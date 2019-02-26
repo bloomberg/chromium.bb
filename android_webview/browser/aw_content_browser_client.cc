@@ -342,9 +342,16 @@ AwContentBrowserClient::GetNetworkContextParams() {
   context_params->accept_language = "en-US,en";
   context_params->enable_data_url_support = true;
 
+  // HTTP cache
   context_params->http_cache_enabled = true;
   context_params->http_cache_max_size = GetHttpCacheSize();
   context_params->http_cache_path = AwBrowserContext::GetCacheDir();
+
+  // WebView should persist and restore cookies between app sessions (including
+  // session cookies).
+  context_params->cookie_path = AwBrowserContext::GetCookieStorePath();
+  context_params->restore_old_session_cookies = true;
+  context_params->persist_session_cookies = true;
 
   context_params->initial_ssl_config = network::mojom::SSLConfig::New();
   // Allow SHA-1 to be used for locally-installed trust anchors, as WebView

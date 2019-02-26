@@ -83,7 +83,10 @@ class AwBrowserContext : public content::BrowserContext,
   static AwBrowserContext* FromWebContents(
       content::WebContents* web_contents);
 
+  // TODO(ntfschr): consider moving these into our PathService in
+  // common/aw_paths.h (http://crbug.com/934184).
   static base::FilePath GetCacheDir();
+  static base::FilePath GetCookieStorePath();
 
   // Maps to BrowserMainParts::PreMainMessageLoopRun.
   void PreMainMessageLoopRun(net::NetLog* net_log);
