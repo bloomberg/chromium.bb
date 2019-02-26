@@ -3801,10 +3801,10 @@ To change this setting, <ph name="BEGIN_LINK">&lt;resetlink&gt;</ph>reset sync<p
         Chrome is still preparing for VR. Restart Chrome later.
       </message>
       <message name="IDS_VR_PREPARING_VR_NOTIFICATION_TITLE" desc="Title of a notifaction shown in VR if VR browser not ready yet. [CHAR-LIMIT=23]">
-        Getting ready for VR…
+        Something went wrong.
       </message>
       <message name="IDS_VR_PREPARING_VR_NOTIFICATION_BODY" desc="Body of a notifaction shown in VR if VR browser not ready yet.">
-        Please try again
+        Reopen Chrome.
       </message>
 
       <if expr="enable_arcore">
