@@ -72,9 +72,10 @@ enum class TestType {
 
 // This test is parameterized to run all tests in the three configurations:
 // both callbacks used, only image_callback used, only image_data_callback used.
-class CachedImageFetcherTest : public testing::TestWithParam<TestType> {
+class NtpSnippetsCachedImageFetcherTest
+    : public testing::TestWithParam<TestType> {
  public:
-  CachedImageFetcherTest() {
+  NtpSnippetsCachedImageFetcherTest() {
     EXPECT_TRUE(database_dir_.CreateUniqueTempDir());
 
     RequestThrottler::RegisterProfilePrefs(pref_service_.registry());
@@ -95,7 +96,7 @@ class CachedImageFetcherTest : public testing::TestWithParam<TestType> {
     EXPECT_TRUE(database_->IsInitialized());
   }
 
-  ~CachedImageFetcherTest() override {
+  ~NtpSnippetsCachedImageFetcherTest() override {
     cached_image_fetcher_.reset();
     database_.reset();
     // We need to run until idle after deleting the database, because
@@ -157,10 +158,10 @@ class CachedImageFetcherTest : public testing::TestWithParam<TestType> {
   TestingPrefServiceSimple pref_service_;
   base::test::ScopedTaskEnvironment scoped_task_environment_;
 
-  DISALLOW_COPY_AND_ASSIGN(CachedImageFetcherTest);
+  DISALLOW_COPY_AND_ASSIGN(NtpSnippetsCachedImageFetcherTest);
 };
 
-TEST_P(CachedImageFetcherTest, FetchImageFromCache) {
+TEST_P(NtpSnippetsCachedImageFetcherTest, FetchImageFromCache) {
   // Save the image in the database.
   database()->SaveImage(kSnippetID, kImageData);
   RunUntilIdle();
@@ -170,7 +171,7 @@ TEST_P(CachedImageFetcherTest, FetchImageFromCache) {
   Fetch(kImageData, true);
 }
 
-TEST_P(CachedImageFetcherTest, FetchImagePopulatesCache) {
+TEST_P(NtpSnippetsCachedImageFetcherTest, FetchImagePopulatesCache) {
   // Expect the image to be fetched by URL.
   {
     test_url_loader_factory()->AddResponse(kImageURL, kImageData);
@@ -183,7 +184,7 @@ TEST_P(CachedImageFetcherTest, FetchImagePopulatesCache) {
   }
 }
 
-TEST_P(CachedImageFetcherTest, FetchNonExistingImage) {
+TEST_P(NtpSnippetsCachedImageFetcherTest, FetchNonExistingImage) {
   const std::string kErrorResponse = "error-response";
   test_url_loader_factory()->AddResponse(kImageURL, kErrorResponse,
                                          net::HTTP_NOT_FOUND);
@@ -192,7 +193,7 @@ TEST_P(CachedImageFetcherTest, FetchNonExistingImage) {
 }
 
 INSTANTIATE_TEST_SUITE_P(,
-                         CachedImageFetcherTest,
+                         NtpSnippetsCachedImageFetcherTest,
                          testing::Values(TestType::kImageCallback,
                                          TestType::kImageDataCallback,
                                          TestType::kBothCallbacks));
