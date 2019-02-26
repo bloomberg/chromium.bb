@@ -48,15 +48,14 @@ TEST_P(LinkTest, FromFile)
 {
     const auto& fileNames = GetParam();
     const size_t fileCount = fileNames.size();
-    const EShMessages controls = DeriveOptions(
-            Source::GLSL, Semantics::OpenGL, Target::AST);
+    const EShMessages controls = DeriveOptions(Source::GLSL, Semantics::OpenGL, Target::AST);
     GlslangResult result;
 
     // Compile each input shader file.
     std::vector<std::unique_ptr<glslang::TShader>> shaders;
     for (size_t i = 0; i < fileCount; ++i) {
         std::string contents;
-        tryLoadFile(GLSLANG_TEST_DIRECTORY "/" + fileNames[i],
+        tryLoadFile(GlobalTestSettings.testRoot + "/" + fileNames[i],
                     "input", &contents);
         shaders.emplace_back(
                 new glslang::TShader(GetShaderStage(GetSuffix(fileNames[i]))));
@@ -78,7 +77,7 @@ TEST_P(LinkTest, FromFile)
 
     // Check with expected results.
     const std::string expectedOutputFname =
-        GLSLANG_TEST_DIRECTORY "/baseResults/" + fileNames.front() + ".out";
+        GlobalTestSettings.testRoot + "/baseResults/" + fileNames.front() + ".out";
     std::string expectedOutput;
     tryLoadFile(expectedOutputFname, "expected output", &expectedOutput);
 
@@ -100,6 +99,7 @@ INSTANTIATE_TEST_CASE_P(
         {"150.tesc", "150.tese", "400.tesc", "400.tese", "410.tesc", "420.tesc", "420.tese"},
         {"max_vertices_0.geom"},
         {"es-link1.frag", "es-link2.frag"},
+        {"missingBodies.vert"}
     })),
 );
 // clang-format on

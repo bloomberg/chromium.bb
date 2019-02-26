@@ -20,20 +20,21 @@ class MODULES_EXPORT DetectedFace final : public ScriptWrappable {
  public:
   static DetectedFace* Create();
   static DetectedFace* Create(DOMRectReadOnly*);
-  static DetectedFace* Create(DOMRectReadOnly*, const HeapVector<Landmark>&);
+  static DetectedFace* Create(DOMRectReadOnly*,
+                              const HeapVector<Member<Landmark>>&);
+
+  explicit DetectedFace(DOMRectReadOnly*);
+  DetectedFace(DOMRectReadOnly*, const HeapVector<Member<Landmark>>&);
 
   DOMRectReadOnly* boundingBox() const;
-  const HeapVector<Landmark>& landmarks() const;
+  const HeapVector<Member<Landmark>>& landmarks() const;
 
   ScriptValue toJSONForBinding(ScriptState*) const;
   void Trace(blink::Visitor*) override;
 
  private:
-  explicit DetectedFace(DOMRectReadOnly*);
-  DetectedFace(DOMRectReadOnly*, const HeapVector<Landmark>&);
-
   const Member<DOMRectReadOnly> bounding_box_;
-  const HeapVector<Landmark> landmarks_;
+  const HeapVector<Member<Landmark>> landmarks_;
 };
 
 }  // namespace blink

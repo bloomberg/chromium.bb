@@ -184,7 +184,10 @@ enum EntryPropertyName {
   canDelete,
   canRename,
   canAddChildren,
-  canShare
+  canShare,
+  isMachineRoot,
+  isExternalMedia,
+  isArbitrarySyncFolder
 };
 
 // Entry property visibility for setEntryTag();
@@ -221,6 +224,8 @@ enum SourceRestriction {
   // Allows native source and Drive source.
   native_or_drive_source
 };
+
+enum CrostiniSharedPathsChangedEventType { share, unshare };
 
 // A file task represents an action that the file manager can perform over the
 // currently selected files. See
@@ -335,6 +340,16 @@ dictionary EntryProperties {
 
   // True if the entry can be shared by the user.
   boolean? canShare;
+
+  // True if the entry is a machine root for backup and sync.
+  boolean? isMachineRoot;
+
+  // True if the entry is a external media folder, that contains one time only
+  // uploads for USB devices, SD cards etc.
+  boolean? isExternalMedia;
+
+  // True if the entry is an arbitrary sync folder.
+  boolean? isArbitrarySyncFolder;
 };
 
 // Information about total and remaining size on the mount point.
@@ -536,7 +551,6 @@ dictionary FileWatchEvent {
 dictionary Preferences {
   boolean driveEnabled;
   boolean cellularDisabled;
-  boolean hostedFilesDisabled;
   boolean searchSuggestEnabled;
   boolean use24hourClock;
   boolean allowRedeemOffers;
@@ -545,7 +559,6 @@ dictionary Preferences {
 
 dictionary PreferencesChange {
   boolean? cellularDisabled;
-  boolean? hostedFilesDisabled;
 };
 
 dictionary SearchParams {
@@ -627,6 +640,26 @@ dictionary Provider {
 
   // Source of file systems' data.
   manifestTypes.FileSystemProviderSource source;
+};
+
+// Information about a Linux package in response to GetLinuxPackageInfo.
+dictionary LinuxPackageInfo {
+  DOMString name;
+  DOMString version;
+
+  // A one-line summary of the project. Almost always present.
+  DOMString? summary;
+  // A longer description of the project. Almost always present.
+  DOMString? description;
+};
+
+// Payload data for crostini shared paths changed event.
+dictionary CrostiniSharedPathsChangedEvent {
+  // Is the event raised for shared or unshared.
+  CrostiniSharedPathsChangedEventType eventType;
+
+  // Paths that have been shared or unshared.
+  [instanceOf=Entry] object[] entries;
 };
 
 // Callback that does not take arguments.
@@ -737,8 +770,13 @@ callback GetDirectorySizeCallback = void(double size);
 callback GetRecentFilesCallback = void([instanceOf=Entry] object[] entries);
 
 // |entries| Entries shared with crostini container.
+// |firstForSession| true the first time this is called for the session.
 callback GetCrostiniSharedPathsCallback =
-    void([instanceOf = Entry] object[] entries);
+    void([instanceOf = Entry] object[] entries, boolean firstForSession);
+
+// |linux_package_info| Package info for the queried package.
+callback GetLinuxPackageInfoCallback =
+    void(LinuxPackageInfo linux_package_info);
 
 // |status| Result of starting the install
 // |failure_reason| Reason for failure for a 'failed' status
@@ -1116,15 +1154,21 @@ interface Functions {
   static void mountCrostini(SimpleCallback callback);
 
   // Shares directory with crostini container.
-  // |entry| Entry of the directory to share.
+  // |entries| Entries of the files or directories to share.
+  // |persist| If true, shares will persist across restarts.
   // |callback|
   [nocompile]
-  static void sharePathWithCrostini(
-      [instanceof=DirectoryEntry] object entry, SimpleCallback callback);
+  static void sharePathsWithCrostini(
+      [instanceof=Entry] object[] entries, boolean persist, SimpleCallback callback);
 
   // Returns list of paths shared with crostini container.
   [nocompile]
   static void getCrostiniSharedPaths(GetCrostiniSharedPathsCallback callback);
+
+  // Requests information about a Linux package. |entry| is a .deb file.
+  [nocompile]
+  static void getLinuxPackageInfo([instanceof=Entry] object entry,
+                                  GetLinuxPackageInfoCallback callback);
 
   // Starts installation of a Linux package.
   [nocompile]
@@ -1167,5 +1211,8 @@ interface Events {
   static void onDriveSyncError(DriveSyncErrorEvent event);
 
   static void onAppsUpdated();
+
+  static void onCrostiniSharedPathsChanged(
+      CrostiniSharedPathsChangedEvent event);
 };
 };

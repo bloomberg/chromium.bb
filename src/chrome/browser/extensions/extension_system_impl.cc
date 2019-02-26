@@ -474,8 +474,7 @@ void ExtensionSystemImpl::RegisterExtensionWithRequestContexts(
 
   bool notifications_disabled = false;
   message_center::NotifierId notifier_id(
-      message_center::NotifierId::APPLICATION,
-      extension->id());
+      message_center::NotifierType::APPLICATION, extension->id());
 
   NotifierStateTracker* notifier_state_tracker =
       NotifierStateTrackerFactory::GetForProfile(profile_);

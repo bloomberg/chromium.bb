@@ -10,8 +10,8 @@
 #include "net/third_party/http2/hpack/decoder/hpack_string_decoder_listener.h"
 #include "net/third_party/http2/hpack/tools/hpack_block_builder.h"
 #include "net/third_party/http2/platform/api/http2_string_piece.h"
-#include "net/third_party/http2/tools/failure.h"
-#include "net/third_party/http2/tools/http2_random.h"
+#include "net/third_party/http2/platform/api/http2_test_helpers.h"
+#include "net/third_party/http2/test_tools/http2_random.h"
 #include "net/third_party/http2/tools/random_decoder_test.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -51,7 +51,6 @@ class HpackStringDecoderTest : public RandomDecoderTest {
   // expected_str is a Http2String rather than a const Http2String& or
   // Http2StringPiece so that the lambda makes a copy of the string, and thus
   // the string to be passed to Collected outlives the call to MakeValidator.
-
   Validator MakeValidator(const Http2String& expected_str,
                           bool expected_huffman) {
     return
@@ -81,7 +80,7 @@ class HpackStringDecoderTest : public RandomDecoderTest {
 TEST_F(HpackStringDecoderTest, DecodeEmptyString) {
   {
     Validator validator = ValidateDoneAndEmpty(MakeValidator("", kCompressed));
-    const char kData[] = {0x80u};
+    const char kData[] = {'\x80'};
     DecodeBuffer b(kData);
     EXPECT_TRUE(
         DecodeAndValidateSeveralWays(&b, kMayReturnZeroOnFirst, validator));
@@ -90,7 +89,7 @@ TEST_F(HpackStringDecoderTest, DecodeEmptyString) {
     // Make sure it stops after decoding the empty string.
     Validator validator =
         ValidateDoneAndOffset(1, MakeValidator("", kUncompressed));
-    const char kData[] = {0x00, 0xffu};
+    const char kData[] = {'\x00', '\xff'};
     DecodeBuffer b(kData);
     EXPECT_EQ(2u, b.Remaining());
     EXPECT_TRUE(

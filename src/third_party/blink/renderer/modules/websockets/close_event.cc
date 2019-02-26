@@ -7,14 +7,14 @@
 namespace blink {
 
 CloseEvent::CloseEvent(const AtomicString& type,
-                       const CloseEventInit& initializer)
+                       const CloseEventInit* initializer)
     : Event(type, initializer), was_clean_(false), code_(0) {
-  if (initializer.hasWasClean())
-    was_clean_ = initializer.wasClean();
-  if (initializer.hasCode())
-    code_ = initializer.code();
-  if (initializer.hasReason())
-    reason_ = initializer.reason();
+  if (initializer->hasWasClean())
+    was_clean_ = initializer->wasClean();
+  if (initializer->hasCode())
+    code_ = initializer->code();
+  if (initializer->hasReason())
+    reason_ = initializer->reason();
 }
 
 }  // namespace blink

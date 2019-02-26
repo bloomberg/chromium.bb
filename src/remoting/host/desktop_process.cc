@@ -41,7 +41,7 @@ DesktopProcess::DesktopProcess(
       daemon_channel_handle_(std::move(daemon_channel_handle)),
       weak_factory_(this) {
   DCHECK(caller_task_runner_->BelongsToCurrentThread());
-  DCHECK(base::MessageLoopForUI::IsCurrent());
+  DCHECK(base::MessageLoopCurrentForUI::IsSet());
 }
 
 DesktopProcess::~DesktopProcess() {

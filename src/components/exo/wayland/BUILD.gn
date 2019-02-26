@@ -20,9 +20,6 @@ if (use_xkbcommon) {
 }
 
 if (use_ozone) {
-  pkg_config("libdrm") {
-    packages = [ "libdrm" ]
-  }
   if (enable_vulkan_wayland_client) {
     pkg_config("vulkan") {
       packages = [ "vulkan" ]
@@ -36,12 +33,60 @@ source_set("wayland") {
     "scoped_wl.h",
     "server.cc",
     "server.h",
+    "server_util.cc",
+    "server_util.h",
+    "wayland_display_observer.cc",
+    "wayland_display_observer.h",
+    "wayland_display_output.cc",
+    "wayland_display_output.h",
+    "wayland_input_delegate.cc",
+    "wayland_input_delegate.h",
+    "wayland_touch_delegate.cc",
+    "wayland_touch_delegate.h",
+    "wl_output.cc",
+    "wl_output.h",
+    "wl_seat.cc",
+    "wl_seat.h",
   ]
 
   defines = [ "EXO_IMPLEMENTATION" ]
 
+  if (is_chromeos) {
+    sources += [
+      "wayland_keyboard_delegate.cc",
+      "wayland_keyboard_delegate.h",
+      "wayland_pointer_delegate.cc",
+      "wayland_pointer_delegate.h",
+      "wl_shell.cc",
+      "wl_shell.h",
+      "zaura_shell.cc",
+      "zaura_shell.h",
+      "zcr_cursor_shapes.cc",
+      "zcr_cursor_shapes.h",
+      "zcr_gaming_input.cc",
+      "zcr_gaming_input.h",
+      "zcr_keyboard_configuration.cc",
+      "zcr_keyboard_configuration.h",
+      "zcr_keyboard_extension.cc",
+      "zcr_keyboard_extension.h",
+      "zcr_notification_shell.cc",
+      "zcr_notification_shell.h",
+      "zcr_remote_shell.cc",
+      "zcr_remote_shell.h",
+      "zcr_stylus_tools.cc",
+      "zcr_stylus_tools.h",
+      "zwp_input_timestamps_manager.cc",
+      "zwp_input_timestamps_manager.h",
+      "zwp_pointer_gestures.cc",
+      "zwp_pointer_gestures.h",
+      "zwp_text_input_manager.cc",
+      "zwp_text_input_manager.h",
+      "zxdg_shell.cc",
+      "zxdg_shell.h",
+    ]
+  }
+
   deps = [
-    "//ash/public/cpp",
     "//base",
     "//components/exo",
     "//components/exo/wayland/public:aura_shell_protocol",
@@ -77,17 +122,31 @@ source_set("wayland") {
   ]
 
   if (use_ozone) {
-    deps += [ "//third_party/wayland-protocols:linux_dmabuf_protocol" ]
-    configs += [ ":libdrm" ]
+    deps += [
+      "//build/config/linux/libdrm",
+      "//third_party/wayland-protocols:linux_dmabuf_protocol",
+    ]
 
     if (is_chromeos) {
-      deps += [ "//ui/events/ozone:events_ozone_layout" ]
+      deps += [
+        "//ash/public/cpp",
+        "//ui/events/ozone:events_ozone_layout",
+      ]
     }
   }
 
   if (use_xkbcommon) {
     configs += [ ":xkbcommon" ]
     deps += [ "//ui/events/keycodes:xkb" ]
+  }
+
+  if (is_chromecast) {
+    defines += [ "USE_FULLSCREEN_SHELL" ]
+    sources += [
+      "zwp_fullscreen_shell.cc",
+      "zwp_fullscreen_shell.h",
+    ]
+    deps += [ "//third_party/wayland-protocols:fullscreen_shell_protocol" ]
   }
 }
 
@@ -136,20 +195,21 @@ source_set("client_support") {
   public_deps = [
     "//skia",
     "//third_party/wayland:wayland_client",
+    "//third_party/wayland-protocols:fullscreen_shell_protocol",
     "//third_party/wayland-protocols:input_timestamps_protocol",
     "//third_party/wayland-protocols:linux_dmabuf_protocol",
     "//third_party/wayland-protocols:presentation_time_protocol",
   ]
 
   if (ozone_platform_gbm) {
-    configs += [
-      ":libdrm",
-      "//ui/gl:gl_config",
-    ]
+    configs += [ "//ui/gl:gl_config" ]
     if (enable_vulkan_wayland_client) {
       configs += [ ":vulkan" ]
     }
-    deps += [ "//ui/ozone" ]
+    deps += [
+      "//build/config/linux/libdrm",
+      "//ui/ozone",
+    ]
     public_deps += [ "//third_party/minigbm" ]
   }
 
@@ -174,12 +234,12 @@ executable("wayland_rects_client") {
   ]
 
   if (ozone_platform_gbm) {
-    configs += [
-      ":libdrm",
-      "//ui/gl:gl_config",
-    ]
+    configs += [ "//ui/gl:gl_config" ]
     defines = [ "USE_GBM" ]
-    deps += [ "//third_party/minigbm" ]
+    deps += [
+      "//build/config/linux/libdrm",
+      "//third_party/minigbm",
+    ]
   }
 }
 
@@ -192,6 +252,7 @@ source_set("simple") {
   deps = [
     ":client_support",
     "//base",
+    "//build/config/linux/libdrm",
     "//skia",
     "//third_party/wayland:wayland_client",
     "//third_party/wayland-protocols:linux_dmabuf_protocol",
@@ -201,10 +262,30 @@ source_set("simple") {
   ]
 
   if (ozone_platform_gbm) {
-    configs += [
-      ":libdrm",
-      "//ui/gl:gl_config",
-    ]
+    configs += [ "//ui/gl:gl_config" ]
+  }
+}
+
+source_set("fullscreen_shell") {
+  sources = [
+    "clients/fullscreen_shell.cc",
+    "clients/fullscreen_shell.h",
+  ]
+
+  deps = [
+    ":client_support",
+    "//base",
+    "//build/config/linux/libdrm",
+    "//skia",
+    "//third_party/wayland:wayland_client",
+    "//third_party/wayland-protocols:linux_dmabuf_protocol",
+    "//third_party/wayland-protocols:presentation_time_protocol",
+    "//ui/gfx/geometry",
+    "//ui/gl",
+  ]
+
+  if (ozone_platform_gbm) {
+    configs += [ "//ui/gl:gl_config" ]
   }
 }
 
@@ -219,6 +300,17 @@ executable("wayland_simple_client") {
   ]
 }
 
+executable("wayland_fullscreen_client") {
+  sources = [
+    "clients/fullscreen_shell_main.cc",
+  ]
+  deps = [
+    ":client_support",
+    ":fullscreen_shell",
+    "//base",
+  ]
+}
+
 executable("wayland_subsurface_client") {
   sources = [
     "clients/subsurface.cc",
@@ -227,6 +319,7 @@ executable("wayland_subsurface_client") {
   deps = [
     ":client_support",
     "//base",
+    "//build/config/linux/libdrm",
     "//skia",
     "//third_party/wayland:wayland_client",
     "//third_party/wayland-protocols:linux_dmabuf_protocol",
@@ -236,10 +329,7 @@ executable("wayland_subsurface_client") {
   ]
 
   if (ozone_platform_gbm) {
-    configs += [
-      ":libdrm",
-      "//ui/gl:gl_config",
-    ]
+    configs += [ "//ui/gl:gl_config" ]
   }
 }
 
@@ -252,6 +342,7 @@ source_set("blur") {
   deps = [
     ":client_support",
     "//base",
+    "//build/config/linux/libdrm",
     "//skia",
     "//third_party/wayland:wayland_client",
     "//ui/gfx/geometry",
@@ -259,10 +350,7 @@ source_set("blur") {
   ]
 
   if (ozone_platform_gbm) {
-    configs += [
-      ":libdrm",
-      "//ui/gl:gl_config",
-    ]
+    configs += [ "//ui/gl:gl_config" ]
   }
 }
 
@@ -292,8 +380,6 @@ executable("wayland_info_client") {
 
 test("wayland_client_perftests") {
   sources = [
-    "../../../ash/test/ash_test_suite.cc",
-    "../../../ash/test/ash_test_suite.h",
     "clients/perftests.cc",
     "clients/test/run_all_client_perftests.cc",
     "clients/test/wayland_client_test.cc",
@@ -305,9 +391,6 @@ test("wayland_client_perftests") {
     ":client_support",
     ":simple",
     ":wayland",
-    "//ash",
-    "//ash:test_support_without_content",
-    "//ash/public/cpp",
     "//base",
     "//base/test:test_support",
     "//cc:test_support",
@@ -324,11 +407,26 @@ test("wayland_client_perftests") {
     "//ui/wm",
   ]
 
-  data_deps = [
-    "//ash/strings:ash_test_strings",
-    "//ash/resources:ash_test_resources_100_percent",
-    "//ash/resources:ash_test_resources_200_percent",
-  ]
+  data_deps = []
+
+  if (is_chromeos) {
+    sources += [
+      "../../../ash/test/ash_test_suite.cc",
+      "../../../ash/test/ash_test_suite.h",
+    ]
+
+    data_deps += [
+      "//ash/strings:ash_test_strings",
+      "//ash/resources:ash_test_resources_100_percent",
+      "//ash/resources:ash_test_resources_200_percent",
+    ]
+
+    deps += [
+      "//ash",
+      "//ash:test_support_without_content",
+      "//ash/public/cpp",
+    ]
+  }
 }
 
 if (ozone_platform_gbm) {
@@ -340,6 +438,7 @@ if (ozone_platform_gbm) {
     deps = [
       ":client_support",
       "//base",
+      "//build/config/linux/libdrm",
       "//skia",
       "//third_party/wayland:wayland_client",
       "//third_party/wayland-protocols:linux_dmabuf_protocol",
@@ -347,10 +446,7 @@ if (ozone_platform_gbm) {
       "//ui/gfx/geometry",
     ]
 
-    configs += [
-      ":libdrm",
-      "//ui/gl:gl_config",
-    ]
+    configs += [ "//ui/gl:gl_config" ]
     deps += [ "//third_party/minigbm" ]
   }
   if (enable_vulkan_wayland_client) {
@@ -362,6 +458,7 @@ if (ozone_platform_gbm) {
       deps = [
         ":client_support",
         "//base",
+        "//build/config/linux/libdrm",
         "//skia",
         "//third_party/wayland:wayland_client",
         "//third_party/wayland-protocols:linux_dmabuf_protocol",
@@ -369,10 +466,7 @@ if (ozone_platform_gbm) {
         "//ui/gfx/geometry",
       ]
 
-      configs += [
-        ":libdrm",
-        "//ui/gl:gl_config",
-      ]
+      configs += [ "//ui/gl:gl_config" ]
       deps += [ "//third_party/minigbm" ]
     }
   }

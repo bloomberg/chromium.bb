@@ -10,14 +10,8 @@ var importer = importer || {};
  *
  * @constructor
  * @struct
- *
- * @param {!analytics.Tracker} tracker
  */
-importer.DriveDuplicateFinder = function(tracker) {
-
-  /** @private {!analytics.Tracker} */
-  this.tracker_ = tracker;
-
+importer.DriveDuplicateFinder = function() {
   /** @private {Promise<string>} */
   this.driveIdPromise_ = null;
 
@@ -87,10 +81,8 @@ importer.DriveDuplicateFinder.prototype.computeHash_ = function(entry) {
                     importer.DriveDuplicateFinder.HASH_EVENT_THRESHOLD_) {
                   console.info(
                       'Content hash computation took ' + elapsedTime + ' ms.');
-                  this.tracker_.sendTiming(
-                     metrics.Categories.ACQUISITION,
-                     metrics.timing.Variables.COMPUTE_HASH,
-                     elapsedTime);
+                  metrics.recordTime(
+                      'DriveDuplicateFinder.LongComputeHash', elapsedTime);
                 }
                 if (chrome.runtime.lastError) {
                   reject(chrome.runtime.lastError);
@@ -163,10 +155,8 @@ importer.DriveDuplicateFinder.prototype.searchFilesByHash_ =
               // Send the timing to GA only if it is sorta exceptionally long.
               if (elapsedTime >=
                   importer.DriveDuplicateFinder.SEARCH_EVENT_THRESHOLD_) {
-                this.tracker_.sendTiming(
-                   metrics.Categories.ACQUISITION,
-                   metrics.timing.Variables.SEARCH_BY_HASH,
-                   elapsedTime);
+                metrics.recordTime(
+                    'DriveDuplicateFinder.LongSearchByHash', elapsedTime);
               }
               if (chrome.runtime.lastError) {
                 reject(chrome.runtime.lastError);
@@ -283,14 +273,11 @@ importer.DispositionChecker.prototype.hasHistoryDuplicate_ =
  * Factory for a function that returns an entry's disposition.
  *
  * @param {!importer.HistoryLoader} historyLoader
- * @param {!analytics.Tracker} tracker
  *
  * @return {!importer.DispositionChecker.CheckerFunction}
  */
-importer.DispositionChecker.createChecker =
-    function(historyLoader, tracker) {
+importer.DispositionChecker.createChecker = function(historyLoader) {
   var checker = new importer.DispositionChecker(
-      historyLoader,
-      new importer.DriveDuplicateFinder(tracker));
+      historyLoader, new importer.DriveDuplicateFinder());
   return checker.getDisposition.bind(checker);
 };

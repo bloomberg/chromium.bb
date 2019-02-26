@@ -32,7 +32,7 @@ class CONTENT_EXPORT MediaSessionServiceImpl
     return playback_state_;
   }
   const base::Optional<MediaMetadata>& metadata() const { return metadata_; }
-  const std::set<blink::mojom::MediaSessionAction>& actions() const {
+  const std::set<media_session::mojom::MediaSessionAction>& actions() const {
     return actions_;
   }
 
@@ -44,8 +44,8 @@ class CONTENT_EXPORT MediaSessionServiceImpl
   void SetPlaybackState(blink::mojom::MediaSessionPlaybackState state) override;
   void SetMetadata(const base::Optional<MediaMetadata>& metadata) override;
 
-  void EnableAction(blink::mojom::MediaSessionAction action) override;
-  void DisableAction(blink::mojom::MediaSessionAction action) override;
+  void EnableAction(media_session::mojom::MediaSessionAction action) override;
+  void DisableAction(media_session::mojom::MediaSessionAction action) override;
 
  protected:
   explicit MediaSessionServiceImpl(RenderFrameHost* render_frame_host);
@@ -66,7 +66,7 @@ class CONTENT_EXPORT MediaSessionServiceImpl
   blink::mojom::MediaSessionClientPtr client_;
   blink::mojom::MediaSessionPlaybackState playback_state_;
   base::Optional<MediaMetadata> metadata_;
-  std::set<blink::mojom::MediaSessionAction> actions_;
+  std::set<media_session::mojom::MediaSessionAction> actions_;
 
   DISALLOW_COPY_AND_ASSIGN(MediaSessionServiceImpl);
 };

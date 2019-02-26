@@ -12,6 +12,7 @@
 #include "third_party/blink/renderer/core/testing/core_unit_test_helper.h"
 #include "third_party/blink/renderer/platform/graphics/graphics_layer.h"
 #include "third_party/blink/renderer/platform/scroll/scroll_types.h"
+#include "third_party/blink/renderer/platform/testing/paint_test_configurations.h"
 
 using testing::_;
 
@@ -30,13 +31,13 @@ class ScrollableAreaMockChromeClient : public EmptyChromeClient {
 
 }  // namespace {
 
-class PaintLayerScrollableAreaTest : public RenderingTest {
+class PaintLayerScrollableAreaTestBase : public RenderingTest {
  public:
-  PaintLayerScrollableAreaTest()
+  PaintLayerScrollableAreaTestBase()
       : RenderingTest(EmptyLocalFrameClient::Create()),
         chrome_client_(new ScrollableAreaMockChromeClient) {}
 
-  ~PaintLayerScrollableAreaTest() override {
+  ~PaintLayerScrollableAreaTestBase() override {
     testing::Mock::VerifyAndClearExpectations(&GetChromeClient());
   }
 
@@ -45,9 +46,8 @@ class PaintLayerScrollableAreaTest : public RenderingTest {
   }
 
   BackgroundPaintLocation GetBackgroundPaintLocation(const char* element_id) {
-    PaintLayer* paint_layer =
-        ToLayoutBoxModelObject(GetLayoutObjectByElementId(element_id))->Layer();
-    return paint_layer->GetBackgroundPaintLocation();
+    return ToLayoutBoxModelObject(GetLayoutObjectByElementId(element_id))
+        ->GetBackgroundPaintLocation();
   }
 
  private:
@@ -59,7 +59,13 @@ class PaintLayerScrollableAreaTest : public RenderingTest {
   Persistent<ScrollableAreaMockChromeClient> chrome_client_;
 };
 
-TEST_F(PaintLayerScrollableAreaTest,
+class PaintLayerScrollableAreaTest : public PaintLayerScrollableAreaTestBase,
+                                     public PaintTestConfigurations {};
+
+INSTANTIATE_PAINT_TEST_CASE_P(PaintLayerScrollableAreaTest);
+using PaintLayerScrollableAreaTestSPv1 = PaintLayerScrollableAreaTestBase;
+
+TEST_P(PaintLayerScrollableAreaTest,
        CanPaintBackgroundOntoScrollingContentsLayer) {
   GetDocument().GetFrame()->GetSettings()->SetPreferCompositingToLCDTextEnabled(
       true);
@@ -150,6 +156,11 @@ TEST_F(PaintLayerScrollableAreaTest,
     <div id='scroller17' class='scroller'
         style='background: rgba(255, 255, 255, 0.5) border-box;
         border: 5px solid rgba(0, 0, 0, 0.5);'>
+      <div class='spacer'></div>
+    </div>
+    <div id='scroller18' class='scroller'
+        style='background: white;
+        border: 5px dashed black;'>
       <div class='spacer'></div>
     </div>
   )HTML");
@@ -246,9 +257,16 @@ TEST_F(PaintLayerScrollableAreaTest,
   // be painted in the graphics layer to be under the translucent border.
   EXPECT_EQ(kBackgroundPaintInGraphicsLayer,
             GetBackgroundPaintLocation("scroller17"));
+
+  // #scroller18 can be painted in both layers because the background is a
+  // solid color, it must be because the dashed border reveals the background
+  // underneath it.
+  EXPECT_EQ(
+      kBackgroundPaintInGraphicsLayer | kBackgroundPaintInScrollingContents,
+      GetBackgroundPaintLocation("scroller18"));
 }
 
-TEST_F(PaintLayerScrollableAreaTest, OpaqueContainedLayersPromoted) {
+TEST_F(PaintLayerScrollableAreaTestSPv1, OpaqueContainedLayersPromoted) {
   SetBodyInnerHTML(R"HTML(
     <style>
     #scroller { overflow: scroll; height: 200px; width: 200px;
@@ -258,7 +276,6 @@ TEST_F(PaintLayerScrollableAreaTest, OpaqueContainedLayersPromoted) {
     </style>
     <div id="scroller"><div id="scrolled"></div></div>
   )HTML");
-  GetDocument().View()->UpdateAllLifecyclePhases();
 
   Element* scroller = GetDocument().getElementById("scroller");
   PaintLayer* paint_layer =
@@ -272,7 +289,7 @@ TEST_F(PaintLayerScrollableAreaTest, OpaqueContainedLayersPromoted) {
 // Tests that we don't promote scrolling content which would not be contained.
 // Promoting the scroller would also require promoting the positioned div
 // which would lose subpixel anti-aliasing due to its transparent background.
-TEST_F(PaintLayerScrollableAreaTest, NonContainedLayersNotPromoted) {
+TEST_F(PaintLayerScrollableAreaTestSPv1, NonContainedLayersNotPromoted) {
   SetBodyInnerHTML(R"HTML(
     <style>
     #scroller { overflow: scroll; height: 200px; width: 200px;
@@ -286,7 +303,6 @@ TEST_F(PaintLayerScrollableAreaTest, NonContainedLayersNotPromoted) {
       <div id="scrolled"></div>
     </div>
   )HTML");
-  GetDocument().View()->UpdateAllLifecyclePhases();
 
   Element* scroller = GetDocument().getElementById("scroller");
   PaintLayer* paint_layer =
@@ -296,7 +312,7 @@ TEST_F(PaintLayerScrollableAreaTest, NonContainedLayersNotPromoted) {
   EXPECT_FALSE(paint_layer->GraphicsLayerBacking());
 }
 
-TEST_F(PaintLayerScrollableAreaTest, TransparentLayersNotPromoted) {
+TEST_F(PaintLayerScrollableAreaTestSPv1, TransparentLayersNotPromoted) {
   SetBodyInnerHTML(R"HTML(
     <style>
     #scroller { overflow: scroll; height: 200px; width: 200px; background:
@@ -306,7 +322,6 @@ TEST_F(PaintLayerScrollableAreaTest, TransparentLayersNotPromoted) {
     </style>
     <div id="scroller"><div id="scrolled"></div></div>
   )HTML");
-  GetDocument().View()->UpdateAllLifecyclePhases();
 
   Element* scroller = GetDocument().getElementById("scroller");
   PaintLayer* paint_layer =
@@ -316,7 +331,7 @@ TEST_F(PaintLayerScrollableAreaTest, TransparentLayersNotPromoted) {
   EXPECT_FALSE(paint_layer->GraphicsLayerBacking());
 }
 
-TEST_F(PaintLayerScrollableAreaTest, OpaqueLayersDepromotedOnStyleChange) {
+TEST_F(PaintLayerScrollableAreaTestSPv1, OpaqueLayersDepromotedOnStyleChange) {
   SetBodyInnerHTML(R"HTML(
     <style>
     #scroller { overflow: scroll; height: 200px; width: 200px; background:
@@ -325,7 +340,6 @@ TEST_F(PaintLayerScrollableAreaTest, OpaqueLayersDepromotedOnStyleChange) {
     </style>
     <div id="scroller"><div id="scrolled"></div></div>
   )HTML");
-  GetDocument().View()->UpdateAllLifecyclePhases();
 
   Element* scroller = GetDocument().getElementById("scroller");
   PaintLayer* paint_layer =
@@ -335,16 +349,16 @@ TEST_F(PaintLayerScrollableAreaTest, OpaqueLayersDepromotedOnStyleChange) {
 
   // Change the background to transparent
   scroller->setAttribute(
-      HTMLNames::styleAttr,
+      html_names::kStyleAttr,
       "background: rgba(255,255,255,0.5) local content-box;");
-  GetDocument().View()->UpdateAllLifecyclePhases();
+  UpdateAllLifecyclePhasesForTest();
   paint_layer = ToLayoutBoxModelObject(scroller->GetLayoutObject())->Layer();
   ASSERT_TRUE(paint_layer);
   EXPECT_FALSE(paint_layer->NeedsCompositedScrolling());
   EXPECT_FALSE(paint_layer->GraphicsLayerBacking());
 }
 
-TEST_F(PaintLayerScrollableAreaTest, OpaqueLayersPromotedOnStyleChange) {
+TEST_F(PaintLayerScrollableAreaTestSPv1, OpaqueLayersPromotedOnStyleChange) {
   SetBodyInnerHTML(R"HTML(
     <style>
     #scroller { overflow: scroll; height: 200px; width: 200px; background:
@@ -353,7 +367,6 @@ TEST_F(PaintLayerScrollableAreaTest, OpaqueLayersPromotedOnStyleChange) {
     </style>
     <div id="scroller"><div id="scrolled"></div></div>
   )HTML");
-  GetDocument().View()->UpdateAllLifecyclePhases();
 
   Element* scroller = GetDocument().getElementById("scroller");
   PaintLayer* paint_layer =
@@ -362,9 +375,9 @@ TEST_F(PaintLayerScrollableAreaTest, OpaqueLayersPromotedOnStyleChange) {
   EXPECT_FALSE(paint_layer->NeedsCompositedScrolling());
 
   // Change the background to opaque
-  scroller->setAttribute(HTMLNames::styleAttr,
+  scroller->setAttribute(html_names::kStyleAttr,
                          "background: white local content-box;");
-  GetDocument().View()->UpdateAllLifecyclePhases();
+  UpdateAllLifecyclePhasesForTest();
   paint_layer = ToLayoutBoxModelObject(scroller->GetLayoutObject())->Layer();
   ASSERT_TRUE(paint_layer);
   EXPECT_TRUE(paint_layer->NeedsCompositedScrolling());
@@ -376,7 +389,8 @@ TEST_F(PaintLayerScrollableAreaTest, OpaqueLayersPromotedOnStyleChange) {
 // Tests that a transform on the scroller or an ancestor will prevent promotion
 // TODO(flackr): Allow integer transforms as long as all of the ancestor
 // transforms are also integer.
-TEST_F(PaintLayerScrollableAreaTest, OnlyNonTransformedOpaqueLayersPromoted) {
+TEST_F(PaintLayerScrollableAreaTestSPv1,
+       OnlyNonTransformedOpaqueLayersPromoted) {
   SetBodyInnerHTML(R"HTML(
     <style>
     #scroller { overflow: scroll; height: 200px; width: 200px; background:
@@ -387,7 +401,6 @@ TEST_F(PaintLayerScrollableAreaTest, OnlyNonTransformedOpaqueLayersPromoted) {
       <div id="scroller"><div id="scrolled"></div></div>
     </div>
   )HTML");
-  GetDocument().View()->UpdateAllLifecyclePhases();
 
   Element* parent = GetDocument().getElementById("parent");
   Element* scroller = GetDocument().getElementById("scroller");
@@ -400,16 +413,16 @@ TEST_F(PaintLayerScrollableAreaTest, OnlyNonTransformedOpaqueLayersPromoted) {
   EXPECT_TRUE(paint_layer->GraphicsLayerBacking()->ContentsOpaque());
 
   // Change the parent to have a transform.
-  parent->setAttribute(HTMLNames::styleAttr, "transform: translate(1px, 0);");
-  GetDocument().View()->UpdateAllLifecyclePhases();
+  parent->setAttribute(html_names::kStyleAttr, "transform: translate(1px, 0);");
+  UpdateAllLifecyclePhasesForTest();
   paint_layer = ToLayoutBoxModelObject(scroller->GetLayoutObject())->Layer();
   ASSERT_TRUE(paint_layer);
   EXPECT_FALSE(paint_layer->NeedsCompositedScrolling());
   EXPECT_FALSE(paint_layer->GraphicsLayerBacking());
 
   // Change the parent to have no transform again.
-  parent->removeAttribute(HTMLNames::styleAttr);
-  GetDocument().View()->UpdateAllLifecyclePhases();
+  parent->removeAttribute(html_names::kStyleAttr);
+  UpdateAllLifecyclePhasesForTest();
   paint_layer = ToLayoutBoxModelObject(scroller->GetLayoutObject())->Layer();
   ASSERT_TRUE(paint_layer);
   EXPECT_TRUE(paint_layer->NeedsCompositedScrolling());
@@ -418,8 +431,9 @@ TEST_F(PaintLayerScrollableAreaTest, OnlyNonTransformedOpaqueLayersPromoted) {
   EXPECT_TRUE(paint_layer->GraphicsLayerBacking()->ContentsOpaque());
 
   // Apply a transform to the scroller directly.
-  scroller->setAttribute(HTMLNames::styleAttr, "transform: translate(1px, 0);");
-  GetDocument().View()->UpdateAllLifecyclePhases();
+  scroller->setAttribute(html_names::kStyleAttr,
+                         "transform: translate(1px, 0);");
+  UpdateAllLifecyclePhasesForTest();
   paint_layer = ToLayoutBoxModelObject(scroller->GetLayoutObject())->Layer();
   ASSERT_TRUE(paint_layer);
   EXPECT_FALSE(paint_layer->NeedsCompositedScrolling());
@@ -428,7 +442,7 @@ TEST_F(PaintLayerScrollableAreaTest, OnlyNonTransformedOpaqueLayersPromoted) {
 
 // Test that opacity applied to the scroller or an ancestor will cause the
 // scrolling contents layer to not be promoted.
-TEST_F(PaintLayerScrollableAreaTest, OnlyOpaqueLayersPromoted) {
+TEST_F(PaintLayerScrollableAreaTestSPv1, OnlyOpaqueLayersPromoted) {
   SetBodyInnerHTML(R"HTML(
     <style>
     #scroller { overflow: scroll; height: 200px; width: 200px; background:
@@ -439,7 +453,6 @@ TEST_F(PaintLayerScrollableAreaTest, OnlyOpaqueLayersPromoted) {
       <div id="scroller"><div id="scrolled"></div></div>
     </div>
   )HTML");
-  GetDocument().View()->UpdateAllLifecyclePhases();
 
   Element* parent = GetDocument().getElementById("parent");
   Element* scroller = GetDocument().getElementById("scroller");
@@ -452,16 +465,16 @@ TEST_F(PaintLayerScrollableAreaTest, OnlyOpaqueLayersPromoted) {
   EXPECT_TRUE(paint_layer->GraphicsLayerBacking()->ContentsOpaque());
 
   // Change the parent to be partially translucent.
-  parent->setAttribute(HTMLNames::styleAttr, "opacity: 0.5;");
-  GetDocument().View()->UpdateAllLifecyclePhases();
+  parent->setAttribute(html_names::kStyleAttr, "opacity: 0.5;");
+  UpdateAllLifecyclePhasesForTest();
   paint_layer = ToLayoutBoxModelObject(scroller->GetLayoutObject())->Layer();
   ASSERT_TRUE(paint_layer);
   EXPECT_FALSE(paint_layer->NeedsCompositedScrolling());
   EXPECT_FALSE(paint_layer->GraphicsLayerBacking());
 
   // Change the parent to be opaque again.
-  parent->setAttribute(HTMLNames::styleAttr, "opacity: 1;");
-  GetDocument().View()->UpdateAllLifecyclePhases();
+  parent->setAttribute(html_names::kStyleAttr, "opacity: 1;");
+  UpdateAllLifecyclePhasesForTest();
   paint_layer = ToLayoutBoxModelObject(scroller->GetLayoutObject())->Layer();
   ASSERT_TRUE(paint_layer);
   EXPECT_TRUE(paint_layer->NeedsCompositedScrolling());
@@ -470,8 +483,8 @@ TEST_F(PaintLayerScrollableAreaTest, OnlyOpaqueLayersPromoted) {
   EXPECT_TRUE(paint_layer->GraphicsLayerBacking()->ContentsOpaque());
 
   // Make the scroller translucent.
-  scroller->setAttribute(HTMLNames::styleAttr, "opacity: 0.5");
-  GetDocument().View()->UpdateAllLifecyclePhases();
+  scroller->setAttribute(html_names::kStyleAttr, "opacity: 0.5");
+  UpdateAllLifecyclePhasesForTest();
   paint_layer = ToLayoutBoxModelObject(scroller->GetLayoutObject())->Layer();
   ASSERT_TRUE(paint_layer);
   EXPECT_FALSE(paint_layer->NeedsCompositedScrolling());
@@ -479,7 +492,7 @@ TEST_F(PaintLayerScrollableAreaTest, OnlyOpaqueLayersPromoted) {
 }
 
 // Test that <input> elements get promoted with "will-change:transform".
-TEST_F(PaintLayerScrollableAreaTest, InputElementPromotionTest) {
+TEST_F(PaintLayerScrollableAreaTestSPv1, InputElementPromotionTest) {
   SetBodyInnerHTML(R"HTML(
     <!DOCTYPE html>
     <style>
@@ -487,7 +500,6 @@ TEST_F(PaintLayerScrollableAreaTest, InputElementPromotionTest) {
     </style>
     <input id='input' width=10 style='font-size:40pt;'/>
   )HTML");
-  GetDocument().View()->UpdateAllLifecyclePhases();
 
   Element* element = GetDocument().getElementById("input");
   PaintLayer* paint_layer =
@@ -495,14 +507,14 @@ TEST_F(PaintLayerScrollableAreaTest, InputElementPromotionTest) {
   ASSERT_FALSE(paint_layer);
 
   element->setAttribute("class", "composited");
-  GetDocument().View()->UpdateAllLifecyclePhases();
+  UpdateAllLifecyclePhasesForTest();
   paint_layer = ToLayoutBoxModelObject(element->GetLayoutObject())->Layer();
   ASSERT_TRUE(paint_layer);
   ASSERT_TRUE(paint_layer->HasCompositedLayerMapping());
 }
 
 // Test that <select> elements get promoted with "will-change:transform".
-TEST_F(PaintLayerScrollableAreaTest, SelectElementPromotionTest) {
+TEST_F(PaintLayerScrollableAreaTestSPv1, SelectElementPromotionTest) {
   SetBodyInnerHTML(R"HTML(
     <!DOCTYPE html>
     <style>
@@ -515,7 +527,6 @@ TEST_F(PaintLayerScrollableAreaTest, SelectElementPromotionTest) {
       <option> value 4</option>
     </select>
   )HTML");
-  GetDocument().View()->UpdateAllLifecyclePhases();
 
   Element* element = GetDocument().getElementById("select");
   PaintLayer* paint_layer =
@@ -525,14 +536,14 @@ TEST_F(PaintLayerScrollableAreaTest, SelectElementPromotionTest) {
   ASSERT_TRUE(!paint_layer || !paint_layer->HasCompositedLayerMapping());
 
   element->setAttribute("class", "composited");
-  GetDocument().View()->UpdateAllLifecyclePhases();
+  UpdateAllLifecyclePhasesForTest();
   paint_layer = ToLayoutBoxModelObject(element->GetLayoutObject())->Layer();
   ASSERT_TRUE(paint_layer);
   ASSERT_TRUE(paint_layer->HasCompositedLayerMapping());
 }
 
 // Ensure OverlayScrollbarColorTheme get updated when page load
-TEST_F(PaintLayerScrollableAreaTest, OverlayScrollbarColorThemeUpdated) {
+TEST_P(PaintLayerScrollableAreaTest, OverlayScrollbarColorThemeUpdated) {
   SetBodyInnerHTML(R"HTML(
     <style>
     div { overflow: scroll; }
@@ -543,7 +554,6 @@ TEST_F(PaintLayerScrollableAreaTest, OverlayScrollbarColorThemeUpdated) {
     <div id="white">b</div>
     <div id="black">c</div>
   )HTML");
-  GetDocument().View()->UpdateAllLifecyclePhases();
 
   Element* none = GetDocument().getElementById("none");
   Element* white = GetDocument().getElementById("white");
@@ -570,7 +580,7 @@ TEST_F(PaintLayerScrollableAreaTest, OverlayScrollbarColorThemeUpdated) {
 
 // Test that css clip applied to the scroller will cause the
 // scrolling contents layer to not be promoted.
-TEST_F(PaintLayerScrollableAreaTest,
+TEST_F(PaintLayerScrollableAreaTestSPv1,
        OnlyAutoClippedScrollingContentsLayerPromoted) {
   SetBodyInnerHTML(R"HTML(
     <style>
@@ -582,7 +592,6 @@ TEST_F(PaintLayerScrollableAreaTest,
     </style>
     <div id="scroller"><div id="scrolled"></div></div>
   )HTML");
-  GetDocument().View()->UpdateAllLifecyclePhases();
 
   Element* scroller = GetDocument().getElementById("scroller");
   PaintLayer* paint_layer =
@@ -591,21 +600,21 @@ TEST_F(PaintLayerScrollableAreaTest,
   EXPECT_TRUE(paint_layer->NeedsCompositedScrolling());
 
   // Add clip to scroller.
-  scroller->setAttribute(HTMLNames::classAttr, "clip");
-  GetDocument().View()->UpdateAllLifecyclePhases();
+  scroller->setAttribute(html_names::kClassAttr, "clip");
+  UpdateAllLifecyclePhasesForTest();
   paint_layer = ToLayoutBoxModelObject(scroller->GetLayoutObject())->Layer();
   ASSERT_TRUE(paint_layer);
   EXPECT_FALSE(paint_layer->NeedsCompositedScrolling());
 
   // Change the scroller to be auto clipped again.
   scroller->removeAttribute("class");
-  GetDocument().View()->UpdateAllLifecyclePhases();
+  UpdateAllLifecyclePhasesForTest();
   paint_layer = ToLayoutBoxModelObject(scroller->GetLayoutObject())->Layer();
   ASSERT_TRUE(paint_layer);
   EXPECT_TRUE(paint_layer->NeedsCompositedScrolling());
 }
 
-TEST_F(PaintLayerScrollableAreaTest, HideTooltipWhenScrollPositionChanges) {
+TEST_P(PaintLayerScrollableAreaTest, HideTooltipWhenScrollPositionChanges) {
   SetBodyInnerHTML(R"HTML(
     <style>
     #scroller { width: 100px; height: 100px; overflow: scroll; }
@@ -613,7 +622,6 @@ TEST_F(PaintLayerScrollableAreaTest, HideTooltipWhenScrollPositionChanges) {
     </style>
     <div id="scroller"><div id="scrolled"></div></div>
   )HTML");
-  GetDocument().View()->UpdateAllLifecyclePhases();
 
   Element* scroller = GetDocument().getElementById("scroller");
   PaintLayerScrollableArea* scrollable_area =
@@ -633,7 +641,7 @@ TEST_F(PaintLayerScrollableAreaTest, HideTooltipWhenScrollPositionChanges) {
   scrollable_area->SetScrollOffset(ScrollOffset(2, 2), kProgrammaticScroll);
 }
 
-TEST_F(PaintLayerScrollableAreaTest, IncludeOverlayScrollbarsInVisibleWidth) {
+TEST_P(PaintLayerScrollableAreaTest, IncludeOverlayScrollbarsInVisibleWidth) {
   ScopedOverlayScrollbarsForTest overlay_scrollbars(false);
   SetBodyInnerHTML(R"HTML(
     <style>
@@ -642,7 +650,7 @@ TEST_F(PaintLayerScrollableAreaTest, IncludeOverlayScrollbarsInVisibleWidth) {
     </style>
     <div id="scroller"><div id="scrolled"></div></div>
   )HTML");
-  GetDocument().View()->UpdateAllLifecyclePhases();
+
   Element* scroller = GetDocument().getElementById("scroller");
   ASSERT_TRUE(scroller);
   PaintLayerScrollableArea* scrollable_area =
@@ -652,7 +660,7 @@ TEST_F(PaintLayerScrollableAreaTest, IncludeOverlayScrollbarsInVisibleWidth) {
   EXPECT_EQ(scrollable_area->GetScrollOffset().Width(), 0);
 }
 
-TEST_F(PaintLayerScrollableAreaTest, ShowAutoScrollbarsForVisibleContent) {
+TEST_P(PaintLayerScrollableAreaTest, ShowAutoScrollbarsForVisibleContent) {
   ScopedOverlayScrollbarsForTest overlay_scrollbars(false);
   SetBodyInnerHTML(R"HTML(
     <style>
@@ -671,18 +679,18 @@ TEST_F(PaintLayerScrollableAreaTest, ShowAutoScrollbarsForVisibleContent) {
       <div id='innerDiv'></div>
     </div>
   )HTML");
-  GetDocument().View()->UpdateAllLifecyclePhases();
+
   Element* outer_div = GetDocument().getElementById("outerDiv");
   ASSERT_TRUE(outer_div);
   outer_div->GetLayoutObject()->SetNeedsLayout("test");
-  GetDocument().View()->UpdateAllLifecyclePhases();
+  UpdateAllLifecyclePhasesForTest();
   PaintLayerScrollableArea* scrollable_area =
       ToLayoutBoxModelObject(outer_div->GetLayoutObject())->GetScrollableArea();
   ASSERT_TRUE(scrollable_area);
   EXPECT_TRUE(scrollable_area->HasVerticalScrollbar());
 }
 
-TEST_F(PaintLayerScrollableAreaTest, FloatOverflowInRtlContainer) {
+TEST_P(PaintLayerScrollableAreaTest, FloatOverflowInRtlContainer) {
   ScopedOverlayScrollbarsForTest overlay_scrollbars(false);
   SetBodyInnerHTML(R"HTML(
     <!DOCTYPE html>
@@ -700,7 +708,7 @@ TEST_F(PaintLayerScrollableAreaTest, FloatOverflowInRtlContainer) {
       </div>
     </div>
   )HTML");
-  GetDocument().View()->UpdateAllLifecyclePhases();
+
   Element* container = GetDocument().getElementById("container");
   ASSERT_TRUE(container);
   PaintLayerScrollableArea* scrollable_area =
@@ -709,7 +717,7 @@ TEST_F(PaintLayerScrollableAreaTest, FloatOverflowInRtlContainer) {
   EXPECT_FALSE(scrollable_area->HasHorizontalScrollbar());
 }
 
-TEST_F(PaintLayerScrollableAreaTest, ScrollOriginInRtlContainer) {
+TEST_P(PaintLayerScrollableAreaTest, ScrollOriginInRtlContainer) {
   SetBodyInnerHTML(R"HTML(
     <!DOCTYPE html>
     <style>
@@ -728,7 +736,7 @@ TEST_F(PaintLayerScrollableAreaTest, ScrollOriginInRtlContainer) {
       <div>
     </div>
   )HTML");
-  GetDocument().View()->UpdateAllLifecyclePhases();
+
   Element* container = GetDocument().getElementById("container");
   ASSERT_TRUE(container);
   PaintLayerScrollableArea* scrollable_area =
@@ -737,10 +745,7 @@ TEST_F(PaintLayerScrollableAreaTest, ScrollOriginInRtlContainer) {
   EXPECT_EQ(scrollable_area->ScrollOrigin().X(), 100);
 }
 
-TEST_F(PaintLayerScrollableAreaTest,
-       SlimmingPaintV2OverflowHiddenScrollOffsetInvalidation) {
-  ScopedSlimmingPaintV2ForTest enabler(true);
-
+TEST_P(PaintLayerScrollableAreaTest, OverflowHiddenScrollOffsetInvalidation) {
   SetBodyInnerHTML(R"HTML(
     <style>
     #scroller {
@@ -753,7 +758,6 @@ TEST_F(PaintLayerScrollableAreaTest,
       <div id='forceScroll' style='height: 2000px;'></div>
     </div>
   )HTML");
-  GetDocument().View()->UpdateAllLifecyclePhases();
 
   auto* scroller = GetLayoutObjectByElementId("scroller");
   auto* scrollable_area = ToLayoutBoxModelObject(scroller)->GetScrollableArea();
@@ -769,7 +773,7 @@ TEST_F(PaintLayerScrollableAreaTest,
   scrollable_area->SetScrollOffset(ScrollOffset(0, 1), kProgrammaticScroll);
   EXPECT_TRUE(scroller->PaintingLayer()->NeedsRepaint());
   EXPECT_TRUE(scroller->NeedsPaintPropertyUpdate());
-  GetDocument().View()->UpdateAllLifecyclePhases();
+  UpdateAllLifecyclePhasesForTest();
 
   // A scroll offset translation is needed when scroll offset is non-zero.
   EXPECT_EQ(FloatSize(0, 1), scrollable_area->GetScrollOffset());
@@ -778,7 +782,7 @@ TEST_F(PaintLayerScrollableAreaTest,
   // A property update is needed when scroll offset changes.
   scrollable_area->SetScrollOffset(ScrollOffset(0, 2), kProgrammaticScroll);
   EXPECT_TRUE(scroller->NeedsPaintPropertyUpdate());
-  GetDocument().View()->UpdateAllLifecyclePhases();
+  UpdateAllLifecyclePhasesForTest();
 
   // A scroll offset translation is still needed when scroll offset is non-zero.
   EXPECT_EQ(FloatSize(0, 2), scrollable_area->GetScrollOffset());
@@ -789,16 +793,14 @@ TEST_F(PaintLayerScrollableAreaTest,
   scrollable_area->SetScrollOffset(ScrollOffset(0, 0), kProgrammaticScroll);
   EXPECT_TRUE(scroller->PaintingLayer()->NeedsRepaint());
   EXPECT_TRUE(scroller->NeedsPaintPropertyUpdate());
-  GetDocument().View()->UpdateAllLifecyclePhases();
+  UpdateAllLifecyclePhasesForTest();
 
   // No scroll offset translation is needed when scroll offset is zero.
   EXPECT_EQ(nullptr, properties->ScrollTranslation());
   EXPECT_EQ(FloatSize(0, 0), scrollable_area->GetScrollOffset());
 }
 
-TEST_F(PaintLayerScrollableAreaTest, SlimmingPaintV2ScrollDoesNotInvalidate) {
-  ScopedSlimmingPaintV2ForTest enabler(true);
-
+TEST_P(PaintLayerScrollableAreaTest, ScrollDoesNotInvalidate) {
   SetBodyInnerHTML(R"HTML(
     <style>
       #scroller {
@@ -812,7 +814,6 @@ TEST_F(PaintLayerScrollableAreaTest, SlimmingPaintV2ScrollDoesNotInvalidate) {
       <div id='forceScroll' style='height: 2000px;'></div>
     </div>
   )HTML");
-  GetDocument().View()->UpdateAllLifecyclePhases();
 
   auto* scroller = GetLayoutObjectByElementId("scroller");
   auto* scrollable_area = ToLayoutBoxModelObject(scroller)->GetScrollableArea();
@@ -826,15 +827,13 @@ TEST_F(PaintLayerScrollableAreaTest, SlimmingPaintV2ScrollDoesNotInvalidate) {
   scrollable_area->SetScrollOffset(ScrollOffset(0, 1), kProgrammaticScroll);
   EXPECT_FALSE(scroller->ShouldDoFullPaintInvalidation());
   EXPECT_TRUE(scroller->NeedsPaintPropertyUpdate());
-  GetDocument().View()->UpdateAllLifecyclePhases();
+  UpdateAllLifecyclePhasesForTest();
   EXPECT_EQ(FloatSize(0, 1), scrollable_area->GetScrollOffset());
   EXPECT_NE(nullptr, properties->ScrollTranslation());
 }
 
-TEST_F(PaintLayerScrollableAreaTest,
-       SlimmingPaintV2ScrollWithLocalBackgroundAttachment) {
-  ScopedSlimmingPaintV2ForTest enabler(true);
-
+TEST_P(PaintLayerScrollableAreaTest,
+       ScrollWithLocalAttachmentBackgroundInScrollingContents) {
   SetBodyInnerHTML(R"HTML(
     <style>
       #scroller {
@@ -849,23 +848,119 @@ TEST_F(PaintLayerScrollableAreaTest,
       <div id='forceScroll' style='height: 2000px;'></div>
     </div>
   )HTML");
-  GetDocument().View()->UpdateAllLifecyclePhases();
 
-  auto* scroller = GetLayoutObjectByElementId("scroller");
-  auto* scrollable_area = ToLayoutBoxModelObject(scroller)->GetScrollableArea();
+  auto* scroller = ToLayoutBox(GetLayoutObjectByElementId("scroller"));
+  auto* scrollable_area = scroller->GetScrollableArea();
+  EXPECT_EQ(kBackgroundPaintInScrollingContents,
+            scroller->GetBackgroundPaintLocation());
 
-  // Programmatically changing the scroll offset should require paint
-  // invalidation due to background attachment.
+  // Programmatically changing the scroll offset.
   scrollable_area->SetScrollOffset(ScrollOffset(0, 1), kProgrammaticScroll);
-  EXPECT_TRUE(scroller->ShouldDoFullPaintInvalidation());
+  if (RuntimeEnabledFeatures::SlimmingPaintV2Enabled()) {
+    // No invalidation because the background paints into scrolling contents.
+    EXPECT_FALSE(scroller->ShouldDoFullPaintInvalidation());
+    EXPECT_FALSE(scroller->BackgroundNeedsFullPaintInvalidation());
+  } else {
+    // Full invalidation because there is no separate scrolling contents layer.
+    EXPECT_TRUE(scroller->ShouldDoFullPaintInvalidation());
+    EXPECT_TRUE(scroller->BackgroundNeedsFullPaintInvalidation());
+  }
   EXPECT_TRUE(scroller->NeedsPaintPropertyUpdate());
-  GetDocument().View()->UpdateAllLifecyclePhases();
+  UpdateAllLifecyclePhasesForTest();
   EXPECT_EQ(FloatSize(0, 1), scrollable_area->GetScrollOffset());
   const auto* properties = scroller->FirstFragment().PaintProperties();
   EXPECT_NE(nullptr, properties->ScrollTranslation());
 }
 
-TEST_F(PaintLayerScrollableAreaTest, HitTestOverlayScrollbars) {
+TEST_P(PaintLayerScrollableAreaTest,
+       ScrollWithLocalAttachmentBackgroundInMainLayer) {
+  SetBodyInnerHTML(R"HTML(
+    <style>
+      #scroller {
+        overflow: scroll;
+        height: 200px;
+        width: 200px;
+        border: 10px dashed black;
+        background: linear-gradient(black, white) local, yellow;
+      }
+    </style>
+    <div id='scroller'>
+      <div id='forceScroll' style='height: 2000px;'></div>
+    </div>
+  )HTML");
+
+  auto* scroller = ToLayoutBox(GetLayoutObjectByElementId("scroller"));
+  auto* scrollable_area = scroller->GetScrollableArea();
+  EXPECT_EQ(
+      kBackgroundPaintInGraphicsLayer | kBackgroundPaintInScrollingContents,
+      scroller->GetBackgroundPaintLocation());
+
+  // Programmatically changing the scroll offset.
+  scrollable_area->SetScrollOffset(ScrollOffset(0, 1), kProgrammaticScroll);
+  // No invalidation because the background paints into the main layer.
+  EXPECT_TRUE(scroller->ShouldDoFullPaintInvalidation());
+  EXPECT_TRUE(scroller->BackgroundNeedsFullPaintInvalidation());
+  EXPECT_TRUE(scroller->NeedsPaintPropertyUpdate());
+  UpdateAllLifecyclePhasesForTest();
+  EXPECT_EQ(FloatSize(0, 1), scrollable_area->GetScrollOffset());
+  const auto* properties = scroller->FirstFragment().PaintProperties();
+  EXPECT_NE(nullptr, properties->ScrollTranslation());
+}
+
+TEST_P(PaintLayerScrollableAreaTest, ViewScrollWithFixedAttachmentBackground) {
+  SetBodyInnerHTML(R"HTML(
+    <style>
+      html, #fixed-background {
+        background: linear-gradient(black, white) fixed;
+      }
+      #fixed-background {
+        width: 200px;
+        height: 200px;
+        overflow: scroll;
+      }
+    </style>
+    <div id="fixed-background">
+      <div style="height: 3000px"></div>
+    </div>
+    <div style="height: 3000px"></div>
+  )HTML");
+
+  auto* fixed_background_div =
+      ToLayoutBox(GetLayoutObjectByElementId("fixed-background"));
+  auto* div_scrollable_area = fixed_background_div->GetScrollableArea();
+  auto* view_scrollable_area = GetLayoutView().GetScrollableArea();
+
+  // Programmatically changing the view's scroll offset. Should invalidate all
+  // objects with fixed attachment background.
+  view_scrollable_area->SetScrollOffset(ScrollOffset(0, 1),
+                                        kProgrammaticScroll);
+  EXPECT_TRUE(fixed_background_div->ShouldDoFullPaintInvalidation());
+  EXPECT_TRUE(fixed_background_div->BackgroundNeedsFullPaintInvalidation());
+  EXPECT_FALSE(fixed_background_div->NeedsPaintPropertyUpdate());
+  if (RuntimeEnabledFeatures::SlimmingPaintV2Enabled()) {
+    // In SPv2, we assume the view's fixed attachment background is composited
+    // at this time and doesn't need paint invalidation on view scroll.
+    EXPECT_FALSE(GetLayoutView().ShouldDoFullPaintInvalidation());
+    EXPECT_FALSE(GetLayoutView().BackgroundNeedsFullPaintInvalidation());
+  } else {
+    EXPECT_TRUE(GetLayoutView().ShouldDoFullPaintInvalidation());
+    EXPECT_TRUE(GetLayoutView().BackgroundNeedsFullPaintInvalidation());
+  }
+  EXPECT_TRUE(GetLayoutView().NeedsPaintPropertyUpdate());
+  UpdateAllLifecyclePhasesForTest();
+
+  // Programmatically changing the div's scroll offset. Should invalidate the
+  // scrolled div with fixed attachment background.
+  div_scrollable_area->SetScrollOffset(ScrollOffset(0, 1), kProgrammaticScroll);
+  EXPECT_TRUE(fixed_background_div->ShouldDoFullPaintInvalidation());
+  EXPECT_TRUE(fixed_background_div->BackgroundNeedsFullPaintInvalidation());
+  EXPECT_TRUE(fixed_background_div->NeedsPaintPropertyUpdate());
+  EXPECT_FALSE(GetLayoutView().ShouldDoFullPaintInvalidation());
+  EXPECT_FALSE(GetLayoutView().BackgroundNeedsFullPaintInvalidation());
+  EXPECT_TRUE(GetLayoutView().NeedsPaintPropertyUpdate());
+}
+
+TEST_P(PaintLayerScrollableAreaTest, HitTestOverlayScrollbars) {
   SetBodyInnerHTML(R"HTML(
     <style>
     html, body {
@@ -883,7 +978,7 @@ TEST_F(PaintLayerScrollableAreaTest, HitTestOverlayScrollbars) {
     </style>
     <div id='scroller'><div id='scrolled'></div></div>
   )HTML");
-  GetDocument().View()->UpdateAllLifecyclePhases();
+
   auto* scroller = GetLayoutObjectByElementId("scroller");
   auto* scrollable_area = ToLayoutBoxModelObject(scroller)->GetScrollableArea();
 
@@ -911,7 +1006,7 @@ TEST_F(PaintLayerScrollableAreaTest, HitTestOverlayScrollbars) {
   EXPECT_EQ(hit_result.GetScrollbar(), scrollable_area->HorizontalScrollbar());
 }
 
-TEST_F(PaintLayerScrollableAreaTest, CompositedStickyDescendant) {
+TEST_P(PaintLayerScrollableAreaTest, CompositedStickyDescendant) {
   SetBodyInnerHTML(R"HTML(
     <div id=scroller style="overflow: scroll; width: 500px; height: 300px;
         will-change: transform">
@@ -923,7 +1018,8 @@ TEST_F(PaintLayerScrollableAreaTest, CompositedStickyDescendant) {
   auto* scroller =
       ToLayoutBoxModelObject(GetLayoutObjectByElementId("scroller"));
   auto* scrollable_area = scroller->GetScrollableArea();
-  EXPECT_EQ(kPaintsIntoOwnBacking, scroller->Layer()->GetCompositingState());
+  if (!RuntimeEnabledFeatures::SlimmingPaintV2Enabled())
+    EXPECT_EQ(kPaintsIntoOwnBacking, scroller->Layer()->GetCompositingState());
   auto* sticky = ToLayoutBoxModelObject(GetLayoutObjectByElementId("sticky"));
 
   EXPECT_EQ(FloatSize(0, 0), sticky->FirstFragment()
@@ -933,7 +1029,7 @@ TEST_F(PaintLayerScrollableAreaTest, CompositedStickyDescendant) {
                                  .To2DTranslation());
 
   scrollable_area->SetScrollOffset(ScrollOffset(0, 50), kUserScroll);
-  GetDocument().View()->UpdateAllLifecyclePhases();
+  UpdateAllLifecyclePhasesForTest();
 
   EXPECT_EQ(FloatSize(0, 50), sticky->FirstFragment()
                                   .LocalBorderBoxProperties()
@@ -943,7 +1039,7 @@ TEST_F(PaintLayerScrollableAreaTest, CompositedStickyDescendant) {
 }
 
 // Delayed scroll offset clamping should not crash. https://crbug.com/842495
-TEST_F(PaintLayerScrollableAreaTest, IgnoreDelayedScrollOnDestroyedLayer) {
+TEST_P(PaintLayerScrollableAreaTest, IgnoreDelayedScrollOnDestroyedLayer) {
   SetBodyInnerHTML(R"HTML(
     <div id=scroller style="overflow: scroll; width: 200px; height: 200px;">
       <div style="height: 1000px;"></div>
@@ -955,11 +1051,11 @@ TEST_F(PaintLayerScrollableAreaTest, IgnoreDelayedScrollOnDestroyedLayer) {
     PaintLayerScrollableArea::DelayScrollOffsetClampScope::SetNeedsClamp(
         scroller->GetLayoutBox()->GetScrollableArea());
     scroller->SetInlineStyleProperty(CSSPropertyDisplay, CSSValueNone);
-    GetDocument().View()->UpdateAllLifecyclePhases();
+    UpdateAllLifecyclePhasesForTest();
   }
 }
 
-TEST_F(PaintLayerScrollableAreaTest, ScrollbarMaximum) {
+TEST_P(PaintLayerScrollableAreaTest, ScrollbarMaximum) {
   SetBodyInnerHTML(R"HTML(
     <style>
     #spacer {
@@ -987,7 +1083,7 @@ TEST_F(PaintLayerScrollableAreaTest, ScrollbarMaximum) {
   Scrollbar* scrollbar = scrollable_area->VerticalScrollbar();
 
   scrollable_area->ScrollBy(ScrollOffset(0, 1000), kProgrammaticScroll);
-  GetDocument().View()->UpdateAllLifecyclePhases();
+  UpdateAllLifecyclePhasesForTest();
   EXPECT_EQ(scrollbar->CurrentPos(), scrollbar->Maximum());
 }
 

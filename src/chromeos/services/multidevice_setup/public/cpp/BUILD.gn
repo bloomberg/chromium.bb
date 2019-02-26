@@ -151,7 +151,6 @@ source_set("unit_tests") {
     "//chromeos/services/multidevice_setup/public/mojom",
     "//components/cryptauth",
     "//components/cryptauth:test_support",
-    "//services/service_manager/public/cpp:service_test_support",
     "//services/service_manager/public/cpp/test:test_support",
     "//testing/gtest",
   ]

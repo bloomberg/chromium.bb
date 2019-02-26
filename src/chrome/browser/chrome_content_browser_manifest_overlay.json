@@ -13,6 +13,7 @@
           "chrome.mojom.AvailableOfflineContentProvider",
           "chrome.mojom.CacheStatsRecorder",
           "chrome.mojom.NetBenchmarking",
+          "data_reduction_proxy.mojom.DataReductionProxy",
           "extensions.StashService",
           "metrics.mojom.CallStackProfileCollector",
           "mojom.ModuleEventSink",
@@ -29,7 +30,7 @@
         ]
       },
       "requires": {
-        "apps": [ "app_registry" ],
+        "apps": [ "app_service" ],
         "ash": [ "system_ui", "test", "display" ],
         // Only used in classic ash case.
         "ash_pref_connector": [ "pref_connector" ],
@@ -38,7 +39,7 @@
         "chrome": [ "input_device_controller" ],
         "chrome_printing": [ "converter" ],
         "content_browser": [ "profiling_client" ],
-        "cups_ipp_validator": [ "ipp_validator" ],
+        "cups_ipp_parser": [ "ipp_parser" ],
         "device": [
           "device:fingerprint",
           "device:geolocation_config",
@@ -88,6 +89,7 @@
           "blink.mojom.MediaDownloadInProductHelp",
           "blink.mojom.ShareService",
           "blink.mojom.TextSuggestionHost",
+          "chrome.mojom.OfflinePageAutoFetcher",
           "chrome.mojom.OpenSearchDocumentDescriptionHandler",
           "chrome.mojom.PrerenderCanceler",
           "chromeos.ime.mojom.InputEngineManager",
@@ -104,6 +106,7 @@
           "translate.mojom.ContentTranslateDriver",
 
           // TODO(beng): These should be moved to a separate capability.
+          "app_management.mojom.PageHandlerFactory",
           "eoc_internals.mojom.PageHandler",
           "media.mojom.MediaEngagementScoreDetailsProvider",
           "mojom.BluetoothInternalsHandler",

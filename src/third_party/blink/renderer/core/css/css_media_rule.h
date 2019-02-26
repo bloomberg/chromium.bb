@@ -35,9 +35,10 @@ class CSSMediaRule final : public CSSConditionRule {
 
  public:
   static CSSMediaRule* Create(StyleRuleMedia* rule, CSSStyleSheet* sheet) {
-    return new CSSMediaRule(rule, sheet);
+    return MakeGarbageCollected<CSSMediaRule>(rule, sheet);
   }
 
+  CSSMediaRule(StyleRuleMedia*, CSSStyleSheet*);
   ~CSSMediaRule() override;
 
   void Reattach(StyleRuleBase*) override;
@@ -49,8 +50,6 @@ class CSSMediaRule final : public CSSConditionRule {
   void Trace(blink::Visitor*) override;
 
  private:
-  CSSMediaRule(StyleRuleMedia*, CSSStyleSheet*);
-
   CSSRule::Type type() const override { return kMediaRule; }
 
   scoped_refptr<MediaQuerySet> MediaQueries() const;

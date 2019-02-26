@@ -13,8 +13,10 @@ namespace blink {
 class CSSStringValue : public CSSValue {
  public:
   static CSSStringValue* Create(const String& str) {
-    return new CSSStringValue(str);
+    return MakeGarbageCollected<CSSStringValue>(str);
   }
+
+  CSSStringValue(const String&);
 
   String Value() const { return string_; }
 
@@ -27,8 +29,6 @@ class CSSStringValue : public CSSValue {
   void TraceAfterDispatch(blink::Visitor*);
 
  private:
-  CSSStringValue(const String&);
-
   String string_;
 };
 

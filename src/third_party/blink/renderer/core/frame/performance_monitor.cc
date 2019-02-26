@@ -75,7 +75,7 @@ PerformanceMonitor* PerformanceMonitor::InstrumentingMonitor(
 PerformanceMonitor::PerformanceMonitor(LocalFrame* local_root)
     : local_root_(local_root) {
   std::fill(std::begin(thresholds_), std::end(thresholds_), base::TimeDelta());
-  Platform::Current()->CurrentThread()->AddTaskTimeObserver(this);
+  Thread::Current()->AddTaskTimeObserver(this);
   local_root_->GetProbeSink()->addPerformanceMonitor(this);
 }
 
@@ -89,7 +89,7 @@ void PerformanceMonitor::Subscribe(Violation violation,
   DCHECK(violation < kAfterLast);
   ClientThresholds* client_thresholds = subscriptions_.at(violation);
   if (!client_thresholds) {
-    client_thresholds = new ClientThresholds();
+    client_thresholds = MakeGarbageCollected<ClientThresholds>();
     subscriptions_.Set(violation, client_thresholds);
   }
   client_thresholds->Set(client, threshold);
@@ -107,7 +107,7 @@ void PerformanceMonitor::Shutdown() {
     return;
   subscriptions_.clear();
   UpdateInstrumentation();
-  Platform::Current()->CurrentThread()->RemoveTaskTimeObserver(this);
+  Thread::Current()->RemoveTaskTimeObserver(this);
   local_root_->GetProbeSink()->removePerformanceMonitor(this);
   local_root_ = nullptr;
 }

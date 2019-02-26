@@ -182,10 +182,10 @@ void ManifestHandlerRegistry::AddExtensionInitialRequiredPermissions(
     const Extension* extension, ManifestPermissionSet* permission_set) {
   for (ManifestHandlerMap::const_iterator it = handlers_.begin();
       it != handlers_.end(); ++it) {
-    ManifestPermission* permission =
-        it->second->CreateInitialRequiredPermission(extension);
+    std::unique_ptr<ManifestPermission> permission(
+        it->second->CreateInitialRequiredPermission(extension));
     if (permission) {
-      permission_set->insert(permission);
+      permission_set->insert(std::move(permission));
     }
   }
 }

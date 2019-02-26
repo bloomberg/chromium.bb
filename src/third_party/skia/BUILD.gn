@@ -4,6 +4,7 @@
 # found in the LICENSE file.
 
 import("gn/flutter_defines.gni")
+import("gn/fuchsia_defines.gni")
 import("gn/shared_sources.gni")
 
 if (is_fuchsia) {
@@ -16,11 +17,17 @@ if (!defined(is_skia_standalone)) {
 is_skia_dev_build = is_skia_standalone && !is_official_build
 
 declare_args() {
+  skia_enable_flutter_defines = false
+}
+
+declare_args() {
   skia_use_angle = false
   skia_use_egl = false
   skia_use_expat = true
   skia_use_fontconfig = is_linux
+  skia_use_fonthost_mac = is_mac
   skia_use_freetype = is_android || is_fuchsia || is_linux
+  skia_use_fixed_gamma_text = is_android
   skia_use_icu = !is_fuchsia && !is_ios && !is_win  # TODO: Windows
   skia_use_libjpeg_turbo = true
   skia_use_libpng = true
@@ -28,6 +35,7 @@ declare_args() {
   skia_use_lua = is_skia_dev_build && !is_ios
   skia_use_opencl = false
   skia_use_piex = !is_win
+  skia_use_wuffs = false
   skia_use_zlib = true
   skia_use_metal = false
   skia_use_libheif = is_skia_dev_build
@@ -35,17 +43,15 @@ declare_args() {
 
   skia_android_serial = ""
   skia_enable_ccpr = true
+  skia_enable_nvpr = !skia_enable_flutter_defines
   skia_enable_discrete_gpu = true
-  skia_enable_effects = true
-  skia_enable_effects_imagefilters = true
-  skia_enable_flutter_defines = false
-  skia_enable_fontmgr_empty = false
   skia_enable_gpu = true
+  skia_enable_nima = false
   skia_enable_pdf = true
   skia_enable_spirv_validation = is_skia_dev_build && is_debug
+  skia_enable_skpicture = true
   skia_enable_tools = is_skia_dev_build
   skia_enable_vulkan_debug_layers = is_skia_dev_build && is_debug
-  skia_vulkan_header = ""  # temporary as we remove the use from clients
   skia_qt_path = getenv("QT_PATH")
   skia_compile_processors = false
   skia_generate_workarounds = false
@@ -63,6 +69,11 @@ declare_args() {
   skia_use_dng_sdk = !is_fuchsia && skia_use_libjpeg_turbo && skia_use_zlib
   skia_use_sfntly = skia_use_icu
   skia_enable_atlas_text = is_skia_dev_build && skia_enable_gpu
+  skia_enable_fontmgr_empty = false
+  skia_enable_fontmgr_custom = (is_linux || target_cpu == "wasm") &&
+                               skia_use_freetype && !skia_use_fontconfig
+  skia_enable_fontmgr_custom_empty = is_fuchsia && skia_use_freetype
+  skia_enable_fontmgr_android = skia_use_expat && skia_use_freetype
 
   if (is_android) {
     skia_use_vulkan = defined(ndk_api) && ndk_api >= 24
@@ -85,8 +96,6 @@ if (defined(skia_settings)) {
 
 # Our tools require static linking (they use non-exported symbols), and the GPU backend.
 skia_enable_tools = skia_enable_tools && !is_component_build && skia_enable_gpu
-
-fontmgr_android_enabled = skia_use_expat && skia_use_freetype
 
 skia_public_includes = [
   "include/android",
@@ -122,15 +131,15 @@ config("skia_public") {
   }
   if (skia_enable_flutter_defines) {
     defines += flutter_defines
-
-    # Flutter always wants this https://github.com/flutter/flutter/issues/11402
-    defines += [ "SK_ENABLE_DUMP_GPU" ]
   }
   if (!skia_enable_gpu) {
     defines += [ "SK_SUPPORT_GPU=0" ]
   }
   if (skia_enable_atlas_text) {
     defines += [ "SK_SUPPORT_ATLAS_TEXT=1" ]
+  }
+  if (is_fuchsia) {
+    defines += fuchsia_defines
   }
 }
 
@@ -163,7 +172,7 @@ config("skia_private") {
   ]
 
   defines = [ "SK_GAMMA_APPLY_TO_A8" ]
-  if (is_android) {
+  if (skia_use_fixed_gamma_text) {
     defines += [
       "SK_GAMMA_EXPONENT=1.4",
       "SK_GAMMA_CONTRAST=0.0",
@@ -178,6 +187,7 @@ config("skia_private") {
   if (skia_enable_gpu) {
     include_dirs += [ "src/gpu" ]
     if (is_skia_dev_build && skia_use_vulkan) {
+      include_dirs += [ "third_party/vulkan" ]
       include_dirs += [ "tools/gpu/vk" ]
     }
   }
@@ -212,6 +222,7 @@ skia_library_configs = [
 
 # Use for CPU-specific Skia code that needs particular compiler flags.
 template("opts") {
+  visibility = [ ":*" ]
   if (invoker.enabled) {
     source_set(target_name) {
       forward_variables_from(invoker, "*")
@@ -326,6 +337,7 @@ opts("hsw") {
 
 # Any feature of Skia that requires third-party code should be optional and use this template.
 template("optional") {
+  visibility = [ ":*" ]
   if (invoker.enabled) {
     config(target_name + "_public") {
       if (defined(invoker.public_defines)) {
@@ -370,26 +382,8 @@ template("optional") {
   }
 }
 
-optional("effects") {
-  enabled = skia_enable_effects
-  deps = [
-    ":compile_processors",
-  ]
-  sources =
-      skia_effects_sources + [ "src/ports/SkGlobalInitialization_default.cpp" ]
-  if (skia_enable_effects_imagefilters) {
-    sources += skia_effects_imagefilter_sources
-  } else {
-    sources += [ "src/ports/SkGlobalInitialization_none_imagefilters.cpp" ]
-  }
-  sources_when_disabled = [
-    "src/ports/SkGlobalInitialization_none.cpp",
-    "src/ports/SkGlobalInitialization_none_imagefilters.cpp",
-  ]
-}
-
 optional("fontmgr_android") {
-  enabled = fontmgr_android_enabled
+  enabled = skia_enable_fontmgr_android
 
   deps = [
     ":typeface_freetype",
@@ -403,8 +397,7 @@ optional("fontmgr_android") {
 }
 
 optional("fontmgr_custom") {
-  enabled = (is_linux || target_cpu == "wasm") && skia_use_freetype &&
-            !skia_use_fontconfig
+  enabled = skia_enable_fontmgr_custom
 
   deps = [
     ":typeface_freetype",
@@ -443,8 +436,8 @@ optional("fontmgr_fontconfig") {
   ]
 }
 
-optional("fontmgr_fuchsia") {
-  enabled = is_fuchsia && skia_use_freetype
+optional("fontmgr_custom_empty") {
+  enabled = skia_enable_fontmgr_custom_empty
 
   deps = [
     ":typeface_freetype",
@@ -574,7 +567,7 @@ if (skia_compile_processors) {
   }
 }
 
-optional("gpu") {
+optional("gpu_for_real") {
   enabled = skia_enable_gpu
   deps = [
     ":compile_processors",
@@ -591,6 +584,10 @@ optional("gpu") {
   if (!skia_enable_ccpr) {
     sources -= skia_ccpr_sources
     sources += [ "src/gpu/ccpr/GrCoverageCountingPathRenderer_none.cpp" ]
+  }
+  if (!skia_enable_nvpr) {
+    sources -= skia_nvpr_sources
+    sources += [ "src/gpu/GrPathRendering_none.cpp" ]
   }
 
   # These paths need to be absolute to match the ones produced by shared_sources.gni.
@@ -731,7 +728,6 @@ optional("raw") {
   configs_to_remove = [ "//gn:no_exceptions" ]
 
   sources = [
-    "src/codec/SkRawAdapterCodec.cpp",
     "src/codec/SkRawCodec.cpp",
   ]
 }
@@ -772,9 +768,20 @@ optional("webp") {
     "//third_party/libwebp",
   ]
   sources = [
-    "src/codec/SkWebpAdapterCodec.cpp",
     "src/codec/SkWebpCodec.cpp",
     "src/images/SkWebpEncoder.cpp",
+  ]
+}
+
+optional("wuffs") {
+  enabled = skia_use_wuffs
+  public_defines = [ "SK_HAS_WUFFS_LIBRARY" ]
+
+  deps = [
+    "//third_party/wuffs",
+  ]
+  sources = [
+    "src/codec/SkWuffsCodec.cpp",
   ]
 }
 
@@ -820,37 +827,52 @@ if (skia_enable_gpu && skia_generate_workarounds) {
   }
 }
 
+# Temporary fake targets so Flutter-in-Fuchsia can "depend" on them.
+# TODO: rename :gpu_for_real back to :gpu when cleaning up.
+source_set("effects") {
+}
+source_set("gpu") {
+}
+
 component("skia") {
   public_configs = [ ":skia_public" ]
   configs += skia_library_configs
+
+  public_deps = [
+    ":gpu_for_real",
+    ":pdf",
+    ":skcms",
+  ]
 
   deps = [
     ":arm64",
     ":armv7",
     ":avx",
+    ":compile_processors",
     ":crc32",
-    ":effects",
     ":fontmgr_android",
     ":fontmgr_custom",
+    ":fontmgr_custom_empty",
     ":fontmgr_empty",
     ":fontmgr_fontconfig",
-    ":fontmgr_fuchsia",
-    ":gpu",
     ":heif",
     ":hsw",
     ":jpeg",
     ":none",
-    ":pdf",
     ":png",
     ":raw",
-    ":skcms",
     ":sse2",
     ":sse41",
     ":sse42",
     ":ssse3",
     ":webp",
+    ":wuffs",
     ":xml",
   ]
+
+  if (skia_enable_nima) {
+    deps += [ "//third_party/Nima-Cpp" ]
+  }
 
   # This file (and all GN files in Skia) are designed to work with an
   # empty sources assignment filter; we handle all that explicitly.
@@ -861,12 +883,15 @@ component("skia") {
   sources += skia_core_sources
   sources += skia_utils_sources
   sources += skia_xps_sources
+  sources += skia_effects_sources
+  sources += skia_effects_imagefilter_sources
   sources += [
     "src/android/SkAndroidFrameworkUtils.cpp",
     "src/android/SkAnimatedImage.cpp",
     "src/android/SkBitmapRegionCodec.cpp",
     "src/android/SkBitmapRegionDecoder.cpp",
     "src/codec/SkAndroidCodec.cpp",
+    "src/codec/SkAndroidCodecAdapter.cpp",
     "src/codec/SkBmpBaseCodec.cpp",
     "src/codec/SkBmpCodec.cpp",
     "src/codec/SkBmpMaskCodec.cpp",
@@ -886,6 +911,7 @@ component("skia") {
     "src/codec/SkWbmpCodec.cpp",
     "src/images/SkImageEncoder.cpp",
     "src/ports/SkDiscardableMemory_none.cpp",
+    "src/ports/SkGlobalInitialization_default.cpp",
     "src/ports/SkImageGenerator_skia.cpp",
     "src/ports/SkMemory_malloc.cpp",
     "src/ports/SkOSFile_stdio.cpp",
@@ -894,6 +920,14 @@ component("skia") {
     "src/utils/mac/SkStream_mac.cpp",
     "third_party/gif/SkGifImageReader.cpp",
   ]
+
+  defines = []
+  if (!skia_enable_skpicture) {
+    defines = [ "SK_DISABLE_SKPICTURE" ]
+    sources -= skia_skpicture_sources
+    sources -= [ "//src/effects/imagefilters/SkPictureImageFilter.cpp" ]
+    sources += [ "src/core/SkPicture_none.cpp" ]
+  }
 
   libs = []
 
@@ -949,10 +983,15 @@ component("skia") {
     }
   }
 
+  if (skia_use_fonthost_mac) {
+    sources += [
+      "src/ports/SkFontHost_mac.cpp",
+    ]
+  }
+
   if (is_mac) {
     sources += [
       "src/ports/SkDebug_stdio.cpp",
-      "src/ports/SkFontHost_mac.cpp",
       "src/ports/SkImageEncoder_CG.cpp",
       "src/ports/SkImageGeneratorCG.cpp",
     ]
@@ -1117,6 +1156,10 @@ if (skia_enable_tools) {
       ":skia.h",
       "modules/skottie",
     ]
+
+    # We add this directory to simulate the client already have
+    # vulkan/vulkan_core.h on their path.
+    include_dirs = [ "third_party/vulkan" ]
   }
 
   template("test_lib") {
@@ -1488,14 +1531,13 @@ if (skia_enable_tools) {
   test_lib("tests") {
     public_include_dirs = [ "tests" ]
     sources = tests_sources + pathops_tests_sources
-    if (!fontmgr_android_enabled) {
+    if (!skia_enable_fontmgr_android) {
       sources -= [ "//tests/FontMgrAndroidParserTest.cpp" ]
     }
     if (!(skia_use_freetype && skia_use_fontconfig)) {
       sources -= [ "//tests/FontMgrFontConfigTest.cpp" ]
     }
     deps = [
-      ":experimental_pipe",
       ":experimental_svg_model",
       ":flags",
       ":skia",
@@ -1520,18 +1562,6 @@ if (skia_enable_tools) {
       ":gpu_tool_utils",
       ":skia",
       ":tool_utils",
-    ]
-  }
-
-  test_lib("experimental_pipe") {
-    public_include_dirs = [ "experimental/pipe" ]
-    sources = [
-      "experimental/pipe/SkPipe.h",
-      "experimental/pipe/SkPipeCanvas.cpp",
-      "experimental/pipe/SkPipeCanvas.h",
-      "experimental/pipe/SkPipeFormat.h",
-      "experimental/pipe/SkPipeReader.cpp",
-      "experimental/pipe/SkRefSet.h",
     ]
   }
 
@@ -1611,16 +1641,19 @@ if (skia_enable_tools) {
 
   test_app("bookmaker") {
     sources = [
+      "tools/bookmaker/bmhParser.cpp",
       "tools/bookmaker/bookmaker.cpp",
       "tools/bookmaker/cataloger.cpp",
       "tools/bookmaker/definition.cpp",
       "tools/bookmaker/fiddleParser.cpp",
+      "tools/bookmaker/hackParser.cpp",
       "tools/bookmaker/includeParser.cpp",
       "tools/bookmaker/includeWriter.cpp",
       "tools/bookmaker/mdOut.cpp",
       "tools/bookmaker/parserCommon.cpp",
       "tools/bookmaker/selfCheck.cpp",
       "tools/bookmaker/spellCheck.cpp",
+      "tools/bookmaker/textParser.cpp",
     ]
     deps = [
       ":flags",
@@ -1656,6 +1689,7 @@ if (skia_enable_tools) {
 
       # NIMA does not build on Windows clang
       if (!is_win || !is_clang) {
+        sources += [ "experimental/nima/NimaActor.cpp" ]
         deps += [ "//third_party/Nima-Cpp" ]
       }
 
@@ -1686,7 +1720,6 @@ if (skia_enable_tools) {
       include_dirs = [ "tests" ]
       deps = [
         ":common_flags",
-        ":experimental_pipe",
         ":experimental_svg_model",
         ":flags",
         ":gm",
@@ -1695,6 +1728,7 @@ if (skia_enable_tools) {
         ":tests",
         ":tool_utils",
         "modules/skottie",
+        "modules/skottie:utils",
         "modules/sksg",
         "//third_party/jsoncpp",
         "//third_party/libpng",
@@ -1856,9 +1890,11 @@ if (skia_enable_tools) {
       "fuzz/FuzzPathop.cpp",
       "fuzz/FuzzPolyUtils.cpp",
       "fuzz/FuzzRegionOp.cpp",
+      "fuzz/oss_fuzz/FuzzAndroidCodec.cpp",
       "fuzz/oss_fuzz/FuzzAnimatedImage.cpp",
       "fuzz/oss_fuzz/FuzzImage.cpp",
       "fuzz/oss_fuzz/FuzzImageFilterDeserialize.cpp",
+      "fuzz/oss_fuzz/FuzzIncrementalImage.cpp",
       "fuzz/oss_fuzz/FuzzJSON.cpp",
       "fuzz/oss_fuzz/FuzzPathDeserialize.cpp",
       "fuzz/oss_fuzz/FuzzRegionDeserialize.cpp",
@@ -2123,7 +2159,7 @@ if (skia_enable_tools) {
     ]
     libs = []
 
-    include_dirs = []
+    include_dirs = [ "experimental" ]
     deps = [
       ":experimental_svg_model",
       ":flags",
@@ -2134,6 +2170,7 @@ if (skia_enable_tools) {
       ":skia",
       ":tool_utils",
       "modules/skottie",
+      "modules/skottie:utils",
       "modules/sksg",
       "modules/sksg:samples",
       "//third_party/imgui",

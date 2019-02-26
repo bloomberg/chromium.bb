@@ -68,9 +68,10 @@ void TetherDisconnectorImpl::DisconnectFromNetwork(
   if (status == ActiveHost::ActiveHostStatus::CONNECTING) {
     // Note: CancelConnectionAttempt() disconnects the active host.
     if (tether_connector_->CancelConnectionAttempt(tether_network_guid)) {
-      PA_LOG(INFO) << "Disconnect requested for Tether network with GUID "
-                   << tether_network_guid << ", which had not yet connected. "
-                   << "Canceled in-progress connection attempt.";
+      PA_LOG(VERBOSE) << "Disconnect requested for Tether network with GUID "
+                      << tether_network_guid
+                      << ", which had not yet connected. "
+                      << "Canceled in-progress connection attempt.";
       success_callback.Run();
       return;
     }

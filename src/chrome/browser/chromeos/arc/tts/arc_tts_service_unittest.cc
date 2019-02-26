@@ -7,12 +7,13 @@
 #include <memory>
 
 #include "base/threading/platform_thread.h"
-#include "chrome/browser/speech/tts_controller_impl.h"
+#include "chrome/browser/speech/tts_controller_delegate_impl.h"
 #include "chrome/test/base/testing_profile.h"
 #include "components/arc/arc_bridge_service.h"
 #include "components/arc/arc_service_manager.h"
 #include "components/arc/test/fake_arc_session.h"
 #include "components/keyed_service/content/browser_context_keyed_service_factory.h"
+#include "content/public/browser/tts_controller.h"
 #include "content/public/test/test_browser_thread_bundle.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -20,13 +21,13 @@ namespace arc {
 
 namespace {
 
-class TestableTtsController : public TtsControllerImpl {
+class TestableTtsController : public TtsControllerDelegateImpl {
  public:
   TestableTtsController() = default;
   ~TestableTtsController() override = default;
 
   void OnTtsEvent(int utterance_id,
-                  TtsEventType event_type,
+                  content::TtsEventType event_type,
                   int char_index,
                   const std::string& error_message) override {
     last_utterance_id_ = utterance_id;
@@ -36,7 +37,7 @@ class TestableTtsController : public TtsControllerImpl {
   }
 
   int last_utterance_id_;
-  TtsEventType last_event_type_;
+  content::TtsEventType last_event_type_;
   int last_char_index_;
   std::string last_error_message_;
 
@@ -52,7 +53,8 @@ class ArcTtsServiceTest : public testing::Test {
         tts_controller_(std::make_unique<TestableTtsController>()),
         tts_service_(ArcTtsService::GetForBrowserContextForTesting(
             testing_profile_.get())) {
-    tts_service_->set_tts_controller_for_testing(tts_controller_.get());
+    tts_service_->set_tts_controller_delegate_for_testing(
+        tts_controller_.get());
   }
 
   ~ArcTtsServiceTest() override { tts_service_->Shutdown(); }
@@ -76,29 +78,30 @@ class ArcTtsServiceTest : public testing::Test {
 // Tests that ArcTtsService can be constructed and destructed.
 TEST_F(ArcTtsServiceTest, TestConstructDestruct) {}
 
-// Tests that OnTtsEvent() properly calls into TtsController::OnTtsEvent().
+// Tests that OnTtsEvent() properly calls into
+// TtsControllerDelegateImpl::OnTtsEvent().
 TEST_F(ArcTtsServiceTest, TestOnTtsEvent) {
   tts_service()->OnTtsEvent(1, mojom::TtsEventType::START, 0, "");
   EXPECT_EQ(1, tts_controller()->last_utterance_id_);
-  EXPECT_EQ(TTS_EVENT_START, tts_controller()->last_event_type_);
+  EXPECT_EQ(content::TTS_EVENT_START, tts_controller()->last_event_type_);
   EXPECT_EQ(0, tts_controller()->last_char_index_);
   EXPECT_EQ("", tts_controller()->last_error_message_);
 
   tts_service()->OnTtsEvent(1, mojom::TtsEventType::END, 10, "");
   EXPECT_EQ(1, tts_controller()->last_utterance_id_);
-  EXPECT_EQ(TTS_EVENT_END, tts_controller()->last_event_type_);
+  EXPECT_EQ(content::TTS_EVENT_END, tts_controller()->last_event_type_);
   EXPECT_EQ(10, tts_controller()->last_char_index_);
   EXPECT_EQ("", tts_controller()->last_error_message_);
 
   tts_service()->OnTtsEvent(2, mojom::TtsEventType::INTERRUPTED, 0, "");
   EXPECT_EQ(2, tts_controller()->last_utterance_id_);
-  EXPECT_EQ(TTS_EVENT_INTERRUPTED, tts_controller()->last_event_type_);
+  EXPECT_EQ(content::TTS_EVENT_INTERRUPTED, tts_controller()->last_event_type_);
   EXPECT_EQ(0, tts_controller()->last_char_index_);
   EXPECT_EQ("", tts_controller()->last_error_message_);
 
   tts_service()->OnTtsEvent(3, mojom::TtsEventType::ERROR, 0, "");
   EXPECT_EQ(3, tts_controller()->last_utterance_id_);
-  EXPECT_EQ(TTS_EVENT_ERROR, tts_controller()->last_event_type_);
+  EXPECT_EQ(content::TTS_EVENT_ERROR, tts_controller()->last_event_type_);
   EXPECT_EQ(0, tts_controller()->last_char_index_);
   EXPECT_EQ("", tts_controller()->last_error_message_);
 }

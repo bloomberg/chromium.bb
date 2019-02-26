@@ -72,7 +72,8 @@ class CONTENT_EXPORT ResourceRequesterInfo
   // request. When PlzNavigate is enabled, |original_request_info| must be
   // browser side navigation type. Otherwise it must be renderer type.
   static scoped_refptr<ResourceRequesterInfo> CreateForNavigationPreload(
-      ResourceRequesterInfo* original_request_info);
+      ResourceRequesterInfo* original_request_info,
+      net::URLRequestContext* url_request_context);
 
   // Creates a ResourceRequesterInfo for a requester that requests certificates
   // for signed exchange.

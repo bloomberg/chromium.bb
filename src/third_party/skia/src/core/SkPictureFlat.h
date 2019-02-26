@@ -97,7 +97,8 @@ enum DrawType {
 
     FLUSH,
 
-    LAST_DRAWTYPE_ENUM = FLUSH
+    DRAW_IMAGE_SET,
+    LAST_DRAWTYPE_ENUM = DRAW_IMAGE_SET
 };
 
 enum DrawVertexFlags {
@@ -156,7 +157,7 @@ static inline bool ClipParams_unpackDoAA(uint32_t packed) {
 class SkTypefacePlayback {
 public:
     SkTypefacePlayback() : fCount(0), fArray(nullptr) {}
-    ~SkTypefacePlayback();
+    ~SkTypefacePlayback() = default;
 
     void setCount(size_t count);
 

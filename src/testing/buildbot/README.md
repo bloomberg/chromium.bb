@@ -5,6 +5,16 @@ The files in this directory control how tests are run on the
 In addition to specifying what tests run on which builders, they also specify
 special arguments and constraints for the tests.
 
+Adding a new test suite?
+
+The bar for adding new test suites is high. New test suites result in extra
+linking time for builders, and sending binaries around to the swarming bots.
+This is especially onerous for suites such as browser_tests (more than 300MB
+as of this writing). Unless there is a compelling reason to have a standalone
+suite, include your tests in existing test suites. For example, all
+InProcessBrowserTests should be in browser_tests. Similarly any unit-tests in
+components should be in components_unittests.
+
 ## A tour of the directory
 
 * <master_name\>.json -- buildbot configuration json files. These are used to

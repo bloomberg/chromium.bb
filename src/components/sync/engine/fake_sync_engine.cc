@@ -35,8 +35,7 @@ void FakeSyncEngine::StartConfiguration() {}
 
 void FakeSyncEngine::StartSyncingWithServer() {}
 
-void FakeSyncEngine::SetEncryptionPassphrase(const std::string& passphrase,
-                                             bool is_explicit) {}
+void FakeSyncEngine::SetEncryptionPassphrase(const std::string& passphrase) {}
 
 void FakeSyncEngine::SetDecryptionPassphrase(const std::string& passphrase) {}
 
@@ -76,10 +75,6 @@ SyncEngine::Status FakeSyncEngine::GetDetailedStatus() {
 void FakeSyncEngine::HasUnsyncedItemsForTest(
     base::OnceCallback<void(bool)> cb) const {}
 
-bool FakeSyncEngine::IsCryptographerReady(const BaseTransaction* trans) const {
-  return false;
-}
-
 void FakeSyncEngine::GetModelSafeRoutingInfo(ModelSafeRoutingInfo* out) const {}
 
 void FakeSyncEngine::FlushDirectory() const {}
@@ -107,5 +102,7 @@ void FakeSyncEngine::OnCookieJarChanged(bool account_mismatch,
     callback.Run();
   }
 }
+
+void FakeSyncEngine::SetInvalidationsForSessionsEnabled(bool enabled) {}
 
 }  // namespace syncer

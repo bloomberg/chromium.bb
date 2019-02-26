@@ -50,6 +50,10 @@ def _ParseArgs(args):
                       help='Output bundle zip archive.')
   parser.add_argument('--module-zips', required=True,
                       help='GN-list of module zip archives.')
+  parser.add_argument(
+      '--rtxt-in-paths', action='append', help='GN-list of module R.txt files.')
+  parser.add_argument(
+      '--rtxt-out-path', help='Path to combined R.txt file for bundle.')
   parser.add_argument('--uncompressed-assets', action='append',
                       help='GN-list of uncompressed assets.')
   parser.add_argument('--uncompress-shared-libraries', action='append',
@@ -63,6 +67,7 @@ def _ParseArgs(args):
 
   options = parser.parse_args(args)
   options.module_zips = build_utils.ParseGnList(options.module_zips)
+  options.rtxt_in_paths = build_utils.ExpandFileArgs(options.rtxt_in_paths)
 
   if len(options.module_zips) == 0:
     raise Exception('The module zip list cannot be empty.')
@@ -166,9 +171,11 @@ def _RewriteLanguageAssetPath(src_path):
   This will rewrite paths that look like locales/<locale>.pak into
   locales#<language>/<locale>.pak, where <language> is the language code
   from the locale.
+
+  Returns new path.
   """
   if not src_path.startswith(_LOCALES_SUBDIR) or not src_path.endswith('.pak'):
-    return src_path
+    return [src_path]
 
   locale = src_path[len(_LOCALES_SUBDIR):-4]
   android_locale = resource_utils.CHROME_TO_ANDROID_LOCALE_MAP.get(
@@ -182,9 +189,15 @@ def _RewriteLanguageAssetPath(src_path):
     android_language = android_locale
 
   if android_language == _FALLBACK_LANGUAGE:
-    return 'assets/locales/%s.pak' % locale
+    # Fallback language .pak files must be placed in a different directory
+    # to ensure they are always stored in the base module.
+    result_path = 'assets/fallback-locales/%s.pak' % locale
+  else:
+    # Other language .pak files go into a language-specific asset directory
+    # that bundletool will store in separate split APKs.
+    result_path = 'assets/locales#lang_%s/%s.pak' % (android_language, locale)
 
-  return 'assets/locales#lang_%s/%s.pak' % (android_language, locale)
+  return result_path
 
 
 def _SplitModuleForAssetTargeting(src_module_zip, tmp_dir, split_dimensions):
@@ -225,9 +238,11 @@ def _SplitModuleForAssetTargeting(src_module_zip, tmp_dir, split_dimensions):
         if src_path in language_files:
           dst_path = _RewriteLanguageAssetPath(src_path)
 
-        build_utils.AddToZipHermetic(dst_zip, dst_path,
-                                     data=src_zip.read(src_path),
-                                     compress=is_compressed)
+        build_utils.AddToZipHermetic(
+            dst_zip,
+            dst_path,
+            data=src_zip.read(src_path),
+            compress=is_compressed)
 
     return tmp_zip
 
@@ -284,6 +299,14 @@ def main(args):
       build_utils.CheckOutput(signing_cmd_args, print_stderr=True)
 
     shutil.move(tmp_bundle, options.out_bundle)
+
+  if options.rtxt_out_path:
+    with open(options.rtxt_out_path, 'w') as rtxt_out:
+      for rtxt_in_path in options.rtxt_in_paths:
+        with open(rtxt_in_path, 'r') as rtxt_in:
+          rtxt_out.write('-- Contents of {}\n'.format(
+              os.path.basename(rtxt_in_path)))
+          rtxt_out.write(rtxt_in.read())
 
 
 if __name__ == '__main__':

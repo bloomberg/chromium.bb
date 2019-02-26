@@ -101,6 +101,7 @@ source_set("unit_tests") {
     "page_placeholder_tab_helper_unittest.mm",
     "repost_form_tab_helper_unittest.mm",
     "sad_tab_tab_helper_unittest.mm",
+    "services_unittest.mm",
     "tab_id_tab_helper_unittest.mm",
   ]
   deps = [
@@ -109,8 +110,10 @@ source_set("unit_tests") {
     ":tab_helper_delegates",
     ":test_support",
     ":web",
+    ":web_internal",
     "//base:base",
     "//base/test:test_support",
+    "//components/services/unzip/public/interfaces",
     "//components/strings:components_strings_grit",
     "//ios/chrome/browser/browser_state:test_support",
     "//ios/chrome/browser/snapshots",
@@ -121,6 +124,7 @@ source_set("unit_tests") {
     "//ios/web/public/test/http_server",
     "//net:test_support",
     "//services/network:test_support",
+    "//services/service_manager/public/cpp",
     "//testing/gmock",
     "//testing/gtest",
     "//third_party/ocmock",
@@ -139,6 +143,7 @@ js_compile_bundle("chrome_bundle_all_frames") {
     "//components/autofill/ios/form_util/resources/form_handlers.js",
     "resources/accessibility.js",
     "resources/chrome_bundle_all_frames.js",
+    "resources/console.js",
     "resources/print.js",
   ]
 }
@@ -147,10 +152,10 @@ js_compile_bundle("chrome_bundle_main_frame") {
   closure_entry_point = "__crWeb.chromeBundleMainFrame"
   sources = [
     "//components/password_manager/ios/resources/password_controller.js",
+    "//ios/chrome/browser/search_engines/resources/search_engine.js",
     "resources/chrome_bundle_main_frame.js",
     "resources/image_fetch.js",
   ]
-
   deps = [
     ":credential_manager",
     ":payment_request",
@@ -181,6 +186,22 @@ js_compile_checked("image_fetch") {
   ]
 }
 
+source_set("java_script_console") {
+  configs += [ "//build/config/compiler:enable_arc" ]
+  sources = [
+    "java_script_console/java_script_console_message.cc",
+    "java_script_console/java_script_console_message.h",
+    "java_script_console/java_script_console_tab_helper.h",
+    "java_script_console/java_script_console_tab_helper.mm",
+    "java_script_console/java_script_console_tab_helper_delegate.h",
+  ]
+  deps = [
+    "//base",
+    "//ios/web/public",
+  ]
+  libs = [ "Foundation.framework" ]
+}
+
 source_set("web_internal") {
   configs += [ "//build/config/compiler:enable_arc" ]
   sources = [
@@ -188,10 +209,6 @@ source_set("web_internal") {
     "blocked_popup_tab_helper.mm",
     "chrome_web_client.h",
     "chrome_web_client.mm",
-    "error_page_content.h",
-    "error_page_content.mm",
-    "error_page_generator.h",
-    "error_page_generator.mm",
     "print_tab_helper.h",
     "print_tab_helper.mm",
     "web_state_printer.h",
@@ -206,6 +223,8 @@ source_set("web_internal") {
     "//components/payments/core",
     "//components/prefs",
     "//components/resources",
+    "//components/services/unzip:lib",
+    "//components/services/unzip/public/interfaces",
     "//components/strings",
     "//components/version_info",
     "//ios/chrome/app/resources:ios_resources",
@@ -218,10 +237,9 @@ source_set("web_internal") {
     "//ios/chrome/browser/passwords",
     "//ios/chrome/browser/ssl",
     "//ios/chrome/browser/tabs",
-    "//ios/chrome/browser/ui:ui_util",
     "//ios/chrome/browser/ui/commands",
     "//ios/chrome/browser/ui/static_content",
-    "//ios/chrome/browser/unzip",
+    "//ios/chrome/browser/ui/util",
     "//ios/chrome/browser/web",
     "//ios/public/provider/chrome/browser",
     "//ios/public/provider/chrome/browser/voice",
@@ -231,6 +249,9 @@ source_set("web_internal") {
     "//ui/base",
     "//ui/gfx",
     "//url",
+  ]
+  public_deps = [
+    ":java_script_console",
   ]
   libs = [
     "UIKit.framework",
@@ -264,7 +285,7 @@ source_set("unit_tests_internal") {
   sources = [
     "blocked_popup_tab_helper_unittest.mm",
     "chrome_web_client_unittest.mm",
-    "error_page_generator_unittest.mm",
+    "java_script_console/java_script_console_tab_helper_unittest.mm",
   ]
   deps = [
     ":test_support",
@@ -282,6 +303,7 @@ source_set("unit_tests_internal") {
     "//ios/chrome/browser/passwords",
     "//ios/chrome/browser/ui",
     "//ios/chrome/browser/web",
+    "//ios/chrome/test/fakes",
     "//ios/web",
     "//ios/web/public/test",
     "//ios/web/public/test/fakes",

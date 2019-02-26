@@ -41,8 +41,7 @@ class SigninViewControllerDelegate
   // itself when the window it's managing is closed.
   static SigninViewControllerDelegate* CreateSyncConfirmationDelegate(
       SigninViewController* signin_view_controller,
-      Browser* browser,
-      bool is_consent_bump = false);
+      Browser* browser);
 
   // Returns a platform-specific SigninViewControllerDelegate instance that
   // displays the modal sign in error dialog. The returned object should delete
@@ -98,7 +97,7 @@ class SigninViewControllerDelegate
                            bool to_different_document) override;
 
   // Subclasses must override this method to correctly handle accelerators.
-  void HandleKeyboardEvent(
+  bool HandleKeyboardEvent(
       content::WebContents* source,
       const content::NativeWebKeyboardEvent& event) override;
 

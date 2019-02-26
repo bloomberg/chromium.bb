@@ -17,6 +17,7 @@ class LinkManifest final : public LinkResource {
  public:
   static LinkManifest* Create(HTMLLinkElement* owner);
 
+  explicit LinkManifest(HTMLLinkElement* owner);
   ~LinkManifest() override;
 
   // LinkResource
@@ -24,9 +25,6 @@ class LinkManifest final : public LinkResource {
   LinkResourceType GetType() const override { return kManifest; }
   bool HasLoaded() const override;
   void OwnerRemoved() override;
-
- private:
-  explicit LinkManifest(HTMLLinkElement* owner);
 };
 
 }  // namespace blink

@@ -29,17 +29,17 @@ namespace blink {
 
 inline SVGFEDiffuseLightingElement::SVGFEDiffuseLightingElement(
     Document& document)
-    : SVGFilterPrimitiveStandardAttributes(SVGNames::feDiffuseLightingTag,
+    : SVGFilterPrimitiveStandardAttributes(svg_names::kFEDiffuseLightingTag,
                                            document),
       diffuse_constant_(
-          SVGAnimatedNumber::Create(this, SVGNames::diffuseConstantAttr, 1)),
+          SVGAnimatedNumber::Create(this, svg_names::kDiffuseConstantAttr, 1)),
       surface_scale_(
-          SVGAnimatedNumber::Create(this, SVGNames::surfaceScaleAttr, 1)),
+          SVGAnimatedNumber::Create(this, svg_names::kSurfaceScaleAttr, 1)),
       kernel_unit_length_(SVGAnimatedNumberOptionalNumber::Create(
           this,
-          SVGNames::kernelUnitLengthAttr,
+          svg_names::kKernelUnitLengthAttr,
           0.0f)),
-      in1_(SVGAnimatedString::Create(this, SVGNames::inAttr)) {
+      in1_(SVGAnimatedString::Create(this, svg_names::kInAttr)) {
   AddToPropertyMap(diffuse_constant_);
   AddToPropertyMap(surface_scale_);
   AddToPropertyMap(kernel_unit_length_);
@@ -61,15 +61,15 @@ bool SVGFEDiffuseLightingElement::SetFilterEffectAttribute(
     const QualifiedName& attr_name) {
   FEDiffuseLighting* diffuse_lighting = static_cast<FEDiffuseLighting*>(effect);
 
-  if (attr_name == SVGNames::lighting_colorAttr) {
+  if (attr_name == svg_names::kLightingColorAttr) {
     const ComputedStyle& style = ComputedStyleRef();
     return diffuse_lighting->SetLightingColor(
         style.VisitedDependentColor(GetCSSPropertyLightingColor()));
   }
-  if (attr_name == SVGNames::surfaceScaleAttr)
+  if (attr_name == svg_names::kSurfaceScaleAttr)
     return diffuse_lighting->SetSurfaceScale(
         surface_scale_->CurrentValue()->Value());
-  if (attr_name == SVGNames::diffuseConstantAttr)
+  if (attr_name == svg_names::kDiffuseConstantAttr)
     return diffuse_lighting->SetDiffuseConstant(
         diffuse_constant_->CurrentValue()->Value());
 
@@ -81,25 +81,25 @@ bool SVGFEDiffuseLightingElement::SetFilterEffectAttribute(
   DCHECK(light_element);
   DCHECK(effect->GetFilter());
 
-  if (attr_name == SVGNames::azimuthAttr)
+  if (attr_name == svg_names::kAzimuthAttr)
     return light_source->SetAzimuth(
         light_element->azimuth()->CurrentValue()->Value());
-  if (attr_name == SVGNames::elevationAttr)
+  if (attr_name == svg_names::kElevationAttr)
     return light_source->SetElevation(
         light_element->elevation()->CurrentValue()->Value());
-  if (attr_name == SVGNames::xAttr || attr_name == SVGNames::yAttr ||
-      attr_name == SVGNames::zAttr)
+  if (attr_name == svg_names::kXAttr || attr_name == svg_names::kYAttr ||
+      attr_name == svg_names::kZAttr)
     return light_source->SetPosition(
         effect->GetFilter()->Resolve3dPoint(light_element->GetPosition()));
-  if (attr_name == SVGNames::pointsAtXAttr ||
-      attr_name == SVGNames::pointsAtYAttr ||
-      attr_name == SVGNames::pointsAtZAttr)
+  if (attr_name == svg_names::kPointsAtXAttr ||
+      attr_name == svg_names::kPointsAtYAttr ||
+      attr_name == svg_names::kPointsAtZAttr)
     return light_source->SetPointsAt(
         effect->GetFilter()->Resolve3dPoint(light_element->PointsAt()));
-  if (attr_name == SVGNames::specularExponentAttr)
+  if (attr_name == svg_names::kSpecularExponentAttr)
     return light_source->SetSpecularExponent(
         light_element->specularExponent()->CurrentValue()->Value());
-  if (attr_name == SVGNames::limitingConeAngleAttr)
+  if (attr_name == svg_names::kLimitingConeAngleAttr)
     return light_source->SetLimitingConeAngle(
         light_element->limitingConeAngle()->CurrentValue()->Value());
 
@@ -109,15 +109,15 @@ bool SVGFEDiffuseLightingElement::SetFilterEffectAttribute(
 
 void SVGFEDiffuseLightingElement::SvgAttributeChanged(
     const QualifiedName& attr_name) {
-  if (attr_name == SVGNames::surfaceScaleAttr ||
-      attr_name == SVGNames::diffuseConstantAttr ||
-      attr_name == SVGNames::lighting_colorAttr) {
+  if (attr_name == svg_names::kSurfaceScaleAttr ||
+      attr_name == svg_names::kDiffuseConstantAttr ||
+      attr_name == svg_names::kLightingColorAttr) {
     SVGElement::InvalidationGuard invalidation_guard(this);
     PrimitiveAttributeChanged(attr_name);
     return;
   }
 
-  if (attr_name == SVGNames::inAttr) {
+  if (attr_name == svg_names::kInAttr) {
     SVGElement::InvalidationGuard invalidation_guard(this);
     Invalidate();
     return;

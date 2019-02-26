@@ -28,10 +28,6 @@ Polymer({
     havePlayStoreApp: Boolean,
     // </if>
 
-    // TODO(jdoerrie): https://crbug.com/854562.
-    // Remove once Autofill Home is launched.
-    autofillHomeEnabled: Boolean,
-
     /** @type {!AndroidAppsInfo|undefined} */
     androidAppsInfo: Object,
 
@@ -162,6 +158,12 @@ Polymer({
     return visibility !== false;
   },
 
+  focusSection: function() {
+    const section = this.getSection(settings.getCurrentRoute().section);
+    assert(section);
+    section.show();
+  },
+
   /**
    * Queues a task to search the basic sections, then another for the advanced
    * sections.
@@ -251,19 +253,6 @@ Polymer({
     const visibility = /** @type {boolean|undefined} */ (
         this.get('pageVisibility.multidevice'));
     return this.showMultidevice && this.showPage_(visibility);
-  },
-
-  /**
-   * @return {boolean} Whether to show the passwords and forms settings page.
-   * TODO(jdoerrie): https://crbug.com/854562. With Autofill Home enabled,
-   * the passwords and autofill sections are moved from the advanced page
-   * to the people page. Remove once Autofill Home is fully launched.
-   * @private
-   */
-  shouldShowPasswordsAndForms_: function() {
-    const visibility = /** @type {boolean|undefined} */ (
-        this.get('pageVisibility.passwordAndForms'));
-    return !this.autofillHomeEnabled && this.showPage_(visibility);
   },
 
   /**
@@ -380,5 +369,14 @@ Polymer({
    */
   getArrowIcon_: function(opened) {
     return opened ? 'cr:arrow-drop-up' : 'cr:arrow-drop-down';
+  },
+
+  /**
+   * @param {boolean} bool
+   * @return {string}
+   * @private
+   */
+  boolToString_: function(bool) {
+    return bool.toString();
   },
 });

@@ -167,7 +167,12 @@ class AutofillCapturedSitesInteractiveTest
                          base::CompareCase::INSENSITIVE_ASCII) ||
         base::StartsWith(field_type, "CREDIT_CARD_",
                          base::CompareCase::INSENSITIVE_ASCII)) {
-      card_.SetRawInfo(type, base::UTF8ToUTF16(field_value));
+      if (type == autofill::CREDIT_CARD_NAME_FIRST ||
+          type == autofill::CREDIT_CARD_NAME_LAST) {
+        card_.SetRawInfo(autofill::CREDIT_CARD_NAME_FULL,
+                         base::ASCIIToUTF16(""));
+        card_.SetRawInfo(type, base::UTF8ToUTF16(field_value));
+      }
     } else {
       profile_.SetRawInfo(type, base::UTF8ToUTF16(field_value));
     }

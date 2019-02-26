@@ -56,15 +56,6 @@ DeviceLocalAccountPolicyProvider::Create(
   if (type == DeviceLocalAccount::TYPE_PUBLIC_SESSION) {
     chrome_policy_overrides.reset(new PolicyMap());
 
-    // Exit the session when the lid is closed. The default behavior is to
-    // suspend while leaving the session running, which is not desirable for
-    // public sessions.
-    chrome_policy_overrides->Set(
-        key::kLidCloseAction, POLICY_LEVEL_MANDATORY, POLICY_SCOPE_MACHINE,
-        POLICY_SOURCE_PUBLIC_SESSION_OVERRIDE,
-        std::make_unique<base::Value>(
-            chromeos::PowerPolicyController::ACTION_STOP_SESSION),
-        nullptr);
     // Force the |ShelfAutoHideBehavior| policy to |Never|, ensuring that the
     // ash shelf does not auto-hide.
     chrome_policy_overrides->Set(

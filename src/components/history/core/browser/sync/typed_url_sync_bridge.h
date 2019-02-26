@@ -55,7 +55,8 @@ class TypedURLSyncBridge : public syncer::ModelTypeSyncBridge,
                     const RedirectList& redirects,
                     base::Time visit_time) override;
   void OnURLsModified(HistoryBackend* history_backend,
-                      const URLRows& changed_urls) override;
+                      const URLRows& changed_urls,
+                      bool is_from_expiration) override;
   void OnURLsDeleted(HistoryBackend* history_backend,
                      bool all_history,
                      bool expired,
@@ -161,10 +162,18 @@ class TypedURLSyncBridge : public syncer::ModelTypeSyncBridge,
                       URLRows* updated_urls,
                       URLRows* new_urls);
 
-  // Utility routine that either updates an existing sync node or creates a
-  // new one for the passed |typed_url| if one does not already exist.
-  void UpdateSyncFromLocal(URLRow typed_url,
+  // Utility routine that (a) updates an existing sync node or (b) creates a
+  // new one for the passed |typed_url| if one does not already exist or (c)
+  // removes metadata for |row| if |is_from_expiration| is true and the |row|
+  // has no more typed visits.
+  void UpdateSyncFromLocal(URLRow row,
+                           bool is_from_expiration,
                            syncer::MetadataChangeList* metadata_change_list);
+
+  // Deletes metadata for an expired URL |row| but does not send up the deletion
+  // to the server (each client expires them independently). It is an no-op when
+  // called on an url with already expired metadata.
+  void ExpireMetadataForURL(const URLRow& row);
 
   // Writes new typed url data from sync server to history backend.
   base::Optional<syncer::ModelError> WriteToHistoryBackend(

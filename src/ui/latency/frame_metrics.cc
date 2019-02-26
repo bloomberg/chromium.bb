@@ -10,7 +10,7 @@
 
 #include "base/bit_cast.h"
 #include "base/trace_event/trace_event.h"
-#include "base/trace_event/trace_event_argument.h"
+#include "base/trace_event/traced_value.h"
 
 namespace ui {
 
@@ -100,7 +100,7 @@ constexpr std::initializer_list<uint32_t> kLatencyAccelerationThresholds = {
     RatioThreshold(0), RatioThreshold(1), RatioThreshold(2), RatioThreshold(4),
 };
 
-const char kTraceCategories[] = "gpu,benchmark";
+constexpr const char kTraceCategories[] = "gpu,benchmark";
 
 // uint32_t should be plenty of range for real world values, but clip individual
 // entries to make sure no single value dominates and also to avoid overflow
@@ -425,34 +425,42 @@ class FrameMetricsTraceData
   FrameMetricsTraceData() = default;
   ~FrameMetricsTraceData() override = default;
 
-  void AppendAsTraceFormat(std::string* out) const override {
-    base::trace_event::TracedValue state;
+  void ToTracedValue(base::trace_event::TracedValue* state) const {
+    state->BeginDictionary("Source");
+    settings.AsValueInto(state);
+    state->EndDictionary();
 
-    state.BeginDictionary("Source");
-    settings.AsValueInto(&state);
-    state.EndDictionary();
+    state->BeginDictionary("Skips");
+    skips.AsValueInto(state);
+    state->EndDictionary();
 
-    state.BeginDictionary("Skips");
-    skips.AsValueInto(&state);
-    state.EndDictionary();
-
-    state.BeginDictionary("Latency");
-    latency.AsValueInto(&state);
-    state.EndDictionary();
+    state->BeginDictionary("Latency");
+    latency.AsValueInto(state);
+    state->EndDictionary();
 
     if (settings.is_frame_latency_speed_on()) {
-      state.BeginDictionary("Speed");
-      speed.AsValueInto(&state);
-      state.EndDictionary();
+      state->BeginDictionary("Speed");
+      speed.AsValueInto(state);
+      state->EndDictionary();
     }
 
     if (settings.is_frame_latency_acceleration_on()) {
-      state.BeginDictionary("Acceleration");
-      acceleration.AsValueInto(&state);
-      state.EndDictionary();
+      state->BeginDictionary("Acceleration");
+      acceleration.AsValueInto(state);
+      state->EndDictionary();
     }
+  }
 
+  void AppendAsTraceFormat(std::string* out) const override {
+    base::trace_event::TracedValue state;
+    ToTracedValue(&state);
     state.AppendAsTraceFormat(out);
+  }
+
+  bool AppendToProto(ProtoAppender* appender) override {
+    base::trace_event::TracedValue state;
+    ToTracedValue(&state);
+    return state.AppendToProto(appender);
   }
 
   void EstimateTraceMemoryOverhead(

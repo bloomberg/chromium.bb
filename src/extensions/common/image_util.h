@@ -44,6 +44,21 @@ bool IsIconSufficientlyVisible(const SkBitmap& bitmap);
 // context.
 bool IsIconAtPathSufficientlyVisible(const base::FilePath& path);
 
+// This is the color of the toolbar in the default scheme. There is a unit test
+// to catch any changes to this value.
+extern const SkColor kDefaultToolbarColor;
+
+// Renders the icon bitmap onto another bitmap, combining it with the specified
+// background color, then determines whether the rendered icon is sufficiently
+// visible against the background.
+bool IsRenderedIconSufficientlyVisible(const SkBitmap& bitmap,
+                                       SkColor background_color);
+
+// Returns whether an icon image is considered to be visible in its display
+// context, according to the previous function.
+bool IsRenderedIconAtPathSufficientlyVisible(const base::FilePath& path,
+                                             SkColor background_color);
+
 // Load a PNG image from a file into the destination bitmap.
 bool LoadPngFromFile(const base::FilePath& path, SkBitmap* dst);
 

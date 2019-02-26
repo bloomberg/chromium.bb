@@ -74,6 +74,9 @@ class CONTENT_EXPORT RenderFrameMessageFilter
 
   network::mojom::CookieManagerPtr* GetCookieManager();
 
+  // Clears |resource_context_| to prevent accessing it after deletion.
+  void ClearResourceContext();
+
  protected:
   friend class TestSaveImageFromDataURL;
 

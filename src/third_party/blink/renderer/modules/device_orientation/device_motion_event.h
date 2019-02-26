@@ -40,15 +40,22 @@ class DeviceMotionEvent final : public Event {
   DEFINE_WRAPPERTYPEINFO();
 
  public:
+  DeviceMotionEvent();
+  DeviceMotionEvent(const AtomicString&, const DeviceMotionEventInit*);
+  DeviceMotionEvent(const AtomicString& event_type, const DeviceMotionData*);
   ~DeviceMotionEvent() override;
-  static DeviceMotionEvent* Create() { return new DeviceMotionEvent; }
+
+  static DeviceMotionEvent* Create() {
+    return MakeGarbageCollected<DeviceMotionEvent>();
+  }
   static DeviceMotionEvent* Create(const AtomicString& event_type,
-                                   const DeviceMotionEventInit& initializer) {
-    return new DeviceMotionEvent(event_type, initializer);
+                                   const DeviceMotionEventInit* initializer) {
+    return MakeGarbageCollected<DeviceMotionEvent>(event_type, initializer);
   }
   static DeviceMotionEvent* Create(const AtomicString& event_type,
                                    const DeviceMotionData* device_motion_data) {
-    return new DeviceMotionEvent(event_type, device_motion_data);
+    return MakeGarbageCollected<DeviceMotionEvent>(event_type,
+                                                   device_motion_data);
   }
 
   const DeviceMotionData* GetDeviceMotionData() const {
@@ -65,21 +72,16 @@ class DeviceMotionEvent final : public Event {
   void Trace(blink::Visitor*) override;
 
  private:
-  DeviceMotionEvent();
-  DeviceMotionEvent(const AtomicString&, const DeviceMotionEventInit&);
-  DeviceMotionEvent(const AtomicString& event_type, const DeviceMotionData*);
-
   Member<const DeviceMotionData> device_motion_data_;
-  Member<DeviceAcceleration> acceleration_;
-  Member<DeviceAcceleration> acceleration_including_gravity_;
-  Member<DeviceRotationRate> rotation_rate_;
 };
 
 DEFINE_TYPE_CASTS(DeviceMotionEvent,
                   Event,
                   event,
-                  event->InterfaceName() == EventNames::DeviceMotionEvent,
-                  event.InterfaceName() == EventNames::DeviceMotionEvent);
+                  event->InterfaceName() ==
+                      event_interface_names::kDeviceMotionEvent,
+                  event.InterfaceName() ==
+                      event_interface_names::kDeviceMotionEvent);
 
 }  // namespace blink
 

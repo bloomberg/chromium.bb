@@ -14,6 +14,8 @@
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/resource_bundle.h"
 
+const char ManagePasswordsIconViews::kClassName[] = "ManagePasswordsIconViews";
+
 ManagePasswordsIconViews::ManagePasswordsIconViews(
     CommandUpdater* updater,
     PageActionIconView::Delegate* delegate)
@@ -107,4 +109,8 @@ void ManagePasswordsIconViews::AboutToRequestFocusFromTabTraversal(
     bool reverse) {
   if (IsBubbleShowing())
     PasswordBubbleViewBase::ActivateBubble();
+}
+
+const char* ManagePasswordsIconViews::GetClassName() const {
+  return kClassName;
 }

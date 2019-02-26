@@ -183,7 +183,7 @@ describe('mr.mirror.MirrorMediaStream', () => {
       mediaStream.getTracks.and.returnValue([{}]);
 
       chrome.desktopCapture.chooseDesktopMedia.and.callFake(
-          (config, callback) => {
+          (config, tab, callback) => {
             callback('source-id');
           });
       navigator.mediaDevices.getUserMedia.and.callFake(
@@ -230,7 +230,7 @@ describe('mr.mirror.MirrorMediaStream', () => {
       mr.PlatformUtils.getCurrentOS.and.returnValue(
           mr.PlatformUtils.OS.WINDOWS);
       chrome.desktopCapture.chooseDesktopMedia.and.callFake(
-          (config, callback) => {
+          (config, tab, callback) => {
             expect(config).toContain('screen');
             expect(config).toContain('audio');
             expect(config).not.toContain('window');
@@ -242,7 +242,7 @@ describe('mr.mirror.MirrorMediaStream', () => {
     it('allows choosing screen, audio, window for linux platforms', (done) => {
       mr.PlatformUtils.getCurrentOS.and.returnValue(mr.PlatformUtils.OS.LINUX);
       chrome.desktopCapture.chooseDesktopMedia.and.callFake(
-          (config, callback) => {
+          (config, tab, callback) => {
             expect(config).toContain('screen');
             expect(config).toContain('audio');
             expect(config).toContain('window');
@@ -273,7 +273,7 @@ describe('mr.mirror.MirrorMediaStream', () => {
 
     it('rejects with an error when user cancels desktop picker', (done) => {
       chrome.desktopCapture.chooseDesktopMedia.and.callFake(
-          (config, callback) => {
+          (config, tab, callback) => {
             callback(/* no source id */);
           });
 
@@ -292,7 +292,7 @@ describe('mr.mirror.MirrorMediaStream', () => {
 
     it('rejects with an error upon getUserMedia error', (done) => {
       chrome.desktopCapture.chooseDesktopMedia.and.callFake(
-          (config, callback) => {
+          (config, tab, callback) => {
             callback('source-id');
           });
 
@@ -313,7 +313,7 @@ describe('mr.mirror.MirrorMediaStream', () => {
 
     it('rejects with an cancelled error upon NotAllowedError', (done) => {
       chrome.desktopCapture.chooseDesktopMedia.and.callFake(
-          (config, callback) => {
+          (config, tab, callback) => {
             callback('source-id');
           });
       navigator.mediaDevices.getUserMedia.and.callFake(
@@ -334,7 +334,7 @@ describe('mr.mirror.MirrorMediaStream', () => {
 
     it('rejects with an error upon empty stream object', (done) => {
       chrome.desktopCapture.chooseDesktopMedia.and.callFake(
-          (config, callback) => {
+          (config, tab, callback) => {
             callback('source-id');
           });
       navigator.mediaDevices.getUserMedia.and.callFake(

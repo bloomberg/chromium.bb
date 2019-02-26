@@ -20,7 +20,7 @@
 #include "mojo/public/cpp/bindings/strong_binding.h"
 #include "services/device/public/mojom/constants.mojom.h"
 #include "services/device/public/mojom/serial.mojom.h"
-#include "services/service_manager/public/cpp/service_context.h"
+#include "services/service_manager/public/cpp/service_binding.h"
 #include "testing/gmock/include/gmock/gmock.h"
 
 // Disable SIMULATE_SERIAL_PORTS only if all the following are true:
@@ -197,21 +197,22 @@ class SerialApiTest : public ExtensionApiTest {
     // Because Device Service also runs in this process(browser process), we can
     // set our binder to intercept requests for
     // SerialDeviceEnumerator/SerialIoHandler interfaces to it.
-    service_manager::ServiceContext::SetGlobalBinderForTesting(
+    service_manager::ServiceBinding::OverrideInterfaceBinderForTesting(
         device::mojom::kServiceName,
-        device::mojom::SerialDeviceEnumerator::Name_,
         base::BindRepeating(&SerialApiTest::BindSerialDeviceEnumerator,
                             base::Unretained(this)));
-    service_manager::ServiceContext::SetGlobalBinderForTesting(
-        device::mojom::kServiceName, device::mojom::SerialIoHandler::Name_,
+    service_manager::ServiceBinding::OverrideInterfaceBinderForTesting(
+        device::mojom::kServiceName,
         base::BindRepeating(&SerialApiTest::BindSerialIoHandler));
 #endif
   }
 
   ~SerialApiTest() override {
 #if SIMULATE_SERIAL_PORTS
-    service_manager::ServiceContext::ClearGlobalBindersForTesting(
-        device::mojom::kServiceName);
+    service_manager::ServiceBinding::ClearInterfaceBinderOverrideForTesting<
+        device::mojom::SerialDeviceEnumerator>(device::mojom::kServiceName);
+    service_manager::ServiceBinding::ClearInterfaceBinderOverrideForTesting<
+        device::mojom::SerialIoHandler>(device::mojom::kServiceName);
 #endif
   }
 
@@ -229,24 +230,18 @@ class SerialApiTest : public ExtensionApiTest {
 
  protected:
   void BindSerialDeviceEnumerator(
-      const std::string& interface_name,
-      mojo::ScopedMessagePipeHandle handle,
-      const service_manager::BindSourceInfo& source_info) {
+      device::mojom::SerialDeviceEnumeratorRequest request) {
     if (fail_enumerator_request_)
       return;
 
-    mojo::MakeStrongBinding(
-        std::make_unique<FakeSerialDeviceEnumerator>(),
-        device::mojom::SerialDeviceEnumeratorRequest(std::move(handle)));
+    mojo::MakeStrongBinding(std::make_unique<FakeSerialDeviceEnumerator>(),
+                            std::move(request));
   }
 
   static void BindSerialIoHandler(
-      const std::string& interface_name,
-      mojo::ScopedMessagePipeHandle handle,
-      const service_manager::BindSourceInfo& source_info) {
-    mojo::MakeStrongBinding(
-        std::make_unique<FakeSerialIoHandler>(),
-        device::mojom::SerialIoHandlerRequest(std::move(handle)));
+      device::mojom::SerialIoHandlerRequest request) {
+    mojo::MakeStrongBinding(std::make_unique<FakeSerialIoHandler>(),
+                            std::move(request));
   }
 
   bool fail_enumerator_request_ = false;

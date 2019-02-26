@@ -30,27 +30,35 @@ namespace {
 
 // Returns a fuzzed non-zero port number.
 uint16_t FuzzPort(base::FuzzedDataProvider* data_provider) {
-  return data_provider->ConsumeUint16();
+  return data_provider->ConsumeIntegral<uint16_t>();
 }
 
 // Returns a fuzzed IPv4 address.  Can return invalid / reserved addresses.
 IPAddress FuzzIPv4Address(base::FuzzedDataProvider* data_provider) {
-  return IPAddress(data_provider->ConsumeUint8(), data_provider->ConsumeUint8(),
-                   data_provider->ConsumeUint8(),
-                   data_provider->ConsumeUint8());
+  return IPAddress(data_provider->ConsumeIntegral<uint8_t>(),
+                   data_provider->ConsumeIntegral<uint8_t>(),
+                   data_provider->ConsumeIntegral<uint8_t>(),
+                   data_provider->ConsumeIntegral<uint8_t>());
 }
 
 // Returns a fuzzed IPv6 address.  Can return invalid / reserved addresses.
 IPAddress FuzzIPv6Address(base::FuzzedDataProvider* data_provider) {
-  return IPAddress(data_provider->ConsumeUint8(), data_provider->ConsumeUint8(),
-                   data_provider->ConsumeUint8(), data_provider->ConsumeUint8(),
-                   data_provider->ConsumeUint8(), data_provider->ConsumeUint8(),
-                   data_provider->ConsumeUint8(), data_provider->ConsumeUint8(),
-                   data_provider->ConsumeUint8(), data_provider->ConsumeUint8(),
-                   data_provider->ConsumeUint8(), data_provider->ConsumeUint8(),
-                   data_provider->ConsumeUint8(), data_provider->ConsumeUint8(),
-                   data_provider->ConsumeUint8(),
-                   data_provider->ConsumeUint8());
+  return IPAddress(data_provider->ConsumeIntegral<uint8_t>(),
+                   data_provider->ConsumeIntegral<uint8_t>(),
+                   data_provider->ConsumeIntegral<uint8_t>(),
+                   data_provider->ConsumeIntegral<uint8_t>(),
+                   data_provider->ConsumeIntegral<uint8_t>(),
+                   data_provider->ConsumeIntegral<uint8_t>(),
+                   data_provider->ConsumeIntegral<uint8_t>(),
+                   data_provider->ConsumeIntegral<uint8_t>(),
+                   data_provider->ConsumeIntegral<uint8_t>(),
+                   data_provider->ConsumeIntegral<uint8_t>(),
+                   data_provider->ConsumeIntegral<uint8_t>(),
+                   data_provider->ConsumeIntegral<uint8_t>(),
+                   data_provider->ConsumeIntegral<uint8_t>(),
+                   data_provider->ConsumeIntegral<uint8_t>(),
+                   data_provider->ConsumeIntegral<uint8_t>(),
+                   data_provider->ConsumeIntegral<uint8_t>());
 }
 
 // Returns a fuzzed address, which can be either IPv4 or IPv6.  Can return
@@ -96,8 +104,8 @@ class FuzzedHostResolverProc : public HostResolverProc {
     // generally before IPv4 ones.
     if (address_family == ADDRESS_FAMILY_UNSPECIFIED ||
         address_family == ADDRESS_FAMILY_IPV6) {
-      size_t num_ipv6_addresses = data_provider_->ConsumeUint8();
-      for (size_t i = 0; i < num_ipv6_addresses; ++i) {
+      uint8_t num_ipv6_addresses = data_provider_->ConsumeIntegral<uint8_t>();
+      for (uint8_t i = 0; i < num_ipv6_addresses; ++i) {
         result.push_back(
             net::IPEndPoint(FuzzIPv6Address(data_provider_.get()), 0));
       }
@@ -105,8 +113,8 @@ class FuzzedHostResolverProc : public HostResolverProc {
 
     if (address_family == ADDRESS_FAMILY_UNSPECIFIED ||
         address_family == ADDRESS_FAMILY_IPV4) {
-      size_t num_ipv4_addresses = data_provider_->ConsumeUint8();
-      for (size_t i = 0; i < num_ipv4_addresses; ++i) {
+      uint8_t num_ipv4_addresses = data_provider_->ConsumeIntegral<uint8_t>();
+      for (uint8_t i = 0; i < num_ipv4_addresses; ++i) {
         result.push_back(
             net::IPEndPoint(FuzzIPv4Address(data_provider_.get()), 0));
       }
@@ -168,14 +176,14 @@ void FuzzedHostResolver::SetDnsClientEnabled(bool enabled) {
   DnsConfig config;
 
   // Fuzz name servers.
-  uint32_t num_nameservers = data_provider_->ConsumeUint32InRange(0, 4);
+  uint32_t num_nameservers = data_provider_->ConsumeIntegralInRange(0, 4);
   for (uint32_t i = 0; i < num_nameservers; ++i) {
     config.nameservers.push_back(
         IPEndPoint(FuzzIPAddress(data_provider_), FuzzPort(data_provider_)));
   }
 
   // Fuzz suffix search list.
-  switch (data_provider_->ConsumeUint32InRange(0, 3)) {
+  switch (data_provider_->ConsumeIntegralInRange(0, 3)) {
     case 3:
       config.search.push_back("foo.com");
       FALLTHROUGH;
@@ -191,7 +199,7 @@ void FuzzedHostResolver::SetDnsClientEnabled(bool enabled) {
 
   net::DnsHosts hosts;
   // Fuzz hosts file.
-  uint8_t num_hosts_entries = data_provider_->ConsumeUint8();
+  uint8_t num_hosts_entries = data_provider_->ConsumeIntegral<uint8_t>();
   for (uint8_t i = 0; i < num_hosts_entries; ++i) {
     const char* kHostnames[] = {"foo", "foo.com",   "a.foo.com",
                                 "bar", "localhost", "localhost6"};
@@ -204,8 +212,8 @@ void FuzzedHostResolver::SetDnsClientEnabled(bool enabled) {
   config.unhandled_options = data_provider_->ConsumeBool();
   config.append_to_multi_label_name = data_provider_->ConsumeBool();
   config.randomize_ports = data_provider_->ConsumeBool();
-  config.ndots = data_provider_->ConsumeInt32InRange(0, 3);
-  config.attempts = data_provider_->ConsumeInt32InRange(1, 3);
+  config.ndots = data_provider_->ConsumeIntegralInRange(0, 3);
+  config.attempts = data_provider_->ConsumeIntegralInRange(1, 3);
 
   // Timeouts don't really work for fuzzing. Even a timeout of 0 milliseconds
   // will be increased after the first timeout, resulting in inconsistent
@@ -218,7 +226,7 @@ void FuzzedHostResolver::SetDnsClientEnabled(bool enabled) {
 
   std::unique_ptr<DnsClient> dns_client = DnsClient::CreateClientForTesting(
       net_log_, &socket_factory_,
-      base::Bind(&base::FuzzedDataProvider::ConsumeInt32InRange,
+      base::Bind(&base::FuzzedDataProvider::ConsumeIntegralInRange<int32_t>,
                  base::Unretained(data_provider_)));
   dns_client->SetConfig(config);
   SetDnsClient(std::move(dns_client));

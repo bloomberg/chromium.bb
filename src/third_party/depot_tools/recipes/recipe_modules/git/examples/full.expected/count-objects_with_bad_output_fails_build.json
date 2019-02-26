@@ -106,9 +106,12 @@
     ]
   },
   {
-    "name": "$result",
-    "reason": "count-objects failed: invalid literal for long() with base 10: 'xxx'",
-    "recipe_result": null,
-    "status_code": 1
+    "failure": {
+      "failure": {
+        "step": ""
+      },
+      "humanReason": "count-objects failed: invalid literal for long() with base 10: 'xxx'"
+    },
+    "name": "$result"
   }
 ]

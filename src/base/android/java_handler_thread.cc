@@ -65,7 +65,7 @@ void JavaHandlerThread::Start() {
       reinterpret_cast<intptr_t>(&initialize_event));
   // Wait for thread to be initialized so it is ready to be used when Start
   // returns.
-  base::ThreadRestrictions::ScopedAllowWait wait_allowed;
+  base::ScopedAllowBaseSyncPrimitivesOutsideBlockingScope wait_allowed;
   initialize_event.Wait();
 }
 

@@ -212,11 +212,9 @@ std::unique_ptr<base::Value> AsValue(const SkPaint& paint) {
     builder.addFlag(paint.isFakeBoldText(), "FakeBoldText");
     builder.addFlag(paint.isLinearText(), "LinearText");
     builder.addFlag(paint.isSubpixelText(), "SubpixelText");
-    builder.addFlag(paint.isDevKernText(), "DevKernText");
     builder.addFlag(paint.isLCDRenderText(), "LCDRenderText");
     builder.addFlag(paint.isEmbeddedBitmapText(), "EmbeddedBitmapText");
     builder.addFlag(paint.isAutohinted(), "Autohinted");
-    builder.addFlag(paint.isVerticalText(), "VerticalText");
 
     val->SetString("Flags", builder.str());
   }

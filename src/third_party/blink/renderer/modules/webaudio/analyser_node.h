@@ -43,7 +43,7 @@ class AnalyserHandler final : public AudioBasicInspectorHandler {
   ~AnalyserHandler() override;
 
   // AudioHandler
-  void Process(size_t frames_to_process) override;
+  void Process(uint32_t frames_to_process) override;
 
   unsigned FftSize() const { return analyser_.FftSize(); }
   void SetFftSize(unsigned size, ExceptionState&);
@@ -103,7 +103,7 @@ class AnalyserNode final : public AudioBasicInspectorNode {
  public:
   static AnalyserNode* Create(BaseAudioContext&, ExceptionState&);
   static AnalyserNode* Create(BaseAudioContext*,
-                              const AnalyserOptions&,
+                              const AnalyserOptions*,
                               ExceptionState&);
 
   unsigned fftSize() const;

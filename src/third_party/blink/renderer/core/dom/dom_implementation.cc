@@ -84,9 +84,9 @@ XMLDocument* DOMImplementation::createDocument(
   XMLDocument* doc = nullptr;
   DocumentInit init =
       DocumentInit::Create().WithContextDocument(document_->ContextDocument());
-  if (namespace_uri == SVGNames::svgNamespaceURI) {
+  if (namespace_uri == svg_names::kNamespaceURI) {
     doc = XMLDocument::CreateSVG(init);
-  } else if (namespace_uri == HTMLNames::xhtmlNamespaceURI) {
+  } else if (namespace_uri == html_names::xhtmlNamespaceURI) {
     doc = XMLDocument::CreateXHTML(
         init.WithRegistrationContext(document_->RegistrationContext()));
   } else {

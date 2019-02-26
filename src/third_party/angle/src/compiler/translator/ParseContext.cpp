@@ -217,12 +217,9 @@ TParseContext::TParseContext(TSymbolTable &symt,
       mGeometryShaderMaxVertices(-1),
       mMaxGeometryShaderInvocations(resources.MaxGeometryShaderInvocations),
       mMaxGeometryShaderMaxVertices(resources.MaxGeometryOutputVertices)
-{
-}
+{}
 
-TParseContext::~TParseContext()
-{
-}
+TParseContext::~TParseContext() {}
 
 bool TParseContext::parseVectorFields(const TSourceLoc &line,
                                       const ImmutableString &compString,
@@ -4962,7 +4959,7 @@ TIntermTyped *TParseContext::createUnaryMath(TOperator op,
         case EOpPositive:
             if (child->getBasicType() == EbtStruct || child->isInterfaceBlock() ||
                 child->getBasicType() == EbtBool || child->isArray() ||
-                IsOpaqueType(child->getBasicType()))
+                child->getBasicType() == EbtVoid || IsOpaqueType(child->getBasicType()))
             {
                 unaryOpError(loc, GetOperatorString(op), child->getType());
                 return nullptr;

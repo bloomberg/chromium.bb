@@ -9,6 +9,8 @@ mojom("interfaces") {
     "device_cursor.mojom",
     "drm_device.mojom",
     "overlay_surface_candidate.mojom",
+    "scenic_gpu_host.mojom",
+    "scenic_gpu_service.mojom",
   ]
 
   public_deps = [

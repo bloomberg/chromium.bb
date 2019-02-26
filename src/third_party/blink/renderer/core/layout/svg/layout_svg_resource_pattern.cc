@@ -49,7 +49,7 @@ LayoutSVGResourcePattern::LayoutSVGResourcePattern(SVGPatternElement* node)
     : LayoutSVGResourcePaintServer(node),
       should_collect_pattern_attributes_(true),
       attributes_wrapper_(PatternAttributesWrapper::Create()),
-      pattern_map_(new PatternMap) {}
+      pattern_map_(MakeGarbageCollected<PatternMap>()) {}
 
 void LayoutSVGResourcePattern::RemoveAllClientsFromCache(
     bool mark_for_invalidation) {

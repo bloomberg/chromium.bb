@@ -33,7 +33,6 @@ from chromite.lib.paygen import download_cache
 from chromite.lib.paygen import gslock
 from chromite.lib.paygen import gspaths
 from chromite.lib.paygen import paygen_payload_lib
-from chromite.lib.paygen import urilib
 from chromite.lib.paygen import utils
 
 # For crostools access.
@@ -409,7 +408,7 @@ class PaygenBuild(object):
     # Find something in the respective chromeos-image-archive build directory.
     archive_build_search_uri = gspaths.ChromeosImageArchive.BuildUri(
         archive_board, '*', version)
-    archive_build_file_uri_list = urilib.ListFiles(archive_build_search_uri)
+    archive_build_file_uri_list = self._ctx.LS(archive_build_search_uri)
     if not archive_build_file_uri_list:
       raise ArchiveError('cannot find archive build directory for %s' %
                          archive_build_search_uri)
@@ -485,7 +484,7 @@ class PaygenBuild(object):
         build.channel, build.board, build.version, key='*', image_type='*',
         image_channel='*', image_version='*', bucket=build.bucket)
 
-    image_uris = urilib.ListFiles(search_uri)
+    image_uris = self._ctx.LS(search_uri)
     images = [gspaths.ChromeosReleases.ParseImageUri(uri) for uri in image_uris]
 
     # Unparsable URIs will result in Nones; filter them out.
@@ -517,7 +516,7 @@ class PaygenBuild(object):
         build.channel, build.board, build.version, milestone='*',
         image_type='test', bucket=build.bucket)
 
-    image_uris = urilib.ListFiles(search_uri)
+    image_uris = self._ctx.LS(search_uri)
     images = [gspaths.ChromeosReleases.ParseUnsignedImageUri(uri)
               for uri in image_uris]
 
@@ -711,7 +710,7 @@ class PaygenBuild(object):
         channel, self._build.board, version, '*',
         bucket=self._build.bucket)
 
-    payload_candidate = urilib.ListFiles(payload_search_uri)
+    payload_candidate = self._ctx.LS(payload_search_uri)
 
     # We create related files for each payload that have the payload name
     # plus these extensions. Skip these files.
@@ -878,10 +877,13 @@ class PaygenBuild(object):
         # objects and their skip/exist attributes. We're also recording whether
         # this run will be skipping any actual work.
         for p in payloads:
-          result = paygen_payload_lib.FindExistingPayloads(p)
-          if result:
-            p.exists = True
-            p.uri = result[0]
+          try:
+            result = paygen_payload_lib.FindExistingPayloads(p)
+            if result:
+              p.exists = True
+              p.uri = result[0]
+          except gs.GSNoSuchKey:
+            pass
 
         # Display the required payload generation list.
         log_items = []

@@ -7,30 +7,47 @@
 #include "third_party/blink/renderer/core/layout/layout_block_flow.h"
 #include "third_party/blink/renderer/core/layout/layout_inline.h"
 #include "third_party/blink/renderer/core/layout/ng/inline/ng_physical_line_box_fragment.h"
+#include "third_party/blink/renderer/core/layout/ng/ng_container_fragment_builder.h"
 #include "third_party/blink/renderer/core/layout/ng/ng_outline_utils.h"
 #include "third_party/blink/renderer/core/layout/ng/ng_physical_box_fragment.h"
 #include "third_party/blink/renderer/platform/geometry/layout_rect.h"
 
 namespace blink {
 
+namespace {
+
+struct SameSizeAsNGPhysicalContainerFragment : NGPhysicalFragment {
+  wtf_size_t size;
+  void* pointer;
+};
+
+static_assert(sizeof(NGPhysicalContainerFragment) ==
+                  sizeof(SameSizeAsNGPhysicalContainerFragment),
+              "NGPhysicalContainerFragment should stay small");
+
+}  // namespace
+
 NGPhysicalContainerFragment::NGPhysicalContainerFragment(
-    LayoutObject* layout_object,
-    const ComputedStyle& style,
-    NGStyleVariant style_variant,
-    NGPhysicalSize size,
+    NGContainerFragmentBuilder* builder,
+    WritingMode block_or_line_writing_mode,
+    NGLinkStorage* buffer,
     NGFragmentType type,
-    unsigned sub_type,
-    Vector<NGLink>& children,
-    scoped_refptr<NGBreakToken> break_token)
-    : NGPhysicalFragment(layout_object,
-                         style,
-                         style_variant,
-                         size,
-                         type,
-                         sub_type,
-                         std::move(break_token)),
-      children_(std::move(children)) {
-  DCHECK(children.IsEmpty());  // Ensure move semantics is used.
+    unsigned sub_type)
+    : NGPhysicalFragment(builder, type, sub_type),
+      num_children_(builder->children_.size()) {
+  DCHECK_EQ(builder->children_.size(), builder->offsets_.size());
+  // Because flexible arrays need to be the last member in a class, we need to
+  // have the buffer passed as a constructor argument and have the actual
+  // storage be part of the subclass.
+  wtf_size_t i = 0;
+  for (auto& child : builder->children_) {
+    buffer[i].fragment = child.get();
+    buffer[i].fragment->AddRef();
+    buffer[i].offset = builder->offsets_[i].ConvertToPhysical(
+        block_or_line_writing_mode, builder->Direction(), Size(),
+        child->Size());
+    ++i;
+  }
 }
 
 void NGPhysicalContainerFragment::AddOutlineRectsForNormalChildren(

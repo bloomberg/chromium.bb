@@ -7,14 +7,13 @@ package org.chromium.chrome.browser.browserservices;
 import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
-import android.graphics.Bitmap;
-import android.graphics.BitmapFactory;
 import android.net.Uri;
 import android.os.Handler;
 import android.os.Looper;
 import android.os.Message;
 import android.os.Messenger;
 import android.os.RemoteException;
+import android.support.customtabs.trusted.TrustedWebActivityServiceConnectionManager;
 import android.support.test.InstrumentationRegistry;
 import android.support.test.filters.SmallTest;
 import android.support.test.rule.ServiceTestRule;
@@ -25,12 +24,13 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
+import org.chromium.base.ContextUtils;
 import org.chromium.base.ThreadUtils;
+import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.base.test.BaseJUnit4ClassRunner;
 import org.chromium.base.test.util.CallbackHelper;
-import org.chromium.base.test.util.DisableIf;
 import org.chromium.chrome.R;
-import org.chromium.chrome.browser.notifications.NotificationBuilderBase;
+import org.chromium.chrome.browser.notifications.NotificationUmaTracker;
 import org.chromium.chrome.browser.notifications.StandardNotificationBuilder;
 
 import java.util.concurrent.TimeoutException;
@@ -71,7 +71,7 @@ public class TrustedWebActivityClientTest {
 
     private TrustedWebActivityClient mClient;
     private Context mTargetContext;
-    private SpyNotificationBuilder mBuilder;
+    private StandardNotificationBuilder mBuilder;
 
     /**
      * A Handler that MessengerService will send messages to, reporting actions on
@@ -120,9 +120,12 @@ public class TrustedWebActivityClientTest {
 
     @Before
     public void setUp() throws TimeoutException, RemoteException, InterruptedException {
+        RecordHistogram.setDisabledForTests(true);
         mTargetContext = InstrumentationRegistry.getTargetContext();
-        mBuilder = new SpyNotificationBuilder(mTargetContext);
-        mClient = new TrustedWebActivityClient();
+        mBuilder = new StandardNotificationBuilder(mTargetContext);
+        mClient = new TrustedWebActivityClient(new TrustedWebActivityServiceConnectionManager(
+                ContextUtils.getApplicationContext()), new TrustedWebActivityUmaRecorder(),
+                NotificationUmaTracker.getInstance());
 
         // TestTrustedWebActivityService is in the test support apk.
         TrustedWebActivityClient.registerClient(mTargetContext, ORIGIN, TEST_SUPPORT_PACKAGE);
@@ -159,68 +162,14 @@ public class TrustedWebActivityClientTest {
             throws TimeoutException, InterruptedException {
         postNotification();
 
-        Assert.assertEquals(1, mResponseHandler.mGetSmallIconId.getCallCount());
+        Assert.assertTrue(mResponseHandler.mGetSmallIconId.getCallCount() >= 1);
+        // getIconId() can be called directly and also indirectly via getIconBitmap().
 
         Assert.assertEquals(mResponseHandler.mNotificationTag, NOTIFICATION_TAG);
         Assert.assertEquals(mResponseHandler.mNotificationId, NOTIFICATION_ID);
         Assert.assertEquals(mResponseHandler.mNotificationChannel,
                 mTargetContext.getResources().getString(
                         R.string.notification_category_group_general));
-    }
-
-    @Test
-    @SmallTest
-    public void usesIconFromServiceIfSmallIconsNotSet()
-            throws TimeoutException, InterruptedException {
-        postNotification();
-        Assert.assertEquals(TestTrustedWebActivityService.SMALL_ICON_ID,
-                mBuilder.iconIdForContent);
-        Assert.assertEquals(TestTrustedWebActivityService.SMALL_ICON_ID,
-                mBuilder.iconIdForStatusBar);
-    }
-
-    /**
-     * Tests that #notifyNotification does not overwrite the small icon if a bitmap
-     * was already provided and is supported.
-     */
-    @Test
-    @SmallTest
-    @DisableIf.Build(sdk_is_less_than = 23,
-            message = "Sdk < 23 doesn't support small icons as Bitmaps")
-    public void doesntUseIconFromServiceIfStatusBarBitmapsSupported()
-            throws TimeoutException, InterruptedException {
-        // Set a custom small icon.
-        mBuilder.setStatusBarIcon(createBitmap());
-        postNotification();
-        Assert.assertNotEquals(TestTrustedWebActivityService.SMALL_ICON_ID,
-                mBuilder.iconIdForStatusBar);
-    }
-
-
-    /**
-     * Tests that #notifyNotification falls back to client's notification if small icon as Bitmap
-     * is not supported.
-     */
-    @Test
-    @SmallTest
-    @DisableIf.Build(sdk_is_greater_than = 22,
-            message = "Sdk < 23 doesn't support small icons as Bitmaps")
-    public void usesSmallIconFromServiceIfSmallIconAsBitmapIsNotSupported()
-            throws TimeoutException, InterruptedException {
-        mBuilder.setStatusBarIcon(createBitmap());
-        postNotification();
-        Assert.assertEquals(TestTrustedWebActivityService.SMALL_ICON_ID,
-                mBuilder.iconIdForStatusBar);
-    }
-
-    @Test
-    @SmallTest
-    public void doesntUseIconFromServiceIfSmallIconForContentSet()
-            throws TimeoutException, InterruptedException {
-        mBuilder.setSmallIconForContent(createBitmap());
-        postNotification();
-        Assert.assertNotEquals(TestTrustedWebActivityService.SMALL_ICON_ID,
-                mBuilder.iconIdForContent);
     }
 
 
@@ -231,10 +180,6 @@ public class TrustedWebActivityClientTest {
         });
 
         mResponseHandler.mNotifyNotification.waitForCallback();
-    }
-
-    private Bitmap createBitmap() {
-        return BitmapFactory.decodeResource(mTargetContext.getResources(), R.drawable.ic_chrome);
     }
 
     /**
@@ -253,28 +198,4 @@ public class TrustedWebActivityClientTest {
         Assert.assertEquals(mResponseHandler.mNotificationId, NOTIFICATION_ID);
     }
 
-    //TODO(pshmakov): separate unit tests for the TWAClient and instrumentation tests for the
-    // Service connection; use Mockito in unit tests instead of inheritance.
-    private static class SpyNotificationBuilder extends StandardNotificationBuilder {
-        public int iconIdForStatusBar;
-        public int iconIdForContent;
-
-        public SpyNotificationBuilder(Context context) {
-            super(context);
-        }
-
-        @Override
-        public NotificationBuilderBase setStatusBarIconForRemoteApp(int iconId,
-                String packageName) {
-            iconIdForStatusBar = iconId;
-            return super.setStatusBarIconForRemoteApp(iconId, packageName);
-        }
-
-        @Override
-        public NotificationBuilderBase setContentSmallIconForRemoteApp(int iconId,
-                String packageName) {
-            iconIdForContent = iconId;
-            return super.setContentSmallIconForRemoteApp(iconId, packageName);
-        }
-    }
 }

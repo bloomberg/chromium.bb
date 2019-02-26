@@ -25,10 +25,30 @@ from devil.android.sdk import intent # pylint: disable=import-error
 # should be disabled on non-Android to avoid failures at
 # benchmark_smoke_unittest.BenchmarkSmokeTest.
 #
-# The recommended way to run this benchmark is:
-# shell> CHROMIUM_OUTPUT_DIR=gn_android/Release tools/perf/run_benchmark \
-#   -v startup.mobile --browser=android-chrome \
-#   --output-dir=/tmp/avoid-polluting-chrome-tree
+# === Mini-HOWTO.
+#
+# 1. Configure for Release Official flavor to get the most representative
+#    results:
+#    shell> gn gen --args='use_goma=true target_os="android" target_cpu="arm" \
+#           is_debug=false is_official_build=true' gn_android/ReleaseOfficial
+#
+# 2. Build Monochrome:
+#    shell> autoninja -C gn_android/ReleaseOfficial monochrome_apk
+#
+# 3. Invoke Telemetry:
+#    shell> CHROMIUM_OUTPUT_DIR=gn_android/ReleaseOfficial \
+#               tools/perf/run_benchmark -v startup.mobile \
+#               --browser=android-chrome \
+#               --output-dir=/tmp/avoid-polluting-chrome-tree \
+#               --also-run-disabled-tests
+#
+# The "--also-run-disabled-tests" is necessary because the benchmark is disabled
+# in expectations.config to avoid failures on Android versions below M. This
+# override is also used on internal bots. See: http://crbug.com/894744 and
+# http://crbug.com/849907.
+
+_NUMBER_OF_ITERATIONS = 10
+_MAX_BATTERY_TEMP = 32
 
 class _MobileStartupSharedState(story_module.SharedState):
 
@@ -69,11 +89,25 @@ class _MobileStartupSharedState(story_module.SharedState):
     if flush_caches:
       self.platform.FlushDnsCache()
       self._possible_browser.FlushOsPageCaches()
-    self.platform.WaitForBatteryTemperature(32)
+    self.platform.WaitForBatteryTemperature(_MAX_BATTERY_TEMP)
     self.platform.StartActivity(
         intent.Intent(package=self._possible_browser.settings.package,
                       activity=self._possible_browser.settings.activity,
                       action=None, data=url),
+        blocking=True)
+
+  def LaunchCCT(self, url):
+    self.platform.FlushDnsCache()
+    self._possible_browser.FlushOsPageCaches()
+    self.platform.WaitForBatteryTemperature(_MAX_BATTERY_TEMP)
+
+    # Note: The presence of the extra.SESSION extra defines a CCT intent.
+    cct_extras = {'android.support.customtabs.extra.SESSION': None}
+    self.platform.StartActivity(
+        intent.Intent(package=self._possible_browser.settings.package,
+                      activity=self._possible_browser.settings.activity,
+                      action=None, data=url, extras=cct_extras),
+
         blocking=True)
 
   @contextlib.contextmanager
@@ -122,7 +156,7 @@ class _MobileStartupSharedState(story_module.SharedState):
 
 
 def _DriveMobileStartupWithIntent(state, flush_caches):
-  for _ in xrange(10):
+  for _ in xrange(_NUMBER_OF_ITERATIONS):
     # TODO(pasko): Find a way to fail the benchmark when WPR is set up
     # incorrectly and error pages get loaded.
     state.LaunchBrowser('http://bbc.co.uk', flush_caches)
@@ -149,6 +183,19 @@ class _MobileStartupWithIntentStoryWarm(story_module.Story):
     _DriveMobileStartupWithIntent(state, flush_caches=False)
 
 
+class _MobileStartupWithCctIntentStory(story_module.Story):
+  def __init__(self):
+    super(_MobileStartupWithCctIntentStory, self).__init__(
+        _MobileStartupSharedState, name='cct:coldish:bbc')
+
+  def Run(self, state):
+    for _ in xrange(_NUMBER_OF_ITERATIONS):
+      state.LaunchCCT('http://bbc.co.uk')
+      with state.FindBrowser() as browser:
+        action_runner = browser.foreground_tab.action_runner
+        action_runner.tab.WaitForDocumentReadyStateToBeComplete()
+
+
 class _MobileStartupStorySet(story_module.StorySet):
   def __init__(self):
     super(_MobileStartupStorySet, self).__init__(
@@ -156,6 +203,7 @@ class _MobileStartupStorySet(story_module.StorySet):
           cloud_storage_bucket=story_module.PARTNER_BUCKET)
     self.AddStory(_MobileStartupWithIntentStory())
     self.AddStory(_MobileStartupWithIntentStoryWarm())
+    self.AddStory(_MobileStartupWithCctIntentStory())
 
 
 @benchmark.Info(emails=['pasko@chromium.org',
@@ -175,7 +223,6 @@ class MobileStartupBenchmark(perf_benchmark.PerfBenchmark):
 
     options = timeline_based_measurement.Options(cat_filter)
     options.config.enable_chrome_trace = True
-    options.config.enable_atrace_trace = True
     options.SetTimelineBasedMetrics([
         'tracingMetric',
         'androidStartupMetric',

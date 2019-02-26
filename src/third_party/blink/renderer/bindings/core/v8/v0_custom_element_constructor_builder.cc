@@ -30,7 +30,7 @@
 
 #include "third_party/blink/renderer/bindings/core/v8/v0_custom_element_constructor_builder.h"
 
-#include "third_party/blink/renderer/bindings/core/v8/string_or_dictionary.h"
+#include "third_party/blink/renderer/bindings/core/v8/string_or_element_creation_options.h"
 #include "third_party/blink/renderer/bindings/core/v8/v8_binding_for_core.h"
 #include "third_party/blink/renderer/bindings/core/v8/v8_document.h"
 #include "third_party/blink/renderer/bindings/core/v8/v8_html_element.h"
@@ -57,7 +57,7 @@ static void ConstructCustomElement(const v8::FunctionCallbackInfo<v8::Value>&);
 
 V0CustomElementConstructorBuilder::V0CustomElementConstructorBuilder(
     ScriptState* script_state,
-    const ElementRegistrationOptions& options)
+    const ElementRegistrationOptions* options)
     : script_state_(script_state), options_(options) {
   DCHECK(script_state_->GetContext() ==
          script_state_->GetIsolate()->GetCurrentContext());
@@ -84,31 +84,34 @@ bool V0CustomElementConstructorBuilder::ValidateOptions(
     return false;
   }
 
-  if (options_.hasPrototype()) {
-    DCHECK(options_.prototype().IsObject());
-    prototype_ = options_.prototype().V8Value().As<v8::Object>();
+  if (options_->hasPrototype()) {
+    DCHECK(options_->prototype().IsObject());
+    prototype_ = options_->prototype().V8Value().As<v8::Object>();
   } else {
     prototype_ = v8::Object::New(script_state_->GetIsolate());
     v8::Local<v8::Object> base_prototype =
         script_state_->PerContextData()->PrototypeForType(
-            &V8HTMLElement::wrapperTypeInfo);
+            &V8HTMLElement::wrapper_type_info);
     if (!base_prototype.IsEmpty()) {
-      if (!V8CallBoolean(prototype_->SetPrototype(script_state_->GetContext(),
-                                                  base_prototype)))
+      bool set_prototype;
+      if (!prototype_->SetPrototype(script_state_->GetContext(), base_prototype)
+               .To(&set_prototype) ||
+          !set_prototype) {
         return false;
+      }
     }
   }
 
-  AtomicString namespace_uri = HTMLNames::xhtmlNamespaceURI;
-  if (HasValidPrototypeChainFor(&V8SVGElement::wrapperTypeInfo))
-    namespace_uri = SVGNames::svgNamespaceURI;
+  AtomicString namespace_uri = html_names::xhtmlNamespaceURI;
+  if (HasValidPrototypeChainFor(&V8SVGElement::wrapper_type_info))
+    namespace_uri = svg_names::kNamespaceURI;
 
   DCHECK(!try_catch.HasCaught());
 
   AtomicString local_name;
 
-  if (options_.hasExtends()) {
-    local_name = AtomicString(options_.extends().DeprecatedLower());
+  if (options_->hasExtends()) {
+    local_name = AtomicString(options_->extends().DeprecatedLower());
 
     if (!Document::IsValidName(local_name)) {
       V0CustomElementException::ThrowException(
@@ -125,7 +128,7 @@ bool V0CustomElementConstructorBuilder::ValidateOptions(
       return false;
     }
   } else {
-    if (namespace_uri == SVGNames::svgNamespaceURI) {
+    if (namespace_uri == svg_names::kNamespaceURI) {
       V0CustomElementException::ThrowException(
           V0CustomElementException::kExtendsIsInvalidName, type,
           exception_state);
@@ -216,38 +219,63 @@ bool V0CustomElementConstructorBuilder::CreateConstructor(
                                           : v8_type.As<v8::String>());
 
   v8::Local<v8::String> prototype_key = V8AtomicString(isolate, "prototype");
-  if (!V8CallBoolean(constructor_->HasOwnProperty(context, prototype_key)))
+  bool has_own_property;
+  if (!constructor_->HasOwnProperty(context, prototype_key)
+           .To(&has_own_property) ||
+      !has_own_property) {
     return false;
+  }
+
   // This sets the property *value*; calling Set is safe because
   // "prototype" is a non-configurable data property so there can be
   // no side effects.
-  if (!V8CallBoolean(constructor_->Set(context, prototype_key, prototype_)))
+  bool set_prototype_key;
+  if (!constructor_->Set(context, prototype_key, prototype_)
+           .To(&set_prototype_key) ||
+      !set_prototype_key) {
     return false;
+  }
+
   // This *configures* the property. DefineOwnProperty of a function's
   // "prototype" does not affect the value, but can reconfigure the
   // property.
-  if (!V8CallBoolean(constructor_->DefineOwnProperty(
-          context, prototype_key, prototype_,
-          v8::PropertyAttribute(v8::ReadOnly | v8::DontEnum | v8::DontDelete))))
+  bool configured_prototype;
+  if (!constructor_
+           ->DefineOwnProperty(
+               context, prototype_key, prototype_,
+               v8::PropertyAttribute(v8::ReadOnly | v8::DontEnum |
+                                     v8::DontDelete))
+           .To(&configured_prototype) ||
+      !configured_prototype) {
     return false;
+  }
 
   v8::Local<v8::String> constructor_key =
       V8AtomicString(isolate, "constructor");
   v8::Local<v8::Value> constructor_prototype;
   if (!prototype_->Get(context, constructor_key)
-           .ToLocal(&constructor_prototype))
+           .ToLocal(&constructor_prototype)) {
     return false;
+  }
 
-  if (!V8CallBoolean(
-          constructor_->SetPrototype(context, constructor_prototype)))
+  bool set_prototype;
+  if (!constructor_->SetPrototype(context, constructor_prototype)
+           .To(&set_prototype) ||
+      !set_prototype) {
     return false;
+  }
 
   V8PrivateProperty::GetCustomElementIsInterfacePrototypeObject(isolate).Set(
       prototype_, v8::True(isolate));
-  if (!V8CallBoolean(prototype_->DefineOwnProperty(
-          context, V8AtomicString(isolate, "constructor"), constructor_,
-          v8::DontEnum)))
+
+  bool configured_constructor;
+  if (!prototype_
+           ->DefineOwnProperty(context, constructor_key, constructor_,
+                               v8::DontEnum)
+           .To(&configured_constructor) ||
+      !configured_constructor) {
     return false;
+  }
 
   return true;
 }
@@ -356,14 +384,13 @@ static void ConstructCustomElement(
       maybe_type->IsUndefined()) {
     return;
   }
-  TOSTRING_VOID(V8StringResource<>, type, maybe_type);
+  TOSTRING_VOID(V8StringResource<kTreatNullAsNullString>, type, maybe_type);
 
   ExceptionState exception_state(isolate, ExceptionState::kConstructionContext,
                                  "CustomElement");
   V0CustomElementProcessingStack::CallbackDeliveryScope delivery_scope;
   Element* element = document->createElementNS(
-      namespace_uri, tag_name,
-      StringOrDictionary::FromString(maybe_type->IsNull() ? g_null_atom : type),
+      namespace_uri, tag_name, StringOrElementCreationOptions::FromString(type),
       exception_state);
   if (element) {
     UseCounter::Count(document, WebFeature::kV0CustomElementsConstruct);

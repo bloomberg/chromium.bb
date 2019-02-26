@@ -6,6 +6,7 @@ mojom = "//services/viz/public/interfaces/compositing/render_pass.mojom"
 public_headers = [
   "//components/viz/common/quads/draw_quad.h",
   "//components/viz/common/quads/render_pass.h",
+  "//ui/gl/dc_renderer_layer_params.h",
 ]
 traits_headers = [
   "//services/viz/public/cpp/compositing/quads_struct_traits.h",
@@ -15,4 +16,7 @@ sources = [
   "//services/viz/public/cpp/compositing/quads_struct_traits.cc",
   "//services/viz/public/cpp/compositing/render_pass_struct_traits.cc",
 ]
-type_mappings = [ "viz.mojom.RenderPass=std::unique_ptr<viz::RenderPass>[move_only,nullable_is_same_type]" ]
+type_mappings = [
+  "viz.mojom.RenderPass=std::unique_ptr<viz::RenderPass>[move_only,nullable_is_same_type]",
+  "viz::mojom::ProtectedVideoState=ui::ProtectedVideoType",
+]

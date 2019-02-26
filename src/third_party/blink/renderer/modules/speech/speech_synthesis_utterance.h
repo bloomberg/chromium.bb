@@ -44,6 +44,7 @@ class SpeechSynthesisUtterance final
  public:
   static SpeechSynthesisUtterance* Create(ExecutionContext*, const String&);
 
+  SpeechSynthesisUtterance(ExecutionContext*, const String&);
   ~SpeechSynthesisUtterance() override;
 
   const String& text() const { return platform_utterance_->GetText(); }
@@ -69,13 +70,13 @@ class SpeechSynthesisUtterance final
     platform_utterance_->SetStartTime(start_time);
   }
 
-  DEFINE_ATTRIBUTE_EVENT_LISTENER(start);
-  DEFINE_ATTRIBUTE_EVENT_LISTENER(end);
-  DEFINE_ATTRIBUTE_EVENT_LISTENER(error);
-  DEFINE_ATTRIBUTE_EVENT_LISTENER(pause);
-  DEFINE_ATTRIBUTE_EVENT_LISTENER(resume);
-  DEFINE_ATTRIBUTE_EVENT_LISTENER(mark);
-  DEFINE_ATTRIBUTE_EVENT_LISTENER(boundary);
+  DEFINE_ATTRIBUTE_EVENT_LISTENER(start, kStart);
+  DEFINE_ATTRIBUTE_EVENT_LISTENER(end, kEnd);
+  DEFINE_ATTRIBUTE_EVENT_LISTENER(error, kError);
+  DEFINE_ATTRIBUTE_EVENT_LISTENER(pause, kPause);
+  DEFINE_ATTRIBUTE_EVENT_LISTENER(resume, kResume);
+  DEFINE_ATTRIBUTE_EVENT_LISTENER(mark, kMark);
+  DEFINE_ATTRIBUTE_EVENT_LISTENER(boundary, kBoundary);
 
   ExecutionContext* GetExecutionContext() const override {
     return ContextClient::GetExecutionContext();
@@ -88,8 +89,6 @@ class SpeechSynthesisUtterance final
   void Trace(blink::Visitor*) override;
 
  private:
-  SpeechSynthesisUtterance(ExecutionContext*, const String&);
-
   // EventTarget
   const AtomicString& InterfaceName() const override;
 

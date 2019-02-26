@@ -79,6 +79,8 @@ sk_sp<GrGLInterface> CreateGLES2InterfaceBindings(
       gles_bind(&GLES2Interface::BindBuffer, impl, context_support);
   functions->fBindTexture =
       gles_bind(&GLES2Interface::BindTexture, impl, context_support);
+  functions->fBindSampler =
+      gles_bind(&GLES2Interface::BindSampler, impl, context_support);
   functions->fBindVertexArray =
       gles_bind(&GLES2Interface::BindVertexArrayOES, impl, context_support);
   functions->fBlendBarrier =
@@ -120,6 +122,8 @@ sk_sp<GrGLInterface> CreateGLES2InterfaceBindings(
       gles_bind(&GLES2Interface::DeleteBuffers, impl, context_support);
   functions->fDeleteProgram =
       gles_bind(&GLES2Interface::DeleteProgram, impl, context_support);
+  functions->fDeleteSamplers =
+      gles_bind(&GLES2Interface::DeleteSamplers, impl, context_support);
   functions->fDeleteShader =
       gles_bind(&GLES2Interface::DeleteShader, impl, context_support);
   functions->fDeleteSync =
@@ -165,6 +169,8 @@ sk_sp<GrGLInterface> CreateGLES2InterfaceBindings(
       gles_bind(&GLES2Interface::FrontFace, impl, context_support);
   functions->fGenBuffers =
       gles_bind(&GLES2Interface::GenBuffers, impl, context_support);
+  functions->fGenSamplers =
+      gles_bind(&GLES2Interface::GenSamplers, impl, context_support);
   functions->fGenTextures =
       gles_bind(&GLES2Interface::GenTextures, impl, context_support);
   functions->fGenVertexArrays =
@@ -224,6 +230,10 @@ sk_sp<GrGLInterface> CreateGLES2InterfaceBindings(
       gles_bind(&GLES2Interface::ReadBuffer, impl, context_support);
   functions->fReadPixels =
       gles_bind(&GLES2Interface::ReadPixels, impl, context_support);
+  functions->fSamplerParameteri =
+      gles_bind(&GLES2Interface::SamplerParameteri, impl, context_support);
+  functions->fSamplerParameteriv =
+      gles_bind(&GLES2Interface::SamplerParameteriv, impl, context_support);
   functions->fScissor =
       gles_bind(&GLES2Interface::Scissor, impl, context_support);
   functions->fShaderSource =

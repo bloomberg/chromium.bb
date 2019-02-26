@@ -50,7 +50,7 @@
 #endif
 
 #if defined(OS_CHROMEOS)
-#include "ui/gfx/platform_font_linux.h"
+#include "ui/gfx/platform_font_skia.h"
 #endif
 
 #if defined(OS_WIN)
@@ -798,7 +798,7 @@ void ResourceBundle::InitDefaultFontList() {
   // TODO(yukishiino): Remove SetDefaultFontDescription() once the migration to
   // the font list is done.  We will no longer need SetDefaultFontDescription()
   // after every client gets started using a FontList instead of a Font.
-  gfx::PlatformFontLinux::SetDefaultFontDescription(font_family);
+  gfx::PlatformFontSkia::SetDefaultFontDescription(font_family);
 #else
   // Use a single default font as the default font list.
   gfx::FontList::SetDefaultFontDescription(std::string());

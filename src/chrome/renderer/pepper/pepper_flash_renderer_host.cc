@@ -9,9 +9,9 @@
 #include <map>
 #include <vector>
 
-#include "base/lazy_instance.h"
 #include "base/macros.h"
 #include "base/metrics/histogram_macros.h"
+#include "base/no_destructor.h"
 #include "base/strings/string_util.h"
 #include "components/pdf/renderer/pepper_pdf_host.h"
 #include "content/public/renderer/pepper_plugin_instance.h"
@@ -101,8 +101,10 @@ enum FlashNavigateUsage {
   FLASH_NAVIGATE_USAGE_ENUM_COUNT
 };
 
-static base::LazyInstance<std::map<std::string, FlashNavigateUsage>>::
-    DestructorAtExit g_rejected_headers = LAZY_INSTANCE_INITIALIZER;
+std::map<std::string, FlashNavigateUsage>& GetRejectedHeaders() {
+  static base::NoDestructor<std::map<std::string, FlashNavigateUsage>> s;
+  return *s;
+}
 
 bool IsSimpleHeader(const std::string& lower_case_header_name,
                     const std::string& header_value) {
@@ -256,7 +258,7 @@ int32_t PepperFlashRendererHost::OnDrawGlyphs(
   paint.setColor(params.color);
   paint.setTextEncoding(SkPaint::kGlyphID_TextEncoding);
   paint.setAntiAlias(true);
-  paint.setHinting(SkPaint::kFull_Hinting);
+  paint.setHinting(SkFontHinting::kFull);
   paint.setTextSize(SkIntToScalar(params.font_desc.size));
   paint.setTypeface(std::move(typeface));
   if (params.allow_subpixel_aa) {
@@ -303,7 +305,7 @@ int32_t PepperFlashRendererHost::OnNavigate(
     return PP_ERROR_FAILED;
 
   std::map<std::string, FlashNavigateUsage>& rejected_headers =
-      g_rejected_headers.Get();
+      GetRejectedHeaders();
   if (rejected_headers.empty()) {
     for (size_t i = 0; i < arraysize(kRejectedHttpRequestHeaders); ++i)
       rejected_headers[kRejectedHttpRequestHeaders[i]] =

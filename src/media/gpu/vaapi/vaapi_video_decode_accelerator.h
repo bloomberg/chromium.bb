@@ -263,7 +263,7 @@ class MEDIA_GPU_EXPORT VaapiVideoDecodeAccelerator
 
   base::Thread decoder_thread_;
   // Use this to post tasks to |decoder_thread_| instead of
-  // |decoder_thread_.message_loop()| because the latter will be NULL once
+  // |decoder_thread_.task_runner()| because the latter will be NULL once
   // |decoder_thread_.Stop()| returns.
   scoped_refptr<base::SingleThreadTaskRunner> decoder_thread_task_runner_;
 

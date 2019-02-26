@@ -7,6 +7,8 @@
 #ifndef FPDFSDK_PWL_CPWL_COMBO_BOX_H_
 #define FPDFSDK_PWL_CPWL_COMBO_BOX_H_
 
+#include <memory>
+
 #include "core/fxcrt/unowned_ptr.h"
 #include "fpdfsdk/pwl/cpwl_edit.h"
 #include "fpdfsdk/pwl/cpwl_list_box.h"
@@ -14,8 +16,9 @@
 
 class CPWL_CBListBox final : public CPWL_ListBox {
  public:
-  CPWL_CBListBox() {}
-  ~CPWL_CBListBox() override {}
+  CPWL_CBListBox(const CreateParams& cp,
+                 std::unique_ptr<PrivateData> pAttachedData);
+  ~CPWL_CBListBox() override;
 
   // CPWL_ListBox
   bool OnLButtonUp(const CFX_PointF& point, uint32_t nFlag) override;
@@ -28,8 +31,9 @@ class CPWL_CBListBox final : public CPWL_ListBox {
 
 class CPWL_CBButton final : public CPWL_Wnd {
  public:
-  CPWL_CBButton() {}
-  ~CPWL_CBButton() override {}
+  CPWL_CBButton(const CreateParams& cp,
+                std::unique_ptr<PrivateData> pAttachedData);
+  ~CPWL_CBButton() override;
 
   // CPWL_Wnd
   void DrawThisAppearance(CFX_RenderDevice* pDevice,
@@ -40,13 +44,13 @@ class CPWL_CBButton final : public CPWL_Wnd {
 
 class CPWL_ComboBox final : public CPWL_Wnd {
  public:
-  CPWL_ComboBox();
+  CPWL_ComboBox(const CreateParams& cp,
+                std::unique_ptr<PrivateData> pAttachedData);
   ~CPWL_ComboBox() override;
 
   CPWL_Edit* GetEdit() const { return m_pEdit.Get(); }
 
   // CPWL_Wnd:
-  void OnCreate(CreateParams* pParamsToAdjust) override;
   void OnDestroy() override;
   bool OnKeyDown(uint16_t nChar, uint32_t nFlag) override;
   bool OnChar(uint16_t nChar, uint32_t nFlag) override;
@@ -77,9 +81,7 @@ class CPWL_ComboBox final : public CPWL_Wnd {
   void ClearSelection();
   void SelectAll();
   bool IsPopup() const;
-
   void SetSelectText();
-
   void AttachFFLData(CFFL_FormFiller* pData) { m_pFormFiller = pData; }
 
  private:

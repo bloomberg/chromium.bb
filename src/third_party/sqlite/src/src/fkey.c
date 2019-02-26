@@ -502,7 +502,7 @@ static Expr *exprTableColumn(
 ){
   Expr *pExpr = sqlite3Expr(db, TK_COLUMN, 0);
   if( pExpr ){
-    pExpr->pTab = pTab;
+    pExpr->y.pTab = pTab;
     pExpr->iTable = iCursor;
     pExpr->iColumn = iCol;
   }
@@ -602,8 +602,11 @@ static void fkScanChildren(
   **     NOT( $current_a==a AND $current_b==b AND ... )
   **
   ** The first form is used for rowid tables.  The second form is used
-  ** for WITHOUT ROWID tables.  In the second form, the primary key is
-  ** (a,b,...)
+  ** for WITHOUT ROWID tables. In the second form, the *parent* key is
+  ** (a,b,...). Either the parent or primary key could be used to
+  ** uniquely identify the current row, but the parent key is more convenient
+  ** as the required values have already been loaded into registers
+  ** by the caller.
   */
   if( pTab==pFKey->pFrom && nIncr>0 ){
     Expr *pNe;                    /* Expression (pLeft != pRight) */
@@ -617,12 +620,12 @@ static void fkScanChildren(
       Expr *pEq, *pAll = 0;
       Index *pPk = sqlite3PrimaryKeyIndex(pTab);
       assert( pIdx!=0 );
-      for(i=0; i<pPk->nKeyCol; i++){
+      for(i=0; i<pIdx->nKeyCol; i++){
         i16 iCol = pIdx->aiColumn[i];
         assert( iCol>=0 );
         pLeft = exprTableRegister(pParse, pTab, regData, iCol);
-        pRight = exprTableColumn(db, pTab, pSrc->a[0].iCursor, iCol);
-        pEq = sqlite3PExpr(pParse, TK_EQ, pLeft, pRight);
+        pRight = sqlite3Expr(db, TK_ID, pTab->aCol[iCol].zName);
+        pEq = sqlite3PExpr(pParse, TK_IS, pLeft, pRight);
         pAll = sqlite3ExprAnd(db, pAll, pEq);
       }
       pNe = sqlite3PExpr(pParse, TK_NOT, pAll, 0);

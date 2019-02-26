@@ -11,6 +11,7 @@ const ROOT_PATH = '../../../../../';
 GEN_INCLUDE(
     [ROOT_PATH + 'chrome/test/data/webui/polymer_browser_test_base.js']);
 GEN('#include "chrome/common/chrome_features.h"');
+GEN('#include "components/autofill/core/common/autofill_features.h"');
 
 /**
  * Test fixture for Polymer Settings elements.
@@ -226,34 +227,88 @@ GEN('#endif');
 
 /**
  * Test fixture for
- * chrome/browser/resources/settings/passwords_and_forms/autofill_section.html.
+ * chrome/browser/resources/settings/autofill_page/autofill_page.html.
  * @constructor
  * @extends {CrSettingsBrowserTest}
  */
-function CrSettingsAutofillSectionTest() {}
+function CrSettingsAutofillPageTest() {}
 
-CrSettingsAutofillSectionTest.prototype = {
+CrSettingsAutofillPageTest.prototype = {
   __proto__: CrSettingsBrowserTest.prototype,
 
   /** @override */
-  browsePreload:
-      'chrome://settings/passwords_and_forms_page/autofill_section.html',
+  browsePreload: 'chrome://settings/autofill_page/autofill_page.html',
 
   /** @override */
   extraLibraries: CrSettingsBrowserTest.prototype.extraLibraries.concat([
-    'passwords_and_autofill_fake_data.js',
-    'test_util.js',
-    'autofill_section_test.js'
+    '../test_browser_proxy.js',
+    'autofill_page_test.js',
   ]),
 };
 
-TEST_F('CrSettingsAutofillSectionTest', 'All', function() {
+TEST_F('CrSettingsAutofillPageTest', 'All', function() {
   mocha.run();
 });
 
 /**
  * Test fixture for
- * chrome/browser/resources/settings/passwords_and_forms/payments_section.html.
+ * chrome/browser/resources/settings/autofill_page/autofill_section.html.
+ * @constructor
+ * @extends {CrSettingsBrowserTest}
+ */
+function CrSettingsAutofillSectionCompanyEnabledTest() {}
+
+CrSettingsAutofillSectionCompanyEnabledTest.prototype = {
+  __proto__: CrSettingsBrowserTest.prototype,
+
+  /** @override */
+  browsePreload: 'chrome://settings/autofill_page/autofill_section.html',
+
+  featureList: ['autofill::features::kAutofillEnableCompanyName', ''],
+
+  /** @override */
+  extraLibraries: CrSettingsBrowserTest.prototype.extraLibraries.concat([
+    'passwords_and_autofill_fake_data.js', 'test_util.js',
+    'autofill_section_test.js'
+  ]),
+};
+
+TEST_F('CrSettingsAutofillSectionCompanyEnabledTest', 'All', function() {
+  // Use 'EnableCompanyName' to inform tests that the feature is enabled.
+  const loadTimeDataOverride = {};
+  loadTimeDataOverride['EnableCompanyName'] = true;
+  loadTimeData.overrideValues(loadTimeDataOverride);
+  mocha.run();
+});
+
+function CrSettingsAutofillSectionCompanyDisabledTest() {}
+
+CrSettingsAutofillSectionCompanyDisabledTest.prototype = {
+  __proto__: CrSettingsBrowserTest.prototype,
+
+  /** @override */
+  browsePreload: 'chrome://settings/autofill_page/autofill_section.html',
+
+  featureList: ['', 'autofill::features::kAutofillEnableCompanyName'],
+
+  /** @override */
+  extraLibraries: CrSettingsBrowserTest.prototype.extraLibraries.concat([
+    'passwords_and_autofill_fake_data.js', 'test_util.js',
+    'autofill_section_test.js'
+  ]),
+};
+
+TEST_F('CrSettingsAutofillSectionCompanyDisabledTest', 'All', function() {
+  // Use 'EnableCompanyName' to inform tests that the feature is disabled.
+  const loadTimeDataOverride = {};
+  loadTimeDataOverride['EnableCompanyName'] = false;
+  loadTimeData.overrideValues(loadTimeDataOverride);
+  mocha.run();
+});
+
+/**
+ * Test fixture for
+ * chrome/browser/resources/settings/autofill_page/payments_section.html.
  * @constructor
  * @extends {CrSettingsBrowserTest}
  */
@@ -263,8 +318,7 @@ CrSettingsPaymentsSectionTest.prototype = {
   __proto__: CrSettingsBrowserTest.prototype,
 
   /** @override */
-  browsePreload:
-      'chrome://settings/passwords_and_forms_page/payments_section.html',
+  browsePreload: 'chrome://settings/autofill_page/payments_section.html',
 
   /** @override */
   extraLibraries: CrSettingsBrowserTest.prototype.extraLibraries.concat([
@@ -539,6 +593,33 @@ GEN('#endif  // !defined(OS_CHROMEOS)');
 
 /**
  * Test fixture for
+ * chrome/browser/resources/settings/people_page/sync_controls.html.
+ * @constructor
+ * @extends {CrSettingsBrowserTest}
+ */
+function CrSettingsPeoplePageSyncControlsTest() {}
+
+CrSettingsPeoplePageSyncControlsTest.prototype = {
+  __proto__: CrSettingsBrowserTest.prototype,
+
+  /** @override */
+  browsePreload: 'chrome://settings/people_page/sync_controls.html',
+
+  /** @override */
+  extraLibraries: CrSettingsBrowserTest.prototype.extraLibraries.concat([
+    '../test_browser_proxy.js',
+    'test_sync_browser_proxy.js',
+    'test_util.js',
+    'people_page_sync_controls_test.js',
+  ]),
+};
+
+TEST_F('CrSettingsPeoplePageSyncControlsTest', 'All', function() {
+  mocha.run();
+});
+
+/**
+ * Test fixture for
  * chrome/browser/resources/settings/people_page/sync_page.html.
  * @constructor
  * @extends {CrSettingsBrowserTest}
@@ -587,7 +668,14 @@ CrSettingsResetPageTest.prototype = {
   ]),
 };
 
-TEST_F('CrSettingsResetPageTest', 'All', function() {
+// Disabling on Linux (desktop and Chrome OS) due to flakiness.
+// https://crbug.com/873884
+GEN('#if defined(OS_LINUX)');
+GEN('#define MAYBE_ResetPageAll DISABLED_All');
+GEN('#else');
+GEN('#define MAYBE_ResetPageAll All');
+GEN('#endif');
+TEST_F('CrSettingsResetPageTest', 'MAYBE_ResetPageAll', function() {
   mocha.run();
 });
 
@@ -881,6 +969,7 @@ TEST_F('CrSettingsCertificateManagerTest', 'All', function() {
 
 GEN('#endif  // defined(USE_NSS_CERTS)');
 
+GEN('#if defined(GOOGLE_CHROME_BUILD)');
 /**
  * Test fixture for chrome/browser/resources/settings/privacy_page/.
  * @constructor
@@ -904,14 +993,8 @@ CrSettingsPersonalizationOptionsTest.prototype = {
   ]),
 };
 
-TEST_F('CrSettingsPersonalizationOptionsTest', 'NonOfficialBuild', function() {
-  settings_personalization_options.registerTests();
-  mocha.run();
-});
 
-GEN('#if defined(GOOGLE_CHROME_BUILD)');
 TEST_F('CrSettingsPersonalizationOptionsTest', 'OfficialBuild', function() {
-  settings_personalization_options.registerOfficialBuildTests();
   mocha.run();
 });
 GEN('#endif');
@@ -1391,6 +1474,7 @@ CrSettingsInternetPageTest.prototype = {
     ROOT_PATH + 'ui/webui/resources/js/assert.js',
     '../fake_chrome_event.js',
     '../chromeos/fake_networking_private.js',
+    '../chromeos/cr_onc_strings.js',
     'internet_page_tests.js',
   ]),
 };
@@ -1419,6 +1503,7 @@ CrSettingsInternetDetailPageTest.prototype = {
     ROOT_PATH + 'ui/webui/resources/js/util.js',
     '../fake_chrome_event.js',
     '../chromeos/fake_networking_private.js',
+    '../chromeos/cr_onc_strings.js',
     'internet_detail_page_tests.js',
   ]),
 };
@@ -1963,6 +2048,33 @@ TEST_F('CrSettingsMultidevicePageTest', 'All', function() {
 });
 
 /**
+ * Test fixture for the multidevice Smart Lock subpage.
+ * @constructor
+ * @extends {CrSettingsBrowserTest}
+ */
+function CrSettingsMultideviceSmartLockSubpageTest() {}
+
+CrSettingsMultideviceSmartLockSubpageTest.prototype = {
+  __proto__: CrSettingsBrowserTest.prototype,
+
+  /** @override */
+  browsePreload:
+      'chrome://settings/multidevice_page/multidevice_smartlock_subpage.html',
+
+  /** @override */
+  extraLibraries: CrSettingsBrowserTest.prototype.extraLibraries.concat([
+    '../test_browser_proxy.js',
+    'test_multidevice_browser_proxy.js',
+    'test_util.js',
+    'multidevice_smartlock_subpage_test.js',
+  ]),
+};
+
+TEST_F('CrSettingsMultideviceSmartLockSubpageTest', 'All', function() {
+  mocha.run();
+});
+
+/**
  * Test fixture for the multidevice settings subpage.
  * @constructor
  * @extends {CrSettingsBrowserTest}
@@ -2191,5 +2303,27 @@ CrSettingsFindShortcutBehavior.prototype = {
 };
 
 TEST_F('CrSettingsFindShortcutBehavior', 'All', function() {
+  mocha.run();
+});
+
+/**
+ * @constructor
+ * @extends {CrSettingsBrowserTest}
+ */
+function CrSettingsSiteFaviconTest() {}
+
+CrSettingsSiteFaviconTest.prototype = {
+  __proto__: CrSettingsBrowserTest.prototype,
+
+  /** @override */
+  browsePreload: 'chrome://settings/site_favicon.html',
+
+  /** @override */
+  extraLibraries: CrSettingsBrowserTest.prototype.extraLibraries.concat([
+    'site_favicon_test.js',
+  ]),
+};
+
+TEST_F('CrSettingsSiteFaviconTest', 'All', function() {
   mocha.run();
 });

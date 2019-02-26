@@ -41,7 +41,6 @@
 #include "third_party/blink/renderer/platform/graphics/paint/paint_image.h"
 #include "third_party/blink/renderer/platform/graphics/skia/skia_utils.h"
 #include "third_party/blink/renderer/platform/graphics/static_bitmap_image.h"
-#include "third_party/blink/renderer/platform/instrumentation/platform_instrumentation.h"
 #include "third_party/blink/renderer/platform/instrumentation/tracing/trace_event.h"
 #include "third_party/blink/renderer/platform/runtime_enabled_features.h"
 #include "third_party/blink/renderer/platform/scheduler/public/thread_scheduler.h"
@@ -284,8 +283,11 @@ void BitmapImage::Draw(
                         &flags,
                         WebCoreClampingModeToSkiaRectConstraint(clamp_mode));
 
-  if (is_lazy_generated)
-    PlatformInstrumentation::DidDrawLazyPixelRef(unique_id);
+  if (is_lazy_generated) {
+    TRACE_EVENT_INSTANT1(TRACE_DISABLED_BY_DEFAULT("devtools.timeline"),
+                         "Draw LazyPixelRef", TRACE_EVENT_SCOPE_THREAD,
+                         "LazyPixelRef", unique_id);
+  }
 
   StartAnimation();
 }

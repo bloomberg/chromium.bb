@@ -126,9 +126,8 @@ void QuicStream::OnStreamFrame(const QuicStreamFrame& frame) {
   bool is_stream_too_long =
       (frame.offset > kMaxStreamLength) ||
       (kMaxStreamLength - frame.offset < frame.data_length);
-  if (GetQuicReloadableFlag(quic_stream_too_long) && is_stream_too_long) {
+  if (is_stream_too_long) {
     // Close connection if stream becomes too long.
-    QUIC_FLAG_COUNT_N(quic_reloadable_flag_quic_stream_too_long, 4, 5);
     QUIC_PEER_BUG
         << "Receive stream frame reaches max stream length. frame offset "
         << frame.offset << " length " << frame.data_length;
@@ -184,9 +183,7 @@ int QuicStream::num_duplicate_frames_received() const {
 
 void QuicStream::OnStreamReset(const QuicRstStreamFrame& frame) {
   rst_received_ = true;
-  if (GetQuicReloadableFlag(quic_stream_too_long) &&
-      frame.byte_offset > kMaxStreamLength) {
-    QUIC_FLAG_COUNT_N(quic_reloadable_flag_quic_stream_too_long, 5, 5);
+  if (frame.byte_offset > kMaxStreamLength) {
     // Peer are not suppose to write bytes more than maxium allowed.
     CloseConnectionWithDetails(QUIC_STREAM_LENGTH_OVERFLOW,
                                "Reset frame stream offset overflow.");
@@ -286,9 +283,7 @@ void QuicStream::WriteOrBufferData(
   if (data.length() > 0) {
     struct iovec iov(MakeIovec(data));
     QuicStreamOffset offset = send_buffer_.stream_offset();
-    if (GetQuicReloadableFlag(quic_stream_too_long) &&
-        kMaxStreamLength - offset < data.length()) {
-      QUIC_FLAG_COUNT_N(quic_reloadable_flag_quic_stream_too_long, 1, 5);
+    if (kMaxStreamLength - offset < data.length()) {
       QUIC_BUG << "Write too many data via stream " << id_;
       CloseConnectionWithDetails(
           QUIC_STREAM_LENGTH_OVERFLOW,
@@ -376,9 +371,7 @@ QuicConsumedData QuicStream::WritevData(const struct iovec* iov,
     return consumed_data;
   }
 
-  if (GetQuicReloadableFlag(quic_stream_too_long) &&
-      kMaxStreamLength - send_buffer_.stream_offset() < write_length) {
-    QUIC_FLAG_COUNT_N(quic_reloadable_flag_quic_stream_too_long, 2, 5);
+  if (kMaxStreamLength - send_buffer_.stream_offset() < write_length) {
     QUIC_BUG << "Write too many data via stream " << id_;
     CloseConnectionWithDetails(
         QUIC_STREAM_LENGTH_OVERFLOW,
@@ -439,10 +432,8 @@ QuicConsumedData QuicStream::WriteMemSlices(QuicMemSliceSpan span, bool fin) {
       QuicStreamOffset offset = send_buffer_.stream_offset();
       consumed_data.bytes_consumed =
           span.SaveMemSlicesInSendBuffer(&send_buffer_);
-      if (GetQuicReloadableFlag(quic_stream_too_long) &&
-          (offset > send_buffer_.stream_offset() ||
-           kMaxStreamLength < send_buffer_.stream_offset())) {
-        QUIC_FLAG_COUNT_N(quic_reloadable_flag_quic_stream_too_long, 3, 5);
+      if (offset > send_buffer_.stream_offset() ||
+          kMaxStreamLength < send_buffer_.stream_offset()) {
         QUIC_BUG << "Write too many data via stream " << id_;
         CloseConnectionWithDetails(
             QUIC_STREAM_LENGTH_OVERFLOW,
@@ -627,13 +618,11 @@ bool QuicStream::OnStreamFrameAcked(QuicStreamOffset offset,
   QuicByteCount newly_acked_length = 0;
   if (!send_buffer_.OnStreamDataAcked(offset, data_length,
                                       &newly_acked_length)) {
-    RecordInternalErrorLocation(QUIC_STREAM_ACKED_UNSENT_DATA);
     CloseConnectionWithDetails(QUIC_INTERNAL_ERROR,
                                "Trying to ack unsent data.");
     return false;
   }
   if (!fin_sent_ && fin_acked) {
-    RecordInternalErrorLocation(QUIC_STREAM_ACKED_UNSENT_FIN);
     CloseConnectionWithDetails(QUIC_INTERNAL_ERROR,
                                "Trying to ack unsent fin.");
     return false;
@@ -926,6 +915,16 @@ bool QuicStream::HasDeadlinePassed() const {
 
 void QuicStream::OnDeadlinePassed() {
   Reset(QUIC_STREAM_TTL_EXPIRED);
+}
+
+void QuicStream::SendStopSending(uint16_t code) {
+  if (transport_version() != QUIC_VERSION_99) {
+    // If the connection is not version 99, do nothing.
+    // Do not QUIC_BUG or anything; the application really does not need to know
+    // what version the connection is in.
+    return;
+  }
+  session_->SendStopSending(code, id_);
 }
 
 }  // namespace quic

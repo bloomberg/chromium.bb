@@ -56,4 +56,28 @@ PositionInFlatTree TextSegments::FindBoundaryForward(
   return last_position;
 }
 
+// static
+PositionInFlatTree TextSegments::FindBoundaryBackward(
+    const PositionInFlatTree& position,
+    Finder* finder) {
+  DCHECK(position.IsNotNull());
+  PositionInFlatTree last_position = position;
+  for (const auto& inline_contents :
+       TextOffsetMapping::BackwardRangeOf(position)) {
+    const TextOffsetMapping mapping(inline_contents);
+    const String text = mapping.GetText();
+    const unsigned offset = last_position == position
+                                ? mapping.ComputeTextOffset(position)
+                                : mapping.GetText().length();
+    const TextSegments::Finder::Position result = finder->Find(text, offset);
+    if (result.IsBefore())
+      return mapping.GetPositionBefore(result.Offset());
+    if (result.IsAfter())
+      return mapping.GetPositionAfter(result.Offset());
+    DCHECK(result.IsNone());
+    last_position = mapping.GetRange().StartPosition();
+  }
+  return last_position;
+}
+
 }  // namespace blink

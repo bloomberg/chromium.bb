@@ -4,6 +4,7 @@
 
 #include "chrome/browser/chromeos/hats/hats_notification_controller.h"
 
+#include "ash/public/cpp/notification_utils.h"
 #include "ash/public/cpp/vector_icons/vector_icons.h"
 #include "base/command_line.h"
 #include "base/feature_list.h"
@@ -190,14 +191,14 @@ void HatsNotificationController::OnPortalDetectionCompleted(
 
   // Create and display the notification for the user.
   std::unique_ptr<message_center::Notification> notification =
-      message_center::Notification::CreateSystemNotification(
+      ash::CreateSystemNotification(
           message_center::NOTIFICATION_TYPE_SIMPLE, kNotificationId,
           l10n_util::GetStringUTF16(IDS_HATS_NOTIFICATION_TITLE),
           l10n_util::GetStringUTF16(IDS_HATS_NOTIFICATION_BODY),
           l10n_util::GetStringUTF16(IDS_MESSAGE_CENTER_NOTIFIER_HATS_NAME),
           GURL(kNotificationOriginUrl),
           message_center::NotifierId(
-              message_center::NotifierId::SYSTEM_COMPONENT, kNotifierHats),
+              message_center::NotifierType::SYSTEM_COMPONENT, kNotifierHats),
           message_center::RichNotificationData(), this,
           ash::kNotificationGoogleIcon,
           message_center::SystemNotificationWarningLevel::NORMAL);

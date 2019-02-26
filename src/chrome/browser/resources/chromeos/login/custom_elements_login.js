@@ -25,6 +25,7 @@
 // <include src="oobe_buttons.js">
 // <include src="oobe_change_picture.js">
 // <include src="oobe_dialog.js">
+// <include src="oobe_enrollment.js">
 // <include src="arc_terms_of_service.js">
 // <include src="oobe_reset.js">
 // <include src="oobe_reset_confirmation_overlay.js">

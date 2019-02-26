@@ -98,7 +98,8 @@ void MediaControlLoadingPanelElement::PopulateShadowDOM() {
       "-internal-media-controls-loading-panel-spinner-mask-2-background",
       mask2);
 
-  event_listener_ = new MediaControlAnimationEventListener(this);
+  event_listener_ =
+      MakeGarbageCollected<MediaControlAnimationEventListener>(this);
 }
 
 void MediaControlLoadingPanelElement::RemovedFrom(

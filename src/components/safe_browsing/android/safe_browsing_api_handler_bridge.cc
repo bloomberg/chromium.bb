@@ -13,8 +13,6 @@
 #include "base/containers/flat_set.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/task/post_task.h"
-#include "base/time/time.h"
-#include "base/timer/elapsed_timer.h"
 #include "base/trace_event/trace_event.h"
 #include "components/safe_browsing/android/safe_browsing_api_handler_util.h"
 #include "components/safe_browsing/db/v4_protocol_manager_util.h"
@@ -34,10 +32,13 @@ using content::BrowserThread;
 namespace safe_browsing {
 
 namespace {
+
 void RunCallbackOnIOThread(
     std::unique_ptr<SafeBrowsingApiHandler::URLCheckCallbackMeta> callback,
     SBThreatType threat_type,
     const ThreatMetadata& metadata) {
+  CHECK(callback);              // Remove after fixing crbug.com/889972
+  CHECK(!callback->is_null());  // Remove after fixing crbug.com/889972
   base::PostTaskWithTraits(
       FROM_HERE, {BrowserThread::IO},
       base::BindOnce(std::move(*callback), threat_type, metadata));
@@ -80,13 +81,104 @@ ScopedJavaLocalRef<jintArray> SBThreatTypeSetToJavaArray(
   return ToJavaIntArray(env, int_threat_types, threat_types.size());
 }
 
+// The map that holds the callback_id used to reference each pending request
+// sent to Java, and the corresponding callback to call on receiving the
+// response.
+typedef std::unordered_map<
+    jlong,
+    std::unique_ptr<SafeBrowsingApiHandler::URLCheckCallbackMeta>>
+    PendingCallbacksMap;
+
+static PendingCallbacksMap* GetPendingCallbacksMapOnIOThread() {
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
+
+  // Holds the list of callback objects that we are currently waiting to hear
+  // the result of from GmsCore.
+  // The key is a unique count-up integer.
+  static PendingCallbacksMap pending_callbacks;
+  return &pending_callbacks;
+}
+
 }  // namespace
 
-// Java->Native call, invoked when a check is done.
+// Java->Native call, to check whether the feature to use local blacklists is
+// enabled.
+jboolean JNI_SafeBrowsingApiBridge_AreLocalBlacklistsEnabled(
+    JNIEnv* env,
+    const JavaParamRef<jclass>&) {
+  return base::FeatureList::IsEnabled(kUseLocalBlacklistsV2);
+}
+
+// Respond to the URL reputation request by looking up the callback information
+// stored in |pending_callbacks|.
 //   |callback_id| is an int form of pointer to a URLCheckCallbackMeta
 //                 that will be called and then deleted here.
 //   |result_status| is one of those from SafeBrowsingApiHandler.java
 //   |metadata| is a JSON string classifying the threat if there is one.
+void OnUrlCheckDoneOnIOThread(jlong callback_id,
+                              jint result_status,
+                              const std::string metadata) {
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
+  DVLOG(1) << __FUNCTION__ << ": check: " << callback_id
+           << " status: " << result_status << " metadata: [" << metadata << "]";
+
+  PendingCallbacksMap* pending_callbacks = GetPendingCallbacksMapOnIOThread();
+  bool found = base::ContainsKey(*pending_callbacks, callback_id);
+  DCHECK(found) << "Not found in pending_callbacks: " << callback_id;
+  if (!found)
+    return;
+
+  std::unique_ptr<SafeBrowsingApiHandler::URLCheckCallbackMeta> callback =
+      std::move((*pending_callbacks)[callback_id]);
+  CHECK(callback);  // Remove after fixing crbug.com/889972
+  pending_callbacks->erase(callback_id);
+
+  if (result_status != RESULT_STATUS_SUCCESS) {
+    if (result_status == RESULT_STATUS_TIMEOUT) {
+      CHECK(!callback->is_null());  // Remove after fixing crbug.com/889972
+
+      ReportUmaResult(UMA_STATUS_TIMEOUT);
+      DVLOG(1) << "Safe browsing API call timed-out";
+    } else {
+      CHECK(!callback->is_null());  // Remove after fixing crbug.com/889972
+
+      DCHECK_EQ(result_status, RESULT_STATUS_INTERNAL_ERROR);
+      ReportUmaResult(UMA_STATUS_INTERNAL_ERROR);
+    }
+    std::move(*callback).Run(SB_THREAT_TYPE_SAFE, ThreatMetadata());
+    return;
+  }
+
+  // Shortcut for safe, so we don't have to parse JSON.
+  if (metadata == "{}") {
+    CHECK(!callback->is_null());  // Remove after fixing crbug.com/889972
+
+    ReportUmaResult(UMA_STATUS_SAFE);
+    std::move(*callback).Run(SB_THREAT_TYPE_SAFE, ThreatMetadata());
+  } else {
+    CHECK(!callback->is_null());  // Remove after fixing crbug.com/889972
+
+    // Unsafe, assuming we can parse the JSON.
+    SBThreatType worst_threat;
+    ThreatMetadata threat_metadata;
+    ReportUmaResult(
+        ParseJsonFromGMSCore(metadata, &worst_threat, &threat_metadata));
+    if (worst_threat != SB_THREAT_TYPE_SAFE) {
+      DVLOG(1) << "Check " << callback_id << " was a MATCH";
+    }
+
+    std::move(*callback).Run(worst_threat, threat_metadata);
+  }
+}
+
+// Java->Native call, invoked when a check is done.
+//   |callback_id| is a key into the |pending_callbacks_| map, whose value is a
+//                 URLCheckCallbackMeta that will be called and then deleted on
+//                 the IO thread.
+//   |result_status| is one of those from SafeBrowsingApiHandler.java
+//   |metadata| is a JSON string classifying the threat if there is one.
+//   |check_delta| is the number of microseconds it took to look up the URL
+//                 reputation from GmsCore.
 //
 //   Careful note: this can be called on multiple threads, so make sure there is
 //   nothing thread unsafe happening here.
@@ -97,7 +189,6 @@ void JNI_SafeBrowsingApiBridge_OnUrlCheckDone(
     jint result_status,
     const JavaParamRef<jstring>& metadata,
     jlong check_delta) {
-  DCHECK(callback_id);
   UMA_HISTOGRAM_COUNTS_10M("SB2.RemoteCall.CheckDelta", check_delta);
 
   const std::string metadata_str =
@@ -110,41 +201,10 @@ void JNI_SafeBrowsingApiBridge_OnUrlCheckDone(
            << " with status=" << result_status << " and metadata=["
            << metadata_str << "]";
 
-  // Convert java long long int to c++ pointer, take ownership.
-  std::unique_ptr<SafeBrowsingApiHandler::URLCheckCallbackMeta> callback(
-      reinterpret_cast<SafeBrowsingApiHandlerBridge::URLCheckCallbackMeta*>(
-          callback_id));
-
-  if (result_status != RESULT_STATUS_SUCCESS) {
-    if (result_status == RESULT_STATUS_TIMEOUT) {
-      ReportUmaResult(UMA_STATUS_TIMEOUT);
-      VLOG(1) << "Safe browsing API call timed-out";
-    } else {
-      DCHECK_EQ(result_status, RESULT_STATUS_INTERNAL_ERROR);
-      ReportUmaResult(UMA_STATUS_INTERNAL_ERROR);
-    }
-    RunCallbackOnIOThread(std::move(callback), SB_THREAT_TYPE_SAFE,
-                          ThreatMetadata());
-    return;
-  }
-
-  // Shortcut for safe, so we don't have to parse JSON.
-  if (metadata_str == "{}") {
-    ReportUmaResult(UMA_STATUS_SAFE);
-    RunCallbackOnIOThread(std::move(callback), SB_THREAT_TYPE_SAFE,
-                          ThreatMetadata());
-  } else {
-    // Unsafe, assuming we can parse the JSON.
-    SBThreatType worst_threat;
-    ThreatMetadata threat_metadata;
-    ReportUmaResult(
-        ParseJsonFromGMSCore(metadata_str, &worst_threat, &threat_metadata));
-    if (worst_threat != SB_THREAT_TYPE_SAFE) {
-      DVLOG(1) << "Check " << callback_id << " was a MATCH";
-    }
-
-    RunCallbackOnIOThread(std::move(callback), worst_threat, threat_metadata);
-  }
+  base::PostTaskWithTraits(
+      FROM_HERE, {BrowserThread::IO},
+      base::BindOnce(&OnUrlCheckDoneOnIOThread, callback_id, result_status,
+                     metadata_str));
 }
 
 //
@@ -170,6 +230,7 @@ void SafeBrowsingApiHandlerBridge::StartURLCheck(
     std::unique_ptr<SafeBrowsingApiHandler::URLCheckCallbackMeta> callback,
     const GURL& url,
     const SBThreatTypeSet& threat_types) {
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
   if (!CheckApiIsSupported()) {
     // Mark all requests as safe. Only users who have an old, broken GMSCore or
     // have sideloaded Chrome w/o PlayStore should land here.
@@ -179,10 +240,9 @@ void SafeBrowsingApiHandlerBridge::StartURLCheck(
     return;
   }
 
-  // Save the address on the heap so we can pass it through JNI. The unique ptr
-  // releases ownership, we will re-own this callback when the response is
-  // received in JNI_SafeBrowsingApiBridge_OnUrlCheckDone.
-  intptr_t callback_id = reinterpret_cast<intptr_t>(callback.release());
+  jlong callback_id = next_callback_id_++;
+  GetPendingCallbacksMapOnIOThread()->insert(
+      {callback_id, std::move(callback)});
   DVLOG(1) << "Starting check " << callback_id << " for URL " << url;
 
   DCHECK(!threat_types.empty());
@@ -192,15 +252,8 @@ void SafeBrowsingApiHandlerBridge::StartURLCheck(
   ScopedJavaLocalRef<jintArray> j_threat_types =
       SBThreatTypeSetToJavaArray(env, threat_types);
 
-  base::ElapsedTimer check_timer;
   Java_SafeBrowsingApiBridge_startUriLookup(env, j_api_handler_, callback_id,
                                             j_url, j_threat_types);
-  // TODO(vakh): The following metric isn't very useful now since the
-  // |startUriLookup| method simply posts a task and adds listeners now.
-  // Continue to monitor it to ensure that it keeps falling and then remove it
-  // when it is consistently a low value. (https://crbug.com/839190)
-  UMA_HISTOGRAM_COUNTS_10M("SB2.RemoteCall.CheckDispatchTime",
-                           check_timer.Elapsed().InMicroseconds());
 }
 
 }  // namespace safe_browsing

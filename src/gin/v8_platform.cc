@@ -15,7 +15,7 @@
 #include "base/location.h"
 #include "base/logging.h"
 #include "base/rand_util.h"
-#include "base/sys_info.h"
+#include "base/system/sys_info.h"
 #include "base/task/post_task.h"
 #include "base/task/task_scheduler/task_scheduler.h"
 #include "base/task/task_traits.h"
@@ -114,7 +114,13 @@ base::LazyInstance<EnabledStateObserverImpl>::Leaky g_trace_state_dispatcher =
 // TODO(skyostil): Deduplicate this with the clamper in Blink.
 class TimeClamper {
  public:
-  static constexpr double kResolutionSeconds = 0.001;
+// As site isolation is enabled on desktop platforms, we can safely provide
+// more timing resolution. Jittering is still enabled everywhere.
+#if defined(OS_ANDROID)
+  static constexpr double kResolutionSeconds = 100e-6;
+#else
+  static constexpr double kResolutionSeconds = 5e-6;
+#endif
 
   TimeClamper() : secret_(base::RandUint64()) {}
 
@@ -239,9 +245,14 @@ class PageAllocator : public v8::PageAllocator {
       base::DecommitSystemPages(address, length);
       return true;
     } else {
-      return base::SetSystemPagesAccess(address, length,
-                                        GetPageConfig(permissions));
+      return base::TrySetSystemPagesAccess(address, length,
+                                           GetPageConfig(permissions));
     }
+  }
+
+  bool DiscardSystemPages(void* address, size_t size) override {
+    base::DiscardSystemPages(address, size);
+    return true;
   }
 };
 

@@ -570,10 +570,6 @@ void InProcessBrowserTest::PreRunTestOnMainThread() {
 #if defined(OS_MACOSX)
   autorelease_pool_->Recycle();
 #endif
-
-#if defined(OS_CHROMEOS)  // http://crbug.com/715735
-  disable_io_checks();
-#endif
 }
 
 void InProcessBrowserTest::PostRunTestOnMainThread() {

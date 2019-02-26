@@ -74,7 +74,7 @@ CryptAuthGCMManagerImpl::~CryptAuthGCMManagerImpl() {
 
 void CryptAuthGCMManagerImpl::StartListening() {
   if (gcm_driver_->GetAppHandler(kCryptAuthGCMAppId) == this) {
-    PA_LOG(INFO) << "GCM app handler already added";
+    PA_LOG(VERBOSE) << "GCM app handler already added";
     return;
   }
 
@@ -83,11 +83,11 @@ void CryptAuthGCMManagerImpl::StartListening() {
 
 void CryptAuthGCMManagerImpl::RegisterWithGCM() {
   if (registration_in_progress_) {
-    PA_LOG(INFO) << "GCM Registration is already in progress";
+    PA_LOG(VERBOSE) << "GCM Registration is already in progress";
     return;
   }
 
-  PA_LOG(INFO) << "Beginning GCM registration...";
+  PA_LOG(VERBOSE) << "Beginning GCM registration...";
   registration_in_progress_ = true;
 
   std::vector<std::string> sender_ids(1, kCryptAuthGCMSenderId);
@@ -125,10 +125,10 @@ void CryptAuthGCMManagerImpl::OnMessage(const std::string& app_id,
     fields.push_back(std::string(kv.first) + ": " + std::string(kv.second));
   }
 
-  PA_LOG(INFO) << "GCM message received:\n"
-               << "  sender_id: " << message.sender_id << "\n"
-               << "  collapse_key: " << message.collapse_key << "\n"
-               << "  data:\n    " << base::JoinString(fields, "\n    ");
+  PA_LOG(VERBOSE) << "GCM message received:\n"
+                  << "  sender_id: " << message.sender_id << "\n"
+                  << "  collapse_key: " << message.collapse_key << "\n"
+                  << "  data:\n    " << base::JoinString(fields, "\n    ");
 
   if (message.data.find(kRegistrationTickleTypeKey) == message.data.end()) {
     PA_LOG(WARNING) << "GCM message does not contain 'registrationTickleType'.";
@@ -175,8 +175,8 @@ void CryptAuthGCMManagerImpl::OnRegistrationCompleted(
     return;
   }
 
-  PA_LOG(INFO) << "GCM registration success, registration_id="
-               << registration_id;
+  PA_LOG(VERBOSE) << "GCM registration success, registration_id="
+                  << registration_id;
   pref_service_->SetString(prefs::kCryptAuthGCMRegistrationId, registration_id);
   for (auto& observer : observers_)
     observer.OnGCMRegistrationResult(true);

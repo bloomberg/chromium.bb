@@ -43,8 +43,10 @@ class SVGBoolean final : public SVGPropertyHelper<SVGBoolean> {
   typedef bool PrimitiveType;
 
   static SVGBoolean* Create(bool value = false) {
-    return new SVGBoolean(value);
+    return MakeGarbageCollected<SVGBoolean>(value);
   }
+
+  SVGBoolean(bool value) : value_(value) {}
 
   SVGBoolean* Clone() const { return Create(value_); }
 
@@ -67,8 +69,6 @@ class SVGBoolean final : public SVGPropertyHelper<SVGBoolean> {
   static AnimatedPropertyType ClassType() { return kAnimatedBoolean; }
 
  private:
-  SVGBoolean(bool value) : value_(value) {}
-
   bool value_;
 };
 

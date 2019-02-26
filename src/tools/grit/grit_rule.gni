@@ -329,11 +329,17 @@ template("grit") {
 
     inputs = [
       invoker.source,
+      asserted_list_file,
     ]
     if (resource_ids != "") {
       # The script depends on the ID file. Only add this dependency if the ID
       # file is specified.
       inputs += [ resource_ids ]
+    }
+    if (grit_predetermined_resource_ids_file != "") {
+      # If the predetermined ID file is present, the script outputs depend on
+      # it too.
+      inputs += [ grit_predetermined_resource_ids_file ]
     }
 
     depfile = "$depfile_dir/${grit_output_name}_stamp.d"

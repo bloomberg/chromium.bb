@@ -41,7 +41,7 @@
 
 namespace blink {
 
-using namespace HTMLNames;
+using namespace html_names;
 
 namespace {
 
@@ -74,12 +74,12 @@ void HTMLViewSourceDocument::CreateContainingTable() {
   // Create a line gutter div that can be used to make sure the gutter extends
   // down the height of the whole document.
   HTMLDivElement* div = HTMLDivElement::Create(*this);
-  div->setAttribute(classAttr, "line-gutter-backdrop");
+  div->setAttribute(kClassAttr, "line-gutter-backdrop");
   body->ParserAppendChild(div);
 
   HTMLTableElement* table = HTMLTableElement::Create(*this);
   body->ParserAppendChild(table);
-  tbody_ = HTMLTableSectionElement::Create(tbodyTag, *this);
+  tbody_ = HTMLTableSectionElement::Create(kTbodyTag, *this);
   table->ParserAppendChild(tbody_);
   current_ = tbody_;
   line_number_ = 0;
@@ -155,21 +155,21 @@ void HTMLViewSourceDocument::ProcessTagToken(const String& source,
     index = AddRange(source, index, iter->NameRange().end - token.StartIndex(),
                      "html-attribute-name");
 
-    if (tag_name == baseTag && name == hrefAttr)
+    if (tag_name == kBaseTag && name == kHrefAttr)
       AddBase(value);
 
     index =
         AddRange(source, index, iter->ValueRange().start - token.StartIndex(),
                  g_empty_atom);
 
-    if (name == srcsetAttr) {
+    if (name == kSrcsetAttr) {
       index =
           AddSrcset(source, index, iter->ValueRange().end - token.StartIndex());
     } else {
-      bool is_link = name == srcAttr || name == hrefAttr;
+      bool is_link = name == kSrcAttr || name == kHrefAttr;
       index =
           AddRange(source, index, iter->ValueRange().end - token.StartIndex(),
-                   "html-attribute-value", is_link, tag_name == aTag, value);
+                   "html-attribute-value", is_link, tag_name == kATag, value);
     }
 
     ++iter;
@@ -199,7 +199,7 @@ Element* HTMLViewSourceDocument::AddSpanWithClassName(
   }
 
   HTMLSpanElement* span = HTMLSpanElement::Create(*this);
-  span->setAttribute(classAttr, class_name);
+  span->setAttribute(kClassAttr, class_name);
   current_->ParserAppendChild(span);
   return span;
 }
@@ -211,14 +211,14 @@ void HTMLViewSourceDocument::AddLine(const AtomicString& class_name) {
 
   // Create a cell that will hold the line number (it is generated in the
   // stylesheet using counters).
-  HTMLTableCellElement* td = HTMLTableCellElement::Create(tdTag, *this);
-  td->setAttribute(classAttr, "line-number");
-  td->SetIntegralAttribute(valueAttr, ++line_number_);
+  HTMLTableCellElement* td = HTMLTableCellElement::Create(kTdTag, *this);
+  td->setAttribute(kClassAttr, "line-number");
+  td->SetIntegralAttribute(kValueAttr, ++line_number_);
   trow->ParserAppendChild(td);
 
   // Create a second cell for the line contents
-  td = HTMLTableCellElement::Create(tdTag, *this);
-  td->setAttribute(classAttr, "line-content");
+  td = HTMLTableCellElement::Create(kTdTag, *this);
+  td->setAttribute(kClassAttr, "line-content");
   trow->ParserAppendChild(td);
   current_ = td_ = td;
 
@@ -294,7 +294,7 @@ int HTMLViewSourceDocument::AddRange(const String& source,
 
 Element* HTMLViewSourceDocument::AddBase(const AtomicString& href) {
   HTMLBaseElement* base = HTMLBaseElement::Create(*this);
-  base->setAttribute(hrefAttr, href);
+  base->setAttribute(kHrefAttr, href);
   current_->ParserAppendChild(base);
   return base;
 }
@@ -311,13 +311,13 @@ Element* HTMLViewSourceDocument::AddLink(const AtomicString& url,
     class_value = "html-attribute-value html-external-link";
   else
     class_value = "html-attribute-value html-resource-link";
-  anchor->setAttribute(classAttr, class_value);
-  anchor->setAttribute(targetAttr, "_blank");
-  anchor->setAttribute(hrefAttr, url);
-  anchor->setAttribute(relAttr, "noreferrer noopener");
+  anchor->setAttribute(kClassAttr, class_value);
+  anchor->setAttribute(kTargetAttr, "_blank");
+  anchor->setAttribute(kHrefAttr, url);
+  anchor->setAttribute(kRelAttr, "noreferrer noopener");
   // Disallow JavaScript hrefs. https://crbug.com/808407
   if (anchor->Url().ProtocolIsJavaScript())
-    anchor->setAttribute(hrefAttr, "about:blank");
+    anchor->setAttribute(kHrefAttr, "about:blank");
   current_->ParserAppendChild(anchor);
   return anchor;
 }
@@ -350,7 +350,7 @@ void HTMLViewSourceDocument::MaybeAddSpanForAnnotation(
     SourceAnnotation annotation) {
   if (annotation == kAnnotateSourceAsXSS) {
     current_ = AddSpanWithClassName("highlight");
-    current_->setAttribute(titleAttr, kXSSDetected);
+    current_->setAttribute(kTitleAttr, kXSSDetected);
   }
 }
 

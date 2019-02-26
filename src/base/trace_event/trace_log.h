@@ -8,6 +8,7 @@
 #include <stddef.h>
 #include <stdint.h>
 
+#include <atomic>
 #include <memory>
 #include <string>
 #include <unordered_map>
@@ -17,15 +18,16 @@
 #include "base/containers/stack.h"
 #include "base/gtest_prod_util.h"
 #include "base/macros.h"
+#include "base/memory/scoped_refptr.h"
+#include "base/single_thread_task_runner.h"
 #include "base/time/time_override.h"
+#include "base/trace_event/category_registry.h"
 #include "base/trace_event/memory_dump_provider.h"
 #include "base/trace_event/trace_config.h"
 #include "base/trace_event/trace_event_impl.h"
 #include "build/build_config.h"
 
 namespace base {
-
-class MessageLoop;
 class RefCountedString;
 
 template <typename T>
@@ -185,13 +187,20 @@ class BASE_EXPORT TraceLog : public MemoryDumpProvider {
   // Cancels tracing and discards collected data.
   void CancelTracing(const OutputCallback& cb);
 
-  typedef void (*AddTraceEventOverrideCallback)(const TraceEvent&);
-  typedef void (*OnFlushCallback)();
-  // The callback will be called up until the point where the flush is
+  using AddTraceEventOverrideCallback = void (*)(TraceEvent*,
+                                                 bool thread_will_flush,
+                                                 TraceEventHandle* handle);
+  using OnFlushCallback = void (*)();
+  using UpdateDurationCallback = void (*)(TraceEventHandle handle,
+                                          const TimeTicks& now,
+                                          const ThreadTicks& thread_now);
+  // The callbacks will be called up until the point where the flush is
   // finished, i.e. must be callable until OutputCallback is called with
   // has_more_events==false.
-  void SetAddTraceEventOverride(const AddTraceEventOverrideCallback& override,
-                                const OnFlushCallback& on_flush_callback);
+  void SetAddTraceEventOverrides(
+      const AddTraceEventOverrideCallback& add_event_override,
+      const OnFlushCallback& on_flush_callback,
+      const UpdateDurationCallback& update_duration_callback);
 
   // Called by TRACE_EVENT* macros, don't call this directly.
   // The name parameter is a category group for example:
@@ -199,10 +208,20 @@ class BASE_EXPORT TraceLog : public MemoryDumpProvider {
   static const unsigned char* GetCategoryGroupEnabled(const char* name);
   static const char* GetCategoryGroupName(
       const unsigned char* category_group_enabled);
+  static constexpr const unsigned char* GetBuiltinCategoryEnabled(
+      const char* name) {
+    TraceCategory* builtin_category =
+        CategoryRegistry::GetBuiltinCategoryByName(name);
+    if (builtin_category)
+      return builtin_category->state_ptr();
+    return nullptr;
+  }
 
   // Called by TRACE_EVENT* macros, don't call this directly.
   // If |copy| is set, |name|, |arg_name1| and |arg_name2| will be deep copied
   // into the event; see "Memory scoping note" and TRACE_EVENT_COPY_XXX above.
+
+  // TODO(898794): Remove methods below when all callers have been updated.
   TraceEventHandle AddTraceEvent(
       char phase,
       const unsigned char* category_group_enabled,
@@ -521,10 +540,9 @@ class BASE_EXPORT TraceLog : public MemoryDumpProvider {
   ThreadLocalBoolean thread_blocks_message_loop_;
   ThreadLocalBoolean thread_is_in_trace_event_;
 
-  // Contains the message loops of threads that have had at least one event
-  // added into the local event buffer. Not using SingleThreadTaskRunner
-  // because we need to know the life time of the message loops.
-  hash_set<MessageLoop*> thread_message_loops_;
+  // Contains task runners for the threads that have had at least one event
+  // added into the local event buffer.
+  hash_map<int, scoped_refptr<SingleThreadTaskRunner>> thread_task_runners_;
 
   // For events which can't be added into the thread local buffer, e.g. events
   // from threads without a message loop.
@@ -537,8 +555,9 @@ class BASE_EXPORT TraceLog : public MemoryDumpProvider {
   ArgumentFilterPredicate argument_filter_predicate_;
   subtle::AtomicWord generation_;
   bool use_worker_thread_;
-  subtle::AtomicWord trace_event_override_;
-  subtle::AtomicWord on_flush_callback_;
+  std::atomic<AddTraceEventOverrideCallback> add_trace_event_override_;
+  std::atomic<OnFlushCallback> on_flush_callback_;
+  std::atomic<UpdateDurationCallback> update_duration_callback_;
 
   FilterFactoryForTesting filter_factory_for_testing_;
 

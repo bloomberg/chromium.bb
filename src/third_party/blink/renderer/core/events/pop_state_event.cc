@@ -27,7 +27,7 @@
 #include "third_party/blink/renderer/core/events/pop_state_event.h"
 
 #include "third_party/blink/renderer/bindings/core/v8/serialization/serialized_script_value.h"
-#include "third_party/blink/renderer/core/event_names.h"
+#include "third_party/blink/renderer/core/event_interface_names.h"
 #include "third_party/blink/renderer/core/event_type_names.h"
 #include "third_party/blink/renderer/core/frame/history.h"
 
@@ -38,18 +38,19 @@ PopStateEvent::PopStateEvent()
 
 PopStateEvent::PopStateEvent(ScriptState* script_state,
                              const AtomicString& type,
-                             const PopStateEventInit& initializer)
+                             const PopStateEventInit* initializer)
     : Event(type, initializer), history_(nullptr) {
-  if (initializer.hasState()) {
+  if (initializer->hasState()) {
     world_ = WrapRefCounted(&script_state->World());
-    state_.Set(initializer.state().GetIsolate(), initializer.state().V8Value());
+    state_.Set(initializer->state().GetIsolate(),
+               initializer->state().V8Value());
   }
 }
 
 PopStateEvent::PopStateEvent(
     scoped_refptr<SerializedScriptValue> serialized_state,
     History* history)
-    : Event(EventTypeNames::popstate, Bubbles::kNo, Cancelable::kNo),
+    : Event(event_type_names::kPopstate, Bubbles::kNo, Cancelable::kNo),
       serialized_state_(std::move(serialized_state)),
       history_(history) {}
 
@@ -70,19 +71,20 @@ ScriptValue PopStateEvent::state(ScriptState* script_state) const {
 }
 
 PopStateEvent* PopStateEvent::Create() {
-  return new PopStateEvent;
+  return MakeGarbageCollected<PopStateEvent>();
 }
 
 PopStateEvent* PopStateEvent::Create(
     scoped_refptr<SerializedScriptValue> serialized_state,
     History* history) {
-  return new PopStateEvent(std::move(serialized_state), history);
+  return MakeGarbageCollected<PopStateEvent>(std::move(serialized_state),
+                                             history);
 }
 
 PopStateEvent* PopStateEvent::Create(ScriptState* script_state,
                                      const AtomicString& type,
-                                     const PopStateEventInit& initializer) {
-  return new PopStateEvent(script_state, type, initializer);
+                                     const PopStateEventInit* initializer) {
+  return MakeGarbageCollected<PopStateEvent>(script_state, type, initializer);
 }
 
 void PopStateEvent::SetSerializedState(
@@ -92,7 +94,7 @@ void PopStateEvent::SetSerializedState(
 }
 
 const AtomicString& PopStateEvent::InterfaceName() const {
-  return EventNames::PopStateEvent;
+  return event_interface_names::kPopStateEvent;
 }
 
 void PopStateEvent::Trace(blink::Visitor* visitor) {

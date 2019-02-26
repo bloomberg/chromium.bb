@@ -32,9 +32,8 @@ public abstract class HostBrowserLauncherActivity extends Activity {
                         }
                         HostBrowserLauncherParams params =
                                 HostBrowserLauncherParams.createForIntent(
-                                        HostBrowserLauncherActivity.this, getComponentName(),
-                                        getIntent(), hostBrowserPackageName, dialogShown,
-                                        mActivityStartTimeMs);
+                                        HostBrowserLauncherActivity.this, getIntent(),
+                                        hostBrowserPackageName, dialogShown, mActivityStartTimeMs);
                         onHostBrowserSelected(params);
                     }
                 });

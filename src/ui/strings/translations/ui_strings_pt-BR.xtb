@@ -30,16 +30,19 @@
 <translation id="1871244248791675517">Ins</translation>
 <translation id="1884435127456172652"><ph name="NUMBER" />%</translation>
 <translation id="1901303067676059328">Selecionar &amp;tudo</translation>
+<translation id="1938451708255335766">Para ajustar a densidade de exibição da janela, reinicie o app.</translation>
 <translation id="2141853158323869627">{DAYS,plural, =1{1 d}one{# d}other{# d}}</translation>
 <translation id="2148716181193084225">Hoje</translation>
 <translation id="2168039046890040389">Página para cima</translation>
 <translation id="2190355936436201913">(vazio)</translation>
+<translation id="2192232475740621500">Usar baixa densidade</translation>
 <translation id="219905428774326614">Tela de início, todos os apps</translation>
 <translation id="2267918077332197517">Bloquear todas as notificações emitidas por este site</translation>
 <translation id="2289052229480071835">Toque nas áreas de toque da tela.</translation>
 <translation id="2295140143284145483">Pesquisa</translation>
 <translation id="2297836609126180313"><ph name="QUANTITY" /> TB/s</translation>
 <translation id="24452542372838207">Expandir notificação</translation>
+<translation id="2445449901874883781">Usar alta densidade</translation>
 <translation id="2482878487686419369">Notificações</translation>
 <translation id="2497284189126895209">Todos os arquivos</translation>
 <translation id="2515586267016047495">Alt</translation>
@@ -60,6 +63,7 @@
 <translation id="3234408098842461169">Seta para baixo</translation>
 <translation id="3291688615589870984">{DAYS,plural, =1{Um dia}one{# dias}other{# dias}}</translation>
 <translation id="335581015389089642">Voz</translation>
+<translation id="3479552764303398839">Não agora</translation>
 <translation id="3600566671520689681">{DAYS,plural, =1{Um dia restante}one{# dias restantes}other{# dias restantes}}</translation>
 <translation id="3618849550573277856">Pesquisar “<ph name="LOOKUP_STRING" />”</translation>
 <translation id="364720409959344976">Selecionar pasta para upload</translation>
@@ -99,6 +103,7 @@
 <translation id="5613020302032141669">Seta para a esquerda</translation>
 <translation id="5754277640426581776">{MINUTES,plural, =1{1 minuto}one{# minutos}other{# minutos}}</translation>
 <translation id="5768079895599174203">{DAYS,plural, =1{Um dia e }one{# dias e }other{# dias e }}</translation>
+<translation id="5895138241574237353">Reiniciar</translation>
 <translation id="5906667377645263094">{SECONDS,plural, =1{Um segundo restante}one{# segundos restantes}other{# segundos restantes}}</translation>
 <translation id="5941711191222866238">Minimizar</translation>
 <translation id="5943826764092288734">{HOURS,plural, =1{Uma hora}one{# horas}other{# horas}}</translation>

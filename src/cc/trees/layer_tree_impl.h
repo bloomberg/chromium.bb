@@ -13,6 +13,7 @@
 
 #include "base/containers/flat_set.h"
 #include "base/macros.h"
+#include "base/time/time.h"
 #include "base/values.h"
 #include "cc/base/synced_property.h"
 #include "cc/input/event_listener_properties.h"
@@ -180,6 +181,7 @@ class CC_EXPORT LayerTreeImpl {
   void PushPropertyTreesTo(LayerTreeImpl* tree_impl);
   void PushPropertiesTo(LayerTreeImpl* tree_impl);
   void PushSurfaceRangesTo(LayerTreeImpl* tree_impl);
+  void PushRegisteredElementIdsTo(LayerTreeImpl* tree_impl);
 
   void MoveChangeTrackingToLayers();
 
@@ -284,6 +286,11 @@ class CC_EXPORT LayerTreeImpl {
         const_cast<const LayerTreeImpl*>(this)->OuterViewportScrollNode());
   }
 
+  void set_viewport_property_ids(
+      const LayerTreeHost::ViewportPropertyIds& ids) {
+    viewport_property_ids_ = ids;
+  }
+
   void ApplySentScrollAndScaleDeltasFromAbortedCommit();
 
   SkColor background_color() const { return background_color_; }
@@ -319,9 +326,12 @@ class CC_EXPORT LayerTreeImpl {
   void set_content_source_id(uint32_t id) { content_source_id_ = id; }
   uint32_t content_source_id() { return content_source_id_; }
 
-  void SetLocalSurfaceIdFromParent(const viz::LocalSurfaceId& id);
-  const viz::LocalSurfaceId& local_surface_id_from_parent() const {
-    return local_surface_id_from_parent_;
+  void SetLocalSurfaceIdAllocationFromParent(
+      const viz::LocalSurfaceIdAllocation&
+          local_surface_id_allocation_from_parent);
+  const viz::LocalSurfaceIdAllocation& local_surface_id_allocation_from_parent()
+      const {
+    return local_surface_id_allocation_from_parent_;
   }
 
   void RequestNewLocalSurfaceId();
@@ -344,6 +354,10 @@ class CC_EXPORT LayerTreeImpl {
 
   void SetRasterColorSpace(int raster_color_space_id,
                            const gfx::ColorSpace& raster_color_space);
+  void SetExternalPageScaleFactor(float external_page_scale_factor);
+  float external_page_scale_factor() const {
+    return external_page_scale_factor_;
+  }
   const gfx::ColorSpace& raster_color_space() const {
     return raster_color_space_;
   }
@@ -545,6 +559,10 @@ class CC_EXPORT LayerTreeImpl {
       std::unique_ptr<PendingPageScaleAnimation> pending_animation);
   std::unique_ptr<PendingPageScaleAnimation> TakePendingPageScaleAnimation();
 
+  // Requests that we force send RenderFrameMetadata with the next frame.
+  void RequestForceSendMetadata() { force_send_metadata_request_ = true; }
+  bool TakeForceSendMetadataRequest();
+
   void DidUpdateScrollOffset(ElementId id);
 
   // Mark the scrollbar geometries (e.g., thumb size and position) as needing an
@@ -599,6 +617,11 @@ class CC_EXPORT LayerTreeImpl {
 
   LayerTreeLifecycle& lifecycle() { return lifecycle_; }
 
+  const std::unordered_set<ElementId, ElementIdHash>&
+  elements_in_property_trees() {
+    return elements_in_property_trees_;
+  }
+
  protected:
   float ClampPageScaleFactorToLimits(float page_scale_factor) const;
   void PushPageScaleFactorAndLimits(const float* page_scale_factor,
@@ -611,6 +634,8 @@ class CC_EXPORT LayerTreeImpl {
   bool ClampBrowserControlsShownRatio();
 
  private:
+  friend class LayerTreeHost;
+
   TransformNode* PageScaleTransformNode();
   void UpdatePageScaleNode();
 
@@ -632,12 +657,14 @@ class CC_EXPORT LayerTreeImpl {
   int last_scrolled_scroll_node_index_;
 
   ViewportLayerIds viewport_layer_ids_;
+  LayerTreeHost::ViewportPropertyIds viewport_property_ids_;
 
   LayerSelection selection_;
 
   scoped_refptr<SyncedProperty<ScaleGroup>> page_scale_factor_;
   float min_page_scale_factor_;
   float max_page_scale_factor_;
+  float external_page_scale_factor_;
 
   float device_scale_factor_;
   float painted_device_scale_factor_;
@@ -645,7 +672,7 @@ class CC_EXPORT LayerTreeImpl {
   gfx::ColorSpace raster_color_space_;
 
   uint32_t content_source_id_;
-  viz::LocalSurfaceId local_surface_id_from_parent_;
+  viz::LocalSurfaceIdAllocation local_surface_id_allocation_from_parent_;
   bool new_local_surface_id_request_ = false;
   gfx::Size device_viewport_size_;
 
@@ -663,7 +690,7 @@ class CC_EXPORT LayerTreeImpl {
   base::flat_set<LayerImpl*> layers_that_should_push_properties_;
 
   // Set of ElementIds which are present in the |layer_list_|.
-  std::unordered_set<ElementId, ElementIdHash> elements_in_layer_list_;
+  std::unordered_set<ElementId, ElementIdHash> elements_in_property_trees_;
 
   std::unordered_map<ElementId, float, ElementIdHash>
       element_id_to_opacity_animations_;
@@ -734,6 +761,10 @@ class CC_EXPORT LayerTreeImpl {
   scoped_refptr<SyncedBrowserControls> top_controls_shown_ratio_;
 
   std::unique_ptr<PendingPageScaleAnimation> pending_page_scale_animation_;
+
+  // Whether we have a request to force-send RenderFrameMetadata with the next
+  // frame.
+  bool force_send_metadata_request_ = false;
 
   // Tracks the lifecycle which is used for enforcing dependencies between
   // lifecycle states. See: |LayerTreeLifecycle|.

@@ -10,14 +10,17 @@ import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import com.squareup.javapoet.AnnotationSpec;
+import com.squareup.javapoet.ArrayTypeName;
 import com.squareup.javapoet.ClassName;
 import com.squareup.javapoet.FieldSpec;
 import com.squareup.javapoet.JavaFile;
 import com.squareup.javapoet.MethodSpec;
 import com.squareup.javapoet.ParameterSpec;
+import com.squareup.javapoet.ParameterizedTypeName;
 import com.squareup.javapoet.TypeName;
 import com.squareup.javapoet.TypeSpec;
 
+import org.chromium.base.JniStaticTestMocker;
 import org.chromium.base.annotations.JniStaticNatives;
 
 import java.security.MessageDigest;
@@ -39,11 +42,14 @@ import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.Modifier;
 import javax.lang.model.element.TypeElement;
 import javax.lang.model.element.VariableElement;
+import javax.lang.model.type.ArrayType;
+import javax.lang.model.type.TypeKind;
+import javax.lang.model.type.TypeMirror;
 import javax.tools.Diagnostic;
 
 /**
  * Annotation processor that finds inner interfaces annotated with
- * @JniStaticNatives and generates a class with native bindings
+ * {@link JniStaticNatives} and generates a class with native bindings
  * (GEN_JNI) and a class specific wrapper class with name (classnameJni)
  *
  * NativeClass - refers to the class that contains all native declarations.
@@ -55,12 +61,21 @@ import javax.tools.Diagnostic;
 public class JniProcessor extends AbstractProcessor {
     private static final Class<JniStaticNatives> JNI_STATIC_NATIVES_CLASS = JniStaticNatives.class;
 
-    static final String NATIVE_WRAPPER_CLASS_POSTFIX = "Jni";
+    private static final String NATIVE_WRAPPER_CLASS_POSTFIX = "Jni";
 
-    static final String NATIVE_CLASS_NAME_STR = "GEN_JNI";
-    static final String NATIVE_CLASS_PACKAGE_NAME = "org.chromium.base.natives";
-    static final ClassName NATIVE_CLASS_NAME =
-            ClassName.get(NATIVE_CLASS_PACKAGE_NAME, NATIVE_CLASS_NAME_STR);
+    // The native class name and package name used in debug.
+    private String mNativeClassStr = "GEN_JNI";
+    private String mNativeClassPackage = "org.chromium.base.natives";
+    private ClassName mNativeClassName;
+
+    static final String NATIVE_TEST_FIELD_NAME = "TESTING_ENABLED";
+    static final String NATIVE_REQUIRE_MOCK_FIELD_NAME = "REQUIRE_MOCK";
+
+    // Lets mocks of the Native impl to be set.
+    static final boolean TESTING_ENABLED = false;
+
+    // If true, throw an exception if no mock is provided.
+    private static final boolean REQUIRE_MOCK = false;
 
     // Builder for NativeClass which will hold all our native method declarations.
     private TypeSpec.Builder mNativesBuilder;
@@ -69,12 +84,18 @@ public class JniProcessor extends AbstractProcessor {
     private static MessageDigest sNativeMethodHashFunction;
 
     // If true, native methods in GEN_JNI will be named as a hash of their descriptor.
-    private static final boolean USE_HASH_FOR_METHODS = true;
+    private static final boolean USE_HASH_FOR_METHODS = !ProcessorArgs.IS_JAVA_DEBUG;
+    private static final boolean USE_SHORTENED_NATIVE_CLASS = !ProcessorArgs.IS_JAVA_DEBUG;
 
     // Limits the number characters of the Base64 encoded hash
     // of the method descriptor used as name of the generated
     // native method in GEN_JNI (prefixed with "M")
     private static final int MAX_CHARS_FOR_HASHED_NATIVE_METHODS = 8;
+
+    // Types that are non-primitives and should not be
+    // casted to objects in native method declarations.
+    static final ImmutableSet JNI_OBJECT_TYPE_EXCEPTIONS =
+            ImmutableSet.of("java.lang.String", "java.lang.Throwable", "java.lang.Class", "void");
 
     static String getNameOfWrapperClass(String containingClassName) {
         return containingClassName + NATIVE_WRAPPER_CLASS_POSTFIX;
@@ -91,10 +112,35 @@ public class JniProcessor extends AbstractProcessor {
     }
 
     public JniProcessor() {
+        // If non-debug we use shorter names to save space.
+        if (USE_SHORTENED_NATIVE_CLASS) {
+            // J.N
+            mNativeClassPackage = "J";
+            mNativeClassStr = "N";
+        }
+        mNativeClassName = ClassName.get(mNativeClassPackage, mNativeClassStr);
+
+        FieldSpec.Builder testingFlagBuilder =
+                FieldSpec.builder(TypeName.BOOLEAN, NATIVE_TEST_FIELD_NAME)
+                        .addModifiers(Modifier.STATIC, Modifier.PUBLIC);
+        FieldSpec.Builder throwFlagBuilder =
+                FieldSpec.builder(TypeName.BOOLEAN, NATIVE_REQUIRE_MOCK_FIELD_NAME)
+                        .addModifiers(Modifier.STATIC, Modifier.PUBLIC);
+
+        // Initialize only if true to avoid NoRedundantFieldInit.
+        if (TESTING_ENABLED) {
+            testingFlagBuilder.initializer("true");
+        }
+        if (REQUIRE_MOCK) {
+            throwFlagBuilder.initializer("true");
+        }
+
         // State of mNativesBuilder needs to be preserved between processing rounds.
-        mNativesBuilder = TypeSpec.classBuilder(NATIVE_CLASS_NAME)
+        mNativesBuilder = TypeSpec.classBuilder(mNativeClassName)
                                   .addAnnotation(createGeneratedAnnotation())
-                                  .addModifiers(Modifier.PUBLIC, Modifier.FINAL);
+                                  .addModifiers(Modifier.PUBLIC, Modifier.FINAL)
+                                  .addField(testingFlagBuilder.build())
+                                  .addField(throwFlagBuilder.build());
 
         try {
             sNativeMethodHashFunction = MessageDigest.getInstance("MD5");
@@ -162,7 +208,7 @@ public class JniProcessor extends AbstractProcessor {
 
             // Queue this file for writing.
             // Can't write right now because the wrapper class depends on NativeClass
-            // to be written and we can't write NativeClass until all @JNINatives
+            // to be written and we can't write NativeClass until all @JniStaticNatives
             // interfaces are processed because each will add new native methods.
             JavaFile file = JavaFile.builder(packageName, nativeWrapperClassSpec).build();
             writeQueue.add(file);
@@ -177,7 +223,7 @@ public class JniProcessor extends AbstractProcessor {
             // Need to write NativeClass first because the wrapper classes
             // depend on it.
             JavaFile nativeClassFile =
-                    JavaFile.builder(NATIVE_CLASS_PACKAGE_NAME, mNativesBuilder.build()).build();
+                    JavaFile.builder(mNativeClassPackage, mNativesBuilder.build()).build();
 
             nativeClassFile.writeTo(processingEnv.getFiler());
 
@@ -204,9 +250,11 @@ public class JniProcessor extends AbstractProcessor {
      * Gets method name for methods inside of NativeClass
      */
     String getNativeMethodName(String packageName, String className, String oldMethodName) {
-        // e.g. org_chromium_base_fooclass_bar()
-        String descriptor =
-                packageName.replaceAll("\\.", "_") + "_" + className + "_" + oldMethodName;
+        // e.g. org.chromium.base.Foo_Class.bar
+        // => org_chromium_base_Foo_1Class_bar()
+        String descriptor = String.format("%s.%s.%s", packageName, className, oldMethodName)
+                                    .replaceAll("_", "_1")
+                                    .replaceAll("\\.", "_");
         if (USE_HASH_FOR_METHODS) {
             // Must start with a character.
             byte[] hash = sNativeMethodHashFunction.digest(descriptor.getBytes(Charsets.UTF_8));
@@ -226,8 +274,9 @@ public class JniProcessor extends AbstractProcessor {
 
     /**
      * Creates method specs for the native methods of NativeClass given
-     * the method declarations from a JNINative annotated interface
-     * @param interfaceMethods method declarations from a JNINative annotated interface
+     * the method declarations from a {@link JniStaticNatives} annotated interface
+     * @param interfaceMethods method declarations from a {@link JniStaticNatives} annotated
+     * interface
      * @param outerType ClassName of class that contains the annotated interface
      * @return map from old method name to new native method specification
      */
@@ -243,6 +292,7 @@ public class JniProcessor extends AbstractProcessor {
                                                  .addModifiers(Modifier.FINAL)
                                                  .addModifiers(Modifier.STATIC)
                                                  .addModifiers(Modifier.NATIVE);
+            builder.addJavadoc(createNativeMethodJavadocString(outerType, m));
 
             copyMethodParamsAndReturnType(builder, m, true);
             if (methodMap.containsKey(oldMethodName)) {
@@ -272,42 +322,41 @@ public class JniProcessor extends AbstractProcessor {
     }
 
     /**
-     * Creates a class spec for an implementation of an @JNINatives annotated interface that will
-     * wrap calls to the NativesClass which contains the actual native method declarations.
+     * Creates a class spec for an implementation of an {@link JniStaticNatives} annotated interface
+     * that will wrap calls to the NativesClass which contains the actual native method
+     * declarations.
+     *
+     * This class should contain:
+     * 1. Wrappers for all GEN_JNI static native methods
+     * 2. A getter that when testing is disabled, will return the native implementation and
+     * when testing is enabled, will call the mock of the native implementation.
+     * 3. A field that holds the testNatives instance for when testing is enabled
+     * 4. A TEST_HOOKS field that implements an anonymous instance of {@link JniStaticTestMocker}
+     * which will set the testNatives implementation when called in tests
      *
      * @param name name of the wrapper class.
      * @param isPublic if true, a public modifier will be added to this native wrapper.
-     * @param nativeInterface the @JNINatives annotated type that this native wrapper
+     * @param nativeInterface the {@link JniStaticNatives} annotated type that this native wrapper
      *                        will implement.
      * @param methodMap a map from the old method name to the new method spec in NativeClass.
      * */
     TypeSpec createNativeWrapperClassSpec(String name, boolean isPublic,
             TypeElement nativeInterface, Map<String, MethodSpec> methodMap) {
+        // The wrapper class builder.
         TypeName nativeInterfaceType = TypeName.get(nativeInterface.asType());
-
         TypeSpec.Builder builder = TypeSpec.classBuilder(name)
+                                           .addSuperinterface(nativeInterfaceType)
                                            .addModifiers(Modifier.FINAL)
-                                           .addAnnotation(createGeneratedAnnotation())
-                                           .addSuperinterface(nativeInterfaceType);
+                                           .addAnnotation(createGeneratedAnnotation());
         if (isPublic) {
             builder.addModifiers(Modifier.PUBLIC);
         }
 
-        // Target is a field that holds an instance of some NativeInterface.
-        // Is initialized with an instance of this class.
-        // Target is final for now so it gets inlined.
-        FieldSpec target = FieldSpec.builder(nativeInterfaceType, "mNatives")
-                                   .addModifiers(Modifier.PRIVATE, Modifier.STATIC)
-                                   .addModifiers(Modifier.FINAL)
-                                   .initializer("new $N()", name)
-                                   .build();
-
-        builder.addField(target);
-
+        // Start by adding all the native method wrappers.
         for (Element enclosed : nativeInterface.getEnclosedElements()) {
             if (enclosed.getKind() != ElementKind.METHOD) {
-                printError(
-                        "Cannot have a non-method in a @JNINatives annotated interface", enclosed);
+                printError("Cannot have a non-method in a @JniStaticNatives annotated interface",
+                        enclosed);
             }
 
             // ElementKind.Method is ExecutableElement so this cast is safe.
@@ -323,20 +372,88 @@ public class JniProcessor extends AbstractProcessor {
             builder.addMethod(createNativeWrapperMethod(interfaceMethod, nativesMethod));
         }
 
-        // Getter for target.
-        MethodSpec instanceGetter = MethodSpec.methodBuilder("get")
-                                            .addModifiers(Modifier.PUBLIC, Modifier.STATIC)
-                                            .addCode("return $N;\n", target)
-                                            .returns(nativeInterfaceType)
-                                            .build();
+        // Add the testInstance field.
+        // Holds the test natives target if it is set.
+        FieldSpec testTarget = FieldSpec.builder(nativeInterfaceType, "testInstance")
+                                       .addModifiers(Modifier.PRIVATE, Modifier.STATIC)
+                                       .build();
+        builder.addField(testTarget);
+
+        // Getter for target or testing instance if flag in GEN_JNI is set.
+        /*
+        {classname}.Natives get() {
+            if (GEN_JNI.TESTING_ENABLED) {
+                if (testInst != null) {
+                    return testInst;
+                }
+                if (GEN_JNI.REQUIRE_MOCK) {
+                    throw new UnsupportedOperationException($noMockExceptionString);
+                }
+            }
+            return new {classname}Jni();
+        }
+         */
+        String noMockExceptionString =
+                String.format("No mock found for the native implementation for %s. "
+                                + "The current configuration requires all native "
+                                + "implementations to have a mock instance.",
+                        nativeInterfaceType);
+        MethodSpec instanceGetter =
+                MethodSpec.methodBuilder("get")
+                        .addModifiers(Modifier.PUBLIC, Modifier.STATIC)
+                        .returns(nativeInterfaceType)
+                        .beginControlFlow("if ($T.$N)", mNativeClassName, NATIVE_TEST_FIELD_NAME)
+                        .beginControlFlow("if ($N != null)", testTarget)
+                        .addStatement("return $N", testTarget)
+                        .endControlFlow()
+                        .beginControlFlow(
+                                "if ($T.$N)", mNativeClassName, NATIVE_REQUIRE_MOCK_FIELD_NAME)
+                        .addStatement("throw new UnsupportedOperationException($S)",
+                                noMockExceptionString)
+                        .endControlFlow()
+                        .endControlFlow()
+                        .addStatement("return new $N()", name)
+                        .build();
+
         builder.addMethod(instanceGetter);
 
+        // Next add TEST_HOOKS to set testInstance... should look like this:
+        // JniStaticTestMocker<ClassNameJni> TEST_HOOKS = new JniStaticTestMocker<>() {
+        //      @Override
+        //      public static setInstanceForTesting(ClassNameJni instance) {
+        //          testInstance = instance;
+        //      }
+        // }
+        MethodSpec testHookMockerMethod = MethodSpec.methodBuilder("setInstanceForTesting")
+                                                  .addModifiers(Modifier.PUBLIC)
+                                                  .addAnnotation(Override.class)
+                                                  .addParameter(nativeInterfaceType, "instance")
+                                                  .addStatement("$N = instance", testTarget)
+                                                  .build();
+
+        // Make the anonymous TEST_HOOK class.
+        ParameterizedTypeName genericMockerInterface = ParameterizedTypeName.get(
+                ClassName.get(JniStaticTestMocker.class), ClassName.get(nativeInterface));
+
+        TypeSpec testHook = TypeSpec.anonymousClassBuilder("")
+                                    .addSuperinterface(genericMockerInterface)
+                                    .addMethod(testHookMockerMethod)
+                                    .build();
+
+        FieldSpec testHookSpec =
+                FieldSpec.builder(genericMockerInterface, "TEST_HOOKS")
+                        .addModifiers(Modifier.STATIC, Modifier.PUBLIC, Modifier.FINAL)
+                        .initializer("$L", testHook.toString())
+                        .build();
+
+        builder.addField(testHookSpec);
         return builder.build();
     }
 
     /**
      * Creates a wrapper method that overrides interfaceMethod and calls staticNativeMethod.
-     * @param interfaceMethod method that will be overridden in a @JNINatives annotated interface.
+     * @param interfaceMethod method that will be overridden in a {@link JniStaticNatives} annotated
+     * interface.
      * @param staticNativeMethod method that will be called in NativeClass.
      */
     MethodSpec createNativeWrapperMethod(
@@ -357,7 +474,7 @@ public class JniProcessor extends AbstractProcessor {
         }
 
         // Make call to native function.
-        builder.addCode("$T.$N(", NATIVE_CLASS_NAME, staticNativeMethod);
+        builder.addCode("$T.$N(", mNativeClassName, staticNativeMethod);
 
         // Add params to native call.
         ArrayList<String> paramNames = new ArrayList<>();
@@ -373,23 +490,67 @@ public class JniProcessor extends AbstractProcessor {
         copyMethodParamsAndReturnType(builder, method, false);
     }
 
+    boolean shouldDowncastToObjectForJni(TypeName t) {
+        if (t.isPrimitive()) {
+            return false;
+        }
+        // There are some non-primitives that should not be downcasted.
+        return !JNI_OBJECT_TYPE_EXCEPTIONS.contains(t.toString());
+    }
+
+    TypeName toTypeName(TypeMirror t, boolean useJni) {
+        if (t.getKind() == TypeKind.ARRAY) {
+            return ArrayTypeName.of(toTypeName(((ArrayType) t).getComponentType(), useJni));
+        }
+        TypeName typeName = TypeName.get(t);
+        if (useJni && shouldDowncastToObjectForJni(typeName)) {
+            return TypeName.OBJECT;
+        }
+        return typeName;
+    }
+
+    /**
+     * Since some types may decay to objects in the native method
+     * this method returns a javadoc string that contains the
+     * type information from the old method. The fully qualified
+     * descriptor of the method is also included since the name
+     * may be hashed.
+     */
+    String createNativeMethodJavadocString(ClassName outerType, ExecutableElement oldMethod) {
+        ArrayList<String> docLines = new ArrayList<>();
+
+        // Class descriptor.
+        String descriptor = String.format("%s.%s.%s", outerType.packageName(),
+                outerType.simpleName(), oldMethod.getSimpleName().toString());
+        docLines.add(descriptor);
+
+        // Parameters.
+        for (VariableElement param : oldMethod.getParameters()) {
+            TypeName paramType = TypeName.get(param.asType());
+            String paramTypeName = paramType.toString();
+            String name = param.getSimpleName().toString();
+            docLines.add(String.format("@param %s (%s)", name, paramTypeName));
+        }
+
+        // Return type.
+        docLines.add(String.format("@return (%s)", oldMethod.getReturnType().toString()));
+
+        return String.join("\n", docLines) + "\n";
+    }
+
     void copyMethodParamsAndReturnType(
-            MethodSpec.Builder builder, ExecutableElement method, boolean useObjects) {
+            MethodSpec.Builder builder, ExecutableElement method, boolean useJniTypes) {
         for (VariableElement param : method.getParameters()) {
-            builder.addParameter(createParamSpec(param, useObjects));
+            builder.addParameter(createParamSpec(param, useJniTypes));
         }
-        TypeName returnType = TypeName.get(method.getReturnType());
-        if (useObjects && !returnType.isPrimitive()) {
-            returnType = TypeName.OBJECT;
-        }
+        TypeMirror givenReturnType = method.getReturnType();
+        TypeName returnType = toTypeName(givenReturnType, useJniTypes);
+
         builder.returns(returnType);
     }
 
-    ParameterSpec createParamSpec(VariableElement param, boolean useObject) {
-        TypeName paramType = TypeName.get(param.asType());
-        if (useObject && !paramType.isPrimitive()) {
-            paramType = TypeName.OBJECT;
-        }
+    ParameterSpec createParamSpec(VariableElement param, boolean useJniObjects) {
+        TypeName paramType = toTypeName(param.asType(), useJniObjects);
         return ParameterSpec.builder(paramType, param.getSimpleName().toString())
                 .addModifiers(param.getModifiers())
                 .build();

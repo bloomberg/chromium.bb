@@ -3,7 +3,6 @@
 <link rel="import" href="chrome://resources/cr_elements/hidden_style_css.html">
 <link rel="import" href="chrome://resources/cr_elements/paper_button_style_css.html">
 <link rel="import" href="chrome://resources/cr_elements/shared_vars_css.html">
-<link rel="import" href="chrome://resources/html/action_link_css.html">
 <link rel="import" href="chrome://resources/html/cr.html">
 <link rel="import" href="chrome://resources/html/i18n_behavior.html">
 <link rel="import" href="chrome://resources/html/util.html">
@@ -26,7 +25,7 @@
 
 <dom-module id="print-preview-preview-area">
   <template>
-    <style include="print-preview-shared action-link cr-hidden-style">
+    <style include="print-preview-shared cr-hidden-style">
       @keyframes dancing-dots-jump {
         0% { top: 0; }
         55% { top: 0; }
@@ -119,9 +118,9 @@
               hidden$="[[!isPreviewLoading_(previewState)]]">
               <span>.</span><span>.</span><span>.</span>
           </span>
-          <a is="action-link" class="learn-more-link"
-              hidden$="[[!shouldShowLearnMoreLink_(previewState)]]"
-              on-click="onGcpErrorLearnMoreClick_">
+          <a href="$i18n{gcpCertificateErrorLearnMoreURL}"
+              target="_blank" class="learn-more-link"
+              hidden$="[[!shouldShowLearnMoreLink_(previewState)]]">
             $i18n{learnMore}
           </a>
         </div>

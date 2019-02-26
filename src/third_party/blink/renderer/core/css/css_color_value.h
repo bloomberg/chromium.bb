@@ -21,9 +21,9 @@ class CSSColorValue : public CSSValue {
   // TODO(sashab): Make this create() method take a Color instead.
   static CSSColorValue* Create(RGBA32 color);
 
-  String CustomCSSText() const {
-    return color_.SerializedAsCSSComponentValue();
-  }
+  CSSColorValue(Color color) : CSSValue(kColorClass), color_(color) {}
+
+  String CustomCSSText() const { return SerializeAsCSSComponentValue(color_); }
 
   Color Value() const { return color_; }
 
@@ -35,10 +35,12 @@ class CSSColorValue : public CSSValue {
     CSSValue::TraceAfterDispatch(visitor);
   }
 
+  // Returns the color serialized according to CSSOM:
+  // https://drafts.csswg.org/cssom/#serialize-a-css-component-value
+  static String SerializeAsCSSComponentValue(Color color);
+
  private:
   friend class ::blink::CSSValuePool;
-
-  CSSColorValue(Color color) : CSSValue(kColorClass), color_(color) {}
 
   Color color_;
 };

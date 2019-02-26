@@ -31,12 +31,12 @@ class PLATFORM_EXPORT FETile final : public FilterEffect {
  public:
   static FETile* Create(Filter*);
 
+  FETile(Filter*);
+
   WTF::TextStream& ExternalRepresentation(WTF::TextStream&,
                                           int indention) const override;
 
  private:
-  FETile(Filter*);
-
   FilterEffectType GetFilterEffectType() const override {
     return kFilterEffectTypeTile;
   }

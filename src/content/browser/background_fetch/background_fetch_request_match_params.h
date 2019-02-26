@@ -15,19 +15,17 @@ class CONTENT_EXPORT BackgroundFetchRequestMatchParams {
  public:
   BackgroundFetchRequestMatchParams();
   BackgroundFetchRequestMatchParams(
-      base::Optional<ServiceWorkerFetchRequest> request_to_match,
+      blink::mojom::FetchAPIRequestPtr request_to_match,
       blink::mojom::QueryParamsPtr cache_query_params,
       bool match_all);
   ~BackgroundFetchRequestMatchParams();
 
-  bool FilterByRequest() const {
-    return request_to_match_.has_value();
-  }
+  bool FilterByRequest() const { return !request_to_match_.is_null(); }
 
   // Only call this method if a valid request_to_match was previously provided.
-  const ServiceWorkerFetchRequest& request_to_match() const {
-    DCHECK(request_to_match_.has_value());
-    return request_to_match_.value();
+  const blink::mojom::FetchAPIRequestPtr& request_to_match() const {
+    DCHECK(request_to_match_);
+    return request_to_match_;
   }
 
   blink::mojom::QueryParamsPtr cloned_cache_query_params() const {
@@ -42,7 +40,7 @@ class CONTENT_EXPORT BackgroundFetchRequestMatchParams {
   // If |request_to_match| is present, we get response(s) only for this request.
   // If not present, response(s) for all requests (contained in the fetch) will
   // be returned.
-  base::Optional<ServiceWorkerFetchRequest> request_to_match_;
+  blink::mojom::FetchAPIRequestPtr request_to_match_;
 
   // When nullptr, this has no effect on the response(s) returned.
   blink::mojom::QueryParamsPtr cache_query_params_;

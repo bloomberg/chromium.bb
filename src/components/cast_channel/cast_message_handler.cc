@@ -58,7 +58,7 @@ InternalMessage::~InternalMessage() = default;
 CastMessageHandler::CastMessageHandler(
     CastSocketService* socket_service,
     std::unique_ptr<service_manager::Connector> connector,
-    const std::string& data_decoder_batch_id,
+    const base::Token& data_decoder_batch_id,
     const std::string& user_agent,
     const std::string& browser_version,
     const std::string& locale)

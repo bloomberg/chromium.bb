@@ -119,6 +119,16 @@ public class SharedStatics {
     }
 
     public void setProxyOverride(String host, int port, String[] exclusionList, Runnable callback) {
+        if (host == null) {
+            throw new NullPointerException("Host string should not be null");
+        }
+        if (exclusionList != null) {
+            for (String url : exclusionList) {
+                if (url == null) {
+                    throw new NullPointerException("Excluded URL strings should not be null");
+                }
+            }
+        }
         ThreadUtils.runOnUiThread(
                 () -> AwContentsStatics.setProxyOverride(host, port, exclusionList, callback));
     }

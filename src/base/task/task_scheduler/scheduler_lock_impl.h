@@ -17,6 +17,8 @@ class ConditionVariable;
 
 namespace internal {
 
+struct UniversalPredecessor {};
+
 // A regular lock with simple deadlock correctness checking.
 // This lock tracks all of the available locks to make sure that any locks are
 // acquired in an expected order.
@@ -25,6 +27,7 @@ class BASE_EXPORT SchedulerLockImpl {
  public:
   SchedulerLockImpl();
   explicit SchedulerLockImpl(const SchedulerLockImpl* predecessor);
+  explicit SchedulerLockImpl(UniversalPredecessor);
   ~SchedulerLockImpl();
 
   void Acquire();
@@ -34,8 +37,11 @@ class BASE_EXPORT SchedulerLockImpl {
 
   std::unique_ptr<ConditionVariable> CreateConditionVariable();
 
+  bool is_universal_predecessor() const { return is_universal_predecessor_; }
+
  private:
   Lock lock_;
+  const bool is_universal_predecessor_;
 
   DISALLOW_COPY_AND_ASSIGN(SchedulerLockImpl);
 };

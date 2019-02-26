@@ -51,7 +51,7 @@ NavigatorVR* NavigatorVR::From(Document& document) {
 NavigatorVR& NavigatorVR::From(Navigator& navigator) {
   NavigatorVR* supplement = Supplement<Navigator>::From<NavigatorVR>(navigator);
   if (!supplement) {
-    supplement = new NavigatorVR(navigator);
+    supplement = MakeGarbageCollected<NavigatorVR>(navigator);
     ProvideTo(navigator, supplement);
   }
   return *supplement;
@@ -179,7 +179,7 @@ VRController* NavigatorVR::Controller() {
     return nullptr;
 
   if (!controller_) {
-    controller_ = new VRController(this);
+    controller_ = MakeGarbageCollected<VRController>(this);
     controller_->SetListeningForActivate(focused_ && listening_for_activate_);
     controller_->FocusChanged();
   }
@@ -260,10 +260,10 @@ void NavigatorVR::DidAddEventListener(LocalDOMWindow* window,
   if (xr_)
     return;
 
-  if (event_type == EventTypeNames::vrdisplayactivate) {
+  if (event_type == event_type_names::kVrdisplayactivate) {
     listening_for_activate_ = true;
     Controller()->SetListeningForActivate(focused_);
-  } else if (event_type == EventTypeNames::vrdisplayconnect) {
+  } else if (event_type == event_type_names::kVrdisplayconnect) {
     // If the page is listening for connection events make sure we've created a
     // controller so that we'll be notified of new devices.
     Controller();
@@ -276,8 +276,8 @@ void NavigatorVR::DidRemoveEventListener(LocalDOMWindow* window,
   if (xr_)
     return;
 
-  if (event_type == EventTypeNames::vrdisplayactivate &&
-      !window->HasEventListeners(EventTypeNames::vrdisplayactivate)) {
+  if (event_type == event_type_names::kVrdisplayactivate &&
+      !window->HasEventListeners(event_type_names::kVrdisplayactivate)) {
     listening_for_activate_ = false;
     Controller()->SetListeningForActivate(false);
   }

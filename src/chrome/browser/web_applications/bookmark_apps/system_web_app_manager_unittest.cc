@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/web_applications/bookmark_apps/system_web_app_manager.h"
+#include "chrome/browser/web_applications/system_web_app_manager.h"
 
 #include <memory>
 #include <utility>
@@ -16,6 +16,7 @@
 #include "chrome/browser/web_applications/components/test_pending_app_manager.h"
 #include "chrome/browser/web_applications/components/web_app_constants.h"
 #include "chrome/browser/web_applications/extensions/web_app_extension_ids_map.h"
+#include "chrome/browser/web_applications/test/test_system_web_app_manager.h"
 #include "chrome/browser/web_applications/web_app_provider.h"
 #include "chrome/common/chrome_features.h"
 #include "chrome/common/pref_names.h"
@@ -32,42 +33,20 @@ namespace web_app {
 
 namespace {
 
-const char kWindowedUrl[] = "https://windowed.example";
-const char kTabbedUrl[] = "https://tabbed.example";
-const char kDefaultContainerUrl[] = "https://default-container.example";
+const char kAppUrl1[] = "chrome://system-app1";
+const char kAppUrl2[] = "chrome://system-app2";
+const char kAppUrl3[] = "chrome://system-app3";
 
 PendingAppManager::AppInfo GetWindowedAppInfo() {
-  return PendingAppManager::AppInfo(
-      GURL(kWindowedUrl), LaunchContainer::kWindow,
-      InstallSource::kSystemInstalled, false /* create_shortcuts */);
-}
-
-PendingAppManager::AppInfo GetTabbedAppInfo() {
-  return PendingAppManager::AppInfo(GURL(kTabbedUrl), LaunchContainer::kTab,
-                                    InstallSource::kSystemInstalled,
-                                    false /* create_shortcuts */);
+  PendingAppManager::AppInfo info(GURL(kAppUrl1), LaunchContainer::kWindow,
+                                  InstallSource::kSystemInstalled);
+  info.create_shortcuts = false;
+  info.bypass_service_worker_check = true;
+  info.always_update = true;
+  return info;
 }
 
 }  // namespace
-
-class TestSystemWebAppManager : public SystemWebAppManager {
- public:
-  TestSystemWebAppManager(Profile* profile,
-                          PendingAppManager* pending_app_manager,
-                          std::vector<PendingAppManager::AppInfo> system_apps)
-      : SystemWebAppManager(profile, pending_app_manager),
-        system_apps_(std::move(system_apps)) {}
-  ~TestSystemWebAppManager() override {}
-
-  std::vector<PendingAppManager::AppInfo> CreateSystemWebApps() override {
-    return std::move(system_apps_);
-  }
-
- private:
-  std::vector<PendingAppManager::AppInfo> system_apps_;
-
-  DISALLOW_COPY_AND_ASSIGN(TestSystemWebAppManager);
-};
 
 class SystemWebAppManagerTest : public ChromeRenderViewHostTestHarness {
  public:
@@ -111,11 +90,11 @@ TEST_F(SystemWebAppManagerTest, Disabled) {
 
   auto pending_app_manager = std::make_unique<TestPendingAppManager>();
 
-  SimulatePreviouslyInstalledApp(pending_app_manager.get(), GURL(kWindowedUrl),
+  SimulatePreviouslyInstalledApp(pending_app_manager.get(), GURL(kAppUrl1),
                                  InstallSource::kSystemInstalled);
 
-  std::vector<PendingAppManager::AppInfo> system_apps;
-  system_apps.push_back(GetWindowedAppInfo());
+  std::vector<GURL> system_apps;
+  system_apps.push_back(GURL(kAppUrl1));
 
   TestSystemWebAppManager system_web_app_manager(
       profile(), pending_app_manager.get(), std::move(system_apps));
@@ -125,7 +104,7 @@ TEST_F(SystemWebAppManagerTest, Disabled) {
 
   // We should try to uninstall the app that is no longer in the System App
   // list.
-  EXPECT_EQ(std::vector<GURL>({GURL(kWindowedUrl)}),
+  EXPECT_EQ(std::vector<GURL>({GURL(kAppUrl1)}),
             pending_app_manager->uninstall_requests());
 }
 
@@ -133,9 +112,9 @@ TEST_F(SystemWebAppManagerTest, Disabled) {
 TEST_F(SystemWebAppManagerTest, Enabled) {
   auto pending_app_manager = std::make_unique<TestPendingAppManager>();
 
-  std::vector<PendingAppManager::AppInfo> system_apps;
-  system_apps.push_back(GetWindowedAppInfo());
-  system_apps.push_back(GetTabbedAppInfo());
+  std::vector<GURL> system_apps;
+  system_apps.push_back(GURL(kAppUrl1));
+  system_apps.push_back(GURL(kAppUrl2));
 
   TestSystemWebAppManager system_web_app_manager(
       profile(), pending_app_manager.get(), std::move(system_apps));
@@ -151,15 +130,14 @@ TEST_F(SystemWebAppManagerTest, UninstallAppInstalledInPreviousSession) {
 
   // Simulate System Apps and a regular app that were installed in the
   // previous session.
-  SimulatePreviouslyInstalledApp(pending_app_manager.get(), GURL(kWindowedUrl),
+  SimulatePreviouslyInstalledApp(pending_app_manager.get(), GURL(kAppUrl1),
                                  InstallSource::kSystemInstalled);
-  SimulatePreviouslyInstalledApp(pending_app_manager.get(), GURL(kTabbedUrl),
+  SimulatePreviouslyInstalledApp(pending_app_manager.get(), GURL(kAppUrl2),
                                  InstallSource::kSystemInstalled);
-  SimulatePreviouslyInstalledApp(pending_app_manager.get(),
-                                 GURL(kDefaultContainerUrl),
+  SimulatePreviouslyInstalledApp(pending_app_manager.get(), GURL(kAppUrl3),
                                  InstallSource::kInternal);
-  std::vector<PendingAppManager::AppInfo> system_apps;
-  system_apps.push_back(GetWindowedAppInfo());
+  std::vector<GURL> system_apps;
+  system_apps.push_back(GURL(kAppUrl1));
 
   TestSystemWebAppManager system_web_app_manager(
       profile(), pending_app_manager.get(), std::move(system_apps));
@@ -172,7 +150,7 @@ TEST_F(SystemWebAppManagerTest, UninstallAppInstalledInPreviousSession) {
 
   // We should try to uninstall the app that is no longer in the System App
   // list.
-  EXPECT_EQ(std::vector<GURL>({GURL(kTabbedUrl)}),
+  EXPECT_EQ(std::vector<GURL>({GURL(kAppUrl2)}),
             pending_app_manager->uninstall_requests());
 }
 

@@ -11,6 +11,7 @@
 #include <utility>
 #include <vector>
 
+#include "core/fxcodec/codec/cfx_codec_memory.h"
 #include "core/fxcodec/fx_codec.h"
 #include "core/fxcrt/fx_stream.h"
 #include "core/fxge/dib/cfx_dibitmap.h"
@@ -1270,8 +1271,8 @@ bool CCodec_ProgressiveDecoder::PngDetectImageTypeInBuffer(
     if (m_pCodecMemory && input_size > m_pCodecMemory->GetSize())
       m_pCodecMemory = pdfium::MakeRetain<CFX_CodecMemory>(input_size);
 
-    if (!m_pFile->ReadBlock(m_pCodecMemory->GetBuffer(), m_offSet,
-                            input_size)) {
+    if (!m_pFile->ReadBlockAtOffset(m_pCodecMemory->GetBuffer(), m_offSet,
+                                    input_size)) {
       m_status = FXCODEC_STATUS_ERR_READ;
       return false;
     }
@@ -1353,8 +1354,8 @@ FXCODEC_STATUS CCodec_ProgressiveDecoder::PngContinueDecode() {
     if (m_pCodecMemory && input_size > m_pCodecMemory->GetSize())
       m_pCodecMemory = pdfium::MakeRetain<CFX_CodecMemory>(input_size);
 
-    bool bResult =
-        m_pFile->ReadBlock(m_pCodecMemory->GetBuffer(), m_offSet, input_size);
+    bool bResult = m_pFile->ReadBlockAtOffset(m_pCodecMemory->GetBuffer(),
+                                              m_offSet, input_size);
     if (!bResult) {
       m_pDeviceBitmap = nullptr;
       m_pFile = nullptr;
@@ -1522,8 +1523,8 @@ FXCODEC_STATUS CCodec_ProgressiveDecoder::TiffContinueDecode() {
     m_status = FXCODEC_STATUS_ERR_MEMORY;
     return m_status;
   }
-  RetainPtr<CFX_DIBitmap> pStrechBitmap =
-      pFormatBitmap->StretchTo(m_sizeX, m_sizeY, FXDIB_INTERPOL, nullptr);
+  RetainPtr<CFX_DIBitmap> pStrechBitmap = pFormatBitmap->StretchTo(
+      m_sizeX, m_sizeY, kBilinearInterpolation, nullptr);
   pFormatBitmap = nullptr;
   if (!pStrechBitmap) {
     m_pDeviceBitmap = nullptr;
@@ -1550,7 +1551,8 @@ bool CCodec_ProgressiveDecoder::DetectImageType(FXCODEC_IMAGE_TYPE imageType,
   size_t size = std::min<size_t>(m_pFile->GetSize(), FXCODEC_BLOCK_SIZE);
   m_pCodecMemory = pdfium::MakeRetain<CFX_CodecMemory>(size);
   m_offSet = 0;
-  if (!m_pFile->ReadBlock(m_pCodecMemory->GetBuffer(), m_offSet, size)) {
+  if (!m_pFile->ReadBlockAtOffset(m_pCodecMemory->GetBuffer(), m_offSet,
+                                  size)) {
     m_status = FXCODEC_STATUS_ERR_READ;
     return false;
   }
@@ -1618,8 +1620,8 @@ bool CCodec_ProgressiveDecoder::ReadMoreData(
   }
 
   // Append new data past the bytes not yet processed by the codec.
-  if (!m_pFile->ReadBlock(m_pCodecMemory->GetBuffer() + dwUnconsumed, m_offSet,
-                          dwBytesToFetchFromFile)) {
+  if (!m_pFile->ReadBlockAtOffset(m_pCodecMemory->GetBuffer() + dwUnconsumed,
+                                  m_offSet, dwBytesToFetchFromFile)) {
     err_status = FXCODEC_STATUS_ERR_READ;
     return false;
   }

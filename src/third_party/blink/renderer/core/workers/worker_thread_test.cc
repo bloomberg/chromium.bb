@@ -12,6 +12,7 @@
 #include "third_party/blink/renderer/bindings/core/v8/v8_cache_options.h"
 #include "third_party/blink/renderer/core/frame/settings.h"
 #include "third_party/blink/renderer/core/inspector/inspector_task_runner.h"
+#include "third_party/blink/renderer/core/inspector/worker_devtools_params.h"
 #include "third_party/blink/renderer/core/script/script.h"
 #include "third_party/blink/renderer/core/workers/global_scope_creation_params.h"
 #include "third_party/blink/renderer/core/workers/worker_reporting_proxy.h"
@@ -65,8 +66,9 @@ void WaitForSignalTask(WorkerThread* worker_thread,
       *worker_thread->GetParentExecutionContextTaskRunners()->Get(
           TaskType::kInternalTest),
       FROM_HERE, CrossThreadBind(&test::ExitRunLoop));
-  WorkerThread::ScopedDebuggerTask debugger_task(worker_thread);
+  worker_thread->DebuggerTaskStarted();
   waitable_event->Wait();
+  worker_thread->DebuggerTaskFinished();
 }
 
 void TerminateParentOfNestedWorker(WorkerThread* parent_thread,
@@ -387,8 +389,9 @@ TEST_F(WorkerThreadTest, Terminate_WhileDebuggerTaskIsRunningOnInitialization) {
 
   auto global_scope_creation_params =
       std::make_unique<GlobalScopeCreationParams>(
-          KURL("http://fake.url/"), ScriptType::kClassic, "fake user agent",
-          headers, kReferrerPolicyDefault, security_origin_.get(),
+          KURL("http://fake.url/"), mojom::ScriptType::kClassic,
+          "fake user agent", nullptr /* web_worker_fetch_context */, headers,
+          network::mojom::ReferrerPolicy::kDefault, security_origin_.get(),
           false /* starter_secure_context */,
           CalculateHttpsState(security_origin_.get()), WorkerClients::Create(),
           mojom::IPAddressSpace::kLocal, nullptr /* originTrialToken */,
@@ -396,11 +399,14 @@ TEST_F(WorkerThreadTest, Terminate_WhileDebuggerTaskIsRunningOnInitialization) {
           std::make_unique<WorkerSettings>(Settings::Create().get()),
           kV8CacheOptionsDefault, nullptr /* worklet_module_responses_map */);
 
-  // Specify PauseOnWorkerStart::kPause so that the worker thread can pause
+  // Set wait_for_debugger so that the worker thread can pause
   // on initialization to run debugger tasks.
+  auto devtools_params = std::make_unique<WorkerDevToolsParams>();
+  devtools_params->wait_for_debugger = true;
+
   worker_thread_->Start(std::move(global_scope_creation_params),
                         WorkerBackingThreadStartupData::CreateDefault(),
-                        WorkerInspectorProxy::PauseOnWorkerStart::kPause,
+                        std::move(devtools_params),
                         ParentExecutionContextTaskRunners::Create());
 
   // Used to wait for worker thread termination in a debugger task on the

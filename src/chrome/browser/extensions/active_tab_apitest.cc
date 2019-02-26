@@ -63,11 +63,6 @@ class ExtensionActiveTabTest : public ExtensionApiTest,
     ASSERT_EQ(ShouldEnableRuntimeHostPermissions(),
               base::FeatureList::IsEnabled(
                   extensions_features::kRuntimeHostPermissions));
-
-    const char* runtime_host_permissions_arg =
-        ShouldEnableRuntimeHostPermissions() ? "RuntimeHostPermissionsEnabled"
-                                             : "RuntimeHostPermissionsDisabled";
-    SetCustomArg(runtime_host_permissions_arg);
   }
 
  private:

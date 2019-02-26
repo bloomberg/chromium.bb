@@ -17,6 +17,8 @@
 
 #if defined(USE_OZONE) || defined(USE_X11)
 #include "services/ws/public/cpp/input_devices/input_device_client_test_api.h"
+#include "ui/aura/test/aura_test_utils.h"
+#include "ui/events/devices/input_device_manager.h"
 #endif
 
 namespace {
@@ -33,6 +35,7 @@ class ChromeBrowserMainExtraPartsMetricsTest : public testing::Test {
 
  protected:
 #if defined(USE_OZONE) || defined(USE_X11)
+  std::unique_ptr<ui::InputDeviceManager> input_manager_;
   ws::InputDeviceClientTestApi input_device_client_test_api_;
 #endif
 
@@ -50,6 +53,9 @@ class ChromeBrowserMainExtraPartsMetricsTest : public testing::Test {
 ChromeBrowserMainExtraPartsMetricsTest::
     ChromeBrowserMainExtraPartsMetricsTest() {
   display::Screen::SetScreenInstance(&test_screen_);
+#if defined(USE_OZONE) || defined(USE_X11)
+  input_manager_ = aura::test::CreateTestInputDeviceManager();
+#endif
 }
 
 ChromeBrowserMainExtraPartsMetricsTest::

@@ -32,6 +32,8 @@ class MEDIA_GPU_EXPORT VideoFrameFactory {
  public:
   using GetStubCb = base::Callback<gpu::CommandBufferStub*()>;
   using InitCb = base::RepeatingCallback<void(scoped_refptr<TextureOwner>)>;
+  using OnceOutputCb =
+      base::OnceCallback<void(const scoped_refptr<VideoFrame>&)>;
 
   VideoFrameFactory() = default;
   virtual ~VideoFrameFactory() = default;
@@ -52,16 +54,14 @@ class MEDIA_GPU_EXPORT VideoFrameFactory {
   virtual void SetSurfaceBundle(
       scoped_refptr<AVDASurfaceBundle> surface_bundle) = 0;
 
-  // Creates a new VideoFrame backed by |output_buffer| and |texture_owner|.
-  // |texture_owner| may be null if the buffer is backed by an overlay
-  // instead. Runs |output_cb| on the calling sequence to return the frame.
-  // TODO(liberato): update the comment.
+  // Creates a new VideoFrame backed by |output_buffer|.  Runs |output_cb| on
+  // the calling sequence to return the frame.
   virtual void CreateVideoFrame(
       std::unique_ptr<CodecOutputBuffer> output_buffer,
       base::TimeDelta timestamp,
       gfx::Size natural_size,
       PromotionHintAggregator::NotifyPromotionHintCB promotion_hint_cb,
-      VideoDecoder::OutputCB output_cb) = 0;
+      OnceOutputCb output_cb) = 0;
 
   // Runs |closure| on the calling sequence after all previous
   // CreateVideoFrame() calls have completed.

@@ -8,9 +8,9 @@
 #include <memory>
 #include <string>
 
+#include "ash/public/cpp/assistant/default_voice_interaction_observer.h"
 #include "ash/public/interfaces/voice_interaction_controller.mojom.h"
 #include "base/macros.h"
-#include "mojo/public/cpp/bindings/binding_set.h"
 #include "ui/views/view.h"
 
 namespace ui {
@@ -24,7 +24,7 @@ class AssistantOptInView;
 class SuggestionContainerView;
 
 class AssistantFooterView : public views::View,
-                            mojom::VoiceInteractionObserver {
+                            DefaultVoiceInteractionObserver {
  public:
   explicit AssistantFooterView(AssistantController* assistant_controller);
   ~AssistantFooterView() override;
@@ -35,15 +35,7 @@ class AssistantFooterView : public views::View,
   int GetHeightForWidth(int width) const override;
 
   // mojom::VoiceInteractionObserver:
-  void OnVoiceInteractionStatusChanged(
-      mojom::VoiceInteractionState state) override {}
-  void OnVoiceInteractionSettingsEnabled(bool enabled) override {}
-  void OnVoiceInteractionContextEnabled(bool enabled) override {}
-  void OnVoiceInteractionHotwordEnabled(bool enabled) override {}
   void OnVoiceInteractionSetupCompleted(bool completed) override;
-  void OnAssistantFeatureAllowedChanged(
-      mojom::AssistantAllowedState state) override {}
-  void OnLocaleChanged(const std::string& locale) override {}
 
  private:
   void InitLayout();
@@ -57,9 +49,6 @@ class AssistantFooterView : public views::View,
   AssistantOptInView* opt_in_view_;                // Owned by view hierarchy.
 
   std::unique_ptr<ui::CallbackLayerAnimationObserver> animation_observer_;
-
-  mojo::Binding<mojom::VoiceInteractionObserver>
-      voice_interaction_observer_binding_;
 
   DISALLOW_COPY_AND_ASSIGN(AssistantFooterView);
 };

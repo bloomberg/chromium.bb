@@ -4,7 +4,7 @@
 
 #include "third_party/blink/renderer/core/events/promise_rejection_event.h"
 
-#include "third_party/blink/renderer/core/event_names.h"
+#include "third_party/blink/renderer/core/event_interface_names.h"
 #include "third_party/blink/renderer/platform/bindings/dom_wrapper_world.h"
 
 namespace blink {
@@ -12,14 +12,14 @@ namespace blink {
 PromiseRejectionEvent::PromiseRejectionEvent(
     ScriptState* state,
     const AtomicString& type,
-    const PromiseRejectionEventInit& initializer)
+    const PromiseRejectionEventInit* initializer)
     : Event(type, initializer), world_(&state->World()) {
-  DCHECK(initializer.hasPromise());
-  promise_.Set(initializer.promise().GetIsolate(),
-               initializer.promise().V8Value());
-  if (initializer.hasReason()) {
-    reason_.Set(initializer.reason().GetIsolate(),
-                initializer.reason().V8Value());
+  DCHECK(initializer->hasPromise());
+  promise_.Set(initializer->promise().GetIsolate(),
+               initializer->promise().V8Value());
+  if (initializer->hasReason()) {
+    reason_.Set(initializer->reason().GetIsolate(),
+                initializer->reason().V8Value());
   }
 }
 
@@ -52,7 +52,7 @@ ScriptValue PromiseRejectionEvent::reason(ScriptState* script_state) const {
 }
 
 const AtomicString& PromiseRejectionEvent::InterfaceName() const {
-  return EventNames::PromiseRejectionEvent;
+  return event_interface_names::kPromiseRejectionEvent;
 }
 
 bool PromiseRejectionEvent::CanBeDispatchedInWorld(

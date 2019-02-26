@@ -16,7 +16,7 @@ function testLowercaseKeysetAsync(testDoneCallback) {
     mockTypeCharacter('s', 0x53, Modifier.NONE);
     mockTypeCharacter('.', 0, Modifier.NONE);
     mockTypeCharacter('Enter', 0x0D, Modifier.NONE, 0x0D);
-    mockTypeCharacter('Space', 0, Modifier.NONE, 0x20);
+    mockTypeCharacter('Space', 0x20, Modifier.NONE, 0x20);
     testDoneCallback();
   });
 }

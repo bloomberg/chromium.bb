@@ -36,7 +36,7 @@ class FramebufferState;
 class InfoLog;
 class Texture;
 struct LinkedVarying;
-}
+}  // namespace gl
 
 namespace rx
 {
@@ -82,36 +82,38 @@ class Context : angle::NonCopyable
     Context() {}
     virtual ~Context() {}
 
-    virtual void handleError(HRESULT hr,
-                             const char *message,
-                             const char *file,
-                             const char *function,
-                             unsigned int line) = 0;
+    virtual void handleResult(HRESULT hr,
+                              const char *message,
+                              const char *file,
+                              const char *function,
+                              unsigned int line) = 0;
 };
 }  // namespace d3d
 
 // ANGLE_TRY for HRESULT errors.
-#define ANGLE_TRY_HR(CONTEXT, EXPR, MESSAGE)                                                    \
-    \
-{                                                                                        \
-        auto ANGLE_LOCAL_VAR = (EXPR);                                                          \
-        if (ANGLE_UNLIKELY(FAILED(ANGLE_LOCAL_VAR)))                                            \
-        {                                                                                       \
-            CONTEXT->handleError(ANGLE_LOCAL_VAR, MESSAGE, __FILE__, ANGLE_FUNCTION, __LINE__); \
-            return angle::Result::Stop();                                                       \
-        }                                                                                       \
-    \
-}
+#define ANGLE_TRY_HR(CONTEXT, EXPR, MESSAGE)                                                     \
+                                                                                                 \
+    {                                                                                            \
+        auto ANGLE_LOCAL_VAR = (EXPR);                                                           \
+        if (ANGLE_UNLIKELY(FAILED(ANGLE_LOCAL_VAR)))                                             \
+        {                                                                                        \
+            CONTEXT->handleResult(ANGLE_LOCAL_VAR, MESSAGE, __FILE__, ANGLE_FUNCTION, __LINE__); \
+            return angle::Result::Stop();                                                        \
+        }                                                                                        \
+    }
 
-#define ANGLE_CHECK_HR_ALLOC(context, result) \
-    ANGLE_CHECK(context, result, "Failed to allocate host memory", E_OUTOFMEMORY)
-
-#define ANGLE_CHECK_HR_MATH(context, result) \
-    ANGLE_CHECK(context, result, "Integer overflow.", E_FAIL)
+#define ANGLE_CHECK_HR(CONTEXT, EXPR, MESSAGE, ERROR)                                  \
+    {                                                                                  \
+        if (ANGLE_UNLIKELY(!(EXPR)))                                                   \
+        {                                                                              \
+            CONTEXT->handleResult(ERROR, MESSAGE, __FILE__, ANGLE_FUNCTION, __LINE__); \
+            return angle::Result::Stop();                                              \
+        }                                                                              \
+    }
 
 #define ANGLE_HR_UNREACHABLE(context) \
     UNREACHABLE();                    \
-    ANGLE_CHECK(context, false, "Unreachble code reached.", E_FAIL)
+    ANGLE_CHECK_HR(context, false, "Unreachble code reached.", E_FAIL)
 
 // Check if the device is lost every 10 failures to get the query data
 constexpr unsigned int kPollingD3DDeviceLostCheckFrequency = 10;
@@ -127,9 +129,8 @@ class BufferFactoryD3D : angle::NonCopyable
     virtual IndexBuffer *createIndexBuffer()   = 0;
 
     // TODO(jmadill): add VertexFormatCaps
-    virtual VertexConversionType getVertexConversionType(
-        gl::VertexFormatType vertexFormatType) const                                   = 0;
-    virtual GLenum getVertexComponentType(gl::VertexFormatType vertexFormatType) const = 0;
+    virtual VertexConversionType getVertexConversionType(angle::FormatID vertexFormatID) const = 0;
+    virtual GLenum getVertexComponentType(angle::FormatID vertexFormatID) const                = 0;
 
     // Warning: you should ensure binding really matches attrib.bindingIndex before using this
     // function.
@@ -292,30 +293,30 @@ class RendererD3D : public BufferFactoryD3D
                                                          RenderTargetD3D *renderTargetD3D) = 0;
     virtual TextureStorage *createTextureStorageExternal(
         egl::Stream *stream,
-        const egl::Stream::GLTextureDescription &desc)                                   = 0;
+        const egl::Stream::GLTextureDescription &desc)                                        = 0;
     virtual TextureStorage *createTextureStorage2D(GLenum internalformat,
                                                    bool renderTarget,
                                                    GLsizei width,
                                                    GLsizei height,
                                                    int levels,
-                                                   bool hintLevelZeroOnly)               = 0;
+                                                   bool hintLevelZeroOnly)                    = 0;
     virtual TextureStorage *createTextureStorageCube(GLenum internalformat,
                                                      bool renderTarget,
                                                      int size,
                                                      int levels,
-                                                     bool hintLevelZeroOnly)             = 0;
+                                                     bool hintLevelZeroOnly)                  = 0;
     virtual TextureStorage *createTextureStorage3D(GLenum internalformat,
                                                    bool renderTarget,
                                                    GLsizei width,
                                                    GLsizei height,
                                                    GLsizei depth,
-                                                   int levels)                           = 0;
+                                                   int levels)                                = 0;
     virtual TextureStorage *createTextureStorage2DArray(GLenum internalformat,
                                                         bool renderTarget,
                                                         GLsizei width,
                                                         GLsizei height,
                                                         GLsizei depth,
-                                                        int levels)                      = 0;
+                                                        int levels)                           = 0;
     virtual TextureStorage *createTextureStorage2DMultisample(GLenum internalformat,
                                                               GLsizei width,
                                                               GLsizei height,

@@ -27,13 +27,14 @@
 #define THIRD_PARTY_BLINK_RENDERER_MODULES_INDEXEDDB_IDB_INDEX_H_
 
 #include "third_party/blink/public/common/indexeddb/web_idb_types.h"
-#include "third_party/blink/public/platform/modules/indexeddb/web_idb_cursor.h"
-#include "third_party/blink/public/platform/modules/indexeddb/web_idb_database.h"
+#include "third_party/blink/public/mojom/indexeddb/indexeddb.mojom-blink.h"
 #include "third_party/blink/renderer/modules/indexeddb/idb_cursor.h"
 #include "third_party/blink/renderer/modules/indexeddb/idb_key_path.h"
 #include "third_party/blink/renderer/modules/indexeddb/idb_key_range.h"
 #include "third_party/blink/renderer/modules/indexeddb/idb_metadata.h"
 #include "third_party/blink/renderer/modules/indexeddb/idb_request.h"
+#include "third_party/blink/renderer/modules/indexeddb/web_idb_cursor.h"
+#include "third_party/blink/renderer/modules/indexeddb/web_idb_database.h"
 #include "third_party/blink/renderer/platform/bindings/script_wrappable.h"
 #include "third_party/blink/renderer/platform/wtf/forward.h"
 #include "third_party/blink/renderer/platform/wtf/text/wtf_string.h"
@@ -50,9 +51,13 @@ class IDBIndex final : public ScriptWrappable {
   static IDBIndex* Create(scoped_refptr<IDBIndexMetadata> metadata,
                           IDBObjectStore* object_store,
                           IDBTransaction* transaction) {
-    return new IDBIndex(std::move(metadata), object_store, transaction);
+    return MakeGarbageCollected<IDBIndex>(std::move(metadata), object_store,
+                                          transaction);
   }
+
+  IDBIndex(scoped_refptr<IDBIndexMetadata>, IDBObjectStore*, IDBTransaction*);
   ~IDBIndex() override;
+
   void Trace(blink::Visitor*) override;
 
   // Implement the IDL
@@ -113,14 +118,12 @@ class IDBIndex final : public ScriptWrappable {
   IDBRequest* openCursor(
       ScriptState*,
       IDBKeyRange*,
-      WebIDBCursorDirection,
+      mojom::IDBCursorDirection,
       IDBRequest::AsyncTraceState = IDBRequest::AsyncTraceState());
 
   WebIDBDatabase* BackendDB() const;
 
  private:
-  IDBIndex(scoped_refptr<IDBIndexMetadata>, IDBObjectStore*, IDBTransaction*);
-
   const IDBIndexMetadata& Metadata() const { return *metadata_; }
 
   IDBRequest* GetInternal(ScriptState*,

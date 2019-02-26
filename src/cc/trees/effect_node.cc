@@ -2,9 +2,9 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "base/trace_event/trace_event_argument.h"
-#include "cc/layers/layer.h"
 #include "cc/trees/effect_node.h"
+#include "base/trace_event/traced_value.h"
+#include "cc/layers/layer.h"
 #include "cc/trees/property_tree.h"
 
 namespace cc {
@@ -50,7 +50,7 @@ bool EffectNode::operator==(const EffectNode& other) const {
          cache_render_surface == other.cache_render_surface &&
          has_copy_request == other.has_copy_request &&
          filters == other.filters &&
-         background_filters == other.background_filters &&
+         backdrop_filters == other.backdrop_filters &&
          filters_origin == other.filters_origin &&
          blend_mode == other.blend_mode &&
          surface_contents_scale == other.surface_contents_scale &&

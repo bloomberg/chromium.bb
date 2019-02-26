@@ -5,8 +5,10 @@
 #ifndef CHROME_BROWSER_CHROMEOS_CHILD_ACCOUNTS_SCREEN_TIME_CONTROLLER_H_
 #define CHROME_BROWSER_CHROMEOS_CHILD_ACCOUNTS_SCREEN_TIME_CONTROLLER_H_
 
+#include <memory>
+
 #include "base/time/time.h"
-#include "base/timer/timer.h"
+#include "chrome/browser/chromeos/child_accounts/time_limit_notifier.h"
 #include "chrome/browser/chromeos/child_accounts/usage_time_limit_processor.h"
 #include "chromeos/dbus/system_clock_client.h"
 #include "components/keyed_service/core/keyed_service.h"
@@ -15,6 +17,12 @@
 
 class PrefRegistrySimple;
 class PrefService;
+
+namespace base {
+class Clock;
+class TickClock;
+class OneShotTimer;
+}  // namespace base
 
 namespace content {
 class BrowserContext;
@@ -41,12 +49,10 @@ class ScreenTimeController : public KeyedService,
   // used the device today (since the last reset).
   base::TimeDelta GetScreenTimeDuration();
 
- private:
-  // The types of time limit notifications. |SCREEN_TIME| is used when the
-  // the screen time limit is about to be used up, and |BED_TIME| is used when
-  // the bed time is approaching.
-  enum TimeLimitNotificationType { kScreenTime, kBedTime };
+  void SetClocksForTesting(const base::Clock* clock,
+                           const base::TickClock* tick_clock);
 
+ private:
   // Call time limit processor for new state.
   void CheckTimeLimit(const std::string& source);
 
@@ -63,10 +69,6 @@ class ScreenTimeController : public KeyedService,
   // |next_unlock_time|: When user will be able to unlock the screen, only valid
   //                     when |visible| is true.
   void UpdateTimeLimitsMessage(bool visible, base::Time next_unlock_time);
-
-  // Show a notification indicating the remaining screen time.
-  void ShowNotification(ScreenTimeController::TimeLimitNotificationType type,
-                        const base::TimeDelta& time_remaining);
 
   // Called when the policy of time limits changes.
   void OnPolicyChanged();
@@ -94,14 +96,15 @@ class ScreenTimeController : public KeyedService,
   content::BrowserContext* context_;
   PrefService* pref_service_;
 
-  // Called to show warning and exit notifications.
-  base::OneShotTimer warning_notification_timer_;
-  base::OneShotTimer exit_notification_timer_;
+  // Points to the base::DefaultClock by default.
+  const base::Clock* clock_;
 
-  // Timers that are called when lock screen state change event happens, ie,
-  // bedtime is over or the usage limit ends.
-  base::OneShotTimer next_state_timer_;
-  base::OneShotTimer reset_screen_time_timer_;
+  // Timer scheduled for when the next lock screen state change event is
+  // expected to happen, e.g. when bedtime is over or the usage limit ends.
+  std::unique_ptr<base::OneShotTimer> next_state_timer_;
+
+  // Used to set up timers when a time limit is approaching.
+  TimeLimitNotifier time_limit_notifier_;
 
   PrefChangeRegistrar pref_change_registrar_;
 

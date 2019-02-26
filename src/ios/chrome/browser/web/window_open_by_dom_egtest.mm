@@ -23,6 +23,7 @@
 #include "ios/web/public/test/element_selector.h"
 #import "ios/web/public/test/http_server/http_server.h"
 #include "ios/web/public/test/http_server/http_server_util.h"
+#import "ios/web/public/test/url_test_util.h"
 #include "ui/base/l10n/l10n_util.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
@@ -138,7 +139,7 @@ id<GREYMatcher> PopupBlocker() {
   [[EarlGrey selectElementWithMatcher:test_page_matcher]
       performAction:link_tap];
   [ChromeEarlGrey waitForMainTabCount:2];
-  chrome_test_util::OpenNewTab();
+  [ChromeEarlGrey openNewTab];
   [ChromeEarlGrey waitForMainTabCount:3];
   chrome_test_util::SelectTabAtIndexInCurrentMode(0);
   [[EarlGrey selectElementWithMatcher:test_page_matcher]
@@ -165,7 +166,9 @@ id<GREYMatcher> PopupBlocker() {
   // Ensure that the resulting tab is updated as expected.
   const GURL targetURL =
       HttpServer::MakeUrl(std::string(kTestURL) + "#assigned");
-  [[EarlGrey selectElementWithMatcher:OmniboxText(targetURL.GetContent())]
+  const std::string targetOmniboxText =
+      web::GetContentAndFragmentForUrl(targetURL);
+  [[EarlGrey selectElementWithMatcher:OmniboxText(targetOmniboxText)]
       assertWithMatcher:grey_notNil()];
 }
 
@@ -180,7 +183,9 @@ id<GREYMatcher> PopupBlocker() {
   // Ensure that the resulting tab is updated as expected.
   const GURL targetURL =
       HttpServer::MakeUrl(std::string(kTestURL) + "#updated");
-  [[EarlGrey selectElementWithMatcher:OmniboxText(targetURL.GetContent())]
+  const std::string targetOmniboxText =
+      web::GetContentAndFragmentForUrl(targetURL);
+  [[EarlGrey selectElementWithMatcher:OmniboxText(targetOmniboxText)]
       assertWithMatcher:grey_notNil()];
 }
 
@@ -261,7 +266,7 @@ id<GREYMatcher> PopupBlocker() {
   [ChromeEarlGrey waitForMainTabCount:2];
 
   // Ensure that the starting tab hasn't navigated.
-  chrome_test_util::CloseCurrentTab();
+  [ChromeEarlGrey closeCurrentTab];
   const GURL URL = HttpServer::MakeUrl(kTestURL);
   [[EarlGrey selectElementWithMatcher:OmniboxText(URL.GetContent())]
       assertWithMatcher:grey_notNil()];

@@ -232,6 +232,7 @@ jumbo_source_set("renderer") {
     "resources/guest_view/guest_view_events.js",
     "resources/guest_view/guest_view_iframe.js",
     "resources/guest_view/guest_view_iframe_container.js",
+    "resources/guest_view/safe_methods.js",
     "resources/guest_view/web_view/extensions_web_view_element.js",
     "resources/guest_view/web_view/web_view.js",
     "resources/guest_view/web_view/web_view_action_requests.js",

@@ -175,6 +175,7 @@ class SchemaVersionedMySQLConnection(object):
       if 'ssl' not in self._ssl_args:
         self._ssl_args['ssl'] = {}
       self._ssl_args['ssl'][key] = file_path
+      self._ssl_args['ssl']['check_hostname'] = False
 
   def _UpdateConnectArgs(self, db_credentials_dir, for_service=False):
     """Update all connection args from |db_credentials_dir|."""
@@ -1599,35 +1600,6 @@ class CIDBConnection(SchemaVersionedMySQLConnection):
     return [dict(zip(CIDBConnection.BUILD_STATUS_KEYS, values))
             for values in results]
 
-  def GetPlatformVersions(self, build_config,
-                          num_results=NUM_RESULTS_NO_LIMIT,
-                          starting_milestone_version=None):
-    """Get the platform versions for a build_config.
-
-    Args:
-      build_config: The build config (string) to get the platform version.
-      num_results: Number of platform_version to get. Default to
-        CIDBConnection.NUM_RESULTS_NO_LIMIT to request no limit on the number
-        of results.
-      starting_milestone_version: The starting milestone version to get the
-        platform version.
-
-    Returns:
-      A list of platform_version which match the requirement.
-    """
-    where_clauses = ['build_config = "%s"' % build_config]
-    if starting_milestone_version is not None:
-      starting_milestone_version_int = int(starting_milestone_version)
-      where_clauses.append('CAST(milestone_version as UNSIGNED) >= %d' %
-                           starting_milestone_version_int)
-    query = ('SELECT platform_version FROM buildTable WHERE %s' %
-             ' AND '.join(where_clauses))
-    if num_results != self.NUM_RESULTS_NO_LIMIT:
-      query += ' LIMIT %d' % num_results
-
-    results = self._Execute(query).fetchall()
-    return [r['platform_version'] for r in results]
-
   @minimum_schema(47)
   def GetAnnotatedBuilds(self, build_config, num_results, start_date=None,
                          end_date=None):
@@ -1669,36 +1641,6 @@ class CIDBConnection(SchemaVersionedMySQLConnection):
 
     return [dict(zip(CIDBConnection.BAD_CL_ANNOTATION_KEYS, values))
             for values in results]
-
-  @minimum_schema(65)
-  def GetMostRecentBuild(self, waterfall, build_config, milestone_version=None):
-    """Returns basic information about most recent completed build.
-
-    Args:
-      waterfall: waterfall of the build.
-      build_config: config name of the build.
-      milestone_version: optional milestone_version to filter upon.
-
-    Returns:
-      A dictionary with keys BUILD_STATUS_KEYS, or None if no results.
-    """
-    where_clauses = ['waterfall = "%s"' % waterfall,
-                     'build_config = "%s"' % build_config,
-                     'final = 1']
-    if milestone_version:
-      where_clauses.append('milestone_version = "%d"' % milestone_version)
-
-    query = (
-        'SELECT %s'
-        ' FROM buildTable'
-        ' WHERE %s'
-        ' ORDER BY id DESC'
-        ' LIMIT 1' %
-        (', '.join(self.BUILD_STATUS_KEYS), ' AND '.join(where_clauses)))
-
-    results = self._Execute(query).fetchall()
-    return (dict(zip(self.BUILD_STATUS_KEYS, results[0]))
-            if len(results) else None)
 
   @minimum_schema(26)
   def GetAnnotationsForBuilds(self, build_ids):
@@ -1859,28 +1801,6 @@ class CIDBConnection(SchemaVersionedMySQLConnection):
     return clactions.CLActionHistory(clactions.CLAction(*values)
                                      for values in results)
 
-  @minimum_schema(11)
-  def GetActionsSince(self, start_date):
-    """Get all CL actions after a specific |start_date|.
-
-    Unlike GetActionHistory, this method makes use of only a single simple
-    SELECT query, and does not perform any of the precalculations that
-    CLActionHistory makes use of for statistics. Hence, this method is most
-    suitable for queries expected to return a large result set.
-
-    Args:
-      start_date: (Type: datetime.date) The first date on which you want action
-                  history.
-    """
-    values = {'start_date': start_date.strftime(self._DATE_FORMAT)}
-
-    # Enforce start date
-    conds = 'timestamp >= TIMESTAMP(%(start_date)s)'
-
-    query = '%s WHERE %s' % (self._SQL_FETCH_ACTIONS, conds)
-    results = self._Execute(query, values).fetchall()
-    return [clactions.CLAction(*values) for values in results]
-
   @minimum_schema(29)
   def HasFailureMsgForStage(self, build_stage_id):
     """Determine whether a build stage has failure messages in failureTable.
@@ -1932,26 +1852,6 @@ class CIDBConnection(SchemaVersionedMySQLConnection):
     return self._GetBuildMessagesWithClause(' AND '.join(where_clause))
 
   @minimum_schema(42)
-  def GetSlaveBuildMessages(self, master_build_id):
-    """Gets build messages from buildMessageTable.
-
-    Args:
-      master_build_id: The build to get all slave messages for.
-
-    Returns:
-      A list of build message dictionaries, where each dictionary contains
-      keys build_id, build_config, waterfall, builder_name, build_number,
-      message_type, message_subtype, message_value, timestamp, board.
-    """
-    # Currently we only retry slave builds in Buildbucket which fail to pass
-    # SyncStage. It means if a build fails to pass HWTestStage, where it posts
-    # messages to buildMessageTable, we won't retry it. So there won't be
-    # duplicated messages for one slave build.
-    # TODO(nxia): it'll be good to have the buildbucket_ids filter.
-    return self._GetBuildMessagesWithClause(
-        'master_build_id = %s' % master_build_id)
-
-  @minimum_schema(42)
   def GetBuildMessagesNewerThan(self, message_type, timestamp):
     """Returns build messages newer than |timestamp|.
 
@@ -1996,27 +1896,6 @@ class CIDBConnection(SchemaVersionedMySQLConnection):
     results = self._Execute(q).fetchall()
 
     return [hwtest_results.HWTestResult(*values) for values in results]
-
-  @minimum_schema(59)
-  def GetBuildRequestsForBuildConfig(self,
-                                     request_build_config,
-                                     num_results=NUM_RESULTS_NO_LIMIT,
-                                     start_time=None):
-    """Get BuildRequests for one request_build_config.
-
-    Args:
-      request_build_config: build config (string) to request.
-      num_results: Number of results to return, default to
-        self.NUM_RESULTS_NO_LIMIT.
-      start_time: If not None, only return build requests sent after the
-        start_time. Default to None.
-
-    Returns:
-      A list of BuildRequest instances sorted by id in descending order.
-    """
-    return self.GetBuildRequestsForBuildConfigs([request_build_config],
-                                                num_results=num_results,
-                                                start_time=start_time)
 
   @minimum_schema(59)
   def GetBuildRequestsForBuildConfigs(self,

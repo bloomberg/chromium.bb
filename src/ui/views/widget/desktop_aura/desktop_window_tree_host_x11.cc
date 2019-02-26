@@ -17,6 +17,7 @@
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/trace_event/trace_event.h"
 #include "third_party/skia/include/core/SkPath.h"
+#include "ui/accessibility/platform/atk_util_auralinux.h"
 #include "ui/aura/client/aura_constants.h"
 #include "ui/aura/client/cursor_client.h"
 #include "ui/aura/client/focus_client.h"
@@ -223,7 +224,6 @@ void DesktopWindowTreeHostX11::AfterActivationStateChanged() {
 
   if (!was_active_ && IsActive()) {
     FlashFrame(false);
-    OnHostActivated();
     // TODO(thomasanderson): Remove this window shuffling and use XWindowCache
     // instead.
     open_windows().remove(xwindow_);
@@ -1209,11 +1209,11 @@ gfx::Rect DesktopWindowTreeHostX11::GetBoundsInPixels() const {
 
 void DesktopWindowTreeHostX11::SetBoundsInPixels(
     const gfx::Rect& requested_bounds_in_pixel,
-    const viz::LocalSurfaceId& local_surface_id) {
+    const viz::LocalSurfaceIdAllocation& local_surface_id_allocation) {
   // On desktop-x11, the callers of SetBoundsInPixels() shouldn't need to (or be
   // able to) allocate LocalSurfaceId for the compositor. Aura itself should
   // allocate the new ids as needed, instead.
-  DCHECK(!local_surface_id.is_valid());
+  DCHECK(!local_surface_id_allocation.IsValid());
 
   gfx::Rect bounds_in_pixels(requested_bounds_in_pixel.origin(),
                              AdjustSize(requested_bounds_in_pixel.size()));
@@ -1266,7 +1266,7 @@ void DesktopWindowTreeHostX11::SetBoundsInPixels(
   if (origin_changed)
     native_widget_delegate_->AsWidget()->OnNativeWidgetMove();
   if (size_changed) {
-    OnHostResizedInPixels(bounds_in_pixels.size(), local_surface_id);
+    OnHostResizedInPixels(bounds_in_pixels.size(), local_surface_id_allocation);
     ResetWindowRegion();
   }
 }
@@ -1318,7 +1318,7 @@ bool DesktopWindowTreeHostX11::CaptureSystemKeyEventsImpl(
   // problems with event routing (i.e. which Hook takes precedence) and
   // destruction ordering.
   DCHECK(!keyboard_hook_);
-  keyboard_hook_ = ui::KeyboardHook::Create(
+  keyboard_hook_ = ui::KeyboardHook::CreateModifierKeyboardHook(
       std::move(dom_codes), GetAcceleratedWidget(),
       base::BindRepeating(&DesktopWindowTreeHostX11::DispatchKeyEvent,
                           base::Unretained(this)));
@@ -1819,8 +1819,10 @@ void DesktopWindowTreeHostX11::DispatchMouseEvent(ui::MouseEvent* event) {
   // WindowTreeHost that hosts ash.
   if (content_window() && content_window()->delegate()) {
     int flags = event->flags();
+    gfx::Point location_in_dip = event->location();
+    GetRootTransform().TransformPointReverse(&location_in_dip);
     int hit_test_code =
-        content_window()->delegate()->GetNonClientComponent(event->location());
+        content_window()->delegate()->GetNonClientComponent(location_in_dip);
     if (hit_test_code != HTCLIENT && hit_test_code != HTNOWHERE)
       flags |= ui::EF_IS_NON_CLIENT;
     event->set_flags(flags);
@@ -2046,8 +2048,11 @@ uint32_t DesktopWindowTreeHostX11::DispatchEvent(
       break;
     }
     case KeyPress: {
-      ui::KeyEvent keydown_event(xev);
-      DispatchKeyEvent(&keydown_event);
+      if (ui::AtkUtilAuraLinux::HandleKeyEvent(xev) !=
+          ui::DiscardAtkKeyEvent::Discard) {
+        ui::KeyEvent keydown_event(xev);
+        DispatchKeyEvent(&keydown_event);
+      }
       break;
     }
     case KeyRelease: {
@@ -2056,8 +2061,11 @@ uint32_t DesktopWindowTreeHostX11::DispatchEvent(
       if (!IsActive() && !HasCapture())
         break;
 
-      ui::KeyEvent key_event(xev);
-      DispatchKeyEvent(&key_event);
+      if (ui::AtkUtilAuraLinux::HandleKeyEvent(xev) !=
+          ui::DiscardAtkKeyEvent::Discard) {
+        ui::KeyEvent key_event(xev);
+        DispatchKeyEvent(&key_event);
+      }
       break;
     }
     case ButtonPress:

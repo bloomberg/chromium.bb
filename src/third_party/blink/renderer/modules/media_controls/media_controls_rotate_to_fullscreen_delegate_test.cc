@@ -38,7 +38,7 @@ using testing::Return;
 
 namespace blink {
 
-using namespace HTMLNames;
+using namespace html_names;
 
 namespace {
 
@@ -62,7 +62,7 @@ class MockChromeClient : public EmptyChromeClient {
         ->SetScreenOrientationAssociatedPtrForTests(
             std::move(screen_orientation));
   }
-  void EnterFullscreen(LocalFrame& frame, const FullscreenOptions&) override {
+  void EnterFullscreen(LocalFrame& frame, const FullscreenOptions*) override {
     Fullscreen::DidEnterFullscreen(*frame.GetDocument());
   }
   void ExitFullscreen(LocalFrame& frame) override {
@@ -109,7 +109,7 @@ class MediaControlsRotateToFullscreenDelegateTest
 
     SetupPageWithClients(&clients, StubLocalFrameClient::Create());
     video_ = HTMLVideoElement::Create(GetDocument());
-    GetVideo().setAttribute(controlsAttr, g_empty_atom);
+    GetVideo().setAttribute(kControlsAttr, g_empty_atom);
     // Most tests should call GetDocument().body()->AppendChild(&GetVideo());
     // This is not done automatically, so that tests control timing of `Attach`.
   }
@@ -146,7 +146,7 @@ class MediaControlsRotateToFullscreenDelegateTest
     // If scripts are not enabled, controls will always be shown.
     GetFrame().GetSettings()->SetScriptEnabled(true);
 
-    GetVideo().removeAttribute(controlsAttr);
+    GetVideo().removeAttribute(kControlsAttr);
   }
 
   void DispatchEvent(EventTarget& target, const AtomicString& type) {
@@ -161,7 +161,7 @@ class MediaControlsRotateToFullscreenDelegateTest
 
   void UpdateVisibilityObserver() {
     // Let IntersectionObserver update.
-    GetDocument().View()->UpdateAllLifecyclePhases();
+    UpdateAllLifecyclePhasesForTest();
     test::RunPendingTasks();
   }
 
@@ -234,7 +234,7 @@ void MediaControlsRotateToFullscreenDelegateTest::RotateTo(
   EXPECT_CALL(GetChromeClient(), GetScreenInfo())
       .Times(AtLeast(1))
       .WillRepeatedly(Return(screen_info));
-  DispatchEvent(GetWindow(), EventTypeNames::orientationchange);
+  DispatchEvent(GetWindow(), event_type_names::kOrientationchange);
   test::RunPendingTasks();
 }
 
@@ -315,7 +315,7 @@ TEST_F(MediaControlsRotateToFullscreenDelegateTest,
   EXPECT_FALSE(ObservedVisibility());
 
   // Should have observed visibility once compositor updates.
-  GetDocument().View()->UpdateAllLifecyclePhases();
+  UpdateAllLifecyclePhasesForTest();
   test::RunPendingTasks();
   EXPECT_TRUE(ObservedVisibility());
 
@@ -336,7 +336,7 @@ TEST_F(MediaControlsRotateToFullscreenDelegateTest,
   EXPECT_FALSE(ObservedVisibility());
 
   // Should have observed visibility once compositor updates.
-  GetDocument().View()->UpdateAllLifecyclePhases();
+  UpdateAllLifecyclePhasesForTest();
   test::RunPendingTasks();
   EXPECT_TRUE(ObservedVisibility());
 }

@@ -12,7 +12,7 @@
 #include "chrome/common/pref_names.h"
 #include "components/autofill/core/common/autofill_prefs.h"
 #include "components/dom_distiller/core/pref_names.h"
-#include "components/ntp_snippets/pref_names.h"
+#include "components/feed/core/pref_names.h"
 #include "components/payments/core/payment_prefs.h"
 
 // A preference exposed to Java.
@@ -41,8 +41,8 @@ const char* const kPrefsExposedToJava[] = {
     prefs::kAllowDeletingBrowserHistory,
     contextual_suggestions::prefs::kContextualSuggestionsEnabled,
     prefs::kIncognitoModeAvailability,
-    ntp_snippets::prefs::kEnableSnippets,
-    ntp_snippets::prefs::kArticlesListVisible,
+    feed::prefs::kEnableSnippets,
+    feed::prefs::kArticlesListVisible,
     dom_distiller::prefs::kReaderForAccessibility,
     prefs::kPromptForDownloadAndroid,
     prefs::kShowMissingSdCardErrorAndroid,

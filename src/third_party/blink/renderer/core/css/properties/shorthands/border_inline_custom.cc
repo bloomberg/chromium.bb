@@ -8,7 +8,7 @@
 #include "third_party/blink/renderer/core/style_property_shorthand.h"
 
 namespace blink {
-namespace CSSShorthand {
+namespace css_shorthand {
 
 bool BorderInline::ParseShorthand(
     bool important,
@@ -20,16 +20,16 @@ bool BorderInline::ParseShorthand(
   const CSSValue* style = nullptr;
   const CSSValue* color = nullptr;
 
-  if (!CSSPropertyParserHelpers::ConsumeBorderShorthand(range, context, width,
-                                                        style, color)) {
+  if (!css_property_parser_helpers::ConsumeBorderShorthand(
+          range, context, width, style, color)) {
     return false;
   };
 
-  CSSPropertyParserHelpers::AddExpandedPropertyForValue(
+  css_property_parser_helpers::AddExpandedPropertyForValue(
       CSSPropertyBorderInlineWidth, *width, important, properties);
-  CSSPropertyParserHelpers::AddExpandedPropertyForValue(
+  css_property_parser_helpers::AddExpandedPropertyForValue(
       CSSPropertyBorderInlineStyle, *style, important, properties);
-  CSSPropertyParserHelpers::AddExpandedPropertyForValue(
+  css_property_parser_helpers::AddExpandedPropertyForValue(
       CSSPropertyBorderInlineColor, *color, important, properties);
 
   return range.AtEnd();
@@ -53,5 +53,5 @@ const CSSValue* BorderInline::CSSValueFromComputedStyleInternal(
   return value_start;
 }
 
-}  // namespace CSSShorthand
+}  // namespace css_shorthand
 }  // namespace blink

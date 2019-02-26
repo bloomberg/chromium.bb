@@ -93,7 +93,8 @@ bool CSSOMTypes::IsPropertySupported(CSSPropertyID id) {
 bool CSSOMTypes::PropertyCanTake(CSSPropertyID id,
                                  const AtomicString& custom_property_name,
                                  const PropertyRegistration* registration,
-                                 const CSSStyleValue& value) {
+                                 const CSSStyleValue& value,
+                                 const CSSSyntaxComponent*& match) {
   DCHECK_EQ(id == CSSPropertyVariable, !custom_property_name.IsNull());
 
   if (id == CSSPropertyVariable && registration) {
@@ -101,7 +102,8 @@ bool CSSOMTypes::PropertyCanTake(CSSPropertyID id,
       return ToCSSUnsupportedStyleValue(value).GetCustomPropertyName() ==
           custom_property_name;
     }
-    return registration->Syntax().CanTake(value);
+    match = registration->Syntax().Match(value);
+    return match != nullptr;
   }
 
   if (value.GetType() == CSSStyleValue::kKeywordType) {

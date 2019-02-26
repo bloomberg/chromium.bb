@@ -84,8 +84,8 @@ class ChildConnection::IOThreadContext
     auto pid_receiver_request = mojo::MakeRequest(&pid_receiver_);
 
     if (connector_) {
-      connector_->StartService(child_identity, std::move(service),
-                               std::move(pid_receiver_request));
+      connector_->RegisterServiceInstance(child_identity, std::move(service),
+                                          std::move(pid_receiver_request));
       connector_->BindInterface(child_identity, &child_);
     }
   }

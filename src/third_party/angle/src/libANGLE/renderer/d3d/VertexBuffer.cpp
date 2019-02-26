@@ -26,9 +26,7 @@ VertexBuffer::VertexBuffer() : mRefCount(1)
     updateSerial();
 }
 
-VertexBuffer::~VertexBuffer()
-{
-}
+VertexBuffer::~VertexBuffer() {}
 
 void VertexBuffer::updateSerial()
 {
@@ -59,8 +57,7 @@ void VertexBuffer::release()
 // VertexBufferInterface Implementation
 VertexBufferInterface::VertexBufferInterface(BufferFactoryD3D *factory, bool dynamic)
     : mFactory(factory), mVertexBuffer(factory->createVertexBuffer()), mDynamic(dynamic)
-{
-}
+{}
 
 VertexBufferInterface::~VertexBufferInterface()
 {
@@ -107,7 +104,7 @@ angle::Result VertexBufferInterface::getSpaceRequired(const gl::Context *context
 
     // Align to 16-byte boundary
     unsigned int alignedSpaceRequired = roundUp(spaceRequired, 16u);
-    ANGLE_CHECK_HR_ALLOC(GetImplAs<ContextD3D>(context), alignedSpaceRequired >= spaceRequired);
+    ANGLE_CHECK_GL_ALLOC(GetImplAs<ContextD3D>(context), alignedSpaceRequired >= spaceRequired);
 
     *spaceInBytesOut = alignedSpaceRequired;
     return angle::Result::Continue();
@@ -128,8 +125,7 @@ VertexBuffer *VertexBufferInterface::getVertexBuffer() const
 // StreamingVertexBufferInterface Implementation
 StreamingVertexBufferInterface::StreamingVertexBufferInterface(BufferFactoryD3D *factory)
     : VertexBufferInterface(factory, true), mWritePosition(0), mReservedSpace(0)
-{
-}
+{}
 
 angle::Result StreamingVertexBufferInterface::initialize(const gl::Context *context,
                                                          std::size_t initialSize)
@@ -146,9 +142,7 @@ void StreamingVertexBufferInterface::reset()
     }
 }
 
-StreamingVertexBufferInterface::~StreamingVertexBufferInterface()
-{
-}
+StreamingVertexBufferInterface::~StreamingVertexBufferInterface() {}
 
 angle::Result StreamingVertexBufferInterface::reserveSpace(const gl::Context *context,
                                                            unsigned int size)
@@ -185,7 +179,7 @@ angle::Result StreamingVertexBufferInterface::storeDynamicAttribute(
     // Protect against integer overflow
     angle::CheckedNumeric<unsigned int> checkedPosition(mWritePosition);
     checkedPosition += spaceRequired;
-    ANGLE_CHECK_HR_ALLOC(GetImplAs<ContextD3D>(context), checkedPosition.IsValid());
+    ANGLE_CHECK_GL_ALLOC(GetImplAs<ContextD3D>(context), checkedPosition.IsValid());
 
     ANGLE_TRY(reserveSpace(context, mReservedSpace));
     mReservedSpace = 0;
@@ -219,7 +213,7 @@ angle::Result StreamingVertexBufferInterface::reserveVertexSpace(const gl::Conte
     alignedRequiredSpace += mReservedSpace;
 
     // Protect against integer overflow
-    ANGLE_CHECK_HR_ALLOC(GetImplAs<ContextD3D>(context), alignedRequiredSpace.IsValid());
+    ANGLE_CHECK_GL_ALLOC(GetImplAs<ContextD3D>(context), alignedRequiredSpace.IsValid());
 
     mReservedSpace = alignedRequiredSpace.ValueOrDie();
 
@@ -229,8 +223,7 @@ angle::Result StreamingVertexBufferInterface::reserveVertexSpace(const gl::Conte
 // StaticVertexBufferInterface Implementation
 StaticVertexBufferInterface::AttributeSignature::AttributeSignature()
     : type(GL_NONE), size(0), stride(0), normalized(false), pureInteger(false), offset(0)
-{
-}
+{}
 
 bool StaticVertexBufferInterface::AttributeSignature::matchesAttribute(
     const gl::VertexAttribute &attrib,
@@ -263,12 +256,9 @@ void StaticVertexBufferInterface::AttributeSignature::set(const gl::VertexAttrib
 
 StaticVertexBufferInterface::StaticVertexBufferInterface(BufferFactoryD3D *factory)
     : VertexBufferInterface(factory, false)
-{
-}
+{}
 
-StaticVertexBufferInterface::~StaticVertexBufferInterface()
-{
-}
+StaticVertexBufferInterface::~StaticVertexBufferInterface() {}
 
 bool StaticVertexBufferInterface::matchesAttribute(const gl::VertexAttribute &attrib,
                                                    const gl::VertexBinding &binding) const

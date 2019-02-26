@@ -18,6 +18,7 @@
 #include "components/sync/protocol/unique_position.pb.h"
 
 namespace bookmarks {
+class BookmarkModel;
 class BookmarkNode;
 }
 
@@ -95,6 +96,13 @@ class SyncedBookmarkTracker {
       std::unique_ptr<sync_pb::ModelTypeState> model_type_state);
   ~SyncedBookmarkTracker();
 
+  // Checks the integrity of the |model_metadata|. It also verifies that the
+  // contents of the |model_metadata| match the contents of |model|. It should
+  // only be called if the initial sync has completed.
+  static bool BookmarkModelMatchesMetadata(
+      const bookmarks::BookmarkModel* model,
+      const sync_pb::BookmarkModelMetadata& model_metadata);
+
   // Returns null if no entity is found.
   const Entity* GetEntityForSyncId(const std::string& sync_id) const;
 
@@ -149,6 +157,8 @@ class SyncedBookmarkTracker {
     model_type_state_ = std::move(model_type_state);
   }
 
+  std::vector<const Entity*> GetAllEntities() const;
+
   std::vector<const Entity*> GetEntitiesWithLocalChanges(
       size_t max_entries) const;
 
@@ -161,6 +171,11 @@ class SyncedBookmarkTracker {
                                 const std::string& new_id,
                                 int64_t acked_sequence_number,
                                 int64_t server_version);
+
+  // Informs the tracker that the sync id for an entity has changed. It updates
+  // the internal state of the tracker accordingly.
+  void UpdateSyncForLocalCreationIfNeeded(const std::string& old_id,
+                                          const std::string& new_id);
 
   // Set the value of |EntityMetadata.acked_sequence_number| in the entity with
   // |sync_id| to be equal to |EntityMetadata.sequence_number| such that it is

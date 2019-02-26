@@ -32,13 +32,13 @@
 #define THIRD_PARTY_BLINK_RENDERER_PLATFORM_BINDINGS_V8_DOM_WRAPPER_H_
 
 #include "base/stl_util.h"
+#include "third_party/blink/renderer/platform/bindings/binding_security_for_platform.h"
 #include "third_party/blink/renderer/platform/bindings/custom_wrappable.h"
 #include "third_party/blink/renderer/platform/bindings/dom_data_store.h"
 #include "third_party/blink/renderer/platform/bindings/runtime_call_stats.h"
 #include "third_party/blink/renderer/platform/bindings/script_wrappable.h"
 #include "third_party/blink/renderer/platform/bindings/script_wrappable_marking_visitor.h"
 #include "third_party/blink/renderer/platform/bindings/v8_binding.h"
-#include "third_party/blink/renderer/platform/bindings/wrapper_creation_security_check.h"
 #include "third_party/blink/renderer/platform/heap/unified_heap_marking_visitor.h"
 #include "third_party/blink/renderer/platform/platform_export.h"
 #include "third_party/blink/renderer/platform/wtf/compiler.h"
@@ -185,9 +185,8 @@ class V8WrapperInstantiationScope {
     if (context_for_wrapper == context_)
       return;
 
-    context_ = context_for_wrapper;
-
-    if (!WrapperCreationSecurityCheck::VerifyContextAccess(context_, type_)) {
+    if (!BindingSecurityForPlatform::ShouldAllowWrapperCreationOrThrowException(
+            isolate->GetCurrentContext(), context_for_wrapper, type_)) {
       DCHECK(try_catch_.HasCaught());
       try_catch_.ReThrow();
       access_check_failed_ = true;
@@ -195,6 +194,7 @@ class V8WrapperInstantiationScope {
     }
 
     did_enter_context_ = true;
+    context_ = context_for_wrapper;
     context_->Enter();
   }
 
@@ -214,8 +214,9 @@ class V8WrapperInstantiationScope {
     // such a scenario.
     v8::Local<v8::Value> caught_exception = try_catch_.Exception();
     try_catch_.Reset();
-    WrapperCreationSecurityCheck::RethrowCrossContextException(
-        context_, type_, caught_exception);
+    BindingSecurityForPlatform::RethrowWrapperCreationException(
+        context_->GetIsolate()->GetCurrentContext(), context_, type_,
+        caught_exception);
     try_catch_.ReThrow();
   }
 

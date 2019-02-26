@@ -5,7 +5,6 @@
 package org.chromium.chrome.browser.preferences;
 
 import android.content.Context;
-import android.content.Intent;
 import android.os.Bundle;
 import android.preference.PreferenceFragment;
 import android.support.annotation.Nullable;
@@ -24,7 +23,6 @@ import org.chromium.chrome.browser.signin.SigninAccessPoint;
 import org.chromium.chrome.browser.signin.SigninActivity;
 import org.chromium.chrome.browser.sync.ProfileSyncService;
 import org.chromium.chrome.browser.sync.ui.SyncCustomizationFragment;
-import org.chromium.chrome.browser.util.IntentUtils;
 import org.chromium.chrome.browser.widget.TintedDrawable;
 import org.chromium.components.signin.ChromeSigninController;
 import org.chromium.ui.text.NoUnderlineClickableSpan;
@@ -52,7 +50,7 @@ public class ContextualSuggestionsPreference
 
         mSwitch = (ChromeSwitchPreference) findPreference(PREF_CONTEXTUAL_SUGGESTIONS_SWITCH);
         mEnabledStateMonitor =
-                ChromeApplication.getComponent().getContextualSuggestionsEnabledStateMonitor();
+                ChromeApplication.getComponent().resolveContextualSuggestionsEnabledStateMonitor();
         mEnabledStateMonitor.addObserver(this);
         onSettingsStateChanged(mEnabledStateMonitor.getSettingsEnabled());
         initialize();
@@ -95,18 +93,16 @@ public class ContextualSuggestionsPreference
             final NoUnderlineClickableSpan span = new NoUnderlineClickableSpan((widget) -> {
                 if (isUnifiedConsentEnabled) {
                     if (isSignedIn) {
-                        Intent intent = PreferencesLauncher.createIntentForSettingsPage(
-                                context, SyncAndServicesPreferences.class.getName());
-                        IntentUtils.safeStartActivity(context, intent);
+                        PreferencesLauncher.launchSettingsPage(
+                                context, SyncAndServicesPreferences.class);
                     } else {
                         startActivity(SigninActivity.createIntentForPromoChooseAccountFlow(
                                 context, SigninAccessPoint.SETTINGS, null));
                     }
                 } else {
                     if (isSignedIn) {
-                        Intent intent = PreferencesLauncher.createIntentForSettingsPage(
-                                context, SyncCustomizationFragment.class.getName());
-                        IntentUtils.safeStartActivity(context, intent);
+                        PreferencesLauncher.launchSettingsPage(
+                                context, SyncCustomizationFragment.class);
                     } else {
                         startActivity(AccountSigninActivity.createIntentForDefaultSigninFlow(
                                 context, SigninAccessPoint.SETTINGS, false));

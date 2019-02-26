@@ -23,6 +23,7 @@ schema_sources = [
   "identity.idl",
   "i18n.json",
   "notifications.idl",
+  "settings_private.idl",
   "tabs.json",
   "windows.json",
 ]

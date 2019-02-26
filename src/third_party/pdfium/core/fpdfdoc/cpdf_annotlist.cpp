@@ -81,13 +81,12 @@ std::unique_ptr<CPDF_Annot> CreatePopupAnnot(CPDF_Annot* pAnnot,
   if (sContents.IsEmpty())
     return nullptr;
 
-  auto pAnnotDict =
-      pdfium::MakeUnique<CPDF_Dictionary>(pDocument->GetByteStringPool());
+  auto pAnnotDict = pDocument->New<CPDF_Dictionary>();
   pAnnotDict->SetNewFor<CPDF_Name>("Type", "Annot");
   pAnnotDict->SetNewFor<CPDF_Name>("Subtype", "Popup");
   pAnnotDict->SetNewFor<CPDF_String>("T", pParentDict->GetStringFor("T"),
                                      false);
-  pAnnotDict->SetNewFor<CPDF_String>("Contents", sContents.UTF8Encode(), false);
+  pAnnotDict->SetNewFor<CPDF_String>("Contents", sContents.ToUTF8(), false);
 
   CFX_FloatRect rect = pParentDict->GetRectFor("Rect");
   rect.Normalize();
@@ -172,7 +171,7 @@ CPDF_AnnotList::CPDF_AnnotList(CPDF_Page* pPage)
   const CPDF_Dictionary* pAcroForm = pRoot->GetDictFor("AcroForm");
   bool bRegenerateAP =
       pAcroForm && pAcroForm->GetBooleanFor("NeedAppearances", false);
-  for (size_t i = 0; i < pAnnots->GetCount(); ++i) {
+  for (size_t i = 0; i < pAnnots->size(); ++i) {
     CPDF_Dictionary* pDict = ToDictionary(pAnnots->GetDirectObjectAt(i));
     if (!pDict)
       continue;

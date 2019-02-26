@@ -25,13 +25,14 @@
 
 #include "perfetto/base/build_config.h"
 #include "perfetto/base/utils.h"
+#include "perfetto/protozero/scattered_stream_memory_delegate.h"
 #include "perfetto/protozero/scattered_stream_writer.h"
-#include "src/protozero/scattered_stream_delegate_for_testing.h"
 
 #include "perfetto/trace/ftrace/ftrace_event.pb.h"
 #include "perfetto/trace/ftrace/ftrace_event.pbzero.h"
 #include "perfetto/trace/ftrace/ftrace_event_bundle.pb.h"
 #include "perfetto/trace/ftrace/ftrace_event_bundle.pbzero.h"
+#include "src/traced/probes/ftrace/ftrace_procfs.h"
 #include "src/traced/probes/ftrace/test/cpu_reader_support.h"
 #include "src/traced/probes/ftrace/test/test_messages.pb.h"
 #include "src/traced/probes/ftrace/test/test_messages.pbzero.h"
@@ -44,6 +45,10 @@ using testing::Eq;
 using testing::Pair;
 using testing::StartsWith;
 using testing::Contains;
+using testing::_;
+using testing::Return;
+using testing::AnyNumber;
+using testing::NiceMock;
 
 namespace perfetto {
 
@@ -66,6 +71,28 @@ constexpr uint64_t kNanoInMicro = 1000;
          << (actual_ns % kNanoInSecond) / kNanoInMicro << " vs. " << expected_s
          << "." << expected_us;
 }
+
+class MockFtraceProcfs : public FtraceProcfs {
+ public:
+  MockFtraceProcfs() : FtraceProcfs("/root/") {
+    ON_CALL(*this, NumberOfCpus()).WillByDefault(Return(1));
+    ON_CALL(*this, WriteToFile(_, _)).WillByDefault(Return(true));
+    ON_CALL(*this, ClearFile(_)).WillByDefault(Return(true));
+    EXPECT_CALL(*this, NumberOfCpus()).Times(AnyNumber());
+  }
+
+  MOCK_METHOD2(WriteToFile,
+               bool(const std::string& path, const std::string& str));
+  MOCK_METHOD1(ReadOneCharFromFile, char(const std::string& path));
+  MOCK_METHOD1(ClearFile, bool(const std::string& path));
+  MOCK_CONST_METHOD1(ReadFileIntoString, std::string(const std::string& path));
+  MOCK_CONST_METHOD0(NumberOfCpus, size_t());
+};
+
+class CpuReaderTableTest : public ::testing::Test {
+ protected:
+  NiceMock<MockFtraceProcfs> ftrace_;
+};
 
 // Single class to manage the whole protozero -> scattered stream -> chunks ->
 // single buffer -> real proto dance. Has a method: writer() to get an
@@ -99,7 +126,7 @@ class ProtoProvider {
   ProtoProvider& operator=(const ProtoProvider&) = delete;
 
   size_t chunk_size_;
-  ScatteredStreamDelegateForTesting delegate_;
+  ScatteredStreamMemoryDelegate delegate_;
   protozero::ScatteredStreamWriter stream_;
   ZeroT writer_;
 };
@@ -189,36 +216,6 @@ TEST(CpuReaderTest, BinaryWriter) {
   EXPECT_EQ(buffer.get()[6], 0);
   EXPECT_EQ(buffer.get()[7], 0);
   EXPECT_EQ(buffer.get()[8], 2);
-}
-
-TEST(EventFilterTest, EventFilter) {
-  std::vector<Field> common_fields;
-  std::vector<Event> events;
-
-  {
-    Event event;
-    event.name = "foo";
-    event.group = "foo_group";
-    event.ftrace_event_id = 1;
-    events.push_back(event);
-  }
-
-  {
-    Event event;
-    event.name = "bar";
-    event.group = "bar_group";
-    event.ftrace_event_id = 10;
-    events.push_back(event);
-  }
-
-  ProtoTranslationTable table(
-      events, std::move(common_fields),
-      ProtoTranslationTable::DefaultPageHeaderSpecForTesting());
-  EventFilter filter(table, {"foo"});
-
-  EXPECT_TRUE(filter.IsEventEnabled(1));
-  EXPECT_FALSE(filter.IsEventEnabled(2));
-  EXPECT_FALSE(filter.IsEventEnabled(10));
 }
 
 TEST(ReadAndAdvanceTest, Number) {
@@ -337,7 +334,9 @@ TEST(CpuReaderTest, ParseSinglePrint) {
   ProtoTranslationTable* table = GetTable(test_case->name);
   auto page = PageFromXxd(test_case->data);
 
-  EventFilter filter(*table, {"print"});
+  EventFilter filter;
+  filter.AddEnabledEvent(
+      table->EventToFtraceId(GroupAndName("ftrace", "print")));
 
   FtraceMetadata metadata{};
   size_t bytes = CpuReader::ParsePage(
@@ -450,7 +449,9 @@ TEST(CpuReaderTest, ReallyLongEvent) {
   ProtoTranslationTable* table = GetTable(test_case->name);
   auto page = PageFromXxd(test_case->data);
 
-  EventFilter filter(*table, {"print"});
+  EventFilter filter;
+  filter.AddEnabledEvent(
+      table->EventToFtraceId(GroupAndName("ftrace", "print")));
 
   FtraceMetadata metadata{};
   CpuReader::ParsePage(page.get(), &filter, bundle_provider.writer(), table,
@@ -485,7 +486,9 @@ TEST(CpuReaderTest, ParseSinglePrintMalformed) {
   ProtoTranslationTable* table = GetTable(test_case->name);
   auto page = PageFromXxd(test_case->data);
 
-  EventFilter filter(*table, {"print"});
+  EventFilter filter;
+  filter.AddEnabledEvent(
+      table->EventToFtraceId(GroupAndName("ftrace", "print")));
 
   FtraceMetadata metadata{};
   ASSERT_FALSE(CpuReader::ParsePage(
@@ -510,7 +513,7 @@ TEST(CpuReaderTest, FilterByEvent) {
   ProtoTranslationTable* table = GetTable(test_case->name);
   auto page = PageFromXxd(test_case->data);
 
-  EventFilter filter(*table, {});
+  EventFilter filter;
 
   FtraceMetadata metadata{};
   ASSERT_TRUE(CpuReader::ParsePage(page.get(), &filter,
@@ -563,7 +566,9 @@ TEST(CpuReaderTest, ParseThreePrint) {
   ProtoTranslationTable* table = GetTable(test_case->name);
   auto page = PageFromXxd(test_case->data);
 
-  EventFilter filter(*table, {"print"});
+  EventFilter filter;
+  filter.AddEnabledEvent(
+      table->EventToFtraceId(GroupAndName("ftrace", "print")));
 
   FtraceMetadata metadata{};
   ASSERT_TRUE(CpuReader::ParsePage(page.get(), &filter,
@@ -657,7 +662,9 @@ TEST(CpuReaderTest, ParseSixSchedSwitch) {
   ProtoTranslationTable* table = GetTable(test_case->name);
   auto page = PageFromXxd(test_case->data);
 
-  EventFilter filter(*table, {"sched_switch"});
+  EventFilter filter;
+  filter.AddEnabledEvent(
+      table->EventToFtraceId(GroupAndName("sched", "sched_switch")));
 
   FtraceMetadata metadata{};
   ASSERT_TRUE(CpuReader::ParsePage(page.get(), &filter,
@@ -681,7 +688,7 @@ TEST(CpuReaderTest, ParseSixSchedSwitch) {
   }
 }
 
-TEST(CpuReaderTest, ParseAllFields) {
+TEST_F(CpuReaderTableTest, ParseAllFields) {
   using FakeEventProvider =
       ProtoProvider<pbzero::FakeFtraceEvent, FakeFtraceEvent>;
 
@@ -827,7 +834,7 @@ TEST(CpuReaderTest, ParseAllFields) {
   }
 
   ProtoTranslationTable table(
-      events, std::move(common_fields),
+      &ftrace_, events, std::move(common_fields),
       ProtoTranslationTable::DefaultPageHeaderSpecForTesting());
 
   FakeEventProvider provider(base::kPageSize);
@@ -1325,7 +1332,9 @@ TEST(CpuReaderTest, ParseFullPageSchedSwitch) {
   ProtoTranslationTable* table = GetTable(test_case->name);
   auto page = PageFromXxd(test_case->data);
 
-  EventFilter filter(*table, {"sched_switch"});
+  EventFilter filter;
+  filter.AddEnabledEvent(
+      table->EventToFtraceId(GroupAndName("sched", "sched_switch")));
 
   FtraceMetadata metadata{};
   ASSERT_TRUE(CpuReader::ParsePage(page.get(), &filter,
@@ -1754,7 +1763,9 @@ TEST(CpuReaderTest, ParseExt4WithOverwrite) {
   ProtoTranslationTable* table = GetTable(test_case->name);
   auto page = PageFromXxd(test_case->data);
 
-  EventFilter filter(*table, {"sched_switch"});
+  EventFilter filter;
+  filter.AddEnabledEvent(
+      table->EventToFtraceId(GroupAndName("sched", "sched_switch")));
 
   FtraceMetadata metadata{};
   ASSERT_TRUE(CpuReader::ParsePage(page.get(), &filter,

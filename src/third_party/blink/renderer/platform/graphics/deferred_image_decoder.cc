@@ -266,10 +266,6 @@ void DeferredImageDecoder::ActivateLazyDecoding() {
   image_is_high_bit_depth_ = metadata_decoder_->ImageIsHighBitDepth();
   has_hot_spot_ = metadata_decoder_->HotSpot(hot_spot_);
   filename_extension_ = metadata_decoder_->FilenameExtension();
-  // JPEG images support YUV decoding; other decoders do not. (WebP could in the
-  // future.)
-  can_yuv_decode_ = RuntimeEnabledFeatures::DecodeToYUVEnabled() &&
-                    (filename_extension_ == "jpg");
   has_embedded_color_profile_ = metadata_decoder_->HasEmbeddedColorProfile();
   color_space_for_sk_images_ = metadata_decoder_->ColorSpaceForSkImages();
 
@@ -310,6 +306,12 @@ void DeferredImageDecoder::PrepareLazyDecodedFrames() {
     frame_data_[last_frame].is_received_ =
         metadata_decoder_->FrameIsReceivedAtIndex(last_frame);
   }
+
+  // YUV decoding does not currently support progressive decoding. See comment
+  // in image_frame_generator.h.
+  can_yuv_decode_ = RuntimeEnabledFeatures::DecodeToYUVEnabled() &&
+                    metadata_decoder_->CanDecodeToYUV() && all_data_received_ &&
+                    !frame_generator_->IsMultiFrame();
 
   // If we've received all of the data, then we can reset the metadata decoder,
   // since everything we care about should now be stored in |frame_data_|.

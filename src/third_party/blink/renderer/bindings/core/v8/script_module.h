@@ -7,7 +7,6 @@
 
 #include "third_party/blink/renderer/core/core_export.h"
 #include "third_party/blink/renderer/platform/bindings/shared_persistent.h"
-#include "third_party/blink/renderer/platform/loader/fetch/access_control_status.h"
 #include "third_party/blink/renderer/platform/wtf/allocator.h"
 #include "third_party/blink/renderer/platform/wtf/text/text_position.h"
 #include "third_party/blink/renderer/platform/wtf/text/wtf_string.h"
@@ -38,7 +37,6 @@ class CORE_EXPORT ScriptModule final {
                               const KURL& source_url,
                               const KURL& base_url,
                               const ScriptFetchOptions&,
-                              AccessControlStatus,
                               const TextPosition&,
                               ExceptionState&);
 

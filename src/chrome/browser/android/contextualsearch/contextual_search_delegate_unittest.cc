@@ -542,8 +542,8 @@ TEST_F(ContextualSearchDelegateTest, DecodeSearchTermFromJsonResponse) {
   QuickActionCategory quick_action_category = QUICK_ACTION_CATEGORY_NONE;
 
   delegate_->DecodeSearchTermFromJsonResponse(
-      json_with_escape, &search_term, &display_text, &alternate_term,
-      &mid, &prevent_preload, &mention_start, &mention_end, &context_language,
+      json_with_escape, &search_term, &display_text, &alternate_term, &mid,
+      &prevent_preload, &mention_start, &mention_end, &context_language,
       &thumbnail_url, &caption, &quick_action_uri, &quick_action_category);
 
   EXPECT_EQ("obama", search_term);

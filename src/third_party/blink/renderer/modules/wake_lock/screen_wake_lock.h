@@ -33,13 +33,12 @@ class MODULES_EXPORT ScreenWakeLock final
 
   static ScreenWakeLock* From(LocalFrame*);
 
+  explicit ScreenWakeLock(LocalFrame&);
   ~ScreenWakeLock() = default;
 
   void Trace(blink::Visitor*) override;
 
  private:
-  explicit ScreenWakeLock(LocalFrame&);
-
   // Inherited from PageVisibilityObserver.
   void PageVisibilityChanged() override;
 

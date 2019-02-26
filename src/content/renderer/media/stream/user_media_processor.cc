@@ -13,6 +13,7 @@
 #include "base/location.h"
 #include "base/logging.h"
 #include "base/single_thread_task_runner.h"
+#include "base/stl_util.h"
 #include "base/strings/stringprintf.h"
 #include "base/task_runner.h"
 #include "base/task_runner_util.h"
@@ -35,7 +36,7 @@
 #include "content/renderer/media/webrtc/webrtc_uma_histograms.h"
 #include "content/renderer/media/webrtc_logging.h"
 #include "content/renderer/render_frame_impl.h"
-#include "content/renderer/render_widget.h"
+#include "content/renderer/render_view_impl.h"
 #include "media/base/audio_parameters.h"
 #include "media/capture/video_capture_types.h"
 #include "services/service_manager/public/cpp/interface_provider.h"
@@ -411,9 +412,7 @@ void UserMediaProcessor::RequestInfo::OnAudioSourceStarted(
     const blink::WebString& result_name) {
   // Check if we're waiting to be notified of this source.  If not, then we'll
   // ignore the notification.
-  auto found = std::find(sources_waiting_for_callback_.begin(),
-                         sources_waiting_for_callback_.end(), source);
-  if (found != sources_waiting_for_callback_.end())
+  if (base::ContainsValue(sources_waiting_for_callback_, source))
     OnTrackStarted(source, result, result_name);
 }
 
@@ -763,8 +762,7 @@ void UserMediaProcessor::GotAllVideoInputFormatsForDevice(
 gfx::Size UserMediaProcessor::GetScreenSize() {
   gfx::Size screen_size(kDefaultScreenCastWidth, kDefaultScreenCastHeight);
   if (render_frame_) {  // Can be null in tests.
-    blink::WebScreenInfo info =
-        render_frame_->GetRenderWidget()->GetScreenInfo();
+    blink::WebScreenInfo info = render_frame_->render_view()->GetScreenInfo();
     screen_size = gfx::Size(info.rect.width, info.rect.height);
   }
   return screen_size;
@@ -818,7 +816,6 @@ void UserMediaProcessor::OnAudioSourceStarted(
     NotifyCurrentRequestInfoOfAudioSourceStarted(source, result, result_name);
     return;
   }
-  NOTREACHED();
 }
 
 void UserMediaProcessor::NotifyCurrentRequestInfoOfAudioSourceStarted(
@@ -852,7 +849,7 @@ void UserMediaProcessor::OnDeviceStopped(const MediaStreamDevice& device) {
   const blink::WebMediaStreamSource* source_ptr = FindLocalSource(device);
   if (!source_ptr) {
     // This happens if the same device is used in several guM requests or
-    // if a user happen stop a track from JS at the same time
+    // if a user happens to stop a track from JS at the same time
     // as the underlying media device is unplugged from the system.
     return;
   }
@@ -861,6 +858,41 @@ void UserMediaProcessor::OnDeviceStopped(const MediaStreamDevice& device) {
   blink::WebMediaStreamSource source(*source_ptr);
   StopLocalSource(source, false);
   RemoveLocalSource(source);
+}
+
+void UserMediaProcessor::OnDeviceChanged(const MediaStreamDevice& old_device,
+                                         const MediaStreamDevice& new_device) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  DVLOG(1) << "UserMediaClientImpl::OnDeviceChange("
+           << "{old_device_id = " << old_device.id
+           << ", session id = " << old_device.session_id
+           << ", type = " << old_device.type << "}"
+           << "{new_device_id = " << new_device.id
+           << ", session id = " << new_device.session_id
+           << ", type = " << new_device.type << "})";
+
+  const blink::WebMediaStreamSource* source_ptr = FindLocalSource(old_device);
+  if (!source_ptr) {
+    // This happens if the same device is used in several guM requests or
+    // if a user happens to stop a track from JS at the same time
+    // as the underlying media device is unplugged from the system.
+    DVLOG(1) << "failed to find existing source with device " << old_device.id;
+    return;
+  }
+
+  if (old_device.type != MEDIA_NO_SERVICE &&
+      new_device.type == MEDIA_NO_SERVICE) {
+    // At present, this will only happen to the case that a new desktop capture
+    // source without audio share is selected, then the previous audio capture
+    // device should be stopped if existing.
+    DCHECK(IsAudioInputMediaType(old_device.type));
+    OnDeviceStopped(old_device);
+    return;
+  }
+
+  MediaStreamSource* const source_impl =
+      static_cast<MediaStreamSource*>(source_ptr->GetExtraData());
+  source_impl->ChangeSource(new_device);
 }
 
 blink::WebMediaStreamSource UserMediaProcessor::InitializeVideoSourceObject(

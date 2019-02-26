@@ -8,6 +8,7 @@
 #include <stdint.h>
 
 #include <iosfwd>
+#include <memory>
 #include <string>
 #include <vector>
 
@@ -58,11 +59,9 @@ class SyncData {
                                   const sync_pb::EntitySpecifics& specifics);
 
   // Helper method for creating SyncData objects originating from the syncer.
-  static SyncData CreateRemoteData(
-      int64_t id,
-      const sync_pb::EntitySpecifics& specifics,
-      const base::Time& last_modified_time,
-      const std::string& client_tag_hash = std::string());
+  static SyncData CreateRemoteData(int64_t id,
+                                   sync_pb::EntitySpecifics specifics,
+                                   std::string client_tag_hash = std::string());
 
   // Whether this SyncData holds valid data. The only way to have a SyncData
   // without valid data is to use the default constructor.
@@ -111,11 +110,6 @@ class SyncData {
 
   int64_t id_;
 
-  // This may be null if the SyncData represents a deleted item.
-  // TODO(crbug.com/681921): Remove when directory-based sessions sync is
-  // removed, the only remaining reader.
-  base::Time remote_modification_time_;
-
   // The actual shared sync entity being held.
   ImmutableSyncEntity immutable_entity_;
 
@@ -127,10 +121,7 @@ class SyncData {
   bool is_valid_;
 
   // Clears |entity|.
-  SyncData(bool is_local_,
-           int64_t id,
-           sync_pb::SyncEntity* entity,
-           const base::Time& remote_modification_time);
+  SyncData(bool is_local_, int64_t id, sync_pb::SyncEntity* entity);
 };
 
 // A SyncData going to the syncer.
@@ -155,12 +146,6 @@ class SyncDataRemote : public SyncData {
   // |sync_data|'s IsLocal() must be false.
   explicit SyncDataRemote(const SyncData& sync_data);
   ~SyncDataRemote();
-
-  // Return the last motification time according to the server. This may be null
-  // if the SyncData represents a deleted item.
-  // TODO(crbug.com/681921): Remove when directory-based sessions sync is
-  // removed, the only remaining reader.
-  const base::Time& GetModifiedTime() const;
 
   // Returns the tag hash value. May not always be present, in which case an
   // empty string will be returned.

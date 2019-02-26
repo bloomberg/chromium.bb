@@ -24,11 +24,13 @@ class CORE_EXPORT CSSSkew final : public CSSTransformComponent {
   // Constructor defined in the IDL.
   static CSSSkew* Create(CSSNumericValue*, CSSNumericValue*, ExceptionState&);
   static CSSSkew* Create(CSSNumericValue* ax, CSSNumericValue* ay) {
-    return new CSSSkew(ax, ay);
+    return MakeGarbageCollected<CSSSkew>(ax, ay);
   }
 
   // Internal ways of creating CSSSkew.
   static CSSSkew* FromCSSValue(const CSSFunctionValue&);
+
+  CSSSkew(CSSNumericValue* ax, CSSNumericValue* ay);
 
   // Getters and setters for the ax and ay attributes defined in the IDL.
   CSSNumericValue* ax() { return ax_.Get(); }
@@ -54,8 +56,6 @@ class CORE_EXPORT CSSSkew final : public CSSTransformComponent {
   }
 
  private:
-  CSSSkew(CSSNumericValue* ax, CSSNumericValue* ay);
-
   Member<CSSNumericValue> ax_;
   Member<CSSNumericValue> ay_;
   DISALLOW_COPY_AND_ASSIGN(CSSSkew);

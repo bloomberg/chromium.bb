@@ -8,18 +8,18 @@
 #include "third_party/blink/renderer/platform/wtf/std_lib_extras.h"
 
 namespace blink {
-namespace {{namespace}}Names {
+namespace {{namespace}} {
 
-void* {{suffix}}NamesStorage[{{namespace}}{{suffix}}NamesCount * ((sizeof(AtomicString) + sizeof(void *) - 1) / sizeof(void *))];
+void* {{suffix|lower}}names_storage[k{{suffix}}NamesCount * ((sizeof(AtomicString) + sizeof(void *) - 1) / sizeof(void *))];
 
 {% for entry in entries|sort(attribute='name', case_sensitive=True) %}
-const AtomicString& {{entry|symbol}} = reinterpret_cast<AtomicString*>(&{{suffix}}NamesStorage)[{{loop.index0}}];
+const AtomicString& {{entry|symbol}} = reinterpret_cast<AtomicString*>(&{{suffix|lower}}names_storage)[{{loop.index0}}];
 {% endfor %}
 
-void init{{suffix}}() {
-  static bool isLoaded = false;
-  if (isLoaded) return;
-  isLoaded = true;
+void Init{{suffix}}() {
+  static bool is_loaded = false;
+  if (is_loaded) return;
+  is_loaded = true;
 
   struct NameEntry {
     const char* name;
@@ -33,12 +33,12 @@ void init{{suffix}}() {
   {% endfor %}
   };
 
-  for (size_t i = 0; i < arraysize(kNames); i++) {
-    StringImpl* stringImpl = StringImpl::CreateStatic(kNames[i].name, kNames[i].length, kNames[i].hash);
-    void* address = reinterpret_cast<AtomicString*>(&{{suffix}}NamesStorage) + i;
-    new (address) AtomicString(stringImpl);
+  for (size_t i = 0; i < arraysize(kNames); ++i) {
+    StringImpl* impl = StringImpl::CreateStatic(kNames[i].name, kNames[i].length, kNames[i].hash);
+    void* address = reinterpret_cast<AtomicString*>(&{{suffix|lower}}names_storage) + i;
+    new (address) AtomicString(impl);
   }
 }
 
-} // {{namespace}}Names
-} // namespace blink
+}  // namespace {{namespace}}
+}  // namespace blink

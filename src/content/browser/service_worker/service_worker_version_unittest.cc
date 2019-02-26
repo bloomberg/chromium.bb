@@ -147,9 +147,9 @@ class ServiceWorkerVersionTest : public testing::Test {
     helper_->context()->storage()->LazyInitializeForTest(base::DoNothing());
     base::RunLoop().RunUntilIdle();
 
-    pattern_ = GURL("https://www.example.com/test/");
+    scope_ = GURL("https://www.example.com/test/");
     blink::mojom::ServiceWorkerRegistrationOptions options;
-    options.scope = pattern_;
+    options.scope = scope_;
     registration_ = new ServiceWorkerRegistration(
         options, helper_->context()->storage()->NewRegistrationId(),
         helper_->context()->AsWeakPtr());
@@ -159,7 +159,7 @@ class ServiceWorkerVersionTest : public testing::Test {
         blink::mojom::ScriptType::kClassic,
         helper_->context()->storage()->NewVersionId(),
         helper_->context()->AsWeakPtr());
-    EXPECT_EQ(url::Origin::Create(pattern_), version_->script_origin());
+    EXPECT_EQ(url::Origin::Create(scope_), version_->script_origin());
     std::vector<ServiceWorkerDatabase::ResourceRecord> records;
     records.push_back(WriteToDiskCacheSync(
         helper_->context()->storage(), version_->script_url(), 10,
@@ -214,8 +214,7 @@ class ServiceWorkerVersionTest : public testing::Test {
     base::RunLoop().RunUntilIdle();
 
     // And finish request, as if a response to the event was received.
-    EXPECT_TRUE(version_->FinishRequest(request_id, true /* was_handled */,
-                                        base::TimeTicks::Now()));
+    EXPECT_TRUE(version_->FinishRequest(request_id, true /* was_handled */));
     base::RunLoop().RunUntilIdle();
     EXPECT_EQ(blink::ServiceWorkerStatusCode::kOk, status.value());
   }
@@ -228,7 +227,7 @@ class ServiceWorkerVersionTest : public testing::Test {
   std::unique_ptr<MessageReceiver> helper_;
   scoped_refptr<ServiceWorkerRegistration> registration_;
   scoped_refptr<ServiceWorkerVersion> version_;
-  GURL pattern_;
+  GURL scope_;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(ServiceWorkerVersionTest);
@@ -469,7 +468,6 @@ TEST_F(ServiceWorkerVersionTest, DispatchEventToStoppedWorker) {
   // Stop the worker, and then dispatch an event immediately after that.
   bool has_stopped = false;
   version_->StopWorker(base::BindOnce(&VerifyCalled, &has_stopped));
-  EXPECT_TRUE(version_->HasNoWork());
   SimulateDispatchEvent(ServiceWorkerMetrics::EventType::INSTALL);
   EXPECT_TRUE(has_stopped);
 
@@ -498,7 +496,7 @@ TEST_F(ServiceWorkerVersionTest, StartUnregisteredButStillLiveWorker) {
   // Delete the registration.
   base::Optional<blink::ServiceWorkerStatusCode> status;
   helper_->context()->storage()->DeleteRegistration(
-      registration_->id(), registration_->pattern().GetOrigin(),
+      registration_->id(), registration_->scope().GetOrigin(),
       CreateReceiverOnCurrentThread(&status));
   base::RunLoop().RunUntilIdle();
   ASSERT_EQ(blink::ServiceWorkerStatusCode::kOk, status.value());
@@ -588,7 +586,7 @@ TEST_F(ServiceWorkerVersionTest, Doom) {
       33 /* dummy render process id */, 1 /* dummy provider_id */,
       true /* is_parent_frame_secure */, helper_->context()->AsWeakPtr(),
       &remote_endpoint);
-  host->SetDocumentUrl(registration_->pattern());
+  host->UpdateUrls(registration_->scope(), registration_->scope());
   host->SetControllerRegistration(registration_, false);
   EXPECT_TRUE(version_->HasControllee());
   EXPECT_TRUE(host->controller());
@@ -653,8 +651,7 @@ TEST_F(ServiceWorkerVersionTest, IdleTimeout) {
   int request_id =
       version_->StartRequest(ServiceWorkerMetrics::EventType::SYNC,
                              CreateReceiverOnCurrentThread(&status));
-  EXPECT_TRUE(version_->FinishRequest(request_id, true /* was_handled */,
-                                      base::TimeTicks::Now()));
+  EXPECT_TRUE(version_->FinishRequest(request_id, true /* was_handled */));
   EXPECT_LT(idle_time, version_->idle_time_);
 }
 
@@ -1010,13 +1007,12 @@ TEST_F(ServiceWorkerRequestTimeoutTest, RequestTimeout) {
   EXPECT_EQ(blink::ServiceWorkerStatusCode::kErrorTimeout,
             error_status.value());
   // Calling FinishRequest should be no-op, since the request timed out.
-  EXPECT_FALSE(version_->FinishRequest(request_id, true /* was_handled */,
-                                       base::TimeTicks::Now()));
+  EXPECT_FALSE(version_->FinishRequest(request_id, true /* was_handled */));
 
   // Simulate the renderer aborting the inflight event.
   // This should not crash: https://crbug.com/676984.
   TakeExtendableMessageEventCallback().Run(
-      blink::mojom::ServiceWorkerEventStatus::ABORTED, base::TimeTicks::Now());
+      blink::mojom::ServiceWorkerEventStatus::ABORTED);
   base::RunLoop().RunUntilIdle();
 
   // Simulate the renderer stopping the worker.
@@ -1042,8 +1038,7 @@ TEST_F(ServiceWorkerVersionTest, RequestNowTimeout) {
   base::RunLoop().RunUntilIdle();
   EXPECT_EQ(blink::ServiceWorkerStatusCode::kErrorTimeout, status.value());
 
-  EXPECT_FALSE(version_->FinishRequest(request_id, true /* was_handled */,
-                                       base::TimeTicks::Now()));
+  EXPECT_FALSE(version_->FinishRequest(request_id, true /* was_handled */));
 
   // CONTINUE_ON_TIMEOUT timeouts don't stop the service worker.
   EXPECT_EQ(EmbeddedWorkerStatus::RUNNING, version_->running_status());
@@ -1066,8 +1061,7 @@ TEST_F(ServiceWorkerVersionTest, RequestNowTimeoutKill) {
   base::RunLoop().RunUntilIdle();
   EXPECT_EQ(blink::ServiceWorkerStatusCode::kErrorTimeout, status.value());
 
-  EXPECT_FALSE(version_->FinishRequest(request_id, true /* was_handled */,
-                                       base::TimeTicks::Now()));
+  EXPECT_FALSE(version_->FinishRequest(request_id, true /* was_handled */));
 
   // KILL_ON_TIMEOUT timeouts should stop the service worker.
   EXPECT_EQ(EmbeddedWorkerStatus::STOPPED, version_->running_status());
@@ -1124,11 +1118,11 @@ TEST_F(ServiceWorkerVersionTest, RequestCustomizedTimeout) {
   EXPECT_EQ(blink::ServiceWorkerStatusCode::kErrorTimeout,
             second_status.value());
 
-  EXPECT_FALSE(version_->FinishRequest(first_request_id, true /* was_handled */,
-                                       base::TimeTicks::Now()));
+  EXPECT_FALSE(
+      version_->FinishRequest(first_request_id, true /* was_handled */));
 
-  EXPECT_FALSE(version_->FinishRequest(
-      second_request_id, true /* was_handled */, base::TimeTicks::Now()));
+  EXPECT_FALSE(
+      version_->FinishRequest(second_request_id, true /* was_handled */));
 
   // KILL_ON_TIMEOUT timeouts should stop the service worker.
   EXPECT_EQ(EmbeddedWorkerStatus::STOPPED, version_->running_status());
@@ -1164,8 +1158,8 @@ TEST_F(ServiceWorkerVersionTest, MixedRequestTimeouts) {
   EXPECT_EQ(EmbeddedWorkerStatus::RUNNING, version_->running_status());
 
   // Gracefully handle the sync event finishing after the timeout.
-  EXPECT_FALSE(version_->FinishRequest(sync_request_id, true /* was_handled */,
-                                       base::TimeTicks::Now()));
+  EXPECT_FALSE(
+      version_->FinishRequest(sync_request_id, true /* was_handled */));
 
   // Verify that the fetch times out later.
   version_->SetAllRequestExpirations(base::TimeTicks::Now());
@@ -1175,8 +1169,8 @@ TEST_F(ServiceWorkerVersionTest, MixedRequestTimeouts) {
             fetch_status.value());
 
   // Fetch request should no longer exist.
-  EXPECT_FALSE(version_->FinishRequest(fetch_request_id, true /* was_handled */,
-                                       base::TimeTicks::Now()));
+  EXPECT_FALSE(
+      version_->FinishRequest(fetch_request_id, true /* was_handled */));
 
   // Other timeouts do stop the service worker.
   EXPECT_EQ(EmbeddedWorkerStatus::STOPPED, version_->running_status());
@@ -1311,8 +1305,7 @@ TEST_F(ServiceWorkerVersionTest, RendererCrashDuringEvent) {
   EXPECT_EQ(EmbeddedWorkerStatus::STOPPED, version_->running_status());
 
   // Request already failed, calling finsh should return false.
-  EXPECT_FALSE(version_->FinishRequest(request_id, true /* was_handled */,
-                                       base::TimeTicks::Now()));
+  EXPECT_FALSE(version_->FinishRequest(request_id, true /* was_handled */));
 }
 
 TEST_F(ServiceWorkerVersionTest, PingController) {

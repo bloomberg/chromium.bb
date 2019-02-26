@@ -50,7 +50,8 @@ RTCDTMFSender* RTCDTMFSender::Create(
     ExecutionContext* context,
     std::unique_ptr<WebRTCDTMFSenderHandler> dtmf_sender_handler) {
   DCHECK(dtmf_sender_handler);
-  return new RTCDTMFSender(context, std::move(dtmf_sender_handler));
+  return MakeGarbageCollected<RTCDTMFSender>(context,
+                                             std::move(dtmf_sender_handler));
 }
 
 RTCDTMFSender::RTCDTMFSender(ExecutionContext* context,
@@ -168,7 +169,7 @@ void RTCDTMFSender::DidPlayTone(const WebString& tone) {
 }
 
 const AtomicString& RTCDTMFSender::InterfaceName() const {
-  return EventTargetNames::RTCDTMFSender;
+  return event_target_names::kRTCDTMFSender;
 }
 
 ExecutionContext* RTCDTMFSender::GetExecutionContext() const {

@@ -37,9 +37,15 @@ class SwitchAccess {
     /**
      * Handles interactions with the accessibility tree, including moving to and
      * selecting nodes.
-     * @private {AutomationManager}
+     * @private {NavigationManager}
      */
-    this.automationManager_ = null;
+    this.navigationManager_ = null;
+
+    /**
+     * Callback for testing use only.
+     * @private {?function()}
+     */
+    this.onMoveForwardForTesting_ = null;
 
     this.init_();
   }
@@ -55,7 +61,7 @@ class SwitchAccess {
     this.keyboardHandler_ = new KeyboardHandler(this);
 
     chrome.automation.getDesktop(function(desktop) {
-      this.automationManager_ = new AutomationManager(desktop);
+      this.navigationManager_ = new NavigationManager(desktop);
     }.bind(this));
 
     document.addEventListener(
@@ -67,8 +73,8 @@ class SwitchAccess {
    * @override
    */
   enterContextMenu() {
-    if (this.automationManager_)
-      this.automationManager_.enterContextMenu();
+    if (this.navigationManager_)
+      this.navigationManager_.enterContextMenu();
   }
 
   /**
@@ -76,8 +82,9 @@ class SwitchAccess {
    * @override
    */
   moveForward() {
-    if (this.automationManager_)
-      this.automationManager_.moveForward();
+    if (this.navigationManager_)
+      this.navigationManager_.moveForward();
+    this.onMoveForwardForTesting_ && this.onMoveForwardForTesting_();
   }
 
   /**
@@ -85,8 +92,8 @@ class SwitchAccess {
    * @override
    */
   moveBackward() {
-    if (this.automationManager_)
-      this.automationManager_.moveBackward();
+    if (this.navigationManager_)
+      this.navigationManager_.moveBackward();
   }
 
   /**
@@ -94,8 +101,8 @@ class SwitchAccess {
    * @override
    */
   selectCurrentNode() {
-    if (this.automationManager_)
-      this.automationManager_.selectCurrentNode();
+    if (this.navigationManager_)
+      this.navigationManager_.selectCurrentNode();
   }
 
   /**

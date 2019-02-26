@@ -12,16 +12,16 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#ifndef sw_LLVMRoutine_hpp
-#define sw_LLVMRoutine_hpp
+#ifndef rr_LLVMRoutine_hpp
+#define rr_LLVMRoutine_hpp
 
 #include "Routine.hpp"
 
 #include <cstdint>
 
-namespace sw
+namespace rr
 {
-#if SWIFTSHADER_LLVM_VERSION < 7
+#if REACTOR_LLVM_VERSION < 7
 	class LLVMRoutineManager;
 
 	class LLVMRoutine : public Routine
@@ -76,7 +76,7 @@ namespace sw
 		LLVMReactorJIT *reactorJIT;
 		uint64_t moduleKey;
 	};
-#endif  // SWIFTSHADER_LLVM_VERSION < 7
+#endif  // REACTOR_LLVM_VERSION < 7
 }
 
-#endif   // sw_LLVMRoutine_hpp
+#endif   // rr_LLVMRoutine_hpp

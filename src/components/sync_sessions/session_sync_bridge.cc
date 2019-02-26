@@ -101,9 +101,11 @@ class LocalSessionWriteBatch : public LocalSessionEventHandlerImpl::WriteBatch {
 }  // namespace
 
 SessionSyncBridge::SessionSyncBridge(
+    const base::RepeatingClosure& notify_foreign_session_updated_cb,
     SyncSessionsClient* sessions_client,
     std::unique_ptr<syncer::ModelTypeChangeProcessor> change_processor)
     : ModelTypeSyncBridge(std::move(change_processor)),
+      notify_foreign_session_updated_cb_(notify_foreign_session_updated_cb),
       sessions_client_(sessions_client),
       local_session_event_router_(
           sessions_client->GetLocalSessionEventRouter()),
@@ -147,14 +149,6 @@ OpenTabsUIDelegate* SessionSyncBridge::GetOpenTabsUIDelegate() {
     return nullptr;
   }
   return syncing_->open_tabs_ui_delegate.get();
-}
-
-syncer::SyncableService* SessionSyncBridge::GetSyncableService() {
-  return nullptr;
-}
-
-syncer::ModelTypeSyncBridge* SessionSyncBridge::GetModelTypeSyncBridge() {
-  return this;
 }
 
 std::unique_ptr<MetadataChangeList>
@@ -234,12 +228,14 @@ base::Optional<syncer::ModelError> SessionSyncBridge::ApplySyncChanges(
           continue;
         }
 
-        if (!SessionStore::AreValidSpecifics(specifics) ||
-            change.data().client_tag_hash !=
-                GenerateSyncableHash(syncer::SESSIONS,
-                                     SessionStore::GetClientTag(specifics))) {
+        if (!SessionStore::AreValidSpecifics(specifics)) {
           continue;
         }
+
+        // Guaranteed by the processor.
+        DCHECK_EQ(change.data().client_tag_hash,
+                  GenerateSyncableHash(syncer::SESSIONS,
+                                       SessionStore::GetClientTag(specifics)));
 
         batch->PutAndUpdateTracker(specifics, change.data().modification_time);
         // If a favicon or favicon urls are present, load the URLs and visit
@@ -258,7 +254,7 @@ base::Optional<syncer::ModelError> SessionSyncBridge::ApplySyncChanges(
   SessionStore::WriteBatch::Commit(std::move(batch));
 
   if (!entity_changes.empty()) {
-    sessions_client_->NotifyForeignSessionUpdated();
+    notify_foreign_session_updated_cb_.Run();
   }
 
   return base::nullopt;
@@ -277,6 +273,9 @@ void SessionSyncBridge::GetAllDataForDebugging(DataCallback callback) {
 
 std::string SessionSyncBridge::GetClientTag(
     const syncer::EntityData& entity_data) {
+  if (!SessionStore::AreValidSpecifics(entity_data.specifics.session())) {
+    return std::string();
+  }
   return SessionStore::GetClientTag(entity_data.specifics.session());
 }
 
@@ -317,6 +316,12 @@ SessionSyncBridge::CreateLocalSessionWriteBatch() {
   return std::make_unique<LocalSessionWriteBatch>(
       syncing_->store->local_session_info(), CreateSessionStoreWriteBatch(),
       change_processor());
+}
+
+bool SessionSyncBridge::IsTabNodeUnsynced(int tab_node_id) {
+  const std::string storage_key = SessionStore::GetTabStorageKey(
+      syncing_->store->local_session_info().session_tag, tab_node_id);
+  return change_processor()->IsEntityUnsynced(storage_key);
 }
 
 void SessionSyncBridge::TrackLocalNavigationId(base::Time timestamp,
@@ -445,7 +450,7 @@ void SessionSyncBridge::DeleteForeignSessionWithBatch(
   change_processor()->Delete(header_storage_key,
                              batch->GetMetadataChangeList());
 
-  sessions_client_->NotifyForeignSessionUpdated();
+  notify_foreign_session_updated_cb_.Run();
 }
 
 std::unique_ptr<SessionStore::WriteBatch>

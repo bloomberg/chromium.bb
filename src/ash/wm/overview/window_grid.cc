@@ -33,6 +33,7 @@
 #include "ash/wm/overview/window_selector_delegate.h"
 #include "ash/wm/overview/window_selector_item.h"
 #include "ash/wm/splitview/split_view_drag_indicators.h"
+#include "ash/wm/tablet_mode/tablet_mode_controller.h"
 #include "ash/wm/tablet_mode/tablet_mode_window_state.h"
 #include "ash/wm/window_state.h"
 #include "ash/wm/window_util.h"
@@ -206,7 +207,12 @@ class WindowGrid::ShieldView : public views::View {
     background_view_ = new views::View();
     background_view_->SetPaintToLayer(ui::LAYER_SOLID_COLOR);
     background_view_->layer()->SetColor(kShieldBaseColor);
-    background_view_->layer()->SetOpacity(kShieldOpacity);
+    background_view_->layer()->SetOpacity(
+        !Shell::Get()
+                ->tablet_mode_controller()
+                ->IsTabletModeWindowManagerEnabled()
+            ? kShieldOpacity
+            : 0.f);
 
     label_ = new views::Label(
         l10n_util::GetStringUTF16(IDS_ASH_OVERVIEW_NO_RECENT_ITEMS),
@@ -283,13 +289,10 @@ WindowGrid::WindowGrid(aura::Window* root_window,
       window_observer_(this),
       window_state_observer_(this),
       bounds_(bounds_in_screen) {
-  aura::Window::Windows windows_in_root;
   for (auto* window : windows) {
-    if (window->GetRootWindow() == root_window)
-      windows_in_root.push_back(window);
-  }
+    if (window->GetRootWindow() != root_window)
+      continue;
 
-  for (auto* window : windows_in_root) {
     // Stop ongoing animations before entering overview mode. Because we are
     // deferring SetTransform of the windows beneath the window covering the
     // available workspace, we need to set the correct transforms of these
@@ -1491,7 +1494,7 @@ void WindowGrid::AddDraggedWindowIntoOverviewOnDragEnd(
     // its changed bounds.
     dragged_window->SetProperty(ash::kCanAttachToAnotherWindowKey, false);
     TabletModeWindowState::UpdateWindowPosition(
-        wm::GetWindowState(dragged_window));
+        wm::GetWindowState(dragged_window), /*animate=*/false);
     const gfx::Rect new_bounds = dragged_window->bounds();
     if (old_bounds != new_bounds) {
       // It's for smoother animation.

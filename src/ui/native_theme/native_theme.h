@@ -303,11 +303,6 @@ class NATIVE_THEME_EXPORT NativeTheme {
     kColorId_ButtonDisabledColor,
     kColorId_ButtonHoverColor,
     kColorId_ButtonPressedShade,
-    kColorId_BlueButtonEnabledColor,
-    kColorId_BlueButtonDisabledColor,
-    kColorId_BlueButtonPressedColor,
-    kColorId_BlueButtonHoverColor,
-    kColorId_BlueButtonShadowColor,
     kColorId_ProminentButtonColor,
     kColorId_TextOnProminentButtonColor,
     // MenuItem
@@ -321,6 +316,9 @@ class NATIVE_THEME_EXPORT NativeTheme {
     kColorId_MenuSeparatorColor,
     kColorId_MenuBackgroundColor,
     kColorId_MenuBorderColor,
+    kColorId_HighlightedMenuItemBackgroundColor,
+    kColorId_HighlightedMenuItemForegroundColor,
+    kColorId_FocusedHighlightedMenuItemBackgroundColor,
     // Label
     kColorId_LabelEnabledColor,
     kColorId_LabelDisabledColor,
@@ -407,6 +405,9 @@ class NATIVE_THEME_EXPORT NativeTheme {
   // Returns whether this NativeTheme uses higher-contrast colors, controlled by
   // system accessibility settings and the system theme.
   virtual bool UsesHighContrastColors() const = 0;
+
+  // Whether OS-level dark mode (as in macOS Mojave or Windows 10) is enabled.
+  virtual bool SystemDarkModeEnabled() const;
 
  protected:
   NativeTheme();

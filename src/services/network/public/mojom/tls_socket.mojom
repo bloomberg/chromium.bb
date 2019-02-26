@@ -4,7 +4,7 @@
 
 module network.mojom;
 
-import "net/interfaces/ip_endpoint.mojom";
+import "services/network/public/mojom/ip_endpoint.mojom";
 import "services/network/public/mojom/ssl_config.mojom";
 
 // Represents a connected TLS client socket. Writes and Reads are through the
@@ -19,7 +19,7 @@ interface TLSClientSocket {
 // TLSClientSocket.
 struct TLSClientSocketOptions {
   SSLVersion version_min = kTLS1;
-  SSLVersion version_max = kTLS12;
+  SSLVersion version_max = kTLS13;
 
   // If true, the SSLInfo will be returned in the UpgradeToTLS callback on
   // success.

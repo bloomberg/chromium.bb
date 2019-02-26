@@ -5,14 +5,8 @@
 #ifndef UI_KEYBOARD_CONTAINER_FULL_WIDTH_BEHAVIOR_H_
 #define UI_KEYBOARD_CONTAINER_FULL_WIDTH_BEHAVIOR_H_
 
-#include "ui/aura/window.h"
-#include "ui/compositor/scoped_layer_animation_settings.h"
-#include "ui/events/event.h"
+#include "ui/gfx/geometry/rect.h"
 #include "ui/keyboard/container_behavior.h"
-#include "ui/keyboard/container_type.h"
-#include "ui/keyboard/keyboard_controller.h"
-#include "ui/keyboard/keyboard_export.h"
-#include "ui/wm/core/window_animations.h"
 
 namespace keyboard {
 
@@ -22,7 +16,7 @@ constexpr int kFullWidthKeyboardAnimationDistance = 30;
 
 class KEYBOARD_EXPORT ContainerFullWidthBehavior : public ContainerBehavior {
  public:
-  ContainerFullWidthBehavior(KeyboardController* controller);
+  explicit ContainerFullWidthBehavior(Delegate* delegate);
   ~ContainerFullWidthBehavior() override;
 
   // ContainerBehavior overrides
@@ -45,17 +39,16 @@ class KEYBOARD_EXPORT ContainerFullWidthBehavior : public ContainerBehavior {
                           const display::Display& current_display) override;
   void SetCanonicalBounds(aura::Window* container,
                           const gfx::Rect& display_bounds) override;
-  ContainerType GetType() const override;
+  mojom::ContainerType GetType() const override;
   bool TextBlurHidesKeyboard() const override;
   void SetOccludedBounds(const gfx::Rect& occluded_bounds_in_window) override;
   gfx::Rect GetOccludedBounds(
       const gfx::Rect& visual_bounds_in_screen) const override;
   bool OccludedBoundsAffectWorkspaceLayout() const override;
-  bool SetDraggableArea(const gfx::Rect& rect) override;
+  void SetDraggableArea(const gfx::Rect& rect) override;
 
  private:
   gfx::Rect occluded_bounds_in_window_;
-  KeyboardController* controller_;
 };
 
 }  // namespace keyboard

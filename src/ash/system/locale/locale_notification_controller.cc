@@ -7,6 +7,7 @@
 #include <memory>
 #include <utility>
 
+#include "ash/public/cpp/notification_utils.h"
 #include "ash/public/cpp/vector_icons/vector_icons.h"
 #include "ash/strings/grit/ash_strings.h"
 #include "ash/system/tray/system_tray_notifier.h"
@@ -100,18 +101,17 @@ void LocaleNotificationController::OnLocaleChanged(
           IDS_ASH_STATUS_TRAY_LOCALE_REVERT_MESSAGE, from)));
   optional.never_timeout = true;
 
-  std::unique_ptr<Notification> notification =
-      Notification::CreateSystemNotification(
-          message_center::NOTIFICATION_TYPE_SIMPLE, kLocaleChangeNotificationId,
-          l10n_util::GetStringUTF16(IDS_ASH_STATUS_TRAY_LOCALE_CHANGE_TITLE),
-          l10n_util::GetStringFUTF16(IDS_ASH_STATUS_TRAY_LOCALE_CHANGE_MESSAGE,
-                                     from, to),
-          base::string16() /* display_source */, GURL(),
-          message_center::NotifierId(
-              message_center::NotifierId::SYSTEM_COMPONENT, kNotifierLocale),
-          optional, new LocaleNotificationDelegate(std::move(callback)),
-          kNotificationSettingsIcon,
-          message_center::SystemNotificationWarningLevel::NORMAL);
+  std::unique_ptr<Notification> notification = ash::CreateSystemNotification(
+      message_center::NOTIFICATION_TYPE_SIMPLE, kLocaleChangeNotificationId,
+      l10n_util::GetStringUTF16(IDS_ASH_STATUS_TRAY_LOCALE_CHANGE_TITLE),
+      l10n_util::GetStringFUTF16(IDS_ASH_STATUS_TRAY_LOCALE_CHANGE_MESSAGE,
+                                 from, to),
+      base::string16() /* display_source */, GURL(),
+      message_center::NotifierId(message_center::NotifierType::SYSTEM_COMPONENT,
+                                 kNotifierLocale),
+      optional, new LocaleNotificationDelegate(std::move(callback)),
+      kNotificationSettingsIcon,
+      message_center::SystemNotificationWarningLevel::NORMAL);
   message_center::MessageCenter::Get()->AddNotification(
       std::move(notification));
 }

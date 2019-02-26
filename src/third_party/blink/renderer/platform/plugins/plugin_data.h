@@ -96,7 +96,9 @@ class PLATFORM_EXPORT PluginData final
  public:
   void Trace(blink::Visitor*);
 
-  static PluginData* Create() { return new PluginData(); }
+  static PluginData* Create() { return MakeGarbageCollected<PluginData>(); }
+
+  PluginData() = default;
 
   const HeapVector<Member<PluginInfo>>& Plugins() const { return plugins_; }
   const HeapVector<Member<MimeClassInfo>>& Mimes() const { return mimes_; }
@@ -112,8 +114,6 @@ class PLATFORM_EXPORT PluginData final
   static void RefreshBrowserSidePluginCache();
 
  private:
-  PluginData() = default;
-
   HeapVector<Member<PluginInfo>> plugins_;
   HeapVector<Member<MimeClassInfo>> mimes_;
   scoped_refptr<const SecurityOrigin> main_frame_origin_;

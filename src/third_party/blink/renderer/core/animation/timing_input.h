@@ -44,7 +44,7 @@ class CORE_EXPORT TimingInput {
   //
   // https://drafts.csswg.org/web-animations-1/#update-the-timing-properties-of-an-animation-effect
   template <class TimingInput>
-  static bool Update(Timing&, const TimingInput&, Document*, ExceptionState&);
+  static bool Update(Timing&, const TimingInput*, Document*, ExceptionState&);
 };
 
 }  // namespace blink

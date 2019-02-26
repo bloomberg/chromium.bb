@@ -5,8 +5,8 @@
 package org.chromium.chrome.browser.omnibox;
 
 import android.support.test.filters.SmallTest;
-import android.support.v7.widget.AppCompatImageButton;
 import android.view.View;
+import android.widget.ImageButton;
 
 import org.junit.Assert;
 import org.junit.Before;
@@ -24,7 +24,7 @@ import org.chromium.chrome.browser.ChromeActivity;
 import org.chromium.chrome.browser.ChromeFeatureList;
 import org.chromium.chrome.browser.ChromeSwitches;
 import org.chromium.chrome.browser.search_engines.TemplateUrlServiceTestUtils;
-import org.chromium.chrome.browser.toolbar.ToolbarModel;
+import org.chromium.chrome.browser.toolbar.LocationBarModel;
 import org.chromium.chrome.test.ChromeActivityTestRule;
 import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
 import org.chromium.chrome.test.util.browser.Features.DisableFeatures;
@@ -58,16 +58,16 @@ public class LocationBarLayoutTest {
     private static final String VERBOSE_URL = "https://www.suchwowveryyes.edu";
     private static final String TRIMMED_URL = "suchwowveryyes.edu";
 
-    private TestToolbarModel mTestToolbarModel;
+    private TestLocationBarModel mTestLocationBarModel;
 
-    private class TestToolbarModel extends ToolbarModel {
+    private class TestLocationBarModel extends LocationBarModel {
         private String mCurrentUrl;
         private String mEditingText;
         private String mDisplayText;
         private Integer mSecurityLevel;
 
-        public TestToolbarModel() {
-            super(ContextUtils.getApplicationContext(), null /* bottomSheet */);
+        public TestLocationBarModel() {
+            super(ContextUtils.getApplicationContext());
             initializeWithNative();
         }
 
@@ -104,11 +104,11 @@ public class LocationBarLayoutTest {
     @Before
     public void setUp() throws InterruptedException {
         mActivityTestRule.startMainActivityOnBlankPage();
-        mTestToolbarModel = new TestToolbarModel();
-        mTestToolbarModel.setTab(mActivityTestRule.getActivity().getActivityTab(), false);
+        mTestLocationBarModel = new TestLocationBarModel();
+        mTestLocationBarModel.setTab(mActivityTestRule.getActivity().getActivityTab(), false);
 
         ThreadUtils.runOnUiThreadBlocking(
-                () -> getLocationBar().setToolbarDataProvider(mTestToolbarModel));
+                () -> getLocationBar().setToolbarDataProvider(mTestLocationBarModel));
     }
 
     private void setUrlToPageUrl(LocationBarLayout locationBar) {
@@ -131,18 +131,16 @@ public class LocationBarLayoutTest {
         return (LocationBarLayout) mActivityTestRule.getActivity().findViewById(R.id.location_bar);
     }
 
-    private AppCompatImageButton getDeleteButton() {
-        return (AppCompatImageButton) mActivityTestRule.getActivity().findViewById(
-                R.id.delete_button);
+    private ImageButton getDeleteButton() {
+        return mActivityTestRule.getActivity().findViewById(R.id.delete_button);
     }
 
-    private AppCompatImageButton getMicButton() {
-        return (AppCompatImageButton) mActivityTestRule.getActivity().findViewById(R.id.mic_button);
+    private ImageButton getMicButton() {
+        return mActivityTestRule.getActivity().findViewById(R.id.mic_button);
     }
 
-    private AppCompatImageButton getSecurityButton() {
-        return (AppCompatImageButton) mActivityTestRule.getActivity().findViewById(
-                R.id.security_button);
+    private ImageButton getSecurityButton() {
+        return mActivityTestRule.getActivity().findViewById(R.id.security_button);
     }
 
     private void setUrlBarTextAndFocus(String text)
@@ -217,8 +215,8 @@ public class LocationBarLayoutTest {
         final UrlBar urlBar = getUrlBar();
         final LocationBarLayout locationBar = getLocationBar();
 
-        mTestToolbarModel.setCurrentUrl(GOOGLE_SRP_URL);
-        mTestToolbarModel.setSecurityLevel(ConnectionSecurityLevel.SECURE);
+        mTestLocationBarModel.setCurrentUrl(GOOGLE_SRP_URL);
+        mTestLocationBarModel.setSecurityLevel(ConnectionSecurityLevel.SECURE);
         setUrlToPageUrl(locationBar);
 
         Assert.assertEquals(SEARCH_TERMS, getUrlText(urlBar));
@@ -234,8 +232,8 @@ public class LocationBarLayoutTest {
         final LocationBarLayout locationBar = getLocationBar();
 
         TemplateUrlServiceTestUtils.setSearchEngine("bing.com");
-        mTestToolbarModel.setCurrentUrl(BING_SRP_URL);
-        mTestToolbarModel.setSecurityLevel(ConnectionSecurityLevel.SECURE);
+        mTestLocationBarModel.setCurrentUrl(BING_SRP_URL);
+        mTestLocationBarModel.setSecurityLevel(ConnectionSecurityLevel.SECURE);
         setUrlToPageUrl(locationBar);
 
         Assert.assertEquals(SEARCH_TERMS, getUrlText(urlBar));
@@ -251,8 +249,8 @@ public class LocationBarLayoutTest {
         final LocationBarLayout locationBar = getLocationBar();
 
         TemplateUrlServiceTestUtils.setSearchEngine("bing.com");
-        mTestToolbarModel.setCurrentUrl(GOOGLE_SRP_URL);
-        mTestToolbarModel.setSecurityLevel(ConnectionSecurityLevel.SECURE);
+        mTestLocationBarModel.setCurrentUrl(GOOGLE_SRP_URL);
+        mTestLocationBarModel.setSecurityLevel(ConnectionSecurityLevel.SECURE);
         setUrlToPageUrl(locationBar);
 
         Assert.assertNotEquals(SEARCH_TERMS, getUrlText(urlBar));
@@ -266,14 +264,14 @@ public class LocationBarLayoutTest {
         final UrlBar urlBar = getUrlBar();
         final LocationBarLayout locationBar = getLocationBar();
 
-        mTestToolbarModel.setCurrentUrl(GOOGLE_SRP_URL);
-        mTestToolbarModel.setSecurityLevel(ConnectionSecurityLevel.NONE);
+        mTestLocationBarModel.setCurrentUrl(GOOGLE_SRP_URL);
+        mTestLocationBarModel.setSecurityLevel(ConnectionSecurityLevel.NONE);
         setUrlToPageUrl(locationBar);
 
-        AppCompatImageButton securityButton = getSecurityButton();
+        ImageButton securityButton = getSecurityButton();
         Assert.assertNotEquals(SEARCH_TERMS, urlBar.getText().toString());
         ThreadUtils.runOnUiThreadBlocking(() -> {
-            Assert.assertNotEquals(mTestToolbarModel.getSecurityIconResource(
+            Assert.assertNotEquals(mTestLocationBarModel.getSecurityIconResource(
                                            mActivityTestRule.getActivity().isTablet()),
                     SEARCH_ICON_RESOURCE);
         });
@@ -286,14 +284,14 @@ public class LocationBarLayoutTest {
     public void testIsShowingSearchIconSecureContent() {
         final LocationBarLayout locationBar = getLocationBar();
 
-        mTestToolbarModel.setCurrentUrl(GOOGLE_SRP_URL);
-        mTestToolbarModel.setSecurityLevel(ConnectionSecurityLevel.SECURE);
+        mTestLocationBarModel.setCurrentUrl(GOOGLE_SRP_URL);
+        mTestLocationBarModel.setSecurityLevel(ConnectionSecurityLevel.SECURE);
         setUrlToPageUrl(locationBar);
 
-        AppCompatImageButton securityButton = getSecurityButton();
+        ImageButton securityButton = getSecurityButton();
         Assert.assertEquals(securityButton.getVisibility(), View.VISIBLE);
         ThreadUtils.runOnUiThreadBlocking(() -> {
-            Assert.assertEquals(mTestToolbarModel.getSecurityIconResource(
+            Assert.assertEquals(mTestLocationBarModel.getSecurityIconResource(
                                         mActivityTestRule.getActivity().isTablet()),
                     SEARCH_ICON_RESOURCE);
         });
@@ -307,8 +305,8 @@ public class LocationBarLayoutTest {
         final UrlBar urlBar = getUrlBar();
         final LocationBarLayout locationBar = getLocationBar();
 
-        mTestToolbarModel.setCurrentUrl(GOOGLE_SRP_URL_LIKE_URL);
-        mTestToolbarModel.setSecurityLevel(ConnectionSecurityLevel.SECURE);
+        mTestLocationBarModel.setCurrentUrl(GOOGLE_SRP_URL_LIKE_URL);
+        mTestLocationBarModel.setSecurityLevel(ConnectionSecurityLevel.SECURE);
         setUrlToPageUrl(locationBar);
 
         Assert.assertNotEquals(SEARCH_TERMS_URL, getUrlText(urlBar));
@@ -323,8 +321,8 @@ public class LocationBarLayoutTest {
         final UrlBar urlBar = getUrlBar();
         final LocationBarLayout locationBar = getLocationBar();
 
-        mTestToolbarModel.setCurrentUrl(GOOGLE_SRP_URL);
-        mTestToolbarModel.setSecurityLevel(ConnectionSecurityLevel.SECURE);
+        mTestLocationBarModel.setCurrentUrl(GOOGLE_SRP_URL);
+        mTestLocationBarModel.setSecurityLevel(ConnectionSecurityLevel.SECURE);
         setUrlToPageUrl(locationBar);
 
         Assert.assertNotEquals(SEARCH_TERMS, getUrlText(urlBar));
@@ -336,10 +334,10 @@ public class LocationBarLayoutTest {
         final UrlBar urlBar = getUrlBar();
         final LocationBarLayout locationBar = getLocationBar();
 
-        mTestToolbarModel.setCurrentUrl(VERBOSE_URL);
-        mTestToolbarModel.setSecurityLevel(ConnectionSecurityLevel.SECURE);
-        mTestToolbarModel.mDisplayText = TRIMMED_URL;
-        mTestToolbarModel.mEditingText = VERBOSE_URL;
+        mTestLocationBarModel.setCurrentUrl(VERBOSE_URL);
+        mTestLocationBarModel.setSecurityLevel(ConnectionSecurityLevel.SECURE);
+        mTestLocationBarModel.mDisplayText = TRIMMED_URL;
+        mTestLocationBarModel.mEditingText = VERBOSE_URL;
         setUrlToPageUrl(locationBar);
 
         Assert.assertEquals(TRIMMED_URL, getUrlText(urlBar));

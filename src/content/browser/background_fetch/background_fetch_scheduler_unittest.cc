@@ -9,159 +9,167 @@
 #include "base/guid.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/task/post_task.h"
+#include "content/browser/background_fetch/background_fetch_job_controller.h"
 #include "content/browser/background_fetch/background_fetch_request_info.h"
 #include "content/browser/background_fetch/background_fetch_test_base.h"
+#include "content/browser/background_fetch/background_fetch_test_data_manager.h"
+#include "content/browser/service_worker/service_worker_context_wrapper.h"
 #include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
+#include "content/public/test/test_utils.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/blink/public/platform/modules/fetch/fetch_api_request.mojom.h"
 
 using ::testing::ElementsAre;
 
 namespace content {
 
-namespace {
-
-const int kExampleServiceWorkerRegistrationId = 1;
-const char kExampleDeveloperId1[] = "my-example-id";
-const char kExampleDeveloperId2[] = "my-other-id";
-
-class FakeController : public BackgroundFetchScheduler::Controller {
+class FakeController : public BackgroundFetchJobController {
  public:
-  FakeController(const BackgroundFetchRegistrationId& registration_id,
-                 BackgroundFetchScheduler* scheduler,
-                 const std::string& name,
+  FakeController(BackgroundFetchDataManager* data_manager,
+                 BackgroundFetchDelegateProxy* delegate_proxy,
+                 const BackgroundFetchRegistrationId& registration_id,
                  std::vector<std::string>* controller_sequence_list,
-                 int total_jobs)
-      : BackgroundFetchScheduler::Controller(scheduler,
-                                             registration_id,
-                                             base::DoNothing()),
-        controller_sequence_list_(controller_sequence_list),
-        name_(name),
-        total_jobs_(total_jobs) {}
-
-  ~FakeController() override {}
-
-  // BackgroundFetchScheduler::Controller implementation:
-  bool HasMoreRequests() override { return jobs_started_ < total_jobs_; }
-  void StartRequest(scoped_refptr<BackgroundFetchRequestInfo> request,
-                    RequestFinishedCallback callback) override {
-    DCHECK_LT(jobs_started_, total_jobs_);
-    ++jobs_started_;
-    controller_sequence_list_->push_back(name_ +
-                                         base::IntToString(jobs_started_));
-
-    base::PostTaskWithTraits(
-        FROM_HERE, {BrowserThread::IO},
-        base::BindOnce(std::move(callback), std::move(request)));
+                 FinishedCallback finished_callback)
+      : BackgroundFetchJobController(data_manager,
+                                     delegate_proxy,
+                                     registration_id,
+                                     BackgroundFetchOptions(),
+                                     SkBitmap(),
+                                     0ul,
+                                     base::DoNothing(),
+                                     std::move(finished_callback)),
+        controller_sequence_list_(controller_sequence_list) {
+    DCHECK(controller_sequence_list_);
   }
 
-  std::vector<scoped_refptr<BackgroundFetchRequestInfo>>
-  TakeOutstandingRequests() override {
-    return {};
+  ~FakeController() override = default;
+
+  void DidCompleteRequest(
+      const scoped_refptr<BackgroundFetchRequestInfo>& request) override {
+    // Record the completed request. Store everything after the origin and the
+    // slash, to be able to directly compare with the provided requests.
+    controller_sequence_list_->push_back(
+        request->fetch_request().url.path().substr(1));
+
+    // Continue normally.
+    BackgroundFetchJobController::DidCompleteRequest(request);
   }
 
  private:
-  int jobs_started_ = 0;
   std::vector<std::string>* controller_sequence_list_;
-  std::string name_;
-  int total_jobs_;
 };
 
-class BackgroundFetchSchedulerTest
-    : public BackgroundFetchTestBase,
-      public BackgroundFetchScheduler::RequestProvider {
+class BackgroundFetchSchedulerTest : public BackgroundFetchTestBase {
  public:
-  BackgroundFetchSchedulerTest() : scheduler_(this) {}
+  BackgroundFetchSchedulerTest() = default;
 
-  // Posts itself as a task |number_of_barriers| times and on the last iteration
-  // invokes the quit_closure.
-  void PostQuitAfterRepeatingBarriers(base::Closure quit_closure,
-                                      int number_of_barriers) {
-    if (--number_of_barriers == 0) {
-      std::move(quit_closure).Run();
-      return;
-    }
+  void SetUp() override {
+    BackgroundFetchTestBase::SetUp();
+    data_manager_ = std::make_unique<BackgroundFetchTestDataManager>(
+        browser_context(), storage_partition(),
+        embedded_worker_test_helper()->context_wrapper());
+    data_manager_->InitializeOnIOThread();
 
-    base::PostTaskWithTraits(
-        FROM_HERE, {BrowserThread::IO},
-        base::BindOnce(
-            &BackgroundFetchSchedulerTest::PostQuitAfterRepeatingBarriers,
-            base::Unretained(this), std::move(quit_closure),
-            number_of_barriers));
+    delegate_proxy_ = std::make_unique<BackgroundFetchDelegateProxy>(
+        browser_context()->GetBackgroundFetchDelegate());
+
+    scheduler_ = std::make_unique<BackgroundFetchScheduler>(
+        data_manager_.get(), nullptr, delegate_proxy_.get(),
+        embedded_worker_test_helper()->context_wrapper());
   }
 
-  void PopNextRequest(
-      const BackgroundFetchRegistrationId& registration_id,
-      BackgroundFetchScheduler::NextRequestCallback callback) override {
-    ServiceWorkerFetchRequest fetch_request(GURL(), "GET",
-                                            ServiceWorkerHeaderMap(),
-                                            Referrer(), false /* is_reload */);
-    auto request = base::MakeRefCounted<BackgroundFetchRequestInfo>(
-        0 /* request_count */, fetch_request);
-    request->InitializeDownloadGuid();
-
-    std::move(callback).Run(blink::mojom::BackgroundFetchError::NONE,
-                            std::move(request));
-  }
-
-  void MarkRequestAsComplete(
-      const BackgroundFetchRegistrationId& registration_id,
-      scoped_refptr<BackgroundFetchRequestInfo> request_info,
-      BackgroundFetchScheduler::MarkRequestCompleteCallback closure) override {
-    std::move(closure).Run(blink::mojom::BackgroundFetchError::NONE);
+  void TearDown() override {
+    data_manager_ = nullptr;
+    delegate_proxy_ = nullptr;
+    scheduler_ = nullptr;
+    controller_sequence_list_.clear();
+    BackgroundFetchTestBase::TearDown();
   }
 
  protected:
-  BackgroundFetchScheduler scheduler_;
+  void InitializeControllerWithRequests(
+      const std::vector<std::string>& requests) {
+    std::vector<blink::mojom::FetchAPIRequestPtr> fetch_requests;
+    for (auto& request : requests) {
+      auto fetch_request = blink::mojom::FetchAPIRequest::New();
+      fetch_request->referrer = blink::mojom::Referrer::New();
+      fetch_request->url = GURL(origin().GetURL().spec() + request);
+      CreateRequestWithProvidedResponse(fetch_request->method,
+                                        fetch_request->url,
+                                        TestResponseBuilder(200).Build());
+      fetch_requests.push_back(std::move(fetch_request));
+    }
+
+    int64_t sw_id = RegisterServiceWorker();
+    BackgroundFetchRegistrationId registration_id(
+        sw_id, origin(), base::GenerateGUID(), base::GenerateGUID());
+    data_manager_->CreateRegistration(
+        registration_id, std::move(fetch_requests), BackgroundFetchOptions(),
+        SkBitmap(),
+        /* start_paused= */ false, base::DoNothing());
+    thread_bundle_.RunUntilIdle();
+
+    auto controller = std::make_unique<FakeController>(
+        data_manager_.get(), delegate_proxy_.get(), registration_id,
+        &controller_sequence_list_,
+        base::BindOnce(&BackgroundFetchSchedulerTest::DidJobFinish,
+                       base::Unretained(this)));
+    controller->InitializeRequestStatus(0 /* completed_downloads */,
+                                        requests.size(),
+                                        {} /* active_fetch_requests */,
+                                        /* start_paused= */ false);
+    scheduler_->job_controllers_[registration_id.unique_id()] =
+        std::move(controller);
+    scheduler_->controller_ids_.push_back(registration_id.unique_id());
+  }
+
+  void RunSchedulerToCompletion() {
+    scheduler_->ScheduleDownload();
+    thread_bundle_.RunUntilIdle();
+  }
+
+  void DidJobFinish(
+      const BackgroundFetchRegistrationId& registration_id,
+      blink::mojom::BackgroundFetchFailureReason failure_reason,
+      base::OnceCallback<void(blink::mojom::BackgroundFetchError)> callback) {
+    DCHECK_EQ(failure_reason, blink::mojom::BackgroundFetchFailureReason::NONE);
+    scheduler_->job_controllers_.erase(registration_id.unique_id());
+    scheduler_->active_controller_ = nullptr;
+    scheduler_->ScheduleDownload();
+  }
+
+ protected:
   std::vector<std::string> controller_sequence_list_;
+
+ private:
+  std::unique_ptr<BackgroundFetchDelegateProxy> delegate_proxy_;
+  std::unique_ptr<BackgroundFetchTestDataManager> data_manager_;
+  std::unique_ptr<BackgroundFetchScheduler> scheduler_;
 };
 
-}  // namespace
-
 TEST_F(BackgroundFetchSchedulerTest, SingleController) {
-  BackgroundFetchRegistrationId registration_id1(
-      kExampleServiceWorkerRegistrationId, origin(), kExampleDeveloperId1,
-      base::GenerateGUID());
-  FakeController controller(registration_id1, &scheduler_, "A",
-                            &controller_sequence_list_, 4);
-
-  scheduler_.AddJobController(&controller);
-
-  base::RunLoop().RunUntilIdle();
-
-  EXPECT_THAT(controller_sequence_list_, ElementsAre("A1", "A2", "A3", "A4"));
+  std::vector<std::string> requests = {"A1", "A2", "A3", "A4"};
+  InitializeControllerWithRequests(requests);
+  RunSchedulerToCompletion();
+  EXPECT_EQ(requests, controller_sequence_list_);
 }
 
 TEST_F(BackgroundFetchSchedulerTest, TwoControllers) {
-  BackgroundFetchRegistrationId registration_id1(
-      kExampleServiceWorkerRegistrationId, origin(), kExampleDeveloperId1,
-      base::GenerateGUID());
-  BackgroundFetchRegistrationId registration_id2(
-      kExampleServiceWorkerRegistrationId, origin(), kExampleDeveloperId2,
-      base::GenerateGUID());
-  FakeController controller1(registration_id1, &scheduler_, "A",
-                             &controller_sequence_list_, 4);
-  FakeController controller2(registration_id2, &scheduler_, "B",
-                             &controller_sequence_list_, 4);
+  std::vector<std::string> all_requests = {"A1", "A2", "A3", "A4",
+                                           "B1", "B2", "B3"};
 
-  scheduler_.AddJobController(&controller1);
-  scheduler_.AddJobController(&controller2);
+  // Create a controller with A1 -> A4.
+  InitializeControllerWithRequests(
+      std::vector<std::string>(all_requests.begin(), all_requests.begin() + 4));
 
-  {
-    base::RunLoop run_loop;
-    PostQuitAfterRepeatingBarriers(run_loop.QuitClosure(), 3);
-    run_loop.Run();
+  // Create a controller with B1 -> B4.
+  InitializeControllerWithRequests(
+      std::vector<std::string>(all_requests.begin() + 4, all_requests.end()));
 
-    // Only one task is run at a time so after 3 barrier iterations, 3 tasks
-    // should have been have run.
-    EXPECT_THAT(controller_sequence_list_, ElementsAre("A1", "A2", "A3"));
-  }
-
-  base::RunLoop().RunUntilIdle();
-
-  EXPECT_THAT(controller_sequence_list_,
-              ElementsAre("A1", "A2", "A3", "A4", "B1", "B2", "B3", "B4"));
+  RunSchedulerToCompletion();
+  EXPECT_EQ(all_requests, controller_sequence_list_);
 }
 
 }  // namespace content

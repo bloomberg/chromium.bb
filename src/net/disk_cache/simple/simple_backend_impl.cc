@@ -24,7 +24,7 @@
 #include "base/metrics/histogram_functions.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/single_thread_task_runner.h"
-#include "base/sys_info.h"
+#include "base/system/sys_info.h"
 #include "base/task/post_task.h"
 #include "base/task/task_scheduler/task_scheduler.h"
 #include "base/task_runner_util.h"
@@ -62,7 +62,7 @@ namespace {
 const int kMaxFileRatio = 8;
 
 // Overrides the above.
-const int kMinFileSizeLimit = 5 * 1024 * 1024;
+const int64_t kMinFileSizeLimit = 5 * 1024 * 1024;
 
 bool g_fd_limit_histogram_has_been_populated = false;
 
@@ -259,7 +259,10 @@ SimpleBackendImpl::SimpleBackendImpl(
 }
 
 SimpleBackendImpl::~SimpleBackendImpl() {
-  index_->WriteToDisk(SimpleIndex::INDEX_WRITE_REASON_SHUTDOWN);
+  // Write the index out if there is a pending write from a
+  // previous operation.
+  if (index_->HasPendingWrite())
+    index_->WriteToDisk(SimpleIndex::INDEX_WRITE_REASON_SHUTDOWN);
 }
 
 void SimpleBackendImpl::SetWorkerPoolForTesting(
@@ -302,9 +305,10 @@ bool SimpleBackendImpl::SetMaxSize(int64_t max_bytes) {
   return true;
 }
 
-int SimpleBackendImpl::GetMaxFileSize() const {
-  return std::max(base::saturated_cast<int>(index_->max_size() / kMaxFileRatio),
-                  kMinFileSizeLimit);
+int64_t SimpleBackendImpl::MaxFileSize() const {
+  return std::max(
+      base::saturated_cast<int64_t>(index_->max_size() / kMaxFileRatio),
+      kMinFileSizeLimit);
 }
 
 void SimpleBackendImpl::OnDoomStart(uint64_t entry_hash) {

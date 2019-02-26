@@ -9,27 +9,10 @@
 #include <string>
 
 #include "chrome/browser/resources/chromeos/zip_archiver/cpp/compressor_archive.h"
-#include "third_party/minizip/src/unzip.h"
-#include "third_party/minizip/src/zip.h"
+#include "chrome/browser/resources/chromeos/zip_archiver/cpp/minizip_helpers.h"
+#include "third_party/minizip/src/mz_strm.h"
 
 class CompressorStream;
-
-// A name space with custom functions passed to minizip.
-namespace compressor_archive_functions {
-
-uLong CustomArchiveWrite(void* compressor,
-                         void* stream,
-                         const void* buffer,
-                         uLong length);
-
-long CustomArchiveTell(void* compressor, void* stream);
-
-long CustomArchiveSeek(void* compressor,
-                       void* stream,
-                       uLong offset,
-                       int origin);
-
-}  // namespace compressor_archive_functions
 
 class CompressorArchiveMinizip : public CompressorArchive {
  public:
@@ -49,45 +32,32 @@ class CompressorArchiveMinizip : public CompressorArchive {
   // Adds an entry to the archive.
   bool AddToArchive(const std::string& filename,
                     int64_t file_size,
-                    int64_t modification_time,
+                    base::Time modification_time,
                     bool is_directory) override;
 
-  // A getter function for zip_file_.
-  zipFile zip_file() const { return zip_file_; }
-
-  // Getter and setter for offset_.
-  int64_t offset() const { return offset_; }
-  void set_offset(int64_t value) { offset_ = value; }
-
-  // Getter and setter for length_.
-  int64_t length() const { return length_; }
-  void set_length(int64_t value) { length_ = value; }
-
-  // A getter function for compressor_stream.
-  CompressorStream* compressor_stream() const { return compressor_stream_; }
-
-  // Custom functions need to access private variables of
-  // CompressorArchiveMinizip frequently.
-  friend uLong compressor_archive_functions::CustomArchiveWrite(
-      void* compressor,
-      void* stream,
-      const void* buffer,
-      uLong length);
-
-  friend long compressor_archive_functions::CustomArchiveTell(void* compressor,
-                                                              void* stream);
-
-  friend long compressor_archive_functions::CustomArchiveSeek(void* compressor,
-                                                              void* stream,
-                                                              uLong offset,
-                                                              int origin);
-
  private:
+  static mz_stream_vtbl minizip_vtable;
+  struct MinizipStream;
+
+  // Stream functions used by minizip. In all cases, |compressor| points to
+  // |this->stream_|.
+  static int32_t MinizipWrite(void* stream, const void* buffer, int32_t length);
+  static int64_t MinizipTell(void* stream);
+  static int32_t MinizipSeek(void* stream, int64_t offset, int32_t origin);
+
+  // Implementation of stream functions used by minizip.
+  int32_t StreamWrite(const void* buffer, int32_t length);
+  int64_t StreamTell();
+  int32_t StreamSeek(int64_t offset, int32_t origin);
+
   // An instance that takes care of all IO operations.
   CompressorStream* compressor_stream_;
 
+  // The minizip stream used to write the archive file.
+  std::unique_ptr<MinizipStream> stream_;
+
   // The minizip correspondent archive object.
-  zipFile zip_file_;
+  ScopedMzZip zip_file_;
 
   // The buffer used to store the data read from JavaScript.
   std::unique_ptr<char[]> destination_buffer_;

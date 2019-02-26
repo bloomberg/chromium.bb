@@ -36,11 +36,13 @@ class MediaStreamEvent final : public Event {
   DEFINE_WRAPPERTYPEINFO();
 
  public:
+  MediaStreamEvent(const AtomicString& type, MediaStream*);
+  MediaStreamEvent(const AtomicString& type, const MediaStreamEventInit*);
   ~MediaStreamEvent() override;
 
   static MediaStreamEvent* Create(const AtomicString& type, MediaStream*);
   static MediaStreamEvent* Create(const AtomicString& type,
-                                  const MediaStreamEventInit& initializer);
+                                  const MediaStreamEventInit* initializer);
 
   MediaStream* stream() const;
   MediaStream* stream(bool&) const;
@@ -50,9 +52,6 @@ class MediaStreamEvent final : public Event {
   void Trace(blink::Visitor*) override;
 
  private:
-  MediaStreamEvent(const AtomicString& type, MediaStream*);
-  MediaStreamEvent(const AtomicString& type, const MediaStreamEventInit&);
-
   Member<MediaStream> stream_;
 };
 

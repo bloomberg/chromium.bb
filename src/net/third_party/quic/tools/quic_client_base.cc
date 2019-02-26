@@ -12,9 +12,6 @@
 #include "net/third_party/quic/platform/api/quic_logging.h"
 #include "net/third_party/quic/platform/api/quic_text_utils.h"
 
-using base::StringToInt;
-using std::string;
-
 namespace quic {
 
 QuicClientBase::NetworkHelper::~NetworkHelper() = default;
@@ -88,10 +85,13 @@ bool QuicClientBase::Connect() {
       // Resend any previously queued data.
       ResendSavedData();
     }
+    ParsedQuicVersion version(PROTOCOL_UNSUPPORTED, QUIC_VERSION_UNSUPPORTED);
     if (session() != nullptr &&
-        session()->error() != QUIC_CRYPTO_HANDSHAKE_STATELESS_REJECT) {
+        session()->error() != QUIC_CRYPTO_HANDSHAKE_STATELESS_REJECT &&
+        !CanReconnectWithDifferentVersion(&version)) {
       // We've successfully created a session but we're not connected, and there
-      // is no stateless reject to recover from.  Give up trying.
+      // is no stateless reject to recover from and cannot try to reconnect with
+      // different version.  Give up trying.
       break;
     }
   }
@@ -109,10 +109,17 @@ void QuicClientBase::StartConnect() {
   DCHECK(initialized_);
   DCHECK(!connected());
   QuicPacketWriter* writer = network_helper_->CreateQuicPacketWriter();
+  ParsedQuicVersion mutual_version(PROTOCOL_UNSUPPORTED,
+                                   QUIC_VERSION_UNSUPPORTED);
+  const bool can_reconnect_with_different_version =
+      CanReconnectWithDifferentVersion(&mutual_version);
   if (connected_or_attempting_connect()) {
     // If the last error was not a stateless reject, then the queued up data
     // does not need to be resent.
-    if (session()->error() != QUIC_CRYPTO_HANDSHAKE_STATELESS_REJECT) {
+    // Keep queued up data if client can try to connect with a different
+    // version.
+    if (session()->error() != QUIC_CRYPTO_HANDSHAKE_STATELESS_REJECT &&
+        !can_reconnect_with_different_version) {
       ClearDataToResend();
     }
     // Before we destroy the last session and create a new one, gather its stats
@@ -120,10 +127,14 @@ void QuicClientBase::StartConnect() {
     UpdateStats();
   }
 
-  session_ = CreateQuicClientSession(new QuicConnection(
-      GetNextConnectionId(), server_address(), helper(), alarm_factory(),
-      writer,
-      /* owns_writer= */ false, Perspective::IS_CLIENT, supported_versions()));
+  session_ = CreateQuicClientSession(
+      supported_versions(),
+      new QuicConnection(GetNextConnectionId(), server_address(), helper(),
+                         alarm_factory(), writer,
+                         /* owns_writer= */ false, Perspective::IS_CLIENT,
+                         can_reconnect_with_different_version
+                             ? ParsedQuicVersionVector{mutual_version}
+                             : supported_versions()));
   if (initial_max_packet_length_ != 0) {
     session()->connection()->SetMaxPacketLength(initial_max_packet_length_);
   }
@@ -168,11 +179,18 @@ bool QuicClientBase::WaitForEvents() {
   network_helper_->RunEventLoop();
 
   DCHECK(session() != nullptr);
+  ParsedQuicVersion version(PROTOCOL_UNSUPPORTED, QUIC_VERSION_UNSUPPORTED);
   if (!connected() &&
-      session()->error() == QUIC_CRYPTO_HANDSHAKE_STATELESS_REJECT) {
-    DCHECK(GetQuicReloadableFlag(enable_quic_stateless_reject_support));
-    QUIC_DLOG(INFO) << "Detected stateless reject while waiting for events.  "
-                    << "Attempting to reconnect.";
+      (session()->error() == QUIC_CRYPTO_HANDSHAKE_STATELESS_REJECT ||
+       CanReconnectWithDifferentVersion(&version))) {
+    if (session()->error() == QUIC_CRYPTO_HANDSHAKE_STATELESS_REJECT) {
+      DCHECK(GetQuicReloadableFlag(enable_quic_stateless_reject_support));
+      QUIC_DLOG(INFO) << "Detected stateless reject while waiting for events.  "
+                      << "Attempting to reconnect.";
+    } else {
+      QUIC_DLOG(INFO) << "Can reconnect with version: " << version
+                      << ", attempting to reconnect.";
+    }
     Connect();
   }
 
@@ -308,6 +326,23 @@ QuicConnectionId QuicClientBase::GetNextServerDesignatedConnectionId() {
 
 QuicConnectionId QuicClientBase::GenerateNewConnectionId() {
   return QuicRandom::GetInstance()->RandUint64();
+}
+
+bool QuicClientBase::CanReconnectWithDifferentVersion(
+    ParsedQuicVersion* version) const {
+  if (session_ == nullptr || session_->connection() == nullptr ||
+      session_->error() != QUIC_INVALID_VERSION ||
+      session_->connection()->server_supported_versions().empty()) {
+    return false;
+  }
+  for (const auto& client_version : supported_versions_) {
+    if (QuicContainsValue(session_->connection()->server_supported_versions(),
+                          client_version)) {
+      *version = client_version;
+      return true;
+    }
+  }
+  return false;
 }
 
 }  // namespace quic

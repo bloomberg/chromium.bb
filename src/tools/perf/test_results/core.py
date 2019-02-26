@@ -4,16 +4,9 @@
 
 import datetime
 import hashlib
-import sys
 
 from test_results import api
 from test_results import frames
-
-
-def CheckDependencies():
-  """Check that module dependencies are satisfied, otherwise exit with error."""
-  if frames.pandas is None:
-    sys.exit('ERROR: This tool requires pandas to run, try: pip install pandas')
 
 
 def GetBuilders():

@@ -75,7 +75,7 @@ void ContentVerifyJob::Start(ContentVerifier* verifier) {
 }
 
 void ContentVerifyJob::DidGetContentHashOnIO(
-    const scoped_refptr<const ContentHash>& content_hash) {
+    scoped_refptr<const ContentHash> content_hash) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::IO);
   base::AutoLock auto_lock(lock_);
   if (g_content_verify_job_test_observer)

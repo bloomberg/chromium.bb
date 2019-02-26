@@ -65,9 +65,6 @@ class SignedExchangeLoader final : public network::mojom::URLLoaderClient,
       scoped_refptr<SignedExchangePrefetchMetricRecorder> metric_recorder);
   ~SignedExchangeLoader() override;
 
-  bool HasRedirectedToFallbackURL() const {
-    return has_redirected_to_fallback_url_;
-  }
 
   // network::mojom::URLLoaderClient implementation
   // Only OnStartLoadingResponseBody() and OnComplete() are called.
@@ -86,10 +83,11 @@ class SignedExchangeLoader final : public network::mojom::URLLoaderClient,
   void OnComplete(const network::URLLoaderCompletionStatus& status) override;
 
   // network::mojom::URLLoader implementation
-  void FollowRedirect(const base::Optional<std::vector<std::string>>&
-                          to_be_removed_request_headers,
-                      const base::Optional<net::HttpRequestHeaders>&
-                          modified_request_headers) override;
+  void FollowRedirect(
+      const base::Optional<std::vector<std::string>>&
+          to_be_removed_request_headers,
+      const base::Optional<net::HttpRequestHeaders>& modified_request_headers,
+      const base::Optional<GURL>& new_url) override;
   void ProceedWithResponse() override;
   void SetPriority(net::RequestPriority priority,
                    int intra_priority_value) override;
@@ -97,6 +95,12 @@ class SignedExchangeLoader final : public network::mojom::URLLoaderClient,
   void ResumeReadingBodyFromNet() override;
 
   void ConnectToClient(network::mojom::URLLoaderClientPtr client);
+
+  const base::Optional<GURL>& fallback_url() const { return fallback_url_; };
+
+  const base::Optional<GURL>& inner_request_url() const {
+    return inner_request_url_;
+  }
 
   // Set nullptr to reset the mocking.
   CONTENT_EXPORT static void SetSignedExchangeHandlerFactoryForTest(
@@ -150,7 +154,6 @@ class SignedExchangeLoader final : public network::mojom::URLLoaderClient,
   const uint32_t url_loader_options_;
   const int load_flags_;
   const bool should_redirect_on_failure_;
-  bool has_redirected_to_fallback_url_ = false;
   const base::Optional<base::UnguessableToken> throttling_profile_id_;
   std::unique_ptr<SignedExchangeDevToolsProxy> devtools_proxy_;
   scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory_;
@@ -161,6 +164,9 @@ class SignedExchangeLoader final : public network::mojom::URLLoaderClient,
   base::Optional<net::SSLInfo> ssl_info_;
 
   std::string content_type_;
+
+  base::Optional<GURL> fallback_url_;
+  base::Optional<GURL> inner_request_url_;
 
   base::WeakPtrFactory<SignedExchangeLoader> weak_factory_;
 

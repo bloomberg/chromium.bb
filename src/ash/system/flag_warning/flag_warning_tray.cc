@@ -59,7 +59,10 @@ void FlagWarningTray::ButtonPressed(views::Button* sender,
   DCHECK_EQ(button_, sender);
 
   // Open the quick launch mojo mini-app to demonstrate that mini-apps work.
-  Shell::Get()->connector()->StartService(quick_launch::mojom::kServiceName);
+  //
+  // TODO(https://crbug.com/904148): This should not use |WarmService()|.
+  Shell::Get()->connector()->WarmService(service_manager::ServiceFilter::ByName(
+      quick_launch::mojom::kServiceName));
 }
 
 void FlagWarningTray::GetAccessibleNodeData(ui::AXNodeData* node_data) {
@@ -83,7 +86,7 @@ void FlagWarningTray::UpdateButton() {
   }
 
   if (::features::IsSingleProcessMash()) {
-    button_->SetText(base::ASCIIToUTF16("a"));
+    button_->SetText(base::ASCIIToUTF16("SPM"));
     button_->SetTooltipText(
         base::ASCIIToUTF16("Running with feature SingleProcessMash"));
   } else if (::features::IsMultiProcessMash()) {

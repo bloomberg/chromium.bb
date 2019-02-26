@@ -5,7 +5,6 @@
 #include "chrome/browser/ui/views/frame/windows_10_caption_button.h"
 
 #include "chrome/browser/themes/theme_properties.h"
-#include "chrome/browser/ui/extensions/hosted_app_browser_controller.h"
 #include "chrome/browser/ui/frame/window_frame_util.h"
 #include "chrome/browser/ui/views/frame/browser_view.h"
 #include "chrome/browser/ui/views/frame/glass_browser_frame_view.h"
@@ -52,9 +51,8 @@ SkColor Windows10CaptionButton::GetBaseColor() const {
       (frame_view_->ShouldPaintAsActive()
            ? ThemeProperties::COLOR_WINDOW_CONTROL_BUTTON_BACKGROUND_ACTIVE
            : ThemeProperties::COLOR_WINDOW_CONTROL_BUTTON_BACKGROUND_INACTIVE);
-  const ui::ThemeProvider* theme_provider = GetFrameThemeProvider();
+  const ui::ThemeProvider* theme_provider = GetThemeProvider();
   const bool has_custom_color =
-      theme_provider &&
       theme_provider->HasCustomColor(control_button_bg_color_id);
   const SkColor bg_color =
       (has_custom_color ? theme_provider->GetColor(control_button_bg_color_id)
@@ -66,11 +64,9 @@ SkColor Windows10CaptionButton::GetBaseColor() const {
 void Windows10CaptionButton::OnPaintBackground(gfx::Canvas* canvas) {
   // Paint the background of the button (the semi-transparent rectangle that
   // appears when you hover or press the button).
-  const ui::ThemeProvider* theme_provider = GetFrameThemeProvider();
+  const ui::ThemeProvider* theme_provider = GetThemeProvider();
   const SkColor bg_color =
-      theme_provider
-          ? theme_provider->GetColor(ThemeProperties::COLOR_BUTTON_BACKGROUND)
-          : SK_ColorTRANSPARENT;
+      theme_provider->GetColor(ThemeProperties::COLOR_BUTTON_BACKGROUND);
   const SkAlpha theme_alpha = SkColorGetA(bg_color);
   gfx::Rect bounds = GetContentsBounds();
   bounds.Inset(GetBetweenButtonSpacing(), 0, 0, 0);
@@ -83,8 +79,7 @@ void Windows10CaptionButton::OnPaintBackground(gfx::Canvas* canvas) {
                         CalculateWindows10GlassCaptionButtonBackgroundAlpha(
                             theme_alpha)));
   }
-  if (theme_provider &&
-      theme_provider->HasCustomImage(IDR_THEME_WINDOW_CONTROL_BACKGROUND)) {
+  if (theme_provider->HasCustomImage(IDR_THEME_WINDOW_CONTROL_BACKGROUND)) {
     // Figure out what portion of the background image to display
     const int button_display_order = GetButtonDisplayOrderIndex();
     const int base_button_width =
@@ -265,14 +260,4 @@ void Windows10CaptionButton::PaintSymbol(gfx::Canvas* canvas) {
       NOTREACHED();
       return;
   }
-}
-
-const ui::ThemeProvider* Windows10CaptionButton::GetFrameThemeProvider() const {
-  // TODO(https://crbug.com/891560): Move this check up into
-  // BrowserFrame::GetThemeProvider() and have it return the default theme.
-  if (extensions::HostedAppBrowserController::IsForExperimentalHostedAppBrowser(
-          frame_view_->browser_view()->browser())) {
-    return nullptr;
-  }
-  return GetThemeProvider();
 }

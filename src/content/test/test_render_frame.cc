@@ -14,13 +14,13 @@
 #include "content/common/frame_messages.h"
 #include "content/common/navigation_params.h"
 #include "content/common/navigation_params.mojom.h"
-#include "content/public/common/browser_side_navigation_policy.h"
 #include "content/public/test/mock_render_thread.h"
 #include "content/renderer/input/frame_input_handler_impl.h"
 #include "content/renderer/loader/web_url_loader_impl.h"
 #include "services/network/public/cpp/resource_response.h"
 #include "third_party/blink/public/common/associated_interfaces/associated_interface_provider.h"
 #include "third_party/blink/public/web/web_local_frame.h"
+#include "third_party/blink/public/web/web_navigation_control.h"
 
 namespace content {
 
@@ -114,6 +114,8 @@ class MockFrameHost : public mojom::FrameHost {
 
   void FullscreenStateChanged(bool is_fullscreen) override {}
 
+  void NotifyWebReportingCrashID(const std::string& crash_id) override {}
+
 #if defined(OS_ANDROID)
   void UpdateUserGestureCarryoverInfo() override {}
 #endif
@@ -205,18 +207,22 @@ void TestRenderFrame::SetCompositionFromExistingText(
                                                          ime_text_spans);
 }
 
-blink::WebNavigationPolicy TestRenderFrame::DecidePolicyForNavigation(
-    const blink::WebLocalFrameClient::NavigationPolicyInfo& info) {
-  if (info.default_policy == blink::kWebNavigationPolicyCurrentTab &&
-      ((GetWebFrame()->Parent() && info.form.IsNull()) ||
+void TestRenderFrame::BeginNavigation(
+    std::unique_ptr<blink::WebNavigationInfo> info) {
+  if (info->navigation_policy == blink::kWebNavigationPolicyCurrentTab &&
+      ((GetWebFrame()->Parent() && info->form.IsNull()) ||
        next_request_url_override_.has_value())) {
     // RenderViewTest::LoadHTML immediately commits navigation for the main
     // frame. However if the loaded html has a subframe,
-    // DecidePolicyForNavigation will be called from Blink and we should avoid
+    // BeginNavigation will be called from Blink and we should avoid
     // going through browser process in this case.
-    return blink::kWebNavigationPolicyCurrentTab;
+    frame_->CommitNavigation(
+        info->url_request, info->frame_load_type, blink::WebHistoryItem(),
+        info->is_client_redirect, base::UnguessableToken::Create(),
+        nullptr /* navigation_params */, nullptr /* extra_data */);
+    return;
   }
-  return RenderFrameImpl::DecidePolicyForNavigation(info);
+  RenderFrameImpl::BeginNavigation(std::move(info));
 }
 
 std::unique_ptr<FrameHostMsg_DidCommitProvisionalLoad_Params>

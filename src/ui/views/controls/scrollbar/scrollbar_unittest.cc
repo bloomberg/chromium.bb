@@ -87,17 +87,7 @@ class ScrollBarViewsTest : public ViewsTestBase {
   std::unique_ptr<TestScrollBarController> controller_;
 };
 
-// TODO(dnicoara) Can't run the test on Windows since the scrollbar |Part|
-// isn't handled in NativeTheme.
-#if defined(OS_WIN)
-#define MAYBE_Scrolling DISABLED_Scrolling
-#define MAYBE_ScrollBarFitsToBottom DISABLED_ScrollBarFitsToBottom
-#else
-#define MAYBE_Scrolling Scrolling
-#define MAYBE_ScrollBarFitsToBottom ScrollBarFitsToBottom
-#endif
-
-TEST_F(ScrollBarViewsTest, MAYBE_Scrolling) {
+TEST_F(ScrollBarViewsTest, Scrolling) {
   EXPECT_EQ(0, scrollbar_->GetPosition());
   EXPECT_EQ(900, scrollbar_->GetMaxPosition());
   EXPECT_EQ(0, scrollbar_->GetMinPosition());
@@ -135,7 +125,7 @@ TEST_F(ScrollBarViewsTest, MAYBE_Scrolling) {
   EXPECT_EQ(0, controller_->last_position);
 }
 
-TEST_F(ScrollBarViewsTest, MAYBE_ScrollBarFitsToBottom) {
+TEST_F(ScrollBarViewsTest, ScrollBarFitsToBottom) {
   scrollbar_->Update(100, 1999, 0);
   EXPECT_EQ(0, scrollbar_->GetPosition());
   EXPECT_EQ(1899, scrollbar_->GetMaxPosition());

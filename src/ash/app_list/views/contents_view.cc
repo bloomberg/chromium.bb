@@ -42,6 +42,17 @@ namespace {
 constexpr float kExpandArrowOpacityStartProgress = 0.61;
 constexpr float kExpandArrowOpacityEndProgress = 1;
 
+void DoAnimation(base::TimeDelta animation_duration,
+                 ui::Layer* layer,
+                 float target_opacity) {
+  ui::ScopedLayerAnimationSettings animation(layer->GetAnimator());
+  animation.SetTransitionDuration(animation_duration);
+  animation.SetTweenType(gfx::Tween::EASE_IN);
+  animation.SetPreemptionStrategy(
+      ui::LayerAnimator::IMMEDIATELY_ANIMATE_TO_NEW_TARGET);
+  layer->SetOpacity(target_opacity);
+}
+
 }  // namespace
 
 ContentsView::ContentsView(AppListView* app_list_view)
@@ -311,7 +322,7 @@ void ContentsView::UpdateExpandArrowOpacity(double progress,
 
   // Don't show |expand_arrow_view_| when the home launcher gestures are
   // disabled in tablet mode.
-  if (app_list_view_->IsHomeLauncherEnabledInTabletMode() &&
+  if (app_list_view_->is_tablet_mode() &&
       !app_list_features::IsHomeLauncherGesturesEnabled()) {
     expand_arrow_view_->layer()->SetOpacity(0);
     return;
@@ -436,7 +447,7 @@ bool ContentsView::Back() {
           GetAppsContainerView()->apps_grid_view()->pagination_model();
       if (GetAppsContainerView()->IsInFolderView()) {
         GetAppsContainerView()->app_list_folder_view()->CloseFolderPage();
-      } else if (app_list_view_->IsHomeLauncherEnabledInTabletMode() &&
+      } else if (app_list_view_->is_tablet_mode() &&
                  pagination_model->total_pages() > 0 &&
                  pagination_model->selected_page() > 0) {
         pagination_model->SelectPage(
@@ -513,6 +524,18 @@ void ContentsView::TransitionChanged() {
 }
 
 void ContentsView::TransitionEnded() {}
+
+void ContentsView::FadeOutOnClose(base::TimeDelta animation_duration) {
+  DoAnimation(animation_duration, layer(), 0.0f);
+  DoAnimation(animation_duration, GetSearchBoxView()->layer(), 0.0f);
+}
+
+void ContentsView::FadeInOnOpen(base::TimeDelta animation_duration) {
+  GetSearchBoxView()->layer()->SetOpacity(0.0f);
+  layer()->SetOpacity(0.0f);
+  DoAnimation(animation_duration, layer(), 1.0f);
+  DoAnimation(animation_duration, GetSearchBoxView()->layer(), 1.0f);
+}
 
 views::View* ContentsView::GetSelectedView() const {
   return app_list_pages_[GetActivePageIndex()]->GetSelectedView();

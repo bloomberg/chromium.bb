@@ -28,6 +28,8 @@
 #include "chrome/test/base/ui_test_utils.h"
 #include "components/autofill/content/browser/content_autofill_driver.h"
 #include "components/autofill/core/browser/credit_card_save_manager.h"
+#include "components/autofill/core/browser/form_data_importer.h"
+#include "components/autofill/core/browser/payments/payments_client.h"
 #include "components/keyed_service/content/browser_context_dependency_manager.h"
 #include "components/network_session_configurator/common/network_switches.h"
 #include "components/signin/core/browser/account_tracker_service.h"
@@ -93,7 +95,8 @@ void SaveCardBubbleViewsBrowserTestBase::SetUpOnMainThread() {
   ContentAutofillDriver::GetForRenderFrameHost(
       GetActiveWebContents()->GetMainFrame())
       ->autofill_manager()
-      ->payments_client()
+      ->client()
+      ->GetPaymentsClient()
       ->set_url_loader_factory_for_testing(test_shared_loader_factory_);
 
   // Set up this class as the ObserverForTest implementation.
@@ -101,7 +104,8 @@ void SaveCardBubbleViewsBrowserTestBase::SetUpOnMainThread() {
       ContentAutofillDriver::GetForRenderFrameHost(
           GetActiveWebContents()->GetMainFrame())
           ->autofill_manager()
-          ->form_data_importer_.get()
+          ->client()
+          ->GetFormDataImporter()
           ->credit_card_save_manager_.get();
   credit_card_save_manager->SetEventObserverForTesting(this);
 
@@ -180,7 +184,7 @@ void SaveCardBubbleViewsBrowserTestBase::OnWillCreateBrowserContextServices(
     content::BrowserContext* context) {
   // Replace the signin manager and account fetcher service with fakes.
   SigninManagerFactory::GetInstance()->SetTestingFactory(
-      context, base::BindRepeating(&BuildFakeSigninManagerBase));
+      context, base::BindRepeating(&BuildFakeSigninManagerForTesting));
   AccountFetcherServiceFactory::GetInstance()->SetTestingFactory(
       context,
       base::BindRepeating(&FakeAccountFetcherServiceBuilder::BuildForTests));
@@ -289,20 +293,6 @@ void SaveCardBubbleViewsBrowserTestBase::FillAndSubmitFormWithoutName() {
   SubmitForm();
 }
 
-// Should be called for credit_card_upload_form_address_and_cc.html.
-void SaveCardBubbleViewsBrowserTestBase::FillAndSubmitFormWithoutAddress() {
-  content::WebContents* web_contents = GetActiveWebContents();
-  const std::string click_fill_button_js =
-      "(function() { document.getElementById('fill_form').click(); })();";
-  ASSERT_TRUE(content::ExecuteScript(web_contents, click_fill_button_js));
-
-  const std::string click_clear_name_button_js =
-      "(function() { document.getElementById('clear_address').click(); })();";
-  ASSERT_TRUE(content::ExecuteScript(web_contents, click_clear_name_button_js));
-
-  SubmitForm();
-}
-
 // Should be called for credit_card_upload_form_shipping_address.html.
 void SaveCardBubbleViewsBrowserTestBase::
     FillAndSubmitFormWithConflictingName() {
@@ -316,6 +306,56 @@ void SaveCardBubbleViewsBrowserTestBase::
       "})();";
   ASSERT_TRUE(
       content::ExecuteScript(web_contents, click_conflicting_name_button_js));
+
+  SubmitForm();
+}
+
+// Should be called for credit_card_upload_form_address_and_cc.html.
+void SaveCardBubbleViewsBrowserTestBase::
+    FillAndSubmitFormWithoutExpirationDate() {
+  content::WebContents* web_contents = GetActiveWebContents();
+  const std::string click_fill_button_js =
+      "(function() { document.getElementById('fill_form').click(); })();";
+  ASSERT_TRUE(content::ExecuteScript(web_contents, click_fill_button_js));
+
+  const std::string click_clear_expiration_date_button_js =
+      "(function() { document.getElementById('clear_expiration_date').click(); "
+      "})();";
+  ASSERT_TRUE(content::ExecuteScript(web_contents,
+                                     click_clear_expiration_date_button_js));
+
+  SubmitForm();
+}
+
+// Should be called for credit_card_upload_form_address_and_cc.html.
+void SaveCardBubbleViewsBrowserTestBase::
+    FillAndSubmitFormWithExpiredExpirationDate() {
+  content::WebContents* web_contents = GetActiveWebContents();
+  const std::string click_fill_button_js =
+      "(function() { document.getElementById('fill_form').click(); })();";
+  ASSERT_TRUE(content::ExecuteScript(web_contents, click_fill_button_js));
+
+  const std::string click_fill_expired_expiration_date_button_js =
+      "(function() { "
+      "document.getElementById('fill_expired_expiration_date').click(); "
+      "})();";
+  ASSERT_TRUE(content::ExecuteScript(
+      web_contents, click_fill_expired_expiration_date_button_js));
+
+  SubmitForm();
+}
+
+// Should be called for credit_card_upload_form_address_and_cc.html.
+void SaveCardBubbleViewsBrowserTestBase::FillAndSubmitFormWithoutAddress() {
+  content::WebContents* web_contents = GetActiveWebContents();
+  const std::string click_fill_button_js =
+      "(function() { document.getElementById('fill_form').click(); })();";
+  ASSERT_TRUE(content::ExecuteScript(web_contents, click_fill_button_js));
+
+  const std::string click_clear_address_button_js =
+      "(function() { document.getElementById('clear_address').click(); })();";
+  ASSERT_TRUE(
+      content::ExecuteScript(web_contents, click_clear_address_button_js));
 
   SubmitForm();
 }
@@ -447,6 +487,14 @@ views::View* SaveCardBubbleViewsBrowserTestBase::FindViewInBubbleById(
   }
 
   return specified_view;
+}
+
+void SaveCardBubbleViewsBrowserTestBase::ClickOnCancelButton() {
+  SaveCardBubbleViews* save_card_bubble_views = GetSaveCardBubbleViews();
+  DCHECK(save_card_bubble_views);
+  ResetEventWaiterForSequence({DialogEvent::BUBBLE_CLOSED});
+  ClickOnDialogViewWithIdAndWait(DialogViewId::CANCEL_BUTTON);
+  DCHECK(!GetSaveCardBubbleViews());
 }
 
 void SaveCardBubbleViewsBrowserTestBase::ClickOnCloseButton() {

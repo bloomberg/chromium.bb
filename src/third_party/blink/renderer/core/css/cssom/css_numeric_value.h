@@ -50,7 +50,7 @@ class CORE_EXPORT CSSNumericValue : public CSSStyleValue {
   CSSUnitValue* to(const String&, ExceptionState&);
   CSSMathSum* toSum(const Vector<String>&, ExceptionState&);
 
-  void type(CSSNumericType&) const;
+  CSSNumericType* type() const;
 
   String toString() const final;
 

@@ -573,6 +573,11 @@ void FileSystemManagerImpl::CreateWriter(const GURL& file_path,
                                          CreateWriterCallback callback) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
 
+  if (!base::FeatureList::IsEnabled(blink::features::kWritableFilesAPI)) {
+    bindings_.ReportBadMessage("FileSystemManager.CreateWriter");
+    return;
+  }
+
   FileSystemURL url(context_->CrackURL(file_path));
   base::Optional<base::File::Error> opt_error = ValidateFileSystemURL(url);
   if (opt_error) {
@@ -630,6 +635,7 @@ void FileSystemManagerImpl::OnConnectionError() {
   if (bindings_.empty()) {
     in_transit_snapshot_files_.Clear();
     operation_runner_.reset();
+    cancellable_operations_.CloseAllBindings();
   }
 }
 

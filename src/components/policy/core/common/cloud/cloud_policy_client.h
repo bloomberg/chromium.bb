@@ -146,6 +146,7 @@ class POLICY_EXPORT CloudPolicyClient {
       enterprise_management::DeviceRegisterRequest::Flavor flavor,
       enterprise_management::DeviceRegisterRequest::Lifetime lifetime,
       enterprise_management::LicenseType::LicenseTypeEnum license_type,
+      std::unique_ptr<DMAuth> auth,
       const std::string& pem_certificate_chain,
       const std::string& client_id,
       const std::string& requisition,
@@ -390,7 +391,9 @@ class POLICY_EXPORT CloudPolicyClient {
   void OnRetryRegister(DeviceManagementRequestJob* job);
 
   // Callback for siganture of requests.
-  void OnRegisterWithCertificateRequestSigned(bool success,
+  void OnRegisterWithCertificateRequestSigned(
+      std::unique_ptr<DMAuth> auth,
+      bool success,
       enterprise_management::SignedData signed_data);
 
   // Callback for registration requests.

@@ -20,7 +20,8 @@ extern NSString* const kPageInfoWillHideNotification;
 // The coordinator that manages the display of the Page Info UI. When
 // |dispatcher| is set, this coordinator uses |dispatcher| to register itself
 // as the target for PageInfoCommmands. These commands can then trigger the
-// showing/hiding of the Page Info UI.
+// showing/hiding of the Page Info UI. The PageInfo UI must have been hidden
+// before |-stop| is called.
 @interface PageInfoLegacyCoordinator : ChromeCoordinator
 
 // The dispatcher for this coordinator. When |dispatcher| is set, the
@@ -36,11 +37,6 @@ extern NSString* const kPageInfoWillHideNotification;
 
 // The active TabModel to be used to display Page Info.
 @property(nonatomic, weak) TabModel* tabModel;
-
-// Stops listening for dispatcher calls and clears this coordinator's weak
-// references. The Page Info UI must not be displayed when this method is
-// called.
-- (void)disconnect;
 
 @end
 

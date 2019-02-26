@@ -6,6 +6,7 @@
 
 #include <vector>
 
+#include "base/android/build_info.h"
 #include "base/bind.h"
 #include "base/location.h"
 #include "base/metrics/histogram_macros.h"
@@ -39,14 +40,20 @@ namespace {
 // Looks up the original, online, visible URL of |web_contents|. The current
 // visible URL may be a distilled article which is not appropriate for a home
 // screen shortcut.
-GURL GetShortcutUrl(const content::WebContents* web_contents) {
+GURL GetShortcutUrl(content::WebContents* web_contents) {
   return dom_distiller::url_utils::GetOriginalUrlFromDistillerUrl(
       web_contents->GetVisibleURL());
+}
+
+bool DoesAndroidSupportMaskableIcons() {
+  return base::android::BuildInfo::GetInstance()->sdk_int() >=
+         base::android::SDK_VERSION_OREO;
 }
 
 InstallableParams ParamsToPerformManifestAndIconFetch() {
   InstallableParams params;
   params.valid_primary_icon = true;
+  params.prefer_maskable_icon = DoesAndroidSupportMaskableIcons();
   params.valid_badge_icon = true;
   params.wait_for_worker = true;
   return params;
@@ -58,6 +65,7 @@ InstallableParams ParamsToPerformInstallableCheck() {
   params.valid_manifest = true;
   params.has_worker = true;
   params.valid_primary_icon = true;
+  params.prefer_maskable_icon = DoesAndroidSupportMaskableIcons();
   params.wait_for_worker = true;
   return params;
 }
@@ -67,10 +75,11 @@ InstallableParams ParamsToPerformInstallableCheck() {
 // - the generated icon
 // - whether |icon| was used in generating the launcher icon
 std::pair<SkBitmap, bool> CreateLauncherIconInBackground(const GURL& start_url,
-                                                         const SkBitmap& icon) {
+                                                         const SkBitmap& icon,
+                                                         bool maskable) {
   bool is_generated = false;
   SkBitmap primary_icon = ShortcutHelper::FinalizeLauncherIconInBackground(
-      icon, start_url, &is_generated);
+      icon, maskable, start_url, &is_generated);
   return std::make_pair(primary_icon, is_generated);
 }
 
@@ -89,7 +98,8 @@ std::pair<SkBitmap, bool> CreateLauncherIconFromFaviconInBackground(
     gfx::PNGCodec::Decode(bitmap_result.bitmap_data->front(),
                           bitmap_result.bitmap_data->size(), &decoded);
   }
-  return CreateLauncherIconInBackground(start_url, decoded);
+  return CreateLauncherIconInBackground(start_url, decoded,
+                                        /* maskable */ false);
 }
 
 void RecordAddToHomescreenDialogDuration(base::TimeDelta duration) {
@@ -106,6 +116,7 @@ AddToHomescreenDataFetcher::AddToHomescreenDataFetcher(
       installable_manager_(InstallableManager::FromWebContents(web_contents)),
       observer_(observer),
       shortcut_info_(GetShortcutUrl(web_contents)),
+      has_maskable_primary_icon_(false),
       data_timeout_ms_(base::TimeDelta::FromMilliseconds(data_timeout_ms)),
       is_waiting_for_manifest_(true),
       weak_ptr_factory_(this) {
@@ -228,6 +239,7 @@ void AddToHomescreenDataFetcher::OnDidGetManifestAndIcons(
   }
 
   raw_primary_icon_ = *data.primary_icon;
+  has_maskable_primary_icon_ = data.has_maskable_primary_icon;
   shortcut_info_.best_primary_icon_url = data.primary_icon_url;
 
   // Save the splash screen URL for the later download.
@@ -336,7 +348,8 @@ void AddToHomescreenDataFetcher::CreateLauncherIcon(const SkBitmap& icon) {
       FROM_HERE,
       {base::MayBlock(), base::TaskPriority::USER_VISIBLE,
        base::TaskShutdownBehavior::SKIP_ON_SHUTDOWN},
-      base::BindOnce(&CreateLauncherIconInBackground, shortcut_info_.url, icon),
+      base::BindOnce(&CreateLauncherIconInBackground, shortcut_info_.url, icon,
+                     has_maskable_primary_icon_),
       base::BindOnce(&AddToHomescreenDataFetcher::NotifyObserver,
                      weak_ptr_factory_.GetWeakPtr()));
 }

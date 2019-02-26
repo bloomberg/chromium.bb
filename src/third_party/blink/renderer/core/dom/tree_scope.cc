@@ -57,7 +57,7 @@
 
 namespace blink {
 
-using namespace HTMLNames;
+using namespace html_names;
 
 TreeScope::TreeScope(ContainerNode& root_node, Document& document)
     : root_node_(&root_node),
@@ -128,7 +128,7 @@ Element* TreeScope::getElementById(const AtomicString& element_id) const {
 const HeapVector<Member<Element>>& TreeScope::GetAllElementsById(
     const AtomicString& element_id) const {
   DEFINE_STATIC_LOCAL(Persistent<HeapVector<Member<Element>>>, empty_vector,
-                      (new HeapVector<Member<Element>>));
+                      (MakeGarbageCollected<HeapVector<Member<Element>>>()));
   if (element_id.IsEmpty())
     return *empty_vector;
   if (!elements_by_id_)
@@ -189,7 +189,9 @@ HTMLMapElement* TreeScope::GetImageMap(const String& url) const {
   if (!image_maps_by_name_)
     return nullptr;
   wtf_size_t hash_pos = url.find('#');
-  String name = hash_pos == kNotFound ? url : url.Substring(hash_pos + 1);
+  if (hash_pos == kNotFound)
+    return nullptr;
+  String name = url.Substring(hash_pos + 1);
   return ToHTMLMapElement(
       image_maps_by_name_->GetElementByMapName(AtomicString(name), *this));
 }
@@ -329,8 +331,10 @@ HeapVector<Member<Element>> TreeScope::ElementsFromPoint(double x,
 }
 
 SVGTreeScopeResources& TreeScope::EnsureSVGTreeScopedResources() {
-  if (!svg_tree_scoped_resources_)
-    svg_tree_scoped_resources_ = new SVGTreeScopeResources(this);
+  if (!svg_tree_scoped_resources_) {
+    svg_tree_scoped_resources_ =
+        MakeGarbageCollected<SVGTreeScopeResources>(this);
+  }
   return *svg_tree_scoped_resources_;
 }
 
@@ -485,7 +489,7 @@ Element* TreeScope::AdjustedFocusedElement() const {
     return nullptr;
   }
 
-  EventPath* event_path = new EventPath(*element);
+  EventPath* event_path = MakeGarbageCollected<EventPath>(*element);
   for (const auto& context : event_path->NodeEventContexts()) {
     if (context.GetNode() == RootNode()) {
       // context.target() is one of the followings:
@@ -598,7 +602,7 @@ Element* TreeScope::GetElementByAccessKey(const String& key) const {
   Element* result = nullptr;
   Node& root = RootNode();
   for (Element& element : ElementTraversal::DescendantsOf(root)) {
-    if (DeprecatedEqualIgnoringCase(element.FastGetAttribute(accesskeyAttr),
+    if (DeprecatedEqualIgnoringCase(element.FastGetAttribute(kAccesskeyAttr),
                                     key))
       result = &element;
     if (ShadowRoot* shadow_root = element.GetShadowRoot()) {
@@ -615,10 +619,11 @@ void TreeScope::SetNeedsStyleRecalcForViewportUnits() {
     if (ShadowRoot* root = element->GetShadowRoot())
       root->SetNeedsStyleRecalcForViewportUnits();
     const ComputedStyle* style = element->GetComputedStyle();
-    if (style && style->HasViewportUnits())
+    if (style && style->HasViewportUnits()) {
       element->SetNeedsStyleRecalc(kLocalStyleChange,
                                    StyleChangeReasonForTracing::Create(
-                                       StyleChangeReason::kViewportUnits));
+                                       style_change_reason::kViewportUnits));
+    }
   }
 }
 

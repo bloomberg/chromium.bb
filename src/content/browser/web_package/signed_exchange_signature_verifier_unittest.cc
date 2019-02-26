@@ -18,7 +18,6 @@ const uint64_t kSignatureHeaderExpires = 1517895941;
 
 // See content/testdata/sxg/README on how to generate these data.
 // clang-format off
-constexpr char kSignatureHeaderRSA[] = R"(label; sig=*DDeXzJshGnPT+ei1rS1KmZx+QLwwLTbNKDVSmTb2HjGfgPngv+C+uMbjZiliOmGe0b514JcAlYAM57t0kZY2FPd9JdqwYPIiAWEwxByfV2iXBbsGZNWGtS/AAq1SaPwIMfrzdLXAFbKbtTRhS7B5LHCo/6hEIXu0TJJFbv5fKaLgTTLF0AK5dV0/En0uz+bnVARuBIH/ez2gPEFc6KbGnTTp8LYcCe/YjlHQy/Oac28ACBtn70rP1TerWEaYBwMMDckJ2gfsVyLqMcFtJqV0uGLT6Atb2wBSUZlZDTEZf228362r+EHLrADAuhz4bdSMKFsFgWyceOriDyHhc0PSwQ==*; validity-url="https://example.com/resource.validity.msg"; integrity="digest/mi-sha256-03"; cert-url="https://example.com/cert.msg"; cert-sha256=*tJGJP8ej7KCEW8VnVK3bKwpBza/oLrtWA75z5ZPptuc=*; date=1517892341; expires=1517895941)";
 constexpr char kSignatureHeaderECDSAP256[] = R"(label; sig=*MEUCIQC7tM/B6YxVgrJmgfFawtwBKPev2vFCh7amR+JTDBMgTQIga9LkS51vteYr8NWPTCSZRy10lcLaFNN9m1G3OBS9lBs=*; validity-url="https://example.com/resource.validity.msg"; integrity="digest/mi-sha256-03"; cert-url="https://example.com/cert.msg"; cert-sha256=*KX+BYLSMgDOON8Ju65RoId39Qvajxa12HO+WnD4HpS0=*; date=1517892341; expires=1517895941)";
 constexpr uint8_t kCborHeadersECDSAP256[] = {
   0x82, 0xa1, 0x47, 0x3a, 0x6d, 0x65, 0x74, 0x68, 0x6f, 0x64, 0x43, 0x47,
@@ -55,31 +54,6 @@ constexpr char kSignatureHeaderInvalidExpires[] =
     "cert-sha256=*3wfzkF4oKGUwoQ0rE7U11FIdcA/8biGzlaACeRQQH6k=*; "
     "date=1517892341; expires=1518497142";
 // clang-format on
-
-constexpr char kCertPEMRSA[] = R"(
------BEGIN CERTIFICATE-----
-MIIDyTCCArGgAwIBAgIBBDANBgkqhkiG9w0BAQsFADBjMQswCQYDVQQGEwJVUzET
-MBEGA1UECAwKQ2FsaWZvcm5pYTEWMBQGA1UEBwwNTW91bnRhaW4gVmlldzEQMA4G
-A1UECgwHVGVzdCBDQTEVMBMGA1UEAwwMVGVzdCBSb290IENBMB4XDTE3MDYwNTE3
-MTA0NloXDTI3MDYwMzE3MTA0NlowYDELMAkGA1UEBhMCVVMxEzARBgNVBAgMCkNh
-bGlmb3JuaWExFjAUBgNVBAcMDU1vdW50YWluIFZpZXcxEDAOBgNVBAoMB1Rlc3Qg
-Q0ExEjAQBgNVBAMMCTEyNy4wLjAuMTCCASIwDQYJKoZIhvcNAQEBBQADggEPADCC
-AQoCggEBANOUHzO0uxUyd3rYUArq33olXC0N1AYNM0wFTjUqUrElLiX48+5hERkG
-hGwC8VG5Zr/2Jw/wtarLiDjg2OfPdwyMp3S7MBTgvXWZ989MUHpx6b0cWM298iOg
-/VeinMphFLDfPDHFWZ7RXBqfk6MGLhI5GgvoooYw2jUmP+elnoizIL/OB08sIYra
-AVrwasoRd+yOmyvQnzw3mZNKpWjeX7NhZCg2nG8B8u78agwAYVWupHnJS2GwhLzy
-19AxU/HmaI9kyyMGmRtbRZ0roCyMDOgEEcWUSYNRP33KLi31uKYqOSblvzmC7kA7
-k5yca3VXlgqg4gnjr9tbOMzMcpeqeaMCAwEAAaOBijCBhzAMBgNVHRMBAf8EAjAA
-MB0GA1UdDgQWBBQYDOtRudM2qckEr/kvFPCZZtJ21DAfBgNVHSMEGDAWgBSbJguK
-mKm7HbkfHOMaQDPtjheIqzAdBgNVHSUEFjAUBggrBgEFBQcDAQYIKwYBBQUHAwIw
-GAYDVR0RBBEwD4INKi5leGFtcGxlLm9yZzANBgkqhkiG9w0BAQsFAAOCAQEAvXK0
-UF19i7JkSSdomQwB18WRFaKG8VZpSFsKbEECPRHoxktMl/Pd04wk+W0fZFq433j3
-4D+cjTB6OxAVdPIPSex8U40fYMl9C13K1tejf4o/+rcLxEDdVfv7PUkogrliXzSE
-MCYdcTwruV7hjC2/Ib0t/kdxblRt4dD2I1jdntsFy/VfET/m0J2qRhJWlfYEzCFe
-Hn8H/PZIiIsso5pm2RodTqi9w4/+1r8Yyfmk8TF+EoWDYtbZ+ScgtCH5fldS+onI
-hHgjz/tniqjbY0MRFr9ZxrohmtgOBOvROEKH06c92oOmj2ahyFpM/yU9PL/JvNmF
-SaMW1eOzjHemIWKTMw==
------END CERTIFICATE-----)";
 
 constexpr char kCertPEMECDSAP256[] = R"(
 -----BEGIN CERTIFICATE-----
@@ -248,34 +222,6 @@ class SignedExchangeSignatureVerifierTest : public ::testing::Test {
                                                 ));
   }
 };
-
-TEST_F(SignedExchangeSignatureVerifierTest, VerifyRSA) {
-  auto signature = SignedExchangeSignatureHeaderField::ParseSignature(
-      kSignatureHeaderRSA, nullptr /* devtools_proxy */);
-  ASSERT_TRUE(signature.has_value());
-  ASSERT_EQ(1u, signature->size());
-
-  net::CertificateList certlist =
-      net::X509Certificate::CreateCertificateListFromBytes(
-          kCertPEMRSA, base::size(kCertPEMRSA),
-          net::X509Certificate::FORMAT_AUTO);
-  ASSERT_EQ(1u, certlist.size());
-
-  SignedExchangeEnvelope envelope;
-  envelope.set_request_method("GET");
-  envelope.set_request_url(GURL("https://test.example.org/test/"));
-  envelope.set_response_code(net::HTTP_OK);
-  envelope.AddResponseHeader("content-type", "text/html; charset=utf-8");
-  envelope.AddResponseHeader("content-encoding", "mi-sha256-03");
-  envelope.AddResponseHeader(
-      "digest", "mi-sha256-03=wmp4dRMYgxP3tSMCwV/I0CWOCiHZpAihKZk19bsN9RI=");
-  envelope.SetSignatureForTesting((*signature)[0]);
-
-  EXPECT_EQ(SignedExchangeSignatureVerifier::Result::kErrUnsupportedCertType,
-            SignedExchangeSignatureVerifier::Verify(
-                envelope, certlist[0], VerificationTime(),
-                nullptr /* devtools_proxy */));
-}
 
 TEST_F(SignedExchangeSignatureVerifierTest, VerifyECDSAP256) {
   auto signature = SignedExchangeSignatureHeaderField::ParseSignature(

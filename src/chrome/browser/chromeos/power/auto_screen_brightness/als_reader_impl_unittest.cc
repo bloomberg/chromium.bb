@@ -8,6 +8,7 @@
 #include "base/files/file_util.h"
 #include "base/files/scoped_temp_dir.h"
 #include "base/strings/string_number_conversions.h"
+#include "base/test/metrics/histogram_tester.h"
 #include "base/test/scoped_task_environment.h"
 #include "base/threading/sequenced_task_runner_handle.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -77,6 +78,7 @@ class AlsReaderImplTest : public testing::Test {
 
   base::ScopedTempDir temp_dir_;
   base::FilePath ambient_light_path_;
+  base::HistogramTester histogram_tester_;
 
   std::unique_ptr<base::test::ScopedTaskEnvironment> scoped_task_environment_;
 
@@ -89,6 +91,30 @@ class AlsReaderImplTest : public testing::Test {
 
 TEST_F(AlsReaderImplTest, OnAlsReaderInitialized) {
   EXPECT_EQ(AlsReader::AlsInitStatus::kSuccess, test_observer_.status());
+  histogram_tester_.ExpectUniqueSample(
+      "AutoScreenBrightness.AlsReaderStatus",
+      static_cast<int>(AlsReader::AlsInitStatus::kSuccess), 1);
+}
+
+TEST_F(AlsReaderImplTest, ErrorMetrics) {
+  std::string histogram = "AutoScreenBrightness.AlsReaderStatus";
+
+  // The setup will already have logged a success during setup.
+  // Double-check that's the case.
+  histogram_tester_.ExpectUniqueSample(
+      "AutoScreenBrightness.AlsReaderStatus",
+      static_cast<int>(AlsReader::AlsInitStatus::kSuccess), 1);
+
+  als_reader_.FailForTesting();
+  histogram_tester_.ExpectBucketCount(
+      histogram, static_cast<int>(AlsReader::AlsInitStatus::kDisabled), 1);
+  histogram_tester_.ExpectBucketCount(
+      histogram, static_cast<int>(AlsReader::AlsInitStatus::kIncorrectConfig),
+      1);
+  histogram_tester_.ExpectBucketCount(
+      histogram, static_cast<int>(AlsReader::AlsInitStatus::kMissingPath), 1);
+  // Expect 3 errors from above + 1 success from before |FailForTesting|.
+  histogram_tester_.ExpectTotalCount(histogram, 4);
 }
 
 TEST_F(AlsReaderImplTest, OneAlsValue) {

@@ -26,7 +26,7 @@
 #include "url/url_constants.h"
 
 #if defined(OS_ANDROID)
-#include "base/sys_info.h"
+#include "base/system/sys_info.h"
 #endif
 
 namespace {
@@ -112,6 +112,12 @@ bool IsIncludedInHoldbackFieldTrial() {
   return IsIncludedInFieldTrial("DataCompressionProxyHoldback");
 }
 
+bool IsIncludedInSecureProxyHoldbackFieldTrial() {
+  return base::StartsWith(
+      base::FieldTrialList::FindFullName("DataCompressionProxyHoldback"),
+      "SecureProxy_Disabled", base::CompareCase::SENSITIVE);
+}
+
 std::string HoldbackFieldTrialGroup() {
   return base::FieldTrialList::FindFullName("DataCompressionProxyHoldback");
 }
@@ -122,10 +128,6 @@ const char* GetLoFiFieldTrialName() {
 
 const char* GetLoFiFlagFieldTrialName() {
   return kLoFiFlagFieldTrial;
-}
-
-const char* GetWarmupCallbackParamName() {
-  return kWarmupFetchCallbackEnabledParam;
 }
 
 const char* GetMissingViaBypassParamName() {
@@ -170,6 +172,21 @@ GURL GetWarmupURL() {
       params, "warmup_url", kDefaultWarmupUrl));
 }
 
+bool IsWarmupURLFetchCallbackEnabled() {
+  if (base::CommandLine::ForCurrentProcess()->HasSwitch(
+          data_reduction_proxy::switches::
+              kDisableDataReductionProxyWarmupURLFetchCallback)) {
+    return false;
+  }
+
+  if (!GetFieldTrialParamByFeatureAsBool(
+          features::kDataReductionProxyRobustConnection,
+          kWarmupFetchCallbackEnabledParam, true)) {
+    return false;
+  }
+  return true;
+}
+
 bool IsWarmupURL(const GURL& url) {
   GURL warmup_url = params::GetWarmupURL();
   return url.host() == warmup_url.host() && url.path() == warmup_url.path();
@@ -192,31 +209,6 @@ bool IsWhitelistedHttpResponseCodeForProbes(int http_response_code) {
   if (!base::StringToInt(value, &response_code))
     return false;
   return response_code == http_response_code;
-}
-
-bool ShouldBypassMissingViaHeader(bool connection_is_cellular) {
-  return GetFieldTrialParamByFeatureAsBool(
-      data_reduction_proxy::features::kMissingViaHeaderShortDuration,
-      connection_is_cellular ? "should_bypass_missing_via_cellular"
-                             : "should_bypass_missing_via_wifi",
-      true);
-}
-
-std::pair<base::TimeDelta, base::TimeDelta>
-GetMissingViaHeaderBypassDurationRange(bool connection_is_cellular) {
-  base::TimeDelta bypass_max =
-      base::TimeDelta::FromSeconds(GetFieldTrialParamByFeatureAsInt(
-          data_reduction_proxy::features::kMissingViaHeaderShortDuration,
-          connection_is_cellular ? "missing_via_max_bypass_cellular_in_seconds"
-                                 : "missing_via_max_bypass_wifi_in_seconds",
-          300));
-  base::TimeDelta bypass_min =
-      base::TimeDelta::FromSeconds(GetFieldTrialParamByFeatureAsInt(
-          data_reduction_proxy::features::kMissingViaHeaderShortDuration,
-          connection_is_cellular ? "missing_via_min_bypass_cellular_in_seconds"
-                                 : "missing_via_min_bypass_wifi_in_seconds",
-          60));
-  return {bypass_min, bypass_max};
 }
 
 bool IsForcePingbackEnabledViaFlags() {
@@ -502,6 +494,9 @@ DataReductionProxyParams::FindConfiguredDataReductionProxy(
   return params::FindConfiguredProxyInVector(proxies_for_http(), proxy_server);
 }
 
-
+net::ProxyList DataReductionProxyParams::GetAllConfiguredProxies() const {
+  NOTREACHED();
+  return net::ProxyList();
+}
 
 }  // namespace data_reduction_proxy

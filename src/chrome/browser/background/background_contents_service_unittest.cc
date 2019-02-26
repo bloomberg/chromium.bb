@@ -73,8 +73,7 @@ class MockBackgroundContents : public BackgroundContents {
       : appid_(id), profile_(profile) {}
 
   void SendOpenedNotification(BackgroundContentsService* service) {
-    BackgroundContentsOpenedDetails details = {
-        this, "background", appid_ };
+    BackgroundContentsOpenedDetails details = {this, "background", appid_};
     service->BackgroundContentsOpened(&details, profile_);
   }
 
@@ -134,8 +133,8 @@ class BackgroundContentsServiceNotificationTest
       scoped_refptr<extensions::Extension> extension) {
     std::string notification_id = BackgroundContentsService::
         GetNotificationDelegateIdForExtensionForTesting(extension->id());
-    BackgroundContentsService::ShowBalloonForTesting(
-        extension.get(), profile());
+    BackgroundContentsService::ShowBalloonForTesting(extension.get(),
+                                                     profile());
     base::RunLoop run_loop;
     display_service_->SetNotificationAddedClosure(run_loop.QuitClosure());
     run_loop.Run();
@@ -169,8 +168,8 @@ TEST_F(BackgroundContentsServiceTest, BackgroundContentsCreateDestroy) {
 TEST_F(BackgroundContentsServiceTest, BackgroundContentsUrlAdded) {
   TestingProfile profile;
   BackgroundContentsService service(&profile, command_line_.get());
-  BackgroundContentsServiceFactory::GetInstance()->
-      RegisterUserPrefsOnBrowserContextForTest(&profile);
+  BackgroundContentsServiceFactory::GetInstance()
+      ->RegisterUserPrefsOnBrowserContextForTest(&profile);
   GURL orig_url;
   GURL url("http://a/");
   GURL url2("http://a/");
@@ -196,8 +195,8 @@ TEST_F(BackgroundContentsServiceTest, BackgroundContentsUrlAdded) {
 TEST_F(BackgroundContentsServiceTest, BackgroundContentsUrlAddedAndClosed) {
   TestingProfile profile;
   BackgroundContentsService service(&profile, command_line_.get());
-  BackgroundContentsServiceFactory::GetInstance()->
-      RegisterUserPrefsOnBrowserContextForTest(&profile);
+  BackgroundContentsServiceFactory::GetInstance()
+      ->RegisterUserPrefsOnBrowserContextForTest(&profile);
 
   GURL url("http://a/");
   MockBackgroundContents* contents = new MockBackgroundContents(&profile);
@@ -217,8 +216,8 @@ TEST_F(BackgroundContentsServiceTest, BackgroundContentsUrlAddedAndClosed) {
 TEST_F(BackgroundContentsServiceTest, RestartBackgroundContents) {
   TestingProfile profile;
   BackgroundContentsService service(&profile, command_line_.get());
-  BackgroundContentsServiceFactory::GetInstance()->
-      RegisterUserPrefsOnBrowserContextForTest(&profile);
+  BackgroundContentsServiceFactory::GetInstance()
+      ->RegisterUserPrefsOnBrowserContextForTest(&profile);
 
   GURL url("http://a/");
   {
@@ -249,19 +248,19 @@ TEST_F(BackgroundContentsServiceTest, RestartBackgroundContents) {
 TEST_F(BackgroundContentsServiceTest, TestApplicationIDLinkage) {
   TestingProfile profile;
   BackgroundContentsService service(&profile, command_line_.get());
-  BackgroundContentsServiceFactory::GetInstance()->
-      RegisterUserPrefsOnBrowserContextForTest(&profile);
+  BackgroundContentsServiceFactory::GetInstance()
+      ->RegisterUserPrefsOnBrowserContextForTest(&profile);
 
   EXPECT_EQ(NULL, service.GetAppBackgroundContents("appid"));
-  MockBackgroundContents* contents = new MockBackgroundContents(&profile,
-                                                                "appid");
+  MockBackgroundContents* contents =
+      new MockBackgroundContents(&profile, "appid");
   std::unique_ptr<MockBackgroundContents> contents2(
       new MockBackgroundContents(&profile, "appid2"));
   contents->SendOpenedNotification(&service);
   EXPECT_EQ(contents, service.GetAppBackgroundContents(contents->appid()));
   contents2->SendOpenedNotification(&service);
-  EXPECT_EQ(contents2.get(), service.GetAppBackgroundContents(
-      contents2->appid()));
+  EXPECT_EQ(contents2.get(),
+            service.GetAppBackgroundContents(contents2->appid()));
   EXPECT_EQ(0U, GetPrefs(&profile)->size());
 
   // Navigate the contents, then make sure the one associated with the extension

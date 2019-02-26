@@ -15,6 +15,10 @@ namespace base {
 class ListValue;
 }
 
+namespace user_manager {
+class User;
+}
+
 namespace chromeos {
 
 struct TimeZoneResponseData;
@@ -43,6 +47,14 @@ bool IsTimezonePrefsManaged(const std::string& pref_name);
 // This is called from chromeos::Preferences after updating profile
 // preferences to apply new value to system time zone.
 void UpdateSystemTimezone(Profile* profile);
+
+// Set system timezone to the given |timezone_id|, as long as the given |user|
+// is allowed to set it (so not a guest, public account or child).
+// Updates only the global system timezone - not specific to the user - and
+// doesn't care if perUserTimezone is enabled.
+// Returns |true| if the system timezone is set, false if the given user cannot.
+bool SetSystemTimezone(const user_manager::User* user,
+                       const std::string& timezone);
 
 // Updates Local State preference prefs::kSigninScreenTimezone AND
 // also immediately sets system timezone (chromeos::system::TimezoneSettings).

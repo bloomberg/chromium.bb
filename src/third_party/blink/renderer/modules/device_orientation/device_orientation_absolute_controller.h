@@ -15,6 +15,7 @@ class MODULES_EXPORT DeviceOrientationAbsoluteController final
  public:
   static const char kSupplementName[];
 
+  explicit DeviceOrientationAbsoluteController(Document&);
   ~DeviceOrientationAbsoluteController() override;
 
   static DeviceOrientationAbsoluteController& From(Document&);
@@ -28,8 +29,6 @@ class MODULES_EXPORT DeviceOrientationAbsoluteController final
  private:
   // Inherited from PlatformEventController.
   void RegisterWithDispatcher() override;
-
-  explicit DeviceOrientationAbsoluteController(Document&);
 
   // Inherited from DeviceOrientationController.
   const AtomicString& EventTypeName() const override;

@@ -328,10 +328,142 @@ tr.exportTo('cp', () => {
     return dict;
   }
 
+  async function* asGenerator(promise) {
+    yield await promise;
+  }
+
+  /**
+   * BatchIterator reduces processing costs by batching results and errors
+   * from an array of tasks. A task can either be a promise or an asynchronous
+   * iterator. In other words, use this class when it is costly to iteratively
+   * process the output of each task (e.g. when rendering to DOM).
+   *
+   *   const tasks = urls.map(fetch);
+   *   for await (const {results, errors} of new BatchIterator(tasks)) {
+   *     render(results);
+   *     renderErrors(errors);
+   *   }
+   */
+  class BatchIterator {
+    constructor(tasks, getDelay = cp.timeout) {
+      // `tasks` may include either simple Promises or async generators.
+      this.results_ = [];
+      this.errors_ = [];
+      this.promises_ = new Set();
+
+      for (let task of tasks) {
+        if (task instanceof Promise) task = asGenerator(task);
+        this.generate_(task);
+      }
+
+      this.getDelay_ = ms => {
+        const promise = getDelay(ms).then(() => {
+          promise.resolved = true;
+        });
+        return promise;
+      };
+    }
+
+    // Adds a Promise to this.promises_ that resolves when the generator next
+    // resolves, and deletes itself from this.promises_.
+    // If the generator is not done, the result is pushed to this.results_ or
+    // the error is pushed to this.errors_, and another Promise is added to
+    // this.promises_.
+    generate_(generator) {
+      const wrapped = (async() => {
+        try {
+          const {value, done} = await generator.next();
+          if (done) return;
+          this.results_.push(value);
+          this.generate_(generator);
+        } catch (error) {
+          this.errors_.push(error);
+        } finally {
+          this.promises_.delete(wrapped);
+        }
+      })();
+      this.promises_.add(wrapped);
+    }
+
+    batch_() {
+      const batch = {results: this.results_, errors: this.errors_};
+      this.results_ = [];
+      this.errors_ = [];
+      return batch;
+    }
+
+    async* [Symbol.asyncIterator]() {
+      // Yield the first result immediately in order to allow the user to start
+      // to understand it (c.f. First Contentful Paint), and also to measure how
+      // long it takes the caller to render the data. Use that measurement as an
+      // estimation of how long to wait before yielding the next batch of
+      // results. This first batch may contain multiple results/errors if
+      // multiple tasks resolve in the same tick, or if a generator yields
+      // multiple results synchronously.
+      await Promise.race(this.promises_);
+      let start = performance.now();
+      yield this.batch_();
+      let processingMs = performance.now() - start;
+
+      while (this.promises_.size ||
+             this.results_.length || this.errors_.length) {
+        // Wait for a result or error to become available.
+        // This may not be necessary if a promise resolved while the caller was
+        // processing previous results.
+        if (!this.results_.length && !this.errors_.length) {
+          await Promise.race(this.promises_);
+        }
+
+        // Wait for either the delay to resolve or all generators to be done.
+        // This can't use Promise.all() because generators can add new promises.
+        const delay = this.getDelay_(processingMs);
+        while (!delay.resolved && this.promises_.size) {
+          await Promise.race([delay, ...this.promises_]);
+        }
+
+        start = performance.now();
+        yield this.batch_();
+        processingMs = performance.now() - start;
+      }
+    }
+  }
+
+  const ZERO_WIDTH_SPACE = String.fromCharCode(0x200b);
+  const NON_BREAKING_SPACE = String.fromCharCode(0xA0);
+
+  function breakWords(str) {
+    if (!str) return NON_BREAKING_SPACE;
+
+    // Insert spaces before underscores.
+    str = str.replace(/_/g, ZERO_WIDTH_SPACE + '_');
+
+    // Insert spaces after colons and dots.
+    str = str.replace(/\./g, '.' + ZERO_WIDTH_SPACE);
+    str = str.replace(/:/g, ':' + ZERO_WIDTH_SPACE);
+
+    // Insert spaces before camel-case words.
+    str = str.split(/([a-z][A-Z])/g);
+    str = str.map((s, i) => {
+      if ((i % 2) === 0) return s;
+      return s[0] + ZERO_WIDTH_SPACE + s[1];
+    });
+    str = str.join('');
+    return str;
+  }
+
+  function plural(count, pluralSuffix = 's', singularSuffix = '') {
+    if (count === 1) return singularSuffix;
+    return pluralSuffix;
+  }
+
   return {
+    BatchIterator,
+    NON_BREAKING_SPACE,
+    ZERO_WIDTH_SPACE,
     afterRender,
     animationFrame,
     authorizationHeaders,
+    breakWords,
     buildProperties,
     buildState,
     deepFreeze,
@@ -344,6 +476,7 @@ tr.exportTo('cp', () => {
     measureText,
     measureTrace,
     normalize,
+    plural,
     setImmutable,
     sha,
     timeout,

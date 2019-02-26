@@ -8,11 +8,11 @@
 #include <utility>
 
 #include "base/strings/utf_string_conversions.h"
-#include "chrome/browser/autofill/strike_database_factory.h"
+#include "chrome/browser/autofill/legacy_strike_database_factory.h"
+#include "chrome/browser/autofill/personal_data_manager_factory.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/signin/account_consistency_mode_manager.h"
-#include "chrome/browser/signin/account_tracker_service_factory.h"
-#include "chrome/browser/signin/signin_manager_factory.h"
+#include "chrome/browser/signin/identity_manager_factory.h"
 #include "chrome/browser/signin/signin_ui_util.h"
 #include "chrome/browser/ssl/security_state_tab_helper.h"
 #include "chrome/browser/sync/profile_sync_service_factory.h"
@@ -28,19 +28,19 @@
 #include "chrome/common/url_constants.h"
 #include "components/autofill/core/browser/autofill_experiments.h"
 #include "components/autofill/core/browser/autofill_metrics.h"
-#include "components/autofill/core/browser/strike_database.h"
+#include "components/autofill/core/browser/legacy_strike_database.h"
+#include "components/autofill/core/browser/personal_data_manager.h"
 #include "components/autofill/core/common/autofill_clock.h"
 #include "components/autofill/core/common/autofill_constants.h"
 #include "components/autofill/core/common/autofill_features.h"
 #include "components/autofill/core/common/autofill_prefs.h"
 #include "components/browser_sync/profile_sync_service.h"
 #include "components/prefs/pref_service.h"
-#include "components/signin/core/browser/account_tracker_service.h"
 #include "components/signin/core/browser/signin_buildflags.h"
-#include "components/signin/core/browser/signin_manager_base.h"
 #include "components/strings/grit/components_strings.h"
 #include "components/user_prefs/user_prefs.h"
 #include "content/public/browser/navigation_handle.h"
+#include "services/identity/public/cpp/identity_manager.h"
 #include "ui/base/l10n/l10n_util.h"
 
 namespace autofill {
@@ -56,6 +56,10 @@ SaveCardBubbleControllerImpl::SaveCardBubbleControllerImpl(
   SecurityStateTabHelper::FromWebContents(web_contents)
       ->GetSecurityInfo(&security_info);
   security_level_ = security_info.security_level;
+
+  personal_data_manager_ =
+      PersonalDataManagerFactory::GetInstance()->GetForProfile(
+          Profile::FromBrowserContext(web_contents->GetBrowserContext()));
 }
 
 SaveCardBubbleControllerImpl::~SaveCardBubbleControllerImpl() {
@@ -85,9 +89,10 @@ void SaveCardBubbleControllerImpl::OfferLocalSave(
     AutofillMetrics::LogSaveCardPromptMetric(
         AutofillMetrics::SAVE_CARD_PROMPT_SHOW_REQUESTED, is_upload_save_,
         is_reshow_, should_request_name_from_user_,
+        should_request_expiration_date_from_user_,
         pref_service_->GetInteger(
             prefs::kAutofillAcceptSaveCreditCardPromptState),
-        GetSecurityLevel());
+        GetSecurityLevel(), GetSyncState());
   } else {
     ShowIconOnly();
   }
@@ -97,8 +102,9 @@ void SaveCardBubbleControllerImpl::OfferUploadSave(
     const CreditCard& card,
     std::unique_ptr<base::DictionaryValue> legal_message,
     bool should_request_name_from_user,
+    bool should_request_expiration_date_from_user,
     bool show_bubble,
-    base::OnceCallback<void(const base::string16&)> save_card_callback) {
+    AutofillClient::UserAcceptedUploadCallback save_card_callback) {
   // Don't show the bubble if it's already visible.
   if (save_card_bubble_view_)
     return;
@@ -110,6 +116,8 @@ void SaveCardBubbleControllerImpl::OfferUploadSave(
   is_upload_save_ = true;
   is_reshow_ = false;
   should_request_name_from_user_ = should_request_name_from_user;
+  should_request_expiration_date_from_user_ =
+      should_request_expiration_date_from_user;
   show_bubble_ = show_bubble;
   if (show_bubble_) {
     // Can't move this into the other "if (show_bubble_)" below because an
@@ -117,9 +125,10 @@ void SaveCardBubbleControllerImpl::OfferUploadSave(
     AutofillMetrics::LogSaveCardPromptMetric(
         AutofillMetrics::SAVE_CARD_PROMPT_SHOW_REQUESTED, is_upload_save_,
         is_reshow_, should_request_name_from_user_,
+        should_request_expiration_date_from_user_,
         pref_service_->GetInteger(
             prefs::kAutofillAcceptSaveCreditCardPromptState),
-        GetSecurityLevel());
+        GetSecurityLevel(), GetSyncState());
   }
 
   if (!LegalMessageLine::Parse(*legal_message, &legal_message_lines_,
@@ -127,9 +136,10 @@ void SaveCardBubbleControllerImpl::OfferUploadSave(
     AutofillMetrics::LogSaveCardPromptMetric(
         AutofillMetrics::SAVE_CARD_PROMPT_END_INVALID_LEGAL_MESSAGE,
         is_upload_save_, is_reshow_, should_request_name_from_user_,
+        should_request_expiration_date_from_user_,
         pref_service_->GetInteger(
             prefs::kAutofillAcceptSaveCreditCardPromptState),
-        GetSecurityLevel());
+        GetSecurityLevel(), GetSyncState());
     return;
   }
 
@@ -183,9 +193,10 @@ void SaveCardBubbleControllerImpl::ReshowBubble() {
     AutofillMetrics::LogSaveCardPromptMetric(
         AutofillMetrics::SAVE_CARD_PROMPT_SHOW_REQUESTED, is_upload_save_,
         is_reshow_, should_request_name_from_user_,
+        should_request_expiration_date_from_user_,
         pref_service_->GetInteger(
             prefs::kAutofillAcceptSaveCreditCardPromptState),
-        GetSecurityLevel());
+        GetSecurityLevel(), GetSyncState());
   }
 
   ShowBubble();
@@ -208,7 +219,10 @@ base::string16 SaveCardBubbleControllerImpl::GetWindowTitle() const {
           IDS_AUTOFILL_SAVE_CARD_PROMPT_TITLE_LOCAL);
     case BubbleType::UPLOAD_SAVE:
       return l10n_util::GetStringUTF16(
-          IDS_AUTOFILL_SAVE_CARD_PROMPT_TITLE_TO_CLOUD_V3);
+          base::FeatureList::IsEnabled(
+              features::kAutofillSaveCardImprovedUserConsent)
+              ? IDS_AUTOFILL_SAVE_CARD_PROMPT_TITLE_TO_CLOUD_V4
+              : IDS_AUTOFILL_SAVE_CARD_PROMPT_TITLE_TO_CLOUD_V3);
     case BubbleType::SIGN_IN_PROMO:
 #if BUILDFLAG(ENABLE_DICE_SUPPORT)
       if (AccountConsistencyModeManager::IsDiceEnabledForProfile(
@@ -262,6 +276,10 @@ bool SaveCardBubbleControllerImpl::ShouldRequestNameFromUser() const {
   return should_request_name_from_user_;
 }
 
+bool SaveCardBubbleControllerImpl::ShouldRequestExpirationDateFromUser() const {
+  return should_request_expiration_date_from_user_;
+}
+
 bool SaveCardBubbleControllerImpl::ShouldShowSignInPromo() const {
   if (is_upload_save_ || !base::FeatureList::IsEnabled(
                              features::kAutofillSaveCardSignInAfterLocalSave))
@@ -293,7 +311,7 @@ void SaveCardBubbleControllerImpl::OnSyncPromoAccepted(
 }
 
 void SaveCardBubbleControllerImpl::OnSaveButton(
-    const base::string16& cardholder_name) {
+    const AutofillClient::UserProvidedCardDetails& user_provided_card_details) {
   save_card_bubble_view_ = nullptr;
 
   switch (current_bubble_type_) {
@@ -301,18 +319,19 @@ void SaveCardBubbleControllerImpl::OnSaveButton(
       DCHECK(!upload_save_card_callback_.is_null());
 
       base::string16 name_provided_by_user;
-      if (!cardholder_name.empty()) {
+      if (!user_provided_card_details.cardholder_name.empty()) {
         // Log whether the name was changed by the user or simply accepted
         // without edits.
         AutofillMetrics::LogSaveCardCardholderNameWasEdited(
-            cardholder_name != base::UTF8ToUTF16(account_info_.full_name));
+            user_provided_card_details.cardholder_name !=
+            base::UTF8ToUTF16(account_info_.full_name));
         // Trim the cardholder name provided by the user and send it in the
         // callback so it can be included in the final request.
         DCHECK(ShouldRequestNameFromUser());
-        base::TrimWhitespace(cardholder_name, base::TRIM_ALL,
-                             &name_provided_by_user);
+        base::TrimWhitespace(user_provided_card_details.cardholder_name,
+                             base::TRIM_ALL, &name_provided_by_user);
       }
-      std::move(upload_save_card_callback_).Run(name_provided_by_user);
+      std::move(upload_save_card_callback_).Run(user_provided_card_details);
       break;
     }
     case BubbleType::LOCAL_SAVE:
@@ -351,9 +370,10 @@ void SaveCardBubbleControllerImpl::OnSaveButton(
     AutofillMetrics::LogSaveCardPromptMetric(
         AutofillMetrics::SAVE_CARD_PROMPT_END_ACCEPTED, is_upload_save_,
         is_reshow_, should_request_name_from_user_,
+        should_request_expiration_date_from_user_,
         pref_service_->GetInteger(
             prefs::kAutofillAcceptSaveCreditCardPromptState),
-        GetSecurityLevel());
+        GetSecurityLevel(), GetSyncState());
     pref_service_->SetInteger(
         prefs::kAutofillAcceptSaveCreditCardPromptState,
         prefs::PREVIOUS_SAVE_CREDIT_CARD_PROMPT_USER_DECISION_ACCEPTED);
@@ -373,9 +393,10 @@ void SaveCardBubbleControllerImpl::OnCancelButton() {
     AutofillMetrics::LogSaveCardPromptMetric(
         AutofillMetrics::SAVE_CARD_PROMPT_END_DENIED, is_upload_save_,
         is_reshow_, should_request_name_from_user_,
+        should_request_expiration_date_from_user_,
         pref_service_->GetInteger(
             prefs::kAutofillAcceptSaveCreditCardPromptState),
-        GetSecurityLevel());
+        GetSecurityLevel(), GetSyncState());
     pref_service_->SetInteger(
         prefs::kAutofillAcceptSaveCreditCardPromptState,
         prefs::PREVIOUS_SAVE_CREDIT_CARD_PROMPT_USER_DECISION_DENIED);
@@ -384,7 +405,7 @@ void SaveCardBubbleControllerImpl::OnCancelButton() {
             features::kAutofillSaveCreditCardUsesStrikeSystem)) {
       // If save was cancelled and the bubble was actually shown (NOT just the
       // icon), count that as a strike against offering save in the future.
-      StrikeDatabase* strike_database = GetStrikeDatabase();
+      LegacyStrikeDatabase* strike_database = GetLegacyStrikeDatabase();
       strike_database->AddStrike(
           strike_database->GetKeyForCreditCardSave(
               base::UTF16ToUTF8(card_.LastFourDigits())),
@@ -400,9 +421,10 @@ void SaveCardBubbleControllerImpl::OnLegalMessageLinkClicked(const GURL& url) {
   AutofillMetrics::LogSaveCardPromptMetric(
       AutofillMetrics::SAVE_CARD_PROMPT_DISMISS_CLICK_LEGAL_MESSAGE,
       is_upload_save_, is_reshow_, should_request_name_from_user_,
+      should_request_expiration_date_from_user_,
       pref_service_->GetInteger(
           prefs::kAutofillAcceptSaveCreditCardPromptState),
-      GetSecurityLevel());
+      GetSecurityLevel(), GetSyncState());
 }
 
 void SaveCardBubbleControllerImpl::OnManageCardsClicked() {
@@ -455,6 +477,10 @@ BubbleType SaveCardBubbleControllerImpl::GetBubbleType() const {
   return current_bubble_type_;
 }
 
+AutofillSyncSigninState SaveCardBubbleControllerImpl::GetSyncState() const {
+  return personal_data_manager_->GetSyncSigninState();
+}
+
 void SaveCardBubbleControllerImpl::DidFinishNavigation(
     content::NavigationHandle* navigation_handle) {
   if (!navigation_handle->IsInMainFrame() || !navigation_handle->HasCommitted())
@@ -496,16 +522,17 @@ void SaveCardBubbleControllerImpl::DidFinishNavigation(
             ? AutofillMetrics::SAVE_CARD_PROMPT_END_NAVIGATION_SHOWING
             : AutofillMetrics::SAVE_CARD_PROMPT_END_NAVIGATION_HIDDEN,
         is_upload_save_, is_reshow_, should_request_name_from_user_,
+        should_request_expiration_date_from_user_,
         pref_service_->GetInteger(
             prefs::kAutofillAcceptSaveCreditCardPromptState),
-        GetSecurityLevel());
+        GetSecurityLevel(), GetSyncState());
     if (base::FeatureList::IsEnabled(
             features::kAutofillSaveCreditCardUsesStrikeSystem) &&
         show_bubble_) {
       // If the save offer was ignored and the bubble was actually shown (NOT
       // just the icon), count that as a strike against offering save in the
       // future.
-      StrikeDatabase* strike_database = GetStrikeDatabase();
+      LegacyStrikeDatabase* strike_database = GetLegacyStrikeDatabase();
       strike_database->AddStrike(
           strike_database->GetKeyForCreditCardSave(
               base::UTF16ToUTF8(card_.LastFourDigits())),
@@ -530,23 +557,19 @@ void SaveCardBubbleControllerImpl::FetchAccountInfo() {
   Profile* profile = GetProfile();
   if (!profile)
     return;
-  SigninManagerBase* signin_manager =
-      SigninManagerFactory::GetForProfile(profile);
-  AccountTrackerService* account_tracker =
-      AccountTrackerServiceFactory::GetForProfile(profile);
-  if (!signin_manager || !account_tracker)
+  auto* identity_manager = IdentityManagerFactory::GetForProfile(profile);
+  if (!identity_manager)
     return;
-  account_info_ = account_tracker->GetAccountInfo(
-      signin_manager->GetAuthenticatedAccountId());
+  account_info_ = identity_manager->GetPrimaryAccountInfo();
 }
 
-StrikeDatabase* SaveCardBubbleControllerImpl::GetStrikeDatabase() {
+LegacyStrikeDatabase* SaveCardBubbleControllerImpl::GetLegacyStrikeDatabase() {
   Profile* profile = GetProfile();
-  // No need to return a StrikeDatabase in incognito mode. We don't allow saving
-  // of Autofill data while in incognito, so an incognito code path should never
-  // get this far.
+  // No need to return a LegacyStrikeDatabase in incognito mode. We don't allow
+  // saving of Autofill data while in incognito, so an incognito code path
+  // should never get this far.
   DCHECK(profile && !profile->IsOffTheRecord());
-  return StrikeDatabaseFactory::GetForProfile(profile);
+  return LegacyStrikeDatabaseFactory::GetForProfile(profile);
 }
 
 void SaveCardBubbleControllerImpl::ShowBubble() {
@@ -580,9 +603,10 @@ void SaveCardBubbleControllerImpl::ShowBubble() {
       AutofillMetrics::LogSaveCardPromptMetric(
           AutofillMetrics::SAVE_CARD_PROMPT_SHOWN, is_upload_save_, is_reshow_,
           should_request_name_from_user_,
+          should_request_expiration_date_from_user_,
           pref_service_->GetInteger(
               prefs::kAutofillAcceptSaveCreditCardPromptState),
-          GetSecurityLevel());
+          GetSecurityLevel(), GetSyncState());
       break;
     case BubbleType::MANAGE_CARDS:
       AutofillMetrics::LogManageCardsPromptMetric(
@@ -618,7 +642,13 @@ void SaveCardBubbleControllerImpl::ShowIconOnly() {
   switch (current_bubble_type_) {
     case BubbleType::UPLOAD_SAVE:
     case BubbleType::LOCAL_SAVE:
-      // TODO(crbug/884817): Log metrics for "bubble not shown".
+      AutofillMetrics::LogSaveCardPromptMetric(
+          AutofillMetrics::SAVE_CARD_ICON_SHOWN_WITHOUT_PROMPT, is_upload_save_,
+          is_reshow_, should_request_name_from_user_,
+          should_request_expiration_date_from_user_,
+          pref_service_->GetInteger(
+              prefs::kAutofillAcceptSaveCreditCardPromptState),
+          GetSecurityLevel(), GetSyncState());
       break;
     case BubbleType::MANAGE_CARDS:
     case BubbleType::SIGN_IN_PROMO:

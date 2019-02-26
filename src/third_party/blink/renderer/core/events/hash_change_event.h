@@ -22,6 +22,7 @@
 #define THIRD_PARTY_BLINK_RENDERER_CORE_EVENTS_HASH_CHANGE_EVENT_H_
 
 #include "third_party/blink/renderer/core/dom/events/event.h"
+#include "third_party/blink/renderer/core/event_interface_names.h"
 #include "third_party/blink/renderer/core/events/hash_change_event_init.h"
 
 namespace blink {
@@ -30,43 +31,43 @@ class HashChangeEvent final : public Event {
   DEFINE_WRAPPERTYPEINFO();
 
  public:
-  static HashChangeEvent* Create() { return new HashChangeEvent; }
+  static HashChangeEvent* Create() {
+    return MakeGarbageCollected<HashChangeEvent>();
+  }
 
   static HashChangeEvent* Create(const String& old_url, const String& new_url) {
-    return new HashChangeEvent(old_url, new_url);
+    return MakeGarbageCollected<HashChangeEvent>(old_url, new_url);
   }
 
   static HashChangeEvent* Create(const AtomicString& type,
-                                 const HashChangeEventInit& initializer) {
-    return new HashChangeEvent(type, initializer);
+                                 const HashChangeEventInit* initializer) {
+    return MakeGarbageCollected<HashChangeEvent>(type, initializer);
+  }
+
+  HashChangeEvent() = default;
+  HashChangeEvent(const String& old_url, const String& new_url)
+      : Event(event_type_names::kHashchange, Bubbles::kNo, Cancelable::kNo),
+        old_url_(old_url),
+        new_url_(new_url) {}
+  HashChangeEvent(const AtomicString& type,
+                  const HashChangeEventInit* initializer)
+      : Event(type, initializer) {
+    if (initializer->hasOldURL())
+      old_url_ = initializer->oldURL();
+    if (initializer->hasNewURL())
+      new_url_ = initializer->newURL();
   }
 
   const String& oldURL() const { return old_url_; }
   const String& newURL() const { return new_url_; }
 
   const AtomicString& InterfaceName() const override {
-    return EventNames::HashChangeEvent;
+    return event_interface_names::kHashChangeEvent;
   }
 
   void Trace(blink::Visitor* visitor) override { Event::Trace(visitor); }
 
  private:
-  HashChangeEvent() = default;
-
-  HashChangeEvent(const String& old_url, const String& new_url)
-      : Event(EventTypeNames::hashchange, Bubbles::kNo, Cancelable::kNo),
-        old_url_(old_url),
-        new_url_(new_url) {}
-
-  HashChangeEvent(const AtomicString& type,
-                  const HashChangeEventInit& initializer)
-      : Event(type, initializer) {
-    if (initializer.hasOldURL())
-      old_url_ = initializer.oldURL();
-    if (initializer.hasNewURL())
-      new_url_ = initializer.newURL();
-  }
-
   String old_url_;
   String new_url_;
 };

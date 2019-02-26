@@ -5,7 +5,7 @@
 #include "third_party/blink/renderer/core/css/properties/longhands/transform_style.h"
 
 namespace blink {
-namespace CSSLonghand {
+namespace css_longhand {
 
 const CSSValue* TransformStyle::CSSValueFromComputedStyleInternal(
     const ComputedStyle& style,
@@ -19,5 +19,5 @@ const CSSValue* TransformStyle::CSSValueFromComputedStyleInternal(
           : CSSValueFlat);
 }
 
-}  // namespace CSSLonghand
+}  // namespace css_longhand
 }  // namespace blink

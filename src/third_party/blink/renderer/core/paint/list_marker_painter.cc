@@ -144,8 +144,8 @@ void ListMarkerPainter::Paint(const PaintInfo& paint_info) {
   // Text is not arbitrary. We can judge whether it's RTL from the first
   // character, and we only need to handle the direction RightToLeft for now.
   bool text_needs_reversing =
-      WTF::Unicode::Direction(layout_list_marker_.GetText()[0]) ==
-      WTF::Unicode::kRightToLeft;
+      WTF::unicode::Direction(layout_list_marker_.GetText()[0]) ==
+      WTF::unicode::kRightToLeft;
   StringBuilder reversed_text;
   if (text_needs_reversing) {
     unsigned length = layout_list_marker_.GetText().length();

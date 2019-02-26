@@ -21,6 +21,7 @@
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/time/time.h"
 #include "base/values.h"
+#include "build/build_config.h"
 #include "net/base/net_errors.h"
 #include "net/base/proxy_delegate.h"
 #include "net/base/url_util.h"
@@ -1561,6 +1562,9 @@ ProxyResolutionService::CreateSystemProxyConfigService(
 #elif defined(OS_ANDROID)
   return std::make_unique<ProxyConfigServiceAndroid>(
       main_task_runner, base::ThreadTaskRunnerHandle::Get());
+#elif defined(OS_FUCHSIA)
+  // TODO(crbug.com/889195): Implement a system proxy service for Fuchsia.
+  return std::make_unique<ProxyConfigServiceDirect>();
 #else
   LOG(WARNING) << "Failed to choose a system proxy settings fetcher "
                   "for this platform.";

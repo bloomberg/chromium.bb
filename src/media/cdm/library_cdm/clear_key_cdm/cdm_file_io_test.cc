@@ -38,9 +38,9 @@ const uint32_t kLargeDataSize = 20 * 1024 + 7;
         new FileIOTest(create_file_io_cb_, test_name)); \
     CREATE_FILE_IO  // Create FileIO for each test case.
 
-#define ADD_TEST_STEP(type, status, data, data_size)                    \
-    test_case->AddTestStep(FileIOTest::type, cdm::FileIOClient::status, \
-                          (data), (data_size));
+#define ADD_TEST_STEP(type, status, data, data_size)                          \
+  test_case->AddTestStep(FileIOTest::type, cdm::FileIOClient::Status::status, \
+                         (data), (data_size));
 
 #define END_TEST_CASE                                 \
     remaining_tests_.push_back(std::move(test_case)); \
@@ -573,7 +573,7 @@ bool FileIOTest::MatchesResult(const TestStep& a, const TestStep& b) {
   if (a.type != b.type || a.status != b.status)
     return false;
 
-  if (a.type != RESULT_READ || a.status != cdm::FileIOClient::kSuccess)
+  if (a.type != RESULT_READ || a.status != cdm::FileIOClient::Status::kSuccess)
     return true;
 
   return (a.data_size == b.data_size &&

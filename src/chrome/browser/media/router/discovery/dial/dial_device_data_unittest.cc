@@ -3,6 +3,8 @@
 // found in the LICENSE file.
 
 #include "chrome/browser/media/router/discovery/dial/dial_device_data.h"
+
+#include "net/base/ip_address.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace media_router {
@@ -82,6 +84,38 @@ TEST(DialDeviceDataTest, TestIsDeviceDescriptionUrl) {
   EXPECT_FALSE(DialDeviceData::IsDeviceDescriptionUrl(GURL(std::string())));
   EXPECT_FALSE(
       DialDeviceData::IsDeviceDescriptionUrl(GURL("file://path/to/file")));
+}
+
+TEST(DialDeviceDataTest, TestIsValidDialAppUrl) {
+  net::IPAddress ipv4_address_1;
+  ASSERT_TRUE(ipv4_address_1.AssignFromIPLiteral("192.168.1.1"));
+  net::IPAddress ipv4_address_2;
+  ASSERT_TRUE(ipv4_address_2.AssignFromIPLiteral("192.168.1.2"));
+  net::IPAddress ipv4_address_bad_octets;
+  ASSERT_FALSE(ipv4_address_bad_octets.AssignFromIPLiteral("400.500.12.999"));
+  net::IPAddress ipv4_address_hex;
+  ASSERT_TRUE(ipv4_address_hex.AssignFromIPLiteral("222.173.190.239"));
+  net::IPAddress ipv6_address;
+  ASSERT_TRUE(ipv6_address.AssignFromIPLiteral(
+      "2401:fa00:480:8600:c4ee:4adc:6dd2:8e78"));
+
+  EXPECT_TRUE(DialDeviceData::IsValidDialAppUrl(
+      GURL("http://192.168.1.1:1234/apps"), ipv4_address_1));
+  EXPECT_TRUE(DialDeviceData::IsValidDialAppUrl(
+      GURL("https://192.168.1.2:4321/apps"), ipv4_address_2));
+  EXPECT_TRUE(DialDeviceData::IsValidDialAppUrl(
+      GURL("http://0xDEADBEEF:1234/apps"), ipv4_address_hex));
+  EXPECT_TRUE(DialDeviceData::IsValidDialAppUrl(
+      GURL("http://[2401:fa00:480:8600:c4ee:4adc:6dd2:8e78]:1234/apps"),
+      ipv6_address));
+
+  // AppUrl host does not match.
+  EXPECT_FALSE(DialDeviceData::IsValidDialAppUrl(
+      GURL("http://192.168.0.1:1234/apps"), ipv4_address_1));
+  EXPECT_FALSE(DialDeviceData::IsValidDialAppUrl(
+      GURL("http://400.500.12.999:1234/apps"), ipv4_address_bad_octets));
+  EXPECT_FALSE(DialDeviceData::IsValidDialAppUrl(
+      GURL("http://192.168.0.2.com:1234/apps"), ipv4_address_1));
 }
 
 }  // namespace media_router

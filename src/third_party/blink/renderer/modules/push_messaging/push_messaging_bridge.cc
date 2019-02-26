@@ -45,7 +45,8 @@ PushMessagingBridge* PushMessagingBridge::From(
           service_worker_registration);
 
   if (!bridge) {
-    bridge = new PushMessagingBridge(*service_worker_registration);
+    bridge =
+        MakeGarbageCollected<PushMessagingBridge>(*service_worker_registration);
     Supplement<ServiceWorkerRegistration>::ProvideTo(
         *service_worker_registration, bridge);
   }
@@ -63,7 +64,7 @@ const char PushMessagingBridge::kSupplementName[] = "PushMessagingBridge";
 
 ScriptPromise PushMessagingBridge::GetPermissionState(
     ScriptState* script_state,
-    const PushSubscriptionOptionsInit& options) {
+    const PushSubscriptionOptionsInit* options) {
   ExecutionContext* context = ExecutionContext::From(script_state);
   if (!permission_service_) {
     ConnectToPermissionService(context,
@@ -78,7 +79,7 @@ ScriptPromise PushMessagingBridge::GetPermissionState(
   // receiving a push message. Permission is denied without this setting.
   //
   // TODO(peter): Would it be better to resolve DENIED rather than rejecting?
-  if (!options.hasUserVisibleOnly() || !options.userVisibleOnly()) {
+  if (!options->hasUserVisibleOnly() || !options->userVisibleOnly()) {
     resolver->Reject(DOMException::Create(DOMExceptionCode::kNotSupportedError,
                                           kUserVisibleOnlyRequired));
     return promise;

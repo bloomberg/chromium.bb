@@ -3,17 +3,15 @@
 <link rel="import" href="chrome://resources/html/i18n_behavior.html">
 <link rel="import" href="chrome://resources/html/util.html">
 <link rel="import" href="chrome://resources/html/web_ui_listener_behavior.html">
-<link rel="import" href="chrome://resources/cr_elements/cr_expand_button/cr_expand_button.html">
 <link rel="import" href="chrome://resources/cr_elements/cr_input/cr_input.html">
-<link rel="import" href="chrome://resources/cr_elements/cr_toggle/cr_toggle.html">
 <link rel="import" href="chrome://resources/cr_elements/cr_radio_button/cr_radio_button.html">
+<link rel="import" href="chrome://resources/cr_elements/cr_radio_group/cr_radio_group.html">
 <link rel="import" href="chrome://resources/cr_elements/shared_vars_css.html">
-<link rel="import" href="chrome://resources/polymer/v1_0/iron-collapse/iron-collapse.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/iron-flex-layout/iron-flex-layout-classes.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/paper-button/paper-button.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/paper-icon-button/paper-icon-button-light.html">
-<link rel="import" href="chrome://resources/polymer/v1_0/paper-radio-group/paper-radio-group.html">
 <link rel="import" href="sync_browser_proxy.html">
+<link rel="import" href="sync_controls.html">
 <link rel="import" href="../icons.html">
 <link rel="import" href="../privacy_page/personalization_options.html">
 <link rel="import" href="../route.html">
@@ -27,8 +25,12 @@
 <dom-module id="settings-sync-page">
   <template>
     <style include="settings-shared iron-flex">
-      #sync-section-toggle:not([actionable]) {
-        opacity: var(--cr-disabled-opacity);
+      h2 {
+        font-size: var(--cr-title-text_-_font-size);
+      }
+
+      #sync-separator {
+        border-bottom: var(--settings-separator-line);
       }
 
       #create-password-box {
@@ -63,16 +65,21 @@
         align-items: center;
       }
 
-      #sync-data-types .list-item:not([hidden]) ~ .list-item:not([hidden]) {
-        border-top: var(--settings-separator-line);
+      #other-sync-items {
+        padding-bottom: 8px;
       }
 
-      #other-sync-items > .list-item {
+      #other-sync-items > .list-item:not(.first) {
         border-top: var(--settings-separator-line);
       }
 
       .passphrase-reset-icon {
         margin-right: 8px;
+      }
+
+      #disabled-by-admin-icon {
+        text-align: center;
+        width: 40px;
       }
 
 <if expr="not chromeos">
@@ -103,6 +110,11 @@
       </settings-sync-account-control>
     </template>
 </if>
+
+    <div class="settings-box first" hidden="[[!syncStatus.managed]]">
+      <iron-icon id="disabled-by-admin-icon" icon="cr20:domain"></iron-icon>
+      <div class="middle">$i18n{syncDisabledByAdministrator}</div>
+    </div>
 
     <template is="dom-if" if="[[shouldShowExistingPassphraseBelowAccount_(
       unifiedConsentEnabled, syncPrefs.passphraseRequired)]]">
@@ -137,32 +149,13 @@
       </div>
     </template>
 
-     <!-- A change of the unified consent toggle state is automatically handled
-          in the C++ code after a change in the pref is observed. -->
-    <settings-toggle-button id="unifiedConsentToggle" class="first"
-        pref="{{prefs.unified_consent_given}}"
-        label="$i18n{syncUnifiedConsentToggleTitle}"
-        on-settings-boolean-control-change="onUnifiedConsentToggleChange_"
-        hidden="[[!shouldShowUnifiedConsentToggle_(unifiedConsentEnabled,
-                   syncStatus.disabled, syncStatus.signedIn)]]"
-        disabled="[[syncPrefs.encryptAllData]]">
-    </settings-toggle-button>
-    <div class="settings-box two-line" id="sync-section-toggle"
-        actionable$="[[!syncSectionDisabled_]]"
-        on-click="toggleExpandButton_"
-        hidden="[[!shouldShowSyncControls_(unifiedConsentEnabled,
-                   syncStatus.disabled)]]">
-      <div class="start">
-        <div>$i18n{sync}</div>
-        <div class="secondary">$i18n{syncDescription}</div>
-      </div>
-      <cr-expand-button expanded="{{syncSectionOpened_}}"
-          disabled$="[[syncSectionDisabled_]]" alt="$i18n{syncExpandA11yLabel}">
-      </cr-expand-button>
-    </div>
+    <div id="sync-separator" hidden="[[!syncSectionDisabled_]]"></div>
 
-    <iron-collapse id="sync-section" opened="[[syncSectionOpened_]]"
-        hidden="[[syncSectionDisabled_]]">
+    <div id="sync-section" hidden="[[syncSectionDisabled_]]">
+      <div class="settings-box first" hidden="[[!unifiedConsentEnabled]]">
+        <h2 class="start">$i18n{sync}</h2>
+      </div>
+
       <div id="[[pages_.SPINNER]]" class="settings-box first"
           hidden$="[[!isStatus_(pages_.SPINNER, pageStatus_)]]">
         $i18n{syncLoading}
@@ -174,7 +167,7 @@
       <div id="[[pages_.CONFIGURE]]"
           hidden$="[[!isStatus_(pages_.CONFIGURE, pageStatus_)]]">
         <!-- TODO(http://crbug.com/862983) Remove this section once the Unified
-             Consent feature is launched. -->
+            Consent feature is launched. -->
         <template is="dom-if" if="[[shouldShowExistingPassphraseInSyncSection_(
             unifiedConsentEnabled, syncPrefs.passphraseRequired)]]">
           <div id="existingPassphrase" class="list-frame">
@@ -205,194 +198,26 @@
           </div>
         </template>
 
-        <div class="settings-box first" hidden="[[unifiedConsentEnabled]]">
-          <div id="syncEverythingCheckboxLabel" class="start">
-            $i18n{syncEverythingCheckboxLabel}
-          </div>
-          <cr-toggle id="syncAllDataTypesControl"
-              checked="{{syncPrefs.syncAllDataTypes}}"
-              on-change="onSyncAllDataTypesChanged_"
-              aria-labelledby="syncEverythingCheckboxLabel">
-          </cr-toggle>
-        </div>
-
-        <div class="list-frame" id="sync-data-types">
-          <div class="layout horizontal list-item"
-              hidden="[[!syncPrefs.appsRegistered]]">
-            <div id="appCheckboxLabel" class="flex">
-              $i18n{appCheckboxLabel}
-            </div>
-            <cr-toggle checked="{{syncPrefs.appsSynced}}"
-                on-change="onSingleSyncDataTypeChanged_"
-                disabled="[[shouldSyncCheckboxBeDisabled_(
-                    syncPrefs.syncAllDataTypes, syncPrefs.appsEnforced)]]"
-                aria-labelledby="appCheckboxLabel">
-            </cr-toggle>
-          </div>
-
-          <div class="layout horizontal list-item"
-              hidden="[[!syncPrefs.autofillRegistered]]">
-            <div id="autofillCheckboxLabel" class="flex">
-              $i18n{autofillCheckboxLabel}
-            </div>
-            <!-- Autofill has a special on-change handler to deal with
-                 Payments integration. -->
-            <cr-toggle checked="{{syncPrefs.autofillSynced}}"
-                on-change="onAutofillDataTypeChanged_"
-                disabled="[[shouldSyncCheckboxBeDisabled_(
-                    syncPrefs.syncAllDataTypes, syncPrefs.autofillEnforced)]]"
-                aria-labelledby="autofillCheckboxLabel">
-            </cr-toggle>
-          </div>
-
-          <div class="layout horizontal list-item"
-              hidden="[[!syncPrefs.bookmarksRegistered]]">
-            <div id="bookmarksCheckboxLabel" class="flex">
-              $i18n{bookmarksCheckboxLabel}
-            </div>
-            <cr-toggle checked="{{syncPrefs.bookmarksSynced}}"
-                on-change="onSingleSyncDataTypeChanged_"
-                disabled="[[shouldSyncCheckboxBeDisabled_(
-                    syncPrefs.syncAllDataTypes, syncPrefs.bookmarksEnforced)]]"
-                aria-labelledby="bookmarksCheckboxLabel">
-            </cr-toggle>
-          </div>
-
-          <div class="layout horizontal list-item"
-              hidden="[[!syncPrefs.extensionsRegistered]]">
-            <div id="extensionsCheckboxLabel" class="flex">
-              $i18n{extensionsCheckboxLabel}
-            </div>
-            <cr-toggle checked="{{syncPrefs.extensionsSynced}}"
-                on-change="onSingleSyncDataTypeChanged_"
-                disabled="[[shouldSyncCheckboxBeDisabled_(
-                    syncPrefs.syncAllDataTypes, syncPrefs.extensionsEnforced)]]"
-                aria-labelledby="extensionsCheckboxLabel">
-            </cr-toggle>
-          </div>
-
-          <div class="layout horizontal list-item"
-              hidden="[[!syncPrefs.typedUrlsRegistered]]">
-            <div id="historyCheckboxLabel" class="flex">
-              $i18n{historyCheckboxLabel}
-            </div>
-            <!-- TypedUrls has a special on-change handler to deal with user
-                 events. -->
-            <cr-toggle id="historyToggle"
-                checked="{{syncPrefs.typedUrlsSynced}}"
-                on-change="onTypedUrlsDataTypeChanged_"
-                disabled="[[shouldSyncCheckboxBeDisabled_(
-                    syncPrefs.syncAllDataTypes, syncPrefs.typedUrlsEnforced)]]"
-                aria-labelledby="historyCheckboxLabel">
-            </cr-toggle>
-          </div>
-
-          <div class="layout horizontal list-item"
-              hidden="[[!syncPrefs.passwordsRegistered]]">
-            <div id="passwordsCheckboxLabel" class="flex">
-              $i18n{passwordsCheckboxLabel}
-            </div>
-            <cr-toggle checked="{{syncPrefs.passwordsSynced}}"
-                on-change="onSingleSyncDataTypeChanged_"
-                disabled="[[shouldSyncCheckboxBeDisabled_(
-                    syncPrefs.syncAllDataTypes, syncPrefs.passwordsEnforced)]]"
-                aria-labelledby="passwordsCheckboxLabel">
-            </cr-toggle>
-          </div>
-
-          <div class="layout horizontal list-item"
-              hidden="[[!syncPrefs.preferencesRegistered]]">
-            <div id="settingsCheckboxLabel" class="flex">
-              $i18n{settingsCheckboxLabel}
-            </div>
-            <cr-toggle checked="{{syncPrefs.preferencesSynced}}"
-                on-change="onSingleSyncDataTypeChanged_"
-                disabled="[[shouldSyncCheckboxBeDisabled_(
-                    syncPrefs.syncAllDataTypes,
-                    syncPrefs.preferencesEnforced)]]"
-                aria-labelledby="settingsCheckboxLabel">
-            </cr-toggle>
-          </div>
-
-          <div class="layout horizontal list-item"
-              hidden="[[!syncPrefs.themesRegistered]]">
-            <div id="themesAndWallpapersCheckboxLabel" class="flex">
-              $i18n{themesAndWallpapersCheckboxLabel}
-            </div>
-            <cr-toggle checked="{{syncPrefs.themesSynced}}"
-                on-change="onSingleSyncDataTypeChanged_"
-                disabled="[[shouldSyncCheckboxBeDisabled_(
-                    syncPrefs.syncAllDataTypes, syncPrefs.themesEnforced)]]"
-                aria-labelledby="themesAndWallpapersCheckboxLabel">
-            </cr-toggle>
-          </div>
-
-          <div class="layout horizontal list-item"
-              hidden="[[!syncPrefs.tabsRegistered]]">
-            <div id="openTabsCheckboxLabel" class="flex">
-              $i18n{openTabsCheckboxLabel}
-            </div>
-            <cr-toggle checked="{{syncPrefs.tabsSynced}}"
-                on-change="onSingleSyncDataTypeChanged_"
-                disabled="[[shouldSyncCheckboxBeDisabled_(
-                    syncPrefs.syncAllDataTypes, syncPrefs.tabsEnforced)]]"
-                aria-labelledby="openTabsCheckboxLabel">
-            </cr-toggle>
-          </div>
-
-          <div class="layout horizontal list-item"
-              hidden="[[!syncPrefs.autofillRegistered]]">
-            <!-- The Payments integration checkbox is a special case in many
-                 ways. It's visible only if autofill is registered. It's
-                 disabled and unchecked if autofill is unchecked.-->
-            <div class="flex">
-              $i18n{enablePaymentsIntegrationCheckboxLabel}
-              <a href="$i18nRaw{autofillHelpURL}" target="_blank">
-                $i18n{learnMore}
-              </a>
-            </div>
-            <cr-toggle
-                checked="{{syncPrefs.paymentsIntegrationEnabled}}"
-                on-change="onSingleSyncDataTypeChanged_"
-                disabled="[[shouldPaymentsCheckboxBeDisabled_(
-                    syncPrefs.syncAllDataTypes, syncPrefs.autofillSynced)]]"
-                aria-label="$i18n{enablePaymentsIntegrationCheckboxLabel}">
-            </cr-toggle>
-          </div>
-
-          <!-- User events is disabled and unchecked if data is encrypted or
-               typed urls are disabled. -->
-          <template is="dom-if" if="[[unifiedConsentEnabled]]">
-            <div hidden="[[!syncPrefs.userEventsRegistered]]"
-                class$="[[getPassphraseHintLines_(syncPrefs.encryptAllData)]]
-                    layout horizontal list-item">
-              <div class="start" id="userEventsCheckboxLabel">
-                $i18n{userEventsCheckboxLabel}
-                <div class="secondary">
-                  $i18n{userEventsCheckboxText}
-                  <div id="reset-sync-message-box-user-events"
-                      hidden="[[!syncPrefs.encryptAllData]]">
-                    <iron-icon icon="settings:info-outline"
-                        class="passphrase-reset-icon">
-                    </iron-icon>
-                    $i18nRaw{passphraseResetHintToggle}
-                  </div>
-                </div>
-              </div>
-              <cr-toggle id="userEventsToggle"
-                  checked="{{userEventsToggleValue}}"
-                  on-change="onUserEventsSyncDataTypeChanged_"
-                  disabled="[[shouldUserEventsCheckboxBeDisabled_(
-                      syncPrefs.syncAllDataTypes, syncPrefs.typedUrlsSynced,
-                      syncPrefs.userEventsEnforced, syncPrefs.encryptAllData)]]"
-                  aria-labelledby="userEventsCheckboxLabel">
-              </cr-toggle>
-            </div>
-          </template>
-        </div>
+        <template is="dom-if" if="[[!unifiedConsentEnabled]]">
+          <settings-sync-controls sync-status="syncStatus">
+          </settings-sync-controls>
+        </template>
 
         <div id="other-sync-items"
             class$="[[getListFrameClass_(unifiedConsentEnabled)]]">
+
+          <template is="dom-if" if="[[unifiedConsentEnabled]]">
+            <div id="sync-advanced-row" class="list-item first"
+                on-click="onSyncAdvancedTap_" actionable>
+              <div class="start">
+                $i18n{syncAdvancedPageTitle}
+              </div>
+              <paper-icon-button-light class="subpage-arrow">
+                <button aria-label="$i18n{syncAdvancedPageTitle}"></button>
+              </paper-icon-button-light>
+            </div>
+          </template>
+
           <template is="dom-if" if="[[driveSuggestAvailable_]]">
             <settings-toggle-button
                 class$="[[getListItemClass_(unifiedConsentEnabled)]]"
@@ -444,19 +269,15 @@
 
           <div id="encryptionRadioGroupContainer" class="list-frame"
               hidden="[[syncPrefs.passphraseRequired]]">
-            <paper-radio-group disabled$="[[syncPrefs.encryptAllData]]"
+            <cr-radio-group disabled$="[[syncPrefs.encryptAllData]]"
                 selected="[[selectedEncryptionRadio_(
                     syncPrefs.passphraseTypeIsCustom)]]"
-                selectable="cr-radio-button"
-                on-paper-radio-group-changed=
-                    "onEncryptionRadioSelectionChanged_">
-              <cr-radio-button name="encrypt-with-google"
-                  class="list-item" disabled="[[syncPrefs.encryptAllData]]"
+                on-selected-changed="onEncryptionRadioSelectionChanged_">
+              <cr-radio-button name="encrypt-with-google" class="list-item"
                   aria-label="$i18n{encryptWithGoogleCredentialsLabel}">
                 $i18n{encryptWithGoogleCredentialsLabel}
               </cr-radio-button>
-              <cr-radio-button name="encrypt-with-passphrase"
-                  class="list-item" disabled="[[syncPrefs.encryptAllData]]">
+              <cr-radio-button name="encrypt-with-passphrase" class="list-item">
                 <span hidden="[[!syncPrefs.fullEncryptionBody]]">
                   [[syncPrefs.fullEncryptionBody]]
                 </span>
@@ -465,7 +286,7 @@
                   $i18nRaw{encryptWithSyncPassphraseLabel}
                 </span>
               </cr-radio-button>
-            </paper-radio-group>
+            </cr-radio-group>
           </div>
 
           <template is="dom-if" if="[[creatingNewPassphrase_]]">
@@ -497,34 +318,22 @@
 
         </div>
       </div>
-    </iron-collapse>
+    </div>
+
     <template is="dom-if" if="[[unifiedConsentEnabled]]">
-      <div class="settings-box two-line" id="personalize-section-toggle"
-          actionable on-click="toggleExpandButton_">
-        <div class="start">
-          <div>$i18n{nonPersonalizedServicesSectionLabel}</div>
-          <div class="secondary">
-            $i18n{nonPersonalizedServicesSectionDesc}
-          </div>
-        </div>
-        <cr-expand-button expanded="{{personalizeSectionOpened_}}"
-            alt="$i18n{nonPersonalizedServicesExpandA11yLabel}">
-        </cr-expand-button>
+      <div class="settings-box first">
+        <h2>$i18n{nonPersonalizedServicesSectionLabel}</h2>
       </div>
-      <iron-collapse id="personalize-section"
-          opened="[[personalizeSectionOpened_]]">
-        <settings-personalization-options class="list-frame" prefs="{{prefs}}"
-            page-visibility="[[pageVisibility]]"
-            unified-consent-enabled="[[unifiedConsentEnabled]]"
-            unified-consent-given="{{prefs.unified_consent_given.value}}">
-        </settings-personalization-options>
-      </iron-collapse>
+      <settings-personalization-options class="list-frame" prefs="{{prefs}}"
+          page-visibility="[[pageVisibility]]"
+          unified-consent-enabled="[[unifiedConsentEnabled]]">
+      </settings-personalization-options>
     </template>
 
 <if expr="not chromeos">
     <cr-toast id="toast" open="[[syncStatus.setupInProgress]]">
       <div>$i18n{syncWillStart}</div>
-      <paper-button on-click="onCancelSyncClick_">
+      <paper-button on-click="cancelSyncSetup">
         $i18n{cancelSync}
       </paper-button>
     </cr-toast>

@@ -37,8 +37,8 @@ struct BidiRun : BidiCharacterRun {
           int start,
           int stop,
           LineLayoutItem line_layout_item,
-          WTF::Unicode::CharDirection dir,
-          WTF::Unicode::CharDirection override_dir)
+          WTF::unicode::CharDirection dir,
+          WTF::unicode::CharDirection override_dir)
       : BidiCharacterRun(override, level, start, stop, dir, override_dir),
         line_layout_item_(line_layout_item),
         box_(nullptr) {

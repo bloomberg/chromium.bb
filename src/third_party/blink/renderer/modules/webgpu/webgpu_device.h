@@ -20,6 +20,8 @@ class WebGPUDevice final : public ScriptWrappable {
  public:
   static WebGPUDevice* Create(ExecutionContext*, WebGPUAdapter*);
 
+  WebGPUDevice(WebGPUAdapter*, std::unique_ptr<WebGraphicsContext3DProvider>);
+
   WebGPUAdapter* adapter() const;
 
   void dummy() const;
@@ -27,8 +29,6 @@ class WebGPUDevice final : public ScriptWrappable {
   void Trace(blink::Visitor*) override;
 
  private:
-  WebGPUDevice(WebGPUAdapter*, std::unique_ptr<WebGraphicsContext3DProvider>);
-
   gpu::webgpu::WebGPUInterface* Interface() const;
 
   Member<WebGPUAdapter> adapter_;

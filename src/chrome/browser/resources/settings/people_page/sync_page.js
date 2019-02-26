@@ -15,24 +15,6 @@ const RadioButtonNames = {
 };
 
 /**
- * Names of the individual data type properties to be cached from
- * settings.SyncPrefs when the user checks 'Sync All'.
- * @type {!Array<string>}
- */
-const SyncPrefsIndividualDataTypes = [
-  'appsSynced',
-  'extensionsSynced',
-  'preferencesSynced',
-  'autofillSynced',
-  'typedUrlsSynced',
-  'themesSynced',
-  'bookmarksSynced',
-  'passwordsSynced',
-  'tabsSynced',
-  'paymentsIntegrationEnabled',
-];
-
-/**
  * @fileoverview
  * 'settings-sync-page' is the settings page containing sync settings.
  */
@@ -88,7 +70,6 @@ Polymer({
     /** @type {settings.SyncStatus} */
     syncStatus: {
       type: Object,
-      observer: 'onSyncStatusChanged_',
     },
 
     /**
@@ -146,18 +127,6 @@ Polymer({
     },
 
     /** @private */
-    personalizeSectionOpened_: {
-      type: Boolean,
-      value: true,
-    },
-
-    /** @private */
-    syncSectionOpened_: {
-      type: Boolean,
-      value: true,
-    },
-
-    /** @private */
     driveSuggestAvailable_: {
       type: Boolean,
       value: function() {
@@ -165,23 +134,12 @@ Polymer({
       }
     },
 
-    // The toggle for user events is not reflected directly on
-    // syncPrefs.userEventsSynced, because this sync preference must only be
-    // updated if there is no passphrase and typedUrls are synced as well.
-    userEventsToggleValue: Boolean,
-
     // <if expr="not chromeos">
     diceEnabled: Boolean,
     // </if>
 
     unifiedConsentEnabled: Boolean,
   },
-
-  observers: [
-    // Depends on signedIn_ so that the sync section is updated on signin
-    // changes, even though the actual value of signedIn_ is not used.
-    'onSyncSectionOpenedShouldChange_(signedIn_, syncSectionDisabled_)',
-  ],
 
   /** @private {?settings.SyncBrowserProxy} */
   browserProxy_: null,
@@ -211,13 +169,6 @@ Polymer({
    */
   didAbort_: false,
 
-  /**
-   * Caches the individually selected synced data types. This is used to
-   * be able to restore the selections after checking and unchecking Sync All.
-   * @private {?Object}
-   */
-  cachedSyncPrefs_: null,
-
   /** @override */
   created: function() {
     this.browserProxy_ = settings.SyncBrowserProxyImpl.getInstance();
@@ -233,10 +184,18 @@ Polymer({
     if (settings.getCurrentRoute() == settings.routes.SYNC)
       this.onNavigateToPage_();
   },
+  /**
+   * Can be called from subpages to notify this page (=main sync page) that sync
+   * setup was cancelled.
+   */
+  cancelSyncSetup: function() {
+    this.didAbort_ = true;
+    settings.navigateTo(settings.routes.BASIC);
+  },
 
   /** @override */
   detached: function() {
-    if (settings.getCurrentRoute() == settings.routes.SYNC)
+    if (settings.routes.SYNC.contains(settings.getCurrentRoute()))
       this.onNavigateAwayFromPage_();
 
     if (this.beforeunloadCallback_) {
@@ -269,7 +228,7 @@ Polymer({
   currentRouteChanged: function() {
     if (settings.getCurrentRoute() == settings.routes.SYNC)
       this.onNavigateToPage_();
-    else
+    else if (!settings.routes.SYNC.contains(settings.getCurrentRoute()))
       this.onNavigateAwayFromPage_();
   },
 
@@ -317,35 +276,12 @@ Polymer({
   },
 
   /**
-   * Handles the change event for the unfied consent toggle.
-   * @private
-   */
-  onUnifiedConsentToggleChange_: function() {
-    const checked = this.$$('#unifiedConsentToggle').checked;
-    this.browserProxy_.unifiedConsentToggleChanged(checked);
-
-    if (!checked) {
-      this.syncSectionOpened_ = !this.syncSectionDisabled_;
-      this.personalizeSectionOpened_ = true;
-    }
-  },
-
-  /**
    * Handler for when the sync preferences are updated.
    * @private
    */
   handleSyncPrefsChanged_: function(syncPrefs) {
     this.syncPrefs = syncPrefs;
     this.pageStatus_ = settings.PageStatus.CONFIGURE;
-
-    // If autofill is not registered or synced, force Payments integration off.
-    if (!this.syncPrefs.autofillRegistered || !this.syncPrefs.autofillSynced)
-      this.set('syncPrefs.paymentsIntegrationEnabled', false);
-
-    this.set(
-        'userEventsToggleValue',
-        this.syncPrefs.userEventsSynced && this.syncPrefs.typedUrlsSynced &&
-            !this.syncPrefs.encryptAllData);
 
     // Hide the new passphrase box if the sync data has been encrypted.
     if (this.syncPrefs.encryptAllData)
@@ -363,84 +299,9 @@ Polymer({
     }
   },
 
-  /**
-   * Handler for when the sync all data types checkbox is changed.
-   * @param {!Event} event
-   * @private
-   */
-  onSyncAllDataTypesChanged_: function(event) {
-    if (event.target.checked) {
-      this.set('syncPrefs.syncAllDataTypes', true);
-
-      // Cache the previously selected preference before checking every box.
-      this.cachedSyncPrefs_ = {};
-      for (const dataType of SyncPrefsIndividualDataTypes) {
-        // These are all booleans, so this shallow copy is sufficient.
-        this.cachedSyncPrefs_[dataType] = this.syncPrefs[dataType];
-
-        this.set(['syncPrefs', dataType], true);
-      }
-    } else if (this.cachedSyncPrefs_) {
-      // Restore the previously selected preference.
-      for (const dataType of SyncPrefsIndividualDataTypes) {
-        this.set(['syncPrefs', dataType], this.cachedSyncPrefs_[dataType]);
-      }
-    }
-
-    this.onSingleSyncDataTypeChanged_();
-  },
-
-  /**
-   * Handler for when any sync data type checkbox is changed (except autofill).
-   * @private
-   */
-  onSingleSyncDataTypeChanged_: function() {
-    assert(this.syncPrefs);
-    this.browserProxy_.setSyncDatatypes(this.syncPrefs)
-        .then(this.handlePageStatusChanged_.bind(this));
-  },
-
   /** @private */
   onActivityControlsTap_: function() {
     this.browserProxy_.openActivityControlsUrl();
-  },
-
-  /**
-   * Handler for when the autofill data type checkbox is changed.
-   * @private
-   */
-  onAutofillDataTypeChanged_: function() {
-    this.set(
-        'syncPrefs.paymentsIntegrationEnabled', this.syncPrefs.autofillSynced);
-
-    this.onSingleSyncDataTypeChanged_();
-  },
-
-  /**
-   * Handler for when the autofill data type checkbox is changed.
-   * @private
-   */
-  onTypedUrlsDataTypeChanged_: function() {
-    // Enabling typed URLs also resets the user events to ON. |encryptAllData|
-    // is not expected to change on the fly, and if it changed the user sync
-    // settings would be reset anyway.
-    if (!this.syncPrefs.encryptAllData && this.syncPrefs.typedUrlsSynced)
-      this.set('syncPrefs.userEventsSynced', true);
-
-    this.onSingleSyncDataTypeChanged_();
-  },
-
-  /**
-   * Handler for when the user events data type checkbox is changed.
-   * @private
-   */
-  onUserEventsSyncDataTypeChanged_: function() {
-    // Only update the sync preference when there is no passphrase and typed
-    // URLs are synced.
-    assert(!this.syncPrefs.encryptAllData && this.syncPrefs.typedUrlsSynced);
-    this.set('syncPrefs.userEventsSynced', this.userEventsToggleValue);
-
-    this.onSingleSyncDataTypeChanged_();
   },
 
   /**
@@ -529,11 +390,12 @@ Polymer({
 
   /**
    * Called when the encryption
+   * @param {!Event} event
    * @private
    */
   onEncryptionRadioSelectionChanged_: function(event) {
     this.creatingNewPassphrase_ =
-        event.target.selected == RadioButtonNames.ENCRYPT_WITH_PASSPHRASE;
+        event.detail.value == RadioButtonNames.ENCRYPT_WITH_PASSPHRASE;
   },
 
   /**
@@ -555,38 +417,6 @@ Polymer({
       return this.syncPrefs.enterPassphraseBody;
 
     return this.syncPrefs.enterGooglePassphraseBody;
-  },
-
-  /**
-   * @param {boolean} syncAllDataTypes
-   * @param {boolean} enforced
-   * @return {boolean} Whether the sync checkbox should be disabled.
-   */
-  shouldSyncCheckboxBeDisabled_: function(syncAllDataTypes, enforced) {
-    return syncAllDataTypes || enforced;
-  },
-
-  /**
-   * @param {boolean} syncAllDataTypes
-   * @param {boolean} autofillSynced
-   * @return {boolean} Whether the sync checkbox should be disabled.
-   */
-  shouldPaymentsCheckboxBeDisabled_: function(
-      syncAllDataTypes, autofillSynced) {
-    return syncAllDataTypes || !autofillSynced;
-  },
-
-  /**
-   * @param {boolean} syncAllDataTypes
-   * @param {boolean} typedUrlsSynced
-   * @param {boolean} userEventsEnforced
-   * @param {boolean} encryptAllData
-   * @return {boolean} Whether the sync checkbox should be disabled.
-   */
-  shouldUserEventsCheckboxBeDisabled_: function(
-      syncAllDataTypes, typedUrlsSynced, userEventsEnforced, encryptAllData) {
-    return syncAllDataTypes || !typedUrlsSynced || userEventsEnforced ||
-        encryptAllData;
   },
 
   /**
@@ -617,55 +447,6 @@ Polymer({
       // checkboxes or radio buttons won't change the value.
       event.stopPropagation();
     }
-  },
-
-  /** @private */
-  onCancelSyncClick_: function() {
-    this.didAbort_ = true;
-    settings.navigateTo(settings.routes.BASIC);
-  },
-
-  // Computes the initial layout for the sync section and the personalize
-  // section. This function only does something on its first call.
-  onSyncStatusChanged_: function() {
-    if (!!this.syncStatus && !this.collapsibleSectionsInitialized_) {
-      this.collapsibleSectionsInitialized_ = true;
-      this.personalizeSectionOpened_ =
-          !this.$$('#unifiedConsentToggle').checked ||
-          !!this.syncStatus.setupInProgress;
-      this.syncSectionOpened_ =
-          this.personalizeSectionOpened_ && !this.syncSectionDisabled_;
-    }
-  },
-
-  /**
-   * Collapses the sync section if it becomes disabled, and expands it when it's
-   * re-enabled.
-   * @private
-   */
-  onSyncSectionOpenedShouldChange_: function() {
-    this.syncSectionOpened_ =
-        !this.syncSectionDisabled_ && !this.$$('#unifiedConsentToggle').checked;
-  },
-
-  /**
-   * Toggles the expand button within the element being listened to.
-   * @param {!Event} e
-   * @private
-   */
-  toggleExpandButton_: function(e) {
-    // The expand button handles toggling itself.
-    const expandButtonTag = 'CR-EXPAND-BUTTON';
-    if (e.target.tagName == expandButtonTag)
-      return;
-
-    if (!e.currentTarget.hasAttribute('actionable'))
-      return;
-
-    /** @type {!CrExpandButtonElement} */
-    const expandButton = e.currentTarget.querySelector(expandButtonTag);
-    assert(expandButton);
-    expandButton.expanded = !expandButton.expanded;
   },
 
   /**
@@ -729,22 +510,9 @@ Polymer({
         !!this.syncPrefs.passphraseRequired;
   },
 
-  /**
-   * @return {boolean}
-   * @private
-   */
-  shouldShowSyncControls_: function() {
-    return !!this.unifiedConsentEnabled && this.syncStatus !== undefined &&
-        !this.syncStatus.disabled;
-  },
-
-  /**
-   * @return {boolean}
-   * @private
-   */
-  shouldShowUnifiedConsentToggle_: function() {
-    return !!this.unifiedConsentEnabled && this.syncStatus !== undefined &&
-        !this.syncStatus.disabled && !!this.syncStatus.signedIn;
+  /** @private */
+  onSyncAdvancedTap_: function() {
+    settings.navigateTo(settings.routes.SYNC_ADVANCED);
   },
 });
 

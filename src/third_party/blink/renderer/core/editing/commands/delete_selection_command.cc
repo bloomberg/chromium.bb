@@ -49,8 +49,6 @@
 
 namespace blink {
 
-using namespace HTMLNames;
-
 static bool IsTableCellEmpty(Node* cell) {
   DCHECK(cell);
   DCHECK(IsTableCell(cell)) << cell;
@@ -903,8 +901,10 @@ void DeleteSelectionCommand::MergeParagraphs(EditingState* editing_state) {
   // the right.
   // FIXME: Consider RTL.
   if (!starts_at_empty_line_ && IsStartOfParagraph(merge_destination) &&
-      AbsoluteCaretBoundsOf(start_of_paragraph_to_move).X() >
-          AbsoluteCaretBoundsOf(merge_destination).X()) {
+      AbsoluteCaretBoundsOf(start_of_paragraph_to_move.ToPositionWithAffinity())
+              .X() >
+          AbsoluteCaretBoundsOf(merge_destination.ToPositionWithAffinity())
+              .X()) {
     if (IsHTMLBRElement(
             *MostForwardCaretPosition(merge_destination.DeepEquivalent())
                  .AnchorNode())) {
@@ -1189,7 +1189,7 @@ void DeleteSelectionCommand::DoApply(EditingState* editing_state) {
     }
     // HandleGeneralDelete cause DOM mutation events so |ending_position_|
     // can be out of document.
-    if (ending_position_.IsConnected()) {
+    if (ending_position_.IsValidFor(GetDocument())) {
       InsertNodeAt(placeholder, ending_position_, editing_state);
       if (editing_state->IsAborted())
         return;

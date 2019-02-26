@@ -14,6 +14,7 @@ namespace blink {
 
 class UnderlyingSourceBase;
 class ExceptionState;
+class MessagePort;
 class ScriptState;
 
 // This class has various methods for ReadableStream[Reader] implemented with
@@ -39,12 +40,20 @@ class CORE_EXPORT ReadableStreamOperations {
 
  public:
   // createReadableStreamWithExternalController
+  // Instantiates ReadableStream defined in the script and returns it.
   // If the caller supplies an invalid strategy (e.g. one that returns
   // negative sizes, or doesn't have appropriate properties), or an exception
   // occurs for another reason, this will return an empty value.
   static ScriptValue CreateReadableStream(ScriptState*,
                                           UnderlyingSourceBase*,
                                           ScriptValue strategy);
+
+  // createReadableStream
+  // Instantiates ReadableStream defined in the script and returns it.
+  static ScriptValue CreateReadableStream(ScriptState*,
+                                          ScriptValue underlying_source,
+                                          ScriptValue strategy,
+                                          ExceptionState& exception_state);
 
   // createBuiltInCountQueuingStrategy
   // If the constructor throws, this will return an empty value.
@@ -121,13 +130,36 @@ class CORE_EXPORT ReadableStreamOperations {
 
   // ReadableStreamTee
   // This function assumes |IsReadableStream(stream)| and |!IsLocked(stream)|
-  // Returns without setting new_stream1 or new_stream2 if an error occurs.
-  // Exceptions are caught and rethrown on |exception_state|.
-  static void Tee(ScriptState*,
-                  ScriptValue stream,
-                  ScriptValue* new_stream1,
-                  ScriptValue* new_stream2,
-                  ExceptionState&);
+  static ScriptValue Tee(ScriptState*, ScriptValue stream, ExceptionState&);
+
+  // ReadableStreamSerialize. The MessagePort passed in must be one half of a
+  // MessageChannel. The other half can later be passed to Deserialize to
+  // produce an equivalent ReadableStream in a different context.
+  static void Serialize(ScriptState*,
+                        ScriptValue stream,
+                        MessagePort* port,
+                        ExceptionState&);
+
+  // ReadableStreamDeserialize returns a new ReadableStream in the current
+  // context given a MessagePort which is bound to one which was previously
+  // passed to Serialize().
+  static ScriptValue Deserialize(ScriptState*, MessagePort*, ExceptionState&);
+
+  // ReadableStreamCancel
+  // This function assumes |IsReadableStream(stream)|
+  static ScriptPromise Cancel(ScriptState*,
+                              ScriptValue stream,
+                              ScriptValue reason,
+                              ExceptionState& exception_state);
+
+  // ReadableStreamPipeTo
+  // This function assumes |IsReadableStream(stream)|, |!IsLocked(stream)|,
+  // |IsWritableStream(destination)| and |!IsLocked(destination)|.
+  static ScriptPromise PipeTo(ScriptState*,
+                              ScriptValue stream,
+                              ScriptValue destination,
+                              ScriptValue options,
+                              ExceptionState& exception_state);
 };
 
 }  // namespace blink

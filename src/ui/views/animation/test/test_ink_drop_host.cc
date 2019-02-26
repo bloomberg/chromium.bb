@@ -77,6 +77,10 @@ class TestInkDropHighlight : public InkDropHighlight {
 TestInkDropHost::TestInkDropHost()
     : num_ink_drop_layers_added_(0),
       num_ink_drop_layers_removed_(0),
+      num_ink_drop_ripples_created_(0),
+      num_ink_drop_highlights_created_(0),
+      last_ink_drop_ripple_(nullptr),
+      last_ink_drop_highlight_(nullptr),
       disable_timers_for_test_(false) {}
 
 TestInkDropHost::~TestInkDropHost() {}
@@ -89,27 +93,25 @@ void TestInkDropHost::RemoveInkDropLayer(ui::Layer* ink_drop_layer) {
   ++num_ink_drop_layers_removed_;
 }
 
-std::unique_ptr<InkDrop> TestInkDropHost::CreateInkDrop() {
-  NOTREACHED();
-  return nullptr;
-}
-
 std::unique_ptr<InkDropRipple> TestInkDropHost::CreateInkDropRipple() const {
-  gfx::Size size(10, 10);
   std::unique_ptr<InkDropRipple> ripple(new TestInkDropRipple(
-      size, 5, size, 5, gfx::Point(), SK_ColorBLACK, 0.175f));
+      size(), 0, size(), 0, gfx::Point(), SK_ColorBLACK, 0.175f));
   if (disable_timers_for_test_)
     ripple->GetTestApi()->SetDisableAnimationTimers(true);
+  num_ink_drop_ripples_created_++;
+  last_ink_drop_ripple_ = ripple.get();
   return ripple;
 }
 
 std::unique_ptr<InkDropHighlight> TestInkDropHost::CreateInkDropHighlight()
     const {
   std::unique_ptr<InkDropHighlight> highlight;
-  highlight.reset(new TestInkDropHighlight(gfx::Size(10, 10), 4, gfx::PointF(),
-                                           SK_ColorBLACK));
+  highlight.reset(
+      new TestInkDropHighlight(size(), 0, gfx::PointF(), SK_ColorBLACK));
   if (disable_timers_for_test_)
     highlight->GetTestApi()->SetDisableAnimationTimers(true);
+  num_ink_drop_highlights_created_++;
+  last_ink_drop_highlight_ = highlight.get();
   return highlight;
 }
 

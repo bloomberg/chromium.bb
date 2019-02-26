@@ -46,18 +46,19 @@ void AXWidgetObjWrapper::GetChildren(
 }
 
 void AXWidgetObjWrapper::Serialize(ui::AXNodeData* out_node_data) {
-  out_node_data->id = GetUniqueId().Get();
+  out_node_data->id = GetUniqueId();
   out_node_data->role = widget_->widget_delegate()->GetAccessibleWindowRole();
   out_node_data->AddStringAttribute(
       ax::mojom::StringAttribute::kName,
       base::UTF16ToUTF8(
           widget_->widget_delegate()->GetAccessibleWindowTitle()));
-  out_node_data->location = gfx::RectF(widget_->GetWindowBoundsInScreen());
+  out_node_data->relative_bounds.bounds =
+      gfx::RectF(widget_->GetWindowBoundsInScreen());
   out_node_data->state = 0;
 }
 
-const ui::AXUniqueId& AXWidgetObjWrapper::GetUniqueId() const {
-  return unique_id_;
+int32_t AXWidgetObjWrapper::GetUniqueId() const {
+  return unique_id_.Get();
 }
 
 void AXWidgetObjWrapper::OnWidgetDestroying(Widget* widget) {

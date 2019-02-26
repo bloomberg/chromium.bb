@@ -34,7 +34,7 @@
 namespace blink {
 
 inline bool RequiresContextForWordBoundary(UChar32 ch) {
-  return WTF::Unicode::HasLineBreakingPropertyComplexContext(ch);
+  return WTF::unicode::HasLineBreakingPropertyComplexContext(ch);
 }
 
 PLATFORM_EXPORT int EndOfFirstWordBoundaryContext(const UChar* characters,

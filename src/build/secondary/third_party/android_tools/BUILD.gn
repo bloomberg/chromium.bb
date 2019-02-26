@@ -35,18 +35,48 @@ if (enable_java_templates) {
     jar_path = android_sdk_jar
   }
 
+  template("android_test_jar_with_manifest") {
+    _library_name = invoker.library_name
+
+    _manifest_output_path = "$target_gen_dir/$target_name/AndroidManifest.xml"
+    _manifest_target = "${target_name}__manifest"
+    jinja_template(_manifest_target) {
+      testonly = true
+      input = "//build/secondary/third_party/android_tools/AndroidManifest.xml.jinja2"
+      output = _manifest_output_path
+      variables = [ "library_name=$_library_name" ]
+    }
+
+    _resources_target = "${target_name}__resources"
+    android_resources(_resources_target) {
+      testonly = true
+      resource_dirs = []
+      android_manifest = _manifest_output_path
+      android_manifest_dep = ":$_manifest_target"
+    }
+
+    java_group(target_name) {
+      testonly = true
+      deps = [
+        ":$_resources_target",
+      ]
+      input_jars_paths =
+          [ "${android_sdk}/optional/android.test.${_library_name}.jar" ]
+    }
+  }
+
   # The android test libraries below are part of the main SDK jar
   # and are linked by default on O and below. Starting in P, they
   # exist in their own libraries that are present on device and are
   # available to be linked against but aren't linked by default.
-  android_system_java_prebuilt("android_test_base_java") {
-    jar_path = "${android_sdk}/optional/android.test.base.jar"
+  android_test_jar_with_manifest("android_test_base_java") {
+    library_name = "base"
   }
-  android_system_java_prebuilt("android_test_mock_java") {
-    jar_path = "${android_sdk}/optional/android.test.mock.jar"
+  android_test_jar_with_manifest("android_test_mock_java") {
+    library_name = "mock"
   }
-  android_system_java_prebuilt("android_test_runner_java") {
-    jar_path = "${android_sdk}/optional/android.test.runner.jar"
+  android_test_jar_with_manifest("android_test_runner_java") {
+    library_name = "runner"
   }
 
   android_library("android_support_chromium_java") {

@@ -17,16 +17,14 @@
 
 namespace blink {
 class PaintLayer;
-class IntRect;
 class LayoutObject;
 class TracedValue;
 class LocalFrameView;
-class LayoutImage;
 
 class ImageRecord : public base::SupportsWeakPtr<ImageRecord> {
  public:
   DOMNodeId node_id = kInvalidDOMNodeId;
-  double first_size = 0.0;
+  uint64_t first_size = 0;
   // LastImagePaint uses the order of the first paints to determine the last
   // image.
   unsigned first_paint_index = 0;
@@ -64,29 +62,30 @@ class CORE_EXPORT ImagePaintTimingDetector final
   friend class ImagePaintTimingDetectorTest;
 
  public:
-  ImagePaintTimingDetector(LocalFrameView* frame_view);
-  void RecordImage(const LayoutObject& object,
-                   const PaintLayer& painting_layer);
+  ImagePaintTimingDetector(LocalFrameView*);
+  void RecordImage(const LayoutObject&, const PaintLayer&);
+  static bool HasContentfulBackgroundImage(const LayoutObject& object);
   void OnPrePaintFinished();
   void NotifyNodeRemoved(DOMNodeId);
+  base::TimeTicks LargestImagePaint() const { return largest_image_paint_; }
+  base::TimeTicks LastImagePaint() const { return last_image_paint_; }
   void Trace(blink::Visitor*);
 
  private:
   ImageRecord* FindLargestPaintCandidate();
   ImageRecord* FindLastPaintCandidate();
-  void PopulateTraceValue(TracedValue& value,
+  void PopulateTraceValue(TracedValue&,
                           const ImageRecord& first_image_paint,
                           unsigned report_count) const;
-  IntRect CalculateTransformedRect(LayoutRect& visual_rect,
-                                   const PaintLayer& painting_layer) const;
   // This is provided for unit test to force invoking swap promise callback.
   void ReportSwapTime(unsigned max_frame_index_to_time,
                       WebLayerTreeView::SwapResult,
                       base::TimeTicks);
   void RegisterNotifySwapTime();
-  void InvokeCallback();
+  void OnLargestImagePaintDetected(const ImageRecord&);
+  void OnLastImagePaintDetected(const ImageRecord&);
+  void Deactivate();
 
-  bool IsJustLoaded(const LayoutImage*, const ImageRecord&) const;
   void Analyze();
 
   base::RepeatingCallback<void(WebLayerTreeView::ReportTimeCallback)>
@@ -104,7 +103,6 @@ class CORE_EXPORT ImagePaintTimingDetector final
                       bool (*)(const base::WeakPtr<ImageRecord>&,
                                const base::WeakPtr<ImageRecord>&)>
       latest_image_heap_;
-  unsigned recorded_node_count_ = 0;
 
   // Node-ids of records pending swap time are stored in this queue until they
   // get a swap time.
@@ -121,6 +119,10 @@ class CORE_EXPORT ImagePaintTimingDetector final
   unsigned frame_index_ = 1;
 
   unsigned last_frame_index_queued_for_timing_ = 0;
+  bool is_recording_ = true;
+
+  base::TimeTicks largest_image_paint_;
+  base::TimeTicks last_image_paint_;
   Member<LocalFrameView> frame_view_;
 };
 }  // namespace blink

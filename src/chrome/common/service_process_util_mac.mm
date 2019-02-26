@@ -104,14 +104,11 @@ mojo::NamedPlatformChannel::ServerName GetServiceProcessServerName() {
 
 bool ForceServiceProcessShutdown(const std::string& /* version */,
                                  base::ProcessId /* process_id */) {
-  base::mac::ScopedNSAutoreleasePool pool;
-  CFStringRef label = base::mac::NSToCFCast(GetServiceProcessLaunchDLabel());
-  CFErrorRef err = NULL;
-  bool ret = Launchd::GetInstance()->RemoveJob(label, &err);
+  const std::string& label =
+      base::SysNSStringToUTF8(GetServiceProcessLaunchDLabel());
+  bool ret = Launchd::GetInstance()->RemoveJob(label);
   if (!ret) {
-    DLOG(ERROR) << "ForceServiceProcessShutdown: " << err << " "
-                << base::SysCFStringRefToUTF8(label);
-    CFRelease(err);
+    DLOG(ERROR) << "ForceServiceProcessShutdown: " << label;
   }
   return ret;
 }
@@ -216,6 +213,24 @@ bool CheckServiceProcessReady() {
     ForceServiceProcessShutdown(version, pid);
   }
   return ready;
+}
+
+mac::services::JobOptions GetServiceProcessJobOptions(
+    base::CommandLine* cmd_line,
+    bool for_auto_launch) {
+  mac::services::JobOptions options;
+
+  options.label = base::SysNSStringToUTF8(GetServiceProcessLaunchDLabel());
+  options.executable_path = cmd_line->GetProgram().value();
+  options.arguments = cmd_line->argv();
+  options.socket_name = GetServiceProcessSocketName().value();
+  options.socket_key =
+      base::SysNSStringToUTF8(GetServiceProcessLaunchDSocketKey());
+
+  options.run_at_load = for_auto_launch;
+  options.auto_launch = for_auto_launch;
+
+  return options;
 }
 
 CFDictionaryRef CreateServiceProcessLaunchdPlist(base::CommandLine* cmd_line,
@@ -443,12 +458,10 @@ void ExecFilePathWatcherCallback::NotifyPathChanged(const base::FilePath& path,
       }
     }
     if (needs_shutdown) {
-      CFStringRef label =
-          base::mac::NSToCFCast(GetServiceProcessLaunchDLabel());
-      CFErrorRef err = NULL;
-      if (!Launchd::GetInstance()->RemoveJob(label, &err)) {
-        base::ScopedCFTypeRef<CFErrorRef> scoped_err(err);
-        DLOG(ERROR) << "RemoveJob " << err;
+      const std::string& label =
+          base::SysNSStringToUTF8(GetServiceProcessLaunchDLabel());
+      if (!Launchd::GetInstance()->RemoveJob(label)) {
+        DLOG(ERROR) << "RemoveJob " << label;
         // Exiting with zero, so launchd doesn't restart the process.
         exit(0);
       }

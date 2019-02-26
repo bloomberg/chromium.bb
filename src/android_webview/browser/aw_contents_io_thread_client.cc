@@ -17,6 +17,7 @@
 #include "base/containers/flat_set.h"
 #include "base/lazy_instance.h"
 #include "base/synchronization/lock.h"
+#include "base/threading/scoped_blocking_call.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/render_process_host.h"
@@ -28,6 +29,7 @@
 #include "jni/AwContentsIoThreadClient_jni.h"
 #include "net/base/data_url.h"
 #include "net/url_request/url_request.h"
+#include "services/network/public/cpp/resource_request.h"
 
 using base::android::AttachCurrentThread;
 using base::android::ConvertUTF8ToJavaString;
@@ -340,9 +342,9 @@ AwContentsIoThreadClient::CacheMode AwContentsIoThreadClient::GetCacheMode()
 namespace {
 
 std::unique_ptr<AwWebResourceResponse> RunShouldInterceptRequest(
-    const AwWebResourceRequest& request,
+    AwWebResourceRequest request,
     JavaObjectWeakGlobalRef ref) {
-  base::AssertBlockingAllowed();
+  base::ScopedBlockingCall scoped_blocking_call(base::BlockingType::MAY_BLOCK);
 
   JNIEnv* env = AttachCurrentThread();
   base::android::ScopedJavaLocalRef<jobject> obj = ref.get(env);
@@ -371,7 +373,7 @@ std::unique_ptr<AwWebResourceResponse> ReturnNull() {
 }  // namespace
 
 void AwContentsIoThreadClient::ShouldInterceptRequestAsync(
-    const net::URLRequest* request,
+    AwWebResourceRequest request,
     ShouldInterceptRequestResultCallback callback) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
   base::OnceCallback<std::unique_ptr<AwWebResourceResponse>()> get_response =
@@ -384,7 +386,7 @@ void AwContentsIoThreadClient::ShouldInterceptRequestAsync(
   }
   if (!bg_thread_client_object_.is_null()) {
     get_response = base::BindOnce(
-        &RunShouldInterceptRequest, AwWebResourceRequest(*request),
+        &RunShouldInterceptRequest, std::move(request),
         JavaObjectWeakGlobalRef(env, bg_thread_client_object_.obj()));
   }
   base::PostTaskAndReplyWithResult(sequenced_task_runner_.get(), FROM_HERE,

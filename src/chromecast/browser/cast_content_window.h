@@ -138,11 +138,14 @@ class CastContentWindow {
     // True if this app should turn on the screen.
     bool turn_on_screen = true;
 
+    // application or acitivity's session ID
+    std::string session_id = "";
+
     // Gesture priority for when the window is visible.
     CastGestureHandler::Priority gesture_priority =
         CastGestureHandler::Priority::NONE;
 
-    CreateParams() = default;
+    CreateParams();
   };
 
   class Observer : public base::CheckedObserver {

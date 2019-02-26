@@ -4,12 +4,10 @@
 
 #include "third_party/blink/renderer/core/exported/worker_shadow_page.h"
 
+#include "services/network/public/mojom/referrer_policy.mojom-shared.h"
 #include "third_party/blink/public/mojom/page/page_visibility_state.mojom-blink.h"
 #include "third_party/blink/public/platform/platform.h"
-#include "third_party/blink/public/platform/web_referrer_policy.h"
-#include "third_party/blink/public/web/web_settings.h"
 #include "third_party/blink/renderer/core/exported/web_view_impl.h"
-#include "third_party/blink/renderer/core/frame/settings.h"
 #include "third_party/blink/renderer/core/loader/frame_load_request.h"
 #include "third_party/blink/renderer/platform/loader/fetch/substitute_data.h"
 
@@ -41,14 +39,6 @@ WorkerShadowPage::WorkerShadowPage(
       preferences_(std::move(preferences)) {
   DCHECK(IsMainThread());
 
-  // TODO(http://crbug.com/363843): This needs to find a better way to
-  // not create graphics layers.
-  web_view_->GetSettings()->SetAcceleratedCompositingEnabled(false);
-  // TODO(lunalu): Service worker and shared worker count feature usage on the
-  // blink side use counter. Once the blink side use counter is removed
-  // (crbug.com/811948), remove this instant from Settings.
-  main_frame_->GetFrame()->GetSettings()->SetIsShadowPage(true);
-
   main_frame_->SetDevToolsAgentImpl(
       WebDevToolsAgentImpl::CreateForWorker(main_frame_, client_));
 }
@@ -57,7 +47,7 @@ WorkerShadowPage::~WorkerShadowPage() {
   DCHECK(IsMainThread());
   // Detach the client before closing the view to avoid getting called back.
   main_frame_->SetClient(nullptr);
-  web_view_->Close();
+  web_view_->MainFrameWidget()->Close();
   main_frame_->Close();
 }
 
@@ -109,8 +99,14 @@ void WorkerShadowPage::WillSendRequest(WebURLRequest& request) {
     request.SetHTTPHeaderField(WebString::FromUTF8(kDoNotTrackHeader), "1");
   }
   if (!preferences_.enable_referrers) {
-    request.SetHTTPReferrer(WebString(), kWebReferrerPolicyDefault);
+    request.SetHTTPReferrer(WebString(),
+                            network::mojom::ReferrerPolicy::kDefault);
   }
+}
+
+void WorkerShadowPage::BeginNavigation(
+    std::unique_ptr<WebNavigationInfo> info) {
+  NOTREACHED();
 }
 
 bool WorkerShadowPage::WasInitialized() const {

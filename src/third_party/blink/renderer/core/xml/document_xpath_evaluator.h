@@ -59,11 +59,10 @@ class DocumentXPathEvaluator final
                                const ScriptValue&,
                                ExceptionState&);
 
+  explicit DocumentXPathEvaluator(Document&);
   void Trace(blink::Visitor*) override;
 
  private:
-  explicit DocumentXPathEvaluator(Document&);
-
   Member<XPathEvaluator> xpath_evaluator_;
 };
 

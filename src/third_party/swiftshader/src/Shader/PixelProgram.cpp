@@ -310,6 +310,7 @@ namespace sw
 			case Shader::OPCODE_BREAKP:     BREAKP(src0);                                  break;
 			case Shader::OPCODE_CONTINUE:   CONTINUE();                                    break;
 			case Shader::OPCODE_TEST:       TEST();                                        break;
+			case Shader::OPCODE_SCALAR:     SCALAR();                                      break;
 			case Shader::OPCODE_CALL:       CALL(dst.label, dst.callSite);                 break;
 			case Shader::OPCODE_CALLNZ:     CALLNZ(dst.label, dst.callSite, src0);         break;
 			case Shader::OPCODE_ELSE:       ELSE();                                        break;
@@ -832,24 +833,26 @@ namespace sw
 
 	Int4 PixelProgram::enableMask(const Shader::Instruction *instruction)
 	{
+		if(scalar)
+		{
+			return Int4(0xFFFFFFFF);
+		}
+
 		Int4 enable = instruction->analysisBranch ? Int4(enableStack[enableIndex]) : Int4(0xFFFFFFFF);
 
-		if(!whileTest)
+		if(shader->containsBreakInstruction() && instruction->analysisBreak)
 		{
-			if(shader->containsBreakInstruction() && instruction->analysisBreak)
-			{
-				enable &= enableBreak;
-			}
+			enable &= enableBreak;
+		}
 
-			if(shader->containsContinueInstruction() && instruction->analysisContinue)
-			{
-				enable &= enableContinue;
-			}
+		if(shader->containsContinueInstruction() && instruction->analysisContinue)
+		{
+			enable &= enableContinue;
+		}
 
-			if(shader->containsLeaveInstruction() && instruction->analysisLeave)
-			{
-				enable &= enableLeave;
-			}
+		if(shader->containsLeaveInstruction() && instruction->analysisLeave)
+		{
+			enable &= enableLeave;
 		}
 
 		return enable;
@@ -1276,7 +1279,10 @@ namespace sw
 
 	void PixelProgram::TEXSIZE(Vector4f &dst, Float4 &lod, const Src &src1)
 	{
-		Pointer<Byte> texture = data + OFFSET(DrawData, mipmap) + src1.index * sizeof(Texture);
+		bool uniformSampler = (src1.type == Shader::PARAMETER_SAMPLER && src1.rel.type == Shader::PARAMETER_VOID);
+		Int offset = uniformSampler ? src1.index * sizeof(Texture) : As<Int>(Float(fetchRegister(src1).x.x)) * sizeof(Texture);
+		Pointer<Byte> texture = data + OFFSET(DrawData, mipmap) + offset;
+
 		dst = SamplerCore::textureSize(texture, lod);
 	}
 
@@ -1395,7 +1401,13 @@ namespace sw
 
 	void PixelProgram::TEST()
 	{
-		whileTest = true;
+		enableContinue = restoreContinue.back();
+		restoreContinue.pop_back();
+	}
+
+	void PixelProgram::SCALAR()
+	{
+		scalar = true;
 	}
 
 	void PixelProgram::CALL(int labelIndex, int callSiteIndex)
@@ -1574,7 +1586,7 @@ namespace sw
 		Nucleus::setInsertBlock(endBlock);
 
 		enableIndex--;
-		whileTest = false;
+		scalar = false;
 	}
 
 	void PixelProgram::ENDSWITCH()
@@ -1758,12 +1770,11 @@ namespace sw
 		loopRepEndBlock[loopRepDepth] = endBlock;
 
 		Int4 restoreBreak = enableBreak;
-		Int4 restoreContinue = enableContinue;
+		restoreContinue.push_back(enableContinue);
 
 		// TODO: jump(testBlock)
 		Nucleus::createBr(testBlock);
 		Nucleus::setInsertBlock(testBlock);
-		enableContinue = restoreContinue;
 
 		const Vector4f &src = fetchRegister(temporaryRegister);
 		Int4 condition = As<Int4>(src.x);
@@ -1781,6 +1792,7 @@ namespace sw
 		Nucleus::setInsertBlock(loopBlock);
 
 		loopRepDepth++;
+		scalar = false;
 	}
 
 	void PixelProgram::SWITCH()

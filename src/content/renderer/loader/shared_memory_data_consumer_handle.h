@@ -50,7 +50,9 @@ class CONTENT_EXPORT SharedMemoryDataConsumerHandle final
 
   class ReaderImpl final : public Reader {
    public:
-    ReaderImpl(scoped_refptr<Context> context, Client* client);
+    ReaderImpl(scoped_refptr<Context> context,
+               Client* client,
+               scoped_refptr<base::SingleThreadTaskRunner> task_runner);
     ~ReaderImpl() override;
     Result Read(void* data,
                 size_t size,

@@ -32,10 +32,11 @@
 #define THIRD_PARTY_BLINK_RENDERER_CORE_FILEAPI_FILE_READER_LOADER_CLIENT_H_
 
 #include "third_party/blink/renderer/core/core_export.h"
-#include "third_party/blink/renderer/core/fileapi/file_error.h"
 #include "third_party/blink/renderer/platform/wtf/assertions.h"
 
 namespace blink {
+
+enum class FileErrorCode;
 
 class CORE_EXPORT FileReaderLoaderClient {
  public:
@@ -51,7 +52,7 @@ class CORE_EXPORT FileReaderLoaderClient {
     NOTREACHED();
   }
   virtual void DidFinishLoading() = 0;
-  virtual void DidFail(FileError::ErrorCode) = 0;
+  virtual void DidFail(FileErrorCode) = 0;
 };
 
 }  // namespace blink

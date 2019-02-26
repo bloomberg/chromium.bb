@@ -37,7 +37,7 @@ public class ContactViewHolder
     /**
      * The PickerBitmapViewHolder.
      * @param itemView The {@link ContactView} for the contact.
-     * @param categoryView The {@link CategoryView} showing the contacts.
+     * @param categoryView The {@link PickerCategoryView} showing the contacts.
      * @param contentResolver The {@link ContentResolver} to use for the lookup.
      */
     public ContactViewHolder(ContactView itemView, PickerCategoryView categoryView,

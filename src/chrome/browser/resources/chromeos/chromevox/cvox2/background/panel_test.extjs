@@ -12,11 +12,11 @@ GEN_INCLUDE(['../../testing/mock_feedback.js']);
  * @constructor
  * @extends {ChromeVoxNextE2ETest}
  */
-function PanelTest() {
+function ChromeVoxPanelTest() {
   ChromeVoxNextE2ETest.call(this);
 }
 
-PanelTest.prototype = {
+ChromeVoxPanelTest.prototype = {
   __proto__: ChromeVoxNextE2ETest.prototype,
 
   /** @override */
@@ -87,7 +87,7 @@ PanelTest.prototype = {
   */}
 };
 
-TEST_F('PanelTest', 'MAYBE_ActivateMenu', function() {
+TEST_F('ChromeVoxPanelTest', 'MAYBE_ActivateMenu', function() {
   var mockFeedback = this.createMockFeedback();
   this.runWithLoadedTree(this.linksDoc, function(root) {
     var openMenus = new PanelCommand(PanelCommandType.OPEN_MENUS);
@@ -105,7 +105,7 @@ TEST_F('PanelTest', 'MAYBE_ActivateMenu', function() {
   });
 });
 
-TEST_F('PanelTest', 'MAYBE_LinkMenu', function() {
+TEST_F('ChromeVoxPanelTest', 'MAYBE_LinkMenu', function() {
   var mockFeedback = this.createMockFeedback();
   this.runWithLoadedTree(this.linksDoc, function(root) {
     var openMenus = new PanelCommand(PanelCommandType.OPEN_MENUS, 'role_link');

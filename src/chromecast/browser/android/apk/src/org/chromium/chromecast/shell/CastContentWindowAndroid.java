@@ -22,14 +22,13 @@ import org.chromium.content_public.browser.WebContents;
 public class CastContentWindowAndroid implements CastWebContentsComponent.OnComponentClosedHandler,
                                                  CastWebContentsComponent.OnKeyDownHandler,
                                                  CastWebContentsComponent.SurfaceEventHandler {
-    private static final String TAG = "cr_CastContentWindowAndroid";
+    private static final String TAG = "cr_CastContentWindow";
     private static final boolean DEBUG = true;
 
     // Note: CastContentWindowAndroid may outlive the native object. The native
     // ref should be checked that it is not zero before it is used.
     private long mNativeCastContentWindowAndroid;
     private Context mContext;
-    private String mInstanceId;
     private CastWebContentsComponent mComponent;
 
     private static int sInstanceId = 1;
@@ -38,20 +37,22 @@ public class CastContentWindowAndroid implements CastWebContentsComponent.OnComp
     @CalledByNative
     private static CastContentWindowAndroid create(long nativeCastContentWindowAndroid,
             boolean isHeadless, boolean enableTouchInput, boolean isRemoteControlMode,
-            boolean turnOnScreen) {
+            boolean turnOnScreen, String sessionId) {
         return new CastContentWindowAndroid(nativeCastContentWindowAndroid,
                 ContextUtils.getApplicationContext(), isHeadless, enableTouchInput,
-                isRemoteControlMode, turnOnScreen);
+                isRemoteControlMode, turnOnScreen, sessionId);
     }
 
     private CastContentWindowAndroid(long nativeCastContentWindowAndroid, final Context context,
             boolean isHeadless, boolean enableTouchInput, boolean isRemoteControlMode,
-            boolean turnOnScreen) {
+            boolean turnOnScreen, String sessionId) {
         mNativeCastContentWindowAndroid = nativeCastContentWindowAndroid;
         mContext = context;
-        mInstanceId = Integer.toString(sInstanceId++);
+        Log.i(TAG,
+                "Creating new CastContentWindowAndroid(No. " + sInstanceId++
+                        + ") Seesion ID: " + sessionId);
         // TODO call nativeGetId() to set ID to CastWebContentsComponent.
-        mComponent = new CastWebContentsComponent(mInstanceId, this, this, this, isHeadless,
+        mComponent = new CastWebContentsComponent(sessionId, this, this, this, isHeadless,
                 enableTouchInput, isRemoteControlMode, turnOnScreen);
     }
 

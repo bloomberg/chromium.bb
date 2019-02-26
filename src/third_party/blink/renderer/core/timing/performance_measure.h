@@ -43,9 +43,16 @@ class PerformanceMeasure final : public PerformanceEntry {
                                     double start_time,
                                     double end_time,
                                     const ScriptValue& detail) {
-    return new PerformanceMeasure(script_state, name, start_time, end_time,
-                                  detail);
+    return MakeGarbageCollected<PerformanceMeasure>(
+        script_state, name, start_time, end_time, detail);
   }
+
+  PerformanceMeasure(ScriptState*,
+                     const AtomicString& name,
+                     double start_time,
+                     double end_time,
+                     const ScriptValue& detail);
+
   ScriptValue detail(ScriptState*) const;
 
   AtomicString entryType() const override;
@@ -56,11 +63,6 @@ class PerformanceMeasure final : public PerformanceEntry {
   }
 
  private:
-  PerformanceMeasure(ScriptState*,
-                     const AtomicString& name,
-                     double start_time,
-                     double end_time,
-                     const ScriptValue& detail);
   ~PerformanceMeasure() override = default;
   scoped_refptr<SerializedScriptValue> detail_;
 };

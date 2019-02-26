@@ -11,7 +11,8 @@ namespace gpu {
 
 enum class GpuChannelReservedRoutes : int32_t {
   kSharedImageInterface = 0,
-  kMaxValue = kSharedImageInterface,
+  kImageDecodeAccelerator = 1,
+  kMaxValue = kImageDecodeAccelerator,
 };
 
 inline CommandBufferId CommandBufferIdFromChannelAndRoute(int channel_id,
@@ -23,6 +24,11 @@ inline CommandBufferId CommandBufferIdFromChannelAndRoute(int channel_id,
 inline int ChannelIdFromCommandBufferId(
     gpu::CommandBufferId command_buffer_id) {
   return static_cast<int>(command_buffer_id.GetUnsafeValue() >> 32);
+}
+
+inline int32_t RouteIdFromCommandBufferId(
+    gpu::CommandBufferId command_buffer_id) {
+  return 0xffffffff & command_buffer_id.GetUnsafeValue();
 }
 
 }  // namespace gpu

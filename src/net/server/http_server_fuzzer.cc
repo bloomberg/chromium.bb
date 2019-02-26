@@ -21,7 +21,7 @@ class WaitTillHttpCloseDelegate : public net::HttpServer::Delegate {
       : server_(nullptr),
         data_provider_(data_provider),
         done_closure_(done_closure),
-        action_flags_(data_provider_->ConsumeUint8()) {}
+        action_flags_(data_provider_->ConsumeIntegral<uint8_t>()) {}
 
   void set_server(net::HttpServer* server) { server_ = server; }
 

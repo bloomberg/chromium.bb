@@ -223,6 +223,11 @@ bool VulkanFunctionPointers::BindDeviceFunctionPointers(VkDevice vk_device) {
   if (!vkDestroyShaderModuleFn)
     return false;
 
+  vkDeviceWaitIdleFn = reinterpret_cast<PFN_vkDeviceWaitIdle>(
+      vkGetDeviceProcAddrFn(vk_device, "vkDeviceWaitIdle"));
+  if (!vkDeviceWaitIdleFn)
+    return false;
+
   vkFreeCommandBuffersFn = reinterpret_cast<PFN_vkFreeCommandBuffers>(
       vkGetDeviceProcAddrFn(vk_device, "vkFreeCommandBuffers"));
   if (!vkFreeCommandBuffersFn)
@@ -262,6 +267,20 @@ bool VulkanFunctionPointers::BindDeviceFunctionPointers(VkDevice vk_device) {
       vkGetDeviceProcAddrFn(vk_device, "vkWaitForFences"));
   if (!vkWaitForFencesFn)
     return false;
+
+#if defined(OS_ANDROID)
+
+  vkImportSemaphoreFdKHRFn = reinterpret_cast<PFN_vkImportSemaphoreFdKHR>(
+      vkGetDeviceProcAddrFn(vk_device, "vkImportSemaphoreFdKHR"));
+  if (!vkImportSemaphoreFdKHRFn)
+    return false;
+
+  vkGetSemaphoreFdKHRFn = reinterpret_cast<PFN_vkGetSemaphoreFdKHR>(
+      vkGetDeviceProcAddrFn(vk_device, "vkGetSemaphoreFdKHR"));
+  if (!vkGetSemaphoreFdKHRFn)
+    return false;
+
+#endif
 
   // Queue functions
   vkQueueSubmitFn = reinterpret_cast<PFN_vkQueueSubmit>(

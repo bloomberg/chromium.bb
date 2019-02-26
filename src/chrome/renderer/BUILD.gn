@@ -32,7 +32,7 @@ grit("resources") {
   deps = [
     "//chrome/common/media_router/mojo:media_controller_js",
     "//chrome/common/media_router/mojo:media_router_js",
-    "//net/interfaces:interfaces_js",
+    "//services/network/public/mojom:mojom_js",
     "//url/mojom:url_mojom_gurl_js",
     "//url/mojom:url_mojom_origin_js",
   ]
@@ -360,6 +360,7 @@ jumbo_static_library("renderer") {
       "//media/cast:net",
       "//media/cast:receiver",
       "//media/cast:sender",
+      "//services/network/public/cpp",
     ]
     public_deps = [
       "//ipc",
@@ -426,6 +427,8 @@ jumbo_static_library("renderer") {
     sources += [
       "net/available_offline_content_helper.cc",
       "net/available_offline_content_helper.h",
+      "net/page_auto_fetcher_helper_android.cc",
+      "net/page_auto_fetcher_helper_android.h",
     ]
   }
 }

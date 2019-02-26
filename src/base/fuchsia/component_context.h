@@ -61,6 +61,20 @@ class BASE_EXPORT ComponentContext {
   DISALLOW_COPY_AND_ASSIGN(ComponentContext);
 };
 
+// Replaces the default ComponentContext with the supplied |service_root|, and
+// restores it when going out-of-scope.
+class BASE_EXPORT ScopedDefaultComponentContext {
+ public:
+  ScopedDefaultComponentContext(zx::channel service_root);
+  ~ScopedDefaultComponentContext();
+
+ private:
+  ComponentContext* context_;
+  std::unique_ptr<ComponentContext> old_context_;
+
+  DISALLOW_COPY_AND_ASSIGN(ScopedDefaultComponentContext);
+};
+
 }  // namespace fuchsia
 }  // namespace base
 

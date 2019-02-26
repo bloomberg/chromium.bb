@@ -12,12 +12,12 @@
 #include "third_party/blink/renderer/core/style/computed_style.h"
 
 namespace blink {
-namespace CSSLonghand {
+namespace css_longhand {
 
 const CSSValue* Color::ParseSingleValue(CSSParserTokenRange& range,
                                         const CSSParserContext& context,
                                         const CSSParserLocalContext&) const {
-  return CSSPropertyParserHelpers::ConsumeColor(
+  return css_property_parser_helpers::ConsumeColor(
       range, context.Mode(), IsQuirksModeBehavior(context.Mode()));
 }
 
@@ -73,5 +73,5 @@ void Color::ApplyValue(StyleResolverState& state, const CSSValue& value) const {
   }
 }
 
-}  // namespace CSSLonghand
+}  // namespace css_longhand
 }  // namespace blink

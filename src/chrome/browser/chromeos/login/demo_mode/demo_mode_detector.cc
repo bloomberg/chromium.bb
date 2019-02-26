@@ -5,33 +5,44 @@
 #include "chrome/browser/chromeos/login/demo_mode/demo_mode_detector.h"
 
 #include "base/command_line.h"
+#include "base/logging.h"
 #include "base/strings/string_number_conversions.h"
-#include "base/sys_info.h"
+#include "base/system/sys_info.h"
+#include "base/time/default_tick_clock.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chromeos/login/ui/login_display_host.h"
 #include "chrome/common/pref_names.h"
 #include "chromeos/chromeos_switches.h"
+#include "chromeos/dbus/dbus_switches.h"
 #include "components/prefs/pref_registry_simple.h"
 #include "components/prefs/pref_service.h"
 
-namespace {
-const int kDerelectDetectionTimeoutSeconds = 8 * 60 * 60;  // 8 hours.
-const int kDerelectIdleTimeoutSeconds = 5 * 60;            // 5 minutes.
-const int kOobeTimerUpdateIntervalSeconds = 5 * 60;        // 5 minutes.
-}  // namespace
 
 namespace chromeos {
+
+const base::TimeDelta DemoModeDetector::kDerelictDetectionTimeout =
+    base::TimeDelta::FromHours(8);
+const base::TimeDelta DemoModeDetector::kDerelictIdleTimeout =
+    base::TimeDelta::FromMinutes(5);
+const base::TimeDelta DemoModeDetector::kOobeTimerUpdateInterval =
+    base::TimeDelta::FromMinutes(5);
 
 // static
 void DemoModeDetector::RegisterPrefs(PrefRegistrySimple* registry) {
   registry->RegisterInt64Pref(prefs::kTimeOnOobe, 0);
 }
 
-DemoModeDetector::DemoModeDetector() : weak_ptr_factory_(this) {
+DemoModeDetector::DemoModeDetector()
+    : tick_clock_(base::DefaultTickClock::GetInstance()),
+      weak_ptr_factory_(this) {
   SetupTimeouts();
 }
 
 DemoModeDetector::~DemoModeDetector() {}
+
+void DemoModeDetector::SetTickClockForTest(const base::TickClock* test_clock) {
+  tick_clock_ = test_clock;
+}
 
 void DemoModeDetector::InitDetection() {
   if (base::CommandLine::ForCurrentProcess()->HasSwitch(
@@ -43,6 +54,14 @@ void DemoModeDetector::InitDetection() {
           switches::kDerelictDetectionTimeout) ||
       base::CommandLine::ForCurrentProcess()->HasSwitch(
           switches::kDerelictIdleTimeout);
+
+  // Devices in retail won't be in dev mode, and DUTs (devices under test) often
+  // sit unused at OOBE for a while.
+  if (base::CommandLine::ForCurrentProcess()->HasSwitch(
+          switches::kSystemDevMode) &&
+      !has_derelict_switch) {
+    return;
+  }
 
   if (base::SysInfo::IsRunningOnChromeOS() && !has_derelict_switch) {
     std::string track;
@@ -66,8 +85,9 @@ void DemoModeDetector::StopDetection() {
 
 void DemoModeDetector::StartIdleDetection() {
   if (!idle_detector_) {
-    idle_detector_.reset(new IdleDetector(
-        base::Bind(&DemoModeDetector::OnIdle, weak_ptr_factory_.GetWeakPtr())));
+    auto callback = base::BindRepeating(&DemoModeDetector::OnIdle,
+                                        weak_ptr_factory_.GetWeakPtr());
+    idle_detector_ = std::make_unique<IdleDetector>(callback, tick_clock_);
   }
   idle_detector_->Start(derelict_idle_timeout_);
 }
@@ -107,33 +127,37 @@ void DemoModeDetector::SetupTimeouts() {
       base::TimeDelta::FromSeconds(prefs->GetInt64(prefs::kTimeOnOobe));
 
   int derelict_detection_timeout;
-  if (!cmdline->HasSwitch(switches::kDerelictDetectionTimeout) ||
-      !base::StringToInt(
+  if (cmdline->HasSwitch(switches::kDerelictDetectionTimeout) &&
+      base::StringToInt(
           cmdline->GetSwitchValueASCII(switches::kDerelictDetectionTimeout),
           &derelict_detection_timeout)) {
-    derelict_detection_timeout = kDerelectDetectionTimeoutSeconds;
+    derelict_detection_timeout_ =
+        base::TimeDelta::FromSeconds(derelict_detection_timeout);
+  } else {
+    derelict_detection_timeout_ = kDerelictDetectionTimeout;
   }
-  derelict_detection_timeout_ =
-      base::TimeDelta::FromSeconds(derelict_detection_timeout);
 
   int derelict_idle_timeout;
-  if (!cmdline->HasSwitch(switches::kDerelictIdleTimeout) ||
-      !base::StringToInt(
+  if (cmdline->HasSwitch(switches::kDerelictIdleTimeout) &&
+      base::StringToInt(
           cmdline->GetSwitchValueASCII(switches::kDerelictIdleTimeout),
           &derelict_idle_timeout)) {
-    derelict_idle_timeout = kDerelectIdleTimeoutSeconds;
+    derelict_idle_timeout_ =
+        base::TimeDelta::FromSeconds(derelict_idle_timeout);
+  } else {
+    derelict_idle_timeout_ = kDerelictIdleTimeout;
   }
-  derelict_idle_timeout_ = base::TimeDelta::FromSeconds(derelict_idle_timeout);
 
   int oobe_timer_update_interval;
-  if (!cmdline->HasSwitch(switches::kOobeTimerInterval) ||
-      !base::StringToInt(
+  if (cmdline->HasSwitch(switches::kOobeTimerInterval) &&
+      base::StringToInt(
           cmdline->GetSwitchValueASCII(switches::kOobeTimerInterval),
           &oobe_timer_update_interval)) {
-    oobe_timer_update_interval = kOobeTimerUpdateIntervalSeconds;
+    oobe_timer_update_interval_ =
+        base::TimeDelta::FromSeconds(oobe_timer_update_interval);
+  } else {
+    oobe_timer_update_interval_ = kOobeTimerUpdateInterval;
   }
-  oobe_timer_update_interval_ =
-      base::TimeDelta::FromSeconds(oobe_timer_update_interval);
 
   // In case we'd be derelict before our timer is set to trigger, reduce
   // the interval so we check again when we're scheduled to go derelict.

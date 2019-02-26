@@ -4,6 +4,7 @@
 
 package org.chromium.chrome.browser.customtabs.dynamicmodule;
 
+import android.os.Bundle;
 import android.os.RemoteException;
 
 /**
@@ -56,6 +57,19 @@ public class ModuleEntryPoint {
     public void onDestroy() {
         try {
             mEntryPoint.onDestroy();
+        } catch (RemoteException e) {
+            assert false;
+        }
+    }
+
+
+    /**
+     * Introduced in API version 6.
+     */
+    public void onBundleReceived(Bundle bundle) {
+        if (getModuleVersion() < 6) return;
+        try {
+            mEntryPoint.onBundleReceived(ObjectWrapper.wrap(bundle));
         } catch (RemoteException e) {
             assert false;
         }

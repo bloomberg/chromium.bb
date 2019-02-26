@@ -9,8 +9,9 @@
 
 #include <iterator>
 #include <map>
+#include <memory>
 
-#include "base/memory/linked_ptr.h"
+#include "base/logging.h"
 
 namespace extensions {
 
@@ -29,7 +30,8 @@ class BaseSetOperators {
  public:
   typedef typename BaseSetOperatorsTraits<T>::ElementType ElementType;
   typedef typename BaseSetOperatorsTraits<T>::ElementIDType ElementIDType;
-  typedef std::map<ElementIDType, linked_ptr<ElementType> > Map;
+
+  using Map = std::map<ElementIDType, std::unique_ptr<ElementType>>;
 
   class const_iterator :
     public std::iterator<std::input_iterator_tag, const ElementType*> {
@@ -74,13 +76,11 @@ class BaseSetOperators {
                   "U ptr must implicitly convert to T ptr");
   }
 
-  explicit BaseSetOperators(const T& set) { this->operator=(set); }
+  explicit BaseSetOperators(const BaseSetOperators<T>& other) { Assign(other); }
 
   ~BaseSetOperators() {}
 
-  T& operator=(const T& rhs) {
-    return Assign(rhs);
-  }
+  T& operator=(const BaseSetOperators<T>& rhs) { return Assign(rhs); }
 
   bool operator==(const T& rhs) const {
     return Equal(rhs);
@@ -90,7 +90,8 @@ class BaseSetOperators {
     return !operator==(rhs);
   }
 
-  T& Assign(const T& rhs) {
+  T& Assign(const BaseSetOperators<T>& rhs) {
+    map_.clear();
     const_iterator it = rhs.begin();
     const const_iterator end = rhs.end();
     while (it != end) {
@@ -157,9 +158,9 @@ class BaseSetOperators {
       } else if (it1->id() > it2->id()) {
         ++it2;
       } else {
-        ElementType* p = it1->Diff(*it2);
+        std::unique_ptr<ElementType> p = it1->Diff(*it2);
         if (p)
-          set3->insert(p);
+          set3->insert(std::move(p));
         ++it1;
         ++it2;
       }
@@ -186,9 +187,9 @@ class BaseSetOperators {
       } else if (it1->id() > it2->id()) {
         ++it2;
       } else {
-        ElementType* p = it1->Intersect(*it2);
+        std::unique_ptr<ElementType> p = it1->Intersect(*it2);
         if (p)
-          set3->insert(p);
+          set3->insert(std::move(p));
         ++it1;
         ++it2;
       }
@@ -233,44 +234,26 @@ class BaseSetOperators {
     }
   }
 
-  const_iterator begin() const {
-    return const_iterator(map().begin());
+  const_iterator begin() const { return const_iterator(map_.begin()); }
+
+  const_iterator end() const { return map_.end(); }
+
+  const_iterator find(ElementIDType id) const { return map_.find(id); }
+
+  size_t count(ElementIDType id) const { return map_.count(id); }
+
+  bool empty() const { return map_.empty(); }
+
+  size_t erase(ElementIDType id) { return map_.erase(id); }
+
+  void insert(std::unique_ptr<ElementType> item) {
+    ElementIDType id = item->id();
+    map_[id] = std::move(item);
   }
 
-  const_iterator end() const {
-    return map().end();
-  }
-
-  const_iterator find(ElementIDType id) const {
-    return map().find(id);
-  }
-
-  size_t count(ElementIDType id) const {
-    return map().count(id);
-  }
-
-  bool empty() const {
-    return map().empty();
-  }
-
-  size_t erase(ElementIDType id) {
-    return map().erase(id);
-  }
-
-  // Take ownership and insert |item| into the set.
-  void insert(ElementType* item) {
-    map_[item->id()].reset(item);
-  }
-
-  size_t size() const {
-    return map().size();
-  }
+  size_t size() const { return map_.size(); }
 
   const Map& map() const {
-    return map_;
-  }
-
-  Map& map() {
     return map_;
   }
 

@@ -332,28 +332,20 @@ bool DownloadItemModel::ShouldNotifyUI() const {
   if (download_->IsTransient())
     return false;
 
-  Profile* profile = Profile::FromBrowserContext(
-      content::DownloadItemUtils::GetBrowserContext(download_));
-  DownloadCoreService* download_core_service =
-      DownloadCoreServiceFactory::GetForBrowserContext(profile);
-  DownloadHistory* download_history =
-      (download_core_service ? download_core_service->GetDownloadHistory()
-                             : nullptr);
-
-  // The browser is only interested in new downloads. Ones that were restored
-  // from history are not displayed on the shelf. The downloads page
-  // independently listens for new downloads when it is active. Note that the UI
-  // will be notified of downloads even if they are not meant to be displayed on
-  // the shelf (i.e. ShouldShowInShelf() returns false). This is because:
-  // *  The shelf isn't the only UI. E.g. on Android, the UI is the system
+  // The browser is only interested in new active downloads. History downloads
+  // that are completed or interrupted are not displayed on the shelf. The
+  // downloads page independently listens for new downloads when it is active.
+  // Note that the UI will be notified of downloads even if they are not meant
+  // to be displayed on the shelf (i.e. ShouldShowInShelf() returns false). This
+  // is because: *  The shelf isn't the only UI. E.g. on Android, the UI is the
+  // system
   //    DownloadManager.
   // *  There are other UI activities that need to be performed. E.g. if the
   //    download was initiated from a new tab, then that tab should be closed.
-  //
-  // TODO(asanka): If an interrupted download is restored from history and is
-  // resumed, then ideally the UI should be notified.
-  return !download_history ||
-         !download_history->WasRestoredFromHistory(download_);
+  return download_->GetDownloadCreationType() !=
+             download::DownloadItem::DownloadCreationType::
+                 TYPE_HISTORY_IMPORT ||
+         download_->GetState() == download::DownloadItem::IN_PROGRESS;
 }
 
 bool DownloadItemModel::WasUINotified() const {

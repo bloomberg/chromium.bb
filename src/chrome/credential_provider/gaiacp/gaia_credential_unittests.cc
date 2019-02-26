@@ -20,10 +20,10 @@ class GcpGaiaCredentialTest : public ::testing::Test {
 };
 
 TEST_F(GcpGaiaCredentialTest, FinishAuthentication) {
+  USES_CONVERSION;
   CComPtr<IGaiaCredential> cred;
   ASSERT_EQ(S_OK, CComCreator<CComObject<CGaiaCredential>>::CreateInstance(
                       nullptr, IID_IGaiaCredential, (void**)&cred));
-  ASSERT_TRUE(!!cred);
 
   CComBSTR sid;
   CComBSTR error;
@@ -31,14 +31,48 @@ TEST_F(GcpGaiaCredentialTest, FinishAuthentication) {
                                              CComBSTR(W2COLE(L"password")),
                                              CComBSTR(W2COLE(L"Full Name")),
                                              &sid, &error));
-  sid.Empty();
-  error.Empty();
+}
 
-  // Finishing with the same username should fail.
-  // TODO(rogerta): Will want to allow this at some point.
+TEST_F(GcpGaiaCredentialTest, FinishAuthentication_SamePassword) {
+  USES_CONVERSION;
+  CComPtr<IGaiaCredential> cred;
+  ASSERT_EQ(S_OK, CComCreator<CComObject<CGaiaCredential>>::CreateInstance(
+                      nullptr, IID_IGaiaCredential, (void**)&cred));
+
+  CComBSTR sid;
+  CComBSTR error;
+  ASSERT_EQ(S_OK, cred->FinishAuthentication(CComBSTR(W2COLE(L"username")),
+                                             CComBSTR(W2COLE(L"password")),
+                                             CComBSTR(W2COLE(L"Full Name")),
+                                             &sid, &error));
+
+  // Finishing with the same username+password should succeeded.
+  CComBSTR sid2;
+  CComBSTR error2;
+  ASSERT_EQ(S_OK, cred->FinishAuthentication(CComBSTR(W2COLE(L"username")),
+                                             CComBSTR(W2COLE(L"password")),
+                                             CComBSTR(W2COLE(L"Full Name")),
+                                             &sid2, &error2));
+  ASSERT_EQ(sid, sid2);
+}
+
+TEST_F(GcpGaiaCredentialTest, FinishAuthentication_DiffPassword) {
+  USES_CONVERSION;
+  CComPtr<IGaiaCredential> cred;
+  ASSERT_EQ(S_OK, CComCreator<CComObject<CGaiaCredential>>::CreateInstance(
+                      nullptr, IID_IGaiaCredential, (void**)&cred));
+
+  CComBSTR sid;
+  CComBSTR error;
+  ASSERT_EQ(S_OK, cred->FinishAuthentication(CComBSTR(W2COLE(L"username")),
+                                             CComBSTR(W2COLE(L"password")),
+                                             CComBSTR(W2COLE(L"Full Name")),
+                                             &sid, &error));
+
+  // Finishing with the same username but different password should fail.
   ASSERT_EQ(HRESULT_FROM_WIN32(NERR_UserExists),
             cred->FinishAuthentication(
-                CComBSTR(W2COLE(L"username")), CComBSTR(W2COLE(L"password")),
+                CComBSTR(W2COLE(L"username")), CComBSTR(W2COLE(L"password2")),
                 CComBSTR(W2COLE(L"Full Name")), &sid, &error));
 }
 

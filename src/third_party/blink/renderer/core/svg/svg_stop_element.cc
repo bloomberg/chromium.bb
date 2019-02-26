@@ -26,9 +26,9 @@
 namespace blink {
 
 inline SVGStopElement::SVGStopElement(Document& document)
-    : SVGElement(SVGNames::stopTag, document),
+    : SVGElement(svg_names::kStopTag, document),
       offset_(SVGAnimatedNumber::Create(this,
-                                        SVGNames::offsetAttr,
+                                        svg_names::kOffsetAttr,
                                         SVGNumberAcceptPercentage::Create())) {
   AddToPropertyMap(offset_);
 
@@ -51,13 +51,13 @@ void InvalidateInstancesAndAncestorResources(SVGStopElement* stop_element) {
 
   Element* parent = stop_element->parentElement();
   if (auto* gradient = ToSVGGradientElementOrNull(parent))
-    gradient->InvalidateGradient(LayoutInvalidationReason::kChildChanged);
+    gradient->InvalidateGradient(layout_invalidation_reason::kChildChanged);
 }
 
 }  // namespace
 
 void SVGStopElement::SvgAttributeChanged(const QualifiedName& attr_name) {
-  if (attr_name == SVGNames::offsetAttr) {
+  if (attr_name == svg_names::kOffsetAttr) {
     InvalidateInstancesAndAncestorResources(this);
     return;
   }

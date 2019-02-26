@@ -406,6 +406,7 @@ class CC_EXPORT ScrollTree final : public PropertyTree<ScrollNode> {
                               const gfx::ScrollOffset& scroll_offset,
                               LayerTreeImpl* layer_tree_impl);
   gfx::Size container_bounds(int scroll_node_id) const;
+  gfx::SizeF scroll_bounds(int scroll_node_id) const;
   ScrollNode* CurrentlyScrollingNode();
   const ScrollNode* CurrentlyScrollingNode() const;
 #if DCHECK_IS_ON()
@@ -437,7 +438,8 @@ class CC_EXPORT ScrollTree final : public PropertyTree<ScrollNode> {
   // reported to the main thread during the main frame. As such, should only be
   // called on the impl thread side PropertyTrees.
   void CollectScrollDeltas(ScrollAndScaleSet* scroll_info,
-                           ElementId inner_viewport_scroll_element_id);
+                           ElementId inner_viewport_scroll_element_id,
+                           bool use_fractional_deltas);
 
   // Applies deltas sent in the previous main frame onto the impl thread state.
   // Should only be called on the impl thread side PropertyTrees.
@@ -500,7 +502,8 @@ class CC_EXPORT ScrollTree final : public PropertyTree<ScrollNode> {
   SyncedScrollOffsetMap synced_scroll_offset_map_;
 
   SyncedScrollOffset* GetOrCreateSyncedScrollOffset(ElementId id);
-  gfx::ScrollOffset PullDeltaForMainThread(SyncedScrollOffset* scroll_offset);
+  gfx::ScrollOffset PullDeltaForMainThread(SyncedScrollOffset* scroll_offset,
+                                           bool use_fractional_deltas);
 };
 
 struct AnimationScaleData {

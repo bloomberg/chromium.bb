@@ -26,7 +26,6 @@
 
 #include "fxbarcode/datamatrix/BC_Encoder.h"
 #include "fxbarcode/datamatrix/BC_SymbolInfo.h"
-#include "fxbarcode/utils.h"
 
 namespace {
 
@@ -100,92 +99,25 @@ const uint8_t* const FACTORS[16] = {
     FACTORS_6,  FACTORS_7,  FACTORS_8,  FACTORS_9, FACTORS_10, FACTORS_11,
     FACTORS_12, FACTORS_13, FACTORS_14, FACTORS_15};
 
-}  // namespace
+constexpr int32_t MODULO_VALUE = 0x12D;
 
-int32_t CBC_ErrorCorrection::LOG[256] = {0};
-int32_t CBC_ErrorCorrection::ALOG[256] = {0};
+int32_t LOG[256] = {0};
+int32_t ALOG[256] = {0};
 
-void CBC_ErrorCorrection::Initialize() {
-  int32_t p = 1;
-  for (int32_t i = 0; i < 255; i++) {
-    ALOG[i] = p;
-    LOG[p] = i;
-    p <<= 1;
-    if (p >= 256) {
-      p ^= MODULO_VALUE;
-    }
-  }
-}
-void CBC_ErrorCorrection::Finalize() {}
-CBC_ErrorCorrection::CBC_ErrorCorrection() {}
-CBC_ErrorCorrection::~CBC_ErrorCorrection() {}
-WideString CBC_ErrorCorrection::encodeECC200(WideString codewords,
-                                             CBC_SymbolInfo* symbolInfo,
-                                             int32_t& e) {
-  if (pdfium::base::checked_cast<int32_t>(codewords.GetLength()) !=
-      symbolInfo->dataCapacity()) {
-    e = BCExceptionIllegalArgument;
-    return WideString();
-  }
-  WideString sb;
-  sb += codewords;
-  int32_t blockCount = symbolInfo->getInterleavedBlockCount();
-  if (blockCount == 1) {
-    WideString ecc = createECCBlock(codewords, symbolInfo->errorCodewords(), e);
-    if (e != BCExceptionNO)
-      return WideString();
-    sb += ecc;
-  } else {
-    std::vector<int32_t> dataSizes(blockCount);
-    std::vector<int32_t> errorSizes(blockCount);
-    std::vector<int32_t> startPos(blockCount);
-    for (int32_t i = 0; i < blockCount; i++) {
-      dataSizes[i] = symbolInfo->getDataLengthForInterleavedBlock(i + 1);
-      errorSizes[i] = symbolInfo->getErrorLengthForInterleavedBlock(i + 1);
-      startPos[i] = 0;
-      if (i > 0) {
-        startPos[i] = startPos[i - 1] + dataSizes[i];
-      }
-    }
-    for (int32_t block = 0; block < blockCount; block++) {
-      WideString temp;
-      for (int32_t d = block; d < symbolInfo->dataCapacity(); d += blockCount) {
-        temp += (wchar_t)codewords[d];
-      }
-      WideString ecc = createECCBlock(temp, errorSizes[block], e);
-      if (e != BCExceptionNO)
-        return WideString();
-      int32_t pos = 0;
-      for (int32_t l = block; l < errorSizes[block] * blockCount;
-           l += blockCount) {
-        sb.SetAt(symbolInfo->dataCapacity() + l, ecc[pos++]);
-      }
-    }
-  }
-  return sb;
-}
-WideString CBC_ErrorCorrection::createECCBlock(WideString codewords,
-                                               int32_t numECWords,
-                                               int32_t& e) {
-  return createECCBlock(codewords, 0, codewords.GetLength(), numECWords, e);
-}
-WideString CBC_ErrorCorrection::createECCBlock(WideString codewords,
-                                               int32_t start,
-                                               int32_t len,
-                                               int32_t numECWords,
-                                               int32_t& e) {
+Optional<WideString> CreateECCBlock(const WideString& codewords,
+                                    int32_t numECWords) {
+  const int32_t len = codewords.GetLength();
   static const size_t kFactorTableNum = sizeof(FACTOR_SETS) / sizeof(int32_t);
   size_t table = 0;
   while (table < kFactorTableNum && FACTOR_SETS[table] != numECWords)
     table++;
 
-  if (table >= kFactorTableNum) {
-    e = BCExceptionIllegalArgument;
-    return WideString();
-  }
+  if (table >= kFactorTableNum)
+    return {};
+
   uint16_t* ecc = FX_Alloc(uint16_t, numECWords);
-  for (int32_t l = start; l < start + len; l++) {
-    uint16_t m = ecc[numECWords - 1] ^ codewords[l];
+  for (int32_t i = 0; i < 0 + len; i++) {
+    uint16_t m = ecc[numECWords - 1] ^ codewords[i];
     for (int32_t k = numECWords - 1; k > 0; k--) {
       if (m != 0 && FACTORS[table][k] != 0) {
         ecc[k] = (uint16_t)(ecc[k - 1] ^
@@ -206,4 +138,64 @@ WideString CBC_ErrorCorrection::createECCBlock(WideString codewords,
   }
   FX_Free(ecc);
   return strecc;
+}
+}  // namespace
+
+void CBC_ErrorCorrection::Initialize() {
+  int32_t p = 1;
+  for (int32_t i = 0; i < 255; i++) {
+    ALOG[i] = p;
+    LOG[p] = i;
+    p <<= 1;
+    if (p >= 256) {
+      p ^= MODULO_VALUE;
+    }
+  }
+}
+void CBC_ErrorCorrection::Finalize() {}
+
+Optional<WideString> CBC_ErrorCorrection::EncodeECC200(
+    const WideString& codewords,
+    const CBC_SymbolInfo* symbolInfo) {
+  if (pdfium::base::checked_cast<int32_t>(codewords.GetLength()) !=
+      symbolInfo->dataCapacity()) {
+    return {};
+  }
+  WideString sb;
+  sb += codewords;
+  int32_t blockCount = symbolInfo->getInterleavedBlockCount();
+  if (blockCount == 1) {
+    Optional<WideString> ecc =
+        CreateECCBlock(codewords, symbolInfo->errorCodewords());
+    if (!ecc.has_value())
+      return WideString();
+    sb += ecc.value();
+  } else {
+    std::vector<int32_t> dataSizes(blockCount);
+    std::vector<int32_t> errorSizes(blockCount);
+    std::vector<int32_t> startPos(blockCount);
+    for (int32_t i = 0; i < blockCount; i++) {
+      dataSizes[i] = symbolInfo->getDataLengthForInterleavedBlock(i + 1);
+      errorSizes[i] = symbolInfo->getErrorLengthForInterleavedBlock(i + 1);
+      startPos[i] = 0;
+      if (i > 0) {
+        startPos[i] = startPos[i - 1] + dataSizes[i];
+      }
+    }
+    for (int32_t block = 0; block < blockCount; block++) {
+      WideString temp;
+      for (int32_t d = block; d < symbolInfo->dataCapacity(); d += blockCount) {
+        temp += (wchar_t)codewords[d];
+      }
+      Optional<WideString> ecc = CreateECCBlock(temp, errorSizes[block]);
+      if (!ecc.has_value())
+        return WideString();
+      int32_t pos = 0;
+      for (int32_t l = block; l < errorSizes[block] * blockCount;
+           l += blockCount) {
+        sb.SetAt(symbolInfo->dataCapacity() + l, ecc.value()[pos++]);
+      }
+    }
+  }
+  return sb;
 }

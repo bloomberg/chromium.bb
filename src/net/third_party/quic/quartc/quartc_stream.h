@@ -49,14 +49,23 @@ class QUIC_EXPORT_PRIVATE QuartcStream : public QuicStream {
 
   // Whether the stream should be cancelled instead of retransmitted on loss.
   // If set to true, the stream will reset itself instead of retransmitting lost
-  // stream frames.  Defaults to false.
+  // stream frames.  Defaults to false.  Setting it to true is equivalent to
+  // setting |max_frame_retransmission_count| to zero.
   bool cancel_on_loss();
   void set_cancel_on_loss(bool cancel_on_loss);
 
-  // If true, stream data will only be delivered after the FIN bit arrives and
-  // all data has been received.
-  bool deliver_on_complete();
-  void set_deliver_on_complete(bool deliver_on_complete);
+  // Maximum number of stream frames which may be retransmitted.  Up to this
+  // number of stream frames may be retransmitted.  If any stream frames in
+  // excess of this amount would be retransmitted, the stream will reset itself.
+  // Setting it to zero disables retransmissions.
+  //
+  // Ideally, the stream would support a maximum retransmission count per frame,
+  // allowing each frame to be retransmitted up to N times.  However, this
+  // requires complex bookkeeping (tracking retransmission count on a per-frame
+  // basis).  This feature provides a simple way to limit retransmissions on
+  // streams that are expected to fit within one frame (eg. small messages).
+  int max_frame_retransmission_count() const;
+  void set_max_frame_retransmission_count(int max_frame_retransmission_count);
 
   QuicByteCount BytesPendingRetransmission();
 
@@ -71,13 +80,16 @@ class QUIC_EXPORT_PRIVATE QuartcStream : public QuicStream {
    public:
     virtual ~Delegate() {}
 
-    // Called when the stream receives data.  Called with |size| == 0 after all
-    // stream data has been delivered (once the stream receives a FIN bit).
-    // Note that the same packet may include both data and a FIN bit, causing
-    // this method to be called twice.
-    virtual void OnReceived(QuartcStream* stream,
-                            const char* data,
-                            size_t size) = 0;
+    // Called when the stream receives data. |iov| is a pointer to the first of
+    // |iov_length| readable regions. |iov| points to readable data within
+    // |stream|'s sequencer buffer. QUIC may modify or delete this data after
+    // the application consumes it. |fin| indicates the end of stream data.
+    // Returns the number of bytes consumed. May return 0 if the delegate is
+    // unable to consume any bytes at this time.
+    virtual size_t OnReceived(QuartcStream* stream,
+                              iovec* iov,
+                              size_t iov_length,
+                              bool fin) = 0;
 
     // Called when the stream is closed, either locally or by the remote
     // endpoint.  Streams close when (a) fin bits are both sent and received,
@@ -96,11 +108,11 @@ class QUIC_EXPORT_PRIVATE QuartcStream : public QuicStream {
  private:
   Delegate* delegate_ = nullptr;
 
-  // Whether the stream should cancel itself instead of retransmitting frames.
-  bool cancel_on_loss_ = false;
+  // Maximum number of frames which may be retransmitted on this stream.
+  int max_frame_retransmission_count_ = std::numeric_limits<int>::max();
 
-  // Whether stream data should only be delivered after all data is received.
-  bool deliver_on_complete_ = true;
+  // Total number of stream frames detected as lost.
+  int total_frames_lost_ = 0;
 };
 
 }  // namespace quic

@@ -19,6 +19,7 @@ class InfoCollectionTest(gpu_integration_test.GpuIntegrationTest):
 
   @classmethod
   def AddCommandlineArgs(cls, parser):
+    super(InfoCollectionTest, cls).AddCommandlineArgs(parser)
     parser.add_option('--expected-device-id',
         help='The expected device id')
     parser.add_option('--expected-vendor-id',

@@ -192,6 +192,11 @@ chrome.autofillPrivate.maskCreditCard = function(guid) {};
 chrome.autofillPrivate.migrateCreditCards = function() {};
 
 /**
+ * Logs that the server cards edit link was clicked.
+ */
+chrome.autofillPrivate.logServerCardLinkClicked = function() {};
+
+/**
  * Fired when the address list has changed, meaning that an entry has been
  * added, removed, or changed. |entries| The updated list of entries.
  * @type {!ChromeEvent}

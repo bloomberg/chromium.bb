@@ -34,6 +34,16 @@ struct CORE_EXPORT
     return result;
   }
 
+  static Vector<mojo::ScopedMessagePipeHandle> stream_channels(
+      blink::BlinkTransferableMessage& input) {
+    Vector<mojo::ScopedMessagePipeHandle> result;
+    auto& stream_channels = input.message->GetStreamChannels();
+    result.ReserveInitialCapacity(stream_channels.size());
+    for (const auto& port : stream_channels)
+      result.push_back(port.ReleaseHandle());
+    return result;
+  }
+
   static const blink::SerializedScriptValue::ArrayBufferContentsArray&
   array_buffer_contents_array(const blink::BlinkCloneableMessage& input) {
     return input.message->GetArrayBufferContentsArray();

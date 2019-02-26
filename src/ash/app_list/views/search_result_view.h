@@ -113,6 +113,7 @@ class APP_LIST_EXPORT SearchResultView
   void OnIsInstallingChanged() override;
   void OnPercentDownloadedChanged() override;
   void OnItemInstalled() override;
+  void OnResultDestroying() override;
 
   void SetIconImage(const gfx::ImageSkia& source,
                     views::ImageView* const icon,

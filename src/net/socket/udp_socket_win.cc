@@ -13,6 +13,7 @@
 #include "base/metrics/histogram_functions.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/rand_util.h"
+#include "base/task/post_task.h"
 #include "net/base/io_buffer.h"
 #include "net/base/ip_address.h"
 #include "net/base/ip_endpoint.h"
@@ -167,7 +168,7 @@ void UDPSocketWin::Core::WriteDelegate::OnObjectSignaled(HANDLE object) {
 }
 //-----------------------------------------------------------------------------
 
-QwaveAPI::QwaveAPI() : qwave_supported_(false) {
+QwaveApi::QwaveApi() : qwave_supported_(false) {
   HMODULE qwave = LoadLibrary(L"qwave.dll");
   if (!qwave)
     return;
@@ -188,59 +189,55 @@ QwaveAPI::QwaveAPI() : qwave_supported_(false) {
   }
 }
 
-QwaveAPI& QwaveAPI::Get() {
-  static base::LazyInstance<QwaveAPI>::Leaky lazy_qwave =
-    LAZY_INSTANCE_INITIALIZER;
-  return lazy_qwave.Get();
+QwaveApi* QwaveApi::GetDefault() {
+  static base::LazyInstance<QwaveApi>::Leaky lazy_qwave =
+      LAZY_INSTANCE_INITIALIZER;
+  return lazy_qwave.Pointer();
 }
 
-bool QwaveAPI::qwave_supported() const {
+bool QwaveApi::qwave_supported() const {
   return qwave_supported_;
 }
-BOOL QwaveAPI::CreateHandle(PQOS_VERSION version, PHANDLE handle) {
+
+void QwaveApi::OnFatalError() {
+  // Disable everything moving forward.
+  qwave_supported_ = false;
+}
+
+BOOL QwaveApi::CreateHandle(PQOS_VERSION version, PHANDLE handle) {
   return create_handle_func_(version, handle);
 }
-BOOL QwaveAPI::CloseHandle(HANDLE handle) {
+
+BOOL QwaveApi::CloseHandle(HANDLE handle) {
   return close_handle_func_(handle);
 }
 
-BOOL QwaveAPI::AddSocketToFlow(HANDLE handle,
+BOOL QwaveApi::AddSocketToFlow(HANDLE handle,
                                SOCKET socket,
                                PSOCKADDR addr,
                                QOS_TRAFFIC_TYPE traffic_type,
                                DWORD flags,
                                PQOS_FLOWID flow_id) {
-  return add_socket_to_flow_func_(handle,
-                                  socket,
-                                  addr,
-                                  traffic_type,
-                                  flags,
+  return add_socket_to_flow_func_(handle, socket, addr, traffic_type, flags,
                                   flow_id);
 }
 
-BOOL QwaveAPI::RemoveSocketFromFlow(HANDLE handle,
+BOOL QwaveApi::RemoveSocketFromFlow(HANDLE handle,
                                     SOCKET socket,
                                     QOS_FLOWID flow_id,
                                     DWORD reserved) {
   return remove_socket_from_flow_func_(handle, socket, flow_id, reserved);
 }
 
-BOOL QwaveAPI::SetFlow(HANDLE handle,
+BOOL QwaveApi::SetFlow(HANDLE handle,
                        QOS_FLOWID flow_id,
                        QOS_SET_FLOW op,
                        ULONG size,
                        PVOID data,
                        DWORD reserved,
                        LPOVERLAPPED overlapped) {
-  return set_flow_func_(handle,
-                        flow_id,
-                        op,
-                        size,
-                        data,
-                        reserved,
-                        overlapped);
+  return set_flow_func_(handle, flow_id, op, size, data, reserved, overlapped);
 }
-
 
 //-----------------------------------------------------------------------------
 
@@ -259,7 +256,6 @@ UDPSocketWin::UDPSocketWin(DatagramSocket::BindType bind_type,
       write_iobuffer_len_(0),
       recv_from_address_(nullptr),
       net_log_(NetLogWithSource::Make(net_log, NetLogSourceType::UDP_SOCKET)),
-      qos_handle_(nullptr),
       event_pending_(this) {
   EnsureWinsockInit();
   net_log_.BeginEvent(NetLogEventType::SOCKET_ALIVE,
@@ -295,11 +291,8 @@ void UDPSocketWin::Close() {
   if (socket_ == INVALID_SOCKET)
     return;
 
-  if (qos_handle_) {
-    GetQwaveAPI().CloseHandle(qos_handle_);
-    dscp_manager_ = nullptr;
-    qos_handle_ = NULL;
-  }
+  // Remove socket_ from the QoS subsystem before we invalidate it.
+  dscp_manager_ = nullptr;
 
   // Zero out any pending read/write callback state.
   read_callback_.Reset();
@@ -598,6 +591,13 @@ int UDPSocketWin::SetBroadcast(bool broadcast) {
   int rv = setsockopt(socket_, SOL_SOCKET, SO_BROADCAST,
                       reinterpret_cast<const char*>(&value), sizeof(value));
   return rv == 0 ? OK : MapSystemError(WSAGetLastError());
+}
+
+int UDPSocketWin::AllowAddressSharingForMulticast() {
+  // When proper multicast groups are used, Windows further defines the address
+  // resuse option (SO_REUSEADDR) to ensure all listening sockets can receive
+  // all incoming messages for the multicast group.
+  return AllowAddressReuse();
 }
 
 void UDPSocketWin::DoReadCallback(int rv) {
@@ -1015,8 +1015,8 @@ int UDPSocketWin::RandomBind(const IPAddress& address) {
   return DoBind(IPEndPoint(address, 0));
 }
 
-QwaveAPI& UDPSocketWin::GetQwaveAPI() {
-  return QwaveAPI::Get();
+QwaveApi* UDPSocketWin::GetQwaveApi() const {
+  return QwaveApi::GetDefault();
 }
 
 int UDPSocketWin::JoinGroup(const IPAddress& group_address) const {
@@ -1178,22 +1178,13 @@ int UDPSocketWin::SetDiffServCodePoint(DiffServCodePoint dscp) {
   if (!is_connected())
     return ERR_SOCKET_NOT_CONNECTED;
 
-  QwaveAPI& qos(GetQwaveAPI());
+  QwaveApi* api = GetQwaveApi();
 
-  if (!qos.qwave_supported())
+  if (!api->qwave_supported())
     return ERR_NOT_IMPLEMENTED;
 
-  if (!qos_handle_) {
-    QOS_VERSION version;
-    version.MajorVersion = 1;
-    version.MinorVersion = 0;
-    qos.CreateHandle(&version, &qos_handle_);
-    if (!qos_handle_)
-      return ERR_NOT_IMPLEMENTED;
-  }
-
   if (!dscp_manager_)
-    dscp_manager_ = std::make_unique<DscpManager>(qos, socket_, qos_handle_);
+    dscp_manager_ = std::make_unique<DscpManager>(api, socket_);
 
   dscp_manager_->Set(dscp);
   if (remote_address_)
@@ -1248,12 +1239,19 @@ DatagramBuffers UDPSocketWin::GetUnwrittenBuffers() {
   NOTIMPLEMENTED();
   return result;
 }
-DscpManager::DscpManager(QwaveAPI& qos, SOCKET socket, HANDLE qos_handle)
-    : qos_(qos), socket_(socket), qos_handle_(qos_handle) {}
+DscpManager::DscpManager(QwaveApi* api, SOCKET socket)
+    : api_(api), socket_(socket), weak_ptr_factory_(this) {
+  RequestHandle();
+}
 
 DscpManager::~DscpManager() {
+  if (!qos_handle_)
+    return;
+
   if (flow_id_ != 0)
-    qos_.RemoveSocketFromFlow(qos_handle_, NULL, flow_id_, 0);
+    api_->RemoveSocketFromFlow(qos_handle_, NULL, flow_id_, 0);
+
+  api_->CloseHandle(qos_handle_);
 }
 
 void DscpManager::Set(DiffServCodePoint dscp) {
@@ -1261,10 +1259,11 @@ void DscpManager::Set(DiffServCodePoint dscp) {
     return;
 
   dscp_value_ = dscp;
+
   // TODO(zstein): We could reuse the flow when the value changes
   // by calling QOSSetFlow with the new traffic type and dscp value.
-  if (flow_id_ != 0) {
-    qos_.RemoveSocketFromFlow(qos_handle_, NULL, flow_id_, 0);
+  if (flow_id_ != 0 && qos_handle_) {
+    api_->RemoveSocketFromFlow(qos_handle_, NULL, flow_id_, 0);
     configured_.clear();
     flow_id_ = 0;
   }
@@ -1276,6 +1275,12 @@ int DscpManager::PrepareForSend(const IPEndPoint& remote_address) {
     return OK;
   }
 
+  if (!api_->qwave_supported())
+    return ERR_NOT_IMPLEMENTED;
+
+  if (!qos_handle_)
+    return ERR_INVALID_HANDLE;  // The closest net error to try again later.
+
   if (configured_.find(remote_address) != configured_.end())
     return OK;
 
@@ -1283,7 +1288,7 @@ int DscpManager::PrepareForSend(const IPEndPoint& remote_address) {
   if (!remote_address.ToSockAddr(storage.addr, &storage.addr_len))
     return ERR_ADDRESS_INVALID;
 
-  // We won't try again if we get an error.
+  // We won't try this address again if we get an error.
   configured_.emplace(remote_address);
 
   // We don't need to call SetFlow if we already have a qos flow.
@@ -1291,14 +1296,18 @@ int DscpManager::PrepareForSend(const IPEndPoint& remote_address) {
 
   const QOS_TRAFFIC_TYPE traffic_type = DscpToTrafficType(dscp_value_);
 
-  if (!qos_.AddSocketToFlow(qos_handle_, socket_, storage.addr, traffic_type,
-                            QOS_NON_ADAPTIVE_FLOW, &flow_id_)) {
-    DWORD err = GetLastError();
+  if (!api_->AddSocketToFlow(qos_handle_, socket_, storage.addr, traffic_type,
+                             QOS_NON_ADAPTIVE_FLOW, &flow_id_)) {
+    DWORD err = ::GetLastError();
     if (err == ERROR_DEVICE_REINITIALIZATION_NEEDED) {
-      qos_.CloseHandle(qos_handle_);
+      // Reset. PrepareForSend is called for every packet.  Once RequestHandle
+      // completes asynchronously the next PrepareForSend call will re-register
+      // the address with the new QoS Handle.  In the meantime, sends will
+      // continue without DSCP.
+      RequestHandle();
+      configured_.clear();
       flow_id_ = 0;
-      qos_handle_ = 0;
-      dscp_value_ = DSCP_NO_CHANGE;
+      return ERR_INVALID_HANDLE;
     }
     return MapSystemError(err);
   }
@@ -1307,11 +1316,58 @@ int DscpManager::PrepareForSend(const IPEndPoint& remote_address) {
     DWORD buf = dscp_value_;
     // This requires admin rights, and may fail, if so we ignore it
     // as AddSocketToFlow should still do *approximately* the right thing.
-    qos_.SetFlow(qos_handle_, flow_id_, QOSSetOutgoingDSCPValue, sizeof(buf),
-                 &buf, 0, nullptr);
+    api_->SetFlow(qos_handle_, flow_id_, QOSSetOutgoingDSCPValue, sizeof(buf),
+                  &buf, 0, nullptr);
   }
 
   return OK;
+}
+
+void DscpManager::RequestHandle() {
+  if (handle_is_initializing_)
+    return;
+
+  if (qos_handle_) {
+    api_->CloseHandle(qos_handle_);
+    qos_handle_ = NULL;
+  }
+
+  handle_is_initializing_ = true;
+  base::PostTaskWithTraitsAndReplyWithResult(
+      FROM_HERE, {base::MayBlock()},
+      base::BindOnce(&DscpManager::DoCreateHandle, api_),
+      base::BindOnce(&DscpManager::OnHandleCreated, api_,
+                     weak_ptr_factory_.GetWeakPtr()));
+}
+
+HANDLE DscpManager::DoCreateHandle(QwaveApi* api) {
+  QOS_VERSION version;
+  version.MajorVersion = 1;
+  version.MinorVersion = 0;
+
+  HANDLE handle = NULL;
+
+  // No access to net_log_ so swallow any errors here.
+  api->CreateHandle(&version, &handle);
+  return handle;
+}
+
+void DscpManager::OnHandleCreated(QwaveApi* api,
+                                  base::WeakPtr<DscpManager> dscp_manager,
+                                  HANDLE handle) {
+  if (!handle)
+    api->OnFatalError();
+
+  if (!dscp_manager) {
+    api->CloseHandle(handle);
+    return;
+  }
+
+  DCHECK(dscp_manager->handle_is_initializing_);
+  DCHECK(!dscp_manager->qos_handle_);
+
+  dscp_manager->qos_handle_ = handle;
+  dscp_manager->handle_is_initializing_ = false;
 }
 
 }  // namespace net

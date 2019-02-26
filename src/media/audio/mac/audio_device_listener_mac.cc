@@ -133,6 +133,8 @@ AudioDeviceListenerMac::~AudioDeviceListenerMac() {
     RemovePropertyListener(default_input_listener_.get());
   if (addition_removal_listener_)
     RemovePropertyListener(addition_removal_listener_.get());
+  for (const auto& entry : source_listeners_)
+    RemovePropertyListener(entry.second.get());
 }
 
 bool AudioDeviceListenerMac::AddPropertyListener(

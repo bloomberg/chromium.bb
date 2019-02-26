@@ -24,27 +24,22 @@ SupportRequirement::SupportRequirement()
     : version(std::numeric_limits<GLuint>::max(), std::numeric_limits<GLuint>::max()),
       versionExtensions(),
       requiredExtensions()
-{
-}
+{}
 
 SupportRequirement::SupportRequirement(const SupportRequirement &other) = default;
 
-SupportRequirement::~SupportRequirement()
-{
-}
+SupportRequirement::~SupportRequirement() {}
 
-InternalFormat::InternalFormat() : texture(), filter(), textureAttachment(), renderbuffer()
-{
-}
+InternalFormat::InternalFormat() : texture(), filter(), textureAttachment(), renderbuffer() {}
 
 InternalFormat::InternalFormat(const InternalFormat &other) = default;
 
-InternalFormat::~InternalFormat()
-{
-}
+InternalFormat::~InternalFormat() {}
 
 // supported = version || vertexExt
-static inline SupportRequirement VersionOrExts(GLuint major, GLuint minor, const std::string &versionExt)
+static inline SupportRequirement VersionOrExts(GLuint major,
+                                               GLuint minor,
+                                               const std::string &versionExt)
 {
     SupportRequirement requirement;
     requirement.version.major = major;
@@ -69,7 +64,7 @@ static inline SupportRequirement ExtsOnly(const std::vector<std::string> &exts)
     requirement.version.major = 0;
     requirement.version.minor = 0;
     requirement.requiredExtensions.resize(exts.size());
-    for(size_t i = 0; i < exts.size(); i++)
+    for (size_t i = 0; i < exts.size(); i++)
     {
         angle::SplitStringAlongWhitespace(exts[i], &requirement.requiredExtensions[i]);
     }
@@ -128,12 +123,12 @@ static inline void InsertFormatMapping(InternalFormatInfoMap *map,
 {
     InternalFormatInfo formatInfo;
     formatInfo.glInfo.texture = desktopTexture;
-    formatInfo.glInfo.filter = desktopFilter;
+    formatInfo.glInfo.filter  = desktopFilter;
     // No difference spotted yet in Desktop GL texture attachment and renderbuffer capabilities
     formatInfo.glInfo.textureAttachment   = desktopRender;
     formatInfo.glInfo.renderbuffer        = desktopRender;
-    formatInfo.glesInfo.texture = esTexture;
-    formatInfo.glesInfo.filter = esFilter;
+    formatInfo.glesInfo.texture           = esTexture;
+    formatInfo.glesInfo.filter            = esFilter;
     formatInfo.glesInfo.textureAttachment = esTextureAttachment;
     formatInfo.glesInfo.renderbuffer      = esRenderbufferAttachment;
     map->insert(std::make_pair(internalFormat, formatInfo));
@@ -326,16 +321,20 @@ static const InternalFormatInfoMap &GetInternalFormatMap()
 
 const InternalFormat &GetInternalFormatInfo(GLenum internalFormat, StandardGL standard)
 {
-    const InternalFormatInfoMap &formatMap = GetInternalFormatMap();
+    const InternalFormatInfoMap &formatMap     = GetInternalFormatMap();
     InternalFormatInfoMap::const_iterator iter = formatMap.find(internalFormat);
     if (iter != formatMap.end())
     {
         const InternalFormatInfo &info = iter->second;
         switch (standard)
         {
-          case STANDARD_GL_ES:      return info.glesInfo;
-          case STANDARD_GL_DESKTOP: return info.glInfo;
-          default: UNREACHABLE();   break;
+            case STANDARD_GL_ES:
+                return info.glesInfo;
+            case STANDARD_GL_DESKTOP:
+                return info.glInfo;
+            default:
+                UNREACHABLE();
+                break;
         }
     }
 
@@ -414,6 +413,13 @@ static GLenum GetNativeInternalFormat(const FunctionsGL *functions,
             // Workaround Adreno driver not supporting unsized EXT_texture_rg formats
             result = internalFormat.sizedInternalFormat;
         }
+        else if (workarounds.unsizedsRGBReadPixelsDoesntTransform &&
+                 internalFormat.colorEncoding == GL_SRGB)
+        {
+            // Work around some Adreno driver bugs that don't read back SRGB data correctly when
+            // it's in unsized SRGB texture formats.
+            result = internalFormat.sizedInternalFormat;
+        }
     }
 
     return result;
@@ -451,6 +457,21 @@ static GLenum GetNativeFormat(const FunctionsGL *functions,
             if (format == GL_LUMINANCE_ALPHA)
             {
                 result = GL_RG;
+            }
+        }
+    }
+    else if (functions->isAtLeastGLES(gl::Version(3, 0)))
+    {
+        if (workarounds.unsizedsRGBReadPixelsDoesntTransform)
+        {
+            if (format == GL_SRGB)
+            {
+                result = GL_RGB;
+            }
+
+            if (format == GL_SRGB_ALPHA)
+            {
+                result = GL_RGBA;
             }
         }
     }
@@ -520,6 +541,16 @@ static GLenum GetNativeType(const FunctionsGL *functions,
                     result = GL_HALF_FLOAT;
                     break;
             }
+        }
+    }
+    else if (functions->standard == STANDARD_GL_ES && functions->version == gl::Version(2, 0))
+    {
+        // On ES2, convert GL_HALF_FLOAT to GL_HALF_FLOAT_OES as a convenience for internal
+        // functions. It should not be possible to get here by a normal glTexImage2D call.
+        if (type == GL_HALF_FLOAT)
+        {
+            ASSERT(functions->hasGLExtension("GL_OES_texture_half_float"));
+            result = GL_HALF_FLOAT_OES;
         }
     }
 
@@ -635,6 +666,6 @@ ReadPixelsFormat GetReadPixelsFormat(const FunctionsGL *functions,
     result.type   = GetNativeReadType(functions, workarounds, type);
     return result;
 }
-}
+}  // namespace nativegl
 
-}
+}  // namespace rx

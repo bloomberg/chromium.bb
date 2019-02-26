@@ -273,9 +273,9 @@ void ArcCertStoreBridge::OnGetNSSCertDatabaseForProfile(
   // Lists certificates from both public and private slots. It's OK as all
   // certificates are filtered by prefs (corporate usage).
   // If filtering logic is changed, make sure certificates slots are correct.
-  database->ListCerts(base::Bind(&ArcCertStoreBridge::OnCertificatesListed,
-                                 weak_ptr_factory_.GetWeakPtr(),
-                                 base::Passed(&callback)));
+  database->ListCerts(base::BindOnce(&ArcCertStoreBridge::OnCertificatesListed,
+                                     weak_ptr_factory_.GetWeakPtr(),
+                                     std::move(callback)));
 }
 
 void ArcCertStoreBridge::OnCertificatesListed(

@@ -116,8 +116,6 @@ class OwnerSettingsServiceChromeOSTest : public DeviceSettingsTestBase {
     ReloadDeviceSettings();
   }
 
-  void TearDown() override { DeviceSettingsTestBase::TearDown(); }
-
   void TestSingleSet(OwnerSettingsServiceChromeOS* service,
                      const std::string& setting,
                      const base::Value& in_value) {
@@ -207,8 +205,6 @@ class OwnerSettingsServiceChromeOSNoOwnerTest
     ASSERT_TRUE(service_);
     ASSERT_FALSE(service_->IsOwner());
   }
-
-  void TearDown() override { DeviceSettingsTestBase::TearDown(); }
 
  private:
   DISALLOW_COPY_AND_ASSIGN(OwnerSettingsServiceChromeOSNoOwnerTest);

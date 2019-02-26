@@ -25,6 +25,7 @@
 #include "fpdfsdk/cpdf_annotcontext.h"
 #include "fpdfsdk/cpdfsdk_helpers.h"
 #include "third_party/base/ptr_util.h"
+#include "third_party/base/stl_util.h"
 
 namespace {
 
@@ -120,28 +121,31 @@ static_assert(static_cast<int>(CPDF_Annot::AppearanceMode::Down) ==
 
 // These checks ensure the consistency of dictionary value types across core/
 // and public/.
-static_assert(static_cast<int>(CPDF_Object::Type::BOOLEAN) ==
+static_assert(static_cast<int>(CPDF_Object::Type::kBoolean) ==
                   FPDF_OBJECT_BOOLEAN,
-              "CPDF_Object::BOOLEAN value mismatch");
-static_assert(static_cast<int>(CPDF_Object::Type::NUMBER) == FPDF_OBJECT_NUMBER,
-              "CPDF_Object::NUMBER value mismatch");
-static_assert(static_cast<int>(CPDF_Object::Type::STRING) == FPDF_OBJECT_STRING,
-              "CPDF_Object::STRING value mismatch");
-static_assert(static_cast<int>(CPDF_Object::Type::NAME) == FPDF_OBJECT_NAME,
-              "CPDF_Object::NAME value mismatch");
-static_assert(static_cast<int>(CPDF_Object::Type::ARRAY) == FPDF_OBJECT_ARRAY,
-              "CPDF_Object::ARRAY value mismatch");
-static_assert(static_cast<int>(CPDF_Object::Type::DICTIONARY) ==
+              "CPDF_Object::kBoolean value mismatch");
+static_assert(static_cast<int>(CPDF_Object::Type::kNumber) ==
+                  FPDF_OBJECT_NUMBER,
+              "CPDF_Object::kNumber value mismatch");
+static_assert(static_cast<int>(CPDF_Object::Type::kString) ==
+                  FPDF_OBJECT_STRING,
+              "CPDF_Object::kString value mismatch");
+static_assert(static_cast<int>(CPDF_Object::Type::kName) == FPDF_OBJECT_NAME,
+              "CPDF_Object::kName value mismatch");
+static_assert(static_cast<int>(CPDF_Object::Type::kArray) == FPDF_OBJECT_ARRAY,
+              "CPDF_Object::kArray value mismatch");
+static_assert(static_cast<int>(CPDF_Object::Type::kDictionary) ==
                   FPDF_OBJECT_DICTIONARY,
-              "CPDF_Object::DICTIONARY value mismatch");
-static_assert(static_cast<int>(CPDF_Object::Type::STREAM) == FPDF_OBJECT_STREAM,
-              "CPDF_Object::STREAM value mismatch");
-static_assert(static_cast<int>(CPDF_Object::Type::NULLOBJ) ==
+              "CPDF_Object::kDictionary value mismatch");
+static_assert(static_cast<int>(CPDF_Object::Type::kStream) ==
+                  FPDF_OBJECT_STREAM,
+              "CPDF_Object::kStream value mismatch");
+static_assert(static_cast<int>(CPDF_Object::Type::kNullobj) ==
                   FPDF_OBJECT_NULLOBJ,
-              "CPDF_Object::NULLOBJ value mismatch");
-static_assert(static_cast<int>(CPDF_Object::Type::REFERENCE) ==
+              "CPDF_Object::kNullobj value mismatch");
+static_assert(static_cast<int>(CPDF_Object::Type::kReference) ==
                   FPDF_OBJECT_REFERENCE,
-              "CPDF_Object::REFERENCE value mismatch");
+              "CPDF_Object::kReference value mismatch");
 
 bool HasAPStream(CPDF_Dictionary* pAnnotDict) {
   return !!GetAnnotAP(pAnnotDict, CPDF_Annot::AppearanceMode::Normal);
@@ -221,8 +225,7 @@ FPDFPage_CreateAnnot(FPDF_PAGE page, FPDF_ANNOTATION_SUBTYPE subtype) {
   if (!pPage || !FPDFAnnot_IsSupportedSubtype(subtype))
     return nullptr;
 
-  auto pDict = pdfium::MakeUnique<CPDF_Dictionary>(
-      pPage->GetDocument()->GetByteStringPool());
+  auto pDict = pPage->GetDocument()->New<CPDF_Dictionary>();
   pDict->SetNewFor<CPDF_Name>("Type", "Annot");
   pDict->SetNewFor<CPDF_Name>("Subtype",
                               CPDF_Annot::AnnotSubtypeToString(
@@ -245,7 +248,7 @@ FPDF_EXPORT int FPDF_CALLCONV FPDFPage_GetAnnotCount(FPDF_PAGE page) {
     return 0;
 
   CPDF_Array* pAnnots = pPage->GetDict()->GetArrayFor("Annots");
-  return pAnnots ? pAnnots->GetCount() : 0;
+  return pAnnots ? pAnnots->size() : 0;
 }
 
 FPDF_EXPORT FPDF_ANNOTATION FPDF_CALLCONV FPDFPage_GetAnnot(FPDF_PAGE page,
@@ -255,7 +258,7 @@ FPDF_EXPORT FPDF_ANNOTATION FPDF_CALLCONV FPDFPage_GetAnnot(FPDF_PAGE page,
     return nullptr;
 
   CPDF_Array* pAnnots = pPage->GetDict()->GetArrayFor("Annots");
-  if (!pAnnots || static_cast<size_t>(index) >= pAnnots->GetCount())
+  if (!pAnnots || static_cast<size_t>(index) >= pAnnots->size())
     return nullptr;
 
   CPDF_Dictionary* pDict = ToDictionary(pAnnots->GetDirectObjectAt(index));
@@ -276,17 +279,18 @@ FPDF_EXPORT int FPDF_CALLCONV FPDFPage_GetAnnotIndex(FPDF_PAGE page,
   if (!pAnnots)
     return -1;
 
+  CPDF_ArrayLocker locker(pAnnots);
   CPDF_Dictionary* pDict = pAnnot->GetAnnotDict();
   auto it =
-      std::find_if(pAnnots->begin(), pAnnots->end(),
+      std::find_if(locker.begin(), locker.end(),
                    [pDict](const std::unique_ptr<CPDF_Object>& candidate) {
                      return candidate->GetDirect() == pDict;
                    });
 
-  if (it == pAnnots->end())
+  if (it == locker.end())
     return -1;
 
-  return it - pAnnots->begin();
+  return it - locker.begin();
 }
 
 FPDF_EXPORT void FPDF_CALLCONV FPDFPage_CloseAnnot(FPDF_ANNOTATION annot) {
@@ -300,7 +304,7 @@ FPDF_EXPORT FPDF_BOOL FPDF_CALLCONV FPDFPage_RemoveAnnot(FPDF_PAGE page,
     return false;
 
   CPDF_Array* pAnnots = pPage->GetDict()->GetArrayFor("Annots");
-  if (!pAnnots || static_cast<size_t>(index) >= pAnnots->GetCount())
+  if (!pAnnots || static_cast<size_t>(index) >= pAnnots->size())
     return false;
 
   pAnnots->RemoveAt(index);
@@ -630,7 +634,7 @@ FPDFAnnot_CountAttachmentPoints(FPDF_ANNOTATION annot) {
   CPDF_Dictionary* pAnnotDict =
       CPDFAnnotContextFromFPDFAnnotation(annot)->GetAnnotDict();
   const CPDF_Array* pArray = GetQuadPointsArrayFromDictionary(pAnnotDict);
-  return pArray ? pArray->GetCount() / 8 : 0;
+  return pArray ? pArray->size() / 8 : 0;
 }
 
 FPDF_EXPORT FPDF_BOOL FPDF_CALLCONV

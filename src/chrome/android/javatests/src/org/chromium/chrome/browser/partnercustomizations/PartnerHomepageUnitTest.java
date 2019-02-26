@@ -72,6 +72,7 @@ public class PartnerHomepageUnitTest {
     @Test
     @SmallTest
     @Feature({"Homepage"})
+    @DisabledTest(message = "crbug.com/901769")
     public void testHomepageFeatureFlag() throws InterruptedException {
         // Checks that #isHomepageProviderAvailableAndEnabled returned false
         Assert.assertNull(PartnerBrowserCustomizations.getHomePageUrl());

@@ -8,7 +8,6 @@
 #include "third_party/blink/public/platform/interface_provider.h"
 #include "third_party/blink/public/platform/platform.h"
 #include "third_party/blink/renderer/platform/scheduler/public/thread_scheduler.h"
-#include "third_party/blink/renderer/platform/web_task_runner.h"
 
 namespace blink {
 
@@ -62,10 +61,8 @@ void BeginFrameProvider::CreateCompositorFrameSinkIfNeeded() {
   Platform::Current()->GetInterfaceProvider()->GetInterface(
       mojo::MakeRequest(&provider));
 
-  scoped_refptr<base::SingleThreadTaskRunner> task_runner;
-  auto* scheduler = blink::Platform::Current()->CurrentThread()->Scheduler();
-  if (scheduler)
-    task_runner = scheduler->CompositorTaskRunner();
+  scoped_refptr<base::SingleThreadTaskRunner> task_runner =
+      ThreadScheduler::Current()->CompositorTaskRunner();
 
   mojom::blink::EmbeddedFrameSinkClientPtr efs_client;
   efs_binding_.Bind(mojo::MakeRequest(&efs_client), task_runner);
@@ -94,7 +91,9 @@ void BeginFrameProvider::RequestBeginFrame() {
   compositor_frame_sink_->SetNeedsBeginFrame(true);
 }
 
-void BeginFrameProvider::OnBeginFrame(const viz::BeginFrameArgs& args) {
+void BeginFrameProvider::OnBeginFrame(
+    const viz::BeginFrameArgs& args,
+    WTF::HashMap<uint32_t, ::gfx::mojom::blink::PresentationFeedbackPtr>) {
   // If there was no need for a BeginFrame, just skip it.
   if (needs_begin_frame_ && requested_needs_begin_frame_) {
     requested_needs_begin_frame_ = false;

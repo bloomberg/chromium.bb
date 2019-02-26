@@ -47,12 +47,12 @@
 
 namespace blink {
 
-using namespace HTMLNames;
+using namespace html_names;
 
 inline SVGAElement::SVGAElement(Document& document)
-    : SVGGraphicsElement(SVGNames::aTag, document),
+    : SVGGraphicsElement(svg_names::kATag, document),
       SVGURIReference(this),
-      svg_target_(SVGAnimatedString::Create(this, SVGNames::targetAttr)) {
+      svg_target_(SVGAnimatedString::Create(this, svg_names::kTargetAttr)) {
   AddToPropertyMap(svg_target_);
 }
 
@@ -66,7 +66,7 @@ DEFINE_NODE_FACTORY(SVGAElement)
 
 String SVGAElement::title() const {
   // If the xlink:title is set (non-empty string), use it.
-  const AtomicString& title = FastGetAttribute(XLinkNames::titleAttr);
+  const AtomicString& title = FastGetAttribute(xlink_names::kTitleAttr);
   if (!title.IsEmpty())
     return title;
 
@@ -126,7 +126,7 @@ void SVGAElement::DefaultEventHandler(Event& event) {
       }
 
       AtomicString target(svg_target_->CurrentValue()->Value());
-      if (target.IsEmpty() && FastGetAttribute(XLinkNames::showAttr) == "new")
+      if (target.IsEmpty() && FastGetAttribute(xlink_names::kShowAttr) == "new")
         target = AtomicString("_blank");
       event.SetDefaultHandled();
 
@@ -172,7 +172,7 @@ bool SVGAElement::ShouldHaveFocusAppearance() const {
 }
 
 bool SVGAElement::IsURLAttribute(const Attribute& attribute) const {
-  return attribute.GetName().LocalName() == hrefAttr ||
+  return attribute.GetName().LocalName() == kHrefAttr ||
          SVGGraphicsElement::IsURLAttribute(attribute);
 }
 

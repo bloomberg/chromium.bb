@@ -45,7 +45,7 @@ public:
     ClockwiseTestProcessor(bool readSkFragCoord)
             : GrGeometryProcessor(kClockwiseTestProcessor_ClassID)
             , fReadSkFragCoord(readSkFragCoord) {
-        this->setVertexAttributeCnt(1);
+        this->setVertexAttributes(&gVertex, 1);
     }
     const char* name() const override { return "ClockwiseTestProcessor"; }
     void getGLSLProcessorKey(const GrShaderCaps&, GrProcessorKeyBuilder* b) const final {
@@ -54,8 +54,6 @@ public:
     GrGLSLPrimitiveProcessor* createGLSLInstance(const GrShaderCaps&) const final;
 
 private:
-    const Attribute& onVertexAttribute(int i) const override { return gVertex; }
-
     const bool fReadSkFragCoord;
 
     friend class GLSLClockwiseTestProcessor;
@@ -110,7 +108,7 @@ private:
         return RequiresDstTexture::kNo;
     }
     void onPrepare(GrOpFlushState*) override {}
-    void onExecute(GrOpFlushState* flushState) override {
+    void onExecute(GrOpFlushState* flushState, const SkRect& chainBounds) override {
         SkPoint vertices[4] = {
             {100, fY},
             {0, fY+100},
@@ -149,8 +147,7 @@ void ClockwiseGM::onDraw(SkCanvas* canvas) {
         return;
     }
 
-    rtc->clear(nullptr, GrColorPackRGBA(0,0,0,255),
-               GrRenderTargetContext::CanClearFullscreen::kYes);
+    rtc->clear(nullptr, { 0, 0, 0, 1 }, GrRenderTargetContext::CanClearFullscreen::kYes);
 
     // Draw the test directly to the frame buffer.
     rtc->priv().testingOnly_addDrawOp(ClockwiseTestOp::Make(ctx, false, 0));
@@ -158,32 +155,34 @@ void ClockwiseGM::onDraw(SkCanvas* canvas) {
 
     // Draw the test to an off-screen, top-down render target.
     if (auto topLeftRTC = ctx->contextPriv().makeDeferredRenderTargetContext(
-                    SkBackingFit::kExact, 100, 200, rtc->asSurfaceProxy()->config(),
-                    nullptr, 1, GrMipMapped::kNo, kTopLeft_GrSurfaceOrigin, nullptr,
-                    SkBudgeted::kYes)) {
-        topLeftRTC->clear(nullptr, 0, GrRenderTargetContext::CanClearFullscreen::kYes);
+            rtc->asSurfaceProxy()->backendFormat(), SkBackingFit::kExact, 100, 200,
+            rtc->asSurfaceProxy()->config(), nullptr, 1, GrMipMapped::kNo,
+            kTopLeft_GrSurfaceOrigin, nullptr, SkBudgeted::kYes)) {
+        topLeftRTC->clear(nullptr, SK_PMColor4fTRANSPARENT,
+                          GrRenderTargetContext::CanClearFullscreen::kYes);
         topLeftRTC->priv().testingOnly_addDrawOp(ClockwiseTestOp::Make(ctx, false, 0));
         topLeftRTC->priv().testingOnly_addDrawOp(ClockwiseTestOp::Make(ctx, true, 100));
         rtc->drawTexture(GrNoClip(), sk_ref_sp(topLeftRTC->asTextureProxy()),
-                         GrSamplerState::Filter::kNearest, 0xffffffff, {0, 0, 100, 200},
+                         GrSamplerState::Filter::kNearest, SK_PMColor4fWHITE, {0, 0, 100, 200},
                          {100, 0, 200, 200}, GrQuadAAFlags::kNone,
                          SkCanvas::SrcRectConstraint::kStrict_SrcRectConstraint, SkMatrix::I(),
-                         nullptr, nullptr);
+                         nullptr);
     }
 
     // Draw the test to an off-screen, bottom-up render target.
     if (auto topLeftRTC = ctx->contextPriv().makeDeferredRenderTargetContext(
-                    SkBackingFit::kExact, 100, 200, rtc->asSurfaceProxy()->config(),
-                    nullptr, 1, GrMipMapped::kNo, kBottomLeft_GrSurfaceOrigin, nullptr,
-                    SkBudgeted::kYes)) {
-        topLeftRTC->clear(nullptr, 0, GrRenderTargetContext::CanClearFullscreen::kYes);
+            rtc->asSurfaceProxy()->backendFormat(), SkBackingFit::kExact, 100, 200,
+            rtc->asSurfaceProxy()->config(), nullptr, 1, GrMipMapped::kNo,
+            kBottomLeft_GrSurfaceOrigin, nullptr, SkBudgeted::kYes)) {
+        topLeftRTC->clear(nullptr, SK_PMColor4fTRANSPARENT,
+                          GrRenderTargetContext::CanClearFullscreen::kYes);
         topLeftRTC->priv().testingOnly_addDrawOp(ClockwiseTestOp::Make(ctx, false, 0));
         topLeftRTC->priv().testingOnly_addDrawOp(ClockwiseTestOp::Make(ctx, true, 100));
         rtc->drawTexture(GrNoClip(), sk_ref_sp(topLeftRTC->asTextureProxy()),
-                         GrSamplerState::Filter::kNearest, 0xffffffff, {0, 0, 100, 200},
+                         GrSamplerState::Filter::kNearest, SK_PMColor4fWHITE, {0, 0, 100, 200},
                          {200, 0, 300, 200}, GrQuadAAFlags::kNone,
                          SkCanvas::SrcRectConstraint::kStrict_SrcRectConstraint, SkMatrix::I(),
-                         nullptr, nullptr);
+                         nullptr);
     }
 }
 

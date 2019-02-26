@@ -12,6 +12,7 @@
 #include <utility>
 
 #include "base/macros.h"
+#include "base/test/scoped_task_environment.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/win/scoped_bstr.h"
 #include "base/win/scoped_variant.h"
@@ -36,7 +37,8 @@ class BrowserAccessibilityTest : public testing::Test {
 
  private:
   void SetUp() override;
-
+  
+  base::test::ScopedTaskEnvironment task_environment_;
   content::TestBrowserThreadBundle thread_bundle_;
 
   DISALLOW_COPY_AND_ASSIGN(BrowserAccessibilityTest);
@@ -1652,10 +1654,8 @@ TEST_F(BrowserAccessibilityTest, TestTextAttributesInContentEditables) {
   text_before.role = ax::mojom::Role::kStaticText;
   text_before.AddState(ax::mojom::State::kEditable);
   text_before.SetName("Before ");
-  text_before.AddIntAttribute(
-      ax::mojom::IntAttribute::kTextStyle,
-      static_cast<int32_t>(ax::mojom::TextStyle::kTextStyleBold) |
-          static_cast<int32_t>(ax::mojom::TextStyle::kTextStyleItalic));
+  text_before.AddTextStyle(ax::mojom::TextStyle::kBold);
+  text_before.AddTextStyle(ax::mojom::TextStyle::kItalic);
 
   ui::AXNodeData link;
   link.id = 4;
@@ -1664,9 +1664,7 @@ TEST_F(BrowserAccessibilityTest, TestTextAttributesInContentEditables) {
   link.AddState(ax::mojom::State::kFocusable);
   link.AddState(ax::mojom::State::kLinked);
   link.SetName("lnk");
-  link.AddIntAttribute(
-      ax::mojom::IntAttribute::kTextStyle,
-      static_cast<int32_t>(ax::mojom::TextStyle::kTextStyleUnderline));
+  link.AddTextStyle(ax::mojom::TextStyle::kUnderline);
 
   ui::AXNodeData link_text;
   link_text.id = 5;
@@ -1675,9 +1673,7 @@ TEST_F(BrowserAccessibilityTest, TestTextAttributesInContentEditables) {
   link_text.AddState(ax::mojom::State::kFocusable);
   link_text.AddState(ax::mojom::State::kLinked);
   link_text.SetName("lnk");
-  link_text.AddIntAttribute(
-      ax::mojom::IntAttribute::kTextStyle,
-      static_cast<int32_t>(ax::mojom::TextStyle::kTextStyleUnderline));
+  link_text.AddTextStyle(ax::mojom::TextStyle::kUnderline);
 
   // The name "lnk" is misspelled.
   std::vector<int32_t> marker_types{

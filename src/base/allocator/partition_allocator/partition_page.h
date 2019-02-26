@@ -5,10 +5,13 @@
 #ifndef BASE_ALLOCATOR_PARTITION_ALLOCATOR_PARTITION_PAGE_H_
 #define BASE_ALLOCATOR_PARTITION_ALLOCATOR_PARTITION_PAGE_H_
 
+#include <string.h>
+
 #include "base/allocator/partition_allocator/partition_alloc_constants.h"
 #include "base/allocator/partition_allocator/partition_bucket.h"
 #include "base/allocator/partition_allocator/partition_cookie.h"
 #include "base/allocator/partition_allocator/partition_freelist_entry.h"
+#include "base/logging.h"
 
 namespace base {
 namespace internal {
@@ -198,13 +201,13 @@ ALWAYS_INLINE size_t PartitionPage::get_raw_size() const {
 }
 
 ALWAYS_INLINE void PartitionPage::Free(void* ptr) {
+#if DCHECK_IS_ON()
   size_t slot_size = this->bucket->slot_size;
   const size_t raw_size = get_raw_size();
   if (raw_size) {
     slot_size = raw_size;
   }
 
-#if DCHECK_IS_ON()
   // If these asserts fire, you probably corrupted memory.
   PartitionCookieCheckValue(ptr);
   PartitionCookieCheckValue(reinterpret_cast<char*>(ptr) + slot_size -

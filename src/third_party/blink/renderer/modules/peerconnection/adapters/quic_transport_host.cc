@@ -13,7 +13,7 @@
 #include "third_party/blink/renderer/modules/peerconnection/adapters/quic_transport_proxy.h"
 #include "third_party/blink/renderer/modules/peerconnection/adapters/web_rtc_cross_thread_copier.h"
 #include "third_party/blink/renderer/platform/cross_thread_functional.h"
-#include "third_party/blink/renderer/platform/web_task_runner.h"
+#include "third_party/blink/renderer/platform/scheduler/public/post_cross_thread_task.h"
 
 namespace blink {
 
@@ -36,20 +36,16 @@ QuicTransportHost::~QuicTransportHost() {
   }
 }
 
-void QuicTransportHost::Initialize(
-    IceTransportHost* ice_transport_host,
-    quic::Perspective perspective,
-    const std::vector<rtc::scoped_refptr<rtc::RTCCertificate>>& certificates) {
+void QuicTransportHost::Initialize(IceTransportHost* ice_transport_host,
+                                   const P2PQuicTransportConfig& config) {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   DCHECK(ice_transport_host);
   DCHECK(!ice_transport_host_);
   ice_transport_host_ = ice_transport_host;
-  P2PQuicTransportConfig config(
-      this, ice_transport_host->ConnectConsumer(this)->packet_transport(),
-      certificates);
-  config.is_server = (perspective == quic::Perspective::IS_SERVER);
-  quic_transport_ =
-      quic_transport_factory_->CreateQuicTransport(std::move(config));
+  IceTransportAdapter* ice_transport_adapter =
+      ice_transport_host_->ConnectConsumer(this);
+  quic_transport_ = quic_transport_factory_->CreateQuicTransport(
+      /*delegate=*/this, ice_transport_adapter->packet_transport(), config);
 }
 
 scoped_refptr<base::SingleThreadTaskRunner> QuicTransportHost::proxy_thread()

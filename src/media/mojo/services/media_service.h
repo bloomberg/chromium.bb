@@ -7,6 +7,7 @@
 
 #include <memory>
 
+#include "base/macros.h"
 #include "build/build_config.h"
 #include "media/base/media_log.h"
 #include "media/mojo/interfaces/interface_factory.mojom.h"
@@ -16,8 +17,9 @@
 #include "mojo/public/cpp/bindings/binding_set.h"
 #include "services/service_manager/public/cpp/binder_registry.h"
 #include "services/service_manager/public/cpp/service.h"
-#include "services/service_manager/public/cpp/service_context.h"
-#include "services/service_manager/public/cpp/service_context_ref.h"
+#include "services/service_manager/public/cpp/service_binding.h"
+#include "services/service_manager/public/cpp/service_keepalive.h"
+#include "services/service_manager/public/mojom/service.mojom.h"
 
 namespace media {
 
@@ -26,7 +28,8 @@ class MojoMediaClient;
 class MEDIA_MOJO_EXPORT MediaService : public service_manager::Service,
                                        public mojom::MediaService {
  public:
-  explicit MediaService(std::unique_ptr<MojoMediaClient> mojo_media_client);
+  MediaService(std::unique_ptr<MojoMediaClient> mojo_media_client,
+               service_manager::mojom::ServiceRequest request);
   ~MediaService() final;
 
  private:
@@ -35,7 +38,7 @@ class MEDIA_MOJO_EXPORT MediaService : public service_manager::Service,
   void OnBindInterface(const service_manager::BindSourceInfo& source_info,
                        const std::string& interface_name,
                        mojo::ScopedMessagePipeHandle interface_pipe) override;
-  bool OnServiceManagerConnectionLost() final;
+  void OnDisconnected() final;
 
   void Create(mojom::MediaServiceRequest request);
 
@@ -44,7 +47,8 @@ class MEDIA_MOJO_EXPORT MediaService : public service_manager::Service,
       service_manager::mojom::InterfaceProviderPtr host_interfaces) final;
 
   MediaLog media_log_;
-  std::unique_ptr<service_manager::ServiceContextRefFactory> ref_factory_;
+  service_manager::ServiceBinding service_binding_;
+  service_manager::ServiceKeepalive keepalive_;
 
   // Note: Since each instance runs on a different thread, do not share a common
   // MojoMediaClient with other instances to avoid threading issues. Hence using
@@ -61,6 +65,8 @@ class MEDIA_MOJO_EXPORT MediaService : public service_manager::Service,
 
   service_manager::BinderRegistry registry_;
   mojo::BindingSet<mojom::MediaService> bindings_;
+
+  DISALLOW_COPY_AND_ASSIGN(MediaService);
 };
 
 }  // namespace media

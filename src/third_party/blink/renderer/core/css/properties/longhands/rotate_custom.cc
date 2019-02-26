@@ -11,7 +11,7 @@
 #include "third_party/blink/renderer/platform/runtime_enabled_features.h"
 
 namespace blink {
-namespace CSSLonghand {
+namespace css_longhand {
 
 const CSSValue* Rotate::ParseSingleValue(CSSParserTokenRange& range,
                                          const CSSParserContext& context,
@@ -20,16 +20,16 @@ const CSSValue* Rotate::ParseSingleValue(CSSParserTokenRange& range,
 
   CSSValueID id = range.Peek().Id();
   if (id == CSSValueNone)
-    return CSSPropertyParserHelpers::ConsumeIdent(range);
+    return css_property_parser_helpers::ConsumeIdent(range);
 
   CSSValueList* list = CSSValueList::CreateSpaceSeparated();
 
-  CSSValue* rotation = CSSPropertyParserHelpers::ConsumeAngle(
+  CSSValue* rotation = css_property_parser_helpers::ConsumeAngle(
       range, &context, base::Optional<WebFeature>());
 
   CSSValueID axis_id = range.Peek().Id();
   if (axis_id == CSSValueX) {
-    CSSPropertyParserHelpers::ConsumeIdent(range);
+    css_property_parser_helpers::ConsumeIdent(range);
     list->Append(
         *CSSPrimitiveValue::Create(1, CSSPrimitiveValue::UnitType::kNumber));
     list->Append(
@@ -37,7 +37,7 @@ const CSSValue* Rotate::ParseSingleValue(CSSParserTokenRange& range,
     list->Append(
         *CSSPrimitiveValue::Create(0, CSSPrimitiveValue::UnitType::kNumber));
   } else if (axis_id == CSSValueY) {
-    CSSPropertyParserHelpers::ConsumeIdent(range);
+    css_property_parser_helpers::ConsumeIdent(range);
     list->Append(
         *CSSPrimitiveValue::Create(0, CSSPrimitiveValue::UnitType::kNumber));
     list->Append(
@@ -45,7 +45,7 @@ const CSSValue* Rotate::ParseSingleValue(CSSParserTokenRange& range,
     list->Append(
         *CSSPrimitiveValue::Create(0, CSSPrimitiveValue::UnitType::kNumber));
   } else if (axis_id == CSSValueZ) {
-    CSSPropertyParserHelpers::ConsumeIdent(range);
+    css_property_parser_helpers::ConsumeIdent(range);
     list->Append(
         *CSSPrimitiveValue::Create(0, CSSPrimitiveValue::UnitType::kNumber));
     list->Append(
@@ -55,7 +55,7 @@ const CSSValue* Rotate::ParseSingleValue(CSSParserTokenRange& range,
   } else {
     for (unsigned i = 0; i < 3; i++) {  // 3 dimensions of rotation
       CSSValue* dimension =
-          CSSPropertyParserHelpers::ConsumeNumber(range, kValueRangeAll);
+          css_property_parser_helpers::ConsumeNumber(range, kValueRangeAll);
       if (!dimension) {
         if (i == 0)
           break;
@@ -66,7 +66,7 @@ const CSSValue* Rotate::ParseSingleValue(CSSParserTokenRange& range,
   }
 
   if (!rotation) {
-    rotation = CSSPropertyParserHelpers::ConsumeAngle(
+    rotation = css_property_parser_helpers::ConsumeAngle(
         range, &context, base::Optional<WebFeature>());
     if (!rotation)
       return nullptr;
@@ -100,5 +100,5 @@ const CSSValue* Rotate::CSSValueFromComputedStyleInternal(
   return list;
 }
 
-}  // namespace CSSLonghand
+}  // namespace css_longhand
 }  // namespace blink

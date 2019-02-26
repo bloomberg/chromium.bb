@@ -9,7 +9,8 @@
 #include <algorithm>
 #include <utility>
 
-#include "base/command_line.h"
+#include "base/bind.h"
+#include "base/memory/scoped_refptr.h"
 #include "base/metrics/field_trial.h"
 #include "base/strings/string_util.h"
 #include "base/task/post_task.h"
@@ -26,7 +27,6 @@
 #include "chrome/browser/engagement/site_engagement_service_factory.h"
 #include "chrome/browser/history/history_service_factory.h"
 #include "chrome/browser/profiles/profile.h"
-#include "chrome/common/chrome_switches.h"
 #include "chrome/common/pref_names.h"
 #include "components/content_settings/core/browser/host_content_settings_map.h"
 #include "components/content_settings/core/common/content_settings_pattern.h"
@@ -34,9 +34,7 @@
 #include "components/prefs/pref_service.h"
 #include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
-#include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/web_contents.h"
-#include "third_party/blink/public/common/associated_interfaces/associated_interface_provider.h"
 #include "url/gurl.h"
 
 #if defined(OS_ANDROID)
@@ -53,28 +51,87 @@ bool g_updated_from_variations = false;
 // Length of time between metrics logging.
 const int kMetricsIntervalInMinutes = 60;
 
-// Helper for fetching content settings for one type.
+// A clock that keeps showing the time it was constructed with.
+class StoppedClock : public base::Clock {
+ public:
+  explicit StoppedClock(base::Time time) : time_(time) {}
+  ~StoppedClock() override = default;
+
+ protected:
+  // base::Clock:
+  base::Time Now() const override { return time_; }
+
+ private:
+  const base::Time time_;
+
+  DISALLOW_COPY_AND_ASSIGN(StoppedClock);
+};
+
+// Helpers for fetching content settings for one type.
+ContentSettingsForOneType GetContentSettingsFromMap(HostContentSettingsMap* map,
+                                                    ContentSettingsType type) {
+  ContentSettingsForOneType content_settings;
+  map->GetSettingsForOneType(type, content_settings::ResourceIdentifier(),
+                             &content_settings);
+  return content_settings;
+}
+
 ContentSettingsForOneType GetContentSettingsFromProfile(
     Profile* profile,
     ContentSettingsType type) {
-  ContentSettingsForOneType content_settings;
-  HostContentSettingsMapFactory::GetForProfile(profile)->GetSettingsForOneType(
-      type, content_settings::ResourceIdentifier(), &content_settings);
-  return content_settings;
+  return GetContentSettingsFromMap(
+      HostContentSettingsMapFactory::GetForProfile(profile), type);
 }
 
 // Returns the combined list of origins which either have site engagement
 // data stored, or have other settings that would provide a score bonus.
-std::set<GURL> GetEngagementOriginsFromContentSettings(Profile* profile) {
+std::set<GURL> GetEngagementOriginsFromContentSettings(
+    HostContentSettingsMap* map) {
   std::set<GURL> urls;
 
   // Fetch URLs of sites with engagement details stored.
-  for (const auto& site : GetContentSettingsFromProfile(
-           profile, CONTENT_SETTINGS_TYPE_SITE_ENGAGEMENT)) {
+  for (const auto& site :
+       GetContentSettingsFromMap(map, CONTENT_SETTINGS_TYPE_SITE_ENGAGEMENT)) {
     urls.insert(GURL(site.primary_pattern.ToString()));
   }
 
   return urls;
+}
+
+SiteEngagementScore CreateEngagementScoreImpl(base::Clock* clock,
+                                              const GURL& origin,
+                                              HostContentSettingsMap* map) {
+  return SiteEngagementScore(clock, origin, map);
+}
+
+mojom::SiteEngagementDetails GetDetailsImpl(base::Clock* clock,
+                                            const GURL& origin,
+                                            HostContentSettingsMap* map) {
+  return CreateEngagementScoreImpl(clock, origin, map).GetDetails();
+}
+
+std::vector<mojom::SiteEngagementDetails> GetAllDetailsImpl(
+    base::Clock* clock,
+    HostContentSettingsMap* map) {
+  std::set<GURL> origins = GetEngagementOriginsFromContentSettings(map);
+
+  std::vector<mojom::SiteEngagementDetails> details;
+  details.reserve(origins.size());
+  for (const GURL& origin : origins) {
+    if (!origin.is_valid())
+      continue;
+    details.push_back(GetDetailsImpl(clock, origin, map));
+  }
+
+  return details;
+}
+
+// Takes a scoped_refptr to keep HostContentSettingsMap alive. See
+// crbug.com/901287.
+std::vector<mojom::SiteEngagementDetails> GetAllDetailsImplInBackground(
+    std::unique_ptr<base::Clock> clock,
+    scoped_refptr<HostContentSettingsMap> map) {
+  return GetAllDetailsImpl(clock.get(), map.get());
 }
 
 // Only accept a navigation event for engagement if it is one of:
@@ -162,17 +219,11 @@ SiteEngagementService::GetEngagementLevel(const GURL& url) const {
 
 std::vector<mojom::SiteEngagementDetails> SiteEngagementService::GetAllDetails()
     const {
-  std::set<GURL> origins = GetEngagementOriginsFromContentSettings(profile_);
+  if (IsLastEngagementStale())
+    CleanupEngagementScores(true);
 
-  std::vector<mojom::SiteEngagementDetails> details;
-  details.reserve(origins.size());
-  for (const GURL& origin : origins) {
-    if (!origin.is_valid())
-      continue;
-    details.push_back(GetDetails(origin));
-  }
-
-  return details;
+  return GetAllDetailsImpl(
+      clock_, HostContentSettingsMapFactory::GetForProfile(profile_));
 }
 
 void SiteEngagementService::HandleNotificationInteraction(const GURL& url) {
@@ -181,7 +232,7 @@ void SiteEngagementService::HandleNotificationInteraction(const GURL& url) {
 
   AddPoints(url, SiteEngagementScore::GetNotificationInteractionPoints());
 
-  RecordMetrics();
+  MaybeRecordMetrics();
   OnEngagementEvent(nullptr /* web_contents */, url,
                     ENGAGEMENT_NOTIFICATION_INTERACTION);
 }
@@ -261,7 +312,8 @@ mojom::SiteEngagementDetails SiteEngagementService::GetDetails(
   if (IsLastEngagementStale())
     CleanupEngagementScores(true);
 
-  return CreateEngagementScore(url).GetDetails();
+  return GetDetailsImpl(clock_, url,
+                        HostContentSettingsMapFactory::GetForProfile(profile_));
 }
 
 double SiteEngagementService::GetTotalEngagementPoints() const {
@@ -323,7 +375,6 @@ void SiteEngagementService::AfterStartupTask() {
   // in AddPoints for people who never restart Chrome, but leave it open and
   // their computer on standby.
   CleanupEngagementScores(IsLastEngagementStale());
-  RecordMetrics();
 }
 
 void SiteEngagementService::CleanupEngagementScores(
@@ -402,7 +453,7 @@ void SiteEngagementService::CleanupEngagementScores(
     SetLastEngagementTime(new_last_engagement_time);
 }
 
-void SiteEngagementService::RecordMetrics() {
+void SiteEngagementService::MaybeRecordMetrics() {
   base::Time now = clock_->Now();
   if (profile_->IsOffTheRecord() ||
       (!last_metrics_time_.is_null() &&
@@ -410,22 +461,56 @@ void SiteEngagementService::RecordMetrics() {
     return;
   }
 
+  // Clean up engagement first before retrieving scores.
+  if (IsLastEngagementStale())
+    CleanupEngagementScores(true);
+
   last_metrics_time_ = now;
-  std::vector<mojom::SiteEngagementDetails> details = GetAllDetails();
+
+  // Retrieve details on a background thread as this is expensive. We may end up
+  // with minor data inconsistency but this doesn't really matter for metrics
+  // purposes.
+  //
+  // The profile and its KeyedServices are normally destroyed before the
+  // TaskScheduler shuts down background threads, so the task needs to hold a
+  // strong reference to HostContentSettingsMap (which supports outliving the
+  // profile), and needs to avoid using any members of SiteEngagementService
+  // (which does not). See https://crbug.com/900022.
+  base::PostTaskWithTraitsAndReplyWithResult(
+      FROM_HERE,
+      {base::TaskPriority::BEST_EFFORT,
+       base::TaskShutdownBehavior::SKIP_ON_SHUTDOWN},
+      base::BindOnce(
+          &GetAllDetailsImplInBackground,
+          std::make_unique<StoppedClock>(clock_->Now()),
+          base::WrapRefCounted(
+              HostContentSettingsMapFactory::GetForProfile(profile_))),
+      base::BindOnce(&SiteEngagementService::RecordMetrics,
+                     weak_factory_.GetWeakPtr()));
+}
+
+void SiteEngagementService::RecordMetrics(
+    std::vector<mojom::SiteEngagementDetails> details) {
   std::sort(details.begin(), details.end(),
             [](const mojom::SiteEngagementDetails& lhs,
                const mojom::SiteEngagementDetails& rhs) {
               return lhs.total_score < rhs.total_score;
             });
 
-  int origins_with_max_engagement = OriginsWithMaxEngagement(details);
   int total_origins = details.size();
+
+  double total_engagement = 0;
+  int origins_with_max_engagement = 0;
+  for (const auto& detail : details) {
+    if (detail.total_score == SiteEngagementScore::kMaxPoints)
+      ++origins_with_max_engagement;
+    total_engagement += detail.total_score;
+  }
+
   int percent_origins_with_max_engagement =
       (total_origins == 0
            ? 0
            : (origins_with_max_engagement * 100) / total_origins);
-
-  double total_engagement = GetTotalEngagementPoints();
   double mean_engagement =
       (total_origins == 0 ? 0 : total_engagement / total_origins);
 
@@ -498,7 +583,7 @@ void SiteEngagementService::HandleMediaPlaying(
   AddPoints(url, is_hidden ? SiteEngagementScore::GetHiddenMediaPoints()
                            : SiteEngagementScore::GetVisibleMediaPoints());
 
-  RecordMetrics();
+  MaybeRecordMetrics();
   OnEngagementEvent(
       web_contents, url,
       is_hidden ? ENGAGEMENT_MEDIA_HIDDEN : ENGAGEMENT_MEDIA_VISIBLE);
@@ -512,7 +597,7 @@ void SiteEngagementService::HandleNavigation(content::WebContents* web_contents,
 
   AddPoints(url, SiteEngagementScore::GetNavigationPoints());
 
-  RecordMetrics();
+  MaybeRecordMetrics();
   OnEngagementEvent(web_contents, url, ENGAGEMENT_NAVIGATION);
 }
 
@@ -524,7 +609,7 @@ void SiteEngagementService::HandleUserInput(content::WebContents* web_contents,
 
   AddPoints(url, SiteEngagementScore::GetUserInputPoints());
 
-  RecordMetrics();
+  MaybeRecordMetrics();
   OnEngagementEvent(web_contents, url, type);
 }
 
@@ -567,7 +652,7 @@ SiteEngagementScore SiteEngagementService::CreateEngagementScore(
   // If we are in incognito, |settings| will automatically have the data from
   // the original profile migrated in, so all engagement scores in incognito
   // will be initialised to the values from the original profile.
-  return SiteEngagementScore(
+  return CreateEngagementScoreImpl(
       clock_, origin, HostContentSettingsMapFactory::GetForProfile(profile_));
 }
 
@@ -585,17 +670,6 @@ int SiteEngagementService::OriginsWithMaxDailyEngagement() const {
     if (CreateEngagementScore(origin).MaxPointsPerDayAdded())
       ++total_origins;
   }
-
-  return total_origins;
-}
-
-int SiteEngagementService::OriginsWithMaxEngagement(
-    const std::vector<mojom::SiteEngagementDetails>& details) const {
-  int total_origins = 0;
-
-  for (const auto& detail : details)
-    if (detail.total_score == SiteEngagementScore::kMaxPoints)
-      ++total_origins;
 
   return total_origins;
 }

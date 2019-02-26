@@ -2,6 +2,7 @@
 <!DOCTYPE translationbundle>
 <translationbundle lang="sl">
 <translation id="1002108253973310084">Zaznana je bila nezdružljiva različica protokola. Poskrbite, da ste v obeh računalnikih nameščeni najnovejši različici, in poskusite znova.</translation>
+<translation id="1008557486741366299">Ne zdaj</translation>
 <translation id="1050693411695664090">Slaba</translation>
 <translation id="1152528166145813711">Izberite …</translation>
 <translation id="1199593201721843963">Onemogoči oddaljene povezave</translation>
@@ -61,8 +62,9 @@ Za več informacij o zasebnosti si oglejte Googlov pravilnik o zasebnosti (http:
 <translation id="2314101195544969792">Seja aplikacije <ph name="APPLICATION_NAME" /> je že nekaj časa nedejavna, zato bo povezava kmalu prekinjena.</translation>
 <translation id="2317666076142640974">Oglejte si novo <ph name="LINK_BEGIN" />spletno aplikacijo Oddaljeno namizje za Chrome<ph name="LINK_END" /> pred izdajo. Veseli bomo vaših povratnih informacij.</translation>
 <translation id="2320166752086256636">Skrij tipkovnico</translation>
+<translation id="2332192922827071008">Odpri nastavitve</translation>
 <translation id="2353140552984634198">Oddaljeno povezovanje s Chromom omogoča varen dostop do tega računalnika.</translation>
-<translation id="2359808026110333948">Nadaljuj</translation>
+<translation id="2359808026110333948">Naprej</translation>
 <translation id="2366718077645204424">Ni mogoče vzpostaviti povezave z gostiteljem; verjetno zaradi konfiguracije omrežja, ki ga uporabljate.</translation>
 <translation id="2370754117186920852"><ph name="OPTIONAL_OFFLINE_REASON" />  Zadnji odziv z vzpostavljeno povezavo: <ph name="RELATIVE_TIMESTAMP" />.</translation>
 <translation id="2405928220797050937">Ta aplikacija ni več podprta. Zaradi prejemanja najnovejših funkcij in varnostnih posodobitev uporabljajte <ph name="LINK_BEGIN" />spletno aplikacijo Oddaljeno namizje za Chrome<ph name="LINK_END" />.</translation>
@@ -80,6 +82,7 @@ Za več informacij o zasebnosti si oglejte Googlov pravilnik o zasebnosti (http:
 <translation id="2841013758207633010">Čas</translation>
 <translation id="2851754573186462851">Chromium App Streaming</translation>
 <translation id="2888969873284818612">Prišlo je do napake v omrežju. Ko bo naprava spet dosegljiva, bo aplikacija znova zagnana.</translation>
+<translation id="2891243864890517178">Za macOS (OS X Yosemite 10.10 in novejši)</translation>
 <translation id="289405675947420287">Varen dostop do računalnikov iz naprave iOS. Je hitro, preprosto in brezplačno.
 
 • V računalniku, do katerega želite dostopati na daljavo, prenesite aplikacijo Oddaljeno namizje za Chrome iz Spletne trgovine Chrome.
@@ -182,6 +185,9 @@ PC</translation>
 <translation id="492843737083352574">Imam težave s tipkovnico ali miško.</translation>
 <translation id="4973800994433240357">Če prenesete namestitveni program za gostitelja za Oddaljeno povezovanje s Chromom, sprejemate Googlove <ph name="LINK_BEGIN" />pogoje storitve<ph name="LINK_END" />.</translation>
 <translation id="4985296110227979402">Računalnik morate najprej nastaviti za oddaljeni dostop.</translation>
+<translation id="5059773780693835145">Preden lahko ta računalnik na daljavo upravljate z uporabo izdelka <ph name="PRODUCT_NAME" />, je potreben dodaten konfiguracijski korak.
+
+Če želite omogočiti to funkcijo, izberite »<ph name="BUTTON_NAME" />«, da prikažete podokno z nastavitvami za varnost in zasebnost, ter potrdite polje zraven možnosti »<ph name="SERVICE_SCRIPT_NAME" />«.</translation>
 <translation id="5064360042339518108"><ph name="HOSTNAME" /> (brez povezave)</translation>
 <translation id="5070121137485264635">Oddaljeni gostitelj zahteva, da previte pristnost na spletnem mestu tretje osebe. Če želite nadaljevati, morate Oddaljenemu namizju za Chrome dodeliti dodatna dovoljenja za dostop do tega naslova:</translation>
 <translation id="507204348399810022">Ali ste prepričani, da želite onemogočiti oddaljene povezave z gostiteljem <ph name="HOSTNAME" />?</translation>
@@ -238,7 +244,6 @@ PC</translation>
 <translation id="6542902059648396432">Prijava težave …</translation>
 <translation id="6550675742724504774">Možnosti</translation>
 <translation id="6570205395680337606">Ponastavite aplikacijo. Delo, ki ga niste shranili, bo izgubljeno.</translation>
-<translation id="6572345186230665992">Za Mac OS (OS X Mavericks 10.9 in novejši)</translation>
 <translation id="6612717000975622067">Pošlji Ctrl + Alt + Del</translation>
 <translation id="6654753848497929428">Skupna raba</translation>
 <translation id="6668065415969892472">PIN je posodobljen.</translation>
@@ -298,6 +303,7 @@ PC</translation>
 <translation id="809687642899217504">Moji računalniki</translation>
 <translation id="811307782653349804">Do računalnika lahko dostopate od kjer koli.</translation>
 <translation id="8116630183974937060">Omrežna napaka. Preverite, ali je naprava dosegljiva in poskusite znova.</translation>
+<translation id="8123581458650016326">Oddaljenim uporabnikom dovoli upravljanje tega računalnika</translation>
 <translation id="8178433417677596899">Skupna raba zaslona je odlična rešitev za oddaljeno tehnično pomoč.</translation>
 <translation id="8187079423890319756">Copyright 2013 Ustvarjalci Chromiuma. Vse pravice pridržane.</translation>
 <translation id="8196755618196986400">V povratnih informacijah, ki nam jih pošljete, bo vključen vaš e-poštni naslov, da se lahko obrnemo na vas glede dodatnih informacij.</translation>

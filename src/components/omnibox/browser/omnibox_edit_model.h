@@ -35,19 +35,6 @@ namespace gfx {
 class Image;
 }
 
-// Reasons why the Omnibox could change into keyword mode.
-// These numeric values are used in UMA logs; do not change them.
-enum class KeywordModeEntryMethod {
-  TAB = 0,
-  SPACE_AT_END = 1,
-  SPACE_IN_MIDDLE = 2,
-  KEYBOARD_SHORTCUT = 3,
-  QUESTION_MARK = 4,
-  CLICK_ON_VIEW = 5,
-  TAP_ON_VIEW = 6,
-  NUM_ITEMS,
-};
-
 class OmniboxEditModel {
  public:
   // Did the Omnibox focus originate via the user clicking on the Omnibox, on
@@ -64,7 +51,8 @@ class OmniboxEditModel {
           const base::string16& user_text,
           const base::string16& keyword,
           bool is_keyword_hint,
-          KeywordModeEntryMethod keyword_mode_entry_method,
+          metrics::OmniboxEventProto::KeywordModeEntryMethod
+              keyword_mode_entry_method,
           OmniboxFocusState focus_state,
           FocusSource focus_source,
           const AutocompleteInput& autocomplete_input);
@@ -75,7 +63,8 @@ class OmniboxEditModel {
     const base::string16 user_text;
     const base::string16 keyword;
     const bool is_keyword_hint;
-    KeywordModeEntryMethod keyword_mode_entry_method;
+    metrics::OmniboxEventProto::KeywordModeEntryMethod
+        keyword_mode_entry_method;
     OmniboxFocusState focus_state;
     FocusSource focus_source;
     const AutocompleteInput autocomplete_input;
@@ -176,10 +165,11 @@ class OmniboxEditModel {
   // Sets the user_text_ to |text|.
   void SetUserText(const base::string16& text);
 
-  // Sets the user text to be url_for_editing_. This also selects all and
-  // enters user-input-in-progress mode. This method is used to exit both
-  // Steady State Elisions and Query in Omnibox mode.
-  void SetUserTextToURLForEditing();
+  // Unapplies any Steady State Elisions by setting the user text to be
+  // url_for_editing_. This also selects all and enters user-input-in-progress
+  // mode. If |exit_query_in_omnibox| is set to true, this will alse exit
+  // Query in Omnibox mode if the omnibox is showing a query.
+  void Unelide(bool exit_query_in_omnibox);
 
   // Invoked any time the text may have changed in the edit. Notifies the
   // controller.
@@ -263,16 +253,17 @@ class OmniboxEditModel {
   }
 
   // Accepts the current keyword hint as a keyword. It always returns true for
-  // caller convenience. |entered_method| indicates how the user entered
+  // caller convenience. |entry_method| indicates how the user entered
   // keyword mode.
-  bool AcceptKeyword(KeywordModeEntryMethod entry_method);
+  bool AcceptKeyword(
+      metrics::OmniboxEventProto::KeywordModeEntryMethod entry_method);
 
   // Sets the current keyword to that of the user's default search provider and
   // updates the view so the user sees the keyword chip in the omnibox.  Adjusts
   // user_text_ and the selection based on the display text and the keyword
   // entry method.
   void EnterKeywordModeForDefaultSearchProvider(
-      KeywordModeEntryMethod entry_method);
+      metrics::OmniboxEventProto::KeywordModeEntryMethod entry_method);
 
   // Accepts the current temporary text as the user text.
   void AcceptTemporaryTextAsUserText();
@@ -605,9 +596,9 @@ class OmniboxEditModel {
   bool is_keyword_hint_;
 
   // Indicates how the user entered keyword mode if the user is actually in
-  // keyword mode.  Otherwise, the value of this variable is undefined.  This
+  // keyword mode.  Otherwise, the value of this variable is INVALID.  This
   // is used to restore the user's search terms upon a call to ClearKeyword().
-  KeywordModeEntryMethod keyword_mode_entry_method_;
+  metrics::OmniboxEventProto::KeywordModeEntryMethod keyword_mode_entry_method_;
 
   // This is needed to properly update the SearchModel state when the user
   // presses escape.

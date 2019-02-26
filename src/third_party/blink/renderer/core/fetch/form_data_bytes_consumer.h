@@ -23,15 +23,19 @@ class FormDataBytesConsumer final : public BytesConsumer {
   explicit CORE_EXPORT FormDataBytesConsumer(const String&);
   explicit CORE_EXPORT FormDataBytesConsumer(DOMArrayBuffer*);
   explicit CORE_EXPORT FormDataBytesConsumer(DOMArrayBufferView*);
-  CORE_EXPORT FormDataBytesConsumer(const void* data, size_t);
+  CORE_EXPORT FormDataBytesConsumer(const void* data, wtf_size_t);
   CORE_EXPORT FormDataBytesConsumer(ExecutionContext*,
                                     scoped_refptr<EncodedFormData>);
+  CORE_EXPORT FormDataBytesConsumer(ExecutionContext*,
+                                    scoped_refptr<EncodedFormData>,
+                                    BytesConsumer* consumer_for_testing);
+
   CORE_EXPORT static FormDataBytesConsumer* CreateForTesting(
       ExecutionContext* execution_context,
       scoped_refptr<EncodedFormData> form_data,
       BytesConsumer* consumer) {
-    return new FormDataBytesConsumer(execution_context, std::move(form_data),
-                                     consumer);
+    return MakeGarbageCollected<FormDataBytesConsumer>(
+        execution_context, std::move(form_data), consumer);
   }
 
   // BytesConsumer implementation
@@ -68,9 +72,6 @@ class FormDataBytesConsumer final : public BytesConsumer {
   static BytesConsumer* GetImpl(ExecutionContext*,
                                 scoped_refptr<EncodedFormData>,
                                 BytesConsumer* consumer_for_testing);
-  CORE_EXPORT FormDataBytesConsumer(ExecutionContext*,
-                                    scoped_refptr<EncodedFormData>,
-                                    BytesConsumer* consumer_for_testing);
 
   const TraceWrapperMember<BytesConsumer> impl_;
 };

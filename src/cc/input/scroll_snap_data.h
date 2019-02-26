@@ -11,8 +11,11 @@
 #include "cc/cc_export.h"
 #include "ui/gfx/geometry/rect_f.h"
 #include "ui/gfx/geometry/scroll_offset.h"
+#include "ui/gfx/range/range_f.h"
 
 namespace cc {
+
+class SnapSelectionStrategy;
 
 // See https://www.w3.org/TR/css-scroll-snap-1/#snap-axis
 enum class SnapAxis : unsigned {
@@ -85,28 +88,13 @@ struct ScrollSnapAlign {
   SnapAlignment alignment_inline;
 };
 
-// We should really use gfx::RangeF. However, it includes windows.h which would
-// bring in complexity to the compilation. https://crbug.com/855717
-class SnapVisibleRange {
- public:
-  SnapVisibleRange() {}
-  SnapVisibleRange(float start, float end) : start_(start), end_(end) {}
-  bool Contains(float value) const;
-  float start() const { return start_; }
-  float end() const { return end_; }
-
- private:
-  float start_;
-  float end_;
-};
-
 // This class includes snap offset and visible range needed to perform a snap
 // operation on one axis for a specific area. The data can be used to determine
 // whether this snap area provides a valid snap position for the current scroll.
 class SnapSearchResult {
  public:
   SnapSearchResult() {}
-  SnapSearchResult(float offset, const SnapVisibleRange& range);
+  SnapSearchResult(float offset, const gfx::RangeF& range);
   // Clips the |snap_offset| between 0 and |max_snap|. And clips the
   // |visible_range| between 0 and |max_visible|.
   void Clip(float max_snap, float max_visible);
@@ -118,15 +106,15 @@ class SnapSearchResult {
   float snap_offset() const { return snap_offset_; }
   void set_snap_offset(float offset) { snap_offset_ = offset; }
 
-  SnapVisibleRange visible_range() const { return visible_range_; }
-  void set_visible_range(const SnapVisibleRange& range);
+  gfx::RangeF visible_range() const { return visible_range_; }
+  void set_visible_range(const gfx::RangeF& range);
 
  private:
   float snap_offset_;
   // This is the range on the cross axis, within which the SnapArea generating
   // this |snap_offset| is visible. We expect the range to be in order (as
-  // opposed to reversed), i.e., start < end.
-  SnapVisibleRange visible_range_;
+  // opposed to reversed), i.e., start() < end().
+  gfx::RangeF visible_range_;
 };
 
 // Snap area is a bounding box that could be snapped to when a scroll happens in
@@ -196,9 +184,7 @@ class CC_EXPORT SnapContainerData {
     return !(*this == other);
   }
 
-  bool FindSnapPosition(const gfx::ScrollOffset& current_position,
-                        bool should_snap_on_x,
-                        bool should_snap_on_y,
+  bool FindSnapPosition(const SnapSelectionStrategy& strategy,
                         gfx::ScrollOffset* snap_position) const;
 
   void AddSnapAreaData(SnapAreaData snap_area_data);
@@ -222,8 +208,8 @@ class CC_EXPORT SnapContainerData {
   gfx::ScrollOffset proximity_range() const { return proximity_range_; }
 
  private:
-  // Finds the best SnapArea candidate that minimizes the distance between
-  // current and candidate positions, while satisfying two invariants:
+  // Finds the best SnapArea candidate that's optimal for the given selection
+  // strategy, while satisfying two invariants:
   // - |candidate.snap_offset| is within |cross_axis_snap_result|'s visible
   // range on |axis|.
   // - |cross_axis_snap_result.snap_offset| is within |candidate|'s visible
@@ -234,7 +220,7 @@ class CC_EXPORT SnapContainerData {
   // |snap_offset| and its visible range on the cross axis.
   base::Optional<SnapSearchResult> FindClosestValidArea(
       SearchAxis axis,
-      float current_offset,
+      const SnapSelectionStrategy& strategy,
       const SnapSearchResult& cross_axis_snap_result) const;
 
   // Returns all the info needed to snap at this area on the given axis,

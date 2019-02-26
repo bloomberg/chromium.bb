@@ -8,13 +8,13 @@
 #include "third_party/blink/renderer/core/style/computed_style.h"
 
 namespace blink {
-namespace CSSLonghand {
+namespace css_longhand {
 
 const CSSValue* ColumnCount::ParseSingleValue(
     CSSParserTokenRange& range,
     const CSSParserContext& context,
     const CSSParserLocalContext&) const {
-  return CSSParsingUtils::ConsumeColumnCount(range);
+  return css_parsing_utils::ConsumeColumnCount(range);
 }
 
 const CSSValue* ColumnCount::CSSValueFromComputedStyleInternal(
@@ -29,5 +29,5 @@ const CSSValue* ColumnCount::CSSValueFromComputedStyleInternal(
                                    CSSPrimitiveValue::UnitType::kNumber);
 }
 
-}  // namespace CSSLonghand
+}  // namespace css_longhand
 }  // namespace blink

@@ -174,7 +174,7 @@ scoped_refptr<FontData> FontFallbackList::GetFontData(
   if (font_selector_) {
     // Try the user's preferred standard font.
     if (scoped_refptr<FontData> data = font_selector_->GetFontData(
-            font_description, FontFamilyNames::webkit_standard))
+            font_description, font_family_names::kWebkitStandard))
       return data;
   }
 

@@ -10,6 +10,10 @@
 
 namespace ui {
 
+AXPlatformNodeDelegateBase::AXPlatformNodeDelegateBase() = default;
+
+AXPlatformNodeDelegateBase::~AXPlatformNodeDelegateBase() = default;
+
 const AXNodeData& AXPlatformNodeDelegateBase::GetData() const {
   static base::NoDestructor<AXNodeData> empty_data;
   return *empty_data;
@@ -20,7 +24,7 @@ const AXTreeData& AXPlatformNodeDelegateBase::GetTreeData() const {
   return *empty_data;
 }
 
-gfx::NativeWindow AXPlatformNodeDelegateBase::GetTopLevelWidget() {
+gfx::NativeViewAccessible AXPlatformNodeDelegateBase::GetNSWindow() {
   return nullptr;
 }
 
@@ -74,20 +78,22 @@ int AXPlatformNodeDelegateBase::GetTableColCount() const {
   return 0;
 }
 
-std::vector<int32_t> AXPlatformNodeDelegateBase::GetColHeaderNodeIds() const {
+const std::vector<int32_t> AXPlatformNodeDelegateBase::GetColHeaderNodeIds()
+    const {
   return std::vector<int32_t>();
 }
 
-std::vector<int32_t> AXPlatformNodeDelegateBase::GetColHeaderNodeIds(
+const std::vector<int32_t> AXPlatformNodeDelegateBase::GetColHeaderNodeIds(
     int32_t col_index) const {
   return std::vector<int32_t>();
 }
 
-std::vector<int32_t> AXPlatformNodeDelegateBase::GetRowHeaderNodeIds() const {
+const std::vector<int32_t> AXPlatformNodeDelegateBase::GetRowHeaderNodeIds()
+    const {
   return std::vector<int32_t>();
 }
 
-std::vector<int32_t> AXPlatformNodeDelegateBase::GetRowHeaderNodeIds(
+const std::vector<int32_t> AXPlatformNodeDelegateBase::GetRowHeaderNodeIds(
     int32_t row_index) const {
   return std::vector<int32_t>();
 }
@@ -97,8 +103,8 @@ int32_t AXPlatformNodeDelegateBase::GetCellId(int32_t row_index,
   return -1;
 }
 
-int32_t AXPlatformNodeDelegateBase::CellIdToIndex(int32_t cell_id) const {
-  return 0;
+int32_t AXPlatformNodeDelegateBase::GetTableCellIndex() const {
+  return -1;
 }
 
 int32_t AXPlatformNodeDelegateBase::CellIndexToId(int32_t cell_index) const {

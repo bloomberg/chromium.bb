@@ -278,41 +278,22 @@ void CFX_DIBitmap::TransferEqualFormatsOneBPP(
   }
 }
 
-bool CFX_DIBitmap::LoadChannel(FXDIB_Channel destChannel,
-                               const RetainPtr<CFX_DIBBase>& pSrcBitmap,
-                               FXDIB_Channel srcChannel) {
+bool CFX_DIBitmap::LoadChannelFromAlpha(
+    FXDIB_Channel destChannel,
+    const RetainPtr<CFX_DIBBase>& pSrcBitmap) {
   if (!m_pBuffer)
     return false;
 
   RetainPtr<CFX_DIBBase> pSrcClone = pSrcBitmap;
-  int srcOffset;
-  if (srcChannel == FXDIB_Alpha) {
-    if (!pSrcBitmap->HasAlpha() && !pSrcBitmap->IsAlphaMask())
-      return false;
+  if (!pSrcBitmap->HasAlpha() && !pSrcBitmap->IsAlphaMask())
+    return false;
 
-    if (pSrcBitmap->GetBPP() == 1) {
-      pSrcClone = pSrcBitmap->CloneConvert(FXDIB_8bppMask);
-      if (!pSrcClone)
-        return false;
-    }
-    srcOffset = pSrcBitmap->GetFormat() == FXDIB_Argb ? 3 : 0;
-  } else {
-    if (pSrcBitmap->IsAlphaMask())
+  if (pSrcBitmap->GetBPP() == 1) {
+    pSrcClone = pSrcBitmap->CloneConvert(FXDIB_8bppMask);
+    if (!pSrcClone)
       return false;
-
-    if (pSrcBitmap->GetBPP() < 24) {
-      if (pSrcBitmap->IsCmykImage()) {
-        pSrcClone = pSrcBitmap->CloneConvert(static_cast<FXDIB_Format>(
-            (pSrcBitmap->GetFormat() & 0xff00) | 0x20));
-      } else {
-        pSrcClone = pSrcBitmap->CloneConvert(static_cast<FXDIB_Format>(
-            (pSrcBitmap->GetFormat() & 0xff00) | 0x18));
-      }
-      if (!pSrcClone)
-        return false;
-    }
-    srcOffset = kChannelOffset[srcChannel];
   }
+  int srcOffset = pSrcBitmap->GetFormat() == FXDIB_Argb ? 3 : 0;
   int destOffset = 0;
   if (destChannel == FXDIB_Alpha) {
     if (IsAlphaMask()) {
@@ -343,12 +324,13 @@ bool CFX_DIBitmap::LoadChannel(FXDIB_Channel destChannel,
     }
     destOffset = kChannelOffset[destChannel];
   }
-  if (srcChannel == FXDIB_Alpha && pSrcClone->m_pAlphaMask) {
+  if (pSrcClone->m_pAlphaMask) {
     RetainPtr<CFX_DIBBase> pAlphaMask = pSrcClone->m_pAlphaMask;
     if (pSrcClone->GetWidth() != m_Width ||
         pSrcClone->GetHeight() != m_Height) {
       if (pAlphaMask) {
-        pAlphaMask = pAlphaMask->StretchTo(m_Width, m_Height, 0, nullptr);
+        pAlphaMask = pAlphaMask->StretchTo(m_Width, m_Height,
+                                           FXDIB_ResampleOptions(), nullptr);
         if (!pAlphaMask)
           return false;
       }
@@ -357,8 +339,8 @@ bool CFX_DIBitmap::LoadChannel(FXDIB_Channel destChannel,
     srcOffset = 0;
   } else if (pSrcClone->GetWidth() != m_Width ||
              pSrcClone->GetHeight() != m_Height) {
-    RetainPtr<CFX_DIBitmap> pSrcMatched =
-        pSrcClone->StretchTo(m_Width, m_Height, 0, nullptr);
+    RetainPtr<CFX_DIBitmap> pSrcMatched = pSrcClone->StretchTo(
+        m_Width, m_Height, FXDIB_ResampleOptions(), nullptr);
     if (!pSrcMatched)
       return false;
 
@@ -451,12 +433,13 @@ bool CFX_DIBitmap::MultiplyAlpha(const RetainPtr<CFX_DIBBase>& pSrcBitmap) {
     return false;
 
   if (!IsAlphaMask() && !HasAlpha())
-    return LoadChannel(FXDIB_Alpha, pSrcBitmap, FXDIB_Alpha);
+    return LoadChannelFromAlpha(FXDIB_Alpha, pSrcBitmap);
 
   RetainPtr<CFX_DIBitmap> pSrcClone = pSrcBitmap.As<CFX_DIBitmap>();
   if (pSrcBitmap->GetWidth() != m_Width ||
       pSrcBitmap->GetHeight() != m_Height) {
-    pSrcClone = pSrcBitmap->StretchTo(m_Width, m_Height, 0, nullptr);
+    pSrcClone = pSrcBitmap->StretchTo(m_Width, m_Height,
+                                      FXDIB_ResampleOptions(), nullptr);
     if (!pSrcClone)
       return false;
   }
@@ -881,7 +864,7 @@ bool CFX_DIBitmap::CompositeBitmap(int dest_left,
                                    const RetainPtr<CFX_DIBBase>& pSrcBitmap,
                                    int src_left,
                                    int src_top,
-                                   int blend_type,
+                                   BlendMode blend_type,
                                    const CFX_ClipRgn* pClipRgn,
                                    bool bRgbByteOrder) {
   if (!m_pBuffer)
@@ -953,7 +936,7 @@ bool CFX_DIBitmap::CompositeMask(int dest_left,
                                  uint32_t color,
                                  int src_left,
                                  int src_top,
-                                 int blend_type,
+                                 BlendMode blend_type,
                                  const CFX_ClipRgn* pClipRgn,
                                  bool bRgbByteOrder,
                                  int alpha_flag) {
@@ -1071,7 +1054,9 @@ bool CFX_DIBitmap::CompositeRect(int left,
     return true;
   }
   if (m_bpp == 1) {
-    ASSERT(!IsCmykImage() && static_cast<uint8_t>(alpha_flag >> 8) == 0);
+    ASSERT(!IsCmykImage());
+    ASSERT(static_cast<uint8_t>(alpha_flag >> 8) == 0);
+
     int left_shift = rect.left % 8;
     int right_shift = rect.right % 8;
     int new_width = rect.right / 8 - rect.left / 8;

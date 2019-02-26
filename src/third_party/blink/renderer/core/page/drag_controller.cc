@@ -43,6 +43,7 @@
 #include "third_party/blink/renderer/core/dom/document_fragment.h"
 #include "third_party/blink/renderer/core/dom/element.h"
 #include "third_party/blink/renderer/core/dom/node.h"
+#include "third_party/blink/renderer/core/dom/node_computed_style.h"
 #include "third_party/blink/renderer/core/dom/shadow_root.h"
 #include "third_party/blink/renderer/core/dom/text.h"
 #include "third_party/blink/renderer/core/dom/user_gesture_indicator.h"
@@ -149,7 +150,7 @@ DragController::DragController(Page* page)
       did_initiate_drag_(false) {}
 
 DragController* DragController::Create(Page* page) {
-  return new DragController(page);
+  return MakeGarbageCollected<DragController>(page);
 }
 
 static DocumentFragment* DocumentFragmentFromDragData(
@@ -207,9 +208,7 @@ bool DragController::DragIsMove(FrameSelection& selection,
          !IsCopyKeyDown(drag_data);
 }
 
-// FIXME: This method is poorly named.  We're just clearing the selection from
-// the document this drag is exiting.
-void DragController::CancelDrag() {
+void DragController::ClearDragCaret() {
   page_->GetDragCaret().Clear();
 }
 
@@ -277,7 +276,7 @@ void DragController::PerformDrag(DragData* drag_data, LocalFrame& local_root) {
     }
     if (prevented_default) {
       document_under_mouse_ = nullptr;
-      CancelDrag();
+      ClearDragCaret();
       return;
     }
   }
@@ -318,7 +317,7 @@ void DragController::MouseMovedIntoDocument(Document* new_document) {
 
   // If we were over another document clear the selection
   if (document_under_mouse_)
-    CancelDrag();
+    ClearDragCaret();
   document_under_mouse_ = new_document;
 }
 
@@ -349,7 +348,7 @@ static HTMLInputElement* AsFileInput(Node* node) {
   DCHECK(node);
   for (; node; node = node->OwnerShadowHost()) {
     if (IsHTMLInputElement(*node) &&
-        ToHTMLInputElement(node)->type() == InputTypeNames::file)
+        ToHTMLInputElement(node)->type() == input_type_names::kFile)
       return ToHTMLInputElement(node);
   }
   return nullptr;
@@ -1055,11 +1054,12 @@ static std::unique_ptr<DragImage> DragImageForImage(
     image = svg_image.get();
   }
 
-  InterpolationQuality interpolation_quality =
-      element->EnsureComputedStyle()->ImageRendering() ==
-              EImageRendering::kPixelated
-          ? kInterpolationNone
-          : kInterpolationDefault;
+  InterpolationQuality interpolation_quality = kInterpolationDefault;
+  if (const ComputedStyle* style = element->GetComputedStyle()) {
+    if (style->ImageRendering() == EImageRendering::kPixelated)
+      interpolation_quality = kInterpolationNone;
+  }
+
   RespectImageOrientationEnum should_respect_image_orientation =
       LayoutObject::ShouldRespectImageOrientation(element->GetLayoutObject());
   ImageOrientation orientation;
@@ -1300,7 +1300,7 @@ void DragController::DoSystemDrag(DragImage* image,
       frame->View()->FrameToViewport(drag_location);
   IntPoint adjusted_event_pos = frame->View()->FrameToViewport(event_pos);
   IntSize offset_size(adjusted_event_pos - adjusted_drag_location);
-  WebPoint offset_point(offset_size.Width(), offset_size.Height());
+  gfx::Point offset_point(offset_size.Width(), offset_size.Height());
   WebDragData drag_data = data_transfer->GetDataObject()->ToWebDragData();
   WebDragOperationsMask drag_operation_mask =
       static_cast<WebDragOperationsMask>(data_transfer->SourceOperation());
@@ -1344,7 +1344,7 @@ bool DragController::IsCopyKeyDown(DragData* drag_data) {
 
 DragState& DragController::GetDragState() {
   if (!drag_state_)
-    drag_state_ = new DragState;
+    drag_state_ = MakeGarbageCollected<DragState>();
   return *drag_state_;
 }
 

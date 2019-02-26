@@ -131,16 +131,19 @@
         Google Credential Provider
       </message>
       <message name="IDS_INVALID_UI_RESPONSE" desc="">
-        Signing in to your Google account failed, please try again.  Make sure the computer has a valid internet connection.  If the error persists, please report to Google.
+        Signing in to your Google Account failed. Make sure the computer has an internet connection, then try again.
       </message>
       <message name="IDS_CANT_CREATE_USER" desc="">
         A user could not be created.
       </message>
+      <message name="IDS_INVALID_PASSWORD" desc="">
+        Sorry, your password couldn't be verified. Please try again.
+      </message>
       <message name="IDS_INTERNAL_ERROR" desc="">
-        An internal error occurred.  If the error persists. please report to Google.
+        An internal error occurred.
       </message>
       <message name="IDS_EMAIL_MISMATCH" desc="">
-         Logon with this Google Account is not permitted.
+         Signing in with this Google Account is not allowed. Try a different account.
       </message>
       <message name="IDS_GAIA_ACCOUNT_FULLNAME" desc="">
         Google Credential Provider Helper
@@ -149,22 +152,25 @@
         Used to run Google Credential Provider sign in page.
       </message>
       <message name="IDS_AUTH_FID_DESCRIPTION" desc="">
-        Logon using your Google Account.
+        Sign in using your Google Account.
       </message>
       <message name="IDS_AUTH_FID_PROVIDER_LABEL" desc="">
-        Google Account
+        Add person
       </message>
       <message name="IDS_REAUTH_FID_DESCRIPTION" desc="">
-        Logon using your updated Google Account password.
+        Sign in using your updated Google Account password.
       </message>
       <message name="IDS_REAUTH_FID_PROVIDER_LABEL" desc="">
         Update password
       </message>
       <message name="IDS_ERROR_DIALOG_TITLE" desc="">
-        Google Account Logon
+        Google Account sign-in
       </message>
       <message name="IDS_USER_ACCOUNT_COMMENT" desc="">
         Google user
+      </message>
+      <message name="IDS_NO_NETWORK" desc="">
+        Make sure you have a network connection and try again.
       </message>
     </messages>
   </release>

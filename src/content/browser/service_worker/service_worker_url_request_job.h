@@ -57,6 +57,7 @@ namespace content {
 class ResourceContext;
 class ServiceWorkerBlobReader;
 class ServiceWorkerDataPipeReader;
+class ServiceWorkerProviderHost;
 class ServiceWorkerVersion;
 
 namespace service_worker_controllee_request_handler_unittest {
@@ -253,9 +254,6 @@ class CONTENT_EXPORT ServiceWorkerURLRequestJob : public net::URLRequestJob {
 
   void MaybeReportNavigationPreloadMetrics();
 
-  void ReportDestination(
-      ServiceWorkerMetrics::MainResourceRequestDestination destination);
-
   // Not owned.
   Delegate* delegate_;
 
@@ -311,7 +309,6 @@ class CONTENT_EXPORT ServiceWorkerURLRequestJob : public net::URLRequestJob {
   // Used when response type is FORWARD_TO_SERVICE_WORKER.
   std::unique_ptr<ServiceWorkerFetchDispatcher> fetch_dispatcher_;
   base::WeakPtr<ServiceWorkerProviderHost> provider_host_;
-  std::string client_id_;
   base::WeakPtr<storage::BlobStorageContext> blob_storage_context_;
   const ResourceContext* resource_context_;
   // Only one of |blob_reader_| and |data_pipe_reader_| can be non-null.
@@ -341,9 +338,6 @@ class CONTENT_EXPORT ServiceWorkerURLRequestJob : public net::URLRequestJob {
   ServiceWorkerHeaderList cors_exposed_header_names_;
 
   std::unique_ptr<FileSizeResolver> file_size_resolver_;
-
-  bool started_fetch_dispatch_ = false;
-  bool reported_destination_ = false;
 
   base::WeakPtrFactory<ServiceWorkerURLRequestJob> weak_factory_;
 

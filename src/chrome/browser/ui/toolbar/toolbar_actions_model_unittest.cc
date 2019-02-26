@@ -1161,7 +1161,7 @@ TEST_F(ToolbarActionsModelUnitTest, ModelWaitsForExtensionSystemReady) {
 
 // Check that the toolbar model correctly clears and reorders when it detects
 // a preference change.
-TEST_F(ToolbarActionsModelUnitTest, ToolbarModelPrefChange) {
+TEST_F(ToolbarActionsModelUnitTest, LocationBarModelPrefChange) {
   Init();
 
   ASSERT_TRUE(AddBrowserActionExtensions());

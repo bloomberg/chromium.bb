@@ -72,6 +72,9 @@ struct array
     const T* data() const noexcept;
 };
 
+  template <class T, class... U>
+    array(T, U...) -> array<T, 1 + sizeof...(U)>;
+
 template <class T, size_t N>
   bool operator==(const array<T,N>& x, const array<T,N>& y);
 template <class T, size_t N>
@@ -86,7 +89,7 @@ template <class T, size_t N>
   bool operator>=(const array<T,N>& x, const array<T,N>& y);
 
 template <class T, size_t N >
-  void swap(array<T,N>& x, array<T,N>& y) noexcept(noexcept(x.swap(y)));
+  void swap(array<T,N>& x, array<T,N>& y) noexcept(noexcept(x.swap(y))); // C++17
 
 template <class T> class tuple_size;
 template <size_t I, class T> class tuple_element;
@@ -109,6 +112,7 @@ template <size_t I, class T, size_t N> const T&& get(const array<T, N>&&) noexce
 #include <algorithm>
 #include <stdexcept>
 #include <cstdlib> // for _LIBCPP_UNREACHABLE
+#include <version>
 #include <__debug>
 
 #if !defined(_LIBCPP_HAS_NO_PRAGMA_SYSTEM_HEADER)
@@ -354,9 +358,17 @@ struct _LIBCPP_TEMPLATE_VIS array<_Tp, 0>
 };
 
 
+#ifndef _LIBCPP_HAS_NO_DEDUCTION_GUIDES
+template<class _Tp, class... _Args,
+         class = typename enable_if<(is_same_v<_Tp, _Args> && ...), void>::type
+         >
+array(_Tp, _Args...)
+  -> array<_Tp, 1 + sizeof...(_Args)>;
+#endif
+
 template <class _Tp, size_t _Size>
 inline _LIBCPP_INLINE_VISIBILITY
-bool
+_LIBCPP_CONSTEXPR_AFTER_CXX17 bool
 operator==(const array<_Tp, _Size>& __x, const array<_Tp, _Size>& __y)
 {
     return _VSTD::equal(__x.begin(), __x.end(), __y.begin());
@@ -364,7 +376,7 @@ operator==(const array<_Tp, _Size>& __x, const array<_Tp, _Size>& __y)
 
 template <class _Tp, size_t _Size>
 inline _LIBCPP_INLINE_VISIBILITY
-bool
+_LIBCPP_CONSTEXPR_AFTER_CXX17 bool
 operator!=(const array<_Tp, _Size>& __x, const array<_Tp, _Size>& __y)
 {
     return !(__x == __y);
@@ -372,7 +384,7 @@ operator!=(const array<_Tp, _Size>& __x, const array<_Tp, _Size>& __y)
 
 template <class _Tp, size_t _Size>
 inline _LIBCPP_INLINE_VISIBILITY
-bool
+_LIBCPP_CONSTEXPR_AFTER_CXX17 bool
 operator<(const array<_Tp, _Size>& __x, const array<_Tp, _Size>& __y)
 {
     return _VSTD::lexicographical_compare(__x.begin(), __x.end(),
@@ -381,7 +393,7 @@ operator<(const array<_Tp, _Size>& __x, const array<_Tp, _Size>& __y)
 
 template <class _Tp, size_t _Size>
 inline _LIBCPP_INLINE_VISIBILITY
-bool
+_LIBCPP_CONSTEXPR_AFTER_CXX17 bool
 operator>(const array<_Tp, _Size>& __x, const array<_Tp, _Size>& __y)
 {
     return __y < __x;
@@ -389,7 +401,7 @@ operator>(const array<_Tp, _Size>& __x, const array<_Tp, _Size>& __y)
 
 template <class _Tp, size_t _Size>
 inline _LIBCPP_INLINE_VISIBILITY
-bool
+_LIBCPP_CONSTEXPR_AFTER_CXX17 bool
 operator<=(const array<_Tp, _Size>& __x, const array<_Tp, _Size>& __y)
 {
     return !(__y < __x);
@@ -397,7 +409,7 @@ operator<=(const array<_Tp, _Size>& __x, const array<_Tp, _Size>& __y)
 
 template <class _Tp, size_t _Size>
 inline _LIBCPP_INLINE_VISIBILITY
-bool
+_LIBCPP_CONSTEXPR_AFTER_CXX17 bool
 operator>=(const array<_Tp, _Size>& __x, const array<_Tp, _Size>& __y)
 {
     return !(__x < __y);

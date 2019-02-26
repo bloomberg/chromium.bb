@@ -14,6 +14,8 @@
 #include "build/build_config.h"
 #include "services/service_manager/public/cpp/binder_registry.h"
 #include "services/service_manager/public/cpp/service.h"
+#include "services/service_manager/public/cpp/service_binding.h"
+#include "services/service_manager/public/mojom/service.mojom.h"
 #include "services/tracing/agent_registry.h"
 #include "services/tracing/coordinator.h"
 
@@ -25,16 +27,11 @@
 namespace tracing {
 
 class PerfettoTracingCoordinator;
-class PerfettoService;
 
 class TracingService : public service_manager::Service {
  public:
-  TracingService();
+  explicit TracingService(service_manager::mojom::ServiceRequest request);
   ~TracingService() override;
-
-  // service_manager::Service:
-  // Factory function for use as an embedded service.
-  static std::unique_ptr<service_manager::Service> Create();
 
   // service_manager::Service:
   void OnStart() override;
@@ -43,6 +40,8 @@ class TracingService : public service_manager::Service {
                        mojo::ScopedMessagePipeHandle interface_pipe) override;
 
  private:
+  service_manager::ServiceBinding service_binding_;
+
   service_manager::BinderRegistryWithArgs<
       const service_manager::BindSourceInfo&>
       registry_;
@@ -51,13 +50,12 @@ class TracingService : public service_manager::Service {
   scoped_refptr<base::SequencedTaskRunner> task_runner_;
 
 #if defined(PERFETTO_SERVICE_AVAILABLE)
-  std::unique_ptr<tracing::PerfettoService> perfetto_service_;
   std::unique_ptr<PerfettoTracingCoordinator> perfetto_tracing_coordinator_;
 #endif
 
   // WeakPtrFactory members should always come last so WeakPtrs are destructed
   // before other members.
-  base::WeakPtrFactory<TracingService> weak_factory_;
+  base::WeakPtrFactory<TracingService> weak_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(TracingService);
 };

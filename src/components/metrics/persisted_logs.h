@@ -48,6 +48,7 @@ class PersistedLogs : public LogStore {
   bool has_staged_log() const override;
   const std::string& staged_log() const override;
   const std::string& staged_log_hash() const override;
+  const std::string& staged_log_signature() const override;
   void StageNextLog() override;
   void DiscardStagedLog() override;
   void PersistUnsentLogs() const override;
@@ -93,6 +94,10 @@ class PersistedLogs : public LogStore {
   const size_t max_log_size_;
 
   struct LogInfo {
+    LogInfo();
+    LogInfo(const LogInfo& other);
+    ~LogInfo();
+
     // Initializes the members based on uncompressed |log_data| and
     // |log_timestamp|.
     // |metrics| is the parent's metrics_ object, and should not be held.
@@ -103,8 +108,14 @@ class PersistedLogs : public LogStore {
     // Compressed log data - a serialized protobuf that's been gzipped.
     std::string compressed_log_data;
 
-    // The SHA1 hash of log, stored to catch errors from memory corruption.
+    // The SHA1 hash of the log. Computed in Init and stored to catch errors
+    // from memory corruption.
     std::string hash;
+
+    // The HMAC-SHA256 signature of the log, used to validate the log came from
+    // Chrome. It's computed in Init and stored, instead of computed on demand,
+    // to catch errors from memory corruption.
+    std::string signature;
 
     // The timestamp of when the log was created as a time_t value.
     std::string timestamp;

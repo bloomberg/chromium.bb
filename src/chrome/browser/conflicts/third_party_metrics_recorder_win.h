@@ -11,6 +11,10 @@
 #include "base/strings/string16.h"
 #include "chrome/browser/conflicts/module_database_observer_win.h"
 
+#if defined(GOOGLE_CHROME_BUILD)
+#include "base/timer/timer.h"
+#endif
+
 struct ModuleInfoData;
 struct ModuleInfoKey;
 
@@ -25,6 +29,10 @@ class ThirdPartyMetricsRecorder : public ModuleDatabaseObserver {
                         const ModuleInfoData& module_data) override;
   void OnModuleDatabaseIdle() override;
 
+#if defined(GOOGLE_CHROME_BUILD)
+  void SetHookDisabled() { hook_enabled_ = false; }
+#endif
+
  private:
   // The size of the unsigned modules crash keys.
   static constexpr size_t kCrashKeySize = 256;
@@ -35,6 +43,24 @@ class ThirdPartyMetricsRecorder : public ModuleDatabaseObserver {
   // will start overwriting the current values in the crash keys. This is not
   // a problem in practice because this class is leaked.
   void AddUnsignedModuleToCrashkeys(const base::string16& module_basename);
+
+#if defined(GOOGLE_CHROME_BUILD)
+  // Invoked periodically to record heartbeat metrics related to third-party
+  // DLL blocking.
+  void RecordHeartbeatMetrics();
+
+  // Timer that controls when heartbeat metrics are recorded.
+  base::RepeatingTimer heartbeat_metrics_timer_;
+
+  // Indicates if the ThirdPartyModules.Heartbeat.BlockedModulesCount heartbeat
+  // metric is being recorded.
+  bool record_blocked_modules_count_ = true;
+
+  // Indicates if the blocking of third-party DLLs is still enabled or if it
+  // was disabled because in-process printing was invoked.
+  // See ModuleDatabase::DisableThirdPartyBlocking().
+  bool hook_enabled_ = true;
+#endif
 
   // The index of the crash key that is currently being updated.
   size_t current_key_index_ = 0;

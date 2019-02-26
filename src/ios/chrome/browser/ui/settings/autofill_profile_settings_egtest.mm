@@ -10,6 +10,7 @@
 #include "components/autofill/core/browser/personal_data_manager.h"
 #include "components/strings/grit/components_strings.h"
 #include "ios/chrome/browser/autofill/personal_data_manager_factory.h"
+#import "ios/chrome/browser/ui/settings/autofill_profile_edit_table_view_controller.h"
 #include "ios/chrome/grit/ios_strings.h"
 #import "ios/chrome/test/app/chrome_test_util.h"
 #import "ios/chrome/test/app/web_view_interaction_test_util.h"
@@ -161,12 +162,16 @@ NSString* GetTextFieldForID(int categoryId) {
 
   // Check that all fields and values match the expectations.
   for (const DisplayStringIDToExpectedResult& expectation : kExpectedFields) {
-    [[EarlGrey selectElementWithMatcher:
-                   grey_accessibilityLabel([NSString
-                       stringWithFormat:@"%@, %@",
-                                        l10n_util::GetNSString(
-                                            expectation.display_string_id),
-                                        expectation.expected_result])]
+    id<GREYMatcher> elementMatcher = grey_accessibilityLabel([NSString
+        stringWithFormat:@"%@, %@",
+                         l10n_util::GetNSString(expectation.display_string_id),
+                         expectation.expected_result]);
+    [[[EarlGrey
+        selectElementWithMatcher:grey_allOf(elementMatcher,
+                                            grey_sufficientlyVisible(), nil)]
+           usingSearchAction:grey_scrollInDirection(kGREYDirectionDown, 150)
+        onElementWithMatcher:grey_accessibilityID(
+                                 kAutofillProfileEditTableViewId)]
         assertWithMatcher:grey_notNil()];
   }
 
@@ -260,8 +265,9 @@ NSString* GetTextFieldForID(int categoryId) {
       performAction:grey_tap()];
 
   // Check the Autofill profile switch is disabled.
-  [[EarlGrey selectElementWithMatcher:chrome_test_util::SettingsSwitchCell(
-                                          @"addressItem_switch", YES, NO)]
+  [[EarlGrey
+      selectElementWithMatcher:chrome_test_util::LegacySettingsSwitchCell(
+                                   @"addressItem_switch", YES, NO)]
       assertWithMatcher:grey_notNil()];
 
   [self exitSettingsMenu];
@@ -274,18 +280,20 @@ NSString* GetTextFieldForID(int categoryId) {
   [self openAutofillProfilesSettings];
 
   // Toggle the Autofill profiles switch off.
-  [[EarlGrey selectElementWithMatcher:chrome_test_util::SettingsSwitchCell(
-                                          @"addressItem_switch", YES, YES)]
-      performAction:chrome_test_util::TurnSettingsSwitchOn(NO)];
+  [[EarlGrey
+      selectElementWithMatcher:chrome_test_util::LegacySettingsSwitchCell(
+                                   @"addressItem_switch", YES, YES)]
+      performAction:chrome_test_util::TurnLegacySettingsSwitchOn(NO)];
 
   // Expect Autofill profiles to remain visible.
   [[EarlGrey selectElementWithMatcher:grey_accessibilityLabel(kProfileLabel)]
       assertWithMatcher:grey_notNil()];
 
   // Toggle the Autofill profiles switch back on.
-  [[EarlGrey selectElementWithMatcher:chrome_test_util::SettingsSwitchCell(
-                                          @"addressItem_switch", NO, YES)]
-      performAction:chrome_test_util::TurnSettingsSwitchOn(YES)];
+  [[EarlGrey
+      selectElementWithMatcher:chrome_test_util::LegacySettingsSwitchCell(
+                                   @"addressItem_switch", NO, YES)]
+      performAction:chrome_test_util::TurnLegacySettingsSwitchOn(YES)];
 
   // Expect Autofill profiles to remain visible.
   [[EarlGrey selectElementWithMatcher:grey_accessibilityLabel(kProfileLabel)]

@@ -14,6 +14,7 @@
 #import "base/mac/foundation_util.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/metrics/user_metrics_action.h"
+#include "base/stl_util.h"
 #include "base/strings/sys_string_conversions.h"
 #include "base/task/cancelable_task_tracker.h"
 #include "base/task/post_task.h"
@@ -176,7 +177,7 @@ BOOL ShouldRecordPageLoadStartForNavigation(
       ui::PAGE_TRANSITION_KEYWORD_GENERATED,
   };
 
-  for (size_t i = 0; i < arraysize(kRecordedPageTransitionTypes); ++i) {
+  for (size_t i = 0; i < base::size(kRecordedPageTransitionTypes); ++i) {
     const ui::PageTransition recorded_type = kRecordedPageTransitionTypes[i];
     if (ui::PageTransitionCoreTypeIs(transition, recorded_type)) {
       return YES;
@@ -327,8 +328,7 @@ void RecordMainFrameNavigationMetric(web::WebState* web_state) {
   if ((self = [super init])) {
     _observers = [TabModelObservers observers];
 
-    _webStateListDelegate =
-        std::make_unique<TabModelWebStateListDelegate>(self);
+    _webStateListDelegate = std::make_unique<TabModelWebStateListDelegate>();
     _webStateList = std::make_unique<WebStateList>(_webStateListDelegate.get());
 
     _browserState = browserState;
@@ -511,6 +511,8 @@ void RecordMainFrameNavigationMetric(web::WebState* web_state) {
                         atIndex:(NSUInteger)index
                    inBackground:(BOOL)inBackground {
   DCHECK(_browserState);
+  DCHECK(index == TabModelConstants::kTabPositionAutomatically ||
+         index <= self.count);
 
   int insertionIndex = WebStateList::kInvalidIndex;
   int insertionFlags = WebStateList::INSERT_NO_FLAGS;
@@ -581,9 +583,9 @@ void RecordMainFrameNavigationMetric(web::WebState* web_state) {
   [_observers tabModel:self didStartLoadingTab:tab];
 }
 
-- (void)notifyTabFinishedLoading:(Tab*)tab success:(BOOL)success {
+- (void)notifyTabFinishedLoading:(Tab*)tab {
   [self notifyTabChanged:tab];
-  [_observers tabModel:self didFinishLoadingTab:tab success:success];
+  [_observers tabModel:self didFinishLoadingTab:tab];
 }
 
 - (void)notifyNewTabWillOpen:(Tab*)tab inBackground:(BOOL)background {
@@ -922,6 +924,17 @@ void RecordMainFrameNavigationMetric(web::WebState* web_state) {
     navigationItem = webState->GetNavigationManager()->GetLastCommittedItem();
   }
 
+  if (!navigationItem) {
+    // Pending item may not exist due to the bug in //ios/web layer.
+    // TODO(crbug.com/899827): remove this early return once GetPendingItem()
+    // always return valid object inside WebStateObserver::DidStartNavigation()
+    // callback.
+    //
+    // Note that GetLastCommittedItem() returns null if navigation manager does
+    // not have committed items (which is normal situation).
+    return;
+  }
+
   [[OmniboxGeolocationController sharedInstance]
       addLocationToNavigationItem:navigationItem
                      browserState:ios::ChromeBrowserState::FromBrowserState(
@@ -937,7 +950,7 @@ void RecordMainFrameNavigationMetric(web::WebState* web_state) {
 - (void)webState:(web::WebState*)webState didLoadPageWithSuccess:(BOOL)success {
   DCHECK(!webState->IsLoading());
   Tab* tab = LegacyTabHelper::GetTabForWebState(webState);
-  [self notifyTabFinishedLoading:tab success:success];
+  [self notifyTabFinishedLoading:tab];
 
   RecordInterfaceOrientationMetric();
   RecordMainFrameNavigationMetric(webState);

@@ -29,6 +29,7 @@
 #include "media/gpu/android/android_video_surface_chooser.h"
 #include "media/gpu/android/codec_allocator.h"
 #include "media/gpu/android/fake_codec_allocator.h"
+#include "media/gpu/android/mock_abstract_texture.h"
 #include "media/gpu/android/mock_android_video_surface_chooser.h"
 #include "media/gpu/android/mock_device_info.h"
 #include "media/media_buildflags.h"
@@ -110,7 +111,8 @@ class AndroidVideoDecodeAcceleratorTest
     context_group_ = new gpu::gles2::ContextGroup(
         gpu_preferences_, false, &mailbox_manager_, nullptr, nullptr, nullptr,
         feature_info_, false, &image_manager_, nullptr, nullptr,
-        gpu::GpuFeatureInfo(), &discardable_manager_, &shared_image_manager_);
+        gpu::GpuFeatureInfo(), &discardable_manager_, nullptr,
+        &shared_image_manager_);
 
     // By default, allow deferred init.
     config_.is_deferred_initialization_allowed = true;
@@ -147,6 +149,9 @@ class AndroidVideoDecodeAcceleratorTest
         base::BindRepeating(&GetContextGroup, context_group_),
         base::BindRepeating(&AndroidVideoDecodeAcceleratorTest::OverlayFactory,
                             base::Unretained(this)),
+        base::BindRepeating(
+            &AndroidVideoDecodeAcceleratorTest::CreateAbstractTexture,
+            base::Unretained(this)),
         device_info_.get());
     vda_.reset(avda);
     avda->force_defer_surface_creation_for_testing_ =
@@ -156,6 +161,18 @@ class AndroidVideoDecodeAcceleratorTest
     bool result = vda_->Initialize(config_, &client_);
     base::RunLoop().RunUntilIdle();
     return result;
+  }
+
+  std::unique_ptr<gpu::gles2::AbstractTexture> CreateAbstractTexture(
+      GLenum target,
+      GLenum internal_format,
+      GLsizei width,
+      GLsizei height,
+      GLsizei depth,
+      int border,
+      GLenum format,
+      GLenum type) {
+    return std::make_unique<MockAbstractTexture>(0);
   }
 
   // Initialize |vda_|, providing a new surface for it.  You may get the surface

@@ -5,7 +5,7 @@
 #include "ash/public/cpp/ash_pref_names.h"
 #include "ash/public/cpp/ash_switches.h"
 #include "ash/public/cpp/stylus_utils.h"
-#include "base/sys_info.h"
+#include "base/system/sys_info.h"
 #include "base/test/scoped_feature_list.h"
 #include "base/values.h"
 #include "chrome/browser/chromeos/arc/arc_util.h"
@@ -21,6 +21,8 @@
 #include "components/arc/arc_util.h"
 #include "components/prefs/pref_service.h"
 #include "services/ws/public/cpp/input_devices/input_device_client_test_api.h"
+#include "ui/aura/window.h"
+#include "ui/base/ui_base_features.h"
 #include "ui/events/devices/input_device.h"
 #include "ui/events/devices/touchscreen_device.h"
 #include "ui/events/test/event_generator.h"
@@ -188,7 +190,10 @@ IN_PROC_BROWSER_TEST_F(ChromeOSInfoPrivateTest, StylusSeen) {
   touchscreen.has_stylus = true;
   test_api.SetTouchscreenDevices({touchscreen});
 
-  ui::test::EventGenerator generator(browser()->window()->GetNativeWindow());
+  ui::test::EventGenerator generator(
+      features::IsUsingWindowService()
+          ? nullptr
+          : browser()->window()->GetNativeWindow()->GetRootWindow());
   generator.EnterPenPointerMode();
   generator.PressTouch();
   generator.ReleaseTouch();

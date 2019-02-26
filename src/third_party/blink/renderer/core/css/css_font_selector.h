@@ -43,8 +43,10 @@ class FontDescription;
 class CORE_EXPORT CSSFontSelector : public FontSelector {
  public:
   static CSSFontSelector* Create(Document* document) {
-    return new CSSFontSelector(document);
+    return MakeGarbageCollected<CSSFontSelector>(document);
   }
+
+  explicit CSSFontSelector(Document*);
   ~CSSFontSelector() override;
 
   unsigned Version() const override { return font_face_cache_.Version(); }
@@ -81,8 +83,6 @@ class CORE_EXPORT CSSFontSelector : public FontSelector {
   void Trace(blink::Visitor*) override;
 
  protected:
-  explicit CSSFontSelector(Document*);
-
   void DispatchInvalidationCallbacks();
 
  private:

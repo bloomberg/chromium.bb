@@ -20,8 +20,9 @@ import subprocess2
 
 
 def ValidateEmail(email):
-  return (re.match(r"^[a-zA-Z0-9._%-+]+@[a-zA-Z0-9._%-]+.[a-zA-Z]{2,6}$", email)
-          is not None)
+  return (
+      re.match(r"^[a-zA-Z0-9._%\-+]+@[a-zA-Z0-9._%-]+.[a-zA-Z]{2,6}$", email)
+      is not None)
 
 
 def GetCasedPath(path):

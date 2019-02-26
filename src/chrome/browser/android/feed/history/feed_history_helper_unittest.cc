@@ -36,7 +36,7 @@ class FeedHistoryHelperTest : public testing::Test {
     feed_history_helper_ =
         std::make_unique<FeedHistoryHelper>(history_service_);
     history_service_->AddPage(
-        GURL(kURL1), base::Time::Now(), /*context_id=*/nullptr,
+        GURL(kURL1), base::Time(), /*context_id=*/nullptr,
         /*nav_entry_id=*/0,
         /*referrer=*/GURL(), history::RedirectList(), ui::PAGE_TRANSITION_TYPED,
         history::SOURCE_BROWSED, /*did_replace_entry=*/false);

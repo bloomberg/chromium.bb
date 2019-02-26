@@ -15,7 +15,6 @@
 #include "ash/public/interfaces/window_pin_type.mojom.h"
 #include "ash/shell.h"
 #include "ash/shell_test_api.h"
-#include "ash/system/tray/system_tray.h"
 #include "ash/system/unified/unified_system_tray.h"
 #include "ash/wm/drag_window_resizer.h"
 #include "ash/wm/overview/window_selector_controller.h"
@@ -47,6 +46,8 @@
 #include "ui/aura/window_event_dispatcher.h"
 #include "ui/aura/window_targeter.h"
 #include "ui/aura/window_tree_host.h"
+#include "ui/compositor/scoped_animation_duration_scale_mode.h"
+#include "ui/compositor/scoped_layer_animation_settings.h"
 #include "ui/compositor_extra/shadow.h"
 #include "ui/display/display.h"
 #include "ui/display/test/display_manager_test_api.h"
@@ -660,54 +661,8 @@ TEST_F(ClientControlledShellSurfaceTest, CompositorLockInRotation) {
 
 // If system tray is shown by click. It should be activated if user presses tab
 // key while shell surface is active.
-TEST_F(ClientControlledShellSurfaceTest, KeyboardNavigationWithSystemTray) {
-  // This is old SystemTray version.
-  if (ash::features::IsSystemTrayUnifiedEnabled())
-    return;
-
-  const gfx::Size buffer_size(800, 600);
-  std::unique_ptr<Buffer> buffer(
-      new Buffer(exo_test_helper()->CreateGpuMemoryBuffer(buffer_size)));
-  std::unique_ptr<Surface> surface(new Surface());
-  auto shell_surface =
-      exo_test_helper()->CreateClientControlledShellSurface(surface.get());
-
-  surface->Attach(buffer.get());
-  surface->Commit();
-
-  EXPECT_TRUE(shell_surface->GetWidget()->IsActive());
-
-  // Show system tray by perfoming a gesture tap at tray.
-  ash::SystemTray* system_tray = GetPrimarySystemTray();
-  ui::GestureEvent tap(0, 0, 0, base::TimeTicks(),
-                       ui::GestureEventDetails(ui::ET_GESTURE_TAP));
-  system_tray->PerformAction(tap);
-  ASSERT_TRUE(system_tray->GetWidget());
-
-  // Confirm that system tray is not active at this time.
-  EXPECT_TRUE(shell_surface->GetWidget()->IsActive());
-  EXPECT_FALSE(
-      system_tray->GetSystemBubble()->bubble_view()->GetWidget()->IsActive());
-
-  // Send tab key event.
-  ui::test::EventGenerator* event_generator = GetEventGenerator();
-  event_generator->PressKey(ui::VKEY_TAB, ui::EF_NONE);
-  event_generator->ReleaseKey(ui::VKEY_TAB, ui::EF_NONE);
-
-  // Confirm that system tray is activated.
-  EXPECT_FALSE(shell_surface->GetWidget()->IsActive());
-  EXPECT_TRUE(
-      system_tray->GetSystemBubble()->bubble_view()->GetWidget()->IsActive());
-}
-
-// If system tray is shown by click. It should be activated if user presses tab
-// key while shell surface is active.
 TEST_F(ClientControlledShellSurfaceTest,
        KeyboardNavigationWithUnifiedSystemTray) {
-  // This is UnifiedSystemTray version.
-  if (!ash::features::IsSystemTrayUnifiedEnabled())
-    return;
-
   const gfx::Size buffer_size(800, 600);
   std::unique_ptr<Buffer> buffer(
       new Buffer(exo_test_helper()->CreateGpuMemoryBuffer(buffer_size)));
@@ -1833,31 +1788,6 @@ TEST_F(ClientControlledShellSurfaceTest, PipWindowCannotBeActivated) {
   EXPECT_TRUE(shell_surface->GetWidget()->CanActivate());
 }
 
-TEST_F(ClientControlledShellSurfaceTest, MovingPipWindowOffDisplayIsAllowed) {
-  UpdateDisplay("500x500");
-
-  gfx::Size buffer_size(256, 256);
-  std::unique_ptr<Buffer> buffer(
-      new Buffer(exo_test_helper()->CreateGpuMemoryBuffer(buffer_size)));
-  std::unique_ptr<Surface> surface(new Surface);
-  auto shell_surface(
-      exo_test_helper()->CreateClientControlledShellSurface(surface.get()));
-  surface->Attach(buffer.get());
-  surface->Commit();
-
-  // Use the PIP window state type.
-  shell_surface->SetPip();
-  shell_surface->GetWidget()->Show();
-
-  // Set an off-screen geometry.
-  gfx::Rect bounds(-200, 0, 100, 100);
-  shell_surface->SetGeometry(bounds);
-  surface->Commit();
-
-  EXPECT_EQ(gfx::Rect(-200, 0, 100, 100),
-            shell_surface->GetWidget()->GetWindowBoundsInScreen());
-}
-
 TEST_F(ClientControlledShellSurfaceDisplayTest,
        NoBoundsChangeEventInMinimized) {
   gfx::Size buffer_size(100, 100);
@@ -1890,6 +1820,53 @@ TEST_F(ClientControlledShellSurfaceDisplayTest,
                                      ash::mojom::WindowStateType::MINIMIZED, 0,
                                      gfx::Rect(0, 0, 100, 100), 0);
   ASSERT_EQ(1, bounds_change_count());
+}
+
+TEST_F(ClientControlledShellSurfaceTest, SetPipWindowBoundsAnimates) {
+  const gfx::Size buffer_size(256, 256);
+  std::unique_ptr<Buffer> buffer(
+      new Buffer(exo_test_helper()->CreateGpuMemoryBuffer(buffer_size)));
+  std::unique_ptr<Surface> surface(new Surface());
+  auto shell_surface =
+      exo_test_helper()->CreateClientControlledShellSurface(surface.get());
+
+  surface->Attach(buffer.get());
+  surface->Commit();
+  shell_surface->SetPip();
+  surface->Commit();
+  shell_surface->GetWidget()->Show();
+
+  ui::ScopedAnimationDurationScaleMode animation_scale_mode(
+      ui::ScopedAnimationDurationScaleMode::NON_ZERO_DURATION);
+  aura::Window* window = shell_surface->GetWidget()->GetNativeWindow();
+  window->SetBounds(gfx::Rect(10, 10, 256, 256));
+  EXPECT_EQ(gfx::Rect(10, 10, 256, 256), window->layer()->GetTargetBounds());
+  EXPECT_EQ(gfx::Rect(0, 0, 256, 256), window->layer()->bounds());
+}
+
+TEST_F(ClientControlledShellSurfaceTest, PipWindowDragDoesNotAnimate) {
+  const gfx::Size buffer_size(256, 256);
+  std::unique_ptr<Buffer> buffer(
+      new Buffer(exo_test_helper()->CreateGpuMemoryBuffer(buffer_size)));
+  std::unique_ptr<Surface> surface(new Surface());
+  auto shell_surface =
+      exo_test_helper()->CreateClientControlledShellSurface(surface.get());
+
+  surface->Attach(buffer.get());
+  surface->Commit();
+  shell_surface->SetPip();
+  surface->Commit();
+  shell_surface->GetWidget()->Show();
+
+  aura::Window* window = shell_surface->GetWidget()->GetNativeWindow();
+  ui::ScopedAnimationDurationScaleMode animation_scale_mode(
+      ui::ScopedAnimationDurationScaleMode::NON_ZERO_DURATION);
+  std::unique_ptr<ash::WindowResizer> resizer(ash::CreateWindowResizer(
+      window, gfx::Point(), HTCAPTION, ::wm::WINDOW_MOVE_SOURCE_MOUSE));
+  resizer->Drag(gfx::Point(10, 10), 0);
+  EXPECT_EQ(gfx::Rect(10, 10, 256, 256), window->layer()->GetTargetBounds());
+  EXPECT_EQ(gfx::Rect(10, 10, 256, 256), window->layer()->bounds());
+  resizer->CompleteDrag();
 }
 
 }  // namespace exo

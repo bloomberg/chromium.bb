@@ -140,8 +140,7 @@ class Delegate : public SimpleMenuModel::Delegate {
     EXPECT_FALSE(did_close_);
     did_show_ = true;
     if (auto_close_) {
-      NSArray* modes = [NSArray arrayWithObjects:NSEventTrackingRunLoopMode,
-                                                 NSDefaultRunLoopMode, nil];
+      NSArray* modes = @[ NSEventTrackingRunLoopMode, NSDefaultRunLoopMode ];
       [menu_to_close_ performSelector:@selector(cancelTracking)
                            withObject:nil
                            afterDelay:0.1
@@ -555,7 +554,8 @@ TEST_F(MenuControllerTest, Dynamic) {
   base::string16 second = ASCIIToUTF16("second");
   delegate.SetDynamicLabel(second);
   const gfx::Image& icon =
-      ResourceBundle::GetSharedInstance().GetNativeImageNamed(IDR_THROBBER);
+      ResourceBundle::GetSharedInstance().GetNativeImageNamed(
+          IDR_EMOJI_FAVICON);
   delegate.SetDynamicIcon(icon);
   // Simulate opening the menu and validate that the item label + icon changes.
   Validate(menu.get(), [menu menu]);

@@ -32,14 +32,13 @@ import org.chromium.base.VisibleForTesting;
 import org.chromium.base.library_loader.LibraryProcessType;
 import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.base.metrics.RecordUserAction;
-import org.chromium.blink_public.web.WebReferrerPolicy;
 import org.chromium.chrome.browser.browserservices.BrowserSessionContentUtils;
 import org.chromium.chrome.browser.document.ChromeLauncherActivity;
 import org.chromium.chrome.browser.externalauth.ExternalAuthUtils;
 import org.chromium.chrome.browser.externalnav.ExternalNavigationDelegateImpl;
 import org.chromium.chrome.browser.externalnav.IntentWithGesturesHandler;
 import org.chromium.chrome.browser.offlinepages.OfflinePageUtils;
-import org.chromium.chrome.browser.omnibox.AutocompleteController;
+import org.chromium.chrome.browser.omnibox.suggestions.AutocompleteController;
 import org.chromium.chrome.browser.rappor.RapporServiceBridge;
 import org.chromium.chrome.browser.search_engines.TemplateUrlService;
 import org.chromium.chrome.browser.tab.Tab;
@@ -52,6 +51,7 @@ import org.chromium.content_public.browser.LoadUrlParams;
 import org.chromium.content_public.common.ContentUrlConstants;
 import org.chromium.content_public.common.Referrer;
 import org.chromium.net.HttpUtil;
+import org.chromium.network.mojom.ReferrerPolicy;
 import org.chromium.ui.base.PageTransition;
 import org.chromium.webapk.lib.common.WebApkConstants;
 
@@ -449,7 +449,7 @@ public class IntentHandler {
         }
 
         String referrerUrl = getReferrerUrlIncludingExtraHeaders(intent);
-        String extraHeaders = getExtraHeadersFromIntent(intent);
+        String extraHeaders = getExtraHeadersFromIntent(intent, true);
 
         if (isIntentForMhtmlFileOrContent(intent) && tabOpenType == TabOpenType.OPEN_NEW_TAB
                 && referrerUrl == null && extraHeaders == null) {
@@ -551,15 +551,15 @@ public class IntentHandler {
         if (referrer != null) {
             params.setReferrer(new Referrer(referrer, getReferrerPolicyFromIntent(intent)));
         }
-        String headers = getExtraHeadersFromIntent(intent);
+        String headers = getExtraHeadersFromIntent(intent, true);
         if (headers != null) params.setVerbatimHeaders(headers);
     }
 
-    public static @WebReferrerPolicy int getReferrerPolicyFromIntent(Intent intent) {
-        int policy = IntentUtils.safeGetIntExtra(
-                intent, EXTRA_REFERRER_POLICY, WebReferrerPolicy.DEFAULT);
-        if (policy < 0 || policy >= WebReferrerPolicy.LAST) {
-            policy = WebReferrerPolicy.DEFAULT;
+    public static int getReferrerPolicyFromIntent(Intent intent) {
+        int policy =
+                IntentUtils.safeGetIntExtra(intent, EXTRA_REFERRER_POLICY, ReferrerPolicy.DEFAULT);
+        if (policy < 0 || policy >= ReferrerPolicy.LAST) {
+            policy = ReferrerPolicy.DEFAULT;
         }
         return policy;
     }
@@ -587,7 +587,7 @@ public class IntentHandler {
                                     .authority(authority)
                                     .build()
                                     .toString(),
-                WebReferrerPolicy.DEFAULT);
+                ReferrerPolicy.DEFAULT);
     }
 
     /**
@@ -727,21 +727,37 @@ public class IntentHandler {
     }
 
     /**
+     * Calls {@link #getExtraHeadersFromIntent(Intent, boolean)} with shouldLogHeaders as false.
+     */
+    public static String getExtraHeadersFromIntent(Intent intent) {
+        return getExtraHeadersFromIntent(intent, false);
+    }
+
+    /**
      * Returns a String (or null) containing the extra headers sent by the intent, if any.
      *
      * This methods skips the referrer header.
      *
      * @param intent The intent containing the bundle extra with the HTTP headers.
+     * @param shouldLogHeaders Whether we should perform logging on the types of headers that the
+     *                         Intent contains. This should only be done for Intents as they come
+     *                         in to Chrome.
      */
-    public static String getExtraHeadersFromIntent(Intent intent) {
+    public static String getExtraHeadersFromIntent(Intent intent, boolean shouldLogHeaders) {
         Bundle bundleExtraHeaders = IntentUtils.safeGetBundleExtra(intent, Browser.EXTRA_HEADERS);
         if (bundleExtraHeaders == null) return null;
         StringBuilder extraHeaders = new StringBuilder();
+
+        // We do some logging to determine what kinds of headers developers are inserting.
+        IntentHeadersRecorder recorder = shouldLogHeaders ? new IntentHeadersRecorder() : null;
+
         for (String key : bundleExtraHeaders.keySet()) {
             String value = bundleExtraHeaders.getString(key);
 
             // Strip the custom header that can only be added by ourselves.
             if ("x-chrome-intent-type".equals(key.toLowerCase(Locale.US))) continue;
+
+            if (shouldLogHeaders) recorder.recordHeader(key, value);
 
             if (!HttpUtil.isAllowedHeader(key, value)) continue;
 
@@ -749,6 +765,10 @@ public class IntentHandler {
             extraHeaders.append(key);
             extraHeaders.append(": ");
             extraHeaders.append(value);
+        }
+
+        if (shouldLogHeaders) {
+            recorder.report(IntentHandler.notSecureIsIntentChromeOrFirstParty(intent));
         }
         return extraHeaders.length() == 0 ? null : extraHeaders.toString();
     }

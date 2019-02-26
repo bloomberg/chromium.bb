@@ -257,6 +257,14 @@ void SkNWayCanvas::onDrawImageLattice(const SkImage* image, const Lattice& latti
     }
 }
 
+void SkNWayCanvas::onDrawImageSet(const SkCanvas::ImageSetEntry set[], int count,
+                                  SkFilterQuality filterQuality, SkBlendMode mode) {
+    Iter iter(fList);
+    while (iter.next()) {
+        iter->experimental_DrawImageSetV1(set, count, filterQuality, mode);
+    }
+}
+
 void SkNWayCanvas::onDrawText(const void* text, size_t byteLength, SkScalar x, SkScalar y,
                               const SkPaint& paint) {
     Iter iter(fList);

@@ -68,16 +68,28 @@ struct PerfStats {
 
 static const std::string kSingleDBName = "singledb";
 
+static const int kSmallDataSize = 10;
+static const int kMediumDataSize = 100;
+static const int kLargeDataSize = 1000;
+
+static const int kDefaultNumDBs = 5;
+static const int kSmallNumEntries = 300;
+static const int kLargeNumEntries = 3000;
+
 static const std::vector<TestParams> kFewEntriesDistributionTestParams = {
-    {20, 10, 1, false}, {10, 10, 1, false},  {10, 10, 1, false},
-    {25, 10, 1, false}, {40, 10, 1, false},  {50, 10, 1, false},
-    {80, 10, 1, false}, {100, 10, 1, false}, {100, 10, 1, false},
+    {2, kSmallDataSize, 1, false},  {1, kSmallDataSize, 1, false},
+    {1, kSmallDataSize, 1, false},  {3, kSmallDataSize, 1, false},
+    {4, kSmallDataSize, 1, false},  {5, kSmallDataSize, 1, false},
+    {8, kSmallDataSize, 1, false},  {10, kSmallDataSize, 1, false},
+    {10, kSmallDataSize, 1, false},
 };
 
 static const std::vector<TestParams> kManyEntriesDistributionTestParams = {
-    {200, 10, 1, false}, {100, 10, 1, false},  {100, 10, 1, false},
-    {250, 10, 1, false}, {400, 10, 1, false},  {500, 10, 1, false},
-    {800, 10, 1, false}, {1000, 10, 1, false}, {1000, 10, 1, false},
+    {20, kSmallDataSize, 1, false},  {10, kSmallDataSize, 1, false},
+    {10, kSmallDataSize, 1, false},  {30, kSmallDataSize, 1, false},
+    {40, kSmallDataSize, 1, false},  {50, kSmallDataSize, 1, false},
+    {80, kSmallDataSize, 1, false},  {100, kSmallDataSize, 1, false},
+    {100, kSmallDataSize, 1, false},
 };
 
 class TestDatabase {
@@ -544,56 +556,56 @@ class ProtoDBPerfTest : public testing::Test {
 
 TEST_F(ProtoDBPerfTest, InsertMultipleDBsAlternating_Individual_100b) {
   // num_entries, data_size, batch_size, single_db.
-  TestParams params = {200, 100, 1, false};
+  TestParams params = {200, kMediumDataSize, 1, false};
   RunAlternatingInsertTests({params}, "InsertMultipleDBsAlternating_Individual",
                             5);
 }
 
 TEST_F(ProtoDBPerfTest, InsertMultipleDBsAlternating_Individual_1000b) {
   // num_entries, data_size, batch_size, single_db.
-  TestParams params = {200, 1000, 1, false};
+  TestParams params = {200, kLargeDataSize, 1, false};
   RunAlternatingInsertTests({params}, "InsertMultipleDBsAlternating_Individual",
                             5);
 }
 
 TEST_F(ProtoDBPerfTest, InsertSingleDBAlternating_Individual_100b) {
   // num_entries, data_size, batch_size, single_db.
-  TestParams params = {200, 100, 1, true};
+  TestParams params = {200, kMediumDataSize, 1, true};
   RunAlternatingInsertTests({params}, "InsertSingleDBAlternating_Individual",
                             5);
 }
 
 TEST_F(ProtoDBPerfTest, InsertSingleDBAlternating_Individual_1000b) {
   // num_entries, data_size, batch_size, single_db.
-  TestParams params = {200, 1000, 1, true};
+  TestParams params = {200, kLargeDataSize, 1, true};
   RunAlternatingInsertTests({params}, "InsertSingleDBAlternating_Individual",
                             5);
 }
 
 TEST_F(ProtoDBPerfTest, InsertMultipleDBsAlternating_LargeBatch_100b) {
   // num_entries, data_size, batch_size, single_db.
-  TestParams params = {200, 100, 200, false};
+  TestParams params = {200, kMediumDataSize, 200, false};
   RunAlternatingInsertTests({params}, "InsertMultipleDBsAlternating_LargeBatch",
                             5);
 }
 
 TEST_F(ProtoDBPerfTest, InsertMultipleDBsAlternating_LargeBatch_1000b) {
   // num_entries, data_size, batch_size, single_db.
-  TestParams params = {200, 1000, 200, false};
+  TestParams params = {200, kLargeDataSize, 200, false};
   RunAlternatingInsertTests({params}, "InsertMultipleDBsAlternating_LargeBatch",
                             5);
 }
 
 TEST_F(ProtoDBPerfTest, InsertSingleDBAlternating_LargeBatch_100b) {
   // num_entries, data_size, batch_size, single_db.
-  TestParams params = {200, 100, 200, true};
+  TestParams params = {200, kMediumDataSize, 200, true};
   RunAlternatingInsertTests({params}, "InsertSingleDBAlternating_LargeBatch",
                             5);
 }
 
 TEST_F(ProtoDBPerfTest, InsertSingleDBAlternating_LargeBatch_1000b) {
   // num_entries, data_size, batch_size, single_db.
-  TestParams params = {200, 1000, 200, true};
+  TestParams params = {200, kLargeDataSize, 200, true};
   RunAlternatingInsertTests({params}, "InsertSingleDBAlternating_LargeBatch",
                             5);
 }
@@ -608,55 +620,23 @@ TEST_F(ProtoDBPerfTest, DistributionTestSmall_FewEntries_Multi) {
                                 kFewEntriesDistributionTestParams, false);
 }
 
-// Times out on Win.  http://crbug.com/879922
-#if defined(OS_WIN)
-#define MAYBE_DistributionTestSmall_ManyEntries_Single \
-  DISABLED_DistributionTestSmall_ManyEntries_Single
-#else
-#define MAYBE_DistributionTestSmall_ManyEntries_Single \
-  DistributionTestSmall_ManyEntries_Single
-#endif
-TEST_F(ProtoDBPerfTest, MAYBE_DistributionTestSmall_ManyEntries_Single) {
+TEST_F(ProtoDBPerfTest, DistributionTestSmall_ManyEntries_Single) {
   RunDistributionTestAndCleanup("DistributionTestSmall_ManyEntries", "Single",
                                 kManyEntriesDistributionTestParams, true);
 }
 
-// Times out on Win.  http://crbug.com/879922
-#if defined(OS_WIN)
-#define MAYBE_DistributionTestSmall_ManyEntries_Multi \
-  DISABLED_DistributionTestSmall_ManyEntries_Multi
-#else
-#define MAYBE_DistributionTestSmall_ManyEntries_Multi \
-  DistributionTestSmall_ManyEntries_Multi
-#endif
-TEST_F(ProtoDBPerfTest, MAYBE_DistributionTestSmall_ManyEntries_Multi) {
+TEST_F(ProtoDBPerfTest, DistributionTestSmall_ManyEntries_Multi) {
   RunDistributionTestAndCleanup("DistributionTestSmall_ManyEntries", "Multi",
                                 kManyEntriesDistributionTestParams, false);
 }
 
-// Times out on Win.  http://crbug.com/879922
-#if defined(OS_WIN)
-#define MAYBE_DistributionTestSmall_ManyEntries_Batch_Single \
-  DISABLED_DistributionTestSmall_ManyEntries_Batch_Single
-#else
-#define MAYBE_DistributionTestSmall_ManyEntries_Batch_Single \
-  DistributionTestSmall_ManyEntries_Batch_Single
-#endif
-TEST_F(ProtoDBPerfTest, MAYBE_DistributionTestSmall_ManyEntries_Batch_Single) {
+TEST_F(ProtoDBPerfTest, DistributionTestSmall_ManyEntries_Batch_Single) {
   RunDistributionTestAndCleanup("DistributionTestSmall_ManyEntries_Batch",
                                 "Single", kManyEntriesDistributionTestParams,
                                 true);
 }
 
-// Times out on Win.  http://crbug.com/879922
-#if defined(OS_WIN)
-#define MAYBE_DistributionTestSmall_ManyEntries_Batch_Multi \
-  DISABLED_DistributionTestSmall_ManyEntries_Batch_Multi
-#else
-#define MAYBE_DistributionTestSmall_ManyEntries_Batch_Multi \
-  DistributionTestSmall_ManyEntries_Batch_Multi
-#endif
-TEST_F(ProtoDBPerfTest, MAYBE_DistributionTestSmall_ManyEntries_Batch_Multi) {
+TEST_F(ProtoDBPerfTest, DistributionTestSmall_ManyEntries_Batch_Multi) {
   RunDistributionTestAndCleanup("DistributionTestSmall_ManyEntries_Batch",
                                 "Multi", kManyEntriesDistributionTestParams,
                                 false);
@@ -664,21 +644,24 @@ TEST_F(ProtoDBPerfTest, MAYBE_DistributionTestSmall_ManyEntries_Batch_Multi) {
 
 TEST_F(ProtoDBPerfTest, LoadEntriesSingle_Small) {
   unsigned int num_entries = 0;
-  RunLoadEntriesSingleTestAndCleanup(10, 3000, 10, {}, "LoadEntriesSingle",
+  RunLoadEntriesSingleTestAndCleanup(kDefaultNumDBs, kSmallNumEntries,
+                                     kSmallDataSize, {}, "LoadEntriesSingle",
                                      &num_entries);
   ASSERT_NE(num_entries, 0U);
 }
 
 TEST_F(ProtoDBPerfTest, LoadEntriesSingle_Medium) {
   unsigned int num_entries = 0;
-  RunLoadEntriesSingleTestAndCleanup(10, 30000, 10, {}, "LoadEntriesSingle",
+  RunLoadEntriesSingleTestAndCleanup(kDefaultNumDBs, kLargeNumEntries,
+                                     kSmallDataSize, {}, "LoadEntriesSingle",
                                      &num_entries);
   ASSERT_NE(num_entries, 0U);
 }
 
 TEST_F(ProtoDBPerfTest, LoadEntriesSingle_Large) {
   unsigned int num_entries = 0;
-  RunLoadEntriesSingleTestAndCleanup(10, 30000, 100, {}, "LoadEntriesSingle",
+  RunLoadEntriesSingleTestAndCleanup(kDefaultNumDBs, kLargeNumEntries,
+                                     kMediumDataSize, {}, "LoadEntriesSingle",
                                      &num_entries);
   ASSERT_NE(num_entries, 0U);
 }
@@ -687,7 +670,8 @@ TEST_F(ProtoDBPerfTest, LoadEntriesSingle_OnePrefix_Small) {
   // Load only the entries that start with a particular prefix.
   unsigned int num_entries = 0;
   RunLoadEntriesSingleTestAndCleanup(
-      10, 3000, 10, {1}, "LoadEntriesSingle_OnePrefix", &num_entries);
+      kDefaultNumDBs, kSmallNumEntries, kSmallDataSize, {1},
+      "LoadEntriesSingle_OnePrefix", &num_entries);
   ASSERT_NE(num_entries, 0U);
 }
 
@@ -695,7 +679,8 @@ TEST_F(ProtoDBPerfTest, LoadEntriesSingle_OnePrefix_Medium) {
   // Load only the entries that start with a particular prefix.
   unsigned int num_entries = 0;
   RunLoadEntriesSingleTestAndCleanup(
-      10, 30000, 10, {1}, "LoadEntriesSingle_OnePrefix", &num_entries);
+      kDefaultNumDBs, kLargeNumEntries, kSmallDataSize, {1},
+      "LoadEntriesSingle_OnePrefix", &num_entries);
   ASSERT_NE(num_entries, 0U);
 }
 
@@ -703,55 +688,63 @@ TEST_F(ProtoDBPerfTest, LoadEntriesSingle_OnePrefix_Large) {
   // Load only the entries that start with a particular prefix.
   unsigned int num_entries = 0;
   RunLoadEntriesSingleTestAndCleanup(
-      10, 30000, 100, {1}, "LoadEntriesSingle_OnePrefix", &num_entries);
+      kDefaultNumDBs, kLargeNumEntries, kMediumDataSize, {1},
+      "LoadEntriesSingle_OnePrefix", &num_entries);
   ASSERT_NE(num_entries, 0U);
 }
 
 TEST_F(ProtoDBPerfTest, LoadEntriesMulti_Small) {
   unsigned int num_entries = 0;
-  RunLoadEntriesMultiTestAndCleanup(10, 3000, 10, {}, "LoadEntriesMulti",
+  RunLoadEntriesMultiTestAndCleanup(kDefaultNumDBs, kSmallNumEntries,
+                                    kSmallDataSize, {}, "LoadEntriesMulti",
                                     &num_entries);
   ASSERT_NE(num_entries, 0U);
 }
 
 TEST_F(ProtoDBPerfTest, LoadEntriesMulti_Medium) {
   unsigned int num_entries = 0;
-  RunLoadEntriesMultiTestAndCleanup(10, 30000, 10, {}, "LoadEntriesMulti",
+  RunLoadEntriesMultiTestAndCleanup(kDefaultNumDBs, kLargeNumEntries,
+                                    kSmallDataSize, {}, "LoadEntriesMulti",
                                     &num_entries);
   ASSERT_NE(num_entries, 0U);
 }
 
 TEST_F(ProtoDBPerfTest, LoadEntriesMulti_Large) {
   unsigned int num_entries = 0;
-  RunLoadEntriesMultiTestAndCleanup(10, 30000, 100, {}, "LoadEntriesMulti",
+  RunLoadEntriesMultiTestAndCleanup(kDefaultNumDBs, kLargeNumEntries,
+                                    kMediumDataSize, {}, "LoadEntriesMulti",
                                     &num_entries);
   ASSERT_NE(num_entries, 0U);
 }
 
 TEST_F(ProtoDBPerfTest, LoadEntriesMulti_OnePrefix_Small) {
   unsigned int num_entries = 0;
-  RunLoadEntriesMultiTestAndCleanup(10, 3000, 10, {1},
+  RunLoadEntriesMultiTestAndCleanup(kDefaultNumDBs, kSmallNumEntries,
+                                    kSmallDataSize, {1},
                                     "LoadEntriesMulti_OnePrefix", &num_entries);
   ASSERT_NE(num_entries, 0U);
 }
 
 TEST_F(ProtoDBPerfTest, LoadEntriesMulti_OnePrefix_Medium) {
   unsigned int num_entries = 0;
-  RunLoadEntriesMultiTestAndCleanup(10, 30000, 10, {1},
+  RunLoadEntriesMultiTestAndCleanup(kDefaultNumDBs, kLargeNumEntries,
+                                    kSmallDataSize, {1},
                                     "LoadEntriesMulti_OnePrefix", &num_entries);
   ASSERT_NE(num_entries, 0U);
 }
 
 TEST_F(ProtoDBPerfTest, LoadEntriesMulti_OnePrefix_Large) {
   unsigned int num_entries = 0;
-  RunLoadEntriesMultiTestAndCleanup(10, 30000, 100, {1},
+  RunLoadEntriesMultiTestAndCleanup(kDefaultNumDBs, kLargeNumEntries,
+                                    kMediumDataSize, {1},
                                     "LoadEntriesMulti_OnePrefix", &num_entries);
   ASSERT_NE(num_entries, 0U);
 }
 
 TEST_F(ProtoDBPerfTest, LoadEntriesSingle_SkipReadCache_Small) {
   unsigned int num_entries = 0;
-  RunLoadEntriesSingleTestAndCleanup(10, 3000, 10, {},
+  RunLoadEntriesSingleTestAndCleanup(kDefaultNumDBs, kSmallNumEntries,
+                                     kSmallDataSize, {},
                                      "LoadEntriesSingle_SkipReadCache",
                                      &num_entries, false /* fill_read_cache */);
   ASSERT_NE(num_entries, 0U);
@@ -759,7 +752,8 @@ TEST_F(ProtoDBPerfTest, LoadEntriesSingle_SkipReadCache_Small) {
 
 TEST_F(ProtoDBPerfTest, LoadEntriesSingle_SkipReadCache_Medium) {
   unsigned int num_entries = 0;
-  RunLoadEntriesSingleTestAndCleanup(10, 30000, 10, {},
+  RunLoadEntriesSingleTestAndCleanup(kDefaultNumDBs, kLargeNumEntries,
+                                     kSmallDataSize, {},
                                      "LoadEntriesSingle_SkipReadCache",
                                      &num_entries, false /* fill_read_cache */);
   ASSERT_NE(num_entries, 0U);
@@ -767,7 +761,8 @@ TEST_F(ProtoDBPerfTest, LoadEntriesSingle_SkipReadCache_Medium) {
 
 TEST_F(ProtoDBPerfTest, LoadEntriesSingle_SkipReadCache_Large) {
   unsigned int num_entries = 0;
-  RunLoadEntriesSingleTestAndCleanup(10, 30000, 100, {},
+  RunLoadEntriesSingleTestAndCleanup(kDefaultNumDBs, kLargeNumEntries,
+                                     kMediumDataSize, {},
                                      "LoadEntriesSingle_SkipReadCache",
                                      &num_entries, false /* fill_read_cache */);
   ASSERT_NE(num_entries, 0U);
@@ -777,8 +772,9 @@ TEST_F(ProtoDBPerfTest, LoadEntriesSingle_OnePrefix_SkipReadCache_Small) {
   // Load only the entries that start with a particular prefix.
   unsigned int num_entries = 0;
   RunLoadEntriesSingleTestAndCleanup(
-      10, 3000, 10, {1}, "LoadEntriesSingle_OnePrefix_SkipReadCache",
-      &num_entries, false /* fill_read_cache */);
+      kDefaultNumDBs, kSmallNumEntries, kSmallDataSize, {1},
+      "LoadEntriesSingle_OnePrefix_SkipReadCache", &num_entries,
+      false /* fill_read_cache */);
   ASSERT_NE(num_entries, 0U);
 }
 
@@ -786,8 +782,9 @@ TEST_F(ProtoDBPerfTest, LoadEntriesSingle_OnePrefix_SkipReadCache_Medium) {
   // Load only the entries that start with a particular prefix.
   unsigned int num_entries = 0;
   RunLoadEntriesSingleTestAndCleanup(
-      10, 30000, 10, {1}, "LoadEntriesSingle_OnePrefix_SkipReadCache",
-      &num_entries, false /* fill_read_cache */);
+      kDefaultNumDBs, kLargeNumEntries, kSmallDataSize, {1},
+      "LoadEntriesSingle_OnePrefix_SkipReadCache", &num_entries,
+      false /* fill_read_cache */);
   ASSERT_NE(num_entries, 0U);
 }
 
@@ -795,14 +792,16 @@ TEST_F(ProtoDBPerfTest, LoadEntriesSingle_OnePrefix_SkipReadCache_Large) {
   // Load only the entries that start with a particular prefix.
   unsigned int num_entries = 0;
   RunLoadEntriesSingleTestAndCleanup(
-      10, 30000, 100, {1}, "LoadEntriesSingle_OnePrefix_SkipReadCache",
-      &num_entries, false /* fill_read_cache */);
+      kDefaultNumDBs, kLargeNumEntries, kMediumDataSize, {1},
+      "LoadEntriesSingle_OnePrefix_SkipReadCache", &num_entries,
+      false /* fill_read_cache */);
   ASSERT_NE(num_entries, 0U);
 }
 
 TEST_F(ProtoDBPerfTest, LoadEntriesMulti_SkipReadCache_Small) {
   unsigned int num_entries = 0;
-  RunLoadEntriesMultiTestAndCleanup(10, 3000, 10, {},
+  RunLoadEntriesMultiTestAndCleanup(kDefaultNumDBs, kSmallNumEntries,
+                                    kSmallDataSize, {},
                                     "LoadEntriesMulti_SkipReadCache",
                                     &num_entries, false /* fill_read_cache */);
   ASSERT_NE(num_entries, 0U);
@@ -810,7 +809,8 @@ TEST_F(ProtoDBPerfTest, LoadEntriesMulti_SkipReadCache_Small) {
 
 TEST_F(ProtoDBPerfTest, LoadEntriesMulti_SkipReadCache_Medium) {
   unsigned int num_entries = 0;
-  RunLoadEntriesMultiTestAndCleanup(10, 30000, 10, {},
+  RunLoadEntriesMultiTestAndCleanup(kDefaultNumDBs, kLargeNumEntries,
+                                    kSmallDataSize, {},
                                     "LoadEntriesMulti_SkipReadCache",
                                     &num_entries, false /* fill_read_cache */);
   ASSERT_NE(num_entries, 0U);
@@ -818,7 +818,8 @@ TEST_F(ProtoDBPerfTest, LoadEntriesMulti_SkipReadCache_Medium) {
 
 TEST_F(ProtoDBPerfTest, LoadEntriesMulti_SkipReadCache_Large) {
   unsigned int num_entries = 0;
-  RunLoadEntriesMultiTestAndCleanup(10, 30000, 100, {},
+  RunLoadEntriesMultiTestAndCleanup(kDefaultNumDBs, kLargeNumEntries,
+                                    kMediumDataSize, {},
                                     "LoadEntriesMulti_SkipReadCache",
                                     &num_entries, false /* fill_read_cache */);
   ASSERT_NE(num_entries, 0U);
@@ -826,7 +827,8 @@ TEST_F(ProtoDBPerfTest, LoadEntriesMulti_SkipReadCache_Large) {
 
 TEST_F(ProtoDBPerfTest, LoadEntriesMulti_OnePrefix_SkipReadCache_Small) {
   unsigned int num_entries = 0;
-  RunLoadEntriesMultiTestAndCleanup(10, 3000, 10, {1},
+  RunLoadEntriesMultiTestAndCleanup(kDefaultNumDBs, kSmallNumEntries,
+                                    kSmallDataSize, {1},
                                     "LoadEntriesMulti_OnePrefix_SkipReadCache",
                                     &num_entries, false /* fill_read_cache */);
   ASSERT_NE(num_entries, 0U);
@@ -834,7 +836,8 @@ TEST_F(ProtoDBPerfTest, LoadEntriesMulti_OnePrefix_SkipReadCache_Small) {
 
 TEST_F(ProtoDBPerfTest, LoadEntriesMulti_OnePrefix_SkipReadCache_Medium) {
   unsigned int num_entries = 0;
-  RunLoadEntriesMultiTestAndCleanup(10, 30000, 10, {1},
+  RunLoadEntriesMultiTestAndCleanup(kDefaultNumDBs, kLargeNumEntries,
+                                    kSmallDataSize, {1},
                                     "LoadEntriesMulti_OnePrefix_SkipReadCache",
                                     &num_entries, false /* fill_read_cache */);
   ASSERT_NE(num_entries, 0U);
@@ -842,7 +845,8 @@ TEST_F(ProtoDBPerfTest, LoadEntriesMulti_OnePrefix_SkipReadCache_Medium) {
 
 TEST_F(ProtoDBPerfTest, LoadEntriesMulti_OnePrefix_SkipReadCache_Large) {
   unsigned int num_entries = 0;
-  RunLoadEntriesMultiTestAndCleanup(10, 30000, 100, {1},
+  RunLoadEntriesMultiTestAndCleanup(kDefaultNumDBs, kLargeNumEntries,
+                                    kMediumDataSize, {1},
                                     "LoadEntriesMulti_OnePrefix_SkipReadCache",
                                     &num_entries, false /* fill_read_cache */);
   ASSERT_NE(num_entries, 0U);
@@ -851,48 +855,48 @@ TEST_F(ProtoDBPerfTest, LoadEntriesMulti_OnePrefix_SkipReadCache_Large) {
 TEST_F(ProtoDBPerfTest, LoadEntriesSingle_OnePrefix_DifferingNumDBs_Small) {
   unsigned int num_entries = 0;
   RunLoadEntriesSingleTestAndCleanup(
-      10, 3000, 10, {1}, "LoadEntriesSingle_OnePrefix_DifferingNumDBs",
-      &num_entries);
+      kDefaultNumDBs, kSmallNumEntries, kSmallDataSize, {1},
+      "LoadEntriesSingle_OnePrefix_DifferingNumDBs", &num_entries);
   ASSERT_NE(num_entries, 0U);
 }
 
 TEST_F(ProtoDBPerfTest, LoadEntriesSingle_OnePrefix_DifferingNumDBs_Medium) {
   unsigned int num_entries = 0;
   RunLoadEntriesSingleTestAndCleanup(
-      25, 3000, 10, {1}, "LoadEntriesSingle_OnePrefix_DifferingNumDBs",
-      &num_entries);
+      kDefaultNumDBs * 2, kSmallNumEntries, kSmallDataSize, {1},
+      "LoadEntriesSingle_OnePrefix_DifferingNumDBs", &num_entries);
   ASSERT_NE(num_entries, 0U);
 }
 
 TEST_F(ProtoDBPerfTest, LoadEntriesSingle_OnePrefix_DifferingNumDBs_Large) {
   unsigned int num_entries = 0;
   RunLoadEntriesSingleTestAndCleanup(
-      100, 3000, 10, {1}, "LoadEntriesSingle_OnePrefix_DifferingNumDBs",
-      &num_entries);
+      kDefaultNumDBs * 4, kSmallNumEntries, kSmallDataSize, {1},
+      "LoadEntriesSingle_OnePrefix_DifferingNumDBs", &num_entries);
   ASSERT_NE(num_entries, 0U);
 }
 
 TEST_F(ProtoDBPerfTest, LoadEntriesMulti_OnePrefix_DifferingNumDBs_Small) {
   unsigned int num_entries = 0;
   RunLoadEntriesMultiTestAndCleanup(
-      10, 3000, 10, {1}, "LoadEntriesMulti_OnePrefix_DifferingNumDBs",
-      &num_entries);
+      kDefaultNumDBs, kSmallNumEntries, kSmallDataSize, {1},
+      "LoadEntriesMulti_OnePrefix_DifferingNumDBs", &num_entries);
   ASSERT_NE(num_entries, 0U);
 }
 
 TEST_F(ProtoDBPerfTest, LoadEntriesMulti_OnePrefix_DifferingNumDBs_Medium) {
   unsigned int num_entries = 0;
   RunLoadEntriesMultiTestAndCleanup(
-      25, 3000, 10, {1}, "LoadEntriesMulti_OnePrefix_DifferingNumDBs",
-      &num_entries);
+      kDefaultNumDBs * 2, kSmallNumEntries, kSmallDataSize, {1},
+      "LoadEntriesMulti_OnePrefix_DifferingNumDBs", &num_entries);
   ASSERT_NE(num_entries, 0U);
 }
 
 TEST_F(ProtoDBPerfTest, LoadEntriesMulti_OnePrefix_DifferingNumDBs_Large) {
   unsigned int num_entries = 0;
   RunLoadEntriesMultiTestAndCleanup(
-      100, 3000, 10, {1}, "LoadEntriesMulti_OnePrefix_DifferingNumDBs",
-      &num_entries);
+      kDefaultNumDBs * 4, kSmallNumEntries, kSmallDataSize, {1},
+      "LoadEntriesMulti_OnePrefix_DifferingNumDBs", &num_entries);
   ASSERT_NE(num_entries, 0U);
 }
 
@@ -900,7 +904,7 @@ TEST_F(ProtoDBPerfTest,
        LoadEntriesSingle_OnePrefix_DifferingNumDBs_SkipReadCache_Small) {
   unsigned int num_entries = 0;
   RunLoadEntriesSingleTestAndCleanup(
-      10, 3000, 10, {1},
+      kDefaultNumDBs, kSmallNumEntries, kSmallDataSize, {1},
       "LoadEntriesSingle_OnePrefix_DifferingNumDBs_SkipReadCache", &num_entries,
       false /* fill_read_cache */);
   ASSERT_NE(num_entries, 0U);
@@ -910,7 +914,7 @@ TEST_F(ProtoDBPerfTest,
        LoadEntriesSingle_OnePrefix_DifferingNumDBs_SkipReadCache_Medium) {
   unsigned int num_entries = 0;
   RunLoadEntriesSingleTestAndCleanup(
-      25, 3000, 10, {1},
+      kDefaultNumDBs * 2, kSmallNumEntries, kSmallDataSize, {1},
       "LoadEntriesSingle_OnePrefix_DifferingNumDBs_SkipReadCache", &num_entries,
       false /* fill_read_cache */);
   ASSERT_NE(num_entries, 0U);
@@ -920,7 +924,7 @@ TEST_F(ProtoDBPerfTest,
        LoadEntriesSingle_OnePrefix_DifferingNumDBs_SkipReadCache_Large) {
   unsigned int num_entries = 0;
   RunLoadEntriesSingleTestAndCleanup(
-      100, 3000, 10, {1},
+      kDefaultNumDBs * 4, kSmallNumEntries, kSmallDataSize, {1},
       "LoadEntriesSingle_OnePrefix_DifferingNumDBs_SkipReadCache", &num_entries,
       false /* fill_read_cache */);
   ASSERT_NE(num_entries, 0U);
@@ -930,7 +934,7 @@ TEST_F(ProtoDBPerfTest,
        LoadEntriesMulti_OnePrefix_DifferingNumDBs_SkipReadCache_Small) {
   unsigned int num_entries = 0;
   RunLoadEntriesMultiTestAndCleanup(
-      10, 3000, 10, {1},
+      kDefaultNumDBs, kSmallNumEntries, kSmallDataSize, {1},
       "LoadEntriesMulti_OnePrefix_DifferingNumDBs_SkipReadCache", &num_entries,
       false /* fill_read_cache */);
   ASSERT_NE(num_entries, 0U);
@@ -940,7 +944,7 @@ TEST_F(ProtoDBPerfTest,
        LoadEntriesMulti_OnePrefix_DifferingNumDBs_SkipReadCache_Medium) {
   unsigned int num_entries = 0;
   RunLoadEntriesMultiTestAndCleanup(
-      25, 3000, 10, {1},
+      kDefaultNumDBs * 2, kSmallNumEntries, kSmallDataSize, {1},
       "LoadEntriesMulti_OnePrefix_DifferingNumDBs_SkipReadCache", &num_entries,
       false /* fill_read_cache */);
   ASSERT_NE(num_entries, 0U);
@@ -950,7 +954,7 @@ TEST_F(ProtoDBPerfTest,
        LoadEntriesMulti_OnePrefix_DifferingNumDBs_SkipReadCache_Large) {
   unsigned int num_entries = 0;
   RunLoadEntriesMultiTestAndCleanup(
-      100, 3000, 10, {1},
+      kDefaultNumDBs * 4, kSmallNumEntries, kSmallDataSize, {1},
       "LoadEntriesMulti_OnePrefix_DifferingNumDBs_SkipReadCache", &num_entries,
       false /* fill_read_cache */);
   ASSERT_NE(num_entries, 0U);
@@ -959,50 +963,57 @@ TEST_F(ProtoDBPerfTest,
 TEST_F(ProtoDBPerfTest, LoadEntriesSingle_DifferingNumDBs_Small) {
   unsigned int num_entries = 0;
   RunLoadEntriesSingleTestAndCleanup(
-      10, 3000, 10, {}, "LoadEntriesSingle_DifferingNumDBs", &num_entries);
+      kDefaultNumDBs, kSmallNumEntries, kSmallDataSize, {},
+      "LoadEntriesSingle_DifferingNumDBs", &num_entries);
   ASSERT_NE(num_entries, 0U);
 }
 
 TEST_F(ProtoDBPerfTest, LoadEntriesSingle_DifferingNumDBs_Medium) {
   unsigned int num_entries = 0;
   RunLoadEntriesSingleTestAndCleanup(
-      25, 3000, 10, {}, "LoadEntriesSingle_DifferingNumDBs", &num_entries);
+      kDefaultNumDBs * 2, kSmallNumEntries, kSmallDataSize, {},
+      "LoadEntriesSingle_DifferingNumDBs", &num_entries);
   ASSERT_NE(num_entries, 0U);
 }
 
 TEST_F(ProtoDBPerfTest, LoadEntriesSingle_DifferingNumDBs_Large) {
   unsigned int num_entries = 0;
   RunLoadEntriesSingleTestAndCleanup(
-      100, 3000, 10, {}, "LoadEntriesSingle_DifferingNumDBs", &num_entries);
+      kDefaultNumDBs * 4, kSmallNumEntries, kSmallDataSize, {},
+      "LoadEntriesSingle_DifferingNumDBs", &num_entries);
   ASSERT_NE(num_entries, 0U);
 }
 
 TEST_F(ProtoDBPerfTest, LoadEntriesMulti_DifferingNumDBs_Small) {
   unsigned int num_entries = 0;
   RunLoadEntriesMultiTestAndCleanup(
-      10, 3000, 10, {}, "LoadEntriesMulti_DifferingNumDBs", &num_entries);
+      kDefaultNumDBs, kSmallNumEntries, kSmallDataSize, {},
+      "LoadEntriesMulti_DifferingNumDBs", &num_entries);
   ASSERT_NE(num_entries, 0U);
 }
 
 TEST_F(ProtoDBPerfTest, LoadEntriesMulti_DifferingNumDBs_Medium) {
   unsigned int num_entries = 0;
   RunLoadEntriesMultiTestAndCleanup(
-      25, 3000, 10, {}, "LoadEntriesMulti_DifferingNumDBs", &num_entries);
+      kDefaultNumDBs * 2, kSmallNumEntries, kSmallDataSize, {},
+      "LoadEntriesMulti_DifferingNumDBs", &num_entries);
   ASSERT_NE(num_entries, 0U);
 }
 
 TEST_F(ProtoDBPerfTest, LoadEntriesMulti_DifferingNumDBs_Large) {
   unsigned int num_entries = 0;
   RunLoadEntriesMultiTestAndCleanup(
-      100, 3000, 10, {}, "LoadEntriesMulti_DifferingNumDBs", &num_entries);
+      kDefaultNumDBs * 4, kSmallNumEntries, kSmallDataSize, {},
+      "LoadEntriesMulti_DifferingNumDBs", &num_entries);
   ASSERT_NE(num_entries, 0U);
 }
 
 TEST_F(ProtoDBPerfTest, LoadEntriesSingle_DifferingNumDBs_SkipReadCache_Small) {
   unsigned int num_entries = 0;
   RunLoadEntriesSingleTestAndCleanup(
-      10, 3000, 10, {}, "LoadEntriesSingle_DifferingNumDBs_SkipReadCache",
-      &num_entries, false /* fill_read_cache */);
+      kDefaultNumDBs, kSmallNumEntries, kSmallDataSize, {},
+      "LoadEntriesSingle_DifferingNumDBs_SkipReadCache", &num_entries,
+      false /* fill_read_cache */);
   ASSERT_NE(num_entries, 0U);
 }
 
@@ -1010,40 +1021,45 @@ TEST_F(ProtoDBPerfTest,
        LoadEntriesSingle_DifferingNumDBs_SkipReadCache_Medium) {
   unsigned int num_entries = 0;
   RunLoadEntriesSingleTestAndCleanup(
-      25, 3000, 10, {}, "LoadEntriesSingle_DifferingNumDBs_SkipReadCache",
-      &num_entries, false /* fill_read_cache */);
+      kDefaultNumDBs * 2, kSmallNumEntries, kSmallDataSize, {},
+      "LoadEntriesSingle_DifferingNumDBs_SkipReadCache", &num_entries,
+      false /* fill_read_cache */);
   ASSERT_NE(num_entries, 0U);
 }
 
 TEST_F(ProtoDBPerfTest, LoadEntriesSingle_DifferingNumDBs_SkipReadCache_Large) {
   unsigned int num_entries = 0;
   RunLoadEntriesSingleTestAndCleanup(
-      100, 3000, 10, {}, "LoadEntriesSingle_DifferingNumDBs_SkipReadCache",
-      &num_entries, false /* fill_read_cache */);
+      kDefaultNumDBs * 4, kSmallNumEntries, kSmallDataSize, {},
+      "LoadEntriesSingle_DifferingNumDBs_SkipReadCache", &num_entries,
+      false /* fill_read_cache */);
   ASSERT_NE(num_entries, 0U);
 }
 
 TEST_F(ProtoDBPerfTest, LoadEntriesMulti_DifferingNumDBs_SkipReadCache_Small) {
   unsigned int num_entries = 0;
   RunLoadEntriesMultiTestAndCleanup(
-      10, 3000, 10, {}, "LoadEntriesMulti_DifferingNumDBs_SkipReadCache",
-      &num_entries, false /* fill_read_cache */);
+      kDefaultNumDBs, kSmallNumEntries, kSmallDataSize, {},
+      "LoadEntriesMulti_DifferingNumDBs_SkipReadCache", &num_entries,
+      false /* fill_read_cache */);
   ASSERT_NE(num_entries, 0U);
 }
 
 TEST_F(ProtoDBPerfTest, LoadEntriesMulti_DifferingNumDBs_SkipReadCache_Medium) {
   unsigned int num_entries = 0;
   RunLoadEntriesMultiTestAndCleanup(
-      25, 3000, 10, {}, "LoadEntriesMulti_DifferingNumDBs_SkipReadCache",
-      &num_entries, false /* fill_read_cache */);
+      kDefaultNumDBs * 2, kSmallNumEntries, kSmallDataSize, {},
+      "LoadEntriesMulti_DifferingNumDBs_SkipReadCache", &num_entries,
+      false /* fill_read_cache */);
   ASSERT_NE(num_entries, 0U);
 }
 
 TEST_F(ProtoDBPerfTest, LoadEntriesMulti_DifferingNumDBs_SkipReadCache_Large) {
   unsigned int num_entries = 0;
   RunLoadEntriesMultiTestAndCleanup(
-      100, 3000, 10, {}, "LoadEntriesMulti_DifferingNumDBs_SkipReadCache",
-      &num_entries, false /* fill_read_cache */);
+      kDefaultNumDBs * 4, kSmallNumEntries, kSmallDataSize, {},
+      "LoadEntriesMulti_DifferingNumDBs_SkipReadCache", &num_entries,
+      false /* fill_read_cache */);
   ASSERT_NE(num_entries, 0U);
 }
 

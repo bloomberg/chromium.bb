@@ -23,6 +23,7 @@ class WebGLTransformFeedback : public WebGLContextObject {
     TFTypeUser,
   };
 
+  explicit WebGLTransformFeedback(WebGL2RenderingContextBase*, TFType);
   ~WebGLTransformFeedback() override;
 
   GLuint Object() const { return object_; }
@@ -69,9 +70,6 @@ class WebGLTransformFeedback : public WebGLContextObject {
   }
 
   bool ValidateProgramForResume(WebGLProgram*) const;
-
- protected:
-  explicit WebGLTransformFeedback(WebGL2RenderingContextBase*, TFType);
 
  private:
   void DispatchDetached(gpu::gles2::GLES2Interface*);

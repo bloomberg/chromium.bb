@@ -8,6 +8,7 @@
 #include <memory>
 
 #include "base/memory/scoped_refptr.h"
+#include "base/time/time.h"
 #include "components/viz/common/surfaces/parent_local_surface_id_allocator.h"
 #include "components/viz/common/surfaces/surface_id.h"
 #include "mojo/public/cpp/bindings/binding.h"
@@ -32,6 +33,7 @@ class WebLayerTreeView;
 // between the Render and Browser processes.
 class PLATFORM_EXPORT SurfaceLayerBridge
     : public blink::mojom::blink::EmbeddedFrameSinkClient,
+      public blink::mojom::blink::SurfaceEmbedder,
       public WebSurfaceLayerBridge {
  public:
   SurfaceLayerBridge(
@@ -44,6 +46,13 @@ class PLATFORM_EXPORT SurfaceLayerBridge
 
   // Implementation of blink::mojom::blink::EmbeddedFrameSinkClient
   void OnFirstSurfaceActivation(const viz::SurfaceInfo&) override;
+  void BindSurfaceEmbedder(
+      mojom::blink::SurfaceEmbedderRequest request) override;
+
+  void EmbedSurface(const viz::SurfaceId& surface_id);
+
+  // Implementation of blink::mojom::blink::SurfaceEmbedder
+  void SetLocalSurfaceId(const viz::LocalSurfaceId& local_surface_id) override;
 
   // Implementation of WebSurfaceLayerBridge.
   cc::Layer* GetCcLayer() const override;
@@ -56,6 +65,8 @@ class PLATFORM_EXPORT SurfaceLayerBridge
     return current_surface_id_;
   }
 
+  base::TimeTicks GetLocalSurfaceIdAllocationTime() const override;
+
  private:
   scoped_refptr<cc::SurfaceLayer> surface_layer_;
   scoped_refptr<cc::SolidColorLayer> solid_color_layer_;
@@ -65,7 +76,9 @@ class PLATFORM_EXPORT SurfaceLayerBridge
   cc::UpdateSubmissionStateCB update_submission_state_callback_;
   viz::ParentLocalSurfaceIdAllocator parent_local_surface_id_allocator_;
   mojo::Binding<blink::mojom::blink::EmbeddedFrameSinkClient> binding_;
+  mojo::Binding<blink::mojom::blink::SurfaceEmbedder> surface_embedder_binding_;
 
+  const bool enable_surface_synchronization_;
   const viz::FrameSinkId frame_sink_id_;
   viz::SurfaceId current_surface_id_;
   const viz::FrameSinkId parent_frame_sink_id_;

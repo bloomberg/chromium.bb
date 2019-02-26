@@ -18,7 +18,6 @@
 #include "build/build_config.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/content_settings/host_content_settings_map_factory.h"
-#include "chrome/browser/content_settings/tab_specific_content_settings.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/blocked_content/list_item_position.h"
 #include "chrome/browser/ui/blocked_content/popup_opener_tab_helper.h"
@@ -210,11 +209,11 @@ void TabUnderNavigationThrottle::ShowUI() {
       std::make_unique<FramebustBlockMessageDelegate>(
           web_contents, url, base::BindOnce(&LogOutcome, off_the_record)));
 #else
-  TabSpecificContentSettings* content_settings =
-      TabSpecificContentSettings::FromWebContents(web_contents);
-  DCHECK(content_settings);
-  content_settings->OnFramebustBlocked(
-      url, base::BindOnce(&OnListItemClicked, off_the_record));
+  if (auto* tab_helper =
+          FramebustBlockTabHelper::FromWebContents(web_contents)) {
+    tab_helper->AddBlockedUrl(
+        url, base::BindOnce(&OnListItemClicked, off_the_record));
+  }
 #endif
 }
 

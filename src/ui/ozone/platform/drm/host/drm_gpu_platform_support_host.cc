@@ -78,9 +78,8 @@ void CursorIPC::Send(IPC::Message* message) {
                            FROM_HERE, base::BindOnce(send_callback_, message)))
     return;
 
-  // Drop disconnected updates. DrmWindowHost will call
-  // CommitBoundsChange() when we connect to initialize the cursor
-  // location.
+  // Drop disconnected updates. The cursor will get set once we connect, via
+  // SetDrmCursorProxy().
   delete message;
 }
 

@@ -9,7 +9,6 @@
 #include "base/optional.h"
 #include "ui/display/display.h"
 #include "ui/gfx/geometry/rect.h"
-#include "ui/keyboard/container_type.h"
 
 namespace keyboard {
 

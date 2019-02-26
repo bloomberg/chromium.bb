@@ -6,7 +6,7 @@
 <merge
     xmlns:android="http://schemas.android.com/apk/res/android">
 
-    <android.support.v7.widget.AppCompatImageView
+    <org.chromium.ui.widget.ChromeImageView
         android:id="@+id/icon_view"
         style="@style/ListItemStartIcon" />
 

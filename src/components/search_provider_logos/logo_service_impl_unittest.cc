@@ -285,7 +285,7 @@ class SigninHelper {
       : task_environment_(task_environment),
         signin_client_(&pref_service_),
         token_service_(&pref_service_),
-        cookie_service_(&token_service_, "test_source", &signin_client_) {
+        cookie_service_(&token_service_, &signin_client_) {
     // GaiaCookieManagerService calls static methods of AccountTrackerService
     // which access prefs.
     AccountTrackerService::RegisterPrefs(pref_service_.registry());
@@ -296,13 +296,13 @@ class SigninHelper {
   void SignIn() {
     cookie_service_.SetListAccountsResponseOneAccount("user@gmail.com",
                                                       "gaia_id");
-    cookie_service_.TriggerListAccounts("test_source");
+    cookie_service_.TriggerListAccounts();
     task_environment_->RunUntilIdle();
   }
 
   void SignOut() {
     cookie_service_.SetListAccountsResponseNoAccounts();
-    cookie_service_.TriggerListAccounts("test_source");
+    cookie_service_.TriggerListAccounts();
     task_environment_->RunUntilIdle();
   }
 

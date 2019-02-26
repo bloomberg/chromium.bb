@@ -449,6 +449,11 @@ float TextAutosizer::Inflate(LayoutObject* parent,
       }
     } else if (child->IsLayoutInline()) {
       multiplier = Inflate(child, layouter, behavior, multiplier);
+      // If this LayoutInline is an anonymous inline that has multiplied
+      // children, apply the multiplifer to the parent too. We compute
+      // ::first-line style from the style of the parent block.
+      if (multiplier && child->IsAnonymous())
+        has_text_child = true;
     } else if (child->IsLayoutBlock() && behavior == kDescendToInnerBlocks &&
                !ClassifyBlock(child,
                               INDEPENDENT | EXPLICIT_WIDTH | SUPPRESSING)) {
@@ -671,7 +676,7 @@ void TextAutosizer::SetAllTextNeedsLayout(LayoutBlock* container) {
     } else {
       if (object->IsText()) {
         object->SetNeedsLayoutAndFullPaintInvalidation(
-            LayoutInvalidationReason::kTextAutosizing);
+            layout_invalidation_reason::kTextAutosizing);
       }
       object = object->NextInPreOrder(container);
     }
@@ -807,9 +812,9 @@ TextAutosizer::Fingerprint TextAutosizer::ComputeFingerprint(
     data.packed_style_properties_ |=
         (static_cast<unsigned>(style->Floating()) << 4);
     data.packed_style_properties_ |=
-        (static_cast<unsigned>(style->Display()) << 6);
-    data.packed_style_properties_ |= (style->Width().GetType() << 11);
-    // packedStyleProperties effectively using 15 bits now.
+        (static_cast<unsigned>(style->Display()) << 7);
+    data.packed_style_properties_ |= (style->Width().GetType() << 12);
+    // packedStyleProperties effectively using 16 bits now.
 
     // consider for adding: writing mode, padding.
 
@@ -1158,7 +1163,7 @@ void TextAutosizer::ApplyMultiplier(LayoutObject* layout_object,
         ToLayoutText(layout_object)->AutosizingMultiplerChanged();
       DCHECK(!layouter || layout_object->IsDescendantOf(&layouter->Root()));
       layout_object->SetNeedsLayoutAndFullPaintInvalidation(
-          LayoutInvalidationReason::kTextAutosizing, kMarkContainerChain,
+          layout_invalidation_reason::kTextAutosizing, kMarkContainerChain,
           layouter);
       layout_object->MarkContainerNeedsCollectInlines();
       break;

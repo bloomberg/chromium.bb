@@ -27,7 +27,8 @@ ArCoreImpl::ArCoreImpl()
 
 ArCoreImpl::~ArCoreImpl() = default;
 
-bool ArCoreImpl::Initialize() {
+bool ArCoreImpl::Initialize(
+    base::android::ScopedJavaLocalRef<jobject> context) {
   DCHECK(IsOnGlThread());
   DCHECK(!arcore_session_.is_valid());
 
@@ -39,32 +40,23 @@ bool ArCoreImpl::Initialize() {
     return false;
   }
 
-  // Get the activity context.
-  base::android::ScopedJavaLocalRef<jobject> context =
-      vr::ArCoreJavaUtils::GetApplicationContext();
-  if (!context.obj()) {
-    DLOG(ERROR) << "Unable to retrieve the Java context/activity!";
-    return false;
-  }
-
-  if (!vr::ArCoreJavaUtils::EnsureLoaded()) {
-    DLOG(ERROR) << "ArCore could not be loaded.";
-    return false;
-  }
-
   // Use a local scoped ArSession for the next steps, we want the
   // arcore_session_ member to remain null until we complete successful
   // initialization.
   internal::ScopedArCoreObject<ArSession*> session;
 
-  ArStatus status = ArSession_create(env, context.obj(), session.receive());
+  ArStatus status = ArSession_create(
+      env, context.obj(),
+      internal::ScopedArCoreObject<ArSession*>::Receiver(session).get());
   if (status != AR_SUCCESS) {
     DLOG(ERROR) << "ArSession_create failed: " << status;
     return false;
   }
 
   internal::ScopedArCoreObject<ArConfig*> arcore_config;
-  ArConfig_create(session.get(), arcore_config.receive());
+  ArConfig_create(
+      session.get(),
+      internal::ScopedArCoreObject<ArConfig*>::Receiver(arcore_config).get());
   if (!arcore_config.is_valid()) {
     DLOG(ERROR) << "ArConfig_create failed";
     return false;
@@ -84,8 +76,8 @@ bool ArCoreImpl::Initialize() {
   }
 
   internal::ScopedArCoreObject<ArFrame*> frame;
-
-  ArFrame_create(session.get(), frame.receive());
+  ArFrame_create(session.get(),
+                 internal::ScopedArCoreObject<ArFrame*>::Receiver(frame).get());
   if (!frame.is_valid()) {
     DLOG(ERROR) << "ArFrame_create failed";
     return false;
@@ -147,8 +139,9 @@ mojom::VRPosePtr ArCoreImpl::Update(bool* camera_updated) {
   // if tracking is working.
   *camera_updated = true;
   internal::ScopedArCoreObject<ArCamera*> arcore_camera;
-  ArFrame_acquireCamera(arcore_session_.get(), arcore_frame_.get(),
-                        arcore_camera.receive());
+  ArFrame_acquireCamera(
+      arcore_session_.get(), arcore_frame_.get(),
+      internal::ScopedArCoreObject<ArCamera*>::Receiver(arcore_camera).get());
   if (!arcore_camera.is_valid()) {
     DLOG(ERROR) << "ArFrame_acquireCamera failed!";
     return nullptr;
@@ -164,7 +157,9 @@ mojom::VRPosePtr ArCoreImpl::Update(bool* camera_updated) {
   }
 
   internal::ScopedArCoreObject<ArPose*> arcore_pose;
-  ArPose_create(arcore_session_.get(), nullptr, arcore_pose.receive());
+  ArPose_create(
+      arcore_session_.get(), nullptr,
+      internal::ScopedArCoreObject<ArPose*>::Receiver(arcore_pose).get());
   if (!arcore_pose.is_valid()) {
     DLOG(ERROR) << "ArPose_create failed!";
     return nullptr;
@@ -204,8 +199,9 @@ gfx::Transform ArCoreImpl::GetProjectionMatrix(float near, float far) {
   DCHECK(arcore_frame_.is_valid());
 
   internal::ScopedArCoreObject<ArCamera*> arcore_camera;
-  ArFrame_acquireCamera(arcore_session_.get(), arcore_frame_.get(),
-                        arcore_camera.receive());
+  ArFrame_acquireCamera(
+      arcore_session_.get(), arcore_frame_.get(),
+      internal::ScopedArCoreObject<ArCamera*>::Receiver(arcore_camera).get());
   DCHECK(arcore_camera.is_valid())
       << "ArFrame_acquireCamera failed despite documentation saying it cannot";
 
@@ -228,8 +224,11 @@ bool ArCoreImpl::RequestHitTest(
   DCHECK(arcore_frame_.is_valid());
 
   internal::ScopedArCoreObject<ArHitResultList*> arcore_hit_result_list;
-  ArHitResultList_create(arcore_session_.get(),
-                         arcore_hit_result_list.receive());
+  ArHitResultList_create(
+      arcore_session_.get(),
+      internal::ScopedArCoreObject<ArHitResultList*>::Receiver(
+          arcore_hit_result_list)
+          .get());
   if (!arcore_hit_result_list.is_valid()) {
     DLOG(ERROR) << "ArHitResultList_create failed!";
     return false;
@@ -261,7 +260,10 @@ bool ArCoreImpl::RequestHitTest(
   for (int i = arcore_hit_result_list_size - 1; i >= 0; i--) {
     internal::ScopedArCoreObject<ArHitResult*> arcore_hit;
 
-    ArHitResult_create(arcore_session_.get(), arcore_hit.receive());
+    ArHitResult_create(
+        arcore_session_.get(),
+        internal::ScopedArCoreObject<ArHitResult*>::Receiver(arcore_hit).get());
+
     if (!arcore_hit.is_valid()) {
       DLOG(ERROR) << "ArHitResult_create failed!";
       return false;
@@ -272,8 +274,10 @@ bool ArCoreImpl::RequestHitTest(
 
     internal::ScopedArCoreObject<ArTrackable*> ar_trackable;
 
-    ArHitResult_acquireTrackable(arcore_session_.get(), arcore_hit.get(),
-                                 ar_trackable.receive());
+    ArHitResult_acquireTrackable(
+        arcore_session_.get(), arcore_hit.get(),
+        internal::ScopedArCoreObject<ArTrackable*>::Receiver(ar_trackable)
+            .get());
     ArTrackableType ar_trackable_type = AR_TRACKABLE_NOT_VALID;
     ArTrackable_getType(arcore_session_.get(), ar_trackable.get(),
                         &ar_trackable_type);
@@ -285,7 +289,9 @@ bool ArCoreImpl::RequestHitTest(
     }
 
     internal::ScopedArCoreObject<ArPose*> arcore_pose;
-    ArPose_create(arcore_session_.get(), nullptr, arcore_pose.receive());
+    ArPose_create(
+        arcore_session_.get(), nullptr,
+        internal::ScopedArCoreObject<ArPose*>::Receiver(arcore_pose).get());
     if (!arcore_pose.is_valid()) {
       DLOG(ERROR) << "ArPose_create failed!";
       return false;
@@ -325,8 +331,9 @@ bool ArCoreImpl::TransformRayToScreenSpace(const mojom::XRRayPtr& ray,
   DCHECK(arcore_frame_.is_valid());
 
   internal::ScopedArCoreObject<ArCamera*> arcore_camera;
-  ArFrame_acquireCamera(arcore_session_.get(), arcore_frame_.get(),
-                        arcore_camera.receive());
+  ArFrame_acquireCamera(
+      arcore_session_.get(), arcore_frame_.get(),
+      internal::ScopedArCoreObject<ArCamera*>::Receiver(arcore_camera).get());
   DCHECK(arcore_camera.is_valid())
       << "ArFrame_acquireCamera failed despite documentation saying it cannot";
 
@@ -372,6 +379,10 @@ bool ArCoreImpl::TransformRayToScreenSpace(const mojom::XRRayPtr& ray,
 
 bool ArCoreImpl::IsOnGlThread() {
   return gl_thread_task_runner_->BelongsToCurrentThread();
+}
+
+std::unique_ptr<ArCore> ArCoreImplFactory::Create() {
+  return std::make_unique<ArCoreImpl>();
 }
 
 }  // namespace device

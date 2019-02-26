@@ -9,6 +9,7 @@
 #include "third_party/blink/renderer/core/dom/node_traversal.h"
 #include "third_party/blink/renderer/core/dom/shadow_root.h"
 #include "third_party/blink/renderer/core/dom/slot_assignment_engine.h"
+#include "third_party/blink/renderer/core/dom/slot_assignment_recalc_forbidden_scope.h"
 #include "third_party/blink/renderer/core/html/forms/html_opt_group_element.h"
 #include "third_party/blink/renderer/core/html/forms/html_select_element.h"
 #include "third_party/blink/renderer/core/html/html_details_element.h"
@@ -226,10 +227,13 @@ void SlotAssignment::RecalcAssignment() {
 #if DCHECK_IS_ON()
   DCHECK(!owner_->GetDocument().IsSlotAssignmentRecalcForbidden());
 #endif
+  // To detect recursive RecalcAssignment, which shouldn't happen.
+  SlotAssignmentRecalcForbiddenScope forbid_slot_recalc(owner_->GetDocument());
+
   needs_assignment_recalc_ = false;
 
   for (Member<HTMLSlotElement> slot : Slots())
-    slot->ClearAssignedNodes();
+    slot->WillRecalcAssignedNodes();
 
   const bool is_user_agent = owner_->IsUserAgent();
 
@@ -266,10 +270,12 @@ void SlotAssignment::RecalcAssignment() {
       }
     }
 
-    if (slot)
+    if (slot) {
       slot->AppendAssignedNode(child);
-    else
+    } else {
+      child.ClearFlatTreeNodeData();
       child.LazyReattachIfAttached();
+    }
   }
 
   if (owner_->isConnected()) {
@@ -279,7 +285,7 @@ void SlotAssignment::RecalcAssignment() {
   }
 
   for (auto& slot : Slots())
-    slot->RecalcFlatTreeChildren();
+    slot->DidRecalcAssignedNodes();
 }
 
 const HeapVector<Member<HTMLSlotElement>>& SlotAssignment::Slots() {

@@ -22,7 +22,6 @@
 #include "third_party/blink/renderer/core/editing/visible_units.h"
 #include "third_party/blink/renderer/core/frame/local_frame.h"
 #include "third_party/blink/renderer/platform/instrumentation/tracing/trace_event.h"
-#include "third_party/blink/renderer/platform/runtime_enabled_features.h"
 #include "third_party/blink/renderer/platform/wtf/time.h"
 
 namespace blink {
@@ -43,8 +42,11 @@ class IdleSpellCheckController::IdleCallback final
     : public ScriptedIdleTaskController::IdleTask {
  public:
   static IdleCallback* Create(IdleSpellCheckController* controller) {
-    return new IdleCallback(controller);
+    return MakeGarbageCollected<IdleCallback>(controller);
   }
+
+  explicit IdleCallback(IdleSpellCheckController* controller)
+      : controller_(controller) {}
 
   void Trace(blink::Visitor* visitor) final {
     visitor->Trace(controller_);
@@ -52,9 +54,6 @@ class IdleSpellCheckController::IdleCallback final
   }
 
  private:
-  explicit IdleCallback(IdleSpellCheckController* controller)
-      : controller_(controller) {}
-
   void invoke(IdleDeadline* deadline) final { controller_->Invoke(deadline); }
 
   const Member<IdleSpellCheckController> controller_;
@@ -125,16 +124,15 @@ void IdleSpellCheckController::SetNeedsInvocation() {
   if (state_ == State::kColdModeRequested)
     DisposeIdleCallback();
 
-  IdleRequestOptions options;
-  options.setTimeout(kHotModeRequestTimeoutMS);
+  IdleRequestOptions* options = IdleRequestOptions::Create();
+  options->setTimeout(kHotModeRequestTimeoutMS);
   idle_callback_handle_ =
       GetDocument().RequestIdleCallback(IdleCallback::Create(this), options);
   state_ = State::kHotModeRequested;
 }
 
 void IdleSpellCheckController::SetNeedsColdModeInvocation() {
-  if (!RuntimeEnabledFeatures::IdleTimeColdModeSpellCheckingEnabled() ||
-      !IsSpellCheckingEnabled()) {
+  if (!IsSpellCheckingEnabled()) {
     Deactivate();
     return;
   }
@@ -152,7 +150,6 @@ void IdleSpellCheckController::SetNeedsColdModeInvocation() {
 }
 
 void IdleSpellCheckController::ColdModeTimerFired(TimerBase*) {
-  DCHECK(RuntimeEnabledFeatures::IdleTimeColdModeSpellCheckingEnabled());
   DCHECK_EQ(State::kColdModeTimerStarted, state_);
 
   if (!IsSpellCheckingEnabled() || !IsAvailable()) {
@@ -161,7 +158,7 @@ void IdleSpellCheckController::ColdModeTimerFired(TimerBase*) {
   }
 
   idle_callback_handle_ = GetDocument().RequestIdleCallback(
-      IdleCallback::Create(this), IdleRequestOptions());
+      IdleCallback::Create(this), IdleRequestOptions::Create());
   state_ = State::kColdModeRequested;
 }
 
@@ -208,7 +205,6 @@ void IdleSpellCheckController::Invoke(IdleDeadline* deadline) {
     HotModeInvocation(deadline);
     SetNeedsColdModeInvocation();
   } else if (state_ == State::kColdModeRequested) {
-    DCHECK(RuntimeEnabledFeatures::IdleTimeColdModeSpellCheckingEnabled());
     state_ = State::kInColdModeInvocation;
     cold_mode_requester_->Invoke(deadline);
     if (cold_mode_requester_->FullyChecked())
@@ -220,7 +216,7 @@ void IdleSpellCheckController::Invoke(IdleDeadline* deadline) {
   }
 }
 
-void IdleSpellCheckController::DocumentAttached(Document* document) {
+void IdleSpellCheckController::DidAttachDocument(Document* document) {
   SetContext(document);
 }
 

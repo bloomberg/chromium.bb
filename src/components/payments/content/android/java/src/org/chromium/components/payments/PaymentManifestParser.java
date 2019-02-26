@@ -7,6 +7,7 @@ package org.chromium.components.payments;
 import org.chromium.base.ThreadUtils;
 import org.chromium.base.annotations.CalledByNative;
 import org.chromium.base.annotations.JNINamespace;
+import org.chromium.content_public.browser.WebContents;
 
 import java.net.URI;
 import java.net.URISyntaxException;
@@ -46,11 +47,13 @@ public class PaymentManifestParser {
     /**
      * Init the native side of this class.
      * Must be called before parsePaymentMethodManifest or parseWebAppManifest can be called.
+     * @param webContents The web contents in whose developer console parsing errors and warnings
+     *                    will be printed.
      */
-    public void createNative() {
+    public void createNative(WebContents webContents) {
         ThreadUtils.assertOnUiThread();
         assert mNativePaymentManifestParserAndroid == 0;
-        mNativePaymentManifestParserAndroid = nativeCreatePaymentManifestParserAndroid();
+        mNativePaymentManifestParserAndroid = nativeCreatePaymentManifestParserAndroid(webContents);
     }
 
     /** Releases the resources held by the native side. */
@@ -123,7 +126,7 @@ public class PaymentManifestParser {
         manifest[sectionIndex].fingerprints[fingerprintIndex] = fingerprint;
     }
 
-    private static native long nativeCreatePaymentManifestParserAndroid();
+    private static native long nativeCreatePaymentManifestParserAndroid(WebContents webContents);
     private static native void nativeDestroyPaymentManifestParserAndroid(
             long nativePaymentManifestParserAndroid);
     private static native void nativeParsePaymentMethodManifest(

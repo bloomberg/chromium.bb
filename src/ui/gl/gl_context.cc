@@ -188,6 +188,10 @@ void GLContext::ForceReleaseVirtuallyCurrent() {
   NOTREACHED();
 }
 
+void GLContext::DirtyVirtualContextState() {
+  current_virtual_context_ = nullptr;
+}
+
 #if defined(OS_MACOSX)
 uint64_t GLContext::BackpressureFenceCreate() {
   return 0;

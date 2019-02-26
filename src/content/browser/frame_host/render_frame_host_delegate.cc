@@ -22,7 +22,7 @@ bool RenderFrameHostDelegate::OnMessageReceived(
   return false;
 }
 
-const GURL& RenderFrameHostDelegate::GetMainFrameLastCommittedURL() const {
+const GURL& RenderFrameHostDelegate::GetMainFrameLastCommittedURL() {
   return GURL::EmptyGURL();
 }
 
@@ -38,6 +38,13 @@ void RenderFrameHostDelegate::RunFileChooser(
     RenderFrameHost* render_frame_host,
     std::unique_ptr<FileSelectListener> listener,
     const blink::mojom::FileChooserParams& params) {
+  listener->FileSelectionCanceled();
+}
+
+void RenderFrameHostDelegate::EnumerateDirectory(
+    RenderFrameHost* render_frame_host,
+    std::unique_ptr<FileSelectListener> listener,
+    const base::FilePath& path) {
   listener->FileSelectionCanceled();
 }
 
@@ -72,7 +79,7 @@ std::string RenderFrameHostDelegate::GetDefaultMediaDeviceID(
   return std::string();
 }
 
-ui::AXMode RenderFrameHostDelegate::GetAccessibilityMode() const {
+ui::AXMode RenderFrameHostDelegate::GetAccessibilityMode() {
   return ui::AXMode();
 }
 
@@ -126,11 +133,11 @@ RenderFrameHostDelegate::GetJavaRenderFrameHostDelegate() {
 }
 #endif
 
-bool RenderFrameHostDelegate::IsBeingDestroyed() const {
+bool RenderFrameHostDelegate::IsBeingDestroyed() {
   return false;
 }
 
-Visibility RenderFrameHostDelegate::GetVisibility() const {
+Visibility RenderFrameHostDelegate::GetVisibility() {
   return Visibility::HIDDEN;
 }
 

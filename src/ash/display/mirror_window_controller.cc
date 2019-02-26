@@ -18,6 +18,8 @@
 #include "ash/window_factory.h"
 #include "base/strings/stringprintf.h"
 #include "base/threading/thread_task_runner_handle.h"
+#include "components/viz/common/features.h"
+#include "components/viz/common/surfaces/surface_id.h"
 #include "ui/aura/client/capture_client.h"
 #include "ui/aura/env.h"
 #include "ui/aura/window_delegate.h"
@@ -158,6 +160,8 @@ void MirrorWindowController::UpdateWindow(
 
   multi_display_mode_ = GetCurrentMultiDisplayMode();
   reflecting_source_id_ = GetCurrentReflectingSourceId();
+  viz::SurfaceId reflecting_surface_id =
+      Shell::GetRootWindowForDisplayId(reflecting_source_id_)->GetSurfaceId();
 
   for (const display::ManagedDisplayInfo& display_info : display_info_list) {
     std::unique_ptr<RootWindowTransformer> transformer;
@@ -220,18 +224,20 @@ void MirrorWindowController::UpdateWindow(
       mirror_window->Init(ui::LAYER_SOLID_COLOR);
       host->window()->AddChild(mirror_window);
       host_info->ash_host->SetRootWindowTransformer(std::move(transformer));
-      mirror_window->SetBounds(host->window()->bounds());
-      mirror_window->Show();
       // The accelerated widget is created synchronously.
       DCHECK_NE(gfx::kNullAcceleratedWidget, host->GetAcceleratedWidget());
-      if (reflector_) {
-        reflector_->AddMirroringLayer(mirror_window->layer());
-      } else if (GetContextFactoryPrivate()) {
-        reflector_ = GetContextFactoryPrivate()->CreateReflector(
-            Shell::GetRootWindowForDisplayId(reflecting_source_id_)
-                ->GetHost()
-                ->compositor(),
-            mirror_window->layer());
+      if (!base::FeatureList::IsEnabled(features::kVizDisplayCompositor)) {
+        mirror_window->SetBounds(host->window()->bounds());
+        mirror_window->Show();
+        if (reflector_) {
+          reflector_->AddMirroringLayer(mirror_window->layer());
+        } else if (GetContextFactoryPrivate()) {
+          reflector_ = GetContextFactoryPrivate()->CreateReflector(
+              Shell::GetRootWindowForDisplayId(reflecting_source_id_)
+                  ->GetHost()
+                  ->compositor(),
+              mirror_window->layer());
+        }
       }
     } else {
       AshWindowTreeHost* ash_host =
@@ -240,6 +246,22 @@ void MirrorWindowController::UpdateWindow(
       GetRootWindowSettings(host->window())->display_id = display_info.id();
       ash_host->SetRootWindowTransformer(std::move(transformer));
       host->SetBoundsInPixels(display_info.bounds_in_native());
+    }
+
+    if (base::FeatureList::IsEnabled(features::kVizDisplayCompositor)) {
+      // |mirror_size| is the size of the mirror source in physical pixels.
+      // The RootWindowTransformer corrects the scale of the mirrored display
+      // and the location of input events.
+      gfx::Size mirror_size =
+          display_manager->GetDisplayInfo(reflecting_source_id_)
+              .bounds_in_native()
+              .size();
+      aura::Window* mirror_window =
+          mirroring_host_info_map_[display_info.id()]->mirror_window;
+      mirror_window->SetBounds(gfx::Rect(mirror_size));
+      mirror_window->Show();
+      mirror_window->layer()->SetShowReflectedSurface(reflecting_surface_id,
+                                                      mirror_size);
     }
   }
 

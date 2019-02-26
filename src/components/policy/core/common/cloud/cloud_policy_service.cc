@@ -211,7 +211,7 @@ void CloudPolicyService::CheckInitializationCompleted() {
   if (!IsInitializationComplete() && store_->is_initialized()) {
     initialization_complete_ = true;
     for (auto& observer : observers_)
-      observer.OnInitializationCompleted(this);
+      observer.OnCloudPolicyServiceInitializationCompleted();
   }
 }
 
@@ -222,8 +222,8 @@ void CloudPolicyService::RefreshCompleted(bool success) {
   callbacks.swap(refresh_callbacks_);
   refresh_state_ = REFRESH_NONE;
 
-  for (std::vector<RefreshPolicyCallback>::iterator callback(callbacks.begin());
-       callback != callbacks.end(); ++callback) {
+  for (auto callback(callbacks.begin()); callback != callbacks.end();
+       ++callback) {
     callback->Run(success);
   }
 }

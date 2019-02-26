@@ -76,7 +76,8 @@ void PdfAccessibilityTree::SetAccessibilityViewportInfo(
   if (render_accessibility && tree_.size() > 1) {
     ui::AXNode* root = tree_.root();
     ui::AXNodeData root_data = root->data();
-    root_data.transform = base::WrapUnique(MakeTransformFromViewInfo());
+    root_data.relative_bounds.transform =
+        base::WrapUnique(MakeTransformFromViewInfo());
     root->SetData(root_data);
     UpdateAXTreeDataFromSelection();
     render_accessibility->OnPluginRootNodeUpdated();
@@ -95,7 +96,7 @@ void PdfAccessibilityTree::SetAccessibilityDocInfo(
   // doc's coordinates, the origin of the doc must be (0, 0). Its
   // width and height will be updated as we add each page so that the
   // doc's bounding box surrounds all pages.
-  doc_node_->location = gfx::RectF(0, 0, 1, 1);
+  doc_node_->relative_bounds.bounds = gfx::RectF(0, 0, 1, 1);
 }
 
 void PdfAccessibilityTree::SetAccessibilityPageInfo(
@@ -116,8 +117,8 @@ void PdfAccessibilityTree::SetAccessibilityPageInfo(
       l10n_util::GetPluralStringFUTF8(IDS_PDF_PAGE_INDEX, page_index + 1));
 
   gfx::RectF page_bounds = ToRectF(page_info.bounds);
-  page_node->location = page_bounds;
-  doc_node_->location.Union(page_node->location);
+  page_node->relative_bounds.bounds = page_bounds;
+  doc_node_->relative_bounds.bounds.Union(page_node->relative_bounds.bounds);
   doc_node_->child_ids.push_back(page_node->id);
 
   double heading_font_size_threshold = 0;
@@ -170,13 +171,15 @@ void PdfAccessibilityTree::SetAccessibilityPageInfo(
                                              chars_utf8);
     gfx::RectF text_run_bounds = ToGfxRectF(text_run.bounds);
     text_run_bounds += page_bounds.OffsetFromOrigin();
-    inline_text_box_node->location = text_run_bounds;
+    inline_text_box_node->relative_bounds.bounds = text_run_bounds;
     inline_text_box_node->AddIntListAttribute(
         ax::mojom::IntListAttribute::kCharacterOffsets, char_offsets);
     AddWordStartsAndEnds(inline_text_box_node);
 
-    para_node->location.Union(inline_text_box_node->location);
-    static_text_node->location.Union(inline_text_box_node->location);
+    para_node->relative_bounds.bounds.Union(
+        inline_text_box_node->relative_bounds.bounds);
+    static_text_node->relative_bounds.bounds.Union(
+        inline_text_box_node->relative_bounds.bounds);
 
     if (i == text_runs.size() - 1) {
       static_text_node->AddStringAttribute(ax::mojom::StringAttribute::kName,
@@ -202,7 +205,8 @@ void PdfAccessibilityTree::SetAccessibilityPageInfo(
 }
 
 void PdfAccessibilityTree::Finish() {
-  doc_node_->transform = base::WrapUnique(MakeTransformFromViewInfo());
+  doc_node_->relative_bounds.transform =
+      base::WrapUnique(MakeTransformFromViewInfo());
 
   ui::AXTreeUpdate update;
   update.root_id = doc_node_->id;
@@ -347,7 +351,7 @@ ui::AXNodeData* PdfAccessibilityTree::CreateNode(ax::mojom::Role role) {
   // All nodes other than the first one have coordinates relative to
   // the first node.
   if (nodes_.size() > 0)
-    node->offset_container_id = nodes_[0]->id;
+    node->relative_bounds.offset_container_id = nodes_[0]->id;
 
   nodes_.push_back(base::WrapUnique(node));
 

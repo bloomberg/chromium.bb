@@ -302,7 +302,9 @@ class BotUpdateApi(recipe_api.RecipeApi):
 
         # bot_update actually just sets root to be the folder name of the
         # first solution.
-        if result['did_run'] and 'checkout' not in self.m.path:
+        if (result.get('did_run')
+            and 'checkout' not in self.m.path
+            and 'root' in result):
           co_root = result['root']
           cwd = self.m.context.cwd or self.m.path['start_dir']
           self.m.path['checkout'] = cwd.join(*co_root.split(self.m.path.sep))

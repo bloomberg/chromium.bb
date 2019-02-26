@@ -10,8 +10,28 @@
 #include "GrShape.h"
 #include "SkNx.h"
 
+static constexpr int kMaxKeyDataCountU32 = 256;  // 1kB of uint32_t's.
+
+DECLARE_SKMESSAGEBUS_MESSAGE(sk_sp<GrCCPathCache::Key>);
+
+static inline uint32_t next_path_cache_id() {
+    static std::atomic<uint32_t> gNextID(1);
+    for (;;) {
+        uint32_t id = gNextID.fetch_add(+1, std::memory_order_acquire);
+        if (SK_InvalidUniqueID != id) {
+            return id;
+        }
+    }
+}
+
+static inline bool SkShouldPostMessageToBus(
+        const sk_sp<GrCCPathCache::Key>& key, uint32_t msgBusUniqueID) {
+    return key->pathCacheUniqueID() == msgBusUniqueID;
+}
+
 // The maximum number of cache entries we allow in our own cache.
 static constexpr int kMaxCacheCount = 1 << 16;
+
 
 GrCCPathCache::MaskTransform::MaskTransform(const SkMatrix& m, SkIVector* shift)
         : fMatrix2x2{m.getScaleX(), m.getSkewX(), m.getSkewY(), m.getScaleY()} {
@@ -44,29 +64,105 @@ inline static bool fuzzy_equals(const GrCCPathCache::MaskTransform& a,
     return true;
 }
 
+sk_sp<GrCCPathCache::Key> GrCCPathCache::Key::Make(uint32_t pathCacheUniqueID,
+                                                   int dataCountU32, const void* data) {
+    void* memory = ::operator new (sizeof(Key) + dataCountU32 * sizeof(uint32_t));
+    sk_sp<GrCCPathCache::Key> key(new (memory) Key(pathCacheUniqueID, dataCountU32));
+    if (data) {
+        memcpy(key->data(), data, key->dataSizeInBytes());
+    }
+    return key;
+}
+
+const uint32_t* GrCCPathCache::Key::data() const {
+    // The shape key is a variable-length footer to the entry allocation.
+    return reinterpret_cast<const uint32_t*>(reinterpret_cast<const char*>(this) + sizeof(Key));
+}
+
+uint32_t* GrCCPathCache::Key::data() {
+    // The shape key is a variable-length footer to the entry allocation.
+    return reinterpret_cast<uint32_t*>(reinterpret_cast<char*>(this) + sizeof(Key));
+}
+
+inline bool GrCCPathCache::Key::operator==(const GrCCPathCache::Key& that) const {
+    return fDataSizeInBytes == that.fDataSizeInBytes &&
+           !memcmp(this->data(), that.data(), fDataSizeInBytes);
+}
+
+void GrCCPathCache::Key::onChange() {
+    // Our key's corresponding path was invalidated. Post a thread-safe eviction message.
+    SkMessageBus<sk_sp<Key>>::Post(sk_ref_sp(this));
+}
+
+inline const GrCCPathCache::Key& GrCCPathCache::HashNode::GetKey(
+        const GrCCPathCache::HashNode& node) {
+    return *node.entry()->fCacheKey;
+}
+
+inline uint32_t GrCCPathCache::HashNode::Hash(const Key& key) {
+    return GrResourceKeyHash(key.data(), key.dataSizeInBytes());
+}
+
+inline GrCCPathCache::HashNode::HashNode(GrCCPathCache* pathCache, sk_sp<Key> key,
+                                         const MaskTransform& m, const GrShape& shape)
+        : fPathCache(pathCache)
+        , fEntry(new GrCCPathCacheEntry(key, m)) {
+    SkASSERT(shape.hasUnstyledKey());
+    shape.addGenIDChangeListener(std::move(key));
+}
+
+inline GrCCPathCache::HashNode::~HashNode() {
+    this->willExitHashTable();
+}
+
+inline GrCCPathCache::HashNode& GrCCPathCache::HashNode::operator=(HashNode&& node) {
+    this->willExitHashTable();
+    fPathCache = node.fPathCache;
+    fEntry = std::move(node.fEntry);
+    SkASSERT(!node.fEntry);
+    return *this;
+}
+
+inline void GrCCPathCache::HashNode::willExitHashTable() {
+    if (!fEntry) {
+        return;  // We were moved.
+    }
+
+    SkASSERT(fPathCache);
+    SkASSERT(fPathCache->fLRU.isInList(fEntry.get()));
+
+    fEntry->fCacheKey->markShouldUnregisterFromPath();  // Unregister the path listener.
+    fPathCache->fLRU.remove(fEntry.get());
+}
+
+
+GrCCPathCache::GrCCPathCache()
+        : fInvalidatedKeysInbox(next_path_cache_id())
+        , fScratchKey(Key::Make(fInvalidatedKeysInbox.uniqueID(), kMaxKeyDataCountU32)) {
+}
+
+GrCCPathCache::~GrCCPathCache() {
+    fHashTable.reset();  // Must be cleared first; ~HashNode calls fLRU.remove() on us.
+    SkASSERT(fLRU.isEmpty());  // Ensure the hash table and LRU list were coherent.
+}
+
 namespace {
 
 // Produces a key that accounts both for a shape's path geometry, as well as any stroke/style.
-class WriteStyledKey {
+class WriteKeyHelper {
 public:
-    static constexpr int kStyledKeySizeInBytesIdx = 0;
-    static constexpr int kStrokeWidthIdx = 1;
-    static constexpr int kStrokeMiterIdx = 2;
-    static constexpr int kStrokeCapJoinIdx = 3;
-    static constexpr int kShapeUnstyledKeyIdx = 4;
+    static constexpr int kStrokeWidthIdx = 0;
+    static constexpr int kStrokeMiterIdx = 1;
+    static constexpr int kStrokeCapJoinIdx = 2;
+    static constexpr int kShapeUnstyledKeyIdx = 3;
 
-    static constexpr int kStrokeKeyCount = 3;  // [width, miterLimit, cap|join].
-
-    WriteStyledKey(const GrShape& shape) : fShapeUnstyledKeyCount(shape.unstyledKeySize()) {}
+    WriteKeyHelper(const GrShape& shape) : fShapeUnstyledKeyCount(shape.unstyledKeySize()) {}
 
     // Returns the total number of uint32_t's to allocate for the key.
     int allocCountU32() const { return kShapeUnstyledKeyIdx + fShapeUnstyledKeyCount; }
 
-    // Writes the key to out[].
+    // Writes the key data to out[].
     void write(const GrShape& shape, uint32_t* out) {
-        out[kStyledKeySizeInBytesIdx] =
-                (kStrokeKeyCount + fShapeUnstyledKeyCount) * sizeof(uint32_t);
-
         // Stroke key.
         // We don't use GrStyle::WriteKey() because it does not account for hairlines.
         // http://skbug.com/8273
@@ -94,75 +190,37 @@ private:
 
 }
 
-inline GrCCPathCache::HashNode::HashNode(GrCCPathCache* cache, const MaskTransform& m,
-                                         const GrShape& shape) {
-    SkASSERT(shape.hasUnstyledKey());
-
-    WriteStyledKey writeKey(shape);
-    void* memory = ::operator new (sizeof(GrCCPathCacheEntry) +
-                                   writeKey.allocCountU32() * sizeof(uint32_t));
-    fEntry = new (memory) GrCCPathCacheEntry(cache, m);
-
-    // The shape key is a variable-length footer to the entry allocation.
-    uint32_t* keyData = (uint32_t*)((char*)memory + sizeof(GrCCPathCacheEntry));
-    writeKey.write(shape, keyData);
-}
-
-inline bool operator==(const GrCCPathCache::HashKey& key1, const GrCCPathCache::HashKey& key2) {
-    return key1.fData[0] == key2.fData[0] && !memcmp(&key1.fData[1], &key2.fData[1], key1.fData[0]);
-}
-
-inline GrCCPathCache::HashKey GrCCPathCache::HashNode::GetKey(const GrCCPathCacheEntry* entry) {
-    // The shape key is a variable-length footer to the entry allocation.
-    return HashKey{(const uint32_t*)((const char*)entry + sizeof(GrCCPathCacheEntry))};
-}
-
-inline uint32_t GrCCPathCache::HashNode::Hash(HashKey key) {
-    return GrResourceKeyHash(&key.fData[1], key.fData[0]);
-}
-
-GrCCPathCache::HashNode::~HashNode() {
-    if (!fEntry) {
-        return;
-    }
-
-    // Finalize our eviction from the path cache.
-    SkASSERT(fEntry->fCacheWeakPtr);
-    fEntry->fCacheWeakPtr->fLRU.remove(fEntry);
-    fEntry->fCacheWeakPtr = nullptr;
-    fEntry->unref();
-}
-
-GrCCPathCache::HashNode& GrCCPathCache::HashNode::operator=(HashNode&& node) {
-    this->~HashNode();
-    return *new (this) HashNode(std::move(node));
-}
-
 sk_sp<GrCCPathCacheEntry> GrCCPathCache::find(const GrShape& shape, const MaskTransform& m,
                                               CreateIfAbsent createIfAbsent) {
     if (!shape.hasUnstyledKey()) {
         return nullptr;
     }
 
-    WriteStyledKey writeKey(shape);
-    SkAutoSTMalloc<GrShape::kMaxKeyFromDataVerbCnt * 4, uint32_t> keyData(writeKey.allocCountU32());
-    writeKey.write(shape, keyData.get());
+    WriteKeyHelper writeKeyHelper(shape);
+    if (writeKeyHelper.allocCountU32() > kMaxKeyDataCountU32) {
+        return nullptr;
+    }
+
+    SkASSERT(fScratchKey->unique());
+    fScratchKey->resetDataCountU32(writeKeyHelper.allocCountU32());
+    writeKeyHelper.write(shape, fScratchKey->data());
 
     GrCCPathCacheEntry* entry = nullptr;
-    if (HashNode* node = fHashTable.find({keyData.get()})) {
+    if (HashNode* node = fHashTable.find(*fScratchKey)) {
         entry = node->entry();
-        SkASSERT(this == entry->fCacheWeakPtr);
-        if (fuzzy_equals(m, entry->fMaskTransform)) {
-            ++entry->fHitCount;  // The path was reused with a compatible matrix.
-        } else if (CreateIfAbsent::kYes == createIfAbsent && entry->unique()) {
-            // This entry is unique: we can recycle it instead of deleting and malloc-ing a new one.
-            entry->fMaskTransform = m;
-            entry->fHitCount = 1;
-            entry->invalidateAtlas();
-            SkASSERT(!entry->fCurrFlushAtlas);  // Should be null because 'entry' is unique.
-        } else {
-            this->evict(entry);
-            entry = nullptr;
+        SkASSERT(fLRU.isInList(entry));
+        if (!fuzzy_equals(m, entry->fMaskTransform)) {
+            // The path was reused with an incompatible matrix.
+            if (CreateIfAbsent::kYes == createIfAbsent && entry->unique()) {
+                // This entry is unique: recycle it instead of deleting and malloc-ing a new one.
+                entry->fMaskTransform = m;
+                entry->fHitCount = 0;
+                entry->invalidateAtlas();
+                SkASSERT(!entry->fCurrFlushAtlas);  // Should be null because 'entry' is unique.
+            } else {
+                this->evict(*fScratchKey);
+                entry = nullptr;
+            }
         }
     }
 
@@ -171,45 +229,78 @@ sk_sp<GrCCPathCacheEntry> GrCCPathCache::find(const GrShape& shape, const MaskTr
             return nullptr;
         }
         if (fHashTable.count() >= kMaxCacheCount) {
-            this->evict(fLRU.tail());  // We've exceeded our limit.
+            SkDEBUGCODE(HashNode* node = fHashTable.find(*fLRU.tail()->fCacheKey));
+            SkASSERT(node && node->entry() == fLRU.tail());
+            this->evict(*fLRU.tail()->fCacheKey);  // We've exceeded our limit.
         }
-        entry = fHashTable.set(HashNode(this, m, shape))->entry();
-        shape.addGenIDChangeListener(sk_ref_sp(entry));
+
+        // Create a new entry in the cache.
+        sk_sp<Key> permanentKey = Key::Make(fInvalidatedKeysInbox.uniqueID(),
+                                            writeKeyHelper.allocCountU32(), fScratchKey->data());
+        SkASSERT(*permanentKey == *fScratchKey);
+        SkASSERT(!fHashTable.find(*permanentKey));
+        entry = fHashTable.set(HashNode(this, std::move(permanentKey), m, shape))->entry();
+
         SkASSERT(fHashTable.count() <= kMaxCacheCount);
     } else {
         fLRU.remove(entry);  // Will be re-added at head.
     }
 
+    SkDEBUGCODE(HashNode* node = fHashTable.find(*fScratchKey));
+    SkASSERT(node && node->entry() == entry);
     fLRU.addToHead(entry);
+
+    entry->fTimestamp = this->quickPerFlushTimestamp();
+    ++entry->fHitCount;
     return sk_ref_sp(entry);
 }
 
-void GrCCPathCache::evict(const GrCCPathCacheEntry* entry) {
-    SkASSERT(entry);
-    SkASSERT(this == entry->fCacheWeakPtr);
-    SkASSERT(fLRU.isInList(entry));
-    SkASSERT(fHashTable.find(HashNode::GetKey(entry))->entry() == entry);
+void GrCCPathCache::doPostFlushProcessing() {
+    this->purgeInvalidatedKeys();
 
-    fHashTable.remove(HashNode::GetKey(entry));  // ~HashNode() handles the rest.
+    // Mark the per-flush timestamp as needing to be updated with a newer clock reading.
+    fPerFlushTimestamp = GrStdSteadyClock::time_point::min();
+}
+
+void GrCCPathCache::purgeEntriesOlderThan(const GrStdSteadyClock::time_point& purgeTime) {
+    this->purgeInvalidatedKeys();
+
+#ifdef SK_DEBUG
+    auto lastTimestamp = (fLRU.isEmpty())
+            ? GrStdSteadyClock::time_point::max()
+            : fLRU.tail()->fTimestamp;
+#endif
+
+    // Drop every cache entry whose timestamp is older than purgeTime.
+    while (!fLRU.isEmpty() && fLRU.tail()->fTimestamp < purgeTime) {
+#ifdef SK_DEBUG
+        // Verify that fLRU is sorted by timestamp.
+        auto timestamp = fLRU.tail()->fTimestamp;
+        SkASSERT(timestamp >= lastTimestamp);
+        lastTimestamp = timestamp;
+#endif
+        this->evict(*fLRU.tail()->fCacheKey);
+    }
+}
+
+void GrCCPathCache::purgeInvalidatedKeys() {
+    SkTArray<sk_sp<Key>> invalidatedKeys;
+    fInvalidatedKeysInbox.poll(&invalidatedKeys);
+    for (const sk_sp<Key>& key : invalidatedKeys) {
+        bool isInCache = !key->shouldUnregisterFromPath();  // Gets set upon exiting the cache.
+        if (isInCache) {
+            this->evict(*key);
+        }
+    }
 }
 
 
-GrCCPathCacheEntry::~GrCCPathCacheEntry() {
-    SkASSERT(!fCacheWeakPtr);  // HashNode should have cleared our cache pointer.
-    SkASSERT(!fCurrFlushAtlas);  // Client is required to reset fCurrFlushAtlas back to null.
-
-    this->invalidateAtlas();
-}
-
-void GrCCPathCacheEntry::initAsStashedAtlas(const GrUniqueKey& atlasKey, uint32_t contextUniqueID,
+void GrCCPathCacheEntry::initAsStashedAtlas(const GrUniqueKey& atlasKey,
                                             const SkIVector& atlasOffset, const SkRect& devBounds,
                                             const SkRect& devBounds45, const SkIRect& devIBounds,
                                             const SkIVector& maskShift) {
-    SkASSERT(contextUniqueID != SK_InvalidUniqueID);
     SkASSERT(atlasKey.isValid());
     SkASSERT(!fCurrFlushAtlas);  // Otherwise we should reuse the atlas from last time.
-
-    fContextUniqueID = contextUniqueID;
 
     fAtlasKey = atlasKey;
     fAtlasOffset = atlasOffset + maskShift;
@@ -221,14 +312,11 @@ void GrCCPathCacheEntry::initAsStashedAtlas(const GrUniqueKey& atlasKey, uint32_
     fDevIBounds = devIBounds.makeOffset(-maskShift.fX, -maskShift.fY);
 }
 
-void GrCCPathCacheEntry::updateToCachedAtlas(const GrUniqueKey& atlasKey, uint32_t contextUniqueID,
+void GrCCPathCacheEntry::updateToCachedAtlas(const GrUniqueKey& atlasKey,
                                              const SkIVector& newAtlasOffset,
                                              sk_sp<GrCCAtlas::CachedAtlasInfo> info) {
-    SkASSERT(contextUniqueID != SK_InvalidUniqueID);
     SkASSERT(atlasKey.isValid());
     SkASSERT(!fCurrFlushAtlas);  // Otherwise we should reuse the atlas from last time.
-
-    fContextUniqueID = contextUniqueID;
 
     fAtlasKey = atlasKey;
     fAtlasOffset = newAtlasOffset;
@@ -245,19 +333,13 @@ void GrCCPathCacheEntry::invalidateAtlas() {
         if (!fCachedAtlasInfo->fIsPurgedFromResourceCache &&
             fCachedAtlasInfo->fNumInvalidatedPathPixels >= fCachedAtlasInfo->fNumPathPixels / 2) {
             // Too many invalidated pixels: purge the atlas texture from the resource cache.
+            // The GrContext and CCPR path cache both share the same unique ID.
             SkMessageBus<GrUniqueKeyInvalidatedMessage>::Post(
-                    GrUniqueKeyInvalidatedMessage(fAtlasKey, fContextUniqueID));
+                    GrUniqueKeyInvalidatedMessage(fAtlasKey, fCachedAtlasInfo->fContextUniqueID));
             fCachedAtlasInfo->fIsPurgedFromResourceCache = true;
         }
     }
 
     fAtlasKey.reset();
     fCachedAtlasInfo = nullptr;
-}
-
-void GrCCPathCacheEntry::onChange() {
-    // Our corresponding path was modified or deleted. Evict ourselves.
-    if (fCacheWeakPtr) {
-        fCacheWeakPtr->evict(this);
-    }
 }

@@ -48,13 +48,23 @@ class MachineLevelUserCloudPolicyRegisterWatcher
   FRIEND_TEST_ALL_PREFIXES(MachineLevelUserCloudPolicyRegisterWatcherTest,
                            EnrollmentSucceed);
   FRIEND_TEST_ALL_PREFIXES(MachineLevelUserCloudPolicyRegisterWatcherTest,
+                           EnrollmentSucceedWithNoErrorMessageSetup);
+  FRIEND_TEST_ALL_PREFIXES(MachineLevelUserCloudPolicyRegisterWatcherTest,
                            EnrollmentFailedAndQuit);
   FRIEND_TEST_ALL_PREFIXES(MachineLevelUserCloudPolicyRegisterWatcherTest,
                            EnrollmentFailedAndRestart);
   FRIEND_TEST_ALL_PREFIXES(MachineLevelUserCloudPolicyRegisterWatcherTest,
                            EnrollmentCanceledBeforeFinish);
+  FRIEND_TEST_ALL_PREFIXES(
+      MachineLevelUserCloudPolicyRegisterWatcherTest,
+      EnrollmentCanceledBeforeFinishWithNoErrorMessageSetup);
   FRIEND_TEST_ALL_PREFIXES(MachineLevelUserCloudPolicyRegisterWatcherTest,
                            EnrollmentFailedBeforeDialogDisplay);
+  FRIEND_TEST_ALL_PREFIXES(MachineLevelUserCloudPolicyRegisterWatcherTest,
+                           EnrollmentFailedWithoutErrorMessage);
+  FRIEND_TEST_ALL_PREFIXES(
+      MachineLevelUserCloudPolicyRegisterWatcherTest,
+      EnrollmentFailedBeforeDialogDisplayWithoutErrorMessage);
 
   // Enum used with kStartupDialogHistogramName.
   enum class EnrollmentStartupDialog {
@@ -77,7 +87,11 @@ class MachineLevelUserCloudPolicyRegisterWatcher
     // before the user gave up and closed the dialog.
     kClosedAbort = 4,
 
-    kMaxValue = kClosedAbort,
+    // The dialog was closed automatically because enrollment failed but admin
+    // choose to ignore the error and show the browser window.
+    kClosedFailAndIgnore = 5,
+
+    kMaxValue = kClosedFailAndIgnore,
   };
 
   static const char kStartupDialogHistogramName[];

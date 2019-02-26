@@ -23,6 +23,7 @@ class ServiceWorkerRegistrationSync final
  public:
   static const char kSupplementName[];
 
+  explicit ServiceWorkerRegistrationSync(ServiceWorkerRegistration*);
   virtual ~ServiceWorkerRegistrationSync();
   static ServiceWorkerRegistrationSync& From(ServiceWorkerRegistration&);
 
@@ -32,8 +33,6 @@ class ServiceWorkerRegistrationSync final
   void Trace(blink::Visitor*) override;
 
  private:
-  explicit ServiceWorkerRegistrationSync(ServiceWorkerRegistration*);
-
   Member<ServiceWorkerRegistration> registration_;
   Member<SyncManager> sync_manager_;
 };

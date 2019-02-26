@@ -40,7 +40,11 @@ class ParameterizedTextOffsetMappingTest
   std::string GetRange(const std::string& selection_text) {
     const PositionInFlatTree position =
         ToPositionInFlatTree(SetSelectionTextToBody(selection_text).Base());
-    TextOffsetMapping mapping(GetInlineContents(position));
+    return GetRange(GetInlineContents(position));
+  }
+
+  std::string GetRange(const TextOffsetMapping::InlineContents& contents) {
+    TextOffsetMapping mapping(contents);
     return GetSelectionTextInFlatTreeFromBody(
         SelectionInFlatTree::Builder()
             .SetBaseAndExtent(mapping.GetRange())
@@ -230,6 +234,76 @@ TEST_P(ParameterizedTextOffsetMappingTest, RangeOfEmptyBlock) {
             TextOffsetMapping::FindBackwardInlineContents(position));
 }
 
+// http://crbug.com/900906
+TEST_P(ParameterizedTextOffsetMappingTest,
+       AnonymousBlockFlowWrapperForFloatPseudo) {
+  InsertStyleElement("table::after{content:close-quote;float:right;}");
+  const PositionInFlatTree position =
+      ToPositionInFlatTree(SetCaretTextToBody("<table></table>|foo"));
+  const TextOffsetMapping::InlineContents inline_contents =
+      TextOffsetMapping::FindBackwardInlineContents(position);
+  ASSERT_TRUE(inline_contents.IsNotNull());
+  const TextOffsetMapping::InlineContents previous_contents =
+      TextOffsetMapping::InlineContents::PreviousOf(inline_contents);
+  EXPECT_TRUE(previous_contents.IsNull());
+}
+
+TEST_P(ParameterizedTextOffsetMappingTest, ForwardRangesWithTextControl) {
+  // InlineContents for positions outside text control should cover the entire
+  // containing block.
+  const PositionInFlatTree outside_position = ToPositionInFlatTree(
+      SetCaretTextToBody("foo<!--|--><input value=\"bla\">bar"));
+  const TextOffsetMapping::InlineContents outside_contents =
+      TextOffsetMapping::FindForwardInlineContents(outside_position);
+  EXPECT_EQ("^foo<input value=\"bla\"><div>bla</div></input>bar|",
+            GetRange(outside_contents));
+
+  // InlineContents for positions inside text control should not escape the text
+  // control in forward iteration.
+  const Element* input = GetDocument().QuerySelector("input");
+  const PositionInFlatTree inside_first =
+      PositionInFlatTree::FirstPositionInNode(*input);
+  const TextOffsetMapping::InlineContents inside_contents =
+      TextOffsetMapping::FindForwardInlineContents(inside_first);
+  EXPECT_EQ("foo<input value=\"bla\"><div>^bla|</div></input>bar",
+            GetRange(inside_contents));
+  EXPECT_TRUE(
+      TextOffsetMapping::InlineContents::NextOf(inside_contents).IsNull());
+
+  const PositionInFlatTree inside_last =
+      PositionInFlatTree::LastPositionInNode(*input);
+  EXPECT_TRUE(
+      TextOffsetMapping::FindForwardInlineContents(inside_last).IsNull());
+}
+
+TEST_P(ParameterizedTextOffsetMappingTest, BackwardRangesWithTextControl) {
+  // InlineContents for positions outside text control should cover the entire
+  // containing block.
+  const PositionInFlatTree outside_position = ToPositionInFlatTree(
+      SetCaretTextToBody("foo<input value=\"bla\"><!--|-->bar"));
+  const TextOffsetMapping::InlineContents outside_contents =
+      TextOffsetMapping::FindBackwardInlineContents(outside_position);
+  EXPECT_EQ("^foo<input value=\"bla\"><div>bla</div></input>bar|",
+            GetRange(outside_contents));
+
+  // InlineContents for positions inside text control should not escape the text
+  // control in backward iteration.
+  const Element* input = GetDocument().QuerySelector("input");
+  const PositionInFlatTree inside_last =
+      PositionInFlatTree::LastPositionInNode(*input);
+  const TextOffsetMapping::InlineContents inside_contents =
+      TextOffsetMapping::FindBackwardInlineContents(inside_last);
+  EXPECT_EQ("foo<input value=\"bla\"><div>^bla|</div></input>bar",
+            GetRange(inside_contents));
+  EXPECT_TRUE(
+      TextOffsetMapping::InlineContents::PreviousOf(inside_contents).IsNull());
+
+  const PositionInFlatTree inside_first =
+      PositionInFlatTree::FirstPositionInNode(*input);
+  EXPECT_TRUE(
+      TextOffsetMapping::FindBackwardInlineContents(inside_first).IsNull());
+}
+
 // http://crbug.com/832497
 TEST_P(ParameterizedTextOffsetMappingTest, RangeWithCollapsedWhitespace) {
   // Whitespaces after <div> is collapsed.
@@ -353,6 +427,22 @@ TEST_P(ParameterizedTextOffsetMappingTest, GetPositionAfter) {
   EXPECT_EQ("  012  456|  ", GetPositionAfter("  012  456  ", 6));
   EXPECT_EQ("  012  456  |", GetPositionAfter("  012  456  ", 7));
   // We hit DCHECK for offset 8, because we walk on "012 456".
+}
+
+// https://crbug.com/903723
+TEST_P(ParameterizedTextOffsetMappingTest, InlineContentsWithDocumentBoundary) {
+  InsertStyleElement("*{position:fixed}");
+  SetBodyContent("");
+  const PositionInFlatTree position =
+      PositionInFlatTree::FirstPositionInNode(*GetDocument().body());
+  const TextOffsetMapping::InlineContents inline_contents =
+      TextOffsetMapping::FindForwardInlineContents(position);
+  EXPECT_TRUE(inline_contents.IsNotNull());
+  // Should not crash when previous/next iteration reaches document boundary.
+  EXPECT_TRUE(
+      TextOffsetMapping::InlineContents::PreviousOf(inline_contents).IsNull());
+  EXPECT_TRUE(
+      TextOffsetMapping::InlineContents::NextOf(inline_contents).IsNull());
 }
 
 }  // namespace blink

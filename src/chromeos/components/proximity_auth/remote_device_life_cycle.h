@@ -66,9 +66,6 @@ class RemoteDeviceLifeCycle {
   // Returns the RemoteDeviceRef instance that this life cycle manages.
   virtual cryptauth::RemoteDeviceRef GetRemoteDevice() const = 0;
 
-  // Returns the current Connection, or null if the device is not yet connected.
-  virtual cryptauth::Connection* GetConnection() const = 0;
-
   // Returns the active channel to the remote device, or null if the device is
   // not yet connected.
   virtual chromeos::secure_channel::ClientChannel* GetChannel() const = 0;

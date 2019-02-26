@@ -7,6 +7,7 @@
 #include <algorithm>
 
 #include "base/memory/ptr_util.h"
+#include "base/metrics/histogram_macros.h"
 #include "base/no_destructor.h"
 #include "chromeos/components/proximity_auth/logging/logging.h"
 #include "chromeos/services/multidevice_setup/eligible_host_devices_provider.h"
@@ -14,6 +15,14 @@
 namespace chromeos {
 
 namespace multidevice_setup {
+
+namespace {
+
+static void RecordMultiDeviceHostStatus(mojom::HostStatus host_status) {
+  UMA_HISTOGRAM_ENUMERATION("MultiDevice.Setup.HostStatus", host_status);
+}
+
+}  // namespace
 
 // static
 HostStatusProviderImpl::Factory*
@@ -63,6 +72,7 @@ HostStatusProviderImpl::HostStatusProviderImpl(
   device_sync_client_->AddObserver(this);
 
   CheckForUpdatedStatusAndNotifyIfChanged();
+  RecordMultiDeviceHostStatus(current_status_and_device_.host_status());
 }
 
 HostStatusProviderImpl::~HostStatusProviderImpl() {
@@ -97,21 +107,22 @@ void HostStatusProviderImpl::CheckForUpdatedStatusAndNotifyIfChanged() {
   if (current_status_and_device == current_status_and_device_)
     return;
 
-  PA_LOG(INFO) << "HostStatusProviderImpl::"
-               << "CheckForUpdatedStatusAndNotifyIfChanged(): Host status "
-               << "changed. New status: "
-               << current_status_and_device.host_status()
-               << ", Old status: " << current_status_and_device_.host_status()
-               << ", Host device "
-               << "ID: "
-               << (current_status_and_device.host_device()
-                       ? current_status_and_device.host_device()
-                             ->GetTruncatedDeviceIdForLogs()
-                       : "[no host]");
+  PA_LOG(VERBOSE) << "HostStatusProviderImpl::"
+                  << "CheckForUpdatedStatusAndNotifyIfChanged(): Host status "
+                  << "changed. New status: "
+                  << current_status_and_device.host_status() << ", Old status: "
+                  << current_status_and_device_.host_status()
+                  << ", Host device "
+                  << "ID: "
+                  << (current_status_and_device.host_device()
+                          ? current_status_and_device.host_device()
+                                ->GetTruncatedDeviceIdForLogs()
+                          : "[no host]");
 
   current_status_and_device_ = current_status_and_device;
   NotifyHostStatusChange(current_status_and_device_.host_status(),
                          current_status_and_device_.host_device());
+  RecordMultiDeviceHostStatus(current_status_and_device_.host_status());
 }
 
 HostStatusProvider::HostStatusWithDevice

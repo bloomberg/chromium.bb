@@ -11,11 +11,11 @@ namespace blink {
 
 GlobalScopeCreationParams::GlobalScopeCreationParams(
     const KURL& script_url,
-    // TODO(asamidoi): Replace ScriptType to mojom::ScriptType
-    ScriptType script_type,
+    mojom::ScriptType script_type,
     const String& user_agent,
+    scoped_refptr<WebWorkerFetchContext> web_worker_fetch_context,
     const Vector<CSPHeaderAndType>& content_security_policy_parsed_headers,
-    ReferrerPolicy referrer_policy,
+    network::mojom::ReferrerPolicy referrer_policy,
     const SecurityOrigin* starter_origin,
     bool starter_secure_context,
     HttpsState starter_https_state,
@@ -34,6 +34,7 @@ GlobalScopeCreationParams::GlobalScopeCreationParams(
     : script_url(script_url.Copy()),
       script_type(script_type),
       user_agent(user_agent.IsolatedCopy()),
+      web_worker_fetch_context(std::move(web_worker_fetch_context)),
       referrer_policy(referrer_policy),
       starter_origin(starter_origin ? starter_origin->IsolatedCopy() : nullptr),
       starter_secure_context(starter_secure_context),

@@ -29,12 +29,12 @@
 #include <memory>
 #include "base/memory/scoped_refptr.h"
 #include "third_party/blink/public/common/indexeddb/web_idb_types.h"
-#include "third_party/blink/public/platform/modules/indexeddb/web_idb_cursor.h"
 #include "third_party/blink/renderer/bindings/core/v8/script_value.h"
 #include "third_party/blink/renderer/bindings/modules/v8/idb_object_store_or_idb_index.h"
 #include "third_party/blink/renderer/modules/indexeddb/idb_key.h"
 #include "third_party/blink/renderer/modules/indexeddb/idb_request.h"
 #include "third_party/blink/renderer/modules/indexeddb/indexed_db.h"
+#include "third_party/blink/renderer/modules/indexeddb/web_idb_cursor.h"
 #include "third_party/blink/renderer/platform/bindings/script_wrappable.h"
 #include "third_party/blink/renderer/platform/wtf/compiler.h"
 
@@ -51,14 +51,21 @@ class IDBCursor : public ScriptWrappable {
  public:
   using Source = IDBObjectStoreOrIDBIndex;
 
-  static WebIDBCursorDirection StringToDirection(const String& mode_string);
+  static mojom::IDBCursorDirection StringToDirection(const String& mode_string);
 
   static IDBCursor* Create(std::unique_ptr<WebIDBCursor>,
-                           WebIDBCursorDirection,
+                           mojom::IDBCursorDirection,
                            IDBRequest*,
                            const Source&,
                            IDBTransaction*);
+
+  IDBCursor(std::unique_ptr<WebIDBCursor>,
+            mojom::IDBCursorDirection,
+            IDBRequest*,
+            const Source&,
+            IDBTransaction*);
   ~IDBCursor() override;
+
   void Trace(blink::Visitor*) override;
   void ContextWillBeDestroyed() { backend_.reset(); }
 
@@ -101,19 +108,12 @@ class IDBCursor : public ScriptWrappable {
   virtual bool IsKeyCursor() const { return true; }
   virtual bool IsCursorWithValue() const { return false; }
 
- protected:
-  IDBCursor(std::unique_ptr<WebIDBCursor>,
-            WebIDBCursorDirection,
-            IDBRequest*,
-            const Source&,
-            IDBTransaction*);
-
  private:
   IDBObjectStore* EffectiveObjectStore() const;
 
   std::unique_ptr<WebIDBCursor> backend_;
   Member<IDBRequest> request_;
-  const WebIDBCursorDirection direction_;
+  const mojom::IDBCursorDirection direction_;
   Source source_;
   Member<IDBTransaction> transaction_;
   bool got_value_ = false;

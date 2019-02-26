@@ -20,7 +20,7 @@ namespace {
 
 class ElementVisibilityObserverTest : public ::testing::Test {
  protected:
-  FrameTestHelpers::WebViewHelper helper_;
+  frame_test_helpers::WebViewHelper helper_;
 };
 
 TEST_F(ElementVisibilityObserverTest, ObserveElementWithoutDocumentFrame) {
@@ -28,8 +28,9 @@ TEST_F(ElementVisibilityObserverTest, ObserveElementWithoutDocumentFrame) {
   Document& document = *helper_.LocalMainFrame()->GetFrame()->GetDocument();
   HTMLElement* element = HTMLDivElement::Create(
       *DOMImplementation::Create(document)->createHTMLDocument("test"));
-  ElementVisibilityObserver* observer = new ElementVisibilityObserver(
-      element, ElementVisibilityObserver::VisibilityCallback());
+  ElementVisibilityObserver* observer =
+      MakeGarbageCollected<ElementVisibilityObserver>(
+          element, ElementVisibilityObserver::VisibilityCallback());
   observer->Start();
   observer->Stop();
   // It should not crash.
@@ -39,12 +40,13 @@ TEST_F(ElementVisibilityObserverTest, ObserveElementWithRemoteFrameParent) {
   helper_.InitializeRemote();
 
   WebLocalFrameImpl* child_frame =
-      FrameTestHelpers::CreateLocalChild(*helper_.RemoteMainFrame());
+      frame_test_helpers::CreateLocalChild(*helper_.RemoteMainFrame());
   Document& document = *child_frame->GetFrame()->GetDocument();
 
   Persistent<HTMLElement> element = HTMLDivElement::Create(document);
   ElementVisibilityObserver* observer =
-      new ElementVisibilityObserver(element, WTF::BindRepeating([](bool) {}));
+      MakeGarbageCollected<ElementVisibilityObserver>(
+          element, WTF::BindRepeating([](bool) {}));
   observer->Start();
   observer->DeliverObservationsForTesting();
   observer->Stop();

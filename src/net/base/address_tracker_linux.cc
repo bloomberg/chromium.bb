@@ -16,7 +16,6 @@
 #include "base/optional.h"
 #include "base/posix/eintr_wrapper.h"
 #include "base/threading/scoped_blocking_call.h"
-#include "base/threading/thread_restrictions.h"
 #include "net/base/network_interfaces_linux.h"
 
 namespace net {
@@ -273,7 +272,7 @@ bool AddressTrackerLinux::IsInterfaceIgnored(int interface_index) const {
 NetworkChangeNotifier::ConnectionType
 AddressTrackerLinux::GetCurrentConnectionType() {
   // http://crbug.com/125097
-  base::ThreadRestrictions::ScopedAllowWait allow_wait;
+  base::ScopedAllowBaseSyncPrimitivesOutsideBlockingScope allow_wait;
   AddressTrackerAutoLock lock(*this, connection_type_lock_);
   // Make sure the initial connection type is set before returning.
   threads_waiting_for_connection_type_initialization_++;
@@ -297,7 +296,6 @@ void AddressTrackerLinux::ReadMessages(bool* address_changed,
     if (tracking_) {
       // If the loop below takes a long time to run, a new thread should added
       // to the current thread pool to ensure forward progress of all tasks.
-      base::AssertBlockingAllowed();
       blocking_call.emplace(base::BlockingType::MAY_BLOCK);
     }
 

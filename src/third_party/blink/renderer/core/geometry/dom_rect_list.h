@@ -39,22 +39,16 @@ class CORE_EXPORT DOMRectList final : public ScriptWrappable {
   DEFINE_WRAPPERTYPEINFO();
 
  public:
-  static DOMRectList* Create() { return new DOMRectList; }
+  static DOMRectList* Create() { return MakeGarbageCollected<DOMRectList>(); }
   static DOMRectList* Create(const Vector<FloatQuad>& quads) {
-    return new DOMRectList(quads);
+    return MakeGarbageCollected<DOMRectList>(quads);
   }
 
   template <typename Rects>
   static DOMRectList* Create(const Rects& rects) {
-    return new DOMRectList(rects);
+    return MakeGarbageCollected<DOMRectList>(rects);
   }
 
-  unsigned length() const;
-  DOMRect* item(unsigned index);
-
-  void Trace(blink::Visitor*) override;
-
- private:
   DOMRectList();
 
   template <typename Rects>
@@ -66,6 +60,12 @@ class CORE_EXPORT DOMRectList final : public ScriptWrappable {
 
   explicit DOMRectList(const Vector<FloatQuad>&);
 
+  unsigned length() const;
+  DOMRect* item(unsigned index);
+
+  void Trace(blink::Visitor*) override;
+
+ private:
   HeapVector<Member<DOMRect>> list_;
 };
 

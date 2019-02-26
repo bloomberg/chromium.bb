@@ -28,13 +28,11 @@ class CannedBrowsingDataIndexedDBHelperTest : public testing::Test {
 
 TEST_F(CannedBrowsingDataIndexedDBHelperTest, Empty) {
   const GURL origin("http://host1:1/");
-  const base::string16 description(base::ASCIIToUTF16("description"));
-
   scoped_refptr<CannedBrowsingDataIndexedDBHelper> helper(
       new CannedBrowsingDataIndexedDBHelper(IndexedDBContext()));
 
   ASSERT_TRUE(helper->empty());
-  helper->AddIndexedDB(origin, description);
+  helper->AddIndexedDB(origin);
   ASSERT_FALSE(helper->empty());
   helper->Reset();
   ASSERT_TRUE(helper->empty());
@@ -42,20 +40,15 @@ TEST_F(CannedBrowsingDataIndexedDBHelperTest, Empty) {
 
 TEST_F(CannedBrowsingDataIndexedDBHelperTest, Delete) {
   const GURL origin1("http://host1:9000");
-  const base::string16 db1(base::ASCIIToUTF16("db1"));
-
   const GURL origin2("http://example.com");
-  const base::string16 db2(base::ASCIIToUTF16("db2"));
-  const base::string16 db3(base::ASCIIToUTF16("db3"));
 
   scoped_refptr<CannedBrowsingDataIndexedDBHelper> helper(
       new CannedBrowsingDataIndexedDBHelper(IndexedDBContext()));
 
   EXPECT_TRUE(helper->empty());
-  helper->AddIndexedDB(origin1, db1);
-  helper->AddIndexedDB(origin2, db2);
-  helper->AddIndexedDB(origin2, db3);
-  EXPECT_EQ(3u, helper->GetIndexedDBCount());
+  helper->AddIndexedDB(origin1);
+  helper->AddIndexedDB(origin2);
+  EXPECT_EQ(2u, helper->GetIndexedDBCount());
   helper->DeleteIndexedDB(origin2);
   EXPECT_EQ(1u, helper->GetIndexedDBCount());
 }
@@ -63,15 +56,14 @@ TEST_F(CannedBrowsingDataIndexedDBHelperTest, Delete) {
 TEST_F(CannedBrowsingDataIndexedDBHelperTest, IgnoreExtensionsAndDevTools) {
   const GURL origin1("chrome-extension://abcdefghijklmnopqrstuvwxyz/");
   const GURL origin2("chrome-devtools://abcdefghijklmnopqrstuvwxyz/");
-  const base::string16 description(base::ASCIIToUTF16("description"));
 
   scoped_refptr<CannedBrowsingDataIndexedDBHelper> helper(
       new CannedBrowsingDataIndexedDBHelper(IndexedDBContext()));
 
   ASSERT_TRUE(helper->empty());
-  helper->AddIndexedDB(origin1, description);
+  helper->AddIndexedDB(origin1);
   ASSERT_TRUE(helper->empty());
-  helper->AddIndexedDB(origin2, description);
+  helper->AddIndexedDB(origin2);
   ASSERT_TRUE(helper->empty());
 }
 

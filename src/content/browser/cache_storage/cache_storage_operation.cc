@@ -15,20 +15,21 @@ const int kNumSecondsForSlowOperation = 10;
 CacheStorageOperation::CacheStorageOperation(
     base::OnceClosure closure,
     CacheStorageSchedulerClient client_type,
+    CacheStorageSchedulerOp op_type,
     scoped_refptr<base::SingleThreadTaskRunner> task_runner)
     : closure_(std::move(closure)),
       creation_ticks_(base::TimeTicks::Now()),
       client_type_(client_type),
+      op_type_(op_type),
       task_runner_(std::move(task_runner)),
       weak_ptr_factory_(this) {}
 
 CacheStorageOperation::~CacheStorageOperation() {
-  CACHE_STORAGE_SCHEDULER_UMA(TIMES, "OperationDuration", client_type_,
-                              base::TimeTicks::Now() - start_ticks_);
+  CACHE_STORAGE_SCHEDULER_UMA(LONG_TIMES, "OperationDuration2", client_type_,
+                              op_type_, base::TimeTicks::Now() - start_ticks_);
 
   if (!was_slow_)
-    CACHE_STORAGE_SCHEDULER_UMA(BOOLEAN, "IsOperationSlow", client_type_,
-                                false);
+    RecordOperationSlowness();
 }
 
 void CacheStorageOperation::Run() {
@@ -44,7 +45,13 @@ void CacheStorageOperation::Run() {
 
 void CacheStorageOperation::NotifyOperationSlow() {
   was_slow_ = true;
-  CACHE_STORAGE_SCHEDULER_UMA(BOOLEAN, "IsOperationSlow", client_type_, true);
+  RecordOperationSlowness();
+}
+
+void CacheStorageOperation::RecordOperationSlowness() {
+  // Wrap the UMA macro in a method to reduce code bloat.
+  CACHE_STORAGE_SCHEDULER_UMA(BOOLEAN, "IsOperationSlow", client_type_,
+                              op_type_, was_slow_);
 }
 
 }  // namespace content

@@ -13,6 +13,7 @@
 #include "services/data_decoder/public/mojom/image_decoder.mojom.h"
 #include "services/data_decoder/public/mojom/json_parser.mojom.h"
 #include "services/service_manager/public/cpp/service.h"
+#include "services/service_manager/public/cpp/service_binding.h"
 #include "services/service_manager/public/cpp/test/test_connector_factory.h"
 
 namespace service_manager {
@@ -33,8 +34,9 @@ class TestDataDecoderService {
   service_manager::Connector* connector() const { return connector_.get(); }
 
  private:
-  std::unique_ptr<service_manager::TestConnectorFactory> connector_factory_;
+  service_manager::TestConnectorFactory connector_factory_;
   std::unique_ptr<service_manager::Connector> connector_;
+  DataDecoderService service_;
 
   DISALLOW_COPY_AND_ASSIGN(TestDataDecoderService);
 };
@@ -43,14 +45,16 @@ class TestDataDecoderService {
 // a call is made on an interface.
 // Can be used with a TestConnectorFactory to simulate crashes in the service
 // while processing a call.
-class CrashyDataDecoderService : public service_manager::ForwardingService,
+class CrashyDataDecoderService : public service_manager::Service,
                                  public mojom::ImageDecoder,
                                  public mojom::JsonParser {
  public:
-  CrashyDataDecoderService(bool crash_json, bool crash_image);
+  CrashyDataDecoderService(service_manager::mojom::ServiceRequest request,
+                           bool crash_json,
+                           bool crash_image);
   ~CrashyDataDecoderService() override;
 
-  // service_manager::ForwardingService:
+  // service_manager::Service:
   void OnStart() override;
   void OnBindInterface(const service_manager::BindSourceInfo& source_info,
                        const std::string& interface_name,
@@ -72,17 +76,14 @@ class CrashyDataDecoderService : public service_manager::ForwardingService,
   void Parse(const std::string& json, ParseCallback callback) override;
 
  private:
-  CrashyDataDecoderService(
-      std::unique_ptr<service_manager::Service> real_service,
-      bool crash_json,
-      bool crash_image);
+  service_manager::ServiceBinding binding_;
 
   std::unique_ptr<mojo::Binding<mojom::ImageDecoder>> image_decoder_binding_;
   std::unique_ptr<mojo::Binding<mojom::JsonParser>> json_parser_binding_;
 
   // An instance of the actual DataDecoderService we forward requests to for
   // interfaces that should not crash.
-  std::unique_ptr<service_manager::Service> real_service_;
+  DataDecoderService real_service_;
 
   bool crash_json_ = false;
   bool crash_image_ = false;

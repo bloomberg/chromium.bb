@@ -29,10 +29,10 @@
 #ifndef THIRD_PARTY_BLINK_RENDERER_PLATFORM_AUDIO_REVERB_INPUT_BUFFER_H_
 #define THIRD_PARTY_BLINK_RENDERER_PLATFORM_AUDIO_REVERB_INPUT_BUFFER_H_
 
+#include <atomic>
 #include "third_party/blink/renderer/platform/audio/audio_array.h"
 #include "third_party/blink/renderer/platform/platform_export.h"
 #include "third_party/blink/renderer/platform/wtf/allocator.h"
-#include "third_party/blink/renderer/platform/wtf/atomics.h"
 #include "third_party/blink/renderer/platform/wtf/noncopyable.h"
 
 namespace blink {
@@ -53,9 +53,8 @@ class PLATFORM_EXPORT ReverbInputBuffer {
   void Write(const float* source_p, size_t number_of_frames);
 
   // Background threads can call this to check if there's anything to read...
-  size_t WriteIndex() const { return AcquireLoad(&write_index_); }
-  void SetWriteIndex(size_t new_index) {
-    ReleaseStore(&write_index_, new_index);
+  size_t WriteIndex() const {
+    return write_index_.load(std::memory_order_acquire);
   }
 
   // The individual background threads read here (and hope that they can keep up
@@ -69,12 +68,16 @@ class PLATFORM_EXPORT ReverbInputBuffer {
   void Reset();
 
  private:
+  void SetWriteIndex(size_t new_index) {
+    write_index_.store(new_index, std::memory_order_release);
+  }
+
   AudioFloatArray buffer_;
 
   // |write_index_| can be accessed from several threads.  Only use
   // the getter and setter to access it atomically.  Don't access
   // directly!
-  size_t write_index_;
+  std::atomic_size_t write_index_;
 };
 
 }  // namespace blink

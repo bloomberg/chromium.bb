@@ -56,13 +56,10 @@ TEST(SurfaceTest, PresentationCallback) {
             .SetFrameToken(2)
             .SetRequestPresentationFeedback(true)
             .Build();
-    EXPECT_CALL(client, DidPresentCompositorFrame(
-                            1, testing::Field(
-                                   &gfx::PresentationFeedback::flags,
-                                   gfx::PresentationFeedback::Flags::kFailure)))
-        .Times(1);
     EXPECT_CALL(client, DidReceiveCompositorFrameAck(testing::_)).Times(1);
     support->SubmitCompositorFrame(local_surface_id, std::move(frame));
+    ASSERT_EQ(1u, support->presentation_feedbacks().size());
+    EXPECT_EQ(1u, support->presentation_feedbacks().begin()->first);
     testing::Mock::VerifyAndClearExpectations(&client);
   }
 }
@@ -70,9 +67,14 @@ TEST(SurfaceTest, PresentationCallback) {
 TEST(SurfaceTest, SurfaceIds) {
   for (size_t i = 0; i < 3; ++i) {
     ParentLocalSurfaceIdAllocator allocator;
-    LocalSurfaceId id1 = allocator.GenerateId();
-    LocalSurfaceId id2 = allocator.GenerateId();
+    allocator.GenerateId();
+    LocalSurfaceIdAllocation id1 =
+        allocator.GetCurrentLocalSurfaceIdAllocation();
+    allocator.GenerateId();
+    LocalSurfaceIdAllocation id2 =
+        allocator.GetCurrentLocalSurfaceIdAllocation();
     EXPECT_NE(id1, id2);
+    EXPECT_NE(id1.local_surface_id(), id2.local_surface_id());
   }
 }
 

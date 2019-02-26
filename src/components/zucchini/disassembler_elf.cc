@@ -43,13 +43,13 @@ bool IsExecSection(const typename Traits::Elf_Shdr& section) {
 
 }  // namespace
 
-/******** ELF32Traits ********/
+/******** Elf32Traits ********/
 
 // static
 constexpr Bitness Elf32Traits::kBitness;
 constexpr elf::FileClass Elf32Traits::kIdentificationClass;
 
-/******** ELF32IntelTraits ********/
+/******** Elf32IntelTraits ********/
 
 // static
 constexpr ExecutableType Elf32IntelTraits::kExeType;
@@ -57,13 +57,13 @@ const char Elf32IntelTraits::kExeTypeString[] = "ELF x86";
 constexpr elf::MachineArchitecture Elf32IntelTraits::kMachineValue;
 constexpr uint32_t Elf32IntelTraits::kRelType;
 
-/******** ELF64Traits ********/
+/******** Elf64Traits ********/
 
 // static
 constexpr Bitness Elf64Traits::kBitness;
 constexpr elf::FileClass Elf64Traits::kIdentificationClass;
 
-/******** ELF64IntelTraits ********/
+/******** Elf64IntelTraits ********/
 
 // static
 constexpr ExecutableType Elf64IntelTraits::kExeType;
@@ -291,7 +291,7 @@ void DisassemblerElf<Traits>::GetAbs32FromRelocSections() {
   constexpr int kAbs32Width = Traits::kVAWidth;
   DCHECK(abs32_locations_.empty());
 
-  // Read reloc targets as preliminary abs32 locations.
+  // Read reloc targets to get preliminary abs32 locations.
   std::unique_ptr<ReferenceReader> relocs = MakeReadRelocs(0, offset_t(size()));
   for (auto ref = relocs->GetNext(); ref.has_value(); ref = relocs->GetNext())
     abs32_locations_.push_back(ref->target);
@@ -300,9 +300,6 @@ void DisassemblerElf<Traits>::GetAbs32FromRelocSections() {
 
   // Abs32 references must have targets translatable to offsets. Remove those
   // that are unable to do so.
-  // TODO(huangs): Investigate whether passing |Traits::kBitness| is correct:
-  // Some architectures using ELF might have 4-byte long abs32 body regardless
-  // of bitness.
   size_t num_untranslatable =
       RemoveUntranslatableAbs32(image_, {Traits::kBitness, kElfImageBase},
                                 translator_, &abs32_locations_);
@@ -352,6 +349,7 @@ std::vector<ReferenceGroup> DisassemblerElfIntel<Traits>::MakeReferenceGroups()
       {ReferenceTypeTraits{Traits::kVAWidth, TypeTag(kAbs32), PoolTag(kAbs32)},
        &DisassemblerElfIntel<Traits>::MakeReadAbs32,
        &DisassemblerElfIntel<Traits>::MakeWriteAbs32},
+      // N.B.: Rel32 |width| is 4 bytes, even for x64.
       {ReferenceTypeTraits{4, TypeTag(kRel32), PoolTag(kRel32)},
        &DisassemblerElfIntel<Traits>::MakeReadRel32,
        &DisassemblerElfIntel<Traits>::MakeWriteRel32}};
@@ -405,8 +403,7 @@ std::unique_ptr<ReferenceReader> DisassemblerElfIntel<Traits>::MakeReadAbs32(
     offset_t lo,
     offset_t hi) {
   // TODO(huangs): Don't use Abs32RvaExtractorWin32 here; use new class that
-  // caters to different ELF architectures (e.g., abs32 in AArch64 are 4 bytes
-  // long, not 8 bytes long).
+  // caters to different ELF architectures.
   Abs32RvaExtractorWin32 abs_rva_extractor(
       this->image_, AbsoluteAddress(Traits::kBitness, kElfImageBase),
       this->abs32_locations_, lo, hi);
@@ -417,7 +414,6 @@ std::unique_ptr<ReferenceReader> DisassemblerElfIntel<Traits>::MakeReadAbs32(
 template <class Traits>
 std::unique_ptr<ReferenceWriter> DisassemblerElfIntel<Traits>::MakeWriteAbs32(
     MutableBufferView image) {
-  // TODO(huangs): For AArch64, see if |Traits::kBitness| should be used here?
   return std::make_unique<Abs32WriterWin32>(
       image, AbsoluteAddress(Traits::kBitness, kElfImageBase),
       this->translator_);

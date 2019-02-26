@@ -4,11 +4,12 @@
 
 #include "ui/keyboard/container_fullscreen_behavior.h"
 
+#include "ui/aura/window.h"
+
 namespace keyboard {
 
-ContainerFullscreenBehavior::ContainerFullscreenBehavior(
-    KeyboardController* controller)
-    : ContainerFullWidthBehavior(controller) {}
+ContainerFullscreenBehavior::ContainerFullscreenBehavior(Delegate* delegate)
+    : ContainerFullWidthBehavior(delegate) {}
 
 ContainerFullscreenBehavior::~ContainerFullscreenBehavior() {}
 
@@ -29,8 +30,8 @@ gfx::Rect ContainerFullscreenBehavior::GetOccludedBounds(
   return occluded_bounds_;
 }
 
-ContainerType ContainerFullscreenBehavior::GetType() const {
-  return ContainerType::FULLSCREEN;
+mojom::ContainerType ContainerFullscreenBehavior::GetType() const {
+  return mojom::ContainerType::kFullscreen;
 }
 
 void ContainerFullscreenBehavior::SetOccludedBounds(

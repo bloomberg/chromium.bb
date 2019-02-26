@@ -30,18 +30,17 @@
 
 #include "third_party/blink/renderer/core/svg/svg_unit_types.h"
 
+#include "third_party/blink/renderer/core/svg/svg_enumeration_map.h"
+
 namespace blink {
 
 template <>
-const SVGEnumerationStringEntries&
-GetStaticStringEntries<SVGUnitTypes::SVGUnitType>() {
-  DEFINE_STATIC_LOCAL(SVGEnumerationStringEntries, entries, ());
-  if (entries.IsEmpty()) {
-    entries.push_back(std::make_pair(SVGUnitTypes::kSvgUnitTypeUserspaceonuse,
-                                     "userSpaceOnUse"));
-    entries.push_back(std::make_pair(
-        SVGUnitTypes::kSvgUnitTypeObjectboundingbox, "objectBoundingBox"));
-  }
+const SVGEnumerationMap& GetEnumerationMap<SVGUnitTypes::SVGUnitType>() {
+  static const SVGEnumerationMap::Entry enum_items[] = {
+      {SVGUnitTypes::kSvgUnitTypeUserspaceonuse, "userSpaceOnUse"},
+      {SVGUnitTypes::kSvgUnitTypeObjectboundingbox, "objectBoundingBox"},
+  };
+  static const SVGEnumerationMap entries(enum_items);
   return entries;
 }
 

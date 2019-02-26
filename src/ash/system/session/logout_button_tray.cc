@@ -17,6 +17,7 @@
 #include "ash/system/tray/tray_constants.h"
 #include "ash/system/tray/tray_container.h"
 #include "ash/system/user/login_status.h"
+#include "base/metrics/user_metrics.h"
 #include "components/prefs/pref_change_registrar.h"
 #include "components/prefs/pref_registry_simple.h"
 #include "components/prefs/pref_service.h"
@@ -72,11 +73,14 @@ void LogoutButtonTray::ButtonPressed(views::Button* sender,
   DCHECK_EQ(button_, sender);
 
   if (dialog_duration_ <= base::TimeDelta()) {
+    if (Shell::Get()->session_controller()->IsDemoSession())
+      base::RecordAction(base::UserMetricsAction("DemoMode.ExitFromShelf"));
     // Sign out immediately if |dialog_duration_| is non-positive.
     Shell::Get()->session_controller()->RequestSignOut();
   } else if (Shell::Get()->logout_confirmation_controller()) {
     Shell::Get()->logout_confirmation_controller()->ConfirmLogout(
-        base::TimeTicks::Now() + dialog_duration_);
+        base::TimeTicks::Now() + dialog_duration_,
+        LogoutConfirmationController::Source::kShelfExitButton);
   }
 }
 

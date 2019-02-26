@@ -185,8 +185,6 @@ const SwitchAccessPredicate = {
     }
 
     // Check various indicators that the node is actionable.
-    // TODO(zhelfins): Update tests to reflect this updated behavior.
-
     if (defaultActionVerb && defaultActionVerb !== 'none' &&
         defaultActionVerb !== DefaultActionVerb.CLICK_ANCESTOR)
       return true;

@@ -49,6 +49,7 @@ class QUIC_EXPORT_PRIVATE QuicFlowController
                      bool should_auto_tune_receive_window,
                      QuicFlowControllerInterface* session_flow_controller);
   QuicFlowController(const QuicFlowController&) = delete;
+  QuicFlowController(QuicFlowController&&) = default;
   QuicFlowController& operator=(const QuicFlowController&) = delete;
 
   ~QuicFlowController() override {}

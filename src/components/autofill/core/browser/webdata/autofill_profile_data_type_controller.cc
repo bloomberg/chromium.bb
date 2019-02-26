@@ -7,9 +7,11 @@
 #include <utility>
 
 #include "base/bind.h"
+#include "base/feature_list.h"
 #include "base/metrics/histogram.h"
 #include "components/autofill/core/browser/personal_data_manager.h"
 #include "components/autofill/core/browser/webdata/autofill_webdata_service.h"
+#include "components/autofill/core/common/autofill_features.h"
 #include "components/autofill/core/common/autofill_prefs.h"
 #include "components/prefs/pref_service.h"
 #include "components/sync/base/experiments.h"
@@ -75,12 +77,23 @@ bool AutofillProfileDataTypeController::StartModels() {
     DisableForPolicy();
     return false;
   }
+  autofill::PersonalDataManager* personal_data =
+      sync_client_->GetPersonalDataManager();
+
+  // Make sure PDM has the sync service. This is needed because in the account
+  // wallet data mode, PDM uses the service to determine whether to use the
+  // account or local database for server cards, and the association depends on
+  // the data in PDM being loaded (see next comment).
+  // TODO(crbug.com/913947): Merge this call and the one in autofill_manager to
+  // one single call in a more general place.
+  if (base::FeatureList::IsEnabled(
+          autofill::features::kAutofillEnableAccountWalletStorage)) {
+    personal_data->OnSyncServiceInitialized(sync_client_->GetSyncService());
+  }
 
   // Waiting for the personal data is subtle:  we do this as the PDM resets
   // its cache of unique IDs once it gets loaded. If we were to proceed with
   // association, the local ids in the mappings would wind up colliding.
-  autofill::PersonalDataManager* personal_data =
-      sync_client_->GetPersonalDataManager();
   if (!personal_data->IsDataLoaded()) {
     personal_data->AddObserver(this);
     return false;

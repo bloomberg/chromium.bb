@@ -26,11 +26,11 @@ class StereoPannerHandler final : public AudioHandler {
                                                    AudioParamHandler& pan);
   ~StereoPannerHandler() override;
 
-  void Process(size_t frames_to_process) override;
-  void ProcessOnlyAudioParams(size_t frames_to_process) override;
+  void Process(uint32_t frames_to_process) override;
+  void ProcessOnlyAudioParams(uint32_t frames_to_process) override;
   void Initialize() override;
 
-  void SetChannelCount(unsigned long, ExceptionState&) final;
+  void SetChannelCount(unsigned, ExceptionState&) final;
   void SetChannelCountMode(const String&, ExceptionState&) final;
 
   double TailTime() const override { return 0; }
@@ -54,15 +54,16 @@ class StereoPannerNode final : public AudioNode {
  public:
   static StereoPannerNode* Create(BaseAudioContext&, ExceptionState&);
   static StereoPannerNode* Create(BaseAudioContext*,
-                                  const StereoPannerOptions&,
+                                  const StereoPannerOptions*,
                                   ExceptionState&);
+
+  StereoPannerNode(BaseAudioContext&);
+
   void Trace(blink::Visitor*) override;
 
   AudioParam* pan() const;
 
  private:
-  StereoPannerNode(BaseAudioContext&);
-
   Member<AudioParam> pan_;
 };
 

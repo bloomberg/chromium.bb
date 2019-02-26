@@ -2,6 +2,7 @@ include_rules = [
   "+components/certificate_transparency",
   "+components/content_settings/core/common",
   "+components/cookie_config",
+  "+components/domain_reliability",
   "+components/network_session_configurator",
   "+components/os_crypt",
   # Prefs are used to create an independent file with a persisted key:value
@@ -10,6 +11,8 @@ include_rules = [
   "+components/prefs",
   "+crypto",
   "+ipc",
+  # FakeSSLClientSocket
+  "+jingle/glue",
   "+net",
   "+sandbox",
   "+services/proxy_resolver/public/mojom",

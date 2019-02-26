@@ -22,6 +22,8 @@
 
 #include "third_party/blink/renderer/core/events/mutation_event.h"
 
+#include "third_party/blink/renderer/core/event_interface_names.h"
+
 namespace blink {
 
 MutationEvent::MutationEvent() : attr_change_(0) {}
@@ -64,7 +66,7 @@ void MutationEvent::initMutationEvent(const AtomicString& type,
 }
 
 const AtomicString& MutationEvent::InterfaceName() const {
-  return EventNames::MutationEvent;
+  return event_interface_names::kMutationEvent;
 }
 
 void MutationEvent::Trace(blink::Visitor* visitor) {

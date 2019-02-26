@@ -38,12 +38,12 @@ class HTMLAllCollection final : public HTMLCollection {
 
  public:
   static HTMLAllCollection* Create(ContainerNode&, CollectionType);
+
+  explicit HTMLAllCollection(ContainerNode&);
   ~HTMLAllCollection() override;
+
   Element* AnonymousIndexedGetter(unsigned index);
   void NamedGetter(const AtomicString& name, HTMLCollectionOrElement&);
-
- private:
-  explicit HTMLAllCollection(ContainerNode&);
 };
 
 DEFINE_TYPE_CASTS(HTMLAllCollection,

@@ -36,7 +36,7 @@
 
 namespace blink {
 
-namespace FileError {
+namespace file_error {
 
 const char kAbortErrorMessage[] =
     "An ongoing operation was aborted, typically with a call to abort().";
@@ -72,33 +72,33 @@ const char kTypeMismatchErrorMessage[] =
 
 namespace {
 
-DOMExceptionCode ErrorCodeToExceptionCode(ErrorCode code) {
+DOMExceptionCode ErrorCodeToExceptionCode(FileErrorCode code) {
   switch (code) {
-    case kOK:
+    case FileErrorCode::kOK:
       return DOMExceptionCode::kNoError;
-    case kNotFoundErr:
+    case FileErrorCode::kNotFoundErr:
       return DOMExceptionCode::kNotFoundError;
-    case kSecurityErr:
+    case FileErrorCode::kSecurityErr:
       return DOMExceptionCode::kSecurityError;
-    case kAbortErr:
+    case FileErrorCode::kAbortErr:
       return DOMExceptionCode::kAbortError;
-    case kNotReadableErr:
+    case FileErrorCode::kNotReadableErr:
       return DOMExceptionCode::kNotReadableError;
-    case kEncodingErr:
+    case FileErrorCode::kEncodingErr:
       return DOMExceptionCode::kEncodingError;
-    case kNoModificationAllowedErr:
+    case FileErrorCode::kNoModificationAllowedErr:
       return DOMExceptionCode::kNoModificationAllowedError;
-    case kInvalidStateErr:
+    case FileErrorCode::kInvalidStateErr:
       return DOMExceptionCode::kInvalidStateError;
-    case kSyntaxErr:
+    case FileErrorCode::kSyntaxErr:
       return DOMExceptionCode::kSyntaxError;
-    case kInvalidModificationErr:
+    case FileErrorCode::kInvalidModificationErr:
       return DOMExceptionCode::kInvalidModificationError;
-    case kQuotaExceededErr:
+    case FileErrorCode::kQuotaExceededErr:
       return DOMExceptionCode::kQuotaExceededError;
-    case kTypeMismatchErr:
+    case FileErrorCode::kTypeMismatchErr:
       return DOMExceptionCode::kTypeMismatchError;
-    case kPathExistsErr:
+    case FileErrorCode::kPathExistsErr:
       return DOMExceptionCode::kPathExistsError;
     default:
       NOTREACHED();
@@ -106,35 +106,35 @@ DOMExceptionCode ErrorCodeToExceptionCode(ErrorCode code) {
   }
 }
 
-const char* ErrorCodeToMessage(ErrorCode code) {
+const char* ErrorCodeToMessage(FileErrorCode code) {
   // Note that some of these do not set message. If message is 0 then the
   // default message is used.
   switch (code) {
-    case kOK:
+    case FileErrorCode::kOK:
       return nullptr;
-    case kSecurityErr:
+    case FileErrorCode::kSecurityErr:
       return kSecurityErrorMessage;
-    case kNotFoundErr:
+    case FileErrorCode::kNotFoundErr:
       return kNotFoundErrorMessage;
-    case kAbortErr:
+    case FileErrorCode::kAbortErr:
       return kAbortErrorMessage;
-    case kNotReadableErr:
+    case FileErrorCode::kNotReadableErr:
       return kNotReadableErrorMessage;
-    case kEncodingErr:
+    case FileErrorCode::kEncodingErr:
       return kEncodingErrorMessage;
-    case kNoModificationAllowedErr:
+    case FileErrorCode::kNoModificationAllowedErr:
       return kNoModificationAllowedErrorMessage;
-    case kInvalidStateErr:
+    case FileErrorCode::kInvalidStateErr:
       return kInvalidStateErrorMessage;
-    case kSyntaxErr:
+    case FileErrorCode::kSyntaxErr:
       return kSyntaxErrorMessage;
-    case kInvalidModificationErr:
+    case FileErrorCode::kInvalidModificationErr:
       return nullptr;
-    case kQuotaExceededErr:
+    case FileErrorCode::kQuotaExceededErr:
       return kQuotaExceededErrorMessage;
-    case kTypeMismatchErr:
+    case FileErrorCode::kTypeMismatchErr:
       return nullptr;
-    case kPathExistsErr:
+    case FileErrorCode::kPathExistsErr:
       return kPathExistsErrorMessage;
     default:
       NOTREACHED();
@@ -229,14 +229,14 @@ const char* FileErrorToMessage(base::File::Error code) {
 }  // namespace
 
 void ThrowDOMException(ExceptionState& exception_state,
-                       ErrorCode code,
+                       FileErrorCode code,
                        String message) {
-  if (code == kOK)
+  if (code == FileErrorCode::kOK)
     return;
 
   // SecurityError is special-cased, as we want to route those exceptions
   // through ExceptionState::ThrowSecurityError.
-  if (code == kSecurityErr) {
+  if (code == FileErrorCode::kSecurityErr) {
     exception_state.ThrowSecurityError(kSecurityErrorMessage);
     return;
   }
@@ -268,8 +268,8 @@ void ThrowDOMException(ExceptionState& exception_state,
   exception_state.ThrowDOMException(FileErrorToExceptionCode(error), message);
 }
 
-DOMException* CreateDOMException(ErrorCode code) {
-  DCHECK_NE(code, kOK);
+DOMException* CreateDOMException(FileErrorCode code) {
+  DCHECK_NE(code, FileErrorCode::kOK);
   return DOMException::Create(ErrorCodeToExceptionCode(code),
                               ErrorCodeToMessage(code));
 }
@@ -280,6 +280,6 @@ DOMException* CreateDOMException(base::File::Error code) {
                               FileErrorToMessage(code));
 }
 
-}  // namespace FileError
+}  // namespace file_error
 
 }  // namespace blink

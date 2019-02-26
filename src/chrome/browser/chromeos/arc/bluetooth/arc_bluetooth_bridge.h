@@ -41,9 +41,7 @@ class BrowserContext;
 namespace arc {
 
 namespace mojom {
-class AppHost;
 class AppInstance;
-class IntentHelperHost;
 class IntentHelperInstance;
 }  // namespace mojom
 
@@ -51,10 +49,11 @@ class ArcBridgeService;
 
 class ArcBluetoothBridge
     : public KeyedService,
-      public ConnectionObserver<mojom::BluetoothInstance>,
       public device::BluetoothAdapter::Observer,
       public device::BluetoothAdapterFactory::AdapterCallback,
       public device::BluetoothLocalGattService::Delegate,
+      public ConnectionObserver<mojom::AppInstance>,
+      public ConnectionObserver<mojom::IntentHelperInstance>,
       public mojom::BluetoothHost {
  public:
   using GattStatusCallback =
@@ -70,10 +69,6 @@ class ArcBluetoothBridge
   ArcBluetoothBridge(content::BrowserContext* context,
                      ArcBridgeService* bridge_service);
   ~ArcBluetoothBridge() override;
-
-  // Overridden from ConnectionObserver<mojom::BluetoothInstance>:
-  void OnConnectionReady() override;
-  void OnConnectionClosed() override;
 
   void OnAdapterInitialized(scoped_refptr<device::BluetoothAdapter> adapter);
 
@@ -207,15 +202,6 @@ class ArcBluetoothBridge
   void GetAdapterProperty(mojom::BluetoothPropertyType type) override;
   void SetAdapterProperty(mojom::BluetoothPropertyPtr property) override;
 
-  void GetRemoteDeviceProperty(mojom::BluetoothAddressPtr remote_addr,
-                               mojom::BluetoothPropertyType type) override;
-  void SetRemoteDeviceProperty(mojom::BluetoothAddressPtr remote_addr,
-                               mojom::BluetoothPropertyPtr property) override;
-  void GetRemoteServiceRecord(mojom::BluetoothAddressPtr remote_addr,
-                              const device::BluetoothUUID& uuid) override;
-
-  void GetRemoteServices(mojom::BluetoothAddressPtr remote_addr) override;
-
   void StartDiscovery() override;
   void CancelDiscovery() override;
 
@@ -231,8 +217,6 @@ class ArcBluetoothBridge
   void StopLEScan() override;
   void ConnectLEDevice(mojom::BluetoothAddressPtr remote_addr) override;
   void DisconnectLEDevice(mojom::BluetoothAddressPtr remote_addr) override;
-  void StartLEListen(StartLEListenCallback callback) override;
-  void StopLEListen(StopLEListenCallback callback) override;
   void SearchService(mojom::BluetoothAddressPtr remote_addr) override;
 
   void GetGattDB(mojom::BluetoothAddressPtr remote_addr) override;
@@ -351,9 +335,6 @@ class ArcBluetoothBridge
   void StartDiscoveryImpl(bool le_scan);
   void CancelDiscoveryImpl();
 
-  template <typename InstanceType, typename HostType>
-  class ConnectionObserverImpl;
-
   // Power state change on Bluetooth adapter.
   enum class AdapterPowerState { TURN_OFF, TURN_ON };
 
@@ -381,23 +362,10 @@ class ArcBluetoothBridge
                           device::BluetoothDevice::ConnectErrorCode error_code);
   void OnGattDisconnected(mojom::BluetoothAddressPtr addr);
 
-  void OnStartLEListenDone(GattStatusCallback callback,
-                           scoped_refptr<device::BluetoothAdvertisement> adv);
-  void OnStartLEListenError(
-      GattStatusCallback callback,
-      device::BluetoothAdvertisement::ErrorCode error_code);
-
-  void OnStopLEListenDone(GattStatusCallback callback);
-  void OnStopLEListenError(
-      GattStatusCallback callback,
-      device::BluetoothAdvertisement::ErrorCode error_code);
-
   void OnGattNotifyStartDone(
       GattStatusCallback callback,
       const std::string char_string_id,
       std::unique_ptr<device::BluetoothGattNotifySession> notify_session);
-
-  bool IsInstanceUp() const { return is_bluetooth_instance_up_; }
 
   // Indicates if a power change is initiated by Chrome / Android.
   bool IsPowerChangeInitiatedByRemote(
@@ -405,8 +373,9 @@ class ArcBluetoothBridge
   bool IsPowerChangeInitiatedByLocal(
       ArcBluetoothBridge::AdapterPowerState powered) const;
 
-  // Sends initial power state when all preconditions are met.
-  void MaybeSendInitialPowerChange();
+  // ConnectionObserver<mojom::AppInstance>:
+  // ConnectionObserver<mojom::IntentHelperInstance>:
+  void OnConnectionReady() override;
 
   // Manages the powered change intents sent to Android.
   void EnqueueLocalPowerChange(AdapterPowerState powered);
@@ -581,16 +550,6 @@ class ArcBluetoothBridge
   // Timer to turn adapter discoverable off.
   base::OneShotTimer discoverable_off_timer_;
 
-  // This indicates whether the remote Bluetooth ARC instance is ready to
-  // receive events.
-  bool is_bluetooth_instance_up_;
-
-  // Observers to listen the start-up of App and Intent Helper.
-  std::unique_ptr<ConnectionObserverImpl<mojom::AppInstance, mojom::AppHost>>
-      app_observer_;
-  std::unique_ptr<ConnectionObserverImpl<mojom::IntentHelperInstance,
-                                         mojom::IntentHelperHost>>
-      intent_helper_observer_;
   // Queue to track the powered state changes initiated by Android.
   base::queue<AdapterPowerState> remote_power_changes_;
   // Queue to track the powered state changes initiated by Chrome.

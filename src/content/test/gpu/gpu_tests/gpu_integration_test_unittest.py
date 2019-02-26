@@ -27,7 +27,8 @@ class GpuIntegrationTestUnittest(unittest.TestCase):
        'unittest_data.integration_tests.SimpleTest.unexpected_failure'],
       ['unittest_data.integration_tests.SimpleTest.expected_flaky',
        'unittest_data.integration_tests.SimpleTest.expected_failure'],
-      ['unittest_data.integration_tests.SimpleTest.expected_skip'])
+      ['unittest_data.integration_tests.SimpleTest.expected_skip'],
+      [])
     # It might be nice to be more precise about the order of operations
     # with these browser restarts, but this is at least a start.
     self.assertEquals(self._test_state['num_browser_starts'], 6)
@@ -36,7 +37,7 @@ class GpuIntegrationTestUnittest(unittest.TestCase):
     self._RunIntegrationTest(
       'browser_start_failure_integration_unittest', [],
       ['unittest_data.integration_tests.BrowserStartFailureTest.restart'],
-      [])
+      [], [])
     self.assertEquals(self._test_state['num_browser_crashes'], 2)
     self.assertEquals(self._test_state['num_browser_starts'], 3)
 
@@ -44,11 +45,40 @@ class GpuIntegrationTestUnittest(unittest.TestCase):
     self._RunIntegrationTest(
       'browser_crash_after_start_integration_unittest', [],
       [('unittest_data.integration_tests.BrowserCrashAfterStartTest.restart')],
-      [])
+      [], [])
     self.assertEquals(self._test_state['num_browser_crashes'], 2)
     self.assertEquals(self._test_state['num_browser_starts'], 3)
 
-  def _RunIntegrationTest(self, test_name, failures, successes, skips):
+  def testRetryLimit(self):
+    self._RunIntegrationTest(
+      'test_retry_limit',
+      ['unittest_data.integration_tests.TestRetryLimit.unexpected_failure'],
+      [],
+      [],
+      ['--retry-limit=2'])
+    # The number of attempted runs is 1 + the retry limit.
+    self.assertEquals(self._test_state['num_test_runs'], 3)
+
+  def testRepeat(self):
+    self._RunIntegrationTest(
+      'test_repeat',
+      [],
+      ['unittest_data.integration_tests.TestRepeat.success'],
+      [],
+      ['--repeat=3'])
+    self.assertEquals(self._test_state['num_test_runs'], 3)
+
+  def testAlsoRunDisabledTests(self):
+    self._RunIntegrationTest(
+      'test_also_run_disabled_tests',
+      [],
+      ['unittest_data.integration_tests.TestAlsoRunDisabledTests.success'],
+      [],
+      ['--also-run-disabled-tests'])
+    self.assertEquals(self._test_state['num_test_runs'], 1)
+
+  def _RunIntegrationTest(self, test_name, failures, successes, skips,
+                          additional_args):
     config = chromium_config.ChromiumConfig(
         top_level_dir=path_util.GetGpuTestDir(),
         benchmark_dirs=[
@@ -61,16 +91,16 @@ class GpuIntegrationTestUnittest(unittest.TestCase):
           config,
           [test_name,
            '--write-full-results-to=%s' % test_results_path,
-           '--test-state-json-path=%s' % test_state_path])
+           '--test-state-json-path=%s' % test_state_path] + additional_args)
       with open(test_results_path) as f:
         test_result = json.load(f)
       with open(test_state_path) as f:
         self._test_state = json.load(f)
       actual_successes, actual_failures, actual_skips = (
           self._ExtracTestResults(test_result))
-      self.assertEquals(actual_failures, failures)
-      self.assertEquals(actual_successes, successes)
-      self.assertEquals(actual_skips, skips)
+      self.assertEquals(set(actual_failures), set(failures))
+      self.assertEquals(set(actual_successes), set(successes))
+      self.assertEquals(set(actual_skips), set(skips))
     finally:
       shutil.rmtree(temp_dir)
 
@@ -103,4 +133,3 @@ class GpuIntegrationTestUnittest(unittest.TestCase):
             ('%s%s%s' % (full_test_name, delimiter, k),
              test_dict[k]))
     return successes, failures, skips
-

@@ -1519,13 +1519,18 @@ IN_PROC_BROWSER_TEST_F(WebContentsImplBrowserTest,
       shell(), UNLOAD_AND_BEFORE_UNLOAD_HTML, true, true);
 }
 
-namespace {
-
 class TestWCDelegateForDialogsAndFullscreen : public JavaScriptDialogManager,
                                               public WebContentsDelegate {
  public:
-  TestWCDelegateForDialogsAndFullscreen() = default;
-  ~TestWCDelegateForDialogsAndFullscreen() override = default;
+  explicit TestWCDelegateForDialogsAndFullscreen(WebContentsImpl* web_contents)
+      : web_contents_(web_contents) {
+    old_delegate_ = web_contents_->GetDelegate();
+    web_contents_->SetDelegate(this);
+  }
+  ~TestWCDelegateForDialogsAndFullscreen() override {
+    web_contents_->SetJavaScriptDialogManagerForTesting(nullptr);
+    web_contents_->SetDelegate(old_delegate_);
+  }
 
   void WillWaitForDialog() { waiting_for_ = kDialog; }
   void WillWaitForNewContents() { waiting_for_ = kNewContents; }
@@ -1620,6 +1625,9 @@ class TestWCDelegateForDialogsAndFullscreen : public JavaScriptDialogManager,
                      bool reset_state) override {}
 
  private:
+  WebContentsImpl* web_contents_;
+  WebContentsDelegate* old_delegate_;
+
   enum {
     kNothing,
     kDialog,
@@ -1642,17 +1650,15 @@ class MockFileSelectListener : public FileSelectListener {
  public:
   MockFileSelectListener() {}
   void FileSelected(std::vector<blink::mojom::FileChooserFileInfoPtr> files,
+                    const base::FilePath& base_dir,
                     blink::mojom::FileChooserParams::Mode mode) override {}
   void FileSelectionCanceled() override {}
 };
 
-}  // namespace
-
 IN_PROC_BROWSER_TEST_F(WebContentsImplBrowserTest,
                        JavaScriptDialogsInMainAndSubframes) {
   WebContentsImpl* wc = static_cast<WebContentsImpl*>(shell()->web_contents());
-  TestWCDelegateForDialogsAndFullscreen test_delegate;
-  wc->SetDelegate(&test_delegate);
+  TestWCDelegateForDialogsAndFullscreen test_delegate(wc);
 
   ASSERT_TRUE(embedded_test_server()->Start());
 
@@ -1733,16 +1739,12 @@ IN_PROC_BROWSER_TEST_F(WebContentsImplBrowserTest,
   test_delegate.Wait();
   EXPECT_EQ(GURL("http://a.com/title1.html"),
             GURL(test_delegate.last_message()).ReplaceComponents(clear_port));
-
-  wc->SetDelegate(nullptr);
-  wc->SetJavaScriptDialogManagerForTesting(nullptr);
 }
 
 IN_PROC_BROWSER_TEST_F(WebContentsImplBrowserTest,
                        JavaScriptDialogsNormalizeText) {
   WebContentsImpl* wc = static_cast<WebContentsImpl*>(shell()->web_contents());
-  TestWCDelegateForDialogsAndFullscreen test_delegate;
-  wc->SetDelegate(&test_delegate);
+  TestWCDelegateForDialogsAndFullscreen test_delegate(wc);
 
   GURL url("about:blank");
   EXPECT_TRUE(NavigateToURL(shell(), url));
@@ -1753,9 +1755,6 @@ IN_PROC_BROWSER_TEST_F(WebContentsImplBrowserTest,
   EXPECT_TRUE(content::ExecuteScript(wc, alert));
   test_delegate.Wait();
   EXPECT_EQ("1\n2\n3\n4", test_delegate.last_message());
-
-  wc->SetDelegate(nullptr);
-  wc->SetJavaScriptDialogManagerForTesting(nullptr);
 }
 
 IN_PROC_BROWSER_TEST_F(WebContentsImplBrowserTest,
@@ -2027,8 +2026,9 @@ class MouseLockDelegate : public WebContentsDelegate {
   bool request_to_lock_mouse_called_ = false;
 };
 
+// TODO(crbug.com/898641): This test is flaky.
 IN_PROC_BROWSER_TEST_F(WebContentsImplBrowserTest,
-                       RenderWidgetDeletedWhileMouseLockPending) {
+                       DISABLED_RenderWidgetDeletedWhileMouseLockPending) {
   ASSERT_TRUE(embedded_test_server()->Start());
 
   std::unique_ptr<MouseLockDelegate> delegate(new MouseLockDelegate());
@@ -2117,8 +2117,7 @@ IN_PROC_BROWSER_TEST_F(WebContentsImplBrowserTest, UserAgentOverride) {
 IN_PROC_BROWSER_TEST_F(WebContentsImplBrowserTest,
                        DialogsFromJavaScriptEndFullscreen) {
   WebContentsImpl* wc = static_cast<WebContentsImpl*>(shell()->web_contents());
-  TestWCDelegateForDialogsAndFullscreen test_delegate;
-  wc->SetDelegate(&test_delegate);
+  TestWCDelegateForDialogsAndFullscreen test_delegate(wc);
 
   GURL url("about:blank");
   EXPECT_TRUE(NavigateToURL(shell(), url));
@@ -2165,17 +2164,13 @@ IN_PROC_BROWSER_TEST_F(WebContentsImplBrowserTest,
   EXPECT_TRUE(NavigateToURL(shell(), url));
   test_delegate.Wait();
   EXPECT_FALSE(wc->IsFullscreenForCurrentTab());
-
-  wc->SetDelegate(nullptr);
-  wc->SetJavaScriptDialogManagerForTesting(nullptr);
 }
 
 IN_PROC_BROWSER_TEST_F(WebContentsImplBrowserTest,
                        DialogsFromJavaScriptEndFullscreenEvenInInnerWC) {
   WebContentsImpl* top_contents =
       static_cast<WebContentsImpl*>(shell()->web_contents());
-  TestWCDelegateForDialogsAndFullscreen top_test_delegate;
-  top_contents->SetDelegate(&top_test_delegate);
+  TestWCDelegateForDialogsAndFullscreen top_test_delegate(top_contents);
 
   GURL url("about:blank");
   EXPECT_TRUE(NavigateToURL(shell(), url));
@@ -2195,8 +2190,7 @@ IN_PROC_BROWSER_TEST_F(WebContentsImplBrowserTest,
 
   WebContentsImpl* inner_contents =
       static_cast<WebContentsImpl*>(CreateAndAttachInnerContents(frame));
-  TestWCDelegateForDialogsAndFullscreen inner_test_delegate;
-  inner_contents->SetDelegate(&inner_test_delegate);
+  TestWCDelegateForDialogsAndFullscreen inner_test_delegate(inner_contents);
 
   // A dialog from the inner WebContents should make the outer contents lose
   // fullscreen.
@@ -2207,18 +2201,11 @@ IN_PROC_BROWSER_TEST_F(WebContentsImplBrowserTest,
   EXPECT_TRUE(content::ExecuteScript(inner_contents, script));
   inner_test_delegate.Wait();
   EXPECT_FALSE(top_contents->IsFullscreenForCurrentTab());
-
-  inner_contents->SetDelegate(nullptr);
-  inner_contents->SetJavaScriptDialogManagerForTesting(nullptr);
-
-  top_contents->SetDelegate(nullptr);
-  top_contents->SetJavaScriptDialogManagerForTesting(nullptr);
 }
 
 IN_PROC_BROWSER_TEST_F(WebContentsImplBrowserTest, FileChooserEndsFullscreen) {
   WebContentsImpl* wc = static_cast<WebContentsImpl*>(shell()->web_contents());
-  TestWCDelegateForDialogsAndFullscreen test_delegate;
-  wc->SetDelegate(&test_delegate);
+  TestWCDelegateForDialogsAndFullscreen test_delegate(wc);
 
   GURL url("about:blank");
   EXPECT_TRUE(NavigateToURL(shell(), url));
@@ -2229,16 +2216,12 @@ IN_PROC_BROWSER_TEST_F(WebContentsImplBrowserTest, FileChooserEndsFullscreen) {
                      std::make_unique<MockFileSelectListener>(),
                      blink::mojom::FileChooserParams());
   EXPECT_FALSE(wc->IsFullscreenForCurrentTab());
-
-  wc->SetDelegate(nullptr);
-  wc->SetJavaScriptDialogManagerForTesting(nullptr);
 }
 
 IN_PROC_BROWSER_TEST_F(WebContentsImplBrowserTest,
                        PopupsFromJavaScriptEndFullscreen) {
   WebContentsImpl* wc = static_cast<WebContentsImpl*>(shell()->web_contents());
-  TestWCDelegateForDialogsAndFullscreen test_delegate;
-  wc->SetDelegate(&test_delegate);
+  TestWCDelegateForDialogsAndFullscreen test_delegate(wc);
 
   GURL url("about:blank");
   EXPECT_TRUE(NavigateToURL(shell(), url));
@@ -2251,16 +2234,12 @@ IN_PROC_BROWSER_TEST_F(WebContentsImplBrowserTest,
   EXPECT_TRUE(content::ExecuteScript(wc, script));
   test_delegate.Wait();
   EXPECT_FALSE(wc->IsFullscreenForCurrentTab());
-
-  wc->SetDelegate(nullptr);
-  wc->SetJavaScriptDialogManagerForTesting(nullptr);
 }
 
 IN_PROC_BROWSER_TEST_F(WebContentsImplBrowserTest,
                        FocusFromJavaScriptEndsFullscreen) {
   WebContentsImpl* wc = static_cast<WebContentsImpl*>(shell()->web_contents());
-  TestWCDelegateForDialogsAndFullscreen test_delegate;
-  wc->SetDelegate(&test_delegate);
+  TestWCDelegateForDialogsAndFullscreen test_delegate(wc);
 
   GURL url("about:blank");
   EXPECT_TRUE(NavigateToURL(shell(), url));
@@ -2284,9 +2263,6 @@ IN_PROC_BROWSER_TEST_F(WebContentsImplBrowserTest,
   EXPECT_TRUE(content::ExecuteScript(wc, script));
   test_delegate.Wait();
   EXPECT_FALSE(wc->IsFullscreenForCurrentTab());
-
-  wc->SetDelegate(nullptr);
-  wc->SetJavaScriptDialogManagerForTesting(nullptr);
 }
 
 IN_PROC_BROWSER_TEST_F(WebContentsImplBrowserTest,
@@ -2680,8 +2656,7 @@ IN_PROC_BROWSER_TEST_F(WebContentsImplBrowserTest, NotifyFullscreenAcquired) {
   ASSERT_TRUE(embedded_test_server()->Start());
   WebContentsImpl* web_contents =
       static_cast<WebContentsImpl*>(shell()->web_contents());
-  TestWCDelegateForDialogsAndFullscreen test_delegate;
-  web_contents->SetDelegate(&test_delegate);
+  TestWCDelegateForDialogsAndFullscreen test_delegate(web_contents);
 
   GURL url = embedded_test_server()->GetURL(
       "a.com", "/cross_site_iframe_factory.html?a(b{allowfullscreen})");
@@ -2774,9 +2749,8 @@ IN_PROC_BROWSER_TEST_F(WebContentsImplBrowserTest,
   ASSERT_TRUE(embedded_test_server()->Start());
   WebContentsImpl* web_contents =
       static_cast<WebContentsImpl*>(shell()->web_contents());
-  TestWCDelegateForDialogsAndFullscreen test_delegate;
+  TestWCDelegateForDialogsAndFullscreen test_delegate(web_contents);
   test_delegate.WillWaitForFullscreenExit();
-  web_contents->SetDelegate(&test_delegate);
 
   GURL url = embedded_test_server()->GetURL(
       "a.com", "/cross_site_iframe_factory.html?a(b{allowfullscreen})");
@@ -2826,8 +2800,7 @@ IN_PROC_BROWSER_TEST_F(WebContentsImplBrowserTest,
   ASSERT_TRUE(embedded_test_server()->Start());
   WebContentsImpl* web_contents =
       static_cast<WebContentsImpl*>(shell()->web_contents());
-  TestWCDelegateForDialogsAndFullscreen test_delegate;
-  web_contents->SetDelegate(&test_delegate);
+  TestWCDelegateForDialogsAndFullscreen test_delegate(web_contents);
 
   GURL url = embedded_test_server()->GetURL(
       "a.com", "/cross_site_iframe_factory.html?a(a{allowfullscreen})");

@@ -29,11 +29,12 @@ class SVGImageElement;
 class SVGImageLoader final : public ImageLoader {
  public:
   static SVGImageLoader* Create(SVGImageElement* element) {
-    return new SVGImageLoader(element);
+    return MakeGarbageCollected<SVGImageLoader>(element);
   }
 
- private:
   explicit SVGImageLoader(SVGImageElement*);
+
+ private:
   void DispatchLoadEvent() override;
   String DebugName() const override { return "SVGImageLoader"; }
 };

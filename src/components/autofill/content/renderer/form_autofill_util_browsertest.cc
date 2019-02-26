@@ -266,6 +266,34 @@ TEST_F(FormAutofillUtilsTest, InferLabelSourceTest) {
   }
 }
 
+TEST_F(FormAutofillUtilsTest, InferButtonTitleForFormTest) {
+  static const AutofillFieldUtilCase test_cases[] = {
+      {"<button>", "<form id='target'><button>Sign Up</button></form>",
+       "Sign Up%"},
+      {"<input type='submit'>",
+       "<form id='target'><input type='submit' value='Sign In'></form>",
+       "Sign In$"},
+      {"several labels",
+       "<form id='target'><button type='button'>Show "
+       "password</button><button type='submit'>Register</button></form>",
+       "Register&Show password%"}};
+  for (const auto& test_case : test_cases) {
+    SCOPED_TRACE(test_case.description);
+    LoadHTML(test_case.html);
+    WebLocalFrame* web_frame = GetMainFrame();
+    ASSERT_NE(nullptr, web_frame);
+    const WebElement& target =
+        web_frame->GetDocument().GetElementById("target");
+    ASSERT_FALSE(target.IsNull());
+    const WebFormElement& form_target = target.ToConst<WebFormElement>();
+    ASSERT_FALSE(form_target.IsNull());
+
+    base::string16 button_title =
+        autofill::form_util::InferButtonTitleForTesting(form_target);
+    EXPECT_EQ(base::UTF8ToUTF16(test_case.expected_label), button_title);
+  }
+}
+
 TEST_F(FormAutofillUtilsTest, IsEnabled) {
   LoadHTML(
       "<input type='text' id='name1'>"
@@ -448,4 +476,127 @@ TEST_F(FormAutofillUtilsTest, FindFormControlElementsByUniqueIdWithForm) {
   EXPECT_TRUE(elements[0].IsNull());
   EXPECT_TRUE(elements[1].IsNull());
   EXPECT_TRUE(elements[2].IsNull());
+}
+
+// Tests the extraction of the aria-label attribute.
+TEST_F(FormAutofillUtilsTest, GetAriaLabel) {
+  LoadHTML("<input id='input' type='text' aria-label='the label'/>");
+
+  WebDocument doc = GetMainFrame()->GetDocument();
+  auto element = doc.GetElementById("input").To<WebInputElement>();
+  EXPECT_EQ(autofill::form_util::GetAriaLabel(doc, element),
+            base::UTF8ToUTF16("the label"));
+}
+
+// Tests that aria-labelledby works. Simple case: only one id referenced.
+TEST_F(FormAutofillUtilsTest, GetAriaLabelledBySingle) {
+  LoadHTML(
+      "<div id='billing'>Billing</div>"
+      "<div>"
+      "    <div id='name'>Name</div>"
+      "    <input id='input' type='text' aria-labelledby='name'/>"
+      "</div>");
+
+  WebDocument doc = GetMainFrame()->GetDocument();
+  auto element = doc.GetElementById("input").To<WebInputElement>();
+  EXPECT_EQ(autofill::form_util::GetAriaLabel(doc, element),
+            base::UTF8ToUTF16("Name"));
+}
+
+// Tests that aria-labelledby works: Complex case: multiple ids referenced.
+TEST_F(FormAutofillUtilsTest, GetAriaLabelledByMulti) {
+  LoadHTML(
+      "<div id='billing'>Billing</div>"
+      "<div>"
+      "    <div id='name'>Name</div>"
+      "    <input id='input' type='text' aria-labelledby='billing name'/>"
+      "</div>");
+
+  WebDocument doc = GetMainFrame()->GetDocument();
+  auto element = doc.GetElementById("input").To<WebInputElement>();
+  EXPECT_EQ(autofill::form_util::GetAriaLabel(doc, element),
+            base::UTF8ToUTF16("Billing Name"));
+}
+
+// Tests that aria-labelledby takes precedence over aria-label
+TEST_F(FormAutofillUtilsTest, GetAriaLabelledByTakesPrecedence) {
+  LoadHTML(
+      "<div id='billing'>Billing</div>"
+      "<div>"
+      "    <div id='name'>Name</div>"
+      "    <input id='input' type='text' aria-label='ignored' "
+      "         aria-labelledby='name'/>"
+      "</div>");
+
+  WebDocument doc = GetMainFrame()->GetDocument();
+  auto element = doc.GetElementById("input").To<WebInputElement>();
+  EXPECT_EQ(autofill::form_util::GetAriaLabel(doc, element),
+            base::UTF8ToUTF16("Name"));
+}
+
+// Tests that an invalid aria-labelledby reference gets ignored (as opposed to
+// crashing, for example).
+TEST_F(FormAutofillUtilsTest, GetAriaLabelledByInvalid) {
+  LoadHTML(
+      "<div id='billing'>Billing</div>"
+      "<div>"
+      "    <div id='name'>Name</div>"
+      "    <input id='input' type='text' aria-labelledby='div1 div2'/>"
+      "</div>");
+
+  WebDocument doc = GetMainFrame()->GetDocument();
+  auto element = doc.GetElementById("input").To<WebInputElement>();
+  EXPECT_EQ(autofill::form_util::GetAriaLabel(doc, element),
+            base::UTF8ToUTF16(""));
+}
+
+// Tests that invalid aria-labelledby references fall back to aria-label.
+TEST_F(FormAutofillUtilsTest, GetAriaLabelledByFallback) {
+  LoadHTML(
+      "<div id='billing'>Billing</div>"
+      "<div>"
+      "    <div id='name'>Name</div>"
+      "    <input id='input' type='text' aria-label='valid' "
+      "          aria-labelledby='div1 div2'/>"
+      "</div>");
+
+  WebDocument doc = GetMainFrame()->GetDocument();
+  auto element = doc.GetElementById("input").To<WebInputElement>();
+  EXPECT_EQ(autofill::form_util::GetAriaLabel(doc, element),
+            base::UTF8ToUTF16("valid"));
+}
+
+// Tests that aria-describedby works: Simple case: a single id referenced.
+TEST_F(FormAutofillUtilsTest, GetAriaDescribedBySingle) {
+  LoadHTML(
+      "<input id='input' type='text' aria-describedby='div1'/>"
+      "<div id='div1'>aria description</div>");
+
+  WebDocument doc = GetMainFrame()->GetDocument();
+  auto element = doc.GetElementById("input").To<WebInputElement>();
+  EXPECT_EQ(autofill::form_util::GetAriaDescription(doc, element),
+            base::UTF8ToUTF16("aria description"));
+}
+
+// Tests that aria-describedby works: Complex case: multiple ids referenced.
+TEST_F(FormAutofillUtilsTest, GetAriaDescribedByMulti) {
+  LoadHTML(
+      "<input id='input' type='text' aria-describedby='div1 div2'/>"
+      "<div id='div2'>description</div>"
+      "<div id='div1'>aria</div>");
+
+  WebDocument doc = GetMainFrame()->GetDocument();
+  auto element = doc.GetElementById("input").To<WebInputElement>();
+  EXPECT_EQ(autofill::form_util::GetAriaDescription(doc, element),
+            base::UTF8ToUTF16("aria description"));
+}
+
+// Tests that invalid aria-describedby returns the empty string.
+TEST_F(FormAutofillUtilsTest, GetAriaDescribedByInvalid) {
+  LoadHTML("<input id='input' type='text' aria-describedby='invalid'/>");
+
+  WebDocument doc = GetMainFrame()->GetDocument();
+  auto element = doc.GetElementById("input").To<WebInputElement>();
+  EXPECT_EQ(autofill::form_util::GetAriaDescription(doc, element),
+            base::UTF8ToUTF16(""));
 }

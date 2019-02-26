@@ -10,7 +10,7 @@
 #include "third_party/blink/renderer/core/style_property_shorthand.h"
 
 namespace blink {
-namespace CSSShorthand {
+namespace css_shorthand {
 
 bool Inset::ParseShorthand(
     bool important,
@@ -18,7 +18,7 @@ bool Inset::ParseShorthand(
     const CSSParserContext& context,
     const CSSParserLocalContext&,
     HeapVector<CSSPropertyValue, 256>& properties) const {
-  return CSSPropertyParserHelpers::ConsumeShorthandVia4Longhands(
+  return css_property_parser_helpers::ConsumeShorthandVia4Longhands(
       insetShorthand(), important, context, range, properties);
 }
 
@@ -32,5 +32,5 @@ const CSSValue* Inset::CSSValueFromComputedStyleInternal(
       insetShorthand(), style, layout_object, styled_node, allow_visited_style);
 }
 
-}  // namespace CSSShorthand
+}  // namespace css_shorthand
 }  // namespace blink

@@ -27,29 +27,33 @@
 #define THIRD_PARTY_BLINK_RENDERER_MODULES_DEVICE_ORIENTATION_DEVICE_ACCELERATION_H_
 
 #include "third_party/blink/renderer/modules/device_orientation/device_motion_data.h"
+#include "third_party/blink/renderer/modules/modules_export.h"
 #include "third_party/blink/renderer/platform/bindings/script_wrappable.h"
 #include "third_party/blink/renderer/platform/heap/handle.h"
 
 namespace blink {
 
-class DeviceAcceleration final : public ScriptWrappable {
+class DeviceAccelerationInit;
+
+class MODULES_EXPORT DeviceAcceleration final : public ScriptWrappable {
   DEFINE_WRAPPERTYPEINFO();
 
  public:
-  static DeviceAcceleration* Create(
-      DeviceMotionData::Acceleration* acceleration) {
-    return new DeviceAcceleration(acceleration);
-  }
-  void Trace(blink::Visitor*) override;
+  static DeviceAcceleration* Create(double x, double y, double z);
+  static DeviceAcceleration* Create(const DeviceAccelerationInit*);
+
+  DeviceAcceleration(double x, double y, double z);
+
+  bool HasAccelerationData() const;
 
   double x(bool& is_null) const;
   double y(bool& is_null) const;
   double z(bool& is_null) const;
 
  private:
-  explicit DeviceAcceleration(DeviceMotionData::Acceleration*);
-
-  Member<DeviceMotionData::Acceleration> acceleration_;
+  const double x_;
+  const double y_;
+  const double z_;
 };
 
 }  // namespace blink

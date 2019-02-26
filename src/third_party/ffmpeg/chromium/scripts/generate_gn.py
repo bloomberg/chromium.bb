@@ -52,7 +52,7 @@ import("ffmpeg_options.gni")
 # Declare empty versions of each variable for easier +=ing later.
 ffmpeg_c_sources = []
 ffmpeg_gas_sources = []
-ffmpeg_yasm_sources = []
+ffmpeg_asm_sources = []
 
 use_linux_config = is_linux || is_fuchsia
 
@@ -66,7 +66,7 @@ GN_C_SOURCES_BEGIN = """ffmpeg_c_sources += [
 """
 GN_GAS_SOURCES_BEGIN = """ffmpeg_gas_sources += [
 """
-GN_YASM_SOURCES_BEGIN = """ffmpeg_yasm_sources += [
+GN_NASM_SOURCES_BEGIN = """ffmpeg_asm_sources += [
 """
 GN_SOURCE_ITEM = """  "%s",
 """
@@ -154,7 +154,7 @@ def IsGasFile(f):
   return ext in ['.S']
 
 
-def IsYasmFile(f):
+def IsNasmFile(f):
   _, ext = os.path.splitext(f)
   return ext in ['.asm']
 
@@ -382,10 +382,10 @@ class SourceSet(object):
       stanza += indent(GN_SOURCE_END)
 
     # Write out all assembly sources.
-    yasm_sources = filter(IsYasmFile, sources)
-    if yasm_sources:
-      stanza += indent(GN_YASM_SOURCES_BEGIN)
-      for name in yasm_sources:
+    nasm_sources = filter(IsNasmFile, sources)
+    if nasm_sources:
+      stanza += indent(GN_NASM_SOURCES_BEGIN)
+      for name in nasm_sources:
         stanza += indent(GN_SOURCE_ITEM % (name))
       stanza += indent(GN_SOURCE_END)
 

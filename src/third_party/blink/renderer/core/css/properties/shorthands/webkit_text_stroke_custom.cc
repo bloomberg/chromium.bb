@@ -8,7 +8,7 @@
 #include "third_party/blink/renderer/core/style_property_shorthand.h"
 
 namespace blink {
-namespace CSSShorthand {
+namespace css_shorthand {
 
 bool WebkitTextStroke::ParseShorthand(
     bool important,
@@ -16,9 +16,9 @@ bool WebkitTextStroke::ParseShorthand(
     const CSSParserContext& context,
     const CSSParserLocalContext&,
     HeapVector<CSSPropertyValue, 256>& properties) const {
-  return CSSPropertyParserHelpers::ConsumeShorthandGreedilyViaLonghands(
+  return css_property_parser_helpers::ConsumeShorthandGreedilyViaLonghands(
       webkitTextStrokeShorthand(), important, context, range, properties);
 }
 
-}  // namespace CSSShorthand
+}  // namespace css_shorthand
 }  // namespace blink

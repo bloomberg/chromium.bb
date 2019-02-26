@@ -4,6 +4,7 @@
 
 #include "chrome/browser/history/history_tab_helper.h"
 
+#include <algorithm>
 #include <utility>
 
 #include "build/build_config.h"
@@ -15,6 +16,7 @@
 #include "components/history/content/browser/history_context_helper.h"
 #include "components/history/core/browser/history_constants.h"
 #include "components/history/core/browser/history_service.h"
+#include "components/previews/core/previews_lite_page_redirect.h"
 #include "content/public/browser/navigation_entry.h"
 #include "content/public/browser/navigation_handle.h"
 #include "content/public/browser/render_frame_host.h"
@@ -93,6 +95,17 @@ HistoryTabHelper::CreateHistoryAddPageArgs(
           ? base::Optional<base::string16>(
                 navigation_handle->GetWebContents()->GetTitle())
           : base::nullopt);
+
+  // If this navigation attempted a Preview, remove those URLS from the redirect
+  // chain so that they are not seen by the user. See http://crbug.com/914404.
+  DCHECK(!add_page_args.redirects.empty());
+  add_page_args.redirects.erase(
+      std::remove_if(add_page_args.redirects.begin(),
+                     add_page_args.redirects.end(),
+                     [](const GURL& url) {
+                       return previews::IsLitePageRedirectPreviewURL(url);
+                     }),
+      add_page_args.redirects.end());
   if (ui::PageTransitionIsMainFrame(navigation_handle->GetPageTransition()) &&
       virtual_url != navigation_handle->GetURL()) {
     // Hack on the "virtual" URL so that it will appear in history. For some

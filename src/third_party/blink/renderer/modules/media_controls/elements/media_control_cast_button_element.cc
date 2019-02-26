@@ -39,7 +39,7 @@ MediaControlCastButtonElement::MediaControlCastButtonElement(
   SetShadowPseudoId(is_overlay_button
                         ? "-internal-media-controls-overlay-cast-button"
                         : "-internal-media-controls-cast-button");
-  setType(InputTypeNames::button);
+  setType(input_type_names::kButton);
   UpdateDisplayType();
 }
 
@@ -93,7 +93,7 @@ const char* MediaControlCastButtonElement::GetNameForHistograms() const {
 }
 
 void MediaControlCastButtonElement::DefaultEventHandler(Event& event) {
-  if (event.type() == EventTypeNames::click) {
+  if (event.type() == event_type_names::kClick) {
     if (is_overlay_button_) {
       Platform::Current()->RecordAction(
           UserMetricsAction("Media.Controls.CastOverlay"));

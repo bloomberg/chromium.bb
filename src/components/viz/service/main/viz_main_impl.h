@@ -98,6 +98,7 @@ class VizMainImpl : public gpu::GpuSandboxHelper, public mojom::VizMain {
       mojo::ScopedSharedBufferHandle activity_flags,
       gfx::FontRenderParams::SubpixelRendering subpixel_rendering) override;
   void CreateFrameSinkManager(mojom::FrameSinkManagerParamsPtr params) override;
+  void CreateVizDevTools(mojom::VizDevToolsParamsPtr params) override;
 
   GpuServiceImpl* gpu_service() { return gpu_service_.get(); }
   const GpuServiceImpl* gpu_service() const { return gpu_service_.get(); }

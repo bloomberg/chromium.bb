@@ -82,9 +82,11 @@ public:
 
     // GrPrimitiveProcessor overrides.
     const char* name() const override { return PrimitiveTypeName(fPrimitiveType); }
+#ifdef SK_DEBUG
     SkString dumpInfo() const override {
         return SkStringPrintf("%s\n%s", this->name(), this->INHERITED::dumpInfo().c_str());
     }
+#endif
     void getGLSLProcessorKey(const GrShaderCaps&, GrProcessorKeyBuilder*) const override;
     GrGLSLPrimitiveProcessor* createGLSLInstance(const GrShaderCaps&) const override;
 
@@ -247,13 +249,6 @@ private:
 
     void initGS();
     void initVS(GrResourceProvider*);
-
-    const Attribute& onVertexAttribute(int i) const override { return fVertexAttribute; }
-
-    const Attribute& onInstanceAttribute(int i) const override {
-        SkASSERT(fImpl == Impl::kVertexShader);
-        return fInstanceAttributes[i];
-    }
 
     void appendGSMesh(GrBuffer* instanceBuffer, int instanceCount, int baseInstance,
                       SkTArray<GrMesh>* out) const;

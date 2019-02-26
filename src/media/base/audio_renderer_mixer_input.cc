@@ -8,6 +8,7 @@
 
 #include "base/bind.h"
 #include "base/callback_helpers.h"
+#include "base/threading/sequenced_task_runner_handle.h"
 #include "base/trace_event/trace_event.h"
 #include "media/base/audio_renderer_mixer.h"
 #include "media/base/audio_renderer_mixer_pool.h"
@@ -21,22 +22,21 @@ AudioRendererMixerInput::AudioRendererMixerInput(
     const std::string& device_id,
     AudioLatency::LatencyType latency)
     : mixer_pool_(mixer_pool),
-      started_(false),
-      playing_(false),
-      volume_(1.0f),
       owner_id_(owner_id),
       device_id_(device_id),
-      latency_(latency),
-      mixer_(nullptr),
-      callback_(nullptr),
-      error_cb_(base::Bind(&AudioRendererMixerInput::OnRenderError,
-                           base::Unretained(this))) {
+      latency_(latency) {
   DCHECK(mixer_pool_);
 }
 
 AudioRendererMixerInput::~AudioRendererMixerInput() {
+  // Note: This may not happen on the thread the sink was used. E.g., this may
+  // end up destroyed on the render thread despite being used on the media
+  // thread.
+
   DCHECK(!started_);
   DCHECK(!mixer_);
+  if (sink_)
+    sink_->Stop();
 }
 
 void AudioRendererMixerInput::Initialize(
@@ -45,6 +45,12 @@ void AudioRendererMixerInput::Initialize(
   DCHECK(!started_);
   DCHECK(!mixer_);
   DCHECK(callback);
+
+  // Current usage ensures we always call GetOutputDeviceInfoAsync() and wait
+  // for the result before calling this method. We could add support for doing
+  // otherwise here, but it's not needed for now, so for simplicity just DCHECK.
+  DCHECK(sink_);
+  DCHECK(device_info_);
 
   params_ = params;
   callback_ = callback;
@@ -55,16 +61,16 @@ void AudioRendererMixerInput::Start() {
   DCHECK(!mixer_);
   DCHECK(callback_);  // Initialized.
 
+  DCHECK(sink_);
+  DCHECK(device_info_);
+  DCHECK_EQ(device_info_->device_status(), OUTPUT_DEVICE_STATUS_OK);
+
   started_ = true;
-  mixer_ =
-      mixer_pool_->GetMixer(owner_id_, params_, latency_, device_id_, nullptr);
-  if (!mixer_) {
-    callback_->OnRenderError();
-    return;
-  }
+  mixer_ = mixer_pool_->GetMixer(owner_id_, params_, latency_, *device_info_,
+                                 std::move(sink_));
 
   // Note: OnRenderError() may be called immediately after this call returns.
-  mixer_->AddErrorCallback(error_cb_);
+  mixer_->AddErrorCallback(this);
 }
 
 void AudioRendererMixerInput::Stop() {
@@ -73,10 +79,7 @@ void AudioRendererMixerInput::Stop() {
   Pause();
 
   if (mixer_) {
-    // TODO(dalecurtis): This is required so that |callback_| isn't called after
-    // Stop() by an error event since it may outlive this ref-counted object. We
-    // should instead have sane ownership semantics: http://crbug.com/151051
-    mixer_->RemoveErrorCallback(error_cb_);
+    mixer_->RemoveErrorCallback(this);
     mixer_pool_->ReturnMixer(mixer_);
     mixer_ = nullptr;
   }
@@ -107,9 +110,34 @@ bool AudioRendererMixerInput::SetVolume(double volume) {
 }
 
 OutputDeviceInfo AudioRendererMixerInput::GetOutputDeviceInfo() {
-  return mixer_ ? mixer_->GetOutputDeviceInfo()
-                : mixer_pool_->GetOutputDeviceInfo(
-                      owner_id_, 0 /* session_id */, device_id_);
+  NOTREACHED();  // The blocking API is intentionally not supported.
+  return OutputDeviceInfo();
+}
+
+void AudioRendererMixerInput::GetOutputDeviceInfoAsync(
+    OutputDeviceInfoCB info_cb) {
+  // If we have device information for a current sink or mixer, just return it
+  // immediately. Per the AudioRendererSink API contract, this must be posted.
+  if (device_info_.has_value() && (sink_ || mixer_)) {
+    base::SequencedTaskRunnerHandle::Get()->PostTask(
+        FROM_HERE, base::BindOnce(std::move(info_cb), *device_info_));
+    return;
+  }
+
+  // We may have |device_info_|, but a Stop() has been called since if we don't
+  // have a |sink_| or a |mixer_|, so request the information again in case it
+  // has changed (which may occur due to browser side device changes).
+  device_info_.reset();
+
+  // If we don't have a sink yet start the process of getting one.
+  sink_ = mixer_pool_->GetSink(owner_id_, device_id_);
+
+  // Retain a ref to this sink to ensure it is not destructed while this occurs.
+  // The callback is guaranteed to execute on this thread, so there are no
+  // threading issues.
+  sink_->GetOutputDeviceInfoAsync(
+      base::BindOnce(&AudioRendererMixerInput::OnDeviceInfoReceived,
+                     base::RetainedRef(this), std::move(info_cb)));
 }
 
 bool AudioRendererMixerInput::IsOptimizedForHardwareParameters() {
@@ -122,44 +150,23 @@ bool AudioRendererMixerInput::CurrentThreadIsRenderingThread() {
 
 void AudioRendererMixerInput::SwitchOutputDevice(
     const std::string& device_id,
-    const OutputDeviceStatusCB& callback) {
+    OutputDeviceStatusCB callback) {
   if (device_id == device_id_) {
-    callback.Run(OUTPUT_DEVICE_STATUS_OK);
+    std::move(callback).Run(OUTPUT_DEVICE_STATUS_OK);
     return;
   }
 
-  if (mixer_) {
-    OutputDeviceStatus new_mixer_status = OUTPUT_DEVICE_STATUS_ERROR_INTERNAL;
-    AudioRendererMixer* new_mixer = mixer_pool_->GetMixer(
-        owner_id_, params_, latency_, device_id, &new_mixer_status);
-    if (new_mixer_status != OUTPUT_DEVICE_STATUS_OK) {
-      callback.Run(new_mixer_status);
-      return;
-    }
+  // Request a new sink using the new device id. This process may fail, so to
+  // avoid interrupting working audio, don't set any class variables until we
+  // know it's a success.
+  auto new_sink = mixer_pool_->GetSink(owner_id_, device_id);
 
-    bool was_playing = playing_;
-    Stop();
-    device_id_ = device_id;
-    mixer_ = new_mixer;
-    mixer_->AddErrorCallback(error_cb_);
-    started_ = true;
-
-    if (was_playing)
-      Play();
-
-  } else {
-    OutputDeviceStatus new_mixer_status =
-        mixer_pool_
-            ->GetOutputDeviceInfo(owner_id_, 0 /* session_id */, device_id)
-            .device_status();
-    if (new_mixer_status != OUTPUT_DEVICE_STATUS_OK) {
-      callback.Run(new_mixer_status);
-      return;
-    }
-    device_id_ = device_id;
-  }
-
-  callback.Run(OUTPUT_DEVICE_STATUS_OK);
+  // Retain a ref to this sink to ensure it is not destructed while this occurs.
+  // The callback is guaranteed to execute on this thread, so there are no
+  // threading issues.
+  new_sink->GetOutputDeviceInfoAsync(
+      base::BindOnce(&AudioRendererMixerInput::OnDeviceSwitchReady,
+                     base::RetainedRef(this), std::move(callback), new_sink));
 }
 
 double AudioRendererMixerInput::ProvideInput(AudioBus* audio_bus,
@@ -173,8 +180,8 @@ double AudioRendererMixerInput::ProvideInput(AudioBus* audio_bus,
 
   // AudioConverter expects unfilled frames to be zeroed.
   if (frames_filled < audio_bus->frames()) {
-    audio_bus->ZeroFramesPartial(
-        frames_filled, audio_bus->frames() - frames_filled);
+    audio_bus->ZeroFramesPartial(frames_filled,
+                                 audio_bus->frames() - frames_filled);
   }
 
   // We're reading |volume_| from the audio device thread and must avoid racing
@@ -188,6 +195,44 @@ double AudioRendererMixerInput::ProvideInput(AudioBus* audio_bus,
 
 void AudioRendererMixerInput::OnRenderError() {
   callback_->OnRenderError();
+}
+
+void AudioRendererMixerInput::OnDeviceInfoReceived(
+    OutputDeviceInfoCB info_cb,
+    OutputDeviceInfo device_info) {
+  device_info_ = device_info;
+  std::move(info_cb).Run(*device_info_);
+}
+
+void AudioRendererMixerInput::OnDeviceSwitchReady(
+    OutputDeviceStatusCB switch_cb,
+    scoped_refptr<AudioRendererSink> sink,
+    OutputDeviceInfo device_info) {
+  if (device_info.device_status() != OUTPUT_DEVICE_STATUS_OK) {
+    sink->Stop();
+    std::move(switch_cb).Run(device_info.device_status());
+    return;
+  }
+
+  const bool has_mixer = !!mixer_;
+  const bool is_playing = playing_;
+
+  // This may occur if Start() hasn't yet been called.
+  if (sink_)
+    sink_->Stop();
+
+  sink_ = std::move(sink);
+  device_info_ = device_info;
+  device_id_ = device_info.device_id();
+
+  Stop();
+  if (has_mixer) {
+    Start();
+    if (is_playing)
+      Play();
+  }
+
+  std::move(switch_cb).Run(device_info.device_status());
 }
 
 }  // namespace media

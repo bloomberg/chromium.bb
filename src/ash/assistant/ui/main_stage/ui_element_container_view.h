@@ -10,7 +10,6 @@
 #include <utility>
 #include <vector>
 
-#include "ash/assistant/assistant_response_processor.h"
 #include "ash/assistant/model/assistant_interaction_model_observer.h"
 #include "ash/assistant/ui/base/assistant_scroll_view.h"
 #include "base/macros.h"
@@ -19,10 +18,6 @@
 namespace ui {
 class CallbackLayerAnimationObserver;
 }  // namespace ui
-
-namespace views {
-class NativeViewHost;
-}  // namespace views
 
 namespace ash {
 
@@ -44,6 +39,7 @@ class UiElementContainerView : public AssistantScrollView,
   const char* GetClassName() const override;
   gfx::Size CalculatePreferredSize() const override;
   int GetHeightForWidth(int width) const override;
+  gfx::Size GetMinimumSize() const override;
   void OnContentsPreferredSizeChanged(views::View* content_view) override;
   void PreferredSizeChanged() override;
 
@@ -80,11 +76,6 @@ class UiElementContainerView : public AssistantScrollView,
   // PreferredSizeChanged events by waiting until the entirety of a response has
   // been added/removed before propagating. This reduces layout passes.
   bool propagate_preferred_size_changed_ = true;
-
-  // Cached references to the native view hosts associated with card elements.
-  // We maintain a reference so long as the native view host is attached so that
-  // we can detach before removal from the view hierarchy and destruction.
-  std::vector<views::NativeViewHost*> native_view_hosts_;
 
   // UI elements will be animated on their own layers. We track the desired
   // opacity to which each layer should be animated when processing the next

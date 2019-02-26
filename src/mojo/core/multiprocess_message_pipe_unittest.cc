@@ -871,8 +871,15 @@ TEST_P(MultiprocessMessagePipeTestWithPeerSupport,
   CloseHandle(echo_proxy_c);
 }
 
+// Flaky on Android. See https://crbug.com/905620.
+#if defined(OS_ANDROID)
+#define MAYBE_ChannelPipesWithMultipleChildren \
+  DISABLED_ChannelPipesWithMultipleChildren
+#else
+#define MAYBE_ChannelPipesWithMultipleChildren ChannelPipesWithMultipleChildren
+#endif
 TEST_P(MultiprocessMessagePipeTestWithPeerSupport,
-       ChannelPipesWithMultipleChildren) {
+       MAYBE_ChannelPipesWithMultipleChildren) {
   RunTestClient("ChannelEchoClient", [&](MojoHandle a) {
     RunTestClient("ChannelEchoClient", [&](MojoHandle b) {
       VerifyEcho(a, "hello child 0");
@@ -1331,9 +1338,13 @@ INSTANTIATE_TEST_CASE_P(
     ,
     MultiprocessMessagePipeTestWithPeerSupport,
     testing::Values(test::MojoTestBase::LaunchType::CHILD,
-                    test::MojoTestBase::LaunchType::PEER,
+                    test::MojoTestBase::LaunchType::PEER
+#if !defined(OS_FUCHSIA)
+                    ,
                     test::MojoTestBase::LaunchType::NAMED_CHILD,
-                    test::MojoTestBase::LaunchType::NAMED_PEER));
+                    test::MojoTestBase::LaunchType::NAMED_PEER
+#endif  // !defined(OS_FUCHSIA)
+                    ));
 }  // namespace
 }  // namespace core
 }  // namespace mojo

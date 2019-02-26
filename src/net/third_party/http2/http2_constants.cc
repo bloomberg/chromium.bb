@@ -4,9 +4,6 @@
 
 #include "net/third_party/http2/http2_constants.h"
 
-#include <ios>
-#include <sstream>
-
 #include "base/logging.h"
 #include "net/third_party/http2/platform/api/http2_string_piece.h"
 #include "net/third_party/http2/platform/api/http2_string_utils.h"
@@ -123,9 +120,7 @@ Http2String Http2ErrorCodeToString(uint32_t v) {
     case 0xd:
       return "HTTP_1_1_REQUIRED";
   }
-  std::stringstream ss;
-  ss << "UnknownErrorCode(0x" << std::hex << v << ")";
-  return ss.str();
+  return Http2StrCat("UnknownErrorCode(0x", Http2Hex(v), ")");
 }
 Http2String Http2ErrorCodeToString(Http2ErrorCode v) {
   return Http2ErrorCodeToString(static_cast<uint32_t>(v));
@@ -146,9 +141,7 @@ Http2String Http2SettingsParameterToString(uint32_t v) {
     case 0x6:
       return "MAX_HEADER_LIST_SIZE";
   }
-  std::stringstream ss;
-  ss << "UnknownSettingsParameter(0x" << std::hex << v << ")";
-  return ss.str();
+  return Http2StrCat("UnknownSettingsParameter(0x", Http2Hex(v), ")");
 }
 Http2String Http2SettingsParameterToString(Http2SettingsParameter v) {
   return Http2SettingsParameterToString(static_cast<uint32_t>(v));

@@ -114,6 +114,12 @@ int GetIncognitoId(int id) {
       return ThemeProperties::COLOR_BACKGROUND_TAB_TEXT_INCOGNITO;
     case ThemeProperties::COLOR_BACKGROUND_TAB_TEXT_INACTIVE:
       return ThemeProperties::COLOR_BACKGROUND_TAB_TEXT_INCOGNITO_INACTIVE;
+    case ThemeProperties::COLOR_WINDOW_CONTROL_BUTTON_BACKGROUND_ACTIVE:
+      return ThemeProperties::
+          COLOR_WINDOW_CONTROL_BUTTON_BACKGROUND_INCOGNITO_ACTIVE;
+    case ThemeProperties::COLOR_WINDOW_CONTROL_BUTTON_BACKGROUND_INACTIVE:
+      return ThemeProperties::
+          COLOR_WINDOW_CONTROL_BUTTON_BACKGROUND_INCOGNITO_INACTIVE;
     default:
       return id;
   }
@@ -135,39 +141,80 @@ bool IsColorGrayscale(SkColor color) {
 
 // ThemeService::BrowserThemeProvider -----------------------------------------
 
+// Creates a temporary scope where all |theme_service_| property getters return
+// uncustomized default values if |theme_provider_.use_default_| is enabled.
+class ThemeService::BrowserThemeProvider::DefaultScope {
+ public:
+  explicit DefaultScope(const BrowserThemeProvider& theme_provider)
+      : theme_provider_(theme_provider) {
+    if (theme_provider_.use_default_) {
+      // Mutations to |theme_provider_| are undone in the destructor making it
+      // effectively const over the entire duration of this object's scope.
+      theme_supplier_ =
+          std::move(const_cast<ThemeService&>(theme_provider_.theme_service_)
+                        .theme_supplier_);
+      DCHECK(!theme_provider_.theme_service_.theme_supplier_);
+    }
+  }
+
+  ~DefaultScope() {
+    if (theme_provider_.use_default_) {
+      const_cast<ThemeService&>(theme_provider_.theme_service_)
+          .theme_supplier_ = std::move(theme_supplier_);
+    }
+    DCHECK(!theme_supplier_);
+  }
+
+ private:
+  const BrowserThemeProvider& theme_provider_;
+  scoped_refptr<CustomThemeSupplier> theme_supplier_;
+
+  DISALLOW_COPY_AND_ASSIGN(DefaultScope);
+};
+
 ThemeService::BrowserThemeProvider::BrowserThemeProvider(
     const ThemeService& theme_service,
-    bool incognito)
-    : theme_service_(theme_service), incognito_(incognito) {}
+    bool incognito,
+    bool use_default)
+    : theme_service_(theme_service),
+      incognito_(incognito),
+      use_default_(use_default) {}
 
 ThemeService::BrowserThemeProvider::~BrowserThemeProvider() {}
 
 gfx::ImageSkia* ThemeService::BrowserThemeProvider::GetImageSkiaNamed(
     int id) const {
+  DefaultScope scope(*this);
   return theme_service_.GetImageSkiaNamed(id, incognito_);
 }
 
 SkColor ThemeService::BrowserThemeProvider::GetColor(int id) const {
+  DefaultScope scope(*this);
   return theme_service_.GetColor(id, incognito_);
 }
 
 color_utils::HSL ThemeService::BrowserThemeProvider::GetTint(int id) const {
+  DefaultScope scope(*this);
   return theme_service_.GetTint(id, incognito_);
 }
 
 int ThemeService::BrowserThemeProvider::GetDisplayProperty(int id) const {
+  DefaultScope scope(*this);
   return theme_service_.GetDisplayProperty(id);
 }
 
 bool ThemeService::BrowserThemeProvider::ShouldUseNativeFrame() const {
+  DefaultScope scope(*this);
   return theme_service_.ShouldUseNativeFrame();
 }
 
 bool ThemeService::BrowserThemeProvider::HasCustomImage(int id) const {
+  DefaultScope scope(*this);
   return theme_service_.HasCustomImage(id);
 }
 
 bool ThemeService::BrowserThemeProvider::HasCustomColor(int id) const {
+  DefaultScope scope(*this);
   bool has_custom_color = false;
   theme_service_.GetColor(id, incognito_, &has_custom_color);
   return has_custom_color;
@@ -176,6 +223,7 @@ bool ThemeService::BrowserThemeProvider::HasCustomColor(int id) const {
 base::RefCountedMemory* ThemeService::BrowserThemeProvider::GetRawData(
     int id,
     ui::ScaleFactor scale_factor) const {
+  DefaultScope scope(*this);
   return theme_service_.GetRawData(id, scale_factor);
 }
 
@@ -262,8 +310,9 @@ ThemeService::ThemeService()
       profile_(nullptr),
       installed_pending_load_id_(kDefaultThemeID),
       number_of_infobars_(0),
-      original_theme_provider_(*this, false),
-      incognito_theme_provider_(*this, true),
+      original_theme_provider_(*this, false, false),
+      incognito_theme_provider_(*this, true, false),
+      default_theme_provider_(*this, false, true),
       weak_ptr_factory_(this) {}
 
 ThemeService::~ThemeService() {
@@ -426,6 +475,14 @@ const ui::ThemeProvider& ThemeService::GetThemeProviderForProfile(
   bool incognito = profile->GetProfileType() == Profile::INCOGNITO_PROFILE;
   return incognito ? service->incognito_theme_provider_
                    : service->original_theme_provider_;
+}
+
+// static
+const ui::ThemeProvider& ThemeService::GetDefaultThemeProviderForProfile(
+    Profile* profile) {
+  DCHECK_NE(profile->GetProfileType(), Profile::INCOGNITO_PROFILE)
+      << "Incognito default theme access not implemented, add if needed.";
+  return ThemeServiceFactory::GetForProfile(profile)->default_theme_provider_;
 }
 
 void ThemeService::SetCustomDefaultTheme(
@@ -627,56 +684,37 @@ bool ThemeService::HasCustomImage(int id) const {
 // static
 SkColor ThemeService::GetSeparatorColor(SkColor tab_color,
                                         SkColor frame_color) {
-  // We use this alpha value for the separator if possible.
-  const SkAlpha kAlpha = 0x40;
+  const float kContrastRatio = 2.f;
 
   // In most cases, if the tab is lighter than the frame, we darken the
   // frame; if the tab is darker than the frame, we lighten the frame.
   // However, if the frame is already very dark or very light, respectively,
   // this won't contrast sufficiently with the frame color, so we'll need to
   // reverse when we're lightening and darkening.
-  const float tab_luminance = color_utils::GetRelativeLuminance(tab_color);
-  const float frame_luminance = color_utils::GetRelativeLuminance(frame_color);
-  const bool lighten = tab_luminance < frame_luminance;
-  SkColor separator_color = lighten ? SK_ColorWHITE : SK_ColorBLACK;
-  float separator_luminance = color_utils::GetRelativeLuminance(
-      color_utils::AlphaBlend(separator_color, frame_color, kAlpha));
-  // The minimum contrast ratio here is just under the ~1.1469 in the default MD
-  // incognito theme.  We want the separator to still darken the frame in that
-  // theme, but that's about as low of contrast as we're willing to accept.
-  const float kMinContrastRatio = 1.1465f;
-  if (color_utils::GetContrastRatio(separator_luminance, frame_luminance) >=
-      kMinContrastRatio)
-    return SkColorSetA(separator_color, kAlpha);
+  const bool lighten = color_utils::GetRelativeLuminance(tab_color) <
+                       color_utils::GetRelativeLuminance(frame_color);
+  SkColor separator_color =
+      lighten ? SK_ColorWHITE : color_utils::GetDarkestColor();
 
-  // We need to reverse whether we're darkening or lightening.  We know the new
-  // separator color will contrast with the frame; check whether it also
-  // contrasts at least as well with the tab.
-  separator_color = color_utils::InvertColor(separator_color);
-  separator_luminance = color_utils::GetRelativeLuminance(
-      color_utils::AlphaBlend(separator_color, frame_color, kAlpha));
-  if (color_utils::GetContrastRatio(separator_luminance, tab_luminance) >=
-      color_utils::GetContrastRatio(separator_luminance, frame_luminance))
-    return SkColorSetA(separator_color, kAlpha);
-
-  // The reversed separator doesn't contrast enough with the tab.  Compute the
-  // resulting luminance from adjusting the tab color, instead of the frame
-  // color, by the separator color.
-  const float target_luminance = color_utils::GetRelativeLuminance(
-      color_utils::AlphaBlend(separator_color, tab_color, kAlpha));
-
-  // Now try to compute an alpha for the separator such that, when blended with
-  // the frame, it results in the above luminance.  Because the luminance
-  // computation is not easily invertible, we use a binary search over the
-  // possible range of alpha values.
-  SkAlpha alpha = 128;
-  for (int delta = lighten ? 64 : -64; delta != 0; delta /= 2) {
-    const float luminance = color_utils::GetRelativeLuminance(
-        color_utils::AlphaBlend(separator_color, frame_color, alpha));
-    if (luminance == target_luminance)
-      break;
-    alpha += (luminance < target_luminance) ? -delta : delta;
+  SkAlpha alpha = color_utils::FindBlendValueForContrastRatio(
+      frame_color, separator_color, frame_color, kContrastRatio, 0);
+  if (color_utils::GetContrastRatio(
+          color_utils::AlphaBlend(separator_color, frame_color, alpha),
+          frame_color) >= kContrastRatio) {
+    return SkColorSetA(separator_color, alpha);
   }
+
+  separator_color =
+      color_utils::BlendTowardOppositeLuma(separator_color, SK_AlphaOPAQUE);
+
+  // If the above call failed to create sufficient contrast, the frame color is
+  // already very dark or very light.  Since separators are only used when the
+  // tab has low contrast against the frame, the tab color is similarly very
+  // dark or very light, just not quite as much so as the frame color.  Blend
+  // towards the opposite separator color, and compute the contrast against the
+  // tab instead of the frame to ensure both contrasts hit the desired minimum.
+  alpha = color_utils::FindBlendValueForContrastRatio(
+      frame_color, separator_color, tab_color, kContrastRatio, 0);
   return SkColorSetA(separator_color, alpha);
 }
 

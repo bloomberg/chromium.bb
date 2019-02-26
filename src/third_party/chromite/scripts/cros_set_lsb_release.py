@@ -41,7 +41,6 @@ LSB_KEY_BUILD_TYPE = 'CHROMEOS_RELEASE_BUILD_TYPE'
 LSB_KEY_DESCRIPTION = 'CHROMEOS_RELEASE_DESCRIPTION'
 LSB_KEY_BOARD = 'CHROMEOS_RELEASE_BOARD'
 LSB_KEY_KEYSET = 'CHROMEOS_RELEASE_KEYSET'
-LSB_KEY_MODELS = 'CHROMEOS_RELEASE_MODELS'
 LSB_KEY_UNIBUILD = 'CHROMEOS_RELEASE_UNIBUILD'
 LSB_KEY_BRANCH_NUMBER = 'CHROMEOS_RELEASE_BRANCH_NUMBER'
 LSB_KEY_BUILD_NUMBER = 'CHROMEOS_RELEASE_BUILD_NUMBER'
@@ -160,9 +159,7 @@ def main(argv):
         LSB_KEY_BOARD: opts.keyset,
     })
 
-  board_and_models = opts.board
-  if opts.models:
-    board_and_models += '-unibuild (%s)' % opts.models
+  board = opts.board
   if opts.official:
     # Official builds (i.e. buildbot).
     track = 'dev-channel'
@@ -175,7 +172,7 @@ def main(argv):
                               (opts.version_string,
                                build_type,
                                track,
-                               board_and_models)),
+                               board)),
         LSB_KEY_AUSERVER: 'https://tools.google.com/service/update2',
         LSB_KEY_DEVSERVER: '',
     })
@@ -187,7 +184,7 @@ def main(argv):
         LSB_KEY_BUILD_TYPE: build_type,
         LSB_KEY_DESCRIPTION: '%s (%s) %s' % (opts.version_string,
                                              build_type,
-                                             board_and_models),
+                                             board),
     })
   else:
     # Developer manual builds.
@@ -198,7 +195,7 @@ def main(argv):
         LSB_KEY_DESCRIPTION: '%s (%s) %s %s' % (opts.version_string,
                                                 build_type,
                                                 opts.track,
-                                                board_and_models),
+                                                board),
     })
 
   fields.update({
@@ -212,6 +209,5 @@ def main(argv):
   })
   if opts.models:
     fields[LSB_KEY_UNIBUILD] = '1'
-    fields[LSB_KEY_MODELS] = opts.models
 
   image_lib.WriteLsbRelease(opts.sysroot, fields)

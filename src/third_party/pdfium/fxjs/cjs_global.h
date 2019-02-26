@@ -11,10 +11,11 @@
 #include <memory>
 #include <vector>
 
-#include "fxjs/cjs_keyvalue.h"
-#include "fxjs/js_define.h"
+#include "fxjs/cfx_keyvalue.h"
+#include "fxjs/cjs_object.h"
+#include "fxjs/cjs_result.h"
 
-class CJS_GlobalData;
+class CFX_GlobalData;
 
 class CJS_Global final : public CJS_Object {
  public:
@@ -50,17 +51,14 @@ class CJS_Global final : public CJS_Object {
                          v8::Local<v8::Value> vp);
 
  private:
-  struct JSGlobalData {
+  struct JSGlobalData : public CFX_Value {
+   public:
     JSGlobalData();
     ~JSGlobalData();
 
-    JS_GlobalDataType nType;
-    double dData;
-    bool bData;
-    ByteString sData;
     v8::Global<v8::Object> pData;
-    bool bPersistent;
-    bool bDeleted;
+    bool bPersistent = false;
+    bool bDeleted = false;
   };
 
   static int ObjDefnID;
@@ -70,7 +68,7 @@ class CJS_Global final : public CJS_Object {
   void CommitGlobalPersisitentVariables(CJS_Runtime* pRuntime);
   void DestroyGlobalPersisitentVariables();
   CJS_Result SetGlobalVariables(const ByteString& propname,
-                                JS_GlobalDataType nType,
+                                CFX_Value::DataType nType,
                                 double dData,
                                 bool bData,
                                 const ByteString& sData,
@@ -78,12 +76,12 @@ class CJS_Global final : public CJS_Object {
                                 bool bDefaultPersistent);
   void ObjectToArray(CJS_Runtime* pRuntime,
                      v8::Local<v8::Object> pObj,
-                     CJS_GlobalVariableArray* pArray);
-  void PutObjectProperty(v8::Local<v8::Object> obj, CJS_KeyValue* pData);
+                     CFX_GlobalArray* pArray);
+  void PutObjectProperty(v8::Local<v8::Object> obj, CFX_KeyValue* pData);
 
   std::map<ByteString, std::unique_ptr<JSGlobalData>> m_MapGlobal;
   WideString m_sFilePath;
-  CJS_GlobalData* m_pGlobalData;
+  CFX_GlobalData* m_pGlobalData;
   CPDFSDK_FormFillEnvironment::ObservedPtr m_pFormFillEnv;
 };
 

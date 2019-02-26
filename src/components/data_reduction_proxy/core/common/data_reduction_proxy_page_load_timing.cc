@@ -18,6 +18,11 @@ DataReductionProxyPageLoadTiming::DataReductionProxyPageLoadTiming(
         parse_blocked_on_script_load_duration,
     const base::Optional<base::TimeDelta>& parse_stop,
     const base::Optional<base::TimeDelta>& page_end_time,
+    const base::Optional<base::TimeDelta>& lite_page_redirect_penalty,
+    const base::Optional<previews::ServerLitePageStatus>&
+        lite_page_redirect_status,
+    const base::Optional<base::TimeDelta>&
+        navigation_start_to_main_frame_fetch_start,
     int64_t network_bytes,
     int64_t original_network_bytes,
     int64_t total_page_size_bytes,
@@ -28,7 +33,8 @@ DataReductionProxyPageLoadTiming::DataReductionProxyPageLoadTiming(
     int host_id,
     PageloadMetrics_PageEndReason page_end_reason,
     uint32_t touch_count,
-    uint32_t scroll_count)
+    uint32_t scroll_count,
+    uint32_t redirect_count)
     : navigation_start(navigation_start),
       response_start(response_start),
       load_event_start(load_event_start),
@@ -40,6 +46,10 @@ DataReductionProxyPageLoadTiming::DataReductionProxyPageLoadTiming(
           parse_blocked_on_script_load_duration),
       parse_stop(parse_stop),
       page_end_time(page_end_time),
+      lite_page_redirect_penalty(lite_page_redirect_penalty),
+      lite_page_redirect_status(lite_page_redirect_status),
+      navigation_start_to_main_frame_fetch_start(
+          navigation_start_to_main_frame_fetch_start),
       network_bytes(network_bytes),
       original_network_bytes(original_network_bytes),
       total_page_size_bytes(total_page_size_bytes),
@@ -50,7 +60,8 @@ DataReductionProxyPageLoadTiming::DataReductionProxyPageLoadTiming(
       host_id(host_id),
       page_end_reason(page_end_reason),
       touch_count(touch_count),
-      scroll_count(scroll_count) {}
+      scroll_count(scroll_count),
+      redirect_count(redirect_count) {}
 
 DataReductionProxyPageLoadTiming::DataReductionProxyPageLoadTiming(
     const DataReductionProxyPageLoadTiming& other) = default;

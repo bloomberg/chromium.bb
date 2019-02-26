@@ -42,7 +42,7 @@ DocumentXPathEvaluator& DocumentXPathEvaluator::From(Document& document) {
   DocumentXPathEvaluator* cache =
       Supplement<Document>::From<DocumentXPathEvaluator>(document);
   if (!cache) {
-    cache = new DocumentXPathEvaluator(document);
+    cache = MakeGarbageCollected<DocumentXPathEvaluator>(document);
     Supplement<Document>::ProvideTo(document, cache);
   }
   return *cache;

@@ -40,14 +40,16 @@ void StyleNonInheritedVariables::RemoveVariable(const AtomicString& name) {
 }
 
 StyleNonInheritedVariables::StyleNonInheritedVariables()
-    : registered_data_(new HeapHashMap<AtomicString, Member<CSSValue>>),
+    : registered_data_(
+          MakeGarbageCollected<HeapHashMap<AtomicString, Member<CSSValue>>>()),
       needs_resolution_(false) {}
 
 StyleNonInheritedVariables::StyleNonInheritedVariables(
     StyleNonInheritedVariables& other) {
   data_ = other.data_;
   registered_data_ =
-      new HeapHashMap<AtomicString, Member<CSSValue>>(*other.registered_data_);
+      MakeGarbageCollected<HeapHashMap<AtomicString, Member<CSSValue>>>(
+          *other.registered_data_);
   needs_resolution_ = other.needs_resolution_;
 }
 

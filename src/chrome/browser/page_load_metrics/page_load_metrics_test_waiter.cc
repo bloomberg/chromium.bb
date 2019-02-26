@@ -43,9 +43,9 @@ void PageLoadMetricsTestWaiter::AddMinimumCompleteResourcesExpectation(
   expected_minimum_complete_resources_ = expected_minimum_complete_resources;
 }
 
-void PageLoadMetricsTestWaiter::AddMinimumResourceBytesExpectation(
-    int expected_minimum_resource_bytes) {
-  expected_minimum_resource_bytes_ = expected_minimum_resource_bytes;
+void PageLoadMetricsTestWaiter::AddMinimumNetworkBytesExpectation(
+    int expected_minimum_network_bytes) {
+  expected_minimum_network_bytes_ = expected_minimum_network_bytes;
 }
 
 bool PageLoadMetricsTestWaiter::DidObserveInPage(TimingField field) const {
@@ -117,9 +117,12 @@ void PageLoadMetricsTestWaiter::OnResourceDataUseObserved(
                               std::forward_as_tuple(resource->request_id),
                               std::forward_as_tuple(resource->Clone()));
     }
-    if (resource->is_complete)
+    if (resource->is_complete) {
       current_complete_resources_++;
-    current_resource_bytes_ += resource->delta_bytes;
+      if (!resource->was_fetched_via_cache)
+        current_network_body_bytes_ += resource->encoded_body_length;
+    }
+    current_network_bytes_ += resource->delta_bytes;
   }
   if (ExpectationsSatisfied() && run_loop_)
     run_loop_->Quit();
@@ -186,8 +189,8 @@ bool PageLoadMetricsTestWaiter::ResourceUseExpectationsSatisfied() const {
   return (expected_minimum_complete_resources_ == 0 ||
           current_complete_resources_ >=
               expected_minimum_complete_resources_) &&
-         (expected_minimum_resource_bytes_ == 0 ||
-          current_resource_bytes_ >= expected_minimum_resource_bytes_);
+         (expected_minimum_network_bytes_ == 0 ||
+          current_network_bytes_ >= expected_minimum_network_bytes_);
 }
 
 bool PageLoadMetricsTestWaiter::ExpectationsSatisfied() const {

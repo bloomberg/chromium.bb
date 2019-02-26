@@ -24,17 +24,17 @@ void PictureInPictureWindow::OnResize(const WebSize& size) {
     return;
 
   size_ = size;
-  DispatchEvent(*Event::Create(EventTypeNames::resize));
+  DispatchEvent(*Event::Create(event_type_names::kResize));
 }
 
 const AtomicString& PictureInPictureWindow::InterfaceName() const {
-  return EventTargetNames::PictureInPictureWindow;
+  return event_target_names::kPictureInPictureWindow;
 }
 
 void PictureInPictureWindow::AddedEventListener(
     const AtomicString& event_type,
     RegisteredEventListener& registered_listener) {
-  if (event_type == EventTypeNames::resize) {
+  if (event_type == event_type_names::kResize) {
     UseCounter::Count(GetExecutionContext(),
                       WebFeature::kPictureInPictureWindowResizeEventListener);
   }

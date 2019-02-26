@@ -7,17 +7,17 @@ package org.chromium.chrome.browser.download;
 import static android.app.DownloadManager.ACTION_NOTIFICATION_CLICKED;
 import static android.app.DownloadManager.EXTRA_NOTIFICATION_CLICK_DOWNLOAD_IDS;
 
-import static org.chromium.chrome.browser.download.DownloadNotificationService2.ACTION_DOWNLOAD_CANCEL;
-import static org.chromium.chrome.browser.download.DownloadNotificationService2.ACTION_DOWNLOAD_OPEN;
-import static org.chromium.chrome.browser.download.DownloadNotificationService2.ACTION_DOWNLOAD_PAUSE;
-import static org.chromium.chrome.browser.download.DownloadNotificationService2.ACTION_DOWNLOAD_RESUME;
-import static org.chromium.chrome.browser.download.DownloadNotificationService2.EXTRA_DOWNLOAD_CONTENTID_ID;
-import static org.chromium.chrome.browser.download.DownloadNotificationService2.EXTRA_DOWNLOAD_CONTENTID_NAMESPACE;
-import static org.chromium.chrome.browser.download.DownloadNotificationService2.EXTRA_DOWNLOAD_FILE_PATH;
-import static org.chromium.chrome.browser.download.DownloadNotificationService2.EXTRA_DOWNLOAD_STATE_AT_CANCEL;
-import static org.chromium.chrome.browser.download.DownloadNotificationService2.EXTRA_IS_OFF_THE_RECORD;
-import static org.chromium.chrome.browser.download.DownloadNotificationService2.EXTRA_IS_SUPPORTED_MIME_TYPE;
-import static org.chromium.chrome.browser.download.DownloadNotificationService2.EXTRA_NOTIFICATION_BUNDLE_ICON_ID;
+import static org.chromium.chrome.browser.download.DownloadNotificationService.ACTION_DOWNLOAD_CANCEL;
+import static org.chromium.chrome.browser.download.DownloadNotificationService.ACTION_DOWNLOAD_OPEN;
+import static org.chromium.chrome.browser.download.DownloadNotificationService.ACTION_DOWNLOAD_PAUSE;
+import static org.chromium.chrome.browser.download.DownloadNotificationService.ACTION_DOWNLOAD_RESUME;
+import static org.chromium.chrome.browser.download.DownloadNotificationService.EXTRA_DOWNLOAD_CONTENTID_ID;
+import static org.chromium.chrome.browser.download.DownloadNotificationService.EXTRA_DOWNLOAD_CONTENTID_NAMESPACE;
+import static org.chromium.chrome.browser.download.DownloadNotificationService.EXTRA_DOWNLOAD_FILE_PATH;
+import static org.chromium.chrome.browser.download.DownloadNotificationService.EXTRA_DOWNLOAD_STATE_AT_CANCEL;
+import static org.chromium.chrome.browser.download.DownloadNotificationService.EXTRA_IS_OFF_THE_RECORD;
+import static org.chromium.chrome.browser.download.DownloadNotificationService.EXTRA_IS_SUPPORTED_MIME_TYPE;
+import static org.chromium.chrome.browser.download.DownloadNotificationService.EXTRA_NOTIFICATION_BUNDLE_ICON_ID;
 
 import android.app.Notification;
 import android.app.PendingIntent;
@@ -40,6 +40,7 @@ import org.chromium.chrome.browser.notifications.channels.ChannelDefinitions;
 import org.chromium.chrome.browser.util.UrlUtilities;
 import org.chromium.components.offline_items_collection.ContentId;
 import org.chromium.components.offline_items_collection.LegacyHelpers;
+import org.chromium.components.offline_items_collection.OfflineItem;
 import org.chromium.components.offline_items_collection.PendingState;
 import org.chromium.components.url_formatter.UrlFormatter;
 
@@ -65,7 +66,7 @@ public final class DownloadNotificationFactory {
      * @return Notification that is built based on these parameters.
      */
     public static Notification buildNotification(Context context,
-            @DownloadNotificationService2.DownloadStatus int downloadStatus,
+            @DownloadNotificationService.DownloadStatus int downloadStatus,
             DownloadUpdate downloadUpdate) {
         ChromeNotificationBuilder builder =
                 NotificationBuilderFactory
@@ -79,7 +80,7 @@ public final class DownloadNotificationFactory {
         int iconId;
 
         switch (downloadStatus) {
-            case DownloadNotificationService2.DownloadStatus.IN_PROGRESS:
+            case DownloadNotificationService.DownloadStatus.IN_PROGRESS:
                 Preconditions.checkNotNull(downloadUpdate.getProgress());
                 Preconditions.checkNotNull(downloadUpdate.getContentId());
                 Preconditions.checkArgument(downloadUpdate.getNotificationId() != -1);
@@ -88,8 +89,11 @@ public final class DownloadNotificationFactory {
                     contentText =
                             DownloadUtils.getPendingStatusString(downloadUpdate.getPendingState());
                 } else {
-                    contentText = DownloadUtils.getProgressTextForNotification(
-                            downloadUpdate.getProgress());
+                    // Incognito mode should hide download progress details like file size.
+                    OfflineItem.Progress progress = downloadUpdate.getIsOffTheRecord()
+                            ? OfflineItem.Progress.createIndeterminateProgress()
+                            : downloadUpdate.getProgress();
+                    contentText = DownloadUtils.getProgressTextForNotification(progress);
                 }
 
                 iconId = downloadUpdate.getIsDownloadPending()
@@ -154,7 +158,7 @@ public final class DownloadNotificationFactory {
                 }
 
                 break;
-            case DownloadNotificationService2.DownloadStatus.PAUSED:
+            case DownloadNotificationService.DownloadStatus.PAUSED:
                 Preconditions.checkNotNull(downloadUpdate.getContentId());
                 Preconditions.checkArgument(downloadUpdate.getNotificationId() != -1);
 
@@ -190,7 +194,7 @@ public final class DownloadNotificationFactory {
                 }
 
                 break;
-            case DownloadNotificationService2.DownloadStatus.COMPLETED:
+            case DownloadNotificationService.DownloadStatus.COMPLETED:
                 Preconditions.checkArgument(downloadUpdate.getNotificationId() != -1);
 
                 // Don't show file size in incognito mode.
@@ -247,7 +251,7 @@ public final class DownloadNotificationFactory {
                     builder.setLargeIcon(downloadUpdate.getIcon());
 
                 break;
-            case DownloadNotificationService2.DownloadStatus.FAILED:
+            case DownloadNotificationService.DownloadStatus.FAILED:
                 iconId = android.R.drawable.stat_sys_download_done;
                 contentText = DownloadUtils.getFailStatusString(downloadUpdate.getFailState());
                 break;
@@ -275,8 +279,8 @@ public final class DownloadNotificationFactory {
         }
 
         if (!downloadUpdate.getIsTransient() && downloadUpdate.getNotificationId() != -1
-                && downloadStatus != DownloadNotificationService2.DownloadStatus.COMPLETED
-                && downloadStatus != DownloadNotificationService2.DownloadStatus.FAILED) {
+                && downloadStatus != DownloadNotificationService.DownloadStatus.COMPLETED
+                && downloadStatus != DownloadNotificationService.DownloadStatus.FAILED) {
             Intent downloadHomeIntent = buildActionIntent(
                     context, ACTION_NOTIFICATION_CLICKED, null, downloadUpdate.getIsOffTheRecord());
             builder.setContentIntent(

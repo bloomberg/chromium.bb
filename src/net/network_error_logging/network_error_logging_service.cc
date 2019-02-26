@@ -113,50 +113,28 @@ const struct {
     // TODO(juliatuttle): Surely there are more errors we want here.
 };
 
-bool GetPhaseAndTypeFromNetError(Error error,
+void GetPhaseAndTypeFromNetError(Error error,
                                  std::string* phase_out,
                                  std::string* type_out) {
   for (size_t i = 0; i < arraysize(kErrorTypes); ++i) {
     if (kErrorTypes[i].error == error) {
       *phase_out = kErrorTypes[i].phase;
       *type_out = kErrorTypes[i].type;
-      return true;
+      return;
     }
   }
-  return false;
+  *phase_out = IsCertificateError(error) ? kConnectionPhase : kApplicationPhase;
+  *type_out = "unknown";
 }
 
 bool IsHttpError(const NetworkErrorLoggingService::RequestDetails& request) {
   return request.status_code >= 400 && request.status_code < 600;
 }
 
-enum class HeaderOutcome {
-  DISCARDED_NO_NETWORK_ERROR_LOGGING_SERVICE = 0,
-  DISCARDED_INVALID_SSL_INFO = 1,
-  DISCARDED_CERT_STATUS_ERROR = 2,
-
-  DISCARDED_INSECURE_ORIGIN = 3,
-
-  DISCARDED_JSON_TOO_BIG = 4,
-  DISCARDED_JSON_INVALID = 5,
-  DISCARDED_NOT_DICTIONARY = 6,
-  DISCARDED_TTL_MISSING = 7,
-  DISCARDED_TTL_NOT_INTEGER = 8,
-  DISCARDED_TTL_NEGATIVE = 9,
-  DISCARDED_REPORT_TO_MISSING = 10,
-  DISCARDED_REPORT_TO_NOT_STRING = 11,
-
-  REMOVED = 12,
-  SET = 13,
-
-  DISCARDED_MISSING_REMOTE_ENDPOINT = 14,
-
-  MAX
-};
-
-void RecordHeaderOutcome(HeaderOutcome outcome) {
-  UMA_HISTOGRAM_ENUMERATION("Net.NetworkErrorLogging.HeaderOutcome", outcome,
-                            HeaderOutcome::MAX);
+void RecordHeaderOutcome(NetworkErrorLoggingService::HeaderOutcome outcome) {
+  UMA_HISTOGRAM_ENUMERATION(NetworkErrorLoggingService::kHeaderOutcomeHistogram,
+                            outcome,
+                            NetworkErrorLoggingService::HeaderOutcome::MAX);
 }
 
 enum class RequestOutcome {
@@ -220,6 +198,7 @@ class NetworkErrorLoggingServiceImpl : public NetworkErrorLoggingService {
     if (policy.expires.is_null())
       return;
 
+    DVLOG(1) << "Received NEL policy for " << origin;
     auto inserted = policies_.insert(std::make_pair(origin, policy));
     DCHECK(inserted.second);
     MaybeAddWildcardPolicy(origin, &inserted.first->second);
@@ -260,10 +239,7 @@ class NetworkErrorLoggingServiceImpl : public NetworkErrorLoggingService {
 
     std::string phase_string;
     std::string type_string;
-    if (!GetPhaseAndTypeFromNetError(type, &phase_string, &type_string)) {
-      RecordRequestOutcome(RequestOutcome::DISCARDED_UNMAPPED_ERROR);
-      return;
-    }
+    GetPhaseAndTypeFromNetError(type, &phase_string, &type_string);
 
     if (IsHttpError(details)) {
       phase_string = kApplicationPhase;
@@ -308,6 +284,10 @@ class NetworkErrorLoggingServiceImpl : public NetworkErrorLoggingService {
       return;
     }
 
+    DVLOG(1) << "Created NEL report (" << type_string
+             << ", status=" << details.status_code
+             << ", depth=" << details.reporting_upload_depth << ") for "
+             << details.uri;
     reporting_service_->QueueReport(
         details.uri, details.user_agent, policy->report_to, kReportType,
         CreateReportBody(phase_string, type_string, sampling_fraction, details),
@@ -577,6 +557,10 @@ NetworkErrorLoggingService::RequestDetails::~RequestDetails() = default;
 const char NetworkErrorLoggingService::kHeaderName[] = "NEL";
 
 const char NetworkErrorLoggingService::kReportType[] = "network-error";
+
+// static
+const char NetworkErrorLoggingService::kHeaderOutcomeHistogram[] =
+    "Net.NetworkErrorLogging.HeaderOutcome";
 
 // Allow NEL reports on regular requests, plus NEL reports on Reporting uploads
 // containing only regular requests, but do not allow NEL reports on Reporting

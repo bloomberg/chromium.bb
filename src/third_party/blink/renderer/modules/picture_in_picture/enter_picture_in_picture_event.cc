@@ -14,7 +14,7 @@ EnterPictureInPictureEvent* EnterPictureInPictureEvent::Create(
 
 EnterPictureInPictureEvent* EnterPictureInPictureEvent::Create(
     const AtomicString& type,
-    const EnterPictureInPictureEventInit& initializer) {
+    const EnterPictureInPictureEventInit* initializer) {
   return new EnterPictureInPictureEvent(type, initializer);
 }
 
@@ -31,9 +31,9 @@ EnterPictureInPictureEvent::EnterPictureInPictureEvent(
 
 EnterPictureInPictureEvent::EnterPictureInPictureEvent(
     AtomicString const& type,
-    const EnterPictureInPictureEventInit& initializer)
+    const EnterPictureInPictureEventInit* initializer)
     : Event(type, initializer),
-      picture_in_picture_window_(initializer.pictureInPictureWindow()) {}
+      picture_in_picture_window_(initializer->pictureInPictureWindow()) {}
 
 void EnterPictureInPictureEvent::Trace(blink::Visitor* visitor) {
   visitor->Trace(picture_in_picture_window_);

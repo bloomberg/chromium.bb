@@ -41,7 +41,6 @@ class UtilityProcessHostBrowserTest : public BrowserChildProcessObserver,
   void RunUtilityProcess(bool elevated, bool crash) {
     DCHECK_CURRENTLY_ON(BrowserThread::UI);
     BrowserChildProcessObserver::Add(this);
-    has_launched = false;
     has_crashed = false;
     base::RunLoop run_loop;
     done_closure_ =
@@ -59,7 +58,6 @@ class UtilityProcessHostBrowserTest : public BrowserChildProcessObserver,
   void DoneRunning(base::OnceClosure quit_closure, bool expect_crashed) {
     DCHECK_CURRENTLY_ON(BrowserThread::UI);
     BrowserChildProcessObserver::Remove(this);
-    EXPECT_EQ(true, has_launched);
     EXPECT_EQ(expect_crashed, has_crashed);
     std::move(quit_closure).Run();
   }
@@ -108,7 +106,6 @@ class UtilityProcessHostBrowserTest : public BrowserChildProcessObserver,
   base::OnceClosure done_closure_;
 
   // Access on UI thread.
-  bool has_launched;
   bool has_crashed;
 
  private:
@@ -130,7 +127,6 @@ class UtilityProcessHostBrowserTest : public BrowserChildProcessObserver,
       const ChildProcessData& data,
       const ChildProcessTerminationInfo& info) override {
     DCHECK_CURRENTLY_ON(BrowserThread::UI);
-    EXPECT_EQ(true, has_launched);
 #if defined(OS_WIN)
     EXPECT_EQ(EXCEPTION_BREAKPOINT, DWORD{info.exit_code});
 #elif defined(OS_MACOSX) || defined(OS_LINUX)
@@ -146,30 +142,13 @@ class UtilityProcessHostBrowserTest : public BrowserChildProcessObserver,
                        base::Unretained(this)));
     std::move(done_closure_).Run();
   }
-
-  void BrowserChildProcessLaunchedAndConnected(
-      const ChildProcessData& data) override {
-    DCHECK_CURRENTLY_ON(BrowserThread::UI);
-    // Multiple child processes might be launched, check just for ours.
-    if (data.metrics_name == kTestProcessName) {
-      EXPECT_EQ(false, has_launched);
-      has_launched = true;
-    }
-  }
 };
 
 IN_PROC_BROWSER_TEST_F(UtilityProcessHostBrowserTest, LaunchProcess) {
   RunUtilityProcess(false, false);
 }
 
-// Flaky on Windows, crbug.com/879555
-#if defined(OS_WIN)
-#define MAYBE_LaunchProcessAndCrash DISABLED_LaunchProcessAndCrash
-#else
-#define MAYBE_LaunchProcessAndCrash LaunchProcessAndCrash
-#endif
-IN_PROC_BROWSER_TEST_F(UtilityProcessHostBrowserTest,
-                       MAYBE_LaunchProcessAndCrash) {
+IN_PROC_BROWSER_TEST_F(UtilityProcessHostBrowserTest, LaunchProcessAndCrash) {
   RunUtilityProcess(false, true);
 }
 

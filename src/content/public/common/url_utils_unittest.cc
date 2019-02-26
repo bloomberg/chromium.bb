@@ -5,7 +5,6 @@
 #include "content/public/common/url_utils.h"
 
 #include "build/build_config.h"
-#include "content/public/common/browser_side_navigation_policy.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "url/gurl.h"
 
@@ -43,6 +42,8 @@ TEST(UrlUtilsTest, IsSafeRedirectTarget) {
       GURL(), CreateValidURL("filesystem:http://foo.com/bar")));
   EXPECT_FALSE(
       IsSafeRedirectTarget(GURL(), CreateValidURL("data:text/plain,foo")));
+  EXPECT_FALSE(
+      IsSafeRedirectTarget(GURL(), CreateValidURL("blob:https://foo.com/bar")));
 #if defined(OS_ANDROID)
   EXPECT_FALSE(
       IsSafeRedirectTarget(GURL(), CreateValidURL("content://foo.bar")));

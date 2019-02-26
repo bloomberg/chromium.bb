@@ -26,6 +26,7 @@
 
 #include "third_party/blink/renderer/core/events/composition_event.h"
 
+#include "third_party/blink/renderer/core/event_interface_names.h"
 #include "third_party/blink/renderer/core/input/input_device_capabilities.h"
 
 namespace blink {
@@ -47,10 +48,10 @@ CompositionEvent::CompositionEvent(const AtomicString& type,
       data_(data) {}
 
 CompositionEvent::CompositionEvent(const AtomicString& type,
-                                   const CompositionEventInit& initializer)
+                                   const CompositionEventInit* initializer)
     : UIEvent(type, initializer) {
-  if (initializer.hasData())
-    data_ = initializer.data();
+  if (initializer->hasData())
+    data_ = initializer->data();
 }
 
 CompositionEvent::~CompositionEvent() = default;
@@ -69,7 +70,7 @@ void CompositionEvent::initCompositionEvent(const AtomicString& type,
 }
 
 const AtomicString& CompositionEvent::InterfaceName() const {
-  return EventNames::CompositionEvent;
+  return event_interface_names::kCompositionEvent;
 }
 
 bool CompositionEvent::IsCompositionEvent() const {

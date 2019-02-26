@@ -17,6 +17,16 @@ class AwWebContentsDelegate
  public:
   AwWebContentsDelegate(JNIEnv* env, jobject obj);
   ~AwWebContentsDelegate() override;
+
+  void RendererUnresponsive(
+      content::WebContents* source,
+      content::RenderWidgetHost* render_widget_host,
+      base::RepeatingClosure hang_monitor_restarter) override;
+
+  void RendererResponsive(
+      content::WebContents* source,
+      content::RenderWidgetHost* render_widget_host) override;
+
   content::JavaScriptDialogManager* GetJavaScriptDialogManager(
       content::WebContents* source) override;
   void FindReply(content::WebContents* web_contents,

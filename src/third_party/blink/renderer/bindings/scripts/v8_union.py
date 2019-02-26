@@ -145,12 +145,13 @@ def member_context(member, info_provider):
     _update_includes_and_forward_decls(member, info_provider)
     if member.is_nullable:
         member = member.inner_type
+    type_name = (member.inner_type if member.is_annotated_type else member).name
     return {
         'cpp_name': to_snake_case(v8_utilities.cpp_name(member)),
         'cpp_type': member.cpp_type_args(used_in_cpp_sequence=True),
         'cpp_local_type': member.cpp_type,
         'cpp_value_to_v8_value': member.cpp_value_to_v8_value(
-            cpp_value='impl.GetAs%s()' % member.name, isolate='isolate',
+            cpp_value='impl.GetAs%s()' % type_name, isolate='isolate',
             creation_context='creationContext'),
         'enum_type': member.enum_type,
         'enum_values': member.enum_values,
@@ -159,8 +160,8 @@ def member_context(member, info_provider):
         'is_traceable': member.is_traceable,
         'rvalue_cpp_type': member.cpp_type_args(used_as_rvalue_type=True),
         'specific_type_enum': 'k' + member.name,
-        'type_name': member.name,
+        'type_name': type_name,
         'v8_value_to_local_cpp_value': member.v8_value_to_local_cpp_value(
-            {}, 'v8Value', 'cppValue', isolate='isolate',
+            {}, 'v8_value', 'cpp_value', isolate='isolate',
             use_exception_state=True)
     }

@@ -11,13 +11,12 @@ import static org.junit.Assert.assertTrue;
 import static org.mockito.Mockito.any;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
-import android.app.Activity;
 import android.content.Intent;
 import android.content.IntentFilter;
-import android.media.AudioManager;
 import android.net.Uri;
 import android.os.PatternMatcher;
 
@@ -47,7 +46,6 @@ import java.util.List;
 @RunWith(BaseRobolectricTestRunner.class)
 @Config(manifest = Config.NONE)
 public class CastWebContentsSurfaceHelperTest {
-    private @Mock Activity mActivity;
     private @Mock Observer<WebContents> mWebContentsView;
     private @Mock Consumer<Uri> mFinishCallback;
     private CastWebContentsSurfaceHelper mSurfaceHelper;
@@ -120,8 +118,7 @@ public class CastWebContentsSurfaceHelperTest {
         MockitoAnnotations.initMocks(this);
         when(mMediaSessionGetter.get(any())).thenReturn(mMediaSessionImpl);
         when(mWebContentsView.open(any())).thenReturn(mock(Scope.class));
-        mSurfaceHelper =
-                new CastWebContentsSurfaceHelper(mActivity, mWebContentsView, mFinishCallback);
+        mSurfaceHelper = new CastWebContentsSurfaceHelper(mWebContentsView, mFinishCallback);
         mSurfaceHelper.setMediaSessionGetterForTesting(mMediaSessionGetter);
     }
 
@@ -173,6 +170,28 @@ public class CastWebContentsSurfaceHelperTest {
     }
 
     @Test
+    public void testDoesNotRestartWebContentsIfNewStartParamsHasSameWebContents() {
+        WebContents webContents = mock(WebContents.class);
+        // Create two StartParams that have the same WebContents but different values.
+        StartParams params1 = new StartParamsBuilder()
+                                      .withId("1")
+                                      .withWebContents(webContents)
+                                      .enableTouchInput(false)
+                                      .build();
+        StartParams params2 = new StartParamsBuilder()
+                                      .withId("1")
+                                      .withWebContents(webContents)
+                                      .enableTouchInput(true)
+                                      .build();
+        Scope scope = mock(Scope.class);
+        when(mWebContentsView.open(webContents)).thenReturn(scope);
+        mSurfaceHelper.onNewStartParams(params1);
+        // The second StartParams has the same WebContents, so we shouldn't open the scopes again.
+        mSurfaceHelper.onNewStartParams(params2);
+        verify(mWebContentsView, times(1)).open(webContents);
+    }
+
+    @Test
     public void testIsTouchInputEnabled() {
         assertFalse(mSurfaceHelper.isTouchInputEnabled());
         StartParams params1 = new StartParamsBuilder().enableTouchInput(true).build();
@@ -184,14 +203,14 @@ public class CastWebContentsSurfaceHelperTest {
     }
 
     @Test
-    public void testInstanceId() {
-        assertNull(mSurfaceHelper.getInstanceId());
-        StartParams params1 = new StartParamsBuilder().withId("/0").build();
+    public void testSessionId() {
+        assertNull(mSurfaceHelper.getSessionId());
+        StartParams params1 = new StartParamsBuilder().withId("/abc123").build();
         mSurfaceHelper.onNewStartParams(params1);
-        assertEquals("/0", mSurfaceHelper.getInstanceId());
-        StartParams params2 = new StartParamsBuilder().withId("/1").build();
+        assertEquals("/abc123", mSurfaceHelper.getSessionId());
+        StartParams params2 = new StartParamsBuilder().withId("/123-abc").build();
         mSurfaceHelper.onNewStartParams(params2);
-        assertEquals("/1", mSurfaceHelper.getInstanceId());
+        assertEquals("/123-abc", mSurfaceHelper.getSessionId());
     }
 
     @Test
@@ -263,13 +282,6 @@ public class CastWebContentsSurfaceHelperTest {
         // Send broadcast to enable touch input.
         sendBroadcastSync(CastWebContentsIntentUtils.enableTouchInput("1", false));
         assertFalse(mSurfaceHelper.isTouchInputEnabled());
-    }
-
-    @Test
-    public void testSetsVolumeControlStreamOfHostActivity() {
-        StartParams params = new StartParamsBuilder().build();
-        mSurfaceHelper.onNewStartParams(params);
-        verify(mActivity).setVolumeControlStream(AudioManager.STREAM_MUSIC);
     }
 
     @Test

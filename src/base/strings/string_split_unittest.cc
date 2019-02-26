@@ -21,6 +21,68 @@ class SplitStringIntoKeyValuePairsTest : public testing::Test {
   base::StringPairs kv_pairs;
 };
 
+using SplitStringIntoKeyValuePairsUsingSubstrTest =
+    SplitStringIntoKeyValuePairsTest;
+
+TEST_F(SplitStringIntoKeyValuePairsUsingSubstrTest, EmptyString) {
+  EXPECT_TRUE(
+      SplitStringIntoKeyValuePairsUsingSubstr(std::string(),
+                                              ':',  // Key-value delimiter
+                                              ",",  // Key-value pair delimiter
+                                              &kv_pairs));
+  EXPECT_TRUE(kv_pairs.empty());
+}
+
+TEST_F(SplitStringIntoKeyValuePairsUsingSubstrTest, MissingKeyValueDelimiter) {
+  EXPECT_FALSE(
+      SplitStringIntoKeyValuePairsUsingSubstr("key1,,key2:value2",
+                                              ':',   // Key-value delimiter
+                                              ",,",  // Key-value pair delimiter
+                                              &kv_pairs));
+  ASSERT_EQ(2U, kv_pairs.size());
+  EXPECT_TRUE(kv_pairs[0].first.empty());
+  EXPECT_TRUE(kv_pairs[0].second.empty());
+  EXPECT_EQ("key2", kv_pairs[1].first);
+  EXPECT_EQ("value2", kv_pairs[1].second);
+}
+
+TEST_F(SplitStringIntoKeyValuePairsUsingSubstrTest,
+       MissingKeyValuePairDelimeter) {
+  EXPECT_TRUE(SplitStringIntoKeyValuePairsUsingSubstr(
+      "key1:value1,,key3:value3",
+      ':',    // Key-value delimiter
+      ",,,",  // Key-value pair delimiter
+      &kv_pairs));
+  ASSERT_EQ(1U, kv_pairs.size());
+  EXPECT_EQ("key1", kv_pairs[0].first);
+  EXPECT_EQ("value1,,key3:value3", kv_pairs[0].second);
+}
+
+TEST_F(SplitStringIntoKeyValuePairsUsingSubstrTest, UntrimmedWhitespace) {
+  EXPECT_TRUE(
+      SplitStringIntoKeyValuePairsUsingSubstr("key1 : value1",
+                                              ':',  // Key-value delimiter
+                                              ",",  // Key-value pair delimiter
+                                              &kv_pairs));
+  ASSERT_EQ(1U, kv_pairs.size());
+  EXPECT_EQ("key1 ", kv_pairs[0].first);
+  EXPECT_EQ(" value1", kv_pairs[0].second);
+}
+
+TEST_F(SplitStringIntoKeyValuePairsUsingSubstrTest, OnlySplitAtGivenSeparator) {
+  std::string a("a ?!@#$%^&*()_+:/{}\\\t\nb");
+  EXPECT_TRUE(
+      SplitStringIntoKeyValuePairsUsingSubstr(a + "X" + a + "XY" + a + "YX" + a,
+                                              'X',   // Key-value delimiter
+                                              "XY",  // Key-value pair delimiter
+                                              &kv_pairs));
+  ASSERT_EQ(2U, kv_pairs.size());
+  EXPECT_EQ(a, kv_pairs[0].first);
+  EXPECT_EQ(a, kv_pairs[0].second);
+  EXPECT_EQ(a + 'Y', kv_pairs[1].first);
+  EXPECT_EQ(a, kv_pairs[1].second);
+}
+
 TEST_F(SplitStringIntoKeyValuePairsTest, EmptyString) {
   EXPECT_TRUE(SplitStringIntoKeyValuePairs(std::string(),
                                            ':',  // Key-value delimiter
@@ -371,15 +433,15 @@ TEST(StringSplitTest, SplitStringAlongWhitespace) {
     { "b\tat",   2, "b",  "at" },
     { "b\t at",  2, "b",  "at" },
   };
-  for (size_t i = 0; i < arraysize(data); ++i) {
-    std::vector<std::string> results = base::SplitString(
-        data[i].input, kWhitespaceASCII, base::KEEP_WHITESPACE,
-        base::SPLIT_WANT_NONEMPTY);
-    ASSERT_EQ(data[i].expected_result_count, results.size());
-    if (data[i].expected_result_count > 0)
-      ASSERT_EQ(data[i].output1, results[0]);
-    if (data[i].expected_result_count > 1)
-      ASSERT_EQ(data[i].output2, results[1]);
+  for (const auto& i : data) {
+    std::vector<std::string> results =
+        base::SplitString(i.input, kWhitespaceASCII, base::KEEP_WHITESPACE,
+                          base::SPLIT_WANT_NONEMPTY);
+    ASSERT_EQ(i.expected_result_count, results.size());
+    if (i.expected_result_count > 0)
+      ASSERT_EQ(i.output1, results[0]);
+    if (i.expected_result_count > 1)
+      ASSERT_EQ(i.output2, results[1]);
   }
 }
 

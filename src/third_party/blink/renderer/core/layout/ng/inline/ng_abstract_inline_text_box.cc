@@ -11,6 +11,7 @@
 #include "third_party/blink/renderer/core/paint/ng/ng_paint_fragment_traversal.h"
 #include "third_party/blink/renderer/platform/fonts/character_range.h"
 #include "third_party/blink/renderer/platform/fonts/shaping/shape_result_buffer.h"
+#include "third_party/blink/renderer/platform/fonts/shaping/shape_result_view.h"
 
 namespace blink {
 
@@ -146,9 +147,12 @@ void NGAbstractInlineTextBox::CharacterWidths(Vector<float>& widths) const {
     widths.resize(Len());
     return;
   }
-  const ShapeResult& shape_result = *PhysicalTextFragment().TextShapeResult();
+  // TODO(layout-dev): Add support for IndividualCharacterRanges to
+  // ShapeResultView to avoid the copy below.
+  auto shape_result =
+      PhysicalTextFragment().TextShapeResult()->CreateShapeResult();
   Vector<CharacterRange> ranges;
-  shape_result.IndividualCharacterRanges(&ranges);
+  shape_result->IndividualCharacterRanges(&ranges);
   widths.ReserveCapacity(ranges.size());
   widths.resize(0);
   for (const auto& range : ranges)

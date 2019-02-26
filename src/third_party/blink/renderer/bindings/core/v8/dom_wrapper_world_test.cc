@@ -23,9 +23,9 @@ Vector<scoped_refptr<DOMWrapperWorld>> CreateIsolatedWorlds(
     v8::Isolate* isolate) {
   Vector<scoped_refptr<DOMWrapperWorld>> worlds;
   worlds.push_back(DOMWrapperWorld::EnsureIsolatedWorld(
-      isolate, DOMWrapperWorld::WorldId::kMainWorldId + 1));
+      isolate, DOMWrapperWorld::kMainWorldId + 1));
   worlds.push_back(DOMWrapperWorld::EnsureIsolatedWorld(
-      isolate, DOMWrapperWorld::WorldId::kIsolatedWorldIdLimit - 1));
+      isolate, DOMWrapperWorld::kDOMWrapperWorldEmbedderWorldIdLimit - 1));
   EXPECT_TRUE(worlds[0]->IsIsolatedWorld());
   EXPECT_TRUE(worlds[1]->IsIsolatedWorld());
   return worlds;
@@ -116,7 +116,7 @@ TEST(DOMWrapperWorldTest, Basic) {
       ThreadCreationParams(WebThreadType::kTestThread)
           .SetThreadNameForTest("DOMWrapperWorld test thread"));
   scoped_refptr<base::SingleThreadTaskRunner> main_thread_task_runner =
-      Platform::Current()->CurrentThread()->GetTaskRunner();
+      Thread::Current()->GetTaskRunner();
   thread->BackingThread().PostTask(
       FROM_HERE,
       CrossThreadBind(&WorkerThreadFunc, CrossThreadUnretained(thread.get()),

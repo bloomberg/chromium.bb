@@ -33,15 +33,16 @@ namespace {
 
 class StopButton : public views::LabelButton {
  public:
-  StopButton(views::ButtonListener* button_listener,
+  StopButton(CastDialogSinkButton* owner,
+             views::ButtonListener* button_listener,
              const UIMediaSink& sink,
              int button_tag,
              bool enabled)
-      : views::LabelButton(button_listener, base::string16()) {
+      : views::LabelButton(button_listener, base::string16()), owner_(owner) {
     static const gfx::ImageSkia icon = CreateVectorIcon(
         kGenericStopIcon, kPrimaryIconSize, gfx::kGoogleBlue500);
     SetImage(views::Button::STATE_NORMAL, icon);
-    SetInkDropMode(views::InkDropHostView::InkDropMode::ON);
+    SetInkDropMode(InkDropMode::ON);
     set_tag(button_tag);
     SetBorder(views::CreateEmptyBorder(gfx::Insets(kPrimaryIconBorderWidth)));
     SetEnabled(enabled);
@@ -73,7 +74,19 @@ class StopButton : public views::LabelButton {
 
   bool CanProcessEventsWithinSubtree() const override { return true; }
 
+  // views::Button:
+  void StateChanged(ButtonState old_state) override {
+    if (state() == Button::STATE_HOVERED) {
+      owner_->OverrideStatusText(
+          l10n_util::GetStringUTF16(IDS_MEDIA_ROUTER_STOP_CASTING));
+    } else if (old_state == Button::STATE_HOVERED) {
+      owner_->RestoreStatusText();
+    }
+  }
+
  private:
+  CastDialogSinkButton* const owner_;
+
   DISALLOW_COPY_AND_ASSIGN(StopButton);
 };
 
@@ -117,14 +130,14 @@ gfx::ImageSkia CreateDisabledSinkIcon(SinkIconType icon_type) {
 }
 
 std::unique_ptr<views::View> CreatePrimaryIconForSink(
+    CastDialogSinkButton* sink_button,
     views::ButtonListener* button_listener,
     const UIMediaSink& sink,
     int button_tag) {
   // The stop button has the highest priority, and the issue icon comes second.
-  if (sink.state == UIMediaSinkState::CONNECTED ||
-      sink.state == UIMediaSinkState::DISCONNECTING) {
+  if (sink.state == UIMediaSinkState::CONNECTED) {
     return std::make_unique<StopButton>(
-        button_listener, sink, button_tag,
+        sink_button, button_listener, sink, button_tag,
         sink.state == UIMediaSinkState::CONNECTED);
   } else if (sink.issue) {
     auto icon_view = std::make_unique<views::ImageView>();
@@ -134,7 +147,8 @@ std::unique_ptr<views::View> CreatePrimaryIconForSink(
     icon_view->SetBorder(
         views::CreateEmptyBorder(gfx::Insets(kPrimaryIconBorderWidth)));
     return icon_view;
-  } else if (sink.state == UIMediaSinkState::CONNECTING) {
+  } else if (sink.state == UIMediaSinkState::CONNECTING ||
+             sink.state == UIMediaSinkState::DISCONNECTING) {
     return CreateThrobber();
   }
   auto icon_view = std::make_unique<views::ImageView>();
@@ -147,6 +161,10 @@ std::unique_ptr<views::View> CreatePrimaryIconForSink(
 base::string16 GetStatusTextForSink(const UIMediaSink& sink) {
   if (sink.issue)
     return base::UTF8ToUTF16(sink.issue->info().title);
+  // If the sink is disconnecting, say so instead of using the source info
+  // stored in |sink.status_text|.
+  if (sink.state == UIMediaSinkState::DISCONNECTING)
+    return l10n_util::GetStringUTF16(IDS_MEDIA_ROUTER_SINK_DISCONNECTING);
   if (!sink.status_text.empty())
     return sink.status_text;
   switch (sink.state) {
@@ -165,17 +183,35 @@ CastDialogSinkButton::CastDialogSinkButton(
     views::ButtonListener* button_listener,
     const UIMediaSink& sink,
     int button_tag)
-    : HoverButton(button_listener,
-                  CreatePrimaryIconForSink(button_listener, sink, button_tag),
-                  sink.friendly_name,
-                  GetStatusTextForSink(sink),
-                  /** secondary_icon_view */ nullptr),
+    : HoverButton(
+          button_listener,
+          CreatePrimaryIconForSink(this, button_listener, sink, button_tag),
+          sink.friendly_name,
+          GetStatusTextForSink(sink),
+          /** secondary_icon_view */ nullptr),
       sink_(sink) {
   set_tag(button_tag);
   SetEnabled(sink.state == UIMediaSinkState::AVAILABLE);
 }
 
 CastDialogSinkButton::~CastDialogSinkButton() = default;
+
+void CastDialogSinkButton::OverrideStatusText(
+    const base::string16& status_text) {
+  if (subtitle()) {
+    if (!saved_status_text_)
+      saved_status_text_ = subtitle()->text();
+    subtitle()->SetText(status_text);
+  }
+}
+
+void CastDialogSinkButton::RestoreStatusText() {
+  if (saved_status_text_) {
+    if (subtitle())
+      subtitle()->SetText(*saved_status_text_);
+    saved_status_text_.reset();
+  }
+}
 
 bool CastDialogSinkButton::OnMousePressed(const ui::MouseEvent& event) {
   if (event.IsRightMouseButton())
@@ -191,20 +227,25 @@ void CastDialogSinkButton::OnMouseReleased(const ui::MouseEvent& event) {
 
 void CastDialogSinkButton::OnEnabledChanged() {
   HoverButton::OnEnabledChanged();
+  // If the button has a state other than AVAILABLE (e.g. CONNECTED), there is
+  // no need to change the status or the icon.
+  if (sink_.state != UIMediaSinkState::AVAILABLE)
+    return;
+
   SkColor background_color = GetNativeTheme()->GetSystemColor(
       ui::NativeTheme::kColorId_ProminentButtonColor);
-  if (enabled() || sink_.state == UIMediaSinkState::CONNECTED) {
+  if (enabled()) {
     SetTitleTextStyle(views::style::STYLE_PRIMARY, background_color);
-    if (sink_.state == UIMediaSinkState::AVAILABLE) {
-      static_cast<views::ImageView*>(icon_view())
-          ->SetImage(CreateSinkIcon(sink_.icon_type));
-    }
+    if (saved_status_text_)
+      RestoreStatusText();
+    static_cast<views::ImageView*>(icon_view())
+        ->SetImage(CreateSinkIcon(sink_.icon_type));
   } else {
     SetTitleTextStyle(views::style::STYLE_DISABLED, background_color);
-    if (sink_.state == UIMediaSinkState::AVAILABLE) {
-      static_cast<views::ImageView*>(icon_view())
-          ->SetImage(CreateDisabledSinkIcon(sink_.icon_type));
-    }
+    OverrideStatusText(
+        l10n_util::GetStringUTF16(IDS_MEDIA_ROUTER_SOURCE_NOT_SUPPORTED));
+    static_cast<views::ImageView*>(icon_view())
+        ->SetImage(CreateDisabledSinkIcon(sink_.icon_type));
   }
   // Apply the style change to the title text.
   title()->Layout();

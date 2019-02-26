@@ -23,6 +23,7 @@
 #include "base/macros.h"
 #include "base/path_service.h"
 #include "base/process/kill.h"
+#include "base/stl_util.h"
 #include "base/strings/string16.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
@@ -634,18 +635,25 @@ bool DeleteChromeRegistrationKeys(const InstallerState& installer_state,
     LOG(DFATAL) << "Cannot retrieve the toast activator registry path";
   }
 
+#if defined(GOOGLE_CHROME_BUILD)
   if (installer_state.system_install()) {
-    // Delete Software\Classes\CLSID and AppId\|elevation_service_clsid|.
+    // Uninstall the elevation service.
     const base::string16 clsid_reg_path =
         GetElevationServiceClsidRegistryPath();
     const base::string16 appid_reg_path =
         GetElevationServiceAppidRegistryPath();
-    for (const auto& reg_path : {clsid_reg_path, appid_reg_path})
+    const base::string16 iid_reg_path = GetElevationServiceIidRegistryPath();
+    const base::string16 typelib_reg_path =
+        GetElevationServiceTypeLibRegistryPath();
+    for (const auto& reg_path :
+         {clsid_reg_path, appid_reg_path, iid_reg_path, typelib_reg_path}) {
       InstallUtil::DeleteRegistryKey(root, reg_path, WorkItem::kWow64Default);
+    }
 
     LOG_IF(WARNING, !InstallServiceWorkItem::DeleteService(
                         install_static::GetElevationServiceName()));
   }
+#endif  // defined(GOOGLE_CHROME_BUILD
 
   // Delete all Start Menu Internet registrations that refer to this Chrome.
   {
@@ -762,18 +770,18 @@ bool DeleteChromeRegistrationKeys(const InstallerState& installer_state,
 }
 
 void RemoveChromeLegacyRegistryKeys(const base::FilePath& chrome_exe) {
-// We used to register Chrome to handle crx files, but this turned out
-// to be not worth the hassle. Remove these old registry entries if
-// they exist. See: http://codereview.chromium.org/210007
+  // We used to register Chrome to handle crx files, but this turned out
+  // to be not worth the hassle. Remove these old registry entries if
+  // they exist. See: http://codereview.chromium.org/210007
 
 #if defined(GOOGLE_CHROME_BUILD)
-const wchar_t kChromeExtProgId[] = L"ChromeExt";
+  const wchar_t kChromeExtProgId[] = L"ChromeExt";
 #else
-const wchar_t kChromeExtProgId[] = L"ChromiumExt";
-#endif
+  const wchar_t kChromeExtProgId[] = L"ChromiumExt";
+#endif  // defined(GOOGLE_CHROME_BUILD
 
-  HKEY roots[] = { HKEY_LOCAL_MACHINE, HKEY_CURRENT_USER };
-  for (size_t i = 0; i < arraysize(roots); ++i) {
+  HKEY roots[] = {HKEY_LOCAL_MACHINE, HKEY_CURRENT_USER};
+  for (size_t i = 0; i < base::size(roots); ++i) {
     base::string16 suffix;
     if (roots[i] == HKEY_LOCAL_MACHINE)
       suffix = ShellUtil::GetCurrentInstallationSuffix(chrome_exe);

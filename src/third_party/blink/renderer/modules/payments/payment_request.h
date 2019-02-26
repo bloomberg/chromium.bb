@@ -50,15 +50,20 @@ class MODULES_EXPORT PaymentRequest final
 
  public:
   static PaymentRequest* Create(ExecutionContext*,
-                                const HeapVector<PaymentMethodData>&,
-                                const PaymentDetailsInit&,
+                                const HeapVector<Member<PaymentMethodData>>&,
+                                const PaymentDetailsInit*,
                                 ExceptionState&);
   static PaymentRequest* Create(ExecutionContext*,
-                                const HeapVector<PaymentMethodData>&,
-                                const PaymentDetailsInit&,
-                                const PaymentOptions&,
+                                const HeapVector<Member<PaymentMethodData>>&,
+                                const PaymentDetailsInit*,
+                                const PaymentOptions*,
                                 ExceptionState&);
 
+  PaymentRequest(ExecutionContext*,
+                 const HeapVector<Member<PaymentMethodData>>&,
+                 const PaymentDetailsInit*,
+                 const PaymentOptions*,
+                 ExceptionState&);
   ~PaymentRequest() override;
 
   ScriptPromise show(ScriptState*);
@@ -69,9 +74,10 @@ class MODULES_EXPORT PaymentRequest final
   const String& shippingOption() const { return shipping_option_; }
   const String& shippingType() const { return shipping_type_; }
 
-  DEFINE_ATTRIBUTE_EVENT_LISTENER(shippingaddresschange);
-  DEFINE_ATTRIBUTE_EVENT_LISTENER(shippingoptionchange);
-  DEFINE_ATTRIBUTE_EVENT_LISTENER(paymentmethodchange);
+  DEFINE_ATTRIBUTE_EVENT_LISTENER(shippingaddresschange,
+                                  kShippingaddresschange);
+  DEFINE_ATTRIBUTE_EVENT_LISTENER(shippingoptionchange, kShippingoptionchange);
+  DEFINE_ATTRIBUTE_EVENT_LISTENER(paymentmethodchange, kPaymentmethodchange);
 
   ScriptPromise canMakePayment(ScriptState*);
 
@@ -84,10 +90,11 @@ class MODULES_EXPORT PaymentRequest final
 
   // PaymentStateResolver:
   ScriptPromise Complete(ScriptState*, PaymentComplete result) override;
-  ScriptPromise Retry(ScriptState*, const PaymentValidationErrors&) override;
+  ScriptPromise Retry(ScriptState*, const PaymentValidationErrors*) override;
 
   // PaymentUpdater:
-  void OnUpdatePaymentDetails(const ScriptValue& details_script_value) override;
+  void OnUpdatePaymentDetails(const AtomicString& event_type,
+                              const ScriptValue& details_script_value) override;
   void OnUpdatePaymentDetailsFailure(const String& error) override;
 
   void Trace(blink::Visitor*) override;
@@ -104,12 +111,6 @@ class MODULES_EXPORT PaymentRequest final
   };
 
  private:
-  PaymentRequest(ExecutionContext*,
-                 const HeapVector<PaymentMethodData>&,
-                 const PaymentDetailsInit&,
-                 const PaymentOptions&,
-                 ExceptionState&);
-
   // LifecycleObserver:
   void ContextDestroyed(ExecutionContext*) override;
 
@@ -137,7 +138,7 @@ class MODULES_EXPORT PaymentRequest final
   // spec.
   ScriptPromiseResolver* GetPendingAcceptPromiseResolver() const;
 
-  PaymentOptions options_;
+  Member<const PaymentOptions> options_;
   Member<PaymentAddress> shipping_address_;
   Member<PaymentResponse> payment_response_;
   String id_;

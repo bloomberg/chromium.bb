@@ -304,21 +304,26 @@ class COMPOSITOR_EXPORT Layer : public LayerAnimationDelegate,
 
   // TODO(fsamuel): Update this comment.
   // Begins showing content from a surface with a particular ID.
-  void SetShowPrimarySurface(const viz::SurfaceId& surface_id,
-                             const gfx::Size& frame_size_in_dip,
-                             SkColor default_background_color,
-                             const cc::DeadlinePolicy& deadline_policy,
-                             bool stretch_content_to_fill_bounds);
+  void SetShowSurface(const viz::SurfaceId& surface_id,
+                      const gfx::Size& frame_size_in_dip,
+                      SkColor default_background_color,
+                      const cc::DeadlinePolicy& deadline_policy,
+                      bool stretch_content_to_fill_bounds);
 
   // In the event that the primary surface is not yet available in the
   // display compositor, the fallback surface will be used.
-  void SetFallbackSurfaceId(const viz::SurfaceId& surface_id);
+  void SetOldestAcceptableFallback(const viz::SurfaceId& surface_id);
 
-  // Returns the primary SurfaceId set by SetShowPrimarySurface.
-  const viz::SurfaceId* GetPrimarySurfaceId() const;
+  // Begins mirroring content from a reflected surface, e.g. a software mirrored
+  // display. |surface_id| should be the root surface for a display.
+  void SetShowReflectedSurface(const viz::SurfaceId& surface_id,
+                               const gfx::Size& frame_size_in_pixels);
 
-  // Returns the fallback SurfaceId set by SetFallbackSurfaceId.
-  const viz::SurfaceId* GetFallbackSurfaceId() const;
+  // Returns the primary SurfaceId set by SetShowSurface.
+  const viz::SurfaceId* GetSurfaceId() const;
+
+  // Returns the fallback SurfaceId set by SetOldestAcceptableFallback.
+  const viz::SurfaceId* GetOldestAcceptableFallback() const;
 
   bool has_external_content() const {
     return texture_layer_.get() || surface_layer_.get();
@@ -521,6 +526,8 @@ class COMPOSITOR_EXPORT Layer : public LayerAnimationDelegate,
   void ResetCompositorForAnimatorsInTree(Compositor* compositor);
 
   void OnMirrorDestroyed(LayerMirror* mirror);
+
+  void CreateSurfaceLayerIfNecessary();
 
   const LayerType type_;
 

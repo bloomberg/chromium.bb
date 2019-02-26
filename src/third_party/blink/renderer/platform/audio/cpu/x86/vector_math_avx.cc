@@ -11,17 +11,17 @@
 #include <immintrin.h>
 
 namespace blink {
-namespace VectorMath {
-namespace AVX {
+namespace vector_math {
+namespace avx {
 
 using MType = __m256;
 
-}  // namespace AVX
-}  // namespace VectorMath
+}  // namespace avx
+}  // namespace vector_math
 }  // namespace blink
 
 #define MM_PS(name) _mm256_##name##_ps
-#define VECTOR_MATH_SIMD_NAMESPACE_NAME AVX
+#define VECTOR_MATH_SIMD_NAMESPACE_NAME avx
 
 #include "third_party/blink/renderer/platform/audio/cpu/x86/vector_math_impl.h"
 

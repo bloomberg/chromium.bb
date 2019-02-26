@@ -7,8 +7,8 @@
 #include <ctype.h>
 
 #include "base/logging.h"
+#include "net/third_party/http2/platform/api/http2_bug_tracker.h"
 #include "net/third_party/http2/platform/api/http2_string_utils.h"
-#include "net/third_party/http2/tools/http2_bug_tracker.h"
 
 namespace http2 {
 namespace test {
@@ -29,7 +29,7 @@ void HpackExampleToStringOrDie(Http2StringPiece example, Http2String* output) {
       example.remove_prefix(1);
       continue;
     }
-    if (example.starts_with("|")) {
+    if (!example.empty() && example[0] == '|') {
       // Start of a comment. Skip to end of line or of input.
       auto pos = example.find('\n');
       if (pos == Http2StringPiece::npos) {
@@ -39,8 +39,8 @@ void HpackExampleToStringOrDie(Http2StringPiece example, Http2String* output) {
       example.remove_prefix(pos + 1);
       continue;
     }
-    HTTP2_BUG << "Can't parse byte " << static_cast<int>(c0) << " (0x"
-              << std::hex << c0 << ")"
+    HTTP2_BUG << "Can't parse byte " << static_cast<int>(c0)
+              << Http2StrCat(" (0x", Http2Hex(c0), ")")
               << "\nExample: " << example;
   }
   CHECK_LT(0u, output->size()) << "Example is empty.";

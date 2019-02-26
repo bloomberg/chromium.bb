@@ -162,3 +162,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionInputMethodApiTest, ImeMenuAPITest) {
   engine_handler->Enable("test2");
   ASSERT_TRUE(list_listenter.WaitUntilSatisfied()) << message_;
 }
+
+IN_PROC_BROWSER_TEST_F(ExtensionInputMethodApiTest, Settings) {
+  ASSERT_TRUE(RunExtensionTest("input_method/settings")) << message_;
+}

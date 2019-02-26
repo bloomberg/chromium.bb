@@ -37,7 +37,6 @@
 .oauth-enroll-state-ad-join #oauth-enroll-step-ad-join,
 .oauth-enroll-state-license #oauth-enroll-step-license,
 .oauth-enroll-state-success #oauth-enroll-step-success,
-.oauth-enroll-state-abe-success #oauth-enroll-step-abe-success,
 .oauth-enroll-state-working #oauth-enroll-step-working,
 .oauth-enroll-state-attribute-prompt
     #oauth-enroll-step-attribute-prompt {
@@ -87,6 +86,7 @@
   height: 44px;
   justify-content: center;
   left: 0;
+  min-height: 0;
   position: absolute;
   right: 0;
   top: 0;

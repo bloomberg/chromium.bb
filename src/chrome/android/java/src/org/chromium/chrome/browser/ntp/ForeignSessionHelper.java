@@ -15,7 +15,7 @@ import java.util.List;
  * This class exposes to Java information about sessions, windows, and tabs on the user's synced
  * devices.
  */
-class ForeignSessionHelper {
+public class ForeignSessionHelper {
     private long mNativeForeignSessionHelper;
 
     /**
@@ -197,6 +197,13 @@ class ForeignSessionHelper {
         nativeDeleteForeignSession(mNativeForeignSessionHelper, session.tag);
     }
 
+    /**
+     * Enable invalidations for sessions sync related datatypes.
+     */
+    public void setInvalidationsForSessionsEnabled(boolean enabled) {
+        nativeSetInvalidationsForSessionsEnabled(mNativeForeignSessionHelper, enabled);
+    }
+
     private static native long nativeInit(Profile profile);
     private static native void nativeDestroy(long nativeForeignSessionHelper);
     private static native boolean nativeIsTabSyncEnabled(long nativeForeignSessionHelper);
@@ -210,4 +217,6 @@ class ForeignSessionHelper {
             int disposition);
     private static native void nativeDeleteForeignSession(
             long nativeForeignSessionHelper, String sessionTag);
+    private static native void nativeSetInvalidationsForSessionsEnabled(
+            long nativeForeignSessionHelper, boolean enabled);
 }

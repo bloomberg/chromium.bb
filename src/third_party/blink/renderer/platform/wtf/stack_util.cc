@@ -2,6 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "build/build_config.h"
+
 #include "third_party/blink/renderer/platform/wtf/stack_util.h"
 
 #include "third_party/blink/renderer/platform/wtf/assertions.h"
@@ -133,10 +135,17 @@ void* GetStackStart() {
 // On Windows stack limits for the current thread are available in
 // the thread information block (TIB). Its fields can be accessed through
 // FS segment register on x86 and GS segment register on x86_64.
-#ifdef _WIN64
+// On Windows ARM64, stack limits could be retrieved by calling
+// GetCurrentThreadStackLimits. This API doesn't work on x86 and x86_64 here
+// because it requires Windows 8+.
+#if defined(ARCH_CPU_X86_64)
   return reinterpret_cast<void*>(__readgsqword(offsetof(NT_TIB64, StackBase)));
-#else
+#elif defined(ARCH_CPU_X86)
   return reinterpret_cast<void*>(__readfsdword(offsetof(NT_TIB, StackBase)));
+#elif defined(ARCH_CPU_ARM64)
+  ULONG_PTR lowLimit, highLimit;
+  ::GetCurrentThreadStackLimits(&lowLimit, &highLimit);
+  return reinterpret_cast<void*>(highLimit);
 #endif
 #else
 #error Unsupported getStackStart on this platform.

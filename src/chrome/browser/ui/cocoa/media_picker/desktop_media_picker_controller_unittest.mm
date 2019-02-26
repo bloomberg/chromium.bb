@@ -171,6 +171,12 @@ TEST_F(DesktopMediaPickerControllerTest, ShowAndDismiss) {
   EXPECT_TRUE([[items objectAtIndex:1] imageRepresentation] != nil);
 }
 
+TEST_F(DesktopMediaPickerControllerTest, CancelIsDefault) {
+  [controller_ showWindow:nil];
+  EXPECT_EQ([[controller_ window] defaultButtonCell],
+            [[controller_ cancelButton] cell]);
+}
+
 TEST_F(DesktopMediaPickerControllerTest, ClickShareScreen) {
   [controller_ showWindow:nil];
   ChangeType(DesktopMediaID::TYPE_SCREEN);

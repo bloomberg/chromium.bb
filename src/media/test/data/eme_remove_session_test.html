@@ -26,7 +26,7 @@
     var mediaKeySession = event.target;
     function onSuccess(response) {
       var key = new Uint8Array(response);
-      Utils.timeLog('Update media key session with license response.', key);
+      Utils.timeLog('Calling update()');
       mediaKeySession.update(key).then(resolve, reject);
     }
     Utils.sendRequest(
@@ -43,6 +43,8 @@
   ClearKeyKeySystemHelper.prototype.onMessage = function(
       event, resolve, reject) {
     var mediaKeySession = event.target;
+
+    Utils.timeLog('Calling update()');
     const jwkSet = Utils.createJWKData(keyId, key);
     mediaKeySession.update(jwkSet).then(resolve, reject);
   };
@@ -70,8 +72,8 @@
     persistentState: 'optional',
     sessionTypes: ['temporary'],
   }];
-  var waitForMessagePromise;
 
+  var mediaKeySession;
   navigator.requestMediaKeySystemAccess(testConfig.keySystem, config)
       .then(function(access) {
         Utils.timeLog(
@@ -80,31 +82,60 @@
         return access.createMediaKeys();
       })
       .then(function(mediaKeys) {
+        Utils.timeLog('Creating session');
         mediaKeySession = mediaKeys.createSession();
-        waitForMessagePromise = Utils.waitForEvent(
+
+        // Register for the 'message' event before it happens. Although the
+        // event shouldn't be generated until after the generateRequest()
+        // promise is resolved, the handlers may be queued before the
+        // JavaScript code runs (and thus be lost if an event handler is
+        // not registered).
+        // When the 'message' event occurs, keySystemHelper.onMessage() will
+        // run. It will end up calling update(), and |waitForMessagePromise|
+        // will be resolved or rejected with the result of calling update().
+        const waitForMessagePromise = Utils.waitForEvent(
             mediaKeySession, 'message', keySystemHelper.onMessage);
+
+        // After update() is called, a 'keystatuseschange' event will occur.
+        // Wait for it before checking the key statuses. Registering the event
+        // handler now to ensure that the event gets caught. There is no need
+        // to do anything in the event handler as the key statuses are on
+        // |mediaKeySession|, and they can be checked after the promise is
+        // resolved.
+        const waitForKeyStatusChangePromise =
+            Utils.waitForEvent(mediaKeySession, 'keystatuseschange');
 
         // As this is using 'webm' initDataType, the data to generateRequest()
         // is simply the key ID.
         Utils.timeLog('Calling generateRequest()');
-        return mediaKeySession.generateRequest(
+        const generateRequestPromise = mediaKeySession.generateRequest(
             'webm', Utils.convertToUint8Array(keyId));
+
+        // Can't tell what order the events happen, so simply wait for them all.
+        return Promise.all([
+          generateRequestPromise, waitForMessagePromise,
+          waitForKeyStatusChangePromise
+        ]);
       })
       .then(function() {
-        // keySystemHelper.onMessage() returns the result of calling update().
-        Utils.timeLog('Waiting for message event');
-        return waitForMessagePromise;
-      })
-      .then(function() {
-        // After update() the session should have 1 usable key.
-        Utils.timeLog('Checking keyStatuses');
+        // Session should have 1 usable key.
+        Utils.timeLog('Checking for usable keyStatuses');
         Utils.verifyKeyStatuses(
             mediaKeySession.keyStatuses, [{keyId: keyId, status: 'usable'}]);
+
+        // Once remove() is called, another 'keystatuseschange' event will
+        // happen.
+        const waitForKeyStatusChangePromise =
+            Utils.waitForEvent(mediaKeySession, 'keystatuseschange');
+
         Utils.timeLog('Calling remove()');
-        return mediaKeySession.remove();
+        const removePromise = mediaKeySession.remove();
+
+        return Promise.all([removePromise, waitForKeyStatusChangePromise]);
       })
       .then(function() {
         // After remove() all keys should be 'released'.
+        Utils.timeLog('Checking for released keyStatuses');
         Utils.verifyKeyStatuses(
             mediaKeySession.keyStatuses, [{keyId: keyId, status: 'released'}]);
         // After remove() the session expiry should be NaN.
@@ -117,6 +148,7 @@
       })
       .then(function() {
         // After close() there should be no keys.
+        Utils.timeLog('Checking for empty keyStatuses');
         Utils.verifyKeyStatuses(mediaKeySession.keyStatuses, []);
         Utils.setResultInTitle('ENDED');
       })

@@ -596,7 +596,10 @@ TEST_F(SyncModelAssociationManagerTest, StopDataType) {
   ASSERT_EQ(GetController(controllers_, BOOKMARKS)->state(),
             DataTypeController::MODEL_LOADED);
 
-  model_association_manager.StopDatatype(BOOKMARKS, DISABLE_SYNC, SyncError());
+  model_association_manager.StopDatatype(
+      BOOKMARKS, DISABLE_SYNC,
+      SyncError(FROM_HERE, syncer::SyncError::UNREADY_ERROR,
+                "Data type is unready.", BOOKMARKS));
 
   EXPECT_EQ(GetController(controllers_, BOOKMARKS)->state(),
             DataTypeController::NOT_RUNNING);
@@ -612,7 +615,10 @@ TEST_F(SyncModelAssociationManagerTest, StopDataType_NotRunning) {
   ASSERT_EQ(GetController(controllers_, BOOKMARKS)->state(),
             DataTypeController::NOT_RUNNING);
 
-  model_association_manager.StopDatatype(BOOKMARKS, DISABLE_SYNC, SyncError());
+  model_association_manager.StopDatatype(
+      BOOKMARKS, DISABLE_SYNC,
+      SyncError(FROM_HERE, syncer::SyncError::UNREADY_ERROR,
+                "Data type is unready.", BOOKMARKS));
 
   // The state should still be not running.
   EXPECT_EQ(GetController(controllers_, BOOKMARKS)->state(),
@@ -726,7 +732,7 @@ TEST_F(SyncModelAssociationManagerTest,
   ModelTypeSet desired_types = preferred_types;
 
   ConfigureContext configure_context;
-  configure_context.storage_option = ConfigureContext::STORAGE_ON_DISK;
+  configure_context.storage_option = STORAGE_ON_DISK;
 
   EXPECT_CALL(delegate_, OnSingleDataTypeWillStart(BOOKMARKS));
   EXPECT_CALL(delegate_, OnSingleDataTypeWillStart(APPS));
@@ -750,7 +756,7 @@ TEST_F(SyncModelAssociationManagerTest,
   testing::Mock::VerifyAndClearExpectations(&delegate_);
 
   // Switch to in-memory storage.
-  configure_context.storage_option = ConfigureContext::STORAGE_IN_MEMORY;
+  configure_context.storage_option = STORAGE_IN_MEMORY;
   desired_types.Remove(APPS);
   preferred_types.Remove(APPS);
 
@@ -788,7 +794,7 @@ TEST_F(SyncModelAssociationManagerTest,
   ModelTypeSet desired_types = preferred_types;
 
   ConfigureContext configure_context;
-  configure_context.storage_option = ConfigureContext::STORAGE_IN_MEMORY;
+  configure_context.storage_option = STORAGE_IN_MEMORY;
 
   EXPECT_CALL(delegate_, OnSingleDataTypeWillStart(BOOKMARKS));
   EXPECT_CALL(delegate_, OnSingleDataTypeWillStart(APPS));
@@ -812,7 +818,7 @@ TEST_F(SyncModelAssociationManagerTest,
   testing::Mock::VerifyAndClearExpectations(&delegate_);
 
   // Switch to on-disk storage.
-  configure_context.storage_option = ConfigureContext::STORAGE_ON_DISK;
+  configure_context.storage_option = STORAGE_ON_DISK;
   desired_types.Remove(APPS);
   preferred_types.Remove(APPS);
 

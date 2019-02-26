@@ -4,53 +4,54 @@
 
 #include "services/service_manager/public/cpp/identity.h"
 
-#include "base/guid.h"
-#include "services/service_manager/public/mojom/constants.mojom.h"
+#include <tuple>
+
+#include "base/strings/stringprintf.h"
 
 namespace service_manager {
 
-Identity::Identity() : Identity("") {}
-
-Identity::Identity(const std::string& name)
-    : Identity(name, mojom::kInheritUserID) {}
-
-Identity::Identity(const std::string& name, const std::string& user_id)
-    : Identity(name, user_id, "") {}
+Identity::Identity() = default;
 
 Identity::Identity(const std::string& name,
-                   const std::string& user_id,
-                   const std::string& instance)
-    : name_(name), user_id_(user_id), instance_(instance) {
-  DCHECK(!user_id.empty());
-  DCHECK(base::IsValidGUID(user_id));
+                   const base::Token& instance_group,
+                   const base::Token& instance_id,
+                   const base::Token& globally_unique_id)
+    : name_(name),
+      instance_group_(instance_group),
+      instance_id_(instance_id),
+      globally_unique_id_(globally_unique_id) {
+  DCHECK(!name_.empty());
+  DCHECK(!instance_group_.is_zero());
+  DCHECK(!globally_unique_id_.is_zero());
 }
 
 Identity::Identity(const Identity& other) = default;
 
-Identity::~Identity() {}
+Identity::~Identity() = default;
 
-Identity& Identity::operator=(const Identity& other) {
-  name_ = other.name_;
-  user_id_ = other.user_id_;
-  instance_ = other.instance_;
-  return *this;
-}
+Identity& Identity::operator=(const Identity& other) = default;
 
 bool Identity::operator<(const Identity& other) const {
-  if (name_ != other.name_)
-    return name_ < other.name_;
-  if (instance_ != other.instance_)
-    return instance_ < other.instance_;
-  return user_id_ < other.user_id_;
+  return std::tie(name_, instance_group_, instance_id_, globally_unique_id_) <
+         std::tie(other.name_, other.instance_group_, other.instance_id_,
+                  other.globally_unique_id_);
 }
 
 bool Identity::operator==(const Identity& other) const {
-  return other.name_ == name_ && other.instance_ == instance_ &&
-         other.user_id_ == user_id_;
+  return name_ == other.name_ && instance_group_ == other.instance_group_ &&
+         instance_id_ == other.instance_id_ &&
+         globally_unique_id_ == other.globally_unique_id_;
 }
 
 bool Identity::IsValid() const {
-  return !name_.empty() && base::IsValidGUID(user_id_);
+  return !name_.empty() && !instance_group_.is_zero() &&
+         !globally_unique_id_.is_zero();
+}
+
+std::string Identity::ToString() const {
+  return base::StringPrintf("%s/%s/%s/%s", instance_group_.ToString().c_str(),
+                            name_.c_str(), instance_id_.ToString().c_str(),
+                            globally_unique_id_.ToString().c_str());
 }
 
 }  // namespace service_manager

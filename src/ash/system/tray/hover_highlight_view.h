@@ -96,6 +96,7 @@ class HoverHighlightView : public ActionableView {
   views::Label* text_label() { return text_label_; }
   views::Label* sub_text_label() { return sub_text_label_; }
   views::ImageView* left_icon() { return left_icon_; }
+  views::View* right_view() { return right_view_; }
 
  protected:
   // Override from Button to also set the tooltip for all child elements.

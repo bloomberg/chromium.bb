@@ -36,18 +36,15 @@ const int kMaxStrokeGapWhenWritingMs = 1000;
 
 MetalayerMode::MetalayerMode(Delegate* delegate)
     : CommonPaletteTool(delegate),
-      voice_interaction_binding_(this),
       weak_factory_(this) {
   Shell::Get()->AddPreTargetHandler(this);
-
-  mojom::VoiceInteractionObserverPtr ptr;
-  voice_interaction_binding_.Bind(mojo::MakeRequest(&ptr));
-  Shell::Get()->voice_interaction_controller()->AddObserver(std::move(ptr));
+  Shell::Get()->voice_interaction_controller()->AddLocalObserver(this);
   Shell::Get()->highlighter_controller()->AddObserver(this);
 }
 
 MetalayerMode::~MetalayerMode() {
   Shell::Get()->highlighter_controller()->RemoveObserver(this);
+  Shell::Get()->voice_interaction_controller()->RemoveLocalObserver(this);
   Shell::Get()->RemovePreTargetHandler(this);
 }
 

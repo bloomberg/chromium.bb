@@ -18,7 +18,7 @@
 namespace web {
 
 TestInterface3* TestInterface3::Create(blink::TestInterface3* test_interface_3) {
-  return test_interface_3 ? new TestInterface3(test_interface_3) : nullptr;
+  return test_interface_3 ? MakeGarbageCollected<TestInterface3>(test_interface_3) : nullptr;
 }
 
 void TestInterface3::Trace(blink::Visitor* visitor) {

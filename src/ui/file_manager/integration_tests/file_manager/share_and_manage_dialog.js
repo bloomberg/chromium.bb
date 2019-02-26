@@ -5,169 +5,283 @@
 'use strict';
 
 /**
- * Test sharing dialog for a file or directory on Drive
- * @param {string} path Path for a file or a directory to be shared.
+ * Test 'Share with others' for a file or directory on Drive.
+ *
+ * @param {!string} path Path of the file or directory to be shared.
+ * @param {!string} url Expected URL for the browser to visit.
+ * @param {!string|undefined} teamDrive If set, the team drive to switch to.
  */
-function share(path, expected_share_url) {
-  var appId;
-  var caller = getCaller();
-  StepsRunner.run([
-    // Set up File Manager.
-    function() {
-      setupAndWaitUntilReady(null, RootPath.DRIVE, this.next);
-    },
-    // Select the source file.
-    function(results) {
-      appId = results.windowId;
-      remoteCall.callRemoteTestUtil('selectFile', appId, [path], this.next);
-    },
-    // Wait for the share button.
-    function(result) {
-      chrome.test.assertTrue(!!result);
-      remoteCall.waitForElement(appId, '#share-menu-button:not([disabled])')
-          .then(this.next);
-    },
-    // Click the share button to open share menu.
-    function(result) {
-      chrome.test.assertTrue(!!result);
-      remoteCall.callRemoteTestUtil(
-          'fakeMouseClick', appId, ['#share-menu-button'], this.next);
-    },
-    // Check: the "Share with others" menu item should be shown enabled.
-    function(result) {
-      chrome.test.assertTrue(!!result);
-      const shareMenuItem =
-          '#share-menu:not([hidden]) [command="#share"]:not([disabled])';
-      remoteCall.waitForElement(appId, shareMenuItem).then(this.next);
-    },
-    // Click the "Share with others" menu item to open the share dialog.
-    function(result) {
-      chrome.test.assertTrue(!!result);
-      const item = ['#share-menu [command="#share"]'];
-      remoteCall.callRemoteTestUtil('fakeMouseClick', appId, item, this.next);
-    },
-    // Wait for the browser window to appear.
-    function(result) {
-      chrome.test.assertTrue(!!result);
-      remoteCall.callRemoteTestUtil('getLastVisitedURL', appId, [], this.next);
-    },
-    // Check we went to the correct URL, and for Javascript errors.
-    function(visitedUrl) {
-      chrome.test.assertEq(expected_share_url, visitedUrl);
-      checkIfNoErrorsOccured(this.next);
-    }
-  ]);
+async function shareWithOthersExpectBrowserURL(
+    path, url, teamDrive = undefined) {
+  // Open Files app on Drive.
+  const {appId} = await setupAndWaitUntilReady(
+      null, RootPath.DRIVE, null, [],
+      BASIC_DRIVE_ENTRY_SET.concat(TEAM_DRIVE_ENTRY_SET));
+
+  // Navigate to the specified team drive if one is specified.
+  if (teamDrive !== undefined) {
+    await remoteCall.navigateWithDirectoryTree(
+        appId, teamDrive === '' ? '/team_drives' : `/team_drives/${teamDrive}`,
+        'Team Drives', 'drive');
+
+    // Wait for the file list to update.
+    await remoteCall.waitForFileListChange(appId, BASIC_DRIVE_ENTRY_SET.length);
+  }
+
+  // Select the given |path|.
+  chrome.test.assertTrue(
+      !!await remoteCall.callRemoteTestUtil('selectFile', appId, [path]),
+      'selectFile failed');
+
+  // Wait for the entry to be selected.
+  await remoteCall.waitForElement(appId, '.table-row[selected]');
+
+  // Wait for the share button to appear.
+  chrome.test.assertTrue(!!await remoteCall.waitForElement(
+      appId, '#share-menu-button:not([disabled])'));
+
+  // Click the share button to open share menu.
+  chrome.test.assertTrue(!!await remoteCall.callRemoteTestUtil(
+      'fakeMouseClick', appId, ['#share-menu-button']));
+
+  // Check: the "Share with others" menu item should be shown enabled.
+  const shareMenuItem =
+      '#share-menu:not([hidden]) [command="#share"]:not([disabled])';
+  chrome.test.assertTrue(
+      !!await remoteCall.waitForElement(appId, shareMenuItem));
+
+  // Click the "Share with others" menu item.
+  const shareWithOthers = '#share-menu [command="#share"]:not([disabled])';
+  chrome.test.assertTrue(
+      !!await remoteCall.callRemoteTestUtil(
+          'fakeMouseClick', appId, [shareWithOthers]),
+      'fakeMouseClick failed');
+
+  // Wait for the share menu to disappear.
+  chrome.test.assertTrue(
+      !!await remoteCall.waitForElement(appId, '#share-menu[hidden]'));
+
+  // Wait for the browser window to appear and navigate to the expected URL.
+  chrome.test.assertEq(
+      url, await remoteCall.callRemoteTestUtil('getLastVisitedURL', appId, []));
 }
 
-
 /**
- * Test clicking 'Manage in Drive' for a file or directory on Drive.
+ * Test 'Manage in Drive' for a file or directory on Drive.
  *
- * @param {!string} path Path for a file or a directory to be shared.
- * @param {!string} expected_manage_url Expected URL for the browser to visit.
+ * @param {!string} path Path of the file or directory to be managed.
+ * @param {!string} url Expected URL for the browser to visit.
+ * @param {!string|undefined} teamDrive If set, the team drive to switch to.
  */
-function manage(path, expected_manage_url) {
-  var appId;
-  var caller = getCaller();
-  StepsRunner.run([
-    // Set up File Manager.
-    function() {
-      setupAndWaitUntilReady(null, RootPath.DRIVE, this.next);
-    },
-    // Select the source file.
-    function(results) {
-      appId = results.windowId;
-      remoteCall.callRemoteTestUtil('selectFile', appId, [path], this.next);
-    },
-    // Wait for the file to be selected.
-    function(result) {
-      chrome.test.assertTrue(!!result);
-      remoteCall.waitForElement(appId, '.table-row[selected]').then(this.next);
-    },
-    // Right-click on the file.
-    function(result) {
-      chrome.test.assertTrue(!!result);
-      remoteCall.callRemoteTestUtil(
-          'fakeMouseRightClick', appId, ['.table-row[selected]'], this.next);
-    },
-    // Wait for the context menu to appear.
-    function(result) {
-      chrome.test.assertTrue(!!result);
-      remoteCall.waitForElement(appId, '#file-context-menu:not([hidden])')
-          .then(this.next);
-    },
-    // Wait for the "Manage in Drive" option to appear.
-    function(result) {
-      chrome.test.assertTrue(!!result);
-      remoteCall
-          .waitForElement(
-              appId,
-              '[command="#manage-in-drive"]:not([hidden]):not([disabled])')
-          .then(this.next);
-    },
-    // Select "Manage in Drive".
-    function(result) {
-      chrome.test.assertTrue(!!result);
-      remoteCall.callRemoteTestUtil(
+async function manageWithDriveExpectBrowserURL(
+    path, url, teamDrive = undefined) {
+  // Open Files app on Drive.
+  const {appId} = await setupAndWaitUntilReady(
+      null, RootPath.DRIVE, null, [],
+      BASIC_DRIVE_ENTRY_SET.concat(TEAM_DRIVE_ENTRY_SET));
+
+  // Navigate to the specified team drive if one is specified.
+  if (teamDrive !== undefined) {
+    await remoteCall.navigateWithDirectoryTree(
+        appId, teamDrive === '' ? '/team_drives' : `/team_drives/${teamDrive}`,
+        'Team Drives', 'drive');
+
+    // Wait for the file list to update.
+    await remoteCall.waitForFileListChange(appId, BASIC_DRIVE_ENTRY_SET.length);
+  }
+
+  // Select the given |path|.
+  chrome.test.assertTrue(
+      !!await remoteCall.callRemoteTestUtil('selectFile', appId, [path]),
+      'selectFile failed');
+
+  // Wait for the entry to be selected.
+  chrome.test.assertTrue(
+      !!await remoteCall.waitForElement(appId, '.table-row[selected]'));
+
+  // Right-click the selected entry.
+  chrome.test.assertTrue(
+      !!await remoteCall.callRemoteTestUtil(
+          'fakeMouseRightClick', appId, ['.table-row[selected]']),
+      'fakeMouseClick failed');
+
+  // Wait for the context menu to appear.
+  chrome.test.assertTrue(!!await remoteCall.waitForElement(
+      appId, '#file-context-menu:not([hidden])'));
+
+  // Wait for the "Manage in Drive" menu item to appear.
+
+  chrome.test.assertTrue(!!await remoteCall.waitForElement(
+      appId, '[command="#manage-in-drive"]:not([hidden]):not([disabled])'));
+
+  // Click the "Manage in Drive" menu item.
+  chrome.test.assertTrue(
+      !!await remoteCall.callRemoteTestUtil(
           'fakeMouseClick', appId,
-          ['[command="#manage-in-drive"]:not([hidden]):not([disabled])'],
-          this.next);
-    },
-    // Wait for the context menu to disappear.
-    function(result) {
-      chrome.test.assertTrue(!!result);
-      remoteCall.waitForElement(appId, '#file-context-menu[hidden]')
-          .then(this.next);
-    },
-    // Wait for the browser window to appear.
-    function(result) {
-      chrome.test.assertTrue(!!result);
-      remoteCall.callRemoteTestUtil('getLastVisitedURL', appId, [], this.next);
-    },
-    // Check we went to the correct URL, and for Javascript errors.
-    function(visitedUrl) {
-      chrome.test.assertEq(expected_manage_url, visitedUrl);
-      checkIfNoErrorsOccured(this.next);
-    }
-  ]);
+          ['[command="#manage-in-drive"]:not([hidden]):not([disabled])']),
+      'fakeMouseClick failed');
+
+  // Wait for the context menu to disappear.
+  chrome.test.assertTrue(
+      !!await remoteCall.waitForElement(appId, '#file-context-menu[hidden]'));
+
+  // Wait for the browser window to appear and navigate to the expected URL.
+  chrome.test.assertEq(
+      url, await remoteCall.callRemoteTestUtil('getLastVisitedURL', appId, []));
 }
 
 /**
  * Tests sharing a file on Drive.
  */
 testcase.shareFileDrive = function() {
-  share(
-      'world.ogv',
-      'https://file_alternate_link/world.ogv?userstoinvite=%22%22');
+  const URL = 'https://file_alternate_link/world.ogv?userstoinvite=%22%22';
+  return shareWithOthersExpectBrowserURL('world.ogv', URL);
 };
 
 /**
  * Tests sharing a directory on Drive.
  */
 testcase.shareDirectoryDrive = function() {
-  share('photos', 'https://folder_alternate_link/photos?userstoinvite=%22%22');
+  const URL = 'https://folder_alternate_link/photos?userstoinvite=%22%22';
+  return shareWithOthersExpectBrowserURL('photos', URL);
 };
 
-// TODO(sashab): Add tests for sharing a file on Team Drives.
-
 /**
- * Tests managing a hosted file (gdoc) on Drive.
+ * Tests sharing a hosted file (gdoc) on Drive.
  */
-testcase.manageHostedFileDrive = function() {
-  manage(
-      'Test Document.gdoc', 'https://document_alternate_link/Test%20Document');
+testcase.shareHostedFileDrive = function() {
+  const URL =
+      'https://document_alternate_link/Test%20Document?userstoinvite=%22%22';
+  return shareWithOthersExpectBrowserURL('Test Document.gdoc', URL);
 };
 
 /**
- * Tests managing a hosted file on Drive.
+ * Tests managing a file on Drive.
  */
 testcase.manageFileDrive = function() {
-  manage('world.ogv', 'https://file_alternate_link/world.ogv');
+  const URL = 'https://file_alternate_link/world.ogv';
+  return manageWithDriveExpectBrowserURL('world.ogv', URL);
 };
 
 /**
  * Tests managing a directory on Drive.
  */
 testcase.manageDirectoryDrive = function() {
-  manage('photos', 'https://folder_alternate_link/photos');
+  const URL = 'https://folder_alternate_link/photos';
+  return manageWithDriveExpectBrowserURL('photos', URL);
+};
+
+/**
+ * Tests managing a hosted file (gdoc) on Drive.
+ */
+testcase.manageHostedFileDrive = function() {
+  const URL = 'https://document_alternate_link/Test%20Document';
+  return manageWithDriveExpectBrowserURL('Test Document.gdoc', URL);
+};
+
+/**
+ * Tests sharing a file in a team drive.
+ */
+testcase.shareFileTeamDrive = function() {
+  const URL =
+      'https://file_alternate_link/teamDriveAFile.txt?userstoinvite=%22%22';
+  return shareWithOthersExpectBrowserURL(
+      'teamDriveAFile.txt', URL, 'Team Drive A');
+};
+
+/**
+ * Tests that sharing a directory in a team drive is not allowed.
+ */
+testcase.shareDirectoryTeamDrive = async function() {
+  const teamDrive = 'Team Drive A';
+  const path = 'teamDriveADirectory';
+
+  // Open Files app on Drive.
+  const {appId} = await setupAndWaitUntilReady(
+      null, RootPath.DRIVE, null, [],
+      BASIC_DRIVE_ENTRY_SET.concat(TEAM_DRIVE_ENTRY_SET));
+
+  // Navigate to the team drive.
+  await remoteCall.navigateWithDirectoryTree(
+      appId, `/team_drives/${teamDrive}`, 'Team Drives', 'drive');
+
+  // Wait for the file list to update.
+  await remoteCall.waitForFileListChange(appId, BASIC_DRIVE_ENTRY_SET.length);
+
+  // Select the given |path|.
+  chrome.test.assertTrue(
+      !!await remoteCall.callRemoteTestUtil('selectFile', appId, [path]),
+      'selectFile failed');
+
+  // Wait for the entry to be selected.
+  chrome.test.assertTrue(
+      !!await remoteCall.waitForElement(appId, '.table-row[selected]'));
+
+  // Right-click the selected entry.
+  chrome.test.assertTrue(
+      !!await remoteCall.callRemoteTestUtil(
+          'fakeMouseRightClick', appId, ['.table-row[selected]']),
+      'fakeMouseClick failed');
+
+  // Wait for the context menu to appear.
+  chrome.test.assertTrue(!!await remoteCall.waitForElement(
+      appId, '#file-context-menu:not([hidden])'));
+
+  // Wait for the "Share" menu item to appear.
+  await remoteCall.waitForElement(
+      appId, '[command="#share"]:not([hidden])[disabled]');
+};
+
+/**
+ * Tests sharing a hosted file (gdoc) in a team drive.
+ */
+testcase.shareHostedFileTeamDrive = function() {
+  const URL =
+      'https://document_alternate_link/teamDriveAHostedDoc?userstoinvite=%22%22';
+  return shareWithOthersExpectBrowserURL(
+      'teamDriveAHostedDoc.gdoc', URL, 'Team Drive A');
+};
+
+/**
+ * Tests managing a file in a team drive.
+ */
+testcase.manageFileTeamDrive = function() {
+  const URL = 'https://file_alternate_link/teamDriveAFile.txt';
+  return manageWithDriveExpectBrowserURL(
+      'teamDriveAFile.txt', URL, 'Team Drive A');
+};
+
+/**
+ * Tests managing a directory in a team drive.
+ */
+testcase.manageDirectoryTeamDrive = function() {
+  const URL = 'https://folder_alternate_link/teamDriveADirectory';
+  return manageWithDriveExpectBrowserURL(
+      'teamDriveADirectory', URL, 'Team Drive A');
+};
+
+/**
+ * Tests managing a hosted file (gdoc) in a team drive.
+ */
+testcase.manageHostedFileTeamDrive = function() {
+  const URL = 'https://document_alternate_link/teamDriveAHostedDoc';
+  return manageWithDriveExpectBrowserURL(
+      'teamDriveAHostedDoc.gdoc', URL, 'Team Drive A');
+};
+
+/**
+ * Tests managing a team drive.
+ */
+testcase.manageTeamDrive = function() {
+  const URL = 'https://folder_alternate_link/Team%20Drive%20A';
+  return manageWithDriveExpectBrowserURL('Team Drive A', URL, '');
+};
+
+/**
+ * Tests sharing a team drive.
+ */
+testcase.shareTeamDrive = function() {
+  const URL =
+      'https://folder_alternate_link/Team%20Drive%20A?userstoinvite=%22%22';
+  return shareWithOthersExpectBrowserURL('Team Drive A', URL, '');
 };

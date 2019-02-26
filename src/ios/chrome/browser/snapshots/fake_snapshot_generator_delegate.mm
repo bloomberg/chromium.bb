@@ -10,24 +10,36 @@
 
 @implementation FakeSnapshotGeneratorDelegate
 
-- (BOOL)canTakeSnapshotForWebState:(web::WebState*)webState {
+@synthesize view = _view;
+
+- (BOOL)snapshotGenerator:(SnapshotGenerator*)snapshotGenerator
+    canTakeSnapshotForWebState:(web::WebState*)webState {
   return YES;
 }
 
-- (UIEdgeInsets)snapshotEdgeInsetsForWebState:(web::WebState*)webState {
+- (UIEdgeInsets)snapshotGenerator:(SnapshotGenerator*)snapshotGenerator
+    snapshotEdgeInsetsForWebState:(web::WebState*)webState {
   return UIEdgeInsetsZero;
 }
 
-- (NSArray<SnapshotOverlay*>*)snapshotOverlaysForWebState:
-    (web::WebState*)webState {
+- (NSArray<SnapshotOverlay*>*)snapshotGenerator:
+                                  (SnapshotGenerator*)snapshotGenerator
+                    snapshotOverlaysForWebState:(web::WebState*)webState {
   return nil;
 }
 
-- (void)willUpdateSnapshotForWebState:(web::WebState*)webState {
+- (void)snapshotGenerator:(SnapshotGenerator*)snapshotGenerator
+    willUpdateSnapshotForWebState:(web::WebState*)webState {
 }
 
-- (void)didUpdateSnapshotForWebState:(web::WebState*)webState
-                           withImage:(UIImage*)snapshot {
+- (void)snapshotGenerator:(SnapshotGenerator*)snapshotGenerator
+    didUpdateSnapshotForWebState:(web::WebState*)webState
+                       withImage:(UIImage*)snapshot {
+}
+
+- (UIView*)snapshotGenerator:(SnapshotGenerator*)snapshotGenerator
+         baseViewForWebState:(web::WebState*)webState {
+  return self.view;
 }
 
 @end

@@ -199,7 +199,7 @@ class MessageCenterImplTest : public testing::Test {
     return std::make_unique<Notification>(
         type, id, UTF8ToUTF16("title"), UTF8ToUTF16(id),
         gfx::Image() /* icon */, base::string16() /* display_source */, GURL(),
-        NotifierId(NotifierId::APPLICATION, notifier_id), optional_fields,
+        NotifierId(NotifierType::APPLICATION, notifier_id), optional_fields,
         base::MakeRefCounted<TestDelegate>());
   }
 
@@ -458,7 +458,7 @@ TEST_F(MessageCenterImplTest, PopupTimersControllerRestartOnUpdate) {
 }
 
 TEST_F(MessageCenterImplTest, NotificationBlocker) {
-  NotifierId notifier_id(NotifierId::APPLICATION, "app1");
+  NotifierId notifier_id(NotifierType::APPLICATION, "app1");
   // Multiple blockers to verify the case that one blocker blocks but another
   // doesn't.
   ToggledNotificationBlocker blocker1(message_center());
@@ -514,7 +514,7 @@ TEST_F(MessageCenterImplTest, NotificationBlocker) {
 }
 
 TEST_F(MessageCenterImplTest, NotificationsDuringBlocked) {
-  NotifierId notifier_id(NotifierId::APPLICATION, "app1");
+  NotifierId notifier_id(NotifierType::APPLICATION, "app1");
   ToggledNotificationBlocker blocker(message_center());
 
   message_center()->AddNotification(std::unique_ptr<Notification>(
@@ -550,8 +550,8 @@ TEST_F(MessageCenterImplTest, NotificationsDuringBlocked) {
 // Similar to other blocker cases but this test case allows |notifier_id2| even
 // in blocked.
 TEST_F(MessageCenterImplTest, NotificationBlockerAllowsPopups) {
-  NotifierId notifier_id1(NotifierId::APPLICATION, "app1");
-  NotifierId notifier_id2(NotifierId::APPLICATION, "app2");
+  NotifierId notifier_id1(NotifierType::APPLICATION, "app1");
+  NotifierId notifier_id2(NotifierType::APPLICATION, "app2");
   PopupNotificationBlocker blocker(message_center(), notifier_id2);
 
   message_center()->AddNotification(std::unique_ptr<Notification>(
@@ -605,8 +605,8 @@ TEST_F(MessageCenterImplTest, NotificationBlockerAllowsPopups) {
 // This would provide the feature to 'separated' message centers per-profile for
 // ChromeOS multi-login.
 TEST_F(MessageCenterImplTest, TotalNotificationBlocker) {
-  NotifierId notifier_id1(NotifierId::APPLICATION, "app1");
-  NotifierId notifier_id2(NotifierId::APPLICATION, "app2");
+  NotifierId notifier_id1(NotifierType::APPLICATION, "app1");
+  NotifierId notifier_id2(NotifierType::APPLICATION, "app2");
   TotalNotificationBlocker blocker(message_center(), notifier_id2);
 
   message_center()->AddNotification(std::unique_ptr<Notification>(
@@ -674,8 +674,8 @@ TEST_F(MessageCenterImplTest, TotalNotificationBlocker) {
 }
 
 TEST_F(MessageCenterImplTest, RemoveAllNotifications) {
-  NotifierId notifier_id1(NotifierId::APPLICATION, "app1");
-  NotifierId notifier_id2(NotifierId::APPLICATION, "app2");
+  NotifierId notifier_id1(NotifierType::APPLICATION, "app1");
+  NotifierId notifier_id2(NotifierType::APPLICATION, "app2");
 
   TotalNotificationBlocker blocker(message_center(), notifier_id1);
   blocker.SetNotificationsEnabled(false);
@@ -712,8 +712,8 @@ TEST_F(MessageCenterImplTest, RemoveAllNotifications) {
 
 #if defined(OS_CHROMEOS)
 TEST_F(MessageCenterImplTest, RemoveAllNotificationsWithPinned) {
-  NotifierId notifier_id1(NotifierId::APPLICATION, "app1");
-  NotifierId notifier_id2(NotifierId::APPLICATION, "app2");
+  NotifierId notifier_id1(NotifierType::APPLICATION, "app1");
+  NotifierId notifier_id2(NotifierType::APPLICATION, "app2");
 
   TotalNotificationBlocker blocker(message_center(), notifier_id1);
   blocker.SetNotificationsEnabled(false);
@@ -793,24 +793,24 @@ TEST_F(MessageCenterImplTest, NotifierEnabledChanged) {
 
   // Removing all of app2's notifications should only leave app1's.
   message_center()->RemoveNotificationsForNotifierId(
-      NotifierId(NotifierId::APPLICATION, "app2"));
+      NotifierId(NotifierType::APPLICATION, "app2"));
   ASSERT_EQ(3u, message_center()->NotificationCount());
 
   // Removal operations should be idempotent.
   message_center()->RemoveNotificationsForNotifierId(
-      NotifierId(NotifierId::APPLICATION, "app2"));
+      NotifierId(NotifierType::APPLICATION, "app2"));
   ASSERT_EQ(3u, message_center()->NotificationCount());
 
   // Now we remove the remaining notifications.
   message_center()->RemoveNotificationsForNotifierId(
-      NotifierId(NotifierId::APPLICATION, "app1"));
+      NotifierId(NotifierType::APPLICATION, "app1"));
   ASSERT_EQ(0u, message_center()->NotificationCount());
 }
 
 TEST_F(MessageCenterImplTest, UpdateWhileMessageCenterVisible) {
   std::string id1("id1");
   std::string id2("id2");
-  NotifierId notifier_id1(NotifierId::APPLICATION, "app1");
+  NotifierId notifier_id1(NotifierType::APPLICATION, "app1");
 
   // First, add and update a notification to ensure updates happen
   // normally.

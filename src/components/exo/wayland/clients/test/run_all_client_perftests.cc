@@ -6,12 +6,12 @@
 #include "base/bind.h"
 #include "base/command_line.h"
 #include "base/debug/debugger.h"
-#include "base/message_loop/message_loop_current.h"
 #include "base/process/launch.h"
 #include "base/run_loop.h"
 #include "base/test/launcher/unit_test_launcher.h"
 #include "base/test/scoped_task_environment.h"
 #include "base/threading/thread.h"
+#include "base/threading/thread_task_runner_handle.h"
 #include "build/build_config.h"
 #include "components/exo/wayland/clients/test/wayland_client_test.h"
 #include "mojo/core/embedder/embedder.h"
@@ -36,7 +36,7 @@ class ExoClientPerfTestSuite : public ash::AshTestSuite {
     client_thread.Start();
 
     base::RunLoop run_loop;
-    client_thread.message_loop()->task_runner()->PostTask(
+    client_thread.task_runner()->PostTask(
         FROM_HERE,
         base::BindOnce(&ExoClientPerfTestSuite::RunTestsOnClientThread,
                        base::Unretained(this), run_loop.QuitWhenIdleClosure()));
@@ -69,9 +69,10 @@ class ExoClientPerfTestSuite : public ash::AshTestSuite {
           std::make_unique<base::test::ScopedTaskEnvironment>(
               base::test::ScopedTaskEnvironment::MainThreadType::UI);
 
-      // Set the UI thread message loop to WaylandClientTest, so all tests can
+      // Set the UI thread task runner to WaylandClientTest, so all tests can
       // post tasks to UI thread.
-      WaylandClientTest::SetUIMessageLoop(base::MessageLoopCurrent::Get());
+      WaylandClientTest::SetUIThreadTaskRunner(
+          base::ThreadTaskRunnerHandle::Get());
     }
   }
 
@@ -80,7 +81,7 @@ class ExoClientPerfTestSuite : public ash::AshTestSuite {
       scoped_task_environment_ = nullptr;
       base::TestSuite::Shutdown();
     } else {
-      WaylandClientTest::SetUIMessageLoop(nullptr);
+      WaylandClientTest::SetUIThreadTaskRunner(nullptr);
       scoped_task_environment_ = nullptr;
       ash::AshTestSuite::Shutdown();
     }

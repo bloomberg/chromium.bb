@@ -67,6 +67,7 @@ struct SwapBuffersCompleteParams;
 
 namespace raster {
 class GrShaderCache;
+struct RasterDecoderContextState;
 }
 
 // This class provides a thread-safe interface to the global GPU service (for
@@ -122,8 +123,7 @@ class GL_IN_PROCESS_CONTEXT_EXPORT InProcessCommandBuffer
   const Capabilities& GetCapabilities() const override;
   int32_t CreateImage(ClientBuffer buffer,
                       size_t width,
-                      size_t height,
-                      unsigned internalformat) override;
+                      size_t height) override;
   void DestroyImage(int32_t id) override;
   void SignalQuery(uint32_t query_id, base::OnceClosure callback) override;
   void CreateGpuFence(uint32_t gpu_fence_id, ClientGpuFence source) override;
@@ -177,13 +177,6 @@ class GL_IN_PROCESS_CONTEXT_EXPORT InProcessCommandBuffer
       base::Callback<void(base::TimeTicks timebase, base::TimeDelta interval)>;
   void SetUpdateVSyncParametersCallback(
       const UpdateVSyncParametersCallback& callback);
-
-  // Mostly the GpuFeatureInfo from GpuInit will be used to create a gpu thread
-  // service. In certain tests GpuInit is not part of the execution path, so
-  // the test suite need to compute it and pass it to the default service.
-  // See "gpu/ipc/in_process_command_buffer.cc".
-  static void InitializeDefaultServiceForTesting(
-      const GpuFeatureInfo& gpu_feature_info);
 
   gpu::ServiceTransferCache* GetTransferCacheForTest() const;
   int GetRasterDecoderIdForTest() const;
@@ -265,7 +258,6 @@ class GL_IN_PROCESS_CONTEXT_EXPORT InProcessCommandBuffer
                               gfx::GpuMemoryBufferHandle handle,
                               const gfx::Size& size,
                               gfx::BufferFormat format,
-                              uint32_t internalformat,
                               uint64_t fence_sync);
   void DestroyImageOnGpuThread(int32_t id);
 
@@ -276,11 +268,21 @@ class GL_IN_PROCESS_CONTEXT_EXPORT InProcessCommandBuffer
   void GetGpuFenceOnGpuThread(
       uint32_t gpu_fence_id,
       base::OnceCallback<void(std::unique_ptr<gfx::GpuFence>)> callback);
+  void LazyCreateSharedImageFactory();
   void CreateSharedImageOnGpuThread(const Mailbox& mailbox,
                                     viz::ResourceFormat format,
                                     const gfx::Size& size,
                                     const gfx::ColorSpace& color_space,
                                     uint32_t usage,
+                                    const SyncToken& sync_token);
+  void CreateGMBSharedImageOnGpuThread(const Mailbox& mailbox,
+                                       gfx::GpuMemoryBufferHandle handle,
+                                       gfx::BufferFormat format,
+                                       const gfx::Size& size,
+                                       const gfx::ColorSpace& color_space,
+                                       uint32_t usage,
+                                       const SyncToken& sync_token);
+  void UpdateSharedImageOnGpuThread(const Mailbox& mailbox,
                                     const SyncToken& sync_token);
   void DestroySharedImageOnGpuThread(const Mailbox& mailbox);
 
@@ -360,6 +362,8 @@ class GL_IN_PROCESS_CONTEXT_EXPORT InProcessCommandBuffer
   };
   base::circular_deque<SwapBufferParams> pending_presented_params_;
   base::circular_deque<SwapBufferParams> pending_swap_completed_params_;
+
+  scoped_refptr<raster::RasterDecoderContextState> context_state_;
 
   base::WeakPtrFactory<InProcessCommandBuffer> client_thread_weak_ptr_factory_;
   base::WeakPtrFactory<InProcessCommandBuffer> gpu_thread_weak_ptr_factory_;

@@ -6,15 +6,18 @@
 
 #include "base/metrics/histogram_macros.h"
 #include "chrome/browser/infobars/infobar_service.h"
+#include "chrome/browser/resource_coordinator/utils.h"
 #include "chrome/grit/generated_resources.h"
 #include "components/infobars/core/simple_alert_infobar_delegate.h"
 #include "content/public/browser/navigation_entry.h"
 #include "content/public/browser/navigation_handle.h"
 #include "content/public/browser/render_process_host.h"
+#include "content/public/common/content_features.h"
 #include "content/public/common/page_importance_signals.h"
 #include "ui/base/l10n/l10n_util.h"
 
 namespace {
+
 // These values are persisted to logs. Entries should not be renumbered and
 // numeric values should never be reused.
 enum class BloatedRendererHandlingInBrowser {
@@ -27,18 +30,15 @@ enum class BloatedRendererHandlingInBrowser {
 void RecordBloatedRendererHandling(BloatedRendererHandlingInBrowser handling) {
   UMA_HISTOGRAM_ENUMERATION("BloatedRenderer.HandlingInBrowser", handling);
 }
+
 }  // anonymous namespace
 
 BloatedRendererTabHelper::BloatedRendererTabHelper(
     content::WebContents* contents)
     : content::WebContentsObserver(contents) {
-  auto* page_signal_receiver =
-      resource_coordinator::PageSignalReceiver::GetInstance();
-  if (page_signal_receiver) {
-    // PageSignalReceiver is not available if the resource coordinator is not
-    // enabled.
+  if (auto* page_signal_receiver =
+          resource_coordinator::GetPageSignalReceiver())
     page_signal_receiver->AddObserver(this);
-  }
 }
 
 void BloatedRendererTabHelper::DidStartNavigation(
@@ -60,13 +60,9 @@ void BloatedRendererTabHelper::DidFinishNavigation(
 }
 
 void BloatedRendererTabHelper::WebContentsDestroyed() {
-  auto* page_signal_receiver =
-      resource_coordinator::PageSignalReceiver::GetInstance();
-  if (page_signal_receiver) {
-    // PageSignalReceiver is not available if the resource coordinator is not
-    // enabled.
+  if (auto* page_signal_receiver =
+          resource_coordinator::GetPageSignalReceiver())
     page_signal_receiver->RemoveObserver(this);
-  }
 }
 
 void BloatedRendererTabHelper::ShowInfoBar(InfoBarService* infobar_service) {
@@ -120,12 +116,14 @@ bool BloatedRendererTabHelper::CanReloadBloatedTab() {
 void BloatedRendererTabHelper::OnRendererIsBloated(
     content::WebContents* bloated_web_contents,
     const resource_coordinator::PageNavigationIdentity& page_navigation_id) {
+  if (!base::FeatureList::IsEnabled(features::kBloatedRendererDetection)) {
+    return;
+  }
   if (web_contents() != bloated_web_contents) {
     // Ignore if the notification is about a different tab.
     return;
   }
-  auto* page_signal_receiver =
-      resource_coordinator::PageSignalReceiver::GetInstance();
+  auto* page_signal_receiver = resource_coordinator::GetPageSignalReceiver();
   DCHECK_NE(nullptr, page_signal_receiver);
   if (page_navigation_id.navigation_id !=
       page_signal_receiver->GetNavigationIDForWebContents(web_contents())) {

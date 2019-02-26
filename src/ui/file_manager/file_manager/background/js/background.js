@@ -12,14 +12,11 @@
 function FileBrowserBackgroundImpl() {
   BackgroundBase.call(this);
 
-  /** @type {!analytics.Tracker} */
-  this.tracker = metrics.getTracker();
-
   /**
    * Progress center of the background page.
    * @type {!ProgressCenter}
    */
-  this.progressCenter = new ProgressCenter();
+  this.progressCenter = new ProgressCenterImpl();
 
   /**
    * File operation manager.
@@ -33,7 +30,7 @@ function FileBrowserBackgroundImpl() {
    *
    * @type {!importer.HistoryLoader}
    */
-  this.historyLoader = new importer.RuntimeHistoryLoader(this.tracker);
+  this.historyLoader = new importer.RuntimeHistoryLoader();
 
   /**
    * Event handler for progress center.
@@ -56,13 +53,13 @@ function FileBrowserBackgroundImpl() {
    * Drive sync handler.
    * @type {!DriveSyncHandler}
    */
-  this.driveSyncHandler = new DriveSyncHandler(this.progressCenter);
+  this.driveSyncHandler = new DriveSyncHandlerImpl(this.progressCenter);
 
   /**
    * @type {!importer.DispositionChecker.CheckerFunction}
    */
-  this.dispositionChecker_ = importer.DispositionChecker.createChecker(
-      this.historyLoader, this.tracker);
+  this.dispositionChecker_ =
+      importer.DispositionChecker.createChecker(this.historyLoader);
 
   /**
    * Provides support for scaning media devices as part of Cloud Import.
@@ -80,7 +77,10 @@ function FileBrowserBackgroundImpl() {
    */
   this.mediaImportHandler = new importer.MediaImportHandler(
       this.progressCenter, this.historyLoader, this.dispositionChecker_,
-      this.tracker, this.driveSyncHandler);
+      this.driveSyncHandler);
+
+  /** @type {!Crostini} */
+  this.crostini = new Crostini();
 
   /**
    * String assets.
@@ -101,7 +101,7 @@ function FileBrowserBackgroundImpl() {
   chrome.contextMenus.onClicked.addListener(
       this.onContextMenuClicked_.bind(this));
 
-  // Initializa string and volume manager related stuffs.
+  // Initialize string and volume manager related stuffs.
   this.initializationPromise_.then(function(strings) {
     this.stringData = strings;
     this.initContextMenu_();
@@ -110,9 +110,12 @@ function FileBrowserBackgroundImpl() {
       volumeManager.addEventListener(
           VolumeManagerCommon.VOLUME_ALREADY_MOUNTED,
           this.handleViewEvent_.bind(this));
+
+      this.crostini.init(volumeManager);
+      this.crostini.listen();
     }.bind(this));
 
-    this.fileOperationManager = new FileOperationManager();
+    this.fileOperationManager = new FileOperationManagerImpl();
     this.fileOperationHandler_ = new FileOperationHandler(
         this.fileOperationManager, this.progressCenter);
   }.bind(this));
@@ -319,6 +322,8 @@ var nextFileManagerDialogID = 0;
 function registerDialog(dialogWindow) {
   var id = DIALOG_ID_PREFIX + (nextFileManagerDialogID++);
   window.background.dialogs[id] = dialogWindow;
+  if (window.IN_TEST)
+    dialogWindow.IN_TEST = true;
   dialogWindow.addEventListener('pagehide', function() {
     delete window.background.dialogs[id];
   });

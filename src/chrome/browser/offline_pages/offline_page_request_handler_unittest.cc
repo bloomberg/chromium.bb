@@ -38,7 +38,6 @@
 #include "components/offline_pages/core/offline_page_metadata_store.h"
 #include "components/offline_pages/core/request_header/offline_page_navigation_ui_data.h"
 #include "components/offline_pages/core/stub_system_download_manager.h"
-#include "components/previews/content/previews_user_data.h"
 #include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/resource_request_info.h"
@@ -1140,8 +1139,6 @@ std::unique_ptr<net::URLRequest> OfflinePageRequestJobBuilder::CreateRequest(
                                                url_request_delegate_.get());
   request->set_method(method);
 
-  previews::PreviewsUserData::Create(request.get(), 1u);
-
   content::ResourceRequestInfo::AllocateForTesting(
       request.get(),
       is_main_frame ? content::RESOURCE_TYPE_MAIN_FRAME
@@ -1312,6 +1309,10 @@ void OfflinePageURLLoaderBuilder::InterceptRequestOnIO(
   network::ResourceRequest request =
       CreateResourceRequest(url, method, extra_headers, is_main_frame);
 
+  request.previews_state = test_base_->allow_preview()
+                               ? content::OFFLINE_PAGE_ON
+                               : content::PREVIEWS_OFF;
+
   url_loader_ = OfflinePageURLLoader::Create(
       navigation_ui_data_.get(),
       test_base_->web_contents()->GetMainFrame()->GetFrameTreeNodeId(), request,
@@ -1323,9 +1324,6 @@ void OfflinePageURLLoaderBuilder::InterceptRequestOnIO(
     return;
 
   url_loader_->SetTabIdGetterForTesting(base::BindRepeating(&GetTabId, kTabId));
-  url_loader_->SetShouldAllowPreviewCallbackForTesting(
-      base::BindRepeating(&OfflinePageRequestHandlerTestBase::allow_preview,
-                          base::Unretained(test_base_)));
 }
 
 void OfflinePageURLLoaderBuilder::InterceptRequest(

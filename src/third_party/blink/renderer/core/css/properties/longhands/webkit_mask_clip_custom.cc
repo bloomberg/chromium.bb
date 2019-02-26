@@ -10,15 +10,15 @@
 #include "third_party/blink/renderer/core/style/computed_style.h"
 
 namespace blink {
-namespace CSSLonghand {
+namespace css_longhand {
 
 const CSSValue* WebkitMaskClip::ParseSingleValue(
     CSSParserTokenRange& range,
     const CSSParserContext&,
     const CSSParserLocalContext&) const {
-  return CSSPropertyParserHelpers::ConsumeCommaSeparatedList(
-      CSSParsingUtils::ConsumePrefixedBackgroundBox, range,
-      CSSParsingUtils::AllowTextValue::kAllow);
+  return css_property_parser_helpers::ConsumeCommaSeparatedList(
+      css_parsing_utils::ConsumePrefixedBackgroundBox, range,
+      css_parsing_utils::AllowTextValue::kAllow);
 }
 
 const CSSValue* WebkitMaskClip::CSSValueFromComputedStyleInternal(
@@ -36,5 +36,5 @@ const CSSValue* WebkitMaskClip::CSSValueFromComputedStyleInternal(
   return list;
 }
 
-}  // namespace CSSLonghand
+}  // namespace css_longhand
 }  // namespace blink

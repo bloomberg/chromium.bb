@@ -45,7 +45,7 @@ constexpr int kMaxDepth = 4;
 // Some strings are very long, and we don't currently use those, so limit string
 // length to something reasonable to avoid undue pressure on Icing. Note that
 // App Indexing supports strings up to length 20k.
-constexpr int kMaxStringLength = 200;
+constexpr wtf_size_t kMaxStringLength = 200;
 // Enforced by App Indexing, so stop processing early if possible.
 constexpr wtf_size_t kMaxNumFields = 20;
 // Enforced by App Indexing, so stop processing early if possible.
@@ -231,7 +231,7 @@ void extractTopLevelEntity(const JSONObject& val, Vector<EntityPtr>& entities) {
 
 void extractEntitiesFromArray(const JSONArray& arr,
                               Vector<EntityPtr>& entities) {
-  for (size_t i = 0; i < arr.size(); ++i) {
+  for (wtf_size_t i = 0; i < arr.size(); ++i) {
     const JSONValue* val = arr.at(i);
     if (val->GetType() == JSONValue::ValueType::kTypeObject) {
       extractTopLevelEntity(*(JSONObject::Cast(val)), entities);
@@ -255,8 +255,8 @@ enum ExtractionStatus { kOK, kEmpty, kParseFailure, kWrongType, kCount };
 ExtractionStatus extractMetadata(const Element& root,
                                  Vector<EntityPtr>& entities) {
   for (Element& element : ElementTraversal::DescendantsOf(root)) {
-    if (element.HasTagName(HTMLNames::scriptTag) &&
-        element.getAttribute(HTMLNames::typeAttr) == "application/ld+json") {
+    if (element.HasTagName(html_names::kScriptTag) &&
+        element.getAttribute(html_names::kTypeAttr) == "application/ld+json") {
       std::unique_ptr<JSONValue> json = ParseJSON(element.textContent());
       if (!json) {
         LOG(ERROR) << "Failed to parse json.";

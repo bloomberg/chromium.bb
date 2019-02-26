@@ -18,6 +18,8 @@
 #include "skia/ext/image_operations.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/skia/include/core/SkBitmap.h"
+#include "third_party/skia/include/core/SkColorSpace.h"
+#include "third_party/skia/include/core/SkImageInfo.h"
 #include "third_party/skia/include/core/SkRect.h"
 #include "ui/gfx/codec/png_codec.h"
 #include "ui/gfx/geometry/size.h"
@@ -115,7 +117,7 @@ bool ColorsClose(uint32_t a, uint32_t b) {
 }
 
 void FillDataToBitmap(int w, int h, SkBitmap* bmp) {
-  bmp->allocN32Pixels(w, h);
+  bmp->allocPixels(SkImageInfo::MakeN32Premul(w, h, SkColorSpace::MakeSRGB()));
 
   for (int y = 0; y < h; ++y) {
     for (int x = 0; x < w; ++x) {
@@ -139,7 +141,7 @@ void DrawCheckerToBitmap(int w, int h,
   ASSERT_GT(rect_h, 0);
   ASSERT_NE(color1, color2);
 
-  bmp->allocN32Pixels(w, h);
+  bmp->allocPixels(SkImageInfo::MakeN32Premul(w, h, SkColorSpace::MakeSRGB()));
 
   for (int y = 0; y < h; ++y) {
     bool y_bit = (((y / rect_h) & 0x1) == 0);
@@ -194,6 +196,7 @@ void CheckResampleToSame(skia::ImageOperations::ResizeMethod method) {
   SkBitmap results = skia::ImageOperations::Resize(src, method, src_w, src_h);
   ASSERT_EQ(src_w, results.width());
   ASSERT_EQ(src_h, results.height());
+  EXPECT_TRUE(results.colorSpace() && results.colorSpace()->isSRGB());
 
   for (int y = 0; y < src_h; y++) {
     for (int x = 0; x < src_w; x++) {
@@ -254,6 +257,7 @@ void CheckResizeMethodShouldAverageGrid(
   SkBitmap dest = skia::ImageOperations::Resize(src, method, dest_w, dest_h);
   ASSERT_EQ(dest_w, dest.width());
   ASSERT_EQ(dest_h, dest.height());
+  EXPECT_TRUE(dest.colorSpace() && dest.colorSpace()->isSRGB());
 
   // Check that pixels match the expected average.
   float max_observed_distance = 0.0f;
@@ -361,6 +365,8 @@ TEST(ImageOperations, Halve) {
       src, skia::ImageOperations::RESIZE_BOX, src_w / 2, src_h / 2);
   ASSERT_EQ(src_w / 2, actual_results.width());
   ASSERT_EQ(src_h / 2, actual_results.height());
+  EXPECT_TRUE(actual_results.colorSpace() &&
+              actual_results.colorSpace()->isSRGB());
 
   // Compute the expected values & compare.
   for (int y = 0; y < actual_results.height(); y++) {
@@ -404,6 +410,7 @@ TEST(ImageOperations, HalveSubset) {
       src, skia::ImageOperations::RESIZE_BOX, src_w / 2, src_h / 2);
   ASSERT_EQ(src_w / 2, full_results.width());
   ASSERT_EQ(src_h / 2, full_results.height());
+  EXPECT_TRUE(full_results.colorSpace() && full_results.colorSpace()->isSRGB());
 
   // Now do a halving of a a subset, recall the destination subset is in the
   // destination coordinate system (max = half of the original image size).
@@ -413,6 +420,8 @@ TEST(ImageOperations, HalveSubset) {
       src_w / 2, src_h / 2, subset_rect);
   ASSERT_EQ(subset_rect.width(), subset_results.width());
   ASSERT_EQ(subset_rect.height(), subset_results.height());
+  EXPECT_TRUE(subset_results.colorSpace() &&
+              subset_results.colorSpace()->isSRGB());
 
   // The computed subset and the corresponding subset of the original image
   // should be the same.
@@ -515,7 +524,8 @@ TEST(ImageOperations, ScaleUp) {
   const int dst_w = 9;
   const int dst_h = 9;
   SkBitmap src;
-  src.allocN32Pixels(src_w, src_h);
+  src.allocPixels(
+      SkImageInfo::MakeN32Premul(src_w, src_h, SkColorSpace::MakeSRGB()));
 
   for (int src_y = 0; src_y < src_h; ++src_y) {
     for (int src_x = 0; src_x < src_w; ++src_x) {
@@ -528,6 +538,7 @@ TEST(ImageOperations, ScaleUp) {
       src,
       skia::ImageOperations::RESIZE_LANCZOS3,
       dst_w, dst_h);
+  EXPECT_TRUE(dst.colorSpace() && dst.colorSpace()->isSRGB());
   for (int dst_y = 0; dst_y < dst_h; ++dst_y) {
     for (int dst_x = 0; dst_x < dst_w; ++dst_x) {
       float dst_x_in_src = (dst_x + 0.5) * src_w / dst_w;

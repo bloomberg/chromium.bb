@@ -5,7 +5,10 @@
 #ifndef CHROME_BROWSER_VR_GRAPHICS_DELEGATE_H_
 #define CHROME_BROWSER_VR_GRAPHICS_DELEGATE_H_
 
+#include <string>
+
 #include "base/callback_forward.h"
+#include "base/memory/scoped_refptr.h"
 #include "chrome/browser/vr/fov_rectangle.h"
 #include "chrome/browser/vr/frame_type.h"
 #include "chrome/browser/vr/gl_texture_location.h"
@@ -33,8 +36,6 @@ class VR_EXPORT GraphicsDelegate {
   using TexturesInitializedCallback = base::OnceCallback<
       void(GlTextureLocation, unsigned int, unsigned int, unsigned int)>;
   virtual ~GraphicsDelegate() {}
-
-  virtual void OnResume() = 0;
 
   virtual FovRectangles GetRecommendedFovs() = 0;
   virtual float GetZNear() = 0;

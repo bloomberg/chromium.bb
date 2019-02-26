@@ -40,7 +40,7 @@ TEST_F(RangeTest, extractContentsWithDOMMutationEvent) {
   GetDocument().body()->SetInnerHTMLFromString("<span><b>abc</b>def</span>");
   GetDocument().GetSettings()->SetScriptEnabled(true);
   Element* const script_element =
-      GetDocument().CreateRawElement(HTMLNames::scriptTag);
+      GetDocument().CreateRawElement(html_names::kScriptTag);
   script_element->setTextContent(
       "let count = 0;"
       "const span = document.querySelector('span');"
@@ -54,7 +54,7 @@ TEST_F(RangeTest, extractContentsWithDOMMutationEvent) {
   Element* const span_element = GetDocument().QuerySelector("span");
   Range* const range =
       Range::Create(GetDocument(), span_element, 0, span_element, 1);
-  Element* const result = GetDocument().CreateRawElement(HTMLNames::divTag);
+  Element* const result = GetDocument().CreateRawElement(html_names::kDivTag);
   result->AppendChild(range->extractContents(ASSERT_NO_EXCEPTION));
 
   EXPECT_EQ("<b>abc</b>", result->InnerHTMLAsString())
@@ -302,7 +302,7 @@ TEST_F(RangeTest, BoundingRectMustIndependentFromSelection) {
       SelectionInDOMTree::Builder()
           .SetBaseAndExtent(EphemeralRange(range))
           .Build());
-  GetDocument().View()->UpdateAllLifecyclePhases();
+  UpdateAllLifecyclePhasesForTest();
   EXPECT_EQ(Selection().SelectedText(), "x x");
   const FloatRect rect_after = range->BoundingRect();
   EXPECT_EQ(rect_before, rect_after);

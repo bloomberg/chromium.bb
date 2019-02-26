@@ -27,9 +27,9 @@
 #include "content/public/browser/content_browser_client.h"
 #include "content/public/browser/login_delegate.h"
 #include "content/public/common/appcache_info.h"
-#include "content/public/common/browser_side_navigation_policy.h"
 #include "content/public/common/content_client.h"
 #include "content/public/common/content_switches.h"
+#include "content/public/common/navigation_policy.h"
 #include "content/public/common/resource_type.h"
 #include "net/base/io_buffer.h"
 #include "net/base/load_flags.h"
@@ -38,6 +38,7 @@
 #include "net/nqe/effective_connection_type.h"
 #include "net/nqe/network_quality_estimator.h"
 #include "net/ssl/client_cert_store.h"
+#include "net/ssl/ssl_connection_status_flags.h"
 #include "net/url_request/redirect_info.h"
 #include "net/url_request/url_request_context.h"
 #include "net/url_request/url_request_status.h"
@@ -59,6 +60,7 @@ net::SSLInfo SelectSSLInfoFields(const net::SSLInfo& in) {
   net::SSLInfo out;
   out.connection_status = in.connection_status;
   out.key_exchange_group = in.key_exchange_group;
+  out.peer_signature_algorithm = in.peer_signature_algorithm;
   out.signed_certificate_timestamps = in.signed_certificate_timestamps;
   out.cert = in.cert;
   return out;
@@ -83,7 +85,7 @@ void PopulateResourceResponse(
       response_info.alpn_negotiated_protocol;
   response->head.connection_info = response_info.connection_info;
   response->head.socket_address = response_info.socket_address;
-  response->head.was_fetched_via_proxy = request->was_fetched_via_proxy();
+  response->head.proxy_server = request->proxy_server();
   response->head.network_accessed = response_info.network_accessed;
   response->head.async_revalidation_requested =
       response_info.async_revalidation_requested;
@@ -125,15 +127,20 @@ void PopulateResourceResponse(
         (!net::IsCertStatusError(response->head.cert_status) ||
          net::IsCertStatusMinorError(response->head.cert_status)) &&
         net::IsLegacySymantecCert(request->ssl_info().public_key_hashes);
+    net::SSLVersion ssl_version = net::SSLConnectionStatusToVersion(
+        request->ssl_info().connection_status);
+    response->head.is_legacy_tls_version =
+        ssl_version == net::SSLVersion::SSL_CONNECTION_VERSION_TLS1 ||
+        ssl_version == net::SSLVersion::SSL_CONNECTION_VERSION_TLS1_1;
 
     if (info->ShouldReportSecurityInfo())
       response->head.ssl_info = SelectSSLInfoFields(request->ssl_info());
   } else {
     // We should not have any SSL state.
     DCHECK(!request->ssl_info().cert_status);
-    DCHECK_EQ(request->ssl_info().security_bits, -1);
     DCHECK_EQ(request->ssl_info().key_exchange_group, 0);
-    DCHECK(!request->ssl_info().connection_status);
+    DCHECK_EQ(request->ssl_info().peer_signature_algorithm, 0);
+    DCHECK_EQ(request->ssl_info().connection_status, 0);
   }
 }
 

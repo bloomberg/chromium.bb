@@ -117,7 +117,7 @@ def main(argv):
       '\n'
       '// Bound calls to token_to_string to prevent memory usage from growing\n'
       '// too much.\n'
-      'const int kMaxRecursiveDepth = 10;\n'
+      'const int kMaxRecursiveDepth = 9;\n'
       '\n'
       'std::string token_to_string(\n'
       '    const javascript_parser_proto_fuzzer::Token& token, int depth)'

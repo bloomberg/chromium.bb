@@ -254,6 +254,7 @@ class ArchiveStage(generic_stages.BoardSpecificBuilderStage,
         tarball = commands.BuildFullAutotestTarball(self._build_root,
                                                     self._current_board,
                                                     image_dir)
+        self.board_runattrs.SetParallel('autotest_tarball_generated', True)
         commands.ArchiveFile(tarball, archive_path)
 
         # Build hwqual image and upload to Google Storage.
@@ -261,6 +262,8 @@ class ArchiveStage(generic_stages.BoardSpecificBuilderStage,
         filename = commands.ArchiveHWQual(buildroot, hwqual_name, archive_path,
                                           image_dir)
         self._release_upload_queue.put([filename])
+      else:
+        self.board_runattrs.SetParallel('autotest_tarball_generated', True)
 
     def ArchiveLicenseFile():
       """Archive licensing file."""
@@ -281,6 +284,10 @@ class ArchiveStage(generic_stages.BoardSpecificBuilderStage,
       # run one instance of build_image at a time. TODO(davidjames): Move the
       # image generation out of the archive stage.
       self.LoadArtifactsList(self._current_board, image_dir)
+
+      # If there's no plan to run ArchiveHWQual, VMTest should start asap.
+      if not config['images']:
+        self.board_runattrs.SetParallel('autotest_tarball_generated', True)
 
       # For recovery image to be generated correctly, BuildRecoveryImage must
       # run before BuildAndArchiveFactoryImages.
@@ -364,12 +371,19 @@ class ArchiveStage(generic_stages.BoardSpecificBuilderStage,
 
     if not self._run.config.afdo_generate_min:
       BuildAndArchiveArtifacts()
+    self.board_runattrs.SetParallel('autotest_tarball_generated', True)
+
+  def HandleSkip(self):
+    """Tell other stages to not wait on us if we are skipped."""
+    self.board_runattrs.SetParallel('autotest_tarball_generated', True)
+    return super(ArchiveStage, self).HandleSkip()
 
   def _HandleStageException(self, exc_info):
     # Tell the HWTestStage not to wait for artifacts to be uploaded
     # in case ArchiveStage throws an exception.
     self._recovery_image_status_queue.put(False)
     self.board_runattrs.SetParallel('instruction_urls_per_channel', None)
+    self.board_runattrs.SetParallel('autotest_tarball_generated', True)
     return super(ArchiveStage, self)._HandleStageException(exc_info)
 
 

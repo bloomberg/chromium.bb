@@ -137,14 +137,10 @@ if (is_linux) {
       "//url/ipc:url_ipc",
     ]
 
-    cflags = [ "-fPIE" ]
-
-    ldflags = [ "-pie" ]
-
     if (is_chromeos) {
       # NaCl is not working with compiler-rt in ChromeOS.
       # Force libgcc as a workaround. See https://crbug.com/761103
-      ldflags += [ "-rtlib=libgcc" ]
+      ldflags = [ "-rtlib=libgcc" ]
 
       # nacl_helper needs to link with libgcc_s. We already have -lgcc_s in
       # the final link command line, but it was placed within "--as-needed"
@@ -153,18 +149,6 @@ if (is_linux) {
       # the latter are also placed within an "--as-needed"'.
       # See https://crbug.com/884017
       ldflags += [ "-lgcc_s" ]
-
-      # Nacl crashes when enabling ThinLTO. See https://crbug.com/799642
-      # We haven't triaged down to the root cause yet. For now, disabling
-      # dead function removal from LTO optimization is a workaround, so that
-      # we can enable ThinLTO and CFI.
-      if (use_thin_lto) {
-        if (use_lld) {
-          ldflags += [ "-Wl,-mllvm,-compute-dead=false" ]
-        } else {
-          ldflags += [ "-Wl,-plugin-opt,-compute-dead=false" ]
-        }
-      }
     }
 
     # The only symbols that nacl_helper needs to export are those specified by

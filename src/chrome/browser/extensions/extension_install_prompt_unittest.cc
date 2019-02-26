@@ -175,7 +175,7 @@ TEST_F(ExtensionInstallPromptTestWithService, ExtensionInstallPromptIconsTest) {
   ImageLoader::Get(browser_context())
       ->LoadImagesAsync(
           extension, image_rep,
-          base::Bind(&SetImage, &image, image_loop.QuitClosure()));
+          base::BindOnce(&SetImage, &image, image_loop.QuitClosure()));
   image_loop.Run();
   ASSERT_FALSE(image.IsEmpty());
   std::unique_ptr<content::WebContents> web_contents(

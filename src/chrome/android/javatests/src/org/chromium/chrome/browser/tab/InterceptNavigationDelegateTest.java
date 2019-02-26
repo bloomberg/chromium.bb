@@ -19,6 +19,7 @@ import org.chromium.base.ThreadUtils;
 import org.chromium.base.test.util.CommandLineFlags;
 import org.chromium.base.test.util.RetryOnFailure;
 import org.chromium.chrome.browser.ChromeActivity;
+import org.chromium.chrome.browser.ChromeFeatureList;
 import org.chromium.chrome.browser.ChromeSwitches;
 import org.chromium.chrome.browser.externalnav.ExternalNavigationHandler;
 import org.chromium.chrome.browser.externalnav.ExternalNavigationParams;
@@ -146,6 +147,7 @@ public class InterceptNavigationDelegateTest {
         DOMUtils.clickNode(mActivity.getActivityTab().getWebContents(), "first");
         waitTillExpectedCallsComplete(2, DEFAULT_MAX_TIME_TO_WAIT_IN_MS);
         Assert.assertTrue(mNavParamHistory.get(1).hasUserGesture);
+        // TODO(mustaq): Not clear why cary-over is different here vs the next test.
         Assert.assertFalse(mNavParamHistory.get(1).hasUserGestureCarryover);
     }
 
@@ -157,8 +159,15 @@ public class InterceptNavigationDelegateTest {
 
         DOMUtils.clickNode(mActivity.getActivityTab().getWebContents(), "first");
         waitTillExpectedCallsComplete(2, DEFAULT_MAX_TIME_TO_WAIT_IN_MS);
-        Assert.assertFalse(mNavParamHistory.get(1).hasUserGesture);
-        Assert.assertTrue(mNavParamHistory.get(1).hasUserGestureCarryover);
+
+        // TODO(mustaq): Cleanup after UAv2 ships, crbug.com/908531.
+        if (ChromeFeatureList.isEnabled(ChromeFeatureList.USER_ACTIVATION_V2)) {
+            Assert.assertTrue(mNavParamHistory.get(1).hasUserGesture);
+            Assert.assertFalse(mNavParamHistory.get(1).hasUserGestureCarryover);
+        } else {
+            Assert.assertFalse(mNavParamHistory.get(1).hasUserGesture);
+            Assert.assertTrue(mNavParamHistory.get(1).hasUserGestureCarryover);
+        }
     }
 
     @Test
@@ -171,8 +180,15 @@ public class InterceptNavigationDelegateTest {
 
         DOMUtils.clickNode(mActivity.getActivityTab().getWebContents(), "first");
         waitTillExpectedCallsComplete(2, DEFAULT_MAX_TIME_TO_WAIT_IN_MS);
-        Assert.assertFalse(mNavParamHistory.get(1).hasUserGesture);
-        Assert.assertTrue(mNavParamHistory.get(1).hasUserGestureCarryover);
+
+        // TODO(mustaq): Cleanup after UAv2 ships, crbug.com/908531.
+        if (ChromeFeatureList.isEnabled(ChromeFeatureList.USER_ACTIVATION_V2)) {
+            Assert.assertTrue(mNavParamHistory.get(1).hasUserGesture);
+            Assert.assertFalse(mNavParamHistory.get(1).hasUserGestureCarryover);
+        } else {
+            Assert.assertFalse(mNavParamHistory.get(1).hasUserGesture);
+            Assert.assertTrue(mNavParamHistory.get(1).hasUserGestureCarryover);
+        }
     }
 
     @Test
@@ -197,8 +213,15 @@ public class InterceptNavigationDelegateTest {
 
         DOMUtils.clickNode(mActivity.getActivityTab().getWebContents(), "first");
         waitTillExpectedCallsComplete(2, DEFAULT_MAX_TIME_TO_WAIT_IN_MS);
-        Assert.assertFalse(mNavParamHistory.get(1).hasUserGesture);
-        Assert.assertTrue(mNavParamHistory.get(1).hasUserGestureCarryover);
+
+        // TODO(mustaq): Cleanup after UAv2 ships, crbug.com/908531.
+        if (ChromeFeatureList.isEnabled(ChromeFeatureList.USER_ACTIVATION_V2)) {
+            Assert.assertTrue(mNavParamHistory.get(1).hasUserGesture);
+            Assert.assertFalse(mNavParamHistory.get(1).hasUserGestureCarryover);
+        } else {
+            Assert.assertFalse(mNavParamHistory.get(1).hasUserGesture);
+            Assert.assertTrue(mNavParamHistory.get(1).hasUserGestureCarryover);
+        }
     }
 
     @Test

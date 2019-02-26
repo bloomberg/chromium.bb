@@ -29,19 +29,8 @@ class DecodeStatsProto;
 // construction. API callbacks will also occur on this sequence.
 class MEDIA_EXPORT VideoDecodeStatsDBImpl : public VideoDecodeStatsDB {
  public:
-  enum : int {
-    // Number chosen after manual review of metrics (accuracy, precision,
-    // recall).
-    // TODO(chcunningham): Run experiments with different values. Metrics
-    // suggest different platforms, even different stream properties (e.g.
-    // framerate) could benefit from customized thresholds. Machine learning
-    // would probably be best.
-    kMaxFramesPerBuffer = 2500,
-    // Number of days after which stats will be discarded if not updated. This
-    // avoids users getting stuck with a bad capability prediction that may have
-    // been due to one-off circumstances.
-    kMaxDaysToKeepStats = 30,
-  };
+  static const char kMaxFramesPerBufferParamName[];
+  static const char kMaxDaysToKeepStatsParamName[];
 
   // Create an instance! |db_dir| specifies where to store LevelDB files to
   // disk. LevelDB generates a handful of files, so its recommended to provide a
@@ -73,6 +62,15 @@ class MEDIA_EXPORT VideoDecodeStatsDBImpl : public VideoDecodeStatsDB {
   // previous version will expire (unless new stats arrive) roughly 2 months
   // after the proto update hits the chrome Stable channel (M71).
   static constexpr char kDefaultWriteTime[] = "01-FEB-2019 12:00pm";
+
+  // Number of decoded frames to keep in the rolling "window" for a given entry
+  // in the database.
+  static int GetMaxFramesPerBuffer();
+
+  // Number of days after which stats will be discarded if not updated. This
+  // avoids users getting stuck with a bad capability prediction that may have
+  // been due to one-off circumstances.
+  static int GetMaxDaysToKeepStats();
 
   // Called when the database has been initialized. Will immediately call
   // |init_cb| to forward |success|.
@@ -111,7 +109,7 @@ class MEDIA_EXPORT VideoDecodeStatsDBImpl : public VideoDecodeStatsDB {
   void OnStatsCleared(base::OnceClosure clear_done_cb, bool success);
 
   // Return true if:
-  //     "now" - stats_proto.last_write_date > kMaxDaysToKeepStats
+  //     "now" - stats_proto.last_write_date > GeMaxDaysToKeepStats()
   bool AreStatsExpired(const DecodeStatsProto* const stats_proto);
 
   void set_wall_clock_for_test(const base::Clock* tick_clock) {

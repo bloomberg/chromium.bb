@@ -13,7 +13,7 @@
 #include "third_party/blink/renderer/core/style/computed_style.h"
 
 namespace blink {
-namespace CSSShorthand {
+namespace css_shorthand {
 
 bool FontVariant::ParseShorthand(
     bool important,
@@ -21,24 +21,28 @@ bool FontVariant::ParseShorthand(
     const CSSParserContext&,
     const CSSParserLocalContext&,
     HeapVector<CSSPropertyValue, 256>& properties) const {
-  if (CSSPropertyParserHelpers::IdentMatches<CSSValueNormal, CSSValueNone>(
+  if (css_property_parser_helpers::IdentMatches<CSSValueNormal, CSSValueNone>(
           range.Peek().Id())) {
-    CSSPropertyParserHelpers::AddProperty(
+    css_property_parser_helpers::AddProperty(
         CSSPropertyFontVariantLigatures, CSSPropertyFontVariant,
-        *CSSPropertyParserHelpers::ConsumeIdent(range), important,
-        CSSPropertyParserHelpers::IsImplicitProperty::kNotImplicit, properties);
-    CSSPropertyParserHelpers::AddProperty(
+        *css_property_parser_helpers::ConsumeIdent(range), important,
+        css_property_parser_helpers::IsImplicitProperty::kNotImplicit,
+        properties);
+    css_property_parser_helpers::AddProperty(
         CSSPropertyFontVariantCaps, CSSPropertyFontVariant,
         *CSSIdentifierValue::Create(CSSValueNormal), important,
-        CSSPropertyParserHelpers::IsImplicitProperty::kNotImplicit, properties);
-    CSSPropertyParserHelpers::AddProperty(
+        css_property_parser_helpers::IsImplicitProperty::kNotImplicit,
+        properties);
+    css_property_parser_helpers::AddProperty(
         CSSPropertyFontVariantNumeric, CSSPropertyFontVariant,
         *CSSIdentifierValue::Create(CSSValueNormal), important,
-        CSSPropertyParserHelpers::IsImplicitProperty::kNotImplicit, properties);
-    CSSPropertyParserHelpers::AddProperty(
+        css_property_parser_helpers::IsImplicitProperty::kNotImplicit,
+        properties);
+    css_property_parser_helpers::AddProperty(
         CSSPropertyFontVariantEastAsian, CSSPropertyFontVariant,
         *CSSIdentifierValue::Create(CSSValueNormal), important,
-        CSSPropertyParserHelpers::IsImplicitProperty::kNotImplicit, properties);
+        css_property_parser_helpers::IsImplicitProperty::kNotImplicit,
+        properties);
     return range.AtEnd();
   }
 
@@ -80,29 +84,32 @@ bool FontVariant::ParseShorthand(
         // Only one caps value permitted in font-variant grammar.
         if (caps_value)
           return false;
-        caps_value = CSSPropertyParserHelpers::ConsumeIdent(range);
+        caps_value = css_property_parser_helpers::ConsumeIdent(range);
         break;
       default:
         return false;
     }
   } while (!range.AtEnd());
 
-  CSSPropertyParserHelpers::AddProperty(
+  css_property_parser_helpers::AddProperty(
       CSSPropertyFontVariantLigatures, CSSPropertyFontVariant,
       *ligatures_parser.FinalizeValue(), important,
-      CSSPropertyParserHelpers::IsImplicitProperty::kNotImplicit, properties);
-  CSSPropertyParserHelpers::AddProperty(
+      css_property_parser_helpers::IsImplicitProperty::kNotImplicit,
+      properties);
+  css_property_parser_helpers::AddProperty(
       CSSPropertyFontVariantNumeric, CSSPropertyFontVariant,
       *numeric_parser.FinalizeValue(), important,
-      CSSPropertyParserHelpers::IsImplicitProperty::kNotImplicit, properties);
-  CSSPropertyParserHelpers::AddProperty(
+      css_property_parser_helpers::IsImplicitProperty::kNotImplicit,
+      properties);
+  css_property_parser_helpers::AddProperty(
       CSSPropertyFontVariantEastAsian, CSSPropertyFontVariant,
       *east_asian_parser.FinalizeValue(), important,
-      CSSPropertyParserHelpers::IsImplicitProperty::kNotImplicit, properties);
-  CSSPropertyParserHelpers::AddProperty(
+      css_property_parser_helpers::IsImplicitProperty::kNotImplicit,
+      properties);
+  css_property_parser_helpers::AddProperty(
       CSSPropertyFontVariantCaps, CSSPropertyFontVariant,
       caps_value ? *caps_value : *CSSIdentifierValue::Create(CSSValueNormal),
-      important, CSSPropertyParserHelpers::IsImplicitProperty::kNotImplicit,
+      important, css_property_parser_helpers::IsImplicitProperty::kNotImplicit,
       properties);
   return true;
 }
@@ -117,5 +124,5 @@ const CSSValue* FontVariant::CSSValueFromComputedStyleInternal(
       style, layout_object, styled_node, allow_visited_style);
 }
 
-}  // namespace CSSShorthand
+}  // namespace css_shorthand
 }  // namespace blink

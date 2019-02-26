@@ -49,12 +49,15 @@ function wait(time) {
  * asserting the count returned by the app.getErrorCount remote call.
  * @param {!RemoteCall} app RemoteCall interface to the app window.
  * @param {function()} callback Completion callback.
+ * @return {Promise} Promise to be fulfilled on completion.
  */
 function checkIfNoErrorsOccuredOnApp(app, callback) {
   var countPromise = app.callRemoteTestUtil('getErrorCount', null, []);
-  countPromise.then(function(count) {
+  return countPromise.then(function(count) {
     chrome.test.assertEq(0, count, 'The error count is not 0.');
-    callback();
+    if (callback) {
+      callback();
+    }
   });
 }
 
@@ -228,6 +231,7 @@ var EntryType = Object.freeze({
   FILE: 'file',
   DIRECTORY: 'directory',
   TEAM_DRIVE: 'team_drive',
+  COMPUTER: 'Computer'
 });
 
 /**
@@ -246,6 +250,7 @@ var SharedOption = Object.freeze({
  */
 var RootPath = Object.seal({
   DOWNLOADS: '/must-be-filled-in-test-setup',
+  DOWNLOADS_PATH: '/must-be-filled-in-test-setup',
   DRIVE: '/must-be-filled-in-test-setup',
   ANDROID_FILES: '/must-be-filled-in-test-setup',
 });
@@ -287,6 +292,31 @@ TestEntryCapabilities.prototype.canAddChildren = true;
 TestEntryCapabilities.prototype.canShare = true;
 
 /**
+ * The folder features for the test entry. Structure should match
+ * TestEntryFolderFeature in file_manager_browsertest_base.cc. All features
+ * default to false is not specified.
+ *
+ * @record
+ * @struct
+ */
+function TestEntryFolderFeature() {}
+
+/**
+ * @type {boolean|undefined}
+ */
+TestEntryFolderFeature.prototype.isMachineRoot = false;
+
+/**
+ * @type {boolean|undefined}
+ */
+TestEntryFolderFeature.prototype.isArbitrarySyncFolder = false;
+
+/**
+ * @type {boolean|undefined}
+ */
+TestEntryFolderFeature.prototype.isExternalMedia = false;
+
+/**
  * Parameters to creat a Test Entry in the file manager. Structure should match
  * TestEntryInfo in file_manager_browsertest_base.cc.
  *
@@ -314,6 +344,11 @@ TestEntryInfoOptions.prototype.targetPath;
  *     string (no team drive). Team Drive names must be unique.
  */
 TestEntryInfoOptions.prototype.teamDriveName;
+/**
+ * @type {string} Name of the computer this entry is in. Defaults to a blank
+ *     string (no computer). Computer names must be unique.
+ */
+TestEntryInfoOptions.prototype.computerName;
 /**
  * @type {string|undefined} Mime type.
  */
@@ -346,6 +381,12 @@ TestEntryInfoOptions.prototype.typeText;
 TestEntryInfoOptions.prototype.capabilities;
 
 /**
+ * @type {TestEntryFolderFeature|undefined} Foder features of this file.
+ *     Defaults to all features disabled.
+ */
+TestEntryInfoOptions.prototype.folderFeature;
+
+/**
  * File system entry information for tests. Structure should match TestEntryInfo
  * in file_manager_browsertest_base.cc
  * TODO(sashab): Remove this, rename TestEntryInfoOptions to TestEntryInfo and
@@ -358,6 +399,7 @@ function TestEntryInfo(options) {
   this.sourceFileName = options.sourceFileName || '';
   this.targetPath = options.targetPath;
   this.teamDriveName = options.teamDriveName || '';
+  this.computerName = options.computerName || '';
   this.mimeType = options.mimeType || '';
   this.sharedOption = options.sharedOption || SharedOption.NONE;
   this.lastModifiedTime = options.lastModifiedTime;
@@ -365,6 +407,7 @@ function TestEntryInfo(options) {
   this.sizeText = options.sizeText;
   this.typeText = options.typeText;
   this.capabilities = options.capabilities;
+  this.folderFeature = options.folderFeature;
   this.pinned = !!options.pinned;
   Object.freeze(this);
 }
@@ -643,6 +686,28 @@ var ENTRIES = {
     typeText: 'Zip archive'
   }),
 
+  zipArchiveMacOs: new TestEntryInfo({
+    type: EntryType.FILE,
+    sourceFileName: 'archive_macos.zip',
+    targetPath: 'archive_macos.zip',
+    mimeType: 'application/x-zip',
+    lastModifiedTime: 'Dec 21, 2018, 12:21 PM',
+    nameText: 'archive_macos.zip',
+    sizeText: '190 bytes',
+    typeText: 'Zip archive'
+  }),
+
+  zipArchiveWithAbsolutePaths: new TestEntryInfo({
+    type: EntryType.FILE,
+    sourceFileName: 'absolute_paths.zip',
+    targetPath: 'absolute_paths.zip',
+    mimeType: 'application/x-zip',
+    lastModifiedTime: 'Jan 1, 2014, 1:00 AM',
+    nameText: 'absolute_paths.zip',
+    sizeText: '400 bytes',
+    typeText: 'Zip archive'
+  }),
+
   debPackage: new TestEntryInfo({
     type: EntryType.FILE,
     sourceFileName: 'package.deb',
@@ -697,6 +762,23 @@ var ENTRIES = {
     },
   }),
 
+  teamDriveADirectory: new TestEntryInfo({
+    type: EntryType.DIRECTORY,
+    targetPath: 'teamDriveADirectory',
+    lastModifiedTime: 'Jan 1, 2000, 1:00 AM',
+    nameText: 'teamDriveADirectory',
+    sizeText: '--',
+    typeText: 'Folder',
+    teamDriveName: 'Team Drive A',
+    capabilities: {
+      canCopy: true,
+      canDelete: true,
+      canRename: true,
+      canAddChildren: true,
+      canShare: false,
+    },
+  }),
+
   teamDriveAHostedFile: new TestEntryInfo({
     type: EntryType.FILE,
     targetPath: 'teamDriveAHostedDoc',
@@ -737,6 +819,44 @@ var ENTRIES = {
       canAddChildren: false,
       canShare: true,
     },
+  }),
+
+  // Computer entries.
+  computerA: new TestEntryInfo({
+    type: EntryType.COMPUTER,
+    computerName: 'Computer A',
+    folderFeature: {
+      isMachineRoot: true,
+    },
+  }),
+
+  computerAFile: new TestEntryInfo({
+    type: EntryType.FILE,
+    sourceFileName: 'text.txt',
+    targetPath: 'computerAFile.txt',
+    mimeType: 'text/plain',
+    lastModifiedTime: 'Sep 4, 1998, 12:34 PM',
+    nameText: 'computerAFile.txt',
+    sizeText: '51 bytes',
+    typeText: 'Plain text',
+    computerName: 'Computer A',
+    capabilities: {
+      canCopy: true,
+      canDelete: true,
+      canRename: true,
+      canAddChildren: false,
+      canShare: true,
+    },
+  }),
+
+  computerAdirectoryA: new TestEntryInfo({
+    type: EntryType.DIRECTORY,
+    targetPath: 'A',
+    lastModifiedTime: 'Jan 1, 2000, 1:00 AM',
+    computerName: 'Computer A',
+    nameText: 'A',
+    sizeText: '--',
+    typeText: 'Folder'
   }),
 
   // Read-only and write-restricted entries.

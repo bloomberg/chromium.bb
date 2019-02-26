@@ -76,10 +76,10 @@ bool IsValidFeatureOrFieldTrialName(const std::string& name) {
 
 }  // namespace
 
-#if DCHECK_IS_CONFIGURABLE
+#if defined(DCHECK_IS_CONFIGURABLE)
 const Feature kDCheckIsFatalFeature{"DcheckIsFatal",
                                     base::FEATURE_DISABLED_BY_DEFAULT};
-#endif  // DCHECK_IS_CONFIGURABLE
+#endif  // defined(DCHECK_IS_CONFIGURABLE)
 
 FeatureList::FeatureList() = default;
 
@@ -263,7 +263,7 @@ void FeatureList::SetInstance(std::unique_ptr<FeatureList> instance) {
   // Note: Intentional leak of global singleton.
   g_feature_list_instance = instance.release();
 
-#if DCHECK_IS_CONFIGURABLE
+#if defined(DCHECK_IS_CONFIGURABLE)
   // Update the behaviour of LOG_DCHECK to match the Feature configuration.
   // DCHECK is also forced to be FATAL if we are running a death-test.
   // TODO(asvitkine): If we find other use-cases that need integrating here
@@ -275,7 +275,7 @@ void FeatureList::SetInstance(std::unique_ptr<FeatureList> instance) {
   } else {
     logging::LOG_DCHECK = logging::LOG_INFO;
   }
-#endif  // DCHECK_IS_CONFIGURABLE
+#endif  // defined(DCHECK_IS_CONFIGURABLE)
 }
 
 // static

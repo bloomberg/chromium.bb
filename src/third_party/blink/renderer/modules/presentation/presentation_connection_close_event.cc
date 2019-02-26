@@ -18,13 +18,13 @@ PresentationConnectionCloseEvent::PresentationConnectionCloseEvent(
 
 PresentationConnectionCloseEvent::PresentationConnectionCloseEvent(
     const AtomicString& event_type,
-    const PresentationConnectionCloseEventInit& initializer)
+    const PresentationConnectionCloseEventInit* initializer)
     : Event(event_type, initializer),
-      reason_(initializer.reason()),
-      message_(initializer.message()) {}
+      reason_(initializer->reason()),
+      message_(initializer->message()) {}
 
 const AtomicString& PresentationConnectionCloseEvent::InterfaceName() const {
-  return EventNames::PresentationConnectionCloseEvent;
+  return event_interface_names::kPresentationConnectionCloseEvent;
 }
 
 void PresentationConnectionCloseEvent::Trace(blink::Visitor* visitor) {

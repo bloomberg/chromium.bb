@@ -15,7 +15,7 @@
 #include "base/metrics/histogram_macros.h"
 #include "base/no_destructor.h"
 #include "base/time/time.h"
-#include "base/trace_event/trace_event_argument.h"
+#include "base/trace_event/traced_value.h"
 #include "build/build_config.h"
 #include "cc/base/math_util.h"
 #include "cc/benchmarks/micro_benchmark_impl.h"
@@ -526,7 +526,8 @@ void PictureLayerImpl::AppendQuads(viz::RenderPass* render_pass,
     if (!has_draw_quad) {
       // Checkerboard.
       SkColor color = SafeOpaqueBackgroundColor();
-      if (ShowDebugBorders(DebugBorderType::LAYER)) {
+      if (mask_type_ == Layer::LayerMaskType::NOT_MASK &&
+          ShowDebugBorders(DebugBorderType::LAYER)) {
         // Fill the whole tile with the missing tile color.
         color = DebugColors::OOMTileBorderColor();
       }
@@ -1560,13 +1561,30 @@ void PictureLayerImpl::UpdateIdealScales() {
   float min_contents_scale = MinimumContentsScale();
   DCHECK_GT(min_contents_scale, 0.f);
 
-  ideal_page_scale_ = IsAffectedByPageScale()
-                          ? layer_tree_impl()->current_page_scale_factor()
-                          : 1.f;
   ideal_device_scale_ = layer_tree_impl()->device_scale_factor();
+  if (layer_tree_impl()->PageScaleLayer()) {
+    ideal_page_scale_ = IsAffectedByPageScale()
+                            ? layer_tree_impl()->current_page_scale_factor()
+                            : 1.f;
+    ideal_contents_scale_ = GetIdealContentsScale();
+  } else {
+    // This layer may be in a layer tree embedded in a hierarchy that has its
+    // own page scale factor. We represent that here as
+    // 'external_page_scale_factor', a value that affects raster scale in the
+    // same way that page_scale_factor does, but doesn't affect any geometry
+    // calculations.
+    float external_page_scale_factor =
+        layer_tree_impl() ? layer_tree_impl()->external_page_scale_factor()
+                          : 1.f;
+    DCHECK(!layer_tree_impl() || external_page_scale_factor == 1.f ||
+           layer_tree_impl()->current_page_scale_factor() == 1.f);
+    ideal_page_scale_ = external_page_scale_factor;
+    ideal_contents_scale_ =
+        GetIdealContentsScale() * external_page_scale_factor;
+  }
   ideal_contents_scale_ =
       std::min(kMaxIdealContentsScale,
-               std::max(GetIdealContentsScale(), min_contents_scale));
+               std::max(ideal_contents_scale_, min_contents_scale));
   ideal_source_scale_ =
       ideal_contents_scale_ / ideal_page_scale_ / ideal_device_scale_;
 }

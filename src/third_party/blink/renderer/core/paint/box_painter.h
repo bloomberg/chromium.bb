@@ -15,6 +15,7 @@ namespace blink {
 
 struct PaintInfo;
 class Color;
+class DisplayItemClient;
 class LayoutBox;
 class LayoutPoint;
 class LayoutRect;
@@ -32,8 +33,18 @@ class BoxPainter {
   void PaintMask(const PaintInfo&, const LayoutPoint& paint_offset);
 
   void PaintMaskImages(const PaintInfo&, const LayoutRect&);
-  void PaintBoxDecorationBackgroundWithRect(const PaintInfo&,
-                                            const LayoutRect&);
+  void PaintBoxDecorationBackgroundWithRect(
+      const PaintInfo&,
+      const LayoutRect&,
+      const DisplayItemClient& background_client);
+
+  // Paint a hit test display item and record hit test data. This should be
+  // called in the background paint phase even if there is no other painted
+  // content.
+  void RecordHitTestData(const PaintInfo&,
+                         const LayoutRect& paint_rect,
+                         const DisplayItemClient& background_client);
+
  private:
   bool BackgroundIsKnownToBeOpaque(const PaintInfo&);
   void PaintBackground(const PaintInfo&,

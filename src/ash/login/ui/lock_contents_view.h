@@ -84,6 +84,7 @@ class ASH_EXPORT LockContentsView
     LoginBubble* auth_error_bubble() const;
     LoginBubble* detachable_base_error_bubble() const;
     LoginBubble* warning_banner_bubble() const;
+    LoginBubble* supervised_user_deprecation_bubble() const;
     views::View* system_info() const;
     LoginExpandedPublicAccountView* expanded_view() const;
     views::View* main_view() const;
@@ -142,6 +143,10 @@ class ASH_EXPORT LockContentsView
   void OnUsersChanged(
       const std::vector<mojom::LoginUserInfoPtr>& users) override;
   void OnPinEnabledForUserChanged(const AccountId& user, bool enabled) override;
+  void OnFingerprintStateChanged(const AccountId& account_id,
+                                 mojom::FingerprintState state) override;
+  void OnFingerprintAuthResult(const AccountId& account_id,
+                               bool success) override;
   void OnAuthEnabledForUserChanged(
       const AccountId& user,
       bool enabled,
@@ -171,11 +176,10 @@ class ASH_EXPORT LockContentsView
       const AccountId& account_id,
       const std::string& locale,
       const std::vector<mojom::InputMethodItemPtr>& keyboard_layouts) override;
+  void OnPublicSessionShowFullManagementDisclosureChanged(
+      bool show_full_management_disclosure) override;
   void OnDetachableBasePairingStatusChanged(
       DetachableBasePairingStatus pairing_status) override;
-  void OnFingerprintUnlockStateChanged(
-      const AccountId& account_id,
-      mojom::FingerprintUnlockState state) override;
 
   // SystemTrayFocusObserver:
   void OnFocusLeavingSystemTray(bool reverse) override;
@@ -192,7 +196,7 @@ class ASH_EXPORT LockContentsView
   void OnLockStateChanged(bool locked) override;
 
   // keyboard::KeyboardControllerObserver:
-  void OnStateChanged(const keyboard::KeyboardControllerState state) override;
+  void OnKeyboardVisibilityStateChanged(bool is_visible) override;
 
   // chromeos::PowerManagerClient::Observer:
   void SuspendImminent(power_manager::SuspendImminent::Reason reason) override;
@@ -212,7 +216,7 @@ class ASH_EXPORT LockContentsView
     bool force_online_sign_in = false;
     bool disable_auth = false;
     mojom::EasyUnlockIconOptionsPtr easy_unlock_state;
-    mojom::FingerprintUnlockState fingerprint_state;
+    mojom::FingerprintState fingerprint_state;
 
    private:
     DISALLOW_COPY_AND_ASSIGN(UserState);
@@ -301,7 +305,7 @@ class ASH_EXPORT LockContentsView
   // Returns keyboard controller for the view. Returns nullptr if keyboard is
   // not activated, view has not been added to the widget yet or keyboard is not
   // displayed in this window.
-  keyboard::KeyboardController* GetKeyboardController() const;
+  keyboard::KeyboardController* GetKeyboardControllerForView() const;
 
   // Called when the public account is tapped.
   void OnPublicAccountTapped(bool is_primary);
@@ -383,6 +387,9 @@ class ASH_EXPORT LockContentsView
   // Bubble for displaying warning banner message.
   std::unique_ptr<LoginBubble> warning_banner_bubble_;
 
+  // Bubble for displaying supervised user deprecation message.
+  std::unique_ptr<LoginBubble> supervised_user_deprecation_bubble_;
+
   int unlock_attempt_ = 0;
 
   // Whether a lock screen app is currently active (i.e. lock screen note action
@@ -396,9 +403,8 @@ class ASH_EXPORT LockContentsView
   // Expanded view for public account user to select language and keyboard.
   LoginExpandedPublicAccountView* expanded_view_ = nullptr;
 
-  // Whether the virtual keyboard is currently shown. Only changes when the
-  // keyboard state changes to KeyboardControllerState::SHOWN or to
-  // KeyboardControllerState::HIDDEN.
+  // Whether the virtual keyboard is currently shown. Used to determine whether
+  // to show the PIN keyboard or not.
   bool keyboard_shown_ = false;
 
   // Accelerators handled by login screen.

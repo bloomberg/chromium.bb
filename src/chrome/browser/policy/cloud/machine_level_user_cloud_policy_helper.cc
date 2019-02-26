@@ -119,8 +119,8 @@ void MachineLevelUserCloudPolicyFetcher::SetupRegistrationAndFetchPolicy(
       base::BindRepeating(&OnPolicyFetchCompleted));
 }
 
-void MachineLevelUserCloudPolicyFetcher::OnInitializationCompleted(
-    CloudPolicyService* service) {
+void MachineLevelUserCloudPolicyFetcher::
+    OnCloudPolicyServiceInitializationCompleted() {
   // Client will be registered before policy fetch. A non-registered client
   // means there is no validated policy cache on the disk while the device has
   // been enrolled already. Hence, we need to fetch the
@@ -129,8 +129,8 @@ void MachineLevelUserCloudPolicyFetcher::OnInitializationCompleted(
   // Note that Chrome will not fetch policy again immediately here if DM server
   // returns a policy that Chrome is not able to validate.
   if (!policy_manager_->IsClientRegistered()) {
-    VLOG(1) << "OnInitializationCompleted: Fetching policy when there is no "
-               "valid local cache.";
+    VLOG(1) << "OnCloudPolicyServiceInitializationCompleted: Fetching policy "
+               "when there is no valid local cache.";
     TryToFetchPolicy();
   }
 }
@@ -140,9 +140,10 @@ void MachineLevelUserCloudPolicyFetcher::InitializeManager(
   policy_manager_->Connect(local_state_, std::move(client));
   policy_manager_->core()->service()->AddObserver(this);
 
-  // If CloudPolicyStore is already initialized then |OnInitializationCompleted|
-  // has already fired. Fetch policy if CloudPolicyClient hasn't been registered
-  // which means there is no valid policy cache.
+  // If CloudPolicyStore is already initialized then
+  // |OnCloudPolicyServiceInitializationCompleted| has already fired. Fetch
+  // policy if CloudPolicyClient hasn't been registered which means there is no
+  // valid policy cache.
   if (policy_manager_->store()->is_initialized() &&
       !policy_manager_->IsClientRegistered()) {
     VLOG(1) << "InitializeManager: Fetching policy when there is no valid "

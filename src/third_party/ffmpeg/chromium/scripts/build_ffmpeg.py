@@ -91,7 +91,7 @@ Platform specific build notes:
 
     Building on Windows also requires some additional Cygwin packages plus a
     wrapper script for converting Cygwin paths to DOS paths.
-      - Add these packages at install time: diffutils, yasm, make, python.
+      - Add these packages at install time: diffutils, nasm, make, python.
       - Copy chromium/scripts/cygwin-wrapper to /usr/local/bin
 
 Resulting binaries will be placed in:
@@ -565,8 +565,8 @@ def ConfigureAndBuild(target_arch, target_os, host_os, host_arch, parallel_jobs,
       # missing system headers break some Android builds.
       '--disable-linux-perf',
 
-      # Force usage of yasm
-      '--x86asmexe=yasm',
+      # Force usage of nasm.
+      '--x86asmexe=nasm',
   ])
 
   if target_os == 'android':

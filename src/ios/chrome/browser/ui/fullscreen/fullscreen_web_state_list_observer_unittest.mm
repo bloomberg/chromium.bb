@@ -82,6 +82,11 @@ TEST_F(FullscreenWebStateListObserverTest, ObserveActiveWebState) {
   std::unique_ptr<TestWebStateWithProxy> inserted_web_state =
       std::make_unique<TestWebStateWithProxy>();
   TestWebStateWithProxy* web_state = inserted_web_state.get();
+  std::unique_ptr<web::TestNavigationManager> passed_navigation_manager =
+      std::make_unique<web::TestNavigationManager>();
+  web::TestNavigationManager* navigation_manager =
+      passed_navigation_manager.get();
+  web_state->SetNavigationManager(std::move(passed_navigation_manager));
   web_state_list().InsertWebState(0, std::move(inserted_web_state),
                                   WebStateList::INSERT_ACTIVATE,
                                   WebStateOpener());
@@ -90,6 +95,9 @@ TEST_F(FullscreenWebStateListObserverTest, ObserveActiveWebState) {
   SimulateFullscreenUserScrollForProgress(&model(), 0.5);
   EXPECT_EQ(model().progress(), 0.5);
   // Simulate a navigation.  The model should be reset by the observers.
+  std::unique_ptr<web::NavigationItem> committed_item =
+      web::NavigationItem::Create();
+  navigation_manager->SetLastCommittedItem(committed_item.get());
   web::FakeNavigationContext context;
   web_state->OnNavigationFinished(&context);
   EXPECT_FALSE(model().has_base_offset());

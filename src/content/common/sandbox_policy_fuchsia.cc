@@ -9,6 +9,7 @@
 #include <zircon/processargs.h>
 
 #include <fuchsia/fonts/cpp/fidl.h>
+#include <fuchsia/mediacodec/cpp/fidl.h>
 #include <fuchsia/ui/scenic/cpp/fidl.h>
 #include <memory>
 #include <utility>
@@ -30,7 +31,7 @@ namespace content {
 namespace {
 
 constexpr const char* const kRendererServices[] = {
-    fuchsia::fonts::Provider::Name_};
+    fuchsia::fonts::Provider::Name_, fuchsia::mediacodec::CodecFactory::Name_};
 
 constexpr const char* const kGpuServices[] = {
     fuchsia::ui::scenic::Scenic::Name_};

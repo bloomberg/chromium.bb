@@ -52,6 +52,7 @@ void FocusWindowClient(ServiceWorkerProviderHost* provider_host,
 // app, we will open a new foreground tab instead.
 void OpenWindow(const GURL& url,
                 const GURL& script_url,
+                int worker_id,
                 int worker_process_id,
                 const base::WeakPtr<ServiceWorkerContextCore>& context,
                 WindowType type,

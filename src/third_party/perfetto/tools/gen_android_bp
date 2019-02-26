@@ -36,7 +36,7 @@ import sys
 
 # Default targets to translate to the blueprint file.
 default_targets = [
-    '//:libtraced_shared',
+    '//:libperfetto',
     '//:perfetto_integrationtests',
     '//:perfetto_trace_protos',
     '//:perfetto_unittests',
@@ -44,12 +44,15 @@ default_targets = [
     '//:traced',
     '//:traced_probes',
     '//:trace_to_text',
+    '//:heapprofd_client',
+    '//:heapprofd',
 ]
 
 # Defines a custom init_rc argument to be applied to the corresponding output
 # blueprint target.
 target_initrc = {
     '//:traced': 'perfetto.rc',
+    '//:heapprofd': 'heapprofd.rc',
 }
 
 target_host_supported = [
@@ -61,7 +64,7 @@ target_host_only = [
 ]
 
 # Arguments for the GN output directory.
-gn_args = 'target_os="android" target_cpu="arm" is_debug=false build_with_android=true'
+gn_args = 'target_os="android" target_cpu="arm" is_debug=false perfetto_build_with_android=true'
 
 # All module names are prefixed with this string to avoid collisions.
 module_prefix = 'perfetto_'
@@ -92,6 +95,13 @@ define_whitelist = r'^GOOGLE_PROTO.*$'
 library_not_in_pdk = {
     'libandroid',
     'libservices',
+}
+
+# Additional arguments to apply to Android.bp rules.
+additional_args = {
+    "heapprofd_client": [
+        ("include_dirs", ["bionic/libc"]),
+    ],
 }
 
 
@@ -201,6 +211,8 @@ class Module(object):
         self._output_field(output, 'defaults')
         self._output_field(output, 'cflags')
         self._output_field(output, 'local_include_dirs')
+        for key, value in additional_args.get(self.name, []):
+          self._write_value(output, key, value)
 
         disable_pdk = any(name in library_not_in_pdk for name in self.shared_libs)
         if self.user_debug_flag or disable_pdk:
@@ -219,6 +231,9 @@ class Module(object):
 
     def _output_field(self, output, name, sort=True):
         value = getattr(self, name)
+        return self._write_value(output, name, value, sort)
+
+    def _write_value(self, output, name, value, sort=True):
         if not value:
             return
         if isinstance(value, set):
@@ -381,6 +396,7 @@ def make_genrules_for_action(blueprint, desc, target_name):
     parser.add_argument('--plugin')
     parser.add_argument('--plugin_out')
     parser.add_argument('--descriptor_set_out')
+    parser.add_argument('--include_imports', action='store_true')
     parser.add_argument('protos', nargs=argparse.REMAINDER)
     args = parser.parse_args(args[1:])
 

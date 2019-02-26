@@ -179,7 +179,7 @@ public class WebApkUma {
     public static void recordGooglePlayInstallErrorCode(int errorCode) {
         // Don't use an enumerated histogram as there are > 30 potential error codes. In practice,
         // a given client will always get the same error code.
-        RecordHistogram.recordSparseSlowlyHistogram(
+        RecordHistogram.recordSparseHistogram(
                 "WebApk.Install.GooglePlayErrorCode", Math.min(errorCode, 1000));
     }
 
@@ -203,7 +203,7 @@ public class WebApkUma {
     /** Records the current Shell APK version. */
     public static void recordShellApkVersion(
             int shellApkVersion, @WebApkInfo.WebApkDistributor int distributor) {
-        RecordHistogram.recordSparseSlowlyHistogram(
+        RecordHistogram.recordSparseHistogram(
                 "WebApk.ShellApkVersion2." + getWebApkDistributorUmaSuffix(distributor),
                 shellApkVersion);
     }
@@ -287,7 +287,7 @@ public class WebApkUma {
 
     /** Records the network error code caught when a WebAPK is launched. */
     public static void recordNetworkErrorWhenLaunch(int errorCode) {
-        RecordHistogram.recordSparseSlowlyHistogram("WebApk.Launch.NetworkError", -errorCode);
+        RecordHistogram.recordSparseHistogram("WebApk.Launch.NetworkError", -errorCode);
     }
 
     /**
@@ -313,14 +313,13 @@ public class WebApkUma {
     }
 
     private static void logSpaceUsageUMAOnDataAvailable(long spaceSize, long cacheSize) {
-        RecordHistogram.recordSparseSlowlyHistogram(
+        RecordHistogram.recordSparseHistogram(
                 "WebApk.Install.AvailableSpace.Fail", roundByteToMb(spaceSize));
 
-        RecordHistogram.recordSparseSlowlyHistogram(
+        RecordHistogram.recordSparseHistogram(
                 "WebApk.Install.ChromeCacheSize.Fail", roundByteToMb(cacheSize));
 
-        RecordHistogram.recordSparseSlowlyHistogram(
-                "WebApk.Install.AvailableSpaceAfterFreeUpCache.Fail",
+        RecordHistogram.recordSparseHistogram("WebApk.Install.AvailableSpaceAfterFreeUpCache.Fail",
                 roundByteToMb(spaceSize + cacheSize));
     }
 

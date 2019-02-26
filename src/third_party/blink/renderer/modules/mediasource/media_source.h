@@ -63,6 +63,8 @@ class MediaSource final : public EventTargetWithInlineData,
   static const AtomicString& EndedKeyword();
 
   static MediaSource* Create(ExecutionContext*);
+
+  explicit MediaSource(ExecutionContext*);
   ~MediaSource() override;
 
   static void LogAndThrowDOMException(ExceptionState&,
@@ -79,9 +81,9 @@ class MediaSource final : public EventTargetWithInlineData,
   void removeSourceBuffer(SourceBuffer*, ExceptionState&);
   void setDuration(double, ExceptionState&);
 
-  DEFINE_ATTRIBUTE_EVENT_LISTENER(sourceopen);
-  DEFINE_ATTRIBUTE_EVENT_LISTENER(sourceended);
-  DEFINE_ATTRIBUTE_EVENT_LISTENER(sourceclose);
+  DEFINE_ATTRIBUTE_EVENT_LISTENER(sourceopen, kSourceopen);
+  DEFINE_ATTRIBUTE_EVENT_LISTENER(sourceended, kSourceended);
+  DEFINE_ATTRIBUTE_EVENT_LISTENER(sourceclose, kSourceclose);
 
   const AtomicString& readyState() const { return ready_state_; }
   void endOfStream(const AtomicString& error, ExceptionState&);
@@ -128,8 +130,6 @@ class MediaSource final : public EventTargetWithInlineData,
   void Trace(blink::Visitor*) override;
 
  private:
-  explicit MediaSource(ExecutionContext*);
-
   void SetReadyState(const AtomicString&);
   void OnReadyStateChange(const AtomicString&, const AtomicString&);
 

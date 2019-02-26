@@ -13,7 +13,6 @@
 #include "chrome/browser/extensions/extension_install_prompt.h"
 #include "chrome/browser/ui/login/login_handler.h"
 #include "chrome/browser/ui/views/task_manager_view.h"
-#include "chrome/browser/ui/views_mode_controller.h"
 
 // This file provides definitions of desktop browser dialog-creation methods for
 // all toolkit-views platforms.

@@ -36,7 +36,7 @@ void ManifestFetcher::Start(blink::WebLocalFrame* frame,
   // true, and "omit" otherwise.
   fetcher_->Start(
       frame, blink::mojom::RequestContextType::MANIFEST,
-      network::mojom::FetchRequestMode::kCORS,
+      network::mojom::FetchRequestMode::kCors,
       use_credentials ? network::mojom::FetchCredentialsMode::kInclude
                       : network::mojom::FetchCredentialsMode::kOmit,
       network::mojom::RequestContextFrameType::kNone,

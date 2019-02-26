@@ -11,6 +11,7 @@
 <translation id="1299858300159559687">तुमचे हे पेज प्रिंट करा</translation>
 <translation id="1383876407941801731">शोधा</translation>
 <translation id="1454364489140280055"><ph name="CTRL" /><ph name="SEPARATOR1" /><ph name="SHIFT1" /><ph name="SEPARATOR2" /><ph name="G" /> किंवा <ph name="SHIFT2" /><ph name="SEPARATOR3" /><ph name="ENTER" /></translation>
+<translation id="1477442857810932985">ओळीच्या शेवटी जा</translation>
 <translation id="1510238584712386396">लाँचर</translation>
 <translation id="152892567002884378">आवाज मोठा करा</translation>
 <translation id="1560480564179555003"><ph name="SHIFT" /><ph name="SEPARATOR1" /><ph name="ALT" /><ph name="SEPARATOR2" /><ph name="L" />, नंतर <ph name="ESC" /></translation>
@@ -156,7 +157,7 @@
 <translation id="7237562915163138771">अॅड्रेस बारमध्ये वेब अ‍ॅड्रेस टाइप करा आणि त्यानंतर <ph name="ALT" /><ph name="SEPARATOR" /><ph name="ENTER" /> दाबा</translation>
 <translation id="7254764037241667478">डिव्हाइसला स्लीप मोड मध्ये ठेवा (निलंबित)</translation>
 <translation id="7379254767514753910"><ph name="ALT" /> किंवा <ph name="SEARCH" /><ph name="SEPARATOR" /><ph name="UP" /></translation>
-<translation id="743754632698445141">अॅप अनपिन करा</translation>
+<translation id="743754632698445141">ॲप अनपिन करा</translation>
 <translation id="7439718573248533901">पुढील अक्षर हटवा (फॉरवर्ड करा हटवा)</translation>
 <translation id="7611271430932669992">फोकस पॉपअप आणि संवाद वर हलवा</translation>
 <translation id="766326951329901120">आशय एक साधा मजकूर म्हणून क्लिपबोर्डवरून पेस्ट करा</translation>
@@ -191,6 +192,7 @@
 <translation id="9041599225465145264">क्लिपबोर्डवरून आशय पेस्ट करा</translation>
 <translation id="9052808072970550123">पुढील वापरकर्त्यावर स्विच करा</translation>
 <translation id="906458777597946297">विंडो वाढवा</translation>
+<translation id="9091855755813503076">ओळीच्या सुरवातीला जा</translation>
 <translation id="9106898733795143799">पेज आणि वेब ब्राउझर</translation>
 <translation id="9162942292291287644"><ph name="QUERY" /> साठी शोध परिणाम नाहीत</translation>
 <translation id="9179672198516322668">लोकप्रिय शॉर्टकट</translation>

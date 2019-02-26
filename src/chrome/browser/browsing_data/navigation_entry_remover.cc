@@ -8,7 +8,6 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/sessions/tab_restore_service_factory.h"
 #include "chrome/common/buildflags.h"
-#include "components/browsing_data/core/features.h"
 #include "components/sessions/core/serialized_navigation_entry.h"
 #include "components/sessions/core/tab_restore_service.h"
 #include "components/sessions/core/tab_restore_service_observer.h"
@@ -216,10 +215,6 @@ void RemoveNavigationEntries(Profile* profile,
                              const history::DeletionInfo& deletion_info) {
   DCHECK(profile->GetProfileType() == Profile::ProfileType::REGULAR_PROFILE);
   DCHECK(!deletion_info.is_from_expiration());
-  if (!base::FeatureList::IsEnabled(
-          browsing_data::features::kRemoveNavigationHistory)) {
-    return;
-  }
 
   base::flat_set<GURL> url_set;
   if (!deletion_info.time_range().IsValid())

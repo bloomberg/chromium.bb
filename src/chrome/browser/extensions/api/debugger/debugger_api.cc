@@ -148,7 +148,6 @@ class ExtensionDevToolsClientHost : public content::DevToolsAgentHostClient,
   bool MayAttachToRenderer(content::RenderFrameHost* render_frame_host,
                            bool is_webui) override;
   bool MayAttachToBrowser() override;
-  bool MayDiscoverTargets() override;
   bool MayAffectLocalFiles() override;
 
  private:
@@ -380,10 +379,6 @@ bool ExtensionDevToolsClientHost::MayAttachToRenderer(
 }
 
 bool ExtensionDevToolsClientHost::MayAttachToBrowser() {
-  return false;
-}
-
-bool ExtensionDevToolsClientHost::MayDiscoverTargets() {
   return false;
 }
 

@@ -121,7 +121,8 @@ class CORE_EXPORT Performance : public EventTargetWithInlineData {
   void clearResourceTimings();
   void setResourceTimingBufferSize(unsigned);
 
-  DEFINE_ATTRIBUTE_EVENT_LISTENER(resourcetimingbufferfull);
+  DEFINE_ATTRIBUTE_EVENT_LISTENER(resourcetimingbufferfull,
+                                  kResourcetimingbufferfull);
 
   void AddLongTaskTiming(
       TimeTicks start_time,
@@ -159,7 +160,8 @@ class CORE_EXPORT Performance : public EventTargetWithInlineData {
   unsigned EventTimingBufferSize() const;
   void clearEventTimings();
   void setEventTimingBufferMaxSize(unsigned);
-  DEFINE_ATTRIBUTE_EVENT_LISTENER(eventtimingbufferfull);
+  DEFINE_ATTRIBUTE_EVENT_LISTENER(eventtimingbufferfull,
+                                  kEventtimingbufferfull);
 
   PerformanceMark* mark(ScriptState*,
                         const AtomicString& mark_name,
@@ -172,6 +174,42 @@ class CORE_EXPORT Performance : public EventTargetWithInlineData {
       ExceptionState&);
 
   void clearMarks(const AtomicString& mark_name);
+
+  // This enum is used to index different possible strings for for UMA enum
+  // histogram. New enum values can be added, but existing enums must never be
+  // renumbered or deleted and reused.
+  // This enum should be consistent with MeasureParameterType
+  // in tools/metrics/histograms/enums.xml.
+  enum class MeasureParameterType {
+    kObjectObject = 0,
+    // 1 to 8, 13 to 25 are navigation-timing types.
+    kUnloadEventStart = 1,
+    kUnloadEventEnd = 2,
+    kDomInteractive = 3,
+    kDomContentLoadedEventStart = 4,
+    kDomContentLoadedEventEnd = 5,
+    kDomComplete = 6,
+    kLoadEventStart = 7,
+    kLoadEventEnd = 8,
+    kOther = 9,
+    kUndefinedOrNull = 10,
+    kNumber = 11,
+    kUnprovided = 12,
+    kNavigationStart = 13,
+    kRedirectStart = 14,
+    kRedirectEnd = 15,
+    kFetchStart = 16,
+    kDomainLookupStart = 17,
+    kDomainLookupEnd = 18,
+    kConnectStart = 19,
+    kConnectEnd = 20,
+    kSecureConnectionStart = 21,
+    kRequestStart = 22,
+    kResponseStart = 23,
+    kResponseEnd = 24,
+    kDomLoading = 25,
+    kMaxValue = kDomLoading
+  };
 
   PerformanceMeasure* measure(ScriptState*,
                               const AtomicString& measure_name,
@@ -217,19 +255,19 @@ class CORE_EXPORT Performance : public EventTargetWithInlineData {
 
   void AddPaintTiming(PerformancePaintTiming::PaintType, TimeTicks start_time);
 
-  PerformanceMeasure* measureInternal(
+  PerformanceMeasure* MeasureInternal(
       ScriptState*,
       const AtomicString& measure_name,
       const StringOrDoubleOrPerformanceMeasureOptions& start,
       const StringOrDouble& end,
       ExceptionState&);
 
-  PerformanceMeasure* measureInternal(ScriptState*,
-                                      const AtomicString& measure_name,
-                                      const StringOrDouble& start,
-                                      const StringOrDouble& end,
-                                      const ScriptValue& detail,
-                                      ExceptionState&);
+  PerformanceMeasure* MeasureWithDetail(ScriptState*,
+                                        const AtomicString& measure_name,
+                                        const StringOrDouble& start,
+                                        const StringOrDouble& end,
+                                        const ScriptValue& detail,
+                                        ExceptionState&);
 
  protected:
   Performance(TimeTicks time_origin,

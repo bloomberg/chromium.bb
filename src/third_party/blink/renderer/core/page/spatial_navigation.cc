@@ -46,10 +46,7 @@
 
 namespace blink {
 
-using namespace HTMLNames;
-
 static void DeflateIfOverlapped(LayoutRect&, LayoutRect&);
-static bool IsScrollableNode(const Node*);
 
 FocusCandidate::FocusCandidate(Node* node, WebFocusType direction)
     : visible_node(nullptr),

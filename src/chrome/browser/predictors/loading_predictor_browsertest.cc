@@ -545,11 +545,8 @@ IN_PROC_BROWSER_TEST_F(LoadingPredictorBrowserTest,
   ResetNetworkState();
   ResetPredictorState();
 
-  // Open in a new foreground tab to avoid being classified as a reload since
-  // reload requests are always revalidated.
-  ui_test_utils::NavigateToURLWithDisposition(
-      browser(), url, WindowOpenDisposition::NEW_FOREGROUND_TAB,
-      ui_test_utils::BROWSER_TEST_WAIT_FOR_NAVIGATION);
+  auto observer = NavigateToURLAsync(url);
+  EXPECT_TRUE(observer->WaitForRequestStart());
   preconnect_manager_observer()->WaitUntilHostLookedUp(url.host());
   EXPECT_TRUE(preconnect_manager_observer()->HostFound(url.host()));
   // We should preconnect only 2 sockets for the main frame host.
@@ -629,11 +626,8 @@ IN_PROC_BROWSER_TEST_F(LoadingPredictorBrowserTest,
   ui_test_utils::NavigateToURL(browser(), url);
   ResetNetworkState();
 
-  // Open in a new foreground tab to avoid being classified as a reload since
-  // reload requests are always revalidated.
-  ui_test_utils::NavigateToURLWithDisposition(
-      browser(), url, WindowOpenDisposition::NEW_FOREGROUND_TAB,
-      ui_test_utils::BROWSER_TEST_WAIT_FOR_NAVIGATION);
+  auto observer = NavigateToURLAsync(url);
+  EXPECT_TRUE(observer->WaitForRequestStart());
   for (const auto& host : kHtmlSubresourcesHosts) {
     GURL url(base::StringPrintf("http://%s", host.c_str()));
     preconnect_manager_observer()->WaitUntilHostLookedUp(url.host());
@@ -663,7 +657,7 @@ IN_PROC_BROWSER_TEST_F(LoadingPredictorBrowserTest, DnsPrefetch) {
 // Tests that preconnect warms up a socket connection to a test server.
 // Note: This test uses a data URI to serve the preconnect hint, to make sure
 // that the network stack doesn't just re-use its connection to the test server.
-IN_PROC_BROWSER_TEST_F(LoadingPredictorBrowserTest, PreconnectNonCORS) {
+IN_PROC_BROWSER_TEST_F(LoadingPredictorBrowserTest, PreconnectNonCors) {
   GURL preconnect_url = embedded_test_server()->base_url();
   std::string preconnect_content =
       "<link rel=\"preconnect\" href=\"" + preconnect_url.spec() + "\">";
@@ -678,7 +672,7 @@ IN_PROC_BROWSER_TEST_F(LoadingPredictorBrowserTest, PreconnectNonCORS) {
 // and that that socket is later used when fetching a resource.
 // Note: This test uses a data URI to serve the preconnect hint, to make sure
 // that the network stack doesn't just re-use its connection to the test server.
-IN_PROC_BROWSER_TEST_F(LoadingPredictorBrowserTest, PreconnectAndFetchNonCORS) {
+IN_PROC_BROWSER_TEST_F(LoadingPredictorBrowserTest, PreconnectAndFetchNonCors) {
   GURL preconnect_url = embedded_test_server()->base_url();
   // First navigation to content with a preconnect hint.
   std::string preconnect_content =
@@ -702,7 +696,7 @@ IN_PROC_BROWSER_TEST_F(LoadingPredictorBrowserTest, PreconnectAndFetchNonCORS) {
 // server, and that socket is later used when fetching a CORS resource.
 // Note: This test uses a data URI to serve the preconnect hint, to make sure
 // that the network stack doesn't just re-use its connection to the test server.
-IN_PROC_BROWSER_TEST_F(LoadingPredictorBrowserTest, PreconnectAndFetchCORS) {
+IN_PROC_BROWSER_TEST_F(LoadingPredictorBrowserTest, PreconnectAndFetchCors) {
   GURL preconnect_url = embedded_test_server()->base_url();
   // First navigation to content with a preconnect hint.
   std::string preconnect_content = "<link rel=\"preconnect\" href=\"" +
@@ -728,7 +722,7 @@ IN_PROC_BROWSER_TEST_F(LoadingPredictorBrowserTest, PreconnectAndFetchCORS) {
 // Note: This test uses a data URI to serve the preconnect hint, to make sure
 // that the network stack doesn't just re-use its connection to the test server.
 IN_PROC_BROWSER_TEST_F(LoadingPredictorBrowserTest,
-                       PreconnectNonCORSAndFetchCORS) {
+                       PreconnectNonCorsAndFetchCors) {
   GURL preconnect_url = embedded_test_server()->base_url();
   // First navigation to content with a preconnect hint.
   std::string preconnect_content =
@@ -754,7 +748,7 @@ IN_PROC_BROWSER_TEST_F(LoadingPredictorBrowserTest,
 // Note: This test uses a data URI to serve the preconnect hint, to make sure
 // that the network stack doesn't just re-use its connection to the test server.
 IN_PROC_BROWSER_TEST_F(LoadingPredictorBrowserTest,
-                       PreconnectCORSAndFetchNonCORS) {
+                       PreconnectCorsAndFetchNonCors) {
   GURL preconnect_url = embedded_test_server()->base_url();
   // First navigation to content with a preconnect hint.
   std::string preconnect_content = "<link rel=\"preconnect\" href=\"" +
@@ -813,11 +807,8 @@ IN_PROC_BROWSER_TEST_F(LoadingPredictorBrowserTestWithProxy,
   ResetNetworkState();
   ResetPredictorState();
 
-  // Open in a new foreground tab to avoid being classified as a reload since
-  // reload requests are always revalidated.
-  ui_test_utils::NavigateToURLWithDisposition(
-      browser(), url, WindowOpenDisposition::NEW_FOREGROUND_TAB,
-      ui_test_utils::BROWSER_TEST_WAIT_FOR_NAVIGATION);
+  auto observer = NavigateToURLAsync(url);
+  EXPECT_TRUE(observer->WaitForRequestStart());
   preconnect_manager_observer()->WaitUntilProxyLookedUp(url);
   EXPECT_TRUE(preconnect_manager_observer()->ProxyFound(url));
   // We should preconnect only 2 sockets for the main frame host.
@@ -839,11 +830,8 @@ IN_PROC_BROWSER_TEST_F(LoadingPredictorBrowserTestWithProxy,
   ui_test_utils::NavigateToURL(browser(), url);
   ResetNetworkState();
 
-  // Open in a new foreground tab to avoid being classified as a reload since
-  // reload requests are always revalidated.
-  ui_test_utils::NavigateToURLWithDisposition(
-      browser(), url, WindowOpenDisposition::NEW_FOREGROUND_TAB,
-      ui_test_utils::BROWSER_TEST_WAIT_FOR_NAVIGATION);
+  auto observer = NavigateToURLAsync(url);
+  EXPECT_TRUE(observer->WaitForRequestStart());
   for (const auto& host : kHtmlSubresourcesHosts) {
     GURL url = embedded_test_server()->GetURL(host, "/");
     preconnect_manager_observer()->WaitUntilProxyLookedUp(url);

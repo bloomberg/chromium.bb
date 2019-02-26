@@ -13,7 +13,8 @@
 #define NET_THIRD_PARTY_HTTP2_HPACK_DECODER_HPACK_DECODER_STATE_H_
 
 #include <stddef.h>
-#include <stdint.h>
+
+#include <cstdint>
 
 #include "net/third_party/http2/hpack/decoder/hpack_decoder_listener.h"
 #include "net/third_party/http2/hpack/decoder/hpack_decoder_string_buffer.h"

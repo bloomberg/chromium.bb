@@ -24,6 +24,7 @@
 ../../third_party/catapult/devil/devil/android/sdk/dexdump.py
 ../../third_party/catapult/devil/devil/android/sdk/keyevent.py
 ../../third_party/catapult/devil/devil/android/sdk/version_codes.py
+../../third_party/catapult/devil/devil/base_error.py
 ../../third_party/catapult/devil/devil/constants/__init__.py
 ../../third_party/catapult/devil/devil/constants/exit_codes.py
 ../../third_party/catapult/devil/devil/devil_env.py
@@ -34,7 +35,13 @@
 ../../third_party/catapult/devil/devil/utils/reraiser_thread.py
 ../../third_party/catapult/devil/devil/utils/timeout_retry.py
 ../../third_party/catapult/devil/devil/utils/watchdog_timer.py
+../../third_party/catapult/third_party/vinn/vinn/__init__.py
+../../third_party/catapult/third_party/vinn/vinn/_vinn.py
 ../../third_party/catapult/third_party/zipfile/zipfile_2_7_13.py
+../../third_party/catapult/tracing/tracing/__init__.py
+../../third_party/catapult/tracing/tracing/value/__init__.py
+../../third_party/catapult/tracing/tracing/value/convert_chart_json.py
+../../third_party/catapult/tracing/tracing_project.py
 ../../third_party/depot_tools/breakpad.py
 ../../third_party/depot_tools/download_from_google_storage.py
 ../../third_party/depot_tools/subprocess2.py

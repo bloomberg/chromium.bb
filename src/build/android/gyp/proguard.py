@@ -66,6 +66,8 @@ def _ParseOptions(args):
   parser.add_option('--main-dex-rules-path', action='append',
                     help='Paths to main dex rules for multidex'
                          '- only works with R8.')
+  parser.add_option('--min-api', default='',
+                    help='Minimum Android API level compatibility.')
   parser.add_option('--verbose', '-v', action='store_true',
                     help='Print all proguard output')
 
@@ -73,6 +75,8 @@ def _ParseOptions(args):
 
   assert not options.main_dex_rules_path or options.r8_path, \
       "R8 must be enabled to pass main dex rules."
+  assert not options.min_api or options.r8_path, \
+      "R8 must be enabled to pass min api."
 
   classpath = []
   for arg in options.classpath:
@@ -126,6 +130,9 @@ def _CreateR8Command(options, map_output_path, output_dir):
   classpath = [
       p for p in set(options.classpath) if p not in options.input_paths
   ]
+
+  # TODO(smaier): Add back min-api once crbug.com/892644 is done.
+
   for lib in classpath:
     cmd += ['--lib', lib]
 

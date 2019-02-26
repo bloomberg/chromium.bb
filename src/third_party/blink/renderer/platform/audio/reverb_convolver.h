@@ -63,7 +63,7 @@ class PLATFORM_EXPORT ReverbConvolver {
 
   void Process(const AudioChannel* source_channel,
                AudioChannel* destination_channel,
-               size_t frames_to_process);
+               uint32_t frames_to_process);
   void Reset();
 
   ReverbInputBuffer* InputBuffer() { return &input_buffer_; }

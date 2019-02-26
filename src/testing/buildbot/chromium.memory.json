@@ -435,6 +435,7 @@
       },
       {
         "args": [
+          "--gtest_filter=-*UsingRealWebcam*",
           "--gs-results-bucket=chromium-result-details",
           "--recover-devices"
         ],
@@ -608,6 +609,8 @@
       },
       {
         "args": [
+          "--shared-prefs-file=//chrome/android/shared_preference_files/test/vr_cardboard_skipdon_setupcomplete.json",
+          "--additional-apk=//third_party/gvr-android-sdk/test-apks/vr_services/vr_services_current.apk",
           "--gs-results-bucket=chromium-result-details",
           "--recover-devices"
         ],
@@ -649,49 +652,6 @@
           "shards": 2
         },
         "test": "chrome_public_test_vr_apk"
-      },
-      {
-        "args": [
-          "--gs-results-bucket=chromium-result-details",
-          "--recover-devices"
-        ],
-        "merge": {
-          "args": [
-            "--bucket",
-            "chromium-result-details",
-            "--test-name",
-            "chrome_sync_shell_test_apk"
-          ],
-          "script": "//build/android/pylib/results/presentation/test_results_presentation.py"
-        },
-        "swarming": {
-          "can_use_on_swarming_builders": true,
-          "cipd_packages": [
-            {
-              "cipd_package": "infra/tools/luci/logdog/butler/${platform}",
-              "location": "bin",
-              "revision": "git_revision:ff387eadf445b24c935f1cf7d6ddd279f8a6b04c"
-            }
-          ],
-          "dimension_sets": [
-            {
-              "device_os": "MMB29Q",
-              "device_type": "bullhead",
-              "os": "Android"
-            }
-          ],
-          "output_links": [
-            {
-              "link": [
-                "https://luci-logdog.appspot.com/v/?s",
-                "=android%2Fswarming%2Flogcats%2F",
-                "${TASK_ID}%2F%2B%2Funified_logcats"
-              ],
-              "name": "shard #${SHARD_INDEX} logcats"
-            }
-          ]
-        },
-        "test": "chrome_sync_shell_test_apk"
       },
       {
         "args": [
@@ -2777,6 +2737,7 @@
       },
       {
         "args": [
+          "--gtest_filter=-*UsingRealWebcam*",
           "--test-launcher-print-test-stdio=always"
         ],
         "swarming": {
@@ -3578,6 +3539,9 @@
         "test": "cacheinvalidation_unittests"
       },
       {
+        "args": [
+          "--gtest_filter=-*UsingRealWebcam*"
+        ],
         "swarming": {
           "can_use_on_swarming_builders": true
         },
@@ -4241,7 +4205,7 @@
         ],
         "swarming": {
           "can_use_on_swarming_builders": true,
-          "shards": 30
+          "shards": 31
         },
         "test": "browser_tests"
       },
@@ -4309,6 +4273,7 @@
       },
       {
         "args": [
+          "--gtest_filter=-*UsingRealWebcam*",
           "--test-launcher-print-test-stdio=always"
         ],
         "swarming": {
@@ -4369,15 +4334,6 @@
           "can_use_on_swarming_builders": true
         },
         "test": "chromeos_unittests"
-      },
-      {
-        "args": [
-          "--test-launcher-print-test-stdio=always"
-        ],
-        "swarming": {
-          "can_use_on_swarming_builders": true
-        },
-        "test": "chromevox_tests"
       },
       {
         "args": [
@@ -4543,6 +4499,7 @@
       {
         "args": [
           "--enable-features=SingleProcessMash",
+          "--test-launcher-filter-file=../../testing/buildbot/filters/chromeos.single_process_mash.exo_unittests.filter",
           "--test-launcher-print-test-stdio=always"
         ],
         "name": "single_process_mash_exo_unittests",
@@ -4627,6 +4584,19 @@
         "args": [
           "--test-launcher-print-test-stdio=always"
         ],
+        "swarming": {
+          "can_use_on_swarming_builders": true,
+          "shards": 3
+        },
+        "test": "interactive_ui_tests"
+      },
+      {
+        "args": [
+          "--enable-features=SingleProcessMash",
+          "--test-launcher-filter-file=../../testing/buildbot/filters/chromeos.single_process_mash.interactive_ui_tests.filter",
+          "--test-launcher-print-test-stdio=always"
+        ],
+        "name": "single_process_mash_interactive_ui_tests",
         "swarming": {
           "can_use_on_swarming_builders": true,
           "shards": 3
@@ -4871,15 +4841,6 @@
           "can_use_on_swarming_builders": true
         },
         "test": "sandbox_linux_unittests"
-      },
-      {
-        "args": [
-          "--test-launcher-print-test-stdio=always"
-        ],
-        "swarming": {
-          "can_use_on_swarming_builders": true
-        },
-        "test": "select_to_speak_extension_tests"
       },
       {
         "args": [
@@ -5324,7 +5285,7 @@
               "os": "Ubuntu-14.04"
             }
           ],
-          "shards": 20
+          "shards": 25
         },
         "test": "browser_tests"
       },
@@ -5422,6 +5383,7 @@
       },
       {
         "args": [
+          "--gtest_filter=-*UsingRealWebcam*",
           "--test-launcher-print-test-stdio=always"
         ],
         "swarming": {
@@ -5524,22 +5486,6 @@
           ]
         },
         "test": "chromeos_unittests"
-      },
-      {
-        "args": [
-          "--test-launcher-print-test-stdio=always"
-        ],
-        "swarming": {
-          "can_use_on_swarming_builders": true,
-          "dimension_sets": [
-            {
-              "cpu": "x86-64",
-              "os": "Ubuntu-14.04"
-            }
-          ],
-          "shards": 6
-        },
-        "test": "chromevox_tests"
       },
       {
         "args": [
@@ -5800,6 +5746,7 @@
       {
         "args": [
           "--enable-features=SingleProcessMash",
+          "--test-launcher-filter-file=../../testing/buildbot/filters/chromeos.single_process_mash.exo_unittests.filter",
           "--test-launcher-print-test-stdio=always"
         ],
         "name": "single_process_mash_exo_unittests",
@@ -5947,6 +5894,25 @@
             }
           ],
           "shards": 5
+        },
+        "test": "interactive_ui_tests"
+      },
+      {
+        "args": [
+          "--enable-features=SingleProcessMash",
+          "--test-launcher-filter-file=../../testing/buildbot/filters/chromeos.single_process_mash.interactive_ui_tests.filter",
+          "--test-launcher-print-test-stdio=always"
+        ],
+        "name": "single_process_mash_interactive_ui_tests",
+        "swarming": {
+          "can_use_on_swarming_builders": true,
+          "dimension_sets": [
+            {
+              "cpu": "x86-64",
+              "os": "Ubuntu-14.04"
+            }
+          ],
+          "shards": 3
         },
         "test": "interactive_ui_tests"
       },
@@ -6344,21 +6310,6 @@
           ]
         },
         "test": "sandbox_linux_unittests"
-      },
-      {
-        "args": [
-          "--test-launcher-print-test-stdio=always"
-        ],
-        "swarming": {
-          "can_use_on_swarming_builders": true,
-          "dimension_sets": [
-            {
-              "cpu": "x86-64",
-              "os": "Ubuntu-14.04"
-            }
-          ]
-        },
-        "test": "select_to_speak_extension_tests"
       },
       {
         "args": [
@@ -6916,6 +6867,7 @@
       },
       {
         "args": [
+          "--gtest_filter=-*UsingRealWebcam*",
           "--test-launcher-print-test-stdio=always"
         ],
         "swarming": {
@@ -8175,6 +8127,7 @@
       },
       {
         "args": [
+          "--gtest_filter=-*UsingRealWebcam*",
           "--test-launcher-print-test-stdio=always"
         ],
         "swarming": {
@@ -8932,6 +8885,7 @@
       },
       {
         "args": [
+          "--gtest_filter=-*UsingRealWebcam*",
           "--test-launcher-print-test-stdio=always"
         ],
         "swarming": {
@@ -9251,15 +9205,6 @@
         "swarming": {
           "can_use_on_swarming_builders": true
         },
-        "test": "mac_installer_unittests"
-      },
-      {
-        "args": [
-          "--test-launcher-print-test-stdio=always"
-        ],
-        "swarming": {
-          "can_use_on_swarming_builders": true
-        },
         "test": "media_blink_unittests"
       },
       {
@@ -9449,15 +9394,6 @@
         "swarming": {
           "can_use_on_swarming_builders": true
         },
-        "test": "traffic_annotation_auditor_unittests"
-      },
-      {
-        "args": [
-          "--test-launcher-print-test-stdio=always"
-        ],
-        "swarming": {
-          "can_use_on_swarming_builders": true
-        },
         "test": "ui_base_unittests"
       },
       {
@@ -9522,6 +9458,105 @@
           "can_use_on_swarming_builders": true
         },
         "test": "wtf_unittests"
+      }
+    ]
+  },
+  "WebKit Linux Trusty ASAN": {
+    "isolated_scripts": [
+      {
+        "args": [
+          "--num-retries=3",
+          "--additional-expectations",
+          "../../third_party/blink/web_tests/ASANExpectations",
+          "--time-out-ms",
+          "48000",
+          "--enable-sanitizer"
+        ],
+        "isolate_name": "webkit_layout_tests_exparchive",
+        "merge": {
+          "args": [
+            "--verbose"
+          ],
+          "script": "//third_party/blink/tools/merge_web_test_results.py"
+        },
+        "name": "webkit_layout_tests",
+        "results_handler": "layout tests",
+        "swarming": {
+          "can_use_on_swarming_builders": true,
+          "dimension_sets": [
+            {
+              "os": "Ubuntu-14.04"
+            }
+          ],
+          "shards": 20
+        }
+      }
+    ]
+  },
+  "WebKit Linux Trusty Leak": {
+    "isolated_scripts": [
+      {
+        "args": [
+          "--num-retries=3",
+          "--additional-expectations",
+          "../../third_party/blink/web_tests/LeakExpectations",
+          "--time-out-ms",
+          "48000",
+          "--enable-leak-detection"
+        ],
+        "isolate_name": "webkit_layout_tests_exparchive",
+        "merge": {
+          "args": [
+            "--verbose"
+          ],
+          "script": "//third_party/blink/tools/merge_web_test_results.py"
+        },
+        "name": "webkit_layout_tests",
+        "results_handler": "layout tests",
+        "swarming": {
+          "can_use_on_swarming_builders": true,
+          "dimension_sets": [
+            {
+              "os": "Ubuntu-14.04"
+            }
+          ],
+          "shards": 10
+        }
+      }
+    ]
+  },
+  "WebKit Linux Trusty MSAN": {
+    "isolated_scripts": [
+      {
+        "args": [
+          "--num-retries=3",
+          "--additional-expectations",
+          "../../third_party/blink/web_tests/MSANExpectations",
+          "--time-out-ms",
+          "66000",
+          "--enable-sanitizer"
+        ],
+        "isolate_name": "webkit_layout_tests_exparchive",
+        "merge": {
+          "args": [
+            "--verbose"
+          ],
+          "script": "//third_party/blink/tools/merge_web_test_results.py"
+        },
+        "name": "webkit_layout_tests",
+        "results_handler": "layout tests",
+        "swarming": {
+          "can_use_on_swarming_builders": true,
+          "dimension_sets": [
+            {
+              "os": "Ubuntu-14.04"
+            }
+          ],
+          "expiration": 36000,
+          "hard_timeout": 10800,
+          "io_timeout": 3600,
+          "shards": 20
+        }
       }
     ]
   },
@@ -9706,6 +9741,9 @@
         "test": "cacheinvalidation_unittests"
       },
       {
+        "args": [
+          "--gtest_filter=-*UsingRealWebcam*"
+        ],
         "swarming": {
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
@@ -10053,6 +10091,17 @@
           ]
         },
         "test": "gcm_unit_tests"
+      },
+      {
+        "swarming": {
+          "can_use_on_swarming_builders": true,
+          "dimension_sets": [
+            {
+              "os": "Windows-10-15063"
+            }
+          ]
+        },
+        "test": "gcp_unittests"
       },
       {
         "swarming": {

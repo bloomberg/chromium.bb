@@ -65,6 +65,13 @@ class APP_LIST_MODEL_EXPORT SearchResult {
   const Tags& details_tags() const { return metadata_->details_tags; }
   void set_details_tags(const Tags& tags) { metadata_->details_tags = tags; }
 
+  const base::string16& accessible_name() const {
+    return metadata_->accessible_name;
+  }
+  void set_accessible_name(const base::string16& name) {
+    metadata_->accessible_name = name;
+  }
+
   float rating() const { return metadata_->rating; }
   void SetRating(float rating);
 
@@ -73,17 +80,14 @@ class APP_LIST_MODEL_EXPORT SearchResult {
   }
   void SetFormattedPrice(const base::string16& formatted_price);
 
-  const base::Optional<base::UnguessableToken>& answer_card_contents_token()
-      const {
-    return metadata_->answer_card_contents_token;
-  }
-  void set_answer_card_contents_token(
-      const base::Optional<base::UnguessableToken>& token) {
-    metadata_->answer_card_contents_token = token;
-  }
+  const base::Optional<GURL>& query_url() const { return metadata_->query_url; }
+  void set_query_url(const GURL& url) { metadata_->query_url = url; }
 
-  gfx::Size answer_card_size() const {
-    return metadata_->answer_card_size.value_or(gfx::Size());
+  const base::Optional<std::string>& equivalent_result_id() const {
+    return metadata_->equivalent_result_id;
+  }
+  void set_equivalent_result_id(const std::string& equivalent_result_id) {
+    metadata_->equivalent_result_id = equivalent_result_id;
   }
 
   const std::string& id() const { return metadata_->id; }
@@ -122,6 +126,9 @@ class APP_LIST_MODEL_EXPORT SearchResult {
     metadata_->is_omnibox_search = is_omnibox_search;
   }
 
+  bool is_visible() const { return is_visible_; }
+  void set_is_visible(bool is_visible) { is_visible_ = is_visible; }
+
   void NotifyItemInstalled();
 
   void AddObserver(SearchResultObserver* observer);
@@ -131,8 +138,8 @@ class APP_LIST_MODEL_EXPORT SearchResult {
   virtual void InvokeAction(int action_index, int event_flags);
 
   void SetMetadata(ash::mojom::SearchResultMetadataPtr metadata);
-  ash::mojom::SearchResultMetadataPtr CloneMetadata() const {
-    return metadata_.Clone();
+  ash::mojom::SearchResultMetadataPtr TakeMetadata() {
+    return std::move(metadata_);
   }
 
  protected:
@@ -150,6 +157,7 @@ class APP_LIST_MODEL_EXPORT SearchResult {
 
   bool is_installing_ = false;
   int percent_downloaded_ = 0;
+  bool is_visible_ = true;
 
   ash::mojom::SearchResultMetadataPtr metadata_;
 

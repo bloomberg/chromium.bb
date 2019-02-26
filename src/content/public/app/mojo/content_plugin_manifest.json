@@ -22,7 +22,8 @@
           "dwrite_font_proxy",
           "field_trials",
           "font_cache",
-          "plugin"
+          "plugin",
+          "sandbox_support"
         ],
         "device": [ "device:power_monitor" ],
         "font_service": [ "font_service" ],

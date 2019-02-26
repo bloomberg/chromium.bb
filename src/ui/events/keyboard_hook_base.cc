@@ -34,9 +34,8 @@ bool KeyboardHookBase::ShouldCaptureKeyEvent(DomCode dom_code) const {
   return !dom_codes_ || base::ContainsKey(dom_codes_.value(), dom_code);
 }
 
-void KeyboardHookBase::ForwardCapturedKeyEvent(
-    std::unique_ptr<KeyEvent> event) {
-  key_event_callback_.Run(event.get());
+void KeyboardHookBase::ForwardCapturedKeyEvent(KeyEvent* event) {
+  key_event_callback_.Run(event);
 }
 
 }  // namespace ui

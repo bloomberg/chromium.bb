@@ -28,7 +28,7 @@ mojom("usb") {
 
   export_class_attribute = "BLINK_COMMON_EXPORT"
   export_define = "BLINK_COMMON_IMPLEMENTATION=1"
-  export_header = "third_party/blink/common/common_export.h"
+  export_header = "third_party/blink/public/common/common_export.h"
 
   export_class_attribute_blink = "PLATFORM_EXPORT"
   export_define_blink = "BLINK_PLATFORM_IMPLEMENTATION=1"

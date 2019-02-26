@@ -33,7 +33,8 @@ HardwareRenderer::HardwareRenderer(RenderThreadManager* state)
       last_committed_layer_tree_frame_sink_id_(0u),
       last_submitted_layer_tree_frame_sink_id_(0u) {
   DCHECK(last_egl_context_);
-  surfaces_->GetFrameSinkManager()->RegisterFrameSinkId(frame_sink_id_);
+  surfaces_->GetFrameSinkManager()->RegisterFrameSinkId(
+      frame_sink_id_, true /* report_activation */);
   surfaces_->GetFrameSinkManager()->SetFrameSinkDebugLabel(frame_sink_id_,
                                                            "HardwareRenderer");
   CreateNewCompositorFrameSinkSupport();
@@ -163,7 +164,10 @@ void HardwareRenderer::DrawGL(AwDrawGLInfo* draw_info) {
 
 void HardwareRenderer::AllocateSurface() {
   DCHECK(!child_id_.is_valid());
-  child_id_ = parent_local_surface_id_allocator_->GenerateId();
+  parent_local_surface_id_allocator_->GenerateId();
+  child_id_ =
+      parent_local_surface_id_allocator_->GetCurrentLocalSurfaceIdAllocation()
+          .local_surface_id();
   surfaces_->AddChildId(viz::SurfaceId(frame_sink_id_, child_id_));
 }
 
@@ -171,7 +175,7 @@ void HardwareRenderer::DestroySurface() {
   DCHECK(child_id_.is_valid());
 
   surfaces_->RemoveChildId(viz::SurfaceId(frame_sink_id_, child_id_));
-  support_->EvictLastActivatedSurface();
+  support_->EvictSurface(child_id_);
   child_id_ = viz::LocalSurfaceId();
   surfaces_->GetFrameSinkManager()->surface_manager()->GarbageCollectSurfaces();
 }
@@ -182,11 +186,9 @@ void HardwareRenderer::DidReceiveCompositorFrameAck(
                               last_submitted_layer_tree_frame_sink_id_);
 }
 
-void HardwareRenderer::DidPresentCompositorFrame(
-    uint32_t presentation_token,
-    const gfx::PresentationFeedback& feedback) {}
-
-void HardwareRenderer::OnBeginFrame(const viz::BeginFrameArgs& args) {
+void HardwareRenderer::OnBeginFrame(
+    const viz::BeginFrameArgs& args,
+    const base::flat_map<uint32_t, gfx::PresentationFeedback>& feedbacks) {
   // TODO(tansell): Hook this up.
 }
 

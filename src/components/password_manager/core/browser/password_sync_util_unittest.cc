@@ -37,18 +37,18 @@ TEST_F(PasswordSyncUtilTest, GetSyncUsernameIfSyncingPasswords) {
     std::string fake_sync_username;
     std::string expected_result;
     const syncer::SyncService* sync_service;
-    const SigninManagerBase* signin_manager;
+    const identity::IdentityManager* identity_manager;
   } kTestCases[] = {
       {TestCase::NOT_SYNCING_PASSWORDS, "a@example.org", std::string(),
-       sync_service(), signin_manager()},
+       sync_service(), identity_manager()},
 
       {TestCase::SYNCING_PASSWORDS, "a@example.org", "a@example.org",
-       sync_service(), signin_manager()},
+       sync_service(), identity_manager()},
 
       // If sync_service is not available, we assume passwords are synced, even
       // if they are not.
       {TestCase::NOT_SYNCING_PASSWORDS, "a@example.org", "a@example.org",
-       nullptr, signin_manager()},
+       nullptr, identity_manager()},
 
       {TestCase::SYNCING_PASSWORDS, "a@example.org", std::string(),
        sync_service(), nullptr},
@@ -63,8 +63,8 @@ TEST_F(PasswordSyncUtilTest, GetSyncUsernameIfSyncingPasswords) {
                         TestCase::SYNCING_PASSWORDS);
     FakeSigninAs(kTestCases[i].fake_sync_username);
     EXPECT_EQ(kTestCases[i].expected_result,
-              GetSyncUsernameIfSyncingPasswords(kTestCases[i].sync_service,
-                                                kTestCases[i].signin_manager));
+              GetSyncUsernameIfSyncingPasswords(
+                  kTestCases[i].sync_service, kTestCases[i].identity_manager));
   }
 }
 
@@ -90,7 +90,7 @@ TEST_F(PasswordSyncUtilTest, IsSyncAccountCredential) {
     FakeSigninAs(kTestCases[i].fake_sync_username);
     EXPECT_EQ(kTestCases[i].expected_result,
               IsSyncAccountCredential(kTestCases[i].form, sync_service(),
-                                      signin_manager()));
+                                      identity_manager()));
   }
 }
 
@@ -118,7 +118,7 @@ TEST_F(PasswordSyncUtilTest, IsSyncAccountEmail) {
     FakeSigninAs(kTestCases[i].fake_sync_email);
     EXPECT_EQ(
         kTestCases[i].expected_result,
-        IsSyncAccountEmail(kTestCases[i].input_username, signin_manager()));
+        IsSyncAccountEmail(kTestCases[i].input_username, identity_manager()));
   }
 }
 
@@ -183,7 +183,7 @@ TEST_F(PasswordSyncUtilEnterpriseTest, ShouldSavePasswordHash) {
       SetSyncingPasswords(syncing_passwords);
       FakeSigninAs(kTestCases[i].fake_sync_username);
       EXPECT_EQ(kTestCases[i].expected_result,
-                ShouldSavePasswordHash(kTestCases[i].form, signin_manager(),
+                ShouldSavePasswordHash(kTestCases[i].form, identity_manager(),
                                        &prefs_));
     }
   }

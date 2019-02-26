@@ -24,6 +24,7 @@ import org.chromium.base.Log;
 import org.chromium.base.VisibleForTesting;
 import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.base.metrics.RecordUserAction;
+import org.chromium.chrome.browser.ChromeFeatureList;
 import org.chromium.chrome.browser.ChromeSwitches;
 import org.chromium.chrome.browser.IntentHandler;
 import org.chromium.chrome.browser.UrlConstants;
@@ -311,6 +312,20 @@ public class ExternalNavigationHandler {
                 if (DEBUG) Log.i(TAG, "NO_OVERRIDE: Incoming intent (not a redirect)");
                 return OverrideUrlLoadingResult.NO_OVERRIDE;
             }
+            // http://crbug.com/839751: Require user gestures for form submits to external
+            //                          protocols.
+            // TODO(tedchoc): Remove the ChromeFeatureList check once we verify this change does
+            //                not break the world.
+            if (isRedirectFromFormSubmit && !params.hasUserGesture()
+                    && ChromeFeatureList.isEnabled(
+                               ChromeFeatureList.INTENT_BLOCK_EXTERNAL_FORM_REDIRECT_NO_GESTURE)) {
+                if (DEBUG) {
+                    Log.i(TAG,
+                            "NO_OVERRIDE: Incoming form intent attempting to redirect without "
+                                    + "user gesture");
+                }
+                return OverrideUrlLoadingResult.NO_OVERRIDE;
+            }
             if (params.getRedirectHandler() != null
                     && params.getRedirectHandler().isNavigationFromUserTyping()) {
                 if (DEBUG) Log.i(TAG, "NO_OVERRIDE: Navigation from user typing");
@@ -332,9 +347,11 @@ public class ExternalNavigationHandler {
         if (params.getUrl().startsWith(WTAI_MC_URL_PREFIX)) {
             // wtai://wp/mc;number
             // number=string(phone-number)
-            mDelegate.startActivity(new Intent(Intent.ACTION_VIEW,
+            Intent wtaiIntent = new Intent(Intent.ACTION_VIEW,
                     Uri.parse(WebView.SCHEME_TEL
-                            + params.getUrl().substring(WTAI_MC_URL_PREFIX.length()))), false);
+                            + params.getUrl().substring(WTAI_MC_URL_PREFIX.length())));
+            wtaiIntent.addFlags(Intent.FLAG_EXCLUDE_STOPPED_PACKAGES);
+            mDelegate.startActivity(wtaiIntent, false);
             if (DEBUG) Log.i(TAG, "OVERRIDE_WITH_EXTERNAL_INTENT wtai:// link handled");
             RecordUserAction.record("Android.PhoneIntent");
             return OverrideUrlLoadingResult.OVERRIDE_WITH_EXTERNAL_INTENT;
@@ -389,6 +406,9 @@ public class ExternalNavigationHandler {
         // Sanitize the Intent, ensuring web pages can not bypass browser
         // security (only access to BROWSABLE activities).
         intent.addCategory(Intent.CATEGORY_BROWSABLE);
+        // Do not target packages that have not been launched directly by the
+        // user at least once.
+        intent.addFlags(Intent.FLAG_EXCLUDE_STOPPED_PACKAGES);
         intent.setComponent(null);
         Intent selector = intent.getSelector();
         if (selector != null) {

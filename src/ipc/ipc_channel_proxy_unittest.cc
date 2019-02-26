@@ -24,10 +24,6 @@
 #include "ipc/struct_constructor_macros.h"
 #include "ipc/ipc_channel_proxy_unittest_messages.h"
 
-// Generate destructors.
-#include "ipc/struct_destructor_macros.h"
-#include "ipc/ipc_channel_proxy_unittest_messages.h"
-
 // Generate param traits write methods.
 #include "ipc/param_traits_write_macros.h"
 namespace IPC {

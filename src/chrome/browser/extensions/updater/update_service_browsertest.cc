@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 #include "base/command_line.h"
+#include "base/json/json_reader.h"
 #include "base/run_loop.h"
 #include "base/test/bind_test_util.h"
 #include "base/test/metrics/histogram_tester.h"
@@ -38,9 +39,10 @@ using UpdateClientEvents = update_client::UpdateClient::Observer::Events;
 
 }  // namespace
 
-class UpdateServiceTest : public ExtensionUpdateClientBaseTest {
+class UpdateServiceTest : public ExtensionUpdateClientBaseTest,
+                          public testing::WithParamInterface<bool> {
  public:
-  UpdateServiceTest() {}
+  UpdateServiceTest() : ExtensionUpdateClientBaseTest(GetParam()) {}
   ~UpdateServiceTest() override {}
 
   void SetUpCommandLine(base::CommandLine* command_line) override {
@@ -53,17 +55,27 @@ class UpdateServiceTest : public ExtensionUpdateClientBaseTest {
   bool ShouldEnableContentVerification() override { return true; }
 };
 
-IN_PROC_BROWSER_TEST_F(UpdateServiceTest, NoUpdate) {
+// This test is parameterized for using JSON or XML serialization. |true| means
+// JSON serialization is used.
+INSTANTIATE_TEST_CASE_P(Parameterized, UpdateServiceTest, testing::Bool());
+
+IN_PROC_BROWSER_TEST_P(UpdateServiceTest, NoUpdate) {
   // Verify that UpdateService runs correctly when there's no update.
   base::ScopedAllowBlockingForTesting allow_io;
   base::HistogramTester histogram_tester;
 
   // Mock a no-update response.
-  const base::FilePath update_response =
-      test_data_dir_.AppendASCII("updater/updatecheck_reply_noupdate_1.xml");
-  ASSERT_TRUE(update_interceptor_->ExpectRequest(
-      std::make_unique<update_client::PartialMatch>("<updatecheck/>"),
-      update_response));
+  if (use_JSON_) {
+    ASSERT_TRUE(update_interceptor_->ExpectRequest(
+        std::make_unique<update_client::PartialMatch>(R"("updatecheck":{)"),
+        test_data_dir_.AppendASCII(
+            "updater/updatecheck_reply_noupdate_1.json")));
+  } else {
+    ASSERT_TRUE(update_interceptor_->ExpectRequest(
+        std::make_unique<update_client::PartialMatch>("<updatecheck/>"),
+        test_data_dir_.AppendASCII(
+            "updater/updatecheck_reply_noupdate_1.xml")));
+  }
 
   const base::FilePath crx_path = test_data_dir_.AppendASCII("updater/v1.crx");
   const Extension* extension =
@@ -104,22 +116,36 @@ IN_PROC_BROWSER_TEST_F(UpdateServiceTest, NoUpdate) {
 
   const std::string update_request =
       std::get<0>(update_interceptor_->GetRequests()[0]);
-  EXPECT_THAT(update_request,
-              ::testing::HasSubstr(base::StringPrintf(
-                  R"(<app appid="%s" version="0.10")", kExtensionId)));
-  EXPECT_THAT(update_request, ::testing::HasSubstr(R"(enabled="1")"));
+  if (use_JSON_) {
+    const auto root = base::JSONReader().Read(update_request);
+    const auto& app = root->FindKey("request")->FindKey("app")->GetList()[0];
+    EXPECT_EQ(kExtensionId, app.FindKey("appid")->GetString());
+    EXPECT_EQ("0.10", app.FindKey("version")->GetString());
+    EXPECT_TRUE(app.FindKey("enabled")->GetBool());
+  } else {
+    EXPECT_THAT(update_request,
+                ::testing::HasSubstr(base::StringPrintf(
+                    R"(<app appid="%s" version="0.10")", kExtensionId)));
+    EXPECT_THAT(update_request, ::testing::HasSubstr(R"(enabled="1")"));
+  }
 }
 
-IN_PROC_BROWSER_TEST_F(UpdateServiceTest, UpdateCheckError) {
+IN_PROC_BROWSER_TEST_P(UpdateServiceTest, UpdateCheckError) {
   // Verify that UpdateService works correctly when there's an error in the
   // update check phase.
   base::ScopedAllowBlockingForTesting allow_io;
   base::HistogramTester histogram_tester;
 
   // Mock an update check error.
-  ASSERT_TRUE(update_interceptor_->ExpectRequest(
-      std::make_unique<update_client::PartialMatch>("<updatecheck/>"),
-      net::HTTP_FORBIDDEN));
+  if (use_JSON_) {
+    ASSERT_TRUE(update_interceptor_->ExpectRequest(
+        std::make_unique<update_client::PartialMatch>(R"("updatecheck":{)"),
+        net::HTTP_FORBIDDEN));
+  } else {
+    ASSERT_TRUE(update_interceptor_->ExpectRequest(
+        std::make_unique<update_client::PartialMatch>("<updatecheck/>"),
+        net::HTTP_FORBIDDEN));
+  }
 
   const base::FilePath crx_path = test_data_dir_.AppendASCII("updater/v1.crx");
   const Extension* extension =
@@ -162,25 +188,42 @@ IN_PROC_BROWSER_TEST_F(UpdateServiceTest, UpdateCheckError) {
 
   const std::string update_request =
       std::get<0>(update_interceptor_->GetRequests()[0]);
-  EXPECT_THAT(update_request,
-              ::testing::HasSubstr(base::StringPrintf(
-                  R"(<app appid="%s" version="0.10")", kExtensionId)));
-  EXPECT_THAT(update_request, ::testing::HasSubstr(R"(enabled="1")"));
+  if (use_JSON_) {
+    const auto root = base::JSONReader().Read(update_request);
+    const auto& app = root->FindKey("request")->FindKey("app")->GetList()[0];
+    EXPECT_EQ(kExtensionId, app.FindKey("appid")->GetString());
+    EXPECT_EQ("0.10", app.FindKey("version")->GetString());
+    EXPECT_TRUE(app.FindKey("enabled")->GetBool());
+  } else {
+    EXPECT_THAT(update_request,
+                ::testing::HasSubstr(base::StringPrintf(
+                    R"(<app appid="%s" version="0.10")", kExtensionId)));
+    EXPECT_THAT(update_request, ::testing::HasSubstr(R"(enabled="1")"));
+  }
 }
 
-IN_PROC_BROWSER_TEST_F(UpdateServiceTest, TwoUpdateCheckErrors) {
+IN_PROC_BROWSER_TEST_P(UpdateServiceTest, TwoUpdateCheckErrors) {
   // Verify that the UMA counters are emitted properly when there are 2 update
   // checks with different number of extensions, both of which result in errors.
   base::ScopedAllowBlockingForTesting allow_io;
   base::HistogramTester histogram_tester;
 
   // Mock update check errors.
-  ASSERT_TRUE(update_interceptor_->ExpectRequest(
-      std::make_unique<update_client::PartialMatch>("<updatecheck/>"),
-      net::HTTP_NOT_MODIFIED));
-  ASSERT_TRUE(update_interceptor_->ExpectRequest(
-      std::make_unique<update_client::PartialMatch>("<updatecheck/>"),
-      net::HTTP_USE_PROXY));
+  if (use_JSON_) {
+    ASSERT_TRUE(update_interceptor_->ExpectRequest(
+        std::make_unique<update_client::PartialMatch>(R"("updatecheck":{)"),
+        net::HTTP_NOT_MODIFIED));
+    ASSERT_TRUE(update_interceptor_->ExpectRequest(
+        std::make_unique<update_client::PartialMatch>(R"("updatecheck":{)"),
+        net::HTTP_USE_PROXY));
+  } else {
+    ASSERT_TRUE(update_interceptor_->ExpectRequest(
+        std::make_unique<update_client::PartialMatch>("<updatecheck/>"),
+        net::HTTP_NOT_MODIFIED));
+    ASSERT_TRUE(update_interceptor_->ExpectRequest(
+        std::make_unique<update_client::PartialMatch>("<updatecheck/>"),
+        net::HTTP_USE_PROXY));
+  }
 
   const base::FilePath crx_path1 = test_data_dir_.AppendASCII("updater/v1.crx");
   const base::FilePath crx_path2 = test_data_dir_.AppendASCII("updater/v2.crx");
@@ -230,23 +273,36 @@ IN_PROC_BROWSER_TEST_F(UpdateServiceTest, TwoUpdateCheckErrors) {
       << ping_interceptor_->GetRequestsAsString();
 }
 
-IN_PROC_BROWSER_TEST_F(UpdateServiceTest, SuccessfulUpdate) {
+IN_PROC_BROWSER_TEST_P(UpdateServiceTest, SuccessfulUpdate) {
   base::ScopedAllowBlockingForTesting allow_io;
   base::HistogramTester histogram_tester;
 
   // Mock an update response.
-  const base::FilePath update_response =
-      test_data_dir_.AppendASCII("updater/updatecheck_reply_update_1.xml");
-  const base::FilePath ping_response =
-      test_data_dir_.AppendASCII("updater/ping_reply_1.xml");
-  const base::FilePath crx_path = test_data_dir_.AppendASCII("updater/v1.crx");
+  if (use_JSON_) {
+    const base::FilePath update_response =
+        test_data_dir_.AppendASCII("updater/updatecheck_reply_update_1.json");
+    const base::FilePath ping_response =
+        test_data_dir_.AppendASCII("updater/ping_reply_1.json");
+    ASSERT_TRUE(update_interceptor_->ExpectRequest(
+        std::make_unique<update_client::PartialMatch>(R"("updatecheck":{)"),
+        update_response));
+    ASSERT_TRUE(ping_interceptor_->ExpectRequest(
+        std::make_unique<update_client::PartialMatch>(R"("eventtype":)"),
+        ping_response));
+  } else {
+    const base::FilePath update_response =
+        test_data_dir_.AppendASCII("updater/updatecheck_reply_update_1.xml");
+    const base::FilePath ping_response =
+        test_data_dir_.AppendASCII("updater/ping_reply_1.xml");
+    ASSERT_TRUE(update_interceptor_->ExpectRequest(
+        std::make_unique<update_client::PartialMatch>("<updatecheck/>"),
+        update_response));
+    ASSERT_TRUE(ping_interceptor_->ExpectRequest(
+        std::make_unique<update_client::PartialMatch>("eventtype"),
+        ping_response));
+  }
 
-  ASSERT_TRUE(update_interceptor_->ExpectRequest(
-      std::make_unique<update_client::PartialMatch>("<updatecheck/>"),
-      update_response));
-  ASSERT_TRUE(ping_interceptor_->ExpectRequest(
-      std::make_unique<update_client::PartialMatch>("eventtype"),
-      ping_response));
+  const base::FilePath crx_path = test_data_dir_.AppendASCII("updater/v1.crx");
   set_interceptor_hook(base::BindLambdaForTesting(
       [&](content::URLLoaderInterceptor::RequestParams* params) {
         if (params->url_request.url.path() != "/download/v1.crx")
@@ -295,30 +351,51 @@ IN_PROC_BROWSER_TEST_F(UpdateServiceTest, SuccessfulUpdate) {
 
   const std::string update_request =
       std::get<0>(update_interceptor_->GetRequests()[0]);
-  EXPECT_THAT(update_request,
-              ::testing::HasSubstr(base::StringPrintf(
-                  R"(<app appid="%s" version="0.10")", kExtensionId)));
-  EXPECT_THAT(update_request, ::testing::HasSubstr(R"(enabled="1")"));
+  if (use_JSON_) {
+    const auto root = base::JSONReader().Read(update_request);
+    const auto& app = root->FindKey("request")->FindKey("app")->GetList()[0];
+    EXPECT_EQ(kExtensionId, app.FindKey("appid")->GetString());
+    EXPECT_EQ("0.10", app.FindKey("version")->GetString());
+    EXPECT_TRUE(app.FindKey("enabled")->GetBool());
+  } else {
+    EXPECT_THAT(update_request,
+                ::testing::HasSubstr(base::StringPrintf(
+                    R"(<app appid="%s" version="0.10")", kExtensionId)));
+    EXPECT_THAT(update_request, ::testing::HasSubstr(R"(enabled="1")"));
+  }
 }
 
-IN_PROC_BROWSER_TEST_F(UpdateServiceTest, PolicyCorrupted) {
+IN_PROC_BROWSER_TEST_P(UpdateServiceTest, PolicyCorrupted) {
   base::ScopedAllowBlockingForTesting allow_io;
 
   ExtensionSystem* system = ExtensionSystem::Get(profile());
   ExtensionService* service = extension_service();
 
-  const base::FilePath update_response =
-      test_data_dir_.AppendASCII("updater/updatecheck_reply_update_1.xml");
-  const base::FilePath ping_response =
-      test_data_dir_.AppendASCII("updater/ping_reply_1.xml");
-  const base::FilePath crx_path = test_data_dir_.AppendASCII("updater/v1.crx");
+  if (use_JSON_) {
+    const base::FilePath update_response =
+        test_data_dir_.AppendASCII("updater/updatecheck_reply_update_1.json");
+    const base::FilePath ping_response =
+        test_data_dir_.AppendASCII("updater/ping_reply_1.json");
+    ASSERT_TRUE(update_interceptor_->ExpectRequest(
+        std::make_unique<update_client::PartialMatch>(R"("updatecheck":{)"),
+        update_response));
+    ASSERT_TRUE(ping_interceptor_->ExpectRequest(
+        std::make_unique<update_client::PartialMatch>(R"("eventtype":)"),
+        ping_response));
+  } else {
+    const base::FilePath update_response =
+        test_data_dir_.AppendASCII("updater/updatecheck_reply_update_1.xml");
+    const base::FilePath ping_response =
+        test_data_dir_.AppendASCII("updater/ping_reply_1.xml");
+    ASSERT_TRUE(update_interceptor_->ExpectRequest(
+        std::make_unique<update_client::PartialMatch>("<updatecheck/>"),
+        update_response));
+    ASSERT_TRUE(ping_interceptor_->ExpectRequest(
+        std::make_unique<update_client::PartialMatch>("eventtype"),
+        ping_response));
+  }
 
-  ASSERT_TRUE(update_interceptor_->ExpectRequest(
-      std::make_unique<update_client::PartialMatch>("<updatecheck/>"),
-      update_response));
-  ASSERT_TRUE(ping_interceptor_->ExpectRequest(
-      std::make_unique<update_client::PartialMatch>("eventtype"),
-      ping_response));
+  const base::FilePath crx_path = test_data_dir_.AppendASCII("updater/v1.crx");
   set_interceptor_hook(base::BindLambdaForTesting(
       [&](content::URLLoaderInterceptor::RequestParams* params) {
         if (params->url_request.url.path() != "/download/v1.crx")
@@ -379,19 +456,32 @@ IN_PROC_BROWSER_TEST_F(UpdateServiceTest, PolicyCorrupted) {
   // - <disabled reason="1024"/>
   const std::string update_request =
       std::get<0>(update_interceptor_->GetRequests()[0]);
-  EXPECT_THAT(update_request,
-              ::testing::HasSubstr(base::StringPrintf(
-                  R"(<app appid="%s" version="0.0.0.0")", kExtensionId)));
-  EXPECT_THAT(
-      update_request,
-      ::testing::HasSubstr(
-          R"(installsource="reinstall" installedby="policy" enabled="0")"));
-  EXPECT_THAT(update_request, ::testing::HasSubstr(base::StringPrintf(
-                                  R"(<disabled reason="%d"/>)",
-                                  disable_reason::DISABLE_CORRUPTED)));
+  if (use_JSON_) {
+    const auto root = base::JSONReader().Read(update_request);
+    const auto& app = root->FindKey("request")->FindKey("app")->GetList()[0];
+    EXPECT_EQ(kExtensionId, app.FindKey("appid")->GetString());
+    EXPECT_EQ("0.0.0.0", app.FindKey("version")->GetString());
+    EXPECT_EQ("reinstall", app.FindKey("installsource")->GetString());
+    EXPECT_EQ("policy", app.FindKey("installedby")->GetString());
+    EXPECT_FALSE(app.FindKey("enabled")->GetBool());
+    const auto& disabled = app.FindKey("disabled")->GetList()[0];
+    EXPECT_EQ(disable_reason::DISABLE_CORRUPTED,
+              disabled.FindKey("reason")->GetInt());
+  } else {
+    EXPECT_THAT(update_request,
+                ::testing::HasSubstr(base::StringPrintf(
+                    R"(<app appid="%s" version="0.0.0.0")", kExtensionId)));
+    EXPECT_THAT(
+        update_request,
+        ::testing::HasSubstr(
+            R"(installsource="reinstall" installedby="policy" enabled="0")"));
+    EXPECT_THAT(update_request, ::testing::HasSubstr(base::StringPrintf(
+                                    R"(<disabled reason="%d"/>)",
+                                    disable_reason::DISABLE_CORRUPTED)));
+  }
 }
 
-IN_PROC_BROWSER_TEST_F(UpdateServiceTest, UninstallExtensionWhileUpdating) {
+IN_PROC_BROWSER_TEST_P(UpdateServiceTest, UninstallExtensionWhileUpdating) {
   // This test is to verify that the extension updater engine (update client)
   // works correctly when an extension is uninstalled when the extension updater
   // is in progress.
@@ -427,9 +517,10 @@ IN_PROC_BROWSER_TEST_F(UpdateServiceTest, UninstallExtensionWhileUpdating) {
   EXPECT_EQ(0, get_interceptor_count());
 }
 
-class PolicyUpdateServiceTest : public ExtensionUpdateClientBaseTest {
+class PolicyUpdateServiceTest : public ExtensionUpdateClientBaseTest,
+                                public testing::WithParamInterface<bool> {
  public:
-  PolicyUpdateServiceTest() {}
+  PolicyUpdateServiceTest() : ExtensionUpdateClientBaseTest(GetParam()) {}
   ~PolicyUpdateServiceTest() override {}
 
   void SetUpCommandLine(base::CommandLine* command_line) override {
@@ -465,11 +556,6 @@ class PolicyUpdateServiceTest : public ExtensionUpdateClientBaseTest {
 
     const base::FilePath crx_path =
         test_data_dir_.AppendASCII("updater/v1.crx");
-    const base::FilePath update_response =
-        test_data_dir_.AppendASCII("updater/updatecheck_reply_update_1.xml");
-    const base::FilePath ping_response =
-        test_data_dir_.AppendASCII("updater/ping_reply_1.xml");
-
     set_interceptor_hook(base::BindLambdaForTesting(
         [=](content::URLLoaderInterceptor::RequestParams* params) {
           if (params->url_request.url.path() != "/download/v1.crx")
@@ -479,30 +565,67 @@ class PolicyUpdateServiceTest : public ExtensionUpdateClientBaseTest {
                                                        params->client.get());
           return true;
         }));
-    ASSERT_TRUE(update_interceptor_->ExpectRequest(
-        std::make_unique<update_client::PartialMatch>("<updatecheck/>"),
-        update_response));
-    ASSERT_TRUE(update_interceptor_->ExpectRequest(
-        std::make_unique<update_client::PartialMatch>("<updatecheck/>"),
-        update_response));
-    ASSERT_TRUE(update_interceptor_->ExpectRequest(
-        std::make_unique<update_client::PartialMatch>("<updatecheck/>"),
-        update_response));
-    ASSERT_TRUE(update_interceptor_->ExpectRequest(
-        std::make_unique<update_client::PartialMatch>("<updatecheck/>"),
-        update_response));
-    ASSERT_TRUE(ping_interceptor_->ExpectRequest(
-        std::make_unique<update_client::PartialMatch>("eventtype"),
-        ping_response));
-    ASSERT_TRUE(ping_interceptor_->ExpectRequest(
-        std::make_unique<update_client::PartialMatch>("eventtype"),
-        ping_response));
-    ASSERT_TRUE(ping_interceptor_->ExpectRequest(
-        std::make_unique<update_client::PartialMatch>("eventtype"),
-        ping_response));
-    ASSERT_TRUE(ping_interceptor_->ExpectRequest(
-        std::make_unique<update_client::PartialMatch>("eventtype"),
-        ping_response));
+    if (use_JSON_) {
+      const base::FilePath update_response =
+          test_data_dir_.AppendASCII("updater/updatecheck_reply_update_1.json");
+      const base::FilePath ping_response =
+          test_data_dir_.AppendASCII("updater/ping_reply_1.json");
+
+      ASSERT_TRUE(update_interceptor_->ExpectRequest(
+          std::make_unique<update_client::PartialMatch>(R"("updatecheck":{)"),
+          update_response));
+      ASSERT_TRUE(update_interceptor_->ExpectRequest(
+          std::make_unique<update_client::PartialMatch>(R"("updatecheck":{)"),
+          update_response));
+      ASSERT_TRUE(update_interceptor_->ExpectRequest(
+          std::make_unique<update_client::PartialMatch>(R"("updatecheck":{)"),
+          update_response));
+      ASSERT_TRUE(update_interceptor_->ExpectRequest(
+          std::make_unique<update_client::PartialMatch>(R"("updatecheck":{)"),
+          update_response));
+      ASSERT_TRUE(ping_interceptor_->ExpectRequest(
+          std::make_unique<update_client::PartialMatch>(R"("eventtype":)"),
+          ping_response));
+      ASSERT_TRUE(ping_interceptor_->ExpectRequest(
+          std::make_unique<update_client::PartialMatch>(R"("eventtype":)"),
+          ping_response));
+      ASSERT_TRUE(ping_interceptor_->ExpectRequest(
+          std::make_unique<update_client::PartialMatch>(R"("eventtype":)"),
+          ping_response));
+      ASSERT_TRUE(ping_interceptor_->ExpectRequest(
+          std::make_unique<update_client::PartialMatch>(R"("eventtype":)"),
+          ping_response));
+    } else {
+      const base::FilePath update_response =
+          test_data_dir_.AppendASCII("updater/updatecheck_reply_update_1.xml");
+      const base::FilePath ping_response =
+          test_data_dir_.AppendASCII("updater/ping_reply_1.xml");
+
+      ASSERT_TRUE(update_interceptor_->ExpectRequest(
+          std::make_unique<update_client::PartialMatch>("<updatecheck/>"),
+          update_response));
+      ASSERT_TRUE(update_interceptor_->ExpectRequest(
+          std::make_unique<update_client::PartialMatch>("<updatecheck/>"),
+          update_response));
+      ASSERT_TRUE(update_interceptor_->ExpectRequest(
+          std::make_unique<update_client::PartialMatch>("<updatecheck/>"),
+          update_response));
+      ASSERT_TRUE(update_interceptor_->ExpectRequest(
+          std::make_unique<update_client::PartialMatch>("<updatecheck/>"),
+          update_response));
+      ASSERT_TRUE(ping_interceptor_->ExpectRequest(
+          std::make_unique<update_client::PartialMatch>("eventtype"),
+          ping_response));
+      ASSERT_TRUE(ping_interceptor_->ExpectRequest(
+          std::make_unique<update_client::PartialMatch>("eventtype"),
+          ping_response));
+      ASSERT_TRUE(ping_interceptor_->ExpectRequest(
+          std::make_unique<update_client::PartialMatch>("eventtype"),
+          ping_response));
+      ASSERT_TRUE(ping_interceptor_->ExpectRequest(
+          std::make_unique<update_client::PartialMatch>("eventtype"),
+          ping_response));
+    }
   }
 
   std::vector<GURL> GetUpdateUrls() const override {
@@ -523,10 +646,16 @@ class PolicyUpdateServiceTest : public ExtensionUpdateClientBaseTest {
   content_verifier_test::DownloaderTestDelegate downloader_;
 };
 
+// This test is parameterized for using JSON or XML serialization. |true| means
+// JSON serialization is used.
+INSTANTIATE_TEST_CASE_P(Parameterized,
+                        PolicyUpdateServiceTest,
+                        testing::Bool());
+
 // Tests that if CheckForExternalUpdates() fails, then we retry reinstalling
 // corrupted policy extensions. For example: if network is unavailable,
 // CheckForExternalUpdates() will fail.
-IN_PROC_BROWSER_TEST_F(PolicyUpdateServiceTest, FailedUpdateRetries) {
+IN_PROC_BROWSER_TEST_P(PolicyUpdateServiceTest, FailedUpdateRetries) {
   ExtensionRegistry* registry = ExtensionRegistry::Get(profile());
   ExtensionService* service = extension_service();
   ContentVerifier* verifier =
@@ -573,19 +702,32 @@ IN_PROC_BROWSER_TEST_F(PolicyUpdateServiceTest, FailedUpdateRetries) {
   // - <disabled reason="1024"/>
   const std::string update_request =
       std::get<0>(update_interceptor_->GetRequests()[0]);
-  EXPECT_THAT(update_request,
-              ::testing::HasSubstr(base::StringPrintf(
-                  R"(<app appid="%s" version="0.0.0.0")", id_.c_str())));
-  EXPECT_THAT(
-      update_request,
-      ::testing::HasSubstr(
-          R"(installsource="reinstall" installedby="policy" enabled="0")"));
-  EXPECT_THAT(update_request, ::testing::HasSubstr(base::StringPrintf(
-                                  R"(<disabled reason="%d"/>)",
-                                  disable_reason::DISABLE_CORRUPTED)));
+  if (use_JSON_) {
+    const auto root = base::JSONReader().Read(update_request);
+    const auto& app = root->FindKey("request")->FindKey("app")->GetList()[0];
+    EXPECT_EQ(id_, app.FindKey("appid")->GetString());
+    EXPECT_EQ("0.0.0.0", app.FindKey("version")->GetString());
+    EXPECT_EQ("reinstall", app.FindKey("installsource")->GetString());
+    EXPECT_EQ("policy", app.FindKey("installedby")->GetString());
+    EXPECT_FALSE(app.FindKey("enabled")->GetBool());
+    const auto& disabled = app.FindKey("disabled")->GetList()[0];
+    EXPECT_EQ(disable_reason::DISABLE_CORRUPTED,
+              disabled.FindKey("reason")->GetInt());
+  } else {
+    EXPECT_THAT(update_request,
+                ::testing::HasSubstr(base::StringPrintf(
+                    R"(<app appid="%s" version="0.0.0.0")", id_.c_str())));
+    EXPECT_THAT(
+        update_request,
+        ::testing::HasSubstr(
+            R"(installsource="reinstall" installedby="policy" enabled="0")"));
+    EXPECT_THAT(update_request, ::testing::HasSubstr(base::StringPrintf(
+                                    R"(<disabled reason="%d"/>)",
+                                    disable_reason::DISABLE_CORRUPTED)));
+  }
 }
 
-IN_PROC_BROWSER_TEST_F(PolicyUpdateServiceTest, Backoff) {
+IN_PROC_BROWSER_TEST_P(PolicyUpdateServiceTest, Backoff) {
   ExtensionRegistry* registry = ExtensionRegistry::Get(profile());
   ContentVerifier* verifier =
       ExtensionSystem::Get(profile())->content_verifier();
@@ -637,7 +779,7 @@ IN_PROC_BROWSER_TEST_F(PolicyUpdateServiceTest, Backoff) {
 
 // We want to test what happens at startup with a corroption-disabled policy
 // force installed extension. So we set that up in the PRE test here.
-IN_PROC_BROWSER_TEST_F(PolicyUpdateServiceTest, PRE_PolicyCorruptedOnStartup) {
+IN_PROC_BROWSER_TEST_P(PolicyUpdateServiceTest, PRE_PolicyCorruptedOnStartup) {
   // This is to not allow any corrupted resintall to proceed.
   content_verifier_test::DelayTracker delay_tracker;
   ExtensionRegistry* registry = ExtensionRegistry::Get(profile());
@@ -666,7 +808,7 @@ IN_PROC_BROWSER_TEST_F(PolicyUpdateServiceTest, PRE_PolicyCorruptedOnStartup) {
 }
 
 // Now actually test what happens on the next startup after the PRE test above.
-IN_PROC_BROWSER_TEST_F(PolicyUpdateServiceTest, PolicyCorruptedOnStartup) {
+IN_PROC_BROWSER_TEST_P(PolicyUpdateServiceTest, PolicyCorruptedOnStartup) {
   // Depdending on timing, the extension may have already been reinstalled
   // between SetUpInProcessBrowserTestFixture and now (usually not during local
   // testing on a developer machine, but sometimes on a heavily loaded system
@@ -691,16 +833,29 @@ IN_PROC_BROWSER_TEST_F(PolicyUpdateServiceTest, PolicyCorruptedOnStartup) {
 
   const std::string update_request =
       std::get<0>(update_interceptor_->GetRequests()[0]);
-  EXPECT_THAT(update_request,
-              ::testing::HasSubstr(base::StringPrintf(
-                  R"(<app appid="%s" version="0.0.0.0")", id_.c_str())));
-  EXPECT_THAT(
-      update_request,
-      ::testing::HasSubstr(
-          R"(installsource="reinstall" installedby="policy" enabled="0")"));
-  EXPECT_THAT(update_request, ::testing::HasSubstr(base::StringPrintf(
-                                  R"(<disabled reason="%d"/>)",
-                                  disable_reason::DISABLE_CORRUPTED)));
+  if (use_JSON_) {
+    const auto root = base::JSONReader().Read(update_request);
+    const auto& app = root->FindKey("request")->FindKey("app")->GetList()[0];
+    EXPECT_EQ(id_, app.FindKey("appid")->GetString());
+    EXPECT_EQ("0.0.0.0", app.FindKey("version")->GetString());
+    EXPECT_EQ("reinstall", app.FindKey("installsource")->GetString());
+    EXPECT_EQ("policy", app.FindKey("installedby")->GetString());
+    EXPECT_FALSE(app.FindKey("enabled")->GetBool());
+    const auto& disabled = app.FindKey("disabled")->GetList()[0];
+    EXPECT_EQ(disable_reason::DISABLE_CORRUPTED,
+              disabled.FindKey("reason")->GetInt());
+  } else {
+    EXPECT_THAT(update_request,
+                ::testing::HasSubstr(base::StringPrintf(
+                    R"(<app appid="%s" version="0.0.0.0")", id_.c_str())));
+    EXPECT_THAT(
+        update_request,
+        ::testing::HasSubstr(
+            R"(installsource="reinstall" installedby="policy" enabled="0")"));
+    EXPECT_THAT(update_request, ::testing::HasSubstr(base::StringPrintf(
+                                    R"(<disabled reason="%d"/>)",
+                                    disable_reason::DISABLE_CORRUPTED)));
+  }
 }
 
 }  // namespace extensions

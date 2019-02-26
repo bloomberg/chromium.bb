@@ -14,7 +14,7 @@ namespace blink {
 
 // HTMLShadowRoot --------------------------------------------------------------
 
-void V8ShadowRoot::innerHTMLAttributeSetterCustom(
+void V8ShadowRoot::InnerHTMLAttributeSetterCustom(
     v8::Local<v8::Value> value,
     const v8::FunctionCallbackInfo<v8::Value>& info) {
   v8::Isolate* isolate = info.GetIsolate();
@@ -37,7 +37,7 @@ void V8ShadowRoot::innerHTMLAttributeSetterCustom(
   if (value->IsNull()) {
     cpp_value.SetString(String());
   } else {
-    V8StringOrTrustedHTML::ToImpl(info.GetIsolate(), value, cpp_value,
+    V8StringOrTrustedHTML::ToImpl(isolate, value, cpp_value,
                                   UnionTypeConversionMode::kNotNullable,
                                   exception_state);
   }

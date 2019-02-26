@@ -4,9 +4,12 @@
 
 package org.chromium.chrome.browser;
 
+import static android.support.test.espresso.Espresso.onView;
+import static android.support.test.espresso.action.ViewActions.click;
+import static android.support.test.espresso.matcher.ViewMatchers.withId;
+
 import static org.chromium.base.test.util.Restriction.RESTRICTION_TYPE_NON_LOW_END_DEVICE;
 
-import android.content.DialogInterface;
 import android.content.pm.ActivityInfo;
 import android.graphics.Point;
 import android.os.Build;
@@ -50,6 +53,9 @@ import org.chromium.chrome.browser.compositor.layouts.eventfilter.ScrollDirectio
 import org.chromium.chrome.browser.compositor.layouts.phone.StackLayout;
 import org.chromium.chrome.browser.compositor.layouts.phone.stack.Stack;
 import org.chromium.chrome.browser.compositor.layouts.phone.stack.StackTab;
+import org.chromium.chrome.browser.jsdialog.JavascriptTabModalDialog;
+import org.chromium.chrome.browser.modaldialog.ModalDialogProperties;
+import org.chromium.chrome.browser.modelutil.PropertyModel;
 import org.chromium.chrome.browser.tab.EmptyTabObserver;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.tabmodel.EmptyTabModelSelectorObserver;
@@ -61,7 +67,7 @@ import org.chromium.chrome.browser.tabmodel.TabModelSelectorImpl;
 import org.chromium.chrome.browser.tabmodel.TabModelSelectorTabModelObserver;
 import org.chromium.chrome.browser.tabmodel.TabModelUtils;
 import org.chromium.chrome.browser.tabmodel.TabbedModeTabPersistencePolicy;
-import org.chromium.chrome.browser.toolbar.ToolbarPhone;
+import org.chromium.chrome.browser.toolbar.top.ToolbarPhone;
 import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
 import org.chromium.chrome.test.ChromeTabbedActivityTestRule;
 import org.chromium.chrome.test.util.ApplicationTestUtils;
@@ -79,7 +85,6 @@ import org.chromium.content_public.browser.test.util.JavaScriptUtils;
 import org.chromium.content_public.browser.test.util.TouchCommon;
 import org.chromium.content_public.browser.test.util.UiUtils;
 import org.chromium.content_public.common.ContentSwitches;
-import org.chromium.content_public.common.ContentUrlConstants;
 import org.chromium.net.test.EmbeddedTestServer;
 import org.chromium.ui.test.util.UiRestriction;
 
@@ -206,7 +211,6 @@ public class TabsTest {
     @Test
     @MediumTest
     @RetryOnFailure
-    @CommandLineFlags.Add("disable-features=TabModalJsDialog")
     public void testAlertDialogDoesNotChangeActiveModel() throws InterruptedException {
         mTestServer = EmbeddedTestServer.createAndStartServer(InstrumentationRegistry.getContext());
         mActivityTestRule.newIncognitoTabFromMenu();
@@ -218,27 +222,25 @@ public class TabsTest {
                         + "})()",
                 null));
 
-        final AtomicReference<JavascriptAppModalDialog> dialog =
-                new AtomicReference<>();
+        final AtomicReference<JavascriptTabModalDialog> dialog = new AtomicReference<>();
 
         CriteriaHelper.pollInstrumentationThread(new Criteria() {
             @Override
             public boolean isSatisfied() {
-                dialog.set(JavascriptAppModalDialog.getCurrentDialogForTest());
+                dialog.set(getCurrentAlertDialog());
 
                 return dialog.get() != null;
             }
         });
 
-        ThreadUtils.runOnUiThreadBlocking(
-                () -> dialog.get().onClick(null, DialogInterface.BUTTON_POSITIVE));
+        onView(withId(R.id.positive_button)).perform(click());
 
         dialog.set(null);
 
         CriteriaHelper.pollInstrumentationThread(new Criteria() {
             @Override
             public boolean isSatisfied() {
-                return JavascriptAppModalDialog.getCurrentDialogForTest() == null;
+                return getCurrentAlertDialog() == null;
             }
         });
 
@@ -530,7 +532,7 @@ public class TabsTest {
 
         int initialTabCount = mActivityTestRule.getActivity().getCurrentTabModel().getCount();
         ChromeTabUtils.fullyLoadUrlInNewTab(InstrumentationRegistry.getInstrumentation(),
-                mActivityTestRule.getActivity(), ContentUrlConstants.ABOUT_BLANK_URL, false);
+                mActivityTestRule.getActivity(), UrlConstants.CHROME_BLANK_URL, false);
         ThreadUtils.runOnUiThreadBlocking(
                 () -> { mActivityTestRule.getActivity().getLayoutManager().showOverview(false); });
 
@@ -1570,7 +1572,7 @@ public class TabsTest {
     @DisabledTest(message = "crbug.com/882003")
     public void testToolbarSwipeNextThenPrevTab() throws InterruptedException, TimeoutException {
         ChromeTabUtils.fullyLoadUrlInNewTab(InstrumentationRegistry.getInstrumentation(),
-                mActivityTestRule.getActivity(), ContentUrlConstants.ABOUT_BLANK_URL, false);
+                mActivityTestRule.getActivity(), UrlConstants.CHROME_BLANK_URL, false);
         ChromeTabUtils.switchTabInCurrentTabModel(mActivityTestRule.getActivity(), 0);
         UiUtils.settleDownUI(InstrumentationRegistry.getInstrumentation());
 
@@ -1593,9 +1595,9 @@ public class TabsTest {
     public void testToolbarSwipeNextThenPrevTabIncognito()
             throws InterruptedException, TimeoutException {
         ChromeTabUtils.fullyLoadUrlInNewTab(InstrumentationRegistry.getInstrumentation(),
-                mActivityTestRule.getActivity(), ContentUrlConstants.ABOUT_BLANK_URL, true);
+                mActivityTestRule.getActivity(), UrlConstants.CHROME_BLANK_URL, true);
         ChromeTabUtils.fullyLoadUrlInNewTab(InstrumentationRegistry.getInstrumentation(),
-                mActivityTestRule.getActivity(), ContentUrlConstants.ABOUT_BLANK_URL, true);
+                mActivityTestRule.getActivity(), UrlConstants.CHROME_BLANK_URL, true);
         mActivityTestRule.getActivity().getTabModelSelector().selectModel(true);
         ChromeTabUtils.switchTabInCurrentTabModel(mActivityTestRule.getActivity(), 0);
         UiUtils.settleDownUI(InstrumentationRegistry.getInstrumentation());
@@ -1844,7 +1846,9 @@ public class TabsTest {
         Assert.assertTrue("notifyChanged() was not called", mNotifyChangedCalled);
     }
 
+    // Flaky: http://crbug.com/901986
     @Test
+    @DisabledTest
     @MediumTest
     @Feature({"Android-TabSwitcher"})
     @RetryOnFailure
@@ -1950,7 +1954,7 @@ public class TabsTest {
                     pageLoadedCallbacks[index] = pageLoadCallback;
                     currentTab.addObserver(new EmptyTabObserver() {
                         @Override
-                        public void onPageLoadFinished(Tab tab) {
+                        public void onPageLoadFinished(Tab tab, String url) {
                             pageLoadCallback.notifyCalled();
                             tab.removeObserver(this);
                         }
@@ -1972,5 +1976,14 @@ public class TabsTest {
             });
             pageLoadedCallbacks[i].waitForCallback(0);
         }
+    }
+
+    private JavascriptTabModalDialog getCurrentAlertDialog() {
+        return (JavascriptTabModalDialog) ThreadUtils.runOnUiThreadBlockingNoException(() -> {
+            PropertyModel dialogModel = mActivityTestRule.getActivity()
+                                                .getModalDialogManager()
+                                                .getCurrentDialogForTest();
+            return dialogModel != null ? dialogModel.get(ModalDialogProperties.CONTROLLER) : null;
+        });
     }
 }

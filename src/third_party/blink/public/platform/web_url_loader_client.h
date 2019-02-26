@@ -35,9 +35,9 @@
 #include "base/time/time.h"
 #include "mojo/public/cpp/system/data_pipe.h"
 #include "services/network/public/cpp/cors/preflight_timing_info.h"
+#include "services/network/public/mojom/referrer_policy.mojom-shared.h"
 #include "third_party/blink/public/platform/web_common.h"
 #include "third_party/blink/public/platform/web_data_consumer_handle.h"
-#include "third_party/blink/public/platform/web_referrer_policy.h"
 #include "third_party/blink/public/platform/web_url_request.h"
 
 namespace blink {
@@ -59,7 +59,7 @@ class BLINK_PLATFORM_EXPORT WebURLLoaderClient {
       const WebURL& new_url,
       const WebURL& new_site_for_cookies,
       const WebString& new_referrer,
-      WebReferrerPolicy new_referrer_policy,
+      network::mojom::ReferrerPolicy new_referrer_policy,
       const WebString& new_method,
       const WebURLResponse& passed_redirect_response,
       bool& report_raw_headers) {

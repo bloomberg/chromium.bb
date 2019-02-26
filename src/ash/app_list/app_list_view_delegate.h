@@ -12,6 +12,7 @@
 #include "ash/public/interfaces/menu.mojom.h"
 #include "base/callback_forward.h"
 #include "base/strings/string16.h"
+#include "services/content/public/mojom/navigable_contents_factory.mojom.h"
 #include "third_party/skia/include/core/SkColor.h"
 #include "ui/base/ui_base_types.h"
 #include "ui/events/event_constants.h"
@@ -20,10 +21,6 @@
 namespace ui {
 class GestureEvent;
 }  // namespace ui
-
-namespace ws {
-class WindowService;
-}  // namespace ws
 
 namespace app_list {
 
@@ -127,7 +124,11 @@ class ASH_PUBLIC_EXPORT AppListViewDelegate {
   // its descendants.
   virtual bool CanProcessEventsOnApplistViews() = 0;
 
-  virtual ws::WindowService* GetWindowService() = 0;
+  // Acquires a factory interface from the client which can be used to acquire
+  // initialize new NavigableContents objects for embedding web contents into
+  // the app list UI.
+  virtual void GetNavigableContentsFactory(
+      content::mojom::NavigableContentsFactoryRequest request) = 0;
 };
 
 }  // namespace app_list

@@ -24,28 +24,33 @@
 
 #include "third_party/blink/renderer/core/html/forms/listed_element.h"
 
+#include "third_party/blink/renderer/core/dom/element_traversal.h"
 #include "third_party/blink/renderer/core/dom/id_target_observer.h"
 #include "third_party/blink/renderer/core/dom/node_traversal.h"
+#include "third_party/blink/renderer/core/html/custom/element_internals.h"
+#include "third_party/blink/renderer/core/html/forms/html_field_set_element.h"
 #include "third_party/blink/renderer/core/html/forms/html_form_control_element.h"
 #include "third_party/blink/renderer/core/html/forms/html_form_element.h"
+#include "third_party/blink/renderer/core/html/forms/html_legend_element.h"
 #include "third_party/blink/renderer/core/html/forms/validity_state.h"
 #include "third_party/blink/renderer/core/html/html_object_element.h"
 #include "third_party/blink/renderer/core/html_names.h"
 
 namespace blink {
 
-using namespace HTMLNames;
+using namespace html_names;
 
 class FormAttributeTargetObserver : public IdTargetObserver {
  public:
   static FormAttributeTargetObserver* Create(const AtomicString& id,
                                              ListedElement*);
+
+  FormAttributeTargetObserver(const AtomicString& id, ListedElement*);
+
   void Trace(blink::Visitor*) override;
   void IdTargetChanged() override;
 
  private:
-  FormAttributeTargetObserver(const AtomicString& id, ListedElement*);
-
   Member<ListedElement> element_;
 };
 
@@ -70,11 +75,15 @@ ValidityState* ListedElement::validity() {
 
 void ListedElement::DidMoveToNewDocument(Document& old_document) {
   HTMLElement* element = ToHTMLElement(this);
-  if (element->FastHasAttribute(formAttr))
+  if (element->FastHasAttribute(kFormAttr))
     SetFormAttributeTargetObserver(nullptr);
 }
 
 void ListedElement::InsertedInto(ContainerNode& insertion_point) {
+  ancestor_disabled_state_ = AncestorDisabledState::kUnknown;
+  // Force traversal to find ancestor
+  may_have_field_set_ancestor_ = true;
+
   if (!form_was_set_by_parser_ || !form_ ||
       NodeTraversal::HighestAncestorOrSelf(insertion_point) !=
           NodeTraversal::HighestAncestorOrSelf(*form_.Get()))
@@ -84,13 +93,15 @@ void ListedElement::InsertedInto(ContainerNode& insertion_point) {
     return;
 
   HTMLElement* element = ToHTMLElement(this);
-  if (element->FastHasAttribute(formAttr))
+  if (element->FastHasAttribute(kFormAttr))
     ResetFormAttributeTargetObserver();
 }
 
 void ListedElement::RemovedFrom(ContainerNode& insertion_point) {
+  ancestor_disabled_state_ = AncestorDisabledState::kUnknown;
+
   HTMLElement* element = ToHTMLElement(this);
-  if (insertion_point.isConnected() && element->FastHasAttribute(formAttr)) {
+  if (insertion_point.isConnected() && element->FastHasAttribute(kFormAttr)) {
     SetFormAttributeTargetObserver(nullptr);
     ResetFormOwner();
     return;
@@ -167,7 +178,7 @@ void ListedElement::DidChangeForm() {
 void ListedElement::ResetFormOwner() {
   form_was_set_by_parser_ = false;
   HTMLElement* element = ToHTMLElement(this);
-  const AtomicString& form_id(element->FastGetAttribute(formAttr));
+  const AtomicString& form_id(element->FastGetAttribute(kFormAttr));
   HTMLFormElement* nearest_form = element->FindFormAncestor();
   // 1. If the element's form owner is not null, and either the element is not
   // reassociateable or its form content attribute is not present, and the
@@ -249,6 +260,58 @@ void ListedElement::setCustomValidity(const String& error) {
   custom_validation_message_ = error;
 }
 
+void ListedElement::DisabledAttributeChanged() {
+  HTMLElement& element = ToHTMLElement(*this);
+  element.PseudoStateChanged(CSSSelector::kPseudoDisabled);
+  element.PseudoStateChanged(CSSSelector::kPseudoEnabled);
+}
+
+void ListedElement::UpdateAncestorDisabledState() const {
+  if (!may_have_field_set_ancestor_) {
+    ancestor_disabled_state_ = AncestorDisabledState::kEnabled;
+    return;
+  }
+  may_have_field_set_ancestor_ = false;
+  // <fieldset> element of which |disabled| attribute affects the
+  // target element.
+  HTMLFieldSetElement* disabled_fieldset_ancestor = nullptr;
+  ContainerNode* last_legend_ancestor = nullptr;
+  for (HTMLElement* ancestor =
+           Traversal<HTMLElement>::FirstAncestor(ToHTMLElement(*this));
+       ancestor; ancestor = Traversal<HTMLElement>::FirstAncestor(*ancestor)) {
+    if (IsHTMLLegendElement(*ancestor)) {
+      last_legend_ancestor = ancestor;
+      continue;
+    }
+    if (!IsHTMLFieldSetElement(*ancestor))
+      continue;
+    may_have_field_set_ancestor_ = true;
+    if (ancestor->IsDisabledFormControl()) {
+      auto* fieldset = ToHTMLFieldSetElement(ancestor);
+      if (last_legend_ancestor && last_legend_ancestor == fieldset->Legend())
+        continue;
+      disabled_fieldset_ancestor = fieldset;
+      break;
+    }
+  }
+  ancestor_disabled_state_ = disabled_fieldset_ancestor
+                                 ? AncestorDisabledState::kDisabled
+                                 : AncestorDisabledState::kEnabled;
+}
+
+void ListedElement::AncestorDisabledStateWasChanged() {
+  ancestor_disabled_state_ = AncestorDisabledState::kUnknown;
+  DisabledAttributeChanged();
+}
+
+bool ListedElement::IsActuallyDisabled() const {
+  if (ToHTMLElement(*this).FastHasAttribute(html_names::kDisabledAttr))
+    return true;
+  if (ancestor_disabled_state_ == AncestorDisabledState::kUnknown)
+    UpdateAncestorDisabledState();
+  return ancestor_disabled_state_ == AncestorDisabledState::kDisabled;
+}
+
 void ListedElement::SetFormAttributeTargetObserver(
     FormAttributeTargetObserver* new_observer) {
   if (form_attribute_target_observer_)
@@ -258,7 +321,7 @@ void ListedElement::SetFormAttributeTargetObserver(
 
 void ListedElement::ResetFormAttributeTargetObserver() {
   HTMLElement* element = ToHTMLElement(this);
-  const AtomicString& form_id(element->FastGetAttribute(formAttr));
+  const AtomicString& form_id(element->FastGetAttribute(kFormAttr));
   if (!form_id.IsNull() && element->isConnected()) {
     SetFormAttributeTargetObserver(
         FormAttributeTargetObserver::Create(form_id, this));
@@ -280,9 +343,15 @@ bool ListedElement::IsFormControlElementWithState() const {
   return false;
 }
 
+bool ListedElement::IsElementInternals() const {
+  return false;
+}
+
 const HTMLElement& ToHTMLElement(const ListedElement& listed_element) {
   if (listed_element.IsFormControlElement())
     return ToHTMLFormControlElement(listed_element);
+  if (listed_element.IsElementInternals())
+    return To<ElementInternals>(listed_element).Target();
   return ToHTMLObjectElementFromListedElement(listed_element);
 }
 
@@ -304,7 +373,7 @@ HTMLElement& ToHTMLElement(ListedElement& listed_element) {
 FormAttributeTargetObserver* FormAttributeTargetObserver::Create(
     const AtomicString& id,
     ListedElement* element) {
-  return new FormAttributeTargetObserver(id, element);
+  return MakeGarbageCollected<FormAttributeTargetObserver>(id, element);
 }
 
 FormAttributeTargetObserver::FormAttributeTargetObserver(const AtomicString& id,

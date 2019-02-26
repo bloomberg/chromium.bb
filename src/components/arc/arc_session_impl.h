@@ -136,8 +136,12 @@ class ArcSessionImpl : public ArcSession,
     // Used for ConnectMojo completion callback.
     using ConnectMojoCallback =
         base::OnceCallback<void(std::unique_ptr<mojom::ArcBridgeHost>)>;
+    using CreateSocketCallback = base::OnceCallback<void(base::ScopedFD)>;
 
     virtual ~Delegate() = default;
+
+    // Creates arcbridge UNIX domain socket on a worker pool.
+    virtual void CreateSocket(CreateSocketCallback callback) = 0;
 
     // Connects ArcBridgeHost via |socket_fd|, and invokes |callback| with
     // connected ArcBridgeHost instance if succeeded (or nullptr if failed).
@@ -177,6 +181,9 @@ class ArcSessionImpl : public ArcSession,
 
   // Sends a D-Bus message to upgrade to a full instance.
   void DoUpgrade();
+
+  // Called when arcbridge socket is created.
+  void OnSocketCreated(base::ScopedFD fd);
 
   // D-Bus callback for UpgradeArcContainer(). |socket_fd| should be a socket
   // which should be accept(2)ed to connect ArcBridgeService Mojo channel.

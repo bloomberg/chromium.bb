@@ -20,6 +20,10 @@
 #include "services/device/public/mojom/hid.mojom.h"
 #include "testing/gmock/include/gmock/gmock.h"
 
+namespace service_manager {
+class Connector;
+}
+
 namespace device {
 
 class MockHidConnection : public device::mojom::HidConnection {
@@ -95,6 +99,9 @@ class FakeHidManager : public device::mojom::HidManager {
   FakeHidManager();
   ~FakeHidManager() override;
 
+  // Invoke AddDevice with a device info struct that mirrors a FIDO USB device.
+  void AddFidoHidDevice(std::string guid);
+
   // device::mojom::HidManager implementation:
   void GetDevicesAndSetClient(
       device::mojom::HidManagerClientAssociatedPtrInfo client,
@@ -116,6 +123,23 @@ class FakeHidManager : public device::mojom::HidManager {
   mojo::BindingSet<device::mojom::HidManager> bindings_;
 
   DISALLOW_COPY_AND_ASSIGN(FakeHidManager);
+};
+
+// ScopedFakeHidManager automatically binds itself to the device service for the
+// duration of its lifetime.
+class ScopedFakeHidManager : public FakeHidManager {
+ public:
+  ScopedFakeHidManager();
+  ~ScopedFakeHidManager() override;
+
+  service_manager::Connector* service_manager_connector() {
+    return connector_.get();
+  }
+
+ private:
+  std::unique_ptr<service_manager::Connector> connector_;
+
+  DISALLOW_COPY_AND_ASSIGN(ScopedFakeHidManager);
 };
 
 }  // namespace device

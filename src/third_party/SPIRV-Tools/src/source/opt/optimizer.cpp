@@ -296,6 +296,10 @@ bool Optimizer::RegisterPassFromFlag(const std::string& flag) {
     RegisterPass(CreateLocalAccessChainConvertPass());
   } else if (pass_name == "eliminate-dead-code-aggressive") {
     RegisterPass(CreateAggressiveDCEPass());
+  } else if (pass_name == "propagate-line-info") {
+    RegisterPass(CreatePropagateLineInfoPass());
+  } else if (pass_name == "eliminate-redundant-line-info") {
+    RegisterPass(CreateRedundantLineInfoElimPass());
   } else if (pass_name == "eliminate-insert-extract") {
     RegisterPass(CreateInsertExtractElimPass());
   } else if (pass_name == "eliminate-local-single-block") {
@@ -368,6 +372,12 @@ bool Optimizer::RegisterPassFromFlag(const std::string& flag) {
     RegisterPass(CreateWorkaround1209Pass());
   } else if (pass_name == "replace-invalid-opcode") {
     RegisterPass(CreateReplaceInvalidOpcodePass());
+  } else if (pass_name == "inst-bindless-check") {
+    RegisterPass(CreateInstBindlessCheckPass(7, 23));
+    RegisterPass(CreateSimplificationPass());
+    RegisterPass(CreateDeadBranchElimPass());
+    RegisterPass(CreateBlockMergePass());
+    RegisterPass(CreateAggressiveDCEPass());
   } else if (pass_name == "simplify-instructions") {
     RegisterPass(CreateSimplificationPass());
   } else if (pass_name == "ssa-rewrite") {
@@ -618,6 +628,16 @@ Optimizer::PassToken CreateAggressiveDCEPass() {
       MakeUnique<opt::AggressiveDCEPass>());
 }
 
+Optimizer::PassToken CreatePropagateLineInfoPass() {
+  return MakeUnique<Optimizer::PassToken::Impl>(
+      MakeUnique<opt::ProcessLinesPass>(opt::kLinesPropagateLines));
+}
+
+Optimizer::PassToken CreateRedundantLineInfoElimPass() {
+  return MakeUnique<Optimizer::PassToken::Impl>(
+      MakeUnique<opt::ProcessLinesPass>(opt::kLinesEliminateDeadLines));
+}
+
 Optimizer::PassToken CreateCommonUniformElimPass() {
   return MakeUnique<Optimizer::PassToken::Impl>(
       MakeUnique<opt::CommonUniformElimPass>());
@@ -747,4 +767,11 @@ Optimizer::PassToken CreateCombineAccessChainsPass() {
   return MakeUnique<Optimizer::PassToken::Impl>(
       MakeUnique<opt::CombineAccessChains>());
 }
+
+Optimizer::PassToken CreateInstBindlessCheckPass(uint32_t desc_set,
+                                                 uint32_t shader_id) {
+  return MakeUnique<Optimizer::PassToken::Impl>(
+      MakeUnique<opt::InstBindlessCheckPass>(desc_set, shader_id));
+}
+
 }  // namespace spvtools

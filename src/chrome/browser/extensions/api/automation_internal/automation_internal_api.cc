@@ -137,7 +137,7 @@ class QuerySelectorHandler : public content::WebContentsObserver {
 
 bool CanRequestAutomation(const Extension* extension,
                           const AutomationInfo* automation_info,
-                          const content::WebContents* contents) {
+                          content::WebContents* contents) {
   if (automation_info->desktop)
     return true;
 
@@ -461,6 +461,18 @@ AutomationInternalPerformActionFunction::ConvertToAXActionData(
     case api::automation::ACTION_TYPE_SETSCROLLOFFSET:
       return RespondNow(
           Error("Unsupported action: " + params->args.action_type));
+    case api::automation::ACTION_TYPE_GETTEXTLOCATION: {
+      api::automation_internal::GetTextLocationDataParams
+          get_text_location_params;
+      EXTENSION_FUNCTION_VALIDATE(
+          api::automation_internal::GetTextLocationDataParams::Populate(
+              params->opt_args.additional_properties,
+              &get_text_location_params));
+      action->action = ax::mojom::Action::kGetTextLocation;
+      action->start_index = get_text_location_params.start_index;
+      action->end_index = get_text_location_params.end_index;
+      break;
+    }
     case api::automation::ACTION_TYPE_NONE:
       break;
   }

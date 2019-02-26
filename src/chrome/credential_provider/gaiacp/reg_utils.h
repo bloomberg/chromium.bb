@@ -53,6 +53,13 @@ HRESULT RemoveAllUserProperties(const base::string16& sid);
 // Gets token handles for all users created by this credential provider.
 HRESULT GetUserTokenHandles(std::map<base::string16, base::string16>* handles);
 
+// Gets the SID associated with the given gaia id.  If none exists, returns
+// HRESULT_FROM_WIN32(ERROR_NONE_MAPPED).
+HRESULT GetSidFromId(const base::string16& id, wchar_t* sid, ULONG length);
+
+// Returns the root registry key that needs to be verified in unit tests.
+const wchar_t* GetUsersRootKeyForTesting();
+
 }  // namespace credential_provider
 
 #endif  // CHROME_CREDENTIAL_PROVIDER_GAIACP_REG_UTILS_H_

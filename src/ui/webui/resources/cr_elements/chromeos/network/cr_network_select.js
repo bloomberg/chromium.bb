@@ -106,7 +106,7 @@ Polymer({
 
     this.refreshNetworks();
 
-    /** @const */ var INTERVAL_MS = 10 * 1000;
+    /** @const */ const INTERVAL_MS = 10 * 1000;
     chrome.networkingPrivate.requestNetworkScan();
     this.scanIntervalId_ = window.setInterval(function() {
       chrome.networkingPrivate.requestNetworkScan();
@@ -133,11 +133,46 @@ Polymer({
   },
 
   /**
+   * Returns default network if it is present.
+   * @return {!CrOnc.NetworkStateProperties|undefined}
+   */
+  getDefaultNetwork: function() {
+    let defaultNetwork;
+    for (let i = 0; i < this.networkStateList_.length; ++i) {
+      const state = this.networkStateList_[i];
+      if (state.ConnectionState == CrOnc.ConnectionState.CONNECTED) {
+        defaultNetwork = state;
+        break;
+      }
+      if (state.ConnectionState == CrOnc.ConnectionState.CONNECTING &&
+          !defaultNetwork) {
+        defaultNetwork = state;
+        // Do not break here in case a non WiFi network is connecting but a
+        // WiFi network is connected.
+      } else if (state.Type == CrOnc.Type.WI_FI) {
+        break;  // Non connecting or connected WiFI networks are always last.
+      }
+    }
+    return defaultNetwork;
+  },
+
+  /**
+   * Returns network with specified GUID if it is available.
+   * @param {string} guid of network.
+   * @return {!CrOnc.NetworkStateProperties|undefined}
+   */
+  getNetwork: function(guid) {
+    return this.networkStateList_.find(function(network) {
+      return network.GUID == guid;
+    });
+  },
+
+  /**
    * @param {!Array<!CrOnc.DeviceStateProperties>} deviceStates
    * @private
    */
   getDeviceStatesCallback_: function(deviceStates) {
-    var filter = {
+    const filter = {
       networkType: chrome.networkingPrivate.NetworkType.ALL,
       visible: true,
       configured: false
@@ -161,22 +196,8 @@ Polymer({
     this.networkStateList_ = networkStates;
     this.fire('network-list-changed', networkStates);
 
-    var defaultNetwork;
-    for (var i = 0; i < networkStates.length; ++i) {
-      var state = networkStates[i];
-      if (state.ConnectionState == CrOnc.ConnectionState.CONNECTED) {
-        defaultNetwork = state;
-        break;
-      }
-      if (state.ConnectionState == CrOnc.ConnectionState.CONNECTING &&
-          !defaultNetwork) {
-        defaultNetwork = state;
-        // Do not break here in case a non WiFi network is connecting but a
-        // WiFi network is connected.
-      } else if (state.Type == CrOnc.Type.WI_FI) {
-        break;  // Non connecting or connected WiFI networks are always last.
-      }
-    }
+    const defaultNetwork = this.getDefaultNetwork();
+
     if ((!defaultNetwork && !this.defaultNetworkState_) ||
         (defaultNetwork && this.defaultNetworkState_ &&
          defaultNetwork.GUID == this.defaultNetworkState_.GUID &&
@@ -203,11 +224,11 @@ Polymer({
       return;
     }
     // Add a Cellular network after the Ethernet network if it exists.
-    var idx = networkStates.length > 0 &&
+    const idx = networkStates.length > 0 &&
             networkStates[0].Type == CrOnc.Type.ETHERNET ?
         1 :
         0;
-    var cellular = {
+    const cellular = {
       GUID: '',
       Type: CrOnc.Type.CELLULAR,
       Cellular: {Scanning: this.cellularDeviceState_.Scanning}
@@ -221,7 +242,7 @@ Polymer({
    * @private
    */
   onNetworkListItemSelected_: function(e) {
-    var state = e.detail;
+    const state = e.detail;
     e.target.blur();
 
     if (!this.handleNetworkItemSelected) {
@@ -232,7 +253,7 @@ Polymer({
     // NOTE: This isn't used by OOBE (no handle-network-item-selected).
     // TODO(stevenjb): Remove custom OOBE handling.
     if (state.Type == CrOnc.Type.CELLULAR && this.cellularDeviceState_) {
-      var cellularDevice = this.cellularDeviceState_;
+      const cellularDevice = this.cellularDeviceState_;
       // If Cellular is not enabled and not SIM locked, enable Cellular.
       if (cellularDevice.State != CrOnc.DeviceState.ENABLED &&
           (!cellularDevice.SIMLockStatus ||
@@ -245,7 +266,7 @@ Polymer({
       return;
 
     chrome.networkingPrivate.startConnect(state.GUID, function() {
-      var lastError = chrome.runtime.lastError;
+      const lastError = chrome.runtime.lastError;
       if (lastError && lastError != 'connecting')
         console.error('networkingPrivate.startConnect error: ' + lastError);
     });

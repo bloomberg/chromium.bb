@@ -38,6 +38,13 @@ WebVector<WebBlobInfo> WebIDBValue::BlobInfoForTesting() const {
   return private_->BlobInfo();
 }
 
+std::unique_ptr<IDBValue> WebIDBValue::ReleaseIdbValue() noexcept {
+#if DCHECK_IS_ON()
+  ReleaseIdbValueOwnership();
+#endif  // DCHECK_IS_ON()
+  return std::move(private_);
+}
+
 #if DCHECK_IS_ON()
 
 void WebIDBValue::ReleaseIdbValueOwnership() {

@@ -32,9 +32,6 @@ class SyncServiceObserver {
   // process.
   virtual void OnSyncConfigurationCompleted(SyncService* sync) {}
 
-  // Called when a foreign session has been updated.
-  virtual void OnForeignSessionUpdated(SyncService* sync) {}
-
   // Called when the sync service is being shutdown permanently, so that
   // longer-lived observers can drop references to it.
   virtual void OnSyncShutdown(SyncService* sync) {}

@@ -749,7 +749,8 @@ TEST_F(SyncerTest, GetCommitIdsFiltersUnreadyEntries) {
   {
     const StatusController& status_controller = cycle_->status_controller();
     // Expect success.
-    EXPECT_EQ(SYNCER_OK, status_controller.model_neutral_state().commit_result);
+    EXPECT_EQ(SyncerError::SYNCER_OK,
+              status_controller.model_neutral_state().commit_result.value());
     // None should be unsynced anymore.
     syncable::ReadTransaction rtrans(FROM_HERE, directory());
     VERIFY_ENTRY(1, false, false, false, 0, 21, 21, ids_, &rtrans);
@@ -3078,8 +3079,9 @@ TEST_F(SyncerTest, CommitManyItemsInOneGo_PostBufferFail) {
   EXPECT_FALSE(SyncShareNudge());
 
   EXPECT_EQ(1U, mock_server_->commit_messages().size());
-  EXPECT_EQ(SYNC_SERVER_ERROR,
-            cycle_->status_controller().model_neutral_state().commit_result);
+  EXPECT_EQ(
+      SyncerError::SYNC_SERVER_ERROR,
+      cycle_->status_controller().model_neutral_state().commit_result.value());
   EXPECT_EQ(items_to_commit - kDefaultMaxCommitBatchSize,
             directory()->unsynced_entity_count());
 }
@@ -4863,7 +4865,8 @@ TEST_F(SyncerTest, GetKeySuccess) {
 
   SyncShareConfigure();
 
-  EXPECT_EQ(SYNCER_OK, cycle_->status_controller().last_get_key_result());
+  EXPECT_EQ(SyncerError::SYNCER_OK,
+            cycle_->status_controller().last_get_key_result().value());
   {
     syncable::ReadTransaction rtrans(FROM_HERE, directory());
     EXPECT_FALSE(directory()->GetNigoriHandler()->NeedKeystoreKey(&rtrans));
@@ -4879,7 +4882,8 @@ TEST_F(SyncerTest, GetKeyEmpty) {
   mock_server_->SetKeystoreKey(std::string());
   SyncShareConfigure();
 
-  EXPECT_NE(SYNCER_OK, cycle_->status_controller().last_get_key_result());
+  EXPECT_NE(SyncerError::SYNCER_OK,
+            cycle_->status_controller().last_get_key_result().value());
   {
     syncable::ReadTransaction rtrans(FROM_HERE, directory());
     EXPECT_TRUE(directory()->GetNigoriHandler()->NeedKeystoreKey(&rtrans));

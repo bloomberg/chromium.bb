@@ -1393,7 +1393,7 @@ TEST_F(InMemoryURLIndexTest, CalculateWordStartsOffsetsUnderscore) {
                   &lower_string, &lower_terms);
     WordStarts lower_terms_to_word_starts_offsets;
     URLIndexPrivateData::CalculateWordStartsOffsets(
-        lower_terms, true, &lower_terms_to_word_starts_offsets);
+        lower_terms, &lower_terms_to_word_starts_offsets);
 
     // Verify against expectations.
     EXPECT_EQ(test_cases[i].expected_word_starts_offsets_size,

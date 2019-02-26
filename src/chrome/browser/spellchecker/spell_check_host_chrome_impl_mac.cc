@@ -137,8 +137,8 @@ void SpellingRequest::RequestRemoteCheck(
     SpellingServiceClient* client,
     const service_manager::Identity& renderer_identity) {
   BrowserContext* context =
-      content::BrowserContext::GetBrowserContextForServiceUserId(
-          renderer_identity.user_id());
+      content::BrowserContext::GetBrowserContextForServiceInstanceGroup(
+          renderer_identity.instance_group());
 
   // |this| may be gone at callback invocation if the owner has been removed.
   client->RequestTextCheck(

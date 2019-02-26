@@ -11,6 +11,7 @@
 #include "base/command_line.h"
 #include "base/files/file_path.h"
 #include "base/logging.h"
+#include "base/optional.h"
 #include "base/task/post_task.h"
 #include "base/task/task_traits.h"
 #include "build/build_config.h"
@@ -145,8 +146,8 @@ void CloudPolicyManager::CreateComponentCloudPolicyService(
   // on the same task runner.
   const auto task_runner =
       base::CreateSequencedTaskRunnerWithTraits({base::MayBlock()});
-  std::unique_ptr<ResourceCache> resource_cache(
-      new ResourceCache(policy_cache_path, task_runner));
+  std::unique_ptr<ResourceCache> resource_cache(new ResourceCache(
+      policy_cache_path, task_runner, /* max_cache_size */ base::nullopt));
   component_policy_service_.reset(new ComponentCloudPolicyService(
       policy_type, this, schema_registry, core(), client,
       std::move(resource_cache), task_runner));

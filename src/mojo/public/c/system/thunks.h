@@ -166,7 +166,7 @@ struct MojoSystemThunks {
       MojoHandle* mojo_handle);
   MojoResult (*UnwrapPlatformHandle)(
       MojoHandle mojo_handle,
-      const MojoUnwrapPlatformHandleOptions* options,
+      const struct MojoUnwrapPlatformHandleOptions* options,
       struct MojoPlatformHandle* platform_handle);
   MojoResult (*WrapPlatformSharedMemoryRegion)(
       const struct MojoPlatformHandle* platform_handles,
@@ -193,13 +193,13 @@ struct MojoSystemThunks {
       MojoHandle invitation_handle,
       const void* name,
       uint32_t name_num_bytes,
-      const MojoAttachMessagePipeToInvitationOptions* options,
+      const struct MojoAttachMessagePipeToInvitationOptions* options,
       MojoHandle* message_pipe_handle);
   MojoResult (*ExtractMessagePipeFromInvitation)(
       MojoHandle invitation_handle,
       const void* name,
       uint32_t name_num_bytes,
-      const MojoExtractMessagePipeFromInvitationOptions* options,
+      const struct MojoExtractMessagePipeFromInvitationOptions* options,
       MojoHandle* message_pipe_handle);
   MojoResult (*SendInvitation)(
       MojoHandle invitation_handle,
@@ -212,6 +212,9 @@ struct MojoSystemThunks {
       const struct MojoInvitationTransportEndpoint* transport_endpoint,
       const struct MojoAcceptInvitationOptions* options,
       MojoHandle* invitation_handle);
+
+  // Core ABI version 1 additions begin here.
+
   MojoResult (*SetQuota)(MojoHandle handle,
                          MojoQuotaType type,
                          uint64_t limit,
@@ -221,6 +224,10 @@ struct MojoSystemThunks {
                            const struct MojoQueryQuotaOptions* options,
                            uint64_t* limit,
                            uint64_t* usage);
+
+  // Core ABI version 2 additions begin here.
+
+  MojoResult (*Shutdown)(const struct MojoShutdownOptions* options);
 };
 #pragma pack(pop)
 

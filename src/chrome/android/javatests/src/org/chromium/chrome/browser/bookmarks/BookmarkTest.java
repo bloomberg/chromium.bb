@@ -187,7 +187,7 @@ public class BookmarkTest {
                 isItemPresentInBookmarkList(TEST_PAGE_TITLE_GOOGLE));
         final View tile = getViewWithText(mItemsContainer, TEST_PAGE_TITLE_GOOGLE);
         ChromeTabUtils.waitForTabPageLoaded(mActivityTestRule.getActivity().getActivityTab(),
-                () -> TouchCommon.singleClickView(tile));
+                mTestPage, () -> TouchCommon.singleClickView(tile));
         Assert.assertEquals(TEST_PAGE_TITLE_GOOGLE,
                 mActivityTestRule.getActivity().getActivityTab().getTitle());
     }

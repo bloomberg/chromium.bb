@@ -76,7 +76,7 @@ public class DelayedInvalidationsController {
         new AsyncTask<Void>() {
             @Override
             protected Void doInBackground() {
-                String contractAuthority = AndroidSyncSettings.getContractAuthority();
+                String contractAuthority = AndroidSyncSettings.get().getContractAuthority();
                 for (Bundle bundle : bundles) {
                     ContentResolver.requestSync(account, contractAuthority, bundle);
                 }

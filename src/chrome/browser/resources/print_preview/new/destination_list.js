@@ -18,7 +18,7 @@ Polymer({
     searchQuery: Object,
 
     /** @type {boolean} */
-    hasActionLink: {
+    hasManageLink: {
       type: Boolean,
       value: false,
     },
@@ -27,6 +27,7 @@ Polymer({
     loadingDestinations: {
       type: Boolean,
       value: false,
+      observer: 'forceIronResize',
     },
 
     listName: String,
@@ -112,11 +113,6 @@ Polymer({
     this.showDestinationsTotal_ = count > 4;
   },
 
-  /** @private */
-  onActionLinkClick_: function() {
-    print_preview.NativeLayer.getInstance().managePrinters();
-  },
-
   /**
    * @param {!KeyboardEvent} e Event containing the destination and key.
    * @private
@@ -133,6 +129,9 @@ Polymer({
    * @private
    */
   onDestinationSelected_: function(e) {
+    if (e.composedPath()[0].tagName === 'A')
+      return;
+
     this.fire('destination-selected', e.target);
   },
 });

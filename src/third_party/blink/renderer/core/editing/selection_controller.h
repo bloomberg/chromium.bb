@@ -49,6 +49,8 @@ class CORE_EXPORT SelectionController final
 
  public:
   static SelectionController* Create(LocalFrame&);
+
+  explicit SelectionController(LocalFrame&);
   virtual ~SelectionController();
   void Trace(blink::Visitor*) override;
 
@@ -83,8 +85,6 @@ class CORE_EXPORT SelectionController final
 
  private:
   friend class SelectionControllerTest;
-
-  explicit SelectionController(LocalFrame&);
 
   enum class AppendTrailingWhitespace { kShouldAppend, kDontAppend };
   enum class SelectInputEventType { kTouch, kMouse };

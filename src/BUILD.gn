@@ -15,17 +15,18 @@ import("//build/config/ui.gni")
 import("//components/nacl/features.gni")
 import("//device/vr/buildflags/buildflags.gni")
 import("//extensions/buildflags/buildflags.gni")
-import("//media/media_options.gni")
+import("//gpu/vulkan/features.gni")
 import("//media/gpu/args.gni")
+import("//media/media_options.gni")
 import("//remoting/remoting_enable.gni")
+import("//testing/test.gni")
 import("//third_party/openh264/openh264_args.gni")
 import("//tools/ipc_fuzzer/ipc_fuzzer.gni")
 import("//ui/base/ui_features.gni")
-import("//ui/webui/webui_features.gni")
 import("//ui/ozone/ozone.gni")
+import("//ui/webui/webui_features.gni")
 import("//v8/gni/v8.gni")
 import("//v8/snapshot_toolchain.gni")
-import("//gpu/vulkan/features.gni")
 
 if (is_android) {
   import("//build/config/android/config.gni")
@@ -104,8 +105,6 @@ group("gn_all") {
       "//chrome/test:sync_integration_tests",
       "//chrome/test/chromedriver:chromedriver_unittests",
       "//components/subresource_filter/tools:subresource_filter_tools",
-      "//components/sync/tools:sync_client",
-      "//components/sync/tools:sync_listen_notifications",
       "//components/zucchini:zucchini",
       "//components/zucchini:zucchini_unittests",
       "//gpu/gles2_conform_support:gles2_conform_test",
@@ -144,11 +143,11 @@ group("gn_all") {
       "//third_party/SPIRV-Tools/src:SPIRV-Tools",
       "//third_party/SPIRV-Tools/src/test/fuzzers",
       "//third_party/cacheinvalidation:cacheinvalidation_unittests",
+      "//third_party/dawn:dawn_end2end_tests",
+      "//third_party/dawn:dawn_unittests",
       "//third_party/pdfium/samples:pdfium_test",
       "//third_party/webrtc/rtc_tools:frame_analyzer",
       "//tools/perf/clear_system_cache",
-      "//tools/traffic_annotation/auditor:traffic_annotation_auditor",
-      "//tools/traffic_annotation/auditor:traffic_annotation_auditor_unittests",
       "//ui/accessibility:accessibility_unittests",
       "//ui/accessibility/extensions",
     ]
@@ -218,7 +217,7 @@ group("gn_all") {
   } else if (is_fuchsia) {
     deps += [
       ":d8_fuchsia",
-      "tools/fuchsia/fidlgen_js:fidlgen_js_unittests",
+      "build/fuchsia/fidlgen_js:fidlgen_js_unittests",
     ]
   }
 
@@ -276,6 +275,13 @@ group("gn_all") {
     ]
   }
 
+  if (is_win || is_linux) {
+    deps += [
+      "//tools/traffic_annotation/auditor:traffic_annotation_auditor",
+      "//tools/traffic_annotation/auditor:traffic_annotation_auditor_unittests",
+    ]
+  }
+
   if (is_mac) {
     deps += [ "//chrome/installer/gcapi_mac:gcapi_example" ]
   }
@@ -292,11 +298,15 @@ group("gn_all") {
       "//chrome/android/webapk/shell_apk:webapk",
       "//chrome/test/vr/perf:motopho_latency_test",
       "//components/invalidation/impl:components_invalidation_impl_junit_tests",
+      "//components/journey:journey_info_fetcher",
       "//components/policy/android:components_policy_junit_tests",
       "//components/signin/core/browser/android:components_signin_junit_tests",
       "//content/public/android:content_junit_tests",
       "//content/shell/android:content_shell_apk",
       "//device:device_junit_tests",
+
+      # TODO(https://crbug.com/879065): remove once tests have been migrated to
+      # the video_decode_accelerator_tests target.
       "//media/gpu:video_decode_accelerator_unittest",
       "//net/android:net_junit_tests",
       "//services:service_junit_tests",
@@ -336,10 +346,10 @@ group("gn_all") {
         "//android_webview/test",
         "//android_webview/tools/automated_ui_tests:webview_ui_test_app",
         "//android_webview/tools/system_webview_shell",
+        "//android_webview/tools/webview_log_verbosifier:webview_log_verbosifier_apk",
         "//chrome/android:chrome_junit_tests",
         "//chrome/android:chrome_public_apk",
         "//chrome/android:chrome_public_test_apk",
-        "//chrome/android:chrome_sync_shell_test_apk",
         "//chrome/test/chromedriver/test/webview_shell:chromedriver_webview_shell_apk",
         "//content/shell/android:content_shell_test_apk",
         "//third_party/custom_tabs_client:custom_tabs_client_example_apk",
@@ -362,6 +372,15 @@ group("gn_all") {
   if (is_linux) {
     deps +=
         [ "//third_party/android_crazy_linker:android_crazy_linker_zip_fuzzer" ]
+  }
+
+  if (is_linux || is_chromeos) {
+    # This is only used by ChromeOS, but we want maximal fuzzer coverage, so
+    # run it under linux too.
+    deps += [
+      "//third_party/minizip:minizip_compress_fuzzer",
+      "//third_party/minizip:minizip_uncompress_fuzzer",
+    ]
   }
 
   if (is_linux || is_android) {
@@ -536,7 +555,6 @@ group("gn_all") {
         "//media/cast:tap_proxy",
         "//skia:filter_fuzz_stub",
         "//skia:image_operations_bench",
-        "//third_party/sqlite:sqlite_shell",
         "//ui/snapshot:snapshot_unittests",
       ]
 
@@ -652,6 +670,10 @@ group("gn_all") {
     deps += [ "//third_party/perfetto:all" ]
   }
 
+  if (is_mac || is_linux) {
+    deps += [ "//third_party/sqlite:sqlite_shell" ]
+  }
+
   if (is_linux && !is_chromeos && !is_chromecast) {
     # TODO(GYP): Figure out if any of these should be in gn_all
     # and figure out how cross-platform they are
@@ -700,15 +722,21 @@ group("gn_all") {
     }
   }
 
-  if ((is_linux && !is_chromeos && !is_chromecast) ||
+  if ((is_linux && !is_chromecast) ||
       (is_win && (use_drfuzz || use_libfuzzer)) || (use_libfuzzer && is_mac)) {
     deps += [
       "//testing/libfuzzer/fuzzers",
-      "//testing/libfuzzer/tests:libfuzzer_tests",
       "//third_party/icu/fuzzers",
       "//third_party/qcms:fuzzers",
       "//third_party/zlib/contrib/tests/fuzzers",
     ]
+
+    # TODO(crbug.com/906751): Get the libFuzzer tests working on Windows.
+    # Disable them for now becaue they cause the Windows clang ToT builder to
+    # fail.
+    if (!is_win) {
+      deps += [ "//testing/libfuzzer/tests:libfuzzer_tests" ]
+    }
   }
 
   if (enable_nacl) {
@@ -732,7 +760,10 @@ group("gn_all") {
       deps += [ "//chrome/browser/vr/testapp:vr_testapp" ]
     }
     if (is_android) {
-      deps += [ "//tools/perf/contrib/vr_benchmarks:vr_perf_tests" ]
+      deps += [
+        "//chrome/browser/android/vr:vr_android_unittests",
+        "//tools/perf/contrib/vr_benchmarks:vr_perf_tests",
+      ]
     }
   }
 
@@ -745,6 +776,7 @@ group("gn_all") {
       "//webrunner:archive_sources",
       "//webrunner:webrunner_unittests",
       "//webrunner/net_http:http_pkg",
+      "//webrunner/net_http:http_service_tests",
     ]
   }
 
@@ -756,6 +788,16 @@ group("gn_all") {
     deps += [
       "//tools/accessibility/inspect:ax_dump_events",
       "//tools/accessibility/inspect:ax_dump_tree",
+    ]
+  }
+}
+
+if ((is_linux || is_win) && enable_remoting && !use_ozone) {
+  # This group is used for network annotation check test.
+  group("shipped_binaries") {
+    deps = [
+      "//chrome:chrome",
+      "//remoting/host:host",
     ]
   }
 }
@@ -782,6 +824,7 @@ if (is_win) {
   group("chrome_official_builder_no_unittests") {
     deps = [
       "//chrome/common/win:eventlog_provider",
+      "//chrome/credential_provider",
       "//chrome/installer/gcapi",
       "//chrome/installer/mini_installer",
       "//cloud_print",
@@ -848,9 +891,16 @@ if (is_chromeos) {
 
     if (use_v4l2_codec || use_vaapi) {
       deps += [
+        "//media/gpu:video_decode_accelerator_tests",
+
+        # TODO(https://crbug.com/879065): remove once tests have been migrated
+        # to the above target.
         "//media/gpu:video_decode_accelerator_unittest",
         "//media/gpu:video_encode_accelerator_unittest",
       ]
+    }
+    if (use_vaapi) {
+      deps += [ "//media/gpu:jpeg_encode_accelerator_unittest" ]
     }
   }
 }
@@ -910,10 +960,25 @@ if (!is_ios) {
   # and is useful for testing with the regular isolate mechanism.
   # To run the full layout test suite you need to use
   # :webkit_layout_tests_exparchive, above, instead.
-  group("webkit_layout_tests") {
-    testonly = true
+  generated_script_test("webkit_layout_tests") {
+    generator_script =
+        "//testing/scripts/generators/gen_run_web_tests_script.py"
+    extra_args = []
+    if (is_debug) {
+      extra_args += [
+        "--build-type",
+        "debug",
+      ]
+    } else {
+      extra_args += [
+        "--build-type",
+        "release",
+      ]
+    }
+
     data_deps = [
       ":layout_test_data_mojo_bindings",
+      ":layout_test_data_mojo_bindings_lite",
       "//content/shell:content_shell",
       "//content/test:mojo_layouttest_bindings_js_data_deps",
       "//device/bluetooth/public/mojom:fake_bluetooth_interfaces_js_data_deps",
@@ -969,16 +1034,16 @@ if (!is_ios) {
       "//testing/scripts/common.py",
       "//testing/scripts/run_isolated_script_test.py",
       "//testing/xvfb.py",
-      "//third_party/WebKit/LayoutTests/",
       "//third_party/blink/perf_tests/",
       "//third_party/blink/tools/",
+      "//third_party/blink/web_tests/",
       "//third_party/pywebsocket/src/mod_pywebsocket/",
     ]
 
     if (is_win) {
       data += [
         "//third_party/apache-win32/",
-        "//third_party/perl/",
+        "//third_party/perl/perl/",
       ]
     }
 
@@ -1006,6 +1071,22 @@ if (!is_ios) {
     ]
   }
 
+  copy("layout_test_data_mojo_bindings_lite") {
+    testonly = true
+
+    sources = [
+      "$root_gen_dir/mojo/public/js/mojo_bindings_lite.js",
+    ]
+
+    outputs = [
+      "$root_gen_dir/layout_test_data/mojo/public/js/mojo_bindings_lite.js",
+    ]
+
+    deps = [
+      "//mojo/public/js:bindings_lite",
+    ]
+  }
+
   group("webkit_python_tests") {
     data = [
       "//build/android/",
@@ -1014,17 +1095,17 @@ if (!is_ios) {
       "//testing/scripts/run_isolated_script_test.py",
       "//testing/test_env.py",
       "//testing/xvfb.py",
-      "//third_party/WebKit/LayoutTests/ASANExpectations",
-      "//third_party/WebKit/LayoutTests/LeakExpectations",
-      "//third_party/WebKit/LayoutTests/MSANExpectations",
-      "//third_party/WebKit/LayoutTests/NeverFixTests",
-      "//third_party/WebKit/LayoutTests/StaleTestExpectations",
-      "//third_party/WebKit/LayoutTests/SlowTests",
-      "//third_party/WebKit/LayoutTests/TestExpectations",
-      "//third_party/WebKit/LayoutTests/VirtualTestSuites",
       "//third_party/blink/renderer/bindings/scripts/",
       "//third_party/blink/renderer/build/scripts/",
       "//third_party/blink/tools/",
+      "//third_party/blink/web_tests/ASANExpectations",
+      "//third_party/blink/web_tests/LeakExpectations",
+      "//third_party/blink/web_tests/MSANExpectations",
+      "//third_party/blink/web_tests/NeverFixTests",
+      "//third_party/blink/web_tests/SlowTests",
+      "//third_party/blink/web_tests/StaleTestExpectations",
+      "//third_party/blink/web_tests/TestExpectations",
+      "//third_party/blink/web_tests/VirtualTestSuites",
       "//third_party/catapult/common/py_utils/",
       "//third_party/catapult/devil/",
       "//third_party/catapult/dependency_manager/",
@@ -1163,20 +1244,18 @@ template("assert_valid_out_dir") {
 
 if (closure_compile) {
   group("webui_closure_compile") {
+    testonly = true
     data_deps = [
       "chrome/browser/resources:closure_compile",
       "content/browser/resources:closure_compile",
       "ui/webui/resources:closure_compile",
+      "components/ukm/debug:closure_compile",
     ]
     if (is_chromeos) {
       data_deps += [ "ui/file_manager:closure_compile" ]
     }
     if (is_android) {
       data_deps += [ "components/offline_pages/resources:closure_compile" ]
-    }
-    if (is_win && is_chrome_branded) {
-      # TODO(scottchen): uncomment after fixing closure compile deps for NUX.
-      #      data_deps += [ "components/nux/resources:closure_compile" ]
     }
   }
 }

@@ -260,6 +260,7 @@ class MediaStreamManager::DeviceRequest {
   DeviceRequest(
       int requesting_process_id,
       int requesting_frame_id,
+      int requester_id,
       int page_request_id,
       bool user_gesture,
       MediaStreamRequestType request_type,
@@ -268,6 +269,7 @@ class MediaStreamManager::DeviceRequest {
       DeviceStoppedCallback device_stopped_cb = DeviceStoppedCallback())
       : requesting_process_id(requesting_process_id),
         requesting_frame_id(requesting_frame_id),
+        requester_id(requester_id),
         page_request_id(page_request_id),
         user_gesture(user_gesture),
         request_type(request_type),
@@ -396,6 +398,12 @@ class MediaStreamManager::DeviceRequest {
   // MediaStreamRequest::render_frame_id which in the tab capture case
   // specifies the target renderer from which audio and video is captured.
   const int requesting_frame_id;
+
+  // The id of the object that requested this stream to be generated and that
+  // will receive a handle to the MediaStream. This may be different from
+  // MediaStreamRequest::requester_id which in the tab capture case
+  // specifies the target renderer from which audio and video is captured.
+  const int requester_id;
 
   // An ID the render frame provided to identify this request.
   const int page_request_id;
@@ -598,6 +606,7 @@ void MediaStreamManager::RemoveAllVideoCaptureObservers() {
 std::string MediaStreamManager::MakeMediaAccessRequest(
     int render_process_id,
     int render_frame_id,
+    int requester_id,
     int page_request_id,
     const StreamControls& controls,
     const url::Origin& security_origin,
@@ -605,7 +614,7 @@ std::string MediaStreamManager::MakeMediaAccessRequest(
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
 
   DeviceRequest* request = new DeviceRequest(
-      render_process_id, render_frame_id, page_request_id,
+      render_process_id, render_frame_id, requester_id, page_request_id,
       false /* user gesture */, MEDIA_DEVICE_ACCESS, controls,
       MediaDeviceSaltAndOrigin{std::string() /* salt */,
                                std::string() /* group_id_salt */,
@@ -628,6 +637,7 @@ std::string MediaStreamManager::MakeMediaAccessRequest(
 void MediaStreamManager::GenerateStream(
     int render_process_id,
     int render_frame_id,
+    int requester_id,
     int page_request_id,
     const StreamControls& controls,
     MediaDeviceSaltAndOrigin salt_and_origin,
@@ -638,8 +648,8 @@ void MediaStreamManager::GenerateStream(
   DVLOG(1) << "GenerateStream()";
 
   DeviceRequest* request = new DeviceRequest(
-      render_process_id, render_frame_id, page_request_id, user_gesture,
-      MEDIA_GENERATE_STREAM, controls, std::move(salt_and_origin),
+      render_process_id, render_frame_id, requester_id, page_request_id,
+      user_gesture, MEDIA_GENERATE_STREAM, controls, std::move(salt_and_origin),
       std::move(device_stopped_cb));
 
   const std::string& label = AddRequest(request);
@@ -670,12 +680,14 @@ void MediaStreamManager::GenerateStream(
 
 void MediaStreamManager::CancelRequest(int render_process_id,
                                        int render_frame_id,
+                                       int requester_id,
                                        int page_request_id) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
   for (const LabeledDeviceRequest& labeled_request : requests_) {
     DeviceRequest* const request = labeled_request.second;
     if (request->requesting_process_id == render_process_id &&
         request->requesting_frame_id == render_frame_id &&
+        request->requester_id == requester_id &&
         request->page_request_id == page_request_id) {
       CancelRequest(labeled_request.first);
       return;
@@ -711,12 +723,14 @@ void MediaStreamManager::CancelRequest(const std::string& label) {
 }
 
 void MediaStreamManager::CancelAllRequests(int render_process_id,
-                                           int render_frame_id) {
+                                           int render_frame_id,
+                                           int requester_id) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
   auto request_it = requests_.begin();
   while (request_it != requests_.end()) {
     if (request_it->second->requesting_process_id != render_process_id ||
-        request_it->second->requesting_frame_id != render_frame_id) {
+        request_it->second->requesting_frame_id != render_frame_id ||
+        request_it->second->requester_id != requester_id) {
       ++request_it;
       continue;
     }
@@ -728,6 +742,7 @@ void MediaStreamManager::CancelAllRequests(int render_process_id,
 
 void MediaStreamManager::StopStreamDevice(int render_process_id,
                                           int render_frame_id,
+                                          int requester_id,
                                           const std::string& device_id,
                                           int session_id) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
@@ -828,6 +843,7 @@ void MediaStreamManager::CloseDevice(MediaStreamType type, int session_id) {
 
 void MediaStreamManager::OpenDevice(int render_process_id,
                                     int render_frame_id,
+                                    int requester_id,
                                     int page_request_id,
                                     const std::string& device_id,
                                     MediaStreamType type,
@@ -851,7 +867,7 @@ void MediaStreamManager::OpenDevice(int render_process_id,
     NOTREACHED();
   }
   DeviceRequest* request = new DeviceRequest(
-      render_process_id, render_frame_id, page_request_id,
+      render_process_id, render_frame_id, requester_id, page_request_id,
       false /* user gesture */, MEDIA_OPEN_DEVICE_PEPPER_ONLY, controls,
       std::move(salt_and_origin), std::move(device_stopped_cb));
 

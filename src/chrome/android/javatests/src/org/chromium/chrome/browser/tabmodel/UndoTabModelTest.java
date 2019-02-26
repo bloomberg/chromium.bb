@@ -462,12 +462,12 @@ public class UndoTabModelTest {
      * @throws InterruptedException
      */
     @Test
-    @MediumTest
-    // TODO(jbudorick): Replace with DisableIf when it supports filtering by device type.
-    // Flaky on tablets, crbug.com/620014.
-    @Restriction(UiRestriction.RESTRICTION_TYPE_PHONE)
-    @RetryOnFailure
-    public void testTwoTabs() throws InterruptedException, TimeoutException {
+    // @MediumTest
+    // @RetryOnFailure
+    @DisabledTest(
+            message = "Flaky on all Android configurations except Swarming.  See crbug.com/620014.")
+    public void
+    testTwoTabs() throws InterruptedException, TimeoutException {
         TabModel model = mActivityTestRule.getActivity().getTabModelSelector().getModel(false);
         ChromeTabCreator tabCreator = mActivityTestRule.getActivity().getTabCreator(false);
         createTabOnUiThread(tabCreator);

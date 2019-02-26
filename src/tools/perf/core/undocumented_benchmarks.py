@@ -9,7 +9,6 @@ UNDOCUMENTED_BENCHMARKS = {
   'angle_perftests',
   'components_perftests',
   'dromaeo',
-  'dummy_benchmark.histogram_benchmark_1',
   'dummy_benchmark.noisy_benchmark_1',
   'dummy_benchmark.stable_benchmark_1',
   'gpu_perftests',

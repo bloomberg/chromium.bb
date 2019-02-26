@@ -5,7 +5,7 @@
 #include "content/child/webthemeengine_impl_android.h"
 
 #include "base/logging.h"
-#include "base/sys_info.h"
+#include "base/system/sys_info.h"
 #include "skia/ext/platform_canvas.h"
 #include "third_party/blink/public/platform/web_rect.h"
 #include "third_party/blink/public/platform/web_size.h"
@@ -168,8 +168,8 @@ static void GetNativeThemeExtraParams(
 
 blink::WebSize WebThemeEngineImpl::GetSize(WebThemeEngine::Part part) {
   switch (part) {
-    case ui::NativeTheme::kScrollbarHorizontalThumb:
-    case ui::NativeTheme::kScrollbarVerticalThumb: {
+    case WebThemeEngine::kPartScrollbarHorizontalThumb:
+    case WebThemeEngine::kPartScrollbarVerticalThumb: {
       // Minimum length for scrollbar thumb is the scrollbar thickness.
       ScrollbarStyle style;
       GetOverlayScrollbarStyle(&style);

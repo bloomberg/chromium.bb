@@ -65,6 +65,7 @@ class URLLoaderFactoryManager {
   static network::mojom::URLLoaderFactoryPtrInfo CreateFactory(
       content::RenderProcessHost* process,
       network::mojom::NetworkContext* network_context,
+      network::mojom::TrustedURLLoaderHeaderClientPtrInfo* header_client,
       const url::Origin& initiator_origin);
 
  private:

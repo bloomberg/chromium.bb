@@ -14,6 +14,8 @@
 
 namespace blink {
 
+using MimeTypeCheck = AllowedByNosniff::MimeTypeCheck;
+
 class AllowedByNosniffTest : public testing::Test {
  public:
   void SetUp() override {
@@ -108,10 +110,10 @@ TEST_F(AllowedByNosniffTest, AllowedOrNot) {
     RuntimeEnabledFeatures::SetWorkerNosniffBlockEnabled(false);
     RuntimeEnabledFeatures::SetWorkerNosniffWarnEnabled(false);
     size_t message_count = ConsoleMessageStoreSize();
-    EXPECT_EQ(testcase.allowed,
-              AllowedByNosniff::MimeTypeAsScript(doc(), response));
-    EXPECT_EQ(testcase.allowed, AllowedByNosniff::MimeTypeAsScriptForTesting(
-                                    doc(), response, true));
+    EXPECT_EQ(testcase.allowed, AllowedByNosniff::MimeTypeAsScript(
+                                    doc(), response, MimeTypeCheck::kLax));
+    EXPECT_EQ(testcase.allowed, AllowedByNosniff::MimeTypeAsScript(
+                                    doc(), response, MimeTypeCheck::kStrict));
     EXPECT_EQ(ConsoleMessageStoreSize(), message_count + 2 * !testcase.allowed);
 
     // Nosniff worker blocked: Workers follow the 'strict_allow' setting.
@@ -119,12 +121,12 @@ TEST_F(AllowedByNosniffTest, AllowedOrNot) {
     RuntimeEnabledFeatures::SetWorkerNosniffBlockEnabled(true);
     RuntimeEnabledFeatures::SetWorkerNosniffWarnEnabled(false);
     message_count = ConsoleMessageStoreSize();
-    EXPECT_EQ(testcase.allowed,
-              AllowedByNosniff::MimeTypeAsScript(doc(), response));
+    EXPECT_EQ(testcase.allowed, AllowedByNosniff::MimeTypeAsScript(
+                                    doc(), response, MimeTypeCheck::kLax));
     EXPECT_EQ(ConsoleMessageStoreSize(), message_count + !testcase.allowed);
-    EXPECT_EQ(
-        testcase.strict_allowed,
-        AllowedByNosniff::MimeTypeAsScriptForTesting(doc(), response, true));
+    EXPECT_EQ(testcase.strict_allowed,
+              AllowedByNosniff::MimeTypeAsScript(doc(), response,
+                                                 MimeTypeCheck::kStrict));
     EXPECT_EQ(ConsoleMessageStoreSize(),
               message_count + !testcase.allowed + !testcase.strict_allowed);
 
@@ -133,11 +135,11 @@ TEST_F(AllowedByNosniffTest, AllowedOrNot) {
     RuntimeEnabledFeatures::SetWorkerNosniffBlockEnabled(false);
     RuntimeEnabledFeatures::SetWorkerNosniffWarnEnabled(true);
     message_count = ConsoleMessageStoreSize();
-    EXPECT_EQ(testcase.allowed,
-              AllowedByNosniff::MimeTypeAsScript(doc(), response));
+    EXPECT_EQ(testcase.allowed, AllowedByNosniff::MimeTypeAsScript(
+                                    doc(), response, MimeTypeCheck::kLax));
     EXPECT_EQ(ConsoleMessageStoreSize(), message_count + !testcase.allowed);
-    EXPECT_EQ(testcase.allowed, AllowedByNosniff::MimeTypeAsScriptForTesting(
-                                    doc(), response, true));
+    EXPECT_EQ(testcase.allowed, AllowedByNosniff::MimeTypeAsScript(
+                                    doc(), response, MimeTypeCheck::kStrict));
     EXPECT_EQ(ConsoleMessageStoreSize(),
               message_count + !testcase.allowed + !testcase.strict_allowed);
   }
@@ -184,7 +186,7 @@ TEST_F(AllowedByNosniffTest, Counters) {
     ResourceResponse response(KURL(testcase.url));
     response.SetHTTPHeaderField("Content-Type", testcase.mimetype);
 
-    AllowedByNosniff::MimeTypeAsScript(doc(), response);
+    AllowedByNosniff::MimeTypeAsScript(doc(), response, MimeTypeCheck::kLax);
     EXPECT_TRUE(UseCounter::IsCounted(*doc(), testcase.expected));
   }
 }
@@ -207,6 +209,11 @@ TEST_F(AllowedByNosniffTest, AllTheSchemes) {
       {"chrome://dino/dino.css", false},
       {"ftp://example.com/bla.js", true},
       {"ftp://example.com/bla.txt", false},
+
+      {"file://home/potato.txt", false},
+      {"file://home/potato.js", true},
+      {"file://home/potato.mjs", true},
+      {"chrome://dino/dino.mjs", true},
   };
 
   for (auto& testcase : data) {
@@ -216,8 +223,8 @@ TEST_F(AllowedByNosniffTest, AllTheSchemes) {
     ResourceResponse response(KURL(testcase.url));
     response.SetHTTPHeaderField("Content-Type", "invalid");
     response.SetHTTPHeaderField("X-Content-Type-Options", "nosniff");
-    EXPECT_EQ(testcase.allowed,
-              AllowedByNosniff::MimeTypeAsScript(doc(), response));
+    EXPECT_EQ(testcase.allowed, AllowedByNosniff::MimeTypeAsScript(
+                                    doc(), response, MimeTypeCheck::kLax));
   }
 }
 

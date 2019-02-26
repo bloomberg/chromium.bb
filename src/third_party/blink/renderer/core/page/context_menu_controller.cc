@@ -98,7 +98,7 @@ void ContextMenuController::DocumentDetached(Document* document) {
 }
 
 void ContextMenuController::HandleContextMenuEvent(MouseEvent* mouse_event) {
-  DCHECK(mouse_event->type() == EventTypeNames::contextmenu);
+  DCHECK(mouse_event->type() == event_type_names::kContextmenu);
   LocalFrame* frame = mouse_event->target()->ToNode()->GetDocument().GetFrame();
   LayoutPoint location(mouse_event->AbsoluteLocation());
   if (ShowContextMenu(frame, location, mouse_event->GetMenuSourceType()))
@@ -388,7 +388,7 @@ bool ContextMenuController::ShowContextMenu(LocalFrame* frame,
     data.selection_start_offset = range.StartOffset();
     // TODO(crbug.com/850954): Remove redundant log after we identified the
     // issue.
-    DCHECK_GE(data.selection_start_offset, 0)
+    CHECK_GE(data.selection_start_offset, 0)
         << "Log issue against https://crbug.com/850954\n"
         << "data.selection_start_offset: " << data.selection_start_offset
         << "\nrange: [" << range.StartOffset() << ", " << range.EndOffset()
@@ -432,8 +432,7 @@ bool ContextMenuController::ShowContextMenu(LocalFrame* frame,
         WebContextMenuData::kCheckableMenuItemChecked;
   }
 
-  data.referrer_policy = static_cast<WebReferrerPolicy>(
-      selected_frame->GetDocument()->GetReferrerPolicy());
+  data.referrer_policy = selected_frame->GetDocument()->GetReferrerPolicy();
 
   if (menu_provider_) {
     // Filter out custom menu elements and add them into the data.
@@ -446,24 +445,24 @@ bool ContextMenuController::ShowContextMenu(LocalFrame* frame,
         selected_frame->GetSecurityContext()->GetSecurityOrigin();
     if (origin->CanReadContent(anchor->Url())) {
       data.suggested_filename =
-          anchor->FastGetAttribute(HTMLNames::downloadAttr);
+          anchor->FastGetAttribute(html_names::kDownloadAttr);
     }
 
     // If the anchor wants to suppress the referrer, update the referrerPolicy
     // accordingly.
     if (anchor->HasRel(kRelationNoReferrer))
-      data.referrer_policy = kWebReferrerPolicyNever;
+      data.referrer_policy = network::mojom::ReferrerPolicy::kNever;
 
     data.link_text = anchor->innerText();
   }
 
   // Find the input field type.
   if (auto* input = ToHTMLInputElementOrNull(result.InnerNode())) {
-    if (input->type() == InputTypeNames::password)
+    if (input->type() == input_type_names::kPassword)
       data.input_field_type = WebContextMenuData::kInputFieldTypePassword;
-    else if (input->type() == InputTypeNames::number)
+    else if (input->type() == input_type_names::kNumber)
       data.input_field_type = WebContextMenuData::kInputFieldTypeNumber;
-    else if (input->type() == InputTypeNames::tel)
+    else if (input->type() == input_type_names::kTel)
       data.input_field_type = WebContextMenuData::kInputFieldTypeTelephone;
     else if (input->IsTextField())
       data.input_field_type = WebContextMenuData::kInputFieldTypePlainText;

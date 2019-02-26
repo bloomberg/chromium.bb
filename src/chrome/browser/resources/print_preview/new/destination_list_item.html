@@ -3,10 +3,8 @@
 <link rel="import" href="chrome://resources/cr_elements/hidden_style_css.html">
 <link rel="import" href="chrome://resources/cr_elements/shared_vars_css.html">
 <link rel="import" href="chrome://resources/html/cr.html">
-<link rel="import" href="chrome://resources/html/load_time_data.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/iron-icon/iron-icon.html">
 <link rel="import" href="../icons.html">
-<link rel="import" href="../native_layer.html">
 <link rel="import" href="../data/destination.html">
 <link rel="import" href="highlight_utils.html">
 <link rel="import" href="print_preview_shared_css.html">
@@ -14,7 +12,7 @@
 
 <dom-module id="print-preview-destination-list-item">
   <template>
-    <style include="print-preview-shared action-link cr-hidden-style">
+    <style include="print-preview-shared cr-hidden-style">
       :host {
         align-items: center;
         cursor: default;
@@ -62,6 +60,12 @@
         min-width: 150px;
       }
 
+      .extension-icon {
+        height: 24px;
+        margin-inline-start: 1em;
+        width: 24px;
+      }
+
       .configuring-failed-text {
         color: var(--google-red-600);
         font-style: italic;
@@ -78,9 +82,9 @@
         hidden$="[[!destination.isOfflineOrInvalid]]">
       [[destination.connectionStatusText]]
     </span>
-    <a is="action-link" class="learn-more-link"
-        hidden$="[[!destination.shouldShowInvalidCertificateError]]"
-        on-click="onLearnMoreLinkClick_">
+    <a href="$i18n{gcpCertificateErrorLearnMoreURL}"
+        target="_blank" class="learn-more-link"
+        hidden$="[[!destination.shouldShowInvalidCertificateError]]">
       $i18n{learnMore}
     </a>
     <span class="extension-controlled-indicator"

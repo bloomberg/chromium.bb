@@ -1,11 +1,6 @@
 // Copyright 2018 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
-
-// This has to be included first.
-// See http://code.google.com/p/googletest/issues/detail?id=371
-#include "testing/gtest/include/gtest/gtest.h"
-
 #include <stddef.h>
 #include <stdint.h>
 #include <string.h>
@@ -30,10 +25,11 @@
 #include "media/base/test_data_util.h"
 #include "media/filters/jpeg_parser.h"
 #include "media/gpu/buildflags.h"
+#include "media/gpu/gpu_jpeg_encode_accelerator_factory.h"
 #include "media/gpu/test/video_accelerator_unittest_helpers.h"
-#include "media/gpu/vaapi/vaapi_jpeg_encode_accelerator.h"
 #include "media/video/jpeg_encode_accelerator.h"
 #include "mojo/core/embedder/embedder.h"
+#include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/libyuv/include/libyuv.h"
 #include "ui/gfx/codec/jpeg_codec.h"
 
@@ -47,30 +43,34 @@ namespace {
 // Default test image file.
 const base::FilePath::CharType kDefaultYuvFilename[] =
     FILE_PATH_LITERAL("bali_640x360_P420.yuv:640x360");
-// Whether to save encode results to files. Output files will be saved
-// in the same directory with unittest. File name is like input file but
-// changing the extension to "jpg".
+// Whether to save encode results to files. Output files will be saved in the
+// same directory as the input files, with the '.jpg' extension appended to
+// their names. The encode result of generated images is written to the current
+// folder using HxW_[black|white].jpg as output file name.
 bool g_save_to_file = false;
 
-const double kMeanDiffThreshold = 7.0;
+const double kMeanDiffThreshold = 10.0;
 const int kJpegDefaultQuality = 90;
 
 // Environment to create test data for all test cases.
 class JpegEncodeAcceleratorTestEnvironment;
 JpegEncodeAcceleratorTestEnvironment* g_env;
 
-struct TestImageFile {
-  TestImageFile(const base::FilePath::StringType& filename,
-                gfx::Size visible_size)
-      : filename(filename), visible_size(visible_size) {}
+struct TestImage {
+  TestImage(std::vector<uint8_t> image_data,
+            const gfx::Size& visible_size,
+            const base::FilePath output_filename)
+      : image_data(std::move(image_data)),
+        visible_size(visible_size),
+        output_filename(output_filename) {}
 
-  base::FilePath::StringType filename;
-
-  // The input content of |filename|.
-  std::string data_str;
-
+  // Test image data.
+  std::vector<uint8_t> image_data;
   gfx::Size visible_size;
-  size_t output_size;
+
+  // Output filename, only used when '--save_to_file' is specified.
+  base::FilePath output_filename;
+  size_t output_size = 0;
 };
 
 enum class ClientState {
@@ -95,40 +95,39 @@ class JpegEncodeAcceleratorTestEnvironment : public ::testing::Environment {
   void LogToFile(const std::string& key, const std::string& value);
 
   // Read image from |filename| to |image_data|.
-  void ReadTestYuvImage(base::FilePath& filename, TestImageFile* image_data);
+  std::unique_ptr<TestImage> ReadTestYuvImage(const base::FilePath& filename,
+                                              const gfx::Size& image_size);
 
   // Returns a file path for a file in what name specified or media/test/data
   // directory.  If the original file path is existed, returns it first.
   base::FilePath GetOriginalOrTestDataFilePath(const std::string& name);
 
   // Parsed data from command line.
-  std::vector<std::unique_ptr<TestImageFile>> image_data_user_;
+  std::vector<std::unique_ptr<TestImage>> image_data_user_;
 
-  // Parsed data of |test_1280x720_yuv_file_|.
-  std::unique_ptr<TestImageFile> image_data_1280x720_white_;
-  // Parsed data of |test_640x368_yuv_file_|.
-  std::unique_ptr<TestImageFile> image_data_640x368_black_;
-  // Parsed data of |test_640x360_yuv_file_|.
-  std::unique_ptr<TestImageFile> image_data_640x360_black_;
+  // Generated 2560x1920 white I420 image.
+  std::unique_ptr<TestImage> image_data_2560x1920_white_;
+  // Scarlet doesn't support 1080 width, it only suports 1088 width.
+  // Generated 1280x720 white I420 image.
+  std::unique_ptr<TestImage> image_data_1280x720_white_;
+  // Generated 640x480 black I420 image.
+  std::unique_ptr<TestImage> image_data_640x480_black_;
+  // Generated 640x368 black I420 image.
+  std::unique_ptr<TestImage> image_data_640x368_black_;
+  // Generated 640x360 black I420 image.
+  std::unique_ptr<TestImage> image_data_640x360_black_;
 
   // Number of times SimpleEncodeTest should repeat for an image.
   const size_t repeat_;
 
  private:
-  // Create black or white test image with |width| and |height| size.
-  void CreateTestYuvImage(int width,
-                          int height,
-                          bool is_black,
-                          base::FilePath* filename);
+  // Create black or white test image with specified |size|.
+  std::unique_ptr<TestImage> CreateTestYuvImage(const gfx::Size& image_size,
+                                                bool is_black);
 
   const base::FilePath::CharType* user_yuv_files_;
   const base::FilePath log_path_;
   std::unique_ptr<base::File> log_file_;
-
-  // Programatically generated YUV files.
-  base::FilePath test_1280x720_yuv_file_;
-  base::FilePath test_640x368_yuv_file_;
-  base::FilePath test_640x360_yuv_file_;
 };
 
 void JpegEncodeAcceleratorTestEnvironment::SetUp() {
@@ -138,24 +137,12 @@ void JpegEncodeAcceleratorTestEnvironment::SetUp() {
     LOG_ASSERT(log_file_->IsValid());
   }
 
-  CreateTestYuvImage(1280, 720, false, &test_1280x720_yuv_file_);
-  CreateTestYuvImage(640, 368, true, &test_640x368_yuv_file_);
-  CreateTestYuvImage(640, 360, true, &test_640x360_yuv_file_);
-
-  image_data_1280x720_white_.reset(
-      new TestImageFile(test_1280x720_yuv_file_.value(), gfx::Size(1280, 720)));
-  ASSERT_NO_FATAL_FAILURE(ReadTestYuvImage(test_1280x720_yuv_file_,
-                                           image_data_1280x720_white_.get()));
-
-  image_data_640x368_black_.reset(
-      new TestImageFile(test_640x368_yuv_file_.value(), gfx::Size(640, 368)));
-  ASSERT_NO_FATAL_FAILURE(ReadTestYuvImage(test_640x368_yuv_file_,
-                                           image_data_640x368_black_.get()));
-
-  image_data_640x360_black_.reset(
-      new TestImageFile(test_640x360_yuv_file_.value(), gfx::Size(640, 360)));
-  ASSERT_NO_FATAL_FAILURE(ReadTestYuvImage(test_640x360_yuv_file_,
-                                           image_data_640x360_black_.get()));
+  image_data_2560x1920_white_ =
+      CreateTestYuvImage(gfx::Size(2560, 1920), false);
+  image_data_1280x720_white_ = CreateTestYuvImage(gfx::Size(1280, 720), false);
+  image_data_640x480_black_ = CreateTestYuvImage(gfx::Size(640, 480), true);
+  image_data_640x368_black_ = CreateTestYuvImage(gfx::Size(640, 368), true);
+  image_data_640x360_black_ = CreateTestYuvImage(gfx::Size(640, 360), true);
 
   // |user_yuv_files_| may include many files and use ';' as delimiter.
   std::vector<base::FilePath::StringType> files =
@@ -181,18 +168,13 @@ void JpegEncodeAcceleratorTestEnvironment::SetUp() {
     ASSERT_TRUE(!image_size.IsEmpty());
 
     base::FilePath input_file = GetOriginalOrTestDataFilePath(filename);
-    auto image_data = std::make_unique<TestImageFile>(filename, image_size);
-    ASSERT_NO_FATAL_FAILURE(ReadTestYuvImage(input_file, image_data.get()));
+    auto image_data = ReadTestYuvImage(input_file, image_size);
     image_data_user_.push_back(std::move(image_data));
   }
 }
 
 void JpegEncodeAcceleratorTestEnvironment::TearDown() {
   log_file_.reset();
-
-  base::DeleteFile(test_1280x720_yuv_file_, false);
-  base::DeleteFile(test_640x368_yuv_file_, false);
-  base::DeleteFile(test_640x360_yuv_file_, false);
 }
 
 void JpegEncodeAcceleratorTestEnvironment::LogToFile(const std::string& key,
@@ -204,50 +186,56 @@ void JpegEncodeAcceleratorTestEnvironment::LogToFile(const std::string& key,
   }
 }
 
-void JpegEncodeAcceleratorTestEnvironment::CreateTestYuvImage(
-    int width,
-    int height,
-    bool is_black,
-    base::FilePath* filename) {
-  std::vector<uint8_t> buffer(width * height * 3 / 2);
+std::unique_ptr<TestImage>
+JpegEncodeAcceleratorTestEnvironment::CreateTestYuvImage(
+    const gfx::Size& image_size,
+    bool is_black) {
+  const size_t num_pixels = image_size.width() * image_size.height();
+  std::vector<uint8_t> image_data(num_pixels * 3 / 2);
 
-  size_t size = width * height;
   // Fill in Y values.
-  memset(buffer.data(), is_black ? 0 : 255, size);
-  // FIll in U and V values.
-  memset(buffer.data() + size, 128, size / 2);
-  LOG_ASSERT(base::CreateTemporaryFile(filename));
-  EXPECT_TRUE(base::AppendToFile(
-      *filename, reinterpret_cast<char*>(buffer.data()), buffer.size()));
+  std::fill(image_data.begin(), image_data.begin() + num_pixels,
+            is_black ? 0 : 255);
+  // Fill in U and V values.
+  std::fill(image_data.begin() + num_pixels, image_data.end(), 128);
+
+  base::FilePath output_filename(std::to_string(image_size.width()) + "x" +
+                                 std::to_string(image_size.height()) +
+                                 (is_black ? "_black.jpg" : "_white.jpg"));
+  return std::make_unique<TestImage>(std::move(image_data), image_size,
+                                     output_filename);
 }
 
-void JpegEncodeAcceleratorTestEnvironment::ReadTestYuvImage(
-    base::FilePath& input_file,
-    TestImageFile* image_data) {
-  ASSERT_TRUE(base::ReadFileToString(input_file, &image_data->data_str));
+std::unique_ptr<TestImage>
+JpegEncodeAcceleratorTestEnvironment::ReadTestYuvImage(
+    const base::FilePath& input_file,
+    const gfx::Size& image_size) {
+  int64_t file_size = 0;
+  LOG_ASSERT(GetFileSize(input_file, &file_size));
+  std::vector<uint8_t> image_data(file_size);
+  LOG_ASSERT(ReadFile(input_file, reinterpret_cast<char*>(image_data.data()),
+                      file_size) == file_size);
 
-  // This is just a placeholder. We will compute the real output size when we
-  // have encoder instance.
-  image_data->output_size =
-      VideoFrame::AllocationSize(PIXEL_FORMAT_I420, image_data->visible_size);
+  base::FilePath output_filename = input_file.AddExtension(".jpg");
+  return std::make_unique<TestImage>(std::move(image_data), image_size,
+                                     output_filename);
 }
 
 base::FilePath
 JpegEncodeAcceleratorTestEnvironment::GetOriginalOrTestDataFilePath(
     const std::string& name) {
-  base::FilePath original_file_path = base::FilePath(name);
-  base::FilePath return_file_path = GetTestDataFilePath(name);
-
-  if (PathExists(original_file_path))
-    return_file_path = original_file_path;
-
-  VLOG(3) << "Use file path " << return_file_path.value();
-  return return_file_path;
+  base::FilePath file_path = base::FilePath(name);
+  if (!PathExists(file_path)) {
+    file_path = GetTestDataFilePath(name);
+  }
+  VLOG(3) << "Using file path " << file_path.value();
+  return file_path;
 }
 
 class JpegClient : public JpegEncodeAccelerator::Client {
  public:
-  JpegClient(const std::vector<TestImageFile*>& test_image_files,
+  JpegClient(const std::vector<TestImage*>& test_aligned_images,
+             const std::vector<TestImage*>& test_images,
              ClientStateNotification<ClientState>* note);
   ~JpegClient() override;
   void CreateJpegEncoder();
@@ -260,9 +248,11 @@ class JpegClient : public JpegEncodeAccelerator::Client {
                    JpegEncodeAccelerator::Status status) override;
 
  private:
+  // Get the related test image file.
+  TestImage* GetTestImage(int32_t bitstream_buffer_id);
   void PrepareMemory(int32_t bitstream_buffer_id);
   void SetState(ClientState new_state);
-  void SaveToFile(TestImageFile* image_file, size_t hw_size, size_t sw_size);
+  void SaveToFile(TestImage* test_image, size_t hw_size, size_t sw_size);
   bool CompareHardwareAndSoftwareResults(int width,
                                          int height,
                                          size_t hw_encoded_size,
@@ -280,8 +270,14 @@ class JpegClient : public JpegEncodeAccelerator::Client {
                                size_t* sw_encoded_size,
                                base::TimeDelta* sw_encode_time);
 
-  // JpegClient doesn't own |test_image_files_|.
-  const std::vector<TestImageFile*>& test_image_files_;
+  // JpegClient doesn't own |test_aligned_images_|.
+  // The resolutions of these images are all aligned. HW Accelerator must
+  // support them.
+  const std::vector<TestImage*>& test_aligned_images_;
+
+  // JpegClient doesn't own |test_images_|.
+  // The resolutions of these images may be unaligned.
+  const std::vector<TestImage*>& test_images_;
 
   // A map that stores HW encoding start timestamp for each output buffer id.
   std::map<int, base::TimeTicks> buffer_id_to_start_time_;
@@ -306,21 +302,30 @@ class JpegClient : public JpegEncodeAccelerator::Client {
   DISALLOW_COPY_AND_ASSIGN(JpegClient);
 };
 
-JpegClient::JpegClient(const std::vector<TestImageFile*>& test_image_files,
+JpegClient::JpegClient(const std::vector<TestImage*>& test_aligned_images,
+                       const std::vector<TestImage*>& test_images,
                        ClientStateNotification<ClientState>* note)
-    : test_image_files_(test_image_files),
+    : test_aligned_images_(test_aligned_images),
+      test_images_(test_images),
       state_(ClientState::CREATED),
       note_(note) {}
 
 JpegClient::~JpegClient() {}
 
 void JpegClient::CreateJpegEncoder() {
-  encoder_ = nullptr;
+  auto jea_factories =
+      GpuJpegEncodeAcceleratorFactory::GetAcceleratorFactories();
+  if (jea_factories.size() == 0) {
+    LOG(ERROR) << "JpegEncodeAccelerator is not supported on this platform.";
+    SetState(ClientState::ERROR);
+    return;
+  }
 
-#if BUILDFLAG(USE_VAAPI)
-  encoder_ = std::make_unique<VaapiJpegEncodeAccelerator>(
-      base::ThreadTaskRunnerHandle::Get());
-#endif
+  for (const auto& create_jea_func : jea_factories) {
+    encoder_ = create_jea_func.Run(base::ThreadTaskRunnerHandle::Get());
+    if (encoder_)
+      break;
+  }
 
   if (!encoder_) {
     LOG(ERROR) << "Failed to create JpegEncodeAccelerator.";
@@ -346,7 +351,13 @@ void JpegClient::VideoFrameReady(int32_t buffer_id, size_t hw_encoded_size) {
   base::TimeDelta elapsed_hw =
       hw_encode_end - buffer_id_to_start_time_[buffer_id];
 
-  TestImageFile* test_image = test_image_files_[buffer_id];
+  TestImage* test_image;
+  if (buffer_id < static_cast<int32_t>(test_aligned_images_.size())) {
+    test_image = test_aligned_images_[buffer_id];
+  } else {
+    test_image = test_images_[buffer_id - test_aligned_images_.size()];
+  }
+
   size_t sw_encoded_size = 0;
   base::TimeDelta elapsed_sw;
   LOG_ASSERT(GetSoftwareEncodeResult(test_image->visible_size.width(),
@@ -462,29 +473,43 @@ void JpegClient::NotifyError(int32_t buffer_id,
   encoded_buffer_.reset(nullptr);
 }
 
-void JpegClient::PrepareMemory(int32_t bitstream_buffer_id) {
-  TestImageFile* image_file = test_image_files_[bitstream_buffer_id];
+TestImage* JpegClient::GetTestImage(int32_t bitstream_buffer_id) {
+  DCHECK_LT(static_cast<size_t>(bitstream_buffer_id),
+            test_aligned_images_.size() + test_images_.size());
+  TestImage* image_file;
+  if (bitstream_buffer_id < static_cast<int32_t>(test_aligned_images_.size())) {
+    image_file = test_aligned_images_[bitstream_buffer_id];
+  } else {
+    image_file =
+        test_images_[bitstream_buffer_id - test_aligned_images_.size()];
+  }
 
-  size_t input_size = image_file->data_str.size();
+  return image_file;
+}
+
+void JpegClient::PrepareMemory(int32_t bitstream_buffer_id) {
+  TestImage* test_image = GetTestImage(bitstream_buffer_id);
+
+  size_t input_size = test_image->image_data.size();
   if (!in_shm_.get() || input_size > in_shm_->mapped_size()) {
     in_shm_.reset(new base::SharedMemory);
     LOG_ASSERT(in_shm_->CreateAndMapAnonymous(input_size));
   }
-  memcpy(in_shm_->memory(), image_file->data_str.data(), input_size);
+  memcpy(in_shm_->memory(), test_image->image_data.data(), input_size);
 
   if (!hw_out_shm_.get() ||
-      image_file->output_size > hw_out_shm_->mapped_size()) {
+      test_image->output_size > hw_out_shm_->mapped_size()) {
     hw_out_shm_.reset(new base::SharedMemory);
-    LOG_ASSERT(hw_out_shm_->CreateAndMapAnonymous(image_file->output_size));
+    LOG_ASSERT(hw_out_shm_->CreateAndMapAnonymous(test_image->output_size));
   }
-  memset(hw_out_shm_->memory(), 0, image_file->output_size);
+  memset(hw_out_shm_->memory(), 0, test_image->output_size);
 
   if (!sw_out_shm_.get() ||
-      image_file->output_size > sw_out_shm_->mapped_size()) {
+      test_image->output_size > sw_out_shm_->mapped_size()) {
     sw_out_shm_.reset(new base::SharedMemory);
-    LOG_ASSERT(sw_out_shm_->CreateAndMapAnonymous(image_file->output_size));
+    LOG_ASSERT(sw_out_shm_->CreateAndMapAnonymous(test_image->output_size));
   }
-  memset(sw_out_shm_->memory(), 0, image_file->output_size);
+  memset(sw_out_shm_->memory(), 0, test_image->output_size);
 }
 
 void JpegClient::SetState(ClientState new_state) {
@@ -496,40 +521,43 @@ void JpegClient::SetState(ClientState new_state) {
   state_ = new_state;
 }
 
-void JpegClient::SaveToFile(TestImageFile* image_file,
+void JpegClient::SaveToFile(TestImage* test_image,
                             size_t hw_size,
                             size_t sw_size) {
-  DCHECK_NE(nullptr, image_file);
+  DCHECK_NE(nullptr, test_image);
 
-  base::FilePath in_filename(image_file->filename);
-  base::FilePath out_filename = in_filename.ReplaceExtension(".jpg");
+  base::FilePath out_filename_hw = test_image->output_filename;
+  LOG(INFO) << "Writing HW encode results to "
+            << out_filename_hw.MaybeAsASCII();
   ASSERT_EQ(
       static_cast<int>(hw_size),
-      base::WriteFile(out_filename, static_cast<char*>(hw_out_shm_->memory()),
-                      hw_size));
+      base::WriteFile(out_filename_hw,
+                      static_cast<char*>(hw_out_shm_->memory()), hw_size));
 
+  base::FilePath out_filename_sw = out_filename_hw.InsertBeforeExtension("_sw");
+  LOG(INFO) << "Writing SW encode results to "
+            << out_filename_sw.MaybeAsASCII();
   ASSERT_EQ(
       static_cast<int>(sw_size),
-      base::WriteFile(out_filename.InsertBeforeExtension("_sw"),
+      base::WriteFile(out_filename_sw,
                       static_cast<char*>(sw_out_shm_->memory()), sw_size));
 }
 
 void JpegClient::StartEncode(int32_t bitstream_buffer_id) {
-  DCHECK_LT(static_cast<size_t>(bitstream_buffer_id), test_image_files_.size());
-  TestImageFile* image_file = test_image_files_[bitstream_buffer_id];
+  TestImage* test_image = GetTestImage(bitstream_buffer_id);
 
-  image_file->output_size =
-      encoder_->GetMaxCodedBufferSize(image_file->visible_size);
+  test_image->output_size =
+      encoder_->GetMaxCodedBufferSize(test_image->visible_size);
   PrepareMemory(bitstream_buffer_id);
 
   base::SharedMemoryHandle dup_handle;
   dup_handle = base::SharedMemory::DuplicateHandle(hw_out_shm_->handle());
   encoded_buffer_ = std::make_unique<BitstreamBuffer>(
-      bitstream_buffer_id, dup_handle, image_file->output_size);
+      bitstream_buffer_id, dup_handle, test_image->output_size);
   scoped_refptr<VideoFrame> input_frame_ = VideoFrame::WrapExternalSharedMemory(
-      PIXEL_FORMAT_I420, image_file->visible_size,
-      gfx::Rect(image_file->visible_size), image_file->visible_size,
-      static_cast<uint8_t*>(in_shm_->memory()), image_file->data_str.size(),
+      PIXEL_FORMAT_I420, test_image->visible_size,
+      gfx::Rect(test_image->visible_size), test_image->visible_size,
+      static_cast<uint8_t*>(in_shm_->memory()), test_image->image_data.size(),
       in_shm_->handle(), 0, base::TimeDelta());
 
   LOG_ASSERT(input_frame_.get());
@@ -549,17 +577,16 @@ class JpegEncodeAcceleratorTest : public ::testing::Test {
   // JpegEncodeAccelerator implementations.
   base::test::ScopedTaskEnvironment scoped_task_environment_;
 
-  // The elements of |test_image_files_| are owned by
-  // JpegEncodeAcceleratorTestEnvironment.
-  std::vector<TestImageFile*> test_image_files_;
-  std::vector<ClientState> expected_status_;
+  // The elements of |test_aligned_images_| and |test_images_| are
+  // owned by JpegEncodeAcceleratorTestEnvironment.
+  std::vector<TestImage*> test_aligned_images_;
+  std::vector<TestImage*> test_images_;
 
  protected:
   DISALLOW_COPY_AND_ASSIGN(JpegEncodeAcceleratorTest);
 };
 
 void JpegEncodeAcceleratorTest::TestEncode(size_t num_concurrent_encoders) {
-  LOG_ASSERT(test_image_files_.size() >= expected_status_.size());
   base::Thread encoder_thread("EncoderThread");
   ASSERT_TRUE(encoder_thread.Start());
 
@@ -568,24 +595,51 @@ void JpegEncodeAcceleratorTest::TestEncode(size_t num_concurrent_encoders) {
 
   for (size_t i = 0; i < num_concurrent_encoders; i++) {
     notes.push_back(std::make_unique<ClientStateNotification<ClientState>>());
-    clients.push_back(
-        std::make_unique<JpegClient>(test_image_files_, notes.back().get()));
+    clients.push_back(std::make_unique<JpegClient>(
+        test_aligned_images_, test_images_, notes.back().get()));
     encoder_thread.task_runner()->PostTask(
         FROM_HERE, base::BindOnce(&JpegClient::CreateJpegEncoder,
                                   base::Unretained(clients.back().get())));
     ASSERT_EQ(notes[i]->Wait(), ClientState::INITIALIZED);
   }
 
-  for (size_t index = 0; index < test_image_files_.size(); index++) {
+  for (size_t index = 0; index < test_aligned_images_.size(); index++) {
+    VLOG(3) << index
+            << ",width:" << test_aligned_images_[index]->visible_size.width();
+    VLOG(3) << index
+            << ",height:" << test_aligned_images_[index]->visible_size.height();
     for (size_t i = 0; i < num_concurrent_encoders; i++) {
       encoder_thread.task_runner()->PostTask(
           FROM_HERE, base::BindOnce(&JpegClient::StartEncode,
                                     base::Unretained(clients[i].get()), index));
     }
-    if (index < expected_status_.size()) {
-      for (size_t i = 0; i < num_concurrent_encoders; i++) {
-        ASSERT_EQ(notes[i]->Wait(), expected_status_[index]);
-      }
+    for (size_t i = 0; i < num_concurrent_encoders; i++) {
+      ASSERT_EQ(notes[i]->Wait(), ClientState::ENCODE_PASS);
+    }
+  }
+
+  for (size_t index = 0; index < test_images_.size(); index++) {
+    int buffer_id = index + test_aligned_images_.size();
+    VLOG(3) << buffer_id
+            << ",width:" << test_images_[index]->visible_size.width();
+    VLOG(3) << buffer_id
+            << ",height:" << test_images_[index]->visible_size.height();
+    for (size_t i = 0; i < num_concurrent_encoders; i++) {
+      encoder_thread.task_runner()->PostTask(
+          FROM_HERE,
+          base::BindOnce(&JpegClient::StartEncode,
+                         base::Unretained(clients[i].get()), buffer_id));
+    }
+
+    for (size_t i = 0; i < num_concurrent_encoders; i++) {
+// For unaligned images, V4L2 may not be able to encode them.
+#if BUILDFLAG(USE_V4L2_CODEC) && defined(ARCH_CPU_ARM_FAMILY)
+      ClientState status = notes[i]->Wait();
+      ASSERT_TRUE(status == ClientState::ENCODE_PASS ||
+                  status == ClientState::ERROR);
+#else
+      ASSERT_EQ(notes[i]->Wait(), ClientState::ENCODE_PASS);
+#endif
     }
   }
 
@@ -595,13 +649,13 @@ void JpegEncodeAcceleratorTest::TestEncode(size_t num_concurrent_encoders) {
                                   base::Unretained(clients[i].get())));
   }
   encoder_thread.Stop();
+  VLOG(1) << "Exit TestEncode";
 }
 
 TEST_F(JpegEncodeAcceleratorTest, SimpleEncode) {
   for (size_t i = 0; i < g_env->repeat_; i++) {
     for (auto& image : g_env->image_data_user_) {
-      test_image_files_.push_back(image.get());
-      expected_status_.push_back(ClientState::ENCODE_PASS);
+      test_images_.push_back(image.get());
     }
   }
   TestEncode(1);
@@ -609,24 +663,27 @@ TEST_F(JpegEncodeAcceleratorTest, SimpleEncode) {
 
 TEST_F(JpegEncodeAcceleratorTest, MultipleEncoders) {
   for (auto& image : g_env->image_data_user_) {
-    test_image_files_.push_back(image.get());
-    expected_status_.push_back(ClientState::ENCODE_PASS);
+    test_images_.push_back(image.get());
   }
   TestEncode(3);
 }
 
 TEST_F(JpegEncodeAcceleratorTest, ResolutionChange) {
-  test_image_files_.push_back(g_env->image_data_640x368_black_.get());
-  test_image_files_.push_back(g_env->image_data_1280x720_white_.get());
-  test_image_files_.push_back(g_env->image_data_640x368_black_.get());
-  for (size_t i = 0; i < test_image_files_.size(); i++)
-    expected_status_.push_back(ClientState::ENCODE_PASS);
+  test_images_.push_back(g_env->image_data_640x368_black_.get());
+  test_images_.push_back(g_env->image_data_640x360_black_.get());
+  test_aligned_images_.push_back(g_env->image_data_1280x720_white_.get());
+  TestEncode(1);
+}
+
+TEST_F(JpegEncodeAcceleratorTest, AlignedSizes) {
+  test_aligned_images_.push_back(g_env->image_data_2560x1920_white_.get());
+  test_aligned_images_.push_back(g_env->image_data_1280x720_white_.get());
+  test_aligned_images_.push_back(g_env->image_data_640x480_black_.get());
   TestEncode(1);
 }
 
 TEST_F(JpegEncodeAcceleratorTest, CodedSizeAlignment) {
-  test_image_files_.push_back(g_env->image_data_640x360_black_.get());
-  expected_status_.push_back(ClientState::ENCODE_PASS);
+  test_images_.push_back(g_env->image_data_640x360_black_.get());
   TestEncode(1);
 }
 

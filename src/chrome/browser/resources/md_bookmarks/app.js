@@ -115,7 +115,12 @@ Polymer({
   },
 
   /** @private */
-  searchTermChanged_: function() {
+  searchTermChanged_: function(newValue, oldValue) {
+    if (oldValue != undefined && !newValue) {
+      this.fire(
+          'iron-announce', {text: loadTimeData.getString('searchCleared')});
+    }
+
     if (!this.searchTerm_)
       return;
 

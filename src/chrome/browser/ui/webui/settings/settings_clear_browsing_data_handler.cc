@@ -351,7 +351,8 @@ void ClearBrowsingDataHandler::UpdateSyncState() {
       base::Value(sync_service_ && sync_service_->IsSyncFeatureActive() &&
                   sync_service_->GetActiveDataTypes().Has(
                       syncer::HISTORY_DELETE_DIRECTIVES)),
-      base::Value(ShouldShowCookieException(profile_)));
+      base::Value(
+          browsing_data_counter_utils::ShouldShowCookieException(profile_)));
 }
 
 void ClearBrowsingDataHandler::RefreshHistoryNotice() {
@@ -391,7 +392,8 @@ void ClearBrowsingDataHandler::UpdateCounterText(
   CallJavascriptFunction(
       "cr.webUIListenerCallback", base::Value("update-counter-text"),
       base::Value(result->source()->GetPrefName()),
-      base::Value(GetChromeCounterTextFromResult(result.get(), profile_)));
+      base::Value(browsing_data_counter_utils::GetChromeCounterTextFromResult(
+          result.get(), profile_)));
 }
 
 void ClearBrowsingDataHandler::HandleTimePeriodChanged(

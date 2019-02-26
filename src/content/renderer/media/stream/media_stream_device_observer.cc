@@ -80,7 +80,7 @@ void MediaStreamDeviceObserver::OnDeviceStopped(
 
   auto it = label_stream_map_.find(label);
   if (it == label_stream_map_.end()) {
-    // This can happen if a user happen stop a the device from JS at the same
+    // This can happen if a user stops a device from JS at the same
     // time as the underlying media device is unplugged from the system.
     return;
   }
@@ -104,6 +104,39 @@ void MediaStreamDeviceObserver::OnDeviceStopped(
   stream = &it->second;
   if (stream->audio_devices.empty() && stream->video_devices.empty())
     label_stream_map_.erase(it);
+}
+
+void MediaStreamDeviceObserver::OnDeviceChanged(
+    const std::string& label,
+    const MediaStreamDevice& old_device,
+    const MediaStreamDevice& new_device) {
+  DVLOG(1) << __func__ << " old_device_id=" << old_device.id
+           << " new_device_id=" << new_device.id;
+  DCHECK(thread_checker_.CalledOnValidThread());
+
+  auto it = label_stream_map_.find(label);
+  if (it == label_stream_map_.end()) {
+    // This can happen if a user stops a device from JS at the same
+    // time as the underlying media device is unplugged from the system.
+    return;
+  }
+
+  Stream* stream = &it->second;
+  if (stream->handler.get())
+    stream->handler->OnDeviceChanged(old_device, new_device);
+
+  // Update device list only for device changing. Removing device will be
+  // handled in its own callback.
+  if (old_device.type != MEDIA_NO_SERVICE &&
+      new_device.type != MEDIA_NO_SERVICE) {
+    if (RemoveStreamDeviceFromArray(old_device, &stream->audio_devices) ||
+        RemoveStreamDeviceFromArray(old_device, &stream->video_devices)) {
+      if (IsAudioInputMediaType(new_device.type))
+        stream->audio_devices.push_back(new_device);
+      else
+        stream->video_devices.push_back(new_device);
+    }
+  }
 }
 
 void MediaStreamDeviceObserver::BindMediaStreamDeviceObserverRequest(

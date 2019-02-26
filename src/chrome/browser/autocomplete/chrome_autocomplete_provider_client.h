@@ -56,7 +56,6 @@ class ChromeAutocompleteProviderClient : public AutocompleteProviderClient {
   bool SearchSuggestEnabled() const override;
   bool IsPersonalizedUrlDataCollectionActive() const override;
   bool IsAuthenticated() const override;
-  bool IsUnifiedConsentGiven() const override;
   bool IsSyncActive() const override;
   void Classify(
       const base::string16& text,
@@ -74,6 +73,7 @@ class ChromeAutocompleteProviderClient : public AutocompleteProviderClient {
       AutocompleteController* controller) override;
   bool IsTabOpenWithURL(const GURL& url,
                         const AutocompleteInput* input) override;
+  bool IsBrowserUpdateAvailable() const override;
 
   // For testing.
   void set_storage_partition(content::StoragePartition* storage_partition) {

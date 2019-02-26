@@ -97,7 +97,8 @@ class PLATFORM_EXPORT MainThreadTaskQueue
         : can_be_deferred(false),
           can_be_throttled(false),
           can_be_paused(false),
-          can_be_frozen(false) {}
+          can_be_frozen(false),
+          can_run_in_background(true) {}
 
     QueueTraits(const QueueTraits&) = default;
 
@@ -121,11 +122,17 @@ class PLATFORM_EXPORT MainThreadTaskQueue
       return *this;
     }
 
+    QueueTraits SetCanRunInBackground(bool value) {
+      can_run_in_background = value;
+      return *this;
+    }
+
     bool operator==(const QueueTraits& other) const {
       return can_be_deferred == other.can_be_deferred &&
              can_be_throttled == other.can_be_throttled &&
              can_be_paused == other.can_be_paused &&
-             can_be_frozen == other.can_be_frozen;
+             can_be_frozen == other.can_be_frozen &&
+             can_run_in_background == other.can_run_in_background;
     }
 
     // Return a key suitable for WTF::HashMap.
@@ -136,6 +143,7 @@ class PLATFORM_EXPORT MainThreadTaskQueue
       key |= can_be_throttled << 2;
       key |= can_be_paused << 3;
       key |= can_be_frozen << 4;
+      key |= can_run_in_background << 5;
       return key;
     }
 
@@ -143,6 +151,7 @@ class PLATFORM_EXPORT MainThreadTaskQueue
     bool can_be_throttled : 1;
     bool can_be_paused : 1;
     bool can_be_frozen : 1;
+    bool can_run_in_background : 1;
   };
 
   struct QueueCreationParams {
@@ -168,26 +177,37 @@ class PLATFORM_EXPORT MainThreadTaskQueue
 
     QueueCreationParams SetCanBeDeferred(bool value) {
       queue_traits = queue_traits.SetCanBeDeferred(value);
+      ApplyQueueTraitsToSpec();
       return *this;
     }
 
     QueueCreationParams SetCanBeThrottled(bool value) {
       queue_traits = queue_traits.SetCanBeThrottled(value);
+      ApplyQueueTraitsToSpec();
       return *this;
     }
 
     QueueCreationParams SetCanBePaused(bool value) {
       queue_traits = queue_traits.SetCanBePaused(value);
+      ApplyQueueTraitsToSpec();
       return *this;
     }
 
     QueueCreationParams SetCanBeFrozen(bool value) {
       queue_traits = queue_traits.SetCanBeFrozen(value);
+      ApplyQueueTraitsToSpec();
+      return *this;
+    }
+
+    QueueCreationParams SetCanRunInBackground(bool value) {
+      queue_traits = queue_traits.SetCanRunInBackground(value);
+      ApplyQueueTraitsToSpec();
       return *this;
     }
 
     QueueCreationParams SetQueueTraits(QueueTraits value) {
       queue_traits = value;
+      ApplyQueueTraitsToSpec();
       return *this;
     }
 
@@ -220,6 +240,11 @@ class PLATFORM_EXPORT MainThreadTaskQueue
     FrameSchedulerImpl* frame_scheduler;
     QueueTraits queue_traits;
     bool freeze_when_keep_active;
+
+   private:
+    void ApplyQueueTraitsToSpec() {
+      spec = spec.SetDelayedFencesAllowed(queue_traits.can_be_throttled);
+    }
   };
 
   ~MainThreadTaskQueue() override;
@@ -240,6 +265,10 @@ class PLATFORM_EXPORT MainThreadTaskQueue
   bool CanBePaused() const { return queue_traits_.can_be_paused; }
 
   bool CanBeFrozen() const { return queue_traits_.can_be_frozen; }
+
+  bool CanRunInBackground() const {
+    return queue_traits_.can_run_in_background;
+  }
 
   bool FreezeWhenKeepActive() const { return freeze_when_keep_active_; }
 

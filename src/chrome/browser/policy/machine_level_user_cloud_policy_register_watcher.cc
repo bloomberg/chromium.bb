@@ -38,14 +38,12 @@ RegisterResult MachineLevelUserCloudPolicyRegisterWatcher::
     WaitUntilCloudPolicyEnrollmentFinished() {
   BrowserDMTokenStorage* token_storage = BrowserDMTokenStorage::Get();
 
-  if (token_storage->RetrieveEnrollmentToken().empty()) {
+  if (token_storage->RetrieveEnrollmentToken().empty())
     return RegisterResult::kNoEnrollmentNeeded;
-  }
 
   // We are already enrolled successfully.
-  if (!token_storage->RetrieveDMToken().empty()) {
+  if (!token_storage->RetrieveDMToken().empty())
     return RegisterResult::kEnrollmentSuccessBeforeDialogDisplayed;
-  }
 
   EnterpriseStartupDialog::DialogResultCallback callback = base::BindOnce(
       &MachineLevelUserCloudPolicyRegisterWatcher::OnDialogClosed,
@@ -56,27 +54,38 @@ RegisterResult MachineLevelUserCloudPolicyRegisterWatcher::
     dialog_ = EnterpriseStartupDialog::CreateAndShowDialog(std::move(callback));
 
   visible_start_time_ = base::Time::Now();
-  RecordEnrollmentStartDialog(EnrollmentStartupDialog::kShown);
 
   if (register_result_) {
-    // |register_result_| has been set only if the enrollment has finihsed.
+    // |register_result_| has been set only if the enrollment has finished.
     // And it must be failed if it's finished without a DM token which is
     // checked above. Show the error message directly.
     DCHECK(!register_result_.value());
+
+    if (!token_storage->ShouldDisplayErrorMessageOnFailure())
+      return RegisterResult::kEnrollmentFailedSilentlyBeforeDialogDisplayed;
+
     DisplayErrorMessage();
   } else {
     // Display the loading dialog and wait for the enrollment process.
     dialog_->DisplayLaunchingInformationWithThrobber(l10n_util::GetStringUTF16(
         IDS_ENTERPRISE_STARTUP_CLOUD_POLICY_ENROLLMENT_TOOLTIP));
   }
+  RecordEnrollmentStartDialog(EnrollmentStartupDialog::kShown);
   run_loop_.Run();
   if (register_result_.value_or(false))
     return RegisterResult::kEnrollmentSuccess;
+
+  if (!token_storage->ShouldDisplayErrorMessageOnFailure() &&
+      register_result_) {
+    SYSLOG(ERROR) << "Machine level user cloud policy enrollment has failed.";
+    return RegisterResult::kEnrollmentFailedSilently;
+  }
 
   SYSLOG(ERROR) << "Can not start Chrome as machine level user cloud policy "
                    "enrollment has failed. Please double check network "
                    "connection and the status of enrollment token then open "
                    "Chrome again.";
+
   if (is_restart_needed_)
     return RegisterResult::kRestartDueToFailure;
   return RegisterResult::kQuitDueToFailure;
@@ -105,7 +114,8 @@ void MachineLevelUserCloudPolicyRegisterWatcher::OnPolicyRegisterFinished(
   // show the error message. If dialog has been closed before enrollment
   // finished, Chrome should already be in the shutdown process.
   if (dialog_ && dialog_->IsShowing()) {
-    if (register_result_.value()) {
+    if (register_result_.value() ||
+        !BrowserDMTokenStorage::Get()->ShouldDisplayErrorMessageOnFailure()) {
       dialog_.reset();
     } else {
       DisplayErrorMessage();
@@ -118,7 +128,12 @@ void MachineLevelUserCloudPolicyRegisterWatcher::OnDialogClosed(
     bool can_show_browser_window) {
   if (can_show_browser_window) {
     // Chrome startup can continue normally.
-    RecordEnrollmentStartDialog(EnrollmentStartupDialog::kClosedSuccess);
+    if (register_result_.value()) {
+      RecordEnrollmentStartDialog(EnrollmentStartupDialog::kClosedSuccess);
+    } else {
+      RecordEnrollmentStartDialog(
+          EnrollmentStartupDialog::kClosedFailAndIgnore);
+    }
   } else if (is_accepted) {
     // User chose to restart chrome and try re-enrolling.
     RecordEnrollmentStartDialog(EnrollmentStartupDialog::kClosedRelaunch);

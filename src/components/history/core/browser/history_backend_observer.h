@@ -34,9 +34,12 @@ class HistoryBackendObserver {
   //
   // |changed_urls| lists the information for each of the URLs affected. The
   // rows will have the IDs that are currently in effect in the main history
-  // database.
+  // database. |is_from_expiration| is true if the modification is caused by
+  // automatic history expiration (the visit count got reduced by expiring some
+  // of the visits); it is false if the modification is caused by user action.
   virtual void OnURLsModified(HistoryBackend* history_backend,
-                              const URLRows& changed_urls) = 0;
+                              const URLRows& changed_urls,
+                              bool is_from_expiration) = 0;
 
   // Called when one or more of URLs are deleted.
   //

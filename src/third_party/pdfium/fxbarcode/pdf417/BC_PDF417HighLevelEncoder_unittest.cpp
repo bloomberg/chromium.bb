@@ -18,23 +18,23 @@ TEST(PDF417HighLevelEncoder, EncodeBinary) {
     const char* input;
     int offset;
     int count;
-    int startmode;
+    CBC_PDF417HighLevelEncoder::EncodingMode startmode;
     const wchar_t* expected;
     int expected_length;
   } encode_binary_cases[] = {
       // Empty string encodes as empty string.
-      {"", 0, 0, CBC_PDF417HighLevelEncoder::TEXT_COMPACTION, L"", 0},
+      {"", 0, 0, CBC_PDF417HighLevelEncoder::EncodingMode::kText, L"", 0},
 
       // Fewer than 6 characters encodes as prefix without compaction.
-      {"xxxxx", 0, 5, CBC_PDF417HighLevelEncoder::TEXT_COMPACTION,
+      {"xxxxx", 0, 5, CBC_PDF417HighLevelEncoder::EncodingMode::kText,
        L"\x0385xxxxx", 6},
 
       // 6 charcters triggerst text encoding compaction.
-      {"xxxxxx", 0, 6, CBC_PDF417HighLevelEncoder::TEXT_COMPACTION,
+      {"xxxxxx", 0, 6, CBC_PDF417HighLevelEncoder::EncodingMode::kText,
        L"\u039c\u00c9\u031f\u012a\u00d2\u02d0", 6},
 
       // Same result if initially in numeric compaction mode.
-      {"xxxxxx", 0, 6, CBC_PDF417HighLevelEncoder::NUMERIC_COMPACTION,
+      {"xxxxxx", 0, 6, CBC_PDF417HighLevelEncoder::EncodingMode::kNumeric,
        L"\u039c\u00c9\u031f\u012a\u00d2\u02d0", 6},
   };
 
@@ -49,8 +49,8 @@ TEST(PDF417HighLevelEncoder, EncodeBinary) {
     }
     WideString expected(ptr->expected, ptr->expected_length);
     WideString result;
-    CBC_PDF417HighLevelEncoder::encodeBinary(
-        &input_array, ptr->offset, ptr->count, ptr->startmode, result);
+    CBC_PDF417HighLevelEncoder::EncodeBinary(
+        input_array, ptr->offset, ptr->count, ptr->startmode, &result);
     EXPECT_EQ(expected, result) << " for case number " << i;
   }
   CBC_PDF417HighLevelEncoder::Finalize();
@@ -112,8 +112,8 @@ TEST(PDF417HighLevelEncoder, EncodeNumeric) {
     WideString input(ptr->input);
     WideString expected(ptr->expected, ptr->expected_length);
     WideString result;
-    CBC_PDF417HighLevelEncoder::encodeNumeric(input, ptr->offset, ptr->count,
-                                              result);
+    CBC_PDF417HighLevelEncoder::EncodeNumeric(input, ptr->offset, ptr->count,
+                                              &result);
     EXPECT_EQ(expected, result) << " for case number " << i;
   }
   CBC_PDF417HighLevelEncoder::Finalize();
@@ -158,7 +158,7 @@ TEST(PDF417HighLevelEncoder, ConsecutiveDigitCount) {
     ConsecutiveDigitCase* ptr = &consecutive_digit_cases[i];
     WideString input(ptr->input);
     int actual_count =
-        CBC_PDF417HighLevelEncoder::determineConsecutiveDigitCount(input,
+        CBC_PDF417HighLevelEncoder::DetermineConsecutiveDigitCount(input,
                                                                    ptr->offset);
     EXPECT_EQ(ptr->expected_count, actual_count) << " for case number " << i;
   }
@@ -219,7 +219,7 @@ TEST(PDF417HighLevelEncoder, ConsecutiveTextCount) {
     ConsecutiveTextCase* ptr = &consecutive_text_cases[i];
     WideString input(ptr->input);
     int actual_count =
-        CBC_PDF417HighLevelEncoder::determineConsecutiveTextCount(input,
+        CBC_PDF417HighLevelEncoder::DetermineConsecutiveTextCount(input,
                                                                   ptr->offset);
     EXPECT_EQ(ptr->expected_count, actual_count) << " for case number " << i;
   }

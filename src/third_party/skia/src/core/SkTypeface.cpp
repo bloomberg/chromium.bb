@@ -14,6 +14,7 @@
 #include "SkOTTable_OS_2.h"
 #include "SkOnce.h"
 #include "SkStream.h"
+#include "SkSurfacePriv.h"
 #include "SkTypeface.h"
 #include "SkTypefaceCache.h"
 
@@ -297,6 +298,11 @@ int SkTypeface::charsToGlyphs(const void* chars, Encoding encoding,
     return this->onCharsToGlyphs(chars, encoding, glyphs, glyphCount);
 }
 
+SkGlyphID SkTypeface::unicharToGlyph(SkUnichar uni) const {
+    SkGlyphID glyphs[1];
+    return this->onCharsToGlyphs(&uni, kUTF32_Encoding, glyphs, 1) == 1 ? glyphs[0] : 0;
+}
+
 int SkTypeface::countGlyphs() const {
     return this->onCountGlyphs();
 }
@@ -388,16 +394,15 @@ bool SkTypeface::onComputeBounds(SkRect* bounds) const {
     const SkScalar textSize = 2048;
     const SkScalar invTextSize = 1 / textSize;
 
-    SkPaint paint;
-    paint.setTypeface(sk_ref_sp(const_cast<SkTypeface*>(this)));
-    paint.setTextSize(textSize);
-    paint.setLinearText(true);
+    SkFont font;
+    font.setTypeface(sk_ref_sp(const_cast<SkTypeface*>(this)));
+    font.setSize(textSize);
+    font.setLinearMetrics(true);
 
     SkScalerContextRec rec;
     SkScalerContextEffects effects;
 
-    SkScalerContext::MakeRecAndEffects(
-        paint, nullptr, nullptr, SkScalerContextFlags::kNone, &rec, &effects);
+    SkScalerContext::MakeRecAndEffectsFromFont(font, &rec, &effects);
 
     SkAutoDescriptor ad;
     SkScalerContextEffects noeffects;
@@ -408,7 +413,7 @@ bool SkTypeface::onComputeBounds(SkRect* bounds) const {
         return false;
     }
 
-    SkPaint::FontMetrics fm;
+    SkFontMetrics fm;
     ctx->getFontMetrics(&fm);
     bounds->set(fm.fXMin * invTextSize, fm.fTop * invTextSize,
                 fm.fXMax * invTextSize, fm.fBottom * invTextSize);

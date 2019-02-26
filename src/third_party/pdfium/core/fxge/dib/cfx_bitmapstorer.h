@@ -9,9 +9,9 @@
 
 #include "core/fxcrt/fx_coordinates.h"
 #include "core/fxcrt/retain_ptr.h"
-#include "core/fxge/dib/cfx_dibitmap.h"
 #include "core/fxge/dib/scanlinecomposer_iface.h"
-#include "third_party/base/stl_util.h"
+
+class CFX_DIBitmap;
 
 class CFX_BitmapStorer final : public ScanlineComposerIface {
  public:

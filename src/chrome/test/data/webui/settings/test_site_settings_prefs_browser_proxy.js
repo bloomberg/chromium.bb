@@ -31,7 +31,7 @@ class TestSiteSettingsPrefsBrowserProxy extends TestBrowserProxy {
       'getExceptionList',
       'getOriginPermissions',
       'isOriginValid',
-      'isPatternValid',
+      'isPatternValidForType',
       'observeProtocolHandlers',
       'observeProtocolHandlersEnabledState',
       'removeIgnoredHandler',
@@ -69,7 +69,7 @@ class TestSiteSettingsPrefsBrowserProxy extends TestBrowserProxy {
     this.isOriginValid_ = true;
 
     /** @private {boolean} */
-    this.isPatternValid_ = true;
+    this.isPatternValidForType_ = true;
   }
 
   /**
@@ -278,16 +278,19 @@ class TestSiteSettingsPrefsBrowserProxy extends TestBrowserProxy {
   }
 
   /** @override */
-  isPatternValid(pattern) {
-    this.methodCalled('isPatternValid', pattern);
-    return Promise.resolve(this.isPatternValid_);
+  isPatternValidForType(pattern, category) {
+    this.methodCalled('isPatternValidForType', pattern, category);
+    return Promise.resolve({
+      isValid: this.isPatternValidForType_,
+      reason: this.isPatternValidForType_ ? '' : 'pattern is invalid',
+    });
   }
 
   /**
-   * Specify whether isPatternValid should succeed or fail.
+   * Specify whether isPatternValidForType should succeed or fail.
    */
-  setIsPatternValid(isValid) {
-    this.isPatternValid_ = isValid;
+  setIsPatternValidForType(isValid) {
+    this.isPatternValidForType_ = isValid;
   }
 
   /** @override */

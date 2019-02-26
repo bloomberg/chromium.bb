@@ -24,7 +24,7 @@
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_split.h"
 #include "base/task/post_task.h"
-#include "base/threading/thread_restrictions.h"
+#include "base/threading/scoped_blocking_call.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "build/build_config.h"
 #include "components/device_event_log/device_event_log.h"
@@ -33,7 +33,7 @@
 #include "services/device/hid/hid_connection_linux.h"
 
 #if defined(OS_CHROMEOS)
-#include "base/sys_info.h"
+#include "base/system/sys_info.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
 #include "chromeos/dbus/permission_broker_client.h"
 #endif  // defined(OS_CHROMEOS)
@@ -80,7 +80,6 @@ class HidServiceLinux::BlockingTaskHelper : public UdevWatcher::Observer {
   }
 
   void Start() {
-    base::AssertBlockingAllowed();
     DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
     watcher_ = UdevWatcher::StartWatching(this);
@@ -94,6 +93,9 @@ class HidServiceLinux::BlockingTaskHelper : public UdevWatcher::Observer {
   // UdevWatcher::Observer
   void OnDeviceAdded(ScopedUdevDevicePtr device) override {
     DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+    base::ScopedBlockingCall scoped_blocking_call(
+        base::BlockingType::MAY_BLOCK);
+
     const char* device_path = udev_device_get_syspath(device.get());
     if (!device_path)
       return;
@@ -168,6 +170,9 @@ class HidServiceLinux::BlockingTaskHelper : public UdevWatcher::Observer {
 
   void OnDeviceRemoved(ScopedUdevDevicePtr device) override {
     DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+    base::ScopedBlockingCall scoped_blocking_call(
+        base::BlockingType::MAY_BLOCK);
+
     const char* device_path = udev_device_get_syspath(device.get());
     if (device_path) {
       task_runner_->PostTask(
@@ -266,7 +271,7 @@ void HidServiceLinux::OnPathOpenError(const std::string& device_path,
 // static
 void HidServiceLinux::OpenOnBlockingThread(
     std::unique_ptr<ConnectParams> params) {
-  base::AssertBlockingAllowed();
+  base::ScopedBlockingCall scoped_blocking_call(base::BlockingType::MAY_BLOCK);
   scoped_refptr<base::SequencedTaskRunner> task_runner = params->task_runner;
 
   base::FilePath device_path(params->device_info->device_node());
@@ -299,7 +304,6 @@ void HidServiceLinux::OpenOnBlockingThread(
 
 // static
 void HidServiceLinux::FinishOpen(std::unique_ptr<ConnectParams> params) {
-  base::AssertBlockingAllowed();
   scoped_refptr<base::SequencedTaskRunner> task_runner = params->task_runner;
 
   if (!base::SetNonBlocking(params->fd.get())) {

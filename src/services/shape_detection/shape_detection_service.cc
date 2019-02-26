@@ -9,7 +9,6 @@
 
 #include "base/bind.h"
 #include "base/macros.h"
-#include "services/service_manager/public/cpp/service_context.h"
 #if defined(OS_WIN)
 #include "services/shape_detection/barcode_detection_provider_impl.h"
 #include "services/shape_detection/face_detection_provider_win.h"
@@ -30,11 +29,9 @@
 
 namespace shape_detection {
 
-std::unique_ptr<service_manager::Service> ShapeDetectionService::Create() {
-  return std::make_unique<ShapeDetectionService>();
-}
-
-ShapeDetectionService::ShapeDetectionService() {
+ShapeDetectionService::ShapeDetectionService(
+    service_manager::mojom::ServiceRequest request)
+    : service_binding_(this, std::move(request)) {
 #if defined(OS_MACOSX)
   if (__builtin_available(macOS 10.13, *)) {
     vision_framework_ =
@@ -53,9 +50,6 @@ ShapeDetectionService::~ShapeDetectionService() {
 }
 
 void ShapeDetectionService::OnStart() {
-  ref_factory_.reset(new service_manager::ServiceContextRefFactory(
-      context()->CreateQuitClosure()));
-
 #if defined(OS_ANDROID)
   registry_.AddInterface(
       GetJavaInterfaces()

@@ -20,11 +20,11 @@
 // files don't know that "resources.pak" now has a dependency to
 // "whatever.js". You should rerun gyp to let the build files know.
 //
+// error_counter.js must be loaded before all other scripts of the Files app.
+// <include src="../../../base/js/error_counter.js">
+//
 // metrics_base.js and metrics.js initiates load performance tracking
 // so we want to parse it as early as possible.
-// error_util.js must be loaded before all other scripts of the Files app.
-// <include src="../../common/js/error_util.js">
-//
 // <include src="../../common/js/metrics_base.js">
 // <include src="../../common/js/metrics.js">
 // <include src="metrics_start.js">
@@ -72,10 +72,6 @@
 // <include src="../../../../webui/resources/js/cr/ui/menu.js">
 // <include src="../../../../webui/resources/js/cr/ui/menu_button.js">
 // <include src="../../../../webui/resources/js/cr/ui/context_menu_handler.js">
-//
-// <include src="../../../../webui/resources/js/analytics.js">
-// metrics_events.js must be loaded after the analytics package.
-// <include src="../../common/js/metrics_events.js">
 
 (function() {
 // 'strict mode' is invoked for this scope.
@@ -85,7 +81,7 @@
 // <include src="../../common/js/async_util.js">
 // <include src="../../common/js/file_type.js">
 // <include src="../../common/js/files_app_entry_types.js">
-// <include src="../../common/js/volume_manager_common.js">
+// <include src="../../../base/js/volume_manager_types.js">
 // <include src="../../common/js/util.js">
 // <include src="../../common/js/progress_center_common.js">
 // <include src="../../common/js/importer_common.js">
@@ -99,20 +95,15 @@
 // <include src="metadata/metadata_provider.js">
 // <include src="metadata/metadata_request.js">
 //
-// <include
-// src="../../../../../components/chrome_apps/webstore_widget/cws_widget/app_installer.js">
-// <include
-// src="../../../../../components/chrome_apps/webstore_widget/cws_widget/cws_webview_client.js">
-// <include
-// src="../../../../../components/chrome_apps/webstore_widget/cws_widget/cws_widget_container.js">
-// <include
-// src="../../../../../components/chrome_apps/webstore_widget/cws_widget/cws_widget_container_error_dialog.js">
+// <include src="../../cws_widget/app_installer.js">
+// <include src="../../cws_widget/cws_webview_client.js">
+// <include src="../../cws_widget/cws_widget_container.js">
+// <include src="../../cws_widget/cws_widget_container_error_dialog.js">
 //
 // <include src="actions_controller.js">
 // <include src="actions_model.js">
 // <include src="app_state_controller.js">
 // <include src="column_visibility_controller.js">
-// <include src="crostini.js">
 // <include src="dialog_action_controller.js">
 // <include src="dialog_type.js">
 // <include src="directory_contents.js">

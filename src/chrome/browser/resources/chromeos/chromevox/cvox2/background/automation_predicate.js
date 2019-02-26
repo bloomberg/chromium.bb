@@ -179,13 +179,24 @@ AutomationPredicate.focused = function(node) {
 };
 
 /**
+ * Returns true if this node should be considered a leaf for touch
+ * exploration.
+ * @param {!AutomationNode} node
+ * @return {boolean}
+ */
+AutomationPredicate.touchLeaf = function(node) {
+  return !node.firstChild || node.role == Role.BUTTON ||
+      node.role == Role.POP_UP_BUTTON || node.role == Role.SLIDER ||
+      node.role == Role.TEXT_FIELD ||
+      (node.role == Role.MENU_ITEM && !hasActionableDescendant(node));
+};
+
+/**
  * @param {!AutomationNode} node
  * @return {boolean}
  */
 AutomationPredicate.leaf = function(node) {
-  return !node.firstChild || node.role == Role.BUTTON ||
-      node.role == Role.POP_UP_BUTTON || node.role == Role.SLIDER ||
-      node.role == Role.TEXT_FIELD ||
+  return AutomationPredicate.touchLeaf(node) ||
       // A node acting as a label should be a leaf if it has no actionable
       // controls.
       (!!node.labelFor && node.labelFor.length > 0 &&
@@ -193,7 +204,6 @@ AutomationPredicate.leaf = function(node) {
       (!!node.descriptionFor && node.descriptionFor.length > 0 &&
        !hasActionableDescendant(node)) ||
       (node.activeDescendantFor && node.activeDescendantFor.length > 0) ||
-      (node.role == Role.MENU_ITEM && !hasActionableDescendant(node)) ||
       node.state[State.INVISIBLE] || node.children.every(function(n) {
         return n.state[State.INVISIBLE];
       }) ||

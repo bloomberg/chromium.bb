@@ -36,7 +36,7 @@
 
 namespace blink {
 
-using namespace VectorMath;
+using namespace vector_math;
 
 OscillatorHandler::OscillatorHandler(AudioNode& node,
                                      float sample_rate,
@@ -49,8 +49,8 @@ OscillatorHandler::OscillatorHandler(AudioNode& node,
       detune_(&detune),
       first_render_(true),
       virtual_read_index_(0),
-      phase_increments_(AudioUtilities::kRenderQuantumFrames),
-      detune_values_(AudioUtilities::kRenderQuantumFrames) {
+      phase_increments_(audio_utilities::kRenderQuantumFrames),
+      detune_values_(audio_utilities::kRenderQuantumFrames) {
   if (wave_table) {
     // A PeriodicWave overrides any value for the oscillator type,
     // forcing the type to be 'custom".
@@ -177,7 +177,7 @@ static void ClampFrequency(float* frequency,
 }
 
 bool OscillatorHandler::CalculateSampleAccuratePhaseIncrements(
-    size_t frames_to_process) {
+    uint32_t frames_to_process) {
   bool is_good = frames_to_process <= phase_increments_.size() &&
                  frames_to_process <= detune_values_.size();
   DCHECK(is_good);
@@ -354,7 +354,7 @@ static float DoInterpolation(double virtual_read_index,
   return sample;
 }
 
-void OscillatorHandler::Process(size_t frames_to_process) {
+void OscillatorHandler::Process(uint32_t frames_to_process) {
   AudioBus* output_bus = Output(0).Bus();
 
   if (!IsInitialized() || !output_bus->NumberOfChannels()) {
@@ -382,7 +382,7 @@ void OscillatorHandler::Process(size_t frames_to_process) {
   }
 
   size_t quantum_frame_offset;
-  size_t non_silent_frames_to_process;
+  uint32_t non_silent_frames_to_process;
   double start_frame_offset;
 
   std::tie(quantum_frame_offset, non_silent_frames_to_process,
@@ -529,29 +529,30 @@ OscillatorNode* OscillatorNode::Create(BaseAudioContext& context,
     return nullptr;
   }
 
-  return new OscillatorNode(context, oscillator_type, wave_table);
+  return MakeGarbageCollected<OscillatorNode>(context, oscillator_type,
+                                              wave_table);
 }
 
 OscillatorNode* OscillatorNode::Create(BaseAudioContext* context,
-                                       const OscillatorOptions& options,
+                                       const OscillatorOptions* options,
                                        ExceptionState& exception_state) {
-  if (options.type() == "custom" && !options.hasPeriodicWave()) {
+  if (options->type() == "custom" && !options->hasPeriodicWave()) {
     exception_state.ThrowDOMException(
         DOMExceptionCode::kInvalidStateError,
         "A PeriodicWave must be specified if the type is set to \"custom\"");
     return nullptr;
   }
 
-  OscillatorNode* node =
-      Create(*context, options.type(), options.periodicWave(), exception_state);
+  OscillatorNode* node = Create(*context, options->type(),
+                                options->periodicWave(), exception_state);
 
   if (!node)
     return nullptr;
 
   node->HandleChannelOptions(options, exception_state);
 
-  node->detune()->setValue(options.detune());
-  node->frequency()->setValue(options.frequency());
+  node->detune()->setValue(options->detune());
+  node->frequency()->setValue(options->frequency());
 
   return node;
 }

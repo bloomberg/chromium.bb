@@ -36,10 +36,6 @@
 #include "ui/views/layout/layout_provider.h"
 #include "ui/views/window/dialog_client_view.h"
 
-#if defined(OS_WIN)
-#include "chrome/browser/ui/views/desktop_ios_promotion/desktop_ios_promotion_bubble_view.h"
-#endif
-
 namespace {
 
 // TODO(pbos): Investigate expicitly obfuscating items inside ComboboxModel.
@@ -248,7 +244,6 @@ PasswordPendingView::PasswordPendingView(content::WebContents* web_contents,
       is_update_bubble_(model()->state() ==
                         password_manager::ui::PENDING_PASSWORD_UPDATE_STATE),
       sign_in_promo_(nullptr),
-      desktop_ios_promo_(nullptr),
       username_field_(nullptr),
       password_view_button_(nullptr),
       initially_focused_view_(nullptr),
@@ -319,10 +314,6 @@ PasswordPendingView::~PasswordPendingView() = default;
 bool PasswordPendingView::Accept() {
   if (sign_in_promo_)
     return sign_in_promo_->Accept();
-#if defined(OS_WIN)
-  if (desktop_ios_promo_)
-    return desktop_ios_promo_->Accept();
-#endif
   UpdateUsernameAndPasswordInModel();
   model()->OnSaveClicked();
   if (model()->ReplaceToShowPromotionIfNeeded()) {
@@ -335,10 +326,6 @@ bool PasswordPendingView::Accept() {
 bool PasswordPendingView::Cancel() {
   if (sign_in_promo_)
     return sign_in_promo_->Cancel();
-#if defined(OS_WIN)
-  if (desktop_ios_promo_)
-    return desktop_ios_promo_->Cancel();
-#endif
   UpdateUsernameAndPasswordInModel();
   if (is_update_bubble_) {
     model()->OnNopeUpdateClicked();
@@ -370,7 +357,7 @@ void PasswordPendingView::ContentsChanged(views::Textfield* sender,
 }
 
 views::View* PasswordPendingView::CreateFootnoteView() {
-  if (sign_in_promo_ || desktop_ios_promo_ || !model()->ShouldShowFooter())
+  if (sign_in_promo_ || !model()->ShouldShowFooter())
     return nullptr;
   views::Label* label = new views::Label(
       l10n_util::GetStringUTF16(IDS_SAVE_PASSWORD_FOOTER),
@@ -406,10 +393,6 @@ base::string16 PasswordPendingView::GetDialogButtonLabel(
   // ask each different possible promo.
   if (sign_in_promo_)
     return sign_in_promo_->GetDialogButtonLabel(button);
-#if defined(OS_WIN)
-  if (desktop_ios_promo_)
-    return desktop_ios_promo_->GetDialogButtonLabel(button);
-#endif
 
   int message = 0;
   if (button == ui::DIALOG_BUTTON_OK) {
@@ -425,15 +408,11 @@ base::string16 PasswordPendingView::GetDialogButtonLabel(
 }
 
 gfx::ImageSkia PasswordPendingView::GetWindowIcon() {
-#if defined(OS_WIN)
-  if (desktop_ios_promo_)
-    return desktop_ios_promo_->GetWindowIcon();
-#endif
   return gfx::ImageSkia();
 }
 
 bool PasswordPendingView::ShouldShowWindowIcon() const {
-  return desktop_ios_promo_ != nullptr;
+  return false;
 }
 
 bool PasswordPendingView::ShouldShowCloseButton() const {
@@ -487,14 +466,6 @@ void PasswordPendingView::ReplaceWithPromo() {
   if (model()->state() == password_manager::ui::CHROME_SIGN_IN_PROMO_STATE) {
     sign_in_promo_ = new PasswordSignInPromoView(model());
     AddChildView(sign_in_promo_);
-#if defined(OS_WIN)
-  } else if (model()->state() ==
-             password_manager::ui::CHROME_DESKTOP_IOS_PROMO_STATE) {
-    desktop_ios_promo_ = new DesktopIOSPromotionBubbleView(
-        model()->GetProfile(),
-        desktop_ios_promotion::PromotionEntryPoint::SAVE_PASSWORD_BUBBLE);
-    AddChildView(desktop_ios_promo_);
-#endif
   } else {
     NOTREACHED();
   }

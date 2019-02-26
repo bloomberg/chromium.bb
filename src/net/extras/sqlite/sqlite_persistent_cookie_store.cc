@@ -42,9 +42,14 @@ using base::Time;
 namespace {
 
 // Changes the recommended priority of |background_task_runner| to
-// USER_BLOCKING.
-const base::Feature kCookieStorePriorityBoost{
-    "CookieStorePriorityBoost", base::FEATURE_DISABLED_BY_DEFAULT};
+// USER_BLOCKING. ENABLED_BY_DEFAULT because we have verified that this is on
+// the critical path of page load. Still an experiment to allow assessing the
+// impact when the WindowsThreadModeBackground feature is enabled.
+//
+// TODO(fdoray): Remove this feature when experiment is complete.
+// https://crbug.com/872820
+const base::Feature kCookieStorePriorityBoost{"CookieStorePriorityBoost",
+                                              base::FEATURE_ENABLED_BY_DEFAULT};
 
 std::unique_ptr<base::Value> CookieKeyedLoadNetLogCallback(
     const std::string& key,

@@ -14,15 +14,14 @@
 
 namespace content {
 
-ui::PlatformCursor WebCursor::GetPlatformCursor() {
+ui::PlatformCursor WebCursor::GetPlatformCursor(const ui::Cursor& cursor) {
   if (platform_cursor_)
     return platform_cursor_;
 
-  SkBitmap bitmap;
-  gfx::Point hotspot;
-  CreateScaledBitmapAndHotspotFromCustomData(&bitmap, &hotspot);
+  SkBitmap bitmap = cursor.GetBitmap();
 
-  XcursorImage* image = ui::SkBitmapToXcursorImage(&bitmap, hotspot);
+  XcursorImage* image =
+      ui::SkBitmapToXcursorImage(&bitmap, cursor.GetHotspot());
   platform_cursor_ = ui::CreateReffedCustomXCursor(image);
   return platform_cursor_;
 }

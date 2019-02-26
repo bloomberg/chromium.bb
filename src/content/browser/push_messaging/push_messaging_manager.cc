@@ -323,7 +323,7 @@ void PushMessagingManager::Subscribe(int32_t render_frame_id,
                           mojom::PushRegistrationStatus::NO_SERVICE_WORKER);
     return;
   }
-  data.requesting_origin = service_worker_registration->pattern().GetOrigin();
+  data.requesting_origin = service_worker_registration->scope().GetOrigin();
 
   DCHECK(!(data.options.sender_info.empty() && data.FromDocument()));
 
@@ -623,7 +623,7 @@ void PushMessagingManager::Unsubscribe(int64_t service_worker_registration_id,
       base::BindOnce(&PushMessagingManager::UnsubscribeHavingGottenSenderId,
                      weak_factory_io_to_io_.GetWeakPtr(), std::move(callback),
                      service_worker_registration_id,
-                     service_worker_registration->pattern().GetOrigin()));
+                     service_worker_registration->scope().GetOrigin()));
 }
 
 void PushMessagingManager::UnsubscribeHavingGottenSenderId(
@@ -768,7 +768,7 @@ void PushMessagingManager::DidGetSubscription(
         break;
       }
 
-      const GURL origin = registration->pattern().GetOrigin();
+      const GURL origin = registration->scope().GetOrigin();
 
       const bool uses_standard_protocol = IsApplicationServerKey(sender_info);
       const GURL endpoint =

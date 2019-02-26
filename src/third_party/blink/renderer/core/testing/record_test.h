@@ -21,7 +21,9 @@ class RecordTest final : public ScriptWrappable {
   DEFINE_WRAPPERTYPEINFO();
 
  public:
-  static RecordTest* Create() { return new RecordTest; }
+  static RecordTest* Create() { return MakeGarbageCollected<RecordTest>(); }
+
+  RecordTest();
   ~RecordTest() override;
 
   void setStringLongRecord(const Vector<std::pair<String, int32_t>>& arg);
@@ -55,8 +57,6 @@ class RecordTest final : public ScriptWrappable {
   void Trace(blink::Visitor*) override;
 
  private:
-  RecordTest();
-
   Vector<std::pair<String, int32_t>> string_long_record_;
   base::Optional<Vector<std::pair<String, int32_t>>>
       nullable_string_long_record_;

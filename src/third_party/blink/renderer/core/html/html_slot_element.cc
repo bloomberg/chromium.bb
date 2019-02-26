@@ -34,6 +34,7 @@
 #include "third_party/blink/renderer/core/css/style_change_reason.h"
 #include "third_party/blink/renderer/core/css/style_engine.h"
 #include "third_party/blink/renderer/core/dom/events/event.h"
+#include "third_party/blink/renderer/core/dom/flat_tree_node_data.h"
 #include "third_party/blink/renderer/core/dom/mutation_observer.h"
 #include "third_party/blink/renderer/core/dom/node_computed_style.h"
 #include "third_party/blink/renderer/core/dom/node_traversal.h"
@@ -49,32 +50,32 @@
 
 namespace blink {
 
-using namespace HTMLNames;
+using namespace html_names;
 
 namespace {
 constexpr size_t kLCSTableSizeLimit = 16;
 }
 
 HTMLSlotElement* HTMLSlotElement::Create(Document& document) {
-  return new HTMLSlotElement(document);
+  return MakeGarbageCollected<HTMLSlotElement>(document);
 }
 
 HTMLSlotElement* HTMLSlotElement::CreateUserAgentDefaultSlot(
     Document& document) {
-  HTMLSlotElement* slot = new HTMLSlotElement(document);
-  slot->setAttribute(nameAttr, UserAgentDefaultSlotName());
+  HTMLSlotElement* slot = MakeGarbageCollected<HTMLSlotElement>(document);
+  slot->setAttribute(kNameAttr, UserAgentDefaultSlotName());
   return slot;
 }
 
 HTMLSlotElement* HTMLSlotElement::CreateUserAgentCustomAssignSlot(
     Document& document) {
-  HTMLSlotElement* slot = new HTMLSlotElement(document);
-  slot->setAttribute(nameAttr, UserAgentCustomAssignSlotName());
+  HTMLSlotElement* slot = MakeGarbageCollected<HTMLSlotElement>(document);
+  slot->setAttribute(kNameAttr, UserAgentCustomAssignSlotName());
   return slot;
 }
 
 inline HTMLSlotElement::HTMLSlotElement(Document& document)
-    : HTMLElement(slotTag, document) {
+    : HTMLElement(kSlotTag, document) {
   UseCounter::Count(document, WebFeature::kHTMLSlotElement);
   SetHasCustomStyleCallbacks();
 }
@@ -148,8 +149,8 @@ const HeapVector<Member<Node>> HTMLSlotElement::FlattenedAssignedNodes() {
 }
 
 const HeapVector<Member<Node>> HTMLSlotElement::AssignedNodesForBinding(
-    const AssignedNodesOptions& options) {
-  if (options.hasFlatten() && options.flatten())
+    const AssignedNodesOptions* options) {
+  if (options->hasFlatten() && options->flatten())
     return FlattenedAssignedNodes();
   return AssignedNodes();
 }
@@ -164,7 +165,7 @@ const HeapVector<Member<Element>> HTMLSlotElement::AssignedElements() {
 }
 
 const HeapVector<Member<Element>> HTMLSlotElement::AssignedElementsForBinding(
-    const AssignedNodesOptions& options) {
+    const AssignedNodesOptions* options) {
   HeapVector<Member<Element>> elements;
   for (auto& node : AssignedNodesForBinding(options)) {
     if (Element* element = ToElementOrNull(node))
@@ -192,8 +193,26 @@ void HTMLSlotElement::ClearAssignedNodes() {
 }
 
 void HTMLSlotElement::ClearAssignedNodesAndFlatTreeChildren() {
-  assigned_nodes_.clear();
+  ClearAssignedNodes();
   flat_tree_children_.clear();
+}
+
+void HTMLSlotElement::UpdateFlatTreeNodeDataForAssignedNodes() {
+  Node* previous = nullptr;
+  for (auto& current : assigned_nodes_) {
+    FlatTreeNodeData& flat_tree_node_data = current->EnsureFlatTreeNodeData();
+    flat_tree_node_data.SetAssignedSlot(this);
+    flat_tree_node_data.SetPreviousInAssignedNodes(previous);
+    if (previous) {
+      DCHECK(previous->GetFlatTreeNodeData());
+      previous->GetFlatTreeNodeData()->SetNextInAssignedNodes(current);
+    }
+    previous = current;
+  }
+  if (previous) {
+    DCHECK(previous->GetFlatTreeNodeData());
+    previous->GetFlatTreeNodeData()->SetNextInAssignedNodes(nullptr);
+  }
 }
 
 void HTMLSlotElement::RecalcFlatTreeChildren() {
@@ -215,35 +234,13 @@ void HTMLSlotElement::RecalcFlatTreeChildren() {
 
 void HTMLSlotElement::DispatchSlotChangeEvent() {
   DCHECK(!IsInUserAgentShadowRoot());
-  Event* event = Event::CreateBubble(EventTypeNames::slotchange);
+  Event* event = Event::CreateBubble(event_type_names::kSlotchange);
   event->SetTarget(this);
   DispatchScopedEvent(*event);
 }
 
-Node* HTMLSlotElement::AssignedNodeNextTo(const Node& node) const {
-  DCHECK(SupportsAssignment());
-  ContainingShadowRoot()->GetSlotAssignment().RecalcAssignment();
-  // TODO(crbug.com/776656): Use {node -> index} map to avoid O(N) lookup
-  wtf_size_t index = assigned_nodes_.Find(&node);
-  DCHECK(index != WTF::kNotFound);
-  if (index + 1 == assigned_nodes_.size())
-    return nullptr;
-  return assigned_nodes_[index + 1].Get();
-}
-
-Node* HTMLSlotElement::AssignedNodePreviousTo(const Node& node) const {
-  DCHECK(SupportsAssignment());
-  ContainingShadowRoot()->GetSlotAssignment().RecalcAssignment();
-  // TODO(crbug.com/776656): Use {node -> index} map to avoid O(N) lookup
-  wtf_size_t index = assigned_nodes_.Find(&node);
-  DCHECK(index != WTF::kNotFound);
-  if (index == 0)
-    return nullptr;
-  return assigned_nodes_[index - 1].Get();
-}
-
 AtomicString HTMLSlotElement::GetName() const {
-  return NormalizeSlotName(FastGetAttribute(nameAttr));
+  return NormalizeSlotName(FastGetAttribute(kNameAttr));
 }
 
 void HTMLSlotElement::AttachLayoutTree(AttachContext& context) {
@@ -286,7 +283,7 @@ void HTMLSlotElement::RebuildDistributedChildrenLayoutTrees(
 
 void HTMLSlotElement::AttributeChanged(
     const AttributeModificationParams& params) {
-  if (params.name == nameAttr) {
+  if (params.name == kNameAttr) {
     if (ShadowRoot* root = ContainingShadowRoot()) {
       if (root->IsV1() && params.old_value != params.new_value) {
         root->GetSlotAssignment().DidRenameSlot(
@@ -391,7 +388,7 @@ void HTMLSlotElement::DidRecalcStyle(StyleRecalcChange change) {
     node->SetNeedsStyleRecalc(
         kLocalStyleChange,
         StyleChangeReasonForTracing::Create(
-            StyleChangeReason::kPropagateInheritChangeToDistributedNodes));
+            style_change_reason::kPropagateInheritChangeToDistributedNodes));
   }
 }
 

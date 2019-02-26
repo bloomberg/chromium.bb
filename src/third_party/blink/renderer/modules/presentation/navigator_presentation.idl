@@ -8,5 +8,5 @@
     ImplementedAs=NavigatorPresentation,
     RuntimeEnabled=Presentation
 ] partial interface Navigator {
-    [SameObject] readonly attribute Presentation presentation;
+    [SameObject, SecureContext] readonly attribute Presentation presentation;
 };

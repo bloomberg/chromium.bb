@@ -93,10 +93,7 @@ public final class DialogManager {
         mDialogFragment.show(fragmentManager, null);
         // Initiate the barrier closure, expecting 2 runs: one automatic but delayed, and one
         // explicit, to hide the dialog.
-        // TODO(crbug.com/821377) -- remove clang-format pragmas
-        // clang-format off
         mBarrierClosure = new SingleThreadBarrierClosure(2, this::hideImmediately);
-        // clang-format on
         // This is the automatic but delayed signal.
         mDelayer.delay(mBarrierClosure);
     }

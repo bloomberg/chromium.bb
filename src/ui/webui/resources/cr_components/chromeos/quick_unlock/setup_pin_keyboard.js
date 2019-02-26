@@ -170,7 +170,8 @@ Polymer({
     this.enableSubmit = false;
     this.isConfirmStep = false;
     this.hideProblem_();
-    this.onPinChange_();
+    this.onPinChange_(
+        new CustomEvent('pin-change', {detail: {pin: this.pinKeyboardValue_}}));
   },
 
   /**
@@ -281,13 +282,16 @@ Polymer({
     }
   },
 
-  /** @private */
-  onPinChange_: function() {
+  /**
+   * @param {!CustomEvent} e Custom event containing the new pin.
+   * @private */
+  onPinChange_: function(e) {
+    const newPin = /** @type {{pin: string}} */ (e.detail).pin;
     if (!this.isConfirmStep) {
-      if (this.pinKeyboardValue_) {
+      if (newPin) {
         this.quickUnlockPrivate.checkCredential(
-            chrome.quickUnlockPrivate.QuickUnlockMode.PIN,
-            this.pinKeyboardValue_, this.processPinProblems_.bind(this));
+            chrome.quickUnlockPrivate.QuickUnlockMode.PIN, newPin,
+            this.processPinProblems_.bind(this));
       } else {
         this.enableSubmit = false;
       }
@@ -295,7 +299,7 @@ Polymer({
     }
 
     this.hideProblem_();
-    this.enableSubmit = this.pinKeyboardValue_.length > 0;
+    this.enableSubmit = newPin.length > 0;
   },
 
   /** @private */
@@ -328,7 +332,8 @@ Polymer({
       this.initialPin_ = this.pinKeyboardValue_;
       this.pinKeyboardValue_ = '';
       this.isConfirmStep = true;
-      this.onPinChange_();
+      this.onPinChange_(new CustomEvent(
+          'pin-change', {detail: {pin: this.pinKeyboardValue_}}));
       this.$.pinKeyboard.focus();
       this.writeUma(LockScreenProgress.ENTER_PIN);
       return;

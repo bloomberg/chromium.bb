@@ -21,16 +21,18 @@ class ElementFullscreen {
  public:
   static ScriptPromise requestFullscreen(ScriptState*,
                                          Element&,
-                                         const FullscreenOptions&);
+                                         const FullscreenOptions*);
 
-  DEFINE_STATIC_ATTRIBUTE_EVENT_LISTENER(fullscreenchange);
-  DEFINE_STATIC_ATTRIBUTE_EVENT_LISTENER(fullscreenerror);
+  DEFINE_STATIC_ATTRIBUTE_EVENT_LISTENER(fullscreenchange, kFullscreenchange);
+  DEFINE_STATIC_ATTRIBUTE_EVENT_LISTENER(fullscreenerror, kFullscreenerror);
 
   static void webkitRequestFullscreen(Element&);
-  static void webkitRequestFullscreen(Element&, const FullscreenOptions&);
+  static void webkitRequestFullscreen(Element&, const FullscreenOptions*);
 
-  DEFINE_STATIC_ATTRIBUTE_EVENT_LISTENER(webkitfullscreenchange);
-  DEFINE_STATIC_ATTRIBUTE_EVENT_LISTENER(webkitfullscreenerror);
+  DEFINE_STATIC_ATTRIBUTE_EVENT_LISTENER(webkitfullscreenchange,
+                                         kWebkitfullscreenchange);
+  DEFINE_STATIC_ATTRIBUTE_EVENT_LISTENER(webkitfullscreenerror,
+                                         kWebkitfullscreenerror);
 };
 
 }  // namespace blink

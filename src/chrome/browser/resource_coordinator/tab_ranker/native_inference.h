@@ -14,13 +14,13 @@
 namespace tab_ranker {
 namespace tfnative_model {
 
-constexpr int DNN_WEIGHTS_SIZE = 29160;
 constexpr int DNN_RANK = 2;
-constexpr int FEATURES_SIZE = 729;
+constexpr int FEATURES_SIZE = 275;
 constexpr int DNN_BIASES_SIZE = 40;
+constexpr int DNN_WEIGHTS_SIZE = FEATURES_SIZE * DNN_BIASES_SIZE;
 
 struct alignas(16) FixedAllocations {
-  float alloc0[DNN_WEIGHTS_SIZE];
+  float alloc0[DNN_BIASES_SIZE];
   int32_t alloc0_shape[DNN_RANK];
   float alloc1[DNN_BIASES_SIZE];
   int32_t alloc1_shape[DNN_RANK];

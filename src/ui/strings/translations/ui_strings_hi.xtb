@@ -30,16 +30,19 @@
 <translation id="1871244248791675517">Ins</translation>
 <translation id="1884435127456172652"><ph name="NUMBER" /> %</translation>
 <translation id="1901303067676059328">&amp;सभी को चुनें</translation>
+<translation id="1938451708255335766">विंडो डिसप्ले की सघनता में बदलाव करने के लिए, ऐप्लिकेशन को रीस्टार्ट करें.</translation>
 <translation id="2141853158323869627">{DAYS,plural, =1{1d}one{#d}other{#d}}</translation>
 <translation id="2148716181193084225">आज</translation>
 <translation id="2168039046890040389">पेज ऊपर</translation>
 <translation id="2190355936436201913">(खाली)</translation>
+<translation id="2192232475740621500">कम सघनता का इस्तेमाल करें</translation>
 <translation id="219905428774326614">लॉन्चर, सभी ऐप्लिकेशन</translation>
 <translation id="2267918077332197517">इस साइट से सभी सूचनाएं रोकें</translation>
 <translation id="2289052229480071835">अपनी स्क्रीन पर स्पर्श लक्ष्य पर टैप करें.</translation>
 <translation id="2295140143284145483">सर्वे</translation>
 <translation id="2297836609126180313"><ph name="QUANTITY" /> TB/s</translation>
 <translation id="24452542372838207">सूचना को विस्तृत करें</translation>
+<translation id="2445449901874883781">ज़्यादा सघनता का इस्तेमाल करें</translation>
 <translation id="2482878487686419369">अधिसूचनाएं</translation>
 <translation id="2497284189126895209">सभी फ़ाइलें</translation>
 <translation id="2515586267016047495">Alt</translation>
@@ -60,6 +63,7 @@
 <translation id="3234408098842461169">नीचे तीर</translation>
 <translation id="3291688615589870984">{DAYS,plural, =1{1 दिन}one{# दिन}other{# दिन}}</translation>
 <translation id="335581015389089642">बोली</translation>
+<translation id="3479552764303398839">अभी नहीं</translation>
 <translation id="3600566671520689681">{DAYS,plural, =1{1 दिन शेष}one{# दिन शेष}other{# दिन शेष}}</translation>
 <translation id="3618849550573277856">“<ph name="LOOKUP_STRING" />” को खोजें</translation>
 <translation id="364720409959344976">अपलोड करने के लिए फ़ोल्‍डर चुनें</translation>
@@ -99,6 +103,7 @@
 <translation id="5613020302032141669">बायां तीर</translation>
 <translation id="5754277640426581776">{MINUTES,plural, =1{1 मिनट}one{# मिनट}other{# मिनट}}</translation>
 <translation id="5768079895599174203">{DAYS,plural, =1{1 दिन और }one{# दिन और }other{# दिन और }}</translation>
+<translation id="5895138241574237353">पुन: प्रारंभ करें</translation>
 <translation id="5906667377645263094">{SECONDS,plural, =1{1 सेकंड शेष}one{# सेकंड शेष}other{# सेकंड शेष}}</translation>
 <translation id="5941711191222866238">छोटा करें</translation>
 <translation id="5943826764092288734">{HOURS,plural, =1{1 घंटा}one{# घंटे}other{# घंटे}}</translation>

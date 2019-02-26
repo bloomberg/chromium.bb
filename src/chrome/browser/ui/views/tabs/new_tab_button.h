@@ -12,7 +12,11 @@
 #include "ui/views/view.h"
 #include "ui/views/widget/widget_observer.h"
 
-class NewTabPromoBubbleView;
+class FeaturePromoBubbleView;
+
+namespace views {
+class InkDropContainerView;
+}
 
 ///////////////////////////////////////////////////////////////////////////////
 // NewTabButton
@@ -57,7 +61,7 @@ class NewTabButton : public views::ImageButton,
 
   void AnimateInkDropToStateForTesting(views::InkDropState state);
 
-  NewTabPromoBubbleView* new_tab_promo() { return new_tab_promo_; }
+  FeaturePromoBubbleView* new_tab_promo() { return new_tab_promo_; }
 
  private:
 // views::ImageButton:
@@ -108,7 +112,7 @@ class NewTabButton : public views::ImageButton,
 
   // Promotional UI that appears next to the NewTabButton and encourages its
   // use. Owned by its NativeWidget.
-  NewTabPromoBubbleView* new_tab_promo_ = nullptr;
+  FeaturePromoBubbleView* new_tab_promo_ = nullptr;
 
   // The offset used to paint the background image.
   int background_offset_;

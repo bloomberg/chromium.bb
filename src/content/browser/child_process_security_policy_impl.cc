@@ -19,6 +19,7 @@
 #include "build/build_config.h"
 #include "content/browser/bad_message.h"
 #include "content/browser/isolated_origin_util.h"
+#include "content/browser/renderer_host/render_process_host_impl.h"
 #include "content/browser/site_instance_impl.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/browser_thread.h"
@@ -1174,8 +1175,16 @@ void ChildProcessSecurityPolicyImpl::LockToOrigin(int child_id,
   // call GetOriginLock or CheckOriginLock from any thread).
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
-  // "gurl" can be currently empty in some cases, such as file://blah.
-  DCHECK_EQ(SiteInstanceImpl::DetermineProcessLockURL(nullptr, gurl), gurl);
+#if DCHECK_IS_ON()
+  // Sanity-check that the |gurl| argument can be used as a lock.
+  RenderProcessHost* rph = RenderProcessHostImpl::FromID(child_id);
+  if (rph) {  // |rph| can be null in unittests.
+    DCHECK_EQ(SiteInstanceImpl::DetermineProcessLockURL(
+                  rph->GetBrowserContext(), gurl),
+              gurl);
+  }
+#endif
+
   base::AutoLock lock(lock_);
   auto state = security_state_.find(child_id);
   DCHECK(state != security_state_.end());

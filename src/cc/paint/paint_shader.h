@@ -27,6 +27,7 @@ using PaintRecord = PaintOpBuffer;
 class CC_PAINT_EXPORT PaintShader : public SkRefCnt {
  public:
   enum class Type : uint8_t {
+    kEmpty,
     kColor,
     kLinearGradient,
     kRadialGradient,
@@ -44,6 +45,8 @@ class CC_PAINT_EXPORT PaintShader : public SkRefCnt {
   // RasterAtScale to create a picture shader. Use FixedScale to create an image
   // shader that is backed by the paint record.
   enum class ScalingBehavior : uint8_t { kRasterAtScale, kFixedScale };
+
+  static sk_sp<PaintShader> MakeEmpty();
 
   static sk_sp<PaintShader> MakeColor(SkColor color);
 

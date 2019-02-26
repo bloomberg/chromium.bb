@@ -9,6 +9,7 @@
 
 #include "base/logging.h"
 #include "base/strings/utf_string_conversions.h"
+#include "base/token.h"
 #include "content/public/browser/cdm_registry.h"
 #include "content/public/browser/plugin_service.h"
 #include "content/public/common/cdm_info.h"
@@ -26,7 +27,7 @@ using VideoCodec = media::VideoCodec;
 using EncryptionMode = media::EncryptionMode;
 using CdmSessionType = media::CdmSessionType;
 
-const char kTestCdmGuid[] = "62FE9C4B-384E-48FD-B28A-9F6F248BC8CC";
+const base::Token kTestCdmGuid{1234, 5678};
 const char kVersion[] = "1.1.1.1";
 const char kTestPath[] = "/aa/bb";
 const char kTestFileSystemId[] = "file_system_id";

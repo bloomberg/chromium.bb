@@ -363,11 +363,13 @@ void LoginDisplayHostMojo::HandleAuthenticateUserWithPasswordOrPin(
   //
   // More details can be found in https://crbug.com/386606
   user_context.SetPasswordKey(Key(password));
-  if (account_id.GetAccountType() == AccountType::ACTIVE_DIRECTORY &&
-      (user_context.GetUserType() !=
-       user_manager::UserType::USER_TYPE_ACTIVE_DIRECTORY)) {
-    LOG(FATAL) << "Incorrect Active Directory user type "
-               << user_context.GetUserType();
+  if (account_id.GetAccountType() == AccountType::ACTIVE_DIRECTORY) {
+    if (user_context.GetUserType() !=
+        user_manager::UserType::USER_TYPE_ACTIVE_DIRECTORY) {
+      LOG(FATAL) << "Incorrect Active Directory user type "
+                 << user_context.GetUserType();
+    }
+    user_context.SetIsUsingOAuth(false);
   }
 
   existing_user_controller_->Login(user_context, chromeos::SigninSpecifics());
@@ -380,6 +382,12 @@ void LoginDisplayHostMojo::HandleAuthenticateUserWithExternalBinary(
   std::move(callback).Run(false);
 }
 
+void LoginDisplayHostMojo::HandleEnrollUserWithExternalBinary(
+    EnrollUserWithExternalBinaryCallback callback) {
+  // Enroll in external binary auth system is not supported for login.
+  std::move(callback).Run(false);
+}
+
 void LoginDisplayHostMojo::HandleAuthenticateUserWithEasyUnlock(
     const AccountId& account_id) {
   user_selection_screen_->AttemptEasyUnlock(account_id);
@@ -387,11 +395,6 @@ void LoginDisplayHostMojo::HandleAuthenticateUserWithEasyUnlock(
 
 void LoginDisplayHostMojo::HandleHardlockPod(const AccountId& account_id) {
   user_selection_screen_->HardLockPod(account_id);
-}
-
-void LoginDisplayHostMojo::HandleRecordClickOnLockIcon(
-    const AccountId& account_id) {
-  user_selection_screen_->RecordClickOnLockIcon(account_id);
 }
 
 void LoginDisplayHostMojo::HandleOnFocusPod(const AccountId& account_id) {

@@ -73,10 +73,6 @@ UITextField<TextFieldStyling>* ChromeBrowserProvider::CreateStyledTextField(
   return nil;
 }
 
-id<AppRatingPrompt> ChromeBrowserProvider::CreateAppRatingPrompt() const {
-  return nil;
-}
-
 void ChromeBrowserProvider::InitializeCastService(
     TabModel* main_tab_model) const {}
 
@@ -107,11 +103,6 @@ UserFeedbackProvider* ChromeBrowserProvider::GetUserFeedbackProvider() const {
 }
 
 SpotlightProvider* ChromeBrowserProvider::GetSpotlightProvider() const {
-  return nullptr;
-}
-
-ExternalSearchProvider* ChromeBrowserProvider::GetExternalSearchProvider()
-    const {
   return nullptr;
 }
 

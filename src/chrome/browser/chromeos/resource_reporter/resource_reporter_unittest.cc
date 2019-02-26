@@ -14,7 +14,7 @@
 #include "base/memory/fake_memory_pressure_monitor.h"
 #include "base/run_loop.h"
 #include "base/strings/utf_string_conversions.h"
-#include "base/sys_info.h"
+#include "base/system/sys_info.h"
 #include "base/timer/mock_timer.h"
 #include "chrome/browser/chromeos/resource_reporter/resource_reporter.h"
 #include "chrome/browser/task_manager/test_task_manager.h"

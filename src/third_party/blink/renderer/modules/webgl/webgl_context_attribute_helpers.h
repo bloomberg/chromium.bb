@@ -11,7 +11,7 @@
 
 namespace blink {
 
-WebGLContextAttributes ToWebGLContextAttributes(
+WebGLContextAttributes* ToWebGLContextAttributes(
     const CanvasContextCreationAttributesCore&);
 
 // Set up the attributes that can be used to create a GL context via the

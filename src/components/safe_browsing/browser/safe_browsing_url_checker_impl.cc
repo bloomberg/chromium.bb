@@ -331,6 +331,8 @@ SBThreatType SafeBrowsingUrlCheckerImpl::CheckWebUIUrls(const GURL& url) {
     return safe_browsing::SB_THREAT_TYPE_URL_PHISHING;
   if (url == kChromeUISafeBrowsingMatchUnwantedUrl)
     return safe_browsing::SB_THREAT_TYPE_URL_UNWANTED;
+  if (url == kChromeUISafeBrowsingMatchBillingUrl)
+    return safe_browsing::SB_THREAT_TYPE_BILLING;
 
   return safe_browsing::SB_THREAT_TYPE_SAFE;
 }

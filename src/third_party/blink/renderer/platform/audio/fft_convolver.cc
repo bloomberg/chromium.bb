@@ -31,7 +31,7 @@
 
 namespace blink {
 
-using namespace VectorMath;
+using namespace vector_math;
 
 FFTConvolver::FFTConvolver(size_t fft_size)
     : frame_(fft_size),
@@ -43,7 +43,7 @@ FFTConvolver::FFTConvolver(size_t fft_size)
 void FFTConvolver::Process(const FFTFrame* fft_kernel,
                            const float* source_p,
                            float* dest_p,
-                           size_t frames_to_process) {
+                           uint32_t frames_to_process) {
   size_t half_size = FftSize() / 2;
 
   // framesToProcess must be an exact multiple of halfSize,

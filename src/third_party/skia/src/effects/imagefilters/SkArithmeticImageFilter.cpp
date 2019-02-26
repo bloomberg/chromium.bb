@@ -51,8 +51,6 @@ public:
                               sk_sp<SkImageFilter> inputs[2], const CropRect* cropRect)
             : INHERITED(inputs, 2, cropRect), fK{k1, k2, k3, k4}, fEnforcePMColor(enforcePMColor) {}
 
-    SK_DECLARE_PUBLIC_FLATTENABLE_DESERIALIZATION_PROCS(ArithmeticImageFilterImpl)
-
 protected:
     sk_sp<SkSpecialImage> onFilterImage(SkSpecialImage* source, const Context&,
                                         SkIPoint* offset) const override;
@@ -83,6 +81,8 @@ protected:
     sk_sp<SkImageFilter> onMakeColorSpace(SkColorSpaceXformer*) const override;
 
 private:
+    SK_FLATTENABLE_HOOKS(ArithmeticImageFilterImpl)
+
     bool affectsTransparentBlack() const override { return !SkScalarNearlyZero(fK[3]); }
 
     const float fK[4];
@@ -356,10 +356,14 @@ sk_sp<SkSpecialImage> ArithmeticImageFilterImpl::filterImageGPU(
 
     paint.setPorterDuffXPFactory(SkBlendMode::kSrc);
 
+    SkColorType colorType = outputProperties.colorType();
+    GrBackendFormat format =
+            context->contextPriv().caps()->getBackendFormatFromColorType(colorType);
+
     sk_sp<GrRenderTargetContext> renderTargetContext(
         context->contextPriv().makeDeferredRenderTargetContext(
-            SkBackingFit::kApprox, bounds.width(), bounds.height(),
-            SkColorType2GrPixelConfig(outputProperties.colorType()),
+            format, SkBackingFit::kApprox, bounds.width(), bounds.height(),
+            SkColorType2GrPixelConfig(colorType),
             sk_ref_sp(outputProperties.colorSpace())));
     if (!renderTargetContext) {
         return nullptr;
@@ -471,6 +475,6 @@ sk_sp<SkImageFilter> SkArithmeticImageFilter::Make(float k1, float k2, float k3,
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 
-SK_DEFINE_FLATTENABLE_REGISTRAR_GROUP_START(SkArithmeticImageFilter)
-    SK_DEFINE_FLATTENABLE_REGISTRAR_ENTRY(ArithmeticImageFilterImpl)
-SK_DEFINE_FLATTENABLE_REGISTRAR_GROUP_END
+void SkArithmeticImageFilter::RegisterFlattenables() {
+    SK_REGISTER_FLATTENABLE(ArithmeticImageFilterImpl)
+}

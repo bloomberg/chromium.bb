@@ -17,14 +17,17 @@ class USBIsochronousInTransferPacket final : public ScriptWrappable {
 
  public:
   static USBIsochronousInTransferPacket* Create(const String& status) {
-    return new USBIsochronousInTransferPacket(status, nullptr);
+    return MakeGarbageCollected<USBIsochronousInTransferPacket>(status,
+                                                                nullptr);
   }
 
   static USBIsochronousInTransferPacket* Create(const String& status,
                                                 DOMDataView* data) {
-    return new USBIsochronousInTransferPacket(status, data);
+    return MakeGarbageCollected<USBIsochronousInTransferPacket>(status, data);
   }
 
+  USBIsochronousInTransferPacket(const String& status, DOMDataView* data)
+      : status_(status), data_(data) {}
   ~USBIsochronousInTransferPacket() override = default;
 
   String status() const { return status_; }
@@ -36,9 +39,6 @@ class USBIsochronousInTransferPacket final : public ScriptWrappable {
   }
 
  private:
-  USBIsochronousInTransferPacket(const String& status, DOMDataView* data)
-      : status_(status), data_(data) {}
-
   const String status_;
   const Member<DOMDataView> data_;
 };

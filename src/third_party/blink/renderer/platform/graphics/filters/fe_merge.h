@@ -31,12 +31,12 @@ class PLATFORM_EXPORT FEMerge final : public FilterEffect {
  public:
   static FEMerge* Create(Filter*);
 
+  explicit FEMerge(Filter*);
+
   WTF::TextStream& ExternalRepresentation(WTF::TextStream&,
                                           int indention) const override;
 
  private:
-  explicit FEMerge(Filter*);
-
   sk_sp<PaintFilter> CreateImageFilter() override;
 };
 

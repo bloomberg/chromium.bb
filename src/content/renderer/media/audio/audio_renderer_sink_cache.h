@@ -27,9 +27,6 @@ class CONTENT_EXPORT AudioRendererSinkCache {
  public:
   virtual ~AudioRendererSinkCache() {}
 
-  // Creates default cache, to be used by AudioRendererMixerManager.
-  static std::unique_ptr<AudioRendererSinkCache> Create();
-
   // If called, the cache will drop sinks belonging to the specified frame on
   // navigation.
   static void ObserveFrame(RenderFrame* frame);

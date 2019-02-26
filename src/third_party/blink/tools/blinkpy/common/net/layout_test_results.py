@@ -160,5 +160,4 @@ class LayoutTestResults(object):
         return sorted(results, key=lambda r: r.test_name())
 
     def didnt_run_as_expected_results(self):
-        # TODO(qyearsley): Rename this method.
         return self._filter_tests(lambda r: not r.did_run_as_expected())

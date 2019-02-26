@@ -45,6 +45,10 @@ class LayoutSVGImage final : public LayoutSVGModelObject {
   }
 
   FloatRect ObjectBoundingBox() const override { return object_bounding_box_; }
+  bool IsObjectBoundingBoxValid() const {
+    return !object_bounding_box_.IsEmpty();
+  }
+
   bool IsOfType(LayoutObjectType type) const override {
     return type == kLayoutObjectSVGImage ||
            LayoutSVGModelObject::IsOfType(type);

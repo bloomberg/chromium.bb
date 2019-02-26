@@ -5,6 +5,7 @@
 import json
 import logging
 import re
+import traceback
 
 import webapp2
 
@@ -38,8 +39,31 @@ class ApiRequestHandler(webapp2.RequestHandler):
   Convenience methods handling authentication errors and surfacing them.
   """
 
-  def _AllowAnonymous(self):
-    return False
+  def _CheckUser(self):
+    """Checks whether the user has permission to make requests.
+
+    This method must be overridden by subclasses to perform access control.
+
+    Raises:
+      api_auth.NotLoggedInError: The user was not logged in,
+          and must be to be to make this request.
+      api_auth.OAuthError: The request was not a valid OAuth request,
+          or the client ID was not in the whitelist.
+      ForbiddenError: The user does not have permission to make this request.
+    """
+    raise NotImplementedError()
+
+  def _CheckIsInternalUser(self):
+    if utils.IsDevAppserver():
+      return
+    self._CheckIsLoggedIn()
+    if not utils.IsInternalUser():
+      raise ForbiddenError()
+
+  def _CheckIsLoggedIn(self):
+    if utils.IsDevAppserver():
+      return
+    api_auth.Authorize()
 
   def post(self, *args):
     """Returns alert data in response to API requests.
@@ -48,38 +72,33 @@ class ApiRequestHandler(webapp2.RequestHandler):
       JSON results.
     """
     self._SetCorsHeadersIfAppropriate()
+
     try:
-      api_auth.Authorize()
+      self._CheckUser()
     except api_auth.NotLoggedInError as e:
-      if not self._AllowAnonymous():
-        self.WriteErrorMessage(e.message, 401)
-        return
+      self.WriteErrorMessage(e.message, 401)
+      return
     except api_auth.OAuthError as e:
+      self.WriteErrorMessage(e.message, 403)
+      return
+    except ForbiddenError as e:
       self.WriteErrorMessage(e.message, 403)
       return
     # Allow oauth.Error to manifest as HTTP 500.
 
     try:
-      if utils.IsInternalUser():
-        results = self.PrivilegedPost(*args)
-      else:
-        results = self.UnprivilegedPost(*args)
+      results = self.Post(*args)
       self.response.out.write(json.dumps(results))
     except NotFoundError as e:
       self.WriteErrorMessage(e.message, 404)
-    except ForbiddenError as e:
-      self.WriteErrorMessage(e.message, 403)
-    except BadRequestError as e:
+    except (BadRequestError, KeyError, TypeError, ValueError) as e:
       self.WriteErrorMessage(e.message, 400)
 
   def options(self, *_):  # pylint: disable=invalid-name
     self._SetCorsHeadersIfAppropriate()
 
-  def PrivilegedPost(self, *_):
+  def Post(self, *_):
     raise NotImplementedError()
-
-  def UnprivilegedPost(self, *_):
-    raise ForbiddenError()
 
   def _SetCorsHeadersIfAppropriate(self):
     self.response.headers['Content-Type'] = 'application/json; charset=utf-8'
@@ -102,6 +121,6 @@ class ApiRequestHandler(webapp2.RequestHandler):
     self.response.headers.add_header('Access-Control-Max-Age', '3600')
 
   def WriteErrorMessage(self, message, status):
-    logging.error('Error: %r', message)
+    logging.error(traceback.format_exc())
     self.response.set_status(status)
     self.response.out.write(json.dumps({'error': message}))

@@ -17,6 +17,7 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 
 import org.chromium.base.test.util.CommandLineFlags;
+import org.chromium.base.test.util.DisabledTest;
 import org.chromium.base.test.util.Feature;
 import org.chromium.base.test.util.Restriction;
 import org.chromium.base.test.util.RetryOnFailure;
@@ -43,6 +44,7 @@ public class CastVideoControlsTest {
      * Test the pause button.
      */
     @Test
+    @DisabledTest // crbug.com/907307
     @Feature({"VideoFling"})
     @LargeTest
     @RetryOnFailure

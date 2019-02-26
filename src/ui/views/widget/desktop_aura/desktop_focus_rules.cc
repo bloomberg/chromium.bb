@@ -4,8 +4,10 @@
 
 #include "ui/views/widget/desktop_aura/desktop_focus_rules.h"
 
+#include "ui/aura/client/aura_constants.h"
 #include "ui/aura/window.h"
 #include "ui/aura/window_event_dispatcher.h"
+#include "ui/wm/core/window_util.h"
 
 namespace views {
 
@@ -15,11 +17,21 @@ DesktopFocusRules::DesktopFocusRules(aura::Window* content_window)
 DesktopFocusRules::~DesktopFocusRules() {}
 
 bool DesktopFocusRules::CanActivateWindow(aura::Window* window) const {
+  if (window && content_window_->GetRootWindow()->Contains(window) &&
+      wm::WindowStateIs(window->GetRootWindow(), ui::SHOW_STATE_MINIMIZED)) {
+    return true;
+  }
   if (!BaseFocusRules::CanActivateWindow(window))
     return false;
   // Never activate a window that is not a child of the root window. Transients
   // spanning different DesktopNativeWidgetAuras may trigger this.
   return !window || content_window_->GetRootWindow()->Contains(window);
+}
+
+bool DesktopFocusRules::CanFocusWindow(aura::Window* window,
+                                       const ui::Event* event) const {
+  return BaseFocusRules::CanFocusWindow(window, event) ||
+         wm::WindowStateIs(window->GetRootWindow(), ui::SHOW_STATE_MINIMIZED);
 }
 
 bool DesktopFocusRules::SupportsChildActivation(aura::Window* window) const {

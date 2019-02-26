@@ -69,7 +69,7 @@ void HTMLImportLoader::ResponseReceived(
   // Resource may already have been loaded with the import loader
   // being added as a client later & now being notified. Fail early.
   if (resource->LoadFailedOrCanceled() || response.HttpStatusCode() >= 400 ||
-      !response.HttpHeaderField(HTTPNames::Content_Disposition).IsNull()) {
+      !response.HttpHeaderField(http_names::kContentDisposition).IsNull()) {
     SetState(kStateError);
     return;
   }

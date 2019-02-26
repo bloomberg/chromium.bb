@@ -14,13 +14,13 @@
 
 #include "core/fxcrt/unowned_ptr.h"
 #include "core/fxcrt/widestring.h"
-#include "core/fxcrt/xml/cfx_xmlelement.h"
 #include "fxjs/jse_define.h"
 #include "third_party/base/optional.h"
 #include "third_party/base/span.h"
 #include "xfa/fxfa/fxfa_basic.h"
 #include "xfa/fxfa/parser/cxfa_measurement.h"
 
+class CFX_XMLElement;
 class CFXJSE_Value;
 class CFX_V8;
 class CJX_Object;
@@ -291,10 +291,9 @@ typedef void (CJX_Object::*XFA_ATTRIBUTE_CALLBACK)(CFXJSE_Value* pValue,
 
 struct XFA_SCRIPTATTRIBUTEINFO {
   uint32_t uHash;
-  const wchar_t* pName;
-  XFA_ATTRIBUTE_CALLBACK callback;
   XFA_Attribute attribute;
   XFA_ScriptType eValueType;
+  XFA_ATTRIBUTE_CALLBACK callback;
 };
 
 #endif  // FXJS_XFA_CJX_OBJECT_H_

@@ -34,18 +34,27 @@ class FakeServerHttpPostProvider
   void SetPostPayload(const char* content_type,
                       int content_length,
                       const char* content) override;
-  bool MakeSynchronousPost(int* error_code, int* response_code) override;
+  bool MakeSynchronousPost(int* net_error_code, int* http_status_code) override;
   void Abort() override;
   int GetResponseContentLength() const override;
   const char* GetResponseContent() const override;
   const std::string GetResponseHeaderValue(
       const std::string& name) const override;
 
+  // Forces every request to fail in a way that simulates a network failure.
+  // This can be used to trigger exponential backoff in the client.
+  static void DisableNetwork();
+
+  // Undoes the effects of DisableNetwork.
+  static void EnableNetwork();
+
  protected:
   ~FakeServerHttpPostProvider() override;
 
  private:
   friend class base::RefCountedThreadSafe<FakeServerHttpPostProvider>;
+
+  static bool network_enabled_;
 
   // |fake_server_| should only be dereferenced on the same thread as
   // |fake_server_task_runner_| runs on.
@@ -58,8 +67,6 @@ class FakeServerHttpPostProvider
   std::string request_content_;
   std::string request_content_type_;
   std::string extra_request_headers_;
-  int post_error_code_;
-  int post_response_code_;
 
   DISALLOW_COPY_AND_ASSIGN(FakeServerHttpPostProvider);
 };

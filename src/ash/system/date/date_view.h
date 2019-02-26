@@ -55,7 +55,7 @@ class ASH_EXPORT BaseDateTimeView : public ActionableView,
   base::HourClockType GetHourTypeForTesting() const;
 
  protected:
-  BaseDateTimeView(SystemTrayItem* owner, ClockModel* model);
+  explicit BaseDateTimeView(ClockModel* model);
 
   // Updates labels to display the current time.
   virtual void UpdateTextInternal(const base::Time& now);
@@ -75,45 +75,9 @@ class ASH_EXPORT BaseDateTimeView : public ActionableView,
   DISALLOW_COPY_AND_ASSIGN(BaseDateTimeView);
 };
 
-// Popup view used to display the date and day of week.
-class ASH_EXPORT DateView : public BaseDateTimeView {
- public:
-  enum class DateAction {
-    NONE,
-    SET_SYSTEM_TIME,
-    SHOW_DATE_SETTINGS,
-  };
-
-  DateView(SystemTrayItem* owner, ClockModel* model);
-  ~DateView() override;
-
-  // Sets the action the view should take. An actionable date view gives visual
-  // feedback on hover, can be focused by keyboard, and clicking/pressing space
-  // or enter on the view executes the action.
-  void SetAction(DateAction action);
-
-  // ClockObserver:
-  void OnSystemClockCanSetTimeChanged(bool can_set_time) override;
-
- private:
-  // Sets active rendering state and updates the color of |date_label_|.
-  void SetActive(bool active);
-
-  // BaseDateTimeView:
-  void UpdateTextInternal(const base::Time& now) override;
-
-  // ActionableView:
-  bool PerformAction(const ui::Event& event) override;
-
-  views::Label* date_label_;
-
-  DateAction action_;
-
-  DISALLOW_COPY_AND_ASSIGN(DateView);
-};
-
 // Tray view used to display the current time.
 // Exported for tests.
+// TODO(tetsui): Combine with BaseDateTimeView.  https://crbug.com/901712
 class ASH_EXPORT TimeView : public BaseDateTimeView {
  public:
   enum class ClockLayout {
@@ -146,7 +110,6 @@ class ASH_EXPORT TimeView : public BaseDateTimeView {
   bool OnMousePressed(const ui::MouseEvent& event) override;
   void OnGestureEvent(ui::GestureEvent* event) override;
 
-  void SetBorderFromLayout(ClockLayout clock_layout);
   void SetupLabels();
   void SetupLabel(views::Label* label);
 

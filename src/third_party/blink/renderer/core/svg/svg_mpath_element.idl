@@ -25,7 +25,6 @@
 
 // https://svgwg.org/specs/animations/#InterfaceSVGMPathElement
 
-[RuntimeEnabled=SMIL]
 interface SVGMPathElement : SVGElement {
 };
 

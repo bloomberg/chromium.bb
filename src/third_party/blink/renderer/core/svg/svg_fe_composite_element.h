@@ -29,9 +29,7 @@
 
 namespace blink {
 
-template <>
-const SVGEnumerationStringEntries&
-GetStaticStringEntries<CompositeOperationType>();
+DECLARE_SVG_ENUM_MAP(CompositeOperationType);
 
 class SVGFECompositeElement final
     : public SVGFilterPrimitiveStandardAttributes {

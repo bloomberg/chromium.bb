@@ -56,6 +56,7 @@ scoped_refptr<ws::ContextProviderCommandBuffer> CreateContextProviderImpl(
     bool support_gles2_interface,
     bool support_raster_interface,
     bool support_grcontext,
+    bool support_oop_rasterization,
     ws::command_buffer_metrics::ContextType type) {
   constexpr bool kAutomaticFlushes = false;
 
@@ -70,6 +71,7 @@ scoped_refptr<ws::ContextProviderCommandBuffer> CreateContextProviderImpl(
   attributes.buffer_preserved = false;
   attributes.enable_gles2_interface = support_gles2_interface;
   attributes.enable_raster_interface = support_raster_interface;
+  attributes.enable_oop_rasterization = support_oop_rasterization;
 
   gpu::SharedMemoryLimits memory_limits =
       gpu::SharedMemoryLimits::ForDisplayCompositor();
@@ -248,11 +250,6 @@ void VizProcessTransportFactory::RemoveCompositor(ui::Compositor* compositor) {
   UnconfigureCompositor(compositor);
 }
 
-double VizProcessTransportFactory::GetRefreshRate() const {
-  // TODO(kylechar): Delete this function from ContextFactoryPrivate.
-  return 60.0;
-}
-
 gpu::GpuMemoryBufferManager*
 VizProcessTransportFactory::GetGpuMemoryBufferManager() {
   return gpu_channel_establish_factory_->GetGpuMemoryBufferManager();
@@ -403,10 +400,10 @@ VizProcessTransportFactory::TryCreateContextsForGpuCompositing(
   if (!gpu_channel_host)
     return gpu::ContextResult::kFatalFailure;
 
+  const auto& gpu_feature_info = gpu_channel_host->gpu_feature_info();
   // Fallback to software compositing if GPU compositing is blacklisted.
   auto gpu_compositing_status =
-      gpu_channel_host->gpu_feature_info()
-          .status_values[gpu::GPU_FEATURE_TYPE_GPU_COMPOSITING];
+      gpu_feature_info.status_values[gpu::GPU_FEATURE_TYPE_GPU_COMPOSITING];
   if (gpu_compositing_status != gpu::kGpuFeatureStatusEnabled)
     return gpu::ContextResult::kFatalFailure;
 
@@ -414,19 +411,24 @@ VizProcessTransportFactory::TryCreateContextsForGpuCompositing(
       IsWorkerContextLost(worker_context_provider_.get()))
     worker_context_provider_.reset();
 
+  bool enable_oop_rasterization =
+      gpu_feature_info.status_values[gpu::GPU_FEATURE_TYPE_OOP_RASTERIZATION] ==
+      gpu::kGpuFeatureStatusEnabled;
+
   if (!worker_context_provider_) {
     constexpr bool kSharedWorkerContextSupportsLocking = true;
     constexpr bool kSharedWorkerContextSupportsRaster = true;
     const bool kSharedWorkerContextSupportsGLES2 =
-        features::IsUiGpuRasterizationEnabled();
+        features::IsUiGpuRasterizationEnabled() && !enable_oop_rasterization;
     const bool kSharedWorkerContextSupportsGrContext =
-        features::IsUiGpuRasterizationEnabled();
+        features::IsUiGpuRasterizationEnabled() && !enable_oop_rasterization;
+    const bool kSharedWorkerContextSupportsOOPR = enable_oop_rasterization;
 
     worker_context_provider_ = CreateContextProviderImpl(
         gpu_channel_host, GetGpuMemoryBufferManager(),
         kSharedWorkerContextSupportsLocking, kSharedWorkerContextSupportsGLES2,
         kSharedWorkerContextSupportsRaster,
-        kSharedWorkerContextSupportsGrContext,
+        kSharedWorkerContextSupportsGrContext, kSharedWorkerContextSupportsOOPR,
         ws::command_buffer_metrics::ContextType::BROWSER_WORKER);
 
     // Don't observer context loss on |worker_context_provider_| here, that is
@@ -449,11 +451,13 @@ VizProcessTransportFactory::TryCreateContextsForGpuCompositing(
     constexpr bool kCompositorContextSupportsGLES2 = true;
     constexpr bool kCompositorContextSupportsRaster = false;
     constexpr bool kCompositorContextSupportsGrContext = true;
+    constexpr bool kCompositorContextSupportsOOPR = false;
 
     main_context_provider_ = CreateContextProviderImpl(
         std::move(gpu_channel_host), GetGpuMemoryBufferManager(),
         kCompositorContextSupportsLocking, kCompositorContextSupportsGLES2,
         kCompositorContextSupportsRaster, kCompositorContextSupportsGrContext,
+        kCompositorContextSupportsOOPR,
         ws::command_buffer_metrics::ContextType::BROWSER_MAIN_THREAD);
     main_context_provider_->SetDefaultTaskRunner(resize_task_runner());
 

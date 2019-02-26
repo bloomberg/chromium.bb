@@ -27,8 +27,6 @@ namespace ash {
 // Returns true if |window| can cover available workspace.
 bool CanCoverAvailableWorkspace(aura::Window* window);
 
-bool IsOverviewSwipeToCloseEnabled();
-
 // Fades |widget| to opacity one with the enter overview settings. Additionally
 // place |widget| closer to the top of screen and slide it down if |slide| is
 // true.

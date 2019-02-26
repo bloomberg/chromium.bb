@@ -215,6 +215,19 @@
       ],
     },
     {
+      'target_name': 'system_api-metrics_event-goprotos-gen',
+      'type': 'none',
+      'variables': {
+        'gen_go': 1,
+        'proto_in_dir': 'dbus/metrics_event',
+        'proto_out_dir': 'go/src/chromiumos/system_api/metrics_event_proto',
+      },
+      'sources': [
+        '<(proto_in_dir)/metrics_event.proto',
+      ],
+      'includes': ['../common-mk/protoc.gypi'],
+    },
+    {
       'target_name': 'system_api-smbprovider-protos-gen',
       'type': 'none',
       'variables': {
@@ -379,6 +392,29 @@
       ],
     },
     {
+      'target_name': 'system_api-runtime_probe-protos-gen',
+      'type': 'none',
+      'variables': {
+        'proto_in_dir': 'dbus/runtime_probe',
+        'proto_out_dir': 'include/runtime_probe/proto_bindings',
+      },
+      'sources': [
+        '<(proto_in_dir)/runtime_probe.proto',
+      ],
+      'includes': ['../common-mk/protoc.gypi'],
+    },
+    {
+      'target_name': 'system_api-runtime_probe-protos',
+      'type': 'static_library',
+      'standalone_static_library': 1,
+      'dependencies': [
+        'system_api-runtime_probe-protos-gen',
+      ],
+      'sources': [
+        '<(SHARED_INTERMEDIATE_DIR)/include/runtime_probe/proto_bindings/runtime_probe.pb.cc',
+      ],
+    },
+    {
       'target_name': 'system_api-update_engine-protos-gen',
       'type': 'none',
       'variables': {
@@ -422,6 +458,29 @@
       ],
       'sources': [
         '<(SHARED_INTERMEDIATE_DIR)/include/bootlockbox/proto_bindings/boot_lockbox_rpc.pb.cc',
+      ],
+    },
+    {
+      'target_name': 'system_api-dlcservice-protos-gen',
+      'type': 'none',
+      'variables': {
+        'proto_in_dir': 'dbus/dlcservice',
+        'proto_out_dir': 'include/dlcservice/proto_bindings',
+      },
+      'sources': [
+        '<(proto_in_dir)/dlcservice.proto',
+      ],
+      'includes': ['../common-mk/protoc.gypi'],
+    },
+    {
+      'target_name': 'system_api-dlcservice-protos',
+      'type': 'static_library',
+      'standalone_static_library': 1,
+      'dependencies': [
+        'system_api-dlcservice-protos-gen',
+      ],
+      'sources': [
+        '<(SHARED_INTERMEDIATE_DIR)/include/dlcservice/proto_bindings/dlcservice.pb.cc',
       ],
     },
   ],

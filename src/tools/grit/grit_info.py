@@ -171,10 +171,6 @@ def DoMain(argv):
 
 
 def main(argv):
-  if sys.version_info < (2, 6):
-    print "GRIT requires Python 2.6 or later."
-    return 1
-
   try:
     result = DoMain(argv[1:])
   except WrongNumberOfArguments, e:

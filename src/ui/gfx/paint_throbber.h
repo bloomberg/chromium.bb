@@ -15,6 +15,7 @@ namespace gfx {
 
 class Canvas;
 class Rect;
+class RectF;
 
 // This struct describes the "waiting" mode of a throb animation. It's useful
 // for building a "spinning" state animation on top of a previous "waiting"
@@ -50,15 +51,16 @@ GFX_EXPORT void PaintThrobberSpinningAfterWaiting(
     const base::TimeDelta& elapsed_time,
     ThrobberWaitingState* waiting_state);
 
-// Paint a throbber in the "spinning" state, smoothly transitioning from a
-// previous "waiting" state described by |final_waiting_frame|.
-GFX_EXPORT void PaintThrobberSpinningForFrameAfterWaiting(
-    Canvas* canvas,
-    const Rect& bounds,
-    SkColor color,
-    uint32_t frame,
-    SkColor waiting_color,
-    uint32_t final_waiting_frame);
+// Paints a throbber in the "waiting" state (bouncing back and forth). Used when
+// waiting on a network response, for example.
+GFX_EXPORT void PaintNewThrobberWaiting(Canvas* canvas,
+                                        const RectF& throbber_container_bounds,
+                                        SkColor color,
+                                        const base::TimeDelta& elapsed_time);
+
+// Cycle time for the throbber above. Used to be able to smoothly transition
+// between the throbber and the determinite progress-bar animation.
+constexpr int kNewThrobberWaitingAnimationCycleMs = 1000;
 
 }  // namespace gfx
 

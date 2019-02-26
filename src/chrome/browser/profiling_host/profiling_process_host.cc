@@ -12,8 +12,9 @@
 #include "base/callback_helpers.h"
 #include "base/files/file_util.h"
 #include "base/memory/ref_counted_memory.h"
+#include "base/metrics/field_trial_params.h"
 #include "base/metrics/histogram_macros.h"
-#include "base/sys_info.h"
+#include "base/system/sys_info.h"
 #include "base/task/post_task.h"
 #include "base/trace_event/trace_log.h"
 #include "base/values.h"
@@ -43,6 +44,7 @@ const char kConfigModeKey[] = "mode";
 const char kConfigScenarioName[] = "scenario_name";
 const char kConfigCategoryKey[] = "category";
 const char kConfigCategoryMemlog[] = "MEMLOG";
+const char kOOPHeapProfilingUploadUrl[] = "upload_url";
 
 void OnTraceUploadComplete(TraceCrashServiceUploader* uploader,
                            bool success,
@@ -59,7 +61,8 @@ void OnTraceUploadComplete(TraceCrashServiceUploader* uploader,
   LOG(WARNING) << "slow-reports sent: '" << feedback << '"';
 }
 
-void UploadTraceToCrashServer(std::string file_contents,
+void UploadTraceToCrashServer(std::string upload_url,
+                              std::string file_contents,
                               std::string trigger_name,
                               uint32_t sampling_rate) {
   // Traces has been observed as small as 4k. Seems likely to be a bug. To
@@ -89,6 +92,8 @@ void UploadTraceToCrashServer(std::string file_contents,
 
   TraceCrashServiceUploader* uploader = new TraceCrashServiceUploader(
       g_browser_process->shared_url_loader_factory());
+  if (!upload_url.empty())
+    uploader->SetUploadURL(upload_url);
 
   uploader->DoUpload(file_contents, content::TraceUploader::COMPRESSED_UPLOAD,
                      std::move(metadata),
@@ -98,7 +103,12 @@ void UploadTraceToCrashServer(std::string file_contents,
 
 }  // namespace
 
-ProfilingProcessHost::ProfilingProcessHost() : background_triggers_(this) {}
+ProfilingProcessHost::ProfilingProcessHost() : background_triggers_(this) {
+  const std::string upload_url = base::GetFieldTrialParamValueByFeature(
+      kOOPHeapProfilingFeature, kOOPHeapProfilingUploadUrl);
+  if (GURL(upload_url).is_valid())
+    upload_url_ = upload_url;
+}
 
 ProfilingProcessHost::~ProfilingProcessHost() = default;
 
@@ -153,16 +163,16 @@ void ProfilingProcessHost::RequestProcessReport(std::string trigger_name) {
   // It's safe to pass a raw pointer for ProfilingProcessHost because it's a
   // singleton that's never destroyed.
   auto finish_report_callback = base::BindOnce(
-      [](ProfilingProcessHost* host, std::string trigger_name,
+      [](std::string upload_url, std::string trigger_name,
          uint32_t sampling_rate, bool success, std::string trace) {
         UMA_HISTOGRAM_BOOLEAN("OutOfProcessHeapProfiling.RecordTrace.Success",
                               success);
         if (success) {
-          UploadTraceToCrashServer(std::move(trace), std::move(trigger_name),
-                                   sampling_rate);
+          UploadTraceToCrashServer(std::move(upload_url), std::move(trace),
+                                   std::move(trigger_name), sampling_rate);
         }
       },
-      base::Unretained(this), std::move(trigger_name),
+      upload_url_, std::move(trigger_name),
       Supervisor::GetInstance()->GetSamplingRate());
   Supervisor::GetInstance()->RequestTraceWithHeapDump(
       std::move(finish_report_callback), true /* anonymize */);

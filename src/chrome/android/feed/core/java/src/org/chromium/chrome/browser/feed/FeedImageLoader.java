@@ -17,9 +17,14 @@ import com.google.android.libraries.feed.common.functional.Consumer;
 import com.google.android.libraries.feed.host.imageloader.BundledAssets;
 import com.google.android.libraries.feed.host.imageloader.ImageLoaderApi;
 
+import org.chromium.base.Callback;
+import org.chromium.base.DiscardableReferencePool;
+import org.chromium.base.SysUtils;
 import org.chromium.base.ThreadUtils;
+import org.chromium.base.VisibleForTesting;
 import org.chromium.chrome.R;
-import org.chromium.chrome.browser.profiles.Profile;
+import org.chromium.chrome.browser.cached_image_fetcher.CachedImageFetcher;
+import org.chromium.chrome.browser.cached_image_fetcher.InMemoryCachedImageFetcher;
 import org.chromium.chrome.browser.suggestions.ThumbnailGradient;
 
 import java.util.Iterator;
@@ -37,45 +42,32 @@ public class FeedImageLoader implements ImageLoaderApi {
     private static final String OVERLAY_IMAGE_DIRECTION_START = "start";
     private static final String OVERLAY_IMAGE_DIRECTION_END = "end";
 
-    private FeedImageLoaderBridge mFeedImageLoaderBridge;
     private Context mActivityContext;
+    private CachedImageFetcher mCachedImageFetcher;
 
     /**
      * Creates a FeedImageLoader for fetching image for the current user.
      *
-     * @param profile Profile of the user we are rendering the Feed for.
      * @param activityContext Context of the user we are rendering the Feed for.
      */
-    public FeedImageLoader(Profile profile, Context activityContext) {
-        this(profile, activityContext, new FeedImageLoaderBridge());
-    }
-
-    /**
-     * Creates a FeedImageLoader for fetching image for the current user.
-     *
-     * @param profile Profile of the user we are rendering the Feed for.
-     * @param activityContext Context of the user we are rendering the Feed for.
-     * @param bridge The FeedImageLoaderBridge implementation can handle fetching image request.
-     */
-    public FeedImageLoader(Profile profile, Context activityContext, FeedImageLoaderBridge bridge) {
-        mFeedImageLoaderBridge = bridge;
-        mFeedImageLoaderBridge.init(profile);
+    public FeedImageLoader(Context activityContext, DiscardableReferencePool referencePool) {
         mActivityContext = activityContext;
+        if (SysUtils.isLowEndDevice()) {
+            mCachedImageFetcher = CachedImageFetcher.getInstance();
+        } else {
+            mCachedImageFetcher = new InMemoryCachedImageFetcher(referencePool);
+        }
     }
 
-    // TODO(gangwu): Handle widthPx and heightPx.
+    public void destroy() {
+        mCachedImageFetcher.destroy();
+        mCachedImageFetcher = null;
+    }
+
     @Override
     public void loadDrawable(
             List<String> urls, int widthPx, int heightPx, Consumer<Drawable> consumer) {
-        assert mFeedImageLoaderBridge != null;
         loadDrawableWithIter(urls.iterator(), widthPx, heightPx, consumer);
-    }
-
-    /** Cleans up FeedImageLoaderBridge. */
-    public void destroy() {
-        assert mFeedImageLoaderBridge != null;
-        mFeedImageLoaderBridge.destroy();
-        mFeedImageLoaderBridge = null;
     }
 
     /**
@@ -91,8 +83,7 @@ public class FeedImageLoader implements ImageLoaderApi {
      */
     private void loadDrawableWithIter(
             Iterator<String> urlsIter, int widthPx, int heightPx, Consumer<Drawable> consumer) {
-        assert mFeedImageLoaderBridge != null;
-        if (!urlsIter.hasNext()) {
+        if (!urlsIter.hasNext() || mCachedImageFetcher == null) {
             // Post to ensure callback is not run synchronously.
             ThreadUtils.postOnUiThread(() -> consumer.accept(null));
             return;
@@ -112,7 +103,7 @@ public class FeedImageLoader implements ImageLoaderApi {
             int direction = overlayDirection(uri);
             String sourceUrl = uri.getQueryParameter(OVERLAY_IMAGE_URL_PARAM);
             assert !TextUtils.isEmpty(sourceUrl) : "Overlay image source URL empty";
-            mFeedImageLoaderBridge.fetchImage(sourceUrl, widthPx, heightPx, (Bitmap bitmap) -> {
+            fetchImage(sourceUrl, widthPx, heightPx, (Bitmap bitmap) -> {
                 if (bitmap == null) {
                     loadDrawableWithIter(urlsIter, widthPx, heightPx, consumer);
                 } else {
@@ -121,7 +112,7 @@ public class FeedImageLoader implements ImageLoaderApi {
                 }
             });
         } else {
-            mFeedImageLoaderBridge.fetchImage(url, widthPx, heightPx, (Bitmap bitmap) -> {
+            fetchImage(url, widthPx, heightPx, (Bitmap bitmap) -> {
                 if (bitmap == null) {
                     loadDrawableWithIter(urlsIter, widthPx, heightPx, consumer);
                 } else {
@@ -143,6 +134,9 @@ public class FeedImageLoader implements ImageLoaderApi {
     }
 
     /**
+     * Translate {@Link BundledAssets} to android drawable resource. This method only translate
+     * resource name defined in {@Link BundledAssets}.
+     *
      * @param resourceName The name of the drawable asset.
      * @return The id of the drawable asset. May be 0 if it could not be found.
      */
@@ -152,10 +146,9 @@ public class FeedImageLoader implements ImageLoaderApi {
                 return R.drawable.offline_pin_round;
             case BundledAssets.VIDEO_INDICATOR_BADGE:
                 return R.drawable.ic_play_circle_filled_grey;
-            default:
-                return mActivityContext.getResources().getIdentifier(
-                        resourceName, DRAWABLE_RESOURCE_TYPE, mActivityContext.getPackageName());
         }
+
+        return 0;
     }
 
     /**
@@ -171,5 +164,16 @@ public class FeedImageLoader implements ImageLoaderApi {
         return TextUtils.equals(direction, OVERLAY_IMAGE_DIRECTION_START)
                 ? ThumbnailGradient.ThumbnailLocation.START
                 : ThumbnailGradient.ThumbnailLocation.END;
+    }
+
+    @VisibleForTesting
+    protected void fetchImage(String url, int width, int height, Callback<Bitmap> callback) {
+        mCachedImageFetcher.fetchImage(url, width, height, callback);
+    }
+
+    @VisibleForTesting
+    FeedImageLoader(Context activityContext, CachedImageFetcher cachedImageFetcher) {
+        mActivityContext = activityContext;
+        mCachedImageFetcher = cachedImageFetcher;
     }
 }

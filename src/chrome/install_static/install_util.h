@@ -109,8 +109,10 @@ const wchar_t* GetAppGuid();
 // the Windows OS.
 const CLSID& GetToastActivatorClsid();
 
-// Return the Elevation Service CLSID, Name, and Display Name respectively.
+// Returns the Elevation Service CLSID, IID, Name, and Display Name
+// respectively.
 const CLSID& GetElevatorClsid();
+const IID& GetElevatorIid();
 std::wstring GetElevationServiceName();
 std::wstring GetElevationServiceDisplayName();
 

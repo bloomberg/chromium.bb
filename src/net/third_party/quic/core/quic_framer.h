@@ -12,6 +12,7 @@
 #include "base/macros.h"
 #include "net/third_party/quic/core/crypto/quic_decrypter.h"
 #include "net/third_party/quic/core/crypto/quic_encrypter.h"
+#include "net/third_party/quic/core/crypto/quic_random.h"
 #include "net/third_party/quic/core/quic_packets.h"
 #include "net/third_party/quic/platform/api/quic_endian.h"
 #include "net/third_party/quic/platform/api/quic_export.h"
@@ -76,8 +77,8 @@ class QUIC_EXPORT_PRIVATE QuicFramerVisitorInterface {
   // |quic_version_|. The visitor should return true after it updates the
   // version of the |framer_| to |received_version| or false to stop processing
   // this packet.
-  virtual bool OnProtocolVersionMismatch(
-      ParsedQuicVersion received_version) = 0;
+  virtual bool OnProtocolVersionMismatch(ParsedQuicVersion received_version,
+                                         PacketHeaderFormat form) = 0;
 
   // Called when a new packet has been received, before it
   // has been validated or processed.
@@ -173,6 +174,10 @@ class QUIC_EXPORT_PRIVATE QuicFramerVisitorInterface {
   // Called when a NewConnectionIdFrame has been parsed.
   virtual bool OnNewConnectionIdFrame(
       const QuicNewConnectionIdFrame& frame) = 0;
+
+  // Called when a RetireConnectionIdFrame has been parsed.
+  virtual bool OnRetireConnectionIdFrame(
+      const QuicRetireConnectionIdFrame& frame) = 0;
 
   // Called when a NewTokenFrame has been parsed.
   virtual bool OnNewTokenFrame(const QuicNewTokenFrame& frame) = 0;
@@ -318,6 +323,10 @@ class QUIC_EXPORT_PRIVATE QuicFramer {
   static size_t GetNewConnectionIdFrameSize(
       const QuicNewConnectionIdFrame& frame);
 
+  // Size in bytes for a serialized retire connection id frame
+  static size_t GetRetireConnectionIdFrameSize(
+      const QuicRetireConnectionIdFrame& frame);
+
   // Size in bytes for a serialized new token frame
   static size_t GetNewTokenFrameSize(const QuicNewTokenFrame& frame);
 
@@ -364,6 +373,24 @@ class QUIC_EXPORT_PRIVATE QuicFramer {
   size_t BuildConnectivityProbingPacket(const QuicPacketHeader& header,
                                         char* buffer,
                                         size_t packet_length);
+
+  // Serialize a probing packet that uses IETF QUIC's PATH CHALLENGE frame. Also
+  // fills the packet with padding.
+  size_t BuildPaddedPathChallengePacket(const QuicPacketHeader& header,
+                                        char* buffer,
+                                        size_t packet_length,
+                                        QuicPathFrameBuffer* payload,
+                                        QuicRandom* randomizer);
+
+  // Serialize a probing response packet that uses IETF QUIC's PATH RESPONSE
+  // frame. Also fills the packet with padding if |is_padded| is
+  // true. |payloads| is always emptied, even if the packet can not be
+  // successfully built.
+  size_t BuildPathResponsePacket(const QuicPacketHeader& header,
+                                 char* buffer,
+                                 size_t packet_length,
+                                 const QuicDeque<QuicPathFrameBuffer>& payloads,
+                                 const bool is_padded);
 
   // Returns a new public reset packet.
   static std::unique_ptr<QuicEncryptedPacket> BuildPublicResetPacket(
@@ -472,6 +499,9 @@ class QUIC_EXPORT_PRIVATE QuicFramer {
   bool IsIetfStatelessResetPacket(const QuicPacketHeader& header) const;
 
   // Returns header wire format of last received packet.
+  // Please do not use this method.
+  // TODO(fayang): Remove last_header_form_ when deprecating
+  // quic_reloadable_flag_quic_proxy_use_real_packet_format_when_reject.
   PacketHeaderFormat GetLastPacketFormat() const;
 
   void set_validate_flags(bool value) { validate_flags_ = value; }
@@ -480,7 +510,9 @@ class QUIC_EXPORT_PRIVATE QuicFramer {
 
   QuicVersionLabel last_version_label() const { return last_version_label_; }
 
-  bool last_packet_is_ietf_quic() const { return last_packet_is_ietf_quic_; }
+  void set_last_packet_form(PacketHeaderFormat form) {
+    last_header_form_ = form;
+  }
 
   void set_data_producer(QuicStreamFrameDataProducer* data_producer) {
     data_producer_ = data_producer;
@@ -494,6 +526,8 @@ class QUIC_EXPORT_PRIVATE QuicFramer {
   bool is_ietf_format() {
     return version_.transport_version == QUIC_VERSION_99;
   }
+
+  QuicTime creation_time() const { return creation_time_; }
 
  private:
   friend class test::QuicFramerPeer;
@@ -537,7 +571,9 @@ class QUIC_EXPORT_PRIVATE QuicFramer {
   bool ProcessVersionNegotiationPacket(QuicDataReader* reader,
                                        const QuicPacketHeader& header);
 
-  bool ProcessPublicHeader(QuicDataReader* reader, QuicPacketHeader* header);
+  bool ProcessPublicHeader(QuicDataReader* reader,
+                           bool last_packet_is_ietf_quic,
+                           QuicPacketHeader* header);
 
   // Processes the unauthenticated portion of the header into |header| from
   // the current QuicDataReader.  Returns true on success, false on failure.
@@ -565,7 +601,9 @@ class QUIC_EXPORT_PRIVATE QuicFramer {
   bool ProcessTimestampsInAckFrame(uint8_t num_received_packets,
                                    QuicPacketNumber largest_acked,
                                    QuicDataReader* reader);
-  bool ProcessIetfAckFrame(QuicDataReader* reader, QuicAckFrame* ack_frame);
+  bool ProcessIetfAckFrame(QuicDataReader* reader,
+                           uint64_t frame_type,
+                           QuicAckFrame* ack_frame);
   bool ProcessStopWaitingFrame(QuicDataReader* reader,
                                const QuicPacketHeader& header,
                                QuicStopWaitingFrame* stop_waiting);
@@ -657,17 +695,11 @@ class QUIC_EXPORT_PRIVATE QuicFramer {
   // Append IETF format ACK frame.
   //
   // AppendIetfAckFrameAndTypeByte adds the IETF type byte and the body
-  // of the frame (by calling AppendIetfAckFrame).
-  //
-  // AppendIetfAckFrameAndTypeByte adds just the frame - kept separate so
-  // that the Google QUIC  AppendAckFrameAndTypeByte method can insert
-  // the Google QUIC type-byte and the IETF format frame.
+  // of the frame.
   bool AppendIetfAckFrameAndTypeByte(const QuicAckFrame& frame,
                                      QuicDataWriter* writer);
-  // Appends just the frame, not the type byte.
-  bool AppendIetfAckFrame(const QuicAckFrame& frame, QuicDataWriter* writer);
 
-  // Used by AppendIetfAckFrame to figure out how many ack
+  // Used by AppendIetfAckFrameAndTypeByte to figure out how many ack
   // blocks can be included.
   int CalculateIetfAckBlockCount(const QuicAckFrame& frame,
                                  QuicDataWriter* writer,
@@ -757,6 +789,10 @@ class QUIC_EXPORT_PRIVATE QuicFramer {
                                   QuicDataWriter* writer);
   bool ProcessNewConnectionIdFrame(QuicDataReader* reader,
                                    QuicNewConnectionIdFrame* frame);
+  bool AppendRetireConnectionIdFrame(const QuicRetireConnectionIdFrame& frame,
+                                     QuicDataWriter* writer);
+  bool ProcessRetireConnectionIdFrame(QuicDataReader* reader,
+                                      QuicRetireConnectionIdFrame* frame);
 
   bool AppendNewTokenFrame(const QuicNewTokenFrame& frame,
                            QuicDataWriter* writer);
@@ -765,7 +801,8 @@ class QUIC_EXPORT_PRIVATE QuicFramer {
   bool RaiseError(QuicErrorCode error);
 
   // Returns true if |header| indicates a version negotiation packet.
-  bool IsVersionNegotiation(const QuicPacketHeader& header) const;
+  bool IsVersionNegotiation(const QuicPacketHeader& header,
+                            bool last_packet_is_ietf_quic) const;
 
   // Calculates and returns type byte of stream frame.
   uint8_t GetStreamFrameTypeByte(const QuicStreamFrame& frame,
@@ -786,11 +823,9 @@ class QUIC_EXPORT_PRIVATE QuicFramer {
   QuicConnectionId last_serialized_connection_id_;
   // The last QUIC version label received.
   QuicVersionLabel last_version_label_;
-  // Whether last received packet is IETF QUIC packet.
-  bool last_packet_is_ietf_quic_;
-  // Whether last received IETF QUIC packet has long or short header. Only used
-  // when last_packet_is_ietf_quic_ is true.
-  QuicIetfPacketHeaderForm last_header_form_;
+  // Format of last received packet header, whether it is Google QUIC, IETF long
+  // header packet or IETF short header packet.
+  PacketHeaderFormat last_header_form_;
   // Version of the protocol being used.
   ParsedQuicVersion version_;
   // This vector contains QUIC versions which we currently support.

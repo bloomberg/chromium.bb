@@ -8,6 +8,7 @@
 #include "components/data_reduction_proxy/core/common/data_reduction_proxy_headers.h"
 #include "services/network/public/cpp/resource_response.h"
 #include "services/network/public/cpp/url_loader_completion_status.h"
+#include "url/gurl.h"
 
 namespace page_load_metrics {
 
@@ -20,22 +21,25 @@ PageResourceDataUse::PageResourceDataUse()
       is_canceled_(false),
       reported_as_ad_resource_(false),
       is_main_frame_resource_(false),
-      was_fetched_via_cache_(false) {}
+      was_fetched_via_cache_(false),
+      is_secure_scheme_(false),
+      proxy_used_(false) {}
 
 PageResourceDataUse::PageResourceDataUse(const PageResourceDataUse& other) =
     default;
 PageResourceDataUse::~PageResourceDataUse() = default;
 
 void PageResourceDataUse::DidStartResponse(
+    const GURL& response_url,
     int resource_id,
     const network::ResourceResponseHead& response_head) {
   resource_id_ = resource_id;
   data_reduction_proxy_compression_ratio_estimate_ =
       data_reduction_proxy::EstimateCompressionRatioFromHeaders(&response_head);
+  proxy_used_ = !response_head.proxy_server.is_direct();
   mime_type_ = response_head.mime_type;
-  total_received_bytes_ = 0;
-  last_update_bytes_ = 0;
   was_fetched_via_cache_ = response_head.was_fetched_via_cache;
+  is_secure_scheme_ = response_url.SchemeIsCryptographic();
 }
 
 void PageResourceDataUse::DidReceiveTransferSizeUpdate(
@@ -76,7 +80,7 @@ void PageResourceDataUse::SetIsMainFrameResource(bool is_main_frame_resource) {
 int PageResourceDataUse::CalculateNewlyReceivedBytes() {
   int newly_received_bytes = total_received_bytes_ - last_update_bytes_;
   last_update_bytes_ = total_received_bytes_;
-  DCHECK(newly_received_bytes >= 0);
+  DCHECK_GE(newly_received_bytes, 0);
   return newly_received_bytes;
 }
 
@@ -94,6 +98,8 @@ mojom::ResourceDataUpdatePtr PageResourceDataUse::GetResourceDataUpdate() {
   resource_data_update->mime_type = mime_type_;
   resource_data_update->encoded_body_length = encoded_body_length_;
   resource_data_update->was_fetched_via_cache = was_fetched_via_cache_;
+  resource_data_update->is_secure_scheme = is_secure_scheme_;
+  resource_data_update->proxy_used = proxy_used_;
   return resource_data_update;
 }
 }  // namespace page_load_metrics

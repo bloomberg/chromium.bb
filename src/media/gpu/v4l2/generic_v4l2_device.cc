@@ -26,6 +26,7 @@
 #include "build/build_config.h"
 #include "media/base/video_types.h"
 #include "media/gpu/buildflags.h"
+#include "media/gpu/macros.h"
 #include "media/gpu/v4l2/generic_v4l2_device.h"
 #include "ui/gfx/native_pixmap.h"
 #include "ui/gl/egl_util.h"
@@ -46,10 +47,6 @@ using media_gpu_v4l2::StubPathMap;
 static const base::FilePath::CharType kV4l2Lib[] =
     FILE_PATH_LITERAL("/usr/lib/libv4l2.so");
 #endif
-
-#define DVLOGF(level) DVLOG(level) << __func__ << "(): "
-#define VLOGF(level) VLOG(level) << __func__ << "(): "
-#define VPLOGF(level) VPLOG(level) << __func__ << "(): "
 
 namespace media {
 
@@ -466,6 +463,11 @@ bool GenericV4L2Device::IsJpegDecodingSupported() {
   return !devices.empty();
 }
 
+bool GenericV4L2Device::IsJpegEncodingSupported() {
+  const auto& devices = GetDevicesForType(Type::kJpegEncoder);
+  return !devices.empty();
+}
+
 bool GenericV4L2Device::OpenDevicePath(const std::string& path, Type type) {
   DCHECK(!device_fd_.is_valid());
 
@@ -511,6 +513,7 @@ void GenericV4L2Device::EnumerateDevicesForType(Type type) {
   static const std::string kEncoderDevicePattern = "/dev/video-enc";
   static const std::string kImageProcessorDevicePattern = "/dev/image-proc";
   static const std::string kJpegDecoderDevicePattern = "/dev/jpeg-dec";
+  static const std::string kJpegEncoderDevicePattern = "/dev/jpeg-enc";
 
   std::string device_pattern;
   v4l2_buf_type buf_type;
@@ -530,6 +533,10 @@ void GenericV4L2Device::EnumerateDevicesForType(Type type) {
     case Type::kJpegDecoder:
       device_pattern = kJpegDecoderDevicePattern;
       buf_type = V4L2_BUF_TYPE_VIDEO_OUTPUT_MPLANE;
+      break;
+    case Type::kJpegEncoder:
+      device_pattern = kJpegEncoderDevicePattern;
+      buf_type = V4L2_BUF_TYPE_VIDEO_CAPTURE_MPLANE;
       break;
   }
 

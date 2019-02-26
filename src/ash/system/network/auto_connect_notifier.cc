@@ -5,6 +5,7 @@
 #include "ash/system/network/auto_connect_notifier.h"
 
 #include "ash/public/cpp/network_icon_image_source.h"
+#include "ash/public/cpp/notification_utils.h"
 #include "ash/strings/grit/ash_strings.h"
 #include "base/logging.h"
 #include "base/strings/string16.h"
@@ -125,16 +126,15 @@ void AutoConnectNotifier::OnAutoConnectedInitiated(int auto_connect_reasons) {
 }
 
 void AutoConnectNotifier::DisplayNotification() {
-  auto notification = message_center::Notification::CreateSystemNotification(
+  auto notification = ash::CreateSystemNotification(
       message_center::NotificationType::NOTIFICATION_TYPE_SIMPLE,
       kAutoConnectNotificationId,
       l10n_util::GetStringUTF16(IDS_ASH_NETWORK_AUTOCONNECT_NOTIFICATION_TITLE),
       l10n_util::GetStringUTF16(
           IDS_ASH_NETWORK_AUTOCONNECT_NOTIFICATION_MESSAGE),
       base::string16() /* display_source */, GURL() /* origin_url */,
-      message_center::NotifierId(
-          message_center::NotifierId::NotifierType::SYSTEM_COMPONENT,
-          kNotifierAutoConnect),
+      message_center::NotifierId(message_center::NotifierType::SYSTEM_COMPONENT,
+                                 kNotifierAutoConnect),
       {} /* optional_fields */,
       base::MakeRefCounted<message_center::NotificationDelegate>(),
       gfx::VectorIcon() /* small_image */,

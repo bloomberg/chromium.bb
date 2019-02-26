@@ -72,6 +72,7 @@
       }
     },
     "HKEY_LOCAL_MACHINE\\Software\\Classes\\CLSID\\$CHROME_ELEVATOR_CLSID": {
+      "condition": "'$CHROME_SHORT_NAME' == 'Chrome'",
       "exists": "required",
       "values": {
         "AppID": {
@@ -81,6 +82,7 @@
       }
     },
     "HKEY_LOCAL_MACHINE\\Software\\Classes\\AppID\\$CHROME_ELEVATOR_CLSID": {
+      "condition": "'$CHROME_SHORT_NAME' == 'Chrome'",
       "exists": "required",
       "values": {
         "LocalService": {
@@ -89,7 +91,56 @@
         }
       }
     },
+    "HKEY_LOCAL_MACHINE\\Software\\Classes\\Interface\\$CHROME_ELEVATOR_IID": {
+      "condition": "'$CHROME_SHORT_NAME' == 'Chrome'",
+      "exists": "required"
+    },
+      "HKEY_LOCAL_MACHINE\\Software\\Classes\\Interface\\$CHROME_ELEVATOR_IID\\ProxyStubClsid32": {
+        "condition": "'$CHROME_SHORT_NAME' == 'Chrome'",
+        "exists": "required",
+        "values": {
+          "type": "SZ",
+          "data": "{00020424-0000-0000-C000-000000000046}"
+        }
+      },
+      "HKEY_LOCAL_MACHINE\\Software\\Classes\\Interface\\$CHROME_ELEVATOR_IID\\TypeLib": {
+        "condition": "'$CHROME_SHORT_NAME' == 'Chrome'",
+        "exists": "required",
+        "values": {
+          "type": "SZ",
+          "data": "$CHROME_ELEVATOR_IID"
+        }
+      },
+    "HKEY_LOCAL_MACHINE\\Software\\Classes\\TypeLib\\$CHROME_ELEVATOR_IID": {
+      "condition": "'$CHROME_SHORT_NAME' == 'Chrome'",
+      "exists": "required"
+    },
+      "HKEY_LOCAL_MACHINE\\Software\\Classes\\TypeLib\\$CHROME_ELEVATOR_IID\\1.0": {
+        "condition": "'$CHROME_SHORT_NAME' == 'Chrome'",
+        "exists": "required"
+      },
+        "HKEY_LOCAL_MACHINE\\Software\\Classes\\TypeLib\\$CHROME_ELEVATOR_IID\\1.0\\0": {
+          "condition": "'$CHROME_SHORT_NAME' == 'Chrome'",
+          "exists": "required"
+        },
+          "HKEY_LOCAL_MACHINE\\Software\\Classes\\TypeLib\\$CHROME_ELEVATOR_IID\\1.0\\0\\win32": {
+            "condition": "'$CHROME_SHORT_NAME' == 'Chrome'",
+            "exists": "required",
+            "values": {
+              "type": "SZ",
+              "data": "\"$PROGRAM_FILES\\$CHROME_DIR\\Application\\$PREVIOUS_VERSION_MINI_INSTALLER_FILE_VERSION\\elevation_service.exe\""
+            }
+          },
+          "HKEY_LOCAL_MACHINE\\Software\\Classes\\TypeLib\\$CHROME_ELEVATOR_IID\\1.0\\0\\win64": {
+            "condition": "'$CHROME_SHORT_NAME' == 'Chrome'",
+            "exists": "required",
+            "values": {
+              "type": "SZ",
+              "data": "\"$PROGRAM_FILES\\$CHROME_DIR\\Application\\$PREVIOUS_VERSION_MINI_INSTALLER_FILE_VERSION\\elevation_service.exe\""
+            }
+          },
     "HKEY_LOCAL_MACHINE\\SYSTEM\\CurrentControlSet\\Services\\$CHROME_ELEVATION_SERVICE_NAME": {
+      "condition": "'$CHROME_SHORT_NAME' == 'Chrome'",
       "exists": "required",
       "values": {
         "Type": {

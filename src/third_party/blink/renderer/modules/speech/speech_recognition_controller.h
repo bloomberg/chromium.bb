@@ -44,6 +44,7 @@ class SpeechRecognitionController final
  public:
   static const char kSupplementName[];
 
+  explicit SpeechRecognitionController(LocalFrame& frame);
   virtual ~SpeechRecognitionController();
 
   void Start(mojom::blink::SpeechRecognitionSessionRequest session_request,
@@ -60,8 +61,6 @@ class SpeechRecognitionController final
   }
 
  private:
-  explicit SpeechRecognitionController(LocalFrame& frame);
-
   mojom::blink::SpeechRecognizer& GetSpeechRecognizer();
 
   mojom::blink::SpeechRecognizerPtr speech_recognizer_;

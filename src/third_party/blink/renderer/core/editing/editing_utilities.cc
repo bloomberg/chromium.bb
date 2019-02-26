@@ -80,7 +80,7 @@
 
 namespace blink {
 
-using namespace HTMLNames;
+using namespace html_names;
 
 namespace {
 
@@ -637,22 +637,6 @@ PositionInFlatTree PreviousVisuallyDistinctCandidate(
       position);
 }
 
-VisiblePosition FirstEditableVisiblePositionAfterPositionInRoot(
-    const Position& position,
-    ContainerNode& highest_root) {
-  DCHECK(!NeedsLayoutTreeUpdate(position));
-  return CreateVisiblePosition(
-      FirstEditablePositionAfterPositionInRoot(position, highest_root));
-}
-
-VisiblePositionInFlatTree FirstEditableVisiblePositionAfterPositionInRoot(
-    const PositionInFlatTree& position,
-    ContainerNode& highest_root) {
-  DCHECK(!NeedsLayoutTreeUpdate(position));
-  return CreateVisiblePosition(
-      FirstEditablePositionAfterPositionInRoot(position, highest_root));
-}
-
 template <typename Strategy>
 PositionTemplate<Strategy> FirstEditablePositionAfterPositionInRootAlgorithm(
     const PositionTemplate<Strategy>& position,
@@ -712,22 +696,6 @@ PositionInFlatTree FirstEditablePositionAfterPositionInRoot(
     const Node& highest_root) {
   return FirstEditablePositionAfterPositionInRootAlgorithm<
       EditingInFlatTreeStrategy>(position, highest_root);
-}
-
-VisiblePosition LastEditableVisiblePositionBeforePositionInRoot(
-    const Position& position,
-    ContainerNode& highest_root) {
-  DCHECK(!NeedsLayoutTreeUpdate(position));
-  return CreateVisiblePosition(
-      LastEditablePositionBeforePositionInRoot(position, highest_root));
-}
-
-VisiblePositionInFlatTree LastEditableVisiblePositionBeforePositionInRoot(
-    const PositionInFlatTree& position,
-    ContainerNode& highest_root) {
-  DCHECK(!NeedsLayoutTreeUpdate(position));
-  return CreateVisiblePosition(
-      LastEditablePositionBeforePositionInRoot(position, highest_root));
 }
 
 template <typename Strategy>
@@ -1118,24 +1086,24 @@ Element* TableElementJustAfter(const VisiblePosition& visible_position) {
   return nullptr;
 }
 
-// Returns the visible position at the beginning of a node
-VisiblePosition VisiblePositionBeforeNode(const Node& node) {
+// Returns the position at the beginning of a node
+Position PositionBeforeNode(const Node& node) {
   DCHECK(!NeedsLayoutTreeUpdate(node));
   if (node.hasChildren())
-    return CreateVisiblePosition(FirstPositionInOrBeforeNode(node));
+    return FirstPositionInOrBeforeNode(node);
   DCHECK(node.parentNode()) << node;
   DCHECK(!node.parentNode()->IsShadowRoot()) << node.parentNode();
-  return VisiblePosition::InParentBeforeNode(node);
+  return Position::InParentBeforeNode(node);
 }
 
-// Returns the visible position at the ending of a node
-VisiblePosition VisiblePositionAfterNode(const Node& node) {
+// Returns the position at the ending of a node
+Position PositionAfterNode(const Node& node) {
   DCHECK(!NeedsLayoutTreeUpdate(node));
   if (node.hasChildren())
-    return CreateVisiblePosition(LastPositionInOrAfterNode(node));
+    return LastPositionInOrAfterNode(node);
   DCHECK(node.parentNode()) << node.parentNode();
   DCHECK(!node.parentNode()->IsShadowRoot()) << node.parentNode();
-  return VisiblePosition::InParentAfterNode(node);
+  return Position::InParentAfterNode(node);
 }
 
 bool IsHTMLListElement(const Node* n) {
@@ -1152,10 +1120,10 @@ bool IsPresentationalHTMLElement(const Node* node) {
     return false;
 
   const HTMLElement& element = ToHTMLElement(*node);
-  return element.HasTagName(uTag) || element.HasTagName(sTag) ||
-         element.HasTagName(strikeTag) || element.HasTagName(iTag) ||
-         element.HasTagName(emTag) || element.HasTagName(bTag) ||
-         element.HasTagName(strongTag);
+  return element.HasTagName(kUTag) || element.HasTagName(kSTag) ||
+         element.HasTagName(kStrikeTag) || element.HasTagName(kITag) ||
+         element.HasTagName(kEmTag) || element.HasTagName(kBTag) ||
+         element.HasTagName(kStrongTag);
 }
 
 Element* AssociatedElementOf(const Position& position) {
@@ -1314,7 +1282,7 @@ static HTMLSpanElement* CreateTabSpanElement(Document& document,
                                              Text* tab_text_node) {
   // Make the span to hold the tab.
   HTMLSpanElement* span_element = HTMLSpanElement::Create(document);
-  span_element->setAttribute(styleAttr, "white-space:pre");
+  span_element->setAttribute(kStyleAttr, "white-space:pre");
 
   // Add tab text to that span.
   if (!tab_text_node)
@@ -1405,7 +1373,7 @@ bool IsMailHTMLBlockquoteElement(const Node* node) {
     return false;
 
   const HTMLElement& element = ToHTMLElement(*node);
-  return element.HasTagName(blockquoteTag) &&
+  return element.HasTagName(kBlockquoteTag) &&
          element.getAttribute("type") == "cite";
 }
 
@@ -1529,12 +1497,12 @@ bool IsNonTableCellHTMLBlockElement(const Node* node) {
     return false;
 
   const HTMLElement& element = ToHTMLElement(*node);
-  return element.HasTagName(listingTag) || element.HasTagName(olTag) ||
-         element.HasTagName(preTag) || element.HasTagName(tableTag) ||
-         element.HasTagName(ulTag) || element.HasTagName(xmpTag) ||
-         element.HasTagName(h1Tag) || element.HasTagName(h2Tag) ||
-         element.HasTagName(h3Tag) || element.HasTagName(h4Tag) ||
-         element.HasTagName(h5Tag);
+  return element.HasTagName(kListingTag) || element.HasTagName(kOlTag) ||
+         element.HasTagName(kPreTag) || element.HasTagName(kTableTag) ||
+         element.HasTagName(kUlTag) || element.HasTagName(kXmpTag) ||
+         element.HasTagName(kH1Tag) || element.HasTagName(kH2Tag) ||
+         element.HasTagName(kH3Tag) || element.HasTagName(kH4Tag) ||
+         element.HasTagName(kH5Tag);
 }
 
 bool IsBlockFlowElement(const Node& node) {
@@ -1546,7 +1514,8 @@ bool IsBlockFlowElement(const Node& node) {
 bool IsInPasswordField(const Position& position) {
   TextControlElement* text_control = EnclosingTextControl(position);
   return IsHTMLInputElement(text_control) &&
-         ToHTMLInputElement(text_control)->type() == InputTypeNames::password;
+         ToHTMLInputElement(text_control)->type() ==
+             input_type_names::kPassword;
 }
 
 // If current position is at grapheme boundary, return 0; otherwise, return the
@@ -1595,7 +1564,7 @@ const StaticRangeVector* TargetRangesForInputEvent(const Node& node) {
                                 .ComputeVisibleSelectionInDOMTree());
   if (range.IsNull())
     return nullptr;
-  return new StaticRangeVector(1, StaticRange::Create(range));
+  return MakeGarbageCollected<StaticRangeVector>(1, StaticRange::Create(range));
 }
 
 DispatchEventResult DispatchBeforeInputInsertText(
@@ -1721,7 +1690,7 @@ AtomicString GetUrlStringFromNode(const Node& node) {
   // TODO(editing-dev): This should probably be reconciled with
   // HitTestResult::absoluteImageURL.
   if (IsHTMLImageElement(node) || IsHTMLInputElement(node))
-    return ToHTMLElement(node).getAttribute(srcAttr);
+    return ToHTMLElement(node).getAttribute(kSrcAttr);
   if (IsSVGImageElement(node))
     return ToSVGElement(node).ImageSourceURL();
   if (IsHTMLEmbedElement(node) || IsHTMLObjectElement(node) ||

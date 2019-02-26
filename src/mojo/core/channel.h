@@ -7,6 +7,7 @@
 
 #include <vector>
 
+#include "base/containers/span.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/process/process_handle.h"
@@ -143,6 +144,8 @@ class MOJO_SYSTEM_IMPL_EXPORT Channel
             MessageType message_type);
     ~Message();
 
+    static MessagePtr CreateRawForFuzzing(base::span<const unsigned char> data);
+
     // Constructs a Message from serialized message data, optionally coming from
     // a known remote process.
     static MessagePtr Deserialize(
@@ -197,6 +200,8 @@ class MOJO_SYSTEM_IMPL_EXPORT Channel
     void SetVersionForTest(uint16_t version_number);
 
    private:
+    Message();
+
     // The message data buffer.
     char* data_ = nullptr;
 

@@ -11,6 +11,7 @@
 #include "content/test/stub_layer_tree_view_delegate.h"
 #include "third_party/blink/renderer/core/frame/frame_test_helpers.h"
 #include "third_party/blink/renderer/core/testing/sim/sim_canvas.h"
+#include "third_party/blink/renderer/platform/graphics/apply_viewport_changes.h"
 
 namespace blink {
 
@@ -63,8 +64,8 @@ class SimCompositor final : public content::StubLayerTreeViewDelegate {
   // Returns true if commits are deferred in the compositor. Since these tests
   // use synchronous compositing through BeginFrame(), the deferred state has no
   // real effect.
-  bool DeferCommits() const {
-    return layer_tree_view_->layer_tree_host()->defer_commits();
+  bool DeferMainFrameUpdate() const {
+    return layer_tree_view_->layer_tree_host()->defer_main_frame_update();
   }
   // Returns true if a selection is set on the compositor.
   bool HasSelection() const {
@@ -76,8 +77,11 @@ class SimCompositor final : public content::StubLayerTreeViewDelegate {
     return layer_tree_view_->layer_tree_host()->background_color();
   }
 
+  base::TimeTicks LastFrameTime() const { return last_frame_time_; }
+
  private:
   // content::LayerTreeViewDelegate implementation.
+  void ApplyViewportChanges(const ApplyViewportChangesArgs& args) override;
   void RequestNewLayerTreeFrameSink(
       LayerTreeFrameSinkCallback callback) override;
   void BeginMainFrame(base::TimeTicks frame_time) override;
@@ -91,7 +95,8 @@ class SimCompositor final : public content::StubLayerTreeViewDelegate {
 
   content::LayerTreeView* layer_tree_view_ = nullptr;
 
-  std::unique_ptr<cc::ScopedDeferCommits> scoped_defer_commits_;
+  std::unique_ptr<cc::ScopedDeferMainFrameUpdate>
+      scoped_defer_main_frame_update_;
 };
 
 }  // namespace blink

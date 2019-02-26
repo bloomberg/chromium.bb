@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef NET_PROXY_MOCK_PAC_FILE_FETCHER_H_
-#define NET_PROXY_MOCK_PAC_FILE_FETCHER_H_
+#ifndef NET_PROXY_RESOLUTION_MOCK_PAC_FILE_FETCHER_H_
+#define NET_PROXY_RESOLUTION_MOCK_PAC_FILE_FETCHER_H_
 
 #include "base/compiler_specific.h"
 #include "net/base/completion_once_callback.h"
@@ -50,4 +50,4 @@ class MockPacFileFetcher : public PacFileFetcher {
 
 }  // namespace net
 
-#endif  // NET_PROXY_MOCK_PAC_FILE_FETCHER_H_
+#endif  // NET_PROXY_RESOLUTION_MOCK_PAC_FILE_FETCHER_H_

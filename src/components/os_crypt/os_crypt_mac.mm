@@ -142,11 +142,12 @@ std::string OSCrypt::GetRawEncryptionKey() {
 
 // static
 void OSCrypt::SetRawEncryptionKey(const std::string& raw_key) {
-  DCHECK(!raw_key.empty());
   base::AutoLock auto_lock(g_lock.Get());
-  auto key = crypto::SymmetricKey::Import(crypto::SymmetricKey::AES, raw_key);
   DCHECK(!g_key_is_cached) << "Encryption key already set.";
-  g_cached_encryption_key = key.release();
+  if (!raw_key.empty()) {
+    auto key = crypto::SymmetricKey::Import(crypto::SymmetricKey::AES, raw_key);
+    g_cached_encryption_key = key.release();
+  }
   g_key_is_cached = true;
 }
 
@@ -236,7 +237,6 @@ bool OSCrypt::IsEncryptionAvailable() {
 #if !defined(OS_IOS)
 void OSCrypt::RegisterLocalPrefs(PrefRegistrySimple* registry) {
   registry->RegisterBooleanPref(os_crypt::prefs::kKeyCreated, false);
-  registry->RegisterIntegerPref(os_crypt::prefs::kKeyOverwritingPreventions, 0);
 }
 
 void OSCrypt::Init(PrefService* local_state) {

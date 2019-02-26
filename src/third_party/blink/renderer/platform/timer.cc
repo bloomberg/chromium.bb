@@ -163,10 +163,8 @@ bool TimerBase::Comparator::operator()(const TimerBase* a,
 
 // static
 TimeTicks TimerBase::TimerCurrentTimeTicks() const {
-  return WTF::TimeTicks(Platform::Current()
-                            ->CurrentThread()
-                            ->Scheduler()
-                            ->MonotonicallyIncreasingVirtualTime());
+  return WTF::TimeTicks(
+      ThreadScheduler::Current()->MonotonicallyIncreasingVirtualTime());
 }
 
 }  // namespace blink

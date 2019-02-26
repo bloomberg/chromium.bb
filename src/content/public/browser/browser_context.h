@@ -21,7 +21,8 @@
 #include "net/url_request/url_request_interceptor.h"
 #include "net/url_request/url_request_job_factory.h"
 #include "services/network/public/mojom/cors_origin_pattern.mojom.h"
-#include "services/service_manager/embedder/embedded_service_info.h"
+#include "services/service_manager/public/cpp/embedded_service_info.h"
+#include "services/service_manager/public/mojom/service.mojom.h"
 #include "third_party/blink/public/mojom/blob/blob.mojom.h"
 
 #if !defined(OS_ANDROID)
@@ -32,6 +33,7 @@ class GURL;
 
 namespace base {
 class FilePath;
+class Token;
 }
 
 namespace download {
@@ -40,6 +42,7 @@ class InProgressDownloadManager;
 
 namespace service_manager {
 class Connector;
+class Service;
 }
 
 namespace storage {
@@ -197,27 +200,28 @@ class CONTENT_EXPORT BrowserContext : public base::SupportsUserData {
       BrowserContext* browser_context,
       std::unique_ptr<content::DownloadManager> download_manager);
 
-  // Makes the Service Manager aware of this BrowserContext, and assigns a user
-  // ID number to it. Should be called for each BrowserContext created.
+  // Makes the Service Manager aware of this BrowserContext, and assigns a
+  // instance group ID to it. Should be called for each BrowserContext created.
   static void Initialize(BrowserContext* browser_context,
                          const base::FilePath& path);
 
-  // Returns a Service User ID associated with this BrowserContext. This ID is
-  // not persistent across runs. See
+  // Returns a Service instance group ID associated with this BrowserContext.
+  // This ID is not persistent across runs. See
   // services/service_manager/public/mojom/connector.mojom. By default,
-  // this user id is randomly generated when Initialize() is called.
-  static const std::string& GetServiceUserIdFor(
+  // group ID is randomly generated when Initialize() is called.
+  static const base::Token& GetServiceInstanceGroupFor(
       BrowserContext* browser_context);
 
-  // Returns the BrowserContext associated with |user_id|, or nullptr if no
-  // BrowserContext exists for that |user_id|.
-  static BrowserContext* GetBrowserContextForServiceUserId(
-      const std::string& user_id);
+  // Returns the BrowserContext associated with |instance_group|, or nullptr if
+  // no BrowserContext exists for that |instance_group|.
+  static BrowserContext* GetBrowserContextForServiceInstanceGroup(
+      const base::Token& instance_group);
 
   // Returns a Connector associated with this BrowserContext, which can be used
   // to connect to service instances bound as this user.
   static service_manager::Connector* GetConnectorFor(
       BrowserContext* browser_context);
+
   static ServiceManagerConnection* GetServiceManagerConnectionFor(
       BrowserContext* browser_context);
 
@@ -256,9 +260,6 @@ class CONTENT_EXPORT BrowserContext : public base::SupportsUserData {
 
   // Returns the path of the directory where this context's data is stored.
   virtual base::FilePath GetPath() const = 0;
-
-  // Returns the path of the directory where the code is cached.
-  virtual base::FilePath GetCachePath() const = 0;
 
   // Return whether this context is incognito. Default is false.
   virtual bool IsOffTheRecord() const = 0;
@@ -338,6 +339,12 @@ class CONTENT_EXPORT BrowserContext : public base::SupportsUserData {
   // Registers per-browser-context services to be loaded in the browser process
   // by the Service Manager.
   virtual void RegisterInProcessServices(StaticServiceMap* services) {}
+
+  // Handles a service request for a service expected to run an instance per
+  // BrowserContext.
+  virtual std::unique_ptr<service_manager::Service> HandleServiceRequest(
+      const std::string& service_name,
+      service_manager::mojom::ServiceRequest request);
 
   // Returns a unique string associated with this browser context.
   virtual const std::string& UniqueId() const;

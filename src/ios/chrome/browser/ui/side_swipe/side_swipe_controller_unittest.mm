@@ -2,8 +2,14 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "ios/chrome/browser/browser_state/test_chrome_browser_state.h"
 #import "ios/chrome/browser/ui/side_swipe/side_swipe_controller.h"
+#include "base/test/scoped_feature_list.h"
+#include "ios/chrome/browser/browser_state/test_chrome_browser_state.h"
+#include "ios/chrome/browser/chrome_url_constants.h"
+#include "ios/web/public/features.h"
+#import "ios/web/public/navigation_item.h"
+#import "ios/web/public/test/fakes/test_navigation_manager.h"
+#import "ios/web/public/test/fakes/test_web_state.h"
 #include "ios/web/public/test/test_web_thread_bundle.h"
 #include "testing/platform_test.h"
 #import "third_party/ocmock/OCMock/OCMock.h"
@@ -13,6 +19,12 @@
 #if !defined(__has_feature) || !__has_feature(objc_arc)
 #error "This file requires ARC support."
 #endif
+
+@interface SideSwipeController (ExposedForTesting)
+@property(nonatomic, assign) BOOL leadingEdgeNavigationEnabled;
+@property(nonatomic, assign) BOOL trailingEdgeNavigationEnabled;
+- (void)updateNavigationEdgeSwipeForWebState:(web::WebState*)webState;
+@end
 
 namespace {
 
@@ -39,6 +51,7 @@ class SideSwipeControllerTest : public PlatformTest {
   UIView* view_;
   TabModel* tab_model_;
   SideSwipeController* side_swipe_controller_;
+  base::test::ScopedFeatureList feature_list_;
 };
 
 TEST_F(SideSwipeControllerTest, TestConstructor) {
@@ -53,6 +66,48 @@ TEST_F(SideSwipeControllerTest, TestSwipeRecognizers) {
     EXPECT_TRUE(swipeRecognizer);
   }
   EXPECT_TRUE(hasRecognizer);
+}
+
+// Tests that pages that need to use Chromium native swipe
+TEST_F(SideSwipeControllerTest, TestEdgeNavigationEnabled) {
+  feature_list_.InitAndEnableFeature(web::features::kSlimNavigationManager);
+
+  auto testWebState = std::make_unique<web::TestWebState>();
+  auto testNavigationManager = std::make_unique<web::TestNavigationManager>();
+  std::unique_ptr<web::NavigationItem> item = web::NavigationItem::Create();
+  testNavigationManager->SetVisibleItem(item.get());
+  testWebState->SetNavigationManager(std::move(testNavigationManager));
+
+  // The NTP and chrome://crash should use native swipe.
+  item->SetURL(GURL(kChromeUINewTabURL));
+  [side_swipe_controller_
+      updateNavigationEdgeSwipeForWebState:testWebState.get()];
+  EXPECT_TRUE(side_swipe_controller_.leadingEdgeNavigationEnabled);
+  EXPECT_TRUE(side_swipe_controller_.trailingEdgeNavigationEnabled);
+
+  item->SetURL(GURL("chrome://crash"));
+  [side_swipe_controller_
+      updateNavigationEdgeSwipeForWebState:testWebState.get()];
+  EXPECT_TRUE(side_swipe_controller_.leadingEdgeNavigationEnabled);
+  EXPECT_TRUE(side_swipe_controller_.trailingEdgeNavigationEnabled);
+
+  item->SetURL(GURL("http://wwww.test.com"));
+  [side_swipe_controller_
+      updateNavigationEdgeSwipeForWebState:testWebState.get()];
+  EXPECT_FALSE(side_swipe_controller_.leadingEdgeNavigationEnabled);
+  EXPECT_FALSE(side_swipe_controller_.trailingEdgeNavigationEnabled);
+
+  item->SetURL(GURL("chrome://foo"));
+  [side_swipe_controller_
+      updateNavigationEdgeSwipeForWebState:testWebState.get()];
+  EXPECT_FALSE(side_swipe_controller_.leadingEdgeNavigationEnabled);
+  EXPECT_FALSE(side_swipe_controller_.trailingEdgeNavigationEnabled);
+
+  item->SetURL(GURL("chrome://version"));
+  [side_swipe_controller_
+      updateNavigationEdgeSwipeForWebState:testWebState.get()];
+  EXPECT_FALSE(side_swipe_controller_.leadingEdgeNavigationEnabled);
+  EXPECT_FALSE(side_swipe_controller_.trailingEdgeNavigationEnabled);
 }
 
 }  // anonymous namespace

@@ -14,7 +14,7 @@ DOMRectReadOnly* DOMRectReadOnly::Create(double x,
                                          double y,
                                          double width,
                                          double height) {
-  return new DOMRectReadOnly(x, y, width, height);
+  return MakeGarbageCollected<DOMRectReadOnly>(x, y, width, height);
 }
 
 ScriptValue DOMRectReadOnly::toJSONForBinding(ScriptState* script_state) const {
@@ -31,16 +31,18 @@ ScriptValue DOMRectReadOnly::toJSONForBinding(ScriptState* script_state) const {
 }
 
 DOMRectReadOnly* DOMRectReadOnly::FromIntRect(const IntRect& rect) {
-  return new DOMRectReadOnly(rect.X(), rect.Y(), rect.Width(), rect.Height());
+  return MakeGarbageCollected<DOMRectReadOnly>(rect.X(), rect.Y(), rect.Width(),
+                                               rect.Height());
 }
 
 DOMRectReadOnly* DOMRectReadOnly::FromFloatRect(const FloatRect& rect) {
-  return new DOMRectReadOnly(rect.X(), rect.Y(), rect.Width(), rect.Height());
+  return MakeGarbageCollected<DOMRectReadOnly>(rect.X(), rect.Y(), rect.Width(),
+                                               rect.Height());
 }
 
-DOMRectReadOnly* DOMRectReadOnly::fromRect(const DOMRectInit& other) {
-  return new DOMRectReadOnly(other.x(), other.y(), other.width(),
-                             other.height());
+DOMRectReadOnly* DOMRectReadOnly::fromRect(const DOMRectInit* other) {
+  return MakeGarbageCollected<DOMRectReadOnly>(other->x(), other->y(),
+                                               other->width(), other->height());
 }
 
 DOMRectReadOnly::DOMRectReadOnly(double x,

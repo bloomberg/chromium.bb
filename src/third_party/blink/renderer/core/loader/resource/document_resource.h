@@ -41,6 +41,11 @@ class CORE_EXPORT DocumentResource final : public TextResource {
   static DocumentResource* FetchSVGDocument(FetchParameters&,
                                             ResourceFetcher*,
                                             ResourceClient*);
+
+  DocumentResource(const ResourceRequest&,
+                   ResourceType,
+                   const ResourceLoaderOptions&,
+                   const TextResourceDecoderOptions&);
   ~DocumentResource() override;
   void Trace(blink::Visitor*) override;
 
@@ -59,14 +64,10 @@ class CORE_EXPORT DocumentResource final : public TextResource {
         const ResourceRequest& request,
         const ResourceLoaderOptions& options,
         const TextResourceDecoderOptions& decoder_options) const override {
-      return new DocumentResource(request, ResourceType::kSVGDocument, options,
-                                  decoder_options);
+      return MakeGarbageCollected<DocumentResource>(
+          request, ResourceType::kSVGDocument, options, decoder_options);
     }
   };
-  DocumentResource(const ResourceRequest&,
-                   ResourceType,
-                   const ResourceLoaderOptions&,
-                   const TextResourceDecoderOptions&);
 
   bool MimeTypeAllowed() const;
   Document* CreateDocument(const KURL&);

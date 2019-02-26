@@ -53,8 +53,8 @@ void SharedWorkerThread::ClearWorkerBackingThread() {
 
 WorkerOrWorkletGlobalScope* SharedWorkerThread::CreateWorkerGlobalScope(
     std::unique_ptr<GlobalScopeCreationParams> creation_params) {
-  return new SharedWorkerGlobalScope(name_, std::move(creation_params), this,
-                                     time_origin_);
+  return MakeGarbageCollected<SharedWorkerGlobalScope>(
+      name_, std::move(creation_params), this, time_origin_);
 }
 
 }  // namespace blink

@@ -6,21 +6,19 @@ package org.chromium.chrome.browser;
 
 import android.content.ComponentName;
 import android.content.Intent;
+import android.os.Bundle;
 import android.provider.Browser;
 import android.util.SparseArray;
-import android.view.View;
 import android.view.ViewGroup;
 
 import org.chromium.base.ActivityState;
 import org.chromium.base.ApplicationStatus;
 import org.chromium.base.Log;
-import org.chromium.chrome.R;
 import org.chromium.chrome.browser.compositor.layouts.LayoutManager;
 import org.chromium.chrome.browser.fullscreen.ChromeFullscreenManager;
 import org.chromium.chrome.browser.fullscreen.FullscreenOptions;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.util.IntentUtils;
-import org.chromium.chrome.browser.widget.ControlContainer;
 import org.chromium.content_public.browser.ScreenOrientationProvider;
 import org.chromium.content_public.browser.WebContentsObserver;
 
@@ -70,10 +68,8 @@ public class FullscreenActivity extends SingleTabActivity {
 
     @Override
     public void finishNativeInitialization() {
-        ControlContainer controlContainer = (ControlContainer) findViewById(R.id.control_container);
-        initializeCompositorContent(new LayoutManager(getCompositorViewHolder()),
-                (View) controlContainer, (ViewGroup) findViewById(android.R.id.content),
-                controlContainer);
+        initializeCompositorContent(new LayoutManager(getCompositorViewHolder()), null /* urlBar */,
+                (ViewGroup) findViewById(android.R.id.content), null /* controlContainer */);
 
         if (getFullscreenManager() != null) getFullscreenManager().setTab(getActivityTab());
         super.finishNativeInitialization();
@@ -81,17 +77,6 @@ public class FullscreenActivity extends SingleTabActivity {
 
     @Override
     protected void initializeToolbar() {}
-
-    @Override
-    protected int getControlContainerLayoutId() {
-        // TODO(peconn): Determine if there's something more suitable to use here.
-        return R.layout.fullscreen_control_container;
-    }
-
-    @Override
-    public int getControlContainerHeightResource() {
-        return R.dimen.fullscreen_activity_control_container_height;
-    }
 
     @Override
     protected ChromeFullscreenManager createFullscreenManager() {
@@ -218,5 +203,10 @@ public class FullscreenActivity extends SingleTabActivity {
 
         sTabsToSteal.remove(id);
         return tab;
+    }
+
+    @Override
+    protected Tab restoreTab(Bundle savedInstanceState) {
+        return null;
     }
 }

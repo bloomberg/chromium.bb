@@ -42,9 +42,8 @@ class VROrientationDeviceProviderTest : public testing::Test {
 
     service_manager::mojom::ConnectorRequest request;
     connector_ = service_manager::Connector::Create(&request);
-    service_manager::Connector::TestApi test_api(connector_.get());
-    test_api.OverrideBinderForTesting(
-        service_manager::Identity(mojom::kServiceName),
+    connector_->OverrideBinderForTesting(
+        service_manager::ServiceFilter::ByName(mojom::kServiceName),
         mojom::SensorProvider::Name_,
         base::BindRepeating(&FakeSensorProvider::Bind,
                             base::Unretained(fake_sensor_provider_.get())));

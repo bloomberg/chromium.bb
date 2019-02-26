@@ -96,9 +96,6 @@ chrome.test.runTests([
       };
       chrome.networking.onc.verifyDestination(
           stubVerificationProperties, chrome.test.callbackFail(expectedError));
-      chrome.networking.onc.verifyAndEncryptCredentials(
-          stubVerificationProperties, '',
-          chrome.test.callbackFail(expectedError));
       chrome.networking.onc.verifyAndEncryptData(
           stubVerificationProperties, '',
           chrome.test.callbackFail(expectedError));

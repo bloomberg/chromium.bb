@@ -8,7 +8,7 @@
 #include "base/timer/timer.h"
 #include "ui/compositor/layer.h"
 #include "ui/views/animation/ink_drop_highlight.h"
-#include "ui/views/animation/ink_drop_host.h"
+#include "ui/views/animation/ink_drop_host_view.h"
 #include "ui/views/animation/square_ink_drop_ripple.h"
 #include "ui/views/style/platform_style.h"
 
@@ -584,7 +584,8 @@ InkDropImpl::HighlightStateFactory::CreateVisibleState(
   return nullptr;
 }
 
-InkDropImpl::InkDropImpl(InkDropHost* ink_drop_host, const gfx::Size& host_size)
+InkDropImpl::InkDropImpl(InkDropHostView* ink_drop_host,
+                         const gfx::Size& host_size)
     : ink_drop_host_(ink_drop_host),
       root_layer_(new ui::Layer(ui::LAYER_NOT_DRAWN)),
       root_layer_added_to_host_(false),
@@ -629,8 +630,25 @@ void InkDropImpl::HostSizeChanged(const gfx::Size& new_size) {
   // when a mask layer is applied to it. This will not affect clipping if no
   // mask layer is set.
   root_layer_->SetBounds(gfx::Rect(new_size));
-  if (ink_drop_ripple_)
-    ink_drop_ripple_->HostSizeChanged(new_size);
+
+  const bool create_ink_drop_ripple = !!ink_drop_ripple_;
+  const InkDropState state = GetTargetInkDropState();
+  DestroyInkDropRipple();
+
+  if (highlight_) {
+    bool visible = highlight_->IsFadingInOrVisible();
+    DestroyInkDropHighlight();
+    // Both the ripple and the highlight must have been destroyed before
+    // recreating either of them otherwise the mask will not get recreated.
+    CreateInkDropHighlight();
+    if (visible)
+      highlight_->FadeIn(base::TimeDelta());
+  }
+
+  if (create_ink_drop_ripple) {
+    CreateInkDropRipple();
+    ink_drop_ripple_->SnapToState(state);
+  }
 }
 
 InkDropState InkDropImpl::GetTargetInkDropState() const {

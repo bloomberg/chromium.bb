@@ -66,7 +66,7 @@ struct ProgressItem {
 };
 
 ProgressTracker* ProgressTracker::Create(LocalFrame* frame) {
-  return new ProgressTracker(frame);
+  return MakeGarbageCollected<ProgressTracker>(frame);
 }
 
 ProgressTracker::ProgressTracker(LocalFrame* frame)
@@ -165,7 +165,8 @@ void ProgressTracker::IncrementProgress(unsigned long identifier,
   item->estimated_length = estimated_length;
 }
 
-void ProgressTracker::IncrementProgress(unsigned long identifier, int length) {
+void ProgressTracker::IncrementProgress(unsigned long identifier,
+                                        size_t length) {
   ProgressItem* item = progress_items_.at(identifier);
   if (!item)
     return;

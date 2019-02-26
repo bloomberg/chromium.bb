@@ -38,21 +38,18 @@ UI_BASE_EXPORT
 // |-initWithModel:useWithPopUpButtonCell:| or after the first call to |-menu|.
 @property(nonatomic, assign) BOOL useWithPopUpButtonCell;
 
-+ (base::string16)elideMenuTitle:(const base::string16&)title
-                         toWidth:(int)width;
-
 // NIB-based initializer. This does not create a menu. Clients can set the
 // properties of the object and the menu will be created upon the first call to
 // |-menu|. Note that the menu will be immutable after creation.
-- (id)init;
+- (instancetype)init;
 
 // Builds a NSMenu from the pre-built model (must not be nil). Changes made
 // to the contents of the model after calling this will not be noticed. If
 // the menu will be displayed by a NSPopUpButtonCell, it needs to be of a
 // slightly different form (0th item is empty). Note this attribute of the menu
 // cannot be changed after it has been created.
-- (id)initWithModel:(ui::MenuModel*)model
-    useWithPopUpButtonCell:(BOOL)useWithCell;
+- (instancetype)initWithModel:(ui::MenuModel*)model
+       useWithPopUpButtonCell:(BOOL)useWithCell;
 
 // Programmatically close the constructed menu.
 - (void)cancel;

@@ -3,15 +3,17 @@
 <translationbundle lang="zh-TW">
 <translation id="1296843352074373664">Google 使用者</translation>
 <translation id="1383286653814676580">用於執行 Google 憑證提供者登入頁面。</translation>
-<translation id="2119303206591679297">系統不允許使用這個 Google 帳戶登入。</translation>
-<translation id="3374277789313311065">發生內部錯誤。如果問題一直無法解決，請向 Google 回報。</translation>
-<translation id="3713454256426064844">請使用你的 Google 帳戶登入。</translation>
-<translation id="440343981193409132">請使用你更新後的 Google 帳戶密碼登入。</translation>
-<translation id="4735679347289592174">無法登入你的 Google 帳戶，請再試一次。請確認電腦具有暢通的網際網路連線。如果問題仍無法解決，請向 Google 回報。</translation>
-<translation id="7000592418234387954">Google 帳戶登入</translation>
+<translation id="195232392645680541">使用你的 Google 帳戶登入。</translation>
+<translation id="3623301090691182018">登入 Google 帳戶</translation>
+<translation id="4057329986137569701">發生內部錯誤。</translation>
+<translation id="4128734677223009352">Google 帳戶登入失敗。請確認電腦已連上網際網路，然後再試一次。</translation>
+<translation id="4307406925561182259">使用更新後的 Google 帳戶密碼登入。</translation>
+<translation id="6064337552080329342">很抱歉！系統無法驗證你的密碼，請再試一次。</translation>
+<translation id="6613125771987245372">無法使用這個 Google 帳戶登入。請嘗試使用其他帳戶。</translation>
+<translation id="7357241217513796177">請確認你已連上網路，然後再試一次。</translation>
+<translation id="7463006580194749499">新增使用者</translation>
 <translation id="8474372283141585908">Google 憑證提供者</translation>
 <translation id="866458870819756755">無法建立使用者。</translation>
 <translation id="8860262547644202689">Google 憑證提供者小幫手</translation>
-<translation id="8912362522468806198">Google 帳戶</translation>
 <translation id="9094033019050270033">更新密碼</translation>
 </translationbundle>

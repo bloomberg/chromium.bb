@@ -11,6 +11,7 @@
 #include "third_party/blink/renderer/bindings/core/v8/script_promise.h"
 #include "third_party/blink/renderer/bindings/core/v8/script_promise_property.h"
 #include "third_party/blink/renderer/core/dom/context_lifecycle_observer.h"
+#include "third_party/blink/renderer/core/fetch/data_pipe_bytes_consumer.h"
 #include "third_party/blink/renderer/core/fetch/request.h"
 #include "third_party/blink/renderer/modules/event_modules.h"
 #include "third_party/blink/renderer/modules/modules_export.h"
@@ -22,7 +23,6 @@
 
 namespace blink {
 
-class DataPipeBytesConsumer;
 class ExceptionState;
 class FetchRespondWithObserver;
 class Request;
@@ -48,18 +48,25 @@ class MODULES_EXPORT FetchEvent final
                                                         Member<DOMException>>;
   static FetchEvent* Create(ScriptState*,
                             const AtomicString& type,
-                            const FetchEventInit&);
+                            const FetchEventInit*);
   static FetchEvent* Create(ScriptState*,
                             const AtomicString& type,
-                            const FetchEventInit&,
+                            const FetchEventInit*,
                             FetchRespondWithObserver*,
                             WaitUntilObserver*,
                             bool navigation_preload_sent);
 
+  FetchEvent(ScriptState*,
+             const AtomicString& type,
+             const FetchEventInit*,
+             FetchRespondWithObserver*,
+             WaitUntilObserver*,
+             bool navigation_preload_sent);
   ~FetchEvent() override;
 
   Request* request() const;
   String clientId() const;
+  String resultingClientId() const;
   bool isReload() const;
 
   void respondWith(ScriptState*, ScriptPromise, ExceptionState&);
@@ -83,21 +90,14 @@ class MODULES_EXPORT FetchEvent final
 
   void Trace(blink::Visitor*) override;
 
- protected:
-  FetchEvent(ScriptState*,
-             const AtomicString& type,
-             const FetchEventInit&,
-             FetchRespondWithObserver*,
-             WaitUntilObserver*,
-             bool navigation_preload_sent);
-
  private:
   Member<FetchRespondWithObserver> observer_;
   TraceWrapperMember<Request> request_;
   Member<PreloadResponseProperty> preload_response_property_;
   std::unique_ptr<WebURLResponse> preload_response_;
-  Member<DataPipeBytesConsumer> data_pipe_consumer_;
+  Member<DataPipeBytesConsumer::CompletionNotifier> body_completion_notifier_;
   String client_id_;
+  String resulting_client_id_;
   bool is_reload_;
 };
 

@@ -60,7 +60,6 @@ class CORE_EXPORT WorkerReportingProxy {
                                     MessageLevel,
                                     const String& message,
                                     SourceLocation*) {}
-  virtual void PostMessageToPageInspector(int session_id, const String&) {}
 
   // Invoked when the new WorkerGlobalScope is created on
   // WorkerThread::InitializeOnWorkerThread.
@@ -75,6 +74,14 @@ class CORE_EXPORT WorkerReportingProxy {
   // loaded on the worker thread, i.e., via InstalledScriptsManager rather than
   // via ResourceLoader. Called before WillEvaluateClassicScript().
   virtual void DidLoadInstalledScript() {}
+
+  // Invoked when it's failed to load the worker's main script from
+  // InstalledScriptsManager.
+  virtual void DidFailToLoadInstalledClassicScript() {}
+
+  // Invoked on failure to fetch the worker's module script (either from network
+  // or InstalledScriptsManager).
+  virtual void DidFailToFetchModuleScript() {}
 
   // Invoked when the main classic script is about to be evaluated.
   virtual void WillEvaluateClassicScript(size_t script_size,

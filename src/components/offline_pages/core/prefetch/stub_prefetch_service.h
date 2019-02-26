@@ -29,6 +29,7 @@ class StubPrefetchService : public PrefetchService {
   PrefetchBackgroundTaskHandler* GetPrefetchBackgroundTaskHandler() override;
   ThumbnailFetcher* GetThumbnailFetcher() override;
   OfflinePageModel* GetOfflinePageModel() override;
+  image_fetcher::ImageFetcher* GetThumbnailImageFetcher() override;
 
   SuggestedArticlesObserver* GetSuggestedArticlesObserverForTesting() override;
 };

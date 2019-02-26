@@ -50,18 +50,12 @@
     // Register for VoiceOVer status change notifications.  The notification
     // name has been updated in iOS 11.
     NSNotificationCenter* defaultCenter = [NSNotificationCenter defaultCenter];
-    if (@available(iOS 11, *)) {
-      [defaultCenter
-          addObserver:self
-             selector:@selector(voiceOverStatusChanged)
-                 name:UIAccessibilityVoiceOverStatusDidChangeNotification
-               object:nil];
-    } else {
-      [defaultCenter addObserver:self
-                        selector:@selector(voiceOverStatusChanged)
-                            name:UIAccessibilityVoiceOverStatusChanged
-                          object:nil];
-    }
+    [defaultCenter
+        addObserver:self
+           selector:@selector(voiceOverStatusChanged)
+               name:UIAccessibilityVoiceOverStatusDidChangeNotification
+             object:nil];
+
     // Create a disabler if VoiceOver is enabled.
     if (UIAccessibilityIsVoiceOverRunning()) {
       _voiceOverDisabler =

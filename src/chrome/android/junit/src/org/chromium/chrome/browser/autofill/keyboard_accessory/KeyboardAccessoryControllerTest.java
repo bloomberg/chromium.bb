@@ -32,6 +32,7 @@ import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.base.metrics.test.ShadowRecordHistogram;
 import org.chromium.base.task.test.CustomShadowAsyncTask;
 import org.chromium.base.test.BaseRobolectricTestRunner;
+import org.chromium.chrome.browser.ChromeFeatureList;
 import org.chromium.chrome.browser.autofill.keyboard_accessory.KeyboardAccessoryData.Action;
 import org.chromium.chrome.browser.autofill.keyboard_accessory.KeyboardAccessoryData.PropertyProvider;
 import org.chromium.chrome.browser.modelutil.ListObservable;
@@ -39,6 +40,8 @@ import org.chromium.chrome.browser.modelutil.PropertyKey;
 import org.chromium.chrome.browser.modelutil.PropertyModel;
 import org.chromium.chrome.browser.modelutil.PropertyObservable.PropertyObserver;
 import org.chromium.chrome.test.util.browser.modelutil.FakeViewProvider;
+
+import java.util.HashMap;
 
 /**
  * Controller tests for the keyboard accessory component.
@@ -56,7 +59,7 @@ public class KeyboardAccessoryControllerTest {
     @Mock
     private KeyboardAccessoryCoordinator.VisibilityDelegate mMockVisibilityDelegate;
     @Mock
-    private KeyboardAccessoryView mMockView;
+    private KeyboardAccessoryModernView mMockView;
 
     private final KeyboardAccessoryData.Tab mTestTab =
             new KeyboardAccessoryData.Tab(null, null, 0, 0, null);
@@ -69,6 +72,9 @@ public class KeyboardAccessoryControllerTest {
     public void setUp() {
         ShadowRecordHistogram.reset();
         MockitoAnnotations.initMocks(this);
+        HashMap<String, Boolean> features = new HashMap<>();
+        features.put(ChromeFeatureList.AUTOFILL_KEYBOARD_ACCESSORY, true);
+        ChromeFeatureList.setTestFeatures(features);
 
         mCoordinator = new KeyboardAccessoryCoordinator(
                 mMockVisibilityDelegate, new FakeViewProvider<>(mMockView));
@@ -119,8 +125,9 @@ public class KeyboardAccessoryControllerTest {
     public void testModelNotifiesAboutActionsChangedByProvider() {
         mModel.get(ACTIONS).addObserver(mMockActionListObserver);
 
-        PropertyProvider<Action> testProvider = new PropertyProvider<>(GENERATE_PASSWORD_AUTOMATIC);
-        mCoordinator.registerActionListProvider(testProvider);
+        PropertyProvider<Action[]> testProvider =
+                new PropertyProvider<>(GENERATE_PASSWORD_AUTOMATIC);
+        mCoordinator.registerActionProvider(testProvider);
 
         // If the coordinator receives an initial actions, the model should report an insertion.
         mCoordinator.requestShowing();
@@ -182,10 +189,10 @@ public class KeyboardAccessoryControllerTest {
 
     @Test
     public void testIsVisibleWithSuggestionsBeforeKeyboardComesUp() {
-        KeyboardAccessoryData.PropertyProvider<Action> autofillSuggestionProvider =
+        KeyboardAccessoryData.PropertyProvider<Action[]> autofillSuggestionProvider =
                 new KeyboardAccessoryData.PropertyProvider<>(AUTOFILL_SUGGESTION);
         Action suggestion = new Action("Suggestion", AUTOFILL_SUGGESTION, (a) -> {});
-        mCoordinator.registerActionListProvider(autofillSuggestionProvider);
+        mCoordinator.registerActionProvider(autofillSuggestionProvider);
 
         // Without suggestions, the accessory should remain invisible - even if the keyboard shows.
         assertThat(mModel.get(ACTIONS).size(), is(0));
@@ -206,10 +213,10 @@ public class KeyboardAccessoryControllerTest {
 
     @Test
     public void testIsVisibleWithSuggestionsAfterKeyboardComesUp() {
-        KeyboardAccessoryData.PropertyProvider<Action> autofillSuggestionProvider =
+        KeyboardAccessoryData.PropertyProvider<Action[]> autofillSuggestionProvider =
                 new KeyboardAccessoryData.PropertyProvider<>(AUTOFILL_SUGGESTION);
         Action suggestion = new Action("Suggestion", AUTOFILL_SUGGESTION, (a) -> {});
-        mCoordinator.registerActionListProvider(autofillSuggestionProvider);
+        mCoordinator.registerActionProvider(autofillSuggestionProvider);
 
         // Without any suggestions, the accessory should remain invisible.
         assertThat(mModel.get(VISIBLE), is(false));
@@ -239,13 +246,13 @@ public class KeyboardAccessoryControllerTest {
 
     @Test
     public void testSortsActionsBasedOnType() {
-        KeyboardAccessoryData.PropertyProvider<Action> generationProvider =
+        KeyboardAccessoryData.PropertyProvider<Action[]> generationProvider =
                 new KeyboardAccessoryData.PropertyProvider<>(GENERATE_PASSWORD_AUTOMATIC);
-        KeyboardAccessoryData.PropertyProvider<Action> autofillSuggestionProvider =
+        KeyboardAccessoryData.PropertyProvider<Action[]> autofillSuggestionProvider =
                 new KeyboardAccessoryData.PropertyProvider<>(AUTOFILL_SUGGESTION);
 
-        mCoordinator.registerActionListProvider(generationProvider);
-        mCoordinator.registerActionListProvider(autofillSuggestionProvider);
+        mCoordinator.registerActionProvider(generationProvider);
+        mCoordinator.registerActionProvider(autofillSuggestionProvider);
 
         Action suggestion1 = new Action("FirstSuggestion", AUTOFILL_SUGGESTION, (a) -> {});
         Action suggestion2 = new Action("SecondSuggestion", AUTOFILL_SUGGESTION, (a) -> {});
@@ -262,13 +269,13 @@ public class KeyboardAccessoryControllerTest {
 
     @Test
     public void testDeletingActionsAffectsOnlyOneType() {
-        KeyboardAccessoryData.PropertyProvider<Action> generationProvider =
+        KeyboardAccessoryData.PropertyProvider<Action[]> generationProvider =
                 new KeyboardAccessoryData.PropertyProvider<>(GENERATE_PASSWORD_AUTOMATIC);
-        KeyboardAccessoryData.PropertyProvider<Action> autofillSuggestionProvider =
+        KeyboardAccessoryData.PropertyProvider<Action[]> autofillSuggestionProvider =
                 new KeyboardAccessoryData.PropertyProvider<>(AUTOFILL_SUGGESTION);
 
-        mCoordinator.registerActionListProvider(generationProvider);
-        mCoordinator.registerActionListProvider(autofillSuggestionProvider);
+        mCoordinator.registerActionProvider(generationProvider);
+        mCoordinator.registerActionProvider(autofillSuggestionProvider);
 
         Action suggestion = new Action("NewSuggestion", AUTOFILL_SUGGESTION, (a) -> {});
         Action generationAction = new Action("Generate", GENERATE_PASSWORD_AUTOMATIC, (a) -> {});
@@ -357,10 +364,10 @@ public class KeyboardAccessoryControllerTest {
 
         // Adding suggestions adds to the suggestions bucket - and again to tabs and total.
         mCoordinator.close(); // Hide, so it's brought up again.
-        KeyboardAccessoryData.PropertyProvider<Action> autofillSuggestionProvider =
+        KeyboardAccessoryData.PropertyProvider<Action[]> autofillSuggestionProvider =
                 new KeyboardAccessoryData.PropertyProvider<>(AUTOFILL_SUGGESTION);
         Action suggestion = new Action("Suggestion", AUTOFILL_SUGGESTION, (a) -> {});
-        mCoordinator.registerActionListProvider(autofillSuggestionProvider);
+        mCoordinator.registerActionProvider(autofillSuggestionProvider);
         autofillSuggestionProvider.notifyObservers(new Action[] {suggestion});
         mCoordinator.requestShowing();
 
@@ -399,10 +406,10 @@ public class KeyboardAccessoryControllerTest {
         assertThat(getShownMetricsCount(AccessoryBarContents.WITH_ACTIONS), is(1));
         assertThat(getShownMetricsCount(AccessoryBarContents.ANY_CONTENTS), is(1));
 
-        KeyboardAccessoryData.PropertyProvider<Action> autofillSuggestionProvider =
+        KeyboardAccessoryData.PropertyProvider<Action[]> autofillSuggestionProvider =
                 new KeyboardAccessoryData.PropertyProvider<>(AUTOFILL_SUGGESTION);
         Action suggestion = new Action("Suggestion", AUTOFILL_SUGGESTION, (a) -> {});
-        mCoordinator.registerActionListProvider(autofillSuggestionProvider);
+        mCoordinator.registerActionProvider(autofillSuggestionProvider);
         autofillSuggestionProvider.notifyObservers(new Action[] {suggestion});
         assertThat(getShownMetricsCount(AccessoryBarContents.WITH_AUTOFILL_SUGGESTIONS), is(1));
 

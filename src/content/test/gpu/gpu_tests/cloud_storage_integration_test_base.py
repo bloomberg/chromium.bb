@@ -61,6 +61,7 @@ class CloudStorageIntegrationTestBase(gpu_integration_test.GpuIntegrationTest):
 
   @classmethod
   def AddCommandlineArgs(cls, parser):
+    super(CloudStorageIntegrationTestBase, cls).AddCommandlineArgs(parser)
     parser.add_option(
       '--build-revision',
       help='Chrome revision being tested.',

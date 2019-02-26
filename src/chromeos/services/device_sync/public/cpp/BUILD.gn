@@ -59,7 +59,6 @@ source_set("unit_tests") {
     "//net",
     "//services/identity/public/cpp:test_support",
     "//services/network:test_support",
-    "//services/service_manager/public/cpp:service_test_support",
     "//services/service_manager/public/cpp/test:test_support",
     "//testing/gtest",
   ]

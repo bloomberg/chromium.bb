@@ -109,6 +109,7 @@ class CORE_EXPORT Page final : public GarbageCollectedFinalized<Page>,
   // An "ordinary" page is a fully-featured page owned by a web view.
   static Page* CreateOrdinary(PageClients&, Page* opener);
 
+  explicit Page(PageClients&);
   ~Page() override;
 
   void CloseSoon();
@@ -319,8 +320,6 @@ class CORE_EXPORT Page final : public GarbageCollectedFinalized<Page>,
 
  private:
   friend class ScopedPagePauser;
-
-  explicit Page(PageClients&);
 
   void InitGroup();
 

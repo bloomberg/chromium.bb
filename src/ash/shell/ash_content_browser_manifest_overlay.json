@@ -4,7 +4,8 @@
   "interface_provider_specs": {
     "service_manager:connector": {
       "requires": {
-        "shortcut_viewer_app": [ "shortcut_viewer" ]
+        "shortcut_viewer_app": [ "shortcut_viewer" ],
+        "device": [ "device:fingerprint" ]
       }
     }
   }

@@ -14,6 +14,8 @@
 
 // Import all currently implemented tracks. After implemeting a new track, an
 // import statement for it needs to be added here.
-import './cpu_counters/controller';
 import './cpu_slices/controller';
 import './chrome_slices/controller';
+import './vsync/controller';
+import './process_summary/controller';
+import './counter/controller';

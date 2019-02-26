@@ -11,7 +11,6 @@
 
 #include "base/command_line.h"
 #include "base/location.h"
-#include "base/posix/eintr_wrapper.h"
 #include "base/run_loop.h"
 #include "base/test/scoped_task_environment.h"
 #include "base/threading/thread_task_runner_handle.h"
@@ -61,7 +60,15 @@ class FakeDelegate : public ArcSessionImpl::Delegate {
     PostCallback(std::move(pending_callback_));
   }
 
-  // ArcSessionImpl::Delegate override:
+  // ArcSessionImpl::Delegate overrides:
+  void CreateSocket(CreateSocketCallback callback) override {
+    // Open /dev/null as a dummy FD.
+    base::ThreadTaskRunnerHandle::Get()->PostTask(
+        FROM_HERE, base::BindOnce(std::move(callback),
+                                  base::ScopedFD(open("/dev/null",
+                                                      O_RDONLY | O_CLOEXEC))));
+  }
+
   base::ScopedFD ConnectMojo(base::ScopedFD socket_fd,
                              ConnectMojoCallback callback) override {
     if (suspend_) {
@@ -72,7 +79,7 @@ class FakeDelegate : public ArcSessionImpl::Delegate {
     }
 
     // Open /dev/null as a dummy FD.
-    return base::ScopedFD(HANDLE_EINTR(open("/dev/null", O_RDONLY)));
+    return base::ScopedFD(open("/dev/null", O_RDONLY | O_CLOEXEC));
   }
 
   void GetLcdDensity(GetLcdDensityCallback callback) override {
@@ -627,19 +634,6 @@ TEST_P(ArcSessionImplPackagesCacheModeTest, PackagesCacheModes) {
 INSTANTIATE_TEST_CASE_P(,
                         ArcSessionImplPackagesCacheModeTest,
                         ::testing::ValuesIn(kPackagesCacheModeStates));
-
-TEST_F(ArcSessionImplTest, IsChild) {
-  auto arc_session = CreateArcSession();
-  arc_session->StartMiniInstance();
-
-  ArcSession::UpgradeParams params;
-  params.is_child = true;
-  params.locale = kDefaultLocale;
-  arc_session->RequestUpgrade(std::move(params));
-
-  base::RunLoop().RunUntilIdle();
-  EXPECT_TRUE(GetSessionManagerClient()->last_upgrade_arc_request().is_child());
-}
 
 TEST_F(ArcSessionImplTest, DemoSession) {
   auto arc_session = CreateArcSession();

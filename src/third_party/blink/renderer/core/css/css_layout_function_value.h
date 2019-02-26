@@ -19,8 +19,10 @@ class CSSLayoutFunctionValue : public CSSValue {
  public:
   static CSSLayoutFunctionValue* Create(CSSCustomIdentValue* name,
                                         bool is_inline) {
-    return new CSSLayoutFunctionValue(name, is_inline);
+    return MakeGarbageCollected<CSSLayoutFunctionValue>(name, is_inline);
   }
+
+  CSSLayoutFunctionValue(CSSCustomIdentValue* name, bool is_inline);
   ~CSSLayoutFunctionValue();
 
   String CustomCSSText() const;
@@ -31,8 +33,6 @@ class CSSLayoutFunctionValue : public CSSValue {
   void TraceAfterDispatch(blink::Visitor*);
 
  private:
-  CSSLayoutFunctionValue(CSSCustomIdentValue* name, bool is_inline);
-
   Member<CSSCustomIdentValue> name_;
   bool is_inline_;
 };

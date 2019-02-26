@@ -16,8 +16,6 @@
 #error "This file requires ARC support."
 #endif
 
-DEFINE_WEB_STATE_USER_DATA_KEY(CaptivePortalDetectorTabHelper);
-
 // static
 void CaptivePortalDetectorTabHelper::CreateForWebState(
     web::WebState* web_state,

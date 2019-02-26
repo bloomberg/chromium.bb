@@ -6,7 +6,7 @@
 
 #include "base/strings/string_util.h"
 #include "base/strings/stringize_macros.h"
-#include "base/sys_info.h"
+#include "base/system/sys_info.h"
 #include "remoting/base/name_value_map.h"
 #include "remoting/base/platform_details.h"
 

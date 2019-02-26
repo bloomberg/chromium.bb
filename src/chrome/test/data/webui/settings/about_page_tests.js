@@ -935,7 +935,7 @@ cr.define('settings_about_page', function() {
         });
 
         test('Initialization', function() {
-          const radioGroup = dialog.$$('paper-radio-group');
+          const radioGroup = dialog.$$('cr-radio-group');
           assertTrue(!!radioGroup);
           assertTrue(!!dialog.$.warningSelector);
           assertTrue(!!dialog.$.changeChannel);

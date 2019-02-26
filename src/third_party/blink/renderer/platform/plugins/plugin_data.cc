@@ -101,13 +101,13 @@ void PluginData::UpdatePluginList(const SecurityOrigin* main_frame_origin) {
   Vector<mojom::blink::PluginInfoPtr> plugins;
   registry->GetPlugins(false, main_frame_origin_, &plugins);
   for (const auto& plugin : plugins) {
-    auto* plugin_info =
-        new PluginInfo(plugin->name, FilePathToWebString(plugin->filename),
-                       plugin->description, plugin->background_color);
+    auto* plugin_info = MakeGarbageCollected<PluginInfo>(
+        plugin->name, FilePathToWebString(plugin->filename),
+        plugin->description, plugin->background_color);
     plugins_.push_back(plugin_info);
     for (const auto& mime : plugin->mime_types) {
-      auto* mime_info =
-          new MimeClassInfo(mime->mime_type, mime->description, *plugin_info);
+      auto* mime_info = MakeGarbageCollected<MimeClassInfo>(
+          mime->mime_type, mime->description, *plugin_info);
       mime_info->extensions_ = mime->file_extensions;
       plugin_info->AddMimeType(mime_info);
       mimes_.push_back(mime_info);

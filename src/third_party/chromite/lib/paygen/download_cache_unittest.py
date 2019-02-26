@@ -16,9 +16,9 @@ import pickle
 import traceback
 
 from chromite.lib import cros_test_lib
+from chromite.lib import gs
 from chromite.lib import osutils
 from chromite.lib.paygen import download_cache
-from chromite.lib.paygen import gslib
 
 
 # We access a lot of protected members during testing.
@@ -126,6 +126,8 @@ class DownloadCacheTest(cros_test_lib.TempDirTestCase):
     # other things (including tempfiles by gsutil/etc...).
     self.cache_dir = os.path.join(self.tempdir, 'unittest-cache')
 
+    self.ctx = gs.GSContext()
+
   def _verifyFileContents(self, cache, uri):
     """Test helper to make sure a cached file contains correct contents."""
 
@@ -134,7 +136,7 @@ class DownloadCacheTest(cros_test_lib.TempDirTestCase):
       contents = f.read()
 
     # Make sure the contents are valid.
-    self.assertEqual(contents, gslib.Cat(uri))
+    self.assertEqual(contents, self.ctx.Cat(uri))
 
     # Make sure the cache file exists where expected.
     cache_file = cache._UriToCacheFile(uri)
@@ -288,7 +290,7 @@ class DownloadCacheTest(cros_test_lib.TempDirTestCase):
       contents_t = f.read()
 
     self.assertEqual(contents_t, contents_a)
-    self.assertEqual(contents_t, gslib.Cat(self.uri_a))
+    self.assertEqual(contents_t, self.ctx.Cat(self.uri_a))
 
   @cros_test_lib.NetworkTest()
   def testPurgeLogic(self):

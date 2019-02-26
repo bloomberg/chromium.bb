@@ -12,9 +12,7 @@ using content::BrowserThread;
 
 namespace android_webview {
 
-AwResourceContext::AwResourceContext(net::URLRequestContextGetter* getter)
-    : getter_(getter) {
-  DCHECK(getter_);
+AwResourceContext::AwResourceContext() {
 }
 
 AwResourceContext::~AwResourceContext() {
@@ -38,11 +36,6 @@ std::string AwResourceContext::GetExtraHeaders(const GURL& url) {
   std::map<std::string, std::string>::iterator iter =
       extra_headers_.find(url.spec());
   return iter != extra_headers_.end() ? iter->second : std::string();
-}
-
-net::URLRequestContext* AwResourceContext::GetRequestContext() {
-  DCHECK_CURRENTLY_ON(BrowserThread::IO);
-  return getter_->GetURLRequestContext();
 }
 
 }  // namespace android_webview

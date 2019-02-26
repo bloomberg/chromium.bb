@@ -34,9 +34,9 @@
 #include "components/autofill/core/browser/test_autofill_driver.h"
 #include "components/autofill/core/browser/test_autofill_manager.h"
 #include "components/autofill/core/browser/test_credit_card_save_manager.h"
+#include "components/autofill/core/browser/test_form_data_importer.h"
+#include "components/autofill/core/browser/test_legacy_strike_database.h"
 #include "components/autofill/core/browser/test_personal_data_manager.h"
-#include "components/autofill/core/browser/test_strike_database.h"
-#include "components/autofill/core/browser/test_sync_service.h"
 #include "components/autofill/core/browser/validation.h"
 #include "components/autofill/core/browser/webdata/autofill_webdata_service.h"
 #include "components/autofill/core/common/autofill_clock.h"
@@ -45,6 +45,7 @@
 #include "components/autofill/core/common/form_data.h"
 #include "components/autofill/core/common/form_field_data.h"
 #include "components/prefs/pref_service.h"
+#include "components/sync/driver/test_sync_service.h"
 #include "components/ukm/test_ukm_recorder.h"
 #include "net/url_request/url_request_context_getter.h"
 #include "net/url_request/url_request_test_util.h"
@@ -88,12 +89,19 @@ std::string NextMonth() {
 
 }  // anonymous namespace
 
+class MockPersonalDataManager : public TestPersonalDataManager {
+ public:
+  MockPersonalDataManager() {}
+  ~MockPersonalDataManager() override {}
+  MOCK_METHOD0(OnUserAcceptedUpstreamOffer, void());
+};
+
 class CreditCardSaveManagerTest : public testing::Test {
  public:
   void SetUp() override {
-    std::unique_ptr<TestStrikeDatabase> test_strike_database =
-        std::make_unique<TestStrikeDatabase>();
-    strike_database_ = test_strike_database.get();
+    std::unique_ptr<TestLegacyStrikeDatabase> test_strike_database =
+        std::make_unique<TestLegacyStrikeDatabase>();
+    legacy_strike_database_ = test_strike_database.get();
     autofill_client_.SetPrefs(test::PrefServiceForTesting());
     autofill_client_.set_test_strike_database(std::move(test_strike_database));
     personal_data_.Init(/*profile_database=*/autofill_client_.GetDatabase(),
@@ -102,6 +110,7 @@ class CreditCardSaveManagerTest : public testing::Test {
                         /*identity_manager=*/nullptr,
                         /*client_profile_validator=*/nullptr,
                         /*history_service=*/nullptr,
+                        /*cookie_manager_sevice=*/nullptr,
                         /*is_off_the_record=*/false);
     personal_data_.SetSyncServiceForTest(&sync_service_);
     autofill_driver_.reset(new TestAutofillDriver());
@@ -111,14 +120,21 @@ class CreditCardSaveManagerTest : public testing::Test {
     payments_client_ = new payments::TestPaymentsClient(
         autofill_driver_->GetURLLoaderFactory(), autofill_client_.GetPrefs(),
         autofill_client_.GetIdentityManager(), &personal_data_);
+    autofill_client_.set_test_payments_client(
+        std::unique_ptr<payments::TestPaymentsClient>(payments_client_));
     credit_card_save_manager_ =
         new TestCreditCardSaveManager(autofill_driver_.get(), &autofill_client_,
                                       payments_client_, &personal_data_);
     credit_card_save_manager_->SetCreditCardUploadEnabled(true);
+    autofill::TestFormDataImporter* test_form_data_importer =
+        new TestFormDataImporter(
+            &autofill_client_, payments_client_,
+            std::unique_ptr<CreditCardSaveManager>(credit_card_save_manager_),
+            &personal_data_, "en-US");
+    autofill_client_.set_test_form_data_importer(
+        std::unique_ptr<TestFormDataImporter>(test_form_data_importer));
     autofill_manager_.reset(new TestAutofillManager(
-        autofill_driver_.get(), &autofill_client_, &personal_data_,
-        std::unique_ptr<CreditCardSaveManager>(credit_card_save_manager_),
-        payments_client_));
+        autofill_driver_.get(), &autofill_client_, &personal_data_));
     autofill_manager_->SetExpectedObservedSubmission(true);
   }
 
@@ -143,8 +159,10 @@ class CreditCardSaveManagerTest : public testing::Test {
         form, false, SubmissionSource::FORM_SUBMISSION, base::TimeTicks::Now());
   }
 
-  void UserHasAcceptedUpload(const base::string16& cardholder_name) {
-    credit_card_save_manager_->OnUserDidAcceptUpload(cardholder_name);
+  void UserHasAcceptedUpload(
+      AutofillClient::UserProvidedCardDetails user_provided_card_details) {
+    credit_card_save_manager_->OnUserDidAcceptUpload(
+        user_provided_card_details);
   }
 
   // Populates |form| with data corresponding to a simple credit card form.
@@ -304,15 +322,15 @@ class CreditCardSaveManagerTest : public testing::Test {
   std::unique_ptr<TestAutofillDriver> autofill_driver_;
   std::unique_ptr<TestAutofillManager> autofill_manager_;
   scoped_refptr<net::TestURLRequestContextGetter> request_context_;
-  TestPersonalDataManager personal_data_;
-  TestSyncService sync_service_;
+  MockPersonalDataManager personal_data_;
+  syncer::TestSyncService sync_service_;
   base::test::ScopedFeatureList scoped_feature_list_;
   // Ends up getting owned (and destroyed) by TestFormDataImporter:
   TestCreditCardSaveManager* credit_card_save_manager_;
-  // Ends up getting owned (and destroyed) by TestAutofillManager:
+  // Ends up getting owned (and destroyed) by TestAutofillClient:
   payments::TestPaymentsClient* payments_client_;
   // Ends up getting owned (and destroyed) by TestAutofillClient:
-  TestStrikeDatabase* strike_database_;
+  TestLegacyStrikeDatabase* legacy_strike_database_;
 
  private:
   int ToHistogramSample(AutofillMetrics::CardUploadDecisionMetric metric) {
@@ -489,9 +507,8 @@ TEST_F(CreditCardSaveManagerTest, UploadCreditCard_FullAddresses) {
   // modified the profile.
   histogram_tester.ExpectTotalCount(
       "Autofill.DaysSincePreviousUseAtSubmission.Profile", 0);
-
   // Simulate that the user has accepted the upload from the prompt.
-  UserHasAcceptedUpload(/*cardholder_name=*/base::ASCIIToUTF16(""));
+  UserHasAcceptedUpload({});
   // We should find that full addresses are included in the UploadCard request.
   EXPECT_THAT(
       payments_client_->addresses_in_upload_card(),
@@ -562,7 +579,7 @@ TEST_F(CreditCardSaveManagerTest, UploadCreditCard_OnlyCountryInAddresses) {
       "Autofill.DaysSincePreviousUseAtSubmission.Profile", 0);
 
   // Simulate that the user has accepted the upload from the prompt.
-  UserHasAcceptedUpload(/*cardholder_name=*/base::ASCIIToUTF16(""));
+  UserHasAcceptedUpload({});
   // We should find that full addresses are included in the UploadCard request,
   // even though only countries were included in GetUploadDetails.
   EXPECT_THAT(
@@ -2330,6 +2347,308 @@ TEST_F(
   EXPECT_FALSE(credit_card_save_manager_->should_request_name_from_user_);
 }
 
+// This test ensures |should_request_expiration_date_from_user_|
+// is reset between offers to save.
+TEST_F(
+    CreditCardSaveManagerTest,
+    UploadCreditCard_ShouldRequestExpirationDate_ResetBetweenConsecutiveSaves) {
+  scoped_feature_list_.InitAndEnableFeature(
+      features::kAutofillUpstreamEditableExpirationDate);
+
+  // Create, fill and submit an address form in order to establish a recent
+  // profile which can be selected for the upload request.
+  FormData address_form;
+  test::CreateTestAddressFormData(&address_form);
+  FormsSeen(std::vector<FormData>(1, address_form));
+  ManuallyFillAddressForm("Flo", "Master", "77401", "US", &address_form);
+  FormSubmitted(address_form);
+
+  // Set up our credit card form data.
+  FormData credit_card_form;
+  CreateTestCreditCardFormData(&credit_card_form, true, false);
+  FormsSeen(std::vector<FormData>(1, credit_card_form));
+
+  // Edit the data, but don't include a expiration date, and submit.
+  credit_card_form.fields[0].value = ASCIIToUTF16("Jane Doe");
+  credit_card_form.fields[1].value = ASCIIToUTF16("4111111111111111");
+  credit_card_form.fields[2].value = ASCIIToUTF16("");
+  credit_card_form.fields[3].value = ASCIIToUTF16("");
+  credit_card_form.fields[4].value = ASCIIToUTF16("123");
+
+  // With the offer-to-save decision deferred to Google Payments, Payments can
+  // still decide to allow saving despite the missing expiration date.
+  FormSubmitted(credit_card_form);
+  EXPECT_FALSE(autofill_client_.ConfirmSaveCardLocallyWasCalled());
+  EXPECT_TRUE(credit_card_save_manager_->CreditCardWasUploaded());
+
+  // Verify the |credit_card_save_manager_| is requesting expiration date.
+  EXPECT_TRUE(
+      credit_card_save_manager_->should_request_expiration_date_from_user_);
+
+  // Edit the data, include a expiration date, and submit this time.
+  credit_card_form.fields[0].value = ASCIIToUTF16("Jane Doe");
+  credit_card_form.fields[1].value = ASCIIToUTF16("4111111111111111");
+  credit_card_form.fields[2].value = ASCIIToUTF16(NextMonth());
+  credit_card_form.fields[3].value = ASCIIToUTF16(NextYear());
+  credit_card_form.fields[4].value = ASCIIToUTF16("123");
+  FormSubmitted(credit_card_form);
+
+  // Verify the |credit_card_save_manager_| is NOT requesting expiration date.
+  EXPECT_FALSE(
+      credit_card_save_manager_->should_request_expiration_date_from_user_);
+}
+
+TEST_F(
+    CreditCardSaveManagerTest,
+    UploadCreditCard_DoNotRequestExpirationDateIfMissingNameAndExpirationDate) {
+  scoped_feature_list_.InitWithFeatures(
+      {features::kAutofillUpstreamEditableExpirationDate,
+       features::kAutofillUpstreamEditableCardholderName},
+      {});
+  // Create, fill and submit an address form in order to establish a recent
+  // profile which can be selected for the upload request.
+  FormData address_form;
+  test::CreateTestAddressFormData(&address_form);
+  FormsSeen(std::vector<FormData>(1, address_form));
+  // But omit the name:
+  ManuallyFillAddressForm("", "", "77401", "US", &address_form);
+  FormSubmitted(address_form);
+
+  // Set up our credit card form data.
+  FormData credit_card_form;
+  CreateTestCreditCardFormData(&credit_card_form, true, false);
+  FormsSeen(std::vector<FormData>(1, credit_card_form));
+
+  // Edit the data, and submit.
+  credit_card_form.fields[0].value = ASCIIToUTF16("");
+  credit_card_form.fields[1].value = ASCIIToUTF16("4111111111111111");
+  credit_card_form.fields[2].value = ASCIIToUTF16("");
+  credit_card_form.fields[3].value = ASCIIToUTF16("");
+  credit_card_form.fields[4].value = ASCIIToUTF16("123");
+
+  base::HistogramTester histogram_tester;
+
+  FormSubmitted(credit_card_form);
+  EXPECT_FALSE(autofill_client_.ConfirmSaveCardLocallyWasCalled());
+  EXPECT_FALSE(credit_card_save_manager_->CreditCardWasUploaded());
+}
+
+TEST_F(CreditCardSaveManagerTest,
+       UploadCreditCard_RequestExpirationDateIfTestingExperimentOn) {
+  scoped_feature_list_.InitAndEnableFeature(
+      features::kAutofillUpstreamEditableExpirationDate);
+  // Create, fill and submit an address form in order to establish a recent
+  // profile which can be selected for the upload request.
+  FormData address_form;
+  test::CreateTestAddressFormData(&address_form);
+  FormsSeen(std::vector<FormData>(1, address_form));
+  ManuallyFillAddressForm("John", "Smith", "77401", "US", &address_form);
+  FormSubmitted(address_form);
+
+  // Set up our credit card form data.
+  FormData credit_card_form;
+  CreateTestCreditCardFormData(&credit_card_form, true, false);
+  FormsSeen(std::vector<FormData>(1, credit_card_form));
+
+  // Edit the data, and submit.
+  credit_card_form.fields[0].value = ASCIIToUTF16("John Smith");
+  credit_card_form.fields[1].value = ASCIIToUTF16("4111111111111111");
+  credit_card_form.fields[2].value = ASCIIToUTF16("");
+  credit_card_form.fields[3].value = ASCIIToUTF16("");
+  credit_card_form.fields[4].value = ASCIIToUTF16("123");
+
+  base::HistogramTester histogram_tester;
+  FormSubmitted(credit_card_form);
+  // Verify that the correct histogram entry and DetectedValue for "Expiration
+  // date explicitly requested" was logged.
+  ExpectCardUploadDecision(
+      histogram_tester,
+      AutofillMetrics::USER_REQUESTED_TO_PROVIDE_EXPIRATION_DATE);
+  histogram_tester.ExpectUniqueSample(
+      "Autofill.SaveCardRequestExpirationDateReason",
+      AutofillMetrics::SaveCardRequestExpirationDateReasonMetric::
+          kMonthAndYearMissing,
+      1);
+  EXPECT_FALSE(autofill_client_.ConfirmSaveCardLocallyWasCalled());
+  EXPECT_TRUE(credit_card_save_manager_->CreditCardWasUploaded());
+  EXPECT_TRUE(
+      payments_client_->detected_values_in_upload_details() &
+      CreditCardSaveManager::DetectedValue::USER_PROVIDED_EXPIRATION_DATE);
+}
+
+TEST_F(CreditCardSaveManagerTest,
+       UploadCreditCard_RequestExpirationDateIfOnlyMonthMissing) {
+  scoped_feature_list_.InitAndEnableFeature(
+      features::kAutofillUpstreamEditableExpirationDate);
+  // Create, fill and submit an address form in order to establish a recent
+  // profile which can be selected for the upload request.
+  FormData address_form;
+  test::CreateTestAddressFormData(&address_form);
+  FormsSeen(std::vector<FormData>(1, address_form));
+  ManuallyFillAddressForm("John", "Smith", "77401", "US", &address_form);
+  FormSubmitted(address_form);
+
+  // Set up our credit card form data.
+  FormData credit_card_form;
+  CreateTestCreditCardFormData(&credit_card_form, true, false);
+  FormsSeen(std::vector<FormData>(1, credit_card_form));
+
+  // Edit the data, and submit.
+  credit_card_form.fields[0].value = ASCIIToUTF16("John Smith");
+  credit_card_form.fields[1].value = ASCIIToUTF16("4111111111111111");
+  credit_card_form.fields[2].value = ASCIIToUTF16("");
+  credit_card_form.fields[3].value = ASCIIToUTF16(NextYear());
+  credit_card_form.fields[4].value = ASCIIToUTF16("123");
+
+  base::HistogramTester histogram_tester;
+  FormSubmitted(credit_card_form);
+  // Verify that the correct histogram entry and DetectedValue for "Expiration
+  // date explicitly requested" was logged.
+  ExpectCardUploadDecision(
+      histogram_tester,
+      AutofillMetrics::USER_REQUESTED_TO_PROVIDE_EXPIRATION_DATE);
+  histogram_tester.ExpectUniqueSample(
+      "Autofill.SaveCardRequestExpirationDateReason",
+      AutofillMetrics::SaveCardRequestExpirationDateReasonMetric::
+          kMonthMissingOnly,
+      1);
+  EXPECT_FALSE(autofill_client_.ConfirmSaveCardLocallyWasCalled());
+  EXPECT_TRUE(credit_card_save_manager_->CreditCardWasUploaded());
+  EXPECT_TRUE(
+      payments_client_->detected_values_in_upload_details() &
+      CreditCardSaveManager::DetectedValue::USER_PROVIDED_EXPIRATION_DATE);
+}
+
+TEST_F(CreditCardSaveManagerTest,
+       UploadCreditCard_RequestExpirationDateIfOnlyYearMissing) {
+  scoped_feature_list_.InitAndEnableFeature(
+      features::kAutofillUpstreamEditableExpirationDate);
+  // Create, fill and submit an address form in order to establish a recent
+  // profile which can be selected for the upload request.
+  FormData address_form;
+  test::CreateTestAddressFormData(&address_form);
+  FormsSeen(std::vector<FormData>(1, address_form));
+  ManuallyFillAddressForm("John", "Smith", "77401", "US", &address_form);
+  FormSubmitted(address_form);
+
+  // Set up our credit card form data.
+  FormData credit_card_form;
+  CreateTestCreditCardFormData(&credit_card_form, true, false);
+  FormsSeen(std::vector<FormData>(1, credit_card_form));
+
+  // Edit the data, and submit.
+  credit_card_form.fields[0].value = ASCIIToUTF16("John Smith");
+  credit_card_form.fields[1].value = ASCIIToUTF16("4111111111111111");
+  credit_card_form.fields[2].value = ASCIIToUTF16(NextMonth());
+  credit_card_form.fields[3].value = ASCIIToUTF16("");
+  credit_card_form.fields[4].value = ASCIIToUTF16("123");
+
+  base::HistogramTester histogram_tester;
+  FormSubmitted(credit_card_form);
+  // Verify that the correct histogram entry and DetectedValue for "Expiration
+  // date explicitly requested" was logged.
+  ExpectCardUploadDecision(
+      histogram_tester,
+      AutofillMetrics::USER_REQUESTED_TO_PROVIDE_EXPIRATION_DATE);
+  histogram_tester.ExpectUniqueSample(
+      "Autofill.SaveCardRequestExpirationDateReason",
+      AutofillMetrics::SaveCardRequestExpirationDateReasonMetric::
+          kYearMissingOnly,
+      1);
+  EXPECT_FALSE(autofill_client_.ConfirmSaveCardLocallyWasCalled());
+  EXPECT_TRUE(credit_card_save_manager_->CreditCardWasUploaded());
+  EXPECT_TRUE(
+      payments_client_->detected_values_in_upload_details() &
+      CreditCardSaveManager::DetectedValue::USER_PROVIDED_EXPIRATION_DATE);
+}
+
+TEST_F(CreditCardSaveManagerTest,
+       UploadCreditCard_RequestExpirationDateIfExpirationDateInputIsExpired) {
+  scoped_feature_list_.InitAndEnableFeature(
+      features::kAutofillUpstreamEditableExpirationDate);
+  // Create, fill and submit an address form in order to establish a recent
+  // profile which can be selected for the upload request.
+  FormData address_form;
+  test::CreateTestAddressFormData(&address_form);
+  FormsSeen(std::vector<FormData>(1, address_form));
+  ManuallyFillAddressForm("John", "Smith", "77401", "US", &address_form);
+  FormSubmitted(address_form);
+
+  // Set up our credit card form data.
+  FormData credit_card_form;
+  CreateTestCreditCardFormData(&credit_card_form, true, false);
+  FormsSeen(std::vector<FormData>(1, credit_card_form));
+
+  // Edit the data, and submit.
+  credit_card_form.fields[0].value = ASCIIToUTF16("John Smith");
+  credit_card_form.fields[1].value = ASCIIToUTF16("4111111111111111");
+  credit_card_form.fields[2].value = ASCIIToUTF16("09");
+  credit_card_form.fields[3].value = ASCIIToUTF16("2000");
+  credit_card_form.fields[4].value = ASCIIToUTF16("123");
+
+  base::HistogramTester histogram_tester;
+  FormSubmitted(credit_card_form);
+  // Verify that the correct histogram entry and DetectedValue for "Expiration
+  // date explicitly requested" was logged.
+  ExpectCardUploadDecision(
+      histogram_tester,
+      AutofillMetrics::USER_REQUESTED_TO_PROVIDE_EXPIRATION_DATE);
+  histogram_tester.ExpectUniqueSample(
+      "Autofill.SaveCardRequestExpirationDateReason",
+      AutofillMetrics::SaveCardRequestExpirationDateReasonMetric::
+          kExpirationDatePresentButExpired,
+      1);
+  EXPECT_FALSE(autofill_client_.ConfirmSaveCardLocallyWasCalled());
+  EXPECT_TRUE(credit_card_save_manager_->CreditCardWasUploaded());
+  EXPECT_TRUE(
+      payments_client_->detected_values_in_upload_details() &
+      CreditCardSaveManager::DetectedValue::USER_PROVIDED_EXPIRATION_DATE);
+}
+
+TEST_F(
+    CreditCardSaveManagerTest,
+    UploadCreditCard_RequestExpirationDateIfExpirationDateInputIsTwoDigitAndExpired) {
+  scoped_feature_list_.InitAndEnableFeature(
+      features::kAutofillUpstreamEditableExpirationDate);
+  // Create, fill and submit an address form in order to establish a recent
+  // profile which can be selected for the upload request.
+  FormData address_form;
+  test::CreateTestAddressFormData(&address_form);
+  FormsSeen(std::vector<FormData>(1, address_form));
+  ManuallyFillAddressForm("John", "Smith", "77401", "US", &address_form);
+  FormSubmitted(address_form);
+
+  // Set up our credit card form data.
+  FormData credit_card_form;
+  CreateTestCreditCardFormData(&credit_card_form, true, false);
+  FormsSeen(std::vector<FormData>(1, credit_card_form));
+
+  // Edit the data with 2 digit year and submit.
+  credit_card_form.fields[0].value = ASCIIToUTF16("John Smith");
+  credit_card_form.fields[1].value = ASCIIToUTF16("4111111111111111");
+  credit_card_form.fields[2].value = ASCIIToUTF16("01");
+  credit_card_form.fields[3].value = ASCIIToUTF16("10");
+  credit_card_form.fields[4].value = ASCIIToUTF16("123");
+
+  base::HistogramTester histogram_tester;
+  FormSubmitted(credit_card_form);
+  // Verify that the correct histogram entry and DetectedValue for "Expiration
+  // date explicitly requested" was logged.
+  ExpectCardUploadDecision(
+      histogram_tester,
+      AutofillMetrics::USER_REQUESTED_TO_PROVIDE_EXPIRATION_DATE);
+  histogram_tester.ExpectUniqueSample(
+      "Autofill.SaveCardRequestExpirationDateReason",
+      AutofillMetrics::SaveCardRequestExpirationDateReasonMetric::
+          kExpirationDatePresentButExpired,
+      1);
+  EXPECT_FALSE(autofill_client_.ConfirmSaveCardLocallyWasCalled());
+  EXPECT_TRUE(credit_card_save_manager_->CreditCardWasUploaded());
+  EXPECT_TRUE(
+      payments_client_->detected_values_in_upload_details() &
+      CreditCardSaveManager::DetectedValue::USER_PROVIDED_EXPIRATION_DATE);
+}
+
 TEST_F(CreditCardSaveManagerTest,
        UploadCreditCard_RequestCardholderNameIfTestingExperimentOn) {
   scoped_feature_list_.InitAndEnableFeature(
@@ -3795,8 +4114,9 @@ TEST_F(CreditCardSaveManagerTest,
   credit_card_save_manager_->SetCreditCardUploadEnabled(false);
 
   // Max out strikes for the card to be added.
-  strike_database_->AddEntryWithNumStrikes(
-      strike_database_->GetKeyForCreditCardSave("1111"), /*num_strikes=*/3);
+  legacy_strike_database_->AddEntryWithNumStrikes(
+      legacy_strike_database_->GetKeyForCreditCardSave("1111"),
+      /*num_strikes=*/3);
 
   // Set up our credit card form data.
   FormData credit_card_form;
@@ -3836,8 +4156,9 @@ TEST_F(CreditCardSaveManagerTest,
       features::kAutofillSaveCreditCardUsesStrikeSystem);
 
   // Max out strikes for the card to be added.
-  strike_database_->AddEntryWithNumStrikes(
-      strike_database_->GetKeyForCreditCardSave("1111"), /*num_strikes=*/3);
+  legacy_strike_database_->AddEntryWithNumStrikes(
+      legacy_strike_database_->GetKeyForCreditCardSave("1111"),
+      /*num_strikes=*/3);
 
   // Create, fill and submit an address form in order to establish a recent
   // profile which can be selected for the upload request.
@@ -3888,8 +4209,9 @@ TEST_F(CreditCardSaveManagerTest,
   credit_card_save_manager_->SetCreditCardUploadEnabled(false);
 
   // Add a single strike for the card to be added.
-  strike_database_->AddEntryWithNumStrikes(
-      strike_database_->GetKeyForCreditCardSave("1111"), /*num_strikes=*/1);
+  legacy_strike_database_->AddEntryWithNumStrikes(
+      legacy_strike_database_->GetKeyForCreditCardSave("1111"),
+      /*num_strikes=*/1);
 
   // Set up our credit card form data.
   FormData credit_card_form;
@@ -3927,8 +4249,9 @@ TEST_F(CreditCardSaveManagerTest,
       features::kAutofillSaveCreditCardUsesStrikeSystem);
 
   // Add a single strike for the card to be added.
-  strike_database_->AddEntryWithNumStrikes(
-      strike_database_->GetKeyForCreditCardSave("1111"), /*num_strikes=*/1);
+  legacy_strike_database_->AddEntryWithNumStrikes(
+      legacy_strike_database_->GetKeyForCreditCardSave("1111"),
+      /*num_strikes=*/1);
 
   // Create, fill and submit an address form in order to establish a recent
   // profile which can be selected for the upload request.
@@ -3977,8 +4300,9 @@ TEST_F(CreditCardSaveManagerTest,
   credit_card_save_manager_->SetCreditCardUploadEnabled(false);
 
   // Max out strikes for the card to be added.
-  strike_database_->AddEntryWithNumStrikes(
-      strike_database_->GetKeyForCreditCardSave("1111"), /*num_strikes=*/3);
+  legacy_strike_database_->AddEntryWithNumStrikes(
+      legacy_strike_database_->GetKeyForCreditCardSave("1111"),
+      /*num_strikes=*/3);
 
   // Set up our credit card form data.
   FormData credit_card_form;
@@ -4012,8 +4336,9 @@ TEST_F(CreditCardSaveManagerTest, UploadCreditCard_MaxStrikesDisallowsSave) {
       features::kAutofillSaveCreditCardUsesStrikeSystem);
 
   // Max out strikes for the card to be added.
-  strike_database_->AddEntryWithNumStrikes(
-      strike_database_->GetKeyForCreditCardSave("1111"), /*num_strikes=*/3);
+  legacy_strike_database_->AddEntryWithNumStrikes(
+      legacy_strike_database_->GetKeyForCreditCardSave("1111"),
+      /*num_strikes=*/3);
 
   // Create, fill and submit an address form in order to establish a recent
   // profile which can be selected for the upload request.
@@ -4067,8 +4392,9 @@ TEST_F(CreditCardSaveManagerTest,
   credit_card_save_manager_->SetCreditCardUploadEnabled(false);
 
   // Max out strikes for the card to be added.
-  strike_database_->AddEntryWithNumStrikes(
-      strike_database_->GetKeyForCreditCardSave("1111"), /*num_strikes=*/3);
+  legacy_strike_database_->AddEntryWithNumStrikes(
+      legacy_strike_database_->GetKeyForCreditCardSave("1111"),
+      /*num_strikes=*/3);
 
   // Set up our credit card form data.
   FormData credit_card_form;
@@ -4106,8 +4432,9 @@ TEST_F(CreditCardSaveManagerTest, UploadCreditCard_MaxStrikesStillAllowsSave) {
       features::kAutofillSaveCreditCardUsesStrikeSystem);
 
   // Max out strikes for the card to be added.
-  strike_database_->AddEntryWithNumStrikes(
-      strike_database_->GetKeyForCreditCardSave("1111"), /*num_strikes=*/3);
+  legacy_strike_database_->AddEntryWithNumStrikes(
+      legacy_strike_database_->GetKeyForCreditCardSave("1111"),
+      /*num_strikes=*/3);
 
   // Create, fill and submit an address form in order to establish a recent
   // profile which can be selected for the upload request.
@@ -4156,10 +4483,11 @@ TEST_F(CreditCardSaveManagerTest, LocallySaveCreditCard_ClearStrikesOnAdd) {
   credit_card_save_manager_->SetCreditCardUploadEnabled(false);
 
   // Add a couple of strikes for the card to be added.
-  strike_database_->AddEntryWithNumStrikes(
-      strike_database_->GetKeyForCreditCardSave("1111"), /*num_strikes=*/2);
-  EXPECT_EQ(2, strike_database_->GetStrikesForTesting(
-                   strike_database_->GetKeyForCreditCardSave("1111")));
+  legacy_strike_database_->AddEntryWithNumStrikes(
+      legacy_strike_database_->GetKeyForCreditCardSave("1111"),
+      /*num_strikes=*/2);
+  EXPECT_EQ(2, legacy_strike_database_->GetStrikesForTesting(
+                   legacy_strike_database_->GetKeyForCreditCardSave("1111")));
 
   // Set up our credit card form data.
   FormData credit_card_form;
@@ -4179,8 +4507,8 @@ TEST_F(CreditCardSaveManagerTest, LocallySaveCreditCard_ClearStrikesOnAdd) {
   EXPECT_FALSE(credit_card_save_manager_->CreditCardWasUploaded());
 
   // Verify that adding the card reset the strike count for that card.
-  EXPECT_EQ(0, strike_database_->GetStrikesForTesting(
-                   strike_database_->GetKeyForCreditCardSave("1111")));
+  EXPECT_EQ(0, legacy_strike_database_->GetStrikesForTesting(
+                   legacy_strike_database_->GetKeyForCreditCardSave("1111")));
 }
 
 // Tests that adding a card clears all strikes for that card.
@@ -4189,10 +4517,11 @@ TEST_F(CreditCardSaveManagerTest, UploadCreditCard_ClearStrikesOnAdd) {
       features::kAutofillSaveCreditCardUsesStrikeSystem);
 
   // Add a couple of strikes for the card to be added.
-  strike_database_->AddEntryWithNumStrikes(
-      strike_database_->GetKeyForCreditCardSave("1111"), /*num_strikes=*/2);
-  EXPECT_EQ(2, strike_database_->GetStrikesForTesting(
-                   strike_database_->GetKeyForCreditCardSave("1111")));
+  legacy_strike_database_->AddEntryWithNumStrikes(
+      legacy_strike_database_->GetKeyForCreditCardSave("1111"),
+      /*num_strikes=*/2);
+  EXPECT_EQ(2, legacy_strike_database_->GetStrikesForTesting(
+                   legacy_strike_database_->GetKeyForCreditCardSave("1111")));
 
   // Create, fill and submit an address form in order to establish a recent
   // profile which can be selected for the upload request.
@@ -4222,8 +4551,8 @@ TEST_F(CreditCardSaveManagerTest, UploadCreditCard_ClearStrikesOnAdd) {
   EXPECT_TRUE(credit_card_save_manager_->CreditCardWasUploaded());
 
   // Verify that adding the card reset the strike count for that card.
-  EXPECT_EQ(0, strike_database_->GetStrikesForTesting(
-                   strike_database_->GetKeyForCreditCardSave("1111")));
+  EXPECT_EQ(0, legacy_strike_database_->GetStrikesForTesting(
+                   legacy_strike_database_->GetKeyForCreditCardSave("1111")));
 }
 
 // Tests that adding a card clears all strikes for that card.
@@ -4233,10 +4562,11 @@ TEST_F(CreditCardSaveManagerTest, LocallySaveCreditCard_NumStrikesLoggedOnAdd) {
   credit_card_save_manager_->SetCreditCardUploadEnabled(false);
 
   // Add a couple of strikes for the card to be added.
-  strike_database_->AddEntryWithNumStrikes(
-      strike_database_->GetKeyForCreditCardSave("1111"), /*num_strikes=*/2);
-  EXPECT_EQ(2, strike_database_->GetStrikesForTesting(
-                   strike_database_->GetKeyForCreditCardSave("1111")));
+  legacy_strike_database_->AddEntryWithNumStrikes(
+      legacy_strike_database_->GetKeyForCreditCardSave("1111"),
+      /*num_strikes=*/2);
+  EXPECT_EQ(2, legacy_strike_database_->GetStrikesForTesting(
+                   legacy_strike_database_->GetKeyForCreditCardSave("1111")));
 
   // Set up our credit card form data.
   FormData credit_card_form;
@@ -4269,10 +4599,11 @@ TEST_F(CreditCardSaveManagerTest, UploadCreditCard_NumStrikesLoggedOnAdd) {
       features::kAutofillSaveCreditCardUsesStrikeSystem);
 
   // Add a couple of strikes for the card to be added.
-  strike_database_->AddEntryWithNumStrikes(
-      strike_database_->GetKeyForCreditCardSave("1111"), /*num_strikes=*/2);
-  EXPECT_EQ(2, strike_database_->GetStrikesForTesting(
-                   strike_database_->GetKeyForCreditCardSave("1111")));
+  legacy_strike_database_->AddEntryWithNumStrikes(
+      legacy_strike_database_->GetKeyForCreditCardSave("1111"),
+      /*num_strikes=*/2);
+  EXPECT_EQ(2, legacy_strike_database_->GetStrikesForTesting(
+                   legacy_strike_database_->GetKeyForCreditCardSave("1111")));
 
   // Create, fill and submit an address form in order to establish a recent
   // profile which can be selected for the upload request.
@@ -4307,6 +4638,15 @@ TEST_F(CreditCardSaveManagerTest, UploadCreditCard_NumStrikesLoggedOnAdd) {
   histogram_tester.ExpectUniqueSample(
       "Autofill.StrikeDatabase.StrikesPresentWhenServerCardSaved",
       /*sample=*/2, /*count=*/1);
+}
+
+// Make sure that the PersonalDataManager gets notified when the user accepts
+// an upload offer.
+TEST_F(CreditCardSaveManagerTest, OnUserDidAcceptUpload_NotifiesPDM) {
+  EXPECT_CALL(personal_data_, OnUserAcceptedUpstreamOffer);
+
+  // Simulate that the user has accepted the upload from the prompt.
+  UserHasAcceptedUpload({});
 }
 
 }  // namespace autofill

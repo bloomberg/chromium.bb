@@ -40,7 +40,7 @@ from json5_generator import Json5File
 
 
 def _symbol(entry):
-    return entry['name'].original.replace('-', '_')
+    return 'k' + entry['name'].to_upper_camel_case()
 
 
 class MakeQualifiedNamesWriter(json5_generator.Writer):
@@ -85,10 +85,10 @@ class MakeQualifiedNamesWriter(json5_generator.Writer):
             self.attrs_json5_file.merge_from(self.aria_reader.attributes_list())
 
         self.namespace = self._metadata('namespace')
+        cpp_namespace = self.namespace.lower() + '_names'
+        namespace_prefix = self._metadata('namespacePrefix') or 'k'
 
-        namespace_prefix = self._metadata('namespacePrefix') or self.namespace.lower()
         namespace_uri = self._metadata('namespaceURI')
-
         use_namespace_for_attrs = self.attrs_json5_file.metadata['attrsNullNamespace'] is None
 
         self._outputs = {
@@ -98,6 +98,7 @@ class MakeQualifiedNamesWriter(json5_generator.Writer):
         qualified_header = self._relative_output_dir + self.namespace.lower() + '_names.h'
         self._template_context = {
             'attrs': self.attrs_json5_file.name_dictionaries,
+            'cpp_namespace': cpp_namespace,
             'export': self._metadata('export'),
             'header_guard': self.make_header_guard(qualified_header),
             'input_files': self._input_files,

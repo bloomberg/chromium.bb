@@ -10,6 +10,7 @@
 #include "base/callback_forward.h"
 #include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
+#include "base/test/scoped_task_environment.h"
 #include "base/test/trace_event_analyzer.h"
 #include "base/time/time.h"
 #include "base/trace_event/trace_config.h"
@@ -22,7 +23,7 @@
 namespace tracing {
 
 namespace {
-const char kTestCategory[] = "TraceEventAgentTestCategory";
+constexpr const char kTestCategory[] = "TraceEventAgentTestCategory";
 const char kTestMetadataKey[] = "TraceEventAgentTestMetadata";
 }  // namespace
 
@@ -81,16 +82,12 @@ class MockRecorder : public mojom::Recorder {
 
 class TraceEventAgentTest : public testing::Test {
  public:
-  void SetUp() override {
-    message_loop_.reset(new base::MessageLoop());
-    agent_.reset(new LegacyTraceEventAgent(nullptr, false));
-  }
+  void SetUp() override { agent_.reset(new TraceEventAgent(nullptr, false)); }
 
   void TearDown() override {
     base::trace_event::TraceLog::GetInstance()->SetDisabled();
     recorder_.reset();
     agent_.reset();
-    message_loop_.reset();
   }
 
   void StartTracing(const std::string& categories) {
@@ -129,8 +126,8 @@ class TraceEventAgentTest : public testing::Test {
   MockRecorder* recorder() const { return recorder_.get(); }
 
  private:
-  std::unique_ptr<base::MessageLoop> message_loop_;
-  std::unique_ptr<LegacyTraceEventAgent> agent_;
+  base::test::ScopedTaskEnvironment scoped_task_environment_;
+  std::unique_ptr<TraceEventAgent> agent_;
   std::unique_ptr<MockRecorder> recorder_;
 };
 

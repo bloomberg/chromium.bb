@@ -66,7 +66,7 @@ void ScriptWrappableMarkingVisitor::TraceEpilogue() {
   ScheduleIdleLazyCleanup();
 }
 
-void ScriptWrappableMarkingVisitor::AbortTracing() {
+void ScriptWrappableMarkingVisitor::AbortTracingForTermination() {
   CHECK(ThreadState::Current());
   should_cleanup_ = true;
   tracing_in_progress_ = false;
@@ -74,9 +74,8 @@ void ScriptWrappableMarkingVisitor::AbortTracing() {
   PerformCleanup();
 }
 
-size_t ScriptWrappableMarkingVisitor::NumberOfWrappersToTrace() {
-  CHECK(ThreadState::Current());
-  return marking_deque_.size();
+bool ScriptWrappableMarkingVisitor::IsTracingDone() {
+  return marking_deque_.empty();
 }
 
 void ScriptWrappableMarkingVisitor::PerformCleanup() {
@@ -99,16 +98,10 @@ void ScriptWrappableMarkingVisitor::PerformCleanup() {
 }
 
 void ScriptWrappableMarkingVisitor::ScheduleIdleLazyCleanup() {
-  Thread* const thread = Platform::Current()->CurrentThread();
-  // Thread might already be gone, or some threads (e.g. PPAPI) don't have a
-  // scheduler.
-  if (!thread || !thread->Scheduler())
-    return;
-
   if (idle_cleanup_task_scheduled_)
     return;
 
-  Platform::Current()->CurrentThread()->Scheduler()->PostIdleTask(
+  ThreadScheduler::Current()->PostIdleTask(
       FROM_HERE, WTF::Bind(&ScriptWrappableMarkingVisitor::PerformLazyCleanup,
                            WTF::Unretained(this)));
   idle_cleanup_task_scheduled_ = true;

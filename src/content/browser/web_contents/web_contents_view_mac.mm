@@ -172,7 +172,8 @@ void WebContentsViewMac::StartDragging(
   // The drag invokes a nested event loop, arrange to continue
   // processing events.
   base::MessageLoopCurrent::ScopedNestableTaskAllower allow;
-  NSDragOperation mask = static_cast<NSDragOperation>(allowed_operations);
+  NSDragOperation mask = static_cast<NSDragOperation>(allowed_operations) &
+                         ~NSDragOperationGeneric;
   NSPoint offset = NSPointFromCGPoint(
       gfx::PointAtOffsetFromOrigin(image_offset).ToCGPoint());
   [cocoa_view_ startDragWithDropData:drop_data
@@ -202,8 +203,8 @@ void WebContentsViewMac::Focus() {
     delegate()->ResetStoredFocus();
 
   gfx::NativeView native_view = GetNativeViewForFocus();
-  NSWindow* window = [native_view window];
-  [window makeFirstResponder:native_view];
+  NSWindow* window = [native_view.GetNativeNSView() window];
+  [window makeFirstResponder:native_view.GetNativeNSView()];
 }
 
 void WebContentsViewMac::SetInitialFocus() {
@@ -376,7 +377,7 @@ RenderWidgetHostViewBase* WebContentsViewMac::CreateViewForWidget(
   // with us. In case there are other siblings of the content area, we want
   // to make sure the content area is on the bottom so other things draw over
   // it.
-  NSView* view_view = view->GetNativeView();
+  NSView* view_view = view->GetNativeView().GetNativeNSView();
   [view_view setFrame:[cocoa_view_.get() bounds]];
   [view_view setAutoresizingMask:NSViewWidthSizable | NSViewHeightSizable];
   // Add the new view below all other views; this also keeps it below any
@@ -446,6 +447,16 @@ void WebContentsViewMac::CloseTab() {
   web_contents_->Close(web_contents_->GetRenderViewHost());
 }
 
+void WebContentsViewMac::OnWindowVisibilityChanged(Visibility visibility) {
+  if (!web_contents() || web_contents()->IsBeingDestroyed())
+    return;
+  // TODO(ccameron): Communicate window visibility and occlusion from the remote
+  // process (for now, always treat remote windows as visible).
+  if (ns_view_bridge_remote_)
+    visibility = Visibility::VISIBLE;
+  web_contents()->UpdateWebContentsVisibility(visibility);
+}
+
 std::list<RenderWidgetHostViewMac*> WebContentsViewMac::GetChildViews() {
   // Remove any child NSViews that have been destroyed.
   std::list<RenderWidgetHostViewMac*> result;
@@ -483,6 +494,10 @@ void WebContentsViewMac::OnViewsHostableAttached(
         ns_view_id_, client.PassInterface(), std::move(bridge_request));
 
     ns_view_bridge_remote_->SetParentViewsNSView(views_host_->GetNSViewId());
+
+    // TODO(ccameron): Communicate window visibility and occlusion from the
+    // remote process (for now, always treat remote windows as visible).
+    OnWindowVisibilityChanged(content::Visibility::VISIBLE);
   } else if (factory_host_id != NSViewBridgeFactoryHost::kLocalDirectHostId) {
     LOG(ERROR) << "Failed to look up NSViewBridgeFactoryHost!";
   }
@@ -744,16 +759,17 @@ void WebContentsViewMac::OnViewsHostableMakeFirstResponder() {
 }
 
 - (void)updateWebContentsVisibility {
-  WebContentsImpl* webContents = [self webContents];
-  if (!webContents || webContents->IsBeingDestroyed())
+  if (!webContentsView_)
     return;
-
+  content::Visibility visibility = content::Visibility::VISIBLE;
   if ([self isHiddenOrHasHiddenAncestor] || ![self window])
-    webContents->UpdateWebContentsVisibility(content::Visibility::HIDDEN);
+    visibility = content::Visibility::HIDDEN;
   else if ([[self window] occlusionState] & NSWindowOcclusionStateVisible)
-    webContents->UpdateWebContentsVisibility(content::Visibility::VISIBLE);
+    visibility = content::Visibility::VISIBLE;
   else
-    webContents->UpdateWebContentsVisibility(content::Visibility::OCCLUDED);
+    visibility = content::Visibility::OCCLUDED;
+  if (webContentsView_)
+    webContentsView_->OnWindowVisibilityChanged(visibility);
 }
 
 - (void)resizeSubviewsWithOldSize:(NSSize)oldBoundsSize {

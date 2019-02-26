@@ -1,17 +1,17 @@
 # © 2016 and later: Unicode, Inc. and others.
 # License & terms of use: http://www.unicode.org/copyright.html#License
-BRK_RES_CLDR_VERSION = %version%
+BRK_RES_CLDR_VERSION = 34
 # A list of txt's to build
 # Note:
 #
 #   If you are thinking of modifying this file, READ THIS.
 #
 # Instead of changing this file [unless you want to check it back in],
-# you should consider creating a '%local%' file in this same directory.
+# you should consider creating a 'brklocal.mk' file in this same directory.
 # Then, you can have your local changes remain even if you upgrade or
 # reconfigure ICU.
 #
-# Example '%local%' files:
+# Example 'brklocal.mk' files:
 #
 #  * To add an additional locale to the list:
 #    _____________________________________________________
@@ -39,14 +39,13 @@ BRK_DICT_SOURCE = burmesedict.txt cjdict.txt khmerdict.txt laodict.txt\
 
 
 # List of break iterator files (brk).
-BRK_SOURCE = char.txt line.txt\
- line_normal.txt line_normal_cj.txt line_normal_fi.txt\
- line_loose_cj.txt\
- sent.txt sent_el.txt title.txt word.txt
+BRK_SOURCE = char.txt line.txt line_loose.txt line_loose_cj.txt\
+ line_normal.txt line_normal_cj.txt sent.txt sent_el.txt title.txt\
+ word.txt
 
 
 # Ordinary resources
 BRK_RES_SOURCE = de.txt el.txt en.txt en_US.txt\
- es.txt fi.txt fr.txt it.txt ja.txt\
+ es.txt fr.txt it.txt ja.txt\
  pt.txt ru.txt zh.txt zh_Hant.txt
 

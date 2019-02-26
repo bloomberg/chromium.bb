@@ -68,6 +68,7 @@ class CONTENT_EXPORT BrowserTaskTraitsExtension {
         nestable_(!base::trait_helpers::GetTraitFromArgList<NonNestableFilter>(
             args...)) {}
 
+  // Keep in sync with UiThreadTaskTraits.java
   constexpr base::TaskTraitsExtensionStorage Serialize() const {
     static_assert(8 == sizeof(BrowserTaskTraitsExtension),
                   "Update Serialize() and Parse() when changing "

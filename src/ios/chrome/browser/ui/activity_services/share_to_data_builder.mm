@@ -8,6 +8,7 @@
 #import "base/strings/sys_string_conversions.h"
 #import "ios/chrome/browser/find_in_page/find_tab_helper.h"
 #include "ios/chrome/browser/tabs/tab.h"
+#import "ios/chrome/browser/tabs/tab_title_util.h"
 #include "ios/chrome/browser/ui/activity_services/chrome_activity_item_thumbnail_generator.h"
 #include "ios/chrome/browser/ui/activity_services/share_to_data.h"
 #import "ios/web/public/navigation_item.h"
@@ -43,8 +44,8 @@ ShareToData* ShareToDataForTab(Tab* tab, const GURL& shareURL) {
       // If the original page title exists, it is expected to match the Tab's
       // title. If this ever changes, then a decision has to be made on which
       // one should be used for sharing.
-      DCHECK(
-          [tab.title isEqualToString:base::SysUTF16ToNSString(original_title)]);
+      DCHECK([tab_util::GetTabTitle(tab.webState)
+          isEqual:base::SysUTF16ToNSString(original_title)]);
       is_original_title = YES;
     }
   }
@@ -65,10 +66,10 @@ ShareToData* ShareToDataForTab(Tab* tab, const GURL& shareURL) {
   BOOL is_page_searchable =
       (helper && helper->CurrentPageSupportsFindInPage() &&
        !helper->IsFindUIActive());
-
+  NSString* tab_title = tab_util::GetTabTitle(tab.webState);
   return [[ShareToData alloc] initWithShareURL:finalURLToShare
                                     visibleURL:tab.webState->GetVisibleURL()
-                                         title:tab.title
+                                         title:tab_title
                                isOriginalTitle:is_original_title
                                isPagePrintable:is_page_printable
                               isPageSearchable:is_page_searchable

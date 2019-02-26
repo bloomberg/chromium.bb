@@ -238,6 +238,7 @@ TEST_F(DownloadTaskImplTest, DefaultState) {
   EXPECT_EQ(-1, task_->GetPercentComplete());
   EXPECT_EQ(kContentDisposition, task_->GetContentDisposition());
   EXPECT_EQ(kMimeType, task_->GetMimeType());
+  EXPECT_EQ(kMimeType, task_->GetOriginalMimeType());
   EXPECT_TRUE(ui::PageTransitionTypeIncludingQualifiersIs(
       task_->GetTransitionType(), ui::PageTransition::PAGE_TRANSITION_TYPED));
   EXPECT_EQ("file.test", base::UTF16ToUTF8(task_->GetSuggestedFilename()));
@@ -623,7 +624,7 @@ TEST_F(DownloadTaskImplTest, MimeTypeChange) {
   ASSERT_TRUE(session_task);
   testing::Mock::VerifyAndClearExpectations(&task_observer_);
 
-  // Download has finished with a different MIME type.
+  ASSERT_EQ(kMimeType, task_->GetOriginalMimeType());
   ASSERT_EQ(kMimeType, task_->GetMimeType());
   EXPECT_CALL(task_observer_, OnDownloadUpdated(task_.get()));
   const char kOtherMimeType[] = "application/foo";
@@ -637,6 +638,7 @@ TEST_F(DownloadTaskImplTest, MimeTypeChange) {
   ASSERT_TRUE(WaitUntilConditionOrTimeout(kWaitForDownloadTimeout, ^{
     return task_->IsDone();
   }));
+  EXPECT_EQ(kMimeType, task_->GetOriginalMimeType());
   EXPECT_EQ(kOtherMimeType, task_->GetMimeType());
 
   EXPECT_CALL(task_delegate_, OnTaskDestroyed(task_.get()));
@@ -649,8 +651,6 @@ TEST_F(DownloadTaskImplTest, HttpResponseCode) {
   ASSERT_TRUE(session_task);
   testing::Mock::VerifyAndClearExpectations(&task_observer_);
 
-  // Download has finished with a different MIME type.
-  ASSERT_EQ(kMimeType, task_->GetMimeType());
   EXPECT_CALL(task_observer_, OnDownloadUpdated(task_.get()));
   int kHttpCode = 303;
   session_task.response =

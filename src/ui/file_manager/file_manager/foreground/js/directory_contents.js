@@ -233,8 +233,7 @@ Object.freeze(DriveMetadataSearchContentScanner.SearchType);
 DriveMetadataSearchContentScanner.prototype.scan = function(
     entriesCallback, successCallback, errorCallback) {
   chrome.fileManagerPrivate.searchDriveMetadata(
-      {query: '', types: this.searchType_, maxResults: 500},
-      function(results) {
+      {query: '', types: this.searchType_, maxResults: 100}, function(results) {
         if (this.cancelled_) {
           errorCallback(util.createDOMError(util.FileError.ABORT_ERR));
           return;
@@ -406,17 +405,7 @@ function FileFilter(metadataModel) {
    */
   this.metadataModel_ = metadataModel;
 
-  /**
-   * Last value of hosted files disabled.
-   * @type {?boolean}
-   * @private
-   */
-  this.lastHostedFilesDisabled_ = null;
-
   this.hideAndroidDownload();
-  chrome.fileManagerPrivate.onPreferencesChanged.addListener(
-      this.onPreferencesChanged_.bind(this));
-  this.onPreferencesChanged_();
 }
 
 /**
@@ -463,22 +452,6 @@ FileFilter.prototype.setHiddenFilesVisible = function(visible) {
     });
   } else {
     this.removeFilter('hidden');
-  }
-};
-
-/**
- * Show/Hide hosted files (e.g. Google Docs docs).
- * @param {boolean} visible True if hosted files should be visible to the user.
- * @private
- */
-FileFilter.prototype.setHostedFilesVisible_ = function(visible) {
-  if (!visible) {
-    this.addFilter('hosted', entry => {
-      var metadata = this.metadataModel_.getCache([entry], ['hosted']);
-      return !metadata[0].hosted;
-    });
-  } else {
-    this.removeFilter('hosted');
   }
 };
 
@@ -549,24 +522,6 @@ FileFilter.prototype.filter = function(entry) {
       return false;
   }
   return true;
-};
-
-/**
- * Handles preferences change and updates the filter if needed.
- * @private
- */
-FileFilter.prototype.onPreferencesChanged_ = function() {
-  chrome.fileManagerPrivate.getPreferences(prefs => {
-    if (chrome.runtime.lastError) {
-      console.error(chrome.runtime.lastError.name);
-      return;
-    }
-    if (this.lastHostedFilesDisabled_ !== null &&
-        this.lastHostedFilesDisabled_ !== prefs.hostedFilesDisabled) {
-      this.setHostedFilesVisible_(!prefs.hostedFilesDisabled);
-    }
-    this.lastHostedFilesDisabled_ = prefs.hostedFilesDisabled;
-  });
 };
 
 /**
@@ -1151,5 +1106,20 @@ DirectoryContents.createForCrostiniMounter = function(
     context, crostiniRootEntry) {
   return new DirectoryContents(context, true, crostiniRootEntry, function() {
     return new CrostiniMounter();
+  });
+};
+
+/**
+ * Creates an empty DirectoryContents instance to show the Google Drive
+ * placeholder that never completes loading.
+ *
+ * @param {FileListContext} context File list context.
+ * @param {!FakeEntry} rootEntry Fake directory entry representing the fake root
+ *     of Google Drive.
+ * @return {DirectoryContents} Created DirectoryContents instance.
+ */
+DirectoryContents.createForFakeDrive = function(context, rootEntry) {
+  return new DirectoryContents(context, true, rootEntry, function() {
+    return new ContentScanner();
   });
 };

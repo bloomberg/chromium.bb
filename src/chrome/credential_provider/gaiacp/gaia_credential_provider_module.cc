@@ -12,7 +12,10 @@
 #include "chrome/credential_provider/eventlog/gcp_eventlog_messages.h"
 #include "chrome/credential_provider/gaiacp/gaia_credential_base.h"
 #include "chrome/credential_provider/gaiacp/gaia_credential_provider_i.h"
+#include "chrome/credential_provider/gaiacp/gcp_crash_reporting.h"
 #include "chrome/credential_provider/gaiacp/logging.h"
+#include "components/crash/content/app/crash_switches.h"
+#include "content/public/common/content_switches.h"
 
 namespace credential_provider {
 
@@ -48,8 +51,11 @@ CGaiaCredentialProviderModule::UpdateRegistryAppId(BOOL do_register) throw() {
   eventlog_path =
       eventlog_path.Append(FILE_PATH_LITERAL("gcp_eventlog_provider.dll"));
 
+  wchar_t guid_in_wchar[64];
+  StringFromGUID2(CLSID_GaiaCredentialProvider, guid_in_wchar, base::size(guid_in_wchar));
+
   ATL::_ATL_REGMAP_ENTRY regmap[] = {
-      {L"APPID", L"{C2DDF2F2-F760-4B27-92F4-3461EE8A7A0B}"},
+      {L"CREDENTIAL_PROVIDER_CLASS_GUID", guid_in_wchar},
       {L"VERSION", TEXT(CHROME_VERSION_STRING)},
       {L"EVENTLOG_PATH", eventlog_path.value().c_str()},
       {nullptr, nullptr},
@@ -80,12 +86,30 @@ BOOL CGaiaCredentialProviderModule::DllMain(HINSTANCE /*hinstance*/,
                            true,    // Enable timestamp.
                            false);  // Enable tickcount.
       logging::SetEventSource("GCP", GCP_CATEGORY, MSG_LOG_MESSAGE);
+
+      base::CommandLine* cmd_line = base::CommandLine::ForCurrentProcess();
+
+      // Don't start the crash handler if the DLL is being loaded in unit
+      // tests. It is possible that the DLL will be loaded by other executables
+      // including gcp_setup.exe, LogonUI.exe, rundll32.exe.
+      if (!base::EndsWith(cmd_line->GetProgram().value(), L"gcp_unittests.exe",
+                          base::CompareCase::INSENSITIVE_ASCII) &&
+          cmd_line->GetSwitchValueASCII(switches::kProcessType) !=
+              crash_reporter::switches::kCrashpadHandler) {
+        credential_provider::ConfigureGcpCrashReporting(*cmd_line);
+      }
+
       LOGFN(INFO) << "DllMain(DLL_PROCESS_ATTACH)";
       break;
     }
     case DLL_PROCESS_DETACH:
       LOGFN(INFO) << "DllMain(DLL_PROCESS_DETACH)";
-      base::CommandLine::Reset();
+
+      // When this DLL is loaded for testing, don't reset the command line
+      // since it causes tests to crash.
+      if (!is_testing_)
+        base::CommandLine::Reset();
+
       _set_invalid_parameter_handler(nullptr);
       exit_manager_.reset();
       break;

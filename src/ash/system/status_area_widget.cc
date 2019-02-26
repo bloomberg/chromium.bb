@@ -4,7 +4,6 @@
 
 #include "ash/system/status_area_widget.h"
 
-#include "ash/public/cpp/ash_features.h"
 #include "ash/session/session_controller.h"
 #include "ash/shelf/shelf.h"
 #include "ash/shell.h"
@@ -12,12 +11,10 @@
 #include "ash/system/accessibility/select_to_speak_tray.h"
 #include "ash/system/flag_warning/flag_warning_tray.h"
 #include "ash/system/ime_menu/ime_menu_tray.h"
-#include "ash/system/message_center/notification_tray.h"
 #include "ash/system/overview/overview_button_tray.h"
 #include "ash/system/palette/palette_tray.h"
 #include "ash/system/session/logout_button_tray.h"
 #include "ash/system/status_area_widget_delegate.h"
-#include "ash/system/tray/system_tray.h"
 #include "ash/system/unified/unified_system_tray.h"
 #include "ash/system/virtual_keyboard/virtual_keyboard_tray.h"
 #include "base/command_line.h"
@@ -50,20 +47,8 @@ void StatusAreaWidget::Initialize() {
   overview_button_tray_ = std::make_unique<OverviewButtonTray>(shelf_);
   status_area_widget_delegate_->AddChildView(overview_button_tray_.get());
 
-  if (features::IsSystemTrayUnifiedEnabled()) {
-    unified_system_tray_ = std::make_unique<UnifiedSystemTray>(shelf_);
-    status_area_widget_delegate_->AddChildView(unified_system_tray_.get());
-  } else {
-    system_tray_ = std::make_unique<SystemTray>(shelf_);
-    status_area_widget_delegate_->AddChildView(system_tray_.get());
-  }
-
-  // Must happen after the widget is initialized so the native window exists.
-  if (!features::IsSystemTrayUnifiedEnabled()) {
-    notification_tray_ =
-        std::make_unique<NotificationTray>(shelf_, GetNativeWindow());
-    status_area_widget_delegate_->AddChildView(notification_tray_.get());
-  }
+  unified_system_tray_ = std::make_unique<UnifiedSystemTray>(shelf_);
+  status_area_widget_delegate_->AddChildView(unified_system_tray_.get());
 
   palette_tray_ = std::make_unique<PaletteTray>(shelf_);
   status_area_widget_delegate_->AddChildView(palette_tray_.get());
@@ -93,12 +78,7 @@ void StatusAreaWidget::Initialize() {
   status_area_widget_delegate_->UpdateLayout();
 
   // Initialize after all trays have been created.
-  if (notification_tray_) {
-    system_tray_->InitializeTrayItems(notification_tray_.get());
-    notification_tray_->Initialize();
-  } else {
-    unified_system_tray_->Initialize();
-  }
+  unified_system_tray_->Initialize();
   palette_tray_->Initialize();
   virtual_keyboard_tray_->Initialize();
   ime_menu_tray_->Initialize();
@@ -115,12 +95,6 @@ void StatusAreaWidget::Initialize() {
 }
 
 StatusAreaWidget::~StatusAreaWidget() {
-  if (system_tray_)
-    system_tray_->Shutdown();
-
-  notification_tray_.reset();
-  // Must be destroyed after |notification_tray_|.
-  system_tray_.reset();
   unified_system_tray_.reset();
   ime_menu_tray_.reset();
   select_to_speak_tray_.reset();
@@ -136,12 +110,7 @@ StatusAreaWidget::~StatusAreaWidget() {
 }
 
 void StatusAreaWidget::UpdateAfterShelfAlignmentChange() {
-  if (system_tray_)
-    system_tray_->UpdateAfterShelfAlignmentChange();
-  if (unified_system_tray_)
-    unified_system_tray_->UpdateAfterShelfAlignmentChange();
-  if (notification_tray_)
-    notification_tray_->UpdateAfterShelfAlignmentChange();
+  unified_system_tray_->UpdateAfterShelfAlignmentChange();
   logout_button_tray_->UpdateAfterShelfAlignmentChange();
   virtual_keyboard_tray_->UpdateAfterShelfAlignmentChange();
   ime_menu_tray_->UpdateAfterShelfAlignmentChange();
@@ -160,19 +129,13 @@ void StatusAreaWidget::UpdateAfterLoginStatusChange(LoginStatus login_status) {
     return;
   login_status_ = login_status;
 
-  if (system_tray_)
-    system_tray_->UpdateAfterLoginStatusChange(login_status);
-  if (unified_system_tray_)
-    unified_system_tray_->UpdateAfterLoginStatusChange();
+  unified_system_tray_->UpdateAfterLoginStatusChange();
   logout_button_tray_->UpdateAfterLoginStatusChange();
   overview_button_tray_->UpdateAfterLoginStatusChange(login_status);
 }
 
 void StatusAreaWidget::SetSystemTrayVisibility(bool visible) {
-  TrayBackgroundView* tray =
-      unified_system_tray_
-          ? static_cast<TrayBackgroundView*>(unified_system_tray_.get())
-          : static_cast<TrayBackgroundView*>(system_tray_.get());
+  TrayBackgroundView* tray = unified_system_tray_.get();
   tray->SetVisible(visible);
   // Opacity is set to prevent flakiness in kiosk browser tests. See
   // https://crbug.com/624584.
@@ -192,43 +155,29 @@ TrayBackgroundView* StatusAreaWidget::GetSystemTrayAnchor() const {
   if (overview_button_tray_->layer()->GetTargetVisibility())
     return overview_button_tray_.get();
 
-  if (unified_system_tray_)
-    return unified_system_tray_.get();
-  return system_tray_.get();
+  return unified_system_tray_.get();
 }
 
 bool StatusAreaWidget::ShouldShowShelf() const {
-  // If UnifiedSystemTray is enabled, and it has main bubble, return true.
-  if (unified_system_tray_ && unified_system_tray_->IsBubbleShown())
+  // If it has main bubble, return true.
+  if (unified_system_tray_->IsBubbleShown())
     return true;
 
-  // If UnifiedSystemTray is enabled, and it has a slider bubble, return false.
-  if (unified_system_tray_ && unified_system_tray_->IsSliderBubbleShown())
+  // If it has a slider bubble, return false.
+  if (unified_system_tray_->IsSliderBubbleShown())
     return false;
-
-  // The system tray bubble may or may not want to force the shelf to be
-  // visible.
-  if (system_tray_ && system_tray_->IsSystemBubbleVisible())
-    return system_tray_->ShouldShowShelf();
 
   // All other tray bubbles will force the shelf to be visible.
   return TrayBubbleView::IsATrayBubbleOpen();
 }
 
 bool StatusAreaWidget::IsMessageBubbleShown() const {
-  return (unified_system_tray_ && unified_system_tray_->IsBubbleShown()) ||
-         (!unified_system_tray_ && system_tray_->IsSystemBubbleVisible()) ||
-         (notification_tray_ && notification_tray_->IsMessageCenterVisible());
+  return unified_system_tray_->IsBubbleShown();
 }
 
 void StatusAreaWidget::SchedulePaint() {
   status_area_widget_delegate_->SchedulePaint();
-  if (notification_tray_)
-    notification_tray_->SchedulePaint();
-  if (system_tray_)
-    system_tray_->SchedulePaint();
-  if (unified_system_tray_)
-    unified_system_tray_->SchedulePaint();
+  unified_system_tray_->SchedulePaint();
   virtual_keyboard_tray_->SchedulePaint();
   logout_button_tray_->SchedulePaint();
   ime_menu_tray_->SchedulePaint();
@@ -254,12 +203,7 @@ bool StatusAreaWidget::OnNativeWidgetActivationChanged(bool active) {
 }
 
 void StatusAreaWidget::UpdateShelfItemBackground(SkColor color) {
-  if (notification_tray_)
-    notification_tray_->UpdateShelfItemBackground(color);
-  if (system_tray_)
-    system_tray_->UpdateShelfItemBackground(color);
-  if (unified_system_tray_)
-    unified_system_tray_->UpdateShelfItemBackground(color);
+  unified_system_tray_->UpdateShelfItemBackground(color);
   virtual_keyboard_tray_->UpdateShelfItemBackground(color);
   ime_menu_tray_->UpdateShelfItemBackground(color);
   select_to_speak_tray_->UpdateShelfItemBackground(color);

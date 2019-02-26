@@ -33,14 +33,26 @@
 
 class GaiaAuthFetcherTest;
 
-namespace signin {
+namespace gaia {
+
 // Mode determining whether Gaia can change the order of the accounts in
 // cookies.
 enum class MultiloginMode {
   MULTILOGIN_UPDATE_COOKIE_ACCOUNTS_ORDER = 0,
   MULTILOGIN_PRESERVE_COOKIE_ACCOUNTS_ORDER
 };
-}  // namespace signin
+
+// Specifies the "source" parameter for Gaia calls.
+enum class GaiaSource {
+  kChrome,
+  kChromeOS,
+  kAccountReconcilorDice,
+  kAccountReconcilorMirror,
+  kOAuth2LoginVerifier,
+  kSigninManager
+};
+
+}  // namespace gaia
 
 namespace network {
 class SimpleURLLoader;
@@ -71,7 +83,7 @@ class GaiaAuthFetcher {
   // This will later be hidden behind an auth service which caches tokens.
   GaiaAuthFetcher(
       GaiaAuthConsumer* consumer,
-      const std::string& source,
+      gaia::GaiaSource source,
       scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory);
   virtual ~GaiaAuthFetcher();
 
@@ -376,8 +388,8 @@ class GaiaAuthFetcher {
 
   // For investigation of https://crbug.com/876306.
   base::TimeDelta list_accounts_system_uptime_;
-#if !defined(OS_IOS)
-  // There is no easy way to get the process uptime on iOS.
+#if !defined(OS_IOS) && !defined(OS_ANDROID)
+  // Process creation time is not available on iOS and Android.
   base::TimeDelta list_accounts_process_uptime_;
 #endif
 

@@ -100,10 +100,6 @@ video::-webkit-media-controls.sizing-medium div[pseudo="-webkit-media-controls-p
   background-size: auto 200px;
 }
 
-video::-webkit-media-controls.sizing-large div[pseudo="-webkit-media-controls-panel" i] {
-  background-size: auto 312px;
-}
-
 /* Need dark gradient at the top of the video when the scrubbing message is
  * shown */
 video::-webkit-media-controls:not(.audio-only) div[pseudo="-webkit-media-controls-panel" i].scrubbing-message {
@@ -120,10 +116,6 @@ video::-webkit-media-controls.sizing-small div[pseudo="-webkit-media-controls-pa
 
 video::-webkit-media-controls.sizing-medium div[pseudo="-webkit-media-controls-panel" i].scrubbing-message {
   background-size: auto 120px, auto 200px;
-}
-
-video::-webkit-media-controls.sizing-large div[pseudo="-webkit-media-controls-panel" i].scrubbing-message {
-  background-size: auto 120px, auto 312px;
 }
 
 audio::-internal-media-controls-button-panel,
@@ -229,18 +221,6 @@ video::-webkit-media-controls.sizing-medium input[pseudo="-internal-media-contro
   background-size: 32px;
 }
 
-/* TODO(https://crbug.com/857120): remove these rules and the sizing-large CSS class. */
-video::-webkit-media-controls.sizing-large input[pseudo="-webkit-media-controls-play-button" i],
-video::-webkit-media-controls.sizing-large input[pseudo="-webkit-media-controls-mute-button" i],
-video::-webkit-media-controls.sizing-large input[pseudo="-webkit-media-controls-fullscreen-button" i],
-video::-webkit-media-controls.sizing-large input[pseudo="-internal-media-controls-display-cutout-fullscreen-button" i],
-video::-webkit-media-controls.sizing-large input[pseudo="-internal-media-controls-overflow-button" i] {
-  width: 64px;
-  height: 64px;
-  min-width: 64px;
-  background-size: 32px;
-}
-
 video::-webkit-media-controls.sizing-small div[pseudo="-internal-media-controls-button-panel" i] {
   height: 48px;
   line-height: 48px;
@@ -248,13 +228,6 @@ video::-webkit-media-controls.sizing-small div[pseudo="-internal-media-controls-
 }
 
 video::-webkit-media-controls.sizing-medium div[pseudo="-internal-media-controls-button-panel" i] {
-  height: 64px;
-  line-height: 64px;
-  padding: 0 16px 0 32px;
-}
-
-/* TODO(https://crbug.com/857120): remove these rules and the sizing-large CSS class. */
-video::-webkit-media-controls.sizing-large div[pseudo="-internal-media-controls-button-panel" i] {
   height: 64px;
   line-height: 64px;
   padding: 0 16px 0 32px;
@@ -383,7 +356,7 @@ video::-webkit-media-controls-overlay-play-button {
 
 /**
  * The overlay-play-button is disabled if the video element is loaded via
- * MHTML, and a ruleset for input[type=button]:disabled in themeWin.css has
+ * MHTML, and a ruleset for input[type=button]:disabled in win.css has
  * higher priority than the above ruleset.
  */
 video::-webkit-media-controls-overlay-play-button:disabled {
@@ -462,11 +435,6 @@ video::-webkit-media-controls.sizing-small input[pseudo="-webkit-media-controls-
 }
 
 video::-webkit-media-controls.sizing-medium input[pseudo="-webkit-media-controls-timeline" i] {
-  padding: 0 32px 20px 32px;
-}
-
-/* TODO(https://crbug.com/857120): remove these rules and the sizing-large CSS class. */
-video::-webkit-media-controls.sizing-large input[pseudo="-webkit-media-controls-timeline" i] {
   padding: 0 32px 20px 32px;
 }
 
@@ -618,8 +586,7 @@ video::-webkit-media-controls-volume-slider.closed {
   transition: width 0.3s ease, opacity 0.28s step-end;
 }
 
-video::-webkit-media-controls.sizing-medium input[pseudo="-webkit-media-controls-volume-slider" i],
-video::-webkit-media-controls.sizing-large input[pseudo="-webkit-media-controls-volume-slider" i] {
+video::-webkit-media-controls.sizing-medium input[pseudo="-webkit-media-controls-volume-slider" i] {
   padding: 30px 0; /* (64px button panel height - 4px slider height) / 2  */
 }
 
@@ -670,7 +637,28 @@ video::-internal-media-controls-overflow-menu-list {
   background: #FFFFFF;
   box-shadow: 0 1px 9px 0 rgba(0,0,0,0.40);
   border-radius: 2px;
+  transition: transform .2s ease-out, opacity .2s linear;
+  transform-origin: bottom right;
 }
+
+audio::-internal-media-controls-overflow-menu-list.closed,
+video::-internal-media-controls-overflow-menu-list.closed {
+  transform: scale(0);
+  opacity: 0;
+}
+
+
+audio::-webkit-media-controls div[pseudo="-internal-media-controls-overflow-menu-list" i].closed > *,
+video::-webkit-media-controls div[pseudo="-internal-media-controls-overflow-menu-list" i].closed > * {
+  opacity: 0;
+}
+
+audio::-webkit-media-controls div[pseudo="-internal-media-controls-overflow-menu-list" i] > *,
+video::-webkit-media-controls div[pseudo="-internal-media-controls-overflow-menu-list" i] > * {
+  transition: opacity .2s linear .2s;
+}
+
+
 
 audio::-internal-media-controls-text-track-list-header,
 video::-internal-media-controls-text-track-list-header,
@@ -692,45 +680,14 @@ video::-internal-media-controls-overflow-menu-list-item {
   padding-right: 16px;
 }
 
-/* TODO(https://crbug.com/857120): All these are the same, so these are unnecessary. */
-video::-webkit-media-controls.sizing-small div[pseudo="-internal-media-controls-overflow-menu-list" i] {
-  min-width: 180px;
-  max-width: 180px;
-  max-height: 250px;
+video::-internal-media-controls-text-track-list,
+video::-internal-media-controls-overflow-menu-list {
+  max-width: 260px;
+  width: 95%;
 }
 
-video::-webkit-media-controls.sizing-medium div[pseudo="-internal-media-controls-overflow-menu-list" i] {
-  min-width: 180px;
-  max-width: 180px;
-  max-height: 250px;
-}
-
-video::-webkit-media-controls.sizing-large div[pseudo="-internal-media-controls-overflow-menu-list" i] {
-  min-width: 180px;
-  max-width: 180px;
-  max-height: 250px;
-}
-
-/* TODO(https://crbug.com/857120): All these are the same, so these are unnecessary. */
-video::-webkit-media-controls.sizing-small label[pseudo="-internal-media-controls-overflow-menu-list-item" i] input {
-  margin-left: 0;
-  margin-right: 16px;
-  width: 24px;
-  height: 24px;
-  min-width: 24px;
-  background-size: 24px;
-}
-
+video::-webkit-media-controls.sizing-small label[pseudo="-internal-media-controls-overflow-menu-list-item" i] input,
 video::-webkit-media-controls.sizing-medium label[pseudo="-internal-media-controls-overflow-menu-list-item" i] input {
-  margin-left: 0;
-  margin-right: 16px;
-  width: 24px;
-  height: 24px;
-  min-width: 24px;
-  background-size: 24px;
-}
-
-video::-webkit-media-controls.sizing-large label[pseudo="-internal-media-controls-overflow-menu-list-item" i] input {
   margin-left: 0;
   margin-right: 16px;
   width: 24px;

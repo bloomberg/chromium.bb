@@ -9,6 +9,7 @@
 #include <vector>
 
 #include "core/fxcrt/cfx_decimal.h"
+#include "fxjs/cfx_v8.h"
 #include "fxjs/cfxjse_value.h"
 #include "fxjs/js_resources.h"
 #include "xfa/fxfa/cxfa_eventparam.h"
@@ -109,7 +110,7 @@ CJS_Result CJX_Field::getSaveItem(
     return CJS_Result::Success(runtime->NewNull());
 
   return CJS_Result::Success(
-      runtime->NewString(value->UTF8Encode().AsStringView()));
+      runtime->NewString(value->ToUTF8().AsStringView()));
 }
 
 CJS_Result CJX_Field::boundItem(
@@ -125,7 +126,7 @@ CJS_Result CJX_Field::boundItem(
   WideString value = runtime->ToWideString(params[0]);
   WideString boundValue = node->GetItemValue(value.AsStringView());
   return CJS_Result::Success(
-      runtime->NewString(boundValue.UTF8Encode().AsStringView()));
+      runtime->NewString(boundValue.ToUTF8().AsStringView()));
 }
 
 CJS_Result CJX_Field::getItemState(
@@ -175,7 +176,7 @@ CJS_Result CJX_Field::getDisplayItem(
     return CJS_Result::Success(runtime->NewNull());
 
   return CJS_Result::Success(
-      runtime->NewString(value->UTF8Encode().AsStringView()));
+      runtime->NewString(value->ToUTF8().AsStringView()));
 }
 
 CJS_Result CJX_Field::setItemState(
@@ -275,7 +276,7 @@ void CJX_Field::defaultValue(CFXJSE_Value* pValue,
     if (xfaNode->GetUIChildNode()->GetElementType() ==
             XFA_Element::NumericEdit &&
         (pNode->JSObject()->GetInteger(XFA_Attribute::FracDigits) == -1)) {
-      pValue->SetString(content.UTF8Encode().AsStringView());
+      pValue->SetString(content.ToUTF8().AsStringView());
     } else {
       CFX_Decimal decimal(content.AsStringView());
       pValue->SetFloat((float)(double)decimal);
@@ -288,7 +289,7 @@ void CJX_Field::defaultValue(CFXJSE_Value* pValue,
     CFX_Decimal decimal(content.AsStringView());
     pValue->SetFloat((float)(double)decimal);
   } else {
-    pValue->SetString(content.UTF8Encode().AsStringView());
+    pValue->SetString(content.ToUTF8().AsStringView());
   }
 }
 
@@ -304,7 +305,7 @@ void CJX_Field::editValue(CFXJSE_Value* pValue,
     return;
   }
   pValue->SetString(
-      node->GetValue(XFA_VALUEPICTURE_Edit).UTF8Encode().AsStringView());
+      node->GetValue(XFA_VALUEPICTURE_Edit).ToUTF8().AsStringView());
 }
 
 void CJX_Field::formatMessage(CFXJSE_Value* pValue,
@@ -325,7 +326,7 @@ void CJX_Field::formattedValue(CFXJSE_Value* pValue,
     return;
   }
   pValue->SetString(
-      node->GetValue(XFA_VALUEPICTURE_Display).UTF8Encode().AsStringView());
+      node->GetValue(XFA_VALUEPICTURE_Display).ToUTF8().AsStringView());
 }
 
 void CJX_Field::parentSubform(CFXJSE_Value* pValue,

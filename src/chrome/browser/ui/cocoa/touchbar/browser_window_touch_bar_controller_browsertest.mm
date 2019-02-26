@@ -38,7 +38,7 @@ class BrowserWindowTouchBarControllerTest : public InProcessBrowserTest {
   }
 
   NSWindow* native_window() const {
-    return browser()->window()->GetNativeWindow();
+    return browser()->window()->GetNativeWindow().GetNativeNSWindow();
   }
 
   API_AVAILABLE(macos(10.12.2))

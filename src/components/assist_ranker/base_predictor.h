@@ -22,6 +22,10 @@ class UkmEntryBuilder;
 
 namespace assist_ranker {
 
+// Value to use for when no prediction threshold replacement should be applied.
+// See |GetPredictThresholdReplacement| method.
+const float kNoPredictThresholdReplacement = 0.0;
+
 class Feature;
 class RankerExample;
 class RankerModel;
@@ -29,7 +33,7 @@ class RankerModel;
 // Predictors are objects that provide an interface for prediction, as well as
 // encapsulate the logic for loading the model and logging. Sub-classes of
 // BasePredictor implement an interface that depends on the nature of the
-// suported model. Subclasses of BasePredictor will also need to implement an
+// supported model. Subclasses of BasePredictor will also need to implement an
 // Initialize method that will be called once the model is available, and a
 // static validation function with the following signature:
 //
@@ -49,6 +53,9 @@ class BasePredictor : public base::SupportsWeakPtr<BasePredictor> {
 
   // Returns the model URL.
   GURL GetModelUrl() const;
+  // Returns the threshold to use for prediction, or
+  // kNoPredictThresholdReplacement to leave it unchanged.
+  float GetPredictThresholdReplacement() const;
   // Returns the model name.
   std::string GetModelName() const;
 

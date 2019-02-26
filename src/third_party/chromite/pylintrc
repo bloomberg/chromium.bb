@@ -287,12 +287,14 @@ max-parents=10
 
 # Deprecated modules which should not be used, separated by a comma.
 # Bastion: Dropped in Python 3.
+# mox: Use the 'mock' module instead.
 # optparse: Use the 'argparse' module instead.
 # regsub: Use the 're' module instead.
 # rexec: Dropped in Python 3.
 # TERMIOS: Use the 'termios' module instead.
 deprecated-modules=
     Bastion,
+    mox,
     optparse,
     regsub,
     rexec,

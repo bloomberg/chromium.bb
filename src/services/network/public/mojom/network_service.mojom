@@ -11,16 +11,19 @@ import "mojo/public/mojom/base/string16.mojom";
 import "mojo/public/mojom/base/unguessable_token.mojom";
 import "mojo/public/mojom/base/values.mojom";
 import "services/network/public/mojom/cookie_manager.mojom";
+import "services/network/public/mojom/host_resolver.mojom";
 import "services/network/public/mojom/net_log.mojom";
 import "services/network/public/mojom/network_change_manager.mojom";
 import "services/network/public/mojom/network_context.mojom";
 import "services/network/public/mojom/network_param.mojom";
 import "services/network/public/mojom/network_quality_estimator_manager.mojom";
-import "services/network/public/mojom/signed_tree_head.mojom";
 import "services/network/public/mojom/url_loader.mojom";
 import "services/network/public/mojom/url_loader_factory.mojom";
 import "url/mojom/origin.mojom";
 import "url/mojom/url.mojom";
+
+[EnableIf=is_ct_supported]
+import "services/network/public/mojom/signed_tree_head.mojom";
 
 // The content/browser implementation of this SSLPrivateKey interface wraps the
 // scoped_refptr<net::SSLPrivateKey> that is received from
@@ -72,6 +75,8 @@ interface NetworkServiceClient {
                  AuthChallengeResponder auth_challenge_responder);
   // Called when an SSL certificate requested message is received for client
   // authentication.
+  // The |provider_name| parameter corresponses to the return value of
+  // net::SSLPrivateKey::GetProviderName().
   // The |algorithm_preferences| parameter corresponds to the return value
   // of net::SSLPrivateKey::GetAlgorithmPreferences().
   // The |cancel_certificate_selection| parameter is used to distinguish
@@ -92,6 +97,7 @@ interface NetworkServiceClient {
                          uint32 request_id,
                          network.mojom.SSLCertRequestInfo cert_info) => (
                              network.mojom.X509Certificate x509_certificate,
+                             string provider_name,
                              array<uint16> algorithm_preferences,
                              SSLPrivateKey ssl_private_key,
                              bool cancel_certificate_selection);
@@ -105,6 +111,12 @@ interface NetworkServiceClient {
                         url.mojom.Url url,
                         SSLInfo ssl_info,
                         bool fatal) => (int32 net_error);
+
+  // Notification that a trust anchor was used for the given user.
+  // |username_hash| was the parameter passed in NetworkContextParams.
+  [EnableIf=is_chromeos]
+  OnTrustAnchorUsed(string username_hash);
+
   // Called when file uploading was requested.
   // If the process that requested the uploads has permission to read all of
   // the files referenced by |file_paths|, the callback arguments will be
@@ -144,17 +156,13 @@ interface NetworkServiceClient {
                   url.mojom.Url url,
                   string header_value,
                   int32 load_flags) => ();
-};
 
-// An HTTPS server to send DNS queries to, per the DNS Queries over HTTPS spec.
-// spec:  https://tools.ietf.org/html/draft-ietf-doh-dns-over-https-12
- struct DnsOverHttpsServer {
-  // DNS over HTTPS server URI template. Must be HTTPS.
-  string server_template;
-
-  // Whether to use POST to do DNS lookups. Otherwise, GET is used. See spec
-  // for more details.
-  bool use_post = false;
+  // Called on every request completion to update the network traffic annotation
+  // ID, and the total bytes received and sent.
+  // |network_traffic_annotation_id_hash| represents the hash of unique tag that
+  // identifies the annotation of the request.
+  OnDataUseUpdate(int32 network_traffic_annotation_id_hash, int64 recv_bytes,
+                  int64 sent_bytes);
 };
 
 // Values for configuring HTTP authentication that can only be set once.
@@ -283,10 +291,15 @@ interface NetworkService {
   ConfigureHttpAuthPrefs(HttpAuthDynamicParams http_auth_dynamic_params);
 
   // Specifies whether requests for raw headers coming through URLLoaderFactory
-  // associated with the specified process will be granted. Granting such a
-  // permission increases risks in case the child process becomes compromised,
-  // so this should be done only in specific cases (e.g. DevTools attached).
-  SetRawHeadersAccess(uint32 process_id, bool allow);
+  // associated with the specified process will be granted. Only raw headers
+  // for requests with URLs matching a listed origin will be reported (this
+  // permission has no effect on the network request itself).
+  // The list overwrites the list set for given process with a previous call
+  // to this method.
+  // Granting a permission increases risks in case the child process becomes
+  // compromised, so this should be done only in specific cases
+  // (e.g. DevTools attached).
+  SetRawHeadersAccess(uint32 process_id, array<url.mojom.Origin> origins);
 
   // Gets the NetworkChangeManager.
   GetNetworkChangeManager(
@@ -296,12 +309,16 @@ interface NetworkService {
   GetNetworkQualityEstimatorManager(
       NetworkQualityEstimatorManager& network_quality_estimator_manager);
 
+  // Gets the DnsConfigChangeManager.
+  GetDnsConfigChangeManager(DnsConfigChangeManager& dns_config_change_manager);
+
   // Gets the accumulated network usage since the start/restart of the service.
   GetTotalNetworkUsages() => (array<NetworkUsage> total_network_usages);
 
   // Updates Signed Tree Heads (STH) used in the handling of Certificate
   // Transparency. Broadcast to each NetworkContext using the NetworkService.
   // NetworkContextes ignore STHs from unrecognized logs.
+  [EnableIf=is_ct_supported]
   UpdateSignedTreeHead(SignedTreeHead signed_tree_head);
 
   // Updates the CRLSet used in the verification of certificates. CRLSets that
@@ -310,6 +327,9 @@ interface NetworkService {
   // Contexts created by the Network Service, including those created after
   // this call, will use the same CRLSet.
   UpdateCRLSet(mojo_base.mojom.ReadOnlyBuffer crl_set);
+
+  // Notification that the certificate database has been modified.
+  OnCertDBChanged();
 
   // Sets up OSCrypt for the network service process. Must be called before
   // encrypted cookies can be read or set.
@@ -331,6 +351,9 @@ interface NetworkService {
 
   // Reverts AddCorbExceptionForPlugin.
   RemoveCorbExceptionForPlugin(uint32 process_id);
+
+  // Called when the system is low on memory.
+  OnMemoryPressure(MemoryPressureLevel memory_pressure_level);
 
   // Called on state changes of the Android application.
   [EnableIf=is_android]

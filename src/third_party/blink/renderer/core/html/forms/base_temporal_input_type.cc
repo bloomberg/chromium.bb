@@ -43,7 +43,6 @@
 namespace blink {
 
 using blink::WebLocalizedString;
-using namespace HTMLNames;
 
 static const int kMsecPerMinute = 60 * 1000;
 static const int kMsecPerSecond = 1000;

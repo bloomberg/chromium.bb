@@ -319,6 +319,9 @@ void NotificationPlatformBridgeAndroid::Close(
       has_queried_webapk_package, j_webapk_package);
 }
 
+void NotificationPlatformBridgeAndroid::DisplayServiceShutDown(
+    Profile* profile) {}
+
 void NotificationPlatformBridgeAndroid::GetDisplayed(
     Profile* profile,
     GetDisplayedNotificationsCallback callback) const {

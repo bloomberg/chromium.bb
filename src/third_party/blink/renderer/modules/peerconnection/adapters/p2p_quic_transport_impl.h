@@ -44,7 +44,9 @@ class MODULES_EXPORT P2PQuicTransportImpl final
       public quic::QuicCryptoClientStream::ProofHandler {
  public:
   P2PQuicTransportImpl(
-      P2PQuicTransportConfig p2p_transport_config,
+      Delegate* delegate,
+      P2PQuicPacketTransport* packet_transport,
+      const P2PQuicTransportConfig& p2p_transport_config,
       std::unique_ptr<net::QuicChromiumConnectionHelper> helper,
       std::unique_ptr<quic::QuicConnection> connection,
       const quic::QuicConfig& quic_config,
@@ -104,14 +106,13 @@ class MODULES_EXPORT P2PQuicTransportImpl final
   // Creates a new stream initiated from the remote side. The caller does not
   // own the stream, so the stream is activated and ownership is moved to the
   // quic::QuicSession.
-  P2PQuicStreamImpl* CreateIncomingDynamicStream(
+  P2PQuicStreamImpl* CreateIncomingStream(
       quic::QuicStreamId id) override;
 
   // Creates a new outgoing stream. The caller does not own the
   // stream, so the stream is activated and ownership is moved to the
   // quic::QuicSession.
-  P2PQuicStreamImpl* CreateOutgoingBidirectionalStream() override;
-  P2PQuicStreamImpl* CreateOutgoingUnidirectionalStream() override;
+  P2PQuicStreamImpl* CreateOutgoingBidirectionalStream();
 
   void OnCryptoHandshakeEvent(CryptoHandshakeEvent event) override;
 
@@ -171,6 +172,11 @@ class MODULES_EXPORT P2PQuicTransportImpl final
   // Owned by whatever creates the P2PQuicTransportImpl. The |clock_| needs to
   // outlive the P2PQuicTransportImpl.
   quic::QuicClock* clock_ = nullptr;
+  // The size of the stream delegate's read buffer, used when creating
+  // P2PQuicStreams.
+  uint32_t stream_delegate_read_buffer_size_;
+  // Determines the size of the write buffer when P2PQuicStreams.
+  uint32_t stream_write_buffer_size_;
 
   THREAD_CHECKER(thread_checker_);
 };

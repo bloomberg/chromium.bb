@@ -1,11 +1,33 @@
+#!/usr/bin/env python
 # Copyright 2017 The Chromium Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
+"""Parser for linker map files.
+
+The format of a linker map file depends on the linker that generates it. This
+file uses "coded linker name" to identify formats and variants:
+
+  'gold': The gold linker (usage is being deprecated by Chrome).
+  'lld_v0': LLD linker (no LTO), old format.
+  'lld-lto_v0': LLD linker with ThinLTO, old format.
+  'lld_v1': LLD linker (no LTO), new format.
+  'lld-lto_v1': LLD linker with ThinLTO, new format.
+
+The |linker_name| parameter in various functions must take one of the above
+coded linker name values.
+"""
+
+from __future__ import print_function
+
+import argparse
+import code
 import logging
 import os
 import re
+import readline
 
+import demangle
 import models
 
 # About linker maps:
@@ -98,21 +120,23 @@ class MapFileParserGold(object):
 #                 0x00290711                base::AutoLock::~AutoLock()
 #                 0x00290711                base::AutoLock::~AutoLock()
 # .text._ZNK5blink15LayoutBlockFlow31mustSeparateMarginAfterForChildERK...
-#                0xffffffffffffffff       0x46 obj/...
-#                0x006808e1                blink::LayoutBlockFlow::...
+#                 0xffffffffffffffff       0x46 obj/...
+#                 0x006808e1                blink::LayoutBlockFlow::...
+# .text.OUTLINED_FUNCTION_0
+#                 0x002a2000       0x20 obj/net/net/tag.o
 # .bss
 #  .bss._ZGVZN11GrProcessor11initClassIDI10LightingFPEEvvE8kClassID
-#                0x02d4b294        0x4 obj/skia/skia/SkLightingShader.o
-#                0x02d4b294   guard variable for void GrProcessor::initClassID
+#                 0x02d4b294        0x4 obj/skia/skia/SkLightingShader.o
+#                 0x02d4b294   guard variable for void GrProcessor::initClassID
 # .data           0x0028c600  0x22d3468
 #  .data.rel.ro._ZTVN3gvr7android19ScopedJavaGlobalRefIP12_jfloatArrayEE
-#                0x02d1e668       0x10 ../../third_party/.../libfoo.a(bar.o)
-#                0x02d1e668   vtable for gvr::android::GlobalRef<_jfloatArray*>
+#                 0x02d1e668       0x10 ../../third_party/.../libfoo.a(bar.o)
+#                 0x02d1e668   vtable for gvr::android::GlobalRef<_jfloatArray*>
 #  ** merge strings
 #                 0x0255fb00   0x1f2424
 #  ** merge constants
 #                 0x0255fb00   0x8
-# ** common      0x02db5700   0x13ab48
+# ** common       0x02db5700   0x13ab48
     syms = self._symbols
     while True:
       line = self._SkipToLineWithPrefix('.')
@@ -242,6 +266,10 @@ class MapFileParserGold(object):
               if mangled_name and (not name or mangled_name.startswith('_Z') or
                                    '._Z' in mangled_name):
                 full_name = mangled_name
+              # Handle outlined functions. These are actual LLD features, but we
+              # handle them here for Gold to facilitate testing.
+              if full_name and full_name.startswith('OUTLINED_FUNCTION_'):
+                full_name = '** outlined function'
 
               sym = models.Symbol(section_name, size, address=address,
                                   full_name=full_name, object_path=path)
@@ -310,6 +338,15 @@ class MapFileParserLld(object):
 #     194      194       13     1         <internal>:(.interp)
 #     1a8      1a8     22d8     4 .ARM.exidx
 #     1b0      1b0        8     4         obj/sandbox/syscall.o:(.ARM.exidx)
+#     400      400   123400    64 .text
+#     600      600       14     4         obj/...:(.text.OUTLINED_FUNCTION_0)
+#     600      600        0     1                 $x.3
+#     600      600       14     1                 OUTLINED_FUNCTION_0
+#  123800   123800    20000   256 .rodata
+#  123800   123800       4      4         ...:o:(.rodata._ZN3fooE.llvm.1234)
+#  123800   123800       4      1                 foo (.llvm.1234)
+#  123804   123804       4      4         ...:o:(.rodata.bar.llvm.1234)
+#  123804   123804       4      1                 bar.llvm.1234
 # Older format:
 # Address          Size             Align Out     In      Symbol
 # 00000000002002a8 000000000000001c     1 .interp
@@ -333,6 +370,7 @@ class MapFileParserLld(object):
     sym_maker = _SymbolMaker()
     cur_section = None
     cur_section_is_useful = None
+    promoted_name_count = 0
 
     for line in lines:
       m = pattern.match(line)
@@ -345,7 +383,8 @@ class MapFileParserLld(object):
 
       if indent_size == 0:
         sym_maker.Flush()
-        self._section_sizes[tok] = size
+        if not tok.startswith('PROVIDE_HIDDEN'):
+          self._section_sizes[tok] = size
         cur_section = tok
         # E.g., Want to convert "(.text._name)" -> "_name" later.
         mangled_start_idx = len(cur_section) + 2
@@ -374,21 +413,36 @@ class MapFileParserLld(object):
             else:
               # e.g. <internal>:(.text.thunk)
               sym_maker.cur_sym.full_name = '** ' + mangled_name
-          elif cur_obj == 'lto.tmp' or cur_obj.startswith('thinlto-cache'):
+          elif cur_obj == 'lto.tmp' or 'thinlto-cache' in cur_obj:
             pass
           else:
             sym_maker.cur_sym.object_path = cur_obj
 
         elif indent_size == 16:
+          # Ignore anything with '.L_MergedGlobals' prefix. This seems to only
+          # happen for ARM (32-bit) builds.
+          if tok.startswith('.L_MergedGlobals'):
+            continue
           # If multiple entries exist, take the first on that reports a size.
           # Zero-length symbols look like "$t.4", "$d.5".
           if size and not sym_maker.cur_sym.full_name:
+            # Outlined functions have names like OUTLINED_FUNCTION_0, which can
+            # appear 1000+ time that can cause false aliasing. We treat these as
+            # special cases by designating them as a placeholder symbols and
+            # renaming them to '** outlined function'.
+            if tok.startswith('OUTLINED_FUNCTION_'):
+              tok = '** outlined function'
+            stripped_tok = demangle.StripLlvmPromotedGlobalNames(tok)
+            if len(tok) != len(stripped_tok):
+              promoted_name_count += 1
+              tok = stripped_tok
             sym_maker.cur_sym.full_name = tok
-
         else:
           logging.error('Problem line: %r', line)
 
     sym_maker.Flush()
+    if promoted_name_count:
+      logging.info('Found %d promoted global names', promoted_name_count)
     return self._section_sizes, sym_maker.syms
 
 
@@ -426,7 +480,15 @@ def _DetectLto(lines):
 
 
 def DetectLinkerNameFromMapFile(lines):
-  """Scans linker map file, and returns a coded linker name."""
+  """Heuristic linker detection from partial scan of the linker map.
+
+  Args:
+    lines: Iterable of lines from the linker map.
+
+  Returns:
+    A coded linker name.
+
+  """
   first_line = next(lines)
 
   if first_line.startswith('Address'):
@@ -442,12 +504,13 @@ def DetectLinkerNameFromMapFile(lines):
 
 
 class MapFileParser(object):
-  """Parses a linker map file, with heuristic linker detection."""
+  """Parses a linker map file generated from a specified linker."""
   def Parse(self, linker_name, lines):
     """Parses a linker map file.
 
     Args:
-      lines: Iterable of lines.
+      linker_name: Coded linker name to specify a linker.
+      lines: Iterable of lines from the linker map.
 
     Returns:
       A tuple of (section_sizes, symbols).
@@ -467,3 +530,42 @@ class MapFileParser(object):
         # Thin archives' paths will get fixed in |ar.CreateThinObjectPath|.
         sym.object_path = os.path.normpath(sym.object_path)
     return (section_sizes, syms)
+
+
+def main():
+  parser = argparse.ArgumentParser()
+  parser.add_argument('linker_file', type=os.path.realpath)
+  parser.add_argument(
+      '-v',
+      '--verbose',
+      default=0,
+      action='count',
+      help='Verbose level (multiple times for more)')
+  args = parser.parse_args()
+
+  logging.basicConfig(
+      level=logging.WARNING - args.verbose * 10,
+      format='%(levelname).1s %(relativeCreated)6d %(message)s')
+
+  with open(args.linker_file, 'r') as map_file:
+    linker_name = DetectLinkerNameFromMapFile(map_file)
+  print('Linker type: %s' % linker_name)
+
+  with open(args.linker_file, 'r') as map_file:
+    section_sizes, syms = MapFileParser().Parse(linker_name, map_file)
+
+  # Enter interactive shell.
+  readline.parse_and_bind('tab: complete')
+  variables = {'section_sizes': section_sizes, 'syms': syms}
+  banner_lines = [
+      '*' * 80,
+      'Variables:',
+      '  section_sizes: Map from section to sizes.',
+      '  syms: Raw symbols parsed from the linker map file.',
+      '*' * 80,
+  ]
+  code.InteractiveConsole(variables).interact('\n'.join(banner_lines))
+
+
+if __name__ == '__main__':
+  main()

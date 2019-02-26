@@ -33,7 +33,7 @@
 
 namespace blink {
 
-namespace SIMD {
+namespace simd {
 
 ALWAYS_INLINE void UnpackOneRowOfRGBA16LittleToRGBA8(const uint16_t*& source,
                                                      uint8_t*& destination,
@@ -288,7 +288,7 @@ ALWAYS_INLINE void PackOneRowOfRGBA8ToUnsignedShort565(
   pixels_per_row = tail_components / 4;
 }
 
-}  // namespace SIMD
+}  // namespace simd
 
 }  // namespace blink
 

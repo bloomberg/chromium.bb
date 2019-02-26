@@ -12,7 +12,7 @@
 #include "third_party/blink/renderer/core/style_property_shorthand.h"
 
 namespace blink {
-namespace CSSShorthand {
+namespace css_shorthand {
 
 bool PlaceSelf::ParseShorthand(
     bool important,
@@ -41,12 +41,13 @@ bool PlaceSelf::ParseShorthand(
   DCHECK(align_self_value);
   DCHECK(justify_self_value);
 
-  CSSPropertyParserHelpers::AddProperty(
+  css_property_parser_helpers::AddProperty(
       CSSPropertyAlignSelf, CSSPropertyPlaceSelf, *align_self_value, important,
-      CSSPropertyParserHelpers::IsImplicitProperty::kNotImplicit, properties);
-  CSSPropertyParserHelpers::AddProperty(
+      css_property_parser_helpers::IsImplicitProperty::kNotImplicit,
+      properties);
+  css_property_parser_helpers::AddProperty(
       CSSPropertyJustifySelf, CSSPropertyPlaceSelf, *justify_self_value,
-      important, CSSPropertyParserHelpers::IsImplicitProperty::kNotImplicit,
+      important, css_property_parser_helpers::IsImplicitProperty::kNotImplicit,
       properties);
 
   return true;
@@ -65,5 +66,5 @@ const CSSValue* PlaceSelf::CSSValueFromComputedStyleInternal(
       allow_visited_style);
 }
 
-}  // namespace CSSShorthand
+}  // namespace css_shorthand
 }  // namespace blink

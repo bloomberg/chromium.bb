@@ -24,15 +24,15 @@
 
 #include "third_party/blink/renderer/core/html/html_table_caption_element.h"
 
-#include "third_party/blink/renderer/core/css_property_names.h"
+#include "third_party/blink/renderer/core/css/css_property_names.h"
 #include "third_party/blink/renderer/core/html_names.h"
 
 namespace blink {
 
-using namespace HTMLNames;
+using namespace html_names;
 
 inline HTMLTableCaptionElement::HTMLTableCaptionElement(Document& document)
-    : HTMLElement(captionTag, document) {}
+    : HTMLElement(kCaptionTag, document) {}
 
 DEFINE_NODE_FACTORY(HTMLTableCaptionElement)
 
@@ -40,7 +40,7 @@ void HTMLTableCaptionElement::CollectStyleForPresentationAttribute(
     const QualifiedName& name,
     const AtomicString& value,
     MutableCSSPropertyValueSet* style) {
-  if (name == alignAttr) {
+  if (name == kAlignAttr) {
     if (!value.IsEmpty())
       AddPropertyToPresentationAttributeStyle(style, CSSPropertyCaptionSide,
                                               value);

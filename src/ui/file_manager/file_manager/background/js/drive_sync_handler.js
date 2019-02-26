@@ -3,14 +3,14 @@
 // found in the LICENSE file.
 
 /**
- * Handler of the background page for the drive sync events.
- * @param {ProgressCenter} progressCenter Progress center to submit the
- *     progressing items.
+ * Handler of the background page for the Drive sync events.
+ *
  * @constructor
- * @extends {cr.EventTarget}
  * @struct
+ * @implements {DriveSyncHandler}
+ * @extends {cr.EventTarget}
  */
-function DriveSyncHandler(progressCenter) {
+function DriveSyncHandlerImpl(progressCenter) {
   /**
    * Progress center to submit the progressing item.
    * @type {ProgressCenter}
@@ -20,11 +20,27 @@ function DriveSyncHandler(progressCenter) {
   this.progressCenter_ = progressCenter;
 
   /**
+   * Predefined error ID for out of quota messages.
+   * @type {number}
+   * @const
+   * @private
+   */
+  this.driveErrorIdOutOfQuota_ = 1;
+
+  /**
+   * Maximum reserved ID for predefined errors.
+   * @type {number}
+   * @const
+   * @private
+   */
+  this.driveErrorIdMax_ = this.driveErrorIdOutOfQuota_;
+
+  /**
    * Counter for error ID.
    * @type {number}
    * @private
    */
-  this.errorIdCounter_ = 0;
+  this.errorIdCounter_ = this.driveErrorIdMax_ + 1;
 
   /**
    * Progress center item.
@@ -66,38 +82,18 @@ function DriveSyncHandler(progressCenter) {
       this.onNotificationButtonClicked_.bind(this));
   chrome.fileManagerPrivate.onPreferencesChanged.addListener(
       this.onPreferencesChanged_.bind(this));
+  chrome.fileManagerPrivate.onDriveConnectionStatusChanged.addListener(
+      this.onDriveConnectionStatusChanged_.bind(this));
 
   // Set initial values.
   this.onPreferencesChanged_();
 }
 
-/**
- * Completed event name.
- * @type {string}
- * @const
- */
-DriveSyncHandler.COMPLETED_EVENT = 'completed';
-
-/**
- * Progress ID of the drive sync error.
- * @type {string}
- * @const
- */
-DriveSyncHandler.DRIVE_SYNC_ERROR_PREFIX = 'drive-sync-error-';
-
-/**
- * Notification ID of the disabled mobile sync notification.
- * @type {string}
- * @private
- * @const
- */
-DriveSyncHandler.DISABLED_MOBILE_SYNC_NOTIFICATION_ID_ = 'disabled-mobile-sync';
-
-DriveSyncHandler.prototype = /** @struct */ {
+DriveSyncHandlerImpl.prototype = /** @struct */ {
   __proto__: cr.EventTarget.prototype,
 
   /**
-   * @return {boolean} Whether the handler is having syncing items or not.
+   * @return {boolean} Whether the handler is syncing items or not.
    */
   get syncing() {
     return this.syncing_;
@@ -105,29 +101,51 @@ DriveSyncHandler.prototype = /** @struct */ {
 };
 
 /**
- * Returns whether the drive sync is currently suppressed or not.
+ * Completed event name.
+ * @type {string}
+ * @private
+ * @const
+ */
+DriveSyncHandlerImpl.DRIVE_SYNC_COMPLETED_EVENT = 'completed';
+
+/**
+ * Returns the completed event name.
+ * @return {string}
+ */
+DriveSyncHandlerImpl.prototype.getCompletedEventName = function() {
+  return DriveSyncHandlerImpl.DRIVE_SYNC_COMPLETED_EVENT;
+};
+
+/**
+ * Returns whether the Drive sync is currently suppressed or not.
  * @return {boolean}
  */
-DriveSyncHandler.prototype.isSyncSuppressed = function() {
+DriveSyncHandlerImpl.prototype.isSyncSuppressed = function() {
   return navigator.connection.type === 'cellular' &&
       this.cellularDisabled_;
 };
 
 /**
- * Shows the notification saying that the drive sync is disabled on cellular
- * network.
+ * Notification ID of the disabled mobile sync notification.
+ * @type {string}
+ * @private
+ * @const
  */
-DriveSyncHandler.prototype.showDisabledMobileSyncNotification = function() {
+DriveSyncHandlerImpl.DISABLED_MOBILE_SYNC_NOTIFICATION_ID_ =
+    'disabled-mobile-sync';
+
+/**
+ * Shows a notification that Drive sync is disabled on cellular networks.
+ */
+DriveSyncHandlerImpl.prototype.showDisabledMobileSyncNotification = function() {
   chrome.notifications.create(
-      DriveSyncHandler.DISABLED_MOBILE_SYNC_NOTIFICATION_ID_,
-      {
+      DriveSyncHandlerImpl.DISABLED_MOBILE_SYNC_NOTIFICATION_ID_, {
         type: 'basic',
         title: chrome.runtime.getManifest().name,
         message: str('DISABLED_MOBILE_SYNC_NOTIFICATION_MESSAGE'),
         iconUrl: chrome.runtime.getURL('/common/images/icon96.png'),
-        buttons: [
-          {title: str('DISABLED_MOBILE_SYNC_NOTIFICATION_ENABLE_BUTTON')}
-        ]
+        buttons:
+            [{title: str('DISABLED_MOBILE_SYNC_NOTIFICATION_ENABLE_BUTTON')}]
       },
       function() {});
 };
@@ -137,7 +155,7 @@ DriveSyncHandler.prototype.showDisabledMobileSyncNotification = function() {
  * @param {chrome.fileManagerPrivate.FileTransferStatus} status Transfer status.
  * @private
  */
-DriveSyncHandler.prototype.onFileTransfersUpdated_ = function(status) {
+DriveSyncHandlerImpl.prototype.onFileTransfersUpdated_ = function(status) {
   switch (status.transferState) {
     case 'in_progress':
       this.updateItem_(status);
@@ -160,7 +178,7 @@ DriveSyncHandler.prototype.onFileTransfersUpdated_ = function(status) {
  * @param {chrome.fileManagerPrivate.FileTransferStatus} status Transfer status.
  * @private
  */
-DriveSyncHandler.prototype.updateItem_ = function(status) {
+DriveSyncHandlerImpl.prototype.updateItem_ = function(status) {
   this.queue_.run(function(callback) {
     window.webkitResolveLocalFileSystemURL(
         status.fileUrl,
@@ -193,16 +211,24 @@ DriveSyncHandler.prototype.updateItem_ = function(status) {
  * @param {chrome.fileManagerPrivate.FileTransferStatus} status Transfer status.
  * @private
  */
-DriveSyncHandler.prototype.removeItem_ = function(status) {
+DriveSyncHandlerImpl.prototype.removeItem_ = function(status) {
   this.queue_.run(function(callback) {
     this.item_.state = status.transferState === 'completed' ?
         ProgressItemState.COMPLETED : ProgressItemState.CANCELED;
     this.progressCenter_.updateItem(this.item_);
     this.syncing_ = false;
-    this.dispatchEvent(new Event(DriveSyncHandler.COMPLETED_EVENT));
+    this.dispatchEvent(new Event(this.getCompletedEventName()));
     callback();
   }.bind(this));
 };
+
+/**
+ * Drive sync error prefix.
+ * @type {string}
+ * @private
+ * @const
+ */
+DriveSyncHandlerImpl.DRIVE_SYNC_ERROR_PREFIX = 'drive-sync-error-';
 
 /**
  * Handles drive's sync errors.
@@ -210,11 +236,9 @@ DriveSyncHandler.prototype.removeItem_ = function(status) {
  * error event.
  * @private
  */
-DriveSyncHandler.prototype.onDriveSyncError_ = function(event) {
+DriveSyncHandlerImpl.prototype.onDriveSyncError_ = function(event) {
   window.webkitResolveLocalFileSystemURL(event.fileUrl, function(entry) {
     var item = new ProgressCenterItem();
-    item.id =
-        DriveSyncHandler.DRIVE_SYNC_ERROR_PREFIX + (this.errorIdCounter_++);
     item.type = ProgressItemType.SYNC;
     item.quiet = true;
     item.state = ProgressItemState.ERROR;
@@ -228,10 +252,18 @@ DriveSyncHandler.prototype.onDriveSyncError_ = function(event) {
         break;
       case 'no_server_space':
         item.message = strf('SYNC_NO_SERVER_SPACE', entry.name);
+        // This error will reappear every time sync is retried, so we use a
+        // fixed ID to avoid spamming the user.
+        item.id = DriveSyncHandlerImpl.DRIVE_SYNC_ERROR_PREFIX +
+            this.driveErrorIdOutOfQuota_;
         break;
       case 'misc':
         item.message = strf('SYNC_MISC_ERROR', entry.name);
         break;
+    }
+    if (!item.id) {
+      item.id = DriveSyncHandlerImpl.DRIVE_SYNC_ERROR_PREFIX +
+          (this.errorIdCounter_++);
     }
     this.progressCenter_.updateItem(item);
   }.bind(this));
@@ -243,13 +275,12 @@ DriveSyncHandler.prototype.onDriveSyncError_ = function(event) {
  * @param {number} buttonIndex Index of the button.
  * @private
  */
-DriveSyncHandler.prototype.onNotificationButtonClicked_ = function(
+DriveSyncHandlerImpl.prototype.onNotificationButtonClicked_ = function(
     notificationId, buttonIndex) {
-  if (notificationId !== DriveSyncHandler.DISABLED_MOBILE_SYNC_NOTIFICATION_ID_)
+  var expectedId = DriveSyncHandlerImpl.DISABLED_MOBILE_SYNC_NOTIFICATION_ID_;
+  if (notificationId !== expectedId)
     return;
-  chrome.notifications.clear(
-      DriveSyncHandler.DISABLED_MOBILE_SYNC_NOTIFICATION_ID_,
-      function() {});
+  chrome.notifications.clear(notificationId, function() {});
   chrome.fileManagerPrivate.setPreferences({cellularDisabled: false});
 };
 
@@ -257,8 +288,27 @@ DriveSyncHandler.prototype.onNotificationButtonClicked_ = function(
  * Handles preferences change.
  * @private
  */
-DriveSyncHandler.prototype.onPreferencesChanged_ = function() {
+DriveSyncHandlerImpl.prototype.onPreferencesChanged_ = function() {
   chrome.fileManagerPrivate.getPreferences(function(pref) {
     this.cellularDisabled_ = pref.cellularDisabled;
   }.bind(this));
+};
+
+/**
+ * Handles connection state change.
+ * @private
+ */
+DriveSyncHandlerImpl.prototype.onDriveConnectionStatusChanged_ = function() {
+  chrome.fileManagerPrivate.getDriveConnectionState((state) => {
+    // If offline, hide any sync progress notifications. When online again, the
+    // Drive sync client may retry syncing and trigger onFileTransfersUpdated
+    // events, causing it to be shown again.
+    if (state.type == 'offline' && state.reason == 'no_network' &&
+        this.syncing_) {
+      this.syncing_ = false;
+      this.item_.state = ProgressItemState.CANCELED;
+      this.progressCenter_.updateItem(this.item_);
+      this.dispatchEvent(new Event(this.getCompletedEventName()));
+    }
+  });
 };

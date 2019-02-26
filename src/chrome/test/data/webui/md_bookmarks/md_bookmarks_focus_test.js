@@ -20,6 +20,7 @@ MaterialBookmarksFocusTest.prototype = {
   browsePreload: 'chrome://bookmarks',
 
   extraLibraries: PolymerTest.getLibraries(ROOT_PATH).concat([
+    ROOT_PATH + 'ui/webui/resources/js/util.js',
     '../settings/test_util.js',
     'test_command_manager.js',
     'test_store.js',
@@ -34,6 +35,17 @@ TEST_F('MaterialBookmarksFocusTest', 'All', function() {
 
     function getFolderNode(id) {
       return findFolderNode(rootNode, id);
+    }
+
+    function assertHasFocusAndNotSelected(id) {
+      const node = getFolderNode(id);
+      const activeElement = node.shadowRoot.activeElement;
+      assertTrue(
+          activeElement != null && activeElement == getDeepActiveElement());
+      const badAction = bookmarks.actions.selectFolder(id);
+      if (store.lastAction != null && badAction.name == store.lastAction.name) {
+        assertNotEquals(badAction.id, store.lastAction.id);
+      }
     }
 
     function keydown(id, key) {
@@ -104,6 +116,8 @@ TEST_F('MaterialBookmarksFocusTest', 'All', function() {
 
       // Move down into child.
       keydown('1', 'ArrowDown');
+      assertHasFocusAndNotSelected('2');
+      keydown('2', ' ');
 
       assertDeepEquals(bookmarks.actions.selectFolder('2'), store.lastAction);
       store.data.selectedFolder = '2';
@@ -117,6 +131,9 @@ TEST_F('MaterialBookmarksFocusTest', 'All', function() {
 
       // Move down past closed folders.
       keydown('2', 'ArrowDown');
+      assertHasFocusAndNotSelected('7');
+      keydown('7', ' ');
+
       assertDeepEquals(bookmarks.actions.selectFolder('7'), store.lastAction);
       assertFocused('2', '7');
 
@@ -127,11 +144,16 @@ TEST_F('MaterialBookmarksFocusTest', 'All', function() {
 
       // Move up past closed folders.
       keydown('7', 'ArrowUp');
+      assertHasFocusAndNotSelected('2');
+      keydown('2', ' ');
+
       assertDeepEquals(bookmarks.actions.selectFolder('2'), store.lastAction);
       assertFocused('7', '2');
 
       // Move up into parent.
       keydown('2', 'ArrowUp');
+      assertHasFocusAndNotSelected('1');
+      keydown('1', ' ');
       assertDeepEquals(bookmarks.actions.selectFolder('1'), store.lastAction);
       assertFocused('2', '1');
 
@@ -150,6 +172,9 @@ TEST_F('MaterialBookmarksFocusTest', 'All', function() {
 
       // Pressing right descends into first child.
       keydown('1', 'ArrowRight');
+      assertHasFocusAndNotSelected('2');
+      keydown('2', ' ');
+
       assertDeepEquals(bookmarks.actions.selectFolder('2'), store.lastAction);
 
       // Pressing right on a closed folder opens that folder
@@ -159,16 +184,21 @@ TEST_F('MaterialBookmarksFocusTest', 'All', function() {
 
       // Pressing right again descends into first child.
       keydown('2', 'ArrowRight');
+      assertHasFocusAndNotSelected('3');
+      keydown('3', ' ');
       assertDeepEquals(bookmarks.actions.selectFolder('3'), store.lastAction);
 
       // Pressing right on a folder with no children does nothing.
       store.resetLastAction();
       keydown('3', 'ArrowRight');
+      assertHasFocusAndNotSelected('3');
       assertDeepEquals(null, store.lastAction);
 
       // Pressing left on a folder with no children ascends to parent.
       keydown('3', 'ArrowDown');
       keydown('4', 'ArrowLeft');
+      assertHasFocusAndNotSelected('2');
+      keydown('2', ' ');
       assertDeepEquals(bookmarks.actions.selectFolder('2'), store.lastAction);
 
       // Pressing left again closes the parent.
@@ -464,7 +494,7 @@ TEST_F('MaterialBookmarksFocusTest', 'All', function() {
       bookmarks.DialogFocusManager.instance_ = dialogFocusManager;
     });
 
-    test('restores focus on dialog dismissal', function() {
+    test('restores focus on dialog dismissal', async function() {
       const focusedItem = items[0];
       focusedItem.focus();
       assertEquals(focusedItem, dialogFocusManager.getFocusedElement_());
@@ -478,17 +508,15 @@ TEST_F('MaterialBookmarksFocusTest', 'All', function() {
       keydown(dropdown, 'Escape');
       assertFalse(dropdown.open);
 
-      return Promise
-          .all([
-            test_util.eventToPromise('close', dropdown),
-            test_util.eventToPromise('focus', focusedItem),
-          ])
-          .then(() => {
-            assertEquals(focusedItem, dialogFocusManager.getFocusedElement_());
-          });
+      await Promise.all([
+        test_util.eventToPromise('close', dropdown),
+        test_util.eventToPromise('focus', focusedItem),
+      ]);
+
+      assertEquals(focusedItem, dialogFocusManager.getFocusedElement_());
     });
 
-    test('restores focus after stacked dialogs', function() {
+    test('restores focus after stacked dialogs', async () => {
       const focusedItem = items[0];
       focusedItem.focus();
       assertEquals(focusedItem, dialogFocusManager.getFocusedElement_());
@@ -501,20 +529,15 @@ TEST_F('MaterialBookmarksFocusTest', 'All', function() {
       const editDialog = commandManager.$.editDialog.get();
       editDialog.showEditDialog(store.data.nodes['2']);
 
-      return test_util.eventToPromise('close', dropdown)
-          .then(() => {
-            editDialog.onCancelButtonTap_();
-            assertNotEquals(
-                focusedItem, dialogFocusManager.getFocusedElement_());
+      await test_util.eventToPromise('close', dropdown);
+      editDialog.onCancelButtonTap_();
+      assertNotEquals(focusedItem, dialogFocusManager.getFocusedElement_());
 
-            return test_util.eventToPromise('close', editDialog);
-          })
-          .then(() => {
-            assertEquals(focusedItem, dialogFocusManager.getFocusedElement_());
-          });
+      await test_util.eventToPromise('close', editDialog);
+      assertEquals(focusedItem, dialogFocusManager.getFocusedElement_());
     });
 
-    test('restores focus after multiple shows of same dialog', function() {
+    test('restores focus after multiple shows of same dialog', async () => {
       let focusedItem = items[0];
       focusedItem.focus();
       assertEquals(focusedItem, dialogFocusManager.getFocusedElement_());
@@ -528,18 +551,13 @@ TEST_F('MaterialBookmarksFocusTest', 'All', function() {
       focusedItem.focus();
       commandManager.openCommandMenuAtPosition(0, 0, MenuSource.ITEM);
 
-      return test_util.eventToPromise('close', dropdown)
-          .then(() => {
-            assertTrue(dropdown.open);
-            dropdown.close();
-            assertNotEquals(
-                focusedItem, dialogFocusManager.getFocusedElement_());
+      await test_util.eventToPromise('close', dropdown);
+      assertTrue(dropdown.open);
+      dropdown.close();
+      assertNotEquals(focusedItem, dialogFocusManager.getFocusedElement_());
 
-            return test_util.eventToPromise('close', dropdown);
-          })
-          .then(() => {
-            assertEquals(focusedItem, dialogFocusManager.getFocusedElement_());
-          });
+      await test_util.eventToPromise('close', dropdown);
+      assertEquals(focusedItem, dialogFocusManager.getFocusedElement_());
     });
   });
 

@@ -1351,7 +1351,7 @@ public abstract class StackLayoutBase extends Layout implements Animatable {
             final Tab newTab = mTabModelSelector.getTabById(mNextTabId);
             final int newIndex = mTabModelSelector.getCurrentModel().indexOf(newTab);
             assert newIndex != TabList.INVALID_TAB_INDEX;
-            RecordHistogram.recordSparseSlowlyHistogram(
+            RecordHistogram.recordSparseHistogram(
                     "Tabs.TabOffsetOfSwitch", currentIndex - newIndex);
         }
         mIsHidingBecauseOfNewTabCreation = false;

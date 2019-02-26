@@ -51,29 +51,33 @@ public class WebappLauncherActivity extends Activity {
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         mCreateTime = SystemClock.elapsedRealtime();
-        launchActivity();
-        ApiCompatibilityUtils.finishAndRemoveTask(this);
+
+        Intent launchIntent = createLaunchIntent();
+        if (launchIntent == null) {
+            ApiCompatibilityUtils.finishAndRemoveTask(this);
+            return;
+        }
+
+        IntentUtils.safeStartActivity(this, launchIntent);
+
+        if (IntentUtils.isIntentForNewTaskOrNewDocument(launchIntent)) {
+            ApiCompatibilityUtils.finishAndRemoveTask(this);
+        } else {
+            finish();
+        }
     }
 
-    public void launchActivity() {
+    public Intent createLaunchIntent() {
         Intent intent = getIntent();
 
         ChromeWebApkHost.init();
-        boolean validWebApk = isValidWebApk(intent);
-
-        WebappInfo webappInfo;
-        if (validWebApk) {
-            webappInfo = WebApkInfo.create(intent);
-        } else {
-            webappInfo = WebappInfo.create(intent);
-        }
+        WebappInfo webappInfo = tryCreateWebappInfo(intent);
 
         // {@link WebApkInfo#create()} and {@link WebappInfo#create()} return null if the intent
         // does not specify required values such as the uri.
         if (webappInfo == null) {
             String url = IntentUtils.safeGetStringExtra(intent, ShortcutHelper.EXTRA_URL);
-            launchInTab(url, ShortcutSource.UNKNOWN);
-            return;
+            return createLaunchInTabIntent(url, ShortcutSource.UNKNOWN);
         }
 
         String webappUrl = webappInfo.uri().toString();
@@ -84,14 +88,14 @@ public class WebappLauncherActivity extends Activity {
         // - the request was for a WebAPK that is valid;
         // - the MAC is present and valid for the homescreen shortcut to be opened;
         // - the intent was sent by Chrome.
-        if (validWebApk || isValidMacForUrl(webappUrl, webappMac)
+        if (webappInfo.isForWebApk() || isValidMacForUrl(webappUrl, webappMac)
                 || wasIntentFromChrome(intent)) {
             int source = webappSource;
             // Retrieves the source of the WebAPK from WebappDataStorage if it is unknown. The
             // {@link webappSource} will not be unknown in the case of an external intent or a
             // notification that launches a WebAPK. Otherwise, it's not trustworthy and we must read
             // the SharedPreference to get the installation source.
-            if (validWebApk && (webappSource == ShortcutSource.UNKNOWN)) {
+            if (webappInfo.isForWebApk() && (webappSource == ShortcutSource.UNKNOWN)) {
                 source = getWebApkSource(webappInfo);
             }
             LaunchMetrics.recordHomeScreenLaunchIntoStandaloneActivity(
@@ -102,21 +106,20 @@ public class WebappLauncherActivity extends Activity {
             // WebappActivity and the user selects the WebappActivity from "Android Recents" the
             // WebappActivity is launched without going through WebappLauncherActivity first.
             WebappActivity.addWebappInfo(webappInfo.id(), webappInfo);
-            Intent launchIntent = createWebappLaunchIntent(webappInfo, validWebApk);
+            Intent launchIntent = createWebappLaunchIntent(webappInfo);
             IntentHandler.addTimestampToIntent(launchIntent, mCreateTime);
             // Pass through WebAPK shell launch timestamp to the new intent.
             long shellLaunchTimestamp =
                     IntentHandler.getWebApkShellLaunchTimestampFromIntent(intent);
             IntentHandler.addShellLaunchTimestampToIntent(launchIntent, shellLaunchTimestamp);
-            startActivity(launchIntent);
-            return;
+            return launchIntent;
         }
 
         Log.e(TAG, "Shortcut (%s) opened in Chrome.", webappUrl);
 
         // The shortcut data doesn't match the current encoding. Change the intent action to
         // launch the URL with a VIEW Intent in the regular browser.
-        launchInTab(webappUrl, webappSource);
+        return createLaunchInTabIntent(webappUrl, webappSource);
     }
 
     // Gets the source of a WebAPK from the WebappDataStorage if the source has been stored before.
@@ -140,8 +143,8 @@ public class WebappLauncherActivity extends Activity {
         return ShortcutSource.WEBAPK_UNKNOWN;
     }
 
-    private void launchInTab(String webappUrl, int webappSource) {
-        if (TextUtils.isEmpty(webappUrl)) return;
+    private Intent createLaunchInTabIntent(String webappUrl, int webappSource) {
+        if (TextUtils.isEmpty(webappUrl)) return null;
 
         Intent launchIntent = new Intent(Intent.ACTION_VIEW, Uri.parse(webappUrl));
         launchIntent.setClassName(getPackageName(), ChromeLauncherActivity.class.getName());
@@ -149,7 +152,7 @@ public class WebappLauncherActivity extends Activity {
         launchIntent.putExtra(ShortcutHelper.EXTRA_SOURCE, webappSource);
         launchIntent.setFlags(
                 Intent.FLAG_ACTIVITY_NEW_TASK | ApiCompatibilityUtils.getActivityNewDocumentFlag());
-        startActivity(launchIntent);
+        return launchIntent;
     }
 
     /**
@@ -174,16 +177,16 @@ public class WebappLauncherActivity extends Activity {
     /**
      * Creates an Intent to launch the web app.
      * @param info     Information about the web app.
-     * @param isWebApk If true, launch the app as a WebApkActivity.  If false, launch the app as
-     *                 a WebappActivity.
      */
-    public static Intent createWebappLaunchIntent(WebappInfo info, boolean isWebApk) {
-        String activityName = isWebApk ? WebApkActivity.class.getName()
-                : WebappActivity.class.getName();
+    private static Intent createWebappLaunchIntent(WebappInfo info) {
+        String activityName = info.isForWebApk() ? WebApkActivity.class.getName()
+                                                 : WebappActivity.class.getName();
+        boolean newTask = true;
         if (Build.VERSION.SDK_INT < Build.VERSION_CODES.LOLLIPOP) {
             // Specifically assign the app to a particular WebappActivity instance.
-            int namespace = isWebApk ? ActivityAssigner.ActivityAssignerNamespace.WEBAPK_NAMESPACE
-                                     : ActivityAssigner.ActivityAssignerNamespace.WEBAPP_NAMESPACE;
+            int namespace = info.isForWebApk()
+                    ? ActivityAssigner.ActivityAssignerNamespace.WEBAPK_NAMESPACE
+                    : ActivityAssigner.ActivityAssignerNamespace.WEBAPP_NAMESPACE;
             int activityIndex = ActivityAssigner.instance(namespace).assign(info.id());
             activityName += String.valueOf(activityIndex);
 
@@ -201,6 +204,11 @@ public class WebappLauncherActivity extends Activity {
                 }
                 break;
             }
+        } else {
+            if (info.isForWebApk() && info.useTransparentSplash()) {
+                activityName = TransparentSplashWebApkActivity.class.getName();
+                newTask = false;
+            }
         }
 
         // Create an intent to launch the Webapp in an unmapped WebappActivity.
@@ -212,14 +220,7 @@ public class WebappLauncherActivity extends Activity {
         // Activity.
         launchIntent.setAction(Intent.ACTION_VIEW);
         launchIntent.setData(Uri.parse(WebappActivity.WEBAPP_SCHEME + "://" + info.id()));
-        launchIntent.setFlags(getWebappActivityIntentFlags());
-        return launchIntent;
-    }
 
-    /**
-     * Returns the set of Intent flags required to correctly launch a WebappActivity.
-     */
-    public static int getWebappActivityIntentFlags() {
         // Setting FLAG_ACTIVITY_CLEAR_TOP handles 2 edge cases:
         // - If a legacy PWA is launching from a notification, we want to ensure that the URL being
         // launched is the URL in the intent. If a paused WebappActivity exists for this id,
@@ -235,9 +236,16 @@ public class WebappLauncherActivity extends Activity {
         // an Intent to an existing top Activity (such as sent from the Webapp Actions Notification)
         // will trigger a new WebappActivity to be launched and onCreate called instead of
         // onNewIntent of the existing WebappActivity being called.
-        return Intent.FLAG_ACTIVITY_NEW_TASK
-                | ApiCompatibilityUtils.getActivityNewDocumentFlag()
-                | Intent.FLAG_ACTIVITY_CLEAR_TOP;
+        // TODO(pkotwicz): Route Webapp Actions Notification actions through new intent filter
+        //                 instead of WebappLauncherActivity. http://crbug.com/894610
+        if (newTask) {
+            launchIntent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK
+                    | ApiCompatibilityUtils.getActivityNewDocumentFlag()
+                    | Intent.FLAG_ACTIVITY_CLEAR_TOP);
+        } else {
+            launchIntent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
+        }
+        return launchIntent;
     }
 
     /**
@@ -264,25 +272,20 @@ public class WebappLauncherActivity extends Activity {
         return false;
     }
 
-    /**
-     * Checks whether the WebAPK package specified in the intent is a valid WebAPK and whether the
-     * url specified in the intent can be fulfilled by the WebAPK.
-     *
-     * @param intent The intent
-     * @return true iff all validation criteria are met.
-     */
-    private boolean isValidWebApk(Intent intent) {
+    /** Tries to create WebappInfo/WebApkInfo for the intent. */
+    private WebappInfo tryCreateWebappInfo(Intent intent) {
+        // Builds WebApkInfo for the intent if the WebAPK package specified in the intent is a valid
+        // WebAPK and the URL specified in the intent can be fulfilled by the WebAPK.
         String webApkPackage =
                 IntentUtils.safeGetStringExtra(intent, WebApkConstants.EXTRA_WEBAPK_PACKAGE_NAME);
-        if (TextUtils.isEmpty(webApkPackage)) return false;
-
         String url = IntentUtils.safeGetStringExtra(intent, ShortcutHelper.EXTRA_URL);
-        if (TextUtils.isEmpty(url)) return false;
-
-        if (!WebApkValidator.canWebApkHandleUrl(this, webApkPackage, url)) {
-            Log.d(TAG, "%s is not within scope of %s WebAPK", url, webApkPackage);
-            return false;
+        if (!TextUtils.isEmpty(webApkPackage) && !TextUtils.isEmpty(url)
+                && WebApkValidator.canWebApkHandleUrl(this, webApkPackage, url)) {
+            return WebApkInfo.create(intent);
         }
-        return true;
+
+        Log.d(TAG, "%s is either not a WebAPK or %s is not within the WebAPK's scope",
+                webApkPackage, url);
+        return WebappInfo.create(intent);
     }
 }

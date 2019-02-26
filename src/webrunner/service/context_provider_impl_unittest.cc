@@ -9,6 +9,7 @@
 #include <zircon/processargs.h>
 
 #include <functional>
+#include <string>
 #include <utility>
 #include <vector>
 
@@ -29,7 +30,9 @@
 #include "base/test/multiprocess_test.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "testing/multiprocess_func_list.h"
+#include "webrunner/fidl/chromium/web/cpp/fidl_test_base.h"
 #include "webrunner/service/common.h"
+#include "webrunner/test/fake_context.h"
 
 namespace webrunner {
 namespace {
@@ -38,73 +41,6 @@ constexpr char kTestDataFileIn[] = "DataFileIn";
 constexpr char kTestDataFileOut[] = "DataFileOut";
 constexpr char kUrl[] = "chrome://:emorhc";
 constexpr char kTitle[] = "Palindrome";
-
-// A fake Frame implementation that manages its own lifetime.
-class FakeFrame : public chromium::web::Frame {
- public:
-  explicit FakeFrame(fidl::InterfaceRequest<chromium::web::Frame> request)
-      : binding_(this, std::move(request)) {
-    binding_.set_error_handler([this]() { delete this; });
-  }
-
-  ~FakeFrame() override = default;
-
-  void set_on_set_observer_callback(base::OnceClosure callback) {
-    on_set_observer_callback_ = std::move(callback);
-  }
-
-  chromium::web::NavigationEventObserver* observer() { return observer_.get(); }
-
-  void CreateView(
-      fidl::InterfaceRequest<fuchsia::ui::viewsv1token::ViewOwner> view_owner,
-      fidl::InterfaceRequest<fuchsia::sys::ServiceProvider> services) override {
-  }
-
-  void GetNavigationController(
-      fidl::InterfaceRequest<chromium::web::NavigationController> controller)
-      override {}
-
-  void SetNavigationEventObserver(
-      fidl::InterfaceHandle<chromium::web::NavigationEventObserver> observer)
-      override {
-    observer_.Bind(std::move(observer));
-    std::move(on_set_observer_callback_).Run();
-  }
-
- private:
-  fidl::Binding<chromium::web::Frame> binding_;
-  chromium::web::NavigationEventObserverPtr observer_;
-  base::OnceClosure on_set_observer_callback_;
-
-  DISALLOW_COPY_AND_ASSIGN(FakeFrame);
-};
-
-// An implementation of Context that creates and binds FakeFrames.
-class FakeContext : public chromium::web::Context {
- public:
-  using CreateFrameCallback = base::RepeatingCallback<void(FakeFrame*)>;
-
-  FakeContext() = default;
-  ~FakeContext() override = default;
-
-  // Sets a callback that is invoked whenever new Frames are bound.
-  void set_on_create_frame_callback(CreateFrameCallback callback) {
-    on_create_frame_callback_ = callback;
-  }
-
-  void CreateFrame(
-      fidl::InterfaceRequest<chromium::web::Frame> frame_request) override {
-    FakeFrame* new_frame = new FakeFrame(std::move(frame_request));
-    on_create_frame_callback_.Run(new_frame);
-
-    // |new_frame| owns itself, so we intentionally leak the pointer.
-  }
-
- private:
-  CreateFrameCallback on_create_frame_callback_;
-
-  DISALLOW_COPY_AND_ASSIGN(FakeContext);
-};
 
 MULTIPROCESS_TEST_MAIN(SpawnContextServer) {
   base::MessageLoopForIO message_loop;
@@ -143,7 +79,8 @@ MULTIPROCESS_TEST_MAIN(SpawnContextServer) {
 
   // Quit the process when the context is destroyed.
   base::RunLoop run_loop;
-  context_binding.set_error_handler([&run_loop]() { run_loop.Quit(); });
+  context_binding.set_error_handler(
+      [&run_loop](zx_status_t status) { run_loop.Quit(); });
   run_loop.Run();
 
   return 0;
@@ -170,13 +107,13 @@ class ContextProviderImplTest : public base::MultiProcessTest {
       fidl::InterfacePtr<chromium::web::Context>* context) {
     // Call a Context method and wait for it to invoke an observer call.
     base::RunLoop run_loop;
-    context->set_error_handler([&run_loop]() {
+    context->set_error_handler([&run_loop](zx_status_t status) {
       ADD_FAILURE();
       run_loop.Quit();
     });
 
     chromium::web::FramePtr frame_ptr;
-    frame_ptr.set_error_handler([&run_loop]() {
+    frame_ptr.set_error_handler([&run_loop](zx_status_t status) {
       ADD_FAILURE();
       run_loop.Quit();
     });
@@ -211,7 +148,8 @@ class ContextProviderImplTest : public base::MultiProcessTest {
   void CheckContextUnresponsive(
       fidl::InterfacePtr<chromium::web::Context>* context) {
     base::RunLoop run_loop;
-    context->set_error_handler([&run_loop]() { run_loop.Quit(); });
+    context->set_error_handler(
+        [&run_loop](zx_status_t status) { run_loop.Quit(); });
 
     chromium::web::FramePtr frame;
     (*context)->CreateFrame(frame.NewRequest());

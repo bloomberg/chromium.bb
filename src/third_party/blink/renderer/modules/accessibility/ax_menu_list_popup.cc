@@ -31,8 +31,6 @@
 
 namespace blink {
 
-using namespace HTMLNames;
-
 AXMenuListPopup::AXMenuListPopup(AXObjectCacheImpl& ax_object_cache)
     : AXMockObject(ax_object_cache), active_index_(-1) {}
 

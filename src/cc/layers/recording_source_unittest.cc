@@ -16,10 +16,6 @@
 namespace cc {
 namespace {
 
-gfx::ColorSpace DefaultColorSpace() {
-  return gfx::ColorSpace::CreateSRGB();
-}
-
 std::unique_ptr<FakeRecordingSource> CreateRecordingSource(
     const gfx::Rect& viewport) {
   gfx::Rect layer_rect(viewport.right(), viewport.bottom());
@@ -110,8 +106,7 @@ TEST(RecordingSourceTest, DiscardableImagesWithTransform) {
     std::vector<const DrawImage*> images;
     raster_source->GetDiscardableImagesInRect(gfx::Rect(130, 0, 128, 128),
                                               &images);
-    DrawImage image(*images[0], scale, PaintImage::kDefaultFrameIndex,
-                    DefaultColorSpace());
+    DrawImage image(*images[0], scale, PaintImage::kDefaultFrameIndex);
     EXPECT_EQ(1u, images.size());
     EXPECT_FLOAT_EQ(scale, image.scale().width());
     EXPECT_FLOAT_EQ(scale, image.scale().height());
@@ -160,12 +155,8 @@ TEST(RecordingSourceTest, NoDiscardableImages) {
   PaintFlags simple_flags;
   simple_flags.setColor(SkColorSetARGB(255, 12, 23, 34));
 
-  SkBitmap non_discardable_bitmap;
-  non_discardable_bitmap.allocN32Pixels(128, 128);
-  non_discardable_bitmap.setImmutable();
-  sk_sp<SkImage> non_discardable_image =
-      SkImage::MakeFromBitmap(non_discardable_bitmap);
-
+  auto non_discardable_image =
+      CreateNonDiscardablePaintImage(gfx::Size(128, 128));
   recording_source->add_draw_rect_with_flags(gfx::Rect(0, 0, 256, 256),
                                              simple_flags);
   recording_source->add_draw_rect_with_flags(gfx::Rect(128, 128, 512, 512),
@@ -274,12 +265,8 @@ TEST(RecordingSourceTest, DiscardableImagesBaseNonDiscardable) {
 
   std::unique_ptr<FakeRecordingSource> recording_source =
       CreateRecordingSource(recorded_viewport);
-
-  SkBitmap non_discardable_bitmap;
-  non_discardable_bitmap.allocN32Pixels(512, 512);
-  non_discardable_bitmap.setImmutable();
-  sk_sp<SkImage> non_discardable_image =
-      SkImage::MakeFromBitmap(non_discardable_bitmap);
+  PaintImage non_discardable_image =
+      CreateNonDiscardablePaintImage(gfx::Size(512, 512));
 
   PaintImage discardable_image[2][2];
   discardable_image[0][0] = CreateDiscardablePaintImage(gfx::Size(128, 128));

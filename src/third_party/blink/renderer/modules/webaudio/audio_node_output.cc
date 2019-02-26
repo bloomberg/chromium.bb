@@ -47,7 +47,7 @@ inline AudioNodeOutput::AudioNodeOutput(AudioHandler* handler,
   DCHECK_LE(number_of_channels, BaseAudioContext::MaxNumberOfChannels());
 
   internal_bus_ = AudioBus::Create(number_of_channels,
-                                   AudioUtilities::kRenderQuantumFrames);
+                                   audio_utilities::kRenderQuantumFrames);
 }
 
 std::unique_ptr<AudioNodeOutput> AudioNodeOutput::Create(
@@ -88,7 +88,7 @@ void AudioNodeOutput::UpdateInternalBus() {
     return;
 
   internal_bus_ = AudioBus::Create(NumberOfChannels(),
-                                   AudioUtilities::kRenderQuantumFrames);
+                                   audio_utilities::kRenderQuantumFrames);
 }
 
 void AudioNodeOutput::UpdateRenderingState() {
@@ -121,7 +121,7 @@ void AudioNodeOutput::PropagateChannelCount() {
 }
 
 AudioBus* AudioNodeOutput::Pull(AudioBus* in_place_bus,
-                                size_t frames_to_process) {
+                                uint32_t frames_to_process) {
   DCHECK(GetDeferredTaskHandler().IsAudioThread());
   DCHECK(rendering_fan_out_count_ > 0 || rendering_param_fan_out_count_ > 0);
 

@@ -11,18 +11,19 @@ namespace blink {
 PushEvent::PushEvent(const AtomicString& type,
                      PushMessageData* data,
                      WaitUntilObserver* observer)
-    : ExtendableEvent(type, ExtendableEventInit(), observer), data_(data) {}
+    : ExtendableEvent(type, ExtendableEventInit::Create(), observer),
+      data_(data) {}
 
-PushEvent::PushEvent(const AtomicString& type, const PushEventInit& initializer)
+PushEvent::PushEvent(const AtomicString& type, const PushEventInit* initializer)
     : ExtendableEvent(type, initializer) {
-  if (initializer.hasData())
-    data_ = PushMessageData::Create(initializer.data());
+  if (initializer->hasData())
+    data_ = PushMessageData::Create(initializer->data());
 }
 
 PushEvent::~PushEvent() = default;
 
 const AtomicString& PushEvent::InterfaceName() const {
-  return EventNames::PushEvent;
+  return event_interface_names::kPushEvent;
 }
 
 PushMessageData* PushEvent::data() {

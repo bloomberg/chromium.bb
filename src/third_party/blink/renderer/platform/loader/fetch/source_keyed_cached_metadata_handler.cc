@@ -66,7 +66,8 @@ class SourceKeyedCachedMetadataHandler::SingleKeyHandler final
 class SourceKeyedCachedMetadataHandler::KeyHash {
  public:
   static unsigned GetHash(const Key& key) {
-    return StringHasher::ComputeHash(key.data(), key.size());
+    return StringHasher::ComputeHash(key.data(),
+                                     static_cast<uint32_t>(key.size()));
   }
 
   static bool Equal(const Key& a, const Key& b) { return a == b; }
@@ -87,7 +88,7 @@ SingleCachedMetadataHandler* SourceKeyedCachedMetadataHandler::HandlerForSource(
   DCHECK_EQ(digest_value.size(), kKeySize);
   memcpy(key.data(), digest_value.data(), kKeySize);
 
-  return new SingleKeyHandler(this, key);
+  return MakeGarbageCollected<SingleKeyHandler>(this, key);
 }
 
 void SourceKeyedCachedMetadataHandler::ClearCachedMetadata(

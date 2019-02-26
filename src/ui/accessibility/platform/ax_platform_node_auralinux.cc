@@ -52,7 +52,7 @@ typedef struct _AXPlatformNodeAuraLinuxClass AXPlatformNodeAuraLinuxClass;
 
 // TODO(aleventhal) Remove this and use atk_role_get_name() once the following
 // GNOME bug is fixed: https://bugzilla.gnome.org/show_bug.cgi?id=795983
-const char* role_names[] = {
+const char* const kRoleNames[] = {
     "invalid",  // ATK_ROLE_INVALID.
     "accelerator label",
     "alert",
@@ -356,6 +356,15 @@ static gfx::Point FindAtkObjectParentCoords(AtkObject* atk_object) {
   atk_object = atk_object_get_parent(atk_object);
 
   return FindAtkObjectParentCoords(atk_object);
+}
+
+static AtkObject* FindAtkObjectParentFrame(AtkObject* atk_object) {
+  while (atk_object) {
+    if (atk_object_get_role(atk_object) == ATK_ROLE_FRAME)
+      return atk_object;
+    atk_object = atk_object_get_parent(atk_object);
+  }
+  return nullptr;
 }
 
 static void AXPlatformNodeAuraLinuxGetExtents(AtkComponent* atk_component,
@@ -960,6 +969,12 @@ static const GInterfaceInfo TextInfo = {
     reinterpret_cast<GInterfaceInitFunc>(AXTextInterfaceBaseInit), nullptr,
     nullptr};
 
+static void AXWindowInterfaceBaseInit(AtkWindowIface* iface) {}
+
+static const GInterfaceInfo WindowInfo = {
+    reinterpret_cast<GInterfaceInitFunc>(AXWindowInterfaceBaseInit), nullptr,
+    nullptr};
+
 //
 // The rest of the AXPlatformNodeAtk code, not specific to one
 // of the Atk* interfaces.
@@ -1033,6 +1048,56 @@ void AXPlatformNodeAuraLinuxDetach(AXPlatformNodeAuraLinuxObject* atk_object) {
 
 G_END_DECLS
 
+namespace {
+
+// The root-level Application object that's the parent of all top-level windows.
+AXPlatformNode* g_root_application = nullptr;
+
+// The last AtkObject with keyboard focus. Tracking this is required to emit the
+// ATK_STATE_FOCUSED change to false.
+AtkObject* g_current_focused = nullptr;
+
+// The last object which was selected. Tracking this is required because
+// widgets in the browser UI only emit notifications upon becoming selected,
+// but clients also expect notifications when items become unselected.
+AXPlatformNodeAuraLinux* g_current_selected = nullptr;
+
+// The AtkObject with role=ATK_ROLE_FRAME that represents the toplevel desktop
+// window with focus. If this window is not one of our windows, this value
+// should be null. This is a weak pointer as well, so its value will also be
+// null if if the AtkObject is destroyed.
+AtkObject* g_active_top_level_frame = nullptr;
+
+const char* GetUniqueAccessibilityGTypeName(int interface_mask) {
+  // 37 characters is enough for "AXPlatformNodeAuraLinux%x" with any integer
+  // value.
+  static char name[37];
+  snprintf(name, sizeof(name), "AXPlatformNodeAuraLinux%x", interface_mask);
+  return name;
+}
+
+bool IsRoleWithValueInterface(AtkRole role) {
+  return role == ATK_ROLE_SCROLL_BAR || role == ATK_ROLE_SLIDER ||
+         role == ATK_ROLE_PROGRESS_BAR || role == ATK_ROLE_SEPARATOR ||
+         role == ATK_ROLE_SPIN_BUTTON;
+}
+
+}  // namespace
+
+static void SetActiveTopLevelFrame(AtkObject* new_top_level_frame) {
+  if (g_active_top_level_frame)
+    g_object_remove_weak_pointer(
+        G_OBJECT(g_active_top_level_frame),
+        reinterpret_cast<void**>(&g_active_top_level_frame));
+
+  g_active_top_level_frame = new_top_level_frame;
+
+  if (g_active_top_level_frame)
+    g_object_add_weak_pointer(
+        G_OBJECT(g_active_top_level_frame),
+        reinterpret_cast<void**>(&g_active_top_level_frame));
+}
+
 void AXPlatformNodeAuraLinux::EnsureGTypeInit() {
 #if !GLIB_CHECK_VERSION(2, 36, 0)
   static bool first_time = true;
@@ -1041,21 +1106,6 @@ void AXPlatformNodeAuraLinux::EnsureGTypeInit() {
     first_time = false;
   }
 #endif
-}
-
-const char* AXPlatformNodeAuraLinux::GetUniqueAccessibilityGTypeName(
-    int interface_mask) {
-  // 37 characters is enough for "AXPlatformNodeAuraLinux%x" with any integer
-  // value.
-  static char name[37];
-  snprintf(name, sizeof(name), "AXPlatformNodeAuraLinux%x", interface_mask);
-  return name;
-}
-
-static bool IsRoleWithValueInterface(AtkRole role) {
-  return role == ATK_ROLE_SCROLL_BAR || role == ATK_ROLE_SLIDER ||
-         role == ATK_ROLE_PROGRESS_BAR || role == ATK_ROLE_SEPARATOR ||
-         role == ATK_ROLE_SPIN_BUTTON;
 }
 
 int AXPlatformNodeAuraLinux::GetGTypeInterfaceMask() {
@@ -1093,6 +1143,9 @@ int AXPlatformNodeAuraLinux::GetGTypeInterfaceMask() {
   // HyperlinkImpl interface
   if (role == ATK_ROLE_LINK)
     interface_mask |= 1 << ATK_HYPERLINK_INTERFACE;
+
+  if (role == ATK_ROLE_FRAME)
+    interface_mask |= 1 << ATK_WINDOW_INTERFACE;
 
   return interface_mask;
 }
@@ -1135,6 +1188,8 @@ GType AXPlatformNodeAuraLinux::GetAccessibilityGType() {
     g_type_add_interface_static(type, ATK_TYPE_HYPERTEXT, &HypertextInfo);
   if (interface_mask_ & (1 << ATK_TEXT_INTERFACE))
     g_type_add_interface_static(type, ATK_TYPE_TEXT, &TextInfo);
+  if (interface_mask_ & (1 << ATK_WINDOW_INTERFACE))
+    g_type_add_interface_static(type, ATK_TYPE_WINDOW, &WindowInfo);
 
   return type;
 }
@@ -1158,8 +1213,8 @@ void AXPlatformNodeAuraLinux::DestroyAtkObjects() {
     atk_hyperlink_ = nullptr;
   }
   if (atk_object_) {
-    if (atk_object_ == current_focused_)
-      current_focused_ = nullptr;
+    if (atk_object_ == g_current_focused)
+      g_current_focused = nullptr;
     AXPlatformNodeAuraLinuxDetach(AX_PLATFORM_NODE_AURALINUX(atk_object_));
     g_object_unref(atk_object_);
     atk_object_ = nullptr;
@@ -1200,11 +1255,13 @@ AXPlatformNodeAuraLinux* AXPlatformNodeAuraLinux::GetFromUniqueId(
 //
 
 // static
-AXPlatformNode* AXPlatformNodeAuraLinux::application_ = nullptr;
+void AXPlatformNodeAuraLinux::SetApplication(AXPlatformNode* application) {
+  g_root_application = application;
+}
 
 // static
-void AXPlatformNodeAuraLinux::SetApplication(AXPlatformNode* application) {
-  application_ = application;
+AXPlatformNode* AXPlatformNodeAuraLinux::application() {
+  return g_root_application;
 }
 
 // static
@@ -1589,6 +1646,8 @@ AtkRole AXPlatformNodeAuraLinux::GetAtkRole() {
 
 void AXPlatformNodeAuraLinux::GetAtkState(AtkStateSet* atk_state_set) {
   AXNodeData data = GetData();
+  if (atk_object_ == g_active_top_level_frame)
+    atk_state_set_add_state(atk_state_set, ATK_STATE_ACTIVE);
   if (data.HasState(ax::mojom::State::kCollapsed))
     atk_state_set_add_state(atk_state_set, ATK_STATE_EXPANDABLE);
   if (data.HasState(ax::mojom::State::kDefault))
@@ -1684,13 +1743,12 @@ void AXPlatformNodeAuraLinux::GetAtkRelations(
     AtkRelationSet* atk_relation_set) {
 }
 
-AXPlatformNodeAuraLinux::AXPlatformNodeAuraLinux()
-    : interface_mask_(0),
-      atk_object_(nullptr),
-      atk_hyperlink_(nullptr),
-      weak_factory_(this) {}
+AXPlatformNodeAuraLinux::AXPlatformNodeAuraLinux() = default;
 
 AXPlatformNodeAuraLinux::~AXPlatformNodeAuraLinux() {
+  if (g_current_selected == this)
+    g_current_selected = nullptr;
+
   DestroyAtkObjects();
 }
 
@@ -1728,7 +1786,7 @@ void AXPlatformNodeAuraLinux::AddAccessibilityTreeProperties(
   AtkRole role = GetAtkRole();
   if (role != ATK_ROLE_UNKNOWN) {
     int role_index = static_cast<int>(role);
-    dict->SetString("role", role_names[role_index]);
+    dict->SetString("role", kRoleNames[role_index]);
   }
   const gchar* name = atk_object_get_name(atk_object_);
   if (name)
@@ -1773,37 +1831,60 @@ void AXPlatformNodeAuraLinux::OnExpandedStateChanged(bool is_expanded) {
                                  is_expanded);
 }
 
-AtkObject* AXPlatformNodeAuraLinux::current_focused_ = nullptr;
+void AXPlatformNodeAuraLinux::OnWindowActivated() {
+  AtkObject* parent_frame = FindAtkObjectParentFrame(atk_object_);
+  if (!parent_frame || parent_frame == g_active_top_level_frame)
+    return;
+
+  SetActiveTopLevelFrame(parent_frame);
+
+  g_signal_emit_by_name(parent_frame, "activate");
+  atk_object_notify_state_change(parent_frame, ATK_STATE_ACTIVE, TRUE);
+}
+
+void AXPlatformNodeAuraLinux::OnWindowDeactivated() {
+  AtkObject* parent_frame = FindAtkObjectParentFrame(atk_object_);
+  if (!parent_frame || parent_frame != g_active_top_level_frame)
+    return;
+
+  SetActiveTopLevelFrame(nullptr);
+
+  g_signal_emit_by_name(parent_frame, "deactivate");
+  atk_object_notify_state_change(parent_frame, ATK_STATE_ACTIVE, FALSE);
+}
 
 void AXPlatformNodeAuraLinux::OnFocused() {
   DCHECK(atk_object_);
 
-  if (atk_object_ == current_focused_)
+  if (atk_object_get_role(atk_object_) == ATK_ROLE_FRAME) {
+    g_signal_emit_by_name(atk_object_, "activate");
+    atk_object_notify_state_change(atk_object_, ATK_STATE_ACTIVE, TRUE);
+    return;
+  }
+
+  if (atk_object_ == g_current_focused)
     return;
 
-  if (current_focused_) {
-    g_signal_emit_by_name(current_focused_, "focus-event", false);
-    atk_object_notify_state_change(ATK_OBJECT(current_focused_),
+  if (g_current_focused) {
+    g_signal_emit_by_name(g_current_focused, "focus-event", false);
+    atk_object_notify_state_change(ATK_OBJECT(g_current_focused),
                                    ATK_STATE_FOCUSED, false);
   }
 
-  current_focused_ = atk_object_;
+  g_current_focused = atk_object_;
   g_signal_emit_by_name(atk_object_, "focus-event", true);
   atk_object_notify_state_change(ATK_OBJECT(atk_object_), ATK_STATE_FOCUSED,
                                  true);
 }
 
-base::WeakPtr<AXPlatformNodeAuraLinux>
-    AXPlatformNodeAuraLinux::current_selected_ = nullptr;
-
 void AXPlatformNodeAuraLinux::OnSelected() {
-  if (current_selected_ && !current_selected_->GetData().GetBoolAttribute(
-                               ax::mojom::BoolAttribute::kSelected)) {
-    atk_object_notify_state_change(ATK_OBJECT(current_selected_->atk_object_),
+  if (g_current_selected && !g_current_selected->GetData().GetBoolAttribute(
+                                ax::mojom::BoolAttribute::kSelected)) {
+    atk_object_notify_state_change(ATK_OBJECT(g_current_selected->atk_object_),
                                    ATK_STATE_SELECTED, false);
   }
 
-  current_selected_ = weak_factory_.GetWeakPtr();
+  g_current_selected = this;
   if (ATK_IS_OBJECT(atk_object_)) {
     atk_object_notify_state_change(ATK_OBJECT(atk_object_), ATK_STATE_SELECTED,
                                    true);
@@ -1880,6 +1961,12 @@ void AXPlatformNodeAuraLinux::NotifyAccessibilityEvent(
     case ax::mojom::Event::kValueChanged:
       OnValueChanged();
       break;
+    case ax::mojom::Event::kWindowActivated:
+      OnWindowActivated();
+      break;
+    case ax::mojom::Event::kWindowDeactivated:
+      OnWindowDeactivated();
+      break;
     default:
       break;
   }
@@ -1940,7 +2027,7 @@ void AXPlatformNodeAuraLinux::GetPosition(gint* x, gint* y,
 }
 
 void AXPlatformNodeAuraLinux::GetSize(gint* width, gint* height) {
-  gfx::Rect rect_size = gfx::ToEnclosingRect(GetData().location);
+  gfx::Rect rect_size = gfx::ToEnclosingRect(GetData().relative_bounds.bounds);
   if (width)
     *width = rect_size.width();
   if (height)

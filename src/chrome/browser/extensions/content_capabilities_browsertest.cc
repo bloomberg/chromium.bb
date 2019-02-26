@@ -202,7 +202,9 @@ IN_PROC_BROWSER_TEST_F(ContentCapabilitiesTest, ClipboardWrite) {
   // script without a user gesture.
   EXPECT_TRUE(
       CanWriteClipboard(extension.get(), GetTestURLFor("bar.example.com")));
-  if (!base::FeatureList::IsEnabled(features::kUserActivationV2)) {
+  if (!base::FeatureList::IsEnabled(features::kUserActivationV2) ||
+      base::FeatureList::IsEnabled(
+          features::kUserActivationSameOriginVisibility)) {
     EXPECT_TRUE(CanWriteClipboardInAboutBlankFrame(
         extension.get(), GetTestURLFor("bar.example.com")));
   } else {

@@ -115,7 +115,7 @@ MainThreadTaskQueue::MainThreadTaskQueue(
       freeze_when_keep_active_(params.freeze_when_keep_active),
       main_thread_scheduler_(main_thread_scheduler),
       frame_scheduler_(params.frame_scheduler) {
-  if (GetTaskQueueImpl()) {
+  if (GetTaskQueueImpl() && spec.should_notify_observers) {
     // TaskQueueImpl may be null for tests.
     // TODO(scheduler-dev): Consider mapping directly to
     // MainThreadSchedulerImpl::OnTaskStarted/Completed. At the moment this

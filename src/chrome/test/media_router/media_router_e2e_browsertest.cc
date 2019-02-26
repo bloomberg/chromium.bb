@@ -81,7 +81,7 @@ void MediaRouterE2EBrowserTest::CreateMediaRoute(
   observer_.reset(new TestMediaSinksObserver(media_router_, source, origin));
   observer_->Init();
 
-  DVLOG(1) << "Receiver name: " << receiver();
+  DVLOG(1) << "Receiver name: " << receiver_;
   // Wait for MediaSinks compatible with |source| to be discovered.
   ASSERT_TRUE(ConditionalWait(
       base::TimeDelta::FromSeconds(30), base::TimeDelta::FromSeconds(1),
@@ -89,7 +89,7 @@ void MediaRouterE2EBrowserTest::CreateMediaRoute(
                  base::Unretained(this))));
 
   const auto& sink_map = observer_->sink_map;
-  const auto it = sink_map.find(receiver());
+  const auto it = sink_map.find(receiver_);
   const MediaSink& sink = it->second;
 
   // The callback will set route_id_ when invoked.
@@ -112,7 +112,7 @@ void MediaRouterE2EBrowserTest::StopMediaRoute() {
 }
 
 bool MediaRouterE2EBrowserTest::IsSinkDiscovered() const {
-  return base::ContainsKey(observer_->sink_map, receiver());
+  return base::ContainsKey(observer_->sink_map, receiver_);
 }
 
 bool MediaRouterE2EBrowserTest::IsRouteCreated() const {

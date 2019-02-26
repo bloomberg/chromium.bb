@@ -28,6 +28,16 @@ SuggestionMarkerProperties::Builder::SetType(
 }
 
 SuggestionMarkerProperties::Builder&
+SuggestionMarkerProperties::Builder::SetRemoveOnFinishComposing(
+    bool remove_on_finish_composing) {
+  data_.remove_on_finish_composing_ =
+      remove_on_finish_composing
+          ? SuggestionMarker::RemoveOnFinishComposing::kRemove
+          : SuggestionMarker::RemoveOnFinishComposing::kDoNotRemove;
+  return *this;
+}
+
+SuggestionMarkerProperties::Builder&
 SuggestionMarkerProperties::Builder::SetSuggestions(
     const Vector<String>& suggestions) {
   data_.suggestions_ = suggestions;

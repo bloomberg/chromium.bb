@@ -279,16 +279,16 @@ chrome.developerPrivate.SiteControl;
 /**
  * @typedef {{
  *   hasAllHosts: boolean,
+ *   hostAccess: !chrome.developerPrivate.HostAccess,
  *   hosts: !Array<!chrome.developerPrivate.SiteControl>
  * }}
  */
-chrome.developerPrivate.SpecificSiteControls;
+chrome.developerPrivate.RuntimeHostPermissions;
 
 /**
  * @typedef {{
  *   simplePermissions: !Array<!chrome.developerPrivate.Permission>,
- *   hostAccess: (!chrome.developerPrivate.HostAccess|undefined),
- *   specificSiteControls: (!chrome.developerPrivate.SpecificSiteControls|undefined)
+ *   runtimeHostPermissions: (!chrome.developerPrivate.RuntimeHostPermissions|undefined)
  * }}
  */
 chrome.developerPrivate.Permissions;

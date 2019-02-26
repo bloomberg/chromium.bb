@@ -39,6 +39,7 @@
 #include "net/url_request/url_request.h"
 #include "net/url_request/url_request_context.h"
 #include "net/url_request/url_request_status.h"
+#include "services/network/public/cpp/features.h"
 #include "url/gurl.h"
 
 namespace data_reduction_proxy {
@@ -330,12 +331,6 @@ void DataReductionProxyNetworkDelegate::OnBeforeSendHeadersInternal(
                   data_reduction_proxy_request_options_->GetSecureSession()) {
     page_id = data->page_id();
   }
-  // Always persist data's |request_info| since it tracks connection pingback
-  // data for redirects on main frame requests. It should include re-issued
-  // requests and client redirects.
-  std::vector<DataReductionProxyData::RequestInfo> request_info;
-  if (data)
-    request_info = data->TakeRequestInfo();
 
   // Reset |request|'s DataReductionProxyData.
   DataReductionProxyData::ClearData(request);
@@ -389,7 +384,6 @@ void DataReductionProxyNetworkDelegate::OnBeforeSendHeadersInternal(
         page_id = data_reduction_proxy_request_options_->GeneratePageId();
       }
       data->set_page_id(page_id.value());
-      data->set_request_info(std::move(request_info));
     }
   }
 
@@ -418,8 +412,6 @@ void DataReductionProxyNetworkDelegate::OnBeforeSendHeadersInternal(
   }
 
   DCHECK(data);
-  data->set_lofi_requested(
-      lofi_decider ? lofi_decider->ShouldRecordLoFiUMA(*request) : false);
   MaybeAddBrotliToAcceptEncodingHeader(proxy_info, headers, *request);
 
   data_reduction_proxy_request_options_->AddRequestHeader(headers, page_id);
@@ -443,12 +435,6 @@ void DataReductionProxyNetworkDelegate::OnBeforeRedirectInternal(
     page_id = data->page_id();
   }
 
-  // Persist data's |request_info| since it tracks connection pingback data for
-  // redirects on main frame requests.
-  std::vector<DataReductionProxyData::RequestInfo> request_info;
-  if (data)
-    request_info = data->TakeRequestInfo();
-
   DataReductionProxyData::ClearData(request);
 
   if (page_id) {
@@ -456,7 +442,6 @@ void DataReductionProxyNetworkDelegate::OnBeforeRedirectInternal(
     data->set_page_id(page_id.value());
     data->set_session_key(
         data_reduction_proxy_request_options_->GetSecureSession());
-    data->set_request_info(std::move(request_info));
   }
 }
 
@@ -581,7 +566,8 @@ void DataReductionProxyNetworkDelegate::CalculateAndRecordDataUsage(
 
   AccumulateDataUsage(
       data_used, original_size, request_type, mime_type,
-      data_use_measurement::DataUseMeasurement::IsUserRequest(request),
+      data_use_measurement::DataUseMeasurement::IsUserRequest(
+          request.traffic_annotation().unique_id_hash_code),
       data_use_measurement::DataUseMeasurement::GetContentTypeForRequest(
           request),
       request.traffic_annotation().unique_id_hash_code);
@@ -593,6 +579,7 @@ void DataReductionProxyNetworkDelegate::CalculateAndRecordDataUsage(
           ->IsNonContentInitiatedRequest(request)) {
     // Record non-content initiated traffic to the Other bucket for data saver
     // site-breakdown.
+    DCHECK(!base::FeatureList::IsEnabled(network::features::kNetworkService));
     data_reduction_proxy_io_data_->UpdateDataUseForHost(
         data_used, original_size, util::GetSiteBreakdownOtherHostName());
   }

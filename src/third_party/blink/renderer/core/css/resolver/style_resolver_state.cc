@@ -169,7 +169,8 @@ StyleResolverState::ParsedPropertiesForPendingSubstitutionCache(
   HeapHashMap<CSSPropertyID, Member<const CSSValue>>* map =
       parsed_properties_for_pending_substitution_cache_.at(&value);
   if (!map) {
-    map = new HeapHashMap<CSSPropertyID, Member<const CSSValue>>;
+    map = MakeGarbageCollected<
+        HeapHashMap<CSSPropertyID, Member<const CSSValue>>>();
     parsed_properties_for_pending_substitution_cache_.Set(&value, map);
   }
   return *map;

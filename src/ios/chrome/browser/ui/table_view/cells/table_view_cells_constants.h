@@ -16,6 +16,9 @@ extern const CGFloat kTableViewHorizontalSpacing;
 // The vertical spacing between views and the container view of a cell.
 extern const CGFloat kTableViewVerticalSpacing;
 
+// The large vertical spacing between views and the container view of a cell.
+extern const CGFloat kTableViewLargeVerticalSpacing;
+
 // The horizontal spacing between subviews within the container view.
 extern const CGFloat kTableViewSubViewHorizontalSpacing;
 
@@ -29,7 +32,23 @@ extern const CGFloat kUseDefaultFontSize;
 // Spacing between text label and cell contentView.
 extern const CGFloat kTableViewLabelVerticalTopSpacing;
 
+// Hex Value for blue label text color.
+extern const int kTableViewTextLabelColorBlue;
+
 // Hex Value for light gray label text color.
-extern const CGFloat kTableViewTextLabelColorLightGrey;
+extern const int kTableViewTextLabelColorLightGrey;
+
+// Hex Value for blue label text color.
+extern const int kTableViewTextLabelColorBlue;
+
+// Hex Value for the text color of the secondary labels (e.g. details, URL,
+// metadata...).
+extern const int kTableViewSecondaryLabelLightGrayTextColor;
+
+// Hex Value for the tint color for switches.
+extern const int kTableViewSwitchTintColor;
+
+// A masked password string(e.g. "••••••••").
+extern NSString* const kMaskedPassword;
 
 #endif  // IOS_CHROME_BROWSER_UI_TABLE_VIEW_CELLS_TABLE_VIEW_CELLS_CONSTANTS_H_

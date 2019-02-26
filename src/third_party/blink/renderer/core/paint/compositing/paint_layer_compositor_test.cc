@@ -73,7 +73,7 @@ TEST_F(PaintLayerCompositorTest,
   // given animations separated only by a lifecycle update to
   // CompositingInputsClean, they should both be started in the same lifecycle
   // and as such grouped together.
-  GetDocument().View()->UpdateAllLifecyclePhases();
+  UpdateAllLifecyclePhasesForTest();
   EXPECT_EQ(DocumentLifecycle::kPaintClean,
             GetDocument().Lifecycle().GetState());
 
@@ -104,8 +104,8 @@ TEST_F(PaintLayerCompositorTest, UpdateDoesNotOrphanMainGraphicsLayer) {
 
   // Force CompositedLayerMapping to update the internal layer hierarchy.
   auto* box = GetDocument().getElementById("box");
-  box->setAttribute(HTMLNames::styleAttr, "height: 1000px;");
-  GetDocument().View()->UpdateAllLifecyclePhases();
+  box->setAttribute(html_names::kStyleAttr, "height: 1000px;");
+  UpdateAllLifecyclePhasesForTest();
 
   EXPECT_EQ(main_graphics_layer_parent, main_graphics_layer->Parent());
 }

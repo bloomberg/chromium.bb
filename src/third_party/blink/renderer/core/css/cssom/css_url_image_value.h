@@ -21,6 +21,8 @@ class CORE_EXPORT CSSURLImageValue final : public CSSStyleImageValue {
 
   static CSSURLImageValue* FromCSSValue(const CSSImageValue&);
 
+  explicit CSSURLImageValue(const CSSImageValue& value) : value_(value) {}
+
   const String& url() const;
 
   // CSSStyleImageValue
@@ -40,8 +42,6 @@ class CORE_EXPORT CSSURLImageValue final : public CSSStyleImageValue {
   void Trace(blink::Visitor*) override;
 
  private:
-  explicit CSSURLImageValue(const CSSImageValue& value) : value_(value) {}
-
   scoped_refptr<Image> GetImage() const;
 
   Member<const CSSImageValue> value_;

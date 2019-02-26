@@ -37,8 +37,7 @@ class TaskSchedulerTaskTrackerPosixTest : public testing::Test {
     Thread::Options service_thread_options;
     service_thread_options.message_loop_type = MessageLoop::TYPE_IO;
     service_thread_.StartWithOptions(service_thread_options);
-    tracker_.set_watch_file_descriptor_message_loop(
-        static_cast<MessageLoopForIO*>(service_thread_.message_loop()));
+    tracker_.set_io_thread_task_runner(service_thread_.task_runner());
   }
 
  protected:
@@ -57,12 +56,13 @@ TEST_F(TaskSchedulerTaskTrackerPosixTest, RunTask) {
   Task task(FROM_HERE,
             Bind([](bool* did_run) { *did_run = true; }, Unretained(&did_run)),
             TimeDelta());
-  TaskTraits default_traits = {};
+  constexpr TaskTraits default_traits = {};
 
   EXPECT_TRUE(tracker_.WillPostTask(&task, default_traits.shutdown_behavior()));
 
   auto sequence = test::CreateSequenceWithTask(std::move(task), default_traits);
-  EXPECT_EQ(sequence, tracker_.WillScheduleSequence(sequence, nullptr));
+  EXPECT_TRUE(
+      tracker_.WillScheduleSequence(sequence->BeginTransaction(), nullptr));
   // Expect RunAndPopNextTask to return nullptr since |sequence| is empty after
   // popping a task from it.
   EXPECT_FALSE(tracker_.RunAndPopNextTask(sequence, nullptr));
@@ -79,14 +79,15 @@ TEST_F(TaskSchedulerTaskTrackerPosixTest, FileDescriptorWatcher) {
             Bind(IgnoreResult(&FileDescriptorWatcher::WatchReadable), fds[0],
                  DoNothing()),
             TimeDelta());
-  TaskTraits default_traits = {};
+  constexpr TaskTraits default_traits = {};
   // FileDescriptorWatcher::WatchReadable needs a SequencedTaskRunnerHandle.
   task.sequenced_task_runner_ref = MakeRefCounted<NullTaskRunner>();
 
   EXPECT_TRUE(tracker_.WillPostTask(&task, default_traits.shutdown_behavior()));
 
   auto sequence = test::CreateSequenceWithTask(std::move(task), default_traits);
-  EXPECT_EQ(sequence, tracker_.WillScheduleSequence(sequence, nullptr));
+  EXPECT_TRUE(
+      tracker_.WillScheduleSequence(sequence->BeginTransaction(), nullptr));
   // Expect RunAndPopNextTask to return nullptr since |sequence| is empty after
   // popping a task from it.
   EXPECT_FALSE(tracker_.RunAndPopNextTask(sequence, nullptr));

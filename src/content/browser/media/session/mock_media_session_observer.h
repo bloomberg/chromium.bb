@@ -20,8 +20,9 @@ class MockMediaSessionObserver : public MediaSessionObserver {
                void(bool is_controllable, bool is_suspended));
   MOCK_METHOD1(MediaSessionMetadataChanged,
                void(const base::Optional<MediaMetadata>& metadata));
-  MOCK_METHOD1(MediaSessionActionsChanged,
-               void(const std::set<blink::mojom::MediaSessionAction>& action));
+  MOCK_METHOD1(
+      MediaSessionActionsChanged,
+      void(const std::set<media_session::mojom::MediaSessionAction>& action));
 };
 }
 

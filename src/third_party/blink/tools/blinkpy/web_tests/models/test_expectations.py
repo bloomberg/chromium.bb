@@ -68,6 +68,24 @@ class ParseError(Exception):
         return 'ParseError(warnings=%s)' % self.warnings
 
 
+_PLATFORM_TOKENS_LIST = [
+    'Android',
+    'Fuchsia',
+    'Linux',
+    'Mac', 'Mac10.10', 'Mac10.11', 'Retina', 'Mac10.12', 'Mac10.13',
+    'Win', 'Win7', 'Win10'
+]
+
+_BUILD_TYPE_TOKEN_LIST = [
+    'Release',
+    'Debug',
+]
+
+_SPECIFIER_GROUPS = [
+    set(s.upper() for s in _PLATFORM_TOKENS_LIST),
+    set(s.upper() for s in _BUILD_TYPE_TOKEN_LIST)
+]
+
 class TestExpectationParser(object):
     """Provides parsing facilities for lines in the test_expectation.txt file."""
 
@@ -102,7 +120,23 @@ class TestExpectationParser(object):
             test_expectation = TestExpectationLine.tokenize_line(filename, line, line_number)
             self._parse_line(test_expectation)
             expectation_lines.append(test_expectation)
+
+        if self._is_lint_mode:
+            self._validate_specifiers(expectation_lines)
         return expectation_lines
+
+    def _validate_specifiers(self, expectation_lines):
+        errors = []
+        for el in expectation_lines:
+            for s in _SPECIFIER_GROUPS:
+                if len(s.intersection(el.specifiers)) > 2:
+                    errors.append('Expectation line contain more than one exclusive '
+                                  'specifiers: %s (%s:%s). Please split this test '
+                                  'expectation into multiple lines, each has one specifier.' % (
+                        el.original_string, el.filename, el.line_numbers))
+                    break
+        if errors:
+            raise ParseError(errors)
 
     def _create_expectation_line(self, test_name, expectations, file_name):
         expectation_line = TestExpectationLine()
@@ -178,7 +212,7 @@ class TestExpectationParser(object):
         if not self._port.test_exists(expectation_line.name) and not self._port.test_exists(expectation_line.name + '-disabled'):
             # Log a warning here since you hit this case any
             # time you update TestExpectations without syncing
-            # the LayoutTests directory
+            # the web_tests directory
             expectation_line.warnings.append('Path does not exist.')
             return False
         return True
@@ -269,16 +303,7 @@ class TestExpectationLine(object):
         return not self.original_string.strip()
 
     # FIXME: Update the original specifiers and remove this once the old syntax is gone.
-    _configuration_tokens_list = [
-        'Android',
-        'Fuchsia',
-        'Linux',
-        'Mac', 'Mac10.10', 'Mac10.11', 'Retina', 'Mac10.12', 'Mac10.13',
-        'Win', 'Win7', 'Win10',
-
-        'Release',
-        'Debug',
-    ]
+    _configuration_tokens_list = _PLATFORM_TOKENS_LIST + _BUILD_TYPE_TOKEN_LIST
 
     _configuration_tokens = dict((token, token.upper()) for token in _configuration_tokens_list)
     _inverted_configuration_tokens = dict((value, name) for name, value in _configuration_tokens.iteritems())
@@ -859,17 +884,17 @@ class TestExpectations(object):
     in which case the expectations apply to all test cases in that
     directory and any subdirectory. The format is along the lines of:
 
-      LayoutTests/fast/js/fixme.js [ Failure ]
-      LayoutTests/fast/js/flaky.js [ Failure Pass ]
-      LayoutTests/fast/js/crash.js [ Crash Failure Pass Timeout ]
+      fast/js/fixme.js [ Failure ]
+      fast/js/flaky.js [ Failure Pass ]
+      fast/js/crash.js [ Crash Failure Pass Timeout ]
       ...
 
     To add specifiers:
-      LayoutTests/fast/js/no-good.js
-      [ Debug ] LayoutTests/fast/js/no-good.js [ Pass Timeout ]
-      [ Debug ] LayoutTests/fast/js/no-good.js [ Pass Skip Timeout ]
-      [ Linux Debug ] LayoutTests/fast/js/no-good.js [ Pass Skip Timeout ]
-      [ Linux Win ] LayoutTests/fast/js/no-good.js [ Pass Skip Timeout ]
+      fast/js/no-good.js
+      [ Debug ] fast/js/no-good.js [ Pass Timeout ]
+      [ Debug ] fast/js/no-good.js [ Pass Skip Timeout ]
+      [ Linux Debug ] fast/js/no-good.js [ Pass Skip Timeout ]
+      [ Linux Win ] fast/js/no-good.js [ Pass Skip Timeout ]
 
     Skip: Doesn't run the test.
     Slow: The test takes a long time to run, but does not timeout indefinitely.
@@ -967,19 +992,6 @@ class TestExpectations(object):
         if result in (TEXT, IMAGE, IMAGE_PLUS_TEXT, AUDIO) and FAIL in local_expected:
             return True
         return False
-
-    @staticmethod
-    def remove_pixel_failures(expected_results):
-        """Returns a copy of the expected results for a test, except that we
-        drop any pixel failures and return the remaining expectations. For example,
-        if we're not running pixel tests, then tests expected to fail as IMAGE
-        will PASS.
-        """
-        expected_results = expected_results.copy()
-        if IMAGE in expected_results:
-            expected_results.remove(IMAGE)
-            expected_results.add(PASS)
-        return expected_results
 
     @staticmethod
     def remove_non_sanitizer_failures(expected_results):
@@ -1095,12 +1107,10 @@ class TestExpectations(object):
     def get_expectations_string(self, test):
         return self._model.get_expectations_string(test)
 
-    def matches_an_expected_result(self, test, result, pixel_tests_are_enabled, sanitizer_is_enabled):
+    def matches_an_expected_result(self, test, result, sanitizer_is_enabled):
         expected_results = self._model.get_expectations(test)
         if sanitizer_is_enabled:
             expected_results = self.remove_non_sanitizer_failures(expected_results)
-        elif not pixel_tests_are_enabled:
-            expected_results = self.remove_pixel_failures(expected_results)
         return self.result_was_expected(result, expected_results)
 
     def _shorten_filename(self, filename):

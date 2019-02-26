@@ -5,61 +5,9 @@
 # These tests currently fail when run with --enable-features=NetworkService
 # See https://crbug.com/769401
 
-# Uncategorized timeouts or test failures.
--RegisterProtocolHandlerBrowserTest.CustomHandler
-
-# Domain Reliability has yet to be hookup to the NetworkService.
-# https://crbug.com/853251
--DomainReliabilityBrowserTest.Upload
-
 # These tests use URLFetchers directly.
 # https://crbug.com/853798
 -ProfileBrowserTest.SeparateMediaCache
-
-# about:net-internals should be largely removed before shipping the network
-# service.
-# https://crbug.com/678391
--NetInternalsTest.netInternalsChromeOSViewStoreDebugLogs
--NetInternalsTest.netInternalsDnsViewAddTwoTwice
--NetInternalsTest.netInternalsDnsViewExpired
--NetInternalsTest.netInternalsDnsViewFail
--NetInternalsTest.netInternalsDnsViewIncognitoClears
--NetInternalsTest.netInternalsDnsViewNetworkChanged
--NetInternalsTest.netInternalsDnsViewSuccess
--NetInternalsTest.netInternalsDomainSecurityPolicyViewAddDelete
--NetInternalsTest.netInternalsDomainSecurityPolicyViewAddError
--NetInternalsTest.netInternalsDomainSecurityPolicyViewAddFail
--NetInternalsTest.netInternalsDomainSecurityPolicyViewAddOverwrite
--NetInternalsTest.netInternalsDomainSecurityPolicyViewAddTwice
--NetInternalsTest.netInternalsDomainSecurityPolicyViewDeleteError
--NetInternalsTest.netInternalsDomainSecurityPolicyViewDeleteNotFound
--NetInternalsTest.netInternalsDomainSecurityPolicyViewExpectCTAddDelete
--NetInternalsTest.netInternalsDomainSecurityPolicyViewExpectCTAddError
--NetInternalsTest.netInternalsDomainSecurityPolicyViewExpectCTAddFail
--NetInternalsTest.netInternalsDomainSecurityPolicyViewExpectCTAddOverwrite
--NetInternalsTest.netInternalsDomainSecurityPolicyViewExpectCTAddTwice
--NetInternalsTest.netInternalsDomainSecurityPolicyViewExpectCTQueryError
--NetInternalsTest.netInternalsDomainSecurityPolicyViewExpectCTQueryNotFound
--NetInternalsTest.netInternalsDomainSecurityPolicyViewExpectCTTestReport
--NetInternalsTest.netInternalsDomainSecurityPolicyViewQueryError
--NetInternalsTest.netInternalsDomainSecurityPolicyViewQueryNotFound
--NetInternalsTest.netInternalsEventsViewFilter
--NetInternalsTest.netInternalsLogUtilExportImport
--NetInternalsTest.netInternalsLogUtilImportNetLogFile
--NetInternalsTest.netInternalsLogUtilImportNetLogFileTruncated
--NetInternalsTest.netInternalsLogUtilStopCapturing
--NetInternalsTest.netInternalsLogViewPainterPrintAsText
--NetInternalsTest.netInternalsPrerenderViewFail
--NetInternalsTest.netInternalsPrerenderViewSucceed
--NetInternalsTest.netInternalsSessionBandwidthSucceed
--NetInternalsTest.netInternalsTimelineViewDegenerate
--NetInternalsTest.netInternalsTimelineViewLoadLog
--NetInternalsTest.netInternalsTimelineViewNoEvents
--NetInternalsTest.netInternalsTimelineViewRange
--NetInternalsTest.netInternalsTimelineViewScrollbar
--NetInternalsTest.netInternalsTimelineViewZoomIn
--NetInternalsTest.netInternalsTimelineViewZoomOut
--NetInternalsTest.netInternalsTourTabs
 
 # https://crbug.com/816684 Track Page Load Metrics.
 -PageLoadMetricsBrowserTest.LoadingMetricsFailed
@@ -73,25 +21,6 @@
 -DnsProbeBrowserTest.CorrectionsLoadStopped
 -DnsProbeBrowserTest.NoInternetProbeResultWithSlowBrokenCorrections
 
-# https://crbug.com/778793
-# Started failing in r514649.
--PreviewsNoScriptBrowserTest.NoScriptPreviewsEnabled
-# Added in r519342.
--PreviewsNoScriptBrowserTest.NoScriptPreviewsEnabledHttpRedirectToHttps
--PreviewsNoScriptBrowserTest.NoScriptPreviewsEnabledButNoTransformDirective
--ResourceLoadingHintsBrowserTest.ResourceLoadingHintsHttpsWhitelisted
--ResourceLoadingHintsBrowserTest.ResourceLoadingHintsHttpsWhitelistedRedirectToHttps
--ResourceLoadingHintsBrowserTest.ResourceLoadingHintsHttpsWhitelistedNoTransform
--ResourceLoadingHintsBrowserTest.ResourceLoadingHintsHttp
--ResourceLoadingHintsBrowserTest.ResourceLoadingHintsHttpsNoWhitelisted
-
-# https://crbug.com/827582
-# Editing response cookies through headers with webRequest is not supported with
-# the network service.
--ExtensionWebRequestApiTest.WebRequestBlockingSetCookieHeader
--ExtensionWebRequestApiTest.ChangeHeaderUMAs
--ExtensionWebRequestApiTest.RemoveHeaderUMAs
-
 # https://crbug.com/773295
 # Remove this test when there are no more clients left that use URLFetcher.
 -VariationsHttpHeadersBrowserTest.TestStrippingHeadersFromInternalRequest
@@ -102,15 +31,6 @@
 -JavaScriptBindings/MessagingApiTest.DifferentStoragePartitionTLSChannelID/0
 -NativeBindings/ExternallyConnectableMessagingTest.WebConnectableWithNonEmptyTlsChannelId/0
 -NativeBindings/MessagingApiTest.DifferentStoragePartitionTLSChannelID/0
-
-# https://crbug.com/721403
--ContextMenuBrowserTest.DataSaverOpenOrigImageInNewTab
--DataReductionProxyFallbackBrowsertest.FallbackProxyUsedOn500Status
--DataReductionProxyFallbackBrowsertest.FallbackProxyUsedWhenBlockHeaderSent
--DataReductionProxyFallbackBrowsertest.FallbackProxyUsedWhenBlockZeroHeaderSent
--DataReductionProxyFallbackBrowsertest.FallbackProxyUsedWhenBypassHeaderSent
--DataReductionProxyFallbackBrowsertest.NoProxyUsedWhenBlockOnceHeaderSent
--DataReductionProxyResourceTypeBrowsertest.CoreProxyUsedForMedia
 
 # NOTE: if adding an exclusion for an existing failure (e.g. additional test for
 # feature X that is already not working), please add it beside the existing

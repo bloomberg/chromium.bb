@@ -40,7 +40,7 @@ ExtensionViewImpl.prototype.createGuest = function(callback) {
 };
 
 ExtensionViewImpl.prototype.buildContainerParams = function() {
-  var params = {};
+  var params = $Object.create(null);
   for (var i in this.attributes) {
     params[i] = this.attributes[i].getValue();
   }
@@ -106,7 +106,7 @@ ExtensionViewImpl.prototype.loadNextSrc = function() {
       if (extensionId !=
           this.attributes[ExtensionViewConstants.ATTRIBUTE_EXTENSION]
             .getValue()) {
-        this.guest.destroy($Function.bind(this.prepareForReattach_, this));
+        this.guest.destroy($Function.bind(this.prepareForReattach$, this));
 
         // Update the extension and src attributes.
         this.attributes[ExtensionViewConstants.ATTRIBUTE_EXTENSION]

@@ -250,53 +250,30 @@ void CheckException(JNIEnv* env) {
 }
 
 std::string GetJavaExceptionInfo(JNIEnv* env, jthrowable java_throwable) {
-  ScopedJavaLocalRef<jclass> throwable_clazz =
-      GetClass(env, "java/lang/Throwable");
-  jmethodID throwable_printstacktrace =
-      MethodID::Get<MethodID::TYPE_INSTANCE>(
-          env, throwable_clazz.obj(), "printStackTrace",
-          "(Ljava/io/PrintStream;)V");
+  ScopedJavaLocalRef<jclass> log_clazz = GetClass(env, "android/util/Log");
+  jmethodID log_getstacktracestring = MethodID::Get<MethodID::TYPE_STATIC>(
+      env, log_clazz.obj(), "getStackTraceString",
+      "(Ljava/lang/Throwable;)Ljava/lang/String;");
 
-  // Create an instance of ByteArrayOutputStream.
-  ScopedJavaLocalRef<jclass> bytearray_output_stream_clazz =
-      GetClass(env, "java/io/ByteArrayOutputStream");
-  jmethodID bytearray_output_stream_constructor =
-      MethodID::Get<MethodID::TYPE_INSTANCE>(
-          env, bytearray_output_stream_clazz.obj(), "<init>", "()V");
-  jmethodID bytearray_output_stream_tostring =
-      MethodID::Get<MethodID::TYPE_INSTANCE>(
-          env, bytearray_output_stream_clazz.obj(), "toString",
-          "()Ljava/lang/String;");
-  ScopedJavaLocalRef<jobject> bytearray_output_stream(env,
-      env->NewObject(bytearray_output_stream_clazz.obj(),
-                     bytearray_output_stream_constructor));
-  CheckException(env);
-
-  // Create an instance of PrintStream.
-  ScopedJavaLocalRef<jclass> printstream_clazz =
-      GetClass(env, "java/io/PrintStream");
-  jmethodID printstream_constructor =
-      MethodID::Get<MethodID::TYPE_INSTANCE>(
-          env, printstream_clazz.obj(), "<init>",
-          "(Ljava/io/OutputStream;)V");
-  ScopedJavaLocalRef<jobject> printstream(env,
-      env->NewObject(printstream_clazz.obj(), printstream_constructor,
-                     bytearray_output_stream.obj()));
-  CheckException(env);
-
-  // Call Throwable.printStackTrace(PrintStream)
-  env->CallVoidMethod(java_throwable, throwable_printstacktrace,
-      printstream.obj());
-  CheckException(env);
-
-  // Call ByteArrayOutputStream.toString()
+  // Call Log.getStackTraceString()
   ScopedJavaLocalRef<jstring> exception_string(
-      env, static_cast<jstring>(
-          env->CallObjectMethod(bytearray_output_stream.obj(),
-                                bytearray_output_stream_tostring)));
+      env, static_cast<jstring>(env->CallStaticObjectMethod(
+               log_clazz.obj(), log_getstacktracestring, java_throwable)));
   CheckException(env);
 
-  return ConvertJavaStringToUTF8(exception_string);
+  ScopedJavaLocalRef<jclass> piielider_clazz =
+      GetClass(env, "org/chromium/base/PiiElider");
+  jmethodID piielider_sanitize_stacktrace =
+      MethodID::Get<MethodID::TYPE_STATIC>(
+          env, piielider_clazz.obj(), "sanitizeStacktrace",
+          "(Ljava/lang/String;)Ljava/lang/String;");
+  ScopedJavaLocalRef<jstring> sanitized_exception_string(
+      env, static_cast<jstring>(env->CallStaticObjectMethod(
+               piielider_clazz.obj(), piielider_sanitize_stacktrace,
+               exception_string.obj())));
+  CheckException(env);
+
+  return ConvertJavaStringToUTF8(sanitized_exception_string);
 }
 
 #if BUILDFLAG(CAN_UNWIND_WITH_FRAME_POINTERS)

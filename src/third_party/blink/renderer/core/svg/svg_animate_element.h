@@ -25,7 +25,7 @@
 
 #include <base/gtest_prod_util.h>
 #include "third_party/blink/renderer/core/core_export.h"
-#include "third_party/blink/renderer/core/css_property_names.h"
+#include "third_party/blink/renderer/core/css/css_property_names.h"
 #include "third_party/blink/renderer/core/svg/svg_animation_element.h"
 #include "third_party/blink/renderer/core/svg_names.h"
 #include "third_party/blink/renderer/platform/heap/handle.h"
@@ -41,6 +41,8 @@ class CORE_EXPORT SVGAnimateElement : public SVGAnimationElement {
 
  public:
   static SVGAnimateElement* Create(Document&);
+
+  SVGAnimateElement(const QualifiedName&, Document&);
   ~SVGAnimateElement() override;
 
   void Trace(blink::Visitor*) override;
@@ -52,8 +54,6 @@ class CORE_EXPORT SVGAnimateElement : public SVGAnimationElement {
   bool AnimatedPropertyTypeSupportsAddition();
 
  protected:
-  SVGAnimateElement(const QualifiedName&, Document&);
-
   bool HasValidTarget() override;
 
   void WillChangeAnimationTarget() final;
@@ -133,9 +133,9 @@ class CORE_EXPORT SVGAnimateElement : public SVGAnimationElement {
 };
 
 inline bool IsSVGAnimateElement(const SVGElement& element) {
-  return element.HasTagName(SVGNames::animateTag) ||
-         element.HasTagName(SVGNames::animateTransformTag) ||
-         element.HasTagName(SVGNames::setTag);
+  return element.HasTagName(svg_names::kAnimateTag) ||
+         element.HasTagName(svg_names::kAnimateTransformTag) ||
+         element.HasTagName(svg_names::kSetTag);
 }
 
 DEFINE_SVGELEMENT_TYPE_CASTS_WITH_FUNCTION(SVGAnimateElement);

@@ -52,9 +52,9 @@ class HTMLTableSectionElement final : public HTMLTablePartElement {
 };
 
 inline bool IsHTMLTableSectionElement(const HTMLElement& element) {
-  return element.HasTagName(HTMLNames::tbodyTag) ||
-         element.HasTagName(HTMLNames::tfootTag) ||
-         element.HasTagName(HTMLNames::theadTag);
+  return element.HasTagName(html_names::kTbodyTag) ||
+         element.HasTagName(html_names::kTfootTag) ||
+         element.HasTagName(html_names::kTheadTag);
 }
 
 DEFINE_HTMLELEMENT_TYPE_CASTS_WITH_FUNCTION(HTMLTableSectionElement);

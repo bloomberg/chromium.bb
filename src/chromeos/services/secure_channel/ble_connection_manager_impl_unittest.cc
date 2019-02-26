@@ -13,7 +13,9 @@
 #include "base/containers/flat_set.h"
 #include "base/macros.h"
 #include "base/task/post_task.h"
+#include "base/test/metrics/histogram_tester.h"
 #include "base/test/scoped_task_environment.h"
+#include "base/test/simple_test_clock.h"
 #include "chromeos/services/secure_channel/authenticated_channel_impl.h"
 #include "chromeos/services/secure_channel/ble_advertiser_impl.h"
 #include "chromeos/services/secure_channel/ble_constants.h"
@@ -46,6 +48,13 @@ namespace secure_channel {
 namespace {
 
 const size_t kNumTestDevices = 5;
+
+constexpr base::TimeDelta kScanToAdvertisementTime =
+    base::TimeDelta::FromSeconds(3);
+constexpr base::TimeDelta kAdvertisementToConnectionTime =
+    base::TimeDelta::FromSeconds(2);
+constexpr base::TimeDelta kConnectionToAuthenticationTime =
+    base::TimeDelta::FromSeconds(1);
 
 class FakeBleSynchronizerFactory : public BleSynchronizer::Factory {
  public:
@@ -336,6 +345,9 @@ class SecureChannelBleConnectionManagerImplTest : public testing::Test {
 
     fake_timer_factory_ = std::make_unique<FakeTimerFactory>();
 
+    test_clock_ = std::make_unique<base::SimpleTestClock>();
+    test_clock_->SetNow(base::Time::UnixEpoch());
+
     fake_ble_synchronizer_factory_ =
         std::make_unique<FakeBleSynchronizerFactory>(mock_adapter_);
     BleSynchronizer::Factory::SetFactoryForTesting(
@@ -375,7 +387,7 @@ class SecureChannelBleConnectionManagerImplTest : public testing::Test {
 
     manager_ = BleConnectionManagerImpl::Factory::Get()->BuildInstance(
         mock_adapter_, fake_ble_service_data_helper_.get(),
-        fake_timer_factory_.get());
+        fake_timer_factory_.get(), test_clock_.get());
   }
 
   void TearDown() override {
@@ -456,7 +468,8 @@ class SecureChannelBleConnectionManagerImplTest : public testing::Test {
 
   void AttemptBleListenerConnection(const DeviceIdPair& device_id_pair,
                                     ConnectionPriority connection_priority,
-                                    bool expected_to_add_request) {
+                                    bool expected_to_add_request,
+                                    bool should_cancel_attempt_on_failure) {
     SetInRemoteDeviceIdToMetadataMap(
         device_id_pair, ConnectionRole::kListenerRole, connection_priority);
 
@@ -468,7 +481,8 @@ class SecureChannelBleConnectionManagerImplTest : public testing::Test {
             true /* created_via_background_advertisement */),
         base::BindRepeating(
             &SecureChannelBleConnectionManagerImplTest::OnBleListenerFailure,
-            base::Unretained(this), device_id_pair));
+            base::Unretained(this), device_id_pair,
+            should_cancel_attempt_on_failure));
 
     if (expected_to_add_request) {
       EXPECT_TRUE(fake_ble_scanner()->HasScanFilter(BleScanner::ScanFilter(
@@ -564,7 +578,9 @@ class SecureChannelBleConnectionManagerImplTest : public testing::Test {
   void SimulateSecureChannelDisconnection(
       const std::string& remote_device_id,
       bool fail_during_authentication,
-      cryptauth::FakeSecureChannel* fake_secure_channel) {
+      cryptauth::FakeSecureChannel* fake_secure_channel,
+      size_t num_initiator_attempts_canceled_from_disconnection = 0u,
+      size_t num_listener_attempts_canceled_from_disconnection = 0u) {
     size_t num_ble_initiator_failures_before_call =
         ble_initiator_failures_.size();
     size_t num_ble_listener_failures_before_call =
@@ -583,8 +599,12 @@ class SecureChannelBleConnectionManagerImplTest : public testing::Test {
 
     // Iterate through all pending requests to |remote_device_id|, ensuring that
     // all expected failures have been communicated back to the client.
-    size_t initiator_failures_index = num_ble_initiator_failures_before_call;
-    size_t listener_failure_index = num_ble_listener_failures_before_call;
+    size_t initiator_failures_index =
+        num_ble_initiator_failures_before_call +
+        num_initiator_attempts_canceled_from_disconnection;
+    size_t listener_failure_index =
+        num_ble_listener_failures_before_call +
+        num_listener_attempts_canceled_from_disconnection;
     for (const auto& tuple :
          remote_device_id_to_metadata_map_[remote_device_id]) {
       switch (std::get<1>(tuple)) {
@@ -647,10 +667,13 @@ class SecureChannelBleConnectionManagerImplTest : public testing::Test {
 
     size_t num_success_callbacks_before_call = successful_connections_.size();
 
+    test_clock()->Advance(kAdvertisementToConnectionTime);
     fake_secure_channel->ChangeStatus(
         cryptauth::SecureChannel::Status::CONNECTED);
     fake_secure_channel->ChangeStatus(
         cryptauth::SecureChannel::Status::AUTHENTICATING);
+
+    test_clock()->Advance(kConnectionToAuthenticationTime);
     fake_secure_channel->ChangeStatus(
         cryptauth::SecureChannel::Status::AUTHENTICATED);
 
@@ -689,6 +712,10 @@ class SecureChannelBleConnectionManagerImplTest : public testing::Test {
 
   base::test::ScopedTaskEnvironment scoped_task_environment_;
   const cryptauth::RemoteDeviceRefList& test_devices() { return test_devices_; }
+
+  base::SimpleTestClock* test_clock() { return test_clock_.get(); }
+
+  base::HistogramTester* histogram_tester() { return &histogram_tester_; }
 
  private:
   void OnConnectionSuccess(
@@ -752,16 +779,24 @@ class SecureChannelBleConnectionManagerImplTest : public testing::Test {
     if (!should_cancel_attempt_on_failure)
       return;
 
-    base::PostTask(FROM_HERE,
-                   base::BindOnce(&SecureChannelBleConnectionManagerImplTest::
-                                      CancelBleInitiatorConnectionAttempt,
-                                  base::Unretained(this), device_id_pair));
+    // Make a copy of the pair before canceling the attempt, since the reference
+    // points to memory owned by |manager_| which will be deleted.
+    DeviceIdPair device_id_pair_copy = device_id_pair;
+    CancelBleInitiatorConnectionAttempt(device_id_pair_copy);
   }
 
   void OnBleListenerFailure(const DeviceIdPair& device_id_pair,
+                            bool should_cancel_attempt_on_failure,
                             BleListenerFailureType failure_type) {
     ble_listener_failures_.push_back(
         std::make_pair(device_id_pair, failure_type));
+    if (!should_cancel_attempt_on_failure)
+      return;
+
+    // Make a copy of the pair before canceling the attempt, since the reference
+    // points to memory owned by |manager_| which will be deleted.
+    DeviceIdPair device_id_pair_copy = device_id_pair;
+    CancelBleListenerConnectionAttempt(device_id_pair_copy);
   }
 
   void SetInRemoteDeviceIdToMetadataMap(
@@ -815,6 +850,8 @@ class SecureChannelBleConnectionManagerImplTest : public testing::Test {
 
   const cryptauth::RemoteDeviceRefList test_devices_;
 
+  base::HistogramTester histogram_tester_;
+
   base::flat_map<
       std::string,
       base::flat_set<
@@ -842,6 +879,7 @@ class SecureChannelBleConnectionManagerImplTest : public testing::Test {
   scoped_refptr<testing::NiceMock<device::MockBluetoothAdapter>> mock_adapter_;
   std::unique_ptr<FakeBleServiceDataHelper> fake_ble_service_data_helper_;
   std::unique_ptr<FakeTimerFactory> fake_timer_factory_;
+  std::unique_ptr<base::SimpleTestClock> test_clock_;
 
   std::unique_ptr<BleConnectionManager> manager_;
 
@@ -912,13 +950,7 @@ TEST_F(SecureChannelBleConnectionManagerImplTest,
   AttemptBleInitiatorConnection(pair, ConnectionPriority::kLow,
                                 true /* expected_to_add_request */,
                                 true /* should_cancel_attempt_on_failure */);
-
   SimulateBleFailureToGenerateAdvertisement(pair);
-
-  // Runs the cleanup routine that has been posted as a parallel task. It has
-  // not yet been run because |scoped_task_environment_| was instantiated with
-  // base::test::ScopedTaskEnvironment::ExecutionMode::QUEUED.
-  scoped_task_environment_.RunUntilIdle();
 }
 
 TEST_F(SecureChannelBleConnectionManagerImplTest,
@@ -938,6 +970,25 @@ TEST_F(SecureChannelBleConnectionManagerImplTest,
                                      fake_secure_channel);
 
   CancelBleInitiatorConnectionAttempt(pair);
+}
+
+TEST_F(SecureChannelBleConnectionManagerImplTest,
+       OneRequest_Initiator_FailsAuthenticationThenCanceled_CleanupOnCallback) {
+  DeviceIdPair pair(test_devices()[1].GetDeviceId(),
+                    test_devices()[0].GetDeviceId());
+
+  AttemptBleInitiatorConnection(pair, ConnectionPriority::kLow,
+                                true /* expected_to_add_request */,
+                                true /* should_cancel_attempt_on_failure */);
+
+  cryptauth::FakeSecureChannel* fake_secure_channel =
+      SimulateConnectionEstablished(test_devices()[1],
+                                    ConnectionRole::kInitiatorRole);
+  SimulateSecureChannelDisconnection(
+      pair.remote_device_id(), true /* fail_during_authentication */,
+      fake_secure_channel,
+      1u /* num_initiator_attempts_canceled_from_disconnection */,
+      0u /* num_listener_attempts_canceled_from_disconnection */);
 }
 
 TEST_F(SecureChannelBleConnectionManagerImplTest,
@@ -982,7 +1033,8 @@ TEST_F(SecureChannelBleConnectionManagerImplTest,
                     test_devices()[0].GetDeviceId());
 
   AttemptBleListenerConnection(pair, ConnectionPriority::kLow,
-                               true /* expected_to_add_request */);
+                               true /* expected_to_add_request */,
+                               false /* should_cancel_attempt_on_failure */);
   UpdateBleListenerConnectionPriority(pair, ConnectionPriority::kMedium,
                                       true /* expected_to_update_priority */);
   UpdateBleListenerConnectionPriority(pair, ConnectionPriority::kHigh,
@@ -1003,7 +1055,8 @@ TEST_F(SecureChannelBleConnectionManagerImplTest,
                     test_devices()[0].GetDeviceId());
 
   AttemptBleListenerConnection(pair, ConnectionPriority::kLow,
-                               true /* expected_to_add_request */);
+                               true /* expected_to_add_request */,
+                               false /* should_cancel_attempt_on_failure */);
 
   cryptauth::FakeSecureChannel* fake_secure_channel =
       SimulateConnectionEstablished(test_devices()[1],
@@ -1016,12 +1069,32 @@ TEST_F(SecureChannelBleConnectionManagerImplTest,
 }
 
 TEST_F(SecureChannelBleConnectionManagerImplTest,
+       OneRequest_Listener_FailsAuthenticationThenCanceled_CleanupOnCallback) {
+  DeviceIdPair pair(test_devices()[1].GetDeviceId(),
+                    test_devices()[0].GetDeviceId());
+
+  AttemptBleListenerConnection(pair, ConnectionPriority::kLow,
+                               true /* expected_to_add_request */,
+                               true /* should_cancel_attempt_on_failure */);
+
+  cryptauth::FakeSecureChannel* fake_secure_channel =
+      SimulateConnectionEstablished(test_devices()[1],
+                                    ConnectionRole::kListenerRole);
+  SimulateSecureChannelDisconnection(
+      pair.remote_device_id(), true /* fail_during_authentication */,
+      fake_secure_channel,
+      0u /* num_initiator_attempts_canceled_from_disconnection */,
+      1u /* num_listener_attempts_canceled_from_disconnection */);
+}
+
+TEST_F(SecureChannelBleConnectionManagerImplTest,
        OneRequest_Listener_GattFailureThenCanceled) {
   DeviceIdPair pair(test_devices()[1].GetDeviceId(),
                     test_devices()[0].GetDeviceId());
 
   AttemptBleListenerConnection(pair, ConnectionPriority::kLow,
-                               true /* expected_to_add_request */);
+                               true /* expected_to_add_request */,
+                               false /* should_cancel_attempt_on_failure */);
 
   cryptauth::FakeSecureChannel* fake_secure_channel =
       SimulateConnectionEstablished(test_devices()[1],
@@ -1039,7 +1112,8 @@ TEST_F(SecureChannelBleConnectionManagerImplTest,
                     test_devices()[0].GetDeviceId());
 
   AttemptBleListenerConnection(pair, ConnectionPriority::kLow,
-                               true /* expected_to_add_request */);
+                               true /* expected_to_add_request */,
+                               false /* should_cancel_attempt_on_failure */);
 
   cryptauth::FakeSecureChannel* fake_secure_channel =
       SimulateConnectionEstablished(test_devices()[1],
@@ -1127,9 +1201,11 @@ TEST_F(SecureChannelBleConnectionManagerImplTest,
                       test_devices()[0].GetDeviceId());
 
   AttemptBleListenerConnection(pair_1, ConnectionPriority::kLow,
-                               true /* expected_to_add_request */);
+                               true /* expected_to_add_request */,
+                               false /* should_cancel_attempt_on_failure */);
   AttemptBleListenerConnection(pair_2, ConnectionPriority::kMedium,
-                               true /* expected_to_add_request */);
+                               true /* expected_to_add_request */,
+                               false /* should_cancel_attempt_on_failure */);
 
   cryptauth::FakeSecureChannel* fake_secure_channel_1 =
       SimulateConnectionEstablished(test_devices()[1],
@@ -1157,9 +1233,11 @@ TEST_F(SecureChannelBleConnectionManagerImplTest,
                       test_devices()[0].GetDeviceId());
 
   AttemptBleListenerConnection(pair_1, ConnectionPriority::kLow,
-                               true /* expected_to_add_request */);
+                               true /* expected_to_add_request */,
+                               false /* should_cancel_attempt_on_failure */);
   AttemptBleListenerConnection(pair_2, ConnectionPriority::kMedium,
-                               true /* expected_to_add_request */);
+                               true /* expected_to_add_request */,
+                               false /* should_cancel_attempt_on_failure */);
 
   cryptauth::FakeSecureChannel* fake_secure_channel_1 =
       SimulateConnectionEstablished(test_devices()[1],
@@ -1182,7 +1260,8 @@ TEST_F(SecureChannelBleConnectionManagerImplTest,
                     test_devices()[0].GetDeviceId());
 
   AttemptBleListenerConnection(pair, ConnectionPriority::kLow,
-                               true /* expected_to_add_request */);
+                               true /* expected_to_add_request */,
+                               false /* should_cancel_attempt_on_failure */);
   AttemptBleInitiatorConnection(pair, ConnectionPriority::kMedium,
                                 true /* expected_to_add_request */,
                                 false /* should_cancel_attempt_on_failure */);
@@ -1213,7 +1292,8 @@ TEST_F(SecureChannelBleConnectionManagerImplTest,
                     test_devices()[0].GetDeviceId());
 
   AttemptBleListenerConnection(pair, ConnectionPriority::kLow,
-                               true /* expected_to_add_request */);
+                               true /* expected_to_add_request */,
+                               false /* should_cancel_attempt_on_failure */);
   AttemptBleInitiatorConnection(pair, ConnectionPriority::kMedium,
                                 true /* expected_to_add_request */,
                                 false /* should_cancel_attempt_on_failure */);
@@ -1232,7 +1312,8 @@ TEST_F(SecureChannelBleConnectionManagerImplTest,
                     test_devices()[0].GetDeviceId());
 
   AttemptBleListenerConnection(pair, ConnectionPriority::kLow,
-                               true /* expected_to_add_request */);
+                               true /* expected_to_add_request */,
+                               false /* should_cancel_attempt_on_failure */);
 
   cryptauth::FakeSecureChannel* fake_secure_channel =
       SimulateConnectionEstablished(test_devices()[1],
@@ -1259,7 +1340,8 @@ TEST_F(SecureChannelBleConnectionManagerImplTest,
                     test_devices()[0].GetDeviceId());
 
   AttemptBleListenerConnection(pair, ConnectionPriority::kLow,
-                               true /* expected_to_add_request */);
+                               true /* expected_to_add_request */,
+                               false /* should_cancel_attempt_on_failure */);
   AttemptBleInitiatorConnection(pair, ConnectionPriority::kMedium,
                                 true /* expected_to_add_request */,
                                 false /* should_cancel_attempt_on_failure */);
@@ -1275,6 +1357,80 @@ TEST_F(SecureChannelBleConnectionManagerImplTest,
   CancelBleInitiatorConnectionAttempt(pair);
 
   EXPECT_TRUE(WasChannelHandledByDisconnector(fake_secure_channel));
+}
+
+TEST_F(SecureChannelBleConnectionManagerImplTest, ConnectionMetrics) {
+  DeviceIdPair pair(test_devices()[1].GetDeviceId(),
+                    test_devices()[0].GetDeviceId());
+
+  // Start a connection attempt and advance the clock.
+  AttemptBleListenerConnection(pair, ConnectionPriority::kLow,
+                               true /* expected_to_add_request */,
+                               false /* should_cancel_attempt_on_failure */);
+
+  test_clock()->Advance(kScanToAdvertisementTime);
+
+  // Simulate a connection being established, then disconnected.
+  cryptauth::FakeSecureChannel* fake_secure_channel =
+      SimulateConnectionEstablished(test_devices()[1],
+                                    ConnectionRole::kListenerRole);
+  test_clock()->Advance(kAdvertisementToConnectionTime);
+  SimulateSecureChannelDisconnection(pair.remote_device_id(),
+                                     false /* fail_during_authentication */,
+                                     fake_secure_channel);
+  histogram_tester()->ExpectTimeBucketCount(
+      "MultiDevice.SecureChannel.BLE.Performance."
+      "StartScanToReceiveAdvertisementDuration.Background",
+      kScanToAdvertisementTime, 1);
+  histogram_tester()->ExpectTimeBucketCount(
+      "MultiDevice.SecureChannel.BLE.Performance."
+      "ReceiveAdvertisementToConnectionDuration.Background",
+      kAdvertisementToConnectionTime, 1);
+  histogram_tester()->ExpectTimeBucketCount(
+      "MultiDevice.SecureChannel.BLE.Performance."
+      "StartScanToConnectionDuration.Background",
+      kScanToAdvertisementTime + kAdvertisementToConnectionTime, 1);
+  histogram_tester()->ExpectBucketCount(
+      "MultiDevice.SecureChannel.BLE.ReceiveAdvertisementToGattConnection."
+      "EffectiveSuccessRateWithRetries",
+      true, 1u /* expected_count */);
+
+  // Advance the clock again, then simulate a successful authentication.
+  test_clock()->Advance(kScanToAdvertisementTime);
+  fake_secure_channel = SimulateConnectionEstablished(
+      test_devices()[1], ConnectionRole::kListenerRole);
+  SimulateSecureChannelAuthentication(
+      pair.remote_device_id(), fake_secure_channel,
+      true /* created_via_background_advertisement */);
+
+  histogram_tester()->ExpectTimeBucketCount(
+      "MultiDevice.SecureChannel.BLE.Performance."
+      "StartScanToReceiveAdvertisementDuration.Background",
+      kScanToAdvertisementTime, 2);
+  histogram_tester()->ExpectTimeBucketCount(
+      "MultiDevice.SecureChannel.BLE.Performance."
+      "ReceiveAdvertisementToConnectionDuration.Background",
+      kAdvertisementToConnectionTime, 2);
+  histogram_tester()->ExpectTimeBucketCount(
+      "MultiDevice.SecureChannel.BLE.Performance."
+      "StartScanToConnectionDuration.Background",
+      kScanToAdvertisementTime + kAdvertisementToConnectionTime, 2);
+  histogram_tester()->ExpectTimeBucketCount(
+      "MultiDevice.SecureChannel.BLE.Performance."
+      "ConnectionToAuthenticationDuration.Background",
+      kConnectionToAuthenticationTime, 1);
+  histogram_tester()->ExpectBucketCount(
+      "MultiDevice.SecureChannel.BLE.ReceiveAdvertisementToGattConnection."
+      "EffectiveSuccessRateWithRetries",
+      true, 2u /* expected_count */);
+  histogram_tester()->ExpectBucketCount(
+      "MultiDevice.SecureChannel.BLE.ReceiveAdvertisementToAuthentication."
+      "EffectiveSuccessRateWithRetries",
+      true, 1u /* expected_count */);
+  histogram_tester()->ExpectBucketCount(
+      "MultiDevice.SecureChannel.BLE.GattConnectionToAuthentication."
+      "EffectiveSuccessRateWithRetries",
+      true, 1u /* expected_count */);
 }
 
 }  // namespace secure_channel

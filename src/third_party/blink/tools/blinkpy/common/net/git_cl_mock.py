@@ -32,7 +32,7 @@ class MockGitCL(object):
         return 'mock output'
 
     def trigger_try_jobs(self, builders, bucket=None):
-        bucket = bucket or 'master.tryserver.blink'
+        bucket = bucket or 'luci.chromium.try'
         command = ['try', '-B', bucket]
         for builder in sorted(builders):
             command.extend(['-b', builder])

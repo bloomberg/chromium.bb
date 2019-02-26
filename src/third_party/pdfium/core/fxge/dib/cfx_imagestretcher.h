@@ -17,6 +17,7 @@
 #include "core/fxge/fx_dib.h"
 
 class CFX_DIBBase;
+class CStretchEngine;
 class PauseIndicatorIface;
 
 class CFX_ImageStretcher {
@@ -26,13 +27,13 @@ class CFX_ImageStretcher {
                      int dest_width,
                      int dest_height,
                      const FX_RECT& bitmap_rect,
-                     uint32_t flags);
+                     const FXDIB_ResampleOptions& options);
   ~CFX_ImageStretcher();
 
   bool Start();
   bool Continue(PauseIndicatorIface* pPause);
 
-  RetainPtr<CFX_DIBBase> source() { return m_pSource; }
+  RetainPtr<CFX_DIBBase> source();
 
  private:
   bool StartQuickStretch();
@@ -45,7 +46,7 @@ class CFX_ImageStretcher {
   std::unique_ptr<CStretchEngine> m_pStretchEngine;
   std::unique_ptr<uint8_t, FxFreeDeleter> m_pScanline;
   std::unique_ptr<uint8_t, FxFreeDeleter> m_pMaskScanline;
-  const uint32_t m_Flags;
+  const FXDIB_ResampleOptions m_ResampleOptions;
   bool m_bFlipX;
   bool m_bFlipY;
   int m_DestWidth;

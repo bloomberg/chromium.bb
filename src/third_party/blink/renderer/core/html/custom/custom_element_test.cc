@@ -199,12 +199,12 @@ TEST(CustomElementTest, StateByCreateElement) {
     EXPECT_EQ(data.state, element->GetCustomElementState()) << data.name;
     EXPECT_EQ(data.v0state, element->GetV0CustomElementState()) << data.name;
 
-    element = document.createElementNS(HTMLNames::xhtmlNamespaceURI, data.name,
+    element = document.createElementNS(html_names::xhtmlNamespaceURI, data.name,
                                        ASSERT_NO_EXCEPTION);
     EXPECT_EQ(data.state, element->GetCustomElementState()) << data.name;
     EXPECT_EQ(data.v0state, element->GetV0CustomElementState()) << data.name;
 
-    element = document.createElementNS(SVGNames::svgNamespaceURI, data.name,
+    element = document.createElementNS(svg_names::kNamespaceURI, data.name,
                                        ASSERT_NO_EXCEPTION);
     EXPECT_EQ(CustomElementState::kUncustomized,
               element->GetCustomElementState())
@@ -225,7 +225,8 @@ TEST(CustomElementTest,
     CEReactionsScope reactions;
     TestCustomElementDefinitionBuilder builder;
     registry->DefineInternal(script_state, "a-a", builder,
-                             ElementDefinitionOptions(), should_not_throw);
+                             ElementDefinitionOptions::Create(),
+                             should_not_throw);
   }
   CustomElementDefinition* definition =
       registry->DefinitionFor(CustomElementDescriptor("a-a", "a-a"));

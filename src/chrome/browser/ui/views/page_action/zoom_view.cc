@@ -9,7 +9,7 @@
 #include "chrome/browser/ui/view_ids.h"
 #include "chrome/browser/ui/views/location_bar/zoom_bubble_view.h"
 #include "chrome/grit/generated_resources.h"
-#include "components/toolbar/toolbar_model.h"
+#include "components/omnibox/browser/location_bar_model.h"
 #include "components/zoom/zoom_controller.h"
 #include "ui/accessibility/ax_node_data.h"
 #include "ui/base/l10n/l10n_util.h"
@@ -34,7 +34,7 @@ bool ZoomView::Update() {
 
 bool ZoomView::ShouldBeVisible(bool can_show_bubble) const {
   if (location_bar_delegate_ &&
-      location_bar_delegate_->GetToolbarModel()->input_in_progress()) {
+      location_bar_delegate_->GetLocationBarModel()->input_in_progress()) {
     return false;
   }
 

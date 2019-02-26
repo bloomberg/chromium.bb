@@ -17,7 +17,6 @@
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/timer/timer.h"
 #include "chromeos/components/proximity_auth/logging/logging.h"
-#include "components/cryptauth/connection_finder.h"
 #include "components/cryptauth/wire_message.h"
 #include "device/bluetooth/bluetooth_gatt_connection.h"
 
@@ -393,9 +392,10 @@ void BluetoothLowEnergyWeaveClientConnection::SendMessageImpl(
   ProcessNextWriteRequest();
 }
 
-void BluetoothLowEnergyWeaveClientConnection::DeviceChanged(
+void BluetoothLowEnergyWeaveClientConnection::DeviceConnectedStateChanged(
     device::BluetoothAdapter* adapter,
-    device::BluetoothDevice* device) {
+    device::BluetoothDevice* device,
+    bool is_now_connected) {
   // Ignore updates about other devices.
   if (device->GetAddress() != GetDeviceAddress())
     return;
@@ -409,26 +409,13 @@ void BluetoothLowEnergyWeaveClientConnection::DeviceChanged(
 
   // If a connection has already occurred and |device| is still connected, there
   // is nothing to do.
-  if (device->IsConnected())
+  if (is_now_connected)
     return;
 
   PA_LOG(WARNING) << "GATT connection to " << GetDeviceInfoLogString()
                   << " has been dropped.";
   DestroyConnection(BleWeaveConnectionResult::
                         BLE_WEAVE_CONNECTION_RESULT_ERROR_CONNECTION_DROPPED);
-}
-
-void BluetoothLowEnergyWeaveClientConnection::DeviceRemoved(
-    device::BluetoothAdapter* adapter,
-    device::BluetoothDevice* device) {
-  // Ignore updates about other devices.
-  if (device->GetAddress() != GetDeviceAddress())
-    return;
-
-  PA_LOG(WARNING) << "Device has been lost: " << GetDeviceInfoLogString()
-                  << ".";
-  DestroyConnection(
-      BleWeaveConnectionResult::BLE_WEAVE_CONNECTION_RESULT_ERROR_DEVICE_LOST);
 }
 
 void BluetoothLowEnergyWeaveClientConnection::GattCharacteristicValueChanged(

@@ -11,6 +11,7 @@
 #include <vector>
 
 #include "fxjs/cjs_document.h"
+#include "fxjs/cjs_object.h"
 #include "fxjs/js_define.h"
 
 class CPDF_FormControl;
@@ -80,6 +81,7 @@ class CJS_Field final : public CJS_Object {
   JS_STATIC_PROP(richText, rich_text, CJS_Field);
   JS_STATIC_PROP(richValue, rich_value, CJS_Field);
   JS_STATIC_PROP(rotation, rotation, CJS_Field);
+  JS_STATIC_PROP(source, source, CJS_Field);
   JS_STATIC_PROP(strokeColor, stroke_color, CJS_Field);
   JS_STATIC_PROP(style, style, CJS_Field);
   JS_STATIC_PROP(submitName, submit_name, CJS_Field);
@@ -90,7 +92,6 @@ class CJS_Field final : public CJS_Object {
   JS_STATIC_PROP(userName, user_name, CJS_Field);
   JS_STATIC_PROP(value, value, CJS_Field);
   JS_STATIC_PROP(valueAsString, value_as_string, CJS_Field);
-  JS_STATIC_PROP(source, source, CJS_Field);
 
   JS_STATIC_METHOD(browseForFileToSubmit, CJS_Field);
   JS_STATIC_METHOD(buttonGetCaption, CJS_Field);
@@ -356,7 +357,6 @@ class CJS_Field final : public CJS_Object {
   std::vector<CPDF_FormField*> GetFormFields() const;
   CPDF_FormField* GetFirstFormField() const;
   CPDF_FormControl* GetSmartFieldControl(CPDF_FormField* pFormField);
-  bool ValueIsOccur(CPDF_FormField* pFormField, WideString csOptLabel) const;
 
   void AddDelay_Int(FIELD_PROP prop, int32_t n);
   void AddDelay_Bool(FIELD_PROP prop, bool b);

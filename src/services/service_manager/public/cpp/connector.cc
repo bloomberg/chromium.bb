@@ -8,9 +8,6 @@
 
 namespace service_manager {
 
-////////////////////////////////////////////////////////////////////////////////
-// Connector, public:
-
 Connector::Connector(mojom::ConnectorPtrInfo unbound_state)
     : unbound_state_(std::move(unbound_state)), weak_factory_(this) {
   DETACH_FROM_SEQUENCE(sequence_checker_);
@@ -30,45 +27,41 @@ std::unique_ptr<Connector> Connector::Create(mojom::ConnectorRequest* request) {
   return std::make_unique<Connector>(proxy.PassInterface());
 }
 
-void Connector::StartService(const Identity& identity) {
+void Connector::WarmService(const ServiceFilter& filter,
+                            WarmServiceCallback callback) {
+  if (!BindConnectorIfNecessary())
+    return;
+  connector_->WarmService(filter, std::move(callback));
+}
+
+void Connector::RegisterServiceInstance(
+    const Identity& identity,
+    mojom::ServicePtr service,
+    mojom::PIDReceiverRequest pid_receiver_request,
+    RegisterServiceInstanceCallback callback) {
   if (!BindConnectorIfNecessary())
     return;
 
-  connector_->StartService(identity,
-                           base::Bind(&Connector::RunStartServiceCallback,
-                                      weak_factory_.GetWeakPtr()));
-}
-
-void Connector::StartService(const std::string& name) {
-  StartService(Identity(name, mojom::kInheritUserID));
-}
-
-void Connector::StartService(const Identity& identity,
-                             mojom::ServicePtr service,
-                             mojom::PIDReceiverRequest pid_receiver_request) {
-  if (!BindConnectorIfNecessary())
-    return;
-
+  DCHECK(identity.IsValid());
   DCHECK(service.is_bound() && pid_receiver_request.is_pending());
-  connector_->StartServiceWithProcess(
+  connector_->RegisterServiceInstance(
       identity, service.PassInterface().PassHandle(),
-      std::move(pid_receiver_request),
-      base::Bind(&Connector::RunStartServiceCallback,
-                 weak_factory_.GetWeakPtr()));
+      std::move(pid_receiver_request), std::move(callback));
 }
 
-void Connector::QueryService(const Identity& identity,
+void Connector::QueryService(const std::string& service_name,
                              mojom::Connector::QueryServiceCallback callback) {
   if (!BindConnectorIfNecessary())
     return;
 
-  connector_->QueryService(identity, std::move(callback));
+  connector_->QueryService(service_name, std::move(callback));
 }
 
-void Connector::BindInterface(const Identity& target,
+void Connector::BindInterface(const ServiceFilter& filter,
                               const std::string& interface_name,
-                              mojo::ScopedMessagePipeHandle interface_pipe) {
-  auto service_overrides_iter = local_binder_overrides_.find(target);
+                              mojo::ScopedMessagePipeHandle interface_pipe,
+                              BindInterfaceCallback callback) {
+  auto service_overrides_iter = local_binder_overrides_.find(filter);
   if (service_overrides_iter != local_binder_overrides_.end()) {
     auto override_iter = service_overrides_iter->second.find(interface_name);
     if (override_iter != service_overrides_iter->second.end()) {
@@ -80,9 +73,8 @@ void Connector::BindInterface(const Identity& target,
   if (!BindConnectorIfNecessary())
     return;
 
-  connector_->BindInterface(target, interface_name, std::move(interface_pipe),
-                            base::Bind(&Connector::RunStartServiceCallback,
-                                       weak_factory_.GetWeakPtr()));
+  connector_->BindInterface(filter, interface_name, std::move(interface_pipe),
+                            std::move(callback));
 }
 
 std::unique_ptr<Connector> Connector::Clone() {
@@ -103,6 +95,7 @@ void Connector::FilterInterfaces(const std::string& spec,
                                  mojom::InterfaceProviderPtr target) {
   if (!BindConnectorIfNecessary())
     return;
+  DCHECK(source_identity.IsValid());
   connector_->FilterInterfaces(spec, source_identity, std::move(request),
                                std::move(target));
 }
@@ -117,50 +110,40 @@ base::WeakPtr<Connector> Connector::GetWeakPtr() {
   return weak_factory_.GetWeakPtr();
 }
 
-////////////////////////////////////////////////////////////////////////////////
-// Connector, private:
-
-void Connector::OnConnectionError() {
-  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  connector_.reset();
-}
-
 void Connector::OverrideBinderForTesting(
-    const service_manager::Identity& identity,
+    const service_manager::ServiceFilter& filter,
     const std::string& interface_name,
     const TestApi::Binder& binder) {
-  local_binder_overrides_[identity][interface_name] = binder;
+  local_binder_overrides_[filter][interface_name] = binder;
 }
 
-bool Connector::HasBinderOverride(const service_manager::Identity& identity,
-                                  const std::string& interface_name) {
-  auto service_overrides = local_binder_overrides_.find(identity);
+bool Connector::HasBinderOverrideForTesting(
+    const service_manager::ServiceFilter& filter,
+    const std::string& interface_name) {
+  auto service_overrides = local_binder_overrides_.find(filter);
   if (service_overrides == local_binder_overrides_.end())
     return false;
 
   return base::ContainsKey(service_overrides->second, interface_name);
 }
 
-void Connector::ClearBinderOverride(const service_manager::Identity& identity,
-                                    const std::string& interface_name) {
-  auto service_overrides = local_binder_overrides_.find(identity);
+void Connector::ClearBinderOverrideForTesting(
+    const service_manager::ServiceFilter& filter,
+    const std::string& interface_name) {
+  auto service_overrides = local_binder_overrides_.find(filter);
   if (service_overrides == local_binder_overrides_.end())
     return;
 
   service_overrides->second.erase(interface_name);
 }
 
-void Connector::ClearBinderOverrides() {
+void Connector::ClearBinderOverridesForTesting() {
   local_binder_overrides_.clear();
 }
 
-void Connector::SetStartServiceCallback(
-    const Connector::StartServiceCallback& callback) {
-  start_service_callback_ = callback;
-}
-
-void Connector::ResetStartServiceCallback() {
-  start_service_callback_.Reset();
+void Connector::OnConnectionError() {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  connector_.reset();
 }
 
 bool Connector::BindConnectorIfNecessary() {
@@ -181,12 +164,6 @@ bool Connector::BindConnectorIfNecessary() {
   }
 
   return true;
-}
-
-void Connector::RunStartServiceCallback(mojom::ConnectResult result,
-                                        const Identity& user_id) {
-  if (!start_service_callback_.is_null())
-    start_service_callback_.Run(result, user_id);
 }
 
 }  // namespace service_manager

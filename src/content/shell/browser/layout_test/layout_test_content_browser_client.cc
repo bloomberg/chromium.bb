@@ -4,7 +4,14 @@
 
 #include "content/shell/browser/layout_test/layout_test_content_browser_client.h"
 
+#include <algorithm>
+#include <iterator>
+#include <string>
+#include <utility>
+#include <vector>
+
 #include "base/single_thread_task_runner.h"
+#include "base/stl_util.h"
 #include "base/strings/pattern.h"
 #include "base/task/post_task.h"
 #include "content/public/browser/browser_context.h"
@@ -12,11 +19,11 @@
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/login_delegate.h"
 #include "content/public/browser/overlay_window.h"
-#include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/render_process_host.h"
 #include "content/public/browser/resource_dispatcher_host.h"
+#include "content/public/browser/site_isolation_policy.h"
 #include "content/public/browser/storage_partition.h"
-#include "content/public/browser/web_package_context.h"
+#include "content/public/common/content_switches.h"
 #include "content/shell/browser/layout_test/blink_test_controller.h"
 #include "content/shell/browser/layout_test/fake_bluetooth_chooser.h"
 #include "content/shell/browser/layout_test/layout_test_bluetooth_fake_adapter_setter_impl.h"
@@ -27,14 +34,13 @@
 #include "content/shell/browser/shell_browser_context.h"
 #include "content/shell/common/layout_test/layout_test_switches.h"
 #include "content/shell/common/shell_messages.h"
-#include "content/shell/renderer/layout_test/blink_test_helpers.h"
+#include "content/shell/renderer/web_test/blink_test_helpers.h"
 #include "content/test/mock_clipboard_host.h"
 #include "content/test/mock_platform_notification_service.h"
 #include "device/bluetooth/test/fake_bluetooth.h"
 #include "gpu/config/gpu_switches.h"
-#include "mojo/public/cpp/bindings/strong_binding.h"
 #include "services/service_manager/public/cpp/binder_registry.h"
-#include "third_party/blink/public/mojom/web_package/web_package_internals.mojom.h"
+#include "url/origin.h"
 
 namespace content {
 namespace {
@@ -45,34 +51,6 @@ void BindLayoutTestHelper(mojom::MojoLayoutTestHelperRequest request,
                           RenderFrameHost* render_frame_host) {
   MojoLayoutTestHelper::Create(std::move(request));
 }
-
-class WebPackageInternalsImpl : public blink::test::mojom::WebPackageInternals {
- public:
-  explicit WebPackageInternalsImpl(WebPackageContext* web_package_context)
-      : web_package_context_(web_package_context) {}
-  ~WebPackageInternalsImpl() override = default;
-
-  static void Create(WebPackageContext* web_package_context,
-                     blink::test::mojom::WebPackageInternalsRequest request) {
-    DCHECK_CURRENTLY_ON(BrowserThread::IO);
-    mojo::MakeStrongBinding(
-        std::make_unique<WebPackageInternalsImpl>(web_package_context),
-        std::move(request));
-  }
-
- private:
-  void SetSignedExchangeVerificationTime(
-      base::Time time,
-      SetSignedExchangeVerificationTimeCallback callback) override {
-    DCHECK_CURRENTLY_ON(BrowserThread::IO);
-    web_package_context_->SetSignedExchangeVerificationTimeForTesting(time);
-    std::move(callback).Run();
-  }
-
-  WebPackageContext* web_package_context_;
-
-  DISALLOW_COPY_AND_ASSIGN(WebPackageInternalsImpl);
-};
 
 class TestOverlayWindow : public OverlayWindow {
  public:
@@ -179,10 +157,6 @@ void LayoutTestContentBrowserClient::ExposeInterfacesToRenderer(
           &LayoutTestContentBrowserClient::CreateFakeBluetoothChooser,
           base::Unretained(this)),
       ui_task_runner);
-  registry->AddInterface(base::BindRepeating(
-      &WebPackageInternalsImpl::Create,
-      base::Unretained(
-          render_process_host->GetStoragePartition()->GetWebPackageContext())));
   registry->AddInterface(base::BindRepeating(&MojoLayoutTestHelper::Create));
   registry->AddInterface(
       base::BindRepeating(&LayoutTestContentBrowserClient::BindClipboardHost,
@@ -256,14 +230,57 @@ LayoutTestContentBrowserClient::CreateWindowForPictureInPicture(
   return TestOverlayWindow::Create(controller);
 }
 
-bool LayoutTestContentBrowserClient::DoesSiteRequireDedicatedProcess(
-    BrowserContext* browser_context,
-    const GURL& effective_site_url) {
-  if (ShellContentBrowserClient::DoesSiteRequireDedicatedProcess(
-          browser_context, effective_site_url))
-    return true;
-  url::Origin origin = url::Origin::Create(effective_site_url);
-  return base::MatchPattern(origin.Serialize(), "*oopif.test");
+std::vector<url::Origin>
+LayoutTestContentBrowserClient::GetOriginsRequiringDedicatedProcess() {
+  // Unconditionally (with and without --site-per-process) isolate some origins
+  // that may be used by tests that only make sense in presence of an OOPIF.
+  std::vector<std::string> origins_to_isolate = {
+      "http://devtools.oopif.test:8000/", "http://devtools.oopif.test:8003/",
+      "http://devtools-extensions.oopif.test:8000/",
+      "https://devtools.oopif.test:8443/",
+  };
+
+  // On platforms with strict Site Isolation, the also isolate WPT origins for
+  // additional OOPIF coverage.
+  //
+  // Don't isolate WPT origins on
+  // 1) platforms where strict Site Isolation is not the default.
+  // 2) in layout tests under virtual/not-site-per-process where
+  //    --disable-site-isolation-trials switch is used.
+  if (SiteIsolationPolicy::UseDedicatedProcessesForAllSites()) {
+    // The list of hostnames below is based on
+    // https://web-platform-tests.org/writing-tests/server-features.html
+    const char* kWptHostnames[] = {
+        "www.web-platform.test",
+        "www1.web-platform.test",
+        "www2.web-platform.test",
+        "xn--n8j6ds53lwwkrqhv28a.web-platform.test",
+        "xn--lve-6lad.web-platform.test",
+    };
+
+    // The list of schemes and ports below is based on
+    // third_party/blink/tools/blinkpy/third_party/wpt/wpt.config.json
+    const char* kOriginTemplates[] = {
+        "http://%s:8001/", "http://%s:8081/", "https://%s:8444/",
+    };
+
+    origins_to_isolate.reserve(origins_to_isolate.size() +
+                               base::size(kWptHostnames) *
+                                   base::size(kOriginTemplates));
+    for (const char* kWptHostname : kWptHostnames) {
+      for (const char* kOriginTemplate : kOriginTemplates) {
+        std::string origin = base::StringPrintf(kOriginTemplate, kWptHostname);
+        origins_to_isolate.push_back(origin);
+      }
+    }
+  }
+
+  // Translate std::vector<std::string> into std::vector<url::Origin>.
+  std::vector<url::Origin> result;
+  result.reserve(origins_to_isolate.size());
+  for (const std::string& s : origins_to_isolate)
+    result.push_back(url::Origin::Create(GURL(s)));
+  return result;
 }
 
 PlatformNotificationService*
@@ -287,14 +304,6 @@ bool LayoutTestContentBrowserClient::CanCreateWindow(
     bool* no_javascript_access) {
   *no_javascript_access = false;
   return !block_popups_ || user_gesture;
-}
-
-bool LayoutTestContentBrowserClient::ShouldEnableStrictSiteIsolation() {
-  // TODO(lukasza, alexmos): Layout tests should have the same default state of
-  // site-per-process as everything else, but because of a backlog of layout
-  // test failures (see https://crbug.com/477150), layout tests still use no
-  // isolation by default.
-  return false;
 }
 
 bool LayoutTestContentBrowserClient::CanIgnoreCertificateErrorIfNeeded() {

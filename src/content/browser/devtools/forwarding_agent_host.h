@@ -7,8 +7,6 @@
 
 #include <memory>
 
-#include "base/containers/flat_map.h"
-#include "base/memory/ref_counted.h"
 #include "content/browser/devtools/devtools_agent_host_impl.h"
 
 namespace content {
@@ -22,16 +20,13 @@ class ForwardingAgentHost : public DevToolsAgentHostImpl {
       std::unique_ptr<DevToolsExternalAgentProxyDelegate> delegate);
 
  private:
-  class SessionProxy;
-
   ~ForwardingAgentHost() override;
 
-  // DevToolsAgentHost implementation
-  bool AttachClient(DevToolsAgentHostClient* client) override;
-  bool DetachClient(DevToolsAgentHostClient* client) override;
-  bool DispatchProtocolMessage(DevToolsAgentHostClient* client,
-                               const std::string& message) override;
-  bool IsAttached() override;
+  // DevToolsAgentHostImpl overrides.
+  bool AttachSession(DevToolsSession* session) override;
+  void DetachSession(DevToolsSession* session) override;
+
+  // DevToolsAgentHost implementation.
   std::string GetType() override;
   std::string GetTitle() override;
   GURL GetURL() override;
@@ -43,9 +38,6 @@ class ForwardingAgentHost : public DevToolsAgentHostImpl {
   base::TimeTicks GetLastActivityTime() override;
 
   std::unique_ptr<DevToolsExternalAgentProxyDelegate> delegate_;
-  base::flat_map<DevToolsAgentHostClient*, std::unique_ptr<SessionProxy>>
-      session_proxies_;
-
   DISALLOW_COPY_AND_ASSIGN(ForwardingAgentHost);
 };
 

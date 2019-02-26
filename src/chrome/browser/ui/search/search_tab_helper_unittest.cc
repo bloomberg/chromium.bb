@@ -8,20 +8,15 @@
 
 #include <memory>
 #include <string>
-#include <tuple>
 #include <utility>
 
 #include "base/bind.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/time/time.h"
-#include "chrome/browser/signin/fake_signin_manager_builder.h"
-#include "chrome/browser/signin/identity_manager_factory.h"
-#include "chrome/browser/signin/signin_manager_factory.h"
+#include "chrome/browser/signin/identity_test_environment_profile_adaptor.h"
 #include "chrome/browser/sync/profile_sync_service_factory.h"
 #include "chrome/browser/sync/profile_sync_test_util.h"
 #include "chrome/browser/ui/search/search_ipc_router.h"
-#include "chrome/browser/ui/tabs/tab_strip_model.h"
-#include "chrome/common/render_messages.h"
 #include "chrome/common/search/mock_embedded_search_client.h"
 #include "chrome/common/url_constants.h"
 #include "chrome/grit/generated_resources.h"
@@ -29,67 +24,18 @@
 #include "chrome/test/base/chrome_render_view_host_test_harness.h"
 #include "chrome/test/base/testing_profile.h"
 #include "components/browser_sync/profile_sync_service.h"
-#include "components/omnibox/common/omnibox_focus_state.h"
 #include "components/strings/grit/components_strings.h"
-#include "content/public/browser/navigation_controller.h"
-#include "content/public/browser/navigation_entry.h"
 #include "content/public/browser/web_contents.h"
-#include "content/public/test/mock_render_process_host.h"
-#include "ipc/ipc_message.h"
-#include "ipc/ipc_test_sink.h"
-#include "net/base/net_errors.h"
-#include "services/identity/public/cpp/identity_test_utils.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "url/gurl.h"
 
-class OmniboxView;
-
-using testing::Eq;
-using testing::Return;
 using testing::_;
+using testing::NiceMock;
+using testing::Return;
 
 namespace {
-
-class MockSearchIPCRouterDelegate : public SearchIPCRouter::Delegate {
- public:
-  virtual ~MockSearchIPCRouterDelegate() {}
-
-  MOCK_METHOD1(FocusOmnibox, void(bool focus));
-  MOCK_METHOD1(OnDeleteMostVisitedItem, void(const GURL& url));
-  MOCK_METHOD1(OnUndoMostVisitedDeletion, void(const GURL& url));
-  MOCK_METHOD0(OnUndoAllMostVisitedDeletions, void());
-  MOCK_METHOD2(OnAddCustomLink,
-               bool(const GURL& url, const std::string& title));
-  MOCK_METHOD3(OnUpdateCustomLink,
-               bool(const GURL& url,
-                    const GURL& new_url,
-                    const std::string& new_title));
-  MOCK_METHOD1(OnDeleteCustomLink, bool(const GURL& url));
-  MOCK_METHOD0(OnUndoCustomLinkAction, void());
-  MOCK_METHOD0(OnResetCustomLinks, void());
-  MOCK_METHOD2(
-      OnDoesUrlResolve,
-      void(const GURL& url,
-           chrome::mojom::EmbeddedSearch::DoesUrlResolveCallback callback));
-  MOCK_METHOD2(OnLogEvent, void(NTPLoggingEventType event,
-                                base::TimeDelta time));
-  MOCK_METHOD1(OnLogMostVisitedImpression,
-               void(const ntp_tiles::NTPTileImpression& impression));
-  MOCK_METHOD1(OnLogMostVisitedNavigation,
-               void(const ntp_tiles::NTPTileImpression& impression));
-  MOCK_METHOD1(PasteIntoOmnibox, void(const base::string16&));
-  MOCK_METHOD1(ChromeIdentityCheck, bool(const base::string16& identity));
-  MOCK_METHOD0(HistorySyncCheck, bool());
-  MOCK_METHOD1(OnSetCustomBackgroundURL, void(const GURL& url));
-  MOCK_METHOD4(OnSetCustomBackgroundURLWithAttributions,
-               void(const GURL& background_url,
-                    const std::string& attribution_line_1,
-                    const std::string& attribution_line_2,
-                    const GURL& action_url));
-  MOCK_METHOD0(OnSelectLocalBackgroundImage, void());
-};
 
 class MockEmbeddedSearchClientFactory
     : public SearchIPCRouter::EmbeddedSearchClientFactory {
@@ -106,32 +52,41 @@ class SearchTabHelperTest : public ChromeRenderViewHostTestHarness {
 
   void SetUp() override {
     ChromeRenderViewHostTestHarness::SetUp();
+    identity_test_env_adaptor_ =
+        std::make_unique<IdentityTestEnvironmentProfileAdaptor>(profile());
     SearchTabHelper::CreateForWebContents(web_contents());
     auto* search_tab = SearchTabHelper::FromWebContents(web_contents());
-    auto factory = std::make_unique<MockEmbeddedSearchClientFactory>();
+    auto factory =
+        std::make_unique<NiceMock<MockEmbeddedSearchClientFactory>>();
     ON_CALL(*factory, GetEmbeddedSearchClient())
         .WillByDefault(Return(&mock_embedded_search_client_));
     search_tab->ipc_router_for_testing()
         .set_embedded_search_client_factory_for_testing(std::move(factory));
   }
 
+  void TearDown() override {
+    // |identity_test_env_adaptor_| must be destroyed before profile().
+    identity_test_env_adaptor_.reset();
+    ChromeRenderViewHostTestHarness::TearDown();
+  }
+
   content::BrowserContext* CreateBrowserContext() override {
-    TestingProfile::Builder builder;
-    builder.AddTestingFactory(SigninManagerFactory::GetInstance(),
-                              base::BindRepeating(&BuildFakeSigninManagerBase));
-    builder.AddTestingFactory(
-        ProfileSyncServiceFactory::GetInstance(),
-        base::BindRepeating(&BuildMockProfileSyncService));
-    return builder.Build().release();
+    TestingProfile::TestingFactories factories = {
+        {ProfileSyncServiceFactory::GetInstance(),
+         base::BindRepeating(&BuildMockProfileSyncService)}};
+
+    // Per comments on content::RenderViewHostTestHarness, it takes ownership of
+    // the returned object.
+    return IdentityTestEnvironmentProfileAdaptor::
+        CreateProfileForIdentityTestEnvironment(factories)
+            .release();
   }
 
   // Associates |email| with profile as the primary account. |email|
   // should not be empty.
   void SetUpAccount(const std::string& email) {
     ASSERT_FALSE(email.empty());
-    identity::SetPrimaryAccount(
-        SigninManagerFactory::GetForProfile(profile()),
-        IdentityManagerFactory::GetForProfile(profile()), email);
+    identity_test_env()->SetPrimaryAccount(email);
   }
 
   // Configure the account to |sync_history| or not.
@@ -142,21 +97,24 @@ class SearchTabHelperTest : public ChromeRenderViewHostTestHarness {
 
     syncer::ModelTypeSet result;
     if (sync_history) {
+      result.Put(syncer::TYPED_URLS);
       result.Put(syncer::HISTORY_DELETE_DIRECTIVES);
+      result.Put(syncer::SESSIONS);
     }
-    EXPECT_CALL(*sync_service, GetPreferredDataTypes())
-        .WillRepeatedly(Return(result));
+    ON_CALL(*sync_service, IsFirstSetupComplete()).WillByDefault(Return(true));
+    ON_CALL(*sync_service, GetPreferredDataTypes())
+        .WillByDefault(Return(result));
   }
 
-  MockSearchIPCRouterDelegate* mock_delegate() { return &delegate_; }
-
-  MockEmbeddedSearchClient* mock_embedded_search_client() {
-    return &mock_embedded_search_client_;
+  identity::IdentityTestEnvironment* identity_test_env() {
+    DCHECK(identity_test_env_adaptor_);
+    return identity_test_env_adaptor_->identity_test_env();
   }
 
  private:
-  MockSearchIPCRouterDelegate delegate_;
-  MockEmbeddedSearchClient mock_embedded_search_client_;
+  NiceMock<MockEmbeddedSearchClient> mock_embedded_search_client_;
+  std::unique_ptr<IdentityTestEnvironmentProfileAdaptor>
+      identity_test_env_adaptor_;
 };
 
 TEST_F(SearchTabHelperTest, ChromeIdentityCheckMatch) {

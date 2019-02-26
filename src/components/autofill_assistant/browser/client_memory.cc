@@ -9,25 +9,37 @@ namespace autofill_assistant {
 ClientMemory::ClientMemory() = default;
 ClientMemory::~ClientMemory() = default;
 
-base::Optional<std::string> ClientMemory::selected_card() {
-  return selected_card_;
+const autofill::CreditCard* ClientMemory::selected_card() {
+  if (selected_card_.has_value())
+    return selected_card_->get();
+  return nullptr;
 }
 
-base::Optional<std::string> ClientMemory::selected_address(
+bool ClientMemory::has_selected_card() {
+  return selected_card_.has_value();
+}
+
+const autofill::AutofillProfile* ClientMemory::selected_address(
     const std::string& name) {
   if (selected_addresses_.find(name) != selected_addresses_.end())
-    return selected_addresses_[name];
+    return selected_addresses_[name].get();
 
-  return base::nullopt;
+  return nullptr;
 }
 
-void ClientMemory::set_selected_card(const std::string& guid) {
-  selected_card_ = guid;
+void ClientMemory::set_selected_card(
+    std::unique_ptr<autofill::CreditCard> card) {
+  selected_card_ = std::move(card);
 }
 
-void ClientMemory::set_selected_address(const std::string& name,
-                                        const std::string& guid) {
-  selected_addresses_[name] = guid;
+void ClientMemory::set_selected_address(
+    const std::string& name,
+    std::unique_ptr<autofill::AutofillProfile> address) {
+  selected_addresses_[name] = std::move(address);
+}
+
+bool ClientMemory::has_selected_address(const std::string& name) {
+  return selected_addresses_.find(name) != selected_addresses_.end();
 }
 
 }  // namespace autofill_assistant

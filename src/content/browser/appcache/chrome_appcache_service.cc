@@ -22,7 +22,7 @@ ChromeAppCacheService::ChromeAppCacheService(
 void ChromeAppCacheService::InitializeOnIOThread(
     const base::FilePath& cache_path,
     ResourceContext* resource_context,
-    net::URLRequestContextGetter* request_context_getter,
+    scoped_refptr<net::URLRequestContextGetter> request_context_getter,
     scoped_refptr<storage::SpecialStoragePolicy> special_storage_policy) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
 

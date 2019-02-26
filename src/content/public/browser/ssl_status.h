@@ -74,8 +74,8 @@ struct CONTENT_EXPORT SSLStatus {
   // |certificate|. This field is not necessarily populated, e.g. for responses
   // served from disk cache.
   net::HashValueVector public_key_hashes;
-  int security_bits;
   uint16_t key_exchange_group;
+  uint16_t peer_signature_algorithm;
   int connection_status;
   // A combination of the ContentStatusFlags above. Flags are cleared when a
   // navigation commits.

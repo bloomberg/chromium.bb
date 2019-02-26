@@ -53,6 +53,9 @@ endif()
 
 if(BORINGSSL_PREFIX AND BORINGSSL_PREFIX_SYMBOLS)
   add_definitions(-DBORINGSSL_PREFIX=${BORINGSSL_PREFIX})
+  # CMake automatically connects include_directories to the NASM command-line,
+  # but not add_definitions.
+  set(CMAKE_ASM_NASM_FLAGS "${CMAKE_ASM_NASM_FLAGS} -DBORINGSSL_PREFIX=${BORINGSSL_PREFIX}")
 
   # Use "symbol_prefix_include" to store generated header files
   include_directories(${CMAKE_CURRENT_BINARY_DIR}/symbol_prefix_include)
@@ -291,9 +294,8 @@ if(CFI)
     message(FATAL_ERROR "Cannot enable CFI unless using Clang")
   endif()
 
-  # TODO(crbug.com/785442): Remove -fsanitize-cfi-icall-generalize-pointers.
-  set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -fsanitize=cfi -fno-sanitize-trap=cfi -fsanitize-cfi-icall-generalize-pointers -flto=thin")
-  set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fsanitize=cfi -fno-sanitize-trap=cfi -fsanitize-cfi-icall-generalize-pointers -flto=thin")
+  set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -fsanitize=cfi -fno-sanitize-trap=cfi -flto=thin")
+  set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fsanitize=cfi -fno-sanitize-trap=cfi -flto=thin")
   # We use Chromium's copy of clang, which requires -fuse-ld=lld if building
   # with -flto. That, in turn, can't handle -ggdb.
   set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} -fuse-ld=lld")
@@ -408,6 +410,9 @@ elseif(${CMAKE_SYSTEM_PROCESSOR} STREQUAL "i686")
 elseif(${CMAKE_SYSTEM_PROCESSOR} STREQUAL "aarch64")
   set(ARCH "aarch64")
 elseif(${CMAKE_SYSTEM_PROCESSOR} STREQUAL "arm64")
+  set(ARCH "aarch64")
+# Apple A12 Bionic chipset which is added in iPhone XS/XS Max/XR uses arm64e architecture.
+elseif(${CMAKE_SYSTEM_PROCESSOR} STREQUAL "arm64e")
   set(ARCH "aarch64")
 elseif(${CMAKE_SYSTEM_PROCESSOR} MATCHES "^arm*")
   set(ARCH "arm")

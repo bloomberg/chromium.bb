@@ -4,14 +4,14 @@
 
 #include "net/third_party/http2/hpack/decoder/hpack_entry_decoder.h"
 
-#include <cstdint>
-
 // Tests of HpackEntryDecoder.
+
+#include <cstdint>
 
 #include "net/third_party/http2/hpack/decoder/hpack_entry_collector.h"
 #include "net/third_party/http2/hpack/tools/hpack_block_builder.h"
-#include "net/third_party/http2/tools/failure.h"
-#include "net/third_party/http2/tools/http2_random.h"
+#include "net/third_party/http2/platform/api/http2_test_helpers.h"
+#include "net/third_party/http2/test_tools/http2_random.h"
 #include "net/third_party/http2/tools/random_decoder_test.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -56,9 +56,9 @@ class HpackEntryDecoderTest : public RandomDecoderTest {
 
 TEST_F(HpackEntryDecoderTest, IndexedHeader_Literals) {
   {
-    const char input[] = {0x82u};  // == Index 2 ==
+    const char input[] = {'\x82'};  // == Index 2 ==
     DecodeBuffer b(input);
-    NoArgValidator do_check = [this]() {
+    auto do_check = [this]() {
       VERIFY_AND_RETURN_SUCCESS(collector_.ValidateIndexedHeader(2));
     };
     EXPECT_TRUE(
@@ -67,9 +67,9 @@ TEST_F(HpackEntryDecoderTest, IndexedHeader_Literals) {
   }
   collector_.Clear();
   {
-    const char input[] = {0xfeu};  // == Index 126 ==
+    const char input[] = {'\xfe'};  // == Index 126 ==
     DecodeBuffer b(input);
-    NoArgValidator do_check = [this]() {
+    auto do_check = [this]() {
       VERIFY_AND_RETURN_SUCCESS(collector_.ValidateIndexedHeader(126));
     };
     EXPECT_TRUE(
@@ -78,9 +78,9 @@ TEST_F(HpackEntryDecoderTest, IndexedHeader_Literals) {
   }
   collector_.Clear();
   {
-    const char input[] = {0xffu, 0x00};  // == Index 127 ==
+    const char input[] = {'\xff', '\x00'};  // == Index 127 ==
     DecodeBuffer b(input);
-    NoArgValidator do_check = [this]() {
+    auto do_check = [this]() {
       VERIFY_AND_RETURN_SUCCESS(collector_.ValidateIndexedHeader(127));
     };
     EXPECT_TRUE(
@@ -95,7 +95,7 @@ TEST_F(HpackEntryDecoderTest, IndexedHeader_Various) {
     HpackBlockBuilder hbb;
     hbb.AppendIndexedHeader(ndx);
 
-    NoArgValidator do_check = [this, ndx]() {
+    auto do_check = [this, ndx]() {
       VERIFY_AND_RETURN_SUCCESS(collector_.ValidateIndexedHeader(ndx));
     };
     EXPECT_TRUE(
@@ -111,7 +111,7 @@ TEST_F(HpackEntryDecoderTest, IndexedLiteralValue_Literal) {
       "\x0d"            // Value length (13)
       "custom-header";  // Value
   DecodeBuffer b(input, sizeof input - 1);
-  NoArgValidator do_check = [this]() {
+  auto do_check = [this]() {
     VERIFY_AND_RETURN_SUCCESS(collector_.ValidateLiteralValueHeader(
         HpackEntryType::kIndexedLiteralHeader, 0x40, false, "custom-header"));
   };
@@ -128,7 +128,7 @@ TEST_F(HpackEntryDecoderTest, IndexedLiteralNameValue_Literal) {
       "custom-header";  // Value
 
   DecodeBuffer b(input, sizeof input - 1);
-  NoArgValidator do_check = [this]() {
+  auto do_check = [this]() {
     VERIFY_AND_RETURN_SUCCESS(collector_.ValidateLiteralNameValueHeader(
         HpackEntryType::kIndexedLiteralHeader, false, "custom-key", false,
         "custom-header"));
@@ -141,7 +141,7 @@ TEST_F(HpackEntryDecoderTest, DynamicTableSizeUpdate_Literal) {
   // Size update, length 31.
   const char input[] = "\x3f\x00";
   DecodeBuffer b(input, 2);
-  NoArgValidator do_check = [this]() {
+  auto do_check = [this]() {
     VERIFY_AND_RETURN_SUCCESS(collector_.ValidateDynamicTableSizeUpdate(31));
   };
   EXPECT_TRUE(DecodeAndValidateSeveralWays(&b, ValidateDoneAndEmpty(do_check)));
@@ -172,8 +172,8 @@ TEST_P(HpackLiteralEntryDecoderTest, RandNameIndexAndLiteralValue) {
     HpackBlockBuilder hbb;
     hbb.AppendNameIndexAndLiteralValue(entry_type_, ndx,
                                        value_is_huffman_encoded, value);
-    NoArgValidator do_check = [this, ndx, value_is_huffman_encoded,
-                               value]() -> AssertionResult {
+    auto do_check = [this, ndx, value_is_huffman_encoded,
+                     value]() -> AssertionResult {
       VERIFY_AND_RETURN_SUCCESS(collector_.ValidateLiteralValueHeader(
           entry_type_, ndx, value_is_huffman_encoded, value));
     };
@@ -194,9 +194,8 @@ TEST_P(HpackLiteralEntryDecoderTest, RandLiteralNameAndValue) {
     HpackBlockBuilder hbb;
     hbb.AppendLiteralNameAndValue(entry_type_, name_is_huffman_encoded, name,
                                   value_is_huffman_encoded, value);
-    NoArgValidator do_check = [this, name_is_huffman_encoded, name,
-                               value_is_huffman_encoded,
-                               value]() -> AssertionResult {
+    auto do_check = [this, name_is_huffman_encoded, name,
+                     value_is_huffman_encoded, value]() -> AssertionResult {
       VERIFY_AND_RETURN_SUCCESS(collector_.ValidateLiteralNameValueHeader(
           entry_type_, name_is_huffman_encoded, name, value_is_huffman_encoded,
           value));

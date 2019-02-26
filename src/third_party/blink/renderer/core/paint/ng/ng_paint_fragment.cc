@@ -34,6 +34,18 @@ namespace blink {
 
 namespace {
 
+struct SameSizeAsNGPaintFragment : public RefCounted<NGPaintFragment>,
+                                   public DisplayItemClient,
+                                   public ImageResourceObserver {
+  void* pointers[6];
+  NGPhysicalOffset offsets[2];
+  LayoutRect rects[1];
+  unsigned flags;
+};
+
+static_assert(sizeof(NGPaintFragment) == sizeof(SameSizeAsNGPaintFragment),
+              "NGPaintFragment should stay small.");
+
 NGLogicalRect ComputeLogicalRectFor(const NGPhysicalOffsetRect& physical_rect,
                                     const NGPaintFragment& paint_fragment) {
   const WritingMode writing_mode = paint_fragment.Style().GetWritingMode();
@@ -55,7 +67,7 @@ NGPhysicalOffsetRect ComputePhysicalRectFor(
       paint_fragment.PhysicalFragment().ResolvedDirection();
   const NGPhysicalSize outer_size = paint_fragment.Size();
   const NGPhysicalSize physical_size =
-      logical_rect.size.ConvertToPhysical(writing_mode);
+      ToNGPhysicalSize(logical_rect.size, writing_mode);
   const NGPhysicalOffset physical_offset =
       logical_rect.offset.ConvertToPhysical(writing_mode, text_direction,
                                             outer_size, physical_size);
@@ -72,7 +84,7 @@ NGLogicalRect ExpandedSelectionRectForSoftLineBreakIfNeeded(
   if (selection_status.line_break == SelectSoftLineBreak::kNotSelected)
     return rect;
   if (paint_fragment.GetLayoutObject()
-          ->EnclosingNGBlockFlow()
+          ->ContainingNGBlockFlow()
           ->ShouldTruncateOverflowingText())
     return rect;
   // Copy from InlineTextBoxPainter::PaintSelection.
@@ -164,7 +176,57 @@ NGPaintFragment::NGPaintFragment(
   DCHECK(physical_fragment_);
 }
 
-NGPaintFragment::~NGPaintFragment() = default;
+NGPaintFragment::~NGPaintFragment() {
+  // The default destructor will deref |first_child_|, but because children are
+  // in a linked-list, it will call this destructor recursively. Remove children
+  // first non-recursively to avoid stack overflow when there are many chlidren.
+  RemoveChildren();
+}
+
+void NGPaintFragment::RemoveChildren() {
+  scoped_refptr<NGPaintFragment> child = std::move(first_child_);
+  DCHECK(!first_child_);
+  while (child) {
+    child = std::move(child->next_sibling_);
+  }
+}
+
+template <typename Traverse>
+NGPaintFragment& NGPaintFragment::List<Traverse>::front() const {
+  DCHECK(first_);
+  return *first_;
+}
+
+template <typename Traverse>
+NGPaintFragment& NGPaintFragment::List<Traverse>::back() const {
+  DCHECK(first_);
+  NGPaintFragment* last = first_;
+  for (NGPaintFragment* fragment : *this)
+    last = fragment;
+  return *last;
+}
+
+template <typename Traverse>
+wtf_size_t NGPaintFragment::List<Traverse>::size() const {
+  wtf_size_t size = 0;
+  for (NGPaintFragment* fragment : *this) {
+    ANALYZER_ALLOW_UNUSED(fragment);
+    ++size;
+  }
+  return size;
+}
+
+template <typename Traverse>
+void NGPaintFragment::List<Traverse>::ToList(
+    Vector<NGPaintFragment*, 16>* list) const {
+  if (UNLIKELY(!list->IsEmpty()))
+    list->Shrink(0);
+  if (IsEmpty())
+    return;
+  list->ReserveCapacity(size());
+  for (NGPaintFragment* fragment : *this)
+    list->push_back(fragment);
+}
 
 void NGPaintFragment::SetShouldDoFullPaintInvalidation() {
   if (LayoutObject* layout_object = GetLayoutObject())
@@ -183,17 +245,23 @@ scoped_refptr<NGPaintFragment> NGPaintFragment::CreateOrReuse(
   // Re-using NGPaintFragment allows the paint system to identify objects.
   if (previous_instance) {
     DCHECK_EQ(previous_instance->parent_, parent);
+    DCHECK(!previous_instance->next_sibling_);
 
+// TODO(kojii): This fails some tests when reusing line box was enabled.
+// Investigate and re-enable.
+#if 0
     // If the physical fragment was re-used, re-use the paint fragment as well.
     if (&previous_instance->PhysicalFragment() == fragment.get()) {
       previous_instance->offset_ = offset;
       previous_instance->next_for_same_layout_object_ = nullptr;
+      previous_instance->is_dirty_inline_ = false;
       // No need to re-populate children because NGPhysicalFragment is
       // immutable and thus children should not have been changed.
       *populate_children = false;
       previous_instance->SetShouldDoFullPaintInvalidation();
       return previous_instance;
     }
+#endif
 
     // If the LayoutObject are the same, the new paint fragment should have the
     // same DisplayItemClient identity as the previous instance.
@@ -201,8 +269,9 @@ scoped_refptr<NGPaintFragment> NGPaintFragment::CreateOrReuse(
       previous_instance->physical_fragment_ = std::move(fragment);
       previous_instance->offset_ = offset;
       previous_instance->next_for_same_layout_object_ = nullptr;
+      previous_instance->is_dirty_inline_ = false;
       if (!*populate_children)
-        previous_instance->children_.clear();
+        previous_instance->first_child_ = nullptr;
       previous_instance->SetShouldDoFullPaintInvalidation();
       return previous_instance;
     }
@@ -233,6 +302,12 @@ scoped_refptr<NGPaintFragment> NGPaintFragment::Create(
   return paint_fragment;
 }
 
+NGPaintFragment::RareData& NGPaintFragment::EnsureRareData() {
+  if (!rare_data_)
+    rare_data_ = std::make_unique<RareData>();
+  return *rare_data_;
+}
+
 void NGPaintFragment::UpdateFromCachedLayoutResult(
     scoped_refptr<const NGPhysicalFragment> fragment,
     NGPhysicalOffset offset) {
@@ -243,11 +318,14 @@ void NGPaintFragment::UpdateFromCachedLayoutResult(
   // children do not change.
   const NGPhysicalContainerFragment& container_fragment =
       ToNGPhysicalContainerFragment(*fragment);
-  DCHECK_EQ(Children().size(), container_fragment.Children().size());
-  for (unsigned i = 0; i < container_fragment.Children().size(); i++) {
-    DCHECK_EQ(Children()[i]->physical_fragment_.get(),
+  NGPaintFragment* child = FirstChild();
+  for (unsigned i = 0; i < container_fragment.Children().size();
+       i++, child = child->NextSibling()) {
+    DCHECK(child);
+    DCHECK_EQ(child->physical_fragment_.get(),
               container_fragment.Children()[i].get());
   }
+  DCHECK(!child);
 #endif
 
   DCHECK_EQ(physical_fragment_.get(), fragment.get());
@@ -257,16 +335,22 @@ void NGPaintFragment::UpdateFromCachedLayoutResult(
 
 NGPaintFragment* NGPaintFragment::Last(const NGBreakToken& break_token) {
   for (NGPaintFragment* fragment = this; fragment;
-       fragment = fragment->next_fragmented_.get()) {
+       fragment = fragment->Next()) {
     if (fragment->PhysicalFragment().BreakToken() == &break_token)
       return fragment;
   }
   return nullptr;
 }
 
+NGPaintFragment* NGPaintFragment::Next() {
+  if (!rare_data_)
+    return nullptr;
+  return rare_data_->next_fragmented_.get();
+}
+
 NGPaintFragment* NGPaintFragment::Last() {
   for (NGPaintFragment* fragment = this;;) {
-    NGPaintFragment* next = fragment->next_fragmented_.get();
+    NGPaintFragment* next = fragment->Next();
     if (!next)
       return fragment;
     fragment = next;
@@ -288,7 +372,8 @@ scoped_refptr<NGPaintFragment>* NGPaintFragment::Find(
     if (!*fragment)
       return fragment;
 
-    scoped_refptr<NGPaintFragment>* next = &(*fragment)->next_fragmented_;
+    scoped_refptr<NGPaintFragment>* next =
+        &(*fragment)->EnsureRareData().next_fragmented_;
     if ((*fragment)->PhysicalFragment().BreakToken() == break_token)
       return next;
     fragment = next;
@@ -297,7 +382,9 @@ scoped_refptr<NGPaintFragment>* NGPaintFragment::Find(
 }
 
 void NGPaintFragment::SetNext(scoped_refptr<NGPaintFragment> fragment) {
-  next_fragmented_ = std::move(fragment);
+  if (!rare_data_ && !fragment)
+    return;
+  EnsureRareData().next_fragmented_ = std::move(fragment);
 }
 
 bool NGPaintFragment::IsDescendantOfNotSelf(
@@ -325,6 +412,18 @@ bool NGPaintFragment::ShouldClipOverflow() const {
          ToNGPhysicalBoxFragment(*physical_fragment_).ShouldClipOverflow();
 }
 
+LayoutRect NGPaintFragment::SelectionVisualRect() const {
+  if (!rare_data_)
+    return LayoutRect();
+  return rare_data_->selection_visual_rect_;
+}
+
+void NGPaintFragment::SetSelectionVisualRect(const LayoutRect& rect) {
+  if (!rare_data_ && rect.IsEmpty())
+    return;
+  EnsureRareData().selection_visual_rect_ = rect;
+}
+
 LayoutRect NGPaintFragment::SelfInkOverflow() const {
   return physical_fragment_->InkOverflow().ToLayoutRect();
 }
@@ -341,20 +440,23 @@ void NGPaintFragment::PopulateDescendants(
   DCHECK(fragment.IsContainer());
   const NGPhysicalContainerFragment& container =
       ToNGPhysicalContainerFragment(fragment);
-  children_.ReserveCapacity(container.Children().size());
+  scoped_refptr<NGPaintFragment> previous_children = std::move(first_child_);
+  scoped_refptr<NGPaintFragment>* last_child_ptr = &first_child_;
 
   bool children_are_inline =
       !fragment.IsBox() || ToNGPhysicalBoxFragment(fragment).ChildrenInline();
 
-  unsigned child_index = 0;
   for (const NGLink& child_fragment : container.Children()) {
     bool populate_children = child_fragment->IsContainer() &&
                              !child_fragment->IsBlockFormattingContextRoot();
-    scoped_refptr<NGPaintFragment> child = CreateOrReuse(
-        child_fragment.get(), child_fragment.Offset(), this,
-        child_index < children_.size() ? std::move(children_[child_index])
-                                       : nullptr,
-        &populate_children);
+    scoped_refptr<NGPaintFragment> previous_child;
+    if (previous_children) {
+      previous_child = std::move(previous_children);
+      previous_children = std::move(previous_child->next_sibling_);
+    }
+    scoped_refptr<NGPaintFragment> child =
+        CreateOrReuse(child_fragment.get(), child_fragment.Offset(), this,
+                      std::move(previous_child), &populate_children);
 
     if (children_are_inline) {
       if (!child_fragment->IsFloating() &&
@@ -373,15 +475,10 @@ void NGPaintFragment::PopulateDescendants(
       }
     }
 
-    if (child_index < children_.size())
-      children_[child_index] = std::move(child);
-    else
-      children_.push_back(std::move(child));
-    ++child_index;
+    DCHECK(!*last_child_ptr);
+    *last_child_ptr = std::move(child);
+    last_child_ptr = &((*last_child_ptr)->next_sibling_);
   }
-
-  if (child_index < children_.size())
-    children_.resize(child_index);
 }
 
 // Add to a linked list for each LayoutObject.
@@ -406,22 +503,16 @@ void NGPaintFragment::AssociateWithLayoutObject(
 NGPaintFragment* NGPaintFragment::GetForInlineContainer(
     const LayoutObject* layout_object) {
   DCHECK(layout_object && layout_object->IsInline());
-  // Search from its parent because |EnclosingNGBlockFlow| returns itself when
-  // the LayoutObject is a box (i.e., atomic inline, including inline block and
-  // replaced elements.)
-  if (LayoutObject* parent = layout_object->Parent()) {
-    if (LayoutBlockFlow* block_flow = parent->EnclosingNGBlockFlow()) {
-      if (NGPaintFragment* fragment = block_flow->PaintFragment())
-        return fragment;
+  if (LayoutBlockFlow* block_flow = layout_object->ContainingNGBlockFlow()) {
+    if (NGPaintFragment* fragment = block_flow->PaintFragment())
+      return fragment;
 
-      // TODO(kojii): IsLayoutFlowThread should probably be done in
-      // EnclosingNGBlockFlow(), but there seem to be both expectations today.
-      // This needs cleanup.
-      if (block_flow->IsLayoutFlowThread()) {
-        DCHECK(block_flow->Parent() &&
-               block_flow->Parent()->IsLayoutBlockFlow());
-        return ToLayoutBlockFlow(block_flow->Parent())->PaintFragment();
-      }
+    // TODO(kojii): IsLayoutFlowThread should probably be done in
+    // ContainingNGBlockFlow(), but there seem to be both expectations today.
+    // This needs cleanup.
+    if (block_flow->IsLayoutFlowThread()) {
+      DCHECK(block_flow->Parent() && block_flow->Parent()->IsLayoutBlockFlow());
+      return ToLayoutBlockFlow(block_flow->Parent())->PaintFragment();
     }
   }
   return nullptr;
@@ -437,25 +528,20 @@ NGPaintFragment::FragmentRange NGPaintFragment::InlineFragmentsFor(
   return FragmentRange(nullptr, false);
 }
 
+const NGPaintFragment* NGPaintFragment::LastForSameLayoutObject() const {
+  return const_cast<NGPaintFragment*>(this)->LastForSameLayoutObject();
+}
+
+NGPaintFragment* NGPaintFragment::LastForSameLayoutObject() {
+  NGPaintFragment* fragment = this;
+  while (fragment->next_for_same_layout_object_)
+    fragment = fragment->next_for_same_layout_object_;
+  return fragment;
+}
+
 void NGPaintFragment::DirtyLinesFromChangedChild(LayoutObject* child) {
-  if (child->IsInline()) {
-    LayoutBlockFlow* const block = child->EnclosingNGBlockFlow();
-    if (block && block->PaintFragment())
-      MarkLineBoxesDirtyFor(*child);
-  }
-  if (!child->IsInLayoutNGInlineFormattingContext())
-    return;
-  // We should rest first inline fragment for following tests:
-  //  * fast/dom/HTMLObjectElement/fallback-content-behaviour.html
-  //  * fast/dom/shadow/exposed-object-within-shadow.html
-  //  * fast/lists/inline-before-content-after-list-marker.html
-  //  * fast/lists/list-with-image-display-changed.html
-  for (LayoutObject* runner = child; runner;
-       runner = runner->NextInPreOrder(child)) {
-    if (!runner->IsInLayoutNGInlineFormattingContext())
-      continue;
-    runner->SetFirstInlineFragment(nullptr);
-  }
+  if (child->IsInline())
+    MarkLineBoxesDirtyFor(*child);
 }
 
 bool NGPaintFragment::FlippedLocalVisualRectFor(
@@ -483,11 +569,11 @@ bool NGPaintFragment::FlippedLocalVisualRectFor(
 void NGPaintFragment::UpdateVisualRectForNonLayoutObjectChildren() {
   // Scan direct children only beause line boxes are always direct children of
   // the inline formatting context.
-  for (auto& child : Children()) {
+  for (NGPaintFragment* child : Children()) {
     if (!child->PhysicalFragment().IsLineBox())
       continue;
     LayoutRect union_of_children;
-    for (const auto& descendant : child->Children())
+    for (const NGPaintFragment* descendant : child->Children())
       union_of_children.Unite(descendant->VisualRect());
     child->SetVisualRect(union_of_children);
   }
@@ -512,7 +598,7 @@ void NGPaintFragment::PaintInlineBoxForDescendants(
     const LayoutInline* layout_object,
     NGPhysicalOffset offset) const {
   DCHECK(layout_object);
-  for (const auto& child : Children()) {
+  for (const NGPaintFragment* child : Children()) {
     if (child->GetLayoutObject() == layout_object) {
       NGInlineBoxFragmentPainter(*child).Paint(
           paint_info, paint_offset + offset.ToLayoutPoint() /*, paint_offset*/);
@@ -536,43 +622,55 @@ const NGPaintFragment* NGPaintFragment::ContainerLineBox() const {
 }
 
 NGPaintFragment* NGPaintFragment::FirstLineBox() const {
-  for (auto& child : children_) {
+  for (NGPaintFragment* child : Children()) {
     if (child->PhysicalFragment().IsLineBox())
-      return child.get();
+      return child;
   }
   return nullptr;
 }
 
 void NGPaintFragment::MarkLineBoxesDirtyFor(const LayoutObject& layout_object) {
   DCHECK(layout_object.IsInline()) << layout_object;
-  if (TryMarkLineBoxDirtyFor(layout_object))
-    return;
+
   // Since |layout_object| isn't in fragment tree, check preceding siblings.
   // Note: Once we reuse lines below dirty lines, we should check next siblings.
   for (LayoutObject* previous = layout_object.PreviousSibling(); previous;
        previous = previous->PreviousSibling()) {
+    // If the previoius object had never been laid out, it should have already
+    // marked the line box dirty.
+    if (!previous->EverHadLayout())
+      return;
+
     if (previous->IsFloatingOrOutOfFlowPositioned())
       continue;
+
     // |previous| may not be in inline formatting context, e.g. <object>.
-    if (TryMarkLineBoxDirtyFor(*previous))
+    if (TryMarkLastLineBoxDirtyFor(*previous))
       return;
   }
-  // There is no siblings, try parent.
+
+  // There is no siblings, try parent. If it's a non-atomic inline (e.g., span),
+  // mark dirty for it, but if it's an atomic inline (e.g., inline block), do
+  // not propagate across inline formatting context boundary.
   const LayoutObject& parent = *layout_object.Parent();
-  if (parent.IsInline())
+  if (parent.IsInline() && !parent.IsAtomicInlineLevel())
     return MarkLineBoxesDirtyFor(parent);
-  if (!parent.IsLayoutNGMixin())
-    return;
-  const LayoutBlockFlow& block = ToLayoutBlockFlow(parent);
-  if (!block.PaintFragment()) {
-    // We have not yet layout.
-    return;
+
+  // The |layout_object| is inserted into an empty block.
+  // Mark the first line box dirty.
+  if (parent.IsLayoutNGMixin()) {
+    const LayoutBlockFlow& block = ToLayoutBlockFlow(parent);
+    if (NGPaintFragment* paint_fragment = block.PaintFragment()) {
+      if (NGPaintFragment* first_line = paint_fragment->FirstLineBox()) {
+        first_line->is_dirty_inline_ = true;
+        return;
+      }
+    }
   }
-  // We inserted |layout_object| into empty block.
-  block.PaintFragment()->FirstLineBox()->is_dirty_inline_ = true;
 }
 
-void NGPaintFragment::MarkLineBoxDirty() {
+void NGPaintFragment::MarkContainingLineBoxDirty() {
+  DCHECK(PhysicalFragment().IsInline() || PhysicalFragment().IsLineBox());
   for (NGPaintFragment* fragment :
        NGPaintFragmentTraversal::InclusiveAncestorsOf(*this)) {
     if (fragment->is_dirty_inline_)
@@ -584,13 +682,27 @@ void NGPaintFragment::MarkLineBoxDirty() {
   NOTREACHED() << this;  // Should have a line box ancestor.
 }
 
-bool NGPaintFragment::TryMarkLineBoxDirtyFor(
+bool NGPaintFragment::TryMarkFirstLineBoxDirtyFor(
     const LayoutObject& layout_object) {
+  if (!layout_object.IsInLayoutNGInlineFormattingContext())
+    return false;
   // Once we reuse lines below dirty lines, we should mark lines for all
   // inline fragments.
-  NGPaintFragment* const first_fragment = layout_object.FirstInlineFragment();
-  if (first_fragment) {
-    first_fragment->MarkLineBoxDirty();
+  if (NGPaintFragment* const fragment = layout_object.FirstInlineFragment()) {
+    fragment->MarkContainingLineBoxDirty();
+    return true;
+  }
+  return false;
+}
+
+bool NGPaintFragment::TryMarkLastLineBoxDirtyFor(
+    const LayoutObject& layout_object) {
+  if (!layout_object.IsInLayoutNGInlineFormattingContext())
+    return false;
+  // Once we reuse lines below dirty lines, we should mark lines for all
+  // inline fragments.
+  if (NGPaintFragment* const fragment = layout_object.FirstInlineFragment()) {
+    fragment->LastForSameLayoutObject()->MarkContainingLineBoxDirty();
     return true;
   }
   return false;
@@ -600,7 +712,7 @@ void NGPaintFragment::SetShouldDoFullPaintInvalidationRecursively() {
   if (LayoutObject* layout_object = GetLayoutObject())
     layout_object->SetShouldDoFullPaintInvalidation();
 
-  for (auto& child : children_)
+  for (NGPaintFragment* child : Children())
     child->SetShouldDoFullPaintInvalidationRecursively();
 }
 
@@ -660,14 +772,12 @@ PositionWithAffinity NGPaintFragment::PositionForPointInText(
   if (text_fragment.IsAnonymousText())
     return PositionWithAffinity();
   const unsigned text_offset = text_fragment.TextOffsetForPoint(point);
-  if (text_offset > text_fragment.StartOffset() &&
-      text_offset < text_fragment.EndOffset()) {
-    const Position position = NGOffsetMapping::GetFor(GetLayoutObject())
-                                  ->GetFirstPosition(text_offset);
-    return PositionWithAffinity(position, TextAffinity::kDownstream);
-  }
   const NGCaretPosition unadjusted_position{
       this, NGCaretPositionType::kAtTextOffset, text_offset};
+  if (text_offset > text_fragment.StartOffset() &&
+      text_offset < text_fragment.EndOffset()) {
+    return unadjusted_position.ToPositionInDOMTreeWithAffinity();
+  }
   return BidiAdjustment::AdjustForHitTest(unadjusted_position)
       .ToPositionInDOMTreeWithAffinity();
 }
@@ -693,7 +803,7 @@ PositionWithAffinity NGPaintFragment::PositionForPointInInlineLevelBox(
   const NGPaintFragment* closest_child_after = nullptr;
   LayoutUnit closest_child_after_inline_offset = LayoutUnit::Max();
 
-  for (const auto& child : Children()) {
+  for (const NGPaintFragment* child : Children()) {
     const LayoutUnit child_inline_min =
         ChildLogicalOffsetInParent(*child).inline_offset;
     const LayoutUnit child_inline_max =
@@ -708,14 +818,14 @@ PositionWithAffinity NGPaintFragment::PositionForPointInInlineLevelBox(
 
     if (inline_point < child_inline_min) {
       if (child_inline_min < closest_child_after_inline_offset) {
-        closest_child_after = child.get();
+        closest_child_after = child;
         closest_child_after_inline_offset = child_inline_min;
       }
     }
 
     if (inline_point > child_inline_max) {
       if (child_inline_max > closest_child_before_inline_offset) {
-        closest_child_before = child.get();
+        closest_child_before = child;
         closest_child_before_inline_offset = child_inline_max;
       }
     }
@@ -758,7 +868,7 @@ PositionWithAffinity NGPaintFragment::PositionForPointInInlineFormattingContext(
   const NGPaintFragment* closest_line_after = nullptr;
   LayoutUnit closest_line_after_block_offset = LayoutUnit::Max();
 
-  for (const auto& child : Children()) {
+  for (const NGPaintFragment* child : Children()) {
     if (!child->PhysicalFragment().IsLineBox() || child->Children().IsEmpty())
       continue;
 
@@ -777,14 +887,14 @@ PositionWithAffinity NGPaintFragment::PositionForPointInInlineFormattingContext(
 
     if (block_point < line_min) {
       if (line_min < closest_line_after_block_offset) {
-        closest_line_after = child.get();
+        closest_line_after = child;
         closest_line_after_block_offset = line_min;
       }
     }
 
     if (block_point >= line_max) {
       if (line_max > closest_line_before_block_offset) {
-        closest_line_before = child.get();
+        closest_line_before = child;
         closest_line_before_block_offset = line_max;
       }
     }
@@ -874,30 +984,6 @@ bool NGPaintFragment::ShouldPaintDragCaret() const {
   return ToLayoutBlock(GetLayoutObject())->ShouldPaintDragCaret();
 }
 
-// ----
-
-NGPaintFragment& NGPaintFragment::FragmentRange::front() const {
-  DCHECK(first_);
-  return *first_;
-}
-
-NGPaintFragment& NGPaintFragment::FragmentRange::back() const {
-  DCHECK(first_);
-  NGPaintFragment* last = first_;
-  for (NGPaintFragment* fragment : *this)
-    last = fragment;
-  return *last;
-}
-
-wtf_size_t NGPaintFragment::FragmentRange::size() const {
-  wtf_size_t size = 0;
-  for (NGPaintFragment* fragment : *this) {
-    ANALYZER_ALLOW_UNUSED(fragment);
-    ++size;
-  }
-  return size;
-}
-
 String NGPaintFragment::DebugName() const {
   StringBuilder name;
 
@@ -922,5 +1008,10 @@ String NGPaintFragment::DebugName() const {
 
   return name.ToString();
 }
+
+template class CORE_TEMPLATE_EXPORT
+    NGPaintFragment::List<NGPaintFragment::TraverseNextForSameLayoutObject>;
+template class CORE_TEMPLATE_EXPORT
+    NGPaintFragment::List<NGPaintFragment::TraverseNextSibling>;
 
 }  // namespace blink

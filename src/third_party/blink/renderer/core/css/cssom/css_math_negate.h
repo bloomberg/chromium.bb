@@ -22,8 +22,11 @@ class CORE_EXPORT CSSMathNegate : public CSSMathValue {
   }
   // Blink-internal constructor
   static CSSMathNegate* Create(CSSNumericValue* value) {
-    return new CSSMathNegate(value, value->Type());
+    return MakeGarbageCollected<CSSMathNegate>(value, value->Type());
   }
+
+  CSSMathNegate(CSSNumericValue* value, const CSSNumericValueType& type)
+      : CSSMathValue(type), value_(value) {}
 
   String getOperator() const final { return "negate"; }
 
@@ -55,9 +58,6 @@ class CORE_EXPORT CSSMathNegate : public CSSMathValue {
   }
 
  private:
-  CSSMathNegate(CSSNumericValue* value, const CSSNumericValueType& type)
-      : CSSMathValue(type), value_(value) {}
-
   // From CSSNumericValue
   CSSNumericValue* Negate() final { return value_.Get(); }
   base::Optional<CSSNumericSumValue> SumValue() const final;

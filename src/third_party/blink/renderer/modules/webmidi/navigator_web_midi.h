@@ -51,13 +51,12 @@ class NavigatorWebMIDI final : public GarbageCollected<NavigatorWebMIDI>,
   static NavigatorWebMIDI& From(Navigator&);
   static ScriptPromise requestMIDIAccess(ScriptState*,
                                          Navigator&,
-                                         const MIDIOptions&);
-  ScriptPromise requestMIDIAccess(ScriptState*, const MIDIOptions&);
+                                         const MIDIOptions*);
+  ScriptPromise requestMIDIAccess(ScriptState*, const MIDIOptions*);
+
+  explicit NavigatorWebMIDI(Navigator&);
 
   void Trace(blink::Visitor*) override;
-
- private:
-  explicit NavigatorWebMIDI(Navigator&);
 };
 
 }  // namespace blink

@@ -45,8 +45,8 @@ void CrostiniRemover::RemoveCrostini() {
   }
 }
 
-void CrostiniRemover::OnComponentLoaded(ConciergeClientResult result) {
-  if (result != ConciergeClientResult::SUCCESS) {
+void CrostiniRemover::OnComponentLoaded(CrostiniResult result) {
+  if (result != CrostiniResult::SUCCESS) {
     std::move(callback_).Run(result);
     return;
   }
@@ -56,16 +56,16 @@ void CrostiniRemover::OnComponentLoaded(ConciergeClientResult result) {
 
 void CrostiniRemover::OnConciergeStarted(bool is_successful) {
   if (!is_successful) {
-    std::move(callback_).Run(ConciergeClientResult::UNKNOWN_ERROR);
+    std::move(callback_).Run(CrostiniResult::UNKNOWN_ERROR);
     return;
   }
   CrostiniManager::GetForProfile(profile_)->StopVm(
       vm_name_, base::BindOnce(&CrostiniRemover::StopVmFinished, this));
 }
 
-void CrostiniRemover::StopVmFinished(ConciergeClientResult result) {
+void CrostiniRemover::StopVmFinished(CrostiniResult result) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
-  if (result != ConciergeClientResult::SUCCESS) {
+  if (result != CrostiniResult::SUCCESS) {
     std::move(callback_).Run(result);
     return;
   }
@@ -79,9 +79,9 @@ void CrostiniRemover::StopVmFinished(ConciergeClientResult result) {
       base::BindOnce(&CrostiniRemover::DestroyDiskImageFinished, this));
 }
 
-void CrostiniRemover::DestroyDiskImageFinished(ConciergeClientResult result) {
+void CrostiniRemover::DestroyDiskImageFinished(CrostiniResult result) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
-  if (result != ConciergeClientResult::SUCCESS) {
+  if (result != CrostiniResult::SUCCESS) {
     std::move(callback_).Run(result);
     return;
   }
@@ -93,11 +93,16 @@ void CrostiniRemover::DestroyDiskImageFinished(ConciergeClientResult result) {
 void CrostiniRemover::StopConciergeFinished(bool is_successful) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
   // The is_successful parameter is never set by debugd.
-  if (CrostiniManager::GetForProfile(profile_)->UninstallTerminaComponent()) {
+
+  // UninstallTerminaComponent returns false both if Termina wasn't installed
+  // and if the uninstall failed, so we explicitly reset the relevant
+  // preferences even if it's already uninstalled
+  if (!CrostiniManager::GetForProfile(profile_)->IsCrosTerminaInstalled() ||
+      CrostiniManager::GetForProfile(profile_)->UninstallTerminaComponent()) {
     profile_->GetPrefs()->SetBoolean(prefs::kCrostiniEnabled, false);
     profile_->GetPrefs()->ClearPref(prefs::kCrostiniLastDiskSize);
   }
-  std::move(callback_).Run(ConciergeClientResult::SUCCESS);
+  std::move(callback_).Run(CrostiniResult::SUCCESS);
 }
 
 }  // namespace crostini

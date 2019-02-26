@@ -9,12 +9,15 @@
 #include <vector>
 
 #include "base/callback_forward.h"
+#include "base/containers/flat_set.h"
+#include "base/feature_list.h"
 #include "build/build_config.h"
 #include "content/common/content_export.h"
 #include "content/public/common/console_message_level.h"
 #include "ipc/ipc_listener.h"
 #include "ipc/ipc_sender.h"
 #include "services/network/public/mojom/url_loader_factory.mojom.h"
+#include "third_party/blink/public/common/frame/sandbox_flags.h"
 #include "third_party/blink/public/mojom/loader/pause_subresource_loading_handle.mojom.h"
 #include "third_party/blink/public/mojom/page/page_visibility_state.mojom.h"
 #include "third_party/blink/public/platform/web_sudden_termination_disabler_type.h"
@@ -36,6 +39,10 @@ namespace base {
 class UnguessableToken;
 class Value;
 }
+
+namespace features {
+CONTENT_EXPORT extern const base::Feature kCrashReporting;
+}  // namespace features
 
 namespace resource_coordinator {
 class FrameResourceCoordinator;
@@ -67,11 +74,11 @@ class CONTENT_EXPORT RenderFrameHost : public IPC::Listener,
   // Returns nullptr if the IDs do not correspond to a live RenderFrameHost.
   static RenderFrameHost* FromID(int render_process_id, int render_frame_id);
 
-#if defined(OS_ANDROID)
+#if defined(OS_ANDROID) || defined(OS_FUCHSIA)
   // Globally allows for injecting JavaScript into the main world. This feature
-  // is present only to support Android WebView and must not be used in other
-  // configurations.
-  static void AllowInjectingJavaScriptForAndroidWebView();
+  // is present only to support Android WebView and Fuchsia web.Contexts, and
+  // must not be used in other configurations.
+  static void AllowInjectingJavaScript();
 #endif
 
   // Returns a RenderFrameHost given its accessibility tree ID.
@@ -326,8 +333,19 @@ class CONTENT_EXPORT RenderFrameHost : public IPC::Listener,
   // origin will be created via
   // ContentBrowserClient::CreateURLLoaderFactoryForNetworkRequests method.
   virtual void MarkInitiatorsAsRequiringSeparateURLLoaderFactory(
-      std::vector<url::Origin> request_initiators,
+      base::flat_set<url::Origin> request_initiators,
       bool push_to_renderer_now) = 0;
+
+  // Returns true if the given sandbox flag |flags| is in effect on this frame.
+  // The effective flags include those which have been set by a
+  // Content-Security-Policy header, in addition to those which are set by the
+  // embedding frame.
+  virtual bool IsSandboxed(blink::WebSandboxFlags flags) const = 0;
+
+  // Calls |FlushForTesting()| on Network Service and FrameNavigationControl
+  // related interfaces to make sure all in-flight mojo messages have been
+  // received by the other end. For test use only.
+  virtual void FlushNetworkAndNavigationInterfacesForTesting() = 0;
 
  private:
   // This interface should only be implemented inside content.

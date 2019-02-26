@@ -26,11 +26,13 @@
 #include "net/base/test_data_stream.h"
 #include "net/cert/ct_policy_status.h"
 #include "net/http/http_request_info.h"
+#include "net/http/transport_security_state_test_util.h"
 #include "net/log/net_log_event_type.h"
 #include "net/log/net_log_source.h"
 #include "net/log/test_net_log.h"
 #include "net/log/test_net_log_entry.h"
 #include "net/log/test_net_log_util.h"
+#include "net/nqe/network_quality_estimator_test_util.h"
 #include "net/socket/client_socket_pool_manager.h"
 #include "net/socket/socket_tag.h"
 #include "net/socket/socket_test_util.h"
@@ -1025,6 +1027,10 @@ TEST_F(SpdySessionTestWithMockTime, ClientPing) {
   AddSSLSocketData();
 
   CreateNetworkSession();
+  TestNetworkQualityEstimator estimator;
+
+  spdy_session_pool_->set_network_quality_estimator(&estimator);
+
   CreateSpdySession();
 
   base::WeakPtr<SpdyStream> spdy_stream1 =
@@ -1075,6 +1081,8 @@ TEST_F(SpdySessionTestWithMockTime, ClientPing) {
 
   EXPECT_TRUE(data.AllWriteDataConsumed());
   EXPECT_TRUE(data.AllReadDataConsumed());
+
+  EXPECT_LE(1u, estimator.ping_rtt_received_count());
 }
 
 TEST_F(SpdySessionTest, ServerPing) {
@@ -1993,6 +2001,48 @@ TEST_F(SpdySessionTest, CancelPendingCreateStream) {
 
   // Should not crash when running the pending callback.
   base::RunLoop().RunUntilIdle();
+}
+
+TEST_F(SpdySessionTest, ChangeStreamRequestPriority) {
+  MockRead reads[] = {
+      MockRead(ASYNC, ERR_IO_PENDING)  // Stall forever.
+  };
+
+  StaticSocketDataProvider data(reads, base::span<MockWrite>());
+  session_deps_.socket_factory->AddSocketDataProvider(&data);
+
+  AddSSLSocketData();
+
+  CreateNetworkSession();
+  CreateSpdySession();
+
+  set_max_concurrent_streams(1);
+
+  TestCompletionCallback callback1;
+  SpdyStreamRequest request1;
+  ASSERT_EQ(OK, request1.StartRequest(SPDY_REQUEST_RESPONSE_STREAM, session_,
+                                      test_url_, LOWEST, SocketTag(),
+                                      NetLogWithSource(), callback1.callback(),
+                                      TRAFFIC_ANNOTATION_FOR_TESTS));
+  TestCompletionCallback callback2;
+  SpdyStreamRequest request2;
+  ASSERT_EQ(ERR_IO_PENDING,
+            request2.StartRequest(SPDY_REQUEST_RESPONSE_STREAM, session_,
+                                  test_url_, LOWEST, SocketTag(),
+                                  NetLogWithSource(), callback2.callback(),
+                                  TRAFFIC_ANNOTATION_FOR_TESTS));
+
+  request1.SetPriority(HIGHEST);
+  request2.SetPriority(MEDIUM);
+
+  ASSERT_EQ(0u, pending_create_stream_queue_size(HIGHEST));
+  // Priority of queued request is changed.
+  ASSERT_EQ(1u, pending_create_stream_queue_size(MEDIUM));
+  ASSERT_EQ(0u, pending_create_stream_queue_size(LOWEST));
+
+  base::WeakPtr<SpdyStream> stream1 = request1.ReleaseStream();
+  // Priority of stream is updated if request has been fulfilled.
+  ASSERT_EQ(HIGHEST, stream1->priority());
 }
 
 TEST_F(SpdySessionTest, Initialize) {
@@ -6681,21 +6731,20 @@ TEST(CanPoolTest, CanNotPoolAcrossETLDsWithChannelID) {
 }
 
 TEST(CanPoolTest, CanNotPoolWithBadPins) {
-  uint8_t primary_pin = 1;
-  uint8_t backup_pin = 2;
-  uint8_t bad_pin = 3;
   TransportSecurityState tss;
-  test::AddPin(&tss, "mail.example.org", primary_pin, backup_pin);
+  tss.EnableStaticPinsForTesting();
+  ScopedTransportSecurityStateSource scoped_security_state_source;
 
   TestSSLConfigService ssl_config_service;
   SSLInfo ssl_info;
   ssl_info.cert = ImportCertFromFile(GetTestCertsDirectory(),
                                      "spdy_pooling.pem");
   ssl_info.is_issued_by_known_root = true;
+  uint8_t bad_pin = 3;
   ssl_info.public_key_hashes.push_back(test::GetTestHashValue(bad_pin));
 
   EXPECT_FALSE(SpdySession::CanPool(&tss, ssl_info, ssl_config_service,
-                                    "www.example.org", "mail.example.org"));
+                                    "www.example.org", "example.test"));
 }
 
 TEST(CanPoolTest, CanNotPoolWithBadCTWhenCTRequired) {
@@ -6783,17 +6832,20 @@ TEST(CanPoolTest, CanPoolWithGoodCTWhenCTRequired) {
 }
 
 TEST(CanPoolTest, CanPoolWithAcceptablePins) {
-  uint8_t primary_pin = 1;
-  uint8_t backup_pin = 2;
   TransportSecurityState tss;
-  test::AddPin(&tss, "mail.example.org", primary_pin, backup_pin);
+  tss.EnableStaticPinsForTesting();
+  ScopedTransportSecurityStateSource scoped_security_state_source;
 
   TestSSLConfigService ssl_config_service;
   SSLInfo ssl_info;
   ssl_info.cert = ImportCertFromFile(GetTestCertsDirectory(),
                                      "spdy_pooling.pem");
   ssl_info.is_issued_by_known_root = true;
-  ssl_info.public_key_hashes.push_back(test::GetTestHashValue(primary_pin));
+  HashValue hash;
+  // The expected value of GoodPin1 used by |scoped_security_state_source|.
+  ASSERT_TRUE(
+      hash.FromString("sha256/Nn8jk5By4Vkq6BeOVZ7R7AC6XUUBZsWmUbJR1f1Y5FY="));
+  ssl_info.public_key_hashes.push_back(hash);
 
   EXPECT_TRUE(SpdySession::CanPool(&tss, ssl_info, ssl_config_service,
                                    "www.example.org", "mail.example.org"));

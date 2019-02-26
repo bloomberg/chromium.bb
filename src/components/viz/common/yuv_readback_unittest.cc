@@ -16,6 +16,7 @@
 #include "gpu/command_buffer/client/shared_memory_limits.h"
 #include "gpu/ipc/common/surface_handle.h"
 #include "gpu/ipc/gl_in_process_context.h"
+#include "gpu/ipc/test_gpu_thread_holder.h"
 #include "media/base/video_frame.h"
 #include "media/base/video_util.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -44,15 +45,14 @@ class YUVReadbackTest : public testing::Test {
     attributes.bind_generates_resource = false;
 
     context_ = std::make_unique<gpu::GLInProcessContext>();
-    auto result =
-        context_->Initialize(nullptr,                 /* service */
-                             nullptr,                 /* surface */
-                             true,                    /* offscreen */
-                             gpu::kNullSurfaceHandle, /* window */
-                             attributes, gpu::SharedMemoryLimits(),
-                             nullptr, /* gpu_memory_buffer_manager */
-                             nullptr, /* image_factory */
-                             base::ThreadTaskRunnerHandle::Get());
+    auto result = context_->Initialize(
+        gpu::GetTestGpuThreadHolder()->GetTaskExecutor(), nullptr, /* surface */
+        true,                    /* offscreen */
+        gpu::kNullSurfaceHandle, /* window */
+        attributes, gpu::SharedMemoryLimits(),
+        nullptr, /* gpu_memory_buffer_manager */
+        nullptr, /* image_factory */
+        base::ThreadTaskRunnerHandle::Get());
     DCHECK_EQ(result, gpu::ContextResult::kSuccess);
     gl_ = context_->GetImplementation();
     gpu::ContextSupport* support = context_->GetImplementation();
@@ -482,7 +482,7 @@ TEST_F(YUVReadbackTest, YUVReadbackOptTest) {
     // This test uses the gpu.service/gpu_decoder tracing events to detect how
     // many scaling passes are actually performed by the YUV readback pipeline.
     StartTracing(TRACE_DISABLED_BY_DEFAULT(
-        "gpu.service") "," TRACE_DISABLED_BY_DEFAULT("gpu_decoder"));
+        "gpu.service") "," TRACE_DISABLED_BY_DEFAULT("gpu.decoder"));
 
     // Run a test with no size scaling, just planerization.
     TestYUVReadback(800, 400, 800, 400, 0, 0, 1, false, use_mrt == 1,

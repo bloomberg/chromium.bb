@@ -14,15 +14,15 @@
 
 #include "LLVMRoutineManager.hpp"
 
-#if SWIFTSHADER_LLVM_VERSION < 7
+#if REACTOR_LLVM_VERSION < 7
 
 #include "LLVMRoutine.hpp"
 #include "llvm/Function.h"
-#include "Common/Memory.hpp"
-#include "Common/Thread.hpp"
-#include "Common/Debug.hpp"
+#include "ExecutableMemory.hpp"
+#include "Thread.hpp"
+#include "Debug.hpp"
 
-namespace sw
+namespace rr
 {
 	using namespace llvm;
 
@@ -63,7 +63,7 @@ namespace sw
 		}
 		else   // Estimate was too low
 		{
-			sw::atomicIncrement(&averageInstructionSize);
+			atomicIncrement(&averageInstructionSize);
 		}
 
 		// Round up to the next page size
@@ -149,4 +149,4 @@ namespace sw
 	}
 }
 
-#endif  // SWIFTSHADER_LLVM_VERSION < 7
+#endif  // REACTOR_LLVM_VERSION < 7

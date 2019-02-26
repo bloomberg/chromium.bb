@@ -75,9 +75,8 @@ class InspectorBackendList(collections.Sequence):
             context_id)
       except exceptions.Error as e:
         self._HandleDevToolsConnectionError(e)
-        raise e
+        raise  # Re-raise exception with original stacktrace.
       # Propagate KeyError from GetInspectorBackend call.
-
       wrapper = self.CreateWrapper(backend)
       self._wrapper_dict[context_id] = wrapper
     return self._wrapper_dict[context_id]

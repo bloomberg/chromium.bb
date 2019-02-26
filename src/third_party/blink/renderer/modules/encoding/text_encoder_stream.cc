@@ -101,8 +101,8 @@ class TextEncoderStream::Transformer final : public TransformStreamTransformer {
   static DOMUint8Array* CreateDOMUint8ArrayFromTwoCStringsConcatenated(
       const CString& string1,
       const CString& string2) {
-    const size_t length1 = string1.length();
-    const size_t length2 = string2.length();
+    const wtf_size_t length1 = string1.length();
+    const wtf_size_t length2 = string2.length();
     DOMUint8Array* const array = DOMUint8Array::Create(length1 + length2);
     if (length1 > 0)
       memcpy(array->Data(), string1.data(), length1);
@@ -144,8 +144,8 @@ class TextEncoderStream::Transformer final : public TransformStreamTransformer {
     }
 
     // Third argument is ignored, as above.
-    *result =
-        encoder_->Encode(begin, end - begin, WTF::kEntitiesForUnencodables);
+    *result = encoder_->Encode(begin, static_cast<wtf_size_t>(end - begin),
+                               WTF::kEntitiesForUnencodables);
     DCHECK_NE(result->length(), 0u);
     return true;
   }
@@ -170,14 +170,12 @@ String TextEncoderStream::encoding() const {
   return "utf-8";
 }
 
-ScriptValue TextEncoderStream::readable(ScriptState* script_state,
-                                        ExceptionState& exception_state) const {
-  return transform_->Readable(script_state, exception_state);
+ReadableStream* TextEncoderStream::readable() const {
+  return transform_->Readable();
 }
 
-ScriptValue TextEncoderStream::writable(ScriptState* script_state,
-                                        ExceptionState& exception_state) const {
-  return transform_->Writable(script_state, exception_state);
+WritableStream* TextEncoderStream::writable() const {
+  return transform_->Writable();
 }
 
 void TextEncoderStream::Trace(Visitor* visitor) {
@@ -187,7 +185,7 @@ void TextEncoderStream::Trace(Visitor* visitor) {
 
 TextEncoderStream::TextEncoderStream(ScriptState* script_state,
                                      ExceptionState& exception_state)
-    : transform_(new TransformStream()) {
+    : transform_(MakeGarbageCollected<TransformStream>()) {
   if (!RetainWrapperDuringConstruction(this, script_state)) {
     exception_state.ThrowDOMException(DOMExceptionCode::kInvalidStateError,
                                       "Cannot queue task to retain wrapper");

@@ -93,7 +93,7 @@ AudioBufferSourceHandler::~AudioBufferSourceHandler() {
   Uninitialize();
 }
 
-void AudioBufferSourceHandler::Process(size_t frames_to_process) {
+void AudioBufferSourceHandler::Process(uint32_t frames_to_process) {
   AudioBus* output_bus = Output(0).Bus();
 
   if (!IsInitialized()) {
@@ -119,8 +119,8 @@ void AudioBufferSourceHandler::Process(size_t frames_to_process) {
       return;
     }
 
-    size_t quantum_frame_offset;
-    size_t buffer_frames_to_process;
+    uint32_t quantum_frame_offset;
+    uint32_t buffer_frames_to_process;
     double start_time_offset;
 
     std::tie(quantum_frame_offset, buffer_frames_to_process,
@@ -154,7 +154,7 @@ void AudioBufferSourceHandler::Process(size_t frames_to_process) {
 bool AudioBufferSourceHandler::RenderSilenceAndFinishIfNotLooping(
     AudioBus*,
     unsigned index,
-    size_t frames_to_process) {
+    uint32_t frames_to_process) {
   if (!Loop()) {
     // If we're not looping, then stop playing when we get to the end.
 
@@ -176,7 +176,7 @@ bool AudioBufferSourceHandler::RenderSilenceAndFinishIfNotLooping(
 bool AudioBufferSourceHandler::RenderFromBuffer(
     AudioBus* bus,
     unsigned destination_frame_offset,
-    size_t number_of_frames) {
+    uint32_t number_of_frames) {
   DCHECK(Context()->IsAudioThread());
 
   // Basic sanity checking
@@ -198,8 +198,8 @@ bool AudioBufferSourceHandler::RenderFromBuffer(
   size_t destination_length = bus->length();
 
   bool is_length_good =
-      destination_length <= AudioUtilities::kRenderQuantumFrames &&
-      number_of_frames <= AudioUtilities::kRenderQuantumFrames;
+      destination_length <= audio_utilities::kRenderQuantumFrames &&
+      number_of_frames <= audio_utilities::kRenderQuantumFrames;
   DCHECK(is_length_good);
   if (!is_length_good)
     return false;
@@ -221,13 +221,13 @@ bool AudioBufferSourceHandler::RenderFromBuffer(
   // Offset the pointers to the correct offset frame.
   unsigned write_index = destination_frame_offset;
 
-  size_t buffer_length = Buffer()->length();
+  uint32_t buffer_length = Buffer()->length();
   double buffer_sample_rate = Buffer()->sampleRate();
 
   // Avoid converting from time to sample-frames twice by computing
   // the grain end time first before computing the sample frame.
   unsigned end_frame =
-      is_grain_ ? AudioUtilities::TimeToSampleFrame(
+      is_grain_ ? audio_utilities::TimeToSampleFrame(
                       grain_offset_ + grain_duration_, buffer_sample_rate)
                 : buffer_length;
 
@@ -482,7 +482,7 @@ void AudioBufferSourceHandler::ClampGrainParameters(const AudioBuffer* buffer) {
   // identical to the PCM data stored in the buffer. Since playbackRate == 1 is
   // very common, it's worth considering quality.
   virtual_read_index_ =
-      AudioUtilities::TimeToSampleFrame(grain_offset_, buffer->sampleRate());
+      audio_utilities::TimeToSampleFrame(grain_offset_, buffer->sampleRate());
 }
 
 void AudioBufferSourceHandler::Start(double when,
@@ -687,7 +687,7 @@ AudioBufferSourceNode* AudioBufferSourceNode::Create(
 
 AudioBufferSourceNode* AudioBufferSourceNode::Create(
     BaseAudioContext* context,
-    AudioBufferSourceOptions& options,
+    AudioBufferSourceOptions* options,
     ExceptionState& exception_state) {
   DCHECK(IsMainThread());
 
@@ -696,13 +696,13 @@ AudioBufferSourceNode* AudioBufferSourceNode::Create(
   if (!node)
     return nullptr;
 
-  if (options.hasBuffer())
-    node->setBuffer(options.buffer(), exception_state);
-  node->detune()->setValue(options.detune());
-  node->setLoop(options.loop());
-  node->setLoopEnd(options.loopEnd());
-  node->setLoopStart(options.loopStart());
-  node->playbackRate()->setValue(options.playbackRate());
+  if (options->hasBuffer())
+    node->setBuffer(options->buffer(), exception_state);
+  node->detune()->setValue(options->detune());
+  node->setLoop(options->loop());
+  node->setLoopEnd(options->loopEnd());
+  node->setLoopStart(options->loopStart());
+  node->playbackRate()->setValue(options->playbackRate());
 
   return node;
 }

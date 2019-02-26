@@ -52,7 +52,7 @@ VerifyStatus GetVerifyStatus(const uint8_t* buffer,
 
 // RulesetIndexer --------------------------------------------------------------
 
-const int RulesetIndexer::kIndexedFormatVersion = 23;
+const int RulesetIndexer::kIndexedFormatVersion = 25;
 
 // This static assert is meant to catch cases where
 // url_pattern_index::kUrlPatternIndexFormatVersion is incremented without
@@ -67,7 +67,8 @@ RulesetIndexer::RulesetIndexer()
 RulesetIndexer::~RulesetIndexer() = default;
 
 bool RulesetIndexer::AddUrlRule(const proto::UrlRule& rule) {
-  const auto offset = url_pattern_index::SerializeUrlRule(rule, &builder_);
+  const auto offset =
+      url_pattern_index::SerializeUrlRule(rule, &builder_, &domain_map_);
   // Note: A zero offset.o means a "nullptr" offset. It is returned when the
   // rule has not been serialized.
   if (!offset.o)

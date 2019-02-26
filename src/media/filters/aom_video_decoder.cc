@@ -6,16 +6,13 @@
 
 #include "base/bind.h"
 #include "base/callback.h"
-#include "base/command_line.h"
 #include "base/logging.h"
-#include "base/strings/string_number_conversions.h"
-#include "base/sys_info.h"
 #include "base/threading/sequenced_task_runner_handle.h"
 #include "media/base/bind_to_current_loop.h"
 #include "media/base/decoder_buffer.h"
 #include "media/base/media_log.h"
-#include "media/base/media_switches.h"
 #include "media/base/video_util.h"
+#include "media/filters/frame_buffer_pool.h"
 #include "third_party/libyuv/include/libyuv/convert.h"
 
 // Include libaom header files.
@@ -29,24 +26,11 @@ namespace media {
 
 // Returns the number of threads.
 static int GetAomVideoDecoderThreadCount(const VideoDecoderConfig& config) {
-  // Always try to use at least two threads for video decoding. There is little
-  // reason not to since current day CPUs tend to be multi-core and we measured
-  // performance benefits on older machines such as P4s with hyperthreading.
-  constexpr int kDecodeThreads = 2;
-  int decode_threads = kDecodeThreads;
-
-  const base::CommandLine* cmd_line = base::CommandLine::ForCurrentProcess();
-  std::string threads(cmd_line->GetSwitchValueASCII(switches::kVideoThreads));
-  if (threads.empty() || !base::StringToInt(threads, &decode_threads)) {
-    // For AOM decode when using the default thread count, increase the number
-    // of decode threads to equal the maximum number of tiles possible for
-    // higher resolution streams.
-    decode_threads = std::min(config.coded_size().width() / 256,
-                              base::SysInfo::NumberOfProcessors());
-  }
-
-  constexpr int kMaxDecodeThreads = 32;
-  return std::min(std::max(decode_threads, 0), kMaxDecodeThreads);
+  // For AOM decode when using the default thread count, increase the number
+  // of decode threads to equal the maximum number of tiles possible for
+  // higher resolution streams.
+  return VideoDecoder::GetRecommendedThreadCount(config.coded_size().width() /
+                                                 256);
 }
 
 static VideoPixelFormat AomImgFmtToVideoPixelFormat(const aom_image_t* img) {
@@ -117,6 +101,28 @@ static void SetColorSpaceForFrame(const aom_image_t* img,
   frame->set_color_space(color_space.ToGfxColorSpace());
 }
 
+static int GetFrameBuffer(void* cb_priv,
+                          size_t min_size,
+                          aom_codec_frame_buffer* fb) {
+  DCHECK(cb_priv);
+  DCHECK(fb);
+  FrameBufferPool* pool = static_cast<FrameBufferPool*>(cb_priv);
+  fb->data = pool->GetFrameBuffer(min_size, &fb->priv);
+  fb->size = min_size;
+  return 0;
+}
+
+static int ReleaseFrameBuffer(void* cb_priv, aom_codec_frame_buffer* fb) {
+  DCHECK(cb_priv);
+  DCHECK(fb);
+  if (!fb->priv)
+    return -1;
+
+  FrameBufferPool* pool = static_cast<FrameBufferPool*>(cb_priv);
+  pool->ReleaseFrameBuffer(fb->priv);
+  return 0;
+}
+
 AomVideoDecoder::AomVideoDecoder(MediaLog* media_log) : media_log_(media_log) {
   DETACH_FROM_THREAD(thread_checker_);
 }
@@ -159,9 +165,6 @@ void AomVideoDecoder::Initialize(
   // into uint8_t samples.
   aom_config.allow_lowbitdepth = 1;
 
-  // TODO(dalecurtis, tguilbert): Switch to zero-copy by specifying external
-  // frame buffer functions and use FrameBufferPool. https://crbug.com/867613
-  //
   // TODO(dalecurtis, tguilbert): Move decoding off the media thread to the
   // offload thread via OffloadingVideoDecoder. https://crbug.com/867613
 
@@ -170,6 +173,18 @@ void AomVideoDecoder::Initialize(
                          0 /* flags */) != AOM_CODEC_OK) {
     MEDIA_LOG(ERROR, media_log_) << "aom_codec_dec_init() failed: "
                                  << aom_codec_error(aom_decoder_.get());
+    bound_init_cb.Run(false);
+    return;
+  }
+
+  // Setup codec for zero copy frames.
+  if (!memory_pool_)
+    memory_pool_ = new FrameBufferPool();
+  if (aom_codec_set_frame_buffer_functions(
+          context.get(), &GetFrameBuffer, &ReleaseFrameBuffer,
+          memory_pool_.get()) != AOM_CODEC_OK) {
+    DLOG(ERROR) << "Failed to configure external buffers. "
+                << aom_codec_error(context.get());
     bound_init_cb.Run(false);
     return;
   }
@@ -218,6 +233,7 @@ void AomVideoDecoder::Decode(scoped_refptr<DecoderBuffer> buffer,
 void AomVideoDecoder::Reset(const base::Closure& reset_cb) {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   state_ = DecoderState::kNormal;
+  timestamps_.clear();
   base::SequencedTaskRunnerHandle::Get()->PostTask(FROM_HERE, reset_cb);
 }
 
@@ -227,16 +243,20 @@ void AomVideoDecoder::CloseDecoder() {
     return;
   aom_codec_destroy(aom_decoder_.get());
   aom_decoder_.reset();
+
+  if (memory_pool_) {
+    memory_pool_->Shutdown();
+    memory_pool_ = nullptr;
+  }
 }
 
 bool AomVideoDecoder::DecodeBuffer(const DecoderBuffer* buffer) {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   DCHECK(!buffer->end_of_stream());
 
-  if (aom_codec_decode(
-          aom_decoder_.get(), buffer->data(), buffer->data_size(),
-          reinterpret_cast<void*>(buffer->timestamp().InMicroseconds())) !=
-      AOM_CODEC_OK) {
+  timestamps_.push_back(buffer->timestamp());
+  if (aom_codec_decode(aom_decoder_.get(), buffer->data(), buffer->data_size(),
+                       nullptr) != AOM_CODEC_OK) {
     const char* detail = aom_codec_error_detail(aom_decoder_.get());
     MEDIA_LOG(ERROR, media_log_)
         << "aom_codec_decode() failed: " << aom_codec_error(aom_decoder_.get())
@@ -254,11 +274,12 @@ bool AomVideoDecoder::DecodeBuffer(const DecoderBuffer* buffer) {
       return false;
     }
 
-    frame->set_timestamp(base::TimeDelta::FromMicroseconds(
-        reinterpret_cast<int64_t>(img->user_priv)));
-
     // TODO(dalecurtis): Is this true even for low resolutions?
     frame->metadata()->SetBoolean(VideoFrameMetadata::POWER_EFFICIENT, false);
+
+    // Ensure the frame memory is returned to the MemoryPool upon discard.
+    frame->AddDestructionObserver(
+        memory_pool_->CreateFrameCallback(img->fb_priv));
 
     SetColorSpaceForFrame(img, config_, frame.get());
     output_cb_.Run(std::move(frame));
@@ -275,22 +296,18 @@ scoped_refptr<VideoFrame> AomVideoDecoder::CopyImageToVideoFrame(
   if (pixel_format == PIXEL_FORMAT_UNKNOWN)
     return nullptr;
 
-  // Since we're making a copy, only copy the visible area.
+  // Pull the expected timestamp from the front of the queue.
+  DCHECK(!timestamps_.empty());
+  const base::TimeDelta timestamp = timestamps_.front();
+  timestamps_.pop_front();
+
   const gfx::Rect visible_rect(img->d_w, img->d_h);
-  auto frame = frame_pool_.CreateFrame(
+  return VideoFrame::WrapExternalYuvData(
       pixel_format, visible_rect.size(), visible_rect,
       GetNaturalSize(visible_rect, config_.GetPixelAspectRatio()),
-      kNoTimestamp);
-  if (!frame)
-    return nullptr;
-
-  for (int plane = 0; plane < 3; plane++) {
-    libyuv::CopyPlane(img->planes[plane], img->stride[plane],
-                      frame->visible_data(plane), frame->stride(plane),
-                      frame->row_bytes(plane), frame->rows(plane));
-  }
-
-  return frame;
+      img->stride[AOM_PLANE_Y], img->stride[AOM_PLANE_U],
+      img->stride[AOM_PLANE_V], img->planes[AOM_PLANE_Y],
+      img->planes[AOM_PLANE_U], img->planes[AOM_PLANE_V], timestamp);
 }
 
 }  // namespace media

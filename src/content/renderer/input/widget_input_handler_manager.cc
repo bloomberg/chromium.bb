@@ -276,6 +276,10 @@ void WidgetInputHandlerManager::SetWhiteListedTouchAction(
     cc::TouchAction touch_action,
     uint32_t unique_touch_event_id,
     ui::InputHandlerProxy::EventDisposition event_disposition) {
+  if (base::FeatureList::IsEnabled(features::kCompositorTouchAction)) {
+    white_listed_touch_action_ = touch_action;
+    return;
+  }
   mojom::WidgetInputHandlerHost* host = GetWidgetInputHandlerHost();
   if (!host)
     return;
@@ -286,12 +290,8 @@ void WidgetInputHandlerManager::SetWhiteListedTouchAction(
 
 void WidgetInputHandlerManager::ProcessTouchAction(
     cc::TouchAction touch_action) {
-  // Cancel the touch timeout on TouchActionNone since it is a good hint
-  // that author doesn't want scrolling.
-  if (touch_action == cc::TouchAction::kTouchActionNone) {
-    if (mojom::WidgetInputHandlerHost* host = GetWidgetInputHandlerHost())
-      host->CancelTouchTimeout();
-  }
+  if (mojom::WidgetInputHandlerHost* host = GetWidgetInputHandlerHost())
+    host->SetTouchActionFromMain(touch_action);
 }
 
 mojom::WidgetInputHandlerHost*
@@ -413,8 +413,8 @@ void WidgetInputHandlerManager::HandleInputEvent(
     const ui::WebScopedInputEvent& event,
     const ui::LatencyInfo& latency,
     mojom::WidgetInputHandler::DispatchEventCallback callback) {
-  if (!render_widget_ || render_widget_->is_swapped_out() ||
-      render_widget_->IsClosing()) {
+  if (!render_widget_ || render_widget_->is_frozen() ||
+      render_widget_->is_closing()) {
     if (callback) {
       std::move(callback).Run(InputEventAckSource::MAIN_THREAD, latency,
                               INPUT_EVENT_ACK_STATE_NOT_CONSUMED, base::nullopt,
@@ -482,6 +482,10 @@ void WidgetInputHandlerManager::HandledInputEvent(
   if (!callback)
     return;
 
+  if (!touch_action.has_value()) {
+    touch_action = white_listed_touch_action_;
+    white_listed_touch_action_.reset();
+  }
   // This method is called from either the main thread or the compositor thread.
   bool is_compositor_thread = compositor_task_runner_ &&
                               compositor_task_runner_->BelongsToCurrentThread();

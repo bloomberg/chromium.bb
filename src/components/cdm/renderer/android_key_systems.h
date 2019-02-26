@@ -10,12 +10,15 @@
 
 #include "components/cdm/common/cdm_messages_android.h"
 #include "media/base/key_system_properties.h"
+#include "third_party/widevine/cdm/buildflags.h"
 
 namespace cdm {
 
+#if BUILDFLAG(ENABLE_WIDEVINE)
 void AddAndroidWidevine(
     std::vector<std::unique_ptr<media::KeySystemProperties>>*
         concrete_key_systems);
+#endif  // BUILDFLAG(ENABLE_WIDEVINE)
 
 // Add platform-supported key systems which are not explicitly handled
 // by Chrome.

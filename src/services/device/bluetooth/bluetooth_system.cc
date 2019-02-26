@@ -5,9 +5,11 @@
 #include "services/device/bluetooth/bluetooth_system.h"
 
 #include <memory>
+#include <string>
 #include <utility>
 #include <vector>
 
+#include "base/bind.h"
 #include "dbus/object_path.h"
 #include "device/bluetooth/dbus/bluetooth_adapter_client.h"
 #include "device/bluetooth/dbus/bluez_dbus_manager.h"
@@ -80,10 +82,99 @@ void BluetoothSystem::AdapterPropertyChanged(
 
   if (properties->powered.name() == property_name)
     UpdateStateAndNotifyIfNecessary();
+  else if (properties->discovering.name() == property_name)
+    client_ptr_->OnScanStateChanged(GetScanStateFromActiveAdapter());
 }
 
 void BluetoothSystem::GetState(GetStateCallback callback) {
   std::move(callback).Run(state_);
+}
+
+void BluetoothSystem::SetPowered(bool powered, SetPoweredCallback callback) {
+  switch (state_) {
+    case State::kUnsupported:
+    case State::kUnavailable:
+      std::move(callback).Run(SetPoweredResult::kBluetoothUnavailable);
+      return;
+    case State::kTransitioning:
+    case State::kPoweredOff:
+    case State::kPoweredOn:
+      break;
+  }
+
+  if ((state_ == State::kPoweredOn) == powered) {
+    std::move(callback).Run(SetPoweredResult::kSuccess);
+    return;
+  }
+
+  // Update the BluetoothSystem state to kTransitioning if a previous call to
+  // SetPowered() has not done so already.
+  if (state_ != State::kTransitioning) {
+    state_ = State::kTransitioning;
+    client_ptr_->OnStateChanged(state_);
+  }
+
+  GetBluetoothAdapterClient()
+      ->GetProperties(active_adapter_.value())
+      ->powered.Set(powered,
+                    base::BindRepeating(&BluetoothSystem::OnSetPoweredFinished,
+                                        weak_ptr_factory_.GetWeakPtr(),
+                                        base::Passed(&callback)));
+}
+
+void BluetoothSystem::GetScanState(GetScanStateCallback callback) {
+  switch (state_) {
+    case State::kUnsupported:
+    case State::kUnavailable:
+      std::move(callback).Run(ScanState::kNotScanning);
+      return;
+    case State::kPoweredOff:
+    // The Scan State when the adapter is Off should always be
+    // kNotScanning, but the underlying layer makes no guarantees of this.
+    // To avoid hiding a bug in the underlying layer, get the state from
+    // the adapter even if it's Off.
+    case State::kTransitioning:
+    case State::kPoweredOn:
+      break;
+  }
+
+  std::move(callback).Run(GetScanStateFromActiveAdapter());
+}
+
+void BluetoothSystem::StartScan(StartScanCallback callback) {
+  switch (state_) {
+    case State::kUnsupported:
+    case State::kUnavailable:
+    case State::kPoweredOff:
+    case State::kTransitioning:
+      std::move(callback).Run(StartScanResult::kBluetoothUnavailable);
+      return;
+    case State::kPoweredOn:
+      break;
+  }
+
+  GetBluetoothAdapterClient()->StartDiscovery(
+      active_adapter_.value(),
+      base::BindOnce(&BluetoothSystem::OnStartDiscovery,
+                     weak_ptr_factory_.GetWeakPtr(), std::move(callback)));
+}
+
+void BluetoothSystem::StopScan(StopScanCallback callback) {
+  switch (state_) {
+    case State::kUnsupported:
+    case State::kUnavailable:
+    case State::kPoweredOff:
+    case State::kTransitioning:
+      std::move(callback).Run(StopScanResult::kBluetoothUnavailable);
+      return;
+    case State::kPoweredOn:
+      break;
+  }
+
+  GetBluetoothAdapterClient()->StopDiscovery(
+      active_adapter_.value(),
+      base::BindOnce(&BluetoothSystem::OnStopDiscovery,
+                     weak_ptr_factory_.GetWeakPtr(), std::move(callback)));
 }
 
 bluez::BluetoothAdapterClient* BluetoothSystem::GetBluetoothAdapterClient() {
@@ -105,6 +196,44 @@ void BluetoothSystem::UpdateStateAndNotifyIfNecessary() {
 
   if (old_state != state_)
     client_ptr_->OnStateChanged(state_);
+}
+
+BluetoothSystem::ScanState BluetoothSystem::GetScanStateFromActiveAdapter() {
+  bool discovering = GetBluetoothAdapterClient()
+                         ->GetProperties(active_adapter_.value())
+                         ->discovering.value();
+  return discovering ? ScanState::kScanning : ScanState::kNotScanning;
+}
+
+void BluetoothSystem::OnSetPoweredFinished(SetPoweredCallback callback,
+                                           bool succeeded) {
+  if (!succeeded) {
+    // We change |state_| to `kTransitioning` before trying to set 'powered'. If
+    // the call to set 'powered' fails, then we need to change it back to
+    // `kPoweredOn` or `kPoweredOff` depending on the `active_adapter_` state.
+    UpdateStateAndNotifyIfNecessary();
+  }
+
+  std::move(callback).Run(succeeded ? SetPoweredResult::kSuccess
+                                    : SetPoweredResult::kFailedUnknownReason);
+}
+
+void BluetoothSystem::OnStartDiscovery(
+    StartScanCallback callback,
+    const base::Optional<bluez::BluetoothAdapterClient::Error>& error) {
+  // TODO(https://crbug.com/897996): Use the name and message in |error| to
+  // return more specific error codes.
+  std::move(callback).Run(error ? StartScanResult::kFailedUnknownReason
+                                : StartScanResult::kSuccess);
+}
+
+void BluetoothSystem::OnStopDiscovery(
+    StopScanCallback callback,
+    const base::Optional<bluez::BluetoothAdapterClient::Error>& error) {
+  // TODO(https://crbug.com/897996): Use the name and message in |error| to
+  // return more specific error codes.
+  std::move(callback).Run(error ? StopScanResult::kFailedUnknownReason
+                                : StopScanResult::kSuccess);
 }
 
 }  // namespace device

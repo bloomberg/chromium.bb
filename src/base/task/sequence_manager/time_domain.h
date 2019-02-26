@@ -10,7 +10,7 @@
 #include "base/callback.h"
 #include "base/logging.h"
 #include "base/macros.h"
-#include "base/task/sequence_manager/intrusive_heap.h"
+#include "base/task/common/intrusive_heap.h"
 #include "base/task/sequence_manager/lazy_now.h"
 #include "base/task/sequence_manager/task_queue_impl.h"
 #include "base/time/time.h"
@@ -57,6 +57,12 @@ class BASE_EXPORT TimeDomain {
   virtual Optional<TimeDelta> DelayTillNextTask(LazyNow* lazy_now) = 0;
 
   void AsValueInto(trace_event::TracedValue* state) const;
+  bool HasPendingHighResolutionTasks() const;
+
+  // This is the signal that virtual time should step forward. If
+  // RunLoop::QuitWhenIdle has been called then |quit_when_idle_requested| will
+  // be true. Returns true if time advanced and there is now a task to run.
+  virtual bool MaybeFastForwardToNextTask(bool quit_when_idle_requested) = 0;
 
  protected:
   TimeDomain();
@@ -81,6 +87,7 @@ class BASE_EXPORT TimeDomain {
 
   // For implementation-specific tracing.
   virtual void AsValueIntoInternal(trace_event::TracedValue* state) const;
+
   virtual const char* GetName() const = 0;
 
  private:
@@ -99,6 +106,7 @@ class BASE_EXPORT TimeDomain {
   // NOTE: |lazy_now| is provided in TimeDomain's time.
   void SetNextWakeUpForQueue(internal::TaskQueueImpl* queue,
                              Optional<internal::DelayedWakeUp> wake_up,
+                             internal::WakeUpResolution resolution,
                              LazyNow* lazy_now);
 
   // Remove the TaskQueue from any internal data sctructures.
@@ -109,25 +117,31 @@ class BASE_EXPORT TimeDomain {
 
   struct ScheduledDelayedWakeUp {
     internal::DelayedWakeUp wake_up;
+    internal::WakeUpResolution resolution;
     internal::TaskQueueImpl* queue;
 
     bool operator<=(const ScheduledDelayedWakeUp& other) const {
+      if (wake_up == other.wake_up) {
+        return static_cast<int>(resolution) <=
+               static_cast<int>(other.resolution);
+      }
       return wake_up <= other.wake_up;
     }
 
-    void SetHeapHandle(internal::HeapHandle handle) {
+    void SetHeapHandle(base::internal::HeapHandle handle) {
       DCHECK(handle.IsValid());
       queue->set_heap_handle(handle);
     }
 
     void ClearHeapHandle() {
       DCHECK(queue->heap_handle().IsValid());
-      queue->set_heap_handle(internal::HeapHandle());
+      queue->set_heap_handle(base::internal::HeapHandle());
     }
   };
 
   internal::SequenceManagerImpl* sequence_manager_;  // Not owned.
-  internal::IntrusiveHeap<ScheduledDelayedWakeUp> delayed_wake_up_queue_;
+  base::internal::IntrusiveHeap<ScheduledDelayedWakeUp> delayed_wake_up_queue_;
+  int pending_high_res_wake_up_count_ = 0;
 
   scoped_refptr<internal::AssociatedThreadId> associated_thread_;
   DISALLOW_COPY_AND_ASSIGN(TimeDomain);

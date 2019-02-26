@@ -44,16 +44,16 @@ namespace blink {
 // (Pe), "initial" (Pi). "final" (Pf) and "other" (Po) punctuation classes),
 // that precedes or follows the first letter should be included"
 static inline bool IsPunctuationForFirstLetter(UChar32 c) {
-  WTF::Unicode::CharCategory char_category = WTF::Unicode::Category(c);
-  return char_category == WTF::Unicode::kPunctuation_Open ||
-         char_category == WTF::Unicode::kPunctuation_Close ||
-         char_category == WTF::Unicode::kPunctuation_InitialQuote ||
-         char_category == WTF::Unicode::kPunctuation_FinalQuote ||
-         char_category == WTF::Unicode::kPunctuation_Other;
+  WTF::unicode::CharCategory char_category = WTF::unicode::Category(c);
+  return char_category == WTF::unicode::kPunctuation_Open ||
+         char_category == WTF::unicode::kPunctuation_Close ||
+         char_category == WTF::unicode::kPunctuation_InitialQuote ||
+         char_category == WTF::unicode::kPunctuation_FinalQuote ||
+         char_category == WTF::unicode::kPunctuation_Other;
 }
 
 static inline bool IsSpaceForFirstLetter(UChar c) {
-  return IsSpaceOrNewline(c) || c == WTF::Unicode::kNoBreakSpaceCharacter;
+  return IsSpaceOrNewline(c) || c == WTF::unicode::kNoBreakSpaceCharacter;
 }
 
 unsigned FirstLetterPseudoElement::FirstLetterLength(const String& text) {
@@ -231,7 +231,7 @@ void FirstLetterPseudoElement::UpdateTextFragments() {
     // needs to re-create the line boxes. The remaining text layoutObject
     // will be marked by the LayoutText::setText.
     child_fragment->SetNeedsLayoutAndPrefWidthsRecalc(
-        LayoutInvalidationReason::kTextChanged);
+        layout_invalidation_reason::kTextChanged);
     break;
   }
 }
@@ -252,8 +252,9 @@ void FirstLetterPseudoElement::ClearRemainingTextLayoutObject() {
   // first letter, we need to UpdateFirstLetter to render the new first letter
   // or remove the ::first-letter pseudo if there is no text left. Do that as
   // part of a style recalc for this ::first-letter.
-  SetNeedsStyleRecalc(kLocalStyleChange, StyleChangeReasonForTracing::Create(
-                                             StyleChangeReason::kPseudoClass));
+  SetNeedsStyleRecalc(
+      kLocalStyleChange,
+      StyleChangeReasonForTracing::Create(style_change_reason::kPseudoClass));
 }
 
 void FirstLetterPseudoElement::AttachLayoutTree(AttachContext& context) {
@@ -310,12 +311,13 @@ void FirstLetterPseudoElement::AttachFirstLetterTextLayoutObjects(LayoutText* fi
   LayoutTextFragment* remaining_text;
 
   if (first_letter_text->GetNode()) {
-    remaining_text =
-        new LayoutTextFragment(first_letter_text->GetNode(), old_text.Impl(),
-                               length, remaining_length);
+    remaining_text = LayoutTextFragment::Create(
+        *first_letter_text->Style(), first_letter_text->GetNode(),
+        old_text.Impl(), length, remaining_length);
   } else {
     remaining_text = LayoutTextFragment::CreateAnonymous(
-        *this, old_text.Impl(), length, remaining_length);
+        *first_letter_text->Style(), *this, old_text.Impl(), length,
+        remaining_length);
   }
 
   remaining_text->SetFirstLetterPseudoElement(this);
@@ -331,38 +333,14 @@ void FirstLetterPseudoElement::AttachFirstLetterTextLayoutObjects(LayoutText* fi
   GetLayoutObject()->Parent()->AddChild(remaining_text, next_sibling);
 
   // Construct text fragment for the first letter.
-  LayoutTextFragment* letter =
-      LayoutTextFragment::CreateAnonymous(*this, old_text.Impl(), 0, length);
+  ComputedStyle* const letter_style = MutableComputedStyle();
+  LayoutTextFragment* letter = LayoutTextFragment::CreateAnonymous(
+      *letter_style, *this, old_text.Impl(), 0, length);
   letter->SetFirstLetterPseudoElement(this);
-  letter->SetStyle(MutableComputedStyle());
+  letter->SetStyle(letter_style);
   GetLayoutObject()->AddChild(letter);
 
   first_letter_text->Destroy();
-}
-
-void FirstLetterPseudoElement::DidRecalcStyle(StyleRecalcChange) {
-  LayoutObject* layout_object = GetLayoutObject();
-  if (!layout_object)
-    return;
-
-  // The layout objects inside pseudo elements are anonymous so they don't get
-  // notified of RecalcStyle and must have the style propagated downward
-  // manually similar to LayoutObject::PropagateStyleToAnonymousChildren.
-  for (LayoutObject* child = layout_object->NextInPreOrder(layout_object);
-       child; child = child->NextInPreOrder(layout_object)) {
-    // We need to re-calculate the correct style for the first letter element
-    // and then apply that to the container and the text fragment inside.
-    if (child->Style()->StyleType() == kPseudoIdFirstLetter) {
-      child->SetPseudoStyle(layout_object->MutableStyle());
-      continue;
-    }
-
-    // We only manage the style for the generated content items.
-    if (!child->IsText() && !child->IsQuote() && !child->IsImage())
-      continue;
-
-    child->SetPseudoStyle(layout_object->MutableStyle());
-  }
 }
 
 Node* FirstLetterPseudoElement::InnerNodeForHitTesting() const {

@@ -30,16 +30,19 @@
 <translation id="1871244248791675517">Ins</translation>
 <translation id="1884435127456172652"><ph name="NUMBER" /> %</translation>
 <translation id="1901303067676059328">&amp;ሁሉንም ምረጥ</translation>
+<translation id="1938451708255335766">የመስኮቱን የማሳያ ትፍገት ለማስተካከል መተግበሪያውን ዳግም ያስጀምሩት።</translation>
 <translation id="2141853158323869627">{DAYS,plural, =1{1ቀ}one{#ቀ}other{#ቀ}}</translation>
 <translation id="2148716181193084225">ዛሬ</translation>
 <translation id="2168039046890040389">ወደላይ አንቀሳቅስ</translation>
 <translation id="2190355936436201913">(ባዶ)</translation>
+<translation id="2192232475740621500">ዝቅተኛ ትፍገትን ተጠቀም</translation>
 <translation id="219905428774326614">ማስጀመሪያ፣ ሁሉም መተግበሪያዎች</translation>
 <translation id="2267918077332197517">ከዚህ ጣቢያ የሚመጡ ሁሉንም ማሳወቂያዎች አግድ</translation>
 <translation id="2289052229480071835">በማያ ገጽዎ ላይ ያሉት የንክኪ ዒላማዎችን መታ ያድርጉ።</translation>
 <translation id="2295140143284145483">የዳሰሳ ጥናት</translation>
 <translation id="2297836609126180313"><ph name="QUANTITY" /> ቴባ/ሰ</translation>
 <translation id="24452542372838207">ማሳወቂያን ዘርጋ</translation>
+<translation id="2445449901874883781">ከፍተኛ ትፍገትን ተጠቀም</translation>
 <translation id="2482878487686419369">ማስታወቂያዎች</translation>
 <translation id="2497284189126895209">ሁሉም ፋይሎች</translation>
 <translation id="2515586267016047495">Alt</translation>
@@ -60,6 +63,7 @@
 <translation id="3234408098842461169">ዝቅዝቅ ቀስት</translation>
 <translation id="3291688615589870984">{DAYS,plural, =1{1 ቀን}one{# ቀኖች}other{# ቀኖች}}</translation>
 <translation id="335581015389089642">ንግግር</translation>
+<translation id="3479552764303398839">አሁን አይደለም</translation>
 <translation id="3600566671520689681">{DAYS,plural, =1{1 ቀን ቀርቷል}one{# ቀኖች ቀርቷል}other{# ቀኖች ቀርተዋል}}</translation>
 <translation id="3618849550573277856">«<ph name="LOOKUP_STRING" />»ን ፈልግ</translation>
 <translation id="364720409959344976">የሚሰቀል ዓቃፊ ይምረጡ</translation>
@@ -99,6 +103,7 @@
 <translation id="5613020302032141669">ግራ ቀስት</translation>
 <translation id="5754277640426581776">{MINUTES,plural, =1{1 ደቂቃ}one{# ደቂቃዎች}other{# ደቂቃዎች}}</translation>
 <translation id="5768079895599174203">{DAYS,plural, =1{1 ቀን እና }one{# ቀኖች እና }other{# ቀኖች እና }}</translation>
+<translation id="5895138241574237353">እንደገና ጀምር</translation>
 <translation id="5906667377645263094">{SECONDS,plural, =1{1 ሰከንድ ቀርቷል}one{# ሰከንዶች ቀርቷል}other{# ሰከንዶች ቀርቷል}}</translation>
 <translation id="5941711191222866238">አሳንስ</translation>
 <translation id="5943826764092288734">{HOURS,plural, =1{1 ሰዓት}one{# ሰዓቶች}other{# ሰዓቶች}}</translation>

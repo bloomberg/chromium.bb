@@ -23,13 +23,13 @@ class MODULES_EXPORT BackgroundFetchEvent : public ExtendableEvent {
  public:
   static BackgroundFetchEvent* Create(
       const AtomicString& type,
-      const BackgroundFetchEventInit& initializer) {
+      const BackgroundFetchEventInit* initializer) {
     return new BackgroundFetchEvent(type, initializer, nullptr /* observer */);
   }
 
   static BackgroundFetchEvent* Create(
       const AtomicString& type,
-      const BackgroundFetchEventInit& initializer,
+      const BackgroundFetchEventInit* initializer,
       WaitUntilObserver* observer) {
     return new BackgroundFetchEvent(type, initializer, observer);
   }
@@ -46,7 +46,7 @@ class MODULES_EXPORT BackgroundFetchEvent : public ExtendableEvent {
 
  protected:
   BackgroundFetchEvent(const AtomicString& type,
-                       const BackgroundFetchEventInit& initializer,
+                       const BackgroundFetchEventInit* initializer,
                        WaitUntilObserver* observer);
 
   // Corresponds to the 'registration' attribute in the idl.

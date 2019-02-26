@@ -65,7 +65,7 @@ std::unique_ptr<ScriptRegexp> EmailInputType::CreateEmailRegexp() {
 
 String EmailInputType::ConvertEmailAddressToASCII(const ScriptRegexp& regexp,
                                                   const String& address) {
-  if (address.ContainsOnlyASCII())
+  if (address.ContainsOnlyASCIIOrEmpty())
     return address;
 
   wtf_size_t at_position = address.find('@');
@@ -104,7 +104,7 @@ String EmailInputType::ConvertEmailAddressToASCII(const ScriptRegexp& regexp,
 
 String EmailInputType::ConvertEmailAddressToUnicode(
     const String& address) const {
-  if (!address.ContainsOnlyASCII())
+  if (!address.ContainsOnlyASCIIOrEmpty())
     return address;
 
   wtf_size_t at_position = address.find('@');
@@ -160,12 +160,13 @@ EmailInputType::EmailInputType(HTMLInputElement& element)
     : BaseTextInputType(element) {}
 
 InputType* EmailInputType::Create(HTMLInputElement& element) {
-  return new EmailInputType(element);
+  return MakeGarbageCollected<EmailInputType>(element);
 }
 
 void EmailInputType::CountUsage() {
   CountUsageIfVisible(WebFeature::kInputTypeEmail);
-  bool has_max_length = GetElement().FastHasAttribute(HTMLNames::maxlengthAttr);
+  bool has_max_length =
+      GetElement().FastHasAttribute(html_names::kMaxlengthAttr);
   if (has_max_length)
     CountUsageIfVisible(WebFeature::kInputTypeEmailMaxLength);
   if (GetElement().Multiple()) {
@@ -176,7 +177,7 @@ void EmailInputType::CountUsage() {
 }
 
 const AtomicString& EmailInputType::FormControlType() const {
-  return InputTypeNames::email;
+  return input_type_names::kEmail;
 }
 
 ScriptRegexp& EmailInputType::EnsureEmailRegexp() const {

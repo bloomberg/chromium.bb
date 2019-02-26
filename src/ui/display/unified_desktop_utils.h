@@ -12,6 +12,13 @@
 
 namespace display {
 
+// Defines a display position in the unified display matrix.
+enum class DisplayPositionInUnifiedMatrix {
+  kTopLeft,
+  kTopRight,
+  kBottomLeft,
+};
+
 // Type of the matrix that represents the display layout in Unified Desktop
 // mode. The ID of a display is placed in a cell in the matrix where that
 // display is desired to be placed in the actual layout.

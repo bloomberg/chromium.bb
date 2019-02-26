@@ -20,6 +20,11 @@ java_group("robolectric_all_java") {
   ]
 }
 
+java_prebuilt("android-all-4.1.2_r1-robolectric-0_java") {
+  testonly = true
+  jar_path = "lib/android-all-4.1.2_r1-robolectric-0.jar"
+}
+
 java_prebuilt("android-all-4.3_r2-robolectric-0_java") {
   testonly = true
   jar_path = "lib/android-all-4.3_r2-robolectric-0.jar"
@@ -47,6 +52,10 @@ java_prebuilt("android-all-8.1.0-robolectric-r4402310_java") {
 
 java_library("robolectric_java") {
   testonly = true
+
+  # Skip platform checks since we must depend on shadows_core_java here which
+  # depends on targets that requires_android.
+  bypass_platform_checks = true
   deps = [
     ":android-all-8.1.0-robolectric-r4402310_java",
     ":robolectric_annotations_java",
@@ -63,6 +72,7 @@ java_library("robolectric_java") {
     "//third_party/xstream:xstream_java",
   ]
   data_deps = [
+    ":android-all-4.1.2_r1-robolectric-0_java",
     ":android-all-4.3_r2-robolectric-0_java",
     ":android-all-5.0.0_r2-robolectric-1_java",
     ":android-all-7.1.0_r7-robolectric-0_java",
@@ -115,9 +125,7 @@ java_library("robolectric_java") {
     "robolectric/robolectric/src/main/java/org/robolectric/util/FragmentTestUtil.java",
   ]
   additional_jar_files = [ [
-        rebase_path(
-            "local/robolectric/src/main/resources/robolectric-version.properties",
-            root_build_dir),
+        "local/robolectric/src/main/resources/robolectric-version.properties",
         "robolectric-version.properties",
       ] ]
 
@@ -323,6 +331,7 @@ java_library("robolectric_sandbox_java") {
 }
 
 java_library("robolectric_junit_java") {
+  bypass_platform_checks = true
   testonly = true
   deps = [
     ":robolectric_annotations_java",
@@ -354,6 +363,10 @@ java_library("robolectric_shadowapi_java") {
 java_library("shadows_core_java") {
   output_name = "shadows-core-3.2"
 
+  # Skip platform checks since we must depend on accessibility_test_framework_java
+  # here which requires_android.
+  bypass_platform_checks = true
+
   # TODO(mikecase): Remove this once crbug.com/638875 is fixed.
   enable_incremental_javac_override = false
 
@@ -367,34 +380,29 @@ java_library("shadows_core_java") {
   if (host_os == "linux") {
     additional_jar_files = [
       [
-        rebase_path("../sqlite4java/lib/linux-x86_64/libsqlite4java.so",
-                    root_build_dir),
+        "../sqlite4java/lib/linux-x86_64/libsqlite4java.so",
         "linux-x86_64/libsqlite4java.so",
       ],
       [
-        rebase_path("../sqlite4java/lib/linux-x86/libsqlite4java.so",
-                    root_build_dir),
+        "../sqlite4java/lib/linux-x86/libsqlite4java.so",
         "linux-x86/libsqlite4java.so",
       ],
     ]
   }
   if (host_os == "mac") {
     additional_jar_files = [ [
-          rebase_path("../sqlite4java/lib/mac-x86_64/libsqlite4java.jnilib",
-                      root_build_dir),
+          "../sqlite4java/lib/mac-x86_64/libsqlite4java.jnilib",
           "mac-x86_64/libsqlite4java.jnilib",
         ] ]
   }
   if (host_os == "win") {
     additional_jar_files = [
       [
-        rebase_path("../sqlite4java/lib/windows-x86/sqlite4java.dll",
-                    root_build_dir),
+        "../sqlite4java/lib/windows-x86/sqlite4java.dll",
         "windows-x86/sqlite4java.dll",
       ],
       [
-        rebase_path("../sqlite4java/lib/windows-x86_64/sqlite4java.dll",
-                    root_build_dir),
+        "../sqlite4java/lib/windows-x86_64/sqlite4java.dll",
         "windows-x86_64/sqlite4java.dll",
       ],
     ]

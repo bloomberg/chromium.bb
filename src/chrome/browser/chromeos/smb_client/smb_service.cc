@@ -127,6 +127,7 @@ void SmbService::RegisterProfilePrefs(
   registry->RegisterBooleanPref(prefs::kNetBiosShareDiscoveryEnabled, true);
   registry->RegisterBooleanPref(prefs::kNTLMShareAuthenticationEnabled, true);
   registry->RegisterListPref(prefs::kNetworkFileSharesPreconfiguredShares);
+  registry->RegisterStringPref(prefs::kMostRecentlyUsedNetworkFileShareURL, "");
 }
 
 void SmbService::Mount(const file_system_provider::MountOptions& options,
@@ -189,7 +190,8 @@ void SmbService::CallMount(const file_system_provider::MountOptions& options,
 
   SmbUrl parsed_url(share_path.value());
   if (!parsed_url.IsValid()) {
-    std::move(callback).Run(
+    FireMountCallback(
+        std::move(callback),
         TranslateErrorToMountResult(base::File::Error::FILE_ERROR_INVALID_URL));
     return;
   }
@@ -207,6 +209,9 @@ void SmbService::CallMount(const file_system_provider::MountOptions& options,
       base::BindOnce(&SmbService::OnMountResponse, AsWeakPtr(),
                      base::Passed(&callback), options, share_path,
                      use_chromad_kerberos));
+
+  profile_->GetPrefs()->SetString(prefs::kMostRecentlyUsedNetworkFileShareURL,
+                                  share_path.value());
 }
 
 void SmbService::OnMountResponse(

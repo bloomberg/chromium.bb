@@ -7,6 +7,7 @@
 #include "third_party/blink/renderer/core/animation/length_property_functions.h"
 #include "third_party/blink/renderer/core/css/css_calculation_value.h"
 #include "third_party/blink/renderer/core/css/css_resolution_units.h"
+#include "third_party/blink/renderer/core/css/css_syntax_descriptor.h"
 #include "third_party/blink/renderer/core/css/cssom/css_math_invert.h"
 #include "third_party/blink/renderer/core/css/cssom/css_math_max.h"
 #include "third_party/blink/renderer/core/css/cssom/css_math_min.h"
@@ -37,7 +38,8 @@ CSSPrimitiveValue::UnitType ToCanonicalUnitIfPossible(
 
 bool IsValueOutOfRangeForProperty(CSSPropertyID property_id,
                                   double value,
-                                  CSSPrimitiveValue::UnitType unit) {
+                                  CSSPrimitiveValue::UnitType unit,
+                                  const CSSSyntaxComponent* match) {
   // FIXME: Avoid this CSSProperty::Get call as it can be costly.
   // The caller often has a CSSProperty already, so we can just pass it here.
   if (LengthPropertyFunctions::GetValueRange(CSSProperty::Get(property_id)) ==
@@ -47,6 +49,10 @@ bool IsValueOutOfRangeForProperty(CSSPropertyID property_id,
 
   // For non-length properties and special cases.
   switch (property_id) {
+    case CSSPropertyVariable:
+      if (match && match->IsInteger())
+        return round(value) != value;
+      return false;
     case CSSPropertyOrder:
     case CSSPropertyZIndex:
       return round(value) != value;
@@ -91,13 +97,13 @@ CSSUnitValue* CSSUnitValue::Create(double value,
     exception_state.ThrowTypeError("Invalid unit: " + unit_name);
     return nullptr;
   }
-  return new CSSUnitValue(value, unit);
+  return MakeGarbageCollected<CSSUnitValue>(value, unit);
 }
 
 CSSUnitValue* CSSUnitValue::Create(double value,
                                    CSSPrimitiveValue::UnitType unit) {
   DCHECK(IsValidUnit(unit));
-  return new CSSUnitValue(value, unit);
+  return MakeGarbageCollected<CSSUnitValue>(value, unit);
 }
 
 CSSUnitValue* CSSUnitValue::FromCSSValue(const CSSPrimitiveValue& value) {
@@ -107,7 +113,7 @@ CSSUnitValue* CSSUnitValue::FromCSSValue(const CSSPrimitiveValue& value) {
 
   if (!IsValidUnit(unit))
     return nullptr;
-  return new CSSUnitValue(value.GetDoubleValue(), unit);
+  return MakeGarbageCollected<CSSUnitValue>(value.GetDoubleValue(), unit);
 }
 
 String CSSUnitValue::unit() const {
@@ -167,8 +173,9 @@ const CSSPrimitiveValue* CSSUnitValue::ToCSSValue() const {
 }
 
 const CSSPrimitiveValue* CSSUnitValue::ToCSSValueWithProperty(
-    CSSPropertyID property_id) const {
-  if (IsValueOutOfRangeForProperty(property_id, value_, unit_)) {
+    CSSPropertyID property_id,
+    const CSSSyntaxComponent* match) const {
+  if (IsValueOutOfRangeForProperty(property_id, value_, unit_, match)) {
     // Wrap out of range values with a calc.
     CSSCalcExpressionNode* node = ToCalcExpressionNode();
     node->SetIsNestedCalc();

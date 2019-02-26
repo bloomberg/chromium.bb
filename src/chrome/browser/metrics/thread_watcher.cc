@@ -737,10 +737,10 @@ bool WatchDogThread::PostTaskHelper(const base::Location& from_here,
   {
     base::AutoLock lock(g_watchdog_lock.Get());
 
-    base::MessageLoop* message_loop = g_watchdog_thread ?
-        g_watchdog_thread->message_loop() : nullptr;
-    if (message_loop) {
-      message_loop->task_runner()->PostDelayedTask(from_here, task, delay);
+    scoped_refptr<base::SingleThreadTaskRunner> task_runner =
+        g_watchdog_thread ? g_watchdog_thread->task_runner() : nullptr;
+    if (task_runner) {
+      task_runner->PostDelayedTask(from_here, task, delay);
       return true;
     }
   }

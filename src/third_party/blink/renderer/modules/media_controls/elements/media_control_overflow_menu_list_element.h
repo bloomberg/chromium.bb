@@ -7,7 +7,7 @@
 
 #include "base/optional.h"
 #include "third_party/blink/renderer/modules/media_controls/elements/media_control_popup_menu_element.h"
-#include "third_party/blink/renderer/platform/web_task_runner.h"
+#include "third_party/blink/renderer/platform/scheduler/public/post_cancellable_task.h"
 #include "third_party/blink/renderer/platform/wtf/time.h"
 
 namespace blink {
@@ -20,6 +20,9 @@ class MediaControlOverflowMenuListElement final
     : public MediaControlPopupMenuElement {
  public:
   explicit MediaControlOverflowMenuListElement(MediaControlsImpl&);
+
+  void OpenOverflowMenu();
+  void CloseOverflowMenu();
 
   // Override MediaControlPopupMenuElement
   void SetIsWanted(bool) final;

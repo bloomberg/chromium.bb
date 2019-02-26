@@ -25,13 +25,12 @@ typedef std::list<net::CanonicalCookie> CookieList;
 typedef std::list<BrowsingDataDatabaseHelper::DatabaseInfo> DatabaseInfoList;
 typedef std::list<BrowsingDataLocalStorageHelper::LocalStorageInfo>
     LocalStorageInfoList;
-typedef std::list<content::IndexedDBInfo>
-    IndexedDBInfoList;
+typedef std::list<content::StorageUsageInfo> IndexedDBInfoList;
 typedef std::list<BrowsingDataFileSystemHelper::FileSystemInfo>
     FileSystemInfoList;
 typedef net::ChannelIDStore::ChannelIDList ChannelIDList;
-typedef std::list<content::ServiceWorkerUsageInfo> ServiceWorkerUsageInfoList;
-typedef std::list<content::CacheStorageUsageInfo> CacheStorageUsageInfoList;
+typedef std::list<content::StorageUsageInfo> ServiceWorkerUsageInfoList;
+typedef std::list<content::StorageUsageInfo> CacheStorageUsageInfoList;
 typedef std::vector<std::string> FlashLSODomainList;
 
 }  // namespace

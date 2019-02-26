@@ -4,6 +4,8 @@
 
 #include "components/offline_pages/core/background/save_page_request.h"
 
+#include "base/time/clock.h"
+#include "components/offline_pages/core/offline_clock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace offline_pages {
@@ -25,7 +27,7 @@ class SavePageRequestTest : public testing::Test {
 SavePageRequestTest::~SavePageRequestTest() {}
 
 TEST_F(SavePageRequestTest, CreatePendingReqeust) {
-  base::Time creation_time = base::Time::Now();
+  base::Time creation_time = OfflineClock()->Now();
   SavePageRequest request(kRequestId, kUrl, kClientId, creation_time,
                           kUserRequested);
   request.set_original_url(kUrl2);
@@ -43,7 +45,7 @@ TEST_F(SavePageRequestTest, CreatePendingReqeust) {
 }
 
 TEST_F(SavePageRequestTest, StartAndCompleteRequest) {
-  base::Time creation_time = base::Time::Now();
+  base::Time creation_time = OfflineClock()->Now();
   SavePageRequest request(kRequestId, kUrl, kClientId, creation_time,
                           kUserRequested);
   request.set_request_origin(kRequestOrigin);
@@ -77,7 +79,7 @@ TEST_F(SavePageRequestTest, StartAndCompleteRequest) {
 }
 
 TEST_F(SavePageRequestTest, StartAndAbortRequest) {
-  base::Time creation_time = base::Time::Now();
+  base::Time creation_time = OfflineClock()->Now();
   SavePageRequest request(kRequestId, kUrl, kClientId, creation_time,
                           kUserRequested);
 

@@ -38,7 +38,8 @@ void WorkletModuleScriptFetcher::Fetch(FetchParameters& fetch_params,
   // need to handle that case, maybe by having a way to restart fetches in a
   // different global scope?
   url_ = fetch_params.Url();
-  ScriptResource::Fetch(fetch_params, fetcher_.Get(), this);
+  ScriptResource::Fetch(fetch_params, fetcher_.Get(), this,
+                        ScriptResource::kNoStreaming);
 }
 
 void WorkletModuleScriptFetcher::NotifyFinished(Resource* resource) {
@@ -50,8 +51,7 @@ void WorkletModuleScriptFetcher::NotifyFinished(Resource* resource) {
   if (WasModuleLoadSuccessful(script_resource, &error_messages)) {
     params.emplace(
         script_resource->GetResponse().Url(), script_resource->SourceText(),
-        script_resource->GetResourceRequest().GetFetchCredentialsMode(),
-        script_resource->CalculateAccessControlStatus());
+        script_resource->GetResourceRequest().GetFetchCredentialsMode());
   }
 
   // This will eventually notify |client| passed to

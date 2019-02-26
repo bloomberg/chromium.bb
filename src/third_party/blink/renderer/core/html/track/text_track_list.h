@@ -43,8 +43,10 @@ class CORE_EXPORT TextTrackList final : public EventTargetWithInlineData {
 
  public:
   static TextTrackList* Create(HTMLMediaElement* owner) {
-    return new TextTrackList(owner);
+    return MakeGarbageCollected<TextTrackList>(owner);
   }
+
+  explicit TextTrackList(HTMLMediaElement*);
   ~TextTrackList() override;
 
   unsigned length() const;
@@ -61,9 +63,9 @@ class CORE_EXPORT TextTrackList final : public EventTargetWithInlineData {
   const AtomicString& InterfaceName() const override;
   ExecutionContext* GetExecutionContext() const override;
 
-  DEFINE_ATTRIBUTE_EVENT_LISTENER(addtrack);
-  DEFINE_ATTRIBUTE_EVENT_LISTENER(change);
-  DEFINE_ATTRIBUTE_EVENT_LISTENER(removetrack);
+  DEFINE_ATTRIBUTE_EVENT_LISTENER(addtrack, kAddtrack);
+  DEFINE_ATTRIBUTE_EVENT_LISTENER(change, kChange);
+  DEFINE_ATTRIBUTE_EVENT_LISTENER(removetrack, kRemovetrack);
 
   HTMLMediaElement* Owner() const;
 
@@ -75,8 +77,6 @@ class CORE_EXPORT TextTrackList final : public EventTargetWithInlineData {
   void Trace(blink::Visitor*) override;
 
  private:
-  explicit TextTrackList(HTMLMediaElement*);
-
   void ScheduleTrackEvent(const AtomicString& event_name, TextTrack*);
 
   void ScheduleAddTrackEvent(TextTrack*);

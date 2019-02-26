@@ -36,16 +36,16 @@ class RemoveNodePreservingChildrenCommand final : public CompositeEditCommand {
       Node* node,
       ShouldAssumeContentIsAlwaysEditable
           should_assume_content_is_always_editable) {
-    return new RemoveNodePreservingChildrenCommand(
+    return MakeGarbageCollected<RemoveNodePreservingChildrenCommand>(
         node, should_assume_content_is_always_editable);
   }
+
+  RemoveNodePreservingChildrenCommand(Node*,
+                                      ShouldAssumeContentIsAlwaysEditable);
 
   void Trace(blink::Visitor*) override;
 
  private:
-  RemoveNodePreservingChildrenCommand(Node*,
-                                      ShouldAssumeContentIsAlwaysEditable);
-
   void DoApply(EditingState*) override;
 
   Member<Node> node_;

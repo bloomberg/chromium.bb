@@ -5,8 +5,8 @@
 #ifndef THIRD_PARTY_BLINK_RENDERER_CORE_CSS_CSS_CUSTOM_IDENT_VALUE_H_
 #define THIRD_PARTY_BLINK_RENDERER_CORE_CSS_CSS_CUSTOM_IDENT_VALUE_H_
 
+#include "third_party/blink/renderer/core/css/css_property_names.h"
 #include "third_party/blink/renderer/core/css/css_value.h"
-#include "third_party/blink/renderer/core/css_property_names.h"
 #include "third_party/blink/renderer/platform/wtf/text/atomic_string.h"
 
 namespace blink {
@@ -14,14 +14,17 @@ namespace blink {
 class CORE_EXPORT CSSCustomIdentValue : public CSSValue {
  public:
   static CSSCustomIdentValue* Create(const AtomicString& str) {
-    return new CSSCustomIdentValue(str);
+    return MakeGarbageCollected<CSSCustomIdentValue>(str);
   }
 
   // TODO(sashab, timloh): Remove this and lazily parse the CSSPropertyID in
   // isKnownPropertyID().
   static CSSCustomIdentValue* Create(CSSPropertyID id) {
-    return new CSSCustomIdentValue(id);
+    return MakeGarbageCollected<CSSCustomIdentValue>(id);
   }
+
+  explicit CSSCustomIdentValue(const AtomicString&);
+  explicit CSSCustomIdentValue(CSSPropertyID);
 
   AtomicString Value() const {
     DCHECK(!IsKnownPropertyID());
@@ -43,9 +46,6 @@ class CORE_EXPORT CSSCustomIdentValue : public CSSValue {
   void TraceAfterDispatch(blink::Visitor*);
 
  private:
-  explicit CSSCustomIdentValue(const AtomicString&);
-  explicit CSSCustomIdentValue(CSSPropertyID);
-
   AtomicString string_;
   CSSPropertyID property_id_;
 };

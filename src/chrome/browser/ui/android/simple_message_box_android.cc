@@ -13,7 +13,8 @@ namespace chrome {
 
 void ShowWarningMessageBox(gfx::NativeWindow parent,
                            const base::string16& title,
-                           const base::string16& message) {
+                           const base::string16& message,
+                           bool can_close) {
   NOTIMPLEMENTED();
 }
 

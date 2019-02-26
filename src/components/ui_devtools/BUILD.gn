@@ -119,11 +119,16 @@ source_set("unit_tests") {
   }
 
   sources = [
-    "css_agent_unittest.cc",
+    #TODO(lgrey,weili): fix and enable css agent tests.
+    #"css_agent_unittest.cc",
+    "devtools_server_unittest.cc",
   ]
 
   deps = [
     ":test_support",
+    "//base/test:test_support",
+    "//net:test_support",
+    "//services/network:network_service",
     "//testing/gtest",
   ]
 

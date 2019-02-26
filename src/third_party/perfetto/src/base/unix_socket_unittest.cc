@@ -27,6 +27,7 @@
 #include "perfetto/base/build_config.h"
 #include "perfetto/base/file_utils.h"
 #include "perfetto/base/logging.h"
+#include "perfetto/base/pipe.h"
 #include "perfetto/base/temp_file.h"
 #include "perfetto/base/utils.h"
 #include "src/base/test/test_task_runner.h"
@@ -333,9 +334,7 @@ TEST_F(UnixSocketTest, SeveralClients) {
 // the socket to the client. Both processes mmap the file in shared mode and
 // check that they see the same contents.
 TEST_F(UnixSocketTest, SharedMemory) {
-  int pipes[2];
-  ASSERT_EQ(0, pipe(pipes));
-
+  Pipe pipe = Pipe::Create();
   pid_t pid = fork();
   ASSERT_GE(pid, 0);
   constexpr size_t kTmpSize = 4096;
@@ -353,7 +352,7 @@ TEST_F(UnixSocketTest, SharedMemory) {
     auto srv = UnixSocket::Listen(kSocketName, &event_listener_, &task_runner_);
     ASSERT_TRUE(srv->is_listening());
     // Signal the other process that it can connect.
-    ASSERT_EQ(1, base::WriteAll(pipes[1], ".", 1));
+    ASSERT_EQ(1, base::WriteAll(*pipe.wr, ".", 1));
     auto checkpoint = task_runner_.CreateCheckpoint("change_seen_by_server");
     EXPECT_CALL(event_listener_, OnNewIncomingConnection(srv.get(), _))
         .WillOnce(Invoke(
@@ -373,7 +372,7 @@ TEST_F(UnixSocketTest, SharedMemory) {
     _exit(0);
   } else {
     char sync_cmd = '\0';
-    ASSERT_EQ(1, PERFETTO_EINTR(read(pipes[0], &sync_cmd, 1)));
+    ASSERT_EQ(1, PERFETTO_EINTR(read(*pipe.rd, &sync_cmd, 1)));
     ASSERT_EQ('.', sync_cmd);
     auto cli =
         UnixSocket::Connect(kSocketName, &event_listener_, &task_runner_);
@@ -404,75 +403,6 @@ TEST_F(UnixSocketTest, SharedMemory) {
     EXPECT_TRUE(WIFEXITED(st));
     ASSERT_EQ(0, WEXITSTATUS(st));
   }
-}
-
-constexpr size_t kAtomicWrites_FrameSize = 1123;
-bool AtomicWrites_SendAttempt(UnixSocket* s,
-                              TaskRunner* task_runner,
-                              int num_frame) {
-  char buf[kAtomicWrites_FrameSize];
-  memset(buf, static_cast<char>(num_frame), sizeof(buf));
-  if (s->Send(buf, sizeof(buf), -1, kBlocking))
-    return true;
-  task_runner->PostTask(
-      std::bind(&AtomicWrites_SendAttempt, s, task_runner, num_frame));
-  return false;
-}
-
-// Creates a client-server pair. The client sends continuously data to the
-// server. Upon each Send() attempt, the client sends a buffer which is memset()
-// with a unique number (0 to kNumFrames). We are deliberately trying to fill
-// the socket output buffer, so we expect some of these Send()s to fail.
-// The client is extremely aggressive and, when a Send() fails, just keeps
-// re-posting it with the same unique number. The server verifies that we
-// receive one and exactly one of each buffers, without any gaps or truncation.
-TEST_F(UnixSocketTest, DISABLED_SendIsAtomic) {
-  static constexpr int kNumFrames = 127;
-
-  auto srv = UnixSocket::Listen(kSocketName, &event_listener_, &task_runner_);
-  ASSERT_TRUE(srv->is_listening());
-
-  auto cli = UnixSocket::Connect(kSocketName, &event_listener_, &task_runner_);
-
-  auto all_frames_done = task_runner_.CreateCheckpoint("all_frames_done");
-  std::set<int> received_iterations;
-  EXPECT_CALL(event_listener_, OnNewIncomingConnection(srv.get(), _))
-      .WillOnce(Invoke([this, &received_iterations, all_frames_done](
-                           UnixSocket*, UnixSocket* srv_conn) {
-        EXPECT_CALL(event_listener_, OnDataAvailable(srv_conn))
-            .WillRepeatedly(
-                Invoke([&received_iterations, all_frames_done](UnixSocket* s) {
-                  char buf[kAtomicWrites_FrameSize];
-                  size_t res = s->Receive(buf, sizeof(buf));
-                  if (res == 0)
-                    return;  // Spurious select(), could happen.
-                  ASSERT_EQ(kAtomicWrites_FrameSize, res);
-                  // Check that we didn't get two truncated frames.
-                  for (size_t i = 0; i < sizeof(buf); i++)
-                    ASSERT_EQ(buf[0], buf[i]);
-                  ASSERT_EQ(0u, received_iterations.count(buf[0]));
-                  received_iterations.insert(buf[0]);
-                  if (received_iterations.size() == kNumFrames)
-                    all_frames_done();
-                }));
-      }));
-
-  auto cli_connected = task_runner_.CreateCheckpoint("cli_connected");
-  EXPECT_CALL(event_listener_, OnConnect(cli.get(), true))
-      .WillOnce(InvokeWithoutArgs(cli_connected));
-  task_runner_.RunUntilCheckpoint("cli_connected");
-  ASSERT_TRUE(cli->is_connected());
-  ASSERT_EQ(geteuid(), static_cast<uint32_t>(cli->peer_uid()));
-
-  bool did_requeue = false;
-  for (int i = 0; i < kNumFrames; i++)
-    did_requeue |= !AtomicWrites_SendAttempt(cli.get(), &task_runner_, i);
-
-  // We expect that at least one of the kNumFrames didn't fit in the socket
-  // buffer and was re-posted, otherwise this entire test would be pointless.
-  ASSERT_TRUE(did_requeue);
-
-  task_runner_.RunUntilCheckpoint("all_frames_done");
 }
 
 // Checks that the peer_uid() is retained after the client disconnects. The IPC

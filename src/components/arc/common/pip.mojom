@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 //
-// Next MinVersion: 1
+// Next MinVersion: 2
 
 module arc.mojom;
 
@@ -25,7 +25,7 @@ interface PipHost {
 };
 
 // Interface for communicating to Android.
-// Next Method ID: 2
+// Next Method ID: 3
 interface PipInstance {
   // Establishes full-duplex communication with the host.
   Init@0(PipHost host_ptr) => ();
@@ -34,4 +34,9 @@ interface PipInstance {
   // This is used if the user initiates a Chrome side PIP window, since we
   // want to avoid showing two PIP windows at the same time.
   ClosePip@1();
+
+  // Updates the suppression status of PIP. True to suppress PIP windows, or
+  // false not to suppress. Setting this flag also closes existing PIP window.
+  [MinVersion=1]
+  SetPipSuppressionStatus@2(bool suppressed);
 };

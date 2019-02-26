@@ -39,17 +39,19 @@ class CORE_EXPORT TextMetrics final : public ScriptWrappable {
   DEFINE_WRAPPERTYPEINFO();
 
  public:
-  static TextMetrics* Create() { return new TextMetrics; }
+  static TextMetrics* Create() { return MakeGarbageCollected<TextMetrics>(); }
 
   static TextMetrics* Create(const Font& font,
                              const TextDirection& direction,
                              const TextBaseline& baseline,
                              const TextAlign& align,
                              const String& text) {
-    TextMetrics* metric = new TextMetrics();
+    TextMetrics* metric = MakeGarbageCollected<TextMetrics>();
     metric->Update(font, direction, baseline, align, text);
     return metric;
   }
+
+  TextMetrics();
 
   double width() const { return width_; }
   const Vector<double>& advances() const { return advances_; }
@@ -63,10 +65,11 @@ class CORE_EXPORT TextMetrics final : public ScriptWrappable {
   }
   double emHeightAscent() const { return em_height_ascent_; }
   double emHeightDescent() const { return em_height_descent_; }
-  void getBaselines(Baselines& baselines) const { baselines = baselines_; }
-  Baselines getBaselines() const { return baselines_; }
+  Baselines* getBaselines() const { return baselines_; }
 
   static float GetFontBaseline(const TextBaseline&, const SimpleFontData&);
+
+  void Trace(blink::Visitor*) override;
 
  private:
   void Update(const Font&,
@@ -74,7 +77,6 @@ class CORE_EXPORT TextMetrics final : public ScriptWrappable {
               const TextBaseline&,
               const TextAlign&,
               const String&);
-  TextMetrics() = default;
 
   // x-direction
   double width_ = 0.0;
@@ -89,7 +91,7 @@ class CORE_EXPORT TextMetrics final : public ScriptWrappable {
   double actual_bounding_box_descent_ = 0.0;
   double em_height_ascent_ = 0.0;
   double em_height_descent_ = 0.0;
-  Baselines baselines_;
+  Member<Baselines> baselines_;
 };
 
 }  // namespace blink

@@ -266,7 +266,7 @@ void UserCloudPolicyManagerChromeOS::Connect(
 
     // Initialization has completed before our observer was registered
     // so invoke our callback directly.
-    OnInitializationCompleted(service());
+    OnCloudPolicyServiceInitializationCompleted();
   } else {
     // Wait for the CloudPolicyStore to finish initializing.
     service()->AddObserver(this);
@@ -352,10 +352,9 @@ bool UserCloudPolicyManagerChromeOS::IsInitializationComplete(
   return true;
 }
 
-void UserCloudPolicyManagerChromeOS::OnInitializationCompleted(
-    CloudPolicyService* cloud_policy_service) {
-  DCHECK_EQ(service(), cloud_policy_service);
-  cloud_policy_service->RemoveObserver(this);
+void UserCloudPolicyManagerChromeOS::
+    OnCloudPolicyServiceInitializationCompleted() {
+  service()->RemoveObserver(this);
 
   time_init_completed_ = base::Time::Now();
   UMA_HISTOGRAM_MEDIUM_TIMES(kUMADelayInitialization,

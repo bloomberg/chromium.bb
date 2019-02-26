@@ -34,4 +34,7 @@ END
 #endif    // APSTUDIO_INVOKED
 
 #endif    // English (United States) resources
+
+1 TYPELIB "chrome/elevation_service/elevation_service_idl.tlb"
+
 /////////////////////////////////////////////////////////////////////////////

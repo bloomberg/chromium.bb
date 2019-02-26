@@ -42,7 +42,7 @@ class MockPlatform final : public TestingPlatformSupportWithMockScheduler {
 };
 
 ResourceResponse CreateTestResourceResponse() {
-  ResourceResponse response(URLTestHelpers::ToKURL("https://example.com/"));
+  ResourceResponse response(url_test_helpers::ToKURL("https://example.com/"));
   response.SetHTTPStatusCode(200);
   return response;
 }
@@ -105,46 +105,46 @@ TEST(ResourceTest, Vary) {
   ResourceRequest new_request(url);
   EXPECT_FALSE(resource->MustReloadDueToVaryHeader(new_request));
 
-  response.SetHTTPHeaderField(HTTPNames::Vary, "*");
+  response.SetHTTPHeaderField(http_names::kVary, "*");
   resource->SetResponse(response);
   EXPECT_TRUE(resource->MustReloadDueToVaryHeader(new_request));
 
   // Irrelevant header
-  response.SetHTTPHeaderField(HTTPNames::Vary, "definitelynotarealheader");
+  response.SetHTTPHeaderField(http_names::kVary, "definitelynotarealheader");
   resource->SetResponse(response);
   EXPECT_FALSE(resource->MustReloadDueToVaryHeader(new_request));
 
   // Header present on new but not old
-  new_request.SetHTTPHeaderField(HTTPNames::User_Agent, "something");
-  response.SetHTTPHeaderField(HTTPNames::Vary, HTTPNames::User_Agent);
+  new_request.SetHTTPHeaderField(http_names::kUserAgent, "something");
+  response.SetHTTPHeaderField(http_names::kVary, http_names::kUserAgent);
   resource->SetResponse(response);
   EXPECT_TRUE(resource->MustReloadDueToVaryHeader(new_request));
-  new_request.ClearHTTPHeaderField(HTTPNames::User_Agent);
+  new_request.ClearHTTPHeaderField(http_names::kUserAgent);
 
   ResourceRequest old_request(url);
-  old_request.SetHTTPHeaderField(HTTPNames::User_Agent, "something");
-  old_request.SetHTTPHeaderField(HTTPNames::Referer, "http://foo.com");
+  old_request.SetHTTPHeaderField(http_names::kUserAgent, "something");
+  old_request.SetHTTPHeaderField(http_names::kReferer, "http://foo.com");
   resource = MockResource::Create(old_request);
   resource->ResponseReceived(response, nullptr);
   resource->FinishForTest();
 
   // Header present on old but not new
-  new_request.ClearHTTPHeaderField(HTTPNames::User_Agent);
-  response.SetHTTPHeaderField(HTTPNames::Vary, HTTPNames::User_Agent);
+  new_request.ClearHTTPHeaderField(http_names::kUserAgent);
+  response.SetHTTPHeaderField(http_names::kVary, http_names::kUserAgent);
   resource->SetResponse(response);
   EXPECT_TRUE(resource->MustReloadDueToVaryHeader(new_request));
 
   // Header present on both
-  new_request.SetHTTPHeaderField(HTTPNames::User_Agent, "something");
+  new_request.SetHTTPHeaderField(http_names::kUserAgent, "something");
   EXPECT_FALSE(resource->MustReloadDueToVaryHeader(new_request));
 
   // One matching, one mismatching
-  response.SetHTTPHeaderField(HTTPNames::Vary, "User-Agent, Referer");
+  response.SetHTTPHeaderField(http_names::kVary, "User-Agent, Referer");
   resource->SetResponse(response);
   EXPECT_TRUE(resource->MustReloadDueToVaryHeader(new_request));
 
   // Two matching
-  new_request.SetHTTPHeaderField(HTTPNames::Referer, "http://foo.com");
+  new_request.SetHTTPHeaderField(http_names::kReferer, "http://foo.com");
   EXPECT_FALSE(resource->MustReloadDueToVaryHeader(new_request));
 }
 
@@ -169,7 +169,8 @@ TEST(ResourceTest, RevalidationFailed) {
 
   EXPECT_EQ(original_cache_handler, resource->CacheHandler());
 
-  Persistent<MockResourceClient> client = new MockResourceClient;
+  Persistent<MockResourceClient> client =
+      MakeGarbageCollected<MockResourceClient>();
   resource->AddClient(client, nullptr);
 
   ResourceResponse revalidating_response(url);
@@ -216,7 +217,8 @@ TEST(ResourceTest, RevalidationSucceeded) {
 
   EXPECT_EQ(original_cache_handler, resource->CacheHandler());
 
-  Persistent<MockResourceClient> client = new MockResourceClient;
+  Persistent<MockResourceClient> client =
+      MakeGarbageCollected<MockResourceClient>();
   resource->AddClient(client, nullptr);
 
   ResourceResponse revalidating_response(url);
@@ -250,7 +252,8 @@ TEST(ResourceTest, RevalidationSucceededForResourceWithoutBody) {
   // Simulate a successful revalidation.
   resource->SetRevalidatingRequest(ResourceRequest(url));
 
-  Persistent<MockResourceClient> client = new MockResourceClient;
+  Persistent<MockResourceClient> client =
+      MakeGarbageCollected<MockResourceClient>();
   resource->AddClient(client, nullptr);
 
   ResourceResponse revalidating_response(url);
@@ -303,7 +306,8 @@ TEST(ResourceTest, RevalidationSucceededUpdateHeaders) {
   EXPECT_EQ("custom value",
             resource->GetResponse().HttpHeaderField("x-custom"));
 
-  Persistent<MockResourceClient> client = new MockResourceClient;
+  Persistent<MockResourceClient> client =
+      MakeGarbageCollected<MockResourceClient>();
   resource->AddClient(client, nullptr);
 
   // Perform a revalidation step.
@@ -371,7 +375,8 @@ TEST(ResourceTest, RedirectDuringRevalidation) {
   EXPECT_EQ(url, resource->LastResourceRequest().Url());
   EXPECT_EQ(original_cache_handler, resource->CacheHandler());
 
-  Persistent<MockResourceClient> client = new MockResourceClient;
+  Persistent<MockResourceClient> client =
+      MakeGarbageCollected<MockResourceClient>();
   resource->AddClient(client, nullptr);
 
   // The revalidating request is redirected.
@@ -408,7 +413,8 @@ TEST(ResourceTest, RedirectDuringRevalidation) {
   EXPECT_TRUE(client->NotifyFinishedCalled());
 
   // Test the case where a client is added after revalidation is completed.
-  Persistent<MockResourceClient> client2 = new MockResourceClient;
+  Persistent<MockResourceClient> client2 =
+      MakeGarbageCollected<MockResourceClient>();
   auto* platform = static_cast<TestingPlatformSupportWithMockScheduler*>(
       Platform::Current());
   resource->AddClient(client2, platform->test_task_runner().get());
@@ -431,7 +437,7 @@ TEST(ResourceTest, StaleWhileRevalidateCacheControl) {
   const KURL url("http://127.0.0.1:8000/foo.html");
   ResourceResponse response(url);
   response.SetHTTPStatusCode(200);
-  response.SetHTTPHeaderField(HTTPNames::Cache_Control,
+  response.SetHTTPHeaderField(http_names::kCacheControl,
                               "max-age=0, stale-while-revalidate=40");
 
   MockResource* resource = MockResource::Create(url);
@@ -458,7 +464,7 @@ TEST(ResourceTest, StaleWhileRevalidateCacheControlWithRedirect) {
   const KURL url("http://127.0.0.1:8000/foo.html");
   const KURL redirect_target_url("http://127.0.0.1:8000/food.html");
   ResourceResponse response(url);
-  response.SetHTTPHeaderField(HTTPNames::Cache_Control, "max-age=50");
+  response.SetHTTPHeaderField(http_names::kCacheControl, "max-age=50");
   response.SetHTTPStatusCode(200);
 
   // The revalidating request is redirected.
@@ -466,7 +472,7 @@ TEST(ResourceTest, StaleWhileRevalidateCacheControlWithRedirect) {
   redirect_response.SetHTTPHeaderField(
       "location", AtomicString(redirect_target_url.GetString()));
   redirect_response.SetHTTPStatusCode(302);
-  redirect_response.SetHTTPHeaderField(HTTPNames::Cache_Control,
+  redirect_response.SetHTTPHeaderField(http_names::kCacheControl,
                                        "max-age=0, stale-while-revalidate=40");
   redirect_response.SetAsyncRevalidationRequested(true);
   ResourceRequest redirected_revalidating_request(redirect_target_url);

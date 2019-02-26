@@ -36,8 +36,8 @@
 #include "content/shell/common/shell_content_client.h"
 #include "content/shell/common/shell_switches.h"
 #include "content/shell/gpu/shell_content_gpu_client.h"
-#include "content/shell/renderer/layout_test/layout_test_content_renderer_client.h"
 #include "content/shell/renderer/shell_content_renderer_client.h"
+#include "content/shell/renderer/web_test/web_test_content_renderer_client.h"
 #include "content/shell/utility/shell_content_utility_client.h"
 #include "gpu/config/gpu_switches.h"
 #include "ipc/ipc_buildflags.h"
@@ -209,10 +209,16 @@ bool ShellMainDelegate::BasicStartupComplete(int* exit_code) {
       return true;
     }
 #endif
-    command_line.AppendSwitch(switches::kDisableResizeLock);
     command_line.AppendSwitch(cc::switches::kEnableGpuBenchmarking);
     command_line.AppendSwitch(switches::kEnableLogging);
     command_line.AppendSwitch(switches::kAllowFileAccessFromFiles);
+#if !defined(OS_ANDROID)
+    // TODO(crbug/567947) Enable display compositor pixel dumps for Android
+    // once testing becomes possible on post-kitkat OSes, and once we've
+    // had a chance to debug the layout test failures that occur when this
+    // flag is present.
+    command_line.AppendSwitch(switches::kEnableDisplayCompositorPixelDump);
+#endif
     // only default to a software GL if the flag isn't already specified.
     if (!command_line.HasSwitch(switches::kUseGpuInTests) &&
         !command_line.HasSwitch(switches::kUseGL)) {
@@ -247,7 +253,9 @@ bool ShellMainDelegate::BasicStartupComplete(int* exit_code) {
     // checker imaging, since it's imcompatible with single threaded compositor
     // and display compositor pixel dumps.
     if (command_line.HasSwitch(switches::kEnableDisplayCompositorPixelDump)) {
-      command_line.AppendSwitch(switches::kRunAllCompositorStagesBeforeDraw);
+      // TODO(crbug.com/894613) Add kRunAllCompositorStagesBeforeDraw back here
+      // once you figure out why it causes so much layout test flakiness.
+      // command_line.AppendSwitch(switches::kRunAllCompositorStagesBeforeDraw);
       command_line.AppendSwitch(cc::switches::kDisableCheckerImaging);
     }
 
@@ -445,7 +453,7 @@ ContentGpuClient* ShellMainDelegate::CreateContentGpuClient() {
 
 ContentRendererClient* ShellMainDelegate::CreateContentRendererClient() {
   renderer_client_.reset(switches::IsRunWebTestsSwitchPresent()
-                             ? new LayoutTestContentRendererClient
+                             ? new WebTestContentRendererClient
                              : new ShellContentRendererClient);
 
   return renderer_client_.get();

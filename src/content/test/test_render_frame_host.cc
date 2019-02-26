@@ -19,7 +19,7 @@
 #include "content/common/frame_messages.h"
 #include "content/common/frame_owner_properties.h"
 #include "content/public/browser/navigation_throttle.h"
-#include "content/public/common/browser_side_navigation_policy.h"
+#include "content/public/common/navigation_policy.h"
 #include "content/public/common/url_constants.h"
 #include "content/public/common/url_utils.h"
 #include "content/public/test/browser_side_navigation_test_utils.h"
@@ -30,6 +30,7 @@
 #include "net/base/load_flags.h"
 #include "net/http/http_response_headers.h"
 #include "third_party/blink/public/common/associated_interfaces/associated_interface_provider.h"
+#include "third_party/blink/public/common/frame/frame_owner_element_type.h"
 #include "third_party/blink/public/common/frame/frame_policy.h"
 #include "third_party/blink/public/platform/modules/bluetooth/web_bluetooth.mojom.h"
 #include "third_party/blink/public/platform/web_mixed_content_context_type.h"
@@ -107,11 +108,11 @@ void TestRenderFrameHost::InitializeRenderFrameIfNeeded() {
 TestRenderFrameHost* TestRenderFrameHost::AppendChild(
     const std::string& frame_name) {
   std::string frame_unique_name = base::GenerateGUID();
-  OnCreateChildFrame(GetProcess()->GetNextRoutingID(),
-                     CreateStubInterfaceProviderRequest(),
-                     blink::WebTreeScopeType::kDocument, frame_name,
-                     frame_unique_name, false, base::UnguessableToken::Create(),
-                     blink::FramePolicy(), FrameOwnerProperties());
+  OnCreateChildFrame(
+      GetProcess()->GetNextRoutingID(), CreateStubInterfaceProviderRequest(),
+      blink::WebTreeScopeType::kDocument, frame_name, frame_unique_name, false,
+      base::UnguessableToken::Create(), blink::FramePolicy(),
+      FrameOwnerProperties(), blink::FrameOwnerElementType::kIframe);
   return static_cast<TestRenderFrameHost*>(
       child_creation_observer_.last_created_frame());
 }
@@ -247,7 +248,7 @@ void TestRenderFrameHost::SendBeforeUnloadACK(bool proceed) {
 }
 
 void TestRenderFrameHost::SimulateSwapOutACK() {
-  OnSwappedOut();
+  OnSwapOutACK();
 }
 
 void TestRenderFrameHost::NavigateAndCommitRendererInitiated(
@@ -271,6 +272,7 @@ void TestRenderFrameHost::SimulateFeaturePolicyHeader(
   blink::ParsedFeaturePolicy header(1);
   header[0].feature = feature;
   header[0].matches_all_origins = false;
+  header[0].disposition = blink::mojom::FeaturePolicyDisposition::kEnforce;
   header[0].origins = whitelist;
   DidSetFramePolicyHeaders(blink::WebSandboxFlags::kNone, header);
 }
@@ -446,7 +448,8 @@ void TestRenderFrameHost::SendRendererInitiatedNavigationRequest(
           base::nullopt /* devtools_initiator_info */);
   CommonNavigationParams common_params;
   common_params.url = url;
-  common_params.referrer = Referrer(GURL(), blink::kWebReferrerPolicyDefault);
+  common_params.referrer =
+      Referrer(GURL(), network::mojom::ReferrerPolicy::kDefault);
   common_params.transition = ui::PAGE_TRANSITION_LINK;
   common_params.navigation_type = FrameMsg_Navigate_Type::DIFFERENT_DOCUMENT;
   common_params.has_user_gesture = has_user_gesture;

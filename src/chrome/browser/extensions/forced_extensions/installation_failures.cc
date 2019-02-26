@@ -12,7 +12,8 @@
 namespace {
 
 using FailureMap =
-    std::map<extensions::ExtensionId, extensions::InstallationFailures::Reason>;
+    std::map<extensions::ExtensionId,
+             extensions::InstallationFailures::InstallationFailureData>;
 
 FailureMap& GetInstallationFailureMap(const Profile* profile) {
   static base::NoDestructor<std::map<const Profile*, FailureMap>> failure_maps;
@@ -28,15 +29,31 @@ void InstallationFailures::ReportFailure(const Profile* profile,
                                          const ExtensionId& id,
                                          Reason reason) {
   DCHECK_NE(reason, Reason::UNKNOWN);
-  GetInstallationFailureMap(profile).emplace(id, reason);
+  GetInstallationFailureMap(profile).emplace(
+      id, std::make_pair(reason, base::nullopt));
 }
 
 // static
-InstallationFailures::Reason InstallationFailures::Get(const Profile* profile,
-                                                       const ExtensionId& id) {
+void InstallationFailures::ReportCrxInstallError(
+    const Profile* profile,
+    const ExtensionId& id,
+    Reason reason,
+    CrxInstallErrorDetail crx_install_error) {
+  DCHECK(reason == Reason::CRX_INSTALL_ERROR_DECLINED ||
+         reason == Reason::CRX_INSTALL_ERROR_SANDBOXED_UNPACKER_FAILURE ||
+         reason == Reason::CRX_INSTALL_ERROR_OTHER);
+  GetInstallationFailureMap(profile).emplace(
+      id, std::make_pair(reason, crx_install_error));
+}
+
+// static
+InstallationFailures::InstallationFailureData InstallationFailures::Get(
+    const Profile* profile,
+    const ExtensionId& id) {
   FailureMap& map = GetInstallationFailureMap(profile);
   auto it = map.find(id);
-  return it == map.end() ? Reason::UNKNOWN : it->second;
+  return it == map.end() ? std::make_pair(Reason::UNKNOWN, base::nullopt)
+                         : it->second;
 }
 
 // static

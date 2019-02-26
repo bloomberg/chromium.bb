@@ -15,11 +15,10 @@
 #include "components/strings/grit/components_strings.h"
 #import "ios/chrome/browser/ui/colors/MDCPalette+CrAdditions.h"
 #import "ios/chrome/browser/ui/infobars/infobar_constants.h"
-#import "ios/chrome/browser/ui/infobars/infobar_view_sizing_delegate.h"
-#include "ios/chrome/browser/ui/ui_util.h"
-#import "ios/chrome/browser/ui/uikit_ui_util.h"
 #import "ios/chrome/browser/ui/util/label_link_controller.h"
 #import "ios/chrome/browser/ui/util/named_guide.h"
+#include "ios/chrome/browser/ui/util/ui_util.h"
+#import "ios/chrome/browser/ui/util/uikit_ui_util.h"
 #include "ios/chrome/grit/ios_theme_resources.h"
 #import "ios/third_party/material_components_ios/src/components/Buttons/src/MaterialButtons.h"
 #import "ios/third_party/material_components_ios/src/components/Typography/src/MaterialTypography.h"
@@ -201,32 +200,32 @@ UIImage* InfoBarCloseImage() {
 @end
 
 @implementation SwitchView {
-  UISwitch* switch_;
-  CGFloat preferredTotalWidth_;
+  UISwitch* _switch;
+  CGFloat _preferredTotalWidth;
   // Layout metrics for calculating item placement.
-  const LayoutMetrics* metrics_;
+  const LayoutMetrics* _metrics;
 }
 
 - (instancetype)initWithText:(NSString*)labelText isOn:(BOOL)isOn {
-  metrics_ = &kLayoutMetrics;
+  _metrics = &kLayoutMetrics;
 
   self = [super initWithText:labelText];
   if (!self)
     return nil;
 
   self.label.textColor = [UIColor blackColor];
-  switch_ = [[UISwitch alloc] initWithFrame:CGRectZero];
-  switch_.exclusiveTouch = YES;
-  switch_.accessibilityLabel = labelText;
-  switch_.onTintColor = [[MDCPalette cr_bluePalette] tint500];
-  switch_.on = isOn;
+  _switch = [[UISwitch alloc] initWithFrame:CGRectZero];
+  _switch.exclusiveTouch = YES;
+  _switch.accessibilityLabel = labelText;
+  _switch.onTintColor = [[MDCPalette cr_bluePalette] tint500];
+  _switch.on = isOn;
 
   // Computes the size and initializes the view.
   CGSize labelSize = self.label.frame.size;
-  CGSize switchSize = switch_.frame.size;
+  CGSize switchSize = _switch.frame.size;
   CGRect frameRect = CGRectMake(
       0, 0,
-      labelSize.width + metrics_->space_between_widgets + switchSize.width,
+      labelSize.width + _metrics->space_between_widgets + switchSize.width,
       std::max(labelSize.height, switchSize.height));
   [self setFrame:frameRect];
 
@@ -244,30 +243,30 @@ UIImage* InfoBarCloseImage() {
   switchFrame = AlignRectOriginAndSizeToPixels(switchFrame);
 
   [self.label setFrame:labelFrame];
-  [switch_ setFrame:switchFrame];
-  preferredTotalWidth_ = CGRectGetMaxX(switchFrame);
+  [_switch setFrame:switchFrame];
+  _preferredTotalWidth = CGRectGetMaxX(switchFrame);
   self.preferredLabelWidth = CGRectGetMaxX(labelFrame);
 
   [self addSubview:self.label];
-  [self addSubview:switch_];
+  [self addSubview:_switch];
   return self;
 }
 
 - (void)setTag:(NSInteger)tag target:(id)target action:(SEL)action {
-  [switch_ setTag:tag];
-  [switch_ addTarget:target
+  [_switch setTag:tag];
+  [_switch addTarget:target
                 action:action
       forControlEvents:UIControlEventValueChanged];
 }
 
 - (CGFloat)heightRequiredForFooterWithWidth:(CGFloat)width layout:(BOOL)layout {
   CGFloat widthLeftForLabel =
-      width - [switch_ frame].size.width - metrics_->space_between_widgets;
+      width - [_switch frame].size.width - _metrics->space_between_widgets;
   CGSize maxSize = CGSizeMake(widthLeftForLabel, CGFLOAT_MAX);
   CGSize labelSize =
       [[self.label text] cr_boundingSizeWithSize:maxSize
                                             font:[self.label font]];
-  CGFloat viewHeight = std::max(labelSize.height, [switch_ frame].size.height);
+  CGFloat viewHeight = std::max(labelSize.height, [_switch frame].size.height);
   if (layout) {
     // Lays out the label and the switch to fit in {width, viewHeight}.
     CGRect newLabelFrame;
@@ -278,17 +277,17 @@ UIImage* InfoBarCloseImage() {
     [self.label setFrame:newLabelFrame];
     CGRect newSwitchFrame;
     newSwitchFrame.origin.x =
-        CGRectGetMaxX(newLabelFrame) + metrics_->space_between_widgets;
-    newSwitchFrame.origin.y = (viewHeight - [switch_ frame].size.height) / 2;
-    newSwitchFrame.size = [switch_ frame].size;
+        CGRectGetMaxX(newLabelFrame) + _metrics->space_between_widgets;
+    newSwitchFrame.origin.y = (viewHeight - [_switch frame].size.height) / 2;
+    newSwitchFrame.size = [_switch frame].size;
     newSwitchFrame = AlignRectOriginAndSizeToPixels(newSwitchFrame);
-    [switch_ setFrame:newSwitchFrame];
+    [_switch setFrame:newSwitchFrame];
   }
   return viewHeight;
 }
 
 - (CGFloat)preferredWidth {
-  return preferredTotalWidth_;
+  return _preferredTotalWidth;
 }
 
 @end
@@ -330,6 +329,10 @@ UIImage* InfoBarCloseImage() {
 // Returns the marker delimiting the end of a link.
 + (NSString*)closingMarkerForLink;
 
+// How much of the infobar (in points) is visible (e.g., during showing/hiding
+// animation).
+@property(nonatomic, assign) CGFloat visibleHeight;
+
 @end
 
 @implementation ConfirmInfoBarView {
@@ -363,7 +366,6 @@ UIImage* InfoBarCloseImage() {
 }
 
 @synthesize visibleHeight = visibleHeight_;
-@synthesize sizingDelegate = sizingDelegate_;
 
 - (instancetype)initWithFrame:(CGRect)frame {
   self = [super initWithFrame:frame];
@@ -386,7 +388,7 @@ UIImage* InfoBarCloseImage() {
     leftMargin += metrics_->horizontal_space_between_icon_and_text;
   } else {
     leftMargin += metrics_->left_margin_on_first_line_when_icon_absent;
-    leftMargin += SafeAreaInsetsForView(self).left;
+    leftMargin += self.safeAreaInsets.left;
   }
   return leftMargin;
 }
@@ -394,8 +396,7 @@ UIImage* InfoBarCloseImage() {
 // Returns the width reserved for the close button.
 - (CGFloat)rightMarginOnFirstLine {
   return [closeButton_ imageView].image.size.width +
-         metrics_->close_button_inner_padding * 2 +
-         SafeAreaInsetsForView(self).right;
+         metrics_->close_button_inner_padding * 2 + self.safeAreaInsets.right;
 }
 
 // Returns the horizontal space available between the icon and the close
@@ -531,7 +532,7 @@ UIImage* InfoBarCloseImage() {
             [self layoutWideButtonAlignRight:button1_
                                    rightEdge:CGRectGetWidth(self.bounds) -
                                              metrics_->button_margin -
-                                             SafeAreaInsetsForView(self).right
+                                             self.safeAreaInsets.right
                                            y:heightOfFirstLine];
         [self layoutWideButtonAlignRight:button2_
                                rightEdge:leftOfRightmostButton -
@@ -560,7 +561,7 @@ UIImage* InfoBarCloseImage() {
       [self layoutWideButtonAlignRight:button
                              rightEdge:CGRectGetWidth(self.bounds) -
                                        metrics_->button_margin -
-                                       SafeAreaInsetsForView(self).right
+                                       self.safeAreaInsets.right
                                      y:heightOfFirstLine];
     }
     return metrics_->button_height;
@@ -732,7 +733,7 @@ UIImage* InfoBarCloseImage() {
   // The top safe area is ignored because at rest (i.e. not during animations)
   // the infobar is aligned to the bottom of the screen, and thus should not
   // have its top intersect with any safe area.
-  CGFloat bottomSafeAreaInset = SafeAreaInsetsForView(self).bottom;
+  CGFloat bottomSafeAreaInset = self.safeAreaInsets.bottom;
   requiredHeight += bottomSafeAreaInset;
 
   UILayoutGuide* guide =
@@ -760,10 +761,7 @@ UIImage* InfoBarCloseImage() {
 - (void)layoutSubviews {
   // Lays out the position of the icon.
   [imageView_ setFrame:[self frameOfIcon]];
-  targetHeight_ = [self computeRequiredHeightAndLayoutSubviews:YES];
-
-  if (sizingDelegate_)
-    [sizingDelegate_ didSetInfoBarTargetHeight:targetHeight_];
+  self.visibleHeight = [self computeRequiredHeightAndLayoutSubviews:YES];
   [self resetBackground];
 
   // Asks the BidiContainerView to reposition of all the subviews.
@@ -942,6 +940,8 @@ UIImage* InfoBarCloseImage() {
                              tag:tag1
                           target:target
                           action:action];
+  [button1_
+      setAccessibilityIdentifier:kConfirmInfobarButton1AccessibilityIdentifier];
   [self addSubview:button1_];
 
   button2_ = [self infoBarButton:title2
@@ -950,6 +950,8 @@ UIImage* InfoBarCloseImage() {
                              tag:tag2
                           target:target
                           action:action];
+  [button2_
+      setAccessibilityIdentifier:kConfirmInfobarButton2AccessibilityIdentifier];
   [self addSubview:button2_];
 }
 
@@ -1010,7 +1012,7 @@ UIImage* InfoBarCloseImage() {
   closeButtonSize.width += metrics_->close_button_inner_padding * 2;
   closeButtonSize.height += metrics_->close_button_inner_padding * 2;
   CGFloat x = CGRectGetMaxX(self.frame) - closeButtonSize.width -
-              SafeAreaInsetsForView(self).right;
+              self.safeAreaInsets.right;
   // Aligns the close button at the top (height includes touch padding).
   CGFloat y = 0;
   if (singleLineMode) {
@@ -1024,8 +1026,7 @@ UIImage* InfoBarCloseImage() {
 - (CGRect)frameOfIcon {
   CGSize iconSize = [imageView_ image].size;
   CGFloat y = metrics_->buttons_margin_top;
-  CGFloat x =
-      metrics_->close_button_margin_left + SafeAreaInsetsForView(self).left;
+  CGFloat x = metrics_->close_button_margin_left + self.safeAreaInsets.left;
   return CGRectMake(AlignValueToPixel(x), AlignValueToPixel(y), iconSize.width,
                     iconSize.height);
 }

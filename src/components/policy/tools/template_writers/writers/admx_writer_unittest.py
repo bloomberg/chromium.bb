@@ -2,17 +2,13 @@
 # Copyright (c) 2012 The Chromium Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
-
-
 """Unittests for writers.admx_writer."""
-
 
 import os
 import sys
 import unittest
 if __name__ == '__main__':
   sys.path.append(os.path.join(os.path.dirname(__file__), '../../../..'))
-
 
 from writers import admx_writer
 from writers import xml_writer_base_unittest
@@ -30,34 +26,41 @@ class AdmxWriterUnittest(xml_writer_base_unittest.XmlWriterBaseTest):
     # Writer configuration. This dictionary contains parameter used by the ADMX
     # Writer
     config = {
-      'win_supported_os': 'SUPPORTED_TESTOS',
-      'win_config' : {
-        'win' : {
-          'reg_mandatory_key_name': 'Software\\Policies\\Test',
-          'reg_recommended_key_name': 'Software\\Policies\\Test\\Recommended',
-          'mandatory_category_path': ['test_category'],
-          'recommended_category_path': ['test_recommended_category'],
-          'category_path_strings': {
-            'test_category': 'TestCategory',
-            'test_recommended_category': 'TestCategory - recommended',
-          },
-          'namespace': 'ADMXWriter.Test.Namespace',
+        'win_supported_os': 'SUPPORTED_TESTOS',
+        'win_config': {
+            'win': {
+                'reg_mandatory_key_name':
+                    'Software\\Policies\\Test',
+                'reg_recommended_key_name':
+                    'Software\\Policies\\Test\\Recommended',
+                'mandatory_category_path': ['test_category'],
+                'recommended_category_path': ['test_recommended_category'],
+                'category_path_strings': {
+                    'test_category': 'TestCategory',
+                    'test_recommended_category': 'TestCategory - recommended',
+                },
+                'namespace':
+                    'ADMXWriter.Test.Namespace',
+            },
+            'chrome_os': {
+                'reg_mandatory_key_name':
+                    'Software\\Policies\\CrOSTest',
+                'reg_recommended_key_name':
+                    'Software\\Policies\\CrOSTest\\Recommended',
+                'mandatory_category_path': ['cros_test_category'],
+                'recommended_category_path': ['cros_test_recommended_category'],
+                'category_path_strings': {
+                    'cros_test_category':
+                        'CrOSTestCategory',
+                    'cros_test_recommended_category':
+                        'CrOSTestCategory - recommended',
+                },
+                'namespace':
+                    'ADMXWriter.Test.Namespace.ChromeOS',
+            },
         },
-        'chrome_os' : {
-          'reg_mandatory_key_name': 'Software\\Policies\\CrOSTest',
-          'reg_recommended_key_name':
-            'Software\\Policies\\CrOSTest\\Recommended',
-          'mandatory_category_path': ['cros_test_category'],
-          'recommended_category_path': ['cros_test_recommended_category'],
-          'category_path_strings': {
-            'cros_test_category': 'CrOSTestCategory',
-            'cros_test_recommended_category': 'CrOSTestCategory - recommended',
-          },
-          'namespace': 'ADMXWriter.Test.Namespace.ChromeOS',
-        },
-      },
-      'admx_prefix': 'test_prefix',
-      'build': 'test_product',
+        'admx_prefix': 'test_prefix',
+        'build': 'test_product',
     }
     self.writer = self._GetWriter(config)
     self.writer.Init()
@@ -66,16 +69,16 @@ class AdmxWriterUnittest(xml_writer_base_unittest.XmlWriterBaseTest):
     return admx_writer.GetWriter(config)
 
   def _GetKey(self):
-    return "Test";
+    return "Test"
 
   def _GetCategory(self):
-    return "test_category";
+    return "test_category"
 
   def _GetCategoryRec(self):
-    return "test_recommended_category";
+    return "test_recommended_category"
 
   def _GetNamespace(self):
-    return "ADMXWriter.Test.Namespace";
+    return "ADMXWriter.Test.Namespace"
 
   def _GetPoliciesElement(self, doc):
     node_list = doc.getElementsByTagName('policies')
@@ -150,10 +153,7 @@ class AdmxWriterUnittest(xml_writer_base_unittest.XmlWriterBaseTest):
     self.AssertXMLEquals(output, expected_output)
 
   def testEmptyPolicyGroup(self):
-    empty_policy_group = {
-      'name': 'PolicyGroup',
-      'policies': []
-    }
+    empty_policy_group = {'name': 'PolicyGroup', 'policies': []}
     # Initialize writer to write a policy group.
     self.writer.BeginTemplate()
     # Write policy group
@@ -164,8 +164,7 @@ class AdmxWriterUnittest(xml_writer_base_unittest.XmlWriterBaseTest):
     expected_output = ''
     self.AssertXMLEquals(output, expected_output)
 
-    output = self.GetXMLOfChildren(
-        self._GetCategoriesElement(self.writer._doc))
+    output = self.GetXMLOfChildren(self._GetCategoriesElement(self.writer._doc))
     expected_output = (
         '<category displayName="$(string.' + self._GetCategory() + ')"'
         ' name="' + self._GetCategory() + '"/>\n'
@@ -180,13 +179,18 @@ class AdmxWriterUnittest(xml_writer_base_unittest.XmlWriterBaseTest):
 
   def testPolicyGroup(self):
     empty_policy_group = {
-      'name': 'PolicyGroup',
-      'policies': [
-          {'name': 'PolicyStub2',
-          'type': 'main'},
-          {'name': 'PolicyStub1',
-          'type': 'main'},
-      ]
+        'name':
+            'PolicyGroup',
+        'policies': [
+            {
+                'name': 'PolicyStub2',
+                'type': 'main'
+            },
+            {
+                'name': 'PolicyStub1',
+                'type': 'main'
+            },
+        ]
     }
     # Initialize writer to write a policy group.
     self.writer.BeginTemplate()
@@ -198,8 +202,7 @@ class AdmxWriterUnittest(xml_writer_base_unittest.XmlWriterBaseTest):
     expected_output = ''
     self.AssertXMLEquals(output, expected_output)
 
-    output = self.GetXMLOfChildren(
-        self._GetCategoriesElement(self.writer._doc))
+    output = self.GetXMLOfChildren(self._GetCategoriesElement(self.writer._doc))
     expected_output = (
         '<category displayName="$(string.' + self._GetCategory() + ')"'
         ' name="' + self._GetCategory() + '"/>\n'
@@ -211,21 +214,17 @@ class AdmxWriterUnittest(xml_writer_base_unittest.XmlWriterBaseTest):
         '</category>')
     self.AssertXMLEquals(output, expected_output)
 
-
   def _initWriterForPolicy(self, writer, policy):
     '''Initializes the writer to write the given policy next.
     '''
-    policy_group = {
-      'name': 'PolicyGroup',
-      'policies': [policy]
-    }
+    policy_group = {'name': 'PolicyGroup', 'policies': [policy]}
     writer.BeginTemplate()
     writer.BeginPolicyGroup(policy_group)
 
   def testMainPolicy(self):
     main_policy = {
-      'name': 'DummyMainPolicy',
-      'type': 'main',
+        'name': 'DummyMainPolicy',
+        'type': 'main',
     }
 
     self._initWriterForPolicy(self.writer, main_policy)
@@ -255,13 +254,13 @@ class AdmxWriterUnittest(xml_writer_base_unittest.XmlWriterBaseTest):
 
   def testRecommendedPolicy(self):
     main_policy = {
-      'name': 'DummyMainPolicy',
-      'type': 'main',
+        'name': 'DummyMainPolicy',
+        'type': 'main',
     }
 
     policy_group = {
-      'name': 'PolicyGroup',
-      'policies': [main_policy],
+        'name': 'PolicyGroup',
+        'policies': [main_policy],
     }
     self.writer.BeginTemplate()
     self.writer.BeginRecommendedPolicyGroup(policy_group)
@@ -291,17 +290,17 @@ class AdmxWriterUnittest(xml_writer_base_unittest.XmlWriterBaseTest):
 
   def testRecommendedOnlyPolicy(self):
     main_policy = {
-      'name': 'DummyMainPolicy',
-      'type': 'main',
-      'features': {
-        'can_be_recommended': True,
-        'can_be_mandatory': False,
-      }
+        'name': 'DummyMainPolicy',
+        'type': 'main',
+        'features': {
+            'can_be_recommended': True,
+            'can_be_mandatory': False,
+        }
     }
 
     policy_group = {
-      'name': 'PolicyGroup',
-      'policies': [main_policy],
+        'name': 'PolicyGroup',
+        'policies': [main_policy],
     }
     self.writer.BeginTemplate()
     self.writer.BeginRecommendedPolicyGroup(policy_group)
@@ -332,8 +331,8 @@ class AdmxWriterUnittest(xml_writer_base_unittest.XmlWriterBaseTest):
 
   def testStringPolicy(self):
     string_policy = {
-      'name': 'SampleStringPolicy',
-      'type': 'string',
+        'name': 'SampleStringPolicy',
+        'type': 'string',
     }
     self._initWriterForPolicy(self.writer, string_policy)
 
@@ -350,15 +349,15 @@ class AdmxWriterUnittest(xml_writer_base_unittest.XmlWriterBaseTest):
         '  <supportedOn ref="SUPPORTED_TESTOS"/>\n'
         '  <elements>\n'
         '    <text id="SampleStringPolicy" maxLength="1000000"'
-            ' valueName="SampleStringPolicy"/>\n'
+        ' valueName="SampleStringPolicy"/>\n'
         '  </elements>\n'
         '</policy>')
     self.AssertXMLEquals(output, expected_output)
 
   def testIntPolicy(self):
     int_policy = {
-      'name': 'SampleIntPolicy',
-      'type': 'int',
+        'name': 'SampleIntPolicy',
+        'type': 'int',
     }
     self._initWriterForPolicy(self.writer, int_policy)
 
@@ -382,11 +381,19 @@ class AdmxWriterUnittest(xml_writer_base_unittest.XmlWriterBaseTest):
 
   def testIntEnumPolicy(self):
     enum_policy = {
-      'name': 'SampleEnumPolicy',
-      'type': 'int-enum',
+        'name':
+            'SampleEnumPolicy',
+        'type':
+            'int-enum',
         'items': [
-          {'name': 'item_1', 'value': 0},
-          {'name': 'item_2', 'value': 1},
+            {
+                'name': 'item_1',
+                'value': 0
+            },
+            {
+                'name': 'item_2',
+                'value': 1
+            },
         ]
     }
 
@@ -421,11 +428,19 @@ class AdmxWriterUnittest(xml_writer_base_unittest.XmlWriterBaseTest):
 
   def testStringEnumPolicy(self):
     enum_policy = {
-      'name': 'SampleEnumPolicy',
-      'type': 'string-enum',
+        'name':
+            'SampleEnumPolicy',
+        'type':
+            'string-enum',
         'items': [
-          {'name': 'item_1', 'value': 'one'},
-          {'name': 'item_2', 'value': 'two'},
+            {
+                'name': 'item_1',
+                'value': 'one'
+            },
+            {
+                'name': 'item_2',
+                'value': 'two'
+            },
         ]
     }
 
@@ -441,11 +456,11 @@ class AdmxWriterUnittest(xml_writer_base_unittest.XmlWriterBaseTest):
         '<?xml version="1.0" ?>\n'
         '<policyDefinitions>\n'
         '  <policy class="' + self.writer.GetClass(enum_policy) + '"'
-          ' displayName="$(string.SampleEnumPolicy)"'
-          ' explainText="$(string.SampleEnumPolicy_Explain)"'
-          ' key="Software\\Policies\\' + self._GetKey() + '"'
-          ' name="SampleEnumPolicy"'
-          ' presentation="$(presentation.SampleEnumPolicy)">\n'
+        ' displayName="$(string.SampleEnumPolicy)"'
+        ' explainText="$(string.SampleEnumPolicy_Explain)"'
+        ' key="Software\\Policies\\' + self._GetKey() + '"'
+        ' name="SampleEnumPolicy"'
+        ' presentation="$(presentation.SampleEnumPolicy)">\n'
         '    <parentCategory ref="PolicyGroup"/>\n'
         '    <supportedOn ref="SUPPORTED_TESTOS"/>\n'
         '    <elements>\n'
@@ -468,8 +483,8 @@ class AdmxWriterUnittest(xml_writer_base_unittest.XmlWriterBaseTest):
 
   def testListPolicy(self):
     list_policy = {
-      'name': 'SampleListPolicy',
-      'type': 'list',
+        'name': 'SampleListPolicy',
+        'type': 'list',
     }
     self._initWriterForPolicy(self.writer, list_policy)
     self.writer.WritePolicy(list_policy)
@@ -494,12 +509,20 @@ class AdmxWriterUnittest(xml_writer_base_unittest.XmlWriterBaseTest):
 
   def testStringEnumListPolicy(self):
     list_policy = {
-      'name': 'SampleListPolicy',
-      'type': 'string-enum-list',
-      'items': [
-        {'name': 'item_1', 'value': 'one'},
-        {'name': 'item_2', 'value': 'two'},
-      ]
+        'name':
+            'SampleListPolicy',
+        'type':
+            'string-enum-list',
+        'items': [
+            {
+                'name': 'item_1',
+                'value': 'one'
+            },
+            {
+                'name': 'item_2',
+                'value': 'two'
+            },
+        ]
     }
     self._initWriterForPolicy(self.writer, list_policy)
     self.writer.WritePolicy(list_policy)
@@ -522,10 +545,10 @@ class AdmxWriterUnittest(xml_writer_base_unittest.XmlWriterBaseTest):
 
     self.AssertXMLEquals(output, expected_output)
 
-  def testDictionaryPolicy(self, is_external = False):
+  def testDictionaryPolicy(self, is_external=False):
     dict_policy = {
-      'name': 'SampleDictionaryPolicy',
-      'type': 'external' if is_external else 'dict',
+        'name': 'SampleDictionaryPolicy',
+        'type': 'external' if is_external else 'dict',
     }
     self._initWriterForPolicy(self.writer, dict_policy)
 
@@ -542,41 +565,49 @@ class AdmxWriterUnittest(xml_writer_base_unittest.XmlWriterBaseTest):
         '  <supportedOn ref="SUPPORTED_TESTOS"/>\n'
         '  <elements>\n'
         '    <text id="SampleDictionaryPolicy" maxLength="1000000"'
-            ' valueName="SampleDictionaryPolicy"/>\n'
+        ' valueName="SampleDictionaryPolicy"/>\n'
         '  </elements>\n'
         '</policy>')
     self.AssertXMLEquals(output, expected_output)
 
   def testExternalPolicy(self):
-    self.testDictionaryPolicy(is_external = True)
+    self.testDictionaryPolicy(is_external=True)
 
   def testPlatform(self):
     # Test that the writer correctly chooses policies of platform Windows.
-    self.assertTrue(self.writer.IsPolicySupported({
-      'supported_on': [
-        {'platforms': ['win', 'zzz']}, {'platforms': ['aaa']}
-      ]
-    }))
-    self.assertFalse(self.writer.IsPolicySupported({
-      'supported_on': [
-        {'platforms': ['mac', 'linux']}, {'platforms': ['aaa']}
-      ]
-    }))
+    self.assertTrue(
+        self.writer.IsPolicySupported({
+            'supported_on': [{
+                'platforms': ['win', 'zzz']
+            }, {
+                'platforms': ['aaa']
+            }]
+        }))
+    self.assertFalse(
+        self.writer.IsPolicySupported({
+            'supported_on': [{
+                'platforms': ['mac', 'linux']
+            }, {
+                'platforms': ['aaa']
+            }]
+        }))
 
   def testStringEncodings(self):
     enum_policy_a = {
-      'name': 'SampleEnumPolicy.A',
-      'type': 'string-enum',
-        'items': [
-          {'name': 'tls1.2', 'value': 'tls1.2'}
-        ]
+        'name': 'SampleEnumPolicy.A',
+        'type': 'string-enum',
+        'items': [{
+            'name': 'tls1.2',
+            'value': 'tls1.2'
+        }]
     }
     enum_policy_b = {
-      'name': 'SampleEnumPolicy.B',
-      'type': 'string-enum',
-        'items': [
-          {'name': 'tls1.2', 'value': 'tls1.2'}
-        ]
+        'name': 'SampleEnumPolicy.B',
+        'type': 'string-enum',
+        'items': [{
+            'name': 'tls1.2',
+            'value': 'tls1.2'
+        }]
     }
 
     dom_impl = minidom.getDOMImplementation('')
@@ -590,11 +621,11 @@ class AdmxWriterUnittest(xml_writer_base_unittest.XmlWriterBaseTest):
         '<?xml version="1.0" ?>\n'
         '<policyDefinitions>\n'
         '  <policy class="' + self.writer.GetClass(enum_policy_a) + '"'
-          ' displayName="$(string.SampleEnumPolicy_A)"'
-          ' explainText="$(string.SampleEnumPolicy_A_Explain)"'
-          ' key="Software\\Policies\\' + self._GetKey() + '"'
-          ' name="SampleEnumPolicy.A"'
-          ' presentation="$(presentation.SampleEnumPolicy.A)">\n'
+        ' displayName="$(string.SampleEnumPolicy_A)"'
+        ' explainText="$(string.SampleEnumPolicy_A_Explain)"'
+        ' key="Software\\Policies\\' + self._GetKey() + '"'
+        ' name="SampleEnumPolicy.A"'
+        ' presentation="$(presentation.SampleEnumPolicy.A)">\n'
         '    <parentCategory ref="PolicyGroup"/>\n'
         '    <supportedOn ref="SUPPORTED_TESTOS"/>\n'
         '    <elements>\n'
@@ -608,11 +639,11 @@ class AdmxWriterUnittest(xml_writer_base_unittest.XmlWriterBaseTest):
         '    </elements>\n'
         '  </policy>\n'
         '  <policy class="' + self.writer.GetClass(enum_policy_b) + '"'
-          ' displayName="$(string.SampleEnumPolicy_B)"'
-          ' explainText="$(string.SampleEnumPolicy_B_Explain)"'
-          ' key="Software\\Policies\\' + self._GetKey() + '"'
-          ' name="SampleEnumPolicy.B"'
-          ' presentation="$(presentation.SampleEnumPolicy.B)">\n'
+        ' displayName="$(string.SampleEnumPolicy_B)"'
+        ' explainText="$(string.SampleEnumPolicy_B_Explain)"'
+        ' key="Software\\Policies\\' + self._GetKey() + '"'
+        ' name="SampleEnumPolicy.B"'
+        ' presentation="$(presentation.SampleEnumPolicy.B)">\n'
         '    <parentCategory ref="PolicyGroup"/>\n'
         '    <supportedOn ref="SUPPORTED_TESTOS"/>\n'
         '    <elements>\n'

@@ -8,8 +8,8 @@
 // DO NOT MODIFY!
 
 // clang-format off
-#ifndef V8Uint8ClampedArray_h
-#define V8Uint8ClampedArray_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_BINDINGS_TESTS_RESULTS_CORE_V8_UINT_8_CLAMPED_ARRAY_H_
+#define THIRD_PARTY_BLINK_RENDERER_BINDINGS_TESTS_RESULTS_CORE_V8_UINT_8_CLAMPED_ARRAY_H_
 
 #include "third_party/blink/renderer/bindings/core/v8/generated_code_helper.h"
 #include "third_party/blink/renderer/bindings/core/v8/native_value_traits.h"
@@ -32,8 +32,8 @@ class V8Uint8ClampedArray {
  public:
   CORE_EXPORT static TestUint8ClampedArray* ToImpl(v8::Local<v8::Object> object);
   CORE_EXPORT static TestUint8ClampedArray* ToImplWithTypeCheck(v8::Isolate*, v8::Local<v8::Value>);
-  CORE_EXPORT static const WrapperTypeInfo wrapperTypeInfo;
-  static const int internalFieldCount = kV8DefaultWrapperInternalFieldCount;
+  CORE_EXPORT static const WrapperTypeInfo wrapper_type_info;
+  static constexpr int kInternalFieldCount = kV8DefaultWrapperInternalFieldCount;
 
   // Callback functions
 };
@@ -51,4 +51,4 @@ struct V8TypeOf<TestUint8ClampedArray> {
 
 }  // namespace blink
 
-#endif  // V8Uint8ClampedArray_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_BINDINGS_TESTS_RESULTS_CORE_V8_UINT_8_CLAMPED_ARRAY_H_

@@ -13,7 +13,7 @@ class HTMLElementTest : public PageTestBase {};
 
 TEST_F(HTMLElementTest, AdjustDirectionalityInFlatTree) {
   SetBodyContent("<bdi><summary><i id=target></i></summary></bdi>");
-  UpdateAllLifecyclePhases();
+  UpdateAllLifecyclePhasesForTest();
   GetDocument().getElementById("target")->remove();
   // Pass if not crashed.
 }

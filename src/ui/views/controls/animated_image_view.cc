@@ -7,8 +7,8 @@
 #include <utility>
 
 #include "base/logging.h"
+#include "cc/paint/skottie_wrapper.h"
 #include "ui/gfx/canvas.h"
-#include "ui/gfx/skottie_wrapper.h"
 #include "ui/views/widget/widget.h"
 
 namespace views {
@@ -52,21 +52,17 @@ void AnimatedImageView::Play() {
 
   state_ = State::kPlaying;
 
-  // We cannot play the animation unless we have a valid compositor.
-  if (!compositor_)
-    return;
-
-  // Ensure the class is added as an observer to receive clock ticks.
-  if (!compositor_->HasAnimationObserver(this))
-    compositor_->AddAnimationObserver(this);
+  SetCompositorFromWidget();
 
   animated_image_->Start();
 }
 
 void AnimatedImageView::Stop() {
+  if (state_ == State::kStopped)
+    return;
+
   DCHECK(animated_image_);
-  if (compositor_)
-    compositor_->RemoveAnimationObserver(this);
+  ClearCurrentCompositor();
 
   animated_image_->Stop();
   state_ = State::kStopped;
@@ -99,27 +95,21 @@ const char* AnimatedImageView::GetClassName() const {
 }
 
 void AnimatedImageView::NativeViewHierarchyChanged() {
-  // When switching a window from one display to another, the compositor
-  // associated with the widget changes.
-  AddedToWidget();
-}
-
-void AnimatedImageView::AddedToWidget() {
   ui::Compositor* compositor = GetWidget()->GetCompositor();
   DCHECK(compositor);
   if (compositor_ != compositor) {
-    if (compositor_ && compositor_->HasAnimationObserver(this))
-      compositor_->RemoveAnimationObserver(this);
-    compositor_ = compositor;
+    ClearCurrentCompositor();
+
+    // Restore the Play() state with the new compositor.
+    if (state_ == State::kPlaying)
+      SetCompositorFromWidget();
   }
 }
 
 void AnimatedImageView::RemovedFromWidget() {
   if (compositor_) {
     Stop();
-    if (compositor_->HasAnimationObserver(this))
-      compositor_->RemoveAnimationObserver(this);
-    compositor_ = nullptr;
+    ClearCurrentCompositor();
   }
 }
 
@@ -131,6 +121,22 @@ void AnimatedImageView::OnAnimationStep(base::TimeTicks timestamp) {
 void AnimatedImageView::OnCompositingShuttingDown(ui::Compositor* compositor) {
   if (compositor_ == compositor) {
     Stop();
+    ClearCurrentCompositor();
+  }
+}
+
+void AnimatedImageView::SetCompositorFromWidget() {
+  DCHECK(!compositor_);
+  auto* widget = GetWidget();
+  DCHECK(widget);
+  compositor_ = widget->GetCompositor();
+  DCHECK(!compositor_->HasAnimationObserver(this));
+  compositor_->AddAnimationObserver(this);
+}
+
+void AnimatedImageView::ClearCurrentCompositor() {
+  if (compositor_) {
+    DCHECK(compositor_->HasAnimationObserver(this));
     compositor_->RemoveAnimationObserver(this);
     compositor_ = nullptr;
   }

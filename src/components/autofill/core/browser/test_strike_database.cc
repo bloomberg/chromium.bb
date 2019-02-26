@@ -12,32 +12,19 @@ TestStrikeDatabase::TestStrikeDatabase() {}
 
 TestStrikeDatabase::~TestStrikeDatabase() {}
 
-void TestStrikeDatabase::GetStrikes(const std::string key,
-                                    const StrikesCallback& outer_callback) {
+void TestStrikeDatabase::GetProtoStrikes(
+    const std::string key,
+    const StrikesCallback& outer_callback) {
   outer_callback.Run(GetStrikesForTesting(key));
 }
 
-void TestStrikeDatabase::AddStrike(const std::string key,
-                                   const StrikesCallback& outer_callback) {
-  std::unordered_map<std::string, StrikeData>::iterator it = db_.find(key);
-  StrikeData strike_data;
-  strike_data.set_last_update_timestamp(
-      base::Time::Now().ToDeltaSinceWindowsEpoch().InMicroseconds());
-  if (it != db_.end())
-    strike_data.set_num_strikes(it->second.num_strikes() + 1);
-  else
-    strike_data.set_num_strikes(1);
-  db_[key] = strike_data;
-  outer_callback.Run(strike_data.num_strikes());
-}
-
-void TestStrikeDatabase::ClearAllStrikes(
+void TestStrikeDatabase::ClearAllProtoStrikes(
     const ClearStrikesCallback& outer_callback) {
   db_.clear();
   outer_callback.Run(/*success=*/true);
 }
 
-void TestStrikeDatabase::ClearAllStrikesForKey(
+void TestStrikeDatabase::ClearAllProtoStrikesForKey(
     const std::string& key,
     const ClearStrikesCallback& outer_callback) {
   db_.erase(key);

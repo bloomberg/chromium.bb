@@ -57,7 +57,6 @@ PlatformSharedMemoryRegion::TakeFromSharedMemoryHandle(
     const SharedMemoryHandle& handle,
     Mode mode) {
   CHECK(mode == Mode::kReadOnly || mode == Mode::kUnsafe);
-  CHECK(handle.GetType() == SharedMemoryHandle::MACH);
   if (!handle.IsValid())
     return {};
 
@@ -127,7 +126,7 @@ bool PlatformSharedMemoryRegion::ConvertToReadOnly(void* mapped_addr) {
   kern_return_t kr = mach_make_memory_entry_64(
       mach_task_self(), &allocation_size,
       reinterpret_cast<memory_object_offset_t>(temp_addr), VM_PROT_READ,
-      named_right.receive(), MACH_PORT_NULL);
+      mac::ScopedMachSendRight::Receiver(named_right).get(), MACH_PORT_NULL);
   if (kr != KERN_SUCCESS) {
     MACH_DLOG(ERROR, kr) << "mach_make_memory_entry_64";
     return false;
@@ -197,7 +196,7 @@ PlatformSharedMemoryRegion PlatformSharedMemoryRegion::Create(Mode mode,
       mach_task_self(), &vm_size,
       0,  // Address.
       MAP_MEM_NAMED_CREATE | VM_PROT_READ | VM_PROT_WRITE,
-      named_right.receive(),
+      mac::ScopedMachSendRight::Receiver(named_right).get(),
       MACH_PORT_NULL);  // Parent handle.
   if (kr != KERN_SUCCESS)
     LogCreateError(CreateError::CREATE_FILE_MAPPING_FAILURE, kr);

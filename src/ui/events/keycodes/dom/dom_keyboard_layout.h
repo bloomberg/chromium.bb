@@ -62,6 +62,8 @@ extern const DomCode writing_system_key_domcodes[];
 
 extern const size_t kWritingSystemKeyDomCodeEntries;
 
+extern const uint32_t kHankakuZenkakuPlaceholder;
+
 }  // namespace ui
 
 #endif  // UI_EVENTS_KEYCODES_DOM_DOM_KEYBOARD_LAYOUT_H_

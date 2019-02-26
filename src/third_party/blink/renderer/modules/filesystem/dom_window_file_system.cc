@@ -156,15 +156,15 @@ mojom::blink::ChooseFileSystemEntryType ConvertChooserType(const String& input,
 }
 
 Vector<mojom::blink::ChooseFileSystemEntryAcceptsOptionPtr> ConvertAccepts(
-    const HeapVector<ChooseFileSystemEntriesOptionsAccepts>& accepts) {
+    const HeapVector<Member<ChooseFileSystemEntriesOptionsAccepts>>& accepts) {
   Vector<mojom::blink::ChooseFileSystemEntryAcceptsOptionPtr> result;
   result.ReserveInitialCapacity(accepts.size());
   for (const auto& a : accepts) {
     result.emplace_back(
         blink::mojom::blink::ChooseFileSystemEntryAcceptsOption::New(
-            a.hasDescription() ? a.description() : g_empty_string,
-            a.hasMimeTypes() ? a.mimeTypes() : Vector<String>(),
-            a.hasExtensions() ? a.extensions() : Vector<String>()));
+            a->hasDescription() ? a->description() : g_empty_string,
+            a->hasMimeTypes() ? a->mimeTypes() : Vector<String>(),
+            a->hasExtensions() ? a->extensions() : Vector<String>()));
   }
   return result;
 }
@@ -179,13 +179,16 @@ ScriptPromise CreateFileHandle(ScriptState* script_state,
   // TODO(mek): Try to create handle directly rather than having to do more
   // IPCs to get the actual entries.
   if (is_directory) {
-    fs->GetDirectory(fs->root(), entry->base_name, FileSystemFlags(),
-                     new EntryCallbacks::OnDidGetEntryPromiseImpl(new_resolver),
-                     new PromiseErrorCallback(new_resolver));
+    fs->GetDirectory(
+        fs->root(), entry->base_name, FileSystemFlags::Create(),
+        MakeGarbageCollected<EntryCallbacks::OnDidGetEntryPromiseImpl>(
+            new_resolver),
+        MakeGarbageCollected<PromiseErrorCallback>(new_resolver));
   } else {
-    fs->GetFile(fs->root(), entry->base_name, FileSystemFlags(),
-                new EntryCallbacks::OnDidGetEntryPromiseImpl(new_resolver),
-                new PromiseErrorCallback(new_resolver));
+    fs->GetFile(fs->root(), entry->base_name, FileSystemFlags::Create(),
+                MakeGarbageCollected<EntryCallbacks::OnDidGetEntryPromiseImpl>(
+                    new_resolver),
+                MakeGarbageCollected<PromiseErrorCallback>(new_resolver));
   }
   return result;
 }
@@ -195,7 +198,7 @@ ScriptPromise CreateFileHandle(ScriptState* script_state,
 ScriptPromise DOMWindowFileSystem::chooseFileSystemEntries(
     ScriptState* script_state,
     LocalDOMWindow& window,
-    const ChooseFileSystemEntriesOptions& options) {
+    const ChooseFileSystemEntriesOptions* options) {
   if (!base::FeatureList::IsEnabled(blink::features::kWritableFilesAPI)) {
     return ScriptPromise::RejectWithDOMException(
         script_state, DOMException::Create(DOMExceptionCode::kAbortError));
@@ -221,27 +224,27 @@ ScriptPromise DOMWindowFileSystem::chooseFileSystemEntries(
   }
 
   Vector<mojom::blink::ChooseFileSystemEntryAcceptsOptionPtr> accepts;
-  if (options.hasAccepts())
-    accepts = ConvertAccepts(options.accepts());
+  if (options->hasAccepts())
+    accepts = ConvertAccepts(options->accepts());
 
   auto* resolver = ScriptPromiseResolver::Create(script_state);
   ScriptPromise result = resolver->Promise();
   FileSystemDispatcher::From(document).GetFileSystemManager().ChooseEntry(
-      ConvertChooserType(options.type(), options.multiple()),
-      std::move(accepts), !options.excludeAcceptAllOption(),
+      ConvertChooserType(options->type(), options->multiple()),
+      std::move(accepts), !options->excludeAcceptAllOption(),
       WTF::Bind(
           [](ScriptPromiseResolver* resolver,
-             const ChooseFileSystemEntriesOptions& options,
+             const ChooseFileSystemEntriesOptions* options,
              base::File::Error result,
              Vector<mojom::blink::FileSystemEntryPtr> entries) {
             if (result != base::File::FILE_OK) {
-              resolver->Reject(FileError::CreateDOMException(result));
+              resolver->Reject(file_error::CreateDOMException(result));
               return;
             }
-            bool is_directory = options.type() == "openDirectory";
+            bool is_directory = options->type() == "openDirectory";
             ScriptState* script_state = resolver->GetScriptState();
             ScriptState::Scope scope(script_state);
-            if (options.multiple()) {
+            if (options->multiple()) {
               Vector<ScriptPromise> result;
               result.ReserveInitialCapacity(entries.size());
               for (const auto& entry : entries) {
@@ -257,7 +260,7 @@ ScriptPromise DOMWindowFileSystem::chooseFileSystemEntries(
                       .GetScriptValue());
             }
           },
-          WrapPersistent(resolver), options));
+          WrapPersistent(resolver), WrapPersistent(options)));
   return result;
 }
 

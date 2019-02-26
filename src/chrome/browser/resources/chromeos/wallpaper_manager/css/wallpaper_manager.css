@@ -127,20 +127,6 @@ body.v1 {
   position: relative;
 }
 
-#spinner-container {
-  -webkit-box-align: center;
-  -webkit-box-pack: center;
-  background: url(chrome://resources/images/throbber_medium.svg) center/32px
-      no-repeat;
-  display: -webkit-box;
-  height: 287px;
-  padding-bottom: 15px;
-  padding-top: 5px;
-  position: absolute;
-  top: 0;
-  width: 100%;
-}
-
 #wallpaper-set-by-message {
   height: 30px;
   padding-inline-end: 5px;
@@ -409,6 +395,7 @@ body.v2 {
 .v2 .dialog-body {
   display: flex;
   height: 100%;
+  min-height: 0;
 }
 
 .v2 .dialog-topbar {
@@ -823,11 +810,13 @@ html[dir='rtl'] .v2 .top-header-contents .more-options {
   outline: none;
 }
 
-.v2 .image-picker-offline .daily-refresh-slider {
+.v2 .image-picker-offline .daily-refresh-slider,
+.v2 .daily-refresh-disabled .daily-refresh-slider {
   pointer-events: none;
 }
 
-.v2 .image-picker-offline img.slide-show {
+.v2 .image-picker-offline img.slide-show,
+.v2 .daily-refresh-disabled img.slide-show {
   -webkit-filter: grayscale(1);
 }
 

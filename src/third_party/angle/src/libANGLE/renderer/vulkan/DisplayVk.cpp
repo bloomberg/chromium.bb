@@ -21,8 +21,7 @@ namespace rx
 
 DisplayVk::DisplayVk(const egl::DisplayState &state)
     : DisplayImpl(state), vk::Context(new RendererVk()), mScratchBuffer(1000u)
-{
-}
+{}
 
 DisplayVk::~DisplayVk()
 {
@@ -32,7 +31,7 @@ DisplayVk::~DisplayVk()
 egl::Error DisplayVk::initialize(egl::Display *display)
 {
     ASSERT(mRenderer != nullptr && display != nullptr);
-    angle::Result result = mRenderer->initialize(this, display->getAttributeMap(), getWSIName());
+    angle::Result result = mRenderer->initialize(this, display, getWSIName());
     ANGLE_TRY(angle::ToEGL(result, this, EGL_NOT_INITIALIZED));
     return egl::NoError();
 }
@@ -159,8 +158,7 @@ StreamProducerImpl *DisplayVk::createStreamProducerD3DTexture(
 
 gl::Version DisplayVk::getMaxSupportedESVersion() const
 {
-    UNIMPLEMENTED();
-    return gl::Version(0, 0);
+    return mRenderer->getMaxSupportedESVersion();
 }
 
 void DisplayVk::generateExtensions(egl::DisplayExtensions *outExtensions) const
@@ -188,16 +186,22 @@ bool DisplayVk::getScratchBuffer(size_t requstedSizeBytes,
     return mScratchBuffer.get(requstedSizeBytes, scratchBufferOut);
 }
 
-void DisplayVk::handleError(VkResult result, const char *file, unsigned int line)
+void DisplayVk::handleError(VkResult result,
+                            const char *file,
+                            const char *function,
+                            unsigned int line)
 {
+    ASSERT(result != VK_SUCCESS);
+
     std::stringstream errorStream;
     errorStream << "Internal Vulkan error: " << VulkanResultString(result) << ", in " << file
-                << ", line " << line << ".";
+                << ", " << function << ":" << line << ".";
     mStoredErrorString = errorStream.str();
 
     if (result == VK_ERROR_DEVICE_LOST)
     {
-        mRenderer->markDeviceLost();
+        WARN() << mStoredErrorString;
+        mRenderer->notifyDeviceLost();
     }
 }
 

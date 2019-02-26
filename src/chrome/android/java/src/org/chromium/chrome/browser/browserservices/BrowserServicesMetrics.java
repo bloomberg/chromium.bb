@@ -7,8 +7,8 @@ package org.chromium.chrome.browser.browserservices;
 import android.os.SystemClock;
 import android.support.annotation.IntDef;
 
+import org.chromium.base.metrics.CachedMetrics;
 import org.chromium.base.metrics.RecordHistogram;
-import org.chromium.base.metrics.RecordUserAction;
 
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
@@ -45,26 +45,20 @@ public class BrowserServicesMetrics {
     }
 
     /**
-     * Records that a Trusted Web Activity has been opened.
-     */
-    public static void recordTwaOpened() {
-        RecordUserAction.record("BrowserServices.TwaOpened");
-    }
-
-    /**
-     * Records the time that a Trusted Web Activity has been open for.
-     */
-    public static void recordTwaOpenTime(long duration, TimeUnit unit) {
-        RecordHistogram.recordTimesHistogram("BrowserServices.TwaOpenTime", duration, unit);
-    }
-
-    /**
      * Returns a {@link TimingMetric} that records the amount of time spent querying the Android
      * system for ResolveInfos that will deal with a given URL when launching from a background
      * service.
      */
     public static TimingMetric getServiceTabResolveInfoTimingContext() {
         return new TimingMetric("BrowserServices.ServiceTabResolveInfoQuery");
+    }
+
+    /**
+     * Returns a {@link TimingMetric} that records the amount of time spent opening the
+     * {@link ClientAppDataRegister}.
+     */
+    public static TimingMetric getClientAppDataLoadTimingContext() {
+        return new TimingMetric("BrowserServices.ClientAppDataLoad");
     }
 
     /**
@@ -85,8 +79,9 @@ public class BrowserServicesMetrics {
 
         @Override
         public void close() {
-            RecordHistogram.recordMediumTimesHistogram(
-                    mMetric, now() - mStart, TimeUnit.MILLISECONDS);
+            // Use {@link CachedMetrics} so this can be called before native is loaded.
+            new CachedMetrics.MediumTimesHistogramSample(mMetric, TimeUnit.MILLISECONDS)
+                    .record(now() - mStart);
         }
     }
 

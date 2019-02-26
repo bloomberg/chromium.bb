@@ -9,6 +9,7 @@
 #include <limits>
 
 #include "base/bind.h"
+#include "base/logging.h"
 #include "base/single_thread_task_runner.h"
 #include "base/time/time.h"
 #include "chromecast/media/cma/backend/audio_decoder_for_mixer.h"
@@ -93,7 +94,7 @@ void AvSyncVideo::UpkeepAvSync() {
   }
 
   if (!backend_->video_decoder() || !backend_->audio_decoder()) {
-    VLOG(4) << "No video decoder available.";
+    DVLOG(4) << "No video decoder available.";
     return;
   }
 
@@ -129,9 +130,9 @@ void AvSyncVideo::UpkeepAvSync() {
   }
 
   if (video_pts_->num_samples() < 10 || audio_pts_->num_samples() < 20) {
-    VLOG(4) << "Linear regression samples too little."
-            << " video_pts_->num_samples()=" << video_pts_->num_samples()
-            << " audio_pts_->num_samples()=" << audio_pts_->num_samples();
+    DVLOG(4) << "Linear regression samples too little."
+             << " video_pts_->num_samples()=" << video_pts_->num_samples()
+             << " audio_pts_->num_samples()=" << audio_pts_->num_samples();
     return;
   }
 
@@ -147,7 +148,7 @@ void AvSyncVideo::UpkeepAvSync() {
       !audio_pts_->EstimateY(now, &linear_regression_apts, &error) ||
       !video_pts_->EstimateSlope(&vpts_slope, &vpts_slope_error) ||
       !audio_pts_->EstimateSlope(&apts_slope, &apts_slope_error)) {
-    VLOG(3) << "Failed to get linear regression estimate.";
+    DVLOG(3) << "Failed to get linear regression estimate.";
     return;
   }
 
@@ -173,13 +174,13 @@ void AvSyncVideo::UpkeepAvSync() {
   }
 
   if (vpts_slope_error > 0.00001) {
-    VLOG(3) << "vpts slope estimate error too big=" << vpts_slope_error;
+    DVLOG(3) << "vpts slope estimate error too big=" << vpts_slope_error;
     return;
   }
 
   if (apts_slope_error > 0.00001 || audio_pts_->num_samples() < 1000) {
-    VLOG(3) << "apts slope estimate error too big. error=" << apts_slope_error
-            << " num_samples=" << audio_pts_->num_samples();
+    DVLOG(3) << "apts slope estimate error too big. error=" << apts_slope_error
+             << " num_samples=" << audio_pts_->num_samples();
     return;
   }
 
@@ -217,27 +218,27 @@ void AvSyncVideo::UpkeepAvSync() {
     first_audio_pts_received_ = true;
   }
 
-  VLOG(3) << "Pts_monitor."
-          << " linear_regression_difference=" << linear_regression_difference
-          << " apts_slope=" << apts_slope
-          << " current_av_sync_audio_playback_rate_="
-          << current_av_sync_audio_playback_rate_
-          << " new_raw_vpts=" << new_raw_vpts
-          << " new_raw_apts=" << new_raw_apts
-          << " current_time=" << backend_->MonotonicClockNow()
-          << " vpts_slope=" << vpts_slope
-          << " vpts_slope_error=" << vpts_slope_error
-          << " apts_slope=" << apts_slope
-          << " apts_slope_error=" << apts_slope_error
-          << " video_pts_->num_samples()=" << video_pts_->num_samples()
-          << " audio_pts_->num_samples()=" << audio_pts_->num_samples();
+  DVLOG(3) << "Pts_monitor."
+           << " linear_regression_difference=" << linear_regression_difference
+           << " apts_slope=" << apts_slope
+           << " current_av_sync_audio_playback_rate_="
+           << current_av_sync_audio_playback_rate_
+           << " new_raw_vpts=" << new_raw_vpts
+           << " new_raw_apts=" << new_raw_apts
+           << " current_time=" << backend_->MonotonicClockNow()
+           << " vpts_slope=" << vpts_slope
+           << " vpts_slope_error=" << vpts_slope_error
+           << " apts_slope=" << apts_slope
+           << " apts_slope_error=" << apts_slope_error
+           << " video_pts_->num_samples()=" << video_pts_->num_samples()
+           << " audio_pts_->num_samples()=" << audio_pts_->num_samples();
 
   av_sync_difference_sum_ += linear_regression_difference;
   ++av_sync_difference_count_;
 
   if (GetContentFrameRate() < kAvSyncFpsThreshold) {
-    VLOG(3) << "Content frame rate=" << GetContentFrameRate()
-            << ". Not AV syncing.";
+    DVLOG(3) << "Content frame rate=" << GetContentFrameRate()
+             << ". Not AV syncing.";
   }
 
   AudioRateUpkeep(now, new_raw_vpts, new_raw_apts, apts_slope, vpts_slope,
@@ -390,7 +391,7 @@ void AvSyncVideo::GatherPlaybackStatistics() {
   double error = 0.0;
   if (!video_pts_->EstimateY(current_time, &linear_regression_vpts, &error) ||
       !audio_pts_->EstimateY(current_time, &linear_regression_apts, &error)) {
-    VLOG(3) << "Failed to get linear regression estimate.";
+    DVLOG(3) << "Failed to get linear regression estimate.";
     return;
   }
 

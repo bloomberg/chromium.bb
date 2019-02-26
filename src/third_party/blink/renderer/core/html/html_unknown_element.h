@@ -40,12 +40,12 @@ class HTMLUnknownElement final : public HTMLElement {
  public:
   static HTMLUnknownElement* Create(const QualifiedName& tag_name,
                                     Document& document) {
-    return new HTMLUnknownElement(tag_name, document);
+    return MakeGarbageCollected<HTMLUnknownElement>(tag_name, document);
   }
 
- private:
   HTMLUnknownElement(const QualifiedName&, Document&);
 
+ private:
   bool IsHTMLUnknownElement() const override { return true; }
 };
 

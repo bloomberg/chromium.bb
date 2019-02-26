@@ -219,7 +219,7 @@ TEST_F(DocumentMarkerControllerTest, UpdateRenderedRects) {
       MarkerController().LayoutRectsForTextMatchMarkers();
   EXPECT_EQ(1u, rendered_rects.size());
 
-  div->setAttribute(HTMLNames::styleAttr, "margin: 200px");
+  div->setAttribute(html_names::kStyleAttr, "margin: 200px");
   GetDocument().UpdateStyleAndLayout();
   Vector<IntRect> new_rendered_rects =
       MarkerController().LayoutRectsForTextMatchMarkers();
@@ -367,6 +367,45 @@ TEST_F(DocumentMarkerControllerTest, RemoveSuggestionMarkerByTag) {
   const SuggestionMarker& marker =
       *ToSuggestionMarker(MarkerController().Markers()[0]);
   MarkerController().RemoveSuggestionMarkerByTag(*ToText(text), marker.Tag());
+  EXPECT_EQ(0u, MarkerController().Markers().size());
+}
+
+TEST_F(DocumentMarkerControllerTest, RemoveSuggestionMarkerInRangeOnFinish) {
+  SetBodyContent("<div contenteditable>foo</div>");
+  Element* div = GetDocument().QuerySelector("div");
+  Node* text = div->firstChild();
+
+  // Add a regular suggestion marker, RemoveSuggestionMarkerInRangeOnFinish()
+  // should not remove it.
+  MarkerController().AddSuggestionMarker(
+      EphemeralRange(Position(text, 0), Position(text, 2)),
+      SuggestionMarkerProperties());
+
+  ASSERT_EQ(1u, MarkerController().Markers().size());
+  MarkerController().RemoveSuggestionMarkerInRangeOnFinish(
+      EphemeralRangeInFlatTree(PositionInFlatTree(text, 0),
+                               PositionInFlatTree(text, 2)));
+
+  EXPECT_EQ(1u, MarkerController().Markers().size());
+
+  const SuggestionMarker& marker =
+      *ToSuggestionMarker(MarkerController().Markers()[0]);
+  MarkerController().RemoveSuggestionMarkerByTag(*ToText(text), marker.Tag());
+  ASSERT_EQ(0u, MarkerController().Markers().size());
+
+  // Add a suggestion marker which need to be removed after finish composing,
+  // RemoveSuggestionMarkerInRangeOnFinish() should remove it.
+  MarkerController().AddSuggestionMarker(
+      EphemeralRange(Position(text, 0), Position(text, 2)),
+      SuggestionMarkerProperties::Builder()
+          .SetRemoveOnFinishComposing(true)
+          .Build());
+
+  ASSERT_EQ(1u, MarkerController().Markers().size());
+
+  MarkerController().RemoveSuggestionMarkerInRangeOnFinish(
+      EphemeralRangeInFlatTree(PositionInFlatTree(text, 0),
+                               PositionInFlatTree(text, 2)));
   EXPECT_EQ(0u, MarkerController().Markers().size());
 }
 

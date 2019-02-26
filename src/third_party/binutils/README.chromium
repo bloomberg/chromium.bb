@@ -17,7 +17,7 @@ binutils inside the roots.
 
 Local patches:
 
- * (build-all.sh|build-one.sh|upload.sh) scripts for building the binutils
+ * (build-all.sh|build-one.sh|upload.sh|download.py) scripts for building the binutils
    binaries and uploading them to Google storage.
 
 Upgrading:

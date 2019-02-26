@@ -155,10 +155,23 @@ class TastTest(RemoteTest):
     return self._suite_name
 
   def build_test_command(self):
+    if '--gtest_filter=%s' % self.suite_name in self._additional_args:
+      logging.info(
+          'GTest filtering not supported for tast tests. The '
+          '--gtest_filter arg will be ignored.')
+      self._additional_args.remove('--gtest_filter=%s' % self.suite_name)
+    if any(arg.startswith('--gtest_repeat') for arg in self._additional_args):
+      logging.info(
+          '--gtest_repeat not supported for tast tests. The arg will be '
+          'ignored.')
+      self._additional_args = [
+          arg for arg in self._additional_args if not arg.startswith(
+              '--gtest_repeat')]
+
     if self._additional_args:
-      raise TestFormatError(
-          'Tast tests should not have additional args: %s' % (
-              self._additional_args))
+      logging.error(
+          'Tast tests should not have additional args. These will be '
+          'ignored: %s', self._additional_args)
 
     self._vm_test_cmd += [
         '--deploy',
@@ -243,6 +256,13 @@ class GTestTest(RemoteTest):
           'vpython -vpython-spec %s -vpython-tool install' % (
               vpython_spec_path),
       ])
+
+    # Load vivid before running capture_unittests
+    # TODO(crbug.com/904730): Once we start loading vivid in init service,
+    # we can remove this code.
+    if self._test_exe == 'capture_unittests':
+      vm_test_script_contents.append(
+          'echo "test0000" | sudo -S modprobe vivid n_devs=1 node_types=0x1')
 
     test_invocation = (
         './%s --test-launcher-shard-index=%d '
@@ -332,6 +352,13 @@ class BrowserSanityTest(RemoteTest):
           'GTest filtering not supported for the sanity test. The '
           '--gtest_filter arg will be ignored.')
       self._additional_args.remove('--gtest_filter=%s' % SANITY_TEST_TARGET)
+    if any(arg.startswith('--gtest_repeat') for arg in self._additional_args):
+      logging.info(
+          '--gtest_repeat not supported for sanity test. The arg will be '
+          'ignored.')
+      self._additional_args = [
+          arg for arg in self._additional_args if not arg.startswith(
+              '--gtest_repeat')]
 
     if self._additional_args:
       raise TestFormatError(

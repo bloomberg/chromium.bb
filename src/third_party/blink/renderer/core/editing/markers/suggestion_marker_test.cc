@@ -12,20 +12,20 @@ namespace blink {
 class SuggestionMarkerTest : public testing::Test {};
 
 TEST_F(SuggestionMarkerTest, MarkerType) {
-  DocumentMarker* marker =
-      new SuggestionMarker(0, 1, SuggestionMarkerProperties());
+  DocumentMarker* marker = MakeGarbageCollected<SuggestionMarker>(
+      0, 1, SuggestionMarkerProperties());
   EXPECT_EQ(DocumentMarker::kSuggestion, marker->GetType());
 }
 
 TEST_F(SuggestionMarkerTest, IsStyleableMarker) {
-  DocumentMarker* marker =
-      new SuggestionMarker(0, 1, SuggestionMarkerProperties());
+  DocumentMarker* marker = MakeGarbageCollected<SuggestionMarker>(
+      0, 1, SuggestionMarkerProperties());
   EXPECT_TRUE(IsStyleableMarker(*marker));
 }
 
 TEST_F(SuggestionMarkerTest, ConstructorAndGetters) {
   Vector<String> suggestions = {"this", "that"};
-  SuggestionMarker* marker = new SuggestionMarker(
+  SuggestionMarker* marker = MakeGarbageCollected<SuggestionMarker>(
       0, 1,
       SuggestionMarkerProperties::Builder()
           .SetType(SuggestionMarker::SuggestionType::kNotMisspelling)
@@ -42,7 +42,7 @@ TEST_F(SuggestionMarkerTest, ConstructorAndGetters) {
   EXPECT_TRUE(marker->HasThicknessThin());
   EXPECT_EQ(Color::kGray, marker->BackgroundColor());
 
-  SuggestionMarker* marker2 = new SuggestionMarker(
+  SuggestionMarker* marker2 = MakeGarbageCollected<SuggestionMarker>(
       0, 1,
       SuggestionMarkerProperties::Builder()
           .SetType(SuggestionMarker::SuggestionType::kMisspelling)
@@ -56,11 +56,11 @@ TEST_F(SuggestionMarkerTest, ConstructorAndGetters) {
 
 TEST_F(SuggestionMarkerTest, SetSuggestion) {
   Vector<String> suggestions = {"this", "that"};
-  SuggestionMarker* marker =
-      new SuggestionMarker(0, 1,
-                           SuggestionMarkerProperties::Builder()
-                               .SetSuggestions(suggestions)
-                               .Build());
+  SuggestionMarker* marker = MakeGarbageCollected<SuggestionMarker>(
+      0, 1,
+      SuggestionMarkerProperties::Builder()
+          .SetSuggestions(suggestions)
+          .Build());
 
   marker->SetSuggestion(1, "these");
 

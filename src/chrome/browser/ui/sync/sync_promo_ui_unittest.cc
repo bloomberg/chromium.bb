@@ -27,8 +27,9 @@ class SyncPromoUITest : public testing::Test {
   void SetUp() override {
     testing::Test::SetUp();
     TestingProfile::Builder builder;
-    builder.AddTestingFactory(SigninManagerFactory::GetInstance(),
-                              base::BindRepeating(&BuildFakeSigninManagerBase));
+    builder.AddTestingFactory(
+        SigninManagerFactory::GetInstance(),
+        base::BindRepeating(&BuildFakeSigninManagerForTesting));
     profile_ = builder.Build();
   }
 

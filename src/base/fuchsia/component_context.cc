@@ -9,6 +9,7 @@
 #include <utility>
 
 #include "base/fuchsia/fuchsia_logging.h"
+#include "base/logging.h"
 #include "base/no_destructor.h"
 
 namespace base {
@@ -27,6 +28,13 @@ zx::channel ConnectToServiceRoot() {
   return client_channel;
 }
 
+std::unique_ptr<ComponentContext>* DefaultComponentContext() {
+  static base::NoDestructor<std::unique_ptr<ComponentContext>>
+      component_context_ptr(
+          std::make_unique<ComponentContext>(ConnectToServiceRoot()));
+  return component_context_ptr.get();
+}
+
 }  // namespace
 
 ComponentContext::ComponentContext(zx::channel service_root)
@@ -38,15 +46,26 @@ ComponentContext::~ComponentContext() = default;
 
 // static
 ComponentContext* ComponentContext::GetDefault() {
-  static base::NoDestructor<ComponentContext> component_context(
-      ConnectToServiceRoot());
-  return component_context.get();
+  return DefaultComponentContext()->get();
 }
 
 zx_status_t ComponentContext::ConnectToService(FidlInterfaceRequest request) {
   DCHECK(request.is_valid());
   return fdio_service_connect_at(service_root_.get(), request.interface_name(),
                                  request.TakeChannel().release());
+}
+
+ScopedDefaultComponentContext::ScopedDefaultComponentContext(
+    zx::channel service_root)
+    : old_context_(std::move(*DefaultComponentContext())) {
+  *DefaultComponentContext() =
+      std::make_unique<ComponentContext>(std::move(service_root));
+  context_ = DefaultComponentContext()->get();
+}
+
+ScopedDefaultComponentContext::~ScopedDefaultComponentContext() {
+  DCHECK_EQ(DefaultComponentContext()->get(), context_);
+  *DefaultComponentContext() = std::move(old_context_);
 }
 
 }  // namespace fuchsia

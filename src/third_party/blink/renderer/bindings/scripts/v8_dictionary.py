@@ -93,7 +93,6 @@ def dictionary_context(dictionary, interfaces_info):
                                          if member.is_required]),
         'use_permissive_dictionary_conversion': 'PermissiveDictionaryConversion' in dictionary.extended_attributes,
         'v8_class': v8_types.v8_type(cpp_class),
-        'v8_original_class': v8_types.v8_type(dictionary.name),
     }
     if dictionary.parent:
         IdlType(dictionary.parent).add_includes_for_type()
@@ -129,6 +128,7 @@ def member_context(dictionary, member):
             return None, None
         if member.default_value.is_null:
             return None, 'v8::Null(isolate)'
+
         cpp_default_value = unwrapped_idl_type.literal_cpp_value(
             member.default_value)
         v8_default_value = unwrapped_idl_type.cpp_value_to_v8_value(
@@ -149,7 +149,7 @@ def member_context(dictionary, member):
         'cpp_type': unwrapped_idl_type.cpp_type,
         'cpp_value': cpp_value,
         'cpp_value_to_v8_value': unwrapped_idl_type.cpp_value_to_v8_value(
-            cpp_value='impl.%s()' % getter_name, isolate='isolate',
+            cpp_value='impl->%s()' % getter_name, isolate='isolate',
             creation_context='creationContext',
             extended_attributes=extended_attributes),
         'deprecate_as': v8_utilities.deprecate_as(member),

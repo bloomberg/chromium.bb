@@ -5,21 +5,17 @@
 #ifndef CHROME_BROWSER_UI_WEBUI_FOREIGN_SESSION_HANDLER_H_
 #define CHROME_BROWSER_UI_WEBUI_FOREIGN_SESSION_HANDLER_H_
 
+#include <memory>
 #include <string>
 #include <vector>
 
+#include "base/callback_list.h"
 #include "base/macros.h"
-#include "base/scoped_observer.h"
 #include "base/time/time.h"
 #include "chrome/browser/sessions/session_service.h"
-#include "components/sync/driver/sync_service_observer.h"
 #include "components/sync_sessions/open_tabs_ui_delegate.h"
 #include "content/public/browser/web_ui.h"
 #include "content/public/browser/web_ui_message_handler.h"
-
-namespace syncer {
-class SyncService;
-}
 
 namespace user_prefs {
 class PrefRegistrySyncable;
@@ -27,8 +23,7 @@ class PrefRegistrySyncable;
 
 namespace browser_sync {
 
-class ForeignSessionHandler : public content::WebUIMessageHandler,
-                              public syncer::SyncServiceObserver {
+class ForeignSessionHandler : public content::WebUIMessageHandler {
  public:
   // WebUIMessageHandler implementation.
   void RegisterMessages() override;
@@ -53,9 +48,7 @@ class ForeignSessionHandler : public content::WebUIMessageHandler,
       content::WebUI* web_ui);
 
  private:
-  // syncer::SyncServiceObserver:
-  void OnSyncConfigurationCompleted(syncer::SyncService* sync) override;
-  void OnForeignSessionUpdated(syncer::SyncService* sync) override;
+  void OnForeignSessionUpdated();
 
   // Returns a string used to show the user when a session was last modified.
   base::string16 FormatSessionTime(const base::Time& time);
@@ -78,13 +71,12 @@ class ForeignSessionHandler : public content::WebUIMessageHandler,
 
   void HandleSetForeignSessionCollapsed(const base::ListValue* args);
 
-  // ScopedObserver used to observe the ProfileSyncService.
-  ScopedObserver<syncer::SyncService, syncer::SyncServiceObserver>
-      scoped_observer_;
-
   // The time at which this WebUI was created. Used to calculate how long
   // the WebUI was present before the sessions data was visible.
   base::TimeTicks load_attempt_time_;
+
+  std::unique_ptr<base::CallbackList<void()>::Subscription>
+      foreign_session_updated_subscription_;
 
   DISALLOW_COPY_AND_ASSIGN(ForeignSessionHandler);
 };

@@ -67,13 +67,10 @@ class MockSearchIPCRouterDelegate : public SearchIPCRouter::Delegate {
                bool(const GURL& url,
                     const GURL& new_url,
                     const std::string& new_title));
+  MOCK_METHOD2(OnReorderCustomLink, bool(const GURL& url, int new_pos));
   MOCK_METHOD1(OnDeleteCustomLink, bool(const GURL& url));
   MOCK_METHOD0(OnUndoCustomLinkAction, void());
   MOCK_METHOD0(OnResetCustomLinks, void());
-  MOCK_METHOD2(
-      OnDoesUrlResolve,
-      void(const GURL& url,
-           chrome::mojom::EmbeddedSearch::DoesUrlResolveCallback callback));
   MOCK_METHOD2(OnLogEvent, void(NTPLoggingEventType event,
                                 base::TimeDelta time));
   MOCK_METHOD1(OnLogMostVisitedImpression,
@@ -102,10 +99,10 @@ class MockSearchIPCRouterPolicy : public SearchIPCRouter::Policy {
   MOCK_METHOD0(ShouldProcessUndoAllMostVisitedDeletions, bool());
   MOCK_METHOD0(ShouldProcessAddCustomLink, bool());
   MOCK_METHOD0(ShouldProcessUpdateCustomLink, bool());
+  MOCK_METHOD0(ShouldProcessReorderCustomLink, bool());
   MOCK_METHOD0(ShouldProcessDeleteCustomLink, bool());
   MOCK_METHOD0(ShouldProcessUndoCustomLinkAction, bool());
   MOCK_METHOD0(ShouldProcessResetCustomLinks, bool());
-  MOCK_METHOD0(ShouldProcessDoesUrlResolve, bool());
   MOCK_METHOD0(ShouldProcessLogEvent, bool());
   MOCK_METHOD1(ShouldProcessPasteIntoOmnibox, bool(bool));
   MOCK_METHOD0(ShouldProcessChromeIdentityCheck, bool());
@@ -557,6 +554,38 @@ TEST_F(SearchIPCRouterTest, IgnoreUpdateCustomLinkMsg) {
                                         new_url, new_title, callback.Get());
 }
 
+TEST_F(SearchIPCRouterTest, ProcessReorderCustomLinkMsg) {
+  NavigateAndCommitActiveTab(GURL("chrome-search://foo/bar"));
+  SetupMockDelegateAndPolicy();
+  MockSearchIPCRouterPolicy* policy = GetSearchIPCRouterPolicy();
+  GURL item_url("www.foo.com");
+  int new_pos = 1;
+  EXPECT_CALL(*mock_delegate(), OnReorderCustomLink(item_url, new_pos))
+      .Times(1);
+  EXPECT_CALL(*policy, ShouldProcessReorderCustomLink())
+      .Times(1)
+      .WillOnce(Return(true));
+
+  GetSearchIPCRouter().ReorderCustomLink(GetSearchIPCRouterSeqNo(), item_url,
+                                         new_pos);
+}
+
+TEST_F(SearchIPCRouterTest, IgnoreReorderCustomLinkMsg) {
+  NavigateAndCommitActiveTab(GURL("chrome-search://foo/bar"));
+  SetupMockDelegateAndPolicy();
+  MockSearchIPCRouterPolicy* policy = GetSearchIPCRouterPolicy();
+  GURL item_url("www.foo.com");
+  int new_pos = 1;
+  EXPECT_CALL(*mock_delegate(), OnReorderCustomLink(item_url, new_pos))
+      .Times(0);
+  EXPECT_CALL(*policy, ShouldProcessReorderCustomLink())
+      .Times(1)
+      .WillOnce(Return(false));
+
+  GetSearchIPCRouter().ReorderCustomLink(GetSearchIPCRouterSeqNo(), item_url,
+                                         new_pos);
+}
+
 TEST_F(SearchIPCRouterTest, ProcessDeleteCustomLinkMsg) {
   NavigateAndCommitActiveTab(GURL("chrome-search://foo/bar"));
   SetupMockDelegateAndPolicy();
@@ -637,38 +666,6 @@ TEST_F(SearchIPCRouterTest, IgnoreResetCustomLinksMsg) {
       .WillOnce(Return(false));
 
   GetSearchIPCRouter().ResetCustomLinks(GetSearchIPCRouterSeqNo());
-}
-
-TEST_F(SearchIPCRouterTest, ProcessDoesUrlResolve) {
-  NavigateAndCommitActiveTab(GURL("chrome-search://foo/bar"));
-  SetupMockDelegateAndPolicy();
-  MockSearchIPCRouterPolicy* policy = GetSearchIPCRouterPolicy();
-  GURL url("www.foo.com");
-  EXPECT_CALL(*mock_delegate(), OnDoesUrlResolve(url, _)).Times(1);
-  EXPECT_CALL(*policy, ShouldProcessDoesUrlResolve())
-      .Times(1)
-      .WillOnce(Return(true));
-
-  base::MockCallback<SearchIPCRouter::DoesUrlResolveCallback> callback;
-  EXPECT_CALL(callback, Run(_, _)).Times(0);
-  GetSearchIPCRouter().DoesUrlResolve(GetSearchIPCRouterSeqNo(), url,
-                                      callback.Get());
-}
-
-TEST_F(SearchIPCRouterTest, IgnoreDoesUrlResolveMsg) {
-  NavigateAndCommitActiveTab(GURL("chrome-search://foo/bar"));
-  SetupMockDelegateAndPolicy();
-  MockSearchIPCRouterPolicy* policy = GetSearchIPCRouterPolicy();
-  GURL url("www.foo.com");
-  EXPECT_CALL(*mock_delegate(), OnDoesUrlResolve(url, _)).Times(0);
-  EXPECT_CALL(*policy, ShouldProcessDoesUrlResolve())
-      .Times(1)
-      .WillOnce(Return(false));
-
-  base::MockCallback<SearchIPCRouter::DoesUrlResolveCallback> callback;
-  EXPECT_CALL(callback, Run(true, false));
-  GetSearchIPCRouter().DoesUrlResolve(GetSearchIPCRouterSeqNo(), url,
-                                      callback.Get());
 }
 
 TEST_F(SearchIPCRouterTest, ProcessPasteAndOpenDropdownMsg) {

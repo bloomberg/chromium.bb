@@ -12,7 +12,6 @@
 #include "gpu/command_buffer/service/scheduler.h"
 #include "gpu/command_buffer/service/shared_image_factory.h"
 #include "gpu/ipc/common/command_buffer_id.h"
-#include "gpu/ipc/common/gpu_messages.h"
 #include "gpu/ipc/service/gpu_channel.h"
 #include "gpu/ipc/service/gpu_channel_manager.h"
 #include "gpu/ipc/service/gpu_memory_buffer_factory.h"
@@ -48,6 +47,9 @@ bool SharedImageStub::OnMessageReceived(const IPC::Message& msg) {
   bool handled = true;
   IPC_BEGIN_MESSAGE_MAP(SharedImageStub, msg)
     IPC_MESSAGE_HANDLER(GpuChannelMsg_CreateSharedImage, OnCreateSharedImage)
+    IPC_MESSAGE_HANDLER(GpuChannelMsg_CreateGMBSharedImage,
+                        OnCreateGMBSharedImage)
+    IPC_MESSAGE_HANDLER(GpuChannelMsg_UpdateSharedImage, OnUpdateSharedImage)
     IPC_MESSAGE_HANDLER(GpuChannelMsg_DestroySharedImage, OnDestroySharedImage)
     IPC_MESSAGE_UNHANDLED(handled = false)
   IPC_END_MESSAGE_MAP()
@@ -78,6 +80,56 @@ void SharedImageStub::OnCreateSharedImage(
   sync_point_client_state_->ReleaseFenceSync(params.release_id);
 }
 
+void SharedImageStub::OnCreateGMBSharedImage(
+    GpuChannelMsg_CreateGMBSharedImage_Params params) {
+  TRACE_EVENT2("gpu", "SharedImageStub::OnCreateSharedImage", "width",
+               params.size.width(), "height", params.size.height());
+  if (!MakeContextCurrentAndCreateFactory()) {
+    OnError();
+    return;
+  }
+
+  // TODO(piman): add support for SurfaceHandle (for backbuffers for ozone/drm).
+  SurfaceHandle surface_handle = kNullSurfaceHandle;
+  if (!factory_->CreateSharedImage(params.mailbox, channel_->client_id(),
+                                   std::move(params.handle), params.format,
+                                   surface_handle, params.size,
+                                   params.color_space, params.usage)) {
+    LOG(ERROR) << "SharedImageStub: Unable to create shared image";
+    OnError();
+    return;
+  }
+
+  SyncToken sync_token(sync_point_client_state_->namespace_id(),
+                       sync_point_client_state_->command_buffer_id(),
+                       params.release_id);
+  auto* mailbox_manager = channel_->gpu_channel_manager()->mailbox_manager();
+  mailbox_manager->PushTextureUpdates(sync_token);
+  sync_point_client_state_->ReleaseFenceSync(params.release_id);
+}
+
+void SharedImageStub::OnUpdateSharedImage(const Mailbox& mailbox,
+                                          uint32_t release_id) {
+  TRACE_EVENT0("gpu", "SharedImageStub::OnDestroySharedImage");
+  if (!MakeContextCurrentAndCreateFactory()) {
+    OnError();
+    return;
+  }
+
+  if (!factory_->UpdateSharedImage(mailbox)) {
+    LOG(ERROR) << "SharedImageStub: Unable to destroy shared image";
+    OnError();
+    return;
+  }
+
+  SyncToken sync_token(sync_point_client_state_->namespace_id(),
+                       sync_point_client_state_->command_buffer_id(),
+                       release_id);
+  auto* mailbox_manager = channel_->gpu_channel_manager()->mailbox_manager();
+  mailbox_manager->PushTextureUpdates(sync_token);
+  sync_point_client_state_->ReleaseFenceSync(release_id);
+}
+
 void SharedImageStub::OnDestroySharedImage(const Mailbox& mailbox) {
   TRACE_EVENT0("gpu", "SharedImageStub::OnDestroySharedImage");
   if (!MakeContextCurrentAndCreateFactory()) {
@@ -97,7 +149,7 @@ bool SharedImageStub::MakeContextCurrent() {
   DCHECK(!context_state_->context_lost);
 
   // |factory_| never writes to the surface, so skip unnecessary MakeCurrent to
-  // mitigate driver bugs. https://crbug.com/457431
+  // improve performance. https://crbug.com/457431
   if (context_state_->context->IsCurrent(nullptr))
     return true;
 
@@ -128,7 +180,8 @@ bool SharedImageStub::MakeContextCurrentAndCreateFactory() {
     factory_ = std::make_unique<SharedImageFactory>(
         channel_manager->gpu_preferences(),
         channel_manager->gpu_driver_bug_workarounds(),
-        channel_manager->gpu_feature_info(), channel_manager->mailbox_manager(),
+        channel_manager->gpu_feature_info(), context_state_.get(),
+        channel_manager->mailbox_manager(),
         channel_manager->shared_image_manager(),
         gmb_factory ? gmb_factory->AsImageFactory() : nullptr, this);
     return true;

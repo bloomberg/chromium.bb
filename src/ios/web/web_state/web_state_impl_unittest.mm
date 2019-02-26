@@ -16,7 +16,7 @@
 #import "base/strings/sys_string_conversions.h"
 #import "base/test/ios/wait_util.h"
 #include "base/test/scoped_feature_list.h"
-#import "ios/web/interstitials/html_web_interstitial_impl.h"
+#import "ios/web/interstitials/web_interstitial_impl.h"
 #import "ios/web/navigation/navigation_item_impl.h"
 #import "ios/web/navigation/wk_navigation_util.h"
 #import "ios/web/public/crw_navigation_item_storage.h"
@@ -233,8 +233,8 @@ class WebStateImplTest
   WebInterstitialImpl* ShowInterstitial() {
     auto delegate = std::make_unique<MockInterstitialDelegate>();
     WebInterstitialImpl* result =
-        new HtmlWebInterstitialImpl(web_state_.get(), /*new_navigation=*/true,
-                                    GURL::EmptyGURL(), std::move(delegate));
+        new WebInterstitialImpl(web_state_.get(), /*new_navigation=*/true,
+                                GURL::EmptyGURL(), std::move(delegate));
     result->Show();
     return result;
   }
@@ -255,19 +255,6 @@ TEST_P(WebStateImplTest, WebUsageEnabled) {
   web_state_->SetWebUsageEnabled(true);
   EXPECT_TRUE(web_state_->IsWebUsageEnabled());
   EXPECT_TRUE(web_state_->GetWebController().webUsageEnabled);
-}
-
-TEST_P(WebStateImplTest, ShouldSuppressDialogs) {
-  // Default is false.
-  ASSERT_FALSE(web_state_->ShouldSuppressDialogs());
-
-  web_state_->SetShouldSuppressDialogs(true);
-  EXPECT_TRUE(web_state_->ShouldSuppressDialogs());
-  EXPECT_TRUE(web_state_->GetWebController().shouldSuppressDialogs);
-
-  web_state_->SetShouldSuppressDialogs(false);
-  EXPECT_FALSE(web_state_->ShouldSuppressDialogs());
-  EXPECT_FALSE(web_state_->GetWebController().shouldSuppressDialogs);
 }
 
 TEST_P(WebStateImplTest, ResponseHeaders) {
@@ -380,13 +367,6 @@ TEST_P(WebStateImplTest, ObserverTest) {
   EXPECT_EQ(web_state_.get(),
             observer->did_change_visible_security_state_info()->web_state);
 
-  // Test that DidSuppressDialog() is called.
-  ASSERT_FALSE(observer->did_suppress_dialog_info());
-  web_state_->SetShouldSuppressDialogs(true);
-  web_state_->OnDialogSuppressed();
-  ASSERT_TRUE(observer->did_suppress_dialog_info());
-  EXPECT_EQ(web_state_.get(), observer->did_suppress_dialog_info()->web_state);
-
   // Test that FaviconUrlUpdated() is called.
   ASSERT_FALSE(observer->update_favicon_url_candidates_info());
   web::FaviconURL favicon_url(GURL("https://chromium.test/"),
@@ -435,7 +415,7 @@ TEST_P(WebStateImplTest, ObserverTest) {
   // Test that DidFinishNavigation() is called.
   ASSERT_FALSE(observer->did_finish_navigation_info());
   const GURL url("http://test");
-  std::unique_ptr<web::NavigationContext> context =
+  std::unique_ptr<NavigationContextImpl> context =
       NavigationContextImpl::CreateNavigationContext(
           web_state_.get(), url, /*has_user_gesture=*/true,
           ui::PageTransition::PAGE_TRANSITION_AUTO_BOOKMARK,
@@ -525,22 +505,27 @@ TEST_P(WebStateImplTest, ObserverTest) {
 // Tests that placeholder navigations are not visible to WebStateObservers.
 TEST_P(WebStateImplTest, PlaceholderNavigationNotExposedToObservers) {
   TestWebStateObserver observer(web_state_.get());
-  FakeNavigationContext context;
-  context.SetUrl(
-      wk_navigation_util::CreatePlaceholderUrlForUrl(GURL("chrome://newtab")));
-
+  GURL placeholder_url =
+      wk_navigation_util::CreatePlaceholderUrlForUrl(GURL("chrome://newtab"));
+  std::unique_ptr<NavigationContextImpl> context =
+      NavigationContextImpl::CreateNavigationContext(
+          web_state_.get(), placeholder_url,
+          /*has_user_gesture=*/true,
+          ui::PageTransition::PAGE_TRANSITION_AUTO_BOOKMARK,
+          /*is_renderer_initiated=*/true);
+  context->SetPlaceholderNavigation(true);
   // Test that OnPageLoaded() is not called.
-  web_state_->OnPageLoaded(context.GetUrl(), true /* load_success */);
+  web_state_->OnPageLoaded(placeholder_url, /*load_success=*/true);
   EXPECT_FALSE(observer.load_page_info());
-  web_state_->OnPageLoaded(context.GetUrl(), false /* load_success */);
+  web_state_->OnPageLoaded(placeholder_url, /*load_success=*/false);
   EXPECT_FALSE(observer.load_page_info());
 
   // Test that OnNavigationStarted() is not called.
-  web_state_->OnNavigationStarted(&context);
+  web_state_->OnNavigationStarted(context.get());
   EXPECT_FALSE(observer.did_start_navigation_info());
 
   // Test that OnNavigationFinished() is not called.
-  web_state_->OnNavigationFinished(&context);
+  web_state_->OnNavigationFinished(context.get());
   EXPECT_FALSE(observer.did_finish_navigation_info());
 }
 
@@ -686,8 +671,12 @@ TEST_P(WebStateImplTest, GlobalObserverTest) {
 
   // Test that DidStartNavigation() is called.
   EXPECT_FALSE(observer->did_start_navigation_called());
-  FakeNavigationContext context;
-  web_state_->OnNavigationStarted(&context);
+  std::unique_ptr<NavigationContextImpl> context =
+      NavigationContextImpl::CreateNavigationContext(
+          web_state_.get(), GURL::EmptyGURL(), /*has_user_gesture=*/true,
+          ui::PageTransition::PAGE_TRANSITION_AUTO_BOOKMARK,
+          /*is_renderer_initiated=*/true);
+  web_state_->OnNavigationStarted(context.get());
   EXPECT_TRUE(observer->did_start_navigation_called());
 
   // Test that WebStateDidStartLoading() is called.
@@ -947,9 +936,13 @@ TEST_P(WebStateImplTest, FaviconUpdateForSameDocumentNavigations) {
   auto observer = std::make_unique<TestWebStateObserver>(web_state_.get());
 
   // No callback if icons has not been fetched yet.
-  FakeNavigationContext context;
-  context.SetIsSameDocument(true);
-  web_state_->OnNavigationFinished(&context);
+  std::unique_ptr<NavigationContextImpl> context =
+      NavigationContextImpl::CreateNavigationContext(
+          web_state_.get(), GURL::EmptyGURL(),
+          /*has_user_gesture=*/false, ui::PageTransition::PAGE_TRANSITION_LINK,
+          /*is_renderer_initiated=*/false);
+  context->SetIsSameDocument(true);
+  web_state_->OnNavigationFinished(context.get());
   EXPECT_FALSE(observer->update_favicon_url_candidates_info());
 
   // Callback is called when icons were fetched.
@@ -962,7 +955,7 @@ TEST_P(WebStateImplTest, FaviconUpdateForSameDocumentNavigations) {
 
   // Callback is now called after same-document navigation.
   observer = std::make_unique<TestWebStateObserver>(web_state_.get());
-  web_state_->OnNavigationFinished(&context);
+  web_state_->OnNavigationFinished(context.get());
   ASSERT_TRUE(observer->update_favicon_url_candidates_info());
   ASSERT_EQ(1U,
             observer->update_favicon_url_candidates_info()->candidates.size());
@@ -979,14 +972,14 @@ TEST_P(WebStateImplTest, FaviconUpdateForSameDocumentNavigations) {
 
   // Document change navigation does not call callback.
   observer = std::make_unique<TestWebStateObserver>(web_state_.get());
-  context.SetIsSameDocument(false);
-  web_state_->OnNavigationFinished(&context);
+  context->SetIsSameDocument(false);
+  web_state_->OnNavigationFinished(context.get());
   EXPECT_FALSE(observer->update_favicon_url_candidates_info());
 
   // Previous candidates were invalidated by the document change. No callback
   // if icons has not been fetched yet.
-  context.SetIsSameDocument(true);
-  web_state_->OnNavigationFinished(&context);
+  context->SetIsSameDocument(true);
+  web_state_->OnNavigationFinished(context.get());
   EXPECT_FALSE(observer->update_favicon_url_candidates_info());
 }
 

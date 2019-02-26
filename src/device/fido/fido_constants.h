@@ -92,10 +92,8 @@ enum class CtapDeviceResponseCode : uint8_t {
   kCtap1ErrChannelBusy = 0x06,
   kCtap1ErrLockRequired = 0x0A,
   kCtap1ErrInvalidChannel = 0x0B,
-  kCtap2ErrCBORParsing = 0x10,
-  kCtap2ErrUnexpectedType = 0x11,
+  kCtap2ErrCBORUnexpectedType = 0x11,
   kCtap2ErrInvalidCBOR = 0x12,
-  kCtap2ErrInvalidCBORType = 0x13,
   kCtap2ErrMissingParameter = 0x14,
   kCtap2ErrLimitExceeded = 0x15,
   kCtap2ErrUnsupportedExtension = 0x16,
@@ -145,10 +143,8 @@ constexpr std::array<CtapDeviceResponseCode, 51> GetCtapResponseCodeList() {
           CtapDeviceResponseCode::kCtap1ErrChannelBusy,
           CtapDeviceResponseCode::kCtap1ErrLockRequired,
           CtapDeviceResponseCode::kCtap1ErrInvalidChannel,
-          CtapDeviceResponseCode::kCtap2ErrCBORParsing,
-          CtapDeviceResponseCode::kCtap2ErrUnexpectedType,
+          CtapDeviceResponseCode::kCtap2ErrCBORUnexpectedType,
           CtapDeviceResponseCode::kCtap2ErrInvalidCBOR,
-          CtapDeviceResponseCode::kCtap2ErrInvalidCBORType,
           CtapDeviceResponseCode::kCtap2ErrMissingParameter,
           CtapDeviceResponseCode::kCtap2ErrLimitExceeded,
           CtapDeviceResponseCode::kCtap2ErrUnsupportedExtension,
@@ -258,6 +254,16 @@ enum class U2fApduInstruction : uint8_t {
 };
 
 enum class CredentialType { kPublicKey };
+
+// Authenticator attachment constraint passed on from the relying party as a
+// parameter for AuthenticatorSelectionCriteria. |kAny| is equivalent to the
+// (optional) attachment field not being present.
+// https://w3c.github.io/webauthn/#attachment
+enum class AuthenticatorAttachment {
+  kAny,
+  kPlatform,
+  kCrossPlatform,
+};
 
 // User verification constraint passed on from the relying party as a parameter
 // for AuthenticatorSelectionCriteria and for CtapGetAssertion request.
@@ -372,6 +378,17 @@ COMPONENT_EXPORT(DEVICE_FIDO) extern const char kCableClientHelloMessage[];
 // TODO(hongjunchoi): Add url to the official spec once it's standardized.
 COMPONENT_EXPORT(DEVICE_FIDO) extern const char kCtap2Version[];
 COMPONENT_EXPORT(DEVICE_FIDO) extern const char kU2fVersion[];
+
+COMPONENT_EXPORT(DEVICE_FIDO) extern const char kExtensionHmacSecret[];
+
+// Maximum number of seconds the browser waits for Bluetooth authenticator to
+// send packets that advertises that the device is in pairing mode before
+// setting pairing mode to false. The interval time is set to 2 seconds, which
+// is equivalent to the maximum Bluetooth error wait interval set by the CTAP
+// spec.
+// https://fidoalliance.org/specs/fido-v2.0-rd-20170927/fido-client-to-authenticator-protocol-v2.0-rd-20170927.html#BTCORE
+COMPONENT_EXPORT(DEVICE_FIDO)
+extern const base::TimeDelta kBleDevicePairingModeWaitingInterval;
 
 }  // namespace device
 

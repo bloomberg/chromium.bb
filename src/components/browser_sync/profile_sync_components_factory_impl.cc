@@ -14,18 +14,20 @@
 #include "components/autofill/core/browser/autofill_wallet_model_type_controller.h"
 #include "components/autofill/core/browser/webdata/autocomplete_sync_bridge.h"
 #include "components/autofill/core/browser/webdata/autofill_profile_data_type_controller.h"
+#include "components/autofill/core/browser/webdata/autofill_profile_model_type_controller.h"
 #include "components/autofill/core/browser/webdata/autofill_profile_sync_bridge.h"
 #include "components/autofill/core/browser/webdata/autofill_wallet_metadata_sync_bridge.h"
 #include "components/autofill/core/browser/webdata/autofill_wallet_sync_bridge.h"
 #include "components/autofill/core/browser/webdata/autofill_webdata_service.h"
 #include "components/browser_sync/browser_sync_switches.h"
 #include "components/browser_sync/profile_sync_service.h"
-#include "components/dom_distiller/core/dom_distiller_features.h"
 #include "components/history/core/browser/sync/history_delete_directives_data_type_controller.h"
 #include "components/history/core/browser/sync/history_delete_directives_model_type_controller.h"
 #include "components/history/core/browser/sync/typed_url_model_type_controller.h"
-#include "components/password_manager/core/browser/password_data_type_controller.h"
 #include "components/password_manager/core/browser/password_store.h"
+#include "components/password_manager/core/browser/sync/password_data_type_controller.h"
+#include "components/password_manager/core/browser/sync/password_model_type_controller.h"
+#include "components/password_manager/core/browser/sync/password_syncable_service_based_model_type_controller.h"
 #include "components/prefs/pref_service.h"
 #include "components/reading_list/features/reading_list_switches.h"
 #include "components/sync/base/report_unrecoverable_error.h"
@@ -46,7 +48,6 @@
 #include "components/sync_bookmarks/bookmark_data_type_controller.h"
 #include "components/sync_bookmarks/bookmark_model_associator.h"
 #include "components/sync_bookmarks/bookmark_sync_service.h"
-#include "components/sync_sessions/session_data_type_controller.h"
 #include "components/sync_sessions/session_model_type_controller.h"
 #include "components/sync_sessions/session_sync_service.h"
 
@@ -55,7 +56,6 @@ using bookmarks::BookmarkModel;
 using sync_bookmarks::BookmarkChangeProcessor;
 using sync_bookmarks::BookmarkDataTypeController;
 using sync_bookmarks::BookmarkModelAssociator;
-using sync_sessions::SessionDataTypeController;
 using syncer::AsyncDirectoryTypeController;
 using syncer::DataTypeController;
 using syncer::DataTypeManager;
@@ -136,34 +136,36 @@ ProfileSyncComponentsFactoryImpl::~ProfileSyncComponentsFactoryImpl() {}
 
 syncer::DataTypeController::TypeVector
 ProfileSyncComponentsFactoryImpl::CreateCommonDataTypeControllers(
-    syncer::ModelTypeSet disabled_types,
-    syncer::LocalDeviceInfoProvider* local_device_info_provider) {
+    syncer::ModelTypeSet disabled_types) {
   syncer::DataTypeController::TypeVector controllers;
   const base::RepeatingClosure dump_stack =
       base::BindRepeating(&syncer::ReportUnrecoverableError, channel_);
 
-  // TODO(stanisc): can DEVICE_INFO be one of disabled datatypes?
-  // Use an error callback that always uploads a stacktrace if it can to help
-  // get USS as stable as possible.
-  controllers.push_back(
-      CreateModelTypeControllerForModelRunningOnUIThread(syncer::DEVICE_INFO));
   // These features are enabled only if there's a DB thread to post tasks to.
   if (db_thread_) {
     // Autocomplete sync is enabled by default.  Register unless explicitly
     // disabled.
     if (!disabled_types.Has(syncer::AUTOFILL)) {
-      controllers.push_back(CreateWebDataModelTypeController(
+      controllers.push_back(std::make_unique<ModelTypeController>(
           syncer::AUTOFILL,
-          base::BindRepeating(&AutocompleteDelegateFromDataService)));
+          std::make_unique<syncer::ProxyModelTypeControllerDelegate>(
+              db_thread_, base::BindRepeating(
+                              &AutocompleteDelegateFromDataService,
+                              base::RetainedRef(web_data_service_on_disk_)))));
     }
 
     // Autofill sync is enabled by default.  Register unless explicitly
     // disabled.
     if (!disabled_types.Has(syncer::AUTOFILL_PROFILE)) {
       if (FeatureList::IsEnabled(switches::kSyncUSSAutofillProfile)) {
-        controllers.push_back(CreateWebDataModelTypeController(
-            syncer::AUTOFILL_PROFILE,
-            base::BindRepeating(&AutofillProfileDelegateFromDataService)));
+        controllers.push_back(
+            std::make_unique<AutofillProfileModelTypeController>(
+                std::make_unique<syncer::ProxyModelTypeControllerDelegate>(
+                    db_thread_,
+                    base::BindRepeating(
+                        &AutofillProfileDelegateFromDataService,
+                        base::RetainedRef(web_data_service_on_disk_))),
+                sync_client_));
       } else {
         controllers.push_back(
             std::make_unique<AutofillProfileDataTypeController>(
@@ -258,9 +260,11 @@ ProfileSyncComponentsFactoryImpl::CreateCommonDataTypeControllers(
     // disabled because the tab sync data is added to the web history on the
     // server.
     if (!disabled_types.Has(syncer::PROXY_TABS)) {
-      controllers.push_back(
-          std::make_unique<ProxyDataTypeController>(syncer::PROXY_TABS));
-      if (FeatureList::IsEnabled(switches::kSyncUSSSessions)) {
+      controllers.push_back(std::make_unique<ProxyDataTypeController>(
+          syncer::PROXY_TABS,
+          base::BindRepeating(
+              &sync_sessions::SessionSyncService::ProxyTabsStateChanged,
+              base::Unretained(sync_client_->GetSessionSyncService()))));
         controllers.push_back(
             std::make_unique<sync_sessions::SessionModelTypeController>(
                 sync_client_->GetPrefService(),
@@ -269,11 +273,6 @@ ProfileSyncComponentsFactoryImpl::CreateCommonDataTypeControllers(
                         ->GetControllerDelegate()
                         .get()),
                 history_disabled_pref_));
-      } else {
-        controllers.push_back(std::make_unique<SessionDataTypeController>(
-            dump_stack, sync_client_, local_device_info_provider,
-            history_disabled_pref_));
-      }
     }
 
     // Favicon sync is enabled by default. Register unless explicitly disabled.
@@ -310,9 +309,22 @@ ProfileSyncComponentsFactoryImpl::CreateCommonDataTypeControllers(
   // Password sync is enabled by default.  Register unless explicitly
   // disabled.
   if (!disabled_types.Has(syncer::PASSWORDS)) {
-    controllers.push_back(std::make_unique<PasswordDataTypeController>(
-        dump_stack, sync_client_,
-        sync_client_->GetPasswordStateChangedCallback(), password_store_));
+    if (base::FeatureList::IsEnabled(switches::kSyncUSSPasswords)) {
+      controllers.push_back(
+          std::make_unique<password_manager::PasswordModelTypeController>(
+              password_store_->CreateSyncControllerDelegate(), sync_client_));
+    } else if (base::FeatureList::IsEnabled(
+                   switches::kSyncPseudoUSSPasswords)) {
+      controllers.push_back(
+          std::make_unique<password_manager::
+                               PasswordSyncableServiceBasedModelTypeController>(
+              sync_client_->GetModelTypeStoreService()->GetStoreFactory(),
+              dump_stack, password_store_, sync_client_));
+    } else {
+      controllers.push_back(std::make_unique<PasswordDataTypeController>(
+          dump_stack, sync_client_,
+          sync_client_->GetPasswordStateChangedCallback(), password_store_));
+    }
   }
 
   if (!disabled_types.Has(syncer::PREFERENCES)) {
@@ -375,27 +387,25 @@ ProfileSyncComponentsFactoryImpl::CreateCommonDataTypeControllers(
         syncer::USER_EVENTS));
   }
 
-  if (base::FeatureList::IsEnabled(switches::kSyncUserConsentSeparateType)) {
-    // Forward both on-disk and in-memory storage modes to the same delegate,
-    // since behavior for USER_CONSENTS does not differ (they are always
-    // persisted).
-    // TODO(crbug.com/867801): Replace the proxy delegates below with a simpler
-    // forwarding delegate that involves no posting of tasks.
-    controllers.push_back(std::make_unique<ModelTypeController>(
-        syncer::USER_CONSENTS,
-        /*delegate_on_disk=*/
-        std::make_unique<syncer::ProxyModelTypeControllerDelegate>(
-            ui_thread_,
-            base::BindRepeating(
-                &syncer::SyncClient::GetControllerDelegateForModelType,
-                base::Unretained(sync_client_), syncer::USER_CONSENTS)),
-        /*delegate_in_memory=*/
-        std::make_unique<syncer::ProxyModelTypeControllerDelegate>(
-            ui_thread_,
-            base::BindRepeating(
-                &syncer::SyncClient::GetControllerDelegateForModelType,
-                base::Unretained(sync_client_), syncer::USER_CONSENTS))));
-  }
+  // Forward both on-disk and in-memory storage modes to the same delegate,
+  // since behavior for USER_CONSENTS does not differ (they are always
+  // persisted).
+  // TODO(crbug.com/867801): Replace the proxy delegates below with a simpler
+  // forwarding delegate that involves no posting of tasks.
+  controllers.push_back(std::make_unique<ModelTypeController>(
+      syncer::USER_CONSENTS,
+      /*delegate_on_disk=*/
+      std::make_unique<syncer::ProxyModelTypeControllerDelegate>(
+          ui_thread_,
+          base::BindRepeating(
+              &syncer::SyncClient::GetControllerDelegateForModelType,
+              base::Unretained(sync_client_), syncer::USER_CONSENTS)),
+      /*delegate_in_memory=*/
+      std::make_unique<syncer::ProxyModelTypeControllerDelegate>(
+          ui_thread_,
+          base::BindRepeating(
+              &syncer::SyncClient::GetControllerDelegateForModelType,
+              base::Unretained(sync_client_), syncer::USER_CONSENTS))));
 
   return controllers;
 }
@@ -472,19 +482,6 @@ std::unique_ptr<ModelTypeController> ProfileSyncComponentsFactoryImpl::
                 base::BindRepeating(
                     &syncer::SyncClient::GetControllerDelegateForModelType,
                     base::Unretained(sync_client_), type)));
-}
-
-std::unique_ptr<ModelTypeController>
-ProfileSyncComponentsFactoryImpl::CreateWebDataModelTypeController(
-    syncer::ModelType type,
-    const base::RepeatingCallback<
-        base::WeakPtr<syncer::ModelTypeControllerDelegate>(
-            autofill::AutofillWebDataService*)>& delegate_from_web_data) {
-  return std::make_unique<ModelTypeController>(
-      type, std::make_unique<syncer::ProxyModelTypeControllerDelegate>(
-                db_thread_, base::BindRepeating(
-                                delegate_from_web_data,
-                                base::RetainedRef(web_data_service_on_disk_))));
 }
 
 std::unique_ptr<ModelTypeController>

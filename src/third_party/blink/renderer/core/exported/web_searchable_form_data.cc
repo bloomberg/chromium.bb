@@ -46,14 +46,14 @@
 
 namespace blink {
 
-using namespace HTMLNames;
+using namespace html_names;
 
 namespace {
 
 // Gets the encoding for the form.
 // TODO(tkent): Use FormDataEncoder::encodingFromAcceptCharset().
 void GetFormEncoding(const HTMLFormElement& form, WTF::TextEncoding* encoding) {
-  String str(form.FastGetAttribute(HTMLNames::accept_charsetAttr));
+  String str(form.FastGetAttribute(html_names::kAcceptCharsetAttr));
   str.Replace(',', ' ');
   Vector<String> charsets;
   str.Split(' ', charsets);
@@ -91,7 +91,7 @@ bool IsSelectInDefaultState(const HTMLSelectElement& select) {
   if (select.IsMultiple() || select.size() > 1) {
     for (auto* const option_element : select.GetOptionList()) {
       if (option_element->Selected() !=
-          option_element->FastHasAttribute(selectedAttr))
+          option_element->FastHasAttribute(kSelectedAttr))
         return false;
     }
     return true;
@@ -101,7 +101,7 @@ bool IsSelectInDefaultState(const HTMLSelectElement& select) {
   // least one item is selected, determine which one.
   HTMLOptionElement* initial_selected = nullptr;
   for (auto* const option_element : select.GetOptionList()) {
-    if (option_element->FastHasAttribute(selectedAttr)) {
+    if (option_element->FastHasAttribute(kSelectedAttr)) {
       // The page specified the option to select.
       initial_selected = option_element;
       break;
@@ -119,9 +119,9 @@ bool IsSelectInDefaultState(const HTMLSelectElement& select) {
 // attribute.
 bool IsInDefaultState(const HTMLFormControlElement& form_element) {
   if (auto* input = ToHTMLInputElementOrNull(form_element)) {
-    if (input->type() == InputTypeNames::checkbox ||
-        input->type() == InputTypeNames::radio)
-      return input->checked() == input->FastHasAttribute(checkedAttr);
+    if (input->type() == input_type_names::kCheckbox ||
+        input->type() == input_type_names::kRadio)
+      return input->checked() == input->FastHasAttribute(kCheckedAttr);
   } else if (auto* select = ToHTMLSelectElementOrNull(form_element)) {
     return IsSelectInDefaultState(*select);
   }
@@ -153,8 +153,8 @@ HTMLInputElement* FindSuitableSearchInputElement(const HTMLFormElement& form) {
 
       // Return nothing if a file upload field or a password field are
       // found.
-      if (input.type() == InputTypeNames::file ||
-          input.type() == InputTypeNames::password)
+      if (input.type() == input_type_names::kFile ||
+          input.type() == input_type_names::kPassword)
         return nullptr;
 
       if (input.IsTextField()) {
@@ -223,7 +223,7 @@ WebSearchableFormData::WebSearchableFormData(
       static_cast<HTMLInputElement*>(selected_input_element);
 
   // Only consider forms that GET data.
-  if (EqualIgnoringASCIICase(form_element->getAttribute(methodAttr), "post"))
+  if (EqualIgnoringASCIICase(form_element->getAttribute(kMethodAttr), "post"))
     return;
 
   WTF::TextEncoding encoding;

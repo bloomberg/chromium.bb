@@ -30,6 +30,8 @@ class KeyboardAccessoryProperties {
             new WritableObjectPropertyKey<>();
     static final WritableObjectPropertyKey<TabLayout.OnTabSelectedListener>
             TAB_SELECTION_CALLBACKS = new WritableObjectPropertyKey<>();
+    static final WritableObjectPropertyKey<Runnable> SHOW_KEYBOARD_CALLBACK =
+            new WritableObjectPropertyKey<>();
 
     private KeyboardAccessoryProperties() {}
 }

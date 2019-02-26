@@ -81,14 +81,16 @@ class MODULES_EXPORT CanvasRenderingContext2D final
         CanvasRenderingContextHost* host,
         const CanvasContextCreationAttributesCore& attrs) override {
       DCHECK(!host->IsOffscreenCanvas());
-      return new CanvasRenderingContext2D(static_cast<HTMLCanvasElement*>(host),
-                                          attrs);
+      return MakeGarbageCollected<CanvasRenderingContext2D>(
+          static_cast<HTMLCanvasElement*>(host), attrs);
     }
     CanvasRenderingContext::ContextType GetContextType() const override {
       return CanvasRenderingContext::kContext2d;
     }
   };
 
+  CanvasRenderingContext2D(HTMLCanvasElement*,
+                           const CanvasContextCreationAttributesCore&);
   ~CanvasRenderingContext2D() override;
 
   HTMLCanvasElement* canvas() const {
@@ -124,12 +126,12 @@ class MODULES_EXPORT CanvasRenderingContext2D final
   void strokeText(const String& text, double x, double y, double max_width);
   TextMetrics* measureText(const String& text);
 
-  void getContextAttributes(CanvasRenderingContext2DSettings&) const;
+  CanvasRenderingContext2DSettings* getContextAttributes() const;
 
   void drawFocusIfNeeded(Element*);
   void drawFocusIfNeeded(Path2D*, Element*);
 
-  void addHitRegion(const HitRegionOptions&, ExceptionState&);
+  void addHitRegion(const HitRegionOptions*, ExceptionState&);
   void removeHitRegion(const String& id);
   void clearHitRegions();
   HitRegion* HitRegionAtPoint(const FloatPoint&);
@@ -141,7 +143,7 @@ class MODULES_EXPORT CanvasRenderingContext2D final
   void RestoreCanvasMatrixClipStack(cc::PaintCanvas*) const override;
 
   // TaskObserver implementation
-  void DidProcessTask() final;
+  void DidProcessTask(const base::PendingTask&) final;
 
   void StyleDidChange(const ComputedStyle* old_style,
                       const ComputedStyle& new_style) override;
@@ -213,8 +215,6 @@ class MODULES_EXPORT CanvasRenderingContext2D final
  private:
   friend class CanvasRenderingContext2DAutoRestoreSkCanvas;
 
-  CanvasRenderingContext2D(HTMLCanvasElement*,
-                           const CanvasContextCreationAttributesCore&);
   void DispatchContextLostEvent(TimerBase*);
   void DispatchContextRestoredEvent(TimerBase*);
   void TryRestoreContextEvent(TimerBase*);

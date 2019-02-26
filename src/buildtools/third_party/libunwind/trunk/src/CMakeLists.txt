@@ -2,7 +2,8 @@
 
 set(LIBUNWIND_CXX_SOURCES
     libunwind.cpp
-    Unwind-EHABI.cpp)
+    Unwind-EHABI.cpp
+    Unwind-seh.cpp)
 append_if(LIBUNWIND_CXX_SOURCES APPLE Unwind_AppleExtras.cpp)
 
 set(LIBUNWIND_C_SOURCES
@@ -50,8 +51,14 @@ set(LIBUNWIND_SOURCES
     ${LIBUNWIND_ASM_SOURCES})
 
 # Generate library list.
-set(libraries ${LIBUNWINDCXX_ABI_LIBRARIES})
+set(libraries)
 append_if(libraries LIBUNWIND_HAS_C_LIB c)
+if (LIBUNWIND_USE_COMPILER_RT)
+  list(APPEND libraries "${LIBUNWIND_BUILTINS_LIBRARY}")
+else()
+  append_if(libraries LIBUNWIND_HAS_GCC_S_LIB gcc_s)
+  append_if(libraries LIBUNWIND_HAS_GCC_LIB gcc)
+endif()
 append_if(libraries LIBUNWIND_HAS_DL_LIB dl)
 if (LIBUNWIND_ENABLE_THREADS)
   append_if(libraries LIBUNWIND_HAS_PTHREAD_LIB pthread)
@@ -61,6 +68,9 @@ endif()
 append_if(LIBUNWIND_CXX_FLAGS LIBUNWIND_HAS_NO_RTTI_FLAG -fno-rtti)
 
 append_if(LIBUNWIND_LINK_FLAGS LIBUNWIND_HAS_NODEFAULTLIBS_FLAG -nodefaultlibs)
+
+# MINGW_LIBRARIES is defined in config-ix.cmake
+append_if(libraries MINGW "${MINGW_LIBRARIES}")
 
 if (LIBUNWIND_HAS_NO_EXCEPTIONS_FLAG AND LIBUNWIND_HAS_FUNWIND_TABLES)
   list(APPEND LIBUNWIND_COMPILE_FLAGS -fno-exceptions)
@@ -103,8 +113,6 @@ set_target_properties(unwind_objects
                         COMPILE_FLAGS "${LIBUNWIND_COMPILE_FLAGS}"
                         POSITION_INDEPENDENT_CODE ON)
 
-set(LIBUNWIND_TARGETS)
-
 # Build the shared library.
 if (LIBUNWIND_ENABLE_SHARED)
   add_library(unwind_shared SHARED $<TARGET_OBJECTS:unwind_objects>)
@@ -118,7 +126,10 @@ if (LIBUNWIND_ENABLE_SHARED)
                           OUTPUT_NAME   "unwind"
                           VERSION       "1.0"
                           SOVERSION     "1")
-  list(APPEND LIBUNWIND_TARGETS "unwind_shared")
+  list(APPEND LIBUNWIND_BUILD_TARGETS "unwind_shared")
+  if (LIBUNWIND_INSTALL_SHARED_LIBRARY)
+    list(APPEND LIBUNWIND_INSTALL_TARGETS "unwind_shared")
+  endif()
 endif()
 
 # Build the static library.
@@ -129,14 +140,17 @@ if (LIBUNWIND_ENABLE_STATIC)
                         PROPERTIES
                           LINK_FLAGS    "${LIBUNWIND_LINK_FLAGS}"
                           OUTPUT_NAME   "unwind")
-  list(APPEND LIBUNWIND_TARGETS "unwind_static")
+  list(APPEND LIBUNWIND_BUILD_TARGETS "unwind_static")
+  if (LIBUNWIND_INSTALL_STATIC_LIBRARY)
+    list(APPEND LIBUNWIND_INSTALL_TARGETS "unwind_static")
+  endif()
 endif()
 
 # Add a meta-target for both libraries.
-add_custom_target(unwind DEPENDS ${LIBUNWIND_TARGETS})
+add_custom_target(unwind DEPENDS ${LIBUNWIND_BUILD_TARGETS})
 
 if (LIBUNWIND_INSTALL_LIBRARY)
-  install(TARGETS ${LIBUNWIND_TARGETS}
+  install(TARGETS ${LIBUNWIND_INSTALL_TARGETS}
     LIBRARY DESTINATION ${LIBUNWIND_INSTALL_PREFIX}lib${LIBUNWIND_LIBDIR_SUFFIX} COMPONENT unwind
     ARCHIVE DESTINATION ${LIBUNWIND_INSTALL_PREFIX}lib${LIBUNWIND_LIBDIR_SUFFIX} COMPONENT unwind)
 endif()

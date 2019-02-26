@@ -6,8 +6,10 @@
 
 #include "third_party/blink/renderer/core/layout/ng/inline/ng_inline_item_result.h"
 #include "third_party/blink/renderer/core/layout/ng/inline/ng_text_fragment_builder.h"
+#include "third_party/blink/renderer/core/layout/ng/ng_physical_box_fragment.h"
 #include "third_party/blink/renderer/platform/fonts/font_baseline.h"
 #include "third_party/blink/renderer/platform/fonts/shaping/harfbuzz_shaper.h"
+#include "third_party/blink/renderer/platform/fonts/shaping/shape_result_view.h"
 
 namespace blink {
 
@@ -55,8 +57,8 @@ LayoutUnit NGLineTruncator::TruncateLine(
           ? String(&kHorizontalEllipsisCharacter, 1)
           : String(u"...");
   HarfBuzzShaper shaper(ellipsis_text);
-  scoped_refptr<ShapeResult> ellipsis_shape_result =
-      shaper.Shape(&font, line_direction_);
+  scoped_refptr<ShapeResultView> ellipsis_shape_result =
+      ShapeResultView::Create(shaper.Shape(&font, line_direction_).get());
   LayoutUnit ellipsis_width = ellipsis_shape_result->SnappedWidth();
 
   // Loop children from the logical last to the logical first to determine where
@@ -115,6 +117,24 @@ LayoutUnit NGLineTruncator::TruncateLine(
 // Hide this child from being painted.
 void NGLineTruncator::HideChild(NGLineBoxFragmentBuilder::Child* child) {
   DCHECK(child->HasInFlowFragment());
+
+  // If this child has self painting layer, not producing fragments will not
+  // suppress painting because layers are painted separately. Move it out of the
+  // clipping area.
+  const NGPhysicalFragment* fragment = child->PhysicalFragment();
+  DCHECK(fragment);
+  if (const NGPhysicalBoxFragment* box_fragment =
+          ToNGPhysicalBoxFragmentOrNull(fragment)) {
+    if (box_fragment->HasSelfPaintingLayer()) {
+      // |avilable_width_| may not be enough when the contaning block has
+      // paddings, because clipping is at the content box but ellipsizing is at
+      // the padding box. Just move to the max because we don't know paddings,
+      // and max should do what we need.
+      child->offset.inline_offset = LayoutUnit::NearlyMax();
+      return;
+    }
+  }
+
   // TODO(kojii): Not producing fragments is the most clean and efficient way to
   // hide them, but we may want to revisit how to do this to reduce special
   // casing in other code.
@@ -185,7 +205,10 @@ bool NGLineTruncator::TruncateChild(LayoutUnit space_for_child,
   if (!child->fragment)
     return is_first_child;
   auto& fragment = ToNGPhysicalTextFragment(*child->fragment);
-  const ShapeResult* shape_result = fragment.TextShapeResult();
+  // TODO(layout-dev): Add support for OffsetToFit to ShapeResultView to avoid
+  // this copy.
+  scoped_refptr<blink::ShapeResult> shape_result =
+      fragment.TextShapeResult()->CreateShapeResult();
   if (!shape_result)
     return is_first_child;
 

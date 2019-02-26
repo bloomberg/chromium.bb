@@ -72,28 +72,6 @@ void VideoFrameResourceProvider::AppendQuads(
   DCHECK(resource_updater_);
   DCHECK(resource_provider_);
 
-  gfx::Transform transform = gfx::Transform();
-  gfx::Size rotated_size = frame->coded_size();
-
-  switch (rotation) {
-    case media::VIDEO_ROTATION_90:
-      rotated_size = gfx::Size(rotated_size.height(), rotated_size.width());
-      transform.Rotate(90.0);
-      transform.Translate(0.0, -rotated_size.height());
-      break;
-    case media::VIDEO_ROTATION_180:
-      transform.Rotate(180.0);
-      transform.Translate(-rotated_size.width(), -rotated_size.height());
-      break;
-    case media::VIDEO_ROTATION_270:
-      rotated_size = gfx::Size(rotated_size.height(), rotated_size.width());
-      transform.Rotate(270.0);
-      transform.Translate(-rotated_size.width(), 0);
-      break;
-    case media::VIDEO_ROTATION_0:
-      break;
-  }
-
   // When obtaining frame resources, we end up having to wait. See
   // https://crbug/878070.
   // Unfortunately, we have no idea if blocking is allowed on the current thread
@@ -108,21 +86,37 @@ void VideoFrameResourceProvider::AppendQuads(
     resource_updater_->ObtainFrameResources(frame);
   }
 
-  // TODO(lethalantidote) : update with true value;
-  gfx::Rect visible_layer_rect = gfx::Rect(rotated_size);
-  gfx::Rect clip_rect = gfx::Rect(frame->coded_size());
+  gfx::Transform transform = gfx::Transform();
+  // The quad's rect is in pre-transform space so that applying the transform on
+  // it will produce the bounds in target space.
+  gfx::Rect quad_rect = gfx::Rect(frame->natural_size());
+
+  switch (rotation) {
+    case media::VIDEO_ROTATION_90:
+      transform.Rotate(90.0);
+      transform.Translate(0.0, -quad_rect.height());
+      break;
+    case media::VIDEO_ROTATION_180:
+      transform.Rotate(180.0);
+      transform.Translate(-quad_rect.width(), -quad_rect.height());
+      break;
+    case media::VIDEO_ROTATION_270:
+      transform.Rotate(270.0);
+      transform.Translate(-quad_rect.width(), 0);
+      break;
+    case media::VIDEO_ROTATION_0:
+      break;
+  }
+
+  gfx::Rect visible_quad_rect = quad_rect;
+  gfx::Rect clip_rect;
   bool is_clipped = false;
   float draw_opacity = 1.0f;
   int sorting_context_id = 0;
 
-  // Internal to this compositor frame, this video quad is never occluded,
-  // thus the full quad is visible.
-  gfx::Rect visible_quad_rect = gfx::Rect(rotated_size);
-
-  resource_updater_->AppendQuads(render_pass, std::move(frame), transform,
-                                 rotated_size, visible_layer_rect, clip_rect,
-                                 is_clipped, is_opaque, draw_opacity,
-                                 sorting_context_id, visible_quad_rect);
+  resource_updater_->AppendQuads(
+      render_pass, std::move(frame), transform, quad_rect, visible_quad_rect,
+      clip_rect, is_clipped, is_opaque, draw_opacity, sorting_context_id);
 }
 
 void VideoFrameResourceProvider::ReleaseFrameResources() {

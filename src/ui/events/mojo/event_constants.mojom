@@ -16,14 +16,6 @@ enum EventType {
   UNKNOWN,
   KEY_PRESSED,
   KEY_RELEASED,
-  POINTER_DOWN,
-  POINTER_MOVED,
-  POINTER_UP,
-  POINTER_CANCELLED,
-  POINTER_ENTERED,
-  POINTER_EXITED,
-  POINTER_WHEEL_CHANGED,
-  POINTER_CAPTURE_CHANGED,
   GESTURE_TAP,
   SCROLL,
   SCROLL_FLING_START,
@@ -78,13 +70,6 @@ enum PointerKind {
   PEN,
   TOUCH,
   ERASER,
-};
-
-enum WheelMode {
-  PIXEL,
-  LINE,
-  PAGE,
-  SCALING,
 };
 
 // Phase information used for a ScrollEvent.

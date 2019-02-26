@@ -25,13 +25,13 @@
 
 #include "third_party/blink/renderer/core/events/before_text_inserted_event.h"
 
-#include "third_party/blink/renderer/core/event_names.h"
+#include "third_party/blink/renderer/core/event_interface_names.h"
 #include "third_party/blink/renderer/core/event_type_names.h"
 
 namespace blink {
 
 BeforeTextInsertedEvent::BeforeTextInsertedEvent(const String& text)
-    : Event(EventTypeNames::webkitBeforeTextInserted,
+    : Event(event_type_names::kWebkitBeforeTextInserted,
             Bubbles::kNo,
             Cancelable::kYes),
       text_(text) {}
@@ -40,7 +40,7 @@ BeforeTextInsertedEvent::~BeforeTextInsertedEvent() = default;
 
 const AtomicString& BeforeTextInsertedEvent::InterfaceName() const {
   // Notice that there is no BeforeTextInsertedEvent.idl.
-  return EventNames::Event;
+  return event_interface_names::kEvent;
 }
 
 void BeforeTextInsertedEvent::Trace(blink::Visitor* visitor) {

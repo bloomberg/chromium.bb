@@ -6,8 +6,9 @@
 
 #include <utility>
 
+#include "ash/login/login_screen_test_api.h"
 #include "ash/metrics/time_to_first_present_recorder_test_api.h"
-#include "ash/public/cpp/ash_features.h"
+#include "ash/public/interfaces/login_screen_test_api.mojom.h"
 #include "ash/public/interfaces/shelf_test_api.mojom.h"
 #include "ash/public/interfaces/shell_test_api.mojom.h"
 #include "ash/public/interfaces/status_area_widget_test_api.mojom.h"
@@ -16,7 +17,6 @@
 #include "ash/shelf/shelf_test_api.h"
 #include "ash/shell_test_api.h"
 #include "ash/system/status_area_widget_test_api.h"
-#include "ash/system/tray/system_tray_test_api.h"
 #include "ash/system/unified/unified_system_tray_test_api.h"
 #include "base/bind.h"
 #include "base/single_thread_task_runner.h"
@@ -27,6 +27,11 @@ namespace {
 
 // These functions aren't strictly necessary, but exist to make threading and
 // arguments clearer.
+
+void BindLoginScreenTestApiOnMainThread(
+    mojom::LoginScreenTestApiRequest request) {
+  LoginScreenTestApi::BindRequest(std::move(request));
+}
 
 void BindShelfTestApiOnMainThread(mojom::ShelfTestApiRequest request) {
   ShelfTestApi::BindRequest(std::move(request));
@@ -43,10 +48,7 @@ void BindStatusAreaWidgetTestApiOnMainThread(
 
 void BindSystemTrayTestApiOnMainThread(
     mojom::SystemTrayTestApiRequest request) {
-  if (features::IsSystemTrayUnifiedEnabled())
-    UnifiedSystemTrayTestApi::BindRequest(std::move(request));
-  else
-    SystemTrayTestApi::BindRequest(std::move(request));
+  UnifiedSystemTrayTestApi::BindRequest(std::move(request));
 }
 
 void BindTimeToFirstPresentRecorderTestApiOnMainThread(
@@ -59,6 +61,8 @@ void BindTimeToFirstPresentRecorderTestApiOnMainThread(
 void RegisterInterfaces(
     service_manager::BinderRegistry* registry,
     scoped_refptr<base::SingleThreadTaskRunner> main_thread_task_runner) {
+  registry->AddInterface(base::Bind(&BindLoginScreenTestApiOnMainThread),
+                         main_thread_task_runner);
   registry->AddInterface(base::Bind(&BindShelfTestApiOnMainThread),
                          main_thread_task_runner);
   registry->AddInterface(base::Bind(&BindShellTestApiOnMainThread),

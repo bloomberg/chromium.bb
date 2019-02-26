@@ -31,9 +31,9 @@
 #ifndef THIRD_PARTY_BLINK_PUBLIC_WEB_WEB_SECURITY_POLICY_H_
 #define THIRD_PARTY_BLINK_PUBLIC_WEB_WEB_SECURITY_POLICY_H_
 
-#include "services/network/public/mojom/cors.mojom-shared.h"
+#include "services/network/public/mojom/cors_origin_pattern.mojom-shared.h"
+#include "services/network/public/mojom/referrer_policy.mojom-shared.h"
 #include "third_party/blink/public/platform/web_common.h"
-#include "third_party/blink/public/platform/web_referrer_policy.h"
 
 namespace blink {
 
@@ -72,32 +72,23 @@ class WebSecurityPolicy {
   // In the case where both an allowlist and blocklist rule of the same
   // priority match a request the blocklist rule takes priority.
   // Callers should use
-  // network::mojom::CORSOriginAccessMatchPriority::kDefaultPriority as the
+  // network::mojom::CorsOriginAccessMatchPriority::kDefaultPriority as the
   // default priority unless overriding existing entries is explicitly needed.
   BLINK_EXPORT static void AddOriginAccessAllowListEntry(
       const WebURL& source_origin,
       const WebString& destination_protocol,
       const WebString& destination_host,
       bool allow_destination_subdomains,
-      const network::mojom::CORSOriginAccessMatchPriority priority);
-  BLINK_EXPORT static void ClearOriginAccessAllowListForOrigin(
-      const WebURL& source_origin);
-  BLINK_EXPORT static void ClearOriginAccessAllowList();
-  BLINK_EXPORT static void ClearOriginAccessListForOrigin(
-      const WebURL& source_origin);
-
+      const network::mojom::CorsOriginAccessMatchPriority priority);
   BLINK_EXPORT static void AddOriginAccessBlockListEntry(
       const WebURL& source_origin,
       const WebString& destination_protocol,
       const WebString& destination_host,
       bool disallow_destination_subdomains,
-      const network::mojom::CORSOriginAccessMatchPriority priority);
-
-  BLINK_EXPORT static void AddOriginAccessBlockListEntry(
-      const WebURL& source_origin,
-      const WebString& destination_protocol,
-      const WebString& destination_host,
-      bool disallow_destination_subdomains);
+      const network::mojom::CorsOriginAccessMatchPriority priority);
+  BLINK_EXPORT static void ClearOriginAccessListForOrigin(
+      const WebURL& source_origin);
+  BLINK_EXPORT static void ClearOriginAccessList();
 
   // Support for whitelisting origins or hostname patterns to treat them as
   // trustworthy. This method does not do any canonicalization; the caller is
@@ -112,7 +103,7 @@ class WebSecurityPolicy {
   // navigation to a given URL. If the referrer returned is empty, the
   // referrer header should be omitted.
   BLINK_EXPORT static WebString GenerateReferrerHeader(
-      WebReferrerPolicy,
+      network::mojom::ReferrerPolicy,
       const WebURL&,
       const WebString& referrer);
 

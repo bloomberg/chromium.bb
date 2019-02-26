@@ -36,8 +36,6 @@ bool ClassifyBlock(CSSParserTokenRange range,
           has_references = true;
           continue;
         case CSSValueEnv:
-          if (!RuntimeEnabledFeatures::CSSEnvironmentVariablesEnabled())
-            return false;
           if (!IsValidEnvVariableReference(range.ConsumeBlock(),
                                            skip_variables))
             return false;  // Invalid reference.

@@ -46,14 +46,17 @@ class DOMURL final : public ScriptWrappable, public DOMURLUtils {
 
  public:
   static DOMURL* Create(const String& url, ExceptionState& exception_state) {
-    return new DOMURL(url, BlankURL(), exception_state);
+    return MakeGarbageCollected<DOMURL>(url, BlankURL(), exception_state);
   }
 
   static DOMURL* Create(const String& url,
                         const String& base,
                         ExceptionState& exception_state) {
-    return new DOMURL(url, KURL(NullURL(), base), exception_state);
+    return MakeGarbageCollected<DOMURL>(url, KURL(NullURL(), base),
+                                        exception_state);
   }
+
+  DOMURL(const String& url, const KURL& base, ExceptionState&);
   ~DOMURL() override;
 
   CORE_EXPORT static String CreatePublicURL(ExecutionContext*, URLRegistrable*);
@@ -74,7 +77,6 @@ class DOMURL final : public ScriptWrappable, public DOMURLUtils {
 
  private:
   friend class URLSearchParams;
-  DOMURL(const String& url, const KURL& base, ExceptionState&);
 
   void Update();
   void UpdateSearchParams(const String&);

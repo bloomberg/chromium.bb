@@ -19,7 +19,9 @@ namespace blink {
 NGPageLayoutAlgorithm::NGPageLayoutAlgorithm(NGBlockNode node,
                                              const NGConstraintSpace& space,
                                              const NGBreakToken* break_token)
-    : NGLayoutAlgorithm(node, space, ToNGBlockBreakToken(break_token)) {}
+    : NGLayoutAlgorithm(node, space, ToNGBlockBreakToken(break_token)) {
+  container_builder_.SetIsNewFormattingContext(space.IsNewFormattingContext());
+}
 
 scoped_refptr<NGLayoutResult> NGPageLayoutAlgorithm::Layout() {
   NGBoxStrut borders = ComputeBorders(ConstraintSpace(), Node());
@@ -52,8 +54,8 @@ scoped_refptr<NGLayoutResult> NGPageLayoutAlgorithm::Layout() {
     NGBlockLayoutAlgorithm child_algorithm(Node(), child_space,
                                            break_token.get());
     scoped_refptr<NGLayoutResult> result = child_algorithm.Layout();
-    scoped_refptr<const NGPhysicalBoxFragment> page(
-        ToNGPhysicalBoxFragment(result->PhysicalFragment().get()));
+    const NGPhysicalBoxFragment* page =
+        ToNGPhysicalBoxFragment(result->PhysicalFragment());
 
     container_builder_.AddChild(*result, page_offset);
 
@@ -93,25 +95,21 @@ base::Optional<MinMaxSize> NGPageLayoutAlgorithm::ComputeMinMaxSize(
 
 NGConstraintSpace NGPageLayoutAlgorithm::CreateConstraintSpaceForPages(
     const NGLogicalSize& page_size) const {
-  NGConstraintSpaceBuilder space_builder(ConstraintSpace());
+  NGConstraintSpaceBuilder space_builder(
+      ConstraintSpace(), Style().GetWritingMode(), /* is_new_fc */ true);
   space_builder.SetAvailableSize(page_size);
   space_builder.SetPercentageResolutionSize(page_size);
 
   if (NGBaseline::ShouldPropagateBaselines(Node()))
     space_builder.AddBaselineRequests(ConstraintSpace().BaselineRequests());
 
-  // TODO(mstensho): Handle auto block size. For now just disable fragmentation
-  // if block size is auto. With the current approach, we'll just end up with
-  // one tall page. This is only correct if there are no explicit page breaks.
-  if (page_size.block_size != NGSizeIndefinite) {
-    space_builder.SetFragmentationType(kFragmentPage);
-    space_builder.SetFragmentainerBlockSize(page_size.block_size);
-    space_builder.SetFragmentainerSpaceAtBfcStart(page_size.block_size);
-  }
-  space_builder.SetIsNewFormattingContext(true);
+  // TODO(mstensho): Handle auto block size.
+  space_builder.SetFragmentationType(kFragmentPage);
+  space_builder.SetFragmentainerBlockSize(page_size.block_size);
+  space_builder.SetFragmentainerSpaceAtBfcStart(page_size.block_size);
   space_builder.SetIsAnonymous(true);
 
-  return space_builder.ToConstraintSpace(Style().GetWritingMode());
+  return space_builder.ToConstraintSpace();
 }
 
 }  // namespace blink

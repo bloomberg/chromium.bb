@@ -33,7 +33,7 @@
 namespace blink {
 
 MediaQueryMatcher* MediaQueryMatcher::Create(Document& document) {
-  return new MediaQueryMatcher(document);
+  return MakeGarbageCollected<MediaQueryMatcher>(document);
 }
 
 MediaQueryMatcher::MediaQueryMatcher(Document& document)
@@ -52,7 +52,7 @@ MediaQueryEvaluator* MediaQueryMatcher::CreateEvaluator() const {
   if (!document_ || !document_->GetFrame())
     return nullptr;
 
-  return new MediaQueryEvaluator(document_->GetFrame());
+  return MakeGarbageCollected<MediaQueryEvaluator>(document_->GetFrame());
 }
 
 bool MediaQueryMatcher::Evaluate(const MediaQuerySet* media) {

@@ -509,7 +509,7 @@ void Layer::SetMaskLayer(PictureLayer* mask_layer) {
     inputs_.mask_layer->RemoveFromParent();
     DCHECK(!inputs_.mask_layer->parent());
     inputs_.mask_layer->SetParent(this);
-    if (inputs_.filters.IsEmpty() && inputs_.background_filters.IsEmpty() &&
+    if (inputs_.filters.IsEmpty() && inputs_.backdrop_filters.IsEmpty() &&
         (!layer_tree_host_ ||
          layer_tree_host_->GetSettings().enable_mask_tiling)) {
       inputs_.mask_layer->SetLayerMaskType(
@@ -537,11 +537,11 @@ void Layer::SetFilters(const FilterOperations& filters) {
   SetNeedsCommit();
 }
 
-void Layer::SetBackgroundFilters(const FilterOperations& filters) {
+void Layer::SetBackdropFilters(const FilterOperations& filters) {
   DCHECK(IsPropertyChangeAllowed());
-  if (inputs_.background_filters == filters)
+  if (inputs_.backdrop_filters == filters)
     return;
-  inputs_.background_filters = filters;
+  inputs_.backdrop_filters = filters;
 
   // We will not set the mask type to MULTI_TEXTURE_MASK if the mask layer's
   // filters are removed, because we do not want to reraster if the filters are

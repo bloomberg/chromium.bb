@@ -43,6 +43,7 @@
   HB_FONT_FUNC_IMPLEMENT (font_h_extents) \
   HB_FONT_FUNC_IMPLEMENT (font_v_extents) \
   HB_FONT_FUNC_IMPLEMENT (nominal_glyph) \
+  HB_FONT_FUNC_IMPLEMENT (nominal_glyphs) \
   HB_FONT_FUNC_IMPLEMENT (variation_glyph) \
   HB_FONT_FUNC_IMPLEMENT (glyph_h_advance) \
   HB_FONT_FUNC_IMPLEMENT (glyph_v_advance) \
@@ -61,9 +62,6 @@
 struct hb_font_funcs_t
 {
   hb_object_header_t header;
-  ASSERT_POD ();
-
-  hb_bool_t immutable;
 
   struct {
 #define HB_FONT_FUNC_IMPLEMENT(name) void *name;
@@ -98,12 +96,13 @@ DECLARE_NULL_INSTANCE (hb_font_funcs_t);
  * hb_font_t
  */
 
+#define HB_SHAPER_IMPLEMENT(shaper) HB_SHAPER_DATA_INSTANTIATE_SHAPERS(shaper, font);
+#include "hb-shaper-list.hh"
+#undef HB_SHAPER_IMPLEMENT
+
 struct hb_font_t
 {
   hb_object_header_t header;
-  ASSERT_POD ();
-
-  hb_bool_t immutable;
 
   hb_font_t *parent;
   hb_face_t *face;
@@ -124,7 +123,7 @@ struct hb_font_t
   void              *user_data;
   hb_destroy_func_t  destroy;
 
-  struct hb_shaper_data_t shaper_data;
+  hb_shaper_object_dataset_t<hb_font_t> data; /* Various shaper data. */
 
 
   /* Convert from font-space to user-space */
@@ -170,6 +169,7 @@ struct hb_font_t
   /* Public getters */
 
   HB_INTERNAL bool has_func (unsigned int i);
+  HB_INTERNAL bool has_func_set (unsigned int i);
 
   /* has_* ... */
 #define HB_FONT_FUNC_IMPLEMENT(name) \
@@ -179,6 +179,13 @@ struct hb_font_t
     hb_font_funcs_t *funcs = this->klass; \
     unsigned int i = offsetof (hb_font_funcs_t::get_t::get_funcs_t, name) / sizeof (funcs->get.array[0]); \
     return has_func (i); \
+  } \
+  bool \
+  has_##name##_func_set (void) \
+  { \
+    hb_font_funcs_t *funcs = this->klass; \
+    unsigned int i = offsetof (hb_font_funcs_t::get_t::get_funcs_t, name) / sizeof (funcs->get.array[0]); \
+    return has_func_set (i); \
   }
   HB_FONT_FUNCS_IMPLEMENT_CALLBACKS
 #undef HB_FONT_FUNC_IMPLEMENT
@@ -212,6 +219,18 @@ struct hb_font_t
 				       unicode, glyph,
 				       klass->user_data.nominal_glyph);
   }
+  inline unsigned int get_nominal_glyphs (unsigned int count,
+					  const hb_codepoint_t *first_unicode,
+					  unsigned int unicode_stride,
+					  hb_codepoint_t *first_glyph,
+					  unsigned int glyph_stride)
+  {
+    return klass->get.f.nominal_glyphs (this, user_data,
+					count,
+					first_unicode, unicode_stride,
+					first_glyph, glyph_stride,
+					klass->user_data.nominal_glyphs);
+  }
 
   inline hb_bool_t get_variation_glyph (hb_codepoint_t unicode, hb_codepoint_t variation_selector,
 					hb_codepoint_t *glyph)
@@ -237,7 +256,7 @@ struct hb_font_t
   }
 
   inline void get_glyph_h_advances (unsigned int count,
-				    hb_codepoint_t *first_glyph,
+				    const hb_codepoint_t *first_glyph,
 				    unsigned int glyph_stride,
 				    hb_position_t *first_advance,
 				    unsigned int advance_stride)
@@ -250,7 +269,7 @@ struct hb_font_t
   }
 
   inline void get_glyph_v_advances (unsigned int count,
-				    hb_codepoint_t *first_glyph,
+				    const hb_codepoint_t *first_glyph,
 				    unsigned int glyph_stride,
 				    hb_position_t *first_advance,
 				    unsigned int advance_stride)
@@ -377,8 +396,8 @@ struct hb_font_t
       *y = get_glyph_v_advance (glyph);
   }
   inline void get_glyph_advances_for_direction (hb_direction_t direction,
-						unsigned count,
-						hb_codepoint_t *first_glyph,
+						unsigned int count,
+						const hb_codepoint_t *first_glyph,
 						unsigned glyph_stride,
 						hb_position_t *first_advance,
 						unsigned advance_stride)
@@ -502,8 +521,8 @@ struct hb_font_t
 					       hb_position_t *x, hb_position_t *y)
   {
     if (likely (HB_DIRECTION_IS_HORIZONTAL (direction))) {
-      *x = get_glyph_h_kerning (first_glyph, second_glyph);
       *y = 0;
+      *x = get_glyph_h_kerning (first_glyph, second_glyph);
     } else {
       *x = 0;
       *y = get_glyph_v_kerning (first_glyph, second_glyph);
@@ -593,12 +612,6 @@ struct hb_font_t
   }
 };
 DECLARE_NULL_INSTANCE (hb_font_t);
-
-#define HB_SHAPER_DATA_CREATE_FUNC_EXTRA_ARGS
-#define HB_SHAPER_IMPLEMENT(shaper) HB_SHAPER_DATA_PROTOTYPE(shaper, font);
-#include "hb-shaper-list.hh"
-#undef HB_SHAPER_IMPLEMENT
-#undef HB_SHAPER_DATA_CREATE_FUNC_EXTRA_ARGS
 
 
 #endif /* HB_FONT_HH */

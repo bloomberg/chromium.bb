@@ -84,16 +84,20 @@ bool TabletModeClient::ShouldTrackBrowser(Browser* browser) {
   return tablet_mode_enabled_;
 }
 
-void TabletModeClient::TabInsertedAt(TabStripModel* tab_strip_model,
-                                     content::WebContents* contents,
-                                     int index,
-                                     bool foreground) {
+void TabletModeClient::OnTabStripModelChanged(
+    TabStripModel* tab_strip_model,
+    const TabStripModelChange& change,
+    const TabStripSelectionChange& selection) {
+  if (change.type() != TabStripModelChange::kInserted)
+    return;
+
   // We limit the mobile-like behavior to webcontents in tabstrips since many
   // apps and extensions draw their own caption buttons and header frames. We
   // don't want those to shrink down and resize to fit the width of their
   // windows like webpages on mobile do. So this behavior is limited to webpages
   // in tabs and packaged apps.
-  contents->NotifyPreferencesChanged();
+  for (const auto& delta : change.deltas())
+    delta.insert.contents->NotifyPreferencesChanged();
 }
 
 void TabletModeClient::FlushForTesting() {

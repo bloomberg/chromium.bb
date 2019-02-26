@@ -23,6 +23,7 @@ source_set("perf_test_support") {
     "//ios/chrome/browser/sessions:serialisation",
     "//ios/chrome/browser/tabs",
     "//ios/chrome/browser/ui:ui_internal",
+    "//ios/chrome/browser/ui/commands",
     "//ios/chrome/browser/web:web_internal",
     "//ios/chrome/test:test_support",
     "//ios/chrome/test/base:perf_test_support",

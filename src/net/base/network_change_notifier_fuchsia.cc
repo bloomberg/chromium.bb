@@ -10,6 +10,7 @@
 #include <vector>
 
 #include "base/fuchsia/component_context.h"
+#include "base/fuchsia/fuchsia_logging.h"
 #include "base/optional.h"
 #include "base/run_loop.h"
 #include "net/base/network_interfaces.h"
@@ -46,8 +47,9 @@ NetworkChangeNotifierFuchsia::NetworkChangeNotifierFuchsia(
     : netstack_(std::move(netstack)) {
   DCHECK(netstack_);
 
-  netstack_.set_error_handler(
-      [this]() { LOG(ERROR) << "Lost connection to netstack."; });
+  netstack_.set_error_handler([](zx_status_t status) {
+    ZX_LOG(ERROR, status) << "Lost connection to netstack.";
+  });
   netstack_.events().OnInterfacesChanged =
       [this](fidl::VectorPtr<fuchsia::netstack::NetInterface> interfaces) {
         ProcessInterfaceList(base::OnceClosure(), std::move(interfaces));

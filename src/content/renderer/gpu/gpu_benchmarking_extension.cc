@@ -308,9 +308,10 @@ bool BeginSmoothScroll(GpuBenchmarkingContext* context,
                                    blink::WebInputEvent::kNoModifiers,
                                    ui::EventTimeForNow());
     mouseMove.SetPositionInWidget(start_x, start_y);
-    context->web_view()->HandleInputEvent(
+    context->web_view()->MainFrameWidget()->HandleInputEvent(
         blink::WebCoalescedInputEvent(mouseMove));
-    context->web_view()->SetCursorVisibilityState(cursor_visible);
+    context->web_view()->MainFrameWidget()->SetCursorVisibilityState(
+        cursor_visible);
   }
 
   scoped_refptr<CallbackAndContext> callback_and_context =
@@ -527,8 +528,9 @@ GpuBenchmarking::~GpuBenchmarking() {
 
 void GpuBenchmarking::EnsureRemoteInterface() {
   if (!input_injector_) {
-    render_frame_->GetRemoteInterfaces()->GetInterface(
-        mojo::MakeRequest(&input_injector_));
+    render_frame_->GetRemoteInterfaces()->GetInterface(mojo::MakeRequest(
+        &input_injector_,
+        render_frame_->GetTaskRunner(blink::TaskType::kInternalDefault)));
   }
 }
 
@@ -924,9 +926,9 @@ void GpuBenchmarking::SetPageScaleFactor(float scale) {
 
 void GpuBenchmarking::SetBrowserControlsShown(bool show) {
   GpuBenchmarkingContext context;
-  if (!context.Init(false))
+  if (!context.Init(true))
     return;
-  context.web_view()->UpdateBrowserControlsState(
+  context.layer_tree_view()->UpdateBrowserControlsState(
       cc::BrowserControlsState::kBoth,
       show ? cc::BrowserControlsState::kShown
            : cc::BrowserControlsState::kHidden,

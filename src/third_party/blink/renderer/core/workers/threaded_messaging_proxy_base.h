@@ -25,7 +25,6 @@ namespace blink {
 
 class ExecutionContext;
 class SourceLocation;
-class WorkerInspectorProxy;
 struct GlobalScopeCreationParams;
 
 // The base proxy class to talk to Worker/WorkletGlobalScope on a worker thread
@@ -60,7 +59,6 @@ class CORE_EXPORT ThreadedMessagingProxyBase
                             MessageLevel,
                             const String& message,
                             std::unique_ptr<SourceLocation>);
-  void PostMessageToPageInspector(int session_id, const String&);
 
   void WorkerThreadTerminated();
 
@@ -79,7 +77,6 @@ class CORE_EXPORT ThreadedMessagingProxyBase
   ExecutionContext* GetExecutionContext() const;
   ParentExecutionContextTaskRunners* GetParentExecutionContextTaskRunners()
       const;
-  WorkerInspectorProxy* GetWorkerInspectorProxy() const;
 
   // May return nullptr after termination is requested.
   WorkerThread* GetWorkerThread() const;
@@ -93,7 +90,6 @@ class CORE_EXPORT ThreadedMessagingProxyBase
   virtual std::unique_ptr<WorkerThread> CreateWorkerThread() = 0;
 
   Member<ExecutionContext> execution_context_;
-  Member<WorkerInspectorProxy> worker_inspector_proxy_;
 
   // Accessed cross-thread when worker thread posts tasks to the parent.
   CrossThreadPersistent<ParentExecutionContextTaskRunners>

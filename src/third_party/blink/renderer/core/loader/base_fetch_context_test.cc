@@ -47,7 +47,8 @@ class MockBaseFetchContext final : public BaseFetchContext {
             execution_context->GetTaskRunner(blink::TaskType::kInternalTest)),
         execution_context_(execution_context),
         fetch_client_settings_object_(
-            new FetchClientSettingsObjectImpl(*execution_context)) {}
+            MakeGarbageCollected<FetchClientSettingsObjectImpl>(
+                *execution_context)) {}
   ~MockBaseFetchContext() override = default;
 
   // BaseFetchContext overrides:
@@ -127,10 +128,11 @@ class MockBaseFetchContext final : public BaseFetchContext {
 class BaseFetchContextTest : public testing::Test {
  protected:
   void SetUp() override {
-    execution_context_ = new NullExecutionContext();
+    execution_context_ = MakeGarbageCollected<NullExecutionContext>();
     static_cast<NullExecutionContext*>(execution_context_.Get())
         ->SetUpSecurityContext();
-    fetch_context_ = new MockBaseFetchContext(execution_context_);
+    fetch_context_ =
+        MakeGarbageCollected<MockBaseFetchContext>(execution_context_);
   }
 
   Persistent<ExecutionContext> execution_context_;
@@ -411,7 +413,7 @@ TEST_F(BaseFetchContextTest, UACSSTest) {
   ResourceRequest resource_request(test_url);
   resource_request.SetRequestorOrigin(fetch_context_->GetSecurityOrigin());
   ResourceLoaderOptions options;
-  options.initiator_info.name = FetchInitiatorTypeNames::uacss;
+  options.initiator_info.name = fetch_initiator_type_names::kUacss;
 
   EXPECT_EQ(ResourceRequestBlockedReason::kOther,
             fetch_context_->CanRequest(
@@ -445,7 +447,7 @@ TEST_F(BaseFetchContextTest, UACSSTest_BypassCSP) {
   ResourceRequest resource_request(data_url);
   resource_request.SetRequestorOrigin(fetch_context_->GetSecurityOrigin());
   ResourceLoaderOptions options;
-  options.initiator_info.name = FetchInitiatorTypeNames::uacss;
+  options.initiator_info.name = fetch_initiator_type_names::kUacss;
 
   EXPECT_EQ(base::nullopt,
             fetch_context_->CanRequest(

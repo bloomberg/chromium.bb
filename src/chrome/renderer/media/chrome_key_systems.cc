@@ -144,6 +144,7 @@ static void AddExternalClearKey(
 #if BUILDFLAG(ENABLE_WIDEVINE)
 static SupportedCodecs GetSupportedCodecs(
     const std::vector<media::VideoCodec>& supported_video_codecs,
+    bool supports_vp9_profile2,
     bool is_secure) {
   SupportedCodecs supported_codecs = media::EME_CODEC_NONE;
 
@@ -169,8 +170,12 @@ static SupportedCodecs GetSupportedCodecs(
         supported_codecs |= media::EME_CODEC_VP8;
         break;
       case media::VideoCodec::kCodecVP9:
-        supported_codecs |= media::EME_CODEC_LEGACY_VP9;
-        supported_codecs |= media::EME_CODEC_VP9;
+        supported_codecs |= media::EME_CODEC_VP9_PROFILE0;
+        if (supports_vp9_profile2)
+          supported_codecs |= media::EME_CODEC_VP9_PROFILE2;
+        break;
+      case media::VideoCodec::kCodecAV1:
+        supported_codecs |= media::EME_CODEC_AV1;
         break;
 #if BUILDFLAG(USE_PROPRIETARY_CODECS)
       case media::VideoCodec::kCodecH264:
@@ -248,10 +253,13 @@ static void AddWidevine(
   }
 
   // Codecs and encryption schemes.
-  auto codecs =
-      GetSupportedCodecs(capability->video_codecs, /*is_secure=*/false);
+  auto codecs = GetSupportedCodecs(capability->video_codecs,
+                                   capability->supports_vp9_profile2,
+                                   /*is_secure=*/false);
   const auto& encryption_schemes = capability->encryption_schemes;
+  // TODO(xhwang): Investigate whether hardware VP9 profile 2 is supported.
   auto hw_secure_codecs = GetSupportedCodecs(capability->hw_secure_video_codecs,
+                                             /*supports_vp9_profile2=*/false,
                                              /*is_secure=*/true);
   const auto& hw_secure_encryption_schemes =
       capability->hw_secure_encryption_schemes;

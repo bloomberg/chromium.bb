@@ -40,10 +40,6 @@ bool VRDeviceBase::HasExclusiveSession() {
   return presenting_;
 }
 
-void VRDeviceBase::SetMagicWindowEnabled(bool enabled) {
-  magic_window_enabled_ = enabled;
-}
-
 void VRDeviceBase::ListenToDeviceChanges(
     mojom::XRRuntimeEventListenerAssociatedPtrInfo listener_info,
     mojom::XRRuntime::ListenToDeviceChangesCallback callback) {
@@ -51,14 +47,14 @@ void VRDeviceBase::ListenToDeviceChanges(
   std::move(callback).Run(display_info_.Clone());
 }
 
-void VRDeviceBase::GetFrameData(
+void VRDeviceBase::GetInlineFrameData(
     mojom::XRFrameDataProvider::GetFrameDataCallback callback) {
-  if (!magic_window_enabled_) {
+  if (!inline_poses_enabled_) {
     std::move(callback).Run(nullptr);
     return;
   }
 
-  OnMagicWindowFrameDataRequest(std::move(callback));
+  OnGetInlineFrameData(std::move(callback));
 }
 
 void VRDeviceBase::SetVRDisplayInfo(mojom::VRDisplayInfoPtr display_info) {
@@ -88,7 +84,7 @@ bool VRDeviceBase::ShouldPauseTrackingWhenFrameDataRestricted() {
 
 void VRDeviceBase::OnListeningForActivate(bool listening) {}
 
-void VRDeviceBase::OnMagicWindowFrameDataRequest(
+void VRDeviceBase::OnGetInlineFrameData(
     mojom::XRFrameDataProvider::GetFrameDataCallback callback) {
   std::move(callback).Run(nullptr);
 }
@@ -99,6 +95,10 @@ void VRDeviceBase::SetListeningForActivate(bool is_listening) {
 
 void VRDeviceBase::EnsureInitialized(EnsureInitializedCallback callback) {
   std::move(callback).Run();
+}
+
+void VRDeviceBase::SetInlinePosesEnabled(bool enable) {
+  inline_poses_enabled_ = enable;
 }
 
 void VRDeviceBase::RequestHitTest(
@@ -113,16 +113,11 @@ void VRDeviceBase::ReturnNonImmersiveSession(
   mojom::XRFrameDataProviderPtr data_provider;
   mojom::XREnvironmentIntegrationProviderPtr environment_provider;
   mojom::XRSessionControllerPtr controller;
-  magic_window_sessions_.push_back(
-      std::make_unique<VRDisplayImpl>(this, mojo::MakeRequest(&data_provider),
-                                      mojo::MakeRequest(&environment_provider),
-                                      mojo::MakeRequest(&controller)));
+  magic_window_sessions_.push_back(std::make_unique<VRDisplayImpl>(
+      this, mojo::MakeRequest(&data_provider), mojo::MakeRequest(&controller)));
 
   auto session = mojom::XRSession::New();
   session->data_provider = data_provider.PassInterface();
-  // TODO(http://crbug.com/876135) Not all sessions want the environment
-  // provider. This should be refactored to only be passed when requested.
-  session->environment_provider = environment_provider.PassInterface();
   if (display_info_) {
     session->display_info = display_info_.Clone();
   }

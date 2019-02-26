@@ -13,7 +13,7 @@
 #include "third_party/blink/renderer/core/style/computed_style.h"
 
 namespace blink {
-namespace CSSShorthand {
+namespace css_shorthand {
 
 bool BorderRadius::ParseShorthand(
     bool important,
@@ -24,34 +24,34 @@ bool BorderRadius::ParseShorthand(
   CSSValue* horizontal_radii[4] = {nullptr};
   CSSValue* vertical_radii[4] = {nullptr};
 
-  if (!CSSParsingUtils::ConsumeRadii(horizontal_radii, vertical_radii, range,
-                                     context.Mode(),
-                                     local_context.UseAliasParsing()))
+  if (!css_parsing_utils::ConsumeRadii(horizontal_radii, vertical_radii, range,
+                                       context.Mode(),
+                                       local_context.UseAliasParsing()))
     return false;
 
-  CSSPropertyParserHelpers::AddProperty(
+  css_property_parser_helpers::AddProperty(
       CSSPropertyBorderTopLeftRadius, CSSPropertyBorderRadius,
       *CSSValuePair::Create(horizontal_radii[0], vertical_radii[0],
                             CSSValuePair::kDropIdenticalValues),
-      important, CSSPropertyParserHelpers::IsImplicitProperty::kNotImplicit,
+      important, css_property_parser_helpers::IsImplicitProperty::kNotImplicit,
       properties);
-  CSSPropertyParserHelpers::AddProperty(
+  css_property_parser_helpers::AddProperty(
       CSSPropertyBorderTopRightRadius, CSSPropertyBorderRadius,
       *CSSValuePair::Create(horizontal_radii[1], vertical_radii[1],
                             CSSValuePair::kDropIdenticalValues),
-      important, CSSPropertyParserHelpers::IsImplicitProperty::kNotImplicit,
+      important, css_property_parser_helpers::IsImplicitProperty::kNotImplicit,
       properties);
-  CSSPropertyParserHelpers::AddProperty(
+  css_property_parser_helpers::AddProperty(
       CSSPropertyBorderBottomRightRadius, CSSPropertyBorderRadius,
       *CSSValuePair::Create(horizontal_radii[2], vertical_radii[2],
                             CSSValuePair::kDropIdenticalValues),
-      important, CSSPropertyParserHelpers::IsImplicitProperty::kNotImplicit,
+      important, css_property_parser_helpers::IsImplicitProperty::kNotImplicit,
       properties);
-  CSSPropertyParserHelpers::AddProperty(
+  css_property_parser_helpers::AddProperty(
       CSSPropertyBorderBottomLeftRadius, CSSPropertyBorderRadius,
       *CSSValuePair::Create(horizontal_radii[3], vertical_radii[3],
                             CSSValuePair::kDropIdenticalValues),
-      important, CSSPropertyParserHelpers::IsImplicitProperty::kNotImplicit,
+      important, css_property_parser_helpers::IsImplicitProperty::kNotImplicit,
       properties);
   return true;
 }
@@ -65,5 +65,5 @@ const CSSValue* BorderRadius::CSSValueFromComputedStyleInternal(
   return ComputedStyleUtils::ValueForBorderRadiusShorthand(style);
 }
 
-}  // namespace CSSShorthand
+}  // namespace css_shorthand
 }  // namespace blink

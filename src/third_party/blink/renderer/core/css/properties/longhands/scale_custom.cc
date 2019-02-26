@@ -10,7 +10,7 @@
 #include "third_party/blink/renderer/platform/runtime_enabled_features.h"
 
 namespace blink {
-namespace CSSLonghand {
+namespace css_longhand {
 
 const CSSValue* Scale::ParseSingleValue(CSSParserTokenRange& range,
                                         const CSSParserContext& context,
@@ -19,18 +19,18 @@ const CSSValue* Scale::ParseSingleValue(CSSParserTokenRange& range,
 
   CSSValueID id = range.Peek().Id();
   if (id == CSSValueNone)
-    return CSSPropertyParserHelpers::ConsumeIdent(range);
+    return css_property_parser_helpers::ConsumeIdent(range);
 
   CSSValue* scale =
-      CSSPropertyParserHelpers::ConsumeNumber(range, kValueRangeAll);
+      css_property_parser_helpers::ConsumeNumber(range, kValueRangeAll);
   if (!scale)
     return nullptr;
   CSSValueList* list = CSSValueList::CreateSpaceSeparated();
   list->Append(*scale);
-  scale = CSSPropertyParserHelpers::ConsumeNumber(range, kValueRangeAll);
+  scale = css_property_parser_helpers::ConsumeNumber(range, kValueRangeAll);
   if (scale) {
     list->Append(*scale);
-    scale = CSSPropertyParserHelpers::ConsumeNumber(range, kValueRangeAll);
+    scale = css_property_parser_helpers::ConsumeNumber(range, kValueRangeAll);
     if (scale)
       list->Append(*scale);
   }
@@ -58,5 +58,5 @@ const CSSValue* Scale::CSSValueFromComputedStyleInternal(
   return list;
 }
 
-}  // namespace CSSLonghand
+}  // namespace css_longhand
 }  // namespace blink

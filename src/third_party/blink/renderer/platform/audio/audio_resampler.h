@@ -53,7 +53,7 @@ class PLATFORM_EXPORT AudioResampler {
   // destinationBus.
   void Process(AudioSourceProvider*,
                AudioBus* destination_bus,
-               size_t frames_to_process);
+               uint32_t frames_to_process);
 
   // Resets the processing state.
   void Reset();

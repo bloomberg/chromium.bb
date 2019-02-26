@@ -22,7 +22,7 @@ FrameRequestCallbackCollection::RegisterCallback(FrameCallback* callback) {
 
   TRACE_EVENT_INSTANT1("devtools.timeline", "RequestAnimationFrame",
                        TRACE_EVENT_SCOPE_THREAD, "data",
-                       InspectorAnimationFrameEvent::Data(context_, id));
+                       inspector_animation_frame_event::Data(context_, id));
   probe::AsyncTaskScheduledBreakable(context_, "requestAnimationFrame",
                                      callback);
   return id;
@@ -36,7 +36,7 @@ void FrameRequestCallbackCollection::CancelCallback(CallbackId id) {
       callbacks_.EraseAt(i);
       TRACE_EVENT_INSTANT1("devtools.timeline", "CancelAnimationFrame",
                            TRACE_EVENT_SCOPE_THREAD, "data",
-                           InspectorAnimationFrameEvent::Data(context_, id));
+                           inspector_animation_frame_event::Data(context_, id));
       return;
     }
   }
@@ -46,7 +46,7 @@ void FrameRequestCallbackCollection::CancelCallback(CallbackId id) {
                                         callback);
       TRACE_EVENT_INSTANT1("devtools.timeline", "CancelAnimationFrame",
                            TRACE_EVENT_SCOPE_THREAD, "data",
-                           InspectorAnimationFrameEvent::Data(context_, id));
+                           inspector_animation_frame_event::Data(context_, id));
       callback->SetIsCancelled(true);
       // will be removed at the end of executeCallbacks()
       return;
@@ -74,7 +74,7 @@ void FrameRequestCallbackCollection::ExecuteCallbacks(
     if (!callback->IsCancelled()) {
       TRACE_EVENT1(
           "devtools.timeline", "FireAnimationFrame", "data",
-          InspectorAnimationFrameEvent::Data(context_, callback->Id()));
+          inspector_animation_frame_event::Data(context_, callback->Id()));
       probe::AsyncTask async_task(context_, callback);
       probe::UserCallback probe(context_, "requestAnimationFrame",
                                 AtomicString(), true);

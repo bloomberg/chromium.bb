@@ -8,9 +8,9 @@ import android.content.Context;
 import android.content.res.ColorStateList;
 import android.support.design.widget.TabLayout;
 import android.support.v7.content.res.AppCompatResources;
-import android.support.v7.widget.AppCompatImageView;
 import android.util.AttributeSet;
 import android.view.View;
+import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.ListView;
 
@@ -23,6 +23,7 @@ import org.chromium.chrome.browser.tabmodel.EmptyTabModelSelectorObserver;
 import org.chromium.chrome.browser.tabmodel.TabModelSelector;
 import org.chromium.chrome.browser.tabmodel.TabModelSelectorObserver;
 import org.chromium.chrome.browser.widget.accessibility.AccessibilityTabModelAdapter.AccessibilityTabModelAdapterListener;
+import org.chromium.ui.widget.ChromeImageView;
 
 /**
  * A wrapper around the Android views in the Accessibility tab switcher. This
@@ -36,8 +37,8 @@ public class AccessibilityTabModelWrapper extends LinearLayout {
     private TabLayout mStackButtonWrapper;
     private TabLayout.Tab mStandardButton;
     private TabLayout.Tab mIncognitoButton;
-    private AppCompatImageView mStandardButtonIcon;
-    private AppCompatImageView mIncognitoButtonIcon;
+    private ImageView mStandardButtonIcon;
+    private ImageView mIncognitoButtonIcon;
 
     private ColorStateList mTabIconDarkColor;
     private ColorStateList mTabIconLightColor;
@@ -106,12 +107,12 @@ public class AccessibilityTabModelWrapper extends LinearLayout {
                 AppCompatResources.getColorStateList(getContext(), R.color.white_mode_tint);
         // Setting scaleY here to make sure the icons are not flipped due to the scaleY of its
         // container layout.
-        mStandardButtonIcon = new AppCompatImageView(getContext());
+        mStandardButtonIcon = new ChromeImageView(getContext());
         mStandardButtonIcon.setImageResource(R.drawable.btn_normal_tabs);
         mStandardButtonIcon.setScaleY(-1.0f);
         mStandardButtonIcon.setContentDescription(
                 getResources().getString(R.string.accessibility_tab_switcher_standard_stack));
-        mIncognitoButtonIcon = new AppCompatImageView(getContext());
+        mIncognitoButtonIcon = new ChromeImageView(getContext());
         mIncognitoButtonIcon.setImageResource(R.drawable.btn_incognito_tabs);
         mIncognitoButtonIcon.setScaleY(-1.0f);
         mIncognitoButtonIcon.setContentDescription(getResources().getString(

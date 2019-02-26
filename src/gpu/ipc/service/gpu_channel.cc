@@ -37,12 +37,14 @@
 #include "gpu/command_buffer/service/mailbox_manager.h"
 #include "gpu/command_buffer/service/memory_tracking.h"
 #include "gpu/command_buffer/service/scheduler.h"
+#include "gpu/command_buffer/service/service_utils.h"
 #include "gpu/ipc/common/command_buffer_id.h"
 #include "gpu/ipc/common/gpu_messages.h"
 #include "gpu/ipc/service/gles2_command_buffer_stub.h"
 #include "gpu/ipc/service/gpu_channel_manager.h"
 #include "gpu/ipc/service/gpu_channel_manager_delegate.h"
 #include "gpu/ipc/service/gpu_memory_buffer_factory.h"
+#include "gpu/ipc/service/image_decode_accelerator_stub.h"
 #include "gpu/ipc/service/raster_command_buffer_stub.h"
 #include "gpu/ipc/service/webgpu_command_buffer_stub.h"
 #include "ipc/ipc_channel.h"
@@ -117,6 +119,7 @@ class GPU_IPC_SERVICE_EXPORT GpuChannelMessageFilter
   Scheduler* scheduler_;
   scoped_refptr<base::SingleThreadTaskRunner> main_task_runner_;
 
+  scoped_refptr<ImageDecodeAcceleratorStub> image_decode_accelerator_stub_;
   base::ThreadChecker io_thread_checker_;
 
   DISALLOW_COPY_AND_ASSIGN(GpuChannelMessageFilter);
@@ -128,7 +131,12 @@ GpuChannelMessageFilter::GpuChannelMessageFilter(
     scoped_refptr<base::SingleThreadTaskRunner> main_task_runner)
     : gpu_channel_(gpu_channel),
       scheduler_(scheduler),
-      main_task_runner_(std::move(main_task_runner)) {
+      main_task_runner_(std::move(main_task_runner)),
+      image_decode_accelerator_stub_(
+          base::MakeRefCounted<ImageDecodeAcceleratorStub>(
+              gpu_channel,
+              static_cast<int32_t>(
+                  GpuChannelReservedRoutes::kImageDecodeAccelerator))) {
   io_thread_checker_.DetachFromThread();
 }
 
@@ -138,6 +146,7 @@ GpuChannelMessageFilter::~GpuChannelMessageFilter() {
 
 void GpuChannelMessageFilter::Destroy() {
   base::AutoLock auto_lock(gpu_channel_lock_);
+  image_decode_accelerator_stub_->Shutdown();
   gpu_channel_ = nullptr;
 }
 
@@ -268,7 +277,11 @@ bool GpuChannelMessageFilter::OnMessageReceived(const IPC::Message& message) {
     }
 
     scheduler_->ScheduleTasks(std::move(tasks));
-
+  } else if (message.routing_id() ==
+             static_cast<int32_t>(
+                 GpuChannelReservedRoutes::kImageDecodeAccelerator)) {
+    if (!image_decode_accelerator_stub_->OnMessageReceived(message))
+      return MessageErrorHandler(message, "Invalid image decode request");
   } else if (message.routing_id() == MSG_ROUTING_CONTROL ||
              message.type() == GpuCommandBufferMsg_WaitForTokenInRange::ID ||
              message.type() ==
@@ -559,6 +572,13 @@ void GpuChannel::OnCreateCommandBuffer(
     return;
   }
 
+  if (gpu_channel_manager_->is_exiting_for_lost_context()) {
+    LOG(ERROR) << "ContextResult::kTransientFailure: trying to create command "
+                  "buffer during process shutdown.";
+    *result = gpu::ContextResult::kTransientFailure;
+    return;
+  }
+
   int32_t stream_id = init_params.stream_id;
   int32_t share_group_id = init_params.share_group_id;
   CommandBufferStub* share_group = LookupCommandBuffer(share_group_id);
@@ -600,11 +620,10 @@ void GpuChannel::OnCreateCommandBuffer(
   }
 
   std::unique_ptr<CommandBufferStub> stub;
+  bool use_passthrough_cmd_decoder =
+      gpu_channel_manager_->gpu_preferences().use_passthrough_cmd_decoder &&
+      gles2::PassthroughCommandDecoderSupported();
 
-  bool supports_oop_rasterization =
-      gpu_channel_manager_->gpu_feature_info()
-          .status_values[GPU_FEATURE_TYPE_GPU_RASTERIZATION] ==
-      kGpuFeatureStatusEnabled;
   if (init_params.attribs.context_type == CONTEXT_TYPE_WEBGPU) {
     if (!gpu_channel_manager_->gpu_preferences().enable_webgpu) {
       DLOG(ERROR) << "ContextResult::kFatalFailure: WebGPU not enabled";
@@ -613,8 +632,7 @@ void GpuChannel::OnCreateCommandBuffer(
 
     stub = std::make_unique<WebGPUCommandBufferStub>(
         this, init_params, command_buffer_id, sequence_id, stream_id, route_id);
-  } else if (supports_oop_rasterization &&
-             init_params.attribs.enable_oop_rasterization &&
+  } else if (!use_passthrough_cmd_decoder &&
              init_params.attribs.enable_raster_interface &&
              !init_params.attribs.enable_gles2_interface) {
     stub = std::make_unique<RasterCommandBufferStub>(
@@ -692,11 +710,11 @@ void GpuChannel::RemoveFilter(IPC::MessageFilter* filter) {
 
 uint64_t GpuChannel::GetMemoryUsage() const {
   // Collect the unique memory trackers in use by the |stubs_|.
-  base::flat_set<gles2::MemoryTracker*> unique_memory_trackers;
+  base::flat_set<MemoryTracker*> unique_memory_trackers;
   unique_memory_trackers.reserve(stubs_.size());
   uint64_t size = 0;
   for (const auto& kv : stubs_) {
-    gles2::MemoryTracker* tracker = kv.second->GetMemoryTracker();
+    MemoryTracker* tracker = kv.second->GetMemoryTracker();
     if (!unique_memory_trackers.insert(tracker).second) {
       // We already counted that tracker.
       continue;
@@ -712,15 +730,13 @@ scoped_refptr<gl::GLImage> GpuChannel::CreateImageForGpuMemoryBuffer(
     gfx::GpuMemoryBufferHandle handle,
     const gfx::Size& size,
     gfx::BufferFormat format,
-    uint32_t internalformat,
     SurfaceHandle surface_handle) {
   switch (handle.type) {
     case gfx::SHARED_MEMORY_BUFFER: {
       if (!base::IsValueInRangeForNumericType<size_t>(handle.stride))
         return nullptr;
-      scoped_refptr<gl::GLImageSharedMemory> image(
-          new gl::GLImageSharedMemory(size, internalformat));
-      if (!image->Initialize(handle.handle, handle.id, format, handle.offset,
+      auto image = base::MakeRefCounted<gl::GLImageSharedMemory>(size);
+      if (!image->Initialize(handle.region, handle.id, format, handle.offset,
                              handle.stride)) {
         return nullptr;
       }
@@ -735,8 +751,7 @@ scoped_refptr<gl::GLImage> GpuChannel::CreateImageForGpuMemoryBuffer(
       return manager->gpu_memory_buffer_factory()
           ->AsImageFactory()
           ->CreateImageForGpuMemoryBuffer(std::move(handle), size, format,
-                                          internalformat, client_id_,
-                                          surface_handle);
+                                          client_id_, surface_handle);
     }
   }
 }

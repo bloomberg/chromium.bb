@@ -720,7 +720,8 @@ TEST_F(ChromeDownloadManagerDelegateTest, WithoutHistoryDbNextId) {
   // |download::DownloadItem::kInvalidId|.
   delegate()->GetDownloadIdReceiverCallback().Run(
       download::DownloadItem::kInvalidId);
-  std::vector<uint32_t> expected_ids = std::vector<uint32_t>{1u, 2u};
+  std::vector<uint32_t> expected_ids = std::vector<uint32_t>{
+      download::DownloadItem::kInvalidId, download::DownloadItem::kInvalidId};
   EXPECT_EQ(expected_ids, download_ids());
 }
 

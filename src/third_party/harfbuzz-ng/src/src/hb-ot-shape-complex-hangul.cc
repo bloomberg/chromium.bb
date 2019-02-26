@@ -70,8 +70,6 @@ override_features_hangul (hb_ot_shape_planner_t *plan)
 
 struct hangul_shape_plan_t
 {
-  ASSERT_POD ();
-
   hb_mask_t mask_array[HANGUL_FEATURE_COUNT];
 };
 
@@ -128,7 +126,7 @@ is_zero_width_char (hb_font_t *font,
 }
 
 static void
-preprocess_text_hangul (const hb_ot_shape_plan_t *plan,
+preprocess_text_hangul (const hb_ot_shape_plan_t *plan HB_UNUSED,
 			hb_buffer_t              *buffer,
 			hb_font_t                *font)
 {
@@ -345,13 +343,6 @@ preprocess_text_hangul (const hb_ot_shape_plan_t *plan,
 	{
 	  unsigned int s_len = tindex ? 3 : 2;
 	  buffer->replace_glyphs (1, s_len, decomposed);
-	  if (unlikely (!buffer->successful))
-	    return;
-
-	  /* We decomposed S: apply jamo features to the individual glyphs
-	   * that are now in buffer->out_info.
-	   */
-	  hb_glyph_info_t *info = buffer->out_info;
 
 	  /* If we decomposed an LV because of a non-combining T following,
 	   * we want to include this T in the syllable.
@@ -361,6 +352,14 @@ preprocess_text_hangul (const hb_ot_shape_plan_t *plan,
             buffer->next_glyph ();
             s_len++;
           }
+
+	  if (unlikely (!buffer->successful))
+	    return;
+
+	  /* We decomposed S: apply jamo features to the individual glyphs
+	   * that are now in buffer->out_info.
+	   */
+	  hb_glyph_info_t *info = buffer->out_info;
           end = start + s_len;
 
 	  unsigned int i = start;
@@ -368,6 +367,7 @@ preprocess_text_hangul (const hb_ot_shape_plan_t *plan,
 	  info[i++].hangul_shaping_feature() = VJMO;
 	  if (i < end)
 	    info[i++].hangul_shaping_feature() = TJMO;
+
 	  if (buffer->cluster_level == HB_BUFFER_CLUSTER_LEVEL_MONOTONE_GRAPHEMES)
 	    buffer->merge_out_clusters (start, end);
 	  continue;

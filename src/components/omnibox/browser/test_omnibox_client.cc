@@ -29,6 +29,7 @@ class FakeQueryInOmnibox : public QueryInOmnibox {
 
   // QueryInOmnibox:
   bool GetDisplaySearchTerms(security_state::SecurityLevel security_level,
+                             bool ignore_security_level,
                              const GURL& url,
                              base::string16* search_terms) override {
     if (fake_search_terms_.empty())

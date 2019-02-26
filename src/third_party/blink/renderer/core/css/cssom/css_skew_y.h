@@ -23,10 +23,14 @@ class CORE_EXPORT CSSSkewY final : public CSSTransformComponent {
  public:
   // Constructor defined in the IDL.
   static CSSSkewY* Create(CSSNumericValue*, ExceptionState&);
-  static CSSSkewY* Create(CSSNumericValue* ay) { return new CSSSkewY(ay); }
+  static CSSSkewY* Create(CSSNumericValue* ay) {
+    return MakeGarbageCollected<CSSSkewY>(ay);
+  }
 
   // Internal ways of creating CSSSkewY.
   static CSSSkewY* FromCSSValue(const CSSFunctionValue&);
+
+  CSSSkewY(CSSNumericValue* ay);
 
   // Getters and setters for the ay attributes defined in the IDL.
   CSSNumericValue* ay() { return ay_.Get(); }
@@ -49,8 +53,6 @@ class CORE_EXPORT CSSSkewY final : public CSSTransformComponent {
   }
 
  private:
-  CSSSkewY(CSSNumericValue* ay);
-
   Member<CSSNumericValue> ay_;
   DISALLOW_COPY_AND_ASSIGN(CSSSkewY);
 };

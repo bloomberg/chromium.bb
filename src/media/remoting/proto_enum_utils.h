@@ -67,11 +67,6 @@ base::Optional<VideoPixelFormat> ToMediaVideoPixelFormat(
 base::Optional<pb::VideoDecoderConfig::Format> ToProtoVideoDecoderConfigFormat(
     VideoPixelFormat value);
 
-base::Optional<ColorSpace> ToMediaColorSpace(
-    pb::VideoDecoderConfig::ColorSpace value);
-base::Optional<pb::VideoDecoderConfig::ColorSpace>
-ToProtoVideoDecoderConfigColorSpace(ColorSpace value);
-
 base::Optional<BufferingState> ToMediaBufferingState(
     pb::RendererClientOnBufferingStateChange::State value);
 base::Optional<pb::RendererClientOnBufferingStateChange::State>

@@ -310,4 +310,97 @@ IN_PROC_BROWSER_TEST_F(RenderFrameMessageFilterBrowserTest, RenderProcessGone) {
   ASSERT_FALSE(web_rfh->IsRenderFrameLive());
 }
 
+class WaitingCookieStore : public net::CookieMonster {
+ public:
+  WaitingCookieStore() : CookieMonster(nullptr, nullptr, nullptr) {}
+
+  void GetCookieListWithOptionsAsync(const GURL& url,
+                                     const net::CookieOptions& options,
+                                     GetCookieListCallback callback) override {
+    callback_ = std::move(callback);
+  }
+
+  void Finish() { std::move(callback_).Run({}); }
+
+ private:
+  GetCookieListCallback callback_;
+};
+
+class CookieStoreContentBrowserClient : public ContentBrowserClient {
+ public:
+  ~CookieStoreContentBrowserClient() override {
+    BrowserThread::DeleteSoon(BrowserThread::IO, FROM_HERE,
+                              std::move(cookie_store_));
+  }
+
+  net::CookieStore* OverrideCookieStoreForURL(
+      const GURL& url,
+      ResourceContext* context) override {
+    if (!cookie_store_)
+      cookie_store_ = std::make_unique<WaitingCookieStore>();
+    return cookie_store_.get();
+  }
+
+  bool AllowGetCookie(const GURL& url,
+                      const GURL& first_party,
+                      const net::CookieList& cookie_list,
+                      ResourceContext* context,
+                      int render_process_id,
+                      int render_frame_id) override {
+    num_allow_get_cookie_calls_++;
+    return false;
+  }
+
+  void FinishGetCookieList() {
+    base::PostTaskWithTraits(
+        FROM_HERE, {BrowserThread::IO},
+        base::BindOnce(&WaitingCookieStore::Finish,
+                       base::Unretained(cookie_store_.get())));
+  }
+
+  int num_allow_get_cookie_calls() const { return num_allow_get_cookie_calls_; }
+
+ private:
+  int num_allow_get_cookie_calls_ = 0;
+  std::unique_ptr<WaitingCookieStore> cookie_store_;
+};
+
+IN_PROC_BROWSER_TEST_F(RenderFrameMessageFilterBrowserTest,
+                       CookieCallbackAfterProfileDestroyed) {
+  CookieStoreContentBrowserClient browser_client;
+  content::ContentBrowserClient* old_browser_client =
+      content::SetBrowserClientForTesting(&browser_client);
+
+  ASSERT_TRUE(embedded_test_server()->Start());
+  NavigateToURL(shell(), embedded_test_server()->GetURL("/title1.html"));
+
+  base::RunLoop run_loop;
+  WebContentsImpl* web_contents =
+      static_cast<WebContentsImpl*>(shell()->web_contents());
+  FrameTreeNode* root = web_contents->GetFrameTree()->root();
+  base::PostTaskWithTraits(
+      FROM_HERE, {BrowserThread::IO},
+      base::BindOnce(
+          [](RenderFrameHost* frame, base::RunLoop* run_loop) {
+            GetFilterForProcess(frame->GetProcess())
+                ->GetCookies(
+                    frame->GetRoutingID(), GURL("http://127.0.0.1/"),
+                    GURL("http://127.0.0.1/"),
+                    base::BindOnce([](base::RunLoop* run_loop,
+                                      const std::string&) { run_loop->Quit(); },
+                                   run_loop));
+          },
+          root->current_frame_host(), &run_loop));
+
+  shell()->Close();
+  base::RunLoop().RunUntilIdle();
+
+  int num_calls = browser_client.num_allow_get_cookie_calls();
+  browser_client.FinishGetCookieList();
+  run_loop.Run();
+  EXPECT_EQ(num_calls, browser_client.num_allow_get_cookie_calls());
+
+  content::SetBrowserClientForTesting(old_browser_client);
+}
+
 }  // namespace content

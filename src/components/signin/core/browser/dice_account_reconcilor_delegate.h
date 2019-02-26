@@ -8,8 +8,8 @@
 #include <string>
 
 #include "base/macros.h"
+#include "components/signin/core/browser/account_consistency_method.h"
 #include "components/signin/core/browser/account_reconcilor_delegate.h"
-#include "components/signin/core/browser/profile_management_switches.h"
 
 class SigninClient;
 
@@ -25,7 +25,7 @@ class DiceAccountReconcilorDelegate : public AccountReconcilorDelegate {
   // AccountReconcilorDelegate:
   bool IsReconcileEnabled() const override;
   bool IsAccountConsistencyEnforced() const override;
-  std::string GetGaiaApiSource() const override;
+  gaia::GaiaSource GetGaiaApiSource() const override;
   std::string GetFirstGaiaAccountForReconcile(
       const std::vector<std::string>& chrome_accounts,
       const std::vector<gaia::ListedAccount>& gaia_accounts,
@@ -39,6 +39,18 @@ class DiceAccountReconcilorDelegate : public AccountReconcilorDelegate {
   bool ShouldRevokeTokensOnCookieDeleted() override;
 
  private:
+  std::vector<std::string> GetChromeAccountsForReconcile(
+      const std::vector<std::string>& chrome_accounts,
+      const std::string& primary_account,
+      const std::vector<gaia::ListedAccount>& gaia_accounts,
+      const gaia::MultiloginMode mode) const override;
+
+  gaia::MultiloginMode CalculateModeForReconcile(
+      const std::vector<gaia::ListedAccount>& gaia_accounts,
+      const std::string primary_account,
+      bool first_execution,
+      bool primary_has_error) const override;
+
   SigninClient* signin_client_;
   AccountConsistencyMethod account_consistency_;
 

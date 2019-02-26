@@ -38,6 +38,13 @@ float TextMetrics::GetFontBaseline(const TextBaseline& text_baseline,
   return 0;
 }
 
+void TextMetrics::Trace(blink::Visitor* visitor) {
+  visitor->Trace(baselines_);
+  ScriptWrappable::Trace(visitor);
+}
+
+TextMetrics::TextMetrics() : baselines_(Baselines::Create()) {}
+
 void TextMetrics::Update(const Font& font,
                          const TextDirection& direction,
                          const TextBaseline& baseline,
@@ -84,10 +91,10 @@ void TextMetrics::Update(const Font& font,
   em_height_descent_ = font_data->EmHeightDescent() + baseline_y;
 
   // TODO(fserb): hanging/ideographic baselines are broken.
-  baselines_.setAlphabetic(-baseline_y);
-  baselines_.setHanging(ascent * kHangingAsPercentOfAscent / 100.0f -
-                        baseline_y);
-  baselines_.setIdeographic(-descent - baseline_y);
+  baselines_->setAlphabetic(-baseline_y);
+  baselines_->setHanging(ascent * kHangingAsPercentOfAscent / 100.0f -
+                         baseline_y);
+  baselines_->setIdeographic(-descent - baseline_y);
 }
 
 }  // namespace blink

@@ -162,7 +162,8 @@ class TranslateManagerTest : public ::testing::Test {
 
   void SetHasLanguageChanged(bool has_language_changed) {
     translate_manager_->GetLanguageState().LanguageDetermined("de", true);
-    translate_manager_->GetLanguageState().DidNavigate(false, true, false);
+    translate_manager_->GetLanguageState().DidNavigate(false, true, false,
+                                                       std::string());
     translate_manager_->GetLanguageState().LanguageDetermined(
         has_language_changed ? "en" : "de", true);
     EXPECT_EQ(has_language_changed,

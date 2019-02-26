@@ -29,14 +29,6 @@ class PerformanceLongTaskTiming final : public PerformanceEntry {
       const String& frame_name,
       const SubTaskAttribution::EntriesVector& sub_task_attributions);
 
-  AtomicString entryType() const override;
-  PerformanceEntryType EntryTypeEnum() const override;
-
-  TaskAttributionVector attribution() const;
-
-  void Trace(blink::Visitor*) override;
-
- private:
   PerformanceLongTaskTiming(
       double start_time,
       double end_time,
@@ -45,6 +37,15 @@ class PerformanceLongTaskTiming final : public PerformanceEntry {
       const String& frame_id,
       const String& frame_name,
       const SubTaskAttribution::EntriesVector& sub_task_attributions);
+
+  AtomicString entryType() const override;
+  PerformanceEntryType EntryTypeEnum() const override;
+
+  TaskAttributionVector attribution() const;
+
+  void Trace(blink::Visitor*) override;
+
+ private:
   ~PerformanceLongTaskTiming() override;
 
   void BuildJSONValue(V8ObjectBuilder&) const override;

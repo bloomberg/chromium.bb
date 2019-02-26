@@ -13,16 +13,17 @@
 #include "core/fxcrt/retain_ptr.h"
 #include "core/fxcrt/unowned_ptr.h"
 #include "core/fxge/dib/cfx_bitmapstorer.h"
-#include "core/fxge/dib/cfx_dibbase.h"
-#include "core/fxge/dib/cfx_dibitmap.h"
 
+class CFX_DIBBase;
+class CFX_DIBitmap;
 class CFX_ImageStretcher;
+class PauseIndicatorIface;
 
 class CFX_ImageTransformer {
  public:
   CFX_ImageTransformer(const RetainPtr<CFX_DIBBase>& pSrc,
-                       const CFX_Matrix* pMatrix,
-                       int flags,
+                       const CFX_Matrix& matrix,
+                       const FXDIB_ResampleOptions& options,
                        const FX_RECT* pClip);
   ~CFX_ImageTransformer();
 
@@ -72,10 +73,8 @@ class CFX_ImageTransformer {
   void CalcMono(const CalcData& cdata, FXDIB_Format format);
   void CalcColor(const CalcData& cdata, FXDIB_Format format, int Bpp);
 
-  bool IsBilinear() const {
-    return !(m_Flags & FXDIB_DOWNSAMPLE) && !IsBiCubic();
-  }
-  bool IsBiCubic() const { return !!(m_Flags & FXDIB_BICUBIC_INTERPOL); }
+  bool IsBilinear() const;
+  bool IsBiCubic() const;
 
   int stretch_width() const { return m_StretchClip.Width(); }
   int stretch_height() const { return m_StretchClip.Height(); }
@@ -99,15 +98,14 @@ class CFX_ImageTransformer {
       std::function<void(const DownSampleData&, uint8_t*)> func);
 
   RetainPtr<CFX_DIBBase> const m_pSrc;
-  UnownedPtr<const CFX_Matrix> const m_pMatrix;
-  const FX_RECT* const m_pClip;
+  const CFX_Matrix m_matrix;
   FX_RECT m_StretchClip;
   FX_RECT m_result;
   CFX_Matrix m_dest2stretch;
   std::unique_ptr<CFX_ImageStretcher> m_Stretcher;
   CFX_BitmapStorer m_Storer;
-  const uint32_t m_Flags;
-  int m_Status;
+  const FXDIB_ResampleOptions m_ResampleOptions;
+  int m_Status = 0;
 };
 
 #endif  // CORE_FXGE_DIB_CFX_IMAGETRANSFORMER_H_

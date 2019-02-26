@@ -8,6 +8,8 @@
 
 #include "base/logging.h"
 #include "base/mac/foundation_util.h"
+#include "base/metrics/user_metrics.h"
+#include "base/metrics/user_metrics_action.h"
 #include "components/bookmarks/browser/bookmark_model.h"
 #include "ios/chrome/browser/bookmarks/bookmark_model_factory.h"
 #import "ios/chrome/browser/passwords/password_form_filler.h"
@@ -26,8 +28,8 @@
 #import "ios/chrome/browser/ui/activity_services/share_protocol.h"
 #import "ios/chrome/browser/ui/activity_services/share_to_data.h"
 #import "ios/chrome/browser/ui/commands/snackbar_commands.h"
-#include "ios/chrome/browser/ui/ui_util.h"
-#import "ios/chrome/browser/ui/uikit_ui_util.h"
+#include "ios/chrome/browser/ui/util/ui_util.h"
+#import "ios/chrome/browser/ui/util/uikit_ui_util.h"
 #include "ios/chrome/grit/ios_strings.h"
 #import "ios/third_party/material_components_ios/src/components/Snackbar/src/MaterialSnackbar.h"
 #include "ui/base/l10n/l10n_util.h"
@@ -416,6 +418,8 @@ NSString* const kActivityServicesSnackbarCategory =
                    message:IDS_IOS_SHARE_TO_SIGN_IN_ERROR_ALERT];
       break;
     case ShareTo::SHARE_CANCEL:
+      base::RecordAction(base::UserMetricsAction("MobileShareMenuCancel"));
+      break;
     case ShareTo::SHARE_UNKNOWN_RESULT:
       break;
   }

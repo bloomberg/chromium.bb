@@ -10,6 +10,8 @@
 
 #include "core/fxcrt/fx_string.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/base/span.h"
+#include "third_party/base/stl_util.h"
 
 namespace fxcrt {
 
@@ -979,7 +981,7 @@ TEST(WideString, MultiCharReverseIterator) {
   EXPECT_TRUE(iter == multi_str.rbegin());
 }
 
-TEST(WideString, UTF16LE_Encode) {
+TEST(WideString, ToUTF16LE) {
   struct UTF16LEEncodeCase {
     WideString ws;
     ByteString bs;
@@ -994,9 +996,32 @@ TEST(WideString, UTF16LE_Encode) {
 
   for (size_t i = 0; i < FX_ArraySize(utf16le_encode_cases); ++i) {
     EXPECT_EQ(utf16le_encode_cases[i].bs,
-              utf16le_encode_cases[i].ws.UTF16LE_Encode())
+              utf16le_encode_cases[i].ws.ToUTF16LE())
         << " for case number " << i;
   }
+}
+
+TEST(WideString, IsASCII) {
+  EXPECT_TRUE(WideString(L"xy\u007fz").IsASCII());
+  EXPECT_FALSE(WideString(L"xy\u0080z").IsASCII());
+  EXPECT_FALSE(WideString(L"xy\u2041z").IsASCII());
+}
+
+TEST(WideString, ToASCII) {
+  const char* kResult =
+      "x"
+      "\x02"
+      "\x7f"
+      "\x22"
+      "\x0c"
+      "y";
+  EXPECT_EQ(kResult, WideString(L"x"
+                                L"\u0082"
+                                L"\u00ff"
+                                L"\u0122"
+                                L"\u208c"
+                                L"y")
+                         .ToASCII());
 }
 
 TEST(WideString, ToDefANSI) {
@@ -1025,8 +1050,21 @@ TEST(WideString, ToDefANSI) {
                          .ToDefANSI());
 }
 
-TEST(WideString, FromLocal) {
-  EXPECT_EQ(L"", WideString::FromLocal(ByteStringView()));
+TEST(WideString, FromASCII) {
+  EXPECT_EQ(L"", WideString::FromDefANSI(ByteStringView()));
+  const wchar_t* kResult =
+      L"x"
+      L"\u0002"
+      L"\u007f"
+      L"y";
+  EXPECT_EQ(kResult, WideString::FromASCII("x"
+                                           "\x82"
+                                           "\xff"
+                                           "y"));
+}
+
+TEST(WideString, FromDefANSI) {
+  EXPECT_EQ(L"", WideString::FromDefANSI(ByteStringView()));
 #if _FX_PLATFORM_ == _FX_PLATFORM_WINDOWS_
   const wchar_t* kResult =
       L"x"
@@ -1040,10 +1078,10 @@ TEST(WideString, FromLocal) {
       L"\u00ff"
       L"y";
 #endif
-  EXPECT_EQ(kResult, WideString::FromLocal("x"
-                                           "\x80"
-                                           "\xff"
-                                           "y"));
+  EXPECT_EQ(kResult, WideString::FromDefANSI("x"
+                                             "\x80"
+                                             "\xff"
+                                             "y"));
 }
 
 TEST(WideStringView, FromVector) {

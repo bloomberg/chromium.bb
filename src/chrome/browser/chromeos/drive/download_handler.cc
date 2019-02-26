@@ -19,9 +19,6 @@
 #include "chrome/browser/chromeos/drive/drive_integration_service.h"
 #include "chrome/browser/chromeos/drive/file_system_util.h"
 #include "chrome/browser/chromeos/drive/write_on_cache_file.h"
-#include "chrome/browser/download/download_core_service.h"
-#include "chrome/browser/download/download_core_service_factory.h"
-#include "chrome/browser/download/download_history.h"
 #include "components/drive/chromeos/file_system_interface.h"
 #include "components/drive/drive.pb.h"
 #include "content/public/browser/browser_task_traits.h"
@@ -120,13 +117,8 @@ bool IsPersistedDriveDownload(const base::FilePath& drive_tmp_download_path,
   if (!drive_tmp_download_path.IsParent(download->GetTargetFilePath()))
     return false;
 
-  DownloadCoreService* download_core_service =
-      DownloadCoreServiceFactory::GetForBrowserContext(
-          content::DownloadItemUtils::GetBrowserContext(download));
-  DownloadHistory* download_history =
-      download_core_service->GetDownloadHistory();
-
-  return download_history && download_history->WasRestoredFromHistory(download);
+  return download->GetDownloadCreationType() ==
+         download::DownloadItem::TYPE_HISTORY_IMPORT;
 }
 
 // Returns an empty string |mime_type| was too generic that can be a result of

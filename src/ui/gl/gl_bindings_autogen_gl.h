@@ -1024,6 +1024,29 @@ typedef void(GL_BINDING_CALL* glMaxShaderCompilerThreadsKHRProc)(GLuint count);
 typedef void(GL_BINDING_CALL* glMemoryBarrierByRegionProc)(GLbitfield barriers);
 typedef void(GL_BINDING_CALL* glMemoryBarrierEXTProc)(GLbitfield barriers);
 typedef void(GL_BINDING_CALL* glMinSampleShadingProc)(GLfloat value);
+typedef void(GL_BINDING_CALL* glMultiDrawArraysANGLEProc)(GLenum mode,
+                                                          const GLint* firsts,
+                                                          const GLsizei* counts,
+                                                          GLsizei drawcount);
+typedef void(GL_BINDING_CALL* glMultiDrawArraysInstancedANGLEProc)(
+    GLenum mode,
+    const GLint* firsts,
+    const GLsizei* counts,
+    const GLsizei* instanceCounts,
+    GLsizei drawcount);
+typedef void(GL_BINDING_CALL* glMultiDrawElementsANGLEProc)(
+    GLenum mode,
+    const GLsizei* counts,
+    GLenum type,
+    const GLvoid* const* indices,
+    GLsizei drawcount);
+typedef void(GL_BINDING_CALL* glMultiDrawElementsInstancedANGLEProc)(
+    GLenum mode,
+    const GLsizei* counts,
+    GLenum type,
+    const GLvoid* const* indices,
+    const GLsizei* instanceCounts,
+    GLsizei drawcount);
 typedef void(GL_BINDING_CALL* glObjectLabelProc)(GLenum identifier,
                                                  GLuint name,
                                                  GLsizei length,
@@ -1750,6 +1773,7 @@ struct ExtensionsGL {
   bool b_GL_ANGLE_framebuffer_blit;
   bool b_GL_ANGLE_framebuffer_multisample;
   bool b_GL_ANGLE_instanced_arrays;
+  bool b_GL_ANGLE_multi_draw;
   bool b_GL_ANGLE_multiview;
   bool b_GL_ANGLE_request_extension;
   bool b_GL_ANGLE_robust_client_memory;
@@ -2116,6 +2140,10 @@ struct ProcsGL {
   glMemoryBarrierByRegionProc glMemoryBarrierByRegionFn;
   glMemoryBarrierEXTProc glMemoryBarrierEXTFn;
   glMinSampleShadingProc glMinSampleShadingFn;
+  glMultiDrawArraysANGLEProc glMultiDrawArraysANGLEFn;
+  glMultiDrawArraysInstancedANGLEProc glMultiDrawArraysInstancedANGLEFn;
+  glMultiDrawElementsANGLEProc glMultiDrawElementsANGLEFn;
+  glMultiDrawElementsInstancedANGLEProc glMultiDrawElementsInstancedANGLEFn;
   glObjectLabelProc glObjectLabelFn;
   glObjectPtrLabelProc glObjectPtrLabelFn;
   glPathCommandsNVProc glPathCommandsNVFn;
@@ -3193,6 +3221,27 @@ class GL_EXPORT GLApi {
   virtual void glMemoryBarrierByRegionFn(GLbitfield barriers) = 0;
   virtual void glMemoryBarrierEXTFn(GLbitfield barriers) = 0;
   virtual void glMinSampleShadingFn(GLfloat value) = 0;
+  virtual void glMultiDrawArraysANGLEFn(GLenum mode,
+                                        const GLint* firsts,
+                                        const GLsizei* counts,
+                                        GLsizei drawcount) = 0;
+  virtual void glMultiDrawArraysInstancedANGLEFn(GLenum mode,
+                                                 const GLint* firsts,
+                                                 const GLsizei* counts,
+                                                 const GLsizei* instanceCounts,
+                                                 GLsizei drawcount) = 0;
+  virtual void glMultiDrawElementsANGLEFn(GLenum mode,
+                                          const GLsizei* counts,
+                                          GLenum type,
+                                          const GLvoid* const* indices,
+                                          GLsizei drawcount) = 0;
+  virtual void glMultiDrawElementsInstancedANGLEFn(
+      GLenum mode,
+      const GLsizei* counts,
+      GLenum type,
+      const GLvoid* const* indices,
+      const GLsizei* instanceCounts,
+      GLsizei drawcount) = 0;
   virtual void glObjectLabelFn(GLenum identifier,
                                GLuint name,
                                GLsizei length,
@@ -4269,6 +4318,14 @@ class GL_EXPORT GLApi {
   ::gl::g_current_gl_context->glMemoryBarrierByRegionFn
 #define glMemoryBarrierEXT ::gl::g_current_gl_context->glMemoryBarrierEXTFn
 #define glMinSampleShading ::gl::g_current_gl_context->glMinSampleShadingFn
+#define glMultiDrawArraysANGLE \
+  ::gl::g_current_gl_context->glMultiDrawArraysANGLEFn
+#define glMultiDrawArraysInstancedANGLE \
+  ::gl::g_current_gl_context->glMultiDrawArraysInstancedANGLEFn
+#define glMultiDrawElementsANGLE \
+  ::gl::g_current_gl_context->glMultiDrawElementsANGLEFn
+#define glMultiDrawElementsInstancedANGLE \
+  ::gl::g_current_gl_context->glMultiDrawElementsInstancedANGLEFn
 #define glObjectLabel ::gl::g_current_gl_context->glObjectLabelFn
 #define glObjectPtrLabel ::gl::g_current_gl_context->glObjectPtrLabelFn
 #define glPathCommandsNV ::gl::g_current_gl_context->glPathCommandsNVFn

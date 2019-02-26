@@ -219,7 +219,7 @@ void RecordGetDescriptorsDescriptor(
 
 // These are the possible outcomes when performing GATT operations i.e.
 // characteristic.readValue/writeValue descriptor.readValue/writeValue.
-enum UMAGATTOperationOutcome {
+enum class UMAGATTOperationOutcome {
   SUCCESS = 0,
   NO_DEVICE = 1,
   NO_SERVICE = 2,

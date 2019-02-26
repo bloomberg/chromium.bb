@@ -157,7 +157,9 @@ static HitTestRegionList CreateHitTestData(const CompositorFrame& frame) {
   return hit_test_region_list;
 }
 
-void DirectLayerTreeFrameSink::SubmitCompositorFrame(CompositorFrame frame) {
+void DirectLayerTreeFrameSink::SubmitCompositorFrame(
+    CompositorFrame frame,
+    bool show_hit_test_borders) {
   DCHECK(frame.metadata.begin_frame_ack.has_damage);
   DCHECK_LE(BeginFrameArgs::kStartingFrameNumber,
             frame.metadata.begin_frame_ack.sequence_number);
@@ -171,15 +173,16 @@ void DirectLayerTreeFrameSink::SubmitCompositorFrame(CompositorFrame frame) {
     pipeline_reporting_frame_times_.erase(it);
   }
 
-  const LocalSurfaceId& local_surface_id =
-      parent_local_surface_id_allocator_.GetCurrentLocalSurfaceId();
-
   if (frame.size_in_pixels() != last_swap_frame_size_ ||
-      frame.device_scale_factor() != device_scale_factor_) {
+      frame.device_scale_factor() != device_scale_factor_ ||
+      !parent_local_surface_id_allocator_.HasValidLocalSurfaceIdAllocation()) {
     parent_local_surface_id_allocator_.GenerateId();
     last_swap_frame_size_ = frame.size_in_pixels();
     device_scale_factor_ = frame.device_scale_factor();
-    display_->SetLocalSurfaceId(local_surface_id, device_scale_factor_);
+    display_->SetLocalSurfaceId(
+        parent_local_surface_id_allocator_.GetCurrentLocalSurfaceIdAllocation()
+            .local_surface_id(),
+        device_scale_factor_);
   }
 
   const int64_t trace_id = ~frame.metadata.begin_frame_ack.trace_id;
@@ -189,8 +192,10 @@ void DirectLayerTreeFrameSink::SubmitCompositorFrame(CompositorFrame frame) {
                          "SubmitHitTestData");
 
   HitTestRegionList hit_test_region_list = CreateHitTestData(frame);
-  support_->SubmitCompositorFrame(local_surface_id, std::move(frame),
-                                  std::move(hit_test_region_list));
+  support_->SubmitCompositorFrame(
+      parent_local_surface_id_allocator_.GetCurrentLocalSurfaceIdAllocation()
+          .local_surface_id(),
+      std::move(frame), std::move(hit_test_region_list));
 }
 
 void DirectLayerTreeFrameSink::DidNotProduceFrame(const BeginFrameAck& ack) {
@@ -224,9 +229,11 @@ void DirectLayerTreeFrameSink::DisplayOutputSurfaceLost() {
 
 void DirectLayerTreeFrameSink::DisplayWillDrawAndSwap(
     bool will_draw_and_swap,
-    const RenderPassList& render_passes) {
-  if (support_->GetHitTestAggregator())
-    support_->GetHitTestAggregator()->Aggregate(display_->CurrentSurfaceId());
+    RenderPassList* render_passes) {
+  if (support_->GetHitTestAggregator()) {
+    support_->GetHitTestAggregator()->Aggregate(display_->CurrentSurfaceId(),
+                                                render_passes);
+  }
 }
 
 void DirectLayerTreeFrameSink::DisplayDidDrawAndSwap() {
@@ -277,13 +284,12 @@ void DirectLayerTreeFrameSink::DidReceiveCompositorFrameAckInternal(
   client_->DidReceiveCompositorFrameAck();
 }
 
-void DirectLayerTreeFrameSink::DidPresentCompositorFrame(
-    uint32_t presentation_token,
-    const gfx::PresentationFeedback& feedback) {
-  client_->DidPresentCompositorFrame(presentation_token, feedback);
-}
+void DirectLayerTreeFrameSink::OnBeginFrame(
+    const BeginFrameArgs& args,
+    const base::flat_map<uint32_t, gfx::PresentationFeedback>& feedbacks) {
+  for (const auto& pair : feedbacks)
+    client_->DidPresentCompositorFrame(pair.first, pair.second);
 
-void DirectLayerTreeFrameSink::OnBeginFrame(const BeginFrameArgs& args) {
   DCHECK_LE(pipeline_reporting_frame_times_.size(), 25u);
   // Note that client_name is constant during the lifetime of the process and
   // it's either "Browser" or "Renderer".

@@ -142,6 +142,13 @@ typedef uint32_t MojoInitializeFlags;
 // No flags.
 #define MOJO_INITIALIZE_FLAG_NONE ((MojoInitializeFlags)0)
 
+// The calling process will be initialized as the broker process for its IPC
+// network. Any connected graph of Mojo consumers must have exactly one broker
+// process. That process is always the first member of the network and it should
+// set this flag during initialization. Attempts to invite a broker process into
+// an existing network will always fail.
+#define MOJO_INITIALIZE_FLAG_AS_BROKER ((MojoInitializeFlags)1)
+
 // Options passed to |MojoInitialize()|.
 struct MOJO_ALIGNAS(8) MojoInitializeOptions {
   // The size of this structure, used for versioning.
@@ -159,6 +166,23 @@ struct MOJO_ALIGNAS(8) MojoInitializeOptions {
 };
 MOJO_STATIC_ASSERT(sizeof(MojoInitializeOptions) == 24,
                    "MojoInitializeOptions has wrong size");
+
+// Flags passed to |MojoShutdown()| via |MojoShutdownOptions|.
+typedef uint32_t MojoShutdownFlags;
+
+// No flags.
+#define MOJO_SHUTDOWN_FLAG_NONE ((MojoShutdownFlags)0)
+
+// Options passed to |MojoShutdown()|.
+struct MOJO_ALIGNAS(8) MojoShutdownOptions {
+  // The size of this structure, used for versioning.
+  uint32_t struct_size;
+
+  // See |MojoShutdownFlags|.
+  MojoShutdownFlags flags;
+};
+MOJO_STATIC_ASSERT(sizeof(MojoShutdownOptions) == 8,
+                   "MojoShutdownOptions has wrong size");
 
 // |MojoHandleSignals|: Used to specify signals that can be watched for on a
 // handle (and which can be triggered), e.g., the ability to read or write to

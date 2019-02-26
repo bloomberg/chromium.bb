@@ -4,6 +4,8 @@
 
 #include "chrome/browser/chromeos/login/screens/fingerprint_setup_screen.h"
 
+#include "chrome/browser/chromeos/login/users/chrome_user_manager_util.h"
+
 namespace chromeos {
 namespace {
 
@@ -25,7 +27,10 @@ FingerprintSetupScreen::~FingerprintSetupScreen() {
 }
 
 void FingerprintSetupScreen::Show() {
-  // Show the screen.
+  if (chrome_user_manager_util::IsPublicSessionOrEphemeralLogin()) {
+    Finish(ScreenExitCode::FINGERPRINT_SETUP_FINISHED);
+    return;
+  }
   view_->Show();
 }
 

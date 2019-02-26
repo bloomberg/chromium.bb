@@ -56,11 +56,15 @@ class SVGTransformTearOff final : public SVGPropertyTearOff<SVGTransform> {
       SVGTransform* target,
       SVGAnimatedPropertyBase* binding,
       PropertyIsAnimValType property_is_anim_val) {
-    return new SVGTransformTearOff(target, binding, property_is_anim_val);
+    return MakeGarbageCollected<SVGTransformTearOff>(target, binding,
+                                                     property_is_anim_val);
   }
   static SVGTransformTearOff* CreateDetached();
   static SVGTransformTearOff* Create(SVGMatrixTearOff*);
 
+  SVGTransformTearOff(SVGTransform*,
+                      SVGAnimatedPropertyBase* binding,
+                      PropertyIsAnimValType);
   ~SVGTransformTearOff() override;
 
   unsigned short transformType() { return Target()->TransformType(); }
@@ -77,10 +81,6 @@ class SVGTransformTearOff final : public SVGPropertyTearOff<SVGTransform> {
   void Trace(blink::Visitor*) override;
 
  private:
-  SVGTransformTearOff(SVGTransform*,
-                      SVGAnimatedPropertyBase* binding,
-                      PropertyIsAnimValType);
-
   Member<SVGMatrixTearOff> matrix_tearoff_;
 };
 

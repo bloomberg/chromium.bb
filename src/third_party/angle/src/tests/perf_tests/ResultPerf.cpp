@@ -14,7 +14,7 @@ volatile int gThing = 0;
 
 namespace
 {
-constexpr int kIterations = 1000;
+constexpr int kIterationsPerStep = 1000;
 
 class ResultPerfTest : public ANGLEPerfTest
 {
@@ -23,24 +23,22 @@ class ResultPerfTest : public ANGLEPerfTest
     void step() override;
 };
 
-ResultPerfTest::ResultPerfTest() : ANGLEPerfTest("ResultPerf", "_run")
-{
-}
+ResultPerfTest::ResultPerfTest() : ANGLEPerfTest("ResultPerf", "_run", kIterationsPerStep) {}
 
-ANGLE_NOINLINE gl::Error ExternalCall()
+ANGLE_NOINLINE angle::Result ExternalCall()
 {
     if (gThing != 0)
     {
         printf("Something very slow");
-        return gl::Error(GL_INVALID_OPERATION);
+        return angle::Result::Stop();
     }
     else
     {
-        return gl::NoError();
+        return angle::Result::Continue();
     }
 }
 
-gl::Error CallReturningResult(int depth)
+angle::Result CallReturningResult(int depth)
 {
     ANGLE_TRY(ExternalCall());
     ANGLE_TRY(ExternalCall());
@@ -56,7 +54,7 @@ gl::Error CallReturningResult(int depth)
 
 void ResultPerfTest::step()
 {
-    for (int i = 0; i < kIterations; i++)
+    for (int i = 0; i < kIterationsPerStep; i++)
     {
         (void)CallReturningResult(0);
         (void)CallReturningResult(0);

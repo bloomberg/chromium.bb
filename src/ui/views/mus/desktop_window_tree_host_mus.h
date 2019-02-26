@@ -48,6 +48,8 @@ class VIEWS_MUS_EXPORT DesktopWindowTreeHostMus
   }
 
  private:
+  class WindowTreeHostWindowObserver;
+
   void SendClientAreaToServer();
 
   // Returns true if the FocusClient associated with our window is installed on
@@ -61,6 +63,26 @@ class VIEWS_MUS_EXPORT DesktopWindowTreeHostMus
 
   // Returns true if the client area should be set on this.
   bool ShouldSendClientAreaToServer() const;
+
+  bool IsWaitingForRestoreToComplete() const;
+
+  // Restores the window to its pre-minimized state. There are two paths to
+  // unminimizing/restoring a window:
+  // . Implicitly by calling Show()/Activate(). In this scenario the expectation
+  //   is the Widget returns to its pre-minimized state.
+  //   DesktopWindowTreeHostMus does *not* cache the pre-minimized state, only
+  //   the server knows it.
+  // . By calling Restore(). Restore sets the state to normal, circumventing
+  //   the pre-minimized state in the server. This mirrors what NativeWidgetAura
+  //   does.
+  // This function handles the first case. As DesktopWindowTreeHostMus doesn't
+  // know the new state, an observer is added that tracks when the show state
+  // changes. While waiting, IsMinimized() returns false.
+  void RestoreToPreminimizedState();
+
+  // Called when window()'s visibility changes to |visible|. This is called from
+  // WindowObserver::OnWindowVisibilityChanged().
+  void OnWindowTreeHostWindowVisibilityChanged(bool visible);
 
   // DesktopWindowTreeHost:
   void Init(const Widget::InitParams& params) override;
@@ -144,7 +166,8 @@ class VIEWS_MUS_EXPORT DesktopWindowTreeHostMus
   void ShowImpl() override;
   void HideImpl() override;
   void SetBoundsInPixels(const gfx::Rect& bounds_in_pixels,
-                         const viz::LocalSurfaceId& local_surface_id) override;
+                         const viz::LocalSurfaceIdAllocation&
+                             local_surface_id_allocation) override;
 
   // views::ViewObserver:
   void OnViewBoundsChanged(views::View* observed_view) override;
@@ -168,7 +191,17 @@ class VIEWS_MUS_EXPORT DesktopWindowTreeHostMus
 
   bool auto_update_client_area_ = true;
 
-  ScopedObserver<views::View, views::ViewObserver> observed_frame_{this};
+  // Observes changes to the ClientView. Used to update the client area in the
+  // server.
+  ScopedObserver<views::View, views::ViewObserver> observed_client_view_{this};
+
+  // If true, |this| is changing the visibility of window(), or is processing
+  // a change in the visibility of window().
+  bool is_updating_window_visibility_ = false;
+
+  // aura::WindowObserver on window().
+  std::unique_ptr<WindowTreeHostWindowObserver>
+      window_tree_host_window_observer_;
 
   // Used so that Close() isn't immediate.
   base::WeakPtrFactory<DesktopWindowTreeHostMus> close_widget_factory_;

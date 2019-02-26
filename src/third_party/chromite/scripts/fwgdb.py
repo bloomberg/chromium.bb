@@ -20,6 +20,8 @@ from chromite.lib import cros_build_lib
 from chromite.lib import cros_logging as logging
 from chromite.lib import timeout_util
 
+from elftools.elf.elffile import ELFFile
+
 # Need to do this before Servo import
 cros_build_lib.AssertInsideChroot()
 
@@ -39,12 +41,15 @@ _PTRN_GDB = 'Ready for GDB connection'
 _PTRN_BOARD = 'Starting(?: read-only| read/write)? depthcharge on ([a-z_]+)...'
 
 
-def ParsePortage(board):
-  """Parse some data from portage files. equery takes ages in comparison."""
-  with open(os.path.join('/build', board, 'packages/Packages'), 'r') as f:
-    for line in f:
-      if line[:7] == 'CHOST: ':
-        return line[7:].strip()
+def GetGdbForElf(elf):
+  """Return the correct C compiler prefix for the target ELF file."""
+  with open(elf, 'rb') as elf:
+    return {
+        'EM_386': 'x86_64-cros-linux-gnu-gdb',
+        'EM_X86_64': 'x86_64-cros-linux-gnu-gdb',
+        'EM_ARM': 'armv7a-cros-linux-gnueabihf-gdb',
+        'EM_AARCH64': 'aarch64-cros-linux-gnu-gdb',
+    }[ELFFile(elf).header.e_machine]
 
 
 def ParseArgs(argv):
@@ -243,12 +248,11 @@ def main(argv):
     opts.execute.insert(0, 'target remote %s' % opts.tty)
     ex_args = sum([['--ex', cmd] for cmd in opts.execute], [])
 
-    chost = ParsePortage(opts.board)
-    logging.info('Launching GDB...')
+    elf = FindSymbols(opts.symbols, opts.board)
+    gdb_cmd = GetGdbForElf(elf)
 
-    gdb_cmd = chost + '-gdb'
     gdb_args = [
-        '--symbols', FindSymbols(opts.symbols, opts.board),
+        '--symbols', elf,
         '--directory', _SRC_DC,
         '--directory', _SRC_VB,
         '--directory', _SRC_LP,
@@ -259,5 +263,6 @@ def main(argv):
     else:
       full_cmd = [gdb_cmd] + gdb_args
 
+    logging.info('Launching GDB...')
     cros_build_lib.RunCommand(
         full_cmd, ignore_sigint=True, debug_level=logging.WARNING)

@@ -26,37 +26,37 @@
       {
         "id": "OnBeforeSendHeadersOptions",
         "type": "string",
-        "enum": ["requestHeaders", "blocking"]
+        "enum": ["requestHeaders", "blocking", "extraHeaders"]
       },
       {
         "id": "OnSendHeadersOptions",
         "type": "string",
-        "enum": ["requestHeaders"]
+        "enum": ["requestHeaders", "extraHeaders"]
       },
       {
         "id": "OnHeadersReceivedOptions",
         "type": "string",
-        "enum": ["blocking", "responseHeaders"]
+        "enum": ["blocking", "responseHeaders", "extraHeaders"]
       },
       {
         "id": "OnAuthRequiredOptions",
         "type": "string",
-        "enum": ["responseHeaders", "blocking", "asyncBlocking"]
+        "enum": ["responseHeaders", "blocking", "asyncBlocking", "extraHeaders"]
       },
       {
         "id": "OnResponseStartedOptions",
         "type": "string",
-        "enum": ["responseHeaders"]
+        "enum": ["responseHeaders", "extraHeaders"]
       },
       {
         "id": "OnBeforeRedirectOptions",
         "type": "string",
-        "enum": ["responseHeaders"]
+        "enum": ["responseHeaders", "extraHeaders"]
       },
       {
         "id": "OnCompletedOptions",
         "type": "string",
-        "enum": ["responseHeaders"]
+        "enum": ["responseHeaders", "extraHeaders"]
       },
       {
         "id": "RequestFilter",

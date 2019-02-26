@@ -23,9 +23,25 @@ source_set("extensions_util_lib") {
 
   deps = [
     ":chrome_util_lib",
+    ":force_installed_extension",
     "//base:base",
-    "//chrome/chrome_cleaner/json_parser",
+    "//chrome/chrome_cleaner/logging/proto:shared_data_proto",
     "//chrome/chrome_cleaner/os:common_os",
+    "//chrome/chrome_cleaner/parsers/json_parser",
+    "//chrome/chrome_cleaner/parsers/json_parser:json_splicer",
+    "//chrome/chrome_cleaner/parsers/parser_utils:parse_tasks_remaining_counter",
+  ]
+}
+
+source_set("force_installed_extension") {
+  sources = [
+    "force_installed_extension.cc",
+    "force_installed_extension.h",
+  ]
+
+  deps = [
+    ":extension_id",
+    "//chrome/chrome_cleaner/logging/proto:shared_data_proto",
   ]
 }
 
@@ -40,8 +56,20 @@ source_set("unittest_sources") {
     ":extensions_util_lib",
     "//base:base",
     "//base/test:test_support",
-    "//chrome/chrome_cleaner/json_parser",
+    "//chrome/chrome_cleaner/parsers/json_parser",
+    "//chrome/chrome_cleaner/test:test_extensions",
     "//chrome/chrome_cleaner/test:test_util",
     "//testing/gtest",
+  ]
+}
+
+source_set("extension_id") {
+  sources = [
+    "extension_id.cc",
+    "extension_id.h",
+  ]
+
+  deps = [
+    "//base:base",
   ]
 }

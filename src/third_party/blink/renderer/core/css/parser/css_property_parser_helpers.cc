@@ -33,7 +33,7 @@ namespace blink {
 
 using namespace cssvalue;
 
-namespace CSSPropertyParserHelpers {
+namespace css_property_parser_helpers {
 
 namespace {
 
@@ -85,13 +85,14 @@ CSSFunctionValue* ConsumeFilterFunction(CSSParserTokenRange& range,
   CSSValueID filter_type = range.Peek().FunctionId();
   if (filter_type < CSSValueInvert || filter_type > CSSValueDropShadow)
     return nullptr;
-  CSSParserTokenRange args = CSSPropertyParserHelpers::ConsumeFunction(range);
+  CSSParserTokenRange args =
+      css_property_parser_helpers::ConsumeFunction(range);
   CSSFunctionValue* filter_value = CSSFunctionValue::Create(filter_type);
   CSSValue* parsed_value = nullptr;
 
   if (filter_type == CSSValueDropShadow) {
-    parsed_value = CSSParsingUtils::ParseSingleShadow(
-        args, context.Mode(), CSSParsingUtils::AllowInsetAndSpread::kForbid);
+    parsed_value = css_parsing_utils::ParseSingleShadow(
+        args, context.Mode(), css_parsing_utils::AllowInsetAndSpread::kForbid);
   } else {
     if (args.AtEnd()) {
       context.Count(WebFeature::kCSSFilterFunctionNoArguments);
@@ -100,23 +101,23 @@ CSSFunctionValue* ConsumeFilterFunction(CSSParserTokenRange& range,
     if (filter_type == CSSValueBrightness) {
       // FIXME (crbug.com/397061): Support calc expressions like calc(10% + 0.5)
       parsed_value =
-          CSSPropertyParserHelpers::ConsumePercent(args, kValueRangeAll);
+          css_property_parser_helpers::ConsumePercent(args, kValueRangeAll);
       if (!parsed_value) {
-        parsed_value = CSSPropertyParserHelpers::ConsumeNumber(
+        parsed_value = css_property_parser_helpers::ConsumeNumber(
             args, kValueRangeNonNegative);
       }
     } else if (filter_type == CSSValueHueRotate) {
-      parsed_value = CSSPropertyParserHelpers::ConsumeAngle(
+      parsed_value = css_property_parser_helpers::ConsumeAngle(
           args, &context, WebFeature::kUnitlessZeroAngleFilter);
     } else if (filter_type == CSSValueBlur) {
-      parsed_value = CSSPropertyParserHelpers::ConsumeLength(
+      parsed_value = css_property_parser_helpers::ConsumeLength(
           args, kHTMLStandardMode, kValueRangeNonNegative);
     } else {
       // FIXME (crbug.com/397061): Support calc expressions like calc(10% + 0.5)
-      parsed_value = CSSPropertyParserHelpers::ConsumePercent(
+      parsed_value = css_property_parser_helpers::ConsumePercent(
           args, kValueRangeNonNegative);
       if (!parsed_value) {
-        parsed_value = CSSPropertyParserHelpers::ConsumeNumber(
+        parsed_value = css_property_parser_helpers::ConsumeNumber(
             args, kValueRangeNonNegative);
       }
       if (parsed_value && filter_type != CSSValueSaturate &&
@@ -241,6 +242,30 @@ CSSPrimitiveValue* ConsumeInteger(CSSParserTokenRange& range,
     if (value < minimum_value)
       return nullptr;
     return calc_parser.ConsumeNumber();
+  }
+  return nullptr;
+}
+
+// This implements the behavior defined in [1], where calc() expressions
+// are valid when <integer> is expected, even if the calc()-expression does
+// not result in an integral value.
+//
+// TODO(andruud): Eventually this behavior should just be part of
+// ConsumeInteger, and this function can be removed. For now, having a separate
+// function with this behavior allows us to implement [1] gradually.
+//
+// [1] https://drafts.csswg.org/css-values-4/#calc-type-checking
+CSSPrimitiveValue* ConsumeIntegerOrNumberCalc(CSSParserTokenRange& range) {
+  CSSParserTokenRange int_range(range);
+  if (CSSPrimitiveValue* value = ConsumeInteger(int_range)) {
+    range = int_range;
+    return value;
+  }
+  CalcParser calc_parser(range);
+  if (const CSSCalcValue* calculation = calc_parser.Value()) {
+    if (calculation->Category() != kCalcNumber)
+      return nullptr;
+    return calc_parser.ConsumeValue();
   }
   return nullptr;
 }
@@ -395,6 +420,28 @@ CSSPrimitiveValue* ConsumeLengthOrPercent(CSSParserTokenRange& range,
   return nullptr;
 }
 
+namespace {
+
+bool IsNonZeroUserUnitsValue(const CSSPrimitiveValue* value) {
+  return value &&
+         value->TypeWithCalcResolved() ==
+             CSSPrimitiveValue::UnitType::kUserUnits &&
+         value->GetDoubleValue() != 0;
+}
+
+}  // namespace
+
+CSSPrimitiveValue* ConsumeSVGGeometryPropertyLength(
+    CSSParserTokenRange& range,
+    const CSSParserContext& context,
+    ValueRange value_range) {
+  CSSPrimitiveValue* value = ConsumeLengthOrPercent(
+      range, kSVGAttributeMode, value_range, UnitlessQuirk::kForbid);
+  if (IsNonZeroUserUnitsValue(value))
+    context.Count(WebFeature::kSVGGeometryPropertyHasNonZeroUnitlessValue);
+  return value;
+}
+
 CSSPrimitiveValue* ConsumeGradientLengthOrPercent(
     CSSParserTokenRange& range,
     const CSSParserContext& context,
@@ -489,17 +536,26 @@ CSSIdentifierValue* ConsumeIdentRange(CSSParserTokenRange& range,
   return ConsumeIdent(range);
 }
 
-CSSCustomIdentValue* ConsumeCustomIdentWithToken(const CSSParserToken& token) {
+CSSCustomIdentValue* ConsumeCustomIdentWithToken(
+    const CSSParserToken& token,
+    const CSSParserContext& context) {
   if (token.GetType() != kIdentToken || IsCSSWideKeyword(token.Value()))
     return nullptr;
+
+  if (EqualIgnoringASCIICase(token.Value(), "default"))
+    context.Count(WebFeature::kDefaultInCustomIdent);
+
   return CSSCustomIdentValue::Create(token.Value().ToAtomicString());
 }
 
-CSSCustomIdentValue* ConsumeCustomIdent(CSSParserTokenRange& range) {
+CSSCustomIdentValue* ConsumeCustomIdent(CSSParserTokenRange& range,
+                                        const CSSParserContext& context) {
   if (range.Peek().GetType() != kIdentToken ||
       IsCSSWideKeyword(range.Peek().Value()))
     return nullptr;
-  return ConsumeCustomIdentWithToken(range.ConsumeIncludingWhitespace());
+
+  return ConsumeCustomIdentWithToken(range.ConsumeIncludingWhitespace(),
+                                     context);
 }
 
 CSSStringValue* ConsumeString(CSSParserTokenRange& range) {
@@ -962,21 +1018,21 @@ bool ConsumeBorderShorthand(CSSParserTokenRange& range,
                             const CSSValue*& result_color) {
   while (!result_width || !result_style || !result_color) {
     if (!result_width) {
-      result_width = CSSPropertyParserHelpers::ConsumeLineWidth(
+      result_width = css_property_parser_helpers::ConsumeLineWidth(
           range, context.Mode(),
-          CSSPropertyParserHelpers::UnitlessQuirk::kForbid);
+          css_property_parser_helpers::UnitlessQuirk::kForbid);
       if (result_width)
         continue;
     }
     if (!result_style) {
-      result_style = CSSPropertyParserHelpers::ParseLonghand(
+      result_style = css_property_parser_helpers::ParseLonghand(
           CSSPropertyBorderLeftStyle, CSSPropertyBorder, context, range);
       if (result_style)
         continue;
     }
     if (!result_color) {
       result_color =
-          CSSPropertyParserHelpers::ConsumeColor(range, context.Mode());
+          css_property_parser_helpers::ConsumeColor(range, context.Mode());
       if (result_color)
         continue;
     }
@@ -1428,7 +1484,7 @@ static CSSValue* ConsumeCrossFade(CSSParserTokenRange& args,
 static CSSValue* ConsumePaint(CSSParserTokenRange& args,
                               const CSSParserContext* context) {
   const CSSParserToken& name_token = args.ConsumeIncludingWhitespace();
-  CSSCustomIdentValue* name = ConsumeCustomIdentWithToken(name_token);
+  CSSCustomIdentValue* name = ConsumeCustomIdentWithToken(name_token, *context);
   if (!name)
     return nullptr;
 
@@ -1638,14 +1694,14 @@ void AddProperty(CSSPropertyID resolved_property,
 CSSValue* ConsumeTransformValue(CSSParserTokenRange& range,
                                 const CSSParserContext& context) {
   bool use_legacy_parsing = false;
-  return CSSParsingUtils::ConsumeTransformValue(range, context,
-                                                use_legacy_parsing);
+  return css_parsing_utils::ConsumeTransformValue(range, context,
+                                                  use_legacy_parsing);
 }
 
 CSSValue* ConsumeTransformList(CSSParserTokenRange& range,
                                const CSSParserContext& context) {
-  return CSSParsingUtils::ConsumeTransformList(range, context,
-                                               CSSParserLocalContext());
+  return css_parsing_utils::ConsumeTransformList(range, context,
+                                                 CSSParserLocalContext());
 }
 
 CSSValue* ConsumeFilterFunctionList(CSSParserTokenRange& range,
@@ -1746,12 +1802,13 @@ const CSSValue* ParseLonghand(CSSPropertyID unresolved_property,
       return nullptr;
   }
 
-  const CSSValue* result =
-      ToLonghand(CSSProperty::Get(property_id))
-          .ParseSingleValue(
-              range, context,
-              CSSParserLocalContext(isPropertyAlias(unresolved_property),
-                                    current_shorthand));
+  const auto local_context =
+      CSSParserLocalContext()
+          .WithAliasParsing(isPropertyAlias(unresolved_property))
+          .WithCurrentShorthand(current_shorthand);
+
+  const CSSValue* result = ToLonghand(CSSProperty::Get(property_id))
+                               .ParseSingleValue(range, context, local_context);
   return result;
 }
 
@@ -1885,6 +1942,6 @@ void AddExpandedPropertyForValue(
   }
 }
 
-}  // namespace CSSPropertyParserHelpers
+}  // namespace css_property_parser_helpers
 
 }  // namespace blink

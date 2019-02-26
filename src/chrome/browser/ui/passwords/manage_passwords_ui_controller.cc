@@ -23,7 +23,9 @@
 #include "chrome/browser/ui/browser_window.h"
 #include "chrome/browser/ui/chrome_pages.h"
 #include "chrome/browser/ui/location_bar/location_bar.h"
+#include "chrome/browser/ui/page_action/page_action_icon_container.h"
 #include "chrome/browser/ui/passwords/manage_passwords_icon_view.h"
+#include "chrome/browser/ui/passwords/manage_passwords_view_utils.h"
 #include "chrome/browser/ui/passwords/password_dialog_controller_impl.h"
 #include "chrome/browser/ui/passwords/password_dialog_prompts.h"
 #include "chrome/browser/ui/tab_dialogs.h"
@@ -449,18 +451,17 @@ void ManagePasswordsUIController::ChooseCredential(
   UpdateBubbleAndIconVisibility();
 }
 
-void ManagePasswordsUIController::NavigateToPasswordManagerSettingsPage() {
-  chrome::ShowSettingsSubPage(
-      chrome::FindBrowserWithWebContents(web_contents()),
-      chrome::kPasswordManagerSubPage);
+void ManagePasswordsUIController::NavigateToPasswordManagerSettingsPage(
+    password_manager::ManagePasswordsReferrer referrer) {
+  NavigateToManagePasswordsPage(
+      chrome::FindBrowserWithWebContents(web_contents()), referrer);
 }
 
-void ManagePasswordsUIController::NavigateToPasswordManagerAccountDashboard() {
-  GURL dashboard_link(l10n_util::GetStringUTF16(IDS_PASSWORDS_WEB_LINK));
-  NavigateParams params(chrome::FindBrowserWithWebContents(web_contents()),
-                        dashboard_link, ui::PAGE_TRANSITION_LINK);
-  params.disposition = WindowOpenDisposition::NEW_FOREGROUND_TAB;
-  Navigate(&params);
+void ManagePasswordsUIController::NavigateToPasswordManagerAccountDashboard(
+    password_manager::ManagePasswordsReferrer referrer) {
+  NavigateToGooglePasswordManager(
+      Profile::FromBrowserContext(web_contents()->GetBrowserContext()),
+      referrer);
 }
 
 void ManagePasswordsUIController::EnableSync(const AccountInfo& account,
@@ -531,9 +532,8 @@ void ManagePasswordsUIController::UpdateBubbleAndIconVisibility() {
   if (!browser)
     return;
 
-  LocationBar* location_bar = browser->window()->GetLocationBar();
-  DCHECK(location_bar);
-  location_bar->UpdateManagePasswordsIconAndBubble();
+  browser->window()->GetPageActionIconContainer()->UpdatePageActionIcon(
+      PageActionIconType::kManagePasswords);
 }
 
 AccountChooserPrompt* ManagePasswordsUIController::CreateAccountChooser(

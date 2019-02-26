@@ -46,43 +46,41 @@ class OfflineMetricsCollectorImpl : public OfflineMetricsCollector {
  public:
   static void RegisterPrefs(PrefRegistrySimple* registry);
 
-  // This enum is used for UMA reporting. It is used to report the kind of
-  // Offline Pages usage per day and corresponds to OfflinePagesOfflineUsage in
-  // enums.xml.
-  // NOTE: because this is used for UMA reporting, these values should not be
-  // changed or reused; new values should be appended immediately before the
-  // MAX_USAGE value. Make sure to update the histogram enum mentioned above
-  // accordingly.
+  // This enum is used for UMA reporting of user-days counts when Chrome was
+  // used in specific ways regarding navigation to online and offline content.
+  // It corresponds to OfflinePagesOfflineUsage in enums.xml.
+  // NOTE: These values should mirror the histogram enum mentioned above. They
+  // must not be changed or reused and new values should be appended. kMaxValue
+  // should be updated when needed.
   enum class DailyUsageType {
-    UNUSED = 0,   // Chrome was not used the whole day.
-    STARTED = 1,  // Started, but no successful navigations happened during the
-                  // day (Error pages, Dine etc)
-    OFFLINE = 2,  // Successfully navigated to at least one offline page, no
-                  // online navigations(however device may be connected).
-    ONLINE = 3,   // Only online navigations happened during the day.
-    MIXED = 4,    // Both offline and online navigations happened during the
-                  // day.
-    MAX_USAGE = 5,
+    kUnused = 0,   // Chrome was not used the whole day.
+    kStarted = 1,  // Started, but no successful navigations happened during the
+                   // day (Error pages, Dine etc)
+    kOffline = 2,  // Successfully navigated to at least one offline page, no
+                   // online navigations(however device may be connected).
+    kOnline = 3,   // Only online navigations happened during the day.
+    kMixed = 4,    // Both offline and online navigations happened during the
+                   // day.
+    kMaxValue = kMixed,
   };
 
-  // This enum is used for UMA reporting. It is used to report the kind of
-  // Prefetch usage per day and corresponds to OfflinePagesPrefetchUsage in
-  // enums.xml.
-  // NOTE: because this is used for UMA reporting, these values should not be
-  // changed or reused; new values should be appended immediately before the
-  // MAX_USAGE value. Make sure to update the histogram enum mentioned above
-  // accordingly.
+  // This enum is used for UMA reporting of user-days counts categorized by how
+  // Offline Prefetch performed and had its content accessed by the user. It
+  // corresponds to OfflinePagesPrefetchUsage in enums.xml.
+  // NOTE: These values should mirror the histogram enum mentioned above. They
+  // must not be changed or reused and new values should be appended. kMaxValue
+  // should be updated when needed.
   enum class PrefetchUsageType {
     // Prefetch subsystem has unexpired prefetched pages.
     // Deprecated: Not useful enough to justify its reporting complexities.
-    DEPRECATED_HAS_PAGES = 0,
+    kDeprecated_HasPages = 0,
     // New pages has been fetched during the day.
-    FETCHED_NEW_PAGES = 1,
+    kFetchedNewPages = 1,
     // The prefetched offline pages were opened during the day.
-    OPENED_PAGES = 2,
+    kOpenedPages = 2,
     // The pages were both fetched and opened during the day.
-    FETCHED_AND_OPENED_PAGES = 3,
-    MAX_USAGE = 4,
+    kFetchedAndOpenedPages = 3,
+    kMaxValue = kFetchedAndOpenedPages,
   };
 
   explicit OfflineMetricsCollectorImpl(PrefService* prefs);
@@ -111,10 +109,6 @@ class OfflineMetricsCollectorImpl : public OfflineMetricsCollector {
   // necessary and updates the usage counters accordingly. Returns 'true' if the
   // past days counters changed and need to be updated on disk.
   bool UpdatePastDaysIfNeeded();
-
-  // Reports to UMA 1 day of specified usage.
-  void ReportOfflineUsageForOneDayToUma(DailyUsageType usage_type);
-  void ReportPrefetchUsageForOneDayToUma(PrefetchUsageType usage_type);
 
   // Used to retrieve current time, overrideable in tests.
   base::Time Now() const;

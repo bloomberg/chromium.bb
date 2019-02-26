@@ -29,10 +29,11 @@ class Profile;
 namespace crostini {
 
 // Result types for CrostiniManager::StartTerminaVmCallback etc.
-enum class ConciergeClientResult {
+enum class CrostiniResult {
   SUCCESS,
   DBUS_ERROR,
   UNPARSEABLE_RESPONSE,
+  INSUFFICIENT_DISK,
   CREATE_DISK_IMAGE_FAILED,
   VM_START_FAILED,
   VM_STOP_FAILED,
@@ -74,6 +75,22 @@ struct Icon {
   std::string content;
 };
 
+struct LinuxPackageInfo {
+  LinuxPackageInfo();
+  ~LinuxPackageInfo();
+
+  bool success;
+
+  // A textual reason for the failure, only set when success is false.
+  std::string failure_reason;
+
+  // The remaining fields are only set when success is true.
+  std::string name;
+  std::string version;
+  std::string summary;
+  std::string description;
+};
+
 class InstallLinuxPackageProgressObserver {
  public:
   // A successfully started package install will continually fire progress
@@ -99,10 +116,9 @@ class CrostiniManager : public KeyedService,
                         public chromeos::ConciergeClient::Observer,
                         public chromeos::CiceroneClient::Observer {
  public:
-  using ConciergeClientCallback =
-      base::OnceCallback<void(ConciergeClientResult result)>;
+  using CrostiniResultCallback =
+      base::OnceCallback<void(CrostiniResult result)>;
   using BoolCallback = base::OnceCallback<void(bool)>;
-  using CrostiniResultCallback = ConciergeClientCallback;
 
   // The type of the callback for CrostiniManager::StartConcierge.
   using StartConciergeCallback = BoolCallback;
@@ -112,14 +128,14 @@ class CrostiniManager : public KeyedService,
   using StartTerminaVmCallback = CrostiniResultCallback;
   // The type of the callback for CrostiniManager::CreateDiskImage.
   using CreateDiskImageCallback =
-      base::OnceCallback<void(ConciergeClientResult result,
+      base::OnceCallback<void(CrostiniResult result,
+                              vm_tools::concierge::DiskImageStatus,
                               const base::FilePath& disk_path)>;
   // The type of the callback for CrostiniManager::DestroyDiskImage.
   using DestroyDiskImageCallback = CrostiniResultCallback;
   // The type of the callback for CrostiniManager::ListVmDisks.
   using ListVmDisksCallback =
-      base::OnceCallback<void(ConciergeClientResult result,
-                              int64_t total_size)>;
+      base::OnceCallback<void(CrostiniResult result, int64_t total_size)>;
   // The type of the callback for CrostiniManager::StopVm.
   using StopVmCallback = CrostiniResultCallback;
   // The type of the callback for CrostiniManager::StartContainer.
@@ -130,17 +146,20 @@ class CrostiniManager : public KeyedService,
   using LaunchContainerApplicationCallback = CrostiniResultCallback;
   // The type of the callback for CrostiniManager::GetContainerAppIcons.
   using GetContainerAppIconsCallback =
-      base::OnceCallback<void(ConciergeClientResult result,
+      base::OnceCallback<void(CrostiniResult result,
                               const std::vector<Icon>& icons)>;
+  // The type of the callback for CrostiniManager::GetLinuxPackageInfo.
+  using GetLinuxPackageInfoCallback =
+      base::OnceCallback<void(const LinuxPackageInfo&)>;
   // The type of the callback for CrostiniManager::InstallLinuxPackage.
   // |failure_reason| is returned from the container upon failure
   // (INSTALL_LINUX_PACKAGE_FAILED), and not necessarily localized.
   using InstallLinuxPackageCallback =
-      base::OnceCallback<void(ConciergeClientResult result,
+      base::OnceCallback<void(CrostiniResult result,
                               const std::string& failure_reason)>;
   // The type of the callback for CrostiniManager::GetContainerSshKeys.
   using GetContainerSshKeysCallback =
-      base::OnceCallback<void(ConciergeClientResult result,
+      base::OnceCallback<void(CrostiniResult result,
                               const std::string& container_public_key,
                               const std::string& host_private_key,
                               const std::string& hostname)>;
@@ -153,14 +172,17 @@ class CrostiniManager : public KeyedService,
   class RestartObserver {
    public:
     virtual ~RestartObserver() {}
-    virtual void OnComponentLoaded(ConciergeClientResult result) = 0;
-    virtual void OnConciergeStarted(ConciergeClientResult result) = 0;
-    virtual void OnDiskImageCreated(ConciergeClientResult result) = 0;
-    virtual void OnVmStarted(ConciergeClientResult result) = 0;
+    virtual void OnComponentLoaded(CrostiniResult result) = 0;
+    virtual void OnConciergeStarted(CrostiniResult result) = 0;
+    virtual void OnDiskImageCreated(CrostiniResult result,
+                                    vm_tools::concierge::DiskImageStatus status,
+                                    int64_t disk_size_available) = 0;
+    virtual void OnVmStarted(CrostiniResult result) = 0;
     virtual void OnContainerDownloading(int32_t download_percent) = 0;
-    virtual void OnContainerCreated(ConciergeClientResult result) = 0;
-    virtual void OnContainerStarted(ConciergeClientResult result) = 0;
-    virtual void OnSshKeysFetched(ConciergeClientResult result) = 0;
+    virtual void OnContainerCreated(CrostiniResult result) = 0;
+    virtual void OnContainerStarted(CrostiniResult result) = 0;
+    virtual void OnContainerSetup(CrostiniResult result) = 0;
+    virtual void OnSshKeysFetched(CrostiniResult result) = 0;
   };
 
   static CrostiniManager* GetForProfile(Profile* profile);
@@ -213,6 +235,8 @@ class CrostiniManager : public KeyedService,
       const base::FilePath& disk_path,
       // The storage location for the disk image
       vm_tools::concierge::StorageLocation storage_location,
+      // The logical size of the disk image, in bytes
+      int64_t disk_size_bytes,
       CreateDiskImageCallback callback);
 
   // Checks the arguments for destroying a named Termina VM disk image.
@@ -284,6 +308,14 @@ class CrostiniManager : public KeyedService,
                             int icon_size,
                             int scale,
                             GetContainerAppIconsCallback callback);
+
+  // Asynchronously retrieve information about a Linux Package (.deb) inside the
+  // container.
+  void GetLinuxPackageInfo(Profile* profile,
+                           std::string vm_name,
+                           std::string container_name,
+                           std::string package_path,
+                           GetLinuxPackageInfoCallback callback);
 
   // Begin installation of a Linux Package inside the container. If the
   // installation is successfully started, further updates will be sent to
@@ -429,7 +461,7 @@ class CrostiniManager : public KeyedService,
   // |callback|.
   void OnStartTremplin(std::string vm_name,
                        StartTerminaVmCallback callback,
-                       ConciergeClientResult result);
+                       CrostiniResult result);
 
   // Callback for ConciergeClient::StopVm. Called after the Concierge
   // service method finishes.
@@ -488,6 +520,11 @@ class CrostiniManager : public KeyedService,
       GetContainerAppIconsCallback callback,
       base::Optional<vm_tools::cicerone::ContainerAppIconResponse> reply);
 
+  // Callback for CrostiniManager::GetLinuxPackageInfo.
+  void OnGetLinuxPackageInfo(
+      GetLinuxPackageInfoCallback callback,
+      base::Optional<vm_tools::cicerone::LinuxPackageInfoResponse> reply);
+
   // Callback for CrostiniManager::InstallLinuxPackage.
   void OnInstallLinuxPackage(
       InstallLinuxPackageCallback callback,
@@ -507,18 +544,11 @@ class CrostiniManager : public KeyedService,
   // checking component registration code may block.
   void MaybeUpgradeCrostiniAfterChecks();
 
-  // Helper for CrostiniManager::CreateDiskImage. Separated so it can be run
-  // off the main thread.
-  void CreateDiskImageAfterSizeCheck(
-      vm_tools::concierge::CreateDiskImageRequest request,
-      CreateDiskImageCallback callback,
-      int64_t free_disk_size);
 
-  void FinishRestart(CrostiniRestarter* restarter,
-                     ConciergeClientResult result);
+  void FinishRestart(CrostiniRestarter* restarter, CrostiniResult result);
 
   // Callback for CrostiniManager::RemoveCrostini.
-  void OnRemoveCrostini(ConciergeClientResult result);
+  void OnRemoveCrostini(CrostiniResult result);
 
   Profile* profile_;
   std::string owner_id_;

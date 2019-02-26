@@ -11,8 +11,8 @@
 #include "base/logging.h"
 #include "net/third_party/http2/hpack/http2_hpack_constants.h"
 #include "net/third_party/http2/platform/api/http2_string.h"
-#include "net/third_party/http2/tools/failure.h"
-#include "net/third_party/http2/tools/http2_random.h"
+#include "net/third_party/http2/platform/api/http2_test_helpers.h"
+#include "net/third_party/http2/test_tools/http2_random.h"
 #include "net/third_party/http2/tools/random_util.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -51,7 +51,7 @@ std::vector<StaticEntry> MakeSpecStaticEntries() {
 }
 
 template <class C>
-void ShuffleCollection(C* collection, RandomBase* r) {
+void ShuffleCollection(C* collection, Http2Random* r) {
   std::shuffle(collection->begin(), collection->end(), *r);
 }
 
@@ -84,10 +84,11 @@ class HpackDecoderStaticTableTest : public ::testing::Test {
     return static_table_.Lookup(index);
   }
 
-  RandomBase* RandomPtr() { return &random_; }
+  Http2Random* RandomPtr() { return &random_; }
+
+  Http2Random random_;
 
  private:
-  Http2Random random_;
   HpackDecoderStaticTable static_table_;
 };
 
@@ -250,10 +251,10 @@ TEST_F(HpackDecoderTablesTest, RandomDynamicTable) {
   for (size_t limit : table_sizes) {
     ASSERT_TRUE(DynamicTableSizeUpdate(limit));
     for (int insert_count = 0; insert_count < 100; ++insert_count) {
-      Http2String name = GenerateHttp2HeaderName(
-          GenerateUniformInRange(2, 40, RandomPtr()), RandomPtr());
-      Http2String value = GenerateWebSafeString(
-          GenerateUniformInRange(2, 600, RandomPtr()), RandomPtr());
+      Http2String name =
+          GenerateHttp2HeaderName(random_.UniformInRange(2, 40), RandomPtr());
+      Http2String value =
+          GenerateWebSafeString(random_.UniformInRange(2, 600), RandomPtr());
       ASSERT_TRUE(Insert(name, value));
     }
     EXPECT_TRUE(VerifyStaticTableContents());

@@ -21,9 +21,23 @@ class PaintImageGenerator;
 class PaintOpBuffer;
 using PaintRecord = PaintOpBuffer;
 
-// A representation of an image for the compositor.
-// Note that aside from default construction, it can only be constructed using a
-// PaintImageBuilder, or copied/moved into using operator=.
+// A representation of an image for the compositor.  This is the most abstract
+// form of images, and represents what is known at paint time.  Note that aside
+// from default construction, it can only be constructed using a
+// PaintImageBuilder, or copied/moved into using operator=.  PaintImage can
+// be backed by different kinds of content, such as a lazy generator, a paint
+// record, a bitmap, or a texture.
+//
+// If backed by a generator, this image may not be decoded and information like
+// the animation frame, the target colorspace, or the scale at which it will be
+// used are not known yet.  A DrawImage is a PaintImage with those decisions
+// known but that might not have been decoded yet.  A DecodedDrawImage is a
+// DrawImage that has been decoded/scaled/uploaded with all of those parameters
+// applied.
+//
+// The PaintImage -> DrawImage -> DecodedDrawImage -> PaintImage (via SkImage)
+// path can be used to create a PaintImage that is snapshotted at a particular
+// scale or animation frame.
 class CC_PAINT_EXPORT PaintImage {
  public:
   using Id = int;
@@ -162,6 +176,7 @@ class CC_PAINT_EXPORT PaintImage {
   uint32_t unique_id() const { return GetSkImage()->uniqueID(); }
   explicit operator bool() const { return !!GetSkImage(); }
   bool IsLazyGenerated() const { return GetSkImage()->isLazyGenerated(); }
+  bool IsTextureBacked() const { return GetSkImage()->isTextureBacked(); }
   int width() const { return GetSkImage()->width(); }
   int height() const { return GetSkImage()->height(); }
   SkColorSpace* color_space() const { return GetSkImage()->colorSpace(); }

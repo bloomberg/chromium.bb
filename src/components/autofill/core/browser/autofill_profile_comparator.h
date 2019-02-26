@@ -113,6 +113,9 @@ class AutofillProfileComparator {
                       const AutofillProfile& p2,
                       Address* address) const;
 
+  // App locale used when this comparator instance was created.
+  const std::string app_locale() const { return app_locale_; }
+
  protected:
   // The result type returned by CompareTokens.
   enum CompareTokensResult {
@@ -214,8 +217,6 @@ class AutofillProfileComparator {
   bool MergeCJKNames(const AutofillProfile& p1,
                      const AutofillProfile& p2,
                      NameInfo* info) const;
-
-  const std::string app_locale() const { return app_locale_; }
 
  private:
   l10n::CaseInsensitiveCompare case_insensitive_compare_;

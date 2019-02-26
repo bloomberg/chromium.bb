@@ -247,6 +247,8 @@ void SurfaceTreeHost::SubmitCompositorFrame() {
   render_pass->SetNew(kRenderPassId, gfx::Rect(output_surface_size_in_pixels),
                       gfx::Rect(), gfx::Transform());
   frame.metadata.device_scale_factor = device_scale_factor;
+  frame.metadata.local_surface_id_allocation_time =
+      host_window()->GetLocalSurfaceIdAllocation().allocation_time();
   root_surface_->AppendSurfaceHierarchyContentsToFrame(
       root_surface_origin_, device_scale_factor,
       layer_tree_frame_sink_holder_.get(), &frame);

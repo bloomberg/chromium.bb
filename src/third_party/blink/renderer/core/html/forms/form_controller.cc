@@ -25,7 +25,6 @@
 
 #include "base/macros.h"
 #include "base/memory/ptr_util.h"
-#include "third_party/blink/public/platform/file_path_conversion.h"
 #include "third_party/blink/renderer/core/dom/events/scoped_event_queue.h"
 #include "third_party/blink/renderer/core/html/forms/file_chooser.h"
 #include "third_party/blink/renderer/core/html/forms/html_form_control_element_with_state.h"
@@ -37,14 +36,14 @@
 
 namespace blink {
 
-using namespace HTMLNames;
+using namespace html_names;
 
 static inline HTMLFormElement* OwnerFormForState(
     const HTMLFormControlElementWithState& control) {
   // Assume controls with form attribute have no owners because we restore
   // state during parsing and form owners of such controls might be
   // indeterminate.
-  return control.FastHasAttribute(formAttr) ? nullptr : control.Form();
+  return control.FastHasAttribute(kFormAttr) ? nullptr : control.Form();
 }
 
 // ----------------------------------------------------------------------------
@@ -297,13 +296,9 @@ Vector<String> SavedFormState::GetReferencedFilePaths() const {
       continue;
     const Deque<FormControlState>& queue = form_control.value;
     for (const FormControlState& form_control_state : queue) {
-      const FileChooserFileInfoList& selected_files =
+      to_return.AppendVector(
           HTMLInputElement::FilesFromFileInputFormControlState(
-              form_control_state);
-      for (const auto& file : selected_files) {
-        to_return.push_back(
-            FilePathToString(file->get_native_file()->file_path));
-      }
+              form_control_state));
     }
   }
   return to_return;
@@ -315,14 +310,17 @@ class FormKeyGenerator final
     : public GarbageCollectedFinalized<FormKeyGenerator> {
 
  public:
-  static FormKeyGenerator* Create() { return new FormKeyGenerator; }
+  static FormKeyGenerator* Create() {
+    return MakeGarbageCollected<FormKeyGenerator>();
+  }
+
+  FormKeyGenerator() = default;
+
   void Trace(blink::Visitor* visitor) { visitor->Trace(form_to_key_map_); }
   const AtomicString& FormKey(const HTMLFormControlElementWithState&);
   void WillDeleteForm(HTMLFormElement*);
 
  private:
-  FormKeyGenerator() = default;
-
   using FormToKeyMap = HeapHashMap<Member<HTMLFormElement>, AtomicString>;
   using FormSignatureToNextIndexMap = HashMap<String, unsigned>;
   FormToKeyMap form_to_key_map_;
@@ -357,7 +355,7 @@ static inline void RecordFormStructure(const HTMLFormElement& form,
 }
 
 static inline String FormSignature(const HTMLFormElement& form) {
-  KURL action_url = form.GetURLAttribute(actionAttr);
+  KURL action_url = form.GetURLAttribute(kActionAttr);
   // Remove the query part because it might contain volatile parameters such
   // as a session key.
   if (!action_url.IsEmpty())
@@ -406,7 +404,7 @@ void FormKeyGenerator::WillDeleteForm(HTMLFormElement* form) {
 // ----------------------------------------------------------------------------
 
 DocumentState* DocumentState::Create() {
-  return new DocumentState;
+  return MakeGarbageCollected<DocumentState>();
 }
 
 void DocumentState::Trace(blink::Visitor* visitor) {
@@ -429,7 +427,7 @@ static String FormStateSignature() {
   // attribute value of a form control. The following string literal should
   // contain some characters which are rarely used for name attribute values.
   DEFINE_STATIC_LOCAL(String, signature,
-                      ("\n\r?% Blink serialized form state version 9 \n\r=&"));
+                      ("\n\r?% Blink serialized form state version 10 \n\r=&"));
   return signature;
 }
 

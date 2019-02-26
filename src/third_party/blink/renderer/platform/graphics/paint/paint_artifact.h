@@ -54,7 +54,7 @@ class PLATFORM_EXPORT PaintArtifact final : public RefCounted<PaintArtifact> {
   const Vector<PaintChunk>& PaintChunks() const { return chunks_; }
 
   PaintChunkSubset GetPaintChunkSubset(
-      const Vector<size_t>& subset_indices) const {
+      const Vector<wtf_size_t>& subset_indices) const {
     return PaintChunkSubset(PaintChunks(), subset_indices);
   }
 
@@ -66,6 +66,8 @@ class PLATFORM_EXPORT PaintArtifact final : public RefCounted<PaintArtifact> {
   // Returns the approximate memory usage, excluding memory likely to be
   // shared with the embedder after copying to cc::DisplayItemList.
   size_t ApproximateUnsharedMemoryUsage() const;
+
+  void AppendDebugDrawing(sk_sp<const PaintRecord>, const PropertyTreeState&);
 
   // Draws the paint artifact to a GraphicsContext, into the ancestor state
   // given by |replay_state|.

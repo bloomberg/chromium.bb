@@ -13,6 +13,7 @@ import contextlib
 import glob
 import json
 import os
+import re
 
 from chromite.cbuildbot import archive_lib
 from chromite.cli import command
@@ -84,8 +85,8 @@ class SDKFetcher(object):
   MISC_CACHE = 'misc'
 
   TARGET_TOOLCHAIN_KEY = 'target_toolchain'
-  QEMU_BIN_KEY = 'qemu'
   QEMU_BIN_PATH = 'app-emulation/qemu'
+  SEABIOS_BIN_PATH = 'sys-firmware/seabios'
 
   CANARIES_PER_DAY = 3
   DAYS_TO_CONSIDER = 14
@@ -206,35 +207,108 @@ class SDKFetcher(object):
   def _GetSDKVersion(self, version):
     """Get SDK version from metadata.
 
-    sdk_version looks like 2018.06.04.200410
+    Args:
+      version: LKGM version, e.g. 12345.0.0
+
+    Returns:
+      sdk_version, e.g. 2018.06.04.200410
     """
     return self._GetMetadata(version)['sdk-version']
 
-  def _GetQemuVersion(self, version):
-    """Get QEMU version from the cache, or from the build manifest."""
-    with self.misc_cache.Lookup(('qemu-version', self.board, version)) as ref:
+  def _GetManifest(self, version):
+    """Get the build manifest from the cache, downloading it if necessary.
+
+    Args:
+      version: LKGM version, e.g. 12345.0.0
+
+    Returns:
+      build manifest as a python dictionary. The build manifest contains build
+      versions for packages built by the SDK builder.
+    """
+    with self.misc_cache.Lookup(('manifest', self.board, version)) as ref:
       if ref.Exists(lock=True):
-        return osutils.ReadFile(ref.path).strip()
+        manifest = osutils.ReadFile(ref.path)
       else:
         manifest_path = gs.GetGsURL(
             bucket=constants.SDK_GS_BUCKET,
             suburl='cros-sdk-%s.tar.xz.Manifest' % self._GetSDKVersion(version),
             for_gsutil=True)
-        manifest = json.loads(self.gs_ctx.Cat(manifest_path))
+        manifest = self.gs_ctx.Cat(manifest_path)
+        ref.AssignText(manifest)
+      return json.loads(manifest)
 
-        qemu_version = manifest['packages'][self.QEMU_BIN_PATH][0][0]
-        ref.AssignText(qemu_version)
-        logging.debug('QEMU version: %s', qemu_version)
-        return qemu_version
+  def _GetBinPackageGSPath(self, version, key):
+    """Get google storage path of prebuilt binary package.
 
-  def _GetQemuBinGSPath(self, version):
-    """Get google storage path of prebuilt QEMU binary."""
+    Args:
+      version: LKGM version, e.g. 12345.0.0
+      key: key in build manifest, for e.g. 'app-emulation/qemu'
+
+    Returns:
+      GS path, for e.g. gs://chromeos-prebuilt/board/amd64-host/
+      chroot-2018.10.23.171742/packages/app-emulation/qemu-3.0.0.tbz2
+    """
+    package_version = self._GetManifest(version)['packages'][key][0][0]
     return gs.GetGsURL(
         bucket='chromeos-prebuilt',
         suburl='board/amd64-host/chroot-%s/packages/%s-%s.tbz2' %
-        (self._GetSDKVersion(version), self.QEMU_BIN_PATH,
-         self._GetQemuVersion(version)),
+        (self._GetSDKVersion(version), key, package_version),
         for_gsutil=True)
+
+  def _GetTarballCachePath(self, version, key):
+    """Get a path in the tarball cache.
+
+    Args:
+      version: LKGM version, e.g. 12345.0.0
+      key: tarball key, for e.g. 'app-emulation/qemu'
+    """
+    cache_key = self._GetCacheKeyForComponent(version, key)
+    with self.tarball_cache.Lookup(cache_key) as ref:
+      if ref.Exists(lock=True):
+        return ref.path
+      else:
+        logging.warning('%s not found.', key)
+    return None
+
+  def _FinalizePackages(self, version):
+    """Finalize downloaded packages.
+
+    Fix broken seabios symlinks in the qemu package.
+
+    Args:
+      version: LKGM version, e.g. 12345.0.0
+    """
+    self._CreateSeabiosFWSymlinks(version)
+
+  def _CreateSeabiosFWSymlinks(self, version):
+    """Create Seabios firmware symlinks.
+
+    tarballs/<board>+<version>+app-emulation/qemu/usr/share/qemu/ has a number
+    of broken symlinks, for example: bios.bin -> ../seabios/bios.bin
+    bios.bin is in the seabios package at <cache>/seabios/usr/share/seabios/
+    To resolve these symlinks, we create symlinks from
+    <cache>+sys-firmware/seabios/usr/share/* to
+    <cache>+app-emulation/qemu/usr/share/
+
+    Args:
+      version: LKGM version, e.g. 12345.0.0
+    """
+    qemu_bin_path = self._GetTarballCachePath(version, self.QEMU_BIN_PATH)
+    seabios_bin_path = self._GetTarballCachePath(version, self.SEABIOS_BIN_PATH)
+    if not qemu_bin_path or not seabios_bin_path:
+      logging.warning('Could not create Seabios firmware links.')
+      return
+
+    # Symlink the directories in seabios/usr/share/* to qemu/usr/share/.
+    share_dir = 'usr/share'
+    seabios_share_dir = os.path.join(seabios_bin_path, share_dir)
+    qemu_share_dir = os.path.join(qemu_bin_path, share_dir)
+    for seabios_dir in os.listdir(seabios_share_dir):
+      src_dir = os.path.relpath(
+          os.path.join(seabios_share_dir, seabios_dir), qemu_share_dir)
+      target_dir = os.path.join(qemu_share_dir, seabios_dir)
+      if not os.path.exists(target_dir):
+        os.symlink(src_dir, target_dir)
 
   def _GetFullVersionFromStorage(self, version_file):
     """Cat |version_file| in google storage.
@@ -360,13 +434,14 @@ class SDKFetcher(object):
 
     Args:
       version: A ChromeOS platform number of the form XXXX.XX.XX, i.e.,
-        3918.0.0.
+        3918.0.0. If a full version is provided, it will be returned unmodified.
 
     Returns:
       The version with release branch and build number added, as needed. E.g.
       R28-3918.0.0-b1234.
     """
-    assert not version.startswith('R')
+    if version.startswith('R'):
+      return version
 
     with self.misc_cache.Lookup(('full-version', self.board, version)) as ref:
       if ref.Exists(lock=True):
@@ -448,11 +523,14 @@ class SDKFetcher(object):
 
     # Also fetch QEMU binary if VM_IMAGE_TAR is specified.
     if constants.VM_IMAGE_TAR in components:
-      qemu_bin_path = self._GetQemuBinGSPath(version)
-      if qemu_bin_path:
-        fetch_urls[self.QEMU_BIN_KEY] = qemu_bin_path
+      qemu_bin_path = self._GetBinPackageGSPath(version, self.QEMU_BIN_PATH)
+      seabios_bin_path = self._GetBinPackageGSPath(version,
+                                                   self.SEABIOS_BIN_PATH)
+      if qemu_bin_path and seabios_bin_path:
+        fetch_urls[self.QEMU_BIN_PATH] = qemu_bin_path
+        fetch_urls[self.SEABIOS_BIN_PATH] = seabios_bin_path
       else:
-        logging.warning('Failed to find a QEMU binary to download.')
+        logging.warning('Failed to find QEMU/Seabios binaries to download.')
 
     version_base = self._GetVersionGSBase(version)
     fetch_urls.update((t, os.path.join(version_base, t)) for t in components)
@@ -478,6 +556,7 @@ class SDKFetcher(object):
             else:
               raise
 
+      self._FinalizePackages(version)
       ctx_version = version
       if self.sdk_path is not None:
         ctx_version = CUSTOM_VERSION
@@ -543,9 +622,15 @@ class ChromeSDKCommand(command.CliCommand):
 
   @staticmethod
   def ValidateVersion(version):
-    if version.startswith('R') or len(version.split('.')) != 3:
+    """Ensures that the version arg is potentially valid.
+
+    See the argument description for supported version formats.
+    """
+
+    if (not re.match(r'^[0-9]+\.0\.0$', version) and
+        not re.match(r'^R[0-9]+-[0-9]+\.[0-9]+\.[0-9]+', version)):
       raise argparse.ArgumentTypeError(
-          '--version should be in the format 3912.0.0')
+          '--version should be in the format 1234.0.0 or R56-1234.0.0')
     return version
 
   @classmethod
@@ -615,9 +700,14 @@ class ChromeSDKCommand(command.CliCommand):
         help='Use the goma installation at the specified PATH.')
     parser.add_argument(
         '--version', default=None, type=cls.ValidateVersion,
-        help="Specify version of SDK to use, in the format '3912.0.0'.  "
-             "Defaults to determining version based on the type of checkout "
-             "(Chrome or ChromeOS) you are executing from.")
+        help="Specify the SDK version to use. This can be a platform version "
+             "ending in .0.0, e.g. 1234.0.0, in which case the full version "
+             "will be extracted from the corresponding LATEST file for the "
+             "specified board. If no LATEST file exists, an older version "
+             "will be used if available. Alternatively, a full version may be "
+             "specified, e.g. R56-1234.0.0, in which case that exact version "
+             "will be used. Defaults to using the version specified in the "
+             "CHROMEOS_LKGM file in the chromium checkout.")
     parser.add_argument(
         'cmd', nargs='*', default=None,
         help='The command to execute in the SDK environment.  Defaults to '

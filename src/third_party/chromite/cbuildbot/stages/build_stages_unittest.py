@@ -77,9 +77,71 @@ class InitSDKTest(generic_stages_unittest.RunCommandAbstractStageTestCase):
     self._Run(dir_exists=False)
     self.assertCommandContains([self.cros_sdk, '--bootstrap'])
 
+  def testBinBuildWithExistingChroot(self):
+    """Tests whether the --nosdk option works."""
+    self._PrepareFull(extra_cmd_args=['--nosdk'])
+    # Do not force chroot replacement in build config.
+    self._run._config.chroot_replace = False
+    self._run._config.separate_debug_symbols = False
+    self._run.config.useflags = ['foo']
+    self._Run(dir_exists=True)
+    self.assertCommandContains([self.cros_sdk], expected=False)
+    self.assertCommandContains(['./update_chroot'], expected=False)
+
+
+class UpdateSDKTest(generic_stages_unittest.RunCommandAbstractStageTestCase):
+  """Test UpdateSDKStage."""
+
+  def ConstructStage(self):
+    return build_stages.UpdateSDKStage(self._run, self._current_board)
+
+  def _RunFull(self, dir_exists=False):
+    """Helper for testing a full builder."""
+    self._Run(dir_exists)
+    self.assertCommandContains(['./update_chroot'])
+
+  def testFullBuildWithProfile(self):
+    """Tests whether full builds add profile flag when requested."""
+    self._PrepareFull(extra_config={'profile': 'foo'})
+    self._RunFull(dir_exists=False)
+
+  def testFullBuildWithOverriddenProfile(self):
+    """Tests whether full builds add overridden profile flag when requested."""
+    self._PrepareFull(extra_cmd_args=['--profile', 'smock'])
+    self._RunFull(dir_exists=False)
+
+  def _RunBin(self, dir_exists):
+    """Helper for testing a binary builder."""
+    self._Run(dir_exists)
+    update_nousepkg = (not self._run.config.usepkg_toolchain or
+                       self._run.options.latest_toolchain)
+    self.assertCommandContains(['./update_chroot', '--nousepkg'],
+                               expected=update_nousepkg)
+
+  def testBinBuildWithLatestToolchain(self):
+    """Tests whether we use --nousepkg for creating the board."""
+    self._PrepareBin()
+    self._run.options.latest_toolchain = True
+    self._RunBin(dir_exists=False)
+
+  def testBinBuildWithLatestToolchainAndDirExists(self):
+    """Tests whether we use --nousepkg for creating the board."""
+    self._PrepareBin()
+    self._run.options.latest_toolchain = True
+    self._RunBin(dir_exists=True)
+
+  def testBinBuildWithNoToolchainPackages(self):
+    """Tests whether we use --nousepkg for creating the board."""
+    self._PrepareBin()
+    self._run.config.usepkg_toolchain = False
+    self._RunBin(dir_exists=False)
+
 
 class SetupBoardTest(generic_stages_unittest.RunCommandAbstractStageTestCase):
   """Test building the board"""
+
+  def setUp(self):
+    self.setup_toolchains_mock = self.PatchObject(commands, 'SetupToolchains')
 
   def ConstructStage(self):
     return build_stages.SetupBoardStage(self._run, self._current_board)
@@ -87,7 +149,6 @@ class SetupBoardTest(generic_stages_unittest.RunCommandAbstractStageTestCase):
   def _RunFull(self, dir_exists=False):
     """Helper for testing a full builder."""
     self._Run(dir_exists)
-    self.assertCommandContains(['./update_chroot'])
     cmd = ['./setup_board', '--board=%s' % self._current_board, '--nousepkg']
     self.assertCommandContains(cmd)
     cmd = ['./setup_board', '--skip_chroot_upgrade']
@@ -108,10 +169,7 @@ class SetupBoardTest(generic_stages_unittest.RunCommandAbstractStageTestCase):
   def _RunBin(self, dir_exists):
     """Helper for testing a binary builder."""
     self._Run(dir_exists)
-    update_nousepkg = (not self._run.config.usepkg_toolchain or
-                       self._run.options.latest_toolchain)
-    self.assertCommandContains(['./update_chroot', '--nousepkg'],
-                               expected=update_nousepkg)
+    self.assertTrue(self.setup_toolchains_mock.called)
     self.assertCommandContains(['./setup_board'])
     cmd = ['./setup_board', '--skip_chroot_upgrade']
     self.assertCommandContains(cmd)
@@ -515,14 +573,14 @@ class CleanUpStageTest(generic_stages_unittest.StageTestCase):
     cidb.CIDBConnectionFactory.SetupMockCidb(self.fake_db)
 
     self.fake_db.InsertBuild(
-        'test_builder', waterfall.WATERFALL_TRYBOT, 666, 'test_config',
+        'test_builder', waterfall.WATERFALL_SWARMING, 666, 'test_config',
         'test_hostname',
         status=constants.BUILDER_STATUS_INFLIGHT,
         timeout_seconds=23456,
         buildbucket_id='100')
 
     self.fake_db.InsertBuild(
-        'test_builder', waterfall.WATERFALL_TRYBOT, 666, 'test_config',
+        'test_builder', waterfall.WATERFALL_SWARMING, 666, 'test_config',
         'test_hostname',
         status=constants.BUILDER_STATUS_INFLIGHT,
         timeout_seconds=23456,
@@ -581,7 +639,7 @@ class CleanUpStageTest(generic_stages_unittest.StageTestCase):
 
   def testChrootReusePreviousMasterFailed(self):
     master_id = self.fake_db.InsertBuild(
-        'test_builder', waterfall.WATERFALL_TRYBOT, 123, 'test_config',
+        'test_builder', waterfall.WATERFALL_SWARMING, 123, 'test_config',
         'test_hostname', status=constants.BUILDER_STATUS_FAILED,
         buildbucket_id='2178')
     self.PatchObject(
@@ -598,7 +656,7 @@ class CleanUpStageTest(generic_stages_unittest.StageTestCase):
 
   def testChrootReuseAllPassed(self):
     master_id = self.fake_db.InsertBuild(
-        'test_builder', waterfall.WATERFALL_TRYBOT, 123, 'test_config',
+        'test_builder', waterfall.WATERFALL_SWARMING, 123, 'test_config',
         'test_hostname', status=constants.BUILDER_STATUS_PASSED,
         buildbucket_id='2178')
     self.PatchObject(

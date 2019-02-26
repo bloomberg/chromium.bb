@@ -27,12 +27,14 @@ class CORE_EXPORT TrustedTypePolicyFactory final : public ScriptWrappable,
 
  public:
   static TrustedTypePolicyFactory* Create(LocalFrame* frame) {
-    return new TrustedTypePolicyFactory(frame);
+    return MakeGarbageCollected<TrustedTypePolicyFactory>(frame);
   }
+
+  explicit TrustedTypePolicyFactory(LocalFrame*);
 
   // TrustedTypePolicyFactory.idl
   TrustedTypePolicy* createPolicy(const String&,
-                                  const TrustedTypePolicyOptions&,
+                                  const TrustedTypePolicyOptions*,
                                   bool exposed,
                                   ExceptionState&);
 
@@ -48,8 +50,6 @@ class CORE_EXPORT TrustedTypePolicyFactory final : public ScriptWrappable,
   void Trace(blink::Visitor*) override;
 
  private:
-  explicit TrustedTypePolicyFactory(LocalFrame*);
-
   const WrapperTypeInfo* GetWrapperTypeInfoFromScriptValue(ScriptState*,
                                                            const ScriptValue&);
 

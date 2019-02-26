@@ -11,9 +11,20 @@ cr.define('welcome', function() {
 
   /** @interface */
   class WelcomeBrowserProxy {
-    /** @param {string} redirectUrl the URL to redirect to, after signing in. */
+    /** @param {?string} redirectUrl the URL to go to, after signing in. */
     handleActivateSignIn(redirectUrl) {}
-    goToNewTabPage() {}
+
+    /**
+     * @param {?string} redirectUrl the URL to go to after backend records the
+     *     user declining signin.
+     */
+    handleUserDecline(redirectUrl) {}
+
+    /** @param {boolean=} replace */
+    goToNewTabPage(replace) {}
+
+    /** @param {string} url */
+    goToURL(url) {}
   }
 
   /** @implements {welcome.WelcomeBrowserProxy} */
@@ -24,8 +35,21 @@ cr.define('welcome', function() {
     }
 
     /** @override */
-    goToNewTabPage() {
-      window.location.replace('chrome://newtab');
+    handleUserDecline(redirectUrl) {
+      chrome.send('handleUserDecline', redirectUrl ? [redirectUrl] : []);
+    }
+
+    /** @override */
+    goToNewTabPage(replace) {
+      if (replace)
+        window.location.replace('chrome://newtab');
+      else
+        window.location.assign('chrome://newtab');
+    }
+
+    /** @override */
+    goToURL(url) {
+      window.location.assign(url);
     }
   }
 

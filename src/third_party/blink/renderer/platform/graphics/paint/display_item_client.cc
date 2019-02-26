@@ -30,21 +30,39 @@ bool DisplayItemClient::IsAlive() const {
          g_live_display_item_clients->Contains(this);
 }
 
-String DisplayItemClient::SafeDebugName(const DisplayItemClient& client,
-                                        bool known_to_be_safe) {
+String DisplayItemClient::SafeDebugName(bool known_to_be_safe) const {
   if (known_to_be_safe) {
-    DCHECK(client.IsAlive());
-    return client.DebugName();
+    DCHECK(IsAlive());
+    return DebugName();
   }
 
   // If the caller is not sure, we must ensure the client is alive, and it's
   // not a destroyed client at the same address of a new client.
-  if (client.IsAlive() && !client.IsJustCreated())
-    return client.DebugName();
-
+  if (IsJustCreated())
+    return "Just created:" + DebugName();
+  if (IsAlive())
+    return DebugName();
   return "DEAD";
 }
 
 #endif  // DCHECK_IS_ON()
+
+String DisplayItemClient::ToString() const {
+#if DCHECK_IS_ON()
+  return String::Format("%p:%s", this, SafeDebugName().Utf8().data());
+#else
+  return String::Format("%p", this);
+#endif
+}
+
+std::ostream& operator<<(std::ostream& out, const DisplayItemClient& client) {
+  return out << client.ToString();
+}
+
+std::ostream& operator<<(std::ostream& out, const DisplayItemClient* client) {
+  if (!client)
+    return out << "<null>";
+  return out << *client;
+}
 
 }  // namespace blink

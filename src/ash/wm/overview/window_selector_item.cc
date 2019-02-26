@@ -26,6 +26,7 @@
 #include "ash/wm/splitview/split_view_utils.h"
 #include "ash/wm/tablet_mode/tablet_mode_controller.h"
 #include "ash/wm/window_state.h"
+#include "ash/wm/window_transient_descendant_iterator.h"
 #include "base/auto_reset.h"
 #include "base/metrics/user_metrics.h"
 #include "base/strings/string_util.h"
@@ -97,6 +98,11 @@ constexpr float kPreCloseScale = 0.02f;
 // The size in dp of the window icon shown on the overview window next to the
 // title.
 constexpr gfx::Size kIconSize{24, 24};
+
+// The amount we need to offset the close button so that the icon, which is
+// smaller than the actual button is lined up with the right side of the window
+// preview.
+constexpr int kCloseButtonOffsetDp = 8;
 
 constexpr int kCloseButtonInkDropInsetDp = 2;
 
@@ -328,7 +334,7 @@ class WindowSelectorItem::CaptionContainerView : public views::View {
       header_view_->AddChildView(image_view_);
     header_view_->AddChildView(title_label_);
     AddChildWithLayer(header_view_, close_button_);
-    AddChildWithLayer(this, header_view_);
+    AddChildWithLayer(listener_button_, header_view_);
     layout->SetFlexForView(title_label_, 1);
   }
 
@@ -420,11 +426,11 @@ class WindowSelectorItem::CaptionContainerView : public views::View {
       cannot_snap_container_->SetBoundsRect(cannot_snap_bounds);
     }
 
-    // Position the header at the top. The left should be indented to match
-    // the transformed window, but not the right because the close button hit
-    // radius should extend past the transformed window's rightmost bounds.
+    // Position the header at the top. The right side of the header should be
+    // positioned so that the rightmost of the close icon matches the right side
+    // of the window preview.
     gfx::Rect header_bounds = GetLocalBounds();
-    header_bounds.Inset(kWindowSelectorMargin, kWindowSelectorMargin, 0, 0);
+    header_bounds.Inset(0, 0, kCloseButtonOffsetDp, 0);
     header_bounds.set_height(visible_height);
     header_view_->SetBoundsRect(header_bounds);
   }
@@ -565,7 +571,6 @@ void WindowSelectorItem::Shutdown() {
 void WindowSelectorItem::PrepareForOverview() {
   transform_window_.PrepareForOverview();
   RestackItemWidget();
-  UpdateHeaderLayout(HeaderFadeInMode::kEnter, OVERVIEW_ANIMATION_NONE);
 }
 
 void WindowSelectorItem::SlideWindowIn() {
@@ -584,13 +589,26 @@ void WindowSelectorItem::UpdateYPositionAndOpacity(
     WindowSelector::UpdateAnimationSettingsCallback callback) {
   // Animate the window selector widget and the window itself.
   // TODO(sammiequon): Investigate if we can combine with
-  // FadeInWidgetAndMaybeSlideOnEnter and animate the transient children too.
-  // Also when animating we should remove shadow and rounded corners.
-  std::vector<ui::Layer*> animation_layers = {
-      GetWindowForStacking()->layer(),
-      item_widget_->GetNativeWindow()->layer()};
-  for (auto* layer : animation_layers) {
-    layer->GetAnimator()->StopAnimating();
+  // FadeInWidgetAndMaybeSlideOnEnter. Also when animating we should remove
+  // shadow and rounded corners.
+  std::vector<std::pair<ui::Layer*, int>> animation_layers_and_offsets = {
+      {item_widget_->GetNativeWindow()->layer(), 0}};
+
+  // Transient children may already have a y translation relative to their base
+  // ancestor, so factor that in when computing their new y translation.
+  base::Optional<int> base_window_y_translation = base::nullopt;
+  for (auto* window : wm::GetTransientTreeIterator(GetWindowForStacking())) {
+    if (!base_window_y_translation.has_value()) {
+      base_window_y_translation = base::make_optional(
+          window->layer()->transform().To2dTranslation().y());
+    }
+    const int offset = *base_window_y_translation -
+                       window->layer()->transform().To2dTranslation().y();
+    animation_layers_and_offsets.push_back({window->layer(), offset});
+  }
+
+  for (auto& layer_and_offset : animation_layers_and_offsets) {
+    ui::Layer* layer = layer_and_offset.first;
     std::unique_ptr<ui::ScopedLayerAnimationSettings> settings;
     if (!callback.is_null()) {
       settings = std::make_unique<ui::ScopedLayerAnimationSettings>(
@@ -601,7 +619,8 @@ void WindowSelectorItem::UpdateYPositionAndOpacity(
 
     // Alter the y-translation. Offset by the window location relative to the
     // grid.
-    const int offset = target_bounds_.y() + kHeaderHeightDp + kWindowMargin;
+    const int offset = target_bounds_.y() + kHeaderHeightDp + kWindowMargin -
+                       layer_and_offset.second;
     gfx::Transform transform = layer->transform();
     transform.matrix().setFloat(1, 3, static_cast<float>(offset + new_grid_y));
     layer->SetTransform(transform);
@@ -640,9 +659,7 @@ void WindowSelectorItem::SetBounds(const gfx::Rect& target_bounds,
   // If |target_bounds_| is empty, this is the first update. Let
   // UpdateHeaderLayout know, as we do not want |item_widget_| to be animated
   // with the window.
-  HeaderFadeInMode mode = target_bounds_.IsEmpty()
-                              ? HeaderFadeInMode::kFirstUpdate
-                              : HeaderFadeInMode::kUpdate;
+  const bool is_first_update = target_bounds_.IsEmpty();
   target_bounds_ = target_bounds;
 
   gfx::Rect inset_bounds(target_bounds);
@@ -651,16 +668,14 @@ void WindowSelectorItem::SetBounds(const gfx::Rect& target_bounds,
   // Do not animate if entering when the window is minimized, as it will be
   // faded in. We still want to animate if the position is changed after
   // entering.
-  if (wm::GetWindowState(GetWindow())->IsMinimized() &&
-      mode == HeaderFadeInMode::kFirstUpdate) {
+  if (wm::GetWindowState(GetWindow())->IsMinimized() && is_first_update)
     new_animation_type = OVERVIEW_ANIMATION_NONE;
-  }
-
-  SetItemBounds(inset_bounds, new_animation_type);
 
   // SetItemBounds is called before UpdateHeaderLayout so the header can
   // properly use the updated windows bounds.
-  UpdateHeaderLayout(mode, new_animation_type);
+  SetItemBounds(inset_bounds, new_animation_type);
+  UpdateHeaderLayout(is_first_update ? OVERVIEW_ANIMATION_NONE
+                                     : new_animation_type);
 
   // Shadow is normally set after an animation is finished. In the case of no
   // animations, manually set the shadow. Shadow relies on both the window
@@ -1164,7 +1179,6 @@ void WindowSelectorItem::CreateWindowLabel(const base::string16& title) {
 }
 
 void WindowSelectorItem::UpdateHeaderLayout(
-    HeaderFadeInMode mode,
     OverviewAnimationType animation_type) {
   gfx::Rect transformed_window_bounds =
       transform_window_.window_selector_bounds().value_or(
@@ -1175,17 +1189,11 @@ void WindowSelectorItem::UpdateHeaderLayout(
   label_rect.set_width(transformed_window_bounds.width());
   // For tabbed windows the initial bounds of the caption are set such that it
   // appears to be "growing" up from the window content area.
-  label_rect.set_y(
-      (mode != HeaderFadeInMode::kEnter || transform_window_.GetTopInset())
-          ? -label_rect.height()
-          : 0);
+  label_rect.set_y(-label_rect.height());
 
   aura::Window* widget_window = item_widget_->GetNativeWindow();
-  // For the first update, place the widget at its destination.
-  ScopedOverviewAnimationSettings animation_settings(
-      mode == HeaderFadeInMode::kFirstUpdate ? OVERVIEW_ANIMATION_NONE
-                                             : animation_type,
-      widget_window);
+  ScopedOverviewAnimationSettings animation_settings(animation_type,
+                                                     widget_window);
 
   // Create a start animation observer if this is an enter overview layout
   // animation.
@@ -1199,10 +1207,8 @@ void WindowSelectorItem::UpdateHeaderLayout(
   // |widget_window| covers both the transformed window and the header
   // as well as the gap between the windows to prevent events from reaching
   // the window including its sizing borders.
-  if (mode != HeaderFadeInMode::kEnter) {
     label_rect.set_height(close_button_->GetPreferredSize().height() +
                           transformed_window_bounds.height());
-  }
   label_rect.Inset(-kWindowSelectorMargin, -kWindowSelectorMargin);
   widget_window->SetBounds(label_rect);
   gfx::Transform label_transform;

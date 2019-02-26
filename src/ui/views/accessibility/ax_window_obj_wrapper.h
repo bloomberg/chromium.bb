@@ -36,7 +36,7 @@ class AXWindowObjWrapper : public AXAuraObjWrapper,
   AXAuraObjWrapper* GetParent() override;
   void GetChildren(std::vector<AXAuraObjWrapper*>* out_children) override;
   void Serialize(ui::AXNodeData* out_node_data) override;
-  const ui::AXUniqueId& GetUniqueId() const final;
+  int32_t GetUniqueId() const final;
 
   // WindowObserver overrides.
   void OnWindowDestroyed(aura::Window* window) override;
@@ -52,6 +52,7 @@ class AXWindowObjWrapper : public AXAuraObjWrapper,
   void OnWindowVisibilityChanged(aura::Window* window, bool visible) override;
   void OnWindowTransformed(aura::Window* window,
                            ui::PropertyChangeReason reason) override;
+  void OnWindowTitleChanged(aura::Window* window) override;
 
  private:
   aura::Window* window_;

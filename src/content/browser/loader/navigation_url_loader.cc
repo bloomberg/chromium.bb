@@ -12,7 +12,6 @@
 #include "content/browser/loader/navigation_url_loader_factory.h"
 #include "content/browser/loader/navigation_url_loader_impl.h"
 #include "content/public/browser/navigation_ui_data.h"
-#include "content/public/common/browser_side_navigation_policy.h"
 #include "services/network/public/cpp/features.h"
 
 namespace content {

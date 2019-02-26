@@ -45,7 +45,7 @@ NavigatorServiceWorker* NavigatorServiceWorker::From(Document& document) {
 NavigatorServiceWorker& NavigatorServiceWorker::From(Navigator& navigator) {
   NavigatorServiceWorker* supplement = ToNavigatorServiceWorker(navigator);
   if (!supplement) {
-    supplement = new NavigatorServiceWorker(navigator);
+    supplement = MakeGarbageCollected<NavigatorServiceWorker>(navigator);
     ProvideTo(navigator, supplement);
   }
   if (navigator.GetFrame() && navigator.GetFrame()
@@ -122,23 +122,13 @@ ServiceWorkerContainer* NavigatorServiceWorker::serviceWorker(
              frame->GetSecurityContext()->GetSecurityOrigin()->IsLocal()) {
     UseCounter::Count(frame, WebFeature::kFileAccessedServiceWorker);
   }
-  if (!service_worker_ && frame) {
-    // We need to create a new ServiceWorkerContainer when the frame
-    // navigates to a new document. In practice, this happens only when the
-    // frame navigates from the initial empty page to a new same-origin page.
-    DCHECK(frame->DomWindow());
-    service_worker_ = ServiceWorkerContainer::Create(
-        frame->DomWindow()->GetExecutionContext(), this);
-  }
-  return service_worker_.Get();
-}
-
-void NavigatorServiceWorker::ClearServiceWorker() {
-  service_worker_ = nullptr;
+  if (!frame)
+    return nullptr;
+  return ServiceWorkerContainer::From(
+      To<Document>(frame->DomWindow()->GetExecutionContext()));
 }
 
 void NavigatorServiceWorker::Trace(blink::Visitor* visitor) {
-  visitor->Trace(service_worker_);
   Supplement<Navigator>::Trace(visitor);
 }
 

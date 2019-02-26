@@ -79,6 +79,8 @@ class AwBrowserContext : public content::BrowserContext,
   static AwBrowserContext* FromWebContents(
       content::WebContents* web_contents);
 
+  static base::FilePath GetCacheDir();
+
   // Maps to BrowserMainParts::PreMainMessageLoopRun.
   void PreMainMessageLoopRun(net::NetLog* net_log);
 
@@ -93,7 +95,6 @@ class AwBrowserContext : public content::BrowserContext,
 
   // content::BrowserContext implementation.
   base::FilePath GetPath() const override;
-  base::FilePath GetCachePath() const override;
   bool IsOffTheRecord() const override;
   content::ResourceContext* GetResourceContext() override;
   content::DownloadManagerDelegate* GetDownloadManagerDelegate() override;

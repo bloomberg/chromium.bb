@@ -581,7 +581,8 @@ bool WebrtcLoggingPrivateStartEventLoggingFunction::RunAsync() {
       FROM_HERE, {BrowserThread::UI},
       base::BindOnce(&WebRtcLoggingHandlerHost::StartEventLogging,
                      webrtc_logging_handler_host, params->peer_connection_id,
-                     params->max_log_size_bytes, params->web_app_id, callback));
+                     params->max_log_size_bytes, params->output_period_ms,
+                     params->web_app_id, callback));
 
   return true;
 }

@@ -110,7 +110,7 @@ class BASE_EXPORT ScopedBlockingCall
     : public internal::UncheckedScopedBlockingCall {
  public:
   ScopedBlockingCall(BlockingType blocking_type);
-  ~ScopedBlockingCall() = default;
+  ~ScopedBlockingCall();
 };
 
 namespace internal {
@@ -124,7 +124,7 @@ class BASE_EXPORT ScopedBlockingCallWithBaseSyncPrimitives
     : public UncheckedScopedBlockingCall {
  public:
   ScopedBlockingCallWithBaseSyncPrimitives(BlockingType blocking_type);
-  ~ScopedBlockingCallWithBaseSyncPrimitives() = default;
+  ~ScopedBlockingCallWithBaseSyncPrimitives();
 };
 
 // Interface for an observer to be informed when a thread enters or exits

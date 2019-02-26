@@ -16,6 +16,7 @@
 #include "components/autofill/core/browser/personal_data_manager.h"
 #include "components/autofill/ios/browser/autofill_driver_ios.h"
 #import "ios/chrome/browser/autofill/form_suggestion_label.h"
+#import "ios/chrome/browser/ui/infobars/infobar_constants.h"
 #import "ios/chrome/test/app/chrome_test_util.h"
 #import "ios/chrome/test/earl_grey/chrome_earl_grey.h"
 #import "ios/web/public/test/earl_grey/web_view_actions.h"
@@ -112,6 +113,43 @@ using web::test::ElementSelector;
 @interface AutomationActionSelectDropdown : AutomationAction
 @end
 
+// An action that loads a web page.
+// This is recorded in tandem with the actions that cause loads to
+// occur (i.e. clicking on a link); therefore, this action is
+// a no-op when replaying.
+// We assume this action has a format resembling:
+// {
+//   "url": "www.google.com",
+//   "type": "loadPage"
+// }
+@interface AutomationActionLoadPage : AutomationAction
+@end
+
+// An action that types the provided text in the specified field.
+// This can be either of the "type" or "typePassword" type due to
+// the two actions needing to be handled differently on desktop in order
+// to ensure passwords are saved. They can be treated the same on iOS.
+// We assume this action has a format resembling:
+// {
+//   "type": "type" OR "typePassword",
+//   "selector": "//input[@autocapitalize=\"none\" and
+//   @name=\"session[password]\"]", "value": "mycoolpassword",
+// }
+@interface AutomationActionType : AutomationAction
+@end
+
+// An action that selects the affirmative option in an open confirmation dialog.
+// One main use case is selecting "Save" from the "Save password?" dialog,
+// but this action cannot tell the difference between different confirmation
+// dialogs, so it is multi-purpose. This action assumes that this dialog is
+// already open.
+// We assume this action has a format resembling:
+// {
+//   "type": "savePassword"
+// }
+@interface AutomationActionConfirmInfobar : AutomationAction
+@end
+
 @implementation AutomationAction
 
 + (instancetype)actionWithValueDictionary:
@@ -134,6 +172,10 @@ using web::test::ElementSelector;
     @"autofill" : [AutomationActionAutofill class],
     @"validateField" : [AutomationActionValidateField class],
     @"select" : [AutomationActionSelectDropdown class],
+    @"loadPage" : [AutomationActionLoadPage class],
+    @"type" : [AutomationActionType class],
+    @"typePassword" : [AutomationActionType class],
+    @"savePassword" : [AutomationActionConfirmInfobar class],
     // More to come.
   };
 
@@ -164,9 +206,20 @@ using web::test::ElementSelector;
 
   // Wait for the element to be visible on the page.
   [ChromeEarlGrey waitForWebViewContainingElement:selector];
+
   // Potentially scroll into view if below the fold.
   [[EarlGrey selectElementWithMatcher:web::WebViewInWebState(web_state)]
       performAction:WebViewScrollElementToVisible(web_state, selector)];
+
+  // Calling WebViewTapElement right after WebViewScrollElement caused flaky
+  // issues with the wrong location being provided for the tap target,
+  // seemingly caused by the screen not redrawing in-between these two actions.
+  // We force a brief wait here to avoid this issue.
+  [[GREYCondition conditionWithName:@"forced wait to allow for redraw"
+                              block:^BOOL {
+                                return false;
+                              }] waitWithTimeout:0.1];
+
   // Tap on the element.
   [[EarlGrey selectElementWithMatcher:web::WebViewInWebState(web_state)]
       performAction:web::WebViewTapElement(web_state, selector)];
@@ -247,6 +300,14 @@ using web::test::ElementSelector;
 
 @end
 
+@implementation AutomationActionLoadPage
+
+- (void)execute {
+  // loadPage is a no-op action - perform nothing
+}
+
+@end
+
 @implementation AutomationActionWaitFor
 
 - (void)execute {
@@ -305,79 +366,9 @@ using web::test::ElementSelector;
 
 @implementation AutomationActionAutofill
 
-static const char PROFILE_NAME_FULL[] = "Milton C. Waddams";
-static const char PROFILE_NAME_FIRST[] = "Milton";
-static const char PROFILE_NAME_MIDDLE[] = "C.";
-static const char PROFILE_NAME_LAST[] = "Waddams";
-static const char PROFILE_HOME_LINE1[] = "4120 Freidrich Lane";
-static const char PROFILE_HOME_LINE2[] = "Apt 8";
-static const char PROFILE_HOME_CITY[] = "Austin";
-static const char PROFILE_HOME_STATE[] = "Texas";
-static const char PROFILE_COMPANY_NAME[] = "Initech";
-static const char PROFILE_EMAIL_ADDRESS[] = "red.swingline@initech.com";
-static const char PROFILE_HOME_ZIP[] = "78744";
-static const char PROFILE_PHONE_HOME_CITY_CODE[] = "512";
-static const char PROFILE_PHONE_HOME_WHOLE[] = "5125551234";
-static const char PROFILE_CREDIT_CARD_NUMBER[] = "9621327911759602";
-static const char PROFILE_CREDIT_CARD_NAME_FULL[] = "Milton Waddams";
-static const char PROFILE_CREDIT_CARD_EXP_MONTH[] = "5";
-static const char PROFILE_CREDIT_CARD_EXP_4_DIGIT_YEAR[] = "2027";
-
-// Loads the predefined autofill profile into the personal data manager, so that
-// autofill actions will be suggested when tapping on an autofillable form.
-- (void)prepareAutofillProfileWithWebState:(web::WebState*)web_state {
-  web::WebFrame* main_frame = web::GetMainWebFrame(web_state);
-  autofill::AutofillManager* autofill_manager =
-      autofill::AutofillDriverIOS::FromWebStateAndWebFrame(web_state,
-                                                           main_frame)
-          ->autofill_manager();
-  autofill::PersonalDataManager* personal_data_manager =
-      autofill_manager->client()->GetPersonalDataManager();
-  autofill::AutofillProfile profile(base::GenerateGUID(),
-                                    "https://www.example.com/");
-  profile.SetRawInfo(autofill::NAME_FULL, base::UTF8ToUTF16(PROFILE_NAME_FULL));
-  profile.SetRawInfo(autofill::NAME_FIRST,
-                     base::UTF8ToUTF16(PROFILE_NAME_FIRST));
-  profile.SetRawInfo(autofill::NAME_MIDDLE,
-                     base::UTF8ToUTF16(PROFILE_NAME_MIDDLE));
-  profile.SetRawInfo(autofill::NAME_LAST, base::UTF8ToUTF16(PROFILE_NAME_LAST));
-  profile.SetRawInfo(autofill::ADDRESS_HOME_LINE1,
-                     base::UTF8ToUTF16(PROFILE_HOME_LINE1));
-  profile.SetRawInfo(autofill::ADDRESS_HOME_LINE2,
-                     base::UTF8ToUTF16(PROFILE_HOME_LINE2));
-  profile.SetRawInfo(autofill::ADDRESS_HOME_CITY,
-                     base::UTF8ToUTF16(PROFILE_HOME_CITY));
-  profile.SetRawInfo(autofill::ADDRESS_HOME_STATE,
-                     base::UTF8ToUTF16(PROFILE_HOME_STATE));
-  profile.SetRawInfo(autofill::COMPANY_NAME,
-                     base::UTF8ToUTF16(PROFILE_COMPANY_NAME));
-  profile.SetRawInfo(autofill::EMAIL_ADDRESS,
-                     base::UTF8ToUTF16(PROFILE_EMAIL_ADDRESS));
-  profile.SetRawInfo(autofill::ADDRESS_HOME_ZIP,
-                     base::UTF8ToUTF16(PROFILE_HOME_ZIP));
-  profile.SetRawInfo(autofill::PHONE_HOME_CITY_CODE,
-                     base::UTF8ToUTF16(PROFILE_PHONE_HOME_CITY_CODE));
-  profile.SetRawInfo(autofill::PHONE_HOME_WHOLE_NUMBER,
-                     base::UTF8ToUTF16(PROFILE_PHONE_HOME_WHOLE));
-  personal_data_manager->SaveImportedProfile(profile);
-
-  autofill::CreditCard credit_card(base::GenerateGUID(),
-                                   "https://www.example.com/");
-  credit_card.SetRawInfo(autofill::CREDIT_CARD_NUMBER,
-                         base::UTF8ToUTF16(PROFILE_CREDIT_CARD_NUMBER));
-  credit_card.SetRawInfo(autofill::CREDIT_CARD_NAME_FULL,
-                         base::UTF8ToUTF16(PROFILE_CREDIT_CARD_NAME_FULL));
-  credit_card.SetRawInfo(autofill::CREDIT_CARD_EXP_MONTH,
-                         base::UTF8ToUTF16(PROFILE_CREDIT_CARD_EXP_MONTH));
-  credit_card.SetRawInfo(
-      autofill::CREDIT_CARD_EXP_4_DIGIT_YEAR,
-      base::UTF8ToUTF16(PROFILE_CREDIT_CARD_EXP_4_DIGIT_YEAR));
-  personal_data_manager->AddCreditCard(credit_card);
-}
-
 - (void)execute {
-  web::WebState* web_state = chrome_test_util::GetCurrentWebState();
-  [self prepareAutofillProfileWithWebState:web_state];
+  // The autofill profile is configured in
+  // automation_egtest::prepareAutofillProfileWithValues.
 
   web::test::ElementSelector selector = [self selectorForTarget];
   [self tapOnTarget:selector];
@@ -405,7 +396,7 @@ static const char PROFILE_CREDIT_CARD_EXP_4_DIGIT_YEAR[] = "2027";
       [self getStringFromDictionaryWithKey:"expectedValue"]);
 
   NSString* predictionType = base::mac::ObjCCastStrict<NSString>([self
-      executeJavascript:"return target.getAttribute('placeholder');"
+      executeJavascript:"return target.placeholder;"
                onTarget:[self selectorForTarget]]);
 
   NSString* autofilledValue = base::mac::ObjCCastStrict<NSString>(
@@ -448,6 +439,32 @@ static const char PROFILE_CREDIT_CARD_EXP_4_DIGIT_YEAR[] = "2027";
   const std::string type(typeValue->GetString());
 
   GREYAssert(NO, @"Unknown action of type %s", type.c_str());
+}
+
+@end
+
+@implementation AutomationActionType
+
+- (void)execute {
+  web::test::ElementSelector selector = [self selectorForTarget];
+  std::string value = [self getStringFromDictionaryWithKey:"value"];
+  [self executeJavascript:
+            base::SysNSStringToUTF8([NSString
+                stringWithFormat:
+                    @"__gCrWeb.fill.setInputElementValue(\"%s\", target);",
+                    value.c_str()])
+                 onTarget:selector];
+}
+
+@end
+
+@implementation AutomationActionConfirmInfobar
+
+- (void)execute {
+  [[EarlGrey
+      selectElementWithMatcher:
+          grey_accessibilityID(kConfirmInfobarButton1AccessibilityIdentifier)]
+      performAction:grey_tap()];
 }
 
 @end

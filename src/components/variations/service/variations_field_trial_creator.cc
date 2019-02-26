@@ -17,10 +17,10 @@
 #include "base/base_switches.h"
 #include "base/build_time.h"
 #include "base/command_line.h"
+#include "base/metrics/histogram_functions.h"
 #include "base/metrics/histogram_macros.h"
-#include "base/metrics/sparse_histogram.h"
 #include "base/strings/stringprintf.h"
-#include "base/sys_info.h"
+#include "base/system/sys_info.h"
 #include "base/trace_event/trace_event.h"
 #include "base/version.h"
 #include "build/build_config.h"
@@ -199,6 +199,9 @@ bool VariationsFieldTrialCreator::CreateTrialsFromSeed(
 
   std::unique_ptr<ClientFilterableState> client_filterable_state =
       GetClientFilterableStateForVersion(current_version);
+  base::UmaHistogramSparse("Variations.UserChannel",
+                           client_filterable_state->channel);
+
   VariationsSeed seed;
   bool run_in_safe_mode = safe_seed_manager->ShouldRunInSafeMode() &&
                           LoadSafeSeed(&seed, client_filterable_state.get());

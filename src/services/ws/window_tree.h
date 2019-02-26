@@ -21,6 +21,7 @@
 #include "services/ws/public/mojom/window_tree.mojom.h"
 #include "ui/aura/client/capture_client_observer.h"
 #include "ui/aura/window_observer.h"
+#include "ui/aura/window_occlusion_tracker.h"
 
 namespace aura {
 class Window;
@@ -35,8 +36,8 @@ namespace ws {
 class ClientChangeTracker;
 class ClientRoot;
 class Embedding;
+class EventObserverHelper;
 class FocusHandler;
-class PointerWatcher;
 class ServerWindow;
 class TopmostWindowObserver;
 class WindowManagerInterface;
@@ -67,6 +68,17 @@ class COMPONENT_EXPORT(WINDOW_SERVICE) WindowTree
       public aura::WindowObserver,
       public aura::client::CaptureClientObserver {
  public:
+  enum class ConnectionType {
+    // This client is the result of an embedding, InitForEmbed() was called.
+    kEmbedding,
+
+    // This client is not the result of an embedding. More specifically
+    // InitFromFactory() was called. Generally this means the client first
+    // connected to mojom::WindowTreeFactory and then called
+    // mojom::WindowTreeFactory::CreateWindowTree().
+    kOther,
+  };
+
   WindowTree(WindowService* window_service,
              ClientSpecificId client_id,
              mojom::WindowTreeClient* client,
@@ -82,10 +94,9 @@ class COMPONENT_EXPORT(WINDOW_SERVICE) WindowTree
   // Notifies the client than an event has been received.
   void SendEventToClient(aura::Window* window, const ui::Event& event);
 
-  // Notifies the client that an event matching a pointer watcher has been
-  // received.
-  void SendPointerWatcherEventToClient(int64_t display_id,
-                                       std::unique_ptr<ui::Event> event);
+  // Notifies the client that an event matching an observer has been received.
+  void SendObservedEventToClient(int64_t display_id,
+                                 std::unique_ptr<ui::Event> event);
 
   // Returns the aura::Window associated with the specified transport id; null
   // if |transport_window_id| is not a valid id for a window.
@@ -107,6 +118,9 @@ class COMPONENT_EXPORT(WINDOW_SERVICE) WindowTree
   // windows, as described for OnTopmostWindowChanged() in window_tree.mojom.
   void SendTopmostWindows(const std::vector<aura::Window*>& topmosts);
 
+  // Notifies the client that the window occlusion state has changed.
+  void SendOcclusionState(aura::Window* window);
+
   WindowService* window_service() { return window_service_; }
 
   // Returns the ClientWindowId for the window the client previously supplied
@@ -124,6 +138,8 @@ class COMPONENT_EXPORT(WINDOW_SERVICE) WindowTree
 
   const std::string& client_name() const { return client_name_; }
 
+  ConnectionType connection_type() const { return connection_type_; }
+
   // Returns true if at a compositor frame sink has been created for at least
   // one of the roots.
   bool HasAtLeastOneRootWithCompositorFrameSink();
@@ -132,6 +148,8 @@ class COMPONENT_EXPORT(WINDOW_SERVICE) WindowTree
   // typically only sees a limited set of windows that may exist. The set of
   // windows exposed to the client are referred to as the known windows.
   bool IsWindowKnown(aura::Window* window) const;
+
+  Id TransportIdForWindow(aura::Window* window) const;
 
   ClientWindowId ClientWindowIdForWindow(aura::Window* window) const;
 
@@ -149,17 +167,6 @@ class COMPONENT_EXPORT(WINDOW_SERVICE) WindowTree
   struct InFlightEvent;
 
   using ClientRoots = std::vector<std::unique_ptr<ClientRoot>>;
-
-  enum class ConnectionType {
-    // This client is the result of an embedding, InitForEmbed() was called.
-    kEmbedding,
-
-    // This client is not the result of an embedding. More specifically
-    // InitFromFactory() was called. Generally this means the client first
-    // connected to mojom::WindowTreeFactory and then called
-    // mojom::WindowTreeFactory::CreateWindowTree().
-    kOther,
-  };
 
   enum class DeleteClientRootReason {
     // The window is being destroyed.
@@ -278,8 +285,6 @@ class COMPONENT_EXPORT(WINDOW_SERVICE) WindowTree
   // the client doesn't know its own id).
   Id ClientWindowIdToTransportId(const ClientWindowId& client_window_id) const;
 
-  Id TransportIdForWindow(aura::Window* window) const;
-
   // Returns the ClientWindowId from a transport id. Uses |client_id_| as the
   // ClientWindowId::client_id part if invalid. This function does a straight
   // mapping, there may not be a window with the returned id.
@@ -355,6 +360,7 @@ class COMPONENT_EXPORT(WINDOW_SERVICE) WindowTree
   // aura::WindowObserver:
   void OnWindowHierarchyChanging(const HierarchyChangeParams& params) override;
   void OnWindowDestroyed(aura::Window* window) override;
+  void OnWindowVisibilityChanging(aura::Window* window, bool visible) override;
 
   // aura::client::CaptureClientObserver:
   void OnCaptureChanged(aura::Window* lost_capture,
@@ -374,8 +380,8 @@ class COMPONENT_EXPORT(WINDOW_SERVICE) WindowTree
   void DeleteWindow(uint32_t change_id, Id transport_window_id) override;
   void SetCapture(uint32_t change_id, Id transport_window_id) override;
   void ReleaseCapture(uint32_t change_id, Id transport_window_id) override;
-  void StartPointerWatcher(bool want_moves) override;
-  void StopPointerWatcher() override;
+  void ObserveEventTypes(
+      const std::vector<ui::mojom::EventType>& types) override;
   void SetWindowBounds(
       uint32_t change_id,
       Id window_id,
@@ -483,6 +489,9 @@ class COMPONENT_EXPORT(WINDOW_SERVICE) WindowTree
   void TransferGestureEventsTo(Id current_id,
                                Id new_id,
                                bool should_cancel) override;
+  void TrackOcclusionState(Id transport_window_id) override;
+  void PauseWindowOcclusionTracking() override;
+  void UnpauseWindowOcclusionTracking() override;
 
   WindowService* window_service_;
 
@@ -515,9 +524,9 @@ class COMPONENT_EXPORT(WINDOW_SERVICE) WindowTree
   // Used to track the active change from the client.
   std::unique_ptr<ClientChangeTracker> property_change_tracker_;
 
-  // If non-null the client has requested pointer events the client would not
+  // If non-null, the client requested to observe events the client would not
   // normally get.
-  std::unique_ptr<PointerWatcher> pointer_watcher_;
+  std::unique_ptr<EventObserverHelper> event_observer_helper_;
 
   FocusHandler focus_handler_{this};
 
@@ -552,6 +561,14 @@ class COMPONENT_EXPORT(WINDOW_SERVICE) WindowTree
 
   std::vector<std::unique_ptr<WindowManagerInterface>>
       window_manager_interfaces_;
+
+  // Keeps track of outstanding occlusion tracking pauses. A ScopedPause object
+  // is added to the list when the client requests to pause and removed from the
+  // list  when the client no longer wishes to pause. Using a tracking vector so
+  // that outstanding pauses from the client are properly removed in case the
+  // client goes away.
+  std::vector<std::unique_ptr<aura::WindowOcclusionTracker::ScopedPause>>
+      window_occlusion_tracking_pauses_;
 
   base::WeakPtrFactory<WindowTree> weak_factory_{this};
 

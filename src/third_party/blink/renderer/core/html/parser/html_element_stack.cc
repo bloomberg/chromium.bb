@@ -36,48 +36,48 @@
 
 namespace blink {
 
-using namespace HTMLNames;
+using namespace html_names;
 
 namespace {
 
 inline bool IsRootNode(HTMLStackItem* item) {
-  return item->IsDocumentFragmentNode() || item->HasTagName(htmlTag);
+  return item->IsDocumentFragmentNode() || item->HasTagName(kHTMLTag);
 }
 
 inline bool IsScopeMarker(HTMLStackItem* item) {
-  return item->HasTagName(appletTag) || item->HasTagName(captionTag) ||
-         item->HasTagName(marqueeTag) || item->HasTagName(objectTag) ||
-         item->HasTagName(tableTag) || item->HasTagName(tdTag) ||
-         item->HasTagName(thTag) || item->HasTagName(MathMLNames::miTag) ||
-         item->HasTagName(MathMLNames::moTag) ||
-         item->HasTagName(MathMLNames::mnTag) ||
-         item->HasTagName(MathMLNames::msTag) ||
-         item->HasTagName(MathMLNames::mtextTag) ||
-         item->HasTagName(MathMLNames::annotation_xmlTag) ||
-         item->HasTagName(SVGNames::foreignObjectTag) ||
-         item->HasTagName(SVGNames::descTag) ||
-         item->HasTagName(SVGNames::titleTag) ||
-         item->HasTagName(templateTag) || IsRootNode(item);
+  return item->HasTagName(kAppletTag) || item->HasTagName(kCaptionTag) ||
+         item->HasTagName(kMarqueeTag) || item->HasTagName(kObjectTag) ||
+         item->HasTagName(kTableTag) || item->HasTagName(kTdTag) ||
+         item->HasTagName(kThTag) || item->HasTagName(mathml_names::kMiTag) ||
+         item->HasTagName(mathml_names::kMoTag) ||
+         item->HasTagName(mathml_names::kMnTag) ||
+         item->HasTagName(mathml_names::kMsTag) ||
+         item->HasTagName(mathml_names::kMtextTag) ||
+         item->HasTagName(mathml_names::kAnnotationXmlTag) ||
+         item->HasTagName(svg_names::kForeignObjectTag) ||
+         item->HasTagName(svg_names::kDescTag) ||
+         item->HasTagName(svg_names::kTitleTag) ||
+         item->HasTagName(kTemplateTag) || IsRootNode(item);
 }
 
 inline bool IsListItemScopeMarker(HTMLStackItem* item) {
-  return IsScopeMarker(item) || item->HasTagName(olTag) ||
-         item->HasTagName(ulTag);
+  return IsScopeMarker(item) || item->HasTagName(kOlTag) ||
+         item->HasTagName(kUlTag);
 }
 
 inline bool IsTableScopeMarker(HTMLStackItem* item) {
-  return item->HasTagName(tableTag) || item->HasTagName(templateTag) ||
+  return item->HasTagName(kTableTag) || item->HasTagName(kTemplateTag) ||
          IsRootNode(item);
 }
 
 inline bool IsTableBodyScopeMarker(HTMLStackItem* item) {
-  return item->HasTagName(tbodyTag) || item->HasTagName(tfootTag) ||
-         item->HasTagName(theadTag) || item->HasTagName(templateTag) ||
+  return item->HasTagName(kTbodyTag) || item->HasTagName(kTfootTag) ||
+         item->HasTagName(kTheadTag) || item->HasTagName(kTemplateTag) ||
          IsRootNode(item);
 }
 
 inline bool IsTableRowScopeMarker(HTMLStackItem* item) {
-  return item->HasTagName(trTag) || item->HasTagName(templateTag) ||
+  return item->HasTagName(kTrTag) || item->HasTagName(kTemplateTag) ||
          IsRootNode(item);
 }
 
@@ -88,11 +88,11 @@ inline bool IsForeignContentScopeMarker(HTMLStackItem* item) {
 }
 
 inline bool IsButtonScopeMarker(HTMLStackItem* item) {
-  return IsScopeMarker(item) || item->HasTagName(buttonTag);
+  return IsScopeMarker(item) || item->HasTagName(kButtonTag);
 }
 
 inline bool IsSelectScopeMarker(HTMLStackItem* item) {
-  return !item->HasTagName(optgroupTag) && !item->HasTagName(optionTag);
+  return !item->HasTagName(kOptgroupTag) && !item->HasTagName(kOptionTag);
 }
 
 }  // namespace
@@ -175,7 +175,7 @@ void HTMLElementStack::PopAll() {
 }
 
 void HTMLElementStack::Pop() {
-  DCHECK(!TopStackItem()->HasTagName(HTMLNames::headTag));
+  DCHECK(!TopStackItem()->HasTagName(html_names::kHeadTag));
   PopCommon();
 }
 
@@ -229,20 +229,20 @@ void HTMLElementStack::PopUntilTableRowScopeMarker() {
 bool HTMLElementStack::IsMathMLTextIntegrationPoint(HTMLStackItem* item) {
   if (!item->IsElementNode())
     return false;
-  return item->HasTagName(MathMLNames::miTag) ||
-         item->HasTagName(MathMLNames::moTag) ||
-         item->HasTagName(MathMLNames::mnTag) ||
-         item->HasTagName(MathMLNames::msTag) ||
-         item->HasTagName(MathMLNames::mtextTag);
+  return item->HasTagName(mathml_names::kMiTag) ||
+         item->HasTagName(mathml_names::kMoTag) ||
+         item->HasTagName(mathml_names::kMnTag) ||
+         item->HasTagName(mathml_names::kMsTag) ||
+         item->HasTagName(mathml_names::kMtextTag);
 }
 
 // http://www.whatwg.org/specs/web-apps/current-work/multipage/tree-construction.html#html-integration-point
 bool HTMLElementStack::IsHTMLIntegrationPoint(HTMLStackItem* item) {
   if (!item->IsElementNode())
     return false;
-  if (item->HasTagName(MathMLNames::annotation_xmlTag)) {
+  if (item->HasTagName(mathml_names::kAnnotationXmlTag)) {
     Attribute* encoding_attr =
-        item->GetAttributeItem(MathMLNames::encodingAttr);
+        item->GetAttributeItem(mathml_names::kEncodingAttr);
     if (encoding_attr) {
       const String& encoding = encoding_attr->Value();
       return DeprecatedEqualIgnoringCase(encoding, "text/html") ||
@@ -250,9 +250,9 @@ bool HTMLElementStack::IsHTMLIntegrationPoint(HTMLStackItem* item) {
     }
     return false;
   }
-  return item->HasTagName(SVGNames::foreignObjectTag) ||
-         item->HasTagName(SVGNames::descTag) ||
-         item->HasTagName(SVGNames::titleTag);
+  return item->HasTagName(svg_names::kForeignObjectTag) ||
+         item->HasTagName(svg_names::kDescTag) ||
+         item->HasTagName(svg_names::kTitleTag);
 }
 
 void HTMLElementStack::PopUntilForeignContentScopeMarker() {
@@ -266,7 +266,7 @@ void HTMLElementStack::PushRootNode(HTMLStackItem* root_item) {
 }
 
 void HTMLElementStack::PushHTMLHtmlElement(HTMLStackItem* item) {
-  DCHECK(item->HasTagName(htmlTag));
+  DCHECK(item->HasTagName(kHTMLTag));
   PushRootNodeCommon(item);
 }
 
@@ -278,23 +278,23 @@ void HTMLElementStack::PushRootNodeCommon(HTMLStackItem* root_item) {
 }
 
 void HTMLElementStack::PushHTMLHeadElement(HTMLStackItem* item) {
-  DCHECK(item->HasTagName(HTMLNames::headTag));
+  DCHECK(item->HasTagName(html_names::kHeadTag));
   DCHECK(!head_element_);
   head_element_ = item->GetElement();
   PushCommon(item);
 }
 
 void HTMLElementStack::PushHTMLBodyElement(HTMLStackItem* item) {
-  DCHECK(item->HasTagName(HTMLNames::bodyTag));
+  DCHECK(item->HasTagName(html_names::kBodyTag));
   DCHECK(!body_element_);
   body_element_ = item->GetElement();
   PushCommon(item);
 }
 
 void HTMLElementStack::Push(HTMLStackItem* item) {
-  DCHECK(!item->HasTagName(htmlTag));
-  DCHECK(!item->HasTagName(headTag));
-  DCHECK(!item->HasTagName(bodyTag));
+  DCHECK(!item->HasTagName(kHTMLTag));
+  DCHECK(!item->HasTagName(kHeadTag));
+  DCHECK(!item->HasTagName(kBodyTag));
   DCHECK(root_node_);
   PushCommon(item);
 }
@@ -304,9 +304,9 @@ void HTMLElementStack::InsertAbove(HTMLStackItem* item,
   DCHECK(item);
   DCHECK(record_below);
   DCHECK(top_);
-  DCHECK(!item->HasTagName(htmlTag));
-  DCHECK(!item->HasTagName(headTag));
-  DCHECK(!item->HasTagName(bodyTag));
+  DCHECK(!item->HasTagName(kHTMLTag));
+  DCHECK(!item->HasTagName(kHeadTag));
+  DCHECK(!item->HasTagName(kBodyTag));
   DCHECK(root_node_);
   if (record_below == top_) {
     Push(item);
@@ -319,7 +319,8 @@ void HTMLElementStack::InsertAbove(HTMLStackItem* item,
       continue;
 
     stack_depth_++;
-    record_above->SetNext(new ElementRecord(item, record_above->ReleaseNext()));
+    record_above->SetNext(
+        MakeGarbageCollected<ElementRecord>(item, record_above->ReleaseNext()));
     record_above->Next()->GetElement()->BeginParsingChildren();
     return;
   }
@@ -464,7 +465,7 @@ bool HTMLElementStack::InSelectScope(const QualifiedName& tag_name) const {
 }
 
 bool HTMLElementStack::HasTemplateInHTMLScope() const {
-  return InScopeCommon<IsRootNode>(top_.Get(), templateTag.LocalName());
+  return InScopeCommon<IsRootNode>(top_.Get(), kTemplateTag.LocalName());
 }
 
 Element* HTMLElementStack::HtmlElement() const {
@@ -491,13 +492,13 @@ void HTMLElementStack::PushCommon(HTMLStackItem* item) {
   DCHECK(root_node_);
 
   stack_depth_++;
-  top_ = new ElementRecord(item, top_.Release());
+  top_ = MakeGarbageCollected<ElementRecord>(item, top_.Release());
 }
 
 void HTMLElementStack::PopCommon() {
-  DCHECK(!TopStackItem()->HasTagName(htmlTag));
-  DCHECK(!TopStackItem()->HasTagName(headTag) || !head_element_);
-  DCHECK(!TopStackItem()->HasTagName(bodyTag) || !body_element_);
+  DCHECK(!TopStackItem()->HasTagName(kHTMLTag));
+  DCHECK(!TopStackItem()->HasTagName(kHeadTag) || !head_element_);
+  DCHECK(!TopStackItem()->HasTagName(kBodyTag) || !body_element_);
   Top()->FinishParsingChildren();
   top_ = top_->ReleaseNext();
 

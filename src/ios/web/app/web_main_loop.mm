@@ -27,6 +27,7 @@
 #import "ios/web/public/web_client.h"
 #include "ios/web/public/web_task_traits.h"
 #include "ios/web/service_manager_context.h"
+#include "ios/web/web_sub_thread.h"
 #include "ios/web/web_thread_impl.h"
 #include "ios/web/webui/url_data_manager_ios.h"
 
@@ -128,7 +129,7 @@ int WebMainLoop::CreateThreads(
 
   base::Thread::Options io_message_loop_options;
   io_message_loop_options.message_loop_type = base::MessageLoop::TYPE_IO;
-  io_thread_ = std::make_unique<WebThreadImpl>(WebThread::IO);
+  io_thread_ = std::make_unique<WebSubThread>(WebThread::IO);
   io_thread_->StartWithOptions(io_message_loop_options);
 
   // Only start IO thread above as this is the only WebThread besides UI (which
@@ -195,8 +196,8 @@ void WebMainLoop::InitializeMainThread() {
   base::PlatformThread::SetName("CrWebMain");
 
   // Register the main thread by instantiating it, but don't call any methods.
-  main_thread_.reset(
-      new WebThreadImpl(WebThread::UI, base::MessageLoop::current()));
+  main_thread_.reset(new WebThreadImpl(
+      WebThread::UI, ios_global_state::GetMainThreadMessageLoop()));
 }
 
 int WebMainLoop::WebThreadsStarted() {

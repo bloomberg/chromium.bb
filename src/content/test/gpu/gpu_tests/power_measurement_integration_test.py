@@ -80,16 +80,6 @@ fullscreen_script = r"""
     return false;
   }
 
-  function isVideoPlaying() {
-    var video = locateElement("video");
-    if (video) {
-      // Wait until playing starts is necessary. Otherwise going fullscreen
-      // becomes flaky.
-      return video.currentTime > 1;
-    }
-    return false;
-  }
-
   function locateButton(texts) {
     var buttons = document.getElementsByTagName("button");
     for (var ii = 0; ii < buttons.length; ++ii) {
@@ -129,6 +119,7 @@ class PowerMeasurementIntegrationTest(gpu_integration_test.GpuIntegrationTest):
 
   @classmethod
   def AddCommandlineArgs(cls, parser):
+    super(PowerMeasurementIntegrationTest, cls).AddCommandlineArgs(parser)
     parser.add_option("--duration", default=60, type="int",
                       help="specify how many seconds Intel Power Gadget "
                       "measures. By default, 60 seconds is selected.")
@@ -210,16 +201,14 @@ class PowerMeasurementIntegrationTest(gpu_integration_test.GpuIntegrationTest):
         if not self.tab.action_runner.EvaluateJavaScript(code):
           # autoplay doesn't work for vimeo.
           # action_runner.PlayMedia doesn't work for vimeo.
-          self.tab.action_runner.TapElement(element_function=(
+          self.tab.action_runner.ClickElement(element_function=(
               'locateElement("video")'))
-        self.tab.action_runner.WaitForJavaScriptCondition(
-            'isVideoPlaying()', timeout=10)
 
       if fullscreen:
         if self.tab.action_runner.EvaluateJavaScript(
                'locateFullscreenButton() == null'):
           self.fail("Fullscreen button not located, --fullscreen won't work")
-        self.tab.action_runner.TapElement(element_function=(
+        self.tab.action_runner.ClickElement(element_function=(
             'locateFullscreenButton()'))
 
       logfile = None

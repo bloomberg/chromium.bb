@@ -18,6 +18,7 @@
 #include "net/spdy/spdy_log_util.h"
 #include "net/third_party/quic/core/http/quic_spdy_session.h"
 #include "net/third_party/quic/core/http/spdy_utils.h"
+#include "net/third_party/quic/core/quic_utils.h"
 #include "net/third_party/quic/core/quic_write_blocked_list.h"
 
 namespace net {
@@ -409,6 +410,7 @@ QuicChromiumClientStream::QuicChromiumClientStream(
       headers_delivered_(false),
       initial_headers_sent_(false),
       session_(session),
+      quic_version_(session->connection()->transport_version()),
       can_migrate_to_cellular_network_(true),
       initial_headers_frame_len_(0),
       trailing_headers_frame_len_(0),
@@ -478,7 +480,7 @@ void QuicChromiumClientStream::OnPromiseHeaderList(
   session_->HandlePromised(id(), promised_id, promise_headers);
 }
 
-void QuicChromiumClientStream::OnDataAvailable() {
+void QuicChromiumClientStream::OnBodyAvailable() {
   if (!FinishedReadingHeaders() || !headers_delivered_) {
     // Buffer the data in the sequencer until the headers have been read.
     return;
@@ -682,7 +684,7 @@ void QuicChromiumClientStream::DisableConnectionMigrationToCellularNetwork() {
 }
 
 bool QuicChromiumClientStream::IsFirstStream() {
-  return id() == quic::kHeadersStreamId + 2;
+  return id() == quic::QuicUtils::GetHeadersStreamId(quic_version_) + 2;
 }
 
 }  // namespace net

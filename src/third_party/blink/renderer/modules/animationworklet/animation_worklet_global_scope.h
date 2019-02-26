@@ -12,6 +12,7 @@
 #include "third_party/blink/renderer/modules/modules_export.h"
 #include "third_party/blink/renderer/platform/bindings/script_wrappable.h"
 #include "third_party/blink/renderer/platform/graphics/animation_worklet_mutators_state.h"
+#include "third_party/blink/renderer/platform/wtf/casting.h"
 
 namespace blink {
 
@@ -56,10 +57,12 @@ class MODULES_EXPORT AnimationWorkletGlobalScope : public WorkletGlobalScope {
 
   void RegisterWithProxyClientIfNeeded();
   Animator* CreateInstance(const String& name,
-                           WorkletAnimationOptions* options);
+                           WorkletAnimationOptions* options,
+                           int num_effects);
   Animator* CreateAnimatorFor(int animation_id,
                               const String& name,
-                              WorkletAnimationOptions* options);
+                              WorkletAnimationOptions* options,
+                              int num_effects);
   typedef HeapHashMap<String, TraceWrapperMember<AnimatorDefinition>>
       DefinitionMap;
   DefinitionMap animator_definitions_;
@@ -70,11 +73,12 @@ class MODULES_EXPORT AnimationWorkletGlobalScope : public WorkletGlobalScope {
   bool registered_ = false;
 };
 
-DEFINE_TYPE_CASTS(AnimationWorkletGlobalScope,
-                  ExecutionContext,
-                  context,
-                  context->IsAnimationWorkletGlobalScope(),
-                  context.IsAnimationWorkletGlobalScope());
+template <>
+struct DowncastTraits<AnimationWorkletGlobalScope> {
+  static bool AllowFrom(const ExecutionContext& context) {
+    return context.IsAnimationWorkletGlobalScope();
+  }
+};
 
 }  // namespace blink
 

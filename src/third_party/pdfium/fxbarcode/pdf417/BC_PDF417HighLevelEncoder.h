@@ -10,56 +10,41 @@
 #include <vector>
 
 #include "core/fxcrt/fx_string.h"
-#include "fxbarcode/pdf417/BC_PDF417Compaction.h"
+#include "fxbarcode/pdf417/BC_PDF417.h"
+
+#include "third_party/base/optional.h"
 
 class CBC_PDF417HighLevelEncoder {
  public:
-  static WideString encodeHighLevel(WideString msg,
-                                    Compaction compaction,
-                                    int32_t& e);
-  static void Inverse();
+  CBC_PDF417HighLevelEncoder() = delete;
+  ~CBC_PDF417HighLevelEncoder() = delete;
+
   static void Initialize();
   static void Finalize();
+  static Optional<WideString> EncodeHighLevel(const WideString& msg);
 
  private:
-  static const int32_t TEXT_COMPACTION;
-  static const int32_t BYTE_COMPACTION;
-  static const int32_t NUMERIC_COMPACTION;
-  static const int32_t SUBMODE_PUNCTUATION;
-  static const int32_t LATCH_TO_TEXT;
-  static const int32_t LATCH_TO_BYTE_PADDED;
-  static const int32_t LATCH_TO_NUMERIC;
-  static const int32_t SHIFT_TO_BYTE;
-  static const int32_t LATCH_TO_BYTE;
-  static const uint8_t TEXT_MIXED_RAW[];
-  static const uint8_t TEXT_PUNCTUATION_RAW[];
+  enum class EncodingMode { kUnknown = 0, kText, kByte, kNumeric };
 
-  static int32_t MIXED[128];
-  static int32_t PUNCTUATION[128];
+  enum class SubMode { kAlpha = 0, kLower, kMixed, kPunctuation };
 
-  static int32_t encodeText(WideString msg,
+  static SubMode EncodeText(const WideString& msg,
                             size_t startpos,
                             size_t count,
-                            WideString& sb,
-                            int32_t initialSubmode);
-  static void encodeBinary(std::vector<uint8_t>* bytes,
+                            SubMode initialSubmode,
+                            WideString* sb);
+  static void EncodeBinary(const std::vector<uint8_t>& bytes,
                            size_t startpos,
                            size_t count,
-                           int32_t startmode,
-                           WideString& sb);
-  static void encodeNumeric(WideString msg,
+                           EncodingMode startmode,
+                           WideString* sb);
+  static void EncodeNumeric(const WideString& msg,
                             size_t startpos,
                             size_t count,
-                            WideString& sb);
-  static bool isDigit(wchar_t ch);
-  static bool isAlphaUpper(wchar_t ch);
-  static bool isAlphaLower(wchar_t ch);
-  static bool isMixed(wchar_t ch);
-  static bool isPunctuation(wchar_t ch);
-  static bool isText(wchar_t ch);
-  static size_t determineConsecutiveDigitCount(WideString msg, size_t startpos);
-  static size_t determineConsecutiveTextCount(WideString msg, size_t startpos);
-  static Optional<size_t> determineConsecutiveBinaryCount(
+                            WideString* sb);
+  static size_t DetermineConsecutiveDigitCount(WideString msg, size_t startpos);
+  static size_t DetermineConsecutiveTextCount(WideString msg, size_t startpos);
+  static Optional<size_t> DetermineConsecutiveBinaryCount(
       WideString msg,
       std::vector<uint8_t>* bytes,
       size_t startpos);

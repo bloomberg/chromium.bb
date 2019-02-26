@@ -8,7 +8,6 @@
 from __future__ import print_function
 
 import base64
-import fnmatch
 import hashlib
 import os
 import shutil
@@ -30,51 +29,6 @@ def Copy(src_path, dest_path):
     osutils.SafeMakedirs(dest_dir)
 
   shutil.copy2(src_path, dest_path)
-
-
-def ListFiles(root_path, recurse=False, filepattern=None, sort=False):
-  """Return list of full file paths under given root path.
-
-  Directories are intentionally excluded.
-
-  Args:
-    root_path: e.g. /some/path/to/dir
-    recurse: Look for files in subdirectories, as well
-    filepattern: glob pattern to match against basename of file
-    sort: If True then do a default sort on paths.
-
-  Returns:
-    List of paths to files that matched
-  """
-  # Smoothly accept trailing '/' in root_path.
-  root_path = root_path.rstrip('/')
-
-  paths = []
-
-  if recurse:
-    # Recursively walk paths starting at root_path, filter for files.
-    for entry in os.walk(root_path):
-      dir_path, _, files = entry
-      for file_entry in files:
-        paths.append(os.path.join(dir_path, file_entry))
-
-  else:
-    # List paths directly in root_path, filter for files.
-    for filename in os.listdir(root_path):
-      path = os.path.join(root_path, filename)
-      if os.path.isfile(path):
-        paths.append(path)
-
-  # Filter by filepattern, if specified.
-  if filepattern:
-    paths = [p for p in paths
-             if fnmatch.fnmatch(os.path.basename(p), filepattern)]
-
-  # Sort results, if specified.
-  if sort:
-    paths = sorted(paths)
-
-  return paths
 
 
 def MD5Sum(file_path):

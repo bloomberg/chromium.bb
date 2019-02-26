@@ -67,11 +67,26 @@ typedef struct {
   int rd_mode_is_ready;  // Flag to indicate whether rd pick mode decision has
                          // been made.
 
+#if CONFIG_ONE_PASS_SVM
+  // Features for one pass svm early term
+  int seg_feat;
+#endif
+
   // motion vector cache for adaptive motion search control in partition
   // search loop
   MV pred_mv[REF_FRAMES];
   InterpFilter pred_interp_filter;
   PARTITION_TYPE partition;
+
+  // Reference and prediction mode cache for ref/mode speedup
+  // TODO(zoeliu@gmail.com): The values of ref_selected and mode_selected will
+  // be explored for further encoder speedup, to differentiate this approach for
+  // setting skip_ref_frame_mask from others. For instance, it is possible that
+  // the underlying square block(s) share the same SIMPLE_TRANSLATION motion
+  // mode as well as the mode of GLOBALMV, more ref/mode combos could be
+  // skipped.
+  MV_REFERENCE_FRAME ref_selected[2];
+  int mode_selected;
 } PICK_MODE_CONTEXT;
 
 typedef struct {

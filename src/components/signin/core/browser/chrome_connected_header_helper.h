@@ -7,7 +7,7 @@
 
 #include <string>
 
-#include "components/signin/core/browser/profile_management_switches.h"
+#include "components/signin/core/browser/account_consistency_method.h"
 #include "components/signin/core/browser/signin_header_helper.h"
 
 class GURL;

@@ -47,28 +47,28 @@ class CookieStore final : public EventTargetWithInlineData,
 
   ScriptPromise getAll(ScriptState*, const String& name, ExceptionState&);
   ScriptPromise getAll(ScriptState*,
-                       const CookieStoreGetOptions&,
+                       const CookieStoreGetOptions*,
                        ExceptionState&);
   ScriptPromise get(ScriptState*, const String& name, ExceptionState&);
   ScriptPromise get(ScriptState*,
-                    const CookieStoreGetOptions&,
+                    const CookieStoreGetOptions*,
                     ExceptionState&);
 
   ScriptPromise set(ScriptState*,
-                    const CookieStoreSetExtraOptions&,
+                    const CookieStoreSetExtraOptions*,
                     ExceptionState&);
   ScriptPromise set(ScriptState*,
                     const String& name,
                     const String& value,
-                    const CookieStoreSetOptions&,
+                    const CookieStoreSetOptions*,
                     ExceptionState&);
   ScriptPromise Delete(ScriptState*, const String& name, ExceptionState&);
   ScriptPromise Delete(ScriptState*,
-                       const CookieStoreDeleteOptions&,
+                       const CookieStoreDeleteOptions*,
                        ExceptionState&);
   ScriptPromise subscribeToChanges(
       ScriptState*,
-      const HeapVector<CookieStoreGetOptions>& subscriptions,
+      const HeapVector<Member<CookieStoreGetOptions>>& subscriptions,
       ExceptionState&);
   ScriptPromise getChangeSubscriptions(ScriptState*, ExceptionState&);
 
@@ -82,7 +82,7 @@ class CookieStore final : public EventTargetWithInlineData,
   void ContextDestroyed(ExecutionContext*) override;
 
   // EventTargetWithInlineData
-  DEFINE_ATTRIBUTE_EVENT_LISTENER(change);
+  DEFINE_ATTRIBUTE_EVENT_LISTENER(change, kChange);
   const AtomicString& InterfaceName() const override;
   ExecutionContext* GetExecutionContext() const override;
   void RemoveAllEventListeners() override;
@@ -113,7 +113,7 @@ class CookieStore final : public EventTargetWithInlineData,
   // captured in the DoReadBackendResultConverter argument, which should point
   // to one of the static methods below.
   ScriptPromise DoRead(ScriptState*,
-                       const CookieStoreGetOptions&,
+                       const CookieStoreGetOptions*,
                        DoReadBackendResultConverter,
                        ExceptionState&);
 
@@ -131,7 +131,7 @@ class CookieStore final : public EventTargetWithInlineData,
 
   // Common code in CookieStore::delete and CookieStore::set.
   ScriptPromise DoWrite(ScriptState*,
-                        const CookieStoreSetExtraOptions&,
+                        const CookieStoreSetExtraOptions*,
                         ExceptionState&);
 
   static void OnSetCanonicalCookieResult(ScriptPromiseResolver*,

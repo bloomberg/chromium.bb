@@ -27,6 +27,7 @@
 #ifndef THIRD_PARTY_BLINK_RENDERER_CORE_EVENTS_TEXT_EVENT_H_
 #define THIRD_PARTY_BLINK_RENDERER_CORE_EVENTS_TEXT_EVENT_H_
 
+#include "third_party/blink/renderer/core/event_interface_names.h"
 #include "third_party/blink/renderer/core/events/text_event_input_type.h"
 #include "third_party/blink/renderer/core/events/ui_event.h"
 
@@ -51,6 +52,15 @@ class TextEvent final : public UIEvent {
                                            bool should_match_style);
   static TextEvent* CreateForDrop(AbstractView*, const String& data);
 
+  TextEvent();
+  TextEvent(AbstractView*,
+            const String& data,
+            TextEventInputType = kTextEventInputKeyboard);
+  TextEvent(AbstractView*,
+            const String& data,
+            DocumentFragment*,
+            bool should_smart_replace,
+            bool should_match_style);
   ~TextEvent() override;
 
   void initTextEvent(const AtomicString& type,
@@ -80,17 +90,6 @@ class TextEvent final : public UIEvent {
   void Trace(blink::Visitor*) override;
 
  private:
-  TextEvent();
-
-  TextEvent(AbstractView*,
-            const String& data,
-            TextEventInputType = kTextEventInputKeyboard);
-  TextEvent(AbstractView*,
-            const String& data,
-            DocumentFragment*,
-            bool should_smart_replace,
-            bool should_match_style);
-
   TextEventInputType input_type_;
   String data_;
 
@@ -100,8 +99,8 @@ class TextEvent final : public UIEvent {
 };
 
 inline bool IsTextEvent(const Event& event) {
-  return event.type() == EventTypeNames::textInput &&
-         event.HasInterface(EventNames::TextEvent);
+  return event.type() == event_type_names::kTextInput &&
+         event.HasInterface(event_interface_names::kTextEvent);
 }
 
 DEFINE_TYPE_CASTS(TextEvent,

@@ -8,21 +8,24 @@
 #include "base/metrics/histogram_macros.h"
 #include "base/task/post_task.h"
 #include "base/task_runner_util.h"
+#include "components/optimization_guide/hints_component_info.h"
+#include "components/optimization_guide/optimization_guide_service.h"
 #include "components/optimization_guide/proto/hints.pb.h"
 #include "components/previews/content/previews_hints.h"
 #include "components/previews/content/previews_user_data.h"
+#include "components/previews/core/previews_constants.h"
 #include "url/gurl.h"
 
 namespace previews {
 
 PreviewsOptimizationGuide::PreviewsOptimizationGuide(
     optimization_guide::OptimizationGuideService* optimization_guide_service,
-    const scoped_refptr<base::SingleThreadTaskRunner>& io_task_runner)
+    const scoped_refptr<base::SingleThreadTaskRunner>& ui_task_runner)
     : optimization_guide_service_(optimization_guide_service),
-      io_task_runner_(io_task_runner),
+      ui_task_runner_(ui_task_runner),
       background_task_runner_(base::CreateSequencedTaskRunnerWithTraits(
           {base::MayBlock(), base::TaskPriority::BEST_EFFORT})),
-      io_weak_ptr_factory_(this) {
+      ui_weak_ptr_factory_(this) {
   DCHECK(optimization_guide_service_);
   optimization_guide_service_->AddObserver(this);
 }
@@ -31,26 +34,29 @@ PreviewsOptimizationGuide::~PreviewsOptimizationGuide() {
   optimization_guide_service_->RemoveObserver(this);
 }
 
-bool PreviewsOptimizationGuide::IsWhitelisted(PreviewsUserData* previews_data,
-                                              const GURL& url,
-                                              PreviewsType type) const {
-  DCHECK(io_task_runner_->BelongsToCurrentThread());
+bool PreviewsOptimizationGuide::IsWhitelisted(
+    PreviewsUserData* previews_data,
+    const GURL& url,
+    PreviewsType type,
+    net::EffectiveConnectionType* out_ect_threshold) const {
+  DCHECK(ui_task_runner_->BelongsToCurrentThread());
   if (!hints_)
     return false;
 
+  *out_ect_threshold = params::GetECTThresholdForPreview(type);
   int inflation_percent = 0;
-  if (!hints_->IsWhitelisted(url, type, &inflation_percent))
+  if (!hints_->IsWhitelisted(url, type, &inflation_percent, out_ect_threshold))
     return false;
 
   if (inflation_percent != 0 && previews_data)
-    previews_data->SetDataSavingsInflationPercent(inflation_percent);
+    previews_data->set_data_savings_inflation_percent(inflation_percent);
 
   return true;
 }
 
 bool PreviewsOptimizationGuide::IsBlacklisted(const GURL& url,
                                               PreviewsType type) const {
-  DCHECK(io_task_runner_->BelongsToCurrentThread());
+  DCHECK(ui_task_runner_->BelongsToCurrentThread());
   if (!hints_)
     return false;
 
@@ -61,7 +67,7 @@ void PreviewsOptimizationGuide::OnLoadedHint(
     ResourceLoadingHintsCallback callback,
     const GURL& document_url,
     const optimization_guide::proto::Hint& loaded_hint) const {
-  DCHECK(io_task_runner_->BelongsToCurrentThread());
+  DCHECK(ui_task_runner_->BelongsToCurrentThread());
 
   const optimization_guide::proto::PageHint* matched_page_hint =
       PreviewsHints::FindPageHint(document_url, loaded_hint);
@@ -98,14 +104,14 @@ void PreviewsOptimizationGuide::OnLoadedHint(
 bool PreviewsOptimizationGuide::MaybeLoadOptimizationHints(
     const GURL& url,
     ResourceLoadingHintsCallback callback) {
-  DCHECK(io_task_runner_->BelongsToCurrentThread());
+  DCHECK(ui_task_runner_->BelongsToCurrentThread());
 
   if (!hints_)
     return false;
 
   return hints_->MaybeLoadOptimizationHints(
       url, base::BindOnce(&PreviewsOptimizationGuide::OnLoadedHint,
-                          io_weak_ptr_factory_.GetWeakPtr(),
+                          ui_weak_ptr_factory_.GetWeakPtr(),
                           std::move(callback), url));
 }
 
@@ -119,24 +125,27 @@ void PreviewsOptimizationGuide::LogHintCacheMatch(
   hints_->LogHintCacheMatch(url, is_committed, ect);
 }
 
-void PreviewsOptimizationGuide::OnHintsProcessed(
-    const optimization_guide::proto::Configuration& config,
-    const optimization_guide::ComponentInfo& info) {
-  DCHECK(io_task_runner_->BelongsToCurrentThread());
+void PreviewsOptimizationGuide::OnHintsComponentAvailable(
+    const optimization_guide::HintsComponentInfo& info) {
+  DCHECK(ui_task_runner_->BelongsToCurrentThread());
 
   base::PostTaskAndReplyWithResult(
       background_task_runner_.get(), FROM_HERE,
-      base::BindOnce(&PreviewsHints::CreateFromConfig, config, info),
+      base::BindOnce(&PreviewsHints::CreateFromHintsComponent, info),
       base::BindOnce(&PreviewsOptimizationGuide::UpdateHints,
-                     io_weak_ptr_factory_.GetWeakPtr()));
+                     ui_weak_ptr_factory_.GetWeakPtr()));
 }
 
 void PreviewsOptimizationGuide::UpdateHints(
     std::unique_ptr<PreviewsHints> hints) {
-  DCHECK(io_task_runner_->BelongsToCurrentThread());
+  DCHECK(ui_task_runner_->BelongsToCurrentThread());
   hints_ = std::move(hints);
-  if (hints_)
-    hints_->Initialize();
+
+  // Record the result of updating the hints. This is used as a signal for the
+  // hints being fully processed in testing.
+  LOCAL_HISTOGRAM_BOOLEAN(
+      kPreviewsOptimizationGuideUpdateHintsResultHistogramString,
+      hints_ != NULL);
 }
 
 }  // namespace previews

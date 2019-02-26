@@ -8,15 +8,39 @@
 #include "gpu/gpu_export.h"
 #include "ui/gfx/buffer_types.h"
 #include "ui/gfx/geometry/size.h"
-#include "ui/gfx/gpu_memory_buffer.h"
 
 namespace gpu {
 
+// A struct that represents a set of gfx::BufferFormat in a compact way.
+struct GpuMemoryBufferFormatSet {
+  constexpr GpuMemoryBufferFormatSet() = default;
+  constexpr GpuMemoryBufferFormatSet(
+      std::initializer_list<gfx::BufferFormat> formats) {
+    for (auto format : formats)
+      bitfield |= 1u << static_cast<int>(format);
+  }
+
+  constexpr bool Has(gfx::BufferFormat format) const {
+    return !!(bitfield & (1u << static_cast<int>(format)));
+  }
+
+  void Add(gfx::BufferFormat format) {
+    bitfield |= 1u << static_cast<int>(format);
+  }
+
+  void Remove(gfx::BufferFormat format) {
+    bitfield &= ~(1u << static_cast<int>(format));
+  }
+
+  static_assert(static_cast<int>(gfx::BufferFormat::LAST) < 32,
+                "GpuMemoryBufferFormatSet only supports 32 formats");
+  uint32_t bitfield = 0;
+};
+
 struct Capabilities;
 
-// Returns true if |internalformat| is compatible with |format|.
-GPU_EXPORT bool IsImageFormatCompatibleWithGpuMemoryBufferFormat(
-    unsigned internalformat,
+// Returns the GL internalformat that is compatible with |format|.
+GPU_EXPORT unsigned InternalFormatForGpuMemoryBufferFormat(
     gfx::BufferFormat format);
 
 // Returns true if creating an image for a GpuMemoryBuffer with |format| is

@@ -132,7 +132,7 @@ class BrowserFeatureExtractorTest : public ChromeRenderViewHostTestHarness {
     auto navigation = content::NavigationSimulator::CreateBrowserInitiated(
         url, web_contents());
     navigation->SetReferrer(
-        content::Referrer(referrer, blink::kWebReferrerPolicyDefault));
+        content::Referrer(referrer, network::mojom::ReferrerPolicy::kDefault));
     navigation->SetTransition(type);
     navigation->Commit();
   }
@@ -168,7 +168,7 @@ class BrowserFeatureExtractorTest : public ChromeRenderViewHostTestHarness {
     // Feature extraction takes ownership of the request object
     // and passes it along to the done callback in the end.
     StartExtractMalwareFeatures(request);
-    ASSERT_TRUE(base::MessageLoopForUI::IsCurrent());
+    ASSERT_TRUE(base::MessageLoopCurrentForUI::IsSet());
     base::RunLoop().Run();
     EXPECT_EQ(1U, success_.count(request));
     EXPECT_TRUE(success_[request]);

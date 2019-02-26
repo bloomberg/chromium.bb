@@ -2,6 +2,7 @@
 <!DOCTYPE translationbundle>
 <translationbundle lang="hu">
 <translation id="1002108253973310084">A rendszer nem kompatibilis protokollverziót észlelt. Győződjön meg róla, hogy a szoftver legfrissebb verziója van telepítve mindkét számítógépen, majd próbálja újra.</translation>
+<translation id="1008557486741366299">Ne most</translation>
 <translation id="1050693411695664090">Gyenge</translation>
 <translation id="1152528166145813711">Válasszon…</translation>
 <translation id="1199593201721843963">Távoli kapcsolatok letiltása</translation>
@@ -62,8 +63,9 @@ Adatvédelmi információkért tekintse meg a Google adatvédelmi irányelveit (
 <translation id="2314101195544969792">A(z) <ph name="APPLICATION_NAME" /> munkamenete egy ideje inaktív, ezért a rendszer rövidesen leválasztja.</translation>
 <translation id="2317666076142640974">Vessen egy pillantást az új <ph name="LINK_BEGIN" />Chrome távoliasztal-szolgáltatás internetes alkalmazásra<ph name="LINK_END" />. Szeretnénk megismerni a véleményét.</translation>
 <translation id="2320166752086256636">Billentyűzet elrejtése</translation>
+<translation id="2332192922827071008">A beállítások megnyitása</translation>
 <translation id="2353140552984634198">A Chromoting használatával biztonságosan hozzáférhet a számítógéphez.</translation>
-<translation id="2359808026110333948">Folytatás</translation>
+<translation id="2359808026110333948">Tovább</translation>
 <translation id="2366718077645204424">A gazdagép nem érhető el. Ez valószínűleg az Ön által használt hálózat konfigurációja miatt van.</translation>
 <translation id="2370754117186920852"><ph name="OPTIONAL_OFFLINE_REASON" />  Legutóbb észlelve az interneten: <ph name="RELATIVE_TIMESTAMP" />.</translation>
 <translation id="2405928220797050937">Ez az alkalmazás már nem támogatott. Annak érdekében, hogy biztosan megkapja a legújabb funkciókat és biztonsági frissítéseket, használja a <ph name="LINK_BEGIN" />Chrome távoliasztal-szolgáltatás internetes alkalmazást<ph name="LINK_END" />.</translation>
@@ -82,6 +84,7 @@ Adatvédelmi információkért tekintse meg a Google adatvédelmi irányelveit (
 <translation id="2841013758207633010">Idő</translation>
 <translation id="2851754573186462851">Chromium alkalmazás internetes megjelenítése</translation>
 <translation id="2888969873284818612">Hálózati hiba történt. Újraindítjuk az alkalmazást, amint eszköze ismét online lesz.</translation>
+<translation id="2891243864890517178">Mac típusú számítógépekhez (OS X Yosemite 10.10 és újabb)</translation>
 <translation id="289405675947420287">Biztonságosan férhet hozzá számítógépéhez iOS rendszerű eszközéről. Gyors, egyszerű és ingyenes.
 
 • Töltse le a Chrome távoliasztal-szolgáltatás nevű alkalmazást a Chrome Internetes áruházból azon a számítógépen, amelyhez távolról hozzá szeretne férni.
@@ -188,6 +191,9 @@ PC</translation>
 <translation id="4973800994433240357">A Chromoting gazdagép-telepítő letöltésével elfogadja a Google <ph name="LINK_BEGIN" />Általános Szerződési Feltételeit<ph name="LINK_END" />.</translation>
 <translation id="4974476491460646149">Megszakítva a kapcsolat a következővel: <ph name="HOSTNAME" /></translation>
 <translation id="4985296110227979402">Előbb be kell állítania számítógépén a távoli hozzáférést.</translation>
+<translation id="5059773780693835145">Végre kell hajtania még egy konfigurációs lépést, hogy távolról vezérelhesse ezt a számítógépet a <ph name="PRODUCT_NAME" /> használatával.
+
+Ha aktiválni szeretné ezt a funkciót, kattintson a(z) „<ph name="BUTTON_NAME" />” gombra a Biztonság és adatvédelem beállításainak megnyitásához, majd jelölje be a(z) „<ph name="SERVICE_SCRIPT_NAME" />” melletti jelölőnégyzetet.</translation>
 <translation id="5064360042339518108"><ph name="HOSTNAME" /> (offline)</translation>
 <translation id="5070121137485264635">A távoli gazdagép hitelesítést kér egy harmadik féltől származó webhelyhez. A folytatáshoz további engedélyeket kell adnia a Chrome távoliasztal-szolgáltatásnak a cím eléréséhez:</translation>
 <translation id="507204348399810022">Biztosan szeretné letiltani a távoli kapcsolatokat a(z) <ph name="HOSTNAME" /> gazdagéppel?</translation>
@@ -249,7 +255,6 @@ PC</translation>
 <translation id="6542902059648396432">Hiba bejelentése…</translation>
 <translation id="6550675742724504774">Beállítások</translation>
 <translation id="6570205395680337606">Alkalmazás visszaállítása. A nem mentett munkája el fog veszni.</translation>
-<translation id="6572345186230665992">Mac típusú számítógépekhez (OS X Mavericks 10.9 és újabb)</translation>
 <translation id="6583902294974160967">Támogatás</translation>
 <translation id="6612717000975622067">Ctrl-Alt-Del küldése</translation>
 <translation id="6654753848497929428">Megosztás</translation>
@@ -313,6 +318,7 @@ PC</translation>
 <translation id="809687642899217504">Saját számítógépek</translation>
 <translation id="811307782653349804">Bárhonnan hozzáférhet saját számítógépéhez.</translation>
 <translation id="8116630183974937060">Hálózati hiba történt. Ellenőrizze, hogy eszköze online állapotban van-e, majd próbálja újra.</translation>
+<translation id="8123581458650016326">Engedélyezze, hogy távoli felhasználók használhassák ezt a számítógépet</translation>
 <translation id="8178433417677596899">Felhasználók közötti képernyőmegosztás, amely tökéletes a távoli műszaki támogatáshoz.</translation>
 <translation id="8187079423890319756">Copyright 2013 – A Chromium szerzői. Minden jog fenntartva.</translation>
 <translation id="8196755618196986400">Ha szeretné, hogy további információkért felvegyük Önnel a kapcsolatot, e-mail-címét tartalmazni fogják az Ön által küldött visszajelzések.</translation>

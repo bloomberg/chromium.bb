@@ -31,7 +31,7 @@
 #ifndef THIRD_PARTY_BLINK_PUBLIC_WEB_WEB_DOCUMENT_H_
 #define THIRD_PARTY_BLINK_PUBLIC_WEB_WEB_DOCUMENT_H_
 
-#include "third_party/blink/public/platform/web_referrer_policy.h"
+#include "services/network/public/mojom/referrer_policy.mojom-shared.h"
 #include "third_party/blink/public/platform/web_security_origin.h"
 #include "third_party/blink/public/platform/web_vector.h"
 #include "third_party/blink/public/web/web_draggable_region.h"
@@ -107,7 +107,7 @@ class WebDocument : public WebNode {
   BLINK_EXPORT WebURL CompleteURL(const WebString&) const;
   BLINK_EXPORT WebElement GetElementById(const WebString&) const;
   BLINK_EXPORT WebElement FocusedElement() const;
-  BLINK_EXPORT WebReferrerPolicy GetReferrerPolicy() const;
+  BLINK_EXPORT network::mojom::ReferrerPolicy GetReferrerPolicy() const;
   BLINK_EXPORT WebString OutgoingReferrer();
 
   // Inserts the given CSS source code as a style sheet in the document.

@@ -37,9 +37,7 @@ enum SVGLengthAdjustType {
   kSVGLengthAdjustSpacing,
   kSVGLengthAdjustSpacingAndGlyphs
 };
-template <>
-const SVGEnumerationStringEntries&
-GetStaticStringEntries<SVGLengthAdjustType>();
+DECLARE_SVG_ENUM_MAP(SVGLengthAdjustType);
 
 class CORE_EXPORT SVGTextContentElement : public SVGGraphicsElement {
   DEFINE_WRAPPERTYPEINFO();

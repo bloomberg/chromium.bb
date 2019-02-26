@@ -40,9 +40,9 @@ class CONTENT_EXPORT BackgroundFetchEventDispatcher {
       scoped_refptr<ServiceWorkerContextWrapper> service_worker_context);
   ~BackgroundFetchEventDispatcher();
 
-  // Dispatches the `backgroundfetchabort` event, which indicates that an active
-  // background fetch was aborted by the user or another external event.
-  void DispatchBackgroundFetchAbortEvent(
+  // Dispatches one of the update, fail, or success events depending on the
+  // provided registration.
+  void DispatchBackgroundFetchCompletionEvent(
       const BackgroundFetchRegistrationId& registration_id,
       std::unique_ptr<BackgroundFetchRegistration> registration,
       base::OnceClosure finished_closure);
@@ -50,6 +50,17 @@ class CONTENT_EXPORT BackgroundFetchEventDispatcher {
   // Dispatches the `backgroundfetchclick` event, which indicates that the user
   // interface displayed for an active background fetch was activated.
   void DispatchBackgroundFetchClickEvent(
+      const BackgroundFetchRegistrationId& registration_id,
+      std::unique_ptr<BackgroundFetchRegistration> registration,
+      base::OnceClosure finished_closure);
+
+ private:
+  using ServiceWorkerLoadedCallback =
+      base::Callback<void(scoped_refptr<ServiceWorkerVersion>, int request_id)>;
+
+  // Dispatches the `backgroundfetchabort` event, which indicates that an active
+  // background fetch was aborted by the user or another external event.
+  void DispatchBackgroundFetchAbortEvent(
       const BackgroundFetchRegistrationId& registration_id,
       std::unique_ptr<BackgroundFetchRegistration> registration,
       base::OnceClosure finished_closure);
@@ -67,10 +78,6 @@ class CONTENT_EXPORT BackgroundFetchEventDispatcher {
       const BackgroundFetchRegistrationId& registration_id,
       std::unique_ptr<BackgroundFetchRegistration> registration,
       base::OnceClosure finished_closure);
-
- private:
-  using ServiceWorkerLoadedCallback =
-      base::Callback<void(scoped_refptr<ServiceWorkerVersion>, int)>;
 
   // Phase at which the dispatching process finished. Used for UMA.
   enum class DispatchPhase { FINDING, STARTING, DISPATCHING };

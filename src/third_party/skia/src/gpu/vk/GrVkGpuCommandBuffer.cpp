@@ -7,6 +7,7 @@
 
 #include "GrVkGpuCommandBuffer.h"
 
+#include "GrBackendDrawableInfo.h"
 #include "GrFixedClip.h"
 #include "GrMesh.h"
 #include "GrOpFlushState.h"
@@ -19,7 +20,9 @@
 #include "GrVkRenderPass.h"
 #include "GrVkRenderTarget.h"
 #include "GrVkResourceProvider.h"
+#include "GrVkSemaphore.h"
 #include "GrVkTexture.h"
+#include "SkDrawable.h"
 #include "SkRect.h"
 
 void GrVkGpuTextureCommandBuffer::copy(GrSurface* src, GrSurfaceOrigin srcOrigin,
@@ -99,10 +102,10 @@ void GrVkGpuRTCommandBuffer::init() {
                                                                      vkStencilOps);
     }
 
-    cbInfo.fColorClearValue.color.float32[0] = fClearColor.fRGBA[0];
-    cbInfo.fColorClearValue.color.float32[1] = fClearColor.fRGBA[1];
-    cbInfo.fColorClearValue.color.float32[2] = fClearColor.fRGBA[2];
-    cbInfo.fColorClearValue.color.float32[3] = fClearColor.fRGBA[3];
+    cbInfo.fColorClearValue.color.float32[0] = fClearColor[0];
+    cbInfo.fColorClearValue.color.float32[1] = fClearColor[1];
+    cbInfo.fColorClearValue.color.float32[2] = fClearColor[2];
+    cbInfo.fColorClearValue.color.float32[3] = fClearColor[3];
 
     if (VK_ATTACHMENT_LOAD_OP_CLEAR == fVkColorLoadOp) {
         cbInfo.fBounds = SkRect::MakeWH(vkRT->width(), vkRT->height());
@@ -240,7 +243,7 @@ void GrVkGpuRTCommandBuffer::set(GrRenderTarget* rt, GrSurfaceOrigin origin,
 
     this->INHERITED::set(rt, origin);
 
-    fClearColor = GrColor4f::FromGrColor(colorInfo.fClearColor);
+    fClearColor = colorInfo.fClearColor;
 
     get_vk_load_store_ops(colorInfo.fLoadOp, colorInfo.fStoreOp,
                           &fVkColorLoadOp, &fVkColorStoreOp);
@@ -266,6 +269,8 @@ void GrVkGpuRTCommandBuffer::reset() {
     fLastPipelineState = nullptr;
     fRenderTarget = nullptr;
 }
+
+////////////////////////////////////////////////////////////////////////////////
 
 void GrVkGpuRTCommandBuffer::discard() {
     GrVkRenderTarget* vkRT = static_cast<GrVkRenderTarget*>(fRenderTarget);
@@ -366,7 +371,7 @@ void GrVkGpuRTCommandBuffer::onClearStencilClip(const GrFixedClip& clip, bool in
     }
 }
 
-void GrVkGpuRTCommandBuffer::onClear(const GrFixedClip& clip, GrColor color) {
+void GrVkGpuRTCommandBuffer::onClear(const GrFixedClip& clip, const SkPMColor4f& color) {
     GrVkRenderTarget* vkRT = static_cast<GrVkRenderTarget*>(fRenderTarget);
 
     // parent class should never let us get here with no RT
@@ -374,8 +379,7 @@ void GrVkGpuRTCommandBuffer::onClear(const GrFixedClip& clip, GrColor color) {
 
     CommandBufferInfo& cbInfo = fCommandBufferInfos[fCurrentCmdInfo];
 
-    VkClearColorValue vkColor;
-    GrColorToRGBAFloat(color, vkColor.float32);
+    VkClearColorValue vkColor = {{color.fR, color.fG, color.fB, color.fA}};
 
     if (cbInfo.fIsEmpty && !clip.scissorEnabled()) {
         // Change the render pass to do a clear load
@@ -401,7 +405,7 @@ void GrVkGpuRTCommandBuffer::onClear(const GrFixedClip& clip, GrColor color) {
         SkASSERT(cbInfo.fRenderPass->isCompatible(*oldRP));
         oldRP->unref(fGpu);
 
-        GrColorToRGBAFloat(color, cbInfo.fColorClearValue.color.float32);
+        cbInfo.fColorClearValue.color = {{color.fR, color.fG, color.fB, color.fA}};
         cbInfo.fLoadStoreState = LoadStoreState::kStartsWithClear;
         // If we are going to clear the whole render target then the results of any copies we did
         // immediately before to the target won't matter, so just drop them.
@@ -777,3 +781,36 @@ void GrVkGpuRTCommandBuffer::sendIndexedInstancedMeshToGpu(GrPrimitiveType,
                                         baseIndex, baseVertex, baseInstance);
     fGpu->stats()->incNumDraws();
 }
+
+////////////////////////////////////////////////////////////////////////////////
+
+void GrVkGpuRTCommandBuffer::executeDrawable(std::unique_ptr<SkDrawable::GpuDrawHandler> drawable) {
+    GrVkRenderTarget* target = static_cast<GrVkRenderTarget*>(fRenderTarget);
+
+    GrVkImage* targetImage = target->msaaImage() ? target->msaaImage() : target;
+
+    CommandBufferInfo& cbInfo = fCommandBufferInfos[fCurrentCmdInfo];
+    VkRect2D bounds;
+    bounds.offset = { 0, 0 };
+    bounds.extent = { 0, 0 };
+
+    GrVkDrawableInfo vkInfo;
+    vkInfo.fSecondaryCommandBuffer = cbInfo.currentCmdBuf()->vkCommandBuffer();
+    vkInfo.fCompatibleRenderPass = cbInfo.fRenderPass->vkRenderPass();
+    SkAssertResult(cbInfo.fRenderPass->colorAttachmentIndex(&vkInfo.fImageAttachmentIndex));
+    vkInfo.fFormat = targetImage->imageFormat();
+    vkInfo.fDrawBounds = &bounds;
+
+    GrBackendDrawableInfo info(vkInfo);
+
+    drawable->draw(info);
+    fGpu->addDrawable(std::move(drawable));
+
+    if (bounds.extent.width == 0 || bounds.extent.height == 0) {
+        cbInfo.fBounds.join(target->getBoundsRect());
+    } else {
+        cbInfo.fBounds.join(SkRect::MakeXYWH(bounds.offset.x, bounds.offset.y,
+                                             bounds.extent.width, bounds.extent.height));
+    }
+}
+

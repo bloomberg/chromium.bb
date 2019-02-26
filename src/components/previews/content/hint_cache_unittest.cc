@@ -38,8 +38,6 @@ class HintCacheTest : public testing::Test {
 };
 
 TEST_F(HintCacheTest, TestMemoryCache) {
-  HintCache hint_cache;
-
   optimization_guide::proto::Hint hint1;
   hint1.set_key("subdomain.domain.org");
   hint1.set_key_representation(optimization_guide::proto::HOST_SUFFIX);
@@ -50,9 +48,11 @@ TEST_F(HintCacheTest, TestMemoryCache) {
   hint3.set_key("otherhost.subdomain.domain.org");
   hint3.set_key_representation(optimization_guide::proto::HOST_SUFFIX);
 
-  hint_cache.AddHint(hint1);
-  hint_cache.AddHint(hint2);
-  hint_cache.AddHint(hint3);
+  HintCache::Data data;
+  data.AddHint(hint1);
+  data.AddHint(hint2);
+  data.AddHint(hint3);
+  HintCache hint_cache(std::move(data));
 
   // Not matched
   EXPECT_FALSE(hint_cache.HasHint("domain.org"));
@@ -78,12 +78,13 @@ TEST_F(HintCacheTest, TestMemoryCache) {
 }
 
 TEST_F(HintCacheTest, TestMemoryCacheLoadCallback) {
-  HintCache hint_cache;
-
   optimization_guide::proto::Hint hint1;
   hint1.set_key("subdomain.domain.org");
   hint1.set_key_representation(optimization_guide::proto::HOST_SUFFIX);
-  hint_cache.AddHint(hint1);
+
+  HintCache::Data data;
+  data.AddHint(hint1);
+  HintCache hint_cache(std::move(data));
 
   EXPECT_TRUE(hint_cache.IsHintLoaded("host.subdomain.domain.org"));
   hint_cache.LoadHint(

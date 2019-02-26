@@ -58,7 +58,7 @@ void ArcTermsOfServiceOobeNegotiator::OnSkip() {
   HandleTermsAccepted(false);
 }
 
-void ArcTermsOfServiceOobeNegotiator::OnAccept() {
+void ArcTermsOfServiceOobeNegotiator::OnAccept(bool /* review_arc_settings */) {
   HandleTermsAccepted(true);
 }
 

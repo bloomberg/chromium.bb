@@ -25,6 +25,7 @@
 #include "third_party/blink/renderer/core/css/parser/css_tokenizer.h"
 #include "third_party/blink/renderer/core/css/parser/css_variable_parser.h"
 #include "third_party/blink/renderer/core/css/parser/media_query_parser.h"
+#include "third_party/blink/renderer/core/css/properties/css_parsing_utils.h"
 #include "third_party/blink/renderer/core/css/property_registry.h"
 #include "third_party/blink/renderer/core/css/style_rule_import.h"
 #include "third_party/blink/renderer/core/css/style_rule_keyframe.h"
@@ -192,6 +193,19 @@ ImmutableCSSPropertyValueSet* CSSParserImpl::ParseInlineStyleDeclaration(
   return CreateCSSPropertyValueSet(parser.parsed_properties_, mode);
 }
 
+ImmutableCSSPropertyValueSet* CSSParserImpl::ParseInlineStyleDeclaration(
+    const String& string,
+    CSSParserMode parser_mode,
+    SecureContextMode secure_context_mode) {
+  CSSParserContext* context =
+      CSSParserContext::Create(parser_mode, secure_context_mode);
+  CSSParserImpl parser(context);
+  CSSTokenizer tokenizer(string);
+  CSSParserTokenStream stream(tokenizer);
+  parser.ConsumeDeclarationList(stream, StyleRule::kStyle);
+  return CreateCSSPropertyValueSet(parser.parsed_properties_, parser_mode);
+}
+
 bool CSSParserImpl::ParseDeclarationList(
     MutableCSSPropertyValueSet* declaration,
     const String& string,
@@ -258,8 +272,8 @@ ParseSheetResult CSSParserImpl::ParseStyleSheet(
   CSSParserTokenStream stream(tokenizer);
   CSSParserImpl parser(context, style_sheet);
   if (defer_property_parsing == CSSDeferPropertyParsing::kYes) {
-    parser.lazy_state_ =
-        new CSSLazyParsingState(context, string, parser.style_sheet_);
+    parser.lazy_state_ = MakeGarbageCollected<CSSLazyParsingState>(
+        context, string, parser.style_sheet_);
   }
   ParseSheetResult result = ParseSheetResult::kSucceeded;
   bool first_rule_valid = parser.ConsumeRuleList(
@@ -397,6 +411,7 @@ static CSSParserImpl::AllowedRulesType ComputeNewAllowedRules(
     CSSParserImpl::AllowedRulesType allowed_rules,
     StyleRuleBase* rule) {
   if (!rule || allowed_rules == CSSParserImpl::kKeyframeRules ||
+      allowed_rules == CSSParserImpl::kFontFeatureRules ||
       allowed_rules == CSSParserImpl::kNoRules)
     return allowed_rules;
   DCHECK_LE(allowed_rules, CSSParserImpl::kRegularRules);
@@ -421,6 +436,9 @@ bool CSSParserImpl::ConsumeRuleList(CSSParserTokenStream& stream,
       break;
     case kKeyframesRuleList:
       allowed_rules = kKeyframeRules;
+      break;
+    case kFontFeatureRuleList:
+      allowed_rules = kFontFeatureRules;
       break;
     default:
       NOTREACHED();
@@ -502,6 +520,9 @@ StyleRuleBase* CSSParserImpl::ConsumeAtRule(CSSParserTokenStream& stream,
 
   if (allowed_rules == kKeyframeRules)
     return nullptr;  // Parse error, no at-rules supported inside @keyframes
+  // Parse error, no at-rules currently supported inside @font-feature-values
+  if (allowed_rules == kFontFeatureRules)
+    return nullptr;
   if (allowed_rules == kNoRules)
     return nullptr;  // Parse error, no at-rules with blocks supported inside
                      // declaration lists
@@ -517,6 +538,8 @@ StyleRuleBase* CSSParserImpl::ConsumeAtRule(CSSParserTokenStream& stream,
       return ConsumeViewportRule(prelude, prelude_offset, stream);
     case kCSSAtRuleFontFace:
       return ConsumeFontFaceRule(prelude, prelude_offset, stream);
+    case kCSSAtRuleFontFeatureValues:
+      return ConsumeFontFeatureValuesRule(prelude, prelude_offset, stream);
     case kCSSAtRuleWebkitKeyframes:
       return ConsumeKeyframesRule(true, prelude, prelude_offset, stream);
     case kCSSAtRuleKeyframes:
@@ -547,7 +570,34 @@ StyleRuleBase* CSSParserImpl::ConsumeQualifiedRule(
       return nullptr;  // Parse error, EOF instead of qualified rule block
 
     CSSParserTokenStream::BlockGuard guard(stream);
-    return ConsumeKeyframeStyleRule(prelude, prelude_offset, stream);
+    StyleRuleKeyframe* keyframe_style_rule =
+        ConsumeKeyframeStyleRule(prelude, prelude_offset, stream);
+    if (context_->IsLayoutAnimationsPolicyEnforced()) {
+      context_->ReportLayoutAnimationsViolationIfNeeded(*keyframe_style_rule);
+    }
+    return keyframe_style_rule;
+  }
+  if (allowed_rules == kFontFeatureRules) {
+    stream.ConsumeWhitespace();
+    if (stream.AtEnd())
+      return nullptr;  // Parse error, EOF instead of qualified rule block
+    bool prelude_invalid = false;
+    stream.EnsureLookAhead();
+    if (stream.UncheckedPeek().GetType() != kLeftBraceToken) {
+      prelude_invalid = true;
+      while (!stream.AtEnd() &&
+             stream.UncheckedPeek().GetType() != kLeftBraceToken)
+        stream.UncheckedConsumeComponentValue();
+      if (stream.AtEnd())
+        return nullptr;
+    }
+
+    CSSParserTokenStream::BlockGuard guard(stream);
+    if (prelude_invalid)
+      return nullptr;
+    ConsumeDeclarationList(stream, StyleRule::kFontFace);
+    return StyleRuleFontFace::Create(
+        CreateCSSPropertyValueSet(parsed_properties_, kCSSFontFaceRuleMode));
   }
 
   NOTREACHED();
@@ -716,6 +766,43 @@ StyleRuleFontFace* CSSParserImpl::ConsumeFontFaceRule(
       CreateCSSPropertyValueSet(parsed_properties_, kCSSFontFaceRuleMode));
 }
 
+StyleRuleFontFeatureValues* CSSParserImpl::ConsumeFontFeatureValuesRule(
+    CSSParserTokenRange prelude,
+    const RangeOffset& prelude_offset,
+    CSSParserTokenStream& block) {
+  if (!RuntimeEnabledFeatures::CSSFontFeatureValuesEnabled())
+    return nullptr;
+
+  const CSSValueList* font_family =
+      css_parsing_utils::ConsumeFontFamily(prelude);
+  if (!font_family || !prelude.AtEnd())
+    return nullptr;
+
+  if (observer_) {
+    observer_->StartRuleHeader(StyleRule::kFontFeatureValues,
+                               prelude_offset.start);
+    observer_->EndRuleHeader(prelude_offset.end);
+    observer_->StartRuleBody(block.Offset());
+  }
+
+  const CSSIdentifierValue* font_display = nullptr;
+  ConsumeRuleList(
+      block, kFontFeatureRuleList, [&font_display](StyleRuleBase* rule) {
+        const CSSValue* value =
+            ToStyleRuleFontFace(rule)->Properties().GetPropertyCSSValue(
+                CSSPropertyFontDisplay);
+        if (value)
+          font_display = ToCSSIdentifierValue(value);
+      });
+
+  if (observer_)
+    observer_->EndRuleBody(block.Offset());
+
+  if (!block.AtEnd())
+    return nullptr;
+  return StyleRuleFontFeatureValues::Create(font_family, font_display);
+}
+
 StyleRuleKeyframes* CSSParserImpl::ConsumeKeyframesRule(
     bool webkit_prefixed,
     CSSParserTokenRange prelude,
@@ -824,12 +911,12 @@ StyleRule* CSSParserImpl::ConsumeStyleRule(CSSParserTokenStream& stream) {
     return nullptr;  // Parse error, invalid selector list
 
   // TODO(csharrison): How should we lazily parse css that needs the observer?
-  if (!observer_ && lazy_state_ &&
-      lazy_state_->ShouldLazilyParseProperties(selector_list)) {
+  if (!observer_ && lazy_state_) {
     DCHECK(style_sheet_);
     return StyleRule::CreateLazy(
         std::move(selector_list),
-        new CSSLazyPropertyParserImpl(stream.Offset() - 1, lazy_state_));
+        MakeGarbageCollected<CSSLazyPropertyParserImpl>(stream.Offset() - 1,
+                                                        lazy_state_));
   }
   ConsumeDeclarationList(stream, StyleRule::kStyle);
 

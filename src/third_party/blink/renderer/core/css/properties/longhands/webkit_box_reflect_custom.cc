@@ -17,7 +17,7 @@ namespace {
 
 CSSValue* ConsumeReflect(CSSParserTokenRange& range,
                          const CSSParserContext& context) {
-  CSSIdentifierValue* direction = CSSPropertyParserHelpers::ConsumeIdent<
+  CSSIdentifierValue* direction = css_property_parser_helpers::ConsumeIdent<
       CSSValueAbove, CSSValueBelow, CSSValueLeft, CSSValueRight>(range);
   if (!direction)
     return nullptr;
@@ -28,14 +28,14 @@ CSSValue* ConsumeReflect(CSSParserTokenRange& range,
   } else {
     offset = ConsumeLengthOrPercent(
         range, context.Mode(), kValueRangeAll,
-        CSSPropertyParserHelpers::UnitlessQuirk::kForbid);
+        css_property_parser_helpers::UnitlessQuirk::kForbid);
     if (!offset)
       return nullptr;
   }
 
   CSSValue* mask = nullptr;
   if (!range.AtEnd()) {
-    mask = CSSParsingUtils::ConsumeWebkitBorderImage(range, context);
+    mask = css_parsing_utils::ConsumeWebkitBorderImage(range, context);
     if (!mask)
       return nullptr;
   }
@@ -43,7 +43,7 @@ CSSValue* ConsumeReflect(CSSParserTokenRange& range,
 }
 
 }  // namespace
-namespace CSSLonghand {
+namespace css_longhand {
 
 const CSSValue* WebkitBoxReflect::ParseSingleValue(
     CSSParserTokenRange& range,
@@ -61,5 +61,5 @@ const CSSValue* WebkitBoxReflect::CSSValueFromComputedStyleInternal(
   return ComputedStyleUtils::ValueForReflection(style.BoxReflect(), style);
 }
 
-}  // namespace CSSLonghand
+}  // namespace css_longhand
 }  // namespace blink

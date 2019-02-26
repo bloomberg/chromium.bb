@@ -82,10 +82,12 @@ class DumpAccessibilityEventsTest : public DumpAccessibilityTestBase {
 bool IsRecordingComplete(AccessibilityEventRecorder& event_recorder,
                          std::vector<std::string>& run_until) {
   // If no @RUN-UNTIL-EVENT directives, then having any events is enough.
+  LOG(ERROR) << "=== IsRecordingComplete#1 run_until size=" << run_until.size();
   if (run_until.empty())
     return true;
 
   std::vector<std::string> event_logs = event_recorder.event_logs();
+  LOG(ERROR) << "=== IsRecordingComplete#2 Logs size=" << event_logs.size();
 
   for (size_t i = 0; i < event_logs.size(); ++i)
     for (size_t j = 0; j < run_until.size(); ++j)
@@ -321,6 +323,11 @@ IN_PROC_BROWSER_TEST_F(DumpAccessibilityEventsTest,
 }
 
 IN_PROC_BROWSER_TEST_F(DumpAccessibilityEventsTest,
+                       AccessibilityEventsDisabledStateChanged) {
+  RunEventTest(FILE_PATH_LITERAL("disabled-state-changed.html"));
+}
+
+IN_PROC_BROWSER_TEST_F(DumpAccessibilityEventsTest,
                        AccessibilityEventsExpandedChange) {
   RunEventTest(FILE_PATH_LITERAL("expanded-change.html"));
 }
@@ -443,6 +450,26 @@ IN_PROC_BROWSER_TEST_F(
     DumpAccessibilityEventsTest,
     AccessibilityEventsRemoveHiddenAttributeSubtree) {
   RunEventTest(FILE_PATH_LITERAL("remove-hidden-attribute-subtree.html"));
+}
+
+IN_PROC_BROWSER_TEST_F(DumpAccessibilityEventsTest,
+                       AccessibilityEventsTabindexAddedOnPlainDiv) {
+  RunEventTest(FILE_PATH_LITERAL("tabindex-added-on-plain-div.html"));
+}
+
+IN_PROC_BROWSER_TEST_F(DumpAccessibilityEventsTest,
+                       AccessibilityEventsTabindexAddedOnAriaHidden) {
+  RunEventTest(FILE_PATH_LITERAL("tabindex-added-on-aria-hidden.html"));
+}
+
+IN_PROC_BROWSER_TEST_F(DumpAccessibilityEventsTest,
+                       AccessibilityEventsTabindexRemovedOnPlainDiv) {
+  RunEventTest(FILE_PATH_LITERAL("tabindex-removed-on-plain-div.html"));
+}
+
+IN_PROC_BROWSER_TEST_F(DumpAccessibilityEventsTest,
+                       AccessibilityEventsTabindexRemovedOnAriaHidden) {
+  RunEventTest(FILE_PATH_LITERAL("tabindex-removed-on-aria-hidden.html"));
 }
 
 IN_PROC_BROWSER_TEST_F(DumpAccessibilityEventsTest,

@@ -14,6 +14,7 @@
 #include "common/bitset_utils.h"
 #include "common/mathutil.h"
 #include "common/matrix_utils.h"
+#include "libANGLE/Buffer.h"
 #include "libANGLE/Caps.h"
 #include "libANGLE/Context.h"
 #include "libANGLE/Debug.h"
@@ -32,7 +33,6 @@ namespace gl
 
 namespace
 {
-
 bool GetAlternativeQueryType(QueryType type, QueryType *alternativeType)
 {
     switch (type)
@@ -48,16 +48,45 @@ bool GetAlternativeQueryType(QueryType type, QueryType *alternativeType)
     }
 }
 
-}  // anonymous namepace
+// Mapping from a buffer binding type to a dirty bit type.
+constexpr angle::PackedEnumMap<BufferBinding, size_t> kBufferBindingDirtyBits = {{
+    {BufferBinding::AtomicCounter, State::DIRTY_BIT_ATOMIC_COUNTER_BUFFER_BINDING},
+    {BufferBinding::DispatchIndirect, State::DIRTY_BIT_DISPATCH_INDIRECT_BUFFER_BINDING},
+    {BufferBinding::DrawIndirect, State::DIRTY_BIT_DRAW_INDIRECT_BUFFER_BINDING},
+    {BufferBinding::PixelPack, State::DIRTY_BIT_PACK_BUFFER_BINDING},
+    {BufferBinding::PixelUnpack, State::DIRTY_BIT_UNPACK_BUFFER_BINDING},
+    {BufferBinding::ShaderStorage, State::DIRTY_BIT_SHADER_STORAGE_BUFFER_BINDING},
+    {BufferBinding::Uniform, State::DIRTY_BIT_UNIFORM_BUFFER_BINDINGS},
+}};
+
+// Returns a buffer binding function depending on if a dirty bit is set.
+template <BufferBinding Target>
+constexpr std::pair<BufferBinding, State::BufferBindingSetter> GetBufferBindingSetter()
+{
+    return std::make_pair(Target, kBufferBindingDirtyBits[Target] != 0
+                                      ? &State::setGenericBufferBindingWithBit<Target>
+                                      : &State::setGenericBufferBinding<Target>);
+}
+}  // namespace
 
 template <typename BindingT, typename... ArgsT>
-void UpdateNonTFBufferBinding(const Context *context, BindingT *binding, ArgsT... args)
+ANGLE_INLINE void UpdateNonTFBufferBinding(const Context *context,
+                                           BindingT *binding,
+                                           Buffer *buffer,
+                                           ArgsT... args)
 {
-    if (binding->get())
-        (*binding)->onNonTFBindingChanged(context, -1);
-    binding->set(context, args...);
-    if (binding->get())
-        (*binding)->onNonTFBindingChanged(context, 1);
+    Buffer *oldBuffer = binding->get();
+    if (oldBuffer)
+    {
+        oldBuffer->onNonTFBindingChanged(-1);
+        oldBuffer->release(context);
+    }
+    binding->assign(buffer, args...);
+    if (buffer)
+    {
+        buffer->addRef();
+        buffer->onNonTFBindingChanged(1);
+    }
 }
 
 template <typename BindingT, typename... ArgsT>
@@ -102,6 +131,65 @@ void UpdateIndexedBufferBinding(const Context *context,
     }
 }
 
+// These template functions must be defined before they are instantiated in kBufferSetters.
+template <BufferBinding Target>
+void State::setGenericBufferBindingWithBit(const Context *context, Buffer *buffer)
+{
+    UpdateNonTFBufferBinding(context, &mBoundBuffers[Target], buffer);
+    mDirtyBits.set(kBufferBindingDirtyBits[Target]);
+}
+
+template <BufferBinding Target>
+void State::setGenericBufferBinding(const Context *context, Buffer *buffer)
+{
+    UpdateNonTFBufferBinding(context, &mBoundBuffers[Target], buffer);
+}
+
+template <>
+void State::setGenericBufferBinding<BufferBinding::TransformFeedback>(const Context *context,
+                                                                      Buffer *buffer)
+{
+    UpdateTFBufferBinding(context, &mBoundBuffers[BufferBinding::TransformFeedback], false, buffer);
+}
+
+template <>
+void State::setGenericBufferBinding<BufferBinding::ElementArray>(const Context *context,
+                                                                 Buffer *buffer)
+{
+    Buffer *oldBuffer = mVertexArray->mState.mElementArrayBuffer.get();
+    if (oldBuffer)
+    {
+        oldBuffer->removeObserver(&mVertexArray->mState.mElementArrayBuffer);
+        oldBuffer->onNonTFBindingChanged(-1);
+        oldBuffer->release(context);
+    }
+    mVertexArray->mState.mElementArrayBuffer.assign(buffer);
+    if (buffer)
+    {
+        buffer->addObserver(&mVertexArray->mState.mElementArrayBuffer);
+        buffer->onNonTFBindingChanged(1);
+        buffer->addRef();
+    }
+    mVertexArray->mDirtyBits.set(VertexArray::DIRTY_BIT_ELEMENT_ARRAY_BUFFER);
+    mVertexArray->mIndexRangeCache.invalidate();
+    mDirtyObjects.set(DIRTY_OBJECT_VERTEX_ARRAY);
+}
+
+const angle::PackedEnumMap<BufferBinding, State::BufferBindingSetter> State::kBufferSetters = {{
+    GetBufferBindingSetter<BufferBinding::Array>(),
+    GetBufferBindingSetter<BufferBinding::AtomicCounter>(),
+    GetBufferBindingSetter<BufferBinding::CopyRead>(),
+    GetBufferBindingSetter<BufferBinding::CopyWrite>(),
+    GetBufferBindingSetter<BufferBinding::DispatchIndirect>(),
+    GetBufferBindingSetter<BufferBinding::DrawIndirect>(),
+    GetBufferBindingSetter<BufferBinding::ElementArray>(),
+    GetBufferBindingSetter<BufferBinding::PixelPack>(),
+    GetBufferBindingSetter<BufferBinding::PixelUnpack>(),
+    GetBufferBindingSetter<BufferBinding::ShaderStorage>(),
+    GetBufferBindingSetter<BufferBinding::TransformFeedback>(),
+    GetBufferBindingSetter<BufferBinding::Uniform>(),
+}};
+
 State::State(bool debug,
              bool bindGeneratesResource,
              bool clientArraysEnabled,
@@ -142,12 +230,9 @@ State::State(bool debug,
       mRobustResourceInit(robustResourceInit),
       mProgramBinaryCacheEnabled(programBinaryCacheEnabled),
       mMaxShaderCompilerThreads(std::numeric_limits<GLuint>::max())
-{
-}
+{}
 
-State::~State()
-{
-}
+State::~State() {}
 
 void State::initialize(Context *context)
 {
@@ -223,10 +308,12 @@ void State::initialize(Context *context)
         mSamplerTextures[TextureType::_2DArray].resize(caps.maxCombinedTextureImageUnits);
         mSamplerTextures[TextureType::_3D].resize(caps.maxCombinedTextureImageUnits);
     }
+    if (clientVersion >= Version(3, 1) || nativeExtensions.textureMultisample)
+    {
+        mSamplerTextures[TextureType::_2DMultisample].resize(caps.maxCombinedTextureImageUnits);
+    }
     if (clientVersion >= Version(3, 1))
     {
-        // TODO(http://anglebug.com/2775): These could also be enabled via extension
-        mSamplerTextures[TextureType::_2DMultisample].resize(caps.maxCombinedTextureImageUnits);
         mSamplerTextures[TextureType::_2DMultisampleArray].resize(
             caps.maxCombinedTextureImageUnits);
 
@@ -243,7 +330,7 @@ void State::initialize(Context *context)
         mSamplerTextures[TextureType::External].resize(caps.maxCombinedTextureImageUnits);
     }
     mCompleteTextureBindings.reserve(caps.maxCombinedTextureImageUnits);
-    mCachedTexturesInitState = InitState::MayNeedInit;
+    mCachedTexturesInitState      = InitState::MayNeedInit;
     mCachedImageTexturesInitState = InitState::MayNeedInit;
     for (uint32_t textureIndex = 0; textureIndex < caps.maxCombinedTextureImageUnits;
          ++textureIndex)
@@ -455,20 +542,10 @@ void State::setDepthMask(bool mask)
     mDirtyBits.set(DIRTY_BIT_DEPTH_MASK);
 }
 
-bool State::isRasterizerDiscardEnabled() const
-{
-    return mRasterizer.rasterizerDiscard;
-}
-
 void State::setRasterizerDiscard(bool enabled)
 {
     mRasterizer.rasterizerDiscard = enabled;
     mDirtyBits.set(DIRTY_BIT_RASTERIZER_DISCARD_ENABLED);
-}
-
-bool State::isCullFaceEnabled() const
-{
-    return mRasterizer.cullFace;
 }
 
 void State::setCullFace(bool enabled)
@@ -489,11 +566,6 @@ void State::setFrontFace(GLenum front)
     mDirtyBits.set(DIRTY_BIT_FRONT_FACE);
 }
 
-bool State::isDepthTestEnabled() const
-{
-    return mDepthStencil.depthTest;
-}
-
 void State::setDepthTest(bool enabled)
 {
     mDepthStencil.depthTest = enabled;
@@ -511,21 +583,6 @@ void State::setDepthRange(float zNear, float zFar)
     mNearZ = zNear;
     mFarZ  = zFar;
     mDirtyBits.set(DIRTY_BIT_DEPTH_RANGE);
-}
-
-float State::getNearPlane() const
-{
-    return mNearZ;
-}
-
-float State::getFarPlane() const
-{
-    return mFarZ;
-}
-
-bool State::isBlendEnabled() const
-{
-    return mBlend.blend;
 }
 
 void State::setBlend(bool enabled)
@@ -557,16 +614,6 @@ void State::setBlendEquation(GLenum rgbEquation, GLenum alphaEquation)
     mBlend.blendEquationRGB   = rgbEquation;
     mBlend.blendEquationAlpha = alphaEquation;
     mDirtyBits.set(DIRTY_BIT_BLEND_EQUATIONS);
-}
-
-const ColorF &State::getBlendColor() const
-{
-    return mBlendColor;
-}
-
-bool State::isStencilTestEnabled() const
-{
-    return mDepthStencil.stencilTest;
 }
 
 void State::setStencilTest(bool enabled)
@@ -625,21 +672,6 @@ void State::setStencilBackOperations(GLenum stencilBackFail,
     mDirtyBits.set(DIRTY_BIT_STENCIL_OPS_BACK);
 }
 
-GLint State::getStencilRef() const
-{
-    return mStencilRef;
-}
-
-GLint State::getStencilBackRef() const
-{
-    return mStencilBackRef;
-}
-
-bool State::isPolygonOffsetFillEnabled() const
-{
-    return mRasterizer.polygonOffsetFill;
-}
-
 void State::setPolygonOffsetFill(bool enabled)
 {
     mRasterizer.polygonOffsetFill = enabled;
@@ -654,20 +686,10 @@ void State::setPolygonOffsetParams(GLfloat factor, GLfloat units)
     mDirtyBits.set(DIRTY_BIT_POLYGON_OFFSET);
 }
 
-bool State::isSampleAlphaToCoverageEnabled() const
-{
-    return mBlend.sampleAlphaToCoverage;
-}
-
 void State::setSampleAlphaToCoverage(bool enabled)
 {
     mBlend.sampleAlphaToCoverage = enabled;
     mDirtyBits.set(DIRTY_BIT_SAMPLE_ALPHA_TO_COVERAGE_ENABLED);
-}
-
-bool State::isSampleCoverageEnabled() const
-{
-    return mSampleCoverage;
 }
 
 void State::setSampleCoverage(bool enabled)
@@ -681,21 +703,6 @@ void State::setSampleCoverageParams(GLclampf value, bool invert)
     mSampleCoverageValue  = value;
     mSampleCoverageInvert = invert;
     mDirtyBits.set(DIRTY_BIT_SAMPLE_COVERAGE);
-}
-
-GLclampf State::getSampleCoverageValue() const
-{
-    return mSampleCoverageValue;
-}
-
-bool State::getSampleCoverageInvert() const
-{
-    return mSampleCoverageInvert;
-}
-
-bool State::isSampleMaskEnabled() const
-{
-    return mSampleMask;
 }
 
 void State::setSampleMaskEnabled(bool enabled)
@@ -712,42 +719,16 @@ void State::setSampleMaskParams(GLuint maskNumber, GLbitfield mask)
     mDirtyBits.set(DIRTY_BIT_SAMPLE_MASK);
 }
 
-GLbitfield State::getSampleMaskWord(GLuint maskNumber) const
-{
-    ASSERT(maskNumber < mMaxSampleMaskWords);
-    return mSampleMaskValues[maskNumber];
-}
-
-GLuint State::getMaxSampleMaskWords() const
-{
-    return mMaxSampleMaskWords;
-}
-
 void State::setSampleAlphaToOne(bool enabled)
 {
     mSampleAlphaToOne = enabled;
     mDirtyBits.set(DIRTY_BIT_SAMPLE_ALPHA_TO_ONE);
 }
 
-bool State::isSampleAlphaToOneEnabled() const
-{
-    return mSampleAlphaToOne;
-}
-
 void State::setMultisampling(bool enabled)
 {
     mMultiSampling = enabled;
     mDirtyBits.set(DIRTY_BIT_MULTISAMPLING);
-}
-
-bool State::isMultisamplingEnabled() const
-{
-    return mMultiSampling;
-}
-
-bool State::isScissorTestEnabled() const
-{
-    return mScissorTest;
 }
 
 void State::setScissorTest(bool enabled)
@@ -765,25 +746,10 @@ void State::setScissorParams(GLint x, GLint y, GLsizei width, GLsizei height)
     mDirtyBits.set(DIRTY_BIT_SCISSOR);
 }
 
-const Rectangle &State::getScissor() const
-{
-    return mScissor;
-}
-
-bool State::isDitherEnabled() const
-{
-    return mBlend.dither;
-}
-
 void State::setDither(bool enabled)
 {
     mBlend.dither = enabled;
     mDirtyBits.set(DIRTY_BIT_DITHER_ENABLED);
-}
-
-bool State::isPrimitiveRestartEnabled() const
-{
-    return mPrimitiveRestart;
 }
 
 void State::setPrimitiveRestart(bool enabled)
@@ -1018,11 +984,6 @@ void State::setLineWidth(GLfloat width)
     mDirtyBits.set(DIRTY_BIT_LINE_WIDTH);
 }
 
-float State::getLineWidth() const
-{
-    return mLineWidth;
-}
-
 void State::setGenerateMipmapHint(GLenum hint)
 {
     mGenerateMipmapHint = hint;
@@ -1038,11 +999,6 @@ void State::setFragmentShaderDerivativeHint(GLenum hint)
     // Ignore for now. It is valid for implementations to ignore hint.
 }
 
-bool State::areClientArraysEnabled() const
-{
-    return mClientArraysEnabled;
-}
-
 void State::setViewportParams(GLint x, GLint y, GLsizei width, GLsizei height)
 {
     mViewport.x      = x;
@@ -1052,22 +1008,12 @@ void State::setViewportParams(GLint x, GLint y, GLsizei width, GLsizei height)
     mDirtyBits.set(DIRTY_BIT_VIEWPORT);
 }
 
-const Rectangle &State::getViewport() const
-{
-    return mViewport;
-}
-
 void State::setActiveSampler(unsigned int active)
 {
     mActiveSampler = active;
 }
 
-unsigned int State::getActiveSampler() const
-{
-    return static_cast<unsigned int>(mActiveSampler);
-}
-
-Error State::setSamplerTexture(const Context *context, TextureType type, Texture *texture)
+angle::Result State::setSamplerTexture(const Context *context, TextureType type, Texture *texture)
 {
     mSamplerTextures[type][mActiveSampler].set(context, texture);
 
@@ -1079,7 +1025,7 @@ Error State::setSamplerTexture(const Context *context, TextureType type, Texture
 
     mDirtyBits.set(DIRTY_BIT_TEXTURE_BINDINGS);
 
-    return NoError();
+    return angle::Result::Continue();
 }
 
 Texture *State::getTargetTexture(TextureType type) const
@@ -1170,12 +1116,6 @@ void State::setSamplerBinding(const Context *context, GLuint textureUnit, Sample
     setSamplerDirty(textureUnit);
 }
 
-GLuint State::getSamplerId(GLuint textureUnit) const
-{
-    ASSERT(textureUnit < mSamplers.size());
-    return mSamplers[textureUnit].id();
-}
-
 void State::detachSampler(const Context *context, GLuint sampler)
 {
     // [OpenGL ES 3.0.2] section 3.8.2 pages 123-124:
@@ -1196,16 +1136,6 @@ void State::setRenderbufferBinding(const Context *context, Renderbuffer *renderb
 {
     mRenderbuffer.set(context, renderbuffer);
     mDirtyBits.set(DIRTY_BIT_RENDERBUFFER_BINDING);
-}
-
-GLuint State::getRenderbufferId() const
-{
-    return mRenderbuffer.id();
-}
-
-Renderbuffer *State::getCurrentRenderbuffer() const
-{
-    return mRenderbuffer.get();
 }
 
 void State::detachRenderbuffer(const Context *context, GLuint renderbuffer)
@@ -1285,11 +1215,6 @@ Framebuffer *State::getTargetFramebuffer(GLenum target) const
     }
 }
 
-Framebuffer *State::getReadFramebuffer() const
-{
-    return mReadFramebuffer;
-}
-
 bool State::removeReadFramebufferBinding(GLuint framebuffer)
 {
     if (mReadFramebuffer != nullptr && mReadFramebuffer->id() == framebuffer)
@@ -1329,12 +1254,6 @@ void State::setVertexArrayBinding(const Context *context, VertexArray *vertexArr
     }
 }
 
-GLuint State::getVertexArrayId() const
-{
-    ASSERT(mVertexArray != nullptr);
-    return mVertexArray->id();
-}
-
 bool State::removeVertexArrayBinding(const Context *context, GLuint vertexArray)
 {
     if (mVertexArray && mVertexArray->id() == vertexArray)
@@ -1347,6 +1266,12 @@ bool State::removeVertexArrayBinding(const Context *context, GLuint vertexArray)
     }
 
     return false;
+}
+
+GLuint State::getVertexArrayId() const
+{
+    ASSERT(mVertexArray != nullptr);
+    return mVertexArray->id();
 }
 
 void State::bindVertexBuffer(const Context *context,
@@ -1493,48 +1418,6 @@ Query *State::getActiveQuery(QueryType type) const
     return mActiveQueries[type].get();
 }
 
-void State::setBufferBinding(const Context *context, BufferBinding target, Buffer *buffer)
-{
-    switch (target)
-    {
-        case BufferBinding::PixelPack:
-            UpdateNonTFBufferBinding(context, &mBoundBuffers[target], buffer);
-            mDirtyBits.set(DIRTY_BIT_PACK_BUFFER_BINDING);
-            break;
-        case BufferBinding::PixelUnpack:
-            UpdateNonTFBufferBinding(context, &mBoundBuffers[target], buffer);
-            mDirtyBits.set(DIRTY_BIT_UNPACK_BUFFER_BINDING);
-            break;
-        case BufferBinding::DrawIndirect:
-            UpdateNonTFBufferBinding(context, &mBoundBuffers[target], buffer);
-            mDirtyBits.set(DIRTY_BIT_DRAW_INDIRECT_BUFFER_BINDING);
-            break;
-        case BufferBinding::DispatchIndirect:
-            UpdateNonTFBufferBinding(context, &mBoundBuffers[target], buffer);
-            mDirtyBits.set(DIRTY_BIT_DISPATCH_INDIRECT_BUFFER_BINDING);
-            break;
-        case BufferBinding::ElementArray:
-            getVertexArray()->setElementArrayBuffer(context, buffer);
-            mDirtyObjects.set(DIRTY_OBJECT_VERTEX_ARRAY);
-            break;
-        case BufferBinding::ShaderStorage:
-            UpdateNonTFBufferBinding(context, &mBoundBuffers[target], buffer);
-            mDirtyBits.set(DIRTY_BIT_SHADER_STORAGE_BUFFER_BINDING);
-            break;
-        case BufferBinding::Uniform:
-            UpdateBufferBinding(context, &mBoundBuffers[target], buffer, target);
-            mDirtyBits.set(DIRTY_BIT_UNIFORM_BUFFER_BINDINGS);
-            break;
-        case BufferBinding::AtomicCounter:
-            UpdateBufferBinding(context, &mBoundBuffers[target], buffer, target);
-            mDirtyBits.set(DIRTY_BIT_ATOMIC_COUNTER_BUFFER_BINDING);
-            break;
-        default:
-            UpdateBufferBinding(context, &mBoundBuffers[target], buffer, target);
-            break;
-    }
-}
-
 void State::setIndexedBufferBinding(const Context *context,
                                     BufferBinding target,
                                     GLuint index,
@@ -1591,7 +1474,7 @@ Buffer *State::getTargetBuffer(BufferBinding target) const
     switch (target)
     {
         case BufferBinding::ElementArray:
-            return getVertexArray()->getElementArrayBuffer().get();
+            return getVertexArray()->getElementArrayBuffer();
         default:
             return mBoundBuffers[target].get();
     }
@@ -1699,17 +1582,6 @@ void State::setVertexAttribDivisor(const Context *context, GLuint index, GLuint 
     mDirtyObjects.set(DIRTY_OBJECT_VERTEX_ARRAY);
 }
 
-const VertexAttribCurrentValueData &State::getVertexAttribCurrentValue(size_t attribNum) const
-{
-    ASSERT(attribNum < mVertexAttribCurrentValues.size());
-    return mVertexAttribCurrentValues[attribNum];
-}
-
-const std::vector<VertexAttribCurrentValueData> &State::getVertexAttribCurrentValues() const
-{
-    return mVertexAttribCurrentValues;
-}
-
 const void *State::getVertexAttribPointer(unsigned int attribNum) const
 {
     return getVertexArray()->getVertexAttribute(attribNum).pointer;
@@ -1721,20 +1593,10 @@ void State::setPackAlignment(GLint alignment)
     mDirtyBits.set(DIRTY_BIT_PACK_STATE);
 }
 
-GLint State::getPackAlignment() const
-{
-    return mPack.alignment;
-}
-
 void State::setPackReverseRowOrder(bool reverseRowOrder)
 {
     mPack.reverseRowOrder = reverseRowOrder;
     mDirtyBits.set(DIRTY_BIT_PACK_STATE);
-}
-
-bool State::getPackReverseRowOrder() const
-{
-    return mPack.reverseRowOrder;
 }
 
 void State::setPackRowLength(GLint rowLength)
@@ -1743,20 +1605,10 @@ void State::setPackRowLength(GLint rowLength)
     mDirtyBits.set(DIRTY_BIT_PACK_STATE);
 }
 
-GLint State::getPackRowLength() const
-{
-    return mPack.rowLength;
-}
-
 void State::setPackSkipRows(GLint skipRows)
 {
     mPack.skipRows = skipRows;
     mDirtyBits.set(DIRTY_BIT_PACK_STATE);
-}
-
-GLint State::getPackSkipRows() const
-{
-    return mPack.skipRows;
 }
 
 void State::setPackSkipPixels(GLint skipPixels)
@@ -1765,30 +1617,10 @@ void State::setPackSkipPixels(GLint skipPixels)
     mDirtyBits.set(DIRTY_BIT_PACK_STATE);
 }
 
-GLint State::getPackSkipPixels() const
-{
-    return mPack.skipPixels;
-}
-
-const PixelPackState &State::getPackState() const
-{
-    return mPack;
-}
-
-PixelPackState &State::getPackState()
-{
-    return mPack;
-}
-
 void State::setUnpackAlignment(GLint alignment)
 {
     mUnpack.alignment = alignment;
     mDirtyBits.set(DIRTY_BIT_UNPACK_STATE);
-}
-
-GLint State::getUnpackAlignment() const
-{
-    return mUnpack.alignment;
 }
 
 void State::setUnpackRowLength(GLint rowLength)
@@ -1797,20 +1629,10 @@ void State::setUnpackRowLength(GLint rowLength)
     mDirtyBits.set(DIRTY_BIT_UNPACK_STATE);
 }
 
-GLint State::getUnpackRowLength() const
-{
-    return mUnpack.rowLength;
-}
-
 void State::setUnpackImageHeight(GLint imageHeight)
 {
     mUnpack.imageHeight = imageHeight;
     mDirtyBits.set(DIRTY_BIT_UNPACK_STATE);
-}
-
-GLint State::getUnpackImageHeight() const
-{
-    return mUnpack.imageHeight;
 }
 
 void State::setUnpackSkipImages(GLint skipImages)
@@ -1819,20 +1641,10 @@ void State::setUnpackSkipImages(GLint skipImages)
     mDirtyBits.set(DIRTY_BIT_UNPACK_STATE);
 }
 
-GLint State::getUnpackSkipImages() const
-{
-    return mUnpack.skipImages;
-}
-
 void State::setUnpackSkipRows(GLint skipRows)
 {
     mUnpack.skipRows = skipRows;
     mDirtyBits.set(DIRTY_BIT_UNPACK_STATE);
-}
-
-GLint State::getUnpackSkipRows() const
-{
-    return mUnpack.skipRows;
 }
 
 void State::setUnpackSkipPixels(GLint skipPixels)
@@ -1841,40 +1653,10 @@ void State::setUnpackSkipPixels(GLint skipPixels)
     mDirtyBits.set(DIRTY_BIT_UNPACK_STATE);
 }
 
-GLint State::getUnpackSkipPixels() const
-{
-    return mUnpack.skipPixels;
-}
-
-const PixelUnpackState &State::getUnpackState() const
-{
-    return mUnpack;
-}
-
-PixelUnpackState &State::getUnpackState()
-{
-    return mUnpack;
-}
-
-const Debug &State::getDebug() const
-{
-    return mDebug;
-}
-
-Debug &State::getDebug()
-{
-    return mDebug;
-}
-
 void State::setCoverageModulation(GLenum components)
 {
     mCoverageModulation = components;
     mDirtyBits.set(DIRTY_BIT_COVERAGE_MODULATION);
-}
-
-GLenum State::getCoverageModulation() const
-{
-    return mCoverageModulation;
 }
 
 void State::loadPathRenderingMatrix(GLenum matrixMode, const GLfloat *matrix)
@@ -1918,40 +1700,15 @@ void State::setPathStencilFunc(GLenum func, GLint ref, GLuint mask)
     mDirtyBits.set(DIRTY_BIT_PATH_RENDERING);
 }
 
-GLenum State::getPathStencilFunc() const
-{
-    return mPathStencilFunc;
-}
-
-GLint State::getPathStencilRef() const
-{
-    return mPathStencilRef;
-}
-
-GLuint State::getPathStencilMask() const
-{
-    return mPathStencilMask;
-}
-
 void State::setFramebufferSRGB(bool sRGB)
 {
     mFramebufferSRGB = sRGB;
     mDirtyBits.set(DIRTY_BIT_FRAMEBUFFER_SRGB);
 }
 
-bool State::getFramebufferSRGB() const
-{
-    return mFramebufferSRGB;
-}
-
 void State::setMaxShaderCompilerThreads(GLuint count)
 {
     mMaxShaderCompilerThreads = count;
-}
-
-GLuint State::getMaxShaderCompilerThreads() const
-{
-    return mMaxShaderCompilerThreads;
 }
 
 void State::getBooleanv(GLenum pname, GLboolean *params)
@@ -2160,15 +1917,20 @@ void State::getFloatv(GLenum pname, GLfloat *params)
     }
 }
 
-Error State::getIntegerv(const Context *context, GLenum pname, GLint *params)
+angle::Result State::getIntegerv(const Context *context, GLenum pname, GLint *params)
 {
     if (pname >= GL_DRAW_BUFFER0_EXT && pname <= GL_DRAW_BUFFER15_EXT)
     {
-        unsigned int colorAttachment = (pname - GL_DRAW_BUFFER0_EXT);
-        ASSERT(colorAttachment < mMaxDrawBuffers);
+        size_t drawBuffer = (pname - GL_DRAW_BUFFER0_EXT);
+        ASSERT(drawBuffer < mMaxDrawBuffers);
         Framebuffer *framebuffer = mDrawFramebuffer;
-        *params                  = framebuffer->getDrawBufferState(colorAttachment);
-        return NoError();
+        // The default framebuffer may have fewer draw buffer states than a user-created one. The
+        // user is always allowed to query up to GL_MAX_DRAWBUFFERS so just return GL_NONE here if
+        // the draw buffer is out of range for this framebuffer.
+        *params = drawBuffer < framebuffer->getDrawbufferStateCount()
+                      ? framebuffer->getDrawBufferState(drawBuffer)
+                      : GL_NONE;
+        return angle::Result::Continue();
     }
 
     // Please note: DEPTH_CLEAR_VALUE is not included in our internal getIntegerv implementation
@@ -2185,8 +1947,11 @@ Error State::getIntegerv(const Context *context, GLenum pname, GLint *params)
             *params = mBoundBuffers[BufferBinding::DrawIndirect].id();
             break;
         case GL_ELEMENT_ARRAY_BUFFER_BINDING:
-            *params = getVertexArray()->getElementArrayBuffer().id();
+        {
+            Buffer *elementArrayBuffer = getVertexArray()->getElementArrayBuffer();
+            *params                    = elementArrayBuffer ? elementArrayBuffer->id() : 0;
             break;
+        }
         case GL_DRAW_FRAMEBUFFER_BINDING:
             static_assert(GL_DRAW_FRAMEBUFFER_BINDING == GL_DRAW_FRAMEBUFFER_BINDING_ANGLE,
                           "Enum mismatch");
@@ -2564,7 +2329,7 @@ Error State::getIntegerv(const Context *context, GLenum pname, GLint *params)
             break;
     }
 
-    return NoError();
+    return angle::Result::Continue();
 }
 
 void State::getPointerv(const Context *context, GLenum pname, void **params) const
@@ -2714,49 +2479,33 @@ void State::getBooleani_v(GLenum target, GLuint index, GLboolean *data)
     }
 }
 
-angle::Result State::syncDirtyObjects(const Context *context, const DirtyObjects &bitset)
+angle::Result State::syncReadFramebuffer(const Context *context)
 {
-    const DirtyObjects &dirtyObjects = mDirtyObjects & bitset;
-    for (auto dirtyObject : dirtyObjects)
-    {
-        switch (dirtyObject)
-        {
-            case DIRTY_OBJECT_READ_FRAMEBUFFER:
-                ASSERT(mReadFramebuffer);
-                ANGLE_TRY(mReadFramebuffer->syncState(context));
-                break;
-            case DIRTY_OBJECT_DRAW_FRAMEBUFFER:
-                ASSERT(mDrawFramebuffer);
-                ANGLE_TRY(mDrawFramebuffer->syncState(context));
-                break;
-            case DIRTY_OBJECT_VERTEX_ARRAY:
-                ASSERT(mVertexArray);
-                ANGLE_TRY(mVertexArray->syncState(context));
-                break;
-            case DIRTY_OBJECT_SAMPLERS:
-                syncSamplers(context);
-                break;
-            case DIRTY_OBJECT_PROGRAM_TEXTURES:
-                ANGLE_TRY(syncProgramTextures(context));
-                break;
-            case DIRTY_OBJECT_PROGRAM:
-                ANGLE_TRY(mProgram->syncState(context));
-                break;
-
-            default:
-                UNREACHABLE();
-                break;
-        }
-    }
-
-    mDirtyObjects &= ~dirtyObjects;
-    return angle::Result::Continue();
+    ASSERT(mReadFramebuffer);
+    return mReadFramebuffer->syncState(context);
 }
 
-void State::syncSamplers(const Context *context)
+angle::Result State::syncWriteFramebuffer(const Context *context)
+{
+    ASSERT(mDrawFramebuffer);
+    return mDrawFramebuffer->syncState(context);
+}
+
+angle::Result State::syncVertexArray(const Context *context)
+{
+    ASSERT(mVertexArray);
+    return mVertexArray->syncState(context);
+}
+
+angle::Result State::syncProgram(const Context *context)
+{
+    return mProgram->syncState(context);
+}
+
+angle::Result State::syncSamplers(const Context *context)
 {
     if (mDirtySamplers.none())
-        return;
+        return angle::Result::Continue();
 
     // This could be optimized by tracking which samplers are dirty.
     for (size_t samplerIndex : mDirtySamplers)
@@ -2769,6 +2518,8 @@ void State::syncSamplers(const Context *context)
     }
 
     mDirtySamplers.reset();
+
+    return angle::Result::Continue();
 }
 
 angle::Result State::syncProgramTextures(const Context *context)
@@ -2786,7 +2537,7 @@ angle::Result State::syncProgramTextures(const Context *context)
 
     // Initialize to the 'Initialized' state and set to 'MayNeedInit' if any texture is not
     // initialized.
-    mCachedTexturesInitState = InitState::Initialized;
+    mCachedTexturesInitState      = InitState::Initialized;
     mCachedImageTexturesInitState = InitState::Initialized;
 
     const ActiveTextureMask &activeTextures             = mProgram->getActiveSamplersMask();
@@ -2970,11 +2721,6 @@ void State::setImageUnit(const Context *context,
     mDirtyBits.set(DIRTY_BIT_IMAGE_BINDINGS);
 }
 
-const ImageUnit &State::getImageUnit(size_t unit) const
-{
-    return mImageUnits[unit];
-}
-
 // Handle a dirty texture event.
 void State::onActiveTextureStateChange(size_t textureIndex)
 {
@@ -3037,8 +2783,6 @@ AttributesMask State::getAndResetDirtyCurrentValues() const
     return retVal;
 }
 
-bool State::isCurrentTransformFeedback(const TransformFeedback *tf) const
-{
-    return tf == mTransformFeedback.get();
-}
+constexpr State::DirtyObjectHandler State::kDirtyObjectHandlers[DIRTY_OBJECT_MAX];
+
 }  // namespace gl

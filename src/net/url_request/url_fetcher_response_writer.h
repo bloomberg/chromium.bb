@@ -32,14 +32,17 @@ class NET_EXPORT URLFetcherResponseWriter {
  public:
   virtual ~URLFetcherResponseWriter() {}
 
-  // Initializes this instance. If ERR_IO_PENDING is returned, |callback| will
-  // be run later with the result. Calling this method again after a
-  // Initialize() success results in discarding already written data.
+  // Initializes this instance. Returns an error code defined in
+  // //net/base/net_errors.h. If ERR_IO_PENDING is returned, |callback| will be
+  // run later with the result. If anything else is returned, |callback| will
+  // *not* be called. Calling this method again after a Initialize() success
+  // results in discarding already written data.
   virtual int Initialize(CompletionOnceCallback callback) = 0;
 
   // Writes |num_bytes| bytes in |buffer|, and returns the number of bytes
-  // written or an error code. If ERR_IO_PENDING is returned, |callback| will be
-  // run later with the result.
+  // written or an error code defined in //net/base/net_errors.h. If
+  // ERR_IO_PENDING is returned, |callback| will be run later with the result.
+  // If anything else is returned, |callback| will *not* be called.
   virtual int Write(IOBuffer* buffer,
                     int num_bytes,
                     CompletionOnceCallback callback) = 0;
@@ -49,8 +52,10 @@ class NET_EXPORT URLFetcherResponseWriter {
   // errors (|net_error| not OK), this method may be called before the previous
   // operation completed. In this case, URLFetcherResponseWriter may skip
   // graceful shutdown and completion of the pending operation. After such a
-  // failure, the URLFetcherResponseWriter may be reused. If ERR_IO_PENDING is
-  // returned, |callback| will be run later with the result.
+  // failure, the URLFetcherResponseWriter may be reused. Returns an error code
+  // defined in //net/base/net_errors.h. If ERR_IO_PENDING is returned,
+  // |callback| will be run later with the result. If anything else is returned,
+  // |callback| will *not* be called.
   virtual int Finish(int net_error, CompletionOnceCallback callback) = 0;
 
   // Returns this instance's pointer as URLFetcherStringWriter when possible.
@@ -86,7 +91,9 @@ class NET_EXPORT URLFetcherStringWriter : public URLFetcherResponseWriter {
 class NET_EXPORT URLFetcherFileWriter : public URLFetcherResponseWriter {
  public:
   // |file_path| is used as the destination path. If |file_path| is empty,
-  // Initialize() will create a temporary file.
+  // Initialize() will create a temporary file. The destination file is deleted
+  // when a URLFetcherFileWriter instance is destructed unless DisownFile() is
+  // called.
   URLFetcherFileWriter(
       scoped_refptr<base::SequencedTaskRunner> file_task_runner,
       const base::FilePath& file_path);

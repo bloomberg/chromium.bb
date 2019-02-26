@@ -26,7 +26,7 @@ void PaintWorkletPendingGeneratorRegistry::AddPendingGenerator(
   Member<GeneratorHashSet>& set =
       pending_generators_.insert(name, nullptr).stored_value->value;
   if (!set)
-    set = new GeneratorHashSet;
+    set = MakeGarbageCollected<GeneratorHashSet>();
   set->insert(generator);
 }
 

@@ -7,7 +7,7 @@
 #include <memory>
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/blink/renderer/core/css/css_primitive_value.h"
-#include "third_party/blink/renderer/core/css_property_names.h"
+#include "third_party/blink/renderer/core/css/css_property_names.h"
 #include "third_party/blink/renderer/core/css_value_keywords.h"
 #include "third_party/blink/renderer/core/frame/settings.h"
 #include "third_party/blink/renderer/core/layout/api/line_layout_text.h"
@@ -38,10 +38,13 @@ class TextPainterTest : public RenderingTest {
         is_printing ? kGlobalPaintPrinting : kGlobalPaintNormalPhase, 0);
   }
 
- private:
+ protected:
   void SetUp() override {
     RenderingTest::SetUp();
     SetBodyInnerHTML("Hello world");
+    UpdateLayoutText();
+  }
+  void UpdateLayoutText() {
     layout_text_ =
         ToLayoutText(GetDocument().body()->firstChild()->GetLayoutObject());
     ASSERT_TRUE(layout_text_);
@@ -55,7 +58,7 @@ class TextPainterTest : public RenderingTest {
 
 TEST_F(TextPainterTest, TextPaintingStyle_Simple) {
   GetDocument().body()->SetInlineStyleProperty(CSSPropertyColor, CSSValueBlue);
-  GetDocument().View()->UpdateAllLifecyclePhases();
+  UpdateAllLifecyclePhasesForTest();
 
   TextPaintStyle text_style = TextPainter::TextPaintingStyle(
       GetLineLayoutText().GetDocument(), GetLineLayoutText().StyleRef(),
@@ -79,7 +82,7 @@ TEST_F(TextPainterTest, TextPaintingStyle_AllProperties) {
       CSSPrimitiveValue::UnitType::kPixels);
   GetDocument().body()->SetInlineStyleProperty(CSSPropertyTextShadow,
                                                "1px 2px 3px yellow");
-  GetDocument().View()->UpdateAllLifecyclePhases();
+  UpdateAllLifecyclePhasesForTest();
 
   TextPaintStyle text_style = TextPainter::TextPaintingStyle(
       GetLineLayoutText().GetDocument(), GetLineLayoutText().StyleRef(),
@@ -109,7 +112,7 @@ TEST_F(TextPainterTest, TextPaintingStyle_UsesTextAsClip) {
       CSSPrimitiveValue::UnitType::kPixels);
   GetDocument().body()->SetInlineStyleProperty(CSSPropertyTextShadow,
                                                "1px 2px 3px yellow");
-  GetDocument().View()->UpdateAllLifecyclePhases();
+  UpdateAllLifecyclePhasesForTest();
 
   TextPaintStyle text_style = TextPainter::TextPaintingStyle(
       GetLineLayoutText().GetDocument(), GetLineLayoutText().StyleRef(),
@@ -134,7 +137,10 @@ TEST_F(TextPainterTest,
   GetDocument().GetSettings()->SetShouldPrintBackgrounds(false);
   FloatSize page_size(500, 800);
   GetFrame().StartPrinting(page_size, page_size, 1);
-  GetDocument().View()->UpdateAllLifecyclePhases();
+  UpdateAllLifecyclePhasesForTest();
+  // In LayoutNG, printing currently forces layout tree reattachment,
+  // so we need to re-get layout_text_.
+  UpdateLayoutText();
 
   TextPaintStyle text_style = TextPainter::TextPaintingStyle(
       GetLineLayoutText().GetDocument(), GetLineLayoutText().StyleRef(),
@@ -157,6 +163,9 @@ TEST_F(TextPainterTest, TextPaintingStyle_ForceBackgroundToWhite_Darkened) {
   FloatSize page_size(500, 800);
   GetFrame().StartPrinting(page_size, page_size, 1);
   GetDocument().View()->UpdateLifecyclePhasesForPrinting();
+  // In LayoutNG, printing currently forces layout tree reattachment,
+  // so we need to re-get layout_text_.
+  UpdateLayoutText();
 
   TextPaintStyle text_style = TextPainter::TextPaintingStyle(
       GetLineLayoutText().GetDocument(), GetLineLayoutText().StyleRef(),

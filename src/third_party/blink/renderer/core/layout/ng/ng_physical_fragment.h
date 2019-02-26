@@ -23,6 +23,7 @@ namespace blink {
 class ComputedStyle;
 class LayoutObject;
 class Node;
+class NGFragmentBuilder;
 class NGBreakToken;
 class NGInlineItem;
 struct NGPixelSnappedPhysicalBoxStrut;
@@ -198,11 +199,11 @@ class CORE_EXPORT NGPhysicalFragment
   TouchAction EffectiveWhitelistedTouchAction() const;
 
   // Returns the bidi level of a text or atomic inline fragment.
-  virtual UBiDiLevel BidiLevel() const;
+  UBiDiLevel BidiLevel() const;
 
   // Returns the resolved direction of a text or atomic inline fragment. Not to
   // be confused with the CSS 'direction' property.
-  virtual TextDirection ResolvedDirection() const;
+  TextDirection ResolvedDirection() const;
 
   String ToString() const;
 
@@ -230,8 +231,11 @@ class CORE_EXPORT NGPhysicalFragment
 #endif
 
  protected:
+  NGPhysicalFragment(NGFragmentBuilder*,
+                     NGFragmentType type,
+                     unsigned sub_type);
+
   NGPhysicalFragment(LayoutObject* layout_object,
-                     const ComputedStyle& style,
                      NGStyleVariant,
                      NGPhysicalSize size,
                      NGFragmentType type,
@@ -241,21 +245,28 @@ class CORE_EXPORT NGPhysicalFragment
   const Vector<NGInlineItem>& InlineItemsOfContainingBlock() const;
 
   LayoutObject* const layout_object_;
-  scoped_refptr<const ComputedStyle> style_;
   const NGPhysicalSize size_;
   scoped_refptr<NGBreakToken> break_token_;
 
   const unsigned type_ : 2;      // NGFragmentType
-  const unsigned sub_type_ : 3;  // Union of NGBoxType and NGTextType
-  unsigned is_fieldset_container_ : 1;
-  unsigned is_old_layout_root_ : 1;
-  unsigned border_edge_ : 4;  // NGBorderEdges::Physical
+  const unsigned sub_type_ : 3;  // NGBoxType, NGTextType, or NGLineBoxType
   const unsigned style_variant_ : 2;  // NGStyleVariant
-  unsigned base_direction_ : 1;  // TextDirection, for NGPhysicalLineBoxFragment
+
+  // The following bitfield is only to be used by NGPhysicalLineBoxFragment
+  // (it's defined here to save memory, since that class has no bitfields).
+  unsigned base_direction_ : 1;  // TextDirection
 
   // The following bitfield is only to be used by NGPhysicalBoxFragment (it's
   // defined here to save memory, since that class has no bitfields).
   unsigned children_inline_ : 1;
+  unsigned is_fieldset_container_ : 1;
+  unsigned is_old_layout_root_ : 1;
+  unsigned border_edge_ : 4;  // NGBorderEdges::Physical
+
+  // The following bitfield is only to be used by NGPhysicalTextFragment (it's
+  // defined here to save memory, since that class has no bitfields).
+  unsigned line_orientation_ : 2;  // NGLineOrientation
+  unsigned is_anonymous_text_ : 1;
 
  private:
   friend struct NGPhysicalFragmentTraits;

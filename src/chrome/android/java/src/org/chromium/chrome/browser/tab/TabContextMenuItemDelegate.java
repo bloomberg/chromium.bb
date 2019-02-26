@@ -222,6 +222,11 @@ public class TabContextMenuItemDelegate implements ContextMenuItemDelegate {
     }
 
     @Override
+    public void onOpenInEphemeralTab(String url, String title) {
+        mTab.getActivity().getEphemeralTabPanel().requestOpenPanel(url, title);
+    }
+
+    @Override
     public void onOpenInChrome(String linkUrl, String pageUrl) {
         Context applicationContext = ContextUtils.getApplicationContext();
         Intent chromeIntent = new Intent(Intent.ACTION_VIEW, Uri.parse(linkUrl));

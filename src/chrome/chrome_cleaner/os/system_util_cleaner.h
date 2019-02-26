@@ -75,6 +75,8 @@ base::Process LaunchElevatedProcessWithAssociatedWindow(
     const base::CommandLine& command_line,
     HWND hwnd);
 
+bool InitializeQuarantineFolder(base::FilePath* output_quarantine_path);
+
 }  // namespace chrome_cleaner
 
 #endif  // CHROME_CHROME_CLEANER_OS_SYSTEM_UTIL_CLEANER_H_

@@ -4,10 +4,16 @@
 
 #include "ui/aura/mus/window_port_mus.h"
 
+#include <utility>
+
 #include "base/auto_reset.h"
+#include "base/bind.h"
+#include "base/callback.h"
 #include "cc/mojo_embedder/async_layer_tree_frame_sink.h"
 #include "components/viz/client/hit_test_data_provider_draw_quad.h"
 #include "components/viz/client/local_surface_id_provider.h"
+#include "components/viz/common/features.h"
+#include "components/viz/common/surfaces/local_surface_id_allocation.h"
 #include "components/viz/host/host_frame_sink_manager.h"
 #include "services/ws/public/mojom/window_tree_constants.mojom.h"
 #include "ui/aura/client/aura_constants.h"
@@ -15,9 +21,9 @@
 #include "ui/aura/env.h"
 #include "ui/aura/mus/client_surface_embedder.h"
 #include "ui/aura/mus/property_converter.h"
+#include "ui/aura/mus/property_utils.h"
 #include "ui/aura/mus/window_tree_client.h"
 #include "ui/aura/mus/window_tree_client_delegate.h"
-#include "ui/aura/window.h"
 #include "ui/aura/window_delegate.h"
 #include "ui/aura/window_observer.h"
 #include "ui/base/class_property.h"
@@ -36,6 +42,46 @@ static const char* kMus = "Mus";
 WindowPortMus::WindowMusChangeDataImpl::WindowMusChangeDataImpl() = default;
 
 WindowPortMus::WindowMusChangeDataImpl::~WindowMusChangeDataImpl() = default;
+
+class WindowPortMus::VisibilityTracker : public WindowObserver {
+ public:
+  using Callback = base::RepeatingCallback<void(bool visible)>;
+  VisibilityTracker(Window* target, Callback callback)
+      : target_(target),
+        callback_(std::move(callback)),
+        last_visible_(target->IsVisible()) {
+    target_->AddObserver(this);
+  }
+
+  ~VisibilityTracker() override {
+    if (target_)
+      target_->RemoveObserver(this);
+  }
+
+ private:
+  // WindowObserver:
+  void OnWindowVisibilityChanged(Window* window, bool visible) override {
+    // Checking visibility change here instead of in OnVisibilityChanged to
+    // capture the change from window ancestors in addition to the window
+    // itself.
+    bool new_visible = target_->IsVisible();
+    if (new_visible == last_visible_)
+      return;
+
+    last_visible_ = new_visible;
+    callback_.Run(new_visible);
+  }
+  void OnWindowDestroyed(Window* window) override {
+    DCHECK_EQ(target_, window);
+    target_ = nullptr;
+  }
+
+  Window* target_;
+  Callback callback_;
+  bool last_visible_;
+
+  DISALLOW_COPY_AND_ASSIGN(VisibilityTracker);
+};
 
 // static
 WindowMus* WindowMus::Get(Window* window) {
@@ -130,6 +176,7 @@ void WindowPortMus::EmbedUsingToken(
 std::unique_ptr<cc::mojo_embedder::AsyncLayerTreeFrameSink>
 WindowPortMus::RequestLayerTreeFrameSink(
     scoped_refptr<viz::ContextProvider> context_provider,
+    scoped_refptr<viz::RasterContextProvider> raster_context_provider,
     gpu::GpuMemoryBufferManager* gpu_memory_buffer_manager) {
   viz::mojom::CompositorFrameSinkPtrInfo sink_info;
   viz::mojom::CompositorFrameSinkRequest sink_request =
@@ -139,6 +186,9 @@ WindowPortMus::RequestLayerTreeFrameSink(
       mojo::MakeRequest(&client);
 
   cc::mojo_embedder::AsyncLayerTreeFrameSink::InitParams params;
+  ui::Compositor* compositor = window_->layer()->GetCompositor();
+  DCHECK(compositor);
+  params.compositor_task_runner = compositor->task_runner();
   params.gpu_memory_buffer_manager = gpu_memory_buffer_manager;
   params.pipes.compositor_frame_sink_info = std::move(sink_info);
   params.pipes.client_request = std::move(client_request);
@@ -147,9 +197,11 @@ WindowPortMus::RequestLayerTreeFrameSink(
        ws::mojom::EventTargetingPolicy::TARGET_ONLY) ||
       (window_->event_targeting_policy() ==
        ws::mojom::EventTargetingPolicy::TARGET_AND_DESCENDANTS);
-  params.hit_test_data_provider =
-      std::make_unique<viz::HitTestDataProviderDrawQuad>(
-          true /* should_ask_for_child_region */, root_accepts_events);
+  if (features::IsVizHitTestingDrawQuadEnabled()) {
+    params.hit_test_data_provider =
+        std::make_unique<viz::HitTestDataProviderDrawQuad>(
+            /* should_ask_for_child_regions */ false, root_accepts_events);
+  }
   params.local_surface_id_provider =
       std::make_unique<viz::DefaultLocalSurfaceIdProvider>();
   params.enable_surface_synchronization = true;
@@ -157,7 +209,7 @@ WindowPortMus::RequestLayerTreeFrameSink(
 
   auto layer_tree_frame_sink =
       std::make_unique<cc::mojo_embedder::AsyncLayerTreeFrameSink>(
-          std::move(context_provider), nullptr /* worker_context_provider */,
+          std::move(context_provider), std::move(raster_context_provider),
           &params);
   window_tree_client_->AttachCompositorFrameSink(
       server_id(), std::move(sink_request), std::move(client));
@@ -327,9 +379,9 @@ void WindowPortMus::SetBoundsFromServer(
   last_surface_size_in_pixels_ =
       gfx::ConvertSizeToPixel(GetDeviceScaleFactor(), bounds.size());
   if (local_surface_id)
-    local_surface_id_ = *local_surface_id;
+    parent_local_surface_id_allocator_.Reset(*local_surface_id);
   else
-    local_surface_id_ = viz::LocalSurfaceId();
+    parent_local_surface_id_allocator_.Invalidate();
   window_->SetBounds(bounds);
 }
 
@@ -383,10 +435,14 @@ void WindowPortMus::SetFrameSinkIdFromServer(
 const viz::LocalSurfaceId& WindowPortMus::GetOrAllocateLocalSurfaceId(
     const gfx::Size& surface_size_in_pixels) {
   if (last_surface_size_in_pixels_ != surface_size_in_pixels ||
-      !local_surface_id_.is_valid()) {
-    local_surface_id_ = parent_local_surface_id_allocator_.GenerateId();
+      !GetLocalSurfaceIdAllocation().IsValid()) {
+    parent_local_surface_id_allocator_.GenerateId();
     last_surface_size_in_pixels_ = surface_size_in_pixels;
   }
+
+  const viz::LocalSurfaceId& current_local_surface_id =
+      parent_local_surface_id_allocator_.GetCurrentLocalSurfaceIdAllocation()
+          .local_surface_id();
 
   // If the FrameSinkId is available, then immediately embed the SurfaceId.
   // The newly generated frame by the embedder will block in the display
@@ -396,9 +452,9 @@ const viz::LocalSurfaceId& WindowPortMus::GetOrAllocateLocalSurfaceId(
     UpdatePrimarySurfaceId();
 
   if (local_layer_tree_frame_sink_)
-    local_layer_tree_frame_sink_->SetLocalSurfaceId(local_surface_id_);
+    local_layer_tree_frame_sink_->SetLocalSurfaceId(current_local_surface_id);
 
-  return local_surface_id_;
+  return current_local_surface_id;
 }
 
 void WindowPortMus::DestroyFromServer() {
@@ -457,14 +513,12 @@ WindowPortMus::ChangeSource WindowPortMus::OnTransientChildRemoved(
 }
 
 void WindowPortMus::AllocateLocalSurfaceId() {
-  local_surface_id_ = parent_local_surface_id_allocator_.GenerateId();
+  parent_local_surface_id_allocator_.GenerateId();
   UpdatePrimarySurfaceId();
-  if (local_layer_tree_frame_sink_)
-    local_layer_tree_frame_sink_->SetLocalSurfaceId(local_surface_id_);
-}
-
-bool WindowPortMus::IsLocalSurfaceIdAllocationSuppressed() const {
-  return parent_local_surface_id_allocator_.is_allocation_suppressed();
+  if (local_layer_tree_frame_sink_) {
+    local_layer_tree_frame_sink_->SetLocalSurfaceId(
+        GetLocalSurfaceIdAllocation().local_surface_id());
+  }
 }
 
 viz::ScopedSurfaceIdAllocator WindowPortMus::GetSurfaceIdAllocator(
@@ -473,12 +527,15 @@ viz::ScopedSurfaceIdAllocator WindowPortMus::GetSurfaceIdAllocator(
                                        std::move(allocation_task));
 }
 
+void WindowPortMus::InvalidateLocalSurfaceId() {
+  parent_local_surface_id_allocator_.Invalidate();
+}
+
 void WindowPortMus::UpdateLocalSurfaceIdFromEmbeddedClient(
-    const viz::LocalSurfaceId& embedded_client_local_surface_id) {
+    const viz::LocalSurfaceIdAllocation&
+        embedded_client_local_surface_id_allocation) {
   parent_local_surface_id_allocator_.UpdateFromChild(
-      embedded_client_local_surface_id);
-  local_surface_id_ =
-      parent_local_surface_id_allocator_.GetCurrentLocalSurfaceId();
+      embedded_client_local_surface_id_allocation);
   UpdatePrimarySurfaceId();
 
   // OnWindowMusBoundsChanged() triggers notifying the server of the new
@@ -487,8 +544,10 @@ void WindowPortMus::UpdateLocalSurfaceIdFromEmbeddedClient(
                                                 window_->bounds());
 }
 
-const viz::LocalSurfaceId& WindowPortMus::GetLocalSurfaceId() {
-  return local_surface_id_;
+const viz::LocalSurfaceIdAllocation&
+WindowPortMus::GetLocalSurfaceIdAllocation() {
+  return parent_local_surface_id_allocator_
+      .GetCurrentLocalSurfaceIdAllocation();
 }
 
 std::unique_ptr<WindowMusChangeData>
@@ -538,10 +597,12 @@ void WindowPortMus::OnPreInit(Window* window) {
 
 void WindowPortMus::OnDeviceScaleFactorChanged(float old_device_scale_factor,
                                                float new_device_scale_factor) {
-  if (!window_->IsRootWindow() && local_surface_id_.is_valid() &&
+  if (!window_->IsRootWindow() && GetLocalSurfaceIdAllocation().IsValid() &&
       local_layer_tree_frame_sink_) {
-    local_surface_id_ = parent_local_surface_id_allocator_.GenerateId();
-    local_layer_tree_frame_sink_->SetLocalSurfaceId(local_surface_id_);
+    parent_local_surface_id_allocator_.GenerateId();
+    local_layer_tree_frame_sink_->SetLocalSurfaceId(
+        parent_local_surface_id_allocator_.GetCurrentLocalSurfaceIdAllocation()
+            .local_surface_id());
   }
 
   if (window_->delegate()) {
@@ -635,8 +696,10 @@ WindowPortMus::CreateLayerTreeFrameSink() {
   DCHECK_EQ(window_mus_type(), WindowMusType::LOCAL);
   DCHECK(!local_layer_tree_frame_sink_);
 
+  // TODO(sky): this needs to supply a RasterContextProvider.
   auto client_layer_tree_frame_sink = RequestLayerTreeFrameSink(
-      nullptr, window_->env()->context_factory()->GetGpuMemoryBufferManager());
+      nullptr, nullptr,
+      window_->env()->context_factory()->GetGpuMemoryBufferManager());
   local_layer_tree_frame_sink_ = client_layer_tree_frame_sink->GetWeakPtr();
   embed_frame_sink_id_ = GenerateFrameSinkIdFromServerId();
   window_->SetEmbedFrameSinkId(embed_frame_sink_id_);
@@ -672,23 +735,94 @@ void WindowPortMus::UnregisterFrameSinkId(
   window_tree_client_->UnregisterFrameSinkId(this);
 }
 
+void WindowPortMus::TrackOcclusionState() {
+  // base::Unretained because |this| owns |visibility_tracker_|.
+  visibility_tracker_ = std::make_unique<VisibilityTracker>(
+      window_, base::BindRepeating(
+                   &WindowPortMus::UpdateOcclusionStateAfterVisiblityChange,
+                   base::Unretained(this)));
+  window_tree_client_->TrackOcclusionState(this);
+}
+
 void WindowPortMus::UpdatePrimarySurfaceId() {
   if (window_mus_type() != WindowMusType::LOCAL)
     return;
 
-  if (!window_->IsEmbeddingClient() || !local_surface_id_.is_valid())
+  if (!window_->IsEmbeddingClient() || !GetLocalSurfaceIdAllocation().IsValid())
     return;
 
   primary_surface_id_ =
-      viz::SurfaceId(window_->GetFrameSinkId(), local_surface_id_);
+      viz::SurfaceId(window_->GetFrameSinkId(),
+                     GetLocalSurfaceIdAllocation().local_surface_id());
 
   if (!client_surface_embedder_) {
     client_surface_embedder_ = std::make_unique<ClientSurfaceEmbedder>(
         window_, /* inject_gutter */ false, gfx::Insets());
   }
 
-  client_surface_embedder_->SetPrimarySurfaceId(primary_surface_id_);
+  client_surface_embedder_->SetSurfaceId(primary_surface_id_);
   client_surface_embedder_->UpdateSizeAndGutters();
+}
+
+void WindowPortMus::SetOcclusionStateFromServer(
+    ws::mojom::OcclusionState occlusion_state) {
+  const Window::OcclusionState new_state =
+      WindowOcclusionStateFromMojom(occlusion_state);
+  const Window::OcclusionState old_state = window_->occlusion_state();
+
+  if (old_state == new_state)
+    return;
+
+  // Filter HIDDEN/VISIBLE state that does not match window target visibility.
+  // This happens when the client makes visibility changes without waiting for
+  // server's occlusion state update. The stale occlusion state is still
+  // received and should be dropped to avoid unnecessary state change.
+  // e.g.
+  //   CLIENT: Hide()
+  //   CLIENT: Show()
+  //   SERVER: Receives Hide() and sends back HIDDEN
+  //   SERVER: Receives Show() and sends back VISIBLE
+  //   CLIENT: Receives HIDDEN and drops it because local state is visible.
+  //   CLIENT: Receives VISIBLE and accepts it.
+  const bool visible = window_->IsVisible();
+  if ((visible && new_state == Window::OcclusionState::HIDDEN) ||
+      (!visible && new_state == Window::OcclusionState::VISIBLE)) {
+    return;
+  }
+
+  UpdateOcclusionState(new_state);
+}
+
+void WindowPortMus::UpdateOcclusionState(Window::OcclusionState new_state) {
+  const Window::OcclusionState old_state = window_->occlusion_state();
+
+  if (new_state == Window::OcclusionState::HIDDEN &&
+      old_state != Window::OcclusionState::UNKNOWN) {
+    occlusion_state_before_hidden_ = old_state;
+  } else {
+    occlusion_state_before_hidden_.reset();
+  }
+
+  // TODO: Support occlusion region tracking. See crbug.com/900568.
+  window_->SetOcclusionInfo(new_state, SkRegion());
+}
+
+void WindowPortMus::UpdateOcclusionStateAfterVisiblityChange(bool visible) {
+  DCHECK_EQ(visible, window_->IsVisible());
+
+  // No occlusion state update if |window_| is not added a root window.
+  if (!window_->GetRootWindow())
+    return;
+
+  if (!visible) {
+    // Set HIDDEN early when |window_| becomes hidden.
+    UpdateOcclusionState(Window::OcclusionState::HIDDEN);
+  } else {
+    // Restore to before-hidden state or VISIBLE when |window_| becomes visible.
+    UpdateOcclusionState(occlusion_state_before_hidden_
+                             ? occlusion_state_before_hidden_.value()
+                             : Window::OcclusionState::VISIBLE);
+  }
 }
 
 }  // namespace aura

@@ -42,7 +42,7 @@ class LayoutSVGResourceClipper final : public LayoutSVGResourceContainer {
   static const LayoutSVGResourceType kResourceType = kClipperResourceType;
   LayoutSVGResourceType ResourceType() const override { return kResourceType; }
 
-  bool HitTestClipContent(const FloatRect&, const FloatPoint&);
+  bool HitTestClipContent(const FloatRect&, const HitTestLocation&) const;
 
   SVGUnitTypes::SVGUnitType ClipPathUnits() const;
   AffineTransform CalculateClipTransform(const FloatRect& reference_box) const;

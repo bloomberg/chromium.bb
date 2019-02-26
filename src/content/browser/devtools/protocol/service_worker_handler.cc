@@ -362,12 +362,12 @@ void ServiceWorkerHandler::OnWorkerRegistrationUpdated(
       protocol::Array<Registration>::create();
   for (const auto& registration : registrations) {
     result->addItem(Registration::Create()
-        .SetRegistrationId(
-            base::Int64ToString(registration.registration_id))
-        .SetScopeURL(registration.pattern.spec())
-        .SetIsDeleted(registration.delete_flag ==
-                      ServiceWorkerRegistrationInfo::IS_DELETED)
-        .Build());
+                        .SetRegistrationId(
+                            base::Int64ToString(registration.registration_id))
+                        .SetScopeURL(registration.scope.spec())
+                        .SetIsDeleted(registration.delete_flag ==
+                                      ServiceWorkerRegistrationInfo::IS_DELETED)
+                        .Build());
   }
   frontend_->WorkerRegistrationUpdated(std::move(result));
 }

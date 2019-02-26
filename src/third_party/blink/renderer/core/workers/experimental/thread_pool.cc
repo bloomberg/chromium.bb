@@ -6,55 +6,14 @@
 
 #include "services/service_manager/public/cpp/interface_provider.h"
 #include "third_party/blink/public/platform/dedicated_worker_factory.mojom-blink.h"
-#include "third_party/blink/renderer/bindings/core/v8/serialization/serialized_script_value.h"
-#include "third_party/blink/renderer/bindings/core/v8/v8_binding_for_core.h"
-#include "third_party/blink/renderer/bindings/core/v8/worker_or_worklet_script_controller.h"
-#include "third_party/blink/renderer/core/dom/abort_signal.h"
-#include "third_party/blink/renderer/core/execution_context/execution_context.h"
-#include "third_party/blink/renderer/core/inspector/main_thread_debugger.h"
+#include "third_party/blink/renderer/core/dom/document.h"
+#include "third_party/blink/renderer/core/frame/local_frame.h"
 #include "third_party/blink/renderer/core/origin_trials/origin_trial_context.h"
-#include "third_party/blink/renderer/core/probe/core_probes.h"
-#include "third_party/blink/renderer/core/workers/dedicated_worker_messaging_proxy.h"
+#include "third_party/blink/renderer/core/workers/global_scope_creation_params.h"
 #include "third_party/blink/renderer/core/workers/threaded_messaging_proxy_base.h"
 #include "third_party/blink/renderer/core/workers/threaded_object_proxy_base.h"
-#include "third_party/blink/renderer/core/workers/worker_global_scope.h"
-#include "third_party/blink/renderer/core/workers/worker_options.h"
-#include "third_party/blink/renderer/platform/bindings/exception_state.h"
-#include "third_party/blink/renderer/platform/cross_thread_functional.h"
-#include "third_party/blink/renderer/platform/loader/fetch/fetch_client_settings_object_snapshot.h"
-#include "third_party/blink/renderer/platform/scheduler/worker/worker_thread_scheduler.h"
 
 namespace blink {
-
-class ThreadPoolWorkerGlobalScope final : public WorkerGlobalScope {
- public:
-  ThreadPoolWorkerGlobalScope(
-      std::unique_ptr<GlobalScopeCreationParams> creation_params,
-      WorkerThread* thread)
-      : WorkerGlobalScope(std::move(creation_params),
-                          thread,
-                          CurrentTimeTicks()) {}
-
-  ~ThreadPoolWorkerGlobalScope() override = default;
-
-  // EventTarget
-  const AtomicString& InterfaceName() const override {
-    // TODO(japhet): Replaces this with
-    // EventTargetNames::ThreadPoolWorkerGlobalScope.
-    return EventTargetNames::DedicatedWorkerGlobalScope;
-  }
-
-  // WorkerGlobalScope
-  void ImportModuleScript(
-      const KURL& module_url_record,
-      FetchClientSettingsObjectSnapshot* outside_settings_object,
-      network::mojom::FetchCredentialsMode) override {
-    // TODO(japhet): Consider whether modules should be supported.
-    NOTREACHED();
-  }
-
-  void ExceptionThrown(ErrorEvent*) override {}
-};
 
 class ThreadPoolObjectProxy final : public ThreadedObjectProxyBase {
  public:
@@ -87,8 +46,8 @@ class ThreadPoolMessagingProxy final : public ThreadedMessagingProxyBase {
                            WorkerBackingThreadStartupData::CreateDefault());
   }
   std::unique_ptr<WorkerThread> CreateWorkerThread() override {
-    return std::make_unique<ThreadPoolThread>(GetExecutionContext(),
-                                              *object_proxy_.get());
+    return std::make_unique<ThreadPoolThread>(
+        GetExecutionContext(), *object_proxy_.get(), ThreadPoolThread::kWorker);
   }
 
   ThreadPoolThread* GetWorkerThread() const {
@@ -99,22 +58,6 @@ class ThreadPoolMessagingProxy final : public ThreadedMessagingProxyBase {
  private:
   std::unique_ptr<ThreadPoolObjectProxy> object_proxy_;
 };
-
-ThreadPoolThread::ThreadPoolThread(ExecutionContext* parent_execution_context,
-                                   ThreadPoolObjectProxy& object_proxy)
-    : WorkerThread(object_proxy) {
-  FrameOrWorkerScheduler* scheduler =
-      parent_execution_context ? parent_execution_context->GetScheduler()
-                               : nullptr;
-  worker_backing_thread_ =
-      WorkerBackingThread::Create(ThreadCreationParams(GetThreadType())
-                                      .SetFrameOrWorkerScheduler(scheduler));
-}
-
-WorkerOrWorkletGlobalScope* ThreadPoolThread::CreateWorkerGlobalScope(
-    std::unique_ptr<GlobalScopeCreationParams> creation_params) {
-  return new ThreadPoolWorkerGlobalScope(std::move(creation_params), this);
-}
 
 service_manager::mojom::blink::InterfaceProviderPtrInfo
 ConnectToWorkerInterfaceProviderForThreadPool(
@@ -165,12 +108,15 @@ ThreadPoolThread* ThreadPool::CreateNewThread() {
   std::unique_ptr<WorkerSettings> settings =
       std::make_unique<WorkerSettings>(GetFrame()->GetSettings());
 
+  // WebWorkerFetchContext is provided later in
+  // ThreadedMessagingProxyBase::InitializeWorkerThread().
   proxy->StartWorker(std::make_unique<GlobalScopeCreationParams>(
-      context->Url(), ScriptType::kClassic, context->UserAgent(),
-      context->GetContentSecurityPolicy()->Headers(), kReferrerPolicyDefault,
-      context->GetSecurityOrigin(), context->IsSecureContext(),
-      context->GetHttpsState(), WorkerClients::Create(),
-      context->GetSecurityContext().AddressSpace(),
+      context->Url(), mojom::ScriptType::kClassic, context->UserAgent(),
+      nullptr /* web_worker_fetch_context */,
+      context->GetContentSecurityPolicy()->Headers(),
+      network::mojom::ReferrerPolicy::kDefault, context->GetSecurityOrigin(),
+      context->IsSecureContext(), context->GetHttpsState(),
+      WorkerClients::Create(), context->GetSecurityContext().AddressSpace(),
       OriginTrialContext::GetTokens(context).get(), devtools_worker_token,
       std::move(settings), kV8CacheOptionsDefault,
       nullptr /* worklet_module_responses_map */,

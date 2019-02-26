@@ -33,8 +33,6 @@
 
 namespace blink {
 
-using namespace HTMLNames;
-
 Attr* NamedNodeMap::getNamedItem(const AtomicString& name) const {
   return element_->getAttributeNode(name);
 }

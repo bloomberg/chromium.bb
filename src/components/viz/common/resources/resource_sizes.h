@@ -14,12 +14,12 @@
 #include "cc/base/math_util.h"
 #include "components/viz/common/resources/resource_format.h"
 #include "components/viz/common/resources/resource_format_utils.h"
-#include "components/viz/common/viz_common_export.h"
+#include "components/viz/common/viz_resource_format_export.h"
 #include "ui/gfx/geometry/size.h"
 
 namespace viz {
 
-class VIZ_COMMON_EXPORT ResourceSizes {
+class VIZ_RESOURCE_FORMAT_EXPORT ResourceSizes {
  public:
   // Returns true if the width is valid and fits in bytes, false otherwise.
   template <typename T>

@@ -26,7 +26,6 @@
 #include "components/payments/core/payment_shipping_option.h"
 #include "components/payments/core/web_payment_request.h"
 #include "components/prefs/pref_service.h"
-#include "components/signin/core/browser/signin_manager.h"
 #include "ios/chrome/browser/application_context.h"
 #include "ios/chrome/browser/autofill/address_normalizer_factory.h"
 #include "ios/chrome/browser/autofill/validation_rules_storage_factory.h"
@@ -34,8 +33,9 @@
 #import "ios/chrome/browser/metrics/ukm_url_recorder.h"
 #import "ios/chrome/browser/payments/ios_payment_instrument.h"
 #import "ios/chrome/browser/payments/payment_request_util.h"
-#include "ios/chrome/browser/signin/signin_manager_factory.h"
+#include "ios/chrome/browser/signin/identity_manager_factory.h"
 #include "ios/web/public/web_state/web_state.h"
+#include "services/identity/public/cpp/identity_manager.h"
 #include "services/network/public/cpp/shared_url_loader_factory.h"
 #include "third_party/libaddressinput/chromium/chrome_metadata_source.h"
 #include "third_party/libaddressinput/src/cpp/include/libaddressinput/source.h"
@@ -179,10 +179,10 @@ ukm::UkmRecorder* PaymentRequest::GetUkmRecorder() {
 }
 
 std::string PaymentRequest::GetAuthenticatedEmail() const {
-  const SigninManager* signin_manager =
-      ios::SigninManagerFactory::GetForBrowserStateIfExists(browser_state_);
-  if (signin_manager && signin_manager->IsAuthenticated())
-    return signin_manager->GetAuthenticatedAccountInfo().email;
+  const identity::IdentityManager* identity_manager =
+      IdentityManagerFactory::GetForBrowserStateIfExists(browser_state_);
+  if (identity_manager && identity_manager->HasPrimaryAccount())
+    return identity_manager->GetPrimaryAccountInfo().email;
   else
     return std::string();
 }

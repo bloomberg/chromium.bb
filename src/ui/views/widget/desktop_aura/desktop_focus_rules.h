@@ -18,6 +18,8 @@ class DesktopFocusRules : public wm::BaseFocusRules {
  private:
   // Overridden from wm::BaseFocusRules:
   bool CanActivateWindow(aura::Window* window) const override;
+  bool CanFocusWindow(aura::Window* window,
+                      const ui::Event* event) const override;
   bool SupportsChildActivation(aura::Window* window) const override;
   bool IsWindowConsideredVisibleForActivation(
       aura::Window* window) const override;

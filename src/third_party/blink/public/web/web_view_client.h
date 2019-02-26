@@ -32,6 +32,7 @@
 #define THIRD_PARTY_BLINK_PUBLIC_WEB_WEB_VIEW_CLIENT_H_
 
 #include "base/strings/string_piece.h"
+#include "third_party/blink/public/common/dom_storage/session_storage_namespace_id.h"
 #include "third_party/blink/public/mojom/page/page_visibility_state.mojom-shared.h"
 #include "third_party/blink/public/platform/web_string.h"
 #include "third_party/blink/public/web/web_ax_enums.h"
@@ -42,7 +43,6 @@
 namespace blink {
 
 class WebDateTimeChooserCompletion;
-class WebFileChooserCompletion;
 class WebNode;
 class WebURL;
 class WebURLRequest;
@@ -66,13 +66,15 @@ class WebViewClient {
   // could be fulfilled.  The client should not load the request.
   // The policy parameter indicates how the new view will be displayed in
   // WebWidgetClient::show.
-  virtual WebView* CreateView(WebLocalFrame* creator,
-                              const WebURLRequest& request,
-                              const WebWindowFeatures& features,
-                              const WebString& name,
-                              WebNavigationPolicy policy,
-                              bool suppress_opener,
-                              WebSandboxFlags) {
+  virtual WebView* CreateView(
+      WebLocalFrame* creator,
+      const WebURLRequest& request,
+      const WebWindowFeatures& features,
+      const WebString& name,
+      WebNavigationPolicy policy,
+      bool suppress_opener,
+      WebSandboxFlags,
+      const SessionStorageNamespaceId& session_storage_namespace_id) {
     return nullptr;
   }
 
@@ -91,15 +93,6 @@ class WebViewClient {
   // children, to print.  Otherwise, the main frame and its children
   // should be printed.
   virtual void PrintPage(WebLocalFrame*) {}
-
-  // This method enumerates all the files in the path. It returns immediately
-  // and asynchronously invokes the WebFileChooserCompletion with all the
-  // files in the directory. Returns false if the WebFileChooserCompletion
-  // will never be called.
-  virtual bool EnumerateChosenDirectory(const WebString& path,
-                                        WebFileChooserCompletion*) {
-    return false;
-  }
 
   // Called when PageImportanceSignals for the WebView is updated.
   virtual void PageImportanceSignalsChanged() {}
@@ -168,6 +161,10 @@ class WebViewClient {
 
   // Called when the View acquires focus.
   virtual void DidFocus(WebLocalFrame* calling_frame) {}
+
+  // Returns information about the screen where this view's widgets are being
+  // displayed.
+  virtual WebScreenInfo GetScreenInfo() = 0;
 
   // Session history -----------------------------------------------------
 

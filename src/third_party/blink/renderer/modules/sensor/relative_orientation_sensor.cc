@@ -10,22 +10,23 @@ namespace blink {
 
 RelativeOrientationSensor* RelativeOrientationSensor::Create(
     ExecutionContext* execution_context,
-    const SpatialSensorOptions& options,
+    const SpatialSensorOptions* options,
     ExceptionState& exception_state) {
-  return new RelativeOrientationSensor(execution_context, options,
-                                       exception_state);
+  return MakeGarbageCollected<RelativeOrientationSensor>(
+      execution_context, options, exception_state);
 }
 
 // static
 RelativeOrientationSensor* RelativeOrientationSensor::Create(
     ExecutionContext* execution_context,
     ExceptionState& exception_state) {
-  return Create(execution_context, SpatialSensorOptions(), exception_state);
+  return Create(execution_context, SpatialSensorOptions::Create(),
+                exception_state);
 }
 
 RelativeOrientationSensor::RelativeOrientationSensor(
     ExecutionContext* execution_context,
-    const SpatialSensorOptions& options,
+    const SpatialSensorOptions* options,
     ExceptionState& exception_state)
     : OrientationSensor(execution_context,
                         options,

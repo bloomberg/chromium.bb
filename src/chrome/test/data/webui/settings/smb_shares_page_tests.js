@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-/** @implements {settings.SmbBrowserProxy} */
+/** @implements {smb_shares.SmbBrowserProxy} */
 class TestSmbBrowserProxy extends TestBrowserProxy {
   constructor() {
     super([
@@ -15,6 +15,7 @@ class TestSmbBrowserProxy extends TestBrowserProxy {
   smbMount(smbUrl, smbName, username, password, authMethod) {
     this.methodCalled(
         'smbMount', [smbUrl, smbName, username, password, authMethod]);
+    return Promise.resolve(SmbMountResult.SUCCESS);
   }
 
   /** @override */
@@ -27,12 +28,12 @@ suite('AddSmbShareDialogTests', function() {
   let page = null;
   let addDialog = null;
 
-  /** @type {?settings.TestSmbBrowserProxy} */
+  /** @type {?smb_shares.TestSmbBrowserProxy} */
   let smbBrowserProxy = null;
 
   setup(function() {
     smbBrowserProxy = new TestSmbBrowserProxy();
-    settings.SmbBrowserProxyImpl.instance_ = smbBrowserProxy;
+    smb_shares.SmbBrowserProxyImpl.instance_ = smbBrowserProxy;
 
     PolymerTest.clearBody();
 
@@ -44,7 +45,7 @@ suite('AddSmbShareDialogTests', function() {
     button.click();
     Polymer.dom.flush();
 
-    addDialog = page.$$('settings-add-smb-share-dialog');
+    addDialog = page.$$('add-smb-share-dialog');
     assertTrue(!!addDialog);
 
     Polymer.dom.flush();
@@ -62,7 +63,7 @@ suite('AddSmbShareDialogTests', function() {
     expectTrue(!!url);
     url.value = 'smb://192.168.1.1/testshare';
 
-    const addButton = addDialog.$$('#actionButton');
+    const addButton = addDialog.$$('.action-button');
     expectTrue(!!addButton);
     expectFalse(addButton.disabled);
   });
@@ -157,6 +158,35 @@ suite('AddSmbShareDialogTests', function() {
     Polymer.dom.flush();
 
     expectFalse(credentials.hidden);
+  });
+
+  test('MostRecentlyUsedUrl', function() {
+    const expectedSmbUrl = 'smb://192.168.1.1/testshare';
+
+    PolymerTest.clearBody();
+
+    page = document.createElement('settings-smb-shares-page');
+    page.prefs = {
+      network_file_shares: {most_recently_used_url: {value: expectedSmbUrl}},
+    };
+    document.body.appendChild(page);
+
+    const button = page.$$('#addShare');
+    assertTrue(!!button);
+    button.click();
+
+    Polymer.dom.flush();
+
+    addDialog = page.$$('add-smb-share-dialog');
+    assertTrue(!!addDialog);
+
+    Polymer.dom.flush();
+
+    const openDialogButton = page.$$('#addShare');
+    openDialogButton.click();
+
+    expectEquals(expectedSmbUrl, addDialog.mountUrl_);
+    expectEquals(expectedSmbUrl, addDialog.mountUrl_);
   });
 
 });

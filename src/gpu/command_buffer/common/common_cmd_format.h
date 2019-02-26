@@ -34,11 +34,11 @@ struct SizedResult {
 
   // Returns the total size in bytes of the SizedResult for a given number of
   // results including the size field.
-  static uint32_t ComputeSize(base::CheckedNumeric<uint32_t> num_results) {
+  static base::CheckedNumeric<uint32_t> ComputeSize(uint32_t num_results) {
     base::CheckedNumeric<uint32_t> size = num_results;
     size *= sizeof(T);
     size += sizeof(uint32_t);
-    return size.ValueOrDie();
+    return size;
   }
 
   // Returns the maximum number of results for a given buffer size.

@@ -32,34 +32,25 @@
 #include "third_party/blink/renderer/platform/fonts/font_platform_data.h"
 
 #include <windows.h>
+#include "SkFont.h"
 #include "SkTypeface.h"
 #include "third_party/blink/renderer/platform/fonts/font_cache.h"
-#include "third_party/blink/renderer/platform/layout_test_support.h"
+#include "third_party/blink/renderer/platform/web_test_support.h"
 
 namespace blink {
 
-// Maximum font size, in pixels, at which embedded bitmaps will be used
-// if available.
-const float kMaxSizeForEmbeddedBitmap = 24.0f;
-
-void FontPlatformData::SetupPaintFont(PaintFont* font,
-                                      float,
-                                      const Font*) const {
-  const float ts = text_size_ >= 0 ? text_size_ : 12;
-  font->SetTextSize(SkFloatToScalar(text_size_));
-  font->SetTypeface(typeface_);
-  font->SetFakeBoldText(synthetic_bold_);
-  font->SetTextSkewX(synthetic_italic_ ? -SK_Scalar1 / 4 : 0);
+void FontPlatformData::SetupSkPaint(SkPaint* font, float, const Font*) const {
+  font->setTextSize(SkFloatToScalar(text_size_));
+  font->setTypeface(typeface_);
+  font->setFakeBoldText(synthetic_bold_);
+  font->setTextSkewX(synthetic_italic_ ? -SK_Scalar1 / 4 : 0);
 
   uint32_t text_flags = PaintTextFlags();
-  uint32_t flags = font->flags();
+  uint32_t flags = font->getFlags();
   static const uint32_t kTextFlagsMask =
       SkPaint::kAntiAlias_Flag | SkPaint::kLCDRenderText_Flag |
       SkPaint::kEmbeddedBitmapText_Flag | SkPaint::kSubpixelText_Flag;
   flags &= ~kTextFlagsMask;
-
-  if (ts <= kMaxSizeForEmbeddedBitmap)
-    flags |= SkPaint::kEmbeddedBitmapText_Flag;
 
   // Only use sub-pixel positioning if anti aliasing is enabled. Otherwise,
   // without font smoothing, subpixel text positioning leads to uneven spacing
@@ -70,16 +61,48 @@ void FontPlatformData::SetupPaintFont(PaintFont* font,
   if (text_flags & SkPaint::kAntiAlias_Flag)
     flags |= SkPaint::kSubpixelText_Flag;
 
-  if (LayoutTestSupport::IsRunningLayoutTest() &&
-      !LayoutTestSupport::IsTextSubpixelPositioningAllowedForTest())
+  if (WebTestSupport::IsRunningWebTest() &&
+      !WebTestSupport::IsTextSubpixelPositioningAllowedForTest())
     flags &= ~SkPaint::kSubpixelText_Flag;
 
   SkASSERT(!(text_flags & ~kTextFlagsMask));
   flags |= text_flags;
 
-  font->SetFlags(flags);
+  font->setFlags(flags);
 
-  font->SetEmbeddedBitmapText(!avoid_embedded_bitmaps_);
+  font->setEmbeddedBitmapText(!avoid_embedded_bitmaps_);
+}
+
+void FontPlatformData::SetupSkFont(SkFont* font, float, const Font*) const {
+  font->setSize(SkFloatToScalar(text_size_));
+  font->setTypeface(typeface_);
+  font->setEmbolden(synthetic_bold_);
+  font->setSkewX(synthetic_italic_ ? -SK_Scalar1 / 4 : 0);
+
+  uint32_t text_flags = PaintTextFlags();
+  if (text_flags & SkPaint::kLCDRenderText_Flag) {
+    font->setEdging(SkFont::Edging::kSubpixelAntiAlias);
+  } else if (text_flags & SkPaint::kAntiAlias_Flag) {
+    font->setEdging(SkFont::Edging::kAntiAlias);
+  } else {
+    font->setEdging(SkFont::Edging::kAlias);
+  }
+  font->setSubpixel(SkToBool(text_flags & SkPaint::kSubpixelText_Flag));
+
+  // Only use sub-pixel positioning if anti aliasing is enabled. Otherwise,
+  // without font smoothing, subpixel text positioning leads to uneven spacing
+  // since subpixel test placement coordinates would be passed to Skia, which
+  // only has non-antialiased glyphs to draw, so they necessarily get clamped at
+  // pixel positions, which leads to uneven spacing, either too close or too far
+  // away from adjacent glyphs. We avoid this by linking the two flags.
+  if (text_flags & SkPaint::kAntiAlias_Flag)
+    font->setSubpixel(true);
+
+  if (WebTestSupport::IsRunningWebTest() &&
+      !WebTestSupport::IsTextSubpixelPositioningAllowedForTest())
+    font->setSubpixel(false);
+
+  font->setEmbeddedBitmaps(!avoid_embedded_bitmaps_);
 }
 
 static bool IsWebFont(const String& family_name) {
@@ -91,8 +114,8 @@ static bool IsWebFont(const String& family_name) {
 }
 
 static int ComputePaintTextFlags(String font_family_name) {
-  if (LayoutTestSupport::IsRunningLayoutTest())
-    return LayoutTestSupport::IsFontAntialiasingEnabledForTest()
+  if (WebTestSupport::IsRunningWebTest())
+    return WebTestSupport::IsFontAntialiasingEnabledForTest()
                ? SkPaint::kAntiAlias_Flag
                : 0;
 

@@ -250,14 +250,8 @@ void NetExportMessageHandler::OnStopNetLog(const base::ListValue* list) {
       new base::DictionaryValue());
 
   Profile* profile = Profile::FromWebUI(web_ui());
-  SetIfNotNull(ui_thread_polled_data.get(), "dataReductionProxyInfo",
-               chrome_browser_net::GetDataReductionProxyInfo(profile));
-  SetIfNotNull(ui_thread_polled_data.get(), "historicNetworkStats",
-               chrome_browser_net::GetHistoricNetworkStats(profile));
   SetIfNotNull(ui_thread_polled_data.get(), "prerenderInfo",
                chrome_browser_net::GetPrerenderInfo(profile));
-  SetIfNotNull(ui_thread_polled_data.get(), "sessionNetworkStats",
-               chrome_browser_net::GetSessionNetworkStats(profile));
   SetIfNotNull(ui_thread_polled_data.get(), "extensionInfo",
                chrome_browser_net::GetExtensionInfo(profile));
 #if defined(OS_WIN)

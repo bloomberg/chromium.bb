@@ -201,9 +201,7 @@ void UpdateStateWithProxy(MainContentUIStateUpdater* updater,
 // any changes.
 - (void)checkForContentInsetAdjustment {
   UIEdgeInsets inset = self.proxy.contentInset;
-  if (@available(iOS 11, *)) {
-    inset = self.proxy.adjustedContentInset;
-  }
+  inset = self.proxy.adjustedContentInset;
   if (!UIEdgeInsetsEqualToEdgeInsets(inset, self.updater.state.contentInset))
     [self.updater scrollViewDidResetContentInset:inset];
 }

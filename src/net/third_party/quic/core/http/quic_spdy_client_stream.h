@@ -45,7 +45,7 @@ class QuicSpdyClientStream : public QuicSpdyStream {
                            const QuicHeaderList& header_list) override;
 
   // QuicStream implementation called by the session when there's data for us.
-  void OnDataAvailable() override;
+  void OnBodyAvailable() override;
 
   // Serializes the headers and body, sends it to the server, and
   // returns the number of bytes sent.

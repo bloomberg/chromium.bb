@@ -18,6 +18,8 @@ class InternalAppItem : public ChromeAppListItem {
  public:
   static const char kItemType[];
 
+  static void RecordActiveHistogram(const std::string& app_id);
+
   InternalAppItem(Profile* profile,
                   AppListModelUpdater* model_updater,
                   const app_list::AppListSyncableService::SyncItem* sync_item,

@@ -28,8 +28,6 @@
 
 namespace blink {
 
-using namespace HTMLNames;
-
 NameNodeList::NameNodeList(ContainerNode& root_node, const AtomicString& name)
     : LiveNodeList(root_node, kNameNodeListType, kInvalidateOnNameAttrChange),
       name_(name) {}

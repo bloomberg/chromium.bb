@@ -42,7 +42,11 @@ class MODULES_EXPORT SpeechRecognitionError final : public Event {
       mojom::blink::SpeechRecognitionErrorCode,
       const String&);
   static SpeechRecognitionError* Create(const AtomicString&,
-                                        const SpeechRecognitionErrorInit&);
+                                        const SpeechRecognitionErrorInit*);
+
+  SpeechRecognitionError(const String&, const String&);
+  SpeechRecognitionError(const AtomicString&,
+                         const SpeechRecognitionErrorInit*);
 
   const String& error() { return error_; }
   const String& message() { return message_; }
@@ -52,10 +56,6 @@ class MODULES_EXPORT SpeechRecognitionError final : public Event {
   void Trace(blink::Visitor* visitor) override { Event::Trace(visitor); }
 
  private:
-  SpeechRecognitionError(const String&, const String&);
-  SpeechRecognitionError(const AtomicString&,
-                         const SpeechRecognitionErrorInit&);
-
   String error_;
   String message_;
 };

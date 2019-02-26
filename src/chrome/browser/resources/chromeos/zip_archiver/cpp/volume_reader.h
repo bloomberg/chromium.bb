@@ -10,6 +10,7 @@
 #include <string>
 
 #include "base/files/file.h"
+#include "base/optional.h"
 
 // Defines a reader for archive volumes. This class is used by minizip
 // for custom reads.
@@ -34,9 +35,9 @@ class VolumeReader {
   // http://www.cplusplus.com/reference/cstdio/fseek/
   virtual int64_t Seek(int64_t offset, base::File::Whence whence) = 0;
 
-  // Fetches a passphrase for reading. If the passphrase is not available it
-  // returns nullptr.
-  virtual std::unique_ptr<std::string> Passphrase() = 0;
+  // Fetches a passphrase for reading. If the passphrase is not available, the
+  // returned Optional will have no value.
+  virtual base::Optional<std::string> Passphrase() = 0;
 
   virtual int64_t offset() = 0;
 

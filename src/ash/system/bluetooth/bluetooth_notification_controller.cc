@@ -7,6 +7,7 @@
 #include <memory>
 #include <utility>
 
+#include "ash/public/cpp/notification_utils.h"
 #include "ash/resources/vector_icons/vector_icons.h"
 #include "ash/strings/grit/ash_strings.h"
 #include "base/bind.h"
@@ -269,19 +270,17 @@ void BluetoothNotificationController::OnGetAdapter(
 void BluetoothNotificationController::NotifyAdapterDiscoverable() {
   message_center::RichNotificationData optional;
 
-  std::unique_ptr<Notification> notification =
-      Notification::CreateSystemNotification(
-          message_center::NOTIFICATION_TYPE_SIMPLE,
-          kBluetoothDeviceDiscoverableNotificationId,
-          base::string16() /* title */,
-          l10n_util::GetStringFUTF16(IDS_ASH_STATUS_TRAY_BLUETOOTH_DISCOVERABLE,
-                                     base::UTF8ToUTF16(adapter_->GetName()),
-                                     base::UTF8ToUTF16(adapter_->GetAddress())),
-          base::string16() /* display source */, GURL(),
-          message_center::NotifierId(
-              message_center::NotifierId::SYSTEM_COMPONENT, kNotifierBluetooth),
-          optional, nullptr, kNotificationBluetoothIcon,
-          message_center::SystemNotificationWarningLevel::NORMAL);
+  std::unique_ptr<Notification> notification = ash::CreateSystemNotification(
+      message_center::NOTIFICATION_TYPE_SIMPLE,
+      kBluetoothDeviceDiscoverableNotificationId, base::string16() /* title */,
+      l10n_util::GetStringFUTF16(IDS_ASH_STATUS_TRAY_BLUETOOTH_DISCOVERABLE,
+                                 base::UTF8ToUTF16(adapter_->GetName()),
+                                 base::UTF8ToUTF16(adapter_->GetAddress())),
+      base::string16() /* display source */, GURL(),
+      message_center::NotifierId(message_center::NotifierType::SYSTEM_COMPONENT,
+                                 kNotifierBluetooth),
+      optional, nullptr, kNotificationBluetoothIcon,
+      message_center::SystemNotificationWarningLevel::NORMAL);
   MessageCenter::Get()->AddNotification(std::move(notification));
 }
 
@@ -297,18 +296,16 @@ void BluetoothNotificationController::NotifyPairing(
         l10n_util::GetStringUTF16(IDS_ASH_STATUS_TRAY_BLUETOOTH_REJECT)));
   }
 
-  std::unique_ptr<Notification> notification =
-      Notification::CreateSystemNotification(
-          message_center::NOTIFICATION_TYPE_SIMPLE,
-          kBluetoothDevicePairingNotificationId, base::string16() /* title */,
-          message, base::string16() /* display source */, GURL(),
-          message_center::NotifierId(
-              message_center::NotifierId::SYSTEM_COMPONENT, kNotifierBluetooth),
-          optional,
-          new BluetoothPairingNotificationDelegate(adapter_,
-                                                   device->GetAddress()),
-          kNotificationBluetoothIcon,
-          message_center::SystemNotificationWarningLevel::NORMAL);
+  std::unique_ptr<Notification> notification = ash::CreateSystemNotification(
+      message_center::NOTIFICATION_TYPE_SIMPLE,
+      kBluetoothDevicePairingNotificationId, base::string16() /* title */,
+      message, base::string16() /* display source */, GURL(),
+      message_center::NotifierId(message_center::NotifierType::SYSTEM_COMPONENT,
+                                 kNotifierBluetooth),
+      optional,
+      new BluetoothPairingNotificationDelegate(adapter_, device->GetAddress()),
+      kNotificationBluetoothIcon,
+      message_center::SystemNotificationWarningLevel::NORMAL);
   MessageCenter::Get()->AddNotification(std::move(notification));
 }
 
@@ -322,17 +319,16 @@ void BluetoothNotificationController::NotifyPairedDevice(
 
   message_center::RichNotificationData optional;
 
-  std::unique_ptr<Notification> notification =
-      Notification::CreateSystemNotification(
-          message_center::NOTIFICATION_TYPE_SIMPLE,
-          kBluetoothDevicePairedNotificationId, base::string16() /* title */,
-          l10n_util::GetStringFUTF16(IDS_ASH_STATUS_TRAY_BLUETOOTH_PAIRED,
-                                     device->GetNameForDisplay()),
-          base::string16() /* display source */, GURL(),
-          message_center::NotifierId(
-              message_center::NotifierId::SYSTEM_COMPONENT, kNotifierBluetooth),
-          optional, nullptr, kNotificationBluetoothIcon,
-          message_center::SystemNotificationWarningLevel::NORMAL);
+  std::unique_ptr<Notification> notification = ash::CreateSystemNotification(
+      message_center::NOTIFICATION_TYPE_SIMPLE,
+      kBluetoothDevicePairedNotificationId, base::string16() /* title */,
+      l10n_util::GetStringFUTF16(IDS_ASH_STATUS_TRAY_BLUETOOTH_PAIRED,
+                                 device->GetNameForDisplay()),
+      base::string16() /* display source */, GURL(),
+      message_center::NotifierId(message_center::NotifierType::SYSTEM_COMPONENT,
+                                 kNotifierBluetooth),
+      optional, nullptr, kNotificationBluetoothIcon,
+      message_center::SystemNotificationWarningLevel::NORMAL);
   MessageCenter::Get()->AddNotification(std::move(notification));
 }
 

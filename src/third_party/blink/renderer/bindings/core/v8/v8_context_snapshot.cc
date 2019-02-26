@@ -47,7 +47,7 @@ v8::Local<v8::Object> CreatePlainWrapper(v8::Isolate* isolate,
                                          const DOMWrapperWorld& world,
                                          v8::Local<v8::Context> context,
                                          const WrapperTypeInfo* type) {
-  CHECK(V8HTMLDocument::wrapperTypeInfo.Equals(type));
+  CHECK(V8HTMLDocument::wrapper_type_info.Equals(type));
   v8::Context::Scope scope(context);
 
   v8::Local<v8::Function> interface_object =
@@ -56,10 +56,7 @@ v8::Local<v8::Object> CreatePlainWrapper(v8::Isolate* isolate,
   v8::Local<v8::Object> instance_template =
       V8ObjectConstructor::NewInstance(isolate, interface_object)
           .ToLocalChecked();
-  v8::Local<v8::Object> wrapper = instance_template->Clone();
-  wrapper->SetAlignedPointerInInternalField(kV8DOMWrapperTypeIndex,
-                                            const_cast<WrapperTypeInfo*>(type));
-  return wrapper;
+  return instance_template->Clone();
 }
 
 int GetSnapshotIndexForWorld(const DOMWrapperWorld& world) {
@@ -74,14 +71,15 @@ struct SnapshotInterface {
   InstallRuntimeEnabledFeaturesOnTemplateFunction install_function;
 };
 SnapshotInterface g_snapshot_interfaces[] = {
-    {&V8Window::wrapperTypeInfo,
+    {&V8Window::wrapper_type_info,
      V8Window::InstallRuntimeEnabledFeaturesOnTemplate},
-    {&V8HTMLDocument::wrapperTypeInfo,
+    {&V8HTMLDocument::wrapper_type_info,
      V8HTMLDocument::InstallRuntimeEnabledFeaturesOnTemplate},
-    {&V8EventTarget::wrapperTypeInfo,
+    {&V8EventTarget::wrapper_type_info,
      V8EventTarget::InstallRuntimeEnabledFeaturesOnTemplate},
-    {&V8Node::wrapperTypeInfo, V8Node::InstallRuntimeEnabledFeaturesOnTemplate},
-    {&V8Document::wrapperTypeInfo,
+    {&V8Node::wrapper_type_info,
+     V8Node::InstallRuntimeEnabledFeaturesOnTemplate},
+    {&V8Document::wrapper_type_info,
      V8Document::InstallRuntimeEnabledFeaturesOnTemplate},
 };
 constexpr size_t kSnapshotInterfaceSize = base::size(g_snapshot_interfaces);
@@ -100,13 +98,13 @@ const WrapperTypeInfo* FieldTypeToWrapperTypeInfo(InternalFieldType type) {
       NOTREACHED();
       break;
     case InternalFieldType::kNodeType:
-      return &V8Node::wrapperTypeInfo;
+      return &V8Node::wrapper_type_info;
     case InternalFieldType::kDocumentType:
-      return &V8Document::wrapperTypeInfo;
+      return &V8Document::wrapper_type_info;
     case InternalFieldType::kHTMLDocumentType:
-      return &V8HTMLDocument::wrapperTypeInfo;
+      return &V8HTMLDocument::wrapper_type_info;
     case InternalFieldType::kHTMLDocumentObject:
-      return &V8HTMLDocument::wrapperTypeInfo;
+      return &V8HTMLDocument::wrapper_type_info;
   }
   NOTREACHED();
   return nullptr;
@@ -177,7 +175,7 @@ bool V8ContextSnapshot::InstallConditionalFeatures(
   {
     v8::Local<v8::Object> window_wrapper =
         global_proxy->GetPrototype().As<v8::Object>();
-    const WrapperTypeInfo* type = &V8Window::wrapperTypeInfo;
+    const WrapperTypeInfo* type = &V8Window::wrapper_type_info;
     v8::Local<v8::Function> interface = data->ConstructorForType(type);
     v8::Local<v8::Object> prototype = interface->Get(context, prototype_str)
                                           .ToLocalChecked()
@@ -186,11 +184,11 @@ bool V8ContextSnapshot::InstallConditionalFeatures(
                                             prototype, interface);
     type->InstallConditionalFeatures(context, world, window_wrapper, prototype,
                                      interface,
-                                     type->domTemplate(isolate, world));
+                                     type->DomTemplate(isolate, world));
     InstallOriginTrialFeatures(type, script_state, prototype, interface);
   }
   {
-    const WrapperTypeInfo* type = &V8EventTarget::wrapperTypeInfo;
+    const WrapperTypeInfo* type = &V8EventTarget::wrapper_type_info;
     v8::Local<v8::Function> interface = data->ConstructorForType(type);
     v8::Local<v8::Object> prototype = interface->Get(context, prototype_str)
                                           .ToLocalChecked()
@@ -199,7 +197,7 @@ bool V8ContextSnapshot::InstallConditionalFeatures(
         isolate, world, v8::Local<v8::Object>(), prototype, interface);
     type->InstallConditionalFeatures(context, world, v8::Local<v8::Object>(),
                                      prototype, interface,
-                                     type->domTemplate(isolate, world));
+                                     type->DomTemplate(isolate, world));
     InstallOriginTrialFeatures(type, script_state, prototype, interface);
   }
 
@@ -214,7 +212,7 @@ bool V8ContextSnapshot::InstallConditionalFeatures(
     CHECK(document->ContainsWrapper());
     v8::Local<v8::Object> document_wrapper =
         ToV8(document, global_proxy, isolate).As<v8::Object>();
-    const WrapperTypeInfo* type = &V8HTMLDocument::wrapperTypeInfo;
+    const WrapperTypeInfo* type = &V8HTMLDocument::wrapper_type_info;
     v8::Local<v8::Function> interface = data->ConstructorForType(type);
     v8::Local<v8::Object> prototype = interface->Get(context, prototype_str)
                                           .ToLocalChecked()
@@ -223,11 +221,11 @@ bool V8ContextSnapshot::InstallConditionalFeatures(
         isolate, world, document_wrapper, prototype, interface);
     type->InstallConditionalFeatures(context, world, document_wrapper,
                                      prototype, interface,
-                                     type->domTemplate(isolate, world));
+                                     type->DomTemplate(isolate, world));
     InstallOriginTrialFeatures(type, script_state, prototype, interface);
   }
   {
-    const WrapperTypeInfo* type = &V8Document::wrapperTypeInfo;
+    const WrapperTypeInfo* type = &V8Document::wrapper_type_info;
     v8::Local<v8::Function> interface = data->ConstructorForType(type);
     v8::Local<v8::Object> prototype = interface->Get(context, prototype_str)
                                           .ToLocalChecked()
@@ -236,11 +234,11 @@ bool V8ContextSnapshot::InstallConditionalFeatures(
         isolate, world, v8::Local<v8::Object>(), prototype, interface);
     type->InstallConditionalFeatures(context, world, v8::Local<v8::Object>(),
                                      prototype, interface,
-                                     type->domTemplate(isolate, world));
+                                     type->DomTemplate(isolate, world));
     InstallOriginTrialFeatures(type, script_state, prototype, interface);
   }
   {
-    const WrapperTypeInfo* type = &V8Node::wrapperTypeInfo;
+    const WrapperTypeInfo* type = &V8Node::wrapper_type_info;
     v8::Local<v8::Function> interface = data->ConstructorForType(type);
     v8::Local<v8::Object> prototype = interface->Get(context, prototype_str)
                                           .ToLocalChecked()
@@ -249,7 +247,7 @@ bool V8ContextSnapshot::InstallConditionalFeatures(
         isolate, world, v8::Local<v8::Object>(), prototype, interface);
     type->InstallConditionalFeatures(context, world, v8::Local<v8::Object>(),
                                      prototype, interface,
-                                     type->domTemplate(isolate, world));
+                                     type->DomTemplate(isolate, world));
     InstallOriginTrialFeatures(type, script_state, prototype, interface);
   }
 
@@ -266,13 +264,13 @@ void V8ContextSnapshot::EnsureInterfaceTemplates(v8::Isolate* isolate) {
   // Update the install functions for V8Window and V8Document to work for their
   // partial interfaces.
   SnapshotInterface& snapshot_window = g_snapshot_interfaces[0];
-  DCHECK(V8Window::wrapperTypeInfo.Equals(snapshot_window.wrapper_type_info));
+  DCHECK(V8Window::wrapper_type_info.Equals(snapshot_window.wrapper_type_info));
   snapshot_window.install_function =
       V8Window::install_runtime_enabled_features_on_template_function_;
 
   SnapshotInterface& snapshot_document = g_snapshot_interfaces[4];
-  DCHECK(
-      V8Document::wrapperTypeInfo.Equals(snapshot_document.wrapper_type_info));
+  DCHECK(V8Document::wrapper_type_info.Equals(
+      snapshot_document.wrapper_type_info));
   snapshot_document.install_function =
       V8Document::install_runtime_enabled_features_on_template_function_;
 
@@ -326,17 +324,17 @@ v8::StartupData V8ContextSnapshot::SerializeInternalField(
   InternalFieldType field_type = InternalFieldType::kNone;
   const WrapperTypeInfo* wrapper_type = ToWrapperTypeInfo(object);
   if (kV8DOMWrapperObjectIndex == index) {
-    if (blink::V8HTMLDocument::wrapperTypeInfo.Equals(wrapper_type)) {
+    if (blink::V8HTMLDocument::wrapper_type_info.Equals(wrapper_type)) {
       field_type = InternalFieldType::kHTMLDocumentObject;
     }
     DCHECK_LE(kV8DefaultWrapperInternalFieldCount,
               object->InternalFieldCount());
   } else if (kV8DOMWrapperTypeIndex == index) {
-    if (blink::V8HTMLDocument::wrapperTypeInfo.Equals(wrapper_type)) {
+    if (blink::V8HTMLDocument::wrapper_type_info.Equals(wrapper_type)) {
       field_type = InternalFieldType::kHTMLDocumentType;
-    } else if (blink::V8Document::wrapperTypeInfo.Equals(wrapper_type)) {
+    } else if (blink::V8Document::wrapper_type_info.Equals(wrapper_type)) {
       field_type = InternalFieldType::kDocumentType;
-    } else if (blink::V8Node::wrapperTypeInfo.Equals(wrapper_type)) {
+    } else if (blink::V8Node::wrapper_type_info.Equals(wrapper_type)) {
       field_type = InternalFieldType::kNodeType;
     }
     DCHECK_LE(kV8PrototypeInternalFieldcount, object->InternalFieldCount());
@@ -466,10 +464,10 @@ void V8ContextSnapshot::TakeSnapshotForWorld(v8::SnapshotCreator* creator,
     const WrapperTypeInfo* wrapper_type_info =
         g_snapshot_interfaces[i].wrapper_type_info;
     v8::Local<v8::FunctionTemplate> interface_template =
-        wrapper_type_info->domTemplate(isolate, world);
+        wrapper_type_info->DomTemplate(isolate, world);
     CHECK(!interface_template.IsEmpty());
     interface_templates[i] = interface_template;
-    if (V8Window::wrapperTypeInfo.Equals(wrapper_type_info)) {
+    if (V8Window::wrapper_type_info.Equals(wrapper_type_info)) {
       window_template = interface_template;
     }
   }
@@ -492,10 +490,10 @@ void V8ContextSnapshot::TakeSnapshotForWorld(v8::SnapshotCreator* creator,
   if (world.IsMainWorld()) {
     v8::Context::Scope scope(context);
     v8::Local<v8::Object> document_wrapper = CreatePlainWrapper(
-        isolate, world, context, &V8HTMLDocument::wrapperTypeInfo);
+        isolate, world, context, &V8HTMLDocument::wrapper_type_info);
     int indices[] = {kV8DOMWrapperObjectIndex, kV8DOMWrapperTypeIndex};
     void* values[] = {nullptr, const_cast<WrapperTypeInfo*>(
-                                   &V8HTMLDocument::wrapperTypeInfo)};
+                                   &V8HTMLDocument::wrapper_type_info)};
     document_wrapper->SetAlignedPointerInInternalFields(base::size(indices),
                                                         indices, values);
 

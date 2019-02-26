@@ -19,6 +19,8 @@
 #include "services/preferences/public/mojom/preferences.mojom.h"
 #include "services/service_manager/public/cpp/binder_registry.h"
 #include "services/service_manager/public/cpp/service.h"
+#include "services/service_manager/public/cpp/service_binding.h"
+#include "services/service_manager/public/mojom/service.mojom.h"
 
 class PrefRegistry;
 
@@ -38,7 +40,8 @@ class ScopedPrefConnectionBuilder;
 // clients use the |PrefStoreConnector| interface to connect to these stores.
 class PrefStoreManagerImpl : public service_manager::Service {
  public:
-  PrefStoreManagerImpl(PrefStore* managed_prefs,
+  PrefStoreManagerImpl(service_manager::mojom::ServiceRequest request,
+                       PrefStore* managed_prefs,
                        PrefStore* supervised_user_prefs,
                        PrefStore* extension_prefs,
                        PrefStore* command_line_prefs,
@@ -59,7 +62,6 @@ class PrefStoreManagerImpl : public service_manager::Service {
       const service_manager::BindSourceInfo& source_info);
 
   // service_manager::Service:
-  void OnStart() override;
   void OnBindInterface(const service_manager::BindSourceInfo& source_info,
                        const std::string& interface_name,
                        mojo::ScopedMessagePipeHandle interface_pipe) override;
@@ -71,6 +73,8 @@ class PrefStoreManagerImpl : public service_manager::Service {
                          PrefStore* pref_store);
 
   void ShutDown();
+
+  service_manager::ServiceBinding service_binding_;
 
   base::flat_map<PrefValueStore::PrefStoreType, std::unique_ptr<PrefStoreImpl>>
       read_only_pref_stores_;
@@ -92,7 +96,7 @@ class PrefStoreManagerImpl : public service_manager::Service {
       const service_manager::BindSourceInfo&>
       registry_;
 
-  base::WeakPtrFactory<PrefStoreManagerImpl> weak_factory_;
+  base::WeakPtrFactory<PrefStoreManagerImpl> weak_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(PrefStoreManagerImpl);
 };

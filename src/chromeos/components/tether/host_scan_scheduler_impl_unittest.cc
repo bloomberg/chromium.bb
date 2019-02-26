@@ -9,12 +9,10 @@
 #include "base/memory/ptr_util.h"
 #include "base/run_loop.h"
 #include "base/test/metrics/histogram_tester.h"
-#include "base/test/scoped_feature_list.h"
 #include "base/test/scoped_task_environment.h"
 #include "base/test/simple_test_clock.h"
 #include "base/test/test_simple_task_runner.h"
 #include "base/timer/mock_timer.h"
-#include "chromeos/chromeos_features.h"
 #include "chromeos/components/tether/fake_host_scanner.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
 #include "chromeos/dbus/power_manager_client.h"
@@ -57,18 +55,6 @@ class HostScanSchedulerImplTest : public NetworkStateTest {
   void SetUp() override {
     DBusThreadManager::Initialize();
     NetworkStateTest::SetUp();
-  }
-
-  void TearDown() override {
-    host_scan_scheduler_.reset();
-
-    ShutdownNetworkState();
-    NetworkStateTest::TearDown();
-    DBusThreadManager::Shutdown();
-  }
-
-  void InitializeTest(bool multidevice_flags_enabled) {
-    SetMultiDeviceApi(multidevice_flags_enabled);
 
     histogram_tester_ = std::make_unique<base::HistogramTester>();
 
@@ -83,28 +69,22 @@ class HostScanSchedulerImplTest : public NetworkStateTest {
         session_manager_.get());
 
     mock_host_scan_batch_timer_ = new base::MockOneShotTimer();
-    mock_delay_scan_after_unlock_timer_ = new base::MockOneShotTimer();
 
     // Advance the clock by an arbitrary value to ensure that when Now() is
     // called, the Unix epoch will not be returned.
     test_clock_.Advance(base::TimeDelta::FromSeconds(10));
     test_task_runner_ = base::MakeRefCounted<base::TestSimpleTaskRunner>();
     host_scan_scheduler_->SetTestDoubles(
-        base::WrapUnique(mock_host_scan_batch_timer_),
-        base::WrapUnique(mock_delay_scan_after_unlock_timer_), &test_clock_,
+        base::WrapUnique(mock_host_scan_batch_timer_), &test_clock_,
         test_task_runner_);
   }
 
-  void SetMultiDeviceApi(bool enabled) {
-    static const std::vector<base::Feature> kFeatures{
-        chromeos::features::kMultiDeviceApi,
-        chromeos::features::kEnableUnifiedMultiDeviceSetup};
+  void TearDown() override {
+    host_scan_scheduler_.reset();
 
-    scoped_feature_list_.InitWithFeatures(
-        (enabled ? kFeatures
-                 : std::vector<base::Feature>() /* enable_features */),
-        (enabled ? std::vector<base::Feature>()
-                 : kFeatures /* disable_features */));
+    ShutdownNetworkState();
+    NetworkStateTest::TearDown();
+    DBusThreadManager::Shutdown();
   }
 
   void RequestScan(const NetworkTypePattern& type) {
@@ -172,54 +152,6 @@ class HostScanSchedulerImplTest : public NetworkStateTest {
                   : session_manager::SessionState::LOGIN_PRIMARY);
   }
 
-  void TestDeviceLockAndUnlock(bool is_online) {
-    if (is_online)
-      InitializeEthernet();
-
-    // Lock the screen. This should never trigger a scan.
-    SetScreenLockedState(true /* is_locked */);
-    EXPECT_EQ(0u, fake_host_scanner_->num_scans_started());
-    EXPECT_FALSE(mock_delay_scan_after_unlock_timer_->IsRunning());
-
-    // Try to start a scan. Because the screen is locked, this should not
-    // cause a scan to be started.
-    host_scan_scheduler_->AttemptScanIfOffline();
-    EXPECT_EQ(0u, fake_host_scanner_->num_scans_started());
-    EXPECT_FALSE(mock_delay_scan_after_unlock_timer_->IsRunning());
-
-    // Unlock the screen. A scan should not yet have been scheduled yet, but the
-    // timer should have.
-    SetScreenLockedState(false /* is_locked */);
-    EXPECT_EQ(0u, fake_host_scanner_->num_scans_started());
-    ASSERT_TRUE(mock_delay_scan_after_unlock_timer_->IsRunning());
-
-    // Fire the timer; this should only start the scan if the device is offline.
-    mock_delay_scan_after_unlock_timer_->Fire();
-    EXPECT_EQ(is_online ? 0u : 1u, fake_host_scanner_->num_scans_started());
-  }
-
-  void TestDeviceLockAndUnlock_MultiDeviceApiEnabled(bool is_online) {
-    if (is_online)
-      InitializeEthernet();
-
-    // Lock the screen. This should never trigger a scan.
-    SetScreenLockedState(true /* is_locked */);
-    EXPECT_EQ(0u, fake_host_scanner_->num_scans_started());
-    EXPECT_FALSE(mock_delay_scan_after_unlock_timer_->IsRunning());
-
-    // Try to start a scan. Because the screen is locked, this should not
-    // cause a scan to be started.
-    host_scan_scheduler_->AttemptScanIfOffline();
-    EXPECT_EQ(0u, fake_host_scanner_->num_scans_started());
-    EXPECT_FALSE(mock_delay_scan_after_unlock_timer_->IsRunning());
-
-    // Unlock the screen. If the device is offline, a new scan should have
-    // started. The timer should be untouched.
-    SetScreenLockedState(false /* is_locked */);
-    EXPECT_EQ(is_online ? 0u : 1u, fake_host_scanner_->num_scans_started());
-    EXPECT_FALSE(mock_delay_scan_after_unlock_timer_->IsRunning());
-  }
-
   void VerifyScanDuration(size_t expected_num_seconds) {
     histogram_tester_->ExpectTimeBucketCount(
         "InstantTethering.HostScanBatchDuration",
@@ -233,19 +165,15 @@ class HostScanSchedulerImplTest : public NetworkStateTest {
   std::unique_ptr<session_manager::SessionManager> session_manager_;
 
   base::MockOneShotTimer* mock_host_scan_batch_timer_;
-  base::MockOneShotTimer* mock_delay_scan_after_unlock_timer_;
   base::SimpleTestClock test_clock_;
   scoped_refptr<base::TestSimpleTaskRunner> test_task_runner_;
 
   std::unique_ptr<base::HistogramTester> histogram_tester_;
 
   std::unique_ptr<HostScanSchedulerImpl> host_scan_scheduler_;
-
-  base::test::ScopedFeatureList scoped_feature_list_;
 };
 
 TEST_F(HostScanSchedulerImplTest, AttemptScanIfOffline) {
-  InitializeTest(false /* multidevice_flags_enabled */);
   host_scan_scheduler_->AttemptScanIfOffline();
   EXPECT_EQ(1u, fake_host_scanner_->num_scans_started());
   EXPECT_TRUE(
@@ -263,30 +191,41 @@ TEST_F(HostScanSchedulerImplTest, AttemptScanIfOffline) {
 }
 
 TEST_F(HostScanSchedulerImplTest, TestDeviceLockAndUnlock_Offline) {
-  InitializeTest(false /* multidevice_flags_enabled */);
-  TestDeviceLockAndUnlock(false /* is_online */);
+  // Lock the screen. This should never trigger a scan.
+  SetScreenLockedState(true /* is_locked */);
+  EXPECT_EQ(0u, fake_host_scanner_->num_scans_started());
+
+  // Try to start a scan. Because the screen is locked, this should not
+  // cause a scan to be started.
+  host_scan_scheduler_->AttemptScanIfOffline();
+  EXPECT_EQ(0u, fake_host_scanner_->num_scans_started());
+
+  // Unlock the screen. Because the device is offline, a new scan should have
+  // started.
+  SetScreenLockedState(false /* is_locked */);
+  EXPECT_EQ(1u, fake_host_scanner_->num_scans_started());
 }
 
 TEST_F(HostScanSchedulerImplTest, TestDeviceLockAndUnlock_Online) {
-  InitializeTest(false /* multidevice_flags_enabled */);
-  TestDeviceLockAndUnlock(true /* is_online */);
-}
+  // Simulate the device being online.
+  InitializeEthernet();
 
-TEST_F(HostScanSchedulerImplTest,
-       TestDeviceLockAndUnlock_MultiDeviceApiEnabled_Offline) {
-  InitializeTest(true /* multidevice_flags_enabled */);
-  TestDeviceLockAndUnlock_MultiDeviceApiEnabled(false /* is_online */);
-}
+  // Lock the screen. This should never trigger a scan.
+  SetScreenLockedState(true /* is_locked */);
+  EXPECT_EQ(0u, fake_host_scanner_->num_scans_started());
 
-TEST_F(HostScanSchedulerImplTest,
-       TestDeviceLockAndUnlock_MultiDeviceApiEnabled_Online) {
-  InitializeTest(true /* multidevice_flags_enabled */);
-  TestDeviceLockAndUnlock_MultiDeviceApiEnabled(true /* is_online */);
+  // Try to start a scan. Because the screen is locked, this should not
+  // cause a scan to be started.
+  host_scan_scheduler_->AttemptScanIfOffline();
+  EXPECT_EQ(0u, fake_host_scanner_->num_scans_started());
+
+  // Unlock the screen. Because the device is online, a new scan should not have
+  // started.
+  SetScreenLockedState(false /* is_locked */);
+  EXPECT_EQ(0u, fake_host_scanner_->num_scans_started());
 }
 
 TEST_F(HostScanSchedulerImplTest, ScanRequested) {
-  InitializeTest(false /* multidevice_flags_enabled */);
-
   // Begin scanning.
   RequestScan(NetworkTypePattern::Tether());
   EXPECT_EQ(1u, fake_host_scanner_->num_scans_started());
@@ -315,7 +254,6 @@ TEST_F(HostScanSchedulerImplTest, ScanRequested) {
 }
 
 TEST_F(HostScanSchedulerImplTest, ScanRequested_NonMatchingNetworkTypePattern) {
-  InitializeTest(false /* multidevice_flags_enabled */);
   RequestScan(NetworkTypePattern::WiFi());
   EXPECT_EQ(0u, fake_host_scanner_->num_scans_started());
   EXPECT_FALSE(
@@ -323,8 +261,6 @@ TEST_F(HostScanSchedulerImplTest, ScanRequested_NonMatchingNetworkTypePattern) {
 }
 
 TEST_F(HostScanSchedulerImplTest, HostScanSchedulerDestroyed) {
-  InitializeTest(false /* multidevice_flags_enabled */);
-
   host_scan_scheduler_->AttemptScanIfOffline();
   EXPECT_TRUE(
       network_state_handler()->GetScanningByType(NetworkTypePattern::Tether()));
@@ -339,8 +275,6 @@ TEST_F(HostScanSchedulerImplTest, HostScanSchedulerDestroyed) {
 }
 
 TEST_F(HostScanSchedulerImplTest, HostScanBatchMetric) {
-  InitializeTest(false /* multidevice_flags_enabled */);
-
   // The first scan takes 5 seconds. After stopping, the timer should be
   // running.
   host_scan_scheduler_->AttemptScanIfOffline();
@@ -401,7 +335,6 @@ TEST_F(HostScanSchedulerImplTest, HostScanBatchMetric) {
 }
 
 TEST_F(HostScanSchedulerImplTest, DefaultNetworkChanged) {
-  InitializeTest(false /* multidevice_flags_enabled */);
   InitializeEthernet();
 
   // When no Tether network is present, a scan should start when the default

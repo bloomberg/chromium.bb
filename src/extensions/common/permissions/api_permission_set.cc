@@ -68,7 +68,7 @@ bool CreateAPIPermission(
       }
       LOG(WARNING) << "Parse permission failed.";
     } else {
-      api_permissions->insert(permission.release());
+      api_permissions->insert(std::move(permission));
     }
     return true;
   }
@@ -135,8 +135,8 @@ void APIPermissionSet::insert(APIPermission::ID id) {
   insert(permission_info->CreateAPIPermission());
 }
 
-void APIPermissionSet::insert(APIPermission* permission) {
-  BaseSetOperators<APIPermissionSet>::insert(permission);
+void APIPermissionSet::insert(std::unique_ptr<APIPermission> permission) {
+  BaseSetOperators<APIPermissionSet>::insert(std::move(permission));
 }
 
 // static

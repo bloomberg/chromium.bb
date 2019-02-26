@@ -22,8 +22,12 @@
 #include "SkBlendMode.h"
 #include "SkColor.h"
 #include "SkFilterQuality.h"
+#include "SkFontMetrics.h"
+#include "SkFontTypes.h"
 #include "SkMatrix.h"
 #include "SkRefCnt.h"
+
+#define SK_SUPPORT_LEGACY_FONTMETRICS_IN_PAINT
 
 class GrTextBlob;
 class SkAutoDescriptor;
@@ -49,6 +53,10 @@ class SkSurfaceProps;
 class SkTextBlob;
 class SkTextBlobRunIterator;
 class SkTypeface;
+
+#ifndef SK_SUPPORT_LEGACY_PAINT_TEXTMEASURE
+#define SK_SUPPORT_LEGACY_PAINT_TEXTMEASURE
+#endif
 
 /** \class SkPaint
     SkPaint controls options applied when drawing and measuring. SkPaint collects all
@@ -181,7 +189,9 @@ public:
     */
     void reset();
 
+#ifdef SK_SUPPORT_LEGACY_NESTED_HINTINGENUM
     /** \enum SkPaint::Hinting
+        Deprecated.
         Hinting adjusts the glyph outlines so that the shape provides a uniform
         look at a given point size on font engines that support it. Hinting may have a
         muted effect or no effect at all depending on the platform.
@@ -189,27 +199,28 @@ public:
         The four levels roughly control corresponding features on platforms that use FreeType
         as the font engine.
     */
-    enum Hinting {
+    enum Hinting : uint8_t {
         kNo_Hinting     = 0, //!< glyph outlines unchanged
         kSlight_Hinting = 1, //!< minimal modification to improve constrast
         kNormal_Hinting = 2, //!< glyph outlines modified to improve constrast
         kFull_Hinting   = 3, //!< modifies glyph outlines for maximum constrast
     };
-
-    /** Returns level of glyph outline adjustment.
-
-        @return  one of: kNo_Hinting, kSlight_Hinting, kNormal_Hinting, kFull_Hinting
-    */
-    Hinting getHinting() const {
-        return static_cast<Hinting>(fBitfields.fHinting);
-    }
+#endif
 
     /** Sets level of glyph outline adjustment.
         Does not check for valid values of hintingLevel.
 
-        @param hintingLevel  one of: kNo_Hinting, kSlight_Hinting, kNormal_Hinting, kFull_Hinting
+        @param hintingLevel  one of: SkFontHinting::kNone, SkFontHinting::kSlight,
+                                     SkFontHinting::kNormal, SkFontHinting::kFull
     */
-    void setHinting(Hinting hintingLevel);
+    void setHinting(SkFontHinting hintingLevel);
+
+    /** Returns level of glyph outline adjustment.
+
+        @return  one of: SkFontHinting::kNone, SkFontHinting::kSlight, SkFontHinting::kNormal,
+                         SkFontHinting::kFull
+     */
+    SkFontHinting getHinting() const { return (SkFontHinting)fBitfields.fHinting; }
 
     /** \enum SkPaint::Flags
         The bit values stored in Flags.
@@ -227,11 +238,13 @@ public:
         kLCDRenderText_Flag      = 0x200,  //!< mask for setting LCD text
         kEmbeddedBitmapText_Flag = 0x400,  //!< mask for setting font embedded bitmaps
         kAutoHinting_Flag        = 0x800,  //!< mask for setting auto-hinting
-        kVerticalText_Flag       = 0x1000, //!< mask for setting vertical text
+                                           // 0x1000 used to be kVertical
         kAllFlags                = 0xFFFF, //!< mask of all Flags
     };
 
     #ifdef SK_BUILD_FOR_ANDROID_FRAMEWORK
+    /** Private.
+     */
     enum ReserveFlags {
         kUnderlineText_ReserveFlag  = 0x08, //!< to be deprecated soon
         kStrikeThruText_ReserveFlag = 0x10, //!< to be deprecated soon
@@ -262,7 +275,7 @@ public:
         return SkToBool(this->getFlags() & kAntiAlias_Flag);
     }
 
-    /** Requests, but does not require, that SkPath edge pixels draw opaque or with
+    /** Requests, but does not require, that edge pixels draw opaque or with
         partial transparency.
 
         Sets kAntiAlias_Flag if aa is true.
@@ -301,7 +314,8 @@ public:
         return SkToBool(this->getFlags() & kLinearText_Flag);
     }
 
-    /** Returns true if text is converted to SkPath before drawing and measuring.
+    /** Requests, but does not require, that glyphs are converted to SkPath
+        before drawing and measuring.
         By default, kLinearText_Flag is clear.
 
         Sets kLinearText_Flag if linearText is true.
@@ -368,9 +382,9 @@ public:
     */
     void setEmbeddedBitmapText(bool useEmbeddedBitmapText);
 
-    /** Returns true if SkPaint::Hinting is set to kNormal_Hinting or kFull_Hinting, and if
-        platform uses FreeType as the font manager. If true, instructs
-        the font manager to always hint glyphs.
+    /** Returns true if SkPaint::Hinting is set to SkFontHinting::kNormal or
+        SkFontHinting::kFull, and if platform uses FreeType as the font manager.
+        If true, instructs the font manager to always hint glyphs.
 
         Equivalent to getFlags() masked with kAutoHinting_Flag.
 
@@ -381,10 +395,10 @@ public:
     }
 
     /** Sets whether to always hint glyphs.
-        If SkPaint::Hinting is set to kNormal_Hinting or kFull_Hinting and useAutohinter is set,
-        instructs the font manager to always hint glyphs.
-        auto-hinting has no effect if SkPaint::Hinting is set to kNo_Hinting or
-        kSlight_Hinting.
+        If SkPaint::Hinting is set to SkFontHinting::kNormal or SkFontHinting::kFull
+        and useAutohinter is set, instructs the font manager to always hint glyphs.
+        auto-hinting has no effect if SkPaint::Hinting is set to SkFontHinting::kNone or
+        SkFontHinting::kSlight.
 
         Only affects platforms that use FreeType as the font manager.
 
@@ -394,26 +408,6 @@ public:
         @param useAutohinter  setting for kAutoHinting_Flag
     */
     void setAutohinted(bool useAutohinter);
-
-    /** Returns true if glyphs are drawn top to bottom instead of left to right.
-
-        Equivalent to getFlags() masked with kVerticalText_Flag.
-
-        @return  kVerticalText_Flag state
-    */
-    bool isVerticalText() const {
-        return SkToBool(this->getFlags() & kVerticalText_Flag);
-    }
-
-    /** Returns true if text advance positions the next glyph below the previous glyph instead of to the
-        right of previous glyph.
-
-        Sets kVerticalText_Flag if vertical is true.
-        Clears kVerticalText_Flag if vertical is false.
-
-        @param verticalText  setting for kVerticalText_Flag
-    */
-    void setVerticalText(bool verticalText);
 
     /** Returns true if approximate bold by increasing the stroke width when creating glyph bitmaps
         from outlines.
@@ -434,14 +428,6 @@ public:
         @param fakeBoldText  setting for kFakeBoldText_Flag
     */
     void setFakeBoldText(bool fakeBoldText);
-
-    /** Deprecated.
-    */
-    bool isDevKernText() const { return false; }
-
-    /** Deprecated.
-    */
-    void setDevKernText(bool) { }
 
     /** Returns SkFilterQuality, the image filtering level. A lower setting
         draws faster; a higher setting looks better when the image is scaled.
@@ -470,7 +456,7 @@ public:
         Use kStrokeAndFill_Style to avoid hitting the same pixels twice with a stroke draw and
         a fill draw.
     */
-    enum Style {
+    enum Style : uint8_t {
         kFill_Style,          //!< set to fill geometry
         kStroke_Style,        //!< set to stroke geometry
         kStrokeAndFill_Style, //!< sets to stroke and fill geometry
@@ -501,7 +487,7 @@ public:
     */
     SkColor getColor() const { return fColor4f.toSkColor(); }
 
-    /** Retrieves alpha and RGB, unpmreultiplied, as four floating point values. RGB are
+    /** Retrieves alpha and RGB, unpremultiplied, as four floating point values. RGB are
         are extended sRGB values (sRGB gamut, and encoded with the sRGB transfer function).
 
         @return  unpremultiplied RGBA
@@ -608,7 +594,7 @@ public:
         not contain the actual join. For instance, a fill path constructed with round joins does
         not necessarily include circles at each connected segment.
     */
-    enum Join {
+    enum Join : uint8_t {
         kMiter_Join,                 //!< extends to miter limit
         kRound_Join,                 //!< adds circle
         kBevel_Join,                 //!< connects outside edges
@@ -651,7 +637,7 @@ public:
         @param src       SkPath read to create a filled version
         @param dst       resulting SkPath; may be the same as src, but may not be nullptr
         @param cullRect  optional limit passed to SkPathEffect
-        @param resScale  if > 1, increase precision, else if (0 < res < 1) reduce precision
+        @param resScale  if > 1, increase precision, else if (0 < resScale < 1) reduce precision
                          to favor speed and size
         @return          true if the path represents style fill, or false if it represents hairline
     */
@@ -866,47 +852,6 @@ public:
     */
     void setLooper(sk_sp<SkDrawLooper> drawLooper);
 
-    /** \enum SkPaint::Align
-        Align adjusts the text relative to the text position.
-        Align affects glyphs drawn with: SkCanvas::drawText, SkCanvas::drawPosText,
-        SkCanvas::drawPosTextH, SkCanvas::drawTextRSXform, SkCanvas::drawTextBlob,
-        and SkCanvas::drawString;
-        as well as calls that place text glyphs like getTextWidths() and getTextPath().
-
-        The text position is set by the font for both horizontal and vertical text.
-        Typically, for horizontal text, the position is to the left side of the glyph on the
-        base line; and for vertical text, the position is the horizontal center of the glyph
-        at the caps height.
-
-        Align adjusts the glyph position to center it or move it to abut the position
-        using the metrics returned by the font.
-
-        Align defaults to kLeft_Align.
-    */
-    enum Align {
-        kLeft_Align,   //!< positions glyph by computed font offset
-        kCenter_Align, //!< centers line of glyphs by its width or height
-        kRight_Align,  //!< moves lines of glyphs by its width or height
-    };
-
-    /** May be used to verify that align is a legal value.
-    */
-    static constexpr int kAlignCount = 3;
-
-    /** Returns SkPaint::Align.
-        Returns kLeft_Align if SkPaint::Align has not been set.
-
-        @return  text placement relative to position
-    */
-    Align   getTextAlign() const { return (Align)fBitfields.fTextAlign; }
-
-    /** Sets SkPaint::Align to align.
-        Has no effect if align is an invalid value.
-
-        @param align  text placement relative to position
-    */
-    void    setTextAlign(Align align);
-
     /** Returns text size in points.
 
         @return  typographic height of text
@@ -920,31 +865,31 @@ public:
     */
     void setTextSize(SkScalar textSize);
 
-    /** Returns text scale x.
+    /** Returns text scale on x-axis.
         Default value is 1.
 
         @return  text horizontal scale
     */
     SkScalar getTextScaleX() const { return fTextScaleX; }
 
-    /** Sets text scale x.
+    /** Sets text scale on x-axis.
         Default value is 1.
 
         @param scaleX  text horizontal scale
     */
     void setTextScaleX(SkScalar scaleX);
 
-    /** Returns text skew x.
+    /** Returns text skew on x-axis.
         Default value is zero.
 
-        @return  additional shear in x-axis relative to y-axis
+        @return  additional shear on x-axis relative to y-axis
     */
     SkScalar getTextSkewX() const { return fTextSkewX; }
 
-    /** Sets text skew x.
+    /** Sets text skew on x-axis.
         Default value is zero.
 
-        @param skewX  additional shear in x-axis relative to y-axis
+        @param skewX  additional shear on x-axis relative to y-axis
     */
     void setTextSkewX(SkScalar skewX);
 
@@ -967,7 +912,7 @@ public:
 
         TextEncoding is set to kUTF8_TextEncoding by default.
     */
-    enum TextEncoding {
+    enum TextEncoding : uint8_t {
         kUTF8_TextEncoding,    //!< uses bytes to represent UTF-8 or ASCII
         kUTF16_TextEncoding,   //!< uses two byte words to represent most of Unicode
         kUTF32_TextEncoding,   //!< uses four byte words to represent all of Unicode
@@ -992,9 +937,16 @@ public:
                          kGlyphID_TextEncoding
     */
     void setTextEncoding(TextEncoding encoding);
+    // Experimental
+    void setTextEncoding(SkTextEncoding encoding) {
+        this->setTextEncoding((TextEncoding)encoding);
+    }
 
-    /** \struct SkPaint::FontMetrics
-        FontMetrics is filled out by getFontMetrics(). FontMetrics contents reflect the values
+#ifdef SK_SUPPORT_LEGACY_PAINT_TEXTMEASURE
+
+#ifdef SK_SUPPORT_LEGACY_FONTMETRICS_IN_PAINT
+    /**
+        SkFontMetrics is filled out by getFontMetrics(). SkFontMetrics contents reflect the values
         computed by font manager using SkTypeface. Values are set to zero if they are
         not available.
 
@@ -1008,114 +960,21 @@ public:
         fStrikeoutThickness and fStrikeoutPosition have a bit set in fFlags if their values
         are valid, since their value may be zero.
     */
-    struct FontMetrics {
+    typedef SkFontMetrics FontMetrics;
+#endif
 
-        /** \enum SkPaint::FontMetrics::FontMetricsFlags
-            FontMetricsFlags are set in fFlags when underline and strikeout metrics are valid;
-            the underline or strikeout metric may be valid and zero.
-            Fonts with embedded bitmaps may not have valid underline or strikeout metrics.
-        */
-        enum FontMetricsFlags {
-            kUnderlineThicknessIsValid_Flag = 1 << 0, //!< set if fUnderlineThickness is valid
-            kUnderlinePositionIsValid_Flag  = 1 << 1, //!< set if fUnderlinePosition is valid
-            kStrikeoutThicknessIsValid_Flag = 1 << 2, //!< set if fStrikeoutThickness is valid
-            kStrikeoutPositionIsValid_Flag  = 1 << 3, //!< set if fStrikeoutPosition is valid
-        };
-
-        uint32_t fFlags;              //!< is set to FontMetricsFlags when metrics are valid
-        SkScalar fTop;                //!< extent above baseline
-        SkScalar fAscent;             //!< distance to reserve above baseline
-        SkScalar fDescent;            //!< distance to reserve below baseline
-        SkScalar fBottom;             //!< extent below baseline
-        SkScalar fLeading;            //!< distance to add between lines
-        SkScalar fAvgCharWidth;       //!< average character width
-        SkScalar fMaxCharWidth;       //!< maximum character width
-        SkScalar fXMin;               //!< minimum x
-        SkScalar fXMax;               //!< maximum x
-        SkScalar fXHeight;            //!< height of lower-case 'x'
-        SkScalar fCapHeight;          //!< height of an upper-case letter
-        SkScalar fUnderlineThickness; //!< underline thickness
-        SkScalar fUnderlinePosition;  //!< underline position relative to baseline
-        SkScalar fStrikeoutThickness; //!< strikeout thickness
-        SkScalar fStrikeoutPosition;  //!< strikeout position relative to baseline
-
-        /** Returns true if SkPaint::FontMetrics has a valid underline thickness, and sets
-            thickness to that value. If the underline thickness is not valid,
-            return false, and ignore thickness.
-
-            @param thickness  storage for underline width
-            @return           true if font specifies underline width
-        */
-        bool hasUnderlineThickness(SkScalar* thickness) const {
-            if (SkToBool(fFlags & kUnderlineThicknessIsValid_Flag)) {
-                *thickness = fUnderlineThickness;
-                return true;
-            }
-            return false;
-        }
-
-        /** Returns true if SkPaint::FontMetrics has a valid underline position, and sets
-            position to that value. If the underline position is not valid,
-            return false, and ignore position.
-
-            @param position  storage for underline position
-            @return          true if font specifies underline position
-        */
-        bool hasUnderlinePosition(SkScalar* position) const {
-            if (SkToBool(fFlags & kUnderlinePositionIsValid_Flag)) {
-                *position = fUnderlinePosition;
-                return true;
-            }
-            return false;
-        }
-
-        /** Returns true if SkPaint::FontMetrics has a valid strikeout thickness, and sets
-            thickness to that value. If the underline thickness is not valid,
-            return false, and ignore thickness.
-
-            @param thickness  storage for strikeout width
-            @return           true if font specifies strikeout width
-        */
-        bool hasStrikeoutThickness(SkScalar* thickness) const {
-            if (SkToBool(fFlags & kStrikeoutThicknessIsValid_Flag)) {
-                *thickness = fStrikeoutThickness;
-                return true;
-            }
-            return false;
-        }
-
-        /** Returns true if SkPaint::FontMetrics has a valid strikeout position, and sets
-            position to that value. If the underline position is not valid,
-            return false, and ignore position.
-
-            @param position  storage for strikeout position
-            @return          true if font specifies strikeout position
-        */
-        bool hasStrikeoutPosition(SkScalar* position) const {
-            if (SkToBool(fFlags & kStrikeoutPositionIsValid_Flag)) {
-                *position = fStrikeoutPosition;
-                return true;
-            }
-            return false;
-        }
-
-    };
-
-    /** Returns SkPaint::FontMetrics associated with SkTypeface.
+    /** Returns SkFontMetrics associated with SkTypeface.
         The return value is the recommended spacing between lines: the sum of metrics
         descent, ascent, and leading.
-        If metrics is not nullptr, SkPaint::FontMetrics is copied to metrics.
+        If metrics is not nullptr, SkFontMetrics is copied to metrics.
         Results are scaled by text size but does not take into account
         dimensions required by text scale x, text skew x, fake bold,
         style stroke, and SkPathEffect.
-        Results can be additionally scaled by scale; a scale of zero
-        is ignored.
 
-        @param metrics  storage for SkPaint::FontMetrics from SkTypeface; may be nullptr
-        @param scale    additional multiplier for returned values
+        @param metrics  storage for SkFontMetrics; may be nullptr
         @return         recommended spacing between lines
     */
-    SkScalar getFontMetrics(FontMetrics* metrics, SkScalar scale = 0) const;
+    SkScalar getFontMetrics(SkFontMetrics* metrics) const;
 
     /** Returns the recommended spacing between lines: the sum of metrics
         descent, ascent, and leading.
@@ -1125,7 +984,7 @@ public:
 
         @return  recommended spacing between lines
     */
-    SkScalar getFontSpacing() const { return this->getFontMetrics(nullptr, 0); }
+    SkScalar getFontSpacing() const { return this->getFontMetrics(nullptr); }
 
     /** Converts text into glyph indices.
         Returns the number of glyph indices represented by text.
@@ -1187,8 +1046,7 @@ public:
     */
     int countText(const void* text, size_t byteLength) const;
 
-    /** Returns the advance width of text if kVerticalText_Flag is clear,
-        and the height of text if kVerticalText_Flag is set.
+    /** Returns the advance width of text.
         The advance is the normal distance to move before drawing additional text.
         Uses SkPaint::TextEncoding to decode text, SkTypeface to get the font metrics,
         and text size, text scale x, text skew x, stroke width, and
@@ -1203,8 +1061,7 @@ public:
     */
     SkScalar measureText(const void* text, size_t length, SkRect* bounds) const;
 
-    /** Returns the advance width of text if kVerticalText_Flag is clear,
-        and the height of text if kVerticalText_Flag is set.
+    /** Returns the advance width of text.
         The advance is the normal distance to move before drawing additional text.
         Uses SkPaint::TextEncoding to decode text, SkTypeface to get the font metrics,
         and text size to scale the metrics.
@@ -1217,12 +1074,10 @@ public:
     SkScalar measureText(const void* text, size_t length) const {
         return this->measureText(text, length, nullptr);
     }
+#endif
 
     /** Returns the bytes of text that fit within maxWidth.
-        If kVerticalText_Flag is clear, the text fragment fits if its advance width is less than or
-        equal to maxWidth.
-        If kVerticalText_Flag is set, the text fragment fits if its advance height is less than or
-        equal to maxWidth.
+        The text fragment fits if its advance width is less than or equal to maxWidth.
         Measures only while the advance is less than or equal to maxWidth.
         Returns the advance or the text fragment in measuredWidth if it not nullptr.
         Uses SkPaint::TextEncoding to decode text, SkTypeface to get the font metrics,
@@ -1238,13 +1093,12 @@ public:
     size_t  breakText(const void* text, size_t length, SkScalar maxWidth,
                       SkScalar* measuredWidth = nullptr) const;
 
+#ifdef SK_SUPPORT_LEGACY_PAINT_TEXTMEASURE
     /** Retrieves the advance and bounds for each glyph in text, and returns
         the glyph count in text.
         Both widths and bounds may be nullptr.
         If widths is not nullptr, widths must be an array of glyph count entries.
         if bounds is not nullptr, bounds must be an array of glyph count entries.
-        If kVerticalText_Flag is clear, widths returns the horizontal advance.
-        If kVerticalText_Flag is set, widths returns the vertical advance.
         Uses SkPaint::TextEncoding to decode text, SkTypeface to get the font metrics,
         and text size to scale the widths and bounds.
         Does not scale the advance by fake bold or SkPathEffect.
@@ -1263,7 +1117,7 @@ public:
         Uses SkPaint::TextEncoding to decode text, SkTypeface to get the glyph paths,
         and text size, fake bold, and SkPathEffect to scale and modify the glyph paths.
         All of the glyph paths are stored in path.
-        Uses x, y, and SkPaint::Align to position path.
+        Uses x, y, to position path.
 
         @param text    character codes or glyph indices
         @param length  number of bytes of text
@@ -1278,7 +1132,7 @@ public:
         Uses SkPaint::TextEncoding to decode text, SkTypeface to get the glyph paths,
         and text size, fake bold, and SkPathEffect to scale and modify the glyph paths.
         All of the glyph paths are stored in path.
-        Uses pos array and SkPaint::Align to position path.
+        Uses pos array to position path.
         pos contains a position for each glyph.
 
         @param text    character codes or glyph indices
@@ -1289,13 +1143,18 @@ public:
     void getPosTextPath(const void* text, size_t length,
                         const SkPoint pos[], SkPath* path) const;
 
+#ifdef SK_SUPPORT_LEGACY_TEXTINTERCEPTS
+public:
+#else
+private:
+#endif
     /** Returns the number of intervals that intersect bounds.
         bounds describes a pair of lines parallel to the text advance.
         The return count is zero or a multiple of two, and is at most twice the number of glyphs in
         the string.
         Uses SkPaint::TextEncoding to decode text, SkTypeface to get the glyph paths,
         and text size, fake bold, and SkPathEffect to scale and modify the glyph paths.
-        Uses x, y, and SkPaint::Align to position intervals.
+        Uses x, y to position intervals.
 
         Pass nullptr for intervals to determine the size of the interval array.
 
@@ -1318,7 +1177,7 @@ public:
         the string.
         Uses SkPaint::TextEncoding to decode text, SkTypeface to get the glyph paths,
         and text size, fake bold, and SkPathEffect to scale and modify the glyph paths.
-        Uses pos array and SkPaint::Align to position intervals.
+        Uses pos array to position intervals.
 
         Pass nullptr for intervals to determine the size of the interval array.
 
@@ -1340,7 +1199,7 @@ public:
         the string.
         Uses SkPaint::TextEncoding to decode text, SkTypeface to get the glyph paths,
         and text size, fake bold, and SkPathEffect to scale and modify the glyph paths.
-        Uses xpos array, constY, and SkPaint::Align to position intervals.
+        Uses xpos array, constY to position intervals.
 
         Pass nullptr for intervals to determine the size of the interval array.
 
@@ -1348,14 +1207,15 @@ public:
 
         @param text       character codes or glyph indices
         @param length     number of bytes of text
-        @param xpos       positions of each glyph in x
-        @param constY     position of each glyph in y
+        @param xpos       positions of each glyph on x-axis
+        @param constY     position of each glyph on y-axis
         @param bounds     lower and upper line parallel to the advance
         @param intervals  returned intersections; may be nullptr
         @return           number of intersections; may be zero
     */
     int getPosTextHIntercepts(const void* text, size_t length, const SkScalar xpos[],
                               SkScalar constY, const SkScalar bounds[2], SkScalar* intervals) const;
+public:
 
     /** Returns the number of intervals that intersect bounds.
         bounds describes a pair of lines parallel to the text advance.
@@ -1363,7 +1223,7 @@ public:
         the string.
         Uses SkTypeface to get the glyph paths,
         and text size, fake bold, and SkPathEffect to scale and modify the glyph paths.
-        Uses run array and SkPaint::Align to position intervals.
+        Uses run array to position intervals.
 
         SkPaint::TextEncoding must be set to SkPaint::kGlyphID_TextEncoding.
 
@@ -1381,16 +1241,16 @@ public:
 
     /** Returns the union of bounds of all glyphs.
         Returned dimensions are computed by font manager from font data,
-        ignoring SkPaint::Hinting. Includes text size, text scale x,
-        and text skew x, but not fake bold or SkPathEffect.
+        ignoring SkPaint::Hinting. Includes font metrics, but not fake bold or SkPathEffect.
 
-        If text size is large, text scale x is one, and text skew x is zero,
-        returns the same bounds as SkPaint::FontMetrics { FontMetrics::fXMin,
-        FontMetrics::fTop, FontMetrics::fXMax, FontMetrics::fBottom }.
+        If text size is large, text scale is one, and text skew is zero,
+        returns the bounds as:
+        { SkFontMetrics::fXMin, SkFontMetrics::fTop, SkFontMetrics::fXMax, SkFontMetrics::fBottom }.
 
         @return  union of bounds of all glyphs
     */
     SkRect getFontBounds() const;
+#endif
 
     /** Returns true if SkPaint prevents all drawing;
         otherwise, the SkPaint may or may not allow drawing.
@@ -1481,7 +1341,6 @@ private:
     friend class SkGlyphRun;
     friend class SkGlyphRunBuilder;
     SkPaint(const SkPaint&, const SkRunFont&);
-    typedef const SkGlyph& (*GlyphCacheProc)(SkGlyphCache*, const char**, const char*);
 
     sk_sp<SkTypeface>     fTypeface;
     sk_sp<SkPathEffect>   fPathEffect;
@@ -1502,20 +1361,16 @@ private:
         struct {
             // all of these bitfields should add up to 32
             unsigned        fFlags : 16;
-            unsigned        fTextAlign : 2;
             unsigned        fCapType : 2;
             unsigned        fJoinType : 2;
             unsigned        fStyle : 2;
             unsigned        fTextEncoding : 2;  // 3 values
             unsigned        fHinting : 2;
             unsigned        fFilterQuality : 2;
-            //unsigned      fFreeBits : 2;
+            //unsigned      fFreeBits : 4;
         } fBitfields;
         uint32_t fBitfieldsUInt;
     };
-
-    static GlyphCacheProc GetGlyphCacheProc(TextEncoding encoding,
-                                            bool needFullMetrics);
 
     SkScalar measure_text(SkGlyphCache*, const char* text, size_t length,
                           int* count, SkRect* bounds) const;
@@ -1560,6 +1415,7 @@ private:
     friend class SkCanonicalizePaint;
     friend class SkCanvas;
     friend class SkDraw;
+    friend class SkFont;
     friend class SkGlyphRunListPainter;
     friend class SkPaintPriv;
     friend class SkPDFDevice;

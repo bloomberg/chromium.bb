@@ -17,13 +17,12 @@
 #include "services/metrics/public/cpp/ukm_recorder.h"
 #include "services/resource_coordinator/public/cpp/coordination_unit_id.h"
 #include "services/resource_coordinator/public/cpp/coordination_unit_types.h"
-#include "services/service_manager/public/cpp/service_context_ref.h"
+#include "services/service_manager/public/cpp/service_keepalive.h"
 
 namespace service_manager {
 template <typename... BinderArgs>
 class BinderRegistryWithArgs;
 struct BindSourceInfo;
-class ServiceContextRefFactory;
 }  // namespace service_manager
 
 namespace resource_coordinator {
@@ -52,7 +51,7 @@ class CoordinationUnitGraph {
 
   void OnStart(service_manager::BinderRegistryWithArgs<
                    const service_manager::BindSourceInfo&>* registry,
-               service_manager::ServiceContextRefFactory* service_ref_factory);
+               service_manager::ServiceKeepalive* keepalive);
   void RegisterObserver(
       std::unique_ptr<CoordinationUnitGraphObserver> observer);
   void OnCoordinationUnitCreated(CoordinationUnitBase* coordination_unit);
@@ -61,15 +60,15 @@ class CoordinationUnitGraph {
 
   FrameCoordinationUnitImpl* CreateFrameCoordinationUnit(
       const CoordinationUnitID& id,
-      std::unique_ptr<service_manager::ServiceContextRef> service_ref);
+      std::unique_ptr<service_manager::ServiceKeepaliveRef> service_ref);
   PageCoordinationUnitImpl* CreatePageCoordinationUnit(
       const CoordinationUnitID& id,
-      std::unique_ptr<service_manager::ServiceContextRef> service_ref);
+      std::unique_ptr<service_manager::ServiceKeepaliveRef> service_ref);
   ProcessCoordinationUnitImpl* CreateProcessCoordinationUnit(
       const CoordinationUnitID& id,
-      std::unique_ptr<service_manager::ServiceContextRef> service_ref);
+      std::unique_ptr<service_manager::ServiceKeepaliveRef> service_ref);
   SystemCoordinationUnitImpl* FindOrCreateSystemCoordinationUnit(
-      std::unique_ptr<service_manager::ServiceContextRef> service_ref);
+      std::unique_ptr<service_manager::ServiceKeepaliveRef> service_ref);
 
   std::vector<ProcessCoordinationUnitImpl*> GetAllProcessCoordinationUnits();
   std::vector<FrameCoordinationUnitImpl*> GetAllFrameCoordinationUnits();
@@ -112,8 +111,7 @@ class CoordinationUnitGraph {
   ukm::UkmRecorder* ukm_recorder_ = nullptr;
   std::unique_ptr<CoordinationUnitProviderImpl> provider_;
 
-  static void Create(
-      service_manager::ServiceContextRefFactory* service_ref_factory);
+  static void Create(service_manager::ServiceKeepalive* keepalive);
 
   DISALLOW_COPY_AND_ASSIGN(CoordinationUnitGraph);
 };

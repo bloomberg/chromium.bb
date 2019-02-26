@@ -19,8 +19,10 @@ class NavigationPreloadManager final : public ScriptWrappable {
  public:
   static NavigationPreloadManager* Create(
       ServiceWorkerRegistration* registration) {
-    return new NavigationPreloadManager(registration);
+    return MakeGarbageCollected<NavigationPreloadManager>(registration);
   }
+
+  explicit NavigationPreloadManager(ServiceWorkerRegistration*);
 
   ScriptPromise enable(ScriptState*);
   ScriptPromise disable(ScriptState*);
@@ -30,8 +32,6 @@ class NavigationPreloadManager final : public ScriptWrappable {
   void Trace(blink::Visitor*) override;
 
  private:
-  explicit NavigationPreloadManager(ServiceWorkerRegistration*);
-
   ScriptPromise SetEnabled(bool enable, ScriptState*);
 
   Member<ServiceWorkerRegistration> registration_;

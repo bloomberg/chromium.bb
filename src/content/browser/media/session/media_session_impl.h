@@ -91,7 +91,7 @@ class MediaSessionImpl : public MediaSession,
   void NotifyMediaSessionMetadataChange(
       const base::Optional<MediaMetadata>& metadata);
   void NotifyMediaSessionActionsChange(
-      const std::set<blink::mojom::MediaSessionAction>& actions);
+      const std::set<media_session::mojom::MediaSessionAction>& actions);
 
   // Adds the given player to the current media session. Returns whether the
   // player was successfully added. If it returns false, AddPlayer() should be
@@ -134,6 +134,7 @@ class MediaSessionImpl : public MediaSession,
   void WebContentsDestroyed() override;
   void RenderFrameDeleted(RenderFrameHost* rfh) override;
   void DidFinishNavigation(NavigationHandle* navigation_handle) override;
+  void OnWebContentsFocused(RenderWidgetHost* render_widget_host) override;
 
   // MediaSessionService-related methods
 
@@ -177,11 +178,8 @@ class MediaSessionImpl : public MediaSession,
   // |type| represents the origin of the request.
   CONTENT_EXPORT void Stop(MediaSession::SuspendType suspend_type) override;
 
-  // Seek the media session forward.
-  CONTENT_EXPORT void SeekForward(base::TimeDelta seek_time) override;
-
-  // Seek the media session backward.
-  CONTENT_EXPORT void SeekBackward(base::TimeDelta seek_time) override;
+  // Seek the media session.
+  CONTENT_EXPORT void Seek(base::TimeDelta seek_time) override;
 
   // Returns if the session can be controlled by Resume() and Suspend() calls
   // above.
@@ -193,10 +191,17 @@ class MediaSessionImpl : public MediaSession,
 
   // Called when a MediaSessionAction is received. The action will be forwarded
   // to blink::MediaSession corresponding to the current routed service.
-  void DidReceiveAction(blink::mojom::MediaSessionAction action) override;
+  void DidReceiveAction(
+      media_session::mojom::MediaSessionAction action) override;
 
   // Set the volume multiplier applied during ducking.
   CONTENT_EXPORT void SetDuckingVolumeMultiplier(double multiplier) override;
+
+  // Set the audio focus group id for this media session. Sessions in the same
+  // group can share audio focus. Setting this to null will use the browser
+  // default value.
+  CONTENT_EXPORT void SetAudioFocusGroupId(
+      const base::UnguessableToken& group_id);
 
   // Suspend the media session.
   // |type| represents the origin of the request.
@@ -226,6 +231,16 @@ class MediaSessionImpl : public MediaSession,
   CONTENT_EXPORT void FinishSystemAudioFocusRequest(
       media_session::mojom::AudioFocusType type,
       bool result);
+
+  // Skip to the previous track.
+  CONTENT_EXPORT void PreviousTrack() override;
+
+  // Skip to the next track.
+  CONTENT_EXPORT void NextTrack() override;
+
+  const base::UnguessableToken& audio_focus_group_id() const {
+    return audio_focus_group_id_;
+  }
 
  private:
   friend class content::WebContentsUserData<MediaSessionImpl>;
@@ -282,8 +297,9 @@ class MediaSessionImpl : public MediaSession,
   // Notify all information that an observer needs to know when it's added.
   void NotifyAddedObserver(MediaSessionObserver* observer);
 
-  // Notifies observers about the state change of the media session.
-  void NotifyAboutStateChange();
+  // Notifies legacy (non-mojo) observers about the state change of the media
+  // session.
+  void NotifyLegacyObserversStateChange();
 
   // Internal method that should be used instead of setting audio_focus_state_.
   // It sets audio_focus_state_ and notifies observers about the state change.
@@ -293,7 +309,8 @@ class MediaSessionImpl : public MediaSession,
   CONTENT_EXPORT void FlushForTesting();
 
   // Notifies mojo observers that the MediaSessionInfo has changed.
-  void NotifyObserversInfoChanged();
+  void OnMediaSessionInfoChanged();
+  void NotifyMojoObserversMediaSessionInfoChanged();
 
   // Update the volume multiplier when ducking state changes.
   void UpdateVolumeMultiplier();
@@ -325,6 +342,9 @@ class MediaSessionImpl : public MediaSession,
   // to update |routed_service_|.
   CONTENT_EXPORT MediaSessionServiceImpl* ComputeServiceForRouting();
 
+  // Returns whether the action is supported by the media session.
+  bool IsActionSupported(media_session::mojom::MediaSessionAction action) const;
+
   std::unique_ptr<AudioFocusDelegate> delegate_;
   std::map<PlayerIdentifier, media_session::mojom::AudioFocusType>
       normal_players_;
@@ -344,6 +364,8 @@ class MediaSessionImpl : public MediaSession,
   // is set to |true| after StartDucking(), and will be set to |false| after
   // StopDucking().
   bool is_ducking_;
+
+  base::UnguessableToken audio_focus_group_id_ = base::UnguessableToken::Null();
 
   double ducking_volume_multiplier_;
 
@@ -370,6 +392,9 @@ class MediaSessionImpl : public MediaSession,
 
   mojo::InterfacePtrSet<media_session::mojom::MediaSessionObserver>
       mojo_observers_;
+
+  // Timer used for debouncing MediaSessionInfoChanged events.
+  std::unique_ptr<base::OneShotTimer> info_changed_timer_;
 
   DISALLOW_COPY_AND_ASSIGN(MediaSessionImpl);
 };

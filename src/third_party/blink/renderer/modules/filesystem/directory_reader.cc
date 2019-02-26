@@ -51,8 +51,10 @@ class DirectoryReader::EntriesCallbackHelper final
     : public EntriesCallbacks::OnDidGetEntriesCallback {
  public:
   static EntriesCallbackHelper* Create(DirectoryReader* reader) {
-    return new EntriesCallbackHelper(reader);
+    return MakeGarbageCollected<EntriesCallbackHelper>(reader);
   }
+
+  explicit EntriesCallbackHelper(DirectoryReader* reader) : reader_(reader) {}
 
   void Trace(blink::Visitor* visitor) override {
     visitor->Trace(reader_);
@@ -64,8 +66,6 @@ class DirectoryReader::EntriesCallbackHelper final
   }
 
  private:
-  explicit EntriesCallbackHelper(DirectoryReader* reader) : reader_(reader) {}
-
   // FIXME: This Member keeps the reader alive until all of the readDirectory
   // results are received. crbug.com/350285
   Member<DirectoryReader> reader_;
@@ -74,8 +74,10 @@ class DirectoryReader::EntriesCallbackHelper final
 class DirectoryReader::ErrorCallbackHelper final : public ErrorCallbackBase {
  public:
   static ErrorCallbackHelper* Create(DirectoryReader* reader) {
-    return new ErrorCallbackHelper(reader);
+    return MakeGarbageCollected<ErrorCallbackHelper>(reader);
   }
+
+  explicit ErrorCallbackHelper(DirectoryReader* reader) : reader_(reader) {}
 
   void Invoke(base::File::Error error) override { reader_->OnError(error); }
 
@@ -85,8 +87,6 @@ class DirectoryReader::ErrorCallbackHelper final : public ErrorCallbackBase {
   }
 
  private:
-  explicit ErrorCallbackHelper(DirectoryReader* reader) : reader_(reader) {}
-
   Member<DirectoryReader> reader_;
 };
 
@@ -118,7 +118,8 @@ void DirectoryReader::readEntries(V8EntriesCallback* entries_callback,
   }
 
   if (!has_more_entries_ || !entries_.IsEmpty()) {
-    EntryHeapVector* entries = new EntryHeapVector(std::move(entries_));
+    EntryHeapVector* entries =
+        MakeGarbageCollected<EntryHeapVector>(std::move(entries_));
     DOMFileSystem::ScheduleCallback(
         Filesystem()->GetExecutionContext(),
         WTF::Bind(
@@ -147,7 +148,7 @@ void DirectoryReader::OnError(base::File::Error error) {
   entries_callback_ = nullptr;
   if (auto* error_callback = error_callback_.Release()) {
     error_callback->InvokeAndReportException(
-        nullptr, FileError::CreateDOMException(error_));
+        nullptr, file_error::CreateDOMException(error_));
   }
 }
 

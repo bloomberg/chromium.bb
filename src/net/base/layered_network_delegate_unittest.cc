@@ -137,9 +137,9 @@ class TestNetworkDelegateImpl : public NetworkDelegateImpl {
     return false;
   }
 
-  bool OnCanEnablePrivacyMode(const GURL& url,
-                              const GURL& site_for_cookies) const override {
-    IncrementAndCompareCounter("on_can_enable_privacy_mode_count");
+  bool OnForcePrivacyMode(const GURL& url,
+                          const GURL& site_for_cookies) const override {
+    IncrementAndCompareCounter("on_force_privacy_mode_count");
     return false;
   }
 
@@ -209,7 +209,7 @@ class TestLayeredNetworkDelegate : public LayeredNetworkDelegate {
     EXPECT_FALSE(OnCanGetCookies(*request, CookieList(), true));
     EXPECT_FALSE(OnCanSetCookie(*request, net::CanonicalCookie(), NULL, true));
     EXPECT_FALSE(OnCanAccessFile(*request, base::FilePath(), base::FilePath()));
-    EXPECT_FALSE(OnCanEnablePrivacyMode(GURL(), GURL()));
+    EXPECT_FALSE(OnForcePrivacyMode(GURL(), GURL()));
     EXPECT_FALSE(OnCancelURLRequestWithPolicyViolatingReferrerHeader(
         *request, GURL(), GURL()));
   }
@@ -323,11 +323,10 @@ class TestLayeredNetworkDelegate : public LayeredNetworkDelegate {
     EXPECT_EQ(1, (*counters_)["on_can_access_file_count"]);
   }
 
-  bool OnCanEnablePrivacyModeInternal(
-      const GURL& url,
-      const GURL& site_for_cookies) const override {
-    ++(*counters_)["on_can_enable_privacy_mode_count"];
-    EXPECT_EQ(1, (*counters_)["on_can_enable_privacy_mode_count"]);
+  bool OnForcePrivacyModeInternal(const GURL& url,
+                                  const GURL& site_for_cookies) const override {
+    ++(*counters_)["on_force_privacy_mode_count"];
+    EXPECT_EQ(1, (*counters_)["on_force_privacy_mode_count"]);
     return false;
   }
 

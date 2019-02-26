@@ -8,6 +8,7 @@
 #include <string>
 #include <vector>
 
+#include "base/metrics/field_trial.h"
 #include "base/test/metrics/histogram_tester.h"
 #include "base/test/scoped_task_environment.h"
 #include "base/time/default_clock.h"
@@ -35,8 +36,7 @@ class DataReductionProxyConfiguratorTest : public testing::Test {
     manager_->OnChangeInNetworkID("test");
 
     test_context_ = DataReductionProxyTestContext::Builder().Build();
-    config_.reset(new DataReductionProxyConfigurator(
-        test_context_->net_log(), test_context_->event_creator()));
+    config_.reset(new DataReductionProxyConfigurator());
   }
 
   void TearDown() override {
@@ -233,6 +233,18 @@ TEST_F(DataReductionProxyConfiguratorTest, TestSecureInsecureCoreRestricted) {
                    std::string());
 }
 
+TEST_F(DataReductionProxyConfiguratorTest, TestSecureRestrictedInHoldback) {
+  base::FieldTrialList field_trial_list(nullptr);
+  ASSERT_TRUE(base::FieldTrialList::CreateFieldTrial(
+      "DataCompressionProxyHoldback", "SecureProxy_Disabled"));
+
+  config_->Enable(*manager_,
+                  BuildProxyList("https://www.foo.com:443", ProxyServer::CORE,
+                                 "http://www.bar.com:80", ProxyServer::CORE));
+  CheckProxyConfig(net::ProxyConfig::ProxyRules::Type::PROXY_LIST_PER_SCHEME,
+                   "PROXY www.bar.com:80;DIRECT", std::string());
+}
+
 TEST_F(DataReductionProxyConfiguratorTest, TestRestrictedQuic) {
   base::HistogramTester histogram_tester;
   manager_->SetHasWarmupURLProbeFailed(true, true, true);
@@ -278,7 +290,7 @@ TEST_F(DataReductionProxyConfiguratorTest, TestBypassList) {
   expected.AddRuleFromString("http://www.google.com");
   expected.AddRuleFromString("fefe:13::abc/33");
 
-  EXPECT_TRUE(expected.Equals(config_->bypass_rules_));
+  EXPECT_EQ(expected, config_->bypass_rules_);
 }
 
 TEST_F(DataReductionProxyConfiguratorTest,

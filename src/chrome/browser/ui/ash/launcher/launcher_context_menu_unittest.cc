@@ -34,7 +34,7 @@
 #include "chrome/test/base/testing_profile.h"
 #include "components/arc/metrics/arc_metrics_constants.h"
 #include "components/arc/test/fake_app_instance.h"
-#include "components/exo/shell_surface.h"
+#include "components/exo/shell_surface_util.h"
 #include "components/prefs/pref_service.h"
 #include "components/session_manager/core/session_manager.h"
 #include "ui/aura/window_event_dispatcher.h"
@@ -102,8 +102,7 @@ class LauncherContextMenuTest : public ash::AshTestBase {
     widget->Init(params);
     widget->Show();
     widget->Activate();
-    exo::ShellSurface::SetApplicationId(widget->GetNativeWindow(),
-                                        window_app_id);
+    exo::SetShellApplicationId(widget->GetNativeWindow(), window_app_id);
     return widget;
   }
 

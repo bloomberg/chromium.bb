@@ -46,8 +46,10 @@ class CSSViewportRule final : public CSSRule {
  public:
   static CSSViewportRule* Create(StyleRuleViewport* viewport_rule,
                                  CSSStyleSheet* sheet) {
-    return new CSSViewportRule(viewport_rule, sheet);
+    return MakeGarbageCollected<CSSViewportRule>(viewport_rule, sheet);
   }
+
+  CSSViewportRule(StyleRuleViewport*, CSSStyleSheet*);
   ~CSSViewportRule() override;
 
   String cssText() const override;
@@ -58,8 +60,6 @@ class CSSViewportRule final : public CSSRule {
   void Trace(blink::Visitor*) override;
 
  private:
-  CSSViewportRule(StyleRuleViewport*, CSSStyleSheet*);
-
   CSSRule::Type type() const override { return kViewportRule; }
 
   Member<StyleRuleViewport> viewport_rule_;

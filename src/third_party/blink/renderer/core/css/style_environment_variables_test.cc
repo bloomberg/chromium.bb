@@ -41,8 +41,6 @@ class StyleEnvironmentVariablesTest : public PageTestBase {
   void SetUp() override {
     PageTestBase::SetUp();
 
-    RuntimeEnabledFeatures::SetCSSEnvironmentVariablesEnabled(true);
-
     // Needed for RecordUseCounter_IgnoreMediaControls.
     RuntimeEnabledFeatures::SetModernMediaControlsEnabled(true);
   }
@@ -58,7 +56,8 @@ class StyleEnvironmentVariablesTest : public PageTestBase {
   void InitializeWithHTML(LocalFrame& frame, const String& html_content) {
     // Sets the inner html and runs the document lifecycle.
     frame.GetDocument()->body()->SetInnerHTMLFromString(html_content);
-    frame.GetDocument()->View()->UpdateAllLifecyclePhases();
+    frame.GetDocument()->View()->UpdateAllLifecyclePhases(
+        DocumentLifecycle::LifecycleUpdateReason::kTest);
   }
 
   void InitializeTestPageWithVariableNamed(LocalFrame& frame,
@@ -105,7 +104,7 @@ TEST_F(StyleEnvironmentVariablesTest, DocumentVariable_AfterLoad) {
 
   // Ensure that the document has been invalidated.
   EXPECT_TRUE(GetDocument().NeedsLayoutTreeUpdate());
-  GetDocument().View()->UpdateAllLifecyclePhases();
+  UpdateAllLifecyclePhasesForTest();
 
   // Check that the element has the background color provided by the variable.
   Element* target = GetDocument().getElementById("target");
@@ -122,7 +121,7 @@ TEST_F(StyleEnvironmentVariablesTest, DocumentVariable_Change) {
 
   // Ensure that the document has been invalidated.
   EXPECT_TRUE(GetDocument().NeedsLayoutTreeUpdate());
-  GetDocument().View()->UpdateAllLifecyclePhases();
+  UpdateAllLifecyclePhasesForTest();
 
   // Check that the element has the background color provided by the variable.
   Element* target = GetDocument().getElementById("target");
@@ -148,7 +147,7 @@ TEST_F(StyleEnvironmentVariablesTest,
 
   // Ensure that the document has been invalidated.
   EXPECT_TRUE(GetDocument().NeedsLayoutTreeUpdate());
-  GetDocument().View()->UpdateAllLifecyclePhases();
+  UpdateAllLifecyclePhasesForTest();
 
   // Check that the element has the background color provided by the document
   // variable.
@@ -160,7 +159,7 @@ TEST_F(StyleEnvironmentVariablesTest,
 
   // Ensure that the document has been invalidated.
   EXPECT_TRUE(GetDocument().NeedsLayoutTreeUpdate());
-  GetDocument().View()->UpdateAllLifecyclePhases();
+  UpdateAllLifecyclePhasesForTest();
 
   // Check that the element has the background color provided by the global
   // variable.
@@ -185,7 +184,7 @@ TEST_F(StyleEnvironmentVariablesTest, DocumentVariable_Override_RemoveGlobal) {
 
   // Ensure that the document has been invalidated.
   EXPECT_TRUE(GetDocument().NeedsLayoutTreeUpdate());
-  GetDocument().View()->UpdateAllLifecyclePhases();
+  UpdateAllLifecyclePhasesForTest();
 
   // Check that the element has the background color provided by the document
   // variable.
@@ -223,7 +222,7 @@ TEST_F(StyleEnvironmentVariablesTest, DocumentVariable_Remove) {
 
   // Ensure that the document has been invalidated.
   EXPECT_TRUE(GetDocument().NeedsLayoutTreeUpdate());
-  GetDocument().View()->UpdateAllLifecyclePhases();
+  UpdateAllLifecyclePhasesForTest();
 
   // Check that the element does not have the background color any more.
   EXPECT_NE(kTestColorRed, target->ComputedStyleRef().VisitedDependentColor(
@@ -241,7 +240,8 @@ TEST_F(StyleEnvironmentVariablesTest, MultiDocumentInvalidation_FromRoot) {
   // Create an empty page that does not use the variable.
   std::unique_ptr<DummyPageHolder> empty_page =
       DummyPageHolder::Create(IntSize(800, 600));
-  empty_page->GetDocument().View()->UpdateAllLifecyclePhases();
+  empty_page->GetDocument().View()->UpdateAllLifecyclePhases(
+      DocumentLifecycle::LifecycleUpdateReason::kTest);
 
   StyleEnvironmentVariables::GetRootInstance().SetVariable(kVariableName,
                                                            kVariableTestColor);
@@ -287,7 +287,7 @@ TEST_F(StyleEnvironmentVariablesTest, GlobalVariable_AfterLoad) {
 
   // Ensure that the document has been invalidated.
   EXPECT_TRUE(GetDocument().NeedsLayoutTreeUpdate());
-  GetDocument().View()->UpdateAllLifecyclePhases();
+  UpdateAllLifecyclePhasesForTest();
 
   // Check that the element has the background color provided by the variable.
   Element* target = GetDocument().getElementById("target");
@@ -306,7 +306,7 @@ TEST_F(StyleEnvironmentVariablesTest, GlobalVariable_Change) {
 
   // Ensure that the document has been invalidated.
   EXPECT_TRUE(GetDocument().NeedsLayoutTreeUpdate());
-  GetDocument().View()->UpdateAllLifecyclePhases();
+  UpdateAllLifecyclePhasesForTest();
 
   // Check that the element has the background color provided by the variable.
   Element* target = GetDocument().getElementById("target");
@@ -355,7 +355,7 @@ TEST_F(StyleEnvironmentVariablesTest, GlobalVariable_Remove) {
 
   // Ensure that the document has been invalidated.
   EXPECT_TRUE(GetDocument().NeedsLayoutTreeUpdate());
-  GetDocument().View()->UpdateAllLifecyclePhases();
+  UpdateAllLifecyclePhasesForTest();
 
   // Check that the element does not have the background color any more.
   EXPECT_NE(kTestColorRed, target->ComputedStyleRef().VisitedDependentColor(

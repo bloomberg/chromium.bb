@@ -32,27 +32,17 @@ const void* const kDownloadManagerDelegateKey = &kDownloadManagerDelegateKey;
 class CastBrowserContext::CastResourceContext :
     public content::ResourceContext {
  public:
-  explicit CastResourceContext(
-      URLRequestContextFactory* url_request_context_factory) :
-    url_request_context_factory_(url_request_context_factory) {}
+  CastResourceContext() {}
   ~CastResourceContext() override {}
 
-  // ResourceContext implementation:
-  net::URLRequestContext* GetRequestContext() override {
-    return url_request_context_factory_->GetMainGetter()->
-        GetURLRequestContext();
-  }
-
  private:
-  URLRequestContextFactory* url_request_context_factory_;
-
   DISALLOW_COPY_AND_ASSIGN(CastResourceContext);
 };
 
 CastBrowserContext::CastBrowserContext(
     URLRequestContextFactory* url_request_context_factory)
     : url_request_context_factory_(url_request_context_factory),
-      resource_context_(new CastResourceContext(url_request_context_factory)) {
+      resource_context_(new CastResourceContext) {
   InitWhileIOAllowed();
 }
 
@@ -92,10 +82,6 @@ CastBrowserContext::CreateZoomLevelDelegate(
 
 base::FilePath CastBrowserContext::GetPath() const {
   return path_;
-}
-
-base::FilePath CastBrowserContext::GetCachePath() const {
-  return base::FilePath();
 }
 
 bool CastBrowserContext::IsOffTheRecord() const {

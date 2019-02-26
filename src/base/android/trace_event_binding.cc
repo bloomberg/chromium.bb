@@ -17,9 +17,9 @@ namespace android {
 
 namespace {
 
-const char kJavaCategory[] = "Java";
-const char kToplevelCategory[] = "toplevel";
-const char kLooperDispatchMessage[] = "Looper.dispatchMessage";
+constexpr const char kJavaCategory[] = "Java";
+constexpr const char kToplevelCategory[] = "toplevel";
+constexpr const char kLooperDispatchMessage[] = "Looper.dispatchMessage";
 
 // Boilerplate for safely converting Java data to TRACE_EVENT data.
 class TraceEventDataConverter {
@@ -28,8 +28,7 @@ class TraceEventDataConverter {
       : name_(ConvertJavaStringToUTF8(env, jname)),
         has_arg_(jarg != nullptr),
         arg_(jarg ? ConvertJavaStringToUTF8(env, jarg) : "") {}
-  ~TraceEventDataConverter() {
-  }
+  ~TraceEventDataConverter() = default;
 
   // Return saves values to pass to TRACE_EVENT macros.
   const char* name() { return name_.c_str(); }
@@ -46,15 +45,18 @@ class TraceEventDataConverter {
 
 class TraceEnabledObserver
     : public trace_event::TraceLog::EnabledStateObserver {
-  public:
-   void OnTraceLogEnabled() override {
-      JNIEnv* env = base::android::AttachCurrentThread();
-      base::android::Java_TraceEvent_setEnabled(env, true);
-    }
-    void OnTraceLogDisabled() override {
-      JNIEnv* env = base::android::AttachCurrentThread();
-      base::android::Java_TraceEvent_setEnabled(env, false);
-    }
+ public:
+  ~TraceEnabledObserver() override = default;
+
+  // trace_event::TraceLog::EnabledStateObserver:
+  void OnTraceLogEnabled() override {
+    JNIEnv* env = base::android::AttachCurrentThread();
+    base::android::Java_TraceEvent_setEnabled(env, true);
+  }
+  void OnTraceLogDisabled() override {
+    JNIEnv* env = base::android::AttachCurrentThread();
+    base::android::Java_TraceEvent_setEnabled(env, false);
+  }
 };
 
 }  // namespace

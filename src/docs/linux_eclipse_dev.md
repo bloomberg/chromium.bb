@@ -143,8 +143,8 @@ In the Project Explorer on the left side:
 1.  Add another filter:
     *   Exclude all
     *   Folders
-    *   Name matches `out_.*|\.git|LayoutTests` regular expression
-        *   If you aren't working on WebKit, adding `|WebKit` will remove more
+    *   Name matches `out_.*|\.git|web_tests` regular expression
+        *   If you aren't working on WebKit, adding `|blink` will remove more
             files
 1.  Click "Apply and Close"
 

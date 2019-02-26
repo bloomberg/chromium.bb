@@ -25,4 +25,3 @@ public class OverlayContentProgressObserver {
      */
     public void onProgressBarFinished() {}
 }
-

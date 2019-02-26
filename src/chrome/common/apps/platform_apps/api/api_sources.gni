@@ -11,11 +11,11 @@ chrome_apps_api_schema_files_ = [
   "browser.idl",
   "media_galleries.idl",
   "sync_file_system.idl",
-]
 
-if (is_chromeos) {
-  chrome_apps_api_schema_files_ += [ "easy_unlock_private.idl" ]
-}
+  # TODO(devlin): This API is only available on ChromeOS. We should only
+  # generate sources for it on CrOS as well.
+  "webstore_widget_private.idl",
+]
 
 chrome_apps_uncompiled_schema_files_ = [ "music_manager_private.idl" ]
 

@@ -11,6 +11,10 @@ endif()
 if(POLICY CMP0022)
   cmake_policy(SET CMP0022 NEW) # Required when interacting with LLVM and Clang
 endif()
+if(POLICY CMP0068)
+  cmake_policy(SET CMP0068 NEW)
+  set(CMAKE_BUILD_WITH_INSTALL_NAME_DIR ON)
+endif()
 
 # Add path for custom modules
 set(CMAKE_MODULE_PATH
@@ -23,7 +27,7 @@ if (CMAKE_SOURCE_DIR STREQUAL CMAKE_CURRENT_SOURCE_DIR)
   project(libcxx CXX C)
 
   set(PACKAGE_NAME libcxx)
-  set(PACKAGE_VERSION 7.0.0svn)
+  set(PACKAGE_VERSION 8.0.0svn)
   set(PACKAGE_STRING "${PACKAGE_NAME} ${PACKAGE_VERSION}")
   set(PACKAGE_BUGREPORT "llvm-bugs@lists.llvm.org")
 
@@ -46,9 +50,14 @@ MACRO_ENSURE_OUT_OF_SOURCE_BUILD(
  "${PROJECT_NAME} requires an out of source build. Please create a separate
  build directory and run 'cmake /path/to/${PROJECT_NAME} [options]' there."
  )
+if("${CMAKE_CXX_COMPILER_ID}" STREQUAL "Clang" AND "${CMAKE_CXX_SIMULATE_ID}" STREQUAL "MSVC")
+  message(STATUS "Configuring for clang-cl")
+  set(LIBCXX_TARGETING_CLANG_CL ON)
+endif()
 
 if (MSVC)
   set(LIBCXX_TARGETING_MSVC ON)
+  message(STATUS "Configuring for MSVC")
 else()
   set(LIBCXX_TARGETING_MSVC OFF)
 endif()
@@ -68,12 +77,12 @@ set(ENABLE_FILESYSTEM_DEFAULT ${LIBCXX_ENABLE_EXPERIMENTAL_LIBRARY})
 if (WIN32)
   set(ENABLE_FILESYSTEM_DEFAULT OFF)
 endif()
-option(LIBCXX_ENABLE_FILESYSTEM "Build filesystem as part of libc++experimental.a"
+option(LIBCXX_ENABLE_FILESYSTEM "Build filesystem as part of libc++fs.a"
     ${ENABLE_FILESYSTEM_DEFAULT})
 option(LIBCXX_INCLUDE_TESTS "Build the libc++ tests." ${LLVM_INCLUDE_TESTS})
 
 # Benchmark options -----------------------------------------------------------
-option(LIBCXX_INCLUDE_BENCHMARKS "Build the libc++ benchmarks and their dependancies" ON)
+option(LIBCXX_INCLUDE_BENCHMARKS "Build the libc++ benchmarks and their dependencies" ON)
 set(LIBCXX_BENCHMARK_NATIVE_STDLIB "" CACHE STRING
         "Build the benchmarks against the specified native STL.
          The value must be one of libc++/libstdc++")
@@ -93,19 +102,25 @@ set(LIBCXX_LIBDIR_SUFFIX "${LLVM_LIBDIR_SUFFIX}" CACHE STRING
     "Define suffix of library directory name (32/64)")
 option(LIBCXX_INSTALL_HEADERS "Install the libc++ headers." ON)
 option(LIBCXX_INSTALL_LIBRARY "Install the libc++ library." ON)
+cmake_dependent_option(LIBCXX_INSTALL_STATIC_LIBRARY
+  "Install the static libc++ library." ON
+  "LIBCXX_ENABLE_STATIC;LIBCXX_INSTALL_LIBRARY" OFF)
+cmake_dependent_option(LIBCXX_INSTALL_SHARED_LIBRARY
+  "Install the shared libc++ library." ON
+  "LIBCXX_ENABLE_SHARED;LIBCXX_INSTALL_LIBRARY" OFF)
 option(LIBCXX_INSTALL_SUPPORT_HEADERS "Install libc++ support headers." ON)
 cmake_dependent_option(LIBCXX_INSTALL_EXPERIMENTAL_LIBRARY
         "Install libc++experimental.a" ON
         "LIBCXX_ENABLE_EXPERIMENTAL_LIBRARY;LIBCXX_INSTALL_LIBRARY" OFF)
-if (FUCHSIA)
-  set(DEFAULT_ABI_VERSION 2)
-else()
-  set(DEFAULT_ABI_VERSION 1)
-endif()
-set(LIBCXX_ABI_VERSION ${DEFAULT_ABI_VERSION} CACHE STRING "ABI version of libc++.")
+cmake_dependent_option(LIBCXX_INSTALL_FILESYSTEM_LIBRARY
+        "Install libc++fs.a" ON
+        "LIBCXX_ENABLE_FILESYSTEM;LIBCXX_INSTALL_LIBRARY" OFF)
+
+set(LIBCXX_ABI_VERSION "1" CACHE STRING "ABI version of libc++. Can be either 1 or 2, where 2 is currently not stable. Defaults to 1.")
 option(LIBCXX_ABI_UNSTABLE "Unstable ABI of libc++." OFF)
 option(LIBCXX_ABI_FORCE_ITANIUM "Ignore auto-detection and force use of the Itanium ABI.")
 option(LIBCXX_ABI_FORCE_MICROSOFT "Ignore auto-detection and force use of the Microsoft ABI.")
+option(LIBCXX_HIDE_FROM_ABI_PER_TU_BY_DEFAULT "Enable per TU ABI insulation by default. To be used by vendors." OFF)
 set(LIBCXX_ABI_DEFINES "" CACHE STRING "A semicolon separated list of ABI macros to define in the site config header.")
 option(LIBCXX_USE_COMPILER_RT "Use compiler-rt instead of libgcc" OFF)
 
@@ -155,13 +170,21 @@ endif()
 # cannot be used with LIBCXX_ENABLE_ABI_LINKER_SCRIPT.
 option(LIBCXX_ENABLE_STATIC_ABI_LIBRARY "Statically link the ABI library" OFF)
 
+cmake_dependent_option(LIBCXX_STATICALLY_LINK_ABI_IN_STATIC_LIBRARY
+  "Statically link the ABI library to static library" ON
+  "LIBCXX_ENABLE_STATIC_ABI_LIBRARY;LIBCXX_ENABLE_STATIC" OFF)
+
+cmake_dependent_option(LIBCXX_STATICALLY_LINK_ABI_IN_SHARED_LIBRARY
+  "Statically link the ABI library to shared library" ON
+  "LIBCXX_ENABLE_STATIC_ABI_LIBRARY;LIBCXX_ENABLE_SHARED" OFF)
+
 # Generate and install a linker script inplace of libc++.so. The linker script
 # will link libc++ to the correct ABI library. This option is on by default
 # on UNIX platforms other than Apple unless 'LIBCXX_ENABLE_STATIC_ABI_LIBRARY'
 # is on. This option is also disabled when the ABI library is not specified
 # or is specified to be "none".
 set(ENABLE_LINKER_SCRIPT_DEFAULT_VALUE OFF)
-if (LLVM_HAVE_LINK_VERSION_SCRIPT AND NOT LIBCXX_ENABLE_STATIC_ABI_LIBRARY
+if (LLVM_HAVE_LINK_VERSION_SCRIPT AND NOT LIBCXX_STATICALLY_LINK_ABI_IN_SHARED_LIBRARY
       AND NOT LIBCXX_CXX_ABI_LIBNAME STREQUAL "none"
       AND NOT LIBCXX_CXX_ABI_LIBNAME STREQUAL "default"
       AND PYTHONINTERP_FOUND
@@ -356,7 +379,7 @@ if (LIBCXX_ENABLE_ABI_LINKER_SCRIPT)
     endif()
 endif()
 
-if (LIBCXX_ENABLE_STATIC_ABI_LIBRARY AND LIBCXX_ENABLE_ABI_LINKER_SCRIPT)
+if (LIBCXX_STATICALLY_LINK_ABI_IN_SHARED_LIBRARY AND LIBCXX_ENABLE_ABI_LINKER_SCRIPT)
     message(FATAL_ERROR "Conflicting options given.
         LIBCXX_ENABLE_STATIC_ABI_LIBRARY cannot be specified with
         LIBCXX_ENABLE_ABI_LINKER_SCRIPT")
@@ -379,19 +402,29 @@ set(LIBCXX_COMPILER    ${CMAKE_CXX_COMPILER})
 set(LIBCXX_SOURCE_DIR  ${CMAKE_CURRENT_SOURCE_DIR})
 set(LIBCXX_BINARY_DIR  ${CMAKE_CURRENT_BINARY_DIR})
 set(LIBCXX_BINARY_INCLUDE_DIR "${LIBCXX_BINARY_DIR}/include/c++build")
-if (LLVM_LIBRARY_OUTPUT_INTDIR)
+
+string(REGEX MATCH "[0-9]+\\.[0-9]+(\\.[0-9]+)?" CLANG_VERSION
+       ${PACKAGE_VERSION})
+
+if(LLVM_ENABLE_PER_TARGET_RUNTIME_DIR AND NOT APPLE)
+  set(DEFAULT_INSTALL_PREFIX lib${LLVM_LIBDIR_SUFFIX}/clang/${CLANG_VERSION}/${LLVM_DEFAULT_TARGET_TRIPLE}/)
+  set(DEFAULT_INSTALL_HEADER_PREFIX lib${LLVM_LIBDIR_SUFFIX}/clang/${CLANG_VERSION}/)
+  set(LIBCXX_LIBRARY_DIR ${LLVM_LIBRARY_OUTPUT_INTDIR}/clang/${CLANG_VERSION}/${LLVM_DEFAULT_TARGET_TRIPLE}/lib${LIBCXX_LIBDIR_SUFFIX})
+  set(LIBCXX_HEADER_DIR ${LLVM_LIBRARY_OUTPUT_INTDIR}/clang/${CLANG_VERSION})
+elseif(LLVM_LIBRARY_OUTPUT_INTDIR)
   set(LIBCXX_LIBRARY_DIR ${LLVM_LIBRARY_OUTPUT_INTDIR})
+  set(LIBCXX_HEADER_DIR  ${LLVM_BINARY_DIR})
 else()
   set(LIBCXX_LIBRARY_DIR ${CMAKE_BINARY_DIR}/lib${LIBCXX_LIBDIR_SUFFIX})
 endif()
+
 file(MAKE_DIRECTORY "${LIBCXX_BINARY_INCLUDE_DIR}")
 
-set(LIBCXX_INSTALL_PREFIX "" CACHE STRING
+set(LIBCXX_INSTALL_PREFIX ${DEFAULT_INSTALL_PREFIX} CACHE STRING
     "Define libc++ destination prefix.")
 
-if (NOT LIBCXX_INSTALL_PREFIX MATCHES "^$|.*/")
-  message(FATAL_ERROR "LIBCXX_INSTALL_PREFIX has to end with \"/\".")
-endif()
+set(LIBCXX_INSTALL_HEADER_PREFIX ${DEFAULT_INSTALL_HEADER_PREFIX} CACHE STRING
+    "Define libc++ header destination prefix.")
 
 set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY ${LIBCXX_LIBRARY_DIR})
 set(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${LIBCXX_LIBRARY_DIR})
@@ -470,14 +503,16 @@ remove_flags(-Wno-pedantic -pedantic-errors -pedantic)
 
 # Required flags ==============================================================
 set(LIBCXX_STANDARD_VER c++11 CACHE INTERNAL "internal option to change build dialect")
-if (LIBCXX_HAS_MUSL_LIBC)
+if (LIBCXX_HAS_MUSL_LIBC OR LIBCXX_TARGETING_CLANG_CL)
   # musl's pthread implementations uses volatile types in their structs which is
   # not a constexpr in C++11 but is in C++14, so we use C++14 with musl.
   set(LIBCXX_STANDARD_VER c++14 CACHE INTERNAL "internal option to change build dialect")
 endif()
 add_compile_flags_if_supported(-std=${LIBCXX_STANDARD_VER})
+add_compile_flags_if_supported("/std:${LIBCXX_STANDARD_VER}")
 mangle_name("LIBCXX_SUPPORTS_STD_EQ_${LIBCXX_STANDARD_VER}_FLAG" SUPPORTS_DIALECT_NAME)
-if(NOT ${SUPPORTS_DIALECT_NAME})
+mangle_name("LIBCXX_SUPPORTS_STD_COLON_${LIBCXX_STANDARD_VER}_FLAG" SUPPORTS_DIALECT_NAME_MSVC)
+if(NOT ${SUPPORTS_DIALECT_NAME} AND NOT ${SUPPORTS_DIALECT_NAME_MSVC})
   if(NOT "${CMAKE_CXX_COMPILER_ID}" STREQUAL "MSVC" AND NOT "${CMAKE_CXX_SIMULATE_ID}" STREQUAL "MSVC")
     message(FATAL_ERROR "C++11 or greater is required but the compiler does not support ${LIBCXX_STANDARD_VER}")
   endif()
@@ -512,11 +547,29 @@ add_definitions(-D_LIBCPP_HAS_NO_PRAGMA_SYSTEM_HEADER)
 add_compile_flags_if_supported(
     -Wall -Wextra -W -Wwrite-strings
     -Wno-unused-parameter -Wno-long-long
-    -Werror=return-type)
+    -Werror=return-type -Wextra-semi)
 if ("${CMAKE_CXX_COMPILER_ID}" MATCHES "Clang")
     add_compile_flags_if_supported(
         -Wno-user-defined-literals
         -Wno-covered-switch-default)
+    if (LIBCXX_TARGETING_CLANG_CL)
+      add_compile_flags_if_supported(
+        -Wno-c++98-compat
+        -Wno-c++98-compat-pedantic
+        -Wno-c++11-compat
+        -Wno-undef
+        -Wno-reserved-id-macro
+        -Wno-gnu-include-next
+        -Wno-gcc-compat # For ignoring "'diagnose_if' is a clang extension" warnings
+        -Wno-zero-as-null-pointer-constant # FIXME: Remove this and fix all occurrences.
+        -Wno-deprecated-dynamic-exception-spec # For auto_ptr
+        -Wno-sign-conversion
+        -Wno-old-style-cast
+        -Wno-deprecated # FIXME: Remove this and fix all occurrences.
+        -Wno-shift-sign-overflow # FIXME: Why do we need this with clang-cl but not clang?
+        -Wno-double-promotion # FIXME: remove me
+      )
+    endif()
 elseif("${CMAKE_CXX_COMPILER_ID}" MATCHES "GNU")
     add_compile_flags_if_supported(
         -Wno-literal-suffix
@@ -624,12 +677,13 @@ if (LIBCXX_STANDALONE_BUILD)
 endif()
 
 # Configuration file flags =====================================================
-if (NOT LIBCXX_ABI_VERSION EQUAL DEFAULT_ABI_VERSION)
+if (NOT LIBCXX_ABI_VERSION EQUAL 1)
   config_define(${LIBCXX_ABI_VERSION} _LIBCPP_ABI_VERSION)
 endif()
 config_define_if(LIBCXX_ABI_UNSTABLE _LIBCPP_ABI_UNSTABLE)
 config_define_if(LIBCXX_ABI_FORCE_ITANIUM _LIBCPP_ABI_FORCE_ITANIUM)
 config_define_if(LIBCXX_ABI_FORCE_MICROSOFT _LIBCPP_ABI_FORCE_MICROSOFT)
+config_define_if(LIBCXX_HIDE_FROM_ABI_PER_TU_BY_DEFAULT _LIBCPP_HIDE_FROM_ABI_PER_TU_BY_DEFAULT)
 
 config_define_if_not(LIBCXX_ENABLE_GLOBAL_FILESYSTEM_NAMESPACE _LIBCPP_HAS_NO_GLOBAL_FILESYSTEM_NAMESPACE)
 config_define_if_not(LIBCXX_ENABLE_STDIN _LIBCPP_HAS_NO_STDIN)

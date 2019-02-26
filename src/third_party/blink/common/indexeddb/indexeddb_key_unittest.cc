@@ -6,6 +6,7 @@
 
 #include <stddef.h>
 
+#include <utility>
 #include <vector>
 
 #include "base/strings/string16.h"
@@ -34,7 +35,7 @@ TEST(IndexedDBKeyTest, KeySizeEstimates) {
   estimates.push_back(24u);  // Overhead + sizeof(double).
 
   const base::string16 string(1024, static_cast<base::char16>('X'));
-  keys.push_back(IndexedDBKey(string));
+  keys.push_back(IndexedDBKey(std::move(string)));
   // Overhead + string length * sizeof(base::char16).
   estimates.push_back(2064u);
 
@@ -44,7 +45,7 @@ TEST(IndexedDBKeyTest, KeySizeEstimates) {
   for (size_t i = 0; i < array_size; ++i) {
     array.push_back(IndexedDBKey(value, blink::kWebIDBKeyTypeNumber));
   }
-  keys.push_back(IndexedDBKey(array));
+  keys.push_back(IndexedDBKey(std::move(array)));
   // Overhead + array length * (Overhead + sizeof(double)).
   estimates.push_back(24592u);
 

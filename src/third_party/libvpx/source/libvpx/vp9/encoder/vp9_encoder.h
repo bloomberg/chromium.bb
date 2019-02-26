@@ -291,7 +291,7 @@ typedef struct TplDepStats {
   int_mv mv;
 
 #if CONFIG_NON_GREEDY_MV
-  int ready;
+  int ready[3];
   double mv_dist[3];
   double mv_cost[3];
   int64_t inter_cost_arr[3];
@@ -311,6 +311,11 @@ typedef struct TplDepFrame {
   int mi_rows;
   int mi_cols;
   int base_qindex;
+#if CONFIG_NON_GREEDY_MV
+  double lambda;
+  double mv_dist_sum[3];
+  double mv_cost_sum[3];
+#endif
 } TplDepFrame;
 
 #define TPL_DEP_COST_SCALE_LOG2 4
@@ -490,6 +495,23 @@ typedef struct ARNRFilterData {
   struct scale_factors sf;
 } ARNRFilterData;
 
+typedef struct EncFrameBuf {
+  int mem_valid;
+  int released;
+  YV12_BUFFER_CONFIG frame;
+} EncFrameBuf;
+
+// Maximum operating frame buffer size needed for a GOP using ARF reference.
+#define MAX_ARF_GOP_SIZE (2 * MAX_LAG_BUFFERS)
+#if CONFIG_NON_GREEDY_MV
+typedef struct FEATURE_SCORE_LOC {
+  int visited;
+  double feature_score;
+  int mi_row;
+  int mi_col;
+} FEATURE_SCORE_LOC;
+#endif
+
 typedef struct VP9_COMP {
   QUANTS quants;
   ThreadData td;
@@ -513,8 +535,14 @@ typedef struct VP9_COMP {
 #endif
   YV12_BUFFER_CONFIG *raw_source_frame;
 
-  TplDepFrame tpl_stats[MAX_LAG_BUFFERS];
-  YV12_BUFFER_CONFIG *tpl_recon_frames[REFS_PER_FRAME + 1];
+  TplDepFrame tpl_stats[MAX_ARF_GOP_SIZE];
+  YV12_BUFFER_CONFIG *tpl_recon_frames[REF_FRAMES];
+  EncFrameBuf enc_frame_buf[REF_FRAMES];
+#if CONFIG_NON_GREEDY_MV
+  FEATURE_SCORE_LOC *feature_score_loc_arr;
+  FEATURE_SCORE_LOC **feature_score_loc_sort;
+  FEATURE_SCORE_LOC **feature_score_loc_heap;
+#endif
 
   TileDataEnc *tile_data;
   int allocated_tiles;  // Keep track of memory allocated for tiles.
@@ -522,13 +550,12 @@ typedef struct VP9_COMP {
   // For a still frame, this flag is set to 1 to skip partition search.
   int partition_search_skippable_frame;
 
-  int scaled_ref_idx[MAX_REF_FRAMES];
+  int scaled_ref_idx[REFS_PER_FRAME];
   int lst_fb_idx;
   int gld_fb_idx;
   int alt_fb_idx;
 
   int ref_fb_idx[REF_FRAMES];
-  int last_show_frame_buf_idx;  // last show frame buffer index
 
   int refresh_last_frame;
   int refresh_golden_frame;
@@ -600,6 +627,7 @@ typedef struct VP9_COMP {
   ActiveMap active_map;
 
   fractional_mv_step_fp *find_fractional_mv_step;
+  struct scale_factors me_sf;
   vp9_diamond_search_fn_t diamond_search_sad;
   vp9_variance_fn_ptr_t fn_ptr[BLOCK_SIZES];
   uint64_t time_receive_data;
@@ -783,7 +811,7 @@ void vp9_change_config(VP9_COMP *cpi, const VP9EncoderConfig *oxcf);
 // frame is made and not just a copy of the pointer..
 int vp9_receive_raw_frame(VP9_COMP *cpi, vpx_enc_frame_flags_t frame_flags,
                           YV12_BUFFER_CONFIG *sd, int64_t time_stamp,
-                          int64_t end_time_stamp);
+                          int64_t end_time);
 
 int vp9_get_compressed_data(VP9_COMP *cpi, unsigned int *frame_flags,
                             size_t *size, uint8_t *dest, int64_t *time_stamp,
@@ -804,9 +832,11 @@ int vp9_set_reference_enc(VP9_COMP *cpi, VP9_REFFRAME ref_frame_flag,
 
 int vp9_update_entropy(VP9_COMP *cpi, int update);
 
-int vp9_set_active_map(VP9_COMP *cpi, unsigned char *map, int rows, int cols);
+int vp9_set_active_map(VP9_COMP *cpi, unsigned char *new_map_16x16, int rows,
+                       int cols);
 
-int vp9_get_active_map(VP9_COMP *cpi, unsigned char *map, int rows, int cols);
+int vp9_get_active_map(VP9_COMP *cpi, unsigned char *new_map_16x16, int rows,
+                       int cols);
 
 int vp9_set_internal_size(VP9_COMP *cpi, VPX_SCALING horiz_mode,
                           VPX_SCALING vert_mode);

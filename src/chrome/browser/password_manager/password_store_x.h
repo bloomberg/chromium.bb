@@ -41,6 +41,16 @@ class PasswordStoreX : public password_manager::PasswordStoreDefault {
     COPIED_ALL,
     // The standard login database is encrypted.
     LOGIN_DB_REPLACED,
+    // The migration is about to be attempted.
+    STARTED,
+    // No access to the native backend.
+    POSTPONED,
+    // Could not create or write into the temporary file.
+    FAILED_CREATE_ENCRYPTED,
+    // Could not read from the native backend.
+    FAILED_ACCESS_NATIVE,
+    // Could not replace old database.
+    FAILED_REPLACE,
   };
 
   // NativeBackends more or less implement the PaswordStore interface, but

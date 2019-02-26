@@ -89,6 +89,14 @@ const char kHistogramFirstContentfulPaintInitiatingProcess[] =
     "InitiatingProcess";
 const char kHistogramFirstMeaningfulPaint[] =
     "PageLoad.Experimental.PaintTiming.NavigationToFirstMeaningfulPaint";
+const char kHistogramLargestImagePaint[] =
+    "PageLoad.Experimental.PaintTiming.NavigationToLargestImagePaint";
+const char kHistogramLastImagePaint[] =
+    "PageLoad.Experimental.PaintTiming.NavigationToLastImagePaint";
+const char kHistogramLargestTextPaint[] =
+    "PageLoad.Experimental.PaintTiming.NavigationToLargestTextPaint";
+const char kHistogramLastTextPaint[] =
+    "PageLoad.Experimental.PaintTiming.NavigationToLastTextPaint";
 const char kHistogramTimeToInteractive[] =
     "PageLoad.Experimental.NavigationToInteractive";
 const char kHistogramInteractiveToInteractiveDetection[] =
@@ -204,6 +212,8 @@ const char kHistogramPageLoadTotalBytes[] = "PageLoad.Experimental.Bytes.Total";
 const char kHistogramPageLoadNetworkBytes[] =
     "PageLoad.Experimental.Bytes.Network";
 const char kHistogramPageLoadCacheBytes[] = "PageLoad.Experimental.Bytes.Cache";
+const char kHistogramPageLoadNetworkBytesIncludingHeaders[] =
+    "PageLoad.Experimental.Bytes.NetworkIncludingHeaders";
 
 const char kHistogramLoadTypeTotalBytesForwardBack[] =
     "PageLoad.Experimental.Bytes.Total.LoadType.ForwardBackNavigation";
@@ -259,6 +269,7 @@ CorePageLoadMetricsObserver::CorePageLoadMetricsObserver()
       num_network_resources_(0),
       cache_bytes_(0),
       network_bytes_(0),
+      network_bytes_including_headers_(0),
       redirect_chain_size_(0) {}
 
 CorePageLoadMetricsObserver::~CorePageLoadMetricsObserver() {}
@@ -518,6 +529,56 @@ void CorePageLoadMetricsObserver::OnFirstMeaningfulPaintInMainFrameDocument(
   }
 }
 
+void CorePageLoadMetricsObserver::OnLargestImagePaintInMainFrameDocument(
+    const page_load_metrics::mojom::PageLoadTiming& timing,
+    const page_load_metrics::PageLoadExtraInfo& info) {
+  base::Optional<base::TimeDelta>& largest_image_paint =
+      timing.paint_timing->largest_image_paint;
+  if (largest_image_paint.has_value() &&
+      WasStartedInForegroundOptionalEventInForeground(largest_image_paint,
+                                                      info)) {
+    PAGE_LOAD_HISTOGRAM(internal::kHistogramLargestImagePaint,
+                        largest_image_paint.value());
+  }
+}
+
+void CorePageLoadMetricsObserver::OnLastImagePaintInMainFrameDocument(
+    const page_load_metrics::mojom::PageLoadTiming& timing,
+    const page_load_metrics::PageLoadExtraInfo& info) {
+  base::Optional<base::TimeDelta>& last_image_paint =
+      timing.paint_timing->last_image_paint;
+  if (last_image_paint.has_value() &&
+      WasStartedInForegroundOptionalEventInForeground(last_image_paint, info)) {
+    PAGE_LOAD_HISTOGRAM(internal::kHistogramLastImagePaint,
+                        last_image_paint.value());
+  }
+}
+
+void CorePageLoadMetricsObserver::OnLargestTextPaintInMainFrameDocument(
+    const page_load_metrics::mojom::PageLoadTiming& timing,
+    const page_load_metrics::PageLoadExtraInfo& info) {
+  base::Optional<base::TimeDelta>& largest_text_paint =
+      timing.paint_timing->largest_text_paint;
+  if (largest_text_paint.has_value() &&
+      WasStartedInForegroundOptionalEventInForeground(largest_text_paint,
+                                                      info)) {
+    PAGE_LOAD_HISTOGRAM(internal::kHistogramLargestTextPaint,
+                        largest_text_paint.value());
+  }
+}
+
+void CorePageLoadMetricsObserver::OnLastTextPaintInMainFrameDocument(
+    const page_load_metrics::mojom::PageLoadTiming& timing,
+    const page_load_metrics::PageLoadExtraInfo& info) {
+  base::Optional<base::TimeDelta>& last_text_paint =
+      timing.paint_timing->last_text_paint;
+  if (last_text_paint.has_value() &&
+      WasStartedInForegroundOptionalEventInForeground(last_text_paint, info)) {
+    PAGE_LOAD_HISTOGRAM(internal::kHistogramLastTextPaint,
+                        last_text_paint.value());
+  }
+}
+
 void CorePageLoadMetricsObserver::OnPageInteractive(
     const page_load_metrics::mojom::PageLoadTiming& timing,
     const page_load_metrics::PageLoadExtraInfo& info) {
@@ -731,6 +792,14 @@ void CorePageLoadMetricsObserver::OnLoadedResource(
   }
 }
 
+void CorePageLoadMetricsObserver::OnResourceDataUseObserved(
+    const std::vector<page_load_metrics::mojom::ResourceDataUpdatePtr>&
+        resources) {
+  for (auto const& resource : resources) {
+    network_bytes_including_headers_ += resource->delta_bytes;
+  }
+}
+
 // This method records values for metrics that were not recorded during any
 // other event, or records failure status for metrics that have not been
 // collected yet. This is meant to be called at the end of a page lifetime, for
@@ -828,6 +897,8 @@ void CorePageLoadMetricsObserver::RecordByteAndResourceHistograms(
                        network_bytes_);
   PAGE_BYTES_HISTOGRAM(internal::kHistogramPageLoadCacheBytes, cache_bytes_);
   PAGE_BYTES_HISTOGRAM(internal::kHistogramPageLoadTotalBytes, total_bytes);
+  PAGE_BYTES_HISTOGRAM(internal::kHistogramPageLoadNetworkBytesIncludingHeaders,
+                       network_bytes_including_headers_);
 
   switch (GetPageLoadType(transition_)) {
     case LOAD_TYPE_RELOAD:

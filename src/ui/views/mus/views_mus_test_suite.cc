@@ -19,6 +19,7 @@
 #include "services/catalog/catalog.h"
 #include "services/service_manager/background/background_service_manager.h"
 #include "services/service_manager/public/cpp/connector.h"
+#include "services/service_manager/public/cpp/constants.h"
 #include "services/service_manager/public/cpp/service.h"
 #include "services/service_manager/public/cpp/service_context.h"
 #include "services/ws/common/switches.h"
@@ -126,8 +127,9 @@ class ServiceManagerConnection {
     context_ = std::make_unique<service_manager::ServiceContext>(
         std::make_unique<DefaultService>(), mojo::MakeRequest(&service));
     background_service_manager_->RegisterService(
-        service_manager::Identity(
-            GetTestName(), service_manager::mojom::kRootUserID),
+        service_manager::Identity(GetTestName(),
+                                  service_manager::kSystemInstanceGroup,
+                                  base::Token{}, base::Token::CreateRandom()),
         std::move(service), nullptr);
     service_manager_connector_ = context_->connector()->Clone();
     service_manager_identity_ = context_->identity();

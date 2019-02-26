@@ -11,3 +11,9 @@ per-file app_categorizer*=set noparent
 per-file app_categorizer*=jschuh@chromium.org
 per-file app_categorizer*=tsepez@chromium.org
 per-file app_categorizer*=wfh@chromium.org
+
+# Content client.
+per-file chrome_content_renderer_client_browsertest.cc=*
+per-file chrome_content_renderer_client.cc=*
+per-file chrome_content_renderer_client.h=*
+per-file chrome_content_renderer_client_unittest.cc=*

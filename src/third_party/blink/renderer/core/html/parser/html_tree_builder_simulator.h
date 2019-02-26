@@ -48,6 +48,7 @@ class CORE_EXPORT HTMLTreeBuilderSimulator {
     kScriptEnd,
     kLink,
     kStyleEnd,
+    kCustomElementBegin,
     kOtherToken
   };
 

@@ -8,6 +8,8 @@
 #ifndef GrVkResourceProvider_DEFINED
 #define GrVkResourceProvider_DEFINED
 
+#include "GrVkVulkan.h"
+
 #include "GrResourceHandle.h"
 #include "GrVkDescriptorPool.h"
 #include "GrVkDescriptorSetManager.h"
@@ -19,8 +21,6 @@
 #include "SkTArray.h"
 #include "SkTDynamicHash.h"
 #include "SkTInternalLList.h"
-
-#include "vk/GrVkDefines.h"
 
 class GrPipeline;
 class GrPrimitiveProcessor;
@@ -99,7 +99,7 @@ public:
 
     // Finds or creates a compatible GrVkSampler based on the GrSamplerState.
     // The refcount is incremented and a pointer returned.
-    GrVkSampler* findOrCreateCompatibleSampler(const GrSamplerState&, uint32_t maxMipLevel);
+    GrVkSampler* findOrCreateCompatibleSampler(const GrSamplerState&);
 
     GrVkPipelineState* findOrCreateCompatiblePipelineState(const GrPipeline&,
                                                            const GrPrimitiveProcessor&,
@@ -252,7 +252,7 @@ private:
 
     // Stores GrVkSampler objects that we've already created so we can reuse them across multiple
     // GrVkPipelineStates
-    SkTDynamicHash<GrVkSampler, uint16_t> fSamplers;
+    SkTDynamicHash<GrVkSampler, uint8_t> fSamplers;
 
     // Cache of GrVkPipelineStates
     PipelineStateCache* fPipelineStateCache;

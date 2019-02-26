@@ -29,6 +29,8 @@ class CORE_EXPORT CSSPositionValue final : public CSSStyleValue {
 
   static CSSPositionValue* FromCSSValue(const CSSValue&);
 
+  CSSPositionValue(CSSNumericValue* x, CSSNumericValue* y) : x_(x), y_(y) {}
+
   // Getters and setters defined in the IDL.
   CSSNumericValue* x() { return x_.Get(); }
   CSSNumericValue* y() { return y_.Get(); }
@@ -50,8 +52,6 @@ class CORE_EXPORT CSSPositionValue final : public CSSStyleValue {
   static bool IsValidCoordinate(CSSNumericValue* coord);
 
  protected:
-  CSSPositionValue(CSSNumericValue* x, CSSNumericValue* y) : x_(x), y_(y) {}
-
   Member<CSSNumericValue> x_;
   Member<CSSNumericValue> y_;
   DISALLOW_COPY_AND_ASSIGN(CSSPositionValue);

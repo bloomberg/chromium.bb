@@ -22,7 +22,7 @@
 namespace blink {
 
 FetchRequestData* FetchRequestData::Create() {
-  return new FetchRequestData();
+  return MakeGarbageCollected<FetchRequestData>();
 }
 
 FetchRequestData* FetchRequestData::Create(
@@ -37,8 +37,8 @@ FetchRequestData* FetchRequestData::Create(
   if (scoped_refptr<EncodedFormData> body = web_request.Body()) {
     request->SetBuffer(new BodyStreamBuffer(
         script_state,
-        new FormDataBytesConsumer(ExecutionContext::From(script_state),
-                                  std::move(body)),
+        MakeGarbageCollected<FormDataBytesConsumer>(
+            ExecutionContext::From(script_state), std::move(body)),
         nullptr /* AbortSignal */));
   } else if (web_request.GetBlobDataHandle()) {
     request->SetBuffer(new BodyStreamBuffer(
@@ -49,8 +49,7 @@ FetchRequestData* FetchRequestData::Create(
   }
   request->SetContext(web_request.GetRequestContext());
   request->SetReferrerString(web_request.ReferrerUrl().GetString());
-  request->SetReferrerPolicy(
-      static_cast<ReferrerPolicy>(web_request.GetReferrerPolicy()));
+  request->SetReferrerPolicy(web_request.GetReferrerPolicy());
   request->SetMode(web_request.Mode());
   request->SetCredentials(web_request.CredentialsMode());
   request->SetCacheMode(web_request.CacheMode());
@@ -62,6 +61,44 @@ FetchRequestData* FetchRequestData::Create(
   request->SetKeepalive(web_request.Keepalive());
   request->SetIsHistoryNavigation(web_request.IsHistoryNavigation());
   request->SetWindowId(web_request.GetWindowId());
+  return request;
+}
+
+FetchRequestData* FetchRequestData::Create(
+    ScriptState* script_state,
+    const mojom::blink::FetchAPIRequest& fetch_api_request) {
+  FetchRequestData* request = FetchRequestData::Create();
+  request->url_ = fetch_api_request.url;
+  request->method_ = AtomicString(fetch_api_request.method);
+  for (const auto& pair : fetch_api_request.headers) {
+    // TODO(leonhsl): Check sources of |fetch_api_request.headers| to make clear
+    // whether we really need this filter.
+    if (DeprecatedEqualIgnoringCase(pair.key, "referer"))
+      continue;
+    request->header_list_->Append(pair.key, pair.value);
+  }
+  if (fetch_api_request.blob) {
+    request->SetBuffer(new BodyStreamBuffer(
+        script_state,
+        new BlobBytesConsumer(ExecutionContext::From(script_state),
+                              fetch_api_request.blob),
+        nullptr /* AbortSignal */));
+  }
+  request->SetContext(fetch_api_request.request_context_type);
+  request->SetReferrerString(AtomicString(Referrer::NoReferrer()));
+  if (fetch_api_request.referrer) {
+    if (!fetch_api_request.referrer->url.IsEmpty())
+      request->SetReferrerString(AtomicString(fetch_api_request.referrer->url));
+    request->SetReferrerPolicy(fetch_api_request.referrer->policy);
+  }
+  request->SetMode(fetch_api_request.mode);
+  request->SetCredentials(fetch_api_request.credentials_mode);
+  request->SetCacheMode(fetch_api_request.cache_mode);
+  request->SetRedirect(fetch_api_request.redirect_mode);
+  request->SetMIMEType(request->header_list_->ExtractMIMEType());
+  request->SetIntegrity(fetch_api_request.integrity);
+  request->SetKeepalive(fetch_api_request.keepalive);
+  request->SetIsHistoryNavigation(fetch_api_request.is_history_navigation);
   return request;
 }
 
@@ -126,13 +163,13 @@ FetchRequestData* FetchRequestData::Pass(ScriptState* script_state,
 FetchRequestData::~FetchRequestData() {}
 
 FetchRequestData::FetchRequestData()
-    : method_(HTTPNames::GET),
+    : method_(http_names::kGET),
       header_list_(FetchHeaderList::Create()),
       context_(mojom::RequestContextType::UNSPECIFIED),
       same_origin_data_url_flag_(false),
       referrer_string_(Referrer::ClientReferrerString()),
-      referrer_policy_(kReferrerPolicyDefault),
-      mode_(network::mojom::FetchRequestMode::kNoCORS),
+      referrer_policy_(network::mojom::ReferrerPolicy::kDefault),
+      mode_(network::mojom::FetchRequestMode::kNoCors),
       credentials_(network::mojom::FetchCredentialsMode::kOmit),
       cache_mode_(mojom::FetchCacheMode::kDefault),
       redirect_(network::mojom::FetchRedirectMode::kFollow),

@@ -136,7 +136,6 @@ class CC_EXPORT CheckerImageTracker {
     DecodePolicy policy = DecodePolicy::SYNC;
     SkFilterQuality filter_quality = kNone_SkFilterQuality;
     SkSize scale = SkSize::MakeEmpty();
-    gfx::ColorSpace color_space;
     size_t frame_index = PaintImage::kDefaultFrameIndex;
   };
 

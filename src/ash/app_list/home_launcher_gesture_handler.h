@@ -53,7 +53,7 @@ class ASH_EXPORT HomeLauncherGestureHandler : aura::WindowObserver,
   // was not processed.
   bool OnPressEvent(Mode mode, const gfx::Point& location);
   bool OnScrollEvent(const gfx::Point& location, float scroll_y);
-  bool OnReleaseEvent(const gfx::Point& location, bool* out_dragged_down);
+  bool OnReleaseEvent(const gfx::Point& location);
 
   // Cancel a current drag and animates the items to their final state based on
   // |last_event_location_|.
@@ -157,8 +157,6 @@ class ASH_EXPORT HomeLauncherGestureHandler : aura::WindowObserver,
   // Stores windows which were shown behind the mru window. They need to be
   // hidden so the home launcher is visible when swiping up.
   std::vector<aura::Window*> hidden_windows_;
-
-  gfx::Point initial_event_location_;
 
   // Tracks the location of the last received event in screen coordinates. Empty
   // if there is currently no window being processed.

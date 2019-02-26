@@ -874,6 +874,7 @@ void LocalizedError::GetStrings(
     bool can_show_network_diagnostics_dialog,
     bool is_incognito,
     OfflineContentOnNetErrorFeatureState offline_content_feature_state,
+    bool auto_fetch_feature_enabled,
     const std::string& locale,
     std::unique_ptr<error_page::ErrorPageParams> params,
     base::DictionaryValue* error_strings) {
@@ -1070,12 +1071,22 @@ void LocalizedError::GetStrings(
       !is_incognito && failed_url.is_valid() &&
       failed_url.SchemeIsHTTPOrHTTPS() &&
       IsOfflineError(error_domain, error_code)) {
-    error_strings->SetPath(
-        {"downloadButton", "msg"},
-        base::Value(l10n_util::GetStringUTF16(IDS_ERRORPAGES_BUTTON_DOWNLOAD)));
-    error_strings->SetPath({"downloadButton", "disabledMsg"},
-                           base::Value(l10n_util::GetStringUTF16(
-                               IDS_ERRORPAGES_BUTTON_DOWNLOADING)));
+    if (!auto_fetch_feature_enabled) {
+      error_strings->SetPath({"downloadButton", "msg"},
+                             base::Value(l10n_util::GetStringUTF16(
+                                 IDS_ERRORPAGES_BUTTON_DOWNLOAD)));
+      error_strings->SetPath({"downloadButton", "disabledMsg"},
+                             base::Value(l10n_util::GetStringUTF16(
+                                 IDS_ERRORPAGES_BUTTON_DOWNLOADING)));
+    } else {
+      error_strings->SetString("attemptAutoFetch", "true");
+      error_strings->SetPath({"savePageLater", "savePageMsg"},
+                             base::Value(l10n_util::GetStringUTF16(
+                                 IDS_ERRORPAGES_SAVE_PAGE_BUTTON)));
+      error_strings->SetPath({"savePageLater", "cancelMsg"},
+                             base::Value(l10n_util::GetStringUTF16(
+                                 IDS_ERRORPAGES_CANCEL_SAVE_PAGE_BUTTON)));
+    }
   }
 
   error_strings->SetString(
@@ -1096,6 +1107,12 @@ void LocalizedError::GetStrings(
             {"offlineContentList", "actionText"},
             base::Value(l10n_util::GetStringUTF16(
                 IDS_ERRORPAGES_OFFLINE_CONTENT_LIST_OPEN_ALL_BUTTON)));
+        error_strings->SetPath(
+            {"offlineContentList", "showText"},
+            base::Value(l10n_util::GetStringUTF16(IDS_SHOW)));
+        error_strings->SetPath(
+            {"offlineContentList", "hideText"},
+            base::Value(l10n_util::GetStringUTF16(IDS_HIDE)));
         break;
       case OfflineContentOnNetErrorFeatureState::kEnabledSummary:
         error_strings->SetString("suggestedOfflineContentPresentationMode",

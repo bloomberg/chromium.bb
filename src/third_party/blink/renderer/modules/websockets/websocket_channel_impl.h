@@ -39,7 +39,6 @@
 #include "third_party/blink/public/platform/web_callbacks.h"
 #include "third_party/blink/renderer/bindings/core/v8/source_location.h"
 #include "third_party/blink/renderer/core/fileapi/blob.h"
-#include "third_party/blink/renderer/core/fileapi/file_error.h"
 #include "third_party/blink/renderer/modules/modules_export.h"
 #include "third_party/blink/renderer/modules/websockets/websocket_channel.h"
 #include "third_party/blink/renderer/modules/websockets/websocket_handle.h"
@@ -56,6 +55,7 @@
 namespace blink {
 
 class BaseFetchContext;
+enum class FileErrorCode;
 class WebSocketChannelClient;
 class WebSocketHandshakeThrottle;
 
@@ -81,6 +81,10 @@ class MODULES_EXPORT WebSocketChannelImpl final
       WebSocketHandle*,
       std::unique_ptr<WebSocketHandshakeThrottle>);
 
+  WebSocketChannelImpl(ExecutionContext*,
+                       WebSocketChannelClient*,
+                       std::unique_ptr<SourceLocation>,
+                       std::unique_ptr<WebSocketHandle>);
   ~WebSocketChannelImpl() override;
 
   // Allows the caller to provide the Mojo pipe through which the socket is
@@ -127,11 +131,6 @@ class MODULES_EXPORT WebSocketChannelImpl final
     Vector<char> data;
   };
 
-  WebSocketChannelImpl(ExecutionContext*,
-                       WebSocketChannelClient*,
-                       std::unique_ptr<SourceLocation>,
-                       std::unique_ptr<WebSocketHandle>);
-
   void SendInternal(WebSocketHandle::MessageType,
                     const char* data,
                     wtf_size_t total_size,
@@ -177,7 +176,7 @@ class MODULES_EXPORT WebSocketChannelImpl final
 
   // Methods for BlobLoader.
   void DidFinishLoadingBlob(DOMArrayBuffer*);
-  void DidFailLoadingBlob(FileError::ErrorCode);
+  void DidFailLoadingBlob(FileErrorCode);
 
   void TearDownFailedConnection();
   bool ShouldDisallowConnection(const KURL&);

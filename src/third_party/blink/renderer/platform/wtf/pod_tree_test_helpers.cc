@@ -28,7 +28,7 @@
 #include <cstdlib>
 
 namespace WTF {
-namespace TreeTestHelpers {
+namespace tree_test_helpers {
 
 void InitRandom(const int32_t seed) {
   srand(seed);
@@ -39,5 +39,5 @@ int32_t NextRandom(const int32_t maximum_value) {
   return rand() % maximum_value;
 }
 
-}  // namespace TreeTestHelpers
+}  // namespace tree_test_helpers
 }  // namespace WTF

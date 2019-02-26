@@ -549,12 +549,6 @@ DeprecationInfo GetDeprecationInfo(WebFeature feature) {
       return {"ChromeLoadTimesWasAlternateProtocolAvailable", kUnknown,
               kChromeLoadTimesNextHopProtocol};
 
-    case WebFeature::kDataUriHasOctothorpe:
-      return {"DataUriHasOctothorpe", kM71,
-              ReplacedWillBeRemoved(
-                  "Using unescaped '#' characters in a data URI body", "'%23'",
-                  kM71, "5656049583390720")};
-
     case WebFeature::kMediaElementSourceOnOfflineContext:
       return {"MediaElementAudioSourceNode", kM71,
               WillBeRemoved("Creating a MediaElementAudioSourceNode on an "
@@ -828,9 +822,10 @@ void Deprecation::GenerateReport(const LocalFrame* frame, WebFeature feature) {
 
   // Construct the deprecation report.
   double removal_date = MilestoneDate(info.anticipated_removal);
-  DeprecationReportBody* body = new DeprecationReportBody(
+  DeprecationReportBody* body = MakeGarbageCollected<DeprecationReportBody>(
       info.id, removal_date, info.message, SourceLocation::Capture());
-  Report* report = new Report("deprecation", document->Url().GetString(), body);
+  Report* report = MakeGarbageCollected<Report>(
+      "deprecation", document->Url().GetString(), body);
 
   // Send the deprecation report to any ReportingObservers.
   ReportingContext::From(document)->QueueReport(report);

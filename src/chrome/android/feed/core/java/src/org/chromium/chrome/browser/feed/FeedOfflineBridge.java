@@ -17,6 +17,7 @@ import org.chromium.chrome.browser.profiles.Profile;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -57,45 +58,58 @@ public class FeedOfflineBridge
 
     @Override
     public Long getOfflineIdIfPageIsOfflined(String url) {
-        return (Long) nativeGetOfflineId(mNativeBridge, url);
+        if (mNativeBridge == 0) {
+            return 0L;
+        } else {
+            return (Long) nativeGetOfflineId(mNativeBridge, url);
+        }
     }
 
     @Override
     public void getOfflineStatus(
             List<String> urlsToRetrieve, Consumer<List<String>> urlListConsumer) {
-        assert mNativeBridge != 0;
-        String[] urlsArray = urlsToRetrieve.toArray(new String[urlsToRetrieve.size()]);
-        nativeGetOfflineStatus(mNativeBridge, urlsArray,
-                (String[] urlsAsArray) -> urlListConsumer.accept(Arrays.asList(urlsAsArray)));
+        if (mNativeBridge == 0) {
+            urlListConsumer.accept(Collections.emptyList());
+        } else {
+            String[] urlsArray = urlsToRetrieve.toArray(new String[urlsToRetrieve.size()]);
+            nativeGetOfflineStatus(mNativeBridge, urlsArray,
+                    (String[] urlsAsArray) -> urlListConsumer.accept(Arrays.asList(urlsAsArray)));
+        }
     }
 
     @Override
     public void addOfflineStatusListener(OfflineStatusListener offlineStatusListener) {
-        assert mNativeBridge != 0;
-        mListeners.add(offlineStatusListener);
+        if (mNativeBridge != 0) {
+            mListeners.add(offlineStatusListener);
+        }
     }
 
     @Override
     public void removeOfflineStatusListener(OfflineStatusListener offlineStatusListener) {
-        assert mNativeBridge != 0;
-        mListeners.remove(offlineStatusListener);
-        if (mListeners.isEmpty()) {
-            nativeOnNoListeners(mNativeBridge);
+        if (mNativeBridge != 0) {
+            mListeners.remove(offlineStatusListener);
+            if (mListeners.isEmpty()) {
+                nativeOnNoListeners(mNativeBridge);
+            }
         }
     }
 
     @Override
     public void onContentRemoved(List<ContentRemoval> contentRemoved) {
-        List<String> userDrivenRemovals = takeUserDriveRemovalsOnly(contentRemoved);
-        if (!userDrivenRemovals.isEmpty()) {
-            nativeOnContentRemoved(mNativeBridge,
-                    userDrivenRemovals.toArray(new String[userDrivenRemovals.size()]));
+        if (mNativeBridge != 0) {
+            List<String> userDrivenRemovals = takeUserDriveRemovalsOnly(contentRemoved);
+            if (!userDrivenRemovals.isEmpty()) {
+                nativeOnContentRemoved(mNativeBridge,
+                        userDrivenRemovals.toArray(new String[userDrivenRemovals.size()]));
+            }
         }
     }
 
     @Override
     public void onNewContentReceived(boolean isNewRefresh, long contentCreationDateTimeMs) {
-        nativeOnNewContentReceived(mNativeBridge);
+        if (mNativeBridge != 0) {
+            nativeOnNewContentReceived(mNativeBridge);
+        }
     }
 
     /**
@@ -124,6 +138,8 @@ public class FeedOfflineBridge
     @CalledByNative
     private void getKnownContent() {
         mKnownContentApi.getKnownContent((List<ContentMetadata> metadataList) -> {
+            if (mNativeBridge == 0) return;
+
             for (ContentMetadata metadata : metadataList) {
                 long time_published_ms = TimeUnit.SECONDS.toMillis(metadata.getTimePublished());
                 nativeAppendContentMetadata(mNativeBridge, metadata.getUrl(), metadata.getTitle(),

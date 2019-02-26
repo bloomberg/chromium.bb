@@ -79,6 +79,9 @@ class FeedOfflineBridge {
   // call FeedOfflineHost::OnGetKnownContentDone() on async completion.
   void TriggerGetKnownContent();
 
+  void OnGetOfflineStatus(base::android::ScopedJavaGlobalRef<jobject> callback,
+                          std::vector<std::string> urls);
+
   // Reference to the Java half of this bridge. Always valid.
   base::android::ScopedJavaGlobalRef<jobject> j_this_;
 

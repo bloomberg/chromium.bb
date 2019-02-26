@@ -18,6 +18,7 @@ mojom("interfaces") {
     "compositing/frame_deadline.mojom",
     "compositing/frame_sink_id.mojom",
     "compositing/local_surface_id.mojom",
+    "compositing/local_surface_id_allocation.mojom",
     "compositing/paint_filter.mojom",
     "compositing/quads.mojom",
     "compositing/render_pass.mojom",

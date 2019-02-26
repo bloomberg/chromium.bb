@@ -16,7 +16,7 @@ gpu::SyncPointManager* ContentGpuClient::GetSyncPointManager() {
 
 #if BUILDFLAG(ENABLE_LIBRARY_CDMS)
 std::unique_ptr<media::CdmProxy> ContentGpuClient::CreateCdmProxy(
-    const std::string& cdm_guid) {
+    const base::Token& cdm_guid) {
   return nullptr;
 }
 #endif

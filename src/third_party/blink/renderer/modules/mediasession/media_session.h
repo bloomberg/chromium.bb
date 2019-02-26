@@ -32,6 +32,8 @@ class MODULES_EXPORT MediaSession final
  public:
   static MediaSession* Create(ExecutionContext*);
 
+  explicit MediaSession(ExecutionContext*);
+
   void Dispose();
 
   void setPlaybackState(const String&);
@@ -57,12 +59,11 @@ class MODULES_EXPORT MediaSession final
     kActionDisabled,
   };
 
-  explicit MediaSession(ExecutionContext*);
-
   void NotifyActionChange(const String& action, ActionChangeType);
 
   // blink::mojom::blink::MediaSessionClient implementation.
-  void DidReceiveAction(blink::mojom::blink::MediaSessionAction) override;
+  void DidReceiveAction(
+      media_session::mojom::blink::MediaSessionAction) override;
 
   // Returns null when the ExecutionContext is not document.
   mojom::blink::MediaSessionService* GetService();

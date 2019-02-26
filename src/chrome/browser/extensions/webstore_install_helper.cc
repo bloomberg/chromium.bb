@@ -139,7 +139,7 @@ void WebstoreInstallHelper::ReportResultsIfComplete() {
     return;
 
   if (error_.empty() && parsed_manifest_)
-    delegate_->OnWebstoreParseSuccess(id_, icon_, parsed_manifest_.release());
+    delegate_->OnWebstoreParseSuccess(id_, icon_, std::move(parsed_manifest_));
   else
     delegate_->OnWebstoreParseFailure(id_, parse_error_, error_);
 }

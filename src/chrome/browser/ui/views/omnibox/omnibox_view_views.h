@@ -90,7 +90,11 @@ class OmniboxViewViews : public OmniboxView,
   // provider. For example, if Google is the default search provider, this shows
   // "Search Google or type a URL" when the Omnibox is empty and unfocused.
   void InstallPlaceholderText();
-  bool SelectionAtEnd();
+
+  // Indicates if the cursor is at one end of the input. Requires that both
+  // ends of the selection reside there.
+  bool SelectionAtBeginning() const;
+  bool SelectionAtEnd() const;
 
   // OmniboxView:
   void EmphasizeURLComponents() override;
@@ -179,14 +183,33 @@ class OmniboxViewViews : public OmniboxView,
   // Handle keyword hint tab-to-search and tabbing through dropdown results.
   bool HandleEarlyTabActions(const ui::KeyEvent& event);
 
-  // Updates |security_level_| based on the toolbar model's current value.
+  // Updates |security_level_| based on the location bar model's current value.
   void UpdateSecurityLevel();
 
   void ClearAccessibilityLabel();
 
+  // Selects the whole omnibox contents as a result of the user gesture. This
+  // may also unapply steady state elisions depending on user preferences.
+  void SelectAllForUserGesture();
+
   // Returns true if the user text was updated with the full URL (without
   // steady-state elisions).  |gesture| is the user gesture causing unelision.
   bool UnapplySteadyStateElisions(UnelisionGesture gesture);
+
+  // Informs if text and UI direction match (otherwise what "at end" means must
+  // flip.)
+  bool TextAndUIDirectionMatch() const;
+
+  // Returns true if the caret is completely at the end of the input, and if
+  // there's a tab match present. Helper function for MaybeFocusTabButton()
+  // and MaybeUnfocusTabButton().
+  bool AtEndWithTabMatch() const;
+
+  // Attempts to either focus or unfocus the tab switch button (tests if all
+  // conditions are met and makes necessary subroutine call) and returns
+  // whether it succeeded.
+  bool MaybeFocusTabButton();
+  bool MaybeUnfocusTabButton();
 
   // OmniboxView:
   void SetWindowTextAndCaretPos(const base::string16& text,

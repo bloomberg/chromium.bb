@@ -27,6 +27,20 @@
 
 namespace content {
 
+namespace {
+
+bool IsSiteIsolationDisabled() {
+  if (base::CommandLine::ForCurrentProcess()->HasSwitch(
+          switches::kDisableSiteIsolation)) {
+    return true;
+  }
+
+  return GetContentClient() &&
+         GetContentClient()->browser()->ShouldDisableSiteIsolation();
+}
+
+}  // namespace
+
 // static
 bool SiteIsolationPolicy::UseDedicatedProcessesForAllSites() {
   if (base::CommandLine::ForCurrentProcess()->HasSwitch(
@@ -34,10 +48,8 @@ bool SiteIsolationPolicy::UseDedicatedProcessesForAllSites() {
     return true;
   }
 
-  if (base::CommandLine::ForCurrentProcess()->HasSwitch(
-          switches::kDisableSiteIsolationTrials)) {
+  if (IsSiteIsolationDisabled())
     return false;
-  }
 
   // The switches above needs to be checked first, because if the
   // ContentBrowserClient consults a base::Feature, then it will activate the
@@ -60,13 +72,6 @@ void SiteIsolationPolicy::PopulateURLLoaderFactoryParamsPtrForCORB(
   params->is_corb_enabled = true;
   params->corb_detachable_resource_type = RESOURCE_TYPE_PREFETCH;
   params->corb_excluded_resource_type = RESOURCE_TYPE_PLUGIN_RESOURCE;
-
-  const char* initiator_scheme_exception =
-      GetContentClient()
-          ->browser()
-          ->GetInitiatorSchemeBypassingDocumentBlocking();
-  if (initiator_scheme_exception)
-    params->corb_excluded_initiator_scheme = initiator_scheme_exception;
 }
 
 // static
@@ -79,10 +84,8 @@ bool SiteIsolationPolicy::AreIsolatedOriginsEnabled() {
     return true;
   }
 
-  if (base::CommandLine::ForCurrentProcess()->HasSwitch(
-          switches::kDisableSiteIsolationTrials)) {
+  if (IsSiteIsolationDisabled())
     return false;
-  }
 
   // The feature needs to be checked last, because checking the feature
   // activates the field trial and assigns the client either to a control or an
@@ -121,10 +124,8 @@ SiteIsolationPolicy::GetIsolatedOriginsFromEnvironment() {
 
   // --isolate-origins (both command-line flag and enterprise policy) trumps
   // the opt-out flag.
-  if (base::CommandLine::ForCurrentProcess()->HasSwitch(
-          switches::kDisableSiteIsolationTrials)) {
+  if (IsSiteIsolationDisabled())
     return origins;
-  }
 
   // The feature needs to be checked last, because checking the feature
   // activates the field trial and assigns the client either to a control or an

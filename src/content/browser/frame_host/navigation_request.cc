@@ -6,6 +6,8 @@
 
 #include <utility>
 
+#include "base/debug/alias.h"
+#include "base/debug/dump_without_crashing.h"
 #include "base/metrics/field_trial_params.h"
 #include "base/optional.h"
 #include "base/strings/string_util.h"
@@ -15,7 +17,7 @@
 #include "content/browser/appcache/appcache_navigation_handle.h"
 #include "content/browser/appcache/chrome_appcache_service.h"
 #include "content/browser/child_process_security_policy_impl.h"
-#include "content/browser/devtools/render_frame_devtools_agent_host.h"
+#include "content/browser/devtools/devtools_instrumentation.h"
 #include "content/browser/download/download_manager_impl.h"
 #include "content/browser/frame_host/debug_urls.h"
 #include "content/browser/frame_host/frame_tree.h"
@@ -48,11 +50,11 @@
 #include "content/public/browser/site_isolation_policy.h"
 #include "content/public/browser/storage_partition.h"
 #include "content/public/common/appcache_info.h"
-#include "content/public/common/browser_side_navigation_policy.h"
 #include "content/public/common/child_process_host.h"
 #include "content/public/common/content_client.h"
 #include "content/public/common/content_features.h"
 #include "content/public/common/content_switches.h"
+#include "content/public/common/navigation_policy.h"
 #include "content/public/common/origin_util.h"
 #include "content/public/common/renderer_preferences.h"
 #include "content/public/common/url_constants.h"
@@ -214,7 +216,7 @@ void AddAdditionalRequestHeaders(
       }
     }
     std::string value = base::StringPrintf(
-        "cause=\"%s\", destination=\"%s\", site=\"%s\"",
+        "cause=%s, destination=%s, site=%s",
         has_user_gesture ? "user-activated" : "forced",
         frame_tree_node->IsMainFrame() ? "document" : "nested-document",
         site_value.c_str());
@@ -282,39 +284,17 @@ bool ShouldPropagateUserActivation(const url::Origin& previous_origin,
 // static
 std::unique_ptr<NavigationRequest> NavigationRequest::CreateBrowserInitiated(
     FrameTreeNode* frame_tree_node,
-    const GURL& dest_url,
-    const Referrer& dest_referrer,
+    const CommonNavigationParams& common_params,
+    const RequestNavigationParams& request_params,
+    bool browser_initiated,
+    const std::string& extra_headers,
     const FrameNavigationEntry& frame_entry,
     const NavigationEntryImpl& entry,
-    FrameMsg_Navigate_Type::Value navigation_type,
-    PreviewsState previews_state,
-    bool is_same_document_history_load,
-    bool is_history_navigation_in_new_child,
     const scoped_refptr<network::ResourceRequestBody>& post_body,
-    base::TimeTicks navigation_start,
-    NavigationControllerImpl* controller,
-    std::unique_ptr<NavigationUIData> navigation_ui_data,
-    base::TimeTicks input_start,
-    WasActivatedOption was_activated) {
-  // A form submission happens either because the navigation is a
-  // renderer-initiated form submission that took the OpenURL path or a
-  // back/forward/reload navigation the does a form resubmission.
-  scoped_refptr<network::ResourceRequestBody> request_body;
-  std::string post_content_type;
-  if (post_body) {
-    // Standard form submission from the renderer.
-    request_body = post_body;
-  } else if (frame_entry.method() == "POST") {
-    // Form resubmission during a back/forward/reload navigation.
-    request_body = frame_entry.GetPostData(&post_content_type);
-    // Might have a LF at end.
-    post_content_type =
-        base::TrimWhitespaceASCII(post_content_type, base::TRIM_ALL)
-            .as_string();
-  }
+    std::unique_ptr<NavigationUIData> navigation_ui_data) {
   // TODO(arthursonzogni): Form submission with the "GET" method is possible.
   // This is not currently handled here.
-  bool is_form_submission = !!request_body;
+  bool is_form_submission = !!post_body;
 
   base::Optional<url::Origin> initiator =
       frame_tree_node->IsMainFrame()
@@ -322,37 +302,24 @@ std::unique_ptr<NavigationRequest> NavigationRequest::CreateBrowserInitiated(
           : base::Optional<url::Origin>(
                 frame_tree_node->frame_tree()->root()->current_origin());
 
-  // While the navigation was started via the LoadURL path it may have come from
-  // the renderer in the first place as part of OpenURL.
-  bool browser_initiated = !entry.is_renderer_initiated();
+  auto navigation_params = mojom::BeginNavigationParams::New(
+      extra_headers, net::LOAD_NORMAL, false /* skip_service_worker */,
+      blink::mojom::RequestContextType::LOCATION,
+      blink::WebMixedContentContextType::kBlockable, is_form_submission,
+      GURL() /* searchable_form_url */,
+      std::string() /* searchable_form_encoding */, initiator,
+      GURL() /* client_side_redirect_url */,
+      base::nullopt /* devtools_initiator_info */);
 
-  CommonNavigationParams common_params = entry.ConstructCommonNavigationParams(
-      frame_entry, request_body, dest_url, dest_referrer, navigation_type,
-      previews_state, navigation_start, input_start);
-
-  RequestNavigationParams request_params =
-      entry.ConstructRequestNavigationParams(
-          frame_entry, common_params.url, common_params.method,
-          is_history_navigation_in_new_child,
-          entry.GetSubframeUniqueNames(frame_tree_node),
-          controller->GetPendingEntryIndex() == -1,
-          controller->GetIndexOfEntry(&entry),
-          controller->GetLastCommittedEntryIndex(),
-          controller->GetEntryCount());
-  request_params.post_content_type = post_content_type;
-  request_params.was_activated = was_activated;
+  // Shift-Reload forces bypassing caches and service workers.
+  if (common_params.navigation_type ==
+      FrameMsg_Navigate_Type::RELOAD_BYPASSING_CACHE) {
+    navigation_params->load_flags |= net::LOAD_BYPASS_CACHE;
+    navigation_params->skip_service_worker = true;
+  }
 
   std::unique_ptr<NavigationRequest> navigation_request(new NavigationRequest(
-      frame_tree_node, common_params,
-      mojom::BeginNavigationParams::New(
-          entry.extra_headers(), net::LOAD_NORMAL,
-          false /* skip_service_worker */,
-          blink::mojom::RequestContextType::LOCATION,
-          blink::WebMixedContentContextType::kBlockable, is_form_submission,
-          GURL() /* searchable_form_url */,
-          std::string() /* searchable_form_encoding */, initiator,
-          GURL() /* client_side_redirect_url */,
-          base::nullopt /* devtools_initiator_info */),
+      frame_tree_node, common_params, std::move(navigation_params),
       request_params, browser_initiated, false /* from_begin_navigation */,
       &frame_entry, &entry, std::move(navigation_ui_data), nullptr, nullptr));
   navigation_request->blob_url_loader_factory_ =
@@ -552,7 +519,7 @@ NavigationRequest::NavigationRequest(
 NavigationRequest::~NavigationRequest() {
   TRACE_EVENT_ASYNC_END0("navigation", "NavigationRequest", this);
   if (state_ == STARTED) {
-    RenderFrameDevToolsAgentHost::OnNavigationRequestFailed(
+    devtools_instrumentation::OnNavigationRequestFailed(
         *this, network::URLLoaderCompletionStatus(net::ERR_ABORTED));
   }
 }
@@ -640,6 +607,12 @@ void NavigationRequest::BeginNavigation() {
 
   if (IsURLHandledByNetworkStack(common_params_.url) &&
       !navigation_handle_->IsSameDocument()) {
+    // Update PreviewsState if we are going to use the NetworkStack.
+    common_params_.previews_state =
+        GetContentClient()->browser()->DetermineAllowedPreviews(
+            common_params_.previews_state, navigation_handle_.get(),
+            common_params_.url);
+
     // It's safe to use base::Unretained because this NavigationRequest owns
     // the NavigationHandle where the callback will be stored.
     // TODO(clamy): pass the method to the NavigationHandle instead of a
@@ -706,7 +679,7 @@ void NavigationRequest::CreateNavigationHandle() {
           common_params_.has_user_gesture, common_params_.transition,
           is_external_protocol, begin_params_->request_context_type,
           begin_params_->mixed_content_context_type,
-          common_params_.input_start);
+          common_params_.href_translate, common_params_.input_start);
 
   if (!frame_tree_node->navigation_request()) {
     // A callback could have cancelled this request synchronously in which case
@@ -911,6 +884,14 @@ void NavigationRequest::OnRequestRedirected(
         site_instance->GetBrowserContext());
   }
 
+  // Re-evaluate the PreviewsState, but do not update the URLLoader. The
+  // URLLoader PreviewsState is considered immutable after the URLLoader is
+  // created.
+  common_params_.previews_state =
+      GetContentClient()->browser()->DetermineAllowedPreviews(
+          common_params_.previews_state, navigation_handle_.get(),
+          common_params_.url);
+
   // Check what the process of the SiteInstance is. It will be passed to the
   // NavigationHandle, and informed to expect a navigation to the redirected
   // URL.
@@ -939,8 +920,12 @@ void NavigationRequest::OnResponseStarted(
     const GlobalRequestID& request_id,
     bool is_download,
     bool is_stream,
-    PreviewsState previews_state,
     base::Optional<SubresourceLoaderParams> subresource_loader_params) {
+  // TODO(https://crbug.com/880741): Remove this once the bug is fixed.
+  if (state_ != STARTED) {
+    DEBUG_ALIAS_FOR_GURL(url, navigation_handle_->GetURL());
+    base::debug::DumpWithoutCrashing();
+  }
   DCHECK_EQ(state_, STARTED);
   DCHECK(response);
   TRACE_EVENT_ASYNC_STEP_INTO0("navigation", "NavigationRequest", this,
@@ -1022,9 +1007,6 @@ void NavigationRequest::OnResponseStarted(
     }
   }
 
-  // Update the previews state of the request.
-  common_params_.previews_state = previews_state;
-
   // Select an appropriate renderer to commit the navigation.
   RenderFrameHostImpl* render_frame_host = nullptr;
   if (response_should_be_rendered_) {
@@ -1054,6 +1036,15 @@ void NavigationRequest::OnResponseStarted(
 
   if (navigation_data)
     navigation_handle_->set_navigation_data(std::move(navigation_data));
+
+  // This must be set before DetermineCommittedPreviews is called.
+  navigation_handle_->set_proxy_server(response->head.proxy_server);
+
+  // Update the previews state of the request.
+  common_params_.previews_state =
+      GetContentClient()->browser()->DetermineCommittedPreviews(
+          common_params_.previews_state, navigation_handle_.get(),
+          response->head.headers.get());
 
   // Store the response and the URLLoaderClient endpoints until checks have been
   // processed.
@@ -1094,7 +1085,7 @@ void NavigationRequest::OnResponseStarted(
     }
   }
 
-  RenderFrameDevToolsAgentHost::OnNavigationResponseReceived(*this, *response);
+  devtools_instrumentation::OnNavigationResponseReceived(*this, *response);
 
   // The response code indicates that this is an error page, but we don't
   // know how to display the content.  We follow Firefox here and show our
@@ -1135,6 +1126,7 @@ void NavigationRequest::OnResponseStarted(
       response->head.connection_info, response->head.socket_address, ssl_info_,
       request_id, common_params_.should_replace_current_entry, is_download,
       is_stream, response->head.is_signed_exchange_inner_response,
+      response->head.was_fetched_via_cache,
       base::Bind(&NavigationRequest::OnWillProcessResponseChecksComplete,
                  base::Unretained(this)));
 }
@@ -1157,8 +1149,9 @@ void NavigationRequest::OnRequestFailedInternal(
   DCHECK(state_ == STARTED || state_ == RESPONSE_STARTED);
   DCHECK(!(status.error_code == net::ERR_ABORTED &&
            error_page_content.has_value()));
+  common_params_.previews_state = content::PREVIEWS_OFF;
 
-  RenderFrameDevToolsAgentHost::OnNavigationRequestFailed(*this, status);
+  devtools_instrumentation::OnNavigationRequestFailed(*this, status);
 
   // TODO(https://crbug.com/757633): Check that ssl_info.has_value() if
   // net_error is a certificate error.
@@ -1401,9 +1394,9 @@ void NavigationRequest::OnStartChecksComplete(
   // Give DevTools a chance to override begin params (headers, skip SW)
   // before actually loading resource.
   bool report_raw_headers = false;
-  RenderFrameDevToolsAgentHost::ApplyOverrides(
+  devtools_instrumentation::ApplyNetworkRequestOverrides(
       frame_tree_node_, begin_params_.get(), &report_raw_headers);
-  RenderFrameDevToolsAgentHost::OnNavigationRequestWillBeSent(*this);
+  devtools_instrumentation::OnNavigationRequestWillBeSent(*this);
 
   loader_ = NavigationURLLoader::Create(
       browser_context->GetResourceContext(), partition,
@@ -1460,7 +1453,7 @@ void NavigationRequest::OnRedirectChecksComplete(
     return;
   }
 
-  RenderFrameDevToolsAgentHost::OnNavigationRequestWillBeSent(*this);
+  devtools_instrumentation::OnNavigationRequestWillBeSent(*this);
 
   base::Optional<net::HttpRequestHeaders> embedder_additional_headers;
   GetContentClient()->browser()->NavigationRequestRedirected(
@@ -1666,6 +1659,12 @@ void NavigationRequest::CommitNavigation() {
              frame_tree_node_->render_manager()->current_frame_host() ||
          render_frame_host ==
              frame_tree_node_->render_manager()->speculative_frame_host());
+
+  // TODO(https://crbug.com/880741): Remove this once the bug is fixed.
+  if (!frame_tree_node_->navigation_request()) {
+    DEBUG_ALIAS_FOR_GURL(url, navigation_handle_->GetURL());
+    base::debug::DumpWithoutCrashing();
+  }
 
   frame_tree_node_->TransferNavigationRequestOwnership(render_frame_host);
   if (IsPerNavigationMojoInterfaceEnabled() && request_navigation_client_ &&

@@ -11,8 +11,7 @@ class GURL;
 
 namespace web {
 
-class HtmlWebInterstitialDelegate;
-class NativeWebInterstitialDelegate;
+class WebInterstitialDelegate;
 class WebState;
 
 // This class is used for showing interstitial pages, pages that show some
@@ -28,16 +27,11 @@ class WebInterstitial {
   // |delegate|. Reloading the interstitial page will result in a new navigation
   // to |url|.  The pointers returned by these functions are self-owning; they
   // manage their own deletion after calling |Show()|.
-  static WebInterstitial* CreateHtmlInterstitial(
+  static WebInterstitial* CreateInterstitial(
       WebState* web_state,
       bool new_navigation,
       const GURL& url,
-      std::unique_ptr<HtmlWebInterstitialDelegate> delegate);
-  static WebInterstitial* CreateNativeInterstitial(
-      WebState* web_state,
-      bool new_navigation,
-      const GURL& url,
-      std::unique_ptr<NativeWebInterstitialDelegate> delegate);
+      std::unique_ptr<WebInterstitialDelegate> delegate);
 
   virtual ~WebInterstitial() {}
 

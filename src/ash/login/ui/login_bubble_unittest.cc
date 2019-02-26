@@ -106,9 +106,9 @@ class LoginBubbleTest : public LoginTestBase {
   }
 
   void ShowSelectionMenu(const LoginMenuView::OnSelect& on_select) {
-    LoginMenuView* view =
-        new LoginMenuView(PopulateMenuItems(), container_, on_select);
-    bubble_->ShowSelectionMenu(view, bubble_opener_);
+    LoginMenuView* view = new LoginMenuView(PopulateMenuItems(), container_,
+                                            bubble_opener_, on_select);
+    bubble_->ShowSelectionMenu(view);
   }
 
   // Owned by test widget view hierarchy.
@@ -288,7 +288,7 @@ TEST_F(LoginBubbleTest, ErrorBubbleKeyEventHandling) {
 
   EXPECT_FALSE(bubble_->IsVisible());
   views::Label* error_text = new views::Label(base::ASCIIToUTF16("Error text"));
-  bubble_->ShowErrorBubble(error_text, container_, LoginBubble::kFlagsNone);
+  bubble_->ShowErrorBubble(error_text, container_, false /*show_persistently*/);
   EXPECT_TRUE(bubble_->IsVisible());
 
   // Verifies that key event on a view other than error closes the error bubble.
@@ -302,7 +302,7 @@ TEST_F(LoginBubbleTest, ErrorBubbleMouseEventHandling) {
 
   EXPECT_FALSE(bubble_->IsVisible());
   views::Label* error_text = new views::Label(base::ASCIIToUTF16("Error text"));
-  bubble_->ShowErrorBubble(error_text, container_, LoginBubble::kFlagsNone);
+  bubble_->ShowErrorBubble(error_text, container_, false /*show_persistently*/);
   EXPECT_TRUE(bubble_->IsVisible());
 
   // Verifies that mouse event on the bubble itself won't close the bubble.
@@ -322,7 +322,7 @@ TEST_F(LoginBubbleTest, ErrorBubbleGestureEventHandling) {
 
   EXPECT_FALSE(bubble_->IsVisible());
   views::Label* error_text = new views::Label(base::ASCIIToUTF16("Error text"));
-  bubble_->ShowErrorBubble(error_text, container_, LoginBubble::kFlagsNone);
+  bubble_->ShowErrorBubble(error_text, container_, false /*show_persistently*/);
   EXPECT_TRUE(bubble_->IsVisible());
 
   // Verifies that gesture event on the bubble itself won't close the bubble.
@@ -340,8 +340,7 @@ TEST_F(LoginBubbleTest, PersistentErrorBubbleEventHandling) {
 
   EXPECT_FALSE(bubble_->IsVisible());
   views::Label* error_text = new views::Label(base::ASCIIToUTF16("Error text"));
-  bubble_->ShowErrorBubble(error_text, container_,
-                           LoginBubble::kFlagPersistent);
+  bubble_->ShowErrorBubble(error_text, container_, true /*show_persistently*/);
   EXPECT_TRUE(bubble_->IsVisible());
 
   // Verifies that mouse event on the bubble itself won't close the bubble.

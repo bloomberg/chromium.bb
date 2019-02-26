@@ -11,7 +11,7 @@
 #include "chromeos/login/auth/user_context.h"
 #include "components/keyed_service/core/keyed_service.h"
 
-class PrefService;
+class Profile;
 
 namespace base {
 class Time;
@@ -29,7 +29,7 @@ namespace quick_unlock {
 // authentication used by Settings).
 class QuickUnlockStorage : public KeyedService {
  public:
-  explicit QuickUnlockStorage(PrefService* pref_service);
+  explicit QuickUnlockStorage(Profile* profile);
   ~QuickUnlockStorage() override;
 
   // Mark that the user has had a strong authentication. This means
@@ -89,8 +89,8 @@ class QuickUnlockStorage : public KeyedService {
   // KeyedService:
   void Shutdown() override;
 
-  PrefService* pref_service_;
-  base::TimeTicks last_strong_auth_;
+  Profile* const profile_;
+  base::Time last_strong_auth_;
   std::unique_ptr<FingerprintStorage> fingerprint_storage_;
   std::unique_ptr<PinStoragePrefs> pin_storage_prefs_;
   std::unique_ptr<AuthToken> auth_token_;

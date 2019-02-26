@@ -257,7 +257,9 @@ public class WebApkUpdateManagerUnitTest {
                 manifestData.shortName, manifestData.displayMode, manifestData.orientation, -1,
                 manifestData.themeColor, manifestData.backgroundColor, kPackageName, -1,
                 WEB_MANIFEST_URL, manifestData.startUrl, WebApkInfo.WebApkDistributor.BROWSER,
-                manifestData.iconUrlToMurmur2HashMap, null, false /* forceNavigation */);
+                manifestData.iconUrlToMurmur2HashMap,
+                new WebApkInfo.ShareTarget(null, null, null, null), false /* forceNavigation */,
+                false /* useTransparentSplash */, null);
     }
 
     /**

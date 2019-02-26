@@ -16,7 +16,7 @@ namespace blink {
 MediaControlPlayButtonElement::MediaControlPlayButtonElement(
     MediaControlsImpl& media_controls)
     : MediaControlInputElement(media_controls, kMediaPlayButton) {
-  setType(InputTypeNames::button);
+  setType(input_type_names::kButton);
   SetShadowPseudoId(AtomicString("-webkit-media-controls-play-button"));
 }
 
@@ -49,7 +49,7 @@ const char* MediaControlPlayButtonElement::GetNameForHistograms() const {
 }
 
 void MediaControlPlayButtonElement::DefaultEventHandler(Event& event) {
-  if (event.type() == EventTypeNames::click) {
+  if (event.type() == event_type_names::kClick) {
     if (MediaElement().paused()) {
       Platform::Current()->RecordAction(
           UserMetricsAction("Media.Controls.Play"));
@@ -62,8 +62,7 @@ void MediaControlPlayButtonElement::DefaultEventHandler(Event& event) {
     // state. This allows potential recovery for transient network and decoder
     // resource issues.
     const String& url = MediaElement().currentSrc().GetString();
-    if (MediaElement().error() && !HTMLMediaElement::IsMediaStreamURL(url) &&
-        !HTMLMediaSource::Lookup(url))
+    if (MediaElement().error() && !HTMLMediaSource::Lookup(url))
       MediaElement().load();
 
     MediaElement().TogglePlayState();

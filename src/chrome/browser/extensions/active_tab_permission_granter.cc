@@ -8,7 +8,6 @@
 #include <utility>
 #include <vector>
 
-#include "base/feature_list.h"
 #include "base/no_destructor.h"
 #include "chrome/browser/extensions/extension_action_runner.h"
 #include "chrome/browser/extensions/extension_util.h"
@@ -20,7 +19,6 @@
 #include "content/public/browser/web_contents.h"
 #include "extensions/browser/extension_registry.h"
 #include "extensions/browser/process_manager.h"
-#include "extensions/common/extension_features.h"
 #include "extensions/common/extension_messages.h"
 #include "extensions/common/permissions/permission_set.h"
 #include "extensions/common/permissions/permissions_data.h"
@@ -198,25 +196,16 @@ void ActiveTabPermissionGranter::DidFinishNavigation(
   }
 
   // Only clear the granted permissions for cross-origin navigations.
-  //
-  // See http://crbug.com/404243 for why. Currently we only differentiate
-  // between same-origin and cross-origin navigations when the
-  // script-require-action flag is on. It's not clear it's good for general
-  // activeTab consumption (we likely need to build some UI around it first).
-  // However, features::kRuntimeHostPermissions is all-but unusable without
-  // this behaviour.
-  if (base::FeatureList::IsEnabled(
-          extensions_features::kRuntimeHostPermissions)) {
-    const content::NavigationEntry* navigation_entry =
-        web_contents()->GetController().GetVisibleEntry();
-    if (!navigation_entry ||
-        (navigation_entry->GetURL().GetOrigin() !=
-            navigation_handle->GetPreviousURL().GetOrigin())) {
-      ClearActiveExtensionsAndNotify();
-    }
-  } else {
-    ClearActiveExtensionsAndNotify();
+  // TODO(devlin): We likely shouldn't be using the visible entry. Instead,
+  // we should use WebContents::GetLastCommittedURL().
+  const content::NavigationEntry* navigation_entry =
+      web_contents()->GetController().GetVisibleEntry();
+  if (navigation_entry && navigation_entry->GetURL().GetOrigin() ==
+                              navigation_handle->GetPreviousURL().GetOrigin()) {
+    return;
   }
+
+  ClearActiveExtensionsAndNotify();
 }
 
 void ActiveTabPermissionGranter::WebContentsDestroyed() {

@@ -25,6 +25,7 @@
 #include "base/task/post_task.h"
 #include "base/task_runner_util.h"
 #include "base/third_party/icu/icu_utf.h"
+#include "base/time/time.h"
 #include "build/build_config.h"
 #include "chrome/common/buildflags.h"
 #include "chrome/common/chrome_paths.h"
@@ -125,12 +126,29 @@ bool IsPathInUse(const base::FilePath& path) {
 // Create a unique filename by appending a uniquifier. Modifies |path| in place
 // if successful and returns true. Otherwise |path| is left unmodified and
 // returns false.
-bool CreateUniqueFilename(int max_path_component_length, base::FilePath* path) {
+bool CreateUniqueFilename(int max_path_component_length,
+                          const base::Time& download_start_time,
+                          base::FilePath* path) {
+  // Try every numeric uniquifier. Then make one attempt with the timestamp.
   for (int uniquifier = 1;
-       uniquifier <= DownloadPathReservationTracker::kMaxUniqueFiles;
+       uniquifier <= DownloadPathReservationTracker::kMaxUniqueFiles + 1;
        ++uniquifier) {
     // Append uniquifier.
     std::string suffix(base::StringPrintf(" (%d)", uniquifier));
+
+    // After we've tried all the unique numeric indices, make one attempt using
+    // the timestamp.
+    if (uniquifier > DownloadPathReservationTracker::kMaxUniqueFiles) {
+      // Generate an ISO8601 compliant local timestamp suffix that avoids
+      // reserved characters that are forbidden on some OSes like Windows.
+      base::Time::Exploded exploded;
+      download_start_time.LocalExplode(&exploded);
+      suffix = base::StringPrintf(
+          " - %04d-%02d-%02dT%02d%02d%02d.%03d", exploded.year, exploded.month,
+          exploded.day_of_month, exploded.hour, exploded.minute,
+          exploded.second, exploded.millisecond);
+    }
+
     base::FilePath path_to_check(*path);
     // If the name length limit is available (max_length != -1), and the
     // the current name exceeds the limit, truncate.
@@ -166,6 +184,7 @@ struct CreateReservationInfo {
   base::FilePath default_download_path;
   base::FilePath temporary_path;
   bool create_target_directory;
+  base::Time start_time;
   DownloadPathReservationTracker::FilenameConflictAction conflict_action;
   DownloadPathReservationTracker::ReservedPathCallback completion_callback;
 };
@@ -227,7 +246,8 @@ PathValidationResult ValidatePathAndResolveConflicts(
 
   switch (info.conflict_action) {
     case DownloadPathReservationTracker::UNIQUIFY:
-      return CreateUniqueFilename(max_path_component_length, target_path)
+      return CreateUniqueFilename(max_path_component_length, info.start_time,
+                                  target_path)
                  ? PathValidationResult::SUCCESS
                  : PathValidationResult::CONFLICT;
 
@@ -416,6 +436,7 @@ void DownloadPathReservationTracker::GetReservedPath(
                                 default_path,
                                 download_item->GetTemporaryFilePath(),
                                 create_directory,
+                                download_item->GetStartTime(),
                                 conflict_action,
                                 callback};
 

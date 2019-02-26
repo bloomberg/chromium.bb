@@ -85,7 +85,7 @@ class PLATFORM_EXPORT ResourceRequest final {
       const AtomicString& new_method,
       const KURL& new_site_for_cookies,
       const String& new_referrer,
-      ReferrerPolicy new_referrer_policy,
+      network::mojom::ReferrerPolicy new_referrer_policy,
       bool skip_service_worker) const;
 
   bool IsNull() const;
@@ -127,26 +127,28 @@ class PLATFORM_EXPORT ResourceRequest final {
   void ClearHTTPHeaderField(const AtomicString& name);
 
   const AtomicString& HttpContentType() const {
-    return HttpHeaderField(HTTPNames::Content_Type);
+    return HttpHeaderField(http_names::kContentType);
   }
   void SetHTTPContentType(const AtomicString& http_content_type) {
-    SetHTTPHeaderField(HTTPNames::Content_Type, http_content_type);
+    SetHTTPHeaderField(http_names::kContentType, http_content_type);
   }
 
   // TODO(domfarolino): Remove this once we stop storing the generated referrer
   // as a header, and instead use a separate member. See
   // https://crbug.com/850813.
   const AtomicString& HttpReferrer() const {
-    return HttpHeaderField(HTTPNames::Referer);
+    return HttpHeaderField(http_names::kReferer);
   }
   void SetHTTPReferrer(const Referrer&);
   bool DidSetHTTPReferrer() const { return did_set_http_referrer_; }
   void ClearHTTPReferrer();
 
-  void SetReferrerPolicy(ReferrerPolicy referrer_policy) {
+  void SetReferrerPolicy(network::mojom::ReferrerPolicy referrer_policy) {
     referrer_policy_ = referrer_policy;
   }
-  ReferrerPolicy GetReferrerPolicy() const { return referrer_policy_; }
+  network::mojom::ReferrerPolicy GetReferrerPolicy() const {
+    return referrer_policy_;
+  }
 
   void SetReferrerString(const String& referrer_string) {
     referrer_string_ = referrer_string;
@@ -154,7 +156,7 @@ class PLATFORM_EXPORT ResourceRequest final {
   const String& ReferrerString() const { return referrer_string_; }
 
   const AtomicString& HttpOrigin() const {
-    return HttpHeaderField(HTTPNames::Origin);
+    return HttpHeaderField(http_names::kOrigin);
   }
   void SetHTTPOrigin(const SecurityOrigin*);
   void ClearHTTPOrigin();
@@ -162,12 +164,12 @@ class PLATFORM_EXPORT ResourceRequest final {
   void SetHTTPOriginToMatchReferrerIfNeeded();
 
   void SetHTTPUserAgent(const AtomicString& http_user_agent) {
-    SetHTTPHeaderField(HTTPNames::User_Agent, http_user_agent);
+    SetHTTPHeaderField(http_names::kUserAgent, http_user_agent);
   }
   void ClearHTTPUserAgent();
 
   void SetHTTPAccept(const AtomicString& http_accept) {
-    SetHTTPHeaderField(HTTPNames::Accept, http_accept);
+    SetHTTPHeaderField(http_names::kAccept, http_accept);
   }
 
   EncodedFormData* HttpBody() const;
@@ -260,6 +262,12 @@ class PLATFORM_EXPORT ResourceRequest final {
     }
   }
 
+  bool IsDownloadToNetworkCacheOnly() const { return download_to_cache_only_; }
+
+  void SetDownloadToNetworkCacheOnly(bool download_to_cache_only) {
+    download_to_cache_only_ = download_to_cache_only;
+  }
+
   mojom::RequestContextType GetRequestContext() const {
     return request_context_;
   }
@@ -333,10 +341,10 @@ class PLATFORM_EXPORT ResourceRequest final {
   bool IsExternalRequest() const { return is_external_request_; }
   void SetExternalRequestStateFromRequestorAddressSpace(mojom::IPAddressSpace);
 
-  network::mojom::CORSPreflightPolicy CORSPreflightPolicy() const {
+  network::mojom::CorsPreflightPolicy CorsPreflightPolicy() const {
     return cors_preflight_policy_;
   }
-  void SetCORSPreflightPolicy(network::mojom::CORSPreflightPolicy policy) {
+  void SetCorsPreflightPolicy(network::mojom::CorsPreflightPolicy policy) {
     cors_preflight_policy_ = policy;
   }
 
@@ -378,6 +386,13 @@ class PLATFORM_EXPORT ResourceRequest final {
   void SetAllowStaleResponse(bool value) { allow_stale_response_ = value; }
   bool AllowsStaleResponse() const { return allow_stale_response_; }
 
+  void SetStaleRevalidateCandidate(bool value) {
+    stale_revalidate_candidate_ = value;
+  }
+  bool IsStaleRevalidateCandidate() const {
+    return stale_revalidate_candidate_;
+  }
+
   const base::Optional<base::UnguessableToken>& GetDevToolsToken() const {
     return devtools_token_;
   }
@@ -389,8 +404,15 @@ class PLATFORM_EXPORT ResourceRequest final {
   void SetOriginPolicy(const String& policy) { origin_policy_ = policy; }
   const String& GetOriginPolicy() const { return origin_policy_; }
 
-  void SetRequestedWith(const String& value) { requested_with_ = value; }
-  const String& GetRequestedWith() const { return requested_with_; }
+  void SetRequestedWithHeader(const String& value) {
+    requested_with_header_ = value;
+  }
+  const String& GetRequestedWithHeader() const {
+    return requested_with_header_;
+  }
+
+  void SetClientDataHeader(const String& value) { client_data_header_ = value; }
+  const String& GetClientDataHeader() const { return client_data_header_; }
 
   void SetUkmSourceId(int64_t ukm_source_id) { ukm_source_id_ = ukm_source_id; }
   int64_t GetUkmSourceId() const { return ukm_source_id_; }
@@ -431,8 +453,10 @@ class PLATFORM_EXPORT ResourceRequest final {
   bool keepalive_ : 1;
   bool should_reset_app_cache_ : 1;
   bool allow_stale_response_ : 1;
+  bool stale_revalidate_candidate_ : 1;
   mojom::FetchCacheMode cache_mode_;
   bool skip_service_worker_ : 1;
+  bool download_to_cache_only_ : 1;
   ResourceLoadPriority priority_;
   int intra_priority_value_;
   int requestor_id_;
@@ -451,11 +475,11 @@ class PLATFORM_EXPORT ResourceRequest final {
   // off-main-thread fetch is fully implemented and ResourceRequest never gets
   // transferred between threads. See https://crbug.com/706331.
   String referrer_string_;
-  ReferrerPolicy referrer_policy_;
+  network::mojom::ReferrerPolicy referrer_policy_;
   bool did_set_http_referrer_;
   bool was_discarded_;
   bool is_external_request_;
-  network::mojom::CORSPreflightPolicy cors_preflight_policy_;
+  network::mojom::CorsPreflightPolicy cors_preflight_policy_;
   RedirectStatus redirect_status_;
   base::Optional<String> suggested_filename_;
 
@@ -475,7 +499,8 @@ class PLATFORM_EXPORT ResourceRequest final {
 
   base::Optional<base::UnguessableToken> devtools_token_;
   String origin_policy_;
-  String requested_with_;
+  String requested_with_header_;
+  String client_data_header_;
 
   int64_t ukm_source_id_;
 

@@ -57,7 +57,7 @@ class GrPipelineDynamicStateTestProcessor : public GrGeometryProcessor {
 public:
     GrPipelineDynamicStateTestProcessor()
             : INHERITED(kGrPipelineDynamicStateTestProcessor_ClassID) {
-        this->setVertexAttributeCnt(2);
+        this->setVertexAttributes(kAttributes, SK_ARRAY_COUNT(kAttributes));
     }
 
     const char* name() const override { return "GrPipelineDynamicStateTest Processor"; }
@@ -66,21 +66,19 @@ public:
 
     GrGLSLPrimitiveProcessor* createGLSLInstance(const GrShaderCaps&) const final;
 
-private:
-    const Attribute& onVertexAttribute(int i) const override {
-        return IthAttribute(i, kVertex, kColor);
-    }
+    const Attribute& inVertex() const { return kAttributes[0]; }
+    const Attribute& inColor() const { return kAttributes[1]; }
 
-    static constexpr Attribute kVertex =
-            {"vertex", kFloat2_GrVertexAttribType, kHalf2_GrSLType};
-    static constexpr Attribute kColor =
-            {"color", kUByte4_norm_GrVertexAttribType, kHalf4_GrSLType};
+private:
+    static constexpr Attribute kAttributes[] = {
+        {"vertex", kFloat2_GrVertexAttribType, kHalf2_GrSLType},
+        {"color", kUByte4_norm_GrVertexAttribType, kHalf4_GrSLType},
+    };
 
     friend class GLSLPipelineDynamicStateTestProcessor;
     typedef GrGeometryProcessor INHERITED;
 };
-constexpr GrPrimitiveProcessor::Attribute GrPipelineDynamicStateTestProcessor::kVertex;
-constexpr GrPrimitiveProcessor::Attribute GrPipelineDynamicStateTestProcessor::kColor;
+constexpr GrPrimitiveProcessor::Attribute GrPipelineDynamicStateTestProcessor::kAttributes[];
 
 class GLSLPipelineDynamicStateTestProcessor : public GrGLSLGeometryProcessor {
     void setData(const GrGLSLProgramDataManager& pdman, const GrPrimitiveProcessor&,
@@ -92,10 +90,10 @@ class GLSLPipelineDynamicStateTestProcessor : public GrGLSLGeometryProcessor {
 
         GrGLSLVaryingHandler* varyingHandler = args.fVaryingHandler;
         varyingHandler->emitAttributes(mp);
-        varyingHandler->addPassThroughAttribute(mp.kColor, args.fOutputColor);
+        varyingHandler->addPassThroughAttribute(mp.inColor(), args.fOutputColor);
 
         GrGLSLVertexBuilder* v = args.fVertBuilder;
-        v->codeAppendf("float2 vertex = %s;", mp.kVertex.name());
+        v->codeAppendf("float2 vertex = %s;", mp.inVertex().name());
         gpArgs->fPositionVar.set(kFloat2_GrSLType, "vertex");
 
         GrGLSLFPFragmentBuilder* f = args.fFragBuilder;
@@ -137,7 +135,7 @@ private:
         return RequiresDstTexture::kNo;
     }
     void onPrepare(GrOpFlushState*) override {}
-    void onExecute(GrOpFlushState* state) override {
+    void onExecute(GrOpFlushState* state, const SkRect& chainBounds) override {
         GrRenderTargetProxy* proxy = state->drawOpArgs().fProxy;
         GrPipeline pipeline(proxy, fScissorTest, SkBlendMode::kSrc);
         SkSTArray<kNumMeshes, GrMesh> meshes;
@@ -163,9 +161,12 @@ DEF_GPUTEST_FOR_RENDERING_CONTEXTS(GrPipelineDynamicStateTest, reporter, ctxInfo
     GrContext* context = ctxInfo.grContext();
     GrResourceProvider* rp = context->contextPriv().resourceProvider();
 
+    const GrBackendFormat format =
+            context->contextPriv().caps()->getBackendFormatFromColorType(kRGBA_8888_SkColorType);
+
     sk_sp<GrRenderTargetContext> rtc(context->contextPriv().makeDeferredRenderTargetContext(
-                                                 SkBackingFit::kExact, kScreenSize, kScreenSize,
-                                                 kRGBA_8888_GrPixelConfig, nullptr));
+                                                 format, SkBackingFit::kExact, kScreenSize,
+                                                 kScreenSize, kRGBA_8888_GrPixelConfig, nullptr));
     if (!rtc) {
         ERRORF(reporter, "could not create render target context.");
         return;
@@ -207,7 +208,8 @@ DEF_GPUTEST_FOR_RENDERING_CONTEXTS(GrPipelineDynamicStateTest, reporter, ctxInfo
     uint32_t resultPx[kScreenSize * kScreenSize];
 
     for (GrScissorTest scissorTest : {GrScissorTest::kEnabled, GrScissorTest::kDisabled}) {
-        rtc->clear(nullptr, 0xbaaaaaad, GrRenderTargetContext::CanClearFullscreen::kYes);
+        rtc->clear(nullptr, SkPMColor4f::FromBytes_RGBA(0xbaaaaaad),
+                   GrRenderTargetContext::CanClearFullscreen::kYes);
         rtc->priv().testingOnly_addDrawOp(
             GrPipelineDynamicStateTestOp::Make(context, scissorTest, vbuff));
         rtc->readPixels(SkImageInfo::Make(kScreenSize, kScreenSize,

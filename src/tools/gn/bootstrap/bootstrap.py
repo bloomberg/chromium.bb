@@ -46,10 +46,6 @@ def main(argv):
       '--build-path',
       help='The directory in which to build gn, '
       'relative to the src directory. (eg. out/Release)')
-  parser.add_option(
-      '--with-sysroot',
-      action='store_true',
-      help='Download and build with the Debian sysroot.')
   parser.add_option('-v', '--verbose', help='ignored')
   parser.add_option(
       '--skip-generate-buildfiles',
@@ -76,8 +72,6 @@ def main(argv):
       '--no-last-commit-position',
       '--out-path=' + gn_build_dir,
   ]
-  if not options.with_sysroot:
-    cmd.append('--no-sysroot')
   if options.debug:
     cmd.append('--debug')
   subprocess.check_call(cmd)

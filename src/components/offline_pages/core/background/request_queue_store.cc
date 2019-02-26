@@ -4,6 +4,7 @@
 
 #include "components/offline_pages/core/background/request_queue_store.h"
 
+#include <string>
 #include <unordered_set>
 #include <utility>
 
@@ -254,6 +255,7 @@ ItemActionStatus Update(sql::Database* db, const SavePageRequest& request) {
       " WHERE request_id = ?";
 
   sql::Statement statement(db->GetCachedStatement(SQL_FROM_HERE, kSql));
+  // SET columns:
   statement.BindInt64(0, store_utils::ToDatabaseTime(request.creation_time()));
   statement.BindInt64(1, 0);
   statement.BindInt64(2,
@@ -267,6 +269,7 @@ ItemActionStatus Update(sql::Database* db, const SavePageRequest& request) {
   statement.BindString(9, request.original_url().spec());
   statement.BindString(10, request.request_origin());
   statement.BindInt64(11, static_cast<int64_t>(request.fail_state()));
+  // WHERE:
   statement.BindInt64(12, request.request_id());
 
   if (!statement.Run())
@@ -284,7 +287,7 @@ void PostStoreUpdateResultForIds(
     RequestQueueStore::UpdateCallback callback) {
   UpdateRequestsResult result(store_state);
   for (const auto& item_id : item_ids)
-    result.item_statuses.push_back(std::make_pair(item_id, action_status));
+    result.item_statuses.emplace_back(item_id, action_status);
   runner->PostTask(FROM_HERE,
                    base::BindOnce(std::move(callback), std::move(result)));
 }
@@ -376,7 +379,7 @@ void GetRequestsByIdsSync(sql::Database* db,
       result.updated_items.push_back(*request);
     ItemActionStatus status =
         request ? ItemActionStatus::SUCCESS : ItemActionStatus::NOT_FOUND;
-    result.item_statuses.push_back(std::make_pair(request_id, status));
+    result.item_statuses.emplace_back(request_id, status);
   }
 
   if (!transaction.Commit()) {
@@ -410,8 +413,7 @@ void UpdateRequestsSync(sql::Database* db,
 
   for (const auto& request : requests) {
     ItemActionStatus status = Update(db, request);
-    result.item_statuses.push_back(
-        std::make_pair(request.request_id(), status));
+    result.item_statuses.emplace_back(request.request_id(), status);
     if (status == ItemActionStatus::SUCCESS)
       result.updated_items.push_back(request);
   }

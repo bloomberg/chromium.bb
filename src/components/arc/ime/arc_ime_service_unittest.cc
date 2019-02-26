@@ -11,12 +11,14 @@
 #include "base/strings/string16.h"
 #include "base/strings/utf_string_conversions.h"
 #include "components/arc/arc_bridge_service.h"
+#include "components/arc/common/ime.mojom.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/aura/test/test_window_delegate.h"
 #include "ui/aura/test/test_windows.h"
 #include "ui/aura/window.h"
 #include "ui/base/ime/composition_text.h"
 #include "ui/base/ime/dummy_input_method.h"
+#include "ui/base/ime/text_input_flags.h"
 #include "ui/events/event.h"
 #include "ui/events/keycodes/dom/dom_code.h"
 #include "ui/events/keycodes/keyboard_codes.h"
@@ -235,11 +237,13 @@ TEST_F(ArcImeServiceTest, HasCompositionText) {
 TEST_F(ArcImeServiceTest, ShowVirtualKeyboardIfEnabled) {
   instance_->OnWindowFocused(arc_win_.get(), nullptr);
 
-  instance_->OnTextInputTypeChanged(ui::TEXT_INPUT_TYPE_NONE, false);
+  instance_->OnTextInputTypeChanged(ui::TEXT_INPUT_TYPE_NONE, false,
+                                    mojom::TEXT_INPUT_FLAG_NONE);
   ASSERT_EQ(0, fake_input_method_->count_show_ime_if_needed());
 
   // Text input type change does not imply the show ime request.
-  instance_->OnTextInputTypeChanged(ui::TEXT_INPUT_TYPE_TEXT, true);
+  instance_->OnTextInputTypeChanged(ui::TEXT_INPUT_TYPE_TEXT, true,
+                                    mojom::TEXT_INPUT_FLAG_NONE);
   EXPECT_EQ(0, fake_input_method_->count_show_ime_if_needed());
 
   instance_->ShowVirtualKeyboardIfEnabled();
@@ -258,12 +262,14 @@ TEST_F(ArcImeServiceTest, InsertChar) {
   instance_->OnWindowFocused(arc_win_.get(), nullptr);
 
   // When text input type is NONE, the event is not forwarded.
-  instance_->OnTextInputTypeChanged(ui::TEXT_INPUT_TYPE_NONE, false);
+  instance_->OnTextInputTypeChanged(ui::TEXT_INPUT_TYPE_NONE, false,
+                                    mojom::TEXT_INPUT_FLAG_NONE);
   instance_->InsertChar(ui::KeyEvent('a', ui::VKEY_A, ui::DomCode::NONE, 0));
   EXPECT_EQ(0, fake_arc_ime_bridge_->count_send_insert_text());
 
   // When the bridge is accepting text inputs, forward the event.
-  instance_->OnTextInputTypeChanged(ui::TEXT_INPUT_TYPE_TEXT, true);
+  instance_->OnTextInputTypeChanged(ui::TEXT_INPUT_TYPE_TEXT, true,
+                                    mojom::TEXT_INPUT_FLAG_NONE);
   instance_->InsertChar(ui::KeyEvent('a', ui::VKEY_A, ui::DomCode::NONE, 0));
   EXPECT_EQ(1, fake_arc_ime_bridge_->count_send_insert_text());
 }
@@ -402,15 +408,18 @@ TEST_F(ArcImeServiceTest, ShouldDoLearning) {
   instance_->OnWindowFocused(arc_win_.get(), nullptr);
 
   ASSERT_NE(ui::TEXT_INPUT_TYPE_TEXT, instance_->GetTextInputType());
-  instance_->OnTextInputTypeChanged(ui::TEXT_INPUT_TYPE_TEXT, true);
+  instance_->OnTextInputTypeChanged(ui::TEXT_INPUT_TYPE_TEXT, true,
+                                    mojom::TEXT_INPUT_FLAG_NONE);
   EXPECT_TRUE(instance_->ShouldDoLearning());
   EXPECT_EQ(1, fake_input_method_->count_on_text_input_type_changed());
 
-  instance_->OnTextInputTypeChanged(ui::TEXT_INPUT_TYPE_TEXT, false);
+  instance_->OnTextInputTypeChanged(ui::TEXT_INPUT_TYPE_TEXT, false,
+                                    mojom::TEXT_INPUT_FLAG_NONE);
   EXPECT_FALSE(instance_->ShouldDoLearning());
   EXPECT_EQ(2, fake_input_method_->count_on_text_input_type_changed());
 
-  instance_->OnTextInputTypeChanged(ui::TEXT_INPUT_TYPE_URL, false);
+  instance_->OnTextInputTypeChanged(ui::TEXT_INPUT_TYPE_URL, false,
+                                    mojom::TEXT_INPUT_FLAG_NONE);
   EXPECT_FALSE(instance_->ShouldDoLearning());
   EXPECT_EQ(3, fake_input_method_->count_on_text_input_type_changed());
 }

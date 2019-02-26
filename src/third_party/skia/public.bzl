@@ -215,11 +215,6 @@ BASE_SRCS_ALL = struct(
         "src/**/*.h",
         "src/**/*.cpp",
         "src/**/*.inc",
-        "src/jumper/SkJumper_generated.S",
-
-        # Third Party
-        "third_party/gif/*.cpp",
-        "third_party/gif/*.h",
     ],
     exclude = [
         # Exclude platform-dependent files.
@@ -240,10 +235,11 @@ BASE_SRCS_ALL = struct(
         "src/utils/win/**/*",
 
         # Exclude multiple definitions.
-        # TODO(mtklein): Move to opts?
-        "src/pdf/SkDocument_PDF_None.cpp",  # We use src/pdf/SkPDFDocument.cpp.
-        "src/gpu/gl/GrGLMakeNativeInterface_none.cpp",
+        "src/core/SkPicture_none.cpp",
+        "src/gpu/GrPathRendering_none.cpp",
         "src/gpu/ccpr/GrCoverageCountingPathRenderer_none.cpp",
+        "src/gpu/gl/GrGLMakeNativeInterface_none.cpp",
+        "src/pdf/SkDocument_PDF_None.cpp",  # We use src/pdf/SkPDFDocument.cpp.
 
         # Exclude files that don't compile everywhere.
         "src/svg/**/*",  # Depends on xml, SkJpegCodec, and SkPngCodec.
@@ -270,16 +266,17 @@ BASE_SRCS_ALL = struct(
 )
 
 def codec_srcs(limited):
-    """Sources for the codecs. Excludes Ico, Webp, Png, and Raw if limited."""
-    exclude = []
+    """Sources for the codecs. Excludes Raw, and Ico, Webp, and Png if limited."""
+
+    # TODO: Enable wuffs in Google3
+    exclude = ["src/codec/SkWuffsCodec.cpp", "src/codec/*Raw*.cpp"]
     if limited:
         exclude += [
             "src/codec/*Ico*.cpp",
             "src/codec/*Webp*.cpp",
             "src/codec/*Png*",
-            "src/codec/*Raw*.cpp",
         ]
-    return native.glob(["src/codec/*.cpp"], exclude = exclude)
+    return native.glob(["src/codec/*.cpp", "third_party/gif/*.cpp"], exclude = exclude)
 
 # Platform-dependent SRCS for google3-default platform.
 BASE_SRCS_UNIX = struct(
@@ -303,8 +300,6 @@ BASE_SRCS_UNIX = struct(
         "src/ports/SkFontMgr_empty_factory.cpp",
         "src/ports/SkFontMgr_fontconfig.cpp",
         "src/ports/SkFontMgr_fontconfig_factory.cpp",
-        "src/ports/SkGlobalInitialization_none.cpp",
-        "src/ports/SkGlobalInitialization_none_imagefilters.cpp",
         "src/ports/SkImageGenerator_none.cpp",
         "src/ports/SkTLS_none.cpp",
     ],
@@ -332,8 +327,6 @@ BASE_SRCS_ANDROID = struct(
         "src/ports/SkFontMgr_custom_embedded_factory.cpp",
         "src/ports/SkFontMgr_custom_empty_factory.cpp",
         "src/ports/SkFontMgr_empty_factory.cpp",
-        "src/ports/SkGlobalInitialization_none.cpp",
-        "src/ports/SkGlobalInitialization_none_imagefilters.cpp",
         "src/ports/SkImageGenerator_none.cpp",
         "src/ports/SkTLS_none.cpp",
     ],
@@ -365,8 +358,6 @@ BASE_SRCS_IOS = struct(
         "src/ports/SkFontMgr_custom_embedded_factory.cpp",
         "src/ports/SkFontMgr_custom_empty_factory.cpp",
         "src/ports/SkFontMgr_empty_factory.cpp",
-        "src/ports/SkGlobalInitialization_none.cpp",
-        "src/ports/SkGlobalInitialization_none_imagefilters.cpp",
         "src/ports/SkImageGenerator_none.cpp",
         "src/ports/SkTLS_none.cpp",
     ],
@@ -554,7 +545,7 @@ DM_INCLUDES = [
 ################################################################################
 
 def DM_ARGS(asan):
-    source = ["tests", "gm", "image", "lottie"]
+    source = ["gm", "image", "lottie"]
 
     # TODO(benjaminwagner): f16, pic-8888, serialize-8888, and tiles_rt-8888 fail.
     config = ["565", "8888", "pdf"]
@@ -608,7 +599,7 @@ def base_defines(os_conditions):
         # Should remove after we update golden images
         "SK_WEBP_ENCODER_USE_DEFAULT_METHOD",
         # Experiment to diagnose image diffs in Google3
-        "SK_JUMPER_DISABLE_8BIT",
+        "SK_DISABLE_LOWP_RASTER_PIPELINE",
         # JPEG is in codec_limited
         "SK_HAS_JPEG_LIBRARY",
     ] + skia_select(
@@ -620,14 +611,12 @@ def base_defines(os_conditions):
                 "SK_BUILD_FOR_UNIX",
                 "SK_SAMPLES_FOR_X",
                 "SK_PDF_USE_SFNTLY",
-                "SK_CODEC_DECODES_RAW",
                 "SK_HAS_PNG_LIBRARY",
                 "SK_HAS_WEBP_LIBRARY",
             ],
             # ANDROID
             [
                 "SK_BUILD_FOR_ANDROID",
-                "SK_CODEC_DECODES_RAW",
                 "SK_HAS_PNG_LIBRARY",
                 "SK_HAS_WEBP_LIBRARY",
             ],
@@ -667,3 +656,21 @@ def base_linkopts(os_conditions):
             ],
         ],
     )
+
+################################################################################
+## skottie_tool
+################################################################################
+
+SKOTTIE_TOOL_INCLUDES = [
+    "modules/skottie/utils",
+    "tools/flags",
+]
+
+SKOTTIE_TOOL_SRCS = [
+    "modules/skottie/src/SkottieTool.cpp",
+    "modules/skottie/utils/SkottieUtils.cpp",
+    "modules/skottie/utils/SkottieUtils.h",
+    # TODO(benjaminwagner): Add "flags" target.
+    "tools/flags/SkCommandLineFlags.cpp",
+    "tools/flags/SkCommandLineFlags.h",
+]

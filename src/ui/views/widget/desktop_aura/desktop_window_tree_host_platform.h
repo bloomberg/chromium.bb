@@ -6,6 +6,7 @@
 #define UI_VIEWS_WIDGET_DESKTOP_AURA_DESKTOP_WINDOW_TREE_HOST_PLATFORM_H_
 
 #include "base/memory/weak_ptr.h"
+#include "build/build_config.h"
 #include "ui/aura/window_tree_host_platform.h"
 #include "ui/views/views_export.h"
 #include "ui/views/widget/desktop_aura/desktop_window_tree_host.h"
@@ -120,8 +121,10 @@ class VIEWS_EXPORT DesktopWindowTreeHostPlatform
 
   bool is_active_ = false;
 
+#if defined(OS_LINUX)
   // A handler for events intended for non client area.
   std::unique_ptr<WindowEventFilter> non_client_window_event_filter_;
+#endif
 
   base::WeakPtrFactory<DesktopWindowTreeHostPlatform> weak_factory_{this};
 

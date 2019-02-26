@@ -6,6 +6,7 @@
 
 #include <algorithm>
 #include <iterator>
+#include <memory>
 #include <string>
 #include <utility>
 
@@ -134,13 +135,16 @@ class ExamplesWindowContents : public WidgetDelegateView,
                                public ComboboxListener {
  public:
   ExamplesWindowContents(base::OnceClosure on_close, ExampleVector examples)
-      : combobox_(new Combobox(&combobox_model_)),
-        example_shown_(new View),
+      : example_shown_(new View),
         status_label_(new Label),
         on_close_(std::move(on_close)) {
+    auto combobox_model = std::make_unique<ComboboxModelExampleList>();
+    combobox_model_ = combobox_model.get();
+    combobox_ = new Combobox(std::move(combobox_model));
+
     instance_ = this;
     combobox_->set_listener(this);
-    combobox_model_.SetExamples(std::move(examples));
+    combobox_model_->SetExamples(std::move(examples));
     combobox_->ModelChanged();
 
     SetBackground(CreateStandardPanelBackground());
@@ -155,10 +159,10 @@ class ExamplesWindowContents : public WidgetDelegateView,
     layout->StartRow(0 /* no expand */, 0);
     layout->AddView(combobox_);
 
-    if (combobox_model_.GetItemCount() > 0) {
+    if (combobox_model_->GetItemCount() > 0) {
       layout->StartRow(1, 0);
       example_shown_->SetLayoutManager(std::make_unique<FillLayout>());
-      example_shown_->AddChildView(combobox_model_.GetItemViewAt(0));
+      example_shown_->AddChildView(combobox_model_->GetItemViewAt(0));
       layout->AddView(example_shown_);
     }
 
@@ -167,11 +171,7 @@ class ExamplesWindowContents : public WidgetDelegateView,
     layout->AddPaddingRow(0, 5);
   }
 
-  ~ExamplesWindowContents() override {
-    // Delete |combobox_| first as it references |combobox_model_|.
-    delete combobox_;
-    combobox_ = NULL;
-  }
+  ~ExamplesWindowContents() override = default;
 
   // Prints a message in the status area, at the bottom of the window.
   void SetStatus(const std::string& status) {
@@ -200,21 +200,22 @@ class ExamplesWindowContents : public WidgetDelegateView,
   // ComboboxListener:
   void OnPerformAction(Combobox* combobox) override {
     DCHECK_EQ(combobox, combobox_);
-    DCHECK(combobox->selected_index() < combobox_model_.GetItemCount());
+    DCHECK(combobox->selected_index() < combobox_model_->GetItemCount());
     example_shown_->RemoveAllChildViews(false);
-    example_shown_->AddChildView(combobox_model_.GetItemViewAt(
-        combobox->selected_index()));
+    example_shown_->AddChildView(
+        combobox_model_->GetItemViewAt(combobox->selected_index()));
     example_shown_->RequestFocus();
     SetStatus(std::string());
     Layout();
   }
 
   static ExamplesWindowContents* instance_;
-  ComboboxModelExampleList combobox_model_;
-  Combobox* combobox_;
   View* example_shown_;
   Label* status_label_;
   base::OnceClosure on_close_;
+  Combobox* combobox_ = nullptr;
+  // Owned by |combobox_|.
+  ComboboxModelExampleList* combobox_model_ = nullptr;
 
   DISALLOW_COPY_AND_ASSIGN(ExamplesWindowContents);
 };

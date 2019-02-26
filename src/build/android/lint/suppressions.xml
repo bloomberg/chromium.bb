@@ -119,6 +119,8 @@ Still reading?
     <ignore regexp="content/public/android/java/res/drawable-xxxhdpi"/>
     <ignore regexp="ui/android/java/res/drawable-xxhdpi"/>
     <ignore regexp="ui/android/java/res/drawable-xxxhdpi"/>
+    <!-- This is intentional to reduce APK size. See: http://crrev/c/1352161 -->
+    <ignore regexp="chrome/android/java/res_autofill_assistant/drawable-*"/>
   </issue>
   <issue id="IconDipSize">
     <ignore regexp="chromecast/internal"/>
@@ -181,10 +183,19 @@ Still reading?
   </issue>
   <!-- TODO(crbug.com/804453): Remove this after fixing. -->
   <issue id="KeyboardInaccessibleWidget" severity="ignore"/>
-  <issue id="LintError" severity="Error"/>
+  <issue id="LintError">
+    <!-- We no longer supply class files to lint. -->
+    <ignore regexp="No `.class` files were found in project"/>
+  </issue>
   <issue id="LogConditional" severity="ignore"/>
   <issue id="LongLogTag" severity="ignore"/>
   <issue id="MissingApplicationIcon" severity="ignore"/>
+  <issue id="MissingDefaultResource">
+    <!-- Only used by ToolbarControlContainer guarded by tablet form-factor. -->
+    <ignore regexp="toolbar_background.9.png"/>
+    <!-- Only used by FirstRunFlowSequencer guarded by tablet form-factor. -->
+    <ignore regexp="window_background.xml"/>
+  </issue>
   <issue id="MissingPermission" severity="ignore"/>
   <!-- TODO(yolandyan) remove this once all tests are converted to junit4 -->
   <issue id="MissingPrefix" severity="ignore"/>
@@ -254,6 +265,8 @@ Still reading?
     <ignore regexp="chrome/android/chrome_strings_grd.resources.zip/values/android_chrome_strings.xml"/>
   </issue>
   <issue id="PrivateApi" severity="ignore"/>
+  <!-- Chrome is a system app. -->
+  <issue id="ProtectedPermissions" severity="ignore"/>
   <issue id="Recycle" severity="ignore"/>
   <issue id="Registered" severity="ignore"/>
   <issue id="ResourceAsColor" severity="ignore"/>

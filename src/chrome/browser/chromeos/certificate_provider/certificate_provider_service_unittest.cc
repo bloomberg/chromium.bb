@@ -465,6 +465,8 @@ TEST_F(CertificateProviderServiceTest, SignRequest) {
 
   ASSERT_TRUE(private_key);
   EXPECT_TRUE(IsKeyEqualToCertInfo(cert_info1_, private_key.get()));
+  EXPECT_NE(std::string::npos,
+            private_key->GetProviderName().find(kExtension1));
 
   test_delegate_->ClearAndExpectRequest(TestDelegate::RequestType::SIGN);
 

@@ -14,6 +14,7 @@
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/profiles/profile_manager.h"
+#include "chrome/browser/ui/ash/chrome_keyboard_controller_client.h"
 #include "ui/aura/window.h"
 #include "ui/aura/window_tree_host.h"
 #include "ui/base/ime/candidate_window.h"
@@ -32,7 +33,6 @@
 #include "ui/events/event_utils.h"
 #include "ui/events/keycodes/dom/dom_code.h"
 #include "ui/events/keycodes/dom/keycode_converter.h"
-#include "ui/keyboard/keyboard_controller.h"
 
 using input_method::InputMethodEngineBase;
 
@@ -216,26 +216,18 @@ bool InputMethodEngine::IsActive() const {
 }
 
 void InputMethodEngine::HideInputView() {
-  // TODO(crbug.com/756059): Support virtual keyboard under MASH. There is no
-  // KeyboardController in the browser process under MASH.
-  if (!features::IsUsingWindowService()) {
-    auto* keyboard_controller = keyboard::KeyboardController::Get();
-    if (keyboard_controller->IsEnabled())
-      keyboard_controller->HideKeyboardByUser();
-  }
+  auto* keyboard_client = ChromeKeyboardControllerClient::Get();
+  if (keyboard_client->is_keyboard_enabled())
+    keyboard_client->HideKeyboard(ash::mojom::HideReason::kUser);
 }
 
 void InputMethodEngine::EnableInputView() {
   input_method::InputMethodManager::Get()
       ->GetActiveIMEState()
       ->EnableInputView();
-  // TODO(crbug.com/756059): Support virtual keyboard under MASH. There is no
-  // KeyboardController in the browser process under MASH.
-  if (!features::IsUsingWindowService()) {
-    auto* keyboard_controller = keyboard::KeyboardController::Get();
-    if (keyboard_controller->IsEnabled())
-      keyboard_controller->Reload();
-  }
+  auto* keyboard_client = ChromeKeyboardControllerClient::Get();
+  if (keyboard_client->is_keyboard_enabled())
+    keyboard_client->ReloadKeyboardIfNeeded();
 }
 
 

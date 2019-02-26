@@ -16,17 +16,19 @@ GrDrawPathOpBase::GrDrawPathOpBase(uint32_t classID, const SkMatrix& viewMatrix,
                                    GrPathRendering::FillType fill, GrAAType aaType)
         : INHERITED(classID)
         , fViewMatrix(viewMatrix)
-        , fInputColor(paint.getColor())
+        , fInputColor(paint.getColor4f())
         , fFillType(fill)
         , fAAType(aaType)
         , fProcessorSet(std::move(paint)) {}
 
+#ifdef SK_DEBUG
 SkString GrDrawPathOp::dumpInfo() const {
     SkString string;
     string.printf("PATH: 0x%p", fPath.get());
     string.append(INHERITED::dumpInfo());
     return string;
 }
+#endif
 
 GrPipeline::InitArgs GrDrawPathOpBase::pipelineInitArgs(const GrOpFlushState& state) {
     static constexpr GrUserStencilSettings kCoverPass{
@@ -72,7 +74,7 @@ std::unique_ptr<GrDrawOp> GrDrawPathOp::Make(GrContext* context,
     return pool->allocate<GrDrawPathOp>(viewMatrix, std::move(paint), aaType, path);
 }
 
-void GrDrawPathOp::onExecute(GrOpFlushState* state) {
+void GrDrawPathOp::onExecute(GrOpFlushState* state, const SkRect& chainBounds) {
     GrAppliedClip appliedClip = state->detachAppliedClip();
     GrPipeline::FixedDynamicState fixedDynamicState(appliedClip.scissorState().rect());
     GrPipeline pipeline(this->pipelineInitArgs(*state), this->detachProcessors(),

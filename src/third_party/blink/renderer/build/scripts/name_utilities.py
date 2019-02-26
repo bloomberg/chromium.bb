@@ -26,13 +26,7 @@
 # (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 # OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-import os.path
-
 from blinkbuild.name_style_converter import NameStyleConverter
-
-
-def script_name(entry):
-    return os.path.basename(entry['name'].original)
 
 
 def cpp_bool(value):
@@ -46,7 +40,7 @@ def cpp_bool(value):
 
 
 def cpp_name(entry):
-    return entry['ImplementedAs'] or script_name(entry)
+    return entry['ImplementedAs'] or entry['name'].original
 
 
 def enum_for_css_keyword(keyword):

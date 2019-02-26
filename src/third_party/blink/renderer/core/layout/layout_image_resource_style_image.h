@@ -37,10 +37,11 @@ class LayoutObject;
 
 class LayoutImageResourceStyleImage final : public LayoutImageResource {
  public:
+  explicit LayoutImageResourceStyleImage(StyleImage*);
   ~LayoutImageResourceStyleImage() override;
 
   static LayoutImageResource* Create(StyleImage* style_image) {
-    return new LayoutImageResourceStyleImage(style_image);
+    return MakeGarbageCollected<LayoutImageResourceStyleImage>(style_image);
   }
   void Initialize(LayoutObject*) override;
   void Shutdown() override;
@@ -60,7 +61,6 @@ class LayoutImageResourceStyleImage final : public LayoutImageResource {
   void Trace(blink::Visitor*) override;
 
  private:
-  explicit LayoutImageResourceStyleImage(StyleImage*);
   Member<StyleImage> style_image_;
 };
 

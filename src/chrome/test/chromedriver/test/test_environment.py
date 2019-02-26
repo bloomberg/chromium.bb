@@ -66,6 +66,17 @@ class BaseTestEnvironment(object):
     return _EXPECTATIONS['GetDisabledTestMatchers'](
         self.GetOS(), self._chrome_version)
 
+  def GetReadyToRunJavaTestMatchers(self):
+    """Get the list of disabled for Chrome java test matchers
+    but which already works.
+
+    Returns:
+      List of disabled for Chrome java test matchers
+      but which already works.
+    """
+    return _EXPECTATIONS['GetReadyToRunTestMatchers'](
+        self._chrome_version)
+
   def GetPassedJavaTests(self):
     """Get the list of passed java tests.
 

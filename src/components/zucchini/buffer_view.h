@@ -33,12 +33,6 @@ struct BufferRegion {
   size_t InclusiveClamp(size_t v) const {
     return zucchini::InclusiveClamp(v, lo(), hi());
   }
-  friend bool operator==(const BufferRegion& a, const BufferRegion& b) {
-    return a.offset == b.offset && a.size == b.size;
-  }
-  friend bool operator!=(const BufferRegion& a, const BufferRegion& b) {
-    return !(a == b);
-  }
 
   // Region data use size_t to match BufferViewBase::size_type, to make it
   // convenient to index into buffer view.

@@ -535,12 +535,6 @@ android_aar_prebuilt(
   ]
 }
 
-android_aar_prebuilt("com_google_android_play_core_java") {
-  aar_path = "libs/com_google_android_play_core/core-1.3.0.aar"
-  info_path =
-      "libs/com_google_android_play_core/com_google_android_play_core.info"
-}
-
 java_prebuilt("com_google_dagger_dagger_java") {
   jar_path = "libs/com_google_dagger_dagger/dagger-2.17.jar"
   output_name = "com_google_dagger_dagger"
@@ -563,6 +557,12 @@ java_prebuilt("com_google_dagger_dagger_compiler_java") {
     ":javax_annotation_jsr250_api_java",
     ":javax_inject_javax_inject_java",
   ]
+}
+
+java_prebuilt("com_google_protobuf_protobuf_lite_java") {
+  jar_path = "libs/com_google_protobuf_protobuf_lite/protobuf-lite-3.0.1.jar"
+  output_name = "com_google_protobuf_protobuf_lite"
+  supports_android = true
 }
 
 java_prebuilt("com_squareup_javapoet_java") {

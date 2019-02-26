@@ -31,6 +31,7 @@
 <translation id="1351937230027495976">Skjul menyen</translation>
 <translation id="1383876407941801731">Søk</translation>
 <translation id="1419738280318246476">Lås opp enheten for å utføre varselhandlingen</translation>
+<translation id="1455242230282523554">Vis språkinnstillinger</translation>
 <translation id="1467432559032391204">Venstre</translation>
 <translation id="1484102317210609525"><ph name="DEVICE_NAME" /> (HDMI/DP)</translation>
 <translation id="1520303207432623762">{NUM_APPS,plural, =1{Vis innstillinger for varsler. Varsler er slått av for en app}other{Vis innstillinger for varsler. Varsler er slått av for # apper}}</translation>
@@ -38,8 +39,8 @@
 <translation id="1537254971476575106">Lupe for hele skjermen</translation>
 <translation id="15373452373711364">Stor markør</translation>
 <translation id="1550523713251050646">Klikk for å se flere alternativer</translation>
-<translation id="1567387640189251553">Et annet tastatur er koblet til etter at du sist skrev inn passordet ditt. Det brukes kanskje til å stjele tastetrykkene dine.</translation>
 <translation id="1570871743947603115">Slå av/på Bluetooth. <ph name="STATE_TEXT" /></translation>
+<translation id="1589090746204042747">se all aktiviteten din i denne økten</translation>
 <translation id="1608626060424371292">Fjern denne brukeren</translation>
 <translation id="1621499497873603021">Gjenværende tid til batteriet er tomt – <ph name="TIME_LEFT" /></translation>
 <translation id="1654477262762802994">Start et talesøk</translation>
@@ -111,8 +112,8 @@
 <translation id="2727977024730340865">Tilkoblet laveffektslader. Batteriladingen kan være upålitelig.</translation>
 <translation id="2761704814324807722">Statusfelt, klokken <ph name="TIME" />, <ph name="BATTERY" /></translation>
 <translation id="277257480934873581">Kobler til <ph name="NAME" /> på nytt</translation>
-<translation id="2790844815106384441">Velg om nettsteder kan bruke posisjonstjenester eller enhetens mikrofon, kamera eller andre funksjoner</translation>
 <translation id="2792498699870441125">Alt + Søk</translation>
+<translation id="2803734122639935495">Skriv inn passordet ditt for å låse opp</translation>
 <translation id="2819276065543622893">Du blir nå logget av.</translation>
 <translation id="2825619548187458965">Hylle</translation>
 <translation id="2844169650293029770">USB-C-enhet (porten foran på venstre side)</translation>
@@ -126,6 +127,7 @@
 <translation id="2946119680249604491">Legg til forbindelse</translation>
 <translation id="2961963223658824723">Noe gikk galt. Prøv på nytt om noen sekunder.</translation>
 <translation id="2963773877003373896">mod3</translation>
+<translation id="2970920913501714344">installere apper, utvidelser og temaer</translation>
 <translation id="2995447421581609334">Vis Cast-enheter.</translation>
 <translation id="2996462380875591307">Dokket lupe er slått på. Trykk på Ctrl + Søk + D igjen for å slå det av.</translation>
 <translation id="3000461861112256445">Monolyd</translation>
@@ -155,6 +157,7 @@
 <translation id="3413817803639110246">Ingenting å se ennå</translation>
 <translation id="3445925074670675829">USB-C-enhet</translation>
 <translation id="3454224730401036106">Tilkoblingen din er byttet til et sikrere nettverk</translation>
+<translation id="3465223694362104965">Et annet tastatur er koblet til denne enheten siden du sist logget på. Sørg for at du stoler på dette tastaturet før du bruker det.</translation>
 <translation id="3477079411857374384">Ctrl+Shift+Mellomrom</translation>
 <translation id="3510164367642747937">Fremhev musemarkøren</translation>
 <translation id="3510503721818156981">Chromebook koblet seg til en ny telefon</translation>
@@ -173,6 +176,7 @@
 <translation id="3783640748446814672">alt</translation>
 <translation id="3784455785234192852">Lås</translation>
 <translation id="3798670284305777884">Høyttaler (intern)</translation>
+<translation id="3799080171973636491">Du trykket på hurtigtasten for lupen for hele skjermen. Vil du slå den på?</translation>
 <translation id="380165613292957338">Hei! Hva kan jeg hjelpe deg med?</translation>
 <translation id="383629559565718788">Vis tastaturinnstillinger</translation>
 <translation id="3846575436967432996">Ingen nettverksinformasjon tilgjengelig</translation>
@@ -190,7 +194,7 @@
 <translation id="4065525899979931964">{NUM_APPS,plural, =1{Slått av for en app}other{Slått av for # apper}}</translation>
 <translation id="4072264167173457037">Middels sterkt signal</translation>
 <translation id="4146833061457621061">Spill av musikk</translation>
-<translation id="4200057768455216496">Du trykket på snarveien for den dokkede lupen. Vil du slå den på?</translation>
+<translation id="4181841719683918333">Språk</translation>
 <translation id="4217571870635786043">Diktering</translation>
 <translation id="4261870227682513959">Vis innstillinger for varsler. Varsler er av</translation>
 <translation id="4269883910223712419">Administratoren av denne enheten kan</translation>
@@ -198,12 +202,14 @@
 <translation id="4279490309300973883">Speiling</translation>
 <translation id="4292681942966152062">Aktiverer <ph name="NETWORK_NAME" /></translation>
 <translation id="4321179778687042513">ctrl</translation>
+<translation id="4321776623976362024">Du trykket på hurtigtasten for høy kontrast. Vil du slå det på?</translation>
 <translation id="4331809312908958774">Chrome OS</translation>
 <translation id="4338109981321384717">Forstørrelsesglass</translation>
 <translation id="4351433414020964307">Assistenten lastes inn …</translation>
 <translation id="435527878592612277">Velg bilde</translation>
 <translation id="4378551569595875038">Kobler til …</translation>
 <translation id="4379531060876907730">Dette er pekepennverktøyene dine</translation>
+<translation id="4389184120735010762">Du trykket på hurtigtasten for den dokkede lupen. Vil du slå den på?</translation>
 <translation id="4421231901400348175">Deler kontroll av skjermen med <ph name="HELPER_NAME" /> via fjernhjelp.</translation>
 <translation id="4430019312045809116">Volum</translation>
 <translation id="4450893287417543264">Ikke vis igjen</translation>
@@ -219,6 +225,7 @@
 <translation id="4628757576491864469">Enheter</translation>
 <translation id="4659419629803378708">ChromeVox er slått på</translation>
 <translation id="4734965478015604180">Horisontal</translation>
+<translation id="476166673298332917">Enhetsadministratoren har tilgang til nettleseraktiviteten din.</translation>
 <translation id="4774338217796918551">Kom tilbake i morgen <ph name="COME_BACK_TIME" />.</translation>
 <translation id="4776917500594043016">Passord for <ph name="USER_EMAIL_ADDRESS" /></translation>
 <translation id="4778095205580009397">Google-assistenten er ikke tilgjengelig under demonstrasjonsøkter.</translation>
@@ -241,6 +248,7 @@
 <translation id="5207949376430453814">Fremhev tekstinnsettingspunktet</translation>
 <translation id="5222676887888702881">Logg av</translation>
 <translation id="523505283826916779">Tilgjengelighetsinnstillinger</translation>
+<translation id="5302048478445481009">Språk</translation>
 <translation id="5313326810920013265">Bluetooth-innstillinger</translation>
 <translation id="5331975486040154427">USB-C-enhet (porten bak på venstre side)</translation>
 <translation id="5379115545237091094">For mange forsøk</translation>
@@ -253,13 +261,14 @@
 <translation id="5537725057119320332">Cast</translation>
 <translation id="5548285847212963613">Utvidelsen «<ph name="EXTENSION_NAME" />» kan hjelpe deg med å koble deg til dette nettverket.</translation>
 <translation id="554893713779400387">Slå av/på diktering</translation>
-<translation id="5554214597676791969">Skriv inn passordet ditt for å logge på igjen</translation>
 <translation id="5571066253365925590">Bluetooth er aktivert</translation>
 <translation id="5597451508971090205"><ph name="SHORT_WEEKDAY" /> <ph name="DATE" /></translation>
 <translation id="5600837773213129531">Trykk på Ctrl + Alt + Z for å slå av taletilbakemelding.</translation>
+<translation id="5626283214046138476">Den administrerte brukerkontoen din utløper snart.</translation>
 <translation id="5648021990716966815">Mikrofonkontakt</translation>
 <translation id="5669267381087807207">Aktiverer</translation>
 <translation id="5673434351075758678">Fra «<ph name="FROM_LOCALE" />» til «<ph name="TO_LOCALE" />» etter at innstillingene dine ble synkronisert.</translation>
+<translation id="5691772641933328258">Gjenkjenner ikke fingeravtrykket</translation>
 <translation id="5710450975648804523">Ikke forstyrr er på</translation>
 <translation id="574392208103952083">Medium</translation>
 <translation id="5744083938413354016">Trykk-og-dra</translation>
@@ -300,7 +309,6 @@
 <translation id="6284232397434400372">Oppløsningen er endret</translation>
 <translation id="6297287540776456956">Bruk pekepennen til å velge et område</translation>
 <translation id="6310121235600822547"><ph name="DISPLAY_NAME" /> ble rotert til <ph name="ROTATION" /></translation>
-<translation id="632744581670418035">Tastaturoverlegg</translation>
 <translation id="6344698853700675736">Slå av/på nattlys</translation>
 <translation id="6376931439017688372">Bluetooth er på</translation>
 <translation id="639644700271529076">CAPS LOCK er av</translation>
@@ -322,6 +330,7 @@
 <translation id="6627638273713273709">Søk + Shift + K</translation>
 <translation id="6650933572246256093">Bluetooth-enheten «<ph name="DEVICE_NAME" />» ber om tillatelse til å koble til. Skriv inn denne tilgangskoden på den aktuelle enheten: <ph name="PASSKEY" /></translation>
 <translation id="6657585470893396449">Passord</translation>
+<translation id="6665545700722362599">gi nettsteder, apper og utvidelser tillatelse til å bruke posisjonstjenester, enhetens mikrofon, kamera eller andre funksjoner</translation>
 <translation id="6691659475504239918">Søk + Shift + H</translation>
 <translation id="6696025732084565524">Det avtakbare tastaturet trenger en kritisk oppdatering</translation>
 <translation id="6700713906295497288">IME-menyknappen</translation>
@@ -332,7 +341,6 @@
 <translation id="6751826523481687655">Ytelsessporing er slått på</translation>
 <translation id="6785414152754474415">Batteriet er <ph name="PERCENTAGE" /> % fullt og til lading.</translation>
 <translation id="6803622936009808957">Kunne ikke speile skjermene fordi ingen støttede oppløsninger ble funnet. Utvidet skrivebord ble brukt i stedet.</translation>
-<translation id="6814658242098378692">administrere programmer, utvidelser og temaer</translation>
 <translation id="6820676911989879663">Ta en pause!</translation>
 <translation id="683971173229319003">Søk+L</translation>
 <translation id="6857811139397017780">Aktiver <ph name="NETWORKSERVICE" /></translation>
@@ -343,7 +351,6 @@
 <translation id="698231206551913481">Alle filer og lokale data som er tilknyttet denne brukeren, slettes permanent når brukeren fjernes.</translation>
 <translation id="7015766095477679451">Kom tilbake <ph name="COME_BACK_TIME" />.</translation>
 <translation id="7029814467594812963">Avslutt økten</translation>
-<translation id="7037152028959403492">Du trykket på snarveien for høy kontrast. Vil du slå det på?</translation>
 <translation id="7066646422045619941">Administratoren din har slått av dette nettverket.</translation>
 <translation id="7067196344162293536">Automatisk retning</translation>
 <translation id="7068360136237591149">Åpne filer</translation>
@@ -373,7 +380,6 @@
 <translation id="7564874036684306347">Flytting av vinduer til et annet skrivebord kan føre til uventet atferd. Følgende varsler, vinduer og dialogbokser kan bli delt mellom skrivebordene.</translation>
 <translation id="7569509451529460200">Braille og ChromeVox er slått på</translation>
 <translation id="7593891976182323525">Søk eller Shift</translation>
-<translation id="7604942372593434070">Gå til surfeaktiviteten din</translation>
 <translation id="7645176681409127223"><ph name="USER_NAME" /> (eier)</translation>
 <translation id="7647488630410863958">Lås opp enheten for å se varslene dine</translation>
 <translation id="7649070708921625228">Hjelp</translation>
@@ -382,6 +388,7 @@
 <translation id="7705524343798198388">VPN</translation>
 <translation id="7723389094756330927">{NUM_NOTIFICATIONS,plural, =1{1 varsel}other{# varsler}}</translation>
 <translation id="776344839111254542">Klikk for å se oppdateringsdetaljene</translation>
+<translation id="7780159184141939021">Rotér skjermen</translation>
 <translation id="7796353162336583443">Trykk på pekepenn-knappen på hyllen for å gjøre et notat, ta en skjermdump eller bruke Google-assistenten, laserpekeren eller forstørrelsesglasset.</translation>
 <translation id="7798302898096527229">Trykk på Søk eller Shift for å avbryte</translation>
 <translation id="7814236020522506259"><ph name="HOUR" /> og <ph name="MINUTE" /></translation>
@@ -389,14 +396,17 @@
 <translation id="7842211907556571265">Kobler til <ph name="NETWORK_NAME" /></translation>
 <translation id="7842569679327885685">Advarsel: Funksjon på forsøksstadiet</translation>
 <translation id="7846634333498149051">Tastatur</translation>
+<translation id="7868900307798234037">Låser opp med fingeravtrykk</translation>
 <translation id="7886169021410746335">justere personverninnstillinger</translation>
 <translation id="7886277072580235377">Internett-økten din fjernes når du logger av. <ph name="LEARN_MORE" /></translation>
 <translation id="788781083998633524">Send e-post</translation>
+<translation id="7897375687985782769">Du har trykket på hurtigtasten for skjermrotasjon. Vil du rotere skjermen?</translation>
 <translation id="7904094684485781019">Administratoren for denne kontoen har forbudt multipålogging.</translation>
 <translation id="7933084174919150729">Google-assistenten er bare tilgjengelig for den primære profilen.</translation>
 <translation id="79341161159229895">Kontoen er administrert av <ph name="FIRST_PARENT_EMAIL" /> og <ph name="SECOND_PARENT_EMAIL" /></translation>
 <translation id="7977927628060636163">Søker etter mobilnettverk …</translation>
 <translation id="7982789257301363584">Nettverk</translation>
+<translation id="7984197416080286869">For mange forsøk med fingeravtrykk</translation>
 <translation id="7994370417837006925">Multipålogging</translation>
 <translation id="8000066093800657092">Ingen nettverk</translation>
 <translation id="8029241286966751120">Lupe for hele skjermen er slått på. Trykk på Ctrl + Søk + M igjen for å slå det av.</translation>
@@ -408,7 +418,6 @@
 <translation id="8132793192354020517">Tilkoblet <ph name="NAME" /></translation>
 <translation id="813913629614996137">Initialiserer …</translation>
 <translation id="8142699993796781067">Privat nettverk</translation>
-<translation id="8152119955266188852">Du trykket på snarveien for lupen for hele skjermen. Vil du slå den på?</translation>
 <translation id="8190698733819146287">Tilpass språk og inndata</translation>
 <translation id="8192202700944119416">Varsler er skjult.</translation>
 <translation id="8236042855478648955">På tide med en pause</translation>

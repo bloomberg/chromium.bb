@@ -10,7 +10,6 @@ import static org.hamcrest.Matchers.is;
 
 import android.annotation.TargetApi;
 import android.app.NotificationChannel;
-import android.app.NotificationManager;
 import android.content.Context;
 import android.os.Build;
 import android.support.test.InstrumentationRegistry;
@@ -62,8 +61,8 @@ public class SiteChannelsManagerTest {
         mChromeBrowserTestRule.loadNativeLibraryAndInitBrowserProcess();
 
         Context mContext = InstrumentationRegistry.getTargetContext();
-        NotificationManagerProxy notificationManagerProxy = new NotificationManagerProxyImpl(
-                (NotificationManager) mContext.getSystemService(Context.NOTIFICATION_SERVICE));
+        NotificationManagerProxy notificationManagerProxy =
+                new NotificationManagerProxyImpl(mContext);
         clearExistingSiteChannels(notificationManagerProxy);
         mSiteChannelsManager = new SiteChannelsManager(notificationManagerProxy);
     }

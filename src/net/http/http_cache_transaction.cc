@@ -1527,7 +1527,7 @@ int HttpCache::Transaction::DoCacheToggleUnusedSincePrefetch() {
 int HttpCache::Transaction::DoCacheToggleUnusedSincePrefetchComplete(
     int result) {
   TRACE_EVENT0(
-      kNetTracingCategory,
+      NetTracingCategory(),
       "HttpCacheTransaction::DoCacheToggleUnusedSincePrefetchComplete");
   // Restore the original value for this transaction.
   response_.unused_since_prefetch = !response_.unused_since_prefetch;
@@ -2514,8 +2514,23 @@ int HttpCache::Transaction::BeginCacheValidation() {
     skip_validation = !partial_->initial_validation();
   }
 
+  // If this is the first request (!reading_) of a 206 entry (is_sparse_) that
+  // doesn't actually cover the entire file (which with !reading would require
+  // partial->IsLastRange()), and the user is requesting the whole thing
+  // (!partial_->range_requested()), make sure to validate the first chunk,
+  // since afterwards it will be too late if it's actually out-of-date (or the
+  // server bungles invalidation). This is limited to the whole-file request
+  // as a targeted fix for https://crbug.com/888742 while avoiding extra
+  // requests in other cases, but the problem can occur more generally as well;
+  // it's just a lot less likely with applications actively using ranges.
+  // See https://crbug.com/902724 for the more general case.
+  bool first_read_of_full_from_partial =
+      is_sparse_ && !reading_ &&
+      (partial_ && !partial_->range_requested() && !partial_->IsLastRange());
+
   if (partial_ && (is_sparse_ || truncated_) &&
-      (!partial_->IsCurrentRangeCached() || invalid_range_)) {
+      (!partial_->IsCurrentRangeCached() || invalid_range_ ||
+       first_read_of_full_from_partial)) {
     // Force revalidation for sparse or truncated entries. Note that we don't
     // want to ignore the regular validation logic just because a byte range was
     // part of the request.
@@ -3170,6 +3185,11 @@ int HttpCache::Transaction::OnCacheReadError(int result, bool restart) {
                           partial_ != nullptr);
     entry_ = NULL;
     is_sparse_ = false;
+    // It's OK to use PartialData::RestoreHeaders here as |restart| is only set
+    // when the HttpResponseInfo couldn't even be read, at which point it's
+    // too early for range info in |partial_| to have changed.
+    if (partial_)
+      partial_->RestoreHeaders(&custom_request_->extra_headers);
     partial_.reset();
     TransitionToState(STATE_GET_BACKEND);
     return OK;

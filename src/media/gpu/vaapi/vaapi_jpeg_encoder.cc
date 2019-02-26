@@ -12,56 +12,12 @@
 #include "base/macros.h"
 #include "base/numerics/safe_conversions.h"
 #include "media/filters/jpeg_parser.h"
+#include "media/gpu/macros.h"
 #include "media/gpu/vaapi/vaapi_wrapper.h"
-
-#define ARRAY_MEMCPY_CHECKED(to, from)                               \
-  do {                                                               \
-    static_assert(sizeof(to) == sizeof(from),                        \
-                  #from " and " #to " arrays must be of same size"); \
-    memcpy(to, from, sizeof(to));                                    \
-  } while (0)
 
 namespace media {
 
 namespace {
-
-// JPEG header only uses 2 bytes to represent width and height.
-constexpr int kMaxDimension = 65535;
-constexpr size_t kDctSize2 = 64;
-constexpr size_t kNumDcRunSizeBits = 16;
-constexpr size_t kNumAcRunSizeBits = 16;
-constexpr size_t kNumDcCodeWordsHuffVal = 12;
-constexpr size_t kNumAcCodeWordsHuffVal = 162;
-constexpr size_t kJpegDefaultHeaderSize =
-    67 + (kDctSize2 * 2) + (kNumDcRunSizeBits * 2) +
-    (kNumDcCodeWordsHuffVal * 2) + (kNumAcRunSizeBits * 2) +
-    (kNumAcCodeWordsHuffVal * 2);
-constexpr size_t kJFIFApp0Size = 16;
-
-constexpr uint8_t kZigZag8x8[64] = {
-    0,  1,  8,  16, 9,  2,  3,  10, 17, 24, 32, 25, 18, 11, 4,  5,
-    12, 19, 26, 33, 40, 48, 41, 34, 27, 20, 13, 6,  7,  14, 21, 28,
-    35, 42, 49, 56, 57, 50, 43, 36, 29, 22, 15, 23, 30, 37, 44, 51,
-    58, 59, 52, 45, 38, 31, 39, 46, 53, 60, 61, 54, 47, 55, 62, 63};
-
-constexpr JpegQuantizationTable kDefaultQuantTable[2] = {
-    // Table K.1 Luminance quantization table values.
-    {
-        true,
-        {16, 11, 10, 16, 24,  40,  51,  61,  12, 12, 14, 19, 26,  58,  60,  55,
-         14, 13, 16, 24, 40,  57,  69,  56,  14, 17, 22, 29, 51,  87,  80,  62,
-         18, 22, 37, 56, 68,  109, 103, 77,  24, 35, 55, 64, 81,  104, 113, 92,
-         49, 64, 78, 87, 103, 121, 120, 101, 72, 92, 95, 98, 112, 100, 103, 99},
-    },
-    // Table K.2 Chrominance quantization table values.
-    {
-        true,
-        {17, 18, 24, 47, 99, 99, 99, 99, 18, 21, 26, 66, 99, 99, 99, 99,
-         24, 26, 56, 99, 99, 99, 99, 99, 47, 66, 99, 99, 99, 99, 99, 99,
-         99, 99, 99, 99, 99, 99, 99, 99, 99, 99, 99, 99, 99, 99, 99, 99,
-         99, 99, 99, 99, 99, 99, 99, 99, 99, 99, 99, 99, 99, 99, 99, 99},
-    },
-};
 
 void FillPictureParameters(const gfx::Size& input_size,
                            int quality,
@@ -130,12 +86,12 @@ void FillHuffmanTableParameters(
     huff_table_param->load_huffman_table[i] = true;
 
     // Load DC Table.
-    ARRAY_MEMCPY_CHECKED(huff_table_param->huffman_table[i].num_dc_codes,
-                         dcTable.code_length);
+    SafeArrayMemcpy(huff_table_param->huffman_table[i].num_dc_codes,
+                    dcTable.code_length);
     // |code_values| of JpegHuffmanTable needs to hold DC and AC code values
     // so it has different size than
     // |huff_table_param->huffman_table[i].dc_values|. Therefore we can't use
-    // ARRAY_MEMCPY_CHECKED() here.
+    // SafeArrayMemcpy() here.
     static_assert(arraysize(huff_table_param->huffman_table[i].dc_values) <=
                       arraysize(dcTable.code_value),
                   "DC table code value array too small.");
@@ -143,10 +99,10 @@ void FillHuffmanTableParameters(
            sizeof(huff_table_param->huffman_table[i].dc_values));
 
     // Load AC Table.
-    ARRAY_MEMCPY_CHECKED(huff_table_param->huffman_table[i].num_ac_codes,
-                         acTable.code_length);
-    ARRAY_MEMCPY_CHECKED(huff_table_param->huffman_table[i].ac_values,
-                         acTable.code_value);
+    SafeArrayMemcpy(huff_table_param->huffman_table[i].num_ac_codes,
+                    acTable.code_length);
+    SafeArrayMemcpy(huff_table_param->huffman_table[i].ac_values,
+                    acTable.code_value);
 
     memset(huff_table_param->huffman_table[i].pad, 0,
            sizeof(huff_table_param->huffman_table[i].pad));
@@ -236,7 +192,7 @@ size_t FillJpegHeader(const gfx::Size& input_size,
   for (size_t i = 0; i < 2; ++i) {
     const uint8_t kQuantSegment[] = {
         0xFF, JPEG_DQT, 0x00,
-        0x03 + kDctSize2,        // Segment length:67 (2-byte).
+        0x03 + kDctSize,         // Segment length:67 (2-byte).
         static_cast<uint8_t>(i)  // Precision (4-bit high) = 0,
                                  // Index (4-bit low) = i.
     };
@@ -244,7 +200,7 @@ size_t FillJpegHeader(const gfx::Size& input_size,
     idx += sizeof(kQuantSegment);
 
     const JpegQuantizationTable& quant_table = kDefaultQuantTable[i];
-    for (size_t j = 0; j < kDctSize2; ++j) {
+    for (size_t j = 0; j < kDctSize; ++j) {
       uint32_t scaled_quant_value =
           (quant_table.value[kZigZag8x8[j]] * quality_normalized) / 100;
       scaled_quant_value = std::min(255u, std::max(1u, scaled_quant_value));

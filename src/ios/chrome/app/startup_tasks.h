@@ -20,6 +20,8 @@ class ChromeBrowserState;
     (ios::ChromeBrowserState*)browserState;
 // Starts Omaha and, if first run, sets install time.  For official builds only.
 - (void)initializeOmaha;
+// Donate initial Intents.
+- (void)donateIntents;
 // Registers to receive UIApplicationWillResignActiveNotification.
 - (void)registerForApplicationWillResignActiveNotification;
 

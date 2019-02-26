@@ -19,6 +19,7 @@
 #include "third_party/blink/renderer/modules/encryptedmedia/media_keys_controller.h"
 #include "third_party/blink/renderer/platform/bindings/script_state.h"
 #include "third_party/blink/renderer/platform/timer.h"
+#include "third_party/blink/renderer/platform/wtf/std_lib_extras.h"
 
 namespace blink {
 
@@ -70,30 +71,32 @@ class NewCdmResultPromise : public ContentDecryptionModuleResultPromise {
 // NavigatorRequestMediaKeySystemAccess.
 static Vector<String> ConvertInitDataTypes(
     const WebVector<WebEncryptedMediaInitDataType>& init_data_types) {
-  Vector<String> result(init_data_types.size());
-  for (size_t i = 0; i < init_data_types.size(); i++)
+  Vector<String> result(SafeCast<wtf_size_t>(init_data_types.size()));
+  for (wtf_size_t i = 0; i < result.size(); i++)
     result[i] =
         EncryptedMediaUtils::ConvertFromInitDataType(init_data_types[i]);
   return result;
 }
 
-static HeapVector<MediaKeySystemMediaCapability> ConvertCapabilities(
+static HeapVector<Member<MediaKeySystemMediaCapability>> ConvertCapabilities(
     const WebVector<WebMediaKeySystemMediaCapability>& capabilities) {
-  HeapVector<MediaKeySystemMediaCapability> result(capabilities.size());
-  for (size_t i = 0; i < capabilities.size(); i++) {
-    MediaKeySystemMediaCapability capability;
-    capability.setContentType(capabilities[i].content_type);
-    capability.setRobustness(capabilities[i].robustness);
+  HeapVector<Member<MediaKeySystemMediaCapability>> result(
+      SafeCast<wtf_size_t>(capabilities.size()));
+  for (wtf_size_t i = 0; i < result.size(); i++) {
+    MediaKeySystemMediaCapability* capability =
+        MediaKeySystemMediaCapability::Create();
+    capability->setContentType(capabilities[i].content_type);
+    capability->setRobustness(capabilities[i].robustness);
 
     switch (capabilities[i].encryption_scheme) {
       case WebMediaKeySystemMediaCapability::EncryptionScheme::kNotSpecified:
-        capability.setEncryptionSchemeToNull();
+        capability->setEncryptionSchemeToNull();
         break;
       case WebMediaKeySystemMediaCapability::EncryptionScheme::kCenc:
-        capability.setEncryptionScheme("cenc");
+        capability->setEncryptionScheme("cenc");
         break;
       case WebMediaKeySystemMediaCapability::EncryptionScheme::kCbcs:
-        capability.setEncryptionScheme("cbcs");
+        capability->setEncryptionScheme("cbcs");
         break;
     }
 
@@ -102,25 +105,10 @@ static HeapVector<MediaKeySystemMediaCapability> ConvertCapabilities(
   return result;
 }
 
-static String ConvertMediaKeysRequirement(
-    WebMediaKeySystemConfiguration::Requirement requirement) {
-  switch (requirement) {
-    case WebMediaKeySystemConfiguration::Requirement::kRequired:
-      return "required";
-    case WebMediaKeySystemConfiguration::Requirement::kOptional:
-      return "optional";
-    case WebMediaKeySystemConfiguration::Requirement::kNotAllowed:
-      return "not-allowed";
-  }
-
-  NOTREACHED();
-  return "not-allowed";
-}
-
 static Vector<String> ConvertSessionTypes(
     const WebVector<WebEncryptedMediaSessionType>& session_types) {
-  Vector<String> result(session_types.size());
-  for (size_t i = 0; i < session_types.size(); i++)
+  Vector<String> result(SafeCast<wtf_size_t>(session_types.size()));
+  for (wtf_size_t i = 0; i < result.size(); i++)
     result[i] = EncryptedMediaUtils::ConvertFromSessionType(session_types[i]);
   return result;
 }
@@ -128,38 +116,39 @@ static Vector<String> ConvertSessionTypes(
 }  // namespace
 
 MediaKeySystemAccess::MediaKeySystemAccess(
-    const String& key_system,
     std::unique_ptr<WebContentDecryptionModuleAccess> access)
-    : key_system_(key_system), access_(std::move(access)) {}
+    : access_(std::move(access)) {}
 
 MediaKeySystemAccess::~MediaKeySystemAccess() = default;
 
-void MediaKeySystemAccess::getConfiguration(
-    MediaKeySystemConfiguration& result) {
+MediaKeySystemConfiguration* MediaKeySystemAccess::getConfiguration() const {
   WebMediaKeySystemConfiguration configuration = access_->GetConfiguration();
-
+  MediaKeySystemConfiguration* result = MediaKeySystemConfiguration::Create();
   // |initDataTypes|, |audioCapabilities|, and |videoCapabilities| can only be
   // empty if they were not present in the requested configuration.
   if (!configuration.init_data_types.IsEmpty())
-    result.setInitDataTypes(
+    result->setInitDataTypes(
         ConvertInitDataTypes(configuration.init_data_types));
   if (!configuration.audio_capabilities.IsEmpty())
-    result.setAudioCapabilities(
+    result->setAudioCapabilities(
         ConvertCapabilities(configuration.audio_capabilities));
   if (!configuration.video_capabilities.IsEmpty())
-    result.setVideoCapabilities(
+    result->setVideoCapabilities(
         ConvertCapabilities(configuration.video_capabilities));
 
   // |distinctiveIdentifier|, |persistentState|, and |sessionTypes| are always
   // set by requestMediaKeySystemAccess().
-  result.setDistinctiveIdentifier(
-      ConvertMediaKeysRequirement(configuration.distinctive_identifier));
-  result.setPersistentState(
-      ConvertMediaKeysRequirement(configuration.persistent_state));
-  result.setSessionTypes(ConvertSessionTypes(configuration.session_types));
+  result->setDistinctiveIdentifier(
+      EncryptedMediaUtils::ConvertMediaKeysRequirementToString(
+          configuration.distinctive_identifier));
+  result->setPersistentState(
+      EncryptedMediaUtils::ConvertMediaKeysRequirementToString(
+          configuration.persistent_state));
+  result->setSessionTypes(ConvertSessionTypes(configuration.session_types));
 
   // |label| will (and should) be a null string if it was not set.
-  result.setLabel(configuration.label);
+  result->setLabel(configuration.label);
+  return result;
 }
 
 ScriptPromise MediaKeySystemAccess::createMediaKeys(ScriptState* script_state) {

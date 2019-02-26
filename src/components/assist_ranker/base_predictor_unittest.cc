@@ -54,37 +54,41 @@ const base::Feature kTestRankerQuery{"TestRankerQuery",
 const base::FeatureParam<std::string> kTestRankerUrl{
     &kTestRankerQuery, kTestUrlParamName, kTestDefaultModelUrl};
 
-const PredictorConfig kTestPredictorConfig = PredictorConfig{
-    kTestModelName,     kTestLoggingName,  kTestUmaPrefixName, LOG_UKM,
-    &kFeatureWhitelist, &kTestRankerQuery, &kTestRankerUrl};
+const PredictorConfig kTestPredictorConfig =
+    PredictorConfig{kTestModelName,     kTestLoggingName,
+                    kTestUmaPrefixName, LOG_UKM,
+                    &kFeatureWhitelist, &kTestRankerQuery,
+                    &kTestRankerUrl,    kNoPredictThresholdReplacement};
 
 // Class that implements virtual functions of the base class.
 class FakePredictor : public BasePredictor {
  public:
-  static std::unique_ptr<FakePredictor> Create();
+  // Creates a |FakePredictor| using the default config (from this file).
+  static std::unique_ptr<FakePredictor> Create() {
+    return Create(kTestPredictorConfig);
+  }
+  // Creates a |FakePredictor| using the |PredictorConfig| passed in
+  // |predictor_config|.
+  static std::unique_ptr<FakePredictor> Create(
+      PredictorConfig predictor_config);
   ~FakePredictor() override{};
   // Validation will always succeed.
-  static RankerModelStatus ValidateModel(const RankerModel& model);
+  static RankerModelStatus ValidateModel(const RankerModel& model) {
+    return RankerModelStatus::OK;
+  }
 
  protected:
   // Not implementing any inference logic.
   bool Initialize() override { return true; };
 
  private:
-  FakePredictor(const PredictorConfig& config);
+  FakePredictor(const PredictorConfig& config) : BasePredictor(config) {}
   DISALLOW_COPY_AND_ASSIGN(FakePredictor);
 };
 
-FakePredictor::FakePredictor(const PredictorConfig& config)
-    : BasePredictor(config) {}
-
-RankerModelStatus FakePredictor::ValidateModel(const RankerModel& model) {
-  return RankerModelStatus::OK;
-}
-
-std::unique_ptr<FakePredictor> FakePredictor::Create() {
-  std::unique_ptr<FakePredictor> predictor(
-      new FakePredictor(kTestPredictorConfig));
+std::unique_ptr<FakePredictor> FakePredictor::Create(
+    PredictorConfig predictor_config) {
+  std::unique_ptr<FakePredictor> predictor(new FakePredictor(predictor_config));
   auto ranker_model = std::make_unique<RankerModel>();
   auto fake_model_loader = std::make_unique<FakeRankerModelLoader>(
       base::BindRepeating(&FakePredictor::ValidateModel),
@@ -182,6 +186,16 @@ TEST_F(BasePredictorTest, LogExampleToUkm) {
 
   EXPECT_FALSE(
       GetTestUkmRecorder()->EntryHasMetric(entries[0], kFeatureNotWhitelisted));
+}
+
+TEST_F(BasePredictorTest, GetPredictThresholdReplacement) {
+  float altered_threshold = 0.78f;  // Arbitrary value.
+  const PredictorConfig altered_threshold_config{
+      kTestModelName,  kTestLoggingName,   kTestUmaPrefixName,
+      LOG_UKM,         &kFeatureWhitelist, &kTestRankerQuery,
+      &kTestRankerUrl, altered_threshold};
+  auto predictor = FakePredictor::Create(altered_threshold_config);
+  EXPECT_EQ(altered_threshold, predictor->GetPredictThresholdReplacement());
 }
 
 }  // namespace assist_ranker

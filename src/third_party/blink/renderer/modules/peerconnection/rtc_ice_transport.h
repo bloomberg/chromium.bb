@@ -50,6 +50,13 @@ class MODULES_EXPORT RTCIceTransport final
   USING_GARBAGE_COLLECTED_MIXIN(RTCIceTransport);
 
  public:
+  enum class CloseReason {
+    // stop() was called.
+    kStopped,
+    // The ExecutionContext is being destroyed.
+    kContextDestroyed,
+  };
+
   static RTCIceTransport* Create(ExecutionContext* context);
   static RTCIceTransport* Create(
       ExecutionContext* context,
@@ -57,6 +64,11 @@ class MODULES_EXPORT RTCIceTransport final
       scoped_refptr<base::SingleThreadTaskRunner> host_thread,
       std::unique_ptr<IceTransportAdapterCrossThreadFactory> adapter_factory);
 
+  explicit RTCIceTransport(
+      ExecutionContext* context,
+      scoped_refptr<base::SingleThreadTaskRunner> proxy_thread,
+      scoped_refptr<base::SingleThreadTaskRunner> host_thread,
+      std::unique_ptr<IceTransportAdapterCrossThreadFactory> adapter_factory);
   ~RTCIceTransport() override;
 
   // Returns true if start() has been called.
@@ -85,22 +97,21 @@ class MODULES_EXPORT RTCIceTransport final
   String gatheringState() const;
   const HeapVector<Member<RTCIceCandidate>>& getLocalCandidates() const;
   const HeapVector<Member<RTCIceCandidate>>& getRemoteCandidates() const;
-  void getSelectedCandidatePair(
-      base::Optional<RTCIceCandidatePair>& result) const;
-  void getLocalParameters(base::Optional<RTCIceParameters>& result) const;
-  void getRemoteParameters(base::Optional<RTCIceParameters>& result) const;
-  void gather(const RTCIceGatherOptions& options,
-              ExceptionState& exception_state);
-  void start(const RTCIceParameters& remote_parameters,
+  RTCIceCandidatePair* getSelectedCandidatePair() const;
+  RTCIceParameters* getLocalParameters() const;
+  RTCIceParameters* getRemoteParameters() const;
+  void gather(RTCIceGatherOptions* options, ExceptionState& exception_state);
+  void start(RTCIceParameters* remote_parameters,
              const String& role,
              ExceptionState& exception_state);
   void stop();
   void addRemoteCandidate(RTCIceCandidate* remote_candidate,
                           ExceptionState& exception_state);
-  DEFINE_ATTRIBUTE_EVENT_LISTENER(statechange);
-  DEFINE_ATTRIBUTE_EVENT_LISTENER(gatheringstatechange);
-  DEFINE_ATTRIBUTE_EVENT_LISTENER(selectedcandidatepairchange);
-  DEFINE_ATTRIBUTE_EVENT_LISTENER(icecandidate);
+  DEFINE_ATTRIBUTE_EVENT_LISTENER(statechange, kStatechange);
+  DEFINE_ATTRIBUTE_EVENT_LISTENER(gatheringstatechange, kGatheringstatechange);
+  DEFINE_ATTRIBUTE_EVENT_LISTENER(selectedcandidatepairchange,
+                                  kSelectedcandidatepairchange);
+  DEFINE_ATTRIBUTE_EVENT_LISTENER(icecandidate, kIcecandidate);
 
   // EventTarget overrides.
   const AtomicString& InterfaceName() const override;
@@ -116,12 +127,6 @@ class MODULES_EXPORT RTCIceTransport final
   void Trace(blink::Visitor* visitor) override;
 
  private:
-  explicit RTCIceTransport(
-      ExecutionContext* context,
-      scoped_refptr<base::SingleThreadTaskRunner> proxy_thread,
-      scoped_refptr<base::SingleThreadTaskRunner> host_thread,
-      std::unique_ptr<IceTransportAdapterCrossThreadFactory> adapter_factory);
-
   // IceTransportProxy::Delegate overrides.
   void OnGatheringStateChanged(cricket::IceGatheringState new_state) override;
   void OnCandidateGathered(const cricket::Candidate& candidate) override;
@@ -134,6 +139,11 @@ class MODULES_EXPORT RTCIceTransport final
   // password.
   void GenerateLocalParameters();
 
+  // Permenantly closes the RTCIceTransport with the given reason.
+  // The RTCIceTransport must not already be closed.
+  // This will transition the state to closed.
+  void Close(CloseReason reason);
+
   bool RaiseExceptionIfClosed(ExceptionState& exception_state) const;
 
   cricket::IceRole role_ = cricket::ICEROLE_UNKNOWN;
@@ -143,10 +153,9 @@ class MODULES_EXPORT RTCIceTransport final
   HeapVector<Member<RTCIceCandidate>> local_candidates_;
   HeapVector<Member<RTCIceCandidate>> remote_candidates_;
 
-  RTCIceParameters local_parameters_;
-  base::Optional<RTCIceParameters> remote_parameters_;
-
-  base::Optional<RTCIceCandidatePair> selected_candidate_pair_;
+  Member<RTCIceParameters> local_parameters_;
+  Member<RTCIceParameters> remote_parameters_;
+  Member<RTCIceCandidatePair> selected_candidate_pair_;
 
   Member<RTCQuicTransport> consumer_;
 

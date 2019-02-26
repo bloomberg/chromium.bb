@@ -8,7 +8,7 @@
 #include "base/metrics/histogram_macros.h"
 #include "base/numerics/safe_conversions.h"
 #include "services/resource_coordinator/public/cpp/resource_coordinator_features.h"
-#include "third_party/blink/public/platform/scheduler/renderer_process_type.h"
+#include "third_party/blink/public/platform/scheduler/web_renderer_process_type.h"
 #include "third_party/blink/renderer/platform/instrumentation/resource_coordinator/renderer_resource_coordinator.h"
 #include "third_party/blink/renderer/platform/scheduler/main_thread/frame_scheduler_impl.h"
 #include "third_party/blink/renderer/platform/scheduler/main_thread/main_thread_scheduler_impl.h"
@@ -478,7 +478,7 @@ void MainThreadMetricsHelper::RecordMainThreadTaskLoad(base::TimeTicks time,
   UMA_HISTOGRAM_PERCENTAGE(MAIN_THREAD_LOAD_METRIC_NAME, load_percentage);
 
   if (main_thread_scheduler_->main_thread_only().process_type ==
-      RendererProcessType::kExtensionRenderer) {
+      WebRendererProcessType::kExtensionRenderer) {
     UMA_HISTOGRAM_PERCENTAGE(EXTENSIONS_MAIN_THREAD_LOAD_METRIC_NAME,
                              load_percentage);
   }
@@ -494,12 +494,12 @@ void MainThreadMetricsHelper::RecordForegroundMainThreadTaskLoad(
   DCHECK_LE(load_percentage, 100);
 
   switch (main_thread_scheduler_->main_thread_only().process_type) {
-    case RendererProcessType::kExtensionRenderer:
+    case WebRendererProcessType::kExtensionRenderer:
       UMA_HISTOGRAM_PERCENTAGE(EXTENSIONS_MAIN_THREAD_LOAD_METRIC_NAME
                                ".Foreground",
                                load_percentage);
       break;
-    case RendererProcessType::kRenderer:
+    case WebRendererProcessType::kRenderer:
       UMA_HISTOGRAM_PERCENTAGE(MAIN_THREAD_LOAD_METRIC_NAME ".Foreground",
                                load_percentage);
 
@@ -526,12 +526,12 @@ void MainThreadMetricsHelper::RecordBackgroundMainThreadTaskLoad(
   DCHECK_LE(load_percentage, 100);
 
   switch (main_thread_scheduler_->main_thread_only().process_type) {
-    case RendererProcessType::kExtensionRenderer:
+    case WebRendererProcessType::kExtensionRenderer:
       UMA_HISTOGRAM_PERCENTAGE(EXTENSIONS_MAIN_THREAD_LOAD_METRIC_NAME
                                ".Background",
                                load_percentage);
       break;
-    case RendererProcessType::kRenderer:
+    case WebRendererProcessType::kRenderer:
       UMA_HISTOGRAM_PERCENTAGE(MAIN_THREAD_LOAD_METRIC_NAME ".Background",
                                load_percentage);
 

@@ -887,7 +887,7 @@ error::Error DoScheduleDCLayerCHROMIUM(
     GLuint edge_aa_mask,
     GLenum filter,
     const GLfloat* bounds_rect,
-    bool is_protected_video);
+    GLuint protected_video_type);
 error::Error DoCommitOverlayPlanesCHROMIUM(uint64_t swap_id, GLbitfield flags);
 error::Error DoSetColorSpaceMetadataCHROMIUM(GLuint texture_id,
                                              gfx::ColorSpace color_space);
@@ -1066,4 +1066,16 @@ error::Error DoSetReadbackBufferShadowAllocationINTERNAL(GLuint buffer_id,
                                                          GLuint shm_offset,
                                                          GLuint size);
 error::Error DoMaxShaderCompilerThreadsKHR(GLuint count);
+error::Error DoInitializeDiscardableTextureCHROMIUM(
+    GLuint texture_id,
+    ServiceDiscardableHandle&& discardable_handle);
+error::Error DoUnlockDiscardableTextureCHROMIUM(GLuint texture_id);
+error::Error DoLockDiscardableTextureCHROMIUM(GLuint texture_id);
+error::Error DoCreateAndTexStorage2DSharedImageINTERNAL(
+    GLuint client_id,
+    GLenum internal_format,
+    const volatile GLbyte* mailbox);
+error::Error DoBeginSharedImageAccessDirectCHROMIUM(GLuint client_id,
+                                                    GLenum mode);
+error::Error DoEndSharedImageAccessDirectCHROMIUM(GLuint client_id);
 #endif  // GPU_COMMAND_BUFFER_SERVICE_GLES2_CMD_DECODER_PASSTHROUGH_DOER_PROTOTYPES_H_

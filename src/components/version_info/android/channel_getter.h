@@ -8,9 +8,11 @@
 #include "components/version_info/channel.h"
 
 namespace version_info {
+namespace android {
 
 Channel GetChannel();
 
-}
+}  // namespace android
+}  // namespace version_info
 
 #endif  // COMPONENTS_VERSION_INFO_ANDROID_CHANNEL_GETTER_H_

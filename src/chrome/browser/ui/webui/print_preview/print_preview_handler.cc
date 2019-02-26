@@ -63,8 +63,8 @@
 #include "components/printing/common/cloud_print_cdd_conversion.h"
 #include "components/printing/common/print_messages.h"
 #include "components/printing/common/printer_capabilities.h"
+#include "components/signin/core/browser/account_consistency_method.h"
 #include "components/signin/core/browser/gaia_cookie_manager_service.h"
-#include "components/signin/core/browser/profile_management_switches.h"
 #include "components/signin/core/browser/profile_oauth2_token_service.h"
 #include "components/signin/core/browser/signin_manager.h"
 #include "content/public/browser/browser_context.h"
@@ -628,6 +628,7 @@ void PrintPreviewHandler::RegisterMessages() {
 }
 
 void PrintPreviewHandler::OnJavascriptAllowed() {
+  print_preview_ui()->SetPreviewUIId();
   // Now that the UI is initialized, any future account changes will require
   // a printer list refresh.
   RegisterForGaiaCookieChanges();
@@ -637,6 +638,7 @@ void PrintPreviewHandler::OnJavascriptDisallowed() {
   // Normally the handler and print preview will be destroyed together, but
   // this is necessary for refresh or navigation from the chrome://print page.
   weak_factory_.InvalidateWeakPtrs();
+  print_preview_ui()->ClearPreviewUIId();
   preview_callbacks_.clear();
   preview_failures_.clear();
   UnregisterForGaiaCookieChanges();
@@ -773,7 +775,7 @@ void PrintPreviewHandler::HandleGetPreview(const base::ListValue* args) {
   // Add an additional key in order to identify |print_preview_ui| later on
   // when calling PrintPreviewUI::ShouldCancelRequest() on the IO thread.
   settings->SetInteger(printing::kPreviewUIID,
-                       print_preview_ui()->GetIDForPrintPreviewUI());
+                       print_preview_ui()->GetIDForPrintPreviewUI().value());
 
   // Increment request count.
   ++regenerate_preview_request_count_;
@@ -975,6 +977,7 @@ void PrintPreviewHandler::HandleGetAccessToken(const base::ListValue* args) {
   token_service_->RequestToken(type, callback_id);
 }
 
+// TODO(rbpotter): Remove this when the old Print Preview page is deleted.
 void PrintPreviewHandler::HandleManagePrinters(const base::ListValue* args) {
   GURL local_printers_manage_url(
       chrome::GetSettingsUrl(chrome::kPrintingSettingsSubPage));
@@ -995,9 +998,8 @@ void PrintPreviewHandler::HandleShowSystemDialog(
     return;
 
   auto* print_view_manager = PrintViewManager::FromWebContents(initiator);
-  print_view_manager->PrintForSystemDialogNow(
-      base::Bind(&PrintPreviewHandler::ClosePreviewDialog,
-                 weak_factory_.GetWeakPtr()));
+  print_view_manager->PrintForSystemDialogNow(base::BindOnce(
+      &PrintPreviewHandler::ClosePreviewDialog, weak_factory_.GetWeakPtr()));
 
   // Cancel the pending preview request if exists.
   print_preview_ui()->OnCancelPendingPreviewRequest();
@@ -1050,6 +1052,7 @@ void PrintPreviewHandler::HandleGetInitialSettings(
                                      weak_factory_.GetWeakPtr(), callback_id));
 }
 
+// TODO(rbpotter): Remove this when the old Print Preview page is deleted.
 void PrintPreviewHandler::HandleForceOpenNewTab(const base::ListValue* args) {
   std::string url;
   if (!args->GetString(0, &url))

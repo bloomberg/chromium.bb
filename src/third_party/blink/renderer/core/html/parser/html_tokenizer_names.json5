@@ -1,23 +1,19 @@
 {
   metadata: {
-    namespace: "HTMLTokenizer",
+    namespace: "html_tokenizer_names",
   },
 
   data: [
     {
       name: "--",
-      Symbol: "dashDash",
+      Symbol: "kDashDash",
     },
     "doctype",
     {
       name: "[CDATA[",
-      Symbol: "cdata",
+      Symbol: "kCdata",
     },
-    // The symbol "public" conflicts with the C++ keyword.
-    {
-      name: "public",
-      Symbol: "publicString",
-    },
+    "public",
     "system",
   ],
 }

@@ -28,6 +28,11 @@ SurfaceElement::SurfaceElement(const viz::SurfaceId& surface_id,
 
 SurfaceElement::~SurfaceElement() = default;
 
+std::vector<std::pair<std::string, std::string>>
+SurfaceElement::GetCustomProperties() const {
+  return {};
+}
+
 void SurfaceElement::GetBounds(gfx::Rect* bounds) const {
   // We cannot really know real bounds on the surface unless we do
   // aggregation. Here we just return size of the surface.

@@ -18,7 +18,7 @@
 #include "base/single_thread_task_runner.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/stringprintf.h"
-#include "base/sys_info.h"
+#include "base/system/sys_info.h"
 #include "base/trace_event/memory_dump_manager.h"
 #include "build/build_config.h"
 #include "components/services/leveldb/public/cpp/util.h"
@@ -29,7 +29,7 @@
 #include "content/browser/dom_storage/local_storage_database.pb.h"
 #include "content/browser/dom_storage/storage_area_impl.h"
 #include "content/common/dom_storage/dom_storage_types.h"
-#include "content/public/browser/local_storage_usage_info.h"
+#include "content/public/browser/storage_usage_info.h"
 #include "services/file/public/mojom/constants.mojom.h"
 #include "services/service_manager/public/cpp/connector.h"
 #include "sql/database.h"
@@ -433,6 +433,25 @@ void LocalStorageContextMojo::DeleteStorage(const url::Origin& origin,
   }
 }
 
+void LocalStorageContextMojo::PerformCleanup(base::OnceClosure callback) {
+  if (connection_state_ != CONNECTION_FINISHED) {
+    RunWhenConnected(base::BindOnce(&LocalStorageContextMojo::PerformCleanup,
+                                    weak_ptr_factory_.GetWeakPtr(),
+                                    std::move(callback)));
+    return;
+  }
+  if (database_) {
+    // Try to commit all changes before rewriting the database. If
+    // an area is not ready to commit its changes, nothing breaks but the
+    // rewrite doesn't remove all traces of old data.
+    Flush();
+    database_->RewriteDB(
+        base::BindOnce(&DatabaseErrorResponse, std::move(callback)));
+  } else {
+    std::move(callback).Run();
+  }
+}
+
 void LocalStorageContextMojo::Flush() {
   if (connection_state_ != CONNECTION_FINISHED) {
     RunWhenConnected(base::BindOnce(&LocalStorageContextMojo::Flush,
@@ -682,6 +701,19 @@ void LocalStorageContextMojo::InitiateConnection(bool in_memory_only) {
   }
 }
 
+void LocalStorageContextMojo::OnMojoConnectionDestroyed() {
+  UMA_HISTOGRAM_BOOLEAN("LocalStorageContext.OnConnectionDestroyed", true);
+  LOG(ERROR) << "Lost connection to database";
+  // We're about to set database_ to null, so delete the StorageAreaImpls
+  // that might still be using the old database.
+  for (const auto& it : areas_)
+    it.second->storage_area()->CancelAllPendingRequests();
+  areas_.clear();
+  database_ = nullptr;
+  // TODO(dullweber): Should we try to recover? E.g. try to reopen and if this
+  // fails, call DeleteAndRecreateDatabase().
+}
+
 void LocalStorageContextMojo::OnDirectoryOpened(base::File::Error err) {
   if (err != base::File::Error::FILE_OK) {
     // We failed to open the directory; continue with startup so that we create
@@ -740,6 +772,9 @@ void LocalStorageContextMojo::OnDatabaseOpened(
 
   // Verify DB schema version.
   if (database_) {
+    database_.set_connection_error_handler(
+        base::BindOnce(&LocalStorageContextMojo::OnMojoConnectionDestroyed,
+                       weak_ptr_factory_.GetWeakPtr()));
     database_->Get(
         leveldb::StdStringToUint8Vector(kVersionKey),
         base::BindOnce(&LocalStorageContextMojo::OnGotDatabaseVersion,
@@ -904,14 +939,10 @@ void LocalStorageContextMojo::RetrieveStorageUsage(
   if (!database_) {
     // If for whatever reason no leveldb database is available, no storage is
     // used, so return an array only containing the current areas.
-    std::vector<LocalStorageUsageInfo> result;
+    std::vector<StorageUsageInfo> result;
     base::Time now = base::Time::Now();
-    for (const auto& it : areas_) {
-      LocalStorageUsageInfo info;
-      info.origin = it.first.GetURL();
-      info.last_modified = now;
-      result.push_back(std::move(info));
-    }
+    for (const auto& it : areas_)
+      result.emplace_back(it.first.GetURL(), 0, now);
     std::move(callback).Run(std::move(result));
     return;
   }
@@ -926,15 +957,15 @@ void LocalStorageContextMojo::OnGotMetaData(
     GetStorageUsageCallback callback,
     leveldb::mojom::DatabaseError status,
     std::vector<leveldb::mojom::KeyValuePtr> data) {
-  std::vector<LocalStorageUsageInfo> result;
+  std::vector<StorageUsageInfo> result;
   std::set<url::Origin> origins;
   for (const auto& row : data) {
     DCHECK_GT(row->key.size(), arraysize(kMetaPrefix));
-    LocalStorageUsageInfo info;
-    info.origin = GURL(leveldb::Uint8VectorToStdString(row->key).substr(
+    GURL origin(leveldb::Uint8VectorToStdString(row->key).substr(
         arraysize(kMetaPrefix)));
-    origins.insert(url::Origin::Create(info.origin));
-    if (!info.origin.is_valid()) {
+
+    origins.insert(url::Origin::Create(origin));
+    if (!origin.is_valid()) {
       // TODO(mek): Deal with database corruption.
       continue;
     }
@@ -944,10 +975,9 @@ void LocalStorageContextMojo::OnGotMetaData(
       // TODO(mek): Deal with database corruption.
       continue;
     }
-    info.data_size = row_data.size_bytes();
-    info.last_modified =
-        base::Time::FromInternalValue(row_data.last_modified());
-    result.push_back(std::move(info));
+    result.emplace_back(
+        origin, row_data.size_bytes(),
+        base::Time::FromInternalValue(row_data.last_modified()));
   }
   // Add any origins for which StorageAreas exist, but which haven't
   // committed any data to disk yet.
@@ -960,16 +990,13 @@ void LocalStorageContextMojo::OnGotMetaData(
         it.second->storage_area()->empty()) {
       continue;
     }
-    LocalStorageUsageInfo info;
-    info.origin = it.first.GetURL();
-    info.last_modified = now;
-    result.push_back(std::move(info));
+    result.emplace_back(it.first.GetURL(), 0, now);
   }
   std::move(callback).Run(std::move(result));
 }
 
 void LocalStorageContextMojo::OnGotStorageUsageForShutdown(
-    std::vector<LocalStorageUsageInfo> usage) {
+    std::vector<StorageUsageInfo> usage) {
   std::vector<leveldb::mojom::BatchedOperationPtr> operations;
   for (const auto& info : usage) {
     if (special_storage_policy_->IsStorageProtected(info.origin))

@@ -57,8 +57,7 @@ class TestShellContentRendererClient : public ShellContentRendererClient {
   void PrepareErrorPage(content::RenderFrame* render_frame,
                         const blink::WebURLRequest& failed_request,
                         const blink::WebURLError& error,
-                        std::string* error_html,
-                        base::string16* error_description) override {
+                        std::string* error_html) override {
     if (error_html)
       *error_html = "A suffusion of yellow.";
     latest_error_valid_ = true;

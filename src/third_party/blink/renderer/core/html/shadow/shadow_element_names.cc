@@ -32,7 +32,7 @@
 
 namespace blink {
 
-namespace ShadowElementNames {
+namespace shadow_element_names {
 
 const AtomicString& DetailsContent() {
   DEFINE_STATIC_LOCAL(AtomicString, name, ("details-content"));
@@ -109,6 +109,6 @@ const AtomicString& OptGroupLabel() {
   return name;
 }
 
-}  // namespace ShadowElementNames
+}  // namespace shadow_element_names
 
 }  // namespace blink

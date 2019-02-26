@@ -16,6 +16,8 @@ class AXObject;
 class AXSelection;
 class LocalFrameClient;
 
+namespace test {
+
 // Makes writing and debugging selection tests easier.
 class AccessibilitySelectionTest : public AccessibilityTest {
   USING_FAST_MALLOC(AccessibilitySelectionTest);
@@ -24,25 +26,41 @@ class AccessibilitySelectionTest : public AccessibilityTest {
   AccessibilitySelectionTest(LocalFrameClient* local_frame_client = nullptr);
 
  protected:
-  // Gets the inner HTML of the accessibility tree and annotates it with markers
-  // indicating the anchor and focus of |selection|.
+  // Gets a text representation of the accessibility tree that is currently
+  // selected and annotates it with markers indicating the anchor and focus of
+  // |selection|.
+  std::string GetCurrentSelectionText() const;
+
+  // Gets a text representation of the accessibility tree encompassing
+  // |selection| and annotates it with markers indicating the anchor and focus
+  // of |selection|.
   std::string GetSelectionText(const AXSelection& selection) const;
 
-  // Gets the inner HTML of the accessibility subtree rooted at |subtree| and
-  // annotates it with markers indicating the anchor and focus of |selection|.
+  // Gets a text representation of the accessibility subtree rooted at |subtree|
+  // and encompassing |selection|, and annotates it with markers indicating the
+  // anchor and focus of |selection|.
   std::string GetSelectionText(const AXSelection& selection,
                                const AXObject& subtree) const;
 
   // Sets |selection_text| as inner HTML of the document body and returns the
-  // root of the accessibility tree at body.
-  const AXSelection SetSelectionText(const std::string& selection_text) const;
+  // resulting |AXSelection|. If there are multiple selection markers, returns
+  // only the first selection.
+  AXSelection SetSelectionText(const std::string& selection_text) const;
 
-  // Sets |selection_text| as inner HTML of |element| and returns the root of
-  // the accessibility subtree at |element|.
-  const AXSelection SetSelectionText(const std::string& selection_text,
-                                     HTMLElement& element) const;
+  // Sets |selection_text| as inner HTML of |element| and returns the resulting
+  // |AXSelection|. If there are multiple selection markers, returns only the
+  // first selection.
+  AXSelection SetSelectionText(const std::string& selection_text,
+                               HTMLElement& element) const;
+
+  // Compares two HTML files containing a DOM selection and the equivalent
+  // accessibility selection.
+  void RunSelectionTest(const std::string& test_name) const;
+
+ private:
 };
 
+}  // namespace test
 }  // namespace blink
 
 #endif  // THIRD_PARTY_BLINK_RENDERER_MODULES_ACCESSIBILITY_TESTING_ACCESSIBILITY_SELECTION_TEST_H_

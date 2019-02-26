@@ -199,7 +199,7 @@ void WideFrameView::OnOverviewModeEnded() {
 HeaderView* WideFrameView::GetTargetHeaderView() {
   auto* frame_view = static_cast<NonClientFrameViewAsh*>(
       target_->non_client_view()->frame_view());
-  return static_cast<HeaderView*>(frame_view->GetHeaderView());
+  return frame_view->GetHeaderView();
 }
 
 }  // namespace ash

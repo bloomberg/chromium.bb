@@ -25,6 +25,7 @@ enum class ObservedUiEvents {
   kPreviewFormData,
   kFormDataFilled,
   kSuggestionShown,
+  kNoEvent,
 };
 
 class AutofillManagerTestDelegateImpl
@@ -71,6 +72,7 @@ class AutofillUiTest : public InProcessBrowserTest {
                             ui::DomCode code,
                             ui::KeyboardCode key_code,
                             std::list<ObservedUiEvents> expected_events);
+  void DoNothingAndWait(unsigned seconds);
   void SendKeyToPopup(content::RenderFrameHost* render_frame_host,
                       const ui::DomKey key);
   // Send key to the render host view's widget if |widget| is null.

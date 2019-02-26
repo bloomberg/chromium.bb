@@ -33,7 +33,7 @@ void DisplayCutoutClientImpl::BindMojoRequest(
     mojom::blink::DisplayCutoutClientAssociatedRequest request) {
   if (!frame)
     return;
-  new DisplayCutoutClientImpl(frame, std::move(request));
+  MakeGarbageCollected<DisplayCutoutClientImpl>(frame, std::move(request));
 }
 
 void DisplayCutoutClientImpl::SetSafeArea(

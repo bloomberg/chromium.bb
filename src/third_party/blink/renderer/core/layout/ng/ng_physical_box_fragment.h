@@ -13,27 +13,28 @@
 
 namespace blink {
 
+class NGBoxFragmentBuilder;
 enum class NGOutlineType;
+
 class CORE_EXPORT NGPhysicalBoxFragment final
     : public NGPhysicalContainerFragment {
  public:
-  // This modifies the passed-in children vector.
-  NGPhysicalBoxFragment(LayoutObject* layout_object,
-                        const ComputedStyle& style,
-                        NGStyleVariant style_variant,
-                        NGPhysicalSize size,
-                        Vector<NGLink>& children,
-                        const NGPhysicalBoxStrut& border,
-                        const NGPhysicalBoxStrut& padding,
-                        Vector<NGBaseline>& baselines,
-                        NGBoxType box_type,
-                        bool is_fieldset_container,
-                        bool is_rendered_legend,
-                        bool is_old_layout_root,
-                        unsigned,  // NGBorderEdges::Physical
-                        scoped_refptr<NGBreakToken> break_token = nullptr);
+  static scoped_refptr<const NGPhysicalBoxFragment> Create(
+      NGBoxFragmentBuilder* builder,
+      WritingMode block_or_line_writing_mode);
 
-  const NGBaseline* Baseline(const NGBaselineRequest&) const;
+  ~NGPhysicalBoxFragment() {
+    for (const NGLinkStorage& child : Children())
+      child.fragment->Release();
+  }
+
+  ChildLinkList Children() const final {
+    return ChildLinkList(num_children_, &children_[0]);
+  }
+
+  base::Optional<LayoutUnit> Baseline(const NGBaselineRequest& request) const {
+    return baselines_.Offset(request);
+  }
 
   const NGPhysicalBoxStrut Borders() const { return borders_; }
 
@@ -81,15 +82,18 @@ class CORE_EXPORT NGPhysicalBoxFragment final
                            const LayoutPoint& additional_offset,
                            NGOutlineType include_block_overflows) const;
 
-  UBiDiLevel BidiLevel() const override;
+  UBiDiLevel BidiLevel() const;
 
   scoped_refptr<const NGPhysicalFragment> CloneWithoutOffset() const;
 
  private:
-  Vector<NGBaseline> baselines_;
+  NGPhysicalBoxFragment(NGBoxFragmentBuilder* builder,
+                        WritingMode block_or_line_writing_mode);
+
+  NGBaselineList baselines_;
   NGPhysicalBoxStrut borders_;
   NGPhysicalBoxStrut padding_;
-  NGPhysicalOffsetRect descendant_outlines_;
+  NGLinkStorage children_[];
 };
 
 DEFINE_TYPE_CASTS(

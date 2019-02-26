@@ -6,7 +6,7 @@
 
 #include "third_party/blink/renderer/core/inspector/thread_debugger.h"
 #include "third_party/blink/renderer/platform/cross_thread_functional.h"
-#include "third_party/blink/renderer/platform/web_task_runner.h"
+#include "third_party/blink/renderer/platform/scheduler/public/post_cross_thread_task.h"
 
 namespace blink {
 
@@ -122,7 +122,6 @@ void InspectorTaskRunner::PerformSingleTaskDontWait() {
 
 void InspectorTaskRunner::V8InterruptCallback(v8::Isolate*, void* data) {
   InspectorTaskRunner* runner = static_cast<InspectorTaskRunner*>(data);
-  DCHECK(runner->isolate_task_runner_->BelongsToCurrentThread());
   if (runner->ignore_interrupts_)
     return;
   while (true) {

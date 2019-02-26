@@ -26,7 +26,9 @@ class CORE_EXPORT DOMRectReadOnly : public ScriptWrappable {
                                  double height);
   static DOMRectReadOnly* FromIntRect(const IntRect&);
   static DOMRectReadOnly* FromFloatRect(const FloatRect&);
-  static DOMRectReadOnly* fromRect(const DOMRectInit&);
+  static DOMRectReadOnly* fromRect(const DOMRectInit*);
+
+  DOMRectReadOnly(double x, double y, double width, double height);
 
   double x() const { return x_; }
   double y() const { return y_; }
@@ -41,8 +43,6 @@ class CORE_EXPORT DOMRectReadOnly : public ScriptWrappable {
   ScriptValue toJSONForBinding(ScriptState*) const;
 
  protected:
-  DOMRectReadOnly(double x, double y, double width, double height);
-
   double x_;
   double y_;
   double width_;

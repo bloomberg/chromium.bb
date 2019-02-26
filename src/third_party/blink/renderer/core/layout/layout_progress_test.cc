@@ -22,7 +22,7 @@ class LayoutProgressTest : public RenderingTest {
 TEST_F(LayoutProgressTest, AnimationScheduling) {
   RenderingTest::SetBodyInnerHTML(
       "<progress id=\"progressElement\" value=0.3 max=1.0></progress>");
-  GetDocument().View()->UpdateAllLifecyclePhases();
+  UpdateAllLifecyclePhasesForTest();
   Element* progress_element =
       GetDocument().getElementById(AtomicString("progressElement"));
   LayoutProgress* layout_progress =
@@ -33,14 +33,14 @@ TEST_F(LayoutProgressTest, AnimationScheduling) {
   EXPECT_FALSE(LayoutProgressTest::IsAnimatiing(layout_progress));
 
   progress_element->removeAttribute("value");
-  GetDocument().View()->UpdateAllLifecyclePhases();
+  UpdateAllLifecyclePhasesForTest();
 
   // Verify that we schedule a timer for an indeterminant progress element
   EXPECT_TRUE(LayoutProgressTest::IsAnimationTimerActive(layout_progress));
   EXPECT_TRUE(LayoutProgressTest::IsAnimatiing(layout_progress));
 
-  progress_element->setAttribute(HTMLNames::valueAttr, "0.7");
-  GetDocument().View()->UpdateAllLifecyclePhases();
+  progress_element->setAttribute(html_names::kValueAttr, "0.7");
+  UpdateAllLifecyclePhasesForTest();
 
   // Verify that we cancel the timer for a determinant progress element
   EXPECT_FALSE(LayoutProgressTest::IsAnimationTimerActive(layout_progress));

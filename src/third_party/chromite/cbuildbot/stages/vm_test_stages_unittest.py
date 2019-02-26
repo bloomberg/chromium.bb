@@ -54,6 +54,7 @@ class GCETestStageTest(generic_stages_unittest.AbstractStageTestCase,
     # Simulate breakpad symbols being ready.
     board_runattrs = self._run.GetBoardRunAttrs(self._current_board)
     board_runattrs.SetParallel('breakpad_symbols_generated', True)
+    board_runattrs.SetParallel('autotest_tarball_generated', True)
 
   def ConstructStage(self):
     # pylint: disable=protected-access
@@ -113,6 +114,7 @@ class VMTestStageTest(generic_stages_unittest.AbstractStageTestCase,
     # Simulate breakpad symbols being ready.
     board_runattrs = self._run.GetBoardRunAttrs(self._current_board)
     board_runattrs.SetParallel('breakpad_symbols_generated', True)
+    board_runattrs.SetParallel('autotest_tarball_generated', True)
 
   def ConstructStage(self):
     # pylint: disable=protected-access
@@ -154,6 +156,9 @@ class VMTestStageTest(generic_stages_unittest.AbstractStageTestCase,
     """Tests trybot with no vm test."""
     extra_cmd_args = ['--novmtests']
     self._Prepare(extra_cmd_args=extra_cmd_args)
+    # _Prepare resets the board_runattrs.
+    board_runattrs = self._run.GetBoardRunAttrs(self._current_board)
+    board_runattrs.SetParallel('autotest_tarball_generated', True)
     self.RunStage()
 
   def testReportTestResults(self):

@@ -18,7 +18,7 @@ MediaControlDisplayCutoutFullscreenButtonElement::
         MediaControlsImpl& media_controls)
     : MediaControlInputElement(media_controls,
                                kMediaDisplayCutoutFullscreenButton) {
-  setType(InputTypeNames::button);
+  setType(input_type_names::kButton);
   SetShadowPseudoId(AtomicString(
       "-internal-media-controls-display-cutout-fullscreen-button"));
   SetIsWanted(false);
@@ -31,7 +31,7 @@ bool MediaControlDisplayCutoutFullscreenButtonElement::
 
 void MediaControlDisplayCutoutFullscreenButtonElement::DefaultEventHandler(
     Event& event) {
-  if (event.type() == EventTypeNames::click) {
+  if (event.type() == event_type_names::kClick) {
     // The button shouldn't be visible if not in fullscreen.
     DCHECK(MediaElement().IsFullscreen());
 

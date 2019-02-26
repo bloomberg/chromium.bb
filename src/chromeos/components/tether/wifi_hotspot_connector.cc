@@ -65,13 +65,13 @@ void WifiHotspotConnector::ConnectToWifiHotspot(
         network_state_handler_->DisassociateTetherNetworkStateFromWifiNetwork(
             tether_network_guid_);
     if (successful_disassociation) {
-      PA_LOG(INFO) << "Wi-Fi network (ID \"" << wifi_network_guid_ << "\") "
-                   << "successfully disassociated from Tether network (ID "
-                   << "\"" << tether_network_guid_ << "\").";
+      PA_LOG(VERBOSE) << "Wi-Fi network (ID \"" << wifi_network_guid_ << "\") "
+                      << "successfully disassociated from Tether network (ID "
+                      << "\"" << tether_network_guid_ << "\").";
     } else {
-      PA_LOG(INFO) << "Wi-Fi network (ID \"" << wifi_network_guid_ << "\") "
-                   << "failed to disassociate from Tether network ID (\""
-                   << tether_network_guid_ << "\").";
+      PA_LOG(ERROR) << "Wi-Fi network (ID \"" << wifi_network_guid_ << "\") "
+                    << "failed to disassociate from Tether network ID (\""
+                    << tether_network_guid_ << "\").";
     }
 
     CompleteActiveConnectionAttempt(false /* success */);
@@ -195,15 +195,15 @@ void WifiHotspotConnector::InitiateConnectionToCurrentNetwork() {
       network_state_handler_->AssociateTetherNetworkStateWithWifiNetwork(
           tether_network_guid_, wifi_network_guid_);
   if (successful_association) {
-    PA_LOG(INFO) << "Wi-Fi network (ID \"" << wifi_network_guid_ << "\") "
-                 << "successfully associated with Tether network (ID \""
-                 << tether_network_guid_ << "\"). Starting connection "
-                 << "attempt.";
+    PA_LOG(VERBOSE) << "Wi-Fi network (ID \"" << wifi_network_guid_ << "\") "
+                    << "successfully associated with Tether network (ID \""
+                    << tether_network_guid_ << "\"). Starting connection "
+                    << "attempt.";
   } else {
-    PA_LOG(INFO) << "Wi-Fi network (ID \"" << wifi_network_guid_ << "\") "
-                 << "failed to associate with Tether network (ID \""
-                 << tether_network_guid_ << "\"). Starting connection "
-                 << "attempt.";
+    PA_LOG(ERROR) << "Wi-Fi network (ID \"" << wifi_network_guid_ << "\") "
+                  << "failed to associate with Tether network (ID \""
+                  << tether_network_guid_ << "\"). Starting connection "
+                  << "attempt.";
   }
 
   // Initiate a connection to the network.
@@ -264,10 +264,10 @@ void WifiHotspotConnector::CreateWifiConfiguration() {
 base::DictionaryValue WifiHotspotConnector::CreateWifiPropertyDictionary(
     const std::string& ssid,
     const std::string& password) {
-  PA_LOG(INFO) << "Creating network configuration. "
-               << "SSID: " << ssid << ", "
-               << "Password: " << password << ", "
-               << "Wi-Fi network GUID: " << wifi_network_guid_;
+  PA_LOG(VERBOSE) << "Creating network configuration. "
+                  << "SSID: " << ssid << ", "
+                  << "Password: " << password << ", "
+                  << "Wi-Fi network GUID: " << wifi_network_guid_;
 
   base::DictionaryValue properties;
 

@@ -40,12 +40,17 @@ class ForwardingModelTypeChangeProcessor : public ModelTypeChangeProcessor {
     other_->UpdateStorageKey(entity_data, storage_key, metadata_change_list);
   }
 
-  void UntrackEntity(const EntityData& entity_data) override {
-    other_->UntrackEntity(entity_data);
-  }
-
   void UntrackEntityForStorageKey(const std::string& storage_key) override {
     other_->UntrackEntityForStorageKey(storage_key);
+  }
+
+  void UntrackEntityForClientTagHash(
+      const std::string& client_tag_hash) override {
+    other_->UntrackEntityForClientTagHash(client_tag_hash);
+  }
+
+  bool IsEntityUnsynced(const std::string& storage_key) override {
+    return other_->IsEntityUnsynced(storage_key);
   }
 
   void OnModelStarting(ModelTypeSyncBridge* bridge) override {
@@ -62,6 +67,10 @@ class ForwardingModelTypeChangeProcessor : public ModelTypeChangeProcessor {
 
   void ReportError(const ModelError& error) override {
     other_->ReportError(error);
+  }
+
+  base::Optional<ModelError> GetError() const override {
+    return other_->GetError();
   }
 
   base::WeakPtr<ModelTypeControllerDelegate> GetControllerDelegate() override {
@@ -100,12 +109,15 @@ void MockModelTypeChangeProcessor::DelegateCallsByDefaultTo(
   ON_CALL(*this, UpdateStorageKey(_, _, _))
       .WillByDefault(
           Invoke(delegate, &ModelTypeChangeProcessor::UpdateStorageKey));
-  ON_CALL(*this, UntrackEntity(_))
-      .WillByDefault(
-          Invoke(delegate, &ModelTypeChangeProcessor::UntrackEntity));
   ON_CALL(*this, UntrackEntityForStorageKey(_))
       .WillByDefault(Invoke(
           delegate, &ModelTypeChangeProcessor::UntrackEntityForStorageKey));
+  ON_CALL(*this, UntrackEntityForClientTagHash(_))
+      .WillByDefault(Invoke(
+          delegate, &ModelTypeChangeProcessor::UntrackEntityForClientTagHash));
+  ON_CALL(*this, IsEntityUnsynced(_))
+      .WillByDefault(
+          Invoke(delegate, &ModelTypeChangeProcessor::IsEntityUnsynced));
   ON_CALL(*this, OnModelStarting(_))
       .WillByDefault(
           Invoke(delegate, &ModelTypeChangeProcessor::OnModelStarting));
@@ -121,6 +133,8 @@ void MockModelTypeChangeProcessor::DelegateCallsByDefaultTo(
           Invoke(delegate, &ModelTypeChangeProcessor::TrackedAccountId));
   ON_CALL(*this, ReportError(_))
       .WillByDefault(Invoke(delegate, &ModelTypeChangeProcessor::ReportError));
+  ON_CALL(*this, GetError())
+      .WillByDefault(Invoke(delegate, &ModelTypeChangeProcessor::GetError));
   ON_CALL(*this, GetControllerDelegate())
       .WillByDefault(
           Invoke(delegate, &ModelTypeChangeProcessor::GetControllerDelegate));

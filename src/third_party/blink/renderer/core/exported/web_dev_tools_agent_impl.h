@@ -70,8 +70,13 @@ class CORE_EXPORT WebDevToolsAgentImpl final
   static WebDevToolsAgentImpl* CreateForFrame(WebLocalFrameImpl*);
   static WebDevToolsAgentImpl* CreateForWorker(WebLocalFrameImpl*,
                                                WorkerClient*);
+
+  WebDevToolsAgentImpl(WebLocalFrameImpl*,
+                       bool include_view_agents,
+                       WorkerClient*);
   ~WebDevToolsAgentImpl() override;
   virtual void Trace(blink::Visitor*);
+  DevToolsAgent* GetDevToolsAgent() const { return agent_.Get(); }
 
   void WillBeDestroyed();
   void FlushProtocolNotifications();
@@ -90,16 +95,12 @@ class CORE_EXPORT WebDevToolsAgentImpl final
  private:
   friend class ClientMessageLoopAdapter;
 
-  WebDevToolsAgentImpl(WebLocalFrameImpl*,
-                       bool include_view_agents,
-                       WorkerClient*);
-
   // DevToolsAgent::Client implementation.
-  InspectorSession* AttachSession(
-      InspectorSession::Client*,
-      mojom::blink::DevToolsSessionStatePtr reattach_session_state) override;
-  void DetachSession(InspectorSession*) override;
+  void AttachSession(DevToolsSession*, bool restore) override;
+  void DetachSession(DevToolsSession*) override;
   void InspectElement(const WebPoint& point_in_local_root) override;
+  void DebuggerTaskStarted() override;
+  void DebuggerTaskFinished() override;
 
   // InspectorPageAgent::Client implementation.
   void PageLayoutInvalidated(bool resized) override;
@@ -108,16 +109,14 @@ class CORE_EXPORT WebDevToolsAgentImpl final
   bool IsInspectorLayer(GraphicsLayer*) override;
 
   // Thread::TaskObserver implementation.
-  void WillProcessTask() override;
-  void DidProcessTask() override;
+  void WillProcessTask(const base::PendingTask&) override;
+  void DidProcessTask(const base::PendingTask&) override;
 
   Member<DevToolsAgent> agent_;
-  HeapHashSet<Member<InspectorSession>> sessions_;
-  HeapHashMap<Member<InspectorSession>, Member<InspectorNetworkAgent>>
+  HeapHashMap<Member<DevToolsSession>, Member<InspectorNetworkAgent>>
       network_agents_;
-  HeapHashMap<Member<InspectorSession>, Member<InspectorPageAgent>>
-      page_agents_;
-  HeapHashMap<Member<InspectorSession>, Member<InspectorOverlayAgent>>
+  HeapHashMap<Member<DevToolsSession>, Member<InspectorPageAgent>> page_agents_;
+  HeapHashMap<Member<DevToolsSession>, Member<InspectorOverlayAgent>>
       overlay_agents_;
   WorkerClient* worker_client_;
   Member<WebLocalFrameImpl> web_local_frame_impl_;

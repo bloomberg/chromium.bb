@@ -46,12 +46,14 @@ class CORE_EXPORT HTMLSlotElement final : public HTMLElement {
   static HTMLSlotElement* CreateUserAgentDefaultSlot(Document&);
   static HTMLSlotElement* CreateUserAgentCustomAssignSlot(Document&);
 
+  HTMLSlotElement(Document&);
+
   const HeapVector<Member<Node>>& AssignedNodes() const;
   const HeapVector<Member<Node>> AssignedNodesForBinding(
-      const AssignedNodesOptions&);
+      const AssignedNodesOptions*);
   const HeapVector<Member<Element>> AssignedElements();
   const HeapVector<Member<Element>> AssignedElementsForBinding(
-      const AssignedNodesOptions&);
+      const AssignedNodesOptions*);
 
   Node* FirstAssignedNode() const {
     auto& nodes = AssignedNodes();
@@ -62,14 +64,15 @@ class CORE_EXPORT HTMLSlotElement final : public HTMLElement {
     return nodes.IsEmpty() ? nullptr : nodes.back().Get();
   }
 
-  Node* AssignedNodeNextTo(const Node&) const;
-  Node* AssignedNodePreviousTo(const Node&) const;
-
   void AppendAssignedNode(Node&);
-  void ClearAssignedNodes();
 
   const HeapVector<Member<Node>> FlattenedAssignedNodes();
-  void RecalcFlatTreeChildren();
+
+  void WillRecalcAssignedNodes() { ClearAssignedNodes(); }
+  void DidRecalcAssignedNodes() {
+    UpdateFlatTreeNodeDataForAssignedNodes();
+    RecalcFlatTreeChildren();
+  }
 
   void AttachLayoutTree(AttachContext&) final;
   void DetachLayoutTree(const AttachContext& = AttachContext()) final;
@@ -112,8 +115,6 @@ class CORE_EXPORT HTMLSlotElement final : public HTMLElement {
   void Trace(blink::Visitor*) override;
 
  private:
-  HTMLSlotElement(Document&);
-
   InsertionNotificationRequest InsertedInto(ContainerNode&) final;
   void RemovedFrom(ContainerNode&) final;
   void DidRecalcStyle(StyleRecalcChange) final;
@@ -134,6 +135,9 @@ class CORE_EXPORT HTMLSlotElement final : public HTMLElement {
 
   const HeapVector<Member<Node>>& GetDistributedNodes();
 
+  void RecalcFlatTreeChildren();
+  void UpdateFlatTreeNodeDataForAssignedNodes();
+  void ClearAssignedNodes();
   void ClearAssignedNodesAndFlatTreeChildren();
 
   HeapVector<Member<Node>> assigned_nodes_;

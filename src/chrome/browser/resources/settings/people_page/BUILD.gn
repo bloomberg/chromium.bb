@@ -10,8 +10,6 @@ js_type_check("closure_compile") {
     ":account_manager_browser_proxy",
     ":change_picture",
     ":change_picture_browser_proxy",
-    ":easy_unlock_browser_proxy",
-    ":easy_unlock_turn_off_dialog",
     ":fingerprint_browser_proxy",
     ":fingerprint_list",
     ":import_data_browser_proxy",
@@ -72,22 +70,6 @@ js_library("change_picture_browser_proxy") {
   ]
 }
 
-js_library("easy_unlock_browser_proxy") {
-  deps = [
-    "//ui/webui/resources/js:cr",
-  ]
-}
-
-js_library("easy_unlock_turn_off_dialog") {
-  deps = [
-    ":easy_unlock_browser_proxy",
-    "//ui/webui/resources/cr_elements/cr_dialog:cr_dialog",
-    "//ui/webui/resources/js:cr",
-    "//ui/webui/resources/js:i18n_behavior",
-    "//ui/webui/resources/js:web_ui_listener_behavior",
-  ]
-}
-
 js_library("fingerprint_browser_proxy") {
   deps = [
     "//ui/webui/resources/js:cr",
@@ -117,8 +99,6 @@ js_library("import_data_browser_proxy") {
 
 js_library("lock_screen") {
   deps = [
-    ":easy_unlock_browser_proxy",
-    ":easy_unlock_turn_off_dialog",
     ":fingerprint_browser_proxy",
     ":lock_screen_password_prompt_dialog",
     ":lock_state_behavior",
@@ -177,6 +157,7 @@ js_library("people_page") {
     ":profile_info_browser_proxy",
     ":signout_dialog",
     ":sync_browser_proxy",
+    "..:open_window_proxy",
     "..:page_visibility",
     "..:route",
     "../settings_page:settings_animated_pages",

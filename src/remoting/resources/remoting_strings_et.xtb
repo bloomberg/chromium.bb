@@ -2,6 +2,7 @@
 <!DOCTYPE translationbundle>
 <translationbundle lang="et">
 <translation id="1002108253973310084">Leiti protokolli ühildumatu versioon. Veenduge, et mõlemas arvutis oleks installitud tarkvara uusim versioon, ja proovige uuesti.</translation>
+<translation id="1008557486741366299">Mitte praegu</translation>
 <translation id="1050693411695664090">Halb</translation>
 <translation id="1152528166145813711">Valige ...</translation>
 <translation id="1199593201721843963">Keela kaugühendused</translation>
@@ -62,6 +63,7 @@ Lisateavet privaatsuse kohta vaadake Google'i privaatsuseeskirjadest (http://goo
 <translation id="2314101195544969792">Teie rakenduse <ph name="APPLICATION_NAME" /> seanss on olnud mõnda aega passiivne ja ühendus katkestatakse peagi.</translation>
 <translation id="2317666076142640974">Vaadake uue <ph name="LINK_BEGIN" />veebirakenduse Chrome Remote Desktop<ph name="LINK_END" /> eelvaadet. Soovime kuulda teie tagasisidet.</translation>
 <translation id="2320166752086256636">Peida klaviatuur</translation>
+<translation id="2332192922827071008">Ava eelistused</translation>
 <translation id="2353140552984634198">Rakendus Chromoting võimaldab teil turvaliselt arvuti juurde pääseda.</translation>
 <translation id="2359808026110333948">Jätka</translation>
 <translation id="2366718077645204424">Hostiga ei saa ühendust. Seda põhjustab ilmselt kasutatava võrgu konfiguratsioon.</translation>
@@ -82,6 +84,7 @@ Lisateavet privaatsuse kohta vaadake Google'i privaatsuseeskirjadest (http://goo
 <translation id="2841013758207633010">Aeg</translation>
 <translation id="2851754573186462851">Chromiumi rakenduste voogesitus</translation>
 <translation id="2888969873284818612">Ilmnes võrguviga. Rakendus taaskäivitatakse, kui seadmes on taas võrguühendus.</translation>
+<translation id="2891243864890517178">Maci jaoks (OS X Yosemite 10.10 ja uuemad versioonid)</translation>
 <translation id="289405675947420287">Hankige oma iOS-i seadmest turvaliselt juurdepääs oma arvutile. See on kiire, lihtne ja tasuta.
 
 • Laadige rakendus Chrome Remote Desktop Chrome'i veebipoest alla arvutis, millele soovite kaugjuurdepääsu.
@@ -188,6 +191,9 @@ Lauaarvuti</translation>
 <translation id="4973800994433240357">Chromootimise hosti installiprogrammi allalaadimisel nõustute Google’i <ph name="LINK_BEGIN" />teenusetingimustega<ph name="LINK_END" />.</translation>
 <translation id="4974476491460646149">Ühendus hostiga <ph name="HOSTNAME" /> on suletud</translation>
 <translation id="4985296110227979402">Esmalt tuleb arvutis seadistada kaugjuurdepääs</translation>
+<translation id="5059773780693835145">Enne kui saate seadet teenusega <ph name="PRODUCT_NAME" /> kaugjuhtida, on vaja teha veel üks seadistustoiming.
+
+Funktsiooni lubamiseks valige nupp „<ph name="BUTTON_NAME" />”, et kuvada turva- ja privaatsuseelistuste paan, seejärel märkige ruut „<ph name="SERVICE_SCRIPT_NAME" />”.</translation>
 <translation id="5064360042339518108"><ph name="HOSTNAME" /> (võrguühenduseta)</translation>
 <translation id="5070121137485264635">Kaughost vajab autentimist kolmanda osapoole veebisaidil. Jätkamiseks peate andma Chrome Remote Desktopile täiendavad load juurdepääsuks sellele aadressile:</translation>
 <translation id="507204348399810022">Kas soovite kindlasti keelata kaugühendused hostiga <ph name="HOSTNAME" />?</translation>
@@ -249,7 +255,6 @@ Lauaarvuti</translation>
 <translation id="6542902059648396432">Probleemist teavitamine ...</translation>
 <translation id="6550675742724504774">Valikud</translation>
 <translation id="6570205395680337606">Rakenduse lähtestamine. Kaotate kogu salvestamata töö.</translation>
-<translation id="6572345186230665992">Macile (OS X Mavericks 10.9 ja uuemad versioonid)</translation>
 <translation id="6583902294974160967">Tugi</translation>
 <translation id="6612717000975622067">Saada klahvikombinatsioon Ctrl + Alt + Del</translation>
 <translation id="6654753848497929428">Jaga</translation>
@@ -313,6 +318,7 @@ Lauaarvuti</translation>
 <translation id="809687642899217504">Minu arvutid</translation>
 <translation id="811307782653349804">Kasutage oma arvutit ükskõik kus.</translation>
 <translation id="8116630183974937060">Ilmnes võrguviga. Kontrollige, kas seade on võrgus, ja proovige uuesti.</translation>
+<translation id="8123581458650016326">Kaugkasutajatel seadme juhtimise lubamine</translation>
 <translation id="8178433417677596899">Ekraani jagamine kasutajalt kasutajale, sobib täiuslikult kaugühenduse abil tehnilise toe pakkumiseks.</translation>
 <translation id="8187079423890319756">Autoriõigus 2013 The Chromium Authors. Kõik õigused kaitstud.</translation>
 <translation id="8196755618196986400">Selleks et saaksime teiega lisateabe saamiseks ühendust võtta, tuleb teie e-posti aadress alati lisada saadetud tagasisidele.</translation>

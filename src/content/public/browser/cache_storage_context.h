@@ -9,20 +9,23 @@
 
 #include "base/callback.h"
 #include "base/memory/ref_counted.h"
-#include "content/public/browser/cache_storage_usage_info.h"
+
+class GURL;
 
 namespace content {
+
+struct StorageUsageInfo;
 
 // Represents the per-BrowserContext Cache Storage data.
 class CacheStorageContext
     : public base::RefCountedThreadSafe<CacheStorageContext> {
  public:
-  using GetUsageInfoCallback = base::Callback<void(
-      const std::vector<CacheStorageUsageInfo>& usage_info)>;
+  using GetUsageInfoCallback =
+      base::OnceCallback<void(const std::vector<StorageUsageInfo>& usage_info)>;
 
   // Methods used in response to browsing data and quota manager requests.
   // Must be called on the IO thread.
-  virtual void GetAllOriginsInfo(const GetUsageInfoCallback& callback) = 0;
+  virtual void GetAllOriginsInfo(GetUsageInfoCallback callback) = 0;
   virtual void DeleteForOrigin(const GURL& origin_url) = 0;
 
  protected:

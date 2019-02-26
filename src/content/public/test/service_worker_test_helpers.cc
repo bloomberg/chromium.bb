@@ -96,21 +96,21 @@ void FoundReadyRegistration(
 
 }  // namespace
 
-void StopServiceWorkerForPattern(ServiceWorkerContext* context,
-                                 const GURL& pattern,
-                                 base::OnceClosure completion_callback_ui) {
+void StopServiceWorkerForScope(ServiceWorkerContext* context,
+                               const GURL& scope,
+                               base::OnceClosure completion_callback_ui) {
   if (!BrowserThread::CurrentlyOn(BrowserThread::IO)) {
     base::PostTaskWithTraits(
         FROM_HERE, {BrowserThread::IO},
-        base::BindOnce(&StopServiceWorkerForPattern, context, pattern,
+        base::BindOnce(&StopServiceWorkerForScope, context, scope,
                        std::move(completion_callback_ui)));
     return;
   }
   auto* context_wrapper = static_cast<ServiceWorkerContextWrapper*>(context);
-  context_wrapper->FindReadyRegistrationForPattern(
-      pattern, base::BindOnce(&FoundReadyRegistration,
-                              base::RetainedRef(context_wrapper),
-                              std::move(completion_callback_ui)));
+  context_wrapper->FindReadyRegistrationForScope(
+      scope, base::BindOnce(&FoundReadyRegistration,
+                            base::RetainedRef(context_wrapper),
+                            std::move(completion_callback_ui)));
 }
 
 }  // namespace content

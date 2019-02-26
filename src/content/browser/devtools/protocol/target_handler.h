@@ -18,10 +18,11 @@
 namespace content {
 
 class DevToolsAgentHostImpl;
+class DevToolsRendererChannel;
+class DevToolsSession;
 class NavigationHandle;
 class NavigationThrottle;
 class RenderFrameHostImpl;
-class TargetRegistry;
 
 namespace protocol {
 
@@ -41,7 +42,8 @@ class TargetHandler : public DevToolsDomainHandler,
   };
   TargetHandler(AccessMode access_mode,
                 const std::string& owner_target_id,
-                TargetRegistry* target_registry);
+                DevToolsRendererChannel* renderer_channel,
+                DevToolsSession* root_session);
   ~TargetHandler() override;
 
   static std::vector<TargetHandler*> ForAgentHost(DevToolsAgentHostImpl* host);
@@ -52,7 +54,6 @@ class TargetHandler : public DevToolsDomainHandler,
   Response Disable() override;
 
   void DidCommitNavigation();
-  void RenderFrameHostChanged();
   std::unique_ptr<NavigationThrottle> CreateThrottleForNavigation(
       NavigationHandle* navigation_handle);
 
@@ -104,8 +105,7 @@ class TargetHandler : public DevToolsDomainHandler,
   void AutoDetach(DevToolsAgentHost* host);
   Response FindSession(Maybe<std::string> session_id,
                        Maybe<std::string> target_id,
-                       Session** session,
-                       bool fall_through);
+                       Session** session);
   void ClearThrottles();
 
   // DevToolsAgentHostObserver implementation.
@@ -127,7 +127,7 @@ class TargetHandler : public DevToolsDomainHandler,
   std::set<DevToolsAgentHost*> reported_hosts_;
   AccessMode access_mode_;
   std::string owner_target_id_;
-  TargetRegistry* target_registry_;
+  DevToolsSession* root_session_;
   base::flat_set<Throttle*> throttles_;
   base::WeakPtrFactory<TargetHandler> weak_factory_;
 

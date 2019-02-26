@@ -24,9 +24,9 @@
 #import "ios/chrome/browser/ui/toolbar/primary_toolbar_view_controller.h"
 #import "ios/chrome/browser/ui/toolbar/primary_toolbar_view_controller_delegate.h"
 #import "ios/chrome/browser/ui/toolbar/toolbar_coordinator_delegate.h"
-#import "ios/chrome/browser/ui/ui_util.h"
-#import "ios/chrome/browser/ui/uikit_ui_util.h"
 #import "ios/chrome/browser/ui/url_loader.h"
+#import "ios/chrome/browser/ui/util/ui_util.h"
+#import "ios/chrome/browser/ui/util/uikit_ui_util.h"
 #import "ios/chrome/browser/web_state_list/web_state_list.h"
 #include "ios/web/public/referrer.h"
 
@@ -174,7 +174,7 @@
 - (void)onFakeboxBlur {
   // Hide the toolbar if the NTP is currently displayed.
   web::WebState* webState = self.webStateList->GetActiveWebState();
-  if (webState && IsVisibleUrlNewTabPage(webState)) {
+  if (webState && IsVisibleURLNewTabPage(webState)) {
     self.viewController.view.hidden = IsSplitToolbarMode();
   }
 }
@@ -201,7 +201,7 @@
 - (void)updateToolbarForSideSwipeSnapshot:(web::WebState*)webState {
   [super updateToolbarForSideSwipeSnapshot:webState];
 
-  BOOL isNTP = IsVisibleUrlNewTabPage(webState);
+  BOOL isNTP = IsVisibleURLNewTabPage(webState);
 
   // Don't do anything for a live non-ntp tab.
   if (webState == self.webStateList->GetActiveWebState() && !isNTP) {

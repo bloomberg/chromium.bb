@@ -40,6 +40,7 @@ import org.chromium.chrome.browser.IntentHandler;
 import org.chromium.chrome.browser.LaunchIntentDispatcher;
 import org.chromium.chrome.browser.WarmupManager;
 import org.chromium.chrome.browser.firstrun.FirstRunFlowSequencer;
+import org.chromium.chrome.browser.modaldialog.ModalDialogManager;
 import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.chrome.browser.tabmodel.DocumentModeAssassin;
 import org.chromium.chrome.browser.upgrade.UpgradeActivity;
@@ -62,6 +63,9 @@ public abstract class AsyncInitializationActivity extends AppCompatActivity impl
     private final NativeInitializationController mNativeInitializationController =
             new NativeInitializationController(this);
 
+    private final ActivityLifecycleDispatcher mLifecycleDispatcher =
+            new ActivityLifecycleDispatcher();
+
     /** Time at which onCreate is called. This is realtime, counted in ms since device boot. */
     private long mOnCreateTimestampMs;
 
@@ -69,6 +73,7 @@ public abstract class AsyncInitializationActivity extends AppCompatActivity impl
     private long mOnCreateTimestampUptimeMs;
 
     private ActivityWindowAndroid mWindowAndroid;
+    private ModalDialogManager mModalDialogManager;
     private Bundle mSavedInstanceState;
     private int mCurrentOrientation = Surface.ROTATION_0;
     private boolean mDestroyed;
@@ -100,7 +105,13 @@ public abstract class AsyncInitializationActivity extends AppCompatActivity impl
             mWindowAndroid = null;
         }
 
+        if (mModalDialogManager != null) {
+            mModalDialogManager.destroy();
+            mModalDialogManager = null;
+        }
+
         super.onDestroy();
+        mLifecycleDispatcher.dispatchOnDestroy();
     }
 
     @CallSuper
@@ -133,6 +144,7 @@ public abstract class AsyncInitializationActivity extends AppCompatActivity impl
     public void preInflationStartup() {
         mIsTablet = DeviceFormFactor.isNonMultiDisplayContextOnTablet(this);
         mHadWarmStart = LibraryLoader.getInstance().isInitialized();
+        mLifecycleDispatcher.dispatchPreInflationStartup();
     }
 
     @Override
@@ -176,6 +188,7 @@ public abstract class AsyncInitializationActivity extends AppCompatActivity impl
             }
         };
         firstDrawView.getViewTreeObserver().addOnPreDrawListener(firstDrawListener);
+        mLifecycleDispatcher.dispatchPostInflationStartup();
     }
 
     /**
@@ -221,6 +234,7 @@ public abstract class AsyncInitializationActivity extends AppCompatActivity impl
                     }
                 });
         mNativeInitializationController.onNativeInitializationComplete();
+        mLifecycleDispatcher.dispatchNativeInitializationFinished();
     }
 
     @CallSuper
@@ -263,10 +277,9 @@ public abstract class AsyncInitializationActivity extends AppCompatActivity impl
         @LaunchIntentDispatcher.Action
         int dispatchAction = maybeDispatchLaunchIntent(getIntent());
         if (dispatchAction != LaunchIntentDispatcher.Action.CONTINUE) {
-            abortLaunch();
+            abortLaunch(dispatchAction);
             return;
         }
-
         if (DocumentModeAssassin.getInstance().isMigrationNecessary()) {
             // Some Samsung devices load fonts from disk, crbug.com/691706.
             try (StrictModeContext unused = StrictModeContext.allowDiskReads()) {
@@ -283,14 +296,14 @@ public abstract class AsyncInitializationActivity extends AppCompatActivity impl
 
         Intent intent = getIntent();
         if (!isStartedUpCorrectly(intent)) {
-            abortLaunch();
+            abortLaunch(LaunchIntentDispatcher.Action.FINISH_ACTIVITY_REMOVE_TASK);
             return;
         }
 
         if (requiresFirstRunToBeCompleted(intent)
                 && FirstRunFlowSequencer.launch(this, intent, false /* requiresBroadcast */,
                            shouldPreferLightweightFre(intent))) {
-            abortLaunch();
+            abortLaunch(LaunchIntentDispatcher.Action.FINISH_ACTIVITY_REMOVE_TASK);
             return;
         }
 
@@ -306,6 +319,7 @@ public abstract class AsyncInitializationActivity extends AppCompatActivity impl
         if (mWindowAndroid != null) {
             getWindowAndroid().restoreInstanceState(getSavedInstanceState());
         }
+        mModalDialogManager = createModalDialogManager();
 
         mStartupDelayed = shouldDelayBrowserStartup();
         ChromeBrowserInitializer.getInstance(this).handlePreNativeStartup(this);
@@ -317,22 +331,28 @@ public abstract class AsyncInitializationActivity extends AppCompatActivity impl
      */
     protected void initializeStartupMetrics() {}
 
-    private void abortLaunch() {
+    private void abortLaunch(@LaunchIntentDispatcher.Action int dispatchAction) {
         super.onCreate(null);
-        ApiCompatibilityUtils.finishAndRemoveTask(this);
-        overridePendingTransition(0, R.anim.no_anim);
+        if (dispatchAction == LaunchIntentDispatcher.Action.FINISH_ACTIVITY) {
+            finish();
+            return;
+        } else {
+            assert dispatchAction == LaunchIntentDispatcher.Action.FINISH_ACTIVITY_REMOVE_TASK;
+            ApiCompatibilityUtils.finishAndRemoveTask(this);
 
-        if (Build.VERSION.SDK_INT == Build.VERSION_CODES.LOLLIPOP
-                || Build.VERSION.SDK_INT == Build.VERSION_CODES.LOLLIPOP_MR1) {
-            // On L ApiCompatibilityUtils.finishAndRemoveTask() sometimes fails, which causes
-            // NPE in onStart() later, see crbug.com/781396. We can't let this activity to
-            // start, and we don't want to crash either. So try finishing one more time and
-            // suicide if that fails.
-            if (!isFinishing()) {
-                finish();
-                if (!isFinishing()) Process.killProcess(Process.myPid());
+            if (Build.VERSION.SDK_INT == Build.VERSION_CODES.LOLLIPOP
+                    || Build.VERSION.SDK_INT == Build.VERSION_CODES.LOLLIPOP_MR1) {
+                // On L ApiCompatibilityUtils.finishAndRemoveTask() sometimes fails, which causes
+                // NPE in onStart() later, see crbug.com/781396. We can't let this activity to
+                // start, and we don't want to crash either. So try finishing one more time and
+                // suicide if that fails.
+                if (!isFinishing()) {
+                    finish();
+                    if (!isFinishing()) Process.killProcess(Process.myPid());
+                }
             }
         }
+        overridePendingTransition(0, R.anim.no_anim);
     }
 
     /**
@@ -354,14 +374,6 @@ public abstract class AsyncInitializationActivity extends AppCompatActivity impl
      */
     protected boolean isStartupDelayed() {
         return mStartupDelayed;
-    }
-
-    /**
-     * Creates an {@link ActivityWindowAndroid} to delegate calls to, if the Activity requires it.
-     */
-    @Nullable
-    protected ActivityWindowAndroid createWindowAndroid() {
-        return null;
     }
 
     /**
@@ -497,17 +509,29 @@ public abstract class AsyncInitializationActivity extends AppCompatActivity impl
         }
     }
 
+    @CallSuper
     @Override
-    public void onStartWithNative() { }
+    public void onStartWithNative() {
+        mLifecycleDispatcher.dispatchOnStartWithNative();
+    }
 
+    @CallSuper
     @Override
-    public void onResumeWithNative() { }
+    public void onResumeWithNative() {
+        mLifecycleDispatcher.dispatchOnResumeWithNative();
+    }
 
+    @CallSuper
     @Override
-    public void onPauseWithNative() { }
+    public void onPauseWithNative() {
+        mLifecycleDispatcher.dispatchOnPauseWithNative();
+    }
 
+    @CallSuper
     @Override
-    public void onStopWithNative() { }
+    public void onStopWithNative() {
+        mLifecycleDispatcher.dispatchOnStopWithNative();
+    }
 
     @Override
     public boolean isActivityDestroyed() {
@@ -549,11 +573,42 @@ public abstract class AsyncInitializationActivity extends AppCompatActivity impl
     }
 
     /**
+     * Creates an {@link ActivityWindowAndroid} to delegate calls to, if the Activity requires it.
+     */
+    @Nullable
+    protected ActivityWindowAndroid createWindowAndroid() {
+        return null;
+    }
+
+    /**
      * @return A {@link ActivityWindowAndroid} instance.  May be null if one was not created.
      */
     @Nullable
     public ActivityWindowAndroid getWindowAndroid() {
         return mWindowAndroid;
+    }
+
+    /**
+     * @return The {@link ModalDialogManager} created for this class.
+     */
+    @Nullable
+    protected ModalDialogManager createModalDialogManager() {
+        return null;
+    }
+
+    /**
+     * @return The {@link ModalDialogManager} that manages the display of modal dialogs (e.g.
+     *         JavaScript dialogs).
+     */
+    public ModalDialogManager getModalDialogManager() {
+        return mModalDialogManager;
+    }
+
+    /**
+     * Overrides the originally created modal dialog manager.
+     */
+    public void overrideModalDialogManager(ModalDialogManager modalDialogManager) {
+        mModalDialogManager = modalDialogManager;
     }
 
     /**
@@ -694,6 +749,13 @@ public abstract class AsyncInitializationActivity extends AppCompatActivity impl
         if (mOnInflationCompleteCallback == null) return;
         mOnInflationCompleteCallback.run();
         mOnInflationCompleteCallback = null;
+    }
+
+    /**
+     * @return {@link ActivityLifecycleDispatcher} associated with this activity.
+     */
+    public ActivityLifecycleDispatcher getLifecycleDispatcher() {
+        return mLifecycleDispatcher;
     }
 
     /**

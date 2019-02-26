@@ -30,9 +30,7 @@ class ASH_EXPORT TabletModeAppWindowDragController
   // window may be 1) maximized, or 2) snapped in splitscren.
   bool DragWindowFromTop(ui::GestureEvent* event);
 
-  TabletModeWindowDragDelegate* drag_delegate_for_testing() {
-    return drag_delegate_.get();
-  }
+  TabletModeWindowDragDelegate* drag_delegate() { return drag_delegate_.get(); }
 
  private:
   // Gesture window drag related functions. Used in DragWindowFromTop.

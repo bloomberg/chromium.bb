@@ -21,6 +21,9 @@ class WaitUntilObserver;
 class MODULES_EXPORT PaymentRequestRespondWithObserver final
     : public RespondWithObserver {
  public:
+  PaymentRequestRespondWithObserver(ExecutionContext*,
+                                    int event_id,
+                                    WaitUntilObserver*);
   ~PaymentRequestRespondWithObserver() override = default;
 
   static PaymentRequestRespondWithObserver* Create(ExecutionContext*,
@@ -35,11 +38,6 @@ class MODULES_EXPORT PaymentRequestRespondWithObserver final
   void OnNoResponse() override;
 
   void Trace(blink::Visitor*) override;
-
- private:
-  PaymentRequestRespondWithObserver(ExecutionContext*,
-                                    int event_id,
-                                    WaitUntilObserver*);
 };
 
 }  // namespace blink

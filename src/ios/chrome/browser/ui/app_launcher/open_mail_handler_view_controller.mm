@@ -86,16 +86,6 @@ const CGFloat kSwitchLabelFontSize = 12.0f;
 
 - (void)viewDidLoad {
   [super viewDidLoad];
-
-  // TODO(crbug.com/765146): This is needed here because crrev/c/660257 is not
-  // intended for M62 branch but this change to mailto:// handling is. This
-  // change is redundant but can co-exist with crrev/c/660257.
-  // This will be reverted after cherrypick to M62.
-  if (@available(iOS 11, *)) {
-    self.collectionView.contentInsetAdjustmentBehavior =
-        UIScrollViewContentInsetAdjustmentNever;
-  }
-
   [self loadModel];
 }
 

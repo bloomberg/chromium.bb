@@ -66,7 +66,7 @@ DOMFileSystem* DOMFileSystem::Create(ExecutionContext* context,
                                      const String& name,
                                      mojom::blink::FileSystemType type,
                                      const KURL& root_url) {
-  return new DOMFileSystem(context, name, type, root_url);
+  return MakeGarbageCollected<DOMFileSystem>(context, name, type, root_url);
 }
 
 DOMFileSystem* DOMFileSystem::CreateIsolatedFileSystem(

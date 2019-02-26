@@ -129,7 +129,8 @@ TEST_F(ImageDataTest,
 TEST_F(ImageDataTest, TestGetImageDataInCanvasColorSettings) {
   unsigned num_image_data_color_spaces = 3;
   CanvasColorSpace image_data_color_spaces[] = {
-      kSRGBCanvasColorSpace, kRec2020CanvasColorSpace, kP3CanvasColorSpace,
+      kSRGBCanvasColorSpace, kLinearRGBCanvasColorSpace,
+      kRec2020CanvasColorSpace, kP3CanvasColorSpace,
   };
 
   unsigned num_image_data_storage_formats = 3;
@@ -140,13 +141,14 @@ TEST_F(ImageDataTest, TestGetImageDataInCanvasColorSettings) {
 
   unsigned num_canvas_color_settings = 4;
   CanvasColorSpace canvas_color_spaces[] = {
-      kSRGBCanvasColorSpace, kSRGBCanvasColorSpace, kRec2020CanvasColorSpace,
+      kSRGBCanvasColorSpace,      kSRGBCanvasColorSpace,
+      kLinearRGBCanvasColorSpace, kRec2020CanvasColorSpace,
       kP3CanvasColorSpace,
   };
 
   CanvasPixelFormat canvas_pixel_formats[] = {
       kRGBA8CanvasPixelFormat, kF16CanvasPixelFormat, kF16CanvasPixelFormat,
-      kF16CanvasPixelFormat,
+      kF16CanvasPixelFormat,   kF16CanvasPixelFormat,
   };
 
   // As cross checking the output of Skia color space covnersion API is not in
@@ -187,7 +189,7 @@ TEST_F(ImageDataTest, TestGetImageDataInCanvasColorSettings) {
   EXPECT_EQ(data_length, data_f32->length());
 
   ImageData* image_data = nullptr;
-  ImageDataColorSettings color_settings;
+  ImageDataColorSettings* color_settings = ImageDataColorSettings::Create();
 
   // At most two bytes are needed for output per color component.
   std::unique_ptr<uint8_t[]> pixels_converted_manually(
@@ -198,29 +200,29 @@ TEST_F(ImageDataTest, TestGetImageDataInCanvasColorSettings) {
   // Loop through different possible combinations of image data color space and
   // storage formats and create the respective test image data objects.
   for (unsigned i = 0; i < num_image_data_color_spaces; i++) {
-    color_settings.setColorSpace(
+    color_settings->setColorSpace(
         ImageData::CanvasColorSpaceName(image_data_color_spaces[i]));
 
     for (unsigned j = 0; j < num_image_data_storage_formats; j++) {
       switch (image_data_storage_formats[j]) {
         case kUint8ClampedArrayStorageFormat:
           data_array = static_cast<DOMArrayBufferView*>(data_u8);
-          color_settings.setStorageFormat(kUint8ClampedArrayStorageFormatName);
+          color_settings->setStorageFormat(kUint8ClampedArrayStorageFormatName);
           break;
         case kUint16ArrayStorageFormat:
           data_array = static_cast<DOMArrayBufferView*>(data_u16);
-          color_settings.setStorageFormat(kUint16ArrayStorageFormatName);
+          color_settings->setStorageFormat(kUint16ArrayStorageFormatName);
           break;
         case kFloat32ArrayStorageFormat:
           data_array = static_cast<DOMArrayBufferView*>(data_f32);
-          color_settings.setStorageFormat(kFloat32ArrayStorageFormatName);
+          color_settings->setStorageFormat(kFloat32ArrayStorageFormatName);
           break;
         default:
           NOTREACHED();
       }
 
       image_data =
-          ImageData::CreateForTest(IntSize(2, 2), data_array, &color_settings);
+          ImageData::CreateForTest(IntSize(2, 2), data_array, color_settings);
 
       for (unsigned k = 0; k < num_canvas_color_settings; k++) {
         // Convert the original data used to create ImageData to the
@@ -452,10 +454,10 @@ TEST_F(ImageDataTest, TestCropRect) {
     else
       data_array = static_cast<DOMArrayBufferView*>(data_f32);
 
-    ImageDataColorSettings color_settings;
-    color_settings.setStorageFormat(image_data_storage_format_names[i]);
+    ImageDataColorSettings* color_settings = ImageDataColorSettings::Create();
+    color_settings->setStorageFormat(image_data_storage_format_names[i]);
     image_data = ImageData::CreateForTest(IntSize(width, height), data_array,
-                                          &color_settings);
+                                          color_settings);
     for (int j = 0; j < num_test_cases; j++) {
       // Test the size of the cropped image data
       IntRect src_rect(IntPoint(), image_data->Size());

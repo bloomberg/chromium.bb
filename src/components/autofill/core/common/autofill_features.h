@@ -24,6 +24,7 @@ namespace features {
 extern const base::Feature kAutofillAllowNonHttpActivation;
 extern const base::Feature kAutofillAddressNormalizer;
 extern const base::Feature kAutofillAlwaysFillAddresses;
+extern const base::Feature kAutofillAlwaysShowServerCardsInSyncTransport;
 extern const base::Feature kAutofillCacheQueryResponses;
 extern const base::Feature kAutofillCreateDataForTest;
 extern const base::Feature kAutofillCreditCardAblationExperiment;
@@ -34,30 +35,32 @@ extern const base::Feature kAutofillDeleteDisusedCreditCards;
 extern const base::Feature kAutofillDownstreamUseGooglePayBrandingOniOS;
 extern const base::Feature kAutofillDynamicForms;
 extern const base::Feature kAutofillEnableAccountWalletStorage;
+extern const base::Feature kAutofillEnableAccountWalletStorageUpload;
 extern const base::Feature kAutofillEnableCompanyName;
 extern const base::Feature kAutofillEnableIFrameSupportOniOS;
-extern const base::Feature kAutofillEnablePaymentsInteractionsOnAuthError;
 extern const base::Feature kAutofillEnforceMinRequiredFieldsForHeuristics;
 extern const base::Feature kAutofillEnforceMinRequiredFieldsForQuery;
 extern const base::Feature kAutofillEnforceMinRequiredFieldsForUpload;
 extern const base::Feature kAutofillExpandedPopupViews;
 extern const base::Feature kAutofillGetPaymentsIdentityFromSync;
+extern const base::Feature kAutofillKeyboardAccessory;
 extern const base::Feature kAutofillLocalCardMigrationShowFeedback;
 extern const base::Feature kAutofillManualFallback;
 extern const base::Feature kAutofillManualFallbackPhaseTwo;
+extern const base::Feature kAutofillMetadataUploads;
 extern const base::Feature kAutofillPreferServerNamePredictions;
 extern const base::Feature kAutofillNoLocalSaveOnUploadSuccess;
 extern const base::Feature kAutofillOverrideWithRaterConsensus;
 extern const base::Feature kAutofillPrefilledFields;
 extern const base::Feature kAutofillRationalizeFieldTypePredictions;
 extern const base::Feature kAutofillRationalizeRepeatedServerPredictions;
-extern const base::Feature kAutofillResetFullServerCardsOnAuthError;
 extern const base::Feature kAutofillRestrictUnownedFieldsToFormlessCheckout;
+extern const base::Feature kAutofillRichMetadataQueries;
 extern const base::Feature kAutofillSaveCardDialogUnlabeledExpirationDate;
+extern const base::Feature kAutofillSaveCardImprovedUserConsent;
 extern const base::Feature kAutofillSaveCardSignInAfterLocalSave;
 extern const base::Feature kAutofillSaveCreditCardUsesStrikeSystem;
 extern const base::Feature kAutofillSaveOnProbablySubmitted;
-extern const base::Feature kAutofillScanCardholderName;
 extern const base::Feature kAutofillSendExperimentIdsInPaymentsRPCs;
 extern const base::Feature kAutofillSendOnlyCountryInGetUploadDetails;
 extern const base::Feature kAutofillServerCommunication;
@@ -76,7 +79,9 @@ extern const base::Feature kAutofillUpstreamBlankCardholderNameField;
 extern const base::Feature kAutofillUpstreamDisallowElo;
 extern const base::Feature kAutofillUpstreamDisallowJcb;
 extern const base::Feature kAutofillUpstreamEditableCardholderName;
+extern const base::Feature kAutofillUpstreamEditableExpirationDate;
 extern const base::Feature kAutofillUpstreamUseGooglePayBrandingOnMobile;
+extern const base::Feature kAutofillUseApi;
 extern const base::Feature kAutofillUsePaymentsCustomerData;
 extern const base::Feature kAutomaticPasswordGeneration;
 extern const base::Feature kSingleClickAutofill;
@@ -89,6 +94,7 @@ extern const char
     kAutofillCreditCardLocalCardMigrationParameterWithoutSettingsPage[];
 
 #if defined(OS_ANDROID)
+extern const base::Feature kAutofillManualFallbackAndroid;
 extern const base::Feature kAutofillRefreshStyleAndroid;
 #endif  // OS_ANDROID
 

@@ -8,7 +8,7 @@
 #include "base/feature_list.h"
 #include "base/metrics/field_trial_params.h"
 #include "base/no_destructor.h"
-#include "base/sys_info.h"
+#include "base/system/sys_info.h"
 #include "base/time/time.h"
 
 namespace features {
@@ -111,23 +111,22 @@ struct ProactiveTabFreezeAndDiscardParams {
   // exponentially increasing timeouts beyond that.
   static constexpr base::FeatureParam<int> kLowOccludedTimeout{
       &features::kProactiveTabFreezeAndDiscard, "LowOccludedTimeoutSeconds",
-      base::TimeDelta::FromHours(6).InSeconds()};
+      6 * base::Time::kSecondsPerHour};
   static constexpr base::FeatureParam<int> kModerateOccludedTimeout{
       &features::kProactiveTabFreezeAndDiscard,
-      "ModerateOccludedTimeoutSeconds",
-      base::TimeDelta::FromHours(1).InSeconds()};
+      "ModerateOccludedTimeoutSeconds", 1 * base::Time::kSecondsPerHour};
   static constexpr base::FeatureParam<int> kHighOccludedTimeout{
       &features::kProactiveTabFreezeAndDiscard, "HighOccludedTimeoutSeconds",
-      static_cast<int>(base::TimeDelta::FromMinutes(10).InSeconds())};
+      10 * base::Time::kSecondsPerMinute};
   static constexpr base::FeatureParam<int> kFreezeTimeout{
       &features::kProactiveTabFreezeAndDiscard, "FreezeTimeout",
-      base::TimeDelta::FromMinutes(10).InSeconds()};
+      10 * base::Time::kSecondsPerMinute};
   static constexpr base::FeatureParam<int> kUnfreezeTimeout{
       &features::kProactiveTabFreezeAndDiscard, "UnfreezeTimeout",
-      base::TimeDelta::FromMinutes(15).InSeconds()};
+      15 * base::Time::kSecondsPerMinute};
   static constexpr base::FeatureParam<int> kRefreezeTimeout{
       &features::kProactiveTabFreezeAndDiscard, "RefreezeTimeout",
-      base::TimeDelta::FromMinutes(10).InSeconds()};
+      10 * base::Time::kSecondsPerMinute};
 
   static constexpr base::FeatureParam<bool> kDisableHeuristicsProtections{
       &features::kProactiveTabFreezeAndDiscard,
@@ -198,17 +197,16 @@ struct SiteCharacteristicsDatabaseParams {
   // tabs don't use any of these features in this time window.
   static constexpr base::FeatureParam<int> kFaviconUpdateObservationWindow{
       &features::kSiteCharacteristicsDatabase, "FaviconUpdateObservationWindow",
-      base::TimeDelta::FromHours(2).InSeconds()};
+      2 * base::Time::kSecondsPerHour};
   static constexpr base::FeatureParam<int> kTitleUpdateObservationWindow{
       &features::kSiteCharacteristicsDatabase, "TitleUpdateObservationWindow",
-      base::TimeDelta::FromHours(2).InSeconds()};
+      2 * base::Time::kSecondsPerHour};
   static constexpr base::FeatureParam<int> kAudioUsageObservationWindow{
       &features::kSiteCharacteristicsDatabase, "AudioUsageObservationWindow",
-      base::TimeDelta::FromHours(2).InSeconds()};
+      2 * base::Time::kSecondsPerHour};
   static constexpr base::FeatureParam<int> kNotificationsUsageObservationWindow{
       &features::kSiteCharacteristicsDatabase,
-      "NotificationsUsageObservationWindow",
-      base::TimeDelta::FromHours(2).InSeconds()};
+      "NotificationsUsageObservationWindow", 2 * base::Time::kSecondsPerHour};
   static constexpr base::FeatureParam<int> kTitleOrFaviconChangeGracePeriod{
       &features::kSiteCharacteristicsDatabase,
       "TitleOrFaviconChangeGracePeriod", 20 /* 20 seconds */};
@@ -264,7 +262,7 @@ struct InfiniteSessionRestoreParams {
   // This is the 75th percentile of SessionRestore.RestoredTab.TimeSinceActive.
   static constexpr base::FeatureParam<int> kMaxTimeSinceLastUseToRestore{
       &features::kInfiniteSessionRestore, "MaxTimeSinceLastUseToRestore",
-      base::TimeDelta::FromHours(6).InSeconds()};
+      6 * base::Time::kSecondsPerHour};
   // Taken from an informal survey of Googlers on min engagement of things they
   // think *must* load. Note that about 25% of session-restore tabs fall above
   // this threshold (see SessionRestore.RestoredTab.SiteEngagementScore).
@@ -327,6 +325,15 @@ GetStaticSiteCharacteristicsDatabaseParams();
 
 // Gets parameters for the infinite session restore feature.
 InfiniteSessionRestoreParams GetInfiniteSessionRestoreParams();
+
+// Gets number of oldest tab that should be scored by TabRanker.
+int GetNumOldestTabsToScoreWithTabRanker();
+
+// Gets number of oldest tabs that should be logged by TabRanker.
+int GetNumOldestTabsToLogWithTabRanker();
+
+// Whether to disable background time TabMetrics log.
+bool DisableBackgroundLogWithTabRanker();
 
 }  // namespace resource_coordinator
 

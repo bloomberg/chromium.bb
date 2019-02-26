@@ -24,13 +24,14 @@
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
 #include "base/sys_byteorder.h"
-#include "base/sys_info.h"
+#include "base/system/sys_info.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "jni/MediaDrmBridge_jni.h"
 #include "media/base/android/android_util.h"
 #include "media/base/android/media_codec_util.h"
 #include "media/base/android/media_drm_bridge_client.h"
 #include "media/base/android/media_drm_bridge_delegate.h"
+#include "media/base/android/media_drm_key_type.h"
 #include "media/base/cdm_key_information.h"
 #include "media/base/media_switches.h"
 #include "media/base/provision_fetcher.h"
@@ -71,14 +72,6 @@ enum class KeyStatus : uint32_t {
   KEY_STATUS_INTERNAL_ERROR = 4,
 };
 
-// These must be in sync with Android MediaDrm KEY_TYPE_XXX constants:
-// https://developer.android.com/reference/android/media/MediaDrm.html#KEY_TYPE_OFFLINE
-// KEY_TYPE_RELEASE is handled internally in Java.
-enum class KeyType : uint32_t {
-  KEY_TYPE_STREAMING = 1,
-  KEY_TYPE_OFFLINE = 2,
-};
-
 const uint8_t kWidevineUuid[16] = {
     0xED, 0xEF, 0x8B, 0xA9, 0x79, 0xD6, 0x4A, 0xCE,  //
     0xA3, 0xC8, 0x27, 0xDC, 0xD5, 0x1D, 0x21, 0xED};
@@ -102,18 +95,18 @@ std::string ConvertInitDataType(media::EmeInitDataType init_data_type) {
   }
 }
 
-// Convert CdmSessionType to KeyType supported by MediaDrm.
-KeyType ConvertCdmSessionType(CdmSessionType session_type) {
+// Convert CdmSessionType to MediaDrmKeyType supported by MediaDrm.
+MediaDrmKeyType ConvertCdmSessionType(CdmSessionType session_type) {
   switch (session_type) {
     case CdmSessionType::kTemporary:
-      return KeyType::KEY_TYPE_STREAMING;
+      return MediaDrmKeyType::STREAMING;
     case CdmSessionType::kPersistentLicense:
-      return KeyType::KEY_TYPE_OFFLINE;
+      return MediaDrmKeyType::OFFLINE;
 
     default:
       LOG(WARNING) << "Unsupported session type "
                    << static_cast<int>(session_type);
-      return KeyType::KEY_TYPE_STREAMING;
+      return MediaDrmKeyType::STREAMING;
   }
 }
 
@@ -568,16 +561,6 @@ bool MediaDrmBridge::IsSecureCodecRequired() {
   return true;
 }
 
-void MediaDrmBridge::ResetDeviceCredentials(
-    const ResetCredentialsCB& callback) {
-  DVLOG(1) << __func__;
-
-  DCHECK(!reset_credentials_cb_);
-  reset_credentials_cb_ = callback;
-  JNIEnv* env = AttachCurrentThread();
-  Java_MediaDrmBridge_resetDeviceCredentials(env, j_media_drm_);
-}
-
 void MediaDrmBridge::Unprovision() {
   DVLOG(1) << __func__;
 
@@ -749,7 +732,7 @@ void MediaDrmBridge::OnSessionKeysChange(
     ScopedJavaLocalRef<jbyteArray> j_key_id =
         Java_KeyStatus_getKeyId(env, j_key_status);
     std::vector<uint8_t> key_id;
-    JavaByteArrayToByteVector(env, j_key_id.obj(), &key_id);
+    JavaByteArrayToByteVector(env, j_key_id, &key_id);
     DCHECK(!key_id.empty());
 
     jint j_status_code = Java_KeyStatus_getStatusCode(env, j_key_status);
@@ -803,16 +786,6 @@ void MediaDrmBridge::OnSessionExpirationUpdate(
                      base::Time::FromDoubleT(expiry_time_ms / 1000.0)));
 }
 
-void MediaDrmBridge::OnResetDeviceCredentialsCompleted(
-    JNIEnv* env,
-    const JavaParamRef<jobject>&,
-    bool success) {
-  DVLOG(2) << __func__ << ": success:" << success;
-  DCHECK(reset_credentials_cb_);
-  task_runner_->PostTask(
-      FROM_HERE, base::BindOnce(std::move(reset_credentials_cb_), success));
-}
-
 //------------------------------------------------------------------------------
 // The following are private methods.
 
@@ -859,7 +832,7 @@ MediaDrmBridge::MediaDrmBridge(
       base::android::BuildInfo::GetInstance()->sdk_int() >=
           base::android::SDK_VERSION_MARSHMALLOW &&
       // origin id can be empty when MediaDrmBridge is created by
-      // CreateWithoutSessionSupport, which is used to reset credentials.
+      // CreateWithoutSessionSupport, which is used for unprovisioning.
       !origin_id.empty();
 
   ScopedJavaLocalRef<jstring> j_security_origin = ConvertUTF8ToJavaString(

@@ -19,6 +19,13 @@ void EnableStartupTracingIfNeeded() {
   const base::CommandLine& command_line =
       *base::CommandLine::ForCurrentProcess();
 
+  // TODO(oysteine): Startup tracing using Perfetto
+  // is enabled by the Mojo consumer in content/browser
+  // for now; this is too late in the browser startup
+  // process however.
+  if (command_line.HasSwitch(switches::kPerfettoOutputFile))
+    return;
+
   // Ensure TraceLog is initialized first.
   // https://crbug.com/764357
   base::trace_event::TraceLog::GetInstance();

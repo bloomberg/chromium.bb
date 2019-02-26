@@ -9,9 +9,12 @@
 #include "base/macros.h"
 #include "base/optional.h"
 #include "base/unguessable_token.h"
+#include "services/network/public/mojom/referrer_policy.mojom-shared.h"
 #include "services/service_manager/public/mojom/interface_provider.mojom-blink.h"
 #include "third_party/blink/public/common/feature_policy/feature_policy.h"
 #include "third_party/blink/public/mojom/net/ip_address_space.mojom-blink.h"
+#include "third_party/blink/public/mojom/script/script_type.mojom-blink.h"
+#include "third_party/blink/public/platform/web_worker_fetch_context.h"
 #include "third_party/blink/renderer/bindings/core/v8/v8_cache_options.h"
 #include "third_party/blink/renderer/core/core_export.h"
 #include "third_party/blink/renderer/core/frame/csp/content_security_policy.h"
@@ -24,7 +27,6 @@
 #include "third_party/blink/renderer/platform/network/content_security_policy_parsers.h"
 #include "third_party/blink/renderer/platform/network/content_security_policy_response_headers.h"
 #include "third_party/blink/renderer/platform/weborigin/kurl.h"
-#include "third_party/blink/renderer/platform/weborigin/referrer_policy.h"
 #include "third_party/blink/renderer/platform/wtf/forward.h"
 
 namespace blink {
@@ -39,11 +41,11 @@ struct CORE_EXPORT GlobalScopeCreationParams final {
  public:
   GlobalScopeCreationParams(
       const KURL& script_url,
-      // TODO(asamidoi): Replace ScriptType to mojom::ScriptType
-      ScriptType script_type,
+      mojom::ScriptType script_type,
       const String& user_agent,
+      scoped_refptr<WebWorkerFetchContext>,
       const Vector<CSPHeaderAndType>& content_security_policy_parsed_headers,
-      ReferrerPolicy referrer_policy,
+      network::mojom::ReferrerPolicy referrer_policy,
       const SecurityOrigin*,
       bool starter_secure_context,
       HttpsState starter_https_state,
@@ -75,8 +77,10 @@ struct CORE_EXPORT GlobalScopeCreationParams final {
   // workers.
   KURL script_url;
 
-  ScriptType script_type;
+  mojom::ScriptType script_type;
   String user_agent;
+
+  scoped_refptr<WebWorkerFetchContext> web_worker_fetch_context;
 
   // |content_security_policy_parsed_headers| and
   // |content_security_policy_raw_headers| are mutually exclusive.
@@ -86,7 +90,7 @@ struct CORE_EXPORT GlobalScopeCreationParams final {
   base::Optional<ContentSecurityPolicyResponseHeaders>
       content_security_policy_raw_headers;
 
-  ReferrerPolicy referrer_policy;
+  network::mojom::ReferrerPolicy referrer_policy;
   std::unique_ptr<Vector<String>> origin_trial_tokens;
 
   // The SecurityOrigin of the Document creating a Worker/Worklet.

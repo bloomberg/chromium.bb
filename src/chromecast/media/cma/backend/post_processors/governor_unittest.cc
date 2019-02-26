@@ -11,8 +11,8 @@
 
 #include "base/macros.h"
 #include "base/strings/stringprintf.h"
+#include "chromecast/media/base/aligned_buffer.h"
 #include "chromecast/media/cma/backend/post_processors/governor.h"
-#include "chromecast/media/cma/backend/post_processors/post_processor_benchmark.h"
 #include "chromecast/media/cma/backend/post_processors/post_processor_unittest.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -43,19 +43,21 @@ void ScaleData(float* data, int frames, float scale) {
 
 class GovernorTest : public ::testing::TestWithParam<float> {
  protected:
-  GovernorTest() = default;
+  GovernorTest()
+      : clamp_(kDefaultClamp),
+        onset_volume_(GetParam()),
+        governor_(
+            std::make_unique<Governor>(MakeConfigString(onset_volume_, clamp_),
+                                       kNumChannels)),
+        data_(LinearChirp(kNumFrames,
+                          std::vector<double>(kNumChannels, 0.0),
+                          std::vector<double>(kNumChannels, 1.0))),
+        expected_(data_) {}
+
   ~GovernorTest() = default;
   void SetUp() override {
-    clamp_ = kDefaultClamp;
-    onset_volume_ = GetParam();
-    std::string config = MakeConfigString(onset_volume_, clamp_);
-    governor_ = std::make_unique<Governor>(config, kNumChannels);
     governor_->SetSlewTimeMsForTest(0);
     governor_->SetSampleRate(kSampleRate);
-
-    data_ = LinearChirp(kNumFrames, std::vector<double>(kNumChannels, 0.0),
-                        std::vector<double>(kNumChannels, 1.0));
-    expected_ = data_;
   }
 
   void ProcessFrames(float volume) {
@@ -69,8 +71,8 @@ class GovernorTest : public ::testing::TestWithParam<float> {
   float clamp_;
   float onset_volume_;
   std::unique_ptr<Governor> governor_;
-  std::vector<float> data_;
-  std::vector<float> expected_;
+  AlignedBuffer<float> data_;
+  AlignedBuffer<float> expected_;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(GovernorTest);

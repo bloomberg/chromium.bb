@@ -11,7 +11,7 @@
 #include "third_party/blink/renderer/core/style/computed_style.h"
 
 namespace blink {
-namespace CSSLonghand {
+namespace css_longhand {
 
 const CSSValue* BaselineShift::ParseSingleValue(
     CSSParserTokenRange& range,
@@ -19,8 +19,8 @@ const CSSValue* BaselineShift::ParseSingleValue(
     const CSSParserLocalContext&) const {
   CSSValueID id = range.Peek().Id();
   if (id == CSSValueBaseline || id == CSSValueSub || id == CSSValueSuper)
-    return CSSPropertyParserHelpers::ConsumeIdent(range);
-  return CSSPropertyParserHelpers::ConsumeLengthOrPercent(
+    return css_property_parser_helpers::ConsumeIdent(range);
+  return css_property_parser_helpers::ConsumeLengthOrPercent(
       range, kSVGAttributeMode, kValueRangeAll);
 }
 
@@ -77,5 +77,5 @@ void BaselineShift::ApplyValue(StyleResolverState& state,
   }
 }
 
-}  // namespace CSSLonghand
+}  // namespace css_longhand
 }  // namespace blink

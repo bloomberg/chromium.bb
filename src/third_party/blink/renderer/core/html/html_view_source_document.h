@@ -40,16 +40,16 @@ class CORE_EXPORT HTMLViewSourceDocument final : public HTMLDocument {
 
   static HTMLViewSourceDocument* Create(const DocumentInit& initializer,
                                         const String& mime_type) {
-    return new HTMLViewSourceDocument(initializer, mime_type);
+    return MakeGarbageCollected<HTMLViewSourceDocument>(initializer, mime_type);
   }
+
+  HTMLViewSourceDocument(const DocumentInit&, const String& mime_type);
 
   void AddSource(const String&, HTMLToken&, SourceAnnotation);
 
   void Trace(blink::Visitor*) override;
 
  private:
-  HTMLViewSourceDocument(const DocumentInit&, const String& mime_type);
-
   DocumentParser* CreateParser() override;
 
   void ProcessDoctypeToken(const String& source, HTMLToken&);
@@ -79,6 +79,9 @@ class CORE_EXPORT HTMLViewSourceDocument final : public HTMLDocument {
 
   Element* AddLink(const AtomicString& url, bool is_anchor);
   Element* AddBase(const AtomicString& href);
+
+  // A view-source document is not a regular WebPage.
+  bool HasCustomizedFeaturePolicy() const final { return false; }
 
   String type_;
   Member<Element> current_;

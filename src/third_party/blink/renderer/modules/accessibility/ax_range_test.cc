@@ -10,6 +10,7 @@
 #include "third_party/blink/renderer/modules/accessibility/testing/accessibility_test.h"
 
 namespace blink {
+namespace test {
 
 TEST_F(AccessibilityTest, CommonAncestorContainerOfRange) {
   SetBodyInnerHTML(R"HTML(<input id='input' type='text' value='value'>"
@@ -79,4 +80,5 @@ TEST_F(AccessibilityTest, RangeOfContents) {
             paragraph_range.End());
 }
 
+}  // namespace test
 }  // namespace blink

@@ -10,6 +10,9 @@
 
 namespace WTF {
 
+template <typename T>
+class TerminatedArray;
+
 template <typename T, template <typename> class ArrayType = TerminatedArray>
 class TerminatedArrayBuilder {
   STACK_ALLOCATED();

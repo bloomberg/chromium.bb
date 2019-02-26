@@ -60,8 +60,12 @@ void IntersectionObservation::Compute(unsigned flags) {
   DOMHighResTimeStamp timestamp = observer_->GetTimeStamp();
   if (timestamp == -1)
     return;
-  if (timestamp - last_run_time_ < observer_->GetEffectiveDelay())
+  if (timestamp - last_run_time_ < observer_->GetEffectiveDelay()) {
+    // TODO(crbug.com/915495): Need to eventually notify the observer of the
+    // updated intersection because there's currently nothing to guarantee this
+    // Compute() method will be called again after the delay period has passed.
     return;
+  }
   last_run_time_ = timestamp;
   needs_update_ = 0;
   Vector<Length> root_margin(4);
@@ -92,15 +96,19 @@ void IntersectionObservation::Compute(unsigned flags) {
   float new_visible_ratio;
   bool is_visible = false;
   if (geometry.DoesIntersect()) {
-    if (geometry.TargetRect().IsEmpty()) {
+    const LayoutRect comparison_rect = observer_->trackFractionOfRoot()
+                                           ? geometry.RootRect()
+                                           : geometry.TargetRect();
+    if (comparison_rect.IsEmpty()) {
       new_visible_ratio = 1;
     } else {
-      float intersection_area =
-          geometry.IntersectionRect().Size().Width().ToFloat() *
-          geometry.IntersectionRect().Size().Height().ToFloat();
-      float target_area = geometry.TargetRect().Size().Width().ToFloat() *
-                          geometry.TargetRect().Size().Height().ToFloat();
-      new_visible_ratio = intersection_area / target_area;
+      const LayoutSize& intersection_size = geometry.IntersectionRect().Size();
+      const float intersection_area = intersection_size.Width().ToFloat() *
+                                      intersection_size.Height().ToFloat();
+      const LayoutSize& comparison_size = comparison_rect.Size();
+      const float area_of_interest = comparison_size.Width().ToFloat() *
+                                     comparison_size.Height().ToFloat();
+      new_visible_ratio = intersection_area / area_of_interest;
     }
     new_threshold_index =
         Observer()->FirstThresholdGreaterThan(new_visible_ratio);
@@ -123,10 +131,12 @@ void IntersectionObservation::Compute(unsigned flags) {
     FloatRect root_bounds(geometry.UnZoomedRootRect());
     FloatRect* root_bounds_pointer =
         report_root_bounds ? &root_bounds : nullptr;
-    IntersectionObserverEntry* new_entry = new IntersectionObserverEntry(
-        timestamp, new_visible_ratio, FloatRect(geometry.UnZoomedTargetRect()),
-        root_bounds_pointer, FloatRect(geometry.UnZoomedIntersectionRect()),
-        new_threshold_index > 0, is_visible, Target());
+    IntersectionObserverEntry* new_entry =
+        MakeGarbageCollected<IntersectionObserverEntry>(
+            timestamp, new_visible_ratio,
+            FloatRect(geometry.UnZoomedTargetRect()), root_bounds_pointer,
+            FloatRect(geometry.UnZoomedIntersectionRect()),
+            new_threshold_index > 0, is_visible, Target());
     entries_.push_back(new_entry);
     To<Document>(Observer()->GetExecutionContext())
         ->EnsureIntersectionObserverController()

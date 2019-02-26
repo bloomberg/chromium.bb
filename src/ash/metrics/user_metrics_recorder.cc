@@ -426,18 +426,6 @@ void UserMetricsRecorder::RecordUserMetricsAction(UserMetricsAction action) {
     case UMA_TRAY_SHUT_DOWN:
       RecordAction(UserMetricsAction("Tray_ShutDown"));
       break;
-    case UMA_TRAY_SWIPE_TO_CLOSE_SUCCESSFUL:
-      RecordAction(UserMetricsAction("Tray_SwipeToClose_Successful"));
-      break;
-    case UMA_TRAY_SWIPE_TO_CLOSE_UNSUCCESSFUL:
-      RecordAction(UserMetricsAction("Tray_SwipeToClose_Unsuccessful"));
-      break;
-    case UMA_TRAY_SWIPE_TO_OPEN_SUCCESSFUL:
-      RecordAction(UserMetricsAction("Tray_SwipeToOpen_Successful"));
-      break;
-    case UMA_TRAY_SWIPE_TO_OPEN_UNSUCCESSFUL:
-      RecordAction(UserMetricsAction("Tray_SwipeToOpen_Unsuccessful"));
-      break;
   }
 }
 

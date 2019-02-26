@@ -63,6 +63,9 @@ enum class PreviewsEligibilityReason {
   COMMITTED = 12,
   // Previews blocked by a Cache-Control:no-transform directive.
   CACHE_CONTROL_NO_TRANSFORM = 13,
+  // The network is faster than the max slow page triggering threshold for the
+  // session.
+  NETWORK_NOT_SLOW_FOR_SESSION = 14,
   LAST,
 };
 

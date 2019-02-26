@@ -22,6 +22,8 @@
 
 #include "third_party/blink/renderer/core/events/clipboard_event.h"
 
+#include "third_party/blink/renderer/core/event_interface_names.h"
+
 namespace blink {
 
 ClipboardEvent::ClipboardEvent(const AtomicString& type,
@@ -30,13 +32,13 @@ ClipboardEvent::ClipboardEvent(const AtomicString& type,
       clipboard_data_(clipboard_data) {}
 
 ClipboardEvent::ClipboardEvent(const AtomicString& type,
-                               const ClipboardEventInit& initializer)
-    : Event(type, initializer), clipboard_data_(initializer.clipboardData()) {}
+                               const ClipboardEventInit* initializer)
+    : Event(type, initializer), clipboard_data_(initializer->clipboardData()) {}
 
 ClipboardEvent::~ClipboardEvent() = default;
 
 const AtomicString& ClipboardEvent::InterfaceName() const {
-  return EventNames::ClipboardEvent;
+  return event_interface_names::kClipboardEvent;
 }
 
 bool ClipboardEvent::IsClipboardEvent() const {

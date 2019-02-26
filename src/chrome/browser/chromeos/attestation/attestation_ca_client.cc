@@ -10,6 +10,7 @@
 #include "chrome/browser/browser_process.h"
 #include "chromeos/chromeos_switches.h"
 #include "net/base/load_flags.h"
+#include "net/base/net_errors.h"
 #include "net/http/http_status_code.h"
 #include "net/url_request/url_request_status.h"
 #include "services/network/public/cpp/shared_url_loader_factory.h"
@@ -86,20 +87,21 @@ void AttestationCAClient::OnURLLoadComplete(
 
   DCHECK(url_loader);
 
-  int response_code = -1;
   if (url_loader->ResponseInfo() && url_loader->ResponseInfo()->headers) {
-    response_code = url_loader->ResponseInfo()->headers->response_code();
-  }
+    int response_code = url_loader->ResponseInfo()->headers->response_code();
 
-  if (response_code < 200 || response_code > 299) {
-    LOG(ERROR) << "Attestation CA sent an error response: " << response_code;
-    callback.Run(false, "");
-    return;
+    if (response_code < 200 || response_code > 299) {
+      LOG(ERROR) << "Attestation CA sent an HTTP error response: "
+                 << response_code;
+      callback.Run(false, "");
+      return;
+    }
   }
 
   if (!response_body) {
+    int net_error = url_loader->NetError();
     LOG(ERROR) << "Attestation CA request failed, error: "
-               << url_loader->NetError();
+               << net::ErrorToString(net_error);
     callback.Run(false, "");
     return;
   }

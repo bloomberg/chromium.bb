@@ -99,6 +99,9 @@ cr.define('multidevice_setup', () => {
       /** @type {!settings.FakeQuickUnlockPrivate} */
       let fakeQuickUnlockPrivate;
 
+      /** @type {?TestMultideviceSetupBrowserProxy} */
+      let browserProxy = null;
+
       const PASSWORD = 'password-page';
       const SUCCESS = 'setup-succeeded-page';
       const START = 'start-setup-page';
@@ -107,6 +110,9 @@ cr.define('multidevice_setup', () => {
       const WRONG_PASSWORD = 'wrongPassword';
 
       setup(() => {
+        browserProxy = new TestMultideviceSetupBrowserProxy();
+        multidevice_setup.BrowserProxyImpl.instance_ = browserProxy;
+
         multiDeviceSetupElement = document.createElement('multidevice-setup');
         multiDeviceSetupElement.delegate = new FakeDelegate();
         fakeMojoService = new FakeMojoService();
@@ -139,7 +145,7 @@ cr.define('multidevice_setup', () => {
        * @return {!Promise} Promise that resolves when the page renders.
        */
       function setVisiblePage(visiblePageName) {
-        multiDeviceSetupElement.visiblePageName_ = visiblePageName;
+        multiDeviceSetupElement.visiblePageName = visiblePageName;
         Polymer.dom.flush();
         return test_util.waitForRender(
             multiDeviceSetupElement.$$(visiblePageName));
@@ -288,12 +294,12 @@ cr.define('multidevice_setup', () => {
             return setVisiblePage(PASSWORD)
                 .then(() => {
                   const whenPageChanges = test_util.eventToPromise(
-                      'visible-page-name_-changed', multiDeviceSetupElement);
+                      'visible-page-name-changed', multiDeviceSetupElement);
                   backwardButton.click();
                   return whenPageChanges;
                 })
                 .then(() => {
-                  assertEquals(START, multiDeviceSetupElement.visiblePageName_);
+                  assertEquals(START, multiDeviceSetupElement.visiblePageName);
                   assertEquals(0, getNumSetHostDeviceCalls());
                 });
           });
@@ -311,13 +317,13 @@ cr.define('multidevice_setup', () => {
                 .then(() => {
                   multiDeviceSetupElement.delegate.shouldSetHostSucceed = true;
                   const whenPageChanges = test_util.eventToPromise(
-                      'visible-page-name_-changed', multiDeviceSetupElement);
+                      'visible-page-name-changed', multiDeviceSetupElement);
                   forwardButton.click();
                   return whenPageChanges;
                 })
                 .then(() => {
                   assertEquals(
-                      SUCCESS, multiDeviceSetupElement.visiblePageName_);
+                      SUCCESS, multiDeviceSetupElement.visiblePageName);
                   assertEquals(1, getNumSetHostDeviceCalls());
                 });
           });
@@ -340,7 +346,7 @@ cr.define('multidevice_setup', () => {
                 })
                 .then(() => {
                   assertEquals(
-                      PASSWORD, multiDeviceSetupElement.visiblePageName_);
+                      PASSWORD, multiDeviceSetupElement.visiblePageName);
                   assertEquals(0, getNumSetHostDeviceCalls());
                 });
           });

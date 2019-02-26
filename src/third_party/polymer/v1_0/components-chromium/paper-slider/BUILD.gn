@@ -12,7 +12,6 @@ js_library("paper-slider-extracted") {
     "../iron-form-element-behavior:iron-form-element-behavior-extracted",
     "../iron-range-behavior:iron-range-behavior-extracted",
     "../paper-behaviors:paper-inky-focus-behavior-extracted",
-    "../paper-input:paper-input-extracted",
     "../paper-progress:paper-progress-extracted",
   ]
 }

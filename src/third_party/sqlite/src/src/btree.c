@@ -992,6 +992,13 @@ static void ptrmapPut(BtShared *pBt, Pgno key, u8 eType, Pgno parent, int *pRC){
     *pRC = rc;
     return;
   }
+  if( ((char*)sqlite3PagerGetExtra(pDbPage))[0]!=0 ){
+    /* The first byte of the extra data is the MemPage.isInit byte.
+    ** If that byte is set, it means this page is also being used
+    ** as a btree page. */
+    *pRC = SQLITE_CORRUPT_BKPT;
+    goto ptrmap_exit;
+  }
   offset = PTRMAP_PTROFFSET(iPtrmap, key);
   if( offset<0 ){
     *pRC = SQLITE_CORRUPT_BKPT;
@@ -1357,7 +1364,12 @@ static void ptrmapPutOvflPtr(MemPage *pPage, u8 *pCell, int *pRC){
   assert( pCell!=0 );
   pPage->xParseCell(pPage, pCell, &info);
   if( info.nLocal<info.nPayload ){
-    Pgno ovfl = get4byte(&pCell[info.nSize-4]);
+    Pgno ovfl;
+    if( SQLITE_WITHIN(pPage->aDataEnd, pCell, pCell+info.nLocal) ){
+      *pRC = SQLITE_CORRUPT_BKPT;
+      return;
+    }
+    ovfl = get4byte(&pCell[info.nSize-4]);
     ptrmapPut(pPage->pBt, ovfl, PTRMAP_OVERFLOW1, pPage->pgno, pRC);
   }
 }
@@ -3152,7 +3164,7 @@ static int lockBtree(BtShared *pBt){
                                    pageSize-usableSize);
       return rc;
     }
-    if( (pBt->db->flags & SQLITE_WriteSchema)==0 && nPage>nPageFile ){
+    if( sqlite3WritableSchema(pBt->db)==0 && nPage>nPageFile ){
       rc = SQLITE_CORRUPT_BKPT;
       goto page1_init_failed;
     }
@@ -3626,6 +3638,7 @@ static int relocatePage(
       eType==PTRMAP_BTREE || eType==PTRMAP_ROOTPAGE );
   assert( sqlite3_mutex_held(pBt->mutex) );
   assert( pDbPage->pBt==pBt );
+  if( iDbPage<3 ) return SQLITE_CORRUPT_BKPT;
 
   /* Move page iDbPage from its current location to page number iFreePage */
   TRACE(("AUTOVACUUM: Moving %d to free page %d (ptr page %d type %d)\n",
@@ -4811,9 +4824,6 @@ static int accessPayload(
         /* Need to read this page properly. It contains some of the
         ** range of data that is being read (eOp==0) or written (eOp!=0).
         */
-#ifdef SQLITE_DIRECT_OVERFLOW_READ
-        sqlite3_file *fd;      /* File from which to do direct overflow read */
-#endif
         int a = amt;
         if( a + offset > ovflSize ){
           a = ovflSize - offset;
@@ -4824,7 +4834,7 @@ static int accessPayload(
         **
         **   1) this is a read operation, and
         **   2) data is required from the start of this overflow page, and
-        **   3) there is no open write-transaction, and
+        **   3) there are no dirty pages in the page-cache
         **   4) the database is file-backed, and
         **   5) the page is not in the WAL file
         **   6) at least 4 bytes have already been read into the output buffer
@@ -4835,11 +4845,10 @@ static int accessPayload(
         */
         if( eOp==0                                             /* (1) */
          && offset==0                                          /* (2) */
-         && pBt->inTransaction==TRANS_READ                     /* (3) */
-         && (fd = sqlite3PagerFile(pBt->pPager))->pMethods     /* (4) */
-         && 0==sqlite3PagerUseWal(pBt->pPager, nextPage)       /* (5) */
+         && sqlite3PagerDirectReadOk(pBt->pPager, nextPage)    /* (3,4,5) */
          && &pBuf[-4]>=pBufStart                               /* (6) */
         ){
+          sqlite3_file *fd = sqlite3PagerFile(pBt->pPager);
           u8 aSave[4];
           u8 *aWrite = &pBuf[-4];
           assert( aWrite>=pBufStart );                         /* due to (6) */

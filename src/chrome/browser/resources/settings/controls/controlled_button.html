@@ -31,8 +31,6 @@
       }
 
       :host(:not([end-justified])) cr-policy-pref-indicator {
-        margin-inline-end: calc(
-            var(--cr-controlled-by-spacing) - var(--justify-margin));
         margin-inline-start: var(--cr-controlled-by-spacing);
       }
 
@@ -44,7 +42,10 @@
       }
     </style>
 
-    <paper-button disabled="[[enforced_]]">[[label]]</paper-button>
+    <paper-button class$="[[getClass_(actionButton)]]"
+      disabled="[[!buttonEnabled_(enforced_, disabled)]]">
+      [[label]]
+    </paper-button>
 
     <template is="dom-if" if="[[hasPrefPolicyIndicator(pref.*)]]" restamp>
       <cr-policy-pref-indicator pref="[[pref]]" on-click="onIndicatorTap_"

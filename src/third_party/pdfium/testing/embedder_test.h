@@ -20,10 +20,6 @@
 #include "testing/gtest/include/gtest/gtest.h"
 #include "testing/test_support.h"
 
-#ifdef PDF_ENABLE_V8
-#include "v8/include/v8.h"
-#endif  // PDF_ENABLE_v8
-
 class TestLoader;
 
 // This class is used to load a PDF document, and then run programatic
@@ -75,9 +71,7 @@ class EmbedderTest : public ::testing::Test,
 
 #ifdef PDF_ENABLE_V8
   // Call before SetUp to pass shared isolate, otherwise PDFium creates one.
-  void SetExternalIsolate(void* isolate) {
-    external_isolate_ = static_cast<v8::Isolate*>(isolate);
-  }
+  void SetExternalIsolate(void* isolate);
 #endif  // PDF_ENABLE_V8
 
   void SetDelegate(Delegate* delegate) {
@@ -125,9 +119,15 @@ class EmbedderTest : public ::testing::Test,
   // holds the page handle for that page.
   FPDF_PAGE LoadPage(int page_number);
 
+  // Same as LoadPage(), but does not fire form events.
+  FPDF_PAGE LoadPageNoEvents(int page_number);
+
   // Fire form unload events and release the resources for a |page| obtained
   // from LoadPage(). Further use of |page| is prohibited after calling this.
   void UnloadPage(FPDF_PAGE page);
+
+  // Same as UnloadPage(), but does not fire form events.
+  void UnloadPageNoEvents(FPDF_PAGE page);
 
   // RenderLoadedPageWithFlags() with no flags.
   ScopedFPDFBitmap RenderLoadedPage(FPDF_PAGE page);
@@ -263,6 +263,9 @@ class EmbedderTest : public ::testing::Test,
 
   // Same as GetPageNumberForLoadedPage(), but with |saved_page_map_|.
   int GetPageNumberForSavedPage(FPDF_PAGE page) const;
+
+  void UnloadPageCommon(FPDF_PAGE page, bool do_events);
+  FPDF_PAGE LoadPageCommon(int page_number, bool do_events);
 
   std::string data_string_;
   std::string saved_document_file_data_;

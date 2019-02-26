@@ -29,7 +29,6 @@
         android:layout_height="wrap_content"
         android:layout_below="@id/lightweight_fre_head_image"
         android:layout_marginBottom="32dp"
-        android:fontFamily="sans-serif"
         android:lineSpacingMultiplier="1.64"
         android:paddingEnd="24dp"
         android:paddingStart="24dp"
@@ -46,5 +45,5 @@
         app:buttonAlignment="end"
         app:primaryButtonText="@string/fre_accept_continue"
         app:secondaryButtonText="@string/cancel"
-        app:stackedMargin="@dimen/fre_stacked_button_margin" />
+        app:stackedMargin="@dimen/button_bar_stacked_margin" />
 </RelativeLayout>

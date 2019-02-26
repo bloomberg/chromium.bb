@@ -400,10 +400,20 @@ void HttpAuthController::InvalidateCurrentHandler(
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   DCHECK(handler_.get());
 
-  if (action == INVALIDATE_HANDLER_AND_CACHED_CREDENTIALS)
-    InvalidateRejectedAuthFromCache();
-  if (action == INVALIDATE_HANDLER_AND_DISABLE_SCHEME)
-    DisableAuthScheme(handler_->auth_scheme());
+  switch (action) {
+    case INVALIDATE_HANDLER_AND_CACHED_CREDENTIALS:
+      InvalidateRejectedAuthFromCache();
+      break;
+
+    case INVALIDATE_HANDLER_AND_DISABLE_SCHEME:
+      DisableAuthScheme(handler_->auth_scheme());
+      break;
+
+    case INVALIDATE_HANDLER:
+      PrepareIdentityForReuse();
+      break;
+  }
+
   handler_.reset();
   identity_ = HttpAuth::Identity();
 }
@@ -417,6 +427,29 @@ void HttpAuthController::InvalidateRejectedAuthFromCache() {
   // since the entry in the cache may be newer than what we used last time.
   http_auth_cache_->Remove(auth_origin_, handler_->realm(),
                            handler_->auth_scheme(), identity_.credentials);
+}
+
+void HttpAuthController::PrepareIdentityForReuse() {
+  if (identity_.invalid)
+    return;
+
+  switch (identity_.source) {
+    case HttpAuth::IDENT_SRC_DEFAULT_CREDENTIALS:
+      DCHECK(default_credentials_used_);
+      default_credentials_used_ = false;
+      break;
+
+    case HttpAuth::IDENT_SRC_URL:
+      DCHECK(embedded_identity_used_);
+      embedded_identity_used_ = false;
+      break;
+
+    case HttpAuth::IDENT_SRC_NONE:
+    case HttpAuth::IDENT_SRC_PATH_LOOKUP:
+    case HttpAuth::IDENT_SRC_REALM_LOOKUP:
+    case HttpAuth::IDENT_SRC_EXTERNAL:
+      break;
+  }
 }
 
 bool HttpAuthController::SelectNextAuthIdentityToTry() {

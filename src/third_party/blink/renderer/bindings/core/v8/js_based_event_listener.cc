@@ -4,6 +4,7 @@
 
 #include "third_party/blink/renderer/bindings/core/v8/js_based_event_listener.h"
 
+#include "third_party/blink/renderer/bindings/core/v8/binding_security.h"
 #include "third_party/blink/renderer/bindings/core/v8/source_location.h"
 #include "third_party/blink/renderer/bindings/core/v8/v8_binding_for_core.h"
 #include "third_party/blink/renderer/core/dom/document.h"
@@ -49,17 +50,13 @@ bool JSBasedEventListener::BelongsToTheCurrentWorld(
 
 // Implements step 2. of "inner invoke".
 // https://dom.spec.whatwg.org/#concept-event-listener-inner-invoke
-void JSBasedEventListener::handleEvent(
+void JSBasedEventListener::Invoke(
     ExecutionContext* execution_context_of_event_target,
     Event* event) {
   DCHECK(execution_context_of_event_target);
   DCHECK(event);
-
-  // TODO(crbug.com/893449): Replace this early return by
-  // DCHECK(event->target()) and DCHECK(event->currentTarget) because they
-  // should not be null on dispatching event.
-  if (!event->target() || !event->currentTarget())
-    return;
+  DCHECK(event->target());
+  DCHECK(event->currentTarget());
 
   v8::Isolate* isolate = GetIsolate();
 
@@ -73,7 +70,7 @@ void JSBasedEventListener::handleEvent(
     return;
 
   {
-    v8::HandleScope scope(isolate);
+    v8::HandleScope handle_scope(isolate);
 
     // Calling |GetListenerObject()| here may cause compilation of the
     // uncompiled script body in eventHandler's value earlier than standard's
@@ -92,7 +89,7 @@ void JSBasedEventListener::handleEvent(
   if (!script_state_of_listener->ContextIsValid())
     return;
 
-  ScriptState::Scope scope(script_state_of_listener);
+  ScriptState::Scope listener_script_state_scope(script_state_of_listener);
 
   // https://dom.spec.whatwg.org/#firing-events
   // Step 2. of firing events: Let event be the result of creating an event
@@ -101,11 +98,23 @@ void JSBasedEventListener::handleEvent(
   // |js_event|, a V8 wrapper object for |event|, must be created in the
   // relevant realm of the event target. The world must match the event
   // listener's world.
-  v8::Local<v8::Context> v8_context =
+  v8::Local<v8::Context> v8_context_of_event_target =
       ToV8Context(execution_context_of_event_target, GetWorld());
-  if (v8_context.IsEmpty())
+  if (v8_context_of_event_target.IsEmpty())
     return;
-  v8::Local<v8::Value> js_event = ToV8(event, v8_context->Global(), isolate);
+
+  // Check if the current context, which is set to the listener's relevant
+  // context by creating |listener_script_state_scope|, has access to the
+  // event target's relevant context before creating |js_event|. SecurityError
+  // is thrown if it doesn't have access.
+  if (!BindingSecurity::ShouldAllowAccessToV8Context(
+          script_state_of_listener->GetContext(), v8_context_of_event_target,
+          BindingSecurity::ErrorReportOption::kReport)) {
+    return;
+  }
+
+  v8::Local<v8::Value> js_event =
+      ToV8(event, v8_context_of_event_target->Global(), isolate);
   if (js_event.IsEmpty())
     return;
 
@@ -140,7 +149,7 @@ void JSBasedEventListener::handleEvent(
 
     // Step 10: Call a listener with event's currentTarget as receiver and event
     // and handle errors if thrown.
-    CallListenerFunction(*event->currentTarget(), *event, js_event);
+    InvokeInternal(*event->currentTarget(), *event, js_event);
 
     if (try_catch.HasCaught()) {
       // Step 10-2: Set legacyOutputDidListenersThrowFlag if given.

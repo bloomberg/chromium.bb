@@ -30,7 +30,7 @@ DOMWindowStorageController& DOMWindowStorageController::From(
   DOMWindowStorageController* controller =
       Supplement<Document>::From<DOMWindowStorageController>(document);
   if (!controller) {
-    controller = new DOMWindowStorageController(document);
+    controller = MakeGarbageCollected<DOMWindowStorageController>(document);
     ProvideTo(document, controller);
   }
   return *controller;
@@ -39,7 +39,7 @@ DOMWindowStorageController& DOMWindowStorageController::From(
 void DOMWindowStorageController::DidAddEventListener(
     LocalDOMWindow* window,
     const AtomicString& event_type) {
-  if (event_type == EventTypeNames::storage) {
+  if (event_type == event_type_names::kStorage) {
     // Creating these blink::Storage objects informs the system that we'd like
     // to receive notifications about storage events that might be triggered in
     // other processes. Rather than subscribe to these notifications explicitly,

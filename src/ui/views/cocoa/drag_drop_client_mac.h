@@ -21,7 +21,7 @@
 // OSExchangeData into the pasteboard.
 VIEWS_EXPORT
 @interface CocoaDragDropDataProvider : NSObject<NSPasteboardItemDataProvider>
-- (id)initWithData:(const ui::OSExchangeData&)data;
+- (instancetype)initWithData:(const ui::OSExchangeData&)data;
 @end
 
 namespace gfx {

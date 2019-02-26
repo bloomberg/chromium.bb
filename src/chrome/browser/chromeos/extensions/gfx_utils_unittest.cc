@@ -49,24 +49,19 @@ class DualBadgeMapTest : public ExtensionServiceTestBase {
   Profile* profile() { return profile_.get(); }
 
  protected:
-  arc::mojom::ArcPackageInfo CreateArcPackage(const std::string& package_name) {
-    arc::mojom::ArcPackageInfo package;
-    package.package_name = package_name;
-    package.package_version = 1;
-    package.last_backup_android_id = 1;
-    package.last_backup_time = 1;
-    package.sync = false;
-    return package;
+  arc::mojom::ArcPackageInfoPtr CreateArcPackage(
+      const std::string& package_name) {
+    return arc::mojom::ArcPackageInfo::New(
+        package_name, 1 /* package_version */, 1 /* last_backup_android_id */,
+        1 /* last_backup_time */, false /* sync */);
   }
 
-  void AddArcPackage(const arc::mojom::ArcPackageInfo& package) {
-    arc_test_.AddPackage(package);
-    arc_test_.app_instance()->SendPackageAdded(package);
+  void AddArcPackage(arc::mojom::ArcPackageInfoPtr package) {
+    arc_test_.app_instance()->SendPackageAdded(std::move(package));
   }
 
-  void RemoveArcPackage(const arc::mojom::ArcPackageInfo& package) {
-    arc_test_.RemovePackage(package);
-    arc_test_.app_instance()->SendPackageUninstalled(package.package_name);
+  void RemoveArcPackage(const std::string& package_name) {
+    arc_test_.app_instance()->SendPackageUninstalled(package_name);
   }
 
   arc::mojom::AppInfo CreateArcApp(const std::string& name,
@@ -115,9 +110,7 @@ TEST_F(DualBadgeMapTest, ExtensionToArcAppMapTest) {
       profile(), kGmailExtensionId2));
 
   // Install Gmail Playstore app.
-  const arc::mojom::ArcPackageInfo app_info =
-      CreateArcPackage(kGmailArcPackage);
-  AddArcPackage(app_info);
+  AddArcPackage(CreateArcPackage(kGmailArcPackage));
   EXPECT_FALSE(extensions::util::HasEquivalentInstalledArcApp(
       profile(), kGmailExtensionId1));
   EXPECT_FALSE(extensions::util::HasEquivalentInstalledArcApp(
@@ -129,7 +122,7 @@ TEST_F(DualBadgeMapTest, ExtensionToArcAppMapTest) {
   EXPECT_TRUE(extensions::util::HasEquivalentInstalledArcApp(
       profile(), kGmailExtensionId2));
 
-  RemoveArcPackage(app_info);
+  RemoveArcPackage(kGmailArcPackage);
   EXPECT_FALSE(extensions::util::HasEquivalentInstalledArcApp(
       profile(), kGmailExtensionId1));
   EXPECT_FALSE(extensions::util::HasEquivalentInstalledArcApp(

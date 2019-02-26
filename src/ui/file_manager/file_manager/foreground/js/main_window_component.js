@@ -455,9 +455,8 @@ MainWindowComponent.prototype.onDirectoryChanged_ = function(event) {
     if (this.dialogType_ === DialogType.FULL_PAGE) {
       var locationInfo = this.volumeManager_.getLocationInfo(event.newDirEntry);
       if (locationInfo) {
-        document.title = locationInfo.hasFixedLabel ?
-            util.getRootTypeLabel(locationInfo) :
-            event.newDirEntry.name;
+        const label = util.getEntryLabel(locationInfo, event.newDirEntry);
+        document.title = `${str('FILEMANAGER_APP_NAME')} - ${label}`;
       } else {
         console.error('Could not find location info for entry: '
                       + event.newDirEntry.fullPath);

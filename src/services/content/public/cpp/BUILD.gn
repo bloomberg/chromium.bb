@@ -32,6 +32,9 @@ component("cpp") {
     "//base",
     "//net",
     "//services/content/public/mojom",
+    "//ui/accessibility",
+    "//ui/accessibility/mojom",
+    "//ui/base",
     "//ui/gfx:native_widget_types",
     "//ui/gfx/geometry",
     "//url",
@@ -39,10 +42,7 @@ component("cpp") {
 
   deps = []
   if (toolkit_views) {
-    deps += [
-      "//ui/base",
-      "//ui/views",
-    ]
+    deps += [ "//ui/views" ]
 
     if (enable_remote_navigable_contents_view) {
       deps += [

@@ -15,7 +15,7 @@ NavigatorUSB& NavigatorUSB::From(Navigator& navigator) {
   NavigatorUSB* supplement =
       Supplement<Navigator>::From<NavigatorUSB>(navigator);
   if (!supplement) {
-    supplement = new NavigatorUSB(navigator);
+    supplement = MakeGarbageCollected<NavigatorUSB>(navigator);
     ProvideTo(navigator, supplement);
   }
   return *supplement;

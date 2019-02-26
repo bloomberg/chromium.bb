@@ -19,84 +19,19 @@
 
 namespace blink {
 
-namespace RootScrollerUtil {
-
-ScrollableArea* ScrollableAreaForRootScroller(const Node* node) {
-  if (!node)
-    return nullptr;
-
-  if (node->IsDocumentNode() || node == node->GetDocument().documentElement()) {
-    if (!node->GetDocument().View())
-      return nullptr;
-
-    // For a FrameView, we use the layoutViewport rather than the
-    // getScrollableArea() since that could be the RootFrameViewport. The
-    // rootScroller's ScrollableArea will be swapped in as the layout viewport
-    // in RootFrameViewport so we need to ensure we get the layout viewport.
-    return node->GetDocument().View()->LayoutViewport();
-  }
-
-  DCHECK(node->IsElementNode());
-  const Element* element = ToElement(node);
-
-  if (!element->GetLayoutObject() || !element->GetLayoutObject()->IsBox())
-    return nullptr;
-
-  return ToLayoutBoxModelObject(element->GetLayoutObject())
-      ->GetScrollableArea();
-}
+namespace root_scroller_util {
 
 PaintLayer* PaintLayerForRootScroller(const Node* node) {
   if (!node)
     return nullptr;
 
-  if (node->IsDocumentNode() || node == node->GetDocument().documentElement()) {
-    if (!node->GetDocument().GetLayoutView())
-      return nullptr;
-
-    return node->GetDocument().GetLayoutView()->Layer();
-  }
-
-  DCHECK(node->IsElementNode());
-  const Element* element = ToElement(node);
-  if (!element->GetLayoutObject() || !element->GetLayoutObject()->IsBox())
+  if (!node->GetLayoutObject() || !node->GetLayoutObject()->IsBox())
     return nullptr;
 
-  LayoutBox* box = ToLayoutBox(element->GetLayoutObject());
+  LayoutBox* box = ToLayoutBox(node->GetLayoutObject());
   return box->Layer();
 }
 
-bool IsGlobal(const LayoutBox& box) {
-  if (!box.GetNode() || !box.GetNode()->GetDocument().GetPage())
-    return false;
-
-  return box.GetNode() == box.GetDocument()
-                              .GetPage()
-                              ->GlobalRootScrollerController()
-                              .GlobalRootScroller();
-}
-
-bool IsGlobal(const PaintLayer& layer) {
-  if (!layer.GetLayoutBox())
-    return false;
-
-  PaintLayer* root_scroller_layer =
-      PaintLayerForRootScroller(layer.GetLayoutBox()
-                                    ->GetDocument()
-                                    .GetPage()
-                                    ->GlobalRootScrollerController()
-                                    .GlobalRootScroller());
-
-  return &layer == root_scroller_layer;
-}
-
-bool IsGlobal(const Element* element) {
-  return element->GetDocument()
-             .GetPage()
-             ->GlobalRootScrollerController()
-             .GlobalRootScroller() == element;
-}
-
-}  // namespace RootScrollerUtil
+}  // namespace root_scroller_util
 
 }  // namespace blink

@@ -71,16 +71,17 @@ class BrowserTabStripController : public TabStripController,
   void CreateNewTabWithLocation(const base::string16& loc) override;
   void StackedLayoutMaybeChanged() override;
   bool IsSingleTabModeAvailable() override;
-  bool ShouldDrawStrokes() const override;
   void OnStartedDraggingTabs() override;
   void OnStoppedDraggingTabs() override;
   bool IsFrameCondensed() const override;
   bool HasVisibleBackgroundTabShapes() const override;
   bool EverHasVisibleBackgroundTabShapes() const override;
-  SkColor GetFrameColor() const override;
+  bool ShouldPaintAsActiveFrame() const override;
+  bool CanDrawStrokes() const override;
+  SkColor GetFrameColor(
+      BrowserNonClientFrameView::ActiveState active_state =
+          BrowserNonClientFrameView::kUseCurrent) const override;
   SkColor GetToolbarTopSeparatorColor() const override;
-  SkColor GetTabBackgroundColor(TabState active) const override;
-  SkColor GetTabForegroundColor(TabState state) const override;
   int GetTabBackgroundResourceId(
       BrowserNonClientFrameView::ActiveState active_state,
       bool* has_custom_image) const override;
@@ -88,29 +89,13 @@ class BrowserTabStripController : public TabStripController,
   Profile* GetProfile() const override;
 
   // TabStripModelObserver implementation:
-  void TabInsertedAt(TabStripModel* tab_strip_model,
-                     content::WebContents* contents,
-                     int model_index,
-                     bool is_active) override;
-  void TabDetachedAt(content::WebContents* contents,
-                     int model_index,
-                     bool was_active) override;
-  void ActiveTabChanged(content::WebContents* old_contents,
-                        content::WebContents* new_contents,
-                        int index,
-                        int reason) override;
-  void TabSelectionChanged(TabStripModel* tab_strip_model,
-                           const ui::ListSelectionModel& old_model) override;
-  void TabMoved(content::WebContents* contents,
-                int from_model_index,
-                int to_model_index) override;
+  void OnTabStripModelChanged(
+      TabStripModel* tab_strip_model,
+      const TabStripModelChange& change,
+      const TabStripSelectionChange& selection) override;
   void TabChangedAt(content::WebContents* contents,
                     int model_index,
                     TabChangeType change_type) override;
-  void TabReplacedAt(TabStripModel* tab_strip_model,
-                     content::WebContents* old_contents,
-                     content::WebContents* new_contents,
-                     int model_index) override;
   void TabPinnedStateChanged(TabStripModel* tab_strip_model,
                              content::WebContents* contents,
                              int model_index) override;

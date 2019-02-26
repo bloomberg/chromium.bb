@@ -5,11 +5,13 @@
 #include "chrome/browser/notifications/win/notification_template_builder.h"
 
 #include <algorithm>
+#include <string>
+#include <vector>
 
 #include "base/files/file_path.h"
 #include "base/i18n/time_formatting.h"
-#include "base/memory/ptr_util.h"
 #include "base/strings/string_number_conversions.h"
+#include "base/strings/string_piece.h"
 #include "base/strings/string_split.h"
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
@@ -27,6 +29,12 @@
 #include "url/origin.h"
 
 namespace {
+
+// The different types of text nodes to output.
+enum class TextType { NORMAL, ATTRIBUTION };
+
+// Label to override context menu items in tests.
+const char* context_menu_label_override = nullptr;
 
 // Constants used for the XML element names and their attributes.
 const char kActionElement[] = "action";
@@ -72,100 +80,8 @@ const char kDefaultTemplate[] = "ToastGeneric";
 // The XML version header that has to be stripped from the output.
 const char kXmlVersionHeader[] = "<?xml version=\"1.0\"?>\n";
 
-}  // namespace
-
-const char kNotificationToastElement[] = "toast";
-const char kNotificationLaunchAttribute[] = "launch";
-
-// static
-const char* NotificationTemplateBuilder::context_menu_label_override_ = nullptr;
-
-// static
-std::unique_ptr<NotificationTemplateBuilder> NotificationTemplateBuilder::Build(
-    base::WeakPtr<NotificationImageRetainer> notification_image_retainer,
-    const NotificationLaunchId& launch_id,
-    const std::string& profile_id,
-    const message_center::Notification& notification) {
-  std::unique_ptr<NotificationTemplateBuilder> builder = base::WrapUnique(
-      new NotificationTemplateBuilder(notification_image_retainer, profile_id));
-
-  builder->StartToastElement(launch_id, notification);
-  builder->StartVisualElement();
-
-  builder->StartBindingElement(kDefaultTemplate);
-
-  // Content for the toast template.
-  builder->WriteTextElement(base::UTF16ToUTF8(notification.title()),
-                            TextType::NORMAL);
-
-  // Message has historically not been shown for list-style notifications.
-  if (notification.type() == message_center::NOTIFICATION_TYPE_MULTIPLE &&
-      !notification.items().empty()) {
-    builder->WriteItems(notification.items());
-  } else {
-    builder->WriteTextElement(base::UTF16ToUTF8(notification.message()),
-                              TextType::NORMAL);
-  }
-
-  std::string attribution;
-  if (notification.UseOriginAsContextMessage())
-    attribution = builder->FormatOrigin(notification.origin_url());
-  else if (!notification.context_message().empty())
-    attribution = base::UTF16ToUTF8(notification.context_message());
-
-  if (!attribution.empty())
-    builder->WriteTextElement(attribution, TextType::ATTRIBUTION);
-
-  if (!notification.icon().IsEmpty())
-    builder->WriteIconElement(notification);
-
-  if (!notification.image().IsEmpty())
-    builder->WriteLargeImageElement(notification);
-
-  if (notification.type() == message_center::NOTIFICATION_TYPE_PROGRESS)
-    builder->WriteProgressElement(notification);
-
-  builder->EndBindingElement();
-  builder->EndVisualElement();
-
-  builder->StartActionsElement();
-  if (!notification.buttons().empty())
-    builder->AddActions(notification, launch_id);
-  builder->EnsureReminderHasButton(notification, launch_id);
-  builder->AddContextMenu(launch_id);
-  builder->EndActionsElement();
-
-  if (notification.silent())
-    builder->WriteAudioSilentElement();
-
-  builder->EndToastElement();
-
-  return builder;
-}
-
-NotificationTemplateBuilder::NotificationTemplateBuilder(
-    base::WeakPtr<NotificationImageRetainer> notification_image_retainer,
-    const std::string& profile_id)
-    : xml_writer_(std::make_unique<XmlWriter>()),
-      image_retainer_(notification_image_retainer),
-      profile_id_(profile_id) {
-  xml_writer_->StartWriting();
-}
-
-NotificationTemplateBuilder::~NotificationTemplateBuilder() = default;
-
-base::string16 NotificationTemplateBuilder::GetNotificationTemplate() const {
-  std::string template_xml = xml_writer_->GetWrittenString();
-  DCHECK(base::StartsWith(template_xml, kXmlVersionHeader,
-                          base::CompareCase::SENSITIVE));
-
-  // The |kXmlVersionHeader| is automatically appended by libxml, but the toast
-  // system in the Windows Action Center expects it to be absent.
-  return base::UTF8ToUTF16(template_xml.substr(sizeof(kXmlVersionHeader) - 1));
-}
-
-std::string NotificationTemplateBuilder::FormatOrigin(
-    const GURL& origin) const {
+// Formats the |origin| for display in the notification template.
+std::string FormatOrigin(const GURL& origin) {
   base::string16 origin_string = url_formatter::FormatOriginForSecurityDisplay(
       url::Origin::Create(origin),
       url_formatter::SchemeDisplay::OMIT_HTTP_AND_HTTPS);
@@ -174,64 +90,71 @@ std::string NotificationTemplateBuilder::FormatOrigin(
   return base::UTF16ToUTF8(origin_string);
 }
 
-void NotificationTemplateBuilder::StartToastElement(
-    const NotificationLaunchId& launch_id,
-    const message_center::Notification& notification) {
-  xml_writer_->StartElement(kNotificationToastElement);
-  xml_writer_->AddAttribute(kNotificationLaunchAttribute,
-                            launch_id.Serialize());
+// Writes the <toast> element with a given |launch_attribute|.
+// Also closes the |xml_writer_| for writing as the toast is now complete.
+void StartToastElement(XmlWriter* xml_writer,
+                       const NotificationLaunchId& launch_id,
+                       const message_center::Notification& notification) {
+  xml_writer->StartElement(kNotificationToastElement);
+  xml_writer->AddAttribute(kNotificationLaunchAttribute, launch_id.Serialize());
 
   // Note: If the notification doesn't include a button, then Windows will
   // ignore the Reminder flag.
   if (notification.never_timeout())
-    xml_writer_->AddAttribute(kScenario, kReminder);
+    xml_writer->AddAttribute(kScenario, kReminder);
 
   if (notification.timestamp().is_null())
     return;
 
   base::Time::Exploded exploded;
   notification.timestamp().UTCExplode(&exploded);
-  xml_writer_->AddAttribute(
+  xml_writer->AddAttribute(
       kToastElementDisplayTimestamp,
       base::StringPrintf("%04d-%02d-%02dT%02d:%02d:%02dZ", exploded.year,
                          exploded.month, exploded.day_of_month, exploded.hour,
                          exploded.minute, exploded.second));
 }
 
-void NotificationTemplateBuilder::EndToastElement() {
-  xml_writer_->EndElement();
-  xml_writer_->StopWriting();
+void EndToastElement(XmlWriter* xml_writer) {
+  xml_writer->EndElement();
 }
 
-void NotificationTemplateBuilder::StartVisualElement() {
-  xml_writer_->StartElement(kVisualElement);
+// Writes the <visual> element.
+void StartVisualElement(XmlWriter* xml_writer) {
+  xml_writer->StartElement(kVisualElement);
 }
 
-void NotificationTemplateBuilder::EndVisualElement() {
-  xml_writer_->EndElement();
+void EndVisualElement(XmlWriter* xml_writer) {
+  xml_writer->EndElement();
 }
 
-void NotificationTemplateBuilder::StartBindingElement(
-    const std::string& template_name) {
-  xml_writer_->StartElement(kBindingElement);
-  xml_writer_->AddAttribute(kBindingElementTemplateAttribute, template_name);
+// Writes the <binding> element with the given |template_name|.
+void StartBindingElement(XmlWriter* xml_writer,
+                         const std::string& template_name) {
+  xml_writer->StartElement(kBindingElement);
+  xml_writer->AddAttribute(kBindingElementTemplateAttribute, template_name);
 }
 
-void NotificationTemplateBuilder::EndBindingElement() {
-  xml_writer_->EndElement();
+void EndBindingElement(XmlWriter* xml_writer) {
+  xml_writer->EndElement();
 }
 
-void NotificationTemplateBuilder::WriteTextElement(const std::string& content,
-                                                   TextType text_type) {
-  xml_writer_->StartElement(kTextElement);
+// Writes the <text> element with the given |content|. If |text_type| is
+// ATTRIBUTION then |content| is treated as the source that the notification is
+// attributed to.
+void WriteTextElement(XmlWriter* xml_writer,
+                      const std::string& content,
+                      TextType text_type) {
+  xml_writer->StartElement(kTextElement);
   if (text_type == TextType::ATTRIBUTION)
-    xml_writer_->AddAttribute(kPlacement, kAttribution);
-  xml_writer_->AppendElementContent(content);
-  xml_writer_->EndElement();
+    xml_writer->AddAttribute(kPlacement, kAttribution);
+  xml_writer->AppendElementContent(content);
+  xml_writer->EndElement();
 }
 
-void NotificationTemplateBuilder::WriteItems(
-    const std::vector<message_center::NotificationItem>& items) {
+// Writes the <text> element containing the list entries.
+void WriteItems(XmlWriter* xml_writer,
+                const std::vector<message_center::NotificationItem>& items) {
   // A toast can have a maximum of three text items, of which one is reserved
   // for the title. The remaining two can each handle up to four lines of text,
   // but the toast can only show four lines total, so there's no point in having
@@ -246,57 +169,92 @@ void NotificationTemplateBuilder::WriteItems(
     item_list += base::UTF16ToUTF8(item.title) + " - " +
                  base::UTF16ToUTF8(item.message) + "\n";
   }
-  WriteTextElement(item_list, TextType::NORMAL);
+  WriteTextElement(xml_writer, item_list, TextType::NORMAL);
 }
 
-void NotificationTemplateBuilder::WriteIconElement(
-    const message_center::Notification& notification) {
-  WriteImageElement(notification.icon(), notification.origin_url(),
-                    kPlacementAppLogoOverride, kHintCropNone);
-}
-
-void NotificationTemplateBuilder::WriteLargeImageElement(
-    const message_center::Notification& notification) {
-  WriteImageElement(notification.image(), notification.origin_url(), kHero,
-                    std::string());
-}
-
-void NotificationTemplateBuilder::WriteImageElement(
-    const gfx::Image& image,
-    const GURL& origin,
-    const std::string& placement,
-    const std::string& hint_crop) {
-  // Although image_retainer_ is a WeakPtr, it should never be nullptr here.
-  DCHECK(image_retainer_);
-
-  base::FilePath path =
-      image_retainer_->RegisterTemporaryImage(image, profile_id_, origin);
+// A helper for constructing image xml.
+void WriteImageElement(XmlWriter* xml_writer,
+                       NotificationImageRetainer* image_retainer,
+                       const gfx::Image& image,
+                       const std::string& placement,
+                       const std::string& hint_crop) {
+  base::FilePath path = image_retainer->RegisterTemporaryImage(image);
   if (!path.empty()) {
-    xml_writer_->StartElement(kImageElement);
-    xml_writer_->AddAttribute(kPlacement, placement);
-    xml_writer_->AddAttribute(kSrc, base::UTF16ToUTF8(path.value()));
+    xml_writer->StartElement(kImageElement);
+    xml_writer->AddAttribute(kPlacement, placement);
+    xml_writer->AddAttribute(kSrc, base::UTF16ToUTF8(path.value()));
     if (!hint_crop.empty())
-      xml_writer_->AddAttribute(kHintCrop, hint_crop);
-    xml_writer_->EndElement();
+      xml_writer->AddAttribute(kHintCrop, hint_crop);
+    xml_writer->EndElement();
   }
 }
 
-void NotificationTemplateBuilder::WriteProgressElement(
-    const message_center::Notification& notification) {
+// Writes the <image> element for the notification icon.
+void WriteIconElement(XmlWriter* xml_writer,
+                      NotificationImageRetainer* image_retainer,
+                      const message_center::Notification& notification) {
+  WriteImageElement(xml_writer, image_retainer, notification.icon(),
+                    kPlacementAppLogoOverride, kHintCropNone);
+}
+
+// Writes the <image> element for showing a large image within the notification
+// body.
+void WriteLargeImageElement(XmlWriter* xml_writer,
+                            NotificationImageRetainer* image_retainer,
+                            const message_center::Notification& notification) {
+  WriteImageElement(xml_writer, image_retainer, notification.image(), kHero,
+                    std::string());
+}
+
+// Adds a progress bar to the notification XML.
+void WriteProgressElement(XmlWriter* xml_writer,
+                          const message_center::Notification& notification) {
   // Two other attributes are supported by Microsoft:
   // title: A string shown on the left side of the toast, just above the bar.
   // valueStringOverride: A string that replaces the percentage on the right.
-  xml_writer_->StartElement(kProgress);
+  xml_writer->StartElement(kProgress);
   // Status is mandatory, without it the progress bar is not shown.
-  xml_writer_->AddAttribute(kStatus, std::string());
-  xml_writer_->AddAttribute(
+  xml_writer->AddAttribute(kStatus, std::string());
+  xml_writer->AddAttribute(
       kValue, base::StringPrintf("%3.2f", 1.0 * notification.progress() / 100));
-  xml_writer_->EndElement();
+  xml_writer->EndElement();
 }
 
-void NotificationTemplateBuilder::AddActions(
-    const message_center::Notification& notification,
-    const NotificationLaunchId& launch_id) {
+// Writes the <actions> element.
+void StartActionsElement(XmlWriter* xml_writer) {
+  xml_writer->StartElement(kActionsElement);
+}
+
+void EndActionsElement(XmlWriter* xml_writer) {
+  xml_writer->EndElement();
+}
+
+// A helper for constructing action xml.
+void WriteActionElement(XmlWriter* xml_writer,
+                        NotificationImageRetainer* image_retainer,
+                        const message_center::ButtonInfo& button,
+                        int index,
+                        NotificationLaunchId copied_launch_id) {
+  xml_writer->StartElement(kActionElement);
+  xml_writer->AddAttribute(kActivationType, kForeground);
+  xml_writer->AddAttribute(kContent, base::UTF16ToUTF8(button.title));
+  copied_launch_id.set_button_index(index);
+  xml_writer->AddAttribute(kArguments, copied_launch_id.Serialize());
+
+  if (!button.icon.IsEmpty()) {
+    base::FilePath path = image_retainer->RegisterTemporaryImage(button.icon);
+    if (!path.empty())
+      xml_writer->AddAttribute(kImageUri, path.AsUTF8Unsafe());
+  }
+
+  xml_writer->EndElement();
+}
+
+// Fills in the details for the actions (the buttons the notification contains).
+void AddActions(XmlWriter* xml_writer,
+                NotificationImageRetainer* image_retainer,
+                const message_center::Notification& notification,
+                const NotificationLaunchId& launch_id) {
   const std::vector<message_center::ButtonInfo>& buttons =
       notification.buttons();
   bool inline_reply = false;
@@ -311,96 +269,153 @@ void NotificationTemplateBuilder::AddActions(
   }
 
   if (inline_reply) {
-    xml_writer_->StartElement(kInputElement);
-    xml_writer_->AddAttribute(kInputId, kUserResponse);
-    xml_writer_->AddAttribute(kInputType, kText);
-    xml_writer_->AddAttribute(kPlaceholderContent, placeholder);
-    xml_writer_->EndElement();
+    xml_writer->StartElement(kInputElement);
+    xml_writer->AddAttribute(kInputId, kUserResponse);
+    xml_writer->AddAttribute(kInputType, kText);
+    xml_writer->AddAttribute(kPlaceholderContent, placeholder);
+    xml_writer->EndElement();
   }
 
   for (size_t i = 0; i < buttons.size(); ++i)
-    WriteActionElement(buttons[i], i, notification.origin_url(), launch_id);
+    WriteActionElement(xml_writer, image_retainer, buttons[i], i, launch_id);
 }
 
-void NotificationTemplateBuilder::AddContextMenu(
-    NotificationLaunchId copied_launch_id) {
-  std::string notification_settings_msg = l10n_util::GetStringUTF8(
-      IDS_WIN_NOTIFICATION_SETTINGS_CONTEXT_MENU_ITEM_NAME);
-  if (context_menu_label_override_)
-    notification_settings_msg = context_menu_label_override_;
+// Writes the <audio silent="true"> element.
+void WriteAudioSilentElement(XmlWriter* xml_writer) {
+  xml_writer->StartElement(kAudioElement);
+  xml_writer->AddAttribute(kSilent, kTrue);
+  xml_writer->EndElement();
+}
 
+// A helper for constructing context menu xml.
+void WriteContextMenuElement(XmlWriter* xml_writer,
+                             const std::string& content,
+                             const std::string& arguments) {
+  xml_writer->StartElement(kActionElement);
+  xml_writer->AddAttribute(kContent, content);
+  xml_writer->AddAttribute(kPlacement, kContextMenu);
+  xml_writer->AddAttribute(kActivationType, kForeground);
+  xml_writer->AddAttribute(kArguments, arguments);
+  xml_writer->EndElement();
+}
+
+// Adds context menu actions to the notification.
+void AddContextMenu(XmlWriter* xml_writer,
+                    NotificationLaunchId copied_launch_id,
+                    const std::string& settings_msg) {
   copied_launch_id.set_is_for_context_menu();
-  WriteContextMenuElement(notification_settings_msg,
+  WriteContextMenuElement(xml_writer, settings_msg,
                           copied_launch_id.Serialize());
 }
 
-void NotificationTemplateBuilder::StartActionsElement() {
-  xml_writer_->StartElement(kActionsElement);
-}
-
-void NotificationTemplateBuilder::EndActionsElement() {
-  xml_writer_->EndElement();
-}
-
-void NotificationTemplateBuilder::WriteAudioSilentElement() {
-  xml_writer_->StartElement(kAudioElement);
-  xml_writer_->AddAttribute(kSilent, kTrue);
-  xml_writer_->EndElement();
-}
-
-void NotificationTemplateBuilder::WriteActionElement(
-    const message_center::ButtonInfo& button,
-    int index,
-    const GURL& origin,
-    NotificationLaunchId copied_launch_id) {
-  xml_writer_->StartElement(kActionElement);
-  xml_writer_->AddAttribute(kActivationType, kForeground);
-  xml_writer_->AddAttribute(kContent, base::UTF16ToUTF8(button.title));
-  copied_launch_id.set_button_index(index);
-  xml_writer_->AddAttribute(kArguments, copied_launch_id.Serialize());
-
-  if (!button.icon.IsEmpty()) {
-    // Although image_retainer_ is a WeakPtr, it should never be nullptr here.
-    DCHECK(image_retainer_);
-
-    base::FilePath path = image_retainer_->RegisterTemporaryImage(
-        button.icon, profile_id_, origin);
-    if (!path.empty())
-      xml_writer_->AddAttribute(kImageUri, path.AsUTF8Unsafe());
-  }
-
-  xml_writer_->EndElement();
-}
-
-void NotificationTemplateBuilder::WriteContextMenuElement(
-    const std::string& content,
-    const std::string& arguments) {
-  xml_writer_->StartElement(kActionElement);
-  xml_writer_->AddAttribute(kContent, content);
-  xml_writer_->AddAttribute(kPlacement, kContextMenu);
-  xml_writer_->AddAttribute(kActivationType, kForeground);
-  xml_writer_->AddAttribute(kArguments, arguments);
-  xml_writer_->EndElement();
-}
-
-void NotificationTemplateBuilder::EnsureReminderHasButton(
-    const message_center::Notification& notification,
-    NotificationLaunchId copied_launch_id) {
+// Ensures that every reminder has at least one button, as the Action Center
+// does not respect the Reminder setting on notifications with no buttons, so we
+// must add a Dismiss button to the notification for those cases. For more
+// details, see issue https://crbug.com/781792.
+void EnsureReminderHasButton(XmlWriter* xml_writer,
+                             const message_center::Notification& notification,
+                             NotificationLaunchId copied_launch_id) {
   if (!notification.never_timeout() || !notification.buttons().empty())
     return;
 
-  xml_writer_->StartElement(kActionElement);
-  xml_writer_->AddAttribute(kActivationType, kBackground);
+  xml_writer->StartElement(kActionElement);
+  xml_writer->AddAttribute(kActivationType, kBackground);
   // TODO(finnur): Add our own string here (we're past string-freeze so we're
   // re-using the already translated "Close" from elsewhere).
-  xml_writer_->AddAttribute(
+  xml_writer->AddAttribute(
       kContent, l10n_util::GetStringUTF8(IDS_MD_HISTORY_CLOSE_MENU_PROMO));
   copied_launch_id.set_is_for_dismiss_button();
-  xml_writer_->AddAttribute(kArguments, copied_launch_id.Serialize());
-  xml_writer_->EndElement();
+  xml_writer->AddAttribute(kArguments, copied_launch_id.Serialize());
+  xml_writer->EndElement();
 }
 
-void NotificationTemplateBuilder::OverrideContextMenuLabelForTesting(
-    const char* label) {
-  context_menu_label_override_ = label;
+}  // namespace
+
+const char kNotificationToastElement[] = "toast";
+const char kNotificationLaunchAttribute[] = "launch";
+
+// libXml was preferred (over WinXml, which the samples in the link below tend
+// to use) for building the XML template because it is used frequently in
+// Chrome, is nicer to use and has already been vetted.
+// https://docs.microsoft.com/en-us/windows/uwp/controls-and-patterns/tiles-and-notifications-adaptive-interactive-toasts
+base::string16 BuildNotificationTemplate(
+    NotificationImageRetainer* image_retainer,
+    const NotificationLaunchId& launch_id,
+    const message_center::Notification& notification) {
+  DCHECK(image_retainer);
+
+  XmlWriter xml_writer;
+  xml_writer.StartWriting();
+
+  StartToastElement(&xml_writer, launch_id, notification);
+  StartVisualElement(&xml_writer);
+
+  StartBindingElement(&xml_writer, kDefaultTemplate);
+
+  // Content for the toast template.
+  WriteTextElement(&xml_writer, base::UTF16ToUTF8(notification.title()),
+                   TextType::NORMAL);
+
+  // Message has historically not been shown for list-style notifications.
+  if (notification.type() == message_center::NOTIFICATION_TYPE_MULTIPLE &&
+      !notification.items().empty()) {
+    WriteItems(&xml_writer, notification.items());
+  } else {
+    WriteTextElement(&xml_writer, base::UTF16ToUTF8(notification.message()),
+                     TextType::NORMAL);
+  }
+
+  std::string attribution;
+  if (notification.UseOriginAsContextMessage())
+    attribution = FormatOrigin(notification.origin_url());
+  else if (!notification.context_message().empty())
+    attribution = base::UTF16ToUTF8(notification.context_message());
+
+  if (!attribution.empty())
+    WriteTextElement(&xml_writer, attribution, TextType::ATTRIBUTION);
+
+  if (!notification.icon().IsEmpty())
+    WriteIconElement(&xml_writer, image_retainer, notification);
+
+  if (!notification.image().IsEmpty())
+    WriteLargeImageElement(&xml_writer, image_retainer, notification);
+
+  if (notification.type() == message_center::NOTIFICATION_TYPE_PROGRESS)
+    WriteProgressElement(&xml_writer, notification);
+
+  EndBindingElement(&xml_writer);
+  EndVisualElement(&xml_writer);
+
+  StartActionsElement(&xml_writer);
+  if (!notification.buttons().empty())
+    AddActions(&xml_writer, image_retainer, notification, launch_id);
+  EnsureReminderHasButton(&xml_writer, notification, launch_id);
+  if (context_menu_label_override) {
+    AddContextMenu(&xml_writer, launch_id, context_menu_label_override);
+  } else {
+    AddContextMenu(&xml_writer, launch_id,
+                   l10n_util::GetStringUTF8(
+                       IDS_WIN_NOTIFICATION_SETTINGS_CONTEXT_MENU_ITEM_NAME));
+  }
+  EndActionsElement(&xml_writer);
+
+  if (notification.silent())
+    WriteAudioSilentElement(&xml_writer);
+
+  EndToastElement(&xml_writer);
+
+  xml_writer.StopWriting();
+
+  std::string template_xml = xml_writer.GetWrittenString();
+  DCHECK(base::StartsWith(template_xml, kXmlVersionHeader,
+                          base::CompareCase::SENSITIVE));
+
+  // The |kXmlVersionHeader| is automatically appended by libxml, but the toast
+  // system in the Windows Action Center expects it to be absent.
+  return base::UTF8ToUTF16(
+      base::StringPiece(template_xml).substr(sizeof(kXmlVersionHeader) - 1));
+}
+
+void SetContextMenuLabelForTesting(const char* label) {
+  context_menu_label_override = label;
 }

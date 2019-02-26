@@ -65,7 +65,12 @@ class ArcNotificationViewTest : public AshTestBase {
     AshTestBase::SetUp();
 
     item_ = std::make_unique<MockArcNotificationItem>(kDefaultNotificationKey);
+
+    message_center::MessageViewFactory::
+        ClearCustomNotificationViewFactoryForTest(
+            kArcNotificationCustomViewType);
     message_center::MessageViewFactory::SetCustomNotificationViewFactory(
+        kArcNotificationCustomViewType,
         base::BindRepeating(
             &ArcNotificationViewTest::CreateCustomMessageViewForTest,
             base::Unretained(this), item_.get()));
@@ -96,13 +101,16 @@ class ArcNotificationViewTest : public AshTestBase {
   }
 
   std::unique_ptr<Notification> CreateSimpleNotification() {
-    return std::make_unique<Notification>(
+    std::unique_ptr<Notification> notification = std::make_unique<Notification>(
         message_center::NOTIFICATION_TYPE_CUSTOM, kDefaultNotificationId,
         base::UTF8ToUTF16("title"), base::UTF8ToUTF16("message"), gfx::Image(),
         base::UTF8ToUTF16("display source"), GURL(),
-        message_center::NotifierId(message_center::NotifierId::ARC_APPLICATION,
-                                   "test_app_id"),
+        message_center::NotifierId(
+            message_center::NotifierType::ARC_APPLICATION, "test_app_id"),
         message_center::RichNotificationData(), nullptr);
+
+    notification->set_custom_view_type(kArcNotificationCustomViewType);
+    return notification;
   }
 
   void TearDown() override {
@@ -297,7 +305,7 @@ TEST_F(ArcNotificationViewTest, SnoozeButton) {
       message_center::NOTIFICATION_TYPE_CUSTOM, kDefaultNotificationId,
       base::UTF8ToUTF16("title"), base::UTF8ToUTF16("message"), gfx::Image(),
       base::UTF8ToUTF16("display source"), GURL(),
-      message_center::NotifierId(message_center::NotifierId::ARC_APPLICATION,
+      message_center::NotifierId(message_center::NotifierType::ARC_APPLICATION,
                                  "test_app_id"),
       rich_data, nullptr);
 

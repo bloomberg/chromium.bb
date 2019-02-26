@@ -4,6 +4,7 @@
 
 import("//build/config/clang/clang.gni")
 import("//build/config/compiler/compiler.gni")
+import("//build/config/coverage/coverage.gni")
 import("//build/config/sanitizers/sanitizers.gni")
 import("//build/config/v8_target_cpu.gni")
 import("//build/toolchain/cc_wrapper.gni")
@@ -175,40 +176,51 @@ template("gcc_toolchain") {
     if (toolchain_uses_goma &&
         (!has_gomacc_path || invoker_toolchain_args.current_os != "chromeos")) {
       goma_path = "$goma_dir/gomacc"
-
-      # Use the static analysis script if static analysis is turned on
-      # AND the tool has not opted out by setting
-      # 'is_clang_static_analysis_supported' to false.
-      if (is_clang && use_clang_static_analyzer &&
-          (!defined(invoker.is_clang_analysis_supported) ||
-           invoker.is_clang_analysis_supported)) {
-        compiler_prefix = "${analyzer_wrapper} ${goma_path} "
-
-        # Create a distinct variable for "asm", since analysis runs pass
-        # a bunch of flags to clang/clang++ that are nonsensical on assembler
-        # runs.
-        asm = "${goma_path} ${invoker.cc}"
-      } else {
-        compiler_prefix = "${goma_path} "
-      }
+      compiler_prefix = "${goma_path} "
     } else {
-      if (is_clang && use_clang_static_analyzer &&
-          (!defined(invoker.is_clang_analysis_supported) ||
-           invoker.is_clang_analysis_supported)) {
-        compiler_prefix = "${analyzer_wrapper} "
-        asm = invoker.cc
-      } else {
-        compiler_prefix = "${toolchain_cc_wrapper} "
-      }
+      compiler_prefix = "${toolchain_cc_wrapper} "
+    }
+
+    # Create a distinct variable for "asm", since analysis runs pass # a bunch
+    # of flags to clang/clang++ that are nonsensical on assembler runs.
+    asm_prefix = compiler_prefix
+
+    # Use the static analysis script if static analysis is turned on
+    # AND the tool has not opted out by setting
+    # 'is_clang_static_analysis_supported' to false.
+    if (is_clang && use_clang_static_analyzer &&
+        (!defined(invoker.is_clang_analysis_supported) ||
+         invoker.is_clang_analysis_supported)) {
+      compiler_prefix = "${analyzer_wrapper} " + compiler_prefix
+    }
+
+    if (defined(toolchain_args.coverage_instrumentation_input_file)) {
+      toolchain_coverage_instrumentation_input_file =
+          toolchain_args.coverage_instrumentation_input_file
+    } else {
+      toolchain_coverage_instrumentation_input_file =
+          coverage_instrumentation_input_file
+    }
+    _use_clang_coverage_wrapper =
+        toolchain_coverage_instrumentation_input_file != ""
+    if (_use_clang_coverage_wrapper) {
+      assert(!use_clang_static_analyzer,
+             "Clang static analyzer wrapper and Clang code coverage wrapper " +
+                 "cannot be used together.")
+
+      _coverage_wrapper =
+          rebase_path("//build/toolchain/clang_code_coverage_wrapper.py",
+                      root_build_dir) + " --files-to-instrument=" +
+          rebase_path(toolchain_coverage_instrumentation_input_file,
+                      root_build_dir)
+      compiler_prefix = "${_coverage_wrapper} " + compiler_prefix
     }
 
     cc = compiler_prefix + invoker.cc
     cxx = compiler_prefix + invoker.cxx
+    asm = asm_prefix + invoker.cc
     ar = invoker.ar
     ld = invoker.ld
-    if (!defined(asm)) {
-      asm = cc
-    }
     if (defined(invoker.readelf)) {
       readelf = invoker.readelf
     } else {

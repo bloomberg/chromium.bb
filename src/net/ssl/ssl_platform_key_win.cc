@@ -12,6 +12,7 @@
 
 #include "base/logging.h"
 #include "base/macros.h"
+#include "base/strings/utf_string_conversions.h"
 #include "crypto/openssl_util.h"
 #include "crypto/scoped_capi_types.h"
 #include "net/base/net_errors.h"
@@ -28,13 +29,35 @@ namespace net {
 
 namespace {
 
+std::string GetCAPIProviderName(HCRYPTPROV provider) {
+  DWORD name_len;
+  if (!CryptGetProvParam(provider, PP_NAME, nullptr, &name_len, 0)) {
+    return "(error getting name)";
+  }
+  std::vector<BYTE> name(name_len);
+  if (!CryptGetProvParam(provider, PP_NAME, name.data(), &name_len, 0)) {
+    return "(error getting name)";
+  }
+  // Per Microsoft's documentation, PP_NAME is NUL-terminated. However,
+  // smartcard drivers are notoriously buggy, so check this.
+  auto nul = std::find(name.begin(), name.end(), 0);
+  if (nul != name.end()) {
+    name_len = nul - name.begin();
+  }
+  return std::string(reinterpret_cast<const char*>(name.data()), name_len);
+}
+
 class SSLPlatformKeyCAPI : public ThreadedSSLPrivateKey::Delegate {
  public:
   // Takes ownership of |provider|.
   SSLPlatformKeyCAPI(HCRYPTPROV provider, DWORD key_spec)
-      : provider_(provider), key_spec_(key_spec) {}
+      : provider_name_(GetCAPIProviderName(provider)),
+        provider_(provider),
+        key_spec_(key_spec) {}
 
   ~SSLPlatformKeyCAPI() override {}
+
+  std::string GetProviderName() override { return "CAPI: " + provider_name_; }
 
   std::vector<uint16_t> GetAlgorithmPreferences() override {
     // If the key is in CAPI, assume conservatively that the CAPI service
@@ -119,19 +142,82 @@ class SSLPlatformKeyCAPI : public ThreadedSSLPrivateKey::Delegate {
   }
 
  private:
+  std::string provider_name_;
   crypto::ScopedHCRYPTPROV provider_;
   DWORD key_spec_;
 
   DISALLOW_COPY_AND_ASSIGN(SSLPlatformKeyCAPI);
 };
 
+class ScopedNCRYPT_PROV_HANDLE {
+ public:
+  ScopedNCRYPT_PROV_HANDLE() {}
+  ScopedNCRYPT_PROV_HANDLE(const ScopedNCRYPT_PROV_HANDLE&) = delete;
+  ScopedNCRYPT_PROV_HANDLE& operator=(const ScopedNCRYPT_PROV_HANDLE&) = delete;
+  ~ScopedNCRYPT_PROV_HANDLE() {
+    if (prov_) {
+      NCryptFreeObject(prov_);
+    }
+  }
+
+  NCRYPT_PROV_HANDLE get() const { return prov_; }
+  NCRYPT_PROV_HANDLE* InitializeInto() { return &prov_; }
+
+ private:
+  NCRYPT_PROV_HANDLE prov_ = 0;
+};
+
+std::string GetCNGProviderName(NCRYPT_KEY_HANDLE key) {
+  ScopedNCRYPT_PROV_HANDLE prov;
+  DWORD prov_len = 0;
+  SECURITY_STATUS status = NCryptGetProperty(
+      key, NCRYPT_PROVIDER_HANDLE_PROPERTY,
+      reinterpret_cast<BYTE*>(prov.InitializeInto()),
+      sizeof(*prov.InitializeInto()), &prov_len, NCRYPT_SILENT_FLAG);
+  if (FAILED(status)) {
+    return "(error getting provider)";
+  }
+  DCHECK_EQ(sizeof(NCRYPT_PROV_HANDLE), prov_len);
+
+  // NCRYPT_NAME_PROPERTY is a NUL-terminated Unicode string, which means an
+  // array of wchar_t, however NCryptGetProperty works in bytes, so lengths must
+  // be converted.
+  DWORD name_len = 0;
+  status = NCryptGetProperty(prov.get(), NCRYPT_NAME_PROPERTY, nullptr, 0,
+                             &name_len, NCRYPT_SILENT_FLAG);
+  if (FAILED(status) || name_len % sizeof(wchar_t) != 0) {
+    return "(error getting provider name)";
+  }
+  std::vector<wchar_t> name(name_len / sizeof(wchar_t));
+  status = NCryptGetProperty(
+      prov.get(), NCRYPT_NAME_PROPERTY, reinterpret_cast<BYTE*>(name.data()),
+      name.size() * sizeof(wchar_t), &name_len, NCRYPT_SILENT_FLAG);
+  if (FAILED(status)) {
+    return "(error getting provider name)";
+  }
+  name.resize(name_len / sizeof(wchar_t));
+
+  // Per Microsoft's documentation, the name is NUL-terminated. However,
+  // smartcard drivers are notoriously buggy, so check this.
+  auto nul = std::find(name.begin(), name.end(), 0);
+  if (nul != name.end()) {
+    name.erase(nul, name.end());
+  }
+  return base::WideToUTF8(base::WStringPiece(name.data(), name.size()));
+}
+
 class SSLPlatformKeyCNG : public ThreadedSSLPrivateKey::Delegate {
  public:
   // Takes ownership of |key|.
   SSLPlatformKeyCNG(NCRYPT_KEY_HANDLE key, int type, size_t max_length)
-      : key_(key), type_(type), max_length_(max_length) {}
+      : provider_name_(GetCNGProviderName(key)),
+        key_(key),
+        type_(type),
+        max_length_(max_length) {}
 
   ~SSLPlatformKeyCNG() override { NCryptFreeObject(key_); }
+
+  std::string GetProviderName() override { return "CNG: " + provider_name_; }
 
   std::vector<uint16_t> GetAlgorithmPreferences() override {
     // If this is an under 1024-bit RSA key, conservatively prefer to sign SHA-1
@@ -250,6 +336,7 @@ class SSLPlatformKeyCNG : public ThreadedSSLPrivateKey::Delegate {
   }
 
  private:
+  std::string provider_name_;
   NCRYPT_KEY_HANDLE key_;
   int type_;
   size_t max_length_;

@@ -6,10 +6,8 @@
 #define UI_ANDROID_WINDOW_ANDROID_H_
 
 #include <jni.h>
-#include <list>
 #include <memory>
 #include <string>
-#include <vector>
 
 #include "base/android/jni_weak_ref.h"
 #include "base/android/scoped_java_ref.h"
@@ -64,7 +62,9 @@ class UI_ANDROID_EXPORT WindowAndroid : public ViewAndroid {
   viz::BeginFrameSource* GetBeginFrameSource();
 
   // Runs the provided callback as soon as the current vsync was handled.
-  void AddVSyncCompleteCallback(const base::Closure& callback);
+  // This call is only allowed from inside the OnBeginFrame call from the
+  // BeginFrameSource of this window.
+  void AddBeginFrameCompletionCallback(base::OnceClosure callback);
 
   void SetNeedsAnimate();
   void Animate(base::TimeTicks begin_frame_time);
@@ -97,6 +97,7 @@ class UI_ANDROID_EXPORT WindowAndroid : public ViewAndroid {
 
  private:
   class WindowBeginFrameSource;
+  class ScopedOnBeginFrame;
   friend class DisplayAndroidManager;
   friend class WindowBeginFrameSource;
 
@@ -117,7 +118,6 @@ class UI_ANDROID_EXPORT WindowAndroid : public ViewAndroid {
 
   std::unique_ptr<WindowBeginFrameSource> begin_frame_source_;
   bool needs_begin_frames_;
-  std::list<base::Closure> vsync_complete_callbacks_;
   float mouse_wheel_scroll_factor_;
   bool vsync_paused_ = false;
 

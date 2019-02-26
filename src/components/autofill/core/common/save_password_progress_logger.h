@@ -28,11 +28,6 @@ struct PasswordForm;
 //
 // To use this class, the method SendLog needs to be overriden to send the logs
 // for display as appropriate.
-//
-// TODO(vabr): Logically, this class belongs to the password_manager component.
-// But the PasswordAutofillAgent needs to use it, so until that agent is in a
-// third component, shared by autofill and password_manager, this helper needs
-// to stay in autofill as well.
 class SavePasswordProgressLogger {
  public:
   // IDs of strings allowed in the logs: for security reasons, we only pass the

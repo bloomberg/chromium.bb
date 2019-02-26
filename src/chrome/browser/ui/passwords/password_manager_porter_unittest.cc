@@ -12,12 +12,11 @@
 #include "base/files/file_util.h"
 #include "base/run_loop.h"
 #include "base/strings/utf_string_conversions.h"
-#include "base/test/scoped_task_environment.h"
 #include "build/build_config.h"
 #include "chrome/browser/ui/chrome_select_file_policy.h"
 #include "chrome/browser/ui/passwords/password_manager_presenter.h"
 #include "chrome/browser/ui/passwords/password_ui_view.h"
-#include "chrome/test/base/testing_profile.h"
+#include "chrome/test/base/chrome_render_view_host_test_harness.h"
 #include "components/password_manager/core/browser/export/password_manager_exporter.h"
 #include "components/password_manager/core/browser/ui/credential_provider_interface.h"
 #include "content/public/browser/web_contents.h"
@@ -181,18 +180,14 @@ class MockPasswordManagerExporter
   DISALLOW_COPY_AND_ASSIGN(MockPasswordManagerExporter);
 };
 
-class PasswordManagerPorterTest : public testing::Test {
+class PasswordManagerPorterTest : public ChromeRenderViewHostTestHarness {
  protected:
-  PasswordManagerPorterTest()
-      : scoped_task_environment_(
-            base::test::ScopedTaskEnvironment::MainThreadType::UI) {}
+  PasswordManagerPorterTest() = default;
   ~PasswordManagerPorterTest() override = default;
 
   void SetUp() override {
+    ChromeRenderViewHostTestHarness::SetUp();
     password_manager_porter_.reset(new TestPasswordManagerPorter());
-    profile_.reset(new TestingProfile());
-    web_contents_ = content::WebContentsTester::CreateTestWebContents(
-        profile_.get(), nullptr);
     // SelectFileDialog::SetFactory is responsible for freeing the memory
     // associated with a new factory.
     selected_file_ = base::FilePath(kNullFileName);
@@ -200,25 +195,16 @@ class PasswordManagerPorterTest : public testing::Test {
         new TestSelectFileDialogFactory(selected_file_));
   }
 
-  void TearDown() override {}
-
   TestPasswordManagerPorter* password_manager_porter() const {
     return password_manager_porter_.get();
   }
 
-  content::WebContents* web_contents() const { return web_contents_.get(); }
-
-  base::test::ScopedTaskEnvironment scoped_task_environment_;
   // The file that our fake file selector returns.
   // This file should not actually be used by the test.
   base::FilePath selected_file_;
 
  private:
-  // TODO(crbug.com/689520) This is needed for mojo not to crash on destruction.
-  content::TestBrowserThreadBundle thread_bundle_;
   std::unique_ptr<TestPasswordManagerPorter> password_manager_porter_;
-  std::unique_ptr<TestingProfile> profile_;
-  std::unique_ptr<content::WebContents> web_contents_;
 
   DISALLOW_COPY_AND_ASSIGN(PasswordManagerPorterTest);
 };

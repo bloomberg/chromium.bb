@@ -216,6 +216,7 @@ class RTCRtpSender::RTCRtpSenderInternal
       new_parameters.encodings[i].dtx = encoding.dtx;
       new_parameters.encodings[i].active = encoding.active;
       new_parameters.encodings[i].bitrate_priority = encoding.bitrate_priority;
+      new_parameters.encodings[i].network_priority = encoding.network_priority;
       new_parameters.encodings[i].ptime = encoding.ptime;
       new_parameters.encodings[i].max_bitrate_bps = encoding.max_bitrate_bps;
       new_parameters.encodings[i].max_framerate = encoding.max_framerate;
@@ -231,12 +232,13 @@ class RTCRtpSender::RTCRtpSenderInternal
             this, std::move(new_parameters), std::move(callback)));
   }
 
-  void GetStats(std::unique_ptr<blink::WebRTCStatsReportCallback> callback) {
+  void GetStats(std::unique_ptr<blink::WebRTCStatsReportCallback> callback,
+                blink::RTCStatsFilter filter) {
     signaling_task_runner_->PostTask(
         FROM_HERE,
         base::BindOnce(
             &RTCRtpSender::RTCRtpSenderInternal::GetStatsOnSignalingThread,
-            this, std::move(callback)));
+            this, std::move(callback), filter));
   }
 
   bool RemoveFromPeerConnection(webrtc::PeerConnectionInterface* pc) {
@@ -285,10 +287,12 @@ class RTCRtpSender::RTCRtpSenderInternal
   }
 
   void GetStatsOnSignalingThread(
-      std::unique_ptr<blink::WebRTCStatsReportCallback> callback) {
+      std::unique_ptr<blink::WebRTCStatsReportCallback> callback,
+      blink::RTCStatsFilter filter) {
     native_peer_connection_->GetStats(
-        webrtc_sender_.get(), RTCStatsCollectorCallbackImpl::Create(
-                                  main_task_runner_, std::move(callback)));
+        webrtc_sender_.get(),
+        RTCStatsCollectorCallbackImpl::Create(main_task_runner_,
+                                              std::move(callback), filter));
   }
 
   void SetParametersOnSignalingThread(
@@ -418,8 +422,9 @@ void RTCRtpSender::SetParameters(
 }
 
 void RTCRtpSender::GetStats(
-    std::unique_ptr<blink::WebRTCStatsReportCallback> callback) {
-  internal_->GetStats(std::move(callback));
+    std::unique_ptr<blink::WebRTCStatsReportCallback> callback,
+    blink::RTCStatsFilter filter) {
+  internal_->GetStats(std::move(callback), filter);
 }
 
 void RTCRtpSender::ReplaceTrack(blink::WebMediaStreamTrack with_track,

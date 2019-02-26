@@ -15,7 +15,7 @@
 #include "third_party/blink/renderer/platform/runtime_enabled_features.h"
 
 namespace blink {
-namespace CSSShorthand {
+namespace css_shorthand {
 
 bool Offset::ParseShorthand(
     bool important,
@@ -31,20 +31,20 @@ bool Offset::ParseShorthand(
       ToLonghand(GetCSSPropertyOffsetPosition())
           .ParseSingleValue(range, context, CSSParserLocalContext());
   const CSSValue* offset_path =
-      CSSParsingUtils::ConsumeOffsetPath(range, context);
+      css_parsing_utils::ConsumeOffsetPath(range, context);
   const CSSValue* offset_distance = nullptr;
   const CSSValue* offset_rotate = nullptr;
   if (offset_path) {
-    offset_distance = CSSPropertyParserHelpers::ConsumeLengthOrPercent(
+    offset_distance = css_property_parser_helpers::ConsumeLengthOrPercent(
         range, context.Mode(), kValueRangeAll);
-    offset_rotate = CSSParsingUtils::ConsumeOffsetRotate(range, context);
+    offset_rotate = css_parsing_utils::ConsumeOffsetRotate(range, context);
     if (offset_rotate && !offset_distance) {
-      offset_distance = CSSPropertyParserHelpers::ConsumeLengthOrPercent(
+      offset_distance = css_property_parser_helpers::ConsumeLengthOrPercent(
           range, context.Mode(), kValueRangeAll);
     }
   }
   const CSSValue* offset_anchor = nullptr;
-  if (CSSPropertyParserHelpers::ConsumeSlashIncludingWhitespace(range)) {
+  if (css_property_parser_helpers::ConsumeSlashIncludingWhitespace(range)) {
     offset_anchor =
         ToLonghand(GetCSSPropertyOffsetAnchor())
             .ParseSingleValue(range, context, CSSParserLocalContext());
@@ -59,59 +59,69 @@ bool Offset::ParseShorthand(
     return false;
 
   if (offset_position) {
-    CSSPropertyParserHelpers::AddProperty(
+    css_property_parser_helpers::AddProperty(
         CSSPropertyOffsetPosition, CSSPropertyOffset, *offset_position,
-        important, CSSPropertyParserHelpers::IsImplicitProperty::kNotImplicit,
+        important,
+        css_property_parser_helpers::IsImplicitProperty::kNotImplicit,
         properties);
   } else if (RuntimeEnabledFeatures::CSSOffsetPositionAnchorEnabled()) {
-    CSSPropertyParserHelpers::AddProperty(
+    css_property_parser_helpers::AddProperty(
         CSSPropertyOffsetPosition, CSSPropertyOffset,
         *CSSInitialValue::Create(), important,
-        CSSPropertyParserHelpers::IsImplicitProperty::kNotImplicit, properties);
+        css_property_parser_helpers::IsImplicitProperty::kNotImplicit,
+        properties);
   }
 
   if (offset_path) {
-    CSSPropertyParserHelpers::AddProperty(
+    css_property_parser_helpers::AddProperty(
         CSSPropertyOffsetPath, CSSPropertyOffset, *offset_path, important,
-        CSSPropertyParserHelpers::IsImplicitProperty::kNotImplicit, properties);
+        css_property_parser_helpers::IsImplicitProperty::kNotImplicit,
+        properties);
   } else {
-    CSSPropertyParserHelpers::AddProperty(
+    css_property_parser_helpers::AddProperty(
         CSSPropertyOffsetPath, CSSPropertyOffset, *CSSInitialValue::Create(),
-        important, CSSPropertyParserHelpers::IsImplicitProperty::kNotImplicit,
+        important,
+        css_property_parser_helpers::IsImplicitProperty::kNotImplicit,
         properties);
   }
 
   if (offset_distance) {
-    CSSPropertyParserHelpers::AddProperty(
+    css_property_parser_helpers::AddProperty(
         CSSPropertyOffsetDistance, CSSPropertyOffset, *offset_distance,
-        important, CSSPropertyParserHelpers::IsImplicitProperty::kNotImplicit,
+        important,
+        css_property_parser_helpers::IsImplicitProperty::kNotImplicit,
         properties);
   } else {
-    CSSPropertyParserHelpers::AddProperty(
+    css_property_parser_helpers::AddProperty(
         CSSPropertyOffsetDistance, CSSPropertyOffset,
         *CSSInitialValue::Create(), important,
-        CSSPropertyParserHelpers::IsImplicitProperty::kNotImplicit, properties);
+        css_property_parser_helpers::IsImplicitProperty::kNotImplicit,
+        properties);
   }
 
   if (offset_rotate) {
-    CSSPropertyParserHelpers::AddProperty(
+    css_property_parser_helpers::AddProperty(
         CSSPropertyOffsetRotate, CSSPropertyOffset, *offset_rotate, important,
-        CSSPropertyParserHelpers::IsImplicitProperty::kNotImplicit, properties);
+        css_property_parser_helpers::IsImplicitProperty::kNotImplicit,
+        properties);
   } else {
-    CSSPropertyParserHelpers::AddProperty(
+    css_property_parser_helpers::AddProperty(
         CSSPropertyOffsetRotate, CSSPropertyOffset, *CSSInitialValue::Create(),
-        important, CSSPropertyParserHelpers::IsImplicitProperty::kNotImplicit,
+        important,
+        css_property_parser_helpers::IsImplicitProperty::kNotImplicit,
         properties);
   }
 
   if (offset_anchor) {
-    CSSPropertyParserHelpers::AddProperty(
+    css_property_parser_helpers::AddProperty(
         CSSPropertyOffsetAnchor, CSSPropertyOffset, *offset_anchor, important,
-        CSSPropertyParserHelpers::IsImplicitProperty::kNotImplicit, properties);
+        css_property_parser_helpers::IsImplicitProperty::kNotImplicit,
+        properties);
   } else if (RuntimeEnabledFeatures::CSSOffsetPositionAnchorEnabled()) {
-    CSSPropertyParserHelpers::AddProperty(
+    css_property_parser_helpers::AddProperty(
         CSSPropertyOffsetAnchor, CSSPropertyOffset, *CSSInitialValue::Create(),
-        important, CSSPropertyParserHelpers::IsImplicitProperty::kNotImplicit,
+        important,
+        css_property_parser_helpers::IsImplicitProperty::kNotImplicit,
         properties);
   }
 
@@ -128,5 +138,5 @@ const CSSValue* Offset::CSSValueFromComputedStyleInternal(
                                             allow_visited_style);
 }
 
-}  // namespace CSSShorthand
+}  // namespace css_shorthand
 }  // namespace blink

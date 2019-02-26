@@ -31,12 +31,17 @@ class XRWebGLLayer final : public XRLayer,
   DEFINE_WRAPPERTYPEINFO();
 
  public:
+  XRWebGLLayer(XRSession*,
+               WebGLRenderingContextBase*,
+               scoped_refptr<XRWebGLDrawingBuffer>,
+               WebGLFramebuffer*,
+               double framebuffer_scale);
   ~XRWebGLLayer() override;
 
   static XRWebGLLayer* Create(
       XRSession*,
       const WebGLRenderingContextOrWebGL2RenderingContext&,
-      const XRWebGLLayerInit&,
+      const XRWebGLLayerInit*,
       ExceptionState&);
 
   WebGLRenderingContextBase* context() const { return webgl_context_; }
@@ -84,12 +89,6 @@ class XRWebGLLayer final : public XRLayer,
   void Trace(blink::Visitor*) override;
 
  private:
-  XRWebGLLayer(XRSession*,
-               WebGLRenderingContextBase*,
-               scoped_refptr<XRWebGLDrawingBuffer>,
-               WebGLFramebuffer*,
-               double framebuffer_scale);
-
   Member<XRViewport> left_viewport_;
   Member<XRViewport> right_viewport_;
 

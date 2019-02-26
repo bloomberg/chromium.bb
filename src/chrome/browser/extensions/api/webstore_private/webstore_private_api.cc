@@ -26,13 +26,12 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/safe_browsing/safe_browsing_navigation_observer_manager.h"
 #include "chrome/browser/safe_browsing/safe_browsing_service.h"
-#include "chrome/browser/signin/signin_manager_factory.h"
+#include "chrome/browser/signin/identity_manager_factory.h"
 #include "chrome/browser/ui/app_list/app_list_util.h"
 #include "chrome/common/extensions/extension_constants.h"
 #include "chrome/common/pref_names.h"
 #include "components/crx_file/id_util.h"
 #include "components/prefs/pref_service.h"
-#include "components/signin/core/browser/signin_manager.h"
 #include "content/public/browser/gpu_feature_checker.h"
 #include "content/public/browser/storage_partition.h"
 #include "content/public/browser/web_contents.h"
@@ -42,6 +41,7 @@
 #include "extensions/common/extension.h"
 #include "net/base/load_flags.h"
 #include "net/url_request/url_request.h"
+#include "services/identity/public/cpp/identity_manager.h"
 #include "url/gurl.h"
 
 #if BUILDFLAG(ENABLE_SUPERVISED_USERS)
@@ -253,10 +253,10 @@ WebstorePrivateBeginInstallWithManifest3Function::Run() {
 void WebstorePrivateBeginInstallWithManifest3Function::OnWebstoreParseSuccess(
     const std::string& id,
     const SkBitmap& icon,
-    base::DictionaryValue* parsed_manifest) {
+    std::unique_ptr<base::DictionaryValue> parsed_manifest) {
   CHECK_EQ(details().id, id);
   CHECK(parsed_manifest);
-  parsed_manifest_.reset(parsed_manifest);
+  parsed_manifest_ = std::move(parsed_manifest);
   icon_ = icon;
 
   std::string localized_name =
@@ -526,9 +526,9 @@ WebstorePrivateGetBrowserLoginFunction::
 ExtensionFunction::ResponseAction
 WebstorePrivateGetBrowserLoginFunction::Run() {
   GetBrowserLogin::Results::Info info;
-  info.login = SigninManagerFactory::GetForProfile(
+  info.login = IdentityManagerFactory::GetForProfile(
                    chrome_details_.GetProfile()->GetOriginalProfile())
-                   ->GetAuthenticatedAccountInfo()
+                   ->GetPrimaryAccountInfo()
                    .email;
   return RespondNow(ArgumentList(GetBrowserLogin::Results::Create(info)));
 }

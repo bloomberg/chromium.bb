@@ -29,7 +29,8 @@ TimedCanvasDrawListener* TimedCanvasDrawListener::Create(
     double frame_rate,
     ExecutionContext* context) {
   TimedCanvasDrawListener* listener =
-      new TimedCanvasDrawListener(std::move(handler), frame_rate, context);
+      MakeGarbageCollected<TimedCanvasDrawListener>(std::move(handler),
+                                                    frame_rate, context);
   listener->request_frame_timer_.StartRepeating(listener->frame_interval_,
                                                 FROM_HERE);
   return listener;

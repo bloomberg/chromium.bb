@@ -10,7 +10,7 @@
 #include "base/logging.h"
 #include "base/single_thread_task_runner.h"
 #include "base/trace_event/trace_event.h"
-#include "base/trace_event/trace_event_argument.h"
+#include "base/trace_event/traced_value.h"
 #include "cc/base/devtools_instrumentation.h"
 #include "cc/scheduler/compositor_timing_history.h"
 #include "components/viz/common/frame_sinks/delay_based_time_source.h"
@@ -258,6 +258,7 @@ void Scheduler::StartOrStopBeginFrames() {
     BeginImplFrameNotExpectedSoon();
     devtools_instrumentation::NeedsBeginFrameChanged(layer_tree_host_id_,
                                                      false);
+    client_->WillNotReceiveBeginFrame();
   }
 }
 
@@ -305,6 +306,16 @@ void Scheduler::OnBeginFrameSourcePausedChanged(bool paused) {
 // a BeginRetroFrame.
 bool Scheduler::OnBeginFrameDerivedImpl(const viz::BeginFrameArgs& args) {
   TRACE_EVENT1("cc,benchmark", "Scheduler::BeginFrame", "args", args.AsValue());
+
+  // If the begin frame interval is different than last frame and bigger than
+  // zero then let |client_| know about the new interval for animations. In
+  // theory the interval should always be bigger than zero but the value is
+  // provided by APIs outside our control.
+  if (args.interval != last_frame_interval_ &&
+      args.interval > base::TimeDelta()) {
+    last_frame_interval_ = args.interval;
+    client_->FrameIntervalUpdated(last_frame_interval_);
+  }
 
   if (ShouldDropBeginFrame(args)) {
     TRACE_EVENT_INSTANT0("cc", "Scheduler::BeginFrameDropped",
@@ -729,10 +740,10 @@ void Scheduler::DrawForced() {
       client_->CurrentFrameHadRAF(), client_->NextFrameHasPendingRAF());
 }
 
-void Scheduler::SetDeferCommits(bool defer_commits) {
-  TRACE_EVENT1("cc", "Scheduler::SetDeferCommits", "defer_commits",
-               defer_commits);
-  state_machine_.SetDeferCommits(defer_commits);
+void Scheduler::SetDeferMainFrameUpdate(bool defer_main_frame_update) {
+  TRACE_EVENT1("cc", "Scheduler::SetDeferMainFrameUpdate",
+               "defer_main_frame_update", defer_main_frame_update);
+  state_machine_.SetDeferMainFrameUpdate(defer_main_frame_update);
   ProcessScheduledActions();
 }
 

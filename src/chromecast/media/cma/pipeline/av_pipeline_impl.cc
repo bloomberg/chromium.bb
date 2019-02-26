@@ -9,6 +9,7 @@
 #include "base/bind.h"
 #include "base/callback_helpers.h"
 #include "base/location.h"
+#include "base/logging.h"
 #include "base/single_thread_task_runner.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/threading/thread_task_runner_handle.h"
@@ -16,9 +17,9 @@
 #include "chromecast/media/cdm/cast_cdm_context.h"
 #include "chromecast/media/cma/base/buffering_frame_provider.h"
 #include "chromecast/media/cma/base/buffering_state.h"
-#include "chromecast/media/cma/base/cma_logging.h"
 #include "chromecast/media/cma/base/coded_frame_provider.h"
 #include "chromecast/media/cma/base/decoder_buffer_base.h"
+#include "chromecast/media/cma/pipeline/cdm_decryptor.h"
 #include "chromecast/media/cma/pipeline/decrypt_util.h"
 #include "chromecast/public/media/cast_decrypt_config.h"
 #include "media/base/audio_decoder_config.h"
@@ -78,14 +79,14 @@ void AvPipelineImpl::SetCodedFrameProvider(
 bool AvPipelineImpl::StartPlayingFrom(
     base::TimeDelta time,
     const scoped_refptr<BufferingState>& buffering_state) {
-  CMALOG(kLogControl) << __FUNCTION__ << " t0=" << time.InMilliseconds();
+  LOG(INFO) << __FUNCTION__ << " t0=" << time.InMilliseconds();
   DCHECK(thread_checker_.CalledOnValidThread());
 
   // Reset the pipeline statistics.
   previous_stats_ = ::media::PipelineStatistics();
 
   if (state_ == kError) {
-    CMALOG(kLogControl) << __FUNCTION__ << " called while in error state";
+    LOG(INFO) << __FUNCTION__ << " called while in error state";
     return false;
   }
   DCHECK_EQ(state_, kFlushed);
@@ -107,12 +108,12 @@ bool AvPipelineImpl::StartPlayingFrom(
 }
 
 void AvPipelineImpl::Flush(const base::Closure& flush_cb) {
-  CMALOG(kLogControl) << __FUNCTION__;
+  LOG(INFO) << __FUNCTION__;
   DCHECK(thread_checker_.CalledOnValidThread());
   DCHECK(flush_cb_.is_null());
 
   if (state_ == kError) {
-    CMALOG(kLogControl) << __FUNCTION__ << " called while in error state";
+    LOG(INFO) << __FUNCTION__ << " called while in error state";
     return;
   }
   DCHECK_EQ(state_, kPlaying);
@@ -149,7 +150,7 @@ void AvPipelineImpl::Flush(const base::Closure& flush_cb) {
 }
 
 void AvPipelineImpl::OnFlushDone() {
-  CMALOG(kLogControl) << __FUNCTION__;
+  LOG(INFO) << __FUNCTION__;
   DCHECK(thread_checker_.CalledOnValidThread());
   if (state_ == kError) {
     // Flush callback is reset on error.
@@ -202,13 +203,6 @@ void AvPipelineImpl::OnNewFrame(
   if (audio_config.IsValidConfig() || video_config.IsValidConfig())
     OnUpdateConfig(buffer->stream_id(), audio_config, video_config);
 
-  if (!decryptor_) {
-    decryptor_ = CreateDecryptor();
-    DCHECK(decryptor_);
-    decryptor_->Init(base::BindRepeating(&AvPipelineImpl::OnBufferDecrypted,
-                                         decrypt_weak_factory_.GetWeakPtr()));
-  }
-
   pending_buffer_ = buffer;
   ProcessPendingBuffer();
 }
@@ -221,7 +215,7 @@ void AvPipelineImpl::ProcessPendingBuffer() {
 
   // Break the feeding loop when the end of stream is reached.
   if (pending_buffer_->end_of_stream()) {
-    CMALOG(kLogControl) << __FUNCTION__ << ": EOS reached, stopped feeding";
+    LOG(INFO) << __FUNCTION__ << ": EOS reached, stopped feeding";
     enable_feeding_ = false;
   }
 
@@ -231,8 +225,7 @@ void AvPipelineImpl::ProcessPendingBuffer() {
     // Should not send the frame if the key ID is not available yet.
     std::string key_id(pending_buffer_->decrypt_config()->key_id());
     if (!cast_cdm_context_) {
-      CMALOG(kLogControl) << "No CDM for frame: pts="
-                          << pending_buffer_->timestamp();
+      LOG(INFO) << "No CDM for frame: pts=" << pending_buffer_->timestamp();
       return;
     }
 
@@ -240,19 +233,33 @@ void AvPipelineImpl::ProcessPendingBuffer() {
         cast_cdm_context_->GetDecryptContext(
             key_id, GetEncryptionScheme(pending_buffer_->stream_id()));
     if (!decrypt_context) {
-      CMALOG(kLogControl) << "frame(pts=" << pending_buffer_->timestamp()
-                          << "): waiting for key id "
-                          << base::HexEncode(&key_id[0], key_id.size());
+      LOG(INFO) << "frame(pts=" << pending_buffer_->timestamp()
+                << "): waiting for key id "
+                << base::HexEncode(&key_id[0], key_id.size());
       if (!client_.wait_for_key_cb.is_null())
         client_.wait_for_key_cb.Run();
       return;
     }
 
     DCHECK_NE(decrypt_context->GetKeySystem(), KEY_SYSTEM_NONE);
+
+    if (!decryptor_) {
+      decryptor_ = CreateStreamDecryptor(decrypt_context->GetKeySystem());
+      DCHECK(decryptor_);
+      decryptor_->Init(base::BindRepeating(&AvPipelineImpl::OnBufferDecrypted,
+                                           decrypt_weak_factory_.GetWeakPtr()));
+    }
+
     pending_buffer_->set_decrypt_context(std::move(decrypt_context));
   }
 
-  decryptor_->Decrypt(std::move(pending_buffer_));
+  if (decryptor_) {
+    decryptor_->Decrypt(std::move(pending_buffer_));
+    return;
+  }
+
+  DCHECK(ready_buffers_.empty());
+  PushReadyBuffer(std::move(pending_buffer_));
 }
 
 void AvPipelineImpl::PushAllReadyBuffers() {
@@ -342,8 +349,8 @@ void AvPipelineImpl::OnDecoderError() {
 void AvPipelineImpl::OnKeyStatusChanged(const std::string& key_id,
                                         CastKeyStatus key_status,
                                         uint32_t system_code) {
-  CMALOG(kLogControl) << __FUNCTION__ << " key_status= " << key_status
-                      << " system_code=" << system_code;
+  LOG(INFO) << __FUNCTION__ << " key_status= " << key_status
+            << " system_code=" << system_code;
   DCHECK(cast_cdm_context_);
   cast_cdm_context_->SetKeyStatus(key_id, key_status, system_code);
 }
@@ -429,6 +436,16 @@ void AvPipelineImpl::UpdatePlayableFrames() {
     // The frame is playable: remove it from the list of non playable frames.
     non_playable_frames_.pop_front();
   }
+}
+
+std::unique_ptr<StreamDecryptor> AvPipelineImpl::CreateStreamDecryptor(
+    CastKeySystem key_system) {
+  if (key_system == KEY_SYSTEM_CLEAR_KEY) {
+    // Clear Key only supports clear output.
+    return std::make_unique<CdmDecryptor>(true /* clear_buffer_needed */);
+  }
+
+  return CreateDecryptor();
 }
 
 }  // namespace media

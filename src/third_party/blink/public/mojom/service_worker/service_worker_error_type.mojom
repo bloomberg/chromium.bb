@@ -45,7 +45,7 @@ enum ServiceWorkerResponseError {
   // kForeignFetchMismatchedOrigin = 13,  // obsolete
   kRedirectedResponseForNotFollowRequest = 14,
   kDataPipeCreationFailed = 15,
-  kResponseTypeCORSForRequestModeSameOrigin = 16,
+  kResponseTypeCorsForRequestModeSameOrigin = 16,
   kResponseBodyBroken = 17,
   // Add a new type here, then update enums.xml.
 };

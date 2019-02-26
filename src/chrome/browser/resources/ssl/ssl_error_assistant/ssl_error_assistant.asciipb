@@ -2,11 +2,11 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
+version_id: 7
+
 # List of SPKI hashes of certificates that are treated as captive portal
 # certificates. See chrome/browser/ssl/ssl_error_assistant.proto for the full
 # format.
-
-version_id: 5
 
 # https://captive-portal.badssl.com leaf.
 # This is a test certificate, always keep it at the top.
@@ -34,6 +34,10 @@ captive_portal_cert {
 # https://crt.sh/?q=d92d97e4d17ce28a7c844f58b0d1cda44e604b959cff998435e01777777ce715
 captive_portal_cert {
   sha256_hash: "sha256/8Iuf4xRbVCmCMQTJn3rxlglIO1IOKoyuSUgmXyfaIKs="
+}
+# https://crt.sh/?q=AB+DF+09+66+47+46+2D+B6+D1+4F+AC+B8+13+7B+D6+8C+8B+B7+26+A9
+captive_portal_cert {
+  sha256_hash: "sha256/8IHdrS+r6IWzSMcRcD/GA6mBxk1ECX8tGRW0rtGWILE="
 }
 
 # beeline.ru
@@ -331,5 +335,22 @@ dynamic_interstitial {
   cert_error: ERR_CERT_WEAK_SIGNATURE_ALGORITHM,
   sha256_hash: "sha256/71UShHFSMt6S4kbDIzKTYrEySTuxa1ieR3VSC+uHGlY=",
   mitm_software_name: "Mitel",
+  interstitial_type: INTERSTITIAL_PAGE_MITM_SOFTWARE
+}
+
+# Potentially compromised Sennheiser HeadSetup and Sennheiser HeadSetup Pro
+# certs.
+# https://nvd.nist.gov/vuln/detail/CVE-2018-17612
+dynamic_interstitial {
+  cert_error: ERR_CERT_REVOKED,
+  sha256_hash: "sha256/DEPqi83p/DvKFlZkrIIVVn40idU5OgyB4aeRQZkuGVM=",
+  mitm_software_name: "Sennheiser HeadSetup",
+  interstitial_type: INTERSTITIAL_PAGE_MITM_SOFTWARE
+}
+
+dynamic_interstitial {
+  cert_error: ERR_CERT_REVOKED,
+  sha256_hash: "sha256/j1kfeqTcPv6UkMOKRpLJAR7RKPHeWVVpQG13tvofa0w=",
+  mitm_software_name: "Sennheiser HeadSetup",
   interstitial_type: INTERSTITIAL_PAGE_MITM_SOFTWARE
 }

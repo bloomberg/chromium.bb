@@ -85,18 +85,17 @@
   top: 8px; /* Should be same as time-container's top padding. */
 }
 
-.time-container > .time.disabled {
-  opacity: 0;
-}
-
 .time-container > .time-spacer {
   opacity: 0; /* This class is intended to be used as invisible spacer. */
 }
 
-.time-volume-controls > paper-slider {
-  --paper-slider-active-color: rgb(66, 133, 244);
-  --paper-slider-knob-color: rgb(64, 138, 241);
-  flex: auto;
+.time-volume-controls > cr-slider {
+  --cr-slider-active-color: rgb(66, 133, 244);
+  --cr-slider-knob-color: rgb(64, 138, 241);
+}
+
+cr-slider {
+  cursor: pointer;
 }
 
 #timeSlider {
@@ -107,11 +106,6 @@
 #volumeSlider {
   flex: 1 1 auto;
   width: 82px;
-}
-
-.media-button.disabled,
-paper-slider.disabled {
-  pointer-events: none;
 }
 
 /* Media controls in order of appearance. */

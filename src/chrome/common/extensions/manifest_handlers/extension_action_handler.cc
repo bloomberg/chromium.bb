@@ -14,6 +14,7 @@
 #include "chrome/grit/generated_resources.h"
 #include "extensions/common/extension.h"
 #include "extensions/common/file_util.h"
+#include "extensions/common/image_util.h"
 #include "extensions/common/manifest_constants.h"
 
 namespace extensions {
@@ -114,9 +115,12 @@ bool ExtensionActionHandler::Validate(
     error_message = IDS_EXTENSION_LOAD_ICON_FOR_BROWSER_ACTION_FAILED;
   }
 
+  // Analyze the icons for visibility using the default toolbar color, since
+  // the majority of Chrome users don't modify their theme.
   if (action && !action->default_icon.empty() &&
       !file_util::ValidateExtensionIconSet(
-          action->default_icon, extension, error_message, error)) {
+          action->default_icon, extension, error_message,
+          image_util::kDefaultToolbarColor, error)) {
     return false;
   }
   return true;

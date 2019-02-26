@@ -17,7 +17,6 @@
 namespace blink {
 
 class BackgroundFetchRegistration;
-class WebServiceWorkerRequest;
 
 // The bridge is responsible for establishing and maintaining the Mojo
 // connection to the BackgroundFetchService. It's keyed on an active Service
@@ -51,7 +50,7 @@ class BackgroundFetchBridge final
   // for the sequence of |requests|. The |callback| will be invoked when the
   // registration has been created.
   void Fetch(const String& developer_id,
-             Vector<WebServiceWorkerRequest> requests,
+             Vector<mojom::blink::FetchAPIRequestPtr> requests,
              mojom::blink::BackgroundFetchOptionsPtr options,
              const SkBitmap& icon,
              mojom::blink::BackgroundFetchUkmDataPtr ukm_data,
@@ -69,7 +68,7 @@ class BackgroundFetchBridge final
   void MatchRequests(
       const String& developer_id,
       const String& unique_id,
-      base::Optional<WebServiceWorkerRequest> request_to_match,
+      mojom::blink::FetchAPIRequestPtr request_to_match,
       mojom::blink::QueryParamsPtr cache_query_params,
       bool match_all,
       mojom::blink::BackgroundFetchService::MatchRequestsCallback callback);

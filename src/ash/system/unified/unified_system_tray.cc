@@ -5,6 +5,8 @@
 #include "ash/system/unified/unified_system_tray.h"
 
 #include "ash/accessibility/accessibility_controller.h"
+#include "ash/public/cpp/ash_features.h"
+#include "ash/shelf/shelf.h"
 #include "ash/shell.h"
 #include "ash/strings/grit/ash_strings.h"
 #include "ash/system/date/date_view.h"
@@ -14,11 +16,10 @@
 #include "ash/system/message_center/message_center_ui_delegate.h"
 #include "ash/system/model/clock_model.h"
 #include "ash/system/model/system_tray_model.h"
+#include "ash/system/network/network_icon_purger.h"
 #include "ash/system/network/network_tray_view.h"
-#include "ash/system/network/tray_network_state_observer.h"
 #include "ash/system/power/tray_power.h"
 #include "ash/system/status_area_widget.h"
-#include "ash/system/tray/system_tray.h"
 #include "ash/system/tray/tray_constants.h"
 #include "ash/system/tray/tray_container.h"
 #include "ash/system/unified/ime_mode_view.h"
@@ -40,13 +41,13 @@ namespace ash {
 
 class UnifiedSystemTray::UiDelegate : public MessageCenterUiDelegate {
  public:
-  UiDelegate(UnifiedSystemTray* owner);
+  explicit UiDelegate(UnifiedSystemTray* owner);
   ~UiDelegate() override;
 
   // MessageCenterUiDelegate:
   void OnMessageCenterContentsChanged() override;
   bool ShowPopups() override;
-  void HidePopups(bool animate) override;
+  void HidePopups() override;
   bool ShowMessageCenter(bool show_by_click) override;
   void HideMessageCenter() override;
 
@@ -79,6 +80,7 @@ UnifiedSystemTray::UiDelegate::UiDelegate(UnifiedSystemTray* owner)
   message_popup_collection_ =
       std::make_unique<message_center::MessagePopupCollection>(
           popup_alignment_delegate_.get());
+  message_popup_collection_->set_inverse();
   display::Screen* screen = display::Screen::GetScreen();
   popup_alignment_delegate_->StartObserving(
       screen, screen->GetDisplayNearestWindow(
@@ -94,12 +96,10 @@ void UnifiedSystemTray::UiDelegate::OnMessageCenterContentsChanged() {
 bool UnifiedSystemTray::UiDelegate::ShowPopups() {
   if (owner_->IsBubbleShown())
     return false;
-  message_popup_collection_->Update();
   return true;
 }
 
-void UnifiedSystemTray::UiDelegate::HidePopups(bool animate) {
-  message_popup_collection_->MarkAllPopupsShown(animate);
+void UnifiedSystemTray::UiDelegate::HidePopups() {
   popup_alignment_delegate_->SetTrayBubbleHeight(0);
 }
 
@@ -115,47 +115,18 @@ void UnifiedSystemTray::UiDelegate::HideMessageCenter() {
   owner_->HideBubbleInternal();
 }
 
-class UnifiedSystemTray::NetworkStateDelegate
-    : public TrayNetworkStateObserver::Delegate {
- public:
-  explicit NetworkStateDelegate(tray::NetworkTrayView* tray_view);
-  ~NetworkStateDelegate() override;
-
-  // TrayNetworkStateObserver::Delegate
-  void NetworkStateChanged(bool notify_a11y) override;
-
- private:
-  tray::NetworkTrayView* const tray_view_;
-  const std::unique_ptr<TrayNetworkStateObserver> network_state_observer_;
-
-  DISALLOW_COPY_AND_ASSIGN(NetworkStateDelegate);
-};
-
-UnifiedSystemTray::NetworkStateDelegate::NetworkStateDelegate(
-    tray::NetworkTrayView* tray_view)
-    : tray_view_(tray_view),
-      network_state_observer_(
-          std::make_unique<TrayNetworkStateObserver>(this)) {}
-
-UnifiedSystemTray::NetworkStateDelegate::~NetworkStateDelegate() = default;
-
-void UnifiedSystemTray::NetworkStateDelegate::NetworkStateChanged(
-    bool notify_a11y) {
-  tray_view_->UpdateNetworkStateHandlerIcon();
-  tray_view_->UpdateConnectionStatus(tray::GetConnectedNetwork(), notify_a11y);
-}
-
 UnifiedSystemTray::UnifiedSystemTray(Shelf* shelf)
     : TrayBackgroundView(shelf),
       ui_delegate_(std::make_unique<UiDelegate>(this)),
       model_(std::make_unique<UnifiedSystemTrayModel>()),
       slider_bubble_controller_(
           std::make_unique<UnifiedSliderBubbleController>(this)),
-      ime_mode_view_(new ImeModeView()),
-      managed_device_view_(new ManagedDeviceView()),
-      notification_counter_item_(new NotificationCounterView()),
-      quiet_mode_view_(new QuietModeView()),
-      time_view_(new tray::TimeTrayItemView(nullptr, shelf)) {
+      network_icon_purger_(std::make_unique<NetworkIconPurger>()),
+      ime_mode_view_(new ImeModeView(shelf)),
+      managed_device_view_(new ManagedDeviceView(shelf)),
+      notification_counter_item_(new NotificationCounterView(shelf)),
+      quiet_mode_view_(new QuietModeView(shelf)),
+      time_view_(new tray::TimeTrayItemView(shelf)) {
   tray_container()->SetMargin(kUnifiedTrayContentPadding, 0);
   tray_container()->AddChildView(ime_mode_view_);
   tray_container()->AddChildView(managed_device_view_);
@@ -164,13 +135,18 @@ UnifiedSystemTray::UnifiedSystemTray(Shelf* shelf)
 
   // It is possible in unit tests that it's missing.
   if (chromeos::NetworkHandler::IsInitialized()) {
-    tray::NetworkTrayView* network_item = new tray::NetworkTrayView(nullptr);
-    network_state_delegate_ =
-        std::make_unique<NetworkStateDelegate>(network_item);
-    tray_container()->AddChildView(network_item);
+    if (features::IsSeparateNetworkIconsEnabled()) {
+      tray_container()->AddChildView(
+          tray::NetworkTrayView::CreateForDefault(shelf));
+      tray_container()->AddChildView(
+          tray::NetworkTrayView::CreateForMobile(shelf));
+    } else {
+      tray_container()->AddChildView(
+          tray::NetworkTrayView::CreateForSingleIcon(shelf));
+    }
   }
 
-  tray_container()->AddChildView(new tray::PowerTrayView(nullptr));
+  tray_container()->AddChildView(new tray::PowerTrayView(shelf));
   tray_container()->AddChildView(time_view_);
 
   SetInkDropMode(InkDropMode::ON);

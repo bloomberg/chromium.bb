@@ -41,7 +41,7 @@ OffscreenCanvasRenderingContext2D::OffscreenCanvasRenderingContext2D(
   }
   dirty_rect_for_commit_.setEmpty();
   WorkerSettings* worker_settings =
-      ToWorkerGlobalScope(execution_context)->GetWorkerSettings();
+      To<WorkerGlobalScope>(execution_context)->GetWorkerSettings();
   if (worker_settings && worker_settings->DisableReadingFromCanvas())
     canvas->SetDisableReadingFromCanvasTrue();
 }

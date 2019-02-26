@@ -66,10 +66,15 @@ void CompositingLayerPropertyUpdater::Update(const LayoutObject& object) {
         if (graphics_layer) {
           if (!container_layer_state) {
             container_layer_state = fragment_data.LocalBorderBoxProperties();
-            if (const auto* properties = fragment_data.PaintProperties()) {
-              // CSS clip should be applied within the layer.
-              if (const auto* css_clip = properties->CssClip())
-                container_layer_state->SetClip(css_clip->Parent());
+            // Before BlinkGenPropertyTrees, CSS clip could not be composited so
+            // we should avoid setting it on the layer itself.
+            if (!RuntimeEnabledFeatures::BlinkGenPropertyTreesEnabled() &&
+                !RuntimeEnabledFeatures::SlimmingPaintV2Enabled()) {
+              if (const auto* properties = fragment_data.PaintProperties()) {
+                if (const auto* css_clip = properties->CssClip()) {
+                  container_layer_state->SetClip(css_clip->Parent());
+                }
+              }
             }
           }
           graphics_layer->SetLayerState(

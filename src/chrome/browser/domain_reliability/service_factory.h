@@ -5,41 +5,13 @@
 #ifndef CHROME_BROWSER_DOMAIN_RELIABILITY_SERVICE_FACTORY_H_
 #define CHROME_BROWSER_DOMAIN_RELIABILITY_SERVICE_FACTORY_H_
 
-#include "base/macros.h"
-#include "base/memory/singleton.h"
-#include "components/keyed_service/content/browser_context_keyed_service_factory.h"
-
-namespace content {
-class BrowserContext;
-}  // namespace content
-
 namespace domain_reliability {
 
-class DomainReliabilityService;
-
-// Creates DomainReliabilityServices for BrowserContexts. Initializes them with
-// the hardcoded upload reporter string "chrome".
-class DomainReliabilityServiceFactory
-    : public BrowserContextKeyedServiceFactory {
+class DomainReliabilityServiceFactory {
  public:
-  static DomainReliabilityService* GetForBrowserContext(
-      content::BrowserContext* context);
+  static bool ShouldCreateService();
 
-  static DomainReliabilityServiceFactory* GetInstance();
-
- private:
-  friend struct base::DefaultSingletonTraits<DomainReliabilityServiceFactory>;
-
-  DomainReliabilityServiceFactory();
-  ~DomainReliabilityServiceFactory() override;
-
-  // BrowserContextKeyedServiceFactory implementation:
-  KeyedService* BuildServiceInstanceFor(
-      content::BrowserContext* context) const override;
-
-  bool ShouldCreateService() const;
-
-  DISALLOW_COPY_AND_ASSIGN(DomainReliabilityServiceFactory);
+  static const char kUploadReporterString[];
 };
 
 }  // namespace domain_reliability

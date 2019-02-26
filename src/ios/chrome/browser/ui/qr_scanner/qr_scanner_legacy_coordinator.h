@@ -8,7 +8,6 @@
 #import "ios/chrome/browser/ui/coordinators/chrome_coordinator.h"
 
 @class CommandDispatcher;
-@protocol QRScannerPresenting;
 
 // QRScannerLegacyCoordinator presents the public interface for the QR scanner
 // feature.
@@ -16,14 +15,6 @@
 
 // Models.
 @property(nonatomic, readwrite, weak) CommandDispatcher* dispatcher;
-
-// Requirements.
-@property(nonatomic, readwrite, weak) id<QRScannerPresenting>
-    presentationProvider;
-
-// Removes references to any weak objects that this coordinator holds pointers
-// to.
-- (void)disconnect;
 
 @end
 

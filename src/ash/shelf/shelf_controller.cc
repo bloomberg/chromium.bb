@@ -415,9 +415,9 @@ void ShelfController::OnNotificationAdded(const std::string& notification_id) {
 
   // Skip this if the notification shouldn't badge an app.
   if (notification->notifier_id().type !=
-          message_center::NotifierId::APPLICATION &&
+          message_center::NotifierType::APPLICATION &&
       notification->notifier_id().type !=
-          message_center::NotifierId::ARC_APPLICATION) {
+          message_center::NotifierType::ARC_APPLICATION) {
     return;
   }
 

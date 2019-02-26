@@ -81,8 +81,8 @@ class CheckAlertDialogBuilder(unittest.TestCase):
               'PermissionDialogView.java',
           ['new AlertDialog.Builder()']),
       MockFile(
-          'chrome/android/java/src/org/chromium/chrome/browser/'
-              'JavascriptAppModalDialog.java',
+          'chrome/android/java/src/org/chromium/chrome/browser/payments/'
+              'AndroidPaymentApp.java',
           ['new AlertDialog.Builder()']),
       MockFile('path/One.java', ['AlertDialog.Builder']),
       MockFile('path/Two.java', ['// do not: new AlertDialog.Builder()']),

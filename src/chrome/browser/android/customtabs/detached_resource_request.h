@@ -39,6 +39,8 @@ namespace customtabs {
 // This is a UI thread class.
 class DetachedResourceRequest {
  public:
+  static constexpr int kMaxResponseSize = 100 * 1024;
+
   // The motivation of the resource request, used for histograms reporting.
   // GENERATED_JAVA_ENUM_PACKAGE: org.chromium.chrome.browser.customtabs
   // GENERATED_JAVA_CLASS_NAME_OVERRIDE: DetachedResourceRequestMotivation

@@ -38,8 +38,8 @@ namespace blink {
 OriginAccessEntry::OriginAccessEntry(
     const String& protocol,
     const String& host,
-    network::cors::OriginAccessEntry::MatchMode match_mode,
-    network::mojom::CORSOriginAccessMatchPriority priority)
+    network::mojom::CorsOriginAccessMatchMode match_mode,
+    network::mojom::CorsOriginAccessMatchPriority priority)
     : private_(std::string(protocol.Utf8().data()),
                std::string(host.Utf8().data()),
                match_mode,

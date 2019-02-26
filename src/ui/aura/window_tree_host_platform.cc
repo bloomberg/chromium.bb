@@ -53,10 +53,14 @@ std::unique_ptr<WindowTreeHost> WindowTreeHost::Create(
 
 WindowTreeHostPlatform::WindowTreeHostPlatform(
     ui::PlatformWindowInitProperties properties,
-    std::unique_ptr<Window> window)
+    std::unique_ptr<Window> window,
+    const char* trace_environment_name)
     : WindowTreeHost(std::move(window)) {
   bounds_ = properties.bounds;
-  CreateCompositor();
+  CreateCompositor(viz::FrameSinkId(),
+                   /* force_software_compositor */ false,
+                   /* external_begin_frames_enabled */ false,
+                   /* are_events_in_pixels */ true, trace_environment_name);
   CreateAndSetPlatformWindow(std::move(properties));
 }
 
@@ -117,9 +121,9 @@ gfx::Rect WindowTreeHostPlatform::GetBoundsInPixels() const {
 
 void WindowTreeHostPlatform::SetBoundsInPixels(
     const gfx::Rect& bounds,
-    const viz::LocalSurfaceId& local_surface_id) {
+    const viz::LocalSurfaceIdAllocation& local_surface_id_allocation) {
   pending_size_ = bounds.size();
-  pending_local_surface_id_ = local_surface_id;
+  pending_local_surface_id_allocation_ = local_surface_id_allocation;
   platform_window_->SetBounds(bounds);
 }
 
@@ -141,7 +145,7 @@ bool WindowTreeHostPlatform::CaptureSystemKeyEventsImpl(
   // problems with event routing (i.e. which Hook takes precedence) and
   // destruction ordering.
   DCHECK(!keyboard_hook_);
-  keyboard_hook_ = ui::KeyboardHook::Create(
+  keyboard_hook_ = ui::KeyboardHook::CreateModifierKeyboardHook(
       std::move(dom_codes), GetAcceleratedWidget(),
       base::BindRepeating(
           [](ui::PlatformWindowDelegate* delegate, ui::KeyEvent* event) {
@@ -199,14 +203,14 @@ void WindowTreeHostPlatform::OnBoundsChanged(const gfx::Rect& new_bounds) {
   bounds_ = new_bounds;
   if (bounds_.origin() != old_bounds.origin())
     OnHostMovedInPixels(bounds_.origin());
-  if (pending_local_surface_id_.is_valid() ||
+  if (pending_local_surface_id_allocation_.IsValid() ||
       bounds_.size() != old_bounds.size() || current_scale != new_scale) {
-    auto local_surface_id = bounds_.size() == pending_size_
-                                ? pending_local_surface_id_
-                                : viz::LocalSurfaceId();
-    pending_local_surface_id_ = viz::LocalSurfaceId();
+    viz::LocalSurfaceIdAllocation local_surface_id_allocation;
+    if (bounds_.size() == pending_size_)
+      local_surface_id_allocation = pending_local_surface_id_allocation_;
+    pending_local_surface_id_allocation_ = viz::LocalSurfaceIdAllocation();
     pending_size_ = gfx::Size();
-    OnHostResizedInPixels(bounds_.size(), local_surface_id);
+    OnHostResizedInPixels(bounds_.size(), local_surface_id_allocation);
   }
 }
 
@@ -269,8 +273,6 @@ void WindowTreeHostPlatform::OnAcceleratedWidgetDestroyed() {
 }
 
 void WindowTreeHostPlatform::OnActivationChanged(bool active) {
-  if (active)
-    OnHostActivated();
 }
 
 }  // namespace aura

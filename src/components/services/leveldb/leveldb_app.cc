@@ -10,16 +10,15 @@
 
 namespace leveldb {
 
-LevelDBApp::LevelDBApp()
-    : file_task_runner_(base::CreateSequencedTaskRunnerWithTraits(
+LevelDBApp::LevelDBApp(service_manager::mojom::ServiceRequest request)
+    : service_binding_(this, std::move(request)),
+      file_task_runner_(base::CreateSequencedTaskRunnerWithTraits(
           {base::MayBlock(), base::TaskShutdownBehavior::BLOCK_SHUTDOWN})) {
   registry_.AddInterface<mojom::LevelDBService>(
       base::Bind(&LevelDBApp::Create, base::Unretained(this)));
 }
 
 LevelDBApp::~LevelDBApp() {}
-
-void LevelDBApp::OnStart() {}
 
 void LevelDBApp::OnBindInterface(
     const service_manager::BindSourceInfo& source_info,

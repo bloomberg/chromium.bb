@@ -69,7 +69,7 @@ void DOMTimer::RemoveByID(ExecutionContext* context, int timeout_id) {
   DOMTimer* timer = context->Timers()->RemoveTimeoutByID(timeout_id);
   TRACE_EVENT_INSTANT1("devtools.timeline", "TimerRemove",
                        TRACE_EVENT_SCOPE_THREAD, "data",
-                       InspectorTimerRemoveEvent::Data(context, timeout_id));
+                       inspector_timer_remove_event::Data(context, timeout_id));
   // Eagerly unregister as ExecutionContext observer.
   if (timer)
     timer->ClearContext();
@@ -104,8 +104,8 @@ DOMTimer::DOMTimer(ExecutionContext* context,
   PauseIfNeeded();
   TRACE_EVENT_INSTANT1("devtools.timeline", "TimerInstall",
                        TRACE_EVENT_SCOPE_THREAD, "data",
-                       InspectorTimerInstallEvent::Data(context, timeout_id,
-                                                        interval, single_shot));
+                       inspector_timer_install_event::Data(
+                           context, timeout_id, interval, single_shot));
   probe::AsyncTaskScheduledBreakable(
       context, single_shot ? "setTimeout" : "setInterval", this);
 }
@@ -145,7 +145,7 @@ void DOMTimer::Fired() {
   UserGestureIndicator gesture_indicator(std::move(user_gesture_token_));
 
   TRACE_EVENT1("devtools.timeline", "TimerFire", "data",
-               InspectorTimerFireEvent::Data(context, timeout_id_));
+               inspector_timer_fire_event::Data(context, timeout_id_));
   const bool is_interval = !RepeatInterval().is_zero();
   probe::UserCallback probe(context, is_interval ? "setInterval" : "setTimeout",
                             g_null_atom, true);

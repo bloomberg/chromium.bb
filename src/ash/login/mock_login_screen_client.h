@@ -28,6 +28,8 @@ class MockLoginScreenClient : public mojom::LoginScreenClient {
   MOCK_METHOD2(AuthenticateUserWithExternalBinary_,
                void(const AccountId& account_id,
                     AuthenticateUserWithExternalBinaryCallback& callback));
+  MOCK_METHOD1(EnrollUserWithExternalBinary_,
+               void(EnrollUserWithExternalBinaryCallback& callback));
 
   // Set the result that should be passed to |callback| in
   // |AuthenticateUserWithPasswordOrPin| or
@@ -46,6 +48,10 @@ class MockLoginScreenClient : public mojom::LoginScreenClient {
       AuthenticateUserWithPasswordOrPinCallback* storage) {
     authenticate_user_with_external_binary_callback_storage_ = storage;
   }
+  void set_enroll_user_with_external_binary_storage(
+      EnrollUserWithExternalBinaryCallback* storage) {
+    enroll_user_with_external_binary_callback_storage_ = storage;
+  }
 
   // mojom::LoginScreenClient:
   void AuthenticateUserWithPasswordOrPin(
@@ -56,10 +62,11 @@ class MockLoginScreenClient : public mojom::LoginScreenClient {
   void AuthenticateUserWithExternalBinary(
       const AccountId& account_id,
       AuthenticateUserWithExternalBinaryCallback callback) override;
+  void EnrollUserWithExternalBinary(
+      EnrollUserWithExternalBinaryCallback callback) override;
   MOCK_METHOD1(AuthenticateUserWithEasyUnlock,
                void(const AccountId& account_id));
   MOCK_METHOD1(HardlockPod, void(const AccountId& account_id));
-  MOCK_METHOD1(RecordClickOnLockIcon, void(const AccountId& account_id));
   MOCK_METHOD1(OnFocusPod, void(const AccountId& account_id));
   MOCK_METHOD0(OnNoPodFocused, void());
   MOCK_METHOD1(LoadWallpaper, void(const AccountId& account_id));
@@ -93,6 +100,8 @@ class MockLoginScreenClient : public mojom::LoginScreenClient {
       authenticate_user_with_password_or_pin_callback_storage_ = nullptr;
   AuthenticateUserWithExternalBinaryCallback*
       authenticate_user_with_external_binary_callback_storage_ = nullptr;
+  EnrollUserWithExternalBinaryCallback*
+      enroll_user_with_external_binary_callback_storage_ = nullptr;
 
   mojo::Binding<mojom::LoginScreenClient> binding_;
 

@@ -10,18 +10,18 @@
 #include "third_party/blink/renderer/core/style/computed_style.h"
 
 namespace blink {
-namespace CSSLonghand {
+namespace css_longhand {
 
 const CSSValue* VerticalAlign::ParseSingleValue(
     CSSParserTokenRange& range,
     const CSSParserContext& context,
     const CSSParserLocalContext&) const {
-  CSSValue* parsed_value = CSSPropertyParserHelpers::ConsumeIdentRange(
+  CSSValue* parsed_value = css_property_parser_helpers::ConsumeIdentRange(
       range, CSSValueBaseline, CSSValueWebkitBaselineMiddle);
   if (!parsed_value) {
-    parsed_value = CSSPropertyParserHelpers::ConsumeLengthOrPercent(
+    parsed_value = css_property_parser_helpers::ConsumeLengthOrPercent(
         range, context.Mode(), kValueRangeAll,
-        CSSPropertyParserHelpers::UnitlessQuirk::kAllow);
+        css_property_parser_helpers::UnitlessQuirk::kAllow);
   }
   return parsed_value;
 }
@@ -80,5 +80,5 @@ void VerticalAlign::ApplyValue(StyleResolverState& state,
   }
 }
 
-}  // namespace CSSLonghand
+}  // namespace css_longhand
 }  // namespace blink

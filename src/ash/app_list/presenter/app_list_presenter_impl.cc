@@ -25,6 +25,7 @@
 #include "ui/compositor/scoped_layer_animation_settings.h"
 #include "ui/display/screen.h"
 #include "ui/display/types/display_constants.h"
+#include "ui/gfx/geometry/vector2d_conversions.h"
 #include "ui/gfx/presentation_feedback.h"
 #include "ui/keyboard/keyboard_controller.h"
 #include "ui/views/widget/widget.h"
@@ -119,10 +120,14 @@ void AppListPresenterImpl::Show(int64_t display_id,
   if (is_visible_) {
     // Launcher is always visible on the internal display when home launcher is
     // enabled in tablet mode.
-    if (display_id != GetDisplayId() &&
-        !delegate_->IsHomeLauncherEnabledInTabletMode()) {
+    if (display_id != GetDisplayId() && !delegate_->IsTabletMode()) {
       Dismiss(event_time_stamp);
     }
+    return;
+  }
+
+  if (!delegate_->GetRootWindowForDisplayId(display_id)) {
+    LOG(ERROR) << "Root window does not exist for display: " << display_id;
     return;
   }
 
@@ -217,9 +222,10 @@ void AppListPresenterImpl::EndDragFromShelf(AppListViewState app_list_state) {
   }
 }
 
-void AppListPresenterImpl::ProcessMouseWheelOffset(int y_scroll_offset) {
+void AppListPresenterImpl::ProcessMouseWheelOffset(
+    const gfx::Vector2d& scroll_offset_vector) {
   if (view_)
-    view_->HandleScroll(y_scroll_offset, ui::ET_MOUSEWHEEL);
+    view_->HandleScroll(scroll_offset_vector, ui::ET_MOUSEWHEEL);
 }
 
 void AppListPresenterImpl::UpdateYPositionAndOpacityForHomeLauncher(
@@ -243,6 +249,9 @@ void AppListPresenterImpl::UpdateYPositionAndOpacityForHomeLauncher(
   }
   layer->SetOpacity(opacity);
   layer->SetTransform(translation);
+
+  // Update child views' y positions to target state to avoid stale positions.
+  view_->app_list_main_view()->contents_view()->UpdateYPositionAndOpacity();
 }
 
 void AppListPresenterImpl::ScheduleOverviewModeAnimation(bool start,
@@ -302,8 +311,9 @@ void AppListPresenterImpl::ScheduleAnimation() {
   aura::Window* root_window = widget->GetNativeView()->GetRootWindow();
   const gfx::Vector2d offset =
       delegate_->GetVisibilityAnimationOffset(root_window);
-  base::TimeDelta animation_duration =
-      delegate_->GetVisibilityAnimationDuration(root_window, is_visible_);
+  const base::TimeDelta animation_duration =
+      delegate_->GetVisibilityAnimationDuration(root_window,
+                                                view_->is_fullscreen());
   gfx::Rect target_bounds = widget->GetNativeView()->bounds();
   target_bounds.Offset(offset);
   widget->GetNativeView()->SetBounds(target_bounds);
@@ -364,8 +374,7 @@ void AppListPresenterImpl::OnWindowFocused(aura::Window* gained_focus,
     aura::Window* applist_container = applist_window->parent();
     if (applist_container->Contains(lost_focus) &&
         (!gained_focus || !applist_container->Contains(gained_focus)) &&
-        !switches::ShouldNotDismissOnBlur() &&
-        !delegate_->IsHomeLauncherEnabledInTabletMode()) {
+        !switches::ShouldNotDismissOnBlur() && !delegate_->IsTabletMode()) {
       Dismiss(base::TimeTicks());
     }
     if (applist_container->Contains(gained_focus) &&

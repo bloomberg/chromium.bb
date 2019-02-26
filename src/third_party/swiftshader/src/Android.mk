@@ -7,7 +7,7 @@ COMMON_C_INCLUDES += \
 	$(LOCAL_PATH)/OpenGL/ \
 	$(LOCAL_PATH)
 
-ifdef SWIFTSHADER_USE_SUBZERO
+ifdef REACTOR_USE_SUBZERO
 
 COMMON_C_INCLUDES += \
 	$(LOCAL_PATH)/../third_party/subzero/ \
@@ -17,7 +17,7 @@ COMMON_C_INCLUDES += \
 
 else
 
-ifeq ($(SWIFTSHADER_LLVM_VERSION),3)
+ifeq ($(REACTOR_LLVM_VERSION),3)
 COMMON_C_INCLUDES += \
 	$(LOCAL_PATH)/../third_party/LLVM/include
 else
@@ -60,17 +60,22 @@ COMMON_SRC_FILES += \
 	Main/FrameBufferAndroid.cpp \
 	Main/SwiftConfig.cpp
 
-ifdef SWIFTSHADER_USE_SUBZERO
+COMMON_SRC_FILES += \
+	Reactor/Routine.cpp \
+	Reactor/Debug.cpp \
+	Reactor/DebugAndroid.cpp \
+	Reactor/ExecutableMemory.cpp
+
+ifdef REACTOR_USE_SUBZERO
 COMMON_SRC_FILES += \
 	Reactor/SubzeroReactor.cpp \
-	Reactor/Routine.cpp \
 	Reactor/Optimizer.cpp
 else
 COMMON_SRC_FILES += \
 	Reactor/LLVMReactor.cpp \
-	Reactor/Routine.cpp \
 	Reactor/LLVMRoutine.cpp \
-	Reactor/LLVMRoutineManager.cpp
+	Reactor/LLVMRoutineManager.cpp \
+	Reactor/CPUID.cpp
 endif
 
 COMMON_SRC_FILES += \
@@ -151,7 +156,7 @@ COMMON_C_INCLUDES += \
 endif
 
 # Common LLVM defines
-COMMON_CFLAGS += -DSWIFTSHADER_LLVM_VERSION=$(SWIFTSHADER_LLVM_VERSION)
+COMMON_CFLAGS += -DREACTOR_LLVM_VERSION=$(REACTOR_LLVM_VERSION)
 
 # Common Subzero defines
 COMMON_CFLAGS += -DALLOW_DUMP=0 -DALLOW_TIMERS=0 -DALLOW_LLVM_CL=0 -DALLOW_LLVM_IR=0 -DALLOW_LLVM_IR_AS_INPUT=0 -DALLOW_MINIMAL_BUILD=0 -DALLOW_WASM=0 -DICE_THREAD_LOCAL_HACK=1

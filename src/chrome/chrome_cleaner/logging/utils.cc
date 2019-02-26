@@ -252,8 +252,8 @@ ProcessInformation GetProcessInformationProtoObject(
     case SandboxType::kEset:
       process_info.set_process(ProcessInformation::ESET_SANDBOX);
       break;
-    case SandboxType::kJsonParser:
-      process_info.set_process(ProcessInformation::JSON_PARSER_SANDBOX);
+    case SandboxType::kParser:
+      process_info.set_process(ProcessInformation::PARSER_SANDBOX);
       break;
     case SandboxType::kZipArchiver:
       process_info.set_process(ProcessInformation::ZIP_ARCHIVER_SANDBOX);

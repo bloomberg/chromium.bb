@@ -16,6 +16,7 @@
 #include "third_party/blink/renderer/core/timing/window_performance.h"
 #include "third_party/blink/renderer/platform/cross_thread_functional.h"
 #include "third_party/blink/renderer/platform/graphics/paint/geometry_mapper.h"
+#include "third_party/blink/renderer/platform/weborigin/security_origin.h"
 #include "third_party/blink/renderer/platform/wtf/text/atomic_string.h"
 
 namespace blink {
@@ -50,12 +51,22 @@ void ImageElementTiming::NotifyImagePainted(const HTMLImageElement* element,
 
   images_notified_.insert(layout_image);
 
-  // Compute the viewport rect.
   LocalFrame* frame = GetSupplementable()->GetFrame();
   DCHECK(frame == layout_image->GetDocument().GetFrame());
   if (!frame)
     return;
 
+  // Skip the computations below if the element is not same origin.
+  if (!layout_image->CachedImage())
+    return;
+
+  const KURL& url = layout_image->CachedImage()->Url();
+  DCHECK(GetSupplementable()->document() == &layout_image->GetDocument());
+  if (!SecurityOrigin::AreSameSchemeHostPort(layout_image->GetDocument().Url(),
+                                             url))
+    return;
+
+  // Compute the viewport rect.
   WebLayerTreeView* layerTreeView =
       frame->GetChromeClient().GetWebLayerTreeView(frame);
   if (!layerTreeView)
@@ -81,7 +92,7 @@ void ImageElementTiming::NotifyImagePainted(const HTMLImageElement* element,
   visible_new_visual_rect.Intersect(viewport);
 
   const AtomicString attr =
-      element->FastGetAttribute(HTMLNames::elementtimingAttr);
+      element->FastGetAttribute(html_names::kElementtimingAttr);
   // Do not create an entry if 'elementtiming' is not present or the image is
   // below a certain size threshold.
   if (attr.IsEmpty() &&
@@ -94,7 +105,7 @@ void ImageElementTiming::NotifyImagePainted(const HTMLImageElement* element,
   // empty, use the ID. If empty, use 'img'.
   AtomicString name = attr;
   if (name.IsEmpty())
-    name = element->FastGetAttribute(HTMLNames::idAttr);
+    name = element->FastGetAttribute(html_names::kIdAttr);
   if (name.IsEmpty())
     name = "img";
   element_timings_.emplace_back(name, visible_new_visual_rect);
@@ -110,15 +121,29 @@ void ImageElementTiming::NotifyImagePainted(const HTMLImageElement* element,
 
 void ImageElementTiming::ReportImagePaintSwapTime(WebLayerTreeView::SwapResult,
                                                   base::TimeTicks timestamp) {
-  WindowPerformance* performance =
-      DOMWindowPerformance::performance(*GetSupplementable());
-  if (!performance || !performance->HasObserverFor(PerformanceEntry::kElement))
-    return;
-
-  for (const auto& element_timing : element_timings_) {
-    performance->AddElementTiming(element_timing.name, element_timing.rect,
-                                  timestamp);
+  Document* document = GetSupplementable()->document();
+  DCHECK(document);
+  const SecurityOrigin* current_origin = document->GetSecurityOrigin();
+  // It suffices to check the current origin against the parent origin since all
+  // origins stored in |element_timings_| have been checked against the current
+  // origin.
+  while (document &&
+         current_origin->IsSameSchemeHostPort(document->GetSecurityOrigin())) {
+    DCHECK(document->domWindow());
+    WindowPerformance* performance =
+        DOMWindowPerformance::performance(*document->domWindow());
+    if (performance &&
+        performance->HasObserverFor(PerformanceEntry::kElement)) {
+      for (const auto& element_timing : element_timings_) {
+        performance->AddElementTiming(element_timing.name, element_timing.rect,
+                                      timestamp);
+      }
+    }
+    // Provide the entry to the parent documents for as long as the origin check
+    // still holds.
+    document = document->ParentDocument();
   }
+
   element_timings_.clear();
 }
 

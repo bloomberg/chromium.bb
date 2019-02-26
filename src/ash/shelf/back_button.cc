@@ -27,26 +27,11 @@
 
 namespace ash {
 
-BackButton::BackButton() : views::ImageButton(nullptr) {
-  SetInkDropMode(InkDropMode::ON_NO_GESTURE_HANDLER);
-  set_has_ink_drop_action_on_click(true);
-  set_ink_drop_base_color(kShelfInkDropBaseColor);
-  set_ink_drop_visible_opacity(kShelfInkDropVisibleOpacity);
-
+BackButton::BackButton() : ShelfControlButton() {
   SetAccessibleName(l10n_util::GetStringUTF16(IDS_ASH_SHELF_BACK_BUTTON_TITLE));
-  SetSize(gfx::Size(kShelfControlSize, kShelfControlSize));
-  SetFocusPainter(TrayPopupUtils::CreateFocusPainter());
 }
 
 BackButton::~BackButton() = default;
-
-gfx::Point BackButton::GetCenterPoint() const {
-  // The button bounds could have a larger height than width (in the case of
-  // touch-dragging the shelf upwards) or a larger width than height (in the
-  // case of a shelf hide/show animation), so adjust the y-position of the
-  // button's center to ensure correct layout.
-  return gfx::Point(width() / 2.f, width() / 2.f);
-}
 
 void BackButton::OnGestureEvent(ui::GestureEvent* event) {
   ImageButton::OnGestureEvent(event);
@@ -65,27 +50,6 @@ bool BackButton::OnMousePressed(const ui::MouseEvent& event) {
 void BackButton::OnMouseReleased(const ui::MouseEvent& event) {
   ImageButton::OnMouseReleased(event);
   GenerateAndSendBackEvent(event.type());
-}
-
-std::unique_ptr<views::InkDropRipple> BackButton::CreateInkDropRipple() const {
-  return std::make_unique<views::FloodFillInkDropRipple>(
-      size(),
-      gfx::Insets(ShelfConstants::button_size() / 2 -
-                  ShelfConstants::app_list_button_radius()),
-      GetInkDropCenterBasedOnLastEvent(), GetInkDropBaseColor(),
-      ink_drop_visible_opacity());
-}
-
-std::unique_ptr<views::InkDrop> BackButton::CreateInkDrop() {
-  std::unique_ptr<views::InkDropImpl> ink_drop =
-      Button::CreateDefaultInkDropImpl();
-  ink_drop->SetShowHighlightOnHover(false);
-  return std::move(ink_drop);
-}
-
-std::unique_ptr<views::InkDropMask> BackButton::CreateInkDropMask() const {
-  return std::make_unique<views::CircleInkDropMask>(
-      size(), GetCenterPoint(), ShelfConstants::app_list_button_radius());
 }
 
 void BackButton::PaintButtonContents(gfx::Canvas* canvas) {

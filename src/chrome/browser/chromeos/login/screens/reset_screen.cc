@@ -137,8 +137,9 @@ void ResetScreen::Show() {
 
   ContextEditor context_editor = GetContextEditor();
 
-  bool restart_required = !base::CommandLine::ForCurrentProcess()->HasSwitch(
-      switches::kFirstExecAfterBoot);
+  bool restart_required = user_manager::UserManager::Get()->IsUserLoggedIn() ||
+                          !base::CommandLine::ForCurrentProcess()->HasSwitch(
+                              switches::kFirstExecAfterBoot);
   if (restart_required) {
     context_editor.SetInteger(kContextKeyScreenState, STATE_RESTART_REQUIRED);
     dialog_type = reset::DIALOG_SHORTCUT_RESTART_REQUIRED;

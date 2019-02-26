@@ -66,6 +66,8 @@
 
 #if BUILDFLAG(ENABLE_MOJO_CDM)
 #include "media/mojo/clients/mojo_cdm_factory.h"  // nogncheck
+#else
+#include "media/cdm/default_cdm_factory.h"
 #endif
 
 #if BUILDFLAG(ENABLE_MOJO_RENDERER)
@@ -109,7 +111,10 @@ void PostContextProviderToCallback(
     scoped_refptr<base::SingleThreadTaskRunner> main_task_runner,
     scoped_refptr<viz::ContextProvider> unwanted_context_provider,
     blink::WebSubmitterConfigurationCallback set_context_provider_callback) {
-  main_task_runner->PostTask(
+  // |unwanted_context_provider| needs to be destroyed on the current thread.
+  // Therefore, post a reply-callback that retains a reference to it, so that it
+  // doesn't get destroyed on the main thread.
+  main_task_runner->PostTaskAndReply(
       FROM_HERE,
       base::BindOnce(
           [](scoped_refptr<viz::ContextProvider> unwanted_context_provider,
@@ -120,8 +125,11 @@ void PostContextProviderToCallback(
             std::move(cb).Run(!rti->IsGpuCompositingDisabled(),
                               std::move(context_provider));
           },
-          std::move(unwanted_context_provider),
-          media::BindToCurrentLoop(std::move(set_context_provider_callback))));
+          unwanted_context_provider,
+          media::BindToCurrentLoop(std::move(set_context_provider_callback))),
+      base::BindOnce(
+          [](scoped_refptr<viz::ContextProvider> unwanted_context_provider) {},
+          unwanted_context_provider));
 }
 
 }  // namespace
@@ -131,7 +139,7 @@ namespace content {
 // static
 blink::WebMediaPlayer::SurfaceLayerMode
 MediaFactory::GetVideoSurfaceLayerMode() {
-  // LayoutTests do not support SurfaceLayer by default at the moment.
+  // Web tests do not support SurfaceLayer by default at the moment.
   // See https://crbug.com/838128
   content::RenderThreadImpl* render_thread =
       content::RenderThreadImpl::current();
@@ -224,6 +232,10 @@ std::unique_ptr<blink::WebVideoFrameSubmitter> MediaFactory::CreateSubmitter(
             ? render_thread->compositor_task_runner()
             : render_frame_->GetTaskRunner(
                   blink::TaskType::kInternalMediaRealTime);
+
+    // TODO(https://crbug/901513): Remove once kOnDemand is removed.
+    render_thread->SetVideoFrameCompositorTaskRunner(
+        *video_frame_compositor_task_runner);
   }
 
   std::unique_ptr<blink::WebVideoFrameSubmitter> submitter;
@@ -612,6 +624,8 @@ media::CdmFactory* MediaFactory::GetCdmFactory() {
 
 #if BUILDFLAG(ENABLE_MOJO_CDM)
   cdm_factory_.reset(new media::MojoCdmFactory(GetMediaInterfaceFactory()));
+#else
+  cdm_factory_.reset(new media::DefaultCdmFactory());
 #endif  // BUILDFLAG(ENABLE_MOJO_CDM)
 
   return cdm_factory_.get();

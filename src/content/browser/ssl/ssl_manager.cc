@@ -14,7 +14,7 @@
 #include "base/strings/utf_string_conversions.h"
 #include "base/supports_user_data.h"
 #include "base/task/post_task.h"
-#include "content/browser/devtools/devtools_agent_host_impl.h"
+#include "content/browser/devtools/devtools_instrumentation.h"
 #include "content/browser/frame_host/navigation_entry_impl.h"
 #include "content/browser/loader/resource_dispatcher_host_impl.h"
 #include "content/browser/loader/resource_request_info_impl.h"
@@ -398,7 +398,7 @@ void SSLManager::OnCertErrorInternal(std::unique_ptr<SSLErrorHandler> handler,
       base::Bind(&OnAllowCertificate, base::Owned(handler.release()),
                  ssl_host_state_delegate_);
 
-  if (DevToolsAgentHostImpl::HandleCertificateError(
+  if (devtools_instrumentation::HandleCertificateError(
           web_contents, cert_error, request_url,
           base::BindRepeating(&OnAllowCertificateWithRecordDecision, false,
                               callback))) {

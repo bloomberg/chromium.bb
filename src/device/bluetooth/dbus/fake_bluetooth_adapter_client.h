@@ -5,6 +5,7 @@
 #ifndef DEVICE_BLUETOOTH_DBUS_FAKE_BLUETOOTH_ADAPTER_CLIENT_H_
 #define DEVICE_BLUETOOTH_DBUS_FAKE_BLUETOOTH_ADAPTER_CLIENT_H_
 
+#include <map>
 #include <memory>
 #include <string>
 #include <vector>
@@ -49,11 +50,9 @@ class DEVICE_BLUETOOTH_EXPORT FakeBluetoothAdapterClient
   std::vector<dbus::ObjectPath> GetAdapters() override;
   Properties* GetProperties(const dbus::ObjectPath& object_path) override;
   void StartDiscovery(const dbus::ObjectPath& object_path,
-                      const base::Closure& callback,
-                      ErrorCallback error_callback) override;
+                      ResponseCallback callback) override;
   void StopDiscovery(const dbus::ObjectPath& object_path,
-                     const base::Closure& callback,
-                     ErrorCallback error_callback) override;
+                     ResponseCallback callback) override;
   void PauseDiscovery(const dbus::ObjectPath& object_path,
                       const base::Closure& callback,
                       ErrorCallback error_callback) override;

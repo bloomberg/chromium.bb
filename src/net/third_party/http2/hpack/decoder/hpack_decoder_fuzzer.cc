@@ -5,6 +5,8 @@
 #include <stddef.h>
 #include <stdint.h>
 
+#include <vector>
+
 #include "base/test/fuzzed_data_provider.h"
 #include "net/third_party/http2/hpack/decoder/hpack_decoder.h"
 
@@ -16,13 +18,19 @@ extern "C" int LLVMFuzzerTestOneInput(const uint8_t* data, size_t size) {
 
   base::FuzzedDataProvider fuzzed_data_provider(data, size);
   size_t max_string_size =
-      fuzzed_data_provider.ConsumeUint32InRange(1, 10 * size);
+      fuzzed_data_provider.ConsumeIntegralInRange<size_t>(1, 10 * size);
   http2::HpackDecoder decoder(http2::HpackDecoderNoOpListener::NoOpListener(),
                               max_string_size);
   decoder.StartDecodingBlock();
   while (fuzzed_data_provider.remaining_bytes() > 0) {
-    size_t chunk_size = fuzzed_data_provider.ConsumeUint32InRange(1, 32);
-    std::string chunk = fuzzed_data_provider.ConsumeBytes(chunk_size);
+    size_t chunk_size = fuzzed_data_provider.ConsumeIntegralInRange(1, 32);
+    std::vector<char> chunk =
+        fuzzed_data_provider.ConsumeBytes<char>(chunk_size);
+
+    // http2::DecodeBuffer constructor does not accept nullptr buffer.
+    if (chunk.data() == nullptr)
+      continue;
+
     http2::DecodeBuffer fragment(chunk.data(), chunk.size());
     decoder.DecodeFragment(&fragment);
   }

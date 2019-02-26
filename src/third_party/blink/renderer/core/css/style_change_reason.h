@@ -13,7 +13,7 @@ namespace blink {
 
 class QualifiedName;
 
-namespace StyleChangeReason {
+namespace style_change_reason {
 extern const char kActiveStylesheetsUpdate[];
 extern const char kAnimation[];
 extern const char kAttribute[];
@@ -50,10 +50,10 @@ extern const char kVisitedLink[];
 extern const char kVisuallyOrdered[];
 extern const char kWritingModeChange[];
 extern const char kZoom[];
-}  // namespace StyleChangeReason
+}  // namespace style_change_reason
 typedef const char StyleChangeReasonString[];
 
-namespace StyleChangeExtraData {
+namespace style_change_extra_data {
 extern const AtomicString& g_active;
 extern const AtomicString& g_disabled;
 extern const AtomicString& g_drag;
@@ -65,7 +65,7 @@ extern const AtomicString& g_past;
 extern const AtomicString& g_unresolved;
 
 void Init();
-}  // namespace StyleChangeExtraData
+}  // namespace style_change_extra_data
 
 // |StyleChangeReasonForTracing| is used to trace the reason a
 // |Node::setNeedsStyleRecalc| call was made to show it in DevTools or in
@@ -89,7 +89,7 @@ class StyleChangeReasonForTracing {
 
   static StyleChangeReasonForTracing FromAttribute(
       const QualifiedName& attribute_name) {
-    return StyleChangeReasonForTracing(StyleChangeReason::kAttribute,
+    return StyleChangeReasonForTracing(style_change_reason::kAttribute,
                                        attribute_name.LocalName());
   }
 

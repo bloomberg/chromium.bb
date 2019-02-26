@@ -7,9 +7,14 @@
 #include <memory>
 #include <string>
 
+#include "base/metrics/histogram_macros.h"
 #include "build/build_config.h"
-#include "chrome/browser/favicon/favicon_service_factory.h"
 #include "chrome/browser/signin/account_consistency_mode_manager.h"
+#include "chrome/browser/ui/webui/welcome/nux/bookmark_handler.h"
+#include "chrome/browser/ui/webui/welcome/nux/constants.h"
+#include "chrome/browser/ui/webui/welcome/nux/email_handler.h"
+#include "chrome/browser/ui/webui/welcome/nux/google_apps_handler.h"
+#include "chrome/browser/ui/webui/welcome/nux/set_as_default_handler.h"
 #include "chrome/browser/ui/webui/welcome/nux_helper.h"
 #include "chrome/browser/ui/webui/welcome/welcome_handler.h"
 #include "chrome/common/pref_names.h"
@@ -17,21 +22,18 @@
 #include "chrome/grit/chrome_unscaled_resources.h"
 #include "chrome/grit/chromium_strings.h"
 #include "chrome/grit/generated_resources.h"
+#include "chrome/grit/onboarding_welcome_resources.h"
+#include "chrome/grit/onboarding_welcome_resources_map.h"
 #include "components/prefs/pref_service.h"
+#include "components/strings/grit/components_strings.h"
+#include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_ui_data_source.h"
 #include "net/base/url_util.h"
 #include "ui/base/l10n/l10n_util.h"
 
-#if defined(OS_WIN) && defined(GOOGLE_CHROME_BUILD)
-#include "base/metrics/histogram_macros.h"
-#include "chrome/browser/bookmarks/bookmark_model_factory.h"
-#include "chrome/browser/ui/webui/welcome/nux/constants.h"
-#include "chrome/browser/ui/webui/welcome/nux/email_handler.h"
-#include "chrome/browser/ui/webui/welcome/nux/google_apps_handler.h"
-#include "chrome/browser/ui/webui/welcome/nux/set_as_default_handler.h"
-#include "chrome/browser/ui/webui/welcome/nux/show_promo_delegate.h"
-#include "content/public/browser/web_contents.h"
-#endif  // defined(OS_WIN) && defined(GOOGLE_CHROME_BUILD)
+#if defined(OS_WIN)
+#include "base/win/windows_version.h"
+#endif
 
 namespace {
 const bool kIsBranded =
@@ -41,6 +43,69 @@ const bool kIsBranded =
     false;
 #endif
 }  // namespace
+
+// TODO(scottchen): reuse instead of copy from
+// md_settings_localized_strings_provider.cc.
+struct LocalizedString {
+  const char* name;
+  int id;
+};
+
+void AddOnboardingStrings(content::WebUIDataSource* html_source) {
+  static constexpr LocalizedString kLocalizedStrings[] = {
+      // Shared strings.
+      {"acceptText", IDS_WELCOME_ACCEPT_BUTTON},
+      {"bookmarkAdded", IDS_ONBOARDING_WELCOME_BOOKMARK_ADDED},
+      {"bookmarksAdded", IDS_ONBOARDING_WELCOME_BOOKMARKS_ADDED},
+      {"bookmarkRemoved", IDS_ONBOARDING_WELCOME_BOOKMARK_REMOVED},
+      {"bookmarksRemoved", IDS_ONBOARDING_WELCOME_BOOKMARKS_REMOVED},
+      {"bookmarkReplaced", IDS_ONBOARDING_WELCOME_BOOKMARK_REPLACED},
+      {"getStarted", IDS_ONBOARDING_WELCOME_GET_STARTED},
+      {"headerText", IDS_WELCOME_HEADER},
+      {"next", IDS_ONBOARDING_WELCOME_NEXT},
+      {"noThanks", IDS_NO_THANKS},
+      {"skip", IDS_ONBOARDING_WELCOME_SKIP},
+
+      // Sign-in view strings.
+      {"signInHeader", IDS_ONBOARDING_WELCOME_SIGNIN_VIEW_HEADER},
+      {"signInSubHeader", IDS_ONBOARDING_WELCOME_SIGNIN_VIEW_SUB_HEADER},
+      {"signIn", IDS_ONBOARDING_WELCOME_SIGNIN_VIEW_SIGNIN},
+
+      // Email provider module strings.
+      {"emailProviderTitle", IDS_ONBOARDING_WELCOME_NUX_EMAIL_TITLE},
+
+      // Google apps module strings.
+      {"googleAppsDescription",
+       IDS_ONBOARDING_WELCOME_NUX_GOOGLE_APPS_DESCRIPTION},
+
+      // Set as default module strings.
+      {"setDefaultHeader", IDS_ONBOARDING_WELCOME_NUX_SET_AS_DEFAULT_HEADER},
+      {"setDefaultSubHeader",
+       IDS_ONBOARDING_WELCOME_NUX_SET_AS_DEFAULT_SUB_HEADER},
+      {"setDefaultSkip", IDS_ONBOARDING_WELCOME_NUX_SET_AS_DEFAULT_SKIP},
+      {"setDefaultConfirm",
+       IDS_ONBOARDING_WELCOME_NUX_SET_AS_DEFAULT_SET_AS_DEFAULT},
+
+      // Landing view strings.
+      {"landingTitle", IDS_ONBOARDING_WELCOME_LANDING_TITLE},
+      {"landingDescription", IDS_ONBOARDING_WELCOME_LANDING_DESCRIPTION},
+      {"landingNewUser", IDS_ONBOARDING_WELCOME_LANDING_NEW_USER},
+      {"landingExistingUser", IDS_ONBOARDING_WELCOME_LANDING_EXISTING_USER},
+
+      // Email interstitial strings.
+      {"emailInterstitialTitle",
+       IDS_ONBOARDING_WELCOME_EMAIL_INTERSTITIAL_TITLE},
+      {"emailInterstitialContinue",
+       IDS_ONBOARDING_WELCOME_EMAIL_INTERSTITIAL_CONTINUE},
+  };
+
+  // TODO(scottchen): reuse instead of copy from
+  // md_settings_localized_strings_provider.cc.
+  for (size_t i = 0; i < base::size(kLocalizedStrings); i++) {
+    html_source->AddLocalizedString(kLocalizedStrings[i].name,
+                                    kLocalizedStrings[i].id);
+  }
+}
 
 WelcomeUI::WelcomeUI(content::WebUI* web_ui, const GURL& url)
     : content::WebUIController(web_ui) {
@@ -53,7 +118,7 @@ WelcomeUI::WelcomeUI(content::WebUI* web_ui, const GURL& url)
     return;
   }
 
-  StorePageSeen(profile, url);
+  StorePageSeen(profile);
 
   web_ui->AddMessageHandler(std::make_unique<WelcomeHandler>(web_ui));
 
@@ -68,36 +133,55 @@ WelcomeUI::WelcomeUI(content::WebUI* web_ui, const GURL& url)
   html_source->AddResourcePath("logo.png", IDR_PRODUCT_LOGO_128);
   html_source->AddResourcePath("logo2x.png", IDR_PRODUCT_LOGO_256);
 
-  if (nux::IsNuxOnboardingEnabled()) {
+  if (nux::IsNuxOnboardingEnabled(profile)) {
     // Add Onboarding welcome strings.
-    html_source->AddLocalizedString("headerText", IDS_WELCOME_HEADER);
-    html_source->AddLocalizedString("acceptText", IDS_WELCOME_ACCEPT_BUTTON);
+    AddOnboardingStrings(html_source);
 
-    // Add onboarding welcome resources.
+    // Add all Onboarding resources.
+    for (size_t i = 0; i < kOnboardingWelcomeResourcesSize; ++i) {
+      html_source->AddResourcePath(kOnboardingWelcomeResources[i].name,
+                                   kOnboardingWelcomeResources[i].value);
+    }
+
+    // chrome://welcome
     html_source->SetDefaultResource(
         IDR_WELCOME_ONBOARDING_WELCOME_WELCOME_HTML);
+
+    // chrome://welcome/email-interstitial
     html_source->AddResourcePath(
-        "landing_view.html", IDR_WELCOME_ONBOARDING_WELCOME_LANDING_VIEW_HTML);
-    html_source->AddResourcePath(
-        "landing_view.js", IDR_WELCOME_ONBOARDING_WELCOME_LANDING_VIEW_JS);
-    html_source->AddResourcePath(
-        "navigation_behavior.html",
-        IDR_WELCOME_ONBOARDING_WELCOME_NAVIGATION_BEHAVIOR_HTML);
-    html_source->AddResourcePath(
-        "navigation_behavior.js",
-        IDR_WELCOME_ONBOARDING_WELCOME_NAVIGATION_BEHAVIOR_JS);
-    html_source->AddResourcePath("welcome.css",
-                                 IDR_WELCOME_ONBOARDING_WELCOME_WELCOME_CSS);
-    html_source->AddResourcePath(
-        "welcome_app.html", IDR_WELCOME_ONBOARDING_WELCOME_WELCOME_APP_HTML);
-    html_source->AddResourcePath("welcome_app.js",
-                                 IDR_WELCOME_ONBOARDING_WELCOME_WELCOME_APP_JS);
-    html_source->AddResourcePath(
-        "welcome_browser_proxy.html",
-        IDR_WELCOME_ONBOARDING_WELCOME_WELCOME_BROWSER_PROXY_HTML);
-    html_source->AddResourcePath(
-        "welcome_browser_proxy.js",
-        IDR_WELCOME_ONBOARDING_WELCOME_WELCOME_BROWSER_PROXY_JS);
+        "email-interstitial",
+        IDR_WELCOME_ONBOARDING_WELCOME_EMAIL_INTERSTITIAL_HTML);
+
+#if defined(OS_WIN)
+    html_source->AddBoolean(
+        "is_win10", base::win::GetVersion() >= base::win::VERSION_WIN10);
+#endif
+
+    // Add the shared bookmark handler for onboarding modules.
+    web_ui->AddMessageHandler(
+        std::make_unique<nux::BookmarkHandler>(profile->GetPrefs()));
+
+    // Add email provider bookmarking onboarding module.
+    web_ui->AddMessageHandler(std::make_unique<nux::EmailHandler>());
+    nux::EmailHandler::AddSources(html_source);
+
+    // Add google apps bookmarking onboarding module.
+    web_ui->AddMessageHandler(std::make_unique<nux::GoogleAppsHandler>());
+
+    // Add set-as-default onboarding module.
+    web_ui->AddMessageHandler(std::make_unique<nux::SetAsDefaultHandler>());
+
+    html_source->AddString(
+        "newUserModules",
+        nux::GetNuxOnboardingModules(profile).FindKey("new-user")->GetString());
+    html_source->AddString("returningUserModules",
+                           nux::GetNuxOnboardingModules(profile)
+                               .FindKey("returning-user")
+                               ->GetString());
+    html_source->AddBoolean("showEmailInterstitial",
+                            nux::GetNuxOnboardingModules(profile)
+                                .FindKey("show-email-interstitial")
+                                ->GetBool());
   } else if (kIsBranded && is_dice) {
     // Use special layout if the application is branded and DICE is enabled.
     html_source->AddLocalizedString("headerText", IDS_WELCOME_HEADER);
@@ -143,81 +227,12 @@ WelcomeUI::WelcomeUI(content::WebUI* web_ui, const GURL& url)
     html_source->SetDefaultResource(IDR_WELCOME_HTML);
   }
 
-#if defined(OS_WIN) && defined(GOOGLE_CHROME_BUILD)
-  // TODO(hcarmona): Move this behind nux::kNuxOnboardingFeature when email and
-  // apps experiments end.
-  html_source->AddResourcePath("shared/chooser_shared_css.html",
-                               IDR_NUX_CHOOSER_SHARED_CSS);
-  html_source->AddResourcePath(
-      "shared/i18n_setup.html",
-      IDR_WELCOME_ONBOARDING_WELCOME_SHARED_I18N_SETUP_HTML);
-
-  if (base::FeatureList::IsEnabled(nux::kNuxOnboardingFeature)) {
-    web_ui->AddMessageHandler(std::make_unique<nux::SetAsDefaultHandler>());
-    nux::SetAsDefaultHandler::AddSources(html_source);
-
-    // TODO(scottchen): move all NUX features under this flag once individual
-    // experiments launch.
-  }
-
-  // To avoid diluting data collection, existing users should not be assigned
-  // an NUX group. So, the kOnboardDuringNUX flag is used to short-circuit the
-  // feature checks below.
-  PrefService* prefs = profile->GetPrefs();
-  bool onboard_during_nux =
-      prefs && prefs->GetBoolean(prefs::kOnboardDuringNUX);
-
-  if (onboard_during_nux &&
-      base::FeatureList::IsEnabled(nux::kNuxEmailFeature)) {
-    web_ui->AddMessageHandler(std::make_unique<nux::EmailHandler>(
-        profile->GetPrefs(), FaviconServiceFactory::GetForProfile(
-                                 profile, ServiceAccessType::EXPLICIT_ACCESS)));
-
-    nux::EmailHandler::AddSources(html_source, profile->GetPrefs());
-  }
-
-  if (onboard_during_nux &&
-      base::FeatureList::IsEnabled(nux::kNuxGoogleAppsFeature)) {
-    content::BrowserContext* browser_context =
-        web_ui->GetWebContents()->GetBrowserContext();
-    web_ui->AddMessageHandler(std::make_unique<nux::GoogleAppsHandler>(
-        profile->GetPrefs(),
-        FaviconServiceFactory::GetForProfile(
-            profile, ServiceAccessType::EXPLICIT_ACCESS),
-        BookmarkModelFactory::GetForBrowserContext(browser_context)));
-
-    nux::GoogleAppsHandler::AddSources(html_source);
-  }
-#endif  // defined(OS_WIN) && defined(GOOGLE_CHROME_BUILD
-
   content::WebUIDataSource::Add(profile, html_source);
 }
 
 WelcomeUI::~WelcomeUI() {}
 
-void WelcomeUI::StorePageSeen(Profile* profile, const GURL& url) {
-#if defined(OS_WIN) && defined(GOOGLE_CHROME_BUILD)
-  if (url.EqualsIgnoringRef(GURL(nux::kNuxGoogleAppsUrl))) {
-    // Record that the new user experience page was visited.
-    profile->GetPrefs()->SetBoolean(prefs::kHasSeenGoogleAppsPromoPage, true);
-
-    // Record UMA.
-    UMA_HISTOGRAM_ENUMERATION(nux::kGoogleAppsInteractionHistogram,
-                              nux::GoogleAppsInteraction::kPromptShown,
-                              nux::GoogleAppsInteraction::kCount);
-    return;
-  }
-
-  if (url.EqualsIgnoringRef(GURL(nux::kNuxEmailUrl))) {
-    // Record that the new user experience page was visited.
-    profile->GetPrefs()->SetBoolean(prefs::kHasSeenEmailPromoPage, true);
-
-    // TODO(scottchen): Record UMA.
-
-    return;
-  }
-#endif  // defined(OS_WIN) && defined(GOOGLE_CHROME_BUILD)
-
+void WelcomeUI::StorePageSeen(Profile* profile) {
   // Store that this profile has been shown the Welcome page.
   profile->GetPrefs()->SetBoolean(prefs::kHasSeenWelcomePage, true);
 }

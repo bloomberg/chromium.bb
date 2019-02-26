@@ -32,6 +32,7 @@
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/notification_details.h"
 #include "content/public/browser/notification_types.h"
+#include "content/public/browser/storage_usage_info.h"
 #include "content/public/test/test_browser_thread_bundle.h"
 #include "extensions/buildflags/buildflags.h"
 #include "net/url_request/url_request_context.h"

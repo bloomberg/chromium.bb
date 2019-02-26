@@ -60,10 +60,8 @@ public class ToolbarProgressBarTest {
     @Before
     public void setUp() throws InterruptedException, TimeoutException {
         mActivityTestRule.startMainActivityOnBlankPage();
-        mProgressBar = mActivityTestRule.getActivity()
-                               .getToolbarManager()
-                               .getToolbarLayout()
-                               .getProgressBar();
+        mProgressBar =
+                mActivityTestRule.getActivity().getToolbarManager().getToolbar().getProgressBar();
 
         mProgressBar.resetStartCountForTesting();
 

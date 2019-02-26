@@ -25,18 +25,18 @@
 
 #include "third_party/blink/renderer/core/events/animation_event.h"
 
-#include "third_party/blink/renderer/core/event_names.h"
+#include "third_party/blink/renderer/core/event_interface_names.h"
 
 namespace blink {
 
 AnimationEvent::AnimationEvent() : elapsed_time_(0.0) {}
 
 AnimationEvent::AnimationEvent(const AtomicString& type,
-                               const AnimationEventInit& initializer)
+                               const AnimationEventInit* initializer)
     : Event(type, initializer),
-      animation_name_(initializer.animationName()),
-      elapsed_time_(initializer.elapsedTime()),
-      pseudo_element_(initializer.pseudoElement()) {}
+      animation_name_(initializer->animationName()),
+      elapsed_time_(initializer->elapsedTime()),
+      pseudo_element_(initializer->pseudoElement()) {}
 
 AnimationEvent::AnimationEvent(const AtomicString& type,
                                const String& animation_name,
@@ -62,7 +62,7 @@ const String& AnimationEvent::pseudoElement() const {
 }
 
 const AtomicString& AnimationEvent::InterfaceName() const {
-  return EventNames::AnimationEvent;
+  return event_interface_names::kAnimationEvent;
 }
 
 void AnimationEvent::Trace(blink::Visitor* visitor) {

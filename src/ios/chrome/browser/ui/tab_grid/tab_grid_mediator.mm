@@ -22,7 +22,7 @@
 #import "ios/chrome/browser/tabs/tab_model.h"
 #import "ios/chrome/browser/ui/tab_grid/grid/grid_consumer.h"
 #import "ios/chrome/browser/ui/tab_grid/grid/grid_item.h"
-#include "ios/chrome/browser/ui/ui_util.h"
+#include "ios/chrome/browser/ui/util/ui_util.h"
 #import "ios/chrome/browser/web/tab_id_tab_helper.h"
 #include "ios/chrome/browser/web_state_list/web_state_list.h"
 #import "ios/chrome/browser/web_state_list/web_state_list_observer_bridge.h"
@@ -64,6 +64,14 @@ NSArray* CreateItems(WebStateList* web_state_list) {
 
 // Returns the ID of the active tab in |web_state_list|.
 NSString* GetActiveTabId(WebStateList* web_state_list) {
+  // TODO(crbug.com/877792) : Real-world crashes have been caused by
+  // |web_state_list| being nil in this function. Capture histogram to retain
+  // visibility of issue severity.
+  UMA_HISTOGRAM_BOOLEAN("IOS.TabGridMediator.GetActiveTabIDNilWebStateList",
+                        !web_state_list);
+  if (!web_state_list)
+    return nil;
+
   web::WebState* web_state = web_state_list->GetActiveWebState();
   if (!web_state)
     return nil;

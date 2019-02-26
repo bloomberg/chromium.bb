@@ -10,7 +10,6 @@
 #include "SkCanvas.h"
 #include "SkColorData.h"
 #include "SkColorSpaceXformer.h"
-#include "SkFlattenablePriv.h"
 #include "SkImageFilterPriv.h"
 #include "SkReadBuffer.h"
 #include "SkSpecialImage.h"
@@ -34,8 +33,6 @@ class SkXfermodeImageFilter_Base : public SkImageFilter {
 public:
     SkXfermodeImageFilter_Base(SkBlendMode mode, sk_sp<SkImageFilter> inputs[2],
                                const CropRect* cropRect);
-
-    SK_DECLARE_PUBLIC_FLATTENABLE_DESERIALIZATION_PROCS(SkXfermodeImageFilter_Base)
 
 protected:
     sk_sp<SkSpecialImage> onFilterImage(SkSpecialImage* source, const Context&,
@@ -64,7 +61,7 @@ protected:
 #endif
 
 private:
-    static sk_sp<SkFlattenable> LegacyArithmeticCreateProc(SkReadBuffer& buffer);
+    SK_FLATTENABLE_HOOKS(SkXfermodeImageFilter_Base)
 
     SkBlendMode fMode;
 
@@ -318,10 +315,14 @@ sk_sp<SkSpecialImage> SkXfermodeImageFilter_Base::filterImageGPU(
 
     paint.setPorterDuffXPFactory(SkBlendMode::kSrc);
 
+    SkColorType colorType = outputProperties.colorType();
+    GrBackendFormat format =
+            context->contextPriv().caps()->getBackendFormatFromColorType(colorType);
+
     sk_sp<GrRenderTargetContext> renderTargetContext(
         context->contextPriv().makeDeferredRenderTargetContext(
-                                    SkBackingFit::kApprox, bounds.width(), bounds.height(),
-                                    SkColorType2GrPixelConfig(outputProperties.colorType()),
+                                    format, SkBackingFit::kApprox, bounds.width(), bounds.height(),
+                                    SkColorType2GrPixelConfig(colorType),
                                     sk_ref_sp(outputProperties.colorSpace())));
     if (!renderTargetContext) {
         return nullptr;
@@ -348,36 +349,6 @@ std::unique_ptr<GrFragmentProcessor> SkXfermodeImageFilter_Base::makeFGFrag(
 #endif
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 
-sk_sp<SkFlattenable> SkXfermodeImageFilter_Base::LegacyArithmeticCreateProc(SkReadBuffer& buffer) {
-    SK_IMAGEFILTER_UNFLATTEN_COMMON(common, 2);
-    // skip the unused mode (srcover) field
-    SkDEBUGCODE(unsigned mode =) unflatten_blendmode(buffer);
-    if (!buffer.isValid()) {
-        return nullptr;
-    }
-    SkASSERT(SkBlendMode::kSrcOver == (SkBlendMode)mode);
-    float k[4];
-    for (int i = 0; i < 4; ++i) {
-        k[i] = buffer.readScalar();
-    }
-    const bool enforcePMColor = buffer.readBool();
-    if (!buffer.isValid()) {
-        return nullptr;
-    }
-    return SkArithmeticImageFilter::Make(k[0], k[1], k[2], k[3], enforcePMColor, common.getInput(0),
-                                         common.getInput(1), &common.cropRect());
+void SkXfermodeImageFilter::RegisterFlattenables() {
+    SK_REGISTER_FLATTENABLE(SkXfermodeImageFilter_Base)
 }
-
-///////////////////////////////////////////////////////////////////////////////////////////////////
-
-SK_DEFINE_FLATTENABLE_REGISTRAR_GROUP_START(SkXfermodeImageFilter)
-    SK_DEFINE_FLATTENABLE_REGISTRAR_ENTRY(SkXfermodeImageFilter_Base)
-    // manually register the legacy serialized name "SkXfermodeImageFilter"
-    SkFlattenable::Register("SkXfermodeImageFilter", SkXfermodeImageFilter_Base::CreateProc,
-                            SkFlattenable::kSkImageFilter_Type);
-    // manually register the legacy serialized name "SkArithmeticImageFilter" from when that filter
-    // was implemented as a xfermode image filter.
-    SkFlattenable::Register("SkArithmeticImageFilter",
-                            SkXfermodeImageFilter_Base::LegacyArithmeticCreateProc,
-                            SkFlattenable::kSkImageFilter_Type);
-SK_DEFINE_FLATTENABLE_REGISTRAR_GROUP_END

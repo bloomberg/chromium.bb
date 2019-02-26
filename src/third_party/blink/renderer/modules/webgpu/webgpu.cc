@@ -11,11 +11,11 @@ namespace blink {
 
 // static
 WebGPU* WebGPU::Create() {
-  return new WebGPU();
+  return MakeGarbageCollected<WebGPU>();
 }
 
-WebGPUAdapter* WebGPU::getAdapter(const WebGPUAdapterDescriptor& descriptor) {
-  return WebGPUAdapter::Create(descriptor.powerPreference());
+WebGPUAdapter* WebGPU::getAdapter(const WebGPUAdapterDescriptor* descriptor) {
+  return WebGPUAdapter::Create(descriptor->powerPreference());
 }
 
 WebGPU::WebGPU() {}

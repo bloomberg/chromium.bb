@@ -5,8 +5,8 @@
 #ifndef THIRD_PARTY_BLINK_RENDERER_CORE_CSS_RESOLVER_CSS_VARIABLE_RESOLVER_H_
 #define THIRD_PARTY_BLINK_RENDERER_CORE_CSS_RESOLVER_CSS_VARIABLE_RESOLVER_H_
 
+#include "third_party/blink/renderer/core/css/css_property_names.h"
 #include "third_party/blink/renderer/core/css/parser/css_parser_token.h"
-#include "third_party/blink/renderer/core/css_property_names.h"
 #include "third_party/blink/renderer/platform/wtf/hash_set.h"
 #include "third_party/blink/renderer/platform/wtf/text/atomic_string.h"
 #include "third_party/blink/renderer/platform/wtf/text/atomic_string_hash.h"
@@ -134,9 +134,26 @@ class CORE_EXPORT CSSVariableResolver {
 
   // Resolves a range which may contain var() or env() references.
   bool ResolveTokenRange(CSSParserTokenRange, const Options&, Result&);
+
+  // Return value for ResolveFallback.
+  enum class Fallback {
+    // Fallback not present.
+    kNone,
+    // Fallback present, but resolution failed (i.e. invalid variables
+    // referenced), or the result did not match the syntax registered for
+    // the referenced variable (if applicable).
+    kFail,
+    // Fallback present, resolution succeeded, and syntax matched (if
+    // applicable).
+    kSuccess
+  };
+
   // Resolves the fallback (if present) of a var() or env() reference, starting
   // from the comma.
-  bool ResolveFallback(CSSParserTokenRange, const Options&, Result&);
+  Fallback ResolveFallback(CSSParserTokenRange,
+                           const Options&,
+                           const PropertyRegistration*,
+                           Result&);
   // Resolves the contents of a var() or env() reference.
   bool ResolveVariableReference(CSSParserTokenRange,
                                 const Options&,
@@ -163,7 +180,8 @@ class CORE_EXPORT CSSVariableResolver {
   scoped_refptr<CSSVariableData> ResolveCustomPropertyIfNeeded(
       AtomicString name,
       CSSVariableData*,
-      const Options&);
+      const Options&,
+      bool& cycle_detected);
   // Rewrites (in-place) kUrlTokens and kFunctionToken/CSSValueUrls to contain
   // absolute URLs.
   void ResolveRelativeUrls(Vector<CSSParserToken>& tokens,
@@ -191,6 +209,10 @@ class CORE_EXPORT CSSVariableResolver {
   void SetRegisteredVariable(const AtomicString& name,
                              const PropertyRegistration&,
                              const CSSValue*);
+  void SetInvalidVariable(const AtomicString& name,
+                          const PropertyRegistration*);
+  bool IsRegisteredVariableInvalid(const AtomicString& name,
+                                   const PropertyRegistration&);
 
   const StyleResolverState& state_;
   StyleInheritedVariables* inherited_variables_;

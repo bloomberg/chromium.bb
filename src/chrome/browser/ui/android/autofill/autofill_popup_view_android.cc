@@ -4,6 +4,8 @@
 
 #include "chrome/browser/ui/android/autofill/autofill_popup_view_android.h"
 
+#include <memory>
+
 #include "base/android/jni_android.h"
 #include "base/android/jni_string.h"
 #include "base/command_line.h"
@@ -35,19 +37,6 @@ AutofillPopupViewAndroid::AutofillPopupViewAndroid(
 AutofillPopupViewAndroid::~AutofillPopupViewAndroid() {}
 
 void AutofillPopupViewAndroid::Show() {
-  JNIEnv* env = base::android::AttachCurrentThread();
-  ui::ViewAndroid* view_android = controller_->container_view();
-
-  DCHECK(view_android);
-  popup_view_ = view_android->AcquireAnchorView();
-  const ScopedJavaLocalRef<jobject> view = popup_view_.view();
-  if (view.is_null())
-    return;
-
-  java_object_.Reset(Java_AutofillPopupBridge_create(
-      env, view, reinterpret_cast<intptr_t>(this),
-      view_android->GetWindowAndroid()->GetJavaObject()));
-
   OnSuggestionsChanged();
 }
 
@@ -164,15 +153,39 @@ void AutofillPopupViewAndroid::PopupDismissed(
   delete this;
 }
 
+void AutofillPopupViewAndroid::Init() {
+  JNIEnv* env = base::android::AttachCurrentThread();
+  ui::ViewAndroid* view_android = controller_->container_view();
+
+  DCHECK(view_android);
+  popup_view_ = view_android->AcquireAnchorView();
+  const ScopedJavaLocalRef<jobject> view = popup_view_.view();
+  if (view.is_null())
+    return;
+
+  java_object_.Reset(Java_AutofillPopupBridge_create(
+      env, view, reinterpret_cast<intptr_t>(this),
+      view_android->GetWindowAndroid()->GetJavaObject()));
+}
+
+bool AutofillPopupViewAndroid::WasSuppressed() {
+  return java_object_ &&
+         Java_AutofillPopupBridge_wasSuppressed(
+             base::android::AttachCurrentThread(), java_object_);
+}
+
 // static
 AutofillPopupView* AutofillPopupView::Create(
     AutofillPopupController* controller) {
-  if (IsKeyboardAccessoryEnabled())
+  if (IsKeyboardAccessoryEnabled()) {
     return new AutofillKeyboardAccessoryView(
         controller, GetKeyboardAccessoryAnimationDuration(),
         ShouldLimitKeyboardAccessorySuggestionLabelWidth());
+  }
 
-  return new AutofillPopupViewAndroid(controller);
+  auto popup_view = std::make_unique<AutofillPopupViewAndroid>(controller);
+  popup_view->Init();
+  return popup_view->WasSuppressed() ? nullptr : popup_view.release();
 }
 
 }  // namespace autofill

@@ -36,10 +36,10 @@ std::unique_ptr<BookmarkAppHelper> BookmarkAppHelperCreateWrapper(
 
 }  // namespace
 
-BookmarkAppInstallationTask::Result::Result(ResultCode code,
+BookmarkAppInstallationTask::Result::Result(web_app::InstallResultCode code,
                                             base::Optional<std::string> app_id)
     : code(code), app_id(std::move(app_id)) {
-  DCHECK_EQ(code == ResultCode::kSuccess, app_id.has_value());
+  DCHECK_EQ(code == web_app::InstallResultCode::kSuccess, app_id.has_value());
 }
 
 BookmarkAppInstallationTask::Result::Result(Result&&) = default;
@@ -98,7 +98,8 @@ void BookmarkAppInstallationTask::OnGetWebApplicationInfo(
     std::unique_ptr<WebApplicationInfo> web_app_info) {
   if (!web_app_info) {
     std::move(result_callback)
-        .Run(Result(ResultCode::kGetWebApplicationInfoFailed, std::string()));
+        .Run(Result(web_app::InstallResultCode::kGetWebApplicationInfoFailed,
+                    std::string()));
     return;
   }
 
@@ -152,8 +153,10 @@ void BookmarkAppInstallationTask::OnInstalled(
     const Extension* extension,
     const WebApplicationInfo& web_app_info) {
   std::move(result_callback)
-      .Run(extension ? Result(ResultCode::kSuccess, extension->id())
-                     : Result(ResultCode::kInstallationFailed, base::nullopt));
+      .Run(extension
+               ? Result(web_app::InstallResultCode::kSuccess, extension->id())
+               : Result(web_app::InstallResultCode::kFailedUnknownReason,
+                        base::nullopt));
 }
 
 }  // namespace extensions

@@ -19,6 +19,6 @@ and exposes two static methods:
 
 ### Testing
 
-`LayoutTests/badging/*.html` tests that the API accepts/rejects the appropriate
+`web_tests/badging/*.html` tests that the API accepts/rejects the appropriate
 inputs (with a mock Mojo service). Testing at other layers will be added
 during implementation.

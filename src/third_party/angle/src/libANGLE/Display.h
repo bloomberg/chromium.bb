@@ -28,7 +28,7 @@ namespace gl
 {
 class Context;
 class TextureManager;
-}
+}  // namespace gl
 
 namespace rx
 {
@@ -125,7 +125,11 @@ class Display final : public LabeledObject, angle::NonCopyable
     Error validateClientBuffer(const Config *configuration,
                                EGLenum buftype,
                                EGLClientBuffer clientBuffer,
-                               const AttributeMap &attribs);
+                               const AttributeMap &attribs) const;
+    Error validateImageClientBuffer(const gl::Context *context,
+                                    EGLenum target,
+                                    EGLClientBuffer clientBuffer,
+                                    const egl::AttributeMap &attribs) const;
 
     static bool isValidDisplay(const Display *display);
     static bool isValidNativeDisplay(EGLNativeDisplayType display);

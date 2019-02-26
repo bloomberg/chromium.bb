@@ -70,13 +70,13 @@ function unloadOpenFileDialog(dialog, element = '.button-panel button.ok') {
  */
 function createFileEntryPromise(volume) {
   let localEntryPromise = addEntries(['local'], BASIC_LOCAL_ENTRY_SET);
-  let driveEntryPromise =
-      addEntries(['drive'], [ENTRIES.hello, ENTRIES.pinned]);
+  let driveEntryPromise = addEntries(
+      ['drive'], [ENTRIES.hello, ENTRIES.pinned, ENTRIES.testDocument]);
 
   return Promise.all([localEntryPromise, driveEntryPromise])
       .then(function returnVolumeEntrySet() {
         if (volume == 'drive')
-          return [ENTRIES.hello, ENTRIES.pinned];
+          return [ENTRIES.hello, ENTRIES.pinned, ENTRIES.testDocument];
         return BASIC_LOCAL_ENTRY_SET;
       });
 }
@@ -89,7 +89,7 @@ function createFileEntryPromise(volume) {
  * @param {!string} name File name to select in the dialog.
  * @return {!Promise} Promise to be fulfilled on success.
  */
-function openFileDialogClickOkButton(volume, name) {
+function openFileDialogClickOkButton(volume, name, expectedUrl = undefined) {
   const type = {type: 'openFile'};
 
   const okButton = '.button-panel button.ok:enabled';
@@ -97,10 +97,15 @@ function openFileDialogClickOkButton(volume, name) {
 
   return createFileEntryPromise(volume)
       .then(function openFileDialog(entrySet) {
-        return openAndWaitForClosingDialog(type, volume, entrySet, closer);
+        return openAndWaitForClosingDialog(
+            type, volume, entrySet, closer, !!expectedUrl);
       })
       .then(function expectDialogFileEntry(result) {
-        chrome.test.assertEq(name, result.name);
+        if (expectedUrl) {
+          chrome.test.assertEq(expectedUrl, result);
+        } else {
+          chrome.test.assertEq(name, result.name);
+        }
       });
 }
 
@@ -247,6 +252,16 @@ testcase.openFileDialogDriveOffline = function() {
  */
 testcase.openFileDialogDriveOfflinePinned = function() {
   testPromise(openFileDialogClickOkButton('drive', TEST_DRIVE_PINNED_FILE));
+};
+
+/**
+ * Tests opening a hosted doc in the browser, ensuring it correctly navigates to
+ * the doc's URL.
+ */
+testcase.openFileDialogDriveHostedDoc = function() {
+  testPromise(openFileDialogClickOkButton(
+      'drive', ENTRIES.testDocument.nameText,
+      'https://document_alternate_link/Test%20Document'));
 };
 
 /**

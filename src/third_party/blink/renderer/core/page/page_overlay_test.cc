@@ -6,6 +6,7 @@
 
 #include <memory>
 
+#include "base/time/time.h"
 #include "cc/paint/paint_canvas.h"
 #include "cc/trees/layer_tree_host.h"
 #include "testing/gmock/include/gmock/gmock.h"
@@ -38,14 +39,6 @@ static const int kViewportHeight = 600;
 
 // These unit tests cover both PageOverlay and PageOverlayList.
 
-void EnableAcceleratedCompositing(WebSettings* settings) {
-  settings->SetAcceleratedCompositingEnabled(true);
-}
-
-void DisableAcceleratedCompositing(WebSettings* settings) {
-  settings->SetAcceleratedCompositingEnabled(false);
-}
-
 // PageOverlay that paints a solid color.
 class SolidColorOverlay : public PageOverlay::Delegate {
  public:
@@ -69,19 +62,13 @@ class SolidColorOverlay : public PageOverlay::Delegate {
 
 class PageOverlayTest : public testing::Test {
  protected:
-  enum CompositingMode { kAcceleratedCompositing, kUnacceleratedCompositing };
-
-  void Initialize(CompositingMode compositing_mode) {
+  PageOverlayTest() {
     helper_.Initialize(nullptr /* web_frame_client */,
                        nullptr /* web_view_client */,
-                       nullptr /* web_widget_client */,
-                       compositing_mode == kAcceleratedCompositing
-                           ? EnableAcceleratedCompositing
-                           : DisableAcceleratedCompositing);
+                       nullptr /* web_widget_client */);
     GetWebView()->Resize(WebSize(kViewportWidth, kViewportHeight));
-    GetWebView()->UpdateAllLifecyclePhases();
-    ASSERT_EQ(compositing_mode == kAcceleratedCompositing,
-              GetWebView()->IsAcceleratedCompositingActive());
+    GetWebView()->MainFrameWidget()->UpdateAllLifecyclePhases(
+        WebWidget::LifecycleUpdateReason::kTest);
   }
 
   WebViewImpl* GetWebView() const { return helper_.GetWebView(); }
@@ -96,14 +83,15 @@ class PageOverlayTest : public testing::Test {
     content::LayerTreeView* layer_tree_view = helper_.GetLayerTreeView();
     layer_tree_view->SetViewportSizeAndScale(
         static_cast<gfx::Size>(size), /*device_scale_factor=*/1.f,
-        layer_tree_view->layer_tree_host()->local_surface_id_from_parent());
+        layer_tree_view->layer_tree_host()
+            ->local_surface_id_allocation_from_parent());
   }
 
   template <typename OverlayType>
   void RunPageOverlayTestWithAcceleratedCompositing();
 
  private:
-  FrameTestHelpers::WebViewHelper helper_;
+  frame_test_helpers::WebViewHelper helper_;
 };
 
 template <bool (*getter)(), void (*setter)(bool)>
@@ -125,39 +113,36 @@ class MockPageOverlayCanvas : public SkCanvas {
 };
 
 TEST_F(PageOverlayTest, PageOverlay_AcceleratedCompositing) {
-  Initialize(kAcceleratedCompositing);
   SetViewportSize(WebSize(kViewportWidth, kViewportHeight));
 
   std::unique_ptr<PageOverlay> page_overlay = CreateSolidYellowOverlay();
   page_overlay->Update();
-  GetWebView()->UpdateAllLifecyclePhases();
+  GetWebView()->MainFrameWidget()->UpdateAllLifecyclePhases(
+      WebWidget::LifecycleUpdateReason::kTest);
+
+  GraphicsLayer* graphics_layer = page_overlay->GetGraphicsLayer();
+  WebRect rect(0, 0, kViewportWidth, kViewportHeight);
+
+  IntRect int_rect = rect;
+  graphics_layer->Paint(&int_rect);
 
   // Ideally, we would get results from the compositor that showed that this
   // page overlay actually winds up getting drawn on top of the rest.
   // For now, we just check that the GraphicsLayer will draw the right thing.
-
   MockPageOverlayCanvas canvas(kViewportWidth, kViewportHeight);
   EXPECT_CALL(canvas, onDrawRect(_, _)).Times(AtLeast(0));
   EXPECT_CALL(canvas,
               onDrawRect(SkRect::MakeWH(kViewportWidth, kViewportHeight),
                          Property(&SkPaint::getColor, SK_ColorYELLOW)));
-
-  GraphicsLayer* graphics_layer = page_overlay->GetGraphicsLayer();
-  WebRect rect(0, 0, kViewportWidth, kViewportHeight);
-
-  // Paint the layer with a null canvas to get a display list, and then
-  // replay that onto the mock canvas for examination.
-  IntRect int_rect = rect;
-  graphics_layer->Paint(&int_rect);
   canvas.drawPicture(
       ToSkPicture(graphics_layer->CapturePaintRecord(), int_rect));
 }
 
 TEST_F(PageOverlayTest, PageOverlay_VisualRect) {
-  Initialize(kAcceleratedCompositing);
   std::unique_ptr<PageOverlay> page_overlay = CreateSolidYellowOverlay();
   page_overlay->Update();
-  GetWebView()->UpdateAllLifecyclePhases();
+  GetWebView()->MainFrameWidget()->UpdateAllLifecyclePhases(
+      WebWidget::LifecycleUpdateReason::kTest);
   EXPECT_EQ(LayoutRect(0, 0, kViewportWidth, kViewportHeight),
             page_overlay->VisualRect());
 }

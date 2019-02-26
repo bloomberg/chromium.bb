@@ -88,7 +88,9 @@ class WebThread {
   // sets identifier to its ID.
   static bool GetCurrentThreadIdentifier(ID* identifier) WARN_UNUSED_RESULT;
 
-  // Sets the delegate for the specified WebThread.
+  // Sets the delegate for WebThread::IO.
+  //
+  // This only supports the IO thread.
   //
   // Only one delegate may be registered at a time. Delegates may be
   // unregistered by providing a nullptr pointer.
@@ -96,7 +98,7 @@ class WebThread {
   // If the caller unregisters a delegate before CleanUp has been
   // called, it must perform its own locking to ensure the delegate is
   // not deleted while unregistering.
-  static void SetDelegate(ID identifier, WebThreadDelegate* delegate);
+  static void SetIOThreadDelegate(WebThreadDelegate* delegate);
 
   // Returns an appropriate error message for when DCHECK_CURRENTLY_ON() fails.
   static std::string GetDCheckCurrentlyOnErrorMessage(ID expected);

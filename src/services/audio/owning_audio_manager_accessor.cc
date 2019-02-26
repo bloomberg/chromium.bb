@@ -7,12 +7,17 @@
 #include <memory>
 #include <utility>
 
+#include "base/feature_list.h"
 #include "base/macros.h"
 #include "base/metrics/histogram_macros.h"
+#include "base/sequenced_task_runner.h"
 #include "base/single_thread_task_runner.h"
 #include "base/threading/thread.h"
+#include "base/time/default_tick_clock.h"
+#include "media/audio/audio_features.h"
 #include "media/audio/audio_manager.h"
 #include "media/audio/audio_thread.h"
+#include "media/audio/audio_thread_hang_monitor.h"
 
 namespace audio {
 
@@ -21,15 +26,16 @@ namespace {
 // Thread class for hosting owned AudioManager on the main thread of the
 // service, with a separate worker thread (started on-demand) for running things
 // that shouldn't be blocked by main-thread tasks.
-class MainThread : public media::AudioThread {
+class MainThread final : public media::AudioThread {
  public:
   MainThread();
-  ~MainThread() override;
+  ~MainThread() final;
 
   // AudioThread implementation.
-  void Stop() override;
-  base::SingleThreadTaskRunner* GetTaskRunner() override;
-  base::SingleThreadTaskRunner* GetWorkerTaskRunner() override;
+  void Stop() final;
+  bool IsHung() const final;
+  base::SingleThreadTaskRunner* GetTaskRunner() final;
+  base::SingleThreadTaskRunner* GetWorkerTaskRunner() final;
 
  private:
   scoped_refptr<base::SingleThreadTaskRunner> task_runner_;
@@ -38,12 +44,18 @@ class MainThread : public media::AudioThread {
   base::Thread worker_thread_;
   scoped_refptr<base::SingleThreadTaskRunner> worker_task_runner_;
 
+  media::AudioThreadHangMonitor::Ptr hang_monitor_;
+
   DISALLOW_COPY_AND_ASSIGN(MainThread);
 };
 
 MainThread::MainThread()
     : task_runner_(base::ThreadTaskRunnerHandle::Get()),
-      worker_thread_("AudioWorkerThread") {}
+      worker_thread_("AudioWorkerThread"),
+      hang_monitor_(media::AudioThreadHangMonitor::Create(
+          base::FeatureList::IsEnabled(features::kDumpOnAudioServiceHang),
+          base::DefaultTickClock::GetInstance(),
+          task_runner_)) {}
 
 MainThread::~MainThread() {
   DCHECK(task_runner_->BelongsToCurrentThread());
@@ -51,10 +63,17 @@ MainThread::~MainThread() {
 
 void MainThread::Stop() {
   DCHECK(task_runner_->BelongsToCurrentThread());
+
+  hang_monitor_.reset();
+
   if (worker_task_runner_) {
     worker_task_runner_ = nullptr;
     worker_thread_.Stop();
   }
+}
+
+bool MainThread::IsHung() const {
+  return hang_monitor_->IsAudioThreadHung();
 }
 
 base::SingleThreadTaskRunner* MainThread::GetTaskRunner() {

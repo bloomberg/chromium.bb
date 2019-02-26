@@ -7,6 +7,7 @@
 
 import argparse
 import json
+import logging
 import os
 import subprocess
 import sys
@@ -16,6 +17,9 @@ from pylib.utils import shared_preference_utils
 
 with host_paths.SysPath(host_paths.BUILD_COMMON_PATH):
   import perf_tests_results_helper # pylint: disable=import-error
+
+with host_paths.SysPath(host_paths.TRACING_PATH):
+  from tracing.value import convert_chart_json # pylint: disable=import-error
 
 _ANDROID_DIR = os.path.dirname(os.path.abspath(__file__))
 with host_paths.SysPath(os.path.join(_ANDROID_DIR, 'gyp', 'util')):
@@ -30,7 +34,8 @@ _BASE_CHART = {
     'charts': {},
 }
 
-_RESULTS_FILENAME = 'results-chart.json'
+_CHARTJSON_FILENAME = 'results-chart.json'
+_HISTOGRAMS_FILENAME = 'perf_results.json'
 
 
 def DiffResults(chartjson, base_results, diff_results):
@@ -99,7 +104,12 @@ def _CreateArgparser():
                               'APK.')
   argparser.add_argument('--chartjson',
                          action='store_true',
-                         help='Sets output mode to chartjson.')
+                         help='DEPRECATED. Use --output-format=chartjson '
+                              'instead.')
+  argparser.add_argument('--output-format',
+                         choices=['chartjson', 'histograms'],
+                         help='Output the results to a file in the given '
+                              'format instead of printing the results.')
   argparser.add_argument('--include-intermediate-results',
                          action='store_true',
                          help='Include the results from the resource_sizes.py '
@@ -124,12 +134,16 @@ def _CreateArgparser():
 
 def main():
   args, unknown_args = _CreateArgparser().parse_known_args()
-  chartjson = _BASE_CHART.copy() if args.chartjson else None
+  # TODO(bsheedy): Remove this once all uses of --chartjson are removed.
+  if args.chartjson:
+    args.output_format = 'chartjson'
+
+  chartjson = _BASE_CHART.copy() if args.output_format else None
 
   with build_utils.TempDir() as base_dir, build_utils.TempDir() as diff_dir:
     # Run resource_sizes.py on the two APKs
     resource_sizes_path = os.path.join(_ANDROID_DIR, 'resource_sizes.py')
-    shared_args = (['python', resource_sizes_path, '--chartjson']
+    shared_args = (['python', resource_sizes_path, '--output-format=chartjson']
                    + unknown_args)
 
     base_args = shared_args + ['--output-dir', base_dir, args.base_apk]
@@ -151,18 +165,34 @@ def main():
       raise
 
     # Combine the separate results
-    base_file = os.path.join(base_dir, _RESULTS_FILENAME)
-    diff_file = os.path.join(diff_dir, _RESULTS_FILENAME)
+    base_file = os.path.join(base_dir, _CHARTJSON_FILENAME)
+    diff_file = os.path.join(diff_dir, _CHARTJSON_FILENAME)
     base_results = shared_preference_utils.ExtractSettingsFromJson(base_file)
     diff_results = shared_preference_utils.ExtractSettingsFromJson(diff_file)
     DiffResults(chartjson, base_results, diff_results)
     if args.include_intermediate_results:
       AddIntermediateResults(chartjson, base_results, diff_results)
 
-    if args.chartjson:
-      with open(os.path.join(os.path.abspath(args.output_dir),
-                             _RESULTS_FILENAME), 'w') as outfile:
+    if args.output_format:
+      chartjson_path = os.path.join(os.path.abspath(args.output_dir),
+                                    _CHARTJSON_FILENAME)
+      logging.critical('Dumping diff chartjson to %s', chartjson_path)
+      with open(chartjson_path, 'w') as outfile:
         json.dump(chartjson, outfile)
+
+      if args.output_format == 'histograms':
+        histogram_result = convert_chart_json.ConvertChartJson(chartjson_path)
+        if histogram_result.returncode != 0:
+          logging.error('chartjson conversion failed with error: %s',
+              histogram_result.stdout)
+          return 1
+
+        histogram_path = os.path.join(os.path.abspath(args.output_dir),
+            'perf_results.json')
+        logging.critical('Dumping diff histograms to %s', histogram_path)
+        with open(histogram_path, 'w') as json_file:
+          json_file.write(histogram_result.stdout)
+
 
 if __name__ == '__main__':
   sys.exit(main())

@@ -4,13 +4,11 @@
 
 #include "net/third_party/http2/hpack/decoder/hpack_entry_collector.h"
 
-#include <sstream>
-
 #include "base/logging.h"
 #include "net/third_party/http2/hpack/decoder/hpack_string_collector.h"
 #include "net/third_party/http2/hpack/http2_hpack_constants.h"
 #include "net/third_party/http2/platform/api/http2_string_utils.h"
-#include "net/third_party/http2/tools/failure.h"
+#include "net/third_party/http2/platform/api/http2_test_helpers.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 using ::testing::AssertionResult;
@@ -28,13 +26,8 @@ HpackEntryCollector::HpackEntryCollector() {
   Clear();
 }
 
-HpackEntryCollector::HpackEntryCollector(const HpackEntryCollector& other)
-    : header_type_(other.header_type_),
-      index_(other.index_),
-      name_(other.name_),
-      value_(other.value_),
-      started_(other.started_),
-      ended_(other.ended_) {}
+HpackEntryCollector::HpackEntryCollector(const HpackEntryCollector& other) =
+    default;
 
 HpackEntryCollector::HpackEntryCollector(HpackEntryType type,
                                          size_t index_or_size)

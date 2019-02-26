@@ -17,7 +17,6 @@ source_set("tests") {
     "//media/capture/mojom:video_capture",
     "//mojo/public/cpp/test_support:test_utils",
     "//services/service_manager/public/cpp",
-    "//services/service_manager/public/cpp:service_test_support",
     "//services/viz/public/interfaces",
     "//skia/public/interfaces",
     "//testing/gtest",

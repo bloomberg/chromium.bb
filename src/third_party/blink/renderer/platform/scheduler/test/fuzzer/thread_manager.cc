@@ -56,7 +56,7 @@ ThreadManager::ThreadManager(TimeTicks initial_time,
 
   TaskQueue::Spec spec = TaskQueue::Spec("default_task_queue");
   task_queues_.emplace_back(std::make_unique<TaskQueueWithVoters>(
-      manager_->CreateTaskQueue<TestTaskQueue>(spec)));
+      manager_->CreateTaskQueueWithType<TestTaskQueue>(spec)));
 }
 
 ThreadManager::~ThreadManager() = default;
@@ -155,7 +155,7 @@ void ThreadManager::ExecuteCreateTaskQueueAction(
   {
     AutoLock lock(lock_);
     task_queues_.emplace_back(std::make_unique<TaskQueueWithVoters>(
-        manager_->CreateTaskQueue<TestTaskQueue>(spec)));
+        manager_->CreateTaskQueueWithType<TestTaskQueue>(spec)));
     chosen_task_queue = task_queues_.back()->queue.get();
   }
   chosen_task_queue->SetQueuePriority(
@@ -202,7 +202,7 @@ void ThreadManager::PostDelayedTask(
   // TODO(farahcharab) After adding non-nestable/nestable tasks, fix this to
   // PostNonNestableDelayedTask for the former and PostDelayedTask for the
   // latter.
-  chosen_task_queue->PostDelayedTask(
+  chosen_task_queue->task_runner()->PostDelayedTask(
       FROM_HERE,
       BindOnce(&Task::Execute, pending_task->weak_ptr_factory_.GetWeakPtr(),
                task),

@@ -23,6 +23,8 @@
 #include "base/sha1.h"
 #include "base/stl_util.h"
 #include "base/strings/string_number_conversions.h"
+#include "base/test/bind_test_util.h"
+#include "base/test/metrics/histogram_tester.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "content/browser/blob_storage/chrome_blob_storage_context.h"
 #include "content/browser/cache_storage/cache_storage.h"
@@ -31,9 +33,10 @@
 #include "content/browser/cache_storage/cache_storage_context_impl.h"
 #include "content/browser/cache_storage/cache_storage_index.h"
 #include "content/browser/cache_storage/cache_storage_quota_client.h"
+#include "content/common/service_worker/service_worker_type_converter.h"
 #include "content/public/browser/browser_thread.h"
-#include "content/public/browser/cache_storage_usage_info.h"
 #include "content/public/browser/storage_partition.h"
+#include "content/public/browser/storage_usage_info.h"
 #include "content/public/common/content_features.h"
 #include "content/public/test/test_browser_context.h"
 #include "content/public/test/test_browser_thread_bundle.h"
@@ -54,6 +57,7 @@
 #include "storage/common/blob_storage/blob_handle.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/blink/public/platform/modules/cache_storage/cache_storage.mojom.h"
+#include "third_party/blink/public/platform/modules/fetch/fetch_api_request.mojom.h"
 #include "url/origin.h"
 
 using blink::mojom::CacheStorageError;
@@ -272,8 +276,6 @@ class CacheStorageManagerTest : public testing::Test {
         quota_manager_proxy_);
 
     cache_manager_->SetBlobParametersForCache(
-        BrowserContext::GetDefaultStoragePartition(&browser_context_)
-            ->GetURLRequestContext(),
         blob_storage_context->context()->AsWeakPtr());
   }
 
@@ -311,9 +313,20 @@ class CacheStorageManagerTest : public testing::Test {
     cache_manager_ = nullptr;
   }
 
+  void CheckOpHistograms(base::HistogramTester& histogram_tester,
+                         const char* op_name) {
+    std::string base("ServiceWorkerCache.CacheStorage.Scheduler.");
+    histogram_tester.ExpectTotalCount(base + "IsOperationSlow." + op_name, 1);
+    histogram_tester.ExpectTotalCount(base + "OperationDuration2." + op_name,
+                                      1);
+    histogram_tester.ExpectTotalCount(base + "QueueDuration2." + op_name, 1);
+    histogram_tester.ExpectTotalCount(base + "QueueLength." + op_name, 1);
+  }
+
   bool Open(const url::Origin& origin,
             const std::string& cache_name,
             CacheStorageOwner owner = CacheStorageOwner::kCacheAPI) {
+    base::HistogramTester histogram_tester;
     base::RunLoop loop;
     cache_manager_->OpenCache(
         origin, owner, cache_name,
@@ -322,47 +335,53 @@ class CacheStorageManagerTest : public testing::Test {
     loop.Run();
 
     bool error = callback_error_ != CacheStorageError::kSuccess;
-    if (error)
+    if (error) {
       EXPECT_FALSE(callback_cache_handle_.value());
-    else
+    } else {
       EXPECT_TRUE(callback_cache_handle_.value());
+      CheckOpHistograms(histogram_tester, "Open");
+    }
     return !error;
   }
 
   bool Has(const url::Origin& origin,
            const std::string& cache_name,
            CacheStorageOwner owner = CacheStorageOwner::kCacheAPI) {
+    base::HistogramTester histogram_tester;
     base::RunLoop loop;
     cache_manager_->HasCache(
         origin, owner, cache_name,
         base::BindOnce(&CacheStorageManagerTest::BoolAndErrorCallback,
                        base::Unretained(this), base::Unretained(&loop)));
     loop.Run();
-
+    CheckOpHistograms(histogram_tester, "Has");
     return callback_bool_;
   }
 
   bool Delete(const url::Origin& origin,
               const std::string& cache_name,
               CacheStorageOwner owner = CacheStorageOwner::kCacheAPI) {
+    base::HistogramTester histogram_tester;
     base::RunLoop loop;
     cache_manager_->DeleteCache(
         origin, owner, cache_name,
         base::BindOnce(&CacheStorageManagerTest::ErrorCallback,
                        base::Unretained(this), base::Unretained(&loop)));
     loop.Run();
-
+    CheckOpHistograms(histogram_tester, "Delete");
     return callback_bool_;
   }
 
   size_t Keys(const url::Origin& origin,
               CacheStorageOwner owner = CacheStorageOwner::kCacheAPI) {
+    base::HistogramTester histogram_tester;
     base::RunLoop loop;
     cache_manager_->EnumerateCaches(
         origin, owner,
         base::BindOnce(&CacheStorageManagerTest::CacheMetadataCallback,
                        base::Unretained(this), base::Unretained(&loop)));
     loop.Run();
+    CheckOpHistograms(histogram_tester, "Keys");
     return callback_cache_index_.num_entries();
   }
 
@@ -383,6 +402,7 @@ class CacheStorageManagerTest : public testing::Test {
       const ServiceWorkerFetchRequest& request,
       blink::mojom::QueryParamsPtr match_params = nullptr,
       CacheStorageOwner owner = CacheStorageOwner::kCacheAPI) {
+    base::HistogramTester histogram_tester;
     std::unique_ptr<ServiceWorkerFetchRequest> unique_request =
         std::make_unique<ServiceWorkerFetchRequest>(request);
 
@@ -393,7 +413,8 @@ class CacheStorageManagerTest : public testing::Test {
         base::BindOnce(&CacheStorageManagerTest::CacheMatchCallback,
                        base::Unretained(this), base::Unretained(&loop)));
     loop.Run();
-
+    if (callback_error_ == CacheStorageError::kSuccess)
+      CheckOpHistograms(histogram_tester, "Match");
     return callback_error_ == CacheStorageError::kSuccess;
   }
 
@@ -410,6 +431,7 @@ class CacheStorageManagerTest : public testing::Test {
       const ServiceWorkerFetchRequest& request,
       blink::mojom::QueryParamsPtr match_params = nullptr,
       CacheStorageOwner owner = CacheStorageOwner::kCacheAPI) {
+    base::HistogramTester histogram_tester;
     std::unique_ptr<ServiceWorkerFetchRequest> unique_request =
         std::make_unique<ServiceWorkerFetchRequest>(request);
     base::RunLoop loop;
@@ -418,7 +440,8 @@ class CacheStorageManagerTest : public testing::Test {
         base::BindOnce(&CacheStorageManagerTest::CacheMatchCallback,
                        base::Unretained(this), base::Unretained(&loop)));
     loop.Run();
-
+    if (callback_error_ == CacheStorageError::kSuccess)
+      CheckOpHistograms(histogram_tester, "MatchAll");
     return callback_error_ == CacheStorageError::kSuccess;
   }
 
@@ -491,7 +514,8 @@ class CacheStorageManagerTest : public testing::Test {
     blink::mojom::BatchOperationPtr operation =
         blink::mojom::BatchOperation::New();
     operation->operation_type = blink::mojom::OperationType::kPut;
-    operation->request = request;
+    operation->request =
+        mojo::ConvertTo<blink::mojom::FetchAPIRequestPtr>(request);
     operation->response = std::move(response);
 
     std::vector<blink::mojom::BatchOperationPtr> operations;
@@ -514,7 +538,8 @@ class CacheStorageManagerTest : public testing::Test {
     blink::mojom::BatchOperationPtr operation =
         blink::mojom::BatchOperation::New();
     operation->operation_type = blink::mojom::OperationType::kDelete;
-    operation->request = request;
+    operation->request =
+        mojo::ConvertTo<blink::mojom::FetchAPIRequestPtr>(request);
     operation->response = blink::mojom::FetchAPIResponse::New();
 
     std::vector<blink::mojom::BatchOperationPtr> operations;
@@ -566,21 +591,17 @@ class CacheStorageManagerTest : public testing::Test {
     run_loop->Quit();
   }
 
-  std::vector<CacheStorageUsageInfo> GetAllOriginsUsage(
+  std::vector<StorageUsageInfo> GetAllOriginsUsage(
       CacheStorageOwner owner = CacheStorageOwner::kCacheAPI) {
     base::RunLoop loop;
     cache_manager_->GetAllOriginsUsage(
-        owner, base::Bind(&CacheStorageManagerTest::AllOriginsUsageCallback,
-                          base::Unretained(this), base::Unretained(&loop)));
+        owner, base::BindLambdaForTesting(
+                   [&](const std::vector<StorageUsageInfo>& usage) {
+                     callback_all_origins_usage_ = usage;
+                     loop.Quit();
+                   }));
     loop.Run();
     return callback_all_origins_usage_;
-  }
-
-  void AllOriginsUsageCallback(
-      base::RunLoop* run_loop,
-      const std::vector<CacheStorageUsageInfo>& usage) {
-    callback_all_origins_usage_ = usage;
-    run_loop->Quit();
   }
 
   int64_t GetSizeThenCloseAllCaches(const url::Origin& origin) {
@@ -650,7 +671,7 @@ class CacheStorageManagerTest : public testing::Test {
   const url::Origin origin2_;
 
   int64_t callback_usage_;
-  std::vector<CacheStorageUsageInfo> callback_all_origins_usage_;
+  std::vector<StorageUsageInfo> callback_all_origins_usage_;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(CacheStorageManagerTest);
@@ -1194,7 +1215,7 @@ TEST_F(CacheStorageManagerTest, QuotaCorrectAfterReopen) {
 
   // Choose a response type that will not be padded so that the expected
   // cache size can be calculated.
-  const FetchResponseType response_type = FetchResponseType::kCORS;
+  const FetchResponseType response_type = FetchResponseType::kCors;
 
   // Create a new cache.
   int64_t cache_size;
@@ -1342,7 +1363,7 @@ TEST_P(CacheStorageManagerTestP, GetAllOriginsUsage) {
   EXPECT_TRUE(
       CachePut(callback_cache_handle_.value(), GURL("http://example.com/bar")));
 
-  std::vector<CacheStorageUsageInfo> usage = GetAllOriginsUsage();
+  std::vector<StorageUsageInfo> usage = GetAllOriginsUsage();
   EXPECT_EQ(2ULL, usage.size());
 
   int origin1_index = url::Origin::Create(usage[0].origin) == origin1_ ? 0 : 1;
@@ -1380,10 +1401,10 @@ TEST_P(CacheStorageManagerTestP, GetAllOriginsUsageDifferentOwners) {
   EXPECT_TRUE(
       CachePut(callback_cache_handle_.value(), GURL("http://example.com/bar")));
 
-  std::vector<CacheStorageUsageInfo> usage_cache =
+  std::vector<StorageUsageInfo> usage_cache =
       GetAllOriginsUsage(CacheStorageOwner::kCacheAPI);
   EXPECT_EQ(1ULL, usage_cache.size());
-  std::vector<CacheStorageUsageInfo> usage_bgf =
+  std::vector<StorageUsageInfo> usage_bgf =
       GetAllOriginsUsage(CacheStorageOwner::kBackgroundFetch);
   EXPECT_EQ(2ULL, usage_bgf.size());
 
@@ -1447,7 +1468,7 @@ TEST_F(CacheStorageManagerTest, GetAllOriginsUsageWithOldIndex) {
   EXPECT_TRUE(CachePut(original_handle.value(), kBarURL));
   original_handle = CacheStorageCacheHandle();
 
-  std::vector<CacheStorageUsageInfo> usage = GetAllOriginsUsage();
+  std::vector<StorageUsageInfo> usage = GetAllOriginsUsage();
   ASSERT_EQ(1ULL, usage.size());
   int64_t usage_before_close = usage[0].total_size_bytes;
   EXPECT_GT(usage_before_close, 0);

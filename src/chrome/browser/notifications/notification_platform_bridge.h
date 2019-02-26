@@ -62,6 +62,11 @@ class NotificationPlatformBridge {
   // failed. |callback| may be called directly or from a posted task.
   virtual void SetReadyCallback(NotificationBridgeReadyCallback callback) = 0;
 
+  // Called when display service for |profile| is being shut down (for example
+  // if the profile is being destroyed). If |profile| is nullptr the system
+  // notification display service is being shutdown.
+  virtual void DisplayServiceShutDown(Profile* profile) = 0;
+
  protected:
   NotificationPlatformBridge() = default;
 

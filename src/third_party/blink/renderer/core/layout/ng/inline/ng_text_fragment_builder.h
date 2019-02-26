@@ -9,20 +9,22 @@
 #include "third_party/blink/renderer/core/layout/ng/inline/ng_inline_node.h"
 #include "third_party/blink/renderer/core/layout/ng/inline/ng_physical_text_fragment.h"
 #include "third_party/blink/renderer/core/layout/ng/inline/ng_text_end_effect.h"
-#include "third_party/blink/renderer/core/layout/ng/ng_base_fragment_builder.h"
+#include "third_party/blink/renderer/core/layout/ng/ng_fragment_builder.h"
 #include "third_party/blink/renderer/platform/wtf/allocator.h"
 
 namespace blink {
 
 class LayoutObject;
-class ShapeResult;
+class ShapeResultView;
 struct NGInlineItemResult;
 
-class CORE_EXPORT NGTextFragmentBuilder final : public NGBaseFragmentBuilder {
+class CORE_EXPORT NGTextFragmentBuilder final : public NGFragmentBuilder {
   STACK_ALLOCATED();
 
  public:
-  NGTextFragmentBuilder(NGInlineNode, WritingMode);
+  NGTextFragmentBuilder(NGInlineNode node, WritingMode writing_mode)
+      : NGFragmentBuilder(writing_mode, TextDirection::kLtr),
+        inline_node_(node) {}
 
   // NOTE: Takes ownership of the shape result within the item result.
   void SetItem(NGPhysicalTextFragment::NGTextType,
@@ -35,7 +37,7 @@ class CORE_EXPORT NGTextFragmentBuilder final : public NGBaseFragmentBuilder {
                const String& text,
                scoped_refptr<const ComputedStyle>,
                bool is_ellipsis_style,
-               scoped_refptr<const ShapeResult>);
+               scoped_refptr<const ShapeResultView>);
 
   // Creates the fragment. Can only be called once.
   scoped_refptr<const NGPhysicalTextFragment> ToTextFragment();
@@ -46,14 +48,14 @@ class CORE_EXPORT NGTextFragmentBuilder final : public NGBaseFragmentBuilder {
   unsigned item_index_;
   unsigned start_offset_;
   unsigned end_offset_;
-  NGLogicalSize size_;
-  scoped_refptr<const ShapeResult> shape_result_;
+  scoped_refptr<const ShapeResultView> shape_result_;
 
   NGPhysicalTextFragment::NGTextType text_type_ =
       NGPhysicalTextFragment::kNormalText;
 
   NGTextEndEffect end_effect_ = NGTextEndEffect::kNone;
-  LayoutObject* layout_object_ = nullptr;
+
+  friend class NGPhysicalTextFragment;
 };
 
 }  // namespace blink

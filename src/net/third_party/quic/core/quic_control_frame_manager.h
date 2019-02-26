@@ -53,6 +53,18 @@ class QUIC_EXPORT_PRIVATE QuicControlFrameManager {
   // immediately.
   void WriteOrBufferBlocked(QuicStreamId id);
 
+  // Tries to send an IETF-QUIC STOP_SENDING frame. The frame is buffered if it
+  // can not be sent immediately.
+  void WriteOrBufferStopSending(uint16_t code, QuicStreamId stream_id);
+
+  // Tries to send a STREAM_ID_BLOCKED Frame. Buffers the frame if it cannot be
+  // sent immediately.
+  void WriteOrBufferStreamIdBlocked(QuicStreamId id);
+
+  // Tries to send a MAX_STREAM_ID Frame. Buffers the frame if it cannot be sent
+  // immediately.
+  void WriteOrBufferMaxStreamId(QuicStreamId id);
+
   // Sends a PING_FRAME. Do not send PING if there is buffered frames.
   void WritePing();
 
@@ -112,6 +124,11 @@ class QUIC_EXPORT_PRIVATE QuicControlFrameManager {
   // Returns true if there are buffered frames waiting to be sent for the first
   // time.
   bool HasBufferedFrames() const;
+
+  // Writes or buffers a control frame.  Frame is buffered if there already
+  // are frames waiting to be sent. If no others waiting, will try to send the
+  // frame.
+  void WriteOrBufferQuicFrame(QuicFrame frame);
 
   QuicDeque<QuicFrame> control_frames_;
 

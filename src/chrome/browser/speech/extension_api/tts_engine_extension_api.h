@@ -8,7 +8,7 @@
 #include <vector>
 
 #include "base/memory/singleton.h"
-#include "chrome/browser/speech/tts_controller.h"
+#include "content/public/browser/tts_controller.h"
 #include "extensions/browser/extension_function.h"
 
 class Utterance;
@@ -25,17 +25,18 @@ extern const char kOnResume[];
 }
 
 // TtsEngineDelegate implementation used by TtsController.
-class TtsExtensionEngine : public TtsEngineDelegate {
+class TtsExtensionEngine : public content::TtsEngineDelegate {
  public:
   static TtsExtensionEngine* GetInstance();
 
   // Overridden from TtsEngineDelegate:
   void GetVoices(content::BrowserContext* browser_context,
-                 std::vector<VoiceData>* out_voices) override;
-  void Speak(Utterance* utterance, const VoiceData& voice) override;
-  void Stop(Utterance* utterance) override;
-  void Pause(Utterance* utterance) override;
-  void Resume(Utterance* utterance) override;
+                 std::vector<content::VoiceData>* out_voices) override;
+  void Speak(content::Utterance* utterance,
+             const content::VoiceData& voice) override;
+  void Stop(content::Utterance* utterance) override;
+  void Pause(content::Utterance* utterance) override;
+  void Resume(content::Utterance* utterance) override;
   bool LoadBuiltInTtsExtension(
       content::BrowserContext* browser_context) override;
 };

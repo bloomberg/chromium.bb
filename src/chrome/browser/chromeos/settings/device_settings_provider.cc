@@ -25,12 +25,12 @@
 #include "chrome/browser/chromeos/policy/off_hours/off_hours_proto_parser.h"
 #include "chrome/browser/chromeos/settings/cros_settings.h"
 #include "chrome/browser/chromeos/settings/device_settings_cache.h"
-#include "chrome/browser/chromeos/settings/install_attributes.h"
 #include "chrome/browser/chromeos/tpm_firmware_update.h"
 #include "chromeos/chromeos_switches.h"
 #include "chromeos/dbus/cryptohome_client.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
 #include "chromeos/settings/cros_settings_names.h"
+#include "chromeos/settings/install_attributes.h"
 #include "components/policy/core/common/chrome_schema.h"
 #include "components/policy/core/common/cloud/cloud_policy_constants.h"
 #include "components/policy/core/common/schema.h"
@@ -76,13 +76,14 @@ const char* const kKnownSettings[] = {
     kDeviceLoginScreenLocales,
     kDeviceOffHours,
     kDeviceOwner,
-    kDevicePrintersAccessMode,
-    kDevicePrintersBlacklist,
-    kDevicePrintersConfigurations,
-    kDevicePrintersWhitelist,
+    kDeviceNativePrinters,
+    kDeviceNativePrintersAccessMode,
+    kDeviceNativePrintersBlacklist,
+    kDeviceNativePrintersWhitelist,
     kDeviceQuirksDownloadEnabled,
     kDeviceUnaffiliatedCrostiniAllowed,
     kDeviceWallpaperImage,
+    kDeviceDisplayResolution,
     kDisplayRotationDefault,
     kExtensionCacheSize,
     kHeartbeatEnabled,
@@ -582,6 +583,19 @@ void DecodeGenericPolicies(const em::ChromeDeviceSettingsProto& policy,
     new_values_cache->SetInteger(
         kDisplayRotationDefault,
         policy.display_rotation_default().display_rotation_default());
+  }
+
+  if (policy.has_device_display_resolution() &&
+      policy.device_display_resolution().has_device_display_resolution()) {
+    SetJsonDeviceSetting(
+        kDeviceDisplayResolution, policy::key::kDeviceDisplayResolution,
+        policy.device_display_resolution().device_display_resolution(),
+        new_values_cache);
+  } else {
+    // Set empty value if policy is missing, to make sure that webui
+    // will receive setting update.
+    new_values_cache->SetValue(kDeviceDisplayResolution,
+                               std::make_unique<base::DictionaryValue>());
   }
 
   if (policy.has_allow_bluetooth() &&

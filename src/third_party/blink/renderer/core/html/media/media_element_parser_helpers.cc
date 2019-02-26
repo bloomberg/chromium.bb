@@ -17,7 +17,7 @@
 
 namespace blink {
 
-namespace MediaElementParserHelpers {
+namespace media_element_parser_helpers {
 
 bool IsMediaElement(const Element* element) {
   if ((IsHTMLImageElement(element) || IsSVGImageElement(element)) &&
@@ -26,16 +26,6 @@ bool IsMediaElement(const Element* element) {
   if (IsHTMLVideoElement(element) && !element->GetDocument().IsMediaDocument())
     return true;
   return false;
-}
-
-bool IsUnsizedMediaEnabled(const Document& document) {
-  if (auto* frame = document.GetFrame()) {
-    return frame->DeprecatedIsFeatureEnabled(
-        mojom::FeaturePolicyFeature::kUnsizedMedia);
-  }
-  // Unsized media is by default enabled every where, so when the frame is not
-  // available return default policy (true).
-  return true;
 }
 
 bool ParseIntrinsicSizeAttribute(const String& value,
@@ -59,7 +49,8 @@ bool ParseIntrinsicSizeAttribute(const String& value,
     new_height = 0;
   }
   if (new_width == 0 && new_height == 0 && IsMediaElement(element) &&
-      !IsUnsizedMediaEnabled(element->GetDocument())) {
+      !element->GetDocument().IsFeatureEnabled(
+          mojom::FeaturePolicyFeature::kUnsizedMedia)) {
     new_width = LayoutReplaced::kDefaultWidth;
     new_height = LayoutReplaced::kDefaultHeight;
     *is_default_intrinsic_size = true;
@@ -76,12 +67,13 @@ bool ParseIntrinsicSizeAttribute(const String& value,
 void ReportUnsizedMediaViolation(const LayoutObject* layout_object) {
   const ComputedStyle& style = layout_object->StyleRef();
   if (!style.LogicalWidth().IsSpecified() &&
-      !style.LogicalHeight().IsSpecified() && layout_object->GetFrame()) {
-    layout_object->GetFrame()->DeprecatedReportFeaturePolicyViolation(
-        mojom::FeaturePolicyFeature::kUnsizedMedia);
+      !style.LogicalHeight().IsSpecified()) {
+    layout_object->GetDocument().ReportFeaturePolicyViolation(
+        mojom::FeaturePolicyFeature::kUnsizedMedia,
+        mojom::FeaturePolicyDisposition::kEnforce);
   }
 }
 
-}  // namespace MediaElementParserHelpers
+}  // namespace media_element_parser_helpers
 
 }  // namespace blink

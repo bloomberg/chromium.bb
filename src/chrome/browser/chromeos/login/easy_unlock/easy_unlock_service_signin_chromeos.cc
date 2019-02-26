@@ -12,11 +12,10 @@
 #include "base/json/json_string_value_serializer.h"
 #include "base/location.h"
 #include "base/logging.h"
-#include "base/sys_info.h"
+#include "base/system/sys_info.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/time/time.h"
 #include "chrome/browser/browser_process.h"
-#include "chrome/browser/chromeos/login/easy_unlock/easy_unlock_app_manager.h"
 #include "chrome/browser/chromeos/login/easy_unlock/easy_unlock_challenge_wrapper.h"
 #include "chrome/browser/chromeos/login/easy_unlock/easy_unlock_key_manager.h"
 #include "chrome/browser/chromeos/login/easy_unlock/easy_unlock_metrics.h"
@@ -29,6 +28,7 @@
 #include "chromeos/components/proximity_auth/proximity_auth_local_state_pref_manager.h"
 #include "chromeos/components/proximity_auth/switches.h"
 #include "chromeos/login/auth/user_context.h"
+#include "chromeos/login/login_state.h"
 #include "chromeos/tpm/tpm_token_loader.h"
 #include "components/cryptauth/remote_device.h"
 #include "components/cryptauth/remote_device_cache.h"
@@ -157,7 +157,7 @@ std::vector<cryptauth::BeaconSeed> DeserializeBeaconSeeds(
     beacon_seeds.push_back(beacon_seed);
   }
 
-  PA_LOG(INFO) << "Deserialized " << beacon_seeds.size() << " BeaconSeeds.";
+  PA_LOG(VERBOSE) << "Deserialized " << beacon_seeds.size() << " BeaconSeeds.";
   return beacon_seeds;
 }
 
@@ -198,8 +198,8 @@ void EasyUnlockServiceSignin::WrapChallengeForUserAndDevice(
                         &device_public_key_base64);
   for (const auto& device_data : it->second->devices) {
     if (device_data.public_key == device_public_key_base64) {
-      PA_LOG(INFO) << "Wrapping challenge for " << account_id.Serialize()
-                   << "...";
+      PA_LOG(VERBOSE) << "Wrapping challenge for " << account_id.Serialize()
+                      << "...";
       challenge_wrapper_.reset(new EasyUnlockChallengeWrapper(
           device_data.challenge, channel_binding_data, account_id,
           EasyUnlockTpmKeyManagerFactory::GetInstance()->Get(profile())));
@@ -226,10 +226,6 @@ AccountId EasyUnlockServiceSignin::GetAccountId() const {
   return account_id_;
 }
 
-void EasyUnlockServiceSignin::LaunchSetup() {
-  NOTREACHED();
-}
-
 void EasyUnlockServiceSignin::ClearPermitAccess() {
   NOTREACHED();
 }
@@ -243,19 +239,6 @@ const base::ListValue* EasyUnlockServiceSignin::GetRemoteDevices() const {
 
 void EasyUnlockServiceSignin::SetRemoteDevices(const base::ListValue& devices) {
   NOTREACHED();
-}
-
-void EasyUnlockServiceSignin::RunTurnOffFlow() {
-  NOTREACHED();
-}
-
-void EasyUnlockServiceSignin::ResetTurnOffFlow() {
-  NOTREACHED();
-}
-
-EasyUnlockService::TurnOffFlowStatus
-EasyUnlockServiceSignin::GetTurnOffFlowStatus() const {
-  return EasyUnlockService::IDLE;
 }
 
 std::string EasyUnlockServiceSignin::GetChallenge() const {
@@ -324,7 +307,6 @@ void EasyUnlockServiceSignin::InitializeInternal() {
   pref_manager_.reset(new proximity_auth::ProximityAuthLocalStatePrefManager(
       g_browser_process->local_state()));
 
-  LoginState::Get()->AddObserver(this);
   proximity_auth::ScreenlockBridge* screenlock_bridge =
       proximity_auth::ScreenlockBridge::Get();
   screenlock_bridge->AddObserver(this);
@@ -339,7 +321,6 @@ void EasyUnlockServiceSignin::ShutdownInternal() {
 
   weak_ptr_factory_.InvalidateWeakPtrs();
   proximity_auth::ScreenlockBridge::Get()->RemoveObserver(this);
-  LoginState::Get()->RemoveObserver(this);
   user_data_.clear();
 }
 
@@ -399,8 +380,6 @@ void EasyUnlockServiceSignin::OnScreenDidUnlock(
       proximity_auth::ScreenlockBridge::LockHandler::SIGNIN_SCREEN)
     return;
 
-  DisableAppWithoutResettingScreenlockState();
-
   Shutdown();
 }
 
@@ -430,7 +409,7 @@ void EasyUnlockServiceSignin::OnFocusedUserChanged(
   EasyUnlockScreenlockStateHandler::HardlockState hardlock_state;
   if (GetPersistedHardlockState(&hardlock_state) &&
       hardlock_state != EasyUnlockScreenlockStateHandler::NO_HARDLOCK) {
-    PA_LOG(INFO) << "Hardlock present, skipping remaining login flow.";
+    PA_LOG(VERBOSE) << "Hardlock present, skipping remaining login flow.";
     return;
   }
 
@@ -444,12 +423,6 @@ void EasyUnlockServiceSignin::OnFocusedUserChanged(
   // The system token will be needed to sign a nonce using TPM private key
   // during the sign-in protocol.
   TPMTokenLoader::Get()->EnsureStarted();
-}
-
-void EasyUnlockServiceSignin::LoggedInStateChanged() {
-  if (!LoginState::Get()->IsUserLoggedIn())
-    return;
-  DisableAppWithoutResettingScreenlockState();
 }
 
 void EasyUnlockServiceSignin::LoadCurrentUserDataIfNeeded() {
@@ -530,8 +503,8 @@ void EasyUnlockServiceSignin::OnUserDataLoaded(
 
     std::vector<cryptauth::BeaconSeed> beacon_seeds;
     if (!device.serialized_beacon_seeds.empty()) {
-      PA_LOG(INFO) << "Deserializing BeaconSeeds: "
-                   << device.serialized_beacon_seeds;
+      PA_LOG(VERBOSE) << "Deserializing BeaconSeeds: "
+                      << device.serialized_beacon_seeds;
       beacon_seeds = DeserializeBeaconSeeds(device.serialized_beacon_seeds);
     } else {
       PA_LOG(WARNING) << "No BeaconSeeds were loaded.";
@@ -543,11 +516,11 @@ void EasyUnlockServiceSignin::OnUserDataLoaded(
         0L /* last_update_time_millis */, software_features, beacon_seeds);
 
     remote_devices.push_back(remote_device);
-    PA_LOG(INFO) << "Loaded Remote Device:\n"
-                 << "  user id: " << remote_device.user_id << "\n"
-                 << "  device id: "
-                 << cryptauth::RemoteDeviceRef::TruncateDeviceIdForLogs(
-                        remote_device.GetDeviceId());
+    PA_LOG(VERBOSE) << "Loaded Remote Device:\n"
+                    << "  user id: " << remote_device.user_id << "\n"
+                    << "  device id: "
+                    << cryptauth::RemoteDeviceRef::TruncateDeviceIdForLogs(
+                           remote_device.GetDeviceId());
   }
 
   // If |chromeos::features::kMultiDeviceApi| is enabled, both a remote device

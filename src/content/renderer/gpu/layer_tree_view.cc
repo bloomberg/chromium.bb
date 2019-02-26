@@ -12,6 +12,7 @@
 #include "base/callback.h"
 #include "base/feature_list.h"
 #include "base/location.h"
+#include "base/metrics/histogram_macros.h"
 #include "base/single_thread_task_runner.h"
 #include "base/task/post_task.h"
 #include "base/task/task_scheduler/task_scheduler.h"
@@ -58,12 +59,23 @@ namespace {
 
 using ReportTimeCallback = blink::WebLayerTreeView::ReportTimeCallback;
 
-// Enables using presentation times instead of swap times in swap promises.
-// Currently, these promises are only used by Paint Timing, but they will be
-// used by other APIs such as Event Timing.
-const base::Feature kUsePresentationTimeInSwapPromise = {
-    "UsePresentationTimeInSwapPromise", base::FEATURE_DISABLED_BY_DEFAULT};
+void RecordSwapTimeToPresentationTime(base::TimeTicks swap_time,
+                                      base::TimeTicks presentation_time) {
+  DCHECK(!swap_time.is_null());
+  bool presentation_time_is_valid =
+      !presentation_time.is_null() && (presentation_time > swap_time);
+  UMA_HISTOGRAM_BOOLEAN("PageLoad.Internal.Renderer.PresentationTime.Valid",
+                        presentation_time_is_valid);
+  if (presentation_time_is_valid) {
+    // This measures from 1ms to 10seconds.
+    UMA_HISTOGRAM_TIMES(
+        "PageLoad.Internal.Renderer.PresentationTime.DeltaFromSwapTime",
+        presentation_time - swap_time);
+  }
+}
 
+// Enables measuring and reporting both presentation times and swap times in
+// swap promises.
 class ReportTimeSwapPromise : public cc::SwapPromise {
  public:
   ReportTimeSwapPromise(ReportTimeCallback callback,
@@ -81,6 +93,7 @@ class ReportTimeSwapPromise : public cc::SwapPromise {
   ReportTimeCallback callback_;
   scoped_refptr<base::SingleThreadTaskRunner> task_runner_;
   base::WeakPtr<LayerTreeView> layer_tree_view_;
+  uint32_t frame_token_ = 0;
 
   DISALLOW_COPY_AND_ASSIGN(ReportTimeSwapPromise);
 };
@@ -97,31 +110,30 @@ ReportTimeSwapPromise::~ReportTimeSwapPromise() {}
 
 void ReportTimeSwapPromise::WillSwap(viz::CompositorFrameMetadata* metadata) {
   DCHECK_GT(metadata->frame_token, 0u);
+  // Request a presentation timestamp for this frame. The interval between the
+  // current swap and its presentation time is reported in UMA (see
+  // corresponding code in DidSwap() below).
   metadata->request_presentation_feedback = true;
-  if (!base::FeatureList::IsEnabled(kUsePresentationTimeInSwapPromise))
-    return;
-
-  // If using presentation timestamp, post task here calling
-  // LayerTreeView::AddPresentationCallback.
-  auto* task_runner = task_runner_.get();
-  task_runner->PostTask(
-      FROM_HERE,
-      base::BindOnce(
-          &LayerTreeView::AddPresentationCallback, layer_tree_view_,
-          metadata->frame_token,
-          base::BindOnce(std::move(callback_),
-                         blink::WebLayerTreeView::SwapResult::kDidSwap)));
+  frame_token_ = metadata->frame_token;
 }
 
 void ReportTimeSwapPromise::DidSwap() {
-  if (base::FeatureList::IsEnabled(kUsePresentationTimeInSwapPromise))
-    return;
-
-  // If using swap timestamp, the swap promise should return the current time.
+  DCHECK_GT(frame_token_, 0u);
   task_runner_->PostTask(
-      FROM_HERE, base::BindOnce(std::move(callback_),
-                                blink::WebLayerTreeView::SwapResult::kDidSwap,
-                                base::TimeTicks::Now()));
+      FROM_HERE,
+      base::BindOnce(
+          [](base::TimeTicks timestamp, ReportTimeCallback callback,
+             base::WeakPtr<LayerTreeView> layer_tree_view, int frame_token) {
+            std::move(callback).Run(
+                blink::WebLayerTreeView::SwapResult::kDidSwap, timestamp);
+            if (layer_tree_view) {
+              layer_tree_view->AddPresentationCallback(
+                  frame_token,
+                  base::BindOnce(&RecordSwapTimeToPresentationTime, timestamp));
+            }
+          },
+          base::TimeTicks::Now(), std::move(callback_), layer_tree_view_,
+          frame_token_));
 }
 
 void ReportTimeSwapPromise::DidNotSwap(
@@ -204,6 +216,16 @@ void LayerTreeView::SetNeverVisible() {
   never_visible_ = true;
 }
 
+void LayerTreeView::SetVisible(bool visible) {
+  if (never_visible_)
+    return;
+
+  layer_tree_host_->SetVisible(visible);
+
+  if (visible && layer_tree_frame_sink_request_failed_while_invisible_)
+    DidFailToInitializeLayerTreeFrameSink();
+}
+
 const base::WeakPtr<cc::InputHandler>& LayerTreeView::GetInputHandler() {
   return layer_tree_host_->GetInputHandler();
 }
@@ -270,13 +292,17 @@ bool LayerTreeView::SendMessageToMicroBenchmark(
 void LayerTreeView::SetViewportSizeAndScale(
     const gfx::Size& device_viewport_size,
     float device_scale_factor,
-    const viz::LocalSurfaceId& local_surface_id) {
+    const viz::LocalSurfaceIdAllocation& local_surface_id_allocation) {
   layer_tree_host_->SetViewportSizeAndScale(
-      device_viewport_size, device_scale_factor, local_surface_id);
+      device_viewport_size, device_scale_factor, local_surface_id_allocation);
 }
 
 void LayerTreeView::RequestNewLocalSurfaceId() {
   layer_tree_host_->RequestNewLocalSurfaceId();
+}
+
+void LayerTreeView::RequestForceSendMetadata() {
+    layer_tree_host_->RequestForceSendMetadata();
 }
 
 void LayerTreeView::SetViewportVisibleRect(const gfx::Rect& visible_rect) {
@@ -305,16 +331,6 @@ gfx::Size LayerTreeView::GetViewportSize() const {
 
 void LayerTreeView::SetBackgroundColor(SkColor color) {
   layer_tree_host_->set_background_color(color);
-}
-
-void LayerTreeView::SetVisible(bool visible) {
-  if (never_visible_)
-    return;
-
-  layer_tree_host_->SetVisible(visible);
-
-  if (visible && layer_tree_frame_sink_request_failed_while_invisible_)
-    DidFailToInitializeLayerTreeFrameSink();
 }
 
 void LayerTreeView::SetPageScaleFactorAndLimits(float page_scale_factor,
@@ -496,7 +512,7 @@ void LayerTreeView::SynchronouslyComposite(
     // frame, but the compositor does not support this. In this case, we only
     // run blink's lifecycle updates.
     delegate_->BeginMainFrame(base::TimeTicks::Now());
-    delegate_->UpdateVisualState();
+    delegate_->UpdateVisualState(false /* record_main_frame_metrics */);
     return;
   }
 
@@ -513,8 +529,9 @@ void LayerTreeView::SynchronouslyComposite(
   layer_tree_host_->Composite(base::TimeTicks::Now(), raster);
 }
 
-std::unique_ptr<cc::ScopedDeferCommits> LayerTreeView::DeferCommits() {
-  return layer_tree_host_->DeferCommits();
+std::unique_ptr<cc::ScopedDeferMainFrameUpdate>
+LayerTreeView::DeferMainFrameUpdate() {
+  return layer_tree_host_->DeferMainFrameUpdate();
 }
 
 int LayerTreeView::LayerTreeId() const {
@@ -547,6 +564,12 @@ void LayerTreeView::SetShowScrollBottleneckRects(bool show) {
   debug_state.show_touch_event_handler_rects = show;
   debug_state.show_wheel_event_handler_rects = show;
   debug_state.show_non_fast_scrollable_rects = show;
+  layer_tree_host_->SetDebugState(debug_state);
+}
+
+void LayerTreeView::SetShowHitTestBorders(bool show) {
+  cc::LayerTreeDebugState debug_state = layer_tree_host_->GetDebugState();
+  debug_state.show_hit_test_borders = show;
   layer_tree_host_->SetDebugState(debug_state);
 }
 
@@ -584,6 +607,24 @@ void LayerTreeView::RequestDecode(const cc::PaintImage& image,
   }
 }
 
+void LayerTreeView::RequestPresentationCallback(base::OnceClosure callback) {
+  layer_tree_host_->RequestPresentationTimeForNextFrame(base::BindOnce(
+      [](base::OnceClosure callback,
+         const gfx::PresentationFeedback& feedback) {
+        std::move(callback).Run();
+      },
+      std::move(callback)));
+  SetNeedsForcedRedraw();
+  if (CompositeIsSynchronous()) {
+    main_thread_->PostTask(
+        FROM_HERE,
+        base::BindOnce(&LayerTreeView::SynchronouslyComposite,
+                       weak_factory_.GetWeakPtr(), /*raster=*/true, nullptr));
+  } else {
+    layer_tree_host_->SetNeedsCommit();
+  }
+}
+
 void LayerTreeView::SetOverscrollBehavior(
     const cc::OverscrollBehavior& behavior) {
   layer_tree_host_->SetOverscrollBehavior(behavior);
@@ -608,8 +649,8 @@ void LayerTreeView::BeginMainFrameNotExpectedUntil(base::TimeTicks time) {
   web_main_thread_scheduler_->BeginMainFrameNotExpectedUntil(time);
 }
 
-void LayerTreeView::UpdateLayerTreeHost() {
-  delegate_->UpdateVisualState();
+void LayerTreeView::UpdateLayerTreeHost(bool record_main_frame_metrics) {
+  delegate_->UpdateVisualState(record_main_frame_metrics);
 }
 
 void LayerTreeView::ApplyViewportChanges(
@@ -625,11 +666,31 @@ void LayerTreeView::RecordWheelAndTouchScrollingCount(
 }
 
 void LayerTreeView::RequestNewLayerTreeFrameSink() {
-  // If the host is closing, then no more compositing is possible.  This
-  // prevents shutdown races between handling the close message and
-  // the CreateLayerTreeFrameSink task.
-  if (delegate_->IsClosing())
+  // When the compositor is not visible it would not request a
+  // LayerTreeFrameSink so this is a race where it requested one then became
+  // not-visible. In that case, we can wait for it to become visible again
+  // before replying.
+  //
+  // This deals with an insidious race when the RenderWidget is swapped-out
+  // after this task was posted from the compositor. When swapped-out the
+  // compositor is stopped by making it not visible, and the RenderWidget (our
+  // delegate) is a zombie which can not be used (https://crbug.com/894899).
+  // Eventually the RenderWidget/LayerTreeView will not exist at all in this
+  // case (https://crbug.com/419087). So this handles the case for now since the
+  // compositor is not visible, and we can avoid using the RenderWidget until
+  // it marks the compositor visible again, indicating that it is valid to use
+  // the RenderWidget again.
+  //
+  // If there is no compositor thread, then this is a test-only path where
+  // composite is controlled directly by blink, and visibility is not
+  // considered. We don't expect blink to ever try composite on a swapped-out
+  // RenderWidget, which would be a bug, but the race condition can't happen
+  // in the single-thread case since this isn't a posted task.
+  if (!layer_tree_host_->IsVisible() && !!compositor_thread_) {
+    layer_tree_frame_sink_request_failed_while_invisible_ = true;
     return;
+  }
+
   delegate_->RequestNewLayerTreeFrameSink(base::BindOnce(
       &LayerTreeView::SetLayerTreeFrameSink, weak_factory_.GetWeakPtr()));
 }
@@ -700,6 +761,10 @@ void LayerTreeView::SetRasterColorSpace(const gfx::ColorSpace& color_space) {
   layer_tree_host_->SetRasterColorSpace(color_space);
 }
 
+void LayerTreeView::SetExternalPageScaleFactor(float page_scale_factor) {
+  layer_tree_host_->SetExternalPageScaleFactor(page_scale_factor);
+}
+
 void LayerTreeView::ClearCachesOnNextCommit() {
   layer_tree_host_->ClearCachesOnNextCommit();
 }
@@ -749,6 +814,10 @@ void LayerTreeView::AddPresentationCallback(
 
 void LayerTreeView::SetURLForUkm(const GURL& url) {
   layer_tree_host_->SetURLForUkm(url);
+}
+
+void LayerTreeView::ReleaseLayerTreeFrameSink() {
+  layer_tree_host_->ReleaseLayerTreeFrameSink();
 }
 
 }  // namespace content

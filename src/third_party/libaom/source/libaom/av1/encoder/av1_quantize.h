@@ -67,7 +67,7 @@ typedef struct {
 
 // The Dequants structure is used only for internal quantizer setup in
 // av1_quantize.c.
-// Fields are sufffixed according to whether or not they're expressed in
+// Fields are suffixed according to whether or not they're expressed in
 // the same coefficient shift/precision as TX or a fixed Q3 format.
 typedef struct {
   DECLARE_ALIGNED(16, int16_t,

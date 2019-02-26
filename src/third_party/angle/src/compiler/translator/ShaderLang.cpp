@@ -15,7 +15,7 @@
 #include "compiler/translator/InitializeDll.h"
 #include "compiler/translator/length_limits.h"
 #ifdef ANGLE_ENABLE_HLSL
-#include "compiler/translator/TranslatorHLSL.h"
+#    include "compiler/translator/TranslatorHLSL.h"
 #endif  // ANGLE_ENABLE_HLSL
 #include "angle_gl.h"
 #include "compiler/translator/VariablePacker.h"
@@ -203,6 +203,8 @@ void InitBuiltInResources(ShBuiltInResources *resources)
     resources->EXT_YUV_target                           = 0;
     resources->EXT_geometry_shader                      = 0;
     resources->OES_texture_storage_multisample_2d_array = 0;
+    resources->ANGLE_texture_multisample                = 0;
+    resources->ANGLE_multi_draw                         = 0;
 
     resources->NV_draw_buffers = 0;
 

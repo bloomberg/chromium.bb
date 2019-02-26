@@ -32,13 +32,13 @@ class DragMockChromeClient : public EmptyChromeClient {
                      const WebDragData&,
                      WebDragOperationsMask,
                      const SkBitmap& drag_image,
-                     const WebPoint& drag_image_offset) override {
+                     const gfx::Point& drag_image_offset) override {
     last_drag_image_size = WebSize(drag_image.width(), drag_image.height());
     last_drag_image_offset = drag_image_offset;
   }
 
   WebSize last_drag_image_size;
-  WebPoint last_drag_image_offset;
+  gfx::Point last_drag_image_offset;
 };
 
 class DragControllerTest : public RenderingTest {
@@ -52,10 +52,6 @@ class DragControllerTest : public RenderingTest {
     return *chrome_client_;
   }
 
-  void UpdateAllLifecyclePhases() {
-    GetDocument().View()->UpdateAllLifecyclePhases();
-  }
-
  private:
   Persistent<DragMockChromeClient> chrome_client_;
 };
@@ -66,12 +62,12 @@ TEST_F(DragControllerTest, DragImageForSelectionUsesPageScaleFactor) {
       "by page scale factor</div>");
   GetFrame().GetPage()->GetVisualViewport().SetScale(1);
   GetFrame().Selection().SelectAll();
-  UpdateAllLifecyclePhases();
+  UpdateAllLifecyclePhasesForTest();
   const std::unique_ptr<DragImage> image1(
       DragController::DragImageForSelection(GetFrame(), 0.75f));
   GetFrame().GetPage()->GetVisualViewport().SetScale(2);
   GetFrame().Selection().SelectAll();
-  UpdateAllLifecyclePhases();
+  UpdateAllLifecyclePhasesForTest();
   const std::unique_ptr<DragImage> image2(
       DragController::DragImageForSelection(GetFrame(), 0.75f));
 
@@ -259,7 +255,7 @@ TEST_F(DragControllerTest, DragImageForSelectionClipsChildFrameToViewport) {
     </style>
     <div>abcdefg</div>
   )HTML");
-  UpdateAllLifecyclePhases();
+  UpdateAllLifecyclePhasesForTest();
   auto& child_frame = *ToLocalFrame(GetFrame().Tree().FirstChild());
   child_frame.Selection().SelectAll();
 
@@ -339,7 +335,7 @@ TEST_F(DragControllerTest,
   )HTML");
   const int page_scale_factor = 2;
   GetFrame().GetPage()->SetPageScaleFactor(page_scale_factor);
-  UpdateAllLifecyclePhases();
+  UpdateAllLifecyclePhasesForTest();
   auto& child_frame = *ToLocalFrame(GetFrame().Tree().FirstChild());
   child_frame.Selection().SelectAll();
 
@@ -483,9 +479,9 @@ TEST_F(DragControllerTest, DragLinkWithPageScaleFactor) {
   // The offset is mapped using integers which can introduce rounding errors
   // (see TODO in DragController::DoSystemDrag) so we accept values near our
   // expectation until more precise offset mapping is available.
-  EXPECT_NEAR(expected_offset.X(), GetChromeClient().last_drag_image_offset.x,
+  EXPECT_NEAR(expected_offset.X(), GetChromeClient().last_drag_image_offset.x(),
               1);
-  EXPECT_NEAR(expected_offset.Y(), GetChromeClient().last_drag_image_offset.y,
+  EXPECT_NEAR(expected_offset.Y(), GetChromeClient().last_drag_image_offset.y(),
               1);
 }
 

@@ -28,7 +28,7 @@ import org.chromium.chrome.R;
  * suggestions and manual entry points assisting the user in filling forms.
  */
 class KeyboardAccessoryView extends LinearLayout {
-    private RecyclerView mActionsView;
+    protected RecyclerView mActionsView;
     private TabLayout mTabLayout;
     private TabLayout.TabLayoutOnPageChangeListener mPageChangeListener;
 
@@ -61,7 +61,9 @@ class KeyboardAccessoryView extends LinearLayout {
 
         mTabLayout = findViewById(R.id.tabs);
 
-        // Apply RTL layout changes to the views children:
+        // Apply RTL layout changes to the view's children:
+        ApiCompatibilityUtils.setLayoutDirection(findViewById(R.id.accessory_bar_contents),
+                isLayoutRtl() ? View.LAYOUT_DIRECTION_RTL : View.LAYOUT_DIRECTION_LTR);
         ApiCompatibilityUtils.setLayoutDirection(mActionsView,
                 isLayoutRtl() ? View.LAYOUT_DIRECTION_RTL : View.LAYOUT_DIRECTION_LTR);
 

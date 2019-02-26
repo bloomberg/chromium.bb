@@ -80,10 +80,9 @@ public:
     };
 private:
     enum class ColorMode {
-        kLegacy,                                 // N32, no color management
-        kColorManagedSRGB8888_NonLinearBlending, // N32, sRGB transfer function, nonlinear blending
-        kColorManagedSRGB8888,                   // N32, sRGB transfer function, linear blending
-        kColorManagedLinearF16,                  // F16, linear transfer function, linear blending
+        kLegacy,            // 8888, no color management
+        kColorManaged8888,  // 8888 with color management
+        kColorManagedF16,   // F16 with color management
     };
 
     void initSlides();
@@ -159,6 +158,10 @@ private:
 
     // identity unless the window initially scales the content to fit the screen.
     SkMatrix               fDefaultMatrix;
+
+    bool                   fTiled;
+    bool                   fDrawTileBoundaries;
+    SkSize                 fTileScale;
 
     enum PerspectiveMode {
         kPerspective_Off,

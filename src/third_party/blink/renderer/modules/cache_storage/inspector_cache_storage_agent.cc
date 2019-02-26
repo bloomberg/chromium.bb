@@ -9,10 +9,9 @@
 #include <utility>
 #include "base/macros.h"
 #include "base/memory/scoped_refptr.h"
+#include "services/network/public/mojom/fetch_api.mojom-blink.h"
 #include "services/service_manager/public/cpp/interface_provider.h"
 #include "third_party/blink/public/platform/modules/cache_storage/cache_storage.mojom-blink.h"
-#include "third_party/blink/public/platform/modules/service_worker/web_service_worker_request.h"
-#include "third_party/blink/public/platform/modules/service_worker/web_service_worker_response.h"
 #include "third_party/blink/public/platform/platform.h"
 #include "third_party/blink/public/platform/web_security_origin.h"
 #include "third_party/blink/public/platform/web_string.h"
@@ -33,8 +32,6 @@
 #include "third_party/blink/renderer/platform/weborigin/security_origin.h"
 #include "third_party/blink/renderer/platform/wtf/functional.h"
 #include "third_party/blink/renderer/platform/wtf/ref_counted.h"
-#include "third_party/blink/renderer/platform/wtf/std_lib_extras.h"
-#include "third_party/blink/renderer/platform/wtf/text/base64.h"
 #include "third_party/blink/renderer/platform/wtf/time.h"
 #include "third_party/blink/renderer/platform/wtf/vector.h"
 
@@ -43,6 +40,7 @@ using blink::protocol::Array;
 using ProtocolCache = blink::protocol::CacheStorage::Cache;
 using blink::protocol::CacheStorage::Cache;
 using blink::protocol::CacheStorage::CachedResponse;
+using blink::protocol::CacheStorage::CachedResponseType;
 using blink::protocol::CacheStorage::DataEntry;
 using blink::protocol::CacheStorage::Header;
 // Renaming Response since there is another blink::Response.
@@ -172,6 +170,26 @@ CString CacheStorageErrorString(mojom::blink::CacheStorageError error) {
   return "";
 }
 
+CachedResponseType ResponseTypeToString(
+    network::mojom::FetchResponseType type) {
+  switch (type) {
+    case network::mojom::FetchResponseType::kBasic:
+      return protocol::CacheStorage::CachedResponseTypeEnum::Basic;
+    case network::mojom::FetchResponseType::kCors:
+      return protocol::CacheStorage::CachedResponseTypeEnum::Cors;
+    case network::mojom::FetchResponseType::kDefault:
+      return protocol::CacheStorage::CachedResponseTypeEnum::Default;
+    case network::mojom::FetchResponseType::kError:
+      return protocol::CacheStorage::CachedResponseTypeEnum::Error;
+    case network::mojom::FetchResponseType::kOpaque:
+      return protocol::CacheStorage::CachedResponseTypeEnum::OpaqueResponse;
+    case network::mojom::FetchResponseType::kOpaqueRedirect:
+      return protocol::CacheStorage::CachedResponseTypeEnum::OpaqueRedirect;
+  }
+  NOTREACHED();
+  return "";
+}
+
 struct DataRequestParams {
   String cache_name;
   int skip_count;
@@ -185,6 +203,7 @@ struct RequestResponse {
   int response_status;
   String response_status_text;
   double response_time;
+  network::mojom::FetchResponseType response_type;
   HTTPHeaderMap response_headers;
 };
 
@@ -200,13 +219,13 @@ class ResponsesAccumulator : public RefCounted<ResponsesAccumulator> {
         cache_ptr_(std::move(cache_ptr)),
         callback_(std::move(callback)) {}
 
-  void Dispatch(const Vector<WebServiceWorkerRequest>& requests) {
+  void Dispatch(Vector<mojom::blink::FetchAPIRequestPtr> requests) {
     for (const auto& request : requests) {
       cache_ptr_->Match(
-          request, mojom::blink::QueryParams::New(),
+          request.Clone(), mojom::blink::QueryParams::New(),
           WTF::Bind(
               [](scoped_refptr<ResponsesAccumulator> accumulator,
-                 WebServiceWorkerRequest request,
+                 mojom::blink::FetchAPIRequestPtr request,
                  mojom::blink::MatchResultPtr result) {
                 if (result->is_status()) {
                   accumulator->SendFailure(result->get_status());
@@ -215,23 +234,28 @@ class ResponsesAccumulator : public RefCounted<ResponsesAccumulator> {
                                                       result->get_response());
                 }
               },
-              scoped_refptr<ResponsesAccumulator>(this), request));
+              scoped_refptr<ResponsesAccumulator>(this), request.Clone()));
     }
   }
 
   void AddRequestResponsePair(
-      const WebServiceWorkerRequest& request,
+      const mojom::blink::FetchAPIRequestPtr& request,
       const mojom::blink::FetchAPIResponsePtr& response) {
     DCHECK_GT(num_responses_left_, 0);
     RequestResponse& request_response =
         responses_.at(responses_.size() - num_responses_left_);
 
-    request_response.request_url = request.Url().GetString();
-    request_response.request_method = request.Method();
-    request_response.request_headers = request.Headers();
+    request_response.request_url = request->url.GetString();
+    request_response.request_method = request->method;
+    for (const auto& header : request->headers) {
+      request_response.request_headers.Set(AtomicString(header.key),
+                                           AtomicString(header.value));
+    }
+
     request_response.response_status = response->status_code;
     request_response.response_status_text = response->status_text;
     request_response.response_time = response->response_time.ToDoubleT();
+    request_response.response_type = response->response_type;
     for (const auto& header : response->headers) {
       request_response.response_headers.Set(AtomicString(header.key),
                                             AtomicString(header.value));
@@ -264,6 +288,8 @@ class ResponsesAccumulator : public RefCounted<ResponsesAccumulator> {
               .setResponseStatus(request_response.response_status)
               .setResponseStatusText(request_response.response_status_text)
               .setResponseTime(request_response.response_time)
+              .setResponseType(
+                  ResponseTypeToString(request_response.response_type))
               .setResponseHeaders(
                   SerializeHeaders(request_response.response_headers))
               .build();
@@ -313,8 +339,7 @@ class GetCacheKeysForRequestData {
 
   void Dispatch(std::unique_ptr<GetCacheKeysForRequestData> self) {
     cache_ptr_->Keys(
-        base::Optional<WebServiceWorkerRequest>(),
-        mojom::blink::QueryParams::New(),
+        nullptr /* request */, mojom::blink::QueryParams::New(),
         WTF::Bind(
             [](DataRequestParams params,
                std::unique_ptr<GetCacheKeysForRequestData> self,
@@ -326,8 +351,7 @@ class GetCacheKeysForRequestData {
                         params.cache_name.Utf8().data(),
                         CacheStorageErrorString(result->get_status()).data())));
               } else {
-                auto& requests = result->get_keys();
-                if (requests.IsEmpty()) {
+                if (result->get_keys().IsEmpty()) {
                   std::unique_ptr<Array<DataEntry>> array =
                       Array<DataEntry>::create();
                   self->callback_->sendSuccess(std::move(array), false);
@@ -335,9 +359,10 @@ class GetCacheKeysForRequestData {
                 }
                 scoped_refptr<ResponsesAccumulator> accumulator =
                     base::AdoptRef(new ResponsesAccumulator(
-                        requests.size(), params, std::move(self->cache_ptr_),
+                        result->get_keys().size(), params,
+                        std::move(self->cache_ptr_),
                         std::move(self->callback_)));
-                accumulator->Dispatch(result->get_keys());
+                accumulator->Dispatch(std::move(result->get_keys()));
               }
             },
             params_, std::move(self)));
@@ -365,14 +390,13 @@ class CachedResponseFileReaderLoaderClient final
   void DidFinishLoading() override {
     std::unique_ptr<CachedResponse> response =
         CachedResponse::create()
-            .setBody(
-                Base64Encode(data_->Data(), SafeCast<unsigned>(data_->size())))
+            .setBody(protocol::Binary::fromSharedBuffer(data_))
             .build();
     callback_->sendSuccess(std::move(response));
     dispose();
   }
 
-  void DidFail(FileError::ErrorCode error) override {
+  void DidFail(FileErrorCode error) override {
     callback_->sendFailure(ProtocolResponse::Error(String::Format(
         "Unable to read the cached response, error code: %d", error)));
     dispose();
@@ -551,8 +575,9 @@ void InspectorCacheStorageAgent::deleteEntry(
               batch_operations.push_back(mojom::blink::BatchOperation::New());
               auto& operation = batch_operations.back();
               operation->operation_type = mojom::blink::OperationType::kDelete;
-              operation->request.SetURL(KURL(request));
-              operation->request.SetMethod("GET");
+              operation->request = mojom::blink::FetchAPIRequest::New();
+              operation->request->url = KURL(request);
+              operation->request->method = String("GET");
 
               mojom::blink::CacheStorageCacheAssociatedPtr cache_ptr;
               cache_ptr.Bind(std::move(result->get_cache()));
@@ -592,11 +617,11 @@ void InspectorCacheStorageAgent::requestCachedResponse(
     callback->sendFailure(response);
     return;
   }
-  WebServiceWorkerRequest request;
-  request.SetURL(KURL(request_url));
-  request.SetMethod("GET");
+  auto request = mojom::blink::FetchAPIRequest::New();
+  request->url = KURL(request_url);
+  request->method = String("GET");
   cache_storage->Match(
-      request, mojom::blink::QueryParams::New(),
+      std::move(request), mojom::blink::QueryParams::New(),
       WTF::Bind(
           [](std::unique_ptr<RequestCachedResponseCallback> callback,
              mojom::blink::MatchResultPtr result) {
@@ -608,8 +633,9 @@ void InspectorCacheStorageAgent::requestCachedResponse(
               std::unique_ptr<protocol::DictionaryValue> headers =
                   protocol::DictionaryValue::create();
               if (!result->get_response()->blob) {
-                callback->sendSuccess(
-                    CachedResponse::create().setBody("").build());
+                callback->sendSuccess(CachedResponse::create()
+                                          .setBody(protocol::Binary())
+                                          .build());
                 return;
               }
               CachedResponseFileReaderLoaderClient::Load(

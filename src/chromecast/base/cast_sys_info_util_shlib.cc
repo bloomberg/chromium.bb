@@ -7,8 +7,8 @@
 #include "base/command_line.h"
 #include "base/memory/ptr_util.h"
 #include "chromecast/base/cast_sys_info_util.h"
-#include "chromecast/public/cast_sys_info.h"
 #include "chromecast/public/cast_sys_info_shlib.h"
+#include "chromecast/public/cast_sys_info.h"
 
 namespace chromecast {
 

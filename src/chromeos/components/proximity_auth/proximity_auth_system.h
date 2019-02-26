@@ -9,8 +9,6 @@
 #include <vector>
 
 #include "base/macros.h"
-#include "base/memory/weak_ptr.h"
-#include "base/time/clock.h"
 #include "chromeos/components/proximity_auth/remote_device_life_cycle.h"
 #include "chromeos/components/proximity_auth/screenlock_bridge.h"
 #include "components/account_id/account_id.h"
@@ -25,8 +23,6 @@ class SecureChannelClient;
 namespace proximity_auth {
 
 class ProximityAuthClient;
-class ProximityAuthPrefManager;
-class RemoteDeviceLifeCycle;
 class UnlockManager;
 
 // This is the main entry point to start Proximity Auth, the underlying system
@@ -76,15 +72,15 @@ class ProximityAuthSystem : public RemoteDeviceLifeCycle::Observer,
   // Called when the system wakes up from a suspended state.
   void OnSuspendDone();
 
+  // Called in order to disable attempts to get RemoteStatus from host devices.
+  void CancelConnectionAttempt();
+
  protected:
   // Constructor which allows passing in a custom |unlock_manager_|.
   // Exposed for testing.
   ProximityAuthSystem(
-      ScreenlockType screenlock_type,
-      ProximityAuthClient* proximity_auth_client,
       chromeos::secure_channel::SecureChannelClient* secure_channel_client,
-      std::unique_ptr<UnlockManager> unlock_manager,
-      ProximityAuthPrefManager* pref_manager);
+      std::unique_ptr<UnlockManager> unlock_manager);
 
   // Creates the RemoteDeviceLifeCycle for |remote_device| and |local_device|.
   // |remote_device| is the host intended to be connected to, and |local_device|
@@ -107,13 +103,6 @@ class ProximityAuthSystem : public RemoteDeviceLifeCycle::Observer,
   void OnFocusedUserChanged(const AccountId& account_id) override;
 
  private:
-  // Resumes |remote_device_life_cycle_| after device wakes up and waits a
-  // timeout.
-  void ResumeAfterWakeUpTimeout();
-
-  // The type of the screenlock (i.e. login or unlock).
-  ScreenlockType screenlock_type_;
-
   // Lists of remote devices, keyed by user account id.
   std::map<AccountId, cryptauth::RemoteDeviceRefList> remote_devices_map_;
 
@@ -122,18 +111,12 @@ class ProximityAuthSystem : public RemoteDeviceLifeCycle::Observer,
   // particular user profile.
   std::map<AccountId, cryptauth::RemoteDeviceRef> local_device_map_;
 
-  // Delegate for Chrome dependent functionality.
-  ProximityAuthClient* proximity_auth_client_;
-
   // Entry point to the SecureChannel API.
   chromeos::secure_channel::SecureChannelClient* secure_channel_client_;
 
   // Responsible for the life cycle of connecting and authenticating to
   // the RemoteDevice of the currently focused user.
   std::unique_ptr<RemoteDeviceLifeCycle> remote_device_life_cycle_;
-
-  // Fetches EasyUnlock preferences. Must outlive this instance.
-  ProximityAuthPrefManager* pref_manager_;
 
   // Handles the interaction with the lock screen UI.
   std::unique_ptr<UnlockManager> unlock_manager_;
@@ -143,8 +126,6 @@ class ProximityAuthSystem : public RemoteDeviceLifeCycle::Observer,
 
   // True if the system is started_.
   bool started_;
-
-  base::WeakPtrFactory<ProximityAuthSystem> weak_ptr_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(ProximityAuthSystem);
 };

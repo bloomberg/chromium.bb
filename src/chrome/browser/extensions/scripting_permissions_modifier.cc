@@ -4,6 +4,7 @@
 
 #include "chrome/browser/extensions/scripting_permissions_modifier.h"
 
+#include "base/bind_helpers.h"
 #include "base/feature_list.h"
 #include "chrome/browser/extensions/permissions_updater.h"
 #include "content/public/common/url_constants.h"
@@ -274,7 +275,8 @@ void ScriptingPermissionsModifier::GrantHostPermission(const GURL& url) {
       .GrantRuntimePermissions(
           *extension_,
           PermissionSet(APIPermissionSet(), ManifestPermissionSet(),
-                        explicit_hosts, scriptable_hosts));
+                        explicit_hosts, scriptable_hosts),
+          base::DoNothing::Once());
 }
 
 bool ScriptingPermissionsModifier::HasGrantedHostPermission(
@@ -310,7 +312,8 @@ void ScriptingPermissionsModifier::RemoveGrantedHostPermission(
       .RevokeRuntimePermissions(
           *extension_,
           PermissionSet(APIPermissionSet(), ManifestPermissionSet(),
-                        explicit_hosts, scriptable_hosts));
+                        explicit_hosts, scriptable_hosts),
+          base::DoNothing::Once());
 }
 
 void ScriptingPermissionsModifier::RemoveAllGrantedHostPermissions() {
@@ -393,12 +396,14 @@ void ScriptingPermissionsModifier::GrantWithheldHostPermissions() {
                             withheld.explicit_hosts(),
                             withheld.scriptable_hosts());
   PermissionsUpdater(browser_context_)
-      .GrantRuntimePermissions(*extension_, permissions);
+      .GrantRuntimePermissions(*extension_, permissions,
+                               base::DoNothing::Once());
 }
 
 void ScriptingPermissionsModifier::WithholdHostPermissions() {
   PermissionsUpdater(browser_context_)
-      .RevokeRuntimePermissions(*extension_, *GetRevokablePermissions());
+      .RevokeRuntimePermissions(*extension_, *GetRevokablePermissions(),
+                                base::DoNothing::Once());
 }
 
 }  // namespace extensions

@@ -37,6 +37,7 @@ class AttributeMap;
 
 namespace rx
 {
+class ContextImpl;
 
 class ResourceSerial
 {
@@ -193,8 +194,7 @@ struct LoadImageFunctionInfo
     LoadImageFunctionInfo() : loadFunction(nullptr), requiresConversion(false) {}
     LoadImageFunctionInfo(LoadImageFunction loadFunction, bool requiresConversion)
         : loadFunction(loadFunction), requiresConversion(requiresConversion)
-    {
-    }
+    {}
 
     LoadImageFunction loadFunction;
     bool requiresConversion;
@@ -235,8 +235,8 @@ class MultisampleTextureInitializer
 {
   public:
     virtual ~MultisampleTextureInitializer() {}
-    virtual gl::Error initializeMultisampleTextureToBlack(const gl::Context *context,
-                                                          gl::Texture *glTexture) = 0;
+    virtual angle::Result initializeMultisampleTextureToBlack(const gl::Context *context,
+                                                              gl::Texture *glTexture) = 0;
 };
 
 class IncompleteTextureSet final : angle::NonCopyable
@@ -247,10 +247,10 @@ class IncompleteTextureSet final : angle::NonCopyable
 
     void onDestroy(const gl::Context *context);
 
-    gl::Error getIncompleteTexture(const gl::Context *context,
-                                   gl::TextureType type,
-                                   MultisampleTextureInitializer *multisampleInitializer,
-                                   gl::Texture **textureOut);
+    angle::Result getIncompleteTexture(const gl::Context *context,
+                                       gl::TextureType type,
+                                       MultisampleTextureInitializer *multisampleInitializer,
+                                       gl::Texture **textureOut);
 
   private:
     gl::TextureMap mIncompleteTextures;
@@ -272,6 +272,20 @@ template <typename NonFloatT>
 void GetMatrixUniform(GLenum type, NonFloatT *dataOut, const NonFloatT *source, bool transpose);
 
 const angle::Format &GetFormatFromFormatType(GLenum format, GLenum type);
+
+angle::Result ComputeStartVertex(ContextImpl *contextImpl,
+                                 const gl::IndexRange &indexRange,
+                                 GLint baseVertex,
+                                 GLint *firstVertexOut);
+
+angle::Result GetVertexRangeInfo(const gl::Context *context,
+                                 GLint firstVertex,
+                                 GLsizei vertexOrIndexCount,
+                                 GLenum indexTypeOrNone,
+                                 const void *indices,
+                                 GLint baseVertex,
+                                 GLint *startVertexOut,
+                                 size_t *vertexCountOut);
 }  // namespace rx
 
 #endif  // LIBANGLE_RENDERER_RENDERER_UTILS_H_

@@ -64,8 +64,10 @@ class CORE_EXPORT StyleResolver final
 
  public:
   static StyleResolver* Create(Document& document) {
-    return new StyleResolver(document);
+    return MakeGarbageCollected<StyleResolver>(document);
   }
+
+  explicit StyleResolver(Document&);
   ~StyleResolver();
   void Dispose();
 
@@ -74,6 +76,8 @@ class CORE_EXPORT StyleResolver final
       const ComputedStyle* parent_style = nullptr,
       const ComputedStyle* layout_parent_style = nullptr,
       RuleMatchingBehavior = kMatchAllRules);
+
+  static scoped_refptr<ComputedStyle> InitialStyleForElement(Document&);
 
   static AnimatableValue* CreateAnimatableValueSnapshot(
       Element&,
@@ -128,11 +132,6 @@ class CORE_EXPORT StyleResolver final
   void SetResizedForViewportUnits();
   void ClearResizedForViewportUnits();
 
-  // Exposed for ComputedStyle::IsStyleAvailable().
-  static ComputedStyle* StyleNotYetAvailable() {
-    return style_not_yet_available_;
-  }
-
   void SetRuleUsageTracker(StyleRuleUsageTracker*);
   void UpdateMediaType();
 
@@ -141,10 +140,6 @@ class CORE_EXPORT StyleResolver final
   void Trace(blink::Visitor*);
 
  private:
-  explicit StyleResolver(Document&);
-
-  static scoped_refptr<ComputedStyle> InitialStyleForElement(Document&);
-
   // FIXME: This should probably go away, folded into FontBuilder.
   void UpdateFont(StyleResolverState&);
 
@@ -281,8 +276,6 @@ class CORE_EXPORT StyleResolver final
   bool HasAuthorBorder(const StyleResolverState&);
   Document& GetDocument() const { return *document_; }
   bool WasViewportResized() const { return was_viewport_resized_; }
-
-  static ComputedStyle* style_not_yet_available_;
 
   MatchedPropertiesCache matched_properties_cache_;
   Member<Document> document_;

@@ -11,12 +11,12 @@ var pass = chrome.test.callbackPass;
 var listenOnce = chrome.test.listenOnce;
 
 var NOT_OPTIONAL_ERROR =
-    "Optional permissions must be listed in extension manifest.";
+    "Only permissions specified in the manifest may be requested.";
 
 var REQUIRED_ERROR =
     "You cannot remove required permissions.";
 
-var NOT_WHITE_LISTED_ERROR =
+var NOT_ALLOWLISTED_ERROR =
     "The optional permissions API does not support '*'.";
 
 var UNKNOWN_PERMISSIONS_ERROR =
@@ -26,17 +26,17 @@ var emptyPermissions = {permissions: [], origins: []};
 
 var initialPermissions = {
   permissions: ['management'],
-  origins: ['http://a.com/*']
+  origins: ['http://a.com/*', "http://contentscript.com/*"]
 };
 
 var permissionsWithBookmarks = {
   permissions: ['management', 'bookmarks'],
-  origins: ['http://a.com/*']
+  origins: ['http://a.com/*', "http://contentscript.com/*"]
 }
 
 var permissionsWithOrigin = {
   permissions: ['management'],
-  origins: ['http://a.com/*', 'http://*.c.com/*']
+  origins: ['http://a.com/*', 'http://*.c.com/*', "http://contentscript.com/*"]
 }
 
 function checkEqualSets(set1, set2) {
@@ -103,13 +103,6 @@ chrome.test.getConfig(function(config) {
       }));
     },
 
-    // Nothing should happen if we request permission we already have
-    function requestNoOp() {
-      chrome.permissions.request(
-          {permissions:['management'], origins:['http://a.com/*']},
-          pass(function(granted) { assertTrue(granted); }));
-    },
-
     // We should get an error when requesting permissions that haven't been
     // defined in "optional_permissions".
     function requestNonOptional() {
@@ -142,16 +135,6 @@ chrome.test.getConfig(function(config) {
               assertTrue(checkPermSetsEq(permissionsWithBookmarks,
                                          permissions));
             }));
-      }));
-    },
-
-    // These permissions should be on the granted list because they're on the
-    // extension's default permission list.
-    function requestGrantedPermission() {
-      chrome.permissions.request(
-          {permissions: ['management'], origins: ['http://a.com/*']},
-          pass(function(granted) {
-        assertTrue(granted);
       }));
     },
 
@@ -221,13 +204,14 @@ chrome.test.getConfig(function(config) {
       }));
     },
 
-    // Make sure you can only access the white listed permissions.
-    function whitelist() {
-      var error_msg = NOT_WHITE_LISTED_ERROR.replace('*', 'cloudPrintPrivate');
+    // Make sure you can only access the allowlisted permissions.
+    function allowlist() {
+      const kPermission = 'fontSettings';
+      var error_msg = NOT_ALLOWLISTED_ERROR.replace('*', kPermission);
       chrome.permissions.request(
-          {permissions: ['cloudPrintPrivate']}, fail(error_msg));
+          {permissions: [kPermission]}, fail(error_msg));
       chrome.permissions.remove(
-          {permissions: ['cloudPrintPrivate']}, fail(error_msg));
+          {permissions: [kPermission]}, fail(error_msg));
     },
 
     function unknownPermission() {
@@ -308,7 +292,7 @@ chrome.test.getConfig(function(config) {
       });
 
       chrome.permissions.request(
-          {permissions: ['bookmarks', 'management']}, pass(function(granted) {
+          {permissions: ['bookmarks']}, pass(function(granted) {
         assertTrue(granted);
         chrome.permissions.remove(
             {permissions: ['bookmarks']}, pass(function() {

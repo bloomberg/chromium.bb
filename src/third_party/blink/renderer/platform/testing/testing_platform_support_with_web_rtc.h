@@ -12,6 +12,9 @@
 
 namespace blink {
 
+// TODO(https://crbug.com/908461): This is currently implemented as NO-OPs or to
+// create dummy objects whose methods return default values. Consider renaming
+// the class, changing it to be GMOCK friendly or deleting it.
 class MockWebRTCPeerConnectionHandler : public WebRTCPeerConnectionHandler {
  public:
   MockWebRTCPeerConnectionHandler();
@@ -43,7 +46,8 @@ class MockWebRTCPeerConnectionHandler : public WebRTCPeerConnectionHandler {
   webrtc::RTCErrorType SetConfiguration(
       const webrtc::PeerConnectionInterface::RTCConfiguration&) override;
   void GetStats(const WebRTCStatsRequest&) override;
-  void GetStats(std::unique_ptr<WebRTCStatsReportCallback>) override;
+  void GetStats(std::unique_ptr<WebRTCStatsReportCallback>,
+                RTCStatsFilter) override;
   webrtc::RTCErrorOr<std::unique_ptr<WebRTCRtpTransceiver>>
   AddTransceiverWithTrack(const WebMediaStreamTrack&,
                           const webrtc::RtpTransceiverInit&) override;

@@ -21,7 +21,7 @@
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
 #include "base/task/post_task.h"
-#include "base/threading/thread_restrictions.h"
+#include "base/threading/scoped_blocking_call.h"
 #include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
 
@@ -48,7 +48,7 @@ const char* const kNetDeviceNamePrefixes[] = {
 typedef std::map<base::FilePath, base::FilePath> DiskEntries;
 
 std::string GetDiskUuid() {
-  base::AssertBlockingAllowed();
+  base::ScopedBlockingCall scoped_blocking_call(base::BlockingType::MAY_BLOCK);
 
   DiskEntries disk_uuids;
   base::FileEnumerator files(base::FilePath(kDiskByUuidDirectoryName),
@@ -71,7 +71,7 @@ std::string GetDiskUuid() {
   // Look for first device name matching an entry of |kDeviceNames|.
   std::string result;
   for (size_t i = 0; i < arraysize(kDeviceNames); i++) {
-    auto it = disk_uuids.find(base::FilePath(kDeviceNames[i]));
+    DiskEntries::iterator it = disk_uuids.find(base::FilePath(kDeviceNames[i]));
     if (it != disk_uuids.end()) {
       DVLOG(1) << "Returning uuid: \"" << it->second.value()
                << "\" for device \"" << it->first.value() << "\"";
@@ -85,7 +85,8 @@ std::string GetDiskUuid() {
   if (result.empty() && !error_logged) {
     error_logged = true;
     LOG(ERROR) << "Could not find appropriate disk uuid.";
-    for (auto it = disk_uuids.begin(); it != disk_uuids.end(); ++it) {
+    for (DiskEntries::iterator it = disk_uuids.begin(); it != disk_uuids.end();
+         ++it) {
       LOG(ERROR) << "  DeviceID=" << it->first.value()
                  << ", uuid=" << it->second.value();
     }
@@ -149,7 +150,7 @@ class MacAddressProcessor {
 
 std::string GetMacAddress(
     const IsValidMacAddressCallback& is_valid_mac_address) {
-  base::AssertBlockingAllowed();
+  base::ScopedBlockingCall scoped_blocking_call(base::BlockingType::MAY_BLOCK);
 
   struct ifaddrs* ifaddrs;
   int rv = getifaddrs(&ifaddrs);
@@ -171,8 +172,6 @@ std::string GetMacAddress(
 
 void GetRawDeviceIdImpl(const IsValidMacAddressCallback& is_valid_mac_address,
                         const DeviceId::IdCallback& callback) {
-  base::AssertBlockingAllowed();
-
   std::string disk_id = GetDiskUuid();
   std::string mac_address = GetMacAddress(is_valid_mac_address);
 

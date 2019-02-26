@@ -27,14 +27,13 @@ std::unique_ptr<PushClient> CreateXmppPushClient(
 std::unique_ptr<PushClient> PushClient::CreateDefault(
     const NotifierOptions& notifier_options) {
   return std::unique_ptr<PushClient>(new NonBlockingPushClient(
-      notifier_options.request_context_getter->GetNetworkTaskRunner(),
+      notifier_options.network_config.task_runner,
       base::Bind(&CreateXmppPushClient, notifier_options)));
 }
 
 std::unique_ptr<PushClient> PushClient::CreateDefaultOnIOThread(
     const NotifierOptions& notifier_options) {
-  CHECK(notifier_options.request_context_getter->GetNetworkTaskRunner()->
-        BelongsToCurrentThread());
+  CHECK(notifier_options.network_config.task_runner->BelongsToCurrentThread());
   return CreateXmppPushClient(notifier_options);
 }
 

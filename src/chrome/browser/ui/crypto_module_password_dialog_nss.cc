@@ -29,7 +29,7 @@ class SlotUnlocker {
                CryptoModulePasswordReason reason,
                const net::HostPortPair& server,
                gfx::NativeWindow parent,
-               const base::Closure& callback);
+               base::OnceClosure callback);
 
   void Start();
 
@@ -42,7 +42,7 @@ class SlotUnlocker {
   CryptoModulePasswordReason reason_;
   net::HostPortPair server_;
   gfx::NativeWindow parent_;
-  base::Closure callback_;
+  base::OnceClosure callback_;
   PRBool retry_;
 };
 
@@ -50,13 +50,13 @@ SlotUnlocker::SlotUnlocker(std::vector<crypto::ScopedPK11Slot> modules,
                            CryptoModulePasswordReason reason,
                            const net::HostPortPair& server,
                            gfx::NativeWindow parent,
-                           const base::Closure& callback)
+                           base::OnceClosure callback)
     : current_(0),
       modules_(std::move(modules)),
       reason_(reason),
       server_(server),
       parent_(parent),
-      callback_(callback),
+      callback_(std::move(callback)),
       retry_(PR_FALSE) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
 }
@@ -109,7 +109,7 @@ void SlotUnlocker::GotPassword(const std::string& password) {
 
 void SlotUnlocker::Done() {
   DCHECK_EQ(current_, modules_.size());
-  callback_.Run();
+  std::move(callback_).Run();
   delete this;
 }
 
@@ -121,26 +121,28 @@ void UnlockSlotsIfNecessary(std::vector<crypto::ScopedPK11Slot> modules,
                             CryptoModulePasswordReason reason,
                             const net::HostPortPair& server,
                             gfx::NativeWindow parent,
-                            const base::Closure& callback) {
+                            base::OnceClosure callback) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   for (size_t i = 0; i < modules.size(); ++i) {
     if (ShouldShowDialog(modules[i].get())) {
-      (new SlotUnlocker(std::move(modules), reason, server, parent, callback))
+      (new SlotUnlocker(std::move(modules), reason, server, parent,
+                        std::move(callback)))
           ->Start();
       return;
     }
   }
-  callback.Run();
+  std::move(callback).Run();
 }
 
 void UnlockCertSlotIfNecessary(CERTCertificate* cert,
                                CryptoModulePasswordReason reason,
                                const net::HostPortPair& server,
                                gfx::NativeWindow parent,
-                               const base::Closure& callback) {
+                               base::OnceClosure callback) {
   std::vector<crypto::ScopedPK11Slot> modules;
   modules.push_back(crypto::ScopedPK11Slot(PK11_ReferenceSlot(cert->slot)));
-  UnlockSlotsIfNecessary(std::move(modules), reason, server, parent, callback);
+  UnlockSlotsIfNecessary(std::move(modules), reason, server, parent,
+                         std::move(callback));
 }
 
 }  // namespace chrome

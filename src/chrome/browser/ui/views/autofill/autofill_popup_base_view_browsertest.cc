@@ -91,14 +91,7 @@ class AutofillPopupBaseViewTest : public InProcessBrowserTest {
   DISALLOW_COPY_AND_ASSIGN(AutofillPopupBaseViewTest);
 };
 
-// Flaky on Win and Linux.  http://crbug.com/376299
-#if defined(OS_LINUX) || defined(OS_WIN)
-#define MAYBE_GestureTest DISABLED_GestureTest
-#else
-#define MAYBE_GestureTest GestureTest
-#endif
-
-IN_PROC_BROWSER_TEST_F(AutofillPopupBaseViewTest, MAYBE_GestureTest) {
+IN_PROC_BROWSER_TEST_F(AutofillPopupBaseViewTest, GestureTest) {
   const int kElementSize = 5;
   gfx::RectF bounds(0, 0, kElementSize, kElementSize);
   EXPECT_CALL(mock_delegate_, element_bounds())

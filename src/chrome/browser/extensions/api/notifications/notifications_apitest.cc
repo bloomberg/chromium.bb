@@ -330,8 +330,7 @@ IN_PROC_BROWSER_TEST_F(NotificationsApiTest, TestGetPermissionLevel) {
     notification_function->set_has_callback(true);
 
     message_center::NotifierId notifier_id(
-        message_center::NotifierId::APPLICATION,
-        empty_extension->id());
+        message_center::NotifierType::APPLICATION, empty_extension->id());
     GetNotifierStateTracker()->SetNotifierEnabled(notifier_id, false);
 
     std::unique_ptr<base::Value> result(utils::RunFunctionAndReturnSingleResult(
@@ -355,8 +354,7 @@ IN_PROC_BROWSER_TEST_F(NotificationsApiTest, TestOnPermissionLevelChanged) {
     ResultCatcher catcher;
 
     message_center::NotifierId notifier_id(
-        message_center::NotifierId::APPLICATION,
-        extension->id());
+        message_center::NotifierType::APPLICATION, extension->id());
     GetNotifierStateTracker()->SetNotifierEnabled(notifier_id, false);
 
     EXPECT_TRUE(catcher.GetNextResult()) << catcher.message();
@@ -367,8 +365,7 @@ IN_PROC_BROWSER_TEST_F(NotificationsApiTest, TestOnPermissionLevelChanged) {
     ResultCatcher catcher;
 
     message_center::NotifierId notifier_id(
-        message_center::NotifierId::APPLICATION,
-        extension->id());
+        message_center::NotifierType::APPLICATION, extension->id());
     GetNotifierStateTracker()->SetNotifierEnabled(notifier_id, true);
 
     EXPECT_TRUE(catcher.GetNextResult()) << catcher.message();

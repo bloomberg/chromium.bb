@@ -75,14 +75,15 @@ class MediaKeySession final
                                  MediaKeys*,
                                  WebEncryptedMediaSessionType);
 
+  MediaKeySession(ScriptState*, MediaKeys*, WebEncryptedMediaSessionType);
   ~MediaKeySession() override;
 
   String sessionId() const;
   double expiration() const { return expiration_; }
   ScriptPromise closed(ScriptState*);
   MediaKeyStatusMap* keyStatuses();
-  DEFINE_ATTRIBUTE_EVENT_LISTENER(keystatuseschange);
-  DEFINE_ATTRIBUTE_EVENT_LISTENER(message);
+  DEFINE_ATTRIBUTE_EVENT_LISTENER(keystatuseschange, kKeystatuseschange);
+  DEFINE_ATTRIBUTE_EVENT_LISTENER(message, kMessage);
 
   ScriptPromise generateRequest(ScriptState*,
                                 const String& init_data_type,
@@ -109,7 +110,6 @@ class MediaKeySession final
   friend class NewSessionResultPromise;
   friend class LoadSessionResultPromise;
 
-  MediaKeySession(ScriptState*, MediaKeys*, WebEncryptedMediaSessionType);
   void Dispose();
 
   void ActionTimerFired(TimerBase*);
@@ -149,7 +149,7 @@ class MediaKeySession final
   // Session states.
   bool is_uninitialized_;
   bool is_callable_;
-  bool is_closed_;  // Is the CDM finished with this session?
+  bool is_closing_or_closed_;
 
   // Keep track of the closed promise.
   typedef ScriptPromiseProperty<Member<MediaKeySession>,

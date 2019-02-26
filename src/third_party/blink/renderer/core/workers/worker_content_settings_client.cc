@@ -40,7 +40,7 @@ namespace blink {
 
 WorkerContentSettingsClient* WorkerContentSettingsClient::Create(
     std::unique_ptr<WebContentSettingsClient> client) {
-  return new WorkerContentSettingsClient(std::move(client));
+  return MakeGarbageCollected<WorkerContentSettingsClient>(std::move(client));
 }
 
 WorkerContentSettingsClient::~WorkerContentSettingsClient() = default;
@@ -51,10 +51,10 @@ bool WorkerContentSettingsClient::RequestFileSystemAccessSync() {
   return client_->RequestFileSystemAccessSync();
 }
 
-bool WorkerContentSettingsClient::AllowIndexedDB(const WebString& name) {
+bool WorkerContentSettingsClient::AllowIndexedDB() {
   if (!client_)
     return true;
-  return client_->AllowIndexedDB(name, WebSecurityOrigin());
+  return client_->AllowIndexedDB(WebSecurityOrigin());
 }
 
 bool WorkerContentSettingsClient::AllowScriptFromSource(

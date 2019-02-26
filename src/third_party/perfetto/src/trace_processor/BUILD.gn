@@ -42,10 +42,13 @@ static_library("trace_processor") {
 
 source_set("lib") {
   sources = [
-    "basic_types.h",
     "chunked_trace_reader.h",
     "counters_table.cc",
     "counters_table.h",
+    "event_tracker.cc",
+    "event_tracker.h",
+    "instants_table.cc",
+    "instants_table.h",
     "process_table.cc",
     "process_table.h",
     "process_tracker.cc",
@@ -56,29 +59,39 @@ source_set("lib") {
     "proto_trace_tokenizer.h",
     "query_constraints.cc",
     "query_constraints.h",
+    "row_iterators.cc",
+    "row_iterators.h",
     "sched_slice_table.cc",
     "sched_slice_table.h",
-    "sched_tracker.cc",
-    "sched_tracker.h",
     "scoped_db.h",
     "slice_table.cc",
     "slice_table.h",
     "slice_tracker.cc",
     "slice_tracker.h",
-    "span_operator_table.cc",
-    "span_operator_table.h",
+    "span_join_operator_table.cc",
+    "span_join_operator_table.h",
+    "sql_stats_table.cc",
+    "sql_stats_table.h",
     "sqlite_utils.h",
+    "stats_table.cc",
+    "stats_table.h",
+    "storage_cursor.cc",
+    "storage_cursor.h",
+    "storage_schema.cc",
+    "storage_schema.h",
     "string_table.cc",
     "string_table.h",
     "table.cc",
     "table.h",
+    "table_utils.h",
     "thread_table.cc",
     "thread_table.h",
     "trace_blob_view.h",
     "trace_processor.cc",
-    "trace_processor.h",
     "trace_processor_context.cc",
     "trace_processor_context.h",
+    "trace_processor_impl.cc",
+    "trace_processor_impl.h",
     "trace_sorter.cc",
     "trace_sorter.h",
     "trace_storage.cc",
@@ -96,7 +109,10 @@ source_set("lib") {
     "../base",
     "../protozero",
   ]
-  if (build_standalone) {
+  public_deps = [
+    "../../include/perfetto/trace_processor",
+  ]
+  if (perfetto_build_standalone) {
     sources += [
       "json_trace_parser.cc",
       "json_trace_parser.h",
@@ -113,7 +129,7 @@ if (current_toolchain == host_toolchain) {
       "../../protos/perfetto/trace_processor:lite",
       "../base",
     ]
-    if (build_standalone) {
+    if (perfetto_build_standalone) {
       deps += [ "../../buildtools:linenoise" ]
     }
     sources = [
@@ -140,15 +156,16 @@ source_set("unittests") {
   testonly = true
   sources = [
     "counters_table_unittest.cc",
+    "event_tracker_unittest.cc",
     "process_table_unittest.cc",
     "process_tracker_unittest.cc",
     "proto_trace_parser_unittest.cc",
     "query_constraints_unittest.cc",
     "sched_slice_table_unittest.cc",
-    "sched_tracker_unittest.cc",
     "slice_tracker_unittest.cc",
-    "span_operator_table_unittest.cc",
+    "span_join_operator_table_unittest.cc",
     "thread_table_unittest.cc",
+    "trace_processor_impl_unittest.cc",
     "trace_sorter_unittest.cc",
   ]
   deps = [
@@ -159,6 +176,10 @@ source_set("unittests") {
     "../../protos/perfetto/trace:lite",
     "../base",
   ]
+  if (perfetto_build_standalone) {
+    sources += [ "json_trace_parser_unittest.cc" ]
+    deps += [ "../../gn:jsoncpp_deps" ]
+  }
 }
 
 source_set("integrationtests") {

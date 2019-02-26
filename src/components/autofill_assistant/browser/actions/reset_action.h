@@ -17,11 +17,11 @@ class ResetAction : public Action {
   explicit ResetAction(const ActionProto& proto);
   ~ResetAction() override;
 
-  // Overrides Action:
-  void ProcessAction(ActionDelegate* delegate,
-                     ProcessActionCallback callback) override;
-
  private:
+  // Overrides Action:
+  void InternalProcessAction(ActionDelegate* delegate,
+                             ProcessActionCallback callback) override;
+
   DISALLOW_COPY_AND_ASSIGN(ResetAction);
 };
 

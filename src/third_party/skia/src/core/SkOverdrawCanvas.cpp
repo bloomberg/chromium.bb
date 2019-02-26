@@ -73,7 +73,8 @@ void SkOverdrawCanvas::drawPosTextCommon(const void* text, size_t byteLength, co
     SkSurfaceProps props(0, kUnknown_SkPixelGeometry);
     this->getProps(&props);
     auto cache = SkStrikeCache::FindOrCreateStrikeExclusive(
-            paint, &props, SkScalerContextFlags::kNone, &this->getTotalMatrix());
+                                SkFont::LEGACY_ExtractFromPaint(paint), paint, props,
+                                SkScalerContextFlags::kNone, this->getTotalMatrix());
     SkFindAndPlaceGlyph::ProcessPosText(paint.getTextEncoding(), (const char*) text, byteLength,
                                         SkPoint::Make(0, 0), SkMatrix(), (const SkScalar*) pos, 2,
                                         cache.get(), processBounds);
@@ -269,6 +270,13 @@ void SkOverdrawCanvas::onDrawImageLattice(const SkImage* image, const Lattice& l
         }
     } else {
         fList[0]->onDrawRect(dst, fPaint);
+    }
+}
+
+void SkOverdrawCanvas::onDrawImageSet(const ImageSetEntry set[], int count, SkFilterQuality,
+                                      SkBlendMode) {
+    for (int i = 0; i < count; ++i) {
+        fList[0]->onDrawRect(set[i].fDstRect, fPaint);
     }
 }
 

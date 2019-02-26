@@ -72,7 +72,7 @@ template <typename WTFTypedArray, typename V8TypedArray>
 const WrapperTypeInfo*
 DOMTypedArray<WTFTypedArray, V8TypedArray>::GetWrapperTypeInfo() const {
   return &DOMTypedArrayTraits<
-      DOMTypedArray<WTFTypedArray, V8TypedArray>>::Type::wrapperTypeInfo;
+      DOMTypedArray<WTFTypedArray, V8TypedArray>>::Type::wrapper_type_info;
 }
 
 template class CORE_TEMPLATE_EXPORT

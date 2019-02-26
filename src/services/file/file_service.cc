@@ -94,7 +94,7 @@ FileService::~FileService() {
 
 void FileService::OnStart() {
   file_system_objects_.reset(new FileService::FileSystemObjects(
-      GetUserDirForUserId(context()->identity().user_id())));
+      GetUserDirForInstanceGroup(context()->identity().instance_group())));
   leveldb_objects_.reset(
       new FileService::LevelDBServiceObjects(file_service_runner_));
 }

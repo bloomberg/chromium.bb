@@ -22,25 +22,25 @@ import org.chromium.ui.base.ActivityAndroidPermissionDelegate;
 import org.chromium.ui.base.AndroidPermissionDelegate;
 
 import java.lang.ref.WeakReference;
-import java.util.Deque;
-import java.util.LinkedList;
 
 /**
  * Activity for managing downloads handled through Chrome.
  */
 public class DownloadActivity extends SnackbarActivity {
+    private static final String BUNDLE_KEY_CURRENT_URL = "current_url";
+
     private DownloadManagerCoordinator mDownloadCoordinator;
     private boolean mIsOffTheRecord;
     private AndroidPermissionDelegate mPermissionDelegate;
 
-    /** Caches the stack of filters applied to let the user backtrack through their history. */
-    private final Deque<String> mBackStack = new LinkedList<>();
+    /** Caches the current URL for the filter being applied. */
+    private String mCurrentUrl;
 
     private final DownloadManagerCoordinator.Observer mUiObserver =
             new DownloadManagerCoordinator.Observer() {
                 @Override
                 public void onUrlChanged(String url) {
-                    if (!url.equals(mBackStack.peek())) mBackStack.push(url);
+                    mCurrentUrl = url;
                 }
             };
 
@@ -64,9 +64,19 @@ public class DownloadActivity extends SnackbarActivity {
         setContentView(mDownloadCoordinator.getView());
         mIsOffTheRecord = isOffTheRecord;
         mDownloadCoordinator.addObserver(mUiObserver);
-        // Call updateForUrl() to align with how DownloadPage interacts with DownloadManagerUi.
-        mDownloadCoordinator.updateForUrl(UrlConstants.DOWNLOADS_URL);
+
+        // TODO(crbug/905893) : Use {@link Filters.toUrl) once old download home is removed.
+        mCurrentUrl = savedInstanceState == null
+                ? UrlConstants.DOWNLOADS_URL
+                : savedInstanceState.getString(BUNDLE_KEY_CURRENT_URL);
+        mDownloadCoordinator.updateForUrl(mCurrentUrl);
         if (showPrefetchContent) mDownloadCoordinator.showPrefetchSection();
+    }
+
+    @Override
+    protected void onSaveInstanceState(Bundle outState) {
+        super.onSaveInstanceState(outState);
+        if (mCurrentUrl != null) outState.putString(BUNDLE_KEY_CURRENT_URL, mCurrentUrl);
     }
 
     @Override
@@ -78,16 +88,7 @@ public class DownloadActivity extends SnackbarActivity {
     @Override
     public void onBackPressed() {
         if (mDownloadCoordinator.onBackPressed()) return;
-        // The top of the stack always represents the current filter. When back is pressed,
-        // the top is popped off and the new top indicates what filter to use. If there are
-        // no filters remaining, the Activity itself is closed.
-        if (mBackStack.size() > 1) {
-            mBackStack.pop();
-            mDownloadCoordinator.updateForUrl(mBackStack.peek());
-        } else {
-            if (!mBackStack.isEmpty()) mBackStack.pop();
-            super.onBackPressed();
-        }
+        super.onBackPressed();
     }
 
     @Override

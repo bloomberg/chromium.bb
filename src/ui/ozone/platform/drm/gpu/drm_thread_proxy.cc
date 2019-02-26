@@ -62,15 +62,6 @@ void DrmThreadProxy::CreateBufferFromFds(
                               buffer, framebuffer));
 }
 
-void DrmThreadProxy::GetScanoutFormats(
-    gfx::AcceleratedWidget widget,
-    std::vector<gfx::BufferFormat>* scanout_formats) {
-  PostSyncTask(
-      drm_thread_.task_runner(),
-      base::BindOnce(&DrmThread::GetScanoutFormats,
-                     base::Unretained(&drm_thread_), widget, scanout_formats));
-}
-
 void DrmThreadProxy::AddBindingCursorDevice(
     ozone::mojom::DeviceCursorRequest request) {
   drm_thread_.task_runner()->PostTask(

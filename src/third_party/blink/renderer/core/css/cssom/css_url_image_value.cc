@@ -25,12 +25,12 @@ CSSURLImageValue* CSSURLImageValue::Create(ScriptState* script_state,
   }
   // Use absolute URL for CSSImageValue but keep relative URL for
   // getter and serialization.
-  return new CSSURLImageValue(
+  return MakeGarbageCollected<CSSURLImageValue>(
       *CSSImageValue::Create(url, parsed_url, Referrer()));
 }
 
 CSSURLImageValue* CSSURLImageValue::FromCSSValue(const CSSImageValue& value) {
-  return new CSSURLImageValue(value);
+  return MakeGarbageCollected<CSSURLImageValue>(value);
 }
 
 const String& CSSURLImageValue::url() const {

@@ -159,7 +159,7 @@ void ClientSocketHandle::SetSocket(std::unique_ptr<StreamSocket> s) {
 }
 
 void ClientSocketHandle::OnIOComplete(int result) {
-  TRACE_EVENT0(kNetTracingCategory, "ClientSocketHandle::OnIOComplete");
+  TRACE_EVENT0(NetTracingCategory(), "ClientSocketHandle::OnIOComplete");
   CompletionOnceCallback callback = std::move(callback_);
   callback_.Reset();
   HandleInitCompletion(result);

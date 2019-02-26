@@ -17,9 +17,7 @@ std::unique_ptr<service_manager::Service> MediaSessionService::Create() {
 MediaSessionService::MediaSessionService()
     : audio_focus_manager_(std::make_unique<AudioFocusManager>()) {}
 
-MediaSessionService::~MediaSessionService() {
-  audio_focus_manager_->CloseAllMojoObjects();
-}
+MediaSessionService::~MediaSessionService() = default;
 
 void MediaSessionService::OnStart() {
   ref_factory_.reset(new service_manager::ServiceContextRefFactory(
@@ -31,6 +29,10 @@ void MediaSessionService::OnStart() {
 
   registry_.AddInterface(
       base::BindRepeating(&AudioFocusManager::BindToDebugInterface,
+                          base::Unretained(audio_focus_manager_.get())));
+
+  registry_.AddInterface(
+      base::BindRepeating(&AudioFocusManager::BindToActiveControllerInterface,
                           base::Unretained(audio_focus_manager_.get())));
 }
 

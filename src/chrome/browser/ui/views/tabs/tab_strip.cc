@@ -86,6 +86,16 @@ using MD = ui::MaterialDesignController;
 
 namespace {
 
+// Distance from the next/previous stacked before before we consider the tab
+// close enough to trigger moving.
+const int kStackedDistance = 36;
+
+// Given the bounds of a dragged tab, return the X coordinate to use for
+// computing where in the strip to insert/move the tab.
+int GetDraggedX(const gfx::Rect& dragged_bounds) {
+  return dragged_bounds.x() + TabStyle::GetTabInternalPadding().left();
+}
+
 // Max number of stacked tabs.
 constexpr int kMaxStackedCount = 4;
 
@@ -189,8 +199,7 @@ TabDragController::EventSource EventSourceFromEvent(
 
 const TabSizeInfo& GetTabSizeInfo() {
   static TabSizeInfo tab_size_info, touch_tab_size_info;
-  TabSizeInfo* info =
-      MD::IsTouchOptimizedUiEnabled() ? &touch_tab_size_info : &tab_size_info;
+  TabSizeInfo* info = MD::touch_ui() ? &touch_tab_size_info : &tab_size_info;
   if (info->standard_size.IsEmpty()) {
     info->pinned_tab_width = TabStyle::GetPinnedWidth();
     info->min_active_width = TabStyle::GetMinimumActiveWidth();
@@ -203,8 +212,7 @@ const TabSizeInfo& GetTabSizeInfo() {
 }
 
 int GetStackableTabWidth() {
-  return TabStyle::GetTabOverlap() +
-         (MD::IsTouchOptimizedUiEnabled() ? 136 : 102);
+  return TabStyle::GetTabOverlap() + (MD::touch_ui() ? 136 : 102);
 }
 
 }  // namespace
@@ -377,9 +385,17 @@ TabAlertState TabStrip::GetTabAlertState(int tab_index) const {
   return tab_at(tab_index)->data().alert_state;
 }
 
-void TabStrip::UpdateLoadingAnimations() {
+void TabStrip::UpdateLoadingAnimations(const base::TimeDelta& elapsed_time) {
   for (int i = 0; i < tab_count(); i++)
-    tab_at(i)->StepLoadingAnimation();
+    tab_at(i)->StepLoadingAnimation(elapsed_time);
+}
+
+bool TabStrip::IsAnyIconAnimating() const {
+  for (int i = 0; i < tab_count(); i++) {
+    if (tab_at(i)->ShowingLoadingAnimation())
+      return true;
+  }
+  return false;
 }
 
 void TabStrip::SetStackedLayout(bool stacked_layout) {
@@ -413,8 +429,14 @@ void TabStrip::StopAllHighlighting() {
 void TabStrip::AddTabAt(int model_index, TabRendererData data, bool is_active) {
   const bool was_single_tab_mode = SingleTabMode();
 
+  // Get view child index of where we want to insert
+  int view_index = 0;
+  if (model_index > 0) {
+    view_index = GetIndexOf(tab_at(model_index - 1)) + 1;
+  }
+
   Tab* tab = new Tab(this, animation_container_.get());
-  AddChildView(tab);
+  AddChildViewAt(tab, view_index);
   const bool pinned = data.pinned;
   tab->SetData(std::move(data));
   UpdateTabsClosingMap(model_index, 1);
@@ -471,8 +493,14 @@ void TabStrip::MoveTab(int from_model_index,
                        int to_model_index,
                        TabRendererData data) {
   DCHECK_GT(tabs_.view_size(), 0);
+
   const Tab* last_tab = GetLastVisibleTab();
   tab_at(from_model_index)->SetData(std::move(data));
+
+  // Keep child views in same order as tab strip model.
+  const int to_view_index = GetIndexOf(tab_at(to_model_index));
+  ReorderChildView(tab_at(from_model_index), to_view_index);
+
   if (touch_layout_) {
     tabs_.MoveViewOnly(from_model_index, to_model_index);
     int pinned_count = 0;
@@ -677,6 +705,28 @@ bool TabStrip::ShouldTabBeVisible(const Tab* tab) const {
          tabstrip_right;
 }
 
+bool TabStrip::ShouldDrawStrokes() const {
+  // If the controller says we can't draw strokes, don't.
+  if (!controller_->CanDrawStrokes())
+    return false;
+
+  // In single-tab mode, the whole point is to have the active tab blend with
+  // the frame.
+  if (SingleTabMode())
+    return false;
+
+  // The tabstrip normally avoids strokes and relies on the active tab
+  // contrasting sufficiently with the frame background.  When there isn't
+  // enough contrast, fall back to a stroke.  Always compute the contrast ratio
+  // against the active frame color, to avoid toggling the stroke on and off as
+  // the window activation state changes.
+  return color_utils::GetContrastRatio(
+             GetTabBackgroundColor(TAB_ACTIVE,
+                                   BrowserNonClientFrameView::kActive),
+             controller_->GetFrameColor(BrowserNonClientFrameView::kActive)) <
+         1.3;
+}
+
 void TabStrip::SetSelection(const ui::ListSelectionModel& new_selection) {
   if (selected_tabs_.active() != new_selection.active()) {
     if (selected_tabs_.active() >= 0)
@@ -763,6 +813,81 @@ bool TabStrip::IsValidModelIndex(int model_index) const {
 
 bool TabStrip::IsDragSessionActive() const {
   return drag_controller_ != nullptr;
+}
+
+int TabStrip::GetInsertionIndexForDraggedBounds(
+    const gfx::Rect& dragged_bounds,
+    bool attaching,
+    int num_dragged_tabs,
+    bool mouse_has_ever_moved_left,
+    bool mouse_has_ever_moved_right) const {
+  // If the strip has no tabs, the only position to insert at is 0.
+  if (!tab_count())
+    return 0;
+
+  int index = -1;
+  if (touch_layout_.get()) {
+    index = GetInsertionIndexForDraggedBoundsStacked(
+        dragged_bounds, mouse_has_ever_moved_left, mouse_has_ever_moved_right);
+    if (index != -1) {
+      // Only move the tab to the left/right if the user actually moved the
+      // mouse that way. This is necessary as tabs with stacked tabs
+      // before/after them have multiple drag positions.
+      int active_index = touch_layout_->active_index();
+      if ((index < active_index && !mouse_has_ever_moved_left) ||
+          (index > active_index && !mouse_has_ever_moved_right)) {
+        index = active_index;
+      }
+    }
+  } else {
+    index = GetInsertionIndexFrom(dragged_bounds, 0);
+  }
+  if (index == -1) {
+    const int last_tab_right = ideal_bounds(tab_count() - 1).right();
+    index = (dragged_bounds.right() > last_tab_right) ? tab_count() : 0;
+  }
+
+  const Tab* last_visible_tab = GetLastVisibleTab();
+  int last_insertion_point =
+      last_visible_tab ? (GetModelIndexOfTab(last_visible_tab) + 1) : 0;
+  if (!attaching) {
+    // We're not in the process of attaching, so clamp the insertion point to
+    // keep it within the visible region.
+    last_insertion_point = std::max(0, last_insertion_point - num_dragged_tabs);
+  }
+
+  // Ensure the first dragged tab always stays in the visible index range.
+  return std::min(index, last_insertion_point);
+}
+
+bool TabStrip::ShouldDragToNextStackedTab(
+    const gfx::Rect& dragged_bounds,
+    int index,
+    bool mouse_has_ever_moved_right) const {
+  if (index + 1 >= this->tab_count() ||
+      !this->touch_layout_->IsStacked(index + 1) || !mouse_has_ever_moved_right)
+    return false;
+
+  int active_x = this->ideal_bounds(index).x();
+  int next_x = this->ideal_bounds(index + 1).x();
+  int mid_x =
+      std::min(next_x - kStackedDistance, active_x + (next_x - active_x) / 4);
+  return GetDraggedX(dragged_bounds) >= mid_x;
+}
+
+bool TabStrip::ShouldDragToPreviousStackedTab(
+    const gfx::Rect& dragged_bounds,
+    int index,
+    bool mouse_has_ever_moved_left) const {
+  if (index - 1 < this->GetPinnedTabCount() ||
+      !this->touch_layout_->IsStacked(index - 1) || !mouse_has_ever_moved_left)
+    return false;
+
+  int active_x = this->ideal_bounds(index).x();
+  int previous_x = this->ideal_bounds(index - 1).x();
+  int mid_x = std::max(previous_x + kStackedDistance,
+                       active_x - (active_x - previous_x) / 4);
+  return GetDraggedX(dragged_bounds) <= mid_x;
 }
 
 bool TabStrip::IsActiveDropTarget() const {
@@ -1083,7 +1208,7 @@ bool TabStrip::ShouldPaintTab(const Tab* tab, float scale, gfx::Path* clip) {
 }
 
 int TabStrip::GetStrokeThickness() const {
-  return controller_->ShouldDrawStrokes() ? 1 : 0;
+  return ShouldDrawStrokes() ? 1 : 0;
 }
 
 bool TabStrip::CanPaintThrobberToLayer() const {
@@ -1101,6 +1226,10 @@ bool TabStrip::HasVisibleBackgroundTabShapes() const {
   return controller_->HasVisibleBackgroundTabShapes();
 }
 
+bool TabStrip::ShouldPaintAsActiveFrame() const {
+  return controller_->ShouldPaintAsActiveFrame();
+}
+
 SkColor TabStrip::GetToolbarTopSeparatorColor() const {
   return controller_->GetToolbarTopSeparatorColor();
 }
@@ -1109,12 +1238,78 @@ SkColor TabStrip::GetTabSeparatorColor() const {
   return separator_color_;
 }
 
-SkColor TabStrip::GetTabBackgroundColor(TabState state) const {
-  return controller_->GetTabBackgroundColor(state);
+SkColor TabStrip::GetTabBackgroundColor(
+    TabState tab_state,
+    BrowserNonClientFrameView::ActiveState active_state) const {
+  const ui::ThemeProvider* tp = GetThemeProvider();
+  if (!tp)
+    return SK_ColorBLACK;
+
+  if (tab_state == TAB_ACTIVE)
+    return tp->GetColor(ThemeProperties::COLOR_TOOLBAR);
+
+  bool is_active_frame;
+  if (active_state == BrowserNonClientFrameView::kUseCurrent)
+    is_active_frame = ShouldPaintAsActiveFrame();
+  else
+    is_active_frame = active_state == BrowserNonClientFrameView::kActive;
+
+  const int color_id = is_active_frame
+                           ? ThemeProperties::COLOR_BACKGROUND_TAB
+                           : ThemeProperties::COLOR_BACKGROUND_TAB_INACTIVE;
+  // When the background tab color has not been customized, use the actual frame
+  // color instead of COLOR_BACKGROUND_TAB; these will differ for single-tab
+  // mode and custom window frame colors.
+  const SkColor frame = controller_->GetFrameColor(active_state);
+  const SkColor background =
+      tp->HasCustomColor(color_id)
+          ? tp->GetColor(color_id)
+          : color_utils::HSLShift(
+                frame, tp->GetTint(ThemeProperties::TINT_BACKGROUND_TAB));
+
+  return color_utils::GetResultingPaintColor(background, frame);
 }
 
-SkColor TabStrip::GetTabForegroundColor(TabState state) const {
-  return controller_->GetTabForegroundColor(state);
+SkColor TabStrip::GetTabForegroundColor(TabState tab_state) const {
+  const ui::ThemeProvider* tp = GetThemeProvider();
+  if (!tp)
+    return SK_ColorBLACK;
+
+  const bool is_active_frame = ShouldPaintAsActiveFrame();
+  const SkColor background_color = GetTabBackgroundColor(tab_state);
+
+  // This color varies based on the tab and frame active states.
+  SkColor default_color;
+  if (tab_state == TAB_ACTIVE) {
+    default_color = tp->GetColor(ThemeProperties::COLOR_TAB_TEXT);
+  } else {
+    // If there's a custom color for the background-tab inactive-frame case, use
+    // that instead of alpha blending.
+    if (!is_active_frame &&
+        tp->HasCustomColor(
+            ThemeProperties::COLOR_BACKGROUND_TAB_TEXT_INACTIVE)) {
+      return tp->GetColor(ThemeProperties::COLOR_BACKGROUND_TAB_TEXT_INACTIVE);
+    }
+
+    const int color_id = ThemeProperties::COLOR_BACKGROUND_TAB_TEXT;
+    if (tp->HasCustomColor(color_id)) {
+      default_color = tp->GetColor(color_id);
+    } else {
+      default_color = color_utils::IsDark(background_color)
+                          ? gfx::kGoogleGrey400
+                          : gfx::kGoogleGrey800;
+    }
+  }
+
+  if (!ShouldPaintAsActiveFrame()) {
+    // For inactive frames, we draw text at 75%.
+    constexpr SkAlpha inactive_alpha = 0.75 * SK_AlphaOPAQUE;
+    default_color = color_utils::AlphaBlend(default_color, background_color,
+                                            inactive_alpha);
+  }
+
+  return color_utils::GetColorWithMinimumContrast(default_color,
+                                                  background_color);
 }
 
 // Returns the accessible tab name for the tab.
@@ -1711,6 +1906,69 @@ std::vector<gfx::Rect> TabStrip::CalculateBoundsForDraggedTabs(
   }
 
   return bounds;
+}
+
+int TabStrip::GetInsertionIndexForDraggedBoundsStacked(
+    const gfx::Rect& dragged_bounds,
+    bool mouse_has_ever_moved_left,
+    bool mouse_has_ever_moved_right) const {
+  StackedTabStripLayout* touch_layout = touch_layout_.get();
+  int active_index = touch_layout->active_index();
+  // Search from the active index to the front of the tabstrip. Do this as tabs
+  // overlap each other from the active index.
+  int index = GetInsertionIndexFromReversed(dragged_bounds, active_index);
+  if (index != active_index)
+    return index;
+  if (index == -1)
+    return GetInsertionIndexFrom(dragged_bounds, active_index + 1);
+
+  // The position to drag to corresponds to the active tab. If the next/previous
+  // tab is stacked, then shorten the distance used to determine insertion
+  // bounds. We do this as GetInsertionIndexFrom() uses the bounds of the
+  // tabs. When tabs are stacked the next/previous tab is on top of the tab.
+  if (active_index + 1 < tab_count() &&
+      touch_layout->IsStacked(active_index + 1)) {
+    index = GetInsertionIndexFrom(dragged_bounds, active_index + 1);
+    if (index == -1 && ShouldDragToNextStackedTab(dragged_bounds, active_index,
+                                                  mouse_has_ever_moved_right))
+      index = active_index + 1;
+    else if (index == -1)
+      index = active_index;
+  } else if (ShouldDragToPreviousStackedTab(dragged_bounds, active_index,
+                                            mouse_has_ever_moved_left)) {
+    index = active_index - 1;
+  }
+  return index;
+}
+
+int TabStrip::GetInsertionIndexFrom(const gfx::Rect& dragged_bounds,
+                                    int start) const {
+  const int last_tab = tab_count() - 1;
+  const int dragged_x = GetDraggedX(dragged_bounds);
+  if (start < 0 || start > last_tab || dragged_x < ideal_bounds(start).x())
+    return -1;
+
+  for (int i = start; i <= last_tab; ++i) {
+    if (dragged_x < ideal_bounds(i).CenterPoint().x())
+      return i;
+  }
+
+  return (dragged_x < ideal_bounds(last_tab).right()) ? (last_tab + 1) : -1;
+}
+
+int TabStrip::GetInsertionIndexFromReversed(const gfx::Rect& dragged_bounds,
+                                            int start) const {
+  const int dragged_x = GetDraggedX(dragged_bounds);
+  if (start < 0 || start >= tab_count() ||
+      dragged_x >= ideal_bounds(start).right())
+    return -1;
+
+  for (int i = start; i >= 0; --i) {
+    if (dragged_x >= ideal_bounds(i).CenterPoint().x())
+      return i + 1;
+  }
+
+  return (dragged_x >= ideal_bounds(0).x()) ? 0 : -1;
 }
 
 int TabStrip::TabStartX() const {
@@ -2612,7 +2870,7 @@ views::View* TabStrip::TargetForRect(views::View* root, const gfx::Rect& rect) {
   return this;
 }
 
-void TabStrip::OnMdModeChanged() {
+void TabStrip::OnTouchUiChanged() {
   UpdateNewTabButtonBorder();
   new_tab_button_bounds_.set_size(new_tab_button_->GetPreferredSize());
   new_tab_button_->SetBoundsRect(new_tab_button_bounds_);

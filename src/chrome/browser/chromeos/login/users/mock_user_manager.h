@@ -146,6 +146,10 @@ class MockUserManager : public ChromeUserManager {
                     const chromeos::AffiliationIDSet& user_affiliation_ids));
 
   bool ShouldReportUser(const std::string& user_id) const override;
+  MOCK_CONST_METHOD1(IsManagedSessionEnabledForUser,
+                     bool(const user_manager::User&));
+  MOCK_CONST_METHOD1(IsFullManagementDisclosureNeeded,
+                     bool(policy::DeviceLocalAccountPolicyBroker*));
 
   // We cannot mock ScheduleResolveLocale directly because of
   // base::OnceClosure's removed deleter. This is a trampoline to the actual

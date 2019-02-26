@@ -5,12 +5,15 @@
 #ifndef WIDEVINE_CDM_WIDEVINE_CDM_COMMON_H_
 #define WIDEVINE_CDM_WIDEVINE_CDM_COMMON_H_
 
+#include "base/token.h"
+
 // This file defines constants common to all Widevine CDM versions.
 
 // "alpha" is a temporary name until a convention is defined.
 const char kWidevineKeySystem[] = "com.widevine.alpha";
 
-const char kWidevineCdmGuid[] = "AD87877A-0213-49A8-8849-9E93B075E477";
+const base::Token kWidevineCdmGuid{0x05d908e5dcca9960ull,
+                                   0xcd92d30eac98157aull};
 
 // Widevine CDM files are in a directory with this name. This path is also
 // hardcoded in some build files and changing it requires changing the build

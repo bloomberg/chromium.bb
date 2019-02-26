@@ -27,7 +27,7 @@ namespace ui {
 
 namespace {
 constexpr uint32_t kMaxCompositorVersion = 4;
-constexpr uint32_t kMaxLinuxDmabufVersion = 1;
+constexpr uint32_t kMaxLinuxDmabufVersion = 3;
 constexpr uint32_t kMaxSeatVersion = 4;
 constexpr uint32_t kMaxShmVersion = 1;
 constexpr uint32_t kMaxXdgShellVersion = 1;
@@ -98,7 +98,7 @@ bool WaylandConnection::StartProcessingEvents() {
   DCHECK(display_);
   wl_display_flush(display_.get());
 
-  DCHECK(base::MessageLoopForUI::IsCurrent());
+  DCHECK(base::MessageLoopCurrentForUI::IsSet());
   if (!base::MessageLoopCurrentForUI::Get()->WatchFileDescriptor(
           wl_display_get_fd(display_.get()), true,
           base::MessagePumpLibevent::WATCH_READ, &controller_, this))
@@ -111,7 +111,7 @@ bool WaylandConnection::StartProcessingEvents() {
 void WaylandConnection::ScheduleFlush() {
   if (scheduled_flush_ || !watching_)
     return;
-  DCHECK(base::MessageLoopForUI::IsCurrent());
+  DCHECK(base::MessageLoopCurrentForUI::IsSet());
   base::ThreadTaskRunnerHandle::Get()->PostTask(
       FROM_HERE,
       base::BindOnce(&WaylandConnection::Flush, base::Unretained(this)));
@@ -176,7 +176,7 @@ void WaylandConnection::CreateZwpLinuxDmabuf(
     const std::vector<uint64_t>& modifiers,
     uint32_t planes_count,
     uint32_t buffer_id) {
-  DCHECK(base::MessageLoopForUI::IsCurrent());
+  DCHECK(base::MessageLoopCurrentForUI::IsSet());
   if (!buffer_manager_->CreateBuffer(std::move(file), width, height, strides,
                                      offsets, format, modifiers, planes_count,
                                      buffer_id)) {
@@ -185,7 +185,7 @@ void WaylandConnection::CreateZwpLinuxDmabuf(
 }
 
 void WaylandConnection::DestroyZwpLinuxDmabuf(uint32_t buffer_id) {
-  DCHECK(base::MessageLoopForUI::IsCurrent());
+  DCHECK(base::MessageLoopCurrentForUI::IsSet());
   if (!buffer_manager_->DestroyBuffer(buffer_id)) {
     TerminateGpuProcess(buffer_manager_->error_message());
   }
@@ -196,7 +196,7 @@ void WaylandConnection::ScheduleBufferSwap(
     uint32_t buffer_id,
     const gfx::Rect& damage_region,
     ScheduleBufferSwapCallback callback) {
-  DCHECK(base::MessageLoopForUI::IsCurrent());
+  DCHECK(base::MessageLoopCurrentForUI::IsSet());
   if (!buffer_manager_->ScheduleBufferSwap(widget, buffer_id, damage_region,
                                            std::move(callback))) {
     TerminateGpuProcess(buffer_manager_->error_message());

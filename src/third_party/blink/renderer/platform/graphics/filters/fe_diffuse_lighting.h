@@ -36,6 +36,12 @@ class PLATFORM_EXPORT FEDiffuseLighting final : public FELighting {
                                    float,
                                    float,
                                    scoped_refptr<LightSource>);
+
+  FEDiffuseLighting(Filter*,
+                    const Color&,
+                    float,
+                    float,
+                    scoped_refptr<LightSource>);
   ~FEDiffuseLighting() override;
 
   Color LightingColor() const;
@@ -52,13 +58,6 @@ class PLATFORM_EXPORT FEDiffuseLighting final : public FELighting {
 
   WTF::TextStream& ExternalRepresentation(WTF::TextStream&,
                                           int indention) const override;
-
- private:
-  FEDiffuseLighting(Filter*,
-                    const Color&,
-                    float,
-                    float,
-                    scoped_refptr<LightSource>);
 };
 
 }  // namespace blink

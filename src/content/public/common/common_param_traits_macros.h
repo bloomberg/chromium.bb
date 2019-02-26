@@ -17,11 +17,11 @@
 #include "content/public/common/webplugininfo_param_traits.h"
 #include "ipc/ipc_message_macros.h"
 #include "services/network/public/cpp/network_ipc_param_traits.h"
+#include "services/network/public/mojom/referrer_policy.mojom.h"
 #include "third_party/blink/public/platform/modules/permissions/permission_status.mojom.h"
 #include "third_party/blink/public/platform/web_history_scroll_restoration_type.h"
 #include "third_party/blink/public/platform/web_point.h"
 #include "third_party/blink/public/platform/web_rect.h"
-#include "third_party/blink/public/platform/web_referrer_policy.h"
 #include "third_party/blink/public/platform/web_security_style.h"
 #include "third_party/blink/public/platform/web_url_request.h"
 #include "third_party/blink/public/web/web_frame_serializer_cache_control_policy.h"
@@ -48,8 +48,8 @@ IPC_ENUM_TRAITS_MAX_VALUE(content::ConsoleMessageLevel,
                           content::CONSOLE_MESSAGE_LEVEL_LAST)
 IPC_ENUM_TRAITS_MAX_VALUE(blink::WebFrameSerializerCacheControlPolicy,
                           blink::WebFrameSerializerCacheControlPolicy::kLast)
-IPC_ENUM_TRAITS_MAX_VALUE(blink::WebReferrerPolicy,
-                          blink::kWebReferrerPolicyLast)
+IPC_ENUM_TRAITS_MAX_VALUE(network::mojom::ReferrerPolicy,
+                          network::mojom::ReferrerPolicy::kMaxValue)
 IPC_ENUM_TRAITS_MAX_VALUE(blink::WebHistoryScrollRestorationType,
                           blink::kWebHistoryScrollRestorationManual)
 IPC_ENUM_TRAITS_MAX_VALUE(blink::WebSecurityStyle, blink::kWebSecurityStyleLast)
@@ -133,7 +133,7 @@ IPC_STRUCT_TRAITS_BEGIN(content::WebPreferences)
   IPC_STRUCT_TRAITS_MEMBER(application_cache_enabled)
   IPC_STRUCT_TRAITS_MEMBER(tabs_to_links)
   IPC_STRUCT_TRAITS_MEMBER(history_entry_requires_user_gesture)
-  IPC_STRUCT_TRAITS_MEMBER(disable_pushstate_throttle)
+  IPC_STRUCT_TRAITS_MEMBER(disable_ipc_flooding_protection)
   IPC_STRUCT_TRAITS_MEMBER(hyperlink_auditing_enabled)
   IPC_STRUCT_TRAITS_MEMBER(allow_universal_access_from_file_urls)
   IPC_STRUCT_TRAITS_MEMBER(allow_file_access_from_file_urls)
@@ -240,7 +240,9 @@ IPC_STRUCT_TRAITS_BEGIN(content::WebPreferences)
   IPC_STRUCT_TRAITS_MEMBER(picture_in_picture_enabled)
   IPC_STRUCT_TRAITS_MEMBER(translate_service_available)
   IPC_STRUCT_TRAITS_MEMBER(network_quality_estimator_web_holdback)
+  IPC_STRUCT_TRAITS_MEMBER(lazy_load_enabled)
   IPC_STRUCT_TRAITS_MEMBER(lazy_frame_loading_distance_thresholds_px)
+  IPC_STRUCT_TRAITS_MEMBER(lazy_image_loading_distance_thresholds_px)
 IPC_STRUCT_TRAITS_END()
 
 IPC_STRUCT_TRAITS_BEGIN(blink::mojom::WindowFeatures)

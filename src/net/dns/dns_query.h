@@ -54,7 +54,13 @@ class NET_EXPORT_PRIVATE DnsQuery {
   // Returns true and populates the query if the internally stored raw packet
   // can be parsed. This should only be called when DnsQuery is constructed from
   // the raw buffer.
-  bool Parse();
+  // |valid_bytes| indicates the number of initialized bytes in the raw buffer.
+  // E.g. if the buffer holds a packet received from the network, the buffer may
+  // be allocated with the maximum size of a UDP packet, but |valid_bytes|
+  // indicates the number of bytes actually received from the network. If the
+  // parsing requires reading more than the number of initialized bytes, this
+  // method fails and returns false.
+  bool Parse(size_t valid_bytes);
 
   // DnsQuery field accessors.
   uint16_t id() const;

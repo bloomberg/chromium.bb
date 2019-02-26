@@ -17,6 +17,7 @@ import org.chromium.base.annotations.CalledByNative;
 import org.chromium.components.signin.AccountManagerFacade;
 
 import java.io.File;
+import java.util.List;
 
 /**
  * Helper for issuing intents to the android framework.
@@ -40,10 +41,10 @@ public abstract class IntentHelper {
     static void sendEmail(
             String email, String subject, String body, String chooserTitle, String fileToAttach) {
         if (TextUtils.isEmpty(email)) {
-            Account[] accounts = AccountManagerFacade.get().tryGetGoogleAccounts();
-            if (accounts != null && accounts.length == 1
-                    && Patterns.EMAIL_ADDRESS.matcher(accounts[0].name).matches()) {
-                email = accounts[0].name;
+            List<Account> accounts = AccountManagerFacade.get().tryGetGoogleAccounts();
+            if (accounts != null && accounts.size() == 1
+                    && Patterns.EMAIL_ADDRESS.matcher(accounts.get(0).name).matches()) {
+                email = accounts.get(0).name;
             }
         }
 

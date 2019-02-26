@@ -9,6 +9,8 @@
   'use strict';
 
   binding.streamErrors = {
+    cannotTransferLockedStream: 'Cannot transfer a locked stream',
+    cannotTransferContext: 'Cannot transfer from this context',
     illegalInvocation: 'Illegal invocation',
     illegalConstructor: 'Illegal constructor',
     invalidType: 'Invalid type is specified',

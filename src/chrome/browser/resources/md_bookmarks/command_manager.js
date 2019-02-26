@@ -735,18 +735,16 @@ cr.define('bookmarks', function() {
      * @param {boolean} canUndo If true, shows an undo button in the toast.
      * @private
      */
-    showTitleToast_: function(labelPromise, title, canUndo) {
-      labelPromise.then(function(label) {
-        const pieces = loadTimeData.getSubstitutedStringPieces(label, title)
-                           .map(function(p) {
-                             // Make the bookmark name collapsible.
-                             p.collapsible = !!p.arg;
-                             return p;
-                           });
+    showTitleToast_: async function(labelPromise, title, canUndo) {
+      const label = await labelPromise;
+      const pieces = loadTimeData.getSubstitutedStringPieces(label, title)
+                         .map(function(p) {
+                           // Make the bookmark name collapsible.
+                           p.collapsible = !!p.arg;
+                           return p;
+                         });
 
-        bookmarks.ToastManager.getInstance().showForStringPieces(
-            pieces, canUndo);
-      });
+      bookmarks.ToastManager.getInstance().showForStringPieces(pieces, canUndo);
     },
 
     ////////////////////////////////////////////////////////////////////////////

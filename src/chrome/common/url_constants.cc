@@ -103,9 +103,6 @@ const char kCloudPrintCertificateErrorLearnMoreURL[] =
         "cloudprint?p=cloudprint_error_offline_linux";
 #endif
 
-const char kCloudPrintNoDestinationsLearnMoreURL[] =
-    "https://www.google.com/cloudprint/learn/";
-
 const char kContentSettingsExceptionsLearnMoreURL[] =
     "https://support.google.com/chrome/?p=settings_manage_exceptions";
 
@@ -144,6 +141,10 @@ const char kExtensionInvalidRequestURL[] = "chrome-extension://invalid/";
 const char kGoogleAccountActivityControlsURL[] =
     "https://myaccount.google.com/activitycontrols/search";
 
+const char kGoogleAccountURL[] = "https://myaccount.google.com";
+
+const char kGooglePasswordManagerURL[] = "https://passwords.google.com";
+
 const char kLearnMoreReportingURL[] =
     "https://support.google.com/chrome/?p=ui_usagestat";
 
@@ -151,6 +152,10 @@ const char kLegacySupervisedUserManagementDisplayURL[] =
     "www.chrome.com/manage";
 const char kLegacySupervisedUserManagementURL[] =
     "https://www.chrome.com/manage";
+
+// TODO(nicolaso): Replace with a p-link once it's ready. b/117655761
+const char kManagedUiLearnMoreUrl[] =
+    "https://support.google.com/chromebook/answer/1331549";
 
 const char kMyActivityUrlInClearBrowsingData[] =
     "https://myactivity.google.com/myactivity/?utm_source=chrome_cbd";

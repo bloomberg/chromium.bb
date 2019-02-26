@@ -22,7 +22,8 @@ WorkerNavigatorNetworkInformation& WorkerNavigatorNetworkInformation::From(
   WorkerNavigatorNetworkInformation* supplement =
       ToWorkerNavigatorNetworkInformation(navigator, context);
   if (!supplement) {
-    supplement = new WorkerNavigatorNetworkInformation(navigator, context);
+    supplement = MakeGarbageCollected<WorkerNavigatorNetworkInformation>(
+        navigator, context);
     ProvideTo(navigator, supplement);
   }
   return *supplement;

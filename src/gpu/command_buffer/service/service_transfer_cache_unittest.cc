@@ -83,5 +83,33 @@ TEST(ServiceTransferCache, MultipleDecoderUse) {
                                      decoder2, kEntryType, entry_id)));
 }
 
+TEST(ServiceTransferCache, DeleteEntriesForDecoder) {
+  ServiceTransferCache cache;
+  const size_t entry_size = 1024u;
+  const size_t cache_size = 4 * entry_size;
+  cache.SetCacheSizeLimitForTesting(cache_size);
+
+  // Add 2 entries for decoder 1.
+  cache.CreateLocalEntry(ServiceTransferCache::EntryKey(1, kEntryType, 1),
+                         CreateEntry(entry_size));
+  cache.CreateLocalEntry(ServiceTransferCache::EntryKey(1, kEntryType, 2),
+                         CreateEntry(entry_size));
+
+  // Add 2 entries for decoder 2.
+  cache.CreateLocalEntry(ServiceTransferCache::EntryKey(2, kEntryType, 1),
+                         CreateEntry(entry_size));
+  cache.CreateLocalEntry(ServiceTransferCache::EntryKey(2, kEntryType, 2),
+                         CreateEntry(entry_size));
+
+  // Erase all entries for decoder 1.
+  EXPECT_EQ(cache.entries_count_for_testing(), 4u);
+  cache.DeleteAllEntriesForDecoder(1);
+  EXPECT_EQ(cache.entries_count_for_testing(), 2u);
+  EXPECT_NE(cache.GetEntry(ServiceTransferCache::EntryKey(2, kEntryType, 1)),
+            nullptr);
+  EXPECT_NE(cache.GetEntry(ServiceTransferCache::EntryKey(2, kEntryType, 2)),
+            nullptr);
+}
+
 }  // namespace
 }  // namespace gpu

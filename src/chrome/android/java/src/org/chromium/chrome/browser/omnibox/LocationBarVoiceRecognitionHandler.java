@@ -9,6 +9,7 @@ import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
 import android.content.pm.PackageManager;
+import android.os.Bundle;
 import android.speech.RecognizerIntent;
 import android.support.annotation.IntDef;
 import android.support.annotation.Nullable;
@@ -17,7 +18,8 @@ import android.text.TextUtils;
 
 import org.chromium.base.metrics.CachedMetrics;
 import org.chromium.chrome.R;
-import org.chromium.chrome.browser.omnibox.VoiceSuggestionProvider.VoiceResult;
+import org.chromium.chrome.browser.omnibox.suggestions.AutocompleteController;
+import org.chromium.chrome.browser.omnibox.suggestions.AutocompleteCoordinator;
 import org.chromium.chrome.browser.search_engines.TemplateUrlService;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.toolbar.ToolbarDataProvider;
@@ -27,6 +29,9 @@ import org.chromium.content_public.browser.WebContents;
 import org.chromium.content_public.browser.WebContentsObserver;
 import org.chromium.ui.base.PermissionCallback;
 import org.chromium.ui.base.WindowAndroid;
+
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * Class containing functionality related to voice search in the location bar.
@@ -122,6 +127,38 @@ public class LocationBarVoiceRecognitionHandler {
         WindowAndroid getWindowAndroid();
     }
 
+    /**
+     * A storage class that holds voice recognition string matches and confidence scores.
+     */
+    public static class VoiceResult {
+        private final String mMatch;
+        private final float mConfidence;
+
+        /**
+         * Creates an instance of a VoiceResult.
+         * @param match The text match from the voice recognition.
+         * @param confidence The confidence value of the recognition that should go from 0.0 to 1.0.
+         */
+        public VoiceResult(String match, float confidence) {
+            mMatch = match;
+            mConfidence = confidence;
+        }
+
+        /**
+         * @return The text match from the voice recognition.
+         */
+        public String getMatch() {
+            return mMatch;
+        }
+
+        /**
+         * @return The confidence value of the recognition that should go from 0.0 to 1.0.
+         */
+        public float getConfidence() {
+            return mConfidence;
+        }
+    }
+
     public LocationBarVoiceRecognitionHandler(Delegate delegate) {
         mDelegate = delegate;
     }
@@ -194,7 +231,10 @@ public class LocationBarVoiceRecognitionHandler {
 
             recordVoiceSearchFinishEventSource(mSource);
 
-            VoiceResult topResult = autocompleteCoordinator.onVoiceResults(data.getExtras());
+            List<VoiceResult> voiceResults = convertBundleToVoiceResults(data.getExtras());
+            autocompleteCoordinator.onVoiceResults(voiceResults);
+            VoiceResult topResult =
+                    (voiceResults != null && voiceResults.size() > 0) ? voiceResults.get(0) : null;
             if (topResult == null) {
                 recordVoiceSearchResult(false);
                 return;
@@ -234,6 +274,33 @@ public class LocationBarVoiceRecognitionHandler {
             }
             mDelegate.loadUrlFromVoice(url);
         }
+    }
+
+    /** Convert the android voice intent bundle to a list of result objects. */
+    @VisibleForTesting
+    protected static List<VoiceResult> convertBundleToVoiceResults(Bundle extras) {
+        if (extras == null) return null;
+
+        ArrayList<String> strings = extras.getStringArrayList(RecognizerIntent.EXTRA_RESULTS);
+        float[] confidences = extras.getFloatArray(RecognizerIntent.EXTRA_CONFIDENCE_SCORES);
+
+        if (strings == null || confidences == null) return null;
+        if (strings.size() != confidences.length) return null;
+
+        List<VoiceResult> results = new ArrayList<>();
+        for (int i = 0; i < strings.size(); ++i) {
+            // Remove any spaces in the voice search match when determining whether it
+            // appears to be a URL. This is to prevent cases like (
+            // "tech crunch.com" and "www. engadget .com" from not appearing like URLs)
+            // from not navigating to the URL.
+            // If the string appears to be a URL, then use it instead of the string returned from
+            // the voice engine.
+            String culledString = strings.get(i).replaceAll(" ", "");
+            String url = AutocompleteController.nativeQualifyPartialURLQuery(culledString);
+            results.add(
+                    new VoiceResult(url == null ? strings.get(i) : culledString, confidences[i]));
+        }
+        return results;
     }
 
     /**

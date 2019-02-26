@@ -19,6 +19,11 @@ inline ClientSpecificId ClientWindowIdFromTransportId(Id id) {
   return static_cast<ClientSpecificId>(id & 0xFFFFFFFF);
 }
 
+inline Id BuildTransportId(ClientSpecificId connection_id,
+                           ClientSpecificId window_id) {
+  return (static_cast<Id>(connection_id) << 32) | static_cast<Id>(window_id);
+}
+
 }  // namespace ws
 
 #endif  // SERVICES_WS_COMMON_UTIL_H_

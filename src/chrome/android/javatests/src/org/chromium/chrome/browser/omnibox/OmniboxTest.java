@@ -19,6 +19,7 @@ import android.view.KeyEvent;
 import android.view.View;
 import android.view.WindowManager;
 import android.widget.ImageButton;
+import android.widget.ListView;
 import android.widget.TextView;
 
 import org.junit.Assert;
@@ -41,7 +42,10 @@ import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ChromeActivity;
 import org.chromium.chrome.browser.ChromeFeatureList;
 import org.chromium.chrome.browser.ChromeSwitches;
-import org.chromium.chrome.browser.omnibox.AutocompleteController.OnSuggestionsReceivedListener;
+import org.chromium.chrome.browser.omnibox.status.StatusViewCoordinator;
+import org.chromium.chrome.browser.omnibox.suggestions.AutocompleteController.OnSuggestionsReceivedListener;
+import org.chromium.chrome.browser.omnibox.suggestions.OmniboxSuggestion;
+import org.chromium.chrome.browser.omnibox.suggestions.SuggestionView;
 import org.chromium.chrome.browser.tab.EmptyTabObserver;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.tab.TabObserver;
@@ -294,59 +298,6 @@ public class OmniboxTest {
         }));
     }
 
-    @Test
-    @MediumTest
-    @Feature("Omnibox")
-    public void testSuggestionsTriggeredOnWindowFocusGained() {
-        final LocationBarLayout locationBar =
-                (LocationBarLayout) mActivityTestRule.getActivity().findViewById(R.id.location_bar);
-        final UrlBar urlBar = (UrlBar) mActivityTestRule.getActivity().findViewById(R.id.url_bar);
-
-        OmniboxTestUtils.toggleUrlBarFocus(urlBar, true);
-
-        ThreadUtils.runOnUiThreadBlocking(() -> {
-            TestAutocompleteController controller = new TestAutocompleteController(locationBar,
-                    sEmptySuggestionListener, new HashMap<String, List<SuggestionsResult>>());
-            locationBar.getAutocompleteCoordinator().setAutocompleteController(controller);
-            locationBar.onWindowFocusChanged(false);
-            locationBar.onWindowFocusChanged(true);
-            Assert.assertEquals("Zero suggest not triggered when URL focused but unchanged", 1,
-                    controller.numZeroSuggestRequests());
-        });
-
-        ThreadUtils.runOnUiThreadBlocking(() -> {
-            urlBar.setText("");
-
-            TestAutocompleteController controller = new TestAutocompleteController(locationBar,
-                    sEmptySuggestionListener, new HashMap<String, List<SuggestionsResult>>());
-            locationBar.getAutocompleteCoordinator().setAutocompleteController(controller);
-            locationBar.onWindowFocusChanged(false);
-            locationBar.onWindowFocusChanged(true);
-            Assert.assertEquals("Zero suggest not triggered when URL focused but empty", 1,
-                    controller.numZeroSuggestRequests());
-        });
-
-        final TestAutocompleteController controller = new TestAutocompleteController(locationBar,
-                sEmptySuggestionListener, new HashMap<String, List<SuggestionsResult>>());
-        ThreadUtils.runOnUiThreadBlocking(() -> {
-            urlBar.setText("cows");
-
-            locationBar.getAutocompleteCoordinator().setAutocompleteController(controller);
-            locationBar.onWindowFocusChanged(false);
-            locationBar.onWindowFocusChanged(true);
-            Assert.assertEquals("Zero suggest incorrectly triggered when URL has changed", 0,
-                    controller.numZeroSuggestRequests());
-        });
-        // Autocomplete is triggered async, so we need to poll to see that it is eventually
-        // requested.
-        CriteriaHelper.pollUiThread(Criteria.equals(true, new Callable<Boolean>() {
-            @Override
-            public Boolean call() throws Exception {
-                return controller.isStartAutocompleteCalled();
-            }
-        }));
-    }
-
     // Sanity check that no text is displayed in the omnibox when on the NTP page and that the hint
     // text is correct.
     @Test
@@ -563,8 +514,9 @@ public class OmniboxTest {
             public void onSuggestionsReceived(
                     List<OmniboxSuggestion> suggestions,
                     String inlineAutocompleteText) {
-                locationBar.getAutocompleteCoordinator().onSuggestionsReceived(
-                        suggestions, inlineAutocompleteText);
+                locationBar.getAutocompleteCoordinator()
+                        .getSuggestionsReceivedListenerForTest()
+                        .onSuggestionsReceived(suggestions, inlineAutocompleteText);
                 synchronized (suggestionsProcessedSignal) {
                     int remaining = suggestionsLeft.decrementAndGet();
                     if (remaining == 0) {
@@ -670,12 +622,14 @@ public class OmniboxTest {
             final LocationBarLayout locationBar =
                     (LocationBarLayout) mActivityTestRule.getActivity().findViewById(
                             R.id.location_bar);
-            boolean securityIcon = locationBar.isSecurityButtonShown();
+            StatusViewCoordinator statusViewCoordinator =
+                    locationBar.getStatusViewCoordinatorForTesting();
+            boolean securityIcon = statusViewCoordinator.isSecurityButtonShown();
             if (mActivityTestRule.getActivity().isTablet()) {
                 Assert.assertTrue("Omnibox should have a Security icon", securityIcon);
                 Assert.assertTrue(securityButton.isShown());
                 Assert.assertEquals(
-                        R.drawable.omnibox_info, locationBar.getSecurityIconResourceId());
+                        R.drawable.omnibox_info, statusViewCoordinator.getSecurityIconResourceId());
             } else {
                 Assert.assertFalse("Omnibox should not have a Security icon", securityIcon);
                 Assert.assertFalse(securityButton.isShown());
@@ -717,13 +671,15 @@ public class OmniboxTest {
             final LocationBarLayout locationBar =
                     (LocationBarLayout) mActivityTestRule.getActivity().findViewById(
                             R.id.location_bar);
-            boolean securityIcon = locationBar.isSecurityButtonShown();
+            StatusViewCoordinator statusViewCoordinator =
+                    locationBar.getStatusViewCoordinatorForTesting();
+            boolean securityIcon = statusViewCoordinator.isSecurityButtonShown();
             Assert.assertTrue("Omnibox should have a Security icon", securityIcon);
             Assert.assertEquals("security_button with wrong resource-id", R.id.security_button,
                     securityButton.getId());
             Assert.assertTrue(securityButton.isShown());
-            Assert.assertEquals(
-                    R.drawable.omnibox_https_valid, locationBar.getSecurityIconResourceId());
+            Assert.assertEquals(R.drawable.omnibox_https_valid,
+                    statusViewCoordinator.getSecurityIconResourceId());
         } finally {
             httpsTestServer.stopAndDestroyServer();
         }
@@ -766,7 +722,8 @@ public class OmniboxTest {
             ImageButton securityButton = (ImageButton) mActivityTestRule.getActivity().findViewById(
                     R.id.security_button);
 
-            boolean securityIcon = locationBarLayout.isSecurityButtonShown();
+            boolean securityIcon =
+                    locationBarLayout.getStatusViewCoordinatorForTesting().isSecurityButtonShown();
             Assert.assertTrue("Omnibox should have a Security icon", securityIcon);
             Assert.assertEquals("security_button with wrong resource-id", R.id.security_button,
                     securityButton.getId());
@@ -774,12 +731,12 @@ public class OmniboxTest {
             if (mActivityTestRule.getActivity().isTablet()) {
                 Assert.assertTrue(mActivityTestRule.getActivity()
                                           .getToolbarManager()
-                                          .getToolbarModelForTesting()
+                                          .getLocationBarModelForTesting()
                                           .shouldEmphasizeHttpsScheme());
             } else {
                 Assert.assertFalse(mActivityTestRule.getActivity()
                                            .getToolbarManager()
-                                           .getToolbarModelForTesting()
+                                           .getLocationBarModelForTesting()
                                            .shouldEmphasizeHttpsScheme());
             }
         } finally {
@@ -883,8 +840,9 @@ public class OmniboxTest {
                                         "fa", null)
                                 .addGeneratedSuggestion(OmniboxSuggestionType.SEARCH_HISTORY,
                                         "fac", null)));
-        final TestAutocompleteController controller = new TestAutocompleteController(
-                locationBar, locationBar.getAutocompleteCoordinator(), suggestionsMap);
+        final TestAutocompleteController controller = new TestAutocompleteController(locationBar,
+                locationBar.getAutocompleteCoordinator().getSuggestionsReceivedListenerForTest(),
+                suggestionsMap);
 
         ThreadUtils.runOnUiThreadBlocking(new Runnable() {
             @Override
@@ -924,7 +882,7 @@ public class OmniboxTest {
         ThreadUtils.runOnUiThreadBlocking(new Runnable() {
             @Override
             public void run() {
-                OmniboxSuggestionsList suggestionsList =
+                ListView suggestionsList =
                         locationBar.getAutocompleteCoordinator().getSuggestionList();
                 Assert.assertEquals(expectedSuggestionCount, suggestionsList.getChildCount());
                 for (int i = 0; i < suggestionsList.getChildCount(); i++) {

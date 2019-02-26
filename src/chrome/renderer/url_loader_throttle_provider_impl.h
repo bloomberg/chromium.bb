@@ -18,6 +18,10 @@
 #include "extensions/renderer/extension_throttle_manager.h"
 #endif
 
+namespace data_reduction_proxy {
+class DataReductionProxyThrottleManager;
+}
+
 class ChromeContentRendererClient;
 
 // Instances must be constructed on the render thread, and then used and
@@ -52,6 +56,9 @@ class URLLoaderThrottleProviderImpl
 
   safe_browsing::mojom::SafeBrowsingPtrInfo safe_browsing_info_;
   safe_browsing::mojom::SafeBrowsingPtr safe_browsing_;
+
+  std::unique_ptr<data_reduction_proxy::DataReductionProxyThrottleManager>
+      data_reduction_proxy_manager_;
 
 #if BUILDFLAG(ENABLE_EXTENSIONS)
   std::unique_ptr<extensions::ExtensionThrottleManager>

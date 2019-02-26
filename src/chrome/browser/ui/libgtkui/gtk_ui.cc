@@ -50,7 +50,6 @@
 #include "third_party/skia/include/core/SkCanvas.h"
 #include "third_party/skia/include/core/SkColor.h"
 #include "third_party/skia/include/core/SkShader.h"
-#include "ui/base/material_design/material_design_controller.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/display/display.h"
 #include "ui/events/keycodes/dom/dom_code.h"
@@ -68,7 +67,6 @@
 #include "ui/gfx/x/x11_types.h"
 #include "ui/native_theme/native_theme.h"
 #include "ui/shell_dialogs/select_file_policy.h"
-#include "ui/views/controls/button/blue_button.h"
 #include "ui/views/controls/button/label_button.h"
 #include "ui/views/controls/button/label_button_border.h"
 #include "ui/views/linux_ui/device_scale_factor_observer.h"
@@ -234,11 +232,6 @@ typedef std::unique_ptr<GIcon, GObjectDeleter> ScopedGIcon;
 typedef std::unique_ptr<GtkIconInfo, GtkIconInfoDeleter> ScopedGtkIconInfo;
 typedef std::unique_ptr<GdkPixbuf, GObjectDeleter> ScopedGdkPixbuf;
 
-#if !GTK_CHECK_VERSION(3, 90, 0)
-// Prefix for app indicator ids
-const char kAppIndicatorIdPrefix[] = "chrome_app_indicator_";
-#endif
-
 // Number of app indicators used (used as part of app-indicator id).
 int indicators_count;
 
@@ -371,6 +364,8 @@ void GtkUi::Initialize() {
   g_signal_connect_after(settings, "notify::gtk-theme-name",
                          G_CALLBACK(OnThemeChanged), this);
   g_signal_connect_after(settings, "notify::gtk-icon-theme-name",
+                         G_CALLBACK(OnThemeChanged), this);
+  g_signal_connect_after(settings, "notify::gtk-application-prefer-dark-theme",
                          G_CALLBACK(OnThemeChanged), this);
 
   GdkScreen* screen = gdk_screen_get_default();
@@ -545,7 +540,8 @@ bool GtkUi::IsStatusIconSupported() const {
 
 std::unique_ptr<views::StatusIconLinux> GtkUi::CreateLinuxStatusIcon(
     const gfx::ImageSkia& image,
-    const base::string16& tool_tip) const {
+    const base::string16& tool_tip,
+    const char* id_prefix) const {
 #if GTK_CHECK_VERSION(3, 90, 0)
   NOTIMPLEMENTED();
   return nullptr;
@@ -553,8 +549,8 @@ std::unique_ptr<views::StatusIconLinux> GtkUi::CreateLinuxStatusIcon(
   if (AppIndicatorIcon::CouldOpen()) {
     ++indicators_count;
     return std::unique_ptr<views::StatusIconLinux>(new AppIndicatorIcon(
-        base::StringPrintf("%s%d", kAppIndicatorIdPrefix, indicators_count),
-        image, tool_tip));
+        base::StringPrintf("%s%d", id_prefix, indicators_count), image,
+        tool_tip));
   } else {
     return std::unique_ptr<views::StatusIconLinux>(
         new GtkStatusIcon(image, tool_tip));
@@ -603,54 +599,41 @@ std::unique_ptr<views::Border> GtkUi::CreateNativeBorder(
 
   static struct {
     const char* idr;
-    const char* idr_blue;
     bool focus;
     views::Button::ButtonState state;
   } const paintstate[] = {
       {
-          "IDR_BUTTON_NORMAL", "IDR_BLUE_BUTTON_NORMAL", false,
-          views::Button::STATE_NORMAL,
+          "IDR_BUTTON_NORMAL", false, views::Button::STATE_NORMAL,
       },
       {
-          "IDR_BUTTON_HOVER", "IDR_BLUE_BUTTON_HOVER", false,
-          views::Button::STATE_HOVERED,
+          "IDR_BUTTON_HOVER", false, views::Button::STATE_HOVERED,
       },
       {
-          "IDR_BUTTON_PRESSED", "IDR_BLUE_BUTTON_PRESSED", false,
-          views::Button::STATE_PRESSED,
+          "IDR_BUTTON_PRESSED", false, views::Button::STATE_PRESSED,
       },
       {
-          "IDR_BUTTON_DISABLED", "IDR_BLUE_BUTTON_DISABLED", false,
-          views::Button::STATE_DISABLED,
+          "IDR_BUTTON_DISABLED", false, views::Button::STATE_DISABLED,
       },
 
       {
-          "IDR_BUTTON_FOCUSED_NORMAL", "IDR_BLUE_BUTTON_FOCUSED_NORMAL", true,
-          views::Button::STATE_NORMAL,
+          "IDR_BUTTON_FOCUSED_NORMAL", true, views::Button::STATE_NORMAL,
       },
       {
-          "IDR_BUTTON_FOCUSED_HOVER", "IDR_BLUE_BUTTON_FOCUSED_HOVER", true,
-          views::Button::STATE_HOVERED,
+          "IDR_BUTTON_FOCUSED_HOVER", true, views::Button::STATE_HOVERED,
       },
       {
-          "IDR_BUTTON_FOCUSED_PRESSED", "IDR_BLUE_BUTTON_FOCUSED_PRESSED", true,
-          views::Button::STATE_PRESSED,
+          "IDR_BUTTON_FOCUSED_PRESSED", true, views::Button::STATE_PRESSED,
       },
       {
-          "IDR_BUTTON_DISABLED", "IDR_BLUE_BUTTON_DISABLED", true,
-          views::Button::STATE_DISABLED,
+          "IDR_BUTTON_DISABLED", true, views::Button::STATE_DISABLED,
       },
   };
 
-  bool is_blue =
-      owning_button->GetClassName() == views::BlueButton::kViewClassName;
-
   for (unsigned i = 0; i < arraysize(paintstate); i++) {
-    std::string idr = is_blue ? paintstate[i].idr_blue : paintstate[i].idr;
     gtk_border->SetPainter(
         paintstate[i].focus, paintstate[i].state,
         border->PaintsButtonState(paintstate[i].focus, paintstate[i].state)
-            ? std::make_unique<GtkButtonPainter>(idr)
+            ? std::make_unique<GtkButtonPainter>(paintstate[i].idr)
             : nullptr);
   }
 
@@ -957,15 +940,36 @@ void GtkUi::UpdateColors() {
 
     // These colors represent the border drawn around tabs and between
     // the tabstrip and toolbar.
-    SkColor toolbar_top_separator =
-        GetBorderColor(header_selector + " GtkButton#button");
+    SkColor toolbar_top_separator = GetBorderColor(
+        header_selector + " GtkSeparator#separator.vertical.titlebutton");
     SkColor toolbar_top_separator_inactive =
-        GetBorderColor(header_selector + ":backdrop GtkButton#button");
+        GetBorderColor(header_selector +
+                       ":backdrop GtkSeparator#separator.vertical.titlebutton");
 
-    // Unlike with toolbars, we always want a border around tabs, so let
-    // ThemeService choose the border color if the theme doesn't provide one.
-    if (SkColorGetA(toolbar_top_separator) &&
-        SkColorGetA(toolbar_top_separator_inactive)) {
+    auto toolbar_top_separator_has_good_contrast = [&]() {
+      // This constant is copied from chrome/browser/themes/theme_service.cc.
+      const float kMinContrastRatio = 2.f;
+
+      SkColor active = color_utils::GetResultingPaintColor(
+          toolbar_top_separator, frame_color);
+      SkColor inactive = color_utils::GetResultingPaintColor(
+          toolbar_top_separator_inactive, frame_color_inactive);
+      return color_utils::GetContrastRatio(frame_color, active) >=
+                 kMinContrastRatio &&
+             color_utils::GetContrastRatio(frame_color_inactive, inactive) >=
+                 kMinContrastRatio;
+    };
+
+    if (!toolbar_top_separator_has_good_contrast()) {
+      toolbar_top_separator =
+          GetBorderColor(header_selector + " GtkButton#button");
+      toolbar_top_separator_inactive =
+          GetBorderColor(header_selector + ":backdrop GtkButton#button");
+    }
+
+    // If we can't get a contrasting stroke from the theme, have ThemeService
+    // provide a stroke color for us.
+    if (toolbar_top_separator_has_good_contrast()) {
       color_map[ThemeProperties::COLOR_TOOLBAR_TOP_SEPARATOR] =
           toolbar_top_separator;
       color_map[ThemeProperties::COLOR_TOOLBAR_TOP_SEPARATOR_INACTIVE] =
@@ -1037,6 +1041,9 @@ void GtkUi::UpdateDefaultFont() {
 }
 
 void GtkUi::ResetStyle() {
+  colors_.clear();
+  custom_frame_colors_.clear();
+  native_frame_colors_.clear();
   LoadGtkValues();
   native_theme_->NotifyObservers();
 }

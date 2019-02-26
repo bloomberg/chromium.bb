@@ -113,7 +113,8 @@ class ExpireHistoryTest : public testing::Test, public HistoryBackendNotifier {
 
   // Returns whether HistoryBackendNotifier::NotifyURLsModified was
   // called for |url|.
-  bool ModifiedNotificationSent(const GURL& url);
+  bool ModifiedNotificationSentDueToExpiry(const GURL& url);
+  bool ModifiedNotificationSentDueToUserAction(const GURL& url);
 
   // Clears the list of notifications received.
   void ClearLastNotifications() {
@@ -146,7 +147,7 @@ class ExpireHistoryTest : public testing::Test, public HistoryBackendNotifier {
   // base::Time at the beginning of the test, so everybody agrees what "now" is.
   const base::Time now_;
 
-  typedef std::vector<URLRows> URLsModifiedNotificationList;
+  typedef std::vector<std::pair<bool, URLRows>> URLsModifiedNotificationList;
   URLsModifiedNotificationList urls_modified_notifications_;
 
   typedef std::vector<DeletionInfo> URLsDeletedNotificationList;
@@ -197,6 +198,9 @@ class ExpireHistoryTest : public testing::Test, public HistoryBackendNotifier {
     pref_service_.reset();
   }
 
+  bool ModifiedNotificationSent(const GURL& url,
+                                bool should_be_from_expiration);
+
   // HistoryBackendNotifier:
   void NotifyFaviconsChanged(const std::set<GURL>& page_urls,
                              const GURL& icon_url) override {}
@@ -204,8 +208,10 @@ class ExpireHistoryTest : public testing::Test, public HistoryBackendNotifier {
                         const URLRow& row,
                         const RedirectList& redirects,
                         base::Time visit_time) override {}
-  void NotifyURLsModified(const URLRows& rows) override {
-    urls_modified_notifications_.push_back(rows);
+  void NotifyURLsModified(const URLRows& rows,
+                          bool is_from_expiration) override {
+    urls_modified_notifications_.push_back(
+        std::make_pair(is_from_expiration, rows));
   }
   void NotifyURLsDeleted(DeletionInfo deletion_info) override {
     urls_deleted_notifications_.push_back(std::move(deletion_info));
@@ -385,7 +391,8 @@ void ExpireHistoryTest::EnsureURLInfoGone(const URLRow& row, bool expired) {
       found_delete_notification = true;
     }
   }
-  for (const auto& rows : urls_modified_notifications_) {
+  for (const auto& pair : urls_modified_notifications_) {
+    const auto& rows = pair.second;
     EXPECT_TRUE(std::find_if(rows.begin(), rows.end(),
                              history::URLRow::URLRowHasURL(row.url())) ==
                 rows.end());
@@ -393,11 +400,27 @@ void ExpireHistoryTest::EnsureURLInfoGone(const URLRow& row, bool expired) {
   EXPECT_TRUE(found_delete_notification);
 }
 
-bool ExpireHistoryTest::ModifiedNotificationSent(const GURL& url) {
-  for (const auto& rows : urls_modified_notifications_) {
-    if (std::find_if(rows.begin(), rows.end(),
-                     history::URLRow::URLRowHasURL(url)) != rows.end())
+bool ExpireHistoryTest::ModifiedNotificationSentDueToExpiry(const GURL& url) {
+  return ModifiedNotificationSent(url,
+                                  /*should_be_from_expiration=*/true);
+}
+bool ExpireHistoryTest::ModifiedNotificationSentDueToUserAction(
+    const GURL& url) {
+  return ModifiedNotificationSent(url,
+                                  /*should_be_from_expiration=*/false);
+}
+
+bool ExpireHistoryTest::ModifiedNotificationSent(
+    const GURL& url,
+    bool should_be_from_expiration) {
+  for (const auto& pair : urls_modified_notifications_) {
+    const bool is_from_expiration = pair.first;
+    const auto& rows = pair.second;
+    if (is_from_expiration == should_be_from_expiration &&
+        std::find_if(rows.begin(), rows.end(),
+                     history::URLRow::URLRowHasURL(url)) != rows.end()) {
       return true;
+    }
   }
   return false;
 }
@@ -630,7 +653,7 @@ TEST_F(ExpireHistoryTest, FlushRecentURLsUnstarred) {
   EXPECT_EQ(1U, visits.size());
 
   // Verify that the middle URL visit time and visit counts were updated.
-  EXPECT_TRUE(ModifiedNotificationSent(url_row1.url()));
+  EXPECT_TRUE(ModifiedNotificationSentDueToUserAction(url_row1.url()));
   URLRow temp_row;
   ASSERT_TRUE(main_db_->GetURLRow(url_ids[1], &temp_row));
   EXPECT_TRUE(visit_times[2] == url_row1.last_visit());  // Previous value.
@@ -732,7 +755,7 @@ TEST_F(ExpireHistoryTest, FlushRecentURLsUnstarredWithMaxTime) {
   EXPECT_EQ(1U, visits.size());
 
   // Verify that the middle URL visit time and visit counts were updated.
-  EXPECT_TRUE(ModifiedNotificationSent(url_row1.url()));
+  EXPECT_TRUE(ModifiedNotificationSentDueToUserAction(url_row1.url()));
   URLRow temp_row;
   ASSERT_TRUE(main_db_->GetURLRow(url_ids[1], &temp_row));
   EXPECT_TRUE(visit_times[2] == url_row1.last_visit());  // Previous value.
@@ -820,7 +843,7 @@ TEST_F(ExpireHistoryTest, FlushURLsForTimes) {
   EXPECT_EQ(1U, visits.size());
 
   // Verify that the middle URL visit time and visit counts were updated.
-  EXPECT_TRUE(ModifiedNotificationSent(url_row1.url()));
+  EXPECT_TRUE(ModifiedNotificationSentDueToUserAction(url_row1.url()));
   URLRow temp_row;
   ASSERT_TRUE(main_db_->GetURLRow(url_ids[1], &temp_row));
   EXPECT_TRUE(visit_times[2] == url_row1.last_visit());  // Previous value.
@@ -874,7 +897,7 @@ TEST_F(ExpireHistoryTest, FlushRecentURLsUnstarredRestricted) {
   EXPECT_EQ(1U, visits.size());
 
   // Verify that the middle URL visit time and visit counts were updated.
-  EXPECT_TRUE(ModifiedNotificationSent(url_row1.url()));
+  EXPECT_TRUE(ModifiedNotificationSentDueToUserAction(url_row1.url()));
   URLRow temp_row;
   ASSERT_TRUE(main_db_->GetURLRow(url_ids[1], &temp_row));
   EXPECT_TRUE(visit_times[2] == url_row1.last_visit());  // Previous value.
@@ -926,8 +949,8 @@ TEST_F(ExpireHistoryTest, FlushRecentURLsStarred) {
   EXPECT_TRUE(new_url_row2.last_visit().is_null());  // No last visit time.
 
   // Visit/typed count should be updated.
-  EXPECT_TRUE(ModifiedNotificationSent(url_row1.url()));
-  EXPECT_TRUE(ModifiedNotificationSent(url_row2.url()));
+  EXPECT_TRUE(ModifiedNotificationSentDueToUserAction(url_row1.url()));
+  EXPECT_TRUE(ModifiedNotificationSentDueToUserAction(url_row2.url()));
   EXPECT_EQ(0, new_url_row1.typed_count());
   EXPECT_EQ(1, new_url_row1.visit_count());
   EXPECT_EQ(0, new_url_row2.typed_count());
@@ -967,7 +990,7 @@ TEST_F(ExpireHistoryTest, ExpireHistoryBeforeUnstarred) {
   URLRow temp_row;
   EnsureURLInfoGone(url_row0, true);
   EXPECT_TRUE(main_db_->GetURLRow(url_ids[1], &temp_row));
-  EXPECT_TRUE(ModifiedNotificationSent(url_row1.url()));
+  EXPECT_TRUE(ModifiedNotificationSentDueToExpiry(url_row1.url()));
   VisitVector visits;
   main_db_->GetVisitsForURL(temp_row.id(), &visits);
   EXPECT_EQ(1U, visits.size());
@@ -1004,19 +1027,19 @@ TEST_F(ExpireHistoryTest, ExpireHistoryBeforeStarred) {
 
   URLRow temp_row;
   ASSERT_TRUE(main_db_->GetURLRow(url_ids[0], &temp_row));
-  EXPECT_TRUE(ModifiedNotificationSent(url_row0.url()));
+  EXPECT_TRUE(ModifiedNotificationSentDueToExpiry(url_row0.url()));
   VisitVector visits;
   main_db_->GetVisitsForURL(temp_row.id(), &visits);
   EXPECT_EQ(0U, visits.size());
 
   ASSERT_TRUE(main_db_->GetURLRow(url_ids[1], &temp_row));
-  EXPECT_TRUE(ModifiedNotificationSent(url_row1.url()));
+  EXPECT_TRUE(ModifiedNotificationSentDueToExpiry(url_row1.url()));
   main_db_->GetVisitsForURL(temp_row.id(), &visits);
   EXPECT_EQ(0U, visits.size());
 
   // The third URL should be unchanged.
   EXPECT_TRUE(main_db_->GetURLRow(url_ids[2], &temp_row));
-  EXPECT_FALSE(ModifiedNotificationSent(temp_row.url()));
+  EXPECT_FALSE(ModifiedNotificationSentDueToExpiry(temp_row.url()));
   main_db_->GetVisitsForURL(temp_row.id(), &visits);
   EXPECT_EQ(1U, visits.size());
 }

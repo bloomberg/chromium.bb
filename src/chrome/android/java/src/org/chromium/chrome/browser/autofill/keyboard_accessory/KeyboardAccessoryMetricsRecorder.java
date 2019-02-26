@@ -79,7 +79,8 @@ public class KeyboardAccessoryMetricsRecorder {
             }
             if (propertyKey == KeyboardAccessoryProperties.ACTIVE_TAB
                     || propertyKey == KeyboardAccessoryProperties.BOTTOM_OFFSET_PX
-                    || propertyKey == KeyboardAccessoryProperties.TAB_SELECTION_CALLBACKS) {
+                    || propertyKey == KeyboardAccessoryProperties.TAB_SELECTION_CALLBACKS
+                    || propertyKey == KeyboardAccessoryProperties.SHOW_KEYBOARD_CALLBACK) {
                 return;
             }
             assert false : "Every property update needs to be handled explicitly!";
@@ -231,7 +232,8 @@ public class KeyboardAccessoryMetricsRecorder {
                 return;
             }
             if (propertyKey == AccessorySheetProperties.ACTIVE_TAB_INDEX
-                    || propertyKey == AccessorySheetProperties.HEIGHT) {
+                    || propertyKey == AccessorySheetProperties.HEIGHT
+                    || propertyKey == AccessorySheetProperties.TOP_SHADOW_VISIBLE) {
                 return;
             }
             assert false : "Every property update needs to be handled explicitly!";

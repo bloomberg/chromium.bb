@@ -41,8 +41,7 @@ interface ControllerServiceWorker {
   DispatchFetchEvent(
       blink.mojom.DispatchFetchEventParams params,
       blink.mojom.ServiceWorkerFetchResponseCallback response_callback)
-      => (blink.mojom.ServiceWorkerEventStatus status,
-          mojo_base.mojom.TimeTicks dispatch_event_time);
+      => (blink.mojom.ServiceWorkerEventStatus status);
 
   // TODO(kinuko): Add DispatchExtendableMessageEvent() as well.
 

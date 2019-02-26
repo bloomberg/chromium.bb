@@ -51,58 +51,18 @@ TEST_F(BackgroundSyncNetworkObserverTest, NetworkChangeInvokesCallback) {
   EXPECT_EQ(4, network_changed_count_);
 }
 
-TEST_F(BackgroundSyncNetworkObserverTest, NetworkSufficientAnyNetwork) {
-  SetNetwork(network::mojom::ConnectionType::CONNECTION_WIFI);
-  EXPECT_TRUE(network_observer_->NetworkSufficient(NETWORK_STATE_ANY));
-
-  SetNetwork(network::mojom::ConnectionType::CONNECTION_3G);
-  EXPECT_TRUE(network_observer_->NetworkSufficient(NETWORK_STATE_ANY));
-
-  SetNetwork(network::mojom::ConnectionType::CONNECTION_UNKNOWN);
-  EXPECT_TRUE(network_observer_->NetworkSufficient(NETWORK_STATE_ANY));
-
-  SetNetwork(network::mojom::ConnectionType::CONNECTION_NONE);
-  EXPECT_TRUE(network_observer_->NetworkSufficient(NETWORK_STATE_ANY));
-}
-
-TEST_F(BackgroundSyncNetworkObserverTest, NetworkSufficientAvoidCellular) {
-  SetNetwork(network::mojom::ConnectionType::CONNECTION_WIFI);
-  EXPECT_TRUE(
-      network_observer_->NetworkSufficient(NETWORK_STATE_AVOID_CELLULAR));
-
-  SetNetwork(network::mojom::ConnectionType::CONNECTION_UNKNOWN);
-  EXPECT_TRUE(
-      network_observer_->NetworkSufficient(NETWORK_STATE_AVOID_CELLULAR));
-
-  SetNetwork(network::mojom::ConnectionType::CONNECTION_2G);
-  EXPECT_FALSE(
-      network_observer_->NetworkSufficient(NETWORK_STATE_AVOID_CELLULAR));
-
-  SetNetwork(network::mojom::ConnectionType::CONNECTION_3G);
-  EXPECT_FALSE(
-      network_observer_->NetworkSufficient(NETWORK_STATE_AVOID_CELLULAR));
-
-  SetNetwork(network::mojom::ConnectionType::CONNECTION_4G);
-  EXPECT_FALSE(
-      network_observer_->NetworkSufficient(NETWORK_STATE_AVOID_CELLULAR));
-
-  SetNetwork(network::mojom::ConnectionType::CONNECTION_NONE);
-  EXPECT_FALSE(
-      network_observer_->NetworkSufficient(NETWORK_STATE_AVOID_CELLULAR));
-}
-
 TEST_F(BackgroundSyncNetworkObserverTest, ConditionsMetOnline) {
   SetNetwork(network::mojom::ConnectionType::CONNECTION_WIFI);
-  EXPECT_TRUE(network_observer_->NetworkSufficient(NETWORK_STATE_ONLINE));
+  EXPECT_TRUE(network_observer_->NetworkSufficient());
 
   SetNetwork(network::mojom::ConnectionType::CONNECTION_3G);
-  EXPECT_TRUE(network_observer_->NetworkSufficient(NETWORK_STATE_ONLINE));
+  EXPECT_TRUE(network_observer_->NetworkSufficient());
 
   SetNetwork(network::mojom::ConnectionType::CONNECTION_UNKNOWN);
-  EXPECT_TRUE(network_observer_->NetworkSufficient(NETWORK_STATE_ONLINE));
+  EXPECT_TRUE(network_observer_->NetworkSufficient());
 
   SetNetwork(network::mojom::ConnectionType::CONNECTION_NONE);
-  EXPECT_FALSE(network_observer_->NetworkSufficient(NETWORK_STATE_ONLINE));
+  EXPECT_FALSE(network_observer_->NetworkSufficient());
 }
 
 TEST_F(BackgroundSyncNetworkObserverTest, GetNetworkOnConstruction) {
@@ -120,7 +80,7 @@ TEST_F(BackgroundSyncNetworkObserverTest, GetNetworkOnConstruction) {
   // The network observer should have learned that the current network is not
   // the default (UNKNOWN) but is in fact NONE.
   EXPECT_EQ(1, network_changed_count_);
-  EXPECT_FALSE(observer->NetworkSufficient(NETWORK_STATE_ONLINE));
+  EXPECT_FALSE(observer->NetworkSufficient());
 }
 
 }  // namespace content

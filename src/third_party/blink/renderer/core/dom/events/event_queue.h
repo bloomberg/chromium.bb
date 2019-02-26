@@ -43,6 +43,8 @@ class CORE_EXPORT EventQueue final
 
  public:
   static EventQueue* Create(ExecutionContext*, TaskType);
+
+  EventQueue(ExecutionContext*, TaskType);
   ~EventQueue();
 
   void Trace(blink::Visitor*) override;
@@ -51,8 +53,6 @@ class CORE_EXPORT EventQueue final
   bool HasPendingEvents() const;
 
  private:
-  EventQueue(ExecutionContext*, TaskType);
-
   bool RemoveEvent(Event&);
   void DispatchEvent(Event*);
 

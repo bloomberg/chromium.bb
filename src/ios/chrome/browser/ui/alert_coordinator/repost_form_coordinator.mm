@@ -48,7 +48,7 @@
     _webState = webState;
     CGRect sourceRect = CGRectMake(dialogLocation.x, dialogLocation.y, 1, 1);
     _dialogController =
-        [[self class] newDialogControllerForSourceView:webState->GetView()
+        [[self class] newDialogControllerForSourceView:viewController.view
                                             sourceRect:sourceRect
                                      completionHandler:completionHandler];
     // The dialog may be dimissed when a new navigation starts while the dialog
@@ -66,7 +66,8 @@
     return;
 
   // Check to see if an action sheet can be shown.
-  if ([_webState->GetView() window]) {
+  if (self.baseViewController.view.window &&
+      !self.baseViewController.presentedViewController) {
     [self.baseViewController presentViewController:_dialogController
                                           animated:YES
                                         completion:nil];

@@ -106,7 +106,7 @@ class ServiceWorkerNavigationLoaderTest;
 }  // namespace service_worker_navigation_loader_unittest
 
 // This class corresponds to a specific version of a ServiceWorker
-// script for a given pattern. When a script is upgraded, there may be
+// script for a given scope. When a script is upgraded, there may be
 // more than one ServiceWorkerVersion "running" at a time, but only
 // one of them is activated. This class connects the actual script with a
 // running worker.
@@ -120,8 +120,7 @@ class CONTENT_EXPORT ServiceWorkerVersion
   using StatusCallback =
       base::OnceCallback<void(blink::ServiceWorkerStatusCode)>;
   using SimpleEventCallback =
-      base::OnceCallback<void(blink::mojom::ServiceWorkerEventStatus,
-                              base::TimeTicks)>;
+      base::OnceCallback<void(blink::mojom::ServiceWorkerEventStatus)>;
 
   // Current version status; some of the status (e.g. INSTALLED and ACTIVATED)
   // should be persisted unlike running status.
@@ -326,9 +325,7 @@ class CONTENT_EXPORT ServiceWorkerVersion
   // Pass the result of the event to |was_handled|, which is used to record
   // statistics based on the event status.
   // TODO(mek): Use something other than a bool for event status.
-  bool FinishRequest(int request_id,
-                     bool was_handled,
-                     base::TimeTicks dispatch_event_time);
+  bool FinishRequest(int request_id, bool was_handled);
 
   // Finishes an external request that was started by StartExternalRequest().
   // Returns false if there was an error finishing the request: e.g. the request
@@ -345,9 +342,7 @@ class CONTENT_EXPORT ServiceWorkerVersion
   mojom::ServiceWorker* endpoint() {
     DCHECK(running_status() == EmbeddedWorkerStatus::STARTING ||
            running_status() == EmbeddedWorkerStatus::RUNNING);
-    // Temporarily CHECK for debugging https://crbug.com/817981.
-    CHECK(service_worker_ptr_.is_bound());
-    CHECK(service_worker_ptr_.get());
+    DCHECK(service_worker_ptr_.is_bound());
     return service_worker_ptr_.get();
   }
 
@@ -681,6 +676,8 @@ class CONTENT_EXPORT ServiceWorkerVersion
                   GetClientsCallback callback) override;
   void GetClient(const std::string& client_uuid,
                  GetClientCallback callback) override;
+  void GetClientInternal(const std::string& client_uuid,
+                         GetClientCallback callback);
   void OpenNewTab(const GURL& url, OpenNewTabCallback callback) override;
   void OpenPaymentHandlerWindow(
       const GURL& url,
@@ -735,8 +732,7 @@ class CONTENT_EXPORT ServiceWorkerVersion
   // mojom::ServiceWorker. Use CreateSimpleEventCallback() to
   // create a callback for a given |request_id|.
   void OnSimpleEventFinished(int request_id,
-                             blink::mojom::ServiceWorkerEventStatus status,
-                             base::TimeTicks dispatch_event_time);
+                             blink::mojom::ServiceWorkerEventStatus status);
 
   // The timeout timer periodically calls OnTimeoutTimer, which stops the worker
   // if it is excessively idle or unresponsive to ping.
@@ -795,6 +791,10 @@ class CONTENT_EXPORT ServiceWorkerVersion
   void NotifyControlleeAdded(const std::string& uuid,
                              const ServiceWorkerClientInfo& info);
   void NotifyControlleeRemoved(const std::string& uuid);
+
+  void GetClientOnExecutionReady(const std::string& client_uuid,
+                                 GetClientCallback callback,
+                                 bool success);
 
   const int64_t version_id_;
   const int64_t registration_id_;

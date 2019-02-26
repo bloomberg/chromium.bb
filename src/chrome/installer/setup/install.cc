@@ -241,11 +241,11 @@ InstallStatus InstallNewVersion(const InstallationState& original_state,
 
   if (is_downgrade_allowed) {
     if (new_chrome_exe_exists) {
-      VLOG(1) << "Version downgrades to " << new_version << " while running "
+      VLOG(1) << "Version downgraded to " << new_version << " while running "
               << **current_version;
       return IN_USE_DOWNGRADE;
     }
-    VLOG(1) << "Version downgrades to " << new_version;
+    VLOG(1) << "Version downgraded to " << new_version;
     return OLD_VERSION_DOWNGRADE;
   }
 

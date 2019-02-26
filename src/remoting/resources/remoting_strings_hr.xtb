@@ -2,6 +2,7 @@
 <!DOCTYPE translationbundle>
 <translationbundle lang="hr">
 <translation id="1002108253973310084">Otkrivena je nekompatibilna verzija protokola. Provjerite je li na oba računala instalirana najnovija verzija softvera pa pokušajte ponovo.</translation>
+<translation id="1008557486741366299">Ne sada</translation>
 <translation id="1050693411695664090">Slaba</translation>
 <translation id="1152528166145813711">Odaberite…</translation>
 <translation id="1199593201721843963">Onemogući daljinske veze</translation>
@@ -62,6 +63,7 @@ Informacije o privatnosti potražite u Googleovim pravilima o privatnosti (http:
 <translation id="2314101195544969792">Vaša sesija u aplikaciji <ph name="APPLICATION_NAME" /> nije aktivna već neko vrijeme, pa će se uskoro prekinuti veza.</translation>
 <translation id="2317666076142640974">Isprobajte novu <ph name="LINK_BEGIN" />web-aplikaciju Udaljena radna površina Chrome<ph name="LINK_END" />. Zanimaju nas vaše povratne informacije.</translation>
 <translation id="2320166752086256636">Sakrij tipkovnicu</translation>
+<translation id="2332192922827071008">Otvori Postavke</translation>
 <translation id="2353140552984634198">Ovom računalu možete sigurno pristupiti pomoću aplikacije Chromoting.</translation>
 <translation id="2359808026110333948">Nastavi</translation>
 <translation id="2366718077645204424">Nije moguće pristupiti hostu. To je vjerojatno zbog konfiguracije mreže koju upotrebljavate.</translation>
@@ -82,6 +84,7 @@ Informacije o privatnosti potražite u Googleovim pravilima o privatnosti (http:
 <translation id="2841013758207633010">Vrijeme</translation>
 <translation id="2851754573186462851">Chromium App Streaming</translation>
 <translation id="2888969873284818612">Došlo je mrežne pogreške. Ponovo ćemo pokrenuti aplikaciju kad se vaš uređaj opet poveže s mrežom.</translation>
+<translation id="2891243864890517178">Za Mac (OS X Yosemite 10.10 i novije verzije)</translation>
 <translation id="289405675947420287">Sigurno pristupajte računalu s iOS uređaja. Brzo je, jednostavno i besplatno.
 
 • Na računalu kojemu želite daljinski pristupiti preuzmite aplikaciju Udaljena radna površina Chrome iz Chrome web-trgovine.
@@ -188,6 +191,9 @@ PC</translation>
 <translation id="4973800994433240357">Preuzimanjem programa za instalaciju hosta Chromotinga prihvaćate Googleove <ph name="LINK_BEGIN" />Uvjete pružanja usluge<ph name="LINK_END" />.</translation>
 <translation id="4974476491460646149">Zatvorena je veza s računalom <ph name="HOSTNAME" /></translation>
 <translation id="4985296110227979402">Prvo morate postaviti računalo za daljinski pristup</translation>
+<translation id="5059773780693835145">Potreban je dodatni konfiguracijski korak prije nego što daljinski možete upravljati ovim računalom putem proizvoda <ph name="PRODUCT_NAME" />.
+
+Da biste omogućili ovu funkciju, odaberite '<ph name="BUTTON_NAME" />' za prikaz okna s postavkama Sigurnosti i privatnosti, a zatim stavite kvačicu u okvir '<ph name="SERVICE_SCRIPT_NAME" />'.</translation>
 <translation id="5064360042339518108"><ph name="HOSTNAME" /> (van mreže)</translation>
 <translation id="5070121137485264635">Udaljeni host zahtijeva autentifikaciju web-lokacije treće strane. Da biste nastavili, morate dati Udaljenoj radnoj površini Chrome dodatne dozvole za pristup ovoj adresi:</translation>
 <translation id="507204348399810022">Jeste li sigurni da želite onemogućiti daljinske veze s hostom <ph name="HOSTNAME" />?</translation>
@@ -249,7 +255,6 @@ PC</translation>
 <translation id="6542902059648396432">Prijavi problem…</translation>
 <translation id="6550675742724504774">Opcije</translation>
 <translation id="6570205395680337606">Vratite aplikaciju na zadano. Izgubit ćete sav rad koji niste spremili.</translation>
-<translation id="6572345186230665992">Za Mac (OS X Mavericks 10.9 i novije verzije)</translation>
 <translation id="6583902294974160967">Podrška</translation>
 <translation id="6612717000975622067">Pošalji Ctrl-Alt-Del</translation>
 <translation id="6654753848497929428">Dijeli</translation>
@@ -313,6 +318,7 @@ PC</translation>
 <translation id="809687642899217504">Moja računala</translation>
 <translation id="811307782653349804">Pristupite svojem računalu s bilo kojeg mjesta.</translation>
 <translation id="8116630183974937060">Došlo je pogreške mreže. Provjerite je li uređaj povezan s mrežom i pokušajte ponovo.</translation>
+<translation id="8123581458650016326">Dopusti udaljenim korisnicima da upravljaju ovim računalom</translation>
 <translation id="8178433417677596899">Dijeljenje zaslona između korisnika savršeno je za daljinsku tehničku podršku.</translation>
 <translation id="8187079423890319756">Autorska prava 2013. Autori Chromiuma. Sva prava pridržana.</translation>
 <translation id="8196755618196986400">Da bi smo vam mogli poslati daljnje informacije, u povratnim informacijama koje pošaljete bit će vaša e-adresa.</translation>

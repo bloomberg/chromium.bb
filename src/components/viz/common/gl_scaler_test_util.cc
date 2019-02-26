@@ -7,7 +7,11 @@
 #include <algorithm>
 #include <cmath>
 
+#include "base/files/file_path.h"
 #include "base/logging.h"
+#include "base/path_service.h"
+#include "cc/test/pixel_test_utils.h"
+#include "components/viz/test/paths.h"
 #include "third_party/skia/include/core/SkColor.h"
 #include "third_party/skia/include/core/SkImageInfo.h"
 #include "ui/gfx/geometry/rect.h"
@@ -254,6 +258,86 @@ SkBitmap GLScalerTestUtil::CreatePackedPlanarBitmap(const SkBitmap& source,
     }
   }
   return result;
+}
+
+// static
+void GLScalerTestUtil::UnpackPlanarBitmap(const SkBitmap& plane,
+                                          int channel,
+                                          SkBitmap* out) {
+  // The heuristic below auto-adapts to subsampled plane sizes. However, there
+  // are two cricital requirements: 1) |plane| cannot be empty; 2) |plane| must
+  // have a size that cleanly unpacks to |out|'s size.
+  CHECK_GT(plane.width(), 0);
+  CHECK_GT(plane.height(), 0);
+  const int col_sampling_ratio = out->width() / plane.width();
+  CHECK_EQ(out->width() % plane.width(), 0);
+  CHECK_GT(col_sampling_ratio, 0);
+  const int row_sampling_ratio = out->height() / plane.height();
+  CHECK_EQ(out->height() % plane.height(), 0);
+  CHECK_GT(row_sampling_ratio, 0);
+  const int ch_sampling_ratio = col_sampling_ratio / 4;
+  CHECK_GT(ch_sampling_ratio, 0);
+
+  // These determine which single byte in each of |out|'s uint32_t-valued pixels
+  // will be modified.
+  constexpr int kShiftForChannel[4] = {kRedShift, kGreenShift, kBlueShift,
+                                       kAlphaShift};
+  const int output_shift = kShiftForChannel[channel];
+  const uint32_t output_retain_mask = ~(UINT32_C(0xff) << output_shift);
+
+  // Iterate over the pixels of |out|, sampling each of the 4 components of each
+  // of |plane|'s pixels.
+  for (int y = 0; y < out->height(); ++y) {
+    const uint32_t* const src = plane.getAddr32(0, y / row_sampling_ratio);
+    uint32_t* const dst = out->getAddr32(0, y);
+    for (int x = 0; x < out->width(); ++x) {
+      // Zero-out the existing byte (e.g., if channel==1, then "RGBA" → "R0BA").
+      dst[x] &= output_retain_mask;
+
+      // From |src|, grab one of "XYZW". Then, copy it to the target byte in
+      // |dst| (e.g., if x_src_ch=3, then grab "W" from |src|, and |dst| changes
+      // from "R0BA" to "RWBA").
+      const int x_src = x / col_sampling_ratio;
+      const int x_src_ch = (x / ch_sampling_ratio) % 4;
+      dst[x] |= ((src[x_src] >> kShiftForChannel[x_src_ch]) & 0xff)
+                << output_shift;
+    }
+  }
+}
+
+// static
+SkBitmap GLScalerTestUtil::CreateVerticallyFlippedBitmap(
+    const SkBitmap& source) {
+  SkBitmap bitmap;
+  bitmap.allocPixels(source.info());
+  CHECK_EQ(bitmap.rowBytes(), source.rowBytes());
+  for (int y = 0; y < bitmap.height(); ++y) {
+    const int src_y = bitmap.height() - y - 1;
+    memcpy(bitmap.getAddr32(0, y), source.getAddr32(0, src_y),
+           bitmap.rowBytes());
+  }
+  return bitmap;
+}
+
+// static
+SkBitmap GLScalerTestUtil::LoadPNGTestImage(const std::string& basename) {
+  base::FilePath test_dir;
+  if (!base::PathService::Get(Paths::DIR_TEST_DATA, &test_dir)) {
+    LOG(ERROR) << "Unable to get Paths::DIR_TEST_DATA from base::PathService.";
+    return SkBitmap();
+  }
+  const auto source_file = test_dir.AppendASCII(basename);
+  SkBitmap as_n32;
+  if (!cc::ReadPNGFile(source_file, &as_n32)) {
+    return SkBitmap();
+  }
+  SkBitmap as_rgba =
+      AllocateRGBABitmap(gfx::Size(as_n32.width(), as_n32.height()));
+  if (!as_n32.readPixels(SkPixmap(as_rgba.info(), as_rgba.getAddr(0, 0),
+                                  as_rgba.rowBytes()))) {
+    return SkBitmap();
+  }
+  return as_rgba;
 }
 
 // The area and color of the bars in a 1920x1080 HD SMPTE color bars test image

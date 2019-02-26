@@ -28,15 +28,13 @@ namespace
 namespace gl
 {
 
-GLES1Renderer::GLES1Renderer() : mRendererProgramInitialized(false)
-{
-}
+GLES1Renderer::GLES1Renderer() : mRendererProgramInitialized(false) {}
 
 void GLES1Renderer::onDestroy(Context *context, State *state)
 {
     if (mRendererProgramInitialized)
     {
-        context->handleError(state->setProgram(context, 0));
+        (void)state->setProgram(context, 0);
 
         mShaderPrograms->deleteProgram(context, mProgramState.program);
         mShaderPrograms->release(context);
@@ -458,7 +456,6 @@ void GLES1Renderer::drawTexture(Context *context,
 
     setAttributesEnabled(context, glState, AttributesMask());
 
-    context->gatherParams<EntryPoint::DrawArrays>(PrimitiveMode::Triangles, 0, 6);
     context->drawArrays(PrimitiveMode::Triangles, 0, 6);
 
     setAttributesEnabled(context, glState, prevAttributesMask);
@@ -532,7 +529,7 @@ angle::Result GLES1Renderer::linkProgram(Context *context,
         programObject->bindAttributeLocation(index, name.c_str());
     }
 
-    ANGLE_TRY_HANDLE(context, programObject->link(context));
+    ANGLE_TRY(programObject->link(context));
     programObject->resolveLink(context);
 
     ANGLE_TRY(glState->onProgramExecutableChange(context, programObject));
@@ -803,7 +800,9 @@ void GLES1Renderer::setAttributesEnabled(Context *context, State *glState, Attri
     GLES1State &gles1 = glState->gles1();
 
     ClientVertexArrayType nonTexcoordArrays[] = {
-        ClientVertexArrayType::Vertex, ClientVertexArrayType::Normal, ClientVertexArrayType::Color,
+        ClientVertexArrayType::Vertex,
+        ClientVertexArrayType::Normal,
+        ClientVertexArrayType::Color,
         ClientVertexArrayType::PointSize,
     };
 

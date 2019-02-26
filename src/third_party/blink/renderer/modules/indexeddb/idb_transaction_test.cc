@@ -98,7 +98,7 @@ class IDBTransactionTest : public testing::Test {
     HashSet<String> transaction_scope = {"store"};
     transaction_ = IDBTransaction::CreateNonVersionChange(
         scope.GetScriptState(), kTransactionId, transaction_scope,
-        kWebIDBTransactionModeReadOnly, db_.Get());
+        mojom::IDBTransactionMode::ReadOnly, db_.Get());
 
     IDBKeyPath store_key_path("primaryKey");
     scoped_refptr<IDBObjectStoreMetadata> store_metadata = base::AdoptRef(
@@ -123,7 +123,7 @@ TEST_F(IDBTransactionTest, ContextDestroyedEarlyDeath) {
   BuildTransaction(scope, std::move(backend));
 
   Persistent<HeapHashSet<WeakMember<IDBTransaction>>> live_transactions =
-      new HeapHashSet<WeakMember<IDBTransaction>>;
+      MakeGarbageCollected<HeapHashSet<WeakMember<IDBTransaction>>>();
   ;
   live_transactions->insert(transaction_);
 
@@ -159,7 +159,7 @@ TEST_F(IDBTransactionTest, ContextDestroyedAfterDone) {
   BuildTransaction(scope, std::move(backend));
 
   Persistent<HeapHashSet<WeakMember<IDBTransaction>>> live_transactions =
-      new HeapHashSet<WeakMember<IDBTransaction>>;
+      MakeGarbageCollected<HeapHashSet<WeakMember<IDBTransaction>>>();
   ;
   live_transactions->insert(transaction_);
 
@@ -201,7 +201,7 @@ TEST_F(IDBTransactionTest, ContextDestroyedWithQueuedResult) {
   BuildTransaction(scope, std::move(backend));
 
   Persistent<HeapHashSet<WeakMember<IDBTransaction>>> live_transactions =
-      new HeapHashSet<WeakMember<IDBTransaction>>;
+      MakeGarbageCollected<HeapHashSet<WeakMember<IDBTransaction>>>();
   ;
   live_transactions->insert(transaction_);
 
@@ -240,7 +240,7 @@ TEST_F(IDBTransactionTest, ContextDestroyedWithTwoQueuedResults) {
   BuildTransaction(scope, std::move(backend));
 
   Persistent<HeapHashSet<WeakMember<IDBTransaction>>> live_transactions =
-      new HeapHashSet<WeakMember<IDBTransaction>>;
+      MakeGarbageCollected<HeapHashSet<WeakMember<IDBTransaction>>>();
   ;
   live_transactions->insert(transaction_);
 
@@ -286,7 +286,7 @@ TEST_F(IDBTransactionTest, DocumentShutdownWithQueuedAndBlockedResults) {
   BuildTransaction(scope, std::move(backend));
 
   Persistent<HeapHashSet<WeakMember<IDBTransaction>>> live_transactions =
-      new HeapHashSet<WeakMember<IDBTransaction>>;
+      MakeGarbageCollected<HeapHashSet<WeakMember<IDBTransaction>>>();
   ;
   live_transactions->insert(transaction_);
 
@@ -331,7 +331,7 @@ TEST_F(IDBTransactionTest, TransactionFinish) {
   BuildTransaction(scope, std::move(backend));
 
   Persistent<HeapHashSet<WeakMember<IDBTransaction>>> live_transactions =
-      new HeapHashSet<WeakMember<IDBTransaction>>;
+      MakeGarbageCollected<HeapHashSet<WeakMember<IDBTransaction>>>();
   ;
   live_transactions->insert(transaction_);
 

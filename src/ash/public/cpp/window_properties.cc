@@ -196,4 +196,5 @@ DEFINE_UI_CLASS_PROPERTY_KEY(mojom::WindowStateType,
                              kWindowStateTypeKey,
                              mojom::WindowStateType::DEFAULT);
 
+DEFINE_UI_CLASS_PROPERTY_KEY(bool, kWindowPipTypeKey, false);
 }  // namespace ash

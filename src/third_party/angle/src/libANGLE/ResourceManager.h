@@ -246,7 +246,7 @@ class PathManager : public ResourceManagerBase<HandleRangeAllocator>
   public:
     PathManager();
 
-    Error createPaths(rx::GLImplFactory *factory, GLsizei range, GLuint *numCreated);
+    angle::Result createPaths(Context *context, GLsizei range, GLuint *numCreated);
     void deletePaths(GLuint first, GLsizei range);
     Path *getPath(GLuint handle) const;
     bool hasPath(GLuint handle) const;
@@ -306,4 +306,4 @@ class ProgramPipelineManager
 
 }  // namespace gl
 
-#endif // LIBANGLE_RESOURCEMANAGER_H_
+#endif  // LIBANGLE_RESOURCEMANAGER_H_

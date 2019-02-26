@@ -57,6 +57,9 @@ class InspectorStyle final : public GarbageCollectedFinalized<InspectorStyle> {
   static InspectorStyle* Create(CSSStyleDeclaration*,
                                 CSSRuleSourceData*,
                                 InspectorStyleSheetBase* parent_style_sheet);
+  InspectorStyle(CSSStyleDeclaration*,
+                 CSSRuleSourceData*,
+                 InspectorStyleSheetBase* parent_style_sheet);
   ~InspectorStyle();
 
   CSSStyleDeclaration* CssStyle() { return style_.Get(); }
@@ -67,10 +70,6 @@ class InspectorStyle final : public GarbageCollectedFinalized<InspectorStyle> {
   void Trace(blink::Visitor*);
 
  private:
-  InspectorStyle(CSSStyleDeclaration*,
-                 CSSRuleSourceData*,
-                 InspectorStyleSheetBase* parent_style_sheet);
-
   void PopulateAllProperties(Vector<CSSPropertySourceData>& result);
   std::unique_ptr<protocol::CSS::CSSStyle> StyleWithProperties();
   String ShorthandValue(const String& shorthand_property);
@@ -133,6 +132,12 @@ class InspectorStyleSheet : public InspectorStyleSheetBase {
                                      InspectorStyleSheetBase::Listener*,
                                      InspectorResourceContainer*);
 
+  InspectorStyleSheet(InspectorNetworkAgent*,
+                      CSSStyleSheet* page_style_sheet,
+                      const String& origin,
+                      const String& document_url,
+                      InspectorStyleSheetBase::Listener*,
+                      InspectorResourceContainer*);
   ~InspectorStyleSheet() override;
   void Trace(blink::Visitor*) override;
 
@@ -192,12 +197,6 @@ class InspectorStyleSheet : public InspectorStyleSheetBase {
   InspectorStyle* GetInspectorStyle(CSSStyleDeclaration*) override;
 
  private:
-  InspectorStyleSheet(InspectorNetworkAgent*,
-                      CSSStyleSheet* page_style_sheet,
-                      const String& origin,
-                      const String& document_url,
-                      InspectorStyleSheetBase::Listener*,
-                      InspectorResourceContainer*);
   CSSRuleSourceData* RuleSourceDataAfterSourceRange(const SourceRange&);
   CSSRuleSourceData* FindRuleByHeaderRange(const SourceRange&);
   CSSRuleSourceData* FindRuleByBodyRange(const SourceRange&);
@@ -255,6 +254,7 @@ class InspectorStyleSheetForInlineStyle final : public InspectorStyleSheetBase {
  public:
   static InspectorStyleSheetForInlineStyle* Create(Element*, Listener*);
 
+  InspectorStyleSheetForInlineStyle(Element*, Listener*);
   void DidModifyElementAttribute();
   bool SetText(const String&, ExceptionState&) override;
   bool GetText(String* result) override;
@@ -270,7 +270,6 @@ class InspectorStyleSheetForInlineStyle final : public InspectorStyleSheetBase {
   bool IsInlineStyle() override { return true; }
 
  private:
-  InspectorStyleSheetForInlineStyle(Element*, Listener*);
   const String& ElementStyleText();
 
   Member<Element> element_;

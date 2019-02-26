@@ -11,6 +11,7 @@
 #include "base/metrics/histogram_macros.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "components/feed/core/feed_scheduler_host.h"
+#include "components/offline_pages/core/client_namespace_constants.h"
 #include "components/offline_pages/core/prefetch/prefetch_service.h"
 #include "url/gurl.h"
 
@@ -46,15 +47,33 @@ class CallbackAggregator : public base::RefCounted<CallbackAggregator> {
         on_each_result_(std::move(on_each_result)),
         start_time_(base::Time::Now()) {}
 
-  void OnGetPages(const std::vector<OfflinePageItem>& pages) {
+  // We curry |feed_url|, which is the URL the Feed requested with. This is used
+  // instead of the URLs present in the |pages| because offline pages has
+  // non-exact URL matching, and we must communicate with the Feed with exact
+  // matches.
+  void OnGetPages(std::string feed_url,
+                  const std::vector<OfflinePageItem>& pages) {
     if (!pages.empty()) {
-      OfflinePageItem newest =
+      OfflinePageItem best =
           *std::max_element(pages.begin(), pages.end(), [](auto lhs, auto rhs) {
-            return lhs.creation_time < rhs.creation_time;
+            // Prefer prefetched articles over any other. They are typically of
+            // higher quality.
+            bool leftIsPrefetch = lhs.client_id.name_space ==
+                                  offline_pages::kSuggestedArticlesNamespace;
+            bool rightIsPrefetch = rhs.client_id.name_space ==
+                                   offline_pages::kSuggestedArticlesNamespace;
+            if (leftIsPrefetch != rightIsPrefetch) {
+              // Only one is prefetch, if that is |rhs|, then they're in the
+              // correct order.
+              return rightIsPrefetch;
+            } else {
+              // Newer articles are also better, but not as important as being
+              // prefetched.
+              return lhs.creation_time < rhs.creation_time;
+            }
           });
-      const std::string& url = PreferOriginal(newest).spec();
-      urls_.push_back(url);
-      on_each_result_.Run(url, newest.offline_id);
+      urls_.push_back(feed_url);
+      on_each_result_.Run(feed_url, best.offline_id);
     }
   }
 
@@ -174,8 +193,10 @@ void FeedOfflineHost::GetOfflineStatus(
                               weak_factory_.GetWeakPtr()));
 
   for (std::string url : urls) {
+    GURL gurl(url);
     offline_page_model_->GetPagesByURL(
-        GURL(url), base::BindOnce(&CallbackAggregator::OnGetPages, aggregator));
+        gurl, base::BindOnce(&CallbackAggregator::OnGetPages, aggregator,
+                             std::move(url)));
   }
 }
 

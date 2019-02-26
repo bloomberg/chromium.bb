@@ -42,6 +42,7 @@
 #include "net/log/net_log_event_type.h"
 #include "net/log/net_log_source_type.h"
 #include "net/log/net_log_with_source.h"
+#include "net/nqe/network_quality_estimator.h"
 #include "net/quic/quic_http_utils.h"
 #include "net/socket/socket.h"
 #include "net/socket/ssl_client_socket.h"
@@ -714,6 +715,18 @@ size_t SpdyStreamRequest::EstimateMemoryUsage() const {
   return base::trace_event::EstimateItemMemoryUsage(url_);
 }
 
+void SpdyStreamRequest::SetPriority(RequestPriority priority) {
+  if (priority_ == priority)
+    return;
+
+  if (stream_)
+    stream_->SetPriority(priority);
+  if (session_)
+    session_->ChangeStreamRequestPriority(weak_ptr_factory_.GetWeakPtr(),
+                                          priority);
+  priority_ = priority;
+}
+
 void SpdyStreamRequest::OnRequestCompleteSuccess(
     const base::WeakPtr<SpdyStream>& stream) {
   DCHECK(session_);
@@ -823,6 +836,7 @@ SpdySession::SpdySession(
         greased_http2_frame,
     TimeFunc time_func,
     ServerPushDelegate* push_delegate,
+    NetworkQualityEstimator* network_quality_estimator,
     NetLog* net_log)
     : in_io_loop_(false),
       spdy_session_key_(spdy_session_key),
@@ -880,6 +894,7 @@ SpdySession::SpdySession(
           base::TimeDelta::FromSeconds(kDefaultConnectionAtRiskOfLossSeconds)),
       hung_interval_(base::TimeDelta::FromSeconds(kHungIntervalSeconds)),
       time_func_(time_func),
+      network_quality_estimator_(network_quality_estimator),
       weak_factory_(this) {
   net_log_.BeginEvent(
       NetLogEventType::HTTP2_SESSION,
@@ -1619,7 +1634,7 @@ int SpdySession::CreateStream(const SpdyStreamRequest& request,
   return OK;
 }
 
-void SpdySession::CancelStreamRequest(
+bool SpdySession::CancelStreamRequest(
     const base::WeakPtr<SpdyStreamRequest>& request) {
   DCHECK(request);
   RequestPriority priority = request->priority();
@@ -1650,6 +1665,20 @@ void SpdySession::CancelStreamRequest(
     // present, should not be pending completion.
     DCHECK(std::find_if(it, queue->end(), RequestEquals(request)) ==
            queue->end());
+    return true;
+  }
+  return false;
+}
+
+void SpdySession::ChangeStreamRequestPriority(
+    const base::WeakPtr<SpdyStreamRequest>& request,
+    RequestPriority priority) {
+  // |request->priority()| is updated by the caller after this returns.
+  // |request| needs to still have its old priority in order for
+  // CancelStreamRequest() to find it in the correct queue.
+  DCHECK_NE(priority, request->priority());
+  if (CancelStreamRequest(request)) {
+    pending_create_stream_queues_[priority].push_back(request);
   }
 }
 
@@ -2859,7 +2888,12 @@ void SpdySession::OnPing(spdy::SpdyPingId unique_id, bool is_ack) {
   ping_in_flight_ = false;
 
   // Record RTT in histogram when there are no more pings in flight.
-  RecordPingRTTHistogram(time_func_() - last_ping_sent_time_);
+  base::TimeDelta ping_duration = time_func_() - last_ping_sent_time_;
+  RecordPingRTTHistogram(ping_duration);
+  if (network_quality_estimator_) {
+    network_quality_estimator_->RecordSpdyPingLatency(host_port_pair(),
+                                                      ping_duration);
+  }
 }
 
 void SpdySession::OnRstStream(spdy::SpdyStreamId stream_id,

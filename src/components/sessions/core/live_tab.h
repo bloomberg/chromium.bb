@@ -33,7 +33,7 @@ class SESSIONS_EXPORT LiveTab {
   virtual std::unique_ptr<PlatformSpecificTabData> GetPlatformSpecificTabData();
 
   // Returns the user agent override, if any.
-  virtual const std::string& GetUserAgentOverride() const = 0;
+  virtual const std::string& GetUserAgentOverride() = 0;
 };
 
 }  // namespace sessions

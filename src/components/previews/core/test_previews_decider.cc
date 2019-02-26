@@ -11,32 +11,23 @@ TestPreviewsDecider::TestPreviewsDecider(bool allow_previews)
 
 TestPreviewsDecider::~TestPreviewsDecider() {}
 
-bool TestPreviewsDecider::ShouldAllowPreviewAtECT(
+bool TestPreviewsDecider::ShouldAllowPreviewAtNavigationStart(
     PreviewsUserData* previews_data,
     const GURL& url,
     bool is_reload,
-    PreviewsType type,
-    net::EffectiveConnectionType effective_connection_type_threshold,
-    const std::vector<std::string>& host_blacklist_from_finch,
-    bool is_server_preview) const {
-  return allow_previews_;
-}
-
-bool TestPreviewsDecider::ShouldAllowPreview(PreviewsUserData* previews_data,
-                                             const GURL& url,
-                                             bool is_reload,
-                                             PreviewsType type) const {
-  return allow_previews_;
-}
-
-bool TestPreviewsDecider::IsURLAllowedForPreview(
-    PreviewsUserData* previews_data,
-    const GURL& url,
     PreviewsType type) const {
   return allow_previews_;
 }
 
-void TestPreviewsDecider::LoadResourceHints(const GURL& url) {}
+bool TestPreviewsDecider::ShouldCommitPreview(PreviewsUserData* previews_data,
+                                              const GURL& url,
+                                              PreviewsType type) const {
+  return allow_previews_;
+}
+
+bool TestPreviewsDecider::LoadResourceHints(const GURL& url) {
+  return true;
+}
 
 void TestPreviewsDecider::LogHintCacheMatch(const GURL& url,
                                             bool is_committed) const {}

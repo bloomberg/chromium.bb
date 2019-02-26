@@ -6,8 +6,8 @@ on a regular basis, by the [Fuchsia SDK AutoRoll Bot](https://fuchsia-sdk-chromi
 Should you need to manually update the SDK dependency for some reason, then:
 
 1. Check the [Fuchsia-side
-   job](https://luci-scheduler.appspot.com/jobs/fuchsia/sdk-x86_64-linux) for a
-   recent green archive. On the "SUCCEEDED" link, copy the SHA-1 from the
+   job](https://luci-scheduler.appspot.com/jobs/fuchsia/sdk-garnet-x64-linux)
+   for a recent green archive. On the "SUCCEEDED" link, copy the SHA-1 from the
    `gsutil.upload` link of the `upload fuchsia-sdk` step.
 0. Put that into Chromium's src.git `build/fuchsia/sdk.sha1`.
 0. `gclient sync && ninja ...` and make sure things go OK locally.

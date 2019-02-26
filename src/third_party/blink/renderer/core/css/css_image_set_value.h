@@ -41,8 +41,10 @@ class StyleImage;
 class CSSImageSetValue : public CSSValueList {
  public:
   static CSSImageSetValue* Create(CSSParserMode parser_mode) {
-    return new CSSImageSetValue(parser_mode);
+    return MakeGarbageCollected<CSSImageSetValue>(parser_mode);
   }
+
+  explicit CSSImageSetValue(CSSParserMode);
   ~CSSImageSetValue();
 
   bool IsCachePending(float device_scale_factor) const;
@@ -72,8 +74,6 @@ class CSSImageSetValue : public CSSValueList {
   ImageWithScale BestImageForScaleFactor(float scale_factor);
 
  private:
-  explicit CSSImageSetValue(CSSParserMode);
-
   void FillImageSet();
   static inline bool CompareByScaleFactor(ImageWithScale first,
                                           ImageWithScale second) {

@@ -37,10 +37,10 @@
 
 namespace blink {
 
-using namespace HTMLNames;
+using namespace html_names;
 
 AtomicString StyleSheetCandidate::Title() const {
-  return IsElement() ? ToElement(GetNode()).FastGetAttribute(titleAttr)
+  return IsElement() ? ToElement(GetNode()).FastGetAttribute(kTitleAttr)
                      : g_null_atom;
 }
 

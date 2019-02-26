@@ -62,6 +62,7 @@
 #include "third_party/blink/renderer/platform/weborigin/known_ports.h"
 #include "third_party/blink/renderer/platform/weborigin/security_origin.h"
 #include "third_party/blink/renderer/platform/wtf/assertions.h"
+#include "third_party/blink/renderer/platform/wtf/functional.h"
 #include "third_party/blink/renderer/platform/wtf/hash_set.h"
 #include "third_party/blink/renderer/platform/wtf/math_extras.h"
 #include "third_party/blink/renderer/platform/wtf/std_lib_extras.h"
@@ -276,7 +277,7 @@ DOMWebSocket* DOMWebSocket::Create(ExecutionContext* context,
     return nullptr;
   }
 
-  DOMWebSocket* websocket = new DOMWebSocket(context);
+  DOMWebSocket* websocket = MakeGarbageCollected<DOMWebSocket>(context);
   websocket->PauseIfNeeded();
 
   if (protocols.IsNull()) {
@@ -318,6 +319,9 @@ void DOMWebSocket::Connect(const String& url,
     if (!upgrade_insecure_requests_set) {
       was_autoupgraded_to_wss_ = true;
       LogMixedAutoupgradeStatus(MixedContentAutoupgradeStatus::kStarted);
+      GetExecutionContext()->AddConsoleMessage(
+          MixedContentChecker::CreateConsoleMessageAboutWebSocketAutoupgrade(
+              GetExecutionContext()->Url(), url_));
     }
     UseCounter::Count(GetExecutionContext(),
                       WebFeature::kUpgradeInsecureRequestsUpgradedRequest);
@@ -367,7 +371,7 @@ void DOMWebSocket::Connect(const String& url,
     // resuming the queue. If we don't do this, the event is fired synchronously
     // with the constructor, meaning that it's impossible to listen for.
     event_queue_->Pause();
-    event_queue_->Dispatch(Event::Create(EventTypeNames::error));
+    event_queue_->Dispatch(Event::Create(event_type_names::kError));
     event_queue_->Unpause();
     return;
   }
@@ -664,7 +668,7 @@ void DOMWebSocket::setBinaryType(const String& binary_type) {
 }
 
 const AtomicString& DOMWebSocket::InterfaceName() const {
-  return EventTargetNames::DOMWebSocket;
+  return event_target_names::kWebSocket;
 }
 
 ExecutionContext* DOMWebSocket::GetExecutionContext() const {
@@ -709,7 +713,7 @@ void DOMWebSocket::DidConnect(const String& subprotocol,
   state_ = kOpen;
   subprotocol_ = subprotocol;
   extensions_ = extensions;
-  event_queue_->Dispatch(Event::Create(EventTypeNames::open));
+  event_queue_->Dispatch(Event::Create(event_type_names::kOpen));
 }
 
 void DOMWebSocket::DidReceiveTextMessage(const String& msg) {
@@ -769,7 +773,7 @@ void DOMWebSocket::DidError() {
     LogMixedAutoupgradeStatus(MixedContentAutoupgradeStatus::kFailed);
   ReflectBufferedAmountConsumption();
   state_ = kClosed;
-  event_queue_->Dispatch(Event::Create(EventTypeNames::error));
+  event_queue_->Dispatch(Event::Create(event_type_names::kError));
 }
 
 void DOMWebSocket::DidConsumeBufferedAmount(uint64_t consumed) {

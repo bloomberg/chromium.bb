@@ -10,6 +10,7 @@
 
 #include "base/callback.h"
 #include "base/compiler_specific.h"
+#include "base/containers/flat_map.h"
 #include "base/memory/weak_ptr.h"
 #include "base/optional.h"
 #include "base/time/time.h"
@@ -27,10 +28,6 @@
 #include "services/viz/public/interfaces/hit_test/hit_test_region_list.mojom.h"
 
 namespace viz {
-
-namespace test {
-class FrameSinkManagerTest;
-}
 
 class FrameSinkManagerImpl;
 class LatestLocalSurfaceIdLookupDelegate;
@@ -83,6 +80,11 @@ class VIZ_SERVICE_EXPORT CompositorFrameSinkSupport
 
   FrameSinkManagerImpl* frame_sink_manager() { return frame_sink_manager_; }
 
+  const base::flat_map<uint32_t, gfx::PresentationFeedback>&
+  presentation_feedbacks() {
+    return presentation_feedbacks_;
+  }
+
   // Viz hit-test setup is only called when |is_root_| is true (except on
   // android webview).
   void SetUpHitTest(
@@ -131,7 +133,9 @@ class VIZ_SERVICE_EXPORT CompositorFrameSinkSupport
                                const SharedBitmapId& id);
   void DidDeleteSharedBitmap(const SharedBitmapId& id);
 
-  void EvictLastActivatedSurface();
+  // Mark |id| and all surfaces with smaller ids for destruction. Note that |id|
+  // doesn't have to exist at the time of calling.
+  void EvictSurface(const LocalSurfaceId& id);
 
   // Attempts to submit a new CompositorFrame to |local_surface_id| and returns
   // whether the frame was accepted or the reason why it was rejected. If
@@ -170,8 +174,14 @@ class VIZ_SERVICE_EXPORT CompositorFrameSinkSupport
   // string.
   static const char* GetSubmitResultAsString(SubmitResult result);
 
+  const std::vector<
+      std::pair<LocalSurfaceId, std::unique_ptr<CopyOutputRequest>>>&
+  copy_output_requests_for_testing() const {
+    return copy_output_requests_;
+  }
+
  private:
-  friend class test::FrameSinkManagerTest;
+  friend class FrameSinkManagerTest;
 
   SubmitResult MaybeSubmitCompositorFrameInternal(
       const LocalSurfaceId& local_surface_id,
@@ -209,6 +219,9 @@ class VIZ_SERVICE_EXPORT CompositorFrameSinkSupport
   void HandleCallback();
 
   int64_t ComputeTraceId();
+
+  void MaybeEvictSurfaces();
+  void EvictLastActiveSurface();
 
   mojom::CompositorFrameSinkClient* const client_;
 
@@ -288,6 +301,9 @@ class VIZ_SERVICE_EXPORT CompositorFrameSinkSupport
   bool callback_received_begin_frame_ = true;
   bool callback_received_receive_ack_ = true;
   uint32_t trace_sequence_ = 0;
+
+  base::flat_map<uint32_t, gfx::PresentationFeedback> presentation_feedbacks_;
+  uint32_t last_evicted_parent_sequence_number_ = 0;
 
   base::WeakPtrFactory<CompositorFrameSinkSupport> weak_factory_;
 

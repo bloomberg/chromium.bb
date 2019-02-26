@@ -5,6 +5,7 @@
 #include "chrome/browser/ui/ash/network/tether_notification_presenter.h"
 
 #include "ash/public/cpp/network_icon_image_source.h"
+#include "ash/public/cpp/notification_utils.h"
 #include "ash/public/cpp/vector_icons/vector_icons.h"
 #include "base/bind.h"
 #include "base/memory/ptr_util.h"
@@ -125,9 +126,9 @@ TetherNotificationPresenter::~TetherNotificationPresenter() = default;
 void TetherNotificationPresenter::NotifyPotentialHotspotNearby(
     cryptauth::RemoteDeviceRef remote_device,
     int signal_strength) {
-  PA_LOG(INFO) << "Displaying \"potential hotspot nearby\" notification for "
-               << "device with name \"" << remote_device.name() << "\". "
-               << "Notification ID = " << kPotentialHotspotNotificationId;
+  PA_LOG(VERBOSE) << "Displaying \"potential hotspot nearby\" notification for "
+                  << "device with name \"" << remote_device.name() << "\". "
+                  << "Notification ID = " << kPotentialHotspotNotificationId;
 
   hotspot_nearby_device_id_ =
       std::make_unique<std::string>(remote_device.GetDeviceId());
@@ -148,9 +149,9 @@ void TetherNotificationPresenter::NotifyPotentialHotspotNearby(
 }
 
 void TetherNotificationPresenter::NotifyMultiplePotentialHotspotsNearby() {
-  PA_LOG(INFO) << "Displaying \"potential hotspot nearby\" notification for "
-               << "multiple devices. Notification ID = "
-               << kPotentialHotspotNotificationId;
+  PA_LOG(VERBOSE) << "Displaying \"potential hotspot nearby\" notification for "
+                  << "multiple devices. Notification ID = "
+                  << kPotentialHotspotNotificationId;
 
   hotspot_nearby_device_id_.reset();
 
@@ -185,8 +186,8 @@ void TetherNotificationPresenter::RemovePotentialHotspotNotification() {
 void TetherNotificationPresenter::NotifySetupRequired(
     const std::string& device_name,
     int signal_strength) {
-  PA_LOG(INFO) << "Displaying \"setup required\" notification. Notification "
-               << "ID = " << kSetupRequiredNotificationId;
+  PA_LOG(VERBOSE) << "Displaying \"setup required\" notification. Notification "
+                  << "ID = " << kSetupRequiredNotificationId;
 
   ShowNotification(CreateNotification(
       kSetupRequiredNotificationId,
@@ -204,19 +205,18 @@ void TetherNotificationPresenter::RemoveSetupRequiredNotification() {
 
 void TetherNotificationPresenter::NotifyConnectionToHostFailed() {
   const std::string id = kActiveHostNotificationId;
-  PA_LOG(INFO) << "Displaying \"connection attempt failed\" notification. "
-               << "Notification ID = " << id;
+  PA_LOG(VERBOSE) << "Displaying \"connection attempt failed\" notification. "
+                  << "Notification ID = " << id;
 
-  ShowNotification(message_center::Notification::CreateSystemNotification(
+  ShowNotification(ash::CreateSystemNotification(
       message_center::NotificationType::NOTIFICATION_TYPE_SIMPLE, id,
       l10n_util::GetStringUTF16(
           IDS_TETHER_NOTIFICATION_CONNECTION_FAILED_TITLE),
       l10n_util::GetStringUTF16(
           IDS_TETHER_NOTIFICATION_CONNECTION_FAILED_MESSAGE),
       base::string16() /* display_source */, GURL() /* origin_url */,
-      message_center::NotifierId(
-          message_center::NotifierId::NotifierType::SYSTEM_COMPONENT,
-          kNotifierTether),
+      message_center::NotifierId(message_center::NotifierType::SYSTEM_COMPONENT,
+                                 kNotifierTether),
       {} /* rich_notification_data */,
       new message_center::HandleNotificationClickDelegate(base::BindRepeating(
           &TetherNotificationPresenter::OnNotificationClicked,
@@ -240,8 +240,8 @@ void TetherNotificationPresenter::OnNotificationClicked(
         "InstantTethering.NotificationInteractionType",
         TetherNotificationPresenter::NOTIFICATION_BUTTON_TAPPED_HOST_NEARBY,
         TetherNotificationPresenter::NOTIFICATION_INTERACTION_TYPE_MAX);
-    PA_LOG(INFO) << "\"Potential hotspot nearby\" notification button was "
-                 << "clicked.";
+    PA_LOG(VERBOSE) << "\"Potential hotspot nearby\" notification button was "
+                    << "clicked.";
     network_connect_->ConnectToNetworkId(*hotspot_nearby_device_id_);
     RemoveNotificationIfVisible(kPotentialHotspotNotificationId);
     return;
@@ -296,9 +296,8 @@ TetherNotificationPresenter::CreateNotification(
       message_center::NotificationType::NOTIFICATION_TYPE_SIMPLE, id, title,
       message, gfx::Image() /* image */, base::string16() /* display_source */,
       GURL() /* origin_url */,
-      message_center::NotifierId(
-          message_center::NotifierId::NotifierType::SYSTEM_COMPONENT,
-          kNotifierTether),
+      message_center::NotifierId(message_center::NotifierType::SYSTEM_COMPONENT,
+                                 kNotifierTether),
       rich_notification_data,
       new TetherNotificationDelegate(
           base::BindRepeating(
@@ -326,8 +325,9 @@ void TetherNotificationPresenter::ShowNotification(
 void TetherNotificationPresenter::OpenSettingsAndRemoveNotification(
     const std::string& settings_subpage,
     const std::string& notification_id) {
-  PA_LOG(INFO) << "Notification with ID " << notification_id << " was clicked. "
-               << "Opening settings subpage: " << settings_subpage;
+  PA_LOG(VERBOSE) << "Notification with ID " << notification_id
+                  << " was clicked. "
+                  << "Opening settings subpage: " << settings_subpage;
 
   settings_ui_delegate_->ShowSettingsSubPageForProfile(profile_,
                                                        settings_subpage);

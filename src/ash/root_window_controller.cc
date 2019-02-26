@@ -16,11 +16,11 @@
 #include "ash/high_contrast/high_contrast_controller.h"
 #include "ash/host/ash_window_tree_host.h"
 #include "ash/keyboard/arc/arc_virtual_keyboard_container_layout_manager.h"
+#include "ash/keyboard/ash_keyboard_controller.h"
 #include "ash/keyboard/virtual_keyboard_container_layout_manager.h"
 #include "ash/lock_screen_action/lock_screen_action_background_controller.h"
 #include "ash/login_status.h"
 #include "ash/public/cpp/ash_constants.h"
-#include "ash/public/cpp/ash_features.h"
 #include "ash/public/cpp/ash_switches.h"
 #include "ash/public/cpp/shelf_types.h"
 #include "ash/public/cpp/shell_window_ids.h"
@@ -36,7 +36,6 @@
 #include "ash/shell_state.h"
 #include "ash/system/status_area_layout_manager.h"
 #include "ash/system/status_area_widget.h"
-#include "ash/system/tray/system_tray.h"
 #include "ash/system/tray/tray_background_view.h"
 #include "ash/system/unified/unified_system_tray.h"
 #include "ash/touch/touch_observer_hud.h"
@@ -73,7 +72,6 @@
 #include "ui/aura/window_observer.h"
 #include "ui/aura/window_tracker.h"
 #include "ui/base/models/menu_model.h"
-#include "ui/base/ui_base_features.h"
 #include "ui/compositor/layer.h"
 #include "ui/display/types/display_constants.h"
 #include "ui/events/event_utils.h"
@@ -439,19 +437,8 @@ StatusAreaWidget* RootWindowController::GetStatusAreaWidget() {
   return shelf_widget ? shelf_widget->status_area_widget() : nullptr;
 }
 
-SystemTray* RootWindowController::GetSystemTray() {
-  // We assume in throughout the code that this will not return NULL. If code
-  // triggers this for valid reasons, it should test status_area_widget first.
-  CHECK(shelf_->shelf_widget()->status_area_widget());
-  return shelf_->shelf_widget()->status_area_widget()->system_tray();
-}
-
 bool RootWindowController::IsSystemTrayVisible() {
-  TrayBackgroundView* tray = nullptr;
-  if (features::IsSystemTrayUnifiedEnabled())
-    tray = GetStatusAreaWidget()->unified_system_tray();
-  else
-    tray = GetSystemTray();
+  TrayBackgroundView* tray = GetStatusAreaWidget()->unified_system_tray();
   return tray && tray->GetWidget()->IsVisible() && tray->visible();
 }
 
@@ -554,7 +541,11 @@ void RootWindowController::CloseChildWindows() {
 
   // Deactivate keyboard container before closing child windows and shutting
   // down associated layout managers.
-  DeactivateKeyboard(keyboard::KeyboardController::Get());
+  auto* ash_keyboard_controller = Shell::Get()->ash_keyboard_controller();
+  if (ash_keyboard_controller->keyboard_controller()->GetRootWindow() ==
+      GetRootWindow()) {
+    ash_keyboard_controller->DeactivateKeyboard();
+  }
 
   shelf_->ShutdownShelfWidget();
 
@@ -617,40 +608,6 @@ aura::Window* RootWindowController::GetWindowForFullscreenMode() {
   return wm::GetWindowForFullscreenMode(GetRootWindow());
 }
 
-void RootWindowController::ActivateKeyboard(
-    keyboard::KeyboardController* keyboard_controller) {
-  DCHECK(keyboard_controller);
-
-  // There is a potential edge case where IsKeyboardEnabled() returns true but
-  // EnableKeyboard() has not been called. In that case we still don't want to
-  // activate the keyboard.
-  if (!keyboard::IsKeyboardEnabled() || !keyboard_controller->IsEnabled())
-    return;
-
-  // If the keyboard is already activated, ensure that it is activated in this
-  // root window.
-  if (keyboard_controller->GetRootWindow() == GetRootWindow())
-    return;
-
-  aura::Window* vk_container =
-      GetContainer(kShellWindowId_VirtualKeyboardContainer);
-  DCHECK(vk_container);
-  keyboard_controller->ActivateKeyboardInContainer(vk_container);
-
-  keyboard_controller->LoadKeyboardWindowInBackground();
-}
-
-void RootWindowController::DeactivateKeyboard(
-    keyboard::KeyboardController* keyboard_controller) {
-  DCHECK(keyboard_controller);
-  if (!keyboard_controller->IsEnabled())
-    return;
-
-  // If the VK is under the root window of this controller.
-  if (keyboard_controller->GetRootWindow() == GetRootWindow())
-    keyboard_controller->DeactivateKeyboard();
-}
-
 void RootWindowController::SetTouchAccessibilityAnchorPoint(
     const gfx::Point& anchor_point) {
   if (touch_exploration_manager_)
@@ -674,20 +631,17 @@ void RootWindowController::ShowContextMenu(const gfx::Point& location_in_screen,
   UMA_HISTOGRAM_ENUMERATION("Apps.ContextMenuShowSource.Desktop", source_type,
                             ui::MENU_SOURCE_TYPE_LAST);
 
-  int run_types = views::MenuRunner::CONTEXT_MENU;
-  views::MenuAnchorPosition anchor_position = views::MENU_ANCHOR_TOPLEFT;
-  if (::features::IsTouchableAppContextMenuEnabled()) {
-    run_types |= views::MenuRunner::USE_TOUCHABLE_LAYOUT |
-                 views::MenuRunner::FIXED_ANCHOR;
-    anchor_position = views::MENU_ANCHOR_BUBBLE_TOUCHABLE_ABOVE;
-  }
   menu_runner_ = std::make_unique<views::MenuRunner>(
-      menu_model_.get(), run_types,
+      menu_model_.get(),
+      views::MenuRunner::CONTEXT_MENU |
+          views::MenuRunner::USE_TOUCHABLE_LAYOUT |
+          views::MenuRunner::FIXED_ANCHOR,
       base::Bind(&RootWindowController::OnMenuClosed, base::Unretained(this),
                  base::TimeTicks::Now()));
   menu_runner_->RunMenuAt(wallpaper_widget_controller()->GetWidget(), nullptr,
                           gfx::Rect(location_in_screen, gfx::Size()),
-                          anchor_position, source_type);
+                          views::MENU_ANCHOR_BUBBLE_TOUCHABLE_ABOVE,
+                          source_type);
 }
 
 void RootWindowController::HideContextMenu() {

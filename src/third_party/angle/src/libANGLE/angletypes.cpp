@@ -202,6 +202,11 @@ void SamplerState::setSRGBDecode(GLenum sRGBDecode)
     mSRGBDecode = sRGBDecode;
 }
 
+void SamplerState::setBorderColor(const ColorGeneric &color)
+{
+    mBorderColor = color;
+}
+
 void SamplerState::updateWrapTCompareMode()
 {
     uint8_t wrap    = static_cast<uint8_t>(FromGLenum<WrapMode>(mWrapT));
@@ -211,8 +216,7 @@ void SamplerState::updateWrapTCompareMode()
 
 ImageUnit::ImageUnit()
     : texture(), level(0), layered(false), layer(0), access(GL_READ_ONLY), format(GL_R32UI)
-{
-}
+{}
 
 ImageUnit::ImageUnit(const ImageUnit &other) = default;
 

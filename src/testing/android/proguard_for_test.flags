@@ -28,6 +28,11 @@
 # test annotation information
 -keepattributes *Annotation*
 
+# These are Java classes which aren't part of the Android sdk. They are
+# referenced by some test-only libraries.
+-dontwarn java.lang.ClassValue
+-dontwarn java.lang.instrument.ClassFileTransformer
+
 # We have some "library class WebView depends on program class SslCertificate"
 # warnings, and they don't affect us.
 -dontwarn android.webkit.WebView*

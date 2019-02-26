@@ -4,7 +4,6 @@
 
 package org.chromium.chrome.browser.test;
 
-import android.app.Instrumentation;
 import android.support.test.InstrumentationRegistry;
 
 import org.junit.runner.Description;
@@ -19,9 +18,9 @@ import org.chromium.content_public.browser.test.NativeLibraryTestRule;
  * initializing the AccountManagerFacade.
  */
 public class ChromeBrowserTestRule extends NativeLibraryTestRule {
-    private void setUp(Instrumentation instrumentation) {
+    private void setUp() {
         ApplicationData.clearAppData(InstrumentationRegistry.getTargetContext());
-        SigninTestUtil.setUpAuthForTest(instrumentation);
+        SigninTestUtil.setUpAuthForTest();
         loadNativeLibraryAndInitBrowserProcess();
     }
 
@@ -35,7 +34,7 @@ public class ChromeBrowserTestRule extends NativeLibraryTestRule {
                  * UI thread).  After loading the library, this will initialize the browser process
                  * if necessary.
                  */
-                setUp(InstrumentationRegistry.getInstrumentation());
+                setUp();
                 try {
                     base.evaluate();
                 } finally {

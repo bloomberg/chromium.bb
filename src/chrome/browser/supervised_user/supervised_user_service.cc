@@ -163,10 +163,6 @@ void SupervisedUserService::Init() {
       prefs::kSupervisedUserId,
       base::Bind(&SupervisedUserService::OnSupervisedUserIdChanged,
           base::Unretained(this)));
-  pref_change_registrar_.Add(
-      prefs::kForceSessionSync,
-      base::Bind(&SupervisedUserService::OnForceSessionSyncChanged,
-                 base::Unretained(this)));
 
   browser_sync::ProfileSyncService* sync_service =
       ProfileSyncServiceFactory::GetForProfile(profile_);
@@ -328,8 +324,9 @@ base::string16 SupervisedUserService::GetExtensionsLockedMessage() const {
 void SupervisedUserService::InitSync(const std::string& refresh_token) {
   ProfileOAuth2TokenService* token_service =
       ProfileOAuth2TokenServiceFactory::GetForProfile(profile_);
-  token_service->UpdateCredentials(supervised_users::kSupervisedUserPseudoEmail,
-                                   refresh_token);
+  token_service->UpdateCredentials(
+      supervised_users::kSupervisedUserPseudoEmail, refresh_token,
+      signin_metrics::SourceForRefreshTokenOperation::kSupervisedUser_InitSync);
 }
 #endif  // !defined(OS_ANDROID)
 
@@ -353,13 +350,8 @@ void SupervisedUserService::SetSafeSearchURLReporter(
   url_reporter_ = std::move(reporter);
 }
 
-bool SupervisedUserService::IncludesSyncSessionsType() const {
-  return includes_sync_sessions_type_;
-}
-
 SupervisedUserService::SupervisedUserService(Profile* profile)
-    : includes_sync_sessions_type_(true),
-      profile_(profile),
+    : profile_(profile),
       active_(false),
       delegate_(NULL),
       is_profile_active_(false),
@@ -719,13 +711,6 @@ void SupervisedUserService::UpdateManualURLs() {
     observer.OnURLFilterChanged();
 }
 
-void SupervisedUserService::OnForceSessionSyncChanged() {
-  includes_sync_sessions_type_ =
-      profile_->GetPrefs()->GetBoolean(prefs::kForceSessionSync);
-  ProfileSyncServiceFactory::GetForProfile(profile_)
-      ->ReconfigureDatatypeManager();
-}
-
 void SupervisedUserService::Shutdown() {
   if (!did_init_)
     return;
@@ -999,13 +984,11 @@ void SupervisedUserService::SetExtensionsActive() {
 }
 #endif  // BUILDFLAG(ENABLE_EXTENSIONS)
 
-syncer::ModelTypeSet SupervisedUserService::GetPreferredDataTypes() const {
+syncer::ModelTypeSet SupervisedUserService::GetForcedDataTypes() const {
   if (!ProfileIsSupervised())
     return syncer::ModelTypeSet();
 
   syncer::ModelTypeSet result;
-  if (IncludesSyncSessionsType())
-    result.Put(syncer::SESSIONS);
   result.Put(syncer::EXTENSIONS);
   result.Put(syncer::EXTENSION_SETTINGS);
   result.Put(syncer::APPS);

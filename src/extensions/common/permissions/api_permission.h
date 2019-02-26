@@ -96,7 +96,7 @@ class APIPermission {
     kDownloadsInternal = 52,
     kDownloadsOpen = 53,
     kDownloadsShelf = 54,
-    kEasyUnlockPrivate = 55,
+    kDeleted_EasyUnlockPrivate = 55,
     kEchoPrivate = 56,
     kEmbeddedExtensionOptions = 57,
     kEnterprisePlatformKeys = 58,
@@ -132,7 +132,7 @@ class APIPermission {
     kIdltest = 88,
     kIdle = 89,
     kImeWindowEnabled = 90,
-    kInlineInstallPrivate = 91,
+    kDeleted_InlineInstallPrivate = 91,
     kInput = 92,
     kInputMethodPrivate = 93,
     kDeleted_InterceptAllKeys = 94,
@@ -208,7 +208,7 @@ class APIPermission {
     kWebstoreWidgetPrivate = 164,
     kWebView = 165,
     kWindowShape = 166,
-    kScreenlockPrivate = 167,
+    kDeleted_ScreenlockPrivate = 167,
     kSystemCpu = 168,
     kSystemMemory = 169,
     kSystemNetwork = 170,
@@ -325,16 +325,19 @@ class APIPermission {
   virtual std::unique_ptr<base::Value> ToValue() const = 0;
 
   // Clones this.
-  virtual APIPermission* Clone() const = 0;
+  virtual std::unique_ptr<APIPermission> Clone() const = 0;
 
   // Returns a new API permission which equals this - |rhs|.
-  virtual APIPermission* Diff(const APIPermission* rhs) const = 0;
+  virtual std::unique_ptr<APIPermission> Diff(
+      const APIPermission* rhs) const = 0;
 
   // Returns a new API permission which equals the union of this and |rhs|.
-  virtual APIPermission* Union(const APIPermission* rhs) const = 0;
+  virtual std::unique_ptr<APIPermission> Union(
+      const APIPermission* rhs) const = 0;
 
   // Returns a new API permission which equals the intersect of this and |rhs|.
-  virtual APIPermission* Intersect(const APIPermission* rhs) const = 0;
+  virtual std::unique_ptr<APIPermission> Intersect(
+      const APIPermission* rhs) const = 0;
 
   // IPC functions
   // Writes this into the given IPC message |m|.
@@ -377,7 +380,8 @@ class APIPermissionInfo {
     kFlagSupportsContentCapabilities = 1 << 5,
   };
 
-  typedef APIPermission* (*APIPermissionConstructor)(const APIPermissionInfo*);
+  using APIPermissionConstructor =
+      std::unique_ptr<APIPermission> (*)(const APIPermissionInfo*);
 
   typedef std::set<APIPermission::ID> IDSet;
 
@@ -395,7 +399,7 @@ class APIPermissionInfo {
   ~APIPermissionInfo();
 
   // Creates a APIPermission instance.
-  APIPermission* CreateAPIPermission() const;
+  std::unique_ptr<APIPermission> CreateAPIPermission() const;
 
   int flags() const { return flags_; }
 

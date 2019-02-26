@@ -13,9 +13,11 @@
 #include "base/memory/weak_ptr.h"
 #include "base/optional.h"
 #include "base/scoped_observer.h"
+#include "base/sequence_checker.h"
 #include "base/sequenced_task_runner.h"
+#include "base/threading/thread_checker.h"
 #include "base/time/time.h"
-#include "chrome/browser/chromeos/power/auto_screen_brightness/als_reader_impl.h"
+#include "chrome/browser/chromeos/power/auto_screen_brightness/als_reader.h"
 #include "chrome/browser/chromeos/power/auto_screen_brightness/brightness_monitor.h"
 #include "chrome/browser/chromeos/power/auto_screen_brightness/modeller.h"
 #include "chrome/browser/chromeos/power/auto_screen_brightness/trainer.h"
@@ -32,20 +34,13 @@ namespace auto_screen_brightness {
 // It monitors user-requested brightness changes, ambient light values and
 // trains personal brightness curves when user remains idle for a period of
 // time.
+// An object of this class must be used on the same thread that created this
+// object.
 class ModellerImpl : public Modeller,
                      public AlsReader::Observer,
                      public BrightnessMonitor::Observer,
                      public ui::UserActivityObserver {
  public:
-  // Once user remains idle for |kTrainingDelay|, we start training the model.
-  static constexpr base::TimeDelta kTrainingDelay =
-      base::TimeDelta::FromSeconds(60);
-
-  // If number of recorded training data has reached |kMaxTrainingDataPoints| we
-  // start training immediately, without waiting for user to become idle for
-  // |kTrainingDelay|.
-  static constexpr int kMaxTrainingDataPoints = 100;
-
   // TODO(jiameng): we currently use past 10 seconds of ambient values to
   // calculate average. May revise.
   static constexpr int kAmbientLightHorizonSeconds = 10;
@@ -54,13 +49,13 @@ class ModellerImpl : public Modeller,
 
   // Size of |data_cache_|.
   static constexpr int kNumberAmbientValuesToTrack =
-      kAmbientLightHorizonSeconds * AlsReaderImpl::kNumberAlsPollPerSeconds;
+      kAmbientLightHorizonSeconds * AlsReader::kAlsPollFrequency;
 
   static constexpr char kModelDir[] = "autobrightness";
   static constexpr char kCurveFileName[] = "curve";
 
   // ModellerImpl has weak dependencies on all parameters except |trainer|.
-  ModellerImpl(Profile* profile,
+  ModellerImpl(const Profile* profile,
                AlsReader* als_reader,
                BrightnessMonitor* brightness_monitor,
                ui::UserActivityDetector* user_activity_detector,
@@ -86,12 +81,12 @@ class ModellerImpl : public Modeller,
 
   // ModellerImpl has weak dependencies on all parameters except |trainer|.
   static std::unique_ptr<ModellerImpl> CreateForTesting(
-      Profile* profile,
+      const Profile* profile,
       AlsReader* als_reader,
       BrightnessMonitor* brightness_monitor,
       ui::UserActivityDetector* user_activity_detector,
       std::unique_ptr<Trainer> trainer,
-      scoped_refptr<base::SequencedTaskRunner> task_runner,
+      scoped_refptr<base::SequencedTaskRunner> blocking_task_runner,
       const base::TickClock* tick_clock);
 
   // Current average ambient light.
@@ -99,14 +94,24 @@ class ModellerImpl : public Modeller,
 
   // Current number of training data points stored, which will be used for next
   // training.
-  int NumberTrainingDataPointsForTesting() const;
+  size_t NumberTrainingDataPointsForTesting() const;
 
-  // Calls GetCurvePathFromProfile directly.
-  base::FilePath GetCurvePathForTesting(Profile* profile) const;
+  // Returns |global_curve_| for unit tests.
+  MonotoneCubicSpline GetGlobalCurveForTesting() const;
+
+  // Returns |max_training_data_points_| for unit tests.
+  size_t GetMaxTrainingDataPointsForTesting() const;
+
+  base::TimeDelta GetTrainingDelayForTesting() const;
+
+  // Returns the path that will be used to store curves. It also creates
+  // intermediate directories if they do not exist. Returns an empty path on
+  // failures.
+  static base::FilePath GetCurvePathFromProfile(const Profile* profile);
 
  private:
   // ModellerImpl has weak dependencies on all parameters except |trainer|.
-  ModellerImpl(Profile* profile,
+  ModellerImpl(const Profile* profile,
                AlsReader* als_reader,
                BrightnessMonitor* brightness_monitor,
                ui::UserActivityDetector* user_activity_detector,
@@ -114,11 +119,6 @@ class ModellerImpl : public Modeller,
                scoped_refptr<base::SequencedTaskRunner> task_runner,
                const base::TickClock* tick_clock,
                bool is_testing = false);
-
-  // Returns the path that will be used to store curves. It also creates
-  // intermediate directories if they do not exist. Returns an empty path on
-  // failures.
-  base::FilePath GetCurvePathFromProfile(Profile* profile) const;
 
   // Updates |model_status_| by checking |als_init_status_| and
   // |brightness_monitor_status_| and optionally loads a curve.
@@ -138,14 +138,32 @@ class ModellerImpl : public Modeller,
   // |model_status_| is not |kInitializing|.
   void OnInitializationComplete();
 
-  // Called when there is no saved curve from the disk.
-  void InitWithDefaultCurve();
+  // Called when the modeller is initialized. It notifies its observers about
+  // constructed global curve and personal curve (loaded from the disk). Both
+  // curves will be nullopt if model is disabled, and personal curve will be
+  // nullopt if no curve is loaded from the disk.
+  void NotifyObserverInitStatus(Modeller::Observer& observer);
 
-  // Called after reading from disk is complete. |content| may be empty, in that
-  // case we'll construct a default curve.
-  void OnCurveLoadedFromDisk(const std::string& content);
+  // Called after we've attempted to construct a |curve| from data saved on
+  // disk. |curve| will be assigned to |current_curve_| if |curve| is not
+  // nullopt. Otherwise, |current_curve_| will have the same value as
+  // |global_curve_|.
+  void OnCurveLoadedFromDisk(const base::Optional<MonotoneCubicSpline>& curve);
 
-  // Starts |model_timer_| to start training after certain inactivity period.
+  void OnCurveSavedToDisk(bool is_successful);
+
+  // Called after we've set trainer's initial curves.
+  void OnSetInitialCurves(
+      const base::Optional<MonotoneCubicSpline>& loaded_curve,
+      bool is_personal_curve_valid);
+
+  // Either starts training immediately or delays it for |training_delay_|.
+  // Training starts immediately if |training_delay_| is 0 or number of training
+  // points reached |max_training_data_points_|.
+  // This function is called after a user brightness change signal is received
+  // (that will be used as an example), and when a user activity is detected.
+  // It's also called after initial curves are set.
+  // Nothing will happen if model is not enabled.
   void ScheduleTrainerStart();
 
   // Starts model training and runs it in non UI thread. Also clears
@@ -153,11 +171,22 @@ class ModellerImpl : public Modeller,
   void StartTraining();
 
   // Called after training is complete with a new curve.
-  void OnTrainingFinished(const BrightnessCurve& curve);
+  void OnTrainingFinished(const MonotoneCubicSpline& curve);
 
   // If |is_testing_| is false, we check curve saving/loading and training jobs
   // are running on non-UI thread.
   const bool is_testing_ = false;
+
+  // If number of recorded training data has reached |max_training_data_points_|
+  // we start training immediately, without waiting for user to become idle for
+  // |training_delay_|. This can be overridden by experiment flag
+  // "max_training_data_points".
+  size_t max_training_data_points_ = 100;
+
+  // Once user remains idle for |training_delay_|, we start training the model.
+  // If this value is 0, we will not need to wait for user to remain inactive.
+  // This can be overridden by experiment flag "training_delay_in_seconds".
+  base::TimeDelta training_delay_ = base::TimeDelta::FromSeconds(60);
 
   ScopedObserver<AlsReader, AlsReader::Observer> als_reader_observer_;
 
@@ -167,7 +196,9 @@ class ModellerImpl : public Modeller,
   ScopedObserver<ui::UserActivityDetector, ui::UserActivityObserver>
       user_activity_observer_;
 
-  scoped_refptr<base::SequencedTaskRunner> model_task_runner_;
+  // Background task runner for IO work (loading a curve from disk and writing a
+  // curve to disk) and training jobs.
+  scoped_refptr<base::SequencedTaskRunner> blocking_task_runner_;
   std::unique_ptr<Trainer, base::OnTaskRunnerDeleter> trainer_;
 
   // This will be replaced by a mock tick clock during tests.
@@ -177,12 +208,21 @@ class ModellerImpl : public Modeller,
 
   base::Optional<AlsReader::AlsInitStatus> als_init_status_;
   base::Optional<bool> brightness_monitor_success_;
-  Status model_status_ = Status::kInitializing;
+
+  // Whether this modeller has initialized successfully, including connecting
+  // to AlsReader, BrightnessMonitor and loading a Trainer.
+  // Initially has no value. Guaranteed to have a value after the completion of
+  // |OnCurveLoadedFromDisk|.
+  base::Optional<bool> is_modeller_enabled_;
 
   base::FilePath curve_path_;
 
-  // Latest trained curve.
-  BrightnessCurve curve_;
+  // True if a personal curve was successfully loaded from disk and passed to
+  // Trainer and Trainer reported it was valid.
+  bool has_initial_personal_curve_ = false;
+
+  // Global curve constructed from predefined params.
+  const MonotoneCubicSpline global_curve_;
 
   // Recent |kNumberAmbientValuesToTrack| ambient values.
   base::RingBuffer<AmbientLightSample, kNumberAmbientValuesToTrack>
@@ -191,6 +231,8 @@ class ModellerImpl : public Modeller,
   std::vector<TrainingDataPoint> data_cache_;
 
   base::ObserverList<Modeller::Observer> observers_;
+
+  SEQUENCE_CHECKER(sequence_checker_);
 
   base::WeakPtrFactory<ModellerImpl> weak_ptr_factory_;
 

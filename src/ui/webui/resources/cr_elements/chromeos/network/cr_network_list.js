@@ -78,10 +78,10 @@ Polymer({
   /** @private */
   updateListItems_: function() {
     this.saveScroll(this.$.networkList);
-    var beforeNetworks = this.customItems.filter(function(item) {
+    const beforeNetworks = this.customItems.filter(function(item) {
       return item.showBeforeNetworksList == true;
     });
-    var afterNetworks = this.customItems.filter(function(item) {
+    const afterNetworks = this.customItems.filter(function(item) {
       return item.showBeforeNetworksList == false;
     });
     this.listItems_ = beforeNetworks.concat(this.networks, afterNetworks);
@@ -97,7 +97,7 @@ Polymer({
   /** @private */
   focusFirstItem_: function() {
     // Select the first cr-network-list-item if there is one.
-    var item = this.$$('cr-network-list-item');
+    const item = this.$$('cr-network-list-item');
     if (!item)
       return;
     item.focus();

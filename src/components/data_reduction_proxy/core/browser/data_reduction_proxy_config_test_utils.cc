@@ -10,9 +10,11 @@
 
 #include "base/single_thread_task_runner.h"
 #include "base/time/tick_clock.h"
+#include "components/data_reduction_proxy/core/browser/data_reduction_proxy_configurator.h"
 #include "components/data_reduction_proxy/core/browser/data_reduction_proxy_mutable_config_values.h"
 #include "components/data_reduction_proxy/core/common/data_reduction_proxy_params_test_utils.h"
 #include "components/data_reduction_proxy/core/common/data_reduction_proxy_type_info.h"
+#include "net/proxy_resolution/proxy_bypass_rules.h"
 #include "net/url_request/test_url_fetcher_factory.h"
 #include "net/url_request/url_request_test_util.h"
 #include "services/network/test/test_network_connection_tracker.h"
@@ -24,29 +26,25 @@ namespace data_reduction_proxy {
 
 TestDataReductionProxyConfig::TestDataReductionProxyConfig(
     scoped_refptr<base::SingleThreadTaskRunner> io_task_runner,
-    net::NetLog* net_log,
-    DataReductionProxyConfigurator* configurator,
-    DataReductionProxyEventCreator* event_creator)
+    scoped_refptr<base::SingleThreadTaskRunner> ui_task_runner,
+    DataReductionProxyConfigurator* configurator)
     : TestDataReductionProxyConfig(
           std::make_unique<TestDataReductionProxyParams>(),
           io_task_runner,
-          net_log,
-          configurator,
-          event_creator) {}
+          ui_task_runner,
+          configurator) {}
 
 TestDataReductionProxyConfig::TestDataReductionProxyConfig(
     std::unique_ptr<DataReductionProxyConfigValues> config_values,
     scoped_refptr<base::SingleThreadTaskRunner> io_task_runner,
-    net::NetLog* net_log,
-    DataReductionProxyConfigurator* configurator,
-    DataReductionProxyEventCreator* event_creator)
+    scoped_refptr<base::SingleThreadTaskRunner> ui_task_runner,
+    DataReductionProxyConfigurator* configurator)
     : DataReductionProxyConfig(
           io_task_runner,
-          net_log,
+          ui_task_runner,
           network::TestNetworkConnectionTracker::GetInstance(),
           std::move(config_values),
-          configurator,
-          event_creator),
+          configurator),
       tick_clock_(nullptr),
       is_captive_portal_(false),
       add_default_proxy_bypass_rules_(true) {}
@@ -85,8 +83,12 @@ bool TestDataReductionProxyConfig::GetIsCaptivePortal() const {
   return is_captive_portal_;
 }
 
-bool TestDataReductionProxyConfig::ShouldAddDefaultProxyBypassRules() const {
-  return add_default_proxy_bypass_rules_;
+void TestDataReductionProxyConfig::AddDefaultProxyBypassRules() {
+  if (!add_default_proxy_bypass_rules_) {
+    // Set bypass rules which allow proxying localhost.
+    configurator_->SetBypassRules(
+        net::ProxyBypassRules::GetRulesToSubtractImplicit());
+  }
 }
 
 void TestDataReductionProxyConfig::SetShouldAddDefaultProxyBypassRules(
@@ -144,14 +146,12 @@ void TestDataReductionProxyConfig::SetWarmupURLFetchAttemptCounts(
 MockDataReductionProxyConfig::MockDataReductionProxyConfig(
     std::unique_ptr<DataReductionProxyConfigValues> config_values,
     scoped_refptr<base::SingleThreadTaskRunner> io_task_runner,
-    net::NetLog* net_log,
-    DataReductionProxyConfigurator* configurator,
-    DataReductionProxyEventCreator* event_creator)
+    scoped_refptr<base::SingleThreadTaskRunner> ui_task_runner,
+    DataReductionProxyConfigurator* configurator)
     : TestDataReductionProxyConfig(std::move(config_values),
                                    io_task_runner,
-                                   net_log,
-                                   configurator,
-                                   event_creator) {}
+                                   ui_task_runner,
+                                   configurator) {}
 
 MockDataReductionProxyConfig::~MockDataReductionProxyConfig() {
 }

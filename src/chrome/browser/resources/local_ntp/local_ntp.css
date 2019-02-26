@@ -553,6 +553,18 @@ html[dir=rtl] #mv-notice-x {
   transition: bottom 400ms;
 }
 
+/* Required to allow click events through the wrapping div of the toast
+ * notification container. */
+.md-icons #mv-notice-container,
+#error-notice-container {
+  pointer-events: none;
+}
+.md-icons #mv-notice-container > div,
+#error-notice-container > div {
+  pointer-events: all;
+}
+
+
 .md-icons #mv-notice-container.float-up {
   bottom: 0;
 }
@@ -573,10 +585,10 @@ html[dir=rtl] #mv-notice-x {
   background-color: white;
   border: 1px solid rgb(218, 220, 224);
   /* Necessary for a "pill" shape. Using 50% creates an oval. */
-  border-radius: 500px;
+  border-radius: 16px;
   font-family: 'Roboto', arial, sans-serif;
   font-weight: normal;
-  height: 32px;
+  height: fit-content;
   margin: 0 auto;
   padding: 0;
   width: fit-content;
@@ -608,7 +620,7 @@ html[dir=rtl] #mv-notice-x {
 
 .md-icons #mv-notice-links span {
   /* Necessary for a "pill" shape. Using 50% creates an oval. */
-  border-radius: 500px;
+  border-radius: 16px;
   color: rgb(26, 115, 232);
   margin-inline-start: 0;
   padding: 0 16px;
@@ -719,36 +731,6 @@ html[dir=rtl] #attribution,
   opacity: 0;
 }
 
-.ripple-container {
-  height: 100%;
-  left: 0;
-  pointer-events: none;
-  position: absolute;
-  top: 0;
-  width: 100%;
-  z-index: 100;
-}
-
-.ripple-effect-mask {
-  height: 0;
-  left: 0;
-  overflow: hidden;
-  position: absolute;
-  top: 0;
-  width: 0;
-}
-
-.ripple-effect {
-  background-color: rgba(26, 115, 232, 0.1);
-  border-radius: 50%;
-  height: 1px;
-  pointer-events: none;
-  transition: width, height, margin, background-color 400ms 250ms;
-  transition-duration: 400ms;
-  transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
-  width: 1px;
-}
-
 /* The box containing the slider */
 .switch {
   background-color: #fff;
@@ -828,12 +810,13 @@ input:checked + .toggle::before {
   background-color: white;
   border: 1px solid rgb(218, 220, 224);
   /* Necessary for a "pill" shape. Using 50% creates an oval. */
-  border-radius: 500px;
+  border-radius: 16px;
   color: rgb(217, 48, 37);
+  display: flex;
   font-family: 'Roboto', arial, sans-serif;
   font-size: 12px;
   font-weight: normal;
-  height: 32px;
+  height: fit-content;
   margin: 0 auto;
   opacity: 1;
   padding: 0;
@@ -845,46 +828,41 @@ input:checked + .toggle::before {
   display: none;
 }
 
+#error-notice span {
+  align-self: center;
+  display: inline-block;
+  line-height: 32px;
+}
+
 #error-notice-icon {
   background: url(../../../../ui/webui/resources/images/error.svg) no-repeat center;
   background-size: 18px 18px;
   height: 32px;
-  margin-left: 8px;
-  position: absolute;
+  padding: 0 8px;
   width: 18px;
-}
-
-.rtl #error-notice-icon {
-  margin-right: 8px;
 }
 
 #error-notice-msg {
   cursor: default;
-  padding: 0 16px 0 36px;
+  padding-right: 16px;
 }
 
-.rtl #error-notice-msg {
-  padding: 0 36px 0 16px;
+html[dir=rtl] #error-notice-msg {
+  padding-left: 16px;
+  padding-right: 0;
 }
 
 #error-notice.has-link #error-notice-msg {
   padding-right: 0;
 }
 
-.rtl #error-notice.has-link #error-notice-msg {
-  padding: 0 36px 0 0;
-}
-
-#error-notice span:not(#error-notice-icon-container) {
-  display: inline-block;
-  height: auto;
-  line-height: 32px;
-  vertical-align: unset;
+html[dir=rtl] #error-notice.has-link #error-notice-msg {
+  padding: 0;
 }
 
 #error-notice-link {
   /* Necessary for a "pill" shape. Using 50% creates an oval. */
-  border-radius: 500px;
+  border-radius: 16px;
   color: rgb(26, 115, 232);
   cursor: pointer;
   display: none;
@@ -907,4 +885,71 @@ input:checked + .toggle::before {
   background-color: rgba(26,115,232, 0.1);
   text-decoration: none;
   transition: background-color 200ms;
+}
+
+#promo {
+  bottom: 16px;
+  left: 0;
+  pointer-events: none;
+  position: fixed;
+  right: 0;
+  text-align: center;
+  transition: bottom 400ms;
+}
+
+#promo.float-down {
+  bottom: -50px;
+}
+
+#promo > div {
+  background-color: #FFF;
+  border: 1px solid rgb(218, 220, 224);
+  border-radius: 16px;
+  box-sizing: border-box;
+  color: rgb(95, 99, 104);
+  display: inline-block;
+  font-family: 'Roboto', arial, sans-serif;
+  font-size: 12px;
+  line-height: 32px;
+  margin-bottom: 0;
+  max-width: 505px;
+  overflow: hidden;
+  padding: 0 16px;
+  pointer-events: all;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/**
+ * Hide the promo if the window is too small:
+ * max-width = promo.max-width (505px) + 2 * edit gear icon (16px + 28px + 8px)
+ * max-height = ntp-contents.max-height (628px) + promo div height (16px + 22px)
+ */
+@media only screen and (max-width: 609px),
+            screen and (max-height: 666px)  {
+  #promo > div {
+    display: none;
+  }
+}
+
+#promo > div > a {
+  color: rgb(51, 103, 214) !important;
+  text-decoration: none;
+}
+
+#promo > div > a:visited {
+  color: rgb(51, 103, 214) !important;
+}
+
+#promo > div > img {
+  border-radius: 50%;
+  height: 24px;
+  margin: 0 8px 0 -12px;
+  object-fit: cover;
+  vertical-align: middle;
+  width: 24px;
+}
+
+#promo.notice-hide {
+  display: none;
 }

@@ -14,8 +14,9 @@
         android:id="@+id/loading"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:minHeight="@dimen/tile_view_width"
-        android:minWidth="@dimen/tile_view_width" />
+        android:minHeight="@dimen/explore_sites_loading_spinny_size"
+        android:minWidth="@dimen/explore_sites_loading_spinny_size"
+        android:paddingBottom="@dimen/explore_sites_loading_spinny_padding"/>
     <TextView
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"

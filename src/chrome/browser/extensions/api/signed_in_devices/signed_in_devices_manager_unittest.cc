@@ -6,16 +6,16 @@
 
 #include <memory>
 
-#include "chrome/browser/signin/signin_manager_factory.h"
+#include "chrome/browser/signin/identity_test_environment_profile_adaptor.h"
 #include "chrome/browser/sync/profile_sync_service_factory.h"
 #include "chrome/common/extensions/api/signed_in_devices.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/test/base/testing_profile.h"
 #include "components/prefs/pref_service.h"
 #include "components/prefs/testing_pref_store.h"
-#include "components/signin/core/browser/signin_manager.h"
 #include "content/public/test/test_browser_thread_bundle.h"
 #include "extensions/browser/event_router.h"
+#include "services/identity/public/cpp/identity_test_environment.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -24,17 +24,19 @@ namespace extensions {
 // Adds a listener and removes it.
 TEST(SignedInDevicesManager, UpdateListener) {
   content::TestBrowserThreadBundle thread_bundle;
-  std::unique_ptr<TestingProfile> profile(new TestingProfile());
-  SigninManagerFactory::GetForProfile(profile.get())->
-      SetAuthenticatedAccountInfo("gaia_id", "foo");
+
+  std::unique_ptr<TestingProfile> profile =
+      IdentityTestEnvironmentProfileAdaptor::
+          CreateProfileForIdentityTestEnvironment();
+  IdentityTestEnvironmentProfileAdaptor adaptor(profile.get());
+  adaptor.identity_test_env()->SetPrimaryAccount("foo@test.com");
+
   ProfileSyncServiceFactory::GetInstance()->SetTestingFactory(
       profile.get(), BrowserContextKeyedServiceFactory::TestingFactory());
   SignedInDevicesManager manager(profile.get());
 
   EventListenerInfo info(api::signed_in_devices::OnDeviceInfoChange::kEventName,
-                         "extension1",
-                         GURL(),
-                         profile.get());
+                         "extension1", GURL(), profile.get());
 
   // Add a listener.
   manager.OnListenerAdded(info);

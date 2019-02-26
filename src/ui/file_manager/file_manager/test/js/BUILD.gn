@@ -25,7 +25,7 @@ js_library("strings") {
 js_library("test_util") {
   deps = [
     ":chrome_file_manager_private_test_impl",
-    "../../background/js:test_util_base",
+    "../../background/js:runtime_loaded_test_util",
     "../../foreground/js:constants",
     "//ui/webui/resources/js:webui_resource_test",
   ]

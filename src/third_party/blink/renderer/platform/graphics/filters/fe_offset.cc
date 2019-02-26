@@ -35,7 +35,7 @@ FEOffset::FEOffset(Filter* filter, float dx, float dy)
     : FilterEffect(filter), dx_(dx), dy_(dy) {}
 
 FEOffset* FEOffset::Create(Filter* filter, float dx, float dy) {
-  return new FEOffset(filter, dx, dy);
+  return MakeGarbageCollected<FEOffset>(filter, dx, dy);
 }
 
 float FEOffset::Dx() const {
@@ -67,7 +67,8 @@ sk_sp<PaintFilter> FEOffset::CreateImageFilter() {
   return sk_make_sp<OffsetPaintFilter>(
       SkFloatToScalar(filter->ApplyHorizontalScale(dx_)),
       SkFloatToScalar(filter->ApplyVerticalScale(dy_)),
-      PaintFilterBuilder::Build(InputEffect(0), OperatingInterpolationSpace()),
+      paint_filter_builder::Build(InputEffect(0),
+                                  OperatingInterpolationSpace()),
       &crop_rect);
 }
 

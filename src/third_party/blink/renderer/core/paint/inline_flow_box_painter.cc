@@ -14,6 +14,7 @@
 #include "third_party/blink/renderer/core/paint/paint_info.h"
 #include "third_party/blink/renderer/platform/graphics/graphics_context_state_saver.h"
 #include "third_party/blink/renderer/platform/graphics/paint/drawing_recorder.h"
+#include "third_party/blink/renderer/platform/graphics/paint/hit_test_display_item.h"
 
 namespace blink {
 
@@ -56,7 +57,7 @@ void InlineFlowBoxPainter::Paint(const PaintInfo& paint_info,
   inline_flow_box_.FlipForWritingMode(overflow_rect);
   overflow_rect.MoveBy(paint_offset);
 
-  if (!paint_info.GetCullRect().IntersectsCullRect(overflow_rect))
+  if (!paint_info.GetCullRect().Intersects(overflow_rect))
     return;
 
   if (paint_info.phase == PaintPhase::kMask) {
@@ -239,12 +240,10 @@ void InlineFlowBoxPainter::PaintMask(const PaintInfo& paint_info,
     return;
 
   if (DrawingRecorder::UseCachedDrawingIfPossible(
-          paint_info.context, inline_flow_box_,
-          DisplayItem::PaintPhaseToDrawingType(paint_info.phase)))
+          paint_info.context, inline_flow_box_, paint_info.phase))
     return;
-  DrawingRecorder recorder(
-      paint_info.context, inline_flow_box_,
-      DisplayItem::PaintPhaseToDrawingType(paint_info.phase));
+  DrawingRecorder recorder(paint_info.context, inline_flow_box_,
+                           paint_info.phase);
 
   LayoutRect paint_rect = AdjustedPaintRect(paint_offset);
 
@@ -337,11 +336,15 @@ void InlineFlowBoxPainter::RecordHitTestData(const PaintInfo& paint_info,
   LayoutObject* layout_object =
       LineLayoutAPIShim::LayoutObjectFrom(inline_flow_box_.GetLineLayoutItem());
 
+  // If an object is not visible, it does not participate in hit testing.
+  if (layout_object->StyleRef().Visibility() != EVisibility::kVisible)
+    return;
+
   auto touch_action = layout_object->EffectiveWhitelistedTouchAction();
   if (touch_action == TouchAction::kTouchActionAuto)
     return;
 
-  HitTestData::RecordHitTestRect(
+  HitTestDisplayItem::Record(
       paint_info.context, inline_flow_box_,
       HitTestRect(AdjustedPaintRect(paint_offset), touch_action));
 }

@@ -1,7 +1,7 @@
 // Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
-//
+
 // A toy client, which connects to a specified port and sends QUIC
 // request to that endpoint.
 
@@ -62,6 +62,7 @@ class QuicClient : public QuicSpdyClientBase {
   ~QuicClient() override;
 
   std::unique_ptr<QuicSession> CreateQuicClientSession(
+      const ParsedQuicVersionVector& supported_versions,
       QuicConnection* connection) override;
 
   // Exposed for the quic client test.

@@ -105,7 +105,7 @@ class ImageBitmapTest : public testing::Test {
 };
 
 TEST_F(ImageBitmapTest, ImageResourceConsistency) {
-  const ImageBitmapOptions default_options;
+  const ImageBitmapOptions* default_options = ImageBitmapOptions::Create();
   HTMLImageElement* image_element =
       HTMLImageElement::Create(*Document::CreateForTest());
   sk_sp<SkColorSpace> src_rgb_color_space = SkColorSpace::MakeSRGB();
@@ -189,7 +189,7 @@ TEST_F(ImageBitmapTest, ImageBitmapSourceChanged) {
           StaticBitmapImage::Create(raster_image).get());
   image->SetImageForTest(original_image_resource);
 
-  const ImageBitmapOptions default_options;
+  const ImageBitmapOptions* default_options = ImageBitmapOptions::Create();
   base::Optional<IntRect> crop_rect =
       IntRect(0, 0, image_->width(), image_->height());
   ImageBitmap* image_bitmap = ImageBitmap::Create(
@@ -247,7 +247,7 @@ TEST_F(ImageBitmapTest, ImageBitmapSourceChanged) {
 static void TestImageBitmapTextureBacked(
     scoped_refptr<StaticBitmapImage> bitmap,
     IntRect& rect,
-    ImageBitmapOptions options,
+    ImageBitmapOptions* options,
     bool is_texture_backed) {
   ImageBitmap* image_bitmap = ImageBitmap::Create(bitmap, rect, options);
   EXPECT_TRUE(image_bitmap);
@@ -274,7 +274,7 @@ TEST_F(ImageBitmapTest, AvoidGPUReadback) {
   EXPECT_TRUE(image_bitmap->BitmapImage()->IsTextureBacked());
 
   IntRect image_bitmap_rect(25, 25, 50, 50);
-  ImageBitmapOptions image_bitmap_options;
+  ImageBitmapOptions* image_bitmap_options = ImageBitmapOptions::Create();
   TestImageBitmapTextureBacked(bitmap, image_bitmap_rect, image_bitmap_options,
                                true);
 
@@ -292,14 +292,15 @@ TEST_F(ImageBitmapTest, AvoidGPUReadback) {
         for (auto resize_width : resize_widths) {
           for (auto resize_height : resize_heights) {
             for (auto resize_quality : resize_qualities) {
-              ImageBitmapOptions image_bitmap_options;
-              image_bitmap_options.setImageOrientation(image_orientation);
-              image_bitmap_options.setPremultiplyAlpha(premultiply_alpha);
-              image_bitmap_options.setColorSpaceConversion(
+              ImageBitmapOptions* image_bitmap_options =
+                  ImageBitmapOptions::Create();
+              image_bitmap_options->setImageOrientation(image_orientation);
+              image_bitmap_options->setPremultiplyAlpha(premultiply_alpha);
+              image_bitmap_options->setColorSpaceConversion(
                   color_space_conversion);
-              image_bitmap_options.setResizeWidth(resize_width);
-              image_bitmap_options.setResizeHeight(resize_height);
-              image_bitmap_options.setResizeQuality(resize_quality);
+              image_bitmap_options->setResizeWidth(resize_width);
+              image_bitmap_options->setResizeHeight(resize_height);
+              image_bitmap_options->setResizeQuality(resize_quality);
               // Setting premuliply_alpha to none will cause a read back.
               // Otherwise, we expect to avoid GPU readback when creaing an
               // ImageBitmap from a texture-backed source.
@@ -341,8 +342,8 @@ TEST_F(ImageBitmapTest, ImageBitmapColorSpaceConversionHTMLImageElement) {
   for (int conversion_iterator = kColorSpaceConversion_Default;
        conversion_iterator <= kColorSpaceConversion_Last;
        conversion_iterator++) {
-    ImageBitmapOptions options;
-    options.setColorSpaceConversion(
+    ImageBitmapOptions* options = ImageBitmapOptions::Create();
+    options->setColorSpaceConversion(
         ColorCorrectionTestUtils::ColorSpaceConversionToString(
             static_cast<ColorSpaceConversion>(conversion_iterator)));
     ImageBitmap* image_bitmap = ImageBitmap::Create(
@@ -400,8 +401,8 @@ TEST_F(ImageBitmapTest, ImageBitmapColorSpaceConversionImageBitmap) {
 
   base::Optional<IntRect> crop_rect =
       IntRect(0, 0, source_image->width(), source_image->height());
-  ImageBitmapOptions options;
-  options.setColorSpaceConversion(
+  ImageBitmapOptions* options = ImageBitmapOptions::Create();
+  options->setColorSpaceConversion(
       ColorCorrectionTestUtils::ColorSpaceConversionToString(
           kColorSpaceConversion_Preserve));
   ImageBitmap* source_image_bitmap = ImageBitmap::Create(
@@ -411,7 +412,7 @@ TEST_F(ImageBitmapTest, ImageBitmapColorSpaceConversionImageBitmap) {
   for (int conversion_iterator = kColorSpaceConversion_Default;
        conversion_iterator <= kColorSpaceConversion_Last;
        conversion_iterator++) {
-    options.setColorSpaceConversion(
+    options->setColorSpaceConversion(
         ColorCorrectionTestUtils::ColorSpaceConversionToString(
             static_cast<ColorSpaceConversion>(conversion_iterator)));
     ImageBitmap* image_bitmap =
@@ -473,8 +474,8 @@ TEST_F(ImageBitmapTest, ImageBitmapColorSpaceConversionStaticBitmapImage) {
   for (int conversion_iterator = kColorSpaceConversion_Default;
        conversion_iterator <= kColorSpaceConversion_Last;
        conversion_iterator++) {
-    ImageBitmapOptions options;
-    options.setColorSpaceConversion(
+    ImageBitmapOptions* options = ImageBitmapOptions::Create();
+    options->setColorSpaceConversion(
         ColorCorrectionTestUtils::ColorSpaceConversionToString(
             static_cast<ColorSpaceConversion>(conversion_iterator)));
     ImageBitmap* image_bitmap = ImageBitmap::Create(
@@ -520,9 +521,9 @@ TEST_F(ImageBitmapTest, ImageBitmapColorSpaceConversionStaticBitmapImage) {
 TEST_F(ImageBitmapTest, ImageBitmapColorSpaceConversionImageData) {
   unsigned char data_buffer[4] = {32, 96, 160, 128};
   DOMUint8ClampedArray* data = DOMUint8ClampedArray::Create(data_buffer, 4);
-  ImageDataColorSettings color_settings;
+  ImageDataColorSettings* color_settings = ImageDataColorSettings::Create();
   ImageData* image_data = ImageData::Create(
-      IntSize(1, 1), NotShared<DOMUint8ClampedArray>(data), &color_settings);
+      IntSize(1, 1), NotShared<DOMUint8ClampedArray>(data), color_settings);
 
   SkImageInfo image_info =
       SkImageInfo::Make(1, 1, kRGBA_8888_SkColorType, kUnpremul_SkAlphaType,
@@ -538,8 +539,8 @@ TEST_F(ImageBitmapTest, ImageBitmapColorSpaceConversionImageData) {
   for (int conversion_iterator = kColorSpaceConversion_Default;
        conversion_iterator <= kColorSpaceConversion_Last;
        conversion_iterator++) {
-    ImageBitmapOptions options;
-    options.setColorSpaceConversion(
+    ImageBitmapOptions* options = ImageBitmapOptions::Create();
+    options->setColorSpaceConversion(
         ColorCorrectionTestUtils::ColorSpaceConversionToString(
             static_cast<ColorSpaceConversion>(conversion_iterator)));
     ImageBitmap* image_bitmap =
@@ -589,7 +590,7 @@ TEST_F(ImageBitmapTest, ImageBitmapPixelFormat) {
       StaticBitmapImage::Create(sk_image);
 
   // source: uint8, bitmap pixel format: default
-  ImageBitmapOptions options;
+  ImageBitmapOptions* options = ImageBitmapOptions::Create();
   ImageBitmap* image_bitmap =
       ImageBitmap::Create(bitmap_image, bitmap_image->Rect(), options);
 
@@ -599,7 +600,7 @@ TEST_F(ImageBitmapTest, ImageBitmapPixelFormat) {
   ASSERT_EQ(kN32_SkColorType, sk_image_internal->colorType());
 
   // source: uint8, bitmap pixel format: uint8
-  options.setImagePixelFormat("uint8");
+  options->setImagePixelFormat("uint8");
   ImageBitmap* image_bitmap_8888 =
       ImageBitmap::Create(bitmap_image, bitmap_image->Rect(), options);
   ASSERT_TRUE(image_bitmap_8888);
@@ -623,7 +624,7 @@ TEST_F(ImageBitmapTest, ImageBitmapPixelFormat) {
       StaticBitmapImage::Create(sk_image_f16);
 
   // source: f16, bitmap pixel format: default
-  ImageBitmapOptions options_f16;
+  ImageBitmapOptions* options_f16 = ImageBitmapOptions::Create();
   ImageBitmap* image_bitmap_f16 = ImageBitmap::Create(
       bitmap_image_f16, bitmap_image_f16->Rect(), options_f16);
   ASSERT_TRUE(image_bitmap_f16);
@@ -632,7 +633,7 @@ TEST_F(ImageBitmapTest, ImageBitmapPixelFormat) {
   ASSERT_EQ(kRGBA_F16_SkColorType, sk_image_internal_f16->colorType());
 
   // source: f16, bitmap pixel format: uint8
-  options_f16.setImagePixelFormat("uint8");
+  options_f16->setImagePixelFormat("uint8");
   ImageBitmap* image_bitmap_f16_8888 = ImageBitmap::Create(
       bitmap_image_f16, bitmap_image_f16->Rect(), options_f16);
   ASSERT_TRUE(image_bitmap_f16_8888);
@@ -660,8 +661,8 @@ TEST_F(ImageBitmapTest,
   ImageData* image_data =
       ImageData::CreateForTest(IntSize(v8::TypedArray::kMaxLength / 16, 1));
   DCHECK(image_data);
-  ImageBitmapOptions options;
-  options.setColorSpaceConversion(
+  ImageBitmapOptions* options = ImageBitmapOptions::Create();
+  options->setColorSpaceConversion(
       ColorCorrectionTestUtils::ColorSpaceConversionToString(
           kColorSpaceConversion_Default));
   ImageBitmap* image_bitmap = ImageBitmap::Create(

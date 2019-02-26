@@ -30,16 +30,19 @@
 <translation id="1871244248791675517">Klávesa Ins</translation>
 <translation id="1884435127456172652"><ph name="NUMBER" /> %</translation>
 <translation id="1901303067676059328">&amp;Vybrat vše</translation>
+<translation id="1938451708255335766">Chcete-li upravit kompaktnost zobrazení okna, restartujte aplikaci.</translation>
 <translation id="2141853158323869627">{DAYS,plural, =1{1 d}few{# d}many{# d}other{# d}}</translation>
 <translation id="2148716181193084225">Dnes</translation>
 <translation id="2168039046890040389">Klávesa PageUp</translation>
 <translation id="2190355936436201913">(prázdné)</translation>
+<translation id="2192232475740621500">Použít nízkou hustotu</translation>
 <translation id="219905428774326614">Spouštěč, všechny aplikace</translation>
 <translation id="2267918077332197517">Blokovat všechna oznámení z tohoto webu</translation>
 <translation id="2289052229480071835">Klepněte na cíle klepnutí na obrazovce.</translation>
 <translation id="2295140143284145483">Průzkum</translation>
 <translation id="2297836609126180313"><ph name="QUANTITY" /> TB/s</translation>
 <translation id="24452542372838207">Rozbalit oznámení</translation>
+<translation id="2445449901874883781">Použít vysokou hustotu</translation>
 <translation id="2482878487686419369">Oznámení</translation>
 <translation id="2497284189126895209">Všechny soubory</translation>
 <translation id="2515586267016047495">Alt</translation>
@@ -60,6 +63,7 @@
 <translation id="3234408098842461169">Klávesa šipka dolů</translation>
 <translation id="3291688615589870984">{DAYS,plural, =1{1 den}few{# dny}many{# dne}other{# dnů}}</translation>
 <translation id="335581015389089642">Řeč</translation>
+<translation id="3479552764303398839">Teď ne</translation>
 <translation id="3600566671520689681">{DAYS,plural, =1{Zbývá 1 den}few{Zbývají # dny}many{Zbývá # dne}other{Zbývá # dnů}}</translation>
 <translation id="3618849550573277856">Vyhledat „<ph name="LOOKUP_STRING" />“</translation>
 <translation id="364720409959344976">Vyberte složku pro nahrávání</translation>
@@ -99,6 +103,7 @@
 <translation id="5613020302032141669">Klávesa šipka vlevo</translation>
 <translation id="5754277640426581776">{MINUTES,plural, =1{1 min}few{# min}many{# min}other{# min}}</translation>
 <translation id="5768079895599174203">{DAYS,plural, =1{1 den a  }few{# dny a  }many{# dne a  }other{# dnů a  }}</translation>
+<translation id="5895138241574237353">Restartovat</translation>
 <translation id="5906667377645263094">{SECONDS,plural, =1{Zbývá 1 sekunda}few{Zbývají # sekundy}many{Zbývá # sekundy}other{Zbývá # sekund}}</translation>
 <translation id="5941711191222866238">Minimalizovat</translation>
 <translation id="5943826764092288734">{HOURS,plural, =1{1 hodina}few{# hodiny}many{# hodiny}other{# hodin}}</translation>

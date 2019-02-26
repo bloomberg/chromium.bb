@@ -7,59 +7,150 @@
 #include "base/bind.h"
 #include "base/bind_helpers.h"
 #include "base/macros.h"
+#include "base/metrics/histogram_macros.h"
+#include "base/numerics/safe_conversions.h"
 #include "base/task/post_task.h"
 #include "base/task/task_traits.h"
+#include "build/build_config.h"
 #include "chrome/browser/browser_process.h"
 #include "components/data_use_measurement/core/data_use_ascriber.h"
 #include "components/data_use_measurement/core/url_request_classifier.h"
-#include "components/metrics/metrics_service.h"
+#include "components/metrics/data_use_tracker.h"
 #include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
+#include "content/public/browser/network_service_instance.h"
+#include "services/network/public/cpp/features.h"
+
+using content::BrowserThread;
 
 namespace data_use_measurement {
 
 namespace {
-void UpdateMetricsUsagePrefs(int64_t total_bytes,
-                             bool is_cellular,
-                             bool is_metrics_service_usage) {
-  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
-  // Some unit tests use IOThread but do not initialize MetricsService. In that
-  // case it's fine to skip the update.
-  auto* metrics_service = g_browser_process->metrics_service();
-  if (metrics_service) {
-    metrics_service->UpdateMetricsUsagePrefs(total_bytes, is_cellular,
-                                             is_metrics_service_usage);
-  }
-}
+// Global instance to be used when network service is enabled, this will never
+// be deleted. When network service is disabled, this should always be null.
+ChromeDataUseMeasurement* g_chrome_data_use_measurement = nullptr;
 
-// This function is for forwarding metrics usage pref changes to the metrics
-// service on the appropriate thread.
-// TODO(gayane): Reduce the frequency of posting tasks from IO to UI thread.
-void UpdateMetricsUsagePrefsOnUIThread(int64_t total_bytes,
-                                       bool is_cellular,
-                                       bool is_metrics_service_usage) {
-  DCHECK_CURRENTLY_ON(content::BrowserThread::IO);
-
-  base::PostTaskWithTraits(
-      FROM_HERE, content::BrowserThread::UI,
-      base::BindOnce(UpdateMetricsUsagePrefs, total_bytes, is_cellular,
-                     is_metrics_service_usage));
-}
 }  // namespace
+
+// static
+void ChromeDataUseMeasurement::CreateInstance(PrefService* local_state) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI) ||
+         !BrowserThread::IsThreadInitialized(BrowserThread::UI));
+
+  DCHECK(!g_chrome_data_use_measurement);
+
+  // Do not create when NetworkService is disabled, since data use of URLLoader
+  // is reported via the network delegate callbacks.
+  if (!base::FeatureList::IsEnabled(network::features::kNetworkService))
+    return;
+
+  g_chrome_data_use_measurement = new ChromeDataUseMeasurement(
+      nullptr, nullptr, content::GetNetworkConnectionTracker(), local_state);
+}
+
+// static
+ChromeDataUseMeasurement* ChromeDataUseMeasurement::GetInstance() {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI) ||
+         !BrowserThread::IsThreadInitialized(BrowserThread::UI));
+
+  return g_chrome_data_use_measurement;
+}
 
 ChromeDataUseMeasurement::ChromeDataUseMeasurement(
     std::unique_ptr<URLRequestClassifier> url_request_classifier,
-    DataUseAscriber* ascriber)
-    : DataUseMeasurement(std::move(url_request_classifier), ascriber) {}
+    DataUseAscriber* ascriber,
+    network::NetworkConnectionTracker* network_connection_tracker,
+    PrefService* local_state)
+    : DataUseMeasurement(std::move(url_request_classifier),
+                         ascriber,
+                         network_connection_tracker),
+      local_state_(local_state) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+}
 
 void ChromeDataUseMeasurement::UpdateDataUseToMetricsService(
     int64_t total_bytes,
     bool is_cellular,
     bool is_metrics_service_usage) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   // Update data use of user traffic and services distinguishing cellular and
   // metrics services data use.
   UpdateMetricsUsagePrefsOnUIThread(total_bytes, is_cellular,
                                     is_metrics_service_usage);
+}
+
+void ChromeDataUseMeasurement::ReportNetworkServiceDataUse(
+    int32_t network_traffic_annotation_id_hash,
+    int64_t recv_bytes,
+    int64_t sent_bytes) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  DCHECK(base::FeatureList::IsEnabled(network::features::kNetworkService));
+  // Negative byte numbres is not a critical problem (i.e. should have no security implications) but
+  // is not expected. TODO(rajendrant): remove these DCHECKs or consider using uint in Mojo instead.
+  DCHECK_GE(recv_bytes, 0);
+  DCHECK_GE(sent_bytes, 0);
+
+  bool is_user_request =
+      DataUseMeasurement::IsUserRequest(network_traffic_annotation_id_hash);
+  bool is_metrics_service_request =
+      IsMetricsServiceRequest(network_traffic_annotation_id_hash);
+  UpdateMetricsUsagePrefs(recv_bytes, IsCurrentNetworkCellular(),
+                          is_metrics_service_request);
+  UpdateMetricsUsagePrefs(sent_bytes, IsCurrentNetworkCellular(),
+                          is_metrics_service_request);
+  if (!is_user_request) {
+    ReportDataUsageServices(network_traffic_annotation_id_hash, UPSTREAM,
+                            CurrentAppState(), sent_bytes);
+    ReportDataUsageServices(network_traffic_annotation_id_hash, DOWNSTREAM,
+                            CurrentAppState(), recv_bytes);
+  }
+  if (!is_user_request || DataUseMeasurement::IsUserDownloadsRequest(
+                              network_traffic_annotation_id_hash)) {
+    for (auto& observer : services_data_use_observer_list_)
+      observer.OnServicesDataUse(network_traffic_annotation_id_hash, recv_bytes,
+                                 sent_bytes);
+  }
+  UMA_HISTOGRAM_COUNTS_1M("DataUse.BytesReceived.Delegate", recv_bytes);
+  UMA_HISTOGRAM_COUNTS_1M("DataUse.BytesSent.Delegate", sent_bytes);
+#if defined(OS_ANDROID)
+  bytes_transferred_since_last_traffic_stats_query_ += recv_bytes + sent_bytes;
+  MaybeRecordNetworkBytesOS();
+#endif
+}
+
+void ChromeDataUseMeasurement::UpdateMetricsUsagePrefs(
+    int64_t total_bytes,
+    bool is_cellular,
+    bool is_metrics_service_usage) {
+  PrefService* local_state;
+  if (base::FeatureList::IsEnabled(network::features::kNetworkService)) {
+    DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+    local_state = local_state_;
+  } else {
+    DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
+    local_state = g_browser_process->local_state();
+  }
+  DCHECK(local_state);
+
+  metrics::DataUseTracker::UpdateMetricsUsagePrefs(
+      base::saturated_cast<int>(total_bytes), is_cellular,
+      is_metrics_service_usage, local_state);
+}
+
+// This function is for forwarding metrics usage pref changes to the metrics
+// service on the appropriate thread.
+// TODO(gayane): Reduce the frequency of posting tasks from IO to UI thread.
+void ChromeDataUseMeasurement::UpdateMetricsUsagePrefsOnUIThread(
+    int64_t total_bytes,
+    bool is_cellular,
+    bool is_metrics_service_usage) {
+  DCHECK_CURRENTLY_ON(content::BrowserThread::IO);
+
+  base::PostTaskWithTraits(
+      FROM_HERE, content::BrowserThread::UI,
+      base::BindOnce(&ChromeDataUseMeasurement::UpdateMetricsUsagePrefs,
+                     base::Unretained(this), total_bytes, is_cellular,
+                     is_metrics_service_usage));
 }
 
 }  // namespace data_use_measurement

@@ -194,7 +194,6 @@ class CORE_EXPORT RuleFeatureSet {
   DescendantInvalidationSet& EnsurePartInvalidationSet();
 
   void UpdateInvalidationSets(const RuleData*);
-  void UpdateInvalidationSetsForContentAttribute(const RuleData*);
 
   struct InvalidationSetFeatures {
     DISALLOW_NEW();
@@ -209,7 +208,6 @@ class CORE_EXPORT RuleFeatureSet {
     Vector<AtomicString> tag_names;
     unsigned max_direct_adjacent_selectors = 0;
     InvalidationFlags invalidation_flags;
-    bool has_before_or_after = false;
     bool content_pseudo_crossing = false;
     bool has_nth_pseudo = false;
     bool has_features_for_rule_set_invalidation = false;

@@ -161,18 +161,16 @@ static MTLVertexDescriptor* create_vertex_descriptor(const GrPrimitiveProcessor&
 
     int vertexAttributeCount = primProc.numVertexAttributes();
     size_t vertexAttributeOffset = 0;
-    for (int vertexIndex = 0; vertexIndex < vertexAttributeCount; vertexIndex++) {
-        const GrGeometryProcessor::Attribute& attribute = primProc.vertexAttribute(vertexIndex);
+    for (const auto& attribute : primProc.vertexAttributes()) {
         MTLVertexAttributeDescriptor* mtlAttribute = vertexDescriptor.attributes[attributeIndex];
         mtlAttribute.format = attribute_type_to_mtlformat(attribute.cpuType());
         mtlAttribute.offset = vertexAttributeOffset;
         mtlAttribute.bufferIndex = vertexBinding;
 
-        SkASSERT(mtlAttribute.offset == primProc.debugOnly_vertexAttributeOffset(vertexIndex));
         vertexAttributeOffset += attribute.sizeAlign4();
         attributeIndex++;
     }
-    SkASSERT(vertexAttributeOffset == primProc.debugOnly_vertexStride());
+    SkASSERT(vertexAttributeOffset == primProc.vertexStride());
 
     if (vertexAttributeCount) {
         MTLVertexBufferLayoutDescriptor* vertexBufferLayout =
@@ -184,18 +182,16 @@ static MTLVertexDescriptor* create_vertex_descriptor(const GrPrimitiveProcessor&
 
     int instanceAttributeCount = primProc.numInstanceAttributes();
     size_t instanceAttributeOffset = 0;
-    for (int instanceIndex = 0; instanceIndex < instanceAttributeCount; instanceIndex++) {
-        const GrGeometryProcessor::Attribute& attribute = primProc.instanceAttribute(instanceIndex);
+    for (const auto& attribute : primProc.instanceAttributes()) {
         MTLVertexAttributeDescriptor* mtlAttribute = vertexDescriptor.attributes[attributeIndex];
         mtlAttribute.format = attribute_type_to_mtlformat(attribute.cpuType());
         mtlAttribute.offset = instanceAttributeOffset;
         mtlAttribute.bufferIndex = instanceBinding;
 
-        SkASSERT(mtlAttribute.offset == primProc.debugOnly_instanceAttributeOffset(instanceIndex));
         instanceAttributeOffset += attribute.sizeAlign4();
         attributeIndex++;
     }
-    SkASSERT(instanceAttributeOffset == primProc.debugOnly_instanceStride());
+    SkASSERT(instanceAttributeOffset == primProc.instanceStride());
 
     if (instanceAttributeCount) {
         MTLVertexBufferLayoutDescriptor* instanceBufferLayout =
@@ -227,6 +223,7 @@ static MTLBlendFactor blend_coeff_to_mtl_blend(GrBlendCoeff coeff) {
         MTLBlendFactorOneMinusSource1Color,      // kIS2C_GrBlendCoeff
         MTLBlendFactorSource1Alpha,              // kS2A_GrBlendCoeff
         MTLBlendFactorOneMinusSource1Alpha,      // kIS2A_GrBlendCoeff
+        MTLBlendFactorZero,                      // kIllegal_GrBlendCoeff
     };
     GR_STATIC_ASSERT(SK_ARRAY_COUNT(gTable) == kGrBlendCoeffCnt);
     GR_STATIC_ASSERT(0 == kZero_GrBlendCoeff);
@@ -263,7 +260,7 @@ static MTLBlendOperation blend_equation_to_mtl_blend_op(GrBlendEquation equation
     GR_STATIC_ASSERT(1 == kSubtract_GrBlendEquation);
     GR_STATIC_ASSERT(2 == kReverseSubtract_GrBlendEquation);
 
-    SkASSERT((unsigned)equation < kGrBlendCoeffCnt);
+    SkASSERT((unsigned)equation < kGrBlendEquationCnt);
     return gTable[equation];
 }
 

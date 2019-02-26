@@ -1,10 +1,9 @@
-#!/usr/bin/env python
+#!/usr/bin/env vpython
 # Copyright 2018 The Chromium Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
 import argparse
-import oauth2client.tools
 import os
 import sys
 
@@ -17,18 +16,17 @@ sys.path.append(SOUNDWAVE_ROOT_PATH)
 sys.path.append(PY_UTILS_PATH)
 
 from common import utils
+from services import luci_auth
 from soundwave import commands
+from soundwave import studies
 
-# For help creating service account credentials see:
-# https://developers.google.com/api-client-library/python/auth/service-accounts#creatinganaccount
 
 DEFAULT_DATABASE_PATH = os.path.join(
     SOUNDWAVE_ROOT_PATH, 'soundwave.db')
 
 
-def Main():
-  # Args for API access.
-  parser = argparse.ArgumentParser(parents=[oauth2client.tools.argparser])
+def main():
+  parser = argparse.ArgumentParser()
   # Default args for all actions.
   parser.add_argument(
       '-s', '--sheriff', default='Chromium Perf Sheriff',
@@ -63,24 +61,43 @@ def Main():
   group.add_argument(
       '-b', '--benchmark', help='Fetch timeseries for this benchmark.')
   group.add_argument(
+      '--study', choices=studies.NAMES,
+      help='Fetch timeseries needed for a specific study.')
+  group.add_argument(
       '-i', '--input-file',
-      help='Fetch timeseries for test paths listed in this file, one path '
-           'per line.')
+      help='Fetch timeseries listed in this json file (see e.g.'
+           ' soundwave_examples).')
   subparser.add_argument(
       '-f', '--filters', action='append',
-      help=('Only get data for timeseries whose path contains all the given '
-            'substrings.'))
+      help='Only get data for timeseries whose path contains all the given '
+           'substrings.')
+  group = subparser.add_mutually_exclusive_group()
+  group.add_argument(
+      '--output-csv', metavar='PATH',
+      help='Export the timeseries data to a csv file, the PATH given may be '
+           'either a local or a cloud storage (i.e. gs://...) path.')
+  group.add_argument(
+      '--upload-csv', action='store_true',
+      help='Export the timeseries data to the default cloud storage path for '
+           'a given --study.')
 
   args = parser.parse_args()
 
   utils.ConfigureLogging(args.verbose)
+  luci_auth.CheckLoggedIn()
   if args.action == 'alerts':
     commands.FetchAlertsData(args)
   elif args.action == 'timeseries':
+    if args.study is not None:
+      args.study = studies.GetStudy(args.study)
+      if args.upload_csv:
+        args.output_csv = args.study.CLOUD_PATH
+    elif args.upload_csv:
+      return 'ERROR: --upload-csv also requires a --study to be specified'
     commands.FetchTimeseriesData(args)
   else:
     raise NotImplementedError(args.action)
 
 
 if __name__ == '__main__':
-  Main()
+  sys.exit(main())

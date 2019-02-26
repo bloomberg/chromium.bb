@@ -57,7 +57,7 @@ class BiosSigner(signer.FutilitySigner):
             '--signprivate', fw_key.private,
             '--keyblock', fw_key.keyblock,
             '--kernelkey', kernel_key.public,
-            '--version', fw_key.version,
+            '--version', str(fw_key.version),
             '--devsign', dev_fw_key.private,
             '--devkeyblock', dev_fw_key.keyblock]
 
@@ -188,7 +188,7 @@ class FirmwareSigner(signer.BaseSigner):
     """
 
     if key_id:
-      keyset = keyset.GetSubKeyset(key_id)
+      keyset = keyset.GetBuildKeyset(key_id)
 
     shellball_keydir = os.path.join(shellball_dir, keyset_out_dir)
     osutils.SafeMakedirs(shellball_keydir)
@@ -397,10 +397,10 @@ def WriteSignerNotes(keyset, outfile):
   outfile.write('Signed with keyset in %s\n' % recovery_key.keydir)
   outfile.write('recovery: %s\n' % recovery_key.GetSHA1sum())
 
-  root_key = keyset.keys['root_key']
-  if root_key.subkeys:
-    outfile.write('List sha1sum of all loem/model\'s signatures:\n')
-    for key_id, key in root_key.subkeys.items():
-      outfile.write('%s: %s\n' % (key_id, key.GetSHA1sum()))
+  root_keys = keyset.GetBuildtargetKeys('root_key')
+  if 'root_key' in root_keys and len(root_keys) == 1:
+    outfile.write('root: %s\n' % (root_keys['root_key'].GetSHA1sum()))
   else:
-    outfile.write('root: %s\n' % root_key.GetSHA1sum())
+    outfile.write('List sha1sum of all loem/model\'s signatures:\n')
+    for key_id, key in root_keys.items():
+      outfile.write('%s: %s\n' % (key_id, key.GetSHA1sum()))

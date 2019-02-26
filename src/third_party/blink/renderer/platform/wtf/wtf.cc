@@ -72,8 +72,6 @@ void Initialize(void (*call_on_main_thread_function)(MainThreadFunction,
 
   WTFThreadData::Initialize();
 
-  InitializeDates();
-
   // Force initialization of static DoubleToStringConverter converter variable
   // inside EcmaScriptConverter function while we are in single thread mode.
   double_conversion::DoubleToStringConverter::EcmaScriptConverter();

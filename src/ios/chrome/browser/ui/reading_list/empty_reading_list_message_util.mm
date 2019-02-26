@@ -6,8 +6,8 @@
 
 #include "base/logging.h"
 #include "ios/chrome/browser/experimental_flags.h"
-#include "ios/chrome/browser/ui/rtl_geometry.h"
-#import "ios/chrome/browser/ui/uikit_ui_util.h"
+#include "ios/chrome/browser/ui/util/rtl_geometry.h"
+#import "ios/chrome/browser/ui/util/uikit_ui_util.h"
 #include "ios/chrome/grit/ios_strings.h"
 #include "ui/base/l10n/l10n_util_mac.h"
 
@@ -27,9 +27,30 @@ NSString* const kReadLaterTextMarker = @"READ_LATER_TEXT";
 // Background view constants.
 const CGFloat kLineSpacing = 4;
 
+UIFont* FontWithMaximumForCategory(UIContentSizeCategory category,
+                                   UIFontTextStyle font_style) {
+  if (UIContentSizeCategoryIsAccessibilityCategory(category)) {
+    return [UIFont
+            preferredFontForTextStyle:font_style
+        compatibleWithTraitCollection:
+            [UITraitCollection traitCollectionWithPreferredContentSizeCategory:
+                                   UIContentSizeCategoryAccessibilityLarge]];
+  }
+  return [UIFont preferredFontForTextStyle:font_style];
+}
+
 // Returns the font to use for the message text.
 UIFont* GetMessageFont() {
-  return [UIFont preferredFontForTextStyle:UIFontTextStyleBody];
+  return FontWithMaximumForCategory(
+      [UIApplication sharedApplication].preferredContentSizeCategory,
+      UIFontTextStyleBody);
+}
+
+// Returns the font to use for the message text.
+UIFont* GetInstructionFont() {
+  return FontWithMaximumForCategory(
+      [UIApplication sharedApplication].preferredContentSizeCategory,
+      UIFontTextStyleHeadline);
 }
 
 // Returns the attributes to use for the message text.
@@ -54,8 +75,7 @@ NSMutableDictionary* GetMessageAttributes() {
 // Later" option.
 NSMutableDictionary* GetInstructionAttributes() {
   NSMutableDictionary* attributes = GetMessageAttributes();
-  attributes[NSFontAttributeName] =
-      [UIFont preferredFontForTextStyle:UIFontTextStyleHeadline];
+  attributes[NSFontAttributeName] = GetInstructionFont();
   return attributes;
 }
 

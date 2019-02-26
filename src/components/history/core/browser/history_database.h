@@ -90,10 +90,6 @@ class HistoryDatabase : public DownloadDatabase,
   // Counts the number of unique Hosts visited in the last month.
   int CountUniqueHostsVisitedLastMonth();
 
-  // Computes the |num_hosts| most-visited hostnames in the past 30 days. See
-  // history_service.h for details.
-  TopHostsList TopHosts(size_t num_hosts);
-
   // Call to set the mode on the database to exclusive. The default locking mode
   // is "normal" but we want to run in exclusive mode for slightly better
   // performance since we know nobody else is using the database. This is

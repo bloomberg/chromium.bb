@@ -17,6 +17,7 @@ namespace chromeos {
 class CHROMEOS_EXPORT FakeSmbProviderClient : public SmbProviderClient {
  public:
   FakeSmbProviderClient();
+  explicit FakeSmbProviderClient(bool should_run_synchronously);
   ~FakeSmbProviderClient() override;
 
   // Adds an entry in the |netbios_parse_results_| map for <packetid,
@@ -135,7 +136,15 @@ class CHROMEOS_EXPORT FakeSmbProviderClient : public SmbProviderClient {
   // Clears |shares_|.
   void ClearShares();
 
+  // Runs |stored_callback_|.
+  void RunStoredReadDirCallback();
+
  private:
+  // Controls whether |stored_readdir_callback_| should run synchronously.
+  bool should_run_synchronously_ = true;
+
+  base::OnceClosure stored_readdir_callback_;
+
   std::map<uint8_t, std::vector<std::string>> netbios_parse_results_;
 
   // Mapping of a server url to its shares.

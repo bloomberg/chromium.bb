@@ -82,7 +82,6 @@ QUIC_EXPORT_PRIVATE bool SerializeTransportParameters(
 // |perspective| indicates whether the input came from a client or a server.
 // This method returns true if the input was successfully parsed, and false if
 // it could not be parsed.
-// TODO(nharper): Write fuzz tests for this method.
 QUIC_EXPORT_PRIVATE bool ParseTransportParameters(const uint8_t* in,
                                                   size_t in_len,
                                                   Perspective perspective,

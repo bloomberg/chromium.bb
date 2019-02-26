@@ -40,11 +40,26 @@ class CORE_EXPORT UIEvent : public Event {
   DEFINE_WRAPPERTYPEINFO();
 
  public:
-  static UIEvent* Create() { return new UIEvent; }
+  static UIEvent* Create() { return MakeGarbageCollected<UIEvent>(); }
   static UIEvent* Create(const AtomicString& type,
-                         const UIEventInit& initializer) {
-    return new UIEvent(type, initializer);
+                         const UIEventInit* initializer) {
+    return MakeGarbageCollected<UIEvent>(type, initializer);
   }
+
+  UIEvent();
+  UIEvent(const AtomicString& type,
+          Bubbles,
+          Cancelable,
+          ComposedMode,
+          TimeTicks platform_time_stamp,
+          AbstractView*,
+          int detail,
+          InputDeviceCapabilities* source_capabilities);
+  UIEvent(const AtomicString&,
+          const UIEventInit*,
+          TimeTicks platform_time_stamp);
+  UIEvent(const AtomicString& type, const UIEventInit* init)
+      : UIEvent(type, init, CurrentTimeTicks()) {}
   ~UIEvent() override;
 
   void initUIEvent(const AtomicString& type,
@@ -60,10 +75,10 @@ class CORE_EXPORT UIEvent : public Event {
                            int detail,
                            InputDeviceCapabilities* source_capabilities);
 
-  AbstractView* view() const { return view_.Get(); }
+  AbstractView* view() const { return view_; }
   int detail() const { return detail_; }
   InputDeviceCapabilities* sourceCapabilities() const {
-    return source_capabilities_.Get();
+    return source_capabilities_;
   }
 
   const AtomicString& InterfaceName() const override;
@@ -72,22 +87,6 @@ class CORE_EXPORT UIEvent : public Event {
   virtual unsigned which() const;
 
   void Trace(blink::Visitor*) override;
-
- protected:
-  UIEvent();
-  UIEvent(const AtomicString& type,
-          Bubbles,
-          Cancelable,
-          ComposedMode,
-          TimeTicks platform_time_stamp,
-          AbstractView*,
-          int detail,
-          InputDeviceCapabilities* source_capabilities);
-  UIEvent(const AtomicString&,
-          const UIEventInit&,
-          TimeTicks platform_time_stamp);
-  UIEvent(const AtomicString& type, const UIEventInit& init)
-      : UIEvent(type, init, CurrentTimeTicks()) {}
 
  private:
   Member<AbstractView> view_;

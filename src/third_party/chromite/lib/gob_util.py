@@ -117,7 +117,7 @@ def _GetAppCredentials():
       scope='https://www.googleapis.com/auth/gerritcodereview')
 
 
-TRY_LIMIT = 10
+TRY_LIMIT = 11
 SLEEP = 0.5
 REQUEST_TIMEOUT_SECONDS = 120  # 2 minutes.
 
@@ -375,7 +375,7 @@ def FetchUrl(host, path, reqtype='GET', headers=None, body=None,
   return retry_util.RetryException(
       (socket.error, InternalGOBError, timeout_util.TimeoutError),
       TRY_LIMIT,
-      _FetchUrlHelper, sleep=SLEEP)
+      _FetchUrlHelper, sleep=SLEEP, backoff_factor=2)
 
 
 def FetchUrlJson(*args, **kwargs):

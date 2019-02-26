@@ -67,12 +67,12 @@ class CompositorFrameMetadata;
 
 namespace cc {
 class BrowserControlsOffsetManager;
-class LayerTreeFrameSink;
 class DebugRectHistory;
 class EvictionTilePriorityQueue;
 class FrameRateCounter;
 class ImageAnimationController;
 class LayerImpl;
+class LayerTreeFrameSink;
 class LayerTreeImpl;
 class MemoryHistory;
 class MutatorEvents;
@@ -91,7 +91,6 @@ class SwapPromiseMonitor;
 class SynchronousTaskGraphRunner;
 class TaskGraphRunner;
 class UIResourceBitmap;
-struct ScrollAndScaleSet;
 class Viewport;
 
 using BeginFrameCallbackList = std::vector<base::Closure>;
@@ -295,6 +294,7 @@ class CC_EXPORT LayerTreeHostImpl
   float CurrentBrowserControlsShownRatio() const override;
   void DidChangeBrowserControlsPosition() override;
   bool HaveRootScrollNode() const override;
+  void SetNeedsCommit() override;
 
   void UpdateViewportContainerSizes();
 
@@ -306,6 +306,7 @@ class CC_EXPORT LayerTreeHostImpl
     return viewport_damage_rect_;
   }
 
+  virtual void WillSendBeginMainFrame() {}
   virtual void DidSendBeginMainFrame() {}
   virtual void BeginMainFrameAborted(
       CommitEarlyOutReason reason,
@@ -442,6 +443,7 @@ class CC_EXPORT LayerTreeHostImpl
   void DidPresentCompositorFrame(
       uint32_t frame_token,
       const gfx::PresentationFeedback& feedback) override;
+  void DidNotNeedBeginFrame() override;
   void ReclaimResources(
       const std::vector<viz::ReturnedResource>& resources) override;
   void SetMemoryPolicy(const ManagedMemoryPolicy& policy) override;
@@ -542,7 +544,6 @@ class CC_EXPORT LayerTreeHostImpl
     return is_animating_for_snap_;
   }
 
-  void SetNeedsCommit() { client_->SetNeedsCommitOnImplThread(); }
   void SetNeedsOneBeginImplFrame();
   void SetNeedsRedraw();
 
@@ -615,8 +616,8 @@ class CC_EXPORT LayerTreeHostImpl
   gfx::ScrollOffset GetVisualScrollOffset(const ScrollNode& scroll_node) const;
 
   bool GetSnapFlingInfo(const gfx::Vector2dF& natural_displacement_in_viewport,
-                        gfx::Vector2dF* out_initial_offset,
-                        gfx::Vector2dF* out_target_offset) const override;
+                        gfx::Vector2dF* out_initial_position,
+                        gfx::Vector2dF* out_target_position) const override;
 
   // Returns the amount of delta that can be applied to scroll_node, taking
   // page scale into account.
@@ -778,7 +779,7 @@ class CC_EXPORT LayerTreeHostImpl
 
   // Returns true if status changed.
   bool UpdateGpuRasterizationStatus();
-  void UpdateTreeResourcesForGpuRasterizationIfNeeded();
+  void UpdateTreeResourcesIfNeeded();
 
   Viewport* viewport() const { return viewport_.get(); }
 
@@ -1075,7 +1076,7 @@ class CC_EXPORT LayerTreeHostImpl
 
   uint32_t next_frame_token_ = 1u;
 
-  viz::LocalSurfaceId last_draw_local_surface_id_;
+  viz::LocalSurfaceIdAllocation last_draw_local_surface_id_allocation_;
   base::flat_set<viz::SurfaceRange> last_draw_referenced_surfaces_;
   base::Optional<RenderFrameMetadata> last_draw_render_frame_metadata_;
   viz::ChildLocalSurfaceIdAllocator child_local_surface_id_allocator_;
@@ -1106,9 +1107,14 @@ class CC_EXPORT LayerTreeHostImpl
   base::circular_deque<FrameTokenInfo> frame_token_infos_;
   ui::FrameMetrics frame_metrics_;
   ui::SkippedFrameTracker skipped_frame_tracker_;
+  int last_color_space_id_ = -1;
   bool is_animating_for_snap_;
 
   const PaintImage::GeneratorClientId paint_image_generator_client_id_;
+
+  // Set to true when a scroll gesture being handled on the compositor has
+  // ended.
+  bool scroll_gesture_did_end_;
 
   DISALLOW_COPY_AND_ASSIGN(LayerTreeHostImpl);
 };

@@ -5,11 +5,14 @@
 #import "ios/chrome/browser/autofill/form_input_accessory_view_controller.h"
 
 #include "base/mac/foundation_util.h"
+#include "base/metrics/histogram_macros.h"
+#include "base/metrics/user_metrics.h"
 #include "components/autofill/core/common/autofill_features.h"
 #import "ios/chrome/browser/autofill/form_input_accessory_view.h"
 #import "ios/chrome/browser/autofill/form_suggestion_view.h"
-#include "ios/chrome/browser/ui/ui_util.h"
-#import "ios/chrome/browser/ui/uikit_ui_util.h"
+#import "ios/chrome/browser/ui/autofill/manual_fill/manual_fill_accessory_view_controller.h"
+#include "ios/chrome/browser/ui/util/ui_util.h"
+#import "ios/chrome/browser/ui/util/uikit_ui_util.h"
 #import "ios/chrome/common/ui_util/constraints_ui_util.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
@@ -20,7 +23,9 @@ namespace autofill {
 CGFloat const kInputAccessoryHeight = 44.0f;
 }  // namespace autofill
 
-@interface FormInputAccessoryViewController ()
+@interface FormInputAccessoryViewController () <
+    FormSuggestionViewDelegate,
+    ManualFillAccessoryViewControllerDelegate>
 
 // Grey view used as the background of the keyboard to fix
 // http://crbug.com/847523
@@ -30,10 +35,23 @@ CGFloat const kInputAccessoryHeight = 44.0f;
 @property(nonatomic, weak) UIView* keyboardReplacementView;
 
 // The custom view that should be shown in the input accessory view.
-@property(nonatomic, strong) FormInputAccessoryView* customAccessoryView;
+@property(nonatomic, strong) FormInputAccessoryView* inputAccessoryView;
+
+// The leading view with the suggestions in FormInputAccessoryView.
+@property(nonatomic, strong) FormSuggestionView* formSuggestionView;
 
 // If this view controller is paused it shouldn't add its views to the keyboard.
 @property(nonatomic, getter=isPaused) BOOL paused;
+
+// The manual fill accessory view controller to add at the end of the
+// suggestions.
+@property(nonatomic, strong, readonly)
+    ManualFillAccessoryViewController* manualFillAccessoryViewController;
+
+// Delegate to handle interactions with the manual fill buttons.
+@property(nonatomic, readonly, weak)
+    id<ManualFillAccessoryViewControllerDelegate>
+        manualFillAccessoryViewControllerDelegate;
 
 // Called when the keyboard will or did change frame.
 - (void)keyboardWillOrDidChangeFrame:(NSNotification*)notification;
@@ -48,13 +66,29 @@ CGFloat const kInputAccessoryHeight = 44.0f;
   BOOL _suggestionsHaveBeenShown;
 }
 
+@synthesize addressButtonHidden = _addressButtonHidden;
+@synthesize creditCardButtonHidden = _creditCardButtonHidden;
+@synthesize formInputNextButtonEnabled = _formInputNextButtonEnabled;
+@synthesize formInputPreviousButtonEnabled = _formInputPreviousButtonEnabled;
+@synthesize navigationDelegate = _navigationDelegate;
+@synthesize passwordButtonHidden = _passwordButtonHidden;
+
 #pragma mark - Life Cycle
 
-- (instancetype)init {
+- (instancetype)initWithManualFillAccessoryViewControllerDelegate:
+    (id<ManualFillAccessoryViewControllerDelegate>)
+        manualFillAccessoryViewControllerDelegate {
   self = [super init];
   if (self) {
-    _suggestionsHaveBeenShown = NO;
+    _paused = YES;
+    _manualFillAccessoryViewControllerDelegate =
+        manualFillAccessoryViewControllerDelegate;
+    if (autofill::features::IsPasswordManualFallbackEnabled()) {
+      _manualFillAccessoryViewController =
+          [[ManualFillAccessoryViewController alloc] initWithDelegate:self];
+    }
 
+    _suggestionsHaveBeenShown = NO;
     if (IsIPadIdiom()) {
       _grayBackgroundView = [[UIView alloc] init];
       _grayBackgroundView.translatesAutoresizingMaskIntoConstraints = NO;
@@ -65,21 +99,16 @@ CGFloat const kInputAccessoryHeight = 44.0f;
                                   blue:217 / 255.f
                                  alpha:1];
 
-      [[NSNotificationCenter defaultCenter]
-          addObserver:self
-             selector:@selector(keyboardWillOrDidChangeFrame:)
-                 name:UIKeyboardWillChangeFrameNotification
-               object:nil];
     }
     [[NSNotificationCenter defaultCenter]
         addObserver:self
            selector:@selector(keyboardWillOrDidChangeFrame:)
-               name:UIKeyboardDidChangeFrameNotification
+               name:UIKeyboardWillChangeFrameNotification
              object:nil];
     [[NSNotificationCenter defaultCenter]
         addObserver:self
-           selector:@selector(keyboardWillShow:)
-               name:UIKeyboardWillShowNotification
+           selector:@selector(keyboardWillOrDidChangeFrame:)
+               name:UIKeyboardDidChangeFrameNotification
              object:nil];
   }
   return self;
@@ -102,60 +131,92 @@ CGFloat const kInputAccessoryHeight = 44.0f;
   view.translatesAutoresizingMaskIntoConstraints = NO;
   AddSameConstraints(view, constrainingView);
   self.keyboardReplacementView = view;
+  UIAccessibilityPostNotification(UIAccessibilityLayoutChangedNotification, view);
+}
+
+- (void)unlockManualFallbackView {
+  [self.formSuggestionView resetContentInsetAndDelegate];
+}
+
+- (void)lockManualFallbackView {
+  [self.formSuggestionView lockTrailingView];
+}
+
+- (void)resetManualFallbackIcons {
+  [self.manualFillAccessoryViewController resetAnimated:YES];
 }
 
 #pragma mark - FormInputAccessoryConsumer
 
-- (void)showCustomInputAccessoryView:(UIView*)view
-                  navigationDelegate:
-                      (id<FormInputAccessoryViewDelegate>)navigationDelegate {
-  DCHECK(view);
-  if (IsIPadIdiom()) {
-    // On iPad, there's no inputAccessoryView available, so we attach the custom
-    // view directly to the keyboard view instead.
-    [self.customAccessoryView removeFromSuperview];
-    [self.grayBackgroundView removeFromSuperview];
+- (void)showAccessorySuggestions:(NSArray<FormSuggestion*>*)suggestions
+                suggestionClient:(id<FormSuggestionClient>)suggestionClient
+              isHardwareKeyboard:(BOOL)hardwareKeyboard {
+  // On ipad if the keyboard isn't visible don't show the custom view.
+  if (IsIPadIdiom() &&
+      (CGRectIntersection([UIScreen mainScreen].bounds, _keyboardFrame)
+               .size.height == 0 ||
+       CGRectEqualToRect(_keyboardFrame, CGRectZero))) {
+    [self removeCustomInputAccessoryView];
+    return;
+  }
 
-    // If the keyboard isn't visible don't show the custom view.
-    if (CGRectIntersection([UIScreen mainScreen].bounds, _keyboardFrame)
-                .size.height == 0 ||
-        CGRectEqualToRect(_keyboardFrame, CGRectZero)) {
-      self.customAccessoryView = nil;
-      return;
-    }
-
-    // If this is a form suggestion view and no suggestions have been triggered
-    // yet, don't show the custom view.
-    FormSuggestionView* formSuggestionView =
-        base::mac::ObjCCast<FormSuggestionView>(view);
-    if (formSuggestionView) {
-      int numSuggestions = [[formSuggestionView suggestions] count];
-      if (!_suggestionsHaveBeenShown && numSuggestions == 0) {
-        self.customAccessoryView = nil;
+  // Check that |manualFillAccessoryViewController| was not instantiated if flag
+  // is disabled. And return early if there are no suggestions on iPad.
+  if (!autofill::features::IsPasswordManualFallbackEnabled()) {
+    DCHECK(!self.manualFillAccessoryViewController);
+    if (IsIPadIdiom()) {
+      // On iPad, there's no inputAccessoryView available, so we attach the
+      // custom view directly to the keyboard view instead. If this is a form
+      // suggestion view and no suggestions have been triggered yet, don't show
+      // the custom view.
+      if (suggestions && !_suggestionsHaveBeenShown && !suggestions.count) {
+        [self removeCustomInputAccessoryView];
         return;
       }
+      _suggestionsHaveBeenShown = YES;
     }
-    _suggestionsHaveBeenShown = YES;
-
-    self.customAccessoryView = [[FormInputAccessoryView alloc] init];
-    [self.customAccessoryView setUpWithCustomView:view];
-    [self addCustomAccessoryViewIfNeeded];
-  } else {
-    // On iPhone, the custom view replaces the default UI of the
-    // inputAccessoryView.
-    [self restoreOriginalInputAccessoryView];
-    self.customAccessoryView = [[FormInputAccessoryView alloc] init];
-    [self.customAccessoryView setUpWithNavigationDelegate:navigationDelegate
-                                               customView:view];
-    [self addCustomAccessoryViewIfNeeded];
   }
+
+  // Create the views if they don't exist already.
+  if (!self.formSuggestionView) {
+    self.formSuggestionView = [[FormSuggestionView alloc] init];
+    self.formSuggestionView.formSuggestionViewDelegate = self;
+  }
+
+  [self.formSuggestionView updateClient:suggestionClient
+                            suggestions:suggestions];
+
+  if (!self.inputAccessoryView) {
+    self.inputAccessoryView = [[FormInputAccessoryView alloc] init];
+    self.inputAccessoryView.accessibilityViewIsModal = YES;
+    if (IsIPadIdiom()) {
+      [self.inputAccessoryView
+          setUpWithLeadingView:self.formSuggestionView
+            customTrailingView:self.manualFillAccessoryViewController.view];
+    } else {
+      self.formSuggestionView.trailingView =
+          self.manualFillAccessoryViewController.view;
+      [self.inputAccessoryView setUpWithLeadingView:self.formSuggestionView
+                                 navigationDelegate:self.navigationDelegate];
+      self.inputAccessoryView.nextButton.enabled =
+          self.formInputNextButtonEnabled;
+      self.inputAccessoryView.previousButton.enabled =
+          self.formInputPreviousButtonEnabled;
+    }
+  }
+
+  // On iPhones, when using a hardware keyboard, for most models, there's no
+  // space to show suggestions because of the on-screen menu button.
+  self.inputAccessoryView.leadingView.hidden = hardwareKeyboard;
+
+  [self addInputAccessoryViewIfNeeded];
 }
 
 - (void)restoreOriginalKeyboardView {
-  [self restoreOriginalInputAccessoryView];
+  [self.manualFillAccessoryViewController resetAnimated:NO];
+  [self removeCustomInputAccessoryView];
   [self.keyboardReplacementView removeFromSuperview];
   self.keyboardReplacementView = nil;
-  self.paused = NO;
 }
 
 - (void)pauseCustomKeyboardView {
@@ -176,18 +237,49 @@ CGFloat const kInputAccessoryHeight = 44.0f;
   }
 }
 
+#pragma mark - Setters
+
+- (void)setPasswordButtonHidden:(BOOL)passwordButtonHidden {
+  _passwordButtonHidden = passwordButtonHidden;
+  self.manualFillAccessoryViewController.passwordButtonHidden =
+      passwordButtonHidden;
+}
+
+- (void)setAddressButtonHidden:(BOOL)addressButtonHidden {
+  _addressButtonHidden = addressButtonHidden;
+  self.manualFillAccessoryViewController.addressButtonHidden =
+      addressButtonHidden;
+}
+
+- (void)setCreditCardButtonHidden:(BOOL)creditCardButtonHidden {
+  _creditCardButtonHidden = creditCardButtonHidden;
+  self.manualFillAccessoryViewController.creditCardButtonHidden =
+      creditCardButtonHidden;
+}
+
+- (void)setFormInputNextButtonEnabled:(BOOL)formInputNextButtonEnabled {
+  if (formInputNextButtonEnabled == _formInputNextButtonEnabled) {
+    return;
+  }
+  _formInputNextButtonEnabled = formInputNextButtonEnabled;
+  self.inputAccessoryView.nextButton.enabled = _formInputNextButtonEnabled;
+}
+
+- (void)setFormInputPreviousButtonEnabled:(BOOL)formInputPreviousButtonEnabled {
+  if (formInputPreviousButtonEnabled == _formInputPreviousButtonEnabled) {
+    return;
+  }
+  _formInputPreviousButtonEnabled = formInputPreviousButtonEnabled;
+  self.inputAccessoryView.previousButton.enabled =
+      _formInputPreviousButtonEnabled;
+}
+
 #pragma mark - Private
 
 // Removes the custom views related to the input accessory view.
 - (void)removeCustomInputAccessoryView {
-  [self.customAccessoryView removeFromSuperview];
+  [self.inputAccessoryView removeFromSuperview];
   [self.grayBackgroundView removeFromSuperview];
-}
-
-// Removes the custom input accessory views and clears the references.
-- (void)restoreOriginalInputAccessoryView {
-  [self removeCustomInputAccessoryView];
-  self.customAccessoryView = nil;
 }
 
 // This searches in a keyboard view hierarchy for the best candidate to
@@ -243,47 +335,52 @@ CGFloat const kInputAccessoryHeight = 44.0f;
   return nil;
 }
 
-- (void)keyboardWillShow:(NSNotification*)notification {
-  // [iPhone, iOS 10] If the customAccessoryView has not been added to the
-  // hierarchy, do it here. This can happen is the view is provided before the
-  // keyboard view is created by the system, i.e. the first time the keyboard
-  // will appear.
-  if (!IsIPadIdiom()) {
-    [self addCustomAccessoryViewIfNeeded];
-    [self addCustomKeyboardViewIfNeeded];
+// Returns YES if one the first level of children has "Picker" in their class
+// name. No otherwise.
+- (BOOL)containsPickerView:(UIView*)view {
+  for (UIView* subview in view.subviews) {
+    if ([NSStringFromClass([subview class]) rangeOfString:@"Picker"].location !=
+        NSNotFound) {
+      return YES;
+    }
   }
+  return NO;
 }
 
 - (void)keyboardWillOrDidChangeFrame:(NSNotification*)notification {
   CGRect keyboardFrame =
       [notification.userInfo[UIKeyboardFrameEndUserInfoKey] CGRectValue];
   UIView* keyboardView = [self getKeyboardView];
+  // On iPhones when the field is a selector the keyboard becomes a picker.
+  // Restore the keyboard in these cases, but allow the user to return to see
+  // the info in Manual Fallback.
+  if (!IsIPadIdiom() && [self containsPickerView:keyboardView]) {
+    [self.manualFillAccessoryViewController resetAnimated:NO];
+    [self unlockManualFallbackView];
+    [self.keyboardReplacementView removeFromSuperview];
+    self.keyboardReplacementView = nil;
+    return;
+  }
   CGRect windowRect = keyboardView.window.bounds;
-  // On iPad when the keyboard is undocked, on iOS 10 and 11,
+  // On iPad when the keyboard is undocked, on iOS 11 and 12,
   // `UIKeyboard*HideNotification` or `UIKeyboard*ShowNotification` are not
-  // being sent. So the check is done here.
+  // being sent. So the check for all devices is done here.
   if (CGRectContainsRect(windowRect, keyboardFrame)) {
     _keyboardFrame = keyboardFrame;
+    // Make sure the input accessory is there if needed.
+    [self addInputAccessoryViewIfNeeded];
+    [self addCustomKeyboardViewIfNeeded];
   } else {
     _keyboardFrame = CGRectZero;
   }
   // On ipad we hide the views so they don't stick around at the bottom. Only
   // needed on iPad because we add the view directly to the keyboard view.
-  if (IsIPadIdiom() && self.customAccessoryView) {
-    if (@available(iOS 11, *)) {
-    } else {
-      // [iPad iOS 10] There is a bug when constraining something to the
-      // keyboard view. So this updates the frame instead.
-      CGFloat height = autofill::kInputAccessoryHeight;
-      self.customAccessoryView.frame =
-          CGRectMake(keyboardView.frame.origin.x, -height,
-                     keyboardView.frame.size.width, height);
-    }
+  if (IsIPadIdiom() && self.inputAccessoryView) {
     if (CGRectEqualToRect(_keyboardFrame, CGRectZero)) {
-      self.customAccessoryView.hidden = true;
+      self.inputAccessoryView.hidden = true;
       self.grayBackgroundView.hidden = true;
     } else {
-      self.customAccessoryView.hidden = false;
+      self.inputAccessoryView.hidden = false;
       self.grayBackgroundView.hidden = false;
     }
   }
@@ -298,37 +395,27 @@ CGFloat const kInputAccessoryHeight = 44.0f;
   }
 }
 
-// Adds the customAccessoryView and the backgroundView (on iPads), if those are
+// Adds the inputAccessoryView and the backgroundView (on iPads), if those are
 // not already in the hierarchy.
-- (void)addCustomAccessoryViewIfNeeded {
+- (void)addInputAccessoryViewIfNeeded {
   if (self.isPaused) {
     return;
   }
-  if (self.customAccessoryView && !self.customAccessoryView.superview) {
+  if (self.inputAccessoryView && !self.inputAccessoryView.superview) {
     if (IsIPadIdiom()) {
       UIView* keyboardView = [self getKeyboardView];
-      // [iPad iOS 10] There is a bug when constraining something to the
-      // keyboard view. So this sets the frame instead.
-      if (@available(iOS 11, *)) {
-        self.customAccessoryView.translatesAutoresizingMaskIntoConstraints = NO;
-        [keyboardView addSubview:self.customAccessoryView];
-        [NSLayoutConstraint activateConstraints:@[
-          [self.customAccessoryView.leadingAnchor
-              constraintEqualToAnchor:keyboardView.leadingAnchor],
-          [self.customAccessoryView.trailingAnchor
-              constraintEqualToAnchor:keyboardView.trailingAnchor],
-          [self.customAccessoryView.bottomAnchor
-              constraintEqualToAnchor:keyboardView.topAnchor],
-          [self.customAccessoryView.heightAnchor
-              constraintEqualToConstant:autofill::kInputAccessoryHeight]
-        ]];
-      } else {
-        CGFloat height = autofill::kInputAccessoryHeight;
-        self.customAccessoryView.frame =
-            CGRectMake(keyboardView.frame.origin.x, -height,
-                       keyboardView.frame.size.width, height);
-        [keyboardView addSubview:self.customAccessoryView];
-      }
+      self.inputAccessoryView.translatesAutoresizingMaskIntoConstraints = NO;
+      [keyboardView addSubview:self.inputAccessoryView];
+      [NSLayoutConstraint activateConstraints:@[
+        [self.inputAccessoryView.leadingAnchor
+            constraintEqualToAnchor:keyboardView.leadingAnchor],
+        [self.inputAccessoryView.trailingAnchor
+            constraintEqualToAnchor:keyboardView.trailingAnchor],
+        [self.inputAccessoryView.bottomAnchor
+            constraintEqualToAnchor:keyboardView.topAnchor],
+        [self.inputAccessoryView.heightAnchor
+            constraintEqualToConstant:autofill::kInputAccessoryHeight]
+      ]];
       if (!self.grayBackgroundView.superview) {
         [keyboardView addSubview:self.grayBackgroundView];
         [keyboardView sendSubviewToBack:self.grayBackgroundView];
@@ -336,13 +423,48 @@ CGFloat const kInputAccessoryHeight = 44.0f;
       }
     } else {
       UIResponder* firstResponder = GetFirstResponder();
-      UIView* inputAccessoryView = firstResponder.inputAccessoryView;
-      if (inputAccessoryView) {
-        [inputAccessoryView addSubview:self.customAccessoryView];
-        AddSameConstraints(self.customAccessoryView, inputAccessoryView);
+      if (firstResponder.inputAccessoryView) {
+        [firstResponder.inputAccessoryView addSubview:self.inputAccessoryView];
+        AddSameConstraints(self.inputAccessoryView,
+                           firstResponder.inputAccessoryView);
       }
     }
   }
+}
+
+#pragma mark - ManualFillAccessoryViewControllerDelegate
+
+- (void)keyboardButtonPressed {
+  [self.manualFillAccessoryViewControllerDelegate keyboardButtonPressed];
+}
+
+- (void)accountButtonPressed:(UIButton*)sender {
+  UMA_HISTOGRAM_COUNTS_100("ManualFallback.VisibleSuggestions.OpenProfiles",
+                           self.formSuggestionView.suggestions.count);
+  [self.manualFillAccessoryViewControllerDelegate accountButtonPressed:sender];
+}
+
+- (void)cardButtonPressed:(UIButton*)sender {
+  UMA_HISTOGRAM_COUNTS_100("ManualFallback.VisibleSuggestions.OpenCreditCards",
+                           self.formSuggestionView.suggestions.count);
+  [self.manualFillAccessoryViewControllerDelegate cardButtonPressed:sender];
+}
+
+- (void)passwordButtonPressed:(UIButton*)sender {
+  UMA_HISTOGRAM_COUNTS_100("ManualFallback.VisibleSuggestions.OpenPasswords",
+                           self.formSuggestionView.suggestions.count);
+  [self.manualFillAccessoryViewControllerDelegate passwordButtonPressed:sender];
+}
+
+#pragma mark - FormSuggestionViewDelegate
+
+- (void)formSuggestionViewShouldResetFromPull:
+    (FormSuggestionView*)formSuggestionView {
+  base::RecordAction(base::UserMetricsAction("ManualFallback_ClosePull"));
+  // The pull gesture has the same effect as when the keyboard button is
+  // pressed.
+  [self.manualFillAccessoryViewControllerDelegate keyboardButtonPressed];
+  [self.manualFillAccessoryViewController resetAnimated:YES];
 }
 
 @end

@@ -309,11 +309,19 @@
       "gltestthreading",
       "gm",
       "_",
+      "dftext",
+      "gltestthreading",
+      "gm",
+      "_",
       "orientation",
       "_",
       "svg",
       "_",
       "svgparse_",
+      "_",
+      "image",
+      "gen_platf",
+      "error",
       "_",
       "image",
       "_",
@@ -410,6 +418,7 @@
       "~VkHeapTests",
       "~GLPrograms",
       "--nonativeFonts",
+      "--reduceOpListSplitting",
       "--verbose"
     ],
     "cwd": "[START_DIR]/skia",
@@ -423,8 +432,7 @@
     "name": "symbolized dm"
   },
   {
-    "name": "$result",
-    "recipe_result": null,
-    "status_code": 0
+    "jsonResult": null,
+    "name": "$result"
   }
 ]

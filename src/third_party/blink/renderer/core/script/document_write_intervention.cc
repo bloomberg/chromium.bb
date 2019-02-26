@@ -139,10 +139,10 @@ bool MaybeDisallowFetchForDocWrittenScript(FetchParameters& params,
   // If the hosts didn't match, then see if the domains match. For example, if
   // a script is served from static.example.com for a document served from
   // www.example.com, we consider that a first party script and allow it.
-  String request_domain = NetworkUtils::GetDomainAndRegistry(
-      request_host, NetworkUtils::kIncludePrivateRegistries);
-  String document_domain = NetworkUtils::GetDomainAndRegistry(
-      document_host, NetworkUtils::kIncludePrivateRegistries);
+  String request_domain = network_utils::GetDomainAndRegistry(
+      request_host, network_utils::kIncludePrivateRegistries);
+  String document_domain = network_utils::GetDomainAndRegistry(
+      document_host, network_utils::kIncludePrivateRegistries);
   // getDomainAndRegistry will return the empty string for domains that are
   // already top-level, such as localhost. Thus we only compare domains if we
   // get non-empty results back from getDomainAndRegistry.
@@ -219,7 +219,8 @@ void PossiblyFetchBlockedDocWriteScript(
       resource->Url(), element_document.GetSecurityOrigin(), cross_origin,
       resource->Encoding(), FetchParameters::kIdleLoad);
   AddHeader(&params);
-  ScriptResource::Fetch(params, element_document.Fetcher(), nullptr);
+  ScriptResource::Fetch(params, element_document.Fetcher(), nullptr,
+                        ScriptResource::kNoStreaming);
 }
 
 }  // namespace blink

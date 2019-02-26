@@ -58,8 +58,6 @@ public:
 
     SkDEBUGCODE(void dump(bool printDependencies) const override;)
 
-    SkDEBUGCODE(int numOps() const override { return fRecordedOps.count(); })
-
 private:
     void deleteOp(int index);
     void deleteOps();
@@ -70,7 +68,7 @@ private:
 
     void recordOp(std::unique_ptr<GrOp>);
 
-    // The memory for the ops in 'fRecordedOps' is actually stored in 'fOpMemoryPool'
+    // The memory for the ops in 'fOpChains' is actually stored in 'fOpMemoryPool'
     SkSTArray<2, std::unique_ptr<GrOp>, true> fRecordedOps;
 
     typedef GrOpList INHERITED;

@@ -418,10 +418,6 @@ cr.define('mobile', function() {
     MobileSetup.getInstance().updateDeviceStatus_(deviceInfo);
   };
 
-  MobileSetup.portalFrameLoadError = function(errorCode) {};
-
-  MobileSetup.portalFrameLoadCompleted = function() {};
-
   MobileSetup.loadPage = function() {
     mobile.MobileSetup.getInstance().initialize(
         mobile.MobileSetup.ACTIVATION_PAGE_URL);

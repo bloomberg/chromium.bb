@@ -8,15 +8,15 @@
 #include "third_party/blink/renderer/core/css/parser/css_property_parser_helpers.h"
 
 namespace blink {
-namespace CSSLonghand {
+namespace css_longhand {
 
 const CSSValue* WebkitTransformOriginZ::ParseSingleValue(
     CSSParserTokenRange& range,
     const CSSParserContext& context,
     const CSSParserLocalContext&) const {
-  return CSSPropertyParserHelpers::ConsumeLength(range, context.Mode(),
-                                                 kValueRangeAll);
+  return css_property_parser_helpers::ConsumeLength(range, context.Mode(),
+                                                    kValueRangeAll);
 }
 
-}  // namespace CSSLonghand
+}  // namespace css_longhand
 }  // namespace blink

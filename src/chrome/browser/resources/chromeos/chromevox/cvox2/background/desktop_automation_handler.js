@@ -60,6 +60,9 @@ DesktopAutomationHandler = function(node) {
   /** @private {boolean} */
   this.shouldIgnoreDocumentSelectionFromAction_ = false;
 
+  /** @private {number?} */
+  this.delayedAttributeOutputId_;
+
   this.addListener_(
       EventType.ACTIVEDESCENDANTCHANGED, this.onActiveDescendantChanged);
   this.addListener_(EventType.ALERT, this.onAlert);
@@ -107,6 +110,13 @@ DesktopAutomationHandler = function(node) {
  * @const {number}
  */
 DesktopAutomationHandler.VMIN_VALUE_CHANGE_DELAY_MS = 50;
+
+/**
+ * Time to wait before announcing attribute changes that are otherwise too
+ * disruptive.
+ * @const {number}
+ */
+DesktopAutomationHandler.ATTRIBUTE_DELAY_MS = 1500;
 
 /**
  * Controls announcement of non-user-initiated events.
@@ -187,6 +197,21 @@ DesktopAutomationHandler.prototype = {
           prevOutput.equals(this.lastAttributeOutput_))
         return;
 
+      // If the target or an ancestor is controlled by another control, we may
+      // want to delay the output.
+      var maybeControlledBy = evt.target;
+      while (maybeControlledBy) {
+        if (maybeControlledBy.controlledBy.length &&
+            maybeControlledBy.controlledBy.find((n) => !!n.autoComplete)) {
+          clearTimeout(this.delayedAttributeOutputId_);
+          this.delayedAttributeOutputId_ = setTimeout(() => {
+            this.lastAttributeOutput_.go();
+          }, DesktopAutomationHandler.ATTRIBUTE_DELAY_MS);
+          return;
+        }
+        maybeControlledBy = maybeControlledBy.parent;
+      }
+
       this.lastAttributeOutput_.go();
     }
   },
@@ -205,6 +230,10 @@ DesktopAutomationHandler.prototype = {
   onAriaAttributeChanged: function(evt) {
     if (evt.target.state.editable)
       return;
+    // Only report attribute changes on menu list items if it is selected.
+    if (evt.target.role == RoleType.MENU_LIST_OPTION && !evt.target.selected)
+      return;
+
     this.onEventIfInRange(evt);
   },
 
@@ -256,16 +285,17 @@ DesktopAutomationHandler.prototype = {
     EventSourceState.set(EventSourceType.TOUCH_GESTURE);
 
     var target = evt.target;
-    if (!AutomationPredicate.object(target)) {
-      target = AutomationUtil.findNodePre(
-                   target, Dir.FORWARD, AutomationPredicate.object) ||
-          target;
+    var targetLeaf = null;
+    var targetObject = null;
+    while (target && target != target.root) {
+      if (!targetObject && AutomationPredicate.object(target))
+        targetObject = target;
+      if (AutomationPredicate.touchLeaf(target))
+        targetLeaf = target;
+      target = target.parent;
     }
 
-    while (target && !AutomationPredicate.object(target))
-      target = target.parent;
-
-
+    target = targetLeaf || targetObject;
     if (!target)
       return;
 
@@ -470,6 +500,9 @@ DesktopAutomationHandler.prototype = {
     }
 
     var cur = ChromeVoxState.instance.currentRange;
+    if (!cur)
+      return;
+
     if (AutomationUtil.isDescendantOf(cur.start.node, evt.target) ||
         AutomationUtil.isDescendantOf(cur.end.node, evt.target)) {
       new Output().withLocation(cur, null, evt.type).go();

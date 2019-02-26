@@ -405,6 +405,10 @@ const CLSID& GetElevatorClsid() {
   return InstallDetails::Get().elevator_clsid();
 }
 
+const CLSID& GetElevatorIid() {
+  return InstallDetails::Get().elevator_iid();
+}
+
 std::wstring GetElevationServiceName() {
   std::wstring name = GetElevationServiceDisplayName();
   name.erase(std::remove_if(name.begin(), name.end(), isspace), name.end());

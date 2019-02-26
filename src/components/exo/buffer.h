@@ -38,7 +38,8 @@ class Buffer : public base::SupportsWeakPtr<Buffer> {
          unsigned texture_target,
          unsigned query_type,
          bool use_zero_copy,
-         bool is_overlay_candidate);
+         bool is_overlay_candidate,
+         bool y_invert);
   ~Buffer();
 
   // Set the callback to run when the buffer is no longer used by the
@@ -47,6 +48,9 @@ class Buffer : public base::SupportsWeakPtr<Buffer> {
   void set_release_callback(const base::Closure& release_callback) {
     release_callback_ = release_callback;
   }
+
+  // Returns if this buffer's contents are vertically inverted.
+  bool y_invert() const { return y_invert_; }
 
   // This function can be used to acquire a texture mailbox for the contents of
   // buffer. Returns a release callback on success. The release callback should
@@ -113,6 +117,9 @@ class Buffer : public base::SupportsWeakPtr<Buffer> {
 
   // True if this buffer is an overlay candidate.
   const bool is_overlay_candidate_;
+
+  // True if buffer content is vertically inverted.
+  const bool y_invert_;
 
   // This keeps track of how many Surfaces the buffer is attached to.
   unsigned attach_count_ = 0;

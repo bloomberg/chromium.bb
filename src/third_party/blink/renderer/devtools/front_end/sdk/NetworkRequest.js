@@ -1151,12 +1151,13 @@ SDK.NetworkRequest = class extends Common.Object {
   async populateImageSource(image) {
     const {content, encoded} = await this.contentData();
     let imageSrc = Common.ContentProvider.contentAsDataURL(content, this._mimeType, encoded);
-    if (imageSrc === null) {
+    if (imageSrc === null && !this._failed) {
       const cacheControl = this.responseHeaderValue('cache-control') || '';
       if (!cacheControl.includes('no-cache'))
         imageSrc = this._url;
     }
-    image.src = imageSrc;
+    if (imageSrc !== null)
+      image.src = imageSrc;
   }
 
   /**
@@ -1243,6 +1244,24 @@ SDK.NetworkRequest = class extends Common.Object {
   setRequestIdForTest(requestId) {
     this._backendRequestId = requestId;
     this._requestId = requestId;
+  }
+
+  /**
+   * @return {?string}
+   */
+  charset() {
+    const contentTypeHeader = this.responseHeaderValue('content-type');
+    if (!contentTypeHeader)
+      return null;
+
+    const responseCharsets = contentTypeHeader.replace(/ /g, '')
+                                 .split(';')
+                                 .filter(parameter => parameter.toLowerCase().startsWith('charset='))
+                                 .map(parameter => parameter.slice('charset='.length));
+    if (responseCharsets.length)
+      return responseCharsets[0];
+
+    return null;
   }
 };
 

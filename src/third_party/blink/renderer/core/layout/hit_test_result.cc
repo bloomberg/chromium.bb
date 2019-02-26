@@ -46,7 +46,7 @@
 
 namespace blink {
 
-using namespace HTMLNames;
+using namespace html_names;
 
 HitTestResult::HitTestResult()
     : hit_test_request_(HitTestRequest::kReadOnly | HitTestRequest::kActive),
@@ -72,9 +72,10 @@ HitTestResult::HitTestResult(const HitTestResult& other)
       is_over_embedded_content_view_(other.IsOverEmbeddedContentView()),
       canvas_region_id_(other.CanvasRegionId()) {
   // Only copy the NodeSet in case of list hit test.
-  list_based_test_result_ = other.list_based_test_result_
-                                ? new NodeSet(*other.list_based_test_result_)
-                                : nullptr;
+  list_based_test_result_ =
+      other.list_based_test_result_
+          ? MakeGarbageCollected<NodeSet>(*other.list_based_test_result_)
+          : nullptr;
 }
 
 HitTestResult::~HitTestResult() = default;
@@ -114,9 +115,10 @@ void HitTestResult::PopulateFromCachedResult(const HitTestResult& other) {
   canvas_region_id_ = other.CanvasRegionId();
 
   // Only copy the NodeSet in case of list hit test.
-  list_based_test_result_ = other.list_based_test_result_
-                                ? new NodeSet(*other.list_based_test_result_)
-                                : nullptr;
+  list_based_test_result_ =
+      other.list_based_test_result_
+          ? MakeGarbageCollected<NodeSet>(*other.list_based_test_result_)
+          : nullptr;
 }
 
 void HitTestResult::Trace(blink::Visitor* visitor) {
@@ -181,7 +183,7 @@ HTMLAreaElement* HitTestResult::ImageAreaForImage() const {
     return nullptr;
 
   HTMLMapElement* map = image_element->GetTreeScope().GetImageMap(
-      image_element->FastGetAttribute(usemapAttr));
+      image_element->FastGetAttribute(kUsemapAttr));
   if (!map)
     return nullptr;
 
@@ -253,7 +255,7 @@ const AtomicString& HitTestResult::AltDisplayString() const {
     return g_null_atom;
 
   if (auto* image = ToHTMLImageElementOrNull(*inner_node_or_image_map_image))
-    return image->getAttribute(altAttr);
+    return image->getAttribute(kAltAttr);
 
   if (auto* input = ToHTMLInputElementOrNull(*inner_node_or_image_map_image))
     return input->Alt();
@@ -299,7 +301,7 @@ KURL HitTestResult::AbsoluteImageURL() const {
   if (IsHTMLImageElement(*inner_node_or_image_map_image) ||
       (IsHTMLInputElement(*inner_node_or_image_map_image) &&
        ToHTMLInputElement(inner_node_or_image_map_image)->type() ==
-           InputTypeNames::image))
+           input_type_names::kImage))
     url_string = ToElement(*inner_node_or_image_map_image).ImageSourceURL();
   else if ((inner_node_or_image_map_image->GetLayoutObject() &&
             inner_node_or_image_map_image->GetLayoutObject()->IsImage()) &&
@@ -445,13 +447,13 @@ void HitTestResult::Append(const HitTestResult& other) {
 
 const HitTestResult::NodeSet& HitTestResult::ListBasedTestResult() const {
   if (!list_based_test_result_)
-    list_based_test_result_ = new NodeSet;
+    list_based_test_result_ = MakeGarbageCollected<NodeSet>();
   return *list_based_test_result_;
 }
 
 HitTestResult::NodeSet& HitTestResult::MutableListBasedTestResult() {
   if (!list_based_test_result_)
-    list_based_test_result_ = new NodeSet;
+    list_based_test_result_ = MakeGarbageCollected<NodeSet>();
   return *list_based_test_result_;
 }
 

@@ -62,12 +62,10 @@ void SearchModel::PublishResults(
   // Add items back to |results_| in the order of |new_results|.
   for (auto&& new_result : new_results) {
     auto ui_result_it = results_map.find(new_result->id());
-    if (ui_result_it != results_map.end() &&
-        new_result->answer_card_contents_token() ==
-            ui_result_it->second->answer_card_contents_token()) {
+    if (ui_result_it != results_map.end()) {
       // Update and use the old result if it exists.
       std::unique_ptr<SearchResult> ui_result = std::move(ui_result_it->second);
-      ui_result->SetMetadata(new_result->CloneMetadata());
+      ui_result->SetMetadata(new_result->TakeMetadata());
       results_->Add(std::move(ui_result));
 
       // Remove the item from the map so that it ends up only with unused
@@ -90,8 +88,27 @@ SearchResult* SearchModel::FindSearchResult(const std::string& id) {
   return nullptr;
 }
 
+SearchResult* SearchModel::GetFirstVisibleResult() {
+  for (const auto& result : *results_) {
+    if (result->is_visible())
+      return result.get();
+  }
+
+  return nullptr;
+}
+
 void SearchModel::DeleteAllResults() {
   PublishResults(std::vector<std::unique_ptr<SearchResult>>());
+}
+
+void SearchModel::DeleteResultById(const std::string& id) {
+  for (size_t i = 0; i < results_->item_count(); ++i) {
+    SearchResult* result = results_->GetItemAt(i);
+    if (result->id() == id) {
+      results_->DeleteAt(i);
+      break;
+    }
+  }
 }
 
 }  // namespace app_list

@@ -13,6 +13,7 @@
 #include "chrome/browser/profiles/profile_android.h"
 #include "chrome/browser/sessions/session_restore.h"
 #include "chrome/browser/sync/profile_sync_service_factory.h"
+#include "chrome/browser/sync/session_sync_service_factory.h"
 #include "chrome/browser/ui/android/tab_model/tab_model.h"
 #include "chrome/browser/ui/android/tab_model/tab_model_list.h"
 #include "chrome/common/pref_names.h"
@@ -21,6 +22,7 @@
 #include "components/prefs/pref_service.h"
 #include "components/prefs/scoped_user_pref_update.h"
 #include "components/sync_sessions/open_tabs_ui_delegate.h"
+#include "components/sync_sessions/session_sync_service.h"
 #include "content/public/browser/notification_details.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/notification_source.h"
@@ -40,11 +42,11 @@ using sync_sessions::SyncedSession;
 namespace {
 
 OpenTabsUIDelegate* GetOpenTabsUIDelegate(Profile* profile) {
-  browser_sync::ProfileSyncService* service =
-      ProfileSyncServiceFactory::GetInstance()->GetForProfile(profile);
+  sync_sessions::SessionSyncService* service =
+      SessionSyncServiceFactory::GetInstance()->GetForProfile(profile);
 
-  // Only return the delegate if it exists and it is done syncing sessions.
-  if (!service || !service->IsSyncFeatureActive())
+  // Only return the delegate if it exists.
+  if (!service)
     return NULL;
 
   return service->GetOpenTabsUIDelegate();
@@ -145,13 +147,19 @@ static jlong JNI_ForeignSessionHelper_Init(
 }
 
 ForeignSessionHelper::ForeignSessionHelper(Profile* profile)
-    : profile_(profile), scoped_observer_(this) {
-  browser_sync::ProfileSyncService* service =
-      ProfileSyncServiceFactory::GetInstance()->GetForProfile(profile);
+    : profile_(profile) {
+  sync_sessions::SessionSyncService* service =
+      SessionSyncServiceFactory::GetInstance()->GetForProfile(profile);
 
-  // NOTE: The ProfileSyncService can be null in tests.
-  if (service)
-    scoped_observer_.Add(service);
+  // NOTE: The SessionSyncService can be null in tests.
+  if (service) {
+    // base::Unretained() is safe below because the subscription itself is a
+    // class member field and handles destruction well.
+    foreign_session_updated_subscription_ =
+        service->SubscribeToForeignSessionsChanged(base::BindRepeating(
+            &ForeignSessionHelper::FireForeignSessionCallback,
+            base::Unretained(this)));
+  }
 }
 
 ForeignSessionHelper::~ForeignSessionHelper() {
@@ -165,9 +173,9 @@ void ForeignSessionHelper::Destroy(JNIEnv* env,
 jboolean ForeignSessionHelper::IsTabSyncEnabled(
     JNIEnv* env,
     const JavaParamRef<jobject>& obj) {
-  browser_sync::ProfileSyncService* service =
-      ProfileSyncServiceFactory::GetInstance()->GetForProfile(profile_);
-  return service && service->GetActiveDataTypes().Has(syncer::PROXY_TABS);
+  sync_sessions::SessionSyncService* service =
+      SessionSyncServiceFactory::GetInstance()->GetForProfile(profile_);
+  return service && service->GetOpenTabsUIDelegate();
 }
 
 void ForeignSessionHelper::TriggerSessionSync(
@@ -195,15 +203,6 @@ void ForeignSessionHelper::FireForeignSessionCallback() {
 
   JNIEnv* env = AttachCurrentThread();
   Java_ForeignSessionCallback_onUpdated(env, callback_);
-}
-
-void ForeignSessionHelper::OnSyncConfigurationCompleted(
-    syncer::SyncService* sync) {
-  FireForeignSessionCallback();
-}
-
-void ForeignSessionHelper::OnForeignSessionUpdated(syncer::SyncService* sync) {
-  FireForeignSessionCallback();
 }
 
 jboolean ForeignSessionHelper::GetForeignSessions(
@@ -304,4 +303,16 @@ void ForeignSessionHelper::DeleteForeignSession(
   OpenTabsUIDelegate* open_tabs = GetOpenTabsUIDelegate(profile_);
   if (open_tabs)
     open_tabs->DeleteForeignSession(ConvertJavaStringToUTF8(env, session_tag));
+}
+
+void ForeignSessionHelper::SetInvalidationsForSessionsEnabled(
+    JNIEnv* env,
+    const JavaParamRef<jobject>& obj,
+    jboolean enabled) {
+  browser_sync::ProfileSyncService* service =
+      ProfileSyncServiceFactory::GetInstance()->GetForProfile(profile_);
+  if (!service)
+    return;
+
+  service->SetInvalidationsForSessionsEnabled(enabled);
 }

@@ -16,7 +16,6 @@
 #include "ui/base/ui_base_paths.h"
 #include "ui/base/ui_base_switches.h"
 #include "ui/compositor/test/context_factories_for_test.h"
-#include "ui/gfx/gfx_paths.h"
 #include "ui/gl/gl_switches.h"
 #include "ui/gl/test/gl_surface_test_support.h"
 
@@ -36,7 +35,6 @@ void AshTestSuite::Initialize() {
 
   gl::GLSurfaceTestSupport::InitializeOneOff();
 
-  gfx::RegisterPathProvider();
   ui::RegisterPathProvider();
 
   // Force unittests to run using en-US so if we test against string output,

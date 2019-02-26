@@ -21,6 +21,7 @@
 
 #include "third_party/blink/renderer/core/dom/document.h"
 #include "third_party/blink/renderer/core/svg/graphics/filters/svg_filter_builder.h"
+#include "third_party/blink/renderer/core/svg/svg_enumeration_map.h"
 #include "third_party/blink/renderer/core/svg_names.h"
 #include "third_party/blink/renderer/platform/geometry/int_point.h"
 #include "third_party/blink/renderer/platform/geometry/int_size.h"
@@ -28,30 +29,30 @@
 namespace blink {
 
 template <>
-const SVGEnumerationStringEntries& GetStaticStringEntries<EdgeModeType>() {
-  DEFINE_STATIC_LOCAL(SVGEnumerationStringEntries, entries, ());
-  if (entries.IsEmpty()) {
-    entries.push_back(std::make_pair(EDGEMODE_DUPLICATE, "duplicate"));
-    entries.push_back(std::make_pair(EDGEMODE_WRAP, "wrap"));
-    entries.push_back(std::make_pair(EDGEMODE_NONE, "none"));
-  }
+const SVGEnumerationMap& GetEnumerationMap<EdgeModeType>() {
+  static const SVGEnumerationMap::Entry enum_items[] = {
+      {EDGEMODE_DUPLICATE, "duplicate"},
+      {EDGEMODE_WRAP, "wrap"},
+      {EDGEMODE_NONE, "none"},
+  };
+  static const SVGEnumerationMap entries(enum_items);
   return entries;
 }
 
 class SVGAnimatedOrder : public SVGAnimatedIntegerOptionalInteger {
  public:
   static SVGAnimatedOrder* Create(SVGElement* context_element) {
-    return new SVGAnimatedOrder(context_element);
+    return MakeGarbageCollected<SVGAnimatedOrder>(context_element);
   }
+
+  SVGAnimatedOrder(SVGElement* context_element)
+      : SVGAnimatedIntegerOptionalInteger(context_element,
+                                          svg_names::kOrderAttr,
+                                          3) {}
 
   SVGParsingError AttributeChanged(const String&) override;
 
  protected:
-  SVGAnimatedOrder(SVGElement* context_element)
-      : SVGAnimatedIntegerOptionalInteger(context_element,
-                                          SVGNames::orderAttr,
-                                          3) {}
-
   static SVGParsingError CheckValue(SVGParsingError parse_status, int value) {
     if (parse_status != SVGParseStatus::kNoError)
       return parse_status;
@@ -75,26 +76,26 @@ SVGParsingError SVGAnimatedOrder::AttributeChanged(const String& value) {
 
 inline SVGFEConvolveMatrixElement::SVGFEConvolveMatrixElement(
     Document& document)
-    : SVGFilterPrimitiveStandardAttributes(SVGNames::feConvolveMatrixTag,
+    : SVGFilterPrimitiveStandardAttributes(svg_names::kFEConvolveMatrixTag,
                                            document),
-      bias_(SVGAnimatedNumber::Create(this, SVGNames::biasAttr, 0.0f)),
-      divisor_(SVGAnimatedNumber::Create(this, SVGNames::divisorAttr, 1)),
-      in1_(SVGAnimatedString::Create(this, SVGNames::inAttr)),
+      bias_(SVGAnimatedNumber::Create(this, svg_names::kBiasAttr, 0.0f)),
+      divisor_(SVGAnimatedNumber::Create(this, svg_names::kDivisorAttr, 1)),
+      in1_(SVGAnimatedString::Create(this, svg_names::kInAttr)),
       edge_mode_(
           SVGAnimatedEnumeration<EdgeModeType>::Create(this,
-                                                       SVGNames::edgeModeAttr,
+                                                       svg_names::kEdgeModeAttr,
                                                        EDGEMODE_DUPLICATE)),
       kernel_matrix_(
-          SVGAnimatedNumberList::Create(this, SVGNames::kernelMatrixAttr)),
+          SVGAnimatedNumberList::Create(this, svg_names::kKernelMatrixAttr)),
       kernel_unit_length_(SVGAnimatedNumberOptionalNumber::Create(
           this,
-          SVGNames::kernelUnitLengthAttr,
+          svg_names::kKernelUnitLengthAttr,
           0.0f)),
       order_(SVGAnimatedOrder::Create(this)),
       preserve_alpha_(
-          SVGAnimatedBoolean::Create(this, SVGNames::preserveAlphaAttr)),
-      target_x_(SVGAnimatedInteger::Create(this, SVGNames::targetXAttr, 0)),
-      target_y_(SVGAnimatedInteger::Create(this, SVGNames::targetYAttr, 0)) {
+          SVGAnimatedBoolean::Create(this, svg_names::kPreserveAlphaAttr)),
+      target_x_(SVGAnimatedInteger::Create(this, svg_names::kTargetXAttr, 0)),
+      target_y_(SVGAnimatedInteger::Create(this, svg_names::kTargetYAttr, 0)) {
   AddToPropertyMap(preserve_alpha_);
   AddToPropertyMap(divisor_);
   AddToPropertyMap(bias_);
@@ -158,16 +159,17 @@ bool SVGFEConvolveMatrixElement::SetFilterEffectAttribute(
     FilterEffect* effect,
     const QualifiedName& attr_name) {
   FEConvolveMatrix* convolve_matrix = static_cast<FEConvolveMatrix*>(effect);
-  if (attr_name == SVGNames::edgeModeAttr)
+  if (attr_name == svg_names::kEdgeModeAttr)
     return convolve_matrix->SetEdgeMode(
         edge_mode_->CurrentValue()->EnumValue());
-  if (attr_name == SVGNames::divisorAttr)
+  if (attr_name == svg_names::kDivisorAttr)
     return convolve_matrix->SetDivisor(ComputeDivisor());
-  if (attr_name == SVGNames::biasAttr)
+  if (attr_name == svg_names::kBiasAttr)
     return convolve_matrix->SetBias(bias_->CurrentValue()->Value());
-  if (attr_name == SVGNames::targetXAttr || attr_name == SVGNames::targetYAttr)
+  if (attr_name == svg_names::kTargetXAttr ||
+      attr_name == svg_names::kTargetYAttr)
     return convolve_matrix->SetTargetOffset(TargetPoint());
-  if (attr_name == SVGNames::preserveAlphaAttr)
+  if (attr_name == svg_names::kPreserveAlphaAttr)
     return convolve_matrix->SetPreserveAlpha(
         preserve_alpha_->CurrentValue()->Value());
   return SVGFilterPrimitiveStandardAttributes::SetFilterEffectAttribute(
@@ -176,18 +178,19 @@ bool SVGFEConvolveMatrixElement::SetFilterEffectAttribute(
 
 void SVGFEConvolveMatrixElement::SvgAttributeChanged(
     const QualifiedName& attr_name) {
-  if (attr_name == SVGNames::edgeModeAttr ||
-      attr_name == SVGNames::divisorAttr || attr_name == SVGNames::biasAttr ||
-      attr_name == SVGNames::targetXAttr ||
-      attr_name == SVGNames::targetYAttr ||
-      attr_name == SVGNames::preserveAlphaAttr) {
+  if (attr_name == svg_names::kEdgeModeAttr ||
+      attr_name == svg_names::kDivisorAttr ||
+      attr_name == svg_names::kBiasAttr ||
+      attr_name == svg_names::kTargetXAttr ||
+      attr_name == svg_names::kTargetYAttr ||
+      attr_name == svg_names::kPreserveAlphaAttr) {
     SVGElement::InvalidationGuard invalidation_guard(this);
     PrimitiveAttributeChanged(attr_name);
     return;
   }
 
-  if (attr_name == SVGNames::inAttr || attr_name == SVGNames::orderAttr ||
-      attr_name == SVGNames::kernelMatrixAttr) {
+  if (attr_name == svg_names::kInAttr || attr_name == svg_names::kOrderAttr ||
+      attr_name == svg_names::kKernelMatrixAttr) {
     SVGElement::InvalidationGuard invalidation_guard(this);
     Invalidate();
     return;

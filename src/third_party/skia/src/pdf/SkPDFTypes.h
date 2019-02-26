@@ -32,6 +32,18 @@ class SkWStream;
     #include <atomic>
 #endif
 
+struct SkPDFIndirectReference {
+    int fValue = -1;
+};
+
+inline static bool operator==(SkPDFIndirectReference u, SkPDFIndirectReference v) {
+    return u.fValue == v.fValue;
+}
+
+inline static bool operator!=(SkPDFIndirectReference u, SkPDFIndirectReference v) {
+    return u.fValue != v.fValue;
+}
+
 /** \class SkPDFObject
 
     A PDF Object is the base class for primitive elements in a PDF file.  A
@@ -46,8 +58,7 @@ public:
      *  @param catalog  The object catalog to use.
      *  @param stream   The writable output stream to send the output to.
      */
-    virtual void emitObject(SkWStream* stream,
-                            const SkPDFObjNumMap& objNumMap) const = 0;
+    virtual void emitObject(SkWStream* stream) const = 0;
 
     /**
      *  Adds all transitive dependencies of this object to the
@@ -64,6 +75,9 @@ public:
     virtual void drop() {}
 
     virtual ~SkPDFObject() {}
+
+    SkPDFIndirectReference fIndirectReference;
+
 private:
     typedef SkRefCnt INHERITED;
 };
@@ -111,6 +125,8 @@ public:
 
     static SkPDFUnion ColorComponent(uint8_t);
 
+    static SkPDFUnion ColorComponentF(float);
+
     /** These two functions do NOT take ownership of char*, and do NOT
         copy the string.  Suitable for passing in static const
         strings. For example:
@@ -126,20 +142,22 @@ public:
         not copy the name. */
     static SkPDFUnion String(const char*);
 
-    /** SkPDFUnion::Name(const SkString&) does not assume that the
+    /** SkPDFUnion::Name(SkString) does not assume that the
         passed string is already a valid name and it will escape the
         string. */
-    static SkPDFUnion Name(const SkString&);
+    static SkPDFUnion Name(SkString);
 
     /** SkPDFUnion::String will encode the passed string. */
-    static SkPDFUnion String(const SkString&);
+    static SkPDFUnion String(SkString);
 
     static SkPDFUnion Object(sk_sp<SkPDFObject>);
     static SkPDFUnion ObjRef(sk_sp<SkPDFObject>);
 
+    static SkPDFUnion Ref(SkPDFIndirectReference);
+
     /** These two non-virtual methods mirror SkPDFObject's
         corresponding virtuals. */
-    void emitObject(SkWStream*, const SkPDFObjNumMap&) const;
+    void emitObject(SkWStream*) const;
     void addResources(SkPDFObjNumMap*) const;
 
     bool isName() const;
@@ -159,6 +177,7 @@ private:
         kDestroyed = 0,
         kInt,
         kColorComponent,
+        kColorComponentF,
         kBool,
         kScalar,
         kName,
@@ -167,10 +186,15 @@ private:
         kStringSkS,
         kObjRef,
         kObject,
+        kRef,
     };
     Type fType;
 
     SkPDFUnion(Type);
+    SkPDFUnion(Type, int32_t);
+    SkPDFUnion(Type, bool);
+    SkPDFUnion(Type, SkScalar);
+    SkPDFUnion(Type, SkString);
     // We do not now need copy constructor and copy assignment, so we
     // will disable this functionality.
     SkPDFUnion& operator=(const SkPDFUnion&) = delete;
@@ -189,8 +213,7 @@ void SkPDFWriteString(SkWStream* wStream, const char* cin, size_t len);
     referenced indirectly. */
 class SkPDFAtom final : public SkPDFObject {
 public:
-    void emitObject(SkWStream* stream,
-                    const SkPDFObjNumMap& objNumMap) final;
+    void emitObject(SkWStream* stream) final;
     void addResources(SkPDFObjNumMap* const final;
     SkPDFAtom(SkPDFUnion&& v) : fValue(std::move(v) {}
 
@@ -214,8 +237,7 @@ public:
     ~SkPDFArray() override;
 
     // The SkPDFObject interface.
-    void emitObject(SkWStream* stream,
-                    const SkPDFObjNumMap& objNumMap) const override;
+    void emitObject(SkWStream* stream) const override;
     void addResources(SkPDFObjNumMap*) const override;
     void drop() override;
 
@@ -236,11 +258,12 @@ public:
     void appendBool(bool);
     void appendScalar(SkScalar);
     void appendName(const char[]);
-    void appendName(const SkString&);
+    void appendName(SkString);
     void appendString(const char[]);
-    void appendString(const SkString&);
+    void appendString(SkString);
     void appendObject(sk_sp<SkPDFObject>);
     void appendObjRef(sk_sp<SkPDFObject>);
+    void appendRef(SkPDFIndirectReference);
 
 private:
     std::vector<SkPDFUnion> fValues;
@@ -280,8 +303,7 @@ public:
     ~SkPDFDict() override;
 
     // The SkPDFObject interface.
-    void emitObject(SkWStream* stream,
-                    const SkPDFObjNumMap& objNumMap) const override;
+    void emitObject(SkWStream* stream) const override;
     void addResources(SkPDFObjNumMap*) const override;
     void drop() override;
 
@@ -297,9 +319,11 @@ public:
      *  @param value The value for this dictionary entry.
      */
     void insertObject(const char key[], sk_sp<SkPDFObject>);
-    void insertObject(const SkString& key, sk_sp<SkPDFObject>);
+    void insertObject(SkString, sk_sp<SkPDFObject>);
     void insertObjRef(const char key[], sk_sp<SkPDFObject>);
-    void insertObjRef(const SkString& key, sk_sp<SkPDFObject>);
+    void insertObjRef(SkString, sk_sp<SkPDFObject>);
+    void insertRef(const char key[], SkPDFIndirectReference);
+    void insertRef(SkString, SkPDFIndirectReference);
 
     /** Add the value to the dictionary with the given key.
      *  @param key   The text of the key for this dictionary entry.
@@ -309,15 +333,15 @@ public:
     void insertInt(const char key[], int32_t value);
     void insertInt(const char key[], size_t value);
     void insertScalar(const char key[], SkScalar value);
+    void insertColorComponentF(const char key[], SkScalar value);
     void insertName(const char key[], const char nameValue[]);
-    void insertName(const char key[], const SkString& nameValue);
+    void insertName(const char key[], SkString nameValue);
     void insertString(const char key[], const char value[]);
-    void insertString(const char key[], const SkString& value);
+    void insertString(const char key[], SkString value);
 
     /** Emit the dictionary, without the "<<" and ">>".
      */
-    void emitAll(SkWStream* stream,
-                 const SkPDFObjNumMap& objNumMap) const;
+    void emitAll(SkWStream* stream) const;
 
 private:
     struct Record {
@@ -340,8 +364,7 @@ public:
     SkPDFSharedStream(std::unique_ptr<SkStreamAsset> data);
     ~SkPDFSharedStream() override;
     SkPDFDict* dict() { return &fDict; }
-    void emitObject(SkWStream*,
-                    const SkPDFObjNumMap&) const override;
+    void emitObject(SkWStream*) const override;
     void addResources(SkPDFObjNumMap*) const override;
     void drop() override;
 
@@ -372,8 +395,7 @@ public:
     SkPDFDict* dict() { return &fDict; }
 
     // The SkPDFObject interface.
-    void emitObject(SkWStream* stream,
-                    const SkPDFObjNumMap& objNumMap) const override;
+    void emitObject(SkWStream* stream) const override;
     void addResources(SkPDFObjNumMap*) const final;
     void drop() override;
 
@@ -409,13 +431,15 @@ public:
     /** Get the object number for the passed object.
      *  @param obj         The object of interest.
      */
-    int32_t getObjectNumber(SkPDFObject* obj) const;
-
+    int getObjectNumber(SkPDFObject* obj) const {
+        return SkASSERT(obj), obj->fIndirectReference.fValue;
+    }
     const std::vector<sk_sp<SkPDFObject>>& objects() const { return fObjects; }
 
 private:
+    friend struct SkPDFObjectSerializer;
     std::vector<sk_sp<SkPDFObject>> fObjects;
-    SkTHashMap<SkPDFObject*, int32_t> fObjectNumbers;
+    int fNextObjectNumber = 1;
 };
 
 ////////////////////////////////////////////////////////////////////////////////

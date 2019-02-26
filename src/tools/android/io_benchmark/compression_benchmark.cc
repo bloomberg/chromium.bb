@@ -17,63 +17,75 @@
 
 namespace {
 
-void LogThroughputAndLatency(size_t size,
-                             int repeats,
+void LogThroughputAndLatency(size_t chunk_size,
+                             size_t chunk_count,
                              base::TimeTicks tick,
                              base::TimeTicks tock) {
-  size_t total_size = size * repeats;
+  size_t total_size = chunk_size * chunk_count;
   double elapsed_us = (tock - tick).InMicrosecondsF();
   double throughput = total_size / elapsed_us;
-  double latency_us = elapsed_us / repeats;
+  double latency_us = elapsed_us / chunk_count;
   LOG(INFO) << "  Throughput = " << throughput << "MB/s";
-  LOG(INFO) << "  Latency (size = " << size << ") = " << latency_us << "us";
-  LOG(INFO) << size << "," << throughput << "," << latency_us;
+  LOG(INFO) << "  Latency (size = " << chunk_size << ") = " << latency_us
+            << "us";
+  LOG(INFO) << "AS_CSV=" << chunk_size << "," << throughput << ","
+            << latency_us;
+}
+
+void CompressChunks(const std::string& contents,
+                    size_t chunk_size,
+                    bool snappy,
+                    std::vector<std::string>* compressed_chunks) {
+  CHECK(compressed_chunks);
+  size_t chunk_count = contents.size() / chunk_size;
+
+  for (size_t i = 0; i < chunk_count; ++i) {
+    std::string compressed;
+    base::StringPiece input(contents.c_str() + i * chunk_size, chunk_size);
+    if (snappy)
+      CHECK(snappy::Compress(input.data(), input.size(), &compressed));
+    else
+      CHECK(compression::GzipCompress(input, &compressed));
+
+    compressed_chunks->push_back(compressed);
+  }
 }
 
 void BenchmarkDecompression(const std::string& contents,
-                            int repeats,
+                            size_t chunk_size,
                             bool snappy) {
-  std::string compressed;
-  if (snappy) {
-    snappy::Compress(contents.c_str(), contents.size(), &compressed);
-  } else {
-    CHECK(compression::GzipCompress(contents, &compressed));
-  }
+  std::vector<std::string> compressed_chunks;
+  CompressChunks(contents, chunk_size, snappy, &compressed_chunks);
 
   auto tick = base::TimeTicks::Now();
-  for (int i = 0; i < repeats; ++i) {
+  for (const auto& chunk : compressed_chunks) {
     std::string uncompressed;
     if (snappy) {
-      snappy::Uncompress(compressed.c_str(), compressed.size(), &uncompressed);
+      snappy::Uncompress(chunk.c_str(), chunk.size(), &uncompressed);
     } else {
-      CHECK(compression::GzipUncompress(compressed, &uncompressed));
+      CHECK(compression::GzipUncompress(chunk, &uncompressed));
     }
   }
   auto tock = base::TimeTicks::Now();
 
-  LogThroughputAndLatency(contents.size(), repeats, tick, tock);
+  LogThroughputAndLatency(chunk_size, compressed_chunks.size(), tick, tock);
 }
 
 void BenchmarkCompression(const std::string& contents,
-                          int repeats,
+                          size_t chunk_size,
                           bool snappy) {
-  size_t compressed_size = 0;
   auto tick = base::TimeTicks::Now();
-  for (int i = 0; i < repeats; ++i) {
-    std::string compressed;
-    if (snappy) {
-      compressed_size =
-          snappy::Compress(contents.c_str(), contents.size(), &compressed);
-    } else {
-      CHECK(compression::GzipCompress(contents, &compressed));
-      compressed_size = compressed.size();
-    }
-  }
+  std::vector<std::string> compressed_chunks;
+  CompressChunks(contents, chunk_size, snappy, &compressed_chunks);
   auto tock = base::TimeTicks::Now();
+
+  size_t compressed_size = 0;
+  for (const auto& compressed_chunk : compressed_chunks)
+    compressed_size += compressed_chunk.size();
 
   double ratio = contents.size() / static_cast<double>(compressed_size);
   LOG(INFO) << "  Compression ratio = " << ratio;
-  LogThroughputAndLatency(contents.size(), repeats, tick, tock);
+  LogThroughputAndLatency(chunk_size, compressed_chunks.size(), tick, tock);
 }
 
 }  // namespace
@@ -90,18 +102,24 @@ int main(int argc, char** argv) {
   std::string contents;
   CHECK(base::ReadFileToString(path, &contents));
 
+  // Make sure we have at least 40MiB.
   constexpr size_t kPageSize = 1 << 12;
+  constexpr size_t target_size = 40 * 1024 * 1024;
+  std::string repeated_contents;
+  size_t repeats = target_size / contents.size() + 1;
+
+  repeated_contents.reserve(repeats * contents.size());
+  for (size_t i = 0; i < repeats; ++i)
+    repeated_contents.append(contents);
+
   for (bool use_snappy : {false, true}) {
     LOG(INFO) << "\n\n\n\n" << (use_snappy ? "Snappy" : "Gzip");
-    for (size_t size = kPageSize; size < contents.size() * 2; size *= 2) {
-      size_t actual_size = std::min(contents.size(), size);
-      std::string data = contents.substr(0, actual_size);
-      LOG(INFO) << "Size = " << actual_size;
+    for (size_t size = kPageSize; size < contents.size(); size *= 2) {
+      LOG(INFO) << "Size = " << size;
       LOG(INFO) << "Compression";
-      BenchmarkCompression(data, (10 * 1024 * kPageSize) / actual_size,
-                           use_snappy);  // 40MiB.
+      BenchmarkCompression(repeated_contents, size, use_snappy);
       LOG(INFO) << "Decompression";
-      BenchmarkDecompression(data, 100, use_snappy);
+      BenchmarkDecompression(repeated_contents, size, use_snappy);
     }
   }
   return 0;

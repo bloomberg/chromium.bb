@@ -528,7 +528,7 @@ void CSSAnimations::MaybeApplyPendingUpdate(Element* element) {
   for (const auto& entry : pending_update_.NewAnimations()) {
     const InertEffect* inert_animation = entry.effect.Get();
     AnimationEventDelegate* event_delegate =
-        new AnimationEventDelegate(element, entry.name);
+        MakeGarbageCollected<AnimationEventDelegate>(element, entry.name);
     KeyframeEffect* effect = KeyframeEffect::Create(
         element, inert_animation->Model(), inert_animation->SpecifiedTiming(),
         KeyframeEffect::kDefaultPriority, event_delegate);
@@ -538,7 +538,8 @@ void CSSAnimations::MaybeApplyPendingUpdate(Element* element) {
       animation->pause();
     animation->Update(kTimingUpdateOnDemand);
 
-    running_animations_.push_back(new RunningAnimation(animation, entry));
+    running_animations_.push_back(
+        MakeGarbageCollected<RunningAnimation>(animation, entry));
   }
 
   // Transitions that are run on the compositor only update main-thread state
@@ -592,7 +593,7 @@ void CSSAnimations::MaybeApplyPendingUpdate(Element* element) {
     const PropertyHandle& property = new_transition.property;
     const InertEffect* inert_animation = new_transition.effect.Get();
     TransitionEventDelegate* event_delegate =
-        new TransitionEventDelegate(element, property);
+        MakeGarbageCollected<TransitionEventDelegate>(element, property);
 
     KeyframeEffectModelBase* model = inert_animation->Model();
 
@@ -1119,7 +1120,7 @@ void CSSAnimations::CalculateTransitionActiveInterpolations(
 }
 
 EventTarget* CSSAnimations::AnimationEventDelegate::GetEventTarget() const {
-  return EventPath::EventTargetRespectingTargetRules(*animation_target_);
+  return &EventPath::EventTargetRespectingTargetRules(*animation_target_);
 }
 
 void CSSAnimations::AnimationEventDelegate::MaybeDispatch(
@@ -1154,7 +1155,7 @@ void CSSAnimations::AnimationEventDelegate::OnEventCondition(
     const double start_delay = animation_node.SpecifiedTiming().start_delay;
     const double elapsed_time = start_delay < 0 ? -start_delay : 0;
     MaybeDispatch(Document::kAnimationStartListener,
-                  EventTypeNames::animationstart, elapsed_time);
+                  event_type_names::kAnimationstart, elapsed_time);
   }
 
   if (current_phase == AnimationEffect::kPhaseActive &&
@@ -1168,13 +1169,14 @@ void CSSAnimations::AnimationEventDelegate::OnEventCondition(
         animation_node.SpecifiedTiming().iteration_duration.value() *
         (previous_iteration_ + 1);
     MaybeDispatch(Document::kAnimationIterationListener,
-                  EventTypeNames::animationiteration,
+                  event_type_names::kAnimationiteration,
                   elapsed_time.InSecondsF());
   }
 
   if (current_phase == AnimationEffect::kPhaseAfter &&
       previous_phase_ != AnimationEffect::kPhaseAfter) {
-    MaybeDispatch(Document::kAnimationEndListener, EventTypeNames::animationend,
+    MaybeDispatch(Document::kAnimationEndListener,
+                  event_type_names::kAnimationend,
                   animation_node.RepeatedDuration());
   }
 
@@ -1188,7 +1190,7 @@ void CSSAnimations::AnimationEventDelegate::Trace(blink::Visitor* visitor) {
 }
 
 EventTarget* CSSAnimations::TransitionEventDelegate::GetEventTarget() const {
-  return EventPath::EventTargetRespectingTargetRules(*transition_target_);
+  return &EventPath::EventTargetRespectingTargetRules(*transition_target_);
 }
 
 void CSSAnimations::TransitionEventDelegate::OnEventCondition(
@@ -1203,7 +1205,7 @@ void CSSAnimations::TransitionEventDelegate::OnEventCondition(
             : property_.GetCSSProperty().GetPropertyNameString();
     const Timing& timing = animation_node.SpecifiedTiming();
     double elapsed_time = timing.iteration_duration->InSecondsF();
-    const AtomicString& event_type = EventTypeNames::transitionend;
+    const AtomicString& event_type = event_type_names::kTransitionend;
     String pseudo_element =
         PseudoElement::PseudoElementNameForEvents(GetPseudoId());
     TransitionEvent* event = TransitionEvent::Create(

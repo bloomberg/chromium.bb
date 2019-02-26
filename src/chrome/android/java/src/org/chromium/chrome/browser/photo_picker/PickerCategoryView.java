@@ -27,6 +27,7 @@ import org.chromium.chrome.browser.ChromeActivity;
 import org.chromium.chrome.browser.util.ConversionUtils;
 import org.chromium.chrome.browser.widget.selection.SelectableListLayout;
 import org.chromium.chrome.browser.widget.selection.SelectionDelegate;
+import org.chromium.net.MimeTypeFilter;
 import org.chromium.ui.PhotoPickerListener;
 import org.chromium.ui.UiUtils;
 
@@ -365,7 +366,7 @@ public class PickerCategoryView extends RelativeLayout
 
         mEnumStartTime = SystemClock.elapsedRealtime();
         mWorkerTask = new FileEnumWorkerTask(
-                mActivity.getWindowAndroid(), this, new MimeTypeFileFilter(mMimeTypes));
+                mActivity.getWindowAndroid(), this, new MimeTypeFilter(mMimeTypes, true));
         mWorkerTask.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
     }
 

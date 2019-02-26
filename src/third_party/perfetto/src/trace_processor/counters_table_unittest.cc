@@ -15,7 +15,8 @@
  */
 
 #include "src/trace_processor/counters_table.h"
-#include "src/trace_processor/sched_tracker.h"
+#include "src/trace_processor/event_tracker.h"
+#include "src/trace_processor/process_tracker.h"
 #include "src/trace_processor/scoped_db.h"
 #include "src/trace_processor/trace_processor_context.h"
 
@@ -34,7 +35,8 @@ class CountersTableUnittest : public ::testing::Test {
     db_.reset(db);
 
     context_.storage.reset(new TraceStorage());
-    context_.sched_tracker.reset(new SchedTracker(&context_));
+    context_.event_tracker.reset(new EventTracker(&context_));
+    context_.process_tracker.reset(new ProcessTracker(&context_));
 
     CountersTable::RegisterTable(db_.get(), context_.storage.get());
   }
@@ -64,14 +66,13 @@ TEST_F(CountersTableUnittest, SelectWhereCpu) {
   uint32_t freq = 3000;
 
   context_.storage->mutable_counters()->AddCounter(
-      timestamp, 0 /* dur */, 1, freq, 0 /* value delta */, 1 /* cpu */,
-      RefType::kCPU_ID);
-  context_.storage->mutable_counters()->AddCounter(
-      timestamp + 1, 1 /* dur */, 1, freq + 1000, 1000 /* value delta */,
-      1 /* cpu */, RefType::kCPU_ID);
-  context_.storage->mutable_counters()->AddCounter(
-      timestamp + 2, 1 /* dur */, 1, freq + 2000, 1000 /* value delta */,
-      2 /* cpu */, RefType::kCPU_ID);
+      timestamp, 0 /* dur */, 1, freq, 1 /* cpu */, RefType::kRefCpuId);
+  context_.storage->mutable_counters()->AddCounter(timestamp + 1, 1 /* dur */,
+                                                   1, freq + 1000, 1 /* cpu */,
+                                                   RefType::kRefCpuId);
+  context_.storage->mutable_counters()->AddCounter(timestamp + 2, 1 /* dur */,
+                                                   1, freq + 2000, 2 /* cpu */,
+                                                   RefType::kRefCpuId);
 
   PrepareValidStatement("SELECT ts, dur, value FROM counters where ref = 1");
 
@@ -94,14 +95,13 @@ TEST_F(CountersTableUnittest, GroupByFreq) {
   uint32_t name_id = 1;
 
   context_.storage->mutable_counters()->AddCounter(
-      timestamp, 1 /* dur */, name_id, freq, 0 /* value delta */, 1 /* cpu */,
-      RefType::kCPU_ID);
+      timestamp, 1 /* dur */, name_id, freq, 1 /* cpu */, RefType::kRefCpuId);
   context_.storage->mutable_counters()->AddCounter(
-      timestamp + 1, 2 /* dur */, name_id, freq + 1000, 1000 /* value delta */,
-      1 /* cpu */, RefType::kCPU_ID);
-  context_.storage->mutable_counters()->AddCounter(
-      timestamp + 3, 0 /* dur */, name_id, freq, -1000 /* value delta */,
-      1 /* cpu */, RefType::kCPU_ID);
+      timestamp + 1, 2 /* dur */, name_id, freq + 1000, 1 /* cpu */,
+      RefType::kRefCpuId);
+  context_.storage->mutable_counters()->AddCounter(timestamp + 3, 0 /* dur */,
+                                                   name_id, freq, 1 /* cpu */,
+                                                   RefType::kRefCpuId);
 
   PrepareValidStatement(
       "SELECT value, sum(dur) as dur_sum FROM counters where value > 0 group "
@@ -114,6 +114,82 @@ TEST_F(CountersTableUnittest, GroupByFreq) {
   ASSERT_EQ(sqlite3_step(*stmt_), SQLITE_ROW);
   ASSERT_EQ(sqlite3_column_int(*stmt_, 0), freq);
   ASSERT_EQ(sqlite3_column_int(*stmt_, 1), 1);
+
+  ASSERT_EQ(sqlite3_step(*stmt_), SQLITE_DONE);
+}
+
+TEST_F(CountersTableUnittest, UtidLookupUpid) {
+  uint64_t timestamp = 1000;
+  uint32_t value = 3000;
+  uint32_t name_id = 1;
+
+  uint32_t utid = context_.process_tracker->UpdateThread(timestamp, 1, 0);
+
+  context_.storage->mutable_counters()->AddCounter(timestamp, 0 /* dur */,
+                                                   name_id, value, utid,
+                                                   RefType::kRefUtidLookupUpid);
+
+  PrepareValidStatement("SELECT value, ref, ref_type FROM counters");
+
+  ASSERT_EQ(sqlite3_step(*stmt_), SQLITE_ROW);
+  ASSERT_EQ(sqlite3_column_int(*stmt_, 0), value);
+  ASSERT_EQ(sqlite3_column_type(*stmt_, 1), SQLITE_NULL);
+  ASSERT_STREQ(reinterpret_cast<const char*>(sqlite3_column_text(*stmt_, 2)),
+               "upid");
+
+  ASSERT_EQ(sqlite3_step(*stmt_), SQLITE_DONE);
+
+  // Simulate some other processes to avoid a situation where utid == upid so
+  // we cannot assert correctly below.
+  context_.process_tracker->UpdateProcess(4);
+  context_.process_tracker->UpdateProcess(10);
+  context_.process_tracker->UpdateProcess(11);
+
+  auto* thread = context_.storage->GetMutableThread(utid);
+  thread->upid = context_.process_tracker->UpdateProcess(1);
+
+  PrepareValidStatement("SELECT value, ref, ref_type FROM counters");
+
+  ASSERT_EQ(sqlite3_step(*stmt_), SQLITE_ROW);
+  ASSERT_EQ(sqlite3_column_int(*stmt_, 0), value);
+  ASSERT_EQ(sqlite3_column_int(*stmt_, 1), thread->upid.value());
+  ASSERT_STREQ(reinterpret_cast<const char*>(sqlite3_column_text(*stmt_, 2)),
+               "upid");
+
+  ASSERT_EQ(sqlite3_step(*stmt_), SQLITE_DONE);
+}
+
+TEST_F(CountersTableUnittest, UtidLookupUpidSort) {
+  uint64_t timestamp = 1000;
+  uint32_t value = 3000;
+  uint32_t name_id = 1;
+
+  uint32_t utid_a = context_.process_tracker->UpdateThread(timestamp, 100, 0);
+  uint32_t utid_b = context_.process_tracker->UpdateThread(timestamp, 200, 0);
+
+  auto* thread_a = context_.storage->GetMutableThread(utid_a);
+  thread_a->upid = context_.process_tracker->UpdateProcess(100);
+
+  context_.storage->mutable_counters()->AddCounter(timestamp, 0 /* dur */,
+                                                   name_id, value, utid_a,
+                                                   RefType::kRefUtidLookupUpid);
+  context_.storage->mutable_counters()->AddCounter(timestamp + 1, 0 /* dur */,
+                                                   name_id, value, utid_b,
+                                                   RefType::kRefUtidLookupUpid);
+
+  PrepareValidStatement("SELECT ts, ref, ref_type FROM counters ORDER BY ref");
+
+  ASSERT_EQ(sqlite3_step(*stmt_), SQLITE_ROW);
+  ASSERT_EQ(sqlite3_column_int(*stmt_, 0), timestamp + 1);
+  ASSERT_EQ(sqlite3_column_type(*stmt_, 1), SQLITE_NULL);
+  ASSERT_STREQ(reinterpret_cast<const char*>(sqlite3_column_text(*stmt_, 2)),
+               "upid");
+
+  ASSERT_EQ(sqlite3_step(*stmt_), SQLITE_ROW);
+  ASSERT_EQ(sqlite3_column_int(*stmt_, 0), timestamp);
+  ASSERT_EQ(sqlite3_column_int(*stmt_, 1), thread_a->upid.value());
+  ASSERT_STREQ(reinterpret_cast<const char*>(sqlite3_column_text(*stmt_, 2)),
+               "upid");
 
   ASSERT_EQ(sqlite3_step(*stmt_), SQLITE_DONE);
 }

@@ -9,9 +9,16 @@
 
 #include "base/macros.h"
 #include "base/test/scoped_feature_list.h"
-#include "components/unified_consent/feature.h"
 
 namespace unified_consent {
+
+// State of the "Unified Consent" feature.
+enum class UnifiedConsentFeatureState {
+  // Unified consent is disabled.
+  kDisabled,
+  // Unified consent is enabled.
+  kEnabled,
+};
 
 // Changes the unified consent feature state while it is in scope. Useful for
 // tests.
@@ -23,7 +30,6 @@ class ScopedUnifiedConsent {
   ~ScopedUnifiedConsent();
 
  private:
-  base::test::ScopedFeatureList sync_user_consent_separate_type_feature_list_;
   base::test::ScopedFeatureList unified_consent_feature_list_;
 
   DISALLOW_COPY_AND_ASSIGN(ScopedUnifiedConsent);

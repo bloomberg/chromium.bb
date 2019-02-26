@@ -113,11 +113,25 @@ TEST_F(ReportingHeaderParserTest, ZeroMaxAge) {
       kOrigin_, kEndpoint_, ReportingClient::Subdomains::EXCLUDE, kGroup_,
       tick_clock()->NowTicks() + base::TimeDelta::FromDays(1),
       ReportingClient::kDefaultPriority, ReportingClient::kDefaultWeight);
+  EXPECT_NE(nullptr, FindClientInCache(cache(), kOrigin_, kEndpoint_));
 
   ParseHeader(kUrl_, "{\"endpoints\":[{\"url\":\"" + kEndpoint_.spec() +
                          "\"}],\"max_age\":0}");
 
+  // max_age: 0 should clear the pre-existing client.
   EXPECT_EQ(nullptr, FindClientInCache(cache(), kOrigin_, kEndpoint_));
+
+  std::vector<const ReportingClient*> clients;
+  cache()->GetClients(&clients);
+  EXPECT_TRUE(clients.empty());
+
+  // Without a pre-existing client, max_age: 0 should do nothing.
+  ParseHeader(kUrl_, "{\"endpoints\":[{\"url\":\"" + kEndpoint_.spec() +
+                         "\"}],\"max_age\":0}");
+
+  EXPECT_EQ(nullptr, FindClientInCache(cache(), kOrigin_, kEndpoint_));
+  cache()->GetClients(&clients);
+  EXPECT_TRUE(clients.empty());
 }
 
 TEST_F(ReportingHeaderParserTest, Subdomains) {

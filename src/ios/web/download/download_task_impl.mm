@@ -172,6 +172,7 @@ DownloadTaskImpl::DownloadTaskImpl(const WebState* web_state,
     : original_url_(original_url),
       total_bytes_(total_bytes),
       content_disposition_(content_disposition),
+      original_mime_type_(mime_type),
       mime_type_(mime_type),
       page_transition_(page_transition),
       identifier_([identifier copy]),
@@ -290,6 +291,11 @@ int DownloadTaskImpl::GetPercentComplete() const {
 std::string DownloadTaskImpl::GetContentDisposition() const {
   DCHECK_CURRENTLY_ON(web::WebThread::UI);
   return content_disposition_;
+}
+
+std::string DownloadTaskImpl::GetOriginalMimeType() const {
+  DCHECK_CURRENTLY_ON(web::WebThread::UI);
+  return original_mime_type_;
 }
 
 std::string DownloadTaskImpl::GetMimeType() const {

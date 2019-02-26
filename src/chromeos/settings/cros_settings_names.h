@@ -102,6 +102,15 @@ CHROMEOS_EXPORT extern const char kRebootOnShutdown[];
 
 CHROMEOS_EXPORT extern const char kExtensionCacheSize[];
 
+CHROMEOS_EXPORT extern const char kDeviceDisplayResolution[];
+CHROMEOS_EXPORT extern const char kDeviceDisplayResolutionKeyExternalWidth[];
+CHROMEOS_EXPORT extern const char kDeviceDisplayResolutionKeyExternalHeight[];
+CHROMEOS_EXPORT extern const char kDeviceDisplayResolutionKeyExternalScale[];
+CHROMEOS_EXPORT extern const char
+    kDeviceDisplayResolutionKeyExternalUseNative[];
+CHROMEOS_EXPORT extern const char kDeviceDisplayResolutionKeyInternalScale[];
+CHROMEOS_EXPORT extern const char kDeviceDisplayResolutionKeyRecommended[];
+
 CHROMEOS_EXPORT extern const char kDisplayRotationDefault[];
 
 CHROMEOS_EXPORT extern const char kLoginAuthenticationBehavior[];
@@ -124,10 +133,10 @@ CHROMEOS_EXPORT extern const char kFineGrainedTimeZoneResolveEnabled[];
 
 CHROMEOS_EXPORT extern const char kDeviceOffHours[];
 
-CHROMEOS_EXPORT extern const char kDevicePrintersConfigurations[];
-CHROMEOS_EXPORT extern const char kDevicePrintersAccessMode[];
-CHROMEOS_EXPORT extern const char kDevicePrintersBlacklist[];
-CHROMEOS_EXPORT extern const char kDevicePrintersWhitelist[];
+CHROMEOS_EXPORT extern const char kDeviceNativePrinters[];
+CHROMEOS_EXPORT extern const char kDeviceNativePrintersAccessMode[];
+CHROMEOS_EXPORT extern const char kDeviceNativePrintersBlacklist[];
+CHROMEOS_EXPORT extern const char kDeviceNativePrintersWhitelist[];
 
 CHROMEOS_EXPORT extern const char kTPMFirmwareUpdateSettings[];
 

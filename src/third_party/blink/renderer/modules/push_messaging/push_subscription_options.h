@@ -23,13 +23,15 @@ class PushSubscriptionOptions final : public ScriptWrappable {
   // Converts developer-provided dictionary to WebPushSubscriptionOptions.
   // Throws if applicationServerKey is invalid.
   MODULES_EXPORT static WebPushSubscriptionOptions ToWeb(
-      const PushSubscriptionOptionsInit& options,
+      const PushSubscriptionOptionsInit* options,
       ExceptionState& exception_state);
 
   static PushSubscriptionOptions* Create(
       const WebPushSubscriptionOptions& options) {
-    return new PushSubscriptionOptions(options);
+    return MakeGarbageCollected<PushSubscriptionOptions>(options);
   }
+
+  explicit PushSubscriptionOptions(const WebPushSubscriptionOptions& options);
 
   bool userVisibleOnly() const { return user_visible_only_; }
 
@@ -41,8 +43,6 @@ class PushSubscriptionOptions final : public ScriptWrappable {
   void Trace(blink::Visitor* visitor) override;
 
  private:
-  explicit PushSubscriptionOptions(const WebPushSubscriptionOptions& options);
-
   bool user_visible_only_;
   Member<DOMArrayBuffer> application_server_key_;
 };

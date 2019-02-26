@@ -40,8 +40,6 @@ COMPONENT_EXPORT(CHROME_FEATURES) extern const base::Feature kViewsTaskManager;
 #endif  // defined(OS_MACOSX)
 
 #if !defined(OS_ANDROID)
-COMPONENT_EXPORT(CHROME_FEATURES)
-extern const base::Feature kAnimatedAppMenuIcon;
 COMPONENT_EXPORT(CHROME_FEATURES) extern const base::Feature kAppBanners;
 #endif  // !defined(OS_ANDROID)
 
@@ -49,6 +47,11 @@ COMPONENT_EXPORT(CHROME_FEATURES) extern const base::Feature kAppBanners;
 COMPONENT_EXPORT(CHROME_FEATURES)
 extern const base::Feature kAppNotificationStatusMessaging;
 #endif  // defined(OS_ANDROID)
+
+#if !defined(OS_ANDROID)
+COMPONENT_EXPORT(CHROME_FEATURES)
+extern const base::Feature kAppService;
+#endif  // !defined(OS_ANDROID)
 
 COMPONENT_EXPORT(CHROME_FEATURES)
 extern const base::Feature kAssetDownloadSuggestionsFeature;
@@ -119,11 +122,6 @@ COMPONENT_EXPORT(CHROME_FEATURES)
 extern const base::Feature kUsageTimeLimitPolicy;
 #endif
 
-#if defined(OS_WIN)
-COMPONENT_EXPORT(CHROME_FEATURES)
-extern const base::Feature kDesktopIOSPromotion;
-#endif  // defined(OS_WIN)
-
 COMPONENT_EXPORT(CHROME_FEATURES)
 extern const base::Feature kDesktopPWAWindowing;
 
@@ -131,26 +129,26 @@ COMPONENT_EXPORT(CHROME_FEATURES)
 extern const base::Feature kDesktopPWAsLinkCapturing;
 
 COMPONENT_EXPORT(CHROME_FEATURES)
+extern const base::Feature kDesktopPWAsCustomTabUI;
+
+COMPONENT_EXPORT(CHROME_FEATURES)
 extern const base::Feature kDesktopPWAsStayInWindow;
+
+COMPONENT_EXPORT(CHROME_FEATURES)
+extern const base::Feature kDesktopPWAsWithoutExtensions;
 
 COMPONENT_EXPORT(CHROME_FEATURES)
 extern const base::Feature kDisallowUnsafeHttpDownloads;
 COMPONENT_EXPORT(CHROME_FEATURES)
 extern const char kDisallowUnsafeHttpDownloadsParamName[];
 
-#if !defined(OS_ANDROID)
-COMPONENT_EXPORT(CHROME_FEATURES) extern const base::Feature kDoodlesOnLocalNtp;
-#endif
-
-#if defined(OS_ANDROID)
-COMPONENT_EXPORT(CHROME_FEATURES)
-extern const base::Feature kDownloadsForeground;
-#endif
-
 #if defined(OS_ANDROID)
 COMPONENT_EXPORT(CHROME_FEATURES)
 extern const base::Feature kDownloadsLocationChange;
 #endif
+
+COMPONENT_EXPORT(CHROME_FEATURES)
+extern const base::Feature kEnableIncognitoWindowCounter;
 
 COMPONENT_EXPORT(CHROME_FEATURES)
 extern const base::Feature kExperimentalAppBanners;
@@ -230,7 +228,7 @@ extern const base::Feature kLocalScreenCasting;
 #endif
 
 COMPONENT_EXPORT(CHROME_FEATURES)
-extern const base::Feature kLookalikeUrlNavigationSuggestions;
+extern const base::Feature kLookalikeUrlNavigationSuggestionsUI;
 
 COMPONENT_EXPORT(CHROME_FEATURES)
 extern const base::Feature kLsdPermissionPrompt;
@@ -272,6 +270,11 @@ COMPONENT_EXPORT(CHROME_FEATURES)
 extern const char kNewNetErrorPageUIAlternateContentPreview[];
 #endif
 
+#if !defined(OS_ANDROID)
+COMPONENT_EXPORT(CHROME_FEATURES)
+extern const base::Feature kNewTabLoadingAnimation;
+#endif
+
 #if defined(OS_POSIX)
 COMPONENT_EXPORT(CHROME_FEATURES) extern const base::Feature kNtlmV2Enabled;
 #endif
@@ -303,6 +306,9 @@ extern const base::Feature kDisablePostScriptPrinting;
 COMPONENT_EXPORT(CHROME_FEATURES) extern const base::Feature kPolicyTool;
 #endif
 
+COMPONENT_EXPORT(CHROME_FEATURES)
+extern const base::Feature kPredictivePrefetchingAllowedOnAllConnectionTypes;
+
 #if BUILDFLAG(ENABLE_PLUGINS)
 COMPONENT_EXPORT(CHROME_FEATURES)
 extern const base::Feature kPreferHtmlOverPlugins;
@@ -327,6 +333,10 @@ extern const base::Feature kSafeSearchUrlReporting;
 
 COMPONENT_EXPORT(CHROME_FEATURES)
 extern const base::Feature kSecurityKeyAttestationPrompt;
+
+#if !defined(OS_ANDROID)
+COMPONENT_EXPORT(CHROME_FEATURES) extern const base::Feature kShowManagedUi;
+#endif
 
 #if defined(OS_ANDROID)
 COMPONENT_EXPORT(CHROME_FEATURES)
@@ -368,13 +378,11 @@ extern const base::Feature kSysInternals;
 COMPONENT_EXPORT(CHROME_FEATURES)
 extern const base::Feature kSystemWebApps;
 
+COMPONENT_EXPORT(CHROME_FEATURES)
+extern const base::Feature kAppManagement;
+
 #if !defined(OS_ANDROID)
 COMPONENT_EXPORT(CHROME_FEATURES) extern const base::Feature kTabMetricsLogging;
-#endif
-
-#if defined(OS_MACOSX)
-COMPONENT_EXPORT(CHROME_FEATURES)
-extern const base::Feature kTextSuggestionsTouchBar;
 #endif
 
 #if defined(OS_WIN) && defined(GOOGLE_CHROME_BUILD)
@@ -384,8 +392,6 @@ extern const base::Feature kThirdPartyModulesBlocking;
 
 COMPONENT_EXPORT(CHROME_FEATURES)
 extern const base::Feature kTopSitesFromSiteEngagement;
-
-COMPONENT_EXPORT(CHROME_FEATURES) extern const base::Feature kUseGoogleLocalNtp;
 
 #if defined(OS_CHROMEOS)
 COMPONENT_EXPORT(CHROME_FEATURES)

@@ -56,17 +56,27 @@ class HTMLTreeBuilder final
                                  Document& document,
                                  ParserContentPolicy parser_content_policy,
                                  const HTMLParserOptions& options) {
-    return new HTMLTreeBuilder(parser, document, parser_content_policy,
-                               options);
+    return MakeGarbageCollected<HTMLTreeBuilder>(
+        parser, document, parser_content_policy, options);
   }
   static HTMLTreeBuilder* Create(HTMLDocumentParser* parser,
                                  DocumentFragment* fragment,
                                  Element* context_element,
                                  ParserContentPolicy parser_content_policy,
                                  const HTMLParserOptions& options) {
-    return new HTMLTreeBuilder(parser, fragment, context_element,
-                               parser_content_policy, options);
+    return MakeGarbageCollected<HTMLTreeBuilder>(
+        parser, fragment, context_element, parser_content_policy, options);
   }
+
+  HTMLTreeBuilder(HTMLDocumentParser*,
+                  Document&,
+                  ParserContentPolicy,
+                  const HTMLParserOptions&);
+  HTMLTreeBuilder(HTMLDocumentParser*,
+                  DocumentFragment*,
+                  Element* context_element,
+                  ParserContentPolicy,
+                  const HTMLParserOptions&);
   ~HTMLTreeBuilder();
   void Trace(blink::Visitor*);
 
@@ -132,16 +142,6 @@ class HTMLTreeBuilder final
 #ifndef DEBUG
   static const char* ToString(InsertionMode);
 #endif
-
-  HTMLTreeBuilder(HTMLDocumentParser*,
-                  Document&,
-                  ParserContentPolicy,
-                  const HTMLParserOptions&);
-  HTMLTreeBuilder(HTMLDocumentParser*,
-                  DocumentFragment*,
-                  Element* context_element,
-                  ParserContentPolicy,
-                  const HTMLParserOptions&);
 
   void ProcessToken(AtomicHTMLToken*);
 

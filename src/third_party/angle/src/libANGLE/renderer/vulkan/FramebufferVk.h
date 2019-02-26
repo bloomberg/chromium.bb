@@ -38,56 +38,58 @@ class FramebufferVk : public FramebufferImpl
     ~FramebufferVk() override;
     void destroy(const gl::Context *context) override;
 
-    gl::Error discard(const gl::Context *context, size_t count, const GLenum *attachments) override;
-    gl::Error invalidate(const gl::Context *context,
-                         size_t count,
-                         const GLenum *attachments) override;
-    gl::Error invalidateSub(const gl::Context *context,
-                            size_t count,
-                            const GLenum *attachments,
-                            const gl::Rectangle &area) override;
+    angle::Result discard(const gl::Context *context,
+                          size_t count,
+                          const GLenum *attachments) override;
+    angle::Result invalidate(const gl::Context *context,
+                             size_t count,
+                             const GLenum *attachments) override;
+    angle::Result invalidateSub(const gl::Context *context,
+                                size_t count,
+                                const GLenum *attachments,
+                                const gl::Rectangle &area) override;
 
-    gl::Error clear(const gl::Context *context, GLbitfield mask) override;
-    gl::Error clearBufferfv(const gl::Context *context,
-                            GLenum buffer,
-                            GLint drawbuffer,
-                            const GLfloat *values) override;
-    gl::Error clearBufferuiv(const gl::Context *context,
-                             GLenum buffer,
-                             GLint drawbuffer,
-                             const GLuint *values) override;
-    gl::Error clearBufferiv(const gl::Context *context,
-                            GLenum buffer,
-                            GLint drawbuffer,
-                            const GLint *values) override;
-    gl::Error clearBufferfi(const gl::Context *context,
-                            GLenum buffer,
-                            GLint drawbuffer,
-                            GLfloat depth,
-                            GLint stencil) override;
+    angle::Result clear(const gl::Context *context, GLbitfield mask) override;
+    angle::Result clearBufferfv(const gl::Context *context,
+                                GLenum buffer,
+                                GLint drawbuffer,
+                                const GLfloat *values) override;
+    angle::Result clearBufferuiv(const gl::Context *context,
+                                 GLenum buffer,
+                                 GLint drawbuffer,
+                                 const GLuint *values) override;
+    angle::Result clearBufferiv(const gl::Context *context,
+                                GLenum buffer,
+                                GLint drawbuffer,
+                                const GLint *values) override;
+    angle::Result clearBufferfi(const gl::Context *context,
+                                GLenum buffer,
+                                GLint drawbuffer,
+                                GLfloat depth,
+                                GLint stencil) override;
 
     GLenum getImplementationColorReadFormat(const gl::Context *context) const override;
     GLenum getImplementationColorReadType(const gl::Context *context) const override;
-    gl::Error readPixels(const gl::Context *context,
-                         const gl::Rectangle &area,
-                         GLenum format,
-                         GLenum type,
-                         void *pixels) override;
+    angle::Result readPixels(const gl::Context *context,
+                             const gl::Rectangle &area,
+                             GLenum format,
+                             GLenum type,
+                             void *pixels) override;
 
-    gl::Error blit(const gl::Context *context,
-                   const gl::Rectangle &sourceArea,
-                   const gl::Rectangle &destArea,
-                   GLbitfield mask,
-                   GLenum filter) override;
+    angle::Result blit(const gl::Context *context,
+                       const gl::Rectangle &sourceArea,
+                       const gl::Rectangle &destArea,
+                       GLbitfield mask,
+                       GLenum filter) override;
 
     bool checkStatus(const gl::Context *context) const override;
 
     angle::Result syncState(const gl::Context *context,
                             const gl::Framebuffer::DirtyBits &dirtyBits) override;
 
-    gl::Error getSamplePosition(const gl::Context *context,
-                                size_t index,
-                                GLfloat *xy) const override;
+    angle::Result getSamplePosition(const gl::Context *context,
+                                    size_t index,
+                                    GLfloat *xy) const override;
     RenderTargetVk *getDepthStencilRenderTarget() const;
     const vk::RenderPassDesc &getRenderPassDesc();
 
@@ -113,6 +115,9 @@ class FramebufferVk : public FramebufferImpl
     vk::FramebufferHelper *getFramebuffer() { return &mFramebuffer; }
 
     angle::Result startNewRenderPass(ContextVk *context, vk::CommandBuffer **commandBufferOut);
+
+    RenderTargetVk *getFirstRenderTarget() const;
+    GLint getSamples() const;
 
   private:
     FramebufferVk(RendererVk *renderer,
@@ -156,7 +161,8 @@ class FramebufferVk : public FramebufferImpl
     angle::Result clearWithClearAttachments(ContextVk *contextVk,
                                             bool clearColor,
                                             bool clearDepth,
-                                            bool clearStencil);
+                                            bool clearStencil,
+                                            const VkClearDepthStencilValue &clearDepthStencilValue);
     angle::Result clearWithDraw(ContextVk *contextVk, VkColorComponentFlags colorMaskFlags);
     void updateActiveColorMasks(size_t colorIndex, bool r, bool g, bool b, bool a);
 

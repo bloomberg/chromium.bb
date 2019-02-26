@@ -20,6 +20,7 @@
 #include "net/third_party/http2/hpack/tools/hpack_block_builder.h"
 #include "net/third_party/http2/platform/api/http2_string.h"
 #include "net/third_party/http2/platform/api/http2_string_piece.h"
+#include "testing/gtest/include/gtest/gtest.h"
 
 namespace http2 {
 namespace test {

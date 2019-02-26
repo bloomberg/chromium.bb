@@ -287,5 +287,23 @@ TEST_F(WKNavigationUtilTest, DecodeRejectInvalidUrls) {
   EXPECT_EQ(GURL::EmptyGURL(), ExtractUrlFromPlaceholderUrl(encoded));
 }
 
+// Tests that app specific urls and non-placeholder about: urls do not need a
+// user agent type, but normal urls and placeholders do.
+TEST_F(WKNavigationUtilTest, URLNeedsUserAgentType) {
+  // Not app specific or non-placeholder about urls.
+  GURL non_user_agent_urls("http://newtab");
+  GURL::Replacements scheme_replacements;
+  scheme_replacements.SetSchemeStr(kTestNativeContentScheme);
+  EXPECT_FALSE(URLNeedsUserAgentType(
+      non_user_agent_urls.ReplaceComponents(scheme_replacements)));
+  scheme_replacements.SetSchemeStr(url::kAboutScheme);
+  EXPECT_FALSE(URLNeedsUserAgentType(
+      non_user_agent_urls.ReplaceComponents(scheme_replacements)));
+
+  // Not a placeholder or normal URL.
+  EXPECT_TRUE(URLNeedsUserAgentType(GURL("about:blank?for=")));
+  EXPECT_TRUE(URLNeedsUserAgentType(GURL("http://www.0.com")));
+}
+
 }  // namespace wk_navigation_util
 }  // namespace web

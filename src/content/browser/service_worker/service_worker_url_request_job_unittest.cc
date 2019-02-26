@@ -34,7 +34,6 @@
 #include "content/common/service_worker/service_worker_types.h"
 #include "content/common/service_worker/service_worker_utils.h"
 #include "content/public/browser/blob_handle.h"
-#include "content/public/common/browser_side_navigation_policy.h"
 #include "content/public/common/resource_type.h"
 #include "content/public/test/mock_resource_context.h"
 #include "content/public/test/test_browser_context.h"
@@ -116,7 +115,7 @@ class MockProtocolHandler : public net::URLRequestJobFactory::ProtocolHandler {
 
     job_ = new ServiceWorkerURLRequestJob(
         request, network_delegate, provider_host_, blob_storage_context_,
-        resource_context_, network::mojom::FetchRequestMode::kNoCORS,
+        resource_context_, network::mojom::FetchRequestMode::kNoCors,
         network::mojom::FetchCredentialsMode::kOmit,
         network::mojom::FetchRedirectMode::kFollow,
         std::string() /* integrity */, false /* keepalive */, resource_type_,
@@ -221,7 +220,6 @@ class ServiceWorkerURLRequestJobTest
     http_info->ssl_info.cert =
         net::ImportCertFromFile(net::GetTestCertsDirectory(), "ok_cert.pem");
     EXPECT_TRUE(http_info->ssl_info.is_valid());
-    http_info->ssl_info.security_bits = 0x100;
     // SSL3 TLS_DHE_RSA_WITH_AES_256_CBC_SHA
     http_info->ssl_info.connection_status = 0x300039;
     http_info->headers = base::MakeRefCounted<net::HttpResponseHeaders>("");
@@ -259,7 +257,8 @@ class ServiceWorkerURLRequestJobTest
             true /* is_parent_frame_secure */, helper_->context()->AsWeakPtr(),
             &remote_endpoint_);
     provider_host_ = provider_host->AsWeakPtr();
-    provider_host->SetDocumentUrl(GURL("https://example.com/"));
+    provider_host.get()->UpdateUrls(GURL("https://example.com/"),
+                                    GURL("https://example.com/"));
     registration_->SetActiveVersion(version_);
     provider_host->SetControllerRegistration(
         registration_, false /* notify_controllerchange */);
@@ -304,7 +303,6 @@ class ServiceWorkerURLRequestJobTest
     const net::SSLInfo& ssl_info = request_->response_info().ssl_info;
     if (expect_valid_ssl) {
       EXPECT_TRUE(ssl_info.is_valid());
-      EXPECT_EQ(ssl_info.security_bits, 0x100);
       EXPECT_EQ(ssl_info.connection_status, 0x300039);
     } else {
       EXPECT_FALSE(ssl_info.is_valid());
@@ -493,8 +491,7 @@ class DelayHelper : public EmbeddedWorkerTestHelper {
     response_callback_->OnResponse(
         MakeOkResponse(), blink::mojom::ServiceWorkerFetchEventTiming::New());
     std::move(finish_callback_)
-        .Run(blink::mojom::ServiceWorkerEventStatus::COMPLETED,
-             base::TimeTicks::Now());
+        .Run(blink::mojom::ServiceWorkerEventStatus::COMPLETED);
   }
 
  protected:
@@ -711,8 +708,7 @@ class ProviderDeleteHelper : public EmbeddedWorkerTestHelper {
     response_callback->OnResponse(
         MakeOkResponse(), blink::mojom::ServiceWorkerFetchEventTiming::New());
     std::move(finish_callback)
-        .Run(blink::mojom::ServiceWorkerEventStatus::COMPLETED,
-             base::TimeTicks::Now());
+        .Run(blink::mojom::ServiceWorkerEventStatus::COMPLETED);
   }
 
  private:
@@ -800,8 +796,7 @@ class BlobResponder : public EmbeddedWorkerTestHelper {
         std::move(response),
         blink::mojom::ServiceWorkerFetchEventTiming::New());
     std::move(finish_callback)
-        .Run(blink::mojom::ServiceWorkerEventStatus::COMPLETED,
-             base::TimeTicks::Now());
+        .Run(blink::mojom::ServiceWorkerEventStatus::COMPLETED);
   }
 
   std::string blob_uuid_;
@@ -896,8 +891,7 @@ class StreamResponder : public EmbeddedWorkerTestHelper {
         std::move(response), std::move(stream_handle_),
         blink::mojom::ServiceWorkerFetchEventTiming::New());
     std::move(finish_callback)
-        .Run(blink::mojom::ServiceWorkerEventStatus::COMPLETED,
-             base::TimeTicks::Now());
+        .Run(blink::mojom::ServiceWorkerEventStatus::COMPLETED);
   }
 
   blink::mojom::ServiceWorkerStreamHandlePtr stream_handle_;
@@ -1276,8 +1270,7 @@ class FailFetchHelper : public EmbeddedWorkerTestHelper {
       override {
     SimulateWorkerStopped(embedded_worker_id);
     std::move(finish_callback)
-        .Run(blink::mojom::ServiceWorkerEventStatus::ABORTED,
-             base::TimeTicks::Now());
+        .Run(blink::mojom::ServiceWorkerEventStatus::ABORTED);
   }
 
  private:
@@ -1355,8 +1348,7 @@ class EarlyResponseHelper : public EmbeddedWorkerTestHelper {
 
   void FinishWaitUntil() {
     std::move(finish_callback_)
-        .Run(blink::mojom::ServiceWorkerEventStatus::COMPLETED,
-             base::TimeTicks::Now());
+        .Run(blink::mojom::ServiceWorkerEventStatus::COMPLETED);
   }
 
  protected:

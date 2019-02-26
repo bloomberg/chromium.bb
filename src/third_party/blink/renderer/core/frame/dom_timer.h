@@ -51,6 +51,11 @@ class CORE_EXPORT DOMTimer final : public GarbageCollectedFinalized<DOMTimer>,
                      bool single_shot);
   static void RemoveByID(ExecutionContext*, int timeout_id);
 
+  DOMTimer(ExecutionContext*,
+           ScheduledAction*,
+           TimeDelta interval,
+           bool single_shot,
+           int timeout_id);
   ~DOMTimer() override;
 
   // PausableObject
@@ -73,14 +78,10 @@ class CORE_EXPORT DOMTimer final : public GarbageCollectedFinalized<DOMTimer>,
                           TimeDelta timeout,
                           bool single_shot,
                           int timeout_id) {
-    return new DOMTimer(context, action, timeout, single_shot, timeout_id);
+    return MakeGarbageCollected<DOMTimer>(context, action, timeout, single_shot,
+                                          timeout_id);
   }
 
-  DOMTimer(ExecutionContext*,
-           ScheduledAction*,
-           TimeDelta interval,
-           bool single_shot,
-           int timeout_id);
   void Fired() override;
 
   scoped_refptr<base::SingleThreadTaskRunner> TimerTaskRunner() const override;

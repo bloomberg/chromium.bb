@@ -11,14 +11,14 @@
 #include "third_party/skia/include/core/SkCanvas.h"
 #include "third_party/skia/include/core/SkColorFilter.h"
 #include "third_party/skia/include/core/SkDrawLooper.h"
+#include "third_party/skia/include/core/SkFont.h"
+#include "third_party/skia/include/core/SkFontTypes.h"
 #include "third_party/skia/include/core/SkImageFilter.h"
 #include "third_party/skia/include/core/SkMaskFilter.h"
 #include "third_party/skia/include/core/SkPaint.h"
 #include "third_party/skia/include/core/SkPathEffect.h"
 #include "third_party/skia/include/core/SkShader.h"
 #include "third_party/skia/include/core/SkTypeface.h"
-
-class SkPaint;
 
 namespace cc {
 class PaintFilter;
@@ -62,12 +62,6 @@ class CC_PAINT_EXPORT PaintFlags {
   ALWAYS_INLINE void setAntiAlias(bool aa) {
     SetInternalFlag(aa, SkPaint::kAntiAlias_Flag);
   }
-  ALWAYS_INLINE bool isVerticalText() const {
-    return !!(bitfields_.flags_ & SkPaint::kVerticalText_Flag);
-  }
-  ALWAYS_INLINE void setVerticalText(bool vertical) {
-    SetInternalFlag(vertical, SkPaint::kVerticalText_Flag);
-  }
   ALWAYS_INLINE bool isSubpixelText() const {
     return !!(bitfields_.flags_ & SkPaint::kSubpixelText_Flag);
   }
@@ -81,10 +75,11 @@ class CC_PAINT_EXPORT PaintFlags {
     SetInternalFlag(lcd_text, SkPaint::kLCDRenderText_Flag);
   }
   enum Hinting {
-    kNo_Hinting = SkPaint::kNo_Hinting,
-    kSlight_Hinting = SkPaint::kSlight_Hinting,
-    kNormal_Hinting = SkPaint::kNormal_Hinting,  //!< this is the default
-    kFull_Hinting = SkPaint::kFull_Hinting
+    kNo_Hinting = static_cast<unsigned>(SkFontHinting::kNone),
+    kSlight_Hinting = static_cast<unsigned>(SkFontHinting::kSlight),
+    kNormal_Hinting =
+        static_cast<unsigned>(SkFontHinting::kNormal),  //!< this is the default
+    kFull_Hinting = static_cast<unsigned>(SkFontHinting::kFull)
   };
   ALWAYS_INLINE Hinting getHinting() const {
     return static_cast<Hinting>(bitfields_.hinting_);
@@ -214,6 +209,7 @@ class CC_PAINT_EXPORT PaintFlags {
   bool SupportsFoldingAlpha() const;
 
   SkPaint ToSkPaint() const;
+  SkFont ToSkFont() const;
 
   bool IsValid() const;
   bool operator==(const PaintFlags& other) const;

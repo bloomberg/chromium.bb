@@ -12,9 +12,10 @@
 
 #include "base/callback.h"
 #include "base/macros.h"
-#include "base/message_loop/message_loop.h"
+#include "base/run_loop.h"
 #include "base/stl_util.h"
 #include "base/test/scoped_feature_list.h"
+#include "base/test/scoped_task_environment.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "components/safe_search_api/stub_url_checker.h"
 #include "net/base/net_errors.h"
@@ -81,7 +82,7 @@ class SafeSearchURLCheckerTest : public testing::Test {
   }
 
   size_t next_url_;
-  base::MessageLoop message_loop_;
+  base::test::ScopedTaskEnvironment task_environment_;
   StubURLChecker stub_url_checker_;
   std::unique_ptr<URLChecker> checker_;
 };

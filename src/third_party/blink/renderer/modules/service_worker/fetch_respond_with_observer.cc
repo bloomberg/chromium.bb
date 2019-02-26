@@ -79,7 +79,7 @@ const String GetMessageForResponseError(ServiceWorkerResponseError error,
                       "an \"opaqueredirect\" type response was used for a "
                       "request whose redirect mode is not \"manual\".";
       break;
-    case ServiceWorkerResponseError::kResponseTypeCORSForRequestModeSameOrigin:
+    case ServiceWorkerResponseError::kResponseTypeCorsForRequestModeSameOrigin:
       error_message = error_message +
                       "a \"cors\" type response was used for a request whose "
                       "mode is \"same-origin\".";
@@ -203,9 +203,9 @@ FetchRespondWithObserver* FetchRespondWithObserver::Create(
     network::mojom::RequestContextFrameType frame_type,
     mojom::RequestContextType request_context,
     WaitUntilObserver* observer) {
-  return new FetchRespondWithObserver(context, fetch_event_id, request_url,
-                                      request_mode, redirect_mode, frame_type,
-                                      request_context, observer);
+  return MakeGarbageCollected<FetchRespondWithObserver>(
+      context, fetch_event_id, request_url, request_mode, redirect_mode,
+      frame_type, request_context, observer);
 }
 
 // This function may be called when an exception is scheduled. Thus, it must
@@ -233,7 +233,7 @@ void FetchRespondWithObserver::OnResponseFulfilled(
     const char* interface_name,
     const char* property_name) {
   DCHECK(GetExecutionContext());
-  if (!V8Response::hasInstance(value.V8Value(),
+  if (!V8Response::HasInstance(value.V8Value(),
                                ToIsolate(GetExecutionContext()))) {
     OnResponseRejected(ServiceWorkerResponseError::kNoV8Instance);
     return;
@@ -252,14 +252,14 @@ void FetchRespondWithObserver::OnResponseFulfilled(
     OnResponseRejected(ServiceWorkerResponseError::kResponseTypeError);
     return;
   }
-  if (response_type == network::mojom::FetchResponseType::kCORS &&
+  if (response_type == network::mojom::FetchResponseType::kCors &&
       request_mode_ == network::mojom::FetchRequestMode::kSameOrigin) {
     OnResponseRejected(
-        ServiceWorkerResponseError::kResponseTypeCORSForRequestModeSameOrigin);
+        ServiceWorkerResponseError::kResponseTypeCorsForRequestModeSameOrigin);
     return;
   }
   if (response_type == network::mojom::FetchResponseType::kOpaque) {
-    if (request_mode_ != network::mojom::FetchRequestMode::kNoCORS) {
+    if (request_mode_ != network::mojom::FetchRequestMode::kNoCors) {
       OnResponseRejected(ServiceWorkerResponseError::kResponseTypeOpaque);
       return;
     }

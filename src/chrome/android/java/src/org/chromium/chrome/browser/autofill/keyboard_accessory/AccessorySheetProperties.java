@@ -21,6 +21,8 @@ class AccessorySheetProperties {
     public static final WritableIntPropertyKey ACTIVE_TAB_INDEX = new WritableIntPropertyKey();
     public static final WritableBooleanPropertyKey VISIBLE = new WritableBooleanPropertyKey();
     public static final WritableIntPropertyKey HEIGHT = new WritableIntPropertyKey();
+    public static final WritableBooleanPropertyKey TOP_SHADOW_VISIBLE =
+            new WritableBooleanPropertyKey();
 
     public static final int NO_ACTIVE_TAB = -1;
 

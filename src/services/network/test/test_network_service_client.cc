@@ -82,6 +82,13 @@ void TestNetworkServiceClient::OnCookieChange(
   NOTREACHED();
 }
 
+#if defined(OS_CHROMEOS)
+void TestNetworkServiceClient::OnTrustAnchorUsed(
+    const std::string& username_hash) {
+  NOTREACHED();
+}
+#endif
+
 void TestNetworkServiceClient::OnFileUploadRequested(
     uint32_t process_id,
     bool async,
@@ -120,5 +127,10 @@ void TestNetworkServiceClient::OnClearSiteData(
     OnClearSiteDataCallback callback) {
   NOTREACHED();
 }
+
+void TestNetworkServiceClient::OnDataUseUpdate(
+    int32_t network_traffic_annotation_id_hash,
+    int64_t recv_bytes,
+    int64_t sent_bytes) {}
 
 }  // namespace network

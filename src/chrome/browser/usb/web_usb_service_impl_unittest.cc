@@ -13,6 +13,7 @@
 #include "base/barrier_closure.h"
 #include "base/bind.h"
 #include "base/run_loop.h"
+#include "base/test/bind_test_util.h"
 #include "chrome/browser/usb/usb_chooser_context.h"
 #include "chrome/browser/usb/usb_chooser_context_factory.h"
 #include "chrome/test/base/chrome_render_view_host_test_harness.h"
@@ -33,6 +34,7 @@ using device::mojom::UsbDeviceInfo;
 using device::mojom::UsbDeviceInfoPtr;
 using device::mojom::UsbDeviceManagerClient;
 using device::mojom::UsbDeviceManagerClientAssociatedPtrInfo;
+using device::mojom::UsbDeviceClient;
 using device::FakeUsbDeviceInfo;
 
 namespace {
@@ -284,4 +286,39 @@ TEST_F(WebUsbServiceImplTest, ReconnectDeviceManager) {
       context->HasDevicePermission(origin, origin, *another_device_info));
   EXPECT_FALSE(
       context->HasDevicePermission(origin, origin, *ephemeral_device_info));
+}
+
+TEST_F(WebUsbServiceImplTest, RevokeDevicePermission) {
+  GURL origin(kDefaultTestUrl);
+
+  auto* context = GetChooserContext();
+  auto device_info = device_manager()->CreateAndAddDevice(
+      0x1234, 0x5678, "ACME", "Frobinator", "ABCDEF");
+
+  WebUsbServicePtr web_usb_service;
+  ConnectToService(mojo::MakeRequest(&web_usb_service));
+  base::RunLoop().RunUntilIdle();
+  {
+    std::set<std::string> guids;
+    base::RunLoop loop;
+    web_usb_service->GetDevices(
+        base::BindOnce(&ExpectDevicesAndThen, guids, loop.QuitClosure()));
+    loop.Run();
+  }
+
+  context->GrantDevicePermission(origin, origin, *device_info);
+
+  device::mojom::UsbDevicePtr device_ptr;
+  web_usb_service->GetDevice(device_info->guid, mojo::MakeRequest(&device_ptr));
+  base::RunLoop().RunUntilIdle();
+
+  EXPECT_TRUE(device_ptr);
+  device_ptr.set_connection_error_handler(
+      base::BindLambdaForTesting([&]() { device_ptr.reset(); }));
+
+  auto objects = context->GetGrantedObjects(origin, origin);
+  context->RevokeObjectPermission(origin, origin, *objects[0]);
+  base::RunLoop().RunUntilIdle();
+
+  EXPECT_FALSE(device_ptr);
 }

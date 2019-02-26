@@ -7,8 +7,6 @@
 #include <set>
 #include <string>
 
-#include "ash/system/network/network_icon.h"
-#include "ash/system/tray/system_tray.h"
 #include "base/location.h"
 #include "chromeos/network/network_state.h"
 #include "chromeos/network/network_state_handler.h"
@@ -32,7 +30,6 @@ namespace ash {
 
 TrayNetworkStateObserver::TrayNetworkStateObserver(Delegate* delegate)
     : delegate_(delegate),
-      purge_icons_(false),
       update_frequency_(kUpdateFrequencyMs) {
   if (ui::ScopedAnimationDurationScaleMode::duration_scale_mode() !=
       ui::ScopedAnimationDurationScaleMode::NORMAL_DURATION) {
@@ -59,7 +56,6 @@ TrayNetworkStateObserver::~TrayNetworkStateObserver() {
 }
 
 void TrayNetworkStateObserver::NetworkListChanged() {
-  purge_icons_ = true;
   SignalUpdate(false /* notify_a11y */);
 }
 
@@ -120,10 +116,6 @@ void TrayNetworkStateObserver::SignalUpdate(bool notify_a11y) {
 
 void TrayNetworkStateObserver::SendNetworkStateChanged(bool notify_a11y) {
   delegate_->NetworkStateChanged(notify_a11y);
-  if (purge_icons_) {
-    network_icon::PurgeNetworkIconCache();
-    purge_icons_ = false;
-  }
 }
 
 }  // namespace ash

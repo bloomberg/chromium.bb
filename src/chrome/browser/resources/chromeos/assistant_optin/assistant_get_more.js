@@ -47,6 +47,13 @@ Polymer({
   screenShown_: false,
 
   /**
+   * Whether the voice match feature has been enabled.
+   * @type {boolean}
+   * @private
+   */
+  voiceMatchFeatureEnabled_: false,
+
+  /**
    * On-tap event handler for next button.
    *
    * @private
@@ -56,13 +63,17 @@ Polymer({
       return;
     }
     this.buttonsDisabled = true;
-    var hotword = this.$$('#toggle0').hasAttribute('checked');
-    var screenContext = this.$$('#toggle1').hasAttribute('checked');
-    var toggle2 = this.$$('#toggle2');
-    var emailOptedIn = toggle2 != null && toggle2.hasAttribute('checked');
+
+    if (!this.voiceMatchFeatureEnabled_) {
+      var hotword = this.$$('#toggle-hotword').hasAttribute('checked');
+      chrome.send('login.AssistantOptInFlowScreen.hotwordResult', [hotword]);
+    }
+    var screenContext = this.$$('#toggle-context').hasAttribute('checked');
+    var toggleEmail = this.$$('#toggle-email');
+    var emailOptedIn =
+        toggleEmail != null && toggleEmail.hasAttribute('checked');
 
     // TODO(updowndota): Wrap chrome.send() calls with a proxy object.
-    chrome.send('login.AssistantOptInFlowScreen.hotwordResult', [hotword]);
     chrome.send(
         'login.AssistantOptInFlowScreen.GetMoreScreen.userActed',
         [screenContext, emailOptedIn]);
@@ -83,6 +94,7 @@ Polymer({
     this.$['title-text'].textContent = data['getMoreTitle'];
     this.$['intro-text'].textContent = data['getMoreIntro'];
     this.$['next-button-text'].textContent = data['getMoreContinueButton'];
+    this.voiceMatchFeatureEnabled_ = data['voiceMatchFeatureEnabled'];
 
     this.consentStringLoaded_ = true;
     if (this.settingZippyLoaded_) {
@@ -103,7 +115,7 @@ Polymer({
           'data:text/html;charset=utf-8,' +
               encodeURIComponent(zippy.getWrappedIcon(data['iconUri'])));
       zippy.setAttribute('toggle-style', true);
-      zippy.id = 'zippy' + i;
+      zippy.id = 'zippy-' + data['id'];
       var title = document.createElement('div');
       title.className = 'zippy-title';
       title.textContent = data['title'];
@@ -111,7 +123,7 @@ Polymer({
 
       var toggle = document.createElement('cr-toggle');
       toggle.className = 'zippy-toggle';
-      toggle.id = 'toggle' + i;
+      toggle.id = 'toggle-' + data['id'];
       if (data['defaultEnabled']) {
         toggle.setAttribute('checked', '');
       }

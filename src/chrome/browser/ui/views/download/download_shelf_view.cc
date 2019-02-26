@@ -390,6 +390,16 @@ void DownloadShelfView::Closed() {
       ++i;
     }
   }
+
+  // If we had keyboard focus, calling SetVisible(false) causes keyboard focus
+  // to be completely lost. To prevent this, we focus another view: the web
+  // contents. TODO(collinbaker): https://crbug.com/846466 Fix
+  // AccessiblePaneView::SetVisible or FocusManager to make this unnecessary.
+  auto* focus_manager = GetFocusManager();
+  if (focus_manager && Contains(focus_manager->GetFocusedView())) {
+    get_parent()->contents_web_view()->RequestFocus();
+  }
+
   SetVisible(false);
 }
 

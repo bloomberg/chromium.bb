@@ -8,21 +8,16 @@
 #include <stdint.h>
 
 #include <algorithm>
-#include <string>
 
 #include "base/bind.h"
 #include "base/callback_helpers.h"
-#include "base/command_line.h"
 #include "base/location.h"
 #include "base/single_thread_task_runner.h"
-#include "base/strings/string_number_conversions.h"
-#include "base/sys_info.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "media/base/bind_to_current_loop.h"
 #include "media/base/decoder_buffer.h"
 #include "media/base/limits.h"
 #include "media/base/media_log.h"
-#include "media/base/media_switches.h"
 #include "media/base/timestamp_constants.h"
 #include "media/base/video_frame.h"
 #include "media/base/video_util.h"
@@ -31,70 +26,44 @@
 
 namespace media {
 
-
 // Returns the number of threads given the FFmpeg CodecID. Also inspects the
 // command line for a valid --video-threads flag.
 static int GetFFmpegVideoDecoderThreadCount(const VideoDecoderConfig& config) {
-  // Always use 2 or more threads for video decoding. Most machines today will
-  // have 2-8 execution contexts. Using more cores generally doesn't seem to
-  // increase power usage and allows us to decode video faster.
-  //
-  // Handling decoding on separate threads also frees up the pipeline thread to
-  // continue processing. Although it'd be nice to have the option of a single
-  // decoding thread, FFmpeg treats having one thread the same as having zero
-  // threads (i.e., decoding will execute on the calling thread). Yet another
-  // reason for having two threads :)
-  constexpr int kDecodeThreads = 2;
-  constexpr int kMaxDecodeThreads = 16;
+  // Most codecs are so old that more threads aren't really needed.
+  int desired_threads = limits::kMinVideoDecodeThreads;
 
-  // Refer to http://crbug.com/93932 for tsan suppressions on decoding.
-  int decode_threads = kDecodeThreads;
+  // Some ffmpeg codecs don't actually benefit from using more threads.
+  // Only add more threads for those codecs that we know will benefit.
+  switch (config.codec()) {
+    case kUnknownVideoCodec:
+    case kCodecVC1:
+    case kCodecMPEG2:
+    case kCodecHEVC:
+    case kCodecVP9:
+    case kCodecAV1:
+    case kCodecDolbyVision:
+      // We do not compile ffmpeg with support for any of these codecs.
+      break;
 
-  const base::CommandLine* cmd_line = base::CommandLine::ForCurrentProcess();
-  std::string threads(cmd_line->GetSwitchValueASCII(switches::kVideoThreads));
-  if (threads.empty() || !base::StringToInt(threads, &decode_threads)) {
-    // Some ffmpeg codecs don't actually benefit from using more threads.
-    // Only add more threads for those codecs that we know will benefit.
-    switch (config.codec()) {
-      case kUnknownVideoCodec:
-      case kCodecVC1:
-      case kCodecMPEG2:
-      case kCodecHEVC:
-      case kCodecVP9:
-      case kCodecAV1:
-      case kCodecDolbyVision:
-        // We do not compile ffmpeg with support for any of these codecs.
-        break;
+    case kCodecTheora:
+    case kCodecMPEG4:
+      // No extra threads for these codecs.
+      break;
 
-      case kCodecTheora:
-        // No extra threads for these codecs.
-        break;
-
-      case kCodecH264:
-      case kCodecMPEG4:
-      case kCodecVP8:
-        // Normalize to three threads for 1080p content, then scale linearly
-        // with number of pixels.
-        // Examples:
-        // 4k: 12 threads
-        // 1440p: 5 threads
-        // 1080p: 3 threads
-        // anything lower than 1080p: 2 threads
-        decode_threads = config.coded_size().width() *
-                         config.coded_size().height() * 3 / 1920 / 1080;
-
-        int cores = base::SysInfo::NumberOfProcessors();
-        // Leave two execution contexts for other things to run.
-        decode_threads = std::min(decode_threads, cores - 2);
-        // Use at least two threads, or ffmpeg will decode on the calling
-        // thread.
-        decode_threads = std::max(decode_threads, kDecodeThreads);
-    }
+    case kCodecH264:
+    case kCodecVP8:
+      // Normalize to three threads for 1080p content, then scale linearly
+      // with number of pixels.
+      // Examples:
+      // 4k: 12 threads
+      // 1440p: 5 threads
+      // 1080p: 3 threads
+      // anything lower than 1080p: 2 threads
+      desired_threads = config.coded_size().width() *
+                        config.coded_size().height() * 3 / 1920 / 1080;
   }
 
-  decode_threads = std::max(decode_threads, 0);
-  decode_threads = std::min(decode_threads, kMaxDecodeThreads);
-  return decode_threads;
+  return VideoDecoder::GetRecommendedThreadCount(desired_threads);
 }
 
 static int GetVideoBufferImpl(struct AVCodecContext* s,
@@ -180,23 +149,11 @@ int FFmpegVideoDecoder::GetVideoBuffer(struct AVCodecContext* codec_context,
 
   // Prefer the color space from the codec context. If it's not specified (or is
   // set to an unsupported value), fall back on the value from the config.
-  ColorSpace color_space = AVColorSpaceToColorSpace(codec_context->colorspace,
-                                                    codec_context->color_range);
-  if (color_space == COLOR_SPACE_UNSPECIFIED)
-    color_space = config_.color_space();
-  switch (color_space) {
-    case COLOR_SPACE_UNSPECIFIED:
-      break;
-    case COLOR_SPACE_HD_REC709:
-      video_frame->set_color_space(gfx::ColorSpace::CreateREC709());
-      break;
-    case COLOR_SPACE_SD_REC601:
-      video_frame->set_color_space(gfx::ColorSpace::CreateREC601());
-      break;
-    case COLOR_SPACE_JPEG:
-      video_frame->set_color_space(gfx::ColorSpace::CreateJpeg());
-      break;
-  }
+  VideoColorSpace color_space = AVColorSpaceToColorSpace(
+      codec_context->colorspace, codec_context->color_range);
+  if (!color_space.IsSpecified())
+    color_space = config_.color_space_info();
+  video_frame->set_color_space(color_space.ToGfxColorSpace());
 
   if (codec_context->codec_id == AV_CODEC_ID_VP8 &&
       codec_context->color_primaries == AVCOL_PRI_UNSPECIFIED &&

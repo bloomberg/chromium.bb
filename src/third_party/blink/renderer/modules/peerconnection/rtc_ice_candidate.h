@@ -49,9 +49,11 @@ class MODULES_EXPORT RTCIceCandidate final : public ScriptWrappable {
 
  public:
   static RTCIceCandidate* Create(ExecutionContext*,
-                                 const RTCIceCandidateInit&,
+                                 const RTCIceCandidateInit*,
                                  ExceptionState&);
   static RTCIceCandidate* Create(scoped_refptr<WebRTCICECandidate>);
+
+  explicit RTCIceCandidate(scoped_refptr<WebRTCICECandidate>);
 
   String candidate() const;
   void setCandidate(String);
@@ -65,8 +67,6 @@ class MODULES_EXPORT RTCIceCandidate final : public ScriptWrappable {
   scoped_refptr<WebRTCICECandidate> WebCandidate() const;
 
  private:
-  explicit RTCIceCandidate(scoped_refptr<WebRTCICECandidate>);
-
   scoped_refptr<WebRTCICECandidate> web_candidate_;
 };
 

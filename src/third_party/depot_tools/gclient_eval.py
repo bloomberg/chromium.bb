@@ -277,7 +277,7 @@ def _gclient_eval(node_or_string, filename='<unknown>', vars_dict=None):
   return _convert(node_or_string)
 
 
-def Exec(content, filename='<unknown>', vars_override=None):
+def Exec(content, filename='<unknown>', vars_override=None, builtin_vars=None):
   """Safely execs a set of assignments."""
   def _validate_statement(node, local_scope):
     if not isinstance(node, ast.Assign):
@@ -334,11 +334,15 @@ def Exec(content, filename='<unknown>', vars_override=None):
     # Update the parsed vars with the overrides, but only if they are already
     # present (overrides do not introduce new variables).
     vars_dict.update(value)
-    if vars_override:
-      vars_dict.update({
-        k: v
-        for k, v in vars_override.iteritems()
-        if k in vars_dict})
+
+  if builtin_vars:
+    vars_dict.update(builtin_vars)
+
+  if vars_override:
+    vars_dict.update({
+      k: v
+      for k, v in vars_override.iteritems()
+      if k in vars_dict})
 
   for name, node in statements.iteritems():
     value = _gclient_eval(node, filename, vars_dict)
@@ -347,7 +351,8 @@ def Exec(content, filename='<unknown>', vars_override=None):
   return _GCLIENT_SCHEMA.validate(local_scope)
 
 
-def ExecLegacy(content, filename='<unknown>', vars_override=None):
+def ExecLegacy(content, filename='<unknown>', vars_override=None,
+               builtin_vars=None):
   """Executes a DEPS file |content| using exec."""
   local_scope = {}
   global_scope = {'Var': lambda var_name: '{%s}' % var_name}
@@ -358,17 +363,19 @@ def ExecLegacy(content, filename='<unknown>', vars_override=None):
   # as "exec a in b, c" (See https://bugs.python.org/issue21591).
   eval(compile(content, filename, 'exec'), global_scope, local_scope)
 
-  if 'vars' not in local_scope:
-    return local_scope
-
   vars_dict = {}
-  vars_dict.update(local_scope['vars'])
+  vars_dict.update(local_scope.get('vars', {}))
+  if builtin_vars:
+    vars_dict.update(builtin_vars)
   if vars_override:
     vars_dict.update({
         k: v
         for k, v in vars_override.iteritems()
         if k in vars_dict
     })
+
+  if not vars_dict:
+    return local_scope
 
   def _DeepFormat(node):
     if isinstance(node, basestring):
@@ -453,7 +460,8 @@ def UpdateCondition(info_dict, op, new_condition):
     del info_dict['condition']
 
 
-def Parse(content, validate_syntax, filename, vars_override=None):
+def Parse(content, validate_syntax, filename, vars_override=None,
+          builtin_vars=None):
   """Parses DEPS strings.
 
   Executes the Python-like string stored in content, resulting in a Python
@@ -468,15 +476,17 @@ def Parse(content, validate_syntax, filename, vars_override=None):
       of the content, e.g. '<string>', '<unknown>'.
     vars_override: dict, optional. A dictionary with overrides for the variables
       defined by the DEPS file.
+    builtin_vars: dict, optional. A dictionary with variables that are provided
+      by default.
 
   Returns:
     A Python dict with the parsed contents of the DEPS file, as specified by the
     schema above.
   """
   if validate_syntax:
-    result = Exec(content, filename, vars_override)
+    result = Exec(content, filename, vars_override, builtin_vars)
   else:
-    result = ExecLegacy(content, filename, vars_override)
+    result = ExecLegacy(content, filename, vars_override, builtin_vars)
 
   vars_dict = result.get('vars', {})
   if 'deps' in result:

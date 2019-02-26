@@ -386,7 +386,6 @@ class SigninScreenHandler
   void HandleMigrateUserData(const std::string& password);
   void HandleResyncUserData();
   void HandleLoginUIStateChanged(const std::string& source, bool active);
-  void HandleUnlockOnLoginSuccess();
   void HandleLoginScreenUpdate();
   void HandleShowLoadingTimeoutError();
   void HandleFocusPod(const AccountId& account_id, bool is_large_pod);

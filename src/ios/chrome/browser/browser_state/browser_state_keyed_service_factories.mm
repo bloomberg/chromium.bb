@@ -13,7 +13,6 @@
 #include "ios/chrome/browser/bookmarks/startup_task_runner_service_factory.h"
 #include "ios/chrome/browser/browsing_data/browsing_data_remover_factory.h"
 #include "ios/chrome/browser/content_settings/cookie_settings_factory.h"
-#include "ios/chrome/browser/desktop_promotion/desktop_promotion_sync_service_factory.h"
 #include "ios/chrome/browser/dom_distiller/dom_distiller_service_factory.h"
 #include "ios/chrome/browser/download/browser_download_service_factory.h"
 #include "ios/chrome/browser/favicon/favicon_service_factory.h"
@@ -43,6 +42,7 @@
 #include "ios/chrome/browser/signin/authentication_service_factory.h"
 #include "ios/chrome/browser/signin/gaia_cookie_manager_service_factory.h"
 #include "ios/chrome/browser/signin/profile_oauth2_token_service_factory.h"
+#include "ios/chrome/browser/signin/signin_browser_state_info_updater_factory.h"
 #include "ios/chrome/browser/signin/signin_client_factory.h"
 #include "ios/chrome/browser/signin/signin_error_controller_factory.h"
 #include "ios/chrome/browser/signin/signin_manager_factory.h"
@@ -58,9 +58,9 @@
 #include "ios/chrome/browser/ui/browser_list/browser_list_factory.h"
 #include "ios/chrome/browser/ui/browser_list/browser_list_session_service_factory.h"
 #include "ios/chrome/browser/ui/fullscreen/fullscreen_controller_factory.h"
-#import "ios/chrome/browser/ui/overlays/overlay_service_factory.h"
 #import "ios/chrome/browser/ui/voice/text_to_speech_playback_controller_factory.h"
 #include "ios/chrome/browser/undo/bookmark_undo_service_factory.h"
+#include "ios/chrome/browser/unified_consent/unified_consent_service_factory.h"
 #include "ios/chrome/browser/web_data_service_factory.h"
 #import "ios/chrome/browser/web_state_list/web_usage_enabler/web_state_list_web_usage_enabler_factory.h"
 
@@ -80,6 +80,7 @@
 void EnsureBrowserStateKeyedServiceFactoriesBuilt() {
   autofill::PersonalDataManagerFactory::GetInstance();
   dom_distiller::DomDistillerServiceFactory::GetInstance();
+  feature_engagement::TrackerFactory::GetInstance();
   ios::AboutSigninInternalsFactory::GetInstance();
   ios::AccountConsistencyServiceFactory::GetInstance();
   ios::AccountFetcherServiceFactory::GetInstance();
@@ -103,37 +104,36 @@ void EnsureBrowserStateKeyedServiceFactoriesBuilt() {
   ios::WebDataServiceFactory::GetInstance();
   ios::WebHistoryServiceFactory::GetInstance();
   translate::TranslateRankerFactory::GetInstance();
+  suggestions::SuggestionsServiceFactory::GetInstance();
   AuthenticationServiceFactory::GetInstance();
+  BrowserDownloadServiceFactory::GetInstance();
   BrowserListFactory::GetInstance();
   BrowserListSessionServiceFactory::GetInstance();
   BrowsingDataRemoverFactory::GetInstance();
   ConsentAuditorFactory::GetInstance();
-  DesktopPromotionSyncServiceFactory::GetInstance();
-  feature_engagement::TrackerFactory::GetInstance();
+  FullscreenControllerFactory::GetInstance();
+  GoogleLogoServiceFactory::GetInstance();
+  IOSChromeContentSuggestionsServiceFactory::GetInstance();
+  IOSChromeDeprecatedProfileInvalidationProviderFactory::GetInstance();
+  IOSChromeFaviconLoaderFactory::GetInstance();
   IOSChromeGCMProfileServiceFactory::GetInstance();
   IOSChromeLargeIconCacheFactory::GetInstance();
   IOSChromeLargeIconServiceFactory::GetInstance();
-  IOSChromeFaviconLoaderFactory::GetInstance();
-  IOSChromeContentSuggestionsServiceFactory::GetInstance();
   IOSChromePasswordStoreFactory::GetInstance();
-  IOSChromeDeprecatedProfileInvalidationProviderFactory::GetInstance();
-  ModelTypeStoreServiceFactory::GetInstance();
-  ProfileSyncServiceFactory::GetInstance();
   IOSUserEventServiceFactory::GetInstance();
-  GoogleLogoServiceFactory::GetInstance();
   LanguageModelManagerFactory::GetInstance();
+  ModelTypeStoreServiceFactory::GetInstance();
   ProfileOAuth2TokenServiceFactory::GetInstance();
+  ProfileSyncServiceFactory::GetInstance();
   ReadingListModelFactory::GetInstance();
+  SigninBrowserStateInfoUpdaterFactory::GetInstance();
   SigninClientFactory::GetInstance();
-  suggestions::SuggestionsServiceFactory::GetInstance();
   SnapshotCacheFactory::GetInstance();
   SyncSetupServiceFactory::GetInstance();
   TabRestoreServiceDelegateImplIOSFactory::GetInstance();
-  TranslateAcceptLanguagesFactory::GetInstance();
-  UrlLanguageHistogramFactory::GetInstance();
-  BrowserDownloadServiceFactory::GetInstance();
-  FullscreenControllerFactory::GetInstance();
-  OverlayServiceFactory::GetInstance();
   TextToSpeechPlaybackControllerFactory::GetInstance();
+  TranslateAcceptLanguagesFactory::GetInstance();
+  UnifiedConsentServiceFactory::GetInstance();
+  UrlLanguageHistogramFactory::GetInstance();
   WebStateListWebUsageEnablerFactory::GetInstance();
 }

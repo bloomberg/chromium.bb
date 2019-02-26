@@ -6,9 +6,9 @@
 
 #include <string>
 
-#include "base/message_loop/message_loop.h"
 #include "base/metrics/field_trial.h"
 #include "base/run_loop.h"
+#include "base/test/scoped_task_environment.h"
 #include "build/build_config.h"
 #include "components/crash/core/common/crash_key.h"
 #include "components/variations/hashing.h"
@@ -42,7 +42,7 @@ class VariationsCrashKeysTest : public ::testing::Test {
   }
 
  private:
-  base::MessageLoop loop_;
+  base::test::ScopedTaskEnvironment task_environment_;
 
   base::FieldTrialList field_trial_list_;
 

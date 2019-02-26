@@ -485,9 +485,10 @@ html[dir=rtl] .bg-sel-tile-bg {
 .selected-border {
   border: 2px solid rgba(26, 115, 232, .4);
   border-radius: 4px;
-  height: 113px;
+  box-sizing: border-box;
+  height: 100%;
   position: relative;
-  width: 152px;
+  width: 100%;
 }
 
 .selected-circle {
@@ -588,6 +589,7 @@ html[dir=rtl] .plus-icon {
   padding: 8px 8px 8px 8px;
   position: fixed;
   text-shadow: 0 0 16px rgba(0, 0, 0, 0.3);
+  z-index: -1;
 }
 
 html[dir=rtl] #custom-bg-attr {

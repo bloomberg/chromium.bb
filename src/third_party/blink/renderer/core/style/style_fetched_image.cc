@@ -31,6 +31,7 @@
 #include "third_party/blink/renderer/core/svg/graphics/svg_image.h"
 #include "third_party/blink/renderer/core/svg/graphics/svg_image_for_container.h"
 #include "third_party/blink/renderer/platform/geometry/layout_size.h"
+#include "third_party/blink/renderer/platform/graphics/placeholder_image.h"
 
 namespace blink {
 
@@ -146,6 +147,11 @@ scoped_refptr<Image> StyleFetchedImage::GetImage(
     const ComputedStyle& style,
     const FloatSize& target_size) const {
   Image* image = image_->GetImage();
+  if (image->IsPlaceholderImage()) {
+    static_cast<PlaceholderImage*>(image)->SetIconAndTextScaleFactor(
+        style.EffectiveZoom());
+  }
+
   if (!image->IsSVGImage())
     return image;
   return SVGImageForContainer::Create(ToSVGImage(image), target_size,

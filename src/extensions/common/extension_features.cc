@@ -17,6 +17,6 @@ const base::Feature kNewExtensionUpdaterService{
 // Forces extensions with <all_hosts> to use activeTab-style runtime host
 // permissions.
 const base::Feature kRuntimeHostPermissions{"RuntimeHostPermissions",
-                                            base::FEATURE_DISABLED_BY_DEFAULT};
+                                            base::FEATURE_ENABLED_BY_DEFAULT};
 
 }  // namespace extensions_features

@@ -10,15 +10,13 @@
 
 #include "modules/audio_processing/aec3/suppression_filter.h"
 
-#include <math.h>
 #include <algorithm>
 #include <cmath>
 #include <cstring>
 #include <functional>
-#include <numeric>
+#include <iterator>
 
 #include "modules/audio_processing/aec3/vector_math.h"
-#include "modules/audio_processing/utility/ooura_fft.h"
 #include "rtc_base/checks.h"
 #include "rtc_base/numerics/safe_minmax.h"
 

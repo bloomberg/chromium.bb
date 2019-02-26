@@ -99,13 +99,15 @@ bool ProcessedLocalAudioSource::EnsureSourceIsStarted() {
     return false;
   }
 
-  WebRtcLogMessage(base::StringPrintf(
+  std::string str = base::StringPrintf(
       "ProcessedLocalAudioSource::EnsureSourceIsStarted. render_frame_id=%d"
       ", channel_layout=%d, sample_rate=%d, buffer_size=%d"
       ", session_id=%d, effects=%d. ",
       consumer_render_frame_id_, device().input.channel_layout(),
       device().input.sample_rate(), device().input.frames_per_buffer(),
-      device().session_id, device().input.effects()));
+      device().session_id, device().input.effects());
+  WebRtcLogMessage(str);
+  DVLOG(1) << str;
 
   MediaStreamDevice modified_device(device());
   bool device_is_modified = false;
@@ -177,7 +179,8 @@ bool ProcessedLocalAudioSource::EnsureSourceIsStarted() {
   // Verify that the reported input channel configuration is supported.
   if (channel_layout != media::CHANNEL_LAYOUT_MONO &&
       channel_layout != media::CHANNEL_LAYOUT_STEREO &&
-      channel_layout != media::CHANNEL_LAYOUT_STEREO_AND_KEYBOARD_MIC) {
+      channel_layout != media::CHANNEL_LAYOUT_STEREO_AND_KEYBOARD_MIC &&
+      channel_layout != media::CHANNEL_LAYOUT_DISCRETE) {
     WebRtcLogMessage(base::StringPrintf(
         "ProcessedLocalAudioSource::EnsureSourceIsStarted() fails "
         " because the input channel layout (%d) is not supported.",
@@ -203,6 +206,11 @@ bool ProcessedLocalAudioSource::EnsureSourceIsStarted() {
                                 channel_layout, device().input.sample_rate(),
                                 device().input.sample_rate() / 100);
   params.set_effects(device().input.effects());
+  if (channel_layout == media::CHANNEL_LAYOUT_DISCRETE) {
+    DCHECK_LE(device().input.channels(), 2);
+    params.set_channels_for_discrete(device().input.channels());
+  }
+  DVLOG(1) << params.AsHumanReadableString();
   DCHECK(params.IsValid());
   media::AudioSourceParameters source_params(device().session_id);
   const bool use_remote_apm =
@@ -217,6 +225,12 @@ bool ProcessedLocalAudioSource::EnsureSourceIsStarted() {
     source_params.processing = media::AudioSourceParameters::ProcessingConfig(
         rtc_audio_device->GetAudioProcessingId(),
         audio_processing_properties_.ToAudioProcessingSettings());
+    if (source_params.processing->settings.automatic_gain_control !=
+            media::AutomaticGainControlType::kDisabled &&
+        base::FeatureList::IsEnabled(features::kWebRtcHybridAgc)) {
+      source_params.processing->settings.automatic_gain_control =
+          media::AutomaticGainControlType::kHybridExperimental;
+    }
   } else {
     audio_processor_ = new rtc::RefCountedObject<MediaStreamAudioProcessor>(
         audio_processing_properties_, rtc_audio_device);

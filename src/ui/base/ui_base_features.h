@@ -14,13 +14,15 @@ namespace features {
 
 // Keep sorted!
 UI_BASE_EXPORT extern const base::Feature kEnableEmojiContextMenu;
-UI_BASE_EXPORT extern const base::Feature kEnableFloatingVirtualKeyboard;
 UI_BASE_EXPORT extern const base::Feature
     kEnableFullscreenHandwritingVirtualKeyboard;
 UI_BASE_EXPORT extern const base::Feature kEnableStylusVirtualKeyboard;
-UI_BASE_EXPORT extern const base::Feature kEnableVirtualKeyboardMdUi;
 UI_BASE_EXPORT extern const base::Feature kEnableVirtualKeyboardUkm;
 UI_BASE_EXPORT extern const base::Feature kExperimentalUi;
+#if defined(OS_CHROMEOS)
+UI_BASE_EXPORT extern const base::Feature kSettingsShowsPerKeyboardSettings;
+#endif  // defined(OS_CHROMEOS)
+UI_BASE_EXPORT extern const base::Feature kInputMethodSettingsUiUpdate;
 UI_BASE_EXPORT extern const base::Feature kSystemKeyboardLock;
 UI_BASE_EXPORT extern const base::Feature kTouchableAppContextMenu;
 UI_BASE_EXPORT extern const base::Feature kNotificationIndicator;
@@ -32,6 +34,7 @@ UI_BASE_EXPORT bool IsNotificationIndicatorEnabled();
 UI_BASE_EXPORT bool IsUiGpuRasterizationEnabled();
 
 #if defined(OS_WIN)
+UI_BASE_EXPORT extern const base::Feature kCalculateNativeWinOcclusion;
 UI_BASE_EXPORT extern const base::Feature kInputPaneOnScreenKeyboard;
 UI_BASE_EXPORT extern const base::Feature kPointerEventsForTouch;
 UI_BASE_EXPORT extern const base::Feature kPrecisionTouchpad;
@@ -42,6 +45,10 @@ UI_BASE_EXPORT extern const base::Feature kTSFImeSupport;
 UI_BASE_EXPORT bool IsUsingWMPointerForTouch();
 #endif  // defined(OS_WIN)
 
+#if defined(OS_WIN) || defined(OS_CHROMEOS)
+UI_BASE_EXPORT extern const base::Feature kEnableAutomaticUiAdjustmentsForTouch;
+#endif  // defined(OS_WIN) || defined(OS_CHROMEOS)
+
 #if defined(OS_WIN) || defined(OS_MACOSX) || defined(OS_LINUX)
 UI_BASE_EXPORT extern const base::Feature kDirectManipulationStylus;
 #endif  // defined(OS_WIN) || defined(OS_MACOSX) || defined(OS_LINUX)
@@ -49,6 +56,12 @@ UI_BASE_EXPORT extern const base::Feature kDirectManipulationStylus;
 // Used to have ash (Chrome OS system UI) run in its own process.
 // TODO(jamescook): Make flag only available in Chrome OS.
 UI_BASE_EXPORT extern const base::Feature kMash;
+
+// Used to run Viz in its own process when kMash is enabled. Viz is run in Ash
+// process by default.
+// TODO(mohsen): Remove this when Viz can run fully in a separate process. Then
+// make it the default kMash behavior.
+UI_BASE_EXPORT extern const base::Feature kMashOopViz;
 
 UI_BASE_EXPORT extern const base::Feature kSingleProcessMash;
 
@@ -59,6 +72,8 @@ UI_BASE_EXPORT bool IsUsingWindowService();
 // service and Viz graphics). See //ash/README.md.
 UI_BASE_EXPORT bool IsMultiProcessMash();
 
+UI_BASE_EXPORT bool IsMashOopVizEnabled();
+
 // Returns true if code outside of ash is using the WindowService. In this mode
 // there are two aura::Envs. Ash uses one with Env::Mode::LOCAL. Non-ash code
 // uses an aura::Env with a mode of MUS. The non-ash code using mus targets the
@@ -66,6 +81,9 @@ UI_BASE_EXPORT bool IsMultiProcessMash();
 // similar to kMash, but leaves ash and browser running in the same process.
 // See //ash/README.md.
 UI_BASE_EXPORT bool IsSingleProcessMash();
+
+// Whether the UI may accommodate touch input in response to hardware changes.
+UI_BASE_EXPORT bool IsAutomaticUiAdjustmentsForTouchEnabled();
 
 #if defined(OS_MACOSX)
 UI_BASE_EXPORT extern const base::Feature kHostWindowsInAppShimProcess;

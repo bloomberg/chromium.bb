@@ -73,8 +73,6 @@ sk_sp<GrTextureProxy> GrTextureAdjuster::refTextureProxyCopy(const CopyParams& c
 
 sk_sp<GrTextureProxy> GrTextureAdjuster::onRefTextureProxyForParams(
         const GrSamplerState& params,
-        SkColorSpace* dstColorSpace,
-        sk_sp<SkColorSpace>* texColorSpace,
         bool willBeMipped,
         SkScalar scaleAdjust[2]) {
     sk_sp<GrTextureProxy> proxy = this->originalProxyRef();
@@ -85,9 +83,6 @@ sk_sp<GrTextureProxy> GrTextureAdjuster::onRefTextureProxyForParams(
         return nullptr;
     }
 
-    if (texColorSpace) {
-        *texColorSpace = sk_ref_sp(fColorSpace);
-    }
     SkASSERT(this->width() <= fContext->contextPriv().caps()->maxTextureSize() &&
              this->height() <= fContext->contextPriv().caps()->maxTextureSize());
 
@@ -119,8 +114,7 @@ std::unique_ptr<GrFragmentProcessor> GrTextureAdjuster::createFragmentProcessor(
         const SkRect& constraintRect,
         FilterConstraint filterConstraint,
         bool coordsLimitedToConstraintRect,
-        const GrSamplerState::Filter* filterOrNullForBicubic,
-        SkColorSpace* dstColorSpace) {
+        const GrSamplerState::Filter* filterOrNullForBicubic) {
     SkMatrix textureMatrix = origTextureMatrix;
 
     SkRect domain;
@@ -130,7 +124,7 @@ std::unique_ptr<GrFragmentProcessor> GrTextureAdjuster::createFragmentProcessor(
     }
     SkScalar scaleAdjust[2] = { 1.0f, 1.0f };
     sk_sp<GrTextureProxy> proxy(
-            this->refTextureProxyForParams(samplerState, nullptr, nullptr, scaleAdjust));
+            this->refTextureProxyForParams(samplerState, scaleAdjust));
     if (!proxy) {
         return nullptr;
     }
@@ -159,7 +153,6 @@ std::unique_ptr<GrFragmentProcessor> GrTextureAdjuster::createFragmentProcessor(
     }
     SkASSERT(kNoDomain_DomainMode == domainMode ||
              (domain.fLeft <= domain.fRight && domain.fTop <= domain.fBottom));
-    auto fp = CreateFragmentProcessorForDomainAndFilter(std::move(proxy), textureMatrix,
-                                                        domainMode, domain, filterOrNullForBicubic);
-    return GrColorSpaceXformEffect::Make(std::move(fp), fColorSpace, fAlphaType, dstColorSpace);
+    return CreateFragmentProcessorForDomainAndFilter(std::move(proxy), textureMatrix, domainMode,
+                                                     domain, filterOrNullForBicubic);
 }

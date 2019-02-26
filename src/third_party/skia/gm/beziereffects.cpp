@@ -34,12 +34,12 @@ public:
         return analysis.requiresDstTexture() ? RequiresDstTexture::kYes : RequiresDstTexture::kNo;
     }
 
-    void visitProxies(const VisitProxyFunc& func) const override {
+    void visitProxies(const VisitProxyFunc& func, VisitorType) const override {
         fProcessorSet.visitProxies(func);
     }
 
 protected:
-    BezierTestOp(sk_sp<const GrGeometryProcessor> gp, const SkRect& rect, GrColor color,
+    BezierTestOp(sk_sp<const GrGeometryProcessor> gp, const SkRect& rect, const SkPMColor4f& color,
                  int32_t classID)
             : INHERITED(classID)
             , fRect(rect)
@@ -56,201 +56,20 @@ protected:
     sk_sp<const GrGeometryProcessor> gp() const { return fGeometryProcessor; }
 
     const SkRect& rect() const { return fRect; }
-    GrColor color() const { return fColor; }
+    const SkPMColor4f& color() const { return fColor; }
 
 private:
     SkRect fRect;
-    GrColor fColor;
+    SkPMColor4f fColor;
     sk_sp<const GrGeometryProcessor> fGeometryProcessor;
     GrProcessorSet fProcessorSet;
 
     typedef GrMeshDrawOp INHERITED;
 };
 
-class BezierCubicTestOp : public BezierTestOp {
-public:
-    DEFINE_OP_CLASS_ID
-
-    const char* name() const override { return "BezierCubicTestOp"; }
-
-    static std::unique_ptr<GrDrawOp> Make(GrContext* context,
-                                          sk_sp<const GrGeometryProcessor> gp,
-                                          const SkRect& rect,
-                                          GrColor color) {
-        GrOpMemoryPool* pool = context->contextPriv().opMemoryPool();
-
-        return pool->allocate<BezierCubicTestOp>(std::move(gp), rect, color);
-    }
-
-private:
-    friend class ::GrOpMemoryPool; // for ctor
-
-    BezierCubicTestOp(sk_sp<const GrGeometryProcessor> gp, const SkRect& rect, GrColor color)
-            : INHERITED(std::move(gp), rect, color, ClassID()) {}
-
-    void onPrepareDraws(Target* target) override {
-        SkASSERT(this->gp()->debugOnly_vertexStride() == sizeof(SkPoint));
-        QuadHelper helper(target, sizeof(SkPoint), 1);
-        SkPoint* pts = reinterpret_cast<SkPoint*>(helper.vertices());
-        if (!pts) {
-            return;
-        }
-        SkRect rect = this->rect();
-        SkPointPriv::SetRectTriStrip(pts, rect, sizeof(SkPoint));
-        auto pipe = this->makePipeline(target);
-        helper.recordDraw(target, this->gp(), pipe.fPipeline, pipe.fFixedDynamicState);
-    }
-
-    static constexpr int kVertsPerCubic = 4;
-    static constexpr int kIndicesPerCubic = 6;
-
-    typedef BezierTestOp INHERITED;
-};
-
 /**
  * This GM directly exercises effects that draw Bezier curves in the GPU backend.
  */
-class BezierCubicEffects : public GM {
-public:
-    BezierCubicEffects() {
-        this->setBGColor(0xFFFFFFFF);
-    }
-
-protected:
-    SkString onShortName() override {
-        return SkString("bezier_cubic_effects");
-    }
-
-    SkISize onISize() override {
-        return SkISize::Make(800, 800);
-    }
-
-    void onDraw(SkCanvas* canvas) override {
-        GrRenderTargetContext* renderTargetContext =
-            canvas->internal_private_accessTopLayerRenderTargetContext();
-        if (!renderTargetContext) {
-            skiagm::GM::DrawGpuOnlyMessage(canvas);
-            return;
-        }
-
-        GrContext* context = canvas->getGrContext();
-        if (!context) {
-            return;
-        }
-
-        if (!context->contextPriv().caps()->shaderCaps()->floatIs32Bits()) {
-            SkPaint paint;
-            sk_tool_utils::set_portable_typeface(&paint);
-            paint.setAntiAlias(true);
-            paint.setTextSize(20);
-
-            canvas->clear(SK_ColorWHITE);
-            canvas->drawString("float != fp32", 20, 40, paint);
-            return;
-        }
-
-        struct Vertex {
-            SkPoint fPosition;
-            float   fKLM[4]; // The last value is ignored. The effect expects a vec4f.
-        };
-
-        constexpr int kNumCubics = 15;
-        SkRandom rand;
-
-        // Mult by 3 for each edge effect type
-        int numCols = SkScalarCeilToInt(SkScalarSqrt(SkIntToScalar(kNumCubics*3)));
-        int numRows = SkScalarCeilToInt(SkIntToScalar(kNumCubics*3) / numCols);
-        SkScalar w = SkIntToScalar(renderTargetContext->width()) / numCols;
-        SkScalar h = SkIntToScalar(renderTargetContext->height()) / numRows;
-        int row = 0;
-        int col = 0;
-        constexpr GrColor color = 0xff000000;
-
-        for (int i = 0; i < kNumCubics; ++i) {
-            SkPoint baseControlPts[] = {
-                {rand.nextRangeF(0.f, w), rand.nextRangeF(0.f, h)},
-                {rand.nextRangeF(0.f, w), rand.nextRangeF(0.f, h)},
-                {rand.nextRangeF(0.f, w), rand.nextRangeF(0.f, h)},
-                {rand.nextRangeF(0.f, w), rand.nextRangeF(0.f, h)}
-            };
-            for(GrClipEdgeType edgeType : {GrClipEdgeType::kFillBW,
-                                           GrClipEdgeType::kFillAA,
-                                           GrClipEdgeType::kHairlineAA}) {
-                SkScalar x = col * w;
-                SkScalar y = row * h;
-                SkPoint controlPts[] = {
-                    {x + baseControlPts[0].fX, y + baseControlPts[0].fY},
-                    {x + baseControlPts[1].fX, y + baseControlPts[1].fY},
-                    {x + baseControlPts[2].fX, y + baseControlPts[2].fY},
-                    {x + baseControlPts[3].fX, y + baseControlPts[3].fY}
-                };
-                SkPoint chopped[10];
-                SkMatrix klm;
-                int loopIndex;
-                int cnt = GrPathUtils::chopCubicAtLoopIntersection(controlPts,
-                                                                   chopped,
-                                                                   &klm,
-                                                                   &loopIndex);
-
-                SkPaint ctrlPtPaint;
-                ctrlPtPaint.setColor(rand.nextU() | 0xFF000000);
-                canvas->drawCircle(controlPts[0], 8.f, ctrlPtPaint);
-                for (int i = 1; i < 4; ++i) {
-                    canvas->drawCircle(controlPts[i], 6.f, ctrlPtPaint);
-                }
-
-                SkPaint polyPaint;
-                polyPaint.setColor(0xffA0A0A0);
-                polyPaint.setStrokeWidth(0);
-                polyPaint.setStyle(SkPaint::kStroke_Style);
-                canvas->drawPoints(SkCanvas::kPolygon_PointMode, 4, controlPts, polyPaint);
-
-                SkPaint choppedPtPaint;
-                choppedPtPaint.setColor(~ctrlPtPaint.getColor() | 0xFF000000);
-
-                for (int c = 0; c < cnt; ++c) {
-                    SkPoint* pts = chopped + 3 * c;
-
-                    for (int i = 0; i < 4; ++i) {
-                        canvas->drawCircle(pts[i], 3.f, choppedPtPaint);
-                    }
-
-                    SkRect bounds;
-                    bounds.set(pts, 4);
-
-                    SkPaint boundsPaint;
-                    boundsPaint.setColor(0xff808080);
-                    boundsPaint.setStrokeWidth(0);
-                    boundsPaint.setStyle(SkPaint::kStroke_Style);
-                    canvas->drawRect(bounds, boundsPaint);
-
-
-                    bool flipKL = (c == loopIndex && cnt != 3);
-                    sk_sp<GrGeometryProcessor> gp =
-                            GrCubicEffect::Make(color, SkMatrix::I(), klm, flipKL, edgeType,
-                                                *context->contextPriv().caps());
-                    if (!gp) {
-                        break;
-                    }
-
-                    std::unique_ptr<GrDrawOp> op =
-                            BezierCubicTestOp::Make(context, std::move(gp), bounds, color);
-                    renderTargetContext->priv().testingOnly_addDrawOp(std::move(op));
-                }
-                ++col;
-                if (numCols == col) {
-                    col = 0;
-                    ++row;
-                }
-            }
-        }
-    }
-
-private:
-    typedef GM INHERITED;
-};
-
-//////////////////////////////////////////////////////////////////////////////
 
 class BezierConicTestOp : public BezierTestOp {
 public:
@@ -261,7 +80,7 @@ public:
     static std::unique_ptr<GrDrawOp> Make(GrContext* context,
                                           sk_sp<const GrGeometryProcessor> gp,
                                           const SkRect& rect,
-                                          GrColor color,
+                                          const SkPMColor4f& color,
                                           const SkMatrix& klm) {
         GrOpMemoryPool* pool = context->contextPriv().opMemoryPool();
 
@@ -271,8 +90,8 @@ public:
 private:
     friend class ::GrOpMemoryPool; // for ctor
 
-    BezierConicTestOp(sk_sp<const GrGeometryProcessor> gp, const SkRect& rect, GrColor color,
-                      const SkMatrix& klm)
+    BezierConicTestOp(sk_sp<const GrGeometryProcessor> gp, const SkRect& rect,
+                      const SkPMColor4f& color, const SkMatrix& klm)
             : INHERITED(std::move(gp), rect, color, ClassID()), fKLM(klm) {}
 
     struct Vertex {
@@ -281,7 +100,7 @@ private:
     };
 
     void onPrepareDraws(Target* target) override {
-        SkASSERT(this->gp()->debugOnly_vertexStride() == sizeof(Vertex));
+        SkASSERT(this->gp()->vertexStride() == sizeof(Vertex));
         QuadHelper helper(target, sizeof(Vertex), 1);
         Vertex* verts = reinterpret_cast<Vertex*>(helper.vertices());
         if (!verts) {
@@ -354,7 +173,7 @@ protected:
         SkScalar h = SkIntToScalar(renderTargetContext->height()) / numRows;
         int row = 0;
         int col = 0;
-        constexpr GrColor color = 0xff000000;
+        SkPMColor4f color = SkPMColor4f::FromBytes_RGBA(0xff000000);
 
         for (int i = 0; i < kNumConics; ++i) {
             SkPoint baseControlPts[] = {
@@ -483,7 +302,7 @@ public:
     static std::unique_ptr<GrDrawOp> Make(GrContext* context,
                                           sk_sp<const GrGeometryProcessor> gp,
                                           const SkRect& rect,
-                                          GrColor color,
+                                          const SkPMColor4f& color,
                                           const GrPathUtils::QuadUVMatrix& devToUV) {
         GrOpMemoryPool* pool = context->contextPriv().opMemoryPool();
 
@@ -493,8 +312,8 @@ public:
 private:
     friend class ::GrOpMemoryPool; // for ctor
 
-    BezierQuadTestOp(sk_sp<const GrGeometryProcessor> gp, const SkRect& rect, GrColor color,
-                     const GrPathUtils::QuadUVMatrix& devToUV)
+    BezierQuadTestOp(sk_sp<const GrGeometryProcessor> gp, const SkRect& rect,
+                     const SkPMColor4f& color, const GrPathUtils::QuadUVMatrix& devToUV)
             : INHERITED(std::move(gp), rect, color, ClassID()), fDevToUV(devToUV) {}
 
     struct Vertex {
@@ -503,7 +322,7 @@ private:
     };
 
     void onPrepareDraws(Target* target) override {
-        SkASSERT(this->gp()->debugOnly_vertexStride() == sizeof(Vertex));
+        SkASSERT(this->gp()->vertexStride() == sizeof(Vertex));
         QuadHelper helper(target, sizeof(Vertex), 1);
         Vertex* verts = reinterpret_cast<Vertex*>(helper.vertices());
         if (!verts) {
@@ -570,7 +389,7 @@ protected:
         SkScalar h = SkIntToScalar(renderTargetContext->height()) / numRows;
         int row = 0;
         int col = 0;
-        constexpr GrColor color = 0xff000000;
+        SkPMColor4f color = SkPMColor4f::FromBytes_RGBA(0xff000000);
 
         for (int i = 0; i < kNumQuads; ++i) {
             SkPoint baseControlPts[] = {
@@ -650,7 +469,6 @@ private:
     typedef GM INHERITED;
 };
 
-DEF_GM(return new BezierCubicEffects;)
 DEF_GM(return new BezierConicEffects;)
 DEF_GM(return new BezierQuadEffects;)
 }

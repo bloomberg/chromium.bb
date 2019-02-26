@@ -36,7 +36,7 @@
 #include "base/strings/string_piece.h"
 #include "base/strings/sys_string_conversions.h"
 #include "base/strings/utf_string_conversions.h"
-#include "base/sys_info.h"
+#include "base/system/sys_info.h"
 #include "base/task/post_task.h"
 #include "base/threading/platform_thread.h"
 #include "base/threading/thread_task_runner_handle.h"
@@ -120,7 +120,6 @@
 #include "chrome/common/media/media_resource_provider.h"
 #include "chrome/common/net/net_resource_provider.h"
 #include "chrome/common/pref_names.h"
-#include "chrome/common/profiling.h"
 #include "chrome/common/stack_sampling_configuration.h"
 #include "chrome/common/thread_profiler.h"
 #include "chrome/grit/generated_resources.h"
@@ -150,8 +149,9 @@
 #include "components/prefs/pref_value_store.h"
 #include "components/prefs/scoped_user_pref_update.h"
 #include "components/rappor/rappor_service_impl.h"
-#include "components/signin/core/browser/profile_management_switches.h"
+#include "components/signin/core/browser/account_consistency_method.h"
 #include "components/startup_metric_utils/browser/startup_metric_utils.h"
+#include "components/tracing/common/tracing_sampler_profiler.h"
 #include "components/tracing/common/tracing_switches.h"
 #include "components/translate/core/browser/translate_download_manager.h"
 #include "components/variations/field_trial_config/field_trial_util.h"
@@ -176,6 +176,7 @@
 #include "content/public/common/content_features.h"
 #include "content/public/common/content_switches.h"
 #include "content/public/common/main_function_params.h"
+#include "content/public/common/profiling.h"
 #include "content/public/common/service_manager_connection.h"
 #include "device/vr/buildflags/buildflags.h"
 #include "extensions/buildflags/buildflags.h"
@@ -185,7 +186,6 @@
 #include "net/cookies/cookie_monster.h"
 #include "net/http/http_network_layer.h"
 #include "net/http/http_stream_factory.h"
-#include "net/url_request/url_request.h"
 #include "printing/buildflags/buildflags.h"
 #include "rlz/buildflags/buildflags.h"
 #include "services/service_manager/public/cpp/connector.h"
@@ -610,33 +610,6 @@ bool IsSiteIsolationEnterprisePolicyApplicable() {
 #endif
 }
 
-bool WaitUntilMachineLevelUserCloudPolicyEnrollmentFinished(
-    policy::ChromeBrowserPolicyConnector* connector) {
-#if !defined(OS_CHROMEOS) && !defined(OS_ANDROID)
-  using RegisterResult =
-      policy::MachineLevelUserCloudPolicyController::RegisterResult;
-  switch (connector->machine_level_user_cloud_policy_controller()
-              ->WaitUntilPolicyEnrollmentFinished()) {
-    case RegisterResult::kNoEnrollmentNeeded:
-    case RegisterResult::kEnrollmentSuccessBeforeDialogDisplayed:
-      return true;
-    case RegisterResult::kEnrollmentSuccess:
-#if defined(OS_MACOSX)
-      app_controller_mac::EnterpriseStartupDialogClosed();
-#endif
-      return true;
-    case RegisterResult::kRestartDueToFailure:
-      chrome::AttemptRestart();
-      return false;
-    case RegisterResult::kQuitDueToFailure:
-      chrome::AttemptExit();
-      return false;
-  }
-#else
-  return true;
-#endif
-}
-
 // Sets up the ThreadProfiler for the browser process, runs it, and returns the
 // profiler.
 std::unique_ptr<ThreadProfiler> CreateAndStartBrowserMainThreadProfiler() {
@@ -682,11 +655,6 @@ ChromeBrowserMainParts::ChromeBrowserMainParts(
   // If we're running tests (ui_task is non-null).
   if (parameters.ui_task)
     browser_defaults::enable_help_app = false;
-
-  // Chrome disallows cookies by default. All code paths that want to use
-  // cookies need to go through one of Chrome's URLRequestContexts which have
-  // a ChromeNetworkDelegate attached that selectively allows cookies again.
-  net::URLRequest::SetDefaultCookiePolicyToBlock();
 
 #if !defined(OS_ANDROID)
   startup_watcher_ = std::make_unique<StartupTimeBomb>();
@@ -1159,16 +1127,15 @@ int ChromeBrowserMainParts::PreCreateThreadsImpl() {
     }
   }
 
-  // The admin should also be able to use these policies to override trials that
-  // will try to turn site isolation on per default.
-  // Note that disabling either SitePerProcess or IsolateOrigins via policy will
-  // disable both types of field trials.
+  // The admin should also be able to use these policies to force Site Isolation
+  // off.  Note that disabling either SitePerProcess or IsolateOrigins via
+  // policy will disable both types of isolation.
   if ((local_state->IsManagedPreference(prefs::kSitePerProcess) &&
        !local_state->GetBoolean(prefs::kSitePerProcess)) ||
       (local_state->IsManagedPreference(prefs::kIsolateOrigins) &&
        local_state->GetString(prefs::kIsolateOrigins).empty())) {
     base::CommandLine::ForCurrentProcess()->AppendSwitch(
-        switches::kDisableSiteIsolationTrials);
+        switches::kDisableSiteIsolation);
   }
 
   // ChromeOS needs ui::ResourceBundle::InitSharedInstance to be called before
@@ -1196,6 +1163,13 @@ void ChromeBrowserMainParts::PostCreateThreads() {
       FROM_HERE, {BrowserThread::IO},
       base::BindOnce(&ThreadProfiler::StartOnChildThread,
                      metrics::CallStackProfileParams::IO_THREAD));
+// Sampling multiple threads might cause overhead on Android and we don't want
+// to enable it unless the data is needed.
+#if !defined(OS_ANDROID)
+  base::PostTaskWithTraits(
+      FROM_HERE, {BrowserThread::IO},
+      base::BindOnce(&tracing::TracingSamplerProfiler::CreateOnChildThread));
+#endif
 }
 
 void ChromeBrowserMainParts::ServiceManagerConnectionStarted(
@@ -1360,13 +1334,16 @@ int ChromeBrowserMainParts::PreMainMessageLoopRunImpl() {
   // running.
   browser_process_->PreMainMessageLoopRun();
 
+#if !defined(OS_CHROMEOS) && !defined(OS_ANDROID)
   // Wait for the result of machine level user cloud policy enrollment after
   // we start the enrollment process in browser_porcess_->PreMainMessageLoopRun.
   // Abort the launch process if the enrollment is failed.
-  if (!WaitUntilMachineLevelUserCloudPolicyEnrollmentFinished(
-          browser_process_->browser_policy_connector())) {
+  if (!browser_process_->browser_policy_connector()
+           ->machine_level_user_cloud_policy_controller()
+           ->WaitUntilPolicyEnrollmentFinished()) {
     return chrome::RESULT_CODE_CLOUD_POLICY_ENROLLMENT_FAILED;
   }
+#endif
 
   // Record last shutdown time into a histogram.
   browser_shutdown::ReadLastShutdownInfo();
@@ -1834,11 +1811,15 @@ int ChromeBrowserMainParts::PreMainMessageLoopRunImpl() {
 
   PostBrowserStart();
 
+#if defined(OS_ANDROID)
+  DCHECK(!parameters().ui_task);
+#else
   if (parameters().ui_task) {
     parameters().ui_task->Run();
     delete parameters().ui_task;
     run_message_loop_ = false;
   }
+#endif
 
 #if defined(OS_WIN)
   // Clean up old user data directory and disk cache directory.
@@ -1864,8 +1845,10 @@ int ChromeBrowserMainParts::PreMainMessageLoopRunImpl() {
   if (parsed_command_line().HasSwitch(switches::kLaunchSimpleBrowserSwitch) ||
       parsed_command_line().HasSwitch(
           switches::kLaunchInProcessSimpleBrowserSwitch)) {
-    content::BrowserContext::GetConnectorFor(profile_)->StartService(
-        service_manager::Identity(simple_browser::mojom::kServiceName));
+    // TODO(https://crbug.com/904148): This should not use |WarmService()|.
+    content::BrowserContext::GetConnectorFor(profile_)->WarmService(
+        service_manager::ServiceFilter::ByName(
+            simple_browser::mojom::kServiceName));
   }
 #endif
 
@@ -1893,7 +1876,7 @@ bool ChromeBrowserMainParts::MainMessageLoopRun(int* result_code) {
   // across versions.
   RecordBrowserStartupTime();
 
-  DCHECK(base::MessageLoopForUI::IsCurrent());
+  DCHECK(base::MessageLoopCurrentForUI::IsSet());
 
   performance_monitor::PerformanceMonitor::GetInstance()->StartGatherCycle();
 

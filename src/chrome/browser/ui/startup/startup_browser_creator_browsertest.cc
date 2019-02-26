@@ -648,13 +648,19 @@ IN_PROC_BROWSER_TEST_F(StartupBrowserCreatorTest, PRE_UpdateWithTwoProfiles) {
   // Create two profiles.
   base::FilePath dest_path = profile_manager->user_data_dir();
 
-  Profile* profile1 = profile_manager->GetProfile(
-      dest_path.Append(FILE_PATH_LITERAL("New Profile 1")));
-  ASSERT_TRUE(profile1);
+  Profile* profile1 = nullptr;
+  Profile* profile2 = nullptr;
+  {
+    base::ScopedAllowBlockingForTesting allow_blocking;
+    profile1 = profile_manager->GetProfile(
+        dest_path.Append(FILE_PATH_LITERAL("New Profile 1")));
+    ASSERT_TRUE(profile1);
 
-  Profile* profile2 = profile_manager->GetProfile(
-      dest_path.Append(FILE_PATH_LITERAL("New Profile 2")));
-  ASSERT_TRUE(profile2);
+    profile2 = profile_manager->GetProfile(
+        dest_path.Append(FILE_PATH_LITERAL("New Profile 2")));
+    ASSERT_TRUE(profile2);
+  }
+  DisableWelcomePages({profile1, profile2});
 
   // Open some urls with the browsers, and close them.
   Browser* browser1 =
@@ -693,10 +699,7 @@ IN_PROC_BROWSER_TEST_F(StartupBrowserCreatorTest, PRE_UpdateWithTwoProfiles) {
   profile2->GetPrefs()->CommitPendingWrite();
 }
 
-// See crbug.com/376184 about improvements to this test on Mac.
-// Disabled because it's flaky. http://crbug.com/379579
-IN_PROC_BROWSER_TEST_F(StartupBrowserCreatorTest,
-                       DISABLED_UpdateWithTwoProfiles) {
+IN_PROC_BROWSER_TEST_F(StartupBrowserCreatorTest, UpdateWithTwoProfiles) {
   // Make StartupBrowserCreator::WasRestarted() return true.
   StartupBrowserCreator::was_restarted_read_ = false;
   PrefService* pref_service = g_browser_process->local_state();
@@ -707,13 +710,18 @@ IN_PROC_BROWSER_TEST_F(StartupBrowserCreatorTest,
   // Open the two profiles.
   base::FilePath dest_path = profile_manager->user_data_dir();
 
-  Profile* profile1 = profile_manager->GetProfile(
-      dest_path.Append(FILE_PATH_LITERAL("New Profile 1")));
-  ASSERT_TRUE(profile1);
+  Profile* profile1 = nullptr;
+  Profile* profile2 = nullptr;
+  {
+    base::ScopedAllowBlockingForTesting allow_blocking;
+    profile1 = profile_manager->GetProfile(
+        dest_path.Append(FILE_PATH_LITERAL("New Profile 1")));
+    ASSERT_TRUE(profile1);
 
-  Profile* profile2 = profile_manager->GetProfile(
-      dest_path.Append(FILE_PATH_LITERAL("New Profile 2")));
-  ASSERT_TRUE(profile2);
+    profile2 = profile_manager->GetProfile(
+        dest_path.Append(FILE_PATH_LITERAL("New Profile 2")));
+    ASSERT_TRUE(profile2);
+  }
 
   // Simulate a launch after a browser update.
   base::CommandLine dummy(base::CommandLine::NO_PROGRAM);
@@ -1088,14 +1096,7 @@ void StartupBrowserCreatorFirstRunTest::SetUpInProcessBrowserTestFixture() {
   policy::BrowserPolicyConnector::SetPolicyProviderForTesting(&provider_);
 }
 
-// http://crbug.com/691707
-#if defined(OS_MACOSX)
-#define MAYBE_AddFirstRunTab DISABLED_AddFirstRunTab
-#else
-#define MAYBE_AddFirstRunTab AddFirstRunTab
-#endif
-IN_PROC_BROWSER_TEST_F(StartupBrowserCreatorFirstRunTest,
-                       MAYBE_AddFirstRunTab) {
+IN_PROC_BROWSER_TEST_F(StartupBrowserCreatorFirstRunTest, AddFirstRunTab) {
   ASSERT_TRUE(embedded_test_server()->Start());
   StartupBrowserCreator browser_creator;
   browser_creator.AddFirstRunTab(
@@ -1230,13 +1231,7 @@ IN_PROC_BROWSER_TEST_F(StartupBrowserCreatorFirstRunTest,
             tab_strip->GetWebContentsAt(0)->GetURL().ExtractFileName());
 }
 
-// http://crbug.com/691707
-#if defined(OS_MACOSX)
-#define MAYBE_WelcomePages DISABLED_WelcomePages
-#else
-#define MAYBE_WelcomePages WelcomePages
-#endif
-IN_PROC_BROWSER_TEST_F(StartupBrowserCreatorFirstRunTest, MAYBE_WelcomePages) {
+IN_PROC_BROWSER_TEST_F(StartupBrowserCreatorFirstRunTest, WelcomePages) {
   ASSERT_TRUE(embedded_test_server()->Start());
 
   ProfileManager* profile_manager = g_browser_process->profile_manager();
@@ -1287,14 +1282,8 @@ IN_PROC_BROWSER_TEST_F(StartupBrowserCreatorFirstRunTest, MAYBE_WelcomePages) {
             tab_strip->GetWebContentsAt(0)->GetURL().possibly_invalid_spec());
 }
 
-// http://crbug.com/691707
-#if defined(OS_MACOSX)
-#define MAYBE_WelcomePagesWithPolicy DISABLED_WelcomePagesWithPolicy
-#else
-#define MAYBE_WelcomePagesWithPolicy WelcomePagesWithPolicy
-#endif
 IN_PROC_BROWSER_TEST_F(StartupBrowserCreatorFirstRunTest,
-                       MAYBE_WelcomePagesWithPolicy) {
+                       WelcomePagesWithPolicy) {
   ASSERT_TRUE(embedded_test_server()->Start());
 
   // Set the following user policies:
@@ -1453,13 +1442,8 @@ IN_PROC_BROWSER_TEST_F(StartupBrowserCreatorWelcomeBackTest,
 }
 #endif  // defined(OS_WIN)
 
-#if defined(OS_LINUX)
-#define MAYBE_WelcomeBackStandardNoPolicy DISABLED_WelcomeBackStandardNoPolicy
-#else
-#define MAYBE_WelcomeBackStandardNoPolicy WelcomeBackStandardNoPolicy
-#endif
 IN_PROC_BROWSER_TEST_F(StartupBrowserCreatorWelcomeBackTest,
-                       MAYBE_WelcomeBackStandardNoPolicy) {
+                       WelcomeBackStandardNoPolicy) {
   ASSERT_NO_FATAL_FAILURE(
       StartBrowser(StartupBrowserCreator::WelcomeBackPage::kWelcomeStandard,
                    PolicyVariant()));

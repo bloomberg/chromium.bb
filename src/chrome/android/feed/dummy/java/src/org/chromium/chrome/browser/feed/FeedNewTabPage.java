@@ -4,6 +4,7 @@
 
 package org.chromium.chrome.browser.feed;
 
+import org.chromium.base.VisibleForTesting;
 import org.chromium.chrome.browser.ChromeActivity;
 import org.chromium.chrome.browser.native_page.NativePageHost;
 import org.chromium.chrome.browser.ntp.NewTabPage;
@@ -24,11 +25,8 @@ public class FeedNewTabPage extends NewTabPage {
         super(activity, nativePageHost, tabModelSelector);
     }
 
-    /**
-     * Configures the FeedNewTabPage for testing.
-     * @param inTestMode Whether test mode is enabled. If true, test implementations of Feed
-     *                   interfaces will be used to create the {@link FeedProcessScope}. If false,
-     *                   the FeedProcessScope will be reset.
-     */
-    public static void setInTestMode(boolean inTestMode) {}
+    @VisibleForTesting
+    public static boolean isDummy() {
+        return true;
+    }
 }

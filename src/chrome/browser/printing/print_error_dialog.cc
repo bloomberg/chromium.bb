@@ -18,7 +18,7 @@ namespace {
 void ShowPrintErrorDialogTask() {
   Browser* browser = chrome::FindLastActive();
   chrome::ShowWarningMessageBox(
-      browser ? browser->window()->GetNativeWindow() : NULL,
+      browser ? browser->window()->GetNativeWindow() : gfx::kNullNativeWindow,
       l10n_util::GetStringUTF16(IDS_PRINT_SPOOL_FAILED_TITLE_TEXT),
       l10n_util::GetStringUTF16(IDS_PRINT_SPOOL_FAILED_ERROR_TEXT));
 }

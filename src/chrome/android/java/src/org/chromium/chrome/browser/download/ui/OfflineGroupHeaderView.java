@@ -8,7 +8,6 @@ import android.annotation.SuppressLint;
 import android.content.Context;
 import android.content.res.ColorStateList;
 import android.support.v7.content.res.AppCompatResources;
-import android.support.v7.widget.AppCompatImageView;
 import android.text.format.DateUtils;
 import android.text.format.Formatter;
 import android.util.AttributeSet;
@@ -40,7 +39,7 @@ public class OfflineGroupHeaderView
 
     private TextView mDescriptionTextView;
     private ImageView mExpandImage;
-    private AppCompatImageView mIconImageView;
+    private ImageView mIconImageView;
 
     public OfflineGroupHeaderView(Context context, AttributeSet attrs) {
         super(context, attrs);
@@ -55,7 +54,7 @@ public class OfflineGroupHeaderView
     protected void onFinishInflate() {
         super.onFinishInflate();
 
-        mIconImageView = (AppCompatImageView) findViewById(R.id.icon_view);
+        mIconImageView = findViewById(R.id.icon_view);
         mDescriptionTextView = (TextView) findViewById(R.id.description);
         mExpandImage = (ImageView) findViewById(R.id.expand_icon);
     }

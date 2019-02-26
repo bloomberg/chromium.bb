@@ -13,6 +13,7 @@
 #include "chrome/browser/chromeos/login/screens/assistant_optin_flow_screen_view.h"
 #include "chrome/browser/ui/webui/chromeos/login/base_screen_handler.h"
 #include "chromeos/services/assistant/public/mojom/settings.mojom.h"
+#include "mojo/public/cpp/bindings/binding.h"
 
 namespace chromeos {
 
@@ -20,7 +21,8 @@ namespace chromeos {
 class AssistantOptInFlowScreenHandler
     : public BaseScreenHandler,
       public AssistantOptInFlowScreenView,
-      public arc::VoiceInteractionControllerClient::Observer {
+      public arc::VoiceInteractionControllerClient::Observer,
+      assistant::mojom::SpeakerIdEnrollmentClient {
  public:
   AssistantOptInFlowScreenHandler();
   ~AssistantOptInFlowScreenHandler() override;
@@ -35,6 +37,12 @@ class AssistantOptInFlowScreenHandler
   void Unbind() override;
   void Show() override;
   void Hide() override;
+
+  // assistant::mojom::SpeakerIdEnrollmentClient:
+  void OnListeningHotword() override;
+  void OnProcessingHotword() override;
+  void OnSpeakerIdEnrollmentDone() override;
+  void OnSpeakerIdEnrollmentFailure() override;
 
   // Setup Assistant settings manager connection.
   void SetupAssistantConnection();
@@ -70,11 +78,13 @@ class AssistantOptInFlowScreenHandler
   // Handler for JS WebUI message.
   void HandleValuePropScreenUserAction(const std::string& action);
   void HandleThirdPartyScreenUserAction(const std::string& action);
+  void HandleVoiceMatchScreenUserAction(const std::string& action);
   void HandleGetMoreScreenUserAction(const bool screen_context,
                                      const bool email_opted_in);
   void HandleReadyScreenUserAction(const std::string& action);
   void HandleValuePropScreenShown();
   void HandleThirdPartyScreenShown();
+  void HandleVoiceMatchScreenShown();
   void HandleGetMoreScreenShown();
   void HandleReadyScreenShown();
   void HandleLoadingTimeout();
@@ -108,6 +118,14 @@ class AssistantOptInFlowScreenHandler
   // Counter for the number of loading timeout happens.
   int loading_timeout_counter_ = 0;
 
+  // Whether the screen has been initialized.
+  bool initialized_ = false;
+
+  // Whether there is a pending voice match enrollment request.
+  bool voice_enrollment_pending = false;
+
+  mojo::Binding<assistant::mojom::SpeakerIdEnrollmentClient> client_binding_;
+  assistant::mojom::SpeakerIdEnrollmentClientPtr client_ptr_;
   assistant::mojom::AssistantSettingsManagerPtr settings_manager_;
   base::WeakPtrFactory<AssistantOptInFlowScreenHandler> weak_factory_;
 

@@ -8,9 +8,10 @@
 
 #include "base/command_line.h"
 #include "base/macros.h"
-#include "base/sys_info.h"
+#include "base/system/sys_info.h"
 #include "base/test/icu_test_util.h"
 #include "base/test/scoped_command_line.h"
+#include "base/test/scoped_feature_list.h"
 #include "base/values.h"
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/chromeos/arc/arc_session_manager.h"
@@ -408,51 +409,23 @@ TEST_F(ChromeArcUtilTest, IsArcCompatibleFileSystemUsedForProfile) {
   const user_manager::User* user =
       chromeos::ProfileHelper::Get()->GetUserByProfile(profile());
 
-  // Unconfirmed + Old ARC
-  base::SysInfo::SetChromeOSVersionInfoForTest(
-      "CHROMEOS_ARC_ANDROID_SDK_VERSION=23", base::Time::Now());
-  EXPECT_TRUE(IsArcCompatibleFileSystemUsedForUser(user));
-
-  // Unconfirmed + New ARC
-  base::SysInfo::SetChromeOSVersionInfoForTest(
-      "CHROMEOS_ARC_ANDROID_SDK_VERSION=25", base::Time::Now());
+  // Unconfirmed
   EXPECT_FALSE(IsArcCompatibleFileSystemUsedForUser(user));
 
-  // Old FS + Old ARC
+  // Old FS
   user_manager::known_user::SetIntegerPref(
       id, prefs::kArcCompatibleFilesystemChosen, kFileSystemIncompatible);
-  base::SysInfo::SetChromeOSVersionInfoForTest(
-      "CHROMEOS_ARC_ANDROID_SDK_VERSION=23", base::Time::Now());
-  EXPECT_TRUE(IsArcCompatibleFileSystemUsedForUser(user));
-
-  // Old FS + New ARC
-  base::SysInfo::SetChromeOSVersionInfoForTest(
-      "CHROMEOS_ARC_ANDROID_SDK_VERSION=25", base::Time::Now());
   EXPECT_FALSE(IsArcCompatibleFileSystemUsedForUser(user));
 
-  // New FS + Old ARC
+  // New FS
   user_manager::known_user::SetIntegerPref(
       id, prefs::kArcCompatibleFilesystemChosen, kFileSystemCompatible);
-  base::SysInfo::SetChromeOSVersionInfoForTest(
-      "CHROMEOS_ARC_ANDROID_SDK_VERSION=23", base::Time::Now());
   EXPECT_TRUE(IsArcCompatibleFileSystemUsedForUser(user));
 
-  // New FS + New ARC
-  base::SysInfo::SetChromeOSVersionInfoForTest(
-      "CHROMEOS_ARC_ANDROID_SDK_VERSION=25", base::Time::Now());
-  EXPECT_TRUE(IsArcCompatibleFileSystemUsedForUser(user));
-
-  // New FS (User notified) + Old ARC
+  // New FS (User notified)
   user_manager::known_user::SetIntegerPref(
       id, prefs::kArcCompatibleFilesystemChosen,
       kFileSystemCompatibleAndNotifiedDeprecated);
-  base::SysInfo::SetChromeOSVersionInfoForTest(
-      "CHROMEOS_ARC_ANDROID_SDK_VERSION=23", base::Time::Now());
-  EXPECT_TRUE(IsArcCompatibleFileSystemUsedForUser(user));
-
-  // New FS (User notified) + New ARC
-  base::SysInfo::SetChromeOSVersionInfoForTest(
-      "CHROMEOS_ARC_ANDROID_SDK_VERSION=25", base::Time::Now());
   EXPECT_TRUE(IsArcCompatibleFileSystemUsedForUser(user));
 }
 
@@ -865,9 +838,11 @@ TEST_F(ChromeArcUtilTest, ArcStartModeDefaultDemoMode) {
 }
 
 TEST_F(ChromeArcUtilTest, ArcStartModeDefaultDemoModeWithPlayStore) {
+  base::test::ScopedFeatureList feature_list;
+  feature_list.InitWithFeatureState(chromeos::switches::kShowPlayInDemoMode,
+                                    true /* enabled */);
   auto* command_line = base::CommandLine::ForCurrentProcess();
-  command_line->InitFromArgv(
-      {"", "--arc-availability=installed", "--show-play-in-demo-mode"});
+  command_line->InitFromArgv({"", "--arc-availability=installed"});
   chromeos::DemoSession::SetDemoConfigForTesting(
       chromeos::DemoSession::DemoModeConfig::kOnline);
   ScopedLogIn login(GetFakeUserManager(),

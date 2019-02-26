@@ -47,8 +47,7 @@ class PaintControllerPaintTestBase : public RenderingTest {
         GraphicsContext graphics_context(RootPaintController());
         GetDocument().View()->Paint(
             graphics_context, kGlobalPaintNormalPhase,
-            interest_rect ? CullRect(*interest_rect)
-                          : CullRect(LayoutRect::InfiniteIntRect()));
+            interest_rect ? CullRect(*interest_rect) : CullRect::Infinite());
         return true;
       }
       GetDocument().View()->Lifecycle().AdvanceTo(
@@ -65,13 +64,10 @@ class PaintControllerPaintTestBase : public RenderingTest {
     return true;
   }
 
-  const DisplayItemClient& ViewBackgroundClient() {
-    if (!RuntimeEnabledFeatures::SlimmingPaintV2Enabled()) {
-      // With SPv1, the document background uses the scrolling contents
-      // layer as its DisplayItemClient.
-      return *GetLayoutView().Layer()->GraphicsLayerBacking();
-    }
-    return GetLayoutView();
+  const DisplayItemClient& ViewScrollingBackgroundClient() {
+    return GetLayoutView()
+        .GetScrollableArea()
+        ->GetScrollingBackgroundDisplayItemClient();
   }
 
   void CommitAndFinishCycle() {
@@ -119,6 +115,11 @@ class PaintControllerPaintTestBase : public RenderingTest {
   bool ClientCacheIsValid(const DisplayItemClient& client) {
     return RootPaintController().ClientCacheIsValid(client);
   }
+
+  using SubsequenceMarkers = PaintController::SubsequenceMarkers;
+  SubsequenceMarkers* GetSubsequenceMarkers(const DisplayItemClient& client) {
+    return RootPaintController().GetSubsequenceMarkers(client);
+  }
 };
 
 class PaintControllerPaintTest : public PaintTestConfigurations,
@@ -127,6 +128,29 @@ class PaintControllerPaintTest : public PaintTestConfigurations,
   PaintControllerPaintTest(LocalFrameClient* local_frame_client = nullptr)
       : PaintControllerPaintTestBase(local_frame_client) {}
 };
+
+// Shorter names for frequently used display item types in core/ tests.
+const DisplayItem::Type kNonScrollingBackgroundChunkType =
+    DisplayItem::PaintPhaseToDrawingType(PaintPhase::kSelfBlockBackgroundOnly);
+const DisplayItem::Type kScrollingBackgroundChunkType =
+    DisplayItem::PaintPhaseToClipType(PaintPhase::kSelfBlockBackgroundOnly);
+const DisplayItem::Type kNonScrollingContentsBackgroundChunkType =
+    DisplayItem::PaintPhaseToDrawingType(
+        PaintPhase::kDescendantBlockBackgroundsOnly);
+const DisplayItem::Type kScrollingContentsBackgroundChunkType =
+    DisplayItem::PaintPhaseToClipType(
+        PaintPhase::kDescendantBlockBackgroundsOnly);
+
+#define EXPECT_SUBSEQUENCE(client, expected_start, expected_end)        \
+  do {                                                                  \
+    auto* subsequence = GetSubsequenceMarkers(client);                  \
+    ASSERT_NE(nullptr, subsequence);                                    \
+    EXPECT_EQ(static_cast<size_t>(expected_start), subsequence->start); \
+    EXPECT_EQ(static_cast<size_t>(expected_end), subsequence->end);     \
+  } while (false)
+
+#define EXPECT_NO_SUBSEQUENCE(client) \
+  EXPECT_EQ(nullptr, GetSubsequenceMarkers(client)
 
 }  // namespace blink
 

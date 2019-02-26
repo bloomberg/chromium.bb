@@ -80,11 +80,12 @@ void ToUnicodeCallbackSubstitute(const void* context,
   // else ignore the reset, close and clone calls.
 }
 
-bool ConvertFromUTF16(UConverter* converter, const UChar* uchar_src,
-                      int uchar_len, OnStringConversionError::Type on_error,
+bool ConvertFromUTF16(UConverter* converter,
+                      base::StringPiece16 src,
+                      OnStringConversionError::Type on_error,
                       std::string* encoded) {
-  int encoded_max_length = UCNV_GET_MAX_BYTES_FOR_STRING(uchar_len,
-      ucnv_getMaxCharSize(converter));
+  int encoded_max_length = UCNV_GET_MAX_BYTES_FOR_STRING(
+      src.length(), ucnv_getMaxCharSize(converter));
   encoded->resize(encoded_max_length);
 
   UErrorCode status = U_ZERO_ERROR;
@@ -105,8 +106,9 @@ bool ConvertFromUTF16(UConverter* converter, const UChar* uchar_src,
   }
 
   // ucnv_fromUChars returns size not including terminating null
-  int actual_size = ucnv_fromUChars(converter, &(*encoded)[0],
-      encoded_max_length, uchar_src, uchar_len, &status);
+  int actual_size =
+      ucnv_fromUChars(converter, &(*encoded)[0], encoded_max_length, src.data(),
+                      src.length(), &status);
   encoded->resize(actual_size);
   ucnv_close(converter);
   if (U_SUCCESS(status))
@@ -140,7 +142,7 @@ void SetUpErrorHandlerForToUChars(OnStringConversionError::Type on_error,
 
 // Codepage <-> Wide/UTF-16  ---------------------------------------------------
 
-bool UTF16ToCodepage(const string16& utf16,
+bool UTF16ToCodepage(base::StringPiece16 utf16,
                      const char* codepage_name,
                      OnStringConversionError::Type on_error,
                      std::string* encoded) {
@@ -151,11 +153,10 @@ bool UTF16ToCodepage(const string16& utf16,
   if (!U_SUCCESS(status))
     return false;
 
-  return ConvertFromUTF16(converter, utf16.c_str(),
-                          static_cast<int>(utf16.length()), on_error, encoded);
+  return ConvertFromUTF16(converter, utf16, on_error, encoded);
 }
 
-bool CodepageToUTF16(const std::string& encoded,
+bool CodepageToUTF16(base::StringPiece encoded,
                      const char* codepage_name,
                      OnStringConversionError::Type on_error,
                      string16* utf16) {
@@ -191,13 +192,13 @@ bool CodepageToUTF16(const std::string& encoded,
   return true;
 }
 
-bool ConvertToUtf8AndNormalize(const std::string& text,
+bool ConvertToUtf8AndNormalize(base::StringPiece text,
                                const std::string& charset,
                                std::string* result) {
   result->clear();
   string16 utf16;
-  if (!CodepageToUTF16(
-      text, charset.c_str(), OnStringConversionError::FAIL, &utf16))
+  if (!CodepageToUTF16(text, charset.c_str(), OnStringConversionError::FAIL,
+                       &utf16))
     return false;
 
   UErrorCode status = U_ZERO_ERROR;

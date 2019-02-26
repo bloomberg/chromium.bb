@@ -293,7 +293,7 @@ ServiceWorkerDatabase::ServiceWorkerDatabase(const base::FilePath& path)
       next_avail_registration_id_(0),
       next_avail_resource_id_(0),
       next_avail_version_id_(0),
-      state_(UNINITIALIZED) {
+      state_(DATABASE_STATE_UNINITIALIZED) {
   sequence_checker_.DetachFromSequence();
 }
 
@@ -1252,7 +1252,7 @@ ServiceWorkerDatabase::Status ServiceWorkerDatabase::LazyOpen(
   DCHECK(sequence_checker_.CalledOnValidSequence());
 
   // Do not try to open a database if we tried and failed once.
-  if (state_ == DISABLED)
+  if (state_ == DATABASE_STATE_DISABLED)
     return STATUS_ERROR_FAILED;
   if (IsOpen())
     return STATUS_OK;
@@ -1292,7 +1292,7 @@ ServiceWorkerDatabase::Status ServiceWorkerDatabase::LazyOpen(
   switch (db_version) {
     case 0:
       // This database is new. It will be initialized when something is written.
-      DCHECK_EQ(UNINITIALIZED, state_);
+      DCHECK_EQ(DATABASE_STATE_UNINITIALIZED, state_);
       return STATUS_OK;
     case 1:
       // This database has an obsolete schema version. ServiceWorkerStorage
@@ -1302,7 +1302,7 @@ ServiceWorkerDatabase::Status ServiceWorkerDatabase::LazyOpen(
       return status;
     case 2:
       DCHECK_EQ(db_version, service_worker_internals::kCurrentSchemaVersion);
-      state_ = INITIALIZED;
+      state_ = DATABASE_STATE_INITIALIZED;
       return STATUS_OK;
     default:
       // Other cases should be handled in ReadDatabaseVersion.
@@ -1315,7 +1315,7 @@ bool ServiceWorkerDatabase::IsNewOrNonexistentDatabase(
     ServiceWorkerDatabase::Status status) {
   if (status == STATUS_ERROR_NOT_FOUND)
     return true;
-  if (status == STATUS_OK && state_ == UNINITIALIZED)
+  if (status == STATUS_OK && state_ == DATABASE_STATE_UNINITIALIZED)
     return true;
   return false;
 }
@@ -1788,14 +1788,14 @@ ServiceWorkerDatabase::Status ServiceWorkerDatabase::ReadDatabaseVersion(
 ServiceWorkerDatabase::Status ServiceWorkerDatabase::WriteBatch(
     leveldb::WriteBatch* batch) {
   DCHECK(batch);
-  DCHECK_NE(DISABLED, state_);
+  DCHECK_NE(DATABASE_STATE_DISABLED, state_);
 
-  if (state_ == UNINITIALIZED) {
+  if (state_ == DATABASE_STATE_UNINITIALIZED) {
     // Write database default values.
     batch->Put(
         service_worker_internals::kDatabaseVersionKey,
         base::Int64ToString(service_worker_internals::kCurrentSchemaVersion));
-    state_ = INITIALIZED;
+    state_ = DATABASE_STATE_INITIALIZED;
   }
 
   Status status = LevelDBStatusToServiceWorkerDBStatus(
@@ -1848,7 +1848,7 @@ void ServiceWorkerDatabase::Disable(const base::Location& from_here,
                 << " with error: " << StatusToString(status);
     DLOG(ERROR) << "ServiceWorkerDatabase is disabled.";
   }
-  state_ = DISABLED;
+  state_ = DATABASE_STATE_DISABLED;
   db_.reset();
 }
 

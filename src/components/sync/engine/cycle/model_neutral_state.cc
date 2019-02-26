@@ -18,9 +18,6 @@ ModelNeutralState::ModelNeutralState()
       num_hierarchy_conflicts(0),
       num_local_overwrites(0),
       num_server_overwrites(0),
-      last_get_key_result(UNSET),
-      last_download_updates_result(UNSET),
-      commit_result(UNSET),
       items_committed(false) {}
 
 ModelNeutralState::ModelNeutralState(const ModelNeutralState& other) = default;
@@ -28,10 +25,10 @@ ModelNeutralState::ModelNeutralState(const ModelNeutralState& other) = default;
 ModelNeutralState::~ModelNeutralState() {}
 
 bool HasSyncerError(const ModelNeutralState& state) {
-  const bool get_key_error = SyncerErrorIsError(state.last_get_key_result);
+  const bool get_key_error = state.last_get_key_result.IsActualError();
   const bool download_updates_error =
-      SyncerErrorIsError(state.last_download_updates_result);
-  const bool commit_error = SyncerErrorIsError(state.commit_result);
+      state.last_download_updates_result.IsActualError();
+  const bool commit_error = state.commit_result.IsActualError();
   return get_key_error || download_updates_error || commit_error;
 }
 

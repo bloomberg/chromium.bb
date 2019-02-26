@@ -29,6 +29,11 @@ class OverlayCandidateValidatorImpl : public OverlayCandidateValidator {
     // Only update the last candidate that was added to the list. All previous
     // overlays should have already been handled.
     auto& candidate = surfaces->back();
+    if (candidate.transform != gfx::OVERLAY_TRANSFORM_NONE) {
+      candidate.overlay_handled = false;
+      return;
+    }
+
     candidate.display_rect =
         gfx::RectF(gfx::ToEnclosingRect(candidate.display_rect));
     candidate.overlay_handled = true;

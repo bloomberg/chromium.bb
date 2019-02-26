@@ -78,6 +78,8 @@ blink::WebImeTextSpan ConvertUiImeTextSpanToBlinkImeTextSpan(
       ui_ime_text_span.suggestion_highlight_color,
       ui_ime_text_span.suggestions);
   blink_ime_text_span.underline_color = ui_ime_text_span.underline_color;
+  blink_ime_text_span.remove_on_finish_composing =
+      ui_ime_text_span.remove_on_finish_composing;
   return blink_ime_text_span;
 }
 
@@ -101,6 +103,8 @@ ui::ImeTextSpan ConvertBlinkImeTextSpanToUiImeTextSpan(
       blink_ime_text_span.suggestion_highlight_color,
       blink_ime_text_span.suggestions);
   ui_ime_text_span.underline_color = blink_ime_text_span.underline_color;
+  ui_ime_text_span.remove_on_finish_composing =
+      blink_ime_text_span.remove_on_finish_composing;
   return ui_ime_text_span;
 }
 

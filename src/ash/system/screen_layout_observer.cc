@@ -11,6 +11,7 @@
 #include "ash/display/screen_orientation_controller.h"
 #include "ash/metrics/user_metrics_action.h"
 #include "ash/metrics/user_metrics_recorder.h"
+#include "ash/public/cpp/notification_utils.h"
 #include "ash/resources/vector_icons/vector_icons.h"
 #include "ash/session/session_controller.h"
 #include "ash/shell.h"
@@ -360,19 +361,18 @@ void ScreenLayoutObserver::CreateOrUpdateNotification(
     return;
   }
 
-  std::unique_ptr<Notification> notification =
-      Notification::CreateSystemNotification(
-          message_center::NOTIFICATION_TYPE_SIMPLE, kNotificationId, message,
-          additional_message,
-          base::string16(),  // display_source
-          GURL(),
-          message_center::NotifierId(
-              message_center::NotifierId::SYSTEM_COMPONENT, kNotifierDisplay),
-          message_center::RichNotificationData(),
-          new message_center::HandleNotificationClickDelegate(
-              base::Bind(&OnNotificationClicked)),
-          kNotificationScreenIcon,
-          message_center::SystemNotificationWarningLevel::NORMAL);
+  std::unique_ptr<Notification> notification = ash::CreateSystemNotification(
+      message_center::NOTIFICATION_TYPE_SIMPLE, kNotificationId, message,
+      additional_message,
+      base::string16(),  // display_source
+      GURL(),
+      message_center::NotifierId(message_center::NotifierType::SYSTEM_COMPONENT,
+                                 kNotifierDisplay),
+      message_center::RichNotificationData(),
+      new message_center::HandleNotificationClickDelegate(
+          base::BindRepeating(&OnNotificationClicked)),
+      kNotificationScreenIcon,
+      message_center::SystemNotificationWarningLevel::NORMAL);
   notification->set_priority(message_center::SYSTEM_PRIORITY);
 
   Shell::Get()->metrics()->RecordUserMetricsAction(

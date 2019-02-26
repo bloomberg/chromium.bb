@@ -48,7 +48,9 @@ class ExploreSitesServiceImplTest : public testing::Test {
     auto history_stats_reporter =
         std::make_unique<HistoryStatisticsReporter>(nullptr, nullptr, nullptr);
     service_ = std::make_unique<ExploreSitesServiceImpl>(
-        std::move(store), test_shared_url_loader_factory_,
+        std::move(store),
+        std::make_unique<TestURLLoaderFactoryGetter>(
+            test_shared_url_loader_factory_),
         std::move(history_stats_reporter));
     success_ = false;
     test_data_ = CreateTestDataProto();
@@ -104,6 +106,21 @@ class ExploreSitesServiceImplTest : public testing::Test {
   void ValidateTestCatalog();
 
  private:
+  class TestURLLoaderFactoryGetter
+      : public ExploreSitesServiceImpl::URLLoaderFactoryGetter {
+   public:
+    explicit TestURLLoaderFactoryGetter(
+        scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory)
+        : url_loader_factory_(url_loader_factory) {}
+    scoped_refptr<network::SharedURLLoaderFactory> GetFactory() override {
+      return url_loader_factory_;
+    }
+
+   private:
+    scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory_;
+    DISALLOW_COPY_AND_ASSIGN(TestURLLoaderFactoryGetter);
+  };
+
   std::unique_ptr<explore_sites::ExploreSitesServiceImpl> service_;
   bool success_;
   int callback_count_;
@@ -490,6 +507,41 @@ TEST_F(ExploreSitesServiceImplTest, UnparseableCatalogHistograms) {
 
   histograms()->ExpectBucketCount("ExploreSites.CatalogError",
                                   ExploreSitesCatalogError::kParseFailure, 1);
+}
+
+TEST_F(ExploreSitesServiceImplTest, BlacklistNonCanonicalUrls) {
+  base::test::ScopedFeatureList scoped_feature_list;
+  scoped_feature_list.InitAndEnableFeature(chrome::android::kExploreSites);
+
+  service()->UpdateCatalogFromNetwork(
+      false /*is_immediate_fetch*/, kAcceptLanguages,
+      base::BindOnce(&ExploreSitesServiceImplTest::UpdateCatalogDoneCallback,
+                     base::Unretained(this)));
+  // Simulate fetching using the test loader factory and test data.
+  SimulateFetcherData(test_data());
+
+  // Wait for callback to get called.
+  PumpLoop();
+  ASSERT_TRUE(success());
+  ASSERT_EQ(1, callback_count());
+  service()->GetCatalog(base::BindOnce(
+      &ExploreSitesServiceImplTest::CatalogCallback, base::Unretained(this)));
+  PumpLoop();
+  ValidateTestCatalog();
+
+  // This will fail if canonicalization does not work correctly because
+  // kSite1Url is the canonicalized version of the URL inserted in to the
+  // database.
+  service()->BlacklistSite(kSite1Url);
+  PumpLoop();
+
+  service()->GetCatalog(base::BindOnce(
+      &ExploreSitesServiceImplTest::CatalogCallback, base::Unretained(this)));
+  PumpLoop();
+
+  EXPECT_EQ(2U, database_categories()->at(0).sites.size());
+  EXPECT_TRUE(database_categories()->at(0).sites.at(0).is_blacklisted);
+  EXPECT_FALSE(database_categories()->at(0).sites.at(1).is_blacklisted);
 }
 
 }  // namespace explore_sites

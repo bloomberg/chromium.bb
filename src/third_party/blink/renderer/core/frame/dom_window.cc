@@ -59,7 +59,7 @@ v8::Local<v8::Object> DOMWindow::AssociateWithWrapper(
 }
 
 const AtomicString& DOMWindow::InterfaceName() const {
-  return EventTargetNames::DOMWindow;
+  return event_target_names::kWindow;
 }
 
 const DOMWindow* DOMWindow::ToDOMWindow() const {
@@ -120,16 +120,16 @@ void DOMWindow::postMessage(LocalDOMWindow* incumbent_window,
                             const String& target_origin,
                             Vector<ScriptValue>& transfer,
                             ExceptionState& exception_state) {
-  WindowPostMessageOptions options;
-  options.setTargetOrigin(target_origin);
+  WindowPostMessageOptions* options = WindowPostMessageOptions::Create();
+  options->setTargetOrigin(target_origin);
   if (!transfer.IsEmpty())
-    options.setTransfer(transfer);
+    options->setTransfer(transfer);
   postMessage(incumbent_window, message, options, exception_state);
 }
 
 void DOMWindow::postMessage(LocalDOMWindow* incumbent_window,
                             const ScriptValue& message,
-                            const WindowPostMessageOptions& options,
+                            const WindowPostMessageOptions* options,
                             ExceptionState& exception_state) {
   UseCounter::Count(incumbent_window->GetFrame(),
                     WebFeature::kWindowPostMessage);
@@ -391,8 +391,10 @@ void DOMWindow::focus(LocalDOMWindow* incumbent_window) {
 }
 
 InputDeviceCapabilitiesConstants* DOMWindow::GetInputDeviceCapabilities() {
-  if (!input_capabilities_)
-    input_capabilities_ = new InputDeviceCapabilitiesConstants;
+  if (!input_capabilities_) {
+    input_capabilities_ =
+        MakeGarbageCollected<InputDeviceCapabilitiesConstants>();
+  }
   return input_capabilities_;
 }
 
@@ -402,14 +404,14 @@ void DOMWindow::PostMessageForTesting(
     const String& target_origin,
     LocalDOMWindow* source,
     ExceptionState& exception_state) {
-  WindowPostMessageOptions options;
-  options.setTargetOrigin(target_origin);
+  WindowPostMessageOptions* options = WindowPostMessageOptions::Create();
+  options->setTargetOrigin(target_origin);
   DoPostMessage(std::move(message), ports, options, source, exception_state);
 }
 
 void DOMWindow::DoPostMessage(scoped_refptr<SerializedScriptValue> message,
                               const MessagePortArray& ports,
-                              const WindowPostMessageOptions& options,
+                              const WindowPostMessageOptions* options,
                               LocalDOMWindow* source,
                               ExceptionState& exception_state) {
   if (!IsCurrentlyDisplayedInFrame())
@@ -417,7 +419,7 @@ void DOMWindow::DoPostMessage(scoped_refptr<SerializedScriptValue> message,
 
   Document* source_document = source->document();
 
-  const String& target_origin = options.targetOrigin();
+  const String& target_origin = options->targetOrigin();
 
   // Compute the target origin.  We need to do this synchronously in order
   // to generate the SyntaxError exception correctly.
@@ -484,7 +486,7 @@ void DOMWindow::DoPostMessage(scoped_refptr<SerializedScriptValue> message,
         WebFeature::kPostMessageOutgoingWouldBeBlockedByConnectSrc);
   }
   UserActivation* user_activation = nullptr;
-  if (options.includeUserActivation())
+  if (options->includeUserActivation())
     user_activation = UserActivation::CreateSnapshot(source);
 
   MessageEvent* event =

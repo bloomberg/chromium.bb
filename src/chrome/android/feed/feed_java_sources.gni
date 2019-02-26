@@ -10,6 +10,7 @@ if (enable_feed_in_chrome) {
 
   feed_java_sources = [
     "//chrome/android/feed/core/java/src/org/chromium/chrome/browser/feed/FeedAppLifecycle.java",
+    "//chrome/android/feed/core/java/src/org/chromium/chrome/browser/feed/FeedApplicationInfo.java",
     "//chrome/android/feed/core/java/src/org/chromium/chrome/browser/feed/FeedConfiguration.java",
     "//chrome/android/feed/core/java/src/org/chromium/chrome/browser/feed/FeedContentBridge.java",
     "//chrome/android/feed/core/java/src/org/chromium/chrome/browser/feed/FeedContentStorage.java",
@@ -29,8 +30,6 @@ if (enable_feed_in_chrome) {
     "//chrome/android/feed/core/java/src/org/chromium/chrome/browser/feed/FeedScheduler.java",
     "//chrome/android/feed/core/java/src/org/chromium/chrome/browser/feed/FeedSchedulerBridge.java",
     "//chrome/android/feed/core/java/src/org/chromium/chrome/browser/feed/StreamLifecycleManager.java",
-    "//chrome/android/feed/core/java/src/org/chromium/chrome/browser/feed/TestFeedOfflineIndicator.java",
-    "//chrome/android/feed/core/java/src/org/chromium/chrome/browser/feed/TestFeedScheduler.java",
     "//chrome/android/feed/core/java/src/org/chromium/chrome/browser/feed/TestNetworkClient.java",
     "//chrome/android/feed/core/java/src/org/chromium/chrome/browser/feed/action/FeedActionHandler.java",
   ]
@@ -38,6 +37,7 @@ if (enable_feed_in_chrome) {
   feed_srcjar_deps = [ "//components/feed/core:feed_core_java_enums_srcjar" ]
 
   feed_junit_test_java_sources = [
+    "junit/src/org/chromium/chrome/browser/feed/FeedApplicationInfoTest.java",
     "junit/src/org/chromium/chrome/browser/feed/FeedContentStorageTest.java",
     "junit/src/org/chromium/chrome/browser/feed/FeedImageLoaderTest.java",
     "junit/src/org/chromium/chrome/browser/feed/FeedJournalStorageTest.java",
@@ -47,8 +47,11 @@ if (enable_feed_in_chrome) {
   ]
 
   feed_test_java_sources = [
+    "//chrome/android/javatests/src/org/chromium/chrome/browser/feed/ConsumerSyncWrapper.java",
     "//chrome/android/javatests/src/org/chromium/chrome/browser/feed/FeedAppLifecycleTest.java",
     "//chrome/android/javatests/src/org/chromium/chrome/browser/feed/FeedConfigurationTest.java",
+    "//chrome/android/javatests/src/org/chromium/chrome/browser/feed/FeedContentStorageConformanceTest.java",
+    "//chrome/android/javatests/src/org/chromium/chrome/browser/feed/FeedJournalStorageConformanceTest.java",
     "//chrome/android/javatests/src/org/chromium/chrome/browser/feed/FeedNetworkBridgeConformanceTest.java",
     "//chrome/android/javatests/src/org/chromium/chrome/browser/feed/FeedNewTabPageTest.java",
     "//chrome/android/javatests/src/org/chromium/chrome/browser/feed/FeedSchedulerBridgeConformanceTest.java",
@@ -65,6 +68,7 @@ if (enable_feed_in_chrome) {
     "//chrome/android/feed/dummy/java/src/org/chromium/chrome/browser/feed/FeedAppLifecycle.java",
     "//chrome/android/feed/dummy/java/src/org/chromium/chrome/browser/feed/FeedNewTabPage.java",
     "//chrome/android/feed/dummy/java/src/org/chromium/chrome/browser/feed/FeedProcessScopeFactory.java",
+    "//chrome/android/feed/dummy/java/src/org/chromium/chrome/browser/feed/TestNetworkClient.java",
   ]
   feed_srcjar_deps = []
 }

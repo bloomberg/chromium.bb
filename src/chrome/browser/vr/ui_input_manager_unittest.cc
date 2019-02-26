@@ -599,7 +599,7 @@ TEST_F(UiInputManagerContentTest, ControllerRestingInViewport) {
   RenderInfo render_info = CreateRenderInfo();
 
   // The controller is initially not in the viewport.
-  EXPECT_FALSE(input_manager_->controller_resting_in_viewport());
+  EXPECT_FALSE(input_manager_->ControllerRestingInViewport());
 
   input_manager_->HandleInput(MsToTicks(1), render_info, controller_model,
                               &reticle_model, &input_event_list);
@@ -608,7 +608,7 @@ TEST_F(UiInputManagerContentTest, ControllerRestingInViewport) {
 
   // Although we are currently looking at the controller, it is not focused yet.
   // It must remain in the viewport for the requisite amount of time.
-  EXPECT_FALSE(input_manager_->controller_resting_in_viewport());
+  EXPECT_FALSE(input_manager_->ControllerRestingInViewport());
 
   input_manager_->HandleInput(MsToTicks(50000), render_info, controller_model,
                               &reticle_model, &input_event_list);
@@ -617,7 +617,7 @@ TEST_F(UiInputManagerContentTest, ControllerRestingInViewport) {
 
   // Since the controller has been in the viewport for a long time (50s), it
   // must report that it is focused.
-  EXPECT_TRUE(input_manager_->controller_resting_in_viewport());
+  EXPECT_TRUE(input_manager_->ControllerRestingInViewport());
 
   ui_->OnControllerUpdated(controller_model, reticle_model);
   scene_->OnBeginFrame(base::TimeTicks(), head_pose_);

@@ -4,6 +4,7 @@
 
 #include "chrome/browser/plugins/plugin_response_interceptor_url_loader_throttle.h"
 
+#include "base/feature_list.h"
 #include "base/guid.h"
 #include "base/task/post_task.h"
 #include "chrome/browser/extensions/api/streams_private/streams_private_api.h"
@@ -16,6 +17,7 @@
 #include "content/public/common/transferrable_url_loader.mojom.h"
 #include "extensions/common/extension.h"
 #include "mojo/public/cpp/system/data_pipe.h"
+#include "services/network/public/cpp/features.h"
 
 PluginResponseInterceptorURLLoaderThrottle::
     PluginResponseInterceptorURLLoaderThrottle(
@@ -36,6 +38,17 @@ void PluginResponseInterceptorURLLoaderThrottle::WillProcessResponse(
   if (content::download_utils::MustDownload(response_url,
                                             response_head->headers.get(),
                                             response_head->mime_type)) {
+    return;
+  }
+
+  // Don't intercept if the request went through the legacy resource loading
+  // path, i.e., ResourceDispatcherHost, since that path doesn't need response
+  // interception. ResourceDispatcherHost is only used if network service is
+  // disabled (in which case this throttle was created because
+  // ServiceWorkerServicification was enabled) and a service worker didn't
+  // handle the request.
+  if (!base::FeatureList::IsEnabled(network::features::kNetworkService) &&
+      !response_head->was_fetched_via_service_worker) {
     return;
   }
 

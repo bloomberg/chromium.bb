@@ -13,7 +13,6 @@
 #include "SkOpts.h"
 #include "SkRasterPipeline.h"
 #include "SkSpriteBlitter.h"
-#include "../jumper/SkJumper.h"
 
 SkSpriteBlitter::SkSpriteBlitter(const SkPixmap& source)
     : fSource(source) {}
@@ -131,7 +130,7 @@ public:
                                             : kPremul_SkAlphaType;
             fAlloc->make<SkColorSpaceXformSteps>(srcCS, srcAT,
                                                  dstCS, kPremul_SkAlphaType)
-                ->apply(&p);
+                ->apply(&p, fSource.colorType());
         }
         if (fPaintColor.fA != 1.0f) {
             p.append(SkRasterPipeline::scale_1_float, &fPaintColor.fA);
@@ -156,10 +155,10 @@ public:
     }
 
 private:
-    SkArenaAlloc*      fAlloc;
-    SkBlitter*         fBlitter;
-    SkJumper_MemoryCtx fSrcPtr;
-    SkColor4f          fPaintColor;
+    SkArenaAlloc*              fAlloc;
+    SkBlitter*                 fBlitter;
+    SkRasterPipeline_MemoryCtx fSrcPtr;
+    SkColor4f                  fPaintColor;
 
     typedef SkSpriteBlitter INHERITED;
 };

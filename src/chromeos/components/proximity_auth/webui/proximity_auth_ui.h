@@ -23,16 +23,13 @@ class SecureChannelClient;
 
 namespace proximity_auth {
 
-class ProximityAuthClient;
-
 // The WebUI controller for chrome://proximity-auth.
 class ProximityAuthUI : public ui::MojoWebUIController {
  public:
-  // Note: |web_ui| and |proximity_auth_client| are not owned by this instance
-  // and must outlive this instance.
+  // Note: |web_ui| is not owned by this instance and must outlive this
+  // instance.
   ProximityAuthUI(
       content::WebUI* web_ui,
-      ProximityAuthClient* proximity_auth_client,
       chromeos::device_sync::DeviceSyncClient* device_sync_client,
       chromeos::secure_channel::SecureChannelClient* secure_channel_client);
   ~ProximityAuthUI() override;

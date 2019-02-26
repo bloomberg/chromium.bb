@@ -18,7 +18,7 @@ NavigatorNFC& NavigatorNFC::From(Navigator& navigator) {
   NavigatorNFC* supplement =
       Supplement<Navigator>::From<NavigatorNFC>(navigator);
   if (!supplement) {
-    supplement = new NavigatorNFC(navigator);
+    supplement = MakeGarbageCollected<NavigatorNFC>(navigator);
     ProvideTo(navigator, supplement);
   }
   return *supplement;

@@ -48,47 +48,6 @@ NGLogicalOffset NGPhysicalOffset::ConvertToLogical(
   }
 }
 
-NGPhysicalOffset NGPhysicalOffset::operator+(
-    const NGPhysicalOffset& other) const {
-  return NGPhysicalOffset{this->left + other.left, this->top + other.top};
-}
-
-NGPhysicalOffset& NGPhysicalOffset::operator+=(const NGPhysicalOffset& other) {
-  *this = *this + other;
-  return *this;
-}
-
-NGPhysicalOffset NGPhysicalOffset::operator-(
-    const NGPhysicalOffset& other) const {
-  return NGPhysicalOffset{this->left - other.left, this->top - other.top};
-}
-
-NGPhysicalOffset& NGPhysicalOffset::operator-=(const NGPhysicalOffset& other) {
-  *this = *this - other;
-  return *this;
-}
-
-bool NGPhysicalOffset::operator==(const NGPhysicalOffset& other) const {
-  return other.left == left && other.top == top;
-}
-
-NGPhysicalOffset::NGPhysicalOffset(const LayoutPoint& point) {
-  left = point.X();
-  top = point.Y();
-}
-NGPhysicalOffset::NGPhysicalOffset(const LayoutSize& size) {
-  left = size.Width();
-  top = size.Height();
-}
-
-LayoutPoint NGPhysicalOffset::ToLayoutPoint() const {
-  return {left, top};
-}
-
-LayoutSize NGPhysicalOffset::ToLayoutSize() const {
-  return {left, top};
-}
-
 String NGPhysicalOffset::ToString() const {
   return String::Format("%d,%d", left.ToInt(), top.ToInt());
 }

@@ -48,7 +48,11 @@ class CORE_EXPORT Navigator final : public ScriptWrappable,
   USING_GARBAGE_COLLECTED_MIXIN(Navigator);
 
  public:
-  static Navigator* Create(LocalFrame* frame) { return new Navigator(frame); }
+  static Navigator* Create(LocalFrame* frame) {
+    return MakeGarbageCollected<Navigator>(frame);
+  }
+
+  explicit Navigator(LocalFrame*);
 
   // NavigatorCookies
   bool cookieEnabled() const;
@@ -66,9 +70,6 @@ class CORE_EXPORT Navigator final : public ScriptWrappable,
   Vector<String> languages() override;
 
   void Trace(blink::Visitor*) override;
-
- private:
-  explicit Navigator(LocalFrame*);
 };
 
 }  // namespace blink

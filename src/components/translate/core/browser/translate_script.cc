@@ -164,9 +164,9 @@ void TranslateScript::OnScriptFetchComplete(bool success,
 #if defined(OS_IOS)
     // Append snippet to install callbacks on translate.js if available.
     const char* install_callbacks =
-        "if (installTranslateCallbacks) {"
-        "  installTranslateCallbacks();"
-        "}";
+        "try {"
+        "  __gCrWeb.translate.installCallbacks();"
+        "} catch (error) {};";
     base::StringPiece(install_callbacks).AppendToString(&data_);
 #endif  // defined(OS_IOS)
 

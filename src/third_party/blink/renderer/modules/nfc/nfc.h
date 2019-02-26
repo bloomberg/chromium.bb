@@ -33,6 +33,7 @@ class NFC final : public ScriptWrappable,
  public:
   static NFC* Create(LocalFrame*);
 
+  explicit NFC(LocalFrame*);
   ~NFC() override;
 
   void Dispose();
@@ -43,13 +44,13 @@ class NFC final : public ScriptWrappable,
   // Pushes NFCPushMessage asynchronously to NFC tag / peer.
   ScriptPromise push(ScriptState*,
                      const NFCPushMessage&,
-                     const NFCPushOptions&);
+                     const NFCPushOptions*);
 
   // Cancels ongoing push operation.
   ScriptPromise cancelPush(ScriptState*, const String&);
 
   // Starts watching for NFC messages that match NFCWatchOptions criteria.
-  ScriptPromise watch(ScriptState*, V8MessageCallback*, const NFCWatchOptions&);
+  ScriptPromise watch(ScriptState*, V8MessageCallback*, const NFCWatchOptions*);
 
   // Cancels watch operation with id.
   ScriptPromise cancelWatch(ScriptState*, int32_t id);
@@ -85,7 +86,6 @@ class NFC final : public ScriptWrappable,
                device::mojom::blink::NFCMessagePtr) override;
 
  private:
-  explicit NFC(LocalFrame*);
   device::mojom::blink::NFCPtr nfc_;
   mojo::Binding<device::mojom::blink::NFCClient> client_binding_;
   HeapHashSet<Member<ScriptPromiseResolver>> requests_;

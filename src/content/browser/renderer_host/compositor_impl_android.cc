@@ -26,7 +26,7 @@
 #include "base/no_destructor.h"
 #include "base/single_thread_task_runner.h"
 #include "base/synchronization/lock.h"
-#include "base/sys_info.h"
+#include "base/system/sys_info.h"
 #include "base/task/post_task.h"
 #include "base/threading/simple_thread.h"
 #include "base/threading/thread.h"
@@ -49,6 +49,7 @@
 #include "components/viz/common/gpu/vulkan_in_process_context_provider.h"
 #include "components/viz/common/quads/compositor_frame.h"
 #include "components/viz/common/surfaces/frame_sink_id_allocator.h"
+#include "components/viz/common/surfaces/local_surface_id_allocation.h"
 #include "components/viz/host/host_display_client.h"
 #include "components/viz/host/host_frame_sink_manager.h"
 #include "components/viz/service/display/display.h"
@@ -224,6 +225,20 @@ class CompositorDependencies {
                              std::move(pending_connect_viz_on_io_thread_));
   }
 
+  void OnCompositorVisible(CompositorImpl* compositor) {
+    bool element_inserted = visible_compositors_.insert(compositor).second;
+    DCHECK(element_inserted);
+    if (visible_compositors_.size() == 1)
+      OnVisibilityChanged();
+  }
+
+  void OnCompositorHidden(CompositorImpl* compositor) {
+    size_t elements_removed = visible_compositors_.erase(compositor);
+    DCHECK_EQ(1u, elements_removed);
+    if (visible_compositors_.size() == 0)
+      OnVisibilityChanged();
+  }
+
   SingleThreadTaskGraphRunner task_graph_runner;
   viz::HostFrameSinkManager host_frame_sink_manager;
   viz::FrameSinkIdAllocator frame_sink_id_allocator;
@@ -244,16 +259,8 @@ class CompositorDependencies {
  private:
   friend class base::NoDestructor<CompositorDependencies>;
 
-  CompositorDependencies()
-      : frame_sink_id_allocator(kDefaultClientId),
-        app_listener_(
-            base::android::ApplicationStatusListener::New(base::BindRepeating(
-                &CompositorDependencies::OnApplicationStateChange,
-                base::Unretained(this)))) {
+  CompositorDependencies() : frame_sink_id_allocator(kDefaultClientId) {
     DCHECK_CURRENTLY_ON(BrowserThread::UI);
-
-    // Ensure we're in the correct state at start up.
-    OnApplicationStateChange(app_listener_->GetState());
 
     bool enable_viz =
         base::FeatureList::IsEnabled(features::kVizDisplayCompositor);
@@ -312,34 +319,19 @@ class CompositorDependencies {
         }));
   }
 
-  // This callback function runs when application state changes. If application
-  // state is UNKNOWN, consider it as the app running as a conservative
-  // approach so that we don't send the gpu services to background.
-  void OnApplicationStateChange(
-      base::android::ApplicationState application_state) {
-    DCHECK_CURRENTLY_ON(BrowserThread::UI);
-
-    switch (application_state) {
-      case base::android::APPLICATION_STATE_UNKNOWN:
-      case base::android::APPLICATION_STATE_HAS_RUNNING_ACTIVITIES:
-      case base::android::APPLICATION_STATE_HAS_PAUSED_ACTIVITIES:
-        if (application_is_foreground_)
-          return;
-        application_is_foreground_ = true;
-        GpuDataManagerImpl::GetInstance()->SetApplicationVisible(true);
-        BrowserGpuChannelHostFactorySetApplicationVisible(true);
-        SendOnForegroundedToGpuService();
-        low_end_background_cleanup_task_.Cancel();
-        break;
-      case base::android::APPLICATION_STATE_HAS_STOPPED_ACTIVITIES:
-      case base::android::APPLICATION_STATE_HAS_DESTROYED_ACTIVITIES:
-        if (!application_is_foreground_)
-          return;
-        application_is_foreground_ = false;
-        GpuDataManagerImpl::GetInstance()->SetApplicationVisible(false);
-        BrowserGpuChannelHostFactorySetApplicationVisible(false);
-        SendOnBackgroundedToGpuService();
-        EnqueueLowEndBackgroundCleanup();
+  // This function runs when our first CompositorImpl becomes visible or when
+  // our last Compositormpl is hidden.
+  void OnVisibilityChanged() {
+    if (visible_compositors_.size() > 0) {
+      GpuDataManagerImpl::GetInstance()->SetApplicationVisible(true);
+      BrowserGpuChannelHostFactorySetApplicationVisible(true);
+      SendOnForegroundedToGpuService();
+      low_end_background_cleanup_task_.Cancel();
+    } else {
+      GpuDataManagerImpl::GetInstance()->SetApplicationVisible(false);
+      BrowserGpuChannelHostFactorySetApplicationVisible(false);
+      SendOnBackgroundedToGpuService();
+      EnqueueLowEndBackgroundCleanup();
     }
   }
 
@@ -347,12 +339,11 @@ class CompositorDependencies {
   // when we hide, canceled when we're shown.
   base::CancelableOnceClosure low_end_background_cleanup_task_;
 
-  // An instance of Android AppListener.
-  std::unique_ptr<base::android::ApplicationStatusListener> app_listener_;
-  bool application_is_foreground_ = true;
-
   // A callback which connects to the viz service on the IO thread.
   base::OnceClosure pending_connect_viz_on_io_thread_;
+
+  // The set of visible CompositorImpls.
+  base::flat_set<CompositorImpl*> visible_compositors_;
 };
 
 const unsigned int kMaxDisplaySwapBuffers = 1U;
@@ -927,6 +918,7 @@ void CompositorImpl::SetVisible(bool visible) {
 
   if (!visible) {
     DCHECK(host_->IsVisible());
+    CompositorDependencies::Get().OnCompositorHidden(this);
     // Tear down the display first, synchronously completing any pending
     // draws/readbacks if poosible.
     TearDownDisplayAndUnregisterRootFrameSink();
@@ -937,6 +929,7 @@ void CompositorImpl::SetVisible(bool visible) {
     pending_frames_ = 0;
   } else {
     DCHECK(!host_->IsVisible());
+    CompositorDependencies::Get().OnCompositorVisible(this);
     RegisterRootFrameSink();
     host_->SetVisible(true);
     has_submitted_frame_since_became_visible_ = false;
@@ -980,7 +973,8 @@ void CompositorImpl::TearDownDisplayAndUnregisterRootFrameSink() {
 }
 
 void CompositorImpl::RegisterRootFrameSink() {
-  GetHostFrameSinkManager()->RegisterFrameSinkId(frame_sink_id_, this);
+  GetHostFrameSinkManager()->RegisterFrameSinkId(
+      frame_sink_id_, this, viz::ReportFirstSurfaceActivation::kNo);
   GetHostFrameSinkManager()->SetFrameSinkDebugLabel(frame_sink_id_,
                                                     "CompositorImpl");
 }
@@ -1015,7 +1009,7 @@ void CompositorImpl::SetNeedsComposite() {
   host_->SetNeedsAnimate();
 }
 
-void CompositorImpl::UpdateLayerTreeHost() {
+void CompositorImpl::UpdateLayerTreeHost(bool record_main_frame_metrics) {
   client_->UpdateLayerTreeHost();
   if (needs_animate_) {
     needs_animate_ = false;
@@ -1322,10 +1316,11 @@ bool CompositorImpl::HavePendingReadbacks() {
 std::unique_ptr<ui::CompositorLock> CompositorImpl::GetCompositorLock(
     ui::CompositorLockClient* client,
     base::TimeDelta timeout) {
-  std::unique_ptr<cc::ScopedDeferCommits> scoped_defer_commits =
-      host_ ? host_->DeferCommits() : nullptr;
-  return lock_manager_.GetCompositorLock(client, timeout,
-                                         std::move(scoped_defer_commits));
+  std::unique_ptr<cc::ScopedDeferMainFrameUpdate>
+      scoped_defer_main_frame_update =
+          host_ ? host_->DeferMainFrameUpdate() : nullptr;
+  return lock_manager_.GetCompositorLock(
+      client, timeout, std::move(scoped_defer_main_frame_update));
 }
 
 bool CompositorImpl::IsDrawingFirstVisibleFrame() const {
@@ -1415,11 +1410,15 @@ void CompositorImpl::InitializeVizLayerTreeFrameSink(
   display_private_->SetVSyncPaused(vsync_paused_);
 }
 
-viz::LocalSurfaceId CompositorImpl::GenerateLocalSurfaceId() const {
-  if (enable_surface_synchronization_)
-    return CompositorDependencies::Get().surface_id_allocator.GenerateId();
+viz::LocalSurfaceIdAllocation CompositorImpl::GenerateLocalSurfaceId() const {
+  if (enable_surface_synchronization_) {
+    viz::ParentLocalSurfaceIdAllocator& allocator =
+        CompositorDependencies::Get().surface_id_allocator;
+    allocator.GenerateId();
+    return allocator.GetCurrentLocalSurfaceIdAllocation();
+  }
 
-  return viz::LocalSurfaceId();
+  return viz::LocalSurfaceIdAllocation();
 }
 
 void CompositorImpl::OnFatalOrSurfaceContextCreationFailure(
@@ -1432,6 +1431,10 @@ void CompositorImpl::OnFatalOrSurfaceContextCreationFailure(
     SetSurface(nullptr);
     client_->RecreateSurface();
   }
+}
+
+void CompositorImpl::OnFirstSurfaceActivation(const viz::SurfaceInfo& info) {
+  NOTREACHED();
 }
 
 }  // namespace content

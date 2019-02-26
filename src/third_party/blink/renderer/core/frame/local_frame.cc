@@ -30,7 +30,9 @@
 
 #include "third_party/blink/renderer/core/frame/local_frame.h"
 
+#include <limits>
 #include <memory>
+#include <utility>
 
 #include "services/network/public/cpp/features.h"
 #include "services/service_manager/public/cpp/connector.h"
@@ -38,6 +40,7 @@
 #include "third_party/blink/public/platform/interface_provider.h"
 #include "third_party/blink/public/platform/interface_registry.h"
 #include "third_party/blink/public/platform/scheduler/web_resource_loading_task_runner_handle.h"
+#include "third_party/blink/public/platform/web_content_settings_client.h"
 #include "third_party/blink/public/platform/web_url_request.h"
 #include "third_party/blink/renderer/bindings/core/v8/script_controller.h"
 #include "third_party/blink/renderer/bindings/core/v8/source_location.h"
@@ -61,7 +64,6 @@
 #include "third_party/blink/renderer/core/events/current_input_event.h"
 #include "third_party/blink/renderer/core/exported/web_plugin_container_impl.h"
 #include "third_party/blink/renderer/core/frame/ad_tracker.h"
-#include "third_party/blink/renderer/core/frame/content_settings_client.h"
 #include "third_party/blink/renderer/core/frame/event_handler_registry.h"
 #include "third_party/blink/renderer/core/frame/frame_console.h"
 #include "third_party/blink/renderer/core/frame/local_dom_window.h"
@@ -106,6 +108,7 @@
 #include "third_party/blink/renderer/platform/json/json_values.h"
 #include "third_party/blink/renderer/platform/loader/fetch/resource_fetcher.h"
 #include "third_party/blink/renderer/platform/loader/fetch/resource_request.h"
+#include "third_party/blink/renderer/platform/network/network_state_notifier.h"
 #include "third_party/blink/renderer/platform/network/network_utils.h"
 #include "third_party/blink/renderer/platform/plugins/plugin_data.h"
 #include "third_party/blink/renderer/platform/plugins/plugin_script_forbidden_scope.h"
@@ -114,8 +117,6 @@
 #include "third_party/blink/renderer/platform/wtf/std_lib_extras.h"
 
 namespace blink {
-
-using namespace HTMLNames;
 
 namespace {
 
@@ -214,7 +215,7 @@ LocalFrame* LocalFrame::Create(LocalFrameClient* client,
                                Page& page,
                                FrameOwner* owner,
                                InterfaceRegistry* interface_registry) {
-  LocalFrame* frame = new LocalFrame(
+  LocalFrame* frame = MakeGarbageCollected<LocalFrame>(
       client, page, owner,
       interface_registry ? interface_registry
                          : InterfaceRegistry::GetEmptyInterfaceRegistry());
@@ -329,12 +330,16 @@ void LocalFrame::ScheduleNavigation(Document& origin_document,
                                     const KURL& url,
                                     WebFrameLoadType frame_load_type,
                                     UserGestureStatus user_gesture_status) {
+  if (!navigation_rate_limiter().CanProceed())
+    return;
   navigation_scheduler_->ScheduleFrameNavigation(&origin_document, url,
                                                  frame_load_type);
 }
 
 void LocalFrame::Navigate(const FrameLoadRequest& request,
                           WebFrameLoadType frame_load_type) {
+  if (!navigation_rate_limiter().CanProceed())
+    return;
   loader_.StartNavigation(request, frame_load_type);
 }
 
@@ -424,9 +429,6 @@ void LocalFrame::DetachImpl(FrameDetachType type) {
 
   DomWindow()->FrameDestroyed();
 
-  if (GetPage() && GetPage()->GetFocusController().FocusedFrame() == this)
-    GetPage()->GetFocusController().SetFocusedFrame(nullptr);
-
   probe::frameDetachedFromParent(this);
 
   supplements_.clear();
@@ -487,14 +489,19 @@ void LocalFrame::DetachChildren() {
     ChildFrameDisconnector(*document).Disconnect();
 }
 
-void LocalFrame::DocumentAttached() {
-  DCHECK(GetDocument());
+void LocalFrame::DidAttachDocument() {
+  Document* document = GetDocument();
+  DCHECK(document);
   GetEditor().Clear();
+  // Clearing the event handler clears many events, but notably can ensure that
+  // for a drag started on an element in a frame that was moved (likely via
+  // appendChild()), the drag source will detach and stop firing drag events
+  // even after the frame reattaches.
   GetEventHandler().Clear();
-  Selection().DocumentAttached(GetDocument());
-  GetInputMethodController().DocumentAttached(GetDocument());
-  GetSpellChecker().DocumentAttached(GetDocument());
-  GetTextSuggestionController().DocumentAttached(GetDocument());
+  Selection().DidAttachDocument(document);
+  GetInputMethodController().DidAttachDocument(document);
+  GetSpellChecker().DidAttachDocument(document);
+  GetTextSuggestionController().DidAttachDocument(document);
   previews_resource_loading_hints_receiver_.reset();
 }
 
@@ -593,7 +600,7 @@ void LocalFrame::DidResume() {
   DCHECK(RuntimeEnabledFeatures::PageLifecycleEnabled());
   if (GetDocument()) {
     const TimeTicks resume_event_start = CurrentTimeTicks();
-    GetDocument()->DispatchEvent(*Event::Create(EventTypeNames::resume));
+    GetDocument()->DispatchEvent(*Event::Create(event_type_names::kResume));
     const TimeTicks resume_event_end = CurrentTimeTicks();
     DEFINE_STATIC_LOCAL(
         CustomCountHistogram, resume_histogram,
@@ -632,7 +639,7 @@ void LocalFrame::SetInheritedEffectiveTouchAction(TouchAction touch_action) {
     GetDocument()->documentElement()->SetNeedsStyleRecalc(
         kSubtreeStyleChange,
         StyleChangeReasonForTracing::Create(
-            StyleChangeReason::kInheritedStyleChangeFromParentFrame));
+            style_change_reason::kInheritedStyleChangeFromParentFrame));
   }
 }
 
@@ -701,7 +708,7 @@ void LocalFrame::SetPrinting(bool printing,
   } else {
     if (LayoutView* layout_view = View()->GetLayoutView()) {
       layout_view->SetPreferredLogicalWidthsDirty();
-      layout_view->SetNeedsLayout(LayoutInvalidationReason::kPrintingChanged);
+      layout_view->SetNeedsLayout(layout_invalidation_reason::kPrintingChanged);
       layout_view->SetShouldDoFullPaintInvalidationForViewAndAllDescendants();
     }
     View()->UpdateLayout();
@@ -813,7 +820,7 @@ void LocalFrame::SetPageAndTextZoomFactors(float page_zoom_factor,
   document->MediaQueryAffectingValueChanged();
   document->SetNeedsStyleRecalc(
       kSubtreeStyleChange,
-      StyleChangeReasonForTracing::Create(StyleChangeReason::kZoom));
+      StyleChangeReasonForTracing::Create(style_change_reason::kZoom));
   document->UpdateStyleAndLayoutIgnorePendingStylesheets();
 }
 
@@ -821,7 +828,7 @@ void LocalFrame::DeviceScaleFactorChanged() {
   GetDocument()->MediaQueryAffectingValueChanged();
   GetDocument()->SetNeedsStyleRecalc(
       kSubtreeStyleChange,
-      StyleChangeReasonForTracing::Create(StyleChangeReason::kZoom));
+      StyleChangeReasonForTracing::Create(style_change_reason::kZoom));
   for (Frame* child = Tree().FirstChild(); child;
        child = child->Tree().NextSibling()) {
     if (child->IsLocalFrame())
@@ -947,21 +954,25 @@ inline LocalFrame::LocalFrame(LocalFrameClient* client,
       editor_(Editor::Create(*this)),
       spell_checker_(SpellChecker::Create(*this)),
       selection_(FrameSelection::Create(*this)),
-      event_handler_(new EventHandler(*this)),
+      event_handler_(MakeGarbageCollected<EventHandler>(*this)),
       console_(FrameConsole::Create(*this)),
       input_method_controller_(InputMethodController::Create(*this)),
-      text_suggestion_controller_(new TextSuggestionController(*this)),
+      text_suggestion_controller_(
+          MakeGarbageCollected<TextSuggestionController>(*this)),
       navigation_disable_count_(0),
       page_zoom_factor_(ParentPageZoomFactor(this)),
       text_zoom_factor_(ParentTextZoomFactor(this)),
       in_view_source_mode_(false),
       inspector_task_runner_(InspectorTaskRunner::Create(
           GetTaskRunner(TaskType::kInternalInspector))),
-      interface_registry_(interface_registry) {
+      interface_registry_(interface_registry),
+      is_save_data_enabled_(
+          !(GetSettings() && GetSettings()->GetDataSaverHoldbackWebApi()) &&
+          GetNetworkStateNotifier().SaveDataEnabled()) {
   if (IsLocalRoot()) {
     probe_sink_ = new CoreProbeSink();
-    performance_monitor_ = new PerformanceMonitor(this);
-    inspector_trace_events_ = new InspectorTraceEvents();
+    performance_monitor_ = MakeGarbageCollected<PerformanceMonitor>(this);
+    inspector_trace_events_ = MakeGarbageCollected<InspectorTraceEvents>();
     probe_sink_->addInspectorTraceEvents(inspector_trace_events_);
     if (RuntimeEnabledFeatures::AdTaggingEnabled()) {
       ad_tracker_ = new AdTracker(this);
@@ -976,7 +987,7 @@ inline LocalFrame::LocalFrame(LocalFrameClient* client,
     ad_tracker_ = LocalFrameRoot().ad_tracker_;
     performance_monitor_ = LocalFrameRoot().performance_monitor_;
   }
-  idleness_detector_ = new IdlenessDetector(this);
+  idleness_detector_ = MakeGarbageCollected<IdlenessDetector>(this);
   inspector_task_runner_->InitIsolate(V8PerIsolateData::MainThreadIsolate());
 
   if (ad_tracker_) {
@@ -1059,11 +1070,11 @@ bool LocalFrame::CanNavigate(const Frame& target_frame,
       return true;
     }
 
-    String target_domain = NetworkUtils::GetDomainAndRegistry(
+    String target_domain = network_utils::GetDomainAndRegistry(
         target_frame.GetSecurityContext()->GetSecurityOrigin()->Domain(),
-        NetworkUtils::kIncludePrivateRegistries);
-    String destination_domain = NetworkUtils::GetDomainAndRegistry(
-        destination_url.Host(), NetworkUtils::kIncludePrivateRegistries);
+        network_utils::kIncludePrivateRegistries);
+    String destination_domain = network_utils::GetDomainAndRegistry(
+        destination_url.Host(), network_utils::kIncludePrivateRegistries);
     if (!target_domain.IsEmpty() && !destination_domain.IsEmpty() &&
         target_domain == destination_domain) {
       return true;
@@ -1075,10 +1086,14 @@ bool LocalFrame::CanNavigate(const Frame& target_frame,
     //
     // TODO(csharrison,japhet): Consider not logging an error message if the
     // user has allowed popups/redirects.
+    bool allow_popups_and_redirects = false;
+    if (auto* settings_client = Client()->GetContentSettingsClient()) {
+      allow_popups_and_redirects =
+          settings_client->AllowPopupsAndRedirects(allow_popups_and_redirects);
+    }
     if (!RuntimeEnabledFeatures::
             FramebustingNeedsSameOriginOrUserGestureEnabled() ||
-        Client()->GetContentSettingsClient().AllowPopupsAndRedirects(
-            false /* default_value */)) {
+        allow_popups_and_redirects) {
       String target_frame_description =
           target_frame.IsLocalFrame() ? "with URL '" +
                                             ToLocalFrame(target_frame)
@@ -1278,8 +1293,8 @@ LocalFrameClient* LocalFrame::Client() const {
   return static_cast<LocalFrameClient*>(Frame::Client());
 }
 
-ContentSettingsClient* LocalFrame::GetContentSettingsClient() {
-  return Client() ? &Client()->GetContentSettingsClient() : nullptr;
+WebContentSettingsClient* LocalFrame::GetContentSettingsClient() {
+  return Client() ? Client()->GetContentSettingsClient() : nullptr;
 }
 
 FrameResourceCoordinator* LocalFrame::GetFrameResourceCoordinator() {
@@ -1357,6 +1372,10 @@ bool LocalFrame::IsLazyLoadingImageAllowed() const {
     return false;
   if (Owner() && !Owner()->ShouldLazyLoadChildren())
     return false;
+  if (RuntimeEnabledFeatures::RestrictLazyImageLoadingToDataSaverEnabled() &&
+      !is_save_data_enabled_) {
+    return false;
+  }
   return true;
 }
 
@@ -1489,7 +1508,7 @@ SmoothScrollSequencer& LocalFrame::GetSmoothScrollSequencer() {
   if (!IsLocalRoot())
     return LocalFrameRoot().GetSmoothScrollSequencer();
   if (!smooth_scroll_sequencer_)
-    smooth_scroll_sequencer_ = new SmoothScrollSequencer();
+    smooth_scroll_sequencer_ = MakeGarbageCollected<SmoothScrollSequencer>();
   return *smooth_scroll_sequencer_;
 }
 
@@ -1514,11 +1533,6 @@ const mojom::blink::ReportingServiceProxyPtr& LocalFrame::GetReportingService()
         Platform::Current()->GetBrowserServiceName(), &reporting_service_);
   }
   return reporting_service_;
-}
-
-void LocalFrame::DeprecatedReportFeaturePolicyViolation(
-    mojom::FeaturePolicyFeature feature) const {
-  GetSecurityContext()->ReportFeaturePolicyViolation(feature);
 }
 
 // static

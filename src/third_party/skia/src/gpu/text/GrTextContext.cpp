@@ -188,7 +188,7 @@ void GrTextContext::InitDistanceFieldPaint(GrTextBlob* blob,
     skPaint->setAntiAlias(true);
     skPaint->setLCDRenderText(false);
     skPaint->setAutohinted(false);
-    skPaint->setHinting(SkPaint::kNormal_Hinting);
+    skPaint->setHinting(kNormal_SkFontHinting);
     skPaint->setSubpixelText(true);
 
     skPaint->setMaskFilter(GrSDFMaskFilter::Make());
@@ -214,9 +214,12 @@ GR_DRAW_OP_TEST_DEFINE(GrAtlasTextOp) {
         gTextContext = GrTextContext::Make(GrTextContext::Options());
     }
 
+    const GrBackendFormat format =
+            context->contextPriv().caps()->getBackendFormatFromColorType(kRGBA_8888_SkColorType);
+
     // Setup dummy SkPaint / GrPaint / GrRenderTargetContext
     sk_sp<GrRenderTargetContext> rtc(context->contextPriv().makeDeferredRenderTargetContext(
-        SkBackingFit::kApprox, 1024, 1024, kRGBA_8888_GrPixelConfig, nullptr));
+        format, SkBackingFit::kApprox, 1024, 1024, kRGBA_8888_GrPixelConfig, nullptr));
 
     SkMatrix viewMatrix = GrTest::TestMatrixInvertible(random);
 

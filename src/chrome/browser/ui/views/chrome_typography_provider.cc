@@ -10,6 +10,7 @@
 #include "ui/gfx/color_utils.h"
 #include "ui/gfx/platform_font.h"
 #include "ui/native_theme/native_theme.h"
+#include "ui/views/style/typography.h"
 #include "ui/views/view.h"
 
 #if defined(OS_WIN)
@@ -112,9 +113,10 @@ int ChromeTypographyProvider::GetPlatformFontHeight(int font_context) {
 
 const gfx::FontList& ChromeTypographyProvider::GetFont(int context,
                                                        int style) const {
-  // "Target" font size constants from the Harmony spec.
+  // "Target" font size constants.
   constexpr int kHeadlineSize = 20;
   constexpr int kTitleSize = 15;
+  constexpr int kTouchableLabelSize = 14;
   constexpr int kBodyTextLargeSize = 13;
   constexpr int kDefaultSize = 12;
 
@@ -133,6 +135,10 @@ const gfx::FontList& ChromeTypographyProvider::GetFont(int context,
       break;
     case views::style::CONTEXT_DIALOG_TITLE:
       size_delta = kTitleSize - gfx::PlatformFont::kDefaultBaseFontSize;
+      break;
+    case views::style::CONTEXT_TOUCH_MENU:
+      size_delta =
+          kTouchableLabelSize - gfx::PlatformFont::kDefaultBaseFontSize;
       break;
     case CONTEXT_BODY_TEXT_LARGE:
     case views::style::CONTEXT_MESSAGE_BOX_BODY_TEXT:

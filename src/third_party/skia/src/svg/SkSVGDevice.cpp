@@ -71,19 +71,6 @@ static const char* svg_join(SkPaint::Join join) {
     return join_map[join];
 }
 
-// Keep in sync with SkPaint::Align
-static const char* text_align_map[] = {
-    nullptr,     // kLeft_Align (default)
-    "middle", // kCenter_Align
-    "end"     // kRight_Align
-};
-static_assert(SK_ARRAY_COUNT(text_align_map) == SkPaint::kAlignCount,
-              "missing_text_align_map_entry");
-static const char* svg_text_align(SkPaint::Align align) {
-    SkASSERT(align < SK_ARRAY_COUNT(text_align_map));
-    return text_align_map[align];
-}
-
 static SkString svg_transform(const SkMatrix& t) {
     SkASSERT(!t.isIdentity());
 
@@ -604,10 +591,6 @@ void SkSVGDevice::AutoElement::addPathAttributes(const SkPath& path) {
 void SkSVGDevice::AutoElement::addTextAttributes(const SkPaint& paint) {
     this->addAttribute("font-size", paint.getTextSize());
 
-    if (const char* textAlign = svg_text_align(paint.getTextAlign())) {
-        this->addAttribute("text-anchor", textAlign);
-    }
-
     SkString familyName;
     SkTHashSet<SkString> familySet;
     sk_sp<SkTypeface> tface = SkPaintPriv::RefTypefaceOrDefault(paint);
@@ -872,7 +855,7 @@ public:
         const SkPaint& paint = glyphRun.paint();
         auto runSize = glyphRun.runSize();
         SkAutoSTArray<64, SkUnichar> unichars(runSize);
-        paint.glyphsToUnichars(glyphRun.shuntGlyphsIDs().data(), runSize, unichars.get());
+        paint.glyphsToUnichars(glyphRun.glyphsIDs().data(), runSize, unichars.get());
         auto positions = glyphRun.positions();
         for (size_t i = 0; i < runSize; ++i) {
             this->appendUnichar(unichars[i], positions[i]);

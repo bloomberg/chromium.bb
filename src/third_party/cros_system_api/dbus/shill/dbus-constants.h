@@ -40,7 +40,6 @@ const char kUnblockPinFunction[] = "UnblockPin";
 const char kChangePinFunction[] = "ChangePin";
 const char kRegisterFunction[] = "Register";
 const char kConfigureServiceFunction[] = "ConfigureService";
-const char kConfigureWifiServiceFunction[] = "ConfigureWifiService";
 const char kFindMatchingServiceFunction[] = "FindMatchingService";
 const char kSetNetworkThrottlingFunction[] = "SetNetworkThrottlingStatus";
 
@@ -152,7 +151,8 @@ const char kDevicesProperty[] = "Devices";
 const char kCheckPortalListProperty[] = "CheckPortalList";
 const char kArpGatewayProperty[] = "ArpGateway";
 const char kCountryProperty[] = "Country";
-const char kPortalURLProperty[] = "PortalURL";
+const char kPortalHttpUrlProperty[] = "PortalHttpUrl";
+const char kPortalHttpsUrlProperty[] = "PortalHttpsUrl";
 const char kConnectionStateProperty[] = "ConnectionState";
 const char kClaimedDevicesProperty[] = "ClaimedDevices";
 
@@ -601,6 +601,7 @@ const char kShortDNSTimeoutTechnologiesProperty[] =
 const char kUninitializedTechnologiesProperty[] = "UninitializedTechnologies";
 const char kWakeOnLanEnabledProperty[] = "WakeOnLanEnabled";
 const char kWakeOnWiFiFeaturesEnabledProperty[] = "WakeOnWiFiFeaturesEnabled";
+const char kWifiGlobalFTEnabledProperty[] = "WiFi.GlobalFTEnabled";
 
 // Service property names.
 const char kActivationTypeProperty[] = "Cellular.ActivationType";

@@ -28,6 +28,7 @@ class MODULES_EXPORT PushMessageData final : public ScriptWrappable {
   static PushMessageData* Create(
       const ArrayBufferOrArrayBufferViewOrUSVString& data);
 
+  PushMessageData(const char* data, unsigned bytes_size);
   ~PushMessageData() override;
 
   DOMArrayBuffer* arrayBuffer() const;
@@ -37,8 +38,6 @@ class MODULES_EXPORT PushMessageData final : public ScriptWrappable {
   String text() const;
 
  private:
-  PushMessageData(const char* data, unsigned bytes_size);
-
   Vector<char> data_;
 };
 

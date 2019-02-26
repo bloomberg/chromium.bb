@@ -3,9 +3,9 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-
 import copy
 import re
+
 
 class PolicyTemplateGenerator:
   '''Generates template text for a particular platform.
@@ -102,18 +102,18 @@ class PolicyTemplateGenerator:
       else:
         # e.g.: 'chrome_frame:7-'
         product, platform = {
-          'android':         ('chrome',        'android'),
-          'webview_android': ('webview',       'android'),
-          'chrome_os':       ('chrome_os',     'chrome_os'),
-          'chrome_frame':    ('chrome_frame',  'win'),
+            'android': ('chrome', 'android'),
+            'webview_android': ('webview', 'android'),
+            'chrome_os': ('chrome_os', 'chrome_os'),
+            'chrome_frame': ('chrome_frame', 'win'),
         }[product_platform_part]
         platforms = [platform]
       since_version, until_version = version_part.split('-')
       result.append({
-        'product': product,
-        'platforms': platforms,
-        'since_version': since_version,
-        'until_version': until_version
+          'product': product,
+          'platforms': platforms,
+          'since_version': since_version,
+          'until_version': until_version
       })
     return result
 
@@ -131,7 +131,6 @@ class PolicyTemplateGenerator:
       policy['label'] = self._ImportMessage(policy['label'])
     if 'arc_support' in policy:
       policy['arc_support'] = self._ImportMessage(policy['arc_support'])
-
 
     if policy['type'] == 'group':
       self._ProcessPolicyList(policy['policies'])
@@ -183,20 +182,25 @@ class PolicyTemplateGenerator:
       Modified policy_list
     '''
     groups = [policy for policy in policy_list if policy['type'] == 'group']
-    policies = {policy['name']: policy
-                for policy in policy_list if policy['type'] != 'group'}
+    policies = {
+        policy['name']: policy
+        for policy in policy_list
+        if policy['type'] != 'group'
+    }
     policies_in_groups = set()
     result_policies = []
     for group in groups:
       group_policies = group['policies']
-      expanded_policies = [policies[policy_name]
-                           for policy_name in group_policies]
+      expanded_policies = [
+          policies[policy_name] for policy_name in group_policies
+      ]
       assert policies_in_groups.isdisjoint(group_policies)
       policies_in_groups.update(group_policies)
       group['policies'] = expanded_policies
       result_policies.append(group)
 
-    result_policies.extend([policy for policy in policy_list
-                            if policy['type'] != 'group' and
-                               policy['name'] not in policies_in_groups])
+    result_policies.extend([
+        policy for policy in policy_list if policy['type'] != 'group' and
+        policy['name'] not in policies_in_groups
+    ])
     return result_policies

@@ -51,7 +51,8 @@ class DetailsMarkerControl final : public HTMLDivElement {
 };
 
 inline DetailsMarkerControl* DetailsMarkerControl::Create(Document& document) {
-  DetailsMarkerControl* element = new DetailsMarkerControl(document);
+  DetailsMarkerControl* element =
+      MakeGarbageCollected<DetailsMarkerControl>(document);
   element->SetShadowPseudoId(AtomicString("-webkit-details-marker"));
   return element;
 }

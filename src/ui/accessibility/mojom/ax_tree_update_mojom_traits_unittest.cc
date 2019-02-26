@@ -6,6 +6,7 @@
 #include "mojo/public/cpp/test_support/test_utils.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/accessibility/ax_tree_update.h"
+#include "ui/accessibility/mojom/ax_relative_bounds_mojom_traits.h"
 #include "ui/accessibility/mojom/ax_tree_update.mojom.h"
 
 using mojo::test::SerializeAndDeserialize;

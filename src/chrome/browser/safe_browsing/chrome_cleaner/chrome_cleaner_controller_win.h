@@ -224,6 +224,13 @@ class ChromeCleanerController {
   DISALLOW_COPY_AND_ASSIGN(ChromeCleanerController);
 };
 
+//  These are used for debug output in tests.
+std::ostream& operator<<(std::ostream& out,
+                         ChromeCleanerController::State state);
+
+std::ostream& operator<<(std::ostream& out,
+                         ChromeCleanerController::UserResponse response);
+
 }  // namespace safe_browsing
 
 #endif  // CHROME_BROWSER_SAFE_BROWSING_CHROME_CLEANER_CHROME_CLEANER_CONTROLLER_WIN_H_

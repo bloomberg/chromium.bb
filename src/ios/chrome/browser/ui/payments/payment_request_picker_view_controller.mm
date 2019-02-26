@@ -10,7 +10,7 @@
 #import "ios/chrome/browser/ui/material_components/chrome_app_bar_view_controller.h"
 #import "ios/chrome/browser/ui/material_components/utils.h"
 #import "ios/chrome/browser/ui/payments/payment_request_picker_row.h"
-#include "ios/chrome/browser/ui/ui_util.h"
+#include "ios/chrome/browser/ui/util/ui_util.h"
 #import "ios/third_party/material_components_ios/src/components/CollectionCells/src/MaterialCollectionCells.h"
 #include "third_party/libaddressinput/messages.h"
 #include "ui/base/l10n/l10n_util.h"
@@ -97,7 +97,8 @@ NSString* const kPaymentRequestPickerSearchBarAccessibilityID =
   self.tableView.delegate = self;
 
   [self updateTableInset];
-  self.tableView.rowHeight = MDCCellDefaultOneLineHeight;
+  self.tableView.estimatedRowHeight = MDCCellDefaultOneLineHeight;
+  self.tableView.rowHeight = UITableViewAutomaticDimension;
   self.tableView.accessibilityIdentifier =
       kPaymentRequestPickerViewControllerAccessibilityID;
 
@@ -285,12 +286,7 @@ NSString* const kPaymentRequestPickerSearchBarAccessibilityID =
     // content by the same amount, to ensure they line up properly. Also insets
     // by one more pixel to hide the one pixel gap left in between the
     // navigation bar and the UITableView.
-    CGFloat topInset = 0;
-    if (@available(iOS 11, *)) {
-      topInset = self.view.safeAreaInsets.top;
-    } else {
-      topInset = StatusBarHeight();
-    }
+    CGFloat topInset = self.view.safeAreaInsets.top;
     const UIEdgeInsets statusBarInset =
         UIEdgeInsetsMake(-1 - topInset, 0, 0, 0);
     self.tableView.contentInset = statusBarInset;

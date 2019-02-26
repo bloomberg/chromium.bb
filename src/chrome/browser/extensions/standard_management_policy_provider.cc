@@ -109,7 +109,8 @@ bool StandardManagementPolicyProvider::UserMayLoad(
     case Manifest::TYPE_LEGACY_PACKAGED_APP:
     case Manifest::TYPE_PLATFORM_APP:
     case Manifest::TYPE_SHARED_MODULE: {
-      if (!settings_->IsAllowedManifestType(extension->GetType()))
+      if (!settings_->IsAllowedManifestType(extension->GetType(),
+                                            extension->id()))
         return ReturnLoadError(extension, error);
       break;
     }

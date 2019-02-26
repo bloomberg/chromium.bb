@@ -185,7 +185,7 @@ std::set<std::string> FtraceProcfs::AvailableClocks() {
   size_t start = 0;
   size_t end = 0;
 
-  while (true) {
+  for (;;) {
     end = s.find(' ', start);
     if (end == std::string::npos)
       end = s.size();
@@ -259,6 +259,33 @@ std::string FtraceProcfs::ReadFileIntoString(const std::string& path) const {
   if (!base::ReadFile(path, &str))
     return "";
   return str;
+}
+
+const std::set<std::string> FtraceProcfs::GetEventNamesForGroup(
+    const std::string& path) const {
+  std::set<std::string> names;
+  std::string full_path = root_ + path;
+  base::ScopedDir dir(opendir(full_path.c_str()));
+  if (!dir) {
+    PERFETTO_DLOG("Unable to read events from %s", full_path.c_str());
+    return names;
+  }
+  struct dirent* ent;
+  while ((ent = readdir(*dir)) != nullptr) {
+    if (strncmp(ent->d_name, ".", 1) == 0 ||
+        strncmp(ent->d_name, "..", 2) == 0) {
+      continue;
+    }
+    // Check ent is a directory.
+    struct stat statbuf;
+    std::string dir_path = full_path + "/" + ent->d_name;
+    if (stat(dir_path.c_str(), &statbuf) == 0) {
+      if (S_ISDIR(statbuf.st_mode)) {
+        names.insert(ent->d_name);
+      }
+    }
+  }
+  return names;
 }
 
 // static

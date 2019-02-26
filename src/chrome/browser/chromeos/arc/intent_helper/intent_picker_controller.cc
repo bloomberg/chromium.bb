@@ -19,10 +19,15 @@ IntentPickerController::~IntentPickerController() {
   browser_->tab_strip_model()->RemoveObserver(this);
 }
 
-void IntentPickerController::TabSelectionChanged(
-    TabStripModel* model,
-    const ui::ListSelectionModel& old_model) {
-  ResetVisibility();
+void IntentPickerController::OnTabStripModelChanged(
+    TabStripModel* tab_strip_model,
+    const TabStripModelChange& change,
+    const TabStripSelectionChange& selection) {
+  if (tab_strip_model->empty())
+    return;
+
+  if (selection.selection_changed())
+    ResetVisibility();
 }
 
 void IntentPickerController::ResetVisibility() {

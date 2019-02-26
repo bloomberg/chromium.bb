@@ -13,6 +13,7 @@
 #include "ash/test/ash_test_base.h"
 #include "ash/test_screenshot_delegate.h"
 #include "ash/wm/window_util.h"
+#include "services/ws/window_tree_test_helper.h"
 #include "ui/aura/env.h"
 #include "ui/aura/window_event_dispatcher.h"
 #include "ui/base/cursor/cursor.h"
@@ -146,7 +147,7 @@ TEST_F(PartialScreenshotControllerTest, BasicTouch) {
   TestScreenshotDelegate* test_delegate = GetScreenshotDelegate();
   ui::test::EventGenerator generator(Shell::GetPrimaryRootWindow());
 
-  generator.set_current_location(gfx::Point(100, 100));
+  generator.set_current_screen_location(gfx::Point(100, 100));
   generator.PressTouch();
   EXPECT_EQ(0, test_delegate->handle_take_partial_screenshot_count());
   EXPECT_EQ(gfx::Point(100, 100), GetStartPosition());
@@ -174,7 +175,7 @@ TEST_F(PartialScreenshotControllerTest,
   ui::test::EventGenerator generator(Shell::GetPrimaryRootWindow());
 
   generator.EnterPenPointerMode();
-  generator.set_current_location(gfx::Point(100, 100));
+  generator.set_current_screen_location(gfx::Point(100, 100));
   generator.PressTouch();
   EXPECT_EQ(0, test_delegate->handle_take_partial_screenshot_count());
   EXPECT_EQ(gfx::Point(100, 100), GetStartPosition());
@@ -200,7 +201,7 @@ TEST_F(PartialScreenshotControllerTest,
   screenshot_controller()->set_pen_events_only(true);
   TestScreenshotDelegate* test_delegate = GetScreenshotDelegate();
   ui::test::EventGenerator generator(Shell::GetPrimaryRootWindow());
-  generator.set_current_location(gfx::Point(100, 100));
+  generator.set_current_screen_location(gfx::Point(100, 100));
 
   // Verify touch is ignored.
   generator.PressTouch();
@@ -217,7 +218,7 @@ TEST_F(PartialScreenshotControllerTest,
   // Verify pointer enter/exit is ignored.
   generator.EnterPenPointerMode();
   generator.SendMouseEnter();
-  generator.set_current_location(gfx::Point(100, 100));
+  generator.set_current_screen_location(gfx::Point(100, 100));
   generator.SendMouseExit();
   generator.ExitPenPointerMode();
   EXPECT_EQ(0, test_delegate->handle_take_partial_screenshot_count());
@@ -233,12 +234,12 @@ TEST_F(PartialScreenshotControllerTest, TwoFingerTouch) {
   TestScreenshotDelegate* test_delegate = GetScreenshotDelegate();
   ui::test::EventGenerator generator(Shell::GetPrimaryRootWindow());
 
-  generator.set_current_location(gfx::Point(100, 100));
+  generator.set_current_screen_location(gfx::Point(100, 100));
   generator.PressTouch();
   EXPECT_EQ(0, test_delegate->handle_take_partial_screenshot_count());
   EXPECT_EQ(gfx::Point(100, 100), GetStartPosition());
 
-  generator.set_current_location(gfx::Point(200, 200));
+  generator.set_current_screen_location(gfx::Point(200, 200));
   generator.PressTouchId(1);
   EXPECT_EQ(gfx::Rect(100, 100, 100, 100),
             GetScreenshotDelegate()->last_rect());
@@ -476,6 +477,22 @@ TEST_F(ScreenshotControllerTest, BreaksCapture) {
   EXPECT_TRUE(window->HasCapture());
   Cancel();
   EXPECT_FALSE(window->HasCapture());
+}
+
+TEST_F(ScreenshotControllerTest, DontTargetNonTopLevels) {
+  std::unique_ptr<aura::Window> toplevel = CreateTestWindow();
+  std::unique_ptr<aura::Window> content(GetWindowTreeTestHelper()->NewWindow());
+  content->SetBounds(gfx::Rect(toplevel->bounds().size()));
+  toplevel->AddChild(content.get());
+  content->set_owned_by_parent(false);
+  content->Show();
+
+  StartWindowScreenshotSession();
+
+  ui::test::EventGenerator generator(Shell::GetPrimaryRootWindow());
+  generator.MoveMouseTo(toplevel->GetBoundsInScreen().CenterPoint());
+
+  EXPECT_EQ(toplevel.get(), GetCurrentSelectedWindow());
 }
 
 }  // namespace ash

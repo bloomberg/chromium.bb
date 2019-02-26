@@ -30,8 +30,9 @@ class BrowserWindowMacTest : public InProcessBrowserTest {
 // that is destroyed.
 IN_PROC_BROWSER_TEST_F(BrowserWindowMacTest, MenuCommandsAfterDestroy) {
   // Simulate AppKit (e.g. NSMenu) retaining an NSWindow.
-  base::scoped_nsobject<NSWindow> window(browser()->window()->GetNativeWindow(),
-                                         base::scoped_policy::RETAIN);
+  base::scoped_nsobject<NSWindow> window(
+      browser()->window()->GetNativeWindow().GetNativeNSWindow(),
+      base::scoped_policy::RETAIN);
   base::scoped_nsobject<NSMenuItem> bookmark_menu_item(
       [[[[NSApp mainMenu] itemWithTag:IDC_BOOKMARKS_MENU] submenu]
           itemWithTag:IDC_BOOKMARK_PAGE],

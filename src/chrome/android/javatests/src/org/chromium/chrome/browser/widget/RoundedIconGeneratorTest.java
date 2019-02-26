@@ -87,10 +87,7 @@ public class RoundedIconGeneratorTest {
         RoundedIconGenerator generator = new RoundedIconGenerator(mContext.getResources(),
                 iconSizeDp, iconSizeDp, iconCornerRadiusDp, iconColor, iconTextSizeDp);
 
-        Assert.assertTrue(generator.generateIconForText("", 0) != null);
-        Assert.assertTrue(generator.generateIconForText("", 1) != null);
-        Assert.assertTrue(generator.generateIconForText("A", 0) != null);
-        Assert.assertTrue(generator.generateIconForText("A", 1) != null);
-        Assert.assertTrue(generator.generateIconForText("A", 2) != null);
+        Assert.assertTrue(generator.generateIconForText("") != null);
+        Assert.assertTrue(generator.generateIconForText("A") != null);
     }
 }

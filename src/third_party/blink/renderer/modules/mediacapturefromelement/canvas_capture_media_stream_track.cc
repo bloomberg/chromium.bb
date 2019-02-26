@@ -18,8 +18,8 @@ CanvasCaptureMediaStreamTrack* CanvasCaptureMediaStreamTrack::Create(
     HTMLCanvasElement* element,
     ExecutionContext* context,
     std::unique_ptr<WebCanvasCaptureHandler> handler) {
-  return new CanvasCaptureMediaStreamTrack(component, element, context,
-                                           std::move(handler));
+  return MakeGarbageCollected<CanvasCaptureMediaStreamTrack>(
+      component, element, context, std::move(handler));
 }
 
 CanvasCaptureMediaStreamTrack* CanvasCaptureMediaStreamTrack::Create(
@@ -28,8 +28,8 @@ CanvasCaptureMediaStreamTrack* CanvasCaptureMediaStreamTrack::Create(
     ExecutionContext* context,
     std::unique_ptr<WebCanvasCaptureHandler> handler,
     double frame_rate) {
-  return new CanvasCaptureMediaStreamTrack(component, element, context,
-                                           std::move(handler), frame_rate);
+  return MakeGarbageCollected<CanvasCaptureMediaStreamTrack>(
+      component, element, context, std::move(handler), frame_rate);
 }
 
 HTMLCanvasElement* CanvasCaptureMediaStreamTrack::canvas() const {
@@ -44,7 +44,8 @@ CanvasCaptureMediaStreamTrack* CanvasCaptureMediaStreamTrack::clone(
     ScriptState* script_state) {
   MediaStreamComponent* cloned_component = Component()->Clone();
   CanvasCaptureMediaStreamTrack* cloned_track =
-      new CanvasCaptureMediaStreamTrack(*this, cloned_component);
+      MakeGarbageCollected<CanvasCaptureMediaStreamTrack>(*this,
+                                                          cloned_component);
   MediaStreamCenter::Instance().DidCreateMediaStreamTrack(cloned_component);
   return cloned_track;
 }

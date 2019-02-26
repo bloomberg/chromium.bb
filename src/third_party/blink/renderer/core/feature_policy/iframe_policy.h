@@ -33,7 +33,9 @@ class IFramePolicy final : public Policy {
       const ParsedFeaturePolicy& container_policy,
       scoped_refptr<const SecurityOrigin> src_origin) override {
     policy_ = FeaturePolicy::CreateFromParentPolicy(
-        parent_document_->GetFeaturePolicy(), container_policy,
+        parent_document_->GetFeaturePolicy(),
+        *DirectivesWithDisposition(mojom::FeaturePolicyDisposition::kEnforce,
+                                   container_policy),
         src_origin->ToUrlOrigin());
   }
 

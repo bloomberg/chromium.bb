@@ -2,10 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "ash/shell.h"
 #include "base/command_line.h"
 #include "base/files/file.h"
+#include "base/run_loop.h"
 #include "chrome/browser/chromeos/input_method/textinput_test_helper.h"
+#include "chrome/browser/ui/ash/chrome_keyboard_controller_client.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_window.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
@@ -15,18 +16,62 @@
 #include "content/public/test/browser_test_utils.h"
 #include "ui/aura/test/mus/change_completion_waiter.h"
 #include "ui/aura/window_tree_host.h"
-#include "ui/keyboard/keyboard_controller.h"
-#include "ui/keyboard/keyboard_resource_util.h"
-#include "ui/keyboard/keyboard_switches.h"
-#include "ui/keyboard/test/keyboard_test_util.h"
+#include "ui/display/display.h"
+#include "ui/display/screen.h"
+#include "ui/keyboard/public/keyboard_switches.h"
+#include "ui/keyboard/resources/keyboard_resource_util.h"
 
-namespace keyboard {
+namespace {
+
+class KeyboardVisibleWaiter : public ChromeKeyboardControllerClient::Observer {
+ public:
+  explicit KeyboardVisibleWaiter(bool visible) : visible_(visible) {
+    ChromeKeyboardControllerClient::Get()->AddObserver(this);
+  }
+  ~KeyboardVisibleWaiter() override {
+    ChromeKeyboardControllerClient::Get()->RemoveObserver(this);
+  }
+
+  void Wait() { run_loop_.Run(); }
+
+  // ChromeKeyboardControllerClient::Observer
+  void OnKeyboardVisibilityChanged(bool visible) override {
+    if (visible == visible_)
+      run_loop_.QuitWhenIdle();
+  }
+
+ private:
+  base::RunLoop run_loop_;
+  const bool visible_;
+
+  DISALLOW_COPY_AND_ASSIGN(KeyboardVisibleWaiter);
+};  // namespace
+
+bool WaitUntilShown() {
+  if (ChromeKeyboardControllerClient::Get()->is_keyboard_visible())
+    return true;
+  KeyboardVisibleWaiter(true).Wait();
+  return ChromeKeyboardControllerClient::Get()->is_keyboard_visible();
+}
+
+bool WaitUntilHidden() {
+  if (!ChromeKeyboardControllerClient::Get()->is_keyboard_visible())
+    return true;
+  KeyboardVisibleWaiter(false).Wait();
+  return !ChromeKeyboardControllerClient::Get()->is_keyboard_visible();
+}
+
+gfx::Size GetScreenBounds() {
+  return display::Screen::GetScreen()->GetPrimaryDisplay().GetSizeInPixel();
+}
+
+}  // namespace
 
 class KeyboardEndToEndTest : public InProcessBrowserTest {
  public:
   // Ensure that the virtual keyboard is enabled.
   void SetUpCommandLine(base::CommandLine* command_line) override {
-    command_line->AppendSwitch(switches::kEnableVirtualKeyboard);
+    command_line->AppendSwitch(keyboard::switches::kEnableVirtualKeyboard);
   }
 
   void SetUpOnMainThread() override {
@@ -36,17 +81,15 @@ class KeyboardEndToEndTest : public InProcessBrowserTest {
     web_contents = browser()->tab_strip_model()->GetActiveWebContents();
     ASSERT_TRUE(web_contents);
 
-    ASSERT_TRUE(KeyboardController::Get());
-    ASSERT_TRUE(KeyboardController::Get()->IsEnabled());
-    EXPECT_FALSE(IsKeyboardVisible());
+    base::RunLoop().RunUntilIdle();
+
+    auto* client = ChromeKeyboardControllerClient::Get();
+    ASSERT_TRUE(client);
+    ASSERT_TRUE(client->is_keyboard_enabled());
+    EXPECT_FALSE(client->is_keyboard_visible());
   }
 
  protected:
-  bool IsKeyboardVisible() {
-    auto* keyboard_controller = keyboard::KeyboardController::Get();
-    return keyboard_controller->IsKeyboardVisible();
-  }
-
   // Initialized in |SetUpOnMainThread|.
   content::WebContents* web_contents;
 
@@ -133,7 +176,8 @@ IN_PROC_BROWSER_TEST_F(KeyboardEndToEndFormTest,
                       "document.getElementById('username').type = 'password'")
           .error.empty());
 
-  EXPECT_FALSE(IsKeyboardHiding());
+  base::RunLoop().RunUntilIdle();  // Allow async operations to complete.
+  EXPECT_TRUE(ChromeKeyboardControllerClient::Get()->is_keyboard_visible());
 }
 
 IN_PROC_BROWSER_TEST_F(KeyboardEndToEndFormTest,
@@ -172,7 +216,8 @@ IN_PROC_BROWSER_TEST_F(KeyboardEndToEndFormTest,
                               "setAttribute('inputmode', 'numeric')")
                   .error.empty());
 
-  EXPECT_FALSE(IsKeyboardHiding());
+  base::RunLoop().RunUntilIdle();  // Allow async operations to complete.
+  EXPECT_TRUE(ChromeKeyboardControllerClient::Get()->is_keyboard_visible());
 }
 
 IN_PROC_BROWSER_TEST_F(KeyboardEndToEndFormTest,
@@ -215,7 +260,8 @@ IN_PROC_BROWSER_TEST_F(KeyboardEndToEndFocusTest,
       content::EvalJs(web_contents, "document.getElementById('text').focus()")
           .error.empty());
 
-  EXPECT_FALSE(IsKeyboardShowing());
+  base::RunLoop().RunUntilIdle();  // Allow async operations to complete.
+  EXPECT_FALSE(ChromeKeyboardControllerClient::Get()->is_keyboard_visible());
 }
 
 IN_PROC_BROWSER_TEST_F(KeyboardEndToEndFocusTest,
@@ -230,7 +276,8 @@ IN_PROC_BROWSER_TEST_F(
     TriggerAsyncInputFocusFromUserGestureDoesNotShowKeyboard) {
   ClickElementWithId(web_contents, "async");
 
-  EXPECT_FALSE(IsKeyboardShowing());
+  base::RunLoop().RunUntilIdle();  // Allow async operations to complete.
+  EXPECT_FALSE(ChromeKeyboardControllerClient::Get()->is_keyboard_visible());
 }
 
 IN_PROC_BROWSER_TEST_F(
@@ -263,7 +310,8 @@ IN_PROC_BROWSER_TEST_F(
   base::PlatformThread::Sleep(base::TimeDelta::FromMilliseconds(3501));
 
   ClickElementWithId(web_contents, "async");
-  EXPECT_FALSE(IsKeyboardShowing());
+  base::RunLoop().RunUntilIdle();  // Allow async operations to complete.
+  EXPECT_FALSE(ChromeKeyboardControllerClient::Get()->is_keyboard_visible());
 }
 
 class KeyboardEndToEndOverscrollTest : public KeyboardEndToEndTest {
@@ -274,7 +322,11 @@ class KeyboardEndToEndOverscrollTest : public KeyboardEndToEndTest {
 
   void FocusAndShowKeyboard() { ClickElementWithId(web_contents, "username"); }
 
-  void HideKeyboard() { KeyboardController::Get()->HideKeyboardByUser(); }
+  void HideKeyboard() {
+    auto* controller = ChromeKeyboardControllerClient::Get();
+    controller->HideKeyboard(ash::mojom::HideReason::kUser);
+    controller->FlushForTesting();
+  }
 
  protected:
   int GetViewportHeight(content::WebContents* web_contents) {
@@ -309,7 +361,7 @@ IN_PROC_BROWSER_TEST_F(
     ToggleKeyboardOnNonOverlappingWindowDoesNotAffectViewport) {
   // Set the window bounds so that it does not overlap with the keyboard.
   // The virtual keyboard takes up no more than half the screen height.
-  const auto screen_bounds = ash::Shell::GetPrimaryRootWindow()->bounds();
+  gfx::Size screen_bounds = GetScreenBounds();
   browser()->window()->SetBounds(
       gfx::Rect(0, 0, screen_bounds.width(), screen_bounds.height() / 2));
   aura::test::WaitForAllChangesToComplete();
@@ -333,7 +385,7 @@ IN_PROC_BROWSER_TEST_F(
   // Shift the window down so that it overlaps with the keyboard, but shrink the
   // window size so that when it moves upwards, it will no longer overlap with
   // the keyboard.
-  const auto screen_bounds = ash::Shell::GetPrimaryRootWindow()->bounds();
+  gfx::Size screen_bounds = GetScreenBounds();
   browser()->window()->SetBounds(gfx::Rect(0, screen_bounds.height() / 2,
                                            screen_bounds.width(),
                                            screen_bounds.height() / 2));
@@ -363,7 +415,7 @@ IN_PROC_BROWSER_TEST_F(
   // Shift the window down so that it overlaps with the keyboard, and expand the
   // window size so that when it moves upwards, it will still overlap with
   // the keyboard.
-  const auto screen_bounds = ash::Shell::GetPrimaryRootWindow()->bounds();
+  gfx::Size screen_bounds = GetScreenBounds();
   browser()->window()->SetBounds(gfx::Rect(0, screen_bounds.height() / 3,
                                            screen_bounds.width(),
                                            screen_bounds.height() / 3 * 2));
@@ -386,5 +438,3 @@ IN_PROC_BROWSER_TEST_F(
   EXPECT_EQ(browser()->window()->GetBounds(), old_browser_bounds);
   EXPECT_EQ(GetViewportHeight(web_contents), old_height);
 }
-
-}  // namespace keyboard

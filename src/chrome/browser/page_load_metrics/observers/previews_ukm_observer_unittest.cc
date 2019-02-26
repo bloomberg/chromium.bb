@@ -10,14 +10,13 @@
 #include "base/metrics/metrics_hashes.h"
 #include "base/optional.h"
 #include "base/test/scoped_feature_list.h"
-#include "chrome/browser/loader/chrome_navigation_data.h"
 #include "chrome/browser/page_load_metrics/metrics_web_contents_observer.h"
 #include "chrome/browser/page_load_metrics/observers/page_load_metrics_observer_test_harness.h"
 #include "chrome/browser/page_load_metrics/page_load_metrics_observer.h"
 #include "chrome/browser/page_load_metrics/page_load_tracker.h"
 #include "chrome/browser/previews/previews_ui_tab_helper.h"
 #include "chrome/test/base/testing_browser_process.h"
-#include "components/data_reduction_proxy/core/browser/data_reduction_proxy_data.h"
+#include "components/previews/core/previews_experiments.h"
 #include "components/previews/core/previews_features.h"
 #include "components/ukm/test_ukm_recorder.h"
 #include "content/public/common/previews_state.h"
@@ -35,82 +34,77 @@ namespace {
 
 const char kDefaultTestUrl[] = "https://www.google.com/";
 
-data_reduction_proxy::DataReductionProxyData* DataForNavigationHandle(
-    content::WebContents* web_contents,
-    content::NavigationHandle* navigation_handle) {
-  ChromeNavigationData* chrome_navigation_data = new ChromeNavigationData();
-  content::WebContentsTester::For(web_contents)
-      ->SetNavigationData(navigation_handle,
-                          base::WrapUnique(chrome_navigation_data));
-  data_reduction_proxy::DataReductionProxyData* data =
-      new data_reduction_proxy::DataReductionProxyData();
-  chrome_navigation_data->SetDataReductionProxyData(base::WrapUnique(data));
-
-  return data;
-}
-
 class TestPreviewsUKMObserver : public PreviewsUKMObserver {
  public:
-  TestPreviewsUKMObserver(content::WebContents* web_contents,
-                          bool data_reduction_proxy_used,
-                          bool lite_page_received,
-                          bool noscript_on,
-                          bool resource_loading_hints_on,
-                          bool origin_opt_out_received,
-                          bool save_data_enabled)
-      : web_contents_(web_contents),
-        data_reduction_proxy_used_(data_reduction_proxy_used),
+  TestPreviewsUKMObserver(
+      PreviewsType committed_preview,
+      bool lite_page_received,
+      bool lite_page_redirect_received,
+      bool noscript_on,
+      bool resource_loading_hints_on,
+      bool origin_opt_out_received,
+      bool save_data_enabled,
+      base::Optional<base::TimeDelta> navigation_restart_penalty)
+      : committed_preview_(committed_preview),
         lite_page_received_(lite_page_received),
+        lite_page_redirect_received_(lite_page_redirect_received),
         noscript_on_(noscript_on),
         resource_loading_hints_on_(resource_loading_hints_on),
         origin_opt_out_received_(origin_opt_out_received),
-        save_data_enabled_(save_data_enabled) {}
+        save_data_enabled_(save_data_enabled),
+        navigation_restart_penalty_(navigation_restart_penalty) {}
 
   ~TestPreviewsUKMObserver() override {}
 
   // page_load_metrics::PageLoadMetricsObserver implementation:
   ObservePolicy OnCommit(content::NavigationHandle* navigation_handle,
                          ukm::SourceId source_id) override {
-    data_reduction_proxy::DataReductionProxyData* data =
-        DataForNavigationHandle(web_contents_, navigation_handle);
-    data->set_used_data_reduction_proxy(data_reduction_proxy_used_);
-    data->set_request_url(GURL(kDefaultTestUrl));
-    data->set_lite_page_received(lite_page_received_);
+    PreviewsUITabHelper* ui_tab_helper = PreviewsUITabHelper::FromWebContents(
+        navigation_handle->GetWebContents());
+    previews::PreviewsUserData* user_data =
+        ui_tab_helper->CreatePreviewsUserDataForNavigationHandle(
+            navigation_handle, 1u);
+
+    user_data->SetCommittedPreviewsTypeForTesting(committed_preview_);
 
     if (noscript_on_) {
-      // ChromeNavigationData is guaranteed to be non-null at this point, as
-      // DataForNavigationHandle is always called prior to this and creates one.
-      ChromeNavigationData* chrome_navigation_data =
-          static_cast<ChromeNavigationData*>(
-              navigation_handle->GetNavigationData());
       content::PreviewsState previews_state =
-          chrome_navigation_data->previews_state();
-      chrome_navigation_data->set_previews_state(previews_state |=
-                                                 content::NOSCRIPT_ON);
+          user_data->committed_previews_state();
+      user_data->set_committed_previews_state(previews_state |=
+                                              content::NOSCRIPT_ON);
     }
 
     if (resource_loading_hints_on_) {
-      // ChromeNavigationData is guaranteed to be non-null at this point, as
-      // DataForNavigationHandle is always called prior to this and creates one.
-      ChromeNavigationData* chrome_navigation_data =
-          static_cast<ChromeNavigationData*>(
-              navigation_handle->GetNavigationData());
       content::PreviewsState previews_state =
-          chrome_navigation_data->previews_state();
-      chrome_navigation_data->set_previews_state(
+          user_data->committed_previews_state();
+      user_data->set_committed_previews_state(
           previews_state |= content::RESOURCE_LOADING_HINTS_ON);
     }
 
+    if (lite_page_received_) {
+      content::PreviewsState previews_state =
+          user_data->committed_previews_state();
+      user_data->set_committed_previews_state(previews_state |=
+                                              content::SERVER_LITE_PAGE_ON);
+    }
+
+    if (lite_page_redirect_received_) {
+      content::PreviewsState previews_state =
+          user_data->committed_previews_state();
+      user_data->set_committed_previews_state(previews_state |=
+                                              content::LITE_PAGE_REDIRECT_ON);
+    }
+
+    if (navigation_restart_penalty_.has_value()) {
+      user_data->set_server_lite_page_info(
+          std::make_unique<previews::PreviewsUserData::ServerLitePageInfo>());
+      user_data->server_lite_page_info()->original_navigation_start =
+          navigation_handle->NavigationStart() -
+          navigation_restart_penalty_.value();
+    }
+
     if (origin_opt_out_received_) {
-      // ChromeNavigationData is guaranteed to be non-null at this point, as
-      // DataForNavigationHandle is always called prior to this and creates one.
-      ChromeNavigationData* chrome_navigation_data =
-          static_cast<ChromeNavigationData*>(
-              navigation_handle->GetNavigationData());
-      previews::PreviewsUserData previews_user_data(1);
-      previews_user_data.SetCacheControlNoTransformDirective();
-      chrome_navigation_data->set_previews_user_data(
-          previews_user_data.DeepCopy());
+      user_data->set_cache_control_no_transform_directive();
     }
 
     return PreviewsUKMObserver::OnCommit(navigation_handle, source_id);
@@ -122,13 +116,14 @@ class TestPreviewsUKMObserver : public PreviewsUKMObserver {
     return save_data_enabled_;
   }
 
-  content::WebContents* web_contents_;
-  bool data_reduction_proxy_used_;
+  PreviewsType committed_preview_;
   bool lite_page_received_;
+  bool lite_page_redirect_received_;
   bool noscript_on_;
   bool resource_loading_hints_on_;
   bool origin_opt_out_received_;
   const bool save_data_enabled_;
+  base::Optional<base::TimeDelta> navigation_restart_penalty_;
 
   DISALLOW_COPY_AND_ASSIGN(TestPreviewsUKMObserver);
 };
@@ -139,35 +134,42 @@ class PreviewsUKMObserverTest
   PreviewsUKMObserverTest() {}
   ~PreviewsUKMObserverTest() override {}
 
-  void RunTest(bool data_reduction_proxy_used,
+  void RunTest(PreviewsType committed_preview,
                bool lite_page_received,
+               bool lite_page_redirect_received,
                bool noscript_on,
                bool resource_loading_hints_on,
                bool origin_opt_out,
-               bool save_data_enabled) {
-    data_reduction_proxy_used_ = data_reduction_proxy_used;
+               bool save_data_enabled,
+               base::Optional<base::TimeDelta> navigation_restart_penalty) {
+    committed_preview_ = committed_preview;
     lite_page_received_ = lite_page_received;
+    lite_page_redirect_received_ = lite_page_redirect_received;
     noscript_on_ = noscript_on;
     resource_loading_hints_on_ = resource_loading_hints_on;
     origin_opt_out_ = origin_opt_out;
     save_data_enabled_ = save_data_enabled;
+    navigation_restart_penalty_ = navigation_restart_penalty;
     NavigateAndCommit(GURL(kDefaultTestUrl));
   }
 
   void ValidateUKM(bool server_lofi_expected,
                    bool client_lofi_expected,
                    bool lite_page_expected,
+                   bool lite_page_redirect_expected,
                    bool noscript_expected,
                    bool resource_loading_hints_expected,
                    int opt_out_value,
                    bool origin_opt_out_expected,
-                   bool save_data_enabled_expected) {
+                   bool save_data_enabled_expected,
+                   base::Optional<base::TimeDelta> navigation_restart_penalty) {
     using UkmEntry = ukm::builders::Previews;
     auto entries = test_ukm_recorder().GetEntriesByName(UkmEntry::kEntryName);
     if (!server_lofi_expected && !client_lofi_expected && !lite_page_expected &&
-        !noscript_expected && !resource_loading_hints_expected &&
-        opt_out_value == 0 && !origin_opt_out_expected &&
-        !save_data_enabled_expected) {
+        !lite_page_redirect_expected && !noscript_expected &&
+        !resource_loading_hints_expected && opt_out_value == 0 &&
+        !origin_opt_out_expected && !save_data_enabled_expected &&
+        !navigation_restart_penalty.has_value()) {
       EXPECT_EQ(0u, entries.size());
       return;
     }
@@ -180,6 +182,9 @@ class PreviewsUKMObserverTest
                                           entry, UkmEntry::kclient_lofiName));
       EXPECT_EQ(lite_page_expected, test_ukm_recorder().EntryHasMetric(
                                         entry, UkmEntry::klite_pageName));
+      EXPECT_EQ(lite_page_redirect_expected,
+                test_ukm_recorder().EntryHasMetric(
+                    entry, UkmEntry::klite_page_redirectName));
       EXPECT_EQ(noscript_expected, test_ukm_recorder().EntryHasMetric(
                                        entry, UkmEntry::knoscriptName));
       EXPECT_EQ(resource_loading_hints_expected,
@@ -197,77 +202,103 @@ class PreviewsUKMObserverTest
       EXPECT_EQ(save_data_enabled_expected,
                 test_ukm_recorder().EntryHasMetric(
                     entry, UkmEntry::ksave_data_enabledName));
+      if (navigation_restart_penalty.has_value()) {
+        test_ukm_recorder().ExpectEntryMetric(
+            entry, UkmEntry::knavigation_restart_penaltyName,
+            navigation_restart_penalty.value().InMilliseconds());
+      }
     }
+  }
+
+  void SetUp() override {
+    page_load_metrics::PageLoadMetricsObserverTestHarness::SetUp();
+    PreviewsUITabHelper::CreateForWebContents(web_contents());
   }
 
  protected:
   void RegisterObservers(page_load_metrics::PageLoadTracker* tracker) override {
     tracker->AddObserver(std::make_unique<TestPreviewsUKMObserver>(
-        web_contents(), data_reduction_proxy_used_, lite_page_received_,
+        committed_preview_, lite_page_received_, lite_page_redirect_received_,
         noscript_on_, resource_loading_hints_on_, origin_opt_out_,
-        save_data_enabled_));
+        save_data_enabled_, navigation_restart_penalty_));
     // Data is only added to the first navigation after RunTest().
-    data_reduction_proxy_used_ = false;
+    committed_preview_ = PreviewsType::NONE;
     lite_page_received_ = false;
+    lite_page_redirect_received_ = false;
     noscript_on_ = false;
     resource_loading_hints_on_ = false;
     origin_opt_out_ = false;
+    navigation_restart_penalty_ = base::nullopt;
   }
 
  private:
-  bool data_reduction_proxy_used_ = false;
+  PreviewsType committed_preview_ = PreviewsType::NONE;
   bool lite_page_received_ = false;
+  bool lite_page_redirect_received_ = false;
   bool noscript_on_ = false;
   bool resource_loading_hints_on_ = false;
   bool origin_opt_out_ = false;
   bool save_data_enabled_ = false;
+  base::Optional<base::TimeDelta> navigation_restart_penalty_ = base::nullopt;
 
   DISALLOW_COPY_AND_ASSIGN(PreviewsUKMObserverTest);
 };
 
 TEST_F(PreviewsUKMObserverTest, NoPreviewSeen) {
-  RunTest(false /* data_reduction_proxy_used */, false /* lite_page_received */,
-          false /* noscript_on */, false /* resource_loading_hints_on */,
-          false /* origin_opt_out */, false /* save_data_enabled */);
+  RunTest(PreviewsType::NONE, false /* lite_page_received */,
+          false /* lite_page_redirect_received */, false /* noscript_on */,
+          false /* resource_loading_hints_on */, false /* origin_opt_out */,
+          false /* save_data_enabled */,
+          base::nullopt /* navigation_restart_penalty */);
   NavigateToUntrackedUrl();
 
   ValidateUKM(false /* server_lofi_expected */,
               false /* client_lofi_expected */, false /* lite_page_expected */,
+              false /* lite_page_redirect_expected */,
               false /* noscript_expected */,
               false /* resource_loading_hints_expected */,
               0 /* opt_out_value */, false /* origin_opt_out_expected */,
-              false /* save_data_enabled_expected */);
+              false /* save_data_enabled_expected */,
+              base::nullopt /* navigation_restart_penalty */);
 }
 
 TEST_F(PreviewsUKMObserverTest, UntrackedPreviewTypeOptOut) {
-  RunTest(false /* data_reduction_proxy_used */, false /* lite_page_received */,
-          false /* noscript_on */, false /* resource_loading_hints_on */,
-          false /* origin_opt_out */, false /* save_data_enabled */);
+  RunTest(PreviewsType::NONE, false /* lite_page_received */,
+          false /* lite_page_redirect_received */, false /* noscript_on */,
+          false /* resource_loading_hints_on */, false /* origin_opt_out */,
+          false /* save_data_enabled */,
+          base::nullopt /* navigation_restart_penalty */);
   observer()->BroadcastEventToObservers(PreviewsUITabHelper::OptOutEventKey());
   NavigateToUntrackedUrl();
 
   // Opt out should not be added since we don't track this type.
   ValidateUKM(false /* server_lofi_expected */,
               false /* client_lofi_expected */, false /* lite_page_expected */,
+              false /* lite_page_redirect_expected */,
               false /* noscript_expected */,
               false /* resource_loading_hints_expected */,
               0 /* opt_out_value */, false /* origin_opt_out_expected */,
-              false /* save_data_enabled_expected */);
+              false /* save_data_enabled_expected */,
+              base::nullopt /* navigation_restart_penalty */);
 }
 
 TEST_F(PreviewsUKMObserverTest, LitePageSeen) {
-  RunTest(true /* data_reduction_proxy_used */, true /* lite_page_received */,
-          false /* noscript_on */, false /* resource_loading_hints_on */,
-          false /* origin_opt_out */, false /* save_data_enabled */);
+  RunTest(PreviewsType::NONE, true /* lite_page_received */,
+          false /* lite_page_redirect_received */, false /* noscript_on */,
+          false /* resource_loading_hints_on */, false /* origin_opt_out */,
+          false /* save_data_enabled */,
+          base::nullopt /* navigation_restart_penalty */);
 
   NavigateToUntrackedUrl();
 
   ValidateUKM(false /* server_lofi_expected */,
               false /* client_lofi_expected */, true /* lite_page_expected */,
+              false /* lite_page_redirect_expected */,
               false /* noscript_expected */,
               false /* resource_loading_hints_expected */,
               0 /* opt_out_value */, false /* origin_opt_out_expected */,
-              false /* save_data_enabled_expected */);
+              false /* save_data_enabled_expected */,
+              base::nullopt /* navigation_restart_penalty */);
 }
 
 TEST_F(PreviewsUKMObserverTest, LitePageOptOut) {
@@ -277,19 +308,23 @@ TEST_F(PreviewsUKMObserverTest, LitePageOptOut) {
       {previews::features::
            kAndroidOmniboxPreviewsBadge} /* disabled features */);
 
-  RunTest(true /* data_reduction_proxy_used */, true /* lite_page_received */,
-          false /* noscript_on */, false /* resource_loading_hints_on */,
-          false /* origin_opt_out */, false /* save_data_enabled */);
+  RunTest(PreviewsType::LITE_PAGE, true /* lite_page_received */,
+          false /* lite_page_redirect_received */, false /* noscript_on */,
+          false /* resource_loading_hints_on */, false /* origin_opt_out */,
+          false /* save_data_enabled */,
+          base::nullopt /* navigation_restart_penalty */);
 
   observer()->BroadcastEventToObservers(PreviewsUITabHelper::OptOutEventKey());
   NavigateToUntrackedUrl();
 
   ValidateUKM(false /* server_lofi_expected */,
               false /* client_lofi_expected */, true /* lite_page_expected */,
+              false /* lite_page_redirect_expected */,
               false /* noscript_expected */,
               false /* resource_loading_hints_expected */,
               1 /* opt_out_value */, false /* origin_opt_out_expected */,
-              false /* save_data_enabled_expected */);
+              false /* save_data_enabled_expected */,
+              base::nullopt /* navigation_restart_penalty */);
 }
 
 TEST_F(PreviewsUKMObserverTest, LitePageOptOutChip) {
@@ -298,34 +333,111 @@ TEST_F(PreviewsUKMObserverTest, LitePageOptOutChip) {
       {previews::features::kAndroidOmniboxPreviewsBadge} /* enabled features */,
       {} /*disabled features */);
 
-  RunTest(true /* data_reduction_proxy_used */, true /* lite_page_received */,
-          false /* noscript_on */, false /* resource_loading_hints_on */,
-          false /* origin_opt_out */, false /* save_data_enabled */);
+  RunTest(PreviewsType::LITE_PAGE, true /* lite_page_received */,
+          false /* lite_page_redirect_received */, false /* noscript_on */,
+          false /* resource_loading_hints_on */, false /* origin_opt_out */,
+          false /* save_data_enabled */,
+          base::nullopt /* navigation_restart_penalty */);
 
   observer()->BroadcastEventToObservers(PreviewsUITabHelper::OptOutEventKey());
   NavigateToUntrackedUrl();
 
   ValidateUKM(false /* server_lofi_expected */,
               false /* client_lofi_expected */, true /* lite_page_expected */,
+              false /* lite_page_redirect_expected */,
               false /* noscript_expected */,
               false /* resource_loading_hints_expected */,
               2 /* opt_out_value */, false /* origin_opt_out_expected */,
-              false /* save_data_enabled_expected */);
+              false /* save_data_enabled_expected */,
+              base::nullopt /* navigation_restart_penalty */);
 }
 
-TEST_F(PreviewsUKMObserverTest, NoScriptSeen) {
-  RunTest(false /* data_reduction_proxy_used */, false /* lite_page_received */,
-          true /* noscript_on */, false /* resource_loading_hints_on */,
-          false /* origin_opt_out */, false /* save_data_enabled */);
+TEST_F(PreviewsUKMObserverTest, LitePageRedirectSeen) {
+  RunTest(PreviewsType::NONE, false /* lite_page_received */,
+          true /* lite_page_redirect_received */, false /* noscript_on */,
+          false /* resource_loading_hints_on */, false /* origin_opt_out */,
+          false /* save_data_enabled */,
+          base::nullopt /* navigation_restart_penalty */);
 
   NavigateToUntrackedUrl();
 
   ValidateUKM(false /* server_lofi_expected */,
               false /* client_lofi_expected */, false /* lite_page_expected */,
-              true /* noscript_expected */,
+              true /* lite_page_redirect_expected */,
+              false /* noscript_expected */,
               false /* resource_loading_hints_expected */,
               0 /* opt_out_value */, false /* origin_opt_out_expected */,
-              false /* save_data_enabled_expected */);
+              false /* save_data_enabled_expected */,
+              base::nullopt /* navigation_restart_penalty */);
+}
+
+TEST_F(PreviewsUKMObserverTest, LitePageRedirectOptOut) {
+  base::test::ScopedFeatureList scoped_feature_list;
+  scoped_feature_list.InitWithFeatures(
+      {} /* enabled features */,
+      {previews::features::
+           kAndroidOmniboxPreviewsBadge} /* disabled features */);
+
+  RunTest(PreviewsType::LITE_PAGE_REDIRECT, false /* lite_page_received */,
+          true /* lite_page_redirect_received */, false /* noscript_on */,
+          false /* resource_loading_hints_on */, false /* origin_opt_out */,
+          false /* save_data_enabled */,
+          base::nullopt /* navigation_restart_penalty */);
+
+  observer()->BroadcastEventToObservers(PreviewsUITabHelper::OptOutEventKey());
+  NavigateToUntrackedUrl();
+
+  ValidateUKM(false /* server_lofi_expected */,
+              false /* client_lofi_expected */, false /* lite_page_expected */,
+              true /* lite_page_redirect_expected */,
+              false /* noscript_expected */,
+              false /* resource_loading_hints_expected */,
+              1 /* opt_out_value */, false /* origin_opt_out_expected */,
+              false /* save_data_enabled_expected */,
+              base::nullopt /* navigation_restart_penalty */);
+}
+
+TEST_F(PreviewsUKMObserverTest, LitePageRedirectOptOutChip) {
+  base::test::ScopedFeatureList scoped_feature_list;
+  scoped_feature_list.InitWithFeatures(
+      {previews::features::kAndroidOmniboxPreviewsBadge} /* enabled features */,
+      {} /*disabled features */);
+
+  RunTest(PreviewsType::LITE_PAGE_REDIRECT, false /* lite_page_received */,
+          true /* lite_page_redirect_received */, false /* noscript_on */,
+          false /* resource_loading_hints_on */, false /* origin_opt_out */,
+          false /* save_data_enabled */,
+          base::nullopt /* navigation_restart_penalty */);
+
+  observer()->BroadcastEventToObservers(PreviewsUITabHelper::OptOutEventKey());
+  NavigateToUntrackedUrl();
+
+  ValidateUKM(false /* server_lofi_expected */,
+              false /* client_lofi_expected */, false /* lite_page_expected */,
+              true /* lite_page_redirect_expected */,
+              false /* noscript_expected */,
+              false /* resource_loading_hints_expected */,
+              2 /* opt_out_value */, false /* origin_opt_out_expected */,
+              false /* save_data_enabled_expected */,
+              base::nullopt /* navigation_restart_penalty */);
+}
+
+TEST_F(PreviewsUKMObserverTest, NoScriptSeen) {
+  RunTest(PreviewsType::NOSCRIPT, false /* lite_page_received */,
+          false /* lite_page_redirect_received */, true /* noscript_on */,
+          false /* resource_loading_hints_on */, false /* origin_opt_out */,
+          false /* save_data_enabled */,
+          base::nullopt /* navigation_restart_penalty */);
+
+  NavigateToUntrackedUrl();
+
+  ValidateUKM(
+      false /* server_lofi_expected */, false /* client_lofi_expected */,
+      false /* lite_page_expected */, false /* lite_page_redirect_expected */,
+      true /* noscript_expected */, false /* resource_loading_hints_expected */,
+      0 /* opt_out_value */, false /* origin_opt_out_expected */,
+      false /* save_data_enabled_expected */,
+      base::nullopt /* navigation_restart_penalty */);
 }
 
 TEST_F(PreviewsUKMObserverTest, NoScriptOptOut) {
@@ -335,19 +447,22 @@ TEST_F(PreviewsUKMObserverTest, NoScriptOptOut) {
       {previews::features::
            kAndroidOmniboxPreviewsBadge} /* disabled features */);
 
-  RunTest(false /* data_reduction_proxy_used */, false /* lite_page_received */,
-          true /* noscript_on */, false /* resource_loading_hints_on */,
-          false /* origin_opt_out */, false /* save_data_enabled */);
+  RunTest(PreviewsType::NOSCRIPT, false /* lite_page_received */,
+          false /* lite_page_redirect_received */, true /* noscript_on */,
+          false /* resource_loading_hints_on */, false /* origin_opt_out */,
+          false /* save_data_enabled */,
+          base::nullopt /* navigation_restart_penalty */);
 
   observer()->BroadcastEventToObservers(PreviewsUITabHelper::OptOutEventKey());
   NavigateToUntrackedUrl();
 
-  ValidateUKM(false /* server_lofi_expected */,
-              false /* client_lofi_expected */, false /* lite_page_expected */,
-              true /* noscript_expected */,
-              false /* resource_loading_hints_expected */,
-              1 /* opt_out_value */, false /* origin_opt_out_expected */,
-              false /* save_data_enabled_expected */);
+  ValidateUKM(
+      false /* server_lofi_expected */, false /* client_lofi_expected */,
+      false /* lite_page_expected */, false /* lite_page_redirect_expected */,
+      true /* noscript_expected */, false /* resource_loading_hints_expected */,
+      1 /* opt_out_value */, false /* origin_opt_out_expected */,
+      false /* save_data_enabled_expected */,
+      base::nullopt /* navigation_restart_penalty */);
 }
 
 TEST_F(PreviewsUKMObserverTest, NoScriptOptOutChip) {
@@ -356,34 +471,40 @@ TEST_F(PreviewsUKMObserverTest, NoScriptOptOutChip) {
       {previews::features::kAndroidOmniboxPreviewsBadge} /* enabled features */,
       {} /*disabled features */);
 
-  RunTest(false /* data_reduction_proxy_used */, false /* lite_page_received */,
-          true /* noscript_on */, false /* resource_loading_hints_on */,
-          false /* origin_opt_out */, false /* save_data_enabled */);
+  RunTest(PreviewsType::NOSCRIPT, false /* lite_page_received */,
+          false /* lite_page_redirect_received */, true /* noscript_on */,
+          false /* resource_loading_hints_on */, false /* origin_opt_out */,
+          false /* save_data_enabled */,
+          base::nullopt /* navigation_restart_penalty */);
 
   observer()->BroadcastEventToObservers(PreviewsUITabHelper::OptOutEventKey());
   NavigateToUntrackedUrl();
 
-  ValidateUKM(false /* server_lofi_expected */,
-              false /* client_lofi_expected */, false /* lite_page_expected */,
-              true /* noscript_expected */,
-              false /* resource_loading_hints_expected */,
-              2 /* opt_out_value */, false /* origin_opt_out_expected */,
-              false /* save_data_enabled_expected */);
+  ValidateUKM(
+      false /* server_lofi_expected */, false /* client_lofi_expected */,
+      false /* lite_page_expected */, false /* lite_page_redirect_expected */,
+      true /* noscript_expected */, false /* resource_loading_hints_expected */,
+      2 /* opt_out_value */, false /* origin_opt_out_expected */,
+      false /* save_data_enabled_expected */,
+      base::nullopt /* navigation_restart_penalty */);
 }
 
 TEST_F(PreviewsUKMObserverTest, ResourceLoadingHintsSeen) {
-  RunTest(false /* data_reduction_proxy_used */, false /* lite_page_received */,
-          false /* noscript_on */, true /* resource_loading_hints_on */,
-          false /* origin_opt_out */, false /* save_data_enabled */);
+  RunTest(PreviewsType::RESOURCE_LOADING_HINTS, false /* lite_page_received */,
+          false /* lite_page_redirect_received */, false /* noscript_on */,
+          true /* resource_loading_hints_on */, false /* origin_opt_out */,
+          false /* save_data_enabled */,
+          base::nullopt /* navigation_restart_penalty */);
 
   NavigateToUntrackedUrl();
 
-  ValidateUKM(false /* server_lofi_expected */,
-              false /* client_lofi_expected */, false /* lite_page_expected */,
-              false /* noscript_expected */,
-              true /* resource_loading_hints_expected */, 0 /* opt_out_value */,
-              false /* origin_opt_out_expected */,
-              false /* save_data_enabled_expected */);
+  ValidateUKM(
+      false /* server_lofi_expected */, false /* client_lofi_expected */,
+      false /* lite_page_expected */, false /* lite_page_redirect_expected */,
+      false /* noscript_expected */, true /* resource_loading_hints_expected */,
+      0 /* opt_out_value */, false /* origin_opt_out_expected */,
+      false /* save_data_enabled_expected */,
+      base::nullopt /* navigation_restart_penalty */);
 }
 
 TEST_F(PreviewsUKMObserverTest, ResourceLoadingHintsOptOut) {
@@ -393,19 +514,22 @@ TEST_F(PreviewsUKMObserverTest, ResourceLoadingHintsOptOut) {
       {previews::features::
            kAndroidOmniboxPreviewsBadge} /* disabled features */);
 
-  RunTest(false /* data_reduction_proxy_used */, false /* lite_page_received */,
-          false /* noscript_on */, true /* resource_loading_hints_on */,
-          false /* origin_opt_out */, false /* save_data_enabled */);
+  RunTest(PreviewsType::RESOURCE_LOADING_HINTS, false /* lite_page_received */,
+          false /* lite_page_redirect_received */, false /* noscript_on */,
+          true /* resource_loading_hints_on */, false /* origin_opt_out */,
+          false /* save_data_enabled */,
+          base::nullopt /* navigation_restart_penalty */);
 
   observer()->BroadcastEventToObservers(PreviewsUITabHelper::OptOutEventKey());
   NavigateToUntrackedUrl();
 
-  ValidateUKM(false /* server_lofi_expected */,
-              false /* client_lofi_expected */, false /* lite_page_expected */,
-              false /* noscript_expected */,
-              true /* resource_loading_hints_expected */, 1 /* opt_out_value */,
-              false /* origin_opt_out_expected */,
-              false /* save_data_enabled_expected */);
+  ValidateUKM(
+      false /* server_lofi_expected */, false /* client_lofi_expected */,
+      false /* lite_page_expected */, false /* lite_page_redirect_expected */,
+      false /* noscript_expected */, true /* resource_loading_hints_expected */,
+      1 /* opt_out_value */, false /* origin_opt_out_expected */,
+      false /* save_data_enabled_expected */,
+      base::nullopt /* navigation_restart_penalty */);
 }
 
 TEST_F(PreviewsUKMObserverTest, ResourceLoadingHintsOptOutChip) {
@@ -414,25 +538,30 @@ TEST_F(PreviewsUKMObserverTest, ResourceLoadingHintsOptOutChip) {
       {previews::features::kAndroidOmniboxPreviewsBadge} /* enabled features */,
       {} /*disabled features */);
 
-  RunTest(false /* data_reduction_proxy_used */, false /* lite_page_received */,
-          false /* noscript_on */, true /* resource_loading_hints_on */,
-          false /* origin_opt_out */, false /* save_data_enabled */);
+  RunTest(PreviewsType::RESOURCE_LOADING_HINTS, false /* lite_page_received */,
+          false /* lite_page_redirect_received */, false /* noscript_on */,
+          true /* resource_loading_hints_on */, false /* origin_opt_out */,
+          false /* save_data_enabled */,
+          base::nullopt /* navigation_restart_penalty */);
 
   observer()->BroadcastEventToObservers(PreviewsUITabHelper::OptOutEventKey());
   NavigateToUntrackedUrl();
 
-  ValidateUKM(false /* server_lofi_expected */,
-              false /* client_lofi_expected */, false /* lite_page_expected */,
-              false /* noscript_expected */,
-              true /* resource_loading_hints_expected */, 2 /* opt_out_value */,
-              false /* origin_opt_out_expected */,
-              false /* save_data_enabled_expected */);
+  ValidateUKM(
+      false /* server_lofi_expected */, false /* client_lofi_expected */,
+      false /* lite_page_expected */, false /* lite_page_redirect_expected */,
+      false /* noscript_expected */, true /* resource_loading_hints_expected */,
+      2 /* opt_out_value */, false /* origin_opt_out_expected */,
+      false /* save_data_enabled_expected */,
+      base::nullopt /* navigation_restart_penalty */);
 }
 
 TEST_F(PreviewsUKMObserverTest, ClientLoFiSeen) {
-  RunTest(false /* data_reduction_proxy_used */, false /* lite_page_received */,
-          false /* noscript_on */, false /* resource_loading_hints_on */,
-          false /* origin_opt_out */, false /* save_data_enabled */);
+  RunTest(PreviewsType::LOFI, false /* lite_page_received */,
+          false /* lite_page_redirect_received */, false /* noscript_on */,
+          false /* resource_loading_hints_on */, false /* origin_opt_out */,
+          false /* save_data_enabled */,
+          base::nullopt /* navigation_restart_penalty */);
 
   std::unique_ptr<data_reduction_proxy::DataReductionProxyData> data =
       std::make_unique<data_reduction_proxy::DataReductionProxyData>();
@@ -461,10 +590,13 @@ TEST_F(PreviewsUKMObserverTest, ClientLoFiSeen) {
   NavigateToUntrackedUrl();
 
   ValidateUKM(false /* server_lofi_expected */, true /* client_lofi_expected */,
-              false /* lite_page_expected */, false /* noscript_expected */,
+              false /* lite_page_expected */,
+              false /* lite_page_redirect_expected */,
+              false /* noscript_expected */,
               false /* resource_loading_hints_expected */,
               0 /* opt_out_value */, false /* origin_opt_out_expected */,
-              false /* save_data_enabled_expected */);
+              false /* save_data_enabled_expected */,
+              base::nullopt /* navigation_restart_penalty */);
 }
 
 TEST_F(PreviewsUKMObserverTest, ClientLoFiOptOut) {
@@ -474,9 +606,11 @@ TEST_F(PreviewsUKMObserverTest, ClientLoFiOptOut) {
       {previews::features::
            kAndroidOmniboxPreviewsBadge} /* disabled features */);
 
-  RunTest(false /* data_reduction_proxy_used */, false /* lite_page_received */,
-          false /* noscript_on */, false /* resource_loading_hints_on */,
-          false /* origin_opt_out */, false /* save_data_enabled */);
+  RunTest(PreviewsType::LOFI, false /* lite_page_received */,
+          false /* lite_page_redirect_received */, false /* noscript_on */,
+          false /* resource_loading_hints_on */, false /* origin_opt_out */,
+          false /* save_data_enabled */,
+          base::nullopt /* navigation_restart_penalty */);
 
   std::unique_ptr<data_reduction_proxy::DataReductionProxyData> data =
       std::make_unique<data_reduction_proxy::DataReductionProxyData>();
@@ -505,10 +639,13 @@ TEST_F(PreviewsUKMObserverTest, ClientLoFiOptOut) {
   NavigateToUntrackedUrl();
 
   ValidateUKM(false /* server_lofi_expected */, true /* client_lofi_expected */,
-              false /* lite_page_expected */, false /* noscript_expected */,
+              false /* lite_page_expected */,
+              false /* lite_page_redirect_expected */,
+              false /* noscript_expected */,
               false /* resource_loading_hints_expected */,
               1 /* opt_out_value */, false /* origin_opt_out_expected */,
-              false /* save_data_enabled_expected */);
+              false /* save_data_enabled_expected */,
+              base::nullopt /* navigation_restart_penalty */);
 }
 
 TEST_F(PreviewsUKMObserverTest, ClientLoFiOptOutChip) {
@@ -517,9 +654,11 @@ TEST_F(PreviewsUKMObserverTest, ClientLoFiOptOutChip) {
       {previews::features::kAndroidOmniboxPreviewsBadge} /* enabled features */,
       {} /*disabled features */);
 
-  RunTest(false /* data_reduction_proxy_used */, false /* lite_page_received */,
-          false /* noscript_on */, false /* resource_loading_hints_on */,
-          false /* origin_opt_out */, false /* save_data_enabled */);
+  RunTest(PreviewsType::LOFI, false /* lite_page_received */,
+          false /* lite_page_redirect_received */, false /* noscript_on */,
+          false /* resource_loading_hints_on */, false /* origin_opt_out */,
+          false /* save_data_enabled */,
+          base::nullopt /* navigation_restart_penalty */);
 
   std::unique_ptr<data_reduction_proxy::DataReductionProxyData> data =
       std::make_unique<data_reduction_proxy::DataReductionProxyData>();
@@ -548,16 +687,21 @@ TEST_F(PreviewsUKMObserverTest, ClientLoFiOptOutChip) {
   NavigateToUntrackedUrl();
 
   ValidateUKM(false /* server_lofi_expected */, true /* client_lofi_expected */,
-              false /* lite_page_expected */, false /* noscript_expected */,
+              false /* lite_page_expected */,
+              false /* lite_page_redirect_expected */,
+              false /* noscript_expected */,
               false /* resource_loading_hints_expected */,
               2 /* opt_out_value */, false /* origin_opt_out_expected */,
-              false /* save_data_enabled_expected */);
+              false /* save_data_enabled_expected */,
+              base::nullopt /* navigation_restart_penalty */);
 }
 
 TEST_F(PreviewsUKMObserverTest, ServerLoFiSeen) {
-  RunTest(true /* data_reduction_proxy_used */, false /* lite_page_received */,
-          false /* noscript_on */, false /* resource_loading_hints_on */,
-          false /* origin_opt_out */, false /* save_data_enabled */);
+  RunTest(PreviewsType::LOFI, false /* lite_page_received */,
+          false /* lite_page_redirect_received */, false /* noscript_on */,
+          false /* resource_loading_hints_on */, false /* origin_opt_out */,
+          false /* save_data_enabled */,
+          base::nullopt /* navigation_restart_penalty */);
 
   std::unique_ptr<data_reduction_proxy::DataReductionProxyData> data =
       std::make_unique<data_reduction_proxy::DataReductionProxyData>();
@@ -586,10 +730,13 @@ TEST_F(PreviewsUKMObserverTest, ServerLoFiSeen) {
   NavigateToUntrackedUrl();
 
   ValidateUKM(true /* server_lofi_expected */, false /* client_lofi_expected */,
-              false /* lite_page_expected */, false /* noscript_expected */,
+              false /* lite_page_expected */,
+              false /* lite_page_redirect_expected */,
+              false /* noscript_expected */,
               false /* resource_loading_hints_expected */,
               0 /* opt_out_value */, false /* origin_opt_out_expected */,
-              false /* save_data_enabled_expected */);
+              false /* save_data_enabled_expected */,
+              base::nullopt /* navigation_restart_penalty */);
 }
 
 TEST_F(PreviewsUKMObserverTest, ServerLoFiOptOut) {
@@ -599,9 +746,11 @@ TEST_F(PreviewsUKMObserverTest, ServerLoFiOptOut) {
       {previews::features::
            kAndroidOmniboxPreviewsBadge} /* disabled features */);
 
-  RunTest(true /* data_reduction_proxy_used */, false /* lite_page_received */,
-          false /* noscript_on */, false /* resource_loading_hints_on */,
-          false /* origin_opt_out */, false /* save_data_enabled */);
+  RunTest(PreviewsType::LOFI, false /* lite_page_received */,
+          false /* lite_page_redirect_received */, false /* noscript_on */,
+          false /* resource_loading_hints_on */, false /* origin_opt_out */,
+          false /* save_data_enabled */,
+          base::nullopt /* navigation_restart_penalty */);
 
   std::unique_ptr<data_reduction_proxy::DataReductionProxyData> data =
       std::make_unique<data_reduction_proxy::DataReductionProxyData>();
@@ -631,10 +780,13 @@ TEST_F(PreviewsUKMObserverTest, ServerLoFiOptOut) {
   NavigateToUntrackedUrl();
 
   ValidateUKM(true /* server_lofi_expected */, false /* client_lofi_expected */,
-              false /* lite_page_expected */, false /* noscript_expected */,
+              false /* lite_page_expected */,
+              false /* lite_page_redirect_expected */,
+              false /* noscript_expected */,
               false /* resource_loading_hints_expected */,
               1 /* opt_out_value */, false /* origin_opt_out_expected */,
-              false /* save_data_enabled_expected */);
+              false /* save_data_enabled_expected */,
+              base::nullopt /* navigation_restart_penalty */);
 }
 
 TEST_F(PreviewsUKMObserverTest, ServerLoFiOptOutChip) {
@@ -643,9 +795,11 @@ TEST_F(PreviewsUKMObserverTest, ServerLoFiOptOutChip) {
       {previews::features::kAndroidOmniboxPreviewsBadge} /* enabled features */,
       {} /*disabled features */);
 
-  RunTest(true /* data_reduction_proxy_used */, false /* lite_page_received */,
-          false /* noscript_on */, false /* resource_loading_hints_on */,
-          false /* origin_opt_out */, false /* save_data_enabled */);
+  RunTest(PreviewsType::LOFI, false /* lite_page_received */,
+          false /* lite_page_redirect_received */, false /* noscript_on */,
+          false /* resource_loading_hints_on */, false /* origin_opt_out */,
+          false /* save_data_enabled */,
+          base::nullopt /* navigation_restart_penalty */);
 
   std::unique_ptr<data_reduction_proxy::DataReductionProxyData> data =
       std::make_unique<data_reduction_proxy::DataReductionProxyData>();
@@ -675,16 +829,21 @@ TEST_F(PreviewsUKMObserverTest, ServerLoFiOptOutChip) {
   NavigateToUntrackedUrl();
 
   ValidateUKM(true /* server_lofi_expected */, false /* client_lofi_expected */,
-              false /* lite_page_expected */, false /* noscript_expected */,
+              false /* lite_page_expected */,
+              false /* lite_page_redirect_expected */,
+              false /* noscript_expected */,
               false /* resource_loading_hints_expected */,
               2 /* opt_out_value */, false /* origin_opt_out_expected */,
-              false /* save_data_enabled_expected */);
+              false /* save_data_enabled_expected */,
+              base::nullopt /* navigation_restart_penalty */);
 }
 
 TEST_F(PreviewsUKMObserverTest, BothLoFiSeen) {
-  RunTest(true /* data_reduction_proxy_used */, false /* lite_page_received */,
-          false /* noscript_on */, false /* resource_loading_hints_on */,
-          false /* origin_opt_out */, false /* save_data_enabled */);
+  RunTest(PreviewsType::LOFI, false /* lite_page_received */,
+          false /* lite_page_redirect_received */, false /* noscript_on */,
+          false /* resource_loading_hints_on */, false /* origin_opt_out */,
+          false /* save_data_enabled */,
+          base::nullopt /* navigation_restart_penalty */);
 
   std::unique_ptr<data_reduction_proxy::DataReductionProxyData> data1 =
       std::make_unique<data_reduction_proxy::DataReductionProxyData>();
@@ -718,10 +877,13 @@ TEST_F(PreviewsUKMObserverTest, BothLoFiSeen) {
 
   NavigateToUntrackedUrl();
   ValidateUKM(true /* server_lofi_expected */, true /* client_lofi_expected */,
-              false /* lite_page_expected */, false /* noscript_expected */,
+              false /* lite_page_expected */,
+              false /* lite_page_redirect_expected */,
+              false /* noscript_expected */,
               false /* resource_loading_hints_expected */,
               0 /* opt_out_value */, false /* origin_opt_out_expected */,
-              false /* save_data_enabled_expected */);
+              false /* save_data_enabled_expected */,
+              base::nullopt /* navigation_restart_penalty */);
 }
 
 TEST_F(PreviewsUKMObserverTest, BothLoFiOptOut) {
@@ -731,9 +893,11 @@ TEST_F(PreviewsUKMObserverTest, BothLoFiOptOut) {
       {previews::features::
            kAndroidOmniboxPreviewsBadge} /* disabled features */);
 
-  RunTest(true /* data_reduction_proxy_used */, false /* lite_page_received */,
-          false /* noscript_on */, false /* resource_loading_hints_on */,
-          false /* origin_opt_out */, false /* save_data_enabled */);
+  RunTest(PreviewsType::LOFI, false /* lite_page_received */,
+          false /* lite_page_redirect_received */, false /* noscript_on */,
+          false /* resource_loading_hints_on */, false /* origin_opt_out */,
+          false /* save_data_enabled */,
+          base::nullopt /* navigation_restart_penalty */);
 
   std::unique_ptr<data_reduction_proxy::DataReductionProxyData> data1 =
       std::make_unique<data_reduction_proxy::DataReductionProxyData>();
@@ -767,10 +931,13 @@ TEST_F(PreviewsUKMObserverTest, BothLoFiOptOut) {
   observer()->BroadcastEventToObservers(PreviewsUITabHelper::OptOutEventKey());
   NavigateToUntrackedUrl();
   ValidateUKM(true /* server_lofi_expected */, true /* client_lofi_expected */,
-              false /* lite_page_expected */, false /* noscript_expected */,
+              false /* lite_page_expected */,
+              false /* lite_page_redirect_expected */,
+              false /* noscript_expected */,
               false /* resource_loading_hints_expected */,
               1 /* opt_out_value */, false /* origin_opt_out_expected */,
-              false /* save_data_enabled_expected */);
+              false /* save_data_enabled_expected */,
+              base::nullopt /* navigation_restart_penalty */);
 }
 
 TEST_F(PreviewsUKMObserverTest, BothLoFiOptOutChip) {
@@ -779,9 +946,11 @@ TEST_F(PreviewsUKMObserverTest, BothLoFiOptOutChip) {
       {previews::features::kAndroidOmniboxPreviewsBadge} /* enabled features */,
       {} /*disabled features */);
 
-  RunTest(true /* data_reduction_proxy_used */, false /* lite_page_received */,
-          false /* noscript_on */, false /* resource_loading_hints_on */,
-          false /* origin_opt_out */, false /* save_data_enabled */);
+  RunTest(PreviewsType::LOFI, false /* lite_page_received */,
+          false /* lite_page_redirect_received */, false /* noscript_on */,
+          false /* resource_loading_hints_on */, false /* origin_opt_out */,
+          false /* save_data_enabled */,
+          base::nullopt /* navigation_restart_penalty */);
 
   std::unique_ptr<data_reduction_proxy::DataReductionProxyData> data1 =
       std::make_unique<data_reduction_proxy::DataReductionProxyData>();
@@ -815,70 +984,136 @@ TEST_F(PreviewsUKMObserverTest, BothLoFiOptOutChip) {
   observer()->BroadcastEventToObservers(PreviewsUITabHelper::OptOutEventKey());
   NavigateToUntrackedUrl();
   ValidateUKM(true /* server_lofi_expected */, true /* client_lofi_expected */,
-              false /* lite_page_expected */, false /* noscript_expected */,
+              false /* lite_page_expected */,
+              false /* lite_page_redirect_expected */,
+              false /* noscript_expected */,
               false /* resource_loading_hints_expected */,
               2 /* opt_out_value */, false /* origin_opt_out_expected */,
-              false /* save_data_enabled_expected */);
+              false /* save_data_enabled_expected */,
+              base::nullopt /* navigation_restart_penalty */);
 }
 
 TEST_F(PreviewsUKMObserverTest, OriginOptOut) {
-  RunTest(false /* data_reduction_proxy_used */, false /* lite_page_received */,
-          false /* noscript_on */, false /* resource_loading_hints_on */,
-          true /* origin_opt_out */, false /* save_data_enabled */);
+  RunTest(PreviewsType::NONE, false /* lite_page_received */,
+          false /* lite_page_redirect_received */, false /* noscript_on */,
+          false /* resource_loading_hints_on */, true /* origin_opt_out */,
+          false /* save_data_enabled */,
+          base::nullopt /* navigation_restart_penalty */);
 
   NavigateToUntrackedUrl();
 
   ValidateUKM(false /* server_lofi_expected */,
               false /* client_lofi_expected */, false /* lite_page_expected */,
+              false /* lite_page_redirect_expected */,
               false /* noscript_expected */,
               false /* resource_loading_hints_expected */,
               0 /* opt_out_value */, true /* origin_opt_out_expected */,
-              false /* save_data_enabled_expected */);
+              false /* save_data_enabled_expected */,
+              base::nullopt /* navigation_restart_penalty */);
 }
 
 TEST_F(PreviewsUKMObserverTest, DataSaverEnabled) {
-  RunTest(false /* data_reduction_proxy_used */, false /* lite_page_received */,
-          false /* noscript_on */, false /* resource_loading_hints_on */,
-          false /* origin_opt_out */, true /* save_data_enabled */);
+  RunTest(PreviewsType::NONE, false /* lite_page_received */,
+          false /* lite_page_redirect_received */, false /* noscript_on */,
+          false /* resource_loading_hints_on */, false /* origin_opt_out */,
+          true /* save_data_enabled */,
+          base::nullopt /* navigation_restart_penalty */);
 
   NavigateToUntrackedUrl();
 
   ValidateUKM(false /* server_lofi_expected */,
               false /* client_lofi_expected */, false /* lite_page_expected */,
+              false /* lite_page_redirect_expected */,
               false /* noscript_expected */,
               false /* resource_loading_hints_expected */,
               0 /* opt_out_value */, false /* origin_opt_out_expected */,
-              true /* save_data_enabled_expected */);
+              true /* save_data_enabled_expected */,
+              base::nullopt /* navigation_restart_penalty */);
+}
+
+// Navigation restart penalty can occur independently of a preview being
+// committed so we do not consider the opt out tests here.
+TEST_F(PreviewsUKMObserverTest, NavigationRestartPenaltySeen) {
+  RunTest(
+      PreviewsType::NONE, false /* lite_page_received */,
+      false /* lite_page_redirect_received */, false /* noscript_on */,
+      false /* resource_loading_hints_on */, false /* origin_opt_out */,
+      false /* save_data_enabled */,
+      base::TimeDelta::FromMilliseconds(1337) /* navigation_restart_penalty */);
+
+  NavigateToUntrackedUrl();
+
+  ValidateUKM(
+      false /* server_lofi_expected */, false /* client_lofi_expected */,
+      false /* lite_page_expected */, false /* lite_page_redirect_expected */,
+      false /* noscript_expected */,
+      false /* resource_loading_hints_expected */, 0 /* opt_out_value */,
+      false /* origin_opt_out_expected */,
+      false /* save_data_enabled_expected */,
+      base::TimeDelta::FromMilliseconds(1337) /* navigation_restart_penalty */);
 }
 
 TEST_F(PreviewsUKMObserverTest, CheckReportingForHidden) {
-  RunTest(false /* data_reduction_proxy_used */, false /* lite_page_received */,
-          false /* noscript_on */, false /* resource_loading_hints_on */,
-          false /* origin_opt_out */, true /* save_data_enabled */);
+  RunTest(PreviewsType::NONE, false /* lite_page_received */,
+          false /* lite_page_redirect_received */, false /* noscript_on */,
+          false /* resource_loading_hints_on */, false /* origin_opt_out */,
+          true /* save_data_enabled */,
+          base::nullopt /* navigation_restart_penalty */);
 
   web_contents()->WasHidden();
 
   ValidateUKM(false /* server_lofi_expected */,
               false /* client_lofi_expected */, false /* lite_page_expected */,
+              false /* lite_page_redirect_expected */,
               false /* noscript_expected */,
               false /* resource_loading_hints_expected */,
               0 /* opt_out_value */, false /* origin_opt_out_expected */,
-              true /* save_data_enabled_expected */);
+              true /* save_data_enabled_expected */,
+              base::nullopt /* navigation_restart_penalty */);
 }
 
 TEST_F(PreviewsUKMObserverTest, CheckReportingForFlushMetrics) {
-  RunTest(false /* data_reduction_proxy_used */, false /* lite_page_received */,
-          false /* noscript_on */, false /* resource_loading_hints_on */,
-          false /* origin_opt_out */, true /* save_data_enabled */);
+  RunTest(PreviewsType::NONE, false /* lite_page_received */,
+          false /* lite_page_redirect_received */, false /* noscript_on */,
+          false /* resource_loading_hints_on */, false /* origin_opt_out */,
+          true /* save_data_enabled */,
+          base::nullopt /* navigation_restart_penalty */);
 
   SimulateAppEnterBackground();
 
   ValidateUKM(false /* server_lofi_expected */,
               false /* client_lofi_expected */, false /* lite_page_expected */,
+              false /* lite_page_redirect_expected */,
               false /* noscript_expected */,
               false /* resource_loading_hints_expected */,
               0 /* opt_out_value */, false /* origin_opt_out_expected */,
-              true /* save_data_enabled_expected */);
+              true /* save_data_enabled_expected */,
+              base::nullopt /* navigation_restart_penalty */);
+}
+
+TEST_F(PreviewsUKMObserverTest, TestPageEndReasonUMA) {
+  for (int i = static_cast<int>(PreviewsType::NONE);
+       i < static_cast<int>(PreviewsType::LAST); i++) {
+    PreviewsType type = static_cast<PreviewsType>(i);
+    if (type == PreviewsType::DEPRECATED_AMP_REDIRECTION)
+      continue;
+
+    base::HistogramTester tester;
+    RunTest(type, false /* lite_page_received */,
+            false /* lite_page_redirect_received */, false /* noscript_on */,
+            false /* resource_loading_hints_on */, false /* origin_opt_out */,
+            false /* save_data_enabled */,
+            base::nullopt /* navigation_restart_penalty */);
+
+    NavigateToUntrackedUrl();
+
+    tester.ExpectUniqueSample(
+        "Previews.PageEndReason",
+        page_load_metrics::PageEndReason::END_NEW_NAVIGATION, 1);
+    tester.ExpectUniqueSample(
+        "Previews.PageEndReason." + GetStringNameForType(type),
+        page_load_metrics::PageEndReason::END_NEW_NAVIGATION, 1);
+  }
 }
 
 }  // namespace

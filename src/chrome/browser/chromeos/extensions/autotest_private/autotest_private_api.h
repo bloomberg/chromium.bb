@@ -5,10 +5,15 @@
 #ifndef CHROME_BROWSER_CHROMEOS_EXTENSIONS_AUTOTEST_PRIVATE_AUTOTEST_PRIVATE_API_H_
 #define CHROME_BROWSER_CHROMEOS_EXTENSIONS_AUTOTEST_PRIVATE_AUTOTEST_PRIVATE_API_H_
 
+#include <memory>
 #include <string>
+#include <vector>
 
+#include "ash/public/cpp/assistant/assistant_state_proxy.h"
+#include "ash/public/cpp/assistant/default_voice_interaction_observer.h"
 #include "ash/public/interfaces/ash_message_center_controller.mojom.h"
 #include "base/compiler_specific.h"
+#include "base/timer/timer.h"
 #include "chrome/browser/chromeos/printing/cups_printers_manager.h"
 #include "chrome/browser/extensions/chrome_extension_function.h"
 #include "chromeos/services/machine_learning/public/mojom/machine_learning_service.mojom.h"
@@ -21,7 +26,7 @@ class Notification;
 }
 
 namespace crostini {
-enum class ConciergeClientResult;
+enum class CrostiniResult;
 }
 
 namespace extensions {
@@ -231,6 +236,14 @@ class AutotestPrivateGetHistogramFunction : public UIThreadExtensionFunction {
  private:
   ~AutotestPrivateGetHistogramFunction() override;
   ResponseAction Run() override;
+
+  // Sends an asynchronous response containing data for the histogram named
+  // |name|. Passed to content::FetchHistogramsAsynchronously() to be run after
+  // new data from other processes has been collected.
+  void RespondOnHistogramsFetched(const std::string& name);
+
+  // Creates a response with current data for the histogram named |name|.
+  ResponseValue GetHistogram(const std::string& name);
 };
 
 class AutotestPrivateIsAppShownFunction : public UIThreadExtensionFunction {
@@ -285,7 +298,7 @@ class AutotestPrivateRunCrostiniInstallerFunction
   ~AutotestPrivateRunCrostiniInstallerFunction() override;
   ResponseAction Run() override;
 
-  void CrostiniRestarted(crostini::ConciergeClientResult);
+  void CrostiniRestarted(crostini::CrostiniResult);
 };
 
 class AutotestPrivateRunCrostiniUninstallerFunction
@@ -298,7 +311,7 @@ class AutotestPrivateRunCrostiniUninstallerFunction
   ~AutotestPrivateRunCrostiniUninstallerFunction() override;
   ResponseAction Run() override;
 
-  void CrostiniRemoved(crostini::ConciergeClientResult);
+  void CrostiniRemoved(crostini::CrostiniResult);
 };
 
 class AutotestPrivateTakeScreenshotFunction : public UIThreadExtensionFunction {
@@ -361,6 +374,33 @@ class AutotestPrivateBootstrapMachineLearningServiceFunction
   void ConnectionError();
 
   chromeos::machine_learning::mojom::ModelPtr model_;
+};
+
+// Enable/disable the Google Assistant feature. This toggles the Assistant user
+// pref which will indirectly bring up or shut down the Assistant service.
+class AutotestPrivateSetAssistantEnabledFunction
+    : public UIThreadExtensionFunction,
+      public ash::DefaultVoiceInteractionObserver {
+ public:
+  AutotestPrivateSetAssistantEnabledFunction();
+  DECLARE_EXTENSION_FUNCTION("autotestPrivate.setAssistantEnabled",
+                             AUTOTESTPRIVATE_SETASSISTANTENABLED)
+
+ private:
+  ~AutotestPrivateSetAssistantEnabledFunction() override;
+  ResponseAction Run() override;
+
+  // ash::DefaultVoiceInteractionObserver overrides:
+  void OnVoiceInteractionStatusChanged(
+      ash::mojom::VoiceInteractionState state) override;
+
+  // Called when the Assistant service does not respond in a timely fashion. We
+  // will respond with an error.
+  void Timeout();
+
+  ash::AssistantStateProxy assistant_state_;
+  base::Optional<ash::mojom::VoiceInteractionState> expected_state_;
+  base::OneShotTimer timeout_timer_;
 };
 
 // The profile-keyed service that manages the autotestPrivate extension API.

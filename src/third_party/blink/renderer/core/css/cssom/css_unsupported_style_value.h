@@ -20,15 +20,23 @@ class CORE_EXPORT CSSUnsupportedStyleValue final : public CSSStyleValue {
       CSSPropertyID property,
       const AtomicString& custom_property_name,
       const String& css_text) {
-    return new CSSUnsupportedStyleValue(property, custom_property_name,
-                                        css_text);
+    return MakeGarbageCollected<CSSUnsupportedStyleValue>(
+        property, custom_property_name, css_text);
   }
   static CSSUnsupportedStyleValue* Create(
       CSSPropertyID property,
       const AtomicString& custom_property_name,
       const CSSValue& value) {
-    return new CSSUnsupportedStyleValue(property, custom_property_name,
-                                        value.CssText());
+    return MakeGarbageCollected<CSSUnsupportedStyleValue>(
+        property, custom_property_name, value.CssText());
+  }
+
+  CSSUnsupportedStyleValue(CSSPropertyID property,
+                           const AtomicString& custom_property_name,
+                           const String& css_text)
+      : property_(property), custom_property_name_(custom_property_name) {
+    SetCSSText(css_text);
+    DCHECK_EQ(property == CSSPropertyVariable, !custom_property_name.IsNull());
   }
 
   StyleValueType GetType() const override {
@@ -46,14 +54,6 @@ class CORE_EXPORT CSSUnsupportedStyleValue final : public CSSStyleValue {
   String toString() const final { return CSSText(); }
 
  private:
-  CSSUnsupportedStyleValue(CSSPropertyID property,
-                           const AtomicString& custom_property_name,
-                           const String& css_text)
-      : property_(property), custom_property_name_(custom_property_name) {
-    SetCSSText(css_text);
-    DCHECK_EQ(property == CSSPropertyVariable, !custom_property_name.IsNull());
-  }
-
   const CSSPropertyID property_;
   // Name is set when property_ is CSSPropertyVariable, otherwise it's
   // g_null_atom.

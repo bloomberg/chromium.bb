@@ -55,12 +55,9 @@ TransformFeedbackState::TransformFeedbackState(size_t maxIndexedBuffers)
       mVertexCapacity(0),
       mProgram(nullptr),
       mIndexedBuffers(maxIndexedBuffers)
-{
-}
+{}
 
-TransformFeedbackState::~TransformFeedbackState()
-{
-}
+TransformFeedbackState::~TransformFeedbackState() {}
 
 const OffsetBindingPointer<Buffer> &TransformFeedbackState::getIndexedBuffer(size_t idx) const
 {
@@ -92,7 +89,7 @@ void TransformFeedback::onDestroy(const Context *context)
     ASSERT(!mState.mProgram);
     for (size_t i = 0; i < mState.mIndexedBuffers.size(); i++)
     {
-        mState.mIndexedBuffers[i].set(context, nullptr);
+        mState.mIndexedBuffers[i].set(context, nullptr, 0, 0);
     }
 }
 
@@ -233,7 +230,7 @@ void TransformFeedback::detachBuffer(const Context *context, GLuint bufferName)
             {
                 mState.mIndexedBuffers[index]->onTFBindingChanged(context, false, true);
             }
-            mState.mIndexedBuffers[index].set(context, nullptr);
+            mState.mIndexedBuffers[index].set(context, nullptr, 0, 0);
             mImplementation->bindIndexedBuffer(index, mState.mIndexedBuffers[index]);
         }
     }

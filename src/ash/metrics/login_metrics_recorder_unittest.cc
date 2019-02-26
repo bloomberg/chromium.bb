@@ -46,8 +46,6 @@ class LoginMetricsRecorderTest : public LoginTestBase {
     histogram_tester_.reset(new base::HistogramTester());
   }
 
-  void TearDown() override { LoginTestBase::TearDown(); }
-
  protected:
   void EnableTabletMode(bool enable) {
     Shell::Get()->tablet_mode_controller()->EnableTabletModeWindowManager(
@@ -87,8 +85,8 @@ TEST_F(LoginMetricsRecorderTest, NoteActionButtonClick) {
 
   auto* contents = new LockContentsView(
       mojom::TrayActionState::kAvailable, LockScreen::ScreenType::kLock,
-      data_dispatcher(),
-      std::make_unique<FakeLoginDetachableBaseModel>(data_dispatcher()));
+      DataDispatcher(),
+      std::make_unique<FakeLoginDetachableBaseModel>(DataDispatcher()));
   SetUserCount(1);
   std::unique_ptr<views::Widget> widget = CreateWidgetWithContent(contents);
 

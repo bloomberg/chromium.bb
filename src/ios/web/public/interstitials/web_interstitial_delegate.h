@@ -32,26 +32,12 @@ class WebInterstitialDelegate {
   // Note that this is only called if the WebInterstitial was constructed with
   // |new_navigation| set to true.
   virtual void OverrideItem(NavigationItem* item) {}
-};
 
-// Provides HTML to an HTMLWebInterstitialImpl.
-class HtmlWebInterstitialDelegate : public WebInterstitialDelegate {
- public:
   // Returns the HTML that should be displayed in the page.
   virtual std::string GetHtmlContents() const = 0;
 
   // Invoked when a WebInterstitial receives a command via JavaScript.
   virtual void CommandReceived(const std::string& command) {}
-};
-
-// Provides a native content view to NativeWebInterstitialImpls.
-class NativeWebInterstitialDelegate : public WebInterstitialDelegate {
- public:
-  // Returns the content view for native interstitials.
-  virtual UIView* GetContentView() = 0;
-
-  // The desired background color for the interstitial's scroll view.
-  virtual UIColor* GetScrollViewBackgroundColor() const = 0;
 };
 
 }  // namespace web

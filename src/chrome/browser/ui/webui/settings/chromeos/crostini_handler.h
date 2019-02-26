@@ -11,7 +11,7 @@
 class Profile;
 
 namespace crostini {
-enum class ConciergeClientResult;
+enum class CrostiniResult;
 }
 
 namespace chromeos {

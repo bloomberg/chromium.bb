@@ -36,16 +36,17 @@ class SetNodeAttributeCommand final : public SimpleEditCommand {
   static SetNodeAttributeCommand* Create(Element* element,
                                          const QualifiedName& attribute,
                                          const AtomicString& value) {
-    return new SetNodeAttributeCommand(element, attribute, value);
+    return MakeGarbageCollected<SetNodeAttributeCommand>(element, attribute,
+                                                         value);
   }
 
-  void Trace(blink::Visitor*) override;
-
- private:
   SetNodeAttributeCommand(Element*,
                           const QualifiedName& attribute,
                           const AtomicString& value);
 
+  void Trace(blink::Visitor*) override;
+
+ private:
   void DoApply(EditingState*) override;
   void DoUnapply() override;
 

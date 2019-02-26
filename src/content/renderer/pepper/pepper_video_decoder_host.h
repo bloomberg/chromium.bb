@@ -125,6 +125,9 @@ class CONTENT_EXPORT PepperVideoDecoderHost
   bool software_fallback_allowed_ = false;
   bool software_fallback_used_ = false;
 
+  // Used for UMA stats; not frame-accurate.
+  gfx::Size coded_size_;
+
   int pending_texture_requests_ = 0;
 
   // Set after software decoder fallback to dismiss all outstanding texture

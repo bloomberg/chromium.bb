@@ -6,6 +6,7 @@
 #define ASH_ASSISTANT_ASSISTANT_UI_CONTROLLER_H_
 
 #include <map>
+#include <memory>
 #include <string>
 
 #include "ash/ash_export.h"
@@ -19,9 +20,10 @@
 #include "ash/assistant/ui/dialog_plate/dialog_plate.h"
 #include "ash/highlighter/highlighter_controller.h"
 #include "base/macros.h"
+#include "base/optional.h"
 #include "base/timer/timer.h"
 #include "ui/display/display_observer.h"
-#include "ui/events/event_handler.h"
+#include "ui/events/event_observer.h"
 #include "ui/gfx/geometry/rect.h"
 #include "ui/keyboard/keyboard_controller_observer.h"
 #include "ui/views/event_monitor.h"
@@ -56,7 +58,7 @@ class ASH_EXPORT AssistantUiController
       public HighlighterController::Observer,
       public keyboard::KeyboardControllerObserver,
       public display::DisplayObserver,
-      public ui::EventHandler {
+      public ui::EventObserver {
  public:
   explicit AssistantUiController(AssistantController* assistant_controller);
   ~AssistantUiController() override;
@@ -106,9 +108,11 @@ class ASH_EXPORT AssistantUiController
   void OnUrlOpened(const GURL& url, bool from_server) override;
 
   // AssistantUiModelObserver:
-  void OnUiVisibilityChanged(AssistantVisibility new_visibility,
-                             AssistantVisibility old_visibility,
-                             AssistantSource source) override;
+  void OnUiVisibilityChanged(
+      AssistantVisibility new_visibility,
+      AssistantVisibility old_visibility,
+      base::Optional<AssistantEntryPoint> entry_point,
+      base::Optional<AssistantExitPoint> exit_point) override;
 
   // keyboard::KeyboardControllerObserver:
   void OnKeyboardWorkspaceOccludedBoundsChanged(
@@ -118,21 +122,18 @@ class ASH_EXPORT AssistantUiController
   void OnDisplayMetricsChanged(const display::Display& display,
                                uint32_t changed_metrics) override;
 
-  // ui::EventHandler:
-  void OnMouseEvent(ui::MouseEvent* event) override;
-  void OnTouchEvent(ui::TouchEvent* event) override;
+  // ui::EventObserver:
+  void OnEvent(const ui::Event& event) override;
 
-  void ShowUi(AssistantSource source);
-  void HideUi(AssistantSource source);
-  void CloseUi(AssistantSource source);
-  void ToggleUi(AssistantSource source);
+  void ShowUi(AssistantEntryPoint entry_point);
+  void HideUi(AssistantExitPoint exit_point);
+  void CloseUi(AssistantExitPoint exit_point);
+  void ToggleUi(base::Optional<AssistantEntryPoint> entry_point,
+                base::Optional<AssistantExitPoint> exit_point);
 
   AssistantContainerView* GetViewForTest();
 
  private:
-  // Invoked on either a mouse or touch pressed event.
-  void OnPressedEvent(const ui::LocatedEvent& event);
-
   // Updates UI mode to |ui_mode| if specified. Otherwise UI mode is updated on
   // the basis of interaction/widget visibility state.
   void UpdateUiMode(base::Optional<AssistantUiMode> ui_mode = base::nullopt);

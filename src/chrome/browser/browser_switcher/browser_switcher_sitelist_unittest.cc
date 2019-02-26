@@ -16,11 +16,12 @@ namespace browser_switcher {
 
 namespace {
 
-base::Value StringArrayToValue(const std::vector<const char*>& strings) {
+std::unique_ptr<base::Value> StringArrayToValue(
+    const std::vector<const char*>& strings) {
   std::vector<base::Value> values(strings.size());
   std::transform(strings.begin(), strings.end(), values.begin(),
                  [](const char* s) { return base::Value(s); });
-  return base::Value(values);
+  return std::make_unique<base::Value>(values);
 }
 
 }  // namespace
@@ -31,12 +32,13 @@ class BrowserSwitcherSitelistTest : public testing::Test {
                   const std::vector<const char*>& url_greylist) {
     prefs_.registry()->RegisterListPref(prefs::kUrlList);
     prefs_.registry()->RegisterListPref(prefs::kUrlGreylist);
-    prefs_.Set(prefs::kUrlList, StringArrayToValue(url_list));
-    prefs_.Set(prefs::kUrlGreylist, StringArrayToValue(url_greylist));
+    prefs_.SetManagedPref(prefs::kUrlList, StringArrayToValue(url_list));
+    prefs_.SetManagedPref(prefs::kUrlGreylist,
+                          StringArrayToValue(url_greylist));
     sitelist_ = std::make_unique<BrowserSwitcherSitelistImpl>(&prefs_);
   }
 
-  PrefService* prefs() { return &prefs_; }
+  TestingPrefServiceSimple* prefs() { return &prefs_; }
   BrowserSwitcherSitelist* sitelist() { return sitelist_.get(); }
 
  private:
@@ -138,12 +140,26 @@ TEST_F(BrowserSwitcherSitelistTest, ShouldMatchAnySchema) {
 
 TEST_F(BrowserSwitcherSitelistTest, ShouldPickUpPrefChanges) {
   Initialize({}, {});
-  prefs()->Set(prefs::kUrlList, StringArrayToValue({"example.com"}));
-  prefs()->Set(prefs::kUrlGreylist, StringArrayToValue({"foo.example.com"}));
+  prefs()->SetManagedPref(prefs::kUrlList, StringArrayToValue({"example.com"}));
+  prefs()->SetManagedPref(prefs::kUrlGreylist,
+                          StringArrayToValue({"foo.example.com"}));
   EXPECT_TRUE(sitelist()->ShouldSwitch(GURL("http://example.com/")));
   EXPECT_TRUE(sitelist()->ShouldSwitch(GURL("http://bar.example.com/")));
   EXPECT_FALSE(sitelist()->ShouldSwitch(GURL("http://foo.example.com/")));
   EXPECT_FALSE(sitelist()->ShouldSwitch(GURL("http://google.com/")));
+}
+
+TEST_F(BrowserSwitcherSitelistTest, ShouldIgnoreNonManagedPrefs) {
+  Initialize({}, {});
+
+  prefs()->Set(prefs::kUrlList, *StringArrayToValue({"example.com"}));
+  EXPECT_FALSE(sitelist()->ShouldSwitch(GURL("http://example.com/")));
+
+  prefs()->SetManagedPref(prefs::kUrlList, StringArrayToValue({"example.com"}));
+  prefs()->Set(prefs::kUrlGreylist,
+               *StringArrayToValue({"morespecific.example.com"}));
+  EXPECT_TRUE(
+      sitelist()->ShouldSwitch(GURL("http://morespecific.example.com/")));
 }
 
 TEST_F(BrowserSwitcherSitelistTest, SetIeemSitelist) {

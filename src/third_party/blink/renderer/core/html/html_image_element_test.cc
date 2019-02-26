@@ -23,19 +23,19 @@ class HTMLImageElementTest : public PageTestBase {
 
 TEST_F(HTMLImageElementTest, width) {
   auto* image = HTMLImageElement::Create(GetDocument());
-  image->setAttribute(HTMLNames::widthAttr, "400");
+  image->setAttribute(html_names::kWidthAttr, "400");
   // TODO(yoav): `width` does not impact resourceWidth until we resolve
   // https://github.com/ResponsiveImagesCG/picture-element/issues/268
   EXPECT_EQ(500, image->GetResourceWidth().width);
-  image->setAttribute(HTMLNames::sizesAttr, "100vw");
+  image->setAttribute(html_names::kSizesAttr, "100vw");
   EXPECT_EQ(500, image->GetResourceWidth().width);
 }
 
 TEST_F(HTMLImageElementTest, sourceSize) {
   auto* image = HTMLImageElement::Create(GetDocument());
-  image->setAttribute(HTMLNames::widthAttr, "400");
+  image->setAttribute(html_names::kWidthAttr, "400");
   EXPECT_EQ(kViewportWidth, image->SourceSize(*image));
-  image->setAttribute(HTMLNames::sizesAttr, "50vw");
+  image->setAttribute(html_names::kSizesAttr, "50vw");
   EXPECT_EQ(250, image->SourceSize(*image));
 }
 

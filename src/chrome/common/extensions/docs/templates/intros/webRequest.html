@@ -1,9 +1,10 @@
 <h2 id="manifest">Manifest</h2>
 <p>You must declare the "webRequest" permission in the <a
   href="manifest">extension manifest</a> to use the web request
-API, along with <a href="declare_permissions">host permissions</a>
-for any hosts whose network requests you want to access. If you want to
-use the web request API in a blocking fashion, you need to request
+API, along with the necessary
+<a href="declare_permissions">host permissions</a>. To intercept a request, the
+extension needs to have access to both the requested URL and its initiator. If
+you want to use the web request API in a blocking fashion, you need to request
 the "webRequestBlocking" permission in addition.
 For example:</p>
 <pre data-filename="manifest.json">
@@ -55,12 +56,12 @@ event definitions:<br/>
   This event is informational and handled asynchronously. It does not allow
   modifying or cancelling the request.</dd>
   <dt><code>onHeadersReceived</code> (optionally synchronous)</dt>
-  <dd>Fires each time that an HTTP(S) response header is received. Due
-  to redirects and authentication requests this can happen multiple times per
+  <dd>Fires each time that an HTTP(S) response header is received. Due to
+  redirects and authentication requests this can happen multiple times per
   request. This event is intended to allow extensions to add, modify, and delete
-  response headers, such as incoming Set-Cookie headers. The caching directives
-  are processed before this event is triggered, so modifying headers such as
-  Cache-Control has no influence on the browser's cache.
+  response headers, such as incoming Content-Type headers. The caching
+  directives are processed before this event is triggered, so modifying headers
+  such as Cache-Control has no influence on the browser's cache.
   It also allows you to cancel or redirect the request.</dd>
   <dt><code>onAuthRequired</code> (optionally synchronous)</dt>
   <dd>Fires when a request requires authentication of the user. This event can
@@ -118,6 +119,32 @@ complete nor stable.
 </p>
 
 <p>
+<span class="availability">Starting from Chrome 72</span>, the following request
+headers are <strong>not provided</strong> and cannot be modified or removed
+without specifying <code>'extraHeaders'</code> in
+<code>opt_extraInfoSpec</code>:
+<ul>
+  <li>Accept-Language</li>
+  <li>Accept-Encoding</li>
+  <li>Referer</li>
+  <li>Cookie</li>
+</ul>
+</p>
+
+<p>
+<span class="availability">Starting from Chrome 72</span>, the Set-Cookie
+response header is <strong>not provided</strong> and cannot be modified or
+removed without specifying <code>'extraHeaders'</code> in
+<code>opt_extraInfoSpec</code>.
+</p>
+
+<p class="note">
+<strong>Note:</strong> Specifying <code>'extraHeaders'</code> in
+<code>opt_extraInfoSpec</code> may have a negative impact on performance, hence
+it should only be used when really necessary.
+<p>
+
+<p>
 The webRequest API only exposes requests that the extension has
 permission to see, given its
 <a href="declare_permissions">host permissions</a>.
@@ -155,6 +182,12 @@ webRequest model. Note that the API does <b>not intercept</b>:
   <li>WebSocket closing connection.</li>
 </ul>
 Redirects are <b>not supported</b> for WebSocket requests.
+</p>
+
+<p>
+<span class="availability">Starting from Chrome 72</span>, an extension will be
+able to intercept a request only if it has host permissions to both the
+requested URL and the request initiator.
 </p>
 
 <h2 id="concepts">Concepts</h2>

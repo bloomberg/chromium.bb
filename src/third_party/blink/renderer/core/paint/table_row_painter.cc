@@ -14,6 +14,7 @@
 #include "third_party/blink/renderer/core/paint/scoped_paint_state.h"
 #include "third_party/blink/renderer/core/paint/table_cell_painter.h"
 #include "third_party/blink/renderer/platform/graphics/paint/drawing_recorder.h"
+#include "third_party/blink/renderer/platform/graphics/paint/hit_test_display_item.h"
 
 namespace blink {
 
@@ -62,7 +63,7 @@ void TableRowPainter::HandleChangedPartialPaint(
       dirtied_columns ==
               layout_table_row_.Section()->FullTableEffectiveColumnSpan()
           ? kFullyPainted
-          : kMayBeClippedByPaintDirtyRect;
+          : kMayBeClippedByCullRect;
   layout_table_row_.GetMutableForPainting().UpdatePaintResult(
       paint_result, paint_info.GetCullRect());
 }
@@ -74,14 +75,18 @@ void TableRowPainter::RecordHitTestData(const PaintInfo& paint_info,
   if (paint_info.GetGlobalPaintFlags() & kGlobalPaintFlattenCompositingLayers)
     return;
 
+  // If an object is not visible, it does not participate in hit testing.
+  if (layout_table_row_.StyleRef().Visibility() != EVisibility::kVisible)
+    return;
+
   auto touch_action = layout_table_row_.EffectiveWhitelistedTouchAction();
   if (touch_action == TouchAction::kTouchActionAuto)
     return;
 
   auto rect = layout_table_row_.BorderBoxRect();
   rect.MoveBy(paint_offset);
-  HitTestData::RecordHitTestRect(paint_info.context, layout_table_row_,
-                                 HitTestRect(rect, touch_action));
+  HitTestDisplayItem::Record(paint_info.context, layout_table_row_,
+                             HitTestRect(rect, touch_action));
 }
 
 void TableRowPainter::PaintBoxDecorationBackground(

@@ -9,13 +9,14 @@
 #include "third_party/blink/renderer/core/offscreencanvas/offscreen_canvas.h"
 #include "third_party/blink/renderer/modules/canvas/htmlcanvas/canvas_context_creation_attributes_helpers.h"
 #include "third_party/blink/renderer/modules/canvas/htmlcanvas/canvas_context_creation_attributes_module.h"
+#include "third_party/blink/renderer/platform/histogram.h"
 
 namespace blink {
 
 void HTMLCanvasElementModule::getContext(
     HTMLCanvasElement& canvas,
     const String& type,
-    const CanvasContextCreationAttributesModule& attributes,
+    const CanvasContextCreationAttributesModule* attributes,
     ExceptionState& exception_state,
     RenderingContext& result) {
   if (canvas.SurfaceLayerBridge() && !canvas.LowLatencyEnabled()) {
@@ -37,16 +38,20 @@ void HTMLCanvasElementModule::getContext(
 OffscreenCanvas* HTMLCanvasElementModule::transferControlToOffscreen(
     HTMLCanvasElement& canvas,
     ExceptionState& exception_state) {
+  OffscreenCanvas* offscreen_canvas = nullptr;
   if (canvas.SurfaceLayerBridge()) {
     exception_state.ThrowDOMException(
         DOMExceptionCode::kInvalidStateError,
         "Cannot transfer control from a canvas for more than one time.");
-    return nullptr;
+  } else {
+    canvas.CreateLayer();
+    offscreen_canvas =
+        TransferControlToOffscreenInternal(canvas, exception_state);
   }
 
-  canvas.CreateLayer();
-
-  return TransferControlToOffscreenInternal(canvas, exception_state);
+  UMA_HISTOGRAM_BOOLEAN("Blink.OffscreenCanvas.TransferControlToOffscreen",
+                        bool(offscreen_canvas));
+  return offscreen_canvas;
 }
 
 OffscreenCanvas* HTMLCanvasElementModule::TransferControlToOffscreenInternal(
@@ -61,9 +66,9 @@ OffscreenCanvas* HTMLCanvasElementModule::TransferControlToOffscreenInternal(
   OffscreenCanvas* offscreen_canvas =
       OffscreenCanvas::Create(canvas.width(), canvas.height());
 
-  int canvas_id = DOMNodeIds::IdForNode(&canvas);
+  DOMNodeId canvas_id = DOMNodeIds::IdForNode(&canvas);
   offscreen_canvas->SetPlaceholderCanvasId(canvas_id);
-  canvas.RegisterPlaceholder(canvas_id);
+  canvas.RegisterPlaceholder(static_cast<int>(canvas_id));
 
   SurfaceLayerBridge* bridge = canvas.SurfaceLayerBridge();
   if (bridge) {

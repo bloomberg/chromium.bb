@@ -41,7 +41,7 @@ class VR_UI_EXPORT UiInputManager {
   };
 
   explicit UiInputManager(UiScene* scene);
-  ~UiInputManager();
+  virtual ~UiInputManager();
   void HandleInput(base::TimeTicks current_time,
                    const RenderInfo& render_info,
                    const ControllerModel& controller_model,
@@ -57,9 +57,7 @@ class VR_UI_EXPORT UiInputManager {
   void OnInputCommitted(const EditedText& info);
   void OnKeyboardHidden();
 
-  bool controller_resting_in_viewport() const {
-    return controller_resting_in_viewport_;
-  }
+  virtual bool ControllerRestingInViewport() const;
 
   void set_hit_test_strategy(HitTestStrategy strategy) {
     hit_test_strategy_ = strategy;

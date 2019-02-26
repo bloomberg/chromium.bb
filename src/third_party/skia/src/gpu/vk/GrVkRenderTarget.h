@@ -9,6 +9,8 @@
 #ifndef GrVkRenderTarget_DEFINED
 #define GrVkRenderTarget_DEFINED
 
+#include "GrVkVulkan.h"
+
 #include "GrVkImage.h"
 #include "GrRenderTarget.h"
 
@@ -36,6 +38,8 @@ public:
                                                            sk_sp<GrVkImageLayout>);
 
     ~GrVkRenderTarget() override;
+
+    GrBackendFormat backendFormat() const override { return this->getBackendFormat(); }
 
     const GrVkFramebuffer* framebuffer() const { return fFramebuffer; }
     const GrVkImageView* colorAttachmentView() const { return fColorAttachmentView; }

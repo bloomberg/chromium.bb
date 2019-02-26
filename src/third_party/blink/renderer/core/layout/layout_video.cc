@@ -33,8 +33,6 @@
 
 namespace blink {
 
-using namespace HTMLNames;
-
 LayoutVideo::LayoutVideo(HTMLVideoElement* video) : LayoutMedia(video) {
   SetIntrinsicSize(CalculateIntrinsicSize());
 }
@@ -66,7 +64,7 @@ void LayoutVideo::UpdateIntrinsicSize() {
   SetIntrinsicSize(size);
   SetPreferredLogicalWidthsDirty();
   SetNeedsLayoutAndFullPaintInvalidation(
-      LayoutInvalidationReason::kSizeChanged);
+      layout_invalidation_reason::kSizeChanged);
 }
 
 LayoutSize LayoutVideo::CalculateIntrinsicSize() {
@@ -203,7 +201,7 @@ void LayoutVideo::UpdateAfterLayout() {
   // Report violation of unsized-media policy.
   if (auto* video_element = ToHTMLVideoElementOrNull(GetNode())) {
     if (video_element->IsDefaultIntrinsicSize())
-      MediaElementParserHelpers::ReportUnsizedMediaViolation(this);
+      media_element_parser_helpers::ReportUnsizedMediaViolation(this);
   }
 }
 

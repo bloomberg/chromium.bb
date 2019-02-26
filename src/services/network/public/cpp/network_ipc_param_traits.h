@@ -89,8 +89,8 @@ struct COMPONENT_EXPORT(NETWORK_CPP_BASE)
 
 #endif  // INTERNAL_SERVICES_NETWORK_PUBLIC_CPP_NETWORK_IPC_PARAM_TRAITS_H_
 
-IPC_ENUM_TRAITS_MAX_VALUE(network::mojom::CORSError,
-                          network::mojom::CORSError::kMaxValue)
+IPC_ENUM_TRAITS_MAX_VALUE(network::mojom::CorsError,
+                          network::mojom::CorsError::kMaxValue)
 
 IPC_ENUM_TRAITS_MAX_VALUE(network::mojom::FetchCredentialsMode,
                           network::mojom::FetchCredentialsMode::kMaxValue)
@@ -104,10 +104,10 @@ IPC_ENUM_TRAITS_MAX_VALUE(network::mojom::FetchRequestMode,
 IPC_ENUM_TRAITS_MAX_VALUE(network::mojom::RequestContextFrameType,
                           network::mojom::RequestContextFrameType::kMaxValue)
 
-IPC_ENUM_TRAITS_MAX_VALUE(network::mojom::CORSPreflightPolicy,
-                          network::mojom::CORSPreflightPolicy::kMaxValue)
+IPC_ENUM_TRAITS_MAX_VALUE(network::mojom::CorsPreflightPolicy,
+                          network::mojom::CorsPreflightPolicy::kMaxValue)
 
-IPC_STRUCT_TRAITS_BEGIN(network::CORSErrorStatus)
+IPC_STRUCT_TRAITS_BEGIN(network::CorsErrorStatus)
   IPC_STRUCT_TRAITS_MEMBER(cors_error)
   IPC_STRUCT_TRAITS_MEMBER(failed_parameter)
 IPC_STRUCT_TRAITS_END()
@@ -146,7 +146,8 @@ IPC_STRUCT_TRAITS_BEGIN(network::ResourceRequest)
   IPC_STRUCT_TRAITS_MEMBER(referrer_policy)
   IPC_STRUCT_TRAITS_MEMBER(is_prerendering)
   IPC_STRUCT_TRAITS_MEMBER(headers)
-  IPC_STRUCT_TRAITS_MEMBER(requested_with)
+  IPC_STRUCT_TRAITS_MEMBER(requested_with_header)
+  IPC_STRUCT_TRAITS_MEMBER(client_data_header)
   IPC_STRUCT_TRAITS_MEMBER(load_flags)
   IPC_STRUCT_TRAITS_MEMBER(allow_credentials)
   IPC_STRUCT_TRAITS_MEMBER(plugin_child_id)
@@ -182,6 +183,7 @@ IPC_STRUCT_TRAITS_BEGIN(network::ResourceRequest)
   IPC_STRUCT_TRAITS_MEMBER(throttling_profile_id)
   IPC_STRUCT_TRAITS_MEMBER(custom_proxy_pre_cache_headers)
   IPC_STRUCT_TRAITS_MEMBER(custom_proxy_post_cache_headers)
+  IPC_STRUCT_TRAITS_MEMBER(custom_proxy_use_alternate_proxy_list)
   IPC_STRUCT_TRAITS_MEMBER(fetch_window_id)
 IPC_STRUCT_TRAITS_END()
 
@@ -225,6 +227,7 @@ IPC_STRUCT_TRAITS_BEGIN(network::ResourceResponseInfo)
   IPC_STRUCT_TRAITS_MEMBER(async_revalidation_requested)
   IPC_STRUCT_TRAITS_MEMBER(did_mime_sniff)
   IPC_STRUCT_TRAITS_MEMBER(is_signed_exchange_inner_response)
+  IPC_STRUCT_TRAITS_MEMBER(is_legacy_tls_version)
 IPC_STRUCT_TRAITS_END()
 
 IPC_ENUM_TRAITS_MAX_VALUE(network::mojom::FetchResponseType,

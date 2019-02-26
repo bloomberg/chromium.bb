@@ -185,6 +185,8 @@ void PasswordAutofillManager::OnPopupShown() {}
 
 void PasswordAutofillManager::OnPopupHidden() {}
 
+void PasswordAutofillManager::OnPopupSuppressed() {}
+
 void PasswordAutofillManager::DidSelectSuggestion(const base::string16& value,
                                                   int identifier) {
   ClearPreviewedForm();
@@ -198,12 +200,19 @@ void PasswordAutofillManager::DidSelectSuggestion(const base::string16& value,
 void PasswordAutofillManager::DidAcceptSuggestion(const base::string16& value,
                                                   int identifier,
                                                   int position) {
-  autofill_client_->ExecuteCommand(identifier);
+  using metrics_util::PasswordDropdownSelectedOption;
+
   if (identifier == autofill::POPUP_ITEM_ID_GENERATE_PASSWORD_ENTRY) {
     password_client_->GeneratePassword();
+    metrics_util::LogPasswordDropdownItemSelected(
+        PasswordDropdownSelectedOption::kGenerate);
   } else if (identifier == autofill::POPUP_ITEM_ID_ALL_SAVED_PASSWORDS_ENTRY) {
+    password_client_->NavigateToManagePasswordsPage(
+        ManagePasswordsReferrer::kPasswordDropdown);
     metrics_util::LogContextOfShowAllSavedPasswordsAccepted(
         metrics_util::SHOW_ALL_SAVED_PASSWORDS_CONTEXT_PASSWORD);
+    metrics_util::LogPasswordDropdownItemSelected(
+        PasswordDropdownSelectedOption::kShowAll);
 
     if (password_client_ && password_client_->GetMetricsRecorder()) {
       using UserAction =
@@ -212,6 +221,8 @@ void PasswordAutofillManager::DidAcceptSuggestion(const base::string16& value,
           UserAction::kShowAllPasswordsWhileSomeAreSuggested);
     }
   } else {
+    metrics_util::LogPasswordDropdownItemSelected(
+        PasswordDropdownSelectedOption::kPassword);
     bool success = FillSuggestion(GetUsernameFromSuggestion(value));
     DCHECK(success);
   }
@@ -297,6 +308,8 @@ void PasswordAutofillManager::OnShowPasswordSuggestions(
           metrics_util::SHOW_ALL_SAVED_PASSWORDS_CONTEXT_PASSWORD);
   }
 
+  metrics_util::LogPasswordDropdownShown(
+      metrics_util::PasswordDropdownState::kStandard);
   autofill_client_->ShowAutofillPopup(bounds, text_direction, suggestions,
                                       false, weak_ptr_factory_.GetWeakPtr());
 }
@@ -343,6 +356,8 @@ bool PasswordAutofillManager::MaybeShowPasswordSuggestionsWithGeneration(
         metrics_util::SHOW_ALL_SAVED_PASSWORDS_CONTEXT_PASSWORD);
   }
 
+  metrics_util::LogPasswordDropdownShown(
+      metrics_util::PasswordDropdownState::kStandardGenerate);
   autofill_client_->ShowAutofillPopup(bounds, text_direction, suggestions,
                                       false, weak_ptr_factory_.GetWeakPtr());
   return true;

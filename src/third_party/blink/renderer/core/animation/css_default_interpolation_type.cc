@@ -39,7 +39,7 @@ void CSSDefaultInterpolationType::Apply(
     InterpolationEnvironment& environment) const {
   DCHECK(ToCSSDefaultNonInterpolableValue(non_interpolable_value)->CssValue());
   StyleBuilder::ApplyProperty(
-      GetProperty().GetCSSProperty(),
+      GetProperty().GetCSSPropertyName(),
       ToCSSInterpolationEnvironment(environment).GetState(),
       *ToCSSDefaultNonInterpolableValue(non_interpolable_value)->CssValue());
 }

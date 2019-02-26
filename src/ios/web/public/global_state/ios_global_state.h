@@ -7,6 +7,10 @@
 
 #include "base/task/task_scheduler/task_scheduler.h"
 
+namespace base {
+class MessageLoop;
+}
+
 namespace ios_global_state {
 
 // Contains parameters passed to |Create|.
@@ -61,6 +65,9 @@ void StartTaskScheduler(base::TaskScheduler::InitParams* init_params);
 // passed to |Create|. It is safe to call this method more than once, the
 // AtExitManager will be destroyed on the first call.
 void DestroyAtExitManager();
+
+// Returns message loop for the UI thread.
+base::MessageLoop* GetMainThreadMessageLoop();
 
 }  // namespace ios_global_state
 

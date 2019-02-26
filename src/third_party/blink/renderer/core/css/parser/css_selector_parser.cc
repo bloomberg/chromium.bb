@@ -6,6 +6,7 @@
 #include "third_party/blink/renderer/core/css/parser/css_selector_parser.h"
 
 #include <memory>
+#include "base/numerics/safe_conversions.h"
 #include "third_party/blink/renderer/core/css/css_selector_list.h"
 #include "third_party/blink/renderer/core/css/parser/css_parser_context.h"
 #include "third_party/blink/renderer/core/css/parser/css_parser_observer.h"
@@ -266,12 +267,8 @@ bool IsSimpleSelectorValidAfterPseudoElement(
     return true;
   if (compound_pseudo_element == CSSSelector::kPseudoContent)
     return simple_selector.Match() != CSSSelector::kPseudoElement;
-  if (compound_pseudo_element == CSSSelector::kPseudoSlotted) {
-    return simple_selector.Match() == CSSSelector::kPseudoElement &&
-           (simple_selector.GetPseudoType() == CSSSelector::kPseudoBefore ||
-            simple_selector.GetPseudoType() == CSSSelector::kPseudoAfter);
-  }
-
+  if (compound_pseudo_element == CSSSelector::kPseudoSlotted)
+    return simple_selector.IsTreeAbidingPseudoElement();
   if (simple_selector.Match() != CSSSelector::kPseudoClass)
     return false;
   CSSSelector::PseudoType pseudo = simple_selector.GetPseudoType();
@@ -328,6 +325,7 @@ std::unique_ptr<CSSParserSelector> CSSSelectorParser::ConsumeCompoundSelector(
   if (!compound_selector) {
     AtomicString namespace_uri = DetermineNamespace(namespace_prefix);
     if (namespace_uri.IsNull()) {
+      context_->Count(WebFeature::kCSSUnknownNamespacePrefixInSelector);
       failed_parsing_ = true;
       return nullptr;
     }
@@ -489,6 +487,44 @@ std::unique_ptr<CSSParserSelector> CSSSelectorParser::ConsumeAttribute(
   return selector;
 }
 
+void CSSSelectorParser::CountRejectedNot(CSSParserTokenRange& range) {
+  bool exists_valid = false;
+  bool exists_invalid = false;
+
+  do {
+    if (exists_valid || exists_invalid) {
+      DCHECK(range.Peek().GetType() == kCommaToken);
+      range.ConsumeIncludingWhitespace();
+    }
+    // else we are parsing the first complex selector
+
+    failed_parsing_ = false;
+    bool consumed_invalid = !ConsumeComplexSelector(range) || failed_parsing_;
+    range.ConsumeWhitespace();
+    while (!range.AtEnd() && range.Peek().GetType() != kCommaToken) {
+      consumed_invalid = true;
+      range.ConsumeIncludingWhitespace();
+    }
+
+    if (consumed_invalid)
+      exists_invalid = true;
+    else
+      exists_valid = true;
+  } while (!range.AtEnd());
+
+  WebFeature feature;
+  if (exists_valid) {
+    if (exists_invalid)
+      feature = WebFeature::kCSSSelectorNotWithPartiallyValidList;
+    else
+      feature = WebFeature::kCSSSelectorNotWithValidList;
+  } else {
+    feature = WebFeature::kCSSSelectorNotWithInvalidList;
+  }
+  context_->Count(feature);
+  failed_parsing_ = true;
+}
+
 std::unique_ptr<CSSParserSelector> CSSSelectorParser::ConsumePseudo(
     CSSParserTokenRange& range) {
   DCHECK_EQ(range.Peek().GetType(), kColonToken);
@@ -535,8 +571,8 @@ std::unique_ptr<CSSParserSelector> CSSSelectorParser::ConsumePseudo(
     return nullptr;
 
   switch (selector->GetPseudoType()) {
-    case CSSSelector::kPseudoMatches: {
-      if (!RuntimeEnabledFeatures::CSSMatchesEnabled())
+    case CSSSelector::kPseudoIs: {
+      if (!RuntimeEnabledFeatures::CSSPseudoIsEnabled())
         break;
 
       DisallowPseudoElementsScope scope(this);
@@ -549,8 +585,8 @@ std::unique_ptr<CSSParserSelector> CSSSelectorParser::ConsumePseudo(
       selector->SetSelectorList(std::move(selector_list));
       return selector;
     }
-    case CSSSelector::kPseudoIS: {
-      if (!RuntimeEnabledFeatures::CSSPseudoISEnabled())
+    case CSSSelector::kPseudoWhere: {
+      if (!RuntimeEnabledFeatures::CSSPseudoWhereEnabled())
         break;
 
       DisallowPseudoElementsScope scope(this);
@@ -573,17 +609,23 @@ std::unique_ptr<CSSParserSelector> CSSSelectorParser::ConsumePseudo(
           std::make_unique<CSSSelectorList>();
       *selector_list = ConsumeCompoundSelectorList(block);
       if (!selector_list->IsValid() || !block.AtEnd() ||
-          selector_list->HasPseudoMatches() || selector_list->HasPseudoIS())
+          selector_list->HasPseudoIs() || selector_list->HasPseudoWhere())
         return nullptr;
       selector->SetSelectorList(std::move(selector_list));
       return selector;
     }
     case CSSSelector::kPseudoNot: {
+      CSSParserTokenRange fallback_block = block;
+
       std::unique_ptr<CSSParserSelector> inner_selector =
           ConsumeCompoundSelector(block);
       block.ConsumeWhitespace();
-      if (!inner_selector || !inner_selector->IsSimple() || !block.AtEnd())
+      if (!inner_selector || !inner_selector->IsSimple() ||
+          inner_selector->Relation() != CSSSelector::kSubSelector ||
+          !block.AtEnd()) {
+        CountRejectedNot(fallback_block);
         return nullptr;
+      }
       Vector<std::unique_ptr<CSSParserSelector>> selector_vector;
       selector_vector.push_back(std::move(inner_selector));
       selector->AdoptSelectorVector(selector_vector);
@@ -605,8 +647,8 @@ std::unique_ptr<CSSParserSelector> CSSSelectorParser::ConsumePseudo(
           ConsumeCompoundSelector(block);
       block.ConsumeWhitespace();
       if (!inner_selector || !block.AtEnd() ||
-          inner_selector->GetPseudoType() == CSSSelector::kPseudoMatches ||
-          inner_selector->GetPseudoType() == CSSSelector::kPseudoIS)
+          inner_selector->GetPseudoType() == CSSSelector::kPseudoIs ||
+          inner_selector->GetPseudoType() == CSSSelector::kPseudoWhere)
         return nullptr;
       Vector<std::unique_ptr<CSSParserSelector>> selector_vector;
       selector_vector.push_back(std::move(inner_selector));
@@ -917,13 +959,148 @@ CSSSelectorParser::SplitCompoundAtImplicitShadowCrossingCombinator(
   if (!split_after || !split_after->TagHistory())
     return compound_selector;
 
-  std::unique_ptr<CSSParserSelector> second_compound =
+  std::unique_ptr<CSSParserSelector> remaining =
       split_after->ReleaseTagHistory();
-  second_compound->AppendTagHistory(
-      second_compound->GetImplicitShadowCombinatorForMatching(),
-      std::move(compound_selector));
-  return second_compound;
+  CSSSelector::RelationType relation =
+      remaining->GetImplicitShadowCombinatorForMatching();
+  // We might need to split the compound twice since ::placeholder is allowed
+  // after ::slotted and they both need an implicit combinator for matching.
+  remaining =
+      SplitCompoundAtImplicitShadowCrossingCombinator(std::move(remaining));
+  remaining->AppendTagHistory(relation, std::move(compound_selector));
+  return remaining;
 }
+
+namespace {
+
+struct PseudoElementFeatureMapEntry {
+  template <unsigned key_length>
+  PseudoElementFeatureMapEntry(const char (&key)[key_length],
+                               WebFeature feature)
+      : key(key),
+        key_length(base::checked_cast<uint16_t>(key_length - 1)),
+        feature(base::checked_cast<uint16_t>(feature)) {}
+  const char* const key;
+  const uint16_t key_length;
+  const uint16_t feature;
+};
+
+WebFeature FeatureForWebKitCustomPseudoElement(const AtomicString& name) {
+  static const PseudoElementFeatureMapEntry feature_table[] = {
+      {"cue", WebFeature::kCSSSelectorCue},
+      {"-internal-media-controls-overlay-cast-button",
+       WebFeature::kCSSSelectorInternalMediaControlsOverlayCastButton},
+      {"-webkit-calendar-picker-indicator",
+       WebFeature::kCSSSelectorWebkitCalendarPickerIndicator},
+      {"-webkit-clear-button", WebFeature::kCSSSelectorWebkitClearButton},
+      {"-webkit-color-swatch", WebFeature::kCSSSelectorWebkitColorSwatch},
+      {"-webkit-color-swatch-wrapper",
+       WebFeature::kCSSSelectorWebkitColorSwatchWrapper},
+      {"-webkit-date-and-time-value",
+       WebFeature::kCSSSelectorWebkitDateAndTimeValue},
+      {"-webkit-datetime-edit", WebFeature::kCSSSelectorWebkitDatetimeEdit},
+      {"-webkit-datetime-edit-ampm-field",
+       WebFeature::kCSSSelectorWebkitDatetimeEditAmpmField},
+      {"-webkit-datetime-edit-day-field",
+       WebFeature::kCSSSelectorWebkitDatetimeEditDayField},
+      {"-webkit-datetime-edit-fields-wrapper",
+       WebFeature::kCSSSelectorWebkitDatetimeEditFieldsWrapper},
+      {"-webkit-datetime-edit-hour-field",
+       WebFeature::kCSSSelectorWebkitDatetimeEditHourField},
+      {"-webkit-datetime-edit-millisecond-field",
+       WebFeature::kCSSSelectorWebkitDatetimeEditMillisecondField},
+      {"-webkit-datetime-edit-minute-field",
+       WebFeature::kCSSSelectorWebkitDatetimeEditMinuteField},
+      {"-webkit-datetime-edit-month-field",
+       WebFeature::kCSSSelectorWebkitDatetimeEditMonthField},
+      {"-webkit-datetime-edit-second-field",
+       WebFeature::kCSSSelectorWebkitDatetimeEditSecondField},
+      {"-webkit-datetime-edit-text",
+       WebFeature::kCSSSelectorWebkitDatetimeEditText},
+      {"-webkit-datetime-edit-week-field",
+       WebFeature::kCSSSelectorWebkitDatetimeEditWeekField},
+      {"-webkit-datetime-edit-year-field",
+       WebFeature::kCSSSelectorWebkitDatetimeEditYearField},
+      {"-webkit-details-marker", WebFeature::kCSSSelectorWebkitDetailsMarker},
+      {"-webkit-file-upload-button",
+       WebFeature::kCSSSelectorWebkitFileUploadButton},
+      {"-webkit-inner-spin-button",
+       WebFeature::kCSSSelectorWebkitInnerSpinButton},
+      {"-webkit-input-placeholder",
+       WebFeature::kCSSSelectorWebkitInputPlaceholder},
+      {"-webkit-media-controls", WebFeature::kCSSSelectorWebkitMediaControls},
+      {"-webkit-media-controls-current-time-display",
+       WebFeature::kCSSSelectorWebkitMediaControlsCurrentTimeDisplay},
+      {"-webkit-media-controls-enclosure",
+       WebFeature::kCSSSelectorWebkitMediaControlsEnclosure},
+      {"-webkit-media-controls-fullscreen-button",
+       WebFeature::kCSSSelectorWebkitMediaControlsFullscreenButton},
+      {"-webkit-media-controls-mute-button",
+       WebFeature::kCSSSelectorWebkitMediaControlsMuteButton},
+      {"-webkit-media-controls-overlay-enclosure",
+       WebFeature::kCSSSelectorWebkitMediaControlsOverlayEnclosure},
+      {"-webkit-media-controls-overlay-play-button",
+       WebFeature::kCSSSelectorWebkitMediaControlsOverlayPlayButton},
+      {"-webkit-media-controls-panel",
+       WebFeature::kCSSSelectorWebkitMediaControlsPanel},
+      {"-webkit-media-controls-play-button",
+       WebFeature::kCSSSelectorWebkitMediaControlsPlayButton},
+      {"-webkit-media-controls-timeline",
+       WebFeature::kCSSSelectorWebkitMediaControlsTimeline},
+      // Note: This feature is no longer implemented in Blink.
+      {"-webkit-media-controls-timeline-container",
+       WebFeature::kCSSSelectorWebkitMediaControlsTimelineContainer},
+      {"-webkit-media-controls-time-remaining-display",
+       WebFeature::kCSSSelectorWebkitMediaControlsTimeRemainingDisplay},
+      {"-webkit-media-controls-toggle-closed-captions-button",
+       WebFeature::kCSSSelectorWebkitMediaControlsToggleClosedCaptionsButton},
+      {"-webkit-media-controls-volume-slider",
+       WebFeature::kCSSSelectorWebkitMediaControlsVolumeSlider},
+      {"-webkit-media-slider-container",
+       WebFeature::kCSSSelectorWebkitMediaSliderContainer},
+      {"-webkit-media-slider-thumb",
+       WebFeature::kCSSSelectorWebkitMediaSliderThumb},
+      {"-webkit-media-text-track-container",
+       WebFeature::kCSSSelectorWebkitMediaTextTrackContainer},
+      {"-webkit-media-text-track-display",
+       WebFeature::kCSSSelectorWebkitMediaTextTrackDisplay},
+      {"-webkit-media-text-track-region",
+       WebFeature::kCSSSelectorWebkitMediaTextTrackRegion},
+      {"-webkit-media-text-track-region-container",
+       WebFeature::kCSSSelectorWebkitMediaTextTrackRegionContainer},
+      {"-webkit-meter-bar", WebFeature::kCSSSelectorWebkitMeterBar},
+      {"-webkit-meter-even-less-good-value",
+       WebFeature::kCSSSelectorWebkitMeterEvenLessGoodValue},
+      {"-webkit-meter-inner-element",
+       WebFeature::kCSSSelectorWebkitMeterInnerElement},
+      {"-webkit-meter-optimum-value",
+       WebFeature::kCSSSelectorWebkitMeterOptimumValue},
+      {"-webkit-meter-suboptimum-value",
+       WebFeature::kCSSSelectorWebkitMeterSuboptimumValue},
+      {"-webkit-progress-bar", WebFeature::kCSSSelectorWebkitProgressBar},
+      {"-webkit-progress-inner-element",
+       WebFeature::kCSSSelectorWebkitProgressInnerElement},
+      {"-webkit-progress-value", WebFeature::kCSSSelectorWebkitProgressValue},
+      {"-webkit-search-cancel-button",
+       WebFeature::kCSSSelectorWebkitSearchCancelButton},
+      {"-webkit-slider-container",
+       WebFeature::kCSSSelectorWebkitSliderContainer},
+      {"-webkit-slider-runnable-track",
+       WebFeature::kCSSSelectorWebkitSliderRunnableTrack},
+      {"-webkit-slider-thumb", WebFeature::kCSSSelectorWebkitSliderThumb},
+      {"-webkit-textfield-decoration-container",
+       WebFeature::kCSSSelectorWebkitTextfieldDecorationContainer},
+  };
+  // TODO(fs): Could use binary search once there's a less finicky way to
+  // compare (order) String and StringView/non-String.
+  for (const auto& entry : feature_table) {
+    if (name == StringView(entry.key, entry.key_length))
+      return static_cast<WebFeature>(entry.feature);
+  }
+  return WebFeature::kCSSSelectorWebkitUnknownPseudo;
+}
+
+}  // namespace
 
 void CSSSelectorParser::RecordUsageAndDeprecations(
     const CSSSelectorList& selector_list) {
@@ -939,9 +1116,9 @@ void CSSSelectorParser::RecordUsageAndDeprecations(
         case CSSSelector::kPseudoAny:
           feature = WebFeature::kCSSSelectorPseudoAny;
           break;
-        case CSSSelector::kPseudoMatches:
-          DCHECK(RuntimeEnabledFeatures::CSSMatchesEnabled());
-          feature = WebFeature::kCSSSelectorPseudoMatches;
+        case CSSSelector::kPseudoIs:
+          DCHECK(RuntimeEnabledFeatures::CSSPseudoIsEnabled());
+          feature = WebFeature::kCSSSelectorPseudoIs;
           break;
         case CSSSelector::kPseudoFocusVisible:
           DCHECK(RuntimeEnabledFeatures::CSSFocusVisibleEnabled());
@@ -958,9 +1135,9 @@ void CSSSelectorParser::RecordUsageAndDeprecations(
         case CSSSelector::kPseudoWebkitAnyLink:
           feature = WebFeature::kCSSSelectorPseudoWebkitAnyLink;
           break;
-        case CSSSelector::kPseudoIS:
-          DCHECK(RuntimeEnabledFeatures::CSSPseudoISEnabled());
-          feature = WebFeature::kCSSSelectorPseudoIS;
+        case CSSSelector::kPseudoWhere:
+          DCHECK(RuntimeEnabledFeatures::CSSPseudoWhereEnabled());
+          feature = WebFeature::kCSSSelectorPseudoWhere;
           break;
         case CSSSelector::kPseudoUnresolved:
           feature = WebFeature::kCSSSelectorPseudoUnresolved;
@@ -991,156 +1168,8 @@ void CSSSelectorParser::RecordUsageAndDeprecations(
             feature = WebFeature::kCSSSelectorInternalPseudoListBox;
           break;
         case CSSSelector::kPseudoWebKitCustomElement:
-          if (context_->Mode() != kUASheetMode) {
-            if (current->Value() == "cue") {
-              feature = WebFeature::kCSSSelectorCue;
-            } else if (current->Value() ==
-                       "-internal-media-controls-overlay-cast-button") {
-              feature = WebFeature::
-                  kCSSSelectorInternalMediaControlsOverlayCastButton;
-            } else if (current->Value() ==
-                       "-webkit-calendar-picker-indicator") {
-              feature = WebFeature::kCSSSelectorWebkitCalendarPickerIndicator;
-            } else if (current->Value() == "-webkit-clear-button") {
-              feature = WebFeature::kCSSSelectorWebkitClearButton;
-            } else if (current->Value() == "-webkit-color-swatch") {
-              feature = WebFeature::kCSSSelectorWebkitColorSwatch;
-            } else if (current->Value() == "-webkit-color-swatch-wrapper") {
-              feature = WebFeature::kCSSSelectorWebkitColorSwatchWrapper;
-            } else if (current->Value() == "-webkit-date-and-time-value") {
-              feature = WebFeature::kCSSSelectorWebkitDateAndTimeValue;
-            } else if (current->Value() == "-webkit-datetime-edit") {
-              feature = WebFeature::kCSSSelectorWebkitDatetimeEdit;
-            } else if (current->Value() == "-webkit-datetime-edit-ampm-field") {
-              feature = WebFeature::kCSSSelectorWebkitDatetimeEditAmpmField;
-            } else if (current->Value() == "-webkit-datetime-edit-day-field") {
-              feature = WebFeature::kCSSSelectorWebkitDatetimeEditDayField;
-            } else if (current->Value() ==
-                       "-webkit-datetime-edit-fields-wrapper") {
-              feature = WebFeature::kCSSSelectorWebkitDatetimeEditFieldsWrapper;
-            } else if (current->Value() == "-webkit-datetime-edit-hour-field") {
-              feature = WebFeature::kCSSSelectorWebkitDatetimeEditHourField;
-            } else if (current->Value() ==
-                       "-webkit-datetime-edit-millisecond-field") {
-              feature =
-                  WebFeature::kCSSSelectorWebkitDatetimeEditMillisecondField;
-            } else if (current->Value() ==
-                       "-webkit-datetime-edit-minute-field") {
-              feature = WebFeature::kCSSSelectorWebkitDatetimeEditMinuteField;
-            } else if (current->Value() ==
-                       "-webkit-datetime-edit-month-field") {
-              feature = WebFeature::kCSSSelectorWebkitDatetimeEditMonthField;
-            } else if (current->Value() ==
-                       "-webkit-datetime-edit-second-field") {
-              feature = WebFeature::kCSSSelectorWebkitDatetimeEditSecondField;
-            } else if (current->Value() == "-webkit-datetime-edit-text") {
-              feature = WebFeature::kCSSSelectorWebkitDatetimeEditText;
-            } else if (current->Value() == "-webkit-datetime-edit-week-field") {
-              feature = WebFeature::kCSSSelectorWebkitDatetimeEditWeekField;
-            } else if (current->Value() == "-webkit-datetime-edit-year-field") {
-              feature = WebFeature::kCSSSelectorWebkitDatetimeEditYearField;
-            } else if (current->Value() == "-webkit-details-marker") {
-              feature = WebFeature::kCSSSelectorWebkitDetailsMarker;
-            } else if (current->Value() == "-webkit-file-upload-button") {
-              feature = WebFeature::kCSSSelectorWebkitFileUploadButton;
-            } else if (current->Value() == "-webkit-inner-spin-button") {
-              feature = WebFeature::kCSSSelectorWebkitInnerSpinButton;
-            } else if (current->Value() == "-webkit-input-placeholder") {
-              feature = WebFeature::kCSSSelectorWebkitInputPlaceholder;
-            } else if (current->Value() == "-webkit-media-controls") {
-              feature = WebFeature::kCSSSelectorWebkitMediaControls;
-            } else if (current->Value() ==
-                       "-webkit-media-controls-current-time-display") {
-              feature =
-                  WebFeature::kCSSSelectorWebkitMediaControlsCurrentTimeDisplay;
-            } else if (current->Value() == "-webkit-media-controls-enclosure") {
-              feature = WebFeature::kCSSSelectorWebkitMediaControlsEnclosure;
-            } else if (current->Value() ==
-                       "-webkit-media-controls-fullscreen-button") {
-              feature =
-                  WebFeature::kCSSSelectorWebkitMediaControlsFullscreenButton;
-            } else if (current->Value() ==
-                       "-webkit-media-controls-mute-button") {
-              feature = WebFeature::kCSSSelectorWebkitMediaControlsMuteButton;
-            } else if (current->Value() ==
-                       "-webkit-media-controls-overlay-enclosure") {
-              feature =
-                  WebFeature::kCSSSelectorWebkitMediaControlsOverlayEnclosure;
-            } else if (current->Value() ==
-                       "-webkit-media-controls-overlay-play-button") {
-              feature =
-                  WebFeature::kCSSSelectorWebkitMediaControlsOverlayPlayButton;
-            } else if (current->Value() == "-webkit-media-controls-panel") {
-              feature = WebFeature::kCSSSelectorWebkitMediaControlsPanel;
-            } else if (current->Value() ==
-                       "-webkit-media-controls-play-button") {
-              feature = WebFeature::kCSSSelectorWebkitMediaControlsPlayButton;
-            } else if (current->Value() == "-webkit-media-controls-timeline") {
-              feature = WebFeature::kCSSSelectorWebkitMediaControlsTimeline;
-            } else if (current->Value() ==
-                       "-webkit-media-controls-timeline-container") {
-              // Note: This feature is no longer implemented in Blink.
-              feature =
-                  WebFeature::kCSSSelectorWebkitMediaControlsTimelineContainer;
-            } else if (current->Value() ==
-                       "-webkit-media-controls-time-remaining-display") {
-              feature = WebFeature::
-                  kCSSSelectorWebkitMediaControlsTimeRemainingDisplay;
-            } else if (current->Value() ==
-                       "-webkit-media-controls-toggle-closed-captions-button") {
-              feature = WebFeature::
-                  kCSSSelectorWebkitMediaControlsToggleClosedCaptionsButton;
-            } else if (current->Value() ==
-                       "-webkit-media-controls-volume-slider") {
-              feature = WebFeature::kCSSSelectorWebkitMediaControlsVolumeSlider;
-            } else if (current->Value() == "-webkit-media-slider-container") {
-              feature = WebFeature::kCSSSelectorWebkitMediaSliderContainer;
-            } else if (current->Value() == "-webkit-media-slider-thumb") {
-              feature = WebFeature::kCSSSelectorWebkitMediaSliderThumb;
-            } else if (current->Value() ==
-                       "-webkit-media-text-track-container") {
-              feature = WebFeature::kCSSSelectorWebkitMediaTextTrackContainer;
-            } else if (current->Value() == "-webkit-media-text-track-display") {
-              feature = WebFeature::kCSSSelectorWebkitMediaTextTrackDisplay;
-            } else if (current->Value() == "-webkit-media-text-track-region") {
-              feature = WebFeature::kCSSSelectorWebkitMediaTextTrackRegion;
-            } else if (current->Value() ==
-                       "-webkit-media-text-track-region-container") {
-              feature =
-                  WebFeature::kCSSSelectorWebkitMediaTextTrackRegionContainer;
-            } else if (current->Value() == "-webkit-meter-bar") {
-              feature = WebFeature::kCSSSelectorWebkitMeterBar;
-            } else if (current->Value() ==
-                       "-webkit-meter-even-less-good-value") {
-              feature = WebFeature::kCSSSelectorWebkitMeterEvenLessGoodValue;
-            } else if (current->Value() == "-webkit-meter-inner-element") {
-              feature = WebFeature::kCSSSelectorWebkitMeterInnerElement;
-            } else if (current->Value() == "-webkit-meter-optimum-value") {
-              feature = WebFeature::kCSSSelectorWebkitMeterOptimumValue;
-            } else if (current->Value() == "-webkit-meter-suboptimum-value") {
-              feature = WebFeature::kCSSSelectorWebkitMeterSuboptimumValue;
-            } else if (current->Value() == "-webkit-progress-bar") {
-              feature = WebFeature::kCSSSelectorWebkitProgressBar;
-            } else if (current->Value() == "-webkit-progress-inner-element") {
-              feature = WebFeature::kCSSSelectorWebkitProgressInnerElement;
-            } else if (current->Value() == "-webkit-progress-value") {
-              feature = WebFeature::kCSSSelectorWebkitProgressValue;
-            } else if (current->Value() == "-webkit-search-cancel-button") {
-              feature = WebFeature::kCSSSelectorWebkitSearchCancelButton;
-            } else if (current->Value() == "-webkit-slider-container") {
-              feature = WebFeature::kCSSSelectorWebkitSliderContainer;
-            } else if (current->Value() == "-webkit-slider-runnable-track") {
-              feature = WebFeature::kCSSSelectorWebkitSliderRunnableTrack;
-            } else if (current->Value() == "-webkit-slider-thumb") {
-              feature = WebFeature::kCSSSelectorWebkitSliderThumb;
-            } else if (current->Value() ==
-                       "-webkit-textfield-decoration-container") {
-              feature =
-                  WebFeature::kCSSSelectorWebkitTextfieldDecorationContainer;
-            } else {
-              feature = WebFeature::kCSSSelectorWebkitUnknownPseudo;
-            }
-          }
+          if (context_->Mode() != kUASheetMode)
+            feature = FeatureForWebKitCustomPseudoElement(current->Value());
           break;
         case CSSSelector::kPseudoSpatialNavigationFocus:
           if (context_->Mode() != kUASheetMode) {

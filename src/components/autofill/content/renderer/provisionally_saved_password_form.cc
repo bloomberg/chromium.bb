@@ -37,9 +37,11 @@ bool ProvisionallySavedPasswordForm::IsPasswordValid() const {
 }
 
 void ProvisionallySavedPasswordForm::SetSubmissionIndicatorEvent(
-    PasswordForm::SubmissionIndicatorEvent event) {
-  if (password_form_)
+    SubmissionIndicatorEvent event) {
+  if (password_form_) {
     password_form_->submission_event = event;
+    password_form_->form_data.submission_event = event;
+  }
 }
 
 }  // namespace autofill

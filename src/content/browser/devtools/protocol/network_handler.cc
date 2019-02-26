@@ -49,7 +49,6 @@
 #include "content/public/browser/site_instance.h"
 #include "content/public/browser/storage_partition.h"
 #include "content/public/browser/web_contents.h"
-#include "content/public/common/browser_side_navigation_policy.h"
 #include "content/public/common/content_client.h"
 #include "content/public/common/content_switches.h"
 #include "net/base/net_errors.h"
@@ -521,11 +520,11 @@ String resourcePriority(net::RequestPriority priority) {
   return Network::ResourcePriorityEnum::Medium;
 }
 
-String referrerPolicy(blink::WebReferrerPolicy referrer_policy) {
+String referrerPolicy(network::mojom::ReferrerPolicy referrer_policy) {
   switch (referrer_policy) {
-    case blink::kWebReferrerPolicyAlways:
+    case network::mojom::ReferrerPolicy::kAlways:
       return Network::Request::ReferrerPolicyEnum::UnsafeUrl;
-    case blink::kWebReferrerPolicyDefault:
+    case network::mojom::ReferrerPolicy::kDefault:
       if (base::CommandLine::ForCurrentProcess()->HasSwitch(
               switches::kReducedReferrerGranularity)) {
         return Network::Request::ReferrerPolicyEnum::
@@ -533,19 +532,20 @@ String referrerPolicy(blink::WebReferrerPolicy referrer_policy) {
       } else {
         return Network::Request::ReferrerPolicyEnum::NoReferrerWhenDowngrade;
       }
-    case blink::kWebReferrerPolicyNoReferrerWhenDowngrade:
+    case network::mojom::ReferrerPolicy::kNoReferrerWhenDowngrade:
       return Network::Request::ReferrerPolicyEnum::NoReferrerWhenDowngrade;
-    case blink::kWebReferrerPolicyNever:
+    case network::mojom::ReferrerPolicy::kNever:
       return Network::Request::ReferrerPolicyEnum::NoReferrer;
-    case blink::kWebReferrerPolicyOrigin:
+    case network::mojom::ReferrerPolicy::kOrigin:
       return Network::Request::ReferrerPolicyEnum::Origin;
-    case blink::kWebReferrerPolicyOriginWhenCrossOrigin:
+    case network::mojom::ReferrerPolicy::kOriginWhenCrossOrigin:
       return Network::Request::ReferrerPolicyEnum::OriginWhenCrossOrigin;
-    case blink::kWebReferrerPolicySameOrigin:
+    case network::mojom::ReferrerPolicy::kSameOrigin:
       return Network::Request::ReferrerPolicyEnum::SameOrigin;
-    case blink::kWebReferrerPolicyStrictOrigin:
+    case network::mojom::ReferrerPolicy::kStrictOrigin:
       return Network::Request::ReferrerPolicyEnum::StrictOrigin;
-    case blink::kWebReferrerPolicyNoReferrerWhenDowngradeOriginWhenCrossOrigin:
+    case network::mojom::ReferrerPolicy::
+        kNoReferrerWhenDowngradeOriginWhenCrossOrigin:
       return Network::Request::ReferrerPolicyEnum::StrictOriginWhenCrossOrigin;
   }
   NOTREACHED();
@@ -593,131 +593,6 @@ DevToolsNetworkInterceptor::InterceptionStage ToInterceptorStage(
     return DevToolsNetworkInterceptor::RESPONSE;
   NOTREACHED();
   return DevToolsNetworkInterceptor::REQUEST;
-}
-
-net::Error NetErrorFromString(const std::string& error, bool* ok) {
-  *ok = true;
-  if (error == Network::ErrorReasonEnum::Failed)
-    return net::ERR_FAILED;
-  if (error == Network::ErrorReasonEnum::Aborted)
-    return net::ERR_ABORTED;
-  if (error == Network::ErrorReasonEnum::TimedOut)
-    return net::ERR_TIMED_OUT;
-  if (error == Network::ErrorReasonEnum::AccessDenied)
-    return net::ERR_ACCESS_DENIED;
-  if (error == Network::ErrorReasonEnum::ConnectionClosed)
-    return net::ERR_CONNECTION_CLOSED;
-  if (error == Network::ErrorReasonEnum::ConnectionReset)
-    return net::ERR_CONNECTION_RESET;
-  if (error == Network::ErrorReasonEnum::ConnectionRefused)
-    return net::ERR_CONNECTION_REFUSED;
-  if (error == Network::ErrorReasonEnum::ConnectionAborted)
-    return net::ERR_CONNECTION_ABORTED;
-  if (error == Network::ErrorReasonEnum::ConnectionFailed)
-    return net::ERR_CONNECTION_FAILED;
-  if (error == Network::ErrorReasonEnum::NameNotResolved)
-    return net::ERR_NAME_NOT_RESOLVED;
-  if (error == Network::ErrorReasonEnum::InternetDisconnected)
-    return net::ERR_INTERNET_DISCONNECTED;
-  if (error == Network::ErrorReasonEnum::AddressUnreachable)
-    return net::ERR_ADDRESS_UNREACHABLE;
-  if (error == Network::ErrorReasonEnum::BlockedByClient)
-    return net::ERR_BLOCKED_BY_CLIENT;
-  if (error == Network::ErrorReasonEnum::BlockedByResponse)
-    return net::ERR_BLOCKED_BY_RESPONSE;
-  *ok = false;
-  return net::ERR_FAILED;
-}
-
-String NetErrorToString(int net_error) {
-  switch (net_error) {
-    case net::ERR_ABORTED:
-      return Network::ErrorReasonEnum::Aborted;
-    case net::ERR_TIMED_OUT:
-      return Network::ErrorReasonEnum::TimedOut;
-    case net::ERR_ACCESS_DENIED:
-      return Network::ErrorReasonEnum::AccessDenied;
-    case net::ERR_CONNECTION_CLOSED:
-      return Network::ErrorReasonEnum::ConnectionClosed;
-    case net::ERR_CONNECTION_RESET:
-      return Network::ErrorReasonEnum::ConnectionReset;
-    case net::ERR_CONNECTION_REFUSED:
-      return Network::ErrorReasonEnum::ConnectionRefused;
-    case net::ERR_CONNECTION_ABORTED:
-      return Network::ErrorReasonEnum::ConnectionAborted;
-    case net::ERR_CONNECTION_FAILED:
-      return Network::ErrorReasonEnum::ConnectionFailed;
-    case net::ERR_NAME_NOT_RESOLVED:
-      return Network::ErrorReasonEnum::NameNotResolved;
-    case net::ERR_INTERNET_DISCONNECTED:
-      return Network::ErrorReasonEnum::InternetDisconnected;
-    case net::ERR_ADDRESS_UNREACHABLE:
-      return Network::ErrorReasonEnum::AddressUnreachable;
-    case net::ERR_BLOCKED_BY_CLIENT:
-      return Network::ErrorReasonEnum::BlockedByClient;
-    case net::ERR_BLOCKED_BY_RESPONSE:
-      return Network::ErrorReasonEnum::BlockedByResponse;
-    default:
-      return Network::ErrorReasonEnum::Failed;
-  }
-}
-
-bool AddInterceptedResourceType(
-    const std::string& resource_type,
-    base::flat_set<ResourceType>* intercepted_resource_types) {
-  if (resource_type == protocol::Network::ResourceTypeEnum::Document) {
-    intercepted_resource_types->insert(RESOURCE_TYPE_MAIN_FRAME);
-    intercepted_resource_types->insert(RESOURCE_TYPE_SUB_FRAME);
-    return true;
-  }
-  if (resource_type == protocol::Network::ResourceTypeEnum::Stylesheet) {
-    intercepted_resource_types->insert(RESOURCE_TYPE_STYLESHEET);
-    return true;
-  }
-  if (resource_type == protocol::Network::ResourceTypeEnum::Image) {
-    intercepted_resource_types->insert(RESOURCE_TYPE_IMAGE);
-    return true;
-  }
-  if (resource_type == protocol::Network::ResourceTypeEnum::Media) {
-    intercepted_resource_types->insert(RESOURCE_TYPE_MEDIA);
-    return true;
-  }
-  if (resource_type == protocol::Network::ResourceTypeEnum::Font) {
-    intercepted_resource_types->insert(RESOURCE_TYPE_FONT_RESOURCE);
-    return true;
-  }
-  if (resource_type == protocol::Network::ResourceTypeEnum::Script) {
-    intercepted_resource_types->insert(RESOURCE_TYPE_SCRIPT);
-    return true;
-  }
-  if (resource_type == protocol::Network::ResourceTypeEnum::XHR) {
-    intercepted_resource_types->insert(RESOURCE_TYPE_XHR);
-    return true;
-  }
-  if (resource_type == protocol::Network::ResourceTypeEnum::Fetch) {
-    intercepted_resource_types->insert(RESOURCE_TYPE_PREFETCH);
-    return true;
-  }
-  if (resource_type ==
-      protocol::Network::ResourceTypeEnum::CSPViolationReport) {
-    intercepted_resource_types->insert(RESOURCE_TYPE_CSP_REPORT);
-    return true;
-  }
-  if (resource_type == protocol::Network::ResourceTypeEnum::Ping) {
-    intercepted_resource_types->insert(RESOURCE_TYPE_PING);
-    return true;
-  }
-  if (resource_type == protocol::Network::ResourceTypeEnum::Other) {
-    intercepted_resource_types->insert(RESOURCE_TYPE_SUB_RESOURCE);
-    intercepted_resource_types->insert(RESOURCE_TYPE_OBJECT);
-    intercepted_resource_types->insert(RESOURCE_TYPE_WORKER);
-    intercepted_resource_types->insert(RESOURCE_TYPE_SHARED_WORKER);
-    intercepted_resource_types->insert(RESOURCE_TYPE_FAVICON);
-    intercepted_resource_types->insert(RESOURCE_TYPE_SERVICE_WORKER);
-    intercepted_resource_types->insert(RESOURCE_TYPE_PLUGIN_RESOURCE);
-    return true;
-  }
-  return false;
 }
 
 double timeDelta(base::TimeTicks time,
@@ -982,6 +857,179 @@ NetworkHandler::NetworkHandler(const std::string& host_id,
 }
 
 NetworkHandler::~NetworkHandler() {
+}
+
+// static
+net::Error NetworkHandler::NetErrorFromString(const std::string& error,
+                                              bool* ok) {
+  *ok = true;
+  if (error == Network::ErrorReasonEnum::Failed)
+    return net::ERR_FAILED;
+  if (error == Network::ErrorReasonEnum::Aborted)
+    return net::ERR_ABORTED;
+  if (error == Network::ErrorReasonEnum::TimedOut)
+    return net::ERR_TIMED_OUT;
+  if (error == Network::ErrorReasonEnum::AccessDenied)
+    return net::ERR_ACCESS_DENIED;
+  if (error == Network::ErrorReasonEnum::ConnectionClosed)
+    return net::ERR_CONNECTION_CLOSED;
+  if (error == Network::ErrorReasonEnum::ConnectionReset)
+    return net::ERR_CONNECTION_RESET;
+  if (error == Network::ErrorReasonEnum::ConnectionRefused)
+    return net::ERR_CONNECTION_REFUSED;
+  if (error == Network::ErrorReasonEnum::ConnectionAborted)
+    return net::ERR_CONNECTION_ABORTED;
+  if (error == Network::ErrorReasonEnum::ConnectionFailed)
+    return net::ERR_CONNECTION_FAILED;
+  if (error == Network::ErrorReasonEnum::NameNotResolved)
+    return net::ERR_NAME_NOT_RESOLVED;
+  if (error == Network::ErrorReasonEnum::InternetDisconnected)
+    return net::ERR_INTERNET_DISCONNECTED;
+  if (error == Network::ErrorReasonEnum::AddressUnreachable)
+    return net::ERR_ADDRESS_UNREACHABLE;
+  if (error == Network::ErrorReasonEnum::BlockedByClient)
+    return net::ERR_BLOCKED_BY_CLIENT;
+  if (error == Network::ErrorReasonEnum::BlockedByResponse)
+    return net::ERR_BLOCKED_BY_RESPONSE;
+  *ok = false;
+  return net::ERR_FAILED;
+}
+
+// static
+String NetworkHandler::NetErrorToString(int net_error) {
+  switch (net_error) {
+    case net::ERR_ABORTED:
+      return Network::ErrorReasonEnum::Aborted;
+    case net::ERR_TIMED_OUT:
+      return Network::ErrorReasonEnum::TimedOut;
+    case net::ERR_ACCESS_DENIED:
+      return Network::ErrorReasonEnum::AccessDenied;
+    case net::ERR_CONNECTION_CLOSED:
+      return Network::ErrorReasonEnum::ConnectionClosed;
+    case net::ERR_CONNECTION_RESET:
+      return Network::ErrorReasonEnum::ConnectionReset;
+    case net::ERR_CONNECTION_REFUSED:
+      return Network::ErrorReasonEnum::ConnectionRefused;
+    case net::ERR_CONNECTION_ABORTED:
+      return Network::ErrorReasonEnum::ConnectionAborted;
+    case net::ERR_CONNECTION_FAILED:
+      return Network::ErrorReasonEnum::ConnectionFailed;
+    case net::ERR_NAME_NOT_RESOLVED:
+      return Network::ErrorReasonEnum::NameNotResolved;
+    case net::ERR_INTERNET_DISCONNECTED:
+      return Network::ErrorReasonEnum::InternetDisconnected;
+    case net::ERR_ADDRESS_UNREACHABLE:
+      return Network::ErrorReasonEnum::AddressUnreachable;
+    case net::ERR_BLOCKED_BY_CLIENT:
+      return Network::ErrorReasonEnum::BlockedByClient;
+    case net::ERR_BLOCKED_BY_RESPONSE:
+      return Network::ErrorReasonEnum::BlockedByResponse;
+    default:
+      return Network::ErrorReasonEnum::Failed;
+  }
+}
+
+// static
+bool NetworkHandler::AddInterceptedResourceType(
+    const std::string& resource_type,
+    base::flat_set<ResourceType>* intercepted_resource_types) {
+  if (resource_type == protocol::Network::ResourceTypeEnum::Document) {
+    intercepted_resource_types->insert(RESOURCE_TYPE_MAIN_FRAME);
+    intercepted_resource_types->insert(RESOURCE_TYPE_SUB_FRAME);
+    return true;
+  }
+  if (resource_type == protocol::Network::ResourceTypeEnum::Stylesheet) {
+    intercepted_resource_types->insert(RESOURCE_TYPE_STYLESHEET);
+    return true;
+  }
+  if (resource_type == protocol::Network::ResourceTypeEnum::Image) {
+    intercepted_resource_types->insert(RESOURCE_TYPE_IMAGE);
+    return true;
+  }
+  if (resource_type == protocol::Network::ResourceTypeEnum::Media) {
+    intercepted_resource_types->insert(RESOURCE_TYPE_MEDIA);
+    return true;
+  }
+  if (resource_type == protocol::Network::ResourceTypeEnum::Font) {
+    intercepted_resource_types->insert(RESOURCE_TYPE_FONT_RESOURCE);
+    return true;
+  }
+  if (resource_type == protocol::Network::ResourceTypeEnum::Script) {
+    intercepted_resource_types->insert(RESOURCE_TYPE_SCRIPT);
+    return true;
+  }
+  if (resource_type == protocol::Network::ResourceTypeEnum::XHR) {
+    intercepted_resource_types->insert(RESOURCE_TYPE_XHR);
+    return true;
+  }
+  if (resource_type == protocol::Network::ResourceTypeEnum::Fetch) {
+    intercepted_resource_types->insert(RESOURCE_TYPE_PREFETCH);
+    return true;
+  }
+  if (resource_type ==
+      protocol::Network::ResourceTypeEnum::CSPViolationReport) {
+    intercepted_resource_types->insert(RESOURCE_TYPE_CSP_REPORT);
+    return true;
+  }
+  if (resource_type == protocol::Network::ResourceTypeEnum::Ping) {
+    intercepted_resource_types->insert(RESOURCE_TYPE_PING);
+    return true;
+  }
+  if (resource_type == protocol::Network::ResourceTypeEnum::Other) {
+    intercepted_resource_types->insert(RESOURCE_TYPE_SUB_RESOURCE);
+    intercepted_resource_types->insert(RESOURCE_TYPE_OBJECT);
+    intercepted_resource_types->insert(RESOURCE_TYPE_WORKER);
+    intercepted_resource_types->insert(RESOURCE_TYPE_SHARED_WORKER);
+    intercepted_resource_types->insert(RESOURCE_TYPE_FAVICON);
+    intercepted_resource_types->insert(RESOURCE_TYPE_SERVICE_WORKER);
+    intercepted_resource_types->insert(RESOURCE_TYPE_PLUGIN_RESOURCE);
+    return true;
+  }
+  return false;
+}
+
+// static
+const char* NetworkHandler::ResourceTypeToString(ResourceType resource_type) {
+  switch (resource_type) {
+    case RESOURCE_TYPE_MAIN_FRAME:
+      return protocol::Network::ResourceTypeEnum::Document;
+    case RESOURCE_TYPE_SUB_FRAME:
+      return protocol::Network::ResourceTypeEnum::Document;
+    case RESOURCE_TYPE_STYLESHEET:
+      return protocol::Network::ResourceTypeEnum::Stylesheet;
+    case RESOURCE_TYPE_SCRIPT:
+      return protocol::Network::ResourceTypeEnum::Script;
+    case RESOURCE_TYPE_IMAGE:
+      return protocol::Network::ResourceTypeEnum::Image;
+    case RESOURCE_TYPE_FONT_RESOURCE:
+      return protocol::Network::ResourceTypeEnum::Font;
+    case RESOURCE_TYPE_SUB_RESOURCE:
+      return protocol::Network::ResourceTypeEnum::Other;
+    case RESOURCE_TYPE_OBJECT:
+      return protocol::Network::ResourceTypeEnum::Other;
+    case RESOURCE_TYPE_MEDIA:
+      return protocol::Network::ResourceTypeEnum::Media;
+    case RESOURCE_TYPE_WORKER:
+      return protocol::Network::ResourceTypeEnum::Other;
+    case RESOURCE_TYPE_SHARED_WORKER:
+      return protocol::Network::ResourceTypeEnum::Other;
+    case RESOURCE_TYPE_PREFETCH:
+      return protocol::Network::ResourceTypeEnum::Fetch;
+    case RESOURCE_TYPE_FAVICON:
+      return protocol::Network::ResourceTypeEnum::Other;
+    case RESOURCE_TYPE_XHR:
+      return protocol::Network::ResourceTypeEnum::XHR;
+    case RESOURCE_TYPE_PING:
+      return protocol::Network::ResourceTypeEnum::Ping;
+    case RESOURCE_TYPE_SERVICE_WORKER:
+      return protocol::Network::ResourceTypeEnum::Other;
+    case RESOURCE_TYPE_CSP_REPORT:
+      return protocol::Network::ResourceTypeEnum::CSPViolationReport;
+    case RESOURCE_TYPE_PLUGIN_RESOURCE:
+      return protocol::Network::ResourceTypeEnum::Other;
+    default:
+      return protocol::Network::ResourceTypeEnum::Other;
+  }
 }
 
 // static
@@ -1435,22 +1483,29 @@ std::unique_ptr<protocol::Network::SecurityDetails> BuildSecurityDetails(
   return security_details;
 }
 
+std::unique_ptr<protocol::Object> BuildResponseHeaders(
+    scoped_refptr<net::HttpResponseHeaders> headers) {
+  auto headers_dict = DictionaryValue::create();
+  if (!headers)
+    return std::make_unique<protocol::Object>(std::move(headers_dict));
+  size_t iterator = 0;
+  std::string name;
+  std::string value;
+  while (headers->EnumerateHeaderLines(&iterator, &name, &value)) {
+    std::string old_value;
+    bool merge_with_another = headers_dict->getString(name, &old_value);
+    headers_dict->setString(
+        name, merge_with_another ? old_value + '\n' + value : value);
+  }
+  return std::make_unique<protocol::Object>(std::move(headers_dict));
+}
+
 std::unique_ptr<Network::Response> BuildResponse(
     const GURL& url,
     const network::ResourceResponseInfo& info) {
-  std::unique_ptr<DictionaryValue> headers_dict(DictionaryValue::create());
   int status = 0;
   std::string status_text;
   if (info.headers) {
-    size_t iterator = 0;
-    std::string name;
-    std::string value;
-    while (info.headers->EnumerateHeaderLines(&iterator, &name, &value)) {
-      std::string old_value;
-      bool merge_with_another = headers_dict->getString(name, &old_value);
-      headers_dict->setString(
-          name, merge_with_another ? old_value + '\n' + value : value);
-    }
     status = info.headers->response_code();
     status_text = info.headers->GetStatusText();
   } else if (url.SchemeIs(url::kDataScheme)) {
@@ -1464,7 +1519,7 @@ std::unique_ptr<Network::Response> BuildResponse(
           .SetUrl(NetworkHandler::ExtractFragment(url, &url_fragment))
           .SetStatus(status)
           .SetStatusText(status_text)
-          .SetHeaders(Object::fromValue(headers_dict.get(), nullptr))
+          .SetHeaders(BuildResponseHeaders(info.headers))
           .SetMimeType(info.mime_type)
           .SetConnectionReused(info.load_timing.socket_reused)
           .SetConnectionId(info.load_timing.socket_log_id)
@@ -1759,12 +1814,33 @@ void NetworkHandler::OnSignedExchangeReceived(
       std::move(signed_exchange_info));
 }
 
+namespace {
+void UpdateSubresourceLoaderFactories(FrameTreeNode* root) {
+  base::queue<FrameTreeNode*> queue;
+  queue.push(root);
+  while (!queue.empty()) {
+    FrameTreeNode* node = queue.front();
+    queue.pop();
+    RenderFrameHostImpl* host = node->current_frame_host();
+    if (node != root && host->IsCrossProcessSubframe())
+      continue;
+    host->UpdateSubresourceLoaderFactories();
+    for (size_t i = 0; i < node->child_count(); ++i)
+      queue.push(node->child_at(i));
+  }
+}
+}  // namespace
+
 DispatchResponse NetworkHandler::SetRequestInterception(
     std::unique_ptr<protocol::Array<protocol::Network::RequestPattern>>
         patterns) {
   if (!patterns->length()) {
     interception_handle_.reset();
-    url_loader_interceptor_.reset();
+    if (url_loader_interceptor_) {
+      if (host_)
+        UpdateSubresourceLoaderFactories(host_->frame_tree_node());
+      url_loader_interceptor_.reset();
+    }
     return Response::OK();
   }
 
@@ -1790,11 +1866,13 @@ DispatchResponse NetworkHandler::SetRequestInterception(
   if (base::FeatureList::IsEnabled(network::features::kNetworkService)) {
     if (!url_loader_interceptor_) {
       url_loader_interceptor_ = std::make_unique<DevToolsURLLoaderInterceptor>(
-          host_->frame_tree_node(),
           base::BindRepeating(&NetworkHandler::RequestIntercepted,
                               weak_factory_.GetWeakPtr()));
+      url_loader_interceptor_->SetPatterns(interceptor_patterns, true);
+      UpdateSubresourceLoaderFactories(host_->frame_tree_node());
+    } else {
+      url_loader_interceptor_->SetPatterns(interceptor_patterns, true);
     }
-    url_loader_interceptor_->SetPatterns(interceptor_patterns);
     return Response::OK();
   }
 
@@ -1823,21 +1901,35 @@ DispatchResponse NetworkHandler::SetRequestInterception(
 void NetworkHandler::ContinueInterceptedRequest(
     const std::string& interception_id,
     Maybe<std::string> error_reason,
-    Maybe<std::string> base64_raw_response,
+    Maybe<protocol::Binary> raw_response,
     Maybe<std::string> url,
     Maybe<std::string> method,
     Maybe<std::string> post_data,
-    Maybe<protocol::Network::Headers> headers,
+    Maybe<protocol::Network::Headers> opt_headers,
     Maybe<protocol::Network::AuthChallengeResponse> auth_challenge_response,
     std::unique_ptr<ContinueInterceptedRequestCallback> callback) {
-  base::Optional<std::string> raw_response;
-  if (base64_raw_response.isJust()) {
-    std::string decoded;
-    if (!base::Base64Decode(base64_raw_response.fromJust(), &decoded)) {
-      callback->sendFailure(Response::InvalidParams("Invalid rawResponse."));
-      return;
+  scoped_refptr<net::HttpResponseHeaders> response_headers;
+  scoped_refptr<base::RefCountedMemory> response_body;
+  size_t body_offset = 0;
+
+  if (raw_response.isJust()) {
+    const protocol::Binary& raw = raw_response.fromJust();
+
+    std::string raw_headers;
+    int header_size = net::HttpUtil::LocateEndOfHeaders(
+        reinterpret_cast<const char*>(raw.data()), raw.size());
+    if (header_size == -1) {
+      LOG(WARNING) << "Can't find headers in raw response";
+      header_size = 0;
+    } else {
+      raw_headers = net::HttpUtil::AssembleRawHeaders(
+          reinterpret_cast<const char*>(raw.data()), header_size);
     }
-    raw_response = decoded;
+    CHECK_LE(static_cast<size_t>(header_size), raw.size());
+    response_headers =
+        base::MakeRefCounted<net::HttpResponseHeaders>(std::move(raw_headers));
+    response_body = raw.bytes();
+    body_offset = header_size;
   }
 
   base::Optional<net::Error> error;
@@ -1850,11 +1942,55 @@ void NetworkHandler::ContinueInterceptedRequest(
     }
   }
 
+  std::unique_ptr<DevToolsNetworkInterceptor::Modifications::HeadersVector>
+      override_headers;
+  if (opt_headers.isJust()) {
+    std::unique_ptr<protocol::DictionaryValue> headers =
+        opt_headers.fromJust()->toValue();
+    override_headers = std::make_unique<
+        DevToolsNetworkInterceptor::Modifications::HeadersVector>();
+    for (size_t i = 0; i < headers->size(); ++i) {
+      const protocol::DictionaryValue::Entry& entry = headers->at(i);
+      std::string value;
+      if (!entry.second->asString(&value)) {
+        callback->sendFailure(Response::InvalidParams("Invalid header value"));
+        return;
+      }
+      override_headers->emplace_back(entry.first, value);
+    }
+  }
+  using AuthChallengeResponse =
+      DevToolsNetworkInterceptor::AuthChallengeResponse;
+  std::unique_ptr<AuthChallengeResponse> override_auth;
+  if (auth_challenge_response.isJust()) {
+    std::string type = auth_challenge_response.fromJust()->GetResponse();
+    if (type == Network::AuthChallengeResponse::ResponseEnum::Default) {
+      override_auth = std::make_unique<AuthChallengeResponse>(
+          AuthChallengeResponse::kDefault);
+    } else if (type ==
+               Network::AuthChallengeResponse::ResponseEnum::CancelAuth) {
+      override_auth = std::make_unique<AuthChallengeResponse>(
+          AuthChallengeResponse::kCancelAuth);
+    } else if (type == Network::AuthChallengeResponse::ResponseEnum::
+                           ProvideCredentials) {
+      override_auth = std::make_unique<AuthChallengeResponse>(
+          base::UTF8ToUTF16(
+              auth_challenge_response.fromJust()->GetUsername("")),
+          base::UTF8ToUTF16(
+              auth_challenge_response.fromJust()->GetPassword("")));
+    } else {
+      callback->sendFailure(
+          Response::InvalidParams("Unrecognized authChallengeResponse."));
+      return;
+    }
+  }
+
   auto modifications =
       std::make_unique<DevToolsNetworkInterceptor::Modifications>(
-          std::move(error), std::move(raw_response), std::move(url),
-          std::move(method), std::move(post_data), std::move(headers),
-          std::move(auth_challenge_response));
+          std::move(error), std::move(response_headers),
+          std::move(response_body), body_offset, std::move(url),
+          std::move(method), std::move(post_data), std::move(override_headers),
+          std::move(override_auth));
 
   if (url_loader_interceptor_) {
     url_loader_interceptor_->ContinueInterceptedRequest(
@@ -1938,7 +2074,8 @@ std::string NetworkHandler::ExtractFragment(const GURL& url,
 // static
 std::unique_ptr<Network::Request>
 NetworkHandler::CreateRequestFromResourceRequest(
-    const network::ResourceRequest& request) {
+    const network::ResourceRequest& request,
+    const std::string& cookie_line) {
   std::unique_ptr<DictionaryValue> headers_dict(DictionaryValue::create());
   for (net::HttpRequestHeaders::Iterator it(request.headers); it.GetNext();)
     headers_dict->setString(it.name(), it.value());
@@ -1946,6 +2083,9 @@ NetworkHandler::CreateRequestFromResourceRequest(
     headers_dict->setString(net::HttpRequestHeaders::kReferer,
                             request.referrer.spec());
   }
+  if (!cookie_line.empty())
+    headers_dict->setString(net::HttpRequestHeaders::kCookie, cookie_line);
+
   std::string url_fragment;
   std::unique_ptr<protocol::Network::Request> request_object =
       Network::Request::Create()
@@ -2016,13 +2156,13 @@ bool NetworkHandler::ShouldCancelNavigation(
 }
 
 bool NetworkHandler::MaybeCreateProxyForInterception(
-    const base::UnguessableToken& frame_token,
-    int process_id,
+    RenderFrameHostImpl* rfh,
+    bool is_navigation,
     bool is_download,
     network::mojom::URLLoaderFactoryRequest* target_factory_request) {
   return url_loader_interceptor_ &&
          url_loader_interceptor_->CreateProxyForInterception(
-             frame_token, process_id, is_download, target_factory_request);
+             rfh, is_navigation, is_download, target_factory_request);
 }
 
 void NetworkHandler::ApplyOverrides(net::HttpRequestHeaders* headers,
@@ -2034,65 +2174,39 @@ void NetworkHandler::ApplyOverrides(net::HttpRequestHeaders* headers,
   *disable_cache |= cache_disabled_;
 }
 
-namespace {
-
-const char* ResourceTypeToString(ResourceType resource_type) {
-  switch (resource_type) {
-    case RESOURCE_TYPE_MAIN_FRAME:
-      return protocol::Network::ResourceTypeEnum::Document;
-    case RESOURCE_TYPE_SUB_FRAME:
-      return protocol::Network::ResourceTypeEnum::Document;
-    case RESOURCE_TYPE_STYLESHEET:
-      return protocol::Network::ResourceTypeEnum::Stylesheet;
-    case RESOURCE_TYPE_SCRIPT:
-      return protocol::Network::ResourceTypeEnum::Script;
-    case RESOURCE_TYPE_IMAGE:
-      return protocol::Network::ResourceTypeEnum::Image;
-    case RESOURCE_TYPE_FONT_RESOURCE:
-      return protocol::Network::ResourceTypeEnum::Font;
-    case RESOURCE_TYPE_SUB_RESOURCE:
-      return protocol::Network::ResourceTypeEnum::Other;
-    case RESOURCE_TYPE_OBJECT:
-      return protocol::Network::ResourceTypeEnum::Other;
-    case RESOURCE_TYPE_MEDIA:
-      return protocol::Network::ResourceTypeEnum::Media;
-    case RESOURCE_TYPE_WORKER:
-      return protocol::Network::ResourceTypeEnum::Other;
-    case RESOURCE_TYPE_SHARED_WORKER:
-      return protocol::Network::ResourceTypeEnum::Other;
-    case RESOURCE_TYPE_PREFETCH:
-      return protocol::Network::ResourceTypeEnum::Fetch;
-    case RESOURCE_TYPE_FAVICON:
-      return protocol::Network::ResourceTypeEnum::Other;
-    case RESOURCE_TYPE_XHR:
-      return protocol::Network::ResourceTypeEnum::XHR;
-    case RESOURCE_TYPE_PING:
-      return protocol::Network::ResourceTypeEnum::Ping;
-    case RESOURCE_TYPE_SERVICE_WORKER:
-      return protocol::Network::ResourceTypeEnum::Other;
-    case RESOURCE_TYPE_CSP_REPORT:
-      return protocol::Network::ResourceTypeEnum::CSPViolationReport;
-    case RESOURCE_TYPE_PLUGIN_RESOURCE:
-      return protocol::Network::ResourceTypeEnum::Other;
-    default:
-      return protocol::Network::ResourceTypeEnum::Other;
-  }
-}
-
-}  // namespace
-
 void NetworkHandler::RequestIntercepted(
     std::unique_ptr<InterceptedRequestInfo> info) {
   protocol::Maybe<protocol::Network::ErrorReason> error_reason;
   if (info->response_error_code < 0)
     error_reason = NetErrorToString(info->response_error_code);
+
+  Maybe<int> status_code;
+  Maybe<protocol::Network::Headers> response_headers;
+  if (info->response_headers) {
+    status_code = info->response_headers->response_code();
+    response_headers = BuildResponseHeaders(info->response_headers);
+  }
+
+  std::unique_ptr<protocol::Network::AuthChallenge> auth_challenge;
+  if (info->auth_challenge) {
+    auth_challenge =
+        protocol::Network::AuthChallenge::Create()
+            .SetSource(info->auth_challenge->is_proxy
+                           ? Network::AuthChallenge::SourceEnum::Proxy
+                           : Network::AuthChallenge::SourceEnum::Server)
+            .SetOrigin(info->auth_challenge->challenger.Serialize())
+            .SetScheme(info->auth_challenge->scheme)
+            .SetRealm(info->auth_challenge->realm)
+            .Build();
+  }
+
   frontend_->RequestIntercepted(
       info->interception_id, std::move(info->network_request),
       info->frame_id.ToString(), ResourceTypeToString(info->resource_type),
       info->is_navigation, std::move(info->is_download),
-      std::move(info->redirect_url), std::move(info->auth_challenge),
-      std::move(error_reason), std::move(info->http_response_status_code),
-      std::move(info->response_headers));
+      std::move(info->redirect_url), std::move(auth_challenge),
+      std::move(error_reason), std::move(status_code),
+      std::move(response_headers));
 }
 
 void NetworkHandler::SetNetworkConditions(

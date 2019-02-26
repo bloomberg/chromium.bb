@@ -19,11 +19,17 @@ constexpr char kMainThreadTaskLoadLowThresholdParameterName[] =
 namespace features {
 
 const base::Feature kPageAlmostIdle{"PageAlmostIdle",
-                                    base::FEATURE_DISABLED_BY_DEFAULT};
+                                    base::FEATURE_ENABLED_BY_DEFAULT};
 
 // Enables CPU/memory performance measurements on PageAlmostIdle events.
 const base::Feature kPerformanceMeasurement{"PerformanceMeasurement",
                                             base::FEATURE_DISABLED_BY_DEFAULT};
+
+#if defined(OS_WIN)
+// Empty the working set of processes in which all frames are frozen.
+const base::Feature kEmptyWorkingSet{"EmptyWorkingSet",
+                                     base::FEATURE_DISABLED_BY_DEFAULT};
+#endif
 
 }  // namespace features
 
@@ -34,7 +40,7 @@ bool IsPageAlmostIdleSignalEnabled() {
 }
 
 int GetMainThreadTaskLoadLowThreshold() {
-  static const int kDefaultThreshold = 30;
+  static const int kDefaultThreshold = 25;
 
   std::string value_str = base::GetFieldTrialParamValueByFeature(
       features::kPageAlmostIdle, kMainThreadTaskLoadLowThresholdParameterName);

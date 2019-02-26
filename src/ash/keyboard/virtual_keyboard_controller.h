@@ -9,11 +9,9 @@
 
 #include "ash/ash_export.h"
 #include "ash/bluetooth_devices_observer.h"
-#include "ash/keyboard/virtual_keyboard_controller_observer.h"
 #include "ash/session/session_observer.h"
 #include "ash/wm/tablet_mode/tablet_mode_observer.h"
 #include "base/macros.h"
-#include "base/observer_list.h"
 #include "ui/base/ime/chromeos/public/interfaces/ime_keyset.mojom.h"
 #include "ui/events/devices/input_device_event_observer.h"
 #include "ui/keyboard/keyboard_controller_observer.h"
@@ -56,15 +54,11 @@ class ASH_EXPORT VirtualKeyboardController
   void MoveKeyboardToTouchableDisplay() override;
 
   // keyboard::KeyboardControllerObserver:
-  void OnKeyboardDisabled() override;
+  void OnKeyboardEnabledChanged(bool is_enabled) override;
   void OnKeyboardHidden(bool is_temporary_hide) override;
 
   // SessionObserver:
   void OnActiveUserSessionChanged(const AccountId& account_id) override;
-
-  // Management of the observer list.
-  void AddObserver(VirtualKeyboardControllerObserver* observer);
-  void RemoveObserver(VirtualKeyboardControllerObserver* observer);
 
  private:
   // Updates the list of active input devices.
@@ -79,9 +73,9 @@ class ASH_EXPORT VirtualKeyboardController
   // Force enable the keyboard and show it, even in laptop mode.
   void ForceShowKeyboard();
 
-  // Callback function of |bluetooth_devices_observer_|. Called when |device|
-  // changes.
-  void UpdateBluetoothDevice(device::BluetoothDevice* device);
+  // Callback function of |bluetooth_devices_observer_|. Called when the
+  // bluetooth adapter or |device| changes.
+  void OnBluetoothAdapterOrDeviceChanged(device::BluetoothDevice* device);
 
   // True if an external keyboard is connected.
   bool has_external_keyboard_;
@@ -94,8 +88,6 @@ class ASH_EXPORT VirtualKeyboardController
 
   // Observer to observe the bluetooth devices.
   std::unique_ptr<BluetoothDevicesObserver> bluetooth_devices_observer_;
-
-  base::ObserverList<VirtualKeyboardControllerObserver> observers_;
 
   DISALLOW_COPY_AND_ASSIGN(VirtualKeyboardController);
 };

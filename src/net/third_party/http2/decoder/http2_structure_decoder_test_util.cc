@@ -11,7 +11,7 @@ namespace test {
 
 // static
 void Http2StructureDecoderPeer::Randomize(Http2StructureDecoder* p,
-                                          RandomBase* rng) {
+                                          Http2Random* rng) {
   p->offset_ = rng->Rand32();
   for (size_t i = 0; i < sizeof p->buffer_; ++i) {
     p->buffer_[i] = rng->Rand8();

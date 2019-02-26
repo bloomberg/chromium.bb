@@ -206,13 +206,13 @@ def activity_logging_world_check(member):
 
 # [CallWith]
 CALL_WITH_ARGUMENTS = {
-    'ScriptState': 'scriptState',
-    'ExecutionContext': 'executionContext',
-    'ScriptArguments': 'scriptArguments',
+    'ScriptState': 'script_state',
+    'ExecutionContext': 'execution_context',
+    'ScriptArguments': 'script_arguments',
     'CurrentWindow': 'CurrentDOMWindow(info.GetIsolate())',
     'EnteredWindow': 'EnteredDOMWindow(info.GetIsolate())',
     'Document': 'document',
-    'ThisValue': 'ScriptValue(scriptState, info.Holder())',
+    'ThisValue': 'ScriptValue(script_state, info.Holder())',
 }
 # List because key order matters, as we want arguments in deterministic order
 CALL_WITH_VALUES = [
@@ -304,12 +304,12 @@ class ExposureSet:
 
     @staticmethod
     def _code(exposure):
-        exposed = ('executionContext->%s()' %
+        condition = ('execution_context->%s()' %
                    EXPOSED_EXECUTION_CONTEXT_METHOD[exposure.exposed])
         if exposure.runtime_enabled is not None:
             runtime_enabled = (runtime_enabled_function(exposure.runtime_enabled))
-            return '({0} && {1})'.format(exposed, runtime_enabled)
-        return exposed
+            return '({0} && {1})'.format(condition, runtime_enabled)
+        return condition
 
     def code(self):
         if len(self.exposures) == 0:
@@ -350,10 +350,10 @@ def exposed(member, interface):
 # [SecureContext]
 def secure_context(member, interface):
     """Returns C++ code that checks whether an interface/method/attribute/etc. is exposed
-    to the current context. Requires that the surrounding code defines an 'isSecureContext'
+    to the current context. Requires that the surrounding code defines an |is_secure_context|
     variable prior to this check."""
     if 'SecureContext' in member.extended_attributes or 'SecureContext' in interface.extended_attributes:
-        conditions = ['isSecureContext']
+        conditions = ['is_secure_context']
         if 'SecureContext' in member.extended_attributes and member.extended_attributes['SecureContext'] is not None:
             conditions.append('!%s' % runtime_enabled_function(member.extended_attributes['SecureContext']))
         if 'SecureContext' in interface.extended_attributes and interface.extended_attributes['SecureContext'] is not None:
@@ -426,7 +426,7 @@ def origin_trial_feature_name(definition_or_member):
 
 def origin_trial_function_call(feature_name, execution_context=None):
     """Returns a function call to determine if an origin trial is enabled."""
-    return 'OriginTrials::{feature_name}Enabled({context})'.format(
+    return 'origin_trials::{feature_name}Enabled({context})'.format(
         feature_name=feature_name,
         context=execution_context if execution_context else "execution_context")
 
@@ -466,14 +466,14 @@ def is_legacy_interface_type_checking(interface, member):
             'LegacyInterfaceTypeChecking' in member.extended_attributes)
 
 
-# [Unforgeable], [Global], [PrimaryGlobal]
+# [Unforgeable], [Global]
 def on_instance(interface, member):
     """Returns True if the interface's member needs to be defined on every
     instance object.
 
     The following members must be defined on an instance object.
     - [Unforgeable] members
-    - regular members of [Global] or [PrimaryGlobal] interfaces
+    - regular members of [Global] interfaces
     """
     if member.is_static:
         return False
@@ -488,8 +488,7 @@ def on_instance(interface, member):
     if is_constructor_attribute(member):
         return True
 
-    if ('PrimaryGlobal' in interface.extended_attributes or
-            'Global' in interface.extended_attributes or
+    if ('Global' in interface.extended_attributes or
             'Unforgeable' in member.extended_attributes):
         return True
     return False
@@ -503,8 +502,8 @@ def on_prototype(interface, member):
     follows.
     - static members (optional)
     - [Unforgeable] members
-    - members of [Global] or [PrimaryGlobal] interfaces
-    - named properties of [Global] or [PrimaryGlobal] interfaces
+    - members of [Global] interfaces
+    - named properties of [Global] interfaces
     """
     if member.is_static:
         return False
@@ -519,8 +518,7 @@ def on_prototype(interface, member):
     if is_constructor_attribute(member):
         return False
 
-    if ('PrimaryGlobal' in interface.extended_attributes or
-            'Global' in interface.extended_attributes or
+    if ('Global' in interface.extended_attributes or
             'Unforgeable' in member.extended_attributes):
         return False
     return True

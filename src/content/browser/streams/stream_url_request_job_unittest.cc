@@ -55,9 +55,7 @@ class StreamURLRequestJobTest : public testing::Test {
     StreamRegistry* registry_;
   };
 
-  StreamURLRequestJobTest()
-      : task_environment_(
-            base::test::ScopedTaskEnvironment::MainThreadType::IO) {}
+  StreamURLRequestJobTest() {}
 
   void SetUp() override {
     registry_.reset(new StreamRegistry());
@@ -109,7 +107,8 @@ class StreamURLRequestJobTest : public testing::Test {
   }
 
  protected:
-  base::test::ScopedTaskEnvironment task_environment_;
+  base::test::ScopedTaskEnvironment task_environment_{
+      base::test::ScopedTaskEnvironment::MainThreadType::IO};
   std::unique_ptr<StreamRegistry> registry_;
 
   net::URLRequestContext url_request_context_;

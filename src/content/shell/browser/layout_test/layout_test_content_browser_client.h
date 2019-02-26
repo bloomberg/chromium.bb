@@ -5,6 +5,8 @@
 #ifndef CONTENT_SHELL_BROWSER_LAYOUT_TEST_LAYOUT_TEST_CONTENT_BROWSER_CLIENT_H_
 #define CONTENT_SHELL_BROWSER_LAYOUT_TEST_LAYOUT_TEST_CONTENT_BROWSER_CLIENT_H_
 
+#include <memory>
+
 #include "content/shell/browser/shell_content_browser_client.h"
 #include "content/shell/common/layout_test/fake_bluetooth_chooser.mojom.h"
 #include "third_party/blink/public/mojom/clipboard/clipboard.mojom.h"
@@ -49,8 +51,7 @@ class LayoutTestContentBrowserClient : public ShellContentBrowserClient {
       content::BrowserContext* context,
       content::StoragePartition* partition,
       storage::OptionalQuotaSettingsCallback callback) override;
-  bool DoesSiteRequireDedicatedProcess(BrowserContext* browser_context,
-                                       const GURL& effective_site_url) override;
+  std::vector<url::Origin> GetOriginsRequiringDedicatedProcess() override;
   std::unique_ptr<OverlayWindow> CreateWindowForPictureInPicture(
       PictureInPictureWindowController* controller) override;
 
@@ -69,7 +70,6 @@ class LayoutTestContentBrowserClient : public ShellContentBrowserClient {
                        bool user_gesture,
                        bool opener_suppressed,
                        bool* no_javascript_access) override;
-  bool ShouldEnableStrictSiteIsolation() override;
   bool CanIgnoreCertificateErrorIfNeeded() override;
 
   // ShellContentBrowserClient overrides.
@@ -101,6 +101,6 @@ class LayoutTestContentBrowserClient : public ShellContentBrowserClient {
   std::unique_ptr<MockClipboardHost> mock_clipboard_host_;
 };
 
-}  // content
+}  // namespace content
 
 #endif  // CONTENT_SHELL_BROWSER_LAYOUT_TEST_LAYOUT_TEST_CONTENT_BROWSER_CLIENT_H_

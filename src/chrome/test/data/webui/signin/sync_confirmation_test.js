@@ -53,13 +53,13 @@ cr.define('signin_sync_confirmation', function() {
 
     const STANDARD_CONSENT_DESCRIPTION_TEXT = [
       'Get Google smarts in Chrome',
-      'Your bookmarks, passwords, history, and more on all your devices',
-      'More personal Google services, like better page suggestions',
-      'Improve Chrome and its security by sending system and usage ' +
-          'information to Google',
-      'Google may use content on sites you visit, plus browser activity and ' +
-          'interactions, to personalize Chrome and other Google services ' +
-          'like Translate, Search, and ads. You can customize this in Settings.'
+      'Sync your bookmarks, passwords, history, and more on all your devices',
+      'Google may use your history to personalize Search, ads, and other ' +
+          'Google services.',
+      'Fix spelling errors with enhanced spell check',
+      'The text you type in text fields will be sent to Google.',
+      'Help improve Chrome and its security',
+      'Sends some system information and page content to Google anonymously.'
     ];
 
 

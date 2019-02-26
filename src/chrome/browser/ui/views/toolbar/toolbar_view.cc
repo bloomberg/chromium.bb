@@ -99,7 +99,7 @@ int GetToolbarHorizontalPadding() {
   // In the touch-optimized UI, we don't use any horizontal paddings; the back
   // button starts from the beginning of the view, and the app menu button ends
   // at the end of the view.
-  return ui::MaterialDesignController::IsTouchOptimizedUiEnabled() ? 0 : 8;
+  return ui::MaterialDesignController::touch_ui() ? 0 : 8;
 }
 
 }  // namespace
@@ -145,6 +145,8 @@ void ToolbarView::Init() {
   location_bar_ = new LocationBarView(browser_, browser_->profile(),
                                       browser_->command_controller(), this,
                                       !is_display_mode_normal());
+  // Make sure the toolbar shows by default.
+  size_animation_.Reset(1);
 
   if (!is_display_mode_normal()) {
     AddChildView(location_bar_);
@@ -267,6 +269,16 @@ void ToolbarView::Init() {
   initialized_ = true;
 }
 
+void ToolbarView::AnimationEnded(const gfx::Animation* animation) {
+  AnimationProgressed(animation);
+  if (animation->GetCurrentValue() == 0)
+    SetToolbarVisibility(false);
+}
+
+void ToolbarView::AnimationProgressed(const gfx::Animation* animation) {
+  GetWidget()->non_client_view()->Layout();
+}
+
 void ToolbarView::Update(WebContents* tab) {
   if (location_bar_)
     location_bar_->Update(tab);
@@ -274,6 +286,26 @@ void ToolbarView::Update(WebContents* tab) {
     browser_actions_->RefreshToolbarActionViews();
   if (reload_)
     reload_->set_menu_enabled(chrome::IsDebuggerAttachedToCurrentTab(browser_));
+}
+
+void ToolbarView::SetToolbarVisibility(bool visible) {
+  SetVisible(visible);
+  location_bar_->SetVisible(visible);
+}
+
+void ToolbarView::UpdateToolbarVisibility(bool visible, bool animate) {
+  if (!animate) {
+    size_animation_.Reset(visible ? 1.0 : 0.0);
+    SetToolbarVisibility(visible);
+    return;
+  }
+
+  if (visible) {
+    SetToolbarVisibility(true);
+    size_animation_.Show();
+  } else {
+    size_animation_.Hide();
+  }
 }
 
 void ToolbarView::ResetTabState(WebContents* tab) {
@@ -357,12 +389,12 @@ WebContents* ToolbarView::GetWebContents() {
   return browser_->tab_strip_model()->GetActiveWebContents();
 }
 
-ToolbarModel* ToolbarView::GetToolbarModel() {
-  return browser_->toolbar_model();
+LocationBarModel* ToolbarView::GetLocationBarModel() {
+  return browser_->location_bar_model();
 }
 
-const ToolbarModel* ToolbarView::GetToolbarModel() const {
-  return browser_->toolbar_model();
+const LocationBarModel* ToolbarView::GetLocationBarModel() const {
+  return browser_->location_bar_model();
 }
 
 ContentSettingBubbleModelDelegate*
@@ -487,10 +519,16 @@ void ToolbarView::Layout() {
   //                http://crbug.com/5540
   const bool maximized =
       browser_->window() && browser_->window()->IsMaximized();
-  // The padding at either end of the toolbar.
-  const int end_padding = GetToolbarHorizontalPadding();
-  back_->SetLeadingMargin(maximized ? end_padding : 0);
-  back_->SetBounds(maximized ? 0 : end_padding, toolbar_button_y,
+
+  // When maximized, insert padding into the first and last control instead of
+  // padding outside of them.
+  const int end_padding = maximized ? 0 : GetToolbarHorizontalPadding();
+  const int end_control_internal_margin =
+      maximized ? GetToolbarHorizontalPadding() : 0;
+  back_->SetLeadingMargin(end_control_internal_margin);
+  app_menu_button_->SetTrailingMargin(end_control_internal_margin);
+
+  back_->SetBounds(end_padding, toolbar_button_y,
                    back_->GetPreferredSize().width(), toolbar_button_height);
   const int element_padding = GetLayoutConstant(TOOLBAR_ELEMENT_PADDING);
   int next_element_x = back_->bounds().right() + element_padding;
@@ -519,7 +557,7 @@ void ToolbarView::Layout() {
 
   next_element_x += GetLayoutConstant(TOOLBAR_STANDARD_SPACING);
 
-  int app_menu_width = app_menu_button_->GetPreferredSize().width();
+  const int app_menu_width = app_menu_button_->GetPreferredSize().width();
   const int right_padding = GetLayoutConstant(TOOLBAR_STANDARD_SPACING);
 
   // Note that the browser actions container has its own internal left and right
@@ -529,8 +567,8 @@ void ToolbarView::Layout() {
   int available_width = std::max(
       0,
       width() - end_padding - app_menu_width -
-      (browser_actions_->GetPreferredSize().IsEmpty() ? right_padding : 0) -
-      next_element_x);
+          (browser_actions_->GetPreferredSize().IsEmpty() ? right_padding : 0) -
+          next_element_x);
   if (cast_ && cast_->visible()) {
     available_width -= cast_->GetPreferredSize().width();
     available_width -= element_padding;
@@ -583,14 +621,6 @@ void ToolbarView::Layout() {
     next_element_x = avatar_->bounds().right() + element_padding;
   }
 
-  // Extend the app menu to the screen's right edge in maximized mode just like
-  // we extend the back button to the left edge.
-  if (maximized)
-    app_menu_width += end_padding;
-
-  // Set trailing margin before updating the bounds so OnBoundsChange can use
-  // the trailing margin.
-  app_menu_button_->SetTrailingMargin(maximized ? end_padding : 0);
   app_menu_button_->SetBounds(next_element_x, toolbar_button_y, app_menu_width,
                               toolbar_button_height);
 }
@@ -664,29 +694,31 @@ bool ToolbarView::SetPaneFocusAndFocusDefault() {
 }
 
 // ui::MaterialDesignControllerObserver:
-void ToolbarView::OnMdModeChanged() {
-  LoadImages();
-  PreferredSizeChanged();
+void ToolbarView::OnTouchUiChanged() {
+  if (is_display_mode_normal()) {
+    LoadImages();
+    PreferredSizeChanged();
+  }
 }
 
 ////////////////////////////////////////////////////////////////////////////////
 // ToolbarView, private:
 
 // AppMenuIconController::Delegate:
-void ToolbarView::UpdateSeverity(AppMenuIconController::IconType type,
-                                 AppMenuIconController::Severity severity,
-                                 bool animate) {
+void ToolbarView::UpdateTypeAndSeverity(
+    AppMenuIconController::TypeAndSeverity type_and_severity) {
   // There's no app menu in tabless windows.
   if (!app_menu_button_)
     return;
 
   base::string16 accname_app = l10n_util::GetStringUTF16(IDS_ACCNAME_APP);
-  if (type == AppMenuIconController::IconType::UPGRADE_NOTIFICATION) {
+  if (type_and_severity.type ==
+      AppMenuIconController::IconType::UPGRADE_NOTIFICATION) {
     accname_app = l10n_util::GetStringFUTF16(
         IDS_ACCNAME_APP_UPGRADE_RECOMMENDED, accname_app);
   }
   app_menu_button_->SetAccessibleName(accname_app);
-  app_menu_button_->SetSeverity(type, severity, animate);
+  app_menu_button_->SetTypeAndSeverity(type_and_severity);
 }
 
 // ToolbarButtonProvider:
@@ -721,6 +753,10 @@ void ToolbarView::FocusToolbar() {
 
 views::AccessiblePaneView* ToolbarView::GetAsAccessiblePaneView() {
   return this;
+}
+
+views::View* ToolbarView::GetAnchorView() {
+  return location_bar_;
 }
 
 BrowserRootView::DropIndex ToolbarView::GetDropIndex(
@@ -765,13 +801,17 @@ gfx::Size ToolbarView::SizeForContentSize(gfx::Size size) const {
     // In the touch-optimized UI, the toolbar buttons are big and occupy the
     // entire view's height, we don't need to add any extra vertical space.
     const int extra_vertical_space =
-        ui::MaterialDesignController::IsTouchOptimizedUiEnabled() ? 0 : 9;
+        ui::MaterialDesignController::touch_ui() ? 0 : 9;
     size.SetToMax(gfx::Size(0, content_height + extra_vertical_space));
   }
+
+  size.set_height(size.height() * size_animation_.GetCurrentValue());
   return size;
 }
 
 void ToolbarView::LoadImages() {
+  DCHECK(is_display_mode_normal());
+
   const ui::ThemeProvider* tp = GetThemeProvider();
 
   const SkColor normal_color =
@@ -782,25 +822,24 @@ void ToolbarView::LoadImages() {
   browser_actions_->SetSeparatorColor(
       tp->GetColor(ThemeProperties::COLOR_TOOLBAR_VERTICAL_SEPARATOR));
 
-  const bool is_touch =
-      ui::MaterialDesignController::IsTouchOptimizedUiEnabled();
+  const bool touch_ui = ui::MaterialDesignController::touch_ui();
 
   const gfx::VectorIcon& back_image =
-      is_touch ? kBackArrowTouchIcon : vector_icons::kBackArrowIcon;
+      touch_ui ? kBackArrowTouchIcon : vector_icons::kBackArrowIcon;
   back_->SetImage(views::Button::STATE_NORMAL,
                   gfx::CreateVectorIcon(back_image, normal_color));
   back_->SetImage(views::Button::STATE_DISABLED,
                   gfx::CreateVectorIcon(back_image, disabled_color));
 
   const gfx::VectorIcon& forward_image =
-      is_touch ? kForwardArrowTouchIcon : vector_icons::kForwardArrowIcon;
+      touch_ui ? kForwardArrowTouchIcon : vector_icons::kForwardArrowIcon;
   forward_->SetImage(views::Button::STATE_NORMAL,
                      gfx::CreateVectorIcon(forward_image, normal_color));
   forward_->SetImage(views::Button::STATE_DISABLED,
                      gfx::CreateVectorIcon(forward_image, disabled_color));
 
   const gfx::VectorIcon& home_image =
-      is_touch ? kNavigateHomeTouchIcon : kNavigateHomeIcon;
+      touch_ui ? kNavigateHomeTouchIcon : kNavigateHomeIcon;
   home_->SetImage(views::Button::STATE_NORMAL,
                   gfx::CreateVectorIcon(home_image, normal_color));
 
@@ -809,7 +848,7 @@ void ToolbarView::LoadImages() {
   if (avatar_)
     avatar_->UpdateIcon();
 
-  app_menu_button_->UpdateIcon(false);
+  app_menu_button_->UpdateIcon();
 
   reload_->LoadImages();
 }

@@ -35,9 +35,6 @@ class QuicFramerPeer {
 
   static QuicEncrypter* GetEncrypter(QuicFramer* framer, EncryptionLevel level);
 
-  static void SetLastPacketIsIetfQuic(QuicFramer* framer,
-                                      bool last_packet_is_ietf_quic);
-
   // IETF defined frame append/process methods.
   static bool ProcessIetfStreamFrame(QuicFramer* framer,
                                      QuicDataReader* reader,
@@ -70,6 +67,7 @@ class QuicFramerPeer {
                                            QuicApplicationCloseFrame* frame);
   static bool ProcessIetfAckFrame(QuicFramer* framer,
                                   QuicDataReader* reader,
+                                  uint64_t frame_type,
                                   QuicAckFrame* ack_frame);
   static bool AppendIetfAckFrameAndTypeByte(QuicFramer* framer,
                                             const QuicAckFrame& frame,
@@ -151,6 +149,14 @@ class QuicFramerPeer {
   static bool ProcessNewConnectionIdFrame(QuicFramer* framer,
                                           QuicDataReader* reader,
                                           QuicNewConnectionIdFrame* frame);
+  static bool AppendRetireConnectionIdFrame(
+      QuicFramer* framer,
+      const QuicRetireConnectionIdFrame& frame,
+      QuicDataWriter* writer);
+  static bool ProcessRetireConnectionIdFrame(
+      QuicFramer* framer,
+      QuicDataReader* reader,
+      QuicRetireConnectionIdFrame* frame);
   static size_t ComputeFrameLength(QuicFramer* framer,
                                    const QuicFrame& frame,
                                    bool last_frame_in_packet,

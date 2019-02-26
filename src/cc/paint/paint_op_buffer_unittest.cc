@@ -1160,10 +1160,9 @@ std::vector<std::vector<sk_sp<SkTypeface>>> test_typefaces = {
     }(),
 };
 
-std::vector<scoped_refptr<PaintTextBlob>> test_paint_blobs = {
+std::vector<sk_sp<SkTextBlob>> test_paint_blobs = {
     [] {
-      SkPaint font;
-      font.setTextEncoding(SkPaint::kGlyphID_TextEncoding);
+      SkFont font;
       font.setTypeface(test_typefaces[0][0]);
 
       SkTextBlobBuilder builder;
@@ -1172,12 +1171,10 @@ std::vector<scoped_refptr<PaintTextBlob>> test_paint_blobs = {
           builder.allocRun(font, glyph_count, 1.2f, 2.3f, &test_rects[0]);
       // allocRun() allocates only the glyph buffer.
       std::fill(run.glyphs, run.glyphs + glyph_count, 0);
-      return base::MakeRefCounted<PaintTextBlob>(builder.make(),
-                                                 test_typefaces[0]);
+      return builder.make();
     }(),
     [] {
-      SkPaint font;
-      font.setTextEncoding(SkPaint::kGlyphID_TextEncoding);
+      SkFont font;
       font.setTypeface(test_typefaces[1][0]);
 
       SkTextBlobBuilder builder;
@@ -1202,8 +1199,7 @@ std::vector<scoped_refptr<PaintTextBlob>> test_paint_blobs = {
       // pos buffer.
       std::fill(run3.glyphs, run3.glyphs + glyph_count, 0);
       std::fill(run3.pos, run3.pos + glyph_count, 0);
-      return base::MakeRefCounted<PaintTextBlob>(builder.make(),
-                                                 test_typefaces[1]);
+      return builder.make();
     }(),
 };
 
@@ -1215,6 +1211,16 @@ std::vector<PaintImage> test_images = {
     CreateDiscardablePaintImage(gfx::Size(1, 1)),
     CreateDiscardablePaintImage(gfx::Size(50, 50)),
 };
+
+std::vector<scoped_refptr<SkottieWrapper>> test_skotties = {
+    CreateSkottie(gfx::Size(10, 20), 4), CreateSkottie(gfx::Size(100, 40), 5),
+    CreateSkottie(gfx::Size(80, 70), 6)};
+
+std::vector<float> test_skottie_floats = {0, 0.1f, 1.f};
+
+std::vector<SkRect> test_skottie_rects = {SkRect::MakeXYWH(10, 20, 30, 40),
+                                          SkRect::MakeXYWH(0, 5, 10, 20),
+                                          SkRect::MakeXYWH(6, 0, 3, 50)};
 
 // Writes as many ops in |buffer| as can fit in |output_size| to |output|.
 // Records the numbers of bytes written for each op.
@@ -1498,6 +1504,15 @@ void PushDrawRRectOps(PaintOpBuffer* buffer) {
   ValidateOps<DrawRRectOp>(buffer);
 }
 
+void PushDrawSkottieOps(PaintOpBuffer* buffer) {
+  size_t len = std::min(test_skotties.size(), test_flags.size());
+  for (size_t i = 0; i < len; i++) {
+    buffer->push<DrawSkottieOp>(test_skotties[i], test_skottie_rects[i],
+                                test_skottie_floats[i]);
+  }
+  ValidateOps<DrawSkottieOp>(buffer);
+}
+
 void PushDrawTextBlobOps(PaintOpBuffer* buffer) {
   size_t len = std::min(std::min(test_paint_blobs.size(), test_flags.size()),
                         test_floats.size() - 1);
@@ -1637,6 +1652,10 @@ class PaintOpSerializationTest : public ::testing::TestWithParam<uint8_t> {
       case PaintOpType::DrawRRect:
         PushDrawRRectOps(&buffer_);
         break;
+      case PaintOpType::DrawSkottie:
+        // Not supported
+        // TODO(malaykeshav): Add test when Drawable supports serialization.
+        break;
       case PaintOpType::DrawTextBlob:
         PushDrawTextBlobOps(&buffer_);
         break;
@@ -1679,9 +1698,11 @@ class PaintOpSerializationTest : public ::testing::TestWithParam<uint8_t> {
   }
 
   bool IsTypeSupported() {
-    // DrawRecordOps must be flattened and are not currently serialized.
-    // All other types must push non-zero amounts of ops in PushTestOps.
-    return GetParamType() != PaintOpType::DrawRecord;
+    // DrawRecordOps and DrawSkottieOps must be flattened and are not currently
+    // serialized. All other types must push non-zero amounts of ops in
+    // PushTestOps.
+    return GetParamType() != PaintOpType::DrawRecord &&
+           GetParamType() != PaintOpType::DrawSkottie;
   }
 
  protected:
@@ -1718,12 +1739,9 @@ TEST_P(PaintOpSerializationTest, SmokeTest) {
 
   PaintOpBuffer::Iterator iter(&buffer_);
   size_t i = 0;
-  PaintOp::DeserializeOptions deserialize_options(
-      serializer.options_provider()->transfer_cache_helper(),
-      serializer.options_provider()->strike_client());
-  for (auto* base_written :
-       DeserializerIterator(output_.get(), serializer.TotalBytesWritten(),
-                            deserialize_options)) {
+  for (auto* base_written : DeserializerIterator(
+           output_.get(), serializer.TotalBytesWritten(),
+           serializer.options_provider()->deserialize_options())) {
     SCOPED_TRACE(base::StringPrintf(
         "%s #%zu", PaintOpTypeToString(GetParamType()).c_str(), i));
     ASSERT_EQ(!*iter, !base_written);
@@ -1761,6 +1779,7 @@ TEST_P(PaintOpSerializationTest, SerializationFailures) {
     // Attempt to write op into a buffer of size |i|, and only expect
     // it to succeed if the buffer is large enough.
     for (size_t i = 0; i < bytes_written[op_idx] + 2; ++i) {
+      options_provider.ClearPaintCache();
       size_t written_bytes = iter->Serialize(
           output_.get(), i, options_provider.serialize_options());
       if (i >= expected_bytes) {
@@ -1932,8 +1951,8 @@ TEST(PaintOpSerializationTest, CompleteBufferSerialization) {
       memory.get(), PaintOpBuffer::kInitialBufferSize,
       options_provider.image_provider(),
       options_provider.transfer_cache_helper(),
-      options_provider.strike_server(), options_provider.color_space(),
-      options_provider.can_use_lcd_text(),
+      options_provider.client_paint_cache(), options_provider.strike_server(),
+      options_provider.color_space(), options_provider.can_use_lcd_text(),
       options_provider.context_supports_distance_field_text(),
       options_provider.max_texture_size(),
       options_provider.max_texture_bytes());
@@ -2012,8 +2031,8 @@ TEST(PaintOpSerializationTest, Preamble) {
       memory.get(), PaintOpBuffer::kInitialBufferSize,
       options_provider.image_provider(),
       options_provider.transfer_cache_helper(),
-      options_provider.strike_server(), options_provider.color_space(),
-      options_provider.can_use_lcd_text(),
+      options_provider.client_paint_cache(), options_provider.strike_server(),
+      options_provider.color_space(), options_provider.can_use_lcd_text(),
       options_provider.context_supports_distance_field_text(),
       options_provider.max_texture_size(),
       options_provider.max_texture_bytes());
@@ -2115,8 +2134,8 @@ TEST(PaintOpSerializationTest, SerializesNestedRecords) {
       memory.get(), PaintOpBuffer::kInitialBufferSize,
       options_provider.image_provider(),
       options_provider.transfer_cache_helper(),
-      options_provider.strike_server(), options_provider.color_space(),
-      options_provider.can_use_lcd_text(),
+      options_provider.client_paint_cache(), options_provider.strike_server(),
+      options_provider.color_space(), options_provider.can_use_lcd_text(),
       options_provider.context_supports_distance_field_text(),
       options_provider.max_texture_size(),
       options_provider.max_texture_bytes());
@@ -2192,8 +2211,8 @@ TEST(PaintOpBufferTest, ClipsImagesDuringSerialization) {
         memory.get(), PaintOpBuffer::kInitialBufferSize,
         options_provider.image_provider(),
         options_provider.transfer_cache_helper(),
-        options_provider.strike_server(), options_provider.color_space(),
-        options_provider.can_use_lcd_text(),
+        options_provider.client_paint_cache(), options_provider.strike_server(),
+        options_provider.color_space(), options_provider.can_use_lcd_text(),
         options_provider.context_supports_distance_field_text(),
         options_provider.max_texture_size(),
         options_provider.max_texture_bytes());
@@ -2258,8 +2277,8 @@ TEST(PaintOpBufferSerializationTest, AlphaFoldingDuringSerialization) {
       memory.get(), PaintOpBuffer::kInitialBufferSize,
       options_provider.image_provider(),
       options_provider.transfer_cache_helper(),
-      options_provider.strike_server(), options_provider.color_space(),
-      options_provider.can_use_lcd_text(),
+      options_provider.client_paint_cache(), options_provider.strike_server(),
+      options_provider.color_space(), options_provider.can_use_lcd_text(),
       options_provider.context_supports_distance_field_text(),
       options_provider.max_texture_size(),
       options_provider.max_texture_bytes());
@@ -2660,6 +2679,19 @@ TEST(PaintOpBufferTest, BoundingRect_DrawDRRectOp) {
   }
 }
 
+TEST(PaintOpBufferTest, BoundingRect_DrawSkottieOp) {
+  PaintOpBuffer buffer;
+  PushDrawSkottieOps(&buffer);
+
+  SkRect rect;
+  for (auto* base_op : PaintOpBuffer::Iterator(&buffer)) {
+    auto* op = static_cast<DrawSkottieOp*>(base_op);
+
+    ASSERT_TRUE(PaintOp::GetBounds(op, &rect));
+    EXPECT_EQ(rect, op->dst.makeSorted());
+  }
+}
+
 TEST(PaintOpBufferTest, BoundingRect_DrawTextBlobOp) {
   PaintOpBuffer buffer;
   PushDrawTextBlobOps(&buffer);
@@ -2669,10 +2701,7 @@ TEST(PaintOpBufferTest, BoundingRect_DrawTextBlobOp) {
     auto* op = static_cast<DrawTextBlobOp*>(base_op);
 
     ASSERT_TRUE(PaintOp::GetBounds(op, &rect));
-    EXPECT_EQ(rect, op->blob->ToSkTextBlob()
-                        ->bounds()
-                        .makeOffset(op->x, op->y)
-                        .makeSorted());
+    EXPECT_EQ(rect, op->blob->bounds().makeOffset(op->x, op->y).makeSorted());
   }
 }
 
@@ -2880,8 +2909,8 @@ TEST(PaintOpBufferTest, ReplacesImagesFromProviderOOP) {
       memory.get(), PaintOpBuffer::kInitialBufferSize,
       options_provider.image_provider(),
       options_provider.transfer_cache_helper(),
-      options_provider.strike_server(), options_provider.color_space(),
-      options_provider.can_use_lcd_text(),
+      options_provider.client_paint_cache(), options_provider.strike_server(),
+      options_provider.color_space(), options_provider.can_use_lcd_text(),
       options_provider.context_supports_distance_field_text(),
       options_provider.max_texture_size(),
       options_provider.max_texture_bytes());
@@ -2999,11 +3028,8 @@ TEST_P(PaintFilterSerializationTest, Basic) {
     ASSERT_GT(writer.size(), 0u) << PaintFilter::TypeToString(filter->type());
 
     sk_sp<PaintFilter> deserialized_filter;
-    PaintOp::DeserializeOptions deserialize_options(
-        options_provider.transfer_cache_helper(),
-        options_provider.strike_client());
-    PaintOpReader reader(memory.data(), writer.size(), deserialize_options,
-                         GetParam());
+    PaintOpReader reader(memory.data(), writer.size(),
+                         options_provider.deserialize_options(), GetParam());
     reader.Read(&deserialized_filter);
     ASSERT_TRUE(deserialized_filter);
     EXPECT_TRUE(*filter == *deserialized_filter);
@@ -3029,8 +3055,8 @@ TEST(PaintOpBufferTest, PaintRecordShaderSerialization) {
       memory.get(), PaintOpBuffer::kInitialBufferSize,
       options_provider.image_provider(),
       options_provider.transfer_cache_helper(),
-      options_provider.strike_server(), options_provider.color_space(),
-      options_provider.can_use_lcd_text(),
+      options_provider.client_paint_cache(), options_provider.strike_server(),
+      options_provider.color_space(), options_provider.can_use_lcd_text(),
       options_provider.context_supports_distance_field_text(),
       options_provider.max_texture_size(),
       options_provider.max_texture_bytes());
@@ -3121,10 +3147,8 @@ TEST(PaintOpBufferTest, SecurityConstrainedImageSerialization) {
   writer.Write(filter.get());
 
   sk_sp<PaintFilter> out_filter;
-  PaintOp::DeserializeOptions deserialize_options(
-      options_provider.transfer_cache_helper(),
-      options_provider.strike_client());
-  PaintOpReader reader(memory.get(), writer.size(), deserialize_options,
+  PaintOpReader reader(memory.get(), writer.size(),
+                       options_provider.deserialize_options(),
                        enable_security_constraints);
   reader.Read(&out_filter);
   EXPECT_TRUE(*filter == *out_filter);
@@ -3150,8 +3174,8 @@ TEST(PaintOpBufferTest, DrawImageRectSerializeScaledImages) {
       memory.get(), PaintOpBuffer::kInitialBufferSize,
       options_provider.image_provider(),
       options_provider.transfer_cache_helper(),
-      options_provider.strike_server(), options_provider.color_space(),
-      options_provider.can_use_lcd_text(),
+      options_provider.client_paint_cache(), options_provider.strike_server(),
+      options_provider.color_space(), options_provider.can_use_lcd_text(),
       options_provider.context_supports_distance_field_text(),
       options_provider.max_texture_size(),
       options_provider.max_texture_bytes());
@@ -3187,8 +3211,8 @@ TEST(PaintOpBufferTest, RecordShadersSerializeScaledImages) {
       memory.get(), PaintOpBuffer::kInitialBufferSize,
       options_provider.image_provider(),
       options_provider.transfer_cache_helper(),
-      options_provider.strike_server(), options_provider.color_space(),
-      options_provider.can_use_lcd_text(),
+      options_provider.client_paint_cache(), options_provider.strike_server(),
+      options_provider.color_space(), options_provider.can_use_lcd_text(),
       options_provider.context_supports_distance_field_text(),
       options_provider.max_texture_size(),
       options_provider.max_texture_bytes());
@@ -3227,8 +3251,8 @@ TEST(PaintOpBufferTest, RecordShadersCached) {
     SimpleBufferSerializer serializer(
         memory.get(), PaintOpBuffer::kInitialBufferSize,
         options_provider.image_provider(), transfer_cache,
-        options_provider.strike_server(), options_provider.color_space(),
-        options_provider.can_use_lcd_text(),
+        options_provider.client_paint_cache(), options_provider.strike_server(),
+        options_provider.color_space(), options_provider.can_use_lcd_text(),
         options_provider.context_supports_distance_field_text(),
         options_provider.max_texture_size(),
         options_provider.max_texture_bytes());
@@ -3253,8 +3277,8 @@ TEST(PaintOpBufferTest, RecordShadersCached) {
     SimpleBufferSerializer serializer(
         memory_scaled.get(), PaintOpBuffer::kInitialBufferSize,
         options_provider.image_provider(), transfer_cache,
-        options_provider.strike_server(), options_provider.color_space(),
-        options_provider.can_use_lcd_text(),
+        options_provider.client_paint_cache(), options_provider.strike_server(),
+        options_provider.color_space(), options_provider.can_use_lcd_text(),
         options_provider.context_supports_distance_field_text(),
         options_provider.max_texture_size(),
         options_provider.max_texture_bytes());
@@ -3266,7 +3290,8 @@ TEST(PaintOpBufferTest, RecordShadersCached) {
   sk_sp<PaintRecord> records[5];
   const SkShader* last_shader = nullptr;
   PaintOp::DeserializeOptions deserialize_options(
-      transfer_cache, options_provider.strike_client());
+      transfer_cache, options_provider.service_paint_cache(),
+      options_provider.strike_client());
 
   // Several deserialization test cases:
   // (0) deserialize once, verify cached is the same as deserialized version
@@ -3358,8 +3383,8 @@ TEST(PaintOpBufferTest, RecordShadersCachedSize) {
       memory.get(), PaintOpBuffer::kInitialBufferSize,
       options_provider.image_provider(),
       options_provider.transfer_cache_helper(),
-      options_provider.strike_server(), options_provider.color_space(),
-      options_provider.can_use_lcd_text(),
+      options_provider.client_paint_cache(), options_provider.strike_server(),
+      options_provider.color_space(), options_provider.can_use_lcd_text(),
       options_provider.context_supports_distance_field_text(),
       options_provider.max_texture_size(),
       options_provider.max_texture_bytes());
@@ -3367,7 +3392,8 @@ TEST(PaintOpBufferTest, RecordShadersCachedSize) {
   serializer.Serialize(buffer.get());
 
   PaintOp::DeserializeOptions deserialize_options(
-      transfer_cache, options_provider.strike_client());
+      transfer_cache, options_provider.service_paint_cache(),
+      options_provider.strike_client());
   auto record = PaintOpBuffer::MakeFromMemory(
       memory.get(), serializer.written(), deserialize_options);
   auto* shader_entry =
@@ -3409,8 +3435,8 @@ TEST(PaintOpBufferTest, NullImages) {
       memory.get(), PaintOpBuffer::kInitialBufferSize,
       options_provider.image_provider(),
       options_provider.transfer_cache_helper(),
-      options_provider.strike_server(), options_provider.color_space(),
-      options_provider.can_use_lcd_text(),
+      options_provider.client_paint_cache(), options_provider.strike_server(),
+      options_provider.color_space(), options_provider.can_use_lcd_text(),
       options_provider.context_supports_distance_field_text(),
       options_provider.max_texture_size(),
       options_provider.max_texture_bytes());

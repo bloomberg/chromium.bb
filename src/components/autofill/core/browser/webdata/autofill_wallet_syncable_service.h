@@ -102,8 +102,7 @@ class AutofillWalletSyncableService
   static Diff ComputeDiff(const std::vector<std::unique_ptr<Item>>& old_data,
                           const std::vector<Item>& new_data);
 
-  syncer::SyncMergeResult SetSyncData(const syncer::SyncDataList& data_list,
-                                      bool is_initial_data);
+  syncer::SyncMergeResult SetSyncData(const syncer::SyncDataList& data_list);
 
   // Populates the wallet datatypes from the sync data and uses the sync data to
   // link the card to its billing address.

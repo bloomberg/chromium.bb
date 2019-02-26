@@ -12,12 +12,13 @@
 #include "components/services/filesystem/public/interfaces/file_system.mojom.h"
 #include "services/service_manager/public/cpp/binder_registry.h"
 #include "services/service_manager/public/cpp/service.h"
+#include "services/service_manager/public/cpp/service_binding.h"
 
 namespace filesystem {
 
 class FileSystemApp : public service_manager::Service {
  public:
-  FileSystemApp();
+  explicit FileSystemApp(service_manager::mojom::ServiceRequest request);
   ~FileSystemApp() override;
 
  private:
@@ -25,7 +26,6 @@ class FileSystemApp : public service_manager::Service {
   static base::FilePath GetUserDataDir();
 
   // |service_manager::Service| override:
-  void OnStart() override;
   void OnBindInterface(const service_manager::BindSourceInfo& source_info,
                        const std::string& interface_name,
                        mojo::ScopedMessagePipeHandle interface_pipe) override;
@@ -33,6 +33,7 @@ class FileSystemApp : public service_manager::Service {
   void Create(mojom::FileSystemRequest request,
               const service_manager::BindSourceInfo& source_info);
 
+  service_manager::ServiceBinding service_binding_;
   service_manager::BinderRegistryWithArgs<
       const service_manager::BindSourceInfo&>
       registry_;

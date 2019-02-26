@@ -14,7 +14,11 @@ class ShadowRoot;
 class SlotAssignmentEngine final
     : public GarbageCollected<SlotAssignmentEngine> {
  public:
-  static SlotAssignmentEngine* Create() { return new SlotAssignmentEngine(); }
+  static SlotAssignmentEngine* Create() {
+    return MakeGarbageCollected<SlotAssignmentEngine>();
+  }
+
+  explicit SlotAssignmentEngine();
 
   void AddShadowRootNeedingRecalc(ShadowRoot&);
   void RemoveShadowRootNeedingRecalc(ShadowRoot&);
@@ -31,8 +35,6 @@ class SlotAssignmentEngine final
   void Trace(blink::Visitor*);
 
  private:
-  explicit SlotAssignmentEngine();
-
   HeapHashSet<WeakMember<ShadowRoot>> shadow_roots_needing_recalc_;
 };
 

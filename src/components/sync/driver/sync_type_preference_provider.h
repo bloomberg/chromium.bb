@@ -11,7 +11,7 @@ namespace syncer {
 
 class SyncTypePreferenceProvider {
  public:
-  virtual ModelTypeSet GetPreferredDataTypes() const = 0;
+  virtual ModelTypeSet GetForcedDataTypes() const = 0;
 
  protected:
   virtual ~SyncTypePreferenceProvider() {}

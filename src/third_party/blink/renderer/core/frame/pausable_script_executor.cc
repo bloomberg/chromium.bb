@@ -10,6 +10,7 @@
 #include "third_party/blink/public/platform/task_type.h"
 #include "third_party/blink/public/platform/web_vector.h"
 #include "third_party/blink/public/web/web_script_execution_callback.h"
+#include "third_party/blink/renderer/bindings/core/v8/sanitize_script_errors.h"
 #include "third_party/blink/renderer/bindings/core/v8/script_controller.h"
 #include "third_party/blink/renderer/bindings/core/v8/script_source_code.h"
 #include "third_party/blink/renderer/bindings/core/v8/v8_binding_for_core.h"
@@ -18,7 +19,6 @@
 #include "third_party/blink/renderer/core/dom/document.h"
 #include "third_party/blink/renderer/core/dom/user_gesture_indicator.h"
 #include "third_party/blink/renderer/core/frame/local_frame.h"
-#include "third_party/blink/renderer/platform/loader/fetch/access_control_status.h"
 #include "third_party/blink/renderer/platform/wtf/vector.h"
 
 namespace blink {
@@ -62,11 +62,13 @@ Vector<v8::Local<v8::Value>> WebScriptExecutor::Execute(LocalFrame* frame) {
     // Note: An error event in an isolated world will never be dispatched to
     // a foreign world.
     v8::Local<v8::Value> script_value =
-        world_id_ ? frame->GetScriptController().ExecuteScriptInIsolatedWorld(
-                        world_id_, source, KURL(), kSharableCrossOrigin)
-                  : frame->GetScriptController()
-                        .ExecuteScriptInMainWorldAndReturnValue(
-                            source, KURL(), kSharableCrossOrigin);
+        world_id_
+            ? frame->GetScriptController().ExecuteScriptInIsolatedWorld(
+                  world_id_, source, KURL(),
+                  SanitizeScriptErrors::kDoNotSanitize)
+            : frame->GetScriptController()
+                  .ExecuteScriptInMainWorldAndReturnValue(
+                      source, KURL(), SanitizeScriptErrors::kDoNotSanitize);
     results.push_back(script_value);
   }
 
@@ -138,7 +140,7 @@ PausableScriptExecutor* PausableScriptExecutor::Create(
     bool user_gesture,
     WebScriptExecutionCallback* callback) {
   ScriptState* script_state = ToScriptState(frame, *world);
-  return new PausableScriptExecutor(
+  return MakeGarbageCollected<PausableScriptExecutor>(
       frame, script_state, callback,
       new WebScriptExecutor(sources, world->GetWorldId(), user_gesture));
 }
@@ -158,9 +160,10 @@ void PausableScriptExecutor::CreateAndRun(
       callback->Completed(Vector<v8::Local<v8::Value>>());
     return;
   }
-  PausableScriptExecutor* executor = new PausableScriptExecutor(
-      frame, script_state, callback,
-      new V8FunctionExecutor(isolate, function, receiver, argc, argv));
+  PausableScriptExecutor* executor =
+      MakeGarbageCollected<PausableScriptExecutor>(
+          frame, script_state, callback,
+          new V8FunctionExecutor(isolate, function, receiver, argc, argv));
   executor->Run();
 }
 

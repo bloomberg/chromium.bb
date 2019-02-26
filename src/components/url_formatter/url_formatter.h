@@ -73,10 +73,6 @@ extern const FormatUrlType kFormatUrlOmitTrailingSlashOnBareHostname;
 // If the scheme is 'https://', it's removed. Not in kFormatUrlOmitDefaults.
 extern const FormatUrlType kFormatUrlOmitHTTPS;
 
-// Replaces the path, query, and ref with an ellipsis. Experimental and not in
-// kFormatUrlOmitDefaults.
-extern const FormatUrlType kFormatUrlExperimentalElideAfterHost;
-
 // Omits some trivially informative subdomains such as "www" or "m". Not in
 // kFormatUrlOmitDefaults.
 extern const FormatUrlType kFormatUrlOmitTrivialSubdomains;
@@ -84,6 +80,9 @@ extern const FormatUrlType kFormatUrlOmitTrivialSubdomains;
 // Omits everything after the host: the path, query, ref, username and password
 // are all omitted.
 extern const FormatUrlType kFormatUrlTrimAfterHost;
+
+// If the scheme is 'file://', it's removed. Not in kFormatUrlOmitDefaults.
+extern const FormatUrlType kFormatUrlOmitFileScheme;
 
 // Convenience for omitting all unecessary types. Does not include HTTPS scheme
 // removal, or experimental flags.

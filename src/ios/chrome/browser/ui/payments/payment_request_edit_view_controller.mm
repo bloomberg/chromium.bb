@@ -9,7 +9,7 @@
 #include "base/strings/sys_string_conversions.h"
 #include "components/strings/grit/components_strings.h"
 #import "ios/chrome/browser/ui/autofill/autofill_edit_accessory_view.h"
-#import "ios/chrome/browser/ui/autofill/cells/autofill_edit_item.h"
+#import "ios/chrome/browser/ui/autofill/cells/legacy_autofill_edit_item.h"
 #import "ios/chrome/browser/ui/collection_view/cells/MDCCollectionViewCell+Chrome.h"
 #import "ios/chrome/browser/ui/collection_view/cells/collection_view_footer_item.h"
 #import "ios/chrome/browser/ui/collection_view/cells/collection_view_switch_item.h"
@@ -19,7 +19,7 @@
 #import "ios/chrome/browser/ui/payments/cells/payments_text_item.h"
 #import "ios/chrome/browser/ui/payments/payment_request_edit_view_controller_actions.h"
 #import "ios/chrome/browser/ui/payments/payment_request_editor_field.h"
-#import "ios/chrome/browser/ui/uikit_ui_util.h"
+#import "ios/chrome/browser/ui/util/uikit_ui_util.h"
 #include "ios/chrome/grit/ios_theme_resources.h"
 #import "ios/third_party/material_components_ios/src/components/Typography/src/MaterialTypography.h"
 #include "ui/base/l10n/l10n_util.h"
@@ -40,10 +40,12 @@ const CGFloat kSeparatorEdgeInset = 14;
 
 const CGFloat kFooterCellHorizontalPadding = 16;
 
-// Returns the AutofillEditCell that is the parent view of the |textField|.
-AutofillEditCell* AutofillEditCellForTextField(UITextField* textField) {
+// Returns the LegacyAutofillEditCell that is the parent view of the
+// |textField|.
+LegacyAutofillEditCell* AutofillEditCellForTextField(UITextField* textField) {
   for (UIView* view = textField; view; view = [view superview]) {
-    AutofillEditCell* cell = base::mac::ObjCCast<AutofillEditCell>(view);
+    LegacyAutofillEditCell* cell =
+        base::mac::ObjCCast<LegacyAutofillEditCell>(view);
     if (cell)
       return cell;
   }
@@ -101,7 +103,7 @@ PaymentsTextItem* ErrorMessageItemForError(NSString* errorMessage) {
     UIPickerViewDelegate,
     UITextFieldDelegate> {
   // The currently focused cell. May be nil.
-  __weak AutofillEditCell* _currentEditingCell;
+  __weak LegacyAutofillEditCell* _currentEditingCell;
 
   AutofillEditAccessoryView* _accessoryView;
 }
@@ -133,7 +135,7 @@ PaymentsTextItem* ErrorMessageItemForError(NSString* errorMessage) {
 
 // Returns the text field with the given offset relative to the currently
 // focused text field. May return nil.
-- (AutofillEditCell*)nextTextFieldWithOffset:(NSInteger)offset;
+- (LegacyAutofillEditCell*)nextTextFieldWithOffset:(NSInteger)offset;
 
 // Enables or disables the accessory view's previous and next buttons depending
 // on whether there is a text field before and after the currently focused text
@@ -304,8 +306,9 @@ PaymentsTextItem* ErrorMessageItemForError(NSString* errorMessage) {
     [model addSectionWithIdentifier:sectionIdentifier];
     switch (field.fieldType) {
       case EditorFieldTypeTextField: {
-        AutofillEditItem* item =
-            [[AutofillEditItem alloc] initWithType:ItemTypeTextField];
+        LegacyAutofillEditItem* item =
+            [[LegacyAutofillEditItem alloc] initWithType:ItemTypeTextField];
+        item.useScaledFont = YES;
         item.textFieldName = field.label;
         item.textFieldEnabled = field.enabled;
         item.textFieldValue = field.value;
@@ -336,6 +339,7 @@ PaymentsTextItem* ErrorMessageItemForError(NSString* errorMessage) {
       case EditorFieldTypeSwitch: {
         CollectionViewSwitchItem* item =
             [[CollectionViewSwitchItem alloc] initWithType:ItemTypeSwitchField];
+        item.useScaledFont = YES;
         item.text = field.label;
         item.on = [field.value boolValue];
         [model addItem:item toSectionWithIdentifier:sectionIdentifier];
@@ -355,6 +359,7 @@ PaymentsTextItem* ErrorMessageItemForError(NSString* errorMessage) {
   CollectionViewFooterItem* footerItem =
       [[CollectionViewFooterItem alloc] initWithType:ItemTypeFooter];
   footerItem.text = l10n_util::GetNSString(IDS_PAYMENTS_REQUIRED_FIELD_MESSAGE);
+  footerItem.useScaledFont = YES;
   [model addItem:footerItem toSectionWithIdentifier:SectionIdentifierFooter];
 
   // Validate the non-pristine fields, in order to restore the validation errors
@@ -387,8 +392,8 @@ PaymentsTextItem* ErrorMessageItemForError(NSString* errorMessage) {
 - (void)setOptions:(NSArray<NSArray<NSString*>*>*)options
     forEditorField:(EditorField*)field {
   DCHECK(field.fieldType == EditorFieldTypeTextField);
-  AutofillEditItem* item =
-      base::mac::ObjCCastStrict<AutofillEditItem>(field.item);
+  LegacyAutofillEditItem* item =
+      base::mac::ObjCCastStrict<LegacyAutofillEditItem>(field.item);
   item.textFieldEnabled = field.enabled;
   item.textFieldValue = field.value;
 
@@ -454,7 +459,7 @@ PaymentsTextItem* ErrorMessageItemForError(NSString* errorMessage) {
 
 - (BOOL)textFieldShouldReturn:(UITextField*)textField {
   DCHECK([_currentEditingCell textField] == textField);
-  AutofillEditCell* nextCell = [self nextTextFieldWithOffset:1];
+  LegacyAutofillEditCell* nextCell = [self nextTextFieldWithOffset:1];
   if (nextCell)
     [self nextPressed];
   else
@@ -496,8 +501,8 @@ PaymentsTextItem* ErrorMessageItemForError(NSString* errorMessage) {
 
   // Get the icon that identifies the field value and reload the cell if the
   // icon changes.
-  AutofillEditItem* item =
-      base::mac::ObjCCastStrict<AutofillEditItem>(field.item);
+  LegacyAutofillEditItem* item =
+      base::mac::ObjCCastStrict<LegacyAutofillEditItem>(field.item);
   UIImage* oldIcon = item.identifyingIcon;
   item.identifyingIcon = [_dataSource iconIdentifyingEditorField:field];
   if (item.identifyingIcon != oldIcon) {
@@ -515,13 +520,13 @@ PaymentsTextItem* ErrorMessageItemForError(NSString* errorMessage) {
 #pragma mark - AutofillEditAccessoryDelegate
 
 - (void)nextPressed {
-  AutofillEditCell* nextCell = [self nextTextFieldWithOffset:1];
+  LegacyAutofillEditCell* nextCell = [self nextTextFieldWithOffset:1];
   if (nextCell)
     [nextCell.textField becomeFirstResponder];
 }
 
 - (void)previousPressed {
-  AutofillEditCell* previousCell = [self nextTextFieldWithOffset:-1];
+  LegacyAutofillEditCell* previousCell = [self nextTextFieldWithOffset:-1];
   if (previousCell)
     [previousCell.textField becomeFirstResponder];
 }
@@ -598,13 +603,15 @@ PaymentsTextItem* ErrorMessageItemForError(NSString* errorMessage) {
       [self.collectionViewModel itemAtIndexPath:indexPath];
   switch (item.type) {
     case ItemTypeTextField: {
-      AutofillEditCell* autofillEditCell =
-          base::mac::ObjCCast<AutofillEditCell>(cell);
+      LegacyAutofillEditCell* autofillEditCell =
+          base::mac::ObjCCast<LegacyAutofillEditCell>(cell);
       autofillEditCell.textField.delegate = self;
       autofillEditCell.textField.clearButtonMode = UITextFieldViewModeNever;
-      autofillEditCell.textLabel.font = [MDCTypography body2Font];
+      SetUILabelScaledFont(autofillEditCell.textLabel,
+                           [MDCTypography body2Font]);
       autofillEditCell.textLabel.textColor = [[MDCPalette greyPalette] tint900];
-      autofillEditCell.textField.font = [MDCTypography body1Font];
+      SetUITextFieldScaledFont(autofillEditCell.textField,
+                               [MDCTypography body1Font]);
       autofillEditCell.textField.textColor =
           [[MDCPalette cr_bluePalette] tint500];
       break;
@@ -620,7 +627,8 @@ PaymentsTextItem* ErrorMessageItemForError(NSString* errorMessage) {
     case ItemTypeErrorMessage: {
       PaymentsTextCell* errorMessageCell =
           base::mac::ObjCCastStrict<PaymentsTextCell>(cell);
-      errorMessageCell.textLabel.font = [MDCTypography body1Font];
+      SetUILabelScaledFont(errorMessageCell.textLabel,
+                           [MDCTypography body1Font]);
       errorMessageCell.textLabel.textColor =
           [[MDCPalette cr_redPalette] tint600];
       break;
@@ -628,7 +636,7 @@ PaymentsTextItem* ErrorMessageItemForError(NSString* errorMessage) {
     case ItemTypeFooter: {
       CollectionViewFooterCell* footerCell =
           base::mac::ObjCCastStrict<CollectionViewFooterCell>(cell);
-      footerCell.textLabel.font = [MDCTypography body2Font];
+      SetUILabelScaledFont(footerCell.textLabel, [MDCTypography body2Font]);
       footerCell.textLabel.textColor = [[MDCPalette greyPalette] tint600];
       footerCell.textLabel.shadowColor = nil;  // No shadow.
       footerCell.horizontalPadding = kFooterCellHorizontalPadding;
@@ -673,8 +681,8 @@ PaymentsTextItem* ErrorMessageItemForError(NSString* errorMessage) {
     id cell = [collectionView cellForItemAtIndexPath:indexPath];
     // |cell| may be nil if the cell is not visible.
     if (cell) {
-      AutofillEditCell* autofillEditCell =
-          base::mac::ObjCCastStrict<AutofillEditCell>(cell);
+      LegacyAutofillEditCell* autofillEditCell =
+          base::mac::ObjCCastStrict<LegacyAutofillEditCell>(cell);
       [autofillEditCell.textField becomeFirstResponder];
     }
   }
@@ -744,7 +752,7 @@ PaymentsTextItem* ErrorMessageItemForError(NSString* errorMessage) {
   return nil;
 }
 
-- (AutofillEditCell*)nextTextFieldWithOffset:(NSInteger)offset {
+- (LegacyAutofillEditCell*)nextTextFieldWithOffset:(NSInteger)offset {
   UICollectionView* collectionView = [self collectionView];
   NSIndexPath* currentCellPath = [self indexPathForCurrentTextField];
   DCHECK(currentCellPath);
@@ -752,7 +760,7 @@ PaymentsTextItem* ErrorMessageItemForError(NSString* errorMessage) {
       [self indexPathWithSectionOffset:offset fromPath:currentCellPath];
   while (nextCellPath) {
     id nextCell = [collectionView cellForItemAtIndexPath:nextCellPath];
-    if ([nextCell isKindOfClass:[AutofillEditCell class]])
+    if ([nextCell isKindOfClass:[LegacyAutofillEditCell class]])
       return nextCell;
     nextCellPath =
         [self indexPathWithSectionOffset:offset fromPath:nextCellPath];
@@ -761,10 +769,10 @@ PaymentsTextItem* ErrorMessageItemForError(NSString* errorMessage) {
 }
 
 - (void)updateAccessoryViewButtonsStates {
-  AutofillEditCell* previousCell = [self nextTextFieldWithOffset:-1];
+  LegacyAutofillEditCell* previousCell = [self nextTextFieldWithOffset:-1];
   [[_accessoryView previousButton] setEnabled:previousCell != nil];
 
-  AutofillEditCell* nextCell = [self nextTextFieldWithOffset:1];
+  LegacyAutofillEditCell* nextCell = [self nextTextFieldWithOffset:1];
   [[_accessoryView nextButton] setEnabled:nextCell != nil];
 }
 
@@ -817,8 +825,8 @@ PaymentsTextItem* ErrorMessageItemForError(NSString* errorMessage) {
         id cell = [[self collectionView] cellForItemAtIndexPath:indexPath];
         // |cell| may be nil if the cell is not visible.
         if (cell) {
-          AutofillEditCell* autofillEditCell =
-              base::mac::ObjCCastStrict<AutofillEditCell>(cell);
+          LegacyAutofillEditCell* autofillEditCell =
+              base::mac::ObjCCastStrict<LegacyAutofillEditCell>(cell);
           [autofillEditCell.textField becomeFirstResponder];
         }
       }

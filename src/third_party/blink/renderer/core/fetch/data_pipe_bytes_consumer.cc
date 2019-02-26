@@ -14,16 +14,32 @@
 
 namespace blink {
 
+void DataPipeBytesConsumer::CompletionNotifier::SignalComplete() {
+  if (bytes_consumer_)
+    bytes_consumer_->SignalComplete();
+}
+
+void DataPipeBytesConsumer::CompletionNotifier::SignalError(
+    const BytesConsumer::Error& error) {
+  if (bytes_consumer_)
+    bytes_consumer_->SignalError(error);
+}
+
+void DataPipeBytesConsumer::CompletionNotifier::Trace(Visitor* visitor) {
+  visitor->Trace(bytes_consumer_);
+}
+
 DataPipeBytesConsumer::DataPipeBytesConsumer(
     ExecutionContext* execution_context,
-    mojo::ScopedDataPipeConsumerHandle data_pipe)
+    mojo::ScopedDataPipeConsumerHandle data_pipe,
+    CompletionNotifier** notifier)
     : execution_context_(execution_context),
       data_pipe_(std::move(data_pipe)),
       watcher_(FROM_HERE,
                mojo::SimpleWatcher::ArmingPolicy::MANUAL,
                execution_context->GetTaskRunner(TaskType::kNetworking)) {
-  if (!data_pipe_.is_valid())
-    return;
+  DCHECK(data_pipe_.is_valid());
+  *notifier = new CompletionNotifier(this);
   watcher_.Watch(
       data_pipe_.get(),
       MOJO_HANDLE_SIGNAL_READABLE | MOJO_HANDLE_SIGNAL_PEER_CLOSED,
@@ -69,7 +85,7 @@ BytesConsumer::Result DataPipeBytesConsumer::BeginRead(const char** buffer,
         return Result::kShouldWait;
       return Result::kDone;
     default:
-      SetError();
+      SetError(Error("error"));
       return Result::kError;
   }
 
@@ -82,7 +98,7 @@ BytesConsumer::Result DataPipeBytesConsumer::EndRead(size_t read) {
   DCHECK(IsReadableOrWaiting());
   MojoResult rv = data_pipe_->EndReadData(read);
   if (rv != MOJO_RESULT_OK) {
-    SetError();
+    SetError(Error("error"));
     return Result::kError;
   }
   if (has_pending_complete_) {
@@ -92,7 +108,7 @@ BytesConsumer::Result DataPipeBytesConsumer::EndRead(size_t read) {
   }
   if (has_pending_error_) {
     has_pending_error_ = false;
-    SignalError();
+    SignalError(Error("error"));
     return Result::kError;
   }
   if (has_pending_notification_) {
@@ -127,6 +143,7 @@ void DataPipeBytesConsumer::ClearClient() {
 
 void DataPipeBytesConsumer::Cancel() {
   DCHECK(!is_in_two_phase_read_);
+  ClearClient();
   ClearDataPipe();
   SignalComplete();
 }
@@ -176,7 +193,7 @@ void DataPipeBytesConsumer::SignalComplete() {
   watcher_.ArmOrNotify();
 }
 
-void DataPipeBytesConsumer::SignalError() {
+void DataPipeBytesConsumer::SignalError(const Error& error) {
   if (!IsReadableOrWaiting() || has_pending_complete_ || has_pending_error_)
     return;
   if (is_in_two_phase_read_) {
@@ -186,18 +203,18 @@ void DataPipeBytesConsumer::SignalError() {
   Client* client = client_;
   // When we hit an error we switch states immediately.  We don't wait for the
   // end of the pipe to be read.
-  SetError();
+  SetError(error);
   if (client)
     client->OnStateChange();
 }
 
-void DataPipeBytesConsumer::SetError() {
+void DataPipeBytesConsumer::SetError(const Error& error) {
   DCHECK(!is_in_two_phase_read_);
   if (!IsReadableOrWaiting())
     return;
   ClearDataPipe();
   state_ = InternalState::kErrored;
-  error_ = Error("error");
+  error_ = error;
   ClearClient();
 }
 
@@ -242,6 +259,10 @@ void DataPipeBytesConsumer::ClearDataPipe() {
   DCHECK(!is_in_two_phase_read_);
   watcher_.Cancel();
   data_pipe_.reset();
+}
+
+void DataPipeBytesConsumer::Dispose() {
+  watcher_.Cancel();
 }
 
 }  // namespace blink

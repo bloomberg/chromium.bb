@@ -231,8 +231,8 @@ void DomainReliabilityContext::RollbackUpload() {
 void DomainReliabilityContext::RemoveOldestBeacon() {
   DCHECK(!beacons_.empty());
 
-  VLOG(1) << "Beacon queue for " << config().origin << " full; "
-          << "removing oldest beacon";
+  DVLOG(1) << "Beacon queue for " << config().origin << " full; "
+           << "removing oldest beacon";
 
   beacons_.pop_front();
 

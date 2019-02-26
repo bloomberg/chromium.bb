@@ -9,6 +9,7 @@
 #include <atk/atk.h>
 
 #include "testing/gtest/include/gtest/gtest.h"
+#include "ui/accessibility/platform/ax_platform_node_auralinux.h"
 #include "ui/accessibility/platform/ax_platform_node_unittest.h"
 #include "ui/accessibility/platform/test_ax_node_wrapper.h"
 
@@ -32,7 +33,19 @@ class AXPlatformNodeAuraLinuxTest : public AXPlatformNodeTest {
     return atk_object;
   }
 
+  TestAXNodeWrapper* GetRootWrapper() {
+    return TestAXNodeWrapper::GetOrCreate(tree_.get(), GetRootNode());
+  }
+
   AtkObject* GetRootAtkObject() { return AtkObjectFromNode(GetRootNode()); }
+
+  AXPlatformNodeAuraLinux* GetRootPlatformNode() {
+    TestAXNodeWrapper* wrapper = GetRootWrapper();
+    if (!wrapper)
+      return nullptr;
+    AXPlatformNode* ax_platform_node = wrapper->ax_platform_node();
+    return static_cast<AXPlatformNodeAuraLinux*>(ax_platform_node);
+  }
 };
 
 static void EnsureAtkObjectHasAttributeWithValue(
@@ -615,16 +628,16 @@ TEST_F(AXPlatformNodeAuraLinuxTest, TestAtkComponentRefAtPoint) {
   root.id = 0;
   root.child_ids.push_back(1);
   root.child_ids.push_back(2);
-  root.location = gfx::RectF(0, 0, 30, 30);
+  root.relative_bounds.bounds = gfx::RectF(0, 0, 30, 30);
 
   AXNodeData node1;
   node1.id = 1;
-  node1.location = gfx::RectF(0, 0, 10, 10);
+  node1.relative_bounds.bounds = gfx::RectF(0, 0, 10, 10);
   node1.SetName("Name1");
 
   AXNodeData node2;
   node2.id = 2;
-  node2.location = gfx::RectF(20, 20, 10, 10);
+  node2.relative_bounds.bounds = gfx::RectF(20, 20, 10, 10);
   node2.SetName("Name2");
 
   Init(root, node1, node2);
@@ -655,12 +668,12 @@ TEST_F(AXPlatformNodeAuraLinuxTest, TestAtkComponentsGetExtentsPositionSize) {
   AXNodeData root;
   root.id = 1;
   root.role = ax::mojom::Role::kWindow;
-  root.location = gfx::RectF(10, 40, 800, 600);
+  root.relative_bounds.bounds = gfx::RectF(10, 40, 800, 600);
   root.child_ids.push_back(2);
 
   AXNodeData child;
   child.id = 2;
-  child.location = gfx::RectF(100, 150, 200, 200);
+  child.relative_bounds.bounds = gfx::RectF(100, 150, 200, 200);
   Init(root, child);
 
   TestAXNodeWrapper::SetGlobalCoordinateOffset(gfx::Vector2d(100, 200));
@@ -941,6 +954,60 @@ TEST_F(AXPlatformNodeAuraLinuxTest, TestAtkTextCharacterGranularity) {
   verify_text_after_offset(nullptr, -1, 0, 0);
 
   g_object_unref(root_obj);
+}
+
+//
+// AtkWindow interface and active state
+//
+//
+TEST_F(AXPlatformNodeAuraLinuxTest, TestAtkWindowActive) {
+  AXNodeData root;
+  root.id = 1;
+  root.role = ax::mojom::Role::kWindow;
+  Init(root);
+
+  AtkObject* root_atk_object(GetRootAtkObject());
+  EXPECT_TRUE(ATK_IS_OBJECT(root_atk_object));
+  g_object_ref(root_atk_object);
+
+  EXPECT_TRUE(ATK_IS_WINDOW(root_atk_object));
+
+  bool saw_activate = false;
+  bool saw_deactivate = false;
+
+  auto callback = G_CALLBACK(+[](AtkWindow*, bool* flag) { *flag = true; });
+  g_signal_connect(root_atk_object, "activate", callback, &saw_activate);
+  g_signal_connect(root_atk_object, "deactivate", callback, &saw_deactivate);
+
+  AtkStateSet* state_set = atk_object_ref_state_set(root_atk_object);
+  EXPECT_TRUE(ATK_IS_STATE_SET(state_set));
+  EXPECT_FALSE(atk_state_set_contains_state(state_set, ATK_STATE_ACTIVE));
+  g_object_unref(state_set);
+
+  static_cast<AXPlatformNodeAuraLinux*>(GetRootPlatformNode())
+      ->NotifyAccessibilityEvent(ax::mojom::Event::kWindowActivated);
+  EXPECT_TRUE(saw_activate);
+  EXPECT_FALSE(saw_deactivate);
+
+  state_set = atk_object_ref_state_set(root_atk_object);
+  EXPECT_TRUE(ATK_IS_STATE_SET(state_set));
+  EXPECT_TRUE(atk_state_set_contains_state(state_set, ATK_STATE_ACTIVE));
+  g_object_unref(state_set);
+
+  saw_activate = false;
+  saw_deactivate = false;
+
+  static_cast<AXPlatformNodeAuraLinux*>(GetRootPlatformNode())
+      ->NotifyAccessibilityEvent(ax::mojom::Event::kWindowDeactivated);
+  EXPECT_FALSE(saw_activate);
+  EXPECT_TRUE(saw_deactivate);
+
+  state_set = atk_object_ref_state_set(root_atk_object);
+  EXPECT_TRUE(ATK_IS_STATE_SET(state_set));
+  EXPECT_FALSE(atk_state_set_contains_state(state_set, ATK_STATE_ACTIVE));
+  g_object_unref(state_set);
+
+  g_object_unref(root_atk_object);
 }
 
 }  // namespace ui

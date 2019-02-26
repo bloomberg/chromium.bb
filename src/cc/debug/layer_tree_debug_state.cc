@@ -24,6 +24,7 @@ LayerTreeDebugState::LayerTreeDebugState()
       slow_down_raster_scale_factor(0),
       rasterize_only_visible_content(false),
       show_picture_borders(false),
+      show_hit_test_borders(false),
       record_rendering_stats_(false) {}
 
 LayerTreeDebugState::LayerTreeDebugState(const LayerTreeDebugState& other) =
@@ -73,6 +74,7 @@ bool LayerTreeDebugState::Equal(const LayerTreeDebugState& a,
       a.slow_down_raster_scale_factor == b.slow_down_raster_scale_factor &&
       a.rasterize_only_visible_content == b.rasterize_only_visible_content &&
       a.show_picture_borders == b.show_picture_borders &&
+      a.show_hit_test_borders == b.show_hit_test_borders &&
       a.record_rendering_stats_ == b.record_rendering_stats_);
 }
 
@@ -97,6 +99,8 @@ LayerTreeDebugState LayerTreeDebugState::Unite(const LayerTreeDebugState& a,
     r.slow_down_raster_scale_factor = b.slow_down_raster_scale_factor;
   r.rasterize_only_visible_content |= b.rasterize_only_visible_content;
   r.show_picture_borders |= b.show_picture_borders;
+
+  r.show_hit_test_borders |= b.show_hit_test_borders;
 
   r.record_rendering_stats_ |= b.record_rendering_stats_;
 

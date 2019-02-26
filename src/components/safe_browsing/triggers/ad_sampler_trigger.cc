@@ -166,7 +166,7 @@ void AdSamplerTrigger::DidFinishLoad(
 
 void AdSamplerTrigger::CreateAdSampleReport() {
   SBErrorOptions error_options =
-      TriggerManager::GetSBErrorDisplayOptions(*prefs_, *web_contents());
+      TriggerManager::GetSBErrorDisplayOptions(*prefs_, web_contents());
 
   security_interstitials::UnsafeResource resource;
   resource.threat_type = SB_THREAT_TYPE_AD_SAMPLE;

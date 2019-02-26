@@ -12,7 +12,7 @@
 namespace blink {
 
 LinkManifest* LinkManifest::Create(HTMLLinkElement* owner) {
-  return new LinkManifest(owner);
+  return MakeGarbageCollected<LinkManifest>(owner);
 }
 
 LinkManifest::LinkManifest(HTMLLinkElement* owner) : LinkResource(owner) {}

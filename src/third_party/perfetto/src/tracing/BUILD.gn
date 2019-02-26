@@ -37,6 +37,7 @@ source_set("tracing") {
     "core/data_source_config.cc",
     "core/data_source_descriptor.cc",
     "core/ftrace_config.cc",
+    "core/heapprofd_config.cc",
     "core/id_allocator.cc",
     "core/id_allocator.h",
     "core/inode_file_config.cc",
@@ -95,7 +96,7 @@ source_set("unittests") {
     "test/test_shared_memory.h",
   ]
 
-  if (!build_with_chromium) {
+  if (perfetto_build_standalone || perfetto_build_with_android) {
     deps += [ ":ipc" ]
     sources += [
       "ipc/posix_shared_memory_unittest.cc",
@@ -124,7 +125,7 @@ source_set("test_support") {
     "../../include/perfetto/tracing/core",
     "../../protos/perfetto/trace:lite",
     "../../protos/perfetto/trace:zero",
-    "../protozero:test_support",
+    "../protozero",
   ]
   sources = [
     "core/trace_writer_for_testing.cc",
@@ -132,7 +133,20 @@ source_set("test_support") {
   ]
 }
 
-if (!build_with_chromium) {
+if (perfetto_build_standalone || perfetto_build_with_android) {
+  executable("consumer_api_test") {
+    deps = [
+      ":api",
+      "../../gn:default_deps",
+      "../../protos/perfetto/config:lite",
+      "../../protos/perfetto/trace:lite",
+      "../base",
+    ]
+    sources = [
+      "api_impl/consumer_api_test.cc",
+    ]
+  }
+
   # IPC transport: only consumer side
   # TODO(fmayer): Remove duplication between this and ipc.
   source_set("ipc_consumer") {
@@ -197,6 +211,21 @@ if (!build_with_chromium) {
     ]
     sources = [
       "test/hello_world_benchmark.cc",
+    ]
+  }
+
+  # Imlementation of the public-facing consumer API in libperfetto.so (only for
+  # Android builds).
+  source_set("api") {
+    deps = [
+      ":ipc",
+      ":tracing",
+      "../../gn:default_deps",
+      "../../protos/perfetto/config:lite",
+      "../base",
+    ]
+    sources = [
+      "api_impl/consumer_api.cc",
     ]
   }
 }

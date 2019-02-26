@@ -182,7 +182,7 @@ class JsUtil(object):
     # documentation, rather than if it's a private API. Most private APIs
     # aren't documented, but some are. For example:
     #  - https://developer.chrome.com/apps/developerPrivate exists
-    #  - https://developer.chrome.com/apps/screenlockPrivate does not
+    #  - https://developer.chrome.com/apps/mediaPlayerPrivate does not
     if namespace_name.endswith('Private'):
       return
 

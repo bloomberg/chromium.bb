@@ -35,6 +35,7 @@
 #include "third_party/blink/renderer/bindings/modules/v8/v8_rtc_peer_connection_error_callback.h"
 #include "third_party/blink/renderer/bindings/modules/v8/v8_rtc_session_description_callback.h"
 #include "third_party/blink/renderer/core/dom/context_lifecycle_observer.h"
+#include "third_party/blink/renderer/modules/peerconnection/rtc_session_description_enums.h"
 #include "third_party/blink/renderer/platform/heap/handle.h"
 #include "third_party/blink/renderer/platform/peerconnection/rtc_session_description_request.h"
 
@@ -43,6 +44,9 @@ namespace blink {
 class RTCPeerConnection;
 class WebRTCSessionDescription;
 
+// TODO(https://crbug.com/908468): Split up the operation-specific codepaths
+// into separate request implementations and find a way to consolidate the
+// shared code as to not repeat the majority of the implementations.
 class RTCSessionDescriptionRequestImpl final
     : public RTCSessionDescriptionRequest,
       public ContextLifecycleObserver {
@@ -51,9 +55,16 @@ class RTCSessionDescriptionRequestImpl final
  public:
   static RTCSessionDescriptionRequestImpl* Create(
       ExecutionContext*,
+      RTCCreateSessionDescriptionOperation,
       RTCPeerConnection*,
       V8RTCSessionDescriptionCallback*,
       V8RTCPeerConnectionErrorCallback*);
+
+  RTCSessionDescriptionRequestImpl(ExecutionContext*,
+                                   RTCCreateSessionDescriptionOperation,
+                                   RTCPeerConnection*,
+                                   V8RTCSessionDescriptionCallback*,
+                                   V8RTCPeerConnectionErrorCallback*);
   ~RTCSessionDescriptionRequestImpl() override;
 
   void RequestSucceeded(const WebRTCSessionDescription&) override;
@@ -65,13 +76,9 @@ class RTCSessionDescriptionRequestImpl final
   void Trace(blink::Visitor*) override;
 
  private:
-  RTCSessionDescriptionRequestImpl(ExecutionContext*,
-                                   RTCPeerConnection*,
-                                   V8RTCSessionDescriptionCallback*,
-                                   V8RTCPeerConnectionErrorCallback*);
-
   void Clear();
 
+  RTCCreateSessionDescriptionOperation operation_;
   // This request object is held by WebRTCPeerConnectionHandler, which doesn't
   // support wrapper-tracing. Thus, this object holds the underlying callback
   // functions as persistent handles. This is acceptable because the request

@@ -11,6 +11,7 @@ import android.view.ViewGroup;
 import org.chromium.base.ApiCompatibilityUtils;
 import org.chromium.base.VisibleForTesting;
 import org.chromium.chrome.R;
+import org.chromium.chrome.browser.ChromeActivity;
 import org.chromium.chrome.browser.compositor.bottombar.OverlayPanel.PanelState;
 import org.chromium.chrome.browser.compositor.bottombar.OverlayPanel.StateChangeReason;
 import org.chromium.chrome.browser.util.MathUtils;
@@ -689,8 +690,10 @@ abstract class OverlayPanelBase {
         // constructor, once we are able to get the Activity during instantiation. The Activity
         // is needed in order to get the correct height of the Toolbar, which varies depending
         // on the Activity (WebApps have a smaller toolbar for example).
-        mToolbarHeight = mContext.getResources().getDimension(
-                getControlContainerHeightResource()) * mPxToDp;
+        int toolbarHeightResource = getControlContainerHeightResource();
+        mToolbarHeight = toolbarHeightResource == ChromeActivity.NO_CONTROL_CONTAINER
+                ? 0
+                : mContext.getResources().getDimension(toolbarHeightResource) * mPxToDp;
     }
 
     /**

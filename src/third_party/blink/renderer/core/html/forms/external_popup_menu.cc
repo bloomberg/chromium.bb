@@ -133,7 +133,8 @@ void ExternalPopupMenu::Show() {
 }
 
 void ExternalPopupMenu::DispatchEvent(TimerBase*) {
-  web_view_.HandleInputEvent(blink::WebCoalescedInputEvent(*synthetic_event_));
+  web_view_.MainFrameWidget()->HandleInputEvent(
+      blink::WebCoalescedInputEvent(*synthetic_event_));
   synthetic_event_.reset();
 }
 

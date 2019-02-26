@@ -12,14 +12,16 @@
 #import "ios/chrome/browser/ui/toolbar/buttons/toolbar_button.h"
 #import "ios/chrome/browser/ui/toolbar/buttons/toolbar_button_factory.h"
 #import "ios/chrome/browser/ui/toolbar/buttons/toolbar_configuration.h"
-#import "ios/chrome/browser/ui/toolbar/buttons/toolbar_constants.h"
 #import "ios/chrome/browser/ui/toolbar/buttons/toolbar_tools_menu_button.h"
 #import "ios/chrome/browser/ui/toolbar/primary_toolbar_view.h"
 #import "ios/chrome/browser/ui/toolbar/primary_toolbar_view_controller_delegate.h"
 #import "ios/chrome/browser/ui/toolbar/public/omnibox_focuser.h"
-#import "ios/chrome/browser/ui/ui_util.h"
-#import "ios/chrome/browser/ui/uikit_ui_util.h"
+#import "ios/chrome/browser/ui/toolbar/public/toolbar_constants.h"
+#import "ios/chrome/browser/ui/toolbar/public/toolbar_utils.h"
+#import "ios/chrome/browser/ui/util/dynamic_type_util.h"
 #import "ios/chrome/browser/ui/util/named_guide.h"
+#import "ios/chrome/browser/ui/util/ui_util.h"
+#import "ios/chrome/browser/ui/util/uikit_ui_util.h"
 #import "ios/third_party/material_components_ios/src/components/ProgressView/src/MaterialProgressView.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
@@ -75,8 +77,14 @@
 
 - (void)setScrollProgressForTabletOmnibox:(CGFloat)progress {
   [super setScrollProgressForTabletOmnibox:progress];
-  self.view.locationBarBottomConstraint.constant =
-      -AlignValueToPixel(kAdaptiveLocationBarVerticalMargin * progress);
+
+  if (progress == 1) {
+    self.view.locationBarContainer.transform = CGAffineTransformIdentity;
+  } else {
+    self.view.locationBarContainer.transform = CGAffineTransformMakeTranslation(
+        0, [self verticalMarginForLocationBarForFullscreenProgress:1] *
+               (progress - 1));
+  }
   self.view.locationBarContainer.alpha = progress;
 
   // When the locationBarContainer is hidden, show the |fakeOmniboxTarget|.
@@ -95,6 +103,7 @@
 - (void)loadView {
   DCHECK(self.buttonFactory);
 
+  // The first time, the toolbar is fully displayed.
   self.previousFullscreenProgress = 1;
 
   self.view =
@@ -103,6 +112,13 @@
   // This method cannot be called from the init as the topSafeAnchor can only be
   // set to topLayoutGuide after the view creation on iOS 10.
   [self.view setUp];
+
+  self.view.locationBarHeight.constant =
+      [self locationBarHeightForFullscreenProgress:1];
+  self.view.locationBarContainer.layer.cornerRadius =
+      self.view.locationBarHeight.constant / 2;
+  self.view.locationBarBottomConstraint.constant =
+      [self verticalMarginForLocationBarForFullscreenProgress:1];
 
   [self.view.collapsedToolbarButton addTarget:self
                                        action:@selector(exitFullscreen)
@@ -136,6 +152,13 @@
   self.view.locationBarBottomConstraint.constant =
       [self verticalMarginForLocationBarForFullscreenProgress:
                 self.previousFullscreenProgress];
+  if (previousTraitCollection.preferredContentSizeCategory !=
+      self.traitCollection.preferredContentSizeCategory) {
+    self.view.locationBarHeight.constant = [self
+        locationBarHeightForFullscreenProgress:self.previousFullscreenProgress];
+    self.view.locationBarContainer.layer.cornerRadius =
+        self.view.locationBarHeight.constant / 2;
+  }
 }
 
 #pragma mark - Property accessors
@@ -167,11 +190,10 @@
   CGFloat alphaValue = fmax(progress * 2 - 1, 0);
   self.view.leadingStackView.alpha = alphaValue;
   self.view.trailingStackView.alpha = alphaValue;
-  self.view.locationBarHeight.constant = AlignValueToPixel(
-      kToolbarHeightFullscreen +
-      (kAdaptiveToolbarHeight - 2 * kAdaptiveLocationBarVerticalMargin -
-       kToolbarHeightFullscreen) *
-          progress);
+  self.view.locationBarHeight.constant =
+      [self locationBarHeightForFullscreenProgress:progress];
+  self.view.locationBarContainer.layer.cornerRadius =
+      self.view.locationBarHeight.constant / 2;
   self.view.locationBarBottomConstraint.constant =
       [self verticalMarginForLocationBarForFullscreenProgress:progress];
   self.view.locationBarContainer.backgroundColor =
@@ -236,6 +258,23 @@
 
 #pragma mark - Private
 
+- (CGFloat)clampedFontSizeMultiplier {
+  return ToolbarClampedFontSizeMultiplier(
+      self.traitCollection.preferredContentSizeCategory);
+}
+
+// Returns the desired height of the location bar, based on the fullscreen
+// |progress|.
+- (CGFloat)locationBarHeightForFullscreenProgress:(CGFloat)progress {
+  CGFloat expandedHeight =
+      LocationBarHeight(self.traitCollection.preferredContentSizeCategory);
+  CGFloat collapsedHeight =
+      ToolbarCollapsedHeight(self.traitCollection.preferredContentSizeCategory);
+  CGFloat expandedCollapsedDelta = expandedHeight - collapsedHeight;
+
+  return AlignValueToPixel(collapsedHeight + expandedCollapsedDelta * progress);
+}
+
 // Returns the vertical margin to the location bar based on fullscreen
 // |progress|, aligned to the nearest pixel.
 - (CGFloat)verticalMarginForLocationBarForFullscreenProgress:(CGFloat)progress {
@@ -245,8 +284,11 @@
   // in iPhone landscape and by 3pt in all other configurations.
   CGFloat fullscreenVerticalMargin =
       IsCompactHeight(self) ? 0 : kAdaptiveLocationBarVerticalMarginFullscreen;
-  return -AlignValueToPixel(kAdaptiveLocationBarVerticalMargin * progress +
-                            fullscreenVerticalMargin * (1 - progress));
+  return -AlignValueToPixel((kAdaptiveLocationBarVerticalMargin * progress +
+                             fullscreenVerticalMargin * (1 - progress)) *
+                                [self clampedFontSizeMultiplier] +
+                            ([self clampedFontSizeMultiplier] - 1) *
+                                kLocationBarVerticalMarginDynamicType);
 }
 
 // Deactivates the constraints on the location bar positioning.

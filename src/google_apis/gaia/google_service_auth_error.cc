@@ -12,6 +12,27 @@
 #include "base/strings/stringprintf.h"
 #include "net/base/net_errors.h"
 
+namespace {
+const char* InvalidCredentialsReasonToString(
+    GoogleServiceAuthError::InvalidGaiaCredentialsReason reason) {
+  using InvalidGaiaCredentialsReason =
+      GoogleServiceAuthError::InvalidGaiaCredentialsReason;
+  switch (reason) {
+    case InvalidGaiaCredentialsReason::UNKNOWN:
+      return "unknown";
+    case InvalidGaiaCredentialsReason::CREDENTIALS_REJECTED_BY_SERVER:
+      return "credentials rejected by server";
+    case InvalidGaiaCredentialsReason::CREDENTIALS_REJECTED_BY_CLIENT:
+      return "credentials rejected by client";
+    case InvalidGaiaCredentialsReason::CREDENTIALS_MISSING:
+      return "credentials missing";
+    case InvalidGaiaCredentialsReason::NUM_REASONS:
+      NOTREACHED();
+      return "";
+  }
+}
+}  // namespace
+
 GoogleServiceAuthError::Captcha::Captcha() : image_width(0), image_height(0) {
 }
 
@@ -183,8 +204,8 @@ std::string GoogleServiceAuthError::ToString() const {
       return std::string();
     case INVALID_GAIA_CREDENTIALS:
       return base::StringPrintf(
-          "Invalid credentials (%d).",
-          static_cast<int>(invalid_gaia_credentials_reason_));
+          "Invalid credentials (%s).",
+          InvalidCredentialsReasonToString(invalid_gaia_credentials_reason_));
     case USER_NOT_SIGNED_UP:
       return "Not authorized.";
     case CONNECTION_FAILED:
@@ -213,7 +234,8 @@ std::string GoogleServiceAuthError::ToString() const {
       return "Less secure apps may not authenticate with this account. "
              "Please visit: "
              "https://www.google.com/settings/security/lesssecureapps";
-    default:
+    case HOSTED_NOT_ALLOWED_DEPRECATED:
+    case NUM_STATES:
       NOTREACHED();
       return std::string();
   }

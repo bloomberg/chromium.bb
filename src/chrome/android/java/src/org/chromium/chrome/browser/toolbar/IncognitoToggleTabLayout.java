@@ -8,8 +8,8 @@ import android.content.Context;
 import android.content.res.ColorStateList;
 import android.support.design.widget.TabLayout;
 import android.support.v7.content.res.AppCompatResources;
-import android.support.v7.widget.AppCompatImageView;
 import android.util.AttributeSet;
+import android.widget.ImageView;
 
 import org.chromium.base.ApiCompatibilityUtils;
 import org.chromium.chrome.R;
@@ -19,6 +19,7 @@ import org.chromium.chrome.browser.tabmodel.TabModel;
 import org.chromium.chrome.browser.tabmodel.TabModelSelector;
 import org.chromium.chrome.browser.tabmodel.TabModelSelectorObserver;
 import org.chromium.chrome.browser.toolbar.TabCountProvider.TabCountObserver;
+import org.chromium.ui.widget.ChromeImageView;
 
 /**
  * TabLayout shown in the Horizontal Tab Switcher.
@@ -26,8 +27,8 @@ import org.chromium.chrome.browser.toolbar.TabCountProvider.TabCountObserver;
 public class IncognitoToggleTabLayout extends TabLayout implements TabCountObserver {
     private TabLayout.Tab mStandardButton;
     private TabLayout.Tab mIncognitoButton;
-    private AppCompatImageView mStandardButtonIcon;
-    private AppCompatImageView mIncognitoButtonIcon;
+    private ImageView mStandardButtonIcon;
+    private ImageView mIncognitoButtonIcon;
     private TabSwitcherDrawable mTabSwitcherDrawable;
 
     private ColorStateList mTabIconDarkColor;
@@ -54,12 +55,12 @@ public class IncognitoToggleTabLayout extends TabLayout implements TabCountObser
         mTabIconSelectedLightColor =
                 AppCompatResources.getColorStateList(getContext(), R.color.white_mode_tint);
 
-        mStandardButtonIcon = new AppCompatImageView(getContext());
+        mStandardButtonIcon = new ChromeImageView(getContext());
         mTabSwitcherDrawable = TabSwitcherDrawable.createTabSwitcherDrawable(getContext(), false);
         mStandardButtonIcon.setImageDrawable(mTabSwitcherDrawable);
         mStandardButtonIcon.setContentDescription(
                 getResources().getString(R.string.accessibility_tab_switcher_standard_stack));
-        mIncognitoButtonIcon = new AppCompatImageView(getContext());
+        mIncognitoButtonIcon = new ChromeImageView(getContext());
         mIncognitoButtonIcon.setImageResource(R.drawable.incognito_small);
         mIncognitoButtonIcon.setContentDescription(getResources().getString(
                 ChromeFeatureList.isEnabled(ChromeFeatureList.INCOGNITO_STRINGS)

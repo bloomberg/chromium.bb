@@ -112,12 +112,12 @@ void ResourceResponse::SetMimeType(const AtomicString& mime_type) {
   mime_type_ = mime_type;
 }
 
-long long ResourceResponse::ExpectedContentLength() const {
+int64_t ResourceResponse::ExpectedContentLength() const {
   return expected_content_length_;
 }
 
 void ResourceResponse::SetExpectedContentLength(
-    long long expected_content_length) {
+    int64_t expected_content_length) {
   is_null_ = false;
 
   // FIXME: Content length is determined by HTTP Content-Length header. We
@@ -342,8 +342,8 @@ double ResourceResponse::LastModified() const {
 
 bool ResourceResponse::IsAttachment() const {
   static const char kAttachmentString[] = "attachment";
-  String value = http_header_fields_.Get(HTTPNames::Content_Disposition);
-  size_t loc = value.find(';');
+  String value = http_header_fields_.Get(http_names::kContentDisposition);
+  wtf_size_t loc = value.find(';');
   if (loc != kNotFound)
     value = value.Left(loc);
   value = value.StripWhiteSpace();
@@ -352,7 +352,7 @@ bool ResourceResponse::IsAttachment() const {
 
 AtomicString ResourceResponse::HttpContentType() const {
   return ExtractMIMETypeFromMediaType(
-      HttpHeaderField(HTTPNames::Content_Type).DeprecatedLower());
+      HttpHeaderField(http_names::kContentType).DeprecatedLower());
 }
 
 bool ResourceResponse::WasCached() const {
@@ -402,7 +402,7 @@ void ResourceResponse::SetCTPolicyCompliance(CTPolicyCompliance compliance) {
 }
 
 bool ResourceResponse::IsOpaqueResponseFromServiceWorker() const {
-  return IsCORSCrossOrigin() && WasFetchedViaServiceWorker();
+  return IsCorsCrossOrigin() && WasFetchedViaServiceWorker();
 }
 
 KURL ResourceResponse::OriginalURLViaServiceWorker() const {
@@ -419,15 +419,15 @@ AtomicString ResourceResponse::ConnectionInfoString() const {
       connection_info_string.length());
 }
 
-void ResourceResponse::SetEncodedDataLength(long long value) {
+void ResourceResponse::SetEncodedDataLength(int64_t value) {
   encoded_data_length_ = value;
 }
 
-void ResourceResponse::SetEncodedBodyLength(long long value) {
+void ResourceResponse::SetEncodedBodyLength(int64_t value) {
   encoded_body_length_ = value;
 }
 
-void ResourceResponse::SetDecodedBodyLength(long long value) {
+void ResourceResponse::SetDecodedBodyLength(int64_t value) {
   decoded_body_length_ = value;
 }
 

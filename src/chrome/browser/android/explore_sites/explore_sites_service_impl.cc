@@ -33,11 +33,11 @@ namespace explore_sites {
 
 ExploreSitesServiceImpl::ExploreSitesServiceImpl(
     std::unique_ptr<ExploreSitesStore> store,
-    scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory,
+    std::unique_ptr<URLLoaderFactoryGetter> url_loader_factory_getter,
     std::unique_ptr<HistoryStatisticsReporter> history_statistics_reporter)
     : task_queue_(this),
       explore_sites_store_(std::move(store)),
-      url_loader_factory_(url_loader_factory),
+      url_loader_factory_getter_(std::move(url_loader_factory_getter)),
       history_statistics_reporter_(std::move(history_statistics_reporter)),
       weak_ptr_factory_(this) {
   if (IsExploreSitesEnabled()) {
@@ -58,9 +58,11 @@ void ExploreSitesServiceImpl::GetCatalog(CatalogCallback callback) {
   if (!IsExploreSitesEnabled())
     return;
 
+  // TODO(https://crbug.com/910255): Ensure the catalog swap doesn't happen
+  // during a session.
   task_queue_.AddTask(std::make_unique<GetCatalogTask>(
-      explore_sites_store_.get(), check_for_new_catalog_, std::move(callback)));
-  check_for_new_catalog_ = false;
+      explore_sites_store_.get(), /*update_current*/ true,
+      std::move(callback)));
 }
 
 void ExploreSitesServiceImpl::GetCategoryImage(int category_id,
@@ -172,6 +174,11 @@ std::unique_ptr<Catalog> ValidateCatalog(std::unique_ptr<Catalog> catalog) {
       // Add the site into the category we are working on.
       Site* new_site = new_category->add_sites();
       new_site->Swap(&site);
+
+      // We want to use a canonicalized URL in the database so that blacklisting
+      // will always work.  Typically this will cause a trailing slash to be
+      // added if it's missing.
+      new_site->set_site_url(url.spec());
     }
 
     // Collect UMA if the last site was removed from the category, or there were
@@ -208,7 +215,7 @@ void ExploreSitesServiceImpl::GotVersionToStartFetch(
   // Create a fetcher and start fetching the protobuf (async).
   explore_sites_fetcher_ = ExploreSitesFetcher::CreateForGetCatalog(
       is_immediate_fetch, catalog_version, accept_languages,
-      url_loader_factory_,
+      url_loader_factory_getter_->GetFactory(),
       base::BindOnce(&ExploreSitesServiceImpl::OnCatalogFetched,
                      weak_ptr_factory_.GetWeakPtr()));
   explore_sites_fetcher_->Start();

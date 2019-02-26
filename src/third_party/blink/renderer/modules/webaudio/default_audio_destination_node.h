@@ -50,7 +50,7 @@ class DefaultAudioDestinationHandler final : public AudioDestinationHandler,
   void Dispose() override;
   void Initialize() override;
   void Uninitialize() override;
-  void SetChannelCount(unsigned long, ExceptionState&) override;
+  void SetChannelCount(unsigned, ExceptionState&) override;
   double LatencyTime() const override { return 0; }
   double TailTime() const override { return 0; }
   bool RequiresTailProcessing() const final { return false; }
@@ -59,14 +59,14 @@ class DefaultAudioDestinationHandler final : public AudioDestinationHandler,
   void StartRendering() override;
   void StopRendering() override;
   void RestartRendering() override;
-  unsigned long MaxChannelCount() const override;
+  uint32_t MaxChannelCount() const override;
   double SampleRate() const override;
 
   // For AudioIOCallback. This is invoked by the platform audio destination to
   // get the next render quantum into |destination_bus| and update
   // |output_position|.
   void Render(AudioBus* destination_bus,
-              size_t number_of_frames,
+              uint32_t number_of_frames,
               const AudioIOPosition& output_position) final;
 
   // Returns a hadrware callback buffer size from audio infra.
@@ -96,7 +96,6 @@ class DefaultAudioDestinationNode final : public AudioDestinationNode {
   static DefaultAudioDestinationNode* Create(BaseAudioContext*,
                                              const WebAudioLatencyHint&);
 
- private:
   explicit DefaultAudioDestinationNode(BaseAudioContext&,
                                        const WebAudioLatencyHint&);
 };

@@ -24,9 +24,9 @@ public class JniInterface {
      * code. Called on the UI thread.
      * @param context The Application context.
      */
+    @SuppressWarnings("NoContextGetApplicationContext")
     public static void loadLibrary(Context context) {
         ContextUtils.initApplicationContext(context.getApplicationContext());
-        JniOAuthTokenGetter.setContext(context);
         try {
             System.loadLibrary(LIBRARY_NAME);
         } catch (UnsatisfiedLinkError e) {

@@ -17,17 +17,14 @@ namespace gl
 
 Sampler::Sampler(rx::GLImplFactory *factory, GLuint id)
     : RefCountObject(id), mState(), mImpl(factory->createSampler(mState)), mLabel()
-{
-}
+{}
 
 Sampler::~Sampler()
 {
     SafeDelete(mImpl);
 }
 
-void Sampler::onDestroy(const Context *context)
-{
-}
+void Sampler::onDestroy(const Context *context) {}
 
 void Sampler::setLabel(const std::string &label)
 {
@@ -147,6 +144,16 @@ void Sampler::setSRGBDecode(GLenum sRGBDecode)
 GLenum Sampler::getSRGBDecode() const
 {
     return mState.getSRGBDecode();
+}
+
+void Sampler::setBorderColor(const ColorGeneric &color)
+{
+    mState.setBorderColor(color);
+}
+
+const ColorGeneric &Sampler::getBorderColor() const
+{
+    return mState.getBorderColor();
 }
 
 const SamplerState &Sampler::getSamplerState() const

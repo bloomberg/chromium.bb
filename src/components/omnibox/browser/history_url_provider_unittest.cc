@@ -14,7 +14,6 @@
 #include "base/run_loop.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
-#include "base/test/scoped_feature_list.h"
 #include "base/test/scoped_task_environment.h"
 #include "base/time/time.h"
 #include "components/history/core/browser/history_service.h"
@@ -1190,39 +1189,34 @@ TEST_F(HistoryURLProviderTest, MatchURLFormatting) {
   ExpectFormattedFullMatch("abc", L"www.abc.def.com/path", 4, 3);
   ExpectFormattedFullMatch("hij", L"hij.com/path", 0, 3);
 
-  base::test::ScopedFeatureList feature_list;
-  feature_list.InitAndEnableFeature(
-      omnibox::kUIExperimentElideSuggestionUrlAfterHost);
-
   // Sanity check that scheme, subdomain, and path can all be trimmed or elided.
-  ExpectFormattedFullMatch("hij", L"hij.com/\x2026\x0000", 0, 3);
+  ExpectFormattedFullMatch("hij", L"hij.com/path", 0, 3);
 
   // Verify that the scheme is preserved if part of match.
-  ExpectFormattedFullMatch("https://www.hi",
-                           L"https://www.hij.com/\x2026\x0000", 0, 14);
+  ExpectFormattedFullMatch("https://www.hi", L"https://www.hij.com/path", 0,
+                           14);
 
   // Verify that the whole subdomain is preserved if part of match.
-  ExpectFormattedFullMatch("abc", L"www.abc.def.com/\x2026\x0000", 4, 3);
-  ExpectFormattedFullMatch("www.hij", L"www.hij.com/\x2026\x0000", 0, 7);
+  ExpectFormattedFullMatch("abc", L"www.abc.def.com/path", 4, 3);
+  ExpectFormattedFullMatch("www.hij", L"www.hij.com/path", 0, 7);
 
   // Verify that the path is preserved if part of the match.
   ExpectFormattedFullMatch("hij.com/path", L"hij.com/path", 0, 12);
 
   // Verify preserving both the scheme and subdomain.
-  ExpectFormattedFullMatch("https://www.hi",
-                           L"https://www.hij.com/\x2026\x0000", 0, 14);
+  ExpectFormattedFullMatch("https://www.hi", L"https://www.hij.com/path", 0,
+                           14);
 
   // Verify preserving everything.
   ExpectFormattedFullMatch("https://www.hij.com/p", L"https://www.hij.com/path",
                            0, 21);
 
   // Verify that upper case input still works for subdomain matching.
-  ExpectFormattedFullMatch("WWW.hij", L"www.hij.com/\x2026\x0000", 0, 7);
+  ExpectFormattedFullMatch("WWW.hij", L"www.hij.com/path", 0, 7);
 
   // Verify that matching in the subdomain-only preserves the subdomain.
-  ExpectFormattedFullMatch("ww", L"www.hij.com/\x2026\x0000", 0, 2);
-  ExpectFormattedFullMatch("https://ww", L"https://www.hij.com/\x2026\x0000", 0,
-                           10);
+  ExpectFormattedFullMatch("ww", L"www.hij.com/path", 0, 2);
+  ExpectFormattedFullMatch("https://ww", L"https://www.hij.com/path", 0, 10);
 }
 
 std::unique_ptr<HistoryURLProviderParams> BuildHistoryURLProviderParams(

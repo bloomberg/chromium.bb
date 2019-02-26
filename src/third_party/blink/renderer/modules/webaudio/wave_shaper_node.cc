@@ -61,11 +61,11 @@ WaveShaperNode* WaveShaperNode::Create(BaseAudioContext& context,
     return nullptr;
   }
 
-  return new WaveShaperNode(context);
+  return MakeGarbageCollected<WaveShaperNode>(context);
 }
 
 WaveShaperNode* WaveShaperNode::Create(BaseAudioContext* context,
-                                       const WaveShaperOptions& options,
+                                       const WaveShaperOptions* options,
                                        ExceptionState& exception_state) {
   WaveShaperNode* node = Create(*context, exception_state);
 
@@ -74,10 +74,10 @@ WaveShaperNode* WaveShaperNode::Create(BaseAudioContext* context,
 
   node->HandleChannelOptions(options, exception_state);
 
-  if (options.hasCurve())
-    node->setCurve(options.curve(), exception_state);
+  if (options->hasCurve())
+    node->setCurve(options->curve(), exception_state);
 
-  node->setOversample(options.oversample());
+  node->setOversample(options->oversample());
 
   return node;
 }

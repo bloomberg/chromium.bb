@@ -5,17 +5,20 @@
 #ifndef CHROME_BROWSER_UI_WEBUI_WELCOME_NUX_CONSTANTS_H_
 #define CHROME_BROWSER_UI_WEBUI_WELCOME_NUX_CONSTANTS_H_
 
+#include <string>
+#include "base/metrics/field_trial_params.h"
+
 namespace base {
 struct Feature;
 }  // namespace base
 
 namespace nux {
 
-extern const base::Feature kNuxEmailFeature;
-extern const base::Feature kNuxGoogleAppsFeature;
 extern const base::Feature kNuxOnboardingFeature;
-extern const char kNuxEmailUrl[];
-extern const char kNuxGoogleAppsUrl[];
+
+extern const base::FeatureParam<std::string> kNuxOnboardingNewUserModules;
+extern const base::FeatureParam<std::string> kNuxOnboardingReturningUserModules;
+extern const base::FeatureParam<bool> kNuxOnboardingShowEmailInterstitial;
 
 }  // namespace nux
 

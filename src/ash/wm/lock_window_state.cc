@@ -37,6 +37,7 @@ void LockWindowState::OnWMEvent(wm::WindowState* window_state,
     case wm::WM_EVENT_FULLSCREEN:
       UpdateWindow(window_state, mojom::WindowStateType::FULLSCREEN);
       break;
+    case wm::WM_EVENT_PIP:
     case wm::WM_EVENT_PIN:
     case wm::WM_EVENT_TRUSTED_PIN:
       NOTREACHED();
@@ -83,6 +84,8 @@ void LockWindowState::OnWMEvent(wm::WindowState* window_state,
     case wm::WM_EVENT_DISPLAY_BOUNDS_CHANGED:
       UpdateBounds(window_state);
       break;
+    case wm::WM_EVENT_SYSTEM_UI_AREA_CHANGED:
+      return;
   }
 }
 

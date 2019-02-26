@@ -11,7 +11,6 @@
 #include "content/browser/appcache/chrome_appcache_service.h"
 #include "content/browser/bad_message.h"
 #include "content/public/browser/render_process_host.h"
-#include "content/public/common/browser_side_navigation_policy.h"
 
 namespace content {
 

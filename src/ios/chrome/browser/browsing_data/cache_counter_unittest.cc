@@ -18,10 +18,7 @@
 #include "base/time/time.h"
 #include "components/browsing_data/core/browsing_data_utils.h"
 #include "components/browsing_data/core/pref_names.h"
-#include "components/pref_registry/pref_registry_syncable.h"
 #include "components/prefs/testing_pref_service.h"
-#include "components/sync_preferences/pref_service_mock_factory.h"
-#include "components/sync_preferences/pref_service_syncable.h"
 #include "ios/chrome/browser/browser_state/test_chrome_browser_state.h"
 #include "ios/web/public/test/test_web_thread_bundle.h"
 #include "ios/web/public/web_task_traits.h"
@@ -40,9 +37,7 @@ class CacheCounterTest : public PlatformTest {
  public:
   CacheCounterTest() {
     TestChromeBrowserState::Builder builder;
-    builder.SetPrefService(CreatePrefService());
     browser_state_ = builder.Build();
-
     context_getter_ = browser_state_->GetRequestContext();
   }
 
@@ -51,19 +46,6 @@ class CacheCounterTest : public PlatformTest {
   ios::ChromeBrowserState* browser_state() { return browser_state_.get(); }
 
   PrefService* prefs() { return browser_state_->GetPrefs(); }
-
-  std::unique_ptr<sync_preferences::PrefServiceSyncable> CreatePrefService() {
-    sync_preferences::PrefServiceMockFactory factory;
-    scoped_refptr<user_prefs::PrefRegistrySyncable> registry(
-        new user_prefs::PrefRegistrySyncable);
-    std::unique_ptr<sync_preferences::PrefServiceSyncable> prefs =
-        factory.CreateSyncable(registry.get());
-    registry->RegisterIntegerPref(
-        browsing_data::prefs::kDeleteTimePeriod,
-        static_cast<int>(browsing_data::TimePeriod::ALL_TIME));
-    registry->RegisterBooleanPref(browsing_data::prefs::kDeleteCache, true);
-    return prefs;
-  }
 
   void SetCacheDeletionPref(bool value) {
     prefs()->SetBoolean(browsing_data::prefs::kDeleteCache, value);

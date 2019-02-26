@@ -74,8 +74,76 @@ struct MimeInfo {
   const char* const extensions;
 };
 
-// Order of entries in the following mapping lists matters only when the same
-// extension is shared between multiple MIME types.
+// How to use the MIME maps
+// ------------------------
+// READ THIS BEFORE MODIFYING THE MIME MAPPINGS BELOW.
+//
+// There are two hardcoded mappings from MIME types: kPrimaryMappings and
+// kSecondaryMappings.
+//
+// kPrimaryMappings:
+//
+//   Use this for mappings that are critical to the web platform.  Mappings you
+//   add to this list take priority over the underlying platform when converting
+//   from file extension -> MIME type.  Thus file extensions listed here will
+//   work consistently across platforms.
+//
+// kSecondaryMappings:
+//
+//   Use this for mappings that must exist, but can be overridden by user
+//   preferences.
+//
+// The following applies to both lists:
+//
+// * The same extension can appear multiple times in the same list under
+//   different MIME types.  Extensions that appear earlier take precedence over
+//   those that appear later.
+//
+// * A MIME type must not appear more than once in a single list.  It is valid
+//   for the same MIME type to appear in kPrimaryMappings and
+//   kSecondaryMappings.
+//
+// The MIME maps are used for three types of lookups:
+//
+// 1) MIME type -> file extension.  Implemented as
+//    GetPreferredExtensionForMimeType().
+//
+//    Sources are consulted in the following order:
+//
+//    a) As a special case application/octet-stream is mapped to nothing.  Web
+//       sites are supposed to use this MIME type to indicate that the content
+//       is opaque and shouldn't be parsed as any specific type of content.  It
+//       doesn't make sense to map this to anything.
+//
+//    b) The underlying platform.  If the operating system has a mapping from
+//       the MIME type to a file extension, then that takes priority.  The
+//       platform is assumed to represent the user's preference.
+//
+//    c) kPrimaryMappings.  Order doesn't matter since there should only be at
+//       most one entry per MIME type.
+//
+//    d) kSecondaryMappings.  Again, order doesn't matter.
+//
+// 2) File extension -> MIME type.  Implemented in GetMimeTypeFromExtension().
+//
+//    Sources are considered in the following order:
+//
+//    a) kPrimaryMappings.  Order matters here since file extensions can appear
+//       multiple times on these lists.  The first mapping in order of
+//       appearance in the list wins.
+//
+//    b) Underlying platform.
+//
+//    c) kSecondaryMappings.  Again, the order matters.
+//
+// 3) File extension -> Well known MIME type.  Implemented as
+//    GetWellKnownMimeTypeFromExtension().
+//
+//    This is similar to 2), with the exception that b) is skipped.  I.e.  Only
+//    considers the hardcoded mappings in kPrimaryMappings and
+//    kSecondaryMappings.
+
+// See comments above for details on how this list is used.
 static const MimeInfo kPrimaryMappings[] = {
     // Must precede audio/webm .
     {"video/webm", "webm"},
@@ -103,6 +171,7 @@ static const MimeInfo kPrimaryMappings[] = {
     {"video/ogg", "ogv,ogm"},
 };
 
+// See comments above for details on how this list is used.
 static const MimeInfo kSecondaryMappings[] = {
     // Must precede image/vnd.microsoft.icon .
     {"image/x-icon", "ico"},
@@ -380,10 +449,12 @@ bool MimeUtil::ParseMimeTypeWithoutParameter(
     std::string* top_level_type,
     std::string* subtype) const {
   std::vector<std::string> components = base::SplitString(
-      type_string, "/", base::TRIM_WHITESPACE, base::SPLIT_WANT_ALL);
-  if (components.size() != 2 ||
-      !HttpUtil::IsToken(components[0]) ||
-      !HttpUtil::IsToken(components[1]))
+      type_string, "/", base::KEEP_WHITESPACE, base::SPLIT_WANT_ALL);
+  if (components.size() != 2)
+    return false;
+  TrimWhitespaceASCII(components[0], base::TRIM_LEADING, &components[0]);
+  TrimWhitespaceASCII(components[1], base::TRIM_TRAILING, &components[1]);
+  if (!HttpUtil::IsToken(components[0]) || !HttpUtil::IsToken(components[1]))
     return false;
 
   if (top_level_type)
@@ -683,6 +754,26 @@ void AddMultipartValueForUpload(const std::string& value_name,
   // Next line is the Content-disposition.
   post_data->append("Content-Disposition: form-data; name=\"" +
                     value_name + "\"\r\n");
+  if (!content_type.empty()) {
+    // If Content-type is specified, the next line is that.
+    post_data->append("Content-Type: " + content_type + "\r\n");
+  }
+  // Leave an empty line and append the value.
+  post_data->append("\r\n" + value + "\r\n");
+}
+
+void AddMultipartValueForUploadWithFileName(const std::string& value_name,
+                                            const std::string& file_name,
+                                            const std::string& value,
+                                            const std::string& mime_boundary,
+                                            const std::string& content_type,
+                                            std::string* post_data) {
+  DCHECK(post_data);
+  // First line is the boundary.
+  post_data->append("--" + mime_boundary + "\r\n");
+  // Next line is the Content-disposition.
+  post_data->append("Content-Disposition: form-data; name=\"" + value_name +
+                    "\"; filename=\"" + file_name + "\"\r\n");
   if (!content_type.empty()) {
     // If Content-type is specified, the next line is that.
     post_data->append("Content-Type: " + content_type + "\r\n");

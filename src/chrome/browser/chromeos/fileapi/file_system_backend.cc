@@ -86,17 +86,15 @@ void FileSystemBackend::AddSystemMountPoints() {
   // already exists, hence it's safe to call without checking if a mount
   // point already exists or not.
   system_mount_points_->RegisterFileSystem(
-      "archive",
-      storage::kFileSystemTypeNativeLocal,
+      kSystemMountNameArchive, storage::kFileSystemTypeNativeLocal,
       storage::FileSystemMountOption(),
       chromeos::CrosDisksClient::GetArchiveMountPoint());
   system_mount_points_->RegisterFileSystem(
-      "removable", storage::kFileSystemTypeNativeLocal,
+      kSystemMountNameRemovable, storage::kFileSystemTypeNativeLocal,
       storage::FileSystemMountOption(storage::FlushPolicy::FLUSH_ON_COMPLETION),
       chromeos::CrosDisksClient::GetRemovableDiskMountPoint());
   system_mount_points_->RegisterFileSystem(
-      "oem",
-      storage::kFileSystemTypeRestrictedNativeLocal,
+      kSystemMountNameOem, storage::kFileSystemTypeRestrictedNativeLocal,
       storage::FileSystemMountOption(),
       base::FilePath(FILE_PATH_LITERAL("/usr/share/oem")));
 }

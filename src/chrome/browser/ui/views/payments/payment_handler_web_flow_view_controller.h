@@ -6,6 +6,7 @@
 #define CHROME_BROWSER_UI_VIEWS_PAYMENTS_PAYMENT_HANDLER_WEB_FLOW_VIEW_CONTROLLER_H_
 
 #include "chrome/browser/ui/views/payments/payment_request_sheet_controller.h"
+#include "components/payments/content/developer_console_logger.h"
 #include "components/payments/content/payment_request_display_manager.h"
 #include "content/public/browser/web_contents_delegate.h"
 #include "content/public/browser/web_contents_observer.h"
@@ -31,14 +32,17 @@ class PaymentHandlerWebFlowViewController
       public content::WebContentsObserver {
  public:
   // This ctor forwards its first 3 args to PaymentRequestSheetController's
-  // ctor. |profile| is the browser context used to create the WebContents
-  // object that will navigate to |target|. |first_navigation_complete_callback|
-  // is invoked once the WebContents finishes the initial navigation to
-  // |target|.
+  // ctor. |log_destination| is the page whose web developer console will print
+  // error messages. That should be the page that instantiated PaymentRequest
+  // for developer convinience. |profile| is the browser context used to create
+  // the new WebContents object that will navigate to |target|.
+  // |first_navigation_complete_callback| is invoked once the WebContents
+  // finishes the initial navigation to |target|.
   PaymentHandlerWebFlowViewController(
       PaymentRequestSpec* spec,
       PaymentRequestState* state,
       PaymentRequestDialogView* dialog,
+      content::WebContents* log_destination,
       Profile* profile,
       GURL target,
       PaymentHandlerOpenWindowCallback first_navigation_complete_callback);
@@ -75,8 +79,8 @@ class PaymentHandlerWebFlowViewController
   void DidAttachInterstitialPage() override;
 
   void AbortPayment();
-  void WarnIfPossible(const std::string& message);
 
+  DeveloperConsoleLogger log_;
   Profile* profile_;
   GURL target_;
   bool show_progress_bar_;

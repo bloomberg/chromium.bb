@@ -115,6 +115,8 @@ class LogSink {
   virtual void OnLogMessage(const std::string& msg,
                             LoggingSeverity severity,
                             const char* tag);
+  virtual void OnLogMessage(const std::string& message,
+                            LoggingSeverity severity);
   virtual void OnLogMessage(const std::string& message) = 0;
 };
 
@@ -517,10 +519,10 @@ class LogMessage {
       ? static_cast<void>(0)               \
       : rtc::webrtc_logging_impl::LogMessageVoidify()&
 
-#define RTC_LOG_FILE_LINE(sev, file, line)                                     \
-  rtc::webrtc_logging_impl::LogCall() &                                        \
-      rtc::webrtc_logging_impl::LogStreamer<>()                                \
-          << rtc::webrtc_logging_impl::LogMetadata(__FILE__, __LINE__, sev)
+#define RTC_LOG_FILE_LINE(sev, file, line)      \
+  rtc::webrtc_logging_impl::LogCall() &         \
+      rtc::webrtc_logging_impl::LogStreamer<>() \
+          << rtc::webrtc_logging_impl::LogMetadata(file, line, sev)
 
 #define RTC_LOG(sev) RTC_LOG_FILE_LINE(rtc::sev, __FILE__, __LINE__)
 

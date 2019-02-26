@@ -52,9 +52,9 @@ class ContextualSuggestionsEventReporter implements SuggestionsEventReporter {
 
         TrackerFactory.getTrackerForProfile(Profile.getLastUsedProfile())
                 .notifyEvent(EventConstants.CONTEXTUAL_SUGGESTION_TAKEN);
-        RecordHistogram.recordSparseSlowlyHistogram(
+        RecordHistogram.recordSparseHistogram(
                 "ContextualSuggestions.SuggestionClickPosition.Global", suggestion.getGlobalRank());
-        RecordHistogram.recordSparseSlowlyHistogram(
+        RecordHistogram.recordSparseHistogram(
                 "ContextualSuggestions.SuggestionClickPosition.Cluster",
                 suggestion.getPerSectionRank());
     }

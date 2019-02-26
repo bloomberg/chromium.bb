@@ -41,6 +41,14 @@
 - (void)showSavedPasswordsSettingsFromViewController:
     (UIViewController*)baseViewController;
 
+// Shows the list of profiles (addresess) in the settings.
+- (void)showProfileSettingsFromViewController:
+    (UIViewController*)baseViewController;
+
+// Shows the list of credit cards in the settings.
+- (void)showCreditCardSettingsFromViewController:
+    (UIViewController*)baseViewController;
+
 @end
 
 // Protocol for commands that will generally be handled by the application,
@@ -89,6 +97,8 @@
     (UIViewController*)baseViewController;
 
 // Opens the |command| URL in a new tab.
+// TODO(crbug.com/907527): Check if it is possible to merge it with the
+// URLLoader methods.
 - (void)openURLInNewTab:(OpenNewTabCommand*)command;
 
 // TODO(crbug.com/779791) : Do not pass baseViewController through dispatcher.

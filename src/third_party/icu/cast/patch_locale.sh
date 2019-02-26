@@ -63,7 +63,8 @@ done
 
 # Chrome on Android is not localized to the following languages and we
 # have to minimize the locale data for them.
-EXTRA_LANGUAGES="bn et gu kn ml mr ms ta te"
+#EXTRA_LANGUAGES="bn et gu kn ml mr ms ta te"
+EXTRA_LANGUAGES="gu kn ml mr ms ta te"
 
 # TODO(jshin): Copied from scripts/trim_data.sh. Need to refactor.
 echo Creating minimum locale data in locales
@@ -82,11 +83,32 @@ do
      /^\}$/p' ${target}
 done
 
+echo Creating minimum locale data in ${langdatapath}
+for lang in ${EXTRA_LANGUAGES}
+do
+  target=lang/${lang}.txt
+  [  -e ${target} ] || { echo "missing ${lang}"; continue; }
+  echo Overwriting ${target} ...
+
+  # Do not include '%%Parent' line on purpose.
+  sed -n -r -i \
+    '1, /^'${lang}'\{$/p
+     /^    "%%ALIAS"\{/p
+     /^    Languages\{$/, /^    \}$/ {
+       /^    Languages\{$/p
+       /^        '${lang}'\{.*\}$/p
+       /^    \}$/p
+     }
+     /^\}$/p' ${target}
+done
+
 echo Overwriting curr/reslocal.mk to drop the currency names
 echo for ${EXTRA_LANGUAGES}
 for lang in ${EXTRA_LANGUAGES}
 do
   sed -i -e '/'$lang'.txt/ d' curr/reslocal.mk
+  sed -i -e '/'$lang'.txt/ d' zone/reslocal.mk
+  sed -i -e '/'$lang'.txt/ d' unit/reslocal.mk
 done
 
 # Remove exemplar cities in timezone data.
@@ -117,19 +139,30 @@ for i in locales/*.txt; do
       EXTRA_CAL='dangi'
       ;;
     am)
-      EXTRA_CAL='ethiopic'
+      EXTRA_CAL='ethiopic|ethiopic-amete-alem'
       ;;
     he)
       EXTRA_CAL='hebrew'
       ;;
     ar)
-      EXTRA_CAL='arabic'
+      # Other Islamic calendar formats are not in locales other than root.
+      # ar-SA's default is islamic-umalqura, but its format entries are
+      # specified in root via aliases.
+      EXTRA_CAL='islamic'
       ;;
     fa)
-      EXTRA_CAL='persian'
+      EXTRA_CAL='persian|islamic'
       ;;
     ja)
       EXTRA_CAL='japanese'
+      ;;
+    # When adding other Indian locales for Android,
+    # add 'indian' calendar to them as well.
+    hi)
+      EXTRA_CAL='indian'
+      ;;
+    root)
+      EXTRA_CAL='buddhist|chinese|roc|dangi|ethiopic|ethiopic-amete-alem|japanese|hebrew|islamic|islamic-(umalqura|civil|tbla|rgsa)|persian|indian'
       ;;
     *)
       EXTRA_CAL=''
@@ -151,5 +184,17 @@ for i in locales/*.txt; do
             d
           }' -i $i
 done
+
+# Delete Japanese era display names in root. 'ja' has Japanese era names
+# so that root does not need them.
+# The same is true of eras and monthNames for Islamic calendar.
+sed -r -i \
+  '/^        japanese\{$/,/^        \}$/ {
+     /^            eras\{/,/^            \}$/d
+   }
+   /^        islamic\{$/,/^        \}$/ {
+     /^            eras\{/,/^            \}$/d
+     /^            monthNames\{/,/^            \}$/d
+   }'  locales/root.txt
 
 echo DONE.

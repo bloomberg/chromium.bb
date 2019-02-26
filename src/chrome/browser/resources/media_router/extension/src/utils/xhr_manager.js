@@ -51,7 +51,7 @@ class XhrManager {
    * @param {string=} body
    * @param {{timeoutMillis: (number|undefined),
    *         numAttempts: (number|undefined),
-   *         headers: (!Array<!Array<string>>|undefined),
+   *         headers: (?Array<!Array<string>>|undefined),
    *         responseType: (string|undefined)}=} overrides "headers" is an Array
    *     of pairs of strings. "responseType" is a valid
    *     XMLHttpRequest.responseType enum value.

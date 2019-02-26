@@ -261,13 +261,33 @@ TEST(WebCursorTest, CursorScaleFactor) {
   display.set_device_scale_factor(80.2f);
 
   CursorInfo info;
+  info.type = WebCursorInfo::kTypeCustom;
+  info.hotspot = gfx::Point(0, 1);
   info.image_scale_factor = 2.0f;
+
+  SkImageInfo image_info =
+      SkImageInfo::MakeN32(256, 256, kUnpremul_SkAlphaType);
+  info.custom_image = SkBitmap();
+  info.custom_image.setInfo(image_info);
+  info.custom_image.allocN32Pixels(256, 256);
+  info.custom_image.eraseColor(0xFFFFFFFF);
 
   WebCursor cursor;
   cursor.InitFromCursorInfo(info);
   cursor.SetDisplayInfo(display);
 
-  EXPECT_EQ(40.1f, cursor.GetCursorScaleFactor());
+#if defined(USE_OZONE)
+  // For Ozone cursors, the size of the cursor is capped at 64px, and this is
+  // enforce through the calculated scale factor.
+  EXPECT_EQ(0.25f, cursor.GetNativeCursor().device_scale_factor());
+#else
+  EXPECT_EQ(40.1f, cursor.GetNativeCursor().device_scale_factor());
+#endif
+
+  // Test that the Display dsf is copied.
+  WebCursor cursor2 = cursor;
+  EXPECT_EQ(cursor.GetNativeCursor().device_scale_factor(),
+            cursor2.GetNativeCursor().device_scale_factor());
 }
 
 TEST(WebCursorTest, UnscaledImageCopy) {
@@ -286,7 +306,10 @@ TEST(WebCursorTest, UnscaledImageCopy) {
 
   SkBitmap image_copy;
   gfx::Point hotspot;
-  cursor.CreateScaledBitmapAndHotspotFromCustomData(&image_copy, &hotspot);
+  float dsf;
+  cursor.CreateScaledBitmapAndHotspotFromCustomData(&image_copy, &hotspot,
+                                                    &dsf);
+  EXPECT_EQ(1.0f, dsf);
 
   EXPECT_EQ(kBGRA_8888_SkColorType, image_copy.colorType());
   EXPECT_EQ(kUnpremul_SkAlphaType, image_copy.alphaType());
@@ -294,17 +317,6 @@ TEST(WebCursorTest, UnscaledImageCopy) {
   EXPECT_EQ(2, image_copy.height());
   EXPECT_EQ(0, hotspot.x());
   EXPECT_EQ(1, hotspot.y());
-}
-
-TEST(WebCursorTest, CopyDeviceScaleFactor) {
-  WebCursor cursor1;
-  EXPECT_EQ(1.f, cursor1.GetCursorScaleFactor());
-
-  display::Display display;
-  display.set_device_scale_factor(19.333f);
-  cursor1.SetDisplayInfo(display);
-  WebCursor cursor2 = cursor1;
-  EXPECT_EQ(19.333f, cursor2.GetCursorScaleFactor());
 }
 #endif
 
@@ -327,7 +339,7 @@ void ScaleCursor(float scale_factor, int hotspot_x, int hotspot_y) {
   cursor.SetDisplayInfo(display);
   cursor.InitFromCursorInfo(info);
 
-  HCURSOR windows_cursor_handle = cursor.GetPlatformCursor();
+  HCURSOR windows_cursor_handle = cursor.GetNativeCursor().platform();
   EXPECT_NE(nullptr, windows_cursor_handle);
   ICONINFO windows_icon_info;
   EXPECT_TRUE(GetIconInfo(windows_cursor_handle, &windows_icon_info));

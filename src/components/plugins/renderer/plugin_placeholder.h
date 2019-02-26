@@ -39,13 +39,13 @@ class PluginPlaceholderBase : public content::RenderFrameObserver,
       v8::Isolate* isolate) const override;
   bool IsErrorPlaceholder() override;
 
- protected:
   // Hide this placeholder.
   void HidePlugin();
   bool hidden() const { return hidden_; }
 
   // JavaScript callbacks:
   void HideCallback();
+  void NotifyPlaceholderReadyForTestingCallback();
 
  private:
   // RenderFrameObserver methods:

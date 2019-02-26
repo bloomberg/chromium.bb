@@ -18,8 +18,8 @@
 #include "content/browser/dom_storage/session_storage_context_mojo.h"
 #include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
-#include "content/public/common/content_features.h"
 #include "third_party/blink/public/common/dom_storage/session_storage_namespace_id.h"
+#include "third_party/blink/public/common/features.h"
 
 namespace content {
 
@@ -39,7 +39,7 @@ scoped_refptr<SessionStorageNamespaceImpl> SessionStorageNamespaceImpl::Create(
   if (existing)
     return existing;
   if (context->mojo_session_state()) {
-    DCHECK(base::FeatureList::IsEnabled(features::kMojoSessionStorage));
+    DCHECK(base::FeatureList::IsEnabled(blink::features::kOnionSoupDOMStorage));
     auto result = base::WrapRefCounted(
         new SessionStorageNamespaceImpl(context, std::move(namespace_id)));
     result->mojo_task_runner_->PostTask(
@@ -65,7 +65,7 @@ SessionStorageNamespaceImpl::CloneFrom(
     const std::string& namespace_id_to_clone,
     bool immediately) {
   if (context->mojo_session_state()) {
-    DCHECK(base::FeatureList::IsEnabled(features::kMojoSessionStorage));
+    DCHECK(base::FeatureList::IsEnabled(blink::features::kOnionSoupDOMStorage));
     auto result = base::WrapRefCounted(
         new SessionStorageNamespaceImpl(context, std::move(namespace_id)));
     result->mojo_task_runner_->PostTask(
@@ -120,7 +120,7 @@ SessionStorageNamespaceImpl::SessionStorageNamespaceImpl(
       namespace_id_(std::move(namespace_id)),
       should_persist_(false) {
   context_wrapper_->AddNamespace(namespace_id_, this);
-  DCHECK(!base::FeatureList::IsEnabled(features::kMojoSessionStorage));
+  DCHECK(!base::FeatureList::IsEnabled(blink::features::kOnionSoupDOMStorage));
 }
 
 SessionStorageNamespaceImpl::SessionStorageNamespaceImpl(
@@ -131,7 +131,7 @@ SessionStorageNamespaceImpl::SessionStorageNamespaceImpl(
       namespace_id_(std::move(namespace_id)),
       should_persist_(false) {
   context_wrapper_->AddNamespace(namespace_id_, this);
-  DCHECK(base::FeatureList::IsEnabled(features::kMojoSessionStorage));
+  DCHECK(base::FeatureList::IsEnabled(blink::features::kOnionSoupDOMStorage));
 }
 
 SessionStorageNamespaceImpl::~SessionStorageNamespaceImpl() {

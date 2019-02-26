@@ -18,6 +18,7 @@ import org.chromium.webapk.lib.common.WebApkConstants;
 import org.chromium.webapk.lib.common.WebApkMetaDataKeys;
 
 import java.util.ArrayList;
+import java.util.Locale;
 
 /** Convenience wrapper for parameters to {@link HostBrowserLauncher} methods. */
 public class HostBrowserLauncherParams {
@@ -29,24 +30,36 @@ public class HostBrowserLauncherParams {
     private int mSource;
     private boolean mForceNavigation;
     private long mLaunchTimeMs;
+    private String mSelectedShareTargetActivityClassName;
 
     /**
      * Constructs a HostBrowserLauncherParams object from the passed in Intent and from <meta-data>
      * in the Android Manifest.
      */
-    public static HostBrowserLauncherParams createForIntent(Context context,
-            ComponentName callingActivityComponentName, Intent intent,
+    public static HostBrowserLauncherParams createForIntent(Context context, Intent intent,
             String hostBrowserPackageName, boolean dialogShown, long launchTimeMs) {
         Bundle metadata = WebApkUtils.readMetaData(context);
         if (metadata == null) return null;
 
         int hostBrowserMajorChromiumVersion = HostBrowserUtils.queryHostBrowserMajorChromiumVersion(
                 context, hostBrowserPackageName);
+
         String startUrl = null;
         int source = WebApkConstants.SHORTCUT_SOURCE_UNKNOWN;
         boolean forceNavigation = false;
-        if (Intent.ACTION_SEND.equals(intent.getAction())) {
-            startUrl = computeStartUrlForShareTarget(context, callingActivityComponentName, intent);
+
+        String selectedShareTargetActivityClassName = intent.getStringExtra(
+                WebApkConstants.EXTRA_WEBAPK_SELECTED_SHARE_TARGET_ACTIVITY_CLASS_NAME);
+        if (Intent.ACTION_SEND.equals(intent.getAction())
+                || Intent.ACTION_SEND_MULTIPLE.equals(intent.getAction())) {
+            selectedShareTargetActivityClassName = intent.getComponent().getClassName();
+        }
+
+        if (selectedShareTargetActivityClassName != null) {
+            Bundle shareTargetMetaData = fetchActivityMetaData(context,
+                    new ComponentName(
+                            context.getPackageName(), selectedShareTargetActivityClassName));
+            startUrl = computeStartUrlForShareTarget(shareTargetMetaData, intent);
             source = WebApkConstants.SHORTCUT_SOURCE_SHARE;
             forceNavigation = true;
         } else if (!TextUtils.isEmpty(intent.getDataString())) {
@@ -69,12 +82,11 @@ public class HostBrowserLauncherParams {
 
         return new HostBrowserLauncherParams(hostBrowserPackageName,
                 hostBrowserMajorChromiumVersion, dialogShown, intent, startUrl, source,
-                forceNavigation, launchTimeMs);
+                forceNavigation, launchTimeMs, selectedShareTargetActivityClassName);
     }
 
-    /** Computes the start URL for the given share intent and share activity. */
-    private static String computeStartUrlForShareTarget(
-            Context context, ComponentName shareTargetComponentName, Intent intent) {
+    private static Bundle fetchActivityMetaData(
+            Context context, ComponentName shareTargetComponentName) {
         ActivityInfo shareActivityInfo;
         try {
             shareActivityInfo = context.getPackageManager().getActivityInfo(
@@ -82,28 +94,63 @@ public class HostBrowserLauncherParams {
         } catch (PackageManager.NameNotFoundException e) {
             return null;
         }
-        if (shareActivityInfo == null || shareActivityInfo.metaData == null) {
+        if (shareActivityInfo == null) {
             return null;
         }
-        Bundle metaData = shareActivityInfo.metaData;
+        return shareActivityInfo.metaData;
+    }
 
-        String shareAction = metaData.getString(WebApkMetaDataKeys.SHARE_ACTION);
+    private static boolean doesShareTargetUsePost(Bundle shareTargetMetaData) {
+        String method = shareTargetMetaData.getString(WebApkMetaDataKeys.SHARE_METHOD);
+        if (TextUtils.isEmpty(method)) {
+            return false;
+        }
+        return "POST".equals(method.toUpperCase(Locale.ENGLISH));
+    }
+
+    /**
+     * Computes the start URL for the given share intent and share activity.
+     * @param shareTargetMetaData Meta data for the share target activity selected by the user.
+     * @param intent Share intent.
+     */
+    protected static String computeStartUrlForShareTarget(
+            Bundle shareTargetMetaData, Intent intent) {
+        if (shareTargetMetaData == null) {
+            return null;
+        }
+        if (doesShareTargetUsePost(shareTargetMetaData)) {
+            return shareTargetMetaData.getString(WebApkMetaDataKeys.SHARE_ACTION);
+        }
+        return computeStartUrlForGETShareTarget(shareTargetMetaData, intent);
+    }
+
+    /**
+     * Computes the start URL for the given share intent and share activity which sends GET HTTP
+     * requests.
+     * @param shareTargetMetaData Meta data for the share target activity selected by the user.
+     * @param intent Share intent.
+     */
+
+    private static String computeStartUrlForGETShareTarget(
+            Bundle shareTargetMetaData, Intent intent) {
+        String shareAction = shareTargetMetaData.getString(WebApkMetaDataKeys.SHARE_ACTION);
         if (TextUtils.isEmpty(shareAction)) {
             return null;
         }
 
         // These can be null, they are checked downstream.
         ArrayList<Pair<String, String>> entryList = new ArrayList<>();
-        entryList.add(new Pair<>(metaData.getString(WebApkMetaDataKeys.SHARE_PARAM_TITLE),
-                intent.getStringExtra(Intent.EXTRA_SUBJECT)));
-        entryList.add(new Pair<>(metaData.getString(WebApkMetaDataKeys.SHARE_PARAM_TEXT),
+        entryList.add(
+                new Pair<>(shareTargetMetaData.getString(WebApkMetaDataKeys.SHARE_PARAM_TITLE),
+                        intent.getStringExtra(Intent.EXTRA_SUBJECT)));
+        entryList.add(new Pair<>(shareTargetMetaData.getString(WebApkMetaDataKeys.SHARE_PARAM_TEXT),
                 intent.getStringExtra(Intent.EXTRA_TEXT)));
 
-        return createWebShareTargetUriString(shareAction, entryList);
+        return createGETWebShareTargetUriString(shareAction, entryList);
     }
 
     /**
-     * Converts the action url and parameters of a webshare target into a URI.
+     * Converts the action url and parameters of a GET webshare target into a URI.
      * Example:
      * - action = "https://example.org/includinator/share.html"
      * - params
@@ -116,7 +163,7 @@ public class HostBrowserLauncherParams {
      * TODO(ckitagawa): The escaping behavior isn't entirely correct. The exact encoding is still
      * being discussed at https://github.com/WICG/web-share-target/issues/59.
      */
-    protected static String createWebShareTargetUriString(
+    protected static String createGETWebShareTargetUriString(
             String action, ArrayList<Pair<String, String>> entryList) {
         Uri.Builder queryBuilder = new Uri.Builder();
         for (Pair<String, String> nameValue : entryList) {
@@ -128,7 +175,11 @@ public class HostBrowserLauncherParams {
         Uri shareUri = Uri.parse(action);
         Uri.Builder builder = shareUri.buildUpon();
         // Uri.Builder uses %20 rather than + for spaces, the spec requires +.
-        builder.encodedQuery(queryBuilder.build().toString().replace("%20", "+").substring(1));
+        String queryString = queryBuilder.build().toString();
+        if (TextUtils.isEmpty(queryString)) {
+            return action;
+        }
+        builder.encodedQuery(queryString.replace("%20", "+").substring(1));
         return builder.build().toString();
     }
 
@@ -139,7 +190,8 @@ public class HostBrowserLauncherParams {
 
     private HostBrowserLauncherParams(String hostBrowserPackageName,
             int hostBrowserMajorChromiumVersion, boolean dialogShown, Intent originalIntent,
-            String startUrl, int source, boolean forceNavigation, long launchTimeMs) {
+            String startUrl, int source, boolean forceNavigation, long launchTimeMs,
+            String selectedShareTargetActivityClassName) {
         mHostBrowserPackageName = hostBrowserPackageName;
         mHostBrowserMajorChromiumVersion = hostBrowserMajorChromiumVersion;
         mDialogShown = dialogShown;
@@ -148,6 +200,7 @@ public class HostBrowserLauncherParams {
         mSource = source;
         mForceNavigation = forceNavigation;
         mLaunchTimeMs = launchTimeMs;
+        mSelectedShareTargetActivityClassName = selectedShareTargetActivityClassName;
     }
 
     /** Returns the chosen host browser. */
@@ -194,5 +247,10 @@ public class HostBrowserLauncherParams {
     /** Returns time in milliseconds that the WebAPK was launched. */
     public long getLaunchTimeMs() {
         return mLaunchTimeMs;
+    }
+
+    /** Returns the class name of the share activity that the user selected. */
+    public String getSelectedShareTargetActivityClassName() {
+        return mSelectedShareTargetActivityClassName;
     }
 }

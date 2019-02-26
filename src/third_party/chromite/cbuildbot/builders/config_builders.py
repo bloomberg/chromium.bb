@@ -24,4 +24,5 @@ class LuciSchedulerBuilder(simple_builders.SimpleBuilder):
 
   def RunStages(self):
     """Run through the stages of a luci-scheduler-updater build."""
+    self._RunStage(build_stages.InitSDKStage)
     self._RunStage(config_stages.DeployLuciSchedulerStage)

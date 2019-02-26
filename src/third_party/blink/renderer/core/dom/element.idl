@@ -36,6 +36,7 @@ interface Element : Node {
     [Affects=Nothing, CEReactions, Reflect=class] attribute DOMString className;
     [Affects=Nothing, SameObject, PerWorldBindings, PutForwards=value] readonly attribute DOMTokenList classList;
     [Unscopable, CEReactions, Reflect] attribute DOMString slot;
+    [RuntimeEnabled=CSSPartPseudoElement, Affects=Nothing, SameObject, PerWorldBindings, PutForwards=value] readonly attribute DOMTokenList part;
 
     // Pointer Events
     // https://w3c.github.io/pointerevents/#extensions-to-the-element-interface
@@ -100,12 +101,12 @@ interface Element : Node {
     // TODO(sunyunjia): Add default value for scrollIntoView() once
     // crbug.com/734599 is fixed.
     void scrollIntoView(optional (ScrollIntoViewOptions or boolean) arg);
-    [RuntimeEnabled=CSSOMSmoothScroll, ImplementedAs=scrollTo] void scroll(optional ScrollToOptions options);
-    [RuntimeEnabled=CSSOMSmoothScroll, ImplementedAs=scrollTo] void scroll(unrestricted double x, unrestricted double y);
-    [RuntimeEnabled=CSSOMSmoothScroll] void scrollTo(optional ScrollToOptions options);
-    [RuntimeEnabled=CSSOMSmoothScroll] void scrollTo(unrestricted double x, unrestricted double y);
-    [RuntimeEnabled=CSSOMSmoothScroll] void scrollBy(optional ScrollToOptions options);
-    [RuntimeEnabled=CSSOMSmoothScroll] void scrollBy(unrestricted double x, unrestricted double y);
+    [ImplementedAs=scrollTo] void scroll(optional ScrollToOptions options);
+    [ImplementedAs=scrollTo] void scroll(unrestricted double x, unrestricted double y);
+    void scrollTo(optional ScrollToOptions options);
+    void scrollTo(unrestricted double x, unrestricted double y);
+    void scrollBy(optional ScrollToOptions options);
+    void scrollBy(unrestricted double x, unrestricted double y);
     [Affects=Nothing] attribute unrestricted double scrollTop;
     [Affects=Nothing] attribute unrestricted double scrollLeft;
     [Affects=Nothing] readonly attribute long scrollWidth;
@@ -114,10 +115,6 @@ interface Element : Node {
     [Affects=Nothing] readonly attribute long clientLeft;
     [Affects=Nothing] readonly attribute long clientWidth;
     [Affects=Nothing] readonly attribute long clientHeight;
-
-    // Scroll Customization API. See crbug.com/410974 for details.
-    [RuntimeEnabled=ScrollCustomization] void setApplyScroll(ScrollStateCallback scrollStateCallback, NativeScrollBehavior nativeScrollBehavior);
-    [RuntimeEnabled=ScrollCustomization] void setDistributeScroll(ScrollStateCallback scrollStateCallback, NativeScrollBehavior nativeScrollBehavior);
 
     // Typed OM
     // https://drafts.css-houdini.org/css-typed-om/#inline-stylepropertymap-objects

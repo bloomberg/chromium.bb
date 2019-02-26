@@ -91,7 +91,7 @@ class HammerdClientImpl : public HammerdClient {
 
   void OnBaseFirmwareUpdateStarted(dbus::Signal* signal) {
     DCHECK_EQ(signal->GetInterface(), hammerd::kHammerdInterface);
-    DCHECK_EQ(signal->GetMember(), hammerd::kBaseFirmwareNeedUpdateSignal);
+    DCHECK_EQ(signal->GetMember(), hammerd::kBaseFirmwareUpdateStartedSignal);
 
     for (auto& observer : observers_)
       observer.BaseFirmwareUpdateStarted();
@@ -99,7 +99,7 @@ class HammerdClientImpl : public HammerdClient {
 
   void OnBaseFirmwareUpdateSucceeded(dbus::Signal* signal) {
     DCHECK_EQ(signal->GetInterface(), hammerd::kHammerdInterface);
-    DCHECK_EQ(signal->GetMember(), hammerd::kBaseFirmwareNeedUpdateSignal);
+    DCHECK_EQ(signal->GetMember(), hammerd::kBaseFirmwareUpdateSucceededSignal);
 
     for (auto& observer : observers_)
       observer.BaseFirmwareUpdateSucceeded();
@@ -107,7 +107,7 @@ class HammerdClientImpl : public HammerdClient {
 
   void OnBaseFirmwareUpdateFailed(dbus::Signal* signal) {
     DCHECK_EQ(signal->GetInterface(), hammerd::kHammerdInterface);
-    DCHECK_EQ(signal->GetMember(), hammerd::kBaseFirmwareNeedUpdateSignal);
+    DCHECK_EQ(signal->GetMember(), hammerd::kBaseFirmwareUpdateFailedSignal);
 
     for (auto& observer : observers_)
       observer.BaseFirmwareUpdateFailed();
@@ -115,7 +115,7 @@ class HammerdClientImpl : public HammerdClient {
 
   void OnPairChallengeSucceeded(dbus::Signal* signal) {
     DCHECK_EQ(signal->GetInterface(), hammerd::kHammerdInterface);
-    DCHECK_EQ(signal->GetMember(), hammerd::kBaseFirmwareNeedUpdateSignal);
+    DCHECK_EQ(signal->GetMember(), hammerd::kPairChallengeSucceededSignal);
 
     dbus::MessageReader reader(signal);
 
@@ -132,7 +132,7 @@ class HammerdClientImpl : public HammerdClient {
 
   void OnPairChallengeFailed(dbus::Signal* signal) {
     DCHECK_EQ(signal->GetInterface(), hammerd::kHammerdInterface);
-    DCHECK_EQ(signal->GetMember(), hammerd::kBaseFirmwareNeedUpdateSignal);
+    DCHECK_EQ(signal->GetMember(), hammerd::kPairChallengeFailedSignal);
 
     for (auto& observer : observers_)
       observer.PairChallengeFailed();
@@ -140,7 +140,7 @@ class HammerdClientImpl : public HammerdClient {
 
   void OnInvalidBaseConnected(dbus::Signal* signal) {
     DCHECK_EQ(signal->GetInterface(), hammerd::kHammerdInterface);
-    DCHECK_EQ(signal->GetMember(), hammerd::kBaseFirmwareNeedUpdateSignal);
+    DCHECK_EQ(signal->GetMember(), hammerd::kInvalidBaseConnectedSignal);
 
     for (auto& observer : observers_)
       observer.InvalidBaseConnected();

@@ -75,15 +75,13 @@ bool OverviewButtonTray::PerformAction(const ui::Event& event) {
   DCHECK(event.type() == ui::ET_MOUSE_RELEASED ||
          event.type() == ui::ET_GESTURE_TAP);
 
-  if (last_press_event_time_ &&
+  WindowSelectorController* window_selector_controller =
+      Shell::Get()->window_selector_controller();
+  // Skip if the second tap happened outside of overview. This can happen if a
+  // window gets activated in between, which cancels overview mode.
+  if (window_selector_controller->IsSelecting() && last_press_event_time_ &&
       event.time_stamp() - last_press_event_time_.value() <
           kDoubleTapThresholdMs) {
-    // Second taps should not be processed outside of overview mode. (First
-    // taps should be outside of overview).
-    WindowSelectorController* window_selector_controller =
-        Shell::Get()->window_selector_controller();
-    DCHECK(window_selector_controller->IsSelecting());
-
     base::RecordAction(base::UserMetricsAction("Tablet_QuickSwitch"));
 
     // Build mru window list. Use cycle as it excludes some windows we are not

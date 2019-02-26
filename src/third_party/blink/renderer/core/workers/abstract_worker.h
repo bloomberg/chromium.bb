@@ -57,7 +57,7 @@ class CORE_EXPORT AbstractWorker : public EventTargetWithInlineData,
     return ContextLifecycleObserver::GetExecutionContext();
   }
 
-  DEFINE_STATIC_ATTRIBUTE_EVENT_LISTENER(error);
+  DEFINE_STATIC_ATTRIBUTE_EVENT_LISTENER(error, kError);
 
   AbstractWorker(ExecutionContext*);
   ~AbstractWorker() override;

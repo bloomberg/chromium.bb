@@ -10,20 +10,21 @@
 #include "third_party/blink/renderer/core/frame/report.h"
 #include "third_party/blink/renderer/core/frame/reporting_context.h"
 #include "third_party/blink/renderer/platform/bindings/script_state.h"
-#include "third_party/blink/renderer/platform/web_task_runner.h"
+#include "third_party/blink/renderer/platform/wtf/functional.h"
 
 namespace blink {
 
 ReportingObserver* ReportingObserver::Create(
     ExecutionContext* execution_context,
     V8ReportingObserverCallback* callback,
-    ReportingObserverOptions options) {
-  return new ReportingObserver(execution_context, callback, options);
+    ReportingObserverOptions* options) {
+  return MakeGarbageCollected<ReportingObserver>(execution_context, callback,
+                                                 options);
 }
 
 ReportingObserver::ReportingObserver(ExecutionContext* execution_context,
                                      V8ReportingObserverCallback* callback,
-                                     ReportingObserverOptions options)
+                                     ReportingObserverOptions* options)
     : ContextClient(execution_context),
       execution_context_(execution_context),
       callback_(callback),
@@ -59,16 +60,16 @@ void ReportingObserver::QueueReport(Report* report) {
 }
 
 bool ReportingObserver::ObservedType(const String& type) {
-  return !options_.hasTypes() || options_.types().IsEmpty() ||
-         options_.types().Find(type) != kNotFound;
+  return !options_->hasTypes() || options_->types().IsEmpty() ||
+         options_->types().Find(type) != kNotFound;
 }
 
 bool ReportingObserver::Buffered() {
-  return options_.hasBuffered() && options_.buffered();
+  return options_->hasBuffered() && options_->buffered();
 }
 
 void ReportingObserver::ClearBuffered() {
-  return options_.setBuffered(false);
+  return options_->setBuffered(false);
 }
 
 void ReportingObserver::observe() {
@@ -90,6 +91,7 @@ HeapVector<Member<Report>> ReportingObserver::takeRecords() {
 void ReportingObserver::Trace(blink::Visitor* visitor) {
   visitor->Trace(execution_context_);
   visitor->Trace(callback_);
+  visitor->Trace(options_);
   visitor->Trace(report_queue_);
   ScriptWrappable::Trace(visitor);
   ContextClient::Trace(visitor);

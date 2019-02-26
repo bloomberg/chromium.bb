@@ -48,7 +48,7 @@
 #include "third_party/blink/renderer/core/workers/worker_global_scope.h"
 #include "third_party/blink/renderer/core/workers/worker_thread.h"
 #include "third_party/blink/renderer/platform/cross_thread_functional.h"
-#include "third_party/blink/renderer/platform/web_task_runner.h"
+#include "third_party/blink/renderer/platform/scheduler/public/post_cross_thread_task.h"
 #include "third_party/blink/renderer/platform/wtf/functional.h"
 
 namespace blink {
@@ -76,7 +76,7 @@ void DedicatedWorkerObjectProxy::PostMessageToWorkerObject(
 void DedicatedWorkerObjectProxy::ProcessMessageFromWorkerObject(
     BlinkTransferableMessage message,
     WorkerThread* worker_thread) {
-  ToWorkerGlobalScope(worker_thread->GlobalScope())
+  To<WorkerGlobalScope>(worker_thread->GlobalScope())
       ->ReceiveMessagePausable(std::move(message));
 }
 
@@ -84,7 +84,7 @@ void DedicatedWorkerObjectProxy::ProcessUnhandledException(
     int exception_id,
     WorkerThread* worker_thread) {
   WorkerGlobalScope* global_scope =
-      ToWorkerGlobalScope(worker_thread->GlobalScope());
+      To<WorkerGlobalScope>(worker_thread->GlobalScope());
   global_scope->ExceptionUnhandled(exception_id);
 }
 

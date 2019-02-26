@@ -9,39 +9,66 @@ import android.support.test.InstrumentationRegistry;
 import org.junit.rules.TestWatcher;
 import org.junit.runner.Description;
 
+import javax.annotation.concurrent.GuardedBy;
+
 /**
- * Junit4 rule for starting embedded test server before a test starts, and shutting it down when it
- * finishes.
+ * Junit4 rule for starting embedded test server when necessary (i.e. when accessed via
+ * {@link #getServer()}), and shutting it down when the test finishes.
  */
 public class EmbeddedTestServerRule extends TestWatcher {
-    EmbeddedTestServer mServer;
+    private final Object mLock = new Object();
+    @GuardedBy("mLock")
+    private EmbeddedTestServer mServer;
 
-    @Override
-    protected void starting(Description description) {
-        try {
-            mServer = EmbeddedTestServer.createAndStartServer(InstrumentationRegistry.getContext());
-        } catch (InterruptedException e) {
-            throw new EmbeddedTestServer.EmbeddedTestServerFailure("Test server didn't start");
-        }
-        super.starting(description);
-    }
+    // The default value of 0 will result in the same behavior as createAndStartServer
+    // (auto-selected port).
+    @GuardedBy("mLock")
+    private int mServerPort;
 
     @Override
     protected void finished(Description description) {
         super.finished(description);
-        mServer.stopAndDestroyServer();
+        synchronized (mLock) {
+            if (mServer != null) {
+                mServer.stopAndDestroyServer();
+            }
+        }
     }
 
     /**
-     * Get the test server.
+     * Get the test server, creating and starting it if it doesn't exist yet.
      *
      * @return the test server.
      */
     public EmbeddedTestServer getServer() {
-        return mServer;
+        synchronized (mLock) {
+            if (mServer == null) {
+                try {
+                    mServer = EmbeddedTestServer.createAndStartServerWithPort(
+                            InstrumentationRegistry.getContext(), mServerPort);
+                } catch (InterruptedException e) {
+                    throw new EmbeddedTestServer.EmbeddedTestServerFailure(
+                            "Test server didn't start");
+                }
+            }
+            return mServer;
+        }
     }
 
     public String getOrigin() {
-        return mServer.getURL("/");
+        return getServer().getURL("/");
+    }
+
+    /**
+     * Sets the port that the server will be started with. Must be called before the first
+     * {@link #getServer()} call.
+     *
+     * @param port the port to start the server with, or 0 for an automatically selected one.
+     */
+    public void setServerPort(int port) {
+        synchronized (mLock) {
+            assert mServer == null;
+            mServerPort = port;
+        }
     }
 }

@@ -1,11 +1,17 @@
+# This file is generated from a similarly-named Perl script in the BoringSSL
+# source tree. Do not edit by hand.
+
 #if defined(__i386__)
+#if defined(BORINGSSL_PREFIX)
+#include <boringssl_prefix_symbols_asm.h>
+#endif
 .text
-.globl	aesni_encrypt
-.hidden	aesni_encrypt
-.type	aesni_encrypt,@function
+.globl	aes_hw_encrypt
+.hidden	aes_hw_encrypt
+.type	aes_hw_encrypt,@function
 .align	16
-aesni_encrypt:
-.L_aesni_encrypt_begin:
+aes_hw_encrypt:
+.L_aes_hw_encrypt_begin:
 	movl	4(%esp),%eax
 	movl	12(%esp),%edx
 	movups	(%eax),%xmm2
@@ -27,13 +33,13 @@ aesni_encrypt:
 	movups	%xmm2,(%eax)
 	pxor	%xmm2,%xmm2
 	ret
-.size	aesni_encrypt,.-.L_aesni_encrypt_begin
-.globl	aesni_decrypt
-.hidden	aesni_decrypt
-.type	aesni_decrypt,@function
+.size	aes_hw_encrypt,.-.L_aes_hw_encrypt_begin
+.globl	aes_hw_decrypt
+.hidden	aes_hw_decrypt
+.type	aes_hw_decrypt,@function
 .align	16
-aesni_decrypt:
-.L_aesni_decrypt_begin:
+aes_hw_decrypt:
+.L_aes_hw_decrypt_begin:
 	movl	4(%esp),%eax
 	movl	12(%esp),%edx
 	movups	(%eax),%xmm2
@@ -55,7 +61,7 @@ aesni_decrypt:
 	movups	%xmm2,(%eax)
 	pxor	%xmm2,%xmm2
 	ret
-.size	aesni_decrypt,.-.L_aesni_decrypt_begin
+.size	aes_hw_decrypt,.-.L_aes_hw_decrypt_begin
 .hidden	_aesni_encrypt2
 .type	_aesni_encrypt2,@function
 .align	16
@@ -366,12 +372,12 @@ _aesni_decrypt6:
 .byte	102,15,56,223,248
 	ret
 .size	_aesni_decrypt6,.-_aesni_decrypt6
-.globl	aesni_ecb_encrypt
-.hidden	aesni_ecb_encrypt
-.type	aesni_ecb_encrypt,@function
+.globl	aes_hw_ecb_encrypt
+.hidden	aes_hw_ecb_encrypt
+.type	aes_hw_ecb_encrypt,@function
 .align	16
-aesni_ecb_encrypt:
-.L_aesni_ecb_encrypt_begin:
+aes_hw_ecb_encrypt:
+.L_aes_hw_ecb_encrypt_begin:
 	pushl	%ebp
 	pushl	%ebx
 	pushl	%esi
@@ -601,13 +607,13 @@ aesni_ecb_encrypt:
 	popl	%ebx
 	popl	%ebp
 	ret
-.size	aesni_ecb_encrypt,.-.L_aesni_ecb_encrypt_begin
-.globl	aesni_ccm64_encrypt_blocks
-.hidden	aesni_ccm64_encrypt_blocks
-.type	aesni_ccm64_encrypt_blocks,@function
+.size	aes_hw_ecb_encrypt,.-.L_aes_hw_ecb_encrypt_begin
+.globl	aes_hw_ccm64_encrypt_blocks
+.hidden	aes_hw_ccm64_encrypt_blocks
+.type	aes_hw_ccm64_encrypt_blocks,@function
 .align	16
-aesni_ccm64_encrypt_blocks:
-.L_aesni_ccm64_encrypt_blocks_begin:
+aes_hw_ccm64_encrypt_blocks:
+.L_aes_hw_ccm64_encrypt_blocks_begin:
 	pushl	%ebp
 	pushl	%ebx
 	pushl	%esi
@@ -690,13 +696,13 @@ aesni_ccm64_encrypt_blocks:
 	popl	%ebx
 	popl	%ebp
 	ret
-.size	aesni_ccm64_encrypt_blocks,.-.L_aesni_ccm64_encrypt_blocks_begin
-.globl	aesni_ccm64_decrypt_blocks
-.hidden	aesni_ccm64_decrypt_blocks
-.type	aesni_ccm64_decrypt_blocks,@function
+.size	aes_hw_ccm64_encrypt_blocks,.-.L_aes_hw_ccm64_encrypt_blocks_begin
+.globl	aes_hw_ccm64_decrypt_blocks
+.hidden	aes_hw_ccm64_decrypt_blocks
+.type	aes_hw_ccm64_decrypt_blocks,@function
 .align	16
-aesni_ccm64_decrypt_blocks:
-.L_aesni_ccm64_decrypt_blocks_begin:
+aes_hw_ccm64_decrypt_blocks:
+.L_aes_hw_ccm64_decrypt_blocks_begin:
 	pushl	%ebp
 	pushl	%ebx
 	pushl	%esi
@@ -814,13 +820,13 @@ aesni_ccm64_decrypt_blocks:
 	popl	%ebx
 	popl	%ebp
 	ret
-.size	aesni_ccm64_decrypt_blocks,.-.L_aesni_ccm64_decrypt_blocks_begin
-.globl	aesni_ctr32_encrypt_blocks
-.hidden	aesni_ctr32_encrypt_blocks
-.type	aesni_ctr32_encrypt_blocks,@function
+.size	aes_hw_ccm64_decrypt_blocks,.-.L_aes_hw_ccm64_decrypt_blocks_begin
+.globl	aes_hw_ctr32_encrypt_blocks
+.hidden	aes_hw_ctr32_encrypt_blocks
+.type	aes_hw_ctr32_encrypt_blocks,@function
 .align	16
-aesni_ctr32_encrypt_blocks:
-.L_aesni_ctr32_encrypt_blocks_begin:
+aes_hw_ctr32_encrypt_blocks:
+.L_aes_hw_ctr32_encrypt_blocks_begin:
 	pushl	%ebp
 	pushl	%ebx
 	pushl	%esi
@@ -1053,13 +1059,13 @@ aesni_ctr32_encrypt_blocks:
 	popl	%ebx
 	popl	%ebp
 	ret
-.size	aesni_ctr32_encrypt_blocks,.-.L_aesni_ctr32_encrypt_blocks_begin
-.globl	aesni_xts_encrypt
-.hidden	aesni_xts_encrypt
-.type	aesni_xts_encrypt,@function
+.size	aes_hw_ctr32_encrypt_blocks,.-.L_aes_hw_ctr32_encrypt_blocks_begin
+.globl	aes_hw_xts_encrypt
+.hidden	aes_hw_xts_encrypt
+.type	aes_hw_xts_encrypt,@function
 .align	16
-aesni_xts_encrypt:
-.L_aesni_xts_encrypt_begin:
+aes_hw_xts_encrypt:
+.L_aes_hw_xts_encrypt_begin:
 	pushl	%ebp
 	pushl	%ebx
 	pushl	%esi
@@ -1414,13 +1420,13 @@ aesni_xts_encrypt:
 	popl	%ebx
 	popl	%ebp
 	ret
-.size	aesni_xts_encrypt,.-.L_aesni_xts_encrypt_begin
-.globl	aesni_xts_decrypt
-.hidden	aesni_xts_decrypt
-.type	aesni_xts_decrypt,@function
+.size	aes_hw_xts_encrypt,.-.L_aes_hw_xts_encrypt_begin
+.globl	aes_hw_xts_decrypt
+.hidden	aes_hw_xts_decrypt
+.type	aes_hw_xts_decrypt,@function
 .align	16
-aesni_xts_decrypt:
-.L_aesni_xts_decrypt_begin:
+aes_hw_xts_decrypt:
+.L_aes_hw_xts_decrypt_begin:
 	pushl	%ebp
 	pushl	%ebx
 	pushl	%esi
@@ -1805,13 +1811,13 @@ aesni_xts_decrypt:
 	popl	%ebx
 	popl	%ebp
 	ret
-.size	aesni_xts_decrypt,.-.L_aesni_xts_decrypt_begin
-.globl	aesni_cbc_encrypt
-.hidden	aesni_cbc_encrypt
-.type	aesni_cbc_encrypt,@function
+.size	aes_hw_xts_decrypt,.-.L_aes_hw_xts_decrypt_begin
+.globl	aes_hw_cbc_encrypt
+.hidden	aes_hw_cbc_encrypt
+.type	aes_hw_cbc_encrypt,@function
 .align	16
-aesni_cbc_encrypt:
-.L_aesni_cbc_encrypt_begin:
+aes_hw_cbc_encrypt:
+.L_aes_hw_cbc_encrypt_begin:
 	pushl	%ebp
 	pushl	%ebx
 	pushl	%esi
@@ -2067,7 +2073,7 @@ aesni_cbc_encrypt:
 	popl	%ebx
 	popl	%ebp
 	ret
-.size	aesni_cbc_encrypt,.-.L_aesni_cbc_encrypt_begin
+.size	aes_hw_cbc_encrypt,.-.L_aes_hw_cbc_encrypt_begin
 .hidden	_aesni_set_encrypt_key
 .type	_aesni_set_encrypt_key,@function
 .align	16
@@ -2402,24 +2408,24 @@ _aesni_set_encrypt_key:
 	popl	%ebp
 	ret
 .size	_aesni_set_encrypt_key,.-_aesni_set_encrypt_key
-.globl	aesni_set_encrypt_key
-.hidden	aesni_set_encrypt_key
-.type	aesni_set_encrypt_key,@function
+.globl	aes_hw_set_encrypt_key
+.hidden	aes_hw_set_encrypt_key
+.type	aes_hw_set_encrypt_key,@function
 .align	16
-aesni_set_encrypt_key:
-.L_aesni_set_encrypt_key_begin:
+aes_hw_set_encrypt_key:
+.L_aes_hw_set_encrypt_key_begin:
 	movl	4(%esp),%eax
 	movl	8(%esp),%ecx
 	movl	12(%esp),%edx
 	call	_aesni_set_encrypt_key
 	ret
-.size	aesni_set_encrypt_key,.-.L_aesni_set_encrypt_key_begin
-.globl	aesni_set_decrypt_key
-.hidden	aesni_set_decrypt_key
-.type	aesni_set_decrypt_key,@function
+.size	aes_hw_set_encrypt_key,.-.L_aes_hw_set_encrypt_key_begin
+.globl	aes_hw_set_decrypt_key
+.hidden	aes_hw_set_decrypt_key
+.type	aes_hw_set_decrypt_key,@function
 .align	16
-aesni_set_decrypt_key:
-.L_aesni_set_decrypt_key_begin:
+aes_hw_set_decrypt_key:
+.L_aes_hw_set_decrypt_key_begin:
 	movl	4(%esp),%eax
 	movl	8(%esp),%ecx
 	movl	12(%esp),%edx
@@ -2454,7 +2460,7 @@ aesni_set_decrypt_key:
 	xorl	%eax,%eax
 .L114dec_key_ret:
 	ret
-.size	aesni_set_decrypt_key,.-.L_aesni_set_decrypt_key_begin
+.size	aes_hw_set_decrypt_key,.-.L_aes_hw_set_decrypt_key_begin
 .align	64
 .Lkey_const:
 .long	202313229,202313229,202313229,202313229

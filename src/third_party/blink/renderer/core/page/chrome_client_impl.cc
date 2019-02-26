@@ -97,8 +97,8 @@
 #include "third_party/blink/renderer/platform/graphics/graphics_layer.h"
 #include "third_party/blink/renderer/platform/graphics/touch_action.h"
 #include "third_party/blink/renderer/platform/histogram.h"
-#include "third_party/blink/renderer/platform/layout_test_support.h"
 #include "third_party/blink/renderer/platform/runtime_enabled_features.h"
+#include "third_party/blink/renderer/platform/web_test_support.h"
 #include "third_party/blink/renderer/platform/weborigin/security_origin.h"
 #include "third_party/blink/renderer/platform/wtf/text/character_names.h"
 #include "third_party/blink/renderer/platform/wtf/text/cstring.h"
@@ -109,18 +109,18 @@ namespace blink {
 
 namespace {
 
-const char* DialogTypeToString(ChromeClient::DialogType dialog_type) {
-  switch (dialog_type) {
-    case ChromeClient::kAlertDialog:
+const char* UIElementTypeToString(ChromeClient::UIElementType ui_element_type) {
+  switch (ui_element_type) {
+    case ChromeClient::UIElementType::kAlertDialog:
       return "alert";
-    case ChromeClient::kConfirmDialog:
+    case ChromeClient::UIElementType::kConfirmDialog:
       return "confirm";
-    case ChromeClient::kPromptDialog:
+    case ChromeClient::UIElementType::kPromptDialog:
       return "prompt";
-    case ChromeClient::kPrintDialog:
+    case ChromeClient::UIElementType::kPrintDialog:
       return "print";
-    case ChromeClient::kHTMLDialog:
-      NOTREACHED();
+    case ChromeClient::UIElementType::kPopup:
+      return "popup";
   }
   NOTREACHED();
   return "";
@@ -211,7 +211,7 @@ void ChromeClientImpl::Focus(LocalFrame* calling_frame) {
 bool ChromeClientImpl::CanTakeFocus(WebFocusType) {
   // For now the browser can always take focus if we're not running layout
   // tests.
-  return !LayoutTestSupport::IsRunningLayoutTest();
+  return !WebTestSupport::IsRunningWebTest();
 }
 
 void ChromeClientImpl::TakeFocus(WebFocusType type) {
@@ -245,9 +245,10 @@ void ChromeClientImpl::StartDragging(LocalFrame* frame,
                                      const WebDragData& drag_data,
                                      WebDragOperationsMask mask,
                                      const SkBitmap& drag_image,
-                                     const WebPoint& drag_image_offset) {
+                                     const gfx::Point& drag_image_offset) {
   WebLocalFrameImpl* web_frame = WebLocalFrameImpl::FromFrame(frame);
-  WebReferrerPolicy policy = web_frame->GetDocument().GetReferrerPolicy();
+  network::mojom::ReferrerPolicy policy =
+      web_frame->GetDocument().GetReferrerPolicy();
   web_frame->LocalRootFrameWidget()->StartDragging(
       policy, drag_data, mask, drag_image, drag_image_offset);
 }
@@ -256,11 +257,13 @@ bool ChromeClientImpl::AcceptsLoadDrops() const {
   return !web_view_->Client() || web_view_->Client()->AcceptsLoadDrops();
 }
 
-Page* ChromeClientImpl::CreateWindow(LocalFrame* frame,
-                                     const FrameLoadRequest& r,
-                                     const WebWindowFeatures& features,
-                                     NavigationPolicy navigation_policy,
-                                     SandboxFlags sandbox_flags) {
+Page* ChromeClientImpl::CreateWindowDelegate(
+    LocalFrame* frame,
+    const FrameLoadRequest& r,
+    const WebWindowFeatures& features,
+    NavigationPolicy navigation_policy,
+    SandboxFlags sandbox_flags,
+    const SessionStorageNamespaceId& session_storage_namespace_id) {
   if (!web_view_->Client())
     return nullptr;
 
@@ -277,7 +280,8 @@ Page* ChromeClientImpl::CreateWindow(LocalFrame* frame,
           WrappedResourceRequest(r.GetResourceRequest()), features, frame_name,
           static_cast<WebNavigationPolicy>(navigation_policy),
           r.GetShouldSetOpener() == kNeverSetOpener,
-          static_cast<WebSandboxFlags>(sandbox_flags)));
+          static_cast<WebSandboxFlags>(sandbox_flags),
+          session_storage_namespace_id));
   if (!new_view)
     return nullptr;
   return new_view->GetPage();
@@ -445,9 +449,9 @@ float ChromeClientImpl::WindowToViewportScalar(const float scalar_value) const {
 }
 
 WebScreenInfo ChromeClientImpl::GetScreenInfo() const {
-  if (!web_view_->WidgetClient())
+  if (!web_view_->Client())
     return {};
-  return web_view_->WidgetClient()->GetScreenInfo();
+  return web_view_->Client()->GetScreenInfo();
 }
 
 base::Optional<IntRect> ChromeClientImpl::VisibleContentRectForPainting()
@@ -461,6 +465,10 @@ void ChromeClientImpl::ContentsSizeChanged(LocalFrame* frame,
 
   WebLocalFrameImpl* webframe = WebLocalFrameImpl::FromFrame(frame);
   webframe->DidChangeContentsSize(size);
+}
+
+bool ChromeClientImpl::DoubleTapToZoomEnabled() const {
+  return web_view_->SettingsImpl()->DoubleTapToZoomEnabled();
 }
 
 void ChromeClientImpl::PageScaleFactorChanged() const {
@@ -628,18 +636,6 @@ void ChromeClientImpl::DidCompleteFileChooser(FileChooser& chooser) {
   DidCompleteFileChooser(*next_chooser);
 }
 
-void ChromeClientImpl::EnumerateChosenDirectory(FileChooser* file_chooser) {
-  WebViewClient* client = web_view_->Client();
-  if (!client)
-    return;
-
-  DCHECK(file_chooser);
-  DCHECK(file_chooser->Params().selected_files.size());
-  if (client->EnumerateChosenDirectory(file_chooser->Params().selected_files[0],
-                                       file_chooser))
-    file_chooser->AddRef();
-}
-
 Cursor ChromeClientImpl::LastSetCursorForTesting() const {
   return last_set_mouse_cursor_for_testing_;
 }
@@ -759,7 +755,7 @@ void ChromeClientImpl::DetachCompositorAnimationTimeline(
 }
 
 void ChromeClientImpl::EnterFullscreen(LocalFrame& frame,
-                                       const FullscreenOptions& options) {
+                                       const FullscreenOptions* options) {
   web_view_->EnterFullscreen(frame, options);
 }
 
@@ -806,7 +802,7 @@ PopupMenu* ChromeClientImpl::OpenPopupMenu(LocalFrame& frame,
                                            HTMLSelectElement& select) {
   NotifyPopupOpeningObservers();
   if (WebViewImpl::UseExternalPopupMenus())
-    return new ExternalPopupMenu(frame, select, *web_view_);
+    return MakeGarbageCollected<ExternalPopupMenu>(frame, select, *web_view_);
 
   DCHECK(RuntimeEnabledFeatures::PagePopupEnabled());
   return InternalPopupMenu::Create(this, select);
@@ -839,16 +835,25 @@ void ChromeClientImpl::SetBrowserControlsShownRatio(float ratio) {
   web_view_->GetBrowserControls().SetShownRatio(ratio);
 }
 
-bool ChromeClientImpl::ShouldOpenModalDialogDuringPageDismissal(
+bool ChromeClientImpl::ShouldOpenUIElementDuringPageDismissal(
     LocalFrame& frame,
-    DialogType dialog_type,
+    UIElementType ui_element_type,
     const String& dialog_message,
     Document::PageDismissalType dismissal_type) const {
-  String message = String("Blocked ") + DialogTypeToString(dialog_type) + "('" +
-                   dialog_message + "') during " +
-                   DismissalTypeToString(dismissal_type) + ".";
+  StringBuilder builder;
+  builder.Append("Blocked ");
+  builder.Append(UIElementTypeToString(ui_element_type));
+  if (dialog_message.length()) {
+    builder.Append("('");
+    builder.Append(dialog_message);
+    builder.Append("')");
+  }
+  builder.Append(" during ");
+  builder.Append(DismissalTypeToString(dismissal_type));
+  builder.Append(".");
+
   WebLocalFrameImpl::FromFrame(frame)->AddMessageToConsole(
-      WebConsoleMessage(WebConsoleMessage::kLevelError, message));
+      WebConsoleMessage(WebConsoleMessage::kLevelError, builder.ToString()));
 
   return false;
 }

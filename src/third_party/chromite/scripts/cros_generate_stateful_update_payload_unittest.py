@@ -10,7 +10,6 @@ from __future__ import print_function
 import os
 
 from chromite.lib import cros_build_lib
-from chromite.lib import cros_logging as logging
 from chromite.lib import cros_test_lib
 from chromite.lib import osutils
 from chromite.scripts import cros_generate_stateful_update_payload

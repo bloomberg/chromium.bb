@@ -185,6 +185,10 @@ ASH_PUBLIC_EXPORT extern const aura::WindowProperty<bool>* const
 ASH_PUBLIC_EXPORT extern const aura::WindowProperty<
     mojom::WindowStateType>* const kWindowStateTypeKey;
 
+// A property key to indicate pip window state.
+ASH_PUBLIC_EXPORT extern const aura::WindowProperty<bool>* const
+    kWindowPipTypeKey;
+
 // Alphabetical sort.
 
 }  // namespace ash

@@ -470,6 +470,9 @@ void AppsGridView::OnTabletModeChanged(bool started) {
     if (item_view->item()->is_folder())
       item_view->SetBackgroundBlurEnabled(started);
   }
+
+  // Prevent context menus from remaining open after a transition
+  CancelContextMenusOnCurrentPage();
 }
 
 void AppsGridView::SetModel(AppListModel* model) {
@@ -733,6 +736,16 @@ void AppsGridView::EndDrag(bool cancel) {
     // Run an animation to move dragged item to the folder.
     StartFolderDroppingAnimation(folder_item_view, drag_item,
                                  drag_source_bounds);
+  }
+
+  if (!cancel) {
+    // Select the page where dragged item is dropped. Avoid doing so when the
+    // dragged item ends up in a folder.
+    const int model_index = GetModelIndexOfItem(drag_item);
+    if (model_index < view_model_.view_size()) {
+      pagination_model_.SelectPage(GetIndexFromModelIndex(model_index).page,
+                                   false /* animate */);
+    }
   }
 
   StopPageFlipTimer();
@@ -1031,13 +1044,13 @@ void AppsGridView::OnGestureEvent(ui::GestureEvent* event) {
   // If a tap/long-press occurs within a valid tile, it is usually a mistake and
   // should not close the launcher in clamshell mode. Otherwise, we should let
   // those events pass to the ancestor views.
-  if (!contents_view_->app_list_view()->IsHomeLauncherEnabledInTabletMode() &&
+  if (!contents_view_->app_list_view()->is_tablet_mode() &&
       (event->type() == ui::ET_GESTURE_TAP ||
        event->type() == ui::ET_GESTURE_LONG_PRESS)) {
-    GridIndex nearest_tile_index =
-        GetNearestTileIndexForPoint(event->location());
-    if (IsValidIndex(nearest_tile_index))
+    if (EventIsBetweenOccupiedTiles(event)) {
+      contents_view_->app_list_view()->CloseKeyboardIfVisible();
       event->SetHandled();
+    }
     return;
   }
 
@@ -1050,7 +1063,7 @@ void AppsGridView::OnGestureEvent(ui::GestureEvent* event) {
   // If the event is a scroll down in clamshell mode on the first page, don't
   // let |pagination_controller_| handle it. Unless it occurs in a folder.
   if (!folder_delegate_ && event->type() == ui::ET_GESTURE_SCROLL_BEGIN &&
-      !contents_view_->app_list_view()->IsHomeLauncherEnabledInTabletMode() &&
+      !contents_view_->app_list_view()->is_tablet_mode() &&
       pagination_model_.selected_page() == 0 &&
       event->details().scroll_y_hint() > 0) {
     return;
@@ -1063,6 +1076,15 @@ void AppsGridView::OnGestureEvent(ui::GestureEvent* event) {
       (folder_delegate_ && event->type() == ui::ET_GESTURE_SCROLL_BEGIN)) {
     event->SetHandled();
   }
+}
+
+bool AppsGridView::OnMousePressed(const ui::MouseEvent& event) {
+  return !contents_view_->app_list_view()->is_tablet_mode() &&
+         event.IsLeftMouseButton() && EventIsBetweenOccupiedTiles(&event);
+}
+
+bool AppsGridView::EventIsBetweenOccupiedTiles(const ui::LocatedEvent* event) {
+  return IsValidIndex(GetNearestTileIndexForPoint(event->location()));
 }
 
 void AppsGridView::Update() {
@@ -1164,16 +1186,15 @@ AppListItemView* AppsGridView::CreateViewForItemAtIndex(size_t index) {
   return view;
 }
 
-bool AppsGridView::HandleScroll(int offset, ui::EventType type) {
+bool AppsGridView::HandleScroll(const gfx::Vector2d& offset,
+                                ui::EventType type) {
   // Bail on STATE_START or no apps page to make PaginationModel happy.
   if (contents_view_->GetActiveState() == ash::AppListState::kStateStart ||
       pagination_model_.total_pages() <= 0) {
     return false;
   }
 
-  const gfx::Vector2dF scroll_offset_vector(0, offset);
-  return pagination_controller_->OnScroll(
-      gfx::ToFlooredVector2d(scroll_offset_vector), type);
+  return pagination_controller_->OnScroll(offset, type);
 }
 
 void AppsGridView::EnsureViewVisible(const GridIndex& index) {
@@ -1939,9 +1960,11 @@ void AppsGridView::UpdateOpacity() {
   // changes from 0.f to 1.0f.
   const float peeking_to_fullscreen_height =
       app_list_view->GetFullscreenStateHeight() - peeking_height;
-  DCHECK_GT(peeking_to_fullscreen_height, 0);
   const float drag_amount = current_height - peeking_height;
-  fraction = std::max(drag_amount / peeking_to_fullscreen_height, 0.f);
+  fraction = std::max(peeking_to_fullscreen_height > 0
+                          ? drag_amount / peeking_to_fullscreen_height
+                          : 1.0f,
+                      0.f);
   opacity = std::min(std::max((fraction + kAllAppsIndicatorOpacityEndFraction -
                                kAllAppsIndicatorOpacityStartFraction - 1.0f) /
                                   (kAllAppsIndicatorOpacityEndFraction -
@@ -2007,9 +2030,10 @@ void AppsGridView::UpdateOpacity() {
   }
 }
 
-bool AppsGridView::HandleScrollFromAppListView(int offset, ui::EventType type) {
+bool AppsGridView::HandleScrollFromAppListView(const gfx::Vector2d& offset,
+                                               ui::EventType type) {
   // Scroll up at first page in top level apps grid should close the launcher.
-  if (!folder_delegate_ && offset > 0 &&
+  if (!folder_delegate_ && offset.y() > 0 &&
       !pagination_model()->IsValidPageRelative(-1)) {
     return false;
   }
@@ -2187,9 +2211,6 @@ void AppsGridView::MoveItemInModel(AppListItemView* item_view,
   item_list_->MoveItem(current_item_index, target_item_index);
   view_model_.Move(current_model_index, target_model_index);
   item_list_->AddObserver(this);
-
-  if (pagination_model_.selected_page() != target.page)
-    pagination_model_.SelectPage(target.page, false);
 
   RecordAppMovingTypeMetrics(folder_delegate_ ? kReorderInFolder
                                               : kReorderInTopLevel);
@@ -2455,6 +2476,8 @@ void AppsGridView::RemoveLastItemFromReparentItemFolderIfNecessary(
 
 void AppsGridView::CancelContextMenusOnCurrentPage() {
   GridIndex start_index(pagination_model_.selected_page(), 0);
+  if (!IsValidIndex(start_index))
+    return;
   int start = GetModelIndexFromIndex(start_index);
   int end =
       std::min(view_model_.view_size(), start + TilesPerPage(start_index.page));
@@ -2497,14 +2520,20 @@ bool AppsGridView::IsPointWithinBottomDragBuffer(
       display::Screen::GetScreen()->GetDisplayNearestView(
           GetWidget()->GetNativeView());
 
-  const int kBottomDragBufferMin =
-      GetBoundsInScreen().bottom() -
-      (AppListConfig::instance().page_flip_zone_size());
   const int kBottomDragBufferMax =
       display.bounds().bottom() -
       (contents_view_->app_list_view()->is_side_shelf()
            ? 0
            : (display.bounds().bottom() - display.work_area().bottom()));
+
+  // The minimum y position is the bottom of this view, which is sometimes
+  // transformed for display zoom.
+  gfx::RectF transformed_bounds_in_screen = gfx::RectF(GetBoundsInScreen());
+  GetTransform().TransformRect(&transformed_bounds_in_screen);
+  const int kBottomDragBufferMin = transformed_bounds_in_screen.bottom();
+
+  DCHECK_GE(kBottomDragBufferMax - kBottomDragBufferMin,
+            AppListConfig::instance().page_flip_zone_size());
 
   return point_in_screen.y() > kBottomDragBufferMin &&
          point_in_screen.y() < kBottomDragBufferMax;
@@ -3004,7 +3033,7 @@ void AppsGridView::StartFolderDroppingAnimation(
     const gfx::Rect& source_bounds) {
   // Calculate target bounds of dragged item.
   gfx::Rect target_bounds =
-      GetTargetIconRectInFolder(drag_item, folder_item_view);
+      GetMirroredRect(GetTargetIconRectInFolder(drag_item, folder_item_view));
 
   // Update folder icon.
   AppListFolderItem* folder_item =

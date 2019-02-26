@@ -56,7 +56,7 @@ bool MixerOutputStreamFuchsia::Start(int requested_sample_rate, int channels) {
           ->ConnectToService<fuchsia::media::Audio>();
   audio_server->CreateAudioRenderer(audio_renderer_.NewRequest());
   audio_renderer_.set_error_handler(
-      fit::bind_member(this, &MixerOutputStreamFuchsia::OnRendererError));
+      [this](zx_status_t status) { this->OnRendererError(status); });
 
   // Configure the renderer.
   fuchsia::media::AudioStreamType format;
@@ -202,8 +202,8 @@ base::TimeTicks MixerOutputStreamFuchsia::GetCurrentStreamTime() {
                                stream_position_samples_, sample_rate_);
 }
 
-void MixerOutputStreamFuchsia::OnRendererError() {
-  LOG(WARNING) << "AudioRenderer has failed.";
+void MixerOutputStreamFuchsia::OnRendererError(zx_status_t status) {
+  LOG(WARNING) << "AudioRenderer has failed with code " << status;
   Stop();
 }
 

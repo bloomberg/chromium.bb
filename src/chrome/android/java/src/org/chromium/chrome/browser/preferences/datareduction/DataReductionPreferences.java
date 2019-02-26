@@ -57,14 +57,11 @@ public class DataReductionPreferences extends PreferenceFragment {
 
         setHasOptionsMenu(true);
 
-        if (getActivity() != null) {
-            mFromPromo = IntentUtils.safeGetBooleanExtra(getActivity().getIntent(),
-                    DataReductionPromoSnackbarController.FROM_PROMO, false);
-            mFromMainMenu = IntentUtils.safeGetBooleanExtra(
-                    getActivity().getIntent(), FROM_MAIN_MENU, false);
-            mFromInfobar = IntentUtils.safeGetBooleanExtra(
-                    getActivity().getIntent(), PreviewsLitePageInfoBar.FROM_INFOBAR, false);
-        }
+        mFromPromo = IntentUtils.safeGetBoolean(
+                getArguments(), DataReductionPromoSnackbarController.FROM_PROMO, false);
+        mFromMainMenu = IntentUtils.safeGetBoolean(getArguments(), FROM_MAIN_MENU, false);
+        mFromInfobar = IntentUtils.safeGetBoolean(
+                getArguments(), PreviewsLitePageInfoBar.FROM_INFOBAR, false);
     }
 
     @Override

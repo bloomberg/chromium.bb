@@ -51,7 +51,7 @@ void TestOverflowedToolbarAction(Browser* browser,
   // A bunch of plumbing to safely get at the overflowed toolbar action.
   BrowserAppMenuButton* app_menu_button = GetAppButtonFromBrowser(browser);
   EXPECT_TRUE(app_menu_button->IsMenuShowing());
-  AppMenu* app_menu = app_menu_button->app_menu_for_testing();
+  AppMenu* app_menu = app_menu_button->app_menu();
   ASSERT_TRUE(app_menu);
   ExtensionToolbarMenuView* menu_view =
       app_menu->extension_toolbar_for_testing();
@@ -92,7 +92,7 @@ void TestWhileContextMenuOpen(Browser* browser,
 
   // Get the overflow container.
   BrowserAppMenuButton* app_menu_button = GetAppButtonFromBrowser(browser);
-  AppMenu* app_menu = app_menu_button->app_menu_for_testing();
+  AppMenu* app_menu = app_menu_button->app_menu();
   ASSERT_TRUE(app_menu);
   ExtensionToolbarMenuView* menu_view =
       app_menu->extension_toolbar_for_testing();

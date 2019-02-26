@@ -24,12 +24,8 @@ class RenderWidgetHostDelegate;
 // a given RenderWidgetHost.
 class CONTENT_EXPORT RenderWidgetHostLatencyTracker {
  public:
-  RenderWidgetHostLatencyTracker(RenderWidgetHostDelegate* delegate);
+  explicit RenderWidgetHostLatencyTracker(RenderWidgetHostDelegate* delegate);
   virtual ~RenderWidgetHostLatencyTracker();
-
-  // Associates the latency tracker with a given route and process.
-  // Called once after the RenderWidgetHost is fully initialized.
-  void Initialize(int routing_id, int process_id);
 
   void ComputeInputLatencyHistograms(blink::WebInputEvent::Type type,
                                      const ui::LatencyInfo& latency,

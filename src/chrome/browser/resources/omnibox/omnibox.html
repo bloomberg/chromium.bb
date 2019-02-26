@@ -6,9 +6,12 @@
   <link rel="stylesheet" href="chrome://resources/css/text_defaults.css">
   <link rel="stylesheet" href="omnibox.css">
   <script src="chrome://resources/js/cr.js"></script>
-  <script src="chrome://resources/js/mojo_bindings.js"></script>
+  <script src="chrome://resources/js/mojo_bindings_lite.js"></script>
   <script src="chrome://resources/js/util.js"></script>
-  <script src="chrome/browser/ui/webui/omnibox/omnibox.mojom.js"></script>
+  <script src="chrome/browser/ui/webui/omnibox/omnibox.mojom-lite.js"></script>
+  <script src="omnibox_element.js"></script>
+  <script src="omnibox_inputs.js"></script>
+  <script src="omnibox_output.js"></script>
   <script src="omnibox.js"></script>
 </head>
 <body>
@@ -18,6 +21,12 @@
       <input id="input-text" type="text" size="60" placeholder="Enter omnibox input text" autofocus>
     </p>
     <p>Input parameters:</p>
+    <p>
+      <label>
+        <input id="lock-cursor-position" type="checkbox">
+        Lock cursor position to end of input
+      </label>
+    </p>
     <p>
       <label>
         <input id="prevent-inline-autocomplete" type="checkbox">
@@ -63,6 +72,19 @@
         Show results per provider, not just merged results
       </label>
     </p>
+    <div class="section">
+      <button id="copy-text" title="Copy visible table in text format. This is affected by the visibility of ouput; i.e. toggling `Show all details` affects what will be copied.">Copy as text</button>
+      <button id="copy-json" title="Copy responses in JSON format. This is not affected by the visibility of output and will copy responses in their entirety.">Copy as JSON</button>
+    </div>
+
+    <div class="section">
+      <input id="filter-text" type="text" size="60" placeholder="Filter output">
+      <label class="toggle left-20">
+        <input id="filter-hide" type="checkbox">
+        <span class="toggle-off">Highlight</span>
+        <span class="toggle-on">Filter</span>
+      </label>
+    </div>
   </template>
 
   <template id="omnibox-output-template">
@@ -70,7 +92,25 @@
     <div id="contents"></div>
   </template>
 
-  <omnibox-inputs id="omnibox-inputs" class="section"></omnibox-inputs>
-  <omnibox-output id="omnibox-output" class="section"></omnibox-output>
+  <template id="details-and-table-template">
+    <div class="details-and-table">
+      <div class="details"></div>
+      <table class="table"></table>
+    </div>
+  </template>
+
+  <template id="details-template">
+    <p>cursor position = <span class="cursor-position"></span></p>
+    <p>elapsed time = <span class="time"></span>ms</p>
+    <p>all providers done = <span class="done"></span></p>
+    <p>host = <span class="host"></span>, has isTypedHost = <span class="is-typed-host"></span></p>
+  </template>
+
+  <div class="section">
+    <omnibox-inputs id="omnibox-inputs"></omnibox-inputs>
+  </div>
+  <div class="section">
+    <omnibox-output id="omnibox-output"></omnibox-output>
+  </div>
 </body>
 </html>

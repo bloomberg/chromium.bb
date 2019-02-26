@@ -37,11 +37,13 @@
 #include "third_party/blink/public/platform/web_drag_operation.h"
 #include "third_party/blink/public/platform/web_focus_type.h"
 #include "third_party/blink/public/platform/web_string.h"
-#include "third_party/blink/public/web/web_widget.h"
 #include "third_party/skia/include/core/SkColor.h"
 
-namespace blink {
+namespace gfx {
+class Point;
+}
 
+namespace blink {
 class PageScheduler;
 class WebFrame;
 class WebHitTestResult;
@@ -52,14 +54,17 @@ class WebRemoteFrame;
 class WebSettings;
 class WebString;
 class WebViewClient;
+class WebWidget;
 class WebWidgetClient;
 struct WebDeviceEmulationParams;
 struct WebFloatPoint;
+struct WebFloatSize;
 struct WebPluginAction;
-struct WebPoint;
+struct WebRect;
+struct WebSize;
 struct WebWindowFeatures;
 
-class WebView : protected WebWidget {
+class WebView {
  public:
   BLINK_EXPORT static const double kTextSizeMultiplierRatio;
   BLINK_EXPORT static const double kMinTextSizeMultiplier;
@@ -69,39 +74,6 @@ class WebView : protected WebWidget {
     kInjectStyleInAllFrames,
     kInjectStyleInTopFrameOnly
   };
-
-  // WebWidget overrides.
-  using WebWidget::Close;
-  using WebWidget::LifecycleUpdate;
-  using WebWidget::Size;
-  using WebWidget::Resize;
-  using WebWidget::ResizeVisualViewport;
-  using WebWidget::DidEnterFullscreen;
-  using WebWidget::DidExitFullscreen;
-  using WebWidget::BeginFrame;
-  using WebWidget::UpdateAllLifecyclePhases;
-  using WebWidget::UpdateLifecycle;
-  using WebWidget::PaintContent;
-  using WebWidget::LayoutAndPaintAsync;
-  using WebWidget::CompositeAndReadbackAsync;
-  using WebWidget::ThemeChanged;
-  using WebWidget::HandleInputEvent;
-  using WebWidget::DispatchBufferedTouchEvents;
-  using WebWidget::SetCursorVisibilityState;
-  using WebWidget::ApplyViewportChanges;
-  using WebWidget::MouseCaptureLost;
-  using WebWidget::SetFocus;
-  using WebWidget::SelectionBounds;
-  using WebWidget::IsAcceleratedCompositingActive;
-  using WebWidget::IsWebView;
-  using WebWidget::IsPagePopup;
-  using WebWidget::WillCloseLayerTreeView;
-  using WebWidget::DidAcquirePointerLock;
-  using WebWidget::DidNotAcquirePointerLock;
-  using WebWidget::DidLosePointerLock;
-  using WebWidget::BackgroundColor;
-  using WebWidget::GetPagePopup;
-  using WebWidget::UpdateBrowserControlsState;
 
   // Initialization ------------------------------------------------------
 
@@ -278,6 +250,9 @@ class WebView : protected WebWidget {
   // must be updated to at least layout before calling (see: |UpdateLifecycle|).
   virtual WebSize ContentsPreferredMinimumSize() = 0;
 
+  // Requests a page-scale animation based on the specified point/rect.
+  virtual void AnimateDoubleTapZoom(const gfx::Point&, const WebRect&) = 0;
+
   // Sets the display mode of the web app.
   virtual void SetDisplayMode(WebDisplayMode) = 0;
 
@@ -316,19 +291,16 @@ class WebView : protected WebWidget {
 
   // Performs the specified plugin action on the node at the given location.
   virtual void PerformPluginAction(const WebPluginAction&,
-                                   const WebPoint& location) = 0;
+                                   const gfx::Point& location) = 0;
 
   // Notifies WebView when audio is started or stopped.
   virtual void AudioStateChanged(bool is_audio_playing) = 0;
 
   // Data exchange -------------------------------------------------------
 
-  // Do a hit test at given point and return the HitTestResult.
-  WebHitTestResult HitTestResultAt(const WebPoint&) override = 0;
-
   // Do a hit test equivalent to what would be done for a GestureTap event
   // that has width/height corresponding to the supplied |tapArea|.
-  virtual WebHitTestResult HitTestResultForTap(const WebPoint& tap_point,
+  virtual WebHitTestResult HitTestResultForTap(const gfx::Point& tap_point,
                                                const WebSize& tap_area) = 0;
 
   // Support for resource loading initiated by plugins -------------------
@@ -401,6 +373,7 @@ class WebView : protected WebWidget {
   // Sets the visibility of the WebView.
   virtual void SetVisibilityState(mojom::PageVisibilityState visibility_state,
                                   bool is_initial_state) {}
+  virtual mojom::PageVisibilityState VisibilityState() = 0;
 
   // PageOverlay ----------------------------------------------------------
 
@@ -449,7 +422,7 @@ class WebView : protected WebWidget {
 
   // TODO(lfg): Remove this once the refactor of WebView/WebWidget is
   // completed.
-  WebWidget* GetWidget() { return this; }
+  virtual WebWidget* MainFrameWidget() = 0;
 
  protected:
   ~WebView() = default;

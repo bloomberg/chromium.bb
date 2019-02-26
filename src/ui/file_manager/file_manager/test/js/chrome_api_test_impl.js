@@ -51,9 +51,7 @@ chrome = {
   },
 
   commandLinePrivate: {
-    switches_: {
-      'crostini-files': true,
-    },
+    switches_: {},
     hasSwitch: (name, callback) => {
       setTimeout(callback, 0, chrome.commandLinePrivate.switches_[name]);
     },

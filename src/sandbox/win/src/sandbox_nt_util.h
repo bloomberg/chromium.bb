@@ -60,7 +60,7 @@ void __cdecl operator delete(void* memory,
 
 namespace sandbox {
 
-#if defined(_M_X64)
+#if defined(_M_X64) || defined(_M_ARM64)
 #pragma intrinsic(_InterlockedCompareExchange)
 #pragma intrinsic(_InterlockedCompareExchangePointer)
 
@@ -119,7 +119,10 @@ NTSTATUS AllocAndCopyName(const OBJECT_ATTRIBUTES* in_object,
                           HANDLE* root);
 
 // Determine full path name from object root and path.
-NTSTATUS AllocAndGetFullPath(HANDLE root, wchar_t* path, wchar_t** full_path);
+NTSTATUS AllocAndGetFullPath(
+    HANDLE root,
+    const wchar_t* path,
+    std::unique_ptr<wchar_t, NtAllocDeleter>* full_path);
 
 // Initializes our ntdll level heap
 bool InitHeap();

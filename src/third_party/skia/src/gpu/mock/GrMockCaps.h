@@ -9,6 +9,7 @@
 #define GrMockCaps_DEFINED
 
 #include "GrCaps.h"
+#include "SkGr.h"
 #include "mock/GrMockTypes.h"
 
 class GrMockCaps : public GrCaps {
@@ -104,15 +105,43 @@ public:
         return true;
     }
 
+    bool getYUVAConfigFromBackendTexture(const GrBackendTexture& tex,
+                                         GrPixelConfig* config) const override {
+        GrMockTextureInfo texInfo;
+        if (!tex.getMockTextureInfo(&texInfo)) {
+            return false;
+        }
+
+        *config = texInfo.fConfig;
+        return true;
+    }
+
+    bool getYUVAConfigFromBackendFormat(const GrBackendFormat& format,
+                                        GrPixelConfig* config) const override {
+        const GrPixelConfig* mockFormat = format.getMockFormat();
+        if (!mockFormat) {
+            return false;
+        }
+        *config = *mockFormat;
+        return true;
+    }
+
+    GrBackendFormat getBackendFormatFromGrColorType(GrColorType ct,
+                                                    GrSRGBEncoded srgbEncoded) const override {
+        GrPixelConfig config = GrColorTypeToPixelConfig(ct, srgbEncoded);
+        if (config == kUnknown_GrPixelConfig) {
+            return GrBackendFormat();
+        }
+        return GrBackendFormat::MakeMock(config);
+    }
+
 private:
-#ifdef GR_TEST_UTILS
     GrBackendFormat onCreateFormatFromBackendTexture(
             const GrBackendTexture& backendTex) const override {
         GrMockTextureInfo mockInfo;
         SkAssertResult(backendTex.getMockTextureInfo(&mockInfo));
         return GrBackendFormat::MakeMock(mockInfo.fConfig);
     }
-#endif
 
     static const int kMaxSampleCnt = 16;
 

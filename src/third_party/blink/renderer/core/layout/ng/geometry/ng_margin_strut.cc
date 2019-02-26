@@ -8,18 +8,6 @@
 
 namespace blink {
 
-LayoutUnit NGMarginStrut::Sum() const {
-  if (discard_margins)
-    return LayoutUnit();
-  return std::max(quirky_positive_margin, positive_margin) + negative_margin;
-}
-
-LayoutUnit NGMarginStrut::QuirkyContainerSum() const {
-  if (discard_margins)
-    return LayoutUnit();
-  return positive_margin + negative_margin;
-}
-
 void NGMarginStrut::Append(const LayoutUnit& value, bool is_quirky) {
   if (is_quirky_container_start && is_quirky)
     return;
@@ -48,6 +36,7 @@ bool NGMarginStrut::operator==(const NGMarginStrut& other) const {
   return positive_margin == other.positive_margin &&
          negative_margin == other.negative_margin &&
          quirky_positive_margin == other.quirky_positive_margin &&
+         discard_margins == other.discard_margins &&
          is_quirky_container_start == other.is_quirky_container_start;
 }
 

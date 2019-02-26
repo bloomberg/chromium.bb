@@ -72,6 +72,8 @@ public class InvalidationClientService extends AndroidListener {
     private static final String TAG = "cr_invalidation";
     private static final String CLIENT_SERVICE_KEY = "ipc.invalidation.ticl.listener_service_class";
 
+    protected static boolean sShouldCreateService = true;
+
     /**
      * Whether the underlying notification client has been started. This boolean is updated when a
      * start or stop intent is issued to the underlying client, not when the intent is actually
@@ -484,7 +486,7 @@ public class InvalidationClientService extends AndroidListener {
         Bundle bundle =
                 PendingInvalidation.createBundle(objectName, objectSource, version, payload);
         Account account = ChromeSigninController.get().getSignedInUser();
-        String contractAuthority = AndroidSyncSettings.getContractAuthority();
+        String contractAuthority = AndroidSyncSettings.get().getContractAuthority();
         requestSyncFromContentResolver(bundle, account, contractAuthority);
     }
 
@@ -512,7 +514,7 @@ public class InvalidationClientService extends AndroidListener {
     /** Returns whether sync is enabled. LLocal method so it can be overridden in tests. */
     @VisibleForTesting
     boolean isSyncEnabled() {
-        return AndroidSyncSettings.isSyncEnabled();
+        return AndroidSyncSettings.get().isSyncEnabled();
     }
 
     /**
@@ -548,6 +550,7 @@ public class InvalidationClientService extends AndroidListener {
     }
 
     private void startServiceIfPossible(Intent intent) {
+        if (!sShouldCreateService) return;
         // The use of background services is restricted when the application is not in foreground
         // for O. See crbug.com/680812.
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
@@ -559,5 +562,9 @@ public class InvalidationClientService extends AndroidListener {
         } else {
             startService(intent);
         }
+    }
+
+    public void setShouldCreateService(boolean shouldCreate) {
+        sShouldCreateService = shouldCreate;
     }
 }

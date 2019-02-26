@@ -28,7 +28,7 @@ public final class VolumeMap {
 
     private static final int DEVICE_TYPE = AudioDeviceInfo.TYPE_BUILTIN_SPEAKER;
 
-    private static AudioManager sAudioManager = null;
+    private static AudioManager sAudioManager;
 
     // Mapping from Android's stream_type to Cast's AudioContentType (used for callback).
     private static final SparseIntArray ANDROID_TYPE_TO_CAST_TYPE_MAP = new SparseIntArray(4) {
@@ -82,7 +82,8 @@ public final class VolumeMap {
     // Returns the current volume in dB for the given stream type and volume index.
     private static float getStreamVolumeDB(int streamType, int idx) {
         float db = 0;
-        if (Build.VERSION.SDK_INT == Build.VERSION_CODES.O_MR1) {
+        if (Build.VERSION.SDK_INT == Build.VERSION_CODES.O_MR1
+                || Build.VERSION.SDK_INT == Build.VERSION_CODES.N) {
             // API is hidden, use reflection.
             try {
                 db = (float) getAudioManager()

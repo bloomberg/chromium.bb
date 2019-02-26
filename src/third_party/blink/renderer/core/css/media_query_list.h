@@ -53,12 +53,16 @@ class CORE_EXPORT MediaQueryList final
   static MediaQueryList* Create(ExecutionContext*,
                                 MediaQueryMatcher*,
                                 scoped_refptr<MediaQuerySet>);
+
+  MediaQueryList(ExecutionContext*,
+                 MediaQueryMatcher*,
+                 scoped_refptr<MediaQuerySet>);
   ~MediaQueryList() override;
 
   String media() const;
   bool matches();
 
-  DEFINE_ATTRIBUTE_EVENT_LISTENER(change);
+  DEFINE_ATTRIBUTE_EVENT_LISTENER(change, kChange);
 
   // These two functions are provided for compatibility with JS code
   // written before the change listener became a DOM event.
@@ -86,10 +90,6 @@ class CORE_EXPORT MediaQueryList final
   ExecutionContext* GetExecutionContext() const override;
 
  private:
-  MediaQueryList(ExecutionContext*,
-                 MediaQueryMatcher*,
-                 scoped_refptr<MediaQuerySet>);
-
   bool UpdateMatches();
 
   Member<MediaQueryMatcher> matcher_;

@@ -41,4 +41,12 @@ QuicByteCount QuicMemSliceSpanImpl::SaveMemSlicesInSendBuffer(
   return saved_length;
 }
 
+QuicByteCount QuicMemSliceSpanImpl::total_length() {
+  QuicByteCount length = 0;
+  for (size_t i = 0; i < num_buffers_; ++i) {
+    length += lengths_[i];
+  }
+  return length;
+}
+
 }  // namespace quic

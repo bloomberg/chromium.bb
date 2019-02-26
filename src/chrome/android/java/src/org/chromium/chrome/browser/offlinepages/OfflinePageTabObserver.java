@@ -140,7 +140,7 @@ public class OfflinePageTabObserver
 
     // Methods from EmptyTabObserver
     @Override
-    public void onPageLoadFinished(Tab tab) {
+    public void onPageLoadFinished(Tab tab, String url) {
         Log.d(TAG, "onPageLoadFinished");
         if (isObservingTab(tab)) {
             mObservedTabs.get(tab.getId()).isLoaded = true;

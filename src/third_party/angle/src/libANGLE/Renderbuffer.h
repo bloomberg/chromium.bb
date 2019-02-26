@@ -72,13 +72,16 @@ class Renderbuffer final : public RefCountObject, public egl::ImageSibling, publ
     void setLabel(const std::string &label) override;
     const std::string &getLabel() const override;
 
-    Error setStorage(const Context *context, GLenum internalformat, size_t width, size_t height);
-    Error setStorageMultisample(const Context *context,
-                                size_t samples,
-                                GLenum internalformat,
-                                size_t width,
-                                size_t height);
-    Error setStorageEGLImageTarget(const Context *context, egl::Image *imageTarget);
+    angle::Result setStorage(const Context *context,
+                             GLenum internalformat,
+                             size_t width,
+                             size_t height);
+    angle::Result setStorageMultisample(const Context *context,
+                                        size_t samples,
+                                        GLenum internalformat,
+                                        size_t width,
+                                        size_t height);
+    angle::Result setStorageEGLImageTarget(const Context *context, egl::Image *imageTarget);
 
     rx::RenderbufferImpl *getImplementation() const;
 
@@ -92,6 +95,8 @@ class Renderbuffer final : public RefCountObject, public egl::ImageSibling, publ
     GLuint getAlphaSize() const;
     GLuint getDepthSize() const;
     GLuint getStencilSize() const;
+
+    GLint getMemorySize() const;
 
     // FramebufferAttachmentObject Impl
     Extents getAttachmentSize(const ImageIndex &imageIndex) const override;
@@ -119,4 +124,4 @@ class Renderbuffer final : public RefCountObject, public egl::ImageSibling, publ
 
 }  // namespace gl
 
-#endif   // LIBANGLE_RENDERBUFFER_H_
+#endif  // LIBANGLE_RENDERBUFFER_H_

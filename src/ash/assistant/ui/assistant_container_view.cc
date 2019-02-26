@@ -67,7 +67,8 @@ class AssistantContainerEventTargeter : public aura::WindowTargeter {
 // layout, children are horizontally centered and bottom aligned.
 class AssistantContainerLayout : public views::LayoutManager {
  public:
-  AssistantContainerLayout() = default;
+  explicit AssistantContainerLayout(AssistantController* assistant_controller)
+      : assistant_controller_(assistant_controller) {}
   ~AssistantContainerLayout() override = default;
 
   // views::LayoutManager:
@@ -106,7 +107,16 @@ class AssistantContainerLayout : public views::LayoutManager {
           std::max(child->GetHeightForWidth(width), preferred_height);
     }
 
-    return preferred_height;
+    // The height of container view should not exceed work area height to
+    // ensure that the widget will not go offscreen even when the screen
+    // becomes very short (physical size/resolution change, virtual keyboard
+    // shows, etc). When the available work area height is less than
+    // |preferred_height|, it anchors its children (e.g. AssistantMainView)
+    // to the bottom and the top of the contents will be clipped.
+    return std::min(preferred_height, assistant_controller_->ui_controller()
+                                          ->model()
+                                          ->usable_work_area()
+                                          .height());
   }
 
   void Layout(views::View* host) override {
@@ -136,6 +146,8 @@ class AssistantContainerLayout : public views::LayoutManager {
   }
 
  private:
+  AssistantController* const assistant_controller_;
+
   DISALLOW_COPY_AND_ASSIGN(AssistantContainerLayout);
 };
 
@@ -207,6 +219,13 @@ int AssistantContainerView::GetDialogButtons() const {
 }
 
 views::FocusTraversable* AssistantContainerView::GetFocusTraversable() {
+  auto* focus_manager = GetFocusManager();
+  if (focus_manager && focus_manager->GetFocusedView())
+    return nullptr;
+
+  if (!FindFirstFocusableView())
+    return nullptr;
+
   return &focus_traversable_;
 }
 
@@ -235,7 +254,8 @@ void AssistantContainerView::OnBeforeBubbleWidgetInit(
 }
 
 void AssistantContainerView::Init() {
-  SetLayoutManager(std::make_unique<AssistantContainerLayout>());
+  SetLayoutManager(
+      std::make_unique<AssistantContainerLayout>(assistant_controller_));
 
   // We paint to our own layer. Some implementations of |animator_| mask to
   // bounds to clip child layers.

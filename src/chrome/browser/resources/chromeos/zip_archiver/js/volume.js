@@ -219,7 +219,8 @@ unpacker.Volume.ENCODING_TABLE = {
 // supproted by TextEncoder class. We may add more encodings but only if there's
 // evidence that such archives are widespread.
 unpacker.Volume.MIME_TO_ENCODING_TABLE = {
-  'Shift_JIS': 'Shift_JIS'
+  'Shift_JIS': 'Shift_JIS',
+  'UTF-8': 'UTF-8',  // macOS stores file names in UTF-8 without setting EFS
 };
 
 /**
@@ -284,7 +285,7 @@ unpacker.Volume.prototype.onGetMetadataRequested = function(
   if (!entryMetadata)
     onError('NOT_FOUND');
   else
-    onSuccess(entryMetadata);
+    onSuccess(this.filterMetadataEntry_(options, entryMetadata));
 };
 
 /**
@@ -311,7 +312,8 @@ unpacker.Volume.prototype.onReadDirectoryRequested = function(
   // Convert dictionary entries to an array.
   var entries = [];
   for (var entry in directoryMetadata.entries) {
-    entries.push(directoryMetadata.entries[entry]);
+    entries.push(
+        this.filterMetadataEntry_(options, directoryMetadata.entries[entry]));
   }
 
   onSuccess(entries, false /* Last call. */);
@@ -441,4 +443,27 @@ unpacker.Volume.prototype.getEntryMetadata_ = function(entryPath) {
   }
 
   return entryMetadata;
+};
+
+/**
+ * Filters the metadata based on the request options.
+ * @param {Object} options Options for the metadata request.
+ * @param {Object} entry Metadata entry to filter.
+ * @return {Object} The filtered metadata.
+ * @private
+ */
+unpacker.Volume.prototype.filterMetadataEntry_ = function(options, entry) {
+  // Make a copy of the entry so that the original remains unchanged.
+  var filteredEntry = Object.assign({}, entry);
+
+  if (!options.isDirectory)
+    delete filteredEntry.isDirectory;
+  if (!options.name)
+    delete filteredEntry.name;
+  if (!options.size)
+    delete filteredEntry.size;
+  if (!options.modificationTime)
+    delete filteredEntry.modificationTime;
+
+  return filteredEntry;
 };

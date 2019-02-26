@@ -62,4 +62,14 @@ public interface BrowserSessionContentHandler {
      * @return The url of a pending navigation, if any.
      */
     @Nullable String getPendingUrl();
+
+    /**
+     * Triggers sharing of currently shown webpage similarly to the "Share" menu action.
+     */
+    void triggerSharingFlow();
+
+    /**
+     * @return the task id the content handler is running in.
+     */
+    int getTaskId();
 }

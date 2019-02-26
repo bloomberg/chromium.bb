@@ -72,7 +72,7 @@ class CORE_EXPORT LayoutSVGRoot final : public LayoutReplaced {
     // the layout may be incorrectly using the old size.
     if (container_size_ != container_size) {
       SetNeedsLayoutAndFullPaintInvalidation(
-          LayoutInvalidationReason::kSizeChanged);
+          layout_invalidation_reason::kSizeChanged);
     }
     container_size_ = container_size;
   }
@@ -90,8 +90,6 @@ class CORE_EXPORT LayoutSVGRoot final : public LayoutReplaced {
   bool HasNonIsolatedBlendingDescendants() const final;
 
   const char* GetName() const override { return "LayoutSVGRoot"; }
-
-  bool PaintedOutputOfObjectHasNoEffectRegardlessOfSize() const final;
 
  private:
   bool ComputeShouldClipOverflow() const override {

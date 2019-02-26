@@ -9,8 +9,13 @@ namespace explore_sites {
 ExploreSitesSite::ExploreSitesSite(int site_id,
                                    int category_id,
                                    GURL url,
-                                   std::string title)
-    : site_id(site_id), category_id(category_id), url(url), title(title) {}
+                                   std::string title,
+                                   bool is_blacklisted)
+    : site_id(site_id),
+      category_id(category_id),
+      url(url),
+      title(title),
+      is_blacklisted(is_blacklisted) {}
 
 ExploreSitesSite::ExploreSitesSite(ExploreSitesSite&& other) = default;
 

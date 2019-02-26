@@ -44,7 +44,7 @@ WebGLExtensionName WebGLCompressedTextureS3TC::GetName() const {
 
 WebGLCompressedTextureS3TC* WebGLCompressedTextureS3TC::Create(
     WebGLRenderingContextBase* context) {
-  return new WebGLCompressedTextureS3TC(context);
+  return MakeGarbageCollected<WebGLCompressedTextureS3TC>(context);
 }
 
 bool WebGLCompressedTextureS3TC::Supported(WebGLRenderingContextBase* context) {

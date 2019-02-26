@@ -8,12 +8,12 @@
 // DO NOT MODIFY!
 
 // clang-format off
-
-#ifndef V8VoidCallbackFunctionModules_h
-#define V8VoidCallbackFunctionModules_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_BINDINGS_TESTS_RESULTS_MODULES_V8_VOID_CALLBACK_FUNCTION_MODULES_H_
+#define THIRD_PARTY_BLINK_RENDERER_BINDINGS_TESTS_RESULTS_MODULES_V8_VOID_CALLBACK_FUNCTION_MODULES_H_
 
 #include "third_party/blink/renderer/modules/modules_export.h"
 #include "third_party/blink/renderer/platform/bindings/callback_function_base.h"
+#include "third_party/blink/renderer/platform/wtf/forward.h"
 
 namespace blink {
 
@@ -22,9 +22,11 @@ class ScriptWrappable;
 class MODULES_EXPORT V8VoidCallbackFunctionModules final : public CallbackFunctionBase {
  public:
   static V8VoidCallbackFunctionModules* Create(v8::Local<v8::Function> callback_function) {
-    return new V8VoidCallbackFunctionModules(callback_function);
+    return MakeGarbageCollected<V8VoidCallbackFunctionModules>(callback_function);
   }
 
+  explicit V8VoidCallbackFunctionModules(v8::Local<v8::Function> callback_function)
+      : CallbackFunctionBase(callback_function) {}
   ~V8VoidCallbackFunctionModules() override = default;
 
   // NameClient overrides:
@@ -37,10 +39,6 @@ class MODULES_EXPORT V8VoidCallbackFunctionModules final : public CallbackFuncti
   // Performs "invoke", and then reports an exception, if any, to the global
   // error handler such as DevTools' console.
   void InvokeAndReportException(ScriptWrappable* callback_this_value);
-
- private:
-  explicit V8VoidCallbackFunctionModules(v8::Local<v8::Function> callback_function)
-      : CallbackFunctionBase(callback_function) {}
 };
 
 template <>
@@ -78,4 +76,4 @@ Persistent<V8VoidCallbackFunctionModules> WrapPersistent(V8VoidCallbackFunctionM
 
 }  // namespace blink
 
-#endif  // V8VoidCallbackFunctionModules_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_BINDINGS_TESTS_RESULTS_MODULES_V8_VOID_CALLBACK_FUNCTION_MODULES_H_

@@ -167,7 +167,8 @@ TEST_F(WrappableTest, GetAndSetProperty) {
   v8::Local<v8::Value> argv[] = {
       ConvertToV8(isolate, obj.get()).ToLocalChecked(),
   };
-  func->Call(v8::Undefined(isolate), 1, argv);
+  func->Call(context_.Get(isolate), v8::Undefined(isolate), 1, argv)
+      .ToLocalChecked();
   EXPECT_FALSE(try_catch.HasCaught());
   EXPECT_EQ("", try_catch.GetStackTrace());
 
@@ -206,7 +207,8 @@ TEST_F(WrappableTest, MethodInvocationErrorsOnUnnamedObject) {
     v8::Local<v8::Function> func;
     EXPECT_TRUE(ConvertFromV8(isolate, val, &func));
     v8::Local<v8::Value> argv[] = {function_to_run, context_object};
-    func->Call(v8::Undefined(isolate), arraysize(argv), argv);
+    func->Call(context, v8::Undefined(isolate), base::size(argv), argv)
+        .FromMaybe(v8::Local<v8::Value>());
     if (!try_catch.HasCaught())
       return std::string();
     return V8ToString(isolate, try_catch.Message()->Get());
@@ -261,7 +263,8 @@ TEST_F(WrappableTest, MethodInvocationErrorsOnNamedObject) {
     v8::Local<v8::Function> func;
     EXPECT_TRUE(ConvertFromV8(isolate, val, &func));
     v8::Local<v8::Value> argv[] = {function_to_run, context_object};
-    func->Call(v8::Undefined(isolate), arraysize(argv), argv);
+    func->Call(context, v8::Undefined(isolate), base::size(argv), argv)
+        .FromMaybe(v8::Local<v8::Value>());
     if (!try_catch.HasCaught())
       return std::string();
     return V8ToString(isolate, try_catch.Message()->Get());

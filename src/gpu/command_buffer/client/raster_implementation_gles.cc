@@ -54,24 +54,10 @@ RasterImplementationGLES::Texture* RasterImplementationGLES::GetTexture(
   return &it->second;
 }
 
-RasterImplementationGLES::Texture* RasterImplementationGLES::EnsureTextureBound(
-    RasterImplementationGLES::Texture* texture) {
-  DCHECK(texture);
-  if (bound_texture_ != texture) {
-    bound_texture_ = texture;
-    gl_->BindTexture(texture->target, texture->id);
-  }
-  return texture;
-}
-
 RasterImplementationGLES::RasterImplementationGLES(
     gles2::GLES2Interface* gl,
-    CommandBuffer* command_buffer,
     const gpu::Capabilities& caps)
-    : gl_(gl),
-      caps_(caps),
-      use_texture_storage_(caps.texture_storage),
-      use_texture_storage_image_(caps.texture_storage_image) {}
+    : gl_(gl), caps_(caps) {}
 
 RasterImplementationGLES::~RasterImplementationGLES() {}
 
@@ -117,10 +103,6 @@ GLenum RasterImplementationGLES::GetGraphicsResetStatusKHR() {
   return gl_->GetGraphicsResetStatusKHR();
 }
 
-void RasterImplementationGLES::GetIntegerv(GLenum pname, GLint* params) {
-  gl_->GetIntegerv(pname, params);
-}
-
 void RasterImplementationGLES::LoseContextCHROMIUM(GLenum current,
                                                    GLenum other) {
   gl_->LoseContextCHROMIUM(current, other);
@@ -149,22 +131,6 @@ void RasterImplementationGLES::GetQueryObjectuivEXT(GLuint id,
   gl_->GetQueryObjectuivEXT(id, pname, params);
 }
 
-GLuint RasterImplementationGLES::CreateTexture(bool use_buffer,
-                                               gfx::BufferUsage buffer_usage,
-                                               viz::ResourceFormat format) {
-  GLuint texture_id = 0;
-  gl_->GenTextures(1, &texture_id);
-  DCHECK(texture_id);
-  DCHECK(!viz::IsResourceFormatCompressed(format));
-  GLenum target = use_buffer
-                      ? GetImageTextureTarget(caps_, buffer_usage, format)
-                      : GL_TEXTURE_2D;
-  texture_info_.emplace(std::make_pair(
-      texture_id,
-      Texture(texture_id, target, use_buffer, buffer_usage, format)));
-  return texture_id;
-}
-
 void RasterImplementationGLES::DeleteTextures(GLsizei n,
                                               const GLuint* textures) {
   DCHECK_GT(n, 0);
@@ -172,32 +138,10 @@ void RasterImplementationGLES::DeleteTextures(GLsizei n,
     auto texture_iter = texture_info_.find(textures[i]);
     DCHECK(texture_iter != texture_info_.end());
 
-    if (bound_texture_ == &texture_iter->second)
-      bound_texture_ = nullptr;
-
     texture_info_.erase(texture_iter);
   }
 
   gl_->DeleteTextures(n, textures);
-}
-
-void RasterImplementationGLES::SetColorSpaceMetadata(GLuint texture_id,
-                                                     GLColorSpace color_space) {
-  Texture* texture = GetTexture(texture_id);
-  gl_->SetColorSpaceMetadataCHROMIUM(texture->id, color_space);
-}
-
-void RasterImplementationGLES::TexParameteri(GLuint texture_id,
-                                             GLenum pname,
-                                             GLint param) {
-  Texture* texture = EnsureTextureBound(GetTexture(texture_id));
-  gl_->TexParameteri(texture->target, pname, param);
-}
-
-void RasterImplementationGLES::ProduceTextureDirect(GLuint texture_id,
-                                                    GLbyte* mailbox) {
-  Texture* texture = GetTexture(texture_id);
-  gl_->ProduceTextureDirectCHROMIUM(texture->id, mailbox);
 }
 
 GLuint RasterImplementationGLES::CreateAndConsumeTexture(
@@ -219,51 +163,6 @@ GLuint RasterImplementationGLES::CreateAndConsumeTexture(
   return texture_id;
 }
 
-GLuint RasterImplementationGLES::CreateImageCHROMIUM(ClientBuffer buffer,
-                                                     GLsizei width,
-                                                     GLsizei height,
-                                                     GLenum internalformat) {
-  return gl_->CreateImageCHROMIUM(buffer, width, height, internalformat);
-}
-
-void RasterImplementationGLES::BindTexImage2DCHROMIUM(GLuint texture_id,
-                                                      GLint image_id) {
-  Texture* texture = EnsureTextureBound(GetTexture(texture_id));
-  gl_->BindTexImage2DCHROMIUM(texture->target, image_id);
-}
-
-void RasterImplementationGLES::ReleaseTexImage2DCHROMIUM(GLuint texture_id,
-                                                         GLint image_id) {
-  Texture* texture = EnsureTextureBound(GetTexture(texture_id));
-  gl_->ReleaseTexImage2DCHROMIUM(texture->target, image_id);
-}
-
-void RasterImplementationGLES::DestroyImageCHROMIUM(GLuint image_id) {
-  gl_->DestroyImageCHROMIUM(image_id);
-}
-
-void RasterImplementationGLES::TexStorage2D(GLuint texture_id,
-                                            GLsizei width,
-                                            GLsizei height) {
-  Texture* texture = EnsureTextureBound(GetTexture(texture_id));
-
-  if (texture->use_buffer) {
-    DCHECK(use_texture_storage_image_);
-    gl_->TexStorage2DImageCHROMIUM(texture->target,
-                                   viz::TextureStorageFormat(texture->format),
-                                   GL_SCANOUT_CHROMIUM, width, height);
-  } else if (use_texture_storage_) {
-    gl_->TexStorage2DEXT(texture->target, /*levels=*/1,
-                         viz::TextureStorageFormat(texture->format), width,
-                         height);
-  } else {
-    DCHECK(GLSupportsFormat(texture->format));
-    gl_->TexImage2D(texture->target, 0, viz::GLInternalFormat(texture->format),
-                    width, height, 0, viz::GLDataFormat(texture->format),
-                    viz::GLDataType(texture->format), nullptr);
-  }
-}
-
 void RasterImplementationGLES::CopySubTexture(GLuint source_id,
                                               GLuint dest_id,
                                               GLint xoffset,
@@ -278,20 +177,6 @@ void RasterImplementationGLES::CopySubTexture(GLuint source_id,
   gl_->CopySubTextureCHROMIUM(source->id, 0, dest->target, dest->id, 0, xoffset,
                               yoffset, x, y, width, height, false, false,
                               false);
-}
-
-void RasterImplementationGLES::UnpremultiplyAndDitherCopyCHROMIUM(
-    GLuint source_id,
-    GLuint dest_id,
-    GLint x,
-    GLint y,
-    GLsizei width,
-    GLsizei height) {
-  Texture* source = GetTexture(source_id);
-  Texture* dest = GetTexture(dest_id);
-
-  gl_->UnpremultiplyAndDitherCopyCHROMIUM(source->id, dest->id, x, y, width,
-                                          height);
 }
 
 void RasterImplementationGLES::BeginRasterCHROMIUM(
@@ -316,8 +201,22 @@ void RasterImplementationGLES::RasterCHROMIUM(
   NOTREACHED();
 }
 
+void RasterImplementationGLES::SetActiveURLCHROMIUM(const char* url) {
+  gl_->SetActiveURLCHROMIUM(url);
+}
+
 void RasterImplementationGLES::EndRasterCHROMIUM() {
   NOTREACHED();
+}
+
+SyncToken RasterImplementationGLES::ScheduleImageDecode(
+    base::span<const uint8_t> encoded_data,
+    const gfx::Size& output_size,
+    uint32_t transfer_cache_entry_id,
+    const gfx::ColorSpace& target_color_space,
+    bool needs_mips) {
+  NOTREACHED();
+  return SyncToken();
 }
 
 void RasterImplementationGLES::BeginGpuRaster() {
@@ -335,7 +234,6 @@ void RasterImplementationGLES::EndGpuRaster() {
   gl_->TraceEndCHROMIUM();
 
   // Reset cached raster state.
-  bound_texture_ = nullptr;
   gl_->ActiveTexture(GL_TEXTURE0);
 }
 

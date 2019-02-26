@@ -9,6 +9,7 @@ import("//third_party/protobuf/proto_library.gni")
 assert(is_chromeos, "Non-Chrome-OS builds must not depend on //chromeos")
 
 source_set("dbus") {
+  configs += [ "//chromeos:chromeos_implementation" ]
   public_deps = [
     ":dbus_switches",
   ]
@@ -84,6 +85,8 @@ source_set("dbus") {
     "dbus_thread_manager.h",
     "debug_daemon_client.cc",
     "debug_daemon_client.h",
+    "diagnosticsd_client.cc",
+    "diagnosticsd_client.h",
     "easy_unlock_client.cc",
     "easy_unlock_client.h",
     "fake_arc_appfuse_provider_client.cc",
@@ -110,6 +113,8 @@ source_set("dbus") {
     "fake_cryptohome_client.h",
     "fake_debug_daemon_client.cc",
     "fake_debug_daemon_client.h",
+    "fake_diagnosticsd_client.cc",
+    "fake_diagnosticsd_client.h",
     "fake_easy_unlock_client.cc",
     "fake_easy_unlock_client.h",
     "fake_gsm_sms_client.cc",
@@ -229,10 +234,10 @@ source_set("dbus") {
     "volume_state.cc",
     "volume_state.h",
   ]
-  defines = [ "CHROMEOS_IMPLEMENTATION" ]
 }
 
 source_set("dbus_switches") {
+  configs += [ "//chromeos:chromeos_implementation" ]
   deps = [
     "//base",
     "//chromeos:chromeos_export",
@@ -241,7 +246,6 @@ source_set("dbus_switches") {
     "dbus_switches.cc",
     "dbus_switches.h",
   ]
-  defines = [ "CHROMEOS_IMPLEMENTATION" ]
 }
 
 source_set("test_support") {

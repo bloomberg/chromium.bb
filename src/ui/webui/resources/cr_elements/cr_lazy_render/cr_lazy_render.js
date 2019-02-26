@@ -50,10 +50,10 @@ Polymer({
 
   /** @private */
   render_: function() {
-    var template = this.getContentChildren()[0];
+    const template = this.getContentChildren()[0];
     if (!this.ctor)
       this.templatize(template);
-    var parentNode = this.parentNode;
+    const parentNode = this.parentNode;
     if (parentNode && !this.child_) {
       this.instance_ = this.stamp({});
       this.child_ = this.instance_.root.firstElementChild;

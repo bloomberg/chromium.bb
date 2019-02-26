@@ -31,15 +31,13 @@ class ShellContentRendererClient : public ContentRendererClient {
   void PrepareErrorPage(RenderFrame* render_frame,
                         const blink::WebURLRequest& failed_request,
                         const blink::WebURLError& error,
-                        std::string* error_html,
-                        base::string16* error_description) override;
+                        std::string* error_html) override;
   void PrepareErrorPageForHttpStatusError(
       content::RenderFrame* render_frame,
       const blink::WebURLRequest& failed_request,
       const GURL& unreachable_url,
       int http_status,
-      std::string* error_html,
-      base::string16* error_description) override;
+      std::string* error_html) override;
 
   // TODO(mkwst): These toggle based on the kEnablePepperTesting flag. Do we
   // need that outside of layout tests?

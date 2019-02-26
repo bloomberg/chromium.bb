@@ -27,13 +27,13 @@ InstalledScriptsManager::ScriptData::GetContentSecurityPolicyResponseHeaders() {
 }
 
 String InstalledScriptsManager::ScriptData::GetReferrerPolicy() {
-  return headers_.Get(HTTPNames::Referrer_Policy);
+  return headers_.Get(http_names::kReferrerPolicy);
 }
 
 std::unique_ptr<Vector<String>>
 InstalledScriptsManager::ScriptData::CreateOriginTrialTokens() {
   return OriginTrialContext::ParseHeaderValue(
-      headers_.Get(HTTPNames::Origin_Trial));
+      headers_.Get(http_names::kOriginTrial));
 }
 
 }  // namespace blink

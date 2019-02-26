@@ -5,8 +5,8 @@
 import("//mojo/public/tools/bindings/mojom.gni")
 
 # This target includes all mojom interfaces which can be used from
-# Source/platform. In particular these mojom interfaces can't use types that
-# are typemapped to a type in Source/core.
+# renderer/platform. In particular these mojom interfaces can't use types that
+# are typemapped to a type in renderer/core.
 mojom("mojom_platform") {
   sources = [
     "array_buffer/array_buffer_contents.mojom",
@@ -31,7 +31,6 @@ mojom("mojom_platform") {
     "filesystem/file_writer.mojom",
     "frame/find_in_page.mojom",
     "frame/navigation_initiator.mojom",
-    "indexeddb/indexeddb.mojom",
     "leak_detector/leak_detector.mojom",
     "loader/code_cache.mojom",
     "loader/navigation_predictor.mojom",
@@ -49,6 +48,8 @@ mojom("mojom_platform") {
     "presentation/presentation.mojom",
     "quota/quota_dispatcher_host.mojom",
     "quota/quota_types.mojom",
+    "referrer.mojom",
+    "script/script_type.mojom",
     "service_worker/dispatch_fetch_event_params.mojom",
     "service_worker/navigation_preload_state.mojom",
     "service_worker/service_worker_client.mojom",
@@ -60,13 +61,12 @@ mojom("mojom_platform") {
     "service_worker/service_worker_state.mojom",
     "service_worker/service_worker_stream_handle.mojom",
     "shared_worker/shared_worker_creation_context_type.mojom",
-    "shared_worker/shared_worker_main_script_load_params.mojom",
+    "shared_worker/worker_main_script_load_params.mojom",
     "speech/speech_recognition_error.mojom",
     "speech/speech_recognition_grammar.mojom",
     "speech/speech_recognition_result.mojom",
     "speech/speech_recognizer.mojom",
     "use_counter/css_property_id.mojom",
-    "web_package/web_package_internals.mojom",
     "webaudio/audio_context_manager.mojom",
   ]
 
@@ -78,10 +78,6 @@ mojom("mojom_platform") {
     "//mojo/public/mojom/base",
     "//services/device/public/mojom",
     "//services/network/public/mojom",
-
-    # TODO(https://crbug.com/822804): Remove when mojom bindings deps checks
-    # get fixed.
-    "//services/network/public/mojom:data_pipe_interfaces",
     "//skia/public/interfaces",
     "//third_party/blink/public/mojom/usb",
     "//ui/gfx/geometry/mojo",
@@ -91,7 +87,7 @@ mojom("mojom_platform") {
 
   export_class_attribute = "BLINK_COMMON_EXPORT"
   export_define = "BLINK_COMMON_IMPLEMENTATION=1"
-  export_header = "third_party/blink/common/common_export.h"
+  export_header = "third_party/blink/public/common/common_export.h"
 
   export_class_attribute_blink = "PLATFORM_EXPORT"
   export_define_blink = "BLINK_PLATFORM_IMPLEMENTATION=1"
@@ -111,7 +107,7 @@ mojom("android_mojo_bindings") {
 
   export_class_attribute = "BLINK_COMMON_EXPORT"
   export_define = "BLINK_COMMON_IMPLEMENTATION=1"
-  export_header = "third_party/blink/common/common_export.h"
+  export_header = "third_party/blink/public/common/common_export.h"
 
   export_class_attribute_blink = "PLATFORM_EXPORT"
   export_define_blink = "BLINK_PLATFORM_IMPLEMENTATION=1"
@@ -127,8 +123,8 @@ mojom("speech_recognition_error_code") {
 }
 
 # This target can include mojom interfaces which do use types that are
-# typemapped to a type in Source/core. This also means these interfaces are not
-# available from Source/platform.
+# typemapped to a type in renderer/core. This also means these interfaces are
+# not available from renderer/platform.
 # Note that service_worker_object.mojom and service_worker.mojom depend
 # on transferable_message.mojom, and service_worker_registration.mojom depends
 # on service_worker_object.mojom, so we put these three service worker
@@ -159,9 +155,44 @@ mojom("mojom_core") {
 
   export_class_attribute = "BLINK_COMMON_EXPORT"
   export_define = "BLINK_COMMON_IMPLEMENTATION=1"
-  export_header = "third_party/blink/common/common_export.h"
+  export_header = "third_party/blink/public/common/common_export.h"
 
   export_class_attribute_blink = "CORE_EXPORT"
   export_define_blink = "BLINK_CORE_IMPLEMENTATION=1"
   export_header_blink = "third_party/blink/renderer/core/core_export.h"
+}
+
+# This target can include mojom interfaces which use types that are typemapped
+# to a type in renderer/modules. This also means these interfaces are not
+# available from renderer/platform or renderer/core.
+mojom("mojom_modules") {
+  sources = [
+    "indexeddb/indexeddb.mojom",
+  ]
+
+  public_deps = [
+    ":mojom_core",
+
+    # TODO(https://crbug.com/822804): Remove when mojom bindings deps checks
+    # get fixed.
+    ":mojom_platform",
+    "//mojo/public/mojom/base",
+    "//skia/public/interfaces",
+    "//url/mojom:url_mojom_gurl",
+    "//url/mojom:url_mojom_origin",
+  ]
+
+  overridden_deps_blink = [
+    ":mojom_core",
+    ":mojom_platform",
+  ]
+  component_deps_blink = [ "//third_party/blink/renderer/core" ]
+
+  export_class_attribute = "BLINK_COMMON_EXPORT"
+  export_define = "BLINK_COMMON_IMPLEMENTATION=1"
+  export_header = "third_party/blink/public/common/common_export.h"
+
+  export_class_attribute_blink = "MODULES_EXPORT"
+  export_define_blink = "BLINK_MODULES_IMPLEMENTATION=1"
+  export_header_blink = "third_party/blink/renderer/modules/modules_export.h"
 }

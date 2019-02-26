@@ -14,16 +14,15 @@ class LinearAccelerationSensor final : public Accelerometer {
 
  public:
   static LinearAccelerationSensor* Create(ExecutionContext*,
-                                          const SpatialSensorOptions&,
+                                          const SpatialSensorOptions*,
                                           ExceptionState&);
   static LinearAccelerationSensor* Create(ExecutionContext*, ExceptionState&);
 
-  void Trace(blink::Visitor*) override;
-
- private:
   LinearAccelerationSensor(ExecutionContext*,
-                           const SpatialSensorOptions&,
+                           const SpatialSensorOptions*,
                            ExceptionState&);
+
+  void Trace(blink::Visitor*) override;
 };
 
 }  // namespace blink

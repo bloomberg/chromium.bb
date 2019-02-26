@@ -777,6 +777,10 @@
       "_",
       "image",
       "gen_platf",
+      "incInterlaced.png",
+      "_",
+      "image",
+      "gen_platf",
       "incInterlaced.gif",
       "_",
       "image",
@@ -790,6 +794,10 @@
       "image",
       "gen_platf",
       "butterfly.gif",
+      "_",
+      "image",
+      "gen_platf",
+      "error",
       "_",
       "test",
       "_",
@@ -913,8 +921,7 @@
     "name": "pull_if_needed dm"
   },
   {
-    "name": "$result",
-    "recipe_result": null,
-    "status_code": 0
+    "jsonResult": null,
+    "name": "$result"
   }
 ]

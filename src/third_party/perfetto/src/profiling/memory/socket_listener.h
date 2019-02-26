@@ -19,6 +19,7 @@
 
 #include "perfetto/base/unix_socket.h"
 #include "src/profiling/memory/bookkeeping.h"
+#include "src/profiling/memory/queue_messages.h"
 #include "src/profiling/memory/record_reader.h"
 #include "src/profiling/memory/unwinding.h"
 #include "src/profiling/memory/wire_protocol.h"
@@ -27,20 +28,68 @@
 #include <memory>
 
 namespace perfetto {
+namespace profiling {
 
 class SocketListener : public base::UnixSocket::EventListener {
+ private:
+  struct ProcessInfo {
+    ProcessInfo(pid_t p, ClientConfiguration cfg)
+        : pid(p), client_config(std::move(cfg)) {}
+
+    pid_t pid;
+    size_t active_profile_sessions = 0;
+    ClientConfiguration client_config;
+    std::set<base::UnixSocket*> sockets;
+  };
+
  public:
-  SocketListener(ClientConfiguration client_config,
-                 std::function<void(UnwindingRecord)> fn,
-                 GlobalCallstackTrie* callsites)
-      : client_config_(client_config),
-        callback_function_(std::move(fn)),
-        callsites_(callsites) {}
+  friend class ProfilingSession;
+  class ProfilingSession {
+   public:
+    friend class SocketListener;
+
+    ProfilingSession() : ProfilingSession(nullptr, nullptr) {}
+
+    ProfilingSession(ProfilingSession&& other)
+        : process_info_(other.process_info_), listener_(other.listener_) {
+      other.listener_ = nullptr;
+    }
+
+    ~ProfilingSession() {
+      if (listener_)
+        listener_->RemoveProfilingSession(process_info_);
+    }
+    ProfilingSession& operator=(ProfilingSession&& other) {
+      process_info_ = other.process_info_;
+      listener_ = other.listener_;
+      other.listener_ = nullptr;
+      return *this;
+    }
+
+    operator bool() const { return listener_ != nullptr; }
+
+    ProfilingSession(const ProfilingSession&) = delete;
+    ProfilingSession& operator=(const ProfilingSession&) = delete;
+
+   private:
+    ProfilingSession(ProcessInfo* process_info, SocketListener* listener)
+        : process_info_(process_info), listener_(listener) {}
+
+    ProcessInfo* process_info_;
+    SocketListener* listener_ = nullptr;
+  };
+
+  SocketListener(std::function<void(UnwindingRecord)> fn,
+                 BookkeepingThread* bookkeeping_thread)
+      : callback_function_(std::move(fn)),
+        bookkeeping_thread_(bookkeeping_thread) {}
   void OnDisconnect(base::UnixSocket* self) override;
   void OnNewIncomingConnection(
       base::UnixSocket* self,
       std::unique_ptr<base::UnixSocket> new_connection) override;
   void OnDataAvailable(base::UnixSocket* self) override;
+
+  ProfilingSession ExpectPID(pid_t pid, ClientConfiguration cfg);
 
  private:
   struct Entry {
@@ -56,22 +105,22 @@ class SocketListener : public base::UnixSocket::EventListener {
     //
     // This does not get initialized in the ctor because the file descriptors
     // only get received after the first Receive call of the socket.
-    std::shared_ptr<ProcessMetadata> process_metadata;
+    std::shared_ptr<UnwindingMetadata> unwinding_metadata;
   };
 
   void RecordReceived(base::UnixSocket*, size_t, std::unique_ptr<uint8_t[]>);
-  void InitProcess(Entry* entry,
-                   pid_t peer_pid,
-                   base::ScopedFile maps_fd,
-                   base::ScopedFile mem_fd);
 
-  ClientConfiguration client_config_;
+  void AddProfilingSession(ProcessInfo* process_info);
+  void RemoveProfilingSession(ProcessInfo* process_info);
+
   std::map<base::UnixSocket*, Entry> sockets_;
-  std::map<pid_t, std::weak_ptr<ProcessMetadata>> process_metadata_;
+  std::map<pid_t, std::weak_ptr<UnwindingMetadata>> unwinding_metadata_;
+  std::map<pid_t, ProcessInfo> process_info_;
   std::function<void(UnwindingRecord)> callback_function_;
-  GlobalCallstackTrie* callsites_;
+  BookkeepingThread* const bookkeeping_thread_;
 };
 
+}  // namespace profiling
 }  // namespace perfetto
 
 #endif  // SRC_PROFILING_MEMORY_SOCKET_LISTENER_H_

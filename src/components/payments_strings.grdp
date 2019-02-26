@@ -469,9 +469,6 @@
   <message name="IDS_PAYMENTS_VALIDATION_UNSUPPORTED_CREDIT_CARD_TYPE" desc="Message displayed to user when the credit card type (e.g visa, mastercard) is not supported for this transaction.">
     This type of card isn’t supported
   </message>
-  <message name="IDS_PAYMENTS_VALIDATION_ALREADY_USED_CREDIT_CARD_NUMBER" desc="Message displayed to user when the credit card number they have entered corresponds to an existing credit card number in their user profile.">
-    This card number is already used
-  </message>
   <message name="IDS_PAYMENTS_PHONE_INVALID_VALIDATION_MESSAGE" desc="The text that informs the user that the phone number they have entered is not valid." formatter_data="android_java">
     Enter a valid phone number
   </message>

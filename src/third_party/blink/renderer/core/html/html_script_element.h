@@ -33,6 +33,9 @@
 
 namespace blink {
 
+class StringOrTrustedScript;
+class ExceptionState;
+
 class CORE_EXPORT HTMLScriptElement final : public HTMLElement,
                                             public ScriptElementBase {
   DEFINE_WRAPPERTYPEINFO();
@@ -41,11 +44,15 @@ class CORE_EXPORT HTMLScriptElement final : public HTMLElement,
  public:
   static HTMLScriptElement* Create(Document&, const CreateElementFlags);
 
+  HTMLScriptElement(Document&, const CreateElementFlags);
+
   // Returns attributes that should be checked against Trusted Types
   const HashSet<AtomicString>& GetCheckedAttributeNames() const override;
 
-  String text() { return TextFromChildren(); }
-  void setText(const String&);
+  void text(StringOrTrustedScript& result);
+  void setText(const StringOrTrustedScript&, ExceptionState&);
+  void setInnerText(const StringOrTrustedScript&, ExceptionState&) override;
+  void setTextContent(const StringOrTrustedScript&, ExceptionState&) override;
 
   KURL Src() const;
 
@@ -60,8 +67,6 @@ class CORE_EXPORT HTMLScriptElement final : public HTMLElement,
   void Trace(blink::Visitor*) override;
 
  private:
-  HTMLScriptElement(Document&, const CreateElementFlags);
-
   void ParseAttribute(const AttributeModificationParams&) override;
   InsertionNotificationRequest InsertedInto(ContainerNode&) override;
   void DidNotifySubtreeInsertionsToDocument() override;

@@ -13,7 +13,6 @@
 #include "base/bind.h"
 #include "base/bind_helpers.h"
 #include "base/macros.h"
-#include "base/message_loop/message_loop.h"
 #include "base/stl_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/test/metrics/histogram_tester.h"
@@ -67,7 +66,8 @@ void DisallowSync(base::test::ScopedFeatureList* feature_list) {
 class FakePasswordManagerClient : public StubPasswordManagerClient {
  public:
   FakePasswordManagerClient()
-      : password_store_(new testing::NiceMock<MockPasswordStore>) {
+      : password_store_(new testing::NiceMock<MockPasswordStore>),
+        is_incognito_(false) {
 #if defined(SYNC_PASSWORD_REUSE_DETECTION_ENABLED)
     // Initializes and configures prefs.
     prefs_ = std::make_unique<TestingPrefServiceSimple>();
@@ -99,10 +99,14 @@ class FakePasswordManagerClient : public StubPasswordManagerClient {
   PrefService* GetPrefs() const override { return prefs_.get(); }
 #endif
 
+  bool IsIncognito() const override { return is_incognito_; }
+
+  void SetIsIncognito(bool is_incognito) { is_incognito_ = is_incognito; }
+
  private:
-  base::MessageLoop message_loop_;  // For |password_store_|.
   GURL last_committed_entry_url_;
   scoped_refptr<testing::NiceMock<MockPasswordStore>> password_store_;
+  bool is_incognito_;
 #if defined(SYNC_PASSWORD_REUSE_DETECTION_ENABLED)
   std::unique_ptr<TestingPrefServiceSimple> prefs_;
 #endif  // SYNC_PASSWORD_REUSE_DETECTION_ENABLED
@@ -144,14 +148,14 @@ class CredentialsFilterTest : public SyncUsernameTestBase {
         filter_(&client_,
                 base::BindRepeating(&SyncUsernameTestBase::sync_service,
                                     base::Unretained(this)),
-                base::BindRepeating(&SyncUsernameTestBase::signin_manager,
+                base::BindRepeating(&SyncUsernameTestBase::identity_manager,
                                     base::Unretained(this))) {
     form_manager_.Init(nullptr);
     fetcher_.Fetch();
   }
 
   void CheckFilterResultsTestCase(const TestCase& test_case) {
-    DCHECK(signin_manager()->IsAuthenticated());
+    DCHECK(identity_manager()->HasPrimaryAccount());
 
     SetSyncingPasswords(test_case.password_sync == TestCase::SYNCING_PASSWORDS);
     client_.set_last_committed_entry_url(test_case.last_committed_entry_url);
@@ -392,7 +396,7 @@ TEST_F(CredentialsFilterTest, ShouldSave_NotSyncCredential) {
   PasswordForm form = SimpleGaiaForm("user@example.org");
 
   ASSERT_NE("user@example.org",
-            signin_manager()->GetAuthenticatedAccountInfo().email);
+            identity_manager()->GetPrimaryAccountInfo().email);
   SetSyncingPasswords(true);
   EXPECT_TRUE(filter_.ShouldSave(form));
 }
@@ -450,6 +454,15 @@ TEST_F(CredentialsFilterTest, ShouldSaveGaiaPasswordHash) {
   EXPECT_FALSE(filter_.ShouldSaveGaiaPasswordHash(other_form));
 }
 
+TEST_F(CredentialsFilterTest, ShouldNotSaveGaiaPasswordHashIncognito) {
+  client_.SetIsIncognito(true);
+  PasswordForm gaia_form = SimpleGaiaForm("user@gmail.org");
+  EXPECT_FALSE(filter_.ShouldSaveGaiaPasswordHash(gaia_form));
+
+  PasswordForm other_form = SimpleNonGaiaForm("user@example.org");
+  EXPECT_FALSE(filter_.ShouldSaveGaiaPasswordHash(other_form));
+}
+
 TEST_F(CredentialsFilterTest, ShouldSaveEnterprisePasswordHash) {
   PasswordForm gaia_form = SimpleGaiaForm("user@gmail.org");
   EXPECT_FALSE(filter_.ShouldSaveEnterprisePasswordHash(gaia_form));
@@ -462,7 +475,31 @@ TEST_F(CredentialsFilterTest, ShouldSaveEnterprisePasswordHash) {
   EXPECT_TRUE(filter_.ShouldSaveEnterprisePasswordHash(enterprise_form));
 }
 
+TEST_F(CredentialsFilterTest, ShouldNotSaveEnterprisePasswordHashIncognito) {
+  client_.SetIsIncognito(true);
+  PasswordForm gaia_form = SimpleGaiaForm("user@gmail.org");
+  EXPECT_FALSE(filter_.ShouldSaveEnterprisePasswordHash(gaia_form));
+
+  PasswordForm other_form = SimpleNonGaiaForm("user@example.org");
+  EXPECT_FALSE(filter_.ShouldSaveEnterprisePasswordHash(other_form));
+
+  PasswordForm enterprise_form =
+      SimpleNonGaiaForm("user@enterprise.test", kEnterpriseURL);
+  EXPECT_FALSE(filter_.ShouldSaveEnterprisePasswordHash(enterprise_form));
+}
+
 TEST_F(CredentialsFilterTest, IsSyncAccountEmail) {
+  FakeSigninAs("user@gmail.com");
+  EXPECT_FALSE(filter_.IsSyncAccountEmail("user"));
+  EXPECT_FALSE(filter_.IsSyncAccountEmail("user2@gmail.com"));
+  EXPECT_FALSE(filter_.IsSyncAccountEmail("user2@example.com"));
+  EXPECT_TRUE(filter_.IsSyncAccountEmail("user@gmail.com"));
+  EXPECT_TRUE(filter_.IsSyncAccountEmail("us.er@gmail.com"));
+  EXPECT_TRUE(filter_.IsSyncAccountEmail("user@googlemail.com"));
+}
+
+TEST_F(CredentialsFilterTest, IsSyncAccountEmailIncognito) {
+  client_.SetIsIncognito(true);
   FakeSigninAs("user@gmail.com");
   EXPECT_FALSE(filter_.IsSyncAccountEmail("user"));
   EXPECT_FALSE(filter_.IsSyncAccountEmail("user2@gmail.com"));

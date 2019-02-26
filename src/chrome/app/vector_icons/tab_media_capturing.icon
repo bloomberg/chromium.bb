@@ -3,7 +3,6 @@
 // found in the LICENSE file.
 
 CANVAS_DIMENSIONS, 32,
-PATH_COLOR_ARGB, 0xFF, 0x42, 0x85, 0xF4,
 MOVE_TO, 0, 4,
 R_H_LINE_TO, 32,
 R_V_LINE_TO, 24,

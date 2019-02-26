@@ -15,14 +15,19 @@ class CORE_EXPORT PointerEvent final : public MouseEvent {
 
  public:
   static PointerEvent* Create(const AtomicString& type,
-                              const PointerEventInit& initializer,
+                              const PointerEventInit* initializer,
                               TimeTicks platform_time_stamp) {
-    return new PointerEvent(type, initializer, platform_time_stamp);
+    return MakeGarbageCollected<PointerEvent>(type, initializer,
+                                              platform_time_stamp);
   }
   static PointerEvent* Create(const AtomicString& type,
-                              const PointerEventInit& initializer) {
+                              const PointerEventInit* initializer) {
     return PointerEvent::Create(type, initializer, CurrentTimeTicks());
   }
+
+  PointerEvent(const AtomicString&,
+               const PointerEventInit*,
+               TimeTicks platform_time_stamp);
 
   int32_t pointerId() const { return pointer_id_; }
   double width() const { return width_; }
@@ -39,14 +44,12 @@ class CORE_EXPORT PointerEvent final : public MouseEvent {
   bool IsMouseEvent() const override;
   bool IsPointerEvent() const override;
 
-  // TODO(eirage): Remove these override of coordinates getters when
-  // fractional mouseevent flag is removed.
-  double screenX() const override;
-  double screenY() const override;
-  double clientX() const override;
-  double clientY() const override;
-  double pageX() const override;
-  double pageY() const override;
+  double screenX() const override { return screen_location_.X(); }
+  double screenY() const override { return screen_location_.Y(); }
+  double clientX() const override { return client_location_.X(); }
+  double clientY() const override { return client_location_.Y(); }
+  double pageX() const override { return page_location_.X(); }
+  double pageY() const override { return page_location_.Y(); }
 
   double offsetX() override;
   double offsetY() override;
@@ -59,6 +62,7 @@ class CORE_EXPORT PointerEvent final : public MouseEvent {
   Node* toElement() const final;
 
   HeapVector<Member<PointerEvent>> getCoalescedEvents();
+  HeapVector<Member<PointerEvent>> getPredictedEvents();
   TimeTicks OldestPlatformTimeStamp() const;
 
   DispatchEventResult DispatchEvent(EventDispatcher&) override;
@@ -66,10 +70,6 @@ class CORE_EXPORT PointerEvent final : public MouseEvent {
   void Trace(blink::Visitor*) override;
 
  private:
-  PointerEvent(const AtomicString&,
-               const PointerEventInit&,
-               TimeTicks platform_time_stamp);
-
   int32_t pointer_id_;
   double width_;
   double height_;
@@ -82,8 +82,11 @@ class CORE_EXPORT PointerEvent final : public MouseEvent {
   bool is_primary_;
 
   bool coalesced_events_targets_dirty_;
+  bool predicted_events_targets_dirty_;
 
   HeapVector<Member<PointerEvent>> coalesced_events_;
+
+  HeapVector<Member<PointerEvent>> predicted_events_;
 };
 
 DEFINE_EVENT_TYPE_CASTS(PointerEvent);

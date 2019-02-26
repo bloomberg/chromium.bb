@@ -42,8 +42,7 @@ class ProvisionallySavedPasswordForm {
   blink::WebFormElement& form_element() { return form_element_; }
   blink::WebInputElement& input_element() { return input_element_; }
 
-  void SetSubmissionIndicatorEvent(
-      PasswordForm::SubmissionIndicatorEvent event);
+  void SetSubmissionIndicatorEvent(SubmissionIndicatorEvent event);
 
  private:
   std::unique_ptr<PasswordForm> password_form_;

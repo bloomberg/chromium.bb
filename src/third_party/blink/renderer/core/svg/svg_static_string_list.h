@@ -51,10 +51,14 @@ class SVGStaticStringList final
   template <char list_delimiter>
   static SVGStaticStringList* Create(SVGElement* context_element,
                                      const QualifiedName& attribute_name) {
-    return new SVGStaticStringList(context_element, attribute_name,
-                                   SVGStringList<list_delimiter>::Create());
+    return MakeGarbageCollected<SVGStaticStringList>(
+        context_element, attribute_name,
+        SVGStringList<list_delimiter>::Create());
   }
 
+  SVGStaticStringList(SVGElement*,
+                      const QualifiedName&,
+                      SVGStringListBase* initial_value);
   ~SVGStaticStringList() override;
 
   // SVGAnimatedPropertyBase:
@@ -73,10 +77,6 @@ class SVGStaticStringList final
   void Trace(blink::Visitor*) override;
 
  private:
-  SVGStaticStringList(SVGElement*,
-                      const QualifiedName&,
-                      SVGStringListBase* initial_value);
-
   Member<SVGStringListBase> value_;
   Member<SVGStringListTearOff> tear_off_;
 };

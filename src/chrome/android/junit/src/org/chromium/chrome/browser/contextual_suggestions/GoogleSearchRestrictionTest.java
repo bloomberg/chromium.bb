@@ -347,11 +347,6 @@ public class GoogleSearchRestrictionTest {
         }
 
         @Override
-        public String getOriginalUrlForVisibleNavigationEntry() {
-            return null;
-        }
-
-        @Override
         public void clearSslPreferences() {}
 
         @Override
@@ -371,22 +366,6 @@ public class GoogleSearchRestrictionTest {
         public boolean removeEntryAtIndex(int index) {
             return false;
         }
-
-        @Override
-        public boolean canCopyStateOver() {
-            return false;
-        }
-
-        @Override
-        public boolean canPruneAllButLastCommitted() {
-            return false;
-        }
-
-        @Override
-        public void copyStateFrom(NavigationController source, boolean needsReload) {}
-
-        @Override
-        public void copyStateFromAndPrune(NavigationController source, boolean replaceEntry) {}
 
         @Override
         public String getEntryExtraData(int index, String key) {

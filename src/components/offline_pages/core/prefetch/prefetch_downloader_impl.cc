@@ -96,10 +96,9 @@ void PrefetchDownloaderImpl::StartDownload(const std::string& download_id,
         policy {
           cookies_allowed: NO
           setting:
-            "Users can enable or disable the offline prefetch on desktop by "
-            "toggling 'Use a prediction service to load pages more quickly' in "
-            "settings under Privacy and security, or on Android by toggling "
-            "chrome://flags#offline-prefetch."
+            "Users can enable or disable offline prefetch by toggling "
+            "'Download articles for you' in settings under Downloads or "
+            "by toggling chrome://flags#offline-prefetch."
           chrome_policy {
             NetworkPredictionOptions {
               NetworkPredictionOptions: 2

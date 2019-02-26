@@ -18,10 +18,9 @@ namespace device {
 VRDisplayImpl::VRDisplayImpl(
     VRDeviceBase* device,
     mojom::XRFrameDataProviderRequest magic_window_request,
-    mojom::XREnvironmentIntegrationProviderRequest environment_request,
     mojom::XRSessionControllerRequest session_request)
     : magic_window_binding_(this, std::move(magic_window_request)),
-      environment_binding_(this, std::move(environment_request)),
+      environment_binding_(this),
       session_controller_binding_(this, std::move(session_request)),
       device_(device) {
   // Unretained is safe because the binding will close when we are destroyed,
@@ -40,7 +39,21 @@ void VRDisplayImpl::GetFrameData(
     return;
   }
 
-  device_->GetFrameData(std::move(callback));
+  device_->GetInlineFrameData(std::move(callback));
+}
+
+void VRDisplayImpl::GetEnvironmentIntegrationProvider(
+    mojom::XREnvironmentIntegrationProviderAssociatedRequest
+        environment_request) {
+  if (!device_->GetVRDisplayInfo()
+           ->capabilities->canProvideEnvironmentIntegration) {
+    // Environment integration is not supported. This call should not
+    // be made on this device.
+    mojo::ReportBadMessage("Environment integration is not supported.");
+    return;
+  }
+
+  environment_binding_.Bind(std::move(environment_request));
 }
 
 void VRDisplayImpl::UpdateSessionGeometry(const gfx::Size& frame_size,

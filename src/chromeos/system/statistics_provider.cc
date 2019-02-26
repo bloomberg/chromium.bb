@@ -24,7 +24,7 @@
 #include "base/synchronization/cancellation_flag.h"
 #include "base/synchronization/lock.h"
 #include "base/synchronization/waitable_event.h"
-#include "base/sys_info.h"
+#include "base/system/sys_info.h"
 #include "base/task/post_task.h"
 #include "base/task/task_traits.h"
 #include "base/task_runner.h"
@@ -326,7 +326,7 @@ bool StatisticsProviderImpl::WaitForStatisticsLoaded() {
   // Block if the statistics are not loaded yet. Normally this shouldn't
   // happen except during OOBE.
   base::Time start_time = base::Time::Now();
-  base::ThreadRestrictions::ScopedAllowWait allow_wait;
+  base::ScopedAllowBaseSyncPrimitives allow_wait;
   statistics_loaded_.TimedWait(base::TimeDelta::FromSeconds(kTimeoutSecs));
 
   base::TimeDelta dtime = base::Time::Now() - start_time;

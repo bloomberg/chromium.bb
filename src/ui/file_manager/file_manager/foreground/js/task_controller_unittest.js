@@ -7,6 +7,9 @@ window.metrics = {
 };
 
 function setUp() {
+  window.loadTimeData.getBoolean = key => false;
+  window.loadTimeData.getString = id => id;
+
   // Behavior of window.chrome depends on each test case. window.chrome should
   // be initialized properly inside each test function.
   window.chrome = {
@@ -29,6 +32,16 @@ function setUp() {
   };
 
   cr.ui.decorate('command', cr.ui.Command);
+}
+
+function createCrostini() {
+  const crostini = new Crostini();
+  crostini.init({
+    getLocationInfo: () => {
+      return 'test';
+    }
+  });
+  return crostini;
 }
 
 function testExecuteEntryTask(callback) {
@@ -64,15 +77,15 @@ function testExecuteEntryTask(callback) {
       {
         taskMenuButton: document.createElement('button'),
         shareMenuButton: {menu: document.createElement('div')},
-        fileContextMenu:
-            {defaultActionMenuItem: document.createElement('div')}
+        fileContextMenu: {defaultActionMenuItem: document.createElement('div')},
+        speakA11yMessage: text => {},
       },
       new MockMetadataModel({}), {
         getCurrentRootType: function() {
           return null;
         }
       },
-      new cr.EventTarget(), null);
+      new cr.EventTarget(), null, null, createCrostini());
 
   controller.executeEntryTask(fileSystem.entries['/test.png']);
   reportPromise(new Promise(function(fulfill) {
@@ -133,15 +146,14 @@ function createTaskController(selectionHandler) {
       {
         taskMenuButton: document.createElement('button'),
         shareMenuButton: {menu: document.createElement('div')},
-        fileContextMenu:
-            {defaultActionMenuItem: document.createElement('div')}
+        fileContextMenu: {defaultActionMenuItem: document.createElement('div')}
       },
       new MockMetadataModel({}), {
         getCurrentRootType: function() {
           return null;
         }
       },
-      selectionHandler, null);
+      selectionHandler, null, null, createCrostini());
 }
 
 // TaskController.getFileTasks should not call fileManagerPrivate.getFileTasks

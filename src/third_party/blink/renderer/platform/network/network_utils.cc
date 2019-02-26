@@ -24,14 +24,15 @@
 namespace {
 
 net::registry_controlled_domains::PrivateRegistryFilter
-getNetPrivateRegistryFilter(blink::NetworkUtils::PrivateRegistryFilter filter) {
+getNetPrivateRegistryFilter(
+    blink::network_utils::PrivateRegistryFilter filter) {
   switch (filter) {
-    case blink::NetworkUtils::kIncludePrivateRegistries:
+    case blink::network_utils::kIncludePrivateRegistries:
       return net::registry_controlled_domains::INCLUDE_PRIVATE_REGISTRIES;
-    case blink::NetworkUtils::kExcludePrivateRegistries:
+    case blink::network_utils::kExcludePrivateRegistries:
       return net::registry_controlled_domains::EXCLUDE_PRIVATE_REGISTRIES;
   }
-  // There are only two NetworkUtils::PrivateRegistryFilter enum entries, so
+  // There are only two network_utils::PrivateRegistryFilter enum entries, so
   // we should never reach this point. However, we must have a default return
   // value to avoid a compiler error.
   NOTREACHED();
@@ -42,7 +43,7 @@ getNetPrivateRegistryFilter(blink::NetworkUtils::PrivateRegistryFilter filter) {
 
 namespace blink {
 
-namespace NetworkUtils {
+namespace network_utils {
 
 bool IsReservedIPAddress(const String& host) {
   net::IPAddress address;
@@ -132,6 +133,6 @@ String GenerateAcceptLanguageHeader(const String& lang) {
       net::HttpUtil::GenerateAcceptLanguageHeader(string));
 }
 
-}  // NetworkUtils
+}  // namespace network_utils
 
 }  // namespace blink

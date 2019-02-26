@@ -55,6 +55,7 @@
 #include "mojo/core/embedder/embedder.h"
 #include "mojo/core/embedder/scoped_ipc_support.h"
 #include "mojo/public/cpp/system/invitation.h"
+#include "services/service_manager/public/cpp/constants.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/blink/public/platform/scheduler/test/renderer_scheduler_test_support.h"
 #include "third_party/blink/public/platform/scheduler/web_thread_scheduler.h"
@@ -190,13 +191,12 @@ class RenderThreadImplBrowserTest : public testing::Test {
         io_task_runner, mojo::core::ScopedIPCSupport::ShutdownPolicy::FAST));
     shell_context_.reset(new TestServiceManagerContext);
     mojo::OutgoingInvitation invitation;
-    service_manager::Identity child_identity(
-        mojom::kRendererServiceName, service_manager::mojom::kInheritUserID,
-        "test");
-    child_connection_.reset(new ChildConnection(
-        child_identity, &invitation,
-        ServiceManagerConnection::GetForProcess()->GetConnector(),
-        io_task_runner));
+    child_connection_ = std::make_unique<ChildConnection>(
+        service_manager::Identity(mojom::kRendererServiceName,
+                                  service_manager::kSystemInstanceGroup,
+                                  base::Token{}, base::Token::CreateRandom()),
+        &invitation, ServiceManagerConnection::GetForProcess()->GetConnector(),
+        io_task_runner);
 
     mojo::MessagePipe pipe;
     child_connection_->BindInterface(IPC::mojom::ChannelBootstrap::Name_,

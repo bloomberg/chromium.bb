@@ -70,15 +70,13 @@ class FlagsState {
                               const char* enable_features_flag_name,
                               const char* disable_features_flag_name);
 
-  // Reads the state from |flags_storage| and returns a set of strings
-  // corresponding to enabled entries. Does not populate any information about
-  // entries that enable/disable base::Feature states.
-  std::set<std::string> GetSwitchesFromFlags(FlagsStorage* flags_storage);
-
-  // Reads the state from |flags_storage| and returns a set of strings
-  // corresponding to enabled/disabled base::Feature states. Feature names are
-  // suffixed with ":enabled" or ":disabled" depending on their state.
-  std::set<std::string> GetFeaturesFromFlags(FlagsStorage* flags_storage);
+  // Reads the state from |flags_storage| and fills |switches| with the set of
+  // switches corresponding to enabled entries and |features| with the set of
+  // strings corresponding to enabled/disabled base::Feature states. Feature
+  // names are suffixed with ":enabled" or ":disabled" depending on their state.
+  void GetSwitchesAndFeaturesFromFlags(FlagsStorage* flags_storage,
+                                       std::set<std::string>* switches,
+                                       std::set<std::string>* features) const;
 
   bool IsRestartNeededToCommitChanges();
   void SetFeatureEntryEnabled(FlagsStorage* flags_storage,
@@ -142,10 +140,11 @@ class FlagsState {
   struct SwitchEntry;
 
   // Adds mapping to |name_to_switch_map| to set the given switch name/value.
-  void AddSwitchMapping(const std::string& key,
-                        const std::string& switch_name,
-                        const std::string& switch_value,
-                        std::map<std::string, SwitchEntry>* name_to_switch_map);
+  void AddSwitchMapping(
+      const std::string& key,
+      const std::string& switch_name,
+      const std::string& switch_value,
+      std::map<std::string, SwitchEntry>* name_to_switch_map) const;
 
   // Adds mapping to |name_to_switch_map| to toggle base::Feature |feature_name|
   // to state |feature_state|.
@@ -153,7 +152,7 @@ class FlagsState {
       const std::string& key,
       const std::string& feature_name,
       bool feature_state,
-      std::map<std::string, SwitchEntry>* name_to_switch_map);
+      std::map<std::string, SwitchEntry>* name_to_switch_map) const;
 
   // Updates the switches in |command_line| by applying the modifications
   // specified in |name_to_switch_map| for each entry in |enabled_entries|.
@@ -177,18 +176,23 @@ class FlagsState {
       bool feature_state,
       base::CommandLine* command_line);
 
-  // Removes all entries from prefs::kEnabledLabsExperiments that are unknown,
-  // to prevent this list to become very long as entries are added and removed.
-  void SanitizeList(FlagsStorage* flags_storage);
+  // Sanitizes |enabled_entries| to only contain entries that are defined in the
+  // |feature_entries_| and whose |supported_platforms| matches |platform_mask|.
+  // Pass -1 to |platform_mask| to not do platform filtering.
+  std::set<std::string> SanitizeList(
+      const std::set<std::string>& enabled_entries,
+      int platform_mask) const;
 
+  // Gets sanitized entries from |flags_storage|, filtering out any entries that
+  // don't exist in |feature_entries_|, and updates |flags_storage|.
   void GetSanitizedEnabledFlags(FlagsStorage* flags_storage,
-                                std::set<std::string>* result);
+                                std::set<std::string>* result) const;
 
   // Variant of GetSanitizedEnabledFlags that also removes any flags that aren't
   // enabled on the current platform.
   void GetSanitizedEnabledFlagsForCurrentPlatform(
       FlagsStorage* flags_storage,
-      std::set<std::string>* result);
+      std::set<std::string>* result) const;
 
   // Generates a flags to switches mapping based on the set of enabled flags
   // from |flags_storage|. On output, |enabled_entries| will contain the
@@ -197,7 +201,7 @@ class FlagsState {
   void GenerateFlagsToSwitchesMapping(
       FlagsStorage* flags_storage,
       std::set<std::string>* enabled_entries,
-      std::map<std::string, SwitchEntry>* name_to_switch_map);
+      std::map<std::string, SwitchEntry>* name_to_switch_map) const;
 
   // Called when the value of an entry with ORIGIN_LIST_VALUE is modified.
   // Modifies the corresponding command line by adding or removing the switch

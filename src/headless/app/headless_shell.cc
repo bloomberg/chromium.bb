@@ -7,7 +7,6 @@
 #include <string>
 #include <utility>
 
-#include "base/base64.h"
 #include "base/base_switches.h"
 #include "base/bind.h"
 #include "base/callback.h"
@@ -26,6 +25,7 @@
 #include "base/task_runner_util.h"
 #include "build/build_config.h"
 #include "cc/base/switches.h"
+#include "components/os_crypt/os_crypt_switches.h"
 #include "components/viz/common/switches.h"
 #include "content/public/app/content_main.h"
 #include "content/public/browser/browser_thread.h"
@@ -482,7 +482,7 @@ void HeadlessShell::OnPDFCreated(
 
 void HeadlessShell::WriteFile(const std::string& file_path_switch,
                               const std::string& default_file_name,
-                              const std::string& base64_data) {
+                              const protocol::Binary& data) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
 
   base::FilePath file_name =
@@ -491,25 +491,17 @@ void HeadlessShell::WriteFile(const std::string& file_path_switch,
   if (file_name.empty())
     file_name = base::FilePath().AppendASCII(default_file_name);
 
-  std::string decoded_data;
-  if (!base::Base64Decode(base64_data, &decoded_data)) {
-    LOG(ERROR) << "Failed to decode base64 data";
-    OnFileOpened(std::string(), file_name, base::File::FILE_ERROR_FAILED);
-    return;
-  }
-
   file_proxy_ = std::make_unique<base::FileProxy>(file_task_runner_.get());
   if (!file_proxy_->CreateOrOpen(
           file_name, base::File::FLAG_CREATE_ALWAYS | base::File::FLAG_WRITE,
           base::BindOnce(&HeadlessShell::OnFileOpened,
-                         weak_factory_.GetWeakPtr(), decoded_data,
-                         file_name))) {
+                         weak_factory_.GetWeakPtr(), data, file_name))) {
     // Operation could not be started.
-    OnFileOpened(std::string(), file_name, base::File::FILE_ERROR_FAILED);
+    OnFileOpened(protocol::Binary(), file_name, base::File::FILE_ERROR_FAILED);
   }
 }
 
-void HeadlessShell::OnFileOpened(const std::string& decoded_data,
+void HeadlessShell::OnFileOpened(const protocol::Binary& data,
                                  const base::FilePath file_name,
                                  base::File::Error error_code) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
@@ -519,16 +511,12 @@ void HeadlessShell::OnFileOpened(const std::string& decoded_data,
                << base::File::ErrorToString(error_code);
     return;
   }
-
-  auto buf = base::MakeRefCounted<net::IOBufferWithSize>(decoded_data.size());
-  memcpy(buf->data(), decoded_data.data(), decoded_data.size());
-
   if (!file_proxy_->Write(
-          0, buf->data(), buf->size(),
+          0, reinterpret_cast<const char*>(data.data()), data.size(),
           base::BindOnce(&HeadlessShell::OnFileWritten,
-                         weak_factory_.GetWeakPtr(), file_name, buf->size()))) {
+                         weak_factory_.GetWeakPtr(), file_name, data.size()))) {
     // Operation may have completed successfully or failed.
-    OnFileWritten(file_name, buf->size(), base::File::FILE_ERROR_FAILED, 0);
+    OnFileWritten(file_name, data.size(), base::File::FILE_ERROR_FAILED, 0);
   }
 }
 
@@ -650,6 +638,10 @@ int HeadlessShellMain(int argc, const char** argv) {
   base::FilePath dumps_path;
   base::PathService::Get(base::DIR_TEMP, &dumps_path);
   builder.SetCrashDumpsDir(dumps_path);
+#endif
+
+#if defined(OS_MACOSX)
+  command_line.AppendSwitch(os_crypt::switches::kUseMockKeychain);
 #endif
 
   if (command_line.HasSwitch(switches::kDeterministicMode)) {

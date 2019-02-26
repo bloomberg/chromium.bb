@@ -10,8 +10,6 @@
 #include "base/base_paths.h"
 #include "base/base_switches.h"
 #include "base/command_line.h"
-#include "base/message_loop/message_loop.h"
-#include "base/message_loop/message_loop_current.h"
 #include "base/path_service.h"
 #include "base/process/launch.h"
 #include "base/process/process.h"
@@ -174,8 +172,7 @@ class MonitoredProcessClient {
                             WPARAM wparam,
                             LPARAM lparam,
                             LRESULT* result) {
-    EXPECT_EQ(message_window_thread_.message_loop(),
-              base::MessageLoopCurrent::Get());
+    EXPECT_TRUE(message_window_thread_.task_runner()->BelongsToCurrentThread());
     return false;  // Pass through to DefWindowProc.
   }
 

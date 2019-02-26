@@ -50,7 +50,8 @@ export abstract class Engine {
    * Exactly the same as engine.rpc.rawQuery({rawQuery});
    */
   query(sqlQuery: string): Promise<RawQueryResult> {
-    return this.rpc.rawQuery({sqlQuery});
+    const timeQueuedNs = Math.floor(performance.now() * 1e6);
+    return this.rpc.rawQuery({sqlQuery, timeQueuedNs});
   }
 
   async queryOneRow(query: string): Promise<number[]> {
@@ -71,16 +72,21 @@ export abstract class Engine {
   // TODO: This should live in code that's more specific to chrome, instead of
   // in engine.
   async getNumberOfProcesses(): Promise<number> {
-    const result =
-        await this.query('select count(distinct(upid)) from thread;');
+    const result = await this.query('select count(*) from process;');
     return +result.columns[0].longValues![0];
   }
 
   async getTraceTimeBounds(): Promise<TimeSpan> {
-    const maxQuery = 'select max(ts) from (select max(ts) as ts from sched ' +
-        'union all select max(ts) as ts from slices)';
-    const minQuery = 'select min(ts) from (select min(ts) as ts from sched ' +
-        'union all select min(ts) as ts from slices)';
+    const maxQuery = `select max(ts) from (
+      select max(ts) as ts from sched
+      union all select max(ts) as ts from slices
+      union all select max(ts) as ts from counters
+    )`;
+    const minQuery = `select min(ts) from (
+      select min(ts) as ts from sched
+      union all select min(ts) as ts from slices
+      union all select min(ts) as ts from counters
+    )`;
     const start = (await this.queryOneRow(minQuery))[0];
     const end = (await this.queryOneRow(maxQuery))[0];
     return new TimeSpan(start / 1e9, end / 1e9);

@@ -30,10 +30,15 @@
 #include "third_party/blink/public/platform/web_url_request.h"
 #include "third_party/blink/renderer/bindings/core/v8/script_controller.h"
 #include "third_party/blink/renderer/bindings/core/v8/v8_binding_for_core.h"
+#include "third_party/blink/renderer/core/css/css_primitive_value.h"
+#include "third_party/blink/renderer/core/css/css_property_name.h"
+#include "third_party/blink/renderer/core/css/css_property_value_set.h"
 #include "third_party/blink/renderer/core/dom/document.h"
 #include "third_party/blink/renderer/core/dom/element.h"
 #include "third_party/blink/renderer/core/dom/events/event.h"
 #include "third_party/blink/renderer/core/dom/increment_load_event_delay_count.h"
+#include "third_party/blink/renderer/core/frame/csp/content_security_policy.h"
+#include "third_party/blink/renderer/core/frame/frame_owner.h"
 #include "third_party/blink/renderer/core/frame/local_frame.h"
 #include "third_party/blink/renderer/core/frame/settings.h"
 #include "third_party/blink/renderer/core/frame/use_counter.h"
@@ -75,8 +80,8 @@ bool GetAbsoluteDimensionValue(const AtomicString& attribute_value,
   return false;
 }
 
-bool IsLazyLoadingImageAllowed(const LocalFrame* frame,
-                               HTMLImageElement* html_image) {
+bool IsLazyLoadableImage(const LocalFrame* frame,
+                         HTMLImageElement* html_image) {
   // Minimum width or height attribute of the image to start lazyloading.
   const unsigned kMinDimensionToLazyLoad = 10;
 
@@ -85,20 +90,39 @@ bool IsLazyLoadingImageAllowed(const LocalFrame* frame,
     return false;
 
   if (EqualIgnoringASCIICase(
-          html_image->FastGetAttribute(HTMLNames::lazyloadAttr), "off"))
+          html_image->FastGetAttribute(html_names::kLazyloadAttr), "off") &&
+      !frame->GetDocument()->IsLazyLoadPolicyEnforced()) {
     return false;
-
+  }
   // Avoid lazyloading if width and height attributes are small. This
   // heuristic helps avoid double fetching tracking pixels.
   double width, height;
-  if (GetAbsoluteDimensionValue(html_image->getAttribute(HTMLNames::widthAttr),
-                                &width) &&
-      GetAbsoluteDimensionValue(html_image->getAttribute(HTMLNames::heightAttr),
-                                &height) &&
+  if (GetAbsoluteDimensionValue(
+          html_image->getAttribute(html_names::kWidthAttr), &width) &&
+      GetAbsoluteDimensionValue(
+          html_image->getAttribute(html_names::kHeightAttr), &height) &&
       width <= kMinDimensionToLazyLoad && height <= kMinDimensionToLazyLoad) {
     return false;
   }
-  return frame->IsLazyLoadingImageAllowed();
+  // Avoid lazyloading if width or height is specified in inline style and is
+  // small enough. This heuristic helps avoid double fetching tracking pixels.
+  if (const auto* property_set = html_image->InlineStyle()) {
+    const CSSValue* width = property_set->GetPropertyCSSValue(CSSPropertyWidth);
+    const CSSValue* height =
+        property_set->GetPropertyCSSValue(CSSPropertyHeight);
+    if (width && width->IsPrimitiveValue() && height &&
+        height->IsPrimitiveValue()) {
+      const CSSPrimitiveValue* width_prim = ToCSSPrimitiveValue(width);
+      const CSSPrimitiveValue* height_prim = ToCSSPrimitiveValue(height);
+      if (height_prim->IsPx() &&
+          (height_prim->GetDoubleValue() <= kMinDimensionToLazyLoad) &&
+          width_prim->IsPx() &&
+          (width_prim->GetDoubleValue() <= kMinDimensionToLazyLoad)) {
+        return false;
+      }
+    }
+  }
+  return true;
 }
 
 }  // namespace
@@ -107,22 +131,20 @@ static ImageLoader::BypassMainWorldBehavior ShouldBypassMainWorldCSP(
     ImageLoader* loader) {
   DCHECK(loader);
   DCHECK(loader->GetElement());
-  if (loader->GetElement()->GetDocument().GetFrame() &&
-      loader->GetElement()
-          ->GetDocument()
-          .GetFrame()
-          ->GetScriptController()
-          .ShouldBypassMainWorldCSP())
+  if (ContentSecurityPolicy::ShouldBypassMainWorld(
+          &loader->GetElement()->GetDocument())) {
     return ImageLoader::kBypassMainWorldCSP;
+  }
   return ImageLoader::kDoNotBypassMainWorldCSP;
 }
 
 class ImageLoader::Task {
  public:
-  static std::unique_ptr<Task> Create(ImageLoader* loader,
-                                      const KURL& request_url,
-                                      UpdateFromElementBehavior update_behavior,
-                                      ReferrerPolicy referrer_policy) {
+  static std::unique_ptr<Task> Create(
+      ImageLoader* loader,
+      const KURL& request_url,
+      UpdateFromElementBehavior update_behavior,
+      network::mojom::ReferrerPolicy referrer_policy) {
     return std::make_unique<Task>(loader, request_url, update_behavior,
                                   referrer_policy);
   }
@@ -130,7 +152,7 @@ class ImageLoader::Task {
   Task(ImageLoader* loader,
        const KURL& request_url,
        UpdateFromElementBehavior update_behavior,
-       ReferrerPolicy referrer_policy)
+       network::mojom::ReferrerPolicy referrer_policy)
       : loader_(loader),
         should_bypass_main_world_csp_(ShouldBypassMainWorldCSP(loader)),
         update_behavior_(update_behavior),
@@ -182,7 +204,7 @@ class ImageLoader::Task {
   BypassMainWorldBehavior should_bypass_main_world_csp_;
   UpdateFromElementBehavior update_behavior_;
   WeakPersistent<ScriptState> script_state_;
-  ReferrerPolicy referrer_policy_;
+  network::mojom::ReferrerPolicy referrer_policy_;
   KURL request_url_;
   base::WeakPtrFactory<Task> weak_factory_;
 };
@@ -366,7 +388,7 @@ static void ConfigureRequest(
     params.SetContentSecurityCheck(kDoNotCheckContentSecurityPolicy);
 
   CrossOriginAttributeValue cross_origin = GetCrossOriginAttributeValue(
-      element.FastGetAttribute(HTMLNames::crossoriginAttr));
+      element.FastGetAttribute(html_names::kCrossoriginAttr));
   if (cross_origin != kCrossOriginAttributeNotSet) {
     params.SetCrossOriginAccessControl(
         element.GetDocument().GetSecurityOrigin(), cross_origin);
@@ -375,7 +397,7 @@ static void ConfigureRequest(
   if (RuntimeEnabledFeatures::PriorityHintsEnabled()) {
     mojom::FetchImportanceMode importance_mode =
         GetFetchImportanceAttributeValue(
-            element.FastGetAttribute(HTMLNames::importanceAttr));
+            element.FastGetAttribute(html_names::kImportanceAttr));
     params.SetFetchImportanceMode(importance_mode);
   }
 
@@ -411,7 +433,7 @@ inline void ImageLoader::ClearFailedLoadURL() {
 inline void ImageLoader::EnqueueImageLoadingMicroTask(
     const KURL& request_url,
     UpdateFromElementBehavior update_behavior,
-    ReferrerPolicy referrer_policy) {
+    network::mojom::ReferrerPolicy referrer_policy) {
   std::unique_ptr<Task> task =
       Task::Create(this, request_url, update_behavior, referrer_policy);
   pending_task_ = task->GetWeakPtr();
@@ -438,11 +460,12 @@ void ImageLoader::UpdateImageState(ImageResourceContent* new_image_content) {
   delay_until_image_notify_finished_ = nullptr;
 }
 
-void ImageLoader::DoUpdateFromElement(BypassMainWorldBehavior bypass_behavior,
-                                      UpdateFromElementBehavior update_behavior,
-                                      const KURL& url,
-                                      ReferrerPolicy referrer_policy,
-                                      UpdateType update_type) {
+void ImageLoader::DoUpdateFromElement(
+    BypassMainWorldBehavior bypass_behavior,
+    UpdateFromElementBehavior update_behavior,
+    const KURL& url,
+    network::mojom::ReferrerPolicy referrer_policy,
+    UpdateType update_type) {
   // FIXME: According to
   // http://www.whatwg.org/specs/web-apps/current-work/multipage/embedded-content.html#the-img-element:the-img-element-55
   // When "update image" is called due to environment changes and the load
@@ -477,7 +500,7 @@ void ImageLoader::DoUpdateFromElement(BypassMainWorldBehavior bypass_behavior,
 
     // Correct the RequestContext if necessary.
     if (IsHTMLPictureElement(GetElement()->parentNode()) ||
-        !GetElement()->FastGetAttribute(HTMLNames::srcsetAttr).IsNull()) {
+        !GetElement()->FastGetAttribute(html_names::kSrcsetAttr).IsNull()) {
       resource_request.SetRequestContext(mojom::RequestContextType::IMAGE_SET);
     } else if (IsHTMLObjectElement(GetElement())) {
       resource_request.SetRequestContext(mojom::RequestContextType::OBJECT);
@@ -488,7 +511,7 @@ void ImageLoader::DoUpdateFromElement(BypassMainWorldBehavior bypass_behavior,
     bool page_is_being_dismissed =
         document.PageDismissalEventBeingDispatched() != Document::kNoDismissal;
     if (page_is_being_dismissed) {
-      resource_request.SetHTTPHeaderField(HTTPNames::Cache_Control,
+      resource_request.SetHTTPHeaderField(http_names::kCacheControl,
                                           "max-age=0");
       resource_request.SetKeepalive(true);
       resource_request.SetRequestContext(mojom::RequestContextType::PING);
@@ -514,11 +537,15 @@ void ImageLoader::DoUpdateFromElement(BypassMainWorldBehavior bypass_behavior,
       if (frame->IsClientLoFiAllowed(params.GetResourceRequest())) {
         params.SetClientLoFiPlaceholder();
       } else if (auto* html_image = ToHTMLImageElementOrNull(GetElement())) {
-        if (IsLazyLoadingImageAllowed(frame, html_image)) {
-          params.SetLazyImagePlaceholder();
-          lazy_image_load_state_ = LazyImageLoadState::kDeferred;
+        if (IsLazyLoadableImage(frame, html_image)) {
+          if (frame->GetDocument()->GetSettings()->GetLazyLoadEnabled() &&
+              frame->IsLazyLoadingImageAllowed()) {
+            params.SetLazyImagePlaceholder();
+            lazy_image_load_state_ = LazyImageLoadState::kDeferred;
+          }
+          if (!frame->Owner() || frame->Owner()->ShouldLazyLoadChildren())
+            LazyLoadImageObserver::StartTrackingVisibilityMetrics(html_image);
         }
-        LazyLoadImageObserver::StartTrackingVisibilityMetrics(html_image);
       }
     }
 
@@ -577,8 +604,9 @@ void ImageLoader::DoUpdateFromElement(BypassMainWorldBehavior bypass_behavior,
     image_resource->ResetAnimation();
 }
 
-void ImageLoader::UpdateFromElement(UpdateFromElementBehavior update_behavior,
-                                    ReferrerPolicy referrer_policy) {
+void ImageLoader::UpdateFromElement(
+    UpdateFromElementBehavior update_behavior,
+    network::mojom::ReferrerPolicy referrer_policy) {
   AtomicString image_source_url = element_->ImageSourceURL();
   suppress_error_events_ = (update_behavior == kUpdateSizeChanged);
   last_base_element_url_ =
@@ -858,7 +886,7 @@ void ImageLoader::DispatchPendingLoadEvent(
 void ImageLoader::DispatchPendingErrorEvent(
     std::unique_ptr<IncrementLoadEventDelayCount> count) {
   if (GetElement()->GetDocument().GetFrame())
-    GetElement()->DispatchEvent(*Event::Create(EventTypeNames::error));
+    GetElement()->DispatchEvent(*Event::Create(event_type_names::kError));
 
   // Checks Document's load event synchronously here for performance.
   // This is safe because DispatchPendingErrorEvent() is called asynchronously.
@@ -888,15 +916,16 @@ ScriptPromise ImageLoader::Decode(ScriptState* script_state,
 
   UseCounter::Count(GetElement()->GetDocument(), WebFeature::kImageDecodeAPI);
 
-  auto* request =
-      new DecodeRequest(this, ScriptPromiseResolver::Create(script_state));
+  auto* request = MakeGarbageCollected<DecodeRequest>(
+      this, ScriptPromiseResolver::Create(script_state));
   Microtask::EnqueueMicrotask(
       WTF::Bind(&DecodeRequest::ProcessForTask, WrapWeakPersistent(request)));
   decode_requests_.push_back(request);
   return request->promise();
 }
 
-void ImageLoader::LoadDeferredImage(ReferrerPolicy referrer_policy) {
+void ImageLoader::LoadDeferredImage(
+    network::mojom::ReferrerPolicy referrer_policy) {
   if (lazy_image_load_state_ != LazyImageLoadState::kDeferred)
     return;
   DCHECK(!image_complete_);

@@ -31,6 +31,7 @@
 #include "third_party/blink/renderer/core/core_initializer.h"
 
 #include "third_party/blink/public/platform/platform.h"
+#include "third_party/blink/renderer/bindings/core/v8/binding_security.h"
 #include "third_party/blink/renderer/bindings/core/v8/script_streamer_thread.h"
 #include "third_party/blink/renderer/bindings/core/v8/v8_throw_dom_exception.h"
 #include "third_party/blink/renderer/core/css/media_feature_names.h"
@@ -38,7 +39,7 @@
 #include "third_party/blink/renderer/core/css/parser/css_parser_token_range.h"
 #include "third_party/blink/renderer/core/css/style_change_reason.h"
 #include "third_party/blink/renderer/core/dom/document.h"
-#include "third_party/blink/renderer/core/event_names.h"
+#include "third_party/blink/renderer/core/event_interface_names.h"
 #include "third_party/blink/renderer/core/event_target_names.h"
 #include "third_party/blink/renderer/core/event_type_names.h"
 #include "third_party/blink/renderer/core/events/event_factory.h"
@@ -89,24 +90,20 @@ void CoreInitializer::Initialize() {
   // TODO(mikhail.pozdnyakov@intel.com): We should generate static strings
   // initialization code.
   const unsigned kQualifiedNamesCount =
-      HTMLNames::HTMLTagsCount + HTMLNames::HTMLAttrsCount +
-      MathMLNames::MathMLTagsCount + MathMLNames::MathMLAttrsCount +
-      SVGNames::SVGTagsCount + SVGNames::SVGAttrsCount +
-      XLinkNames::XLinkAttrsCount + XMLNSNames::XMLNSAttrsCount +
-      XMLNames::XMLAttrsCount;
+      html_names::kTagsCount + html_names::kAttrsCount +
+      mathml_names::kTagsCount + mathml_names::kAttrsCount +
+      svg_names::kTagsCount + svg_names::kAttrsCount +
+      xlink_names::kAttrsCount + xml_names::kAttrsCount +
+      xmlns_names::kAttrsCount;
 
   const unsigned kCoreStaticStringsCount =
-      kQualifiedNamesCount + EventNames::EventNamesCount +
-      EventTargetNames::EventTargetNamesCount +
-      EventTypeNames::EventTypeNamesCount +
-      FetchInitiatorTypeNames::FetchInitiatorTypeNamesCount +
-      FontFamilyNames::FontFamilyNamesCount +
-      HTMLTokenizerNames::HTMLTokenizerNamesCount + HTTPNames::HTTPNamesCount +
-      InputModeNames::InputModeNamesCount +
-      InputTypeNames::InputTypeNamesCount +
-      MediaFeatureNames::MediaFeatureNamesCount +
-      MediaTypeNames::MediaTypeNamesCount +
-      PerformanceEntryNames::PerformanceEntryNamesCount;
+      kQualifiedNamesCount + event_interface_names::kNamesCount +
+      event_target_names::kNamesCount + event_type_names::kNamesCount +
+      fetch_initiator_type_names::kNamesCount + font_family_names::kNamesCount +
+      html_tokenizer_names::kNamesCount + http_names::kNamesCount +
+      input_mode_names::kNamesCount + input_type_names::kNamesCount +
+      media_feature_names::kNamesCount + media_type_names::kNamesCount +
+      performance_entry_names::kNamesCount;
 
   StringImpl::ReserveStaticStringsCapacityForSize(
       kCoreStaticStringsCount + StringImpl::AllStaticStrings().size());
@@ -114,30 +111,30 @@ void CoreInitializer::Initialize() {
 
   AtomicStringTable::Instance().ReserveCapacity(kCoreStaticStringsCount);
 
-  HTMLNames::init();
-  SVGNames::init();
-  XLinkNames::init();
-  MathMLNames::init();
-  XMLNSNames::init();
-  XMLNames::init();
+  html_names::Init();
+  mathml_names::Init();
+  svg_names::Init();
+  xlink_names::Init();
+  xml_names::Init();
+  xmlns_names::Init();
 
-  EventNames::init();
-  EventTargetNames::init();
-  EventTypeNames::init();
-  FetchInitiatorTypeNames::init();
-  FontFamilyNames::init();
-  HTMLTokenizerNames::init();
-  HTTPNames::init();
-  InputModeNames::init();
-  InputTypeNames::init();
-  MediaFeatureNames::init();
-  MediaTypeNames::init();
-  PerformanceEntryNames::init();
+  event_interface_names::Init();
+  event_target_names::Init();
+  event_type_names::Init();
+  fetch_initiator_type_names::Init();
+  font_family_names::Init();
+  html_tokenizer_names::Init();
+  http_names::Init();
+  input_mode_names::Init();
+  input_type_names::Init();
+  media_feature_names::Init();
+  media_type_names::Init();
+  performance_entry_names::Init();
 
   MediaQueryEvaluator::Init();
   CSSParserTokenRange::InitStaticEOFToken();
 
-  StyleChangeExtraData::Init();
+  style_change_extra_data::Init();
 
   KURL::Initialize();
   SchemeRegistry::Initialize();
@@ -149,6 +146,7 @@ void CoreInitializer::Initialize() {
 
   V8ThrowDOMException::Init();
 
+  BindingSecurity::Init();
   ScriptStreamerThread::Init();
 }
 

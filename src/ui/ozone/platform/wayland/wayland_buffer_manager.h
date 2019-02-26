@@ -151,6 +151,8 @@ class WaylandBufferManager {
 
   void OnBufferSwapped(Buffer* buffer);
 
+  void AddSupportedFourCCFormat(uint32_t fourcc_format);
+
   // zwp_linux_dmabuf_v1_listener
   static void Modifiers(void* data,
                         struct zwp_linux_dmabuf_v1* zwp_linux_dmabuf,

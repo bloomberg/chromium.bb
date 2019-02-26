@@ -362,7 +362,9 @@ base::Optional<VideoPixelFormat> ToMediaVideoPixelFormat(
     // PIXEL_FORMAT_Y8 is deprecated .
     case pb::VideoDecoderConfig_Format_PIXEL_FORMAT_Y8:
       return base::nullopt;
-   CASE_RETURN_OTHER(PIXEL_FORMAT_Y16);
+      CASE_RETURN_OTHER(PIXEL_FORMAT_Y16);
+      CASE_RETURN_OTHER(PIXEL_FORMAT_ABGR);
+      CASE_RETURN_OTHER(PIXEL_FORMAT_XBGR);
   }
   return base::nullopt;  // Not a 'default' to ensure compile-time checks.
 }
@@ -398,32 +400,8 @@ base::Optional<pb::VideoDecoderConfig::Format> ToProtoVideoDecoderConfigFormat(
     CASE_RETURN_OTHER(PIXEL_FORMAT_YUV422P12);
     CASE_RETURN_OTHER(PIXEL_FORMAT_YUV444P12);
     CASE_RETURN_OTHER(PIXEL_FORMAT_Y16);
-  }
-  return base::nullopt;  // Not a 'default' to ensure compile-time checks.
-}
-
-base::Optional<ColorSpace> ToMediaColorSpace(
-    pb::VideoDecoderConfig::ColorSpace value) {
-  using OriginType = pb::VideoDecoderConfig;
-  using OtherType = ColorSpace;
-  switch (value) {
-    CASE_RETURN_OTHER(COLOR_SPACE_UNSPECIFIED);
-    CASE_RETURN_OTHER(COLOR_SPACE_JPEG);
-    CASE_RETURN_OTHER(COLOR_SPACE_HD_REC709);
-    CASE_RETURN_OTHER(COLOR_SPACE_SD_REC601);
-  }
-  return base::nullopt;  // Not a 'default' to ensure compile-time checks.
-}
-
-base::Optional<pb::VideoDecoderConfig::ColorSpace>
-ToProtoVideoDecoderConfigColorSpace(ColorSpace value) {
-  using OriginType = ColorSpace;
-  using OtherType = pb::VideoDecoderConfig;
-  switch (value) {
-    CASE_RETURN_OTHER(COLOR_SPACE_UNSPECIFIED);
-    CASE_RETURN_OTHER(COLOR_SPACE_JPEG);
-    CASE_RETURN_OTHER(COLOR_SPACE_HD_REC709);
-    CASE_RETURN_OTHER(COLOR_SPACE_SD_REC601);
+    CASE_RETURN_OTHER(PIXEL_FORMAT_ABGR);
+    CASE_RETURN_OTHER(PIXEL_FORMAT_XBGR);
   }
   return base::nullopt;  // Not a 'default' to ensure compile-time checks.
 }

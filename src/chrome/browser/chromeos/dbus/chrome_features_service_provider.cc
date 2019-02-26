@@ -86,6 +86,7 @@ void ChromeFeaturesServiceProvider::IsCrostiniEnabled(
   response_sender.Run(std::move(response));
 }
 
+// TODO(mortonm): Combine these functions below when adding any more flags.
 void ChromeFeaturesServiceProvider::IsUsbguardEnabled(
     dbus::MethodCall* method_call,
     dbus::ExportedObject::ResponseSender response_sender) {

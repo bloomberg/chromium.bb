@@ -14,8 +14,6 @@ namespace display {
 class Display;
 
 // Observers for display configuration changes.
-// TODO(oshima): consolidate |WorkAreaWatcherObserver| and
-// |DisplaySettingsProvier|. crbug.com/122863.
 class DISPLAY_EXPORT DisplayObserver : public base::CheckedObserver {
  public:
   enum DisplayMetric {

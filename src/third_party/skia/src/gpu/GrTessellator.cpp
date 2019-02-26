@@ -9,6 +9,7 @@
 
 #include "GrDefaultGeoProcFactory.h"
 #include "GrPathUtils.h"
+#include "GrVertexWriter.h"
 
 #include "SkArenaAlloc.h"
 #include "SkGeometry.h"
@@ -199,24 +200,17 @@ struct Comparator {
 };
 
 inline void* emit_vertex(Vertex* v, const AAParams* aaParams, void* data) {
-    if (!aaParams) {
-        SkPoint* d = static_cast<SkPoint*>(data);
-        *d++ = v->fPoint;
-        return d;
+    GrVertexWriter verts{data};
+    verts.write(v->fPoint);
+
+    if (aaParams) {
+        if (aaParams->fTweakAlpha) {
+            verts.write(SkAlphaMulQ(aaParams->fColor, SkAlpha255To256(v->fAlpha)));
+        } else {
+            verts.write(aaParams->fColor, GrNormalizeByteToFloat(v->fAlpha));
+        }
     }
-    if (aaParams->fTweakAlpha) {
-        auto d = static_cast<GrDefaultGeoProcFactory::PositionColorAttr*>(data);
-        d->fPosition = v->fPoint;
-        d->fColor = SkAlphaMulQ(aaParams->fColor, SkAlpha255To256(v->fAlpha));
-        d++;
-        return d;
-    }
-    auto d = static_cast<GrDefaultGeoProcFactory::PositionColorCoverageAttr*>(data);
-    d->fPosition = v->fPoint;
-    d->fColor = aaParams->fColor;
-    d->fCoverage = GrNormalizeByteToFloat(v->fAlpha);
-    d++;
-    return d;
+    return verts.fPtr;
 }
 
 void* emit_triangle(Vertex* v0, Vertex* v1, Vertex* v2, const AAParams* aaParams, void* data) {

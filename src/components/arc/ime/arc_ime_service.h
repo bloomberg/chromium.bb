@@ -14,7 +14,6 @@
 #include "ui/aura/env_observer.h"
 #include "ui/aura/window_observer.h"
 #include "ui/base/ime/text_input_client.h"
-#include "ui/base/ime/text_input_flags.h"
 #include "ui/base/ime/text_input_type.h"
 #include "ui/gfx/geometry/rect.h"
 #include "ui/keyboard/keyboard_controller_observer.h"
@@ -87,7 +86,8 @@ class ArcImeService : public KeyedService,
 
   // Overridden from ArcImeBridge::Delegate:
   void OnTextInputTypeChanged(ui::TextInputType type,
-                              bool is_personalized_learning_allowed) override;
+                              bool is_personalized_learning_allowed,
+                              int flags) override;
   void OnCursorRectChanged(const gfx::Rect& rect,
                            bool is_screen_coordinates) override;
   void OnCancelComposition() override;
@@ -165,6 +165,8 @@ class ArcImeService : public KeyedService,
   std::unique_ptr<ArcImeBridge> ime_bridge_;
   std::unique_ptr<ArcWindowDelegate> arc_window_delegate_;
   ui::TextInputType ime_type_;
+  // The flag is the bit map of ui::TextInputFlags.
+  int ime_flags_;
   bool is_personalized_learning_allowed_;
   gfx::Rect cursor_rect_;
   bool has_composition_text_;

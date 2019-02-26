@@ -50,22 +50,23 @@ int MediaStreamDescriptor::GenerateUniqueId() {
 MediaStreamDescriptor* MediaStreamDescriptor::Create(
     const MediaStreamSourceVector& audio_sources,
     const MediaStreamSourceVector& video_sources) {
-  return new MediaStreamDescriptor(CreateCanonicalUUIDString(), audio_sources,
-                                   video_sources);
+  return MakeGarbageCollected<MediaStreamDescriptor>(
+      CreateCanonicalUUIDString(), audio_sources, video_sources);
 }
 
 MediaStreamDescriptor* MediaStreamDescriptor::Create(
     const MediaStreamComponentVector& audio_components,
     const MediaStreamComponentVector& video_components) {
-  return new MediaStreamDescriptor(CreateCanonicalUUIDString(),
-                                   audio_components, video_components);
+  return MakeGarbageCollected<MediaStreamDescriptor>(
+      CreateCanonicalUUIDString(), audio_components, video_components);
 }
 
 MediaStreamDescriptor* MediaStreamDescriptor::Create(
     const String& id,
     const MediaStreamComponentVector& audio_components,
     const MediaStreamComponentVector& video_components) {
-  return new MediaStreamDescriptor(id, audio_components, video_components);
+  return MakeGarbageCollected<MediaStreamDescriptor>(id, audio_components,
+                                                     video_components);
 }
 
 void MediaStreamDescriptor::AddComponent(MediaStreamComponent* component) {
@@ -87,7 +88,7 @@ void MediaStreamDescriptor::AddComponent(MediaStreamComponent* component) {
 }
 
 void MediaStreamDescriptor::RemoveComponent(MediaStreamComponent* component) {
-  size_t pos = kNotFound;
+  wtf_size_t pos = kNotFound;
   switch (component->Source()->GetType()) {
     case MediaStreamSource::kTypeAudio:
       pos = audio_components_.Find(component);
@@ -138,7 +139,7 @@ void MediaStreamDescriptor::AddObserver(WebMediaStreamObserver* observer) {
 }
 
 void MediaStreamDescriptor::RemoveObserver(WebMediaStreamObserver* observer) {
-  size_t index = observers_.Find(observer);
+  wtf_size_t index = observers_.Find(observer);
   DCHECK(index != kNotFound);
   observers_.EraseAt(index);
 }
@@ -149,11 +150,11 @@ MediaStreamDescriptor::MediaStreamDescriptor(
     const MediaStreamSourceVector& video_sources)
     : client_(nullptr), id_(id), unique_id_(GenerateUniqueId()), active_(true) {
   DCHECK(id_.length());
-  for (size_t i = 0; i < audio_sources.size(); i++)
-    audio_components_.push_back(MediaStreamComponent::Create(audio_sources[i]));
+  for (MediaStreamSource* source : audio_sources)
+    audio_components_.push_back(MediaStreamComponent::Create(source));
 
-  for (size_t i = 0; i < video_sources.size(); i++)
-    video_components_.push_back(MediaStreamComponent::Create(video_sources[i]));
+  for (MediaStreamSource* source : video_sources)
+    video_components_.push_back(MediaStreamComponent::Create(source));
 }
 
 MediaStreamDescriptor::MediaStreamDescriptor(

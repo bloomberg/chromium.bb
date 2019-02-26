@@ -26,6 +26,8 @@ class SystemInfoHandler : public DevToolsDomainHandler,
   void Wire(UberDispatcher* dispatcher) override;
 
   void GetInfo(std::unique_ptr<GetInfoCallback> callback) override;
+  void GetProcessInfo(
+      std::unique_ptr<GetProcessInfoCallback> callback) override;
 
  private:
   friend class SystemInfoHandlerGpuObserver;

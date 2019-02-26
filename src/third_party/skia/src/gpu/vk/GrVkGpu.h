@@ -8,6 +8,8 @@
 #ifndef GrVkGpu_DEFINED
 #define GrVkGpu_DEFINED
 
+#include "GrVkVulkan.h"
+
 #include "GrGpu.h"
 #include "vk/GrVkBackendContext.h"
 #include "GrVkCaps.h"
@@ -18,7 +20,6 @@
 #include "GrVkSemaphore.h"
 #include "GrVkVertexBuffer.h"
 #include "GrVkUtil.h"
-#include "vk/GrVkDefines.h"
 
 class GrPipeline;
 
@@ -92,7 +93,7 @@ public:
                                                                 int height) override;
 
     GrGpuRTCommandBuffer* getCommandBuffer(
-            GrRenderTarget*, GrSurfaceOrigin,
+            GrRenderTarget*, GrSurfaceOrigin, const SkRect&,
             const GrGpuRTCommandBuffer::LoadAndStoreInfo&,
             const GrGpuRTCommandBuffer::StencilLoadAndStoreInfo&) override;
 
@@ -141,6 +142,14 @@ public:
     void insertSemaphore(sk_sp<GrSemaphore> semaphore, bool flush) override;
     void waitSemaphore(sk_sp<GrSemaphore> semaphore) override;
 
+    // These match the definitions in SkDrawable, from whence they came
+    typedef void* SubmitContext;
+    typedef void (*SubmitProc)(SubmitContext submitContext);
+
+    // Adds an SkDrawable::GpuDrawHandler that we will delete the next time we submit the primary
+    // command buffer to the gpu.
+    void addDrawable(std::unique_ptr<SkDrawable::GpuDrawHandler> drawable);
+
     sk_sp<GrSemaphore> prepareTextureForCrossContextUsage(GrTexture*) override;
 
     void copyBuffer(GrVkBuffer* srcBuffer, GrVkBuffer* dstBuffer, VkDeviceSize srcOffset,
@@ -158,7 +167,8 @@ private:
     sk_sp<GrTexture> onCreateTexture(const GrSurfaceDesc&, SkBudgeted, const GrMipLevel[],
                                      int mipLevelCount) override;
 
-    sk_sp<GrTexture> onWrapBackendTexture(const GrBackendTexture&, GrWrapOwnership) override;
+    sk_sp<GrTexture> onWrapBackendTexture(const GrBackendTexture&, GrWrapOwnership,
+                                          bool purgeImmediately) override;
     sk_sp<GrTexture> onWrapRenderableBackendTexture(const GrBackendTexture&,
                                                     int sampleCnt,
                                                     GrWrapOwnership) override;
@@ -227,40 +237,42 @@ private:
                                   size_t srcRowBytes, GrVkImageInfo* info);
 #endif
 
-    sk_sp<const GrVkInterface>             fInterface;
-    sk_sp<GrVkMemoryAllocator>             fMemoryAllocator;
-    sk_sp<GrVkCaps>                        fVkCaps;
+    sk_sp<const GrVkInterface>                            fInterface;
+    sk_sp<GrVkMemoryAllocator>                            fMemoryAllocator;
+    sk_sp<GrVkCaps>                                       fVkCaps;
 
-    VkInstance                             fInstance;
-    VkPhysicalDevice                       fPhysicalDevice;
-    VkDevice                               fDevice;
-    VkQueue                                fQueue;    // Must be Graphics queue
-    uint32_t                               fQueueIndex;
+    VkInstance                                            fInstance;
+    VkPhysicalDevice                                      fPhysicalDevice;
+    VkDevice                                              fDevice;
+    VkQueue                                               fQueue;    // Must be Graphics queue
+    uint32_t                                              fQueueIndex;
 
     // Created by GrVkGpu
-    GrVkResourceProvider                   fResourceProvider;
-    VkCommandPool                          fCmdPool;
+    GrVkResourceProvider                                  fResourceProvider;
+    VkCommandPool                                         fCmdPool;
 
-    GrVkPrimaryCommandBuffer*              fCurrentCmdBuffer;
+    GrVkPrimaryCommandBuffer*                             fCurrentCmdBuffer;
 
-    SkSTArray<1, GrVkSemaphore::Resource*> fSemaphoresToWaitOn;
-    SkSTArray<1, GrVkSemaphore::Resource*> fSemaphoresToSignal;
+    SkSTArray<1, GrVkSemaphore::Resource*>                fSemaphoresToWaitOn;
+    SkSTArray<1, GrVkSemaphore::Resource*>                fSemaphoresToSignal;
 
-    VkPhysicalDeviceProperties             fPhysDevProps;
-    VkPhysicalDeviceMemoryProperties       fPhysDevMemProps;
+    SkTArray<std::unique_ptr<SkDrawable::GpuDrawHandler>> fDrawables;
 
-    GrVkCopyManager                        fCopyManager;
+    VkPhysicalDeviceProperties                            fPhysDevProps;
+    VkPhysicalDeviceMemoryProperties                      fPhysDevMemProps;
+
+    GrVkCopyManager                                       fCopyManager;
 
     // compiler used for compiling sksl into spirv. We only want to create the compiler once since
     // there is significant overhead to the first compile of any compiler.
-    SkSL::Compiler*                        fCompiler;
+    SkSL::Compiler*                                       fCompiler;
 
     // We need a bool to track whether or not we've already disconnected all the gpu resources from
     // vulkan context.
-    bool                                   fDisconnected;
+    bool                                                  fDisconnected;
 
-    std::unique_ptr<GrVkGpuRTCommandBuffer>      fCachedRTCommandBuffer;
-    std::unique_ptr<GrVkGpuTextureCommandBuffer> fCachedTexCommandBuffer;
+    std::unique_ptr<GrVkGpuRTCommandBuffer>               fCachedRTCommandBuffer;
+    std::unique_ptr<GrVkGpuTextureCommandBuffer>          fCachedTexCommandBuffer;
 
     typedef GrGpu INHERITED;
 };

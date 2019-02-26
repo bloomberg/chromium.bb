@@ -10,7 +10,7 @@
 namespace blink {
 
 VideoTrackList* VideoTrackList::Create(HTMLMediaElement& media_element) {
-  return new VideoTrackList(media_element);
+  return MakeGarbageCollected<VideoTrackList>(media_element);
 }
 
 VideoTrackList::~VideoTrackList() = default;
@@ -19,7 +19,7 @@ VideoTrackList::VideoTrackList(HTMLMediaElement& media_element)
     : TrackListBase<VideoTrack>(&media_element) {}
 
 const AtomicString& VideoTrackList::InterfaceName() const {
-  return EventTargetNames::VideoTrackList;
+  return event_target_names::kVideoTrackList;
 }
 
 int VideoTrackList::selectedIndex() const {

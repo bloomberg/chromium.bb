@@ -34,7 +34,6 @@
 #include "third_party/blink/renderer/core/html/forms/html_field_set_element.h"
 #include "third_party/blink/renderer/core/html/forms/html_form_element.h"
 #include "third_party/blink/renderer/core/html/forms/html_input_element.h"
-#include "third_party/blink/renderer/core/html/forms/html_legend_element.h"
 #include "third_party/blink/renderer/core/html/forms/validity_state.h"
 #include "third_party/blink/renderer/core/html/parser/html_parser_idioms.h"
 #include "third_party/blink/renderer/core/inspector/console_message.h"
@@ -47,15 +46,13 @@
 
 namespace blink {
 
-using namespace HTMLNames;
+using namespace html_names;
 
 HTMLFormControlElement::HTMLFormControlElement(const QualifiedName& tag_name,
                                                Document& document)
     : LabelableElement(tag_name, document),
       autofill_state_(WebAutofillState::kNotFilled),
-      ancestor_disabled_state_(kAncestorDisabledStateUnknown),
       data_list_ancestor_state_(kUnknown),
-      may_have_field_set_ancestor_(true),
       has_validation_message_(false),
       will_validate_initialized_(false),
       will_validate_(true),
@@ -75,29 +72,29 @@ void HTMLFormControlElement::Trace(blink::Visitor* visitor) {
 }
 
 String HTMLFormControlElement::formAction() const {
-  const AtomicString& action = FastGetAttribute(formactionAttr);
+  const AtomicString& action = FastGetAttribute(kFormactionAttr);
   if (action.IsEmpty())
     return GetDocument().Url();
   return GetDocument().CompleteURL(StripLeadingAndTrailingHTMLSpaces(action));
 }
 
 void HTMLFormControlElement::setFormAction(const AtomicString& value) {
-  setAttribute(formactionAttr, value);
+  setAttribute(kFormactionAttr, value);
 }
 
 String HTMLFormControlElement::formEnctype() const {
-  const AtomicString& form_enctype_attr = FastGetAttribute(formenctypeAttr);
+  const AtomicString& form_enctype_attr = FastGetAttribute(kFormenctypeAttr);
   if (form_enctype_attr.IsNull())
     return g_empty_string;
   return FormSubmission::Attributes::ParseEncodingType(form_enctype_attr);
 }
 
 void HTMLFormControlElement::setFormEnctype(const AtomicString& value) {
-  setAttribute(formenctypeAttr, value);
+  setAttribute(kFormenctypeAttr, value);
 }
 
 String HTMLFormControlElement::formMethod() const {
-  const AtomicString& form_method_attr = FastGetAttribute(formmethodAttr);
+  const AtomicString& form_method_attr = FastGetAttribute(kFormmethodAttr);
   if (form_method_attr.IsNull())
     return g_empty_string;
   return FormSubmission::Attributes::MethodString(
@@ -105,45 +102,11 @@ String HTMLFormControlElement::formMethod() const {
 }
 
 void HTMLFormControlElement::setFormMethod(const AtomicString& value) {
-  setAttribute(formmethodAttr, value);
+  setAttribute(kFormmethodAttr, value);
 }
 
 bool HTMLFormControlElement::FormNoValidate() const {
-  return FastHasAttribute(formnovalidateAttr);
-}
-
-void HTMLFormControlElement::UpdateAncestorDisabledState() const {
-  if (!may_have_field_set_ancestor_) {
-    ancestor_disabled_state_ = kAncestorDisabledStateEnabled;
-    return;
-  }
-  may_have_field_set_ancestor_ = false;
-  // <fieldset> element of which |disabled| attribute affects |this| element.
-  HTMLFieldSetElement* disabled_fieldset_ancestor = nullptr;
-  ContainerNode* last_legend_ancestor = nullptr;
-  for (HTMLElement* ancestor = Traversal<HTMLElement>::FirstAncestor(*this);
-       ancestor; ancestor = Traversal<HTMLElement>::FirstAncestor(*ancestor)) {
-    if (IsHTMLLegendElement(*ancestor))
-      last_legend_ancestor = ancestor;
-    if (IsHTMLFieldSetElement(*ancestor)) {
-      may_have_field_set_ancestor_ = true;
-      if (ancestor->IsDisabledFormControl()) {
-        auto* fieldset = ToHTMLFieldSetElement(ancestor);
-        if (last_legend_ancestor && last_legend_ancestor == fieldset->Legend())
-          continue;
-        disabled_fieldset_ancestor = fieldset;
-        break;
-      }
-    }
-  }
-  ancestor_disabled_state_ = disabled_fieldset_ancestor
-                                 ? kAncestorDisabledStateDisabled
-                                 : kAncestorDisabledStateEnabled;
-}
-
-void HTMLFormControlElement::AncestorDisabledStateWasChanged() {
-  ancestor_disabled_state_ = kAncestorDisabledStateUnknown;
-  DisabledAttributeChanged();
+  return FastHasAttribute(kFormnovalidateAttr);
 }
 
 void HTMLFormControlElement::Reset() {
@@ -154,7 +117,7 @@ void HTMLFormControlElement::Reset() {
 void HTMLFormControlElement::AttributeChanged(
     const AttributeModificationParams& params) {
   HTMLElement::AttributeChanged(params);
-  if (params.name == disabledAttr &&
+  if (params.name == kDisabledAttr &&
       params.old_value.IsNull() != params.new_value.IsNull()) {
     DisabledAttributeChanged();
     if (params.reason == AttributeModificationReason::kDirectly &&
@@ -166,10 +129,10 @@ void HTMLFormControlElement::AttributeChanged(
 void HTMLFormControlElement::ParseAttribute(
     const AttributeModificationParams& params) {
   const QualifiedName& name = params.name;
-  if (name == formAttr) {
+  if (name == kFormAttr) {
     FormAttributeChanged();
     UseCounter::Count(GetDocument(), WebFeature::kFormAttribute);
-  } else if (name == readonlyAttr) {
+  } else if (name == kReadonlyAttr) {
     if (params.old_value.IsNull() != params.new_value.IsNull()) {
       SetNeedsWillValidateCheck();
       PseudoStateChanged(CSSSelector::kPseudoReadOnly);
@@ -177,11 +140,11 @@ void HTMLFormControlElement::ParseAttribute(
       if (LayoutObject* o = GetLayoutObject())
         o->InvalidateIfControlStateChanged(kReadOnlyControlState);
     }
-  } else if (name == requiredAttr) {
+  } else if (name == kRequiredAttr) {
     if (params.old_value.IsNull() != params.new_value.IsNull())
       RequiredAttributeChanged();
     UseCounter::Count(GetDocument(), WebFeature::kRequiredAttribute);
-  } else if (name == autofocusAttr) {
+  } else if (name == kAutofocusAttr) {
     HTMLElement::ParseAttribute(params);
     UseCounter::Count(GetDocument(), WebFeature::kAutoFocusAttribute);
   } else {
@@ -195,8 +158,7 @@ void HTMLFormControlElement::DisabledAttributeChanged() {
   EventDispatchForbiddenScope event_forbidden;
 
   SetNeedsWillValidateCheck();
-  PseudoStateChanged(CSSSelector::kPseudoDisabled);
-  PseudoStateChanged(CSSSelector::kPseudoEnabled);
+  ListedElement::DisabledAttributeChanged();
   if (LayoutObject* o = GetLayoutObject())
     o->InvalidateIfControlStateChanged(kEnabledControlState);
 
@@ -217,7 +179,7 @@ void HTMLFormControlElement::RequiredAttributeChanged() {
 }
 
 bool HTMLFormControlElement::IsReadOnly() const {
-  return FastHasAttribute(HTMLNames::readonlyAttr);
+  return FastHasAttribute(html_names::kReadonlyAttr);
 }
 
 bool HTMLFormControlElement::IsDisabledOrReadOnly() const {
@@ -229,7 +191,7 @@ bool HTMLFormControlElement::SupportsAutofocus() const {
 }
 
 bool HTMLFormControlElement::IsAutofocusable() const {
-  return FastHasAttribute(autofocusAttr) && SupportsAutofocus();
+  return FastHasAttribute(kAutofocusAttr) && SupportsAutofocus();
 }
 
 void HTMLFormControlElement::SetAutofillState(WebAutofillState autofill_state) {
@@ -247,7 +209,7 @@ void HTMLFormControlElement::SetAutofillSection(const WebString& section) {
 }
 
 const AtomicString& HTMLFormControlElement::autocapitalize() const {
-  if (!FastGetAttribute(autocapitalizeAttr).IsEmpty())
+  if (!FastGetAttribute(kAutocapitalizeAttr).IsEmpty())
     return HTMLElement::autocapitalize();
 
   // If the form control itself does not have the autocapitalize attribute set,
@@ -299,13 +261,10 @@ void HTMLFormControlElement::DidMoveToNewDocument(Document& old_document) {
 
 Node::InsertionNotificationRequest HTMLFormControlElement::InsertedInto(
     ContainerNode& insertion_point) {
-  ancestor_disabled_state_ = kAncestorDisabledStateUnknown;
-  // Force traversal to find ancestor
-  may_have_field_set_ancestor_ = true;
   data_list_ancestor_state_ = kUnknown;
-  SetNeedsWillValidateCheck();
   HTMLElement::InsertedInto(insertion_point);
   ListedElement::InsertedInto(insertion_point);
+  SetNeedsWillValidateCheck();
   FieldSetAncestorsSetNeedsValidityCheck(&insertion_point);
 
   // Trigger for elements outside of forms.
@@ -319,11 +278,10 @@ void HTMLFormControlElement::RemovedFrom(ContainerNode& insertion_point) {
   FieldSetAncestorsSetNeedsValidityCheck(&insertion_point);
   HideVisibleValidationMessage();
   has_validation_message_ = false;
-  ancestor_disabled_state_ = kAncestorDisabledStateUnknown;
   data_list_ancestor_state_ = kUnknown;
-  SetNeedsWillValidateCheck();
   HTMLElement::RemovedFrom(insertion_point);
   ListedElement::RemovedFrom(insertion_point);
+  SetNeedsWillValidateCheck();
 }
 
 void HTMLFormControlElement::WillChangeForm() {
@@ -363,7 +321,7 @@ void HTMLFormControlElement::FieldSetAncestorsSetNeedsValidityCheck(
 }
 
 void HTMLFormControlElement::DispatchChangeEvent() {
-  DispatchScopedEvent(*Event::CreateBubble(EventTypeNames::change));
+  DispatchScopedEvent(*Event::CreateBubble(event_type_names::kChange));
 }
 
 HTMLFormElement* HTMLFormControlElement::formOwner() const {
@@ -371,18 +329,13 @@ HTMLFormElement* HTMLFormControlElement::formOwner() const {
 }
 
 bool HTMLFormControlElement::IsDisabledFormControl() const {
-  if (FastHasAttribute(disabledAttr))
-    return true;
-
   // Since the MHTML is loaded in sandboxing mode with form submission and
   // script execution disabled, we should gray out all form control elements
   // to indicate that the form cannot be worked on.
   if (GetDocument().Fetcher()->Archive())
     return true;
 
-  if (ancestor_disabled_state_ == kAncestorDisabledStateUnknown)
-    UpdateAncestorDisabledState();
-  return ancestor_disabled_state_ == kAncestorDisabledStateDisabled;
+  return IsActuallyDisabled();
 }
 
 bool HTMLFormControlElement::MatchesEnabledPseudoClass() const {
@@ -390,11 +343,11 @@ bool HTMLFormControlElement::MatchesEnabledPseudoClass() const {
 }
 
 bool HTMLFormControlElement::IsRequired() const {
-  return FastHasAttribute(requiredAttr);
+  return FastHasAttribute(kRequiredAttr);
 }
 
 String HTMLFormControlElement::ResultForDialogSubmit() {
-  return FastGetAttribute(valueAttr);
+  return FastGetAttribute(kValueAttr);
 }
 
 void HTMLFormControlElement::DidRecalcStyle(StyleRecalcChange) {
@@ -546,7 +499,7 @@ bool HTMLFormControlElement::checkValidity(
     return false;
   Document* original_document = &GetDocument();
   DispatchEventResult dispatch_result =
-      DispatchEvent(*Event::CreateCancelable(EventTypeNames::invalid));
+      DispatchEvent(*Event::CreateCancelable(event_type_names::kInvalid));
   if (dispatch_result == DispatchEventResult::kNotCanceled &&
       unhandled_invalid_controls && isConnected() &&
       original_document == GetDocument())

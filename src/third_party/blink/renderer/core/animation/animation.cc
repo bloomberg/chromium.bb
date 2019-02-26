@@ -705,7 +705,7 @@ ScriptPromise Animation::ready(ScriptState* script_state) {
 }
 
 const AtomicString& Animation::InterfaceName() const {
-  return EventTargetNames::Animation;
+  return event_target_names::kAnimation;
 }
 
 ExecutionContext* Animation::GetExecutionContext() const {
@@ -718,7 +718,7 @@ bool Animation::HasPendingActivity() const {
       finished_promise_->GetState() == ScriptPromisePropertyBase::kPending;
 
   return pending_finished_event_ || has_pending_promise ||
-         (!finished_ && HasEventListeners(EventTypeNames::finish));
+         (!finished_ && HasEventListeners(event_type_names::kFinish));
 }
 
 void Animation::ContextDestroyed(ExecutionContext*) {
@@ -971,7 +971,7 @@ bool Animation::Update(TimingUpdateReason reason) {
   if ((idle || Limited()) && !finished_) {
     if (reason == kTimingUpdateForAnimationFrame && (idle || start_time_)) {
       if (idle) {
-        const AtomicString& event_type = EventTypeNames::cancel;
+        const AtomicString& event_type = event_type_names::kCancel;
         if (GetExecutionContext() && HasEventListeners(event_type)) {
           double event_current_time = NullValue();
           pending_cancelled_event_ =
@@ -983,7 +983,7 @@ bool Animation::Update(TimingUpdateReason reason) {
               pending_cancelled_event_);
         }
       } else {
-        const AtomicString& event_type = EventTypeNames::finish;
+        const AtomicString& event_type = event_type_names::kFinish;
         if (GetExecutionContext() && HasEventListeners(event_type)) {
           double event_current_time = CurrentTimeInternal() * 1000;
           pending_finished_event_ =
@@ -1142,19 +1142,21 @@ Animation::PlayStateUpdateScope::~PlayStateUpdateScope() {
   if (old_play_state != new_play_state) {
     bool was_active = old_play_state == kPending || old_play_state == kRunning;
     bool is_active = new_play_state == kPending || new_play_state == kRunning;
-    if (!was_active && is_active)
+    if (!was_active && is_active) {
       TRACE_EVENT_NESTABLE_ASYNC_BEGIN1(
           "blink.animations,devtools.timeline,benchmark,rail", "Animation",
-          animation_, "data", InspectorAnimationEvent::Data(*animation_));
-    else if (was_active && !is_active)
+          animation_, "data", inspector_animation_event::Data(*animation_));
+    } else if (was_active && !is_active) {
       TRACE_EVENT_NESTABLE_ASYNC_END1(
           "blink.animations,devtools.timeline,benchmark,rail", "Animation",
           animation_, "endData",
-          InspectorAnimationStateEvent::Data(*animation_));
-    else
+          inspector_animation_state_event::Data(*animation_));
+    } else {
       TRACE_EVENT_NESTABLE_ASYNC_INSTANT1(
           "blink.animations,devtools.timeline,benchmark,rail", "Animation",
-          animation_, "data", InspectorAnimationStateEvent::Data(*animation_));
+          animation_, "data",
+          inspector_animation_state_event::Data(*animation_));
+    }
   }
 
   // Ordering is important, the ready promise should resolve/reject before
@@ -1231,7 +1233,7 @@ void Animation::AddedEventListener(
     RegisteredEventListener& registered_listener) {
   EventTargetWithInlineData::AddedEventListener(event_type,
                                                 registered_listener);
-  if (event_type == EventTypeNames::finish)
+  if (event_type == event_type_names::kFinish)
     UseCounter::Count(GetExecutionContext(), WebFeature::kAnimationFinishEvent);
 }
 
@@ -1269,7 +1271,7 @@ void Animation::InvalidateKeyframeEffect(const TreeScope& tree_scope) {
       CSSAnimations::IsAffectedByKeyframesFromScope(*target, tree_scope)) {
     target->SetNeedsStyleRecalc(kLocalStyleChange,
                                 StyleChangeReasonForTracing::Create(
-                                    StyleChangeReason::kStyleSheetChange));
+                                    style_change_reason::kStyleSheetChange));
   }
 }
 

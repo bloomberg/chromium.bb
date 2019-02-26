@@ -36,19 +36,20 @@ class DocumentType final : public Node {
                               const String& name,
                               const String& public_id,
                               const String& system_id) {
-    return new DocumentType(document, name, public_id, system_id);
+    return MakeGarbageCollected<DocumentType>(document, name, public_id,
+                                              system_id);
   }
+
+  DocumentType(Document*,
+               const String& name,
+               const String& public_id,
+               const String& system_id);
 
   const String& name() const { return name_; }
   const String& publicId() const { return public_id_; }
   const String& systemId() const { return system_id_; }
 
  private:
-  DocumentType(Document*,
-               const String& name,
-               const String& public_id,
-               const String& system_id);
-
   String nodeName() const override;
   NodeType getNodeType() const override;
   Node* Clone(Document&, CloneChildrenFlag) const override;

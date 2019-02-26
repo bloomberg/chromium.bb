@@ -15,7 +15,6 @@
 #include "components/data_reduction_proxy/core/browser/data_reduction_proxy_io_data.h"
 #include "components/data_reduction_proxy/core/browser/data_reduction_proxy_request_options.h"
 #include "components/data_reduction_proxy/core/browser/data_reduction_proxy_util.h"
-#include "components/data_reduction_proxy/core/common/data_reduction_proxy_event_creator.h"
 #include "components/data_reduction_proxy/core/common/data_reduction_proxy_params.h"
 #include "components/data_reduction_proxy/core/common/data_reduction_proxy_switches.h"
 #include "net/base/host_port_pair.h"
@@ -36,20 +35,14 @@ static const char kDataReductionCoreProxy[] = "proxy.googlezip.net";
 DataReductionProxyDelegate::DataReductionProxyDelegate(
     DataReductionProxyConfig* config,
     const DataReductionProxyConfigurator* configurator,
-    DataReductionProxyEventCreator* event_creator,
-    DataReductionProxyBypassStats* bypass_stats,
-    net::NetLog* net_log)
+    DataReductionProxyBypassStats* bypass_stats)
     : config_(config),
       configurator_(configurator),
-      event_creator_(event_creator),
       bypass_stats_(bypass_stats),
-      io_data_(nullptr),
-      net_log_(net_log) {
+      io_data_(nullptr) {
   DCHECK(config_);
   DCHECK(configurator_);
-  DCHECK(event_creator_);
   DCHECK(bypass_stats_);
-  DCHECK(net_log_);
   // Constructed on the UI thread, but should be checked on the IO thread.
   thread_checker_.DetachFromThread();
 }
@@ -152,12 +145,6 @@ void DataReductionProxyDelegate::OnResolveProxy(
 void DataReductionProxyDelegate::OnFallback(const net::ProxyServer& bad_proxy,
                                             int net_error) {
   DCHECK(thread_checker_.CalledOnValidThread());
-  if (bad_proxy.is_valid() &&
-      config_->FindConfiguredDataReductionProxy(bad_proxy)) {
-    event_creator_->AddProxyFallbackEvent(net_log_, bad_proxy.ToURI(),
-                                          net_error);
-  }
-
   if (bypass_stats_)
     bypass_stats_->OnProxyFallback(bad_proxy, net_error);
 }

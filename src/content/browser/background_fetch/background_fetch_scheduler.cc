@@ -5,167 +5,333 @@
 #include "content/browser/background_fetch/background_fetch_scheduler.h"
 
 #include "base/guid.h"
+#include "base/stl_util.h"
+#include "content/browser/background_fetch/background_fetch_data_manager.h"
+#include "content/browser/background_fetch/background_fetch_delegate_proxy.h"
 #include "content/browser/background_fetch/background_fetch_job_controller.h"
+#include "content/browser/background_fetch/background_fetch_metrics.h"
+#include "content/browser/background_fetch/background_fetch_registration_notifier.h"
+#include "content/browser/service_worker/service_worker_context_core_observer.h"
+#include "content/browser/service_worker/service_worker_context_wrapper.h"
 
 namespace content {
 
-BackgroundFetchScheduler::Controller::Controller(
-    BackgroundFetchScheduler* scheduler,
-    const BackgroundFetchRegistrationId& registration_id,
-    FinishedCallback finished_callback)
-    : scheduler_(scheduler),
-      registration_id_(registration_id),
-      finished_callback_(std::move(finished_callback)) {
-  DCHECK(scheduler_);
-  DCHECK(finished_callback_);
-}
-
-BackgroundFetchScheduler::Controller::~Controller() = default;
-
-void BackgroundFetchScheduler::Controller::Finish(
-    blink::mojom::BackgroundFetchFailureReason reason_to_abort) {
-  DCHECK(reason_to_abort != blink::mojom::BackgroundFetchFailureReason::NONE ||
-         !HasMoreRequests());
-
-  scheduler_->RemoveJobController(this);
-
-  // Developer-initiated abortions will have already marked the registration for
-  // deletion, so make sure that we don't execute the same code-path twice.
-  if (reason_to_abort ==
-      blink::mojom::BackgroundFetchFailureReason::CANCELLED_BY_DEVELOPER) {
-    return;
-  }
-
-  // Race conditions make it possible for a controller to finish twice. This
-  // should be removed when the scheduler starts owning the controllers.
-  if (!finished_callback_)
-    return;
-
-  std::move(finished_callback_).Run(registration_id_, reason_to_abort);
-}
+using blink::mojom::BackgroundFetchError;
+using blink::mojom::BackgroundFetchFailureReason;
 
 BackgroundFetchScheduler::BackgroundFetchScheduler(
-    RequestProvider* request_provider)
-    : request_provider_(request_provider) {}
+    BackgroundFetchDataManager* data_manager,
+    BackgroundFetchRegistrationNotifier* registration_notifier,
+    BackgroundFetchDelegateProxy* delegate_proxy,
+    scoped_refptr<ServiceWorkerContextWrapper> service_worker_context)
+    : data_manager_(data_manager),
+      registration_notifier_(registration_notifier),
+      delegate_proxy_(delegate_proxy),
+      event_dispatcher_(std::move(service_worker_context)),
+      weak_ptr_factory_(this) {
+  DCHECK(delegate_proxy_);
+  delegate_proxy_->SetClickEventDispatcher(
+      base::BindRepeating(&BackgroundFetchScheduler::DispatchClickEvent,
+                          weak_ptr_factory_.GetWeakPtr()));
+}
 
 BackgroundFetchScheduler::~BackgroundFetchScheduler() = default;
 
-void BackgroundFetchScheduler::AddJobController(Controller* controller) {
-  DCHECK(controller);
-  controller_queue_.push_back(controller);
-
-  std::vector<scoped_refptr<content::BackgroundFetchRequestInfo>>
-      outstanding_requests = controller->TakeOutstandingRequests();
-  // There are active downloads from the previous session.
-  if (!outstanding_requests.empty()) {
-    // The current assumption is that there can be at most one active fetch
-    // at any given time.
-    DCHECK(!active_controller_);
-    DCHECK_EQ(outstanding_requests.size(), 1u);
-
-    active_controller_ = controller;
-    for (auto& request_info : outstanding_requests) {
-      active_controller_->StartRequest(
-          std::move(request_info),
-          base::BindOnce(&BackgroundFetchScheduler::MarkRequestAsComplete,
-                         weak_ptr_factory_.GetWeakPtr()));
-    }
-  }
-
-  if (!active_controller_)
-    ScheduleDownload();
-}
-
-void BackgroundFetchScheduler::RemoveJobController(Controller* controller) {
-  DCHECK(controller);
-
-  base::EraseIf(controller_queue_, [controller](Controller* queued_controller) {
-    return controller == queued_controller;
-  });
-
-  if (active_controller_ != controller)
-    return;
-
-  // TODO(peter): Move cancellation of requests to the scheduler.
-  active_controller_ = nullptr;
-
-  ScheduleDownload();
-}
-
 void BackgroundFetchScheduler::ScheduleDownload() {
   DCHECK(!active_controller_);
-  if (controller_queue_.empty())
+
+  if (controller_ids_.empty())
     return;
 
-  active_controller_ = controller_queue_.front();
-  controller_queue_.pop_front();
+  DCHECK(!job_controllers_.empty());
 
-  request_provider_->PopNextRequest(
+  std::string controller_id = controller_ids_.front();
+  controller_ids_.pop_front();
+  active_controller_ = job_controllers_[controller_id].get();
+  DCHECK(active_controller_);
+
+  data_manager_->PopNextRequest(
       active_controller_->registration_id(),
-      base::BindOnce(&BackgroundFetchScheduler::DidPopNextRequest,
-                     weak_ptr_factory_.GetWeakPtr()));
+      base::BindOnce(&BackgroundFetchJobController::DidPopNextRequest,
+                     active_controller_->GetWeakPtr()));
 }
 
-void BackgroundFetchScheduler::DidPopNextRequest(
-    blink::mojom::BackgroundFetchError error,
-    scoped_refptr<BackgroundFetchRequestInfo> request_info) {
-  // It's possible for the |active_controller_| to have been aborted while the
-  // next request was being retrieved. Bail out when that happens.
-  if (!active_controller_) {
+void BackgroundFetchScheduler::Abort(
+    const BackgroundFetchRegistrationId& registration_id,
+    BackgroundFetchFailureReason failure_reason,
+    blink::mojom::BackgroundFetchService::AbortCallback callback) {
+  DCHECK_EQ(failure_reason,
+            BackgroundFetchFailureReason::CANCELLED_BY_DEVELOPER);
+
+  base::Erase(controller_ids_, registration_id.unique_id());
+
+  auto it = job_controllers_.find(registration_id.unique_id());
+  if (it == job_controllers_.end()) {
+    std::move(callback).Run(BackgroundFetchError::INVALID_ID);
+    return;
+  }
+
+  it->second->Abort(failure_reason, std::move(callback));
+}
+
+void BackgroundFetchScheduler::FinishJob(
+    const BackgroundFetchRegistrationId& registration_id,
+    BackgroundFetchFailureReason failure_reason,
+    base::OnceCallback<void(BackgroundFetchError)> callback) {
+  bool job_started = false;
+  if (active_controller_ &&
+      active_controller_->registration_id() == registration_id) {
+    active_controller_ = nullptr;
+    job_started = true;
+  }
+
+  data_manager_->MarkRegistrationForDeletion(
+      registration_id,
+      /* check_for_failure= */ failure_reason ==
+          BackgroundFetchFailureReason::NONE,
+      base::BindOnce(&BackgroundFetchScheduler::DidMarkForDeletion,
+                     weak_ptr_factory_.GetWeakPtr(), registration_id,
+                     job_started, std::move(callback)));
+
+  auto it = job_controllers_.find(registration_id.unique_id());
+  if (it != job_controllers_.end()) {
+    completed_fetches_[it->first] = {registration_id,
+                                     it->second->NewRegistration()};
+    // Destroying the controller will stop all in progress tasks.
+    job_controllers_.erase(it);
+  }
+
+  if (!active_controller_)
     ScheduleDownload();
-    return;
-  }
-
-  if (error != blink::mojom::BackgroundFetchError::NONE) {
-    // This fetch is being abandoned, after which something will be scheduled.
-    return;
-  }
-
-  DCHECK(request_info);
-
-  // Otherwise start the |request_info| through the live Job Controller.
-  active_controller_->StartRequest(
-      std::move(request_info),
-      base::BindOnce(&BackgroundFetchScheduler::MarkRequestAsComplete,
-                     weak_ptr_factory_.GetWeakPtr()));
 }
 
-void BackgroundFetchScheduler::MarkRequestAsComplete(
-    scoped_refptr<BackgroundFetchRequestInfo> request_info) {
-  // It's possible for the |active_controller_| to have been aborted while the
-  // request was being started. Bail out in that case.
-  if (!active_controller_)
+void BackgroundFetchScheduler::DidMarkForDeletion(
+    const BackgroundFetchRegistrationId& registration_id,
+    bool job_started,
+    base::OnceCallback<void(BackgroundFetchError)> callback,
+    BackgroundFetchError error,
+    BackgroundFetchFailureReason failure_reason) {
+  DCHECK(callback);
+  std::move(callback).Run(error);
+
+  // It's normal to get INVALID_ID errors here - it means the registration was
+  // already inactive (marked for deletion). This happens when an abort (from
+  // developer or from user) races with the download completing/failing, or even
+  // when two aborts race.
+  if (error != BackgroundFetchError::NONE)
     return;
 
-  request_provider_->MarkRequestAsComplete(
-      active_controller_->registration_id(), std::move(request_info),
-      base::BindOnce(&BackgroundFetchScheduler::DidMarkRequestAsComplete,
-                     weak_ptr_factory_.GetWeakPtr()));
+  auto it = completed_fetches_.find(registration_id.unique_id());
+  DCHECK(it != completed_fetches_.end());
+
+  BackgroundFetchRegistration* registration = it->second.second.get();
+  // Include any other failure reasons the marking for deletion may have found.
+  if (registration->failure_reason == BackgroundFetchFailureReason::NONE)
+    registration->failure_reason = failure_reason;
+
+  registration->result =
+      registration->failure_reason == BackgroundFetchFailureReason::NONE
+          ? blink::mojom::BackgroundFetchResult::SUCCESS
+          : blink::mojom::BackgroundFetchResult::FAILURE;
+
+  registration_notifier_->Notify(*registration);
+
+  event_dispatcher_.DispatchBackgroundFetchCompletionEvent(
+      registration_id,
+      std::make_unique<BackgroundFetchRegistration>(*registration),
+      base::BindOnce(&BackgroundFetchScheduler::CleanupRegistration,
+                     weak_ptr_factory_.GetWeakPtr(), registration_id));
+
+  if (!job_started ||
+      registration->failure_reason ==
+          BackgroundFetchFailureReason::CANCELLED_FROM_UI ||
+      registration->failure_reason ==
+          BackgroundFetchFailureReason::CANCELLED_BY_DEVELOPER) {
+    // No need to keep the controller around since there won't be dispatch
+    // events.
+    completed_fetches_.erase(it);
+  }
 }
 
-void BackgroundFetchScheduler::DidMarkRequestAsComplete(
-    blink::mojom::BackgroundFetchError error) {
-  // It's possible for the |active_controller_| to have been aborted while the
-  // request was being marked as completed. Bail out in that case.
-  if (!active_controller_)
-    return;
+void BackgroundFetchScheduler::CleanupRegistration(
+    const BackgroundFetchRegistrationId& registration_id) {
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
+  // Indicate to the renderer that the records for this fetch are no longer
+  // available.
+  registration_notifier_->NotifyRecordsUnavailable(registration_id.unique_id());
 
-  if (error != blink::mojom::BackgroundFetchError::NONE) {
-    // This fetch is being abandoned, after which something will be scheduled.
-    DCHECK_EQ(error, blink::mojom::BackgroundFetchError::STORAGE_ERROR);
-    return;
-  }
+  // Delete the data associated with this fetch. Cache storage will keep the
+  // downloaded data around so long as there are references to it, and delete
+  // it once there is none. We don't need to do that accounting.
+  data_manager_->DeleteRegistration(registration_id, base::DoNothing());
 
-  // Continue with the |active_controller_| while there are files pending.
-  if (active_controller_->HasMoreRequests()) {
-    request_provider_->PopNextRequest(
+  // Notify other systems that this registration is complete.
+  delegate_proxy_->MarkJobComplete(registration_id.unique_id());
+}
+
+void BackgroundFetchScheduler::DispatchClickEvent(
+    const std::string& unique_id) {
+  // Case 1: The active fetch received a click event.
+  if (active_controller_ &&
+      active_controller_->registration_id().unique_id() == unique_id) {
+    event_dispatcher_.DispatchBackgroundFetchClickEvent(
         active_controller_->registration_id(),
-        base::BindOnce(&BackgroundFetchScheduler::DidPopNextRequest,
-                       weak_ptr_factory_.GetWeakPtr()));
+        active_controller_->NewRegistration(), base::DoNothing());
     return;
   }
 
-  active_controller_->Finish(blink::mojom::BackgroundFetchFailureReason::NONE);
+  // Case 2: A completed fetch received a click event.
+  auto it = completed_fetches_.find(unique_id);
+  if (it == completed_fetches_.end())
+    return;
+
+  event_dispatcher_.DispatchBackgroundFetchClickEvent(
+      it->second.first, std::move(it->second.second), base::DoNothing());
+  completed_fetches_.erase(unique_id);
+}
+
+std::unique_ptr<BackgroundFetchJobController>
+BackgroundFetchScheduler::CreateInitializedController(
+    const BackgroundFetchRegistrationId& registration_id,
+    const BackgroundFetchRegistration& registration,
+    const BackgroundFetchOptions& options,
+    const SkBitmap& icon,
+    int num_completed_requests,
+    int num_requests,
+    std::vector<scoped_refptr<BackgroundFetchRequestInfo>>
+        active_fetch_requests,
+    bool start_paused) {
+  // TODO(rayankans): Only create a controller when the fetch starts.
+  auto controller = std::make_unique<BackgroundFetchJobController>(
+      data_manager_, delegate_proxy_, registration_id, options, icon,
+      registration.downloaded,
+      // Safe because JobControllers are destroyed before RegistrationNotifier.
+      base::BindRepeating(&BackgroundFetchRegistrationNotifier::Notify,
+                          base::Unretained(registration_notifier_)),
+      base::BindOnce(&BackgroundFetchScheduler::FinishJob,
+                     weak_ptr_factory_.GetWeakPtr()));
+
+  controller->InitializeRequestStatus(num_completed_requests, num_requests,
+                                      std::move(active_fetch_requests),
+                                      start_paused);
+
+  return controller;
+}
+
+void BackgroundFetchScheduler::OnRegistrationCreated(
+    const BackgroundFetchRegistrationId& registration_id,
+    const BackgroundFetchRegistration& registration,
+    const BackgroundFetchOptions& options,
+    const SkBitmap& icon,
+    int num_requests,
+    bool start_paused) {
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
+  auto controller = CreateInitializedController(
+      registration_id, registration, options, icon, 0 /* completed_requests */,
+      num_requests, {} /* active_fetch_requests */, start_paused);
+
+  DCHECK_EQ(job_controllers_.count(registration_id.unique_id()), 0u);
+  job_controllers_[registration_id.unique_id()] = std::move(controller);
+  controller_ids_.push_back(registration_id.unique_id());
+  if (!active_controller_)
+    ScheduleDownload();
+}
+
+void BackgroundFetchScheduler::OnRegistrationLoadedAtStartup(
+    const BackgroundFetchRegistrationId& registration_id,
+    const BackgroundFetchRegistration& registration,
+    const BackgroundFetchOptions& options,
+    const SkBitmap& icon,
+    int num_completed_requests,
+    int num_requests,
+    std::vector<scoped_refptr<BackgroundFetchRequestInfo>>
+        active_fetch_requests) {
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
+
+  auto controller = CreateInitializedController(
+      registration_id, registration, options, icon, num_completed_requests,
+      num_requests, active_fetch_requests, /* start_paused= */ false);
+
+  // The current assumption is that there can be only one active job with one
+  // active fetch.
+  DCHECK(!active_controller_);
+  active_controller_ = controller.get();
+  job_controllers_[registration_id.unique_id()] = std::move(controller);
+
+  DCHECK_LE(active_fetch_requests.size(), 1u);
+
+  if (active_fetch_requests.empty()) {
+    DCHECK_LT(num_completed_requests, num_requests);
+    // Start processing the next request.
+    data_manager_->PopNextRequest(
+        active_controller_->registration_id(),
+        base::BindOnce(&BackgroundFetchJobController::DidPopNextRequest,
+                       active_controller_->GetWeakPtr()));
+    return;
+  }
+
+  for (auto& request_info : active_fetch_requests) {
+    active_controller_->StartRequest(
+        std::move(request_info),
+        base::BindOnce(&BackgroundFetchJobController::MarkRequestAsComplete,
+                       active_controller_->GetWeakPtr()));
+  }
+}
+
+void BackgroundFetchScheduler::AbortFetches(
+    int64_t service_worker_registration_id) {
+  // Abandon all active associated with this service worker.
+  // BackgroundFetchJobController::Abort() will eventually lead to deletion of
+  // the controller from job_controllers, so the IDs need to be copied over.
+  std::vector<BackgroundFetchJobController*> to_abort;
+  for (const auto& controller : job_controllers_) {
+    if (service_worker_registration_id !=
+            blink::mojom::kInvalidServiceWorkerRegistrationId &&
+        service_worker_registration_id !=
+            controller.second->registration_id()
+                .service_worker_registration_id()) {
+      continue;
+    }
+    to_abort.push_back(controller.second.get());
+  }
+
+  for (auto* controller : to_abort) {
+    // Erase it from |controller_ids_| first to avoid rescheduling.
+    base::Erase(controller_ids_, controller->registration_id().unique_id());
+    controller->Abort(BackgroundFetchFailureReason::SERVICE_WORKER_UNAVAILABLE,
+                      base::DoNothing());
+  }
+}
+
+void BackgroundFetchScheduler::OnRegistrationQueried(
+    BackgroundFetchRegistration* registration) {
+  DCHECK(registration);
+  if (!active_controller_)
+    return;
+
+  // The data manager only has the number of bytes from completed downloads, so
+  // augment this with the number of downloaded bytes from in-progress jobs.
+  if (active_controller_->registration_id().unique_id() ==
+      registration->unique_id) {
+    registration->downloaded +=
+        active_controller_->GetInProgressDownloadedBytes();
+  }
+}
+
+void BackgroundFetchScheduler::OnServiceWorkerDatabaseCorrupted(
+    int64_t service_worker_registration_id) {
+  AbortFetches(service_worker_registration_id);
+}
+
+void BackgroundFetchScheduler::OnRegistrationDeleted(int64_t registration_id,
+                                                     const GURL& pattern) {
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
+  AbortFetches(registration_id);
+}
+
+void BackgroundFetchScheduler::OnStorageWiped() {
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
+  AbortFetches(blink::mojom::kInvalidServiceWorkerRegistrationId);
 }
 
 }  // namespace content

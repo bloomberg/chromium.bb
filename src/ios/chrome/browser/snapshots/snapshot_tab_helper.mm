@@ -11,15 +11,13 @@
 #include "ios/chrome/browser/browser_state/chrome_browser_state.h"
 #include "ios/chrome/browser/infobars/infobar_manager_impl.h"
 #import "ios/chrome/browser/snapshots/snapshot_generator.h"
-#include "ios/chrome/browser/ui/ui_util.h"
+#include "ios/chrome/browser/ui/util/ui_util.h"
 #include "ios/web/public/web_task_traits.h"
 #include "ios/web/public/web_thread.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
 #error "This file requires ARC support."
 #endif
-
-DEFINE_WEB_STATE_USER_DATA_KEY(SnapshotTabHelper);
 
 namespace {
 
@@ -129,13 +127,10 @@ void SnapshotTabHelper::RetrieveGreySnapshot(void (^callback)(UIImage*)) {
 
 void SnapshotTabHelper::UpdateSnapshotWithCallback(void (^callback)(UIImage*)) {
   if (IsWKWebViewSnapshotsEnabled() && web_state_->ContentIsHTML()) {
-    if (@available(iOS 11, *)) {
-      [snapshot_generator_ updateWebViewSnapshotWithCompletion:callback];
-      return;
-    }
+    [snapshot_generator_ updateWebViewSnapshotWithCompletion:callback];
+    return;
   }
-  // Pre-iOS 11 and native content cannot utilize the WKWebView snapshotting
-  // API.
+  // Native content cannot utilize the WKWebView snapshotting API.
   UIImage* image =
       UpdateSnapshot(/*with_overlays=*/true, /*visible_frame_only=*/true);
   dispatch_async(dispatch_get_main_queue(), ^{
@@ -209,17 +204,14 @@ void SnapshotTabHelper::PageLoaded(
   if (!ignore_next_load_ && !pause_snapshotting_ &&
       load_completion_status == web::PageLoadCompletionStatus::SUCCESS) {
     if (IsWKWebViewSnapshotsEnabled() && web_state->ContentIsHTML()) {
-      if (@available(iOS 11, *)) {
-        base::PostDelayedTaskWithTraits(
-            FROM_HERE, {web::WebThread::UI},
-            base::BindOnce(&SnapshotTabHelper::UpdateSnapshotWithCallback,
-                           weak_ptr_factory_.GetWeakPtr(), /*callback=*/nil),
-            base::TimeDelta::FromSeconds(1));
-        return;
-      }
+      base::PostDelayedTaskWithTraits(
+          FROM_HERE, {web::WebThread::UI},
+          base::BindOnce(&SnapshotTabHelper::UpdateSnapshotWithCallback,
+                         weak_ptr_factory_.GetWeakPtr(), /*callback=*/nil),
+          base::TimeDelta::FromSeconds(1));
+      return;
     }
-    // Pre-iOS 11 and native content cannot utilize the WKWebView snapshotting
-    // API.
+    // Native content cannot utilize the WKWebView snapshotting API.
     UpdateSnapshot(/*with_overlays=*/true, /*visible_frame_only=*/true);
   }
   ignore_next_load_ = false;

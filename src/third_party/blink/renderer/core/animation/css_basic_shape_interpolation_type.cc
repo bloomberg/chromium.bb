@@ -9,9 +9,9 @@
 
 #include "base/memory/ptr_util.h"
 #include "third_party/blink/renderer/core/animation/basic_shape_interpolation_functions.h"
+#include "third_party/blink/renderer/core/css/css_property_names.h"
 #include "third_party/blink/renderer/core/css/css_value_list.h"
 #include "third_party/blink/renderer/core/css/resolver/style_resolver_state.h"
-#include "third_party/blink/renderer/core/css_property_names.h"
 #include "third_party/blink/renderer/core/style/basic_shapes.h"
 #include "third_party/blink/renderer/core/style/computed_style.h"
 #include "third_party/blink/renderer/core/style/data_equivalency.h"
@@ -61,7 +61,7 @@ class UnderlyingCompatibilityChecker
 
   bool IsValid(const StyleResolverState&,
                const InterpolationValue& underlying) const final {
-    return BasicShapeInterpolationFunctions::ShapesAreCompatible(
+    return basic_shape_interpolation_functions::ShapesAreCompatible(
         *underlying_non_interpolable_value_,
         *underlying.non_interpolable_value);
   }
@@ -106,7 +106,7 @@ InterpolationValue CSSBasicShapeInterpolationType::MaybeConvertNeutral(
   conversion_checkers.push_back(
       UnderlyingCompatibilityChecker::Create(non_interpolable_value));
   return InterpolationValue(
-      BasicShapeInterpolationFunctions::CreateNeutralValue(
+      basic_shape_interpolation_functions::CreateNeutralValue(
           *underlying.non_interpolable_value),
       non_interpolable_value);
 }
@@ -114,7 +114,7 @@ InterpolationValue CSSBasicShapeInterpolationType::MaybeConvertNeutral(
 InterpolationValue CSSBasicShapeInterpolationType::MaybeConvertInitial(
     const StyleResolverState&,
     ConversionCheckers&) const {
-  return BasicShapeInterpolationFunctions::MaybeConvertBasicShape(
+  return basic_shape_interpolation_functions::MaybeConvertBasicShape(
       GetBasicShape(CssProperty(), ComputedStyle::InitialStyle()), 1);
 }
 
@@ -125,7 +125,7 @@ InterpolationValue CSSBasicShapeInterpolationType::MaybeConvertInherit(
   // const_cast to take a ref.
   conversion_checkers.push_back(InheritedShapeChecker::Create(
       CssProperty(), const_cast<BasicShape*>(shape)));
-  return BasicShapeInterpolationFunctions::MaybeConvertBasicShape(
+  return basic_shape_interpolation_functions::MaybeConvertBasicShape(
       shape, state.ParentStyle()->EffectiveZoom());
 }
 
@@ -134,18 +134,19 @@ InterpolationValue CSSBasicShapeInterpolationType::MaybeConvertValue(
     const StyleResolverState*,
     ConversionCheckers&) const {
   if (!value.IsBaseValueList())
-    return BasicShapeInterpolationFunctions::MaybeConvertCSSValue(value);
+    return basic_shape_interpolation_functions::MaybeConvertCSSValue(value);
 
   const CSSValueList& list = ToCSSValueList(value);
   if (list.length() != 1)
     return nullptr;
-  return BasicShapeInterpolationFunctions::MaybeConvertCSSValue(list.Item(0));
+  return basic_shape_interpolation_functions::MaybeConvertCSSValue(
+      list.Item(0));
 }
 
 PairwiseInterpolationValue CSSBasicShapeInterpolationType::MaybeMergeSingles(
     InterpolationValue&& start,
     InterpolationValue&& end) const {
-  if (!BasicShapeInterpolationFunctions::ShapesAreCompatible(
+  if (!basic_shape_interpolation_functions::ShapesAreCompatible(
           *start.non_interpolable_value, *end.non_interpolable_value))
     return nullptr;
   return PairwiseInterpolationValue(std::move(start.interpolable_value),
@@ -156,7 +157,7 @@ PairwiseInterpolationValue CSSBasicShapeInterpolationType::MaybeMergeSingles(
 InterpolationValue
 CSSBasicShapeInterpolationType::MaybeConvertStandardPropertyUnderlyingValue(
     const ComputedStyle& style) const {
-  return BasicShapeInterpolationFunctions::MaybeConvertBasicShape(
+  return basic_shape_interpolation_functions::MaybeConvertBasicShape(
       GetBasicShape(CssProperty(), style), style.EffectiveZoom());
 }
 
@@ -165,7 +166,7 @@ void CSSBasicShapeInterpolationType::Composite(
     double underlying_fraction,
     const InterpolationValue& value,
     double interpolation_fraction) const {
-  if (!BasicShapeInterpolationFunctions::ShapesAreCompatible(
+  if (!basic_shape_interpolation_functions::ShapesAreCompatible(
           *underlying_value_owner.Value().non_interpolable_value,
           *value.non_interpolable_value)) {
     underlying_value_owner.Set(*this, value);
@@ -181,7 +182,7 @@ void CSSBasicShapeInterpolationType::ApplyStandardPropertyValue(
     const NonInterpolableValue* non_interpolable_value,
     StyleResolverState& state) const {
   scoped_refptr<BasicShape> shape =
-      BasicShapeInterpolationFunctions::CreateBasicShape(
+      basic_shape_interpolation_functions::CreateBasicShape(
           interpolable_value, *non_interpolable_value,
           state.CssToLengthConversionData());
   switch (CssProperty().PropertyID()) {

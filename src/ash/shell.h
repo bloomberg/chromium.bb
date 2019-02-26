@@ -64,8 +64,6 @@ class UserActivityPowerManagerNotifier;
 
 namespace views {
 class NonClientFrameView;
-class PointerWatcher;
-enum class PointerWatcherEventTypes;
 class Widget;
 namespace corewm {
 class TooltipController;
@@ -105,6 +103,7 @@ class BluetoothPowerController;
 class BrightnessControlDelegate;
 class CastConfigController;
 class DisplayOutputProtection;
+class ContainedShellController;
 class CrosDisplayConfig;
 class DetachableBaseHandler;
 class DetachableBaseNotificationController;
@@ -127,7 +126,6 @@ class HighlighterController;
 class ImeController;
 class ImeFocusHandler;
 class ImmersiveContext;
-class ImmersiveHandlerFactoryAsh;
 class KeyAccessibilityEnabler;
 class KeyboardBrightnessControlDelegate;
 class AshKeyboardController;
@@ -139,6 +137,7 @@ class LoginScreenController;
 class MagnificationController;
 class TabletModeController;
 class MediaController;
+class MediaNotificationController;
 class MessageCenterController;
 class MouseCursorEventFilter;
 class MruWindowTracker;
@@ -146,12 +145,10 @@ class MultiDeviceNotificationPresenter;
 class NewWindowController;
 class NightLightController;
 class NoteTakingController;
-class NotificationTray;
 class OverlayEventFilter;
 class PartialMagnificationController;
 class PeripheralBatteryNotifier;
 class PersistentWindowController;
-class PointerWatcherAdapter;
 class PolicyRecommendationRestorer;
 class PowerButtonController;
 class PowerEventObserver;
@@ -181,7 +178,6 @@ class StickyKeysController;
 class SystemGestureEventFilter;
 class SystemModalContainerEventFilter;
 class SystemNotificationController;
-class SystemTray;
 class SystemTrayModel;
 class SystemTrayNotifier;
 class TimeToFirstPresentRecorder;
@@ -190,7 +186,6 @@ class ToastManager;
 class TouchDevicesController;
 class TrayAction;
 class TrayBluetoothHelper;
-class VirtualKeyboardController;
 class VideoActivityNotifier;
 class VideoDetector;
 class VoiceInteractionController;
@@ -363,6 +358,9 @@ class ASH_EXPORT Shell : public SessionObserver,
   }
   CastConfigController* cast_config() { return cast_config_.get(); }
   service_manager::Connector* connector() { return connector_; }
+  ContainedShellController* contained_shell_controller() {
+    return contained_shell_controller_.get();
+  }
   CrosDisplayConfig* cros_display_config() {
     return cros_display_config_.get();
   }
@@ -440,6 +438,9 @@ class ASH_EXPORT Shell : public SessionObserver,
     return magnification_controller_.get();
   }
   MediaController* media_controller() { return media_controller_.get(); }
+  MediaNotificationController* media_notification_controller() {
+    return media_notification_controller_.get();
+  }
   MessageCenterController* message_center_controller() {
     return message_center_controller_.get();
   }
@@ -534,9 +535,6 @@ class ASH_EXPORT Shell : public SessionObserver,
   }
   UserMetricsRecorder* metrics() { return user_metrics_recorder_.get(); }
   VideoDetector* video_detector() { return video_detector_.get(); }
-  VirtualKeyboardController* virtual_keyboard_controller() {
-    return virtual_keyboard_controller_.get();
-  }
   VoiceInteractionController* voice_interaction_controller() {
     return voice_interaction_controller_.get();
   }
@@ -566,14 +564,8 @@ class ASH_EXPORT Shell : public SessionObserver,
   // TODO(jamescook): Move to Shelf.
   void UpdateShelfVisibility();
 
-  // Returns NotificationTray on the primary root window.
-  NotificationTray* GetNotificationTray();
-
   // Does the primary display have status area?
   bool HasPrimaryStatusArea();
-
-  // Returns the system tray on primary display.
-  SystemTray* GetPrimarySystemTray();
 
   // Starts the animation that occurs on first login.
   void DoInitialWorkspaceAnimation();
@@ -593,16 +585,6 @@ class ASH_EXPORT Shell : public SessionObserver,
   // Shows the context menu for the wallpaper or shelf at |location_in_screen|.
   void ShowContextMenu(const gfx::Point& location_in_screen,
                        ui::MenuSourceType source_type);
-
-  // If |events| is PointerWatcherEventTypes::MOVES,
-  // PointerWatcher::OnPointerEventObserved() is called for pointer move events.
-  // If |events| is PointerWatcherEventTypes::DRAGS,
-  // PointerWatcher::OnPointerEventObserved() is called for pointer drag events.
-  // Requesting pointer moves or drags may incur a performance hit and should be
-  // avoided if possible.
-  void AddPointerWatcher(views::PointerWatcher* watcher,
-                         views::PointerWatcherEventTypes events);
-  void RemovePointerWatcher(views::PointerWatcher* watcher);
 
   void AddShellObserver(ShellObserver* observer);
   void RemoveShellObserver(ShellObserver* observer);
@@ -742,6 +724,7 @@ class ASH_EXPORT Shell : public SessionObserver,
   std::unique_ptr<CastConfigController> cast_config_;
   std::unique_ptr<CrosDisplayConfig> cros_display_config_;
   service_manager::Connector* const connector_;
+  std::unique_ptr<ContainedShellController> contained_shell_controller_;
   std::unique_ptr<DetachableBaseHandler> detachable_base_handler_;
   std::unique_ptr<DetachableBaseNotificationController>
       detachable_base_notification_controller_;
@@ -759,11 +742,11 @@ class ASH_EXPORT Shell : public SessionObserver,
   std::unique_ptr<LogoutConfirmationController> logout_confirmation_controller_;
   std::unique_ptr<TabletModeController> tablet_mode_controller_;
   std::unique_ptr<MediaController> media_controller_;
+  std::unique_ptr<MediaNotificationController> media_notification_controller_;
   std::unique_ptr<MruWindowTracker> mru_window_tracker_;
   std::unique_ptr<MultiDeviceNotificationPresenter>
       multidevice_notification_presenter_;
   std::unique_ptr<NewWindowController> new_window_controller_;
-  std::unique_ptr<PointerWatcherAdapter> pointer_watcher_adapter_;
   std::unique_ptr<ResizeShadowController> resize_shadow_controller_;
   std::unique_ptr<SessionController> session_controller_;
   std::unique_ptr<NightLightController> night_light_controller_;
@@ -847,7 +830,6 @@ class ASH_EXPORT Shell : public SessionObserver,
   std::unique_ptr<BluetoothPowerController> bluetooth_power_controller_;
   std::unique_ptr<TrayBluetoothHelper> tray_bluetooth_helper_;
   std::unique_ptr<AshKeyboardController> ash_keyboard_controller_;
-  std::unique_ptr<VirtualKeyboardController> virtual_keyboard_controller_;
   // Controls video output device state.
   std::unique_ptr<display::DisplayConfigurator> display_configurator_;
   std::unique_ptr<DisplayOutputProtection> display_output_protection_;
@@ -896,8 +878,6 @@ class ASH_EXPORT Shell : public SessionObserver,
 
   // For testing only: simulate that a modal window is open
   bool simulate_modal_window_open_for_test_ = false;
-
-  std::unique_ptr<ImmersiveHandlerFactoryAsh> immersive_handler_factory_;
 
   std::unique_ptr<MessageCenterController> message_center_controller_;
 

@@ -34,9 +34,7 @@ class CONTENT_EXPORT AppCacheSubresourceURLFactory
   // The |host| parameter contains the appcache host instance. This is used
   // to create the AppCacheRequestHandler instances for handling subresource
   // requests.
-  // |network_loader_factory| is a factory to the Network Service.
   static void CreateURLLoaderFactory(
-      scoped_refptr<network::SharedURLLoaderFactory> network_loader_factory,
       base::WeakPtr<AppCacheHost> host,
       network::mojom::URLLoaderFactoryPtr* loader_factory);
 

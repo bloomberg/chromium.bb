@@ -66,6 +66,7 @@ class AddToHomescreenDataFetcher : public content::WebContentsObserver {
   const SkBitmap& badge_icon() const { return badge_icon_; }
   const SkBitmap& primary_icon() const { return primary_icon_; }
   ShortcutInfo& shortcut_info() { return shortcut_info_; }
+  bool has_maskable_primary_icon() const { return has_maskable_primary_icon_; }
 
  private:
   // Called to stop the timeout timer.
@@ -99,6 +100,7 @@ class AddToHomescreenDataFetcher : public content::WebContentsObserver {
   SkBitmap badge_icon_;
   SkBitmap primary_icon_;
   ShortcutInfo shortcut_info_;
+  bool has_maskable_primary_icon_;
 
   base::CancelableTaskTracker favicon_task_tracker_;
   base::OneShotTimer data_timeout_timer_;

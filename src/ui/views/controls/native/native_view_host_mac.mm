@@ -68,7 +68,10 @@ uint64_t NativeViewHostMac::GetViewsFactoryHostId() const {
   auto* bridge_host = GetBridgedNativeWidgetHost();
   if (bridge_host && bridge_host->bridge_factory_host())
     return bridge_host->bridge_factory_host()->GetHostId();
-  return 0;
+  // This matches content::NSViewBridgeFactoryHost::kLocalDirectHostId,
+  // indicating that this is a local window.
+  constexpr uint64_t kLocalDirectHostId = -1;
+  return kLocalDirectHostId;
 }
 
 uint64_t NativeViewHostMac::GetNSViewId() const {
@@ -111,12 +114,14 @@ void NativeViewHostMac::OnHostableViewDestroying() {
 void NativeViewHostMac::AttachNativeView() {
   DCHECK(host_->native_view());
   DCHECK(!native_view_);
-  native_view_.reset([host_->native_view() retain]);
+  native_view_.reset([host_->native_view().GetNativeNSView() retain]);
   EnsureNativeViewHasNoChildWidgets(native_view_);
 
   auto* bridge_host = GetBridgedNativeWidgetHost();
   DCHECK(bridge_host);
-  [bridge_host->native_widget_mac()->GetNativeView() addSubview:native_view_];
+  NSView* superview =
+      bridge_host->native_widget_mac()->GetNativeView().GetNativeNSView();
+  [superview addSubview:native_view_];
   bridge_host->SetAssociationForView(host_, native_view_);
 
   if ([native_view_ conformsToProtocol:@protocol(ViewsHostable)]) {
@@ -134,21 +139,22 @@ void NativeViewHostMac::NativeViewDetaching(bool destroyed) {
 
   // |native_view_| can be nil here if RemovedFromWidget() is called before
   // NativeViewHost::Detach().
+  NSView* host_native_view = host_->native_view().GetNativeNSView();
   if (!native_view_) {
-    DCHECK(![host_->native_view() superview]);
+    DCHECK(![host_native_view superview]);
     return;
   }
 
-  DCHECK(native_view_ == host_->native_view());
-  [host_->native_view() setHidden:YES];
-  [host_->native_view() removeFromSuperview];
+  DCHECK(native_view_ == host_native_view);
+  [native_view_ setHidden:YES];
+  [native_view_ removeFromSuperview];
 
   if (native_view_hostable_) {
     native_view_hostable_->OnViewsHostableDetached();
     native_view_hostable_ = nullptr;
   }
 
-  EnsureNativeViewHasNoChildWidgets(host_->native_view());
+  EnsureNativeViewHasNoChildWidgets(native_view_);
   auto* bridge_host = GetBridgedNativeWidgetHost();
   // BridgedNativeWidgetImpl can be null when Widget is closing.
   if (bridge_host)
@@ -195,8 +201,7 @@ void NativeViewHostMac::ShowWidget(int x,
                                    int h,
                                    int native_w,
                                    int native_h) {
-  if (host_->fast_resize())
-    NOTIMPLEMENTED();
+  // TODO(https://crbug.com/415024): Implement host_->fast_resize().
 
   // Coordinates will be from the top left of the parent Widget. The NativeView
   // is already in the same NSWindow, so just flip to get Cooca coordinates and
@@ -210,24 +215,24 @@ void NativeViewHostMac::ShowWidget(int x,
   // Convert window coordinates to the hosted view's superview, since that's how
   // coordinates of the hosted view's frame is based.
   NSRect container_rect =
-      [[host_->native_view() superview] convertRect:window_rect fromView:nil];
-  [host_->native_view() setFrame:container_rect];
-  [host_->native_view() setHidden:NO];
+      [[native_view_ superview] convertRect:window_rect fromView:nil];
+  [native_view_ setFrame:container_rect];
+  [native_view_ setHidden:NO];
 
   if (native_view_hostable_)
     native_view_hostable_->OnViewsHostableShow(gfx::Rect(x, y, w, h));
 }
 
 void NativeViewHostMac::HideWidget() {
-  [host_->native_view() setHidden:YES];
+  [native_view_ setHidden:YES];
 
   if (native_view_hostable_)
     native_view_hostable_->OnViewsHostableHide();
 }
 
 void NativeViewHostMac::SetFocus() {
-  if ([host_->native_view() acceptsFirstResponder])
-    [[host_->native_view() window] makeFirstResponder:host_->native_view()];
+  if ([native_view_ acceptsFirstResponder])
+    [[native_view_ window] makeFirstResponder:native_view_];
 
   if (native_view_hostable_)
     native_view_hostable_->OnViewsHostableMakeFirstResponder();
@@ -254,6 +259,10 @@ gfx::NativeCursor NativeViewHostMac::GetCursor(int x, int y) {
   // pointer is over a RenderWidgetHostViewCocoa, OSX won't ask for the fallback
   // cursor.
   return gfx::kNullCursor;
+}
+
+void NativeViewHostMac::SetVisible(bool visible) {
+  [native_view_ setHidden:!visible];
 }
 
 // static

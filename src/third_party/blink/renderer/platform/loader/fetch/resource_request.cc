@@ -48,7 +48,7 @@ ResourceRequest::ResourceRequest(const String& url_string)
 ResourceRequest::ResourceRequest(const KURL& url)
     : url_(url),
       timeout_interval_(default_timeout_interval_),
-      http_method_(HTTPNames::GET),
+      http_method_(http_names::kGET),
       allow_stored_credentials_(true),
       report_upload_progress_(false),
       report_raw_headers_(false),
@@ -58,8 +58,10 @@ ResourceRequest::ResourceRequest(const KURL& url)
       keepalive_(false),
       should_reset_app_cache_(false),
       allow_stale_response_(false),
+      stale_revalidate_candidate_(false),
       cache_mode_(mojom::FetchCacheMode::kDefault),
       skip_service_worker_(false),
+      download_to_cache_only_(false),
       priority_(ResourceLoadPriority::kLowest),
       intra_priority_value_(0),
       requestor_id_(0),
@@ -68,17 +70,17 @@ ResourceRequest::ResourceRequest(const KURL& url)
       previews_state_(WebURLRequest::kPreviewsUnspecified),
       request_context_(mojom::RequestContextType::UNSPECIFIED),
       frame_type_(network::mojom::RequestContextFrameType::kNone),
-      fetch_request_mode_(network::mojom::FetchRequestMode::kNoCORS),
+      fetch_request_mode_(network::mojom::FetchRequestMode::kNoCors),
       fetch_importance_mode_(mojom::FetchImportanceMode::kImportanceAuto),
       fetch_credentials_mode_(network::mojom::FetchCredentialsMode::kInclude),
       fetch_redirect_mode_(network::mojom::FetchRedirectMode::kFollow),
       referrer_string_(Referrer::ClientReferrerString()),
-      referrer_policy_(kReferrerPolicyDefault),
+      referrer_policy_(network::mojom::ReferrerPolicy::kDefault),
       did_set_http_referrer_(false),
       was_discarded_(false),
       is_external_request_(false),
       cors_preflight_policy_(
-          network::mojom::CORSPreflightPolicy::kConsiderPreflight),
+          network::mojom::CorsPreflightPolicy::kConsiderPreflight),
       redirect_status_(RedirectStatus::kNoRedirect) {}
 
 ResourceRequest::ResourceRequest(const ResourceRequest&) = default;
@@ -92,7 +94,7 @@ std::unique_ptr<ResourceRequest> ResourceRequest::CreateRedirectRequest(
     const AtomicString& new_method,
     const KURL& new_site_for_cookies,
     const String& new_referrer,
-    ReferrerPolicy new_referrer_policy,
+    network::mojom::ReferrerPolicy new_referrer_policy,
     bool skip_service_worker) const {
   std::unique_ptr<ResourceRequest> request =
       std::make_unique<ResourceRequest>(new_url);
@@ -103,8 +105,7 @@ std::unique_ptr<ResourceRequest> ResourceRequest::CreateRedirectRequest(
       new_referrer.IsEmpty() ? Referrer::NoReferrer() : String(new_referrer);
   // TODO(domfarolino): Stop storing ResourceRequest's generated referrer as a
   // header and instead use a separate member. See https://crbug.com/850813.
-  request->SetHTTPReferrer(
-      Referrer(referrer, static_cast<ReferrerPolicy>(new_referrer_policy)));
+  request->SetHTTPReferrer(Referrer(referrer, new_referrer_policy));
   request->SetSkipServiceWorker(skip_service_worker);
   request->SetRedirectStatus(RedirectStatus::kFollowedRedirect);
 
@@ -122,13 +123,14 @@ std::unique_ptr<ResourceRequest> ResourceRequest::CreateRedirectRequest(
   if (request->HttpMethod() == HttpMethod())
     request->SetHTTPBody(HttpBody());
   request->SetWasDiscarded(WasDiscarded());
-  request->SetCORSPreflightPolicy(CORSPreflightPolicy());
+  request->SetCorsPreflightPolicy(CorsPreflightPolicy());
   if (IsAdResource())
     request->SetIsAdResource();
   request->SetInitiatorCSP(GetInitiatorCSP());
   request->SetUpgradeIfInsecure(UpgradeIfInsecure());
   request->SetIsAutomaticUpgrade(IsAutomaticUpgrade());
-  request->SetRequestedWith(GetRequestedWith());
+  request->SetRequestedWithHeader(GetRequestedWithHeader());
+  request->SetClientDataHeader(GetClientDataHeader());
   request->SetUkmSourceId(GetUkmSourceId());
 
   return request;
@@ -203,25 +205,25 @@ void ResourceRequest::SetHTTPHeaderField(const AtomicString& name,
 
 void ResourceRequest::SetHTTPReferrer(const Referrer& referrer) {
   if (referrer.referrer.IsEmpty())
-    http_header_fields_.Remove(HTTPNames::Referer);
+    http_header_fields_.Remove(http_names::kReferer);
   else
-    SetHTTPHeaderField(HTTPNames::Referer, referrer.referrer);
+    SetHTTPHeaderField(http_names::kReferer, referrer.referrer);
   referrer_policy_ = referrer.referrer_policy;
   did_set_http_referrer_ = true;
 }
 
 void ResourceRequest::ClearHTTPReferrer() {
-  http_header_fields_.Remove(HTTPNames::Referer);
-  referrer_policy_ = kReferrerPolicyDefault;
+  http_header_fields_.Remove(http_names::kReferer);
+  referrer_policy_ = network::mojom::ReferrerPolicy::kDefault;
   did_set_http_referrer_ = false;
 }
 
 void ResourceRequest::SetHTTPOrigin(const SecurityOrigin* origin) {
-  SetHTTPHeaderField(HTTPNames::Origin, origin->ToAtomicString());
+  SetHTTPHeaderField(http_names::kOrigin, origin->ToAtomicString());
 }
 
 void ResourceRequest::ClearHTTPOrigin() {
-  http_header_fields_.Remove(HTTPNames::Origin);
+  http_header_fields_.Remove(http_names::kOrigin);
 }
 
 void ResourceRequest::SetHTTPOriginIfNeeded(const SecurityOrigin* origin) {
@@ -232,13 +234,13 @@ void ResourceRequest::SetHTTPOriginIfNeeded(const SecurityOrigin* origin) {
 void ResourceRequest::SetHTTPOriginToMatchReferrerIfNeeded() {
   if (NeedsHTTPOrigin()) {
     SetHTTPOrigin(
-        SecurityOrigin::CreateFromString(HttpHeaderField(HTTPNames::Referer))
+        SecurityOrigin::CreateFromString(HttpHeaderField(http_names::kReferer))
             .get());
   }
 }
 
 void ResourceRequest::ClearHTTPUserAgent() {
-  http_header_fields_.Remove(HTTPNames::User_Agent);
+  http_header_fields_.Remove(http_names::kUserAgent);
 }
 
 EncodedFormData* ResourceRequest::HttpBody() const {
@@ -308,7 +310,7 @@ void ResourceRequest::SetExternalRequestStateFromRequestorAddressSpace(
   }
 
   mojom::IPAddressSpace target_space = mojom::IPAddressSpace::kPublic;
-  if (NetworkUtils::IsReservedIPAddress(url_.Host()))
+  if (network_utils::IsReservedIPAddress(url_.Host()))
     target_space = mojom::IPAddressSpace::kPrivate;
   if (SecurityOrigin::Create(url_)->IsLocalhost())
     target_space = mojom::IPAddressSpace::kLocal;
@@ -321,11 +323,11 @@ void ResourceRequest::SetNavigationStartTime(TimeTicks navigation_start) {
 }
 
 bool ResourceRequest::IsConditional() const {
-  return (http_header_fields_.Contains(HTTPNames::If_Match) ||
-          http_header_fields_.Contains(HTTPNames::If_Modified_Since) ||
-          http_header_fields_.Contains(HTTPNames::If_None_Match) ||
-          http_header_fields_.Contains(HTTPNames::If_Range) ||
-          http_header_fields_.Contains(HTTPNames::If_Unmodified_Since));
+  return (http_header_fields_.Contains(http_names::kIfMatch) ||
+          http_header_fields_.Contains(http_names::kIfModifiedSince) ||
+          http_header_fields_.Contains(http_names::kIfNoneMatch) ||
+          http_header_fields_.Contains(http_names::kIfRange) ||
+          http_header_fields_.Contains(http_names::kIfUnmodifiedSince));
 }
 
 void ResourceRequest::SetHasUserGesture(bool has_user_gesture) {
@@ -335,8 +337,8 @@ void ResourceRequest::SetHasUserGesture(bool has_user_gesture) {
 const CacheControlHeader& ResourceRequest::GetCacheControlHeader() const {
   if (!cache_control_header_cache_.parsed) {
     cache_control_header_cache_ = ParseCacheControlDirectives(
-        http_header_fields_.Get(HTTPNames::Cache_Control),
-        http_header_fields_.Get(HTTPNames::Pragma));
+        http_header_fields_.Get(http_names::kCacheControl),
+        http_header_fields_.Get(http_names::kPragma));
   }
   return cache_control_header_cache_;
 }
@@ -350,8 +352,8 @@ bool ResourceRequest::CacheControlContainsNoStore() const {
 }
 
 bool ResourceRequest::HasCacheValidatorFields() const {
-  return !http_header_fields_.Get(HTTPNames::Last_Modified).IsEmpty() ||
-         !http_header_fields_.Get(HTTPNames::ETag).IsEmpty();
+  return !http_header_fields_.Get(http_names::kLastModified).IsEmpty() ||
+         !http_header_fields_.Get(http_names::kETag).IsEmpty();
 }
 
 bool ResourceRequest::NeedsHTTPOrigin() const {
@@ -364,7 +366,7 @@ bool ResourceRequest::NeedsHTTPOrigin() const {
   // will leak the internal host name. Similar privacy concerns have lead
   // to the widespread suppression of the Referer header at the network
   // layer.
-  if (HttpMethod() == HTTPNames::GET || HttpMethod() == HTTPNames::HEAD)
+  if (HttpMethod() == http_names::kGET || HttpMethod() == http_names::kHEAD)
     return false;
 
   // For non-GET and non-HEAD methods, always send an Origin header so the

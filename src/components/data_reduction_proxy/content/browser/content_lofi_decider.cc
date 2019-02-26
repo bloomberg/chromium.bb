@@ -74,18 +74,6 @@ void ContentLoFiDecider::RemoveAcceptTransformHeader(
   headers->RemoveHeader(chrome_proxy_accept_transform_header());
 }
 
-bool ContentLoFiDecider::ShouldRecordLoFiUMA(
-    const net::URLRequest& request) const {
-  const content::ResourceRequestInfo* request_info =
-      content::ResourceRequestInfo::ForRequest(&request);
-
-  if (!request_info)
-    return false;
-
-  return request_info->GetPreviewsState() & content::SERVER_LOFI_ON ||
-         request_info->GetPreviewsState() & content::SERVER_LITE_PAGE_ON;
-}
-
 bool ContentLoFiDecider::IsClientLoFiImageRequest(
     const net::URLRequest& request) const {
   const content::ResourceRequestInfo* request_info =

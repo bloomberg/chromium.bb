@@ -10,7 +10,9 @@
 
 #include "base/macros.h"
 #include "base/strings/string16.h"
+#include "components/autofill/core/browser/autofill_client.h"
 #include "components/autofill/core/browser/legal_message_line.h"
+#include "components/autofill/core/browser/sync_utils.h"
 #include "components/signin/core/browser/account_info.h"
 #include "url/gurl.h"
 
@@ -52,6 +54,10 @@ class SaveCardBubbleController {
   // to confirm/provide cardholder name.
   virtual bool ShouldRequestNameFromUser() const = 0;
 
+  // Returns whether the dialog should include a pair of dropdown lists
+  // allowing the user to provide expiration date.
+  virtual bool ShouldRequestExpirationDateFromUser() const = 0;
+
   // Returns whether or not a sign in / sync promo needs to be shown.
   virtual bool ShouldShowSignInPromo() const = 0;
 
@@ -63,10 +69,11 @@ class SaveCardBubbleController {
   virtual void OnSyncPromoAccepted(const AccountInfo& account,
                                    signin_metrics::AccessPoint access_point,
                                    bool is_default_promo_account) = 0;
-  // OnSaveButton takes in a string value representing the cardholder name
-  // confirmed/entered by the user if it was requested, or an empty string
-  // otherwise.
-  virtual void OnSaveButton(const base::string16& cardholder_name) = 0;
+  // OnSaveButton takes in a struct representing the cardholder name,
+  // expiration date month and expiration date year confirmed/entered by the
+  // user if they were requested, or struct with empty strings otherwise.
+  virtual void OnSaveButton(const AutofillClient::UserProvidedCardDetails&
+                                user_provided_card_details) = 0;
   virtual void OnCancelButton() = 0;
   virtual void OnLegalMessageLinkClicked(const GURL& url) = 0;
   virtual void OnManageCardsClicked() = 0;
@@ -82,6 +89,8 @@ class SaveCardBubbleController {
   virtual bool IsUploadSave() const = 0;
   // Returns the current state of the bubble.
   virtual BubbleType GetBubbleType() const = 0;
+  // Returns the current sync state.
+  virtual AutofillSyncSigninState GetSyncState() const = 0;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(SaveCardBubbleController);

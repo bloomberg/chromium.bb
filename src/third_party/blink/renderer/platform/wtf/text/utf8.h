@@ -30,7 +30,7 @@
 #include "third_party/blink/renderer/platform/wtf/wtf_export.h"
 
 namespace WTF {
-namespace Unicode {
+namespace unicode {
 
 typedef enum {
   kConversionOK,     // conversion successful
@@ -87,7 +87,7 @@ WTF_EXPORT bool EqualLatin1WithUTF8(const LChar* a,
                                     const char* b,
                                     const char* b_end);
 
-}  // namespace Unicode
+}  // namespace unicode
 }  // namespace WTF
 
 #endif  // THIRD_PARTY_BLINK_RENDERER_PLATFORM_WTF_TEXT_UTF8_H_

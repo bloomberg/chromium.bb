@@ -27,6 +27,7 @@
 #include "gpu/command_buffer/service/image_manager.h"
 #include "gpu/command_buffer/service/logger.h"
 #include "gpu/command_buffer/service/mailbox_manager_impl.h"
+#include "gpu/command_buffer/service/passthrough_discardable_manager.h"
 #include "gpu/command_buffer/service/raster_decoder.h"
 #include "gpu/command_buffer/service/raster_decoder_context_state.h"
 #include "gpu/command_buffer/service/service_discardable_manager.h"
@@ -321,6 +322,8 @@ class CommandBufferSetup {
 #error invalid configuration
 #endif
     discardable_manager_ = std::make_unique<ServiceDiscardableManager>();
+    passthrough_discardable_manager_ =
+        std::make_unique<PassthroughDiscardableManager>();
 
     if (gpu_preferences_.use_passthrough_cmd_decoder)
       recreate_context_ = true;
@@ -332,7 +335,7 @@ class CommandBufferSetup {
   }
 
   bool InitDecoder() {
-    if (recreate_context_) {
+    if (!context_) {
       InitContext();
     }
 
@@ -350,7 +353,8 @@ class CommandBufferSetup {
         &translator_cache_, &completeness_cache_, feature_info,
         config_.attrib_helper.bind_generates_resource, &image_manager_,
         nullptr /* image_factory */, nullptr /* progress_reporter */,
-        gpu_feature_info, discardable_manager_.get(), &shared_image_manager_);
+        gpu_feature_info, discardable_manager_.get(),
+        passthrough_discardable_manager_.get(), &shared_image_manager_);
     command_buffer_.reset(new CommandBufferDirect(
         context_group->transfer_buffer_manager(), &sync_point_manager_));
 
@@ -399,9 +403,11 @@ class CommandBufferSetup {
     if (translator)
       translator->AddRef();
 #endif
-    decoder_->Destroy(true);
+    bool context_lost =
+        decoder_->WasContextLost() || !decoder_->CheckResetStatus();
+    decoder_->Destroy(!context_lost);
     decoder_.reset();
-    if (recreate_context_) {
+    if (recreate_context_ || context_lost) {
       context_->ReleaseCurrent(nullptr);
       context_ = nullptr;
     }
@@ -511,6 +517,8 @@ class CommandBufferSetup {
   SyncPointManager sync_point_manager_;
   gles2::ImageManager image_manager_;
   std::unique_ptr<ServiceDiscardableManager> discardable_manager_;
+  std::unique_ptr<PassthroughDiscardableManager>
+      passthrough_discardable_manager_;
   SharedImageManager shared_image_manager_;
 
   bool recreate_context_ = false;

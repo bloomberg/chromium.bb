@@ -32,7 +32,6 @@ class CORE_EXPORT ModuleScript final : public Script, public NameClient {
       const KURL& source_url,
       const KURL& base_url,
       const ScriptFetchOptions&,
-      AccessControlStatus,
       const TextPosition& start_position = TextPosition::MinimumPosition());
 
   // Mostly corresponds to Create() but accepts ScriptModule as the argument
@@ -43,6 +42,13 @@ class CORE_EXPORT ModuleScript final : public Script, public NameClient {
       const KURL& base_url,
       const ScriptFetchOptions& = ScriptFetchOptions());
 
+  ModuleScript(Modulator* settings_object,
+               ScriptModule record,
+               const KURL& source_url,
+               const KURL& base_url,
+               const ScriptFetchOptions&,
+               const ParkableString& source_text,
+               const TextPosition& start_position);
   ~ModuleScript() override = default;
 
   ScriptModule Record() const;
@@ -66,14 +72,6 @@ class CORE_EXPORT ModuleScript final : public Script, public NameClient {
   const char* NameInHeapSnapshot() const override { return "ModuleScript"; }
 
  private:
-  ModuleScript(Modulator* settings_object,
-               ScriptModule record,
-               const KURL& source_url,
-               const KURL& base_url,
-               const ScriptFetchOptions&,
-               const ParkableString& source_text,
-               const TextPosition& start_position);
-
   static ModuleScript* CreateInternal(const ParkableString& source_text,
                                       Modulator*,
                                       ScriptModule,
@@ -82,7 +80,9 @@ class CORE_EXPORT ModuleScript final : public Script, public NameClient {
                                       const ScriptFetchOptions&,
                                       const TextPosition&);
 
-  ScriptType GetScriptType() const override { return ScriptType::kModule; }
+  mojom::ScriptType GetScriptType() const override {
+    return mojom::ScriptType::kModule;
+  }
   void RunScript(LocalFrame*, const SecurityOrigin*) const override;
   String InlineSourceTextForCSP() const override;
 

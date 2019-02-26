@@ -24,7 +24,7 @@ class MockIceTransportAdapterCrossThreadFactory
   }
 
   // IceTransportAdapterCrossThreadFactory overrides.
-  void InitializeOnMainThread() override {}
+  void InitializeOnMainThread(LocalFrame&) override {}
   std::unique_ptr<IceTransportAdapter> ConstructOnWorkerThread(
       IceTransportAdapter::Delegate* delegate) override {
     DCHECK(mock_adapter_);

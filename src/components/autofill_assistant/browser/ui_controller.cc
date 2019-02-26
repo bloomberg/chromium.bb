@@ -4,6 +4,9 @@
 
 #include "components/autofill_assistant/browser/ui_controller.h"
 
+#include "components/autofill/core/browser/autofill_profile.h"
+#include "components/autofill/core/browser/credit_card.h"
+
 namespace autofill_assistant {
 
 PaymentInformation::PaymentInformation() : succeed(false) {}

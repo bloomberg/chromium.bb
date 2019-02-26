@@ -105,19 +105,17 @@ void PWL_SCROLL_PRIVATEDATA::SubBig() {
     SetPos(ScrollRange.fMin);
 }
 
-CPWL_SBButton::CPWL_SBButton(PWL_SCROLLBAR_TYPE eScrollBarType,
-                             PWL_SBBUTTON_TYPE eButtonType) {
-  m_eScrollBarType = eScrollBarType;
-  m_eSBButtonType = eButtonType;
-
-  m_bMouseDown = false;
+CPWL_SBButton::CPWL_SBButton(const CreateParams& cp,
+                             std::unique_ptr<PrivateData> pAttachedData,
+                             PWL_SCROLLBAR_TYPE eScrollBarType,
+                             PWL_SBBUTTON_TYPE eButtonType)
+    : CPWL_Wnd(cp, std::move(pAttachedData)),
+      m_eScrollBarType(eScrollBarType),
+      m_eSBButtonType(eButtonType) {
+  GetCreationParams()->eCursorType = FXCT_ARROW;
 }
 
-CPWL_SBButton::~CPWL_SBButton() {}
-
-void CPWL_SBButton::OnCreate(CreateParams* pParamsToAdjust) {
-  pParamsToAdjust->eCursorType = FXCT_ARROW;
-}
+CPWL_SBButton::~CPWL_SBButton() = default;
 
 void CPWL_SBButton::DrawThisAppearance(CFX_RenderDevice* pDevice,
                                        const CFX_Matrix& mtUser2Device) {
@@ -299,20 +297,14 @@ bool CPWL_SBButton::OnMouseMove(const CFX_PointF& point, uint32_t nFlag) {
   return true;
 }
 
-CPWL_ScrollBar::CPWL_ScrollBar(PWL_SCROLLBAR_TYPE sbType)
-    : m_sbType(sbType),
-      m_pMinButton(nullptr),
-      m_pMaxButton(nullptr),
-      m_pPosButton(nullptr),
-      m_bMouseDown(false),
-      m_bMinOrMax(false),
-      m_bNotifyForever(true) {}
-
-CPWL_ScrollBar::~CPWL_ScrollBar() {}
-
-void CPWL_ScrollBar::OnCreate(CreateParams* pParamsToAdjust) {
-  pParamsToAdjust->eCursorType = FXCT_ARROW;
+CPWL_ScrollBar::CPWL_ScrollBar(const CreateParams& cp,
+                               std::unique_ptr<PrivateData> pAttachedData,
+                               PWL_SCROLLBAR_TYPE sbType)
+    : CPWL_Wnd(cp, std::move(pAttachedData)), m_sbType(sbType) {
+  GetCreationParams()->eCursorType = FXCT_ARROW;
 }
+
+CPWL_ScrollBar::~CPWL_ScrollBar() = default;
 
 void CPWL_ScrollBar::OnDestroy() {
   // Until cleanup takes place in the virtual destructor for CPWL_Wnd
@@ -541,30 +533,36 @@ void CPWL_ScrollBar::NotifyMouseMove(CPWL_Wnd* child, const CFX_PointF& pos) {
 
 void CPWL_ScrollBar::CreateButtons(const CreateParams& cp) {
   CreateParams scp = cp;
-  scp.pParentWnd = this;
   scp.dwBorderWidth = 2;
   scp.nBorderStyle = BorderStyle::BEVELED;
-
   scp.dwFlags =
       PWS_VISIBLE | PWS_CHILD | PWS_BORDER | PWS_BACKGROUND | PWS_NOREFRESHCLIP;
 
   if (!m_pMinButton) {
-    m_pMinButton = new CPWL_SBButton(m_sbType, PSBT_MIN);
-    m_pMinButton->Create(scp);
+    auto pButton = pdfium::MakeUnique<CPWL_SBButton>(scp, CloneAttachedData(),
+                                                     m_sbType, PSBT_MIN);
+    m_pMinButton = pButton.get();
+    AddChild(std::move(pButton));
+    m_pMinButton->Realize();
   }
 
   if (!m_pMaxButton) {
-    m_pMaxButton = new CPWL_SBButton(m_sbType, PSBT_MAX);
-    m_pMaxButton->Create(scp);
+    auto pButton = pdfium::MakeUnique<CPWL_SBButton>(scp, CloneAttachedData(),
+                                                     m_sbType, PSBT_MAX);
+    m_pMaxButton = pButton.get();
+    AddChild(std::move(pButton));
+    m_pMaxButton->Realize();
   }
 
   if (!m_pPosButton) {
-    m_pPosButton = new CPWL_SBButton(m_sbType, PSBT_POS);
-
+    auto pButton = pdfium::MakeUnique<CPWL_SBButton>(scp, CloneAttachedData(),
+                                                     m_sbType, PSBT_POS);
+    m_pPosButton = pButton.get();
     ObservedPtr thisObserved(this);
-    if (!m_pPosButton->SetVisible(false) || !thisObserved)
-      return;
-    m_pPosButton->Create(scp);
+    if (m_pPosButton->SetVisible(false) && thisObserved) {
+      AddChild(std::move(pButton));
+      m_pPosButton->Realize();
+    }
   }
 }
 

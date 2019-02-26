@@ -18,7 +18,7 @@ import time
 
 from common_args import AddCommonArgs, ConfigureLogging, GetDeploymentTargetForArgs
 from net_test_server import SetupTestServer
-from run_package import RunPackage
+from run_package import RunPackage, RunPackageArgs
 
 DEFAULT_TEST_CONCURRENCY = 4
 TEST_RESULT_PATH = '/data/test_summary.json'
@@ -32,6 +32,9 @@ def main():
   parser.add_argument('--gtest_repeat',
                       help='GTest repeat value to use. This also disables the '
                            'test launcher timeout.')
+  parser.add_argument('--test-launcher-retry-limit',
+                      help='Number of times that test suite will retry failing '
+                           'tests. This is multiplicative with --gtest_repeat.')
   parser.add_argument('--gtest_break_on_failure', action='store_true',
                       default=False,
                       help='Should GTest break on failure; useful with '
@@ -79,6 +82,9 @@ def main():
   if args.gtest_repeat:
     child_args.append('--gtest_repeat=' + args.gtest_repeat)
     child_args.append('--test-launcher-timeout=-1')
+  if args.test_launcher_retry_limit:
+    child_args.append(
+        '--test-launcher-retry-limit=' + args.test_launcher_retry_limit)
   if args.gtest_break_on_failure:
     child_args.append('--gtest_break_on_failure')
   if args.child_args:
@@ -98,10 +104,10 @@ def main():
     if args.enable_test_server:
       test_server = SetupTestServer(target, test_concurrency)
 
+    run_package_args = RunPackageArgs.FromCommonArgs(args)
     returncode = RunPackage(
         args.output_directory, target, args.package, args.package_name,
-        args.package_dep, child_args, args.include_system_logs,
-        args.install_only, args.package_manifest)
+        args.package_dep, child_args, run_package_args)
 
     if forwarder:
       forwarder.terminate()

@@ -28,10 +28,26 @@ void IdentityManagerObserverBridge::OnPrimaryAccountSet(
   }
 }
 
+void IdentityManagerObserverBridge::OnPrimaryAccountSetWithPassword(
+    const AccountInfo& primary_account_info,
+    const std::string& password) {
+  if ([delegate_ respondsToSelector:@selector(onPrimaryAccountSet:
+                                                     withPassword:)]) {
+    [delegate_ onPrimaryAccountSet:primary_account_info withPassword:password];
+  }
+}
+
 void IdentityManagerObserverBridge::OnPrimaryAccountCleared(
     const AccountInfo& previous_primary_account_info) {
   if ([delegate_ respondsToSelector:@selector(onPrimaryAccountCleared:)]) {
     [delegate_ onPrimaryAccountCleared:previous_primary_account_info];
+  }
+}
+
+void IdentityManagerObserverBridge::OnPrimaryAccountSigninFailed(
+    const GoogleServiceAuthError& error) {
+  if ([delegate_ respondsToSelector:@selector(onPrimaryAccountSigninFailed:)]) {
+    [delegate_ onPrimaryAccountSigninFailed:error];
   }
 }
 
@@ -45,10 +61,16 @@ void IdentityManagerObserverBridge::OnRefreshTokenUpdatedForAccount(
 }
 
 void IdentityManagerObserverBridge::OnRefreshTokenRemovedForAccount(
-    const AccountInfo& account_info) {
+    const std::string& account_id) {
   if ([delegate_
           respondsToSelector:@selector(onRefreshTokenRemovedForAccount:)]) {
-    [delegate_ onRefreshTokenRemovedForAccount:account_info];
+    [delegate_ onRefreshTokenRemovedForAccount:account_id];
+  }
+}
+
+void IdentityManagerObserverBridge::OnRefreshTokensLoaded() {
+  if ([delegate_ respondsToSelector:@selector(onRefreshTokensLoaded)]) {
+    [delegate_ onRefreshTokensLoaded];
   }
 }
 
@@ -56,6 +78,20 @@ void IdentityManagerObserverBridge::OnAccountsInCookieUpdated(
     const std::vector<AccountInfo>& accounts) {
   if ([delegate_ respondsToSelector:@selector(onAccountsInCookieUpdated:)]) {
     [delegate_ onAccountsInCookieUpdated:accounts];
+  }
+}
+
+void IdentityManagerObserverBridge::OnStartBatchOfRefreshTokenStateChanges() {
+  if ([delegate_ respondsToSelector:@selector
+                 (onStartBatchOfRefreshTokenStateChanges)]) {
+    [delegate_ onStartBatchOfRefreshTokenStateChanges];
+  }
+}
+
+void IdentityManagerObserverBridge::OnEndBatchOfRefreshTokenStateChanges() {
+  if ([delegate_
+          respondsToSelector:@selector(onEndBatchOfRefreshTokenStateChanges)]) {
+    [delegate_ onEndBatchOfRefreshTokenStateChanges];
   }
 }
 

@@ -13,7 +13,7 @@ class CommandUpdater;
 
 namespace autofill {
 
-class LocalCardMigrationBubbleControllerImpl;
+class ManageMigrationUiController;
 
 // The icon shown in location bar for the intermediate local card migration
 // bubble.
@@ -21,7 +21,8 @@ class LocalCardMigrationIconView : public PageActionIconView {
  public:
   LocalCardMigrationIconView(CommandUpdater* command_updater,
                              Browser* browser,
-                             PageActionIconView::Delegate* delegate);
+                             PageActionIconView::Delegate* delegate,
+                             const gfx::FontList& font_list);
   ~LocalCardMigrationIconView() override;
 
   // PageActionIconView:
@@ -29,13 +30,19 @@ class LocalCardMigrationIconView : public PageActionIconView {
   bool Update() override;
   base::string16 GetTextForTooltipAndAccessibleName() const override;
 
+  // IconLabelBubbleView:
+  bool ShouldShowSeparator() const override;
+
  protected:
   // PageActionIconView:
   void OnExecuting(PageActionIconView::ExecuteSource execute_source) override;
   const gfx::VectorIcon& GetVectorIcon() const override;
 
  private:
-  LocalCardMigrationBubbleControllerImpl* GetController() const;
+  ManageMigrationUiController* GetController() const;
+
+  // IconLabelBubbleView:
+  void AnimationProgressed(const gfx::Animation* animation) override;
 
   // Used to do nullptr check when getting the controller.
   Browser* const browser_;

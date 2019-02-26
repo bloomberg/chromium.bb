@@ -8,6 +8,7 @@
 #include <stdint.h>
 
 #include <limits>
+#include <utility>
 #include <vector>
 
 #include "base/macros.h"
@@ -34,7 +35,7 @@ static IndexedDBKey CreateArrayIDBKey() {
 static IndexedDBKey CreateArrayIDBKey(const IndexedDBKey& key1) {
   IndexedDBKey::KeyArray array;
   array.push_back(key1);
-  return IndexedDBKey(array);
+  return IndexedDBKey(std::move(array));
 }
 
 static IndexedDBKey CreateArrayIDBKey(const IndexedDBKey& key1,
@@ -42,7 +43,7 @@ static IndexedDBKey CreateArrayIDBKey(const IndexedDBKey& key1,
   IndexedDBKey::KeyArray array;
   array.push_back(key1);
   array.push_back(key2);
-  return IndexedDBKey(array);
+  return IndexedDBKey(std::move(array));
 }
 
 static std::string WrappedEncodeByte(char value) {
@@ -591,7 +592,7 @@ TEST(IndexedDBLevelDBCodingTest, EncodeDecodeIDBKey) {
   array.push_back(IndexedDBKey(ASCIIToUTF16("Hello World!")));
   array.push_back(IndexedDBKey(std::string("\x01\x02")));
   array.push_back(IndexedDBKey(IndexedDBKey::KeyArray()));
-  test_cases.push_back(IndexedDBKey(array));
+  test_cases.push_back(IndexedDBKey(std::move(array)));
 
   for (size_t i = 0; i < test_cases.size(); ++i) {
     expected_key = test_cases[i];

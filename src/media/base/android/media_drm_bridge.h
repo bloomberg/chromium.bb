@@ -58,7 +58,6 @@ class MEDIA_EXPORT MediaDrmBridge : public ContentDecryptionModule,
     SECURITY_LEVEL_3 = 3,
   };
 
-  using ResetCredentialsCB = base::Callback<void(bool)>;
   using MediaCryptoReadyCB = MediaCryptoContext::MediaCryptoReadyCB;
 
   // Checks whether MediaDRM is available and usable, including for decoding.
@@ -143,11 +142,6 @@ class MEDIA_EXPORT MediaDrmBridge : public ContentDecryptionModule,
   // video playback.
   bool IsSecureCodecRequired();
 
-  // Reset the device credentials. MediaDrmBridge must be created without
-  // session support.
-  // TODO(xhwang): Unify Unprovision() and ResetDeviceCredentials().
-  void ResetDeviceCredentials(const ResetCredentialsCB& callback);
-
   // Helper functions to resolve promises.
   void ResolvePromise(uint32_t promise_id);
   void ResolvePromiseWithSession(uint32_t promise_id,
@@ -231,12 +225,6 @@ class MEDIA_EXPORT MediaDrmBridge : public ContentDecryptionModule,
       const base::android::JavaParamRef<jbyteArray>& j_session_id,
       jlong expiry_time_ms);
 
-  // Called by the java object when credential reset is completed.
-  void OnResetDeviceCredentialsCompleted(
-      JNIEnv* env,
-      const base::android::JavaParamRef<jobject>&,
-      bool success);
-
  private:
   friend class MediaDrmBridgeFactory;
   // For DeleteSoon() in DeleteOnCorrectThread().
@@ -258,8 +246,7 @@ class MEDIA_EXPORT MediaDrmBridge : public ContentDecryptionModule,
   // default security level will be used if |security_level| is
   // SECURITY_LEVEL_DEFAULT.
   //
-  // |origin_id| is a random string that can identify an origin. It may be empty
-  // when reseting device credential.
+  // |origin_id| is a random string that can identify an origin.
   //
   // If |requires_media_crypto| is true, MediaCrypto is expected to be created
   // and notified via MediaCryptoReadyCB set in SetMediaCryptoReadyCB(). This
@@ -270,8 +257,7 @@ class MEDIA_EXPORT MediaDrmBridge : public ContentDecryptionModule,
   //
   // If |requires_media_crypto| is false, MediaCrypto will not be created. This
   // object cannot be used for playback, but can be used to unprovision the
-  // device/origin via Unprovision() and ResetDeviceCredentials(). Sessions
-  // should not be created in this mode.
+  // device/origin via Unprovision(). Sessions are not created in this mode.
   MediaDrmBridge(const std::vector<uint8_t>& scheme_uuid,
                  const std::string& origin_id,
                  SecurityLevel security_level,
@@ -333,8 +319,6 @@ class MEDIA_EXPORT MediaDrmBridge : public ContentDecryptionModule,
   SessionExpirationUpdateCB session_expiration_update_cb_;
 
   MediaCryptoReadyCB media_crypto_ready_cb_;
-
-  ResetCredentialsCB reset_credentials_cb_;
 
   PlayerTrackerImpl player_tracker_;
 

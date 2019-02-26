@@ -38,6 +38,15 @@ constexpr float kWhiteboardBottomRightX = 0.85;
 constexpr float kWhiteboardBottomRightY = 0.79;
 constexpr float kWhiteboardAspectRatio = 1.76;
 
+// One numerical value, one empty and one string NamedTemplateArgument
+constexpr unsigned kNamedTemplateArgumentsSize = 3;
+
+constexpr char kNumericalTemplateArgumentName[] = "numerical_template_argument";
+constexpr double kNumericalTemplateArgumentValue = 42;
+constexpr char kStringTemplateArgumentName[] = "string_template_argument";
+constexpr char kStringTemplateArgumentValue[] = "string_value";
+constexpr double kDoubleTolerance = 0.01;
+
 void InitializeVideoStreamParam(media_perception::VideoStreamParam& param,
                                 const std::string& id,
                                 int width,
@@ -518,7 +527,23 @@ TEST(MediaPerceptionConversionUtilsTest, StateProtoToIdl) {
   state.add_features(mri::State::FEATURE_AUTOZOOM);
   state.add_features(mri::State::FEATURE_HOTWORD_DETECTION);
   state.add_features(mri::State::FEATURE_OCCUPANCY_DETECTION);
+  state.add_features(mri::State::FEATURE_EDGE_EMBEDDINGS);
+  state.add_features(mri::State::FEATURE_SOFTWARE_CROPPING);
   state.add_features(mri::State::FEATURE_UNSET);
+
+  // Number NamedTemplateArgument.
+  mri::State::NamedTemplateArgument* named_template_argument_proto =
+      state.add_named_template_arguments();
+  named_template_argument_proto->set_name(kNumericalTemplateArgumentName);
+  named_template_argument_proto->set_num(kNumericalTemplateArgumentValue);
+
+  // Empty
+  named_template_argument_proto = state.add_named_template_arguments();
+
+  // String NamedTemplateArgument.
+  named_template_argument_proto = state.add_named_template_arguments();
+  named_template_argument_proto->set_name(kStringTemplateArgumentName);
+  named_template_argument_proto->set_str(kStringTemplateArgumentValue);
 
   media_perception::State state_result =
       media_perception::StateProtoToIdl(state);
@@ -540,13 +565,44 @@ TEST(MediaPerceptionConversionUtilsTest, StateProtoToIdl) {
 
   ASSERT_TRUE(state_result.features);
   ASSERT_TRUE(state_result.features.get());
-  ASSERT_EQ(state_result.features.get()->size(), 3u);
+  ASSERT_EQ(state_result.features.get()->size(), 5u);
   EXPECT_EQ(state_result.features.get()->at(0),
             media_perception::FEATURE_AUTOZOOM);
   EXPECT_EQ(state_result.features.get()->at(1),
             media_perception::FEATURE_HOTWORD_DETECTION);
   EXPECT_EQ(state_result.features.get()->at(2),
             media_perception::FEATURE_OCCUPANCY_DETECTION);
+  EXPECT_EQ(state_result.features.get()->at(3),
+            media_perception::FEATURE_EDGE_EMBEDDINGS);
+  EXPECT_EQ(state_result.features.get()->at(4),
+            media_perception::FEATURE_SOFTWARE_CROPPING);
+
+  ASSERT_EQ(state_result.named_template_arguments->size(),
+            kNamedTemplateArgumentsSize);
+
+  // Number.
+
+  EXPECT_EQ(*state_result.named_template_arguments->at(0).name,
+            kNumericalTemplateArgumentName);
+  EXPECT_NEAR(*state_result.named_template_arguments->at(0).value->as_number,
+              kNumericalTemplateArgumentValue, kDoubleTolerance);
+  EXPECT_EQ(state_result.named_template_arguments->at(0).value->as_string,
+            nullptr);
+
+  // Empty.
+  EXPECT_EQ(*state_result.named_template_arguments->at(1).name, "");
+  EXPECT_EQ(state_result.named_template_arguments->at(1).value->as_string,
+            nullptr);
+  EXPECT_EQ(state_result.named_template_arguments->at(1).value->as_number,
+            nullptr);
+
+  // String.
+  EXPECT_EQ(*state_result.named_template_arguments->at(2).name,
+            kStringTemplateArgumentName);
+  EXPECT_EQ(state_result.named_template_arguments->at(2).value->as_number,
+            nullptr);
+  EXPECT_EQ(*state_result.named_template_arguments->at(2).value->as_string,
+            kStringTemplateArgumentValue);
 
   state.set_status(mri::State::STARTED);
   state.set_device_context(kTestDeviceContext);
@@ -590,7 +646,31 @@ TEST(MediaPerceptionConversionUtilsTest, StateIdlToProto) {
   state.features->emplace_back(media_perception::FEATURE_AUTOZOOM);
   state.features->emplace_back(media_perception::FEATURE_HOTWORD_DETECTION);
   state.features->emplace_back(media_perception::FEATURE_OCCUPANCY_DETECTION);
+  state.features->emplace_back(media_perception::FEATURE_EDGE_EMBEDDINGS);
+  state.features->emplace_back(media_perception::FEATURE_SOFTWARE_CROPPING);
   state.features->emplace_back(media_perception::FEATURE_NONE);
+
+  // {Number, Empty, String} test cases.
+  state.named_template_arguments =
+      std::make_unique<std::vector<media_perception::NamedTemplateArgument>>(
+          kNamedTemplateArgumentsSize);
+
+  state.named_template_arguments->at(0).name =
+      std::make_unique<std::string>(kNumericalTemplateArgumentName);
+
+  state.named_template_arguments->at(0).value =
+      std::make_unique<media_perception::NamedTemplateArgument::Value>();
+  media_perception::NamedTemplateArgument::Value::Populate(
+      base::Value(kNumericalTemplateArgumentValue),
+      state.named_template_arguments->at(0).value.get());
+
+  state.named_template_arguments->at(2).name =
+      std::make_unique<std::string>(kStringTemplateArgumentName);
+  state.named_template_arguments->at(2).value =
+      std::make_unique<media_perception::NamedTemplateArgument::Value>();
+  media_perception::NamedTemplateArgument::Value::Populate(
+      base::Value(kStringTemplateArgumentValue),
+      state.named_template_arguments->at(2).value.get());
 
   state_proto = StateIdlToProto(state);
   EXPECT_EQ(state_proto.status(), mri::State::RUNNING);
@@ -612,11 +692,30 @@ TEST(MediaPerceptionConversionUtilsTest, StateIdlToProto) {
   ASSERT_TRUE(state_proto.whiteboard().has_aspect_ratio());
   EXPECT_EQ(state_proto.whiteboard().aspect_ratio(), kWhiteboardAspectRatio);
 
-  ASSERT_EQ(state_proto.features_size(), 4);
+  ASSERT_EQ(state_proto.features_size(), 6);
   EXPECT_EQ(state_proto.features(0), mri::State::FEATURE_AUTOZOOM);
   EXPECT_EQ(state_proto.features(1), mri::State::FEATURE_HOTWORD_DETECTION);
   EXPECT_EQ(state_proto.features(2), mri::State::FEATURE_OCCUPANCY_DETECTION);
-  EXPECT_EQ(state_proto.features(3), mri::State::FEATURE_UNSET);
+  EXPECT_EQ(state_proto.features(3), mri::State::FEATURE_EDGE_EMBEDDINGS);
+  EXPECT_EQ(state_proto.features(4), mri::State::FEATURE_SOFTWARE_CROPPING);
+  EXPECT_EQ(state_proto.features(5), mri::State::FEATURE_UNSET);
+
+  ASSERT_EQ(state_proto.named_template_arguments_size(),
+            static_cast<int>(kNamedTemplateArgumentsSize));
+
+  EXPECT_EQ(state_proto.named_template_arguments(0).name(),
+            kNumericalTemplateArgumentName);
+  EXPECT_NEAR(state_proto.named_template_arguments(0).num(),
+              kNumericalTemplateArgumentValue, kDoubleTolerance);
+
+  EXPECT_FALSE(state_proto.named_template_arguments(1).has_name());
+  EXPECT_FALSE(state_proto.named_template_arguments(1).has_str());
+  EXPECT_FALSE(state_proto.named_template_arguments(1).has_num());
+
+  EXPECT_EQ(state_proto.named_template_arguments(2).name(),
+            kStringTemplateArgumentName);
+  EXPECT_EQ(state_proto.named_template_arguments(2).str(),
+            kStringTemplateArgumentValue);
 
   state.status = media_perception::STATUS_SUSPENDED;
   state.device_context = std::make_unique<std::string>(kTestDeviceContext);

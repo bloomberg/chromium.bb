@@ -102,32 +102,32 @@ BUILD_DEPS_HOST = [
   # lib from sources. Keep the SHA1s in sync with Chrome's src/buildtools/DEPS.
   ('buildtools/libcxx',
    'https://chromium.googlesource.com/chromium/llvm-project/libcxx.git',
-   'ece1de8658d749e19c12cacd4458cc330eca94e3',
+   '2199647acb904b91eea0a5e045f5b227c87d6e85',
    'all'
   ),
   ('buildtools/libcxxabi',
    'https://chromium.googlesource.com/chromium/llvm-project/libcxxabi.git',
-   '05a73941f3fb177c4a891d4ff2a4ed5785e3b80c',
+   'c3f4753f7139c73063304235781e4f7788a94c06',
    'all'
   ),
   ('buildtools/libunwind',
    'https://chromium.googlesource.com/external/llvm.org/libunwind.git',
-   '0f3cbe4123f8afacd646bd4f5414aa6528ef8129',
+   '94edd59b16d2084a62699290f9cfdf120d74eedf',
    'all'
   ),
 
   # Keep the revision in sync with Chrome's CLANG_REVISION in
   # tools/clang/scripts/update.py.
   ('buildtools/clang.tgz',
-   'https://commondatastorage.googleapis.com/chromium-browser-clang/Linux_x64/clang-342523-1.tgz',
-   '8ca5cdf045582073386cc227dda82eaf2a3bc2ef',
+   'https://commondatastorage.googleapis.com/chromium-browser-clang/Linux_x64/clang-346388-1.tgz',
+   'c2998d67a9c623fe12e01a33e8b7cf437b396099',
    'linux2'
   ),
 
   # Keep in sync with chromium DEPS.
   ('buildtools/libfuzzer',
    'https://chromium.googlesource.com/chromium/llvm-project/compiler-rt/lib/fuzzer.git',
-   'a305a5eb85ed42edc5c965c14f308f576cb245ca',
+   '2a53098584c48af50aec3fb51febe5e651489774',
    'linux2'
   ),
 
@@ -146,9 +146,16 @@ BUILD_DEPS_HOST = [
   ),
 
   # Sqlite for the trace processing library.
+  # This is the amalgamated source whose compiled output is meant to be faster.
+  # We still pull the full source for the extensions (not amalgamated).
   ('buildtools/sqlite.zip',
-   'https://storage.googleapis.com/perfetto/sqlite-amalgamation-3230100.zip',
-   '98729f2c2d57d166e3d6d9862744c1d66388e286',
+   'https://storage.googleapis.com/perfetto/sqlite-amalgamation-3250300.zip',
+   'b78c2cb0d2c9182686c582312479f96a82bf5380',
+   'all'
+  ),
+  ('buildtools/sqlite_src.zip',
+   'https://storage.googleapis.com/perfetto/sqlite-src-3250300.zip',
+   'd1af2883bb800852946f9bf8ab6055e7698e18ee',
    'all'
   ),
 
@@ -163,7 +170,7 @@ BUILD_DEPS_HOST = [
   # These dependencies are for libunwindstack, which is used by src/profiling.
   ('buildtools/android-core',
    'https://android.googlesource.com/platform/system/core.git',
-   'd3a7ddcf8dd97e162d7d4a9b3f87b4f1ef797d5f',
+   'b31badf70f7734d1ef6d1a95ee73dc57ebd2b19d',
    'all'
   ),
 
@@ -241,6 +248,9 @@ TEST_DEPS_ANDROID = [
   ),
 ]
 
+# This variable is updated by tools/roll-catapult-trace-viewer.
+CATAPULT_SHA1 = 'ff5d8fd7244680b4d4456c25d5fdc04c76f9ef66'
+
 UI_DEPS = [
   ('buildtools/nodejs.tgz',
    'https://storage.googleapis.com/perfetto/node-v10.3.0-darwin-x64.tar.gz',
@@ -266,6 +276,21 @@ UI_DEPS = [
    'https://storage.googleapis.com/perfetto/emscripten-llvm-e1.37.40-static-linux.tar.gz',
    '478501b9b7a14884e546c84efe209a90052cbb07',
    'linux2'
+  ),
+  ('buildtools/d8.tgz',
+   'https://storage.googleapis.com/perfetto/d8-linux2-5.7.492.65.tar.gz',
+   '95e82ad7faf0a6f74d950c2aa65e3858b7bdb6c6',
+   'linux2'
+  ),
+  ('buildtools/d8.tgz',
+   'https://storage.googleapis.com/perfetto/d8-darwin-6.6.346.32.tar.gz',
+   '1abd630619bb1977ab62095570a113d782a1545d',
+   'darwin'
+  ),
+  ('buildtools/catapult_trace_viewer.tgz',
+   'https://storage.googleapis.com/perfetto/catapult_trace_viewer-%s.tar.gz' % CATAPULT_SHA1,
+    CATAPULT_SHA1,
+   'all'
   ),
 ]
 
@@ -317,7 +342,7 @@ def CheckoutGitRepo(path, git_url, revision):
   logging.info('Fetching %s @ %s into %s', git_url, revision, path)
   subprocess.check_call(['git', 'init', path], cwd=path)
   subprocess.check_call(
-    ['git', 'fetch', '--depth', '1', git_url, revision], cwd=path)
+    ['git', 'fetch', '--quiet', '--depth', '1', git_url, revision], cwd=path)
   subprocess.check_call(['git', 'checkout', revision, '--quiet'], cwd=path)
   assert(IsGitRepoCheckoutOutAtRevision(path, revision))
 
@@ -358,9 +383,11 @@ def Main():
       logging.info('Downloading %s from %s', local_path, url)
       urllib.urlretrieve(url, download_path)
       os.chmod(download_path, 0o755)
-      if (HashLocalFile(download_path) != expected_sha1):
+      actual_sha1 = HashLocalFile(download_path)
+      if (actual_sha1 != expected_sha1):
         os.remove(download_path)
-        logging.fatal('SHA1 mismatch for %s', download_path)
+        logging.fatal('SHA1 mismatch for {} expected {} was {}'.format(
+            download_path, expected_sha1, actual_sha1))
         return 1
       os.rename(download_path, local_path)
     assert(HashLocalFile(local_path) == expected_sha1)

@@ -37,12 +37,16 @@ typedef enum ATTRIBUTE_PACKED {
   EXTRA_FILTERS = INTERP_FILTERS_ALL - SWITCHABLE_FILTERS,
 } InterpFilter;
 
-// With CONFIG_DUAL_FILTER, pack two InterpFilter's into a uint32_t: since
-// there are at most 10 filters, we can use 16 bits for each and have more than
-// enough space. This reduces argument passing and unifies the operation of
-// setting a (pair of) filters.
-//
-// Without CONFIG_DUAL_FILTER,
+typedef enum {
+  USE_2_TAPS_ORIG = 0,  // This is used in temporal filtering.
+  USE_2_TAPS,
+  USE_4_TAPS,
+  USE_8_TAPS,
+} SUBPEL_SEARCH_TYPE;
+
+// Pack two InterpFilter's into a uint32_t: since there are at most 10 filters,
+// we can use 16 bits for each and have more than enough space. This reduces
+// argument passing and unifies the operation of setting a (pair of) filters.
 typedef uint32_t InterpFilters;
 static INLINE InterpFilter av1_extract_interp_filter(InterpFilters filters,
                                                      int x_filter) {
@@ -192,19 +196,35 @@ av1_get_interp_filter_params_with_block_size(const InterpFilter interp_filter,
   return &av1_interp_filter_params_list[interp_filter];
 }
 
-static INLINE const InterpFilterParams *av1_get_4tap_interp_filter_params(
+static INLINE const InterpFilterParams *get_4tap_interp_filter_params(
     const InterpFilter interp_filter) {
   return &av1_interp_4tap[interp_filter];
 }
 
 static INLINE const int16_t *av1_get_interp_filter_kernel(
-    const InterpFilter interp_filter) {
-  return av1_interp_filter_params_list[interp_filter].filter_ptr;
+    const InterpFilter interp_filter, int subpel_search) {
+  assert(subpel_search >= USE_2_TAPS);
+  return (subpel_search == USE_2_TAPS)
+             ? av1_interp_4tap[BILINEAR].filter_ptr
+             : ((subpel_search == USE_4_TAPS)
+                    ? av1_interp_4tap[interp_filter].filter_ptr
+                    : av1_interp_filter_params_list[interp_filter].filter_ptr);
 }
 
 static INLINE const int16_t *av1_get_interp_filter_subpel_kernel(
     const InterpFilterParams *const filter_params, const int subpel) {
   return filter_params->filter_ptr + filter_params->taps * subpel;
+}
+
+static INLINE const InterpFilterParams *av1_get_filter(int subpel_search) {
+  assert(subpel_search >= USE_2_TAPS);
+
+  switch (subpel_search) {
+    case USE_2_TAPS: return get_4tap_interp_filter_params(BILINEAR);
+    case USE_4_TAPS: return get_4tap_interp_filter_params(EIGHTTAP_REGULAR);
+    case USE_8_TAPS: return &av1_interp_filter_params_list[EIGHTTAP_REGULAR];
+    default: assert(0); return NULL;
+  }
 }
 
 #ifdef __cplusplus

@@ -68,7 +68,6 @@ class AssociatedInterfaceProvider;
 class Color;
 class ComputedAccessibleNode;
 class ContentSecurityPolicy;
-class ContentSettingsClient;
 class Document;
 class Editor;
 class Element;
@@ -102,6 +101,7 @@ class SmoothScrollSequencer;
 class SpellChecker;
 class TextSuggestionController;
 class WebComputedAXTree;
+class WebContentSettingsClient;
 class WebPluginContainerImpl;
 class WebURLLoaderFactory;
 
@@ -117,6 +117,8 @@ class CORE_EXPORT LocalFrame final : public Frame,
                             Page&,
                             FrameOwner*,
                             InterfaceRegistry* = nullptr);
+
+  LocalFrame(LocalFrameClient*, Page&, FrameOwner*, InterfaceRegistry*);
 
   void Init();
   void SetView(LocalFrameView*);
@@ -148,7 +150,9 @@ class CORE_EXPORT LocalFrame final : public Frame,
                                          Frame* child) override;
 
   void DetachChildren();
-  void DocumentAttached();
+  // After Document is attached, resets state related to document, and sets
+  // context to the current document.
+  void DidAttachDocument();
 
   Frame* FindFrameForNavigation(const AtomicString& name,
                                 LocalFrame& active_frame,
@@ -307,7 +311,7 @@ class CORE_EXPORT LocalFrame final : public Frame,
 
   LocalFrameClient* Client() const;
 
-  ContentSettingsClient* GetContentSettingsClient();
+  WebContentSettingsClient* GetContentSettingsClient();
 
   // GetFrameResourceCoordinator may return nullptr when it can not hook up to
   // services/resource_coordinator.
@@ -404,16 +408,10 @@ class CORE_EXPORT LocalFrame final : public Frame,
 
   SmoothScrollSequencer& GetSmoothScrollSequencer();
 
-  // TODO(iclelland): Replace this with a method on Document
-  void DeprecatedReportFeaturePolicyViolation(
-      mojom::FeaturePolicyFeature) const override;
-
   const mojom::blink::ReportingServiceProxyPtr& GetReportingService() const;
 
  private:
   friend class FrameNavigationDisabler;
-
-  LocalFrame(LocalFrameClient*, Page&, FrameOwner*, InterfaceRegistry*);
 
   // Frame protected overrides:
   void DetachImpl(FrameDetachType) override;
@@ -528,6 +526,16 @@ class CORE_EXPORT LocalFrame final : public Frame,
       previews_resource_loading_hints_receiver_;
 
   ClientHintsPreferences client_hints_preferences_;
+
+  // The value of |is_save_data_enabled_| is read once per frame from
+  // NetworkStateNotifier, which is guarded by a mutex lock, and cached locally
+  // here for performance.
+  // TODO(sclittle): This field doesn't really belong here - we should find some
+  // way to make the state of NetworkStateNotifier accessible without needing to
+  // acquire a mutex, such as by adding thread-local objects to hold the network
+  // state that get updated whenever the network state changes. That way, this
+  // field would be no longer necessary.
+  const bool is_save_data_enabled_;
 };
 
 inline FrameLoader& LocalFrame::Loader() const {

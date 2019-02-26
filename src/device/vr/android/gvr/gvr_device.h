@@ -42,7 +42,7 @@ class DEVICE_VR_EXPORT GvrDevice : public VRDeviceBase,
  private:
   // VRDeviceBase
   void OnListeningForActivate(bool listening) override;
-  void OnMagicWindowFrameDataRequest(
+  void OnGetInlineFrameData(
       mojom::XRFrameDataProvider::GetFrameDataCallback callback) override;
 
   void OnStartPresentResult(mojom::XRRuntime::RequestSessionCallback callback,
@@ -53,8 +53,16 @@ class DEVICE_VR_EXPORT GvrDevice : public VRDeviceBase,
 
   void OnPresentingControllerMojoConnectionError();
   void StopPresenting();
-  void EnsureGvrReady();
   GvrDelegateProvider* GetGvrDelegateProvider();
+
+  void Init(base::OnceCallback<void(bool)> on_finished);
+  void OnVrModuleInstalled(base::OnceCallback<void(bool)> on_finished,
+                           bool success);
+  void CreateNonPresentingContext();
+  void OnInitRequestSessionFinished(
+      mojom::XRRuntimeSessionOptionsPtr options,
+      mojom::XRRuntime::RequestSessionCallback callback,
+      bool success);
 
   base::android::ScopedJavaGlobalRef<jobject> non_presenting_context_;
   std::unique_ptr<gvr::GvrApi> gvr_api_;

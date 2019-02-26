@@ -46,7 +46,7 @@
 #include "src/profiling/memory/wire_protocol.h"
 
 namespace perfetto {
-
+namespace profiling {
 namespace {
 
 size_t kMaxFrames = 1000;
@@ -82,26 +82,6 @@ std::unique_ptr<unwindstack::Regs> CreateFromRawData(unwindstack::ArchEnum arch,
 }
 
 }  // namespace
-
-size_t RegSize(unwindstack::ArchEnum arch) {
-  switch (arch) {
-    case unwindstack::ARCH_X86:
-      return unwindstack::X86_REG_LAST * sizeof(uint32_t);
-    case unwindstack::ARCH_X86_64:
-      return unwindstack::X86_64_REG_LAST * sizeof(uint64_t);
-    case unwindstack::ARCH_ARM:
-      return unwindstack::ARM_REG_LAST * sizeof(uint32_t);
-    case unwindstack::ARCH_ARM64:
-      return unwindstack::ARM64_REG_LAST * sizeof(uint64_t);
-    case unwindstack::ARCH_MIPS:
-      return unwindstack::MIPS_REG_LAST * sizeof(uint32_t);
-    case unwindstack::ARCH_MIPS64:
-      return unwindstack::MIPS64_REG_LAST * sizeof(uint64_t);
-    case unwindstack::ARCH_UNKNOWN:
-      PERFETTO_DCHECK(false);
-      return 0;
-  }
-}
 
 StackMemory::StackMemory(int mem_fd, uint64_t sp, uint8_t* stack, size_t size)
     : mem_fd_(mem_fd), sp_(sp), stack_end_(sp + size), stack_(stack) {}
@@ -155,12 +135,12 @@ void FileDescriptorMaps::Reset() {
   maps_.clear();
 }
 
-bool DoUnwind(WireMessage* msg, ProcessMetadata* metadata, AllocRecord* out) {
+bool DoUnwind(WireMessage* msg, UnwindingMetadata* metadata, AllocRecord* out) {
   AllocMetadata* alloc_metadata = msg->alloc_header;
   std::unique_ptr<unwindstack::Regs> regs(
       CreateFromRawData(alloc_metadata->arch, alloc_metadata->register_data));
   if (regs == nullptr) {
-    PERFETTO_ELOG("regs");
+    PERFETTO_DLOG("regs");
     return false;
   }
   out->alloc_metadata = *alloc_metadata;
@@ -194,74 +174,44 @@ bool HandleUnwindingRecord(UnwindingRecord* rec, BookkeepingRecord* out) {
   if (!ReceiveWireMessage(reinterpret_cast<char*>(rec->data.get()), rec->size,
                           &msg))
     return false;
-  switch (msg.record_type) {
-    case RecordType::Malloc: {
-      std::shared_ptr<ProcessMetadata> metadata = rec->metadata.lock();
-      if (!metadata)
-        // Process has already gone away.
-        return false;
+  if (msg.record_type == RecordType::Malloc) {
+    std::shared_ptr<UnwindingMetadata> metadata = rec->metadata.lock();
+    if (!metadata) {
+      // Process has already gone away.
+      return false;
+    }
 
-      out->metadata = std::move(rec->metadata);
-      out->free_record = {};
-      return DoUnwind(&msg, metadata.get(), &out->alloc_record);
+    out->pid = rec->pid;
+    out->record_type = BookkeepingRecord::Type::Malloc;
+    if (!DoUnwind(&msg, metadata.get(), &out->alloc_record)) {
+      return false;
     }
-    case RecordType::Free: {
-      // We need to keep this alive, because msg.free_header is a pointer into
-      // this.
-      out->metadata = std::move(rec->metadata);
-      out->free_record.free_data = std::move(rec->data);
-      out->free_record.metadata = msg.free_header;
-      out->alloc_record = {};
-      return true;
-    }
+    return true;
+  } else if (msg.record_type == RecordType::Free) {
+    out->record_type = BookkeepingRecord::Type::Free;
+    out->pid = rec->pid;
+    // We need to keep this alive, because msg.free_header is a pointer into
+    // this.
+    out->free_record.free_data = std::move(rec->data);
+    out->free_record.metadata = msg.free_header;
+    return true;
+  } else {
+    PERFETTO_DFATAL("Invalid record type.");
+    return false;
   }
 }
 
-__attribute__((noreturn)) void UnwindingMainLoop(
-    BoundedQueue<UnwindingRecord>* input_queue,
-    BoundedQueue<BookkeepingRecord>* output_queue) {
+void UnwindingMainLoop(BoundedQueue<UnwindingRecord>* input_queue,
+                       BoundedQueue<BookkeepingRecord>* output_queue) {
   for (;;) {
-    UnwindingRecord rec = input_queue->Get();
+    UnwindingRecord rec;
+    if (!input_queue->Get(&rec))
+      return;
     BookkeepingRecord out;
     if (HandleUnwindingRecord(&rec, &out))
       output_queue->Add(std::move(out));
   }
 }
 
-void HandleBookkeepingRecord(BookkeepingRecord* rec) {
-  std::shared_ptr<ProcessMetadata> metadata = rec->metadata.lock();
-  if (!metadata)
-    // Process has already gone away.
-    return;
-
-  if (rec->free_record.free_data) {
-    FreeRecord& free_rec = rec->free_record;
-    FreePageEntry* entries = free_rec.metadata->entries;
-    uint64_t num_entries = free_rec.metadata->num_entries;
-    if (num_entries > kFreePageSize)
-      return;
-    for (size_t i = 0; i < num_entries; ++i) {
-      const FreePageEntry& entry = entries[i];
-      metadata->heap_dump.RecordFree(entry.addr, entry.sequence_number);
-    }
-  } else {
-    AllocRecord& alloc_rec = rec->alloc_record;
-    std::vector<CodeLocation> code_locations;
-    for (unwindstack::FrameData& frame : alloc_rec.frames)
-      code_locations.emplace_back(frame.map_name, frame.function_name);
-    metadata->heap_dump.RecordMalloc(code_locations,
-                                     alloc_rec.alloc_metadata.alloc_address,
-                                     alloc_rec.alloc_metadata.alloc_size,
-                                     alloc_rec.alloc_metadata.sequence_number);
-  }
-}
-
-__attribute__((noreturn)) void BookkeepingMainLoop(
-    BoundedQueue<BookkeepingRecord>* input_queue) {
-  for (;;) {
-    BookkeepingRecord rec = input_queue->Get();
-    HandleBookkeepingRecord(&rec);
-  }
-}
-
+}  // namespace profiling
 }  // namespace perfetto

@@ -79,14 +79,12 @@ VertexArrayGL::VertexArrayGL(const VertexArrayState &state,
     }
 }
 
-VertexArrayGL::~VertexArrayGL()
-{
-}
+VertexArrayGL::~VertexArrayGL() {}
 
 void VertexArrayGL::destroy(const gl::Context *context)
 {
     mStateManager->deleteVertexArray(mVertexArrayID);
-    mVertexArrayID = 0;
+    mVertexArrayID   = 0;
     mAppliedNumViews = 1;
 
     mStateManager->deleteBuffer(mStreamingElementArrayBuffer);
@@ -104,11 +102,11 @@ void VertexArrayGL::destroy(const gl::Context *context)
     }
 }
 
-angle::Result VertexArrayGL::syncDrawArraysState(const gl::Context *context,
-                                                 const gl::AttributesMask &activeAttributesMask,
-                                                 GLint first,
-                                                 GLsizei count,
-                                                 GLsizei instanceCount) const
+angle::Result VertexArrayGL::syncClientSideData(const gl::Context *context,
+                                                const gl::AttributesMask &activeAttributesMask,
+                                                GLint first,
+                                                GLsizei count,
+                                                GLsizei instanceCount) const
 {
     return syncDrawState(context, activeAttributesMask, first, count, GL_NONE, nullptr,
                          instanceCount, false, nullptr);
@@ -129,7 +127,7 @@ angle::Result VertexArrayGL::syncDrawElementsState(const gl::Context *context,
 
 void VertexArrayGL::updateElementArrayBufferBinding(const gl::Context *context) const
 {
-    gl::Buffer *elementArrayBuffer = mState.getElementArrayBuffer().get();
+    gl::Buffer *elementArrayBuffer = mState.getElementArrayBuffer();
     if (elementArrayBuffer != nullptr && elementArrayBuffer != mAppliedElementArrayBuffer.get())
     {
         const BufferGL *bufferGL = GetImplAs<BufferGL>(elementArrayBuffer);
@@ -187,7 +185,7 @@ angle::Result VertexArrayGL::syncIndexData(const gl::Context *context,
 {
     ASSERT(outIndices);
 
-    gl::Buffer *elementArrayBuffer = mState.getElementArrayBuffer().get();
+    gl::Buffer *elementArrayBuffer = mState.getElementArrayBuffer();
 
     // Need to check the range of indices if attributes need to be streamed
     if (elementArrayBuffer != nullptr)
@@ -197,9 +195,9 @@ angle::Result VertexArrayGL::syncIndexData(const gl::Context *context,
         if (attributesNeedStreaming)
         {
             ptrdiff_t elementArrayBufferOffset = reinterpret_cast<ptrdiff_t>(indices);
-            ANGLE_TRY_HANDLE(context, mState.getElementArrayBuffer()->getIndexRange(
-                                          context, type, elementArrayBufferOffset, count,
-                                          primitiveRestartEnabled, outIndexRange));
+            ANGLE_TRY(mState.getElementArrayBuffer()->getIndexRange(
+                context, type, elementArrayBufferOffset, count, primitiveRestartEnabled,
+                outIndexRange));
         }
 
         // Indices serves as an offset into the index buffer in this case, use the same value for
@@ -276,7 +274,7 @@ void VertexArrayGL::computeStreamingAttributeSizes(const gl::AttributesMask &att
         // If streaming is going to be required, compute the size of the required buffer
         // and how much slack space at the beginning of the buffer will be required by determining
         // the attribute with the largest data size.
-        size_t typeSize = ComputeVertexAttributeTypeSize(attrib);
+        size_t typeSize        = ComputeVertexAttributeTypeSize(attrib);
         GLuint adjustedDivisor = GetAdjustedDivisor(mAppliedNumViews, binding.getDivisor());
         *outStreamingDataSize +=
             typeSize * ComputeVertexBindingElementCount(adjustedDivisor, indexRange.vertexCount(),
@@ -338,7 +336,7 @@ angle::Result VertexArrayGL::streamAttributes(const gl::Context *context,
 
         for (auto idx : attribsToStream)
         {
-            const auto &attrib  = attribs[idx];
+            const auto &attrib = attribs[idx];
             ASSERT(IsVertexAttribPointerSupported(idx, attrib));
 
             const auto &binding = bindings[attrib.bindingIndex];
@@ -729,7 +727,7 @@ void VertexArrayGL::applyNumViewsToDivisor(int numViews)
 
 void VertexArrayGL::applyActiveAttribLocationsMask(const gl::AttributesMask &activeMask)
 {
-    gl::AttributesMask updateMask     = mProgramActiveAttribLocationsMask ^ activeMask;
+    gl::AttributesMask updateMask = mProgramActiveAttribLocationsMask ^ activeMask;
     if (!updateMask.any())
     {
         return;

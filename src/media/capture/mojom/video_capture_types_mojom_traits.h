@@ -136,6 +136,11 @@ struct StructTraits<media::mojom::VideoCaptureParamsDataView,
     return params.power_line_frequency;
   }
 
+  static bool enable_face_detection(
+      const media::VideoCaptureParams& params) {
+    return params.enable_face_detection;
+  }
+
   static bool Read(media::mojom::VideoCaptureParamsDataView data,
                    media::VideoCaptureParams* out);
 };

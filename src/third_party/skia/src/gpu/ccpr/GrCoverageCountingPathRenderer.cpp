@@ -31,8 +31,9 @@ bool GrCoverageCountingPathRenderer::IsSupported(const GrCaps& caps) {
 
 sk_sp<GrCoverageCountingPathRenderer> GrCoverageCountingPathRenderer::CreateIfSupported(
         const GrCaps& caps, AllowCaching allowCaching) {
-    return sk_sp<GrCoverageCountingPathRenderer>(
-            IsSupported(caps) ? new GrCoverageCountingPathRenderer(allowCaching) : nullptr);
+    return sk_sp<GrCoverageCountingPathRenderer>((IsSupported(caps))
+            ? new GrCoverageCountingPathRenderer(allowCaching)
+            : nullptr);
 }
 
 GrCoverageCountingPathRenderer::GrCoverageCountingPathRenderer(AllowCaching allowCaching) {
@@ -143,13 +144,14 @@ bool GrCoverageCountingPathRenderer::onDrawPath(const DrawPathArgs& args) {
     return true;
 }
 
-void GrCoverageCountingPathRenderer::recordOp(std::unique_ptr<GrCCDrawPathsOp> opHolder,
+void GrCoverageCountingPathRenderer::recordOp(std::unique_ptr<GrCCDrawPathsOp> op,
                                               const DrawPathArgs& args) {
-    if (GrCCDrawPathsOp* op = opHolder.get()) {
-        GrRenderTargetContext* rtc = args.fRenderTargetContext;
-        if (uint32_t opListID = rtc->addDrawOp(*args.fClip, std::move(opHolder))) {
-            op->wasRecorded(sk_ref_sp(this->lookupPendingPaths(opListID)));
-        }
+    if (op) {
+        auto addToOwningPerOpListPaths = [this](GrOp* op, uint32_t opListID) {
+            op->cast<GrCCDrawPathsOp>()->addToOwningPerOpListPaths(
+                    sk_ref_sp(this->lookupPendingPaths(opListID)));
+        };
+        args.fRenderTargetContext->addDrawOp(*args.fClip, std::move(op), addToOwningPerOpListPaths);
     }
 }
 
@@ -306,7 +308,18 @@ void GrCoverageCountingPathRenderer::postFlush(GrDeferredUploadToken, const uint
         fFlushingPaths.reset();
     }
 
+    if (fPathCache) {
+        fPathCache->doPostFlushProcessing();
+    }
+
     SkDEBUGCODE(fFlushing = false);
+}
+
+void GrCoverageCountingPathRenderer::purgeCacheEntriesOlderThan(
+        const GrStdSteadyClock::time_point& purgeTime) {
+    if (fPathCache) {
+        fPathCache->purgeEntriesOlderThan(purgeTime);
+    }
 }
 
 void GrCoverageCountingPathRenderer::CropPath(const SkPath& path, const SkIRect& cropbox,

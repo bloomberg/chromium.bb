@@ -24,7 +24,6 @@ PROVISIONAL_PR_LABEL = 'do not merge yet'
 DEFAULT_WPT_COMMITTER_NAME = 'Chromium WPT Sync'
 DEFAULT_WPT_COMMITTER_EMAIL = 'blink-w3c-test-autoroller@chromium.org'
 
-# TODO(qyearsley): Avoid hard-coding third_party/WebKit/LayoutTests.
 CHROMIUM_WPT_DIR = RELATIVE_WEB_TESTS + 'external/wpt/'
 
 _log = logging.getLogger(__name__)

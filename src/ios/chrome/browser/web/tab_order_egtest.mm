@@ -124,7 +124,7 @@ const char kLinksTestURL2Text[] = "arrived";
 
   // Add a non-owned tab. It should be added at the end and marked as the
   // current tab. Next tab should wrap back to index 0, the original parent tab.
-  chrome_test_util::OpenNewTab();
+  [ChromeEarlGrey openNewTab];
   [ChromeEarlGrey waitForMainTabCount:6U];
   GREYAssertEqual(parentTab, chrome_test_util::GetNextTab(),
                   @"Unexpected next tab");

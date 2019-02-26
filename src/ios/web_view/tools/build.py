@@ -226,6 +226,9 @@ def main():
     extra_gn_options += 'ios_web_view_include_cronet=false '
   if options.enable_sync:
     extra_gn_options += 'ios_web_view_enable_sync=true '
+    # Used to differentiate //ios/web_view from //ios/chrome in the user agent
+    # product string passed to sync servers.
+    extra_gn_options += 'sync_user_agent_product="ChromeWebView" '
   else:
     extra_gn_options += 'ios_web_view_enable_sync=false '
   if options.enable_autofill:
@@ -233,6 +236,8 @@ def main():
   else:
     extra_gn_options += 'ios_web_view_enable_autofill=false '
   extra_gn_options += 'ios_web_view_output_name="%s" ' % output_name
+  # This is needed until all clients drop iOS 10 support.
+  extra_gn_options += 'ios_deployment_target="10.0" '
   # This prevents Breakpad from being included in the final binary to avoid
   # duplicate symbols with the client app.
   extra_gn_options += 'use_crash_key_stubs=true '

@@ -39,9 +39,12 @@ class LayoutObject;
 class CORE_EXPORT LayoutImageResource
     : public GarbageCollectedFinalized<LayoutImageResource> {
  public:
+  LayoutImageResource();
   virtual ~LayoutImageResource();
 
-  static LayoutImageResource* Create() { return new LayoutImageResource; }
+  static LayoutImageResource* Create() {
+    return MakeGarbageCollected<LayoutImageResource>();
+  }
 
   virtual void Initialize(LayoutObject*);
   virtual void Shutdown();
@@ -73,8 +76,6 @@ class CORE_EXPORT LayoutImageResource
   virtual void Trace(blink::Visitor* visitor) { visitor->Trace(cached_image_); }
 
  protected:
-  LayoutImageResource();
-
   // Device scale factor for the associated LayoutObject.
   float DeviceScaleFactor() const;
   // Returns an image based on the passed device scale factor.

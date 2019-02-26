@@ -36,7 +36,7 @@ void DesktopLinuxBrowserFrameView::Layout() {
 
 void DesktopLinuxBrowserFrameView::MaybeUpdateCachedFrameButtonImages() {
   DrawFrameButtonParams params{
-      GetTopAreaHeight() - layout()->TitlebarTopThickness(!IsMaximized()),
+      GetTopAreaHeight() - layout()->FrameTopThickness(!IsMaximized()),
       IsMaximized(), ShouldPaintAsActive()};
   if (cache_ == params)
     return;

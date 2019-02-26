@@ -37,21 +37,21 @@ void SVGViewSpec::Trace(Visitor* visitor) {
 }
 
 SVGViewSpec* SVGViewSpec::CreateFromFragment(const String& fragment) {
-  SVGViewSpec* view_spec = new SVGViewSpec();
+  SVGViewSpec* view_spec = MakeGarbageCollected<SVGViewSpec>();
   if (!view_spec->ParseViewSpec(fragment))
     return nullptr;
   return view_spec;
 }
 
 SVGViewSpec* SVGViewSpec::CreateForViewElement(const SVGViewElement& view) {
-  SVGViewSpec* view_spec = new SVGViewSpec();
+  SVGViewSpec* view_spec = MakeGarbageCollected<SVGViewSpec>();
   if (view.HasValidViewBox())
     view_spec->view_box_ = view.viewBox()->CurrentValue()->Clone();
   if (view.preserveAspectRatio()->IsSpecified()) {
     view_spec->preserve_aspect_ratio_ =
         view.preserveAspectRatio()->CurrentValue()->Clone();
   }
-  if (view.hasAttribute(SVGNames::zoomAndPanAttr))
+  if (view.hasAttribute(svg_names::kZoomAndPanAttr))
     view_spec->zoom_and_pan_ = view.zoomAndPan();
   return view_spec;
 }

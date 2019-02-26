@@ -4,7 +4,9 @@
 
 #import "ios/chrome/browser/ui/autofill/manual_fill/manual_fill_password_cell.h"
 
+#include "base/metrics/user_metrics.h"
 #import "ios/chrome/browser/ui/autofill/manual_fill/credential.h"
+#import "ios/chrome/browser/ui/autofill/manual_fill/manual_fill_cell_utils.h"
 #import "ios/chrome/browser/ui/autofill/manual_fill/manual_fill_content_delegate.h"
 #import "ios/chrome/browser/ui/autofill/manual_fill/uicolor_manualfill.h"
 #import "ios/chrome/browser/ui/list_model/list_model.h"
@@ -17,10 +19,20 @@
 #endif
 
 @interface ManualFillCredentialItem ()
+
 // The credential for this item.
 @property(nonatomic, strong, readonly) ManualFillCredential* credential;
+
+// The cell won't show a title (site name) label if it is connected to the
+// previous password item.
+@property(nonatomic, assign) BOOL isConnectedToPreviousItem;
+
+// The separator line won't show if it is connected to the next password item.
+@property(nonatomic, assign) BOOL isConnectedToNextItem;
+
 // The delegate for this item.
 @property(nonatomic, weak, readonly) id<ManualFillContentDelegate> delegate;
+
 @end
 
 @implementation ManualFillCredentialItem
@@ -28,10 +40,14 @@
 @synthesize credential = _credential;
 
 - (instancetype)initWithCredential:(ManualFillCredential*)credential
+         isConnectedToPreviousItem:(BOOL)isConnectedToPreviousItem
+             isConnectedToNextItem:(BOOL)isConnectedToNextItem
                           delegate:(id<ManualFillContentDelegate>)delegate {
   self = [super initWithType:kItemTypeEnumZero];
   if (self) {
     _credential = credential;
+    _isConnectedToPreviousItem = isConnectedToPreviousItem;
+    _isConnectedToNextItem = isConnectedToNextItem;
     _delegate = delegate;
     self.cellClass = [ManualFillPasswordCell class];
   }
@@ -41,99 +57,118 @@
 - (void)configureCell:(ManualFillPasswordCell*)cell
            withStyler:(ChromeTableViewStyler*)styler {
   [super configureCell:cell withStyler:styler];
-  [cell setUpWithCredential:self.credential delegate:self.delegate];
+  [cell setUpWithCredential:self.credential
+      isConnectedToPreviousCell:self.isConnectedToPreviousItem
+          isConnectedToNextCell:self.isConnectedToNextItem
+                       delegate:self.delegate];
 }
 
 @end
 
 namespace {
-// Left and right margins of the cell content.
-static const CGFloat sideMargins = 16;
-// The base multiplier for the top and bottom margins. This number multiplied by
-// the font size plus the base margins will give similar results to
-// |constraintEqualToSystemSpacingBelowAnchor:| which is not available on iOS
-// 10.
-static const CGFloat iOS10MarginFontMultiplier = 1.18;
-// The base top margin, only used in iOS 10. Refer to
-// |iOS10MarginFontMultiplier| for how it is used.
-static const CGFloat iOS10BaseTopMargin = 28;
-// The base middle margin, only used in iOS 10. Refer to
-// |iOS10MarginFontMultiplier| for how it is used.
-static const CGFloat iOS10BaseMiddleMargin = 24;
-// The base bottom margin, only used in iOS 10. Refer to
-// |iOS10MarginFontMultiplier| for how it is used.
-static const CGFloat iOS10BaseBottomMargin = 18;
-// The multiplier for the base system spacing at the top margin.
-static const CGFloat TopSystemSpacingMultiplier = 1.58;
-// The multiplier for the base system spacing between elements (vertical).
-static const CGFloat MiddleSystemSpacingMultiplier = 1.83;
-// The multiplier for the base system spacing at the bottom margin.
-static const CGFloat BottomSystemSpacingMultiplier = 2.26;
+
+// The multiplier for the base system spacing at the top margin for connected
+// cells.
+static const CGFloat TopSystemSpacingMultiplierForConnectedCell = 1.28;
+
+// When no extra multiplier is required.
+static const CGFloat NoMultiplier = 1.0;
+
 }  // namespace
 
 @interface ManualFillPasswordCell ()
+
 // The credential this cell is showing.
 @property(nonatomic, strong) ManualFillCredential* manualFillCredential;
+
+// The dynamic constraints for all the lines (i.e. not set in createView).
+@property(nonatomic, strong)
+    NSMutableArray<NSLayoutConstraint*>* dynamicConstraints;
+
 // The label with the site name and host.
 @property(nonatomic, strong) UILabel* siteNameLabel;
+
 // A button showing the username, or "No Username".
 @property(nonatomic, strong) UIButton* usernameButton;
+
 // A button showing "••••••••" to resemble a password.
 @property(nonatomic, strong) UIButton* passwordButton;
+
+// Separator line between cells, if needed.
+@property(nonatomic, strong) UIView* grayLine;
+
 // The delegate in charge of processing the user actions in this cell.
 @property(nonatomic, weak) id<ManualFillContentDelegate> delegate;
+
 @end
 
 @implementation ManualFillPasswordCell
-
-@synthesize manualFillCredential = _manualFillCredential;
-@synthesize siteNameLabel = _siteNameLabel;
-@synthesize usernameButton = _usernameButton;
-@synthesize passwordButton = _passwordButton;
-@synthesize delegate = _delegate;
 
 #pragma mark - Public
 
 - (void)prepareForReuse {
   [super prepareForReuse];
+  [NSLayoutConstraint deactivateConstraints:self.dynamicConstraints];
+  [self.dynamicConstraints removeAllObjects];
+
   self.siteNameLabel.text = @"";
+
   [self.usernameButton setTitle:@"" forState:UIControlStateNormal];
   self.usernameButton.enabled = YES;
+  [self.usernameButton setTitleColor:UIColor.cr_manualFillTintColor
+                            forState:UIControlStateNormal];
+
   [self.passwordButton setTitle:@"" forState:UIControlStateNormal];
+  self.passwordButton.accessibilityLabel = nil;
+  self.passwordButton.hidden = NO;
+
   self.manualFillCredential = nil;
+
+  self.grayLine.hidden = NO;
 }
 
 - (void)setUpWithCredential:(ManualFillCredential*)credential
-                   delegate:(id<ManualFillContentDelegate>)delegate {
+    isConnectedToPreviousCell:(BOOL)isConnectedToPreviousCell
+        isConnectedToNextCell:(BOOL)isConnectedToNextCell
+                     delegate:(id<ManualFillContentDelegate>)delegate {
   if (self.contentView.subviews.count == 0) {
     [self createViewHierarchy];
   }
   self.delegate = delegate;
   self.manualFillCredential = credential;
-  NSMutableAttributedString* attributedString =
-      [[NSMutableAttributedString alloc]
-          initWithString:credential.siteName ? credential.siteName : @""
-              attributes:@{
-                NSForegroundColorAttributeName : UIColor.blackColor,
-                NSFontAttributeName :
-                    [UIFont preferredFontForTextStyle:UIFontTextStyleHeadline]
-              }];
-  if (credential.host && credential.host.length &&
-      ![credential.host isEqualToString:credential.siteName]) {
-    NSString* hostString =
-        [NSString stringWithFormat:@" –– %@", credential.host];
-    NSDictionary* attributes = @{
-      NSForegroundColorAttributeName : UIColor.lightGrayColor,
-      NSFontAttributeName :
-          [UIFont preferredFontForTextStyle:UIFontTextStyleBody]
-    };
-    NSAttributedString* hostAttributedString =
-        [[NSAttributedString alloc] initWithString:hostString
-                                        attributes:attributes];
-    [attributedString appendAttributedString:hostAttributedString];
+
+  NSMutableArray<UIView*>* verticalLeadViews = [[NSMutableArray alloc] init];
+
+  if (isConnectedToPreviousCell) {
+    self.siteNameLabel.hidden = YES;
+  } else {
+    NSMutableAttributedString* attributedString =
+        [[NSMutableAttributedString alloc]
+            initWithString:credential.siteName ? credential.siteName : @""
+                attributes:@{
+                  NSForegroundColorAttributeName : UIColor.blackColor,
+                  NSFontAttributeName :
+                      [UIFont preferredFontForTextStyle:UIFontTextStyleHeadline]
+                }];
+    if (credential.host && credential.host.length &&
+        ![credential.host isEqualToString:credential.siteName]) {
+      NSString* hostString =
+          [NSString stringWithFormat:@" –– %@", credential.host];
+      NSDictionary* attributes = @{
+        NSForegroundColorAttributeName : UIColor.lightGrayColor,
+        NSFontAttributeName :
+            [UIFont preferredFontForTextStyle:UIFontTextStyleBody]
+      };
+      NSAttributedString* hostAttributedString =
+          [[NSAttributedString alloc] initWithString:hostString
+                                          attributes:attributes];
+      [attributedString appendAttributedString:hostAttributedString];
+    }
+    self.siteNameLabel.attributedText = attributedString;
+    [verticalLeadViews addObject:self.siteNameLabel];
+    self.siteNameLabel.hidden = NO;
   }
 
-  self.siteNameLabel.attributedText = attributedString;
   if (credential.username.length) {
     [self.usernameButton setTitle:credential.username
                          forState:UIControlStateNormal];
@@ -141,12 +176,38 @@ static const CGFloat BottomSystemSpacingMultiplier = 2.26;
     NSString* titleString =
         l10n_util::GetNSString(IDS_IOS_MANUAL_FALLBACK_NO_USERNAME);
     [self.usernameButton setTitle:titleString forState:UIControlStateNormal];
+    [self.usernameButton setTitleColor:UIColor.lightGrayColor
+                              forState:UIControlStateNormal];
     self.usernameButton.enabled = NO;
   }
+  [verticalLeadViews addObject:self.usernameButton];
 
   if (credential.password.length) {
     [self.passwordButton setTitle:@"••••••••" forState:UIControlStateNormal];
+    self.passwordButton.accessibilityLabel =
+        l10n_util::GetNSString(IDS_IOS_SETTINGS_PASSWORD_HIDDEN_LABEL);
+    [verticalLeadViews addObject:self.passwordButton];
+    self.passwordButton.hidden = NO;
+  } else {
+    self.passwordButton.hidden = YES;
   }
+
+  if (isConnectedToNextCell) {
+    self.grayLine.hidden = YES;
+  }
+
+  CGFloat topSystemSpacingMultiplier =
+      isConnectedToPreviousCell ? TopSystemSpacingMultiplierForConnectedCell
+                                : TopSystemSpacingMultiplier;
+  CGFloat bottomSystemSpacingMultiplier =
+      isConnectedToNextCell ? NoMultiplier : BottomSystemSpacingMultiplier;
+
+  self.dynamicConstraints = [[NSMutableArray alloc] init];
+  AppendVerticalConstraintsSpacingForViews(
+      self.dynamicConstraints, verticalLeadViews, self.contentView,
+      topSystemSpacingMultiplier, MiddleSystemSpacingMultiplier,
+      bottomSystemSpacingMultiplier);
+  [NSLayoutConstraint activateConstraints:self.dynamicConstraints];
 }
 
 #pragma mark - Private
@@ -155,132 +216,51 @@ static const CGFloat BottomSystemSpacingMultiplier = 2.26;
 - (void)createViewHierarchy {
   self.selectionStyle = UITableViewCellSelectionStyleNone;
 
-  UIView* grayLine = [[UIView alloc] init];
-  grayLine.backgroundColor = [UIColor colorWithWhite:0.88 alpha:1];
-  grayLine.translatesAutoresizingMaskIntoConstraints = NO;
-  [self.contentView addSubview:grayLine];
+  UIView* guide = self.contentView;
+  self.grayLine = CreateGraySeparatorForContainer(guide);
+  NSMutableArray<NSLayoutConstraint*>* staticConstraints =
+      [[NSMutableArray alloc] init];
 
-  self.siteNameLabel = [[UILabel alloc] init];
+  self.siteNameLabel = CreateLabel();
   self.siteNameLabel.translatesAutoresizingMaskIntoConstraints = NO;
   self.siteNameLabel.adjustsFontForContentSizeCategory = YES;
   [self.contentView addSubview:self.siteNameLabel];
+  AppendHorizontalConstraintsForViews(staticConstraints,
+                                      @[ self.siteNameLabel ], guide,
+                                      ButtonHorizontalMargin);
 
-  self.usernameButton = [UIButton buttonWithType:UIButtonTypeSystem];
-  [self.usernameButton setTitleColor:UIColor.cr_manualFillTintColor
-                            forState:UIControlStateNormal];
-  self.usernameButton.translatesAutoresizingMaskIntoConstraints = NO;
-  self.usernameButton.titleLabel.font =
-      [UIFont preferredFontForTextStyle:UIFontTextStyleBody];
-  self.usernameButton.titleLabel.adjustsFontForContentSizeCategory = YES;
-  [self.usernameButton addTarget:self
-                          action:@selector(userDidTapUsernameButton:)
-                forControlEvents:UIControlEventTouchUpInside];
+  self.usernameButton = CreateButtonWithSelectorAndTarget(
+      @selector(userDidTapUsernameButton:), self);
   [self.contentView addSubview:self.usernameButton];
+  AppendHorizontalConstraintsForViews(staticConstraints,
+                                      @[ self.usernameButton ], guide);
 
-  self.passwordButton = [UIButton buttonWithType:UIButtonTypeSystem];
-  [self.passwordButton setTitleColor:UIColor.cr_manualFillTintColor
-                            forState:UIControlStateNormal];
-  self.passwordButton.translatesAutoresizingMaskIntoConstraints = NO;
-  self.passwordButton.titleLabel.font =
-      [UIFont preferredFontForTextStyle:UIFontTextStyleBody];
-  self.passwordButton.titleLabel.adjustsFontForContentSizeCategory = YES;
-  [self.passwordButton addTarget:self
-                          action:@selector(userDidTapPasswordButton:)
-                forControlEvents:UIControlEventTouchUpInside];
+  self.passwordButton = CreateButtonWithSelectorAndTarget(
+      @selector(userDidTapPasswordButton:), self);
   [self.contentView addSubview:self.passwordButton];
+  AppendHorizontalConstraintsForViews(staticConstraints,
+                                      @[ self.passwordButton ], guide);
 
-  id<LayoutGuideProvider> safeArea =
-      SafeAreaLayoutGuideForView(self.contentView);
-
-  NSArray* verticalConstraints;
-  if (@available(iOS 11, *)) {
-    // Multipliers of these constraints are calculated based on a 24 base
-    // system spacing.
-    verticalConstraints = @[
-      [self.siteNameLabel.firstBaselineAnchor
-          constraintEqualToSystemSpacingBelowAnchor:self.contentView.topAnchor
-                                         multiplier:TopSystemSpacingMultiplier],
-      [self.usernameButton.firstBaselineAnchor
-          constraintEqualToSystemSpacingBelowAnchor:self.siteNameLabel
-                                                        .lastBaselineAnchor
-                                         multiplier:
-                                             MiddleSystemSpacingMultiplier],
-      [self.passwordButton.firstBaselineAnchor
-          constraintEqualToSystemSpacingBelowAnchor:self.usernameButton
-                                                        .lastBaselineAnchor
-                                         multiplier:
-                                             MiddleSystemSpacingMultiplier],
-      [self.contentView.bottomAnchor
-          constraintEqualToSystemSpacingBelowAnchor:self.passwordButton
-                                                        .lastBaselineAnchor
-                                         multiplier:
-                                             BottomSystemSpacingMultiplier],
-    ];
-  } else {
-    CGFloat pointSize = self.usernameButton.titleLabel.font.pointSize;
-    // These margins are based on the design size and the current point size.
-    // The multipliers were selected by manually testing the different system
-    // font sizes.
-    CGFloat marginBetweenButtons =
-        iOS10BaseMiddleMargin + pointSize * iOS10MarginFontMultiplier;
-    CGFloat marginBottom =
-        iOS10BaseBottomMargin + pointSize * iOS10MarginFontMultiplier / 2;
-    CGFloat marginTop =
-        iOS10BaseTopMargin + pointSize * iOS10MarginFontMultiplier / 2;
-
-    verticalConstraints = @[
-      // This doesn't make sense when the label is to big.
-      [self.siteNameLabel.firstBaselineAnchor
-          constraintEqualToAnchor:self.contentView.topAnchor
-                         constant:marginTop],
-      [self.usernameButton.firstBaselineAnchor
-          constraintEqualToAnchor:self.siteNameLabel.lastBaselineAnchor
-                         constant:marginBetweenButtons],
-      [self.passwordButton.firstBaselineAnchor
-          constraintEqualToAnchor:self.usernameButton.lastBaselineAnchor
-                         constant:marginBetweenButtons],
-      [self.contentView.bottomAnchor
-          constraintEqualToAnchor:self.passwordButton.lastBaselineAnchor
-                         constant:marginBottom],
-    ];
-  }
-
-  [NSLayoutConstraint activateConstraints:verticalConstraints];
-  [NSLayoutConstraint activateConstraints:@[
-    // Common vertical constraints.
-    [grayLine.bottomAnchor
-        constraintEqualToAnchor:self.contentView.bottomAnchor],
-    [grayLine.heightAnchor constraintEqualToConstant:1],
-
-    // Horizontal constraints.
-    [grayLine.leadingAnchor constraintEqualToAnchor:safeArea.leadingAnchor
-                                           constant:sideMargins],
-    [safeArea.trailingAnchor constraintEqualToAnchor:grayLine.trailingAnchor
-                                            constant:sideMargins],
-
-    [self.siteNameLabel.leadingAnchor
-        constraintEqualToAnchor:grayLine.leadingAnchor],
-    [self.siteNameLabel.trailingAnchor
-        constraintEqualToAnchor:grayLine.trailingAnchor],
-    [self.usernameButton.leadingAnchor
-        constraintEqualToAnchor:grayLine.leadingAnchor],
-    [self.usernameButton.trailingAnchor
-        constraintLessThanOrEqualToAnchor:grayLine.trailingAnchor],
-    [self.passwordButton.leadingAnchor
-        constraintEqualToAnchor:grayLine.leadingAnchor],
-    [self.passwordButton.trailingAnchor
-        constraintLessThanOrEqualToAnchor:grayLine.trailingAnchor],
-  ]];
+  [NSLayoutConstraint activateConstraints:staticConstraints];
 }
 
 - (void)userDidTapUsernameButton:(UIButton*)button {
+  base::RecordAction(
+      base::UserMetricsAction("ManualFallback_Password_SelectUsername"));
   [self.delegate userDidPickContent:self.manualFillCredential.username
-                           isSecure:NO];
+                      passwordField:NO
+                      requiresHTTPS:NO];
 }
 
 - (void)userDidTapPasswordButton:(UIButton*)button {
+  if (![self.delegate canUserInjectInPasswordField:YES requiresHTTPS:YES]) {
+    return;
+  }
+  base::RecordAction(
+      base::UserMetricsAction("ManualFallback_Password_SelectPassword"));
   [self.delegate userDidPickContent:self.manualFillCredential.password
-                           isSecure:YES];
+                      passwordField:YES
+                      requiresHTTPS:YES];
 }
 
 @end

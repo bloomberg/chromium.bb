@@ -79,6 +79,11 @@ TabletModeWindowDragDelegate::~TabletModeWindowDragDelegate() {
 void TabletModeWindowDragDelegate::StartWindowDrag(
     aura::Window* dragged_window,
     const gfx::Point& location_in_screen) {
+  // TODO(oshima): Consider doing the same for normal window dragging as well
+  // crbug.com/904631.
+  DCHECK(!occlusion_excluder_);
+  occlusion_excluder_.emplace(dragged_window);
+
   dragged_window_ = dragged_window;
   initial_location_in_screen_ = location_in_screen;
 
@@ -102,8 +107,10 @@ void TabletModeWindowDragDelegate::StartWindowDrag(
   // might open overview in the dragged window side of the screen.
   split_view_controller_->OnWindowDragStarted(dragged_window_);
 
-  if (ShouldOpenOverviewWhenDragStarts() && !controller->IsSelecting())
-    controller->ToggleOverview();
+  if (ShouldOpenOverviewWhenDragStarts() && !controller->IsSelecting()) {
+    controller->ToggleOverview(
+        WindowSelector::EnterExitOverviewType::kWindowDragged);
+  }
 
   if (controller->IsSelecting()) {
     // Only do animation if overview was open before the drag started. If the
@@ -197,6 +204,7 @@ void TabletModeWindowDragDelegate::EndWindowDrag(
 
   // For child class to do its special handling if any.
   EndedWindowDrag(location_in_screen);
+  occlusion_excluder_.reset();
   dragged_window_ = nullptr;
   did_move_ = false;
 }
@@ -263,6 +271,9 @@ int TabletModeWindowDragDelegate::GetIndicatorsVerticalThreshold(
 
 SplitViewController::SnapPosition TabletModeWindowDragDelegate::GetSnapPosition(
     const gfx::Point& location_in_screen) const {
+  if (!split_view_controller_->CanSnap(dragged_window_))
+    return SplitViewController::NONE;
+
   // If split view mode is active during dragging, the dragged window will be
   // either snapped left or right (if it's not merged into overview window),
   // depending on the relative position of |location_in_screen| and the current
@@ -373,9 +384,15 @@ bool TabletModeWindowDragDelegate::ShouldDropWindowIntoOverview(
   if (is_split_view_active)
     return is_drop_target_selected;
 
+  const gfx::Rect work_area_bounds =
+      display::Screen::GetScreen()
+          ->GetDisplayNearestWindow(dragged_window_)
+          .work_area();
   return is_drop_target_selected ||
-         location_in_screen.y() >= kDragPositionToOverviewRatio *
-                                       drop_target->GetTransformedBounds().y();
+         (location_in_screen.y() - work_area_bounds.y()) >=
+             kDragPositionToOverviewRatio *
+                 (drop_target->GetTransformedBounds().y() -
+                  work_area_bounds.y());
 }
 
 bool TabletModeWindowDragDelegate::ShouldFlingIntoOverview(

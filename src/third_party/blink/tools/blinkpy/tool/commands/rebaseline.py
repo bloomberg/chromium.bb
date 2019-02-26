@@ -109,8 +109,8 @@ class AbstractRebaseliningCommand(Command):
 class ChangeSet(object):
     """A record of TestExpectation lines to remove.
 
-    TODO(qyearsley): Remove this class, track list of lines to remove directly
-    in an attribute of AbstractRebaseliningCommand.
+    Note: This class is probably more complicated than necessary; it is mainly
+    used to track the list of lines that we want to remove from TestExpectations.
     """
 
     def __init__(self, lines_to_remove=None):
@@ -332,7 +332,7 @@ class AbstractParallelRebaselineCommand(AbstractRebaseliningCommand):
                 except ValueError:
                     _log.debug('"%s" is not a JSON object, ignoring', line)
             if not updated:
-                # TODO(qyearsley): This probably should be an error. See http://crbug.com/649412.
+                # TODO(crbug.com/649412): This could be made into an error.
                 _log.debug('Could not add file based off output "%s"', stdout)
         return change_set
 

@@ -10,7 +10,6 @@
 #include <string>
 #include <vector>
 
-#include "base/base_switches.h"
 #include "base/command_line.h"
 #include "base/files/file_util.h"
 #include "base/logging.h"
@@ -26,23 +25,20 @@
 #include "build/build_config.h"
 #include "cc/base/switches.h"
 #include "chromecast/base/cast_constants.h"
-#include "chromecast/base/cast_features.h"
 #include "chromecast/base/cast_paths.h"
 #include "chromecast/base/chromecast_switches.h"
 #include "chromecast/base/metrics/cast_metrics_helper.h"
 #include "chromecast/base/metrics/grouped_histogram.h"
-#include "chromecast/base/pref_names.h"
 #include "chromecast/base/version.h"
 #include "chromecast/browser/cast_browser_context.h"
 #include "chromecast/browser/cast_browser_process.h"
 #include "chromecast/browser/cast_content_browser_client.h"
+#include "chromecast/browser/cast_feature_list_creator.h"
 #include "chromecast/browser/cast_memory_pressure_monitor.h"
 #include "chromecast/browser/cast_net_log.h"
 #include "chromecast/browser/devtools/remote_debugging_server.h"
 #include "chromecast/browser/media/media_caps_impl.h"
-#include "chromecast/browser/metrics/cast_metrics_prefs.h"
 #include "chromecast/browser/metrics/cast_metrics_service_client.h"
-#include "chromecast/browser/pref_service_helper.h"
 #include "chromecast/browser/tts/tts_controller_impl.h"
 #include "chromecast/browser/tts/tts_platform_stub.h"
 #include "chromecast/browser/url_request_context_factory.h"
@@ -56,8 +52,7 @@
 #include "chromecast/net/connectivity_checker.h"
 #include "chromecast/public/cast_media_shlib.h"
 #include "chromecast/service/cast_service.h"
-#include "components/prefs/pref_registry_simple.h"
-#include "components/proxy_config/pref_proxy_config_tracker_impl.h"
+#include "components/prefs/pref_service.h"
 #include "components/viz/common/switches.h"
 #include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
@@ -318,7 +313,6 @@ CastBrowserMainParts::CastBrowserMainParts(
     CastContentBrowserClient* cast_content_browser_client)
     : BrowserMainParts(),
       cast_browser_process_(new CastBrowserProcess()),
-      field_trial_list_(nullptr),
       parameters_(parameters),
       cast_content_browser_client_(cast_content_browser_client),
       url_request_context_factory_(url_request_context_factory),
@@ -427,32 +421,11 @@ int CastBrowserMainParts::PreCreateThreads() {
   crash_reporter::ChildExitObserver::GetInstance()->RegisterClient(
       std::make_unique<crash_reporter::ChildProcessCrashObserver>(
           crash_dumps_dir, kAndroidMinidumpDescriptor));
-#else
-  base::FilePath home_dir;
-  CHECK(base::PathService::Get(DIR_CAST_HOME, &home_dir));
-  if (!base::CreateDirectory(home_dir))
-    return 1;
 #endif
 
-  scoped_refptr<PrefRegistrySimple> pref_registry(new PrefRegistrySimple());
-  metrics::RegisterPrefs(pref_registry.get());
-  PrefProxyConfigTrackerImpl::RegisterPrefs(pref_registry.get());
   cast_browser_process_->SetPrefService(
-      PrefServiceHelper::CreatePrefService(pref_registry.get()));
-
-  // As soon as the PrefService is set, initialize the base::FeatureList, so
-  // objects initialized after this point can use features from
-  // base::FeatureList.
-  const auto* features_dict =
-      cast_browser_process_->pref_service()->GetDictionary(
-          prefs::kLatestDCSFeatures);
-  const auto* experiment_ids = cast_browser_process_->pref_service()->GetList(
-      prefs::kActiveDCSExperiments);
-  auto* command_line = base::CommandLine::ForCurrentProcess();
-  InitializeFeatureList(
-      *features_dict, *experiment_ids,
-      command_line->GetSwitchValueASCII(switches::kEnableFeatures),
-      command_line->GetSwitchValueASCII(switches::kDisableFeatures));
+      cast_content_browser_client_->GetCastFeatureListCreator()
+          ->TakePrefService());
 
 #if defined(USE_AURA)
   cast_browser_process_->SetCastScreen(std::make_unique<CastScreen>());

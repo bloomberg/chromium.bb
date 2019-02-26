@@ -90,6 +90,7 @@ class QUIC_EXPORT_PRIVATE QuicStreamSequencerBuffer {
 
   explicit QuicStreamSequencerBuffer(size_t max_capacity_bytes);
   QuicStreamSequencerBuffer(const QuicStreamSequencerBuffer&) = delete;
+  QuicStreamSequencerBuffer(QuicStreamSequencerBuffer&&) = default;
   QuicStreamSequencerBuffer& operator=(const QuicStreamSequencerBuffer&) =
       delete;
   ~QuicStreamSequencerBuffer();

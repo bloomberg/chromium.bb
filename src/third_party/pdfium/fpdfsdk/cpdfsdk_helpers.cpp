@@ -48,9 +48,13 @@ class FPDF_FileHandlerContext final : public IFX_SeekableStream {
   FX_FILESIZE GetSize() override;
   bool IsEOF() override;
   FX_FILESIZE GetPosition() override;
-  bool ReadBlock(void* buffer, FX_FILESIZE offset, size_t size) override;
+  bool ReadBlockAtOffset(void* buffer,
+                         FX_FILESIZE offset,
+                         size_t size) override;
   size_t ReadBlock(void* buffer, size_t size) override;
-  bool WriteBlock(const void* buffer, FX_FILESIZE offset, size_t size) override;
+  bool WriteBlockAtOffset(const void* buffer,
+                          FX_FILESIZE offset,
+                          size_t size) override;
   bool Flush() override;
 
   void SetPosition(FX_FILESIZE pos) { m_nCurPos = pos; }
@@ -87,9 +91,9 @@ FX_FILESIZE FPDF_FileHandlerContext::GetPosition() {
   return m_nCurPos;
 }
 
-bool FPDF_FileHandlerContext::ReadBlock(void* buffer,
-                                        FX_FILESIZE offset,
-                                        size_t size) {
+bool FPDF_FileHandlerContext::ReadBlockAtOffset(void* buffer,
+                                                FX_FILESIZE offset,
+                                                size_t size) {
   if (!buffer || !size || !m_pFS->ReadBlock)
     return false;
 
@@ -120,9 +124,9 @@ size_t FPDF_FileHandlerContext::ReadBlock(void* buffer, size_t size) {
   return 0;
 }
 
-bool FPDF_FileHandlerContext::WriteBlock(const void* buffer,
-                                         FX_FILESIZE offset,
-                                         size_t size) {
+bool FPDF_FileHandlerContext::WriteBlockAtOffset(const void* buffer,
+                                                 FX_FILESIZE offset,
+                                                 size_t size) {
   if (!m_pFS || !m_pFS->WriteBlock)
     return false;
 
@@ -167,7 +171,7 @@ CPDF_Page* CPDFPageFromFPDFPage(FPDF_PAGE page) {
 ByteString CFXByteStringFromFPDFWideString(FPDF_WIDESTRING wide_string) {
   return WideString::FromUTF16LE(wide_string,
                                  WideString::WStringLength(wide_string))
-      .UTF8Encode();
+      .ToUTF8();
 }
 
 void CheckUnSupportAnnot(CPDF_Document* pDoc, const CPDF_Annot* pPDFAnnot) {
@@ -218,7 +222,7 @@ void ReportUnsupportedFeatures(CPDF_Document* pDoc) {
         const CPDF_Array* pArray =
             pJSDict ? pJSDict->GetArrayFor("Names") : nullptr;
         if (pArray) {
-          for (size_t i = 0; i < pArray->GetCount(); i++) {
+          for (size_t i = 0; i < pArray->size(); i++) {
             ByteString cbStr = pArray->GetStringAt(i);
             if (cbStr.Compare("com.adobe.acrobat.SharedReview.Register") == 0) {
               RaiseUnSupportError(FPDF_UNSP_DOC_SHAREDREVIEW);
@@ -319,7 +323,7 @@ unsigned long DecodeStreamMaybeCopyAndReturnLength(const CPDF_Stream* stream,
 unsigned long Utf16EncodeMaybeCopyAndReturnLength(const WideString& text,
                                                   void* buffer,
                                                   unsigned long buflen) {
-  ByteString encoded_text = text.UTF16LE_Encode();
+  ByteString encoded_text = text.ToUTF16LE();
   unsigned long len = encoded_text.GetLength();
   if (buffer && len <= buflen)
     memcpy(buffer, encoded_text.c_str(), len);
@@ -353,7 +357,7 @@ CPDF_Array* AddQuadPointsArrayToDictionary(CPDF_Dictionary* dict) {
 }
 
 bool IsValidQuadPointsIndex(const CPDF_Array* array, size_t index) {
-  return array && index < array->GetCount() / 8;
+  return array && index < array->size() / 8;
 }
 
 bool GetQuadPointsAtIndex(const CPDF_Array* array,
@@ -383,7 +387,7 @@ bool GetQuadPointsFromDictionary(CPDF_Dictionary* dict,
   ASSERT(quad_points);
 
   const CPDF_Array* pArray = GetQuadPointsArrayFromDictionary(dict);
-  if (!pArray || quad_index >= pArray->GetCount() / 8)
+  if (!pArray || quad_index >= pArray->size() / 8)
     return false;
 
   quad_index *= 8;

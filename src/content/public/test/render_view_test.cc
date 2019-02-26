@@ -221,22 +221,26 @@ bool RenderViewTest::ExecuteJavaScriptAndReturnNumberValue(
 void RenderViewTest::LoadHTML(const char* html) {
   std::string url_string = "data:text/html;charset=utf-8,";
   url_string.append(net::EscapeQueryParamValue(html, false));
-  GetMainFrame()->LoadHTMLString(std::string(html),
-                                 blink::WebURL(GURL(url_string)));
+  RenderFrame::FromWebFrame(GetMainFrame())
+      ->LoadHTMLString(html, GURL(url_string), "UTF-8", GURL(),
+                       false /* replace_current_item */);
   // The load actually happens asynchronously, so we pump messages to process
   // the pending continuation.
   FrameLoadWaiter(view_->GetMainRenderFrame()).Wait();
-  view_->GetWebView()->UpdateAllLifecyclePhases();
+  view_->GetWebView()->MainFrameWidget()->UpdateAllLifecyclePhases(
+      blink::WebWidget::LifecycleUpdateReason::kTest);
 }
 
 void RenderViewTest::LoadHTMLWithUrlOverride(const char* html,
                                              const char* url_override) {
-  GetMainFrame()->LoadHTMLString(std::string(html),
-                                 blink::WebURL(GURL(url_override)));
+  RenderFrame::FromWebFrame(GetMainFrame())
+      ->LoadHTMLString(html, GURL(url_override), "UTF-8", GURL(),
+                       false /* replace_current_item */);
   // The load actually happens asynchronously, so we pump messages to process
   // the pending continuation.
   FrameLoadWaiter(view_->GetMainRenderFrame()).Wait();
-  view_->GetWebView()->UpdateAllLifecyclePhases();
+  view_->GetWebView()->MainFrameWidget()->UpdateAllLifecyclePhases(
+      blink::WebWidget::LifecycleUpdateReason::kTest);
 }
 
 PageState RenderViewTest::GetCurrentPageState() {
@@ -349,7 +353,6 @@ void RenderViewTest::SetUp() {
       mojo::MakeRequest(&view_params->main_frame_interface_provider));
   view_params->session_storage_namespace_id =
       blink::AllocateSessionStorageNamespaceId();
-  view_params->swapped_out = false;
   view_params->replicated_frame_state = FrameReplicationState();
   view_params->proxy_routing_id = MSG_ROUTING_NONE;
   view_params->hidden = false;
@@ -565,16 +568,17 @@ void RenderViewTest::SetFocused(const blink::WebNode& node) {
 void RenderViewTest::Reload(const GURL& url) {
   CommonNavigationParams common_params(
       url, Referrer(), ui::PAGE_TRANSITION_LINK, FrameMsg_Navigate_Type::RELOAD,
-      true, false, GURL(), GURL(), PREVIEWS_UNSPECIFIED, base::TimeTicks::Now(),
-      "GET", nullptr, base::Optional<SourceLocation>(),
-      false /* started_from_context_menu */, false /* has_user_gesture */,
-      InitiatorCSPInfo());
+      NavigationDownloadPolicy::kAllow, false, GURL(), GURL(),
+      PREVIEWS_UNSPECIFIED, base::TimeTicks::Now(), "GET", nullptr,
+      base::Optional<SourceLocation>(), false /* started_from_context_menu */,
+      false /* has_user_gesture */, InitiatorCSPInfo(), std::string());
   RenderViewImpl* impl = static_cast<RenderViewImpl*>(view_);
   TestRenderFrame* frame =
       static_cast<TestRenderFrame*>(impl->GetMainRenderFrame());
   frame->Navigate(common_params, RequestNavigationParams());
   FrameLoadWaiter(frame).Wait();
-  view_->GetWebView()->UpdateAllLifecyclePhases();
+  view_->GetWebView()->MainFrameWidget()->UpdateAllLifecyclePhases(
+      blink::WebWidget::LifecycleUpdateReason::kTest);
 }
 
 void RenderViewTest::Resize(gfx::Size new_size,
@@ -707,10 +711,11 @@ void RenderViewTest::GoToOffset(int offset,
 
   CommonNavigationParams common_params(
       url, Referrer(), ui::PAGE_TRANSITION_FORWARD_BACK,
-      FrameMsg_Navigate_Type::HISTORY_DIFFERENT_DOCUMENT, true, false, GURL(),
-      GURL(), PREVIEWS_UNSPECIFIED, base::TimeTicks::Now(), "GET", nullptr,
+      FrameMsg_Navigate_Type::HISTORY_DIFFERENT_DOCUMENT,
+      NavigationDownloadPolicy::kAllow, false, GURL(), GURL(),
+      PREVIEWS_UNSPECIFIED, base::TimeTicks::Now(), "GET", nullptr,
       base::Optional<SourceLocation>(), false /* started_from_context_menu */,
-      false /* has_user_gesture */, InitiatorCSPInfo());
+      false /* has_user_gesture */, InitiatorCSPInfo(), std::string());
   RequestNavigationParams request_params;
   request_params.page_state = state;
   request_params.nav_entry_id = pending_offset + 1;
@@ -725,7 +730,8 @@ void RenderViewTest::GoToOffset(int offset,
   // The load actually happens asynchronously, so we pump messages to process
   // the pending continuation.
   FrameLoadWaiter(frame).Wait();
-  view_->GetWebView()->UpdateAllLifecyclePhases();
+  view_->GetWebView()->MainFrameWidget()->UpdateAllLifecyclePhases(
+      blink::WebWidget::LifecycleUpdateReason::kTest);
 }
 
 }  // namespace content

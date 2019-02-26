@@ -256,12 +256,10 @@ class MEDIA_GPU_EXPORT V4L2VideoDecodeAccelerator
                          uint32_t fourcc);
 
   // Take the EGLImage |egl_image|, created for |picture_buffer_id|, and use it
-  // for OutputRecord at |buffer_index|. The buffer is backed by
-  // |passed_dmabuf_fds|, and the OutputRecord takes ownership of them.
+  // for OutputRecord at |buffer_index|.
   void AssignEGLImage(size_t buffer_index,
                       int32_t picture_buffer_id,
-                      EGLImageKHR egl_image,
-                      std::vector<base::ScopedFD> dmabuf_fds);
+                      EGLImageKHR egl_image);
 
   // Service I/O on the V4L2 devices.  This task should only be scheduled from
   // DevicePollTask().  If |event_pending| is true, one or more events

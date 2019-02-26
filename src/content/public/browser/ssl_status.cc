@@ -12,8 +12,8 @@ namespace content {
 SSLStatus::SSLStatus()
     : initialized(false),
       cert_status(0),
-      security_bits(-1),
       key_exchange_group(0),
+      peer_signature_algorithm(0),
       connection_status(0),
       content_status(NORMAL_CONTENT),
       pkp_bypassed(false),
@@ -25,8 +25,8 @@ SSLStatus::SSLStatus(const net::SSLInfo& ssl_info)
       certificate(ssl_info.cert),
       cert_status(ssl_info.cert_status),
       public_key_hashes(ssl_info.public_key_hashes),
-      security_bits(ssl_info.security_bits),
       key_exchange_group(ssl_info.key_exchange_group),
+      peer_signature_algorithm(ssl_info.peer_signature_algorithm),
       connection_status(ssl_info.connection_status),
       content_status(NORMAL_CONTENT),
       pkp_bypassed(ssl_info.pkp_bypassed),
@@ -37,8 +37,8 @@ SSLStatus::SSLStatus(const SSLStatus& other)
       certificate(other.certificate),
       cert_status(other.cert_status),
       public_key_hashes(other.public_key_hashes),
-      security_bits(other.security_bits),
       key_exchange_group(other.key_exchange_group),
+      peer_signature_algorithm(other.peer_signature_algorithm),
       connection_status(other.connection_status),
       content_status(other.content_status),
       pkp_bypassed(other.pkp_bypassed),
@@ -50,8 +50,8 @@ SSLStatus& SSLStatus::operator=(SSLStatus other) {
   certificate = other.certificate;
   cert_status = other.cert_status;
   public_key_hashes = other.public_key_hashes;
-  security_bits = other.security_bits;
   key_exchange_group = other.key_exchange_group;
+  peer_signature_algorithm = other.peer_signature_algorithm;
   connection_status = other.connection_status;
   content_status = other.content_status;
   pkp_bypassed = other.pkp_bypassed;

@@ -152,10 +152,9 @@ class BluetoothLowEnergyWeaveClientConnection
   void OnDidSendMessage(const WireMessage& message, bool success) override;
 
   // device::BluetoothAdapter::Observer:
-  void DeviceChanged(device::BluetoothAdapter* adapter,
-                     device::BluetoothDevice* device) override;
-  void DeviceRemoved(device::BluetoothAdapter* adapter,
-                     device::BluetoothDevice* device) override;
+  void DeviceConnectedStateChanged(device::BluetoothAdapter* adapter,
+                                   device::BluetoothDevice* device,
+                                   bool is_now_connected) override;
   void GattCharacteristicValueChanged(
       device::BluetoothAdapter* adapter,
       device::BluetoothRemoteGattCharacteristic* characteristic,
@@ -175,6 +174,8 @@ class BluetoothLowEnergyWeaveClientConnection
                            ConnectSuccess);
   FRIEND_TEST_ALL_PREFIXES(CryptAuthBluetoothLowEnergyWeaveClientConnectionTest,
                            ConnectSuccessDisconnect);
+  FRIEND_TEST_ALL_PREFIXES(CryptAuthBluetoothLowEnergyWeaveClientConnectionTest,
+                           ConnectThenBluetoothDisconnects);
   FRIEND_TEST_ALL_PREFIXES(CryptAuthBluetoothLowEnergyWeaveClientConnectionTest,
                            DisconnectCalledTwice);
   FRIEND_TEST_ALL_PREFIXES(CryptAuthBluetoothLowEnergyWeaveClientConnectionTest,

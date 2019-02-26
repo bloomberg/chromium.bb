@@ -435,11 +435,13 @@ class BBJSONGenerator(object):
 
   def add_common_test_properties(self, test, tester_config):
     if tester_config.get('use_multi_dimension_trigger_script'):
+      # Assumes update_and_cleanup_test has already been called, so the
+      # builder's mixins have been flattened into the test.
       test['trigger_script'] = {
         'script': '//testing/trigger_scripts/trigger_multiple_dimensions.py',
         'args': [
           '--multiple-trigger-configs',
-          json.dumps(tester_config['swarming']['dimension_sets'] +
+          json.dumps(test['swarming']['dimension_sets'] +
                      tester_config.get('alternate_swarming_dimensions', [])),
           '--multiple-dimension-script-verbose',
           'True'
@@ -754,9 +756,6 @@ class BBJSONGenerator(object):
     is then applied to every dimension set in the test.
 
     """
-    # TODO(martiniss): Maybe make lists extend, possibly on a case by case
-    # basis. Motivation is 'args', where you want a common base, and then
-    # different mixins adding different sets of args.
     new_test = copy.deepcopy(test)
     mixin = copy.deepcopy(mixin)
 
@@ -774,6 +773,23 @@ class BBJSONGenerator(object):
       # test['swarming'], but should update it).
       new_test['swarming'].update(swarming_mixin)
       del mixin['swarming']
+
+    if '$mixin_append' in mixin:
+      # Values specified under $mixin_append should be appended to existing
+      # lists, rather than replacing them.
+      mixin_append = mixin['$mixin_append']
+      for key in mixin_append:
+        new_test.setdefault(key, [])
+        if not isinstance(mixin_append[key], list):
+          raise BBGenErr(
+              'Key "' + key + '" in $mixin_append must be a list.')
+        if not isinstance(new_test[key], list):
+          raise BBGenErr(
+              'Cannot apply $mixin_append to non-list "' + key + '".')
+        new_test[key].extend(mixin_append[key])
+      if 'args' in mixin_append:
+        new_test['args'] = self.maybe_fixup_args_array(new_test['args'])
+      del mixin['$mixin_append']
 
     new_test.update(mixin)
 
@@ -849,6 +865,15 @@ class BBJSONGenerator(object):
     # are defined only to be mirrored into trybots, and don't actually
     # exist on any of the waterfalls or consoles.
     return [
+      'ANGLE GPU Win10 Release (Intel HD 630)',
+      'ANGLE GPU Win10 Release (NVIDIA)',
+      'Dawn GPU Linux Release (Intel HD 630)',
+      'Dawn GPU Linux Release (NVIDIA)',
+      'Dawn GPU Mac Release (Intel)',
+      'Dawn GPU Mac Retina Release (AMD)',
+      'Dawn GPU Mac Retina Release (NVIDIA)',
+      'Dawn GPU Win10 Release (Intel HD 630)',
+      'Dawn GPU Win10 Release (NVIDIA)',
       'Optional Android Release (Nexus 5X)',
       'Optional Linux Release (Intel HD 630)',
       'Optional Linux Release (NVIDIA)',

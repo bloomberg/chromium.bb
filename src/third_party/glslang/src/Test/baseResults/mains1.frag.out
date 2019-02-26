@@ -1,14 +1,14 @@
 mains1.frag
 Shader version: 110
 0:? Sequence
-0:3  Function Definition: main( (global void)
+0:3  Function Definition: main( ( global void)
 0:3    Function Parameters: 
 0:?   Linker Objects
 
 mains2.frag
 Shader version: 110
 0:? Sequence
-0:3  Function Definition: main( (global void)
+0:3  Function Definition: main( ( global void)
 0:3    Function Parameters: 
 0:?   Linker Objects
 
@@ -23,7 +23,7 @@ max_vertices = -1
 input primitive = none
 output primitive = points
 ERROR: node is still EOpNull!
-0:3  Function Definition: foo( (global void)
+0:3  Function Definition: foo( ( global void)
 0:3    Function Parameters: 
 0:?   Linker Objects
 
@@ -34,7 +34,7 @@ max_vertices = -1
 input primitive = none
 output primitive = line_strip
 0:? Sequence
-0:3  Function Definition: bar( (global void)
+0:3  Function Definition: bar( ( global void)
 0:3    Function Parameters: 
 0:?   Linker Objects
 
@@ -42,12 +42,13 @@ output primitive = line_strip
 Linked geometry stage:
 
 ERROR: Linking geometry stage: Contradictory output layout primitives
-ERROR: Linking geometry stage: Missing entry point: Each stage requires one "void main()" entry point
+ERROR: Linking geometry stage: Missing entry point: Each stage requires one entry point
 ERROR: Linking geometry stage: At least one shader must specify an input layout primitive
 ERROR: Linking geometry stage: At least one shader must specify a layout(max_vertices = value)
 
 Linked fragment stage:
 
+ERROR: Linking fragment stage: can't handle multiple entry points per stage
 ERROR: Linking fragment stage: Multiple function bodies in multiple compilation units for the same signature in the same stage:
     main(
 
@@ -57,16 +58,12 @@ max_vertices = -1
 input primitive = none
 output primitive = points
 ERROR: node is still EOpNull!
-0:3  Function Definition: foo( (global void)
-0:3    Function Parameters: 
-0:3  Function Definition: bar( (global void)
-0:3    Function Parameters: 
 0:?   Linker Objects
 Shader version: 110
 0:? Sequence
-0:3  Function Definition: main( (global void)
+0:3  Function Definition: main( ( global void)
 0:3    Function Parameters: 
-0:3  Function Definition: main( (global void)
+0:3  Function Definition: main( ( global void)
 0:3    Function Parameters: 
 0:?   Linker Objects
 

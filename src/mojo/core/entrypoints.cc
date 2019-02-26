@@ -21,8 +21,8 @@ mojo::core::Core* g_core;
 extern "C" {
 
 MojoResult MojoInitializeImpl(const struct MojoInitializeOptions* options) {
-  NOTREACHED() << "Do not call MojoInitialize() as an EDK embedder!";
-  return MOJO_RESULT_OK;
+  NOTREACHED() << "Do not call MojoInitialize() as a Mojo Core embedder!";
+  return MOJO_RESULT_UNIMPLEMENTED;
 }
 
 MojoTimeTicks MojoGetTimeTicksNowImpl() {
@@ -345,6 +345,11 @@ MojoResult MojoQueryQuotaImpl(MojoHandle handle,
                             current_usage);
 }
 
+MojoResult MojoShutdownImpl(const MojoShutdownOptions* options) {
+  NOTREACHED() << "Do not call MojoShutdown() as a Mojo Core embedder!";
+  return MOJO_RESULT_UNIMPLEMENTED;
+}
+
 }  // extern "C"
 
 MojoSystemThunks g_thunks = {sizeof(MojoSystemThunks),
@@ -390,7 +395,8 @@ MojoSystemThunks g_thunks = {sizeof(MojoSystemThunks),
                              MojoSendInvitationImpl,
                              MojoAcceptInvitationImpl,
                              MojoSetQuotaImpl,
-                             MojoQueryQuotaImpl};
+                             MojoQueryQuotaImpl,
+                             MojoShutdownImpl};
 
 }  // namespace
 

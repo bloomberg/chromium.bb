@@ -16,7 +16,7 @@ interface WorkerContentSettingsProxy {
 
   // Returns whether the worker is allowed access to IndexedDB.
   [Sync]
-  AllowIndexedDB(mojo_base.mojom.String16 name) => (bool result);
+  AllowIndexedDB() => (bool result);
 
   // Returns whether the worker is allowed access to the file system.
   [Sync]

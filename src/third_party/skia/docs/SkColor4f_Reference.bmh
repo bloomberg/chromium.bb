@@ -1,6 +1,5 @@
 #Topic Color4f
 #Alias Color4f_Reference ##
-#Substitute SkColor4f
 
 #Struct SkPM4f
 ##
@@ -18,7 +17,7 @@ Components are independent of the others if defined with kUnpremul_SkAlphaType;
 fA Alpha is may be greater or smaller than fG green, fB blue, or fR red.
 SkColor4f is shorthand for Unpremultiplied SkRGBA4f.
 
-Components are connnected if defined with kPremul_SkAlphaType; 
+Components are connected if defined with kPremul_SkAlphaType; 
 fA Alpha is equal to or larger than fG green, fB blue, and fR red. The values
 stored in fG, fB, and fR combine the color component with the Alpha component.
 
@@ -238,83 +237,6 @@ if Alpha not valid.
 
 # ------------------------------------------------------------------------------
 
-#Method static SkRGBA4f Pin(float r, float g, float b, float a)
-#In Utility_Functions
-#Line # sets components to valid range ##
-
-Constructs and returns SkRGBA4f with each component pinned from zero to one.
-
-#Param r  red component ##
-#Param g  green component ##
-#Param b  blue component ##
-#Param a  Alpha component ##
-
-#Return Color4f with valid components ##
-
-#Example
-#Height 40
-    uint32_t storage[8];
-    SkImageInfo info = SkImageInfo::MakeN32Premul(8, 1);
-    SkPixmap pixmap(info, storage, info.minRowBytes());
-    pixmap.erase(SK_ColorWHITE);
-    SkIRect bounds = {0, 0, 1, 1};
-    SkColor4f colors[] = { SkColor4f::Pin(1.5, 0.45f,  0.0,  1), 
-                           SkColor4f::Pin(1,   0.45f, -0.25, 1),
-                           {1.5, 0.45f,  0.0,  1},
-                           {1,   0.45f, -0.25, 1},
-                         };
-    for (auto color4f : colors) {
-        pixmap.erase(color4f, &bounds);
-        bounds.offset(2, 0);
-    }
-    SkBitmap bitmap;
-    canvas->scale(20, 20);
-    bitmap.installPixels(pixmap);
-    canvas->drawBitmap(bitmap, 0, 0);
-##
-
-#SeeAlso pin() FromColor
-
-#Method ##
-
-# ------------------------------------------------------------------------------
-
-#Method SkRGBA4f pin() const
-#In Utility_Functions
-#Line # sets components to valid range ##
-
-Returns SkRGBA4f with all components in the range from zero to one.
-
-#Return SkRGBA4f with valid components ##
-
-#Example
-#Height 40
-    uint32_t storage[8];
-    SkImageInfo info = SkImageInfo::MakeN32Premul(8, 1);
-    SkPixmap pixmap(info, storage, info.minRowBytes());
-    pixmap.erase(SK_ColorWHITE);
-    SkIRect bounds = {0, 0, 1, 1};
-    SkColor4f colors[] = { {1.5, 0.45f,  0.0,  1},
-                           {1,   0.45f, -0.25, 1},
-                         };
-    for (auto color4f : colors) {
-        pixmap.erase(color4f, &bounds);
-        bounds.offset(2, 0);
-        pixmap.erase(color4f.pin(), &bounds);
-        bounds.offset(2, 0);
-    }
-    SkBitmap bitmap;
-    canvas->scale(20, 20);
-    bitmap.installPixels(pixmap);
-    canvas->drawBitmap(bitmap, 0, 0);
-##
-
-#SeeAlso Pin
-
-#Method ##
-
-# ------------------------------------------------------------------------------
-
 #Method static SkRGBA4f FromColor(SkColor)
 #In Utility_Functions
 #Line # sets components from Color ##
@@ -421,6 +343,47 @@ Returns SkRGBA4f with all components independent of Alpha.
 ##
 
 #SeeAlso premul
+
+#Method ##
+
+#Method uint32_t toBytes_RGBA() const
+#In Utility
+#Line # returns kRGBA_8888_SkColorType color ##
+
+Produces bytes in RGBA order. Component values are not affected by color Alpha.
+
+#Return color ##
+
+#NoExample
+##
+
+#Method ##
+
+#Method static SkRGBA4f FromBytes_RGBA(uint32_t color)
+#In Utility
+#Line # sets kRGBA_8888_SkColorType color ##
+
+Returns from color kRGBA_8888_SkColorType order. Component values are
+not affected by color Alpha.
+
+#Param color  Premultiplied or Unpremultiplied ##
+#Return color ##
+
+#NoExample
+##
+
+#Method ##
+
+#Method SkRGBA4f makeOpaque() const
+#In Utility
+#Line # returns color without transparency ##
+
+Returns color with Alpha set to one.
+
+#Return color ##
+
+#NoExample
+##
 
 #Method ##
 

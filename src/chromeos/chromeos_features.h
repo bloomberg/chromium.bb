@@ -17,10 +17,18 @@ namespace features {
 
 CHROMEOS_EXPORT extern const base::Feature kAndroidMessagesIntegration;
 CHROMEOS_EXPORT extern const base::Feature kAndroidMessagesProdEndpoint;
+CHROMEOS_EXPORT extern const base::Feature kAutoScreenBrightness;
+CHROMEOS_EXPORT extern const base::Feature
+    kAutoScreenBrightnessContinuedAdjustment;
 CHROMEOS_EXPORT extern const base::Feature kChromeVoxArcSupport;
+CHROMEOS_EXPORT extern const base::Feature kCrostiniFiles;
+CHROMEOS_EXPORT extern const base::Feature kCrostiniUsbSupport;
+CHROMEOS_EXPORT extern const base::Feature kDiscoverApp;
 CHROMEOS_EXPORT extern const base::Feature kDriveFs;
+CHROMEOS_EXPORT extern const base::Feature kMyFilesVolume;
 CHROMEOS_EXPORT extern const base::Feature kEnableUnifiedMultiDeviceSettings;
 CHROMEOS_EXPORT extern const base::Feature kEnableUnifiedMultiDeviceSetup;
+CHROMEOS_EXPORT extern const base::Feature kFsNosymfollow;
 CHROMEOS_EXPORT extern const base::Feature kImeServiceConnectable;
 CHROMEOS_EXPORT extern const base::Feature kInstantTethering;
 CHROMEOS_EXPORT extern const base::Feature kMultiDeviceApi;

@@ -42,8 +42,8 @@
 #include "components/keyed_service/content/browser_context_dependency_manager.h"
 #include "components/prefs/pref_service.h"
 #include "components/prefs/scoped_user_pref_update.h"
+#include "components/signin/core/browser/account_consistency_method.h"
 #include "components/signin/core/browser/fake_profile_oauth2_token_service.h"
-#include "components/signin/core/browser/profile_management_switches.h"
 #include "components/signin/core/browser/signin_manager.h"
 #include "components/signin/core/browser/signin_pref_names.h"
 #include "content/public/browser/render_frame_host.h"
@@ -274,7 +274,6 @@ class InlineLoginUIBrowserTest : public InProcessBrowserTest {
 
   void SetUpSigninManager(const std::string& username);
   void EnableSigninAllowed(bool enable);
-  void EnableOneClick(bool enable);
   void AddEmailToOneClickRejectedList(const std::string& email);
   void AllowSigninCookies(bool enable);
   void SetAllowedUsernamePattern(const std::string& pattern);
@@ -295,11 +294,6 @@ void InlineLoginUIBrowserTest::SetUpSigninManager(const std::string& username) {
 void InlineLoginUIBrowserTest::EnableSigninAllowed(bool enable) {
   PrefService* pref_service = browser()->profile()->GetPrefs();
   pref_service->SetBoolean(prefs::kSigninAllowed, enable);
-}
-
-void InlineLoginUIBrowserTest::EnableOneClick(bool enable) {
-  PrefService* pref_service = browser()->profile()->GetPrefs();
-  pref_service->SetBoolean(prefs::kReverseAutologinEnabled, enable);
 }
 
 void InlineLoginUIBrowserTest::AddEmailToOneClickRejectedList(
@@ -380,12 +374,9 @@ IN_PROC_BROWSER_TEST_F(InlineLoginUIBrowserTest, CanOfferNoProfile) {
 }
 
 IN_PROC_BROWSER_TEST_F(InlineLoginUIBrowserTest, CanOffer) {
-  EnableOneClick(true);
   EXPECT_TRUE(CanOfferSignin(browser()->profile(),
                              CAN_OFFER_SIGNIN_FOR_ALL_ACCOUNTS, "12345",
                              "user@gmail.com", NULL));
-
-  EnableOneClick(false);
 
   std::string error_message;
 
@@ -469,7 +460,7 @@ class InlineLoginHelperBrowserTest : public InProcessBrowserTest {
     // creating the browser so that a bunch of classes don't register as
     // observers and end up needing to unregister when the fake is substituted.
     SigninManagerFactory::GetInstance()->SetTestingFactory(
-        context, base::BindRepeating(&BuildFakeSigninManagerBase));
+        context, base::BindRepeating(&BuildFakeSigninManagerForTesting));
     ProfileOAuth2TokenServiceFactory::GetInstance()->SetTestingFactory(
         context, base::BindRepeating(&BuildFakeProfileOAuth2TokenService));
   }

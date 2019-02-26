@@ -31,6 +31,7 @@ class BrowserDMTokenStorageWin : public BrowserDMTokenStorage {
   std::string InitClientId() override;
   std::string InitEnrollmentToken() override;
   std::string InitDMToken() override;
+  bool InitEnrollmentErrorOption() override;
   void SaveDMToken(const std::string& token) override;
 
   scoped_refptr<base::SingleThreadTaskRunner> com_sta_task_runner_;
@@ -40,6 +41,12 @@ class BrowserDMTokenStorageWin : public BrowserDMTokenStorage {
 
   FRIEND_TEST_ALL_PREFIXES(BrowserDMTokenStorageWinTest, InitClientId);
   FRIEND_TEST_ALL_PREFIXES(BrowserDMTokenStorageWinTest, InitEnrollmentToken);
+  // TODO(crbug.com/907589): Remove once no longer in use.
+  FRIEND_TEST_ALL_PREFIXES(BrowserDMTokenStorageWinTest,
+                           InitOldEnrollmentToken);
+  // TODO(crbug.com/907589): Remove once no longer in use.
+  FRIEND_TEST_ALL_PREFIXES(BrowserDMTokenStorageWinTest,
+                           InitOldEnrollmentTokenPriority);
   FRIEND_TEST_ALL_PREFIXES(BrowserDMTokenStorageWinTest, InitDMToken);
   FRIEND_TEST_ALL_PREFIXES(BrowserDMTokenStorageWinTest, SaveDMToken);
 

@@ -7,36 +7,26 @@
 #include <stdio.h>
 
 #include "base/metrics/histogram_macros.h"
-#include "components/prefs/pref_service.h"
+#include "base/stl_util.h"
 #include "components/sync/base/stop_source.h"
-#include "components/sync/base/sync_prefs.h"
 #include "components/sync/driver/sync_service.h"
-#include "components/sync/protocol/sync_protocol_error.h"
-#include "components/unified_consent/feature.h"
+#include "components/sync/driver/sync_user_settings.h"
 #include "google_apis/gaia/google_service_auth_error.h"
-#include "ios/chrome/browser/browser_state/chrome_browser_state.h"
-#include "ios/chrome/browser/pref_names.h"
-#include "net/base/network_change_notifier.h"
 
 namespace {
 // The set of user-selectable datatypes. This must be in the same order as
 // |SyncSetupService::SyncableDatatype|.
 syncer::ModelType kDataTypes[] = {
-    syncer::BOOKMARKS,    syncer::TYPED_URLS,  syncer::PASSWORDS,
-    syncer::PROXY_TABS,   syncer::AUTOFILL,    syncer::PREFERENCES,
-    syncer::READING_LIST, syncer::USER_EVENTS,
+    syncer::BOOKMARKS,    syncer::TYPED_URLS, syncer::PASSWORDS,
+    syncer::PROXY_TABS,   syncer::AUTOFILL,   syncer::PREFERENCES,
+    syncer::READING_LIST,
 };
 }  // namespace
 
-SyncSetupService::SyncSetupService(syncer::SyncService* sync_service,
-                                   PrefService* prefs)
-    : sync_service_(sync_service), prefs_(prefs) {
+SyncSetupService::SyncSetupService(syncer::SyncService* sync_service)
+    : sync_service_(sync_service) {
   DCHECK(sync_service_);
-  DCHECK(prefs_);
-  for (unsigned int i = 0; i < arraysize(kDataTypes); ++i) {
-    if (kDataTypes[i] == syncer::USER_EVENTS &&
-        !unified_consent::IsUnifiedConsentFeatureEnabled())
-      continue;
+  for (unsigned int i = 0; i < base::size(kDataTypes); ++i) {
     user_selectable_types_.Put(kDataTypes[i]);
   }
 }
@@ -45,7 +35,7 @@ SyncSetupService::~SyncSetupService() {
 }
 
 syncer::ModelType SyncSetupService::GetModelType(SyncableDatatype datatype) {
-  DCHECK(datatype < arraysize(kDataTypes));
+  DCHECK(datatype < base::size(kDataTypes));
   return kDataTypes[datatype];
 }
 
@@ -63,7 +53,8 @@ bool SyncSetupService::IsDataTypePreferred(syncer::ModelType datatype) const {
 
 void SyncSetupService::SetDataTypeEnabled(syncer::ModelType datatype,
                                           bool enabled) {
-  sync_blocker_ = sync_service_->GetSetupInProgressHandle();
+  if (!sync_blocker_)
+    sync_blocker_ = sync_service_->GetSetupInProgressHandle();
   syncer::ModelTypeSet types = GetPreferredDataTypes();
   if (enabled)
     types.Put(datatype);
@@ -72,12 +63,13 @@ void SyncSetupService::SetDataTypeEnabled(syncer::ModelType datatype,
   types.RetainAll(user_selectable_types_);
   if (enabled && !IsSyncEnabled())
     SetSyncEnabledWithoutChangingDatatypes(true);
-  sync_service_->OnUserChoseDatatypes(IsSyncingAllDataTypes(), types);
+  sync_service_->GetUserSettings()->SetChosenDataTypes(IsSyncingAllDataTypes(),
+                                                       types);
   if (GetPreferredDataTypes().Empty())
     SetSyncEnabled(false);
 }
 
-bool SyncSetupService::UserActionIsRequiredToHaveSyncWork() {
+bool SyncSetupService::UserActionIsRequiredToHaveTabSyncWork() {
   if (!IsSyncEnabled() || !IsDataTypePreferred(syncer::PROXY_TABS)) {
     return true;
   }
@@ -100,15 +92,15 @@ bool SyncSetupService::UserActionIsRequiredToHaveSyncWork() {
 }
 
 bool SyncSetupService::IsSyncingAllDataTypes() const {
-  syncer::SyncPrefs sync_prefs(prefs_);
-  return sync_prefs.HasKeepEverythingSynced();
+  return sync_service_->GetUserSettings()->IsSyncEverythingEnabled();
 }
 
 void SyncSetupService::SetSyncingAllDataTypes(bool sync_all) {
-  sync_blocker_ = sync_service_->GetSetupInProgressHandle();
+  if (!sync_blocker_)
+    sync_blocker_ = sync_service_->GetSetupInProgressHandle();
   if (sync_all && !IsSyncEnabled())
     SetSyncEnabled(true);
-  sync_service_->OnUserChoseDatatypes(
+  sync_service_->GetUserSettings()->SetChosenDataTypes(
       sync_all,
       Intersection(GetPreferredDataTypes(), syncer::UserSelectableTypes()));
 }
@@ -159,7 +151,7 @@ SyncSetupService::SyncServiceState SyncSetupService::GetSyncServiceState() {
   }
   if (sync_service_->HasUnrecoverableError())
     return kSyncServiceUnrecoverableError;
-  if (sync_service_->IsPassphraseRequiredForDecryption())
+  if (sync_service_->GetUserSettings()->IsPassphraseRequiredForDecryption())
     return kSyncServiceNeedsPassphrase;
   return kNoSyncServiceError;
 }
@@ -170,14 +162,15 @@ bool SyncSetupService::HasFinishedInitialSetup() {
   //   OR
   //   2. User is not signed in or has disabled sync.
   return !sync_service_->CanSyncFeatureStart() ||
-         sync_service_->IsFirstSetupComplete();
+         sync_service_->GetUserSettings()->IsFirstSetupComplete();
 }
 
 void SyncSetupService::PrepareForFirstSyncSetup() {
   // |PrepareForFirstSyncSetup| should always be called while the user is signed
   // out. At that time, sync setup is not completed.
-  DCHECK(!sync_service_->IsFirstSetupComplete());
-  sync_blocker_ = sync_service_->GetSetupInProgressHandle();
+  DCHECK(!sync_service_->GetUserSettings()->IsFirstSetupComplete());
+  if (!sync_blocker_)
+    sync_blocker_ = sync_service_->GetSetupInProgressHandle();
 }
 
 void SyncSetupService::CommitChanges() {
@@ -185,7 +178,7 @@ void SyncSetupService::CommitChanges() {
     // Turn on the sync setup completed flag only if the user did not turn sync
     // off.
     if (sync_service_->CanSyncFeatureStart()) {
-      sync_service_->SetFirstSetupComplete();
+      sync_service_->GetUserSettings()->SetFirstSetupComplete();
     }
   }
 
@@ -198,12 +191,11 @@ bool SyncSetupService::HasUncommittedChanges() {
 
 void SyncSetupService::SetSyncEnabledWithoutChangingDatatypes(
     bool sync_enabled) {
-  sync_blocker_ = sync_service_->GetSetupInProgressHandle();
-  if (sync_enabled) {
-    sync_service_->RequestStart();
-  } else {
+  if (!sync_blocker_)
+    sync_blocker_ = sync_service_->GetSetupInProgressHandle();
+  if (!sync_enabled) {
     UMA_HISTOGRAM_ENUMERATION("Sync.StopSource", syncer::CHROME_SYNC_SETTINGS,
                               syncer::STOP_SOURCE_LIMIT);
-    sync_service_->RequestStop(syncer::SyncService::KEEP_DATA);
   }
+  sync_service_->GetUserSettings()->SetSyncRequested(sync_enabled);
 }

@@ -28,6 +28,7 @@
 #include "third_party/blink/renderer/core/css/media_query_list_listener.h"
 #include "third_party/blink/renderer/core/dom/document.h"
 #include "third_party/blink/renderer/core/dom/events/event.h"
+#include "third_party/blink/renderer/core/event_interface_names.h"
 #include "third_party/blink/renderer/core/frame/local_dom_window.h"
 #include "third_party/blink/renderer/core/frame/local_frame_view.h"
 #include "third_party/blink/renderer/core/inspector/inspector_trace_events.h"
@@ -66,7 +67,7 @@ void ScriptedAnimationController::Unpause() {
 }
 
 void ScriptedAnimationController::DispatchEventsAndCallbacksForPrinting() {
-  DispatchEvents(EventNames::MediaQueryListEvent);
+  DispatchEvents(event_interface_names::kMediaQueryListEvent);
   CallMediaQueryListListeners();
 }
 

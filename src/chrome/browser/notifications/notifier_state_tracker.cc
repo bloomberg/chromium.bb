@@ -72,18 +72,18 @@ NotifierStateTracker::~NotifierStateTracker() {
 bool NotifierStateTracker::IsNotifierEnabled(
     const NotifierId& notifier_id) const {
   switch (notifier_id.type) {
-    case NotifierId::APPLICATION:
+    case message_center::NotifierType::APPLICATION:
       return disabled_extension_ids_.find(notifier_id.id) ==
           disabled_extension_ids_.end();
-    case NotifierId::WEB_PAGE:
+    case message_center::NotifierType::WEB_PAGE:
       return PermissionManager::Get(profile_)
                  ->GetPermissionStatus(CONTENT_SETTINGS_TYPE_NOTIFICATIONS,
                                        notifier_id.url, notifier_id.url)
                  .content_setting == CONTENT_SETTING_ALLOW;
-    case NotifierId::SYSTEM_COMPONENT:
+    case message_center::NotifierType::SYSTEM_COMPONENT:
       // We do not disable system component notifications.
       return true;
-    case NotifierId::ARC_APPLICATION:
+    case message_center::NotifierType::ARC_APPLICATION:
 #if defined(OS_CHROMEOS)
       // TODO(hriono): Ask Android if the application's notifications are
       // enabled.
@@ -91,8 +91,13 @@ bool NotifierStateTracker::IsNotifierEnabled(
 #else
       break;
 #endif
-    case NotifierId::SIZE:
+    case message_center::NotifierType::CROSTINI_APPLICATION:
+#if defined(OS_CHROMEOS)
+      // Disabling Crostini notifications is not supported yet.
+      return true;
+#else
       break;
+#endif
   }
 
   NOTREACHED();
@@ -102,13 +107,13 @@ bool NotifierStateTracker::IsNotifierEnabled(
 void NotifierStateTracker::SetNotifierEnabled(
     const NotifierId& notifier_id,
     bool enabled) {
-  DCHECK_NE(NotifierId::WEB_PAGE, notifier_id.type);
+  DCHECK_NE(message_center::NotifierType::WEB_PAGE, notifier_id.type);
 
   bool add_new_item = false;
   const char* pref_name = NULL;
   std::unique_ptr<base::Value> id;
   switch (notifier_id.type) {
-    case NotifierId::APPLICATION:
+    case message_center::NotifierType::APPLICATION:
 #if BUILDFLAG(ENABLE_EXTENSIONS)
       pref_name = prefs::kMessageCenterDisabledExtensionIds;
       add_new_item = !enabled;
@@ -153,7 +158,8 @@ void NotifierStateTracker::OnExtensionUninstalled(
     content::BrowserContext* browser_context,
     const extensions::Extension* extension,
     extensions::UninstallReason reason) {
-  NotifierId notifier_id(NotifierId::APPLICATION, extension->id());
+  NotifierId notifier_id(message_center::NotifierType::APPLICATION,
+                         extension->id());
   if (IsNotifierEnabled(notifier_id))
     return;
 
@@ -162,7 +168,7 @@ void NotifierStateTracker::OnExtensionUninstalled(
 
 void NotifierStateTracker::FirePermissionLevelChangedEvent(
     const NotifierId& notifier_id, bool enabled) {
-  DCHECK_EQ(NotifierId::APPLICATION, notifier_id.type);
+  DCHECK_EQ(message_center::NotifierType::APPLICATION, notifier_id.type);
   extensions::EventRouter* event_router =
       extensions::EventRouter::Get(profile_);
   if (!event_router) {

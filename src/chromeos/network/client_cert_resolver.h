@@ -77,12 +77,13 @@ class CHROMEOS_EXPORT ClientCertResolver : public NetworkStateHandlerObserver,
   void SetClockForTesting(base::Clock* clock);
 
   // Returns true and sets the Shill properties that have to be configured in
-  // |shill_properties| if the certificate pattern |pattern| could be resolved.
+  // |shill_properties| if the client certificate could be resolved according to
+  // |client_cert_config|.
   // Returns false otherwise and sets empty Shill properties to clear the
   // certificate configuration.
   // Note that it uses the global clock when checking the certificates for
   // expiration.
-  static bool ResolveCertificatePatternSync(
+  static bool ResolveClientCertificateSync(
       const client_cert::ConfigType client_cert_type,
       const client_cert::ClientCertConfig& client_cert_config,
       base::DictionaryValue* shill_properties);

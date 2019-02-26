@@ -8,7 +8,7 @@
 
 #include "base/logging.h"
 #include "base/memory/ptr_util.h"
-#include "base/sys_info.h"
+#include "base/system/sys_info.h"
 #include "base/task/task_scheduler/scheduler_worker_pool_params.h"
 #include "base/task/task_scheduler/task_scheduler_impl.h"
 #include "base/threading/platform_thread.h"

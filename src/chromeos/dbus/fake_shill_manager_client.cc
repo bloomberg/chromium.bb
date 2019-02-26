@@ -353,32 +353,6 @@ void FakeShillManagerClient::GetService(
       FROM_HERE, base::BindOnce(callback, dbus::ObjectPath()));
 }
 
-void FakeShillManagerClient::VerifyDestination(
-    const VerificationProperties& properties,
-    const BooleanCallback& callback,
-    const ErrorCallback& error_callback) {
-  base::ThreadTaskRunnerHandle::Get()->PostTask(FROM_HERE,
-                                                base::BindOnce(callback, true));
-}
-
-void FakeShillManagerClient::VerifyAndEncryptCredentials(
-    const VerificationProperties& properties,
-    const std::string& service_path,
-    const StringCallback& callback,
-    const ErrorCallback& error_callback) {
-  base::ThreadTaskRunnerHandle::Get()->PostTask(
-      FROM_HERE, base::BindOnce(callback, "encrypted_credentials"));
-}
-
-void FakeShillManagerClient::VerifyAndEncryptData(
-    const VerificationProperties& properties,
-    const std::string& data,
-    const StringCallback& callback,
-    const ErrorCallback& error_callback) {
-  base::ThreadTaskRunnerHandle::Get()->PostTask(
-      FROM_HERE, base::BindOnce(callback, "encrypted_data"));
-}
-
 void FakeShillManagerClient::ConnectToBestServices(
     const base::Closure& callback,
     const ErrorCallback& error_callback) {
@@ -611,6 +585,12 @@ void FakeShillManagerClient::SetNetworkThrottlingStatus(
     const ErrorCallback& error_callback) {
   network_throttling_status_ = status;
   base::ThreadTaskRunnerHandle::Get()->PostTask(FROM_HERE, callback);
+}
+
+bool FakeShillManagerClient::GetFastTransitionStatus() {
+  base::Value* fast_transition_status = stub_properties_.FindKey(
+      base::StringPiece(shill::kWifiGlobalFTEnabledProperty));
+  return fast_transition_status && fast_transition_status->GetBool();
 }
 
 void FakeShillManagerClient::SetupDefaultEnvironment() {

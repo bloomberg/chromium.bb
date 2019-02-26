@@ -23,6 +23,10 @@
 #include "media/filters/decrypting_video_decoder.h"
 #endif
 
+#if defined(OS_FUCHSIA)
+#include "media/filters/fuchsia/fuchsia_video_decoder.h"
+#endif
+
 #if BUILDFLAG(ENABLE_AV1_DECODER)
 #include "media/filters/aom_video_decoder.h"
 #endif
@@ -98,29 +102,25 @@ void DefaultDecoderFactory::CreateVideoDecoders(
           task_runner, gpu_factories, media_log, request_overlay_info_cb,
           target_color_space, video_decoders);
     }
+
     // MojoVideoDecoder replaces any VDA for this platform when it's enabled.
-    bool enable_vda = !base::FeatureList::IsEnabled(media::kMojoVideoDecoder);
-#if defined(OS_WIN)
-    // D3D11VideoDecoder doesn't support as many cases as dxva yet, so don't
-    // turn off hw decode just because it's enabled.
-    // TODO(crbug.com/832171): Move the check for the most common unsupported
-    // cases for D3D11VideoDecoder to the renderer, to save an IPC hop.
-    enable_vda = true;
-#endif
-    if (enable_vda) {
+    if (!base::FeatureList::IsEnabled(media::kMojoVideoDecoder)) {
       video_decoders->push_back(std::make_unique<GpuVideoDecoder>(
           gpu_factories, request_overlay_info_cb, target_color_space,
           media_log));
     }
   }
 
+#if defined(OS_FUCHSIA)
+  video_decoders->push_back(CreateFuchsiaVideoDecoder());
+#endif
+
 #if BUILDFLAG(ENABLE_LIBVPX)
   video_decoders->push_back(std::make_unique<OffloadingVpxVideoDecoder>());
 #endif
 
 #if BUILDFLAG(ENABLE_AV1_DECODER)
-  if (base::FeatureList::IsEnabled(kAv1Decoder))
-    video_decoders->push_back(std::make_unique<AomVideoDecoder>(media_log));
+  video_decoders->push_back(std::make_unique<AomVideoDecoder>(media_log));
 #endif
 
 #if BUILDFLAG(ENABLE_FFMPEG_VIDEO_DECODERS)

@@ -11,7 +11,7 @@
 #import "ios/web/public/web_state/web_state_observer.h"
 #import "ios/web/public/web_state/web_state_user_data.h"
 
-@protocol FormInputAccessoryViewProvider;
+@protocol FormInputSuggestionsProvider;
 @protocol FormSuggestionProvider;
 @class FormSuggestionController;
 
@@ -28,7 +28,7 @@ class FormSuggestionTabHelper
 
   // Returns an object that can provide an input accessory view from the
   // FormSuggestionController.
-  id<FormInputAccessoryViewProvider> GetAccessoryViewProvider();
+  id<FormInputSuggestionsProvider> GetAccessoryViewProvider();
 
  private:
   FormSuggestionTabHelper(web::WebState* web_state,

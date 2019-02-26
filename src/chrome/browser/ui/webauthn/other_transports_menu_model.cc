@@ -74,7 +74,14 @@ void OtherTransportsMenuModel::ExecuteCommand(int command_id, int event_flags) {
       static_cast<AuthenticatorTransport>(command_id);
 
   DCHECK(dialog_model_);
-  dialog_model_->StartGuidedFlowForTransport(selected_transport);
+  bool pair_with_new_bluetooth_device = false;
+  if (selected_transport == AuthenticatorTransport::kBluetoothLowEnergy &&
+      dialog_model_->current_step() ==
+          AuthenticatorRequestDialogModel::Step::kBleActivate) {
+    pair_with_new_bluetooth_device = true;
+  }
+  dialog_model_->StartGuidedFlowForTransport(selected_transport,
+                                             pair_with_new_bluetooth_device);
 }
 
 void OtherTransportsMenuModel::OnModelDestroyed() {

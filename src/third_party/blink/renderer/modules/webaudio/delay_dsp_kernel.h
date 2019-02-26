@@ -40,10 +40,10 @@ class DelayDSPKernel final : public AudioDelayDSPKernel {
  protected:
   bool HasSampleAccurateValues() override;
   void CalculateSampleAccurateValues(float* delay_times,
-                                     size_t frames_to_process) override;
+                                     uint32_t frames_to_process) override;
   double DelayTime(float sample_rate) override;
 
-  void ProcessOnlyAudioParams(size_t frames_to_process) override;
+  void ProcessOnlyAudioParams(uint32_t frames_to_process) override;
 
  private:
   DelayProcessor* GetDelayProcessor() {

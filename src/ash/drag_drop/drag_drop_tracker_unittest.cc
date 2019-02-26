@@ -19,8 +19,6 @@ namespace ash {
 
 class DragDropTrackerTest : public AshTestBase {
  public:
-  void SetUp() override { AshTestBase::SetUp(); }
-
   aura::Window* CreateTestWindow(const gfx::Rect& bounds) {
     static int window_id = 0;
     return CreateTestWindowInShellWithDelegate(
@@ -174,4 +172,4 @@ TEST_F(DragDropTrackerTest, ConvertEvent) {
   EXPECT_EQ(original11.flags(), converted11->flags());
 }
 
-}  // namespace aura
+}  // namespace ash

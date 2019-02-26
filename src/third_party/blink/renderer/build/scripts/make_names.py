@@ -35,19 +35,19 @@ import json5_generator
 import template_expander
 import name_utilities
 
+
 def _symbol(entry):
     if entry['Symbol'] is not None:
         return entry['Symbol']
-    # FIXME: Remove this special case for the ugly x-webkit-foo attributes.
-    if entry['name'].original.startswith('-webkit-'):
-        return entry['name'].original.replace('-', '_')[1:]
-    return name_utilities.cpp_name(entry).replace('-', '_').replace(' ', '_')
+    return 'k' + entry['name'].to_upper_camel_case()
 
 
 class MakeNamesWriter(json5_generator.Writer):
     default_parameters = {
         'Conditional': {},  # FIXME: Add support for Conditional.
         'ImplementedAs': {},
+        # This is not used in make_names,py, but used in make_event_factory.py.
+        'interfaceHeaderDir': {},
         'RuntimeEnabled': {},  # What should we do for runtime-enabled features?
         'Symbol': {},
     }
@@ -59,7 +59,6 @@ class MakeNamesWriter(json5_generator.Writer):
     filters = {
         'cpp_name': name_utilities.cpp_name,
         'hash': hasher.hash,
-        'script_name': name_utilities.script_name,
         'symbol': _symbol,
     }
 
@@ -70,7 +69,13 @@ class MakeNamesWriter(json5_generator.Writer):
         suffix = self.json5_file.metadata['suffix'].strip('"')
         export = self.json5_file.metadata['export'].strip('"')
 
-        assert namespace, 'A namespace is required.'
+        if not namespace:
+            raise ValueError('A namespace is required.')
+        # https://google.github.io/styleguide/cppguide.html#Namespace_Names
+        if namespace.lower() != namespace:
+            raise ValueError('The namespace field should be lower-cased. ' +
+                             '"%s" is specified in %s.' %
+                             (namespace, json5_file_path))
 
         basename, _ = os.path.splitext(os.path.basename(json5_file_path[0]))
         self._outputs = {

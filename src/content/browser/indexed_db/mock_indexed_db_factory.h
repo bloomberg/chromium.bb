@@ -25,6 +25,10 @@ class MockIndexedDBFactory : public IndexedDBFactory {
                void(scoped_refptr<IndexedDBCallbacks> callbacks,
                     const url::Origin& origin,
                     const base::FilePath& data_directory));
+  MOCK_METHOD3(GetDatabaseInfo,
+               void(scoped_refptr<IndexedDBCallbacks> callbacks,
+                    const url::Origin& origin,
+                    const base::FilePath& data_directory));
   MOCK_METHOD4(
       OpenProxy,
       void(const base::string16& name,

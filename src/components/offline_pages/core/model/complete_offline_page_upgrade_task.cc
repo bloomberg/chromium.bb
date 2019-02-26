@@ -6,7 +6,7 @@
 
 #include "base/bind.h"
 #include "base/files/file_util.h"
-#include "base/sys_info.h"
+#include "base/system/sys_info.h"
 #include "components/offline_pages/core/offline_page_metadata_store.h"
 #include "components/offline_pages/core/offline_store_utils.h"
 #include "sql/database.h"

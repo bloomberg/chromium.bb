@@ -55,7 +55,7 @@ void ContextualSearchRankerLoggerImpl::SetupLoggingAndRanker(
 }
 
 void ContextualSearchRankerLoggerImpl::SetupRankerPredictor(
-    const content::WebContents& web_contents) {
+    content::WebContents& web_contents) {
   // Create one predictor for the current BrowserContext.
   if (browser_context_) {
     DCHECK(browser_context_ == web_contents.GetBrowserContext());
@@ -79,13 +79,13 @@ void ContextualSearchRankerLoggerImpl::LogFeature(
   features[feature_name].set_int32_value(value);
 }
 
-void ContextualSearchRankerLoggerImpl::LogLong(
+void ContextualSearchRankerLoggerImpl::LogInt32(
     JNIEnv* env,
     jobject obj,
     const base::android::JavaParamRef<jstring>& j_feature,
-    jlong j_long) {
+    jint j_int) {
   std::string feature = base::android::ConvertJavaStringToUTF8(env, j_feature);
-  LogFeature(feature, j_long);
+  LogFeature(feature, j_int);
 }
 
 AssistRankerPrediction ContextualSearchRankerLoggerImpl::RunInference(

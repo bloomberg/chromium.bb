@@ -39,6 +39,8 @@ class ManagementUIHandler : public content::WebUIMessageHandler {
 
   void HandleGetExtensions(const base::ListValue* args);
 
+  void HandleGetLocalTrustRootsInfo(const base::ListValue* args);
+
   DISALLOW_COPY_AND_ASSIGN(ManagementUIHandler);
 };
 

@@ -53,6 +53,7 @@
 #include "third_party/blink/renderer/core/svg/svg_svg_element.h"
 #include "third_party/blink/renderer/platform/bindings/script_forbidden_scope.h"
 #include "third_party/blink/renderer/platform/geometry/int_rect.h"
+#include "third_party/blink/renderer/platform/geometry/length_functions.h"
 #include "third_party/blink/renderer/platform/graphics/color.h"
 #include "third_party/blink/renderer/platform/graphics/graphics_context.h"
 #include "third_party/blink/renderer/platform/graphics/image_observer.h"
@@ -62,7 +63,6 @@
 #include "third_party/blink/renderer/platform/graphics/paint/paint_record.h"
 #include "third_party/blink/renderer/platform/graphics/paint/paint_record_builder.h"
 #include "third_party/blink/renderer/platform/instrumentation/tracing/trace_event.h"
-#include "third_party/blink/renderer/platform/length_functions.h"
 
 namespace blink {
 
@@ -680,7 +680,7 @@ void SVGImage::AdvanceAnimationForTesting() {
     page_->Animator().ServiceScriptedAnimations(
         base::TimeTicks() +
         base::TimeDelta::FromSecondsD(root_element->getCurrentTime()));
-    GetImageObserver()->AnimationAdvanced(this);
+    GetImageObserver()->Changed(this);
   }
 }
 
@@ -766,7 +766,6 @@ Image::SizeAvailability SVGImage::DataChanged(bool all_data_received) {
     page = Page::Create(page_clients);
     page->GetSettings().SetScriptEnabled(false);
     page->GetSettings().SetPluginsEnabled(false);
-    page->GetSettings().SetAcceleratedCompositingEnabled(false);
 
     // Because this page is detached, it can't get default font settings
     // from the embedder. Copy over font settings so we have sensible
@@ -791,7 +790,7 @@ Image::SizeAvailability SVGImage::DataChanged(bool all_data_received) {
   {
     TRACE_EVENT0("blink", "SVGImage::dataChanged::createFrame");
     DCHECK(!frame_client_);
-    frame_client_ = new SVGImageLocalFrameClient(this);
+    frame_client_ = MakeGarbageCollected<SVGImageLocalFrameClient>(this);
     frame = LocalFrame::Create(frame_client_, *page, nullptr);
     frame->SetView(LocalFrameView::Create(*frame));
     frame->Init();

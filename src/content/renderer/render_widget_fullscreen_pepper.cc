@@ -160,6 +160,11 @@ class PepperWidget : public WebWidget {
 
   void ThemeChanged() override { NOTIMPLEMENTED(); }
 
+  blink::WebHitTestResult HitTestResultAt(const gfx::Point&) override {
+    NOTIMPLEMENTED();
+    return {};
+  }
+
   WebInputEventResult HandleInputEvent(
       const WebCoalescedInputEvent& coalesced_event) override {
     if (!widget_->plugin())

@@ -115,6 +115,46 @@ TEST_F(WindowServiceDelegateImplTest, RunWindowMoveLoop) {
   EXPECT_EQ(gfx::Point(105, 106), top_level_->bounds().origin());
 }
 
+TEST_F(WindowServiceDelegateImplTest, RunWindowMoveWithMultipleDisplays) {
+  UpdateDisplay("500x500,500x500");
+  GetWindowTreeTestHelper()->window_tree()->PerformWindowMove(
+      21, GetTopLevelWindowId(), ws::mojom::MoveLoopSource::MOUSE,
+      top_level_->GetBoundsInScreen().origin());
+  GetEventGenerator()->MoveMouseTo(gfx::Point(501, 1));
+  GetWindowTreeClientChanges()->clear();
+  GetEventGenerator()->ReleaseLeftButton();
+
+  EXPECT_EQ(Shell::GetRootWindowForDisplayId(GetSecondaryDisplay().id()),
+            top_level_->GetRootWindow());
+  EXPECT_TRUE(
+      ContainsChange(*GetWindowTreeClientChanges(),
+                     "DisplayChanged window_id=0,1 display_id=2200000001"));
+  EXPECT_TRUE(ContainsChange(
+      *GetWindowTreeClientChanges(),
+      std::string("BoundsChanged window=0,1 old_bounds=500,0 104x100 "
+                  "new_bounds=500,0 104x100 local_surface_id=*")));
+}
+
+TEST_F(WindowServiceDelegateImplTest, SetWindowBoundsToDifferentDisplay) {
+  UpdateDisplay("500x500,500x500");
+  EXPECT_EQ(gfx::Point(100, 100), top_level_->GetBoundsInScreen().origin());
+
+  GetWindowTreeClientChanges()->clear();
+  GetWindowTreeTestHelper()->window_tree()->SetWindowBounds(
+      21, GetTopLevelWindowId(), gfx::Rect(600, 100, 100, 100),
+      base::Optional<viz::LocalSurfaceId>());
+  EXPECT_EQ(gfx::Point(600, 100), top_level_->GetBoundsInScreen().origin());
+  EXPECT_EQ(Shell::GetRootWindowForDisplayId(GetSecondaryDisplay().id()),
+            top_level_->GetRootWindow());
+  EXPECT_TRUE(
+      ContainsChange(*GetWindowTreeClientChanges(),
+                     "DisplayChanged window_id=0,1 display_id=2200000001"));
+  EXPECT_TRUE(ContainsChange(
+      *GetWindowTreeClientChanges(),
+      std::string("BoundsChanged window=0,1 old_bounds=100,100 100x100 "
+                  "new_bounds=600,100 104x100 local_surface_id=*")));
+}
+
 TEST_F(WindowServiceDelegateImplTest, DeleteWindowWithInProgressRunLoop) {
   GetWindowTreeTestHelper()->window_tree()->PerformWindowMove(
       29, GetTopLevelWindowId(), ws::mojom::MoveLoopSource::MOUSE,
@@ -328,14 +368,7 @@ TEST_F(WindowServiceDelegateImplTest, MoveAcrossDisplays) {
 
   display::Screen* screen = display::Screen::GetScreen();
   display::Display display1 = screen->GetPrimaryDisplay();
-  display::Display display2;
-  for (const auto& iter : screen->GetAllDisplays()) {
-    if (iter.id() != display1.id()) {
-      display2 = iter;
-      break;
-    }
-  }
-  ASSERT_TRUE(display2.is_valid());
+  display::Display display2 = GetSecondaryDisplay();
   EXPECT_EQ(display1.id(),
             screen->GetDisplayNearestWindow(top_level_.get()).id());
 
@@ -353,6 +386,35 @@ TEST_F(WindowServiceDelegateImplTest, MoveAcrossDisplays) {
       ContainsChange(*GetWindowTreeClientChanges(),
                      std::string("DisplayChanged window_id=0,1 display_id=") +
                          base::NumberToString(display2.id())));
+}
+
+TEST_F(WindowServiceDelegateImplTest, RemoveDisplay) {
+  UpdateDisplay("500x400,500x400");
+  display::Display display1 = display::Screen::GetScreen()->GetPrimaryDisplay();
+  display::Display display2 = GetSecondaryDisplay();
+
+  GetWindowTreeClientChanges()->clear();
+  top_level_->SetBoundsInScreen(gfx::Rect(600, 100, 100, 100),
+                                GetSecondaryDisplay());
+  EXPECT_EQ(Shell::GetRootWindowForDisplayId(display2.id()),
+            top_level_->GetRootWindow());
+  EXPECT_TRUE(
+      ContainsChange(*GetWindowTreeClientChanges(),
+                     std::string("DisplayChanged window_id=0,1 display_id=") +
+                         base::NumberToString(display2.id())));
+
+  GetWindowTreeClientChanges()->clear();
+  UpdateDisplay("500x400");
+  EXPECT_EQ(Shell::GetRootWindowForDisplayId(display1.id()),
+            top_level_->GetRootWindow());
+  EXPECT_TRUE(
+      ContainsChange(*GetWindowTreeClientChanges(),
+                     std::string("DisplayChanged window_id=0,1 display_id=") +
+                         base::NumberToString(display1.id())));
+  EXPECT_TRUE(ContainsChange(
+      *GetWindowTreeClientChanges(),
+      std::string("BoundsChanged window=0,1 old_bounds=* "
+                  "new_bounds=100,100 104x100 local_surface_id=*")));
 }
 
 }  // namespace ash

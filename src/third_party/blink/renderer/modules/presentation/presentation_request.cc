@@ -38,7 +38,6 @@ Settings* GetSettings(ExecutionContext* execution_context) {
 }
 
 bool IsKnownProtocolForPresentationUrl(const KURL& url) {
-  // TODO(crbug.com/733381): Restrict to https + custom schemes.
   return url.ProtocolIsInHTTPFamily() || url.ProtocolIs("cast") ||
          url.ProtocolIs("cast-dial");
 }
@@ -96,11 +95,12 @@ PresentationRequest* PresentationRequest::Create(
     return nullptr;
   }
 
-  return new PresentationRequest(execution_context, parsed_urls);
+  return MakeGarbageCollected<PresentationRequest>(execution_context,
+                                                   parsed_urls);
 }
 
 const AtomicString& PresentationRequest::InterfaceName() const {
-  return EventTargetNames::PresentationRequest;
+  return event_target_names::kPresentationRequest;
 }
 
 ExecutionContext* PresentationRequest::GetExecutionContext() const {
@@ -112,7 +112,7 @@ void PresentationRequest::AddedEventListener(
     RegisteredEventListener& registered_listener) {
   EventTargetWithInlineData::AddedEventListener(event_type,
                                                 registered_listener);
-  if (event_type == EventTypeNames::connectionavailable) {
+  if (event_type == event_type_names::kConnectionavailable) {
     UseCounter::Count(
         GetExecutionContext(),
         WebFeature::kPresentationRequestConnectionAvailableEventListener);
@@ -130,19 +130,6 @@ bool PresentationRequest::HasPendingActivity() const {
 
   return availability_property_ && availability_property_->GetState() ==
                                        ScriptPromisePropertyBase::kPending;
-}
-
-// static
-void PresentationRequest::RecordStartOriginTypeAccess(
-    ExecutionContext& execution_context) {
-  if (execution_context.IsSecureContext()) {
-    UseCounter::Count(&execution_context,
-                      WebFeature::kPresentationRequestStartSecureOrigin);
-  } else {
-    Deprecation::CountDeprecation(
-        &execution_context,
-        WebFeature::kPresentationRequestStartInsecureOrigin);
-  }
 }
 
 ScriptPromise PresentationRequest::start(ScriptState* script_state) {
@@ -171,7 +158,6 @@ ScriptPromise PresentationRequest::start(ScriptState* script_state) {
             DOMExceptionCode::kInvalidStateError,
             "The PresentationRequest is no longer associated to a frame."));
 
-  RecordStartOriginTypeAccess(*execution_context);
   ScriptPromiseResolver* resolver = ScriptPromiseResolver::Create(script_state);
 
   controller->GetPresentationService()->StartPresentation(
@@ -247,20 +233,6 @@ void PresentationRequest::Trace(blink::Visitor* visitor) {
 
 PresentationRequest::PresentationRequest(ExecutionContext* execution_context,
                                          const Vector<KURL>& urls)
-    : ContextClient(execution_context), urls_(urls) {
-  RecordConstructorOriginTypeAccess(*execution_context);
-}
-
-// static
-void PresentationRequest::RecordConstructorOriginTypeAccess(
-    ExecutionContext& execution_context) {
-  if (execution_context.IsSecureContext()) {
-    UseCounter::Count(&execution_context,
-                      WebFeature::kPresentationRequestSecureOrigin);
-  } else {
-    UseCounter::Count(&execution_context,
-                      WebFeature::kPresentationRequestInsecureOrigin);
-  }
-}
+    : ContextClient(execution_context), urls_(urls) {}
 
 }  // namespace blink

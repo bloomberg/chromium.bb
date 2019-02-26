@@ -33,8 +33,8 @@
 #include "third_party/blink/renderer/core/clipboard/data_transfer_access_policy.h"
 #include "third_party/blink/renderer/core/clipboard/system_clipboard.h"
 #include "third_party/blink/renderer/core/css/css_computed_style_declaration.h"
+#include "third_party/blink/renderer/core/css/css_property_names.h"
 #include "third_party/blink/renderer/core/css/css_property_value_set.h"
-#include "third_party/blink/renderer/core/css_property_names.h"
 #include "third_party/blink/renderer/core/dom/document_fragment.h"
 #include "third_party/blink/renderer/core/dom/element_traversal.h"
 #include "third_party/blink/renderer/core/dom/events/scoped_event_queue.h"
@@ -67,7 +67,6 @@
 #include "third_party/blink/renderer/core/editing/visible_position.h"
 #include "third_party/blink/renderer/core/editing/visible_units.h"
 #include "third_party/blink/renderer/core/editing/writing_direction.h"
-#include "third_party/blink/renderer/core/event_names.h"
 #include "third_party/blink/renderer/core/events/keyboard_event.h"
 #include "third_party/blink/renderer/core/events/text_event.h"
 #include "third_party/blink/renderer/core/frame/local_frame.h"
@@ -94,13 +93,13 @@
 
 namespace blink {
 
-using namespace HTMLNames;
+using namespace html_names;
 
 namespace {
 
 bool IsInPasswordFieldWithUnrevealedPassword(const Position& position) {
   if (auto* input = ToHTMLInputElementOrNull(EnclosingTextControl(position))) {
-    return (input->type() == InputTypeNames::password) &&
+    return (input->type() == input_type_names::kPassword) &&
            !input->ShouldRevealPassword();
   }
   return false;
@@ -448,7 +447,7 @@ void Editor::ApplyParagraphStyleToSelection(CSSPropertyValueSet* style,
 }
 
 Editor* Editor::Create(LocalFrame& frame) {
-  return new Editor(frame);
+  return MakeGarbageCollected<Editor>(frame);
 }
 
 Editor::Editor(LocalFrame& frame)
@@ -594,7 +593,7 @@ void Editor::CountEvent(ExecutionContext* execution_context,
   if (!execution_context)
     return;
 
-  if (event.type() == EventTypeNames::textInput) {
+  if (event.type() == event_type_names::kTextInput) {
     CountEditingEvent(execution_context, event,
                       WebFeature::kTextInputEventOnInput,
                       WebFeature::kTextInputEventOnTextArea,
@@ -603,7 +602,7 @@ void Editor::CountEvent(ExecutionContext* execution_context,
     return;
   }
 
-  if (event.type() == EventTypeNames::webkitBeforeTextInserted) {
+  if (event.type() == event_type_names::kWebkitBeforeTextInserted) {
     CountEditingEvent(execution_context, event,
                       WebFeature::kWebkitBeforeTextInsertedOnInput,
                       WebFeature::kWebkitBeforeTextInsertedOnTextArea,
@@ -612,7 +611,7 @@ void Editor::CountEvent(ExecutionContext* execution_context,
     return;
   }
 
-  if (event.type() == EventTypeNames::webkitEditableContentChanged) {
+  if (event.type() == event_type_names::kWebkitEditableContentChanged) {
     CountEditingEvent(
         execution_context, event,
         WebFeature::kWebkitEditableContentChangedOnInput,
@@ -649,7 +648,7 @@ void Editor::SetBaseWritingDirection(WritingDirection direction) {
     if (direction == WritingDirection::kNatural)
       return;
     focused_element->setAttribute(
-        dirAttr, direction == WritingDirection::kLeftToRight ? "ltr" : "rtl");
+        kDirAttr, direction == WritingDirection::kLeftToRight ? "ltr" : "rtl");
     focused_element->DispatchInputEvent();
     return;
   }

@@ -365,6 +365,7 @@ static_library("test_support") {
       "//chrome:chrome_initial",
       "//chrome/install_static:install_static_util",
       "//chrome_elf:test_stubs",
+      "//components/gwp_asan/client",
       "//sandbox/win:sandbox",
     ]
   }
@@ -459,7 +460,7 @@ service_manifest("chrome_content_packaged_services_manifest_overlay") {
       "//ash/components/tap_visualizer:manifest",
       "//ash:manifest",
       "//chrome/browser/chromeos:ash_pref_connector_manifest",
-      "//chrome/services/cups_ipp_validator:manifest",
+      "//chrome/services/cups_ipp_parser:manifest",
       "//chromeos/services/ime:manifest",
       "//chromeos/services/secure_channel:manifest",
       "//ui/accessibility:manifest",
@@ -484,8 +485,7 @@ service_manifest("chrome_content_browser_manifest_overlay") {
     ]
   }
   if (!is_android) {
-    packaged_services +=
-        [ "//chrome/browser/apps/foundation/app_service:manifest" ]
+    packaged_services += [ "//chrome/services/app_service:manifest" ]
   }
 }
 

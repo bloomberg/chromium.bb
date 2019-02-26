@@ -66,6 +66,10 @@ namespace heap_profiling {
 class BackgroundProfilingTriggers;
 }
 
+namespace nux {
+bool IsNuxOnboardingEnabled(Profile* profile);
+}
+
 namespace safe_browsing {
 class ChromeCleanerControllerDelegate;
 class DownloadUrlSBClient;
@@ -141,6 +145,7 @@ class ChromeMetricsServiceAccessor : public metrics::MetricsServiceAccessor {
   friend class ChromePasswordManagerClient;
   friend class NavigationMetricsRecorder;
   friend class ChromeUnifiedConsentServiceClient;
+  friend bool nux::IsNuxOnboardingEnabled(Profile* profile);
 
   // Testing related friends.
   friend class MetricsReportingStateTest;

@@ -5,6 +5,7 @@
 #include "third_party/blink/renderer/core/workers/threaded_worklet_messaging_proxy.h"
 
 #include "base/single_thread_task_runner.h"
+#include "third_party/blink/public/mojom/script/script_type.mojom-blink.h"
 #include "third_party/blink/public/platform/task_type.h"
 #include "third_party/blink/renderer/bindings/core/v8/v8_cache_options.h"
 #include "third_party/blink/renderer/core/dom/document.h"
@@ -19,13 +20,12 @@
 #include "third_party/blink/renderer/core/workers/threaded_worklet_object_proxy.h"
 #include "third_party/blink/renderer/core/workers/worker_clients.h"
 #include "third_party/blink/renderer/core/workers/worker_content_settings_client.h"
-#include "third_party/blink/renderer/core/workers/worker_inspector_proxy.h"
 #include "third_party/blink/renderer/core/workers/worklet_global_scope.h"
 #include "third_party/blink/renderer/core/workers/worklet_module_responses_map.h"
 #include "third_party/blink/renderer/core/workers/worklet_pending_tasks.h"
 #include "third_party/blink/renderer/platform/cross_thread_functional.h"
 #include "third_party/blink/renderer/platform/loader/fetch/fetch_client_settings_object_snapshot.h"
-#include "third_party/blink/renderer/platform/web_task_runner.h"
+#include "third_party/blink/renderer/platform/scheduler/public/post_cross_thread_task.h"
 
 namespace blink {
 
@@ -35,7 +35,8 @@ ThreadedWorkletMessagingProxy::ThreadedWorkletMessagingProxy(
 
 void ThreadedWorkletMessagingProxy::Initialize(
     WorkerClients* worker_clients,
-    WorkletModuleResponsesMap* module_responses_map) {
+    WorkletModuleResponsesMap* module_responses_map,
+    const base::Optional<WorkerBackingThreadStartupData>& thread_startup_data) {
   DCHECK(IsMainThread());
   if (AskedToTerminate())
     return;
@@ -47,16 +48,14 @@ void ThreadedWorkletMessagingProxy::Initialize(
   ContentSecurityPolicy* csp = document->GetContentSecurityPolicy();
   DCHECK(csp);
 
-  ProvideWorkerFetchContextToWorker(
-      worker_clients,
-      document->GetFrame()->Client()->CreateWorkerFetchContext());
   ProvideContentSettingsClientToWorker(
       worker_clients,
       document->GetFrame()->Client()->CreateWorkerContentSettingsClient());
 
   auto global_scope_creation_params =
       std::make_unique<GlobalScopeCreationParams>(
-          document->Url(), ScriptType::kModule, document->UserAgent(),
+          document->Url(), mojom::ScriptType::kModule, document->UserAgent(),
+          document->GetFrame()->Client()->CreateWorkerFetchContext(),
           csp->Headers(), document->GetReferrerPolicy(),
           document->GetSecurityOrigin(), document->IsSecureContext(),
           document->GetHttpsState(), worker_clients, document->AddressSpace(),
@@ -71,7 +70,7 @@ void ThreadedWorkletMessagingProxy::Initialize(
   // Worklets share the pre-initialized backing thread so that we don't have to
   // specify the backing thread startup data.
   InitializeWorkerThread(std::move(global_scope_creation_params),
-                         base::nullopt);
+                         thread_startup_data);
 }
 
 void ThreadedWorkletMessagingProxy::Trace(blink::Visitor* visitor) {

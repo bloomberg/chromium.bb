@@ -13,7 +13,6 @@ namespace credential_provider {
 // Implementation of a ICredentialProviderCredential backed by a Gaia account.
 class ATL_NO_VTABLE CReauthCredential
     : public CComObjectRootEx<CComMultiThreadModel>,
-      public CComCoClass<CReauthCredential, &CLSID_ReauthCredential>,
       public CGaiaCredentialBase,
       public IReauthCredential {
  public:
@@ -61,8 +60,6 @@ class ATL_NO_VTABLE CReauthCredential
   CComBSTR user_sid_;
   CComBSTR user_email_;
 };
-
-OBJECT_ENTRY_AUTO(__uuidof(ReauthCredential), CReauthCredential)
 
 }  // namespace credential_provider
 

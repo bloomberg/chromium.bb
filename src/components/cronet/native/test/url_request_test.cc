@@ -17,7 +17,7 @@
 #include "components/cronet/native/test/test_util.h"
 #include "components/cronet/test/test_server.h"
 #include "cronet_c.h"
-#include "net/cert/mock_cert_verifier.h"
+#include "net/test/embedded_test_server/embedded_test_server.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "url/gurl.h"
 
@@ -386,6 +386,27 @@ TEST_P(UrlRequestTest, UploadSync) {
   EXPECT_EQ("Test", callback->response_as_string_);
 }
 
+TEST_P(UrlRequestTest, SSLCertificateError) {
+  net::EmbeddedTestServer ssl_server(net::EmbeddedTestServer::TYPE_HTTPS);
+  ssl_server.SetSSLConfig(net::EmbeddedTestServer::CERT_EXPIRED);
+  ASSERT_TRUE(ssl_server.Start());
+
+  const std::string url = ssl_server.GetURL("/").spec();
+  TestUploadDataProvider data_provider(TestUploadDataProvider::SYNC,
+                                       /* executor = */ nullptr);
+  data_provider.AddRead("Test");
+  auto callback = std::make_unique<TestUrlRequestCallback>(GetParam());
+  callback = StartAndWaitForComplete(url, std::move(callback), std::string(),
+                                     &data_provider);
+  data_provider.AssertClosed();
+  EXPECT_EQ(4, data_provider.GetUploadedLength());
+  EXPECT_EQ(0, data_provider.num_read_calls());
+  EXPECT_EQ(0, data_provider.num_rewind_calls());
+  EXPECT_EQ(nullptr, callback->response_info_);
+  EXPECT_EQ("", callback->response_as_string_);
+  EXPECT_EQ("net::ERR_CERT_INVALID", callback->last_error_message_);
+}
+
 TEST_P(UrlRequestTest, UploadMultiplePiecesSync) {
   const std::string url = cronet::TestServer::GetEchoRequestBodyURL();
   auto callback = std::make_unique<TestUrlRequestCallback>(GetParam());
@@ -727,6 +748,7 @@ TEST_P(UrlRequestTest, MultiRedirect) {
   EXPECT_EQ(2, callback->redirect_count_);
   EXPECT_EQ(200, callback->response_info_->http_status_code);
   EXPECT_EQ(2ul, callback->redirect_response_info_list_.size());
+  EXPECT_EQ(2ul, callback->redirect_url_list_.size());
 
   // Check first redirect (multiredirect.html -> redirect.html).
   TestUrlRequestCallback::UrlResponseInfo first_expected_response_info(
@@ -736,6 +758,8 @@ TEST_P(UrlRequestTest, MultiRedirect) {
            "redirect-header0", "header-value"}));
   ExpectResponseInfoEquals(first_expected_response_info,
                            *callback->redirect_response_info_list_.front());
+  EXPECT_EQ(cronet::TestServer::GetRedirectURL(),
+            callback->redirect_url_list_.front());
 
   // Check second redirect (redirect.html -> success.txt).
   TestUrlRequestCallback::UrlResponseInfo second_expected_response_info(
@@ -747,6 +771,9 @@ TEST_P(UrlRequestTest, MultiRedirect) {
            "redirect-header", "header-value"}));
   ExpectResponseInfoEquals(second_expected_response_info,
                            *callback->redirect_response_info_list_.back());
+  EXPECT_EQ(cronet::TestServer::GetSuccessURL(),
+            callback->redirect_url_list_.back());
+
   // Check final response (success.txt).
   TestUrlRequestCallback::UrlResponseInfo final_expected_response_info(
       std::vector<std::string>({cronet::TestServer::GetMultiRedirectURL(),
@@ -993,17 +1020,18 @@ TEST_P(UrlRequestTest, GetStatus) {
   EXPECT_GE(Cronet_UrlRequestStatusListener_Status_READING_RESPONSE,
             GetRequestStatus(request, &test_callback));
 
-  buffer = Cronet_Buffer_Create();
-  Cronet_Buffer_InitWithAlloc(buffer, 100);
-  Cronet_UrlRequest_Read(request, buffer);
-  // Verify that late calls to GetStatus() don't invoke OnStatus() after
-  // final callbacks.
-  GetRequestStatus(request, &test_callback);
-  test_callback.WaitForNextStep();
+  do {
+    buffer = Cronet_Buffer_Create();
+    Cronet_Buffer_InitWithAlloc(buffer, 100);
+    Cronet_UrlRequest_Read(request, buffer);
+    // Verify that late calls to GetStatus() don't invoke OnStatus() after
+    // final callbacks.
+    GetRequestStatus(request, &test_callback);
+    test_callback.WaitForNextStep();
+  } while (!test_callback.IsDone());
+
   EXPECT_EQ(Cronet_UrlRequestStatusListener_Status_INVALID,
             GetRequestStatus(request, &test_callback));
-
-  EXPECT_TRUE(test_callback.IsDone());
   ASSERT_EQ("The quick brown fox jumps over the lazy dog.",
             test_callback.response_as_string_);
 

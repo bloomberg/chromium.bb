@@ -52,13 +52,17 @@ constexpr base::TimeDelta kMaxTokenRefreshDelay =
 
 }  // namespace
 
-Service::Service()
-    : platform_binding_(this),
+Service::Service(service_manager::mojom::ServiceRequest request,
+                 network::NetworkConnectionTracker* network_connection_tracker,
+                 scoped_refptr<base::SingleThreadTaskRunner> io_task_runner)
+    : service_binding_(this, std::move(request)),
+      platform_binding_(this),
       session_observer_binding_(this),
       token_refresh_timer_(std::make_unique<base::OneShotTimer>()),
       main_thread_task_runner_(base::ThreadTaskRunnerHandle::Get()),
       power_manager_observer_(this),
-      voice_interaction_observer_binding_(this),
+      network_connection_tracker_(network_connection_tracker),
+      io_task_runner_(std::move(io_task_runner)),
       weak_ptr_factory_(this) {
   registry_.AddInterface<mojom::AssistantPlatform>(base::BindRepeating(
       &Service::BindAssistantPlatformConnection, base::Unretained(this)));
@@ -71,6 +75,12 @@ Service::Service()
 }
 
 Service::~Service() = default;
+
+void Service::RequestAccessToken() {
+  VLOG(1) << "Start requesting access token.";
+  GetIdentityManager()->GetPrimaryAccountInfo(base::BindOnce(
+      &Service::GetPrimaryAccountInfoCallback, base::Unretained(this)));
+}
 
 void Service::SetIdentityManagerForTesting(
     identity::mojom::IdentityManagerPtr identity_manager) {
@@ -139,32 +149,75 @@ void Service::OnLockStateChanged(bool locked) {
 }
 
 void Service::OnVoiceInteractionSettingsEnabled(bool enabled) {
-  settings_enabled_ = enabled;
-  if (enabled && assistant_manager_service_->GetState() ==
-                     AssistantManagerService::State::STOPPED) {
-    // This will eventually trigger the actual start of assistant services
-    // because they all depend on it.
-    RequestAccessToken();
-  } else if (!enabled && assistant_manager_service_->GetState() !=
-                             AssistantManagerService::State::STOPPED) {
-    assistant_manager_service_->Stop();
-    client_->OnAssistantStatusChanged(false /* running */);
-  }
+  UpdateAssistantManagerState();
 }
 
 void Service::OnVoiceInteractionHotwordEnabled(bool enabled) {
-  if (hotword_enabled_ == enabled)
-    return;
-  hotword_enabled_ = enabled;
+  // Hotword status change requires restarting assistant manager.
+  MaybeRestartAssistantManager();
+}
 
-  if (assistant_manager_service_->GetState() !=
-      AssistantManagerService::State::RUNNING) {
+void Service::OnLocaleChanged(const std::string& locale) {
+  UpdateAssistantManagerState();
+}
+
+void Service::MaybeRestartAssistantManager() {
+  if (assistant_manager_service_) {
+    switch (assistant_manager_service_->GetState()) {
+      case AssistantManagerService::State::RUNNING:
+        StopAssistantManagerService();
+        break;
+      case AssistantManagerService::State::STARTED:
+        // A previous instance of assistant manager is still in the process
+        // of starting. We need to wait for that to finish before trying to
+        // restart a new one to avoid potentially multiple instances running.
+        pending_restart_assistant_manager_ = true;
+        return;
+      case AssistantManagerService::State::STOPPED:
+        break;
+    }
+  }
+  UpdateAssistantManagerState();
+}
+
+void Service::UpdateAssistantManagerState() {
+  if (!assistant_state_.hotword_enabled().has_value() ||
+      !assistant_state_.settings_enabled().has_value() ||
+      !assistant_state_.locale().has_value() || !access_token_.has_value()) {
+    // Assistant state has not finished initialization, let's wait.
     return;
   }
 
-  assistant_manager_service_->Stop();
-  client_->OnAssistantStatusChanged(false /* running */);
-  RequestAccessToken();
+  if (!assistant_manager_service_)
+    CreateAssistantManagerService();
+
+  switch (assistant_manager_service_->GetState()) {
+    case AssistantManagerService::State::STOPPED:
+      if (assistant_state_.settings_enabled().value()) {
+        assistant_manager_service_->Start(
+            access_token_.value(), assistant_state_.hotword_enabled().value(),
+            base::BindOnce(
+                [](scoped_refptr<base::SingleThreadTaskRunner> task_runner,
+                   base::OnceCallback<void()> callback) {
+                  task_runner->PostTask(FROM_HERE, std::move(callback));
+                },
+                main_thread_task_runner_,
+                base::BindOnce(&Service::FinalizeAssistantManagerService,
+                               weak_ptr_factory_.GetWeakPtr())));
+        DVLOG(1) << "Request Assistant start";
+      }
+      break;
+    case AssistantManagerService::State::RUNNING:
+      if (assistant_state_.settings_enabled().value())
+        assistant_manager_service_->SetAccessToken(access_token_.value());
+      else
+        StopAssistantManagerService();
+      break;
+    case AssistantManagerService::State::STARTED:
+      if (!assistant_state_.settings_enabled().value())
+        StopAssistantManagerService();
+      break;
+  }
 }
 
 void Service::BindAssistantSettingsManager(
@@ -173,52 +226,21 @@ void Service::BindAssistantSettingsManager(
   assistant_settings_manager_->BindRequest(std::move(request));
 }
 
-void Service::RequestAccessToken() {
-  VLOG(1) << "Start requesting access token.";
-  GetIdentityManager()->GetPrimaryAccountInfo(base::BindOnce(
-      &Service::GetPrimaryAccountInfoCallback, base::Unretained(this)));
-}
-
-identity::mojom::IdentityManager* Service::GetIdentityManager() {
-  if (!identity_manager_) {
-    context()->connector()->BindInterface(
-        identity::mojom::kServiceName, mojo::MakeRequest(&identity_manager_));
-  }
-  return identity_manager_.get();
-}
-
-void Service::RetryRefreshToken() {
-  base::TimeDelta backoff_delay =
-      std::min(kMinTokenRefreshDelay *
-                   (1 << (token_refresh_error_backoff_factor - 1)),
-               kMaxTokenRefreshDelay) +
-      base::RandDouble() * kMinTokenRefreshDelay;
-  if (backoff_delay < kMaxTokenRefreshDelay)
-    ++token_refresh_error_backoff_factor;
-  token_refresh_timer_->Start(FROM_HERE, backoff_delay, this,
-                              &Service::RequestAccessToken);
-}
-
 void Service::Init(mojom::ClientPtr client,
                    mojom::DeviceActionsPtr device_actions) {
   client_ = std::move(client);
   device_actions_ = std::move(device_actions);
-#if BUILDFLAG(ENABLE_CROS_LIBASSISTANT)
-  context()->connector()->BindInterface(ash::mojom::kServiceName,
-                                        &voice_interaction_controller_);
-  ash::mojom::VoiceInteractionObserverPtr ptr;
-  voice_interaction_observer_binding_.Bind(mojo::MakeRequest(&ptr));
-  voice_interaction_controller_->IsHotwordEnabled(base::BindOnce(
-      &Service::CreateAssistantManagerService, weak_ptr_factory_.GetWeakPtr()));
-  voice_interaction_controller_->AddObserver(std::move(ptr));
-  voice_interaction_controller_->IsSettingEnabled(
-      base::BindOnce(&Service::OnVoiceInteractionSettingsEnabled,
-                     weak_ptr_factory_.GetWeakPtr()));
-#else
-  assistant_manager_service_ =
-      std::make_unique<FakeAssistantManagerServiceImpl>();
+  assistant_state_.Init(service_binding_.GetConnector());
+  assistant_state_.AddObserver(this);
   RequestAccessToken();
-#endif
+}
+
+identity::mojom::IdentityManager* Service::GetIdentityManager() {
+  if (!identity_manager_) {
+    service_binding_.GetConnector()->BindInterface(
+        identity::mojom::kServiceName, mojo::MakeRequest(&identity_manager_));
+  }
+  return identity_manager_.get();
 }
 
 void Service::GetPrimaryAccountInfoCallback(
@@ -249,56 +271,38 @@ void Service::GetAccessTokenCallback(const base::Optional<std::string>& token,
     return;
   }
 
-  DCHECK(assistant_manager_service_);
-  switch (assistant_manager_service_->GetState()) {
-    case AssistantManagerService::State::STOPPED:
-      assistant_manager_service_->Start(
-          token.value(),
-          base::BindOnce(
-              [](scoped_refptr<base::SingleThreadTaskRunner> task_runner,
-                 base::OnceCallback<void()> callback) {
-                task_runner->PostTask(FROM_HERE, std::move(callback));
-              },
-              main_thread_task_runner_,
-              base::BindOnce(&Service::FinalizeAssistantManagerService,
-                             weak_ptr_factory_.GetWeakPtr())));
-      DVLOG(1) << "Request Assistant start";
-      break;
-    case AssistantManagerService::State::RUNNING:
-      assistant_manager_service_->SetAccessToken(token.value());
-      break;
-    case AssistantManagerService::State::STARTED:
-      // in the process of starting, no need to do anything.
-      break;
-  }
-
+  access_token_ = token;
+  UpdateAssistantManagerState();
   token_refresh_timer_->Start(FROM_HERE, expiration_time - base::Time::Now(),
                               this, &Service::RequestAccessToken);
 }
 
-void Service::CreateAssistantManagerService(bool enable_hotword) {
+void Service::RetryRefreshToken() {
+  base::TimeDelta backoff_delay =
+      std::min(kMinTokenRefreshDelay *
+                   (1 << (token_refresh_error_backoff_factor - 1)),
+               kMaxTokenRefreshDelay) +
+      base::RandDouble() * kMinTokenRefreshDelay;
+  if (backoff_delay < kMaxTokenRefreshDelay)
+    ++token_refresh_error_backoff_factor;
+  token_refresh_timer_->Start(FROM_HERE, backoff_delay, this,
+                              &Service::RequestAccessToken);
+}
+
+void Service::CreateAssistantManagerService() {
 #if BUILDFLAG(ENABLE_CROS_LIBASSISTANT)
-  hotword_enabled_ = enable_hotword;
   device::mojom::BatteryMonitorPtr battery_monitor;
-  context()->connector()->BindInterface(device::mojom::kServiceName,
-                                        mojo::MakeRequest(&battery_monitor));
+  service_binding_.GetConnector()->BindInterface(
+      device::mojom::kServiceName, mojo::MakeRequest(&battery_monitor));
   assistant_manager_service_ = std::make_unique<AssistantManagerServiceImpl>(
-      context()->connector(), std::move(battery_monitor), this, enable_hotword);
-
-  // Bind to Assistant controller in ash.
-  context()->connector()->BindInterface(ash::mojom::kServiceName,
-                                        &assistant_controller_);
-  mojom::AssistantPtr ptr;
-  BindAssistantConnection(mojo::MakeRequest(&ptr));
-  assistant_controller_->SetAssistant(std::move(ptr));
-
-  registry_.AddInterface<mojom::Assistant>(base::BindRepeating(
-      &Service::BindAssistantConnection, base::Unretained(this)));
+      service_binding_.GetConnector(), std::move(battery_monitor), this,
+      network_connection_tracker_);
 
   assistant_settings_manager_ =
       assistant_manager_service_.get()->GetAssistantSettingsManager();
-  registry_.AddInterface<mojom::AssistantSettingsManager>(base::BindRepeating(
-      &Service::BindAssistantSettingsManager, base::Unretained(this)));
+#else
+  assistant_manager_service_ =
+      std::make_unique<FakeAssistantManagerServiceImpl>();
 #endif
 }
 
@@ -306,30 +310,50 @@ void Service::FinalizeAssistantManagerService() {
   DCHECK(assistant_manager_service_->GetState() ==
          AssistantManagerService::State::RUNNING);
 
-  if (!session_observer_binding_)
-    AddAshSessionObserver();
+  // Using session_observer_binding_ as a flag to control onetime initialization
+  if (!session_observer_binding_) {
+    // Bind to the AssistantController in ash.
+    service_binding_.GetConnector()->BindInterface(ash::mojom::kServiceName,
+                                                   &assistant_controller_);
 
-  // Double check settings enabled status to avoid racing issue.
-  if (!settings_enabled_) {
-    assistant_manager_service_->Stop();
-    client_->OnAssistantStatusChanged(false /* running */);
-    return;
+    mojom::AssistantPtr ptr;
+    BindAssistantConnection(mojo::MakeRequest(&ptr));
+    assistant_controller_->SetAssistant(std::move(ptr));
+
+    // Bind to the AssistantScreenContextController in ash.
+    service_binding_.GetConnector()->BindInterface(
+        ash::mojom::kServiceName, &assistant_screen_context_controller_);
+
+    registry_.AddInterface<mojom::Assistant>(base::BindRepeating(
+        &Service::BindAssistantConnection, base::Unretained(this)));
+
+    registry_.AddInterface<mojom::AssistantSettingsManager>(base::BindRepeating(
+        &Service::BindAssistantSettingsManager, base::Unretained(this)));
+
+    AddAshSessionObserver();
   }
 
   client_->OnAssistantStatusChanged(true /* running */);
   UpdateListeningState();
   DVLOG(1) << "Assistant is running";
 
-  // Double check hotword status to avoid racing issue.
-  voice_interaction_controller_->IsHotwordEnabled(
-      base::BindOnce(&Service::OnVoiceInteractionHotwordEnabled,
-                     weak_ptr_factory_.GetWeakPtr()));
+  if (pending_restart_assistant_manager_) {
+    pending_restart_assistant_manager_ = false;
+    StopAssistantManagerService();
+    UpdateAssistantManagerState();
+  }
+}
+
+void Service::StopAssistantManagerService() {
+  assistant_manager_service_->Stop();
+  weak_ptr_factory_.InvalidateWeakPtrs();
+  client_->OnAssistantStatusChanged(false /* running */);
 }
 
 void Service::AddAshSessionObserver() {
   ash::mojom::SessionControllerPtr session_controller;
-  context()->connector()->BindInterface(ash::mojom::kServiceName,
-                                        &session_controller);
+  service_binding_.GetConnector()->BindInterface(ash::mojom::kServiceName,
+                                                 &session_controller);
   ash::mojom::SessionActivationObserverPtr observer;
   session_observer_binding_.Bind(mojo::MakeRequest(&observer));
   session_controller->AddSessionActivationObserverForAccountId(

@@ -71,7 +71,7 @@ class SixteenBppTextureTest : public ANGLETest
                 gl_FragColor = texture2D(tex, texcoord);
             })";
 
-        m2DProgram = CompileProgram(vertexShaderSource, fragmentShaderSource2D);
+        m2DProgram                = CompileProgram(vertexShaderSource, fragmentShaderSource2D);
         mTexture2DUniformLocation = glGetUniformLocation(m2DProgram, "tex");
     }
 
@@ -142,16 +142,12 @@ class SixteenBppTextureTest : public ANGLETest
 };
 
 class SixteenBppTextureTestES3 : public SixteenBppTextureTest
-{
-};
+{};
 
 // Simple validation test for GL_RGB565 textures.
 // Samples from the texture, renders to it, generates mipmaps etc.
 TEST_P(SixteenBppTextureTest, RGB565Validation)
 {
-    // TODO(lucferron): Diagnose and fix http://anglebug.com/2656
-    ANGLE_SKIP_TEST_IF(IsVulkan() && (IsAndroid() || (IsWindows() && IsIntel())));
-
     GLuint test;
     memcpy(&test, &GLColor::black, 4);
 
@@ -179,16 +175,11 @@ TEST_P(SixteenBppTextureTest, RGB565Validation)
 // Samples from the texture, renders to it, generates mipmaps etc.
 TEST_P(SixteenBppTextureTest, RGBA5551Validation)
 {
-    // TODO(lucferron): Diagnose and fix
-    // http://anglebug.com/2649
-    ANGLE_SKIP_TEST_IF(IsVulkan() && (IsAndroid() || (IsWindows() && IsIntel())));
-
-    GLushort pixels[4] =
-    {
-        0xF801, // Red
-        0x07C1, // Green
-        0x003F, // Blue
-        0xFFC1  // Red + Green
+    GLushort pixels[4] = {
+        0xF801,  // Red
+        0x07C1,  // Green
+        0x003F,  // Blue
+        0xFFC1   // Red + Green
     };
 
     // Create a simple 5551 texture
@@ -209,10 +200,6 @@ TEST_P(SixteenBppTextureTest, RGBA5551Validation)
 // Based on WebGL test conformance/textures/texture-attachment-formats.html
 TEST_P(SixteenBppTextureTest, RGBA5551ClearAlpha)
 {
-    // TODO(lucferron): Diagnose and fix
-    // http://anglebug.com/2649
-    ANGLE_SKIP_TEST_IF(IsVulkan() && (IsAndroid() || (IsWindows() && IsIntel())));
-
     GLTexture tex;
     GLFramebuffer fbo;
 
@@ -248,12 +235,11 @@ TEST_P(SixteenBppTextureTest, RGBA5551ClearAlpha)
 // Samples from the texture, renders to it, generates mipmaps etc.
 TEST_P(SixteenBppTextureTest, RGBA4444Validation)
 {
-    GLushort pixels[4] =
-    {
-        0xF00F, // Red
-        0x0F0F, // Green
-        0x00FF, // Blue
-        0xFF0F  // Red + Green
+    GLushort pixels[4] = {
+        0xF00F,  // Red
+        0x0F0F,  // Green
+        0x00FF,  // Blue
+        0xFF0F   // Red + Green
     };
 
     glClearColor(0, 0, 0, 0);
@@ -499,7 +485,8 @@ TEST_P(SixteenBppTextureTestES3, RGB565FramebufferReadback)
     glDeleteProgram(program);
 }
 
-// Use this to select which configurations (e.g. which renderer, which GLES major version) these tests should be run against.
+// Use this to select which configurations (e.g. which renderer, which GLES major version) these
+// tests should be run against.
 ANGLE_INSTANTIATE_TEST(SixteenBppTextureTest,
                        ES2_D3D9(),
                        ES2_D3D11(),
@@ -510,4 +497,4 @@ ANGLE_INSTANTIATE_TEST(SixteenBppTextureTest,
 
 ANGLE_INSTANTIATE_TEST(SixteenBppTextureTestES3, ES3_D3D11(), ES3_OPENGL(), ES3_OPENGLES());
 
-} // namespace
+}  // namespace

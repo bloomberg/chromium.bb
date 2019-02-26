@@ -34,6 +34,8 @@ class EVENTS_EXPORT GestureRecognizerImplMac : public GestureRecognizer {
   GestureConsumer* GetTargetForLocation(const gfx::PointF& location,
                                         int source_device_id) override;
   void CancelActiveTouchesExcept(GestureConsumer* not_cancelled) override;
+  void CancelActiveTouchesOn(
+      const std::vector<GestureConsumer*>& consumers) override;
   void TransferEventsTo(
       GestureConsumer* current_consumer,
       GestureConsumer* new_consumer,

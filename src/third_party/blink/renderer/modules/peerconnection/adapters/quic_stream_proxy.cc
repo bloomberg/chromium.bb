@@ -8,7 +8,7 @@
 #include "third_party/blink/renderer/modules/peerconnection/adapters/quic_transport_proxy.h"
 #include "third_party/blink/renderer/modules/peerconnection/adapters/web_rtc_cross_thread_copier.h"
 #include "third_party/blink/renderer/platform/cross_thread_functional.h"
-#include "third_party/blink/renderer/platform/web_task_runner.h"
+#include "third_party/blink/renderer/platform/scheduler/public/post_cross_thread_task.h"
 
 namespace blink {
 
@@ -51,13 +51,23 @@ void QuicStreamProxy::Reset() {
   Delete();
 }
 
-void QuicStreamProxy::Finish() {
+void QuicStreamProxy::MarkReceivedDataConsumed(uint32_t amount) {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   PostCrossThreadTask(*host_thread(), FROM_HERE,
-                      CrossThreadBind(&QuicStreamHost::Finish, stream_host_));
-  writeable_ = false;
-  if (!readable_ && !writeable_) {
-    Delete();
+                      CrossThreadBind(&QuicStreamHost::MarkReceivedDataConsumed,
+                                      stream_host_, amount));
+}
+
+void QuicStreamProxy::WriteData(Vector<uint8_t> data, bool fin) {
+  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
+  PostCrossThreadTask(*host_thread(), FROM_HERE,
+                      CrossThreadBind(&QuicStreamHost::WriteData, stream_host_,
+                                      std::move(data), fin));
+  if (fin) {
+    writable_ = false;
+    if (!readable_ && !writable_) {
+      Delete();
+    }
   }
 }
 
@@ -70,16 +80,24 @@ void QuicStreamProxy::OnRemoteReset() {
   delegate_copy->OnRemoteReset();
 }
 
-void QuicStreamProxy::OnRemoteFinish() {
+void QuicStreamProxy::OnDataReceived(Vector<uint8_t> data, bool fin) {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   DCHECK(delegate_);
   // Need to copy the |delegate_| member since Delete() will destroy |this|.
   Delegate* delegate_copy = delegate_;
-  readable_ = false;
-  if (!readable_ && !writeable_) {
-    Delete();
+  if (fin) {
+    readable_ = false;
+    if (!readable_ && !writable_) {
+      Delete();
+    }
   }
-  delegate_copy->OnRemoteFinish();
+  delegate_copy->OnDataReceived(std::move(data), fin);
+}
+
+void QuicStreamProxy::OnWriteDataConsumed(uint32_t amount) {
+  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
+  DCHECK(delegate_);
+  delegate_->OnWriteDataConsumed(amount);
 }
 
 void QuicStreamProxy::Delete() {

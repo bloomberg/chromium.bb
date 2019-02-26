@@ -1,3 +1,0 @@
-: #document scrolling (8, 8, 20, 20)
-
-

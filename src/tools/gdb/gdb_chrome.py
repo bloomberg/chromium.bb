@@ -30,6 +30,11 @@ import sys
 
 sys.path.insert(0, os.path.join(
     os.path.dirname(os.path.abspath(__file__)),
+    'util'))
+import class_methods
+
+sys.path.insert(0, os.path.join(
+    os.path.dirname(os.path.abspath(__file__)),
     '..', '..', 'third_party', 'blink', 'tools', 'gdb'))
 try:
   import blink
@@ -375,3 +380,29 @@ pp_set.add_printer('content::RenderProcessHostImpl',
 
 
 gdb.printing.register_pretty_printer(gdb, pp_set, replace=_DEBUGGING)
+
+
+"""Implementations of inlined libc++ std container functions."""
+@class_methods.Class('std::__1::vector', template_types=['T'])
+class LibcppVector(object):
+    @class_methods.member_function('T&', 'operator[]', ['int'])
+    def element(obj, i):
+        return obj['__begin_'][i]
+
+    @class_methods.member_function('size_t', 'size', [])
+    def size(obj):
+        return obj['__end_'] - obj['__begin_']
+
+@class_methods.Class('std::__1::unique_ptr', template_types=['T'])
+class LibcppUniquePtr(object):
+    @class_methods.member_function('T*', 'get', [])
+    def get(obj):
+        return obj['__ptr_']['__value_']
+
+    @class_methods.member_function('T*', 'operator->', [])
+    def arrow(obj):
+        return obj['__ptr_']['__value_']
+
+    @class_methods.member_function('T&', 'operator*', [])
+    def dereference(obj):
+        return obj['__ptr_']['__value_'].dereference()

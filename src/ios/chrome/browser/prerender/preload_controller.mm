@@ -59,6 +59,9 @@ const char kPrerenderFinalStatusHistogramName[] = "Prerender.FinalStatus";
 // The name of the histogram for recording the number of successful prerenders.
 const char kPrerendersPerSessionCountHistogramName[] =
     "Prerender.PrerendersPerSessionCount";
+// The name of the histogram for recording time until a successful prerender.
+const char kPrerenderStartToReleaseContentsTime[] =
+    "Prerender.PrerenderStartToReleaseContentsTime";
 
 // Is this install selected for this particular experiment.
 bool IsPrerenderTabEvictionExperimentalGroup() {
@@ -90,6 +93,9 @@ bool IsPrerenderTabEvictionExperimentalGroup() {
 // Removes any scheduled prerender requests and resets |scheduledURL| to the
 // empty URL.
 - (void)removeScheduledPrerenderRequests;
+
+// Records metric on a successful prerender.
+- (void)recordReleaseMetrics;
 
 @end
 
@@ -149,6 +155,10 @@ bool IsPrerenderTabEvictionExperimentalGroup() {
   // Number of successful prerenders (i.e. the user viewed the prerendered page)
   // during the lifetime of this controller.
   int successfulPrerendersPerSessionCount_;
+
+  // Tracks the last time of the last attempt to load a |prerenderedURL_|. Used
+  // for UMA reporting of load durations.
+  base::TimeTicks startTime_;
 
   // Bridge to provide navigation policies for |webState_|.
   std::unique_ptr<web::WebStatePolicyDeciderBridge> policyDeciderBridge_;
@@ -244,12 +254,10 @@ bool IsPrerenderTabEvictionExperimentalGroup() {
 
 - (std::unique_ptr<web::WebState>)releasePrerenderContents {
   successfulPrerendersPerSessionCount_++;
-  UMA_HISTOGRAM_ENUMERATION(kPrerenderFinalStatusHistogramName,
-                            PRERENDER_FINAL_STATUS_USED,
-                            PRERENDER_FINAL_STATUS_MAX);
+  [self recordReleaseMetrics];
   [self removeScheduledPrerenderRequests];
   prerenderedURL_ = GURL();
-
+  startTime_ = base::TimeTicks();
   if (!webState_)
     return nullptr;
 
@@ -262,7 +270,6 @@ bool IsPrerenderTabEvictionExperimentalGroup() {
   Tab* tab = LegacyTabHelper::GetTabForWebState(webState.get());
   [[tab webController] setNativeProvider:nil];
 
-  webState->SetShouldSuppressDialogs(false);
   webState->RemoveObserver(webStateObserver_.get());
   webState->SetDelegate(nullptr);
   policyDeciderBridge_.reset();
@@ -341,18 +348,10 @@ bool IsPrerenderTabEvictionExperimentalGroup() {
   return nil;
 }
 
-// Override the CRWNativeContentProvider methods to cancel any prerenders that
-// require native content.
-- (id<CRWNativeContent>)controllerForURL:(const GURL&)url
-                               withError:(NSError*)error
-                                  isPost:(BOOL)isPost {
-  [self schedulePrerenderCancel];
-  return nil;
-}
-
-- (CGFloat)nativeContentHeaderHeightForWebState:(web::WebState*)webState {
-  return [delegate_ nativeContentHeaderHeightForPreloadController:self
-                                                         webState:webState];
+- (UIEdgeInsets)nativeContentInsetForWebState:(web::WebState*)webState {
+  // |-controllerForURL:webState:| short-circuits the native controller
+  // presentation flow, so the insets are never used.
+  return UIEdgeInsetsZero;
 }
 
 #pragma mark -
@@ -397,7 +396,6 @@ bool IsPrerenderTabEvictionExperimentalGroup() {
 
   webState_->SetDelegate(webStateDelegate_.get());
   webState_->AddObserver(webStateObserver_.get());
-  webState_->SetShouldSuppressDialogs(true);
   webState_->SetWebUsageEnabled(true);
 
   if (AccountConsistencyService* accountConsistencyService =
@@ -421,6 +419,8 @@ bool IsPrerenderTabEvictionExperimentalGroup() {
   // LoadIfNecessary is needed because the view is not created (but needed) when
   // loading the page. TODO(crbug.com/705819): Remove this call.
   webState_->GetNavigationManager()->LoadIfNecessary();
+
+  startTime_ = base::TimeTicks::Now();
 }
 
 - (void)destroyPreviewContents {
@@ -441,6 +441,7 @@ bool IsPrerenderTabEvictionExperimentalGroup() {
   webState_.reset();
 
   prerenderedURL_ = GURL();
+  startTime_ = base::TimeTicks();
 }
 
 - (void)schedulePrerenderCancel {
@@ -458,6 +459,22 @@ bool IsPrerenderTabEvictionExperimentalGroup() {
 
 #pragma mark - CRWWebStateDelegate
 
+- (web::WebState*)webState:(web::WebState*)webState
+    createNewWebStateForURL:(const GURL&)URL
+                  openerURL:(const GURL&)openerURL
+            initiatedByUser:(BOOL)initiatedByUser {
+  DCHECK([self isWebStatePrerendered:webState]);
+  [self schedulePrerenderCancel];
+  return nil;
+}
+
+- (web::JavaScriptDialogPresenter*)javaScriptDialogPresenterForWebState:
+    (web::WebState*)webState {
+  DCHECK([self isWebStatePrerendered:webState]);
+  [self schedulePrerenderCancel];
+  return nullptr;
+}
+
 - (void)webState:(web::WebState*)webState
     didRequestHTTPAuthForProtectionSpace:(NSURLProtectionSpace*)protectionSpace
                       proposedCredential:(NSURLCredential*)proposedCredential
@@ -468,6 +485,16 @@ bool IsPrerenderTabEvictionExperimentalGroup() {
   if (handler) {
     handler(nil, nil);
   }
+}
+
+- (void)recordReleaseMetrics {
+  UMA_HISTOGRAM_ENUMERATION(kPrerenderFinalStatusHistogramName,
+                            PRERENDER_FINAL_STATUS_USED,
+                            PRERENDER_FINAL_STATUS_MAX);
+
+  DCHECK_NE(base::TimeTicks(), startTime_);
+  UMA_HISTOGRAM_TIMES(kPrerenderStartToReleaseContentsTime,
+                      base::TimeTicks::Now() - startTime_);
 }
 
 #pragma mark - CRWWebStateObserver
@@ -487,11 +514,6 @@ bool IsPrerenderTabEvictionExperimentalGroup() {
   const std::string& mimeType = webState->GetContentsMimeType();
   if (mimeType == "application/octet-stream")
     [self schedulePrerenderCancel];
-}
-
-- (void)webStateDidSuppressDialog:(web::WebState*)webState {
-  DCHECK_EQ(webState, webState_.get());
-  [self schedulePrerenderCancel];
 }
 
 #pragma mark - ManageAccountsDelegate

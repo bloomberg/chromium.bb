@@ -12,6 +12,7 @@
 #include "base/location.h"
 #include "base/logging.h"
 #include "base/memory/ref_counted.h"
+#include "base/no_destructor.h"
 #include "base/single_thread_task_runner.h"
 #include "base/stl_util.h"
 #include "base/strings/pattern.h"
@@ -68,6 +69,7 @@ class MockHostResolverBase::RequestImpl
       : request_host_(request_host),
         parameters_(optional_parameters ? optional_parameters.value()
                                         : ResolveHostParameters()),
+        priority_(parameters_.initial_priority),
         host_resolver_flags_(ParametersToHostResolverFlags(parameters_)),
         id_(0),
         resolver_(resolver),
@@ -109,6 +111,22 @@ class MockHostResolverBase::RequestImpl
     return address_results_;
   }
 
+  const base::Optional<std::vector<std::string>>& GetTextResults()
+      const override {
+    DCHECK(complete_);
+    static const base::NoDestructor<base::Optional<std::vector<std::string>>>
+        nullopt_result;
+    return *nullopt_result;
+  }
+
+  const base::Optional<std::vector<HostPortPair>>& GetHostnameResults()
+      const override {
+    DCHECK(complete_);
+    static const base::NoDestructor<base::Optional<std::vector<HostPortPair>>>
+        nullopt_result;
+    return *nullopt_result;
+  }
+
   void set_address_results(const AddressList& address_results) {
     // Should only be called at most once and before request is marked
     // completed.
@@ -138,6 +156,10 @@ class MockHostResolverBase::RequestImpl
 
   size_t id() { return id_; }
 
+  RequestPriority priority() const { return priority_; }
+
+  void set_priority(RequestPriority priority) { priority_ = priority; }
+
   void set_id(size_t id) {
     DCHECK_GT(id, 0u);
     DCHECK_EQ(0u, id_);
@@ -150,6 +172,7 @@ class MockHostResolverBase::RequestImpl
  private:
   const HostPortPair request_host_;
   const ResolveHostParameters parameters_;
+  RequestPriority priority_;
   int host_resolver_flags_;
 
   base::Optional<AddressList> address_results_;
@@ -176,7 +199,9 @@ class MockHostResolverBase::LegacyRequestImpl : public HostResolver::Request {
 
   ~LegacyRequestImpl() override {}
 
-  void ChangeRequestPriority(RequestPriority priority) override {}
+  void ChangeRequestPriority(RequestPriority priority) override {
+    inner_request_->set_priority(priority);
+  }
 
   int Start() {
     return inner_request_->Start(base::BindOnce(
@@ -269,8 +294,9 @@ int MockHostResolverBase::ResolveFromCache(const RequestInfo& info,
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   next_request_id_++;
   int rv = ResolveFromIPLiteralOrCache(
-      info.host_port_pair(), info.address_family(), info.host_resolver_flags(),
-      HostResolverSource::ANY, info.allow_cached_response(), addresses);
+      info.host_port_pair(), AddressFamilyToDnsQueryType(info.address_family()),
+      info.host_resolver_flags(), HostResolverSource::ANY,
+      info.allow_cached_response(), addresses);
   return rv;
 }
 
@@ -283,16 +309,10 @@ int MockHostResolverBase::ResolveStaleFromCache(
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   next_request_id_++;
   int rv = ResolveFromIPLiteralOrCache(
-      info.host_port_pair(), info.address_family(), info.host_resolver_flags(),
-      HostResolverSource::ANY, info.allow_cached_response(), addresses,
-      stale_info);
+      info.host_port_pair(), AddressFamilyToDnsQueryType(info.address_family()),
+      info.host_resolver_flags(), HostResolverSource::ANY,
+      info.allow_cached_response(), addresses, stale_info);
   return rv;
-}
-
-void MockHostResolverBase::DetachRequest(size_t id) {
-  auto it = requests_.find(id);
-  CHECK(it != requests_.end());
-  requests_.erase(it);
 }
 
 HostCache* MockHostResolverBase::GetHostCache() {
@@ -317,6 +337,41 @@ void MockHostResolverBase::ResolveAllPending() {
         FROM_HERE,
         base::Bind(&MockHostResolverBase::ResolveNow, AsWeakPtr(), i->first));
   }
+}
+
+void MockHostResolverBase::ResolveNow(size_t id) {
+  auto it = requests_.find(id);
+  if (it == requests_.end())
+    return;  // was canceled
+
+  RequestImpl* req = it->second;
+  requests_.erase(it);
+
+  AddressList addresses;
+  int error = ResolveProc(
+      req->request_host(),
+      DnsQueryTypeToAddressFamily(req->parameters().dns_query_type),
+      req->host_resolver_flags(), req->parameters().source, &addresses);
+  if (error == OK && !req->parameters().is_speculative)
+    req->set_address_results(addresses);
+  req->OnAsyncCompleted(id, error);
+}
+
+void MockHostResolverBase::DetachRequest(size_t id) {
+  auto it = requests_.find(id);
+  CHECK(it != requests_.end());
+  requests_.erase(it);
+}
+
+MockHostResolverBase::RequestImpl* MockHostResolverBase::request(size_t id) {
+  RequestMap::iterator request = requests_.find(id);
+  DCHECK(request != requests_.end());
+  return (*request).second;
+}
+
+RequestPriority MockHostResolverBase::request_priority(size_t id) {
+  DCHECK(request(id));
+  return request(id)->priority();
 }
 
 // start id from 1 to distinguish from NULL RequestHandle
@@ -346,8 +401,7 @@ int MockHostResolverBase::Resolve(RequestImpl* request) {
   num_resolve_++;
   AddressList addresses;
   int rv = ResolveFromIPLiteralOrCache(
-      request->request_host(),
-      DnsQueryTypeToAddressFamily(request->parameters().dns_query_type),
+      request->request_host(), request->parameters().dns_query_type,
       request->host_resolver_flags(), request->parameters().source,
       request->parameters().allow_cached_response, &addresses);
   if (rv == OK && !request->parameters().is_speculative)
@@ -387,7 +441,7 @@ int MockHostResolverBase::Resolve(RequestImpl* request) {
 
 int MockHostResolverBase::ResolveFromIPLiteralOrCache(
     const HostPortPair& host,
-    AddressFamily requested_address_family,
+    DnsQueryType dns_query_type,
     HostResolverFlags flags,
     HostResolverSource source,
     bool allow_cache,
@@ -396,8 +450,9 @@ int MockHostResolverBase::ResolveFromIPLiteralOrCache(
   IPAddress ip_address;
   if (ip_address.AssignFromIPLiteral(host.host())) {
     // This matches the behavior HostResolverImpl.
-    if (requested_address_family != ADDRESS_FAMILY_UNSPECIFIED &&
-        requested_address_family != GetAddressFamily(ip_address)) {
+    if (dns_query_type != DnsQueryType::UNSPECIFIED &&
+        dns_query_type !=
+            AddressFamilyToDnsQueryType(GetAddressFamily(ip_address))) {
       return ERR_NAME_NOT_RESOLVED;
     }
 
@@ -408,7 +463,7 @@ int MockHostResolverBase::ResolveFromIPLiteralOrCache(
   }
   int rv = ERR_DNS_CACHE_MISS;
   if (cache_.get() && allow_cache) {
-    HostCache::Key key(host.host(), requested_address_family, flags, source);
+    HostCache::Key key(host.host(), dns_query_type, flags, source);
     const HostCache::Entry* entry;
     if (stale_info)
       entry = cache_->LookupStale(key, tick_clock_->NowTicks(), stale_info);
@@ -417,7 +472,8 @@ int MockHostResolverBase::ResolveFromIPLiteralOrCache(
     if (entry) {
       rv = entry->error();
       if (rv == OK)
-        *addresses = AddressList::CopyWithPort(entry->addresses(), host.port());
+        *addresses =
+            AddressList::CopyWithPort(entry->addresses().value(), host.port());
     }
   }
   return rv;
@@ -434,7 +490,9 @@ int MockHostResolverBase::ResolveProc(const HostPortPair& host,
   int rv = rules_map_[source]->Resolve(host.host(), requested_address_family,
                                        flags, &addr, nullptr);
   if (cache_.get()) {
-    HostCache::Key key(host.host(), requested_address_family, flags, source);
+    HostCache::Key key(host.host(),
+                       AddressFamilyToDnsQueryType(requested_address_family),
+                       flags, source);
     // Storing a failure with TTL 0 so that it overwrites previous value.
     base::TimeDelta ttl;
     if (rv == OK)
@@ -446,24 +504,6 @@ int MockHostResolverBase::ResolveProc(const HostPortPair& host,
   if (rv == OK)
     *addresses = AddressList::CopyWithPort(addr, host.port());
   return rv;
-}
-
-void MockHostResolverBase::ResolveNow(size_t id) {
-  auto it = requests_.find(id);
-  if (it == requests_.end())
-    return;  // was canceled
-
-  RequestImpl* req = it->second;
-  requests_.erase(it);
-
-  AddressList addresses;
-  int error = ResolveProc(
-      req->request_host(),
-      DnsQueryTypeToAddressFamily(req->parameters().dns_query_type),
-      req->host_resolver_flags(), req->parameters().source, &addresses);
-  if (error == OK && !req->parameters().is_speculative)
-    req->set_address_results(addresses);
-  req->OnAsyncCompleted(id, error);
 }
 
 //-----------------------------------------------------------------------------
@@ -715,6 +755,16 @@ class HangingHostResolver::RequestImpl
   }
 
   const base::Optional<AddressList>& GetAddressResults() const override {
+    IMMEDIATE_CRASH();
+  }
+
+  const base::Optional<std::vector<std::string>>& GetTextResults()
+      const override {
+    IMMEDIATE_CRASH();
+  }
+
+  const base::Optional<std::vector<HostPortPair>>& GetHostnameResults()
+      const override {
     IMMEDIATE_CRASH();
   }
 

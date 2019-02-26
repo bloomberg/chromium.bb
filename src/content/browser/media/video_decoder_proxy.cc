@@ -52,7 +52,7 @@ void VideoDecoderProxy::CreateDecryptor(
     int cdm_id,
     media::mojom::DecryptorRequest request) {}
 
-void VideoDecoderProxy::CreateCdmProxy(const std::string& cdm_guid,
+void VideoDecoderProxy::CreateCdmProxy(const base::Token& cdm_guid,
                                        media::mojom::CdmProxyRequest request) {}
 
 media::mojom::InterfaceFactory* VideoDecoderProxy::GetMediaInterfaceFactory() {

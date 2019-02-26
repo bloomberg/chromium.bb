@@ -23,10 +23,8 @@ namespace feature_engagement {
 // to always save every write during shutdown.
 class PersistentEventStore : public EventStore {
  public:
-  // Builds a PersistentEventStore backed by the ProtoDatabase |db|.  The
-  // database will be loaded and/or created at |storage_dir|.
-  PersistentEventStore(const base::FilePath& storage_dir,
-                       std::unique_ptr<leveldb_proto::ProtoDatabase<Event>> db);
+  // Builds a PersistentEventStore backed by the ProtoDatabase |db|.
+  PersistentEventStore(std::unique_ptr<leveldb_proto::ProtoDatabase<Event>> db);
   ~PersistentEventStore() override;
 
   // EventStore implementation.

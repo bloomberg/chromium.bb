@@ -6,12 +6,30 @@
 #define CHROME_BROWSER_PREVIEWS_PREVIEWS_LITE_PAGE_NAVIGATION_THROTTLE_H_
 
 #include "chrome/browser/previews/previews_lite_page_navigation_throttle_manager.h"
+#include "components/previews/content/previews_user_data.h"
 #include "content/public/browser/navigation_handle.h"
 #include "content/public/browser/navigation_throttle.h"
 
 namespace content {
 struct OpenURLParams;
+class BrowserContext;
 }
+
+// If the given URL is a LitePage Preview URL, this returns true but does not
+// change the |url|. This will set |update_virtual_url_with_url| on
+// NavigationEntry so that |HandlePreviewsLitePageURLRewriteReverse| is called
+// when the navigation finishes.
+// Note: This means the virtual URL will not be set during the navigation load.
+// This is handled separately in UI on Android.
+bool HandlePreviewsLitePageURLRewrite(GURL* url,
+                                      content::BrowserContext* browser_context);
+
+// Handles translating the given Lite Page URL to the original URL. Returns true
+// if the given |url| was a preview, otherwise returns false and does not change
+// |url|.
+bool HandlePreviewsLitePageURLRewriteReverse(
+    GURL* url,
+    content::BrowserContext* browser_context);
 
 // This class does the actual decision making about when to serve a Lite Page
 // Server Preview, and the legwork to trigger the Preview navigation. When a
@@ -26,7 +44,8 @@ class PreviewsLitePageNavigationThrottle : public content::NavigationThrottle {
     kPathSuffixBlacklisted = 0,
     kNavigationToPreviewsDomain = 1,
     kNavigationToPrivateDomain = 2,
-    kMaxValue = kNavigationToPrivateDomain,
+    kHostBlacklisted = 3,
+    kMaxValue = kHostBlacklisted,
   };
 
   // Reasons that a navigation is not eligible for this preview. This enum must
@@ -40,7 +59,8 @@ class PreviewsLitePageNavigationThrottle : public content::NavigationThrottle {
     kInfoBarNotSeen = 4,
     kNetworkNotSlow = 5,
     kLoadOriginalReload = 6,
-    kMaxValue = kLoadOriginalReload,
+    kCookiesBlocked = 7,
+    kMaxValue = kCookiesBlocked,
   };
 
   // The response type from the previews server. This enum must
@@ -81,20 +101,17 @@ class PreviewsLitePageNavigationThrottle : public content::NavigationThrottle {
 
   ~PreviewsLitePageNavigationThrottle() override;
 
-  // Attempts to extract the original URL from the given Previews URL. Returns
-  // false if |url| is not a valid Preview URL. It is ok to pass nullptr for
-  // |original_url| if you only want the boolean return value.
-  static bool GetOriginalURL(const GURL& url, std::string* original_url);
-
   // Returns the URL for a preview given by the url.
   static GURL GetPreviewsURLForURL(const GURL& original_url);
 
   // Starts a new navigation with |params| page in the given |web_contents|,
   // adding the params' url as a single bypass to |manager|.
-  static void LoadAndBypass(content::WebContents* web_contents,
-                            PreviewsLitePageNavigationThrottleManager* manager,
-                            const content::OpenURLParams& params,
-                            bool use_post_task);
+  static void LoadAndBypass(
+      content::WebContents* web_contents,
+      PreviewsLitePageNavigationThrottleManager* manager,
+      const content::OpenURLParams& params,
+      std::unique_ptr<previews::PreviewsUserData::ServerLitePageInfo> info,
+      bool use_post_task);
 
  private:
   // The current effective connection type;
@@ -120,6 +137,21 @@ class PreviewsLitePageNavigationThrottle : public content::NavigationThrottle {
   // |content::NavigationThrottle::ThrottleCheckResult| for the implemented
   // method to return.
   content::NavigationThrottle::ThrottleCheckResult TriggerPreview() const;
+
+  // Gets the ServerLitePageInfo struct from an existing attempted lite page
+  // navigation, if there is one. If not, returns nullptr.
+  previews::PreviewsUserData::ServerLitePageInfo* GetServerLitePageInfo() const;
+
+  // Safely sets the status of the ServerLitePageInfo struct from an existing
+  // attempted lite page navigation, if there is one. If not, does nothing.
+  void SetServerLitePageInfoStatus(previews::ServerLitePageStatus status);
+
+  // Gets the ServerLitePageInfo struct from an existing attempted lite page
+  // navigation, if there is one. If not, returns a new ServerLitePageInfo
+  // initialized with metadata from navigation_handle() and |this| that is owned
+  // by the PreviewsUserData associated with navigation_handle().
+  previews::PreviewsUserData::ServerLitePageInfo*
+  GetOrCreateServerLitePageInfo() const;
 
   // content::NavigationThrottle implementation:
   content::NavigationThrottle::ThrottleCheckResult WillStartRequest() override;

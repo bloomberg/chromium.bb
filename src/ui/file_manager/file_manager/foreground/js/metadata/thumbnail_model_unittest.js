@@ -12,6 +12,18 @@ var nonImageEntry = {
   toURL: function() { return 'filesystem://B'; }
 };
 
+const contentThumbnailTransform = {
+  scaleX: 0,
+  scaleY: 0,
+  rotate90: 0,
+};
+
+const imageTransformation = {
+  scaleX: 1,
+  scaleY: 1,
+  rotate90: 2,
+};
+
 var metadata;
 var contentMetadata;
 var thumbnailModel;
@@ -23,18 +35,19 @@ function setUp() {
   metadata.thumbnailUrl = 'EXTERNAL_THUMBNAIL_URL';
   metadata.customIconUrl = 'CUSTOM_ICON_URL';
   metadata.contentThumbnailUrl = 'CONTENT_THUMBNAIL_URL';
-  metadata.contentThumbnailTransform = 'CONTENT_THUMBNAIL_TRANSFORM';
-  metadata.contentImageTransform = 'CONTENT_IMAGE_TRANSFORM';
+  metadata.contentThumbnailTransform = contentThumbnailTransform;
+  metadata.contentImageTransform = imageTransformation;
 
-  thumbnailModel = new ThumbnailModel({
-      get: function(entries, names) {
-        var result = new MetadataItem();
-        for (var i = 0; i < names.length; i++) {
-          var name = names[i];
-          result[name] = metadata[name];
-        }
-        return Promise.resolve([result]);
-      }});
+  thumbnailModel = new ThumbnailModel(/** @type {!MetadataModel} */ ({
+    get: function(entries, names) {
+      var result = new MetadataItem();
+      for (var i = 0; i < names.length; i++) {
+        var name = names[i];
+        result[name] = metadata[name];
+      }
+      return Promise.resolve([result]);
+    }
+  }));
 }
 
 function testThumbnailModelGetBasic(callback) {
@@ -47,8 +60,8 @@ function testThumbnailModelGetBasic(callback) {
     assertEquals('CUSTOM_ICON_URL', results[0].external.customIconUrl);
     assertTrue(results[0].external.present);
     assertEquals('CONTENT_THUMBNAIL_URL', results[0].thumbnail.url);
-    assertEquals('CONTENT_THUMBNAIL_TRANSFORM', results[0].thumbnail.transform);
-    assertEquals('CONTENT_IMAGE_TRANSFORM', results[0].media.imageTransform);
+    assertEquals(contentThumbnailTransform, results[0].thumbnail.transform);
+    assertEquals(imageTransformation, results[0].media.imageTransform);
   }), callback);
 }
 

@@ -24,12 +24,12 @@
 
 namespace WTF {
 
-namespace Internal {
+namespace internal {
 
 const LChar kLowerHexDigits[17] = "0123456789abcdef";
 const LChar kUpperHexDigits[17] = "0123456789ABCDEF";
 
-}  // namespace Internal
+}  // namespace internal
 
 class HexNumber final {
   STATIC_ONLY(HexNumber);
@@ -99,8 +99,8 @@ class HexNumber final {
 
  private:
   static inline const LChar* HexDigitsForMode(HexConversionMode mode) {
-    return mode == kLowercase ? Internal::kLowerHexDigits
-                              : Internal::kUpperHexDigits;
+    return mode == kLowercase ? internal::kLowerHexDigits
+                              : internal::kUpperHexDigits;
   }
 };
 

@@ -42,9 +42,10 @@ namespace blink {
 
 RTCIceCandidate* RTCIceCandidate::Create(
     ExecutionContext* context,
-    const RTCIceCandidateInit& candidate_init,
+    const RTCIceCandidateInit* candidate_init,
     ExceptionState& exception_state) {
-  if (!candidate_init.hasCandidate() || !candidate_init.candidate().length()) {
+  if (!candidate_init->hasCandidate() ||
+      !candidate_init->candidate().length()) {
     exception_state.ThrowDOMException(
         DOMExceptionCode::kTypeMismatchError,
         ExceptionMessages::IncorrectPropertyType(
@@ -53,25 +54,25 @@ RTCIceCandidate* RTCIceCandidate::Create(
   }
 
   String sdp_mid;
-  if (candidate_init.hasSdpMid())
-    sdp_mid = candidate_init.sdpMid();
+  if (candidate_init->hasSdpMid())
+    sdp_mid = candidate_init->sdpMid();
 
   // TODO(guidou): Change default value to -1. crbug.com/614958.
   unsigned short sdp_m_line_index = 0;
-  if (candidate_init.hasSdpMLineIndex()) {
-    sdp_m_line_index = candidate_init.sdpMLineIndex();
+  if (candidate_init->hasSdpMLineIndex()) {
+    sdp_m_line_index = candidate_init->sdpMLineIndex();
   } else {
     UseCounter::Count(context,
                       WebFeature::kRTCIceCandidateDefaultSdpMLineIndex);
   }
 
-  return new RTCIceCandidate(WebRTCICECandidate::Create(
-      candidate_init.candidate(), sdp_mid, sdp_m_line_index));
+  return MakeGarbageCollected<RTCIceCandidate>(WebRTCICECandidate::Create(
+      candidate_init->candidate(), sdp_mid, sdp_m_line_index));
 }
 
 RTCIceCandidate* RTCIceCandidate::Create(
     scoped_refptr<WebRTCICECandidate> web_candidate) {
-  return new RTCIceCandidate(std::move(web_candidate));
+  return MakeGarbageCollected<RTCIceCandidate>(std::move(web_candidate));
 }
 
 RTCIceCandidate::RTCIceCandidate(

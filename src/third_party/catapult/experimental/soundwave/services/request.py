@@ -10,6 +10,8 @@ import httplib2
 
 from py_utils import retry_util  # pylint: disable=import-error
 
+from services import luci_auth
+
 
 class RequestError(OSError):
   """Exception class for errors while making a request."""
@@ -17,9 +19,12 @@ class RequestError(OSError):
     self.request = request
     self.response = response
     self.content = content
-    super(RequestError, self).__init__(
-        '%s returned HTTP Error %d: %s' % (
-            self.request, self.response.status, self.error_message))
+    message = '%s returned HTTP Error %d: %s' % (
+        self.request, self.response.status, self.error_message)
+    # Note: often the message will contain unicode characters, so we explicitly
+    # encode them as utf-8; otherwise by default python will encode as ascii
+    # and choke when trying to display the exception message.
+    super(RequestError, self).__init__(message.encode('utf-8'))
 
   def __reduce__(self):
     # Method needed to make the exception pickleable [1], otherwise it causes
@@ -68,7 +73,7 @@ def BuildRequestError(request, response, content):
 
 @retry_util.RetryOnException(ServerError, retries=3)
 def Request(url, method='GET', params=None, data=None,
-            content_type='urlencoded', credentials=None, retries=None):
+            content_type='urlencoded', use_auth=False, retries=None):
   """Perform an HTTP request of a given resource.
 
   Args:
@@ -76,10 +81,12 @@ def Request(url, method='GET', params=None, data=None,
     method: A string with the HTTP method to perform, e.g. 'GET' or 'POST'.
     params: An optional dict or sequence of key, value pairs to be added as
       a query to the url.
-    data: An optional dict or sequence of key, value pairs to be form-encoded
-      and included in the body of the request.
-    credentials: An optional OAuth2Credentials object used to authenticate
-      the request.
+    data: An optional dict or sequence of key, value pairs to send as payload
+      data in the body of the request.
+    content_type: A string specifying how to encode the payload data,
+      can be either 'urlencoded' (default) or 'json'.
+    use_auth: A boolean indecating whether to send authorized requests, if True
+      luci-auth is used to get an access token for the logged in user.
     retries: Number of times to retry the request in case of ServerError. Note,
       the request is _not_ retried if the response is a ClientError.
 
@@ -109,13 +116,11 @@ def Request(url, method='GET', params=None, data=None,
   else:
     headers['Content-Length'] = '0'
 
-  http = httplib2.Http()
-  if credentials is not None:
-    if credentials.access_token_expired:
-      credentials.refresh(http)
-    http = credentials.authorize(http)
+  if use_auth:
+    headers['Authorization'] = 'Bearer %s' % luci_auth.GetAccessToken()
 
   logging.info('Making API request: %s', url)
+  http = httplib2.Http()
   response, content = http.request(
       url, method=method, body=body, headers=headers)
   if response.status != 200:

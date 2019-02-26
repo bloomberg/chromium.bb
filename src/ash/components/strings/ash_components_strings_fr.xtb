@@ -11,6 +11,7 @@
 <translation id="1299858300159559687">Imprimer la page active</translation>
 <translation id="1383876407941801731">Rechercher</translation>
 <translation id="1454364489140280055"><ph name="CTRL" /><ph name="SEPARATOR1" /><ph name="SHIFT1" /><ph name="SEPARATOR2" /><ph name="G" /> ou <ph name="SHIFT2" /><ph name="SEPARATOR3" /><ph name="ENTER" /></translation>
+<translation id="1477442857810932985">Accéder à la fin de la ligne</translation>
 <translation id="1510238584712386396">Lanceur d'applications</translation>
 <translation id="152892567002884378">Augmenter le volume</translation>
 <translation id="1560480564179555003"><ph name="SHIFT" /><ph name="SEPARATOR1" /><ph name="ALT" /><ph name="SEPARATOR2" /><ph name="L" />, puis <ph name="ESC" /></translation>
@@ -191,6 +192,7 @@
 <translation id="9041599225465145264">Coller le contenu du Presse-papiers</translation>
 <translation id="9052808072970550123">Passer à l'utilisateur suivant</translation>
 <translation id="906458777597946297">Agrandir la fenêtre</translation>
+<translation id="9091855755813503076">Accéder au début de la ligne</translation>
 <translation id="9106898733795143799">Page et navigateur Web</translation>
 <translation id="9162942292291287644">Aucun résultat de recherche pour <ph name="QUERY" /></translation>
 <translation id="9179672198516322668">Raccourcis courants</translation>

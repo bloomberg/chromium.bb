@@ -48,6 +48,7 @@ class LocalSessionEventHandlerImpl : public LocalSessionEventHandler {
    public:
     virtual ~Delegate();
     virtual std::unique_ptr<WriteBatch> CreateLocalSessionWriteBatch() = 0;
+    virtual bool IsTabNodeUnsynced(int tab_node_id) = 0;
     // Analogous to SessionsGlobalIdMapper.
     virtual void TrackLocalNavigationId(base::Time timestamp,
                                         int unique_id) = 0;
@@ -78,6 +79,8 @@ class LocalSessionEventHandlerImpl : public LocalSessionEventHandler {
 
  private:
   enum ReloadTabsOption { RELOAD_TABS, DONT_RELOAD_TABS };
+
+  void CleanupLocalTabs(WriteBatch* batch);
 
   void AssociateWindows(ReloadTabsOption option,
                         WriteBatch* batch);

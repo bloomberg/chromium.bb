@@ -20,7 +20,10 @@ typedef uint16_t QuicPacketLength;
 typedef uint32_t QuicControlFrameId;
 typedef uint32_t QuicHeaderId;
 typedef uint32_t QuicMessageId;
+
+// TODO(fkastenholz): Should update this to 64 bits for V99.
 typedef uint32_t QuicStreamId;
+
 typedef uint64_t QuicByteCount;
 typedef uint64_t QuicConnectionId;
 typedef uint64_t QuicPacketCount;
@@ -41,7 +44,8 @@ typedef std::array<uint8_t, kQuicPathFrameBufferSize> QuicPathFrameBuffer;
 typedef uint16_t QuicApplicationErrorCode;
 
 // The connection id sequence number specifies the order that connection
-// ids must be used in.
+// ids must be used in. This is also the sequence number carried in
+// the IETF QUIC NEW_CONNECTION_ID and RETIRE_CONNECTION_ID frames.
 typedef uint64_t QuicConnectionIdSequenceNumber;
 
 // A struct for functions which consume data payloads and fins.
@@ -186,6 +190,7 @@ enum QuicFrameType : uint8_t {
   MESSAGE_FRAME,
   CRYPTO_FRAME,
   NEW_TOKEN_FRAME,
+  RETIRE_CONNECTION_ID_FRAME,
 
   NUM_FRAME_TYPES
 };
@@ -215,7 +220,7 @@ enum QuicIetfFrameType : uint8_t {
   IETF_STREAM_ID_BLOCKED = 0x0a,
   IETF_NEW_CONNECTION_ID = 0x0b,
   IETF_STOP_SENDING = 0x0c,
-  IETF_ACK = 0x0d,
+  IETF_RETIRE_CONNECTION_ID = 0x0d,
   IETF_PATH_CHALLENGE = 0x0e,
   IETF_PATH_RESPONSE = 0x0f,
   // the low-3 bits of the stream frame type value are actually flags
@@ -227,6 +232,8 @@ enum QuicIetfFrameType : uint8_t {
   IETF_STREAM = 0x10,
   IETF_CRYPTO = 0x18,
   IETF_NEW_TOKEN = 0x19,
+  IETF_ACK = 0x1a,
+  IETF_ACK_ECN = 0x1b,
 
   // MESSAGE frame type is not yet determined, use 0x2x temporarily to give
   // stream frame some wiggle room.
@@ -323,7 +330,7 @@ enum QuicPacketPrivateFlags {
 // QUIC. Note that this is separate from the congestion feedback type -
 // some congestion control algorithms may use the same feedback type
 // (Reno and Cubic are the classic example for that).
-enum CongestionControlType { kCubicBytes, kRenoBytes, kBBR, kPCC };
+enum CongestionControlType { kCubicBytes, kRenoBytes, kBBR, kPCC, kGoogCC };
 
 enum LossDetectionType : uint8_t {
   kNack,          // Used to mimic TCP's loss detection.
@@ -456,14 +463,6 @@ enum QuicIetfTransportErrorCodes : uint16_t {
   PROTOCOL_VIOLATION = 0xA,
   INVALID_MIGRATION = 0xC,
   FRAME_ERROR_base = 0x100,  // add frame type to this base
-};
-
-enum QuicIetfPacketHeaderForm : uint8_t {
-  // Long header is used for packets that are sent prior to the completion of
-  // version negotiation and establishment of 1-RTT keys.
-  LONG_HEADER,
-  // Short header is used after the version and 1-RTT keys are negotiated.
-  SHORT_HEADER,
 };
 
 // Used in long header to explicitly indicate the packet type.

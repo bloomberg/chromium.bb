@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef NET_PROXY_PAC_FILE_DECIDER_H_
-#define NET_PROXY_PAC_FILE_DECIDER_H_
+#ifndef NET_PROXY_RESOLUTION_PAC_FILE_DECIDER_H_
+#define NET_PROXY_RESOLUTION_PAC_FILE_DECIDER_H_
 
 #include <stddef.h>
 
@@ -209,4 +209,4 @@ class NET_EXPORT_PRIVATE PacFileDecider {
 
 }  // namespace net
 
-#endif  // NET_PROXY_PAC_FILE_DECIDER_H_
+#endif  // NET_PROXY_RESOLUTION_PAC_FILE_DECIDER_H_

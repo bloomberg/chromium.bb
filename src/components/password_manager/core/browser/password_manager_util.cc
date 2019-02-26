@@ -12,7 +12,6 @@
 #include "base/stl_util.h"
 #include "base/time/time.h"
 #include "build/build_config.h"
-#include "components/autofill/core/browser/autofill_client.h"
 #include "components/autofill/core/browser/popup_item_ids.h"
 #include "components/autofill/core/common/password_form.h"
 #include "components/autofill/core/common/password_generation_util.h"
@@ -32,6 +31,7 @@
 #include "components/password_manager/core/common/password_manager_pref_names.h"
 #include "components/prefs/pref_service.h"
 #include "components/sync/driver/sync_service.h"
+#include "components/sync/driver/sync_user_settings.h"
 
 using autofill::PasswordForm;
 
@@ -60,24 +60,10 @@ void UpdateMetadataForUsage(PasswordForm* credential) {
 
 password_manager::SyncState GetPasswordSyncState(
     const syncer::SyncService* sync_service) {
-  if (sync_service && sync_service->IsFirstSetupComplete() &&
+  if (sync_service && sync_service->GetUserSettings()->IsFirstSetupComplete() &&
       sync_service->IsSyncFeatureActive() &&
       sync_service->GetActiveDataTypes().Has(syncer::PASSWORDS)) {
-    return sync_service->IsUsingSecondaryPassphrase()
-               ? password_manager::SYNCING_WITH_CUSTOM_PASSPHRASE
-               : password_manager::SYNCING_NORMAL_ENCRYPTION;
-  }
-  return password_manager::NOT_SYNCING;
-}
-
-password_manager::SyncState GetHistorySyncState(
-    const syncer::SyncService* sync_service) {
-  if (sync_service && sync_service->IsFirstSetupComplete() &&
-      sync_service->IsSyncFeatureActive() &&
-      (sync_service->GetActiveDataTypes().Has(
-           syncer::HISTORY_DELETE_DIRECTIVES) ||
-       sync_service->GetActiveDataTypes().Has(syncer::PROXY_TABS))) {
-    return sync_service->IsUsingSecondaryPassphrase()
+    return sync_service->GetUserSettings()->IsUsingSecondaryPassphrase()
                ? password_manager::SYNCING_WITH_CUSTOM_PASSPHRASE
                : password_manager::SYNCING_NORMAL_ENCRYPTION;
   }
@@ -159,7 +145,8 @@ bool ShowAllSavedPasswordsContextMenuEnabled(
     return false;
 
   password_manager::PasswordManagerClient* client = password_manager->client();
-  if (!client || !client->IsFillingFallbackEnabledForCurrentPage())
+  if (!client ||
+      !client->IsFillingFallbackEnabled(driver->GetLastCommittedURL()))
     return false;
 
   LogContextOfShowAllSavedPasswordsShown(
@@ -167,17 +154,6 @@ bool ShowAllSavedPasswordsContextMenuEnabled(
           SHOW_ALL_SAVED_PASSWORDS_CONTEXT_CONTEXT_MENU);
 
   return true;
-}
-
-void UserTriggeredShowAllSavedPasswordsFromContextMenu(
-    autofill::AutofillClient* autofill_client) {
-  if (!autofill_client)
-    return;
-  autofill_client->ExecuteCommand(
-      autofill::POPUP_ITEM_ID_ALL_SAVED_PASSWORDS_ENTRY);
-  password_manager::metrics_util::LogContextOfShowAllSavedPasswordsAccepted(
-      password_manager::metrics_util::
-          SHOW_ALL_SAVED_PASSWORDS_CONTEXT_CONTEXT_MENU);
 }
 
 void UserTriggeredManualGenerationFromContextMenu(
@@ -252,7 +228,7 @@ base::StringPiece GetSignonRealmWithProtocolExcluded(const PasswordForm& form) {
 
   // Find the web origin (with protocol excluded) in the signon_realm.
   const size_t after_protocol =
-      signon_realm_protocol_excluded.find(form.origin.GetOrigin().GetContent());
+      signon_realm_protocol_excluded.find(form.origin.host_piece());
   DCHECK_NE(after_protocol, base::StringPiece::npos);
 
   // Keep the string starting with position |after_protocol|.

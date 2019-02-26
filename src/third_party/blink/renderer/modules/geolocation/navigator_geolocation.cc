@@ -40,7 +40,7 @@ NavigatorGeolocation& NavigatorGeolocation::From(Navigator& navigator) {
   NavigatorGeolocation* supplement =
       Supplement<Navigator>::From<NavigatorGeolocation>(navigator);
   if (!supplement) {
-    supplement = new NavigatorGeolocation(navigator);
+    supplement = MakeGarbageCollected<NavigatorGeolocation>(navigator);
     ProvideTo(navigator, supplement);
   }
   return *supplement;

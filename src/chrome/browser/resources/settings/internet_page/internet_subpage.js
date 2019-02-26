@@ -113,7 +113,10 @@ Polymer({
     },
   },
 
-  listeners: {'network-list-changed': 'getNetworkStateList_'},
+  listeners: {
+    'network-list-changed': 'getNetworkStateList_',
+    'networks-changed': 'getNetworkStateList_',
+  },
 
   observers: ['deviceStateChanged_(networkingPrivate, deviceState)'],
 

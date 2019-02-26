@@ -8,10 +8,6 @@ assert(is_chromeos, "ProximityAuth is Chrome OS only")
 
 static_library("proximity_auth") {
   sources = [
-    "bluetooth_low_energy_connection_finder.cc",
-    "bluetooth_low_energy_connection_finder.h",
-    "bluetooth_low_energy_setup_connection_finder.cc",
-    "bluetooth_low_energy_setup_connection_finder.h",
     "messenger.h",
     "messenger_impl.cc",
     "messenger_impl.h",
@@ -43,6 +39,8 @@ static_library("proximity_auth") {
     "screenlock_bridge.h",
     "screenlock_state.cc",
     "screenlock_state.h",
+    "smart_lock_metrics_recorder.cc",
+    "smart_lock_metrics_recorder.h",
     "switches.cc",
     "switches.h",
     "unlock_manager.h",
@@ -100,7 +98,6 @@ static_library("test_support") {
 source_set("unit_tests") {
   testonly = true
   sources = [
-    "bluetooth_low_energy_connection_finder_unittest.cc",
     "messenger_impl_unittest.cc",
     "proximity_auth_local_state_pref_manager_unittest.cc",
     "proximity_auth_profile_pref_manager_unittest.cc",

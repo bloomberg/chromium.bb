@@ -9,10 +9,11 @@
 #include <utility>
 
 #include "base/time/time.h"
-#include "chrome/browser/chromeos/profiles/profile_helper.h"
 #include "chrome/browser/notifications/notification_display_service_tester.h"
+#include "chrome/browser/notifications/system_notification_helper.h"
 #include "chrome/grit/generated_resources.h"
 #include "chrome/test/base/browser_with_test_window_test.h"
+#include "chrome/test/base/testing_browser_process.h"
 #include "chrome/test/base/testing_profile_manager.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
 #include "chromeos/dbus/fake_cryptohome_client.h"
@@ -41,8 +42,10 @@ class LowDiskNotificationTest : public BrowserWithTestWindowTest {
 
     BrowserWithTestWindowTest::SetUp();
 
+    TestingBrowserProcess::GetGlobal()->SetSystemNotificationHelper(
+        std::make_unique<SystemNotificationHelper>());
     tester_ = std::make_unique<NotificationDisplayServiceTester>(
-        ProfileHelper::GetSigninProfile());
+        nullptr /* profile */);
     tester_->SetNotificationAddedClosure(base::BindRepeating(
         &LowDiskNotificationTest::OnNotificationAdded, base::Unretained(this)));
     low_disk_notification_.reset(new LowDiskNotification());

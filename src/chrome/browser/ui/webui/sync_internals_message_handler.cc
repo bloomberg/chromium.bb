@@ -4,11 +4,10 @@
 
 #include "chrome/browser/ui/webui/sync_internals_message_handler.h"
 
-#include <stdint.h>
-
 #include <utility>
 #include <vector>
 
+#include "base/command_line.h"
 #include "base/feature_list.h"
 #include "base/logging.h"
 #include "base/strings/string_number_conversions.h"
@@ -17,9 +16,7 @@
 #include "chrome/browser/sync/user_event_service_factory.h"
 #include "chrome/common/channel_info.h"
 #include "components/browser_sync/profile_sync_service.h"
-#include "components/sync/base/enum_set.h"
 #include "components/sync/base/model_type.h"
-#include "components/sync/base/weak_handle.h"
 #include "components/sync/driver/about_sync_util.h"
 #include "components/sync/driver/sync_driver_switches.h"
 #include "components/sync/driver/sync_service.h"
@@ -36,11 +33,7 @@
 using base::DictionaryValue;
 using base::ListValue;
 using base::Value;
-using browser_sync::ProfileSyncService;
-using syncer::JsEventDetails;
-using syncer::ModelTypeSet;
 using syncer::SyncService;
-using syncer::WeakHandle;
 
 namespace {
 
@@ -224,7 +217,7 @@ void SyncInternalsMessageHandler::HandleRequestListOfTypes(
 
   DictionaryValue event_details;
   auto type_list = std::make_unique<ListValue>();
-  ModelTypeSet protocol_types = syncer::ProtocolTypes();
+  syncer::ModelTypeSet protocol_types = syncer::ProtocolTypes();
   for (syncer::ModelType type : protocol_types) {
     type_list->AppendString(ModelTypeToString(type));
   }
@@ -314,11 +307,11 @@ void SyncInternalsMessageHandler::HandleRequestStart(
   if (!service)
     return;
 
-  service->RequestStart();
+  service->GetUserSettings()->SetSyncRequested(true);
   // If the service was previously stopped with CLEAR_DATA, then the
   // "first-setup-complete" bit was also cleared, and now the service wouldn't
   // fully start up. So set that too.
-  service->SetFirstSetupComplete();
+  service->GetUserSettings()->SetFirstSetupComplete();
 }
 
 void SyncInternalsMessageHandler::HandleRequestStopKeepData(
@@ -329,7 +322,7 @@ void SyncInternalsMessageHandler::HandleRequestStopKeepData(
   if (!service)
     return;
 
-  service->RequestStop(SyncService::KEEP_DATA);
+  service->GetUserSettings()->SetSyncRequested(false);
 }
 
 void SyncInternalsMessageHandler::HandleRequestStopClearData(
@@ -404,7 +397,7 @@ void SyncInternalsMessageHandler::EmitCounterUpdate(
 
 void SyncInternalsMessageHandler::HandleJsEvent(
     const std::string& name,
-    const JsEventDetails& details) {
+    const syncer::JsEventDetails& details) {
   DVLOG(1) << "Handling event: " << name
            << " with details " << details.ToString();
   DispatchEvent(name, details.Get());

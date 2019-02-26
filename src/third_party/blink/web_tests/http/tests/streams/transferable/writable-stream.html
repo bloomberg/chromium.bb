@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<meta charset="utf-8">
+<script src="/resources/testharness.js"></script>
+<script src="/resources/testharnessreport.js"></script>
+<script src="resources/helpers.js"></script>
+<script>
+'use strict';
+
+promise_test(t => {
+  const orig = new WritableStream();
+  const promise = new Promise(resolve => {
+    addEventListener('message', t.step_func(evt => {
+      const transferred = evt.data;
+      assert_equals(transferred.constructor, WritableStream,
+                    'transferred should be a WritableStream in this realm');
+      assert_true(transferred instanceof WritableStream,
+                  'instanceof check should pass');
+
+      // Perform a brand-check on |transferred|.
+      const writer = WritableStream.prototype.getWriter.call(transferred);
+      resolve();
+    }), {once: true});
+  });
+  postMessage(orig, '*', [orig]);
+  assert_true(orig.locked, 'the original stream should be locked');
+  return promise;
+}, 'window.postMessage should be able to transfer a WritableStream');
+
+test(() => {
+  const ws = new WritableStream();
+  const writer = ws.getWriter();
+  assert_throws('DataCloneError', () => postMessage(ws, '*', [ws]),
+                'postMessage should throw');
+}, 'a locked WritableStream should not be transferable');
+
+promise_test(t => {
+  const {writable, readable} = new TransformStream();
+  const promise = new Promise(resolve => {
+    addEventListener('message', t.step_func(async evt => {
+      const {writable, readable} = evt.data;
+      const reader = readable.getReader();
+      const writer = writable.getWriter();
+      const writerPromises = Promise.all([
+        writer.write('hi'),
+        writer.close(),
+      ]);
+      const {value, done} = await reader.read();
+      assert_false(done, 'we should not be done');
+      assert_equals(value, 'hi', 'chunk should have been delivered');
+      const readResult = await reader.read();
+      assert_true(readResult.done, 'readable should be closed');
+      await writerPromises;
+      resolve();
+    }), {once: true});
+  });
+  postMessage({writable, readable}, '*', [writable, readable]);
+  return promise;
+}, 'window.postMessage should be able to transfer a {readable, writable} pair');
+
+</script>

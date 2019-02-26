@@ -10,6 +10,7 @@
 
 #include "base/macros.h"
 #include "base/strings/utf_string_conversions.h"
+#include "base/test/simple_test_tick_clock.h"
 #include "chrome/browser/ui/layout_constants.h"
 #include "chrome/browser/ui/tabs/tab_utils.h"
 #include "chrome/browser/ui/views/tabs/alert_indicator.h"
@@ -19,10 +20,10 @@
 #include "chrome/browser/ui/views/tabs/tab_icon.h"
 #include "chrome/browser/ui/views/tabs/tab_strip.h"
 #include "chrome/browser/ui/views/tabs/tab_style.h"
+#include "chrome/common/chrome_features.h"
 #include "chrome/grit/theme_resources.h"
 #include "chrome/test/views/chrome_views_test_base.h"
 #include "testing/gtest/include/gtest/gtest.h"
-#include "ui/base/material_design/material_design_controller.h"
 #include "ui/base/models/list_selection_model.h"
 #include "ui/gfx/color_palette.h"
 #include "ui/gfx/color_utils.h"
@@ -32,6 +33,12 @@
 #include "ui/views/widget/widget.h"
 
 using views::Widget;
+
+namespace {
+bool UsingNewLoadingAnimation() {
+  return base::FeatureList::IsEnabled(features::kNewTabLoadingAnimation);
+}
+}  // namespace
 
 class FakeTabController : public TabController {
  public:
@@ -82,6 +89,7 @@ class FakeTabController : public TabController {
   bool ShouldPaintTab(const Tab* tab, float scale, gfx::Path* clip) override {
     return true;
   }
+  bool ShouldPaintAsActiveFrame() const override { return true; }
   int GetStrokeThickness() const override { return 0; }
   bool CanPaintThrobberToLayer() const override {
     return paint_throbber_to_layer_;
@@ -89,11 +97,16 @@ class FakeTabController : public TabController {
   bool HasVisibleBackgroundTabShapes() const override { return false; }
   SkColor GetToolbarTopSeparatorColor() const override { return SK_ColorBLACK; }
   SkColor GetTabSeparatorColor() const override { return SK_ColorBLACK; }
-  SkColor GetTabBackgroundColor(TabState state) const override {
-    return state == TAB_ACTIVE ? tab_bg_color_active_ : tab_bg_color_inactive_;
+  SkColor GetTabBackgroundColor(
+      TabState tab_state,
+      BrowserNonClientFrameView::ActiveState active_state =
+          BrowserNonClientFrameView::kUseCurrent) const override {
+    return tab_state == TAB_ACTIVE ? tab_bg_color_active_
+                                   : tab_bg_color_inactive_;
   }
-  SkColor GetTabForegroundColor(TabState state) const override {
-    return state == TAB_ACTIVE ? tab_fg_color_active_ : tab_fg_color_inactive_;
+  SkColor GetTabForegroundColor(TabState tab_state) const override {
+    return tab_state == TAB_ACTIVE ? tab_fg_color_active_
+                                   : tab_fg_color_inactive_;
   }
   int GetBackgroundResourceId(
       bool* has_custom_image,
@@ -137,7 +150,10 @@ class FakeTabController : public TabController {
 
 class TabTest : public ChromeViewsTestBase {
  public:
-  TabTest() {}
+  TabTest() {
+    // Prevent the fake clock from starting at 0 which is the null time.
+    fake_clock_.Advance(base::TimeDelta::FromMilliseconds(2000));
+  }
   ~TabTest() override {}
 
   static TabIcon* GetTabIcon(const Tab& tab) { return tab.icon_; }
@@ -300,6 +316,21 @@ class TabTest : public ChromeViewsTestBase {
       fade_animation->Stop();
   }
 
+  void SetupFakeClock(TabIcon* icon) { icon->clock_ = &fake_clock_; }
+
+  void FinishRunningLoadingAnimations(TabIcon* icon) {
+    // Forward the clock enough for any running animations to finish.
+    DCHECK(icon->clock_ == &fake_clock_);
+    constexpr base::TimeDelta delta = base::TimeDelta::FromMilliseconds(2000);
+    fake_clock_.Advance(delta);
+    icon->StepLoadingAnimation(icon->waiting_state_.elapsed_time + delta);
+    icon->animation_state_ = icon->pending_animation_state_;
+  }
+
+  static float GetLoadingProgress(TabIcon* icon) {
+    return icon->target_loading_progress_;
+  }
+
  protected:
   void InitWidget(Widget* widget) {
     Widget::InitParams params(CreateParams(Widget::InitParams::TYPE_WINDOW));
@@ -318,6 +349,7 @@ class TabTest : public ChromeViewsTestBase {
   }
 
   std::string original_locale_;
+  base::SimpleTestTickClock fake_clock_;
 };
 
 class AlertIndicatorTest : public ChromeViewsTestBase {
@@ -566,6 +598,7 @@ TEST_F(TabTest, LayeredThrobber) {
   tab.SizeToPreferredSize();
 
   TabIcon* icon = GetTabIcon(tab);
+  SetupFakeClock(icon);
   TabRendererData data;
   data.url = GURL("http://example.com");
   EXPECT_FALSE(icon->ShowingLoadingAnimation());
@@ -583,6 +616,12 @@ TEST_F(TabTest, LayeredThrobber) {
   EXPECT_TRUE(icon->layer());
   data.network_state = TabNetworkState::kNone;
   tab.SetData(data);
+  if (UsingNewLoadingAnimation()) {
+    // The post-loading animation should still be playing (loading bar fades
+    // out).
+    EXPECT_TRUE(icon->ShowingLoadingAnimation());
+    FinishRunningLoadingAnimations(icon);
+  }
   EXPECT_FALSE(icon->ShowingLoadingAnimation());
 
   // Simulate a tab that should hide throbber.
@@ -612,6 +651,12 @@ TEST_F(TabTest, LayeredThrobber) {
   EXPECT_TRUE(icon->layer());
   data.network_state = TabNetworkState::kNone;
   tab.SetData(data);
+  if (UsingNewLoadingAnimation()) {
+    // The post-loading animation should still be playing (loading bar fades
+    // out).
+    EXPECT_TRUE(icon->ShowingLoadingAnimation());
+    FinishRunningLoadingAnimations(icon);
+  }
   EXPECT_FALSE(icon->ShowingLoadingAnimation());
 
   // After loading is done, simulate another resource starting to load.
@@ -622,6 +667,7 @@ TEST_F(TabTest, LayeredThrobber) {
   // Reset.
   data.network_state = TabNetworkState::kNone;
   tab.SetData(data);
+  FinishRunningLoadingAnimations(icon);
   EXPECT_FALSE(icon->ShowingLoadingAnimation());
 
   // Simulate a drag started and stopped during a load: layer painting stops
@@ -631,15 +677,16 @@ TEST_F(TabTest, LayeredThrobber) {
   EXPECT_TRUE(icon->ShowingLoadingAnimation());
   EXPECT_TRUE(icon->layer());
   tab_controller.set_paint_throbber_to_layer(false);
-  tab.StepLoadingAnimation();
+  tab.StepLoadingAnimation(base::TimeDelta::FromMilliseconds(100));
   EXPECT_TRUE(icon->ShowingLoadingAnimation());
   EXPECT_FALSE(icon->layer());
   tab_controller.set_paint_throbber_to_layer(true);
-  tab.StepLoadingAnimation();
+  tab.StepLoadingAnimation(base::TimeDelta::FromMilliseconds(100));
   EXPECT_TRUE(icon->ShowingLoadingAnimation());
   EXPECT_TRUE(icon->layer());
   data.network_state = TabNetworkState::kNone;
   tab.SetData(data);
+  FinishRunningLoadingAnimations(icon);
   EXPECT_FALSE(icon->ShowingLoadingAnimation());
 
   // Simulate a tab load starting and stopping during tab dragging (or with
@@ -651,7 +698,92 @@ TEST_F(TabTest, LayeredThrobber) {
   EXPECT_FALSE(icon->layer());
   data.network_state = TabNetworkState::kNone;
   tab.SetData(data);
+  FinishRunningLoadingAnimations(icon);
   EXPECT_FALSE(icon->ShowingLoadingAnimation());
+}
+
+// This is enforced as the loading progress is used for painting the progress
+// bar. When the progress bar is done loading and is fading out we want it to be
+// painted to the full width.
+TEST_F(TabTest, LoadingProgressIsFixedTo100PercentWhenNotLoading) {
+  Widget widget;
+  InitWidget(&widget);
+
+  FakeTabController tab_controller;
+  Tab tab(&tab_controller, nullptr);
+  widget.GetContentsView()->AddChildView(&tab);
+  tab.SizeToPreferredSize();
+
+  TabIcon* icon = GetTabIcon(tab);
+  TabRendererData data;
+  data.url = GURL("http://example.com");
+  data.network_state = TabNetworkState::kWaiting;
+  EXPECT_FLOAT_EQ(1.0, GetLoadingProgress(icon));
+  data.load_progress = 0.2;
+  tab.SetData(data);
+  EXPECT_FLOAT_EQ(1.0, GetLoadingProgress(icon));
+}
+
+TEST_F(TabTest, LoadingProgressMonotonicallyIncreases) {
+  if (!UsingNewLoadingAnimation())
+    return;
+  Widget widget;
+  InitWidget(&widget);
+
+  FakeTabController tab_controller;
+  Tab tab(&tab_controller, nullptr);
+  widget.GetContentsView()->AddChildView(&tab);
+  tab.SizeToPreferredSize();
+
+  TabIcon* icon = GetTabIcon(tab);
+  TabRendererData data;
+  data.network_state = TabNetworkState::kLoading;
+  data.load_progress = 0.2;
+  tab.SetData(data);
+  float initial_reported_progress = GetLoadingProgress(icon);
+  // Reported progress should interpolate to something between itself and 1.0.
+  EXPECT_GE(initial_reported_progress, 0.2);
+  EXPECT_LT(initial_reported_progress, 1.0);
+
+  // Decrease load progress, icon's load progress should not change.
+  data.load_progress = 0.1;
+  tab.SetData(data);
+  EXPECT_FLOAT_EQ(initial_reported_progress, GetLoadingProgress(icon));
+
+  // Though increasing it should be respected.
+  data.load_progress = 0.5;
+  tab.SetData(data);
+  // A higher load progress should be interpolate to larger value (less than 1).
+  EXPECT_GT(GetLoadingProgress(icon), initial_reported_progress);
+  EXPECT_LT(GetLoadingProgress(icon), 1.0);
+}
+
+TEST_F(TabTest, LoadingProgressGoesTo100PercentAfterLoadingIsDone) {
+  if (!UsingNewLoadingAnimation())
+    return;
+
+  Widget widget;
+  InitWidget(&widget);
+
+  FakeTabController tab_controller;
+  Tab tab(&tab_controller, nullptr);
+  widget.GetContentsView()->AddChildView(&tab);
+  tab.SizeToPreferredSize();
+
+  TabIcon* icon = GetTabIcon(tab);
+  TabRendererData data;
+  data.network_state = TabNetworkState::kLoading;
+  data.load_progress = 0.2;
+  tab.SetData(data);
+  // Reported progress should interpolate to something between itself and 1.0.
+  EXPECT_GE(GetLoadingProgress(icon), 0.2);
+  EXPECT_LT(GetLoadingProgress(icon), 1.0);
+
+  // Finish loading. Regardless of reported |data.load_progress|, load_progress
+  // should be drawn at 100%.
+  data.network_state = TabNetworkState::kNone;
+  tab.SetData(data);
+  EXPECT_FLOAT_EQ(1.0, GetLoadingProgress(icon));
 }
 
 TEST_F(TabTest, TitleHiddenWhenSmall) {

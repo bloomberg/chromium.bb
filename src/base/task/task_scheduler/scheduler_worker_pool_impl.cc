@@ -20,6 +20,7 @@
 #include "base/sequence_token.h"
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
+#include "base/task/task_features.h"
 #include "base/task/task_scheduler/scheduler_worker_pool_params.h"
 #include "base/task/task_scheduler/task_tracker.h"
 #include "base/task/task_traits.h"
@@ -37,8 +38,6 @@
 
 namespace base {
 namespace internal {
-
-constexpr TimeDelta SchedulerWorkerPoolImpl::kBlockedWorkersPollPeriod;
 
 namespace {
 
@@ -159,8 +158,9 @@ SchedulerWorkerPoolImpl::SchedulerWorkerPoolImpl(
     StringPiece pool_label,
     ThreadPriority priority_hint,
     TrackedRef<TaskTracker> task_tracker,
-    DelayedTaskManager* delayed_task_manager)
-    : SchedulerWorkerPool(std::move(task_tracker), delayed_task_manager),
+    TrackedRef<Delegate> delegate)
+    : SchedulerWorkerPool(std::move(task_tracker),
+                          std::move(delegate)),
       pool_label_(pool_label.as_string()),
       priority_hint_(priority_hint),
       lock_(shared_priority_queue_.container_lock()),
@@ -222,6 +222,11 @@ void SchedulerWorkerPoolImpl::Start(
     WorkerEnvironment worker_environment) {
   AutoSchedulerLock auto_lock(lock_);
 
+  may_block_threshold_ =
+      TimeDelta::FromMicroseconds(kMayBlockThresholdMicrosecondsParam.Get());
+  blocked_workers_poll_period_ =
+      TimeDelta::FromMicroseconds(kBlockedWorkersPollMicrosecondsParam.Get());
+
   DCHECK(workers_.empty());
 
   max_tasks_ = params.max_tasks();
@@ -272,11 +277,22 @@ SchedulerWorkerPoolImpl::~SchedulerWorkerPoolImpl() {
 
 void SchedulerWorkerPoolImpl::OnCanScheduleSequence(
     scoped_refptr<Sequence> sequence) {
-  const auto sequence_sort_key = sequence->GetSortKey();
-  shared_priority_queue_.BeginTransaction()->Push(std::move(sequence),
-                                                  sequence_sort_key);
+  OnCanScheduleSequence(
+      SequenceAndTransaction::FromSequence(std::move(sequence)));
+}
 
+void SchedulerWorkerPoolImpl::OnCanScheduleSequence(
+    SequenceAndTransaction sequence_and_transaction) {
+  PushSequenceToPriorityQueue(std::move(sequence_and_transaction));
   WakeUpOneWorker();
+}
+
+void SchedulerWorkerPoolImpl::PushSequenceToPriorityQueue(
+    SequenceAndTransaction sequence_and_transaction) {
+  DCHECK(sequence_and_transaction.sequence);
+  shared_priority_queue_.BeginTransaction()->Push(
+      std::move(sequence_and_transaction.sequence),
+      sequence_and_transaction.transaction.GetSortKey());
 }
 
 void SchedulerWorkerPoolImpl::GetHistograms(
@@ -331,6 +347,8 @@ void SchedulerWorkerPoolImpl::JoinForTesting() {
   join_for_testing_started_.Set();
 #endif
 
+  shared_priority_queue_.EnableFlushSequencesOnDestroyForTesting();
+
   decltype(workers_) workers_copy;
   {
     AutoSchedulerLock auto_lock(lock_);
@@ -355,6 +373,14 @@ void SchedulerWorkerPoolImpl::JoinForTesting() {
   workers_.clear();
 }
 
+void SchedulerWorkerPoolImpl::ReEnqueueSequence(
+    SequenceAndTransaction sequence_and_transaction,
+    bool is_changing_pools) {
+  PushSequenceToPriorityQueue(std::move(sequence_and_transaction));
+  if (is_changing_pools)
+    WakeUpOneWorker();
+}
+
 size_t SchedulerWorkerPoolImpl::NumberOfWorkersForTesting() const {
   AutoSchedulerLock auto_lock(lock_);
   return workers_.size();
@@ -371,12 +397,26 @@ size_t SchedulerWorkerPoolImpl::NumberOfIdleWorkersForTesting() const {
 }
 
 void SchedulerWorkerPoolImpl::MaximizeMayBlockThresholdForTesting() {
-  maximum_blocked_threshold_for_testing_.Set();
+  may_block_threshold_ = TimeDelta::Max();
 }
 
 void SchedulerWorkerPoolImpl::RecordNumWorkersHistogram() const {
   AutoSchedulerLock auto_lock(lock_);
   num_workers_histogram_->Add(workers_.size());
+}
+
+void SchedulerWorkerPoolImpl::UpdateSortKey(
+    SequenceAndTransaction sequence_and_transaction) {
+  // TODO(fdoray): A worker should be woken up when the priority of a
+  // BEST_EFFORT task is increased and |num_running_best_effort_tasks_| is
+  // equal to |max_best_effort_tasks_|.
+  shared_priority_queue_.BeginTransaction()->UpdateSortKey(
+      std::move(sequence_and_transaction));
+}
+
+bool SchedulerWorkerPoolImpl::RemoveSequence(scoped_refptr<Sequence> sequence) {
+  return shared_priority_queue_.BeginTransaction()->RemoveSequence(
+      std::move(sequence));
 }
 
 SchedulerWorkerPoolImpl::SchedulerWorkerDelegateImpl::
@@ -462,6 +502,9 @@ SchedulerWorkerPoolImpl::SchedulerWorkerDelegateImpl::GetWork(
       return nullptr;
     }
 
+    // Replace this worker if it was the last one, capacity permitting.
+    outer_->MaintainAtLeastOneIdleWorkerLockRequired();
+
     // Excess workers should not get work, until they are no longer excess (i.e.
     // max tasks increases or another worker cleans up). This ensures that if we
     // have excess workers in the pool, they get a chance to no longer be excess
@@ -543,14 +586,8 @@ void SchedulerWorkerPoolImpl::SchedulerWorkerDelegateImpl::DidRunTask() {
 
 void SchedulerWorkerPoolImpl::SchedulerWorkerDelegateImpl::ReEnqueueSequence(
     scoped_refptr<Sequence> sequence) {
-  DCHECK_CALLED_ON_VALID_THREAD(worker_thread_checker_);
-
-  const SequenceSortKey sequence_sort_key = sequence->GetSortKey();
-  outer_->shared_priority_queue_.BeginTransaction()->Push(std::move(sequence),
-                                                          sequence_sort_key);
-  // This worker will soon call GetWork(). Therefore, there is no need to wake
-  // up a worker to run the sequence that was just inserted into
-  // |outer_->shared_priority_queue_|.
+  outer_->delegate_->ReEnqueueSequence(
+      SequenceAndTransaction::FromSequence(std::move(sequence)));
 }
 
 TimeDelta
@@ -830,10 +867,6 @@ bool SchedulerWorkerPoolImpl::WakeUpOneWorkerLockRequired() {
     }
   }
 
-  // Ensure that there is one worker that can run tasks on top of the idle
-  // stack, capacity permitting.
-  MaintainAtLeastOneIdleWorkerLockRequired();
-
   return true;
 }
 
@@ -951,14 +984,10 @@ void SchedulerWorkerPoolImpl::AdjustMaxTasks() {
 }
 
 TimeDelta SchedulerWorkerPoolImpl::MayBlockThreshold() const {
-  if (maximum_blocked_threshold_for_testing_.IsSet())
-    return TimeDelta::Max();
-  // This value was set unscientifically based on intuition and may be adjusted
-  // in the future. This value is smaller than |kBlockedWorkersPollPeriod|
-  // because we hope than when multiple workers block around the same time, a
-  // single AdjustMaxTasks() call will perform all the necessary max tasks
-  // adjustments.
-  return TimeDelta::FromMilliseconds(10);
+  // This value is usually smaller than |blocked_workers_poll_period_| because
+  // we hope than when multiple workers block around the same time, a single
+  // AdjustMaxTasks() call will perform all the necessary max tasks adjustments.
+  return may_block_threshold_;
 }
 
 void SchedulerWorkerPoolImpl::ScheduleAdjustMaxTasksIfNeeded() {
@@ -973,7 +1002,7 @@ void SchedulerWorkerPoolImpl::ScheduleAdjustMaxTasksIfNeeded() {
       FROM_HERE,
       BindOnce(&SchedulerWorkerPoolImpl::AdjustMaxTasksFunction,
                Unretained(this)),
-      kBlockedWorkersPollPeriod);
+      blocked_workers_poll_period_);
 }
 
 void SchedulerWorkerPoolImpl::AdjustMaxTasksFunction() {
@@ -993,7 +1022,7 @@ void SchedulerWorkerPoolImpl::AdjustMaxTasksFunction() {
       FROM_HERE,
       BindOnce(&SchedulerWorkerPoolImpl::AdjustMaxTasksFunction,
                Unretained(this)),
-      kBlockedWorkersPollPeriod);
+      blocked_workers_poll_period_);
 }
 
 bool SchedulerWorkerPoolImpl::ShouldPeriodicallyAdjustMaxTasksLockRequired() {

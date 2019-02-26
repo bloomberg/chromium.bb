@@ -93,6 +93,7 @@ source_set("unittest_sources") {
     "//chrome/chrome_cleaner/os:common_os",
     "//chrome/chrome_cleaner/test:test_util",
     "//components/chrome_cleaner/public/interfaces:interfaces",
+    "//components/chrome_cleaner/test:test_name_helper",
     "//mojo/core/embedder",
     "//sandbox/win:sandbox",
     "//testing/gmock",

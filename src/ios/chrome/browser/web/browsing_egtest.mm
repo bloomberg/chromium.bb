@@ -9,7 +9,7 @@
 
 #include "base/strings/stringprintf.h"
 #include "base/strings/sys_string_conversions.h"
-#include "ios/chrome/browser/ui/ui_util.h"
+#include "ios/chrome/browser/ui/util/ui_util.h"
 #include "ios/chrome/grit/ios_strings.h"
 #import "ios/chrome/test/app/chrome_test_util.h"
 #import "ios/chrome/test/app/web_view_interaction_test_util.h"
@@ -23,6 +23,7 @@
 #include "ios/web/public/test/http_server/data_response_provider.h"
 #import "ios/web/public/test/http_server/http_server.h"
 #include "ios/web/public/test/http_server/http_server_util.h"
+#import "ios/web/public/test/url_test_util.h"
 #import "ios/web/public/web_client.h"
 #include "net/http/http_response_headers.h"
 #include "ui/base/l10n/l10n_util.h"
@@ -34,6 +35,7 @@
 
 using chrome_test_util::GetOriginalBrowserState;
 using chrome_test_util::OmniboxText;
+using chrome_test_util::OmniboxContainingText;
 using chrome_test_util::TapWebViewElementWithId;
 
 namespace {
@@ -225,7 +227,9 @@ id<GREYMatcher> TabWithTitle(const std::string& tab_title) {
   [ChromeEarlGrey waitForMainTabCount:2];
 
   // Verify the new tab was opened with the expected URL.
-  [[EarlGrey selectElementWithMatcher:OmniboxText(destinationURL.GetContent())]
+  const std::string omniboxText =
+      web::GetContentAndFragmentForUrl(destinationURL);
+  [[EarlGrey selectElementWithMatcher:OmniboxText(omniboxText)]
       assertWithMatcher:grey_notNil()];
 }
 
@@ -335,11 +339,15 @@ id<GREYMatcher> TabWithTitle(const std::string& tab_title) {
 
   [ChromeEarlGrey waitForWebViewContainingText:"Link"];
   if (web::GetWebClient()->IsSlimNavigationManagerEnabled()) {
-    // Due to the link click, URL of the first page now has an extra '#'. This
-    // is consistent with all other browsers.
-    const GURL newURL = web::test::HttpServer::MakeUrl("http://origin#");
-    [[EarlGrey selectElementWithMatcher:OmniboxText(newURL.GetContent())]
-        assertWithMatcher:grey_notNil()];
+    // Using partial match for Omnibox text because the displayed URL is now
+    // "http://origin/#" due to the link click. This is consistent with all
+    // other browsers.
+    [[EarlGrey selectElementWithMatcher:chrome_test_util::Omnibox()]
+        assertWithMatcher:chrome_test_util::OmniboxContainingText(
+                              URL.GetContent())];
+    GREYAssertEqual(web::test::HttpServer::MakeUrl("http://origin/#"),
+                    chrome_test_util::GetCurrentWebState()->GetVisibleURL(),
+                    @"Unexpected URL after going back");
   } else {
     [[EarlGrey selectElementWithMatcher:OmniboxText(URL.GetContent())]
         assertWithMatcher:grey_notNil()];

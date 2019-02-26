@@ -20,6 +20,7 @@ import org.chromium.android_webview.AwCookieManager;
 import org.chromium.android_webview.AwSettings;
 import org.chromium.android_webview.AwWebResourceResponse;
 import org.chromium.android_webview.test.util.CommonResources;
+import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.base.test.util.Feature;
 import org.chromium.base.test.util.Restriction;
 import org.chromium.content_public.browser.WebContents;
@@ -72,6 +73,7 @@ public class LoadDataWithBaseUrlTest {
     private static final String SCRIPT_LOADED = "Loaded";
     private static final String SCRIPT_NOT_LOADED = "Not loaded";
     private static final String SCRIPT_JS = "script_was_loaded = true;";
+    private static final String SIMPLE_HTML = "<html><body></body></html>";
 
     private String getScriptFileTestPageHtml(final String scriptUrl) {
         return "<html>"
@@ -510,6 +512,41 @@ public class LoadDataWithBaseUrlTest {
         // Verify that the load succeeds. The actual base url is undefined.
         Assert.assertEquals(
                 CommonResources.ABOUT_TITLE, mActivityTestRule.getTitleOnUiThread(mAwContents));
+    }
+
+    @Test
+    @SmallTest
+    @Feature({"AndroidWebView"})
+    public void testBaseUrlMetrics_empty() throws Throwable {
+        loadContentAndCheckMetrics(null, AwContents.UrlScheme.EMPTY);
+    }
+
+    @Test
+    @SmallTest
+    @Feature({"AndroidWebView"})
+    public void testBaseUrlMetrics_data() throws Throwable {
+        loadContentAndCheckMetrics("data:text/html", AwContents.UrlScheme.DATA_SCHEME);
+    }
+
+    @Test
+    @SmallTest
+    @Feature({"AndroidWebView"})
+    public void testBaseUrlMetrics_http() throws Throwable {
+        loadContentAndCheckMetrics("http://www.google.com/", AwContents.UrlScheme.HTTP_SCHEME);
+    }
+
+    private void loadContentAndCheckMetrics(String baseUrl, int expectedSchemeEnum)
+            throws Throwable {
+        Assert.assertEquals(0,
+                RecordHistogram.getHistogramTotalCountForTesting(
+                        AwContents.DATA_BASE_URL_SCHEME_HISTOGRAM_NAME));
+        loadDataWithBaseUrlSync(SIMPLE_HTML, "text/html", false, baseUrl, null);
+        Assert.assertEquals(1,
+                RecordHistogram.getHistogramTotalCountForTesting(
+                        AwContents.DATA_BASE_URL_SCHEME_HISTOGRAM_NAME));
+        Assert.assertEquals(1,
+                RecordHistogram.getHistogramValueCountForTesting(
+                        AwContents.DATA_BASE_URL_SCHEME_HISTOGRAM_NAME, expectedSchemeEnum));
     }
 
     @Test

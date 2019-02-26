@@ -6,3 +6,10 @@ include_rules = [
   "+third_party/blink/renderer/platform/inspector_protocol",
   "+ui/gfx",
 ]
+
+specific_include_rules = {
+  "devtools_server_unittest\.cc": [
+    "+services/network/network_context.h",
+    "+services/network/network_service.h",
+  ]
+}

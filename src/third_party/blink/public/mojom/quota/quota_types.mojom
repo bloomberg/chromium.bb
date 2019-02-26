@@ -21,3 +21,13 @@ enum QuotaStatusCode {
   kErrorAbort = 20,                // ABORT_ERR
   kUnknown = -1,
 };
+
+struct UsageBreakdown {
+  int64 fileSystem = 0;
+  int64 webSql = 0;
+  int64 appcache = 0;
+  int64 indexedDatabase = 0;
+  int64 serviceWorkerCache = 0;
+  int64 serviceWorker = 0;
+  int64 backgroundFetch = 0;
+};

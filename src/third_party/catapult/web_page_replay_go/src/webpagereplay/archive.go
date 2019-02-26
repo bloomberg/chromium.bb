@@ -31,30 +31,35 @@ type ArchivedRequest struct {
 }
 
 func serializeRequest(req *http.Request, resp *http.Response) (*ArchivedRequest, error) {
-	url := req.URL.String()
 	ar := &ArchivedRequest{}
 	{
 		var buf bytes.Buffer
 		if err := req.Write(&buf); err != nil {
-			return nil, fmt.Errorf("failed writing request for %s: %v", url, err)
+			return nil, fmt.Errorf("failed writing request for %s: %v", req.URL.String(), err)
 		}
 		ar.SerializedRequest = buf.Bytes()
 	}
 	{
 		var buf bytes.Buffer
 		if err := resp.Write(&buf); err != nil {
-			return nil, fmt.Errorf("failed writing response for %s: %v", url, err)
+			return nil, fmt.Errorf("failed writing response for %s: %v", req.URL.String(), err)
 		}
 		ar.SerializedResponse = buf.Bytes()
 	}
 	return ar, nil
 }
 
-func (ar *ArchivedRequest) unmarshal() (*http.Request, *http.Response, error) {
+func (ar *ArchivedRequest) unmarshal(scheme string) (*http.Request, *http.Response, error) {
 	req, err := http.ReadRequest(bufio.NewReader(bytes.NewReader(ar.SerializedRequest)))
 	if err != nil {
 		return nil, nil, fmt.Errorf("couldn't unmarshal request: %v", err)
 	}
+
+	if req.URL.Host == "" {
+		req.URL.Host = req.Host
+		req.URL.Scheme = scheme
+	}
+
 	resp, err := http.ReadResponse(bufio.NewReader(bytes.NewReader(ar.SerializedResponse)), req)
 	if err != nil {
 		if req.Body != nil {
@@ -110,19 +115,23 @@ func OpenArchive(path string) (*Archive, error) {
 }
 
 // ForEach applies f to all requests in the archive.
-func (a *Archive) ForEach(f func(req *http.Request, resp *http.Response)) {
+func (a *Archive) ForEach(f func(req *http.Request, resp *http.Response) error) error {
 	for _, urlmap := range a.Requests {
-		for url, requests := range urlmap {
-			for k, ar := range requests {
-				req, resp, err := ar.unmarshal()
+		for urlString, requests := range urlmap {
+			fullURL, _ := url.Parse(urlString)
+			for index, archivedRequest := range requests {
+				req, resp, err := archivedRequest.unmarshal(fullURL.Scheme)
 				if err != nil {
-					log.Printf("Error unmarshaling request #%d for %s: %v", k, url, err)
+					log.Printf("Error unmarshaling request #%d for %s: %v", index, urlString, err)
 					continue
 				}
-				f(req, resp)
+				if err := f(req, resp); err != nil {
+					return err
+				}
 			}
 		}
 	}
+	return nil
 }
 
 // Returns the der encoded cert and negotiated protocol.
@@ -140,29 +149,33 @@ func (a *Archive) findHostNegotiatedProtocol(host string) string {
 	return "http/1.1"
 }
 
+func assertCompleteURL(url *url.URL) {
+	if url.Host == "" || url.Scheme == "" {
+		log.Printf("Missing host and scheme: %v\n", url)
+		os.Exit(1)
+	}
+}
+
 // FindRequest searches for the given request in the archive.
 // Returns ErrNotFound if the request could not be found. Does not consume req.Body.
 // TODO: conditional requests
-func (a *Archive) FindRequest(req *http.Request, scheme string) (*http.Request, *http.Response, error) {
+func (a *Archive) FindRequest(req *http.Request) (*http.Request, *http.Response, error) {
 	hostMap := a.Requests[req.Host]
 	if len(hostMap) == 0 {
 		return nil, nil, ErrNotFound
 	}
 
 	// Exact match. Note that req may be relative, but hostMap keys are always absolute.
-	u := *req.URL
-	if u.Host == "" {
-		u.Host = req.Host
-		u.Scheme = scheme
-	}
+	assertCompleteURL(req.URL)
+
 	var bestRatio float64
-	if len(hostMap[u.String()]) > 0 {
+	if len(hostMap[req.URL.String()]) > 0 {
 		var bestRequest *http.Request
 		var bestResponse *http.Response
 		// There can be multiple requests with the same URL string. If that's the case,
 		// break the tie by the number of headers that match.
-		for _, r := range hostMap[u.String()] {
-			curReq, curResp, err := r.unmarshal()
+		for _, archivedRequest := range hostMap[req.URL.String()] {
+			curReq, curResp, err := archivedRequest.unmarshal(req.URL.Scheme)
 			if err != nil {
 				log.Println("Error unmarshaling request")
 				continue
@@ -228,78 +241,112 @@ func (a *Archive) FindRequest(req *http.Request, scheme string) (*http.Request, 
 
 	// TODO: Try each until one succeeds with a matching request method.
 	if bestURL != "" {
-		return findExactMatch(hostMap[bestURL], req.Method)
+		return findExactMatch(hostMap[bestURL], req.Method, req.URL.Scheme)
 	}
 
 	return nil, nil, ErrNotFound
 }
 
 // findExactMatch returns the first request that exactly matches the given request method.
-func findExactMatch(requests []*ArchivedRequest, method string) (*http.Request, *http.Response, error) {
-	for _, ar := range requests {
-		req, resp, err := ar.unmarshal()
+func findExactMatch(requests []*ArchivedRequest, method string, scheme string) (*http.Request, *http.Response, error) {
+	for _, archivedRequest := range requests {
+		req, resp, err := archivedRequest.unmarshal(scheme)
 		if err != nil {
-			log.Printf("Error unmarshaling request: %v\nAR.Request: %q\nAR.Response: %q", err, ar.SerializedRequest, ar.SerializedResponse)
+			log.Printf("Error unmarshaling request: %v\nAR.Request: %q\nAR.Response: %q",
+				err, archivedRequest.SerializedRequest, archivedRequest.SerializedResponse)
 			continue
 		}
 		if req.Method == method {
 			return req, resp, nil
 		}
 	}
-
 	return nil, nil, ErrNotFound
 }
 
-func (a *Archive) addArchivedRequest(scheme string, req *http.Request, resp *http.Response) error {
-	ar, err := serializeRequest(req, resp)
+func (a *Archive) addArchivedRequest(req *http.Request, resp *http.Response) error {
+	// Always use the absolute URL in this mapping.
+	assertCompleteURL(req.URL)
+
+	archivedRequest, err := serializeRequest(req, resp)
 	if err != nil {
 		return err
 	}
 	if a.Requests[req.Host] == nil {
 		a.Requests[req.Host] = make(map[string][]*ArchivedRequest)
 	}
-	// Always use the absolute URL in this mapping.
-	u := *req.URL
-	if u.Host == "" {
-		u.Host = req.Host
-		u.Scheme = scheme
-	}
-	ustr := u.String()
-	a.Requests[req.Host][ustr] = append(a.Requests[req.Host][ustr], ar)
+
+	urlStr := req.URL.String()
+	a.Requests[req.Host][urlStr] = append(a.Requests[req.Host][urlStr], archivedRequest)
 	return nil
 }
 
 // Edit iterates over all requests in the archive. For each request, it calls f to
 // edit the request. If f returns a nil pair, the request is deleted.
 // The edited archive is returned, leaving the current archive is unchanged.
-func (a *Archive) Edit(f func(req *http.Request, resp *http.Response) (*http.Request, *http.Response, error)) (*Archive, error) {
+func (a *Archive) Edit(edit func(req *http.Request, resp *http.Response) (*http.Request, *http.Response, error)) (*Archive, error) {
 	clone := newArchive()
-	for _, urlmap := range a.Requests {
-		for ustr, requests := range urlmap {
-			u, _ := url.Parse(ustr)
-			for k, ar := range requests {
-				oldReq, oldResp, err := ar.unmarshal()
-				if err != nil {
-					return nil, fmt.Errorf("Error unmarshaling request #%d for %s: %v", k, ustr, err)
-				}
-				newReq, newResp, err := f(oldReq, oldResp)
-				if err != nil {
-					return nil, err
-				}
-				if newReq == nil || newResp == nil {
-					if newReq != nil || newResp != nil {
-						panic("programming error: newReq/newResp must both be nil or non-nil")
-					}
-					continue
-				}
-				// TODO: allow changing scheme or protocol?
-				if err := clone.addArchivedRequest(u.Scheme, newReq, newResp); err != nil {
-					return nil, err
-				}
-			}
+	err := a.ForEach(func(oldReq *http.Request, oldResp *http.Response) error {
+		newReq, newResp, err := edit(oldReq, oldResp)
+		if err != nil {
+			return err
 		}
+		if newReq == nil || newResp == nil {
+			if newReq != nil || newResp != nil {
+				panic("programming error: newReq/newResp must both be nil or non-nil")
+			}
+			return nil
+		}
+		// TODO: allow changing scheme or protocol?
+		return clone.addArchivedRequest(newReq, newResp)
+	})
+	if err != nil {
+		return nil, err
 	}
 	return &clone, nil
+}
+
+// Merge adds all the request of the provided archive to the receiver.
+func (a *Archive) Merge(other *Archive) error {
+	var numAddedRequests = 0
+	var numSkippedRequests = 0
+	err := other.ForEach(func(req *http.Request, resp *http.Response) error {
+		foundReq, _, notFoundErr := a.FindRequest(req)
+		if notFoundErr == ErrNotFound || req.URL.String() != foundReq.URL.String() {
+			if err := a.addArchivedRequest(req, resp); err != nil {
+				return err
+			}
+			numAddedRequests++
+		} else {
+			numSkippedRequests++
+		}
+		return nil
+	})
+	log.Printf("Merged requests: added=%d duplicates=%d \n", numAddedRequests, numSkippedRequests)
+	return err
+}
+
+// Add the result of a get request to the receiver.
+func (a *Archive) Add(method string, urlString string) error {
+	req, err := http.NewRequest(method, urlString, nil)
+	if err != nil {
+		return fmt.Errorf("Error creating request object: %v", err)
+	}
+
+	resp, err := http.DefaultClient.Do(req)
+	if err != nil {
+		return fmt.Errorf("Error fetching url: %v", err)
+	}
+
+	url, _ := url.Parse(urlString)
+	// Print a warning for duplicate requests since the replay server will only
+	// return the first found response.
+	if foundReq, _, notFoundErr := a.FindRequest(req); notFoundErr != ErrNotFound {
+		if foundReq.URL.String() == url.String() {
+			log.Printf("Potentially adding duplicate request")
+		}
+	}
+
+	return a.addArchivedRequest(req, resp)
 }
 
 // Serialize serializes this archive to the given writer.
@@ -330,10 +377,10 @@ func OpenWritableArchive(path string) (*WritableArchive, error) {
 }
 
 // RecordRequest records a request/response pair in the archive.
-func (a *WritableArchive) RecordRequest(scheme string, req *http.Request, resp *http.Response) error {
+func (a *WritableArchive) RecordRequest(req *http.Request, resp *http.Response) error {
 	a.mu.Lock()
 	defer a.mu.Unlock()
-	return a.addArchivedRequest(scheme, req, resp)
+	return a.addArchivedRequest(req, resp)
 }
 
 // RecordTlsConfig records the cert used and protocol negotiated for a host.

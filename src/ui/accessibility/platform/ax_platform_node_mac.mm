@@ -316,8 +316,7 @@ void NotifyMacEvent(AXPlatformNodeCocoa* target, ax::mojom::Event event_type) {
 
 // Returns true if |action| should be added implicitly for |data|.
 bool HasImplicitAction(const ui::AXNodeData& data, ax::mojom::Action action) {
-  return action == ax::mojom::Action::kDoDefault &&
-         ui::IsRoleClickable(data.role);
+  return action == ax::mojom::Action::kDoDefault && ui::IsClickable(data.role);
 }
 
 // For roles that show a menu for the default action, ensure "show menu" also
@@ -806,7 +805,7 @@ bool AlsoUseShowMenuActionForDefaultAction(const ui::AXNodeData& data) {
 }
 
 - (id)AXWindow {
-  return node_->GetDelegate()->GetTopLevelWidget();
+  return node_->GetDelegate()->GetNSWindow();
 }
 
 - (id)AXTopLevelUIElement {

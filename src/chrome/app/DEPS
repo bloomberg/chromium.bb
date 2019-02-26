@@ -1,4 +1,5 @@
 include_rules = [
+  "+ash/components/quick_launch/public",
   "+chrome/browser",
   "+chrome/child",
   "+chrome/chrome_watcher",
@@ -16,6 +17,7 @@ include_rules = [
   "+components/component_updater",
   "+components/content_settings/core/common/content_settings_pattern.h",
   "+components/crash",
+  "+components/gwp_asan/client/gwp_asan.h",
   "+components/nacl/common",
   "+components/nacl/renderer/plugin/ppapi_entrypoints.h",
   "+components/nacl/zygote",
@@ -28,10 +30,10 @@ include_rules = [
   "+content/public/app",
   "+content/public/browser/browser_main_runner.h",
   "+extensions/common/constants.h",
-  "+headless/public",  # For headless mode.
+  "+headless/public",
   "+mash/common",
-  "+ash/components/quick_launch/public",
   "+native_client/src/trusted/service_runtime/osx",
+  "+pdf/pdf_ppapi.h",
   "+remoting/client/plugin",
   "+sandbox",
   "+services/ws/public",

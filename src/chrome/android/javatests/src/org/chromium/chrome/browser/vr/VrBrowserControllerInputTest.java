@@ -24,6 +24,7 @@ import org.junit.runner.RunWith;
 import org.chromium.base.test.util.CommandLineFlags;
 import org.chromium.base.test.util.Restriction;
 import org.chromium.chrome.browser.ChromeSwitches;
+import org.chromium.chrome.browser.UrlConstants;
 import org.chromium.chrome.browser.history.HistoryPage;
 import org.chromium.chrome.browser.vr.rules.ChromeTabbedActivityVrTestRule;
 import org.chromium.chrome.browser.vr.util.NativeUiUtils;
@@ -299,7 +300,7 @@ public class VrBrowserControllerInputTest {
         mVrTestRule.loadUrl(VrBrowserTestFramework.getFileUrlForHtmlTestFile("test_gamepad_button"),
                 PAGE_LOAD_TIMEOUT_S);
 
-        mVrTestRule.loadUrl("chrome://history", PAGE_LOAD_TIMEOUT_S);
+        mVrTestRule.loadUrl(UrlConstants.HISTORY_URL, PAGE_LOAD_TIMEOUT_S);
 
         RecyclerView recyclerView =
                 ((HistoryPage) (mVrTestRule.getActivity().getActivityTab().getNativePage()))
@@ -339,7 +340,7 @@ public class VrBrowserControllerInputTest {
         Assert.assertTrue("Page did not enter fullscreen",
                 DOMUtils.isFullscreen(mVrBrowserTestFramework.getFirstTabWebContents()));
 
-        mController.pressReleaseAppButton();
+        NativeUiUtils.clickAppButton(UserFriendlyElementName.NONE, new PointF());
         CriteriaHelper.pollInstrumentationThread(
                 ()
                         -> {
@@ -388,7 +389,7 @@ public class VrBrowserControllerInputTest {
                                           navStart, POLL_TIMEOUT_SHORT_MS))
                            .doubleValue()
                     > navigationTimestamp;
-        });
+        }, "Dragging page down did not refresh page");
     }
 
     /**
@@ -406,10 +407,11 @@ public class VrBrowserControllerInputTest {
         // is not actually visible, we'll hit a DCHECK in the native code.
         NativeUiUtils.clickElementAndWaitForUiQuiescence(
                 UserFriendlyElementName.OMNIBOX_TEXT_FIELD, new PointF());
-        NativeUiUtils.revertToRealInput();
         // Wait for the URL bar to re-appear, which we take as a signal that we've exited omnibox
         // text input mode.
-        NativeUiUtils.performActionAndWaitForVisibilityChange(
-                UserFriendlyElementName.URL, () -> { mController.pressReleaseAppButton(); });
+        NativeUiUtils.performActionAndWaitForVisibilityStatus(
+                UserFriendlyElementName.URL, true /* visible */, () -> {
+                    NativeUiUtils.clickAppButton(UserFriendlyElementName.NONE, new PointF());
+                });
     }
 }

@@ -339,6 +339,7 @@
 #define glScheduleDCLayerSharedStateCHROMIUM \
   GLES2_GET_FUN(ScheduleDCLayerSharedStateCHROMIUM)
 #define glScheduleDCLayerCHROMIUM GLES2_GET_FUN(ScheduleDCLayerCHROMIUM)
+#define glSetActiveURLCHROMIUM GLES2_GET_FUN(SetActiveURLCHROMIUM)
 #define glMatrixLoadfCHROMIUM GLES2_GET_FUN(MatrixLoadfCHROMIUM)
 #define glMatrixLoadIdentityCHROMIUM GLES2_GET_FUN(MatrixLoadIdentityCHROMIUM)
 #define glGenPathsCHROMIUM GLES2_GET_FUN(GenPathsCHROMIUM)
@@ -409,5 +410,11 @@
 #define glFramebufferTextureMultiviewLayeredANGLE \
   GLES2_GET_FUN(FramebufferTextureMultiviewLayeredANGLE)
 #define glMaxShaderCompilerThreadsKHR GLES2_GET_FUN(MaxShaderCompilerThreadsKHR)
+#define glCreateAndTexStorage2DSharedImageCHROMIUM \
+  GLES2_GET_FUN(CreateAndTexStorage2DSharedImageCHROMIUM)
+#define glBeginSharedImageAccessDirectCHROMIUM \
+  GLES2_GET_FUN(BeginSharedImageAccessDirectCHROMIUM)
+#define glEndSharedImageAccessDirectCHROMIUM \
+  GLES2_GET_FUN(EndSharedImageAccessDirectCHROMIUM)
 
 #endif  // GPU_GLES2_GL2CHROMIUM_AUTOGEN_H_

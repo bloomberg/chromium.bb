@@ -121,8 +121,7 @@ class DriveBackendSyncTest : public testing::Test,
         nullptr,  // task_logger
         nullptr,  // notification_manager
         nullptr,  // extension_service
-        nullptr,  // signin_manager
-        nullptr,  // token_service
+        nullptr,  // identity_manager
         nullptr,  // url_loader_factory
         nullptr,  // drive_service
         in_memory_env_.get()));

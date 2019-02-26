@@ -58,7 +58,7 @@ void RemoteFrameView::DetachFromLayout() {
 }
 
 RemoteFrameView* RemoteFrameView::Create(RemoteFrame* remote_frame) {
-  RemoteFrameView* view = new RemoteFrameView(remote_frame);
+  RemoteFrameView* view = MakeGarbageCollected<RemoteFrameView>(remote_frame);
   view->Show();
   return view;
 }
@@ -258,7 +258,7 @@ void RemoteFrameView::Paint(GraphicsContext& context,
   if (!context.Printing())
     return;
 
-  if (!rect.IntersectsCullRect(FrameRect()))
+  if (!rect.Intersects(FrameRect()))
     return;
 
   DrawingRecorder recorder(context, *GetFrame().OwnerLayoutObject(),
@@ -309,7 +309,7 @@ void RemoteFrameView::SetupRenderThrottling() {
   if (!target_element)
     return;
 
-  visibility_observer_ = new ElementVisibilityObserver(
+  visibility_observer_ = MakeGarbageCollected<ElementVisibilityObserver>(
       target_element, WTF::BindRepeating(
                           [](RemoteFrameView* remote_view, bool is_visible) {
                             remote_view->UpdateRenderThrottlingStatus(

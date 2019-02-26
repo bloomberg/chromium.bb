@@ -120,8 +120,7 @@ def write_content(content, output_file_name):
 def main():
     options, filenames = parse_options()
     component = options.component
-    idl_filenames = read_idl_files_list_from_file(filenames[0],
-                                                  is_gyp_format=False)
+    idl_filenames = read_idl_files_list_from_file(filenames[0])
     basenames = [idl_filename_to_basename(file_path)
                  for file_path in idl_filenames]
     file_contents = generate_content(component, basenames)

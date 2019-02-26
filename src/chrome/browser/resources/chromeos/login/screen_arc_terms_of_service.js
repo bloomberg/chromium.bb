@@ -207,7 +207,8 @@ login.createScreen('ArcTermsOfServiceScreen', 'arc-tos', function() {
 
       if (this.language_ && this.language_ == language && this.countryCode_ &&
           this.countryCode_ == countryCode &&
-          !this.classList.contains('error') && !this.usingOfflineTerms_) {
+          !this.classList.contains('error') && !this.usingOfflineTerms_ &&
+          this.tosContent_) {
         this.enableButtons_(true);
         return;
       }
@@ -252,6 +253,8 @@ login.createScreen('ArcTermsOfServiceScreen', 'arc-tos', function() {
      */
     setTosForTesting: function(terms) {
       this.tosContent_ = terms;
+      this.usingOfflineTerms_ = true;
+      this.setTermsViewContentLoadedState_();
     },
 
     /**
@@ -312,9 +315,13 @@ login.createScreen('ArcTermsOfServiceScreen', 'arc-tos', function() {
      * Handles Next button click.
      */
     onNext: function() {
+      var isDemoModeSetup = this.isDemoModeSetup_();
       this.getElement_('arc-location-service').hidden = false;
       this.getElement_('arc-pai-service').hidden = false;
       this.getElement_('arc-google-service-confirmation').hidden = false;
+      if (!isDemoModeSetup) {
+        this.getElement_('arc-review-settings').hidden = false;
+      }
       this.getElement_('arc-tos-container').style.overflowY = 'auto';
       this.getElement_('arc-tos-container').scrollTop =
           this.getElement_('arc-tos-container').scrollHeight;
@@ -333,10 +340,12 @@ login.createScreen('ArcTermsOfServiceScreen', 'arc-tos', function() {
           this.getElement_('arc-enable-backup-restore').checked;
       var isLocationServiceEnabled =
           this.getElement_('arc-enable-location-service').checked;
-
-      chrome.send(
-          'arcTermsOfServiceAccept',
-          [isBackupRestoreEnabled, isLocationServiceEnabled, this.tosContent_]);
+      var reviewArcSettings =
+          this.getElement_('arc-review-settings-checkbox').checked;
+      chrome.send('arcTermsOfServiceAccept', [
+        isBackupRestoreEnabled, isLocationServiceEnabled, reviewArcSettings,
+        this.tosContent_
+      ]);
     },
 
     /**
@@ -528,6 +537,7 @@ login.createScreen('ArcTermsOfServiceScreen', 'arc-tos', function() {
       this.getElement_('arc-location-service').hidden = true;
       this.getElement_('arc-pai-service').hidden = true;
       this.getElement_('arc-google-service-confirmation').hidden = true;
+      this.getElement_('arc-review-settings').hidden = true;
       this.getElement_('arc-tos-container').style.overflow = 'hidden';
       this.getElement_('arc-tos-accept-button').hidden = true;
       this.getElement_('arc-tos-next-button').hidden = false;
@@ -609,7 +619,7 @@ login.createScreen('ArcTermsOfServiceScreen', 'arc-tos', function() {
         this.setMetricsMode(
             loadTimeData.getString('arcTextMetricsManagedEnabled'), true);
       }
-      this.getElement_('arc-tos-accept-button').textContent =
+      this.getElement_('arc-tos-accept-button-content').textContent =
           loadTimeData.getString(
               isDemoModeSetup ? 'arcTermsOfServiceAcceptAndContinueButton' :
                                 'arcTermsOfServiceAcceptButton');
@@ -633,6 +643,7 @@ login.createScreen('ArcTermsOfServiceScreen', 'arc-tos', function() {
       this.getElement_('arc-location-service').hidden = true;
       this.getElement_('arc-pai-service').hidden = true;
       this.getElement_('arc-google-service-confirmation').hidden = true;
+      this.getElement_('arc-review-settings').hidden = true;
       this.getElement_('arc-tos-container').style.overflowY = 'auto';
       this.getElement_('arc-tos-container').scrollTop =
           this.getElement_('arc-tos-container').scrollHeight;

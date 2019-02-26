@@ -49,15 +49,17 @@ void QuicSimpleDispatcher::OnRstStreamReceived(
 QuicServerSessionBase* QuicSimpleDispatcher::CreateQuicSession(
     QuicConnectionId connection_id,
     const QuicSocketAddress& client_address,
-    QuicStringPiece /*alpn*/) {
+    QuicStringPiece /*alpn*/,
+    const ParsedQuicVersion& version) {
   // The QuicServerSessionBase takes ownership of |connection| below.
   QuicConnection* connection = new QuicConnection(
       connection_id, client_address, helper(), alarm_factory(), writer(),
-      /* owns_writer= */ false, Perspective::IS_SERVER, GetSupportedVersions());
+      /* owns_writer= */ false, Perspective::IS_SERVER,
+      ParsedQuicVersionVector{version});
 
   QuicServerSessionBase* session = new QuicSimpleServerSession(
-      config(), connection, this, session_helper(), crypto_config(),
-      compressed_certs_cache(), quic_simple_server_backend_);
+      config(), GetSupportedVersions(), connection, this, session_helper(),
+      crypto_config(), compressed_certs_cache(), quic_simple_server_backend_);
   session->Initialize();
   return session;
 }

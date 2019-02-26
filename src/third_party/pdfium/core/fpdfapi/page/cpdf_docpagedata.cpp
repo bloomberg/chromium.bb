@@ -11,7 +11,7 @@
 #include <set>
 #include <utility>
 
-#include "core/fdrm/crypto/fx_crypt.h"
+#include "core/fdrm/fx_crypt.h"
 #include "core/fpdfapi/cpdf_modulemgr.h"
 #include "core/fpdfapi/font/cpdf_type1font.h"
 #include "core/fpdfapi/page/cpdf_iccprofile.h"
@@ -30,7 +30,7 @@
 
 CPDF_DocPageData::CPDF_DocPageData(CPDF_Document* pPDFDoc)
     : m_bForceClear(false), m_pPDFDoc(pPDFDoc) {
-  assert(m_pPDFDoc);
+  ASSERT(m_pPDFDoc);
 }
 
 CPDF_DocPageData::~CPDF_DocPageData() {
@@ -278,7 +278,7 @@ CPDF_ColorSpace* CPDF_DocPageData::GetColorSpaceInternal(
   if (!pArray || pArray->IsEmpty())
     return nullptr;
 
-  if (pArray->GetCount() == 1) {
+  if (pArray->size() == 1) {
     return GetColorSpaceInternal(pArray->GetDirectObjectAt(0), pResources,
                                  pVisited, pVisitedInternal);
   }

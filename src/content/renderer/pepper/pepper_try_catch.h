@@ -35,6 +35,7 @@ class CONTENT_EXPORT PepperTryCatch {
   // exception if there is an error in the conversion.
   v8::Local<v8::Value> ToV8(PP_Var var);
   ppapi::ScopedPPVar FromV8(v8::Local<v8::Value> v8_value);
+  ppapi::ScopedPPVar FromV8Maybe(v8::MaybeLocal<v8::Value> v8_value);
 
  protected:
   // Make sure that |instance_| is alive for the lifetime of PepperTryCatch.

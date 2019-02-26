@@ -133,6 +133,9 @@ class GvrSchedulerDelegate : public BaseSchedulerDelegate,
   // XRFrameDataProvider
   void GetFrameData(device::mojom::XRFrameDataProvider::GetFrameDataCallback
                         callback) override;
+  void GetEnvironmentIntegrationProvider(
+      device::mojom::XREnvironmentIntegrationProviderAssociatedRequest
+          environment_provider) override;
 
   // XRPresentationProvider
   void SubmitFrameMissing(int16_t frame_index, const gpu::SyncToken&) override;

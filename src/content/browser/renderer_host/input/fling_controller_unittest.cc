@@ -26,21 +26,15 @@ namespace content {
 
 class FakeFlingController : public FlingController {
  public:
-  FakeFlingController(GestureEventQueue* gesture_event_queue,
-
-                      FlingControllerEventSenderClient* event_sender_client,
+  FakeFlingController(FlingControllerEventSenderClient* event_sender_client,
                       FlingControllerSchedulerClient* scheduler_client,
                       const Config& config)
-      : FlingController(gesture_event_queue,
-                        event_sender_client,
-                        scheduler_client,
-                        config) {}
+      : FlingController(event_sender_client, scheduler_client, config) {}
 
   bool FlingBoosted() const { return fling_booster_->fling_boosted(); }
 };
 
-class FlingControllerTest : public GestureEventQueueClient,
-                            public FlingControllerEventSenderClient,
+class FlingControllerTest : public FlingControllerEventSenderClient,
                             public FlingControllerSchedulerClient,
                             public testing::TestWithParam<bool> {
  public:
@@ -53,20 +47,11 @@ class FlingControllerTest : public GestureEventQueueClient,
   ~FlingControllerTest() override {}
 
   void SetUp() override {
-    queue_ = std::make_unique<GestureEventQueue>(this, this, this,
-                                                 GestureEventQueue::Config());
     fling_controller_ = std::make_unique<FakeFlingController>(
-        queue_.get(), this, this, FlingController::Config());
+        this, this, FlingController::Config());
     fling_controller_->set_clock_for_testing(&mock_clock_);
     AdvanceTime();
   }
-
-  // GestureEventQueueClient
-  void SendGestureEventImmediately(
-      const GestureEventWithLatencyInfo& event) override {}
-  void OnGestureEventAck(const GestureEventWithLatencyInfo& event,
-                         InputEventAckSource ack_source,
-                         InputEventAckState ack_result) override {}
 
   // FlingControllerEventSenderClient
   void SendGeneratedWheelEvent(
@@ -159,7 +144,6 @@ class FlingControllerTest : public GestureEventQueueClient,
 
   bool needs_begin_frame_for_fling_progress_;
   base::test::ScopedTaskEnvironment scoped_task_environment_;
-  std::unique_ptr<GestureEventQueue> queue_;
   DISALLOW_COPY_AND_ASSIGN(FlingControllerTest);
 };
 
@@ -298,65 +282,6 @@ TEST_P(FlingControllerTest, ControllerSendsGSEWhenTouchscreenFlingIsOver) {
     ProgressFling(NowTicks());
   }
 
-  EXPECT_EQ(WebInputEvent::kGestureScrollEnd, last_sent_gesture_.GetType());
-}
-
-TEST_P(FlingControllerTest,
-       EarlyTouchpadFlingCancelationOnInertialGSUAckNotConsumed) {
-  SimulateFlingStart(blink::kWebGestureDeviceTouchpad, gfx::Vector2dF(1000, 0));
-  EXPECT_TRUE(FlingInProgress());
-  // Processing GFS will send the first fling prgoress event if the time delta
-  // between the timestamp of the GFS and the time that ProcessGestureFlingStart
-  // is called is large enough.
-  bool process_GFS_sent_first_event = first_wheel_event_sent_;
-
-  AdvanceTime();
-  ProgressFling(NowTicks());
-  if (!process_GFS_sent_first_event) {
-    EXPECT_EQ(WebMouseWheelEvent::kPhaseBegan, last_sent_wheel_.momentum_phase);
-  } else {
-    EXPECT_EQ(WebMouseWheelEvent::kPhaseChanged,
-              last_sent_wheel_.momentum_phase);
-  }
-  EXPECT_GT(last_sent_wheel_.delta_x, 0.f);
-
-  // A non-consumed GSU ack in inertial state cancels out the rest of the fling.
-  WebGestureEvent scroll_update(WebInputEvent::kGestureScrollUpdate, 0,
-                                NowTicks());
-  scroll_update.data.scroll_update.inertial_phase =
-      WebGestureEvent::kMomentumPhase;
-
-  fling_controller_->OnGestureEventAck(
-      GestureEventWithLatencyInfo(scroll_update),
-      INPUT_EVENT_ACK_STATE_NOT_CONSUMED);
-  EXPECT_FALSE(FlingInProgress());
-  EXPECT_EQ(WebMouseWheelEvent::kPhaseEnded, last_sent_wheel_.momentum_phase);
-  EXPECT_EQ(0.f, last_sent_wheel_.delta_x);
-  EXPECT_EQ(0.f, last_sent_wheel_.delta_y);
-}
-
-TEST_P(FlingControllerTest,
-       EarlyTouchscreenFlingCancelationOnInertialGSUAckNotConsumed) {
-  SimulateFlingStart(blink::kWebGestureDeviceTouchscreen,
-                     gfx::Vector2dF(1000, 0));
-  EXPECT_TRUE(FlingInProgress());
-  AdvanceTime();
-  ProgressFling(NowTicks());
-  ASSERT_EQ(WebInputEvent::kGestureScrollUpdate, last_sent_gesture_.GetType());
-  EXPECT_EQ(WebGestureEvent::kMomentumPhase,
-            last_sent_gesture_.data.scroll_update.inertial_phase);
-  EXPECT_GT(last_sent_gesture_.data.scroll_update.delta_x, 0.f);
-
-  // A non-consumed GSU ack in inertial state cancels out the rest of the fling.
-  WebGestureEvent scroll_update(WebInputEvent::kGestureScrollUpdate, 0,
-                                NowTicks());
-  scroll_update.data.scroll_update.inertial_phase =
-      WebGestureEvent::kMomentumPhase;
-
-  fling_controller_->OnGestureEventAck(
-      GestureEventWithLatencyInfo(scroll_update),
-      INPUT_EVENT_ACK_STATE_NOT_CONSUMED);
-  EXPECT_FALSE(FlingInProgress());
   EXPECT_EQ(WebInputEvent::kGestureScrollEnd, last_sent_gesture_.GetType());
 }
 

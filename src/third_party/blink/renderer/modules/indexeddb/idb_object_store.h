@@ -28,8 +28,6 @@
 
 #include "base/memory/scoped_refptr.h"
 #include "third_party/blink/public/common/indexeddb/web_idb_types.h"
-#include "third_party/blink/public/platform/modules/indexeddb/web_idb_cursor.h"
-#include "third_party/blink/public/platform/modules/indexeddb/web_idb_database.h"
 #include "third_party/blink/renderer/bindings/core/v8/serialization/serialized_script_value.h"
 #include "third_party/blink/renderer/modules/indexeddb/idb_cursor.h"
 #include "third_party/blink/renderer/modules/indexeddb/idb_index.h"
@@ -39,6 +37,8 @@
 #include "third_party/blink/renderer/modules/indexeddb/idb_metadata.h"
 #include "third_party/blink/renderer/modules/indexeddb/idb_request.h"
 #include "third_party/blink/renderer/modules/indexeddb/idb_transaction.h"
+#include "third_party/blink/renderer/modules/indexeddb/web_idb_cursor.h"
+#include "third_party/blink/renderer/modules/indexeddb/web_idb_database.h"
 #include "third_party/blink/renderer/platform/bindings/script_wrappable.h"
 #include "third_party/blink/renderer/platform/wtf/text/wtf_string.h"
 
@@ -53,8 +53,11 @@ class MODULES_EXPORT IDBObjectStore final : public ScriptWrappable {
  public:
   static IDBObjectStore* Create(scoped_refptr<IDBObjectStoreMetadata> metadata,
                                 IDBTransaction* transaction) {
-    return new IDBObjectStore(std::move(metadata), transaction);
+    return MakeGarbageCollected<IDBObjectStore>(std::move(metadata),
+                                                transaction);
   }
+
+  IDBObjectStore(scoped_refptr<IDBObjectStoreMetadata>, IDBTransaction*);
   ~IDBObjectStore() override = default;
 
   void Trace(blink::Visitor*) override;
@@ -107,7 +110,7 @@ class MODULES_EXPORT IDBObjectStore final : public ScriptWrappable {
   IDBIndex* createIndex(ScriptState* script_state,
                         const String& name,
                         const StringOrStringSequence& key_path,
-                        const IDBIndexParameters& options,
+                        const IDBIndexParameters* options,
                         ExceptionState& exception_state) {
     return createIndex(script_state, name, IDBKeyPath(key_path), options,
                        exception_state);
@@ -119,7 +122,7 @@ class MODULES_EXPORT IDBObjectStore final : public ScriptWrappable {
 
   // Exposed for the use of IDBCursor::update().
   IDBRequest* DoPut(ScriptState*,
-                    WebIDBPutMode,
+                    mojom::IDBPutMode,
                     const IDBRequest::Source&,
                     const ScriptValue&,
                     const IDBKey*,
@@ -129,8 +132,8 @@ class MODULES_EXPORT IDBObjectStore final : public ScriptWrappable {
   IDBRequest* openCursor(
       ScriptState*,
       IDBKeyRange*,
-      WebIDBCursorDirection,
-      WebIDBTaskType = kWebIDBTaskTypeNormal,
+      mojom::IDBCursorDirection,
+      mojom::IDBTaskType = mojom::IDBTaskType::Normal,
       IDBRequest::AsyncTraceState = IDBRequest::AsyncTraceState());
   IDBRequest* deleteFunction(
       ScriptState*,
@@ -187,15 +190,13 @@ class MODULES_EXPORT IDBObjectStore final : public ScriptWrappable {
  private:
   using IDBIndexMap = HeapHashMap<String, Member<IDBIndex>>;
 
-  IDBObjectStore(scoped_refptr<IDBObjectStoreMetadata>, IDBTransaction*);
-
   IDBIndex* createIndex(ScriptState*,
                         const String& name,
                         const IDBKeyPath&,
-                        const IDBIndexParameters&,
+                        const IDBIndexParameters*,
                         ExceptionState&);
   IDBRequest* DoPut(ScriptState*,
-                    WebIDBPutMode,
+                    mojom::IDBPutMode,
                     const ScriptValue&,
                     const ScriptValue& key_value,
                     ExceptionState&);

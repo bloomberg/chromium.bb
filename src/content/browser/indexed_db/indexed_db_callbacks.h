@@ -43,15 +43,16 @@ struct IndexedDBValue;
 class CONTENT_EXPORT IndexedDBCallbacks
     : public base::RefCounted<IndexedDBCallbacks> {
  public:
-  // Destructively converts an IndexedDBValue to a Mojo Value.
-  static blink::mojom::IDBValuePtr ConvertAndEraseValue(IndexedDBValue* value);
-
   IndexedDBCallbacks(base::WeakPtr<IndexedDBDispatcherHost> dispatcher_host,
                      const url::Origin& origin,
                      blink::mojom::IDBCallbacksAssociatedPtrInfo callbacks_info,
                      scoped_refptr<base::SequencedTaskRunner> idb_runner);
 
   virtual void OnError(const IndexedDBDatabaseError& error);
+
+  // IndexedDBFactory::databases
+  virtual void OnSuccess(
+      std::vector<blink::mojom::IDBNameAndVersionPtr> names_and_versions);
 
   // IndexedDBFactory::GetDatabaseNames
   virtual void OnSuccess(const std::vector<base::string16>& string);
@@ -102,8 +103,6 @@ class CONTENT_EXPORT IndexedDBCallbacks
   // IndexedDBCursor::Continue / Advance (when complete)
   virtual void OnSuccess();
 
-  void SetConnectionOpenStartTime(const base::TimeTicks& start_time);
-
  protected:
   virtual ~IndexedDBCallbacks();
 
@@ -121,11 +120,10 @@ class CONTENT_EXPORT IndexedDBCallbacks
   bool connection_created_ = false;
 
   // Used to assert that OnSuccess is only called if there was no data loss.
-  blink::WebIDBDataLoss data_loss_;
+  blink::mojom::IDBDataLoss data_loss_;
 
   // The "blocked" event should be sent at most once per request.
   bool sent_blocked_ = false;
-  base::TimeTicks connection_open_start_time_;
 
   std::unique_ptr<IOThreadHelper, BrowserThread::DeleteOnIOThread> io_helper_;
   SEQUENCE_CHECKER(sequence_checker_);

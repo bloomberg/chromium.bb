@@ -72,14 +72,14 @@ class CONTENT_EXPORT IndexedDBTransaction {
   // transaction.
   void GrabSnapshotThenStart();
 
-  blink::WebIDBTransactionMode mode() const { return mode_; }
+  blink::mojom::IDBTransactionMode mode() const { return mode_; }
   const std::set<int64_t>& scope() const { return object_store_ids_; }
 
   // Tasks cannot call Commit.
   void ScheduleTask(Operation task) {
-    ScheduleTask(blink::kWebIDBTaskTypeNormal, std::move(task));
+    ScheduleTask(blink::mojom::IDBTaskType::Normal, std::move(task));
   }
-  void ScheduleTask(blink::WebIDBTaskType, Operation task);
+  void ScheduleTask(blink::mojom::IDBTaskType, Operation task);
   void ScheduleAbortTask(AbortOperation abort_task);
   void RegisterOpenCursor(IndexedDBCursor* cursor);
   void UnregisterOpenCursor(IndexedDBCursor* cursor);
@@ -131,7 +131,7 @@ class CONTENT_EXPORT IndexedDBTransaction {
       int64_t id,
       IndexedDBConnection* connection,
       const std::set<int64_t>& object_store_ids,
-      blink::WebIDBTransactionMode mode,
+      blink::mojom::IDBTransactionMode mode,
       IndexedDBBackingStore::Transaction* backing_store_transaction);
 
   // May be overridden in tests.
@@ -182,7 +182,7 @@ class CONTENT_EXPORT IndexedDBTransaction {
 
   const int64_t id_;
   const std::set<int64_t> object_store_ids_;
-  const blink::WebIDBTransactionMode mode_;
+  const blink::mojom::IDBTransactionMode mode_;
 
   bool used_ = false;
   State state_ = CREATED;

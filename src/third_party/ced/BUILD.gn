@@ -2,6 +2,7 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
+import("//testing/libfuzzer/fuzzer_test.gni")
 import("//testing/test.gni")
 
 config("ced_config") {
@@ -95,4 +96,15 @@ test("ced_unittests") {
     "//testing/gtest",
     "//testing/gtest:gtest_main",
   ]
+}
+
+fuzzer_test("compact_enc_det_fuzzer") {
+  sources = [
+    "compact_enc_det_fuzzer.cc",
+  ]
+  deps = [
+    ":ced",
+    "//base/test:test_support",
+  ]
+  seed_corpus = "compact_enc_det_corpus"
 }

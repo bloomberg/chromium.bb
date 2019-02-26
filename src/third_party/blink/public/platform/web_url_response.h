@@ -202,6 +202,7 @@ class WebURLResponse {
   BLINK_PLATFORM_EXPORT void SetHasMajorCertificateErrors(bool);
   BLINK_PLATFORM_EXPORT void SetCTPolicyCompliance(net::ct::CTPolicyCompliance);
   BLINK_PLATFORM_EXPORT void SetIsLegacySymantecCert(bool);
+  BLINK_PLATFORM_EXPORT void SetIsLegacyTLSVersion(bool);
 
   BLINK_PLATFORM_EXPORT void SetSecurityStyle(WebSecurityStyle);
 
@@ -209,6 +210,7 @@ class WebURLResponse {
   BLINK_PLATFORM_EXPORT WebSecurityDetails SecurityDetailsForTesting();
 
   BLINK_PLATFORM_EXPORT void SetAsyncRevalidationRequested(bool);
+  BLINK_PLATFORM_EXPORT void SetNetworkAccessed(bool);
 
 #if INSIDE_BLINK
   BLINK_PLATFORM_EXPORT const ResourceResponse& ToResourceResponse() const;

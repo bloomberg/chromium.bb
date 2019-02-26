@@ -3,7 +3,7 @@
 // found in the LICENSE file.
 
 // This file has been auto-generated from the Jinja2 template
-// third_party/blink/renderer/bindings/templates/dictionary_impl.cpp.tmpl
+// third_party/blink/renderer/bindings/templates/dictionary_impl.cc.tmpl
 // by the script code_generator_v8.py.
 // DO NOT MODIFY!
 
@@ -16,11 +16,7 @@ TestDictionaryDerivedImplementedAs::TestDictionaryDerivedImplementedAs() {
   setDerivedStringMemberWithDefault("default string value");
 }
 
-TestDictionaryDerivedImplementedAs::~TestDictionaryDerivedImplementedAs() {}
-
-TestDictionaryDerivedImplementedAs::TestDictionaryDerivedImplementedAs(const TestDictionaryDerivedImplementedAs&) = default;
-
-TestDictionaryDerivedImplementedAs& TestDictionaryDerivedImplementedAs::operator=(const TestDictionaryDerivedImplementedAs&) = default;
+TestDictionaryDerivedImplementedAs::~TestDictionaryDerivedImplementedAs() = default;
 
 void TestDictionaryDerivedImplementedAs::setStringOrDoubleSequenceMember(const HeapVector<StringOrDouble>& value) {
   string_or_double_sequence_member_ = value;

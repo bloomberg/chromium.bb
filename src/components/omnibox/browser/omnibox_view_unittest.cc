@@ -9,13 +9,11 @@
 #include "base/strings/string16.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
-#include "base/test/scoped_feature_list.h"
 #include "base/test/scoped_task_environment.h"
 #include "build/build_config.h"
 #include "components/bookmarks/browser/bookmark_model.h"
 #include "components/bookmarks/test/test_bookmark_client.h"
 #include "components/omnibox/browser/autocomplete_match.h"
-#include "components/omnibox/browser/omnibox_field_trial.h"
 #include "components/omnibox/browser/omnibox_view.h"
 #include "components/omnibox/browser/test_omnibox_client.h"
 #include "components/omnibox/browser/test_omnibox_edit_controller.h"
@@ -175,10 +173,6 @@ TEST_F(OmniboxViewTest, GetIcon_BookmarkIcon) {
 // Tests GetIcon returns the website's favicon when the match is a website.
 TEST_F(OmniboxViewTest, GetIcon_Favicon) {
   const GURL kUrl("https://woahDude.com");
-
-  base::test::ScopedFeatureList scoped_feature_list_;
-  scoped_feature_list_.InitAndEnableFeature(
-      omnibox::kUIExperimentShowSuggestionFavicons);
 
   AutocompleteMatch match;
   match.type = AutocompleteMatchType::URL_WHAT_YOU_TYPED;

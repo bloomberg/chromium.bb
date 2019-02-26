@@ -6,14 +6,16 @@
 
 #include "base/metrics/histogram_macros.h"
 #include "chrome/browser/consent_auditor/consent_auditor_factory.h"
-#include "chrome/browser/signin/signin_manager_factory.h"
+#include "chrome/browser/signin/identity_manager_factory.h"
 #include "chrome/browser/ui/webui/chromeos/user_image_source.h"
 #include "chrome/grit/browser_resources.h"
 #include "chrome/grit/generated_resources.h"
+#include "chromeos/services/assistant/public/features.h"
 #include "components/arc/arc_prefs.h"
 #include "components/consent_auditor/consent_auditor.h"
 #include "components/signin/core/browser/signin_manager_base.h"
 #include "components/user_manager/user_manager.h"
+#include "services/identity/public/cpp/identity_manager.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/webui/web_ui_util.h"
 
@@ -107,23 +109,28 @@ base::Value CreateGetMoreData(bool email_optin_needed,
                               const assistant::EmailOptInUi& email_optin_ui) {
   base::Value get_more_data(base::Value::Type::LIST);
 
-  // Process hotword data.
-  base::Value hotword_data(base::Value::Type::DICTIONARY);
-  hotword_data.SetKey(
-      "title",
-      base::Value(l10n_util::GetStringUTF16(IDS_ASSISTANT_HOTWORD_TITLE)));
-  hotword_data.SetKey(
-      "description",
-      base::Value(l10n_util::GetStringUTF16(IDS_ASSISTANT_HOTWORD_DESC)));
-  hotword_data.SetKey("defaultEnabled", base::Value(true));
-  hotword_data.SetKey(
-      "iconUri",
-      base::Value("https://www.gstatic.com/images/icons/material/system/"
-                  "2x/mic_none_grey600_48dp.png"));
-  get_more_data.GetList().push_back(std::move(hotword_data));
+  if (!base::FeatureList::IsEnabled(
+          assistant::features::kAssistantVoiceMatch)) {
+    // Process hotword data.
+    base::Value hotword_data(base::Value::Type::DICTIONARY);
+    hotword_data.SetKey("id", base::Value("hotword"));
+    hotword_data.SetKey(
+        "title",
+        base::Value(l10n_util::GetStringUTF16(IDS_ASSISTANT_HOTWORD_TITLE)));
+    hotword_data.SetKey(
+        "description",
+        base::Value(l10n_util::GetStringUTF16(IDS_ASSISTANT_HOTWORD_DESC)));
+    hotword_data.SetKey("defaultEnabled", base::Value(true));
+    hotword_data.SetKey(
+        "iconUri",
+        base::Value("https://www.gstatic.com/images/icons/material/system/"
+                    "2x/mic_none_grey600_48dp.png"));
+    get_more_data.GetList().push_back(std::move(hotword_data));
+  }
 
   // Process screen context data.
   base::Value context_data(base::Value::Type::DICTIONARY);
+  context_data.SetKey("id", base::Value("context"));
   context_data.SetKey("title", base::Value(l10n_util::GetStringUTF16(
                                    IDS_ASSISTANT_SCREEN_CONTEXT_TITLE)));
   context_data.SetKey("description", base::Value(l10n_util::GetStringUTF16(
@@ -138,6 +145,7 @@ base::Value CreateGetMoreData(bool email_optin_needed,
   // Process email optin data.
   if (email_optin_needed) {
     base::Value data(base::Value::Type::DICTIONARY);
+    data.SetKey("id", base::Value("email"));
     data.SetKey("title", base::Value(email_optin_ui.title()));
     data.SetKey("description", base::Value(email_optin_ui.description()));
     data.SetKey("defaultEnabled",
@@ -208,10 +216,9 @@ using sync_pb::UserConsentTypes;
 void RecordActivityControlConsent(Profile* profile,
                                   std::string ui_audit_key,
                                   bool opted_in) {
-  SigninManagerBase* signin_manager =
-      SigninManagerFactory::GetForProfile(profile);
-  DCHECK(signin_manager->IsAuthenticated());
-  std::string account_id = signin_manager->GetAuthenticatedAccountId();
+  auto* identity_manager = IdentityManagerFactory::GetForProfile(profile);
+  DCHECK(identity_manager->HasPrimaryAccount());
+  const std::string account_id = identity_manager->GetPrimaryAccountId();
 
   UserConsentTypes::AssistantActivityControlConsent consent;
   consent.set_ui_audit_key(ui_audit_key);

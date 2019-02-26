@@ -14,12 +14,15 @@
 #include "chrome/browser/extensions/component_loader.h"
 #include "chrome/browser/extensions/extension_apitest.h"
 #include "chrome/browser/extensions/extension_service.h"
+#include "chrome/browser/speech/extension_api/tts_engine_extension_api.h"
 #include "chrome/browser/speech/extension_api/tts_extension_api.h"
-#include "chrome/browser/speech/tts_controller.h"
+#include "chrome/browser/speech/tts_controller_delegate_impl.h"
 #include "chrome/browser/speech/tts_platform.h"
 #include "chrome/common/chrome_switches.h"
 #include "content/public/browser/notification_service.h"
+#include "content/public/browser/tts_controller.h"
 #include "content/public/test/test_utils.h"
+#include "extensions/browser/event_router.h"
 #include "extensions/browser/extension_system.h"
 #include "extensions/browser/notification_types.h"
 #include "net/base/network_change_notifier.h"
@@ -45,7 +48,7 @@ int g_saved_utterance_id;
 
 namespace extensions {
 
-class MockTtsPlatformImpl : public TtsPlatformImpl {
+class MockTtsPlatformImpl : public TtsPlatform {
  public:
   MockTtsPlatformImpl()
       : should_fake_get_voices_(false),
@@ -53,12 +56,27 @@ class MockTtsPlatformImpl : public TtsPlatformImpl {
 
   bool PlatformImplAvailable() override { return true; }
 
+  void WillSpeakUtteranceWithVoice(
+      const content::Utterance* utterance,
+      const content::VoiceData& voice_data) override {}
+
+  bool LoadBuiltInTtsExtension(
+      content::BrowserContext* browser_context) override {
+    return false;
+  }
+
+  void ClearError() override { error_ = ""; }
+
+  void SetError(const std::string& error) override { error_ = error; }
+
+  std::string GetError() override { return error_; }
+
   MOCK_METHOD5(Speak,
                bool(int utterance_id,
                     const std::string& utterance,
                     const std::string& lang,
-                    const VoiceData& voice,
-                    const UtteranceContinuousParameters& params));
+                    const content::VoiceData& voice,
+                    const content::UtteranceContinuousParameters& params));
 
   MOCK_METHOD0(StopSpeaking, bool(void));
 
@@ -69,30 +87,28 @@ class MockTtsPlatformImpl : public TtsPlatformImpl {
   MOCK_METHOD0(IsSpeaking, bool(void));
 
   // Fake this method to add a native voice.
-  void GetVoices(std::vector<VoiceData>* voices) override {
+  void GetVoices(std::vector<content::VoiceData>* voices) override {
     if (!should_fake_get_voices_)
       return;
 
-    VoiceData voice;
+    content::VoiceData voice;
     voice.name = "TestNativeVoice";
     voice.native = true;
     voice.lang = "en-GB";
-    voice.events.insert(TTS_EVENT_START);
-    voice.events.insert(TTS_EVENT_END);
+    voice.events.insert(content::TTS_EVENT_START);
+    voice.events.insert(content::TTS_EVENT_END);
     voices->push_back(voice);
   }
 
   void set_should_fake_get_voices(bool val) { should_fake_get_voices_ = val; }
 
-  void SetErrorToEpicFail() {
-    set_error("epic fail");
-  }
+  void SetErrorToEpicFail() { SetError("epic fail"); }
 
   void SendEndEventOnSavedUtteranceId() {
     base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
         FROM_HERE,
         base::Bind(&MockTtsPlatformImpl::SendEvent, ptr_factory_.GetWeakPtr(),
-                   false, g_saved_utterance_id, TTS_EVENT_END, 0,
+                   false, g_saved_utterance_id, content::TTS_EVENT_END, 0,
                    std::string()),
         base::TimeDelta());
   }
@@ -100,12 +116,13 @@ class MockTtsPlatformImpl : public TtsPlatformImpl {
   void SendEndEvent(int utterance_id,
                     const std::string& utterance,
                     const std::string& lang,
-                    const VoiceData& voice,
-                    const UtteranceContinuousParameters& params) {
+                    const content::VoiceData& voice,
+                    const content::UtteranceContinuousParameters& params) {
     base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
-        FROM_HERE, base::Bind(&MockTtsPlatformImpl::SendEvent,
-                              ptr_factory_.GetWeakPtr(), false, utterance_id,
-                              TTS_EVENT_END, utterance.size(), std::string()),
+        FROM_HERE,
+        base::Bind(&MockTtsPlatformImpl::SendEvent, ptr_factory_.GetWeakPtr(),
+                   false, utterance_id, content::TTS_EVENT_END,
+                   utterance.size(), std::string()),
         base::TimeDelta());
   }
 
@@ -113,27 +130,28 @@ class MockTtsPlatformImpl : public TtsPlatformImpl {
       int utterance_id,
       const std::string& utterance,
       const std::string& lang,
-      const VoiceData& voice,
-      const UtteranceContinuousParameters& params) {
+      const content::VoiceData& voice,
+      const content::UtteranceContinuousParameters& params) {
     base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
-        FROM_HERE, base::Bind(&MockTtsPlatformImpl::SendEvent,
-                              ptr_factory_.GetWeakPtr(), true, utterance_id,
-                              TTS_EVENT_END, utterance.size(), std::string()),
+        FROM_HERE,
+        base::Bind(&MockTtsPlatformImpl::SendEvent, ptr_factory_.GetWeakPtr(),
+                   true, utterance_id, content::TTS_EVENT_END, utterance.size(),
+                   std::string()),
         base::TimeDelta());
   }
 
   void SendWordEvents(int utterance_id,
                       const std::string& utterance,
                       const std::string& lang,
-                      const VoiceData& voice,
-                      const UtteranceContinuousParameters& params) {
+                      const content::VoiceData& voice,
+                      const content::UtteranceContinuousParameters& params) {
     for (int i = 0; i < static_cast<int>(utterance.size()); i++) {
       if (i == 0 || utterance[i - 1] == ' ') {
         base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
             FROM_HERE,
             base::Bind(&MockTtsPlatformImpl::SendEvent,
                        ptr_factory_.GetWeakPtr(), false, utterance_id,
-                       TTS_EVENT_WORD, i, std::string()),
+                       content::TTS_EVENT_WORD, i, std::string()),
             base::TimeDelta());
       }
     }
@@ -141,11 +159,12 @@ class MockTtsPlatformImpl : public TtsPlatformImpl {
 
   void SendEvent(bool wait_for_non_empty_queue,
                  int utterance_id,
-                 TtsEventType event_type,
+                 content::TtsEventType event_type,
                  int char_index,
                  const std::string& message) {
-    TtsController* controller = TtsController::GetInstance();
-    if (wait_for_non_empty_queue && controller->QueueSize() == 0) {
+    TtsControllerDelegateImpl* tts_controller_delegate =
+        TtsControllerDelegateImpl::GetInstance();
+    if (wait_for_non_empty_queue && tts_controller_delegate->QueueSize() == 0) {
       base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
           FROM_HERE,
           base::Bind(&MockTtsPlatformImpl::SendEvent, ptr_factory_.GetWeakPtr(),
@@ -154,11 +173,13 @@ class MockTtsPlatformImpl : public TtsPlatformImpl {
       return;
     }
 
-    controller->OnTtsEvent(utterance_id, event_type, char_index, message);
+    content::TtsController::GetInstance()->OnTtsEvent(utterance_id, event_type,
+                                                      char_index, message);
   }
 
  private:
   bool should_fake_get_voices_;
+  std::string error_;
   base::WeakPtrFactory<MockTtsPlatformImpl> ptr_factory_;
 };
 
@@ -178,11 +199,38 @@ class FakeNetworkOnlineStateForTest : public net::NetworkChangeNotifier {
   DISALLOW_COPY_AND_ASSIGN(FakeNetworkOnlineStateForTest);
 };
 
+class EventRouterAddListenerWaiter : public EventRouter::Observer {
+ public:
+  EventRouterAddListenerWaiter(Profile* profile, const std::string& event_name)
+      : event_router_(EventRouter::EventRouter::Get(profile)) {
+    DCHECK(profile);
+    event_router_->RegisterObserver(this, event_name);
+  }
+
+  ~EventRouterAddListenerWaiter() override {
+    event_router_->UnregisterObserver(this);
+  }
+
+  void Wait() { loop_runner_.Run(); }
+
+  // EventRouter::Observer overrides.
+  void OnListenerAdded(const EventListenerInfo& details) override {
+    loop_runner_.Quit();
+  }
+
+ private:
+  EventRouter* const event_router_;
+  base::RunLoop loop_runner_;
+
+  DISALLOW_COPY_AND_ASSIGN(EventRouterAddListenerWaiter);
+};
+
 class TtsApiTest : public ExtensionApiTest {
  public:
   void SetUpInProcessBrowserTestFixture() override {
     ExtensionApiTest::SetUpInProcessBrowserTestFixture();
-    TtsController::GetInstance()->SetPlatformImpl(&mock_platform_impl_);
+    TtsControllerDelegateImpl::GetInstance()->SetTtsPlatform(
+        &mock_platform_impl_);
   }
 
   void AddNetworkSpeechSynthesisExtension() {
@@ -198,6 +246,17 @@ class TtsApiTest : public ExtensionApiTest {
   }
 
  protected:
+  bool HasVoiceWithName(const std::string& name) {
+    std::vector<content::VoiceData> voices;
+    content::TtsController::GetInstance()->GetVoices(profile(), &voices);
+    for (auto& voice : voices) {
+      if (voice.name == name)
+        return true;
+    }
+
+    return false;
+  }
+
   StrictMock<MockTtsPlatformImpl> mock_platform_impl_;
 };
 
@@ -469,6 +528,28 @@ IN_PROC_BROWSER_TEST_F(TtsApiTest, EngineApi) {
 
 IN_PROC_BROWSER_TEST_F(TtsApiTest, UpdateVoicesApi) {
   ASSERT_TRUE(RunExtensionTest("tts_engine/update_voices_api")) << message_;
+}
+
+IN_PROC_BROWSER_TEST_F(TtsApiTest, PRE_VoicesAreCached) {
+  EXPECT_FALSE(HasVoiceWithName("Dynamic Voice 1"));
+  EXPECT_FALSE(HasVoiceWithName("Dynamic Voice 2"));
+  ASSERT_TRUE(RunExtensionTest("tts_engine/call_update_voices")) << message_;
+  EXPECT_TRUE(HasVoiceWithName("Dynamic Voice 1"));
+  EXPECT_TRUE(HasVoiceWithName("Dynamic Voice 2"));
+}
+
+IN_PROC_BROWSER_TEST_F(TtsApiTest, VoicesAreCached) {
+  // Make sure the dynamically loaded voices are available even though
+  // the extension didn't "run". Note that the voices might not be available
+  // immediately when the test runs, but the test should pass shortly after
+  // the extension's event listeners are registered.
+  while (!HasVoiceWithName("Dynamic Voice 1") ||
+         !HasVoiceWithName("Dynamic Voice 2")) {
+    // Wait for the extension's event listener to be registered before
+    // checking what voices are registered.
+    EventRouterAddListenerWaiter waiter(profile(), tts_engine_events::kOnStop);
+    waiter.Wait();
+  }
 }
 
 }  // namespace extensions

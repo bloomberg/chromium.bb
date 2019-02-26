@@ -112,8 +112,8 @@ void ServiceWorkerScriptCacheMap::WriteMetadata(
   ServiceWorkerResponseMetadataWriter* raw_writer = writer.get();
   raw_writer->WriteMetadata(
       buffer.get(), data.size(),
-      base::Bind(&ServiceWorkerScriptCacheMap::OnMetadataWritten,
-                 weak_factory_.GetWeakPtr(), base::Passed(&writer), callback));
+      base::BindOnce(&ServiceWorkerScriptCacheMap::OnMetadataWritten,
+                     weak_factory_.GetWeakPtr(), std::move(writer), callback));
 }
 
 void ServiceWorkerScriptCacheMap::ClearMetadata(

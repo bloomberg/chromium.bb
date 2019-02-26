@@ -18,6 +18,8 @@
 #include "util/process/process_memory_fuchsia.h"
 #elif defined(OS_LINUX) || defined(OS_ANDROID)
 #include "util/process/process_memory_linux.h"
+#elif defined(OS_WIN)
+#include "util/process/process_memory_win.h"
 #endif
 
 namespace crashpad {
@@ -27,6 +29,8 @@ namespace crashpad {
 using ProcessMemoryNative = ProcessMemoryFuchsia;
 #elif defined(OS_LINUX) || defined(OS_ANDROID)
 using ProcessMemoryNative = ProcessMemoryLinux;
+#elif defined(OS_WIN)
+using ProcessMemoryNative = ProcessMemoryWin;
 #else
 #error Port.
 #endif

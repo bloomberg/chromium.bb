@@ -7,7 +7,6 @@
 
 #include "third_party/blink/renderer/platform/fonts/canvas_rotation_in_vertical.h"
 #include "third_party/blink/renderer/platform/fonts/glyph.h"
-#include "third_party/blink/renderer/platform/fonts/paint_text_blob.h"
 #include "third_party/blink/renderer/platform/fonts/shaping/shape_result_buffer.h"
 #include "third_party/blink/renderer/platform/fonts/simple_font_data.h"
 #include "third_party/blink/renderer/platform/geometry/float_point.h"
@@ -38,7 +37,7 @@ class PLATFORM_EXPORT ShapeResultBloberizer {
   float FillGlyphs(const StringView&,
                    unsigned from,
                    unsigned to,
-                   const ShapeResult*);
+                   const ShapeResultView*);
   void FillTextEmphasisGlyphs(const TextRunPaintInfo&,
                               const GlyphData& emphasis_data,
                               const ShapeResultBuffer&);
@@ -46,7 +45,7 @@ class PLATFORM_EXPORT ShapeResultBloberizer {
                               unsigned from,
                               unsigned to,
                               const GlyphData& emphasis_data,
-                              const ShapeResult*);
+                              const ShapeResultView*);
   void Add(Glyph glyph,
            const SimpleFontData* font_data,
            CanvasRotationInVertical canvas_rotation,
@@ -93,9 +92,9 @@ class PLATFORM_EXPORT ShapeResultBloberizer {
   }
 
   struct BlobInfo {
-    BlobInfo(scoped_refptr<PaintTextBlob> b, CanvasRotationInVertical r)
+    BlobInfo(sk_sp<SkTextBlob> b, CanvasRotationInVertical r)
         : blob(std::move(b)), rotation(r) {}
-    scoped_refptr<PaintTextBlob> blob;
+    sk_sp<SkTextBlob> blob;
     CanvasRotationInVertical rotation;
   };
 
@@ -105,20 +104,13 @@ class PLATFORM_EXPORT ShapeResultBloberizer {
  private:
   friend class ShapeResultBloberizerTestInfo;
 
-  float FillGlyphsForResult(const ShapeResult*,
-                            const StringView&,
-                            unsigned from,
-                            unsigned to,
-                            float initial_advance,
-                            unsigned run_offset);
-
   // Whether the FillFastHorizontalGlyphs can be used. Only applies for full
   // runs with no vertical offsets and no text intercepts.
   bool CanUseFastPath(unsigned from,
                       unsigned to,
                       unsigned length,
                       bool has_vertical_offsets);
-  bool CanUseFastPath(unsigned from, unsigned to, const ShapeResult*);
+  bool CanUseFastPath(unsigned from, unsigned to, const ShapeResultView*);
   float FillFastHorizontalGlyphs(const ShapeResultBuffer&, TextDirection);
   float FillFastHorizontalGlyphs(const ShapeResult*, float advance = 0);
 
@@ -132,7 +124,7 @@ class PLATFORM_EXPORT ShapeResultBloberizer {
   const Type type_;
 
   // Current text blob state.
-  PaintTextBlobBuilder builder_;
+  SkTextBlobBuilder builder_;
   CanvasRotationInVertical builder_rotation_ =
       CanvasRotationInVertical::kRegular;
   size_t builder_run_count_ = 0;

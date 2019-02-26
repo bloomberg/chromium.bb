@@ -359,13 +359,6 @@ class CONTENT_EXPORT RenderWidgetHostImpl
     return is_in_gesture_scroll_[blink::kWebGestureDeviceTouchscreen];
   }
 
-#if defined(OS_MACOSX)
-  // Pause for a moment to wait for pending repaint or resize messages sent to
-  // the renderer to arrive. If pending resize messages are for an old window
-  // size, then also pump through a new resize message if there is time.
-  void PauseForPendingResizeOrRepaints();
-#endif
-
   bool visual_properties_ack_pending_for_testing() {
     return visual_properties_ack_pending_;
   }
@@ -376,8 +369,8 @@ class CONTENT_EXPORT RenderWidgetHostImpl
   bool RequestRepaintForTesting();
 
   // Called by the RenderProcessHost to handle the case when the process
-  // changed its state of ignoring input events.
-  void ProcessIgnoreInputEventsChanged(bool ignore_input_events);
+  // changed its state of being blocked.
+  void RenderProcessBlockedStateChanged(bool blocked);
 
   // Called after every cross-document navigation. If Surface Synchronizaton is
   // on, we send a new LocalSurfaceId to RenderWidget to be used after
@@ -396,6 +389,7 @@ class CONTENT_EXPORT RenderWidgetHostImpl
       const NativeWebKeyboardEvent& key_event,
       const ui::LatencyInfo& latency,
       const std::vector<EditCommand>* commands,
+      ui::KeyEvent* original_key_event,
       bool* update_event = nullptr);
 
   // Forwards the given message to the renderer. These are called by the view
@@ -414,6 +408,11 @@ class CONTENT_EXPORT RenderWidgetHostImpl
   void ForwardWheelEventWithLatencyInfo(
       const blink::WebMouseWheelEvent& wheel_event,
       const ui::LatencyInfo& latency) override;
+
+  // Retrieve an iterator over any RenderWidgetHosts that are immediately
+  // embedded within this one. This does not return hosts that are embedded
+  // indirectly (i.e. nested within embedded hosts).
+  std::unique_ptr<RenderWidgetHostIterator> GetEmbeddedRenderWidgetHosts();
 
   // Returns an emulator for this widget. See TouchEmulator for more details.
   TouchEmulator* GetTouchEmulator();
@@ -551,6 +550,9 @@ class CONTENT_EXPORT RenderWidgetHostImpl
   void SetAutoResize(bool enable,
                      const gfx::Size& min_size,
                      const gfx::Size& max_size);
+
+  // Allows the main frame's page scale factor to be tracked.
+  void SetPageScaleFactor(float page_scale_factor);
 
   // Fills in the |visual_properties| struct.
   // Returns |false| if the update is redundant, |true| otherwise.
@@ -717,6 +719,10 @@ class CONTENT_EXPORT RenderWidgetHostImpl
   // NotifyRendererResponsive.
   void RendererIsResponsive();
 
+  // Called during frame eviction to return all SurfaceIds in the frame tree.
+  // Marks all views in the frame tree as evicted.
+  std::vector<viz::SurfaceId> CollectSurfaceIdsForEviction();
+
  protected:
   // ---------------------------------------------------------------------------
   // The following method is overridden by RenderViewHost to send upwards to
@@ -726,13 +732,7 @@ class CONTENT_EXPORT RenderWidgetHostImpl
   // from a newly loaded page. Used for testing.
   virtual void NotifyNewContentRenderingTimeoutForTesting() {}
 
-  // InputAckHandler
-  void OnKeyboardEventAck(const NativeWebKeyboardEventWithLatencyInfo& event,
-                          InputEventAckSource ack_source,
-                          InputEventAckState ack_result) override;
-  void OnMouseEventAck(const MouseEventWithLatencyInfo& event,
-                       InputEventAckSource ack_source,
-                       InputEventAckState ack_result) override;
+  // InputDispositionHandler
   void OnWheelEventAck(const MouseWheelEventWithLatencyInfo& event,
                        InputEventAckSource ack_source,
                        InputEventAckState ack_result) override;
@@ -744,6 +744,10 @@ class CONTENT_EXPORT RenderWidgetHostImpl
                          InputEventAckState ack_result) override;
   void OnUnexpectedEventAck(UnexpectedEventAckType type) override;
 
+  // virtual for testing.
+  virtual void OnMouseEventAck(const MouseEventWithLatencyInfo& event,
+                               InputEventAckSource ack_source,
+                               InputEventAckState ack_result);
   // ---------------------------------------------------------------------------
 
   bool IsMouseLocked() const;
@@ -785,10 +789,13 @@ class CONTENT_EXPORT RenderWidgetHostImpl
                            ResizeAndCrossProcessPostMessagePreserveOrder);
   friend class MockRenderWidgetHost;
   friend class OverscrollNavigationOverlayTest;
+  friend class RenderViewHostTester;
   friend class TestRenderViewHost;
   friend bool TestChildOrGuestAutoresize(bool,
                                          RenderProcessHost*,
                                          RenderWidgetHost*);
+
+  class KeyEventResultTracker;
 
   // Tell this object to destroy itself. If |also_delete| is specified, the
   // destructor is called as well.
@@ -798,9 +805,17 @@ class CONTENT_EXPORT RenderWidgetHostImpl
   // content but failed to produce a compositor frame in a defined time.
   void ClearDisplayedGraphics();
 
+  // InputRouter::SendKeyboardEvent() callbacks to this. This may be called
+  // synchronously.
+  void OnKeyboardEventAck(std::unique_ptr<KeyEventResultTracker> result_tracker,
+                          const NativeWebKeyboardEventWithLatencyInfo& event,
+                          InputEventAckSource ack_source,
+                          InputEventAckState ack_result);
+
   // IPC message handlers
   void OnRenderProcessGone(int status, int error_code);
   void OnClose();
+  void OnRouteCloseEvent();
   void OnUpdateScreenRectsAck();
   void OnRequestSetBounds(const gfx::Rect& bounds);
   void OnSetTooltipText(const base::string16& tooltip_text,
@@ -828,6 +843,12 @@ class CONTENT_EXPORT RenderWidgetHostImpl
   void OnFrameSwapMessagesReceived(uint32_t frame_token,
                                    std::vector<IPC::Message> messages);
   void OnForceRedrawComplete(int snapshot_id);
+  void OnFirstVisuallyNonEmptyPaint();
+  void OnCommitAndDrawCompositorFrame();
+  void OnHasTouchEventHandlers(bool has_handlers);
+  void OnIntrinsicSizingInfoChanged(blink::WebIntrinsicSizingInfo info);
+  void OnAnimateDoubleTapZoomInMainFrame(const gfx::Point& point,
+                                         const gfx::Rect& rect_to_zoom);
 
   // Called when visual properties have changed in the renderer.
   void DidUpdateVisualProperties(const cc::RenderFrameMetadata& metadata);
@@ -842,7 +863,6 @@ class CONTENT_EXPORT RenderWidgetHostImpl
       const ui::LatencyInfo& latency_info) override;
   void IncrementInFlightEventCount() override;
   void DecrementInFlightEventCount(InputEventAckSource ack_source) override;
-  void OnHasTouchEventHandlers(bool has_handlers) override;
   void DidOverscroll(const ui::DidOverscrollParams& params) override;
   void DidStartScrollingViewport() override;
   void OnSetWhiteListedTouchAction(
@@ -971,6 +991,9 @@ class CONTENT_EXPORT RenderWidgetHostImpl
   // The maximum size for the render widget if auto-resize is enabled.
   gfx::Size max_size_for_auto_resize_;
 
+  // The page-scale factor of the main-frame.
+  float page_scale_factor_;
+
   bool waiting_for_screen_rects_ack_;
   gfx::Rect last_view_screen_rect_;
   gfx::Rect last_window_screen_rect_;
@@ -1055,6 +1078,9 @@ class CONTENT_EXPORT RenderWidgetHostImpl
 
   std::unique_ptr<TimeoutMonitor> input_event_ack_timeout_;
   base::TimeTicks input_event_ack_start_time_;
+
+  std::unique_ptr<base::CallbackList<void(bool)>::Subscription>
+      render_process_blocked_state_changed_subscription_;
 
   std::unique_ptr<TimeoutMonitor> new_content_rendering_timeout_;
 

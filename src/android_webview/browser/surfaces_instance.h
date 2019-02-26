@@ -11,6 +11,7 @@
 #include "base/memory/ref_counted.h"
 #include "components/viz/common/surfaces/frame_sink_id.h"
 #include "components/viz/common/surfaces/frame_sink_id_allocator.h"
+#include "components/viz/common/surfaces/local_surface_id_allocation.h"
 #include "components/viz/common/surfaces/surface_id.h"
 #include "components/viz/service/display/display_client.h"
 #include "services/viz/public/interfaces/compositing/compositor_frame_sink.mojom.h"
@@ -60,9 +61,8 @@ class SurfacesInstance : public base::RefCounted<SurfacesInstance>,
 
   // viz::DisplayClient overrides.
   void DisplayOutputSurfaceLost() override;
-  void DisplayWillDrawAndSwap(
-      bool will_draw_and_swap,
-      const viz::RenderPassList& render_passes) override {}
+  void DisplayWillDrawAndSwap(bool will_draw_and_swap,
+                              viz::RenderPassList* render_passes) override {}
   void DisplayDidDrawAndSwap() override {}
   void DisplayDidReceiveCALayerParams(
       const gfx::CALayerParams& ca_layer_params) override {}
@@ -73,10 +73,9 @@ class SurfacesInstance : public base::RefCounted<SurfacesInstance>,
   // viz::mojom::CompositorFrameSinkClient implementation.
   void DidReceiveCompositorFrameAck(
       const std::vector<viz::ReturnedResource>& resources) override;
-  void DidPresentCompositorFrame(
-      uint32_t presentation_token,
-      const gfx::PresentationFeedback& feedback) override {}
-  void OnBeginFrame(const viz::BeginFrameArgs& args) override;
+  void OnBeginFrame(const viz::BeginFrameArgs& args,
+                    const base::flat_map<uint32_t, gfx::PresentationFeedback>&
+                        feedbacks) override;
   void OnBeginFramePausedChanged(bool paused) override;
   void ReclaimResources(
       const std::vector<viz::ReturnedResource>& resources) override;
@@ -96,7 +95,7 @@ class SurfacesInstance : public base::RefCounted<SurfacesInstance>,
       parent_local_surface_id_allocator_;
   std::unique_ptr<viz::CompositorFrameSinkSupport> support_;
 
-  viz::LocalSurfaceId root_id_;
+  viz::LocalSurfaceIdAllocation root_id_allocation_;
   float device_scale_factor_ = 1.0f;
   std::vector<viz::SurfaceId> child_ids_;
 

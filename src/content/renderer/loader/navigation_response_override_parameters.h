@@ -11,7 +11,6 @@
 #include "net/url_request/redirect_info.h"
 #include "services/network/public/cpp/resource_response.h"
 #include "services/network/public/mojom/url_loader.mojom.h"
-#include "url/gurl.h"
 
 namespace content {
 
@@ -23,7 +22,6 @@ struct CONTENT_EXPORT NavigationResponseOverrideParameters {
 
   network::mojom::URLLoaderClientEndpointsPtr url_loader_client_endpoints;
   network::ResourceResponseHead response;
-  std::vector<GURL> redirects;
   std::vector<network::ResourceResponseHead> redirect_responses;
   std::vector<net::RedirectInfo> redirect_infos;
 };

@@ -13,8 +13,8 @@
 #include "ios/chrome/browser/signin/account_tracker_service_factory.h"
 #import "ios/chrome/browser/signin/authentication_service.h"
 #import "ios/chrome/browser/signin/authentication_service_delegate.h"
+#include "ios/chrome/browser/signin/identity_manager_factory.h"
 #include "ios/chrome/browser/signin/profile_oauth2_token_service_factory.h"
-#include "ios/chrome/browser/signin/signin_manager_factory.h"
 #include "ios/chrome/browser/sync/profile_sync_service_factory.h"
 #include "ios/chrome/browser/sync/sync_setup_service_factory.h"
 
@@ -54,7 +54,7 @@ AuthenticationServiceFactory::AuthenticationServiceFactory()
           BrowserStateDependencyManager::GetInstance()) {
   DependsOn(ios::AccountTrackerServiceFactory::GetInstance());
   DependsOn(ProfileOAuth2TokenServiceFactory::GetInstance());
-  DependsOn(ios::SigninManagerFactory::GetInstance());
+  DependsOn(IdentityManagerFactory::GetInstance());
   DependsOn(SyncSetupServiceFactory::GetInstance());
   DependsOn(ProfileSyncServiceFactory::GetInstance());
 }
@@ -71,7 +71,7 @@ AuthenticationServiceFactory::BuildServiceInstanceFor(
       ProfileOAuth2TokenServiceFactory::GetForBrowserState(browser_state),
       SyncSetupServiceFactory::GetForBrowserState(browser_state),
       ios::AccountTrackerServiceFactory::GetForBrowserState(browser_state),
-      ios::SigninManagerFactory::GetForBrowserState(browser_state),
+      IdentityManagerFactory::GetForBrowserState(browser_state),
       ProfileSyncServiceFactory::GetForBrowserState(browser_state));
 }
 

@@ -15,6 +15,7 @@
 #include "base/test/scoped_task_environment.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "components/feed/core/content_metadata.h"
+#include "components/offline_pages/core/client_namespace_constants.h"
 #include "components/offline_pages/core/offline_page_item.h"
 #include "components/offline_pages/core/offline_page_types.h"
 #include "components/offline_pages/core/prefetch/stub_prefetch_service.h"
@@ -52,12 +53,14 @@ class TestOfflinePageModel : public StubOfflinePageModel {
   void AddOfflinedPage(const std::string& url,
                        const std::string& original_url,
                        int64_t offline_id,
-                       base::Time creation_time) {
+                       base::Time creation_time,
+                       std::string name_space) {
     OfflinePageItem item;
     item.url = GURL(url);
     item.original_url = GURL(original_url);
     item.offline_id = offline_id;
     item.creation_time = creation_time;
+    item.client_id = offline_pages::ClientId(name_space, "");
     url_to_offline_page_item_.emplace(url, item);
     if (!original_url.empty()) {
       url_to_offline_page_item_.emplace(original_url, item);
@@ -65,7 +68,7 @@ class TestOfflinePageModel : public StubOfflinePageModel {
   }
 
   void AddOfflinedPage(const std::string& url, int64_t offline_id) {
-    AddOfflinedPage(url, "", offline_id, base::Time());
+    AddOfflinedPage(url, "", offline_id, base::Time(), "");
   }
 
   MOCK_METHOD1(AddObserver, void(Observer*));
@@ -233,7 +236,20 @@ TEST_F(FeedOfflineHostTest, GetOfflineStatusHit) {
 }
 
 TEST_F(FeedOfflineHostTest, GetOfflineIdOriginalUrl) {
-  offline_page_model()->AddOfflinedPage(kUrl1, kUrl2, 4, base::Time());
+  offline_page_model()->AddOfflinedPage(kUrl1, kUrl2, 4, base::Time(), "");
+
+  std::vector<std::string> actual;
+  host()->GetOfflineStatus({kUrl2}, base::BindOnce(&CopyStatus, &actual));
+  RunUntilIdle();
+
+  EXPECT_EQ(1U, actual.size());
+  EXPECT_EQ(kUrl2, actual[0]);
+  EXPECT_FALSE(host()->GetOfflineId(kUrl1).has_value());
+  EXPECT_EQ(host()->GetOfflineId(kUrl2).value(), 4);
+}
+
+TEST_F(FeedOfflineHostTest, GetOfflineIdRequestUrl) {
+  offline_page_model()->AddOfflinedPage(kUrl2, kUrl1, 4, base::Time(), "");
 
   std::vector<std::string> actual;
   host()->GetOfflineStatus({kUrl2}, base::BindOnce(&CopyStatus, &actual));
@@ -246,9 +262,9 @@ TEST_F(FeedOfflineHostTest, GetOfflineIdOriginalUrl) {
 }
 
 TEST_F(FeedOfflineHostTest, GetOfflineIdNewer) {
-  offline_page_model()->AddOfflinedPage(kUrl1, "", 4, base::Time());
+  offline_page_model()->AddOfflinedPage(kUrl1, "", 4, base::Time(), "");
   offline_page_model()->AddOfflinedPage(
-      kUrl1, "", 5, base::Time() + base::TimeDelta::FromHours(1));
+      kUrl1, "", 5, base::Time() + base::TimeDelta::FromHours(1), "");
 
   std::vector<std::string> actual;
   host()->GetOfflineStatus({kUrl1}, base::BindOnce(&CopyStatus, &actual));
@@ -257,6 +273,23 @@ TEST_F(FeedOfflineHostTest, GetOfflineIdNewer) {
   EXPECT_EQ(1U, actual.size());
   EXPECT_EQ(kUrl1, actual[0]);
   EXPECT_EQ(host()->GetOfflineId(kUrl1).value(), 5);
+}
+
+TEST_F(FeedOfflineHostTest, GetOfflineIdNamespace) {
+  // Even though id of 5 is newer, id of 4 will be chosen because it has the
+  // preferred namespace.
+  offline_page_model()->AddOfflinedPage(
+      kUrl1, "", 4, base::Time(), offline_pages::kSuggestedArticlesNamespace);
+  offline_page_model()->AddOfflinedPage(
+      kUrl1, "", 5, base::Time() + base::TimeDelta::FromHours(1), "");
+
+  std::vector<std::string> actual;
+  host()->GetOfflineStatus({kUrl1}, base::BindOnce(&CopyStatus, &actual));
+  RunUntilIdle();
+
+  EXPECT_EQ(1U, actual.size());
+  EXPECT_EQ(kUrl1, actual[0]);
+  EXPECT_EQ(host()->GetOfflineId(kUrl1).value(), 4);
 }
 
 TEST_F(FeedOfflineHostTest, GetCurrentArticleSuggestions) {

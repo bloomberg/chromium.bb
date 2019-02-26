@@ -61,7 +61,7 @@ class PLATFORM_EXPORT SincResampler {
   // Process with input source callback function for streaming applications.
   void Process(AudioSourceProvider*,
                float* destination,
-               size_t frames_to_process);
+               uint32_t frames_to_process);
 
  protected:
   void InitializeKernel();

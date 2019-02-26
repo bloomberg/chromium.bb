@@ -40,8 +40,8 @@ MutationObserverRegistration* MutationObserverRegistration::Create(
     Node* registration_node,
     MutationObserverOptions options,
     const HashSet<AtomicString>& attribute_filter) {
-  return new MutationObserverRegistration(observer, registration_node, options,
-                                          attribute_filter);
+  return MakeGarbageCollected<MutationObserverRegistration>(
+      observer, registration_node, options, attribute_filter);
 }
 
 MutationObserverRegistration::MutationObserverRegistration(
@@ -80,7 +80,7 @@ void MutationObserverRegistration::ObservedSubtreeNodeWillDetach(Node& node) {
   observer_->SetHasTransientRegistration();
 
   if (!transient_registration_nodes_) {
-    transient_registration_nodes_ = new NodeHashSet;
+    transient_registration_nodes_ = MakeGarbageCollected<NodeHashSet>();
 
     DCHECK(registration_node_);
     DCHECK(!registration_node_keep_alive_);

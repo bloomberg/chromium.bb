@@ -123,4 +123,12 @@ IN_PROC_BROWSER_TEST_F(RegisterProtocolHandlerBrowserTest, CustomHandler) {
 
   ASSERT_EQ(handler_url,
             browser()->tab_strip_model()->GetActiveWebContents()->GetURL());
+
+  // Also check redirects.
+  GURL redirect_url =
+      embedded_test_server()->GetURL("/server-redirect?foo:test");
+  ui_test_utils::NavigateToURL(browser(), redirect_url);
+
+  ASSERT_EQ(handler_url,
+            browser()->tab_strip_model()->GetActiveWebContents()->GetURL());
 }

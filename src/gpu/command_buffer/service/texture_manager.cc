@@ -29,6 +29,7 @@
 #include "gpu/command_buffer/service/mailbox_manager.h"
 #include "gpu/command_buffer/service/memory_tracking.h"
 #include "gpu/command_buffer/service/service_discardable_manager.h"
+#include "gpu/command_buffer/service/shared_image_representation.h"
 #include "ui/gl/gl_context.h"
 #include "ui/gl/gl_implementation.h"
 #include "ui/gl/gl_state_restorer.h"
@@ -513,6 +514,20 @@ TexturePassthrough::~TexturePassthrough() {
   }
 }
 
+TextureBase::Type TexturePassthrough::GetType() const {
+  return TextureBase::Type::kPassthrough;
+}
+
+// static
+TexturePassthrough* TexturePassthrough::CheckedCast(TextureBase* texture) {
+  if (!texture)
+    return nullptr;
+  if (texture->GetType() == TextureBase::Type::kPassthrough)
+    return static_cast<TexturePassthrough*>(texture);
+  DLOG(ERROR) << "Bad typecast";
+  return nullptr;
+}
+
 void TexturePassthrough::MarkContextLost() {
   have_context_ = false;
 }
@@ -549,6 +564,10 @@ gl::GLImage* TexturePassthrough::GetLevelImage(GLenum target,
   return level_images_[face_idx][level].get();
 }
 
+void TexturePassthrough::SetEstimatedSize(size_t size) {
+  estimated_size_ = size;
+}
+
 Texture::Texture(GLuint service_id)
     : TextureBase(service_id),
       owned_service_id_(service_id) {}
@@ -578,37 +597,51 @@ void Texture::RemoveTextureRef(TextureRef* ref, bool have_context) {
   MaybeDeleteThis(have_context);
 }
 
-void Texture::SetLightweightRef(MemoryTypeTracker* tracker) {
-  DCHECK(!lightweight_ref_);
-  DCHECK(tracker);
+void Texture::SetLightweightRef() {
   ScopedMemTrackerChange change(this);
-  lightweight_ref_ = tracker;
+  has_lightweight_ref_ = true;
 }
 
 void Texture::RemoveLightweightRef(bool have_context) {
-  DCHECK(lightweight_ref_);
+  DCHECK(has_lightweight_ref_);
   {
     ScopedMemTrackerChange change(this);
-    lightweight_ref_ = nullptr;
+    has_lightweight_ref_ = false;
   }
   MaybeDeleteThis(have_context);
 }
 
 void Texture::MaybeDeleteThis(bool have_context) {
-  if (!refs_.empty() || lightweight_ref_)
+  if (!refs_.empty() || has_lightweight_ref_)
     return;
   if (have_context)
     glDeleteTextures(1, &owned_service_id_);
   delete this;
 }
 
-MemoryTypeTracker* Texture::GetMemTracker() {
-  if (lightweight_ref_)
-    return lightweight_ref_;
-  else if (memory_tracking_ref_)
-    return memory_tracking_ref_->manager()->GetMemTracker();
-  else
+TextureBase::Type Texture::GetType() const {
+  return TextureBase::Type::kValidated;
+}
+
+// static
+Texture* Texture::CheckedCast(TextureBase* texture) {
+  if (!texture)
     return nullptr;
+  if (texture->GetType() == TextureBase::Type::kValidated)
+    return static_cast<Texture*>(texture);
+  DLOG(ERROR) << "Bad typecast";
+  return nullptr;
+}
+
+MemoryTypeTracker* Texture::GetMemTracker() {
+  if (has_lightweight_ref_) {
+    // Memory tracking is handled externally in the SharedImage system.
+    return nullptr;
+  } else if (memory_tracking_ref_) {
+    return memory_tracking_ref_->manager()->GetMemTracker();
+  } else {
+    return nullptr;
+  }
 }
 
 Texture::LevelInfo::LevelInfo()
@@ -840,6 +873,12 @@ bool Texture::CanGenerateMipmaps(const FeatureInfo* feature_info) const {
   const Texture::LevelInfo& base = face_infos_[0].level_infos[base_level_];
   uint32_t channels = GLES2Util::GetChannelsForFormat(base.format);
   if (channels & (GLES2Util::kDepth | GLES2Util::kStencil)) {
+    return false;
+  }
+
+  // WebGL forbids generating mipmaps on zero-size textures.
+  // See https://crbug.com/898351
+  if (feature_info->IsWebGLContext() && (base.width == 0 || base.height == 0)) {
     return false;
   }
 
@@ -1198,8 +1237,22 @@ void Texture::SetLevelInfo(GLenum target,
   {
     ScopedMemTrackerChange change(this);
     estimated_size_ -= info.estimated_size;
-    GLES2Util::ComputeImageDataSizes(width, height, depth, format, type, 4,
-                                     &info.estimated_size, nullptr, nullptr);
+
+    if (format != GL_NONE) {
+      // Uncompressed image
+      GLES2Util::ComputeImageDataSizes(width, height, depth, format, type, 4,
+                                       &info.estimated_size, nullptr, nullptr);
+    } else if (internal_format != GL_NONE) {
+      // Compressed image
+      GLsizei compressed_size = 0;
+      GetCompressedTexSizeInBytes(nullptr, width, height, depth,
+                                  internal_format, &compressed_size, nullptr);
+      info.estimated_size = compressed_size;
+    } else {
+      // No image
+      info.estimated_size = 0;
+    }
+
     estimated_size_ += info.estimated_size;
   }
 
@@ -1337,9 +1390,9 @@ GLenum Texture::SetParameteri(
   switch (pname) {
     case GL_TEXTURE_MIN_LOD:
     case GL_TEXTURE_MAX_LOD:
-      {
-        GLfloat fparam = static_cast<GLfloat>(param);
-        return SetParameterf(feature_info, pname, fparam);
+    case GL_TEXTURE_MAX_ANISOTROPY_EXT: {
+      GLfloat fparam = static_cast<GLfloat>(param);
+      return SetParameterf(feature_info, pname, fparam);
       }
     case GL_TEXTURE_MIN_FILTER:
       if (!feature_info->validators()->texture_min_filter_mode.IsValid(param)) {
@@ -1395,11 +1448,6 @@ GLenum Texture::SetParameteri(
       }
       UpdateMaxLevel(param);
       break;
-    case GL_TEXTURE_MAX_ANISOTROPY_EXT:
-      if (param < 1) {
-        return GL_INVALID_VALUE;
-      }
-      break;
     case GL_TEXTURE_USAGE_ANGLE:
       if (!feature_info->validators()->texture_usage.IsValid(param)) {
         return GL_INVALID_ENUM;
@@ -1437,6 +1485,7 @@ GLenum Texture::SetParameteri(
       break;
     case GL_TEXTURE_IMMUTABLE_FORMAT:
     case GL_TEXTURE_IMMUTABLE_LEVELS:
+    case GL_REQUIRED_TEXTURE_IMAGE_UNITS_OES:
       return GL_INVALID_ENUM;
     default:
       NOTREACHED();
@@ -1450,24 +1499,9 @@ GLenum Texture::SetParameteri(
 
 GLenum Texture::SetParameterf(
     const FeatureInfo* feature_info, GLenum pname, GLfloat param) {
+  // Only handle float parameters here. Handle everything else, including error
+  // cases, in SetParameteri.
   switch (pname) {
-    case GL_TEXTURE_MIN_FILTER:
-    case GL_TEXTURE_MAG_FILTER:
-    case GL_TEXTURE_WRAP_R:
-    case GL_TEXTURE_WRAP_S:
-    case GL_TEXTURE_WRAP_T:
-    case GL_TEXTURE_COMPARE_FUNC:
-    case GL_TEXTURE_COMPARE_MODE:
-    case GL_TEXTURE_BASE_LEVEL:
-    case GL_TEXTURE_MAX_LEVEL:
-    case GL_TEXTURE_USAGE_ANGLE:
-    case GL_TEXTURE_SWIZZLE_R:
-    case GL_TEXTURE_SWIZZLE_G:
-    case GL_TEXTURE_SWIZZLE_B:
-    case GL_TEXTURE_SWIZZLE_A: {
-      GLint iparam = static_cast<GLint>(std::round(param));
-      return SetParameteri(feature_info, pname, iparam);
-    }
     case GL_TEXTURE_MIN_LOD:
       sampler_state_.min_lod = param;
       break;
@@ -1479,12 +1513,10 @@ GLenum Texture::SetParameterf(
         return GL_INVALID_VALUE;
       }
       break;
-    case GL_TEXTURE_IMMUTABLE_FORMAT:
-    case GL_TEXTURE_IMMUTABLE_LEVELS:
-      return GL_INVALID_ENUM;
-    default:
-      NOTREACHED();
-      return GL_INVALID_ENUM;
+    default: {
+      GLint iparam = static_cast<GLint>(std::round(param));
+      return SetParameteri(feature_info, pname, iparam);
+    }
   }
   return GL_NO_ERROR;
 }
@@ -1666,7 +1698,7 @@ bool Texture::ClearLevel(DecoderContext* decoder, GLenum target, GLint level) {
 
   Texture::LevelInfo& info = face_infos_[face_index].level_infos[level];
 
-  DCHECK(target == info.target);
+  DCHECK_EQ(target, info.target);
 
   if (info.target == 0 ||
       info.cleared_rect == gfx::Rect(info.width, info.height) ||
@@ -1906,7 +1938,7 @@ void Texture::SetCompatibilitySwizzle(const CompatibilitySwizzle* swizzle) {
 }
 
 void Texture::ApplyFormatWorkarounds(FeatureInfo* feature_info) {
-  if (feature_info->gl_version_info().is_desktop_core_profile) {
+  if (feature_info->gl_version_info().NeedsLuminanceAlphaEmulation()) {
     if (static_cast<size_t>(base_level_) >= face_infos_[0].level_infos.size())
       return;
     const Texture::LevelInfo& info = face_infos_[0].level_infos[base_level_];
@@ -1940,13 +1972,20 @@ scoped_refptr<TextureRef> TextureRef::Create(TextureManager* manager,
 
 TextureRef::~TextureRef() {
   manager_->StopTracking(this);
-  texture_->RemoveTextureRef(
-      this, force_context_lost_ ? false : manager_->have_context_);
+  bool have_context = force_context_lost_ ? false : manager_->have_context_;
+  texture_->RemoveTextureRef(this, have_context);
   manager_ = nullptr;
+  if (!have_context && shared_image_)
+    shared_image_->OnContextLost();
 }
 
 void TextureRef::ForceContextLost() {
   force_context_lost_ = true;
+}
+
+void TextureRef::SetSharedImageRepresentation(
+    std::unique_ptr<SharedImageRepresentationGLTexture> shared_image) {
+  shared_image_ = std::move(shared_image);
 }
 
 TextureManager::TextureManager(MemoryTracker* memory_tracker,
@@ -2100,13 +2139,8 @@ scoped_refptr<TextureRef>
                      gfx::Rect(1, 1));
       }
     } else {
-      if (needs_initialization) {
-        SetLevelInfo(default_texture.get(), GL_TEXTURE_2D, 0, GL_RGBA, 1, 1, 1,
-                     0, GL_RGBA, GL_UNSIGNED_BYTE, gfx::Rect(1, 1));
-      } else {
-        SetLevelInfo(default_texture.get(), GL_TEXTURE_EXTERNAL_OES, 0, GL_RGBA,
-                     1, 1, 1, 0, GL_RGBA, GL_UNSIGNED_BYTE, gfx::Rect(1, 1));
-      }
+      SetLevelInfo(default_texture.get(), target, 0, GL_RGBA, 1, 1, 1, 0,
+                   GL_RGBA, GL_UNSIGNED_BYTE, gfx::Rect(1, 1));
     }
   }
 
@@ -2204,6 +2238,17 @@ TextureRef* TextureManager::Consume(
   bool result = textures_.insert(std::make_pair(client_id, ref)).second;
   DCHECK(result);
   return ref.get();
+}
+
+TextureRef* TextureManager::ConsumeSharedImage(
+    GLuint client_id,
+    std::unique_ptr<SharedImageRepresentationGLTexture> shared_image) {
+  DCHECK(client_id);
+  Texture* texture = shared_image->GetTexture();
+  TextureRef* ref = Consume(client_id, texture);
+  if (ref)
+    ref->SetSharedImageRepresentation(std::move(shared_image));
+  return ref;
 }
 
 void TextureManager::SetParameteri(
@@ -3315,7 +3360,7 @@ void TextureManager::DoTexSubImageLayerByLayerWorkaround(
 const Texture::CompatibilitySwizzle* TextureManager::GetCompatibilitySwizzle(
     const gles2::FeatureInfo* feature_info,
     GLenum format) {
-  if (feature_info->gl_version_info().is_desktop_core_profile) {
+  if (feature_info->gl_version_info().NeedsLuminanceAlphaEmulation()) {
     return GetCompatibilitySwizzleInternal(format);
   } else {
     return nullptr;
@@ -3326,7 +3371,7 @@ const Texture::CompatibilitySwizzle* TextureManager::GetCompatibilitySwizzle(
 GLenum TextureManager::AdjustTexInternalFormat(
     const gles2::FeatureInfo* feature_info,
     GLenum format) {
-  if (feature_info->gl_version_info().is_desktop_core_profile) {
+  if (feature_info->gl_version_info().NeedsLuminanceAlphaEmulation()) {
     const Texture::CompatibilitySwizzle* swizzle =
         GetCompatibilitySwizzleInternal(format);
     if (swizzle)
@@ -3346,7 +3391,7 @@ GLenum TextureManager::AdjustTexFormat(const gles2::FeatureInfo* feature_info,
     if (format == GL_SRGB_ALPHA_EXT)
       return GL_RGBA;
   }
-  if (feature_info->gl_version_info().is_desktop_core_profile) {
+  if (feature_info->gl_version_info().NeedsLuminanceAlphaEmulation()) {
     const Texture::CompatibilitySwizzle* swizzle =
         GetCompatibilitySwizzleInternal(format);
     if (swizzle)
@@ -3359,8 +3404,7 @@ GLenum TextureManager::AdjustTexFormat(const gles2::FeatureInfo* feature_info,
 GLenum TextureManager::AdjustTexStorageFormat(
     const gles2::FeatureInfo* feature_info,
     GLenum format) {
-  // We need to emulate luminance/alpha on core profile only.
-  if (feature_info->gl_version_info().is_desktop_core_profile) {
+  if (feature_info->gl_version_info().NeedsLuminanceAlphaEmulation()) {
     switch (format) {
       case GL_ALPHA8_EXT:
         return GL_R8_EXT;
@@ -3550,7 +3594,7 @@ void TextureManager::DumpTextureRef(base::trace_event::ProcessMemoryDump* pmd,
   int importance = 0;  // Default importance.
   // The link to the memory tracking |client_id| is given a higher importance
   // than other refs.
-  if (!ref->texture()->lightweight_ref_ &&
+  if (!ref->texture()->has_lightweight_ref_ &&
       (ref == ref->texture()->memory_tracking_ref_))
     importance = 2;
 

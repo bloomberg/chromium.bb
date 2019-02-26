@@ -106,7 +106,8 @@ class CC_EXPORT GpuImageDecodeCache
                                SkColorType color_type,
                                size_t max_working_set_bytes,
                                int max_texture_size,
-                               PaintImage::GeneratorClientId client_id);
+                               PaintImage::GeneratorClientId client_id,
+                               sk_sp<SkColorSpace> target_color_space);
   ~GpuImageDecodeCache() override;
 
   // Returns the GL texture ID backing the given SkImage.
@@ -307,7 +308,6 @@ class CC_EXPORT GpuImageDecodeCache
     ImageData(PaintImage::Id paint_image_id,
               DecodedDataMode mode,
               size_t size,
-              const gfx::ColorSpace& target_color_space,
               SkFilterQuality quality,
               int upload_scale_mip_level,
               bool needs_mips,
@@ -320,7 +320,6 @@ class CC_EXPORT GpuImageDecodeCache
     const PaintImage::Id paint_image_id;
     const DecodedDataMode mode;
     const size_t size;
-    gfx::ColorSpace target_color_space;
     SkFilterQuality quality;
     int upload_scale_mip_level;
     bool needs_mips = false;
@@ -365,7 +364,6 @@ class CC_EXPORT GpuImageDecodeCache
     PaintImage::FrameKey frame_key;
     int upload_scale_mip_level;
     SkFilterQuality filter_quality;
-    gfx::ColorSpace target_color_space;
   };
   struct InUseCacheKeyHash {
     size_t operator()(const InUseCacheKey&) const;
@@ -512,6 +510,7 @@ class CC_EXPORT GpuImageDecodeCache
   std::vector<SkImage*> images_pending_complete_lock_;
   std::vector<SkImage*> images_pending_unlock_;
   std::vector<sk_sp<SkImage>> images_pending_deletion_;
+  const sk_sp<SkColorSpace> target_color_space_;
 
   std::vector<uint32_t> ids_pending_unlock_;
   std::vector<uint32_t> ids_pending_deletion_;

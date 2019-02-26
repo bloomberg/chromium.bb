@@ -14,6 +14,7 @@
 
 class BrowserFrame;
 class BrowserView;
+class HostedAppButtonContainer;
 
 // A specialization of the NonClientFrameView object that provides additional
 // Browser-specific methods.
@@ -89,6 +90,9 @@ class BrowserNonClientFrameView : public views::NonClientFrameView,
   // for either active or inactive windows.
   bool EverHasVisibleBackgroundTabShapes() const;
 
+  // Returns whether tab strokes can be drawn.
+  virtual bool CanDrawStrokes() const;
+
   // Returns the color of the browser frame, which is also the color of the
   // tabstrip background.
   SkColor GetFrameColor(ActiveState active_state = kUseCurrent) const;
@@ -96,15 +100,6 @@ class BrowserNonClientFrameView : public views::NonClientFrameView,
   // Returns COLOR_TOOLBAR_TOP_SEPARATOR[,_INACTIVE] depending on the activation
   // state of the window.
   SkColor GetToolbarTopSeparatorColor() const;
-
-  // Returns the tab background color based on both the |state| of the tab and
-  // the activation state of the window.
-  SkColor GetTabBackgroundColor(TabState state,
-                                ActiveState active_state = kUseCurrent) const;
-
-  // Returns the tab foreground color of the for the text based on both the
-  // |state| of the tab and the activation state of the window.
-  SkColor GetTabForegroundColor(TabState state) const;
 
   // For non-transparent windows, returns the resource ID to use behind
   // background tabs.  |has_custom_image| will be set to true if this has been
@@ -128,15 +123,21 @@ class BrowserNonClientFrameView : public views::NonClientFrameView,
   // many tabs there are right now.
   virtual bool IsSingleTabModeAvailable() const;
 
-  // Returns whether or not strokes should be drawn around and under the tabs.
-  virtual bool ShouldDrawStrokes() const;
+  // Whether the frame should be painted with the special mode for one tab.
+  bool ShouldPaintAsSingleTabMode() const;
 
   // views::NonClientFrameView:
   using views::NonClientFrameView::ShouldPaintAsActive;
   void VisibilityChanged(views::View* starting_from, bool is_visible) override;
+  int NonClientHitTest(const gfx::Point& point) override;
+  void ResetWindowControls() override;
 
   // TabStripObserver:
   void OnSingleTabModeChanged() override;
+
+  HostedAppButtonContainer* hosted_app_button_container_for_testing() {
+    return hosted_app_button_container_;
+  }
 
  protected:
   // Whether the frame should be painted with theming.
@@ -148,15 +149,13 @@ class BrowserNonClientFrameView : public views::NonClientFrameView,
   // treated as active.
   bool ShouldPaintAsActive(ActiveState active_state) const;
 
-  // Whether the frame should be painted with the special mode for one tab.
-  bool ShouldPaintAsSingleTabMode() const;
-
   // Compute aspects of the frame needed to paint the frame background.
   gfx::ImageSkia GetFrameImage(ActiveState active_state = kUseCurrent) const;
   gfx::ImageSkia GetFrameOverlayImage(
       ActiveState active_state = kUseCurrent) const;
 
   // views::NonClientFrameView:
+  void ChildPreferredSizeChanged(views::View* child) override;
   void ActivationChanged(bool active) override;
   bool DoesIntersectRect(const views::View* target,
                          const gfx::Rect& rect) const override;
@@ -168,6 +167,17 @@ class BrowserNonClientFrameView : public views::NonClientFrameView,
   void OnProfileAvatarChanged(const base::FilePath& profile_path) override;
   void OnProfileHighResAvatarLoaded(
       const base::FilePath& profile_path) override;
+
+  void set_hosted_app_button_container(
+      HostedAppButtonContainer* hosted_app_button_container) {
+    hosted_app_button_container_ = hosted_app_button_container;
+  }
+  HostedAppButtonContainer* hosted_app_button_container() {
+    return hosted_app_button_container_;
+  }
+  const HostedAppButtonContainer* hosted_app_button_container() const {
+    return hosted_app_button_container_;
+  }
 
  private:
   void MaybeObserveTabstrip();
@@ -188,6 +198,9 @@ class BrowserNonClientFrameView : public views::NonClientFrameView,
 
   // The BrowserView hosted within this View.
   BrowserView* browser_view_;
+
+  // Menu button and page status icons. Only used by hosted app windows.
+  HostedAppButtonContainer* hosted_app_button_container_ = nullptr;
 
   ScopedObserver<TabStrip, BrowserNonClientFrameView> tab_strip_observer_;
 

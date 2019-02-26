@@ -1,6 +1,5 @@
 halliwell@chromium.org
 servolk@chromium.org
-slan@chromium.org
 
 # Android
 per-file *android*=file://chromecast/android/OWNERS

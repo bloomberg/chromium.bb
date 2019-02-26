@@ -35,7 +35,7 @@ def _GetAvailableTcpPort():
 
 class QemuTarget(target.Target):
   def __init__(self, output_dir, target_cpu, cpu_cores, system_log_file,
-               ram_size_mb=2048):
+               require_kvm, ram_size_mb=2048):
     """output_dir: The directory which will contain the files that are
                    generated to support the QEMU deployment.
     target_cpu: The emulated target CPU architecture.
@@ -45,6 +45,7 @@ class QemuTarget(target.Target):
     self._ram_size_mb = ram_size_mb
     self._system_log_file = system_log_file
     self._cpu_cores = cpu_cores
+    self._require_kvm = require_kvm
 
   def __enter__(self):
     return self
@@ -76,21 +77,15 @@ class QemuTarget(target.Target):
             boot_data.GetTargetFile(self._GetTargetSdkArch(),
                                     'qemu-kernel.bin')),
         '-initrd', EnsurePathExists(
-            boot_data.GetTargetFile(self._GetTargetSdkArch(),
-                                    'fuchsia.zbi')),
+            boot_data.GetBootImage(self._output_dir, self._GetTargetSdkArch())),
         '-smp', str(self._cpu_cores),
 
         # Attach the blobstore and data volumes. Use snapshot mode to discard
         # any changes.
         '-snapshot',
-        '-drive', 'file=%s,format=qcow2,if=none,id=data,snapshot=on' %
-                    EnsurePathExists(os.path.join(self._output_dir,
-                                                  'fvm.blk.qcow2')),
         '-drive', 'file=%s,format=qcow2,if=none,id=blobstore,snapshot=on' %
-            EnsurePathExists(
-                boot_data.ConfigureDataFVM(self._output_dir,
-                                           boot_data.FVM_TYPE_QCOW)),
-        '-device', 'virtio-blk-pci,drive=data',
+                    EnsurePathExists(
+                        os.path.join(self._output_dir, 'fvm.blk.qcow2')),
         '-device', 'virtio-blk-pci,drive=blobstore',
 
         # Use stdio for the guest OS only; don't attach the QEMU interactive
@@ -101,11 +96,10 @@ class QemuTarget(target.Target):
         '-append', ' '.join(kernel_args)
       ]
 
-    # Configure the machine & CPU to emulate, based on the target architecture.
+    # Configure the machine to emulate, based on the target architecture.
     if self._target_cpu == 'arm64':
       qemu_command.extend([
           '-machine','virt',
-          '-cpu', 'cortex-a53',
       ])
       netdev_type = 'virtio-net-pci'
     else:
@@ -114,15 +108,21 @@ class QemuTarget(target.Target):
       ])
       netdev_type = 'e1000'
 
-    # On Linux, enable lightweight virtualization (KVM) if the host and guest
-    # architectures are the same.
-    if sys.platform.startswith('linux'):
-      if self._target_cpu == 'arm64' and platform.machine() == 'aarch64':
-        qemu_command.append('-enable-kvm')
-      elif self._target_cpu == 'x64' and platform.machine() == 'x86_64':
-        qemu_command.extend([
-            '-enable-kvm', '-cpu', 'host,migratable=no',
-        ])
+    # Configure the CPU to emulate.
+    # On Linux, we can enable lightweight virtualization (KVM) if the host and
+    # guest architectures are the same.
+    enable_kvm = self._require_kvm or (sys.platform.startswith('linux') and (
+        (self._target_cpu == 'arm64' and platform.machine() == 'aarch64') or
+        (self._target_cpu == 'x64' and platform.machine() == 'x86_64')) and
+      os.access('/dev/kvm', os.R_OK | os.W_OK))
+    if enable_kvm:
+      qemu_command.extend(['-enable-kvm', '-cpu', 'host,migratable=no'])
+    else:
+      logging.warning('Unable to launch QEMU with KVM acceleration.')
+      if self._target_cpu == 'arm64':
+        qemu_command.extend(['-cpu', 'cortex-a53'])
+      else:
+        qemu_command.extend(['-cpu', 'Haswell,+smap,-check,-fsgsbase'])
 
     # Configure virtual network. It is used in the tests to connect to
     # testserver running on the host.
@@ -160,6 +160,8 @@ class QemuTarget(target.Target):
     self._WaitUntilReady();
 
   def _IsQemuStillRunning(self):
+    if not self._qemu_process:
+      return False
     return os.waitpid(self._qemu_process.pid, os.WNOHANG)[0] == 0
 
   def _GetEndpoint(self):

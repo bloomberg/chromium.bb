@@ -130,6 +130,10 @@ class CORE_EXPORT NGOffsetMapping {
   // a LayoutObject at hand.
   static const NGOffsetMapping* GetFor(const LayoutObject*);
 
+  // Returns the mapping object of the inline formatting context the given
+  // LayoutBlockFlow has.
+  static const NGOffsetMapping* GetForContainingBlockFlow(LayoutBlockFlow*);
+
   // Returns the NGOffsetMappingUnit whose DOM range contains the position.
   // If there are multiple qualifying units, returns the last one.
   const NGOffsetMappingUnit* GetMappingUnitForPosition(const Position&) const;
@@ -138,6 +142,10 @@ class CORE_EXPORT NGOffsetMapping {
   // possibly collapsed) intersections with the passed in DOM range. This API
   // only accepts ranges whose start and end have the same anchor node.
   NGMappingUnitRange GetMappingUnitsForDOMRange(const EphemeralRange&) const;
+
+  // Returns all NGOffsetMappingUnits associated to |node|. Note: |node| should
+  // have associated mapping.
+  NGMappingUnitRange GetMappingUnitsForNode(const Node& node) const;
 
   // Returns the text content offset corresponding to the given position.
   // Returns nullopt when the position is not laid out in this context.
@@ -206,7 +214,7 @@ class CORE_EXPORT NGOffsetMapping {
   DISALLOW_COPY_AND_ASSIGN(NGOffsetMapping);
 };
 
-CORE_EXPORT const LayoutBlockFlow* NGInlineFormattingContextOf(const Position&);
+CORE_EXPORT LayoutBlockFlow* NGInlineFormattingContextOf(const Position&);
 
 }  // namespace blink
 

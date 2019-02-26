@@ -68,7 +68,7 @@ using blink::WebLocalizedString;
 
 namespace blink {
 
-using namespace HTMLNames;
+using namespace html_names;
 
 namespace {
 
@@ -440,16 +440,17 @@ static ARIARoleMap* CreateARIARoleMap() {
 static Vector<AtomicString>* CreateRoleNameVector() {
   Vector<AtomicString>* role_name_vector =
       new Vector<AtomicString>(base::size(kInternalRoles));
-  for (size_t i = 0; i < base::size(kInternalRoles); i++)
+  for (wtf_size_t i = 0; i < base::size(kInternalRoles); i++)
     (*role_name_vector)[i] = g_null_atom;
 
-  for (size_t i = 0; i < base::size(kRoles); ++i) {
-    (*role_name_vector)[static_cast<size_t>(kRoles[i].webcore_role)] =
+  for (wtf_size_t i = 0; i < base::size(kRoles); ++i) {
+    (*role_name_vector)[static_cast<wtf_size_t>(kRoles[i].webcore_role)] =
         AtomicString(kRoles[i].aria_role);
   }
 
-  for (size_t i = 0; i < base::size(kReverseRoles); ++i) {
-    (*role_name_vector)[static_cast<size_t>(kReverseRoles[i].webcore_role)] =
+  for (wtf_size_t i = 0; i < base::size(kReverseRoles); ++i) {
+    (*role_name_vector)[static_cast<wtf_size_t>(
+        kReverseRoles[i].webcore_role)] =
         AtomicString(kReverseRoles[i].aria_role);
   }
 
@@ -459,8 +460,8 @@ static Vector<AtomicString>* CreateRoleNameVector() {
 static Vector<AtomicString>* CreateInternalRoleNameVector() {
   Vector<AtomicString>* internal_role_name_vector =
       new Vector<AtomicString>(base::size(kInternalRoles));
-  for (size_t i = 0; i < base::size(kInternalRoles); i++) {
-    (*internal_role_name_vector)[static_cast<size_t>(
+  for (wtf_size_t i = 0; i < base::size(kInternalRoles); i++) {
+    (*internal_role_name_vector)[static_cast<wtf_size_t>(
         kInternalRoles[i].webcore_role)] =
         AtomicString(kInternalRoles[i].internal_role_name);
   }
@@ -756,7 +757,7 @@ bool AXObject::IsNativeCheckboxInMixedState(const Node* node) {
 
   const HTMLInputElement* input = ToHTMLInputElement(node);
   const auto inputType = input->type();
-  if (inputType != InputTypeNames::checkbox)
+  if (inputType != input_type_names::kCheckbox)
     return false;
   return input->ShouldAppearIndeterminate();
 }
@@ -938,9 +939,14 @@ AXObjectInclusion AXObject::AccessibilityPlatformIncludesObject() const {
 AXObjectInclusion AXObject::DefaultObjectInclusion(
     IgnoredReasons* ignored_reasons) const {
   if (IsInertOrAriaHidden()) {
-    if (ignored_reasons)
-      ComputeIsInertOrAriaHidden(ignored_reasons);
-    return kIgnoreObject;
+    // Keep focusable elements that are aria-hidden in tree, so that they can
+    // still fire events such as focus and value changes.
+    const Element* elem = GetElement();
+    if (!elem || !elem->SupportsFocus() || elem->IsInert()) {
+      if (ignored_reasons)
+        ComputeIsInertOrAriaHidden(ignored_reasons);
+      return kIgnoreObject;
+    }
   }
 
   return AccessibilityPlatformIncludesObject();
@@ -1002,6 +1008,10 @@ bool AXObject::ComputeIsInertOrAriaHidden(
   return false;
 }
 
+bool AXObject::IsVisible() const {
+  return !IsInertOrAriaHidden();
+}
+
 bool AXObject::IsDescendantOfLeafNode() const {
   UpdateCachedAttributeValuesIfNeeded();
   return cached_is_descendant_of_leaf_node_;
@@ -1039,7 +1049,7 @@ const AXObject* AXObject::InertRoot() const {
                          ? ToElement(node)
                          : FlatTreeTraversal::ParentElement(*node);
   while (element) {
-    if (element->hasAttribute(inertAttr))
+    if (element->hasAttribute(kInertAttr))
       return AXObjectCache().GetOrCreate(element);
     element = FlatTreeTraversal::ParentElement(*element);
   }
@@ -1086,10 +1096,11 @@ bool AXObject::DispatchEventToAOMEventListeners(Event& event) {
   // that if it didn't previously exist it won't be part of the event path.
   AccessibleNode* target = GetAccessibleNode();
   if (!target) {
-    Element* element = GetElement();
-    if (element)
+    if (Element* element = GetElement())
       target = element->accessibleNode();
   }
+  if (!target)
+    return false;
   event.SetTarget(target);
 
   // Capturing phase.
@@ -1197,7 +1208,7 @@ bool AXObject::CanReceiveAccessibilityFocus() const {
     return true;
 
   // aria-activedescendant focus
-  return elem->FastHasAttribute(idAttr) && CanBeActiveDescendant();
+  return elem->FastHasAttribute(kIdAttr) && CanBeActiveDescendant();
 }
 
 bool AXObject::CanSetValueAttribute() const {
@@ -1516,7 +1527,7 @@ String AXObject::AriaTextAlternative(bool recursive,
     if (HasAOMProperty(AOMRelationListProperty::kLabeledBy, elements)) {
       if (name_sources) {
         name_sources->push_back(
-            NameSource(*found_text_alternative, aria_labelledbyAttr));
+            NameSource(*found_text_alternative, kAriaLabelledbyAttr));
         name_sources->back().type = name_from;
       }
 
@@ -1543,9 +1554,9 @@ String AXObject::AriaTextAlternative(bool recursive,
     } else {
       // Now check ARIA attribute
       const QualifiedName& attr =
-          HasAttribute(aria_labeledbyAttr) && !HasAttribute(aria_labelledbyAttr)
-              ? aria_labeledbyAttr
-              : aria_labelledbyAttr;
+          HasAttribute(kAriaLabeledbyAttr) && !HasAttribute(kAriaLabelledbyAttr)
+              ? kAriaLabeledbyAttr
+              : kAriaLabelledbyAttr;
 
       if (name_sources) {
         name_sources->push_back(NameSource(*found_text_alternative, attr));
@@ -1589,7 +1600,7 @@ String AXObject::AriaTextAlternative(bool recursive,
   name_from = ax::mojom::NameFrom::kAttribute;
   if (name_sources) {
     name_sources->push_back(
-        NameSource(*found_text_alternative, aria_labelAttr));
+        NameSource(*found_text_alternative, kAriaLabelAttr));
     name_sources->back().type = name_from;
   }
   const AtomicString& aria_label =
@@ -1628,7 +1639,7 @@ String AXObject::TextFromElements(
       String result = RecursiveTextAlternative(
           *ax_element, in_aria_labelledby_traversal, visited);
       local_related_objects.push_back(
-          new NameSourceRelatedObject(ax_element, result));
+          MakeGarbageCollected<NameSourceRelatedObject>(ax_element, result));
       if (!result.IsEmpty()) {
         if (!accumulated_text.IsEmpty())
           accumulated_text.Append(' ');
@@ -1675,9 +1686,9 @@ void AXObject::AriaLabelledbyElementVector(
     HeapVector<Member<Element>>& elements,
     Vector<String>& ids) const {
   // Try both spellings, but prefer aria-labelledby, which is the official spec.
-  ElementsFromAttribute(elements, aria_labelledbyAttr, ids);
+  ElementsFromAttribute(elements, kAriaLabelledbyAttr, ids);
   if (!ids.size())
-    ElementsFromAttribute(elements, aria_labeledbyAttr, ids);
+    ElementsFromAttribute(elements, kAriaLabeledbyAttr, ids);
 }
 
 String AXObject::TextFromAriaLabelledby(AXObjectSet& visited,
@@ -1692,7 +1703,7 @@ String AXObject::TextFromAriaDescribedby(AXRelatedObjectVector* related_objects,
                                          Vector<String>& ids) const {
   AXObjectSet visited;
   HeapVector<Member<Element>> elements;
-  ElementsFromAttribute(elements, aria_describedbyAttr, ids);
+  ElementsFromAttribute(elements, kAriaDescribedbyAttr, ids);
   return TextFromElements(true, visited, elements, related_objects);
 }
 
@@ -1896,7 +1907,7 @@ int AXObject::IndexInParent() const {
     return 0;
 
   const AXObjectVector& siblings = ParentObjectUnignored()->Children();
-  size_t index = siblings.Find(this);
+  wtf_size_t index = siblings.Find(this);
   return (index == kNotFound) ? 0 : static_cast<int>(index);
 }
 
@@ -2338,7 +2349,7 @@ AtomicString AXObject::Language() const {
   // 2. The list of languages the browser sends in the [Accept-Language] header.
   // 3. The browser's default language.
 
-  const AtomicString& lang = GetAttribute(langAttr);
+  const AtomicString& lang = GetAttribute(kLangAttr);
   if (!lang.IsEmpty())
     return lang;
 
@@ -2893,7 +2904,8 @@ LayoutRect AXObject::GetBoundsInFrameCoordinates() const {
 //
 
 bool AXObject::RequestDecrementAction() {
-  Event* event = Event::CreateCancelable(EventTypeNames::accessibledecrement);
+  Event* event =
+      Event::CreateCancelable(event_type_names::kAccessibledecrement);
   if (DispatchEventToAOMEventListeners(*event))
     return true;
 
@@ -2901,7 +2913,7 @@ bool AXObject::RequestDecrementAction() {
 }
 
 bool AXObject::RequestClickAction() {
-  Event* event = Event::CreateCancelable(EventTypeNames::accessibleclick);
+  Event* event = Event::CreateCancelable(event_type_names::kAccessibleclick);
   if (DispatchEventToAOMEventListeners(*event))
     return true;
 
@@ -2933,7 +2945,7 @@ bool AXObject::OnNativeClickAction() {
 }
 
 bool AXObject::RequestFocusAction() {
-  Event* event = Event::CreateCancelable(EventTypeNames::accessiblefocus);
+  Event* event = Event::CreateCancelable(event_type_names::kAccessiblefocus);
   if (DispatchEventToAOMEventListeners(*event))
     return true;
 
@@ -2941,7 +2953,8 @@ bool AXObject::RequestFocusAction() {
 }
 
 bool AXObject::RequestIncrementAction() {
-  Event* event = Event::CreateCancelable(EventTypeNames::accessibleincrement);
+  Event* event =
+      Event::CreateCancelable(event_type_names::kAccessibleincrement);
   if (DispatchEventToAOMEventListeners(*event))
     return true;
 
@@ -2954,7 +2967,7 @@ bool AXObject::RequestScrollToGlobalPointAction(const IntPoint& point) {
 
 bool AXObject::RequestScrollToMakeVisibleAction() {
   Event* event =
-      Event::CreateCancelable(EventTypeNames::accessiblescrollintoview);
+      Event::CreateCancelable(event_type_names::kAccessiblescrollintoview);
   if (DispatchEventToAOMEventListeners(*event))
     return true;
 
@@ -2983,7 +2996,8 @@ bool AXObject::RequestSetValueAction(const String& value) {
 }
 
 bool AXObject::RequestShowContextMenuAction() {
-  Event* event = Event::CreateCancelable(EventTypeNames::accessiblecontextmenu);
+  Event* event =
+      Event::CreateCancelable(event_type_names::kAccessiblecontextmenu);
   if (DispatchEventToAOMEventListeners(*event))
     return true;
 
@@ -3450,7 +3464,7 @@ ax::mojom::Role AXObject::ButtonRoleType() const {
 const AtomicString& AXObject::RoleName(ax::mojom::Role role) {
   static const Vector<AtomicString>* role_name_vector = CreateRoleNameVector();
 
-  return role_name_vector->at(static_cast<size_t>(role));
+  return role_name_vector->at(static_cast<wtf_size_t>(role));
 }
 
 // static
@@ -3458,7 +3472,7 @@ const AtomicString& AXObject::InternalRoleName(ax::mojom::Role role) {
   static const Vector<AtomicString>* internal_role_name_vector =
       CreateInternalRoleNameVector();
 
-  return internal_role_name_vector->at(static_cast<size_t>(role));
+  return internal_role_name_vector->at(static_cast<wtf_size_t>(role));
 }
 
 // static
@@ -3501,6 +3515,13 @@ const AXObject* AXObject::LowestCommonAncestor(const AXObject& first,
   }
 
   return common_ancestor;
+}
+
+String AXObject::ToString() const {
+  return AXObject::InternalRoleName(RoleValue())
+             .GetString()
+             .EncodeForDebugging() +
+         ": " + ComputedName().EncodeForDebugging();
 }
 
 VisiblePosition AXObject::VisiblePositionForIndex(int) const {
@@ -3558,8 +3579,7 @@ bool operator>=(const AXObject& first, const AXObject& second) {
 }
 
 std::ostream& operator<<(std::ostream& stream, const AXObject& obj) {
-  return stream << AXObject::InternalRoleName(obj.RoleValue()) << ": "
-                << obj.ComputedName();
+  return stream << obj.ToString().Utf8().data();
 }
 
 void AXObject::Trace(blink::Visitor* visitor) {

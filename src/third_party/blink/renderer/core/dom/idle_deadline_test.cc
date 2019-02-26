@@ -8,7 +8,7 @@
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/blink/public/platform/platform.h"
 #include "third_party/blink/renderer/platform/scheduler/public/thread_scheduler.h"
-#include "third_party/blink/renderer/platform/testing/testing_platform_support_with_custom_scheduler.h"
+#include "third_party/blink/renderer/platform/testing/scoped_scheduler_overrider.h"
 #include "third_party/blink/renderer/platform/testing/wtf/scoped_mock_clock.h"
 #include "third_party/blink/renderer/platform/wtf/time.h"
 
@@ -48,11 +48,9 @@ class MockIdleDeadlineScheduler final : public ThreadScheduler {
     return base::TimeTicks();
   }
 
-  void AddTaskObserver(
-      base::MessageLoop::TaskObserver* task_observer) override {}
+  void AddTaskObserver(Thread::TaskObserver* task_observer) override {}
 
-  void RemoveTaskObserver(
-      base::MessageLoop::TaskObserver* task_observer) override {}
+  void RemoveTaskObserver(Thread::TaskObserver* task_observer) override {}
 
   void AddRAILModeObserver(scheduler::WebRAILModeObserver*) override {}
 
@@ -74,7 +72,7 @@ class IdleDeadlineTest : public testing::Test {
   WTF::ScopedMockClock clock_;
 };
 
-TEST_F(IdleDeadlineTest, deadlineInFuture) {
+TEST_F(IdleDeadlineTest, DeadlineInFuture) {
   IdleDeadline* deadline =
       IdleDeadline::Create(TimeTicks() + TimeDelta::FromSecondsD(1.25),
                            IdleDeadline::CallbackType::kCalledWhenIdle);
@@ -82,18 +80,16 @@ TEST_F(IdleDeadlineTest, deadlineInFuture) {
   EXPECT_FLOAT_EQ(250.0, deadline->timeRemaining());
 }
 
-TEST_F(IdleDeadlineTest, deadlineInPast) {
+TEST_F(IdleDeadlineTest, DeadlineInPast) {
   IdleDeadline* deadline =
       IdleDeadline::Create(TimeTicks() + TimeDelta::FromSecondsD(0.75),
                            IdleDeadline::CallbackType::kCalledWhenIdle);
   EXPECT_FLOAT_EQ(0, deadline->timeRemaining());
 }
 
-TEST_F(IdleDeadlineTest, yieldForHighPriorityWork) {
+TEST_F(IdleDeadlineTest, YieldForHighPriorityWork) {
   MockIdleDeadlineScheduler scheduler;
-  ScopedTestingPlatformSupport<TestingPlatformSupportWithCustomScheduler,
-                               ThreadScheduler*>
-      platform(&scheduler);
+  ScopedSchedulerOverrider scheduler_overrider(&scheduler);
 
   IdleDeadline* deadline =
       IdleDeadline::Create(TimeTicks() + TimeDelta::FromSecondsD(1.25),

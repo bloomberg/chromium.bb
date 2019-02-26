@@ -175,15 +175,18 @@ static sk_sp<GrTextureProxy> create_mask_GPU(GrContext* context,
                                              const SkMatrix& origViewMatrix,
                                              const GrShape& shape,
                                              int sampleCnt) {
+    GrBackendFormat format =
+            context->contextPriv().caps()->getBackendFormatFromColorType(kAlpha_8_SkColorType);
     sk_sp<GrRenderTargetContext> rtContext(
         context->contextPriv().makeDeferredRenderTargetContextWithFallback(
-            SkBackingFit::kApprox, maskRect.width(), maskRect.height(), kAlpha_8_GrPixelConfig,
-            nullptr, sampleCnt, GrMipMapped::kNo, kTopLeft_GrSurfaceOrigin));
+            format, SkBackingFit::kApprox, maskRect.width(), maskRect.height(),
+            kAlpha_8_GrPixelConfig, nullptr, sampleCnt, GrMipMapped::kNo,
+            kTopLeft_GrSurfaceOrigin));
     if (!rtContext) {
         return nullptr;
     }
 
-    rtContext->priv().absClear(nullptr, 0x0);
+    rtContext->priv().absClear(nullptr, SK_PMColor4fTRANSPARENT);
 
     GrPaint maskPaint;
     maskPaint.setCoverageSetOpXPFactory(SkRegion::kReplace_Op);
@@ -367,7 +370,7 @@ static void draw_shape_with_mask_filter(GrContext* context,
         SkAssertResult(as_MFB(maskFilter)->asABlur(&rec));
 
         builder[5] = rec.fStyle;  // TODO: we could put this with the other style bits
-        builder[6] = rec.fSigma;
+        builder[6] = SkFloat2Bits(rec.fSigma);
         shape->writeUnstyledKey(&builder[7]);
     }
 

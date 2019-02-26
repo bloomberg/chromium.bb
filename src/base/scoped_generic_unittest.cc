@@ -4,9 +4,14 @@
 
 #include "base/scoped_generic.h"
 
+#include <memory>
+#include <unordered_map>
+#include <unordered_set>
 #include <utility>
 #include <vector>
 
+#include "base/stl_util.h"
+#include "build/build_config.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace base {
@@ -26,7 +31,7 @@ struct IntTraits {
   std::vector<int>* freed_ints;
 };
 
-typedef ScopedGeneric<int, IntTraits> ScopedInt;
+using ScopedInt = ScopedGeneric<int, IntTraits>;
 
 }  // namespace
 
@@ -142,6 +147,181 @@ TEST(ScopedGenericTest, Operators) {
     a.reset();
     EXPECT_FALSE(a.is_valid());
   }
+}
+
+TEST(ScopedGenericTest, Receive) {
+  std::vector<int> values_freed;
+  IntTraits traits(&values_freed);
+  auto a = std::make_unique<ScopedInt>(123, traits);
+
+  EXPECT_EQ(123, a->get());
+
+  {
+    ScopedInt::Receiver r(*a);
+    EXPECT_EQ(123, a->get());
+    *r.get() = 456;
+    EXPECT_EQ(123, a->get());
+  }
+
+  EXPECT_EQ(456, a->get());
+
+  {
+    ScopedInt::Receiver r(*a);
+    EXPECT_DEATH_IF_SUPPORTED(a.reset(), "");
+    EXPECT_DEATH_IF_SUPPORTED(ScopedInt::Receiver(*a).get(), "");
+  }
+}
+
+namespace {
+
+struct TrackedIntTraits : public ScopedGenericOwnershipTracking {
+  using OwnerMap =
+      std::unordered_map<int, const ScopedGeneric<int, TrackedIntTraits>*>;
+  TrackedIntTraits(std::unordered_set<int>* freed, OwnerMap* owners)
+      : freed(freed), owners(owners) {}
+
+  static int InvalidValue() { return -1; }
+
+  void Free(int value) {
+    auto it = owners->find(value);
+    ASSERT_EQ(owners->end(), it);
+
+    ASSERT_EQ(0U, freed->count(value));
+    freed->insert(value);
+  }
+
+  void Acquire(const ScopedGeneric<int, TrackedIntTraits>& owner, int value) {
+    auto it = owners->find(value);
+    ASSERT_EQ(owners->end(), it);
+    (*owners)[value] = &owner;
+  }
+
+  void Release(const ScopedGeneric<int, TrackedIntTraits>& owner, int value) {
+    auto it = owners->find(value);
+    ASSERT_NE(owners->end(), it);
+    owners->erase(it);
+  }
+
+  std::unordered_set<int>* freed;
+  OwnerMap* owners;
+};
+
+using ScopedTrackedInt = ScopedGeneric<int, TrackedIntTraits>;
+
+}  // namespace
+
+TEST(ScopedGenericTest, OwnershipTracking) {
+  TrackedIntTraits::OwnerMap owners;
+  std::unordered_set<int> freed;
+  TrackedIntTraits traits(&freed, &owners);
+
+#define ASSERT_OWNED(value, owner)               \
+  ASSERT_TRUE(base::ContainsKey(owners, value)); \
+  ASSERT_EQ(&owner, owners[value]);              \
+  ASSERT_FALSE(base::ContainsKey(freed, value))
+
+#define ASSERT_UNOWNED(value)                     \
+  ASSERT_FALSE(base::ContainsKey(owners, value)); \
+  ASSERT_FALSE(base::ContainsKey(freed, value))
+
+#define ASSERT_FREED(value)                       \
+  ASSERT_FALSE(base::ContainsKey(owners, value)); \
+  ASSERT_TRUE(base::ContainsKey(freed, value))
+
+  // Constructor.
+  {
+    {
+      ScopedTrackedInt a(0, traits);
+      ASSERT_OWNED(0, a);
+    }
+    ASSERT_FREED(0);
+  }
+
+  owners.clear();
+  freed.clear();
+
+  // Reset.
+  {
+    ScopedTrackedInt a(0, traits);
+    ASSERT_OWNED(0, a);
+    a.reset(1);
+    ASSERT_FREED(0);
+    ASSERT_OWNED(1, a);
+    a.reset();
+    ASSERT_FREED(0);
+    ASSERT_FREED(1);
+  }
+
+  owners.clear();
+  freed.clear();
+
+  // Release.
+  {
+    {
+      ScopedTrackedInt a(0, traits);
+      ASSERT_OWNED(0, a);
+      int released = a.release();
+      ASSERT_EQ(0, released);
+      ASSERT_UNOWNED(0);
+    }
+    ASSERT_UNOWNED(0);
+  }
+
+  owners.clear();
+  freed.clear();
+
+  // Move constructor.
+  {
+    ScopedTrackedInt a(0, traits);
+    ASSERT_OWNED(0, a);
+    {
+      ScopedTrackedInt b(std::move(a));
+      ASSERT_OWNED(0, b);
+    }
+    ASSERT_FREED(0);
+  }
+
+  owners.clear();
+  freed.clear();
+
+  // Move assignment.
+  {
+    {
+      ScopedTrackedInt a(0, traits);
+      ScopedTrackedInt b(1, traits);
+      ASSERT_OWNED(0, a);
+      ASSERT_OWNED(1, b);
+      a = std::move(b);
+      ASSERT_OWNED(1, a);
+      ASSERT_FREED(0);
+    }
+    ASSERT_FREED(1);
+  }
+
+  owners.clear();
+  freed.clear();
+
+  // Swap.
+  {
+    {
+      ScopedTrackedInt a(0, traits);
+      ScopedTrackedInt b(1, traits);
+      ASSERT_OWNED(0, a);
+      ASSERT_OWNED(1, b);
+      a.swap(b);
+      ASSERT_OWNED(1, a);
+      ASSERT_OWNED(0, b);
+    }
+    ASSERT_FREED(0);
+    ASSERT_FREED(1);
+  }
+
+  owners.clear();
+  freed.clear();
+
+#undef ASSERT_OWNED
+#undef ASSERT_UNOWNED
+#undef ASSERT_FREED
 }
 
 // Cheesy manual "no compile" test for manually validating changes.

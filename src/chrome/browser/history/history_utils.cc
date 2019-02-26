@@ -6,6 +6,7 @@
 
 #include "chrome/common/url_constants.h"
 #include "components/dom_distiller/core/url_constants.h"
+#include "components/previews/core/previews_lite_page_redirect.h"
 #include "url/gurl.h"
 
 bool CanAddURLToHistory(const GURL& url) {
@@ -16,15 +17,15 @@ bool CanAddURLToHistory(const GURL& url) {
   // typed.  Right now, however, these are marked as typed even when triggered
   // by a shortcut or menu action.
   // Right now, URLs like about:version are not registered in the history.
-  if (url.SchemeIs(url::kJavaScriptScheme) ||
-      url.SchemeIs(url::kAboutScheme) ||
+  if (url.SchemeIs(url::kJavaScriptScheme) || url.SchemeIs(url::kAboutScheme) ||
       url.SchemeIs(url::kContentScheme) ||
       url.SchemeIs(content::kChromeDevToolsScheme) ||
       url.SchemeIs(content::kChromeUIScheme) ||
       url.SchemeIs(content::kViewSourceScheme) ||
       url.SchemeIs(chrome::kChromeNativeScheme) ||
       url.SchemeIs(chrome::kChromeSearchScheme) ||
-      url.SchemeIs(dom_distiller::kDomDistillerScheme))
+      url.SchemeIs(dom_distiller::kDomDistillerScheme) ||
+      previews::IsLitePageRedirectPreviewURL(url))
     return false;
 
   return true;

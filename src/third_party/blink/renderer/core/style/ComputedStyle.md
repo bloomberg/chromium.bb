@@ -13,18 +13,18 @@ The files that generate the code in ComputedStyleBase.{h,cpp} include:
 ## JSON files:
 These files are inputs to the generator and tell the generator what shape our fields and functions take. This is a list of all the relevant JSON files (more detailed documentation can be found in the files themselves):
 * [css_properties.json5](https://cs.chromium.org/chromium/src/third_party/blink/renderer/core/css/css_properties.json5): Contains information for all the CSS properties we support.
-* [computed_style_extra_fields.json5](https://cs.chromium.org/chromium/src/third_party/blink/renderer/core/css/computed_style_extra_fields.json5): Specifies fields in ComputedStyle that we would like to generate, but are not CSS properties.
-* [computed_style_diff_functions.json5](https://cs.chromium.org/chromium/src/third_party/blink/renderer/core/css/computed_style_diff_functions.json5): Specifies the fields we want to diff in the various diff functions in ComputedStyle. It is used to generate the various diffing functions on ComputedStyle.
+* [computed_style_extra_fields.json5](https://cs.chromium.org/chromium/src/third_party/blink/renderer/core/style/computed_style_extra_fields.json5): Specifies fields in ComputedStyle that we would like to generate, but are not CSS properties.
+* [computed_style_diff_functions.json5](https://cs.chromium.org/chromium/src/third_party/blink/renderer/core/style/computed_style_diff_functions.json5): Specifies the fields we want to diff in the various diff functions in ComputedStyle. It is used to generate the various diffing functions on ComputedStyle.
 
 ## Generator files:
 These scripts generate the computed_style_base.{h,cc} files. This is a list of the relevant generator files (more detailed documentation can be found in the files themselves):
-* [make_computed_style_base.py](https://cs.chromium.org/chromium/src/third_party/blink/renderer/build/scripts/make_computed_style_base.py): Main file that handles the code generation logic. It consumes the JSON inputs provided and outputs fields and groups that encapsulate the structure of ComputedStyle.
+* [make_computed_style_base.py](https://cs.chromium.org/chromium/src/third_party/blink/renderer/build/scripts/core/style/make_computed_style_base.py): Main file that handles the code generation logic. It consumes the JSON inputs provided and outputs fields and groups that encapsulate the structure of ComputedStyle.
 
 ## Template files:
 For each generate file, the Python script uses a Jinja template file to format the output:
-* [computed_style_base.h.tmpl](https://cs.chromium.org/chromium/src/third_party/blink/renderer/build/scripts/templates/computed_style_base.h.tmpl): Header file with the field and group declarations.
-* [computed_style_base.cc.tmpl](https://cs.chromium.org/chromium/src/third_party/blink/renderer/build/scripts/templates/computed_style_base.cc.tmpl): Implementation of various generated helper functions. Notably, contains implementation of functions that use ComputedStyle such as the diffing functions.
-* [computed_style_base_constants.h.tmpl](https://cs.chromium.org/chromium/src/third_party/blink/renderer/build/scripts/templates/computed_style_base_constants.h.tmpl): Definitions of generated enums.
+* [computed_style_base.h.tmpl](https://cs.chromium.org/chromium/src/third_party/blink/renderer/build/scripts/core/style/templates/computed_style_base.h.tmpl): Header file with the field and group declarations.
+* [computed_style_base.cc.tmpl](https://cs.chromium.org/chromium/src/third_party/blink/renderer/build/scripts/core/style/templates/computed_style_base.cc.tmpl): Implementation of various generated helper functions. Notably, contains implementation of functions that use ComputedStyle such as the diffing functions.
+* [computed_style_base_constants.h.tmpl](https://cs.chromium.org/chromium/src/third_party/blink/renderer/build/scripts/core/style/templates/computed_style_base_constants.h.tmpl): Definitions of generated enums.
 * [fields/*.tmpl](https://cs.chromium.org/chromium/src/third_party/blink/renderer/build/scripts/templates/fields/): These files contain various macros that help us generate accessors for the fields depending on their field_template.
 
 # Understanding where to make changes:

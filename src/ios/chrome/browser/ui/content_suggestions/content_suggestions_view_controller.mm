@@ -23,7 +23,9 @@
 #import "ios/chrome/browser/ui/content_suggestions/ntp_home_constant.h"
 #import "ios/chrome/browser/ui/ntp/new_tab_page_header_constants.h"
 #import "ios/chrome/browser/ui/overscroll_actions/overscroll_actions_controller.h"
-#import "ios/chrome/browser/ui/uikit_ui_util.h"
+#import "ios/chrome/browser/ui/toolbar/public/toolbar_utils.h"
+#include "ios/chrome/browser/ui/ui_feature_flags.h"
+#import "ios/chrome/browser/ui/util/uikit_ui_util.h"
 #import "ios/chrome/common/ui_util/constraints_ui_util.h"
 #include "ios/web/public/features.h"
 
@@ -38,7 +40,9 @@ const CGFloat kCardBorderRadius = 11;
 
 }
 
-@interface ContentSuggestionsViewController ()<UIGestureRecognizerDelegate>
+@interface ContentSuggestionsViewController ()<UIGestureRecognizerDelegate> {
+  CGFloat _initialContentOffset;
+}
 
 @property(nonatomic, strong)
     ContentSuggestionsCollectionUpdater* collectionUpdater;
@@ -68,6 +72,7 @@ const CGFloat kCardBorderRadius = 11;
   self = [super initWithLayout:layout style:style];
   if (self) {
     _collectionUpdater = [[ContentSuggestionsCollectionUpdater alloc] init];
+    _initialContentOffset = NAN;
   }
   return self;
 }
@@ -185,6 +190,14 @@ const CGFloat kCardBorderRadius = 11;
   [self.overscrollActionsController clear];
 }
 
+- (void)setContentOffset:(CGFloat)offset {
+  _initialContentOffset = offset;
+  if (self.isViewLoaded && self.collectionView.window &&
+      self.collectionView.contentSize.height != 0) {
+    [self applyContentOffset];
+  }
+}
+
 + (NSString*)collectionAccessibilityIdentifier {
   return @"ContentSuggestionsCollectionIdentifier";
 }
@@ -195,12 +208,10 @@ const CGFloat kCardBorderRadius = 11;
   [super viewDidLoad];
 
   self.collectionView.prefetchingEnabled = NO;
-  if (@available(iOS 11, *)) {
-    // Overscroll action does not work well with content offset, so set this
-    // to never and internally offset the UI to account for safe area insets.
-    self.collectionView.contentInsetAdjustmentBehavior =
-        UIScrollViewContentInsetAdjustmentNever;
-  }
+  // Overscroll action does not work well with content offset, so set this
+  // to never and internally offset the UI to account for safe area insets.
+  self.collectionView.contentInsetAdjustmentBehavior =
+      UIScrollViewContentInsetAdjustmentNever;
   self.collectionView.accessibilityIdentifier =
       [[self class] collectionAccessibilityIdentifier];
   _collectionUpdater.collectionViewController = self;
@@ -209,7 +220,6 @@ const CGFloat kCardBorderRadius = 11;
   self.collectionView.backgroundColor = ntp_home::kNTPBackgroundColor();
   self.styler.cellStyle = MDCCollectionViewCellStyleCard;
   self.styler.cardBorderRadius = kCardBorderRadius;
-  self.automaticallyAdjustsScrollViewInsets = NO;
   self.collectionView.translatesAutoresizingMaskIntoConstraints = NO;
 
   ApplyVisualConstraints(@[ @"V:|[collection]|", @"H:|[collection]|" ],
@@ -240,6 +250,7 @@ const CGFloat kCardBorderRadius = 11;
 
 - (void)viewWillAppear:(BOOL)animated {
   [super viewWillAppear:animated];
+  self.headerSynchronizer.showing = YES;
   // Reload data to ensure the Most Visited tiles and fakeOmnibox are correctly
   // positionned, in particular during a rotation while a ViewController is
   // presented in front of the NTP.
@@ -260,13 +271,20 @@ const CGFloat kCardBorderRadius = 11;
 
 - (void)viewDidLayoutSubviews {
   [super viewDidLayoutSubviews];
-  if (CGSizeEqualToSize(self.collectionView.bounds.size, CGSizeZero) &&
+  if (!base::FeatureList::IsEnabled(kBrowserContainerContainsNTP) &&
+      CGSizeEqualToSize(self.collectionView.bounds.size, CGSizeZero) &&
       !CGSizeEqualToSize(self.view.bounds.size, CGSizeZero)) {
     // When started after a cold start, the frame of the collection view isn't
     // set to the bounds of the view. In that case, the constraints for the
     // cells are broken.
     self.collectionView.frame = self.view.bounds;
   }
+  [self applyContentOffset];
+}
+
+- (void)viewDidDisappear:(BOOL)animated {
+  [super viewDidDisappear:animated];
+  self.headerSynchronizer.showing = NO;
 }
 
 - (void)viewWillTransitionToSize:(CGSize)size
@@ -297,6 +315,12 @@ const CGFloat kCardBorderRadius = 11;
 
 - (void)traitCollectionDidChange:(UITraitCollection*)previousTraitCollection {
   [super traitCollectionDidChange:previousTraitCollection];
+  if (previousTraitCollection.preferredContentSizeCategory !=
+      self.traitCollection.preferredContentSizeCategory) {
+    [self.collectionViewLayout invalidateLayout];
+    [self.headerSynchronizer updateFakeOmniboxOnCollectionScroll];
+    [self.headerSynchronizer updateConstraints];
+  }
   [self correctMissingSafeArea];
   [self updateOverscrollActionsState];
 }
@@ -450,9 +474,16 @@ const CGFloat kCardBorderRadius = 11;
   if ([self.collectionUpdater isHeaderSection:section]) {
     return CGSizeMake(0, [self.headerSynchronizer headerHeight]);
   }
-  return [super collectionView:collectionView
-                               layout:collectionViewLayout
-      referenceSizeForHeaderInSection:section];
+  CGSize defaultSize = [super collectionView:collectionView
+                                      layout:collectionViewLayout
+             referenceSizeForHeaderInSection:section];
+  if (UIContentSizeCategoryIsAccessibilityCategory(
+          self.traitCollection.preferredContentSizeCategory) &&
+      [self.collectionUpdater isContentSuggestionsSection:section]) {
+    // Double the size of the header as it is now on two lines.
+    defaultSize.height *= 2;
+  }
+  return defaultSize;
 }
 
 - (BOOL)collectionView:(nonnull UICollectionView*)collectionView
@@ -569,14 +600,15 @@ const CGFloat kCardBorderRadius = 11;
 #pragma mark - UIAccessibilityAction
 
 - (BOOL)accessibilityScroll:(UIAccessibilityScrollDirection)direction {
+  CGFloat toolbarHeight =
+      ToolbarExpandedHeight(self.traitCollection.preferredContentSizeCategory);
   // The collection displays the fake omnibox on the top of the other elements.
   // The default scrolling action scrolls for the full height of the collection,
   // hiding elements behing the fake omnibox. This reduces the scrolling by the
   // height of the fake omnibox.
   if (direction == UIAccessibilityScrollDirectionDown) {
     CGFloat newYOffset = self.collectionView.contentOffset.y +
-                         self.collectionView.bounds.size.height -
-                         ntp_header::ToolbarHeight();
+                         self.collectionView.bounds.size.height - toolbarHeight;
     newYOffset = MIN(self.collectionView.contentSize.height -
                          self.collectionView.bounds.size.height,
                      newYOffset);
@@ -584,8 +616,7 @@ const CGFloat kCardBorderRadius = 11;
         CGPointMake(self.collectionView.contentOffset.x, newYOffset);
   } else if (direction == UIAccessibilityScrollDirectionUp) {
     CGFloat newYOffset = self.collectionView.contentOffset.y -
-                         self.collectionView.bounds.size.height +
-                         ntp_header::ToolbarHeight();
+                         self.collectionView.bounds.size.height + toolbarHeight;
     newYOffset = MAX(0, newYOffset);
     self.collectionView.contentOffset =
         CGPointMake(self.collectionView.contentOffset.x, newYOffset);
@@ -606,15 +637,13 @@ const CGFloat kCardBorderRadius = 11;
   if (base::FeatureList::IsEnabled(web::features::kBrowserContainerFullscreen))
     return;
 
-  if (@available(iOS 11, *)) {
-    UIEdgeInsets missingTop = UIEdgeInsetsZero;
-    // During the new tab animation the browser container view controller
-    // actually matches the browser view controller frame, so safe area does
-    // work, so be sure to check the parent view controller offset.
-    if (self.parentViewController.view.frame.origin.y == StatusBarHeight())
-      missingTop = UIEdgeInsetsMake(StatusBarHeight(), 0, 0, 0);
-    self.additionalSafeAreaInsets = missingTop;
-  }
+  UIEdgeInsets missingTop = UIEdgeInsetsZero;
+  // During the new tab animation the browser container view controller
+  // actually matches the browser view controller frame, so safe area does
+  // work, so be sure to check the parent view controller offset.
+  if (self.parentViewController.view.frame.origin.y == StatusBarHeight())
+    missingTop = UIEdgeInsetsMake(StatusBarHeight(), 0, 0, 0);
+  self.additionalSafeAreaInsets = missingTop;
 }
 
 - (void)handleLongPress:(UILongPressGestureRecognizer*)gestureRecognizer {
@@ -676,6 +705,28 @@ const CGFloat kCardBorderRadius = 11;
       [self.collectionUpdater addEmptyItemForSection:section];
   if (emptyItem)
     [self.collectionView insertItemsAtIndexPaths:@[ emptyItem ]];
+}
+
+// Sets the collectionView's contentOffset if |_initialContentOffset| is set.
+- (void)applyContentOffset {
+  if (!isnan(_initialContentOffset)) {
+    UICollectionView* collection = self.collectionView;
+    // Don't set the offset such as the content of the collection is smaller
+    // than the part of the collection which should be displayed with that
+    // offset, taking into account the size of the toolbar.
+    CGFloat offset = MAX(
+        0, MIN(_initialContentOffset,
+               collection.contentSize.height - collection.bounds.size.height -
+                   ToolbarExpandedHeight(
+                       self.traitCollection.preferredContentSizeCategory) +
+                   collection.contentInset.bottom));
+    if (collection.contentOffset.y != offset) {
+      collection.contentOffset = CGPointMake(0, offset);
+      // Update the constraints in case the omnibox needs to be moved.
+      [self updateConstraints];
+    }
+  }
+  _initialContentOffset = NAN;
 }
 
 @end

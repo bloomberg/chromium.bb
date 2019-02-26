@@ -30,6 +30,7 @@
 #include <memory>
 
 #include "third_party/blink/renderer/bindings/core/v8/v8_array_buffer.h"
+#include "third_party/blink/renderer/core/event_interface_names.h"
 #include "third_party/blink/renderer/core/frame/user_activation.h"
 #include "third_party/blink/renderer/platform/bindings/exception_state.h"
 #include "third_party/blink/renderer/platform/bindings/v8_private_property.h"
@@ -65,22 +66,22 @@ MessageEvent::V8GCAwareString& MessageEvent::V8GCAwareString::operator=(
 MessageEvent::MessageEvent() : data_type_(kDataTypeScriptValue) {}
 
 MessageEvent::MessageEvent(const AtomicString& type,
-                           const MessageEventInit& initializer)
+                           const MessageEventInit* initializer)
     : Event(type, initializer),
       data_type_(kDataTypeScriptValue),
       source_(nullptr) {
-  if (initializer.hasData())
-    data_as_script_value_ = initializer.data();
-  if (initializer.hasOrigin())
-    origin_ = initializer.origin();
-  if (initializer.hasLastEventId())
-    last_event_id_ = initializer.lastEventId();
-  if (initializer.hasSource() && IsValidSource(initializer.source()))
-    source_ = initializer.source();
-  if (initializer.hasPorts())
-    ports_ = new MessagePortArray(initializer.ports());
-  if (initializer.hasUserActivation())
-    user_activation_ = initializer.userActivation();
+  if (initializer->hasData())
+    data_as_script_value_ = initializer->data();
+  if (initializer->hasOrigin())
+    origin_ = initializer->origin();
+  if (initializer->hasLastEventId())
+    last_event_id_ = initializer->lastEventId();
+  if (initializer->hasSource() && IsValidSource(initializer->source()))
+    source_ = initializer->source();
+  if (initializer->hasPorts())
+    ports_ = MakeGarbageCollected<MessagePortArray>(initializer->ports());
+  if (initializer->hasUserActivation())
+    user_activation_ = initializer->userActivation();
   DCHECK(IsValidSource(source_.Get()));
 }
 
@@ -88,7 +89,7 @@ MessageEvent::MessageEvent(const String& origin,
                            const String& last_event_id,
                            EventTarget* source,
                            MessagePortArray* ports)
-    : Event(EventTypeNames::message, Bubbles::kNo, Cancelable::kNo),
+    : Event(event_type_names::kMessage, Bubbles::kNo, Cancelable::kNo),
       data_type_(kDataTypeScriptValue),
       origin_(origin),
       last_event_id_(last_event_id),
@@ -103,7 +104,7 @@ MessageEvent::MessageEvent(scoped_refptr<SerializedScriptValue> data,
                            EventTarget* source,
                            MessagePortArray* ports,
                            UserActivation* user_activation)
-    : Event(EventTypeNames::message, Bubbles::kNo, Cancelable::kNo),
+    : Event(event_type_names::kMessage, Bubbles::kNo, Cancelable::kNo),
       data_type_(kDataTypeSerializedScriptValue),
       data_as_serialized_script_value_(
           SerializedScriptValue::Unpack(std::move(data))),
@@ -121,7 +122,7 @@ MessageEvent::MessageEvent(scoped_refptr<SerializedScriptValue> data,
                            EventTarget* source,
                            Vector<MessagePortChannel> channels,
                            UserActivation* user_activation)
-    : Event(EventTypeNames::message, Bubbles::kNo, Cancelable::kNo),
+    : Event(event_type_names::kMessage, Bubbles::kNo, Cancelable::kNo),
       data_type_(kDataTypeSerializedScriptValue),
       data_as_serialized_script_value_(
           SerializedScriptValue::Unpack(std::move(data))),
@@ -134,7 +135,7 @@ MessageEvent::MessageEvent(scoped_refptr<SerializedScriptValue> data,
 }
 
 MessageEvent::MessageEvent(const String& origin, EventTarget* source)
-    : Event(EventTypeNames::messageerror, Bubbles::kNo, Cancelable::kNo),
+    : Event(event_type_names::kMessageerror, Bubbles::kNo, Cancelable::kNo),
       data_type_(kDataTypeNull),
       origin_(origin),
       source_(source) {
@@ -142,19 +143,19 @@ MessageEvent::MessageEvent(const String& origin, EventTarget* source)
 }
 
 MessageEvent::MessageEvent(const String& data, const String& origin)
-    : Event(EventTypeNames::message, Bubbles::kNo, Cancelable::kNo),
+    : Event(event_type_names::kMessage, Bubbles::kNo, Cancelable::kNo),
       data_type_(kDataTypeString),
       data_as_string_(data),
       origin_(origin) {}
 
 MessageEvent::MessageEvent(Blob* data, const String& origin)
-    : Event(EventTypeNames::message, Bubbles::kNo, Cancelable::kNo),
+    : Event(event_type_names::kMessage, Bubbles::kNo, Cancelable::kNo),
       data_type_(kDataTypeBlob),
       data_as_blob_(data),
       origin_(origin) {}
 
 MessageEvent::MessageEvent(DOMArrayBuffer* data, const String& origin)
-    : Event(EventTypeNames::message, Bubbles::kNo, Cancelable::kNo),
+    : Event(event_type_names::kMessage, Bubbles::kNo, Cancelable::kNo),
       data_type_(kDataTypeArrayBuffer),
       data_as_array_buffer_(data),
       origin_(origin) {}
@@ -162,14 +163,14 @@ MessageEvent::MessageEvent(DOMArrayBuffer* data, const String& origin)
 MessageEvent::~MessageEvent() = default;
 
 MessageEvent* MessageEvent::Create(const AtomicString& type,
-                                   const MessageEventInit& initializer,
+                                   const MessageEventInit* initializer,
                                    ExceptionState& exception_state) {
-  if (initializer.source() && !IsValidSource(initializer.source())) {
+  if (initializer->source() && !IsValidSource(initializer->source())) {
     exception_state.ThrowTypeError(
         "The optional 'source' property is neither a Window nor MessagePort.");
     return nullptr;
   }
-  return new MessageEvent(type, initializer);
+  return MakeGarbageCollected<MessageEvent>(type, initializer);
 }
 
 void MessageEvent::initMessageEvent(const AtomicString& type,
@@ -242,7 +243,7 @@ void MessageEvent::initMessageEvent(const AtomicString& type,
 }
 
 const AtomicString& MessageEvent::InterfaceName() const {
-  return EventNames::MessageEvent;
+  return event_interface_names::kMessageEvent;
 }
 
 MessagePortArray MessageEvent::ports() {

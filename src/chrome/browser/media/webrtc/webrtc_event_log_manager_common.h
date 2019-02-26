@@ -32,6 +32,8 @@ extern const size_t kMaxNumberLocalWebRtcEventLogFiles;
 
 extern const size_t kMaxRemoteLogFileSizeBytes;
 
+extern const int kMaxOutputPeriodMs;
+
 // Maximum size for a response from Crash, which is the upload ID.
 extern const size_t kWebRtcEventLogMaxUploadIdBytes;
 
@@ -100,6 +102,7 @@ extern const char kStartRemoteLoggingFailureFeatureDisabled[];
 extern const char kStartRemoteLoggingFailureUnlimitedSizeDisallowed[];
 extern const char kStartRemoteLoggingFailureMaxSizeTooSmall[];
 extern const char kStartRemoteLoggingFailureMaxSizeTooLarge[];
+extern const char kStartRemoteLoggingFailureOutputPeriodMsTooLarge[];
 extern const char kStartRemoteLoggingFailureIllegalWebAppId[];
 extern const char kStartRemoteLoggingFailureUnknownOrInactivePeerConnection[];
 extern const char kStartRemoteLoggingFailureAlreadyLogging[];
@@ -215,7 +218,8 @@ class WebRtcLocalEventLogsObserver {
 class WebRtcRemoteEventLogsObserver {
  public:
   virtual void OnRemoteLogStarted(WebRtcEventLogPeerConnectionKey key,
-                                  const base::FilePath& file_path) = 0;
+                                  const base::FilePath& file_path,
+                                  int output_period_ms) = 0;
   virtual void OnRemoteLogStopped(WebRtcEventLogPeerConnectionKey key) = 0;
 
  protected:

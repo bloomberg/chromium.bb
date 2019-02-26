@@ -145,7 +145,7 @@ class DumbProxyResolverFactoryRequestClient
   void OnError(int32_t line_number, const std::string& error) override {}
   void ResolveDns(
       std::unique_ptr<net::HostResolver::RequestInfo> request_info,
-      ::net::interfaces::HostResolverRequestClientPtr client) override {}
+      proxy_resolver::mojom::HostResolverRequestClientPtr client) override {}
 
   proxy_resolver::mojom::ProxyResolverPtr resolver_;
   mojo::Binding<proxy_resolver::mojom::ProxyResolverFactoryRequestClient>

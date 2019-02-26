@@ -8,7 +8,7 @@
 #include "third_party/blink/renderer/core/layout/ng/ng_layout_algorithm.h"
 
 #include "third_party/blink/renderer/core/layout/ng/geometry/ng_logical_size.h"
-#include "third_party/blink/renderer/core/layout/ng/ng_fragment_builder.h"
+#include "third_party/blink/renderer/core/layout/ng/ng_box_fragment_builder.h"
 
 namespace blink {
 
@@ -18,7 +18,7 @@ class NGConstraintSpace;
 
 class CORE_EXPORT NGFieldsetLayoutAlgorithm
     : public NGLayoutAlgorithm<NGBlockNode,
-                               NGFragmentBuilder,
+                               NGBoxFragmentBuilder,
                                NGBlockBreakToken> {
  public:
   NGFieldsetLayoutAlgorithm(NGBlockNode node,

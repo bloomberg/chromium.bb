@@ -34,22 +34,20 @@
 #include "chrome/browser/net/system_network_context_manager.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_manager.h"
-#include "chrome/browser/signin/profile_oauth2_token_service_factory.h"
-#include "chrome/browser/signin/signin_manager_factory.h"
+#include "chrome/browser/signin/identity_manager_factory.h"
 #include "chrome/common/extensions/api/file_manager_private_internal.h"
 #include "chromeos/chromeos_switches.h"
 #include "chromeos/network/network_handler.h"
 #include "chromeos/network/network_state_handler.h"
 #include "components/drive/chromeos/search_metadata.h"
 #include "components/drive/event_logger.h"
-#include "components/signin/core/browser/profile_oauth2_token_service.h"
-#include "components/signin/core/browser/signin_manager.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/storage_partition.h"
 #include "google_apis/drive/auth_service.h"
 #include "google_apis/drive/drive_api_url_generator.h"
 #include "mojo/public/cpp/bindings/callback_helpers.h"
 #include "net/base/network_change_notifier.h"
+#include "services/identity/public/cpp/identity_manager.h"
 #include "services/network/public/cpp/shared_url_loader_factory.h"
 #include "storage/common/fileapi/file_system_info.h"
 #include "storage/common/fileapi/file_system_util.h"
@@ -500,6 +498,10 @@ class SingleEntryPropertiesGetterForFileSystemProvider {
         names_.end()) {
       field_mask |= ProvidedFileSystemInterface::METADATA_FIELD_THUMBNAIL;
     }
+    if (!field_mask) {
+      OnGetMetadataCompleted(nullptr, base::File::FILE_OK);
+      return;
+    }
 
     parser.file_system()->GetMetadata(
         parser.file_path(), field_mask,
@@ -712,6 +714,15 @@ class SingleEntryPropertiesGetterForDriveFs {
           std::make_unique<std::string>(*properties_->thumbnail_url);
     }
 
+    if (metadata->folder_feature) {
+      properties_->is_machine_root =
+          std::make_unique<bool>(metadata->folder_feature->is_machine_root);
+      properties_->is_external_media =
+          std::make_unique<bool>(metadata->folder_feature->is_external_media);
+      properties_->is_arbitrary_sync_folder = std::make_unique<bool>(
+          metadata->folder_feature->is_arbitrary_sync_folder);
+    }
+
     CompleteGetEntryProperties(drive::FILE_ERROR_OK);
   }
 
@@ -747,16 +758,8 @@ std::string MakeThumbnailDataUrlOnSequence(
   return base::StrCat({"data:image/png;base64,", encoded});
 }
 
-drivefs::mojom::QueryParameters::QuerySource SearchDriveFs(
-    scoped_refptr<ChromeAsyncExtensionFunction> function,
-    drivefs::mojom::QueryParametersPtr query,
-    bool filter_dirs,
-    base::OnceCallback<void(std::unique_ptr<base::ListValue>)> callback);
-
 void OnSearchDriveFs(
     scoped_refptr<ChromeAsyncExtensionFunction> function,
-    drivefs::mojom::SearchQueryPtr search,
-    drivefs::mojom::QueryParametersPtr query,
     bool filter_dirs,
     base::OnceCallback<void(std::unique_ptr<base::ListValue>)> callback,
     drive::FileError error,
@@ -765,22 +768,6 @@ void OnSearchDriveFs(
       drive::util::GetIntegrationServiceByProfile(function->GetProfile());
   if (!integration_service) {
     std::move(callback).Run(nullptr);
-    return;
-  }
-
-  if (error == drive::FILE_ERROR_NO_CONNECTION &&
-      query->query_source !=
-          drivefs::mojom::QueryParameters::QuerySource::kLocalOnly) {
-    // Retry with offline query.
-    query->query_source =
-        drivefs::mojom::QueryParameters::QuerySource::kLocalOnly;
-    if (query->text_content) {
-      // Full-text searches not supported offline.
-      std::swap(query->text_content, query->title);
-      query->text_content.reset();
-    }
-    SearchDriveFs(std::move(function), std::move(query), filter_dirs,
-                  std::move(callback));
     return;
   }
 
@@ -826,24 +813,13 @@ drivefs::mojom::QueryParameters::QuerySource SearchDriveFs(
     base::OnceCallback<void(std::unique_ptr<base::ListValue>)> callback) {
   drive::DriveIntegrationService* const integration_service =
       drive::util::GetIntegrationServiceByProfile(function->GetProfile());
-  drivefs::mojom::SearchQueryPtr search;
-  integration_service->GetDriveFsInterface()->StartSearchQuery(
-      mojo::MakeRequest(&search), query.Clone());
-  drivefs::mojom::QueryParameters::QuerySource source = query->query_source;
-  if (net::NetworkChangeNotifier::IsOffline() &&
-      source != drivefs::mojom::QueryParameters::QuerySource::kLocalOnly) {
-    // No point trying cloud query if we know we are offline.
-    source = drivefs::mojom::QueryParameters::QuerySource::kLocalOnly;
-    OnSearchDriveFs(std::move(function), std::move(search), std::move(query),
-                    filter_dirs, std::move(callback),
-                    drive::FILE_ERROR_NO_CONNECTION, {});
-  } else {
-    auto* raw_search = search.get();
-    raw_search->GetNextPage(
-        base::BindOnce(&OnSearchDriveFs, std::move(function), std::move(search),
-                       std::move(query), filter_dirs, std::move(callback)));
-  }
-  return source;
+  auto on_response = base::BindOnce(&OnSearchDriveFs, std::move(function),
+                                    filter_dirs, std::move(callback));
+  return integration_service->GetDriveFsHost()->PerformSearch(
+      std::move(query),
+      mojo::WrapCallbackWithDefaultInvokeIfNotRun(
+          std::move(on_response), drive::FileError::FILE_ERROR_ABORT,
+          base::Optional<std::vector<drivefs::mojom::QueryItemPtr>>()));
 }
 
 void UmaEmitSearchOutcome(
@@ -864,11 +840,17 @@ void UmaEmitSearchOutcome(
       infix = "OfflineSearchTime";
       break;
   }
-  base::UmaHistogramTimes(
-      base::StrCat(
-          {remote ? "DriveCommon.RemoteSearch." : "DriveCommon.LocalSearch.",
-           infix, success ? ".SuccessTime" : ".FailTime"}),
-      base::TimeTicks::Now() - time_started);
+  if (remote) {
+    base::UmaHistogramMediumTimes(
+        base::StrCat({"DriveCommon.RemoteSearch.", infix,
+                      success ? ".SuccessTime" : ".FailTime"}),
+        base::TimeTicks::Now() - time_started);
+  } else {
+    base::UmaHistogramMediumTimes(
+        base::StrCat({"DriveCommon.LocalSearch.", infix,
+                      success ? ".SuccessTime" : ".FailTime"}),
+        base::TimeTicks::Now() - time_started);
+  }
 }
 
 }  // namespace
@@ -1472,10 +1454,6 @@ FileManagerPrivateGetDriveConnectionStateFunction::Run() {
           ->network_state_handler()
           ->FirstNetworkByType(chromeos::NetworkTypePattern::Mobile());
 
-  drive::EventLogger* logger = file_manager::util::GetLogger(
-      Profile::FromBrowserContext(browser_context()));
-  if (logger)
-    logger->Log(logging::LOG_INFO, "%s succeeded.", name());
   return RespondNow(ArgumentList(
       api::file_manager_private::GetDriveConnectionState::Results::Create(
           result)));
@@ -1657,11 +1635,9 @@ void FileManagerPrivateInternalGetDownloadUrlFunction::OnGotDownloadUrl(
     return;
   }
   download_url_ = std::move(download_url);
-  ProfileOAuth2TokenService* oauth2_token_service =
-      ProfileOAuth2TokenServiceFactory::GetForProfile(GetProfile());
-  SigninManagerBase* signin_manager =
-      SigninManagerFactory::GetForProfile(GetProfile());
-  const std::string& account_id = signin_manager->GetAuthenticatedAccountId();
+  identity::IdentityManager* identity_manager =
+      IdentityManagerFactory::GetForProfile(GetProfile());
+  const std::string& account_id = identity_manager->GetPrimaryAccountId();
   std::vector<std::string> scopes;
   scopes.emplace_back("https://www.googleapis.com/auth/drive.readonly");
 
@@ -1669,7 +1645,7 @@ void FileManagerPrivateInternalGetDownloadUrlFunction::OnGotDownloadUrl(
       content::BrowserContext::GetDefaultStoragePartition(GetProfile())
           ->GetURLLoaderFactoryForBrowserProcess();
   auth_service_ = std::make_unique<google_apis::AuthService>(
-      oauth2_token_service, account_id, url_loader_factory, scopes);
+      identity_manager, account_id, url_loader_factory, scopes);
   auth_service_->StartAuthentication(base::Bind(
       &FileManagerPrivateInternalGetDownloadUrlFunction::OnTokenFetched, this));
 }

@@ -31,6 +31,7 @@ class BrowserDMTokenStorageLinux : public BrowserDMTokenStorage {
   std::string InitClientId() override;
   std::string InitEnrollmentToken() override;
   std::string InitDMToken() override;
+  bool InitEnrollmentErrorOption() override;
   void SaveDMToken(const std::string& token) override;
   void DeletePolicyDirectory() override;
 
@@ -42,6 +43,9 @@ class BrowserDMTokenStorageLinux : public BrowserDMTokenStorage {
 
   FRIEND_TEST_ALL_PREFIXES(BrowserDMTokenStorageLinuxTest, InitClientId);
   FRIEND_TEST_ALL_PREFIXES(BrowserDMTokenStorageLinuxTest, InitEnrollmentToken);
+  // TODO(crbug.com/907589): Remove once no longer in use.
+  FRIEND_TEST_ALL_PREFIXES(BrowserDMTokenStorageLinuxTest,
+                           InitOldEnrollmentToken);
   FRIEND_TEST_ALL_PREFIXES(BrowserDMTokenStorageLinuxTest, InitDMToken);
   FRIEND_TEST_ALL_PREFIXES(BrowserDMTokenStorageLinuxTest,
                            InitDMTokenWithoutDirectory);

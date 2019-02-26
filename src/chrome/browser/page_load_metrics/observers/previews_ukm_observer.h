@@ -6,8 +6,11 @@
 #define CHROME_BROWSER_PAGE_LOAD_METRICS_OBSERVERS_PREVIEWS_UKM_OBSERVER_H_
 
 #include "base/macros.h"
+#include "base/optional.h"
 #include "base/sequence_checker.h"
+#include "base/time/time.h"
 #include "chrome/browser/page_load_metrics/page_load_metrics_observer.h"
+#include "components/previews/core/previews_experiments.h"
 
 namespace content {
 class NavigationHandle;
@@ -49,14 +52,19 @@ class PreviewsUKMObserver : public page_load_metrics::PageLoadMetricsObserver {
  private:
   void RecordPreviewsTypes(const page_load_metrics::PageLoadExtraInfo& info);
 
+  // The preview type that was most recently committed.
+  PreviewsType committed_preview_;
+
   bool server_lofi_seen_ = false;
   bool client_lofi_seen_ = false;
   bool lite_page_seen_ = false;
+  bool lite_page_redirect_seen_ = false;
   bool noscript_seen_ = false;
   bool resource_loading_hints_seen_ = false;
   bool opt_out_occurred_ = false;
   bool origin_opt_out_occurred_ = false;
   bool save_data_enabled_ = false;
+  base::Optional<base::TimeDelta> navigation_restart_penalty_ = base::nullopt;
 
   SEQUENCE_CHECKER(sequence_checker_);
 

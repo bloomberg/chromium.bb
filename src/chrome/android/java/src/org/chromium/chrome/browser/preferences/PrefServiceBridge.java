@@ -450,13 +450,6 @@ public class PrefServiceBridge {
     }
 
     /**
-     * @return Whether the active Safe Browsing Extended Reporting pref is the new Scout pref.
-     */
-    public boolean isSafeBrowsingScoutReportingActive() {
-        return nativeIsScoutExtendedReportingActive();
-    }
-
-    /**
      * @return Whether Safe Browsing Extended Reporting is currently enabled.
      */
     public boolean isSafeBrowsingExtendedReportingEnabled() {
@@ -1155,7 +1148,6 @@ public class PrefServiceBridge {
     private native void nativeSetSearchSuggestEnabled(boolean enabled);
     private native boolean nativeGetSearchSuggestManaged();
     private native boolean nativeGetSafeBrowsingExtendedReportingEnabled();
-    private native boolean nativeIsScoutExtendedReportingActive();
     private native void nativeSetSafeBrowsingExtendedReportingEnabled(boolean enabled);
     private native boolean nativeGetSafeBrowsingExtendedReportingManaged();
     private native boolean nativeGetSafeBrowsingEnabled();

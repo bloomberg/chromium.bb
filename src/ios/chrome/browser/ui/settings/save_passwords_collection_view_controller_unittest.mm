@@ -21,7 +21,7 @@
 #import "ios/chrome/browser/ui/collection_view/collection_view_controller_test.h"
 #import "ios/chrome/browser/ui/settings/cells/settings_search_item.h"
 #import "ios/chrome/browser/ui/settings/cells/settings_text_item.h"
-#import "ios/chrome/browser/ui/settings/password_details_collection_view_controller.h"
+#import "ios/chrome/browser/ui/settings/password_details_table_view_controller.h"
 #include "ios/chrome/grit/ios_strings.h"
 #import "ios/third_party/material_components_ios/src/components/Palettes/src/MaterialPalettes.h"
 #include "ios/web/public/test/test_web_thread_bundle.h"
@@ -405,7 +405,8 @@ TEST_F(SavePasswordsCollectionViewControllerTest, PropagateDeletionToStore) {
   AddPasswordForm(std::make_unique<autofill::PasswordForm>(form));
 
   EXPECT_CALL(GetMockStore(), RemoveLogin(form));
-  [save_password_controller deletePassword:form];
+  [save_password_controller passwordDetailsTableViewController:nil
+                                                deletePassword:form];
 }
 
 // Tests filtering of items.

@@ -7,7 +7,6 @@
 #include <algorithm>
 
 #include "base/logging.h"
-#include "chrome/browser/browser_process.h"
 #include "chrome/browser/ui/webui/chromeos/login/discover/discover_handler.h"
 #include "chrome/browser/ui/webui/chromeos/login/discover/modules/discover_module_launch_help_app.h"
 #include "chrome/browser/ui/webui/chromeos/login/discover/modules/discover_module_pin_setup.h"
@@ -16,16 +15,28 @@
 #include "chrome/browser/ui/webui/chromeos/login/discover/modules/discover_module_welcome.h"
 
 namespace chromeos {
+namespace {
+
+// Owned by ChromeBrowserMainPartsChromeos.
+DiscoverManager* g_discover_manager = nullptr;
+
+}  // namespace
 
 DiscoverManager::DiscoverManager() {
+  DCHECK(!g_discover_manager);
+  g_discover_manager = this;
+
   CreateModules();
 }
 
-DiscoverManager::~DiscoverManager() = default;
+DiscoverManager::~DiscoverManager() {
+  DCHECK_EQ(g_discover_manager, this);
+  g_discover_manager = nullptr;
+}
 
 // static
 DiscoverManager* DiscoverManager::Get() {
-  return g_browser_process->platform_part()->GetDiscoverManager();
+  return g_discover_manager;
 }
 
 bool DiscoverManager::IsCompleted() const {

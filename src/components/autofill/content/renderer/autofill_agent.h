@@ -29,7 +29,6 @@
 namespace blink {
 class WebNode;
 class WebView;
-class WebString;
 class WebFormControlElement;
 template <typename T>
 class WebVector;
@@ -273,12 +272,16 @@ class AutofillAgent : public content::RenderFrameObserver,
   void OnFormNoLongerSubmittable();
 
   // For no name forms, and unowned elements, try to see if there is a unique
-  // element in the updated form that corresponds to the old |element_|.
-  // Returns false if more than one element matches the |element_|.
+  // element in the updated form that corresponds to the |original_element|.
+  // Returns false if more than one element matches the |original_element|.
+  // Sets the matching element to |matching_element| and updates the
+  // |potential_match_encountered|, based on the search result. Returns false if
+  // more than one element match the name and section, therefore finding a
+  // unique match is impossible.
   bool FindTheUniqueNewVersionOfOldElement(
-      blink::WebVector<blink::WebFormControlElement>& elements,
-      bool& element_found,
-      const blink::WebString& original_element_section,
+      const blink::WebVector<blink::WebFormControlElement>& elements,
+      bool& potential_match_encountered,
+      blink::WebFormControlElement& matching_element,
       const blink::WebFormControlElement& original_element);
 
   // Check whether |element_| was removed or replaced dynamically on the page.

@@ -74,7 +74,10 @@ TranslateHelper::TranslateHelper(content::RenderFrame* render_frame,
       world_id_(world_id),
       extension_scheme_(extension_scheme),
       binding_(this),
-      weak_method_factory_(this) {}
+      weak_method_factory_(this) {
+  translate_task_runner_ = this->render_frame()->GetTaskRunner(
+      blink::TaskType::kInternalTranslation);
+}
 
 TranslateHelper::~TranslateHelper() {
 }
@@ -131,7 +134,9 @@ void TranslateHelper::PageCaptured(const base::string16& contents) {
   // captured, it should be treated as a new page to do translation.
   ResetPage();
   mojom::PagePtr page;
-  binding_.Bind(mojo::MakeRequest(&page));
+  binding_.Bind(
+      mojo::MakeRequest(&page),
+      main_frame->GetTaskRunner(blink::TaskType::kInternalTranslation));
   GetTranslateHandler()->RegisterPage(
       std::move(page), details, !details.has_notranslate && !language.empty());
 }
@@ -386,7 +391,7 @@ void TranslateHelper::CheckTranslateStatus() {
   }
 
   // The translation is still pending, check again later.
-  base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
+  translate_task_runner_->PostDelayedTask(
       FROM_HERE,
       base::BindOnce(&TranslateHelper::CheckTranslateStatus,
                      weak_method_factory_.GetWeakPtr()),
@@ -430,7 +435,7 @@ void TranslateHelper::TranslatePageImpl(int count) {
     return;
   }
   // Check the status of the translation.
-  base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
+  translate_task_runner_->PostDelayedTask(
       FROM_HERE,
       base::BindOnce(&TranslateHelper::CheckTranslateStatus,
                      weak_method_factory_.GetWeakPtr()),

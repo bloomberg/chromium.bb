@@ -134,10 +134,39 @@ class BASE_EXPORT SequencedTaskRunner : public TaskRunner {
   // Submits a non-nestable task to release the given object.  Returns
   // true if the object may be released at some point in the future,
   // and false if the object definitely will not be released.
+  //
+  // If the object was originally held by a scoped_refptr, please use the
+  // scoped_refptr variant of this function, as it does important housekeeping
+  // to ensure safe disposal of your object.
+  // Example use:
+  //
+  // scoped_refptr<T> foo_scoped_refptr;
+  // ...
+  // task_runner->ReleaseSoon(std::move(foo_scoped_refptr));
   template <class T>
   bool ReleaseSoon(const Location& from_here, const T* object) {
     return DeleteOrReleaseSoonInternal(from_here, &ReleaseHelper<T>::DoRelease,
                                        object);
+  }
+
+  // The scoped_refptr version of ReleaseSoon makes sure that the object it
+  // points to gets properly released on the correct thread.
+  // By calling AddRef on the scoped_refptr, we make sure that when it goes out
+  // of scope, it does not incorrectly release the object. If it were to do that
+  // it would be on the incorrect thread.
+  // We apply ReleaseSoon to the rvalue as the side-effects can be unclear to
+  // the caller if an lvalue is used. That being so, the scoped_refptr should
+  // always be std::move'd.
+  template <class T>
+  bool ReleaseSoon(const Location& from_here, scoped_refptr<T>&& object) {
+    if (!object)
+      return true;
+
+    object->AddRef();
+    T* raw_ptr = object.get();
+    object = nullptr;
+    return DeleteOrReleaseSoonInternal(from_here, &ReleaseHelper<T>::DoRelease,
+                                       raw_ptr);
   }
 
  protected:

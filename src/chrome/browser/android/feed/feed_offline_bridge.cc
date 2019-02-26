@@ -28,18 +28,6 @@ using base::android::ScopedJavaLocalRef;
 
 namespace feed {
 
-namespace {
-
-void OnGetOfflineStatus(ScopedJavaGlobalRef<jobject> callback,
-                        std::vector<std::string> urls) {
-  JNIEnv* env = base::android::AttachCurrentThread();
-  ScopedJavaLocalRef<jobjectArray> j_urls =
-      base::android::ToJavaArrayOfStrings(env, urls);
-  RunObjectCallbackAndroid(callback, j_urls);
-}
-
-}  // namespace
-
 static jlong JNI_FeedOfflineBridge_Init(
     JNIEnv* env,
     const JavaParamRef<jobject>& j_this,
@@ -87,10 +75,11 @@ void FeedOfflineBridge::GetOfflineStatus(JNIEnv* env,
                                          const JavaRef<jobjectArray>& j_urls,
                                          const JavaRef<jobject>& j_callback) {
   std::vector<std::string> urls;
-  base::android::AppendJavaStringArrayToStringVector(env, j_urls.obj(), &urls);
+  base::android::AppendJavaStringArrayToStringVector(env, j_urls, &urls);
   ScopedJavaGlobalRef<jobject> callback(j_callback);
   offline_host_->GetOfflineStatus(
-      std::move(urls), base::BindOnce(&OnGetOfflineStatus, callback));
+      std::move(urls), base::BindOnce(&FeedOfflineBridge::OnGetOfflineStatus,
+                                      weak_factory_.GetWeakPtr(), callback));
 }
 
 void FeedOfflineBridge::OnContentRemoved(
@@ -98,7 +87,7 @@ void FeedOfflineBridge::OnContentRemoved(
     const base::android::JavaRef<jobject>& j_this,
     const base::android::JavaRef<jobjectArray>& j_urls) {
   std::vector<std::string> urls;
-  base::android::AppendJavaStringArrayToStringVector(env, j_urls.obj(), &urls);
+  base::android::AppendJavaStringArrayToStringVector(env, j_urls, &urls);
   offline_host_->OnContentRemoved(urls);
 }
 
@@ -168,6 +157,15 @@ void FeedOfflineBridge::NotifyStatusChange(const std::string& url,
       base::android::ConvertUTF8ToJavaString(env, url);
   Java_FeedOfflineBridge_notifyStatusChange(env, j_this_, j_string,
                                             available_offline);
+}
+
+void FeedOfflineBridge::OnGetOfflineStatus(
+    ScopedJavaGlobalRef<jobject> callback,
+    std::vector<std::string> urls) {
+  JNIEnv* env = base::android::AttachCurrentThread();
+  ScopedJavaLocalRef<jobjectArray> j_urls =
+      base::android::ToJavaArrayOfStrings(env, urls);
+  RunObjectCallbackAndroid(callback, j_urls);
 }
 
 }  // namespace feed

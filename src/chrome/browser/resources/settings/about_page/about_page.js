@@ -638,4 +638,8 @@ Polymer({
     // </if>
     return this.showUpdateStatus_;
   },
+
+  focusSection: function() {
+    this.$$('settings-section[section="about"]').show();
+  },
 });

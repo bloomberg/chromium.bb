@@ -74,6 +74,13 @@ class PLATFORM_EXPORT MediaStreamDescriptor final
       const MediaStreamComponentVector& audio_components,
       const MediaStreamComponentVector& video_components);
 
+  MediaStreamDescriptor(const String& id,
+                        const MediaStreamSourceVector& audio_sources,
+                        const MediaStreamSourceVector& video_sources);
+  MediaStreamDescriptor(const String& id,
+                        const MediaStreamComponentVector& audio_components,
+                        const MediaStreamComponentVector& video_components);
+
   MediaStreamDescriptorClient* Client() const { return client_; }
   void SetClient(MediaStreamDescriptorClient* client) { client_ = client; }
 
@@ -114,13 +121,6 @@ class PLATFORM_EXPORT MediaStreamDescriptor final
   void Trace(blink::Visitor*);
 
  private:
-  MediaStreamDescriptor(const String& id,
-                        const MediaStreamSourceVector& audio_sources,
-                        const MediaStreamSourceVector& video_sources);
-  MediaStreamDescriptor(const String& id,
-                        const MediaStreamComponentVector& audio_components,
-                        const MediaStreamComponentVector& video_components);
-
   Member<MediaStreamDescriptorClient> client_;
   String id_;
   int unique_id_;

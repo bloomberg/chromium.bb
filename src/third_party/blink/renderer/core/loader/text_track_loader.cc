@@ -104,7 +104,7 @@ bool TextTrackLoader::Load(const KURL& url,
   CancelLoad();
 
   ResourceLoaderOptions options;
-  options.initiator_info.name = FetchInitiatorTypeNames::track;
+  options.initiator_info.name = fetch_initiator_type_names::kTrack;
 
   // Let |request| be the result of creating a potential-CORS request
   // given |URL|, "track", and |corsAttributeState|, and with the same-origin

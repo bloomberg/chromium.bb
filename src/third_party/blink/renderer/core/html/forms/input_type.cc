@@ -76,7 +76,7 @@
 namespace blink {
 
 using blink::WebLocalizedString;
-using namespace HTMLNames;
+using namespace html_names;
 
 using InputTypeFactoryFunction = InputType* (*)(HTMLInputElement&);
 using InputTypeFactoryMap = HashMap<AtomicString, InputTypeFactoryFunction>;
@@ -84,27 +84,27 @@ using InputTypeFactoryMap = HashMap<AtomicString, InputTypeFactoryFunction>;
 static std::unique_ptr<InputTypeFactoryMap> CreateInputTypeFactoryMap() {
   std::unique_ptr<InputTypeFactoryMap> map =
       std::make_unique<InputTypeFactoryMap>();
-  map->insert(InputTypeNames::button, ButtonInputType::Create);
-  map->insert(InputTypeNames::checkbox, CheckboxInputType::Create);
-  map->insert(InputTypeNames::color, ColorInputType::Create);
-  map->insert(InputTypeNames::date, DateInputType::Create);
-  map->insert(InputTypeNames::datetime_local, DateTimeLocalInputType::Create);
-  map->insert(InputTypeNames::email, EmailInputType::Create);
-  map->insert(InputTypeNames::file, FileInputType::Create);
-  map->insert(InputTypeNames::hidden, HiddenInputType::Create);
-  map->insert(InputTypeNames::image, ImageInputType::Create);
-  map->insert(InputTypeNames::month, MonthInputType::Create);
-  map->insert(InputTypeNames::number, NumberInputType::Create);
-  map->insert(InputTypeNames::password, PasswordInputType::Create);
-  map->insert(InputTypeNames::radio, RadioInputType::Create);
-  map->insert(InputTypeNames::range, RangeInputType::Create);
-  map->insert(InputTypeNames::reset, ResetInputType::Create);
-  map->insert(InputTypeNames::search, SearchInputType::Create);
-  map->insert(InputTypeNames::submit, SubmitInputType::Create);
-  map->insert(InputTypeNames::tel, TelephoneInputType::Create);
-  map->insert(InputTypeNames::time, TimeInputType::Create);
-  map->insert(InputTypeNames::url, URLInputType::Create);
-  map->insert(InputTypeNames::week, WeekInputType::Create);
+  map->insert(input_type_names::kButton, ButtonInputType::Create);
+  map->insert(input_type_names::kCheckbox, CheckboxInputType::Create);
+  map->insert(input_type_names::kColor, ColorInputType::Create);
+  map->insert(input_type_names::kDate, DateInputType::Create);
+  map->insert(input_type_names::kDatetimeLocal, DateTimeLocalInputType::Create);
+  map->insert(input_type_names::kEmail, EmailInputType::Create);
+  map->insert(input_type_names::kFile, FileInputType::Create);
+  map->insert(input_type_names::kHidden, HiddenInputType::Create);
+  map->insert(input_type_names::kImage, ImageInputType::Create);
+  map->insert(input_type_names::kMonth, MonthInputType::Create);
+  map->insert(input_type_names::kNumber, NumberInputType::Create);
+  map->insert(input_type_names::kPassword, PasswordInputType::Create);
+  map->insert(input_type_names::kRadio, RadioInputType::Create);
+  map->insert(input_type_names::kRange, RangeInputType::Create);
+  map->insert(input_type_names::kReset, ResetInputType::Create);
+  map->insert(input_type_names::kSearch, SearchInputType::Create);
+  map->insert(input_type_names::kSubmit, SubmitInputType::Create);
+  map->insert(input_type_names::kTel, TelephoneInputType::Create);
+  map->insert(input_type_names::kTime, TimeInputType::Create);
+  map->insert(input_type_names::kUrl, URLInputType::Create);
+  map->insert(input_type_names::kWeek, WeekInputType::Create);
   // No need to register "text" because it is the default type.
   return map;
 }
@@ -131,10 +131,10 @@ InputType* InputType::CreateText(HTMLInputElement& element) {
 const AtomicString& InputType::NormalizeTypeName(
     const AtomicString& type_name) {
   if (type_name.IsEmpty())
-    return InputTypeNames::text;
+    return input_type_names::kText;
   InputTypeFactoryMap::const_iterator it =
       FactoryMap()->find(type_name.LowerASCII());
-  return it == FactoryMap()->end() ? InputTypeNames::text : it->key;
+  return it == FactoryMap()->end() ? input_type_names::kText : it->key;
 }
 
 InputType::~InputType() = default;
@@ -161,7 +161,7 @@ void InputType::AppendToFormData(FormData& form_data) const {
 }
 
 String InputType::ResultForDialogSubmit() const {
-  return GetElement().FastGetAttribute(valueAttr);
+  return GetElement().FastGetAttribute(kValueAttr);
 }
 
 double InputType::ValueAsDate() const {
@@ -361,7 +361,7 @@ std::pair<String, String> InputType::ValidationMessage(
     //   is present, when informing the user that the pattern is not matched
     return std::make_pair(
         GetLocale().QueryString(WebLocalizedString::kValidationPatternMismatch),
-        GetElement().FastGetAttribute(titleAttr).GetString());
+        GetElement().FastGetAttribute(kTitleAttr).GetString());
   }
 
   if (GetElement().TooLong()) {
@@ -702,7 +702,7 @@ void InputType::ApplyStep(const Decimal& current,
   Decimal step = step_range.Step();
   EventQueueScope scope;
   Decimal new_value = current;
-  const AtomicString& step_string = GetElement().FastGetAttribute(stepAttr);
+  const AtomicString& step_string = GetElement().FastGetAttribute(kStepAttr);
   if (!DeprecatedEqualIgnoringCase(step_string, "any") &&
       step_range.StepMismatch(current)) {
     // Snap-to-step / clamping steps
@@ -867,10 +867,11 @@ void InputType::CountUsageIfVisible(WebFeature feature) const {
 
 Decimal InputType::FindStepBase(const Decimal& default_value) const {
   Decimal step_base =
-      ParseToNumber(GetElement().FastGetAttribute(minAttr), Decimal::Nan());
-  if (!step_base.IsFinite())
+      ParseToNumber(GetElement().FastGetAttribute(kMinAttr), Decimal::Nan());
+  if (!step_base.IsFinite()) {
     step_base =
-        ParseToNumber(GetElement().FastGetAttribute(valueAttr), default_value);
+        ParseToNumber(GetElement().FastGetAttribute(kValueAttr), default_value);
+  }
   return step_base;
 }
 
@@ -882,19 +883,19 @@ StepRange InputType::CreateStepRange(
     const StepRange::StepDescription& step_description) const {
   bool has_range_limitations = false;
   const Decimal step_base = FindStepBase(step_base_default);
-  Decimal minimum = ParseToNumberOrNaN(GetElement().FastGetAttribute(minAttr));
+  Decimal minimum = ParseToNumberOrNaN(GetElement().FastGetAttribute(kMinAttr));
   if (minimum.IsFinite())
     has_range_limitations = true;
   else
     minimum = minimum_default;
-  Decimal maximum = ParseToNumberOrNaN(GetElement().FastGetAttribute(maxAttr));
+  Decimal maximum = ParseToNumberOrNaN(GetElement().FastGetAttribute(kMaxAttr));
   if (maximum.IsFinite())
     has_range_limitations = true;
   else
     maximum = maximum_default;
   const Decimal step =
       StepRange::ParseStep(any_step_handling, step_description,
-                           GetElement().FastGetAttribute(stepAttr));
+                           GetElement().FastGetAttribute(kStepAttr));
   return StepRange(step_base, minimum, maximum, has_range_limitations, step,
                    step_description);
 }

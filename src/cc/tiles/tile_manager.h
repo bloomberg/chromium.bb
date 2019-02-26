@@ -139,6 +139,9 @@ class CC_EXPORT TileManager : CheckerImageTrackerClient {
   ~TileManager() override;
 
   // Assigns tile memory and schedules work to prepare tiles for drawing.
+  // This step occurs after Commit and at most once per BeginFrame. It can be
+  // called on its own, that is, outside of Commit.
+  //
   // - Runs client_->NotifyReadyToActivate() when all tiles required for
   // activation are prepared, or failed to prepare due to OOM.
   // - Runs client_->NotifyReadyToDraw() when all tiles required draw are
@@ -201,10 +204,12 @@ class CC_EXPORT TileManager : CheckerImageTrackerClient {
       // The raster here never really happened, cuz tests. So just add an
       // arbitrary sync token.
       if (resource.gpu_backing()) {
+        resource.gpu_backing()->mailbox = gpu::Mailbox::Generate();
         resource.gpu_backing()->mailbox_sync_token.Set(
             gpu::GPU_IO, gpu::CommandBufferId::FromUnsafeValue(1), 1);
       }
-      resource_pool_->PrepareForExport(resource);
+      bool exported = resource_pool_->PrepareForExport(resource);
+      DCHECK(exported);
       draw_info.SetResource(std::move(resource), false, false, false);
       draw_info.set_resource_ready_for_draw();
     }
@@ -345,7 +350,6 @@ class CC_EXPORT TileManager : CheckerImageTrackerClient {
   void FreeResourcesForTileAndNotifyClientIfTileWasReadyToDraw(Tile* tile);
   scoped_refptr<TileTask> CreateRasterTask(
       const PrioritizedTile& prioritized_tile,
-      const RasterColorSpace& raster_color_space,
       PrioritizedWorkToSchedule* work_to_schedule);
 
   std::unique_ptr<EvictionTilePriorityQueue>
@@ -378,14 +382,12 @@ class CC_EXPORT TileManager : CheckerImageTrackerClient {
 
   void PartitionImagesForCheckering(
       const PrioritizedTile& prioritized_tile,
-      const gfx::ColorSpace& raster_color_space,
       std::vector<DrawImage>* sync_decoded_images,
       std::vector<PaintImage>* checkered_images,
       const gfx::Rect* invalidated_rect,
       base::flat_map<PaintImage::Id, size_t>* image_to_frame_index = nullptr);
   void AddCheckeredImagesToDecodeQueue(
       const PrioritizedTile& prioritized_tile,
-      const gfx::ColorSpace& raster_color_space,
       CheckerImageTracker::DecodeType decode_type,
       CheckerImageTracker::ImageDecodeQueue* image_decode_queue);
 

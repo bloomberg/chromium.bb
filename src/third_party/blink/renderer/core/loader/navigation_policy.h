@@ -39,14 +39,12 @@ class Event;
 struct WebWindowFeatures;
 
 enum NavigationPolicy {
-  kNavigationPolicyIgnore,
   kNavigationPolicyDownload,
   kNavigationPolicyCurrentTab,
   kNavigationPolicyNewBackgroundTab,
   kNavigationPolicyNewForegroundTab,
   kNavigationPolicyNewWindow,
   kNavigationPolicyNewPopup,
-  kNavigationPolicyHandledByClient,
 };
 
 // Returns a NavigationPolicy to use for starting a navigation

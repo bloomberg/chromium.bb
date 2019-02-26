@@ -30,16 +30,19 @@
 <translation id="1871244248791675517">Ins</translation>
 <translation id="1884435127456172652"><ph name="NUMBER" />%</translation>
 <translation id="1901303067676059328">Изабери &amp;све</translation>
+<translation id="1938451708255335766">Да бисте подесили густину приказа прозора, поново покрените апликацију.</translation>
 <translation id="2141853158323869627">{DAYS,plural, =1{1 д}one{# д}few{# д}other{# д}}</translation>
 <translation id="2148716181193084225">Данас</translation>
 <translation id="2168039046890040389">Страница нагоре</translation>
 <translation id="2190355936436201913">(празно)</translation>
+<translation id="2192232475740621500">Користи ниску густину</translation>
 <translation id="219905428774326614">Покретач, све апликације</translation>
 <translation id="2267918077332197517">Блокирај сва обавештења са овог сајта</translation>
 <translation id="2289052229480071835">Додирните циљна поља за додир на екрану.</translation>
 <translation id="2295140143284145483">Анкета</translation>
 <translation id="2297836609126180313"><ph name="QUANTITY" /> TB/s</translation>
 <translation id="24452542372838207">Прошири обавештење</translation>
+<translation id="2445449901874883781">Користи високу густину</translation>
 <translation id="2482878487686419369">Обавештења</translation>
 <translation id="2497284189126895209">Све датотеке</translation>
 <translation id="2515586267016047495">Alt</translation>
@@ -60,6 +63,7 @@
 <translation id="3234408098842461169">Стрелица надоле</translation>
 <translation id="3291688615589870984">{DAYS,plural, =1{1 дан}one{# дан}few{# дана}other{# дана}}</translation>
 <translation id="335581015389089642">Говор</translation>
+<translation id="3479552764303398839">Не сада</translation>
 <translation id="3600566671520689681">{DAYS,plural, =1{Још 1 дан}one{Још # дан}few{Још # дана}other{Још # дана}}</translation>
 <translation id="3618849550573277856">Потражи „<ph name="LOOKUP_STRING" />“</translation>
 <translation id="364720409959344976">Избор директоријума за отпремање</translation>
@@ -99,6 +103,7 @@
 <translation id="5613020302032141669">Стрелица налево</translation>
 <translation id="5754277640426581776">{MINUTES,plural, =1{1 мин}one{# мин}few{# мин}other{# мин}}</translation>
 <translation id="5768079895599174203">{DAYS,plural, =1{1 дан и }one{# дан и }few{# дана и }other{# дана и }}</translation>
+<translation id="5895138241574237353">Покрени поново</translation>
 <translation id="5906667377645263094">{SECONDS,plural, =1{Још 1 секунда}one{Још # секунда}few{Још # секунде}other{Још # секунди}}</translation>
 <translation id="5941711191222866238">Смањи</translation>
 <translation id="5943826764092288734">{HOURS,plural, =1{1 сат}one{# сат}few{# сата}other{# сати}}</translation>

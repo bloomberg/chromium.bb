@@ -250,9 +250,9 @@ void PepperFileIOHost::GotUIThreadStuffForInternalFileSystems(
 
   file_system_host_->GetFileSystemOperationRunner()->OpenFile(
       file_system_url_, platform_file_flags,
-      base::Bind(&DidOpenFile, AsWeakPtr(), task_runner_,
-                 base::Bind(&PepperFileIOHost::DidOpenInternalFile, AsWeakPtr(),
-                            reply_context)));
+      base::BindOnce(&DidOpenFile, AsWeakPtr(), task_runner_,
+                     base::Bind(&PepperFileIOHost::DidOpenInternalFile,
+                                AsWeakPtr(), reply_context)));
 }
 
 void PepperFileIOHost::DidOpenInternalFile(

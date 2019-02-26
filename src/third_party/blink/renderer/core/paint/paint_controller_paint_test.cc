@@ -9,11 +9,14 @@
 #include "third_party/blink/renderer/core/layout/layout_text.h"
 #include "third_party/blink/renderer/core/layout/line/inline_text_box.h"
 #include "third_party/blink/renderer/core/page/focus_controller.h"
+#include "third_party/blink/renderer/core/paint/ng/ng_paint_fragment.h"
 #include "third_party/blink/renderer/core/paint/object_paint_properties.h"
 #include "third_party/blink/renderer/core/paint/paint_layer_painter.h"
 #include "third_party/blink/renderer/platform/graphics/graphics_context.h"
 #include "third_party/blink/renderer/platform/graphics/paint/drawing_display_item.h"
 #include "third_party/blink/renderer/platform/graphics/paint/drawing_recorder.h"
+
+using testing::ElementsAre;
 
 namespace blink {
 
@@ -30,20 +33,21 @@ TEST_P(PaintControllerPaintTest, FullDocumentPaintingWithCaret) {
   Element& div = *ToElement(GetDocument().body()->firstChild());
   InlineTextBox& text_inline_box =
       *ToLayoutText(div.firstChild()->GetLayoutObject())->FirstTextBox();
-  EXPECT_DISPLAY_LIST(
-      RootPaintController().GetDisplayItemList(), 2,
-      TestDisplayItem(ViewBackgroundClient(), kDocumentBackgroundType),
-      TestDisplayItem(text_inline_box, kForegroundType));
+  EXPECT_THAT(RootPaintController().GetDisplayItemList(),
+              ElementsAre(IsSameId(&ViewScrollingBackgroundClient(),
+                                   kDocumentBackgroundType),
+                          IsSameId(&text_inline_box, kForegroundType)));
 
   div.focus();
-  GetDocument().View()->UpdateAllLifecyclePhases();
+  UpdateAllLifecyclePhasesForTest();
 
-  EXPECT_DISPLAY_LIST(
-      RootPaintController().GetDisplayItemList(), 3,
-      TestDisplayItem(ViewBackgroundClient(), kDocumentBackgroundType),
-      TestDisplayItem(text_inline_box, kForegroundType),
-      TestDisplayItem(CaretDisplayItemClientForTesting(),
-                      DisplayItem::kCaret));  // New!
+  EXPECT_THAT(
+      RootPaintController().GetDisplayItemList(),
+      ElementsAre(
+          IsSameId(&ViewScrollingBackgroundClient(), kDocumentBackgroundType),
+          IsSameId(&text_inline_box, kForegroundType),
+          // New!
+          IsSameId(&CaretDisplayItemClientForTesting(), DisplayItem::kCaret)));
 }
 
 TEST_P(PaintControllerPaintTest, InlineRelayout) {
@@ -54,26 +58,37 @@ TEST_P(PaintControllerPaintTest, InlineRelayout) {
   LayoutBlock& div_block =
       *ToLayoutBlock(GetDocument().body()->firstChild()->GetLayoutObject());
   LayoutText& text = *ToLayoutText(div_block.FirstChild());
-  InlineTextBox& first_text_box = *text.FirstTextBox();
+  DisplayItemClient& first_text_box =
+      text.FirstInlineFragment()
+          ? (DisplayItemClient&)*text.FirstInlineFragment()
+          : (DisplayItemClient&)*text.FirstTextBox();
 
-  EXPECT_DISPLAY_LIST(
-      RootPaintController().GetDisplayItemList(), 2,
-      TestDisplayItem(ViewBackgroundClient(), kDocumentBackgroundType),
-      TestDisplayItem(first_text_box, kForegroundType));
+  EXPECT_THAT(RootPaintController().GetDisplayItemList(),
+              ElementsAre(IsSameId(&ViewScrollingBackgroundClient(),
+                                   kDocumentBackgroundType),
+                          IsSameId(&first_text_box, kForegroundType)));
 
-  div.setAttribute(HTMLNames::styleAttr, "width: 10px; height: 200px");
-  GetDocument().View()->UpdateAllLifecyclePhases();
+  div.setAttribute(html_names::kStyleAttr, "width: 10px; height: 200px");
+  UpdateAllLifecyclePhasesForTest();
 
   LayoutText& new_text = *ToLayoutText(div_block.FirstChild());
-  InlineTextBox& new_first_text_box = *new_text.FirstTextBox();
-  InlineTextBox& second_text_box =
-      *new_text.FirstTextBox()->NextForSameLayoutObject();
+  DisplayItemClient& new_first_text_box =
+      new_text.FirstInlineFragment()
+          ? (DisplayItemClient&)*new_text.FirstInlineFragment()
+          : (DisplayItemClient&)*text.FirstTextBox();
+  DisplayItemClient& second_text_box =
+      new_text.FirstInlineFragment()
+          ? (DisplayItemClient&)*NGPaintFragment::
+                TraverseNextForSameLayoutObject::Next(
+                    new_text.FirstInlineFragment())
+          : (DisplayItemClient&)*new_text.FirstTextBox()
+                ->NextForSameLayoutObject();
 
-  EXPECT_DISPLAY_LIST(
-      RootPaintController().GetDisplayItemList(), 3,
-      TestDisplayItem(ViewBackgroundClient(), kDocumentBackgroundType),
-      TestDisplayItem(new_first_text_box, kForegroundType),
-      TestDisplayItem(second_text_box, kForegroundType));
+  EXPECT_THAT(RootPaintController().GetDisplayItemList(),
+              ElementsAre(IsSameId(&ViewScrollingBackgroundClient(),
+                                   kDocumentBackgroundType),
+                          IsSameId(&new_first_text_box, kForegroundType),
+                          IsSameId(&second_text_box, kForegroundType)));
 }
 
 TEST_P(PaintControllerPaintTest, ChunkIdClientCacheFlag) {
@@ -89,29 +104,11 @@ TEST_P(PaintControllerPaintTest, ChunkIdClientCacheFlag) {
   LayoutObject& sub_div = *div.FirstChild();
   LayoutObject& sub_div2 = *sub_div.NextSibling();
 
-  EXPECT_DISPLAY_LIST(
-      RootPaintController().GetDisplayItemList(), 3,
-      TestDisplayItem(ViewBackgroundClient(), kDocumentBackgroundType),
-      TestDisplayItem(sub_div, kBackgroundType),
-      TestDisplayItem(sub_div2, kBackgroundType));
-
-  // Verify that the background does not scroll.
-  const PaintChunk& background_chunk = RootPaintController().PaintChunks()[0];
-  auto* transform = background_chunk.properties.Transform();
-  // TODO(crbug.com/732611): SPv2 invalidations are incorrect if there is
-  // scrolling.
-  if (RuntimeEnabledFeatures::SlimmingPaintV2Enabled())
-    EXPECT_FALSE(transform->ScrollNode());
-  else
-    EXPECT_TRUE(transform->ScrollNode());
-
-  const EffectPaintPropertyNode* effect_node =
-      div.FirstFragment().PaintProperties()->Effect();
-  EXPECT_EQ(0.5f, effect_node->Opacity());
-
-  const PaintChunk& chunk = RootPaintController().PaintChunks()[1];
-  EXPECT_EQ(*div.Layer(), chunk.id.client);
-  EXPECT_EQ(effect_node, chunk.properties.Effect());
+  EXPECT_THAT(RootPaintController().GetDisplayItemList(),
+              ElementsAre(IsSameId(&ViewScrollingBackgroundClient(),
+                                   kDocumentBackgroundType),
+                          IsSameId(&sub_div, kBackgroundType),
+                          IsSameId(&sub_div2, kBackgroundType)));
 
   EXPECT_FALSE(div.Layer()->IsJustCreated());
   // Client used by only paint chunks and non-cachaeable display items but not
@@ -131,10 +128,10 @@ TEST_P(PaintControllerPaintTest, CompositingNoFold) {
   LayoutBlock& div = *ToLayoutBlock(GetLayoutObjectByElementId("div"));
   LayoutObject& sub_div = *div.FirstChild();
 
-  EXPECT_DISPLAY_LIST(
-      RootPaintController().GetDisplayItemList(), 2,
-      TestDisplayItem(ViewBackgroundClient(), kDocumentBackgroundType),
-      TestDisplayItem(sub_div, kBackgroundType));
+  EXPECT_THAT(RootPaintController().GetDisplayItemList(),
+              ElementsAre(IsSameId(&ViewScrollingBackgroundClient(),
+                                   kDocumentBackgroundType),
+                          IsSameId(&sub_div, kBackgroundType)));
 }
 
 TEST_P(PaintControllerPaintTestForSPv2, FrameScrollingContents) {
@@ -151,24 +148,29 @@ TEST_P(PaintControllerPaintTestForSPv2, FrameScrollingContents) {
     <div id='div4' style='top: 9000px; left: 9000px'></div>
   )HTML");
 
-  auto& div1 = *GetLayoutObjectByElementId("div1");
+  const auto& div1 = *GetLayoutObjectByElementId("div1");
+  const auto& div2 = *GetLayoutObjectByElementId("div2");
+  const auto& div3 = *GetLayoutObjectByElementId("div3");
+  const auto& div4 = *GetLayoutObjectByElementId("div4");
 
-  // TODO(crbug.com/792577): Cull rect for frame scrolling contents is too
-  // small?
-  EXPECT_DISPLAY_LIST(RootPaintController().GetDisplayItemList(), 3,
-                      TestDisplayItem(GetLayoutView(), kDocumentBackgroundType),
-                      TestDisplayItem(GetLayoutView(), kScrollHitTestType),
-                      TestDisplayItem(div1, kBackgroundType));
+  EXPECT_THAT(
+      RootPaintController().GetDisplayItemList(),
+      ElementsAre(
+          IsSameId(&GetLayoutView(), kScrollHitTestType),
+          IsSameId(&ViewScrollingBackgroundClient(), kDocumentBackgroundType),
+          IsSameId(&div1, kBackgroundType), IsSameId(&div2, kBackgroundType)));
 
   GetDocument().View()->LayoutViewport()->SetScrollOffset(
       ScrollOffset(5000, 5000), kProgrammaticScroll);
-  GetDocument().View()->UpdateAllLifecyclePhases();
+  UpdateAllLifecyclePhasesForTest();
 
-  // TODO(crbug.com/792577): Cull rect for frame scrolling contents is too
-  // small?
-  EXPECT_DISPLAY_LIST(RootPaintController().GetDisplayItemList(), 2,
-                      TestDisplayItem(GetLayoutView(), kDocumentBackgroundType),
-                      TestDisplayItem(GetLayoutView(), kScrollHitTestType));
+  EXPECT_THAT(
+      RootPaintController().GetDisplayItemList(),
+      ElementsAre(
+          IsSameId(&GetLayoutView(), kScrollHitTestType),
+          IsSameId(&ViewScrollingBackgroundClient(), kDocumentBackgroundType),
+          IsSameId(&div2, kBackgroundType), IsSameId(&div3, kBackgroundType),
+          IsSameId(&div4, kBackgroundType)));
 }
 
 TEST_P(PaintControllerPaintTestForSPv2, BlockScrollingNonLayeredContents) {
@@ -195,23 +197,25 @@ TEST_P(PaintControllerPaintTestForSPv2, BlockScrollingNonLayeredContents) {
   auto& div4 = *GetLayoutObjectByElementId("div4");
 
   // Initial cull rect: (0,0 4200x4200)
-  EXPECT_DISPLAY_LIST(RootPaintController().GetDisplayItemList(), 4,
-                      TestDisplayItem(GetLayoutView(), kDocumentBackgroundType),
-                      TestDisplayItem(container, kScrollHitTestType),
-                      TestDisplayItem(div1, kBackgroundType),
-                      TestDisplayItem(div2, kBackgroundType));
+  EXPECT_THAT(
+      RootPaintController().GetDisplayItemList(),
+      ElementsAre(
+          IsSameId(&ViewScrollingBackgroundClient(), kDocumentBackgroundType),
+          IsSameId(&container, kScrollHitTestType),
+          IsSameId(&div1, kBackgroundType), IsSameId(&div2, kBackgroundType)));
 
   container.GetScrollableArea()->SetScrollOffset(ScrollOffset(5000, 5000),
                                                  kProgrammaticScroll);
-  GetDocument().View()->UpdateAllLifecyclePhases();
+  UpdateAllLifecyclePhasesForTest();
 
   // Cull rect after scroll: (1000,1000 8100x8100)
-  EXPECT_DISPLAY_LIST(RootPaintController().GetDisplayItemList(), 5,
-                      TestDisplayItem(GetLayoutView(), kDocumentBackgroundType),
-                      TestDisplayItem(container, kScrollHitTestType),
-                      TestDisplayItem(div2, kBackgroundType),
-                      TestDisplayItem(div3, kBackgroundType),
-                      TestDisplayItem(div4, kBackgroundType));
+  EXPECT_THAT(
+      RootPaintController().GetDisplayItemList(),
+      ElementsAre(
+          IsSameId(&ViewScrollingBackgroundClient(), kDocumentBackgroundType),
+          IsSameId(&container, kScrollHitTestType),
+          IsSameId(&div2, kBackgroundType), IsSameId(&div3, kBackgroundType),
+          IsSameId(&div4, kBackgroundType)));
 }
 
 TEST_P(PaintControllerPaintTestForSPv2, ScrollHitTestOrder) {
@@ -236,12 +240,17 @@ TEST_P(PaintControllerPaintTestForSPv2, ScrollHitTestOrder) {
   // The container's items should all be after the document's scroll hit test
   // to ensure the container is hit before the document. Similarly, the child's
   // items should all be after the container's scroll hit test.
-  EXPECT_DISPLAY_LIST(RootPaintController().GetDisplayItemList(), 5,
-                      TestDisplayItem(GetLayoutView(), kDocumentBackgroundType),
-                      TestDisplayItem(GetLayoutView(), kScrollHitTestType),
-                      TestDisplayItem(container, kBackgroundType),
-                      TestDisplayItem(container, kScrollHitTestType),
-                      TestDisplayItem(child, kBackgroundType));
+  EXPECT_THAT(
+      RootPaintController().GetDisplayItemList(),
+      ElementsAre(
+          IsSameId(&GetLayoutView(), kScrollHitTestType),
+          IsSameId(&ViewScrollingBackgroundClient(), kDocumentBackgroundType),
+          IsSameId(&container, kBackgroundType),
+          IsSameId(&container, kScrollHitTestType),
+          IsSameId(&container.GetScrollableArea()
+                        ->GetScrollingBackgroundDisplayItemClient(),
+                   kBackgroundType),
+          IsSameId(&child, kBackgroundType)));
 }
 
 TEST_P(PaintControllerPaintTestForSPv2, NonStackingScrollHitTestOrder) {
@@ -276,13 +285,18 @@ TEST_P(PaintControllerPaintTestForSPv2, NonStackingScrollHitTestOrder) {
   // testing should hit positive descendants, the container, and then negative
   // descendants so the ScrollHitTest item should be immediately after the
   // background.
-  EXPECT_DISPLAY_LIST(RootPaintController().GetDisplayItemList(), 6,
-                      TestDisplayItem(GetLayoutView(), kDocumentBackgroundType),
-                      TestDisplayItem(neg_z_child, kBackgroundType),
-                      TestDisplayItem(container, kBackgroundType),
-                      TestDisplayItem(container, kScrollHitTestType),
-                      TestDisplayItem(child, kBackgroundType),
-                      TestDisplayItem(pos_z_child, kBackgroundType));
+  EXPECT_THAT(
+      RootPaintController().GetDisplayItemList(),
+      ElementsAre(
+          IsSameId(&ViewScrollingBackgroundClient(), kDocumentBackgroundType),
+          IsSameId(&neg_z_child, kBackgroundType),
+          IsSameId(&container, kBackgroundType),
+          IsSameId(&container, kScrollHitTestType),
+          IsSameId(&container.GetScrollableArea()
+                        ->GetScrollingBackgroundDisplayItemClient(),
+                   kBackgroundType),
+          IsSameId(&child, kBackgroundType),
+          IsSameId(&pos_z_child, kBackgroundType)));
 }
 
 TEST_P(PaintControllerPaintTestForSPv2, StackingScrollHitTestOrder) {
@@ -315,13 +329,18 @@ TEST_P(PaintControllerPaintTestForSPv2, StackingScrollHitTestOrder) {
   // Both positive and negative z-index descendants are painted after the
   // background. The scroll hit test should be after the background but before
   // the z-index descendants to ensure hit test order is correct.
-  EXPECT_DISPLAY_LIST(RootPaintController().GetDisplayItemList(), 6,
-                      TestDisplayItem(GetLayoutView(), kDocumentBackgroundType),
-                      TestDisplayItem(container, kBackgroundType),
-                      TestDisplayItem(container, kScrollHitTestType),
-                      TestDisplayItem(neg_z_child, kBackgroundType),
-                      TestDisplayItem(child, kBackgroundType),
-                      TestDisplayItem(pos_z_child, kBackgroundType));
+  EXPECT_THAT(
+      RootPaintController().GetDisplayItemList(),
+      ElementsAre(
+          IsSameId(&ViewScrollingBackgroundClient(), kDocumentBackgroundType),
+          IsSameId(&container, kBackgroundType),
+          IsSameId(&container, kScrollHitTestType),
+          IsSameId(&container.GetScrollableArea()
+                        ->GetScrollingBackgroundDisplayItemClient(),
+                   kBackgroundType),
+          IsSameId(&neg_z_child, kBackgroundType),
+          IsSameId(&child, kBackgroundType),
+          IsSameId(&pos_z_child, kBackgroundType)));
 }
 
 TEST_P(PaintControllerPaintTestForSPv2,
@@ -353,12 +372,13 @@ TEST_P(PaintControllerPaintTestForSPv2,
 
   // Even though container does not paint a background, the scroll hit test item
   // should still be between the negative z-index child and the regular child.
-  EXPECT_DISPLAY_LIST(RootPaintController().GetDisplayItemList(), 5,
-                      TestDisplayItem(GetLayoutView(), kDocumentBackgroundType),
-                      TestDisplayItem(neg_z_child, kBackgroundType),
-                      TestDisplayItem(container, kScrollHitTestType),
-                      TestDisplayItem(child, kBackgroundType),
-                      TestDisplayItem(pos_z_child, kBackgroundType));
+  EXPECT_THAT(RootPaintController().GetDisplayItemList(),
+              ElementsAre(IsSameId(&ViewScrollingBackgroundClient(),
+                                   kDocumentBackgroundType),
+                          IsSameId(&neg_z_child, kBackgroundType),
+                          IsSameId(&container, kScrollHitTestType),
+                          IsSameId(&child, kBackgroundType),
+                          IsSameId(&pos_z_child, kBackgroundType)));
 }
 
 }  // namespace blink

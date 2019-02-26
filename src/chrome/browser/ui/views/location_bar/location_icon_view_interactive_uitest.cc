@@ -25,7 +25,8 @@ class LocationIconViewTest : public InProcessBrowserTest {
 };
 
 #if defined(OS_MACOSX)
-// Focusing or input is not completely working on Mac: http://crbug.com/824418
+// TODO(robliao): https://crbug.com/824418  Focusing or input is not completely
+// working on Mac.
 #define MAYBE_HideOnSecondClick DISABLED_HideOnSecondClick
 #else
 #define MAYBE_HideOnSecondClick HideOnSecondClick
@@ -65,7 +66,8 @@ IN_PROC_BROWSER_TEST_F(LocationIconViewTest, MAYBE_HideOnSecondClick) {
 }
 
 #if defined(OS_MACOSX)
-// Widget activation doesn't work on Mac: https://crbug.com/823543
+// TODO(robliao): https://crbug.com/823543  Widget activation doesn't work on
+// Mac.
 #define MAYBE_ActivateFirstInactiveBubbleForAccessibility \
   DISABLED_ActivateFirstInactiveBubbleForAccessibility
 #else

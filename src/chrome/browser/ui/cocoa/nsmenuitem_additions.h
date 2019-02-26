@@ -20,5 +20,6 @@
 // source.
 void SetIsInputSourceDvorakQwertyForTesting(bool is_dvorak_qwerty);
 void SetIsInputSourceCzechForTesting(bool is_czech);
+void SetIsInputSourceAbcAzertyForTesting(bool is_abc_azerty);
 
 #endif  // CHROME_BROWSER_UI_COCOA_NSMENUITEM_ADDITIONS_H_

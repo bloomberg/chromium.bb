@@ -15,6 +15,7 @@
 #include "base/memory/weak_ptr.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/stringprintf.h"
+#include "base/test/metrics/histogram_tester.h"
 #include "base/test/simple_test_clock.h"
 #include "components/cryptauth/fake_cryptauth_gcm_manager.h"
 #include "components/cryptauth/mock_cryptauth_client.h"
@@ -1160,6 +1161,66 @@ TEST_F(CryptAuthDeviceManagerImplTest,
   EXPECT_FALSE(base::ContainsValue(
       synced_device.enabled_software_features(),
       SoftwareFeatureEnumToString(SoftwareFeature::MAGIC_TETHER_HOST)));
+}
+
+TEST_F(CryptAuthDeviceManagerImplTest, MetricsForEnabledAndNotSupported) {
+  ExternalDeviceInfo enabled_not_supported_device;
+  enabled_not_supported_device.set_public_key("new public key");
+  enabled_not_supported_device.add_supported_software_features(
+      SoftwareFeatureEnumToString(SoftwareFeature::BETTER_TOGETHER_HOST));
+  enabled_not_supported_device.add_enabled_software_features(
+      SoftwareFeatureEnumToString(SoftwareFeature::BETTER_TOGETHER_HOST));
+
+  // EASY_UNLOCK_HOST is a special case; it is allowed to not be marked as
+  // supported, but still be set as enabled.
+  enabled_not_supported_device.add_enabled_software_features(
+      SoftwareFeatureEnumToString(SoftwareFeature::EASY_UNLOCK_HOST));
+
+  // These will fail because they are not set as supported.
+  enabled_not_supported_device.add_enabled_software_features(
+      SoftwareFeatureEnumToString(SoftwareFeature::MAGIC_TETHER_HOST));
+  enabled_not_supported_device.add_enabled_software_features(
+      "MyUnknownFeature");
+
+  GetMyDevicesResponse response;
+  response.add_devices()->CopyFrom(enabled_not_supported_device);
+
+  device_manager_->Start();
+  base::HistogramTester histogram_tester;
+  histogram_tester.ExpectTotalCount(
+      "CryptAuth.DeviceSyncSoftwareFeaturesResult", 0);
+  histogram_tester.ExpectTotalCount(
+      "CryptAuth.DeviceSyncSoftwareFeaturesResult.Failures", 0);
+
+  EXPECT_EQ(1u, device_manager_->GetSyncedDevices().size());
+  FireSchedulerForSync(INVOCATION_REASON_PERIODIC);
+  ASSERT_FALSE(success_callback_.is_null());
+  EXPECT_CALL(*this, OnSyncFinishedProxy(
+                         CryptAuthDeviceManager::SyncResult::SUCCESS,
+                         CryptAuthDeviceManager::DeviceChangeResult::CHANGED));
+  success_callback_.Run(response);
+
+  histogram_tester.ExpectTotalCount(
+      "CryptAuth.DeviceSyncSoftwareFeaturesResult", 4);
+  histogram_tester.ExpectBucketCount<bool>(
+      "CryptAuth.DeviceSyncSoftwareFeaturesResult", true, 2);
+  histogram_tester.ExpectBucketCount<bool>(
+      "CryptAuth.DeviceSyncSoftwareFeaturesResult", false, 2);
+
+  histogram_tester.ExpectTotalCount(
+      "CryptAuth.DeviceSyncSoftwareFeaturesResult.Failures", 2);
+  histogram_tester.ExpectBucketCount<cryptauth::SoftwareFeature>(
+      "CryptAuth.DeviceSyncSoftwareFeaturesResult.Failures",
+      cryptauth::SoftwareFeature::BETTER_TOGETHER_HOST, 0);
+  histogram_tester.ExpectBucketCount<cryptauth::SoftwareFeature>(
+      "CryptAuth.DeviceSyncSoftwareFeaturesResult.Failures",
+      cryptauth::SoftwareFeature::EASY_UNLOCK_HOST, 0);
+  histogram_tester.ExpectBucketCount<cryptauth::SoftwareFeature>(
+      "CryptAuth.DeviceSyncSoftwareFeaturesResult.Failures",
+      cryptauth::SoftwareFeature::MAGIC_TETHER_HOST, 1);
+  histogram_tester.ExpectBucketCount<cryptauth::SoftwareFeature>(
+      "CryptAuth.DeviceSyncSoftwareFeaturesResult.Failures",
+      cryptauth::SoftwareFeature::UNKNOWN_FEATURE, 1);
 }
 
 }  // namespace cryptauth

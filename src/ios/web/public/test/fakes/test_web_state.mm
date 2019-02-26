@@ -74,12 +74,6 @@ void TestWebState::SetWebUsageEnabled(bool enabled) {
     SetIsEvicted(true);
 }
 
-bool TestWebState::ShouldSuppressDialogs() const {
-  return false;
-}
-
-void TestWebState::SetShouldSuppressDialogs(bool should_suppress) {}
-
 UIView* TestWebState::GetView() {
   return view_;
 }
@@ -203,6 +197,10 @@ void TestWebState::SetJSInjectionReceiver(
 
 void TestWebState::SetContentIsHTML(bool content_is_html) {
   content_is_html_ = content_is_html;
+}
+
+void TestWebState::SetTitle(const base::string16& title) {
+  title_ = title;
 }
 
 const base::string16& TestWebState::GetTitle() const {

@@ -22,17 +22,17 @@
 namespace blink {
 
 FaceDetector* FaceDetector::Create(ExecutionContext* context,
-                                   const FaceDetectorOptions& options) {
-  return new FaceDetector(context, options);
+                                   const FaceDetectorOptions* options) {
+  return MakeGarbageCollected<FaceDetector>(context, options);
 }
 
 FaceDetector::FaceDetector(ExecutionContext* context,
-                           const FaceDetectorOptions& options)
+                           const FaceDetectorOptions* options)
     : ShapeDetector() {
   auto face_detector_options =
       shape_detection::mojom::blink::FaceDetectorOptions::New();
-  face_detector_options->max_detected_faces = options.maxDetectedFaces();
-  face_detector_options->fast_mode = options.fastMode();
+  face_detector_options->max_detected_faces = options->maxDetectedFaces();
+  face_detector_options->fast_mode = options->fastMode();
 
   shape_detection::mojom::blink::FaceDetectionProviderPtr provider;
   auto request = mojo::MakeRequest(&provider);
@@ -72,19 +72,19 @@ void FaceDetector::OnDetectFaces(
 
   HeapVector<Member<DetectedFace>> detected_faces;
   for (const auto& face : face_detection_results) {
-    HeapVector<Landmark> landmarks;
+    HeapVector<Member<Landmark>> landmarks;
     for (const auto& landmark : face->landmarks) {
-      HeapVector<Point2D> locations;
+      HeapVector<Member<Point2D>> locations;
       for (const auto& location : landmark->locations) {
-        Point2D web_location;
-        web_location.setX(location.x);
-        web_location.setY(location.y);
+        Point2D* web_location = Point2D::Create();
+        web_location->setX(location.x);
+        web_location->setY(location.y);
         locations.push_back(web_location);
       }
 
-      Landmark web_landmark;
-      web_landmark.setLocations(locations);
-      web_landmark.setType(mojo::ConvertTo<String>(landmark->type));
+      Landmark* web_landmark = Landmark::Create();
+      web_landmark->setLocations(locations);
+      web_landmark->setType(mojo::ConvertTo<String>(landmark->type));
       landmarks.push_back(web_landmark);
     }
 

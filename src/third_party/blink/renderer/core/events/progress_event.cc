@@ -25,7 +25,7 @@
 
 #include "third_party/blink/renderer/core/events/progress_event.h"
 
-#include "third_party/blink/renderer/core/event_names.h"
+#include "third_party/blink/renderer/core/event_interface_names.h"
 
 namespace blink {
 
@@ -33,11 +33,11 @@ ProgressEvent::ProgressEvent()
     : length_computable_(false), loaded_(0), total_(0) {}
 
 ProgressEvent::ProgressEvent(const AtomicString& type,
-                             const ProgressEventInit& initializer)
+                             const ProgressEventInit* initializer)
     : Event(type, initializer),
-      length_computable_(initializer.lengthComputable()),
-      loaded_(initializer.loaded()),
-      total_(initializer.total()) {}
+      length_computable_(initializer->lengthComputable()),
+      loaded_(initializer->loaded()),
+      total_(initializer->total()) {}
 
 ProgressEvent::ProgressEvent(const AtomicString& type,
                              bool length_computable,
@@ -49,7 +49,7 @@ ProgressEvent::ProgressEvent(const AtomicString& type,
       total_(total) {}
 
 const AtomicString& ProgressEvent::InterfaceName() const {
-  return EventNames::ProgressEvent;
+  return event_interface_names::kProgressEvent;
 }
 
 void ProgressEvent::Trace(blink::Visitor* visitor) {

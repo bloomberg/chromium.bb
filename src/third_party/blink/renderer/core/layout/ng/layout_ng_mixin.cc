@@ -19,6 +19,7 @@
 #include "third_party/blink/renderer/core/layout/ng/ng_relative_utils.h"
 #include "third_party/blink/renderer/core/paint/ng/ng_block_flow_painter.h"
 #include "third_party/blink/renderer/core/paint/ng/ng_paint_fragment.h"
+#include "third_party/blink/renderer/core/paint/paint_layer.h"
 
 namespace blink {
 
@@ -61,8 +62,23 @@ void LayoutNGMixin<Base>::ResetNGInlineNodeData() {
 template <typename Base>
 const NGPhysicalBoxFragment* LayoutNGMixin<Base>::CurrentFragment() const {
   if (cached_result_)
-    return ToNGPhysicalBoxFragment(cached_result_->PhysicalFragment().get());
+    return ToNGPhysicalBoxFragment(cached_result_->PhysicalFragment());
   return nullptr;
+}
+
+template <typename Base>
+void LayoutNGMixin<Base>::ComputeVisualOverflow(
+    const LayoutRect& previous_visual_overflow_rect,
+    bool recompute_floats) {
+  Base::ComputeVisualOverflow(previous_visual_overflow_rect, recompute_floats);
+  AddVisualOverflowFromChildren();
+
+  if (Base::VisualOverflowRect() != previous_visual_overflow_rect) {
+    if (Base::Layer())
+      Base::Layer()->SetNeedsCompositingInputsUpdate();
+    Base::GetFrameView()->SetIntersectionObservationState(
+        LocalFrameView::kDesired);
+  }
 }
 
 template <typename Base>
@@ -168,22 +184,25 @@ void LayoutNGMixin<Base>::AddOutlineRects(
 
 // Retrieve NGBaseline from the current fragment.
 template <typename Base>
-const NGBaseline* LayoutNGMixin<Base>::FragmentBaseline(
+base::Optional<LayoutUnit> LayoutNGMixin<Base>::FragmentBaseline(
     NGBaselineAlgorithmType type) const {
+  if (Base::ShouldApplyLayoutContainment())
+    return base::nullopt;
+
   if (const NGPhysicalFragment* physical_fragment = CurrentFragment()) {
     FontBaseline baseline_type = Base::StyleRef().GetFontBaseline();
     return ToNGPhysicalBoxFragment(physical_fragment)
         ->Baseline({type, baseline_type});
   }
-  return nullptr;
+  return base::nullopt;
 }
 
 template <typename Base>
 LayoutUnit LayoutNGMixin<Base>::FirstLineBoxBaseline() const {
   if (Base::ChildrenInline()) {
-    if (const NGBaseline* baseline =
+    if (base::Optional<LayoutUnit> offset =
             FragmentBaseline(NGBaselineAlgorithmType::kFirstLine)) {
-      return baseline->offset;
+      return offset.value();
     }
   }
   return Base::FirstLineBoxBaseline();
@@ -193,9 +212,9 @@ template <typename Base>
 LayoutUnit LayoutNGMixin<Base>::InlineBlockBaseline(
     LineDirectionMode line_direction) const {
   if (Base::ChildrenInline()) {
-    if (const NGBaseline* baseline =
+    if (base::Optional<LayoutUnit> offset =
             FragmentBaseline(NGBaselineAlgorithmType::kAtomicInline)) {
-      return baseline->offset;
+      return offset.value();
     }
   }
   return Base::InlineBlockBaseline(line_direction);
@@ -203,19 +222,14 @@ LayoutUnit LayoutNGMixin<Base>::InlineBlockBaseline(
 
 template <typename Base>
 scoped_refptr<NGLayoutResult> LayoutNGMixin<Base>::CachedLayoutResult(
-    const NGConstraintSpace& constraint_space,
-    const NGBreakToken* break_token) const {
+    const NGConstraintSpace& new_space,
+    const NGBreakToken* break_token) {
   if (!RuntimeEnabledFeatures::LayoutNGFragmentCachingEnabled())
     return nullptr;
   if (!cached_result_ || !Base::cached_constraint_space_ || break_token ||
       Base::NeedsLayout())
     return nullptr;
-  if (constraint_space != *Base::cached_constraint_space_)
-    return nullptr;
-  // The checks above should be enough to bail if layout is incomplete, but
-  // let's verify:
-  DCHECK(
-      IsBlockLayoutComplete(*Base::cached_constraint_space_, *cached_result_));
+  const NGConstraintSpace& old_space = *Base::cached_constraint_space_;
   // If we used to contain abspos items, we can't reuse the fragment, because
   // we can't be sure that the list of items hasn't changed (as we bubble them
   // up during layout). In the case of newly-added abspos items to this
@@ -224,7 +238,55 @@ scoped_refptr<NGLayoutResult> LayoutNGMixin<Base>::CachedLayoutResult(
   // TODO(layout-ng): Come up with a better solution for this
   if (cached_result_->OutOfFlowPositionedDescendants().size())
     return nullptr;
-  return cached_result_->CloneWithoutOffset();
+  if (!new_space.MaySkipLayout(old_space))
+    return nullptr;
+
+  // If we have an orthogonal flow root descendant, we don't attempt to cache
+  // our layout result. This is because the initial containing block size may
+  // have changed, having a high likelihood of changing the size of the
+  // orthogonal flow root.
+  if (cached_result_->HasOrthogonalFlowRoots())
+    return nullptr;
+
+  if (!new_space.AreSizesEqual(old_space)) {
+    // We need to descend all the way down into BODY if we're in quirks mode,
+    // since it magically follows the viewport size.
+    if (NGBlockNode(this).IsQuirkyAndFillsViewport())
+      return nullptr;
+
+    // If the available / percentage sizes have changed in a way that may affect
+    // layout, we cannot re-use the previous result.
+    if (SizeMayChange(Base::StyleRef(), new_space, old_space))
+      return nullptr;
+  }
+
+  // Check BFC block offset. Even if they don't match, there're some cases we
+  // can still reuse the fragment.
+  base::Optional<LayoutUnit> bfc_block_offset =
+      cached_result_->BfcBlockOffset();
+  if (new_space.BfcOffset().block_offset !=
+      old_space.BfcOffset().block_offset) {
+    // Earlier floats may affect this box if block offset changes.
+    if (new_space.HasFloats() || old_space.HasFloats())
+      return nullptr;
+
+    // Even for the first fragment, when block fragmentation is enabled, block
+    // offset changes should cause re-layout, since we will fragment at other
+    // locations than before.
+    if (new_space.HasBlockFragmentation() || old_space.HasBlockFragmentation())
+      return nullptr;
+
+    if (bfc_block_offset.has_value()) {
+      bfc_block_offset = bfc_block_offset.value() -
+                         old_space.BfcOffset().block_offset +
+                         new_space.BfcOffset().block_offset;
+    }
+  }
+
+  // The checks above should be enough to bail if layout is incomplete, but
+  // let's verify:
+  DCHECK(IsBlockLayoutComplete(old_space, *cached_result_));
+  return base::AdoptRef(new NGLayoutResult(*cached_result_, bfc_block_offset));
 }
 
 template <typename Base>
@@ -253,6 +315,31 @@ template <typename Base>
 scoped_refptr<const NGLayoutResult>
 LayoutNGMixin<Base>::CachedLayoutResultForTesting() {
   return cached_result_;
+}
+
+template <typename Base>
+bool LayoutNGMixin<Base>::AreCachedLinesValidFor(
+    const NGConstraintSpace& constraint_space) const {
+  if (!Base::cached_constraint_space_)
+    return false;
+  const NGConstraintSpace& cached_constraint_space =
+      *Base::cached_constraint_space_;
+  DCHECK(cached_result_);
+
+  if (constraint_space.AvailableSize().inline_size !=
+      cached_constraint_space.AvailableSize().inline_size)
+    return false;
+
+  // Floats in either cached or new constraint space prevents reusing cached
+  // lines.
+  if (constraint_space.HasFloats() || cached_constraint_space.HasFloats())
+    return false;
+
+  // Propagating OOF needs re-layout.
+  if (!cached_result_->OutOfFlowPositionedDescendants().IsEmpty())
+    return false;
+
+  return true;
 }
 
 template <typename Base>
@@ -381,7 +468,12 @@ void LayoutNGMixin<Base>::DirtyLinesFromChangedChild(
     LayoutObject* child,
     MarkingBehavior marking_behavior) {
   DCHECK_EQ(marking_behavior, kMarkContainerChain);
-  NGPaintFragment::DirtyLinesFromChangedChild(child);
+
+  // We need to dirty line box fragments only if the child is once laid out in
+  // LayoutNG inline formatting context. New objects are handled in
+  // NGInlineNode::MarkLineBoxesDirty().
+  if (child->IsInLayoutNGInlineFormattingContext())
+    NGPaintFragment::DirtyLinesFromChangedChild(child);
 }
 
 template class CORE_TEMPLATE_EXPORT LayoutNGMixin<LayoutTableCaption>;

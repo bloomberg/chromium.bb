@@ -31,25 +31,21 @@
 
 namespace blink {
 
-using namespace HTMLNames;
-
-// ----------------------------
-
 LayoutSearchField::LayoutSearchField(HTMLInputElement* element)
     : LayoutTextControlSingleLine(element) {
-  DCHECK_EQ(element->type(), InputTypeNames::search);
+  DCHECK_EQ(element->type(), input_type_names::kSearch);
 }
 
 LayoutSearchField::~LayoutSearchField() = default;
 
 inline Element* LayoutSearchField::SearchDecorationElement() const {
   return InputElement()->UserAgentShadowRoot()->getElementById(
-      ShadowElementNames::SearchDecoration());
+      shadow_element_names::SearchDecoration());
 }
 
 inline Element* LayoutSearchField::CancelButtonElement() const {
   return InputElement()->UserAgentShadowRoot()->getElementById(
-      ShadowElementNames::ClearButton());
+      shadow_element_names::ClearButton());
 }
 
 LayoutUnit LayoutSearchField::ComputeControlLogicalHeight(

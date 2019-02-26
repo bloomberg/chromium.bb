@@ -298,7 +298,7 @@ class PortTestCase(LoggingTestCase):
         self.assertEqual(port.baseline_search_path()[0], '/tmp/foo')
 
     def test_virtual_test_suites(self):
-        # We test that we can load the real LayoutTests/VirtualTestSuites file properly, so we
+        # We test that we can load the real web_tests/VirtualTestSuites file properly, so we
         # use a real SystemHost(). We don't care what virtual_test_suites() returns as long
         # as it is iterable.
         port = self.make_port(host=SystemHost(), port_name=self.full_port_name)

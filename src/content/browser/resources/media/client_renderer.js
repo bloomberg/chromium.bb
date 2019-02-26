@@ -31,7 +31,9 @@ var ClientRenderer = (function() {
 
     this.selectedPlayerLogIndex = 0;
 
-    this.filterFunction = function() { return true; };
+    this.filterFunction = function() {
+      return true;
+    };
     this.filterText = $('filter-text');
     if (this.filterText)
       this.filterText.onkeyup = this.onTextChange_.bind(this);
@@ -75,8 +77,8 @@ var ClientRenderer = (function() {
     }
   }
 
-  function createSelectableButton(id, groupName, buttonLabel, select_cb,
-                                  isDestructed) {
+  function createSelectableButton(
+      id, groupName, buttonLabel, select_cb, isDestructed) {
     // For CSS styling.
     var radioButton = document.createElement('input');
     radioButton.classList.add(ClientRenderer.Css_.SELECTABLE_BUTTON);
@@ -116,7 +118,7 @@ var ClientRenderer = (function() {
     var file = new Blob([text], {type: 'text/plain'});
     var a = document.createElement('a');
     a.href = URL.createObjectURL(file);
-    a.download = "media-internals.txt";
+    a.download = 'media-internals.txt';
     a.click();
   }
 
@@ -213,8 +215,10 @@ var ClientRenderer = (function() {
       }
       if (key === 'event' && value === 'WEBMEDIAPLAYER_DESTROYED')
         player.destructed = true;
-      if (['url', 'frame_url', 'frame_title', 'audio_codec_name',
-           'video_codec_name', 'width', 'height', 'event'].includes(key)) {
+      if ([
+            'url', 'frame_url', 'frame_title', 'audio_codec_name',
+            'video_codec_name', 'width', 'height', 'event'
+          ].includes(key)) {
         this.redrawPlayerList_(players);
       }
     },
@@ -234,7 +238,7 @@ var ClientRenderer = (function() {
       thead.appendChild(theadRow);
       table.appendChild(thead);
       var tbody = document.createElement('tbody');
-      for (var i=0; i < formats.length; ++i) {
+      for (var i = 0; i < formats.length; ++i) {
         var tr = document.createElement('tr');
         for (var key in formats[i]) {
           var td = document.createElement('td');
@@ -258,13 +262,13 @@ var ClientRenderer = (function() {
       removeChildren(videoTableBodyElement);
 
       for (var component in videoCaptureCapabilities) {
-        var tableRow =  document.createElement('tr');
-        var device = videoCaptureCapabilities[ component ];
+        var tableRow = document.createElement('tr');
+        var device = videoCaptureCapabilities[component];
         for (var i in keys) {
           var value = device[keys[i]];
           var tableCell = document.createElement('td');
           var cellElement;
-          if ((typeof value) == (typeof [])) {
+          if ((typeof value) == (typeof[])) {
             cellElement = this.createVideoCaptureFormatTable(value);
           } else {
             cellElement = document.createTextNode(
@@ -322,8 +326,8 @@ var ClientRenderer = (function() {
 
       var listElement = this.getListElementForAudioComponent_(componentType);
       if (!listElement) {
-        console.error('Failed to find list element for component type: ' +
-            componentType);
+        console.error(
+            'Failed to find list element for component type: ' + componentType);
         return;
       }
 
@@ -331,7 +335,7 @@ var ClientRenderer = (function() {
       for (var id in components) {
         var li = document.createElement('li');
         var buttonCb = this.selectAudioComponent_.bind(
-                this, componentType, id, components[id]);
+            this, componentType, id, components[id]);
         var friendlyName = this.getAudioComponentName_(componentType, id);
         var label = document.createElement('label');
         label.appendChild(document.createTextNode(friendlyName));
@@ -352,7 +356,7 @@ var ClientRenderer = (function() {
 
     selectAudioComponent_: function(componentType, componentId, componentData) {
       document.body.classList.remove(
-         ClientRenderer.Css_.NO_COMPONENTS_SELECTED);
+          ClientRenderer.Css_.NO_COMPONENTS_SELECTED);
 
       this.selectedAudioComponentType = componentType;
       this.selectedAudioComponentId = componentId;
@@ -431,7 +435,7 @@ var ClientRenderer = (function() {
         selectSelectableButton(this.selectedPlayer.id);
       }
 
-      this.saveLogButton.style.display = hasPlayers ? "inline-block" : "none";
+      this.saveLogButton.style.display = hasPlayers ? 'inline-block' : 'none';
     },
 
     selectPlayer_: function(player) {
@@ -473,16 +477,16 @@ var ClientRenderer = (function() {
 
         var timestampCell = row.insertCell(-1);
         timestampCell.classList.add('timestamp');
-        timestampCell.appendChild(document.createTextNode(
-            util.millisecondsToString(event.time)));
+        timestampCell.appendChild(
+            document.createTextNode(util.millisecondsToString(event.time)));
         row.insertCell(-1).appendChild(document.createTextNode(event.key));
         row.insertCell(-1).appendChild(document.createTextNode(event.value));
       }
     },
 
     drawLog_: function() {
-      var toDraw = this.selectedPlayer.allEvents.slice(
-          this.selectedPlayerLogIndex);
+      var toDraw =
+          this.selectedPlayer.allEvents.slice(this.selectedPlayerLogIndex);
       toDraw.forEach(this.appendEventToLog_.bind(this));
       this.selectedPlayerLogIndex = this.selectedPlayer.allEvents.length;
     },
@@ -512,8 +516,8 @@ var ClientRenderer = (function() {
       if (!this.selectedPlayer && !this.selectedAudioCompontentData) {
         return;
       }
-      var properties = this.selectedAudioCompontentData ||
-          this.selectedPlayer.properties;
+      var properties =
+          this.selectedAudioCompontentData || this.selectedPlayer.properties;
       var stringBuffer = [];
 
       for (var key in properties) {
@@ -529,11 +533,13 @@ var ClientRenderer = (function() {
 
     onTextChange_: function(event) {
       var text = this.filterText.value.toLowerCase();
-      var parts = text.split(',').map(function(part) {
-        return part.trim();
-      }).filter(function(part) {
-        return part.trim().length > 0;
-      });
+      var parts = text.split(',')
+                      .map(function(part) {
+                        return part.trim();
+                      })
+                      .filter(function(part) {
+                        return part.trim().length > 0;
+                      });
 
       this.filterFunction = function(text) {
         text = text.toLowerCase();

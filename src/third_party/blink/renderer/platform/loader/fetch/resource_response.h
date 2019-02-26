@@ -172,8 +172,8 @@ class PLATFORM_EXPORT ResourceResponse final {
   const AtomicString& MimeType() const;
   void SetMimeType(const AtomicString&);
 
-  long long ExpectedContentLength() const;
-  void SetExpectedContentLength(long long);
+  int64_t ExpectedContentLength() const;
+  void SetExpectedContentLength(int64_t);
 
   const AtomicString& TextEncodingName() const;
   void SetTextEncodingName(const AtomicString&);
@@ -248,6 +248,9 @@ class PLATFORM_EXPORT ResourceResponse final {
     is_legacy_symantec_cert_ = is_legacy_symantec_cert;
   }
 
+  bool IsLegacyTLSVersion() const { return is_legacy_tls_version_; }
+  void SetIsLegacyTLSVersion(bool value) { is_legacy_tls_version_ = value; }
+
   SecurityStyle GetSecurityStyle() const { return security_style_; }
   void SetSecurityStyle(SecurityStyle security_style) {
     security_style_ = security_style;
@@ -269,8 +272,8 @@ class PLATFORM_EXPORT ResourceResponse final {
                           const Vector<AtomicString>& certificate,
                           const SignedCertificateTimestampList& sct_list);
 
-  long long AppCacheID() const { return app_cache_id_; }
-  void SetAppCacheID(long long id) { app_cache_id_ = id; }
+  int64_t AppCacheID() const { return app_cache_id_; }
+  void SetAppCacheID(int64_t id) { app_cache_id_ = id; }
 
   const KURL& AppCacheManifestURL() const { return app_cache_manifest_url_; }
   void SetAppCacheManifestURL(const KURL& url) {
@@ -302,12 +305,12 @@ class PLATFORM_EXPORT ResourceResponse final {
   }
   bool IsOpaqueResponseFromServiceWorker() const;
   // https://html.spec.whatwg.org/#cors-same-origin
-  bool IsCORSSameOrigin() const {
-    return network::cors::IsCORSSameOriginResponseType(response_type_);
+  bool IsCorsSameOrigin() const {
+    return network::cors::IsCorsSameOriginResponseType(response_type_);
   }
   // https://html.spec.whatwg.org/#cors-cross-origin
-  bool IsCORSCrossOrigin() const {
-    return network::cors::IsCORSCrossOriginResponseType(response_type_);
+  bool IsCorsCrossOrigin() const {
+    return network::cors::IsCorsCrossOriginResponseType(response_type_);
   }
 
   // See ServiceWorkerResponseInfo::url_list_via_service_worker.
@@ -323,7 +326,7 @@ class PLATFORM_EXPORT ResourceResponse final {
   KURL OriginalURLViaServiceWorker() const;
 
   const Vector<char>& MultipartBoundary() const { return multipart_boundary_; }
-  void SetMultipartBoundary(const char* bytes, size_t size) {
+  void SetMultipartBoundary(const char* bytes, uint32_t size) {
     multipart_boundary_.clear();
     multipart_boundary_.Append(bytes, size);
   }
@@ -376,14 +379,14 @@ class PLATFORM_EXPORT ResourceResponse final {
 
   AtomicString ConnectionInfoString() const;
 
-  long long EncodedDataLength() const { return encoded_data_length_; }
-  void SetEncodedDataLength(long long value);
+  int64_t EncodedDataLength() const { return encoded_data_length_; }
+  void SetEncodedDataLength(int64_t value);
 
-  long long EncodedBodyLength() const { return encoded_body_length_; }
-  void SetEncodedBodyLength(long long value);
+  int64_t EncodedBodyLength() const { return encoded_body_length_; }
+  void SetEncodedBodyLength(int64_t value);
 
-  long long DecodedBodyLength() const { return decoded_body_length_; }
-  void SetDecodedBodyLength(long long value);
+  int64_t DecodedBodyLength() const { return decoded_body_length_; }
+  void SetDecodedBodyLength(int64_t value);
 
   // Extra data associated with this response.
   ExtraData* GetExtraData() const { return extra_data_.get(); }
@@ -410,6 +413,12 @@ class PLATFORM_EXPORT ResourceResponse final {
 
   void SetAsyncRevalidationRequested(bool requested) {
     async_revalidation_requested_ = requested;
+  }
+
+  bool NetworkAccessed() const { return network_accessed_; }
+
+  void SetNetworkAccessed(bool network_accessed) {
+    network_accessed_ = network_accessed;
   }
 
   bool IsSignedExchangeInnerResponse() const {
@@ -463,6 +472,10 @@ class PLATFORM_EXPORT ResourceResponse final {
   // is slated for distrust in future.
   bool is_legacy_symantec_cert_ = false;
 
+  // True if the response was sent over TLS 1.0 or 1.1, which are deprecated and
+  // will be removed in the future.
+  bool is_legacy_tls_version_ = false;
+
   // The time at which the resource's certificate expires. Null if there was no
   // certificate.
   base::Time cert_validity_start_;
@@ -487,6 +500,9 @@ class PLATFORM_EXPORT ResourceResponse final {
   // True if this resource is from an inner response of a signed exchange.
   // https://wicg.github.io/webpackage/draft-yasskin-http-origin-signed-responses.html
   bool is_signed_exchange_inner_response_ = false;
+
+  // True if this resource was loaded from the network.
+  bool network_accessed_ = false;
 
   // https://fetch.spec.whatwg.org/#concept-response-type
   network::mojom::FetchResponseType response_type_ =
@@ -520,7 +536,7 @@ class PLATFORM_EXPORT ResourceResponse final {
 
   // The id of the appcache this response was retrieved from, or zero if
   // the response was not retrieved from an appcache.
-  long long app_cache_id_ = 0;
+  int64_t app_cache_id_ = 0;
 
   // The manifest url of the appcache this response was retrieved from, if any.
   // Note: only valid for main resource responses.
@@ -553,14 +569,14 @@ class PLATFORM_EXPORT ResourceResponse final {
       net::HttpResponseInfo::ConnectionInfo::CONNECTION_INFO_UNKNOWN;
 
   // Size of the response in bytes prior to decompression.
-  long long encoded_data_length_ = 0;
+  int64_t encoded_data_length_ = 0;
 
   // Size of the response body in bytes prior to decompression.
-  long long encoded_body_length_ = 0;
+  int64_t encoded_body_length_ = 0;
 
   // Sizes of the response body in bytes after any content-encoding is
   // removed.
-  long long decoded_body_length_ = 0;
+  int64_t decoded_body_length_ = 0;
 
   // ExtraData associated with the response.
   scoped_refptr<ExtraData> extra_data_;

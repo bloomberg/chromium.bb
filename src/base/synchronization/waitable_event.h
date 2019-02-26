@@ -113,6 +113,14 @@ class BASE_EXPORT WaitableEvent {
   HANDLE handle() const { return handle_.Get(); }
 #endif
 
+  // Declares that this WaitableEvent will only ever be used by a thread that is
+  // idle at the bottom of its stack and waiting for work (in particular, it is
+  // not synchronously waiting on this event before resuming ongoing work). This
+  // is useful to avoid telling base-internals that this thread is "blocked"
+  // when it's merely idle and ready to do work. As such, this is only expected
+  // to be used by thread and thread pool impls.
+  void declare_only_used_while_idle() { waiting_is_blocking_ = false; }
+
   // Wait, synchronously, on multiple events.
   //   waitables: an array of WaitableEvent pointers
   //   count: the number of elements in @waitables
@@ -275,6 +283,10 @@ class BASE_EXPORT WaitableEvent {
 
   scoped_refptr<WaitableEventKernel> kernel_;
 #endif
+
+  // Whether a thread invoking Wait() on this WaitableEvent should be considered
+  // blocked as opposed to idle (and potentially replaced if part of a pool).
+  bool waiting_is_blocking_ = true;
 
   DISALLOW_COPY_AND_ASSIGN(WaitableEvent);
 };

@@ -35,6 +35,11 @@ namespace {
 // incur any reallocations as they're expanded to full size.
 const uint32_t kMinimumPayloadBufferSize = 128;
 
+// The maximum number of Mojo handles which can be attached to a serialized
+// user message. Much larger than should ever be necessary, but small enough
+// to not be a problem.
+const uint32_t kMaxMojoHandleAttachments = 1024 * 1024;
+
 // Indicates whether handle serialization failure should be emulated in testing.
 bool g_always_fail_handle_serialization = false;
 
@@ -381,6 +386,9 @@ std::unique_ptr<UserMessageImpl> UserMessageImpl::CreateFromChannelMessage(
   auto* header = static_cast<MessageHeader*>(payload);
   const size_t header_size = header->header_size;
   if (header_size > payload_size)
+    return nullptr;
+
+  if (header->num_dispatchers > kMaxMojoHandleAttachments)
     return nullptr;
 
   void* user_payload = static_cast<uint8_t*>(payload) + header_size;

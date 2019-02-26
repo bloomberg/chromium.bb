@@ -24,7 +24,9 @@
 
 #if defined(OS_FUCHSIA)
 #include <fuchsia/ui/policy/cpp/fidl.h>
+#include <lib/zx/eventpair.h>
 #include "base/fuchsia/component_context.h"
+#include "base/fuchsia/fuchsia_logging.h"
 #endif
 
 #if defined(USE_OZONE)
@@ -108,19 +110,22 @@ ShellPlatformDataAura::ShellPlatformDataAura(const gfx::Size& initial_size) {
   properties.bounds = gfx::Rect(initial_size);
 
 #if defined(OS_FUCHSIA)
-  // When using Scenic Ozone platform we need to supply a ViewOwner request to
-  // the window. This is not necessary when using the headless ozone platform.
+  // When using Scenic Ozone platform we need to supply a view_token to the
+  // window. This is not necessary when using the headless ozone platform.
   if (ui::OzonePlatform::GetInstance()
           ->GetPlatformProperties()
-          .needs_view_owner_request) {
-    // Initialize view_owner_request for the new instance.
-    fidl::InterfaceHandle<fuchsia::ui::viewsv1token::ViewOwner> view_owner;
-    properties.view_owner_request = view_owner.NewRequest();
+          .needs_view_token) {
+    // Create view_token and view_holder_token.
+    zx::eventpair view_holder_token;
+    zx_status_t status = zx::eventpair::create(
+        /*options=*/0, &properties.view_token, &view_holder_token);
+    ZX_CHECK(status == ZX_OK, status) << "zx_eventpair_create";
 
     // Request Presenter to show the view full-screen.
     auto presenter = base::fuchsia::ComponentContext::GetDefault()
                          ->ConnectToService<fuchsia::ui::policy::Presenter>();
-    presenter->Present(std::move(view_owner), nullptr);
+
+    presenter->Present2(std::move(view_holder_token), nullptr);
   }
 #endif
 

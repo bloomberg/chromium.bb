@@ -10,7 +10,7 @@
 #include "base/android/scoped_java_ref.h"
 #include "base/logging.h"
 #include "jni/AndroidNetworkLibrary_jni.h"
-#include "net/dns/dns_protocol.h"
+#include "net/dns/public/dns_protocol.h"
 
 using base::android::AttachCurrentThread;
 using base::android::ConvertJavaStringToUTF8;
@@ -128,8 +128,7 @@ internal::ConfigParsePosixResult GetDnsServers(
   JNIEnv* env = AttachCurrentThread();
   std::vector<std::string> dns_servers_strings;
   base::android::JavaArrayOfByteArrayToStringVector(
-      env, Java_AndroidNetworkLibrary_getDnsServers(env).obj(),
-      &dns_servers_strings);
+      env, Java_AndroidNetworkLibrary_getDnsServers(env), &dns_servers_strings);
   if (dns_servers_strings.size() == 0)
     return internal::CONFIG_PARSE_POSIX_NO_NAMESERVERS;
   if (dns_servers_strings.size() == 1 && dns_servers_strings[0].size() == 1)

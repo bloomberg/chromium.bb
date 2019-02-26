@@ -9,6 +9,7 @@
 #include <set>
 
 #include "base/memory/weak_ptr.h"
+#include "base/version.h"
 #include "components/keyed_service/core/keyed_service.h"
 #include "extensions/browser/lazy_context_task_queue.h"
 #include "extensions/common/extension_id.h"
@@ -36,9 +37,8 @@ class ServiceWorkerTaskQueue : public KeyedService,
 
   bool ShouldEnqueueTask(content::BrowserContext* context,
                          const Extension* extension) override;
-  void AddPendingTaskToDispatchEvent(
-      LazyContextId* context_id,
-      LazyContextTaskQueue::PendingTask task) override;
+  void AddPendingTaskToDispatchEvent(const LazyContextId* context_id,
+                                     PendingTask task) override;
 
   // Performs Service Worker related tasks upon |extension| activation,
   // e.g. registering |extension|'s worker, executing any pending tasks.
@@ -54,11 +54,28 @@ class ServiceWorkerTaskQueue : public KeyedService,
   void DidStopServiceWorkerContext(const ExtensionId& extension_id,
                                    int64_t service_worker_version_id);
 
+  class TestObserver {
+   public:
+    TestObserver() = default;
+    virtual ~TestObserver() = default;
+
+    // Called when an extension with id |extension_id| is going to be activated.
+    // |will_register_service_worker| is true if a Service Worker will be
+    // registered.
+    virtual void OnActivateExtension(const ExtensionId& extension_id,
+                                     bool will_register_service_worker) = 0;
+
+   private:
+    DISALLOW_COPY_AND_ASSIGN(TestObserver);
+  };
+
+  static void SetObserverForTest(TestObserver* observer);
+
  private:
   struct TaskInfo;
 
-  static void DidStartWorkerForPatternOnIO(
-      LazyContextTaskQueue::PendingTask task,
+  static void DidStartWorkerForScopeOnIO(
+      PendingTask task,
       const ExtensionId& extension_id,
       base::WeakPtr<ServiceWorkerTaskQueue> task_queue,
       int64_t version_id,
@@ -66,23 +83,38 @@ class ServiceWorkerTaskQueue : public KeyedService,
       int thread_id);
   static void StartServiceWorkerOnIOToRunTask(
       base::WeakPtr<ServiceWorkerTaskQueue> task_queue_weak,
-      const GURL& pattern,
+      const GURL& scope,
       const ExtensionId& extension_id,
       content::ServiceWorkerContext* service_worker_context,
-      LazyContextTaskQueue::PendingTask task);
+      PendingTask task);
 
-  void RunTaskAfterStartWorker(LazyContextId* context_id,
-                               LazyContextTaskQueue::PendingTask task);
+  void RunTaskAfterStartWorker(const LazyContextId* context_id,
+                               PendingTask task);
 
   void DidRegisterServiceWorker(const ExtensionId& extension_id, bool success);
   void DidUnregisterServiceWorker(const ExtensionId& extension_id,
                                   bool success);
 
-  void DidStartWorkerForPattern(LazyContextTaskQueue::PendingTask task,
-                                const ExtensionId& extension_id,
-                                int64_t version_id,
-                                int process_id,
-                                int thread_id);
+  void DidStartWorkerForScope(PendingTask task,
+                              const ExtensionId& extension_id,
+                              int64_t version_id,
+                              int process_id,
+                              int thread_id);
+
+  // The following three methods retrieve, store, and remove information
+  // about Service Worker registration of SW based background pages:
+  //
+  // Retrieves the last version of the extension, returns invalid version if
+  // there isn't any such extension.
+  base::Version RetrieveRegisteredServiceWorkerVersion(
+      const ExtensionId& extension_id);
+  // Records that the extension with |extension_id| and |version| successfully
+  // registered a Service Worker.
+  void SetRegisteredServiceWorkerInfo(const ExtensionId& extension_id,
+                                      const base::Version& version);
+  // Clears any record of registered Service Worker for the given extension with
+  // |extension_id|.
+  void RemoveRegisteredServiceWorkerInfo(const ExtensionId& extension_id);
 
   // Set of extension ids that hasn't completed Service Worker registration.
   std::set<ExtensionId> pending_registrations_;

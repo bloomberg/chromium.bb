@@ -11,6 +11,7 @@
 #include "base/macros.h"
 #include "chrome/browser/chromeos/settings/stub_cros_settings_provider.h"
 #include "chrome/browser/chromeos/settings/stub_install_attributes.h"
+#include "chromeos/dbus/fake_session_manager_client.h"
 #include "chromeos/settings/cros_settings_provider.h"
 
 class Profile;
@@ -45,7 +46,20 @@ class ScopedCrosSettingsTestHelper {
   std::unique_ptr<FakeOwnerSettingsService> CreateOwnerSettingsService(
       Profile* profile);
 
-  // These methods simply call the according |stub_settings_provider_| method.
+  // Returns the stubbed CrosSettingsProvider - either the one that was
+  // initialized by |CrosSettings::Initialize()| (that is, if the switch
+  // |kStubCrosSettings| is set). Or, if CrosSettings was not initialized with
+  // a stub, this returns a stub that is only swapped into |CrosSettings| once
+  // |ReplaceDeviceSettingsProviderWithStub()| is called.
+  // Note that if you want to test the real DeviceSettingsProvider in your test
+  // (not a stub), you should set the settings using the OwnerSettingsService
+  // which uses the current user's private key to sign the settings.
+  StubCrosSettingsProvider* GetStubbedProvider();
+
+  // These methods simply call the appropriate method on |GetStubbedProvider()|.
+  // So if you use them, you need to make sure that a stubbed provider is used
+  // in your test - either by setting |kStubCrosSettings| switch or by calling
+  // |ReplaceDeviceSettingsProviderWithStub()|.
   void SetTrustedStatus(CrosSettingsProvider::TrustedStatus status);
   void SetCurrentUserIsOwner(bool owner);
   void Set(const std::string& path, const base::Value& in_value);
@@ -67,12 +81,17 @@ class ScopedCrosSettingsTestHelper {
   // device settings service.
   void StoreCachedDeviceSetting(const std::string& path);
 
+  // Sets the underlying DeviceSettingsService session manager to a
+  // FakeSessionManagerClient.
+  void SetFakeSessionManager();
+
   // Get the scoped install attributes to change them as needed for the
   // current test.
   StubInstallAttributes* InstallAttributes();
 
  private:
   // Helpers used to mock out cros settings.
+  FakeSessionManagerClient fake_session_manager_client_;
   std::unique_ptr<ScopedStubInstallAttributes> test_install_attributes_;
   std::unique_ptr<ScopedTestDeviceSettingsService>
       test_device_settings_service_;

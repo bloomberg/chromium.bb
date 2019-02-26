@@ -10,7 +10,7 @@
 #include "third_party/blink/renderer/core/style/computed_style.h"
 
 namespace blink {
-namespace CSSLonghand {
+namespace css_longhand {
 
 const CSSValue* StrokeDasharray::ParseSingleValue(
     CSSParserTokenRange& range,
@@ -18,14 +18,15 @@ const CSSValue* StrokeDasharray::ParseSingleValue(
     const CSSParserLocalContext&) const {
   CSSValueID id = range.Peek().Id();
   if (id == CSSValueNone)
-    return CSSPropertyParserHelpers::ConsumeIdent(range);
+    return css_property_parser_helpers::ConsumeIdent(range);
 
   CSSValueList* dashes = CSSValueList::CreateCommaSeparated();
   do {
-    CSSPrimitiveValue* dash = CSSPropertyParserHelpers::ConsumeLengthOrPercent(
-        range, kSVGAttributeMode, kValueRangeNonNegative);
+    CSSPrimitiveValue* dash =
+        css_property_parser_helpers::ConsumeLengthOrPercent(
+            range, kSVGAttributeMode, kValueRangeNonNegative);
     if (!dash ||
-        (CSSPropertyParserHelpers::ConsumeCommaIncludingWhitespace(range) &&
+        (css_property_parser_helpers::ConsumeCommaIncludingWhitespace(range) &&
          range.AtEnd()))
       return nullptr;
     dashes->Append(*dash);
@@ -43,5 +44,5 @@ const CSSValue* StrokeDasharray::CSSValueFromComputedStyleInternal(
       *svg_style.StrokeDashArray(), style);
 }
 
-}  // namespace CSSLonghand
+}  // namespace css_longhand
 }  // namespace blink

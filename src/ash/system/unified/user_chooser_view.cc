@@ -77,7 +77,7 @@ AddUserButton::AddUserButton(UnifiedSystemTrayController* controller)
   auto* icon = new views::ImageView;
   icon->SetImage(
       gfx::CreateVectorIcon(kSystemMenuNewUserIcon, kUnifiedMenuIconColor));
-  icon->SetTooltipText(
+  icon->set_tooltip_text(
       l10n_util::GetStringUTF16(IDS_ASH_STATUS_TRAY_SIGN_IN_ANOTHER_ACCOUNT));
   AddChildView(icon);
 
@@ -174,7 +174,9 @@ UserItemButton::UserItemButton(int user_index,
     : Button(this),
       user_index_(user_index),
       controller_(controller),
-      capture_icon_(new views::ImageView) {
+      capture_icon_(new views::ImageView),
+      name_(new views::Label),
+      email_(new views::Label) {
   auto* layout = SetLayoutManager(std::make_unique<views::BoxLayout>(
       views::BoxLayout::kHorizontal, gfx::Insets(0, kUnifiedTopShortcutSpacing),
       kUnifiedTopShortcutSpacing));
@@ -193,19 +195,17 @@ UserItemButton::UserItemButton(int user_index,
   const mojom::UserSession* const user_session =
       Shell::Get()->session_controller()->GetUserSession(user_index);
 
-  auto* name = new views::Label(
-      base::UTF8ToUTF16(user_session->user_info->display_name));
-  name->SetEnabledColor(kUnifiedMenuTextColor);
-  name->SetAutoColorReadabilityEnabled(false);
-  name->SetSubpixelRenderingEnabled(false);
-  vertical_labels->AddChildView(name);
+  name_->SetText(base::UTF8ToUTF16(user_session->user_info->display_name));
+  name_->SetEnabledColor(kUnifiedMenuTextColor);
+  name_->SetAutoColorReadabilityEnabled(false);
+  name_->SetSubpixelRenderingEnabled(false);
+  vertical_labels->AddChildView(name_);
 
-  auto* email = new views::Label(
-      base::UTF8ToUTF16(user_session->user_info->display_email));
-  email->SetEnabledColor(kUnifiedMenuSecondaryTextColor);
-  email->SetAutoColorReadabilityEnabled(false);
-  email->SetSubpixelRenderingEnabled(false);
-  vertical_labels->AddChildView(email);
+  email_->SetText(base::UTF8ToUTF16(user_session->user_info->display_email));
+  email_->SetEnabledColor(kUnifiedMenuSecondaryTextColor);
+  email_->SetAutoColorReadabilityEnabled(false);
+  email_->SetSubpixelRenderingEnabled(false);
+  vertical_labels->AddChildView(email_);
 
   AddChildView(vertical_labels);
   layout->SetFlexForView(vertical_labels, 1);
@@ -248,7 +248,17 @@ void UserItemButton::SetCaptureState(mojom::MediaCaptureState capture_state) {
       break;
   }
   if (res_id)
-    capture_icon_->SetTooltipText(l10n_util::GetStringUTF16(res_id));
+    capture_icon_->set_tooltip_text(l10n_util::GetStringUTF16(res_id));
+}
+
+bool UserItemButton::GetTooltipText(const gfx::Point& p,
+                                    base::string16* tooltip) const {
+  // If both of them are full shown, hide the tooltip.
+  if (name_->GetPreferredSize().width() <= name_->width() &&
+      email_->GetPreferredSize().width() <= email_->width()) {
+    return false;
+  }
+  return views::Button::GetTooltipText(p, tooltip);
 }
 
 void UserItemButton::ButtonPressed(views::Button* sender,

@@ -39,11 +39,12 @@ CPWL_Wnd::CreateParams CFFL_ListBox::GetCreateParam() {
   return cp;
 }
 
-std::unique_ptr<CPWL_Wnd> CFFL_ListBox::NewPDFWindow(
-    const CPWL_Wnd::CreateParams& cp) {
-  auto pWnd = pdfium::MakeUnique<CPWL_ListBox>();
+std::unique_ptr<CPWL_Wnd> CFFL_ListBox::NewPWLWindow(
+    const CPWL_Wnd::CreateParams& cp,
+    std::unique_ptr<CPWL_Wnd::PrivateData> pAttachedData) {
+  auto pWnd = pdfium::MakeUnique<CPWL_ListBox>(cp, std::move(pAttachedData));
   pWnd->AttachFFLData(this);
-  pWnd->Create(cp);
+  pWnd->Realize();
   pWnd->SetFillerNotify(m_pFormFillEnv->GetInteractiveFormFiller());
 
   for (int32_t i = 0, sz = m_pWidget->CountOptions(); i < sz; i++)
@@ -143,7 +144,7 @@ void CFFL_ListBox::GetActionData(CPDFSDK_PageView* pPageView,
                                  CPDF_AAction::AActionType type,
                                  CPDFSDK_FieldAction& fa) {
   switch (type) {
-    case CPDF_AAction::Validate:
+    case CPDF_AAction::kValidate:
       if (m_pWidget->GetFieldFlags() & FIELDFLAG_MULTISELECT) {
         fa.sValue = L"";
       } else {
@@ -156,8 +157,8 @@ void CFFL_ListBox::GetActionData(CPDFSDK_PageView* pPageView,
         }
       }
       break;
-    case CPDF_AAction::LoseFocus:
-    case CPDF_AAction::GetFocus:
+    case CPDF_AAction::kLoseFocus:
+    case CPDF_AAction::kGetFocus:
       if (m_pWidget->GetFieldFlags() & FIELDFLAG_MULTISELECT) {
         fa.sValue = L"";
       } else {

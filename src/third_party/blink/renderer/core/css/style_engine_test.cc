@@ -12,6 +12,7 @@
 #include "third_party/blink/renderer/core/css/css_rule_list.h"
 #include "third_party/blink/renderer/core/css/css_style_rule.h"
 #include "third_party/blink/renderer/core/css/css_style_sheet.h"
+#include "third_party/blink/renderer/core/css/css_test_helpers.h"
 #include "third_party/blink/renderer/core/css/parser/css_parser_context.h"
 #include "third_party/blink/renderer/core/css/style_sheet_contents.h"
 #include "third_party/blink/renderer/core/dom/document.h"
@@ -23,6 +24,7 @@
 #include "third_party/blink/renderer/core/frame/frame_test_helpers.h"
 #include "third_party/blink/renderer/core/frame/local_frame_view.h"
 #include "third_party/blink/renderer/core/frame/viewport_data.h"
+#include "third_party/blink/renderer/core/html/html_collection.h"
 #include "third_party/blink/renderer/core/html/html_element.h"
 #include "third_party/blink/renderer/core/html/html_span_element.h"
 #include "third_party/blink/renderer/core/html/html_style_element.h"
@@ -33,6 +35,8 @@
 #include "third_party/blink/renderer/platform/heap/heap.h"
 
 namespace blink {
+
+using namespace css_test_helpers;
 
 class StyleEngineTest : public testing::Test {
  protected:
@@ -51,6 +55,12 @@ class StyleEngineTest : public testing::Test {
   };
   RuleSetInvalidation ScheduleInvalidationsForRules(TreeScope&,
                                                     const String& css_text);
+
+  // A wrapper to add a reason for UpdateAllLifecyclePhases
+  void UpdateAllLifecyclePhases() {
+    GetDocument().View()->UpdateAllLifecyclePhases(
+        DocumentLifecycle::LifecycleUpdateReason::kTest);
+  }
 
  private:
   std::unique_ptr<DummyPageHolder> dummy_page_holder_;
@@ -84,7 +94,7 @@ TEST_F(StyleEngineTest, DocumentDirtyAfterInject) {
   parsed_sheet->ParseString("div {}");
   GetStyleEngine().InjectSheet("", parsed_sheet);
   EXPECT_FALSE(IsDocumentStyleSheetCollectionClean());
-  GetDocument().View()->UpdateAllLifecyclePhases();
+  UpdateAllLifecyclePhases();
   EXPECT_TRUE(IsDocumentStyleSheetCollectionClean());
 }
 
@@ -122,7 +132,7 @@ TEST_F(StyleEngineTest, AnalyzedInject) {
     <div id='t11'>White</div>
     <div></div>
   )HTML");
-  GetDocument().View()->UpdateAllLifecyclePhases();
+  UpdateAllLifecyclePhases();
 
   Element* t1 = GetDocument().getElementById("t1");
   Element* t2 = GetDocument().getElementById("t2");
@@ -151,7 +161,7 @@ TEST_F(StyleEngineTest, AnalyzedInject) {
   StyleSheetKey green_key("green");
   GetStyleEngine().InjectSheet(green_key, green_parsed_sheet,
                                WebDocument::kUserOrigin);
-  GetDocument().View()->UpdateAllLifecyclePhases();
+  UpdateAllLifecyclePhases();
 
   EXPECT_EQ(3u, GetStyleEngine().StyleForElementCount() - initial_count);
 
@@ -177,7 +187,7 @@ TEST_F(StyleEngineTest, AnalyzedInject) {
   StyleSheetKey blue_key("blue");
   GetStyleEngine().InjectSheet(blue_key, blue_parsed_sheet,
                                WebDocument::kUserOrigin);
-  GetDocument().View()->UpdateAllLifecyclePhases();
+  UpdateAllLifecyclePhases();
 
   EXPECT_EQ(6u, GetStyleEngine().StyleForElementCount() - initial_count);
 
@@ -197,7 +207,7 @@ TEST_F(StyleEngineTest, AnalyzedInject) {
       t3->GetComputedStyle()->VisitedDependentColor(GetCSSPropertyColor()));
 
   GetStyleEngine().RemoveInjectedSheet(green_key, WebDocument::kUserOrigin);
-  GetDocument().View()->UpdateAllLifecyclePhases();
+  UpdateAllLifecyclePhases();
   EXPECT_EQ(9u, GetStyleEngine().StyleForElementCount() - initial_count);
   ASSERT_TRUE(t1->GetComputedStyle());
   ASSERT_TRUE(t2->GetComputedStyle());
@@ -213,7 +223,7 @@ TEST_F(StyleEngineTest, AnalyzedInject) {
       t3->GetComputedStyle()->VisitedDependentColor(GetCSSPropertyColor()));
 
   GetStyleEngine().RemoveInjectedSheet(blue_key, WebDocument::kUserOrigin);
-  GetDocument().View()->UpdateAllLifecyclePhases();
+  UpdateAllLifecyclePhases();
   EXPECT_EQ(12u, GetStyleEngine().StyleForElementCount() - initial_count);
   ASSERT_TRUE(t1->GetComputedStyle());
   ASSERT_TRUE(t2->GetComputedStyle());
@@ -258,7 +268,7 @@ TEST_F(StyleEngineTest, AnalyzedInject) {
   StyleSheetKey font_face_key("font_face");
   GetStyleEngine().InjectSheet(font_face_key, font_face_parsed_sheet,
                                WebDocument::kUserOrigin);
-  GetDocument().View()->UpdateAllLifecyclePhases();
+  UpdateAllLifecyclePhases();
 
   // After injecting a more specific font, now there are two and the
   // bold-italic one is selected.
@@ -284,7 +294,7 @@ TEST_F(StyleEngineTest, AnalyzedInject) {
       " font-style: italic;"
       "}");
   GetDocument().body()->AppendChild(style_element);
-  GetDocument().View()->UpdateAllLifecyclePhases();
+  UpdateAllLifecyclePhases();
 
   // Now there are three fonts, but the newest one does not override the older,
   // better matching one.
@@ -301,7 +311,7 @@ TEST_F(StyleEngineTest, AnalyzedInject) {
             FontSelectionRange({ItalicSlopeValue(), ItalicSlopeValue()}));
 
   GetStyleEngine().RemoveInjectedSheet(font_face_key, WebDocument::kUserOrigin);
-  GetDocument().View()->UpdateAllLifecyclePhases();
+  UpdateAllLifecyclePhases();
 
   // After removing the injected style sheet we're left with a bold-normal and
   // a normal-italic font, and the latter is selected by the matching algorithm
@@ -333,7 +343,7 @@ TEST_F(StyleEngineTest, AnalyzedInject) {
   StyleSheetKey keyframes_key("keyframes");
   GetStyleEngine().InjectSheet(keyframes_key, keyframes_parsed_sheet,
                                WebDocument::kUserOrigin);
-  GetDocument().View()->UpdateAllLifecyclePhases();
+  UpdateAllLifecyclePhases();
 
   // After injecting the style sheet, a @keyframes rule named dummy-animation
   // is found with one keyframe.
@@ -347,7 +357,7 @@ TEST_F(StyleEngineTest, AnalyzedInject) {
   style_element->SetInnerHTMLFromString(
       "@keyframes dummy-animation { from {} to {} }");
   GetDocument().body()->AppendChild(style_element);
-  GetDocument().View()->UpdateAllLifecyclePhases();
+  UpdateAllLifecyclePhases();
 
   // Author @keyframes rules take precedence; now there are two keyframes (from
   // and to).
@@ -357,7 +367,7 @@ TEST_F(StyleEngineTest, AnalyzedInject) {
   EXPECT_EQ(2u, keyframes->Keyframes().size());
 
   GetDocument().body()->RemoveChild(style_element);
-  GetDocument().View()->UpdateAllLifecyclePhases();
+  UpdateAllLifecyclePhases();
 
   keyframes = GetStyleEngine().Resolver()->FindKeyframesRule(
       t5, AtomicString("dummy-animation"));
@@ -365,7 +375,7 @@ TEST_F(StyleEngineTest, AnalyzedInject) {
   EXPECT_EQ(1u, keyframes->Keyframes().size());
 
   GetStyleEngine().RemoveInjectedSheet(keyframes_key, WebDocument::kUserOrigin);
-  GetDocument().View()->UpdateAllLifecyclePhases();
+  UpdateAllLifecyclePhases();
 
   // Injected @keyframes rules are no longer available once removed.
   ASSERT_FALSE(GetStyleEngine().Resolver()->FindKeyframesRule(
@@ -396,7 +406,7 @@ TEST_F(StyleEngineTest, AnalyzedInject) {
   GetStyleEngine().InjectSheet(custom_properties_key,
                                custom_properties_parsed_sheet,
                                WebDocument::kUserOrigin);
-  GetDocument().View()->UpdateAllLifecyclePhases();
+  UpdateAllLifecyclePhases();
   ASSERT_TRUE(t6->GetComputedStyle());
   ASSERT_TRUE(t7->GetComputedStyle());
   EXPECT_EQ(MakeRGB(255, 0, 0), t6->GetComputedStyle()->VisitedDependentColor(
@@ -407,7 +417,7 @@ TEST_F(StyleEngineTest, AnalyzedInject) {
 
   GetStyleEngine().RemoveInjectedSheet(custom_properties_key,
                                        WebDocument::kUserOrigin);
-  GetDocument().View()->UpdateAllLifecyclePhases();
+  UpdateAllLifecyclePhases();
   ASSERT_TRUE(t6->GetComputedStyle());
   ASSERT_TRUE(t7->GetComputedStyle());
   EXPECT_EQ(MakeRGB(0, 0, 0), t6->GetComputedStyle()->VisitedDependentColor(
@@ -442,7 +452,7 @@ TEST_F(StyleEngineTest, AnalyzedInject) {
   GetStyleEngine().InjectSheet(media_queries_sheet_key,
                                media_queries_parsed_sheet,
                                WebDocument::kUserOrigin);
-  GetDocument().View()->UpdateAllLifecyclePhases();
+  UpdateAllLifecyclePhases();
   ASSERT_TRUE(t8->GetComputedStyle());
   EXPECT_EQ(MakeRGB(255, 0, 0), t8->GetComputedStyle()->VisitedDependentColor(
                                     GetCSSPropertyColor()));
@@ -460,7 +470,7 @@ TEST_F(StyleEngineTest, AnalyzedInject) {
 
   GetStyleEngine().RemoveInjectedSheet(media_queries_sheet_key,
                                        WebDocument::kUserOrigin);
-  GetDocument().View()->UpdateAllLifecyclePhases();
+  UpdateAllLifecyclePhases();
   ASSERT_TRUE(t8->GetComputedStyle());
   EXPECT_EQ(
       MakeRGB(255, 255, 255),
@@ -491,7 +501,7 @@ TEST_F(StyleEngineTest, AnalyzedInject) {
   StyleSheetKey author_sheet_key("author_sheet");
   GetStyleEngine().InjectSheet(author_sheet_key, parsed_author_sheet,
                                WebDocument::kAuthorOrigin);
-  GetDocument().View()->UpdateAllLifecyclePhases();
+  UpdateAllLifecyclePhases();
   ASSERT_TRUE(t9->GetComputedStyle());
   ASSERT_TRUE(t10->GetComputedStyle());
 
@@ -504,7 +514,7 @@ TEST_F(StyleEngineTest, AnalyzedInject) {
 
   GetStyleEngine().RemoveInjectedSheet(author_sheet_key,
                                        WebDocument::kAuthorOrigin);
-  GetDocument().View()->UpdateAllLifecyclePhases();
+  UpdateAllLifecyclePhases();
   ASSERT_TRUE(t9->GetComputedStyle());
   ASSERT_TRUE(t10->GetComputedStyle());
   EXPECT_EQ(MakeRGB(255, 0, 0), t9->GetComputedStyle()->VisitedDependentColor(
@@ -528,7 +538,7 @@ TEST_F(StyleEngineTest, AnalyzedInject) {
   GetStyleEngine().InjectSheet(removable_red_sheet_key,
                                parsed_removable_red_sheet,
                                WebDocument::kUserOrigin);
-  GetDocument().View()->UpdateAllLifecyclePhases();
+  UpdateAllLifecyclePhases();
   ASSERT_TRUE(t11->GetComputedStyle());
 
   EXPECT_EQ(MakeRGB(255, 0, 0), t11->GetComputedStyle()->VisitedDependentColor(
@@ -542,7 +552,7 @@ TEST_F(StyleEngineTest, AnalyzedInject) {
   GetStyleEngine().InjectSheet(removable_green_sheet_key,
                                parsed_removable_green_sheet,
                                WebDocument::kUserOrigin);
-  GetDocument().View()->UpdateAllLifecyclePhases();
+  UpdateAllLifecyclePhases();
   ASSERT_TRUE(t11->GetComputedStyle());
 
   EXPECT_EQ(MakeRGB(0, 128, 0), t11->GetComputedStyle()->VisitedDependentColor(
@@ -554,7 +564,7 @@ TEST_F(StyleEngineTest, AnalyzedInject) {
   GetStyleEngine().InjectSheet(removable_red_sheet_key,
                                parsed_removable_red_sheet2,
                                WebDocument::kUserOrigin);
-  GetDocument().View()->UpdateAllLifecyclePhases();
+  UpdateAllLifecyclePhases();
   ASSERT_TRUE(t11->GetComputedStyle());
 
   EXPECT_EQ(MakeRGB(255, 0, 0), t11->GetComputedStyle()->VisitedDependentColor(
@@ -562,7 +572,7 @@ TEST_F(StyleEngineTest, AnalyzedInject) {
 
   GetStyleEngine().RemoveInjectedSheet(removable_red_sheet_key,
                                        WebDocument::kAuthorOrigin);
-  GetDocument().View()->UpdateAllLifecyclePhases();
+  UpdateAllLifecyclePhases();
   ASSERT_TRUE(t11->GetComputedStyle());
 
   // Removal works only within the same origin.
@@ -571,7 +581,7 @@ TEST_F(StyleEngineTest, AnalyzedInject) {
 
   GetStyleEngine().RemoveInjectedSheet(removable_red_sheet_key,
                                        WebDocument::kUserOrigin);
-  GetDocument().View()->UpdateAllLifecyclePhases();
+  UpdateAllLifecyclePhases();
   ASSERT_TRUE(t11->GetComputedStyle());
 
   // The last sheet with the given key is removed.
@@ -580,7 +590,7 @@ TEST_F(StyleEngineTest, AnalyzedInject) {
 
   GetStyleEngine().RemoveInjectedSheet(removable_green_sheet_key,
                                        WebDocument::kUserOrigin);
-  GetDocument().View()->UpdateAllLifecyclePhases();
+  UpdateAllLifecyclePhases();
   ASSERT_TRUE(t11->GetComputedStyle());
 
   // Only the last sheet with the given key is removed.
@@ -589,7 +599,7 @@ TEST_F(StyleEngineTest, AnalyzedInject) {
 
   GetStyleEngine().RemoveInjectedSheet(removable_red_sheet_key,
                                        WebDocument::kUserOrigin);
-  GetDocument().View()->UpdateAllLifecyclePhases();
+  UpdateAllLifecyclePhases();
   ASSERT_TRUE(t11->GetComputedStyle());
 
   EXPECT_EQ(
@@ -597,11 +607,44 @@ TEST_F(StyleEngineTest, AnalyzedInject) {
       t11->GetComputedStyle()->VisitedDependentColor(GetCSSPropertyColor()));
 }
 
+TEST_F(StyleEngineTest, InjectedFontFace) {
+  GetDocument().body()->SetInnerHTMLFromString(R"HTML(
+    <style>
+     @font-face {
+      font-family: 'Author';
+      src: url(user);
+     }
+    </style>
+  )HTML");
+  UpdateAllLifecyclePhases();
+
+  FontDescription font_description;
+  FontFaceCache* cache = GetStyleEngine().GetFontSelector()->GetFontFaceCache();
+  EXPECT_TRUE(cache->Get(font_description, "Author"));
+  EXPECT_FALSE(cache->Get(font_description, "User"));
+
+  StyleSheetContents* user_sheet =
+      StyleSheetContents::Create(CSSParserContext::Create(GetDocument()));
+  user_sheet->ParseString(
+      "@font-face {"
+      "  font-family: 'User';"
+      "  src: url(author);"
+      "}");
+
+  StyleSheetKey user_key("user");
+  GetStyleEngine().InjectSheet(user_key, user_sheet, WebDocument::kUserOrigin);
+
+  UpdateAllLifecyclePhases();
+
+  EXPECT_TRUE(cache->Get(font_description, "Author"));
+  EXPECT_TRUE(cache->Get(font_description, "User"));
+}
+
 TEST_F(StyleEngineTest, IgnoreInvalidPropertyValue) {
   GetDocument().body()->SetInnerHTMLFromString(
       "<section><div id='t1'>Red</div></section>"
       "<style id='s1'>div { color: red; } section div#t1 { color:rgb(0");
-  GetDocument().View()->UpdateAllLifecyclePhases();
+  UpdateAllLifecyclePhases();
 
   Element* t1 = GetDocument().getElementById("t1");
   ASSERT_TRUE(t1);
@@ -661,13 +704,13 @@ TEST_F(StyleEngineTest, RuleSetInvalidationTypeSelectors) {
     </i>
   )HTML");
 
-  GetDocument().View()->UpdateAllLifecyclePhases();
+  UpdateAllLifecyclePhases();
 
   unsigned before_count = GetStyleEngine().StyleForElementCount();
   EXPECT_EQ(kRuleSetInvalidationsScheduled,
             ScheduleInvalidationsForRules(GetDocument(),
                                           "span { background: green}"));
-  GetDocument().View()->UpdateAllLifecyclePhases();
+  UpdateAllLifecyclePhases();
   unsigned after_count = GetStyleEngine().StyleForElementCount();
   EXPECT_EQ(1u, after_count - before_count);
 
@@ -675,20 +718,20 @@ TEST_F(StyleEngineTest, RuleSetInvalidationTypeSelectors) {
   EXPECT_EQ(kRuleSetInvalidationsScheduled,
             ScheduleInvalidationsForRules(GetDocument(),
                                           "body div { background: green}"));
-  GetDocument().View()->UpdateAllLifecyclePhases();
+  UpdateAllLifecyclePhases();
   after_count = GetStyleEngine().StyleForElementCount();
   EXPECT_EQ(2u, after_count - before_count);
 
   EXPECT_EQ(kRuleSetInvalidationFullRecalc,
             ScheduleInvalidationsForRules(GetDocument(),
                                           "div * { background: green}"));
-  GetDocument().View()->UpdateAllLifecyclePhases();
+  UpdateAllLifecyclePhases();
 
   before_count = GetStyleEngine().StyleForElementCount();
   EXPECT_EQ(kRuleSetInvalidationsScheduled,
             ScheduleInvalidationsForRules(GetDocument(),
                                           "#i b { background: green}"));
-  GetDocument().View()->UpdateAllLifecyclePhases();
+  UpdateAllLifecyclePhases();
   after_count = GetStyleEngine().StyleForElementCount();
   EXPECT_EQ(1u, after_count - before_count);
 }
@@ -700,13 +743,13 @@ TEST_F(StyleEngineTest, RuleSetInvalidationCustomPseudo) {
     <div></div><div></div><div></div><div></div><div></div><div></div>
   )HTML");
 
-  GetDocument().View()->UpdateAllLifecyclePhases();
+  UpdateAllLifecyclePhases();
 
   unsigned before_count = GetStyleEngine().StyleForElementCount();
   EXPECT_EQ(ScheduleInvalidationsForRules(
                 GetDocument(), "::-webkit-progress-bar { background: green }"),
             kRuleSetInvalidationsScheduled);
-  GetDocument().View()->UpdateAllLifecyclePhases();
+  UpdateAllLifecyclePhases();
   unsigned after_count = GetStyleEngine().StyleForElementCount();
   EXPECT_EQ(3u, after_count - before_count);
 }
@@ -721,13 +764,13 @@ TEST_F(StyleEngineTest, RuleSetInvalidationHost) {
       host->AttachShadowRootInternal(ShadowRootType::kOpen);
 
   shadow_root.SetInnerHTMLFromString("<div></div><div></div><div></div>");
-  GetDocument().View()->UpdateAllLifecyclePhases();
+  UpdateAllLifecyclePhases();
 
   unsigned before_count = GetStyleEngine().StyleForElementCount();
   EXPECT_EQ(ScheduleInvalidationsForRules(
                 shadow_root, ":host(#nohost), #nohost { background: green}"),
             kRuleSetInvalidationsScheduled);
-  GetDocument().View()->UpdateAllLifecyclePhases();
+  UpdateAllLifecyclePhases();
   unsigned after_count = GetStyleEngine().StyleForElementCount();
   EXPECT_EQ(0u, after_count - before_count);
 
@@ -735,7 +778,7 @@ TEST_F(StyleEngineTest, RuleSetInvalidationHost) {
   EXPECT_EQ(ScheduleInvalidationsForRules(shadow_root,
                                           ":host(#host) { background: green}"),
             kRuleSetInvalidationsScheduled);
-  GetDocument().View()->UpdateAllLifecyclePhases();
+  UpdateAllLifecyclePhases();
   after_count = GetStyleEngine().StyleForElementCount();
   EXPECT_EQ(1u, after_count - before_count);
   EXPECT_EQ(ScheduleInvalidationsForRules(shadow_root,
@@ -767,13 +810,13 @@ TEST_F(StyleEngineTest, RuleSetInvalidationSlotted) {
       host->AttachShadowRootInternal(ShadowRootType::kOpen);
 
   shadow_root.SetInnerHTMLFromString("<slot name=other></slot><slot></slot>");
-  GetDocument().View()->UpdateAllLifecyclePhases();
+  UpdateAllLifecyclePhases();
 
   unsigned before_count = GetStyleEngine().StyleForElementCount();
   EXPECT_EQ(ScheduleInvalidationsForRules(
                 shadow_root, "::slotted(.s1) { background: green}"),
             kRuleSetInvalidationsScheduled);
-  GetDocument().View()->UpdateAllLifecyclePhases();
+  UpdateAllLifecyclePhases();
   unsigned after_count = GetStyleEngine().StyleForElementCount();
   EXPECT_EQ(4u, after_count - before_count);
 
@@ -781,7 +824,7 @@ TEST_F(StyleEngineTest, RuleSetInvalidationSlotted) {
   EXPECT_EQ(ScheduleInvalidationsForRules(shadow_root,
                                           "::slotted(*) { background: green}"),
             kRuleSetInvalidationsScheduled);
-  GetDocument().View()->UpdateAllLifecyclePhases();
+  UpdateAllLifecyclePhases();
   after_count = GetStyleEngine().StyleForElementCount();
   EXPECT_EQ(4u, after_count - before_count);
 }
@@ -796,13 +839,13 @@ TEST_F(StyleEngineTest, RuleSetInvalidationHostContext) {
 
   shadow_root.SetInnerHTMLFromString(
       "<div></div><div class=a></div><div></div>");
-  GetDocument().View()->UpdateAllLifecyclePhases();
+  UpdateAllLifecyclePhases();
 
   unsigned before_count = GetStyleEngine().StyleForElementCount();
   EXPECT_EQ(ScheduleInvalidationsForRules(
                 shadow_root, ":host-context(.nomatch) .a { background: green}"),
             kRuleSetInvalidationsScheduled);
-  GetDocument().View()->UpdateAllLifecyclePhases();
+  UpdateAllLifecyclePhases();
   unsigned after_count = GetStyleEngine().StyleForElementCount();
   EXPECT_EQ(1u, after_count - before_count);
 
@@ -824,7 +867,7 @@ TEST_F(StyleEngineTest, RuleSetInvalidationV0BoundaryCrossing) {
 
   shadow_root.SetInnerHTMLFromString(
       "<div></div><div class=a></div><div></div>");
-  GetDocument().View()->UpdateAllLifecyclePhases();
+  UpdateAllLifecyclePhases();
 
   EXPECT_EQ(ScheduleInvalidationsForRules(
                 shadow_root, ".a ::content span { background: green}"),
@@ -843,15 +886,15 @@ TEST_F(StyleEngineTest, HasViewportDependentMediaQueries) {
 
   for (unsigned i = 0; i < 10; i++) {
     GetDocument().body()->RemoveChild(style_element);
-    GetDocument().View()->UpdateAllLifecyclePhases();
+    UpdateAllLifecyclePhases();
     GetDocument().body()->AppendChild(style_element);
-    GetDocument().View()->UpdateAllLifecyclePhases();
+    UpdateAllLifecyclePhases();
   }
 
   EXPECT_TRUE(GetStyleEngine().HasViewportDependentMediaQueries());
 
   GetDocument().body()->RemoveChild(style_element);
-  GetDocument().View()->UpdateAllLifecyclePhases();
+  UpdateAllLifecyclePhases();
 
   EXPECT_FALSE(GetStyleEngine().HasViewportDependentMediaQueries());
 }
@@ -860,7 +903,7 @@ TEST_F(StyleEngineTest, StyleMediaAttributeStyleChange) {
   GetDocument().body()->SetInnerHTMLFromString(
       "<style id='s1' media='(max-width: 1px)'>#t1 { color: green }</style>"
       "<div id='t1'>Green</div><div></div>");
-  GetDocument().View()->UpdateAllLifecyclePhases();
+  UpdateAllLifecyclePhases();
 
   Element* t1 = GetDocument().getElementById("t1");
   ASSERT_TRUE(t1);
@@ -871,8 +914,8 @@ TEST_F(StyleEngineTest, StyleMediaAttributeStyleChange) {
   unsigned before_count = GetStyleEngine().StyleForElementCount();
 
   Element* s1 = GetDocument().getElementById("s1");
-  s1->setAttribute(blink::HTMLNames::mediaAttr, "(max-width: 2000px)");
-  GetDocument().View()->UpdateAllLifecyclePhases();
+  s1->setAttribute(blink::html_names::kMediaAttr, "(max-width: 2000px)");
+  UpdateAllLifecyclePhases();
 
   unsigned after_count = GetStyleEngine().StyleForElementCount();
   EXPECT_EQ(1u, after_count - before_count);
@@ -886,7 +929,7 @@ TEST_F(StyleEngineTest, StyleMediaAttributeNoStyleChange) {
   GetDocument().body()->SetInnerHTMLFromString(
       "<style id='s1' media='(max-width: 1000px)'>#t1 { color: green }</style>"
       "<div id='t1'>Green</div><div></div>");
-  GetDocument().View()->UpdateAllLifecyclePhases();
+  UpdateAllLifecyclePhases();
 
   Element* t1 = GetDocument().getElementById("t1");
   ASSERT_TRUE(t1);
@@ -897,8 +940,8 @@ TEST_F(StyleEngineTest, StyleMediaAttributeNoStyleChange) {
   unsigned before_count = GetStyleEngine().StyleForElementCount();
 
   Element* s1 = GetDocument().getElementById("s1");
-  s1->setAttribute(blink::HTMLNames::mediaAttr, "(max-width: 2000px)");
-  GetDocument().View()->UpdateAllLifecyclePhases();
+  s1->setAttribute(blink::html_names::kMediaAttr, "(max-width: 2000px)");
+  UpdateAllLifecyclePhases();
 
   unsigned after_count = GetStyleEngine().StyleForElementCount();
   EXPECT_EQ(0u, after_count - before_count);
@@ -917,7 +960,7 @@ TEST_F(StyleEngineTest, ModifyStyleRuleMatchedPropertiesCache) {
   GetDocument().body()->SetInnerHTMLFromString(
       "<style id='s1'>#t1 { color: blue }</style>"
       "<div id='t1'>Green</div>");
-  GetDocument().View()->UpdateAllLifecyclePhases();
+  UpdateAllLifecyclePhases();
 
   Element* t1 = GetDocument().getElementById("t1");
   ASSERT_TRUE(t1);
@@ -940,7 +983,7 @@ TEST_F(StyleEngineTest, ModifyStyleRuleMatchedPropertiesCache) {
   // hash value will be the same.
   style_rule->style()->setProperty(&GetDocument(), "color", "red", "",
                                    ASSERT_NO_EXCEPTION);
-  GetDocument().View()->UpdateAllLifecyclePhases();
+  UpdateAllLifecyclePhases();
 
   ASSERT_TRUE(t1->GetComputedStyle());
   EXPECT_EQ(MakeRGB(255, 0, 0), t1->GetComputedStyle()->VisitedDependentColor(
@@ -948,7 +991,7 @@ TEST_F(StyleEngineTest, ModifyStyleRuleMatchedPropertiesCache) {
 
   style_rule->style()->setProperty(&GetDocument(), "color", "green", "",
                                    ASSERT_NO_EXCEPTION);
-  GetDocument().View()->UpdateAllLifecyclePhases();
+  UpdateAllLifecyclePhases();
 
   ASSERT_TRUE(t1->GetComputedStyle());
   EXPECT_EQ(MakeRGB(0, 128, 0), t1->GetComputedStyle()->VisitedDependentColor(
@@ -962,7 +1005,7 @@ TEST_F(StyleEngineTest, VisitedExplicitInheritanceMatchedPropertiesCache) {
     </style>
     <span id="span"><a href></a></span>
   )HTML");
-  GetDocument().View()->UpdateAllLifecyclePhases();
+  UpdateAllLifecyclePhases();
 
   Element* span = GetDocument().getElementById("span");
   const ComputedStyle* style = span->GetComputedStyle();
@@ -974,7 +1017,7 @@ TEST_F(StyleEngineTest, VisitedExplicitInheritanceMatchedPropertiesCache) {
   span->SetInlineStyleProperty(CSSPropertyColor, "blue");
 
   // Should not DCHECK on applying overflow:inherit on cached matched properties
-  GetDocument().View()->UpdateAllLifecyclePhases();
+  UpdateAllLifecyclePhases();
 }
 
 TEST_F(StyleEngineTest, ScheduleInvalidationAfterSubtreeRecalc) {
@@ -987,7 +1030,7 @@ TEST_F(StyleEngineTest, ScheduleInvalidationAfterSubtreeRecalc) {
     <div id='t1'></div>
     <div id='t2'></div>
   )HTML");
-  GetDocument().View()->UpdateAllLifecyclePhases();
+  UpdateAllLifecyclePhases();
 
   Element* t1 = GetDocument().getElementById("t1");
   Element* t2 = GetDocument().getElementById("t2");
@@ -995,12 +1038,12 @@ TEST_F(StyleEngineTest, ScheduleInvalidationAfterSubtreeRecalc) {
   ASSERT_TRUE(t2);
 
   // Sanity test.
-  t1->setAttribute(blink::HTMLNames::classAttr, "t1");
+  t1->setAttribute(blink::html_names::kClassAttr, "t1");
   EXPECT_FALSE(GetDocument().NeedsStyleInvalidation());
   EXPECT_TRUE(GetDocument().ChildNeedsStyleInvalidation());
   EXPECT_TRUE(t1->NeedsStyleInvalidation());
 
-  GetDocument().View()->UpdateAllLifecyclePhases();
+  UpdateAllLifecyclePhases();
 
   // platformColorsChanged() triggers SubtreeStyleChange on document(). If that
   // for some reason should change, this test will start failing and the
@@ -1011,11 +1054,11 @@ TEST_F(StyleEngineTest, ScheduleInvalidationAfterSubtreeRecalc) {
 
   // Check that no invalidations sets are scheduled when the document node is
   // already SubtreeStyleChange.
-  t2->setAttribute(blink::HTMLNames::classAttr, "t2");
+  t2->setAttribute(blink::html_names::kClassAttr, "t2");
   EXPECT_FALSE(GetDocument().NeedsStyleInvalidation());
   EXPECT_FALSE(GetDocument().ChildNeedsStyleInvalidation());
 
-  GetDocument().View()->UpdateAllLifecyclePhases();
+  UpdateAllLifecyclePhases();
   HTMLStyleElement* s2 = ToHTMLStyleElement(GetDocument().getElementById("s2"));
   ASSERT_TRUE(s2);
   s2->setDisabled(true);
@@ -1023,14 +1066,14 @@ TEST_F(StyleEngineTest, ScheduleInvalidationAfterSubtreeRecalc) {
   EXPECT_FALSE(GetDocument().ChildNeedsStyleInvalidation());
   EXPECT_TRUE(GetDocument().NeedsStyleInvalidation());
 
-  GetDocument().View()->UpdateAllLifecyclePhases();
+  UpdateAllLifecyclePhases();
   GetStyleEngine().PlatformColorsChanged();
   s2->setDisabled(false);
   GetStyleEngine().UpdateActiveStyle();
   EXPECT_FALSE(GetDocument().ChildNeedsStyleInvalidation());
   EXPECT_FALSE(GetDocument().NeedsStyleInvalidation());
 
-  GetDocument().View()->UpdateAllLifecyclePhases();
+  UpdateAllLifecyclePhases();
   HTMLStyleElement* s1 = ToHTMLStyleElement(GetDocument().getElementById("s1"));
   ASSERT_TRUE(s1);
   s1->setDisabled(true);
@@ -1040,7 +1083,7 @@ TEST_F(StyleEngineTest, ScheduleInvalidationAfterSubtreeRecalc) {
   EXPECT_TRUE(t1->NeedsStyleInvalidation());
   EXPECT_TRUE(t2->NeedsStyleInvalidation());
 
-  GetDocument().View()->UpdateAllLifecyclePhases();
+  UpdateAllLifecyclePhases();
   GetStyleEngine().PlatformColorsChanged();
   s1->setDisabled(false);
   GetStyleEngine().UpdateActiveStyle();
@@ -1055,7 +1098,7 @@ TEST_F(StyleEngineTest, NoScheduledRuleSetInvalidationsOnNewShadow) {
   Element* host = GetDocument().getElementById("host");
   ASSERT_TRUE(host);
 
-  GetDocument().View()->UpdateAllLifecyclePhases();
+  UpdateAllLifecyclePhases();
   ShadowRoot& shadow_root =
       host->AttachShadowRootInternal(ShadowRootType::kOpen);
 
@@ -1076,7 +1119,7 @@ TEST_F(StyleEngineTest, NoScheduledRuleSetInvalidationsOnNewShadow) {
 TEST_F(StyleEngineTest, EmptyHttpEquivDefaultStyle) {
   GetDocument().body()->SetInnerHTMLFromString(
       "<style>div { color:pink }</style><div id=container></div>");
-  GetDocument().View()->UpdateAllLifecyclePhases();
+  UpdateAllLifecyclePhases();
 
   EXPECT_FALSE(GetStyleEngine().NeedsActiveStyleUpdate());
 
@@ -1120,7 +1163,7 @@ TEST_F(StyleEngineTest, StyleSheetsForStyleSheetList_ShadowRoot) {
   Element* host = GetDocument().getElementById("host");
   ASSERT_TRUE(host);
 
-  GetDocument().View()->UpdateAllLifecyclePhases();
+  UpdateAllLifecyclePhases();
   ShadowRoot& shadow_root =
       host->AttachShadowRootInternal(ShadowRootType::kOpen);
 
@@ -1146,7 +1189,7 @@ TEST_F(StyleEngineTest, StyleSheetsForStyleSheetList_ShadowRoot) {
   EXPECT_FALSE(GetStyleEngine().NeedsActiveStyleUpdate());
 }
 
-class StyleEngineClient : public FrameTestHelpers::TestWebViewClient {
+class StyleEngineClient : public frame_test_helpers::TestWebViewClient {
  public:
   StyleEngineClient() : device_scale_factor_(1.f) {}
   void ConvertWindowToViewport(WebFloatRect* rect) override {
@@ -1167,10 +1210,11 @@ TEST_F(StyleEngineTest, ViewportDescriptionForZoomDSF) {
   StyleEngineClient client;
   client.set_device_scale_factor(1.f);
 
-  FrameTestHelpers::WebViewHelper web_view_helper;
+  frame_test_helpers::WebViewHelper web_view_helper;
   WebViewImpl* web_view_impl =
       web_view_helper.Initialize(nullptr, &client, nullptr, nullptr);
-  web_view_impl->UpdateAllLifecyclePhases();
+  web_view_impl->MainFrameWidget()->UpdateAllLifecyclePhases(
+      WebWidget::LifecycleUpdateReason::kTest);
 
   Document* document =
       ToLocalFrame(web_view_impl->GetPage()->MainFrame())->GetDocument();
@@ -1183,7 +1227,8 @@ TEST_F(StyleEngineTest, ViewportDescriptionForZoomDSF) {
 
   const float device_scale = 3.5f;
   client.set_device_scale_factor(device_scale);
-  web_view_impl->UpdateAllLifecyclePhases();
+  web_view_impl->MainFrameWidget()->UpdateAllLifecyclePhases(
+      WebWidget::LifecycleUpdateReason::kTest);
 
   desc = document->GetViewportData().GetViewportDescription();
   EXPECT_FLOAT_EQ(device_scale * min_width, desc.min_width.GetFloatValue());
@@ -1195,7 +1240,7 @@ TEST_F(StyleEngineTest, ViewportDescriptionForZoomDSF) {
 TEST_F(StyleEngineTest, MediaQueryAffectingValueChanged_StyleElementNoMedia) {
   GetDocument().body()->SetInnerHTMLFromString(
       "<style>div{color:pink}</style>");
-  GetDocument().View()->UpdateAllLifecyclePhases();
+  UpdateAllLifecyclePhases();
   GetStyleEngine().MediaQueryAffectingValueChanged();
   EXPECT_FALSE(GetStyleEngine().NeedsActiveStyleUpdate());
 }
@@ -1204,7 +1249,7 @@ TEST_F(StyleEngineTest,
        MediaQueryAffectingValueChanged_StyleElementMediaNoValue) {
   GetDocument().body()->SetInnerHTMLFromString(
       "<style media>div{color:pink}</style>");
-  GetDocument().View()->UpdateAllLifecyclePhases();
+  UpdateAllLifecyclePhases();
   GetStyleEngine().MediaQueryAffectingValueChanged();
   EXPECT_FALSE(GetStyleEngine().NeedsActiveStyleUpdate());
 }
@@ -1213,7 +1258,7 @@ TEST_F(StyleEngineTest,
        MediaQueryAffectingValueChanged_StyleElementMediaEmpty) {
   GetDocument().body()->SetInnerHTMLFromString(
       "<style media=''>div{color:pink}</style>");
-  GetDocument().View()->UpdateAllLifecyclePhases();
+  UpdateAllLifecyclePhases();
   GetStyleEngine().MediaQueryAffectingValueChanged();
   EXPECT_FALSE(GetStyleEngine().NeedsActiveStyleUpdate());
 }
@@ -1226,7 +1271,7 @@ TEST_F(StyleEngineTest,
        MediaQueryAffectingValueChanged_StyleElementMediaNoValid) {
   GetDocument().body()->SetInnerHTMLFromString(
       "<style media=',,'>div{color:pink}</style>");
-  GetDocument().View()->UpdateAllLifecyclePhases();
+  UpdateAllLifecyclePhases();
   GetStyleEngine().MediaQueryAffectingValueChanged();
   EXPECT_TRUE(GetStyleEngine().NeedsActiveStyleUpdate());
 }
@@ -1234,7 +1279,7 @@ TEST_F(StyleEngineTest,
 TEST_F(StyleEngineTest, MediaQueryAffectingValueChanged_StyleElementMediaAll) {
   GetDocument().body()->SetInnerHTMLFromString(
       "<style media='all'>div{color:pink}</style>");
-  GetDocument().View()->UpdateAllLifecyclePhases();
+  UpdateAllLifecyclePhases();
   GetStyleEngine().MediaQueryAffectingValueChanged();
   EXPECT_TRUE(GetStyleEngine().NeedsActiveStyleUpdate());
 }
@@ -1243,7 +1288,7 @@ TEST_F(StyleEngineTest,
        MediaQueryAffectingValueChanged_StyleElementMediaNotAll) {
   GetDocument().body()->SetInnerHTMLFromString(
       "<style media='not all'>div{color:pink}</style>");
-  GetDocument().View()->UpdateAllLifecyclePhases();
+  UpdateAllLifecyclePhases();
   GetStyleEngine().MediaQueryAffectingValueChanged();
   EXPECT_TRUE(GetStyleEngine().NeedsActiveStyleUpdate());
 }
@@ -1251,7 +1296,7 @@ TEST_F(StyleEngineTest,
 TEST_F(StyleEngineTest, MediaQueryAffectingValueChanged_StyleElementMediaType) {
   GetDocument().body()->SetInnerHTMLFromString(
       "<style media='print'>div{color:pink}</style>");
-  GetDocument().View()->UpdateAllLifecyclePhases();
+  UpdateAllLifecyclePhases();
   GetStyleEngine().MediaQueryAffectingValueChanged();
   EXPECT_TRUE(GetStyleEngine().NeedsActiveStyleUpdate());
 }
@@ -1267,7 +1312,7 @@ TEST_F(StyleEngineTest, EmptyPseudo_RemoveLast) {
     <span></span>
   )HTML");
 
-  GetDocument().View()->UpdateAllLifecyclePhases();
+  UpdateAllLifecyclePhases();
 
   Element* t1 = GetDocument().getElementById("t1");
   t1->firstChild()->remove();
@@ -1289,7 +1334,7 @@ TEST_F(StyleEngineTest, EmptyPseudo_RemoveNotLast) {
     <span></span>
   )HTML");
 
-  GetDocument().View()->UpdateAllLifecyclePhases();
+  UpdateAllLifecyclePhases();
 
   Element* t1 = GetDocument().getElementById("t1");
   t1->firstChild()->remove();
@@ -1311,7 +1356,7 @@ TEST_F(StyleEngineTest, EmptyPseudo_InsertFirst) {
     <span></span>
   )HTML");
 
-  GetDocument().View()->UpdateAllLifecyclePhases();
+  UpdateAllLifecyclePhases();
 
   Element* t1 = GetDocument().getElementById("t1");
   t1->appendChild(Text::Create(GetDocument(), "Text"));
@@ -1333,7 +1378,7 @@ TEST_F(StyleEngineTest, EmptyPseudo_InsertNotFirst) {
     <span></span>
   )HTML");
 
-  GetDocument().View()->UpdateAllLifecyclePhases();
+  UpdateAllLifecyclePhases();
 
   Element* t1 = GetDocument().getElementById("t1");
   t1->appendChild(Text::Create(GetDocument(), "Text"));
@@ -1363,7 +1408,7 @@ TEST_F(StyleEngineTest, EmptyPseudo_ModifyTextData_SingleNode) {
 
   t2->appendChild(Text::Create(GetDocument(), ""));
 
-  GetDocument().View()->UpdateAllLifecyclePhases();
+  UpdateAllLifecyclePhases();
 
   ToText(t1->firstChild())->setData("");
   EXPECT_TRUE(t1->NeedsStyleInvalidation());
@@ -1396,7 +1441,7 @@ TEST_F(StyleEngineTest, EmptyPseudo_ModifyTextData_HasSiblings) {
 
   t2->appendChild(Text::Create(GetDocument(), ""));
 
-  GetDocument().View()->UpdateAllLifecyclePhases();
+  UpdateAllLifecyclePhases();
 
   ToText(t1->firstChild())->setData("");
   EXPECT_FALSE(t1->NeedsStyleInvalidation());
@@ -1419,13 +1464,13 @@ TEST_F(StyleEngineTest, MediaQueriesChangeDefaultFontSize) {
     <body></body>
   )HTML");
 
-  GetDocument().View()->UpdateAllLifecyclePhases();
+  UpdateAllLifecyclePhases();
   EXPECT_EQ(MakeRGB(255, 0, 0),
             GetDocument().body()->GetComputedStyle()->VisitedDependentColor(
                 GetCSSPropertyColor()));
 
   GetDocument().GetSettings()->SetDefaultFontSize(40);
-  GetDocument().View()->UpdateAllLifecyclePhases();
+  UpdateAllLifecyclePhases();
   EXPECT_EQ(MakeRGB(0, 128, 0),
             GetDocument().body()->GetComputedStyle()->VisitedDependentColor(
                 GetCSSPropertyColor()));
@@ -1445,12 +1490,12 @@ TEST_F(StyleEngineTest, ShadowRootStyleRecalcCrash) {
       :nth-child(odd) { color: green }
     </style>
   )HTML");
-  GetDocument().View()->UpdateAllLifecyclePhases();
+  UpdateAllLifecyclePhases();
 
   // This should not cause DCHECK errors on style recalc flags.
   shadow_root.getElementById("span")->remove();
   host->SetInlineStyleProperty(CSSPropertyDisplay, "inline");
-  GetDocument().View()->UpdateAllLifecyclePhases();
+  UpdateAllLifecyclePhases();
 }
 
 TEST_F(StyleEngineTest, GetComputedStyleOutsideFlatTreeCrash) {
@@ -1463,11 +1508,11 @@ TEST_F(StyleEngineTest, GetComputedStyleOutsideFlatTreeCrash) {
   )HTML");
 
   GetDocument().documentElement()->CreateV0ShadowRootForTesting();
-  GetDocument().View()->UpdateAllLifecyclePhases();
+  UpdateAllLifecyclePhases();
   GetDocument().body()->EnsureComputedStyle();
   GetDocument().getElementById("inner")->SetInlineStyleProperty(
       CSSPropertyColor, "blue");
-  GetDocument().View()->UpdateAllLifecyclePhases();
+  UpdateAllLifecyclePhases();
 }
 
 TEST_F(StyleEngineTest, RejectSelectorForPseudoElement) {
@@ -1478,7 +1523,7 @@ TEST_F(StyleEngineTest, RejectSelectorForPseudoElement) {
     </style>
     <div class='not-in-filter'></div>
   )HTML");
-  GetDocument().View()->UpdateAllLifecyclePhases();
+  UpdateAllLifecyclePhases();
 
   StyleEngine& engine = GetStyleEngine();
   engine.SetStatsEnabled(true);
@@ -1509,7 +1554,7 @@ TEST_F(StyleEngineTest, MarkForWhitespaceReattachment) {
   Element* d2 = GetDocument().getElementById("d2");
   Element* d3 = GetDocument().getElementById("d3");
 
-  GetDocument().View()->UpdateAllLifecyclePhases();
+  UpdateAllLifecyclePhases();
 
   d1->firstChild()->remove();
   EXPECT_TRUE(GetStyleEngine().NeedsWhitespaceReattachment(d1));
@@ -1520,7 +1565,7 @@ TEST_F(StyleEngineTest, MarkForWhitespaceReattachment) {
   GetStyleEngine().MarkForWhitespaceReattachment();
   EXPECT_FALSE(GetDocument().ChildNeedsReattachLayoutTree());
 
-  GetDocument().View()->UpdateAllLifecyclePhases();
+  UpdateAllLifecyclePhases();
 
   d2->firstChild()->remove();
   d2->firstChild()->remove();
@@ -1532,7 +1577,7 @@ TEST_F(StyleEngineTest, MarkForWhitespaceReattachment) {
   GetStyleEngine().MarkForWhitespaceReattachment();
   EXPECT_FALSE(GetDocument().ChildNeedsReattachLayoutTree());
 
-  GetDocument().View()->UpdateAllLifecyclePhases();
+  UpdateAllLifecyclePhases();
 
   d3->firstChild()->remove();
   EXPECT_TRUE(GetStyleEngine().NeedsWhitespaceReattachment(d3));
@@ -1551,7 +1596,7 @@ TEST_F(StyleEngineTest, FirstLetterRemoved) {
     <div class=fl id=d2><div><span id=f2>BB</span></div></div>
     <div class=fl id=d3><div><span id=f3>C<!---->C</span></div></div>
   )HTML");
-  GetDocument().View()->UpdateAllLifecyclePhases();
+  UpdateAllLifecyclePhases();
 
   Element* d1 = GetDocument().getElementById("d1");
   Element* d2 = GetDocument().getElementById("d2");
@@ -1569,7 +1614,7 @@ TEST_F(StyleEngineTest, FirstLetterRemoved) {
   EXPECT_TRUE(d1->ChildNeedsStyleRecalc());
   EXPECT_TRUE(fl1->NeedsStyleRecalc());
 
-  GetDocument().View()->UpdateAllLifecyclePhases();
+  UpdateAllLifecyclePhases();
   EXPECT_FALSE(
       ToFirstLetterPseudoElement(d1->GetPseudoElement(kPseudoIdFirstLetter)));
 
@@ -1585,7 +1630,7 @@ TEST_F(StyleEngineTest, FirstLetterRemoved) {
   EXPECT_TRUE(d2->ChildNeedsStyleRecalc());
   EXPECT_TRUE(fl2->NeedsStyleRecalc());
 
-  GetDocument().View()->UpdateAllLifecyclePhases();
+  UpdateAllLifecyclePhases();
   EXPECT_FALSE(
       ToFirstLetterPseudoElement(d2->GetPseudoElement(kPseudoIdFirstLetter)));
 
@@ -1602,11 +1647,73 @@ TEST_F(StyleEngineTest, FirstLetterRemoved) {
   EXPECT_TRUE(d3->ChildNeedsStyleRecalc());
   EXPECT_TRUE(fl3->NeedsStyleRecalc());
 
-  GetDocument().View()->UpdateAllLifecyclePhases();
+  UpdateAllLifecyclePhases();
   fl3 = ToFirstLetterPseudoElement(d3->GetPseudoElement(kPseudoIdFirstLetter));
   EXPECT_TRUE(fl3);
   EXPECT_EQ(f3->lastChild()->GetLayoutObject(),
             fl3->RemainingTextLayoutObject());
+}
+
+TEST_F(StyleEngineTest, InitialDataCreation) {
+  UpdateAllLifecyclePhases();
+
+  // There should be no initial data if nothing is registered.
+  EXPECT_FALSE(GetStyleEngine().MaybeCreateAndGetInitialData());
+
+  // After registering, there should be initial data.
+  RegisterProperty(GetDocument(), "--x", "<length>", "10px", false);
+  auto data1 = GetStyleEngine().MaybeCreateAndGetInitialData();
+  EXPECT_TRUE(data1);
+
+  // After a full recalc, we should have the same initial data.
+  GetDocument().body()->SetInnerHTMLFromString(
+      "<style>* { font-size: 1px; } </style>");
+  EXPECT_TRUE(GetDocument().NeedsStyleRecalc());
+  EXPECT_TRUE(GetDocument().ChildNeedsStyleRecalc());
+  UpdateAllLifecyclePhases();
+  auto data2 = GetStyleEngine().MaybeCreateAndGetInitialData();
+  EXPECT_TRUE(data2);
+  EXPECT_EQ(data1, data2);
+
+  // After registering a new property, initial data should be invalidated,
+  // such that the new initial data is different.
+  RegisterProperty(GetDocument(), "--y", "<color>", "black", false);
+  EXPECT_NE(data1, GetStyleEngine().MaybeCreateAndGetInitialData());
+}
+
+TEST_F(StyleEngineTest, CSSSelectorEmptyWhitespaceOnlyFail) {
+  GetDocument().body()->SetInnerHTMLFromString(R"HTML(
+    <style>.match:empty { background-color: red }</style>
+    <div></div>
+    <div> <span></span></div>
+    <div> <!-- -->X</div>
+    <div></div>
+    <div> <!-- --></div>
+  )HTML");
+  GetDocument().View()->UpdateAllLifecyclePhases(
+      DocumentLifecycle::LifecycleUpdateReason::kTest);
+
+  EXPECT_FALSE(UseCounter::IsCounted(
+      GetDocument(), WebFeature::kCSSSelectorEmptyWhitespaceOnlyFail));
+
+  auto* div_elements = GetDocument().getElementsByTagName("div");
+  ASSERT_TRUE(div_elements);
+  ASSERT_EQ(5u, div_elements->length());
+
+  auto is_counted = [](Element* element) {
+    element->setAttribute(blink::html_names::kClassAttr, "match");
+    element->GetDocument().View()->UpdateAllLifecyclePhases(
+        DocumentLifecycle::LifecycleUpdateReason::kTest);
+    return UseCounter::IsCounted(
+        element->GetDocument(),
+        WebFeature::kCSSSelectorEmptyWhitespaceOnlyFail);
+  };
+
+  EXPECT_FALSE(is_counted(div_elements->item(0)));
+  EXPECT_FALSE(is_counted(div_elements->item(1)));
+  EXPECT_FALSE(is_counted(div_elements->item(2)));
+  EXPECT_FALSE(is_counted(div_elements->item(3)));
+  EXPECT_TRUE(is_counted(div_elements->item(4)));
 }
 
 }  // namespace blink

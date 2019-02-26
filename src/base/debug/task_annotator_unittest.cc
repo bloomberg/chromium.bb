@@ -11,7 +11,6 @@
 #include "base/bind_helpers.h"
 #include "base/callback.h"
 #include "base/macros.h"
-#include "base/message_loop/message_loop.h"
 #include "base/pending_task.h"
 #include "base/run_loop.h"
 #include "base/strings/stringprintf.h"
@@ -134,7 +133,7 @@ class TaskAnnotatorBacktraceIntegrationTest
 
 // Ensure the task backtrace populates correctly.
 TEST_F(TaskAnnotatorBacktraceIntegrationTest, SingleThreadedSimple) {
-  MessageLoop loop;
+  test::ScopedTaskEnvironment scoped_task_environment;
   const Location location0 = FROM_HERE;
   const Location location1 = FROM_HERE;
   const Location location2 = FROM_HERE;
@@ -148,7 +147,7 @@ TEST_F(TaskAnnotatorBacktraceIntegrationTest, SingleThreadedSimple) {
   // last 4 parents are kept).
   OnceClosure task5 = BindOnce(
       &TaskAnnotatorBacktraceIntegrationTest::VerifyTraceAndPost,
-      Unretained(this), loop.task_runner(), location5, FROM_HERE,
+      Unretained(this), ThreadTaskRunnerHandle::Get(), location5, FROM_HERE,
       ExpectedTrace({location4.program_counter(), location3.program_counter(),
                      location2.program_counter(), location1.program_counter()}),
       run_loop.QuitClosure());
@@ -156,31 +155,31 @@ TEST_F(TaskAnnotatorBacktraceIntegrationTest, SingleThreadedSimple) {
   // Task i=4/3/2/1/0 have tasks [0,i) as parents.
   OnceClosure task4 = BindOnce(
       &TaskAnnotatorBacktraceIntegrationTest::VerifyTraceAndPost,
-      Unretained(this), loop.task_runner(), location4, location5,
+      Unretained(this), ThreadTaskRunnerHandle::Get(), location4, location5,
       ExpectedTrace({location3.program_counter(), location2.program_counter(),
                      location1.program_counter(), location0.program_counter()}),
       std::move(task5));
   OnceClosure task3 = BindOnce(
       &TaskAnnotatorBacktraceIntegrationTest::VerifyTraceAndPost,
-      Unretained(this), loop.task_runner(), location3, location4,
+      Unretained(this), ThreadTaskRunnerHandle::Get(), location3, location4,
       ExpectedTrace({location2.program_counter(), location1.program_counter(),
                      location0.program_counter()}),
       std::move(task4));
   OnceClosure task2 = BindOnce(
       &TaskAnnotatorBacktraceIntegrationTest::VerifyTraceAndPost,
-      Unretained(this), loop.task_runner(), location2, location3,
+      Unretained(this), ThreadTaskRunnerHandle::Get(), location2, location3,
       ExpectedTrace({location1.program_counter(), location0.program_counter()}),
       std::move(task3));
-  OnceClosure task1 =
-      BindOnce(&TaskAnnotatorBacktraceIntegrationTest::VerifyTraceAndPost,
-               Unretained(this), loop.task_runner(), location1, location2,
-               ExpectedTrace({location0.program_counter()}), std::move(task2));
+  OnceClosure task1 = BindOnce(
+      &TaskAnnotatorBacktraceIntegrationTest::VerifyTraceAndPost,
+      Unretained(this), ThreadTaskRunnerHandle::Get(), location1, location2,
+      ExpectedTrace({location0.program_counter()}), std::move(task2));
   OnceClosure task0 =
       BindOnce(&TaskAnnotatorBacktraceIntegrationTest::VerifyTraceAndPost,
-               Unretained(this), loop.task_runner(), location0, location1,
-               ExpectedTrace({}), std::move(task1));
+               Unretained(this), ThreadTaskRunnerHandle::Get(), location0,
+               location1, ExpectedTrace({}), std::move(task1));
 
-  loop.task_runner()->PostTask(location0, std::move(task0));
+  ThreadTaskRunnerHandle::Get()->PostTask(location0, std::move(task0));
 
   run_loop.Run();
 }
@@ -189,7 +188,7 @@ TEST_F(TaskAnnotatorBacktraceIntegrationTest, SingleThreadedSimple) {
 TEST_F(TaskAnnotatorBacktraceIntegrationTest, MultipleThreads) {
   test::ScopedTaskEnvironment scoped_task_environment;
 
-  // Use diverse task runners (a MessageLoop on the main thread, a TaskScheduler
+  // Use diverse task runners (a task environment main thread, a TaskScheduler
   // based SequencedTaskRunner, and a TaskScheduler based
   // SingleThreadTaskRunner) to verify that TaskAnnotator can capture backtraces
   // for PostTasks back-and-forth between these.
@@ -278,7 +277,7 @@ TEST_F(TaskAnnotatorBacktraceIntegrationTest, MultipleThreads) {
 
 // Ensure nesting doesn't break the chain.
 TEST_F(TaskAnnotatorBacktraceIntegrationTest, SingleThreadedNested) {
-  MessageLoop loop;
+  test::ScopedTaskEnvironment scoped_task_environment;
   const Location location0 = FROM_HERE;
   const Location location1 = FROM_HERE;
   const Location location2 = FROM_HERE;
@@ -315,19 +314,19 @@ TEST_F(TaskAnnotatorBacktraceIntegrationTest, SingleThreadedNested) {
   // 4.
   OnceClosure task5 = BindOnce(
       &TaskAnnotatorBacktraceIntegrationTest::VerifyTraceAndPost,
-      Unretained(this), loop.task_runner(), location5, FROM_HERE,
+      Unretained(this), ThreadTaskRunnerHandle::Get(), location5, FROM_HERE,
       ExpectedTrace({location4.program_counter(), location3.program_counter(),
                      location2.program_counter(), location1.program_counter()}),
       run_loop.QuitClosure());
   OnceClosure task4 = BindOnce(
       &TaskAnnotatorBacktraceIntegrationTest::VerifyTraceAndPost,
-      Unretained(this), loop.task_runner(), location4, location5,
+      Unretained(this), ThreadTaskRunnerHandle::Get(), location4, location5,
       ExpectedTrace({location3.program_counter(), location2.program_counter(),
                      location1.program_counter(), location0.program_counter()}),
       std::move(task5));
   OnceClosure task3 = BindOnce(
       &TaskAnnotatorBacktraceIntegrationTest::VerifyTraceAndPost,
-      Unretained(this), loop.task_runner(), location3, location4,
+      Unretained(this), ThreadTaskRunnerHandle::Get(), location3, location4,
       ExpectedTrace({location2.program_counter(), location1.program_counter(),
                      location0.program_counter()}),
       std::move(task4));
@@ -338,7 +337,7 @@ TEST_F(TaskAnnotatorBacktraceIntegrationTest, SingleThreadedNested) {
 
   OnceClosure task2 = BindOnce(
       &TaskAnnotatorBacktraceIntegrationTest::VerifyTraceAndPost,
-      Unretained(this), loop.task_runner(), location2, location3,
+      Unretained(this), ThreadTaskRunnerHandle::Get(), location2, location3,
       ExpectedTrace({location1.program_counter(), location0.program_counter()}),
       std::move(run_task_3_then_quit_nested_loop1));
 
@@ -357,11 +356,11 @@ TEST_F(TaskAnnotatorBacktraceIntegrationTest, SingleThreadedNested) {
 
   OnceClosure task0 =
       BindOnce(&TaskAnnotatorBacktraceIntegrationTest::VerifyTraceAndPost,
-               Unretained(this), loop.task_runner(), location0, location1,
-               ExpectedTrace({}), std::move(task1));
+               Unretained(this), ThreadTaskRunnerHandle::Get(), location0,
+               location1, ExpectedTrace({}), std::move(task1));
 
-  loop.task_runner()->PostTask(location0, std::move(task0));
-  loop.task_runner()->PostTask(
+  ThreadTaskRunnerHandle::Get()->PostTask(location0, std::move(task0));
+  ThreadTaskRunnerHandle::Get()->PostTask(
       FROM_HERE, BindOnce(&RunLoop::Run, Unretained(&nested_run_loop1)));
 
   run_loop.Run();

@@ -4,22 +4,17 @@
 
 #include <memory>
 
-#include "base/callback.h"
+#include "base/bind.h"
 #include "base/files/file_path.h"
-#include "base/path_service.h"
 #include "base/run_loop.h"
+#include "base/test/scoped_task_environment.h"
 #include "build/build_config.h"
 #include "media/cdm/default_cdm_factory.h"
 #include "media/media_buildflags.h"
 #include "media/mojo/interfaces/constants.mojom.h"
 #include "media/mojo/services/cdm_service.h"
 #include "media/mojo/services/media_interface_provider.h"
-#include "mojo/public/cpp/bindings/binding_set.h"
-#include "mojo/public/cpp/system/platform_handle.h"
-#include "services/service_manager/public/cpp/binder_registry.h"
-#include "services/service_manager/public/cpp/service_context.h"
-#include "services/service_manager/public/cpp/service_test.h"
-#include "services/service_manager/public/mojom/service_factory.mojom.h"
+#include "services/service_manager/public/cpp/test/test_connector_factory.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "url/gurl.h"
@@ -59,90 +54,32 @@ class MockCdmServiceClient : public media::CdmService::Client {
 #endif  // BUILDFLAG(ENABLE_CDM_HOST_VERIFICATION)
 };
 
-class ServiceTestClient : public service_manager::test::ServiceTestClient,
-                          public service_manager::mojom::ServiceFactory {
+class CdmServiceTest : public testing::Test {
  public:
-  explicit ServiceTestClient(service_manager::test::ServiceTest* test)
-      : service_manager::test::ServiceTestClient(test) {
-    registry_.AddInterface<service_manager::mojom::ServiceFactory>(
-        base::BindRepeating(&ServiceTestClient::Create,
-                            base::Unretained(this)));
-  }
-  ~ServiceTestClient() override {}
+  CdmServiceTest() : connector_(test_connector_factory_.CreateConnector()) {}
+  ~CdmServiceTest() override = default;
 
-  // service_manager::Service implementation.
-  void OnBindInterface(const service_manager::BindSourceInfo& source_info,
-                       const std::string& interface_name,
-                       mojo::ScopedMessagePipeHandle interface_pipe) override {
-    registry_.BindInterface(interface_name, std::move(interface_pipe));
-  }
-
-  // service_manager::mojom::ServiceFactory implementation.
-  void CreateService(
-      service_manager::mojom::ServiceRequest request,
-      const std::string& name,
-      service_manager::mojom::PIDReceiverPtr pid_receiver) override {
-    if (name != mojom::kCdmServiceName)
-      return;
-
-    auto mock_cdm_service_client = std::make_unique<MockCdmServiceClient>();
-    mock_cdm_service_client_ = mock_cdm_service_client.get();
-
-    auto cdm_service =
-        std::make_unique<CdmService>(std::move(mock_cdm_service_client));
-    cdm_service_ = cdm_service.get();
-
-    cdm_service_->SetServiceReleaseDelayForTesting(service_release_delay_);
-
-    service_context_ = std::make_unique<service_manager::ServiceContext>(
-        std::move(cdm_service), std::move(request));
-    service_context_->SetQuitClosure(base::BindRepeating(
-        &ServiceTestClient::DestroyService, base::Unretained(this)));
-  }
-
-  void SetServiceReleaseDelay(base::TimeDelta delay) {
-    service_release_delay_ = delay;
-  }
-
-  void DestroyService() { service_context_.reset(); }
-
-  MockCdmServiceClient* mock_cdm_service_client() {
-    return mock_cdm_service_client_;
-  }
-
-  CdmService* cdm_service() { return cdm_service_; }
-
- private:
-  void Create(service_manager::mojom::ServiceFactoryRequest request) {
-    service_factory_bindings_.AddBinding(this, std::move(request));
-  }
-
-  // Delayed service release involves a posted delayed task which will not
-  // block *.RunUntilIdle() and hence cause a memory leak in the test. So by
-  // default use a zero value delay to disable the delay.
-  base::TimeDelta service_release_delay_;
-
-  service_manager::BinderRegistry registry_;
-  mojo::BindingSet<service_manager::mojom::ServiceFactory>
-      service_factory_bindings_;
-  std::unique_ptr<service_manager::ServiceContext> service_context_;
-  CdmService* cdm_service_ = nullptr;
-  MockCdmServiceClient* mock_cdm_service_client_ = nullptr;
-};
-
-class CdmServiceTest : public service_manager::test::ServiceTest {
- public:
-  CdmServiceTest() : ServiceTest("cdm_service_unittest") {}
-  ~CdmServiceTest() override {}
+  service_manager::Connector* connector() const { return connector_.get(); }
 
   MOCK_METHOD0(CdmServiceConnectionClosed, void());
   MOCK_METHOD0(CdmFactoryConnectionClosed, void());
   MOCK_METHOD0(CdmConnectionClosed, void());
 
   void Initialize() {
+    auto mock_cdm_service_client = std::make_unique<MockCdmServiceClient>();
+    mock_cdm_service_client_ = mock_cdm_service_client.get();
+
+    service_ =
+        std::make_unique<CdmService>(std::move(mock_cdm_service_client),
+                                     test_connector_factory_.RegisterInstance(
+                                         media::mojom::kCdmServiceName));
+    service_->SetServiceReleaseDelayForTesting(service_release_delay_);
+    service_->set_termination_closure(base::BindOnce(
+        &CdmServiceTest::DestroyService, base::Unretained(this)));
+
     connector()->BindInterface(media::mojom::kCdmServiceName,
                                &cdm_service_ptr_);
-    cdm_service_ptr_.set_connection_error_handler(base::BindRepeating(
+    cdm_service_ptr_.set_connection_error_handler(base::BindOnce(
         &CdmServiceTest::CdmServiceConnectionClosed, base::Unretained(this)));
 
     service_manager::mojom::InterfaceProviderPtr interfaces;
@@ -154,12 +91,12 @@ class CdmServiceTest : public service_manager::test::ServiceTest {
                                        std::move(interfaces));
     cdm_service_ptr_.FlushForTesting();
     ASSERT_TRUE(cdm_factory_ptr_);
-    cdm_factory_ptr_.set_connection_error_handler(base::BindRepeating(
+    cdm_factory_ptr_.set_connection_error_handler(base::BindOnce(
         &CdmServiceTest::CdmFactoryConnectionClosed, base::Unretained(this)));
   }
 
   void InitializeWithServiceReleaseDelay(base::TimeDelta delay) {
-    service_test_client_->SetServiceReleaseDelay(delay);
+    service_release_delay_ = delay;
     Initialize();
   }
 
@@ -171,30 +108,42 @@ class CdmServiceTest : public service_manager::test::ServiceTest {
   void InitializeCdm(const std::string& key_system, bool expected_result) {
     base::RunLoop run_loop;
     cdm_factory_ptr_->CreateCdm(key_system, mojo::MakeRequest(&cdm_ptr_));
-    cdm_ptr_.set_connection_error_handler(base::BindRepeating(
+    cdm_ptr_.set_connection_error_handler(base::BindOnce(
         &CdmServiceTest::CdmConnectionClosed, base::Unretained(this)));
     EXPECT_CALL(*this, OnCdmInitialized(MatchesResult(expected_result), _, _))
         .WillOnce(InvokeWithoutArgs(&run_loop, &base::RunLoop::Quit));
     cdm_ptr_->Initialize(key_system, url::Origin::Create(GURL(kSecurityOrigin)),
                          CdmConfig(),
-                         base::BindRepeating(&CdmServiceTest::OnCdmInitialized,
-                                             base::Unretained(this)));
+                         base::BindOnce(&CdmServiceTest::OnCdmInitialized,
+                                        base::Unretained(this)));
     run_loop.Run();
   }
 
-  // service_manager::test::ServiceTest implementation.
-  std::unique_ptr<service_manager::Service> CreateService() override {
-    auto service_test_client = std::make_unique<ServiceTestClient>(this);
-    service_test_client_ = service_test_client.get();
-    return service_test_client;
+  void DestroyService() { service_.reset(); }
+
+  MockCdmServiceClient* mock_cdm_service_client() {
+    return mock_cdm_service_client_;
   }
 
+  CdmService* cdm_service() { return service_.get(); }
+
+  base::test::ScopedTaskEnvironment task_environment_;
   mojom::CdmServicePtr cdm_service_ptr_;
   mojom::CdmFactoryPtr cdm_factory_ptr_;
   mojom::ContentDecryptionModulePtr cdm_ptr_;
-  ServiceTestClient* service_test_client_;
 
  private:
+  service_manager::TestConnectorFactory test_connector_factory_;
+  std::unique_ptr<service_manager::Connector> connector_;
+
+  // Delayed service release involves a posted delayed task which will not
+  // block *.RunUntilIdle() and hence cause a memory leak in the test. So by
+  // default use a zero value delay to disable the delay.
+  base::TimeDelta service_release_delay_;
+
+  std::unique_ptr<CdmService> service_;
+  MockCdmServiceClient* mock_cdm_service_client_ = nullptr;
+
   DISALLOW_COPY_AND_ASSIGN(CdmServiceTest);
 };
 
@@ -205,8 +154,7 @@ TEST_F(CdmServiceTest, LoadCdm) {
 
   // Even with a dummy path where the CDM cannot be loaded, EnsureSandboxed()
   // should still be called to ensure the process is sandboxed.
-  EXPECT_CALL(*service_test_client_->mock_cdm_service_client(),
-              EnsureSandboxed());
+  EXPECT_CALL(*mock_cdm_service_client(), EnsureSandboxed());
 
   base::FilePath cdm_path(FILE_PATH_LITERAL("dummy path"));
 #if defined(OS_MACOSX)
@@ -240,7 +188,7 @@ TEST_F(CdmServiceTest, DestroyAndRecreateCdm) {
 // destroyed after |cdm_ptr_| is reset.
 TEST_F(CdmServiceTest, DestroyCdmFactory) {
   Initialize();
-  auto* service = service_test_client_->cdm_service();
+  auto* service = cdm_service();
 
   InitializeCdm(kClearKeyKeySystem, true);
   EXPECT_EQ(service->BoundCdmFactorySizeForTesting(), 1u);
@@ -253,8 +201,9 @@ TEST_F(CdmServiceTest, DestroyCdmFactory) {
 
   cdm_ptr_.reset();
   base::RunLoop().RunUntilIdle();
-  EXPECT_EQ(service->BoundCdmFactorySizeForTesting(), 0u);
-  EXPECT_EQ(service->UnboundCdmFactorySizeForTesting(), 0u);
+
+  // The service should be destroyed by the time we get here.
+  EXPECT_FALSE(cdm_service());
 }
 
 // Same as DestroyCdmFactory test, but do not disable delayed service release.
@@ -263,9 +212,9 @@ TEST_F(CdmServiceTest, DestroyCdmFactory) {
 // the delay in the test. But currently FastForwardBy() doesn't support delayed
 // task yet.
 TEST_F(CdmServiceTest, DestroyCdmFactory_DelayedServiceRelease) {
-  constexpr base::TimeDelta kServiceContextRefReleaseDelay =
+  constexpr base::TimeDelta kKeepaliveIdleTimeout =
       base::TimeDelta::FromSeconds(1);
-  InitializeWithServiceReleaseDelay(kServiceContextRefReleaseDelay);
+  InitializeWithServiceReleaseDelay(kKeepaliveIdleTimeout);
 
   InitializeCdm(kClearKeyKeySystem, true);
   cdm_factory_ptr_.reset();
@@ -278,7 +227,7 @@ TEST_F(CdmServiceTest, DestroyCdmFactory_DelayedServiceRelease) {
       .WillOnce(Invoke(&run_loop, &base::RunLoop::Quit));
   run_loop.Run();
   auto time_passed = base::Time::Now() - start_time;
-  EXPECT_GE(time_passed, kServiceContextRefReleaseDelay);
+  EXPECT_GE(time_passed, kKeepaliveIdleTimeout);
 }
 
 // Destroy service will destroy the CdmFactory and all CDMs.
@@ -293,7 +242,7 @@ TEST_F(CdmServiceTest, DestroyCdmService) {
   EXPECT_CALL(*this, CdmFactoryConnectionClosed());
   EXPECT_CALL(*this, CdmConnectionClosed())
       .WillOnce(Invoke(&run_loop, &base::RunLoop::Quit));
-  service_test_client_->DestroyService();
+  DestroyService();
   run_loop.Run();
 }
 

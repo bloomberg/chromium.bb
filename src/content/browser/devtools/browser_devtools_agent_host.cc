@@ -8,9 +8,11 @@
 #include "base/guid.h"
 #include "base/json/json_reader.h"
 #include "base/memory/ptr_util.h"
+#include "base/no_destructor.h"
 #include "base/single_thread_task_runner.h"
 #include "content/browser/devtools/devtools_session.h"
 #include "content/browser/devtools/protocol/browser_handler.h"
+#include "content/browser/devtools/protocol/fetch_handler.h"
 #include "content/browser/devtools/protocol/io_handler.h"
 #include "content/browser/devtools/protocol/memory_handler.h"
 #include "content/browser/devtools/protocol/protocol.h"
@@ -19,7 +21,6 @@
 #include "content/browser/devtools/protocol/target_handler.h"
 #include "content/browser/devtools/protocol/tethering_handler.h"
 #include "content/browser/devtools/protocol/tracing_handler.h"
-#include "content/browser/devtools/target_registry.h"
 #include "content/browser/frame_host/frame_tree_node.h"
 
 namespace content {
@@ -36,6 +37,19 @@ scoped_refptr<DevToolsAgentHost> DevToolsAgentHost::CreateForDiscovery() {
   return new BrowserDevToolsAgentHost(nullptr, std::move(null_callback), true);
 }
 
+namespace {
+std::set<BrowserDevToolsAgentHost*>& BrowserDevToolsAgentHostInstances() {
+  static base::NoDestructor<std::set<BrowserDevToolsAgentHost*>> instances;
+  return *instances;
+}
+}  // namespace
+
+// static
+const std::set<BrowserDevToolsAgentHost*>&
+BrowserDevToolsAgentHost::Instances() {
+  return BrowserDevToolsAgentHostInstances();
+}
+
 BrowserDevToolsAgentHost::BrowserDevToolsAgentHost(
     scoped_refptr<base::SingleThreadTaskRunner> tethering_task_runner,
     const CreateServerSocketCallback& socket_callback,
@@ -45,30 +59,27 @@ BrowserDevToolsAgentHost::BrowserDevToolsAgentHost(
       socket_callback_(socket_callback),
       only_discovery_(only_discovery) {
   NotifyCreated();
+  BrowserDevToolsAgentHostInstances().insert(this);
 }
 
 BrowserDevToolsAgentHost::~BrowserDevToolsAgentHost() {
+  BrowserDevToolsAgentHostInstances().erase(this);
 }
 
-bool BrowserDevToolsAgentHost::AttachSession(DevToolsSession* session,
-                                             TargetRegistry* parent_registry) {
+bool BrowserDevToolsAgentHost::AttachSession(DevToolsSession* session) {
   if (!session->client()->MayAttachToBrowser())
     return false;
 
-  TargetRegistry* registry = parent_registry;
-  if (!registry) {
-    auto new_registry = std::make_unique<TargetRegistry>(session);
-    registry = new_registry.get();
-    target_registries_[session->client()] = std::move(new_registry);
-  }
   session->SetBrowserOnly(true);
   session->AddHandler(std::make_unique<protocol::TargetHandler>(
-      protocol::TargetHandler::AccessMode::kBrowser, GetId(), registry));
+      protocol::TargetHandler::AccessMode::kBrowser, GetId(),
+      GetRendererChannel(), session->GetRootSession()));
   if (only_discovery_)
     return true;
 
   session->AddHandler(std::make_unique<protocol::BrowserHandler>());
   session->AddHandler(std::make_unique<protocol::IOHandler>(GetIOContext()));
+  session->AddHandler(std::make_unique<protocol::FetchHandler>(GetIOContext()));
   session->AddHandler(std::make_unique<protocol::MemoryHandler>());
   session->AddHandler(std::make_unique<protocol::SecurityHandler>());
   session->AddHandler(std::make_unique<protocol::SystemInfoHandler>());
@@ -82,7 +93,6 @@ bool BrowserDevToolsAgentHost::AttachSession(DevToolsSession* session,
 }
 
 void BrowserDevToolsAgentHost::DetachSession(DevToolsSession* session) {
-  target_registries_.erase(session->client());
 }
 
 std::string BrowserDevToolsAgentHost::GetType() {
@@ -106,20 +116,6 @@ bool BrowserDevToolsAgentHost::Close() {
 }
 
 void BrowserDevToolsAgentHost::Reload() {
-}
-
-bool BrowserDevToolsAgentHost::DispatchProtocolMessage(
-    DevToolsAgentHostClient* client,
-    const std::string& message,
-    std::unique_ptr<base::DictionaryValue> parsed_message) {
-  auto it = target_registries_.find(client);
-  if (it != target_registries_.end() &&
-      it->second->CanDispatchMessageOnAgentHost(parsed_message.get())) {
-    it->second->DispatchMessageOnAgentHost(message, std::move(parsed_message));
-    return true;
-  }
-  return DevToolsAgentHostImpl::DispatchProtocolMessage(
-      client, message, std::move(parsed_message));
 }
 
 }  // content

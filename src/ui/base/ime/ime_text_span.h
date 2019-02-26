@@ -65,6 +65,8 @@ struct UI_BASE_IME_TYPES_EXPORT ImeTextSpan {
            (this->background_color == rhs.background_color) &&
            (this->suggestion_highlight_color ==
             rhs.suggestion_highlight_color) &&
+           (this->remove_on_finish_composing ==
+            rhs.remove_on_finish_composing) &&
            (this->suggestions == rhs.suggestions);
   }
 
@@ -77,6 +79,7 @@ struct UI_BASE_IME_TYPES_EXPORT ImeTextSpan {
   Thickness thickness;
   SkColor background_color;
   SkColor suggestion_highlight_color;
+  bool remove_on_finish_composing = false;
   std::vector<std::string> suggestions;
 };
 

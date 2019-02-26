@@ -44,6 +44,7 @@ _image_sets = [
   "hardware/ic_mouse",
   "image/ic_photo_camera",
   "image/ic_photo_library",
+  "maps/ic_place",
   "navigation/ic_arrow_back",
   "navigation/ic_arrow_forward_white",
   "navigation/ic_check",

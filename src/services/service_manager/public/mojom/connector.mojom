@@ -4,23 +4,24 @@
 
 module service_manager.mojom;
 
+import "mojo/public/mojom/base/token.mojom";
 import "services/service_manager/public/mojom/constants.mojom";
 import "services/service_manager/public/mojom/interface_provider.mojom";
+import "services/service_manager/public/mojom/service_filter.mojom";
 
-// TODO(beng): Evalute the utility of this enum. There are some inconsistencies
-//             in its use with BindInterface/StartService.
+// TODO(beng): Evaluate the utility of this enum. There are some inconsistencies
+//             in its use with BindInterface/WarmService.
 enum ConnectResult {
-  // The operation was established successfully.
+  // The operation was completed successfully.
   SUCCEEDED,
 
-  // The name or user id supplied was malformed, or the service specified by
-  // |name| could not be loaded.
+  // The given service name specified by |name| does not match a known service.
   INVALID_ARGUMENT,
 
   // Policy prevented the successful completion of this operation. Either
   // requests to bind to |name| are forbidden from the calling service by its
-  // manifest, or the service attempted to connect using a user id other than
-  // its own, |kInheritUserID| or |kRootUserID|.
+  // manifest, or the service attempted to connect to an instance in an instance
+  // group with which it's not allowed to communicate.
   ACCESS_DENIED
 };
 
@@ -29,31 +30,38 @@ struct Identity {
   // A name identifying a service.
   string name;
 
-  // The user id of the target service instance to bind to. If no such instance
-  // exists, the service manager may start one. This user id will be passed to
-  // the new instance via Initialize().
-  //
-  // When binding to other services, services must generally pass kInheritUserID
-  // for this value, and the service manager will either bind to an existing
-  // instance matching the caller's user id, create a new instance matching the
-  // caller's user id, or bind to an existing instance running as kRootUserID.
-  // By default, services do not have the ability to set arbitrary values to
-  // this field, and doing so will result in an error response.
-  //
-  // A service with the ability to launch other services with arbitrary user ids
-  // (e.g. a login service) may set this value. The user id string is a valid
-  // guid of the form "%08X-%04X-%04X-%04X-%012llX", and (aside from the root
-  // user whose guid is defined above) intended to be not-guessable.
-  //
-  // When a service is initialized or receives a bind request from another
-  // service, this value is always the resolved user id, never |kInheritUserID|.
-  string user_id;
+  // Identifies the instance group to which a service instance belongs. Most
+  // running service instances can only reach (via Connector) other service
+  // instances running in the same instance group. This facilitates a mode of
+  // isolation which is useful for modeling, e.g., different users in a multi-
+  // user system. Must always be non-zero.
+  mojo_base.mojom.Token instance_group;
 
-  // A service may spawn multiple instances with the same (name, user_id)
-  // pair, provided they are started with unique values of this field.
-  // TODO(beng): enforce the emptiness of this parameter unless the client bears
-  //             the appropriate capability.
-  string instance;
+  // Disambiguates multiple instances of the same service potentially running
+  // within the same instance group. Used for more granular isolation of
+  // instances. May be zero.
+  //
+  // At any given moment, there can be at most ONE service instance running with
+  // any given combination of |name|, |instance_group|, and |instance_id|.
+  mojo_base.mojom.Token instance_id;
+
+  // A Token which globally and uniquely identifies a service instance across
+  // space and time. This value is generated and assigned by the Service Manager
+  // when starting a new instance, or is given to the Service Manager by a
+  // privileged client using the |Connector.RegisterServiceInstance()| API.
+  //
+  // In either case, this value is always unique to a single service instance.
+  mojo_base.mojom.Token globally_unique_id;
+};
+
+// Static metadata about a service the Service Manager knows about. This is
+// information pertaining to the service definition itself (e.g. registered
+// manifest contents), not to any particular service instance running in the
+// system.
+struct ServiceInfo {
+  // A string describing the kind of sandboxing the service has declared for
+  // itself in its manifest.
+  string sandbox_type;
 };
 
 // Implemented by an object in the service manager associated with a specific
@@ -66,120 +74,91 @@ interface PIDReceiver {
 // An interface that allows the holder to start other services & bind to
 // interfaces exposed by them.
 interface Connector {
-  // Asks the service manager to route a request to bind an implementation of
-  // the interface to a named service instance.
+  // Asks the Service Manager to route an interface request to another service
+  // instance. The target instance is selected by |filter|, subject to various
+  // constraints. With some exceptions and limitations, if no existing service
+  // instance is found matching the given |filter|, a new instance is started
+  // which meets the constraints of the filter.
   //
-  // A service's ability to bind interfaces exposed by another is controlled by
-  // policy set out in each service's manifest. See
-  // //services/service_manager/README.md for more information on manifests.
-  // If policy prevents the requesting service from binding the specified
-  // interface, the request pipe will be closed.
+  // Upon success, |result| will be |SUCCEEDED| and |identity| will contain the
+  // full identity of the service instance to which the request was successfully
+  // routed. Upon failure |result| will take on a different value and |identity|
+  // will be null.
   //
-  // Parameters:
+  // If |filter| filters only by service name, the Service Manager may select
+  // any running service instance with that service name. If the named service
+  // is not a singleton or otherwise shared across all instance groups, the
+  // selection space is limited to the caller's own instance group.
   //
-  //  target
-  //    The identity of the service instance to route the request to. If no
-  //    instance exists, the service will be started.
+  // If |filter| includes an instance group ID, either that group ID must match
+  // the caller's own, or the caller must have set the
+  // |can_connect_to_instances_in_any_group| option in its own manifest.
   //
-  //  interface_name
-  //    The name of the interface to be bound. If the target service does not
-  //    expose an interface of this name, the request pipe will be closed.
+  // If |filter| includes an instance ID, the caller must have set the
+  // |can_connect_to_other_services_with_any_instance_name| option in its own
+  // manifest.
   //
-  //  interface_pipe
-  //    A message pipe endpoint encapsulating a request for an interface named
-  //    |interface_name|.
-  //
-  // Response parameters:
-  //
-  //  result
-  //    Indicates the result of the BindInterface() operation.
-  //
-  //  identity
-  //    The fully resolved identity of the instance in the service manager, with
-  //    a resolved user id. Typically the client passes |kInheritUserID| as the
-  //    user id to BindInterface(), which will be resolved by the service
-  //    manager into a concrete user id.
-  //
-  BindInterface(Identity target,
+  // If |filter| includes a globally unique ID, it must include a group ID and
+  // instance ID as well. Requests like this will only ever match a specific
+  // service instance that is already running. Unlike in other cases, the
+  // Service Manager will NEVER create a new service instance to fulfill this
+  // request.
+  BindInterface(ServiceFilter filter,
                 string interface_name,
-                handle<message_pipe> interface_pipe) =>
-      (ConnectResult result, Identity user_id);
+                handle<message_pipe> interface_pipe)
+      => (ConnectResult result, Identity? identity);
 
-  // Asks the service manager whether it knows how to manage a given service,
-  // and how the service is to be sandboxed per the mainifest. No processes are
-  // started as a result. QueryService() is typically used before a call to
-  // StartProcessWithService() so the client can determine how to launch a
-  // process.
-  //
-  // Parameters:
-  //
-  //  target
-  //    The identity of the service to query.
-  //
-  // Response parameters:
-  //
-  //  result
-  //    Indicates the result of the QueryService() operation.
-  //
-  //  sandbox_type
-  //    A string describing the kind of sandboxing the service has declared
-  //    for itself in the manifest.
-  //
-  QueryService(Identity target) => (ConnectResult result, string sandbox_type);
+  // Asks the Service Manager for details about the service named
+  // |service_name|. No processes are started as a result of this request. On
+  // response, |info| provides information about the service. If the Service
+  // Manager is not familiar the named service, |info| will be null.
+  QueryService(string service_name) => (ServiceInfo? info);
 
-  // Asks the service manager to create an instance for a service. No action is
-  // taken if an instance is already present. If the service is not yet running,
-  // it will be initialized and its OnStart() method will be called. A process
-  // may be allocated.
+  // Asks the Service Manager to ensure that a service instance which would
+  // match |filter| (from the caller's perspective) is running. This is
+  // essentially equivalent to |BindInterface()| above but no interface request
+  // is given to bind. This is mainly here as a performance measure, as a client
+  // may wish to ensure that a service is warmed up by the time the client
+  // actually needs it.
   //
-  // Parameters:
-  //
-  //  target
-  //    The identity of the service to start.
-  //
-  // Response parameters:
-  //
-  //  result
-  //    Indicates the result of the StartService() operation.
-  //
-  //  identity
-  //    The fully resolved identity of the instance in the service manager, with
-  //    a resolved user id. Typically the client passes |kInheritUserID| as the
-  //    user id to BindInterface(), which will be resolved by the service
-  //    manager into a concrete user id.
-  //
-  StartService(Identity target) => (ConnectResult result, Identity identity);
+  // See comments on |BindInterface()| above for details on filtering
+  // constraints, instance creation, and response values.
+  WarmService(ServiceFilter filter)
+      => (ConnectResult result, Identity? identity);
 
-  // Typically, the service manager will start a process for a service the first
-  // time it receives a bind interface request for it, or when StartService() is
-  // called. This struct allows a client to start the process itself and provide
-  // the service manager the pipes it needs to communicate with it. When this
-  // function is called, the client owns the lifetime of the child process it
-  // started, not the service manager. The service manager binds the |service|
-  // pipe, and when it closes destroys the associated instance but the process
-  // stays alive.
+  // Typically, the Service Manager will start a process for a service the first
+  // time it receives a |BindInterface()| or |WarmService()| request for a
+  // filter it can't match to an existing instance.
   //
-  // Parameters:
+  // This call allows new service instances to be explicitly injected into the
+  // Service Manager's set of running services. As such, this is considered to
+  // be a highly privileged API. A service calling this API must have the
+  // |can_create_other_service_instances| option set to |true| in its own
+  // manifest or the request will be rejected.
   //
-  //  target
-  //    The identity of the service to create the instance for.
+  // |identity| is the full identity of the service instance to introduce. This
+  // must include a valid instance group and a valid, random, globally unique
+  // ID.
   //
-  //  service
-  //    A pipe to an implementation of Service that the service manager can use
-  //    to communicate with the service.
+  // |service| is a |Service| interface pipe (i.e. a ServicePtr in C++).
   //
-  //  pid_receiver_request
-  //   Allows the client process launcher to tell the service manager the PID of
-  //   the process it created (the pid isn't supplied directly here as the
-  //   process may not have been launched by the time BindInterface() is
-  //   called.)
+  // |pid_receiver_request| is the receiving end of a PIDReceiver pipe. The
+  // caller is expected to call |SetPid()| on the other end of this pipe in
+  // order to inform the Service Manager about which process is actually hosting
+  // the service instance.
   //
-  StartServiceWithProcess(Identity target,
+  // TODO(https://crbug.com/904137): We should be able to be more typesafe here
+  // for the |service| argument, but Service's definition requires Connector's
+  // definition and we don't yet support circular mojom imports. Hence the raw
+  // message pipe.
+  RegisterServiceInstance(Identity identity,
                           handle<message_pipe> service,
                           PIDReceiver& pid_receiver_request) =>
-      (ConnectResult result, Identity identity);
+      (ConnectResult result);
 
-  // Clones this Connector so it can be passed to another thread.
+  // Binds another Connector pipe to this same implementation. This effectively
+  // allows the client to "clone" its Connector arbitrarily many times, for
+  // example to mint Connector endpoints for different threads to use.
   Clone(Connector& request);
 
   // Filter interface requests received from |source| according to the policy
@@ -193,6 +172,17 @@ interface Connector {
   // in |target|. The Service Manager will only forward interface requests that
   // were permitted by intersecting |source|'s manifest requirements with the
   // contents of |spec|.
+  //
+  // DEPRECATED: Please do not introduce new uses of this API, as it will be
+  // removed soon. Please instead avoid using InterfaceProvider altogether in
+  // favor of explicit factory interfaces. i.e., instead of an InterfaceProvider
+  // hooked up to a BinderRegistry, prefer to define something like:
+  //
+  //   interface MyInterfaceBroker {
+  //     GetFoo(Foo& request);
+  //     GetBar(Bar& request);
+  //   };
+  //
   FilterInterfaces(string spec,
                    Identity source,
                    InterfaceProvider& source_request,

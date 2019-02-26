@@ -40,6 +40,8 @@ class TestQuitInstructionBubbleController
                                         std::move(hide_timer)) {}
 
  private:
+  ~TestQuitInstructionBubbleController() override {}
+
   DISALLOW_COPY_AND_ASSIGN(TestQuitInstructionBubbleController);
 };
 
@@ -66,9 +68,9 @@ class QuitInstructionBubbleControllerTest : public testing::Test {
     auto timer = std::make_unique<base::MockOneShotTimer>();
     bubble_ = bubble.get();
     timer_ = timer.get();
-    controller_.reset(new TestQuitInstructionBubbleController(
+    controller_ = base::MakeRefCounted<TestQuitInstructionBubbleController>(
         std::move(bubble), std::move(timer),
-        std::make_unique<TestSlideAnimation>()));
+        std::make_unique<TestSlideAnimation>());
   }
 
   void TearDown() override { controller_.reset(); }
@@ -95,7 +97,7 @@ class QuitInstructionBubbleControllerTest : public testing::Test {
 
   void ReleaseOtherAccelerator() { SendAccelerator(false, false, false); }
 
-  std::unique_ptr<TestQuitInstructionBubbleController> controller_;
+  scoped_refptr<TestQuitInstructionBubbleController> controller_;
 
   // Owned by |controller_|.
   TestQuitInstructionBubble* bubble_;

@@ -48,6 +48,6 @@ CallbackHelper.prototype = {
  * @private
  */
 CallbackHelper.testDone_ = this.testDone;
-// Remove testDone for public use since direclty using it conflicts with
+// Remove testDone for public use since directly using it conflicts with
 // this callback helper.
 delete this.testDone;

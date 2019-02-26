@@ -66,6 +66,9 @@ NET_EXPORT bool MatchesMimeType(const std::string& mime_type_pattern,
 //
 // If |top_level_type| is non-NULL, sets it to parsed top-level type string.
 // If |subtype| is non-NULL, sets it to parsed subtype string.
+//
+// This function strips leading and trailing whitespace from the MIME type.
+// TODO: investigate if we should strip strictly HTTP whitespace.
 NET_EXPORT bool ParseMimeTypeWithoutParameter(const std::string& type_string,
                                               std::string* top_level_type,
                                               std::string* subtype);
@@ -80,11 +83,12 @@ NET_EXPORT bool ParseMimeTypeWithoutParameter(const std::string& type_string,
 // this method.
 NET_EXPORT bool IsValidTopLevelMimeType(const std::string& type_string);
 
-// Get the extensions associated with the given mime type. There could be
-// multiple extensions for a given mime type, like "html,htm" for "text/html",
-// or "txt,text,html,..." for "text/*".
-// Note that we do not erase the existing elements in the the provided vector.
-// Instead, we append the result to it.
+// Get the extensions associated with the given mime type.
+//
+// There could be multiple extensions for a given mime type, like "html,htm" for
+// "text/html", or "txt,text,html,..." for "text/*".  Note that we do not erase
+// the existing elements in the the provided vector.  Instead, we append the
+// result to it.  The new extensions are returned in no particular order.
 NET_EXPORT void GetExtensionsForMimeType(
     const std::string& mime_type,
     std::vector<base::FilePath::StringType>* extensions);
@@ -99,6 +103,16 @@ NET_EXPORT void AddMultipartValueForUpload(const std::string& value_name,
                                            const std::string& mime_boundary,
                                            const std::string& content_type,
                                            std::string* post_data);
+
+// Prepares one value as part of a multi-part upload request, with file name as
+// an additional parameter.
+NET_EXPORT void AddMultipartValueForUploadWithFileName(
+    const std::string& value_name,
+    const std::string& file_name,
+    const std::string& value,
+    const std::string& mime_boundary,
+    const std::string& content_type,
+    std::string* post_data);
 
 // Adds the final delimiter to a multi-part upload request.
 NET_EXPORT void AddMultipartFinalDelimiterForUpload(

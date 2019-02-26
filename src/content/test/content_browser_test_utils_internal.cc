@@ -282,8 +282,9 @@ Shell* OpenPopup(const ToRenderFrameHost& opener,
   return new_shell;
 }
 
-FileChooserDelegate::FileChooserDelegate(const base::FilePath& file)
-      : file_(file), file_chosen_(false) {}
+FileChooserDelegate::FileChooserDelegate(const base::FilePath& file,
+                                         base::OnceClosure callback)
+    : file_(file), callback_(std::move(callback)) {}
 
 FileChooserDelegate::~FileChooserDelegate() = default;
 
@@ -296,11 +297,11 @@ void FileChooserDelegate::RunFileChooser(
       blink::mojom::NativeFileInfo::New(file_, base::string16()));
   std::vector<blink::mojom::FileChooserFileInfoPtr> files;
   files.push_back(std::move(file_info));
-  listener->FileSelected(std::move(files),
+  listener->FileSelected(std::move(files), base::FilePath(),
                          blink::mojom::FileChooserParams::Mode::kOpen);
 
-  file_chosen_ = true;
   params_ = params.Clone();
+  std::move(callback_).Run();
 }
 
 FrameTestNavigationManager::FrameTestNavigationManager(

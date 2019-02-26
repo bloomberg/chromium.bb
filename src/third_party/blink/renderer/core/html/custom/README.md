@@ -83,7 +83,7 @@ with CustomElement so you can run them with:
 ###### Layout Tests
 
 The custom element layout tests are generally in
-third_party/WebKit/LayoutTests/custom-elements.
+third_party/blink/web_tests/custom-elements.
 
 All custom elements layout tests use the [web-platform-tests
 harness](https://web-platform-tests.org/) and follow its style. The

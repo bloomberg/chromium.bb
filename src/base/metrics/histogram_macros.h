@@ -43,8 +43,9 @@
 // having to handle a sentinel no-op value.
 //
 // Sample usage:
-//   // These values are persisted to logs. Entries should not be renumbered and
-//   // numeric values should never be reused.
+//   // These values are logged to UMA. Entries should not be renumbered and
+//   // numeric values should never be reused. Please keep in sync with "MyEnum"
+//   // in src/tools/metrics/histograms/enums.xml.
 //   enum class MyEnum {
 //     kFirstValue = 0,
 //     kSecondValue = 1,
@@ -59,8 +60,9 @@
 // greater than any other enumerator that will be sampled.
 //
 // Sample usage:
-//   // These values are persisted to logs. Entries should not be renumbered and
-//   // numeric values should never be reused.
+//   // These values are logged to UMA. Entries should not be renumbered and
+//   // numeric values should never be reused. Please keep in sync with "MyEnum"
+//   // in src/tools/metrics/histograms/enums.xml.
 //   enum class MyEnum {
 //     FIRST_VALUE = 0,
 //     SECOND_VALUE = 1,
@@ -77,10 +79,10 @@
 // enum to an arithmetic type and adding one. Instead, prefer the two argument
 // version of the macro which automatically deduces the boundary from kMaxValue.
 #define UMA_HISTOGRAM_ENUMERATION(name, ...)                            \
-  CR_EXPAND_ARG(INTERNAL_UMA_HISTOGRAM_ENUMERATION_GET_MACRO(           \
+  INTERNAL_UMA_HISTOGRAM_ENUMERATION_GET_MACRO(                         \
       __VA_ARGS__, INTERNAL_UMA_HISTOGRAM_ENUMERATION_SPECIFY_BOUNDARY, \
-      INTERNAL_UMA_HISTOGRAM_ENUMERATION_DEDUCE_BOUNDARY)(              \
-      name, __VA_ARGS__, base::HistogramBase::kUmaTargetedHistogramFlag))
+      INTERNAL_UMA_HISTOGRAM_ENUMERATION_DEDUCE_BOUNDARY)               \
+  (name, __VA_ARGS__, base::HistogramBase::kUmaTargetedHistogramFlag)
 
 // As above but "scaled" count to avoid overflows caused by increments of
 // large amounts. See UMA_HISTOGRAM_SCALED_EXACT_LINEAR for more information.
@@ -257,10 +259,10 @@
           name, min, max, bucket_count,                                 \
           base::HistogramBase::kUmaTargetedHistogramFlag))
 
-// Scoped class which logs its time on this earth as a UMA statistic. This is
-// recommended for when you want a histogram which measures the time it takes
-// for a method to execute. This measures up to 10 seconds. It uses
-// UMA_HISTOGRAM_TIMES under the hood.
+// Scoped class which logs its time on this earth in milliseconds as a UMA
+// statistic. This is recommended for when you want a histogram which measures
+// the time it takes for a method to execute. This measures up to 10 seconds. It
+// uses UMA_HISTOGRAM_TIMES under the hood.
 
 // Sample usage:
 //   void Function() {

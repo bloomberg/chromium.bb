@@ -76,7 +76,7 @@ class LinkHighlightImplTest : public testing::Test,
   }
 
   void SetUp() override {
-    WebURL url = URLTestHelpers::RegisterMockedURLLoadFromBase(
+    WebURL url = url_test_helpers::RegisterMockedURLLoadFromBase(
         WebString::FromUTF8("http://www.test.com/"), test::CoreTestDataPath(),
         WebString::FromUTF8("test_touch_link_highlight.html"));
     web_view_helper_.InitializeAndLoad(url.GetString().Utf8());
@@ -108,7 +108,12 @@ class LinkHighlightImplTest : public testing::Test,
     return local_frame_view->GetPaintArtifactCompositorForTesting();
   }
 
-  FrameTestHelpers::WebViewHelper web_view_helper_;
+  void UpdateAllLifecyclePhases() {
+    web_view_helper_.GetWebView()->MainFrameWidget()->UpdateAllLifecyclePhases(
+        WebWidget::LifecycleUpdateReason::kTest);
+  }
+
+  frame_test_helpers::WebViewHelper web_view_helper_;
 };
 
 INSTANTIATE_TEST_CASE_P(All, LinkHighlightImplTest, testing::Bool());
@@ -118,7 +123,7 @@ TEST_P(LinkHighlightImplTest, verifyWebViewImplIntegration) {
   int page_width = 640;
   int page_height = 480;
   web_view_impl->Resize(WebSize(page_width, page_height));
-  web_view_impl->UpdateAllLifecyclePhases();
+  UpdateAllLifecyclePhases();
 
   WebGestureEvent touch_event(WebInputEvent::kGestureShowPress,
                               WebInputEvent::kNoModifiers,
@@ -171,7 +176,7 @@ TEST_P(LinkHighlightImplTest, resetDuringNodeRemoval) {
   int page_width = 640;
   int page_height = 480;
   web_view_impl->Resize(WebSize(page_width, page_height));
-  web_view_impl->UpdateAllLifecyclePhases();
+  UpdateAllLifecyclePhases();
 
   WebGestureEvent touch_event(WebInputEvent::kGestureShowPress,
                               WebInputEvent::kNoModifiers,
@@ -193,7 +198,7 @@ TEST_P(LinkHighlightImplTest, resetDuringNodeRemoval) {
   EXPECT_TRUE(highlight_layer->GetLinkHighlights().at(0));
 
   touch_node->remove(IGNORE_EXCEPTION_FOR_TESTING);
-  web_view_impl->UpdateAllLifecyclePhases();
+  UpdateAllLifecyclePhases();
   EXPECT_EQ(0U, highlight_layer->GetLinkHighlights().size());
 }
 
@@ -204,7 +209,7 @@ TEST_P(LinkHighlightImplTest, resetLayerTreeView) {
   int page_width = 640;
   int page_height = 480;
   web_view_impl->Resize(WebSize(page_width, page_height));
-  web_view_impl->UpdateAllLifecyclePhases();
+  UpdateAllLifecyclePhases();
 
   WebGestureEvent touch_event(WebInputEvent::kGestureShowPress,
                               WebInputEvent::kNoModifiers,
@@ -238,7 +243,7 @@ TEST_P(LinkHighlightImplTest, HighlightLayerEffectNode) {
   web_view_impl->Resize(WebSize(page_width, page_height));
 
   paint_artifact_compositor()->EnableExtraDataForTesting();
-  web_view_impl->UpdateAllLifecyclePhases();
+  UpdateAllLifecyclePhases();
   size_t layer_count_before_highlight = ContentLayerCount();
 
   WebGestureEvent touch_event(WebInputEvent::kGestureShowPress,
@@ -272,7 +277,7 @@ TEST_P(LinkHighlightImplTest, HighlightLayerEffectNode) {
   EXPECT_TRUE(highlight->effect()->RequiresCompositingForAnimation());
 
   touch_node->remove(IGNORE_EXCEPTION_FOR_TESTING);
-  web_view_impl->UpdateAllLifecyclePhases();
+  UpdateAllLifecyclePhases();
   // Removing the highlight layer should drop the cc layer count by one.
   EXPECT_EQ(layer_count_before_highlight, ContentLayerCount());
 }

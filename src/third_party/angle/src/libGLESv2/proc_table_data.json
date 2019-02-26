@@ -539,6 +539,17 @@
         "glTexStorage3DMultisampleOES"
     ],
 
+    "GL_OES_texture_border_clamp": [
+        "glTexParameterIivOES",
+        "glTexParameterIuivOES",
+        "glGetTexParameterIivOES",
+        "glGetTexParameterIuivOES",
+        "glSamplerParameterIivOES",
+        "glSamplerParameterIuivOES",
+        "glGetSamplerParameterIivOES",
+        "glGetSamplerParameterIuivOES"
+    ],
+
     "GLES3 core": [
         "glReadBuffer",
         "glDrawRangeElements",
@@ -721,6 +732,14 @@
         "glFramebufferTextureEXT"
     ],
 
+    "GL_ANGLE_texture_multisample": [
+      "glTexStorage2DMultisampleANGLE",
+      "glGetTexLevelParameterfvANGLE",
+      "glGetTexLevelParameterivANGLE",
+      "glGetMultisamplefvANGLE",
+      "glSampleMaskiANGLE"
+    ],
+
     "EGL 1.0": [
         "eglChooseConfig",
         "eglCopyBuffers",
@@ -860,6 +879,14 @@
         "eglDebugMessageControlKHR",
         "eglQueryDebugKHR",
         "eglLabelObjectKHR"
+    ],
+
+    "EGL_ANDROID_get_frame_timestamps": [
+        "eglGetCompositorTimingSupportedANDROID",
+        "eglGetCompositorTimingANDROID",
+        "eglGetNextFrameIdANDROID",
+        "eglGetFrameTimestampSupportedANDROID",
+        "eglGetFrameTimestampsANDROID"
     ],
 
     "angle::Platform related entry points": [

@@ -50,7 +50,10 @@ import java.util.concurrent.Callable;
  */
 @RunWith(ChromeJUnit4ClassRunner.class)
 @RetryOnFailure
-@CommandLineFlags.Add({ChromeSwitches.DISABLE_FIRST_RUN_EXPERIENCE})
+@CommandLineFlags.Add({
+        ChromeSwitches.DISABLE_FIRST_RUN_EXPERIENCE,
+        ContentSwitches.HOST_RESOLVER_RULES + "=MAP * 127.0.0.1",
+})
 public class SiteSettingsPreferencesTest {
     @Rule
     public ChromeActivityTestRule<ChromeActivity> mActivityTestRule =
@@ -149,9 +152,8 @@ public class SiteSettingsPreferencesTest {
         Bundle fragmentArgs = new Bundle();
         fragmentArgs.putString(SingleCategoryPreferences.EXTRA_CATEGORY, category);
         Intent intent = PreferencesLauncher.createIntentForSettingsPage(
-                InstrumentationRegistry.getTargetContext(),
-                SiteSettingsPreferences.class.getName());
-        intent.putExtra(Preferences.EXTRA_SHOW_FRAGMENT_ARGUMENTS, fragmentArgs);
+                InstrumentationRegistry.getTargetContext(), SiteSettingsPreferences.class.getName(),
+                fragmentArgs);
         return (Preferences) InstrumentationRegistry.getInstrumentation().startActivitySync(intent);
     }
 
@@ -161,8 +163,7 @@ public class SiteSettingsPreferencesTest {
                 SingleCategoryPreferences.EXTRA_CATEGORY, SiteSettingsCategory.preferenceKey(type));
         Intent intent = PreferencesLauncher.createIntentForSettingsPage(
                 InstrumentationRegistry.getTargetContext(),
-                SingleCategoryPreferences.class.getName());
-        intent.putExtra(Preferences.EXTRA_SHOW_FRAGMENT_ARGUMENTS, fragmentArgs);
+                SingleCategoryPreferences.class.getName(), fragmentArgs);
         return (Preferences) InstrumentationRegistry.getInstrumentation().startActivitySync(intent);
     }
 
@@ -171,8 +172,7 @@ public class SiteSettingsPreferencesTest {
         fragmentArgs.putSerializable(SingleWebsitePreferences.EXTRA_SITE, site);
         Intent intent = PreferencesLauncher.createIntentForSettingsPage(
                 InstrumentationRegistry.getTargetContext(),
-                SingleWebsitePreferences.class.getName());
-        intent.putExtra(Preferences.EXTRA_SHOW_FRAGMENT_ARGUMENTS, fragmentArgs);
+                SingleWebsitePreferences.class.getName(), fragmentArgs);
         return (Preferences) InstrumentationRegistry.getInstrumentation().startActivitySync(intent);
     }
 
@@ -218,8 +218,7 @@ public class SiteSettingsPreferencesTest {
                 websitePreferences.onPreferenceChange(thirdPartyCookies, enabled);
                 Assert.assertEquals(
                         "Third-party cookies should be " + (enabled ? "allowed" : "blocked"),
-                        !PrefServiceBridge.getInstance().isBlockThirdPartyCookiesEnabled(),
-                        enabled);
+                        PrefServiceBridge.getInstance().isBlockThirdPartyCookiesEnabled(), enabled);
             }
         });
     }
@@ -288,7 +287,7 @@ public class SiteSettingsPreferencesTest {
                 PreferenceScreen preferenceScreen = preferenceFragment.getPreferenceScreen();
                 int preferenceCount = preferenceScreen.getPreferenceCount();
 
-                ArrayList<String> actualKeys = new ArrayList<String>();
+                ArrayList<String> actualKeys = new ArrayList<>();
                 for (int index = 0; index < preferenceCount; index++) {
                     Preference preference = preferenceScreen.getPreference(index);
                     String key = preference.getKey();
@@ -374,6 +373,63 @@ public class SiteSettingsPreferencesTest {
         // Load the page again and ensure the cookie remains unset.
         mActivityTestRule.loadUrl(url);
         Assert.assertEquals("\"\"", mActivityTestRule.runJavaScriptCodeInCurrentTab("getCookie()"));
+    }
+
+    /**
+     * Set a cookie and check that it is removed when a site is cleared.
+     */
+    @Test
+    @SmallTest
+    @Feature({"Preferences"})
+    public void testClearCookies() throws Exception {
+        final String url = mTestServer.getURL("/chrome/test/data/android/cookie.html");
+
+        mActivityTestRule.loadUrl(url);
+        Assert.assertEquals("\"\"", mActivityTestRule.runJavaScriptCodeInCurrentTab("getCookie()"));
+        mActivityTestRule.runJavaScriptCodeInCurrentTab("setCookie()");
+        Assert.assertEquals(
+                "\"Foo=Bar\"", mActivityTestRule.runJavaScriptCodeInCurrentTab("getCookie()"));
+
+        resetSite(WebsiteAddress.create(url));
+
+        // Load the page again and ensure the cookie is gone.
+        mActivityTestRule.loadUrl(url);
+        Assert.assertEquals("\"\"", mActivityTestRule.runJavaScriptCodeInCurrentTab("getCookie()"));
+    }
+
+    /**
+     * Set cookies for domains and check that they are removed when a site is cleared.
+     */
+    @Test
+    @SmallTest
+    @Feature({"Preferences"})
+    public void testClearDomainCookies() throws Exception {
+        final String url = mTestServer.getURLWithHostName(
+                "test.example.com", "/chrome/test/data/android/cookie.html");
+
+        mActivityTestRule.loadUrl(url);
+        Assert.assertEquals("\"\"", mActivityTestRule.runJavaScriptCodeInCurrentTab("getCookie()"));
+        mActivityTestRule.runJavaScriptCodeInCurrentTab("setCookie(\".example.com\")");
+        mActivityTestRule.runJavaScriptCodeInCurrentTab("setCookie(\".test.example.com\")");
+        Assert.assertEquals("\"Foo=Bar; Foo=Bar\"",
+                mActivityTestRule.runJavaScriptCodeInCurrentTab("getCookie()"));
+
+        resetSite(WebsiteAddress.create("test.example.com"));
+
+        // Load the page again and ensure the cookie is gone.
+        mActivityTestRule.loadUrl(url);
+        Assert.assertEquals("\"\"", mActivityTestRule.runJavaScriptCodeInCurrentTab("getCookie()"));
+    }
+
+    private void resetSite(WebsiteAddress address) {
+        Website website = new Website(address, address);
+        final Preferences preferenceActivity = startSingleWebsitePreferences(website);
+        ThreadUtils.runOnUiThreadBlocking(() -> {
+            SingleWebsitePreferences websitePreferences =
+                    (SingleWebsitePreferences) preferenceActivity.getFragmentForTest();
+            websitePreferences.resetSite();
+        });
+        preferenceActivity.finish();
     }
 
     /**
@@ -475,26 +531,16 @@ public class SiteSettingsPreferencesTest {
     }
 
     /**
-     * Tests Reset Site not crashing on host names (issue 600232).
+     * Tests that {@link SingleWebsitePreferences#resetSite} doesn't crash
+     * (see e.g. the crash on host names in issue 600232).
      * @throws Exception
      */
     @Test
     @SmallTest
     @Feature({"Preferences"})
-    public void testResetCrash600232() throws Exception {
+    public void testResetDoesntCrash() throws Exception {
         WebsiteAddress address = WebsiteAddress.create("example.com");
-        Website website = new Website(address, address);
-        final Preferences preferenceActivity = startSingleWebsitePreferences(website);
-
-        ThreadUtils.runOnUiThreadBlocking(new Runnable() {
-            @Override
-            public void run() {
-                SingleWebsitePreferences websitePreferences =
-                        (SingleWebsitePreferences) preferenceActivity.getFragmentForTest();
-                websitePreferences.resetSite();
-            }
-        });
-        preferenceActivity.finish();
+        resetSite(address);
     }
 
     /**
@@ -699,11 +745,7 @@ public class SiteSettingsPreferencesTest {
     }
 
     private int getTabCount() {
-        return ThreadUtils.runOnUiThreadBlockingNoException(new Callable<Integer>() {
-            @Override
-            public Integer call() throws Exception {
-                return mActivityTestRule.getActivity().getTabModelSelector().getTotalTabCount();
-            }
-        });
+        return ThreadUtils.runOnUiThreadBlockingNoException(
+                () -> mActivityTestRule.getActivity().getTabModelSelector().getTotalTabCount());
     }
 }

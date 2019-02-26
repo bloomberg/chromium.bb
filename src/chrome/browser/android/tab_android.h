@@ -21,10 +21,8 @@
 #include "chrome/browser/ui/tab_contents/core_tab_helper_delegate.h"
 #include "components/favicon/core/favicon_driver_observer.h"
 #include "components/infobars/core/infobar_manager.h"
+#include "components/omnibox/browser/location_bar_model.h"
 #include "components/sessions/core/session_id.h"
-#include "components/toolbar/toolbar_model.h"
-#include "content/public/browser/notification_observer.h"
-#include "content/public/browser/notification_registrar.h"
 #include "content/public/browser/web_contents_observer.h"
 #include "services/service_manager/public/cpp/binder_registry.h"
 #include "third_party/blink/public/platform/media_download_in_product_help.mojom.h"
@@ -54,7 +52,6 @@ class PrerenderManager;
 }
 
 class TabAndroid : public CoreTabHelperDelegate,
-                   public content::NotificationObserver,
                    public favicon::FaviconDriverObserver,
                    public content::WebContentsObserver {
  public:
@@ -107,9 +104,6 @@ class TabAndroid : public CoreTabHelperDelegate,
   // it.
   bool IsUserInteractable() const;
 
-  // Load the tab if it was unloaded from memory.
-  bool LoadIfNeeded();
-
   // Helper methods to make it easier to access objects from the associated
   // WebContents.  Can return NULL.
   Profile* GetProfile() const;
@@ -125,11 +119,6 @@ class TabAndroid : public CoreTabHelperDelegate,
   void HandlePopupNavigation(NavigateParams* params);
 
   bool HasPrerenderedUrl(GURL gurl);
-
-  // Overridden from NotificationObserver:
-  void Observe(int type,
-               const content::NotificationSource& source,
-               const content::NotificationDetails& details) override;
 
   // Overridden from favicon::FaviconDriverObserver:
   void OnFaviconUpdated(favicon::FaviconDriver* favicon_driver,
@@ -253,9 +242,7 @@ class TabAndroid : public CoreTabHelperDelegate,
       const base::android::JavaParamRef<jobject>& obj,
       const base::android::JavaParamRef<jstring>& scope);
 
-  const std::string& GetWebappManifestScope() const {
-    return webapp_manifest_scope_;
-  }
+  const GURL& GetWebappManifestScope() const { return webapp_manifest_scope_; }
 
   void SetPictureInPictureEnabled(
       JNIEnv* env,
@@ -318,8 +305,6 @@ class TabAndroid : public CoreTabHelperDelegate,
   // Identifier of the window the tab is in.
   SessionID session_window_id_;
 
-  content::NotificationRegistrar notification_registrar_;
-
   scoped_refptr<cc::Layer> content_layer_;
   android::TabContentManager* tab_content_manager_;
 
@@ -329,7 +314,7 @@ class TabAndroid : public CoreTabHelperDelegate,
   scoped_refptr<content::DevToolsAgentHost> devtools_host_;
   std::unique_ptr<browser_sync::SyncedTabDelegateAndroid> synced_tab_delegate_;
 
-  std::string webapp_manifest_scope_;
+  GURL webapp_manifest_scope_;
   bool picture_in_picture_enabled_;
   bool embedded_media_experience_enabled_;
 

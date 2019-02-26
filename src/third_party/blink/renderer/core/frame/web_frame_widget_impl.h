@@ -73,6 +73,7 @@ class WebFrameWidgetImpl final : public WebFrameWidgetBase,
  public:
   static WebFrameWidgetImpl* Create(WebWidgetClient&);
 
+  explicit WebFrameWidgetImpl(WebWidgetClient&);
   ~WebFrameWidgetImpl() override;
 
   // WebWidget functions:
@@ -84,13 +85,15 @@ class WebFrameWidgetImpl final : public WebFrameWidgetBase,
   void DidExitFullscreen() override;
   void SetSuppressFrameRequestsWorkaroundFor704763Only(bool) final;
   void BeginFrame(base::TimeTicks last_frame_time) override;
-  void UpdateLifecycle(LifecycleUpdate requested_update) override;
+  void RecordEndOfFrameMetrics(base::TimeTicks) override;
+  void UpdateLifecycle(LifecycleUpdate requested_update,
+                       LifecycleUpdateReason reason) override;
   void PaintContent(cc::PaintCanvas*, const WebRect&) override;
   void LayoutAndPaintAsync(base::OnceClosure callback) override;
   void CompositeAndReadbackAsync(
       base::OnceCallback<void(const SkBitmap&)> callback) override;
   void ThemeChanged() override;
-  WebHitTestResult HitTestResultAt(const WebPoint&) override;
+  WebHitTestResult HitTestResultAt(const gfx::Point&) override;
   WebInputEventResult DispatchBufferedTouchEvents() override;
   WebInputEventResult HandleInputEvent(const WebCoalescedInputEvent&) override;
   void SetCursorVisibilityState(bool is_visible) override;
@@ -110,7 +113,6 @@ class WebFrameWidgetImpl final : public WebFrameWidgetBase,
   WebURL GetURLForDebugTrace() override;
 
   // WebFrameWidget implementation.
-  void SetVisibilityState(mojom::PageVisibilityState) override;
   void SetBackgroundColorOverride(SkColor) override;
   void ClearBackgroundColorOverride() override;
   void SetBaseBackgroundColorOverride(SkColor) override;
@@ -144,7 +146,7 @@ class WebFrameWidgetImpl final : public WebFrameWidgetBase,
   void SetRootLayer(scoped_refptr<cc::Layer>) override;
   WebLayerTreeView* GetLayerTreeView() const override;
   CompositorAnimationHost* AnimationHost() const override;
-  HitTestResult CoreHitTestResultAt(const WebPoint&) override;
+  HitTestResult CoreHitTestResultAt(const gfx::Point&) override;
 
   // Exposed for the purpose of overriding device metrics.
   void SendResizeEventAndRepaint();
@@ -164,8 +166,6 @@ class WebFrameWidgetImpl final : public WebFrameWidgetBase,
 
  private:
   friend class WebFrameWidget;  // For WebFrameWidget::create.
-
-  explicit WebFrameWidgetImpl(WebWidgetClient&);
 
   // Perform a hit test for a point relative to the root frame of the page.
   HitTestResult HitTestResultForRootFramePos(

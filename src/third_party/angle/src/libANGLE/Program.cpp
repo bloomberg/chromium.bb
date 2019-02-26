@@ -607,13 +607,9 @@ struct Program::LinkingState
 const char *const g_fakepath = "C:\\fakepath";
 
 // InfoLog implementation.
-InfoLog::InfoLog()
-{
-}
+InfoLog::InfoLog() {}
 
-InfoLog::~InfoLog()
-{
-}
+InfoLog::~InfoLog() {}
 
 size_t InfoLog::getLength() const
 {
@@ -719,9 +715,7 @@ bool IsActiveInterfaceBlock(const sh::InterfaceBlock &interfaceBlock)
 }
 
 // VariableLocation implementation.
-VariableLocation::VariableLocation() : arrayIndex(0), index(kUnused), ignored(false)
-{
-}
+VariableLocation::VariableLocation() : arrayIndex(0), index(kUnused), ignored(false) {}
 
 VariableLocation::VariableLocation(unsigned int arrayIndex, unsigned int index)
     : arrayIndex(arrayIndex), index(index), ignored(false)
@@ -732,21 +726,16 @@ VariableLocation::VariableLocation(unsigned int arrayIndex, unsigned int index)
 // SamplerBindings implementation.
 SamplerBinding::SamplerBinding(TextureType textureTypeIn, size_t elementCount, bool unreferenced)
     : textureType(textureTypeIn), boundTextureUnits(elementCount, 0), unreferenced(unreferenced)
-{
-}
+{}
 
 SamplerBinding::SamplerBinding(const SamplerBinding &other) = default;
 
 SamplerBinding::~SamplerBinding() = default;
 
 // ProgramBindings implementation.
-ProgramBindings::ProgramBindings()
-{
-}
+ProgramBindings::ProgramBindings() {}
 
-ProgramBindings::~ProgramBindings()
-{
-}
+ProgramBindings::~ProgramBindings() {}
 
 void ProgramBindings::bindLocation(GLuint index, const std::string &name)
 {
@@ -770,9 +759,7 @@ ProgramBindings::const_iterator ProgramBindings::end() const
 }
 
 // ImageBinding implementation.
-ImageBinding::ImageBinding(size_t count) : boundImageUnits(count, 0), unreferenced(false)
-{
-}
+ImageBinding::ImageBinding(size_t count) : boundImageUnits(count, 0), unreferenced(false) {}
 ImageBinding::ImageBinding(GLuint imageUnit, size_t count, bool unreferenced)
     : unreferenced(unreferenced)
 {
@@ -802,6 +789,7 @@ ProgramState::ProgramState()
       mGeometryShaderOutputPrimitiveType(PrimitiveMode::TriangleStrip),
       mGeometryShaderInvocations(1),
       mGeometryShaderMaxVertices(0),
+      mDrawIDLocation(-1),
       mActiveSamplerRefCounts{}
 {
     mComputeShaderLocalSize.fill(1);
@@ -920,7 +908,7 @@ Program::~Program()
 
 void Program::onDestroy(const Context *context)
 {
-    ASSERT(mLinkResolved);
+    resolveLink(context);
     for (ShaderType shaderType : AllShaderTypes())
     {
         if (mState.mAttachedShaders[shaderType])
@@ -930,8 +918,7 @@ void Program::onDestroy(const Context *context)
         }
     }
 
-    // TODO(jmadill): Handle error in the Context. http://anglebug.com/2491
-    ANGLE_SWALLOW_ERR(mProgram->destroy(context));
+    mProgram->destroy(context);
 
     ASSERT(!mState.hasAttachedShader());
     SafeDelete(mProgram);
@@ -1103,7 +1090,7 @@ void Program::pathFragmentInputGen(GLint index,
 // The attached shaders are checked for linking errors by matching up their variables.
 // Uniform, input and output variables get collected.
 // The code gets compiled into binaries.
-Error Program::link(const gl::Context *context)
+angle::Result Program::link(const Context *context)
 {
     const auto &data = context->getContextState();
 
@@ -1116,11 +1103,11 @@ Error Program::link(const gl::Context *context)
     // Validate we have properly attached shaders before checking the cache.
     if (!linkValidateShaders(mInfoLog))
     {
-        return NoError();
+        return angle::Result::Continue();
     }
 
     egl::BlobCache::Key programHash = {0};
-    MemoryProgramCache *cache = context->getMemoryProgramCache();
+    MemoryProgramCache *cache       = context->getMemoryProgramCache();
 
     if (cache)
     {
@@ -1134,7 +1121,7 @@ Error Program::link(const gl::Context *context)
         double delta = platform->currentTime(platform) - startTime;
         int us       = static_cast<int>(delta * 1000000.0);
         ANGLE_HISTOGRAM_COUNTS("GPU.ANGLE.ProgramCache.ProgramCacheHitTimeUS", us);
-        return NoError();
+        return angle::Result::Continue();
     }
 
     // Cache load failed, fall through to normal linking.
@@ -1157,7 +1144,7 @@ Error Program::link(const gl::Context *context)
         if (!linkUniforms(context->getCaps(), mInfoLog, mUniformLocationBindings,
                           &combinedImageUniforms, &resources->unusedUniforms))
         {
-            return NoError();
+            return angle::Result::Continue();
         }
 
         GLuint combinedShaderStorageBlocks = 0u;
@@ -1165,7 +1152,7 @@ Error Program::link(const gl::Context *context)
                                  context->getExtensions().webglCompatibility, mInfoLog,
                                  &combinedShaderStorageBlocks))
         {
-            return NoError();
+            return angle::Result::Continue();
         }
 
         // [OpenGL ES 3.1] Chapter 8.22 Page 203:
@@ -1181,7 +1168,7 @@ Error Program::link(const gl::Context *context)
                    "and active fragment shader outputs exceeds "
                    "MAX_COMBINED_SHADER_OUTPUT_RESOURCES ("
                 << context->getCaps().maxCombinedShaderOutputResources << ")";
-            return NoError();
+            return angle::Result::Continue();
         }
 
         InitUniformBlockLinker(mState, &resources->uniformBlockLinker);
@@ -1211,19 +1198,19 @@ Error Program::link(const gl::Context *context)
 
         if (!linkAttributes(context->getCaps(), mInfoLog))
         {
-            return NoError();
+            return angle::Result::Continue();
         }
 
         if (!linkVaryings(mInfoLog))
         {
-            return NoError();
+            return angle::Result::Continue();
         }
 
         GLuint combinedImageUniforms = 0u;
         if (!linkUniforms(context->getCaps(), mInfoLog, mUniformLocationBindings,
                           &combinedImageUniforms, &resources->unusedUniforms))
         {
-            return NoError();
+            return angle::Result::Continue();
         }
 
         GLuint combinedShaderStorageBlocks = 0u;
@@ -1231,19 +1218,19 @@ Error Program::link(const gl::Context *context)
                                  context->getExtensions().webglCompatibility, mInfoLog,
                                  &combinedShaderStorageBlocks))
         {
-            return NoError();
+            return angle::Result::Continue();
         }
 
         if (!linkValidateGlobalNames(mInfoLog))
         {
-            return NoError();
+            return angle::Result::Continue();
         }
 
         if (!linkOutputVariables(context->getCaps(), context->getExtensions(),
                                  context->getClientVersion(), combinedImageUniforms,
                                  combinedShaderStorageBlocks))
         {
-            return NoError();
+            return angle::Result::Continue();
         }
 
         const auto &mergedVaryings = getMergedVaryings();
@@ -1257,13 +1244,13 @@ Error Program::link(const gl::Context *context)
         if (!linkValidateTransformFeedback(context->getClientVersion(), mInfoLog, mergedVaryings,
                                            context->getCaps()))
         {
-            return NoError();
+            return angle::Result::Continue();
         }
 
         if (!resources->varyingPacking.collectAndPackUserVaryings(
                 mInfoLog, mergedVaryings, mState.getTransformFeedbackVaryingNames()))
         {
-            return NoError();
+            return angle::Result::Continue();
         }
 
         gatherTransformFeedbackVaryings(mergedVaryings);
@@ -1276,7 +1263,7 @@ Error Program::link(const gl::Context *context)
     mLinkingState->resources   = std::move(resources);
     mLinkResolved              = false;
 
-    return NoError();
+    return angle::Result::Continue();
 }
 
 bool Program::isLinking() const
@@ -1314,6 +1301,11 @@ void Program::resolveLinkImpl(const Context *context)
     mState.updateActiveImages();
 
     setUniformValuesFromBindingQualifiers();
+
+    if (context->getExtensions().multiDraw)
+    {
+        mState.mDrawIDLocation = getUniformLocation("gl_DrawID");
+    }
 
     // Save to the program cache.
     auto *cache = linkingState->context->getMemoryProgramCache();
@@ -1420,6 +1412,7 @@ void Program::unlink()
     mState.mGeometryShaderOutputPrimitiveType = PrimitiveMode::TriangleStrip;
     mState.mGeometryShaderInvocations         = 1;
     mState.mGeometryShaderMaxVertices         = 0;
+    mState.mDrawIDLocation                    = -1;
 
     mValidated = false;
 
@@ -1427,22 +1420,22 @@ void Program::unlink()
     mInfoLog.reset();
 }
 
-Error Program::loadBinary(const Context *context,
-                          GLenum binaryFormat,
-                          const void *binary,
-                          GLsizei length)
+angle::Result Program::loadBinary(const Context *context,
+                                  GLenum binaryFormat,
+                                  const void *binary,
+                                  GLsizei length)
 {
     ASSERT(mLinkResolved);
     unlink();
 
 #if ANGLE_PROGRAM_BINARY_LOAD != ANGLE_ENABLED
-    return NoError();
+    return angle::Result::Continue();
 #else
     ASSERT(binaryFormat == GL_PROGRAM_BINARY_ANGLE);
     if (binaryFormat != GL_PROGRAM_BINARY_ANGLE)
     {
         mInfoLog << "Invalid program binary format.";
-        return NoError();
+        return angle::Result::Continue();
     }
 
     const uint8_t *bytes = reinterpret_cast<const uint8_t *>(binary);
@@ -1460,15 +1453,15 @@ Error Program::loadBinary(const Context *context,
         mDirtyBits.set(uniformBlockIndex);
     }
 
-    return NoError();
+    return angle::Result::Continue();
 #endif  // #if ANGLE_PROGRAM_BINARY_LOAD == ANGLE_ENABLED
 }
 
-Error Program::saveBinary(const Context *context,
-                          GLenum *binaryFormat,
-                          void *binary,
-                          GLsizei bufSize,
-                          GLsizei *length) const
+angle::Result Program::saveBinary(Context *context,
+                                  GLenum *binaryFormat,
+                                  void *binary,
+                                  GLsizei bufSize,
+                                  GLsizei *length) const
 {
     ASSERT(mLinkResolved);
     if (binaryFormat)
@@ -1492,7 +1485,7 @@ Error Program::saveBinary(const Context *context,
         // TODO: This should be moved to the validation layer but computing the size of the binary
         // before saving it causes the save to happen twice.  It may be possible to write the binary
         // to a separate buffer, validate sizes and then copy it.
-        return InternalError();
+        ANGLE_CHECK(context, false, "Insufficient buffer size", GL_INVALID_OPERATION);
     }
 
     if (binary)
@@ -1510,10 +1503,10 @@ Error Program::saveBinary(const Context *context,
         *length = streamLength;
     }
 
-    return NoError();
+    return angle::Result::Continue();
 }
 
-GLint Program::getBinaryLength(const Context *context) const
+GLint Program::getBinaryLength(Context *context) const
 {
     ASSERT(mLinkResolved);
     if (!mLinked)
@@ -1522,8 +1515,9 @@ GLint Program::getBinaryLength(const Context *context) const
     }
 
     GLint length;
-    Error error = saveBinary(context, nullptr, nullptr, std::numeric_limits<GLint>::max(), &length);
-    if (error.isError())
+    angle::Result result =
+        saveBinary(context, nullptr, nullptr, std::numeric_limits<GLint>::max(), &length);
+    if (result != angle::Result::Continue())
     {
         return 0;
     }
@@ -2682,6 +2676,19 @@ const TransformFeedbackVarying &Program::getTransformFeedbackVaryingResource(GLu
     return mState.mLinkedTransformFeedbackVaryings[index];
 }
 
+bool Program::hasDrawIDUniform() const
+{
+    ASSERT(mLinkResolved);
+    return mState.mDrawIDLocation >= 0;
+}
+
+void Program::setDrawIDUniform(GLint drawid)
+{
+    ASSERT(mLinkResolved);
+    ASSERT(mState.mDrawIDLocation >= 0);
+    mProgram->setUniform1iv(mState.mDrawIDLocation, 1, &drawid);
+}
+
 bool Program::linkVaryings(InfoLog &infoLog) const
 {
     Shader *previousShader = nullptr;
@@ -2949,7 +2956,7 @@ bool Program::linkAtomicCounterBuffers()
 // Assigns locations to all attributes from the bindings and program locations.
 bool Program::linkAttributes(const Caps &caps, InfoLog &infoLog)
 {
-    Shader *vertexShader     = mState.getAttachedShader(ShaderType::Vertex);
+    Shader *vertexShader = mState.getAttachedShader(ShaderType::Vertex);
 
     int shaderVersion = vertexShader->getShaderVersion();
 
@@ -3711,7 +3718,7 @@ bool Program::linkOutputVariables(const Caps &caps,
 
         // GLSL ES 3.10 section 4.3.6: Output variables cannot be arrays of arrays or arrays of
         // structures, so we may use getBasicTypeElementCount().
-        unsigned int elementCount = outputVariable.getBasicTypeElementCount();
+        unsigned int elementCount          = outputVariable.getBasicTypeElementCount();
         unsigned int outputLocationsNeeded = static_cast<unsigned int>(baseLocation) + elementCount;
         if (outputLocationsNeeded > outputLocations->size())
         {
@@ -3734,8 +3741,8 @@ bool Program::linkOutputVariables(const Caps &caps,
             else
             {
                 VariableLocation locationInfo;
-                locationInfo.index                = outputVariableIndex;
-                (*outputLocations)[location]      = locationInfo;
+                locationInfo.index           = outputVariableIndex;
+                (*outputLocations)[location] = locationInfo;
             }
         }
     }
@@ -3872,7 +3879,7 @@ void Program::updateSamplerUniform(const VariableLocation &locationInfo,
                                    const GLint *v)
 {
     ASSERT(mState.isSamplerUniformIndex(locationInfo.index));
-    GLuint samplerIndex = mState.getSamplerIndexFromUniformIndex(locationInfo.index);
+    GLuint samplerIndex            = mState.getSamplerIndexFromUniformIndex(locationInfo.index);
     SamplerBinding &samplerBinding = mState.mSamplerBindings[samplerIndex];
     std::vector<GLuint> &boundTextureUnits = samplerBinding.boundTextureUnits;
 

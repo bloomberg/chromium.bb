@@ -41,17 +41,18 @@ import org.chromium.chrome.browser.omaha.RequestGenerator;
 import org.chromium.chrome.browser.partnerbookmarks.PartnerBookmark;
 import org.chromium.chrome.browser.partnerbookmarks.PartnerBookmarksProviderIterator;
 import org.chromium.chrome.browser.partnercustomizations.PartnerBrowserCustomizations;
+import org.chromium.chrome.browser.password_manager.ManagePasswordsUIProvider;
 import org.chromium.chrome.browser.policy.PolicyAuditor;
 import org.chromium.chrome.browser.preferences.LocationSettings;
 import org.chromium.chrome.browser.rlz.RevenueStats;
 import org.chromium.chrome.browser.services.AndroidEduOwnerCheckCallback;
 import org.chromium.chrome.browser.signin.GoogleActivityController;
 import org.chromium.chrome.browser.survey.SurveyController;
-import org.chromium.chrome.browser.sync.GmsCoreSyncListener;
 import org.chromium.chrome.browser.tab.AuthenticatorNavigationInterceptor;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.webapps.GooglePlayWebApkInstallDelegate;
 import org.chromium.chrome.browser.webauth.Fido2ApiHandler;
+import org.chromium.chrome.browser.widget.FeatureHighlightProvider;
 import org.chromium.components.signin.AccountManagerDelegate;
 import org.chromium.components.signin.SystemAccountManagerDelegate;
 import org.chromium.policy.AppRestrictionsProvider;
@@ -153,14 +154,6 @@ public abstract class AppHooks {
     }
 
     /**
-     * @return An instance of GmsCoreSyncListener to notify GmsCore of sync encryption key changes.
-     *         Will be null if one is unavailable.
-     */
-    public GmsCoreSyncListener createGmsCoreSyncListener() {
-        return null;
-    }
-
-    /**
      * @return An instance of GoogleActivityController.
      */
     public GoogleActivityController createGoogleActivityController() {
@@ -191,6 +184,14 @@ public abstract class AppHooks {
      */
     public LocaleManager createLocaleManager() {
         return new LocaleManager();
+    }
+
+    /**
+     * @return An instance of {@link ManagePasswordsUIProvider} that can be used to show one of
+     *         the two possible UI surfaces for managing passwords.
+     */
+    public ManagePasswordsUIProvider createManagePasswordsUIProvider() {
+        return new ManagePasswordsUIProvider();
     }
 
     /**
@@ -323,6 +324,13 @@ public abstract class AppHooks {
      */
     public Fido2ApiHandler createFido2ApiHandler() {
         return new Fido2ApiHandler();
+    }
+
+    /**
+     * @return A new {@link FeatureHighlightProvider}.
+     */
+    public FeatureHighlightProvider createFeatureHighlightProvider() {
+        return new FeatureHighlightProvider();
     }
 
     /**

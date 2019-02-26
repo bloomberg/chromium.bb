@@ -36,7 +36,8 @@
 
 - (UIFont*)nameFont {
   if (!_nameFont) {
-    _nameFont = [MDCTypography body2Font];
+    _nameFont = [[UIFontMetrics defaultMetrics]
+        scaledFontForFont:[MDCTypography body2Font]];
   }
   return _nameFont;
 }
@@ -50,7 +51,8 @@
 
 - (UIFont*)valueFont {
   if (!_valueFont) {
-    _valueFont = [MDCTypography body1Font];
+    _valueFont = [[UIFontMetrics defaultMetrics]
+        scaledFontForFont:[MDCTypography body1Font]];
   }
   return _valueFont;
 }
@@ -76,6 +78,10 @@
   cell.textLabel.textColor = self.nameColor;
   cell.detailTextLabel.font = self.valueFont;
   cell.detailTextLabel.textColor = self.valueColor;
+  cell.textLabel.adjustsFontForContentSizeCategory = YES;
+  cell.detailTextLabel.adjustsFontForContentSizeCategory = YES;
+
+  [cell updateConstraintsIfNeeded];
 }
 
 @end

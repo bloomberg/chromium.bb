@@ -62,7 +62,7 @@ void P2PSocketClientImpl::Init(
   state_ = STATE_OPENING;
   network::mojom::P2PSocketClientPtr socket_client;
   binding_.Bind(mojo::MakeRequest(&socket_client));
-  binding_.set_connection_error_handler(base::Bind(
+  binding_.set_connection_error_handler(base::BindOnce(
       &P2PSocketClientImpl::OnConnectionError, base::Unretained(this)));
   dispatcher_->GetP2PSocketManager()->get()->CreateSocket(
       type, local_address, network::P2PPortRange(min_port, max_port),
@@ -147,7 +147,7 @@ void P2PSocketClientImpl::IncomingTcpConnection(
   network::mojom::P2PSocketClientPtr socket_client;
   new_client->socket_ = std::move(socket);
   new_client->binding_.Bind(std::move(client_request));
-  new_client->binding_.set_connection_error_handler(base::Bind(
+  new_client->binding_.set_connection_error_handler(base::BindOnce(
       &P2PSocketClientImpl::OnConnectionError, base::Unretained(this)));
 
   DCHECK(thread_checker_.CalledOnValidThread());

@@ -243,13 +243,18 @@ void URLRequestContextBuilder::SetHttpNetworkSessionComponents(
       request_context->http_server_properties();
   session_context->net_log = request_context->net_log();
   session_context->channel_id_service = request_context->channel_id_service();
-  session_context->network_quality_provider =
+  session_context->network_quality_estimator =
       request_context->network_quality_estimator();
   if (request_context->network_quality_estimator()) {
     session_context->socket_performance_watcher_factory =
         request_context->network_quality_estimator()
             ->GetSocketPerformanceWatcherFactory();
   }
+#if BUILDFLAG(ENABLE_REPORTING)
+  session_context->reporting_service = request_context->reporting_service();
+  session_context->network_error_logging_service =
+      request_context->network_error_logging_service();
+#endif
 }
 
 void URLRequestContextBuilder::set_accept_language(
@@ -547,6 +552,31 @@ std::unique_ptr<URLRequestContext> URLRequestContextBuilder::Build() {
       proxy_resolution_service_.get();
   storage->set_proxy_resolution_service(std::move(proxy_resolution_service_));
 
+#if BUILDFLAG(ENABLE_REPORTING)
+  // Note: ReportingService::Create and NetworkErrorLoggingService::Create can
+  // both return nullptr if the corresponding base::Feature is disabled.
+
+  if (reporting_policy_) {
+    storage->set_reporting_service(
+        ReportingService::Create(*reporting_policy_, context.get()));
+  }
+
+  if (network_error_logging_enabled_) {
+    storage->set_network_error_logging_service(
+        NetworkErrorLoggingService::Create(
+            NetworkErrorLoggingDelegate::Create()));
+  }
+
+  // If both Reporting and Network Error Logging are actually enabled, then
+  // connect them so Network Error Logging can use Reporting to deliver error
+  // reports.
+  if (context->reporting_service() &&
+      context->network_error_logging_service()) {
+    context->network_error_logging_service()->SetReportingService(
+        context->reporting_service());
+  }
+#endif  // BUILDFLAG(ENABLE_REPORTING)
+
   HttpNetworkSession::Context network_session_context;
   SetHttpNetworkSessionComponents(context.get(), &network_session_context);
 
@@ -657,31 +687,6 @@ std::unique_ptr<URLRequestContext> URLRequestContextBuilder::Build() {
                           .Run(std::move(top_job_factory));
   }
   storage->set_job_factory(std::move(top_job_factory));
-
-#if BUILDFLAG(ENABLE_REPORTING)
-  // Note: ReportingService::Create and NetworkErrorLoggingService::Create can
-  // both return nullptr if the corresponding base::Feature is disabled.
-
-  if (reporting_policy_) {
-    storage->set_reporting_service(
-        ReportingService::Create(*reporting_policy_, context.get()));
-  }
-
-  if (network_error_logging_enabled_) {
-    storage->set_network_error_logging_service(
-        NetworkErrorLoggingService::Create(
-            NetworkErrorLoggingDelegate::Create()));
-  }
-
-  // If both Reporting and Network Error Logging are actually enabled, then
-  // connect them so Network Error Logging can use Reporting to deliver error
-  // reports.
-  if (context->reporting_service() &&
-      context->network_error_logging_service()) {
-    context->network_error_logging_service()->SetReportingService(
-        context->reporting_service());
-  }
-#endif  // BUILDFLAG(ENABLE_REPORTING)
 
   return std::move(context);
 }

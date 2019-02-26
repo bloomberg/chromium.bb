@@ -5,4 +5,4 @@
 #include "ios/chrome/browser/search_engines/feature_flags.h"
 
 const base::Feature kCustomSearchEngines{"CustomSearchEngines",
-                                         base::FEATURE_DISABLED_BY_DEFAULT};
+                                         base::FEATURE_ENABLED_BY_DEFAULT};

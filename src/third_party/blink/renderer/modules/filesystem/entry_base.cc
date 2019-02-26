@@ -59,9 +59,10 @@ String EntryBase::toURL() const {
 
 FileSystemBaseHandle* EntryBase::asFileSystemHandle() const {
   if (isFile())
-    return new FileSystemFileHandle(filesystem(), fullPath());
+    return MakeGarbageCollected<FileSystemFileHandle>(filesystem(), fullPath());
   DCHECK(isDirectory());
-  return new FileSystemDirectoryHandle(filesystem(), fullPath());
+  return MakeGarbageCollected<FileSystemDirectoryHandle>(filesystem(),
+                                                         fullPath());
 }
 
 void EntryBase::Trace(blink::Visitor* visitor) {

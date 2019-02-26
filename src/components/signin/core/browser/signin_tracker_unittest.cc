@@ -7,11 +7,11 @@
 #include "base/compiler_specific.h"
 #include "base/message_loop/message_loop.h"
 #include "build/build_config.h"
+#include "components/signin/core/browser/account_consistency_method.h"
 #include "components/signin/core/browser/account_tracker_service.h"
 #include "components/signin/core/browser/fake_gaia_cookie_manager_service.h"
 #include "components/signin/core/browser/fake_profile_oauth2_token_service.h"
 #include "components/signin/core/browser/fake_signin_manager.h"
-#include "components/signin/core/browser/profile_management_switches.h"
 #include "components/signin/core/browser/signin_switches.h"
 #include "components/signin/core/browser/test_signin_client.h"
 #include "components/sync_preferences/testing_pref_service_syncable.h"
@@ -53,7 +53,6 @@ class SigninTrackerTest : public testing::Test {
       : signin_client_(&pref_service_),
         fake_oauth2_token_service_(&pref_service_),
         fake_gaia_cookie_manager_service_(&fake_oauth2_token_service_,
-                                          "signin_tracker_unittest",
                                           &signin_client_),
 #if defined(OS_CHROMEOS)
         fake_signin_manager_(&signin_client_, &account_tracker_) {

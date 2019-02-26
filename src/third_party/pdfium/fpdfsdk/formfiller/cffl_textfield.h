@@ -34,8 +34,9 @@ class CFFL_TextField final : public CFFL_TextObject,
 
   // CFFL_TextObject:
   CPWL_Wnd::CreateParams GetCreateParam() override;
-  std::unique_ptr<CPWL_Wnd> NewPDFWindow(
-      const CPWL_Wnd::CreateParams& cp) override;
+  std::unique_ptr<CPWL_Wnd> NewPWLWindow(
+      const CPWL_Wnd::CreateParams& cp,
+      std::unique_ptr<CPWL_Wnd::PrivateData> pAttachedData) override;
   bool OnChar(CPDFSDK_Annot* pAnnot, uint32_t nChar, uint32_t nFlags) override;
   bool IsDataChanged(CPDFSDK_PageView* pPageView) override;
   void SaveData(CPDFSDK_PageView* pPageView) override;

@@ -5,8 +5,13 @@
 #ifndef CHROME_BROWSER_PREVIEWS_PREVIEWS_UI_TAB_HELPER_H_
 #define CHROME_BROWSER_PREVIEWS_PREVIEWS_UI_TAB_HELPER_H_
 
+#include <map>
+
+#include <stdint.h>
+
 #include "base/callback.h"
 #include "base/macros.h"
+#include "base/memory/weak_ptr.h"
 #include "base/optional.h"
 #include "base/strings/string16.h"
 #include "base/time/time.h"
@@ -18,8 +23,14 @@
 
 typedef base::OnceCallback<void(bool opt_out)> OnDismissPreviewsUICallback;
 
+namespace content {
+class NavigationHandle;
+}  // namespace content
+
 // Tracks whether a previews UI has been shown for a page. Handles showing
-// the UI when the main frame response indicates a Lite Page.
+// the UI when the main frame response indicates a Lite Page. Handles tracking
+// PreviewsState (and other data) throughout the lifetime of the
+// preview/navigation.
 class PreviewsUITabHelper
     : public content::WebContentsObserver,
       public content::WebContentsUserData<PreviewsUITabHelper> {
@@ -92,11 +103,26 @@ class PreviewsUITabHelper
   // A key to identify opt out events.
   static const void* OptOutEventKey();
 
+  // Create a PreviewsUserData and associate |navigation_handle| with the
+  // PreviewsUserData, so it can be deleted later. |page_id| is the Previews
+  // identifier for the load.
+  previews::PreviewsUserData* CreatePreviewsUserDataForNavigationHandle(
+      content::NavigationHandle* navigation_handle,
+      int64_t page_id);
+
+  // Gets the PreviewsUserData associated with |navigation_handle|. It may be
+  // null.
+  previews::PreviewsUserData* GetPreviewsUserData(
+      content::NavigationHandle* navigation_handle);
+
  private:
   friend class content::WebContentsUserData<PreviewsUITabHelper>;
   friend class PreviewsUITabHelperUnitTest;
 
   explicit PreviewsUITabHelper(content::WebContents* web_contents);
+
+  // Synchronously removes any data associated with |navigation_handle|.
+  void RemovePreviewsUserData(int64_t navigation_id);
 
   // Overridden from content::WebContentsObserver:
   void DidFinishNavigation(
@@ -122,9 +148,17 @@ class PreviewsUITabHelper
   // The callback to run when the original page is loaded.
   OnDismissPreviewsUICallback on_dismiss_callback_;
 
+  // The data related to a given navigation ID. Created in the navigation
+  // pathway (see chrome_content_browser_client.cc). Removed in a PostTask from
+  // DidFinishNavigation for the given navigation ID related to the
+  // NavigationHandle.
+  std::map<int64_t, previews::PreviewsUserData> inflight_previews_user_datas_;
+
   // The Previews information related to the navigation that was most recently
   // finished.
   std::unique_ptr<previews::PreviewsUserData> previews_user_data_;
+
+  base::WeakPtrFactory<PreviewsUITabHelper> weak_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(PreviewsUITabHelper);
 };

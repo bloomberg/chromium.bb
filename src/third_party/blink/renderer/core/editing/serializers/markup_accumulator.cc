@@ -119,8 +119,8 @@ void MarkupAccumulator::AppendElement(StringBuilder& result,
     // 3.2. Element: If current node's is value is not null, and the
     // element does not have an is attribute in its attribute list, ...
     const AtomicString& is_value = element.IsValue();
-    if (!is_value.IsNull() && !attributes.Find(HTMLNames::isAttr)) {
-      AppendAttribute(result, element, Attribute(HTMLNames::isAttr, is_value),
+    if (!is_value.IsNull() && !attributes.Find(html_names::kIsAttr)) {
+      AppendAttribute(result, element, Attribute(html_names::kIsAttr, is_value),
                       namespaces);
     }
   }
@@ -227,7 +227,7 @@ String SerializeNodes(MarkupAccumulator& accumulator,
   Namespaces namespace_hash;
   if (!accumulator.SerializeAsHTMLDocument(target_node)) {
     // Add pre-bound namespaces for XML fragments.
-    namespace_hash.Set(g_xml_atom, XMLNames::xmlNamespaceURI);
+    namespace_hash.Set(g_xml_atom, xml_names::kNamespaceURI);
     namespaces = &namespace_hash;
   }
 

@@ -33,9 +33,12 @@ class DefaultP2PQuicTransportFactory : public P2PQuicTransportFactory {
 
   // P2PQuicTransportFactory overrides.
   std::unique_ptr<P2PQuicTransport> CreateQuicTransport(
-      P2PQuicTransportConfig config) override {
+      P2PQuicTransport::Delegate* delegate,
+      P2PQuicPacketTransport* packet_transport,
+      const P2PQuicTransportConfig& config) override {
     DCHECK(host_thread_->RunsTasksInCurrentSequence());
-    return GetFactory()->CreateQuicTransport(std::move(config));
+    return GetFactory()->CreateQuicTransport(delegate, packet_transport,
+                                             config);
   }
 
  private:
@@ -96,8 +99,9 @@ RTCQuicTransport* RTCQuicTransport::Create(
       return nullptr;
     }
   }
-  return new RTCQuicTransport(context, transport, certificates, exception_state,
-                              std::move(p2p_quic_transport_factory));
+  return MakeGarbageCollected<RTCQuicTransport>(
+      context, transport, certificates, exception_state,
+      std::move(p2p_quic_transport_factory));
 }
 
 RTCQuicTransport::RTCQuicTransport(
@@ -106,7 +110,7 @@ RTCQuicTransport::RTCQuicTransport(
     const HeapVector<Member<RTCCertificate>>& certificates,
     ExceptionState& exception_state,
     std::unique_ptr<P2PQuicTransportFactory> p2p_quic_transport_factory)
-    : ContextLifecycleObserver(context),
+    : ContextClient(context),
       transport_(transport),
       certificates_(certificates),
       p2p_quic_transport_factory_(std::move(p2p_quic_transport_factory)) {
@@ -115,18 +119,6 @@ RTCQuicTransport::RTCQuicTransport(
 
 RTCQuicTransport::~RTCQuicTransport() {
   DCHECK(!proxy_);
-}
-
-void RTCQuicTransport::Close(RTCQuicTransportState new_state) {
-  DCHECK(!IsClosed());
-  for (RTCQuicStream* stream : streams_) {
-    stream->Stop();
-  }
-  streams_.clear();
-  transport_->DisconnectConsumer(this);
-  proxy_.reset();
-  state_ = new_state;
-  DCHECK(IsClosed());
 }
 
 RTCIceTransport* RTCQuicTransport::transport() const {
@@ -149,8 +141,10 @@ String RTCQuicTransport::state() const {
   return String();
 }
 
-void RTCQuicTransport::getLocalParameters(RTCQuicParameters& result) const {
-  HeapVector<RTCDtlsFingerprint> fingerprints;
+RTCQuicParameters* RTCQuicTransport::getLocalParameters() const {
+  RTCQuicParameters* result = RTCQuicParameters::Create();
+
+  HeapVector<Member<RTCDtlsFingerprint>> fingerprints;
   for (const auto& certificate : certificates_) {
     // TODO(github.com/w3c/webrtc-quic/issues/33): The specification says that
     // getLocalParameters should return one fingerprint per certificate but is
@@ -160,12 +154,12 @@ void RTCQuicTransport::getLocalParameters(RTCQuicParameters& result) const {
       fingerprints.push_back(certificate_fingerprint);
     }
   }
-  result.setFingerprints(fingerprints);
+  result->setFingerprints(fingerprints);
+  return result;
 }
 
-void RTCQuicTransport::getRemoteParameters(
-    base::Optional<RTCQuicParameters>& result) const {
-  result = remote_parameters_;
+RTCQuicParameters* RTCQuicTransport::getRemoteParameters() const {
+  return remote_parameters_;
 }
 
 const HeapVector<Member<RTCCertificate>>& RTCQuicTransport::getCertificates()
@@ -190,7 +184,7 @@ static quic::Perspective QuicPerspectiveFromIceRole(cricket::IceRole ice_role) {
   return quic::Perspective::IS_CLIENT;
 }
 
-void RTCQuicTransport::start(const RTCQuicParameters& remote_parameters,
+void RTCQuicTransport::start(const RTCQuicParameters* remote_parameters,
                              ExceptionState& exception_state) {
   if (RaiseExceptionIfClosed(exception_state)) {
     return;
@@ -200,16 +194,16 @@ void RTCQuicTransport::start(const RTCQuicParameters& remote_parameters,
                                       "Cannot start() multiple times.");
     return;
   }
-  remote_parameters_ = remote_parameters;
+  remote_parameters_ = const_cast<RTCQuicParameters*>(remote_parameters);
   if (transport_->IsStarted()) {
     StartConnection();
   }
 }
 
 static std::unique_ptr<rtc::SSLFingerprint> RTCDtlsFingerprintToSSLFingerprint(
-    const RTCDtlsFingerprint& dtls_fingerprint) {
-  std::string algorithm = WebString(dtls_fingerprint.algorithm()).Utf8();
-  std::string value = WebString(dtls_fingerprint.value()).Utf8();
+    const RTCDtlsFingerprint* dtls_fingerprint) {
+  std::string algorithm = WebString(dtls_fingerprint->algorithm()).Utf8();
+  std::string value = WebString(dtls_fingerprint->value()).Utf8();
   std::unique_ptr<rtc::SSLFingerprint> rtc_fingerprint(
       rtc::SSLFingerprint::CreateFromRfc4572(algorithm, value));
   DCHECK(rtc_fingerprint);
@@ -227,19 +221,26 @@ void RTCQuicTransport::StartConnection() {
     rtc_certificates.push_back(certificate->Certificate());
   }
   IceTransportProxy* transport_proxy = transport_->ConnectConsumer(this);
-  proxy_.reset(new QuicTransportProxy(
-      this, transport_proxy, QuicPerspectiveFromIceRole(transport_->GetRole()),
-      rtc_certificates, std::move(p2p_quic_transport_factory_)));
+  // TODO(https://crbug.com/874296): Use the proper read/write buffer sizees
+  // once write() and readInto() are implemented.
+  const uint32_t stream_buffer_size = 24 * 1024 * 1024;
+  P2PQuicTransportConfig quic_transport_config(
+      QuicPerspectiveFromIceRole(transport_->GetRole()), rtc_certificates,
+      /*stream_delegate_read_buffer_size_in=*/stream_buffer_size,
+      /*stream_write_buffer_size_in=*/stream_buffer_size);
+  proxy_.reset(new QuicTransportProxy(this, transport_proxy,
+                                      std::move(p2p_quic_transport_factory_),
+                                      quic_transport_config));
 
   std::vector<std::unique_ptr<rtc::SSLFingerprint>> rtc_fingerprints;
-  for (const RTCDtlsFingerprint& fingerprint :
+  for (const RTCDtlsFingerprint* fingerprint :
        remote_parameters_->fingerprints()) {
     rtc_fingerprints.push_back(RTCDtlsFingerprintToSSLFingerprint(fingerprint));
   }
   proxy_->Start(std::move(rtc_fingerprints));
 }
 
-void RTCQuicTransport::OnTransportStarted() {
+void RTCQuicTransport::OnIceTransportStarted() {
   // The RTCIceTransport has now been started.
   if (remote_parameters_) {
     StartConnection();
@@ -250,10 +251,7 @@ void RTCQuicTransport::stop() {
   if (IsClosed()) {
     return;
   }
-  if (proxy_) {
-    proxy_->Stop();
-  }
-  Close(RTCQuicTransportState::kClosed);
+  Close(CloseReason::kLocalStopped);
 }
 
 RTCQuicStream* RTCQuicTransport::createStream(ExceptionState& exception_state) {
@@ -284,23 +282,72 @@ void RTCQuicTransport::RemoveStream(RTCQuicStream* stream) {
 
 void RTCQuicTransport::OnConnected() {
   state_ = RTCQuicTransportState::kConnected;
-  DispatchEvent(*Event::Create(EventTypeNames::statechange));
+  DispatchEvent(*Event::Create(event_type_names::kStatechange));
 }
 
 void RTCQuicTransport::OnConnectionFailed(const std::string& error_details,
                                           bool from_remote) {
-  Close(RTCQuicTransportState::kFailed);
-  DispatchEvent(*Event::Create(EventTypeNames::statechange));
+  Close(CloseReason::kFailed);
 }
 
 void RTCQuicTransport::OnRemoteStopped() {
-  Close(RTCQuicTransportState::kClosed);
-  DispatchEvent(*Event::Create(EventTypeNames::statechange));
+  Close(CloseReason::kRemoteStopped);
 }
 
 void RTCQuicTransport::OnStream(QuicStreamProxy* stream_proxy) {
   RTCQuicStream* stream = AddStream(stream_proxy);
   DispatchEvent(*RTCQuicStreamEvent::Create(stream));
+}
+
+void RTCQuicTransport::OnIceTransportClosed(
+    RTCIceTransport::CloseReason reason) {
+  if (reason == RTCIceTransport::CloseReason::kContextDestroyed) {
+    Close(CloseReason::kContextDestroyed);
+  } else {
+    Close(CloseReason::kIceTransportClosed);
+  }
+}
+
+void RTCQuicTransport::Close(CloseReason reason) {
+  DCHECK(!IsClosed());
+
+  // Disconnect from the RTCIceTransport, allowing a new RTCQuicTransport to
+  // connect to it.
+  transport_->DisconnectConsumer(this);
+
+  // Notify the active streams that the transport is closing.
+  for (RTCQuicStream* stream : streams_) {
+    stream->OnQuicTransportClosed(reason);
+  }
+  streams_.clear();
+
+  // Tear down the QuicTransportProxy and change the state.
+  switch (reason) {
+    case CloseReason::kLocalStopped:
+    case CloseReason::kIceTransportClosed:
+    case CloseReason::kContextDestroyed:
+      // The QuicTransportProxy may be active so gracefully Stop() before
+      // destroying it.
+      if (proxy_) {
+        proxy_->Stop();
+        proxy_.reset();
+      }
+      state_ = RTCQuicTransportState::kClosed;
+      break;
+    case CloseReason::kRemoteStopped:
+    case CloseReason::kFailed:
+      // The QuicTransportProxy has already been closed by the event, so just go
+      // ahead and delete it.
+      proxy_.reset();
+      state_ =
+          (reason == CloseReason::kFailed ? RTCQuicTransportState::kFailed
+                                          : RTCQuicTransportState::kClosed);
+      DispatchEvent(*Event::Create(event_type_names::kStatechange));
+      break;
+  }
+
+  DCHECK(!proxy_);
+  DCHECK(IsClosed());
 }
 
 bool RTCQuicTransport::RaiseExceptionIfClosed(
@@ -315,19 +362,11 @@ bool RTCQuicTransport::RaiseExceptionIfClosed(
 }
 
 const AtomicString& RTCQuicTransport::InterfaceName() const {
-  return EventTargetNames::RTCQuicTransport;
+  return event_target_names::kRTCQuicTransport;
 }
 
 ExecutionContext* RTCQuicTransport::GetExecutionContext() const {
-  return ContextLifecycleObserver::GetExecutionContext();
-}
-
-void RTCQuicTransport::ContextDestroyed(ExecutionContext*) {
-  stop();
-}
-
-bool RTCQuicTransport::HasPendingActivity() const {
-  return static_cast<bool>(proxy_);
+  return ContextClient::GetExecutionContext();
 }
 
 void RTCQuicTransport::Trace(blink::Visitor* visitor) {
@@ -337,7 +376,7 @@ void RTCQuicTransport::Trace(blink::Visitor* visitor) {
   visitor->Trace(remote_parameters_);
   visitor->Trace(streams_);
   EventTargetWithInlineData::Trace(visitor);
-  ContextLifecycleObserver::Trace(visitor);
+  ContextClient::Trace(visitor);
 }
 
 }  // namespace blink

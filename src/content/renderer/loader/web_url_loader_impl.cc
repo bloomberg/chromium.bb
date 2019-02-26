@@ -25,8 +25,8 @@
 #include "build/build_config.h"
 #include "content/child/child_thread_impl.h"
 #include "content/common/service_worker/service_worker_types.h"
-#include "content/public/common/browser_side_navigation_policy.h"
 #include "content/public/common/content_features.h"
+#include "content/public/common/navigation_policy.h"
 #include "content/public/common/previews_state.h"
 #include "content/public/common/referrer.h"
 #include "content/public/renderer/fixed_received_data.h"
@@ -78,7 +78,6 @@ using blink::WebData;
 using blink::WebHTTPBody;
 using blink::WebHTTPHeaderVisitor;
 using blink::WebHTTPLoadInfo;
-using blink::WebReferrerPolicy;
 using blink::WebSecurityPolicy;
 using blink::WebString;
 using blink::WebURL;
@@ -479,6 +478,9 @@ class WebURLLoaderImpl::RequestPeerImpl : public RequestPeer {
   void OnReceivedCachedMetadata(const char* data, int len) override;
   void OnCompletedRequest(
       const network::URLLoaderCompletionStatus& status) override;
+  scoped_refptr<base::TaskRunner> GetTaskRunner() const override {
+    return context_->task_runner();
+  }
 
  private:
   scoped_refptr<Context> context_;
@@ -507,6 +509,9 @@ class WebURLLoaderImpl::SinkPeer : public RequestPeer {
       const network::URLLoaderCompletionStatus& status) override {
     context_->resource_dispatcher()->Cancel(context_->request_id(),
                                             context_->task_runner());
+  }
+  scoped_refptr<base::TaskRunner> GetTaskRunner() const override {
+    return context_->task_runner();
   }
 
  private:
@@ -676,8 +681,10 @@ void WebURLLoaderImpl::Context::Start(const WebURLRequest& request,
     resource_request->headers.SetHeaderIfMissing(network::kAcceptHeader,
                                                  network::kDefaultAcceptHeader);
   }
-  resource_request->requested_with =
-      WebString(request.GetRequestedWith()).Utf8();
+  resource_request->requested_with_header =
+      WebString(request.GetRequestedWithHeader()).Utf8();
+  resource_request->client_data_header =
+      WebString(request.GetClientDataHeader()).Utf8();
 
   if (resource_request->resource_type == RESOURCE_TYPE_PREFETCH ||
       resource_request->resource_type == RESOURCE_TYPE_FAVICON) {
@@ -695,7 +702,7 @@ void WebURLLoaderImpl::Context::Start(const WebURLRequest& request,
   resource_request->appcache_host_id = request.AppCacheHostID();
   resource_request->should_reset_appcache = request.ShouldResetAppCache();
   resource_request->is_external_request = request.IsExternalRequest();
-  resource_request->cors_preflight_policy = request.GetCORSPreflightPolicy();
+  resource_request->cors_preflight_policy = request.GetCorsPreflightPolicy();
   resource_request->skip_service_worker = request.GetSkipServiceWorker();
   resource_request->fetch_request_mode = request.GetFetchRequestMode();
   resource_request->fetch_credentials_mode = request.GetFetchCredentialsMode();
@@ -744,7 +751,7 @@ void WebURLLoaderImpl::Context::Start(const WebURLRequest& request,
   extra_data->CopyToResourceRequest(resource_request.get());
 
   std::unique_ptr<RequestPeer> peer;
-  if (extra_data->download_to_network_cache_only()) {
+  if (request.IsDownloadToNetworkCacheOnly()) {
     peer = std::make_unique<SinkPeer>(this);
   } else {
     const bool discard_body =
@@ -1184,6 +1191,7 @@ void WebURLLoaderImpl::PopulateURLResponse(
       !net::IsCertStatusMinorError(info.cert_status));
   response->SetCTPolicyCompliance(info.ct_policy_compliance);
   response->SetIsLegacySymantecCert(info.is_legacy_symantec_cert);
+  response->SetIsLegacyTLSVersion(info.is_legacy_tls_version);
   response->SetAppCacheID(info.appcache_id);
   response->SetAppCacheManifestURL(info.appcache_manifest_url);
   response->SetWasCached(!info.load_timing.request_start_time.is_null() &&
@@ -1218,6 +1226,7 @@ void WebURLLoaderImpl::PopulateURLResponse(
       WebString::FromUTF8(info.alpn_negotiated_protocol));
   response->SetConnectionInfo(info.connection_info);
   response->SetAsyncRevalidationRequested(info.async_revalidation_requested);
+  response->SetNetworkAccessed(info.network_accessed);
   response->SetRequestId(request_id);
   response->SetIsSignedExchangeInnerResponse(
       info.is_signed_exchange_inner_response);

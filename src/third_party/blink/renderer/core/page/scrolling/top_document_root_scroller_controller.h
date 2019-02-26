@@ -12,8 +12,8 @@
 
 namespace blink {
 
-class Element;
 class LocalFrameView;
+class Node;
 class Page;
 class GraphicsLayer;
 class PaintLayer;
@@ -24,14 +24,16 @@ class ViewportScrollCallback;
 
 // This class manages the the page level aspects of the root scroller.  That
 // is, given all the iframes on a page and their individual root scrollers,
-// this class will determine which ultimate Element should be used as the root
-// scroller and ensures that Element is used to scroll browser controls and
+// this class will determine which ultimate Node should be used as the root
+// scroller and ensures that Node is used to scroll browser controls and
 // provide overscroll effects. High level details are available in README.md.
 // TODO(bokan): This class is currently OOPIF unaware. crbug.com/642378.
 class CORE_EXPORT TopDocumentRootScrollerController
     : public GarbageCollected<TopDocumentRootScrollerController> {
  public:
   static TopDocumentRootScrollerController* Create(Page&);
+
+  TopDocumentRootScrollerController(Page&);
 
   void Trace(blink::Visitor*);
 
@@ -46,7 +48,7 @@ class CORE_EXPORT TopDocumentRootScrollerController
   // This method needs to be called to create a ViewportScrollCallback that
   // will be used to apply viewport scrolling actions like browser controls
   // movement and overscroll glow.
-  void InitializeViewportScrollCallback(RootFrameViewport&);
+  void InitializeViewportScrollCallback(RootFrameViewport&, Document&);
 
   // Returns true if the given ScrollStateCallback is the
   // ViewportScrollCallback managed by this class.
@@ -63,10 +65,10 @@ class CORE_EXPORT TopDocumentRootScrollerController
 
   PaintLayer* RootScrollerPaintLayer() const;
 
-  // Returns the Element that's the global root scroller.  See README.md for
-  // the difference between this and the root scroller types in
+  // Returns the Node that's the global root scroller.  See README.md for the
+  // difference between this and the root scroller types in
   // RootScrollerController.
-  Element* GlobalRootScroller() const;
+  Node* GlobalRootScroller() const;
 
   // Called when the root scroller in any frames on the page has changed.
   void DidChangeRootScroller();
@@ -74,7 +76,7 @@ class CORE_EXPORT TopDocumentRootScrollerController
   void DidResizeViewport();
 
   // Returns the ScrollableArea associated with the globalRootScroller(). Note,
-  // this isn't necessarily the PLSA belonging to the root scroller Element's
+  // this isn't necessarily the PLSA belonging to the root scroller Node's
   // LayoutBox.  If the root scroller is the documentElement then we use the
   // LocalFrameView (or LayoutView if root-layer-scrolls).
   ScrollableArea* RootScrollerArea() const;
@@ -84,18 +86,19 @@ class CORE_EXPORT TopDocumentRootScrollerController
   IntSize RootScrollerVisibleArea() const;
 
  private:
-  TopDocumentRootScrollerController(Page&);
+  // Calculates the Node that should be the globalRootScroller. On a simple
+  // page, this will simply the root frame's effectiveRootScroller but if the
+  // root scroller is set to an iframe, this will then descend into the iframe
+  // to find its effective root scroller.
+  Node* FindGlobalRootScroller();
 
-  // Calculates the Element that should be the globalRootScroller. On a
-  // simple page, this will simply the root frame's effectiveRootScroller but
-  // if the root scroller is set to an iframe, this will then descend into
-  // the iframe to find its effective root scroller.
-  Element* FindGlobalRootScrollerElement();
+  // Should be called to set a new node as the global root scroller and that
+  // all appropriate state changes are made if it changes.
+  void UpdateGlobalRootScroller(Node* new_global_root_scroller);
 
-  // Should be called to ensure the correct element is currently set as the
-  // global root scroller and that all appropriate state changes are made if
-  // it changes.
-  void RecomputeGlobalRootScroller();
+  // Updates the is_global_root_scroller bits in all the necessary places when
+  // the global root scsroller changes.
+  void UpdateCachedBits(Node* old_global, Node* new_global);
 
   Document* TopDocument() const;
 
@@ -104,11 +107,11 @@ class CORE_EXPORT TopDocumentRootScrollerController
   // appropriate root scroller element.
   Member<ViewportScrollCallback> viewport_apply_scroll_;
 
-  // The page level root scroller. i.e. The actual element for which
-  // scrolling should move browser controls and produce overscroll glow. Once an
+  // The page level root scroller. i.e. The actual node for which scrolling
+  // should move browser controls and produce overscroll glow. Once an
   // m_viewportApplyScroll has been created, it will always be set on this
-  // Element.
-  WeakMember<Element> global_root_scroller_;
+  // Node.
+  WeakMember<Node> global_root_scroller_;
 
   Member<Page> page_;
 };

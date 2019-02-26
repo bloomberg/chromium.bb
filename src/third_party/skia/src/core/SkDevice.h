@@ -212,6 +212,8 @@ protected:
     virtual void drawImageLattice(const SkImage*, const SkCanvas::Lattice&,
                                   const SkRect& dst, const SkPaint&);
 
+    virtual void drawImageSet(const SkCanvas::ImageSetEntry[], int count, SkFilterQuality,
+                              SkBlendMode);
 
     virtual void drawVertices(const SkVertices*, const SkVertices::Bone bones[], int boneCount,
                               SkBlendMode, const SkPaint&) = 0;
@@ -234,6 +236,8 @@ protected:
     virtual void drawDevice(SkBaseDevice*, int x, int y, const SkPaint&) = 0;
 
     void drawGlyphRunRSXform(SkGlyphRun* run, const SkRSXform* xform);
+
+    virtual void drawDrawable(SkDrawable*, const SkMatrix*, SkCanvas*);
 
     virtual void drawSpecial(SkSpecialImage*, int x, int y, const SkPaint&,
                              SkImage* clipImage, const SkMatrix& clipMatrix);

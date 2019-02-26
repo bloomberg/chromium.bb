@@ -8,6 +8,7 @@
 #include "base/guid.h"
 #include "base/macros.h"
 #include "base/message_loop/message_loop_current.h"
+#include "base/optional.h"
 #include "base/run_loop.h"
 #include "mojo/public/cpp/bindings/binding_set.h"
 #include "services/service_manager/public/c/main.h"
@@ -25,9 +26,9 @@ namespace {
 
 void OnConnectResult(base::OnceClosure closure,
                      mojom::ConnectResult* out_result,
-                     Identity* out_resolved_identity,
+                     base::Optional<Identity>* out_resolved_identity,
                      mojom::ConnectResult result,
-                     const Identity& resolved_identity) {
+                     const base::Optional<Identity>& resolved_identity) {
   std::move(closure).Run();
   *out_result = result;
   *out_resolved_identity = resolved_identity;
@@ -84,9 +85,11 @@ class ConnectTestApp : public Service,
     bindings_.AddBinding(this, std::move(request));
     test::mojom::ConnectionStatePtr state(test::mojom::ConnectionState::New());
     state->connection_remote_name = source_info.identity.name();
-    state->connection_remote_userid = source_info.identity.user_id();
+    state->connection_remote_instance_group =
+        source_info.identity.instance_group();
     state->initialize_local_name = context()->identity().name();
-    state->initialize_userid = context()->identity().user_id();
+    state->initialize_local_instance_group =
+        context()->identity().instance_group();
 
     context()->connector()->BindInterface(source_info.identity, &caller_);
     caller_->ConnectionAccepted(std::move(state));
@@ -111,8 +114,8 @@ class ConnectTestApp : public Service,
   void GetTitle(GetTitleCallback callback) override {
     std::move(callback).Run("APP");
   }
-  void GetInstance(GetInstanceCallback callback) override {
-    std::move(callback).Run(context()->identity().instance());
+  void GetInstanceId(GetInstanceIdCallback callback) override {
+    std::move(callback).Run(context()->identity().instance_id());
   }
 
   // test::mojom::StandaloneApp:
@@ -166,20 +169,17 @@ class ConnectTestApp : public Service,
   }
 
   // test::mojom::IdentityTest:
-  void ConnectToClassAppWithIdentity(
-      const service_manager::Identity& target,
-      ConnectToClassAppWithIdentityCallback callback) override {
-    context()->connector()->StartService(target);
+  void ConnectToClassAppWithFilter(
+      const service_manager::ServiceFilter& filter,
+      ConnectToClassAppWithFilterCallback callback) override {
     mojom::ConnectResult result;
-    Identity resolved_identity;
-    {
-      base::RunLoop loop;
-      Connector::TestApi test_api(context()->connector());
-      test_api.SetStartServiceCallback(base::BindRepeating(
-          &OnConnectResult, loop.QuitClosure(), &result, &resolved_identity));
-      base::MessageLoopCurrent::ScopedNestableTaskAllower allow;
-      loop.Run();
-    }
+    base::Optional<Identity> resolved_identity;
+    base::RunLoop loop;
+    context()->connector()->WarmService(
+        filter, base::BindOnce(&OnConnectResult, loop.QuitClosure(), &result,
+                               &resolved_identity));
+    base::MessageLoopCurrent::ScopedNestableTaskAllower allow;
+    loop.Run();
     std::move(callback).Run(static_cast<int32_t>(result), resolved_identity);
   }
 

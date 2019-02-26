@@ -7,10 +7,7 @@
 
 namespace content {
 
-class BlinkPlatformAudioHardwareTest : public RenderViewTest {
- protected:
-  void SetUp() override { RenderViewTest::SetUp(); }
-};
+using BlinkPlatformAudioHardwareTest = RenderViewTest;
 
 // Test that calling audioHardware functions from blink::Platform without a v8
 // context returns valid values.

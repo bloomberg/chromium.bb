@@ -12,7 +12,8 @@ namespace blink {
 enum class UserActivationUpdateType {
   kNotifyActivation,
   kConsumeTransientActivation,
-  kMaxValue = kConsumeTransientActivation
+  kClearActivation,
+  kMaxValue = kClearActivation
 };
 
 }  // namespace blink

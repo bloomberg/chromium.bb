@@ -7,6 +7,7 @@
 #include "base/logging.h"
 #include "build/build_config.h"
 #include "chrome/browser/chrome_notification_types.h"
+#include "chrome/browser/defaults.h"
 #include "chrome/browser/ui/global_error/global_error_service.h"
 #include "chrome/browser/ui/global_error/global_error_service_factory.h"
 #include "chrome/browser/upgrade_detector/upgrade_detector.h"
@@ -55,22 +56,6 @@ AppMenuIconController::Severity SeverityFromUpgradeLevel(
   return AppMenuIconController::Severity::NONE;
 }
 
-// Checks if the app menu icon should be animated for the given severity.
-bool ShouldAnimateSeverity(AppMenuIconController::Severity severity) {
-  return severity != AppMenuIconController::Severity::NONE;
-}
-
-// Returns true if we should show the upgrade recommended icon.
-bool ShouldShowUpgradeRecommended() {
-#if defined(OS_CHROMEOS)
-  // In chromeos, the update recommendation is shown in the system tray. So it
-  // should not be displayed in the app menu.
-  return false;
-#else
-  return UpgradeDetector::GetInstance()->notify_upgrade();
-#endif
-}
-
 // Return true if the browser is updating on the dev or canary channels.
 bool IsUnstableChannel() {
   // Unbranded (Chromium) builds are on the UNKNOWN channel, so check explicitly
@@ -85,7 +70,14 @@ bool IsUnstableChannel() {
 
 AppMenuIconController::AppMenuIconController(Profile* profile,
                                              Delegate* delegate)
+    : AppMenuIconController(UpgradeDetector::GetInstance(), profile, delegate) {
+}
+
+AppMenuIconController::AppMenuIconController(UpgradeDetector* upgrade_detector,
+                                             Profile* profile,
+                                             Delegate* delegate)
     : is_unstable_channel_(IsUnstableChannel()),
+      upgrade_detector_(upgrade_detector),
       profile_(profile),
       delegate_(delegate) {
   DCHECK(profile_);
@@ -94,33 +86,39 @@ AppMenuIconController::AppMenuIconController(Profile* profile,
   registrar_.Add(this, chrome::NOTIFICATION_GLOBAL_ERRORS_CHANGED,
                  content::Source<Profile>(profile_));
 
-  UpgradeDetector::GetInstance()->AddObserver(this);
+  upgrade_detector_->AddObserver(this);
 }
 
 AppMenuIconController::~AppMenuIconController() {
-  UpgradeDetector::GetInstance()->RemoveObserver(this);
+  upgrade_detector_->RemoveObserver(this);
 }
 
 void AppMenuIconController::UpdateDelegate() {
-  if (ShouldShowUpgradeRecommended()) {
+  delegate_->UpdateTypeAndSeverity(GetTypeAndSeverity());
+}
+
+AppMenuIconController::TypeAndSeverity
+AppMenuIconController::GetTypeAndSeverity() const {
+  if (browser_defaults::kShowUpgradeMenuItem &&
+      upgrade_detector_->notify_upgrade()) {
     UpgradeDetector::UpgradeNotificationAnnoyanceLevel level =
-        UpgradeDetector::GetInstance()->upgrade_notification_stage();
+        upgrade_detector_->upgrade_notification_stage();
+    // The severity may be NONE even if the detector has been notified of an
+    // update. This can happen for beta and stable channels once the VERY_LOW
+    // annoyance level is reached.
     auto severity = SeverityFromUpgradeLevel(is_unstable_channel_, level);
-    delegate_->UpdateSeverity(IconType::UPGRADE_NOTIFICATION, severity,
-                              ShouldAnimateSeverity(severity));
-    return;
+    if (severity != Severity::NONE)
+      return {IconType::UPGRADE_NOTIFICATION, severity};
   }
 
   if (GlobalErrorServiceFactory::GetForProfile(profile_)
           ->GetHighestSeverityGlobalErrorWithAppMenuItem()) {
     // If you change the severity here, make sure to also change the menu icon
     // and the bubble icon.
-    delegate_->UpdateSeverity(IconType::GLOBAL_ERROR,
-                              Severity::MEDIUM, true);
-    return;
+    return {IconType::GLOBAL_ERROR, Severity::MEDIUM};
   }
 
-  delegate_->UpdateSeverity(IconType::NONE, Severity::NONE, false);
+  return {IconType::NONE, Severity::NONE};
 }
 
 void AppMenuIconController::Observe(

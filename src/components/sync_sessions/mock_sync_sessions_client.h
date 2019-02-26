@@ -26,7 +26,6 @@ class MockSyncSessionsClient : public SyncSessionsClient {
   MOCK_METHOD0(GetSyncedWindowDelegatesGetter, SyncedWindowDelegatesGetter*());
   MOCK_METHOD0(GetLocalSessionEventRouter, LocalSessionEventRouter*());
   MOCK_METHOD0(IsProxyTabsSyncRunning, bool());
-  MOCK_METHOD0(NotifyForeignSessionUpdated, void());
 };
 
 }  // namespace sync_sessions

@@ -81,6 +81,24 @@ runTests([
     });
   },
 
+  function serverRedirectThenExtensionRedirectOnHeadersReceived() {
+    var url_1 = getServerURL('echo');
+    var url_2 = getURLWebAccessible();
+    var serverRedirect = getServerURL('server-redirect?' + url_1);
+    var listener = function(details) {
+      return {redirectUrl: url_2};
+    };
+    chrome.webRequest.onHeadersReceived.addListener(
+      listener,
+      { urls: [url_1] },
+      ["blocking"]
+    );
+
+    assertRedirectSucceeds(serverRedirect, url_2, function() {
+      chrome.webRequest.onHeadersReceived.removeListener(listener);
+    });
+  },
+
   function redirectToUnallowedServerRedirectOnHeadersReceived() {
     var url = getServerURL('echo');
     var redirectURL = getServerURL('server-redirect?' +
@@ -147,6 +165,28 @@ runTests([
         {urls: [url]}, ['blocking']);
 
     assertRedirectSucceeds(url, getURLWebAccessible(), function() {
+      chrome.webRequest.onBeforeRequest.removeListener(listener);
+    });
+  },
+
+  // A server redirect immediately followed by an extension redirect.
+  // Regression test for:
+  // - https://crbug.com/882661
+  // - https://crbug.com/880741
+  function serverRedirectThenExtensionRedirectOnBeforeRequest() {
+    var url_1 = getServerURL('echo');
+    var url_2 = getURLWebAccessible();
+    var serverRedirect = getServerURL('server-redirect?' + url_1);
+    var listener = function(details) {
+      return {redirectUrl: url_2};
+    };
+    chrome.webRequest.onBeforeRequest.addListener(
+      listener,
+      { urls: [url_1] },
+      ["blocking"]
+    );
+
+    assertRedirectSucceeds(serverRedirect, url_2, function() {
       chrome.webRequest.onBeforeRequest.removeListener(listener);
     });
   },

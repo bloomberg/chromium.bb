@@ -34,10 +34,6 @@
 #include "content/shell/common/layout_test.mojom.h"
 #include "ui/gfx/geometry/size.h"
 
-#if defined(OS_ANDROID)
-#include "base/threading/thread_restrictions.h"
-#endif
-
 class SkBitmap;
 
 namespace content {
@@ -48,17 +44,7 @@ class LayoutTestDevToolsBindings;
 class RenderFrameHost;
 class RenderProcessHost;
 class Shell;
-
-#if defined(OS_ANDROID)
-// Android uses a nested run loop for running layout tests because the
-// default message loop, provided by the system, does not offer a blocking
-// Run() method. The loop itself, implemented as NestedMessagePumpAndroid,
-// uses a base::WaitableEvent allowing it to sleep until more events arrive.
-class ScopedAllowWaitForAndroidLayoutTests {
- private:
-  base::ThreadRestrictions::ScopedAllowWait wait;
-};
-#endif
+struct TestInfo;
 
 class BlinkTestResultPrinter {
  public:
@@ -131,10 +117,7 @@ class BlinkTestController : public WebContentsObserver,
   ~BlinkTestController() override;
 
   // True if the controller is ready for testing.
-  bool PrepareForLayoutTest(const GURL& test_url,
-                            const base::FilePath& current_working_directory,
-                            bool enable_pixel_dumping,
-                            const std::string& expected_pixel_hash);
+  bool PrepareForLayoutTest(const TestInfo& test_info);
   // True if the controller was reset successfully.
   bool ResetAfterLayoutTest();
 
@@ -262,10 +245,13 @@ class BlinkTestController : public WebContentsObserver,
   // Each call to CompositeWithRaster() is an asynchronous Mojo call, to avoid
   // reentrancy problems.
   void CompositeAllFramesThen(base::OnceCallback<void()> callback);
+
+ private:
   Node* BuildFrameTree(const std::vector<RenderFrameHost*>& frames);
   void CompositeNodeQueueThen(base::OnceCallback<void()> callback);
   void BuildDepthFirstQueue(Node* node);
 
+ public:
   std::unique_ptr<BlinkTestResultPrinter> printer_;
 
   base::FilePath current_working_directory_;
@@ -295,10 +281,10 @@ class BlinkTestController : public WebContentsObserver,
   bool is_compositing_test_;
 
   // Per test config.
-  bool enable_pixel_dumping_;
   std::string expected_pixel_hash_;
   gfx::Size initial_size_;
   GURL test_url_;
+  bool protocol_mode_;
 
   // Stores the default test-adapted WebPreferences which is then used to fully
   // reset the main window's preferences if and when it is reused.
@@ -345,11 +331,6 @@ class BlinkTestController : public WebContentsObserver,
   // Map from one frame to one mojo pipe.
   std::map<GlobalFrameRoutingId, mojom::LayoutTestControlAssociatedPtr>
       layout_test_control_map_;
-#if defined(OS_ANDROID)
-  // Because of the nested message pump implementation, Android needs to allow
-  // waiting on the UI thread while layout tests are being ran.
-  ScopedAllowWaitForAndroidLayoutTests reduced_restrictions_;
-#endif
 
   SEQUENCE_CHECKER(sequence_checker_);
 

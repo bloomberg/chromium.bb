@@ -236,6 +236,7 @@ public:
 
     const char* name() const override { return "ShadowCircularRRectOp"; }
 
+#ifdef SK_DEBUG
     SkString dumpInfo() const override {
         SkString string;
         for (int i = 0; i < fGeoData.count(); ++i) {
@@ -250,6 +251,7 @@ public:
         string.append(INHERITED::dumpInfo());
         return string;
     }
+#endif
 
     FixedFunctionFlags fixedFunctionFlags() const override { return FixedFunctionFlags::kNone; }
 
@@ -539,7 +541,7 @@ private:
         sk_sp<GrGeometryProcessor> gp = GrRRectShadowGeoProc::Make();
 
         int instanceCount = fGeoData.count();
-        SkASSERT(sizeof(CircleVertex) == gp->debugOnly_vertexStride());
+        SkASSERT(sizeof(CircleVertex) == gp->vertexStride());
 
         const GrBuffer* vertexBuffer;
         int firstVertex;
@@ -601,7 +603,6 @@ private:
     CombineResult onCombineIfPossible(GrOp* t, const GrCaps& caps) override {
         ShadowCircularRRectOp* that = t->cast<ShadowCircularRRectOp>();
         fGeoData.push_back_n(that->fGeoData.count(), that->fGeoData.begin());
-        this->joinBounds(*that);
         fVertCount += that->fVertCount;
         fIndexCount += that->fIndexCount;
         return CombineResult::kMerged;
@@ -670,7 +671,7 @@ GR_DRAW_OP_TEST_DEFINE(ShadowRRectOp) {
     SkScalar blurWidth = random->nextSScalar1() * 72.f;
     bool isCircle = random->nextBool();
     // This op doesn't use a full GrPaint, just a color.
-    GrColor color = paint.getColor();
+    GrColor color = paint.getColor4f().toBytes_RGBA();
     if (isCircle) {
         SkRect circle = GrTest::TestSquare(random);
         SkRRect rrect = SkRRect::MakeOval(circle);

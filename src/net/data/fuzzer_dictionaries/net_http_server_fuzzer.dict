@@ -46,6 +46,6 @@
 # String terminator for FuzzedDataProvider::ConsumeRandomLengthString.
 "\\ "
 
-# There is a lot of use of ConsumeUint32InRange clients, like ConsumeBool,
+# There is a lot of use of ConsumeIntegralInRange clients, like ConsumeBool,
 # so try make it easy to produce lots of inputs for these.
 "\x00\x00\x00\x00"

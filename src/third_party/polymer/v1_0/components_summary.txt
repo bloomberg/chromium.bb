@@ -22,23 +22,11 @@ Tree: v2.1.1
 Revision: b7e78a4a8bdd857780ecd8b54852bb27dbf8f216
 Tree link: https://github.com/PolymerElements/iron-a11y-keys-behavior/tree/v2.1.1
 
-Name: iron-autogrow-textarea
-Repository: https://github.com/PolymerElements/iron-autogrow-textarea.git
-Tree: v2.1.1
-Revision: ac2bf6158b2c52294c8bcc85c677ee13d06e7aaa
-Tree link: https://github.com/PolymerElements/iron-autogrow-textarea/tree/v2.1.1
-
 Name: iron-behaviors
 Repository: https://github.com/PolymerElements/iron-behaviors.git
 Tree: v2.1.1
 Revision: a27b45bebb2af58506af77c377dab301bf7406ce
 Tree link: https://github.com/PolymerElements/iron-behaviors/tree/v2.1.1
-
-Name: iron-checked-element-behavior
-Repository: https://github.com/PolymerElements/iron-checked-element-behavior.git
-Tree: v2.1.0
-Revision: 3bd74f1dda95020aad873467ca25c37dc09d6ee4
-Tree link: https://github.com/PolymerElements/iron-checked-element-behavior/tree/v2.1.0
 
 Name: iron-collapse
 Repository: https://github.com/PolymerElements/iron-collapse.git
@@ -214,23 +202,11 @@ Tree: v2.0.0
 Revision: 07910f6f76e1042286e931da923bff8ceabc3dc6
 Tree link: https://github.com/PolymerElements/paper-item/tree/v2.0.0
 
-Name: paper-listbox
-Repository: https://github.com/PolymerelEments/paper-listbox.git
-Tree: v2.0.0
-Revision: 556e366eada2a75ad2c2df52a0b80baee66f9390
-Tree link: https://github.com/PolymerelEments/paper-listbox/tree/v2.0.0
-
 Name: paper-progress
 Repository: https://github.com/PolymerElements/paper-progress.git
 Tree: v2.0.1
 Revision: abe7b27bb1651e1adac99d9878a4c87cd9b40d7d
 Tree link: https://github.com/PolymerElements/paper-progress/tree/v2.0.1
-
-Name: paper-radio-group
-Repository: https://github.com/PolymerElements/paper-radio-group.git
-Tree: v2.1.0
-Revision: 0d87ce662f6d86b0343cd929ab9f503dc126c764
-Tree link: https://github.com/PolymerElements/paper-radio-group/tree/v2.1.0
 
 Name: paper-ripple
 Repository: https://github.com/PolymerElements/paper-ripple.git
@@ -276,7 +252,7 @@ Tree link: https://github.com/Polymer/polymer/tree/v1.11.2
 
 Name: polymer
 Repository: https://github.com/Polymer/polymer.git
-Tree: v2.6.0
-Revision: 00d510f17a19b5b2ffed2fab5c2220b562b69b4f
-Tree link: https://github.com/Polymer/polymer/tree/v2.6.0
+Tree: v2.7.0
+Revision: 176bc8fb41da317b1b2fa647227e6b1fd47ced11
+Tree link: https://github.com/Polymer/polymer/tree/v2.7.0
 

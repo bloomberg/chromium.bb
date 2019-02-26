@@ -12,7 +12,7 @@
 #include "base/strings/utf_string_conversions.h"
 #include "components/version_info/version_info.h"
 #include "ios/chrome/browser/chrome_url_constants.h"
-#include "ios/chrome/browser/ui/ui_util.h"
+#include "ios/chrome/browser/ui/util/ui_util.h"
 #import "ios/chrome/test/app/chrome_test_util.h"
 #include "ios/chrome/test/app/navigation_test_util.h"
 #import "ios/chrome/test/earl_grey/chrome_earl_grey.h"
@@ -168,6 +168,10 @@ class PausableResponseProvider : public HtmlResponseProvider {
 // Tests that visible URL is always the same as last committed URL during
 // pending back and forward navigations.
 - (void)testBackForwardNavigation {
+  // TODO(crbug.com/874634): re-enable this test.
+  if (base::FeatureList::IsEnabled(web::features::kSlimNavigationManager))
+    EARL_GREY_TEST_DISABLED(@"Test disabled on SlimNavigationManager.");
+
   // Purge web view caches and pause the server to make sure that tests can
   // verify omnibox state before server starts responding.
   GREYAssert(PurgeCachedWebViewPages(), @"Pages were not purged");
@@ -214,6 +218,10 @@ class PausableResponseProvider : public HtmlResponseProvider {
 // Tests that visible URL is always the same as last committed URL during
 // pending navigations initialted from back history popover.
 - (void)testHistoryNavigation {
+  // TODO(crbug.com/874634): re-enable this test.
+  if (base::FeatureList::IsEnabled(web::features::kSlimNavigationManager))
+    EARL_GREY_TEST_DISABLED(@"Test disabled on SlimNavigationManager.");
+
   // Purge web view caches and pause the server to make sure that tests can
   // verify omnibox state before server starts responding.
   GREYAssert(PurgeCachedWebViewPages(), @"Pages were not purged");
@@ -253,6 +261,10 @@ class PausableResponseProvider : public HtmlResponseProvider {
 // Tests that stopping a pending Back navigation and reloading reloads committed
 // URL, not pending URL.
 - (void)testStoppingPendingBackNavigationAndReload {
+  // TODO(crbug.com/874634): re-enable this test.
+  if (base::FeatureList::IsEnabled(web::features::kSlimNavigationManager))
+    EARL_GREY_TEST_DISABLED(@"Test disabled on SlimNavigationManager.");
+
   // Purge web view caches and pause the server to make sure that tests can
   // verify omnibox state before server starts responding.
   GREYAssert(PurgeCachedWebViewPages(), @"Pages were not purged");
@@ -286,6 +298,10 @@ class PausableResponseProvider : public HtmlResponseProvider {
 // Tests that visible URL is always the same as last committed URL during
 // back forward navigations initiated with JS.
 - (void)testJSBackForwardNavigation {
+  // TODO(crbug.com/874634): re-enable this test.
+  if (base::FeatureList::IsEnabled(web::features::kSlimNavigationManager))
+    EARL_GREY_TEST_DISABLED(@"Test disabled on SlimNavigationManager.");
+
   // Purge web view caches and pause the server to make sure that tests can
   // verify omnibox state before server starts responding.
   GREYAssert(PurgeCachedWebViewPages(), @"Pages were not purged");
@@ -331,6 +347,10 @@ class PausableResponseProvider : public HtmlResponseProvider {
 // Tests that visible URL is always the same as last committed URL during go
 // navigations initiated with JS.
 - (void)testJSGoNavigation {
+  // TODO(crbug.com/874634): re-enable this test.
+  if (base::FeatureList::IsEnabled(web::features::kSlimNavigationManager))
+    EARL_GREY_TEST_DISABLED(@"Test disabled on SlimNavigationManager.");
+
   // Purge web view caches and pause the server to make sure that tests can
   // verify omnibox state before server starts responding.
   GREYAssert(PurgeCachedWebViewPages(), @"Pages were not purged");
@@ -377,6 +397,10 @@ class PausableResponseProvider : public HtmlResponseProvider {
 // Tests that visible URL is always the same as last committed URL during go
 // back navigation started with pending reload in progress.
 - (void)testBackNavigationWithPendingReload {
+  // TODO(crbug.com/874634): re-enable this test.
+  if (base::FeatureList::IsEnabled(web::features::kSlimNavigationManager))
+    EARL_GREY_TEST_DISABLED(@"Test disabled on SlimNavigationManager.");
+
   // Purge web view caches and pause the server to make sure that tests can
   // verify omnibox state before server starts responding.
   GREYAssert(PurgeCachedWebViewPages(), @"Pages were not purged");
@@ -422,6 +446,10 @@ class PausableResponseProvider : public HtmlResponseProvider {
   FLAKY_testBackNavigationWithPendingRendererInitiatedNavigation
 #endif
 - (void)MAYBE_testBackNavigationWithPendingRendererInitiatedNavigation {
+  // TODO(crbug.com/874634): re-enable this test.
+  if (base::FeatureList::IsEnabled(web::features::kSlimNavigationManager))
+    EARL_GREY_TEST_DISABLED(@"Test disabled on SlimNavigationManager.");
+
   // Purge web view caches and pause the server to make sure that tests can
   // verify omnibox state before server starts responding.
   GREYAssert(PurgeCachedWebViewPages(), @"Pages were not purged");
@@ -452,6 +480,10 @@ class PausableResponseProvider : public HtmlResponseProvider {
 // renderer-initiated navigation started with pending back navigation in
 // progress.
 - (void)testRendererInitiatedNavigationWithPendingBackNavigation {
+  // TODO(crbug.com/874634): re-enable this test.
+  if (base::FeatureList::IsEnabled(web::features::kSlimNavigationManager))
+    EARL_GREY_TEST_DISABLED(@"Test disabled on SlimNavigationManager.");
+
   // Purge web view caches and pause the server to make sure that tests can
   // verify omnibox state before server starts responding.
   GREYAssert(PurgeCachedWebViewPages(), @"Pages were not purged");
@@ -482,6 +514,10 @@ class PausableResponseProvider : public HtmlResponseProvider {
 // Tests that visible URL is always the same as last committed URL if user
 // issues 2 go back commands.
 - (void)testDoubleBackNavigation {
+  // TODO(crbug.com/874634): re-enable this test.
+  if (base::FeatureList::IsEnabled(web::features::kSlimNavigationManager))
+    EARL_GREY_TEST_DISABLED(@"Test disabled on SlimNavigationManager.");
+
   // Create 3rd entry in the history, to be able to go back twice.
   [ChromeEarlGrey loadURL:_testURL3];
 
@@ -513,6 +549,10 @@ class PausableResponseProvider : public HtmlResponseProvider {
 // Tests that visible URL is always the same as last committed URL if user
 // issues 2 go forward commands to WebUI page (crbug.com/711465).
 - (void)testDoubleForwardNavigationToWebUIPage {
+  // TODO(crbug.com/874634): re-enable this test.
+  if (base::FeatureList::IsEnabled(web::features::kSlimNavigationManager))
+    EARL_GREY_TEST_DISABLED(@"Test disabled on SlimNavigationManager.");
+
   // Create 3rd entry in the history, to be able to go back twice.
   GURL URL(kChromeUIVersionURL);
   [ChromeEarlGrey loadURL:GURL(kChromeUIVersionURL)];
@@ -540,6 +580,10 @@ class PausableResponseProvider : public HtmlResponseProvider {
 // Tests that visible URL is always the same as last committed URL if page calls
 // window.history.back() twice.
 - (void)testDoubleBackJSNavigation {
+  // TODO(crbug.com/874634): re-enable this test.
+  if (base::FeatureList::IsEnabled(web::features::kSlimNavigationManager))
+    EARL_GREY_TEST_DISABLED(@"Test disabled on SlimNavigationManager.");
+
   // Create 3rd entry in the history, to be able to go back twice.
   [ChromeEarlGrey loadURL:_testURL3];
 

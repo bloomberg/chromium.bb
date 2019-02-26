@@ -24,6 +24,7 @@ class WebViewImpl;
 class CORE_EXPORT DevToolsEmulator final
     : public GarbageCollectedFinalized<DevToolsEmulator> {
  public:
+  explicit DevToolsEmulator(WebViewImpl*);
   ~DevToolsEmulator();
   static DevToolsEmulator* Create(WebViewImpl*);
   void Trace(blink::Visitor*);
@@ -66,8 +67,6 @@ class CORE_EXPORT DevToolsEmulator final
   base::Optional<IntRect> VisibleContentRectForPainting() const;
 
  private:
-  explicit DevToolsEmulator(WebViewImpl*);
-
   void EnableMobileEmulation();
   void DisableMobileEmulation();
 

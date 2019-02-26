@@ -43,11 +43,13 @@ class CONTENT_EXPORT ActionsParser {
       pointer_actions_list_;
   size_t longest_action_sequence_;
   std::string source_type_;
+  std::string pointer_type_;
   std::string error_message_;
 
   base::Value* pointer_actions_value_;
   int action_index_;
   std::set<int> pointer_id_set_;
+  std::set<std::string> pointer_name_set_;
 
   DISALLOW_COPY_AND_ASSIGN(ActionsParser);
 };

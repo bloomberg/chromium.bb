@@ -22,16 +22,20 @@ tr.exportTo('tr.e.chrome', function() {
     // Special URL used to start a navigation to an unreachable error page.
     'chrome-error://chromewebdata/'
   ];
-  // Titles for top level tasks in the scheduler. Any input event queued during
-  // a top level task cannot be handled until the end of that task.
-  const TOP_LEVEL_TASK_TITLES = [
-    // Old name of scheduler top level tasks. Preserved for backwards
-    // compatibility with old traces.
-    'TaskQueueManager::ProcessTaskFromWorkQueue',
-    // This is the name of top level scheduler tasks as of
-    // https://crrev.com/c/883346.
+
+
+  // Title for top level tasks in the scheduler. Any input event queued during a
+  // top level scheduler task cannot be handled until the end of that task.
+  const SCHEDULER_TOP_LEVEL_TASK_TITLE = 'ThreadControllerImpl::RunTask';
+
+  const SCHEDULOER_TOP_LEVEL_TASKS = new Set([
+    // Current title for the scheduler top level task.
+    SCHEDULER_TOP_LEVEL_TASK_TITLE,
+    // Previous names scheduler top level tasks, kept for backwards
+    // compatibility.
     'ThreadControllerImpl::DoWork',
-  ];
+    'TaskQueueManager::ProcessTaskFromWorkQueue'
+  ]);
 
   /**
    * Utility class providing methods to efficiently find events.
@@ -62,6 +66,7 @@ tr.exportTo('tr.e.chrome', function() {
      */
     static* getMainThreadEvents(
         rendererHelper, eventTitle, eventCategory) {
+      if (!rendererHelper.mainThread) return;
       // Events yielded by childEvents() are sorted by start time.
       for (const ev of rendererHelper.mainThread.sliceGroup.childEvents()) {
         if (rendererHelper.isTelemetryInternalEvent(ev)) continue;
@@ -212,10 +217,10 @@ tr.exportTo('tr.e.chrome', function() {
      * @returns {!Array<tr.model.Slice>}
      */
     static findToplevelSchedulerTasks(mainThread) {
-      const titles = new Set(TOP_LEVEL_TASK_TITLES);
       const tasks = [];
       tasks.push(...mainThread.findTopmostSlices(
-          slice => titles.has(slice.title)));
+          slice => slice.category === 'toplevel' &&
+          SCHEDULOER_TOP_LEVEL_TASKS.has(slice.title)));
       return tasks;
     }
   }
@@ -223,6 +228,7 @@ tr.exportTo('tr.e.chrome', function() {
   return {
     EventFinderUtils,
     CHROME_INTERNAL_URLS,
+    SCHEDULER_TOP_LEVEL_TASK_TITLE,
   };
 });
 </script>

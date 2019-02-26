@@ -13,9 +13,10 @@
 #include "base/metrics/histogram_macros.h"
 #include "base/run_loop.h"
 #include "base/single_thread_task_runner.h"
-#include "base/sys_info.h"
+#include "base/system/sys_info.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "build/build_config.h"
+#include "components/viz/common/features.h"
 #include "gpu/command_buffer/common/context_creation_attribs.h"
 #include "gpu/command_buffer/common/sync_token.h"
 #include "gpu/command_buffer/service/feature_info.h"
@@ -62,7 +63,8 @@ GpuChannelManager::GpuChannelManager(
     GpuMemoryBufferFactory* gpu_memory_buffer_factory,
     const GpuFeatureInfo& gpu_feature_info,
     GpuProcessActivityFlags activity_flags,
-    scoped_refptr<gl::GLSurface> default_offscreen_surface)
+    scoped_refptr<gl::GLSurface> default_offscreen_surface,
+    viz::VulkanContextProvider* vulkan_context_provider)
     : task_runner_(task_runner),
       io_task_runner_(io_task_runner),
       gpu_preferences_(gpu_preferences),
@@ -83,6 +85,7 @@ GpuChannelManager::GpuChannelManager(
       memory_pressure_listener_(
           base::Bind(&GpuChannelManager::HandleMemoryPressure,
                      base::Unretained(this))),
+      vulkan_context_provider_(vulkan_context_provider),
       weak_factory_(this) {
   DCHECK(task_runner->BelongsToCurrentThread());
   DCHECK(io_task_runner);
@@ -337,6 +340,7 @@ void GpuChannelManager::HandleMemoryPressure(
   if (program_cache_)
     program_cache_->HandleMemoryPressure(memory_pressure_level);
   discardable_manager_.HandleMemoryPressure(memory_pressure_level);
+  passthrough_discardable_manager_.HandleMemoryPressure(memory_pressure_level);
   if (raster_decoder_context_state_)
     raster_decoder_context_state_->PurgeMemory(memory_pressure_level);
   if (gr_shader_cache_)
@@ -364,6 +368,18 @@ GpuChannelManager::GetRasterDecoderContextState(ContextResult* result) {
   // MailboxManagerSync synchronization correctness currently depends on having
   // only a single context. See crbug.com/510243 for details.
   use_virtualized_gl_contexts |= mailbox_manager_->UsesSync();
+
+  const bool use_oop_rasterization =
+      gpu_feature_info_.status_values[GPU_FEATURE_TYPE_OOP_RASTERIZATION] ==
+      gpu::kGpuFeatureStatusEnabled;
+
+  // With OOP-R, SkiaRenderer and Skia DDL, we will only have one GLContext
+  // and share it with RasterDecoders and DisplayCompositor. So it is not
+  // necessary to use virtualized gl context anymore.
+  // TODO(penghuang): Make virtualized gl context work with SkiaRenderer + DDL +
+  // OOPR. https://crbug.com/838899
+  if (features::IsUsingSkiaDeferredDisplayList() && use_oop_rasterization)
+    use_virtualized_gl_contexts = false;
 
   const bool use_passthrough_decoder =
       gles2::PassthroughCommandDecoderSupported() &&
@@ -415,13 +431,15 @@ GpuChannelManager::GetRasterDecoderContextState(ContextResult* result) {
     return nullptr;
   }
 
+  // TODO(penghuang): https://crbug.com/899735 Handle device lost for Vulkan.
   raster_decoder_context_state_ = new raster::RasterDecoderContextState(
       std::move(share_group), std::move(surface), std::move(context),
-      use_virtualized_gl_contexts);
+      use_virtualized_gl_contexts, vulkan_context_provider_);
+
   const bool enable_raster_transport =
       gpu_feature_info_.status_values[GPU_FEATURE_TYPE_OOP_RASTERIZATION] ==
       gpu::kGpuFeatureStatusEnabled;
-  if (enable_raster_transport) {
+  if (enable_raster_transport || features::IsUsingSkiaDeferredDisplayList()) {
     raster_decoder_context_state_->InitializeGrContext(
         gpu_driver_bug_workarounds_, gr_shader_cache(), &activity_flags_,
         watchdog_);

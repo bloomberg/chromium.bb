@@ -260,8 +260,12 @@ class TestRecipeReplayer {
                                            std::string* xpath);
   bool GetTargetFrameFromAction(const base::DictionaryValue& action,
                                 content::RenderFrameHost** frame);
+  bool GetTargetHTMLElementVisibilityEnumFromAction(
+      const base::DictionaryValue& action,
+      int* visibility_enum_val);
   bool WaitForElementToBeReady(content::RenderFrameHost* frame,
-                               const std::string& xpath);
+                               const std::string& xpath,
+                               const int visibility_enum_val);
   bool WaitForStateChange(
       content::RenderFrameHost* frame,
       const std::vector<std::string>& state_assertions,

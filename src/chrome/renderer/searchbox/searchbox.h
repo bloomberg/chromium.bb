@@ -130,6 +130,9 @@ class SearchBox : public content::RenderFrameObserver,
                         const GURL& new_url,
                         const std::string& new_title);
 
+  // Sends ReorderCustomLink to the browser.
+  void ReorderCustomLink(InstantRestrictedID link_id, int new_pos);
+
   // Sends DeleteCustomLink to the browser.
   void DeleteCustomLink(InstantRestrictedID most_visited_item_id);
 
@@ -140,9 +143,9 @@ class SearchBox : public content::RenderFrameObserver,
   void ResetCustomLinks();
 
   // Attempts to fix obviously invalid URLs. Uses the "https" scheme unless
-  // otherwise specified and, if so, checks if the default scheme can resolve.
-  // Returns the fixed URL if valid, otherwise returns an empty string.
-  std::string FixupAndValidateUrl(const std::string& url);
+  // otherwise specified. Returns the fixed URL if valid, otherwise returns an
+  // empty string.
+  std::string FixupAndValidateUrl(const std::string& url) const;
 
   // Updates the NTP custom background preferences, sometimes this includes
   // image attributions.
@@ -181,7 +184,6 @@ class SearchBox : public content::RenderFrameObserver,
   void AddCustomLinkResult(bool success);
   void UpdateCustomLinkResult(bool success);
   void DeleteCustomLinkResult(bool success);
-  void DoesUrlResolveResult(bool resolves, bool timeout) const;
 
   // Returns the URL of the Most Visited item specified by the |item_id|.
   GURL GetURLForMostVisitedItem(InstantRestrictedID item_id) const;

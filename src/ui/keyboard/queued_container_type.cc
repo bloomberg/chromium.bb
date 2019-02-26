@@ -9,7 +9,7 @@ namespace keyboard {
 
 QueuedContainerType::QueuedContainerType(
     KeyboardController* controller,
-    ContainerType container_type,
+    mojom::ContainerType container_type,
     base::Optional<gfx::Rect> bounds,
     base::OnceCallback<void(bool success)> callback)
     : controller_(controller),

@@ -10,7 +10,7 @@
 #include "third_party/blink/renderer/core/layout/layout_box.h"
 #include "third_party/blink/renderer/core/layout/ng/geometry/ng_logical_size.h"
 #include "third_party/blink/renderer/core/layout/ng/list/layout_ng_list_marker.h"
-#include "third_party/blink/renderer/platform/layout_unit.h"
+#include "third_party/blink/renderer/platform/geometry/layout_unit.h"
 #include "third_party/blink/renderer/platform/text/writing_mode.h"
 
 namespace blink {
@@ -23,6 +23,7 @@ class NGBreakToken;
 class NGConstraintSpace;
 class NGInlineChildLayoutContext;
 class NGLayoutResult;
+class NGPaintFragment;
 struct MinMaxSize;
 struct NGLogicalSize;
 struct NGPhysicalSize;
@@ -31,14 +32,10 @@ enum class NGMinMaxSizeType { kContentBoxSize, kBorderBoxSize };
 
 // Input to the min/max inline size calculation algorithm for child nodes. Child
 // nodes within the same formatting context need to know which floats are beside
-// them. Additionally, orthogonal writing mode roots will need the extrinsic
-// block-size of the container.
+// them.
 struct MinMaxSizeInput {
   LayoutUnit float_left_inline_size;
   LayoutUnit float_right_inline_size;
-
-  // Extrinsic block-size of the containing block.
-  LayoutUnit extrinsic_block_size = NGSizeIndefinite;
 
   // Whether to return the size as a content-box size or border-box size.
   NGMinMaxSizeType size_type = NGMinMaxSizeType::kBorderBoxSize;
@@ -109,6 +106,14 @@ class CORE_EXPORT NGLayoutInputNode {
            (box_->IsBody() || box_->IsTableCell());
   }
 
+  // In quirks mode, in-flow positioned BODY and root elements must completely
+  // fill the viewport. Return true if this is such a node.
+  bool IsQuirkyAndFillsViewport() const {
+    if (!GetDocument().InQuirksMode())
+      return false;
+    return (IsDocumentElement() || IsBody()) && !Style().HasOutOfFlowPosition();
+  }
+
   bool CreatesNewFormattingContext() const {
     return IsBlock() && box_->AvoidsFloats();
   }
@@ -151,6 +156,10 @@ class CORE_EXPORT NGLayoutInputNode {
   bool ShouldApplySizeContainment() const {
     return box_->ShouldApplySizeContainment();
   }
+
+  // Returns the first NGPaintFragment for this node. When block fragmentation
+  // occurs, there will be multiple NGPaintFragment for a node.
+  const NGPaintFragment* PaintFragment() const;
 
   String ToString() const;
 

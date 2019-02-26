@@ -241,7 +241,7 @@ TEST_F(SelectionSampleTest, SerializeVoidElement) {
 }
 
 TEST_F(SelectionSampleTest, SerializeVoidElementBR) {
-  Element* const br = GetDocument().CreateRawElement(HTMLNames::brTag);
+  Element* const br = GetDocument().CreateRawElement(html_names::kBrTag);
   br->appendChild(GetDocument().createTextNode("abc"));
   GetDocument().body()->appendChild(br);
   EXPECT_EQ(

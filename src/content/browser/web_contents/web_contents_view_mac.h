@@ -19,6 +19,7 @@
 #include "content/browser/web_contents/web_contents_view.h"
 #include "content/common/content_export.h"
 #include "content/common/drag_event_source_info.h"
+#include "content/public/browser/visibility.h"
 #include "content/public/common/web_contents_ns_view_bridge.mojom.h"
 #include "mojo/public/cpp/bindings/associated_binding.h"
 #import "ui/base/cocoa/base_view.h"
@@ -148,6 +149,9 @@ class WebContentsViewMac : public WebContentsView,
   // A helper method for closing the tab in the
   // CloseTabAfterEventTracking() implementation.
   void CloseTab();
+
+  // Called from Cocoa when window visibility changes.
+  void OnWindowVisibilityChanged(content::Visibility visibility);
 
   WebContentsImpl* web_contents() { return web_contents_; }
   WebContentsViewDelegate* delegate() { return delegate_.get(); }

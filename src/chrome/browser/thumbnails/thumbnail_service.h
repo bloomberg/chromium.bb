@@ -19,6 +19,8 @@ namespace thumbnails {
 
 struct ThumbnailingContext;
 
+// DEPRECATED, thumbnails are to be removed from TopSites. See
+// https://crbug.com/893362.
 // An interface abstracting access to thumbnails. Intended as a temporary
 // bridge facilitating switch from TopSites as the thumbnail source to a more
 // robust way of handling these artefacts.

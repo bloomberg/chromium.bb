@@ -106,8 +106,8 @@ std::ostream& operator<<(std::ostream& o, const ResourceLoaderTest::From& f) {
 }
 
 TEST_F(ResourceLoaderTest, ResponseType) {
-  // This test will be trivial if EnableOutOfBlinkCORS is enabled.
-  WebRuntimeFeatures::EnableOutOfBlinkCORS(false);
+  // This test will be trivial if EnableOutOfBlinkCors is enabled.
+  WebRuntimeFeatures::EnableOutOfBlinkCors(false);
 
   const scoped_refptr<const SecurityOrigin> origin =
       SecurityOrigin::Create(foo_url_);
@@ -117,40 +117,40 @@ TEST_F(ResourceLoaderTest, ResponseType) {
 
   TestCase cases[] = {
       // Same origin response:
-      {same_origin_url, FetchRequestMode::kNoCORS, From::kNetwork, no_origin,
+      {same_origin_url, FetchRequestMode::kNoCors, From::kNetwork, no_origin,
        FetchResponseType::kDefault, FetchResponseType::kBasic},
-      {same_origin_url, FetchRequestMode::kCORS, From::kNetwork, no_origin,
+      {same_origin_url, FetchRequestMode::kCors, From::kNetwork, no_origin,
        FetchResponseType::kDefault, FetchResponseType::kBasic},
 
       // Cross origin, no-cors:
-      {cross_origin_url, FetchRequestMode::kNoCORS, From::kNetwork, no_origin,
+      {cross_origin_url, FetchRequestMode::kNoCors, From::kNetwork, no_origin,
        FetchResponseType::kDefault, FetchResponseType::kOpaque},
 
       // Cross origin, cors:
-      {cross_origin_url, FetchRequestMode::kCORS, From::kNetwork, origin,
-       FetchResponseType::kDefault, FetchResponseType::kCORS},
-      {cross_origin_url, FetchRequestMode::kCORS, From::kNetwork, no_origin,
+      {cross_origin_url, FetchRequestMode::kCors, From::kNetwork, origin,
+       FetchResponseType::kDefault, FetchResponseType::kCors},
+      {cross_origin_url, FetchRequestMode::kCors, From::kNetwork, no_origin,
        FetchResponseType::kDefault, FetchResponseType::kError},
 
       // From service worker, no-cors:
-      {same_origin_url, FetchRequestMode::kNoCORS, From::kServiceWorker,
+      {same_origin_url, FetchRequestMode::kNoCors, From::kServiceWorker,
        no_origin, FetchResponseType::kBasic, FetchResponseType::kBasic},
-      {same_origin_url, FetchRequestMode::kNoCORS, From::kServiceWorker,
-       no_origin, FetchResponseType::kCORS, FetchResponseType::kCORS},
-      {same_origin_url, FetchRequestMode::kNoCORS, From::kServiceWorker,
+      {same_origin_url, FetchRequestMode::kNoCors, From::kServiceWorker,
+       no_origin, FetchResponseType::kCors, FetchResponseType::kCors},
+      {same_origin_url, FetchRequestMode::kNoCors, From::kServiceWorker,
        no_origin, FetchResponseType::kDefault, FetchResponseType::kDefault},
-      {same_origin_url, FetchRequestMode::kNoCORS, From::kServiceWorker,
+      {same_origin_url, FetchRequestMode::kNoCors, From::kServiceWorker,
        no_origin, FetchResponseType::kOpaque, FetchResponseType::kOpaque},
-      {same_origin_url, FetchRequestMode::kNoCORS, From::kServiceWorker,
+      {same_origin_url, FetchRequestMode::kNoCors, From::kServiceWorker,
        no_origin, FetchResponseType::kOpaqueRedirect,
        FetchResponseType::kOpaqueRedirect},
 
       // From service worker, cors:
-      {same_origin_url, FetchRequestMode::kCORS, From::kServiceWorker,
+      {same_origin_url, FetchRequestMode::kCors, From::kServiceWorker,
        no_origin, FetchResponseType::kBasic, FetchResponseType::kBasic},
-      {same_origin_url, FetchRequestMode::kNoCORS, From::kServiceWorker,
-       no_origin, FetchResponseType::kCORS, FetchResponseType::kCORS},
-      {same_origin_url, FetchRequestMode::kNoCORS, From::kServiceWorker,
+      {same_origin_url, FetchRequestMode::kNoCors, From::kServiceWorker,
+       no_origin, FetchResponseType::kCors, FetchResponseType::kCors},
+      {same_origin_url, FetchRequestMode::kNoCors, From::kServiceWorker,
        no_origin, FetchResponseType::kDefault, FetchResponseType::kDefault},
   };
 
@@ -173,7 +173,7 @@ TEST_F(ResourceLoaderTest, ResponseType) {
     request.SetRequestContext(mojom::RequestContextType::FETCH);
 
     FetchParameters fetch_parameters(request);
-    if (test.request_mode == network::mojom::FetchRequestMode::kCORS) {
+    if (test.request_mode == network::mojom::FetchRequestMode::kCors) {
       fetch_parameters.SetCrossOriginAccessControl(
           origin.get(), network::mojom::FetchCredentialsMode::kOmit);
     }

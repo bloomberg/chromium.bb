@@ -47,7 +47,7 @@ const char PaintTiming::kSupplementName[] = "PaintTiming";
 PaintTiming& PaintTiming::From(Document& document) {
   PaintTiming* timing = Supplement<Document>::From<PaintTiming>(document);
   if (!timing) {
-    timing = new PaintTiming(document);
+    timing = MakeGarbageCollected<PaintTiming>(document);
     ProvideTo(document, timing);
   }
   return *timing;
@@ -157,7 +157,7 @@ void PaintTiming::Trace(blink::Visitor* visitor) {
 
 PaintTiming::PaintTiming(Document& document)
     : Supplement<Document>(document),
-      fmp_detector_(new FirstMeaningfulPaintDetector(this)) {}
+      fmp_detector_(MakeGarbageCollected<FirstMeaningfulPaintDetector>(this)) {}
 
 LocalFrame* PaintTiming::GetFrame() const {
   return GetSupplementable()->GetFrame();

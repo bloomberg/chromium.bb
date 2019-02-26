@@ -28,9 +28,45 @@ import {
   SummaryData
 } from './common';
 
-// 0.5 Makes the horizontal lines sharp.
-const MARGIN_TOP = 5.5;
+const MARGIN_TOP = 5;
 const RECT_HEIGHT = 30;
+
+interface Color {
+  c: string;
+  h: number;
+  s: number;
+  l: number;
+}
+const MD_PALETTE: Color[] = [
+  {c: 'red', h: 4, s: 90, l: 58},
+  {c: 'pink', h: 340, s: 82, l: 52},
+  {c: 'purple', h: 291, s: 64, l: 42},
+  {c: 'deep purple', h: 262, s: 52, l: 47},
+  {c: 'indigo', h: 231, s: 48, l: 48},
+  {c: 'blue', h: 207, s: 90, l: 54},
+  {c: 'light blue', h: 199, s: 98, l: 48},
+  {c: 'cyan', h: 187, s: 100, l: 42},
+  {c: 'teal', h: 174, s: 100, l: 29},
+  {c: 'green', h: 122, s: 39, l: 49},
+  {c: 'light green', h: 88, s: 50, l: 53},
+  {c: 'lime', h: 66, s: 70, l: 54},
+  {c: 'yellow', h: 54, s: 100, l: 62},
+  {c: 'amber', h: 45, s: 100, l: 51},
+  {c: 'orange', h: 36, s: 100, l: 50},
+  {c: 'deep organge', h: 14, s: 100, l: 57},
+  {c: 'brown', h: 16, s: 25, l: 38},
+  {c: 'grey', h: 0, s: 0, l: 62},
+  {c: 'blue gray', h: 200, s: 18, l: 46},
+];
+
+function hash(s: string, max: number): number {
+  let hash = 0x811c9dc5 & 0xfffffff;
+  for (let i = 0; i < s.length; i++) {
+    hash ^= s.charCodeAt(i);
+    hash = (hash * 16777619) & 0xffffffff;
+  }
+  return Math.abs(hash) % max;
+}
 
 function cropText(str: string, charWidth: number, rectWidth: number) {
   const maxTextWidth = rectWidth - 4;
@@ -60,10 +96,10 @@ class CpuSliceTrack extends Track<Config, Data> {
     return new CpuSliceTrack(trackState);
   }
 
-  private hoveredUtid = -1;
   private mouseXpos?: number;
   private reqPending = false;
   private hue: number;
+  private utidHoveredInThisTrack = -1;
 
   constructor(trackState: TrackState) {
     super(trackState);
@@ -96,7 +132,8 @@ class CpuSliceTrack extends Track<Config, Data> {
     const inRange = data !== undefined &&
         (visibleWindowTime.start >= data.start &&
          visibleWindowTime.end <= data.end);
-    if (!inRange || data.resolution !== getCurResolution()) {
+    if (!inRange || data === undefined ||
+        data.resolution !== getCurResolution()) {
       if (!this.reqPending) {
         this.reqPending = true;
         setTimeout(() => this.reqDataDeferred(), 50);
@@ -167,19 +204,35 @@ class CpuSliceTrack extends Track<Config, Data> {
       const rectWidth = rectEnd - rectStart;
       if (rectWidth < 0.1) continue;
 
-      const hovered = this.hoveredUtid === utid;
-      ctx.fillStyle = `hsl(${this.hue}, 50%, ${hovered ? 25 : 60}%)`;
-      ctx.fillRect(rectStart, MARGIN_TOP, rectEnd - rectStart, RECT_HEIGHT);
 
       // TODO: consider de-duplicating this code with the copied one from
       // chrome_slices/frontend.ts.
       let title = `[utid:${utid}]`;
       let subTitle = '';
+      const color = Object.assign({}, MD_PALETTE[14]);
+
       const threadInfo = globals.threads.get(utid);
       if (threadInfo !== undefined) {
-        title = `${threadInfo.procName} [${threadInfo.pid}]`;
-        subTitle = `${threadInfo.threadName} [${threadInfo.tid}]`;
+        const hasProc = !!threadInfo.pid;
+        const procName = threadInfo.procName || '';
+        let hashKey = threadInfo.tid;
+        if (hasProc) {
+          title = `${procName} [${threadInfo.pid}]`;
+          subTitle = `${threadInfo.threadName} [${threadInfo.tid}]`;
+          hashKey = threadInfo.pid!;
+        } else {
+          title = `${threadInfo.threadName} [${threadInfo.tid}]`;
+        }
+        const colorIdx = hash(hashKey.toString(), 16);
+        Object.assign(color, MD_PALETTE[colorIdx]);
       }
+
+      const hovered = globals.frontendLocalState.highlightedUtid === utid;
+      color.l =
+          hovered ? Math.max(color.l - 40, 20) : Math.min(color.l + 10, 80);
+      color.s -= 20;
+      ctx.fillStyle = `hsl(${color.h}, ${color.s}%, ${color.l}%)`;
+      ctx.fillRect(rectStart, MARGIN_TOP, rectEnd - rectStart, RECT_HEIGHT);
 
       // Don't render text when we have less than 5px to play with.
       if (rectWidth < 5) continue;
@@ -195,23 +248,28 @@ class CpuSliceTrack extends Track<Config, Data> {
       ctx.fillText(subTitle, rectXCenter, MARGIN_TOP + RECT_HEIGHT / 2 + 11);
     }
 
-    const hoveredThread = globals.threads.get(this.hoveredUtid);
+    const hoveredThread = globals.threads.get(this.utidHoveredInThisTrack);
     if (hoveredThread !== undefined) {
-      const procTitle = `P: ${hoveredThread.procName} [${hoveredThread.pid}]`;
-      const threadTitle =
-          `T: ${hoveredThread.threadName} [${hoveredThread.tid}]`;
+      let line1 = '';
+      let line2 = '';
+      if (hoveredThread.pid) {
+        line1 = `P: ${hoveredThread.procName} [${hoveredThread.pid}]`;
+        line2 = `T: ${hoveredThread.threadName} [${hoveredThread.tid}]`;
+      } else {
+        line1 = `T: ${hoveredThread.threadName} [${hoveredThread.tid}]`;
+      }
 
       ctx.font = '10px Google Sans';
-      const procTitleWidth = ctx.measureText(procTitle).width;
-      const threadTitleWidth = ctx.measureText(threadTitle).width;
-      const width = Math.max(procTitleWidth, threadTitleWidth);
+      const line1Width = ctx.measureText(line1).width;
+      const line2Width = ctx.measureText(line2).width;
+      const width = Math.max(line1Width, line2Width);
 
       ctx.fillStyle = 'rgba(255, 255, 255, 0.9)';
       ctx.fillRect(this.mouseXpos!, MARGIN_TOP, width + 16, RECT_HEIGHT);
       ctx.fillStyle = 'hsl(200, 50%, 40%)';
       ctx.textAlign = 'left';
-      ctx.fillText(procTitle, this.mouseXpos! + 8, 18);
-      ctx.fillText(threadTitle, this.mouseXpos! + 8, 28);
+      ctx.fillText(line1, this.mouseXpos! + 8, 18);
+      ctx.fillText(line2, this.mouseXpos! + 8, 28);
     }
   }
 
@@ -221,25 +279,29 @@ class CpuSliceTrack extends Track<Config, Data> {
     if (data === undefined || data.kind === 'summary') return;
     const {timeScale} = globals.frontendLocalState;
     if (y < MARGIN_TOP || y > MARGIN_TOP + RECT_HEIGHT) {
-      this.hoveredUtid = -1;
+      this.utidHoveredInThisTrack = -1;
+      globals.frontendLocalState.setHighlightedUtid(-1);
       return;
     }
     const t = timeScale.pxToTime(x);
-    this.hoveredUtid = -1;
+    let hoveredUtid = -1;
 
     for (let i = 0; i < data.starts.length; i++) {
       const tStart = data.starts[i];
       const tEnd = data.ends[i];
       const utid = data.utids[i];
       if (tStart <= t && t <= tEnd) {
-        this.hoveredUtid = utid;
+        hoveredUtid = utid;
         break;
       }
     }
+    this.utidHoveredInThisTrack = hoveredUtid;
+    globals.frontendLocalState.setHighlightedUtid(hoveredUtid);
   }
 
   onMouseOut() {
-    this.hoveredUtid = -1;
+    this.utidHoveredInThisTrack = -1;
+    globals.frontendLocalState.setHighlightedUtid(-1);
     this.mouseXpos = 0;
   }
 }

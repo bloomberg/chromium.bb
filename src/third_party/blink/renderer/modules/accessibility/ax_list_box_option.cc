@@ -36,8 +36,6 @@
 
 namespace blink {
 
-using namespace HTMLNames;
-
 AXListBoxOption::AXListBoxOption(LayoutObject* layout_object,
                                  AXObjectCacheImpl& ax_object_cache)
     : AXLayoutObject(layout_object, ax_object_cache) {}
@@ -46,7 +44,7 @@ AXListBoxOption::~AXListBoxOption() = default;
 
 AXListBoxOption* AXListBoxOption::Create(LayoutObject* layout_object,
                                          AXObjectCacheImpl& ax_object_cache) {
-  return new AXListBoxOption(layout_object, ax_object_cache);
+  return MakeGarbageCollected<AXListBoxOption>(layout_object, ax_object_cache);
 }
 
 ax::mojom::Role AXListBoxOption::DetermineAccessibilityRole() {

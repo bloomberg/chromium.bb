@@ -15,7 +15,6 @@
 #include "base/strings/string_util.h"
 #include "base/task/post_task.h"
 #include "base/threading/thread_task_runner_handle.h"
-#include "chrome/browser/extensions/api/networking_private/networking_private_credentials_getter.h"
 #include "chrome/browser/extensions/api/networking_private/networking_private_crypto.h"
 #include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
@@ -111,62 +110,6 @@ void VerifyAndEncryptDataCompleted(
     success_callback.Run(encrypted_data);
 }
 
-// Called when NetworkingPrivateCredentialsGetter completes (from an arbitrary
-// thread). Posts the result to the UI thread.
-void CredentialsGetterCompleted(
-    const NetworkingCastPrivateDelegate::DataCallback& success_callback,
-    const NetworkingCastPrivateDelegate::FailureCallback& failure_callback,
-    const std::string& key_data,
-    const std::string& error) {
-  if (!error.empty()) {
-    base::PostTaskWithTraits(FROM_HERE, {content::BrowserThread::UI},
-                             base::BindOnce(failure_callback, error));
-  } else {
-    base::PostTaskWithTraits(FROM_HERE, {content::BrowserThread::UI},
-                             base::BindOnce(success_callback, key_data));
-  }
-}
-
-// Called from a blocking pool task runner. Returns true if
-// NetworkingPrivateCredentialsGetter is successfully started (which will
-// invoke the appropriate callback when completed), or false if unable
-// to start the getter (credentials or public key decode failed).
-bool RunVerifyAndEncryptCredentials(
-    const std::string& guid,
-    std::unique_ptr<NetworkingCastPrivateDelegate::Credentials> credentials,
-    const NetworkingCastPrivateDelegate::DataCallback& success_callback,
-    const NetworkingCastPrivateDelegate::FailureCallback& failure_callback) {
-  if (DecodeAndVerifyCredentials(*credentials) != VerificationResult::SUCCESS)
-    return false;
-
-  std::string decoded_public_key;
-  if (!base::Base64Decode(credentials->public_key(), &decoded_public_key)) {
-    LOG(ERROR) << "Failed to decode public key";
-    return false;
-  }
-
-  // Start getting credentials. CredentialsGetterCompleted will be called on
-  // completion. On Windows it will be called from a different thread after
-  // |credentials_getter| is deleted.
-  std::unique_ptr<NetworkingPrivateCredentialsGetter> credentials_getter(
-      NetworkingPrivateCredentialsGetter::Create());
-  credentials_getter->Start(guid, decoded_public_key,
-                            base::Bind(&CredentialsGetterCompleted,
-                                       success_callback, failure_callback));
-  return true;
-}
-
-void VerifyAndEncryptCredentialsCompleted(
-    const NetworkingCastPrivateDelegate::FailureCallback& failure_callback,
-    bool succeeded) {
-  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
-  // If VerifyAndEncryptCredentials succeeded, then the appropriate callback
-  // will be triggered from CredentialsGetterCompleted.
-  if (succeeded)
-    return;
-  failure_callback.Run(kErrorEncryptionError);
-}
-
 }  // namespace
 
 std::unique_ptr<ChromeNetworkingCastPrivateDelegate>
@@ -195,19 +138,6 @@ void ChromeNetworkingCastPrivateDelegate::VerifyDestination(
       base::Bind(&RunDecodeAndVerifyCredentials, base::Passed(&credentials)),
       base::Bind(&VerifyDestinationCompleted, success_callback,
                  failure_callback));
-}
-
-void ChromeNetworkingCastPrivateDelegate::VerifyAndEncryptCredentials(
-    const std::string& guid,
-    std::unique_ptr<Credentials> credentials,
-    const DataCallback& success_callback,
-    const FailureCallback& failure_callback) {
-  base::PostTaskWithTraitsAndReplyWithResult(
-      FROM_HERE, {base::MayBlock(), base::TaskPriority::USER_VISIBLE},
-      base::Bind(&RunVerifyAndEncryptCredentials, guid,
-                 base::Passed(&credentials), success_callback,
-                 failure_callback),
-      base::Bind(&VerifyAndEncryptCredentialsCompleted, failure_callback));
 }
 
 void ChromeNetworkingCastPrivateDelegate::VerifyAndEncryptData(

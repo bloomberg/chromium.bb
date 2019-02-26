@@ -38,14 +38,15 @@ static const struct wl_interface *types[] = {
 	NULL,
 	NULL,
 	NULL,
+	NULL,
 	&zcr_notification_shell_surface_v1_interface,
 	&wl_surface_interface,
 	NULL,
 };
 
 static const struct wl_message zcr_notification_shell_v1_requests[] = {
-	{ "create_notification", "nssss", types + 1 },
-	{ "get_notification_surface", "nos", types + 6 },
+	{ "create_notification", "nssssa", types + 1 },
+	{ "get_notification_surface", "nos", types + 7 },
 };
 
 WL_EXPORT const struct wl_interface zcr_notification_shell_v1_interface = {
@@ -72,11 +73,12 @@ static const struct wl_message zcr_notification_shell_notification_v1_requests[]
 
 static const struct wl_message zcr_notification_shell_notification_v1_events[] = {
 	{ "closed", "u", types + 0 },
+	{ "clicked", "i", types + 0 },
 };
 
 WL_EXPORT const struct wl_interface zcr_notification_shell_notification_v1_interface = {
 	"zcr_notification_shell_notification_v1", 1,
 	2, zcr_notification_shell_notification_v1_requests,
-	1, zcr_notification_shell_notification_v1_events,
+	2, zcr_notification_shell_notification_v1_events,
 };
 

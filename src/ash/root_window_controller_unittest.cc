@@ -37,9 +37,9 @@
 #include "ui/events/test/event_generator.h"
 #include "ui/events/test/test_event_handler.h"
 #include "ui/keyboard/keyboard_controller.h"
-#include "ui/keyboard/keyboard_switches.h"
 #include "ui/keyboard/keyboard_ui.h"
 #include "ui/keyboard/keyboard_util.h"
+#include "ui/keyboard/public/keyboard_switches.h"
 #include "ui/keyboard/test/keyboard_test_util.h"
 #include "ui/views/controls/menu/menu_controller.h"
 #include "ui/views/widget/widget.h"
@@ -687,12 +687,11 @@ class VirtualKeyboardRootWindowControllerTest
     base::CommandLine::ForCurrentProcess()->AppendSwitch(
         keyboard::switches::kEnableVirtualKeyboard);
     AshTestBase::SetUp();
-    keyboard::SetTouchKeyboardEnabled(true);
-    Shell::Get()->EnableKeyboard();
+    SetTouchKeyboardEnabled(true);
   }
 
   void TearDown() override {
-    keyboard::SetTouchKeyboardEnabled(false);
+    SetTouchKeyboardEnabled(false);
     AshTestBase::TearDown();
   }
 
@@ -832,17 +831,14 @@ TEST_F(VirtualKeyboardRootWindowControllerTest, ClickWithActiveModalDialog) {
   aura::Window* root_window = Shell::GetPrimaryRootWindow();
   ASSERT_EQ(root_window, controller->GetRootWindow());
 
-  aura::Window* contents_window = controller->GetKeyboardWindow();
-  contents_window->SetName("KeyboardWindow");
-  contents_window->SetBounds(
-      keyboard::KeyboardBoundsFromRootBounds(root_window->bounds(), 100));
-  contents_window->Show();
+  controller->ShowKeyboard(false /* locked */);
+  ASSERT_TRUE(keyboard::WaitUntilShown());
 
   ui::test::TestEventHandler handler;
   root_window->AddPreTargetHandler(&handler);
   ui::test::EventGenerator root_window_event_generator(root_window);
-  ui::test::EventGenerator keyboard_event_generator(root_window,
-                                                    contents_window);
+  ui::test::EventGenerator keyboard_event_generator(
+      root_window, controller->GetKeyboardWindow());
 
   views::Widget* modal_widget = CreateModalWidget(gfx::Rect(300, 10, 100, 100));
 
@@ -1069,11 +1065,8 @@ TEST_F(VirtualKeyboardRootWindowControllerTest, ClickDoesNotFocusKeyboard) {
 
   auto* keyboard_controller = keyboard::KeyboardController::Get();
   keyboard_controller->ShowKeyboard(false);
-  keyboard_controller->NotifyKeyboardWindowLoaded();
-
+  ASSERT_TRUE(keyboard::WaitUntilShown());
   aura::Window* keyboard_window = keyboard_controller->GetKeyboardWindow();
-  keyboard_window->SetBounds(gfx::Rect(100, 100, 100, 100));
-  EXPECT_TRUE(keyboard_window->IsVisible());
   EXPECT_FALSE(keyboard_window->HasFocus());
 
   // Click on the keyboard. Make sure the keyboard receives the event, but does

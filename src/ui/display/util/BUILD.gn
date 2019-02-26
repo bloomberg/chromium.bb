@@ -5,6 +5,7 @@
 import("//build/config/jumbo.gni")
 import("//build/config/ui.gni")
 import("//testing/libfuzzer/fuzzer_test.gni")
+import("//ui/ozone/ozone.gni")
 
 jumbo_component("util") {
   output_name = "display_util"
@@ -27,7 +28,7 @@ jumbo_component("util") {
     "//ui/gfx/geometry",
   ]
 
-  if (use_x11) {
+  if (use_x11 || ozone_platform_x11) {
     sources += [
       "x11/edid_parser_x11.cc",
       "x11/edid_parser_x11.h",
@@ -40,6 +41,10 @@ jumbo_component("util") {
   }
   if (is_chromeos) {
     deps += [ "//ui/display/types" ]
+  } else if (is_mac) {
+    libs = [
+      "IOSurface.framework",
+    ]
   }
 }
 

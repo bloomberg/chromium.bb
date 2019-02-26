@@ -17,6 +17,7 @@
 #include "gpu/command_buffer/service/gpu_tracer.h"
 #include "gpu/command_buffer/service/image_manager.h"
 #include "gpu/command_buffer/service/mailbox_manager_impl.h"
+#include "gpu/command_buffer/service/passthrough_discardable_manager.h"
 #include "gpu/command_buffer/service/service_discardable_manager.h"
 #include "gpu/command_buffer/service/shared_image_manager.h"
 #include "gpu/config/gpu_feature_info.h"
@@ -130,6 +131,13 @@ class GLManager : private GpuControl {
 
   gl::GLContext* context() { return context_.get(); }
 
+  ServiceDiscardableManager* discardable_manager() {
+    return &discardable_manager_;
+  }
+  PassthroughDiscardableManager* passthrough_discardable_manager() {
+    return &passthrough_discardable_manager_;
+  }
+
   const GpuDriverBugWorkarounds& workarounds() const;
   const gpu::GpuPreferences& gpu_preferences() const {
     return gpu_preferences_;
@@ -140,8 +148,7 @@ class GLManager : private GpuControl {
   const Capabilities& GetCapabilities() const override;
   int32_t CreateImage(ClientBuffer buffer,
                       size_t width,
-                      size_t height,
-                      unsigned internalformat) override;
+                      size_t height) override;
   void DestroyImage(int32_t id) override;
   void SignalQuery(uint32_t query, base::OnceClosure callback) override;
   void CreateGpuFence(uint32_t gpu_fence_id, ClientGpuFence source) override;
@@ -178,6 +185,7 @@ class GLManager : private GpuControl {
   gles2::TraceOutputter outputter_;
   gles2::ImageManager image_manager_;
   ServiceDiscardableManager discardable_manager_;
+  PassthroughDiscardableManager passthrough_discardable_manager_;
   std::unique_ptr<gles2::ShaderTranslatorCache> translator_cache_;
   gles2::FramebufferCompletenessCache completeness_cache_;
   MailboxManager* mailbox_manager_ = nullptr;

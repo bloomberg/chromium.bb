@@ -11,6 +11,8 @@ var test = test || {};
 constants.FILES_QUICK_VIEW_HTML = 'test/gen/foreground/elements/files_quick_view.html';
 constants.DRIVE_WELCOME_CSS = FILE_MANAGER_ROOT + constants.DRIVE_WELCOME_CSS;
 
+test.FILE_MANAGER_EXTENSION_ID = 'hhaomjibdihmijegdhdafkllkbggdgoj';
+
 // Stores Blobs loaded from src/chrome/test/data/chromeos/file_manager.
 test.DATA = {
   'archive.zip': null,
@@ -18,6 +20,7 @@ test.DATA = {
   'image2.png': null,
   'image3.jpg': null,
   'music.ogg': null,
+  'package.deb': null,
   'random.bin': null,
   'text.txt': null,
   'video.ogv': null,
@@ -227,15 +230,15 @@ test.ENTRIES = {
       test.SharedOption.NONE, 'Jan 1, 2014, 1:00 AM', 'archive.zip',
       '533 bytes', 'Zip archive'),
 
+  debPackage: new test.TestEntryInfo(
+      test.EntryType.FILE, 'package.deb', 'package.deb',
+      'application/vnd.debian.binary-package', test.SharedOption.NONE,
+      'Jan 1, 2014, 1:00 AM', 'package.deb', '724 bytes', 'DEB file'),
+
   hiddenFile: new test.TestEntryInfo(
       test.EntryType.FILE, 'text.txt', '.hiddenfile.txt', 'text/plain',
       test.SharedOption.NONE, 'Sep 30, 2014, 3:30 PM', '.hiddenfile.txt',
       '51 bytes', 'Plain text'),
-
-  mhtml: new test.TestEntryInfo(
-      test.EntryType.FILE, 'text.txt', 'hello.mhtml', 'text/html',
-      test.SharedOption.NONE, 'Sep 4, 1998, 12:34 PM', 'hello.mhtml',
-      '51 bytes', 'HTML document'),
 
   helloInA: new test.TestEntryInfo(
       test.EntryType.FILE, 'text.txt', 'hello.txt', 'text/plain',
@@ -404,22 +407,22 @@ test.waitForElementLost = function(query) {
  * @param {!Array<!test.TestEntryInfo>} crostini Entries for crostini.
  */
 test.addEntries = function(downloads, drive, crostini) {
-  var fsDownloads = /** @type {MockFileSystem} */ (
+  const fsDownloads = /** @type {MockFileSystem} */ (
       mockVolumeManager
           .getCurrentProfileVolumeInfo(VolumeManagerCommon.VolumeType.DOWNLOADS)
           .fileSystem);
   fsDownloads.populate(
       test.TestEntryInfo.getMockFileSystemPopulateRows(downloads, '/'), true);
 
-  var fsDrive = /** @type {MockFileSystem} */ (
+  const fsDrive = /** @type {MockFileSystem} */ (
       mockVolumeManager
           .getCurrentProfileVolumeInfo(VolumeManagerCommon.VolumeType.DRIVE)
           .fileSystem);
   fsDrive.populate(
       test.TestEntryInfo.getMockFileSystemPopulateRows(drive, '/root/'), true);
-  fsDrive.populate(['/team_drives/']);
+  fsDrive.populate(['/team_drives/', '/Computers/']);
 
-  var fsCrostini = /** @type {MockFileSystem} */ (
+  const fsCrostini = /** @type {MockFileSystem} */ (
       mockVolumeManager
           .createVolumeInfo(
               VolumeManagerCommon.VolumeType.CROSTINI, 'crostini',
@@ -427,6 +430,14 @@ test.addEntries = function(downloads, drive, crostini) {
           .fileSystem);
   fsCrostini.populate(
       test.TestEntryInfo.getMockFileSystemPopulateRows(crostini, '/'), true);
+
+  const fsRemovable = /** @type {MockFileSystem} */ (
+      mockVolumeManager
+          .createVolumeInfo(
+              VolumeManagerCommon.VolumeType.REMOVABLE, 'removable:MyUSB',
+              'MyUSB')
+          .fileSystem);
+  fsRemovable.populate([], true);
 };
 
 /**
@@ -439,6 +450,24 @@ test.mountCrostini = function() {
     volumeMetadata: {
       volumeType: VolumeManagerCommon.VolumeType.CROSTINI,
       volumeId: 'crostini',
+      isReadOnly: false,
+      iconSet: {},
+      profile: {isCurrentProfile: true, displayName: ''},
+      mountContext: 'user',
+    },
+  });
+};
+
+/**
+ * Sends mount event for crostini volume.
+ */
+test.mountRemovable = function() {
+  chrome.fileManagerPrivate.onMountCompleted.dispatchEvent({
+    status: 'success',
+    eventType: 'mount',
+    volumeMetadata: {
+      volumeType: VolumeManagerCommon.VolumeType.REMOVABLE,
+      volumeId: 'removable:MyUSB',
       isReadOnly: false,
       iconSet: {},
       profile: {isCurrentProfile: true, displayName: ''},
@@ -520,18 +549,19 @@ test.setupAndWaitUntilReady = function(opt_downloads, opt_drive, opt_crostini) {
   test.inputText = test.util.sync.inputText.bind(null, window);
   test.selectFile = test.util.sync.selectFile.bind(null, window);
 
+  const downloadsElement = '#directory-tree [volume-type-icon="downloads"]';
+
   return test.loadData()
       .then(() => {
         test.addEntries(entriesDownloads, entriesDrive, entriesCrostini);
-        return test.waitForElement(
-            '#directory-tree [volume-type-icon="downloads"]');
+        return test.waitForElement(downloadsElement);
       })
       .then((downloadsIcon) => {
-        // Click Downloads, or refresh button if already on Downloads.
-        assertTrue(test.fakeMouseClick(
-            downloadsIcon.parentElement.hasAttribute('selected') ?
-                '#refresh-button' :
-                '#directory-tree [volume-type-icon="downloads"]'));
+        // Click Downloads if not already on Downloads, then refresh button.
+        if (!downloadsIcon.parentElement.hasAttribute('selected')) {
+          assertTrue(test.fakeMouseClick(downloadsElement), 'click downloads');
+        }
+        assertTrue(test.fakeMouseClick('#refresh-button'), 'click refresh');
         return test.waitForFiles(
             test.TestEntryInfo.getExpectedRows(entriesDownloads));
       });

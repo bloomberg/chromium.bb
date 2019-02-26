@@ -52,10 +52,6 @@ class PendingTaskQueue {
     return delayed_tasks_.HasPendingHighResolutionTasks();
   }
 
-  // Reports UMA metrics about its queues before the MessageLoop goes to sleep
-  // per being idle.
-  void ReportMetricsOnIdle() const;
-
  private:
   // The queue for holding tasks that should be run later and sorted by expected
   // run time.

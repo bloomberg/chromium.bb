@@ -36,6 +36,8 @@ static constexpr std::array<gfx::Size, 5> kDefaultResolutions{
 static constexpr std::array<float, 1> kDefaultFrameRates{{20.0f}};
 
 static const double kInitialZoom = 100.0;
+static const double kInitialExposureTime = 50.0;
+static const double kInitialFocusDistance = 50.0;
 
 static const media::VideoPixelFormat kSupportedPixelFormats[] = {
     media::PIXEL_FORMAT_I420, media::PIXEL_FORMAT_Y16,
@@ -133,7 +135,8 @@ FakeVideoCaptureDeviceFactory::CreateDeviceWithSettings(
 
   const VideoCaptureFormat& initial_format = settings.supported_formats.front();
   auto device_state = std::make_unique<FakeDeviceState>(
-      kInitialZoom, initial_format.frame_rate, initial_format.pixel_format);
+      kInitialZoom, kInitialExposureTime, kInitialFocusDistance,
+      initial_format.frame_rate, initial_format.pixel_format);
 
   auto photo_frame_painter = std::make_unique<PacmanFramePainter>(
       PacmanFramePainter::Format::SK_N32, device_state.get());

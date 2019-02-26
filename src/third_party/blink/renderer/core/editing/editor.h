@@ -64,6 +64,8 @@ enum class WritingDirection;
 class CORE_EXPORT Editor final : public GarbageCollectedFinalized<Editor> {
  public:
   static Editor* Create(LocalFrame&);
+
+  explicit Editor(LocalFrame&);
   ~Editor();
 
   CompositeEditCommand* LastEditCommand() { return last_edit_command_.Get(); }
@@ -244,8 +246,6 @@ class CORE_EXPORT Editor final : public GarbageCollectedFinalized<Editor> {
   bool overwrite_mode_enabled_;
   Member<EditingStyle> typing_style_;
   bool mark_is_directional_ = false;
-
-  explicit Editor(LocalFrame&);
 
   LocalFrame& GetFrame() const {
     DCHECK(frame_);

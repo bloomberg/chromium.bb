@@ -17,6 +17,7 @@ import android.app.Activity;
 import android.content.pm.ActivityInfo;
 import android.content.res.Configuration;
 import android.support.annotation.Nullable;
+import android.support.test.espresso.matcher.ViewMatchers;
 import android.support.test.filters.MediumTest;
 import android.view.View;
 import android.view.ViewGroup;
@@ -34,6 +35,7 @@ import org.chromium.base.test.util.Feature;
 import org.chromium.base.test.util.RetryOnFailure;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ChromeActivity;
+import org.chromium.chrome.browser.ChromeFeatureList;
 import org.chromium.chrome.browser.ChromeSwitches;
 import org.chromium.chrome.browser.UrlConstants;
 import org.chromium.chrome.browser.modelutil.ListObservable;
@@ -48,7 +50,7 @@ import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
 import org.chromium.chrome.test.ChromeTabbedActivityTestRule;
 import org.chromium.chrome.test.util.NewTabPageTestUtils;
 import org.chromium.chrome.test.util.RenderTestRule;
-import org.chromium.chrome.test.util.browser.RecyclerViewTestUtils;
+import org.chromium.chrome.test.util.browser.Features.DisableFeatures;
 import org.chromium.chrome.test.util.browser.offlinepages.FakeOfflinePageBridge;
 import org.chromium.chrome.test.util.browser.suggestions.FakeMostVisitedSites;
 import org.chromium.chrome.test.util.browser.suggestions.FakeSuggestionsSource;
@@ -101,6 +103,8 @@ public class TileGridLayoutTest {
     @Test
     @MediumTest
     @Feature({"NewTabPage", "RenderTest"})
+    // TODO(https://crbug.com/906151): Add new goldens and enable ExploreSites.
+    @DisableFeatures(ChromeFeatureList.EXPLORE_SITES)
     public void testTileGridAppearance() throws Exception {
         NewTabPage ntp = setUpFakeDataToShowOnNtp(FAKE_MOST_VISITED_URLS.length);
         mRenderTestRule.render(getTileGridLayout(ntp), "ntp_tile_grid_layout");
@@ -145,6 +149,8 @@ public class TileGridLayoutTest {
     @Test
     @MediumTest
     @Feature({"NewTabPage", "RenderTest"})
+    // TODO(https://crbug.com/906151): Add new goldens and enable ExploreSites.
+    @DisableFeatures(ChromeFeatureList.EXPLORE_SITES)
     public void testTileAppearanceModern()
             throws IOException, InterruptedException, TimeoutException {
         List<SiteSuggestion> suggestions = makeSuggestions(2);
@@ -188,7 +194,9 @@ public class TileGridLayoutTest {
         assertTrue(mTab.getNativePage() instanceof NewTabPage);
         NewTabPage ntp = (NewTabPage) mTab.getNativePage();
 
-        RecyclerViewTestUtils.waitForStableRecyclerView(ntp.getNewTabPageView().getRecyclerView());
+        org.chromium.chrome.test.util.ViewUtils.waitForView(
+                (ViewGroup) ntp.getView(), ViewMatchers.withId(R.id.tile_grid_layout));
+
         return ntp;
     }
 
@@ -229,7 +237,7 @@ public class TileGridLayoutTest {
     }
 
     private TileGridLayout getTileGridLayout(NewTabPage ntp) {
-        TileGridLayout tileGridLayout = ntp.getNewTabPageView().findViewById(R.id.tile_grid_layout);
+        TileGridLayout tileGridLayout = ntp.getView().findViewById(R.id.tile_grid_layout);
         assertNotNull("Unable to retrieve the TileGridLayout.", tileGridLayout);
         return tileGridLayout;
     }

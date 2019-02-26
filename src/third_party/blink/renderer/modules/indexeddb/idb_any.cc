@@ -36,11 +36,11 @@
 namespace blink {
 
 IDBAny* IDBAny::CreateUndefined() {
-  return new IDBAny(kUndefinedType);
+  return MakeGarbageCollected<IDBAny>(kUndefinedType);
 }
 
 IDBAny* IDBAny::CreateNull() {
-  return new IDBAny(kNullType);
+  return MakeGarbageCollected<IDBAny>(kNullType);
 }
 
 IDBAny::IDBAny(Type type) : type_(type) {

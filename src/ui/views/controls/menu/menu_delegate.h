@@ -233,6 +233,11 @@ class VIEWS_EXPORT MenuDelegate {
   // Returns true if the labels should reserve additional spacing for e.g.
   // submenu indicators at the end of the line.
   virtual bool ShouldReserveSpaceForSubmenuIndicator() const;
+
+  // Returns true if menus should fall back to positioning beside the anchor,
+  // rather than directly above or below it, when the menu is too tall to fit
+  // within the screen.
+  virtual bool ShouldTryPositioningBesideAnchor() const;
 };
 
 }  // namespace views

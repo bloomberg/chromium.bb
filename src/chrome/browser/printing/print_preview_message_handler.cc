@@ -90,8 +90,8 @@ PrintPreviewUI* PrintPreviewMessageHandler::GetPrintPreviewUI(
     return nullptr;
   PrintPreviewUI* preview_ui =
       static_cast<PrintPreviewUI*>(dialog->GetWebUI()->GetController());
-  return preview_ui->GetIDForPrintPreviewUI() == preview_ui_id ? preview_ui
-                                                               : nullptr;
+  base::Optional<int32_t> id = preview_ui->GetIDForPrintPreviewUI();
+  return (id && *id == preview_ui_id) ? preview_ui : nullptr;
 }
 
 void PrintPreviewMessageHandler::OnRequestPrintPreview(
@@ -165,7 +165,7 @@ void PrintPreviewMessageHandler::OnDidPreviewPage(
 
     // Use utility process to convert skia metafile to pdf.
     client->DoCompositePageToPdf(
-        params.document_cookie, render_frame_host, page_number, content,
+        params.document_cookie, render_frame_host, content,
         base::BindOnce(&PrintPreviewMessageHandler::OnCompositePdfPageDone,
                        weak_ptr_factory_.GetWeakPtr(), page_number,
                        params.document_cookie, ids));

@@ -7,6 +7,7 @@
 #include "base/bind.h"
 #include "base/containers/circular_deque.h"
 #include "base/task/post_task.h"
+#include "base/threading/thread_restrictions.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/chromeos/accessibility/accessibility_manager.h"
@@ -30,8 +31,8 @@
 
 using chromeos::ProfileHelper;
 using chromeos::ScreenLocker;
+using chromeos::ScreenLockerTester;
 using user_manager::UserManager;
-using chromeos::test::ScreenLockerTester;
 using content::BrowserThread;
 
 namespace extensions {
@@ -305,7 +306,6 @@ class BrailleDisplayPrivateAPIUserTest : public BrailleDisplayPrivateApiTest {
 
   void LockScreen(ScreenLockerTester* tester) {
     ScreenLocker::Show();
-    tester->EmulateWindowManagerReady();
     content::WindowedNotificationObserver lock_state_observer(
         chrome::NOTIFICATION_SCREEN_LOCK_STATE_CHANGED,
         content::NotificationService::AllSources());
@@ -338,13 +338,16 @@ class BrailleDisplayPrivateAPIUserTest : public BrailleDisplayPrivateApiTest {
 #endif
 IN_PROC_BROWSER_TEST_F(BrailleDisplayPrivateAPIUserTest,
                        MAYBE_KeyEventOnLockScreen) {
-  std::unique_ptr<ScreenLockerTester> tester(ScreenLocker::GetTester());
+  std::unique_ptr<ScreenLockerTester> tester = ScreenLockerTester::Create();
   // Log in.
   session_manager::SessionManager::Get()->CreateSession(
       AccountId::FromUserEmailGaiaId(kTestUserName, kTestUserGaiaId),
       kTestUserName, false);
-  g_browser_process->profile_manager()->GetProfile(
-      ProfileHelper::Get()->GetProfilePathByUserIdHash(kTestUserName));
+  {
+    base::ScopedAllowBlockingForTesting allow_io;
+    g_browser_process->profile_manager()->GetProfile(
+        ProfileHelper::Get()->GetProfilePathByUserIdHash(kTestUserName));
+  }
   session_manager::SessionManager::Get()->SessionStarted();
   Profile* profile = ProfileManager::GetActiveUserProfile();
   ASSERT_FALSE(
@@ -373,15 +376,15 @@ IN_PROC_BROWSER_TEST_F(BrailleDisplayPrivateAPIUserTest,
   LockScreen(tester.get());
   signin_api.OnBrailleKeyEvent(key_event);
   user_api.OnBrailleKeyEvent(key_event);
-  EXPECT_EQ(1, signin_delegate->GetEventCount());
-  EXPECT_EQ(1, user_delegate->GetEventCount());
+  EXPECT_EQ(0, signin_delegate->GetEventCount());
+  EXPECT_EQ(2, user_delegate->GetEventCount());
 
   // Unlock screen, making sur ekey events go to the user profile again.
   DismissLockScreen(tester.get());
   signin_api.OnBrailleKeyEvent(key_event);
   user_api.OnBrailleKeyEvent(key_event);
-  EXPECT_EQ(1, signin_delegate->GetEventCount());
-  EXPECT_EQ(2, user_delegate->GetEventCount());
+  EXPECT_EQ(0, signin_delegate->GetEventCount());
+  EXPECT_EQ(3, user_delegate->GetEventCount());
 }
 
 }  // namespace braille_display_private

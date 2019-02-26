@@ -53,6 +53,7 @@
 #include "third_party/blink/renderer/core/layout/line/inline_iterator.h"
 #include "third_party/blink/renderer/core/layout/line/inline_text_box.h"
 #include "third_party/blink/renderer/core/layout/line/line_width.h"
+#include "third_party/blink/renderer/core/layout/logical_values.h"
 #include "third_party/blink/renderer/core/layout/ng/inline/ng_line_height_metrics.h"
 #include "third_party/blink/renderer/core/layout/ng/layout_ng_block_flow.h"
 #include "third_party/blink/renderer/core/layout/ng/legacy_layout_tree_walking.h"
@@ -1942,9 +1943,10 @@ LayoutUnit LayoutBlockFlow::CollapseMargins(
     bool logical_top_intrudes_into_float =
         logical_top < before_collapse_logical_top;
     if (logical_top_intrudes_into_float && ContainsFloats() &&
-        !child.AvoidsFloats() && LowestFloatLogicalBottom() > logical_top)
+        !child.AvoidsFloats() && LowestFloatLogicalBottom() > logical_top) {
       child.SetNeedsLayoutAndFullPaintInvalidation(
-          LayoutInvalidationReason::kAncestorMarginCollapsing);
+          layout_invalidation_reason::kAncestorMarginCollapsing);
+    }
   }
 
   return logical_top;
@@ -2362,7 +2364,7 @@ bool LayoutBlockFlow::MustDiscardMarginAfter() const {
 
 bool LayoutBlockFlow::MustDiscardMarginBeforeForChild(
     const LayoutBox& child) const {
-  DCHECK(!child.SelfNeedsLayout());
+  DCHECK(!child.SelfNeedsLayout() || child.LayoutBlockedByDisplayLock());
   if (!child.IsWritingModeRoot()) {
     return child.IsLayoutBlockFlow()
                ? ToLayoutBlockFlow(&child)->MustDiscardMarginBefore()
@@ -2385,7 +2387,7 @@ bool LayoutBlockFlow::MustDiscardMarginBeforeForChild(
 
 bool LayoutBlockFlow::MustDiscardMarginAfterForChild(
     const LayoutBox& child) const {
-  DCHECK(!child.SelfNeedsLayout());
+  DCHECK(!child.SelfNeedsLayout() || child.LayoutBlockedByDisplayLock());
   if (!child.IsWritingModeRoot()) {
     return child.IsLayoutBlockFlow()
                ? ToLayoutBlockFlow(&child)->MustDiscardMarginAfter()
@@ -2427,7 +2429,7 @@ void LayoutBlockFlow::SetMaxMarginAfterValues(LayoutUnit pos, LayoutUnit neg) {
 
 bool LayoutBlockFlow::MustSeparateMarginBeforeForChild(
     const LayoutBox& child) const {
-  DCHECK(!child.SelfNeedsLayout());
+  DCHECK(!child.SelfNeedsLayout() || child.LayoutBlockedByDisplayLock());
   const ComputedStyle& child_style = child.StyleRef();
   if (!child.IsWritingModeRoot())
     return child_style.MarginBeforeCollapse() == EMarginCollapse::kSeparate;
@@ -2440,7 +2442,7 @@ bool LayoutBlockFlow::MustSeparateMarginBeforeForChild(
 
 bool LayoutBlockFlow::MustSeparateMarginAfterForChild(
     const LayoutBox& child) const {
-  DCHECK(!child.SelfNeedsLayout());
+  DCHECK(!child.SelfNeedsLayout() || child.LayoutBlockedByDisplayLock());
   const ComputedStyle& child_style = child.StyleRef();
   if (!child.IsWritingModeRoot())
     return child_style.MarginAfterCollapse() == EMarginCollapse::kSeparate;
@@ -2539,7 +2541,7 @@ void LayoutBlockFlow::AddLayoutOverflowFromFloats() {
 
 scoped_refptr<NGLayoutResult> LayoutBlockFlow::CachedLayoutResult(
     const NGConstraintSpace&,
-    const NGBreakToken*) const {
+    const NGBreakToken*) {
   return nullptr;
 }
 
@@ -2554,6 +2556,10 @@ void LayoutBlockFlow::SetCachedLayoutResult(const NGConstraintSpace&,
 
 void LayoutBlockFlow::ClearCachedLayoutResult() {}
 
+bool LayoutBlockFlow::AreCachedLinesValidFor(const NGConstraintSpace&) const {
+  return false;
+}
+
 void LayoutBlockFlow::SetPaintFragment(const NGBreakToken*,
                                        scoped_refptr<const NGPhysicalFragment>,
                                        NGPhysicalOffset) {}
@@ -2566,11 +2572,20 @@ void LayoutBlockFlow::UpdatePaintFragmentFromCachedLayoutResult(
 void LayoutBlockFlow::ComputeVisualOverflow(
     const LayoutRect& previous_visual_overflow_rect,
     bool recompute_floats) {
-  LayoutBlock::ComputeVisualOverflow(previous_visual_overflow_rect,
-                                     recompute_floats);
+  AddVisualOverflowFromChildren();
+
+  AddVisualEffectOverflow();
+  AddVisualOverflowFromTheme();
+
   if (recompute_floats || CreatesNewFormattingContext() ||
       HasSelfPaintingLayer())
     AddVisualOverflowFromFloats();
+
+  if (VisualOverflowRect() != previous_visual_overflow_rect) {
+    if (Layer())
+      Layer()->SetNeedsCompositingInputsUpdate();
+    GetFrameView()->SetIntersectionObservationState(LocalFrameView::kDesired);
+  }
 }
 
 void LayoutBlockFlow::ComputeLayoutOverflow(LayoutUnit old_client_after_edge,
@@ -2689,6 +2704,8 @@ int LayoutBlockFlow::LineCount(
 }
 
 LayoutUnit LayoutBlockFlow::FirstLineBoxBaseline() const {
+  if (ShouldApplyLayoutContainment())
+    return LayoutUnit(-1);
   // Orthogonal grid items can participante in baseline alignment along column
   // axis.
   if (IsWritingModeRoot() && !IsRubyRun() && !IsGridItem())
@@ -2887,7 +2904,7 @@ LayoutUnit LayoutBlockFlow::GetClearDelta(LayoutBox* child,
 
   // At least one float is present. We need to perform the clearance
   // computation.
-  EClear clear = child->StyleRef().Clear();
+  EClear clear = ResolvedClear(child->StyleRef(), StyleRef());
   LayoutUnit logical_bottom = LowestFloatLogicalBottom(clear);
 
   // We also clear floats if we are too big to sit on the same line as a float
@@ -3021,7 +3038,7 @@ void LayoutBlockFlow::StyleDidChange(StyleDifference diff,
   bool needs_update_ancestor_float_object_should_paint_flags = false;
   if (HasSelfPaintingLayer() != had_self_painting_layer &&
       HasOverhangingFloats()) {
-    SetNeedsLayout(LayoutInvalidationReason::kStyleChange);
+    SetNeedsLayout(layout_invalidation_reason::kStyleChange);
     if (had_self_painting_layer)
       MarkAllDescendantsWithFloatsForLayout();
     else
@@ -3108,13 +3125,12 @@ bool LayoutBlockFlow::NeedsAnonymousInlineWrapper() const {
   DCHECK(RuntimeEnabledFeatures::LayoutNGEnabled());
   if (!GetDocument().GetStyleEngine().UsesFirstLineRules())
     return false;
+  // We need an anonymous inline wrapper only if ::first-line has different
+  // background, but excessive anonymous inline will not harm much. To simplify,
+  // create the wrapper whenever ::first-line is applied.
   const ComputedStyle& first_line_style = FirstLineStyleRef();
   const ComputedStyle& style = StyleRef();
-  if (&first_line_style == &style)
-    return false;
-  // We need an anonymous inline wrapper only if ::first-line has different
-  // background, but excessive anonymous inline will not harm.
-  return first_line_style.HasBackground();
+  return &first_line_style != &style;
 }
 
 void LayoutBlockFlow::AddChild(LayoutObject* new_child,
@@ -3403,7 +3419,7 @@ void LayoutBlockFlow::CollapseAnonymousBlockChild(LayoutBlockFlow* child) {
   if (child->IsRubyRun() || child->IsRubyBase())
     return;
   SetNeedsLayoutAndPrefWidthsRecalcAndFullPaintInvalidation(
-      LayoutInvalidationReason::kChildAnonymousBlockChanged);
+      layout_invalidation_reason::kChildAnonymousBlockChanged);
 
   child->MoveAllChildrenTo(this, child->NextSibling(), child->HasLayer());
   // If we make an object's children inline we are going to frustrate any future
@@ -3429,7 +3445,7 @@ bool LayoutBlockFlow::MergeSiblingContiguousAnonymousBlock(
     return false;
 
   SetNeedsLayoutAndPrefWidthsRecalcAndFullPaintInvalidation(
-      LayoutInvalidationReason::kAnonymousBlockChange);
+      layout_invalidation_reason::kAnonymousBlockChange);
 
   // If the inlineness of children of the two block don't match, we'd need
   // special code here (but there should be no need for it).
@@ -3522,8 +3538,8 @@ void LayoutBlockFlow::MakeChildrenInlineIfPossible() {
   // at layout.
   RemoveFloatingObjectsFromDescendants();
 
-  for (size_t i = 0; i < blocks_to_remove.size(); i++)
-    CollapseAnonymousBlockChild(blocks_to_remove[i]);
+  for (LayoutBlockFlow* child : blocks_to_remove)
+    CollapseAnonymousBlockChild(child);
   SetChildrenInline(true);
 }
 
@@ -3723,7 +3739,7 @@ LayoutPoint LayoutBlockFlow::ComputeLogicalLocationForFloat(
 
   LayoutUnit float_logical_left;
 
-  if (child_box->StyleRef().Floating() == EFloat::kLeft) {
+  if (ResolvedFloating(child_box->StyleRef(), StyleRef()) == EFloat::kLeft) {
     LayoutUnit height_remaining_left = LayoutUnit(1);
     LayoutUnit height_remaining_right = LayoutUnit(1);
     float_logical_left = LogicalLeftOffsetForPositioningFloat(
@@ -3780,8 +3796,12 @@ FloatingObject* LayoutBlockFlow::InsertFloatingObject(LayoutBox& float_box) {
   }
 
   // Create the special object entry & append it to the list
-
-  std::unique_ptr<FloatingObject> new_obj = FloatingObject::Create(&float_box);
+  EFloat f = ResolvedFloating(float_box.StyleRef(), StyleRef());
+  DCHECK(f == EFloat::kLeft || f == EFloat::kRight);
+  FloatingObject::Type type = f == EFloat::kLeft ? FloatingObject::kFloatLeft
+                                                 : FloatingObject::kFloatRight;
+  std::unique_ptr<FloatingObject> new_obj =
+      FloatingObject::Create(&float_box, type);
   return floating_objects_->Add(std::move(new_obj));
 }
 
@@ -3908,9 +3928,9 @@ LayoutUnit LayoutBlockFlow::PositionAndLayoutFloat(
   // FIXME Investigate if this can be removed. crbug.com/370006
   child.SetShouldCheckForPaintInvalidation();
 
-  logical_top_margin_edge =
-      std::max(logical_top_margin_edge,
-               LowestFloatLogicalBottom(child.StyleRef().Clear()));
+  logical_top_margin_edge = std::max(
+      logical_top_margin_edge,
+      LowestFloatLogicalBottom(ResolvedClear(child.StyleRef(), StyleRef())));
 
   bool is_paginated = View()->GetLayoutState()->IsPaginated();
   if (is_paginated && !ChildrenInline()) {

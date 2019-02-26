@@ -265,11 +265,11 @@ bool SendKeyPressNotifyWhenDone(gfx::NativeWindow window,
                                 bool command,
                                 base::OnceClosure task) {
   CHECK(g_ui_controls_enabled);
-  DCHECK(base::MessageLoopForUI::IsCurrent());
+  DCHECK(base::MessageLoopCurrentForUI::IsSet());
 
   std::vector<NSEvent*> events;
-  SynthesizeKeyEventsSequence(
-      window, key, control, shift, alt, command, &events);
+  SynthesizeKeyEventsSequence(window.GetNativeNSWindow(), key, control, shift,
+                              alt, command, &events);
 
   // TODO(suzhe): Using [NSApplication postEvent:atStart:] here causes
   // BrowserKeyEventsTest.CommandKeyEvents to fail. See http://crbug.com/49270

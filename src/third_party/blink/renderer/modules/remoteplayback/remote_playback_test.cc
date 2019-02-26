@@ -47,7 +47,7 @@ class MockEventListenerForRemotePlayback : public EventListener {
     return this == &other;
   }
 
-  MOCK_METHOD2(handleEvent, void(ExecutionContext* executionContext, Event*));
+  MOCK_METHOD2(Invoke, void(ExecutionContext* executionContext, Event*));
 };
 
 class MockPresentationController final : public PresentationController {
@@ -199,17 +199,16 @@ TEST_F(RemotePlaybackTest, StateChangeEvents) {
   auto* disconnect_handler =
       new testing::StrictMock<MockEventListenerForRemotePlayback>();
 
-  remote_playback->addEventListener(EventTypeNames::connecting,
+  remote_playback->addEventListener(event_type_names::kConnecting,
                                     connecting_handler);
-  remote_playback->addEventListener(EventTypeNames::connect, connect_handler);
-  remote_playback->addEventListener(EventTypeNames::disconnect,
+  remote_playback->addEventListener(event_type_names::kConnect,
+                                    connect_handler);
+  remote_playback->addEventListener(event_type_names::kDisconnect,
                                     disconnect_handler);
 
-  EXPECT_CALL(*connecting_handler, handleEvent(testing::_, testing::_))
-      .Times(1);
-  EXPECT_CALL(*connect_handler, handleEvent(testing::_, testing::_)).Times(1);
-  EXPECT_CALL(*disconnect_handler, handleEvent(testing::_, testing::_))
-      .Times(1);
+  EXPECT_CALL(*connecting_handler, Invoke(testing::_, testing::_)).Times(1);
+  EXPECT_CALL(*connect_handler, Invoke(testing::_, testing::_)).Times(1);
+  EXPECT_CALL(*disconnect_handler, Invoke(testing::_, testing::_)).Times(1);
 
   SetState(remote_playback, WebRemotePlaybackState::kConnecting);
   SetState(remote_playback, WebRemotePlaybackState::kConnecting);
@@ -248,7 +247,7 @@ TEST_F(RemotePlaybackTest,
   remote_playback->prompt(scope.GetScriptState())
       .Then(resolve->Bind(), reject->Bind());
   HTMLMediaElementRemotePlayback::SetBooleanAttribute(
-      HTMLNames::disableremoteplaybackAttr, *element, true);
+      html_names::kDisableremoteplaybackAttr, *element, true);
 
   // Runs pending promises.
   v8::MicrotasksScope::PerformCheckpoint(scope.GetIsolate());
@@ -289,7 +288,7 @@ TEST_F(RemotePlaybackTest, DisableRemotePlaybackCancelsAvailabilityCallbacks) {
       .Then(resolve->Bind(), reject->Bind());
 
   HTMLMediaElementRemotePlayback::SetBooleanAttribute(
-      HTMLNames::disableremoteplaybackAttr, *element, true);
+      html_names::kDisableremoteplaybackAttr, *element, true);
 
   // Runs pending promises.
   v8::MicrotasksScope::PerformCheckpoint(scope.GetIsolate());
@@ -386,7 +385,7 @@ TEST_F(RemotePlaybackTest, IsListening) {
 
   LocalFrame& frame = page_holder->GetFrame();
   MockPresentationController* mock_controller =
-      new MockPresentationController(frame);
+      MakeGarbageCollected<MockPresentationController>(frame);
   Supplement<LocalFrame>::ProvideTo(
       frame, static_cast<PresentationController*>(mock_controller));
 

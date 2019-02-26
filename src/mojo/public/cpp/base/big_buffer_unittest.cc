@@ -65,5 +65,25 @@ TEST(BigBufferTest, LargeDataSize) {
   EXPECT_TRUE(BufferEquals(data, out));
 }
 
+TEST(BigBufferTest, InvalidBuffer) {
+  // Verifies that deserializing invalid BigBuffers and BigBufferViews always
+  // fails.
+
+  BigBufferView out_view;
+  auto invalid_view = BigBufferView::CreateInvalidForTest();
+  EXPECT_EQ(invalid_view.storage_type(),
+            BigBuffer::StorageType::kInvalidBuffer);
+  EXPECT_FALSE(mojo::test::SerializeAndDeserialize<mojom::BigBuffer>(
+      &invalid_view, &out_view));
+
+  BigBuffer out_buffer;
+  auto invalid_buffer =
+      BigBufferView::ToBigBuffer(BigBufferView::CreateInvalidForTest());
+  EXPECT_EQ(invalid_buffer.storage_type(),
+            BigBuffer::StorageType::kInvalidBuffer);
+  EXPECT_FALSE(mojo::test::SerializeAndDeserialize<mojom::BigBuffer>(
+      &invalid_buffer, &out_buffer));
+}
+
 }  // namespace big_buffer_unittest
 }  // namespace mojo_base

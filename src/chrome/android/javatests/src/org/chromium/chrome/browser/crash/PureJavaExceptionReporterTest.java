@@ -13,6 +13,8 @@ import org.junit.runner.RunWith;
 
 import org.chromium.base.ThreadUtils;
 import org.chromium.base.test.BaseJUnit4ClassRunner;
+import org.chromium.components.crash.CrashKeyIndex;
+import org.chromium.components.crash.CrashKeys;
 import org.chromium.components.minidump_uploader.CrashTestRule;
 
 import java.io.BufferedReader;

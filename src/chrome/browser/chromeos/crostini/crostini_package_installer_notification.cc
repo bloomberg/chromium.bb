@@ -4,6 +4,7 @@
 
 #include "chrome/browser/chromeos/crostini/crostini_package_installer_notification.h"
 
+#include "ash/public/cpp/notification_utils.h"
 #include "ash/public/cpp/vector_icons/vector_icons.h"
 #include "chrome/browser/chromeos/crostini/crostini_package_installer_service.h"
 #include "chrome/browser/notifications/notification_display_service.h"
@@ -32,8 +33,7 @@ CrostiniPackageInstallerNotification::CrostiniPackageInstallerNotification(
   message_center::RichNotificationData rich_notification_data;
   rich_notification_data.vector_small_image = &ash::kNotificationLinuxIcon;
   rich_notification_data.never_timeout = true;
-  rich_notification_data.accent_color =
-      message_center::kSystemNotificationColorNormal;
+  rich_notification_data.accent_color = ash::kSystemNotificationColorNormal;
 
   notification_ = std::make_unique<message_center::Notification>(
       message_center::NOTIFICATION_TYPE_PROGRESS, notification_id,
@@ -44,7 +44,7 @@ CrostiniPackageInstallerNotification::CrostiniPackageInstallerNotification(
       l10n_util::GetStringUTF16(
           IDS_CROSTINI_PACKAGE_INSTALL_NOTIFICATION_DISPLAY_SOURCE),
       GURL(),  // origin_url
-      message_center::NotifierId(message_center::NotifierId::SYSTEM_COMPONENT,
+      message_center::NotifierId(message_center::NotifierType::SYSTEM_COMPONENT,
                                  kNotifierCrostiniPackageInstaller),
       rich_notification_data,
       base::MakeRefCounted<message_center::ThunkNotificationDelegate>(
@@ -72,7 +72,7 @@ void CrostiniPackageInstallerNotification::UpdateProgress(
       title_id = IDS_CROSTINI_PACKAGE_INSTALL_NOTIFICATION_ERROR_TITLE;
       message_id = IDS_CROSTINI_PACKAGE_INSTALL_NOTIFICATION_ERROR_MESSAGE;
       notification_->set_accent_color(
-          message_center::kSystemNotificationColorCriticalWarning);
+          ash::kSystemNotificationColorCriticalWarning);
     }
     notification_->set_title(l10n_util::GetStringUTF16(title_id));
     notification_->set_message(l10n_util::GetStringUTF16(message_id));

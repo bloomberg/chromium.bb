@@ -32,12 +32,12 @@ class NavigationControllerDelegate {
   virtual ~NavigationControllerDelegate() {}
 
   // Duplicates of WebContents methods.
-  virtual RenderViewHost* GetRenderViewHost() const = 0;
-  virtual InterstitialPage* GetInterstitialPage() const = 0;
-  virtual const std::string& GetContentsMimeType() const = 0;
+  virtual RenderViewHost* GetRenderViewHost() = 0;
+  virtual InterstitialPage* GetInterstitialPage() = 0;
+  virtual const std::string& GetContentsMimeType() = 0;
   virtual void NotifyNavigationStateChanged(InvalidateTypes changed_flags) = 0;
   virtual void Stop() = 0;
-  virtual bool IsBeingDestroyed() const = 0;
+  virtual bool IsBeingDestroyed() = 0;
   virtual bool CanOverscrollContent() const = 0;
 
   // Methods from WebContentsImpl that NavigationControllerImpl needs to
@@ -70,14 +70,6 @@ class NavigationControllerDelegate {
   virtual void DetachInterstitialPage(bool has_focus) = 0;
 
   virtual void UpdateOverridingUserAgent() = 0;
-
-  // Gives the delegate a chance to adjust the previews state during navigation.
-  // When called, previews_state will be pointing to a valid set of previews, or
-  // an enum value disabling previews.  The call will change the value of
-  // previews_state in place, and must change it to either a value disabling
-  // previews, or a subset of the previews passed in.
-  virtual void AdjustPreviewsStateForNavigation(
-      PreviewsState* previews_state) = 0;
 };
 
 }  // namespace content

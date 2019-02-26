@@ -5,6 +5,7 @@
 #include "chrome/browser/browser_switcher/alternative_browser_launcher.h"
 
 #include "base/bind.h"
+#include "base/metrics/histogram_macros.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/browser_switcher/browser_switcher_prefs.h"
 #include "components/prefs/pref_service.h"
@@ -45,12 +46,20 @@ AlternativeBrowserLauncherImpl::AlternativeBrowserLauncherImpl(
 AlternativeBrowserLauncherImpl::~AlternativeBrowserLauncherImpl() {}
 
 void AlternativeBrowserLauncherImpl::OnAltBrowserPathChanged() {
+  // This pref is sensitive. Only set through policies.
+  if (!prefs_->IsManagedPreference(prefs::kAlternativeBrowserPath))
+    return;
+
   // This string could be a variable, e.g. "${ie}". Let the driver decide what
   // to do with it.
   driver_->SetBrowserPath(prefs_->GetString(prefs::kAlternativeBrowserPath));
 }
 
 void AlternativeBrowserLauncherImpl::OnAltBrowserParametersChanged() {
+  // This pref is sensitive. Only set through policies.
+  if (!prefs_->IsManagedPreference(prefs::kAlternativeBrowserParameters))
+    return;
+
   // This string could contain a placeholder, e.g. "${url}". Let the driver
   // decide what to do with it.
   driver_->SetBrowserParameters(
@@ -58,7 +67,10 @@ void AlternativeBrowserLauncherImpl::OnAltBrowserParametersChanged() {
 }
 
 bool AlternativeBrowserLauncherImpl::Launch(const GURL& url) const {
-  return driver_->TryLaunch(url);
+  SCOPED_UMA_HISTOGRAM_TIMER("BrowserSwitcher.LaunchTime");
+  bool success = driver_->TryLaunch(url);
+  UMA_HISTOGRAM_BOOLEAN("BrowserSwitcher.LaunchSuccess", success);
+  return success;
 }
 
 }  // namespace browser_switcher

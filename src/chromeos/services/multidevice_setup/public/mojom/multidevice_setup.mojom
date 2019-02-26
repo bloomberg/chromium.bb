@@ -14,32 +14,35 @@ enum EventTypeForDebugging {
   kExistingUserNewChromebookAdded,
 };
 
+// This enum is tied directly to a UMA enum defined in
+// //tools/metrics/histograms/enums.xml, and should always reflect it (do not
+// change one without changing the other).
 enum HostStatus {
   // The user's account has no devices which can serve as a host for
   // multi-device features.
-  kNoEligibleHosts,
+  kNoEligibleHosts = 0,
 
   // The user's account has one or more devices which can be used as a host for
   // multi-device features, but the user has not yet completed the setup flow
   // for any one of these devices.
-  kEligibleHostExistsButNoHostSet,
+  kEligibleHostExistsButNoHostSet = 1,
 
   // The user has completed the setup flow for multi-device features on this
   // device, but there was an error contacting the back-end (e.g., the device
   // was offline during the setup flow, or the back-end rejected the request for
   // some reason). The local device will continue trying to contact the back-end
   // to confirm that the host is set.
-  kHostSetLocallyButWaitingForBackendConfirmation,
+  kHostSetLocallyButWaitingForBackendConfirmation = 2,
 
   // The host has been set (both locally and on the back-end), but verification
   // has not yet completed. The local device will continue trying to establish
   // a Bluetooth connection to the host until verification succeeds.
-  kHostSetButNotYetVerified,
+  kHostSetButNotYetVerified = 3,
 
   // The host has been set (both locally and on the back-end), and the
   // verification step over Bluetooth has completed. Features should be
   // available for use.
-  kHostVerified
+  kHostVerified = 4
 };
 
 // Individual multi-device features types.
@@ -50,39 +53,42 @@ enum Feature {
   kSmartLock
 };
 
+// This enum is tied directly to a UMA enum defined in
+// //tools/metrics/histograms/enums.xml, and should always reflect it (do not
+// change one without changing the other).
 enum FeatureState {
   // Feature was prohibited by a device policy (e.g., EDU or Enterprise).
-  kProhibitedByPolicy,
+  kProhibitedByPolicy = 0,
 
   // Feature was disabled by the user (i.e., via settings).
-  kDisabledByUser,
+  kDisabledByUser = 1,
 
   // Feature was enabled by the user (i.e., via settings).
-  kEnabledByUser,
+  kEnabledByUser = 2,
 
   // Feature is not supported by this Chromebook.
-  kNotSupportedByChromebook,
+  kNotSupportedByChromebook = 3,
 
   // Feature is not supported by the current host phone device.
-  kNotSupportedByPhone,
+  kNotSupportedByPhone = 4,
 
   // The feature is unavailable because there is no verified multi-device host.
   // To set a host, use SetHostDevice(); to verify a host, use
   // RetrySetHostNow().
-  kUnavailableNoVerifiedHost,
+  kUnavailableNoVerifiedHost = 5,
 
   // The feature is unavailable because there are insufficient security
   // mechanisms in place (e.g., Smart Lock returns this value when the host
   // phone device does not have a lock screen set).
-  kUnavailableInsufficientSecurity,
+  kUnavailableInsufficientSecurity = 6,
 
   // The feature has been enabled by the user, but it is still unavailable
   // because the entire Better Together suite has been disabled by the user.
-  kUnavailableSuiteDisabled,
+  kUnavailableSuiteDisabled = 7,
 
   // The feature still requires further setup to be ready for use (e.g., Android
   // Messages requires a separate pairing flow after unified setup).
-  kFurtherSetupRequired,
+  kFurtherSetupRequired = 8,
 };
 
 interface AccountStatusChangeDelegate {

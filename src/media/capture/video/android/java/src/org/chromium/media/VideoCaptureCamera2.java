@@ -886,6 +886,12 @@ public class VideoCaptureCamera2 extends VideoCapture {
     private static final long kNanosecondsPer100Microsecond = 100000;
     private static final String TAG = "VideoCapture";
 
+    private static final String[] AE_TARGET_FPS_RANGE_BUGGY_DEVICE_LIST = {
+            // See https://crbug.com/913203 for more info.
+            "Pixel 3",
+            "Pixel 3 XL",
+    };
+
     // Map of the equivalent color temperature in Kelvin for the White Balance setting. The
     // values are a mixture of educated guesses and data from Android's Camera2 API. The
     // temperatures must be ordered increasingly.
@@ -936,6 +942,7 @@ public class VideoCaptureCamera2 extends VideoCapture {
     private boolean mRedEyeReduction;
     private int mFillLightMode = AndroidFillLightMode.OFF;
     private boolean mTorch;
+    private boolean mEnableFaceDetection;
 
     // Service function to grab CameraCharacteristics and handle exceptions.
     private static CameraCharacteristics getCameraCharacteristics(int id) {
@@ -1011,6 +1018,14 @@ public class VideoCaptureCamera2 extends VideoCapture {
 
         configureCommonCaptureSettings(mPreviewRequestBuilder);
 
+        // Overwrite settings to enable face detection.
+        if (mEnableFaceDetection) {
+            mPreviewRequestBuilder.set(
+                    CaptureRequest.CONTROL_MODE, CameraMetadata.CONTROL_MODE_USE_SCENE_MODE);
+            mPreviewRequestBuilder.set(CaptureRequest.CONTROL_SCENE_MODE,
+                    CameraMetadata.CONTROL_SCENE_MODE_FACE_PRIORITY);
+        }
+
         List<Surface> surfaceList = new ArrayList<Surface>(1);
         // TODO(mcasas): release this Surface when not needed, https://crbug.com/643884.
         surfaceList.add(mImageReader.getSurface());
@@ -1076,7 +1091,9 @@ public class VideoCaptureCamera2 extends VideoCapture {
         } else {
             requestBuilder.set(CaptureRequest.CONTROL_MODE, CaptureRequest.CONTROL_MODE_AUTO);
             requestBuilder.set(CaptureRequest.CONTROL_AE_MODE, CameraMetadata.CONTROL_AE_MODE_ON);
-            requestBuilder.set(CaptureRequest.CONTROL_AE_TARGET_FPS_RANGE, mAeFpsRange);
+            if (!shouldSkipSettingAeTargetFpsRange()) {
+                requestBuilder.set(CaptureRequest.CONTROL_AE_TARGET_FPS_RANGE, mAeFpsRange);
+            }
         }
 
         if (mTorch) {
@@ -1154,6 +1171,15 @@ public class VideoCaptureCamera2 extends VideoCapture {
             mCameraState = state;
             mCameraStateLock.notifyAll();
         }
+    }
+
+    private static boolean shouldSkipSettingAeTargetFpsRange() {
+        for (String buggyDevice : AE_TARGET_FPS_RANGE_BUGGY_DEVICE_LIST) {
+            if (buggyDevice.contentEquals(android.os.Build.MODEL)) {
+                return true;
+            }
+        }
+        return false;
     }
 
     // Finds the closest Size to (|width|x|height|) in |sizes|, and returns it or null.
@@ -1336,7 +1362,7 @@ public class VideoCaptureCamera2 extends VideoCapture {
     }
 
     @Override
-    public boolean allocate(int width, int height, int frameRate) {
+    public boolean allocate(int width, int height, int frameRate, boolean enableFaceDetection) {
         Log.d(TAG, "allocate: requested (%d x %d) @%dfps", width, height, frameRate);
         nativeDCheckCurrentlyOnIncomingTaskRunner(mNativeVideoCaptureDeviceAndroid);
         synchronized (mCameraStateLock) {
@@ -1389,6 +1415,8 @@ public class VideoCaptureCamera2 extends VideoCapture {
         mInvertDeviceOrientationReadings =
                 cameraCharacteristics.get(CameraCharacteristics.LENS_FACING)
                 == CameraCharacteristics.LENS_FACING_BACK;
+
+        mEnableFaceDetection = enableFaceDetection;
         return true;
     }
 

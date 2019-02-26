@@ -107,7 +107,7 @@ void SkTestTypeface::getAdvance(SkGlyph* glyph) {
     glyph->fAdvanceY = 0;
 }
 
-void SkTestTypeface::getFontMetrics(SkPaint::FontMetrics* metrics) {
+void SkTestTypeface::getFontMetrics(SkFontMetrics* metrics) {
     *metrics = fTestFont->fMetrics;
 }
 
@@ -117,7 +117,7 @@ void SkTestTypeface::getPath(SkGlyphID glyphID, SkPath* path) {
 }
 
 void SkTestTypeface::onFilterRec(SkScalerContextRec* rec) const {
-    rec->setHinting(SkPaint::kNo_Hinting);
+    rec->setHinting(kNo_SkFontHinting);
 }
 
 void SkTestTypeface::getGlyphToUnicodeMap(SkUnichar* glyphToUnicode) const {
@@ -221,7 +221,7 @@ protected:
         return true;
     }
 
-    void generateFontMetrics(SkPaint::FontMetrics* metrics) override {
+    void generateFontMetrics(SkFontMetrics* metrics) override {
         this->getTestTypeface()->getFontMetrics(metrics);
         SkPaintPriv::ScaleFontMetrics(metrics, fMatrix.getScaleY());
     }

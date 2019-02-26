@@ -10,7 +10,7 @@
 #include <string>
 
 #include "base/files/file_util.h"
-#include "base/sys_info.h"
+#include "base/system/sys_info.h"
 #include "base/task/post_task.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/browsing_data/browsing_data_appcache_helper.h"
@@ -341,7 +341,7 @@ void StorageHandler::UpdateCrostiniSize() {
                      weak_ptr_factory_.GetWeakPtr()));
 }
 
-void StorageHandler::OnGetCrostiniSize(crostini::ConciergeClientResult result,
+void StorageHandler::OnGetCrostiniSize(crostini::CrostiniResult result,
                                        int64_t size) {
   updating_crostini_size_ = false;
   FireWebUIListener("storage-crostini-size-changed",

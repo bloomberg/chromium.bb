@@ -39,8 +39,6 @@ component("os_crypt") {
     "keychain_password_mac.h",
     "keychain_password_mac.mm",
     "os_crypt.h",
-    "os_crypt_features_mac.cc",
-    "os_crypt_features_mac.h",
     "os_crypt_mac.mm",
     "os_crypt_pref_names_mac.cc",
     "os_crypt_pref_names_mac.h",

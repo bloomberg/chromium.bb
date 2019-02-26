@@ -9,6 +9,7 @@
 
 #include <limits>
 
+#include "base/bind.h"
 #include "base/command_line.h"
 #include "base/debug/alias.h"
 #include "base/debug/stack_trace.h"
@@ -32,6 +33,7 @@
 #include "base/test/scoped_task_environment.h"
 #include "base/test/test_timeouts.h"
 #include "base/threading/platform_thread.h"
+#include "base/threading/simple_thread.h"
 #include "base/threading/thread.h"
 #include "build/build_config.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -478,19 +480,78 @@ TEST_F(ProcessUtilTest, HandlesToTransferClosedOnBadPathToMapFailure) {
 // On Android SpawnProcess() doesn't use LaunchProcess() and doesn't support
 // LaunchOptions::current_directory.
 #if !defined(OS_ANDROID)
-MULTIPROCESS_TEST_MAIN(CheckCwdProcess) {
-  FilePath expected;
-  CHECK(GetTempDir(&expected));
-  expected = MakeAbsoluteFilePath(expected);
-  CHECK(!expected.empty());
-
+static void CheckCwdIsExpected(FilePath expected) {
   FilePath actual;
   CHECK(GetCurrentDirectory(&actual));
   actual = MakeAbsoluteFilePath(actual);
   CHECK(!actual.empty());
 
-  CHECK(expected == actual) << "Expected: " << expected.value()
-                            << "  Actual: " << actual.value();
+  CHECK_EQ(expected, actual);
+}
+
+// N.B. This test does extra work to check the cwd on multiple threads, because
+// on macOS a per-thread cwd is set when using LaunchProcess().
+MULTIPROCESS_TEST_MAIN(CheckCwdProcess) {
+  // Get the expected cwd.
+  FilePath temp_dir;
+  CHECK(GetTempDir(&temp_dir));
+  temp_dir = MakeAbsoluteFilePath(temp_dir);
+  CHECK(!temp_dir.empty());
+
+  // Test that the main thread has the right cwd.
+  CheckCwdIsExpected(temp_dir);
+
+  // Create a non-main thread.
+  Thread thread("CheckCwdThread");
+  thread.Start();
+  auto task_runner = thread.task_runner();
+
+  // A synchronization primitive used to wait for work done on the non-main
+  // thread.
+  WaitableEvent event(WaitableEvent::ResetPolicy::AUTOMATIC);
+  RepeatingClosure signal_event =
+      BindRepeating(&WaitableEvent::Signal, Unretained(&event));
+
+  // Test that a non-main thread has the right cwd.
+  task_runner->PostTask(FROM_HERE, Bind(&CheckCwdIsExpected, temp_dir));
+  task_runner->PostTask(FROM_HERE, signal_event);
+
+  event.Wait();
+
+  // Get a new cwd for the process.
+  FilePath home_dir;
+  CHECK(PathService::Get(DIR_HOME, &home_dir));
+
+  // Change the cwd on the secondary thread. IgnoreResult is used when setting
+  // because it is checked immediately after.
+  task_runner->PostTask(FROM_HERE,
+                        Bind(IgnoreResult(&SetCurrentDirectory), home_dir));
+  task_runner->PostTask(FROM_HERE, Bind(&CheckCwdIsExpected, home_dir));
+  task_runner->PostTask(FROM_HERE, signal_event);
+
+  event.Wait();
+
+  // Make sure the main thread sees the cwd from the secondary thread.
+  CheckCwdIsExpected(home_dir);
+
+  // Change the directory back on the main thread.
+  CHECK(SetCurrentDirectory(temp_dir));
+  CheckCwdIsExpected(temp_dir);
+
+  // Ensure that the secondary thread sees the new cwd too.
+  task_runner->PostTask(FROM_HERE, Bind(&CheckCwdIsExpected, temp_dir));
+  task_runner->PostTask(FROM_HERE, signal_event);
+
+  event.Wait();
+
+  // Change the cwd on the secondary thread one more time and join the thread.
+  task_runner->PostTask(FROM_HERE,
+                        Bind(IgnoreResult(&SetCurrentDirectory), home_dir));
+  thread.Stop();
+
+  // Make sure that the main thread picked up the new cwd.
+  CheckCwdIsExpected(home_dir);
+
   return kSuccess;
 }
 
@@ -1249,7 +1310,7 @@ TEST_F(ProcessUtilTest, GetParentProcessId) {
 }
 #endif  // !defined(OS_FUCHSIA)
 
-#if !defined(OS_ANDROID) && !defined(OS_FUCHSIA)
+#if !defined(OS_ANDROID) && !defined(OS_FUCHSIA) && !defined(OS_MACOSX)
 class WriteToPipeDelegate : public LaunchOptions::PreExecDelegate {
  public:
   explicit WriteToPipeDelegate(int fd) : fd_(fd) {}

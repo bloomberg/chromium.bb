@@ -163,7 +163,7 @@ void SetDebugName(const PropertyTreeNode* node,
 
 }  // namespace
 
-namespace PaintPropertyTreePrinter {
+namespace paint_property_tree_printer {
 
 void UpdateDebugNames(const VisualViewport& viewport) {
   viewport.GetPageScaleNode()->SetDebugName("VisualViewport Scale Node");
@@ -212,7 +212,7 @@ void UpdateDebugNames(const LayoutObject& object,
   SetDebugName(properties.Scroll(), "Scroll", object);
 }
 
-}  // namespace PaintPropertyTreePrinter
+}  // namespace paint_property_tree_printer
 
 }  // namespace blink
 

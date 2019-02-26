@@ -47,6 +47,11 @@ class ChromeExtensionsClient : public ExtensionsClient {
       const Extension* extension) override;
   bool ExtensionAPIEnabledInExtensionServiceWorkers() const override;
   std::string GetUserAgent() const override;
+  void AddOriginAccessPermissions(
+      const Extension& extension,
+      bool is_extension_active,
+      std::vector<network::mojom::CorsOriginPatternPtr>* origin_patterns)
+      const override;
 
  private:
   const ChromePermissionMessageProvider permission_message_provider_;

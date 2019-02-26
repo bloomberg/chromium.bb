@@ -18,7 +18,10 @@
 
 class Profile;
 class Browser;
-class SigninManagerBase;
+
+namespace identity {
+class IdentityManager;
+}
 
 // Utility functions to gather status information from the various signed in
 // services and construct messages suitable for showing in UI.
@@ -29,7 +32,8 @@ const int kUpgradeWelcomeTutorialShowMax = 1;
 
 // Returns the username of the authenticated user or an empty string if there is
 // no authenticated user.
-base::string16 GetAuthenticatedUsername(const SigninManagerBase* signin);
+base::string16 GetAuthenticatedUsername(
+    const identity::IdentityManager* identity_manager);
 
 // Initializes signin-related preferences.
 void InitializePrefsForProfile(Profile* profile);

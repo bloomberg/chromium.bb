@@ -11,6 +11,7 @@ import android.content.Context;
 import android.content.pm.InstrumentationInfo;
 import android.content.pm.PackageManager;
 import android.content.pm.PackageManager.NameNotFoundException;
+import android.os.Build;
 import android.os.Bundle;
 import android.support.test.InstrumentationRegistry;
 import android.support.test.internal.runner.RunnerArgs;
@@ -89,6 +90,8 @@ public class BaseChromiumAndroidJUnitRunner extends AndroidJUnitRunner {
         // * ProGuard disabled =>
         //      Under-test apk might be multidex
         //      Test apk does not duplicate classes, so does not need multidex.
+        // When there is no under-test apk, then Application.onCreate() should trigger multidex
+        // installation.
         // https://crbug.com/824523
         if (!BuildConfig.IS_MULTIDEX_ENABLED) {
             ChromiumMultiDexInstaller.install(new BaseChromiumRunnerCommon.MultiDexContextWrapper(
@@ -181,20 +184,26 @@ public class BaseChromiumAndroidJUnitRunner extends AndroidJUnitRunner {
     }
 
     private TestRequest createListTestRequest(Bundle arguments) {
-        DexFile[] incrementalJars = null;
+        List<DexFile> dexFiles = new ArrayList<>();
         try {
             Class<?> bootstrapClass =
                     Class.forName("org.chromium.incrementalinstall.BootstrapApplication");
-            incrementalJars =
-                    (DexFile[]) bootstrapClass.getDeclaredField("sIncrementalDexFiles").get(null);
+            dexFiles = Arrays.asList(
+                    (DexFile[]) bootstrapClass.getDeclaredField("sIncrementalDexFiles").get(null));
         } catch (Exception e) {
             // Not an incremental apk.
+            if (BuildConfig.IS_MULTIDEX_ENABLED
+                    && Build.VERSION.SDK_INT <= Build.VERSION_CODES.KITKAT) {
+                // Test listing fails for test classes that aren't in the main dex
+                // (crbug.com/903820).
+                addClassloaderDexFiles(dexFiles, getClass().getClassLoader());
+            }
         }
         RunnerArgs runnerArgs =
                 new RunnerArgs.Builder().fromManifest(this).fromBundle(arguments).build();
         TestRequestBuilder builder;
-        if (incrementalJars != null) {
-            builder = new IncrementalInstallTestRequestBuilder(this, arguments, incrementalJars);
+        if (!dexFiles.isEmpty()) {
+            builder = new DexFileTestRequestBuilder(this, arguments, dexFiles);
         } else {
             builder = new TestRequestBuilder(this, arguments);
         }
@@ -211,21 +220,24 @@ public class BaseChromiumAndroidJUnitRunner extends AndroidJUnitRunner {
     }
 
     /**
-     * Wraps TestRequestBuilder to make it work with incremental install.
+     * Wraps TestRequestBuilder to make it work with incremental install and for multidex <= K.
+     *
      * TestRequestBuilder does not know to look through the incremental install dex files, and has
      * no api for telling it to do so. This class checks to see if the list of tests was given
      * by the runner (mHasClassList), and if not overrides the auto-detection logic in build()
      * to manually scan all .dex files.
+     *
+     * On <= K, classes not in the main dex file are missed, so we manually list them by grabbing
+     * the loaded DexFiles from the ClassLoader.
      */
-    private static class IncrementalInstallTestRequestBuilder extends TestRequestBuilder {
+    private static class DexFileTestRequestBuilder extends TestRequestBuilder {
         final List<String> mExcludedPrefixes = new ArrayList<String>();
-        final DexFile[] mIncrementalJars;
+        final List<DexFile> mDexFiles;
         boolean mHasClassList;
 
-        IncrementalInstallTestRequestBuilder(
-                Instrumentation instr, Bundle bundle, DexFile[] incrementalJars) {
+        DexFileTestRequestBuilder(Instrumentation instr, Bundle bundle, List<DexFile> dexFiles) {
             super(instr, bundle);
-            mIncrementalJars = incrementalJars;
+            mDexFiles = dexFiles;
             try {
                 Field excludedPackagesField =
                         TestRequestBuilder.class.getDeclaredField("DEFAULT_EXCLUDED_PACKAGES");
@@ -264,7 +276,7 @@ public class BaseChromiumAndroidJUnitRunner extends AndroidJUnitRunner {
                 // builder.addApkToScan uses new DexFile(path) under the hood, which on Dalvik OS's
                 // assumes that the optimized dex is in the default location (crashes).
                 // Perform our own dex file scanning instead as a workaround.
-                scanIncrementalJarsForTestClasses();
+                scanDexFilesForTestClasses();
             }
             return super.build();
         }
@@ -278,11 +290,11 @@ public class BaseChromiumAndroidJUnitRunner extends AndroidJUnitRunner {
             return false;
         }
 
-        private void scanIncrementalJarsForTestClasses() {
-            Log.i(TAG, "Scanning incremental classpath.");
+        private void scanDexFilesForTestClasses() {
+            Log.i(TAG, "Scanning loaded dex files for test classes.");
             // Mirror TestRequestBuilder.getClassNamesFromClassPath().
             TestLoader loader = new TestLoader();
-            for (DexFile dexFile : mIncrementalJars) {
+            for (DexFile dexFile : mDexFiles) {
                 Enumeration<String> classNames = dexFile.entries();
                 while (classNames.hasMoreElements()) {
                     String className = classNames.nextElement();
@@ -292,6 +304,27 @@ public class BaseChromiumAndroidJUnitRunner extends AndroidJUnitRunner {
                     }
                 }
             }
+        }
+    }
+
+    private static Object getField(Class<?> clazz, Object instance, String name)
+            throws ReflectiveOperationException {
+        Field field = clazz.getDeclaredField(name);
+        field.setAccessible(true);
+        return field.get(instance);
+    }
+
+    private static void addClassloaderDexFiles(List<DexFile> dexFiles, ClassLoader cl) {
+        try {
+            Object pathList = getField(cl.getClass().getSuperclass(), cl, "pathList");
+            Object[] dexElements =
+                    (Object[]) getField(pathList.getClass(), pathList, "dexElements");
+            for (Object dexElement : dexElements) {
+                dexFiles.add((DexFile) getField(dexElement.getClass(), dexElement, "dexFile"));
+            }
+        } catch (Exception e) {
+            // No way to recover and test listing will fail.
+            throw new RuntimeException(e);
         }
     }
 }

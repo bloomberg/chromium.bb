@@ -1,4 +1,4 @@
-// Copyright 2016 The Chromium Authors. All rights reserved.
+// Copyright 2018 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -8,16 +8,11 @@
 #import <UIKit/UIKit.h>
 
 #import "ios/chrome/browser/ui/autofill/autofill_ui_type.h"
-#import "ios/chrome/browser/ui/collection_view/cells/collection_view_cell_style.h"
-#import "ios/chrome/browser/ui/collection_view/cells/collection_view_item.h"
-#import "ios/third_party/material_components_ios/src/components/CollectionCells/src/MaterialCollectionCells.h"
+#import "ios/chrome/browser/ui/table_view/cells/table_view_item.h"
 
 // Item to represent and configure an AutofillEditItem. It features a label and
 // a text field.
-@interface AutofillEditItem : CollectionViewItem
-
-// The style to use for the cell.
-@property(nonatomic, assign) CollectionViewCellStyle cellStyle;
+@interface AutofillEditItem : TableViewItem
 
 // The name of the text field.
 @property(nonatomic, copy) NSString* textFieldName;
@@ -54,9 +49,9 @@
 
 @end
 
-// AutofillEditCell implements an MDCCollectionViewCell subclass containing a
-// label and a text field.
-@interface AutofillEditCell : MDCCollectionViewCell
+// AutofillEditCell implements an UITableViewCell subclass containing a label
+// and a text field.
+@interface AutofillEditCell : UITableViewCell
 
 // Label at the leading edge of the cell. It displays the item's textFieldName.
 @property(nonatomic, strong) UILabel* textLabel;
@@ -65,8 +60,7 @@
 // |textFieldValue|.
 @property(nonatomic, readonly, strong) UITextField* textField;
 
-// UIImageView containing the icon identifying |textField| or its current value.
-@property(nonatomic, readonly, strong) UIImageView* identifyingIconView;
+- (void)setIdentifyingIcon:(UIImage*)icon;
 
 @end
 

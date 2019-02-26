@@ -3,11 +3,13 @@ include_rules = [
   "+cc/paint",
   "+chrome/app",
   "+chrome/chrome_watcher",
+  "+chrome/credential_provider/common",
   "+chrome/grit",
   "+chrome/install_static",
   "+chrome/installer/util",
   "+chrome/notification_helper/notification_helper_constants.h",
-  "+chrome/services/cups_ipp_validator/public",
+  "+chrome/services/cups_ipp_parser/public",
+  "+chrome/services/diagnosticsd/public",
   "+chrome/services/file_util/public",
   "+chrome/services/media_gallery_util/public",
   "+chrome/services/printing/public",
@@ -49,6 +51,7 @@ include_rules = [
   "+media/midi",  # For midi switches
   "+media/mojo",  # For mojo media services.
   "+media/renderers",
+  "+media/webrtc",  # For webrtc media switches.
   "+ppapi/c",  # For various types.
   "+ppapi/host",
   "+ppapi/proxy",
@@ -63,6 +66,8 @@ include_rules = [
   "+services/media_session/public",
   "+services/metrics/metrics_mojo_service.h",
   "+services/metrics/public",
+  "+services/network/cert_verifier_with_trust_anchors.h",
+  "+services/network/cert_verify_proc_chromeos.h",
   "+services/network/ignore_errors_cert_verifier.h",
   "+services/network/network_service.h",
   "+services/network/public",
@@ -101,6 +106,12 @@ include_rules = [
   # The message center may not exist, or may run out of process (in mash).
   "-ui/message_center",
   "+ui/message_center/public",
+
+  # KeyboardController and related classes are part of Ash.
+  "-ui/keyboard",
+  "+ui/keyboard/grit",
+  "+ui/keyboard/public",
+  "+ui/keyboard/resources",
 
   # chrome only needs switches from cc. All usage of the compositor is from
   # content. Definitely don't include generic stuff from cc/base here, if this
@@ -156,7 +167,6 @@ include_rules = [
   "+third_party/blink/public/platform/web_mouse_event.h",
   "+third_party/blink/public/platform/web_mouse_wheel_event.h",
   "+third_party/blink/public/platform/web_touch_event.h",
-  "+third_party/blink/public/platform/web_referrer_policy.h",
   "+third_party/blink/public/platform/web_security_style.h",
   "+third_party/blink/public/platform/web_speech_synthesis_constants.h",
   "+third_party/blink/public/platform/web_sudden_termination_disabler_type.h",

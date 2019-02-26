@@ -4,9 +4,30 @@
 
 module network.mojom;
 
-import "services/network/public/mojom/cors.mojom";
+// An enum to represent a mode if matching functions can accept a partial match
+// for sub-domains, or for registerable domains.
+enum CorsOriginAccessMatchMode {
+  // 'www.example.com' matches an OriginAccessEntry for 'example.com'
+  kAllowSubdomains,
 
-// Parameters for representing a access origin whitelist or blacklist for CORS.
+  // 'www.example.com' matches an OriginAccessEntry for 'not-www.example.com'
+  kAllowRegisterableDomains,
+
+  // 'www.example.com' does not match an OriginAccessEntry for 'example.com'
+  kDisallowSubdomains,
+};
+
+// Determine which Cors exception takes precedence when multiple matches occur.
+enum CorsOriginAccessMatchPriority {
+  kNoMatchingOrigin,
+  kDefaultPriority,
+  kLowPriority,
+  kMediumPriority,
+  kHighPriority,
+  kMaxPriority
+};
+
+// Parameters for representing a access origin allowlist or blocklist for CORS.
 struct CorsOriginPattern {
   // The protocol part of the destination URL.
   string protocol;
@@ -14,12 +35,21 @@ struct CorsOriginPattern {
   // The domain part of the destination URL.
   string domain;
 
-  // Whether subdomains match this protocol and host pattern.
-  bool allow_subdomains;
+  // Specifies a mode for domain match.
+  CorsOriginAccessMatchMode mode;
 
   // Order of preference in which the pattern is applied.  Higher priority
   // patterns take precedence over lower ones.  In the case were both a
   // allow list and block list rule of the same priority match a request,
   // the block list rule takes priority.
-  CORSOriginAccessMatchPriority priority;
+  CorsOriginAccessMatchPriority priority;
+};
+
+// Parameters for representing pairs of source origin and allow/block-lists
+// for CORS.
+struct CorsOriginAccessPatterns {
+  string source_origin;
+
+  array<CorsOriginPattern> allow_patterns;
+  array<CorsOriginPattern> block_patterns;
 };

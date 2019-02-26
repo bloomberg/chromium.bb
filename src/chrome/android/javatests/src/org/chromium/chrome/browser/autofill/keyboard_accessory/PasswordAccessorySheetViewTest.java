@@ -8,6 +8,9 @@ import static org.hamcrest.Matchers.instanceOf;
 import static org.hamcrest.Matchers.is;
 import static org.junit.Assert.assertThat;
 
+import static org.chromium.chrome.browser.autofill.keyboard_accessory.PasswordAccessorySheetProperties.CREDENTIALS;
+import static org.chromium.chrome.browser.autofill.keyboard_accessory.PasswordAccessorySheetProperties.SCROLL_LISTENER;
+
 import android.support.annotation.LayoutRes;
 import android.support.test.filters.MediumTest;
 import android.support.v7.widget.RecyclerView;
@@ -28,6 +31,7 @@ import org.chromium.chrome.browser.ChromeSwitches;
 import org.chromium.chrome.browser.ChromeTabbedActivity;
 import org.chromium.chrome.browser.autofill.keyboard_accessory.KeyboardAccessoryData.Item;
 import org.chromium.chrome.browser.modelutil.ListModel;
+import org.chromium.chrome.browser.modelutil.PropertyModel;
 import org.chromium.chrome.test.ChromeActivityTestRule;
 import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
 import org.chromium.content_public.browser.test.util.Criteria;
@@ -43,7 +47,10 @@ import java.util.concurrent.atomic.AtomicReference;
 @RunWith(ChromeJUnit4ClassRunner.class)
 @CommandLineFlags.Add({ChromeSwitches.DISABLE_FIRST_RUN_EXPERIENCE})
 public class PasswordAccessorySheetViewTest {
-    private ListModel<Item> mModel;
+    private final PropertyModel mModel = new PropertyModel.Builder(CREDENTIALS, SCROLL_LISTENER)
+                                                 .with(CREDENTIALS, new ListModel<>())
+                                                 .with(SCROLL_LISTENER, null)
+                                                 .build();
     private AtomicReference<RecyclerView> mView = new AtomicReference<>();
 
     @Rule
@@ -75,17 +82,15 @@ public class PasswordAccessorySheetViewTest {
 
     @Before
     public void setUp() throws InterruptedException {
-        mModel = new ListModel<>();
         mActivityTestRule.startMainActivityOnBlankPage();
         openLayoutInAccessorySheet(
                 R.layout.password_accessory_sheet, new KeyboardAccessoryData.Tab.Listener() {
                     @Override
                     public void onTabCreated(ViewGroup view) {
-                        mView.set(view.findViewById(R.id.password_items));
+                        mView.set((RecyclerView) view);
                         // Reuse coordinator code to create and wire the adapter. No mediator
                         // involved.
-                        PasswordAccessorySheetViewBinder.initializeView(mView.get(),
-                                PasswordAccessorySheetCoordinator.createAdapter(mModel));
+                        PasswordAccessorySheetViewBinder.initializeView(mView.get(), mModel);
                     }
 
                     @Override
@@ -104,7 +109,8 @@ public class PasswordAccessorySheetViewTest {
     public void testAddingCaptionsToTheModelRendersThem() {
         assertThat(mView.get().getChildCount(), is(0));
 
-        ThreadUtils.runOnUiThreadBlocking(() -> mModel.add(Item.createLabel("Passwords", null)));
+        ThreadUtils.runOnUiThreadBlocking(
+                () -> mModel.get(CREDENTIALS).add(Item.createLabel("Passwords", null)));
 
         CriteriaHelper.pollUiThread(Criteria.equals(1, () -> mView.get().getChildCount()));
         assertThat(mView.get().getChildAt(0), instanceOf(TextView.class));
@@ -119,8 +125,9 @@ public class PasswordAccessorySheetViewTest {
 
         ThreadUtils.runOnUiThreadBlocking(
                 ()
-                        -> mModel.add(Item.createSuggestion(
-                                "Name Suggestion", null, false, item -> clicked.set(true), null)));
+                        -> mModel.get(CREDENTIALS)
+                                   .add(Item.createSuggestion("Name Suggestion", null, false,
+                                           item -> clicked.set(true), null)));
 
         CriteriaHelper.pollUiThread(Criteria.equals(1, () -> mView.get().getChildCount()));
 
@@ -138,8 +145,9 @@ public class PasswordAccessorySheetViewTest {
 
         ThreadUtils.runOnUiThreadBlocking(
                 ()
-                        -> mModel.add(Item.createSuggestion("Password Suggestion", null, true,
-                                item -> clicked.set(true), null)));
+                        -> mModel.get(CREDENTIALS)
+                                   .add(Item.createSuggestion("Password Suggestion", null, true,
+                                           item -> clicked.set(true), null)));
 
         CriteriaHelper.pollUiThread(Criteria.equals(1, () -> mView.get().getChildCount()));
 

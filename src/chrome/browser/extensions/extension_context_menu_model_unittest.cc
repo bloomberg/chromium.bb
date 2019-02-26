@@ -22,6 +22,7 @@
 #include "chrome/browser/extensions/extension_service_test_base.h"
 #include "chrome/browser/extensions/menu_manager.h"
 #include "chrome/browser/extensions/menu_manager_factory.h"
+#include "chrome/browser/extensions/permissions_test_util.h"
 #include "chrome/browser/extensions/permissions_updater.h"
 #include "chrome/browser/extensions/scripting_permissions_modifier.h"
 #include "chrome/browser/ui/browser.h"
@@ -1062,9 +1063,10 @@ TEST_F(ExtensionContextMenuModelTest, PageAccessMenuOptions) {
     if (test_case.granted_pattern) {
       URLPattern pattern(UserScript::ValidUserScriptSchemes(false),
                          *test_case.granted_pattern);
-      PermissionsUpdater(profile()).GrantRuntimePermissions(
-          *extension, PermissionSet(APIPermissionSet(), ManifestPermissionSet(),
-                                    URLPatternSet(), URLPatternSet({pattern})));
+      permissions_test_util::GrantRuntimePermissionsAndWaitForCompletion(
+          profile(), *extension,
+          PermissionSet(APIPermissionSet(), ManifestPermissionSet(),
+                        URLPatternSet(), URLPatternSet({pattern})));
     }
 
     web_contents_tester->NavigateAndCommit(test_case.current_url);
@@ -1184,8 +1186,8 @@ TEST_F(ExtensionContextMenuModelTest,
 
   // However, if the extension has runtime-granted permissions to b.com, we
   // *should* display them in the menu.
-  PermissionsUpdater(profile()).GrantRuntimePermissions(*extension,
-                                                        b_com_permissions);
+  permissions_test_util::GrantRuntimePermissionsAndWaitForCompletion(
+      profile(), *extension, b_com_permissions);
 
   {
     ExtensionContextMenuModel menu(extension.get(), GetBrowser(),

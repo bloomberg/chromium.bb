@@ -24,9 +24,9 @@ struct TypeConverter<blink::BackgroundFetchRegistration*,
 
 template <>
 struct TypeConverter<blink::mojom::blink::BackgroundFetchOptionsPtr,
-                     blink::BackgroundFetchOptions> {
+                     const blink::BackgroundFetchOptions*> {
   static blink::mojom::blink::BackgroundFetchOptionsPtr Convert(
-      const blink::BackgroundFetchOptions& options);
+      const blink::BackgroundFetchOptions* options);
 };
 
 }  // namespace mojo

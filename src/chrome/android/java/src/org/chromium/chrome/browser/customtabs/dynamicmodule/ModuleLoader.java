@@ -9,6 +9,7 @@ import android.content.ComponentName;
 import android.content.Context;
 import android.content.pm.PackageInfo;
 import android.content.pm.PackageManager;
+import android.os.Bundle;
 import android.os.IBinder;
 import android.os.Process;
 import android.support.annotation.Nullable;
@@ -16,12 +17,17 @@ import android.support.annotation.Nullable;
 import org.chromium.base.Callback;
 import org.chromium.base.ContextUtils;
 import org.chromium.base.Log;
+import org.chromium.base.ObserverList;
+import org.chromium.base.VisibleForTesting;
 import org.chromium.base.task.AsyncTask;
 import org.chromium.chrome.browser.ChromeApplication;
 import org.chromium.chrome.browser.ChromeFeatureList;
-import org.chromium.chrome.browser.crash.CrashKeyIndex;
-import org.chromium.chrome.browser.crash.CrashKeys;
 import org.chromium.chrome.browser.customtabs.dynamicmodule.ModuleMetrics.DestructionReason;
+import org.chromium.components.crash.CrashKeyIndex;
+import org.chromium.components.crash.CrashKeys;
+
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * Dynamically loads a module from another apk.
@@ -38,6 +44,11 @@ public class ModuleLoader {
      * the time of destruction depends on the caching policy.
      */
     private int mModuleUseCount;
+
+    private boolean mIsModuleLoading;
+
+    private final ObserverList<Callback<ModuleEntryPoint>> mCallbacks = new ObserverList<>();
+    private final List<Bundle> mPendingBundles = new ArrayList<>();
 
     /**
      * The timestamp of the moment the module became unused. This is used to determine whether or
@@ -86,46 +97,66 @@ public class ModuleLoader {
     }
 
     /**
-     * If the module is not loaded yet, dynamically loads the module entry point class. If
-     * successful, the callback will receive a {@link ModuleEntryPoint} asynchronously. If the
-     * module fails to load, the callback will receive null. If the module was already loaded and a
-     * reference to it is still held, the callback will synchronously receive a
-     * {@link ModuleEntryPoint}.
+     * If the module is not loaded yet, dynamically loads the module entry point class.
+     */
+    public void loadModule() {
+        if (mIsModuleLoading) return;
+
+        // If module has been already loaded all callbacks must be notified synchronously.
+        // {@see #addCallbackAndIncrementUseCount}
+        if (mModuleEntryPoint != null) {
+            assert mCallbacks.isEmpty();
+            return;
+        }
+
+        Context moduleContext = getModuleContext(mComponentName.getPackageName());
+        if (moduleContext == null) {
+            runAndClearCallbacks();
+            return;
+        }
+
+        mIsModuleLoading = true;
+        new LoadClassTask(moduleContext).executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
+    }
+
+    /**
+     * Loads the dynamic module if it is not loaded yet,
+     * and transfers the bundle to it regardless of the previous loaded state.
+     */
+    public void sendBundleToModule(Bundle bundle) {
+        if (mModuleEntryPoint != null) {
+            mModuleEntryPoint.onBundleReceived(bundle);
+            return;
+        }
+        mPendingBundles.add(bundle);
+        loadModule();
+    }
+
+    /**
+     * Register a callback to receive a {@link ModuleEntryPoint} asynchronously.
+     * If the module fails to load, the callback will receive null.
+     * If the module was already loaded and a reference to it is still held,
+     * the callback will synchronously receive a {@link ModuleEntryPoint}.
+     *
+     * Module use count is incremented when a callback notified.
      *
      * @param callback The callback to receive the result.
-     * @return If the module is not loaded yet, an {@link AsyncTask} will be used to load it and
-     *     a {@link Runnable} returned to the caller for cancelling the task if necessary. If the
-     *     module was already loaded, null is returned.
      */
-    @Nullable
-    public Runnable loadModule(Callback<ModuleEntryPoint> callback) {
+    public void addCallbackAndIncrementUseCount(Callback<ModuleEntryPoint> callback) {
         if (mModuleEntryPoint != null) {
             mModuleUseCount++;
             mModuleUnusedTimeMs = -1;
             ModuleMetrics.recordLoadResult(ModuleMetrics.LoadResult.SUCCESS_CACHED);
             callback.onResult(mModuleEntryPoint);
-            return null;
+            return;
         }
-
-        Context moduleContext = getModuleContext(mComponentName.getPackageName());
-        if (moduleContext == null) {
-            callback.onResult(null);
-            return null;
-        }
-
-        // TODO(crbug.com/864520): Define and return a CancellablePromise instead.
-        final LoadClassTask task = new LoadClassTask(moduleContext, callback);
-        task.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
-        return new Runnable() {
-            @Override
-            public void run() {
-                task.cancel(false);
-            }
-        };
+        mCallbacks.addObserver(callback);
     }
 
-    public void decrementModuleUseCount() {
-        if (mModuleEntryPoint == null) return;
+    public void removeCallbackAndDecrementUseCount(Callback<ModuleEntryPoint> callback) {
+        boolean isPendingCallback = mCallbacks.removeObserver(callback);
+        if (mModuleEntryPoint == null || isPendingCallback) return;
+
         mModuleUseCount--;
         if (mModuleUseCount == 0) {
             mModuleUnusedTimeMs = ModuleMetrics.now();
@@ -173,21 +204,42 @@ public class ModuleLoader {
     }
 
     /**
+     * Notify all callbacks which are waiting for module loading. Each callback is needed to notify
+     * only once therefore all callbacks are cleared after call.
+     */
+    private void runAndClearCallbacks() {
+        assert !mIsModuleLoading;
+        if (mModuleEntryPoint != null && mCallbacks.size() > 0) {
+            mModuleUseCount += mCallbacks.size();
+            mModuleUnusedTimeMs = -1;
+        }
+
+        for (Callback<ModuleEntryPoint> callback: mCallbacks) {
+            callback.onResult(mModuleEntryPoint);
+        }
+        mCallbacks.clear();
+    }
+
+    private void sendAllBundles() {
+        assert !mIsModuleLoading;
+        for (Bundle bundle: mPendingBundles) {
+            mModuleEntryPoint.onBundleReceived(bundle);
+        }
+        mPendingBundles.clear();
+    }
+
+    /**
      * A task for loading the module entry point class on a background thread.
      */
     private class LoadClassTask extends AsyncTask<Class<?>> {
         private final Context mModuleContext;
-        private final Callback<ModuleEntryPoint> mCallback;
 
         /**
          * Constructs the task.
          * @param moduleContext The context for the package to load the class from.
-         * @param callback The callback to receive the result of the task. If there was a problem
-         *     the result will be null.
          */
-        LoadClassTask(Context moduleContext, Callback<ModuleEntryPoint> callback) {
+        LoadClassTask(Context moduleContext) {
             mModuleContext = moduleContext;
-            mCallback = callback;
         }
 
         @Override
@@ -219,8 +271,9 @@ public class ModuleLoader {
 
         @Override
         protected void onPostExecute(@Nullable Class<?> clazz) {
+            mIsModuleLoading = false;
             if (clazz == null) {
-                mCallback.onResult(null);
+                runAndClearCallbacks();
                 return;
             }
 
@@ -242,7 +295,7 @@ public class ModuleLoader {
                             moduleHost.getHostVersion(), entryPoint.getMinimumHostVersion(),
                             entryPoint.getModuleVersion(), moduleHost.getMinimumModuleVersion());
                     ModuleMetrics.recordLoadResult(ModuleMetrics.LoadResult.INCOMPATIBLE_VERSION);
-                    mCallback.onResult(null);
+                    runAndClearCallbacks();
                     return;
                 }
 
@@ -250,12 +303,15 @@ public class ModuleLoader {
                 crashKeys.set(CrashKeyIndex.LOADED_DYNAMIC_MODULE, mModuleId);
                 crashKeys.set(CrashKeyIndex.ACTIVE_DYNAMIC_MODULE, mModuleId);
 
+                long entryPointInitStartTime = ModuleMetrics.now();
                 entryPoint.init(moduleHost);
+                ModuleMetrics.recordEntryPointInitTime(entryPointInitStartTime);
+
                 ModuleMetrics.recordLoadResult(ModuleMetrics.LoadResult.SUCCESS_NEW);
                 mModuleEntryPoint = entryPoint;
-                mModuleUseCount = 1;
-                mModuleUnusedTimeMs = -1;
-                mCallback.onResult(entryPoint);
+                mModuleUnusedTimeMs = ModuleMetrics.now();
+                runAndClearCallbacks();
+                sendAllBundles();
                 return;
             } catch (Exception e) {
                 // No multi-catch below API level 19 for reflection exceptions.
@@ -263,7 +319,7 @@ public class ModuleLoader {
                 Log.e(TAG, "Could not instantiate class %s", mComponentName.getClassName(), e);
                 ModuleMetrics.recordLoadResult(ModuleMetrics.LoadResult.INSTANTIATION_EXCEPTION);
             }
-            mCallback.onResult(null);
+            runAndClearCallbacks();
         }
     }
 
@@ -288,5 +344,10 @@ public class ModuleLoader {
     private static boolean isCompatible(ModuleHostImpl moduleHost, ModuleEntryPoint entryPoint) {
         return entryPoint.getModuleVersion() >= moduleHost.getMinimumModuleVersion()
                 && moduleHost.getHostVersion() >= entryPoint.getMinimumHostVersion();
+    }
+
+    @VisibleForTesting
+    public int getModuleUseCount() {
+        return mModuleUseCount;
     }
 }

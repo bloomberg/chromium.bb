@@ -32,7 +32,8 @@ class QuicSimpleDispatcher : public QuicDispatcher {
   QuicServerSessionBase* CreateQuicSession(
       QuicConnectionId connection_id,
       const QuicSocketAddress& client_address,
-      QuicStringPiece alpn) override;
+      QuicStringPiece alpn,
+      const ParsedQuicVersion& version) override;
 
   QuicSimpleServerBackend* server_backend() {
     return quic_simple_server_backend_;

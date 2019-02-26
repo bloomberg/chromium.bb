@@ -48,11 +48,15 @@ initWithBaseViewController:(UIViewController*)baseViewController
   if (self) {
     _baseViewController = baseViewController;
     _delegate = delegate;
+    [self updateInfobarLabel:self.view];
   }
   return self;
 }
 
 - (void)updateInfobarLabel:(ConfirmInfoBarView*)view {
+  if (!_delegate)
+    return;
+
   [super updateInfobarLabel:view];
 
   // Get the message text with current links marked.

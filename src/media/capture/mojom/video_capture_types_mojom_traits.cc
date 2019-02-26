@@ -139,6 +139,10 @@ EnumTraits<media::mojom::VideoCapturePixelFormat,
       return media::mojom::VideoCapturePixelFormat::YUV444P12;
     case media::VideoPixelFormat::PIXEL_FORMAT_Y16:
       return media::mojom::VideoCapturePixelFormat::Y16;
+    case media::VideoPixelFormat::PIXEL_FORMAT_ABGR:
+      return media::mojom::VideoCapturePixelFormat::ABGR;
+    case media::VideoPixelFormat::PIXEL_FORMAT_XBGR:
+      return media::mojom::VideoCapturePixelFormat::XBGR;
   }
   NOTREACHED();
   return media::mojom::VideoCapturePixelFormat::I420;
@@ -227,6 +231,12 @@ bool EnumTraits<media::mojom::VideoCapturePixelFormat,
       return true;
     case media::mojom::VideoCapturePixelFormat::Y16:
       *output = media::PIXEL_FORMAT_Y16;
+      return true;
+    case media::mojom::VideoCapturePixelFormat::ABGR:
+      *output = media::PIXEL_FORMAT_ABGR;
+      return true;
+    case media::mojom::VideoCapturePixelFormat::XBGR:
+      *output = media::PIXEL_FORMAT_XBGR;
       return true;
   }
   NOTREACHED();
@@ -1511,6 +1521,7 @@ bool StructTraits<media::mojom::VideoCaptureParamsDataView,
     return false;
   if (!data.ReadPowerLineFrequency(&out->power_line_frequency))
     return false;
+  out->enable_face_detection = data.enable_face_detection();
   return true;
 }
 

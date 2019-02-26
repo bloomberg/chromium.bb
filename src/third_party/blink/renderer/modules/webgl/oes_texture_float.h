@@ -40,7 +40,6 @@ class OESTextureFloat final : public WebGLExtension {
 
   WebGLExtensionName GetName() const override;
 
- private:
   explicit OESTextureFloat(WebGLRenderingContextBase*);
 };
 

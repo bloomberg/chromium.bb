@@ -63,20 +63,23 @@ public:
 
     const char* name() const override { return "NonAAStrokeRectOp"; }
 
-    void visitProxies(const VisitProxyFunc& func) const override {
+    void visitProxies(const VisitProxyFunc& func, VisitorType) const override {
         fHelper.visitProxies(func);
     }
 
+#ifdef SK_DEBUG
     SkString dumpInfo() const override {
         SkString string;
         string.appendf(
                 "Color: 0x%08x, Rect [L: %.2f, T: %.2f, R: %.2f, B: %.2f], "
                 "StrokeWidth: %.2f\n",
-                fColor, fRect.fLeft, fRect.fTop, fRect.fRight, fRect.fBottom, fStrokeWidth);
+                fColor.toBytes_RGBA(), fRect.fLeft, fRect.fTop, fRect.fRight, fRect.fBottom,
+                fStrokeWidth);
         string += fHelper.dumpInfo();
         string += INHERITED::dumpInfo();
         return string;
     }
+#endif
 
     static std::unique_ptr<GrDrawOp> Make(GrContext* context,
                                           GrPaint&& paint,
@@ -99,9 +102,9 @@ public:
                                                         stroke, aaType);
     }
 
-    NonAAStrokeRectOp(const Helper::MakeArgs& helperArgs, GrColor color, Helper::Flags flags,
-                      const SkMatrix& viewMatrix, const SkRect& rect, const SkStrokeRec& stroke,
-                      GrAAType aaType)
+    NonAAStrokeRectOp(const Helper::MakeArgs& helperArgs, const SkPMColor4f& color,
+                      Helper::Flags flags, const SkMatrix& viewMatrix, const SkRect& rect,
+                      const SkStrokeRec& stroke, GrAAType aaType)
             : INHERITED(ClassID()), fHelper(helperArgs, aaType, flags) {
         fColor = color;
         fViewMatrix = viewMatrix;
@@ -152,10 +155,7 @@ private:
                                                fViewMatrix);
         }
 
-        static constexpr size_t kVertexStride = sizeof(GrDefaultGeoProcFactory::PositionAttr);
-
-        SkASSERT(kVertexStride == gp->debugOnly_vertexStride());
-
+        size_t kVertexStride = gp->vertexStride();
         int vertexCount = kVertsPerHairlineRect;
         if (fStrokeWidth > 0) {
             vertexCount = kVertsPerStrokeRect;
@@ -198,7 +198,7 @@ private:
     // TODO: override onCombineIfPossible
 
     Helper fHelper;
-    GrColor fColor;
+    SkPMColor4f fColor;
     SkMatrix fViewMatrix;
     SkRect fRect;
     SkScalar fStrokeWidth;

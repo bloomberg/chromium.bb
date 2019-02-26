@@ -19,6 +19,13 @@ const ContentSettingProvider = {
 };
 
 /**
+ * Stores information about if a content setting is valid, and why.
+ * @typedef {{isValid: boolean,
+ *            reason: ?string}}
+ */
+let IsValid;
+
+/**
  * Stores origin information.
  * @typedef {{origin: string,
  *            engagement: number,
@@ -217,11 +224,14 @@ cr.define('settings', function() {
     isOriginValid(origin) {}
 
     /**
-     * Checks whether a pattern is valid.
+     * Checks whether a setting is valid.
      * @param {string} pattern The pattern to check.
-     * @return {!Promise<boolean>} True if the pattern is valid.
+     * @param {settings.ContentSettingsTypes} category What kind of setting,
+     *     e.g. Location, Camera, Cookies, etc.
+     * @return {!Promise<IsValid>} Contains whether or not the pattern is
+     *     valid for the type, and if it is invalid, the reason why.
      */
-    isPatternValid(pattern) {}
+    isPatternValidForType(pattern, category) {}
 
     /**
      * Gets the list of default capture devices for a given type of media. List
@@ -396,8 +406,8 @@ cr.define('settings', function() {
     }
 
     /** @override */
-    isPatternValid(pattern) {
-      return cr.sendWithPromise('isPatternValid', pattern);
+    isPatternValidForType(pattern, category) {
+      return cr.sendWithPromise('isPatternValidForType', pattern, category);
     }
 
     /** @override */

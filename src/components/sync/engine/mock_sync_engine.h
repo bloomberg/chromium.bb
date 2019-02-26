@@ -41,7 +41,7 @@ class MockSyncEngine : public SyncEngine {
   MOCK_METHOD0(InvalidateCredentials, void());
   MOCK_METHOD0(StartConfiguration, void());
   MOCK_METHOD0(StartSyncingWithServer, void());
-  MOCK_METHOD2(SetEncryptionPassphrase, void(const std::string&, bool));
+  MOCK_METHOD1(SetEncryptionPassphrase, void(const std::string&));
   MOCK_METHOD1(SetDecryptionPassphrase, void(const std::string&));
   MOCK_METHOD0(StopSyncingForShutdown, void());
   MOCK_METHOD1(Shutdown, void(ShutdownReason));
@@ -50,7 +50,6 @@ class MockSyncEngine : public SyncEngine {
   MOCK_METHOD0(GetDetailedStatus, Status());
   MOCK_CONST_METHOD1(HasUnsyncedItemsForTest,
                      void(base::OnceCallback<void(bool)>));
-  MOCK_CONST_METHOD1(IsCryptographerReady, bool(const BaseTransaction*));
   MOCK_CONST_METHOD1(GetModelSafeRoutingInfo, void(ModelSafeRoutingInfo*));
   MOCK_CONST_METHOD0(FlushDirectory, void());
   MOCK_METHOD0(RequestBufferedProtocolEventsAndEnableForwarding, void());
@@ -59,6 +58,7 @@ class MockSyncEngine : public SyncEngine {
   MOCK_METHOD0(DisableDirectoryTypeDebugInfoForwarding, void());
   MOCK_METHOD1(ClearServerData, void(const base::Closure&));
   MOCK_METHOD3(OnCookieJarChanged, void(bool, bool, const base::Closure&));
+  MOCK_METHOD1(SetInvalidationsForSessionsEnabled, void(bool));
 };
 
 }  // namespace syncer

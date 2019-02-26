@@ -6,6 +6,7 @@
 
 #include "base/android/jni_android.h"
 #include "chrome/browser/android/tab_android.h"
+#include "components/password_manager/core/browser/manage_passwords_referrer.h"
 #include "content/public/browser/web_contents.h"
 #include "jni/PreferencesLauncher_jni.h"
 
@@ -24,9 +25,12 @@ void PreferencesLauncher::ShowAutofillCreditCardSettings(
       base::android::AttachCurrentThread(), web_contents->GetJavaWebContents());
 }
 
-void PreferencesLauncher::ShowPasswordSettings() {
+void PreferencesLauncher::ShowPasswordSettings(
+    content::WebContents* web_contents,
+    password_manager::ManagePasswordsReferrer referrer) {
   Java_PreferencesLauncher_showPasswordSettings(
-      base::android::AttachCurrentThread());
+      base::android::AttachCurrentThread(), web_contents->GetJavaWebContents(),
+      static_cast<int>(referrer));
 }
 
 }  // namespace android

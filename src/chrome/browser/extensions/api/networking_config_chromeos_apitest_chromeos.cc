@@ -13,7 +13,6 @@
 #include "base/values.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chromeos/net/network_portal_detector_impl.h"
-#include "chrome/browser/chromeos/profiles/profile_helper.h"
 #include "chrome/browser/extensions/extension_apitest.h"
 #include "chrome/browser/notifications/notification_display_service_tester.h"
 #include "chrome/browser/ui/ash/network/network_portal_notification_controller.h"
@@ -57,7 +56,7 @@ class NetworkingConfigTest
     content::RunAllPendingInMessageLoop();
 
     display_service_ = std::make_unique<NotificationDisplayServiceTester>(
-        chromeos::ProfileHelper::GetSigninProfile());
+        nullptr /* profile */);
 
     DBusThreadManager* const dbus_manager = DBusThreadManager::Get();
     ShillServiceClient::TestInterface* const service_test =

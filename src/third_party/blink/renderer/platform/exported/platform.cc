@@ -33,7 +33,6 @@
 #include <memory>
 
 #include "base/single_thread_task_runner.h"
-#include "base/synchronization/waitable_event.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/trace_event/memory_dump_manager.h"
 #include "build/build_config.h"
@@ -41,7 +40,6 @@
 #include "services/service_manager/public/cpp/interface_provider.h"
 #include "third_party/blink/public/platform/interface_provider.h"
 #include "third_party/blink/public/platform/modules/webmidi/web_midi_accessor.h"
-#include "third_party/blink/public/platform/scheduler/child/webthread_base.h"
 #include "third_party/blink/public/platform/scheduler/web_thread_scheduler.h"
 #include "third_party/blink/public/platform/web_canvas_capture_handler.h"
 #include "third_party/blink/public/platform/web_graphics_context_3d_provider.h"
@@ -66,10 +64,11 @@
 #include "third_party/blink/renderer/platform/memory_coordinator.h"
 #include "third_party/blink/renderer/platform/partition_alloc_memory_dump_provider.h"
 #include "third_party/blink/renderer/platform/scheduler/common/simple_thread_scheduler.h"
+#include "third_party/blink/renderer/platform/scheduler/public/post_cross_thread_task.h"
 #include "third_party/blink/renderer/platform/scheduler/public/thread.h"
-#include "third_party/blink/renderer/platform/web_task_runner.h"
 #include "third_party/blink/renderer/platform/wtf/hash_map.h"
 #include "third_party/webrtc/api/rtpparameters.h"
+#include "third_party/webrtc/p2p/base/portallocator.h"
 
 namespace blink {
 
@@ -109,11 +108,11 @@ static void MaxObservedSizeFunction(size_t size_in_mb) {
 static void CallOnMainThreadFunction(WTF::MainThreadFunction function,
                                      void* context) {
   PostCrossThreadTask(
-      *Platform::Current()->MainThread()->GetTaskRunner(), FROM_HERE,
+      *Thread::MainThread()->GetTaskRunner(), FROM_HERE,
       CrossThreadBind(function, CrossThreadUnretained(context)));
 }
 
-Platform::Platform() : main_thread_(nullptr) {
+Platform::Platform() {
   WTF::Partitions::Initialize(MaxObservedSizeFunction);
 }
 
@@ -140,7 +139,6 @@ class SimpleMainThread : public Thread {
   // This function is called from Platform::SetMainThreadTaskRunnerForTesting()
   // and Platform::UnsetMainThreadTaskRunnerForTesting().
 
-  bool IsCurrentThread() const override { return WTF::IsMainThread(); }
   ThreadScheduler* Scheduler() override { return &scheduler_; }
   scoped_refptr<base::SingleThreadTaskRunner> GetTaskRunner() const override {
     if (main_thread_task_runner_for_testing_)
@@ -170,26 +168,21 @@ void Platform::Initialize(
   DCHECK(!g_platform);
   DCHECK(platform);
   g_platform = platform;
-  g_platform->owned_main_thread_ = main_thread_scheduler->CreateMainThread();
-  g_platform->main_thread_ = g_platform->owned_main_thread_.get();
-  DCHECK(!g_platform->current_thread_slot_.Get());
-  g_platform->current_thread_slot_.Set(g_platform->main_thread_);
-  InitializeCommon(platform);
+  InitializeCommon(platform, main_thread_scheduler->CreateMainThread());
 }
 
 void Platform::CreateMainThreadAndInitialize(Platform* platform) {
   DCHECK(!g_platform);
   DCHECK(platform);
   g_platform = platform;
-  g_platform->owned_main_thread_ = std::make_unique<SimpleMainThread>();
-  g_platform->main_thread_ = g_platform->owned_main_thread_.get();
-  DCHECK(!g_platform->current_thread_slot_.Get());
-  g_platform->current_thread_slot_.Set(g_platform->main_thread_);
-  InitializeCommon(platform);
+  InitializeCommon(platform, std::make_unique<SimpleMainThread>());
 }
 
-void Platform::InitializeCommon(Platform* platform) {
+void Platform::InitializeCommon(Platform* platform,
+                                std::unique_ptr<Thread> main_thread) {
   WTF::Initialize(CallOnMainThreadFunction);
+
+  Thread::SetMainThread(std::move(main_thread));
 
   ProcessHeap::Init();
   MemoryCoordinator::Initialize();
@@ -202,69 +195,51 @@ void Platform::InitializeCommon(Platform* platform) {
 
   ThreadState::AttachMainThread();
 
-  // FontFamilyNames are used by platform/fonts and are initialized by core.
+  // font_family_names are used by platform/fonts and are initialized by core.
   // In case core is not available (like on PPAPI plugins), we need to init
   // them here.
-  FontFamilyNames::init();
+  font_family_names::Init();
   InitializePlatformLanguage();
 
-  // TODO(ssid): remove this check after fixing crbug.com/486782.
-  if (g_platform->main_thread_) {
-    DCHECK(!g_gc_task_runner);
-    g_gc_task_runner = new GCTaskRunner(g_platform->main_thread_);
-    base::trace_event::MemoryDumpManager::GetInstance()->RegisterDumpProvider(
-        PartitionAllocMemoryDumpProvider::Instance(), "PartitionAlloc",
-        base::ThreadTaskRunnerHandle::Get());
-    base::trace_event::MemoryDumpManager::GetInstance()->RegisterDumpProvider(
-        FontCacheMemoryDumpProvider::Instance(), "FontCaches",
-        base::ThreadTaskRunnerHandle::Get());
-    base::trace_event::MemoryDumpManager::GetInstance()->RegisterDumpProvider(
-        MemoryCacheDumpProvider::Instance(), "MemoryCache",
-        base::ThreadTaskRunnerHandle::Get());
-    base::trace_event::MemoryDumpManager::GetInstance()->RegisterDumpProvider(
-        InstanceCountersMemoryDumpProvider::Instance(), "BlinkObjectCounters",
-        base::ThreadTaskRunnerHandle::Get());
-  }
+  DCHECK(!g_gc_task_runner);
+  g_gc_task_runner = new GCTaskRunner(Thread::MainThread());
+  base::trace_event::MemoryDumpManager::GetInstance()->RegisterDumpProvider(
+      PartitionAllocMemoryDumpProvider::Instance(), "PartitionAlloc",
+      base::ThreadTaskRunnerHandle::Get());
+  base::trace_event::MemoryDumpManager::GetInstance()->RegisterDumpProvider(
+      FontCacheMemoryDumpProvider::Instance(), "FontCaches",
+      base::ThreadTaskRunnerHandle::Get());
+  base::trace_event::MemoryDumpManager::GetInstance()->RegisterDumpProvider(
+      MemoryCacheDumpProvider::Instance(), "MemoryCache",
+      base::ThreadTaskRunnerHandle::Get());
+  base::trace_event::MemoryDumpManager::GetInstance()->RegisterDumpProvider(
+      InstanceCountersMemoryDumpProvider::Instance(), "BlinkObjectCounters",
+      base::ThreadTaskRunnerHandle::Get());
 
   RendererResourceCoordinator::Initialize();
 }
 
 void Platform::SetCurrentPlatformForTesting(Platform* platform) {
   DCHECK(platform);
-
-  // The overriding platform does not necessarily own the main thread
-  // (owned_main_thread_ may be null), but must have a pointer to a valid
-  // main thread object (which may be from the overridden platform).
-  //
-  // If the new platform's main_thread_ is null, that means we need to
-  // create a new main thread for it. This happens only in
-  // ScopedUnittestsEnvironmentSetup's constructor, which bypasses
-  // Platform::Initialize().
-  if (!platform->main_thread_) {
-    platform->owned_main_thread_ = std::make_unique<SimpleMainThread>();
-    platform->main_thread_ = platform->owned_main_thread_.get();
-  }
-
-  // Set only the main thread to TLS for the new platform. This is OK for the
-  // testing purposes. The TLS slot may already be set when
-  // ScopedTestingPlatformSupport tries to revert to the old platform.
-  if (!platform->current_thread_slot_.Get())
-    platform->current_thread_slot_.Set(platform->main_thread_);
-
   g_platform = platform;
+}
+
+void Platform::CreateMainThreadForTesting() {
+  DCHECK(!Thread::MainThread());
+  Thread::SetMainThread(std::make_unique<SimpleMainThread>());
 }
 
 void Platform::SetMainThreadTaskRunnerForTesting() {
   DCHECK(WTF::IsMainThread());
-  DCHECK(g_platform->main_thread_->IsSimpleMainThread());
-  static_cast<SimpleMainThread*>(g_platform->main_thread_)
+  DCHECK(Thread::MainThread()->IsSimpleMainThread());
+  static_cast<SimpleMainThread*>(Thread::MainThread())
       ->SetMainThreadTaskRunnerForTesting(base::ThreadTaskRunnerHandle::Get());
 }
 
 void Platform::UnsetMainThreadTaskRunnerForTesting() {
   DCHECK(WTF::IsMainThread());
-  DCHECK(g_platform->main_thread_->IsSimpleMainThread());
-  static_cast<SimpleMainThread*>(g_platform->main_thread_)
+  DCHECK(Thread::MainThread()->IsSimpleMainThread());
+  static_cast<SimpleMainThread*>(Thread::MainThread())
       ->SetMainThreadTaskRunnerForTesting(nullptr);
 }
 
@@ -273,11 +248,11 @@ Platform* Platform::Current() {
 }
 
 Thread* Platform::MainThread() {
-  return main_thread_;
+  return Thread::MainThread();
 }
 
 Thread* Platform::CurrentThread() {
-  return static_cast<Thread*>(current_thread_slot_.Get());
+  return Thread::Current();
 }
 
 service_manager::Connector* Platform::GetConnector() {
@@ -305,57 +280,19 @@ std::unique_ptr<WebStorageNamespace> Platform::CreateSessionStorageNamespace(
 
 std::unique_ptr<Thread> Platform::CreateThread(
     const ThreadCreationParams& params) {
-  std::unique_ptr<scheduler::WebThreadBase> thread =
-      scheduler::WebThreadBase::CreateWorkerThread(params);
-  thread->Init();
-  WaitUntilThreadTLSUpdate(thread.get());
-  return std::move(thread);
+  return Thread::CreateThread(params);
 }
 
 std::unique_ptr<Thread> Platform::CreateWebAudioThread() {
-  ThreadCreationParams params(WebThreadType::kWebAudioThread);
-  // WebAudio uses a thread with |DISPLAY| priority to avoid glitch when the
-  // system is under the high pressure. Note that the main browser thread also
-  // runs with same priority. (see: crbug.com/734539)
-  params.thread_options.priority = base::ThreadPriority::DISPLAY;
-  return CreateThread(params);
+  return Thread::CreateWebAudioThread();
 }
 
-void Platform::WaitUntilThreadTLSUpdate(Thread* thread) {
-  base::WaitableEvent event(base::WaitableEvent::ResetPolicy::AUTOMATIC,
-                            base::WaitableEvent::InitialState::NOT_SIGNALED);
-  // This cross-thread posting is guaranteed to be safe.
-  PostCrossThreadTask(*thread->GetTaskRunner(), FROM_HERE,
-                      CrossThreadBind(&Platform::UpdateThreadTLS,
-                                      WTF::CrossThreadUnretained(this),
-                                      WTF::CrossThreadUnretained(thread),
-                                      WTF::CrossThreadUnretained(&event)));
-  event.Wait();
-}
-
-void Platform::UpdateThreadTLS(Thread* thread, base::WaitableEvent* event) {
-  DCHECK(!current_thread_slot_.Get());
-  current_thread_slot_.Set(thread);
-  event->Signal();
-}
-
-void Platform::InitializeCompositorThread() {
-  DCHECK(!compositor_thread_);
-
-  ThreadCreationParams params(WebThreadType::kCompositorThread);
-#if defined(OS_ANDROID)
-  params.thread_options.priority = base::ThreadPriority::DISPLAY;
-#endif
-  std::unique_ptr<scheduler::WebThreadBase> compositor_thread =
-      scheduler::WebThreadBase::CreateCompositorThread(params);
-  compositor_thread->Init();
-  WaitUntilThreadTLSUpdate(compositor_thread.get());
-  compositor_thread_ = std::move(compositor_thread);
-  SetDisplayThreadPriority(compositor_thread_->ThreadId());
+void Platform::CreateAndSetCompositorThread() {
+  Thread::CreateAndSetCompositorThread();
 }
 
 Thread* Platform::CompositorThread() {
-  return compositor_thread_.get();
+  return Thread::CompositorThread();
 }
 
 scoped_refptr<base::SingleThreadTaskRunner>
@@ -388,6 +325,11 @@ std::unique_ptr<WebRTCPeerConnectionHandler>
 Platform::CreateRTCPeerConnectionHandler(
     WebRTCPeerConnectionHandlerClient*,
     scoped_refptr<base::SingleThreadTaskRunner>) {
+  return nullptr;
+}
+
+std::unique_ptr<cricket::PortAllocator> Platform::CreateWebRtcPortAllocator(
+    WebLocalFrame* frame) {
   return nullptr;
 }
 

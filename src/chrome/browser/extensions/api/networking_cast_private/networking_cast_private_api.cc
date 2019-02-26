@@ -88,41 +88,6 @@ void NetworkingCastPrivateVerifyDestinationFunction::Failure(
   Respond(Error(error));
 }
 
-NetworkingCastPrivateVerifyAndEncryptCredentialsFunction::
-    ~NetworkingCastPrivateVerifyAndEncryptCredentialsFunction() {}
-
-ExtensionFunction::ResponseAction
-NetworkingCastPrivateVerifyAndEncryptCredentialsFunction::Run() {
-  std::unique_ptr<cast_api::VerifyAndEncryptCredentials::Params> params =
-      cast_api::VerifyAndEncryptCredentials::Params::Create(*args_);
-  EXTENSION_FUNCTION_VALIDATE(params);
-
-  NetworkingCastPrivateDelegate* delegate =
-      ExtensionsAPIClient::Get()->GetNetworkingCastPrivateDelegate();
-  delegate->VerifyAndEncryptCredentials(
-      params->network_guid, AsCastCredentials(params->properties),
-      base::Bind(
-          &NetworkingCastPrivateVerifyAndEncryptCredentialsFunction::Success,
-          this),
-      base::Bind(
-          &NetworkingCastPrivateVerifyAndEncryptCredentialsFunction::Failure,
-          this));
-
-  // VerifyAndEncryptCredentials might respond synchronously, e.g. in tests.
-  return did_respond() ? AlreadyResponded() : RespondLater();
-}
-
-void NetworkingCastPrivateVerifyAndEncryptCredentialsFunction::Success(
-    const std::string& result) {
-  Respond(ArgumentList(
-      cast_api::VerifyAndEncryptCredentials::Results::Create(result)));
-}
-
-void NetworkingCastPrivateVerifyAndEncryptCredentialsFunction::Failure(
-    const std::string& error) {
-  Respond(Error(error));
-}
-
 NetworkingCastPrivateVerifyAndEncryptDataFunction::
     ~NetworkingCastPrivateVerifyAndEncryptDataFunction() {}
 

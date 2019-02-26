@@ -37,7 +37,7 @@ _log = logging.getLogger(__name__)
 
 
 class MacPort(base.Port):
-    SUPPORTED_VERSIONS = ('mac10.10', 'mac10.11', 'mac10.12', 'mac10.13', 'retina')
+    SUPPORTED_VERSIONS = ('mac10.10', 'mac10.11', 'mac10.12', 'mac10.13', 'mac10.14', 'retina')
     port_name = 'mac'
 
     # FIXME: We treat Retina (High-DPI) devices as if they are running a
@@ -49,6 +49,7 @@ class MacPort(base.Port):
 
     FALLBACK_PATHS = {}
 
+    FALLBACK_PATHS['mac10.14'] = ['mac']
     FALLBACK_PATHS['mac10.13'] = ['mac']
     FALLBACK_PATHS['mac10.12'] = ['mac-mac10.12'] + FALLBACK_PATHS['mac10.13']
     FALLBACK_PATHS['mac10.11'] = ['mac-mac10.11'] + FALLBACK_PATHS['mac10.12']
@@ -94,7 +95,7 @@ class MacPort(base.Port):
 
     def path_to_apache_config_file(self):
         config_file_basename = 'apache2-httpd-' + self._apache_version()
-        if self.host.platform.os_version == 'mac10.13':
+        if self.host.platform.os_version in ['mac10.13', 'mac10.14']:
             config_file_basename += '-php7'
         return self._filesystem.join(self.apache_config_directory(), config_file_basename + '.conf')
 

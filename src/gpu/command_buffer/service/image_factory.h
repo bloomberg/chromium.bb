@@ -28,7 +28,6 @@ class GPU_EXPORT ImageFactory {
       gfx::GpuMemoryBufferHandle handle,
       const gfx::Size& size,
       gfx::BufferFormat format,
-      unsigned internalformat,
       int client_id,
       SurfaceHandle surface_handle) = 0;
 
@@ -39,7 +38,6 @@ class GPU_EXPORT ImageFactory {
       const gfx::Size& size,
       gfx::BufferFormat format,
       gfx::BufferUsage usage,
-      unsigned internalformat,
       bool* is_cleared);
 
   // An image can only be bound to a texture with the appropriate type.

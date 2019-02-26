@@ -15,6 +15,7 @@ TrackedChildURLLoaderFactoryBundleInfo::
 
 TrackedChildURLLoaderFactoryBundleInfo::TrackedChildURLLoaderFactoryBundleInfo(
     network::mojom::URLLoaderFactoryPtrInfo default_factory_info,
+    network::mojom::URLLoaderFactoryPtrInfo appcache_factory_info,
     SchemeMap scheme_specific_factory_infos,
     OriginMap initiator_specific_factory_infos,
     PossiblyAssociatedURLLoaderFactoryPtrInfo direct_network_factory_info,
@@ -23,6 +24,7 @@ TrackedChildURLLoaderFactoryBundleInfo::TrackedChildURLLoaderFactoryBundleInfo(
     bool bypass_redirect_checks)
     : ChildURLLoaderFactoryBundleInfo(
           std::move(default_factory_info),
+          std::move(appcache_factory_info),
           std::move(scheme_specific_factory_infos),
           std::move(initiator_specific_factory_infos),
           std::move(direct_network_factory_info),
@@ -37,6 +39,7 @@ scoped_refptr<network::SharedURLLoaderFactory>
 TrackedChildURLLoaderFactoryBundleInfo::CreateFactory() {
   auto other = std::make_unique<TrackedChildURLLoaderFactoryBundleInfo>();
   other->default_factory_info_ = std::move(default_factory_info_);
+  other->appcache_factory_info_ = std::move(appcache_factory_info_);
   other->scheme_specific_factory_infos_ =
       std::move(scheme_specific_factory_infos_);
   other->initiator_specific_factory_infos_ =
@@ -57,7 +60,7 @@ TrackedChildURLLoaderFactoryBundle::TrackedChildURLLoaderFactoryBundle(
     std::unique_ptr<TrackedChildURLLoaderFactoryBundleInfo> info) {
   DCHECK(info->main_thread_host_bundle());
   main_thread_host_bundle_ = std::move(info->main_thread_host_bundle());
-  Update(std::move(info), base::nullopt);
+  Update(std::move(info));
   AddObserverOnMainThread();
 }
 
@@ -77,6 +80,7 @@ TrackedChildURLLoaderFactoryBundle::Clone() {
 
   return std::make_unique<TrackedChildURLLoaderFactoryBundleInfo>(
       std::move(info->default_factory_info()),
+      std::move(info->appcache_factory_info()),
       std::move(info->scheme_specific_factory_infos()),
       std::move(info->initiator_specific_factory_infos()),
       std::move(info->direct_network_factory_info()),
@@ -113,8 +117,7 @@ void TrackedChildURLLoaderFactoryBundle::RemoveObserverOnMainThread() {
 void TrackedChildURLLoaderFactoryBundle::OnUpdate(
     std::unique_ptr<network::SharedURLLoaderFactoryInfo> info) {
   Update(base::WrapUnique(
-             static_cast<ChildURLLoaderFactoryBundleInfo*>(info.release())),
-         base::nullopt);
+      static_cast<ChildURLLoaderFactoryBundleInfo*>(info.release())));
 }
 
 // -----------------------------------------------------------------------------
@@ -141,6 +144,7 @@ HostChildURLLoaderFactoryBundle::Clone() {
 
   return std::make_unique<TrackedChildURLLoaderFactoryBundleInfo>(
       std::move(info->default_factory_info()),
+      std::move(info->appcache_factory_info()),
       std::move(info->scheme_specific_factory_infos()),
       std::move(info->initiator_specific_factory_infos()),
       std::move(info->direct_network_factory_info()),
@@ -149,9 +153,9 @@ HostChildURLLoaderFactoryBundle::Clone() {
 }
 
 std::unique_ptr<network::SharedURLLoaderFactoryInfo>
-HostChildURLLoaderFactoryBundle::CloneWithoutDefaultFactory() {
+HostChildURLLoaderFactoryBundle::CloneWithoutAppCacheFactory() {
   auto info = base::WrapUnique(static_cast<ChildURLLoaderFactoryBundleInfo*>(
-      ChildURLLoaderFactoryBundle::CloneWithoutDefaultFactory().release()));
+      ChildURLLoaderFactoryBundle::CloneWithoutAppCacheFactory().release()));
 
   DCHECK(base::SequencedTaskRunnerHandle::IsSet());
   auto main_thread_host_bundle_clone = std::make_unique<
@@ -160,6 +164,7 @@ HostChildURLLoaderFactoryBundle::CloneWithoutDefaultFactory() {
 
   return std::make_unique<TrackedChildURLLoaderFactoryBundleInfo>(
       std::move(info->default_factory_info()),
+      std::move(info->appcache_factory_info()),
       std::move(info->scheme_specific_factory_infos()),
       std::move(info->initiator_specific_factory_infos()),
       std::move(info->direct_network_factory_info()),
@@ -181,7 +186,7 @@ void HostChildURLLoaderFactoryBundle::UpdateThisAndAllClones(
                                      partial_bundle->Clone());
   }
 
-  Update(partial_bundle->PassInterface(), base::nullopt);
+  Update(partial_bundle->PassInterface());
 }
 
 bool HostChildURLLoaderFactoryBundle::IsHostChildURLLoaderFactoryBundle()

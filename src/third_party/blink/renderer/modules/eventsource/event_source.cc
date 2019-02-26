@@ -64,11 +64,11 @@ const unsigned long long EventSource::kDefaultReconnectDelay = 3000;
 
 inline EventSource::EventSource(ExecutionContext* context,
                                 const KURL& url,
-                                const EventSourceInit& event_source_init)
+                                const EventSourceInit* event_source_init)
     : ContextLifecycleObserver(context),
       url_(url),
       current_url_(url),
-      with_credentials_(event_source_init.withCredentials()),
+      with_credentials_(event_source_init->withCredentials()),
       state_(kConnecting),
       connect_timer_(context->GetTaskRunner(TaskType::kRemoteEvent),
                      this,
@@ -77,7 +77,7 @@ inline EventSource::EventSource(ExecutionContext* context,
 
 EventSource* EventSource::Create(ExecutionContext* context,
                                  const String& url,
-                                 const EventSourceInit& event_source_init,
+                                 const EventSourceInit* event_source_init,
                                  ExceptionState& exception_state) {
   UseCounter::Count(context, IsA<Document>(context)
                                  ? WebFeature::kEventSourceDocument
@@ -98,7 +98,8 @@ EventSource* EventSource::Create(ExecutionContext* context,
     return nullptr;
   }
 
-  EventSource* source = new EventSource(context, full_url, event_source_init);
+  EventSource* source =
+      MakeGarbageCollected<EventSource>(context, full_url, event_source_init);
 
   source->ScheduleInitialConnect();
   return source;
@@ -123,19 +124,19 @@ void EventSource::Connect() {
 
   ExecutionContext& execution_context = *this->GetExecutionContext();
   ResourceRequest request(current_url_);
-  request.SetHTTPMethod(HTTPNames::GET);
-  request.SetHTTPHeaderField(HTTPNames::Accept, "text/event-stream");
-  request.SetHTTPHeaderField(HTTPNames::Cache_Control, "no-cache");
+  request.SetHTTPMethod(http_names::kGET);
+  request.SetHTTPHeaderField(http_names::kAccept, "text/event-stream");
+  request.SetHTTPHeaderField(http_names::kCacheControl, "no-cache");
   request.SetRequestContext(mojom::RequestContextType::EVENT_SOURCE);
-  request.SetFetchRequestMode(network::mojom::FetchRequestMode::kCORS);
+  request.SetFetchRequestMode(network::mojom::FetchRequestMode::kCors);
   request.SetFetchCredentialsMode(
       with_credentials_ ? network::mojom::FetchCredentialsMode::kInclude
                         : network::mojom::FetchCredentialsMode::kSameOrigin);
   request.SetCacheMode(blink::mojom::FetchCacheMode::kNoStore);
   request.SetExternalRequestStateFromRequestorAddressSpace(
       execution_context.GetSecurityContext().AddressSpace());
-  request.SetCORSPreflightPolicy(
-      network::mojom::CORSPreflightPolicy::kPreventPreflight);
+  request.SetCorsPreflightPolicy(
+      network::mojom::CorsPreflightPolicy::kPreventPreflight);
   if (parser_ && !parser_->LastEventId().IsEmpty()) {
     // HTTP headers are Latin-1 byte strings, but the Last-Event-ID header is
     // encoded as UTF-8.
@@ -143,7 +144,7 @@ void EventSource::Connect() {
     // setHTTPHeaderField's arguments.
     CString last_event_id_utf8 = parser_->LastEventId().Utf8();
     request.SetHTTPHeaderField(
-        HTTPNames::Last_Event_ID,
+        http_names::kLastEventID,
         AtomicString(reinterpret_cast<const LChar*>(last_event_id_utf8.data()),
                      last_event_id_utf8.length()));
   }
@@ -152,8 +153,8 @@ void EventSource::Connect() {
   resource_loader_options.data_buffering_policy = kDoNotBufferData;
 
   probe::willSendEventSourceRequest(&execution_context, this);
-  loader_ =
-      new ThreadableLoader(execution_context, this, resource_loader_options);
+  loader_ = MakeGarbageCollected<ThreadableLoader>(execution_context, this,
+                                                   resource_loader_options);
   loader_->Start(request);
 }
 
@@ -168,7 +169,7 @@ void EventSource::ScheduleReconnect() {
   state_ = kConnecting;
   connect_timer_.StartOneShot(TimeDelta::FromMilliseconds(reconnect_delay_),
                               FROM_HERE);
-  DispatchEvent(*Event::Create(EventTypeNames::error));
+  DispatchEvent(*Event::Create(event_type_names::kError));
 }
 
 void EventSource::ConnectTimerFired(TimerBase*) {
@@ -211,7 +212,7 @@ void EventSource::close() {
 }
 
 const AtomicString& EventSource::InterfaceName() const {
-  return EventTargetNames::EventSource;
+  return event_target_names::kEventSource;
 }
 
 ExecutionContext* EventSource::GetExecutionContext() const {
@@ -268,8 +269,8 @@ void EventSource::DidReceiveResponse(
       // The new parser takes over the event ID.
       last_event_id = parser_->LastEventId();
     }
-    parser_ = new EventSourceParser(last_event_id, this);
-    DispatchEvent(*Event::Create(EventTypeNames::open));
+    parser_ = MakeGarbageCollected<EventSourceParser>(last_event_id, this);
+    DispatchEvent(*Event::Create(event_type_names::kOpen));
   } else {
     loader_->Cancel();
   }
@@ -343,7 +344,7 @@ void EventSource::AbortConnectionAttempt() {
   state_ = kClosed;
   NetworkRequestEnded();
 
-  DispatchEvent(*Event::Create(EventTypeNames::error));
+  DispatchEvent(*Event::Create(event_type_names::kError));
 }
 
 void EventSource::ContextDestroyed(ExecutionContext*) {
@@ -358,6 +359,7 @@ void EventSource::Trace(blink::Visitor* visitor) {
   visitor->Trace(parser_);
   visitor->Trace(loader_);
   EventTargetWithInlineData::Trace(visitor);
+  ThreadableLoaderClient::Trace(visitor);
   ContextLifecycleObserver::Trace(visitor);
   EventSourceParser::Client::Trace(visitor);
 }

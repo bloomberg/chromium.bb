@@ -153,9 +153,8 @@ NSUInteger const kTabPositionAutomatically = NSNotFound;
 // Notifies observers that the given tab is loading a new URL.
 - (void)notifyTabLoading:(Tab*)tab;
 
-// Notifies observers that the given tab finished loading. |success| is YES if
-// the load was successful, NO otherwise.
-- (void)notifyTabFinishedLoading:(Tab*)tab success:(BOOL)success;
+// Notifies observers that the given tab finished loading.
+- (void)notifyTabFinishedLoading:(Tab*)tab;
 
 // Notifies observers that the given tab will open. If it isn't the active tab,
 // |background| is YES, NO otherwise.

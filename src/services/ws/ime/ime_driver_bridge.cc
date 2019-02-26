@@ -13,13 +13,6 @@ IMEDriverBridge::IMEDriverBridge() {}
 
 IMEDriverBridge::~IMEDriverBridge() {}
 
-void IMEDriverBridge::Init(service_manager::Connector* connector,
-                           bool is_test_config) {
-  if (is_test_config)
-    connector->StartService("test_ime_driver");
-  // For non test configs we assume a client registers with us.
-}
-
 void IMEDriverBridge::AddBinding(mojom::IMEDriverRequest request) {
   bindings_.AddBinding(this, std::move(request));
 }

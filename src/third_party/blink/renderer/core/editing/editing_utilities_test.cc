@@ -42,32 +42,32 @@ TEST_F(EditingUtilitiesTest, firstEditablePositionAfterPositionInRoot) {
 
   EXPECT_EQ(Position(one, 0),
             FirstEditablePositionAfterPositionInRoot(Position(one, 0), *host));
-  EXPECT_EQ(
-      Position(one->firstChild(), 0),
-      FirstEditableVisiblePositionAfterPositionInRoot(Position(one, 0), *host)
-          .DeepEquivalent());
+  EXPECT_EQ(Position(one->firstChild(), 0),
+            CreateVisiblePosition(FirstEditablePositionAfterPositionInRoot(
+                                      Position(one, 0), *host))
+                .DeepEquivalent());
 
   EXPECT_EQ(PositionInFlatTree(one, 0),
             FirstEditablePositionAfterPositionInRoot(PositionInFlatTree(one, 0),
                                                      *host));
   EXPECT_EQ(PositionInFlatTree(two->firstChild(), 2),
-            FirstEditableVisiblePositionAfterPositionInRoot(
-                PositionInFlatTree(one, 0), *host)
+            CreateVisiblePosition(FirstEditablePositionAfterPositionInRoot(
+                                      PositionInFlatTree(one, 0), *host))
                 .DeepEquivalent());
 
   EXPECT_EQ(
       Position::FirstPositionInNode(*host),
       FirstEditablePositionAfterPositionInRoot(Position(three, 0), *host));
-  EXPECT_EQ(
-      Position(one->firstChild(), 0),
-      FirstEditableVisiblePositionAfterPositionInRoot(Position(three, 0), *host)
-          .DeepEquivalent());
+  EXPECT_EQ(Position(one->firstChild(), 0),
+            CreateVisiblePosition(FirstEditablePositionAfterPositionInRoot(
+                                      Position(three, 0), *host))
+                .DeepEquivalent());
   EXPECT_EQ(PositionInFlatTree::AfterNode(*host),
             FirstEditablePositionAfterPositionInRoot(
                 PositionInFlatTree(three, 0), *host));
   EXPECT_EQ(PositionInFlatTree::LastPositionInNode(*host),
-            FirstEditableVisiblePositionAfterPositionInRoot(
-                PositionInFlatTree(three, 0), *host)
+            CreateVisiblePosition(FirstEditablePositionAfterPositionInRoot(
+                                      PositionInFlatTree(three, 0), *host))
                 .DeepEquivalent());
 }
 
@@ -126,13 +126,13 @@ TEST_F(EditingUtilitiesTest, isEditablePositionWithTable) {
   // However, |setBodyContent()| automatically creates HTML, HEAD and BODY
   // element. So, we build DOM tree manually.
   // Note: This is unusual HTML taken from http://crbug.com/574230
-  Element* table = GetDocument().CreateRawElement(HTMLNames::tableTag);
+  Element* table = GetDocument().CreateRawElement(html_names::kTableTag);
   table->SetInnerHTMLFromString("<caption>foo</caption>");
   while (GetDocument().firstChild())
     GetDocument().firstChild()->remove();
   GetDocument().AppendChild(table);
   GetDocument().setDesignMode("on");
-  UpdateAllLifecyclePhases();
+  UpdateAllLifecyclePhasesForTest();
 
   EXPECT_FALSE(IsEditablePosition(Position(table, 0)));
 }
@@ -194,32 +194,32 @@ TEST_F(EditingUtilitiesTest, lastEditablePositionBeforePositionInRoot) {
 
   EXPECT_EQ(Position(one, 0),
             LastEditablePositionBeforePositionInRoot(Position(one, 0), *host));
-  EXPECT_EQ(
-      Position(one->firstChild(), 0),
-      LastEditableVisiblePositionBeforePositionInRoot(Position(one, 0), *host)
-          .DeepEquivalent());
+  EXPECT_EQ(Position(one->firstChild(), 0),
+            CreateVisiblePosition(LastEditablePositionBeforePositionInRoot(
+                                      Position(one, 0), *host))
+                .DeepEquivalent());
 
   EXPECT_EQ(PositionInFlatTree(one, 0),
             LastEditablePositionBeforePositionInRoot(PositionInFlatTree(one, 0),
                                                      *host));
   EXPECT_EQ(PositionInFlatTree(two->firstChild(), 2),
-            LastEditableVisiblePositionBeforePositionInRoot(
-                PositionInFlatTree(one, 0), *host)
+            CreateVisiblePosition(LastEditablePositionBeforePositionInRoot(
+                                      PositionInFlatTree(one, 0), *host))
                 .DeepEquivalent());
 
   EXPECT_EQ(
       Position::FirstPositionInNode(*host),
       LastEditablePositionBeforePositionInRoot(Position(three, 0), *host));
-  EXPECT_EQ(
-      Position(one->firstChild(), 0),
-      LastEditableVisiblePositionBeforePositionInRoot(Position(three, 0), *host)
-          .DeepEquivalent());
+  EXPECT_EQ(Position(one->firstChild(), 0),
+            CreateVisiblePosition(LastEditablePositionBeforePositionInRoot(
+                                      Position(three, 0), *host))
+                .DeepEquivalent());
   EXPECT_EQ(PositionInFlatTree::FirstPositionInNode(*host),
             LastEditablePositionBeforePositionInRoot(
                 PositionInFlatTree(three, 0), *host));
   EXPECT_EQ(PositionInFlatTree(two->firstChild(), 0),
-            LastEditableVisiblePositionBeforePositionInRoot(
-                PositionInFlatTree(three, 0), *host)
+            CreateVisiblePosition(LastEditablePositionBeforePositionInRoot(
+                                      PositionInFlatTree(three, 0), *host))
                 .DeepEquivalent());
 }
 
@@ -271,7 +271,7 @@ TEST_F(EditingUtilitiesTest, uncheckedPreviousNextOffset_FirstLetter) {
   EXPECT_EQ(2, NextGraphemeBoundaryOf(node, 1));
   EXPECT_EQ(3, NextGraphemeBoundaryOf(node, 2));
 
-  UpdateAllLifecyclePhases();
+  UpdateAllLifecyclePhasesForTest();
   EXPECT_NE(nullptr, node.GetLayoutObject());
   EXPECT_EQ(2, PreviousGraphemeBoundaryOf(node, 3));
   EXPECT_EQ(1, PreviousGraphemeBoundaryOf(node, 2));
@@ -292,7 +292,7 @@ TEST_F(EditingUtilitiesTest, uncheckedPreviousNextOffset_textTransform) {
   EXPECT_EQ(2, NextGraphemeBoundaryOf(node, 1));
   EXPECT_EQ(3, NextGraphemeBoundaryOf(node, 2));
 
-  UpdateAllLifecyclePhases();
+  UpdateAllLifecyclePhasesForTest();
   EXPECT_NE(nullptr, node.GetLayoutObject());
   EXPECT_EQ(2, PreviousGraphemeBoundaryOf(node, 3));
   EXPECT_EQ(1, PreviousGraphemeBoundaryOf(node, 2));

@@ -15,9 +15,9 @@
 #include "net/base/net_errors.h"
 #include "net/base/network_change_notifier.h"
 #include "net/dns/dns_client.h"
-#include "net/dns/dns_protocol.h"
 #include "net/dns/dns_response.h"
 #include "net/dns/dns_transaction.h"
+#include "net/dns/public/dns_protocol.h"
 #include "net/log/net_log_with_source.h"
 
 using base::TimeDelta;

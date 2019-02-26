@@ -40,17 +40,16 @@ class RadioNodeList final : public LiveNodeList {
                                CollectionType type,
                                const AtomicString& name) {
     DCHECK(type == kRadioNodeListType || type == kRadioImgNodeListType);
-    return new RadioNodeList(owner_node, name, type);
+    return MakeGarbageCollected<RadioNodeList>(owner_node, name, type);
   }
 
+  RadioNodeList(ContainerNode&, const AtomicString& name, CollectionType);
   ~RadioNodeList() override;
 
   String value() const;
   void setValue(const String&);
 
  private:
-  RadioNodeList(ContainerNode&, const AtomicString& name, CollectionType);
-
   bool CheckElementMatchesRadioNodeListFilter(const Element&) const;
 
   bool MatchesByIdOrName(const Element&) const;

@@ -141,6 +141,7 @@ struct StructTraits<gpu::mojom::VideoEncodeAcceleratorSupportedProfileDataView,
   }
 };
 
+#if defined(OS_WIN)
 template <>
 struct EnumTraits<gpu::mojom::OverlayFormat, gpu::OverlayFormat> {
   static gpu::mojom::OverlayFormat ToMojom(gpu::OverlayFormat format);
@@ -185,6 +186,7 @@ struct StructTraits<gpu::mojom::Dx12VulkanVersionInfoDataView,
     return input.vulkan_version;
   }
 };
+#endif
 
 template <>
 struct StructTraits<gpu::mojom::GpuInfoDataView, gpu::GPUInfo> {

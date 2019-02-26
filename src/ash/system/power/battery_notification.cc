@@ -4,6 +4,7 @@
 
 #include "ash/system/power/battery_notification.h"
 
+#include "ash/public/cpp/notification_utils.h"
 #include "ash/public/cpp/power_utils.h"
 #include "ash/resources/vector_icons/vector_icons.h"
 #include "ash/strings/grit/ash_strings.h"
@@ -93,15 +94,14 @@ std::unique_ptr<Notification> CreateNotification(
   if (!time_message.empty())
     message = message + base::ASCIIToUTF16("\n") + time_message;
 
-  std::unique_ptr<Notification> notification =
-      Notification::CreateSystemNotification(
-          message_center::NOTIFICATION_TYPE_SIMPLE, kBatteryNotificationId,
-          base::string16(), message, base::string16(), GURL(),
-          message_center::NotifierId(
-              message_center::NotifierId::SYSTEM_COMPONENT, kNotifierBattery),
-          message_center::RichNotificationData(), nullptr,
-          GetBatteryImageMD(notification_state),
-          GetWarningLevelMD(notification_state));
+  std::unique_ptr<Notification> notification = ash::CreateSystemNotification(
+      message_center::NOTIFICATION_TYPE_SIMPLE, kBatteryNotificationId,
+      base::string16(), message, base::string16(), GURL(),
+      message_center::NotifierId(message_center::NotifierType::SYSTEM_COMPONENT,
+                                 kNotifierBattery),
+      message_center::RichNotificationData(), nullptr,
+      GetBatteryImageMD(notification_state),
+      GetWarningLevelMD(notification_state));
   notification->SetSystemPriority();
   return notification;
 }

@@ -199,6 +199,18 @@ class ImportNotifierTest(unittest.TestCase):
         self.notifier._get_monorail_api = unreachable  # pylint: disable=protected-access
         self.notifier.file_bugs([], True)
 
+    def test_file_bugs_calls_luci_auth(self):
+        test = self
+
+        class FakeAPI(object):
+            def __init__(self, service_account_key_json=None, access_token=None):
+                test.assertIsNone(service_account_key_json)
+                test.assertEqual(access_token, 'MOCK output of child process')
+
+        self.notifier._monorail_api = FakeAPI  # pylint: disable=protected-access
+        self.notifier.file_bugs([], False)
+        self.assertEqual(self.host.executive.calls, [['luci-auth', 'token']])
+
 
 class TestFailureTest(unittest.TestCase):
 

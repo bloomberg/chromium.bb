@@ -64,7 +64,7 @@ class NavigationURLLoaderTest : public testing::Test {
     BrowserContext::EnsureResourceContextInitialized(browser_context_.get());
     base::RunLoop().RunUntilIdle();
     net::URLRequestContext* request_context =
-        browser_context_->GetResourceContext()->GetRequestContext();
+        browser_context_->GetRequestContext()->GetURLRequestContext();
     // Attach URLRequestTestJob.
     job_factory_.SetProtocolHandler(
         "test", net::URLRequestTestJob::CreateProtocolHandler());
@@ -109,7 +109,7 @@ class NavigationURLLoaderTest : public testing::Test {
   std::string FetchURL(const GURL& url) {
     net::TestDelegate delegate;
     net::URLRequestContext* request_context =
-        browser_context_->GetResourceContext()->GetRequestContext();
+        browser_context_->GetRequestContext()->GetURLRequestContext();
     std::unique_ptr<net::URLRequest> request(request_context->CreateRequest(
         url, net::DEFAULT_PRIORITY, &delegate, TRAFFIC_ANNOTATION_FOR_TESTS));
     request->Start();
@@ -176,8 +176,8 @@ TEST_F(NavigationURLLoaderTest, RequestFailedCertErrorFatal) {
 
   // Set HSTS for the test domain in order to make SSL errors fatal.
   net::TransportSecurityState* transport_security_state =
-      browser_context_->GetResourceContext()
-          ->GetRequestContext()
+      browser_context_->GetRequestContext()
+          ->GetURLRequestContext()
           ->transport_security_state();
   base::Time expiry = base::Time::Now() + base::TimeDelta::FromDays(1000);
   bool include_subdomains = false;

@@ -21,29 +21,16 @@
 
 #if defined(OS_MACOSX) && !defined(OS_IOS)
 #include "base/mac/mach_port_broker.h"
+#include "mojo/core/embedder/default_mach_broker.h"
 #endif
 
 namespace mojo {
 namespace core {
 namespace test {
 
-#if defined(OS_MACOSX) && !defined(OS_IOS)
-namespace {
-base::MachPortBroker* g_mach_broker = nullptr;
-}
-#endif
+MojoTestBase::MojoTestBase() = default;
 
-MojoTestBase::MojoTestBase() {
-#if defined(OS_MACOSX) && !defined(OS_IOS)
-  if (!g_mach_broker) {
-    g_mach_broker = new base::MachPortBroker("mojo_test");
-    CHECK(g_mach_broker->Init());
-    SetMachPortProvider(g_mach_broker);
-  }
-#endif
-}
-
-MojoTestBase::~MojoTestBase() {}
+MojoTestBase::~MojoTestBase() = default;
 
 MojoTestBase::ClientController& MojoTestBase::StartClient(
     const std::string& client_name) {
@@ -63,11 +50,12 @@ MojoTestBase::ClientController::ClientController(const std::string& client_name,
   // launched. To prevent a race where the child process sends its task port
   // before the pid has been registered, the lock needs to be held over both
   // launch and child pid registration.
-  base::AutoLock lock(g_mach_broker->GetLock());
+  auto* broker = DefaultMachBroker::Get();
+  base::AutoLock lock(broker->GetLock());
 #endif
   pipe_ = helper_.StartChild(client_name, launch_type);
 #if defined(OS_MACOSX)
-  g_mach_broker->AddPlaceholderForPid(helper_.test_child().Handle());
+  broker->ExpectPid(helper_.test_child().Handle());
 #endif
 #endif
 }
@@ -82,8 +70,9 @@ int MojoTestBase::ClientController::WaitForShutdown() {
 #if !defined(OS_IOS)
   int retval = helper_.WaitForChildShutdown();
 #if defined(OS_MACOSX)
-  base::AutoLock lock(g_mach_broker->GetLock());
-  g_mach_broker->InvalidatePid(helper_.test_child().Handle());
+  auto* broker = DefaultMachBroker::Get();
+  base::AutoLock lock(broker->GetLock());
+  broker->RemovePid(helper_.test_child().Handle());
 #endif
   return retval;
 #else

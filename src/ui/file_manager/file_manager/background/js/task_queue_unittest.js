@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-/** @type {!TaskQueue} */
+/** @type {!importer.TaskQueue} */
 var queue;
 
 /** @type {!Object<importer.TaskQueue.UpdateType, number>} */

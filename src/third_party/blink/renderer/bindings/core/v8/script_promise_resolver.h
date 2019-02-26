@@ -15,8 +15,12 @@
 #include "third_party/blink/renderer/platform/bindings/script_state.h"
 #include "third_party/blink/renderer/platform/heap/handle.h"
 #include "third_party/blink/renderer/platform/heap/self_keep_alive.h"
-#include "third_party/blink/renderer/platform/web_task_runner.h"
+#include "third_party/blink/renderer/platform/scheduler/public/post_cancellable_task.h"
 #include "v8/include/v8.h"
+
+#if DCHECK_IS_ON()
+#include "base/debug/stack_trace.h"
+#endif
 
 namespace blink {
 
@@ -39,26 +43,22 @@ class CORE_EXPORT ScriptPromiseResolver
 
  public:
   static ScriptPromiseResolver* Create(ScriptState* script_state) {
-    ScriptPromiseResolver* resolver = new ScriptPromiseResolver(script_state);
+    ScriptPromiseResolver* resolver =
+        MakeGarbageCollected<ScriptPromiseResolver>(script_state);
     resolver->PauseIfNeeded();
     return resolver;
   }
+
+  // You need to call suspendIfNeeded after the construction because
+  // this is an PausableObject.
+  explicit ScriptPromiseResolver(ScriptState*);
 
 #if DCHECK_IS_ON()
   // Eagerly finalized so as to ensure valid access to getExecutionContext()
   // from the destructor's assert.
   EAGERLY_FINALIZE();
 
-  ~ScriptPromiseResolver() override {
-    // This assertion fails if:
-    //  - promise() is called at least once and
-    //  - this resolver is destructed before it is resolved, rejected,
-    //    detached, the V8 isolate is terminated or the associated
-    //    ExecutionContext is stopped.
-    DCHECK(state_ == kDetached || !is_promise_called_ ||
-           !GetScriptState()->ContextIsValid() || !GetExecutionContext() ||
-           GetExecutionContext()->IsContextDestroyed());
-  }
+  ~ScriptPromiseResolver() override;
 #endif
 
   // Anything that can be passed to toV8 can be passed to this function.
@@ -106,11 +106,6 @@ class CORE_EXPORT ScriptPromiseResolver
   void KeepAliveWhilePending();
 
   void Trace(blink::Visitor*) override;
-
- protected:
-  // You need to call suspendIfNeeded after the construction because
-  // this is an PausableObject.
-  explicit ScriptPromiseResolver(ScriptState*);
 
  private:
   typedef ScriptPromise::InternalResolver Resolver;
@@ -179,6 +174,8 @@ class CORE_EXPORT ScriptPromiseResolver
 #if DCHECK_IS_ON()
   // True if promise() is called.
   bool is_promise_called_ = false;
+
+  base::debug::StackTrace create_stack_trace_{8};
 #endif
 };
 

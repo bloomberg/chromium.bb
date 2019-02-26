@@ -44,10 +44,6 @@ namespace base {
 class SequencedTaskRunner;
 }
 
-namespace domain_reliability {
-class DomainReliabilityMonitor;
-}
-
 namespace policy {
 class ConfigurationPolicyProvider;
 class ProfilePolicyConnector;
@@ -78,7 +74,6 @@ class ProfileImpl : public Profile {
       const base::FilePath& partition_path) override;
 #endif
   base::FilePath GetPath() const override;
-  base::FilePath GetCachePath() const override;
   content::DownloadManagerDelegate* GetDownloadManagerDelegate() override;
   content::ResourceContext* GetResourceContext() override;
   content::BrowserPluginGuestManager* GetGuestManager() override;
@@ -104,6 +99,9 @@ class ProfileImpl : public Profile {
       const base::FilePath& partition_path,
       bool in_memory) override;
   void RegisterInProcessServices(StaticServiceMap* services) override;
+  std::unique_ptr<service_manager::Service> HandleServiceRequest(
+      const std::string& service_name,
+      service_manager::mojom::ServiceRequest request) override;
   std::string GetMediaDeviceIDSalt() override;
   download::InProgressDownloadManager* RetriveInProgressDownloadManager()
       override;
@@ -193,13 +191,6 @@ class ProfileImpl : public Profile {
 
   void GetMediaCacheParameters(base::FilePath* cache_path, int* max_size);
 
-  std::unique_ptr<domain_reliability::DomainReliabilityMonitor>
-  CreateDomainReliabilityMonitor(PrefService* local_state);
-
-  // Creates an instance of the Identity Service for this Profile, populating it
-  // with the appropriate instances of its dependencies.
-  std::unique_ptr<service_manager::Service> CreateIdentityService();
-
 #if defined(OS_CHROMEOS)
   std::unique_ptr<service_manager::Service> CreateDeviceSyncService();
   std::unique_ptr<service_manager::Service> CreateMultiDeviceSetupService();
@@ -208,7 +199,6 @@ class ProfileImpl : public Profile {
   PrefChangeRegistrar pref_change_registrar_;
 
   base::FilePath path_;
-  base::FilePath base_cache_path_;
 
   // Task runner used for file access in the profile path.
   scoped_refptr<base::SequencedTaskRunner> io_task_runner_;

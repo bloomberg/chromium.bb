@@ -1,10 +1,10 @@
 # Life of a URLRequest
 
 This document is intended as an overview of the core layers of the network
-stack, their basic responsibilities, how they fit together, and where some of
-the pain points are, without going into too much detail. Though it touches a
-bit on child processes and the content/loader stack, the focus is on net/
-itself.
+stack and the network service, their basic responsibilities, and how they fit
+together, without going into too much detail. This doc assumes the network
+service is enabled, though the network service is not yet enabled by default
+on any platform.
 
 It's particularly targeted at people new to the Chrome network stack, but
 should also be useful for team members who may be experts at some parts of the
@@ -15,7 +15,12 @@ network stack, and then moves on to discuss how various components plug in.
 If you notice any inaccuracies in this document, or feel that things could be
 better explained, please do not hesitate to submit patches.
 
+
 # Anatomy of the Network Stack
+
+The network stack is located in //net/ in the Chrome repo, and uses the
+namespace "net". Whenever a class name in this doc has no namespace, it can
+generally be assumed it's in //net/ and is in the net namespace.
 
 The top-level network stack object is the URLRequestContext. The context has
 non-owning pointers to everything needed to create and issue a URLRequest. The
@@ -23,32 +28,12 @@ context must outlive all requests that use it. Creating a context is a rather
 complicated process, and it's recommended that most consumers use
 URLRequestContextBuilder to do this.
 
-Chrome has a number of different URLRequestContexts, as there is often a need to
-keep cookies, caches, and socket pools separate for different types of requests.
-Here are the main ones used by Chrome browser:
-
-* The system URLRequestContext, also owned by the IOThread, used for requests
-that aren't associated with a profile.
-* Each profile, including incognito profiles, has a number of URLRequestContexts
-that are created as needed:
-    * The main URLRequestContext is mostly created in ProfileIOData, though it
-    has a couple components that are passed in from content's StoragePartition
-    code. Several other components are shared with the system URLRequestContext,
-    like the HostResolver.
-    * Each non-incognito profile also has a media request context, which uses a
-    different on-disk cache than the main request context. This prevents a
-    single huge media file from evicting everything else in the cache. (See also
-    crbug.com/789657)
-    * On desktop platforms, each profile has a request context for extensions.
-    * Each profile has two contexts for each isolated app (One for media, one
-    for everything else).
-
 The primary use of the URLRequestContext is to create URLRequest objects using
 URLRequestContext::CreateRequest(). The URLRequest is the main interface used
-by consumers of the network stack.  It is used to make the actual requests to a
-server. Each URLRequest tracks a single request across all redirects until an
-error occurs, it's canceled, or a final response is received, with a (possibly
-empty) body.
+by direct consumers of the network stack. It use used to drive requests for
+http, https, ftp, and some data URLs. Each URLRequest tracks a single request
+across all redirects until an error occurs, it's canceled, or a final response
+is received, with a (possibly empty) body.
 
 The HttpNetworkSession is another major network stack object. It owns the
 HttpStreamFactory, the socket pools, and the HTTP/2 and QUIC session pools. It
@@ -63,94 +48,130 @@ get their dependencies from the HttpNetworkSession.
 
 # How many "Delegates"?
 
-The network stack informs the embedder of important events for a request using
-two main interfaces: the URLRequest::Delegate interface and the NetworkDelegate
+A URLRequest informs the consumer of important events for a request using two
+main interfaces: the URLRequest::Delegate interface and the NetworkDelegate
 interface.
 
 The URLRequest::Delegate interface consists of a small set of callbacks needed
-to let the embedder drive a request forward. URLRequest::Delegates generally own
-the URLRequest.
+to let the embedder drive a request forward. The NetworkDelegate is an object
+pointed to by the URLRequestContext and shared by all requests, and includes
+callbacks corresponding to most of the URLRequest::Delegate's callbacks, as
+well as an assortment of other methods.
 
-The NetworkDelegate is an object pointed to by the URLRequestContext and shared
-by all requests, and includes callbacks corresponding to most of the
-URLRequest::Delegate's callbacks, as well as an assortment of other methods. The
-NetworkDelegate is optional, while the URLRequest::Delegate is not.
+# The Network Service and Mojo
+
+The network service, which lives in //services/network/, wraps //net/ objects,
+and provides cross-process network APIs and their implementations for the rest
+of Chrome. The network service uses the namespace "network" for all its classes.
+The Mojo interfaces it provides are in the network::mojom namespace. Mojo is
+Chrome's IPC layer. Generally there's a network::mojom::FooPtr proxy object in
+the consumer's process which also implements the network::mojom::Foo interface.
+When the proxy object's methods are invoked, it passes the call and all its
+arguments over a Mojo IPC channel to another the implementation of the
+network::mojom::Foo interface in the network service (typically implemented by a
+class named network::Foo), which may be running in another process, or possibly
+another thread in the consumer's process.
+
+The network::NetworkService object is singleton that is used by Chrome to create
+all other network service objects. The primary objects it is used to create are
+the network::NetworkContexts, each of which owns its own mostly independent
+URLRequestContext. Chrome has a number of different NetworkContexts, as there
+is often a need to keep cookies, caches, and socket pools separate for different
+types of requests, depending on what's making the request. Here are the main
+NetworkContexts used by Chrome:
+
+* The system NetworkContext, created and owned by Chrome's
+SystemNetworkContextManager, is used for requests that aren't associated with
+particular user or Profile. It has no on-disk storage, so loses all state, like
+cookies, after each browser restart. It has no in-memory http cache, either.
+SystemNetworkContextManager also sets up global network service preferences.
+* Each Chrome Profile, including incognito Profiles, has its own NetworkContext.
+Except for incognito and guest profiles, these contexts store information in
+their own on-disk store, which includes cookies and an HTTP cache, among other
+things. Each of these NetworkContexts is owned by a StoragePartition object in
+the browser process, and created by a Profile's ProfileNetworkContextService.
+* On platforms that support apps, each Profile has a NetworkContext for each app
+installed on that Profile. As with the main NetworkContext, these may have
+on-disk data, depending on the Profile and the App.
 
 
 # Life of a Simple URLRequest
 
-A request for data is normally dispatched from a child to the browser process.
-There a URLRequest is created to drive the request. A protocol-specific job
-(e.g. HTTP, data, file) is attached to the request. That job first checks the
-cache, and then creates a network connection object, if necessary, to actually
-fetch the data. That connection object interacts with network socket pools to
-potentially re-use sockets; the socket pools create and connect a socket if
-there is no appropriate existing socket. Once that socket exists, the HTTP
-request is dispatched, the response read and parsed, and the result returned
-back up the stack and sent over to the child process.
+A request for data is dispatched from some other process which results in
+creating a network::URLLoader in the network process. The URLLoader then
+creates a URLRequest to drive the request. A protocol-specific job
+(e.g. HTTP, data, file) is attached to the request. In the HTTP case, that job
+first checks the cache, and then creates a network connection object, if
+necessary, to actually fetch the data. That connection object interacts with
+network socket pools to potentially re-use sockets; the socket pools create and
+connect a socket if there is no appropriate existing socket. Once that socket
+exists, the HTTP request is dispatched, the response read and parsed, and the
+result returned back up the stack and sent over to the child process.
 
 Of course, it's not quite that simple :-}.
 
-Consider a simple request issued by a child process. Suppose it's an HTTP
-request, the response is uncompressed, no matching entry in the cache, and there
-are no idle sockets connected to the server in the socket pool.
+Consider a simple request issued by some process other than the network
+service's process. Suppose it's an HTTP request, the response is uncompressed,
+no matching entry in the cache, and there are no idle sockets connected to the
+server in the socket pool.
 
 Continuing with a "simple" URLRequest, here's a bit more detail on how things
 work.
 
-### Request starts in a child process
+### Request starts in some (non-network) process
 
 Summary:
 
-* A user (e.g. the WebURLLoaderImpl for Blink) asks ResourceDispatcher to start
-the request.
-* ResourceDispatcher sends an IPC to the ResourceDispatcherHost in the
-browser process.
+* A consumer (e.g. the content::ResourceDispatcher for Blink, the
+content::NavigationURLLoaderImpl for frame navigations, or a
+network::SimpleURLLoader) passes a network::ResourceRequest object and
+network::mojom::URLLoaderClient Mojo channel to a
+network::mojom::URLLoaderFactory, and tells it to create and start a
+network::mojom::URLLoader.
+* Mojo sends the network::ResourceRequest over an IPC pipe to a
+network::URLLoaderFactory in the network process.
 
-Chrome has a single browser process, which handles network requests and tab
-management, among other things, and multiple child processes, which are
-generally sandboxed so can't send out network requests directly. There are
-multiple types of child processes (renderer, GPU, plugin, etc). The renderer
-processes are the ones that layout webpages and run HTML.
+Chrome has a single browser process which handles starting and configuring other
+processes, tab management, and navigation, among other things, and multiple
+child processes, which are generally sandboxed and have no network access
+themselves, apart from the network service (Which either runs in its own
+process, or potentially in the browser process to preserve RAM). There are
+multiple types of child processes (renderer, GPU, plugin, network, etc). The
+renderer processes are the ones that layout webpages and run HTML.
 
-Each child process has at most one ResourceDispatcher, which is responsible for
-all URL request-related communication with the browser process. When something
-in another process needs to issue a resource request, it calls into the
-ResourceDispatcher to start a request. A RequestPeer is passed in to receive
-messages related to the request. When started, the
-ResourceDispatcher assigns the request a per-renderer ID, and then sends the
-ID, along with all information needed to issue the request, to the
-ResourceDispatcherHost in the browser process.
+The browser process creates the top level network::mojom::NetworkContext
+objects, and uses them to create network::mojom::URLLoaderFactories, which it
+can set some security-related options on, before vending them to child
+processes. Child processes can then use them to directly talk to the network
+service.
 
-### ResourceDispatcherHost sets up the request in the browser process
+A consumer that wants to make a network request gets a URLLoaderFactory through
+some manner, assembles a bunch of parameters in the large ResourceRequest
+object, creates a network::mojom::URLLoaderClient Mojo channel for the
+network::mojom::URLLoader to use to talk back to it, and then passes them to
+the URLLoaderFactory, which returns a URLLoader object that it can use to
+manage the network request.
+
+### network::URLLoaderFactory sets up the request in the browser process
 
 Summary:
 
-* ResourceDispatcherHost uses the URLRequestContext to create the URLRequest.
-* ResourceDispatcherHost creates a ResourceLoader and a chain of
-ResourceHandlers to manage the URLRequest.
-* ResourceLoader starts the URLRequest.
+* network::URLLoaderFactory creates a network::URLLoader.
+* network::URLLoader uses the network::NetworkContext's URLRequestContext to
+create and start a URLRequest.
 
-The ResourceDispatcherHost (RDH), along with most of the network stack, lives
-on the browser process's IO thread. The browser process only has one RDH,
-which is responsible for handling all network requests initiated by
-ResourceDispatchers in all child processes, not just renderer processes.
-Requests initiated in the browser process don't go through the RDH, with some
-exceptions.
+The URLLoaderFactory, along with all NetworkContexts and most of the network
+stack, lives on a single thread in the network service. It gets a reconstituted
+ResourceRequest object from the Mojo pipe, does some checks to make sure it
+can service the request, and if so, creates a URLLoader, passing the request and
+the NetworkContext associated with the URLLoaderFactory.
 
-When the RDH sees the request, it calls into a URLRequestContext to create the
-URLRequest. The URLRequestContext has pointers to all the network stack
-objects needed to issue the request over the network, such as the cache, cookie
-store, and host resolver. The RDH then creates a chain of ResourceHandlers
-each of which can monitor/modify/delay/cancel the URLRequest and the
-information it returns. The only one of these I'll talk about here is the
-AsyncResourceHandler, which is the last ResourceHandler in the chain. The RDH
-then creates a ResourceLoader (which is the URLRequest::Delegate), passes
-ownership of the URLRequest and the ResourceHandler chain to it, and then starts
-the ResourceLoader.
-
-The ResourceLoader checks that none of the ResourceHandlers want to cancel,
-modify, or delay the request, and then finally starts the URLRequest.
+The URLLoader then calls into a URLRequestContext to create the URLRequest. The
+URLRequestContext has pointers to all the network stack objects needed to issue
+the request over the network, such as the cache, cookie store, and host
+resolver. The URLLoader then calls into the ResourceScheduler, which may delay
+starting the request, based on priority and other activity. Eventually, the
+ResourceScheduler starts the request.
 
 ### Check the cache, request an HttpStream
 
@@ -222,10 +243,9 @@ and tells it to start the request.
 * HttpBasicStream sends the request, and waits for the response.
 * The HttpBasicStream sends the response headers back to the
 HttpNetworkTransaction.
-* The response headers are sent up to the URLRequest, to the ResourceLoader,
-and down through the ResourceHandler chain.
-* They're then sent by the the last ResourceHandler in the chain (the
-AsyncResourceHandler) to the ResourceDispatcher, with an IPC.
+* The response headers are sent up through the URLRequest, to the
+network::URLLoader.
+* They're then sent to the network::mojom::URLLoaderClient via Mojo.
 
 The HttpNetworkTransaction passes the request headers to the HttpBasicStream,
 which uses an HttpStreamParser to (finally) format the request headers and body
@@ -235,56 +255,46 @@ The HttpStreamParser waits to receive the response and then parses the HTTP/1.x
 response headers, and then passes them up through both the
 HttpNetworkTransaction and HttpCache::Transaction to the URLRequestHttpJob. The
 URLRequestHttpJob saves any cookies, if needed, and then passes the headers up
-to the URLRequest and on to the ResourceLoader.
-
-The ResourceLoader passes them through the chain of ResourceHandlers, and then
-they make their way to the AsyncResourceHandler. The AsyncResourceHandler uses
-the renderer process ID ("child ID") to figure out which process the request
-was associated with, and then sends the headers along with the request ID to
-that process's ResourceDispatcher. The ResourceDispatcher uses the ID to
-figure out which RequestPeer the headers should be sent to, which
-sends them on to the RequestPeer.
+to the URLRequest and on to the network::URLLoader, which sends the data over
+a Mojo pipe to the network::mojom::URLLoaderClient, passed in to the URLLoader
+when it was created.
 
 ### Response body is read
 
 Summary:
 
-* AsyncResourceHandler allocates a 512k ring buffer of shared memory to read
-the body of the request.
-* AsyncResourceHandler tells the ResourceLoader to read the response body to
-the buffer, 32kB at a time.
-* AsyncResourceHandler informs the ResourceDispatcher of each read using
-cross-process IPCs.
-* ResourceDispatcher tells the AsyncResourceHandler when it's done with the
-data with each read, so it knows when parts of the buffer can be reused.
+* network::URLLoader creates a raw Mojo data pipe, and passes one end to the
+network::mojom::URLLoaderClient.
+* The URLLoader requests shared memory buffer from the Mojo data pipe.
+* The URLLoader tells the URLRequest to write to the memory buffer, and tells
+the pipe when data has been written to the buffer.
+* The last two steps repeat until the request is complete.
 
-Without waiting to hear back from the ResourceDispatcher, the ResourceLoader
-tells its ResourceHandler chain to allocate memory to receive the response
-body. The AsyncResourceHandler creates a 512KB ring buffer of shared memory,
-and then passes the first 32KB of it to the ResourceLoader for the first read.
-The ResourceLoader then passes a 32KB body read request down through the
-URLRequest all the way down to the HttpStreamParser. Once some data is read,
-possibly less than 32KB, the number of bytes read makes its way back to the
-AsyncResourceHandler, which passes the shared memory buffer and the offset and
-amount of data read to the renderer process.
-
-The AsyncResourceHandler relies on ACKs from the renderer to prevent it from
-overwriting data that the renderer has yet to consume. This process repeats
-until the response body is completely read.
+Without waiting to hear back from the network::mojom::URLLoaderClient, the
+network::URLLoader allocates a raw mojo data pipe, and passes the client the
+read end of the pipe. The URLLoader then grabs an IPC buffer from the pipe,
+and passes a 64KB body read request down through the URLRequest all the way
+down to the HttpStreamParser. Once some data is read, possibly less than 64KB,
+the number of bytes read makes its way back to the URLLoader, which then tells
+the Mojo pipe the read was complete, and then requests another buffer from the
+pipe, to continue writing data to. The pipe may apply back pressure, to limit
+the amount of unconsumed data that can be in shared memory buffers at once.
+This process repeats until the response body is completely read.
 
 ### URLRequest is destroyed
 
 Summary:
 
-* When complete, the RDH deletes the ResourceLoader, which deletes the
-URLRequest and the ResourceHandler chain.
+* When complete, the network::URLLoaderFactory deletes the network::URLLoader,
+which deletes the URLRequest.
 * During destruction, the HttpNetworkTransaction determines if the socket is
 reusable, and if so, tells the HttpBasicStream to return it to the socket pool.
 
-When the URLRequest informs the ResourceLoader it's complete, the
-ResourceLoader tells the ResourceHandlers, and the AsyncResourceHandler tells
-the ResourceDispatcher the request is complete. The RDH then deletes
-ResourceLoader, which deletes the URLRequest and ResourceHandler chain.
+When the URLRequest informs the network::URLLoader the request is complete, the
+URLLoader passes the message along to the network::mojom::URLLoaderClient, over
+its Mojo pipe, before telling the URLLoaderFactory to destroy the URLLoader,
+which results in destroying the URLRequest and closing all Mojo pipes related to
+the request.
 
 When the HttpNetworkTransaction is being torn down, it figures out if the
 socket is reusable. If not, it tells the HttpBasicStream to close the socket.
@@ -341,11 +351,9 @@ the browser process.
 
 ## Cancellation
 
-A request can be cancelled by the child process, by any of the
-ResourceHandlers in the chain, or by the ResourceDispatcherHost itself. When the
-cancellation message reaches the URLRequest, it passes on the fact it's been
-cancelled back to the ResourceLoader, which then sends the message down the
-ResourceHandler chain.
+A consumer can cancel a request at any time by deleting the
+network::mojom::URLLoader pipe used by the request. This will cause the
+network::URLLoader to destroy itself and its URLRequest.
 
 When an HttpNetworkTransaction for a cancelled request is being torn down, it
 figures out if the socket the HttpStream owns can potentially be reused, based
@@ -366,18 +374,24 @@ body, so the cache only has the headers. The cache then treats it as a complete
 entry, even if the headers indicated there will be a body.
 
 The URLRequestHttpJob then checks with the URLRequest if the redirect should be
-followed. The URLRequest then informs the ResourceLoader about the redirect, to
-give it a chance to cancel the request. The information makes its way down
-through the AsyncResourceHandler into the other process, via the
-ResourceDispatcher. Whatever issued the original request then checks if the
-redirect should be followed.
+followed. The URLRequest then informs the network::URLLoader about the redirect,
+which passes information about the redirect to network::mojom::URLLoaderClient,
+in the consumer process. Whatever issued the original request then checks
+if the redirect should be followed.
 
-The ResourceDispatcher then asynchronously sends a message back to either
-follow the redirect or cancel the request. In either case, the old
-HttpTransaction is destroyed, and the HttpNetworkTransaction attempts to drain
-the socket for reuse, just as in the cancellation case. If the redirect is
-followed, the URLRequest calls into the URLRequestJobFactory to create a new
-URLRequestJob, and then starts it.
+If the redirect should be followed, the URLLoaderClient calls back into the
+URLLoader over the network::mojom::URLLoader Mojo interface, which tells the
+URLRequest to follow the redirect. The URLRequest then creates a new
+URLRequestJob to send the new request. If the URLLoaderClient chooses to
+cancel the request instead, it can delete the network::mojom::URLLoader
+pipe, just like the cancellation case discussed above. In either case, the
+old HttpTransaction is destroyed, and the HttpNetworkTransaction attempts to
+drain the socket for reuse, as discussed in the previous section.
+
+In some cases, the consumer may choose to handle a redirect itself, like
+passing off the redirect to a ServiceWorker. In this case, the consumer cancels
+the request and then call into some other network::mojom::URLLoaderFactory
+the new URL to continue the request.
 
 ## Filters (gzip, deflate, brotli, etc)
 
@@ -546,8 +560,13 @@ priority socket request.
 
 ## Non-HTTP Schemes
 
-The URLRequestJobFactory has a ProtocolHander for each supported scheme.
-Non-HTTP URLRequests have their own ProtocolHandlers. Some are implemented in
-net/, (like FTP, file, and data, though the renderer handles some data URLs
-internally), and others are implemented in content/ or chrome (like blob,
-chrome, and chrome-extension).
+The URLRequestJobFactory has a ProtocolHander for ftp, http, https, and data
+URLs, though most data URLs are handled directly in the renderer. For other
+schemes, and non-network code that can intercept HTTP/HTTPS requests (Like
+ServiceWorker, or extensions), there's typically another
+network::mojom::URLLoaderFactory class that is used instead of
+network::URLLoaderFactory.  These URLLoaderFactories are not part of the
+network service. Some of these are web standards and handled in content/
+code (Like blob:// and file:// URLs), while other of these are
+chrome-specific, and implemented in chrome/ (like chrome:// and
+chrome-extension:// URLs).

@@ -4,11 +4,13 @@
 
 #include "chrome/renderer/net/available_offline_content_helper.h"
 
+#include "base/base64.h"
 #include "base/json/json_reader.h"
 #include "base/json/json_value_converter.h"
 #include "base/json/json_writer.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/numerics/safe_conversions.h"
+#include "base/strings/utf_string_conversions.h"
 #include "base/values.h"
 #include "chrome/common/available_offline_content.mojom.h"
 #include "components/error_page/common/net_error_info.h"
@@ -21,14 +23,38 @@ namespace {
 using chrome::mojom::AvailableOfflineContentPtr;
 using chrome::mojom::AvailableContentType;
 
+// Converts a string to base-64 data. This is done for security purposes, to
+// avoid potential XSS. Note that when this value is decoded in javascript, we
+// want to use the atob() function, but that function only handles latin-1
+// characters. Additionally, javascript needs UTF16 strings. So we instead
+// encode to UTF16, and then store that data as base64.
+std::string ConvertToUTF16Base64(const std::string& text) {
+  base::string16 text_utf16 = base::UTF8ToUTF16(text);
+  std::string utf16_bytes;
+  for (base::char16 c : text_utf16) {
+    utf16_bytes.push_back(static_cast<char>(c >> 8));
+    utf16_bytes.push_back(static_cast<char>(c & 0xff));
+  }
+  std::string encoded;
+  base::Base64Encode(utf16_bytes, &encoded);
+  return encoded;
+}
+
 base::Value AvailableContentToValue(const AvailableOfflineContentPtr& content) {
+  // All pieces of text content downloaded from the web will be base64 encoded
+  // to lessen security risks when this dictionary is passed as a string to
+  // |ExecuteJavaScript|.
+  std::string base64_encoded;
   base::Value value(base::Value::Type::DICTIONARY);
   value.SetKey("ID", base::Value(content->id));
   value.SetKey("name_space", base::Value(content->name_space));
-  value.SetKey("title", base::Value(content->title));
-  value.SetKey("snippet", base::Value(content->snippet));
+  value.SetKey("title_base64",
+               base::Value(ConvertToUTF16Base64(content->title)));
+  value.SetKey("snippet_base64",
+               base::Value(ConvertToUTF16Base64(content->snippet)));
   value.SetKey("date_modified", base::Value(content->date_modified));
-  value.SetKey("attribution", base::Value(content->attribution));
+  value.SetKey("attribution_base64",
+               base::Value(ConvertToUTF16Base64(content->attribution)));
   value.SetKey("thumbnail_data_uri",
                base::Value(content->thumbnail_data_uri.spec()));
   value.SetKey("content_type",
@@ -76,10 +102,9 @@ void AvailableOfflineContentHelper::Reset() {
 }
 
 void AvailableOfflineContentHelper::FetchAvailableContent(
-    base::OnceCallback<void(const std::string& offline_content_json)>
-        callback) {
+    AvailableContentCallback callback) {
   if (!BindProvider()) {
-    std::move(callback).Run({});
+    std::move(callback).Run(true, {});
     return;
   }
   provider_->List(
@@ -87,9 +112,7 @@ void AvailableOfflineContentHelper::FetchAvailableContent(
                      base::Unretained(this), std::move(callback)));
 }
 
-void AvailableOfflineContentHelper::FetchSummary(
-    base::OnceCallback<void(const std::string& content_summary_json)>
-        callback) {
+void AvailableOfflineContentHelper::FetchSummary(SummaryCallback callback) {
   if (!BindProvider()) {
     std::move(callback).Run({});
     return;
@@ -131,8 +154,15 @@ void AvailableOfflineContentHelper::LaunchDownloadsPage() {
   provider_->LaunchDownloadsPage(has_prefetched_content_);
 }
 
+void AvailableOfflineContentHelper::ListVisibilityChanged(bool is_visible) {
+  if (!BindProvider())
+    return;
+  provider_->ListVisibilityChanged(is_visible);
+}
+
 void AvailableOfflineContentHelper::AvailableContentReceived(
-    base::OnceCallback<void(const std::string& offline_content_json)> callback,
+    AvailableContentCallback callback,
+    bool list_visible_by_prefs,
     std::vector<AvailableOfflineContentPtr> content) {
   has_prefetched_content_ = false;
   fetched_content_ = std::move(content);
@@ -145,11 +175,15 @@ void AvailableOfflineContentHelper::AvailableContentReceived(
                               AvailableContentType::kPrefetchedPage;
 
     RecordSuggestionPresented(fetched_content_);
-    RecordEvent(error_page::NETWORK_ERROR_PAGE_OFFLINE_SUGGESTIONS_SHOWN);
+    if (list_visible_by_prefs)
+      RecordEvent(error_page::NETWORK_ERROR_PAGE_OFFLINE_SUGGESTIONS_SHOWN);
+    else
+      RecordEvent(
+          error_page::NETWORK_ERROR_PAGE_OFFLINE_SUGGESTIONS_SHOWN_COLLAPSED);
     base::JSONWriter::Write(AvailableContentListToValue(fetched_content_),
                             &json);
   }
-  std::move(callback).Run(json);
+  std::move(callback).Run(list_visible_by_prefs, json);
   // We don't need to retain the thumbnail here, so free up some memory.
   for (const AvailableOfflineContentPtr& item : fetched_content_) {
     item->thumbnail_data_uri = GURL();
@@ -157,7 +191,7 @@ void AvailableOfflineContentHelper::AvailableContentReceived(
 }
 
 void AvailableOfflineContentHelper::SummaryReceived(
-    base::OnceCallback<void(const std::string& content_summary_json)> callback,
+    SummaryCallback callback,
     chrome::mojom::AvailableOfflineContentSummaryPtr summary) {
   has_prefetched_content_ = false;
   if (summary->total_items == 0) {

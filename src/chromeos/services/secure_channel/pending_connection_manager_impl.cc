@@ -68,12 +68,13 @@ void PendingConnectionManagerImpl::HandleConnectionRequest(
 
   // If the client has canceled the request, it does not need to be processed.
   if (!client_connection_parameters->IsClientWaitingForResponse()) {
-    PA_LOG(INFO) << "PendingConnectionManagerImpl::HandleConnectionRequest(): "
-                 << "Request was canceled by the client before being passed to "
-                 << "PendingConnectionManager; ignoring. Details: "
-                 << connection_attempt_details
-                 << ", Parameters: " << *client_connection_parameters
-                 << ", Priority: " << connection_priority;
+    PA_LOG(VERBOSE)
+        << "PendingConnectionManagerImpl::HandleConnectionRequest(): "
+        << "Request was canceled by the client before being passed to "
+        << "PendingConnectionManager; ignoring. Details: "
+        << connection_attempt_details
+        << ", Parameters: " << *client_connection_parameters
+        << ", Priority: " << connection_priority;
     return;
   }
 

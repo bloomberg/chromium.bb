@@ -47,7 +47,7 @@ void SettingsWindowManager::ShowChromePageForProfile(Profile* profile,
   Browser* browser = FindBrowserForProfile(profile);
   if (browser) {
     DCHECK(browser->profile() == profile);
-    const content::WebContents* web_contents =
+    content::WebContents* web_contents =
         browser->tab_strip_model()->GetWebContentsAt(0);
     if (web_contents && web_contents->GetURL() == gurl) {
       browser->window()->Show();

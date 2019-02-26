@@ -10,6 +10,7 @@
 #include "SkPath.h"
 #include "SkRandom.h"
 #include "SkString.h"
+#include "SkTextUtils.h"
 #include "SkTime.h"
 
 class PolyToPolyView : public Sample {
@@ -95,7 +96,7 @@ protected:
         canvas->drawLine(0, 0, D, D, *paint);
         canvas->drawLine(0, D, D, 0, *paint);
 
-        SkPaint::FontMetrics fm;
+        SkFontMetrics fm;
         paint->getFontMetrics(&fm);
         paint->setColor(SK_ColorRED);
         paint->setStyle(SkPaint::kFill_Style);
@@ -103,9 +104,7 @@ protected:
         float y = D/2 - (fm.fAscent + fm.fDescent)/2;
         SkString str;
         str.appendS32(count);
-        canvas->drawString(str,
-                         x, y,
-                         *paint);
+        SkTextUtils::DrawString(canvas, str, x, y, *paint, SkTextUtils::kCenter_Align);
 
         canvas->restore();
     }
@@ -115,7 +114,6 @@ protected:
         paint.setAntiAlias(true);
         paint.setStrokeWidth(SkIntToScalar(4));
         paint.setTextSize(SkIntToScalar(40));
-        paint.setTextAlign(SkPaint::kCenter_Align);
 
         canvas->save();
         canvas->translate(SkIntToScalar(10), SkIntToScalar(10));

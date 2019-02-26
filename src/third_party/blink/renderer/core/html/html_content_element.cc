@@ -36,12 +36,12 @@
 
 namespace blink {
 
-using namespace HTMLNames;
+using namespace html_names;
 
 DEFINE_NODE_FACTORY(HTMLContentElement);
 
 inline HTMLContentElement::HTMLContentElement(Document& document)
-    : V0InsertionPoint(contentTag, document),
+    : V0InsertionPoint(kContentTag, document),
       should_parse_select_(false),
       is_valid_selector_(true) {
   UseCounter::Count(document, WebFeature::kHTMLContentElement);
@@ -66,7 +66,7 @@ void HTMLContentElement::ParseSelect() {
 
 void HTMLContentElement::ParseAttribute(
     const AttributeModificationParams& params) {
-  if (params.name == selectAttr) {
+  if (params.name == kSelectAttr) {
     if (ShadowRoot* root = ContainingShadowRoot()) {
       if (!root->IsV1())
         root->V0().WillAffectSelector();

@@ -119,31 +119,6 @@
     Warnings may be common while websites update their security. This should improve soon.
   </message>
 
-  <!-- SSL error page: Superfish-specific -->
-  <if expr="_google_chrome">
-    <message name="IDS_SSL_SUPERFISH_HEADING" desc="The large heading at the top of the Superfish-specific SSL interstitial.">
-      Software on your computer is stopping Chrome from safely connecting to the web
-    </message>
-  </if>
-  <if expr="not _google_chrome">
-    <message name="IDS_SSL_SUPERFISH_HEADING" desc="The large heading at the top of the Superfish-specific SSL interstitial.">
-      Software on your computer is stopping Chromium from safely connecting to the web
-    </message>
-  </if>
-  <message name="IDS_SSL_SUPERFISH_PRIMARY_PARAGRAPH" desc="The primary explanatory paragraph for the Superfish-specific SSL interstitial.">
-    <ph name="BEGIN_PARAGRAPH">&lt;p&gt;</ph>Follow these steps to temporarily disable the software so you can get on the web. You'll need administrator privileges.<ph name="END_PARAGRAPH">&lt;/p&gt;</ph>
-
-    <ph name="BEGIN_LIST">&lt;ol&gt;</ph>
-    <ph name="LIST_ITEM">&lt;li&gt;</ph>Click <ph name="BEGIN_BOLD">&lt;strong&gt;</ph>Start<ph name="END_BOLD">&lt;/strong&gt;</ph>, then search for and select <ph name="BEGIN_BOLD">&lt;strong&gt;</ph>"View local services"<ph name="END_BOLD">&lt;/strong&gt;</ph>
-    <ph name="LIST_ITEM">&lt;li&gt;</ph>Select <ph name="BEGIN_BOLD">&lt;strong&gt;</ph>VisualDiscovery<ph name="END_BOLD">&lt;/strong&gt;</ph>
-    <ph name="LIST_ITEM">&lt;li&gt;</ph>Under <ph name="BEGIN_BOLD">&lt;strong&gt;</ph>Startup type<ph name="END_BOLD">&lt;/strong&gt;</ph>, select <ph name="BEGIN_BOLD">&lt;strong&gt;</ph>Disabled<ph name="END_BOLD">&lt;/strong&gt;</ph>
-    <ph name="LIST_ITEM">&lt;li&gt;</ph>Under <ph name="BEGIN_BOLD">&lt;strong&gt;</ph>Service status<ph name="END_BOLD">&lt;/strong&gt;</ph>, click <ph name="BEGIN_BOLD">&lt;strong&gt;</ph>Stop<ph name="END_BOLD">&lt;/strong&gt;</ph>
-    <ph name="LIST_ITEM">&lt;li&gt;</ph>Click <ph name="BEGIN_BOLD">&lt;strong&gt;</ph>Apply<ph name="END_BOLD">&lt;/strong&gt;</ph>, then click <ph name="BEGIN_BOLD">&lt;strong&gt;</ph>OK<ph name="END_BOLD">&lt;/strong&gt;</ph>
-    <ph name="LIST_ITEM">&lt;li&gt;</ph>Visit the <ph name="BEGIN_LEARN_MORE_LINK">&lt;a href="#" id="learn-more-link"&gt;</ph>Chrome help center<ph name="END_LEARN_MORE_LINK">&lt;/a&gt;</ph> to learn how to permanently remove the software from your computer
-    <ph name="END_LIST">&lt;/ol&gt;</ph>
-
-  </message>
-
   <!-- SSL error page: overridable -->
   <message name="IDS_SSL_OVERRIDABLE_SAFETY_BUTTON" desc="The text for the button that takes the user back to the previous page.">
     Back to safety
@@ -338,16 +313,16 @@
   <message name="IDS_CONNECTION_HELP_SPECIFIC_ERROR_HEADING" desc="Heading for individual errors section in chrome://connection-help. Matches the heading for the specific error section in https://support.google.com/chrome/answer/6098869">
     Get help with a specific error message
   </message>
-  <message name="IDS_CONNECTION_HELP_CONNECTION_NOT_PRIVATE_TITLE" desc="Title for your connection is not private section in chrome://connection-help. Matches the heading for the third section in https://support.google.com/chrome/answer/6098869">
-    "Your connection is not private" or "&lt;span class="error-code"&gt;NET::ERR_CERT_AUTHORITY_INVALID&lt;/span&gt;" or "&lt;span class="error-code"&gt;ERR_CERT_COMMON_NAME_INVALID&lt;/span&gt;" or "&lt;span class="error-code"&gt;NET::ERR_CERT_WEAK_SIGNATURE_ALGORITHM&lt;/span&gt;" or "SSL certificate error"
+  <message name="IDS_CONNECTION_HELP_CONNECTION_NOT_PRIVATE_TITLE" desc="Title for your connection is not private section in chrome://connection-help. Matches the heading for the fourth section in https://support.google.com/chrome/answer/6098869, with the addition of ERR_CERT_SYMANTEC_LEGACY.">
+    "Your connection is not private" or "&lt;span class="error-code"&gt;NET::ERR_CERT_AUTHORITY_INVALID&lt;/span&gt;" or "&lt;span class="error-code"&gt;ERR_CERT_COMMON_NAME_INVALID&lt;/span&gt;" or "&lt;span class="error-code"&gt;NET::ERR_CERT_WEAK_SIGNATURE_ALGORITHM&lt;/span&gt;" or "&lt;span class="error-code"&gt;ERR_CERT_SYMANTEC_LEGACY&lt;/span&gt;" or "SSL certificate error"
   </message>
-  <message name="IDS_CONNECTION_HELP_CONNECT_TO_NETWORK_TITLE" desc="Title for connect to network section in chrome://connection-help. Matches the heading for the fourth section in https://support.google.com/chrome/answer/6098869">
+  <message name="IDS_CONNECTION_HELP_CONNECT_TO_NETWORK_TITLE" desc="Title for connect to network section in chrome://connection-help. Matches the heading for the fifth section in https://support.google.com/chrome/answer/6098869">
     "Connect to network"
   </message>
-  <message name="IDS_CONNECTION_HELP_INCORRECT_CLOCK_TITLE" desc="Title for incorrect clock section in chrome://connection-help. Matches the heading for the fifth section in https://support.google.com/chrome/answer/6098869">
+  <message name="IDS_CONNECTION_HELP_INCORRECT_CLOCK_TITLE" desc="Title for incorrect clock section in chrome://connection-help. Matches the heading for the sixth section in https://support.google.com/chrome/answer/6098869">
     "Your clock is behind" or "Your clock is ahead" or "&lt;span class="error-code"&gt;NET::ERR_CERT_DATE_INVALID&lt;/span&gt;"
   </message>
-  <message name="IDS_CONNECTION_HELP_CONNECTION_NOT_PRIVATE_DETAILS" desc="Details for your connection is not private section in chrome://connection-help. Matches the third section in https://support.google.com/chrome/answer/6098869">
+  <message name="IDS_CONNECTION_HELP_CONNECTION_NOT_PRIVATE_DETAILS" desc="Details for your connection is not private section in chrome://connection-help. Matches the fourth section in https://support.google.com/chrome/answer/6098869">
     &lt;h4&gt;Step 1: Sign in to the portal&lt;/h4&gt;
     &lt;p&gt;Wi-Fi networks at places like cafes or airports need you to sign in. To see the sign-in page, visit a page that uses &lt;code&gt;http://&lt;/code&gt;.&lt;/p&gt;
     &lt;ol&gt;
@@ -366,19 +341,19 @@
     &lt;h4&gt;Step 5: Get extra help&lt;/h4&gt;
     &lt;p&gt;If you still see the error, contact the website owner.&lt;/p&gt;
   </message>
-  <message name="IDS_CONNECTION_HELP_CONNECT_TO_NETWORK_DETAILS" desc="Details for connect to network section in chrome://connection-help. Matches the fourth section in https://support.google.com/chrome/answer/6098869">
+  <message name="IDS_CONNECTION_HELP_CONNECT_TO_NETWORK_DETAILS" desc="Details for connect to network section in chrome://connection-help. Matches the fifth section in https://support.google.com/chrome/answer/6098869">
     &lt;p&gt;You'll see this error if you're using a Wi-Fi portal where you have to sign in before you can get online.&lt;/p&gt;
     &lt;p&gt;To fix the error, click &lt;strong&gt;Connect&lt;/strong&gt; on the page you're trying to open.&lt;/p&gt;
   </message>
-  <message name="IDS_CONNECTION_HELP_INCORRECT_CLOCK_DETAILS" desc="Details for incorrect clock section in chrome://connection-help. Matches the fifth section in https://support.google.com/chrome/answer/6098869">
+  <message name="IDS_CONNECTION_HELP_INCORRECT_CLOCK_DETAILS" desc="Details for incorrect clock section in chrome://connection-help. Matches the sixth section in https://support.google.com/chrome/answer/6098869">
     &lt;p&gt;You'll see this error if your computer or mobile device's date and time are inaccurate.&lt;/p&gt;
     &lt;p&gt;To fix the error, open your device's clock. Make sure the time and date are correct.&lt;/p&gt;
   </message>
   <if expr="is_win">
-    <message name="IDS_CONNECTION_HELP_MITM_SOFTWARE_TITLE" desc="Title for MITM software section in chrome://connection-help. Matches the heading for the eighth section in https://support.google.com/chrome/answer/6098869">
+    <message name="IDS_CONNECTION_HELP_MITM_SOFTWARE_TITLE" desc="Title for MITM software section in chrome://connection-help. Matches the heading for the nineth section in https://support.google.com/chrome/answer/6098869">
     "Software on your computer is stopping Chrome from safely connecting to the web" (Windows computers only)
   </message>
-    <message name="IDS_CONNECTION_HELP_MITM_SOFTWARE_DETAILS" desc="Details for MITM software section in chrome://connection-help. Matches the eighth section in https://support.google.com/chrome/answer/6098869">
+    <message name="IDS_CONNECTION_HELP_MITM_SOFTWARE_DETAILS" desc="Details for MITM software section in chrome://connection-help. Matches the nineth section in https://support.google.com/chrome/answer/6098869">
       &lt;p&gt;You'll see this error if you have Superfish software on your Windows computer.&lt;/p&gt;
       &lt;p&gt;Follow these steps to temporarily disable the software so you can get on the web. You'll need administrator privileges.&lt;/p&gt;
       &lt;ol&gt;

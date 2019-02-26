@@ -27,11 +27,12 @@
 #include "base/logging.h"
 #include "base/path_service.h"
 #include "base/process/process_iterator.h"
+#include "base/stl_util.h"
 #include "base/strings/strcat.h"
 #include "base/strings/string_split.h"
 #include "base/strings/string_util.h"
 #include "base/synchronization/waitable_event.h"
-#include "base/threading/thread_restrictions.h"
+#include "base/threading/scoped_blocking_call.h"
 #include "base/time/time.h"
 #include "base/values.h"
 #include "base/win/registry.h"
@@ -43,7 +44,6 @@
 #include "chrome/chrome_cleaner/chrome_utils/extensions_util.h"
 #include "chrome/chrome_cleaner/constants/chrome_cleaner_switches.h"
 #include "chrome/chrome_cleaner/constants/common_registry_names.h"
-#include "chrome/chrome_cleaner/json_parser/json_parser_api.h"
 #include "chrome/chrome_cleaner/logging/logging_service_api.h"
 #include "chrome/chrome_cleaner/logging/proto/shared_data.pb.h"
 #include "chrome/chrome_cleaner/logging/scoped_timed_task_logger.h"
@@ -59,6 +59,7 @@
 #include "chrome/chrome_cleaner/os/system_util.h"
 #include "chrome/chrome_cleaner/os/system_util_cleaner.h"
 #include "chrome/chrome_cleaner/os/task_scheduler.h"
+#include "chrome/chrome_cleaner/parsers/json_parser/json_parser_api.h"
 #include "components/chrome_cleaner/public/constants/constants.h"
 
 using base::WaitableEvent;
@@ -135,8 +136,6 @@ const RegistryKey extension_policy_keys[] = {
     {HKEY_CURRENT_USER, kChromiumPoliciesWhitelistKeyPath},
     {HKEY_LOCAL_MACHINE, kChromiumPoliciesForcelistKeyPath},
     {HKEY_CURRENT_USER, kChromiumPoliciesForcelistKeyPath}};
-
-const int64_t kParseAttemptTimeoutMilliseconds = 10000;
 
 // Expand an executable path as if the launch process directory was the
 // windows folder. This is used to resolve kernel module path.
@@ -699,9 +698,8 @@ void ReportInstalledExtensions(JsonParserAPI* json_parser) {
   DCHECK(json_parser);
   // TODO(proberge): Temporarily allowing syncing to avoid crashes in debug
   // mode. This isn't catastrophic since the cleanup tool doesn't have a UI and
-  // the system report is collected at the end of the process. We also assert
-  // blocking is allowed here since it will block the thread.
-  base::AssertBlockingAllowed();
+  // the system report is collected at the end of the process.
+  base::ScopedBlockingCall scoped_blocking_call(base::BlockingType::MAY_BLOCK);
   base::ScopedAllowBaseSyncPrimitivesForTesting allow_sync;
 
   ReportForcelistExtensions();

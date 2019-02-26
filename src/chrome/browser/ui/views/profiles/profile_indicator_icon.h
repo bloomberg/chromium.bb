@@ -33,15 +33,10 @@ class ProfileIndicatorIcon : public views::View {
   // to Chrome avatar icons, will be resized and modified for the title bar.
   void SetIcon(const gfx::Image& icon);
 
-  // Sets the color to use for drawing a circular stroke around the icon image.
-  // Use SK_ColorTRANSPARENT not to draw any stroke.
-  void set_stroke_color(SkColor color) { stroke_color_ = color; }
-
  private:
   gfx::Image base_icon_;
   gfx::ImageSkia modified_icon_;
   int old_height_ = 0;
-  SkColor stroke_color_ = SK_ColorTRANSPARENT;
   DISALLOW_COPY_AND_ASSIGN(ProfileIndicatorIcon);
 };
 

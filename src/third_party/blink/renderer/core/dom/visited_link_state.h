@@ -43,8 +43,10 @@ class Document;
 class VisitedLinkState : public GarbageCollectedFinalized<VisitedLinkState> {
  public:
   static VisitedLinkState* Create(const Document& document) {
-    return new VisitedLinkState(document);
+    return MakeGarbageCollected<VisitedLinkState>(document);
   }
+
+  explicit VisitedLinkState(const Document&);
 
   void InvalidateStyleForAllLinks(bool invalidate_visited_link_hashes);
   void InvalidateStyleForLink(LinkHash);
@@ -58,7 +60,6 @@ class VisitedLinkState : public GarbageCollectedFinalized<VisitedLinkState> {
   void Trace(blink::Visitor*);
 
  private:
-  explicit VisitedLinkState(const Document&);
   const Document& GetDocument() const { return *document_; }
 
   EInsideLink DetermineLinkStateSlowCase(const Element&);

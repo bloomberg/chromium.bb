@@ -92,9 +92,9 @@ class Command(object):
   SET_WINDOW_RECT = (
       _Method.POST, '/session/:sessionId/window/rect')
   MAXIMIZE_WINDOW = (
-      _Method.POST, '/session/:sessionId/window/:windowHandle/maximize')
+      _Method.POST, '/session/:sessionId/window/maximize')
   MINIMIZE_WINDOW = (
-      _Method.POST, '/session/:sessionId/window/:windowHandle/minimize')
+      _Method.POST, '/session/:sessionId/window/minimize')
   FULLSCREEN_WINDOW = (
       _Method.POST, '/session/:sessionId/window/fullscreen')
   CLOSE = (_Method.DELETE, '/session/:sessionId/window')
@@ -159,6 +159,7 @@ class Command(object):
   TOUCH_DOUBLE_TAP = (_Method.POST, '/session/:sessionId/touch/doubleclick')
   TOUCH_LONG_PRESS = (_Method.POST, '/session/:sessionId/touch/longclick')
   TOUCH_FLICK = (_Method.POST, '/session/:sessionId/touch/flick')
+  PERFORM_ACTIONS = (_Method.POST, '/session/:sessionId/actions')
   GET_LOG = (_Method.POST, '/session/:sessionId/log')
   GET_AVAILABLE_LOG_TYPES = (_Method.GET, '/session/:sessionId/log/types')
   IS_AUTO_REPORTING = (_Method.GET, '/session/:sessionId/autoreport')

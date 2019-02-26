@@ -31,7 +31,7 @@
 #include "third_party/blink/renderer/core/core_export.h"
 #include "third_party/blink/renderer/core/editing/selection_template.h"
 #include "third_party/blink/renderer/core/editing/visible_selection.h"
-#include "third_party/blink/renderer/platform/layout_unit.h"
+#include "third_party/blink/renderer/platform/geometry/layout_unit.h"
 #include "third_party/blink/renderer/platform/wtf/allocator.h"
 
 namespace blink {
@@ -98,7 +98,7 @@ class CORE_EXPORT SelectionModifier {
   VisiblePosition ModifyExtendingBackwardInternal(TextGranularity);
   VisiblePosition ModifyMovingLeft(TextGranularity);
   VisiblePosition ModifyMovingBackward(TextGranularity);
-  VisiblePosition NextWordPositionForPlatform(const VisiblePosition&);
+  Position NextWordPositionForPlatform(const Position&);
 
   // TODO(editing-dev): We should handle |skips_spaces_when_moving_right| in
   // another way, e.g. pass |EditingBehavior()|.

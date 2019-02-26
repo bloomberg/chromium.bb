@@ -5,11 +5,18 @@
 #ifndef SERVICES_WS_EVENT_INJECTOR_H_
 #define SERVICES_WS_EVENT_INJECTOR_H_
 
+#include <stdint.h>
+
 #include <vector>
 
+#include "base/containers/circular_deque.h"
 #include "base/macros.h"
 #include "mojo/public/cpp/bindings/binding_set.h"
 #include "services/ws/public/mojom/event_injector.mojom.h"
+
+namespace aura {
+class WindowTreeHost;
+}
 
 namespace ws {
 
@@ -25,11 +32,17 @@ class COMPONENT_EXPORT(WINDOW_SERVICE) EventInjector
 
   void AddBinding(mojom::EventInjectorRequest request);
 
+  // Returns true if any injected events have been queued for dispatch.
+  bool HasQueuedEvents() const { return !queued_events_.empty(); }
+
  private:
   struct EventAndHost;
+  struct QueuedEvent;
   struct HandlerAndCallback;
 
   void OnEventDispatched(InjectedEventHandler* handler);
+
+  aura::WindowTreeHost* GetWindowTreeHostForDisplayId(int64_t display_id);
 
   // Determines the target WindowTreeHost and provides an mapping on |event|
   // before dispatch. If the returned EventAndHost has a null
@@ -38,12 +51,21 @@ class COMPONENT_EXPORT(WINDOW_SERVICE) EventInjector
   EventAndHost DetermineEventAndHost(int64_t display_id,
                                      std::unique_ptr<ui::Event> event);
 
+  void DispatchNextQueuedEvent();
+
+  // Both InjectEventNoAck() implementations call to this.
+  void InjectEventNoAckImpl(int64_t display_id,
+                            std::unique_ptr<ui::Event> event,
+                            bool honor_rewriters);
+
   // mojom::EventInjector:
   void InjectEvent(int64_t display_id,
                    std::unique_ptr<ui::Event> event,
                    InjectEventCallback cb) override;
   void InjectEventNoAck(int64_t display_id,
                         std::unique_ptr<ui::Event> event) override;
+  void InjectEventNoAckNoRewriters(int64_t display_id,
+                                   std::unique_ptr<ui::Event> event) override;
 
   WindowService* window_service_;
 
@@ -53,6 +75,8 @@ class COMPONENT_EXPORT(WINDOW_SERVICE) EventInjector
   std::vector<std::unique_ptr<HandlerAndCallback>> handlers_;
 
   mojo::BindingSet<mojom::EventInjector> bindings_;
+
+  base::circular_deque<QueuedEvent> queued_events_;
 
   DISALLOW_COPY_AND_ASSIGN(EventInjector);
 };

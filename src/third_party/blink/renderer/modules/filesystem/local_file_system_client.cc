@@ -33,8 +33,8 @@
 #include <memory>
 
 #include "base/memory/ptr_util.h"
+#include "third_party/blink/public/platform/web_content_settings_client.h"
 #include "third_party/blink/renderer/core/dom/document.h"
-#include "third_party/blink/renderer/core/frame/content_settings_client.h"
 #include "third_party/blink/renderer/core/frame/local_frame.h"
 #include "third_party/blink/renderer/core/workers/worker_content_settings_client.h"
 #include "third_party/blink/renderer/core/workers/worker_global_scope.h"
@@ -60,8 +60,7 @@ bool LocalFileSystemClient::RequestFileSystemAccessSync(
     return false;
   }
 
-  DCHECK(context->IsWorkerGlobalScope());
-  return WorkerContentSettingsClient::From(*ToWorkerGlobalScope(context))
+  return WorkerContentSettingsClient::From(*To<WorkerGlobalScope>(context))
       ->RequestFileSystemAccessSync();
 }
 
@@ -76,10 +75,11 @@ void LocalFileSystemClient::RequestFileSystemAccessAsync(
     return;
   }
 
-  DCHECK(document->GetFrame());
-  document->GetFrame()
-      ->GetContentSettingsClient()
-      ->RequestFileSystemAccessAsync(std::move(callbacks));
+  if (auto* client = document->GetFrame()->GetContentSettingsClient()) {
+    client->RequestFileSystemAccessAsync(std::move(callbacks));
+  } else {
+    callbacks->OnAllowed();
+  }
 }
 
 LocalFileSystemClient::LocalFileSystemClient() = default;

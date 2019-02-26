@@ -47,6 +47,7 @@ if (is_android) {
       "media_drm_bridge_delegate.h",
       "media_drm_bridge_factory.cc",
       "media_drm_bridge_factory.h",
+      "media_drm_key_type.h",
       "media_drm_storage.cc",
       "media_drm_storage.h",
       "media_drm_storage_bridge.cc",

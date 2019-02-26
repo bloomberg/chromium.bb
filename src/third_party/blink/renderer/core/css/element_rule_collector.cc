@@ -84,7 +84,7 @@ void ElementRuleCollector::ClearMatchedRules() {
 
 inline StyleRuleList* ElementRuleCollector::EnsureStyleRuleList() {
   if (!style_rule_list_)
-    style_rule_list_ = new StyleRuleList();
+    style_rule_list_ = MakeGarbageCollected<StyleRuleList>();
   return style_rule_list_;
 }
 
@@ -235,9 +235,16 @@ void ElementRuleCollector::CollectMatchingRules(
   if (SelectorChecker::MatchesFocusPseudoClass(element))
     CollectMatchingRulesForList(match_request.rule_set->FocusPseudoClassRules(),
                                 cascade_order, match_request);
-  CollectMatchingRulesForList(
-      match_request.rule_set->TagRules(element.LocalNameForSelectorMatching()),
-      cascade_order, match_request);
+  if (SelectorChecker::MatchesSpatialNavigationFocusPseudoClass(element)) {
+    CollectMatchingRulesForList(
+        match_request.rule_set->SpatialNavigationFocusPseudoClassRules(),
+        cascade_order, match_request);
+  }
+  AtomicString element_name = matching_ua_rules_
+                                  ? element.localName()
+                                  : element.LocalNameForSelectorMatching();
+  CollectMatchingRulesForList(match_request.rule_set->TagRules(element_name),
+                              cascade_order, match_request);
   CollectMatchingRulesForList(match_request.rule_set->UniversalRules(),
                               cascade_order, match_request);
 }

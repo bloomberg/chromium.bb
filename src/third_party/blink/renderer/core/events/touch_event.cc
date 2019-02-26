@@ -29,6 +29,7 @@
 #include "third_party/blink/public/platform/web_coalesced_input_event.h"
 #include "third_party/blink/renderer/core/dom/events/event_dispatcher.h"
 #include "third_party/blink/renderer/core/dom/events/event_path.h"
+#include "third_party/blink/renderer/core/event_interface_names.h"
 #include "third_party/blink/renderer/core/frame/frame_console.h"
 #include "third_party/blink/renderer/core/frame/intervention.h"
 #include "third_party/blink/renderer/core/frame/local_dom_window.h"
@@ -242,17 +243,17 @@ TouchEvent::TouchEvent(const WebCoalescedInputEvent& event,
 }
 
 TouchEvent::TouchEvent(const AtomicString& type,
-                       const TouchEventInit& initializer)
+                       const TouchEventInit* initializer)
     : UIEventWithKeyState(type, initializer),
-      touches_(TouchList::Create(initializer.touches())),
-      target_touches_(TouchList::Create(initializer.targetTouches())),
-      changed_touches_(TouchList::Create(initializer.changedTouches())),
+      touches_(TouchList::Create(initializer->touches())),
+      target_touches_(TouchList::Create(initializer->targetTouches())),
+      changed_touches_(TouchList::Create(initializer->changedTouches())),
       current_touch_action_(TouchAction::kTouchActionAuto) {}
 
 TouchEvent::~TouchEvent() = default;
 
 const AtomicString& TouchEvent::InterfaceName() const {
-  return EventNames::TouchEvent;
+  return event_interface_names::kTouchEvent;
 }
 
 bool TouchEvent::IsTouchEvent() const {
@@ -300,8 +301,8 @@ void TouchEvent::preventDefault() {
                                  message);
   }
 
-  if ((type() == EventTypeNames::touchstart ||
-       type() == EventTypeNames::touchmove) &&
+  if ((type() == event_type_names::kTouchstart ||
+       type() == event_type_names::kTouchmove) &&
       view() && view()->IsLocalDOMWindow() && view()->GetFrame() &&
       current_touch_action_ == TouchAction::kTouchActionAuto) {
     switch (HandlingPassive()) {

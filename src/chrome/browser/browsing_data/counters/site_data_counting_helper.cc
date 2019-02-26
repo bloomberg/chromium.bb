@@ -13,9 +13,9 @@
 #include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/dom_storage_context.h"
-#include "content/public/browser/local_storage_usage_info.h"
 #include "content/public/browser/session_storage_usage_info.h"
 #include "content/public/browser/storage_partition.h"
+#include "content/public/browser/storage_usage_info.h"
 #include "net/cookies/cookie_util.h"
 #include "net/ssl/channel_id_service.h"
 #include "net/ssl/channel_id_store.h"
@@ -160,7 +160,7 @@ void SiteDataCountingHelper::GetQuotaOriginsCallback(
 
 void SiteDataCountingHelper::GetLocalStorageUsageInfoCallback(
     const scoped_refptr<storage::SpecialStoragePolicy>& policy,
-    const std::vector<content::LocalStorageUsageInfo>& infos) {
+    const std::vector<content::StorageUsageInfo>& infos) {
   std::vector<GURL> origins;
   for (const auto& info : infos) {
     if (info.last_modified >= begin_ &&

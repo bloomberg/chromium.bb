@@ -19,7 +19,7 @@ NavigatorPermissions& NavigatorPermissions::From(Navigator& navigator) {
   NavigatorPermissions* supplement =
       Supplement<Navigator>::From<NavigatorPermissions>(navigator);
   if (!supplement) {
-    supplement = new NavigatorPermissions();
+    supplement = MakeGarbageCollected<NavigatorPermissions>();
     ProvideTo(navigator, supplement);
   }
   return *supplement;
@@ -29,7 +29,7 @@ NavigatorPermissions& NavigatorPermissions::From(Navigator& navigator) {
 Permissions* NavigatorPermissions::permissions(Navigator& navigator) {
   NavigatorPermissions& self = NavigatorPermissions::From(navigator);
   if (!self.permissions_)
-    self.permissions_ = new Permissions();
+    self.permissions_ = MakeGarbageCollected<Permissions>();
   return self.permissions_.Get();
 }
 

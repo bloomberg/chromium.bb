@@ -54,10 +54,8 @@ std::string GetStringFromDeletePageResult(
       return "Store failure";
     case offline_pages::DeletePageResult::DEVICE_FAILURE:
       return "Device failure";
-    case offline_pages::DeletePageResult::NOT_FOUND:
+    case offline_pages::DeletePageResult::DEPRECATED_NOT_FOUND:
       return "Not found";
-    case offline_pages::DeletePageResult::RESULT_COUNT:
-      break;
   }
   NOTREACHED();
   return "Unknown";

@@ -4,6 +4,10 @@
 
 #include "ui/views/accessibility/view_accessibility.h"
 
+#include <algorithm>
+#include <utility>
+
+#include "base/memory/ptr_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "ui/accessibility/platform/ax_platform_node.h"
 #include "ui/base/ui_features.h"
@@ -36,14 +40,88 @@ bool IsValidRoleForViews(ax::mojom::Role role) {
 #if !BUILDFLAG_INTERNAL_HAS_NATIVE_ACCESSIBILITY()
 // static
 std::unique_ptr<ViewAccessibility> ViewAccessibility::Create(View* view) {
+  // Cannot use std::make_unique because constructor is protected.
   return base::WrapUnique(new ViewAccessibility(view));
 }
 #endif
 
 ViewAccessibility::ViewAccessibility(View* view)
-    : owner_view_(view), is_leaf_(false) {}
+    : view_(view),
+      focused_virtual_child_(nullptr),
+      is_leaf_(false),
+      is_ignored_(false) {}
 
 ViewAccessibility::~ViewAccessibility() = default;
+
+void ViewAccessibility::AddVirtualChildView(
+    std::unique_ptr<AXVirtualView> virtual_view) {
+  DCHECK(virtual_view);
+  if (virtual_view->parent_view() == this)
+    return;
+  AddVirtualChildViewAt(std::move(virtual_view), virtual_child_count());
+}
+
+void ViewAccessibility::AddVirtualChildViewAt(
+    std::unique_ptr<AXVirtualView> virtual_view,
+    int index) {
+  DCHECK(virtual_view);
+  DCHECK(!virtual_view->parent_view()) << "This |view| already has a View "
+                                          "parent. Call RemoveVirtualChildView "
+                                          "first.";
+  DCHECK(!virtual_view->virtual_parent_view()) << "This |view| already has an "
+                                                  "AXVirtualView parent. Call "
+                                                  "RemoveChildView first.";
+  DCHECK_GE(index, 0);
+  DCHECK_LE(index, virtual_child_count());
+
+  virtual_view->set_parent_view(this);
+  virtual_children_.insert(virtual_children_.begin() + index,
+                           std::move(virtual_view));
+}
+
+std::unique_ptr<AXVirtualView> ViewAccessibility::RemoveVirtualChildView(
+    AXVirtualView* virtual_view) {
+  DCHECK(virtual_view);
+  int cur_index = GetIndexOf(virtual_view);
+  if (cur_index < 0)
+    return {};
+
+  std::unique_ptr<AXVirtualView> child =
+      std::move(virtual_children_[cur_index]);
+  virtual_children_.erase(virtual_children_.begin() + cur_index);
+  child->set_parent_view(nullptr);
+  if (focused_virtual_child_ && child->Contains(focused_virtual_child_))
+    focused_virtual_child_ = nullptr;
+  return child;
+}
+
+void ViewAccessibility::RemoveAllVirtualChildViews() {
+  while (!virtual_children_.empty())
+    RemoveVirtualChildView(virtual_children_.back().get());
+}
+
+bool ViewAccessibility::Contains(const AXVirtualView* virtual_view) const {
+  DCHECK(virtual_view);
+  for (const auto& virtual_child : virtual_children_) {
+    // AXVirtualView::Contains() also checks if the provided virtual view is the
+    // same as |this|.
+    if (virtual_child->Contains(virtual_view))
+      return true;
+  }
+  return false;
+}
+
+int ViewAccessibility::GetIndexOf(const AXVirtualView* virtual_view) const {
+  DCHECK(virtual_view);
+  const auto iter =
+      std::find_if(virtual_children_.begin(), virtual_children_.end(),
+                   [virtual_view](const auto& child) {
+                     return child.get() == virtual_view;
+                   });
+  return iter != virtual_children_.end()
+             ? static_cast<int>(iter - virtual_children_.begin())
+             : -1;
+}
 
 const ui::AXUniqueId& ViewAccessibility::GetUniqueId() const {
   return unique_id_;
@@ -52,14 +130,14 @@ const ui::AXUniqueId& ViewAccessibility::GetUniqueId() const {
 void ViewAccessibility::GetAccessibleNodeData(ui::AXNodeData* data) const {
   // Views may misbehave if their widget is closed; return an unknown role
   // rather than possibly crashing.
-  views::Widget* widget = owner_view_->GetWidget();
+  const views::Widget* widget = view_->GetWidget();
   if (!widget || !widget->widget_delegate() || widget->IsClosed()) {
     data->role = ax::mojom::Role::kUnknown;
     data->SetRestriction(ax::mojom::Restriction::kDisabled);
     return;
   }
 
-  owner_view_->GetAccessibleNodeData(data);
+  view_->GetAccessibleNodeData(data);
   if (custom_data_.role != ax::mojom::Role::kUnknown)
     data->role = custom_data_.role;
 
@@ -76,7 +154,7 @@ void ViewAccessibility::GetAccessibleNodeData(ui::AXNodeData* data) const {
 
   if (!data->HasStringAttribute(ax::mojom::StringAttribute::kDescription)) {
     base::string16 tooltip;
-    owner_view_->GetTooltipText(gfx::Point(), &tooltip);
+    view_->GetTooltipText(gfx::Point(), &tooltip);
     // Some screen readers announce the accessible description right after the
     // accessible name. Only use the tooltip as the accessible description if
     // it's different from the name, otherwise users might be puzzled as to why
@@ -88,30 +166,31 @@ void ViewAccessibility::GetAccessibleNodeData(ui::AXNodeData* data) const {
     }
   }
 
-  data->location = gfx::RectF(owner_view_->GetBoundsInScreen());
+  data->relative_bounds.bounds = gfx::RectF(view_->GetBoundsInScreen());
   data->AddStringAttribute(ax::mojom::StringAttribute::kClassName,
-                           owner_view_->GetClassName());
+                           view_->GetClassName());
 
-  if (owner_view_->IsAccessibilityFocusable())
+  if (view_->IsAccessibilityFocusable())
     data->AddState(ax::mojom::State::kFocusable);
 
-  if (!owner_view_->enabled())
+  if (!view_->enabled())
     data->SetRestriction(ax::mojom::Restriction::kDisabled);
 
-  if (!owner_view_->visible() && data->role != ax::mojom::Role::kAlert)
+  if (!view_->visible() && data->role != ax::mojom::Role::kAlert)
     data->AddState(ax::mojom::State::kInvisible);
 
-  if (owner_view_->context_menu_controller())
+  if (view_->context_menu_controller())
     data->AddAction(ax::mojom::Action::kShowContextMenu);
 }
 
-bool ViewAccessibility::IsLeaf() const {
-  return is_leaf_;
+void ViewAccessibility::OverrideFocus(AXVirtualView* virtual_view) {
+  DCHECK(!virtual_view || Contains(virtual_view))
+      << "|virtual_view| must be nullptr or a descendant of this view.";
+  focused_virtual_child_ = virtual_view;
 }
 
-void ViewAccessibility::OverrideRole(ax::mojom::Role role) {
-  DCHECK(IsValidRoleForViews(role));
-
+void ViewAccessibility::OverrideRole(const ax::mojom::Role role) {
+  DCHECK(IsValidRoleForViews(role)) << "Invalid role for Views.";
   custom_data_.role = role;
 }
 
@@ -120,22 +199,33 @@ void ViewAccessibility::OverrideName(const std::string& name) {
 }
 
 void ViewAccessibility::OverrideName(const base::string16& name) {
-  custom_data_.SetName(base::UTF16ToUTF8(name));
+  custom_data_.SetName(name);
 }
 
 void ViewAccessibility::OverrideDescription(const std::string& description) {
-  DCHECK(!custom_data_.HasStringAttribute(
-      ax::mojom::StringAttribute::kDescription));
-  custom_data_.AddStringAttribute(ax::mojom::StringAttribute::kDescription,
-                                  description);
+  custom_data_.SetDescription(description);
 }
 
-void ViewAccessibility::OverrideIsLeaf() {
-  is_leaf_ = true;
+void ViewAccessibility::OverrideDescription(const base::string16& description) {
+  custom_data_.SetDescription(description);
+}
+
+void ViewAccessibility::OverrideIsLeaf(bool value) {
+  is_leaf_ = value;
+}
+
+void ViewAccessibility::OverrideIsIgnored(bool value) {
+  is_ignored_ = value;
 }
 
 gfx::NativeViewAccessible ViewAccessibility::GetNativeObject() {
   return nullptr;
+}
+
+gfx::NativeViewAccessible ViewAccessibility::GetFocusedDescendant() {
+  if (focused_virtual_child_)
+    return focused_virtual_child_->GetNativeObject();
+  return view_->GetNativeViewAccessible();
 }
 
 }  // namespace views

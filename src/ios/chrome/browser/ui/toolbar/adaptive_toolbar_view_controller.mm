@@ -6,20 +6,20 @@
 
 #import "base/logging.h"
 #include "base/metrics/user_metrics.h"
-#include "ios/chrome/browser/ui/animation_util.h"
 #import "ios/chrome/browser/ui/commands/browser_commands.h"
 #import "ios/chrome/browser/ui/popup_menu/public/popup_menu_long_press_delegate.h"
 #import "ios/chrome/browser/ui/toolbar/adaptive_toolbar_view.h"
 #import "ios/chrome/browser/ui/toolbar/buttons/toolbar_button.h"
 #import "ios/chrome/browser/ui/toolbar/buttons/toolbar_button_factory.h"
 #import "ios/chrome/browser/ui/toolbar/buttons/toolbar_configuration.h"
-#import "ios/chrome/browser/ui/toolbar/buttons/toolbar_constants.h"
 #import "ios/chrome/browser/ui/toolbar/buttons/toolbar_tab_grid_button.h"
 #import "ios/chrome/browser/ui/toolbar/buttons/toolbar_tools_menu_button.h"
 #import "ios/chrome/browser/ui/toolbar/public/features.h"
 #import "ios/chrome/browser/ui/toolbar/public/omnibox_focuser.h"
-#import "ios/chrome/browser/ui/uikit_ui_util.h"
+#import "ios/chrome/browser/ui/toolbar/public/toolbar_constants.h"
+#include "ios/chrome/browser/ui/util/animation_util.h"
 #import "ios/chrome/browser/ui/util/force_touch_long_press_gesture_recognizer.h"
+#import "ios/chrome/browser/ui/util/uikit_ui_util.h"
 #import "ios/chrome/common/material_timing.h"
 #import "ios/third_party/material_components_ios/src/components/ProgressView/src/MaterialProgressView.h"
 #import "ios/third_party/material_components_ios/src/components/Typography/src/MaterialTypography.h"
@@ -81,19 +81,11 @@ const CGFloat kTabGridAnimationsTotalDuration = 0.5;
   [super viewDidLoad];
   [self addStandardActionsForAllButtons];
 
-  if (@available(iOS 11.0, *)) {
-    [[NSNotificationCenter defaultCenter]
-        addObserver:self
-           selector:@selector(voiceOverChanged:)
-               name:UIAccessibilityVoiceOverStatusDidChangeNotification
-             object:nil];
-  } else {
-    [[NSNotificationCenter defaultCenter]
-        addObserver:self
-           selector:@selector(voiceOverChanged:)
-               name:UIAccessibilityVoiceOverStatusChanged
-             object:nil];
-  }
+  [[NSNotificationCenter defaultCenter]
+      addObserver:self
+         selector:@selector(voiceOverChanged:)
+             name:UIAccessibilityVoiceOverStatusDidChangeNotification
+           object:nil];
   [self makeViewAccessibilityTraitsContainer];
 
   // Adds the layout guide to the buttons.

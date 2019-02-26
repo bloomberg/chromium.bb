@@ -41,12 +41,10 @@ class PLATFORM_EXPORT BeginFrameProvider
       const WTF::Vector<viz::ReturnedResource>& resources) final {
     NOTIMPLEMENTED();
   }
-  void DidPresentCompositorFrame(
-      uint32_t presentation_token,
-      ::gfx::mojom::blink::PresentationFeedbackPtr feedback) final {
-    NOTIMPLEMENTED();
-  }
-  void OnBeginFrame(const viz::BeginFrameArgs&) final;
+  void OnBeginFrame(
+      const viz::BeginFrameArgs&,
+      WTF::HashMap<uint32_t, ::gfx::mojom::blink::PresentationFeedbackPtr>)
+      final;
   void OnBeginFramePausedChanged(bool paused) final {}
   void ReclaimResources(
       const WTF::Vector<viz::ReturnedResource>& resources) final {
@@ -55,6 +53,10 @@ class PLATFORM_EXPORT BeginFrameProvider
 
   // viz::mojom::blink::EmbeddedFrameSinkClient implementation.
   void OnFirstSurfaceActivation(const viz::SurfaceInfo& surface_info) final {
+    NOTIMPLEMENTED();
+  }
+  void BindSurfaceEmbedder(
+      mojom::blink::SurfaceEmbedderRequest request) override {
     NOTIMPLEMENTED();
   }
 

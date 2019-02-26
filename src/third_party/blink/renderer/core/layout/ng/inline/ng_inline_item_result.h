@@ -10,12 +10,11 @@
 #include "third_party/blink/renderer/core/layout/ng/inline/ng_text_end_effect.h"
 #include "third_party/blink/renderer/core/layout/ng/ng_layout_result.h"
 #include "third_party/blink/renderer/platform/fonts/shaping/shape_result.h"
-#include "third_party/blink/renderer/platform/layout_unit.h"
+#include "third_party/blink/renderer/platform/geometry/layout_unit.h"
 #include "third_party/blink/renderer/platform/wtf/allocator.h"
 
 namespace blink {
 
-class NGConstraintSpace;
 class NGInlineItem;
 class NGInlineNode;
 
@@ -45,7 +44,7 @@ struct CORE_EXPORT NGInlineItemResult {
 
   // ShapeResult for text items. Maybe different from NGInlineItem if re-shape
   // is needed in the line breaker.
-  scoped_refptr<const ShapeResult> shape_result;
+  scoped_refptr<const ShapeResultView> shape_result;
 
   // NGLayoutResult for atomic inline items.
   scoped_refptr<NGLayoutResult> layout_result;
@@ -132,10 +131,7 @@ class CORE_EXPORT NGLineInfo {
   }
   void SetLineStyle(const NGInlineNode&,
                     const NGInlineItemsData&,
-                    const NGConstraintSpace&,
-                    bool is_first_formatted_line,
-                    bool use_first_line_style,
-                    bool is_after_forced_break);
+                    bool use_first_line_style);
 
   // Use ::first-line style if true.
   // https://drafts.csswg.org/css-pseudo/#selectordef-first-line
@@ -159,6 +155,7 @@ class CORE_EXPORT NGLineInfo {
   NGInlineItemResults* MutableResults() { return &results_; }
   const NGInlineItemResults& Results() const { return results_; }
 
+  void SetTextIndent(LayoutUnit indent) { text_indent_ = indent; }
   LayoutUnit TextIndent() const { return text_indent_; }
 
   NGBfcOffset BfcOffset() const { return bfc_offset_; }

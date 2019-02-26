@@ -58,6 +58,7 @@
 #include "third_party/blink/renderer/core/html_names.h"
 #include "third_party/blink/renderer/core/page/focus_controller.h"
 #include "third_party/blink/renderer/core/page/page.h"
+#include "third_party/blink/renderer/core/page/spatial_navigation.h"
 #include "third_party/blink/renderer/core/probe/core_probes.h"
 #include "third_party/blink/renderer/core/scroll/scrollable_area.h"
 #include "third_party/blink/renderer/core/scroll/scrollbar_theme.h"
@@ -66,19 +67,11 @@
 
 namespace blink {
 
-using namespace HTMLNames;
-
 static bool IsFrameFocused(const Element& element) {
   return element.GetDocument().GetFrame() && element.GetDocument()
                                                  .GetFrame()
                                                  ->Selection()
                                                  .FrameIsFocusedAndActive();
-}
-
-static bool MatchesSpatialNavigationFocusPseudoClass(const Element& element) {
-  return IsHTMLOptionElement(element) &&
-         ToHTMLOptionElement(element).SpatialNavigationFocused() &&
-         IsFrameFocused(element);
 }
 
 static bool MatchesListBoxPseudoClass(const Element& element) {
@@ -763,6 +756,7 @@ bool SelectorChecker::CheckPseudoClass(const SelectorCheckingContext& context,
       return CheckPseudoNot(context, result);
     case CSSSelector::kPseudoEmpty: {
       bool result = true;
+      bool has_whitespace = false;
       for (Node* n = element.firstChild(); n; n = n->nextSibling()) {
         if (n->IsElementNode()) {
           result = false;
@@ -771,10 +765,19 @@ bool SelectorChecker::CheckPseudoClass(const SelectorCheckingContext& context,
         if (n->IsTextNode()) {
           Text* text_node = ToText(n);
           if (!text_node->data().IsEmpty()) {
-            result = false;
-            break;
+            if (text_node->ContainsOnlyWhitespaceOrEmpty()) {
+              has_whitespace = true;
+            } else {
+              result = false;
+              break;
+            }
           }
         }
+      }
+      if (result && has_whitespace) {
+        UseCounter::Count(context.element->GetDocument(),
+                          WebFeature::kCSSSelectorEmptyWhitespaceOnlyFail);
+        result = false;
       }
       if (mode_ == kResolvingStyle)
         element.SetStyleAffectedByEmpty();
@@ -1099,8 +1102,8 @@ bool SelectorChecker::CheckPseudoClass(const SelectorCheckingContext& context,
     case CSSSelector::kPseudoCornerPresent:
       return false;
     case CSSSelector::kPseudoUnknown:
-    case CSSSelector::kPseudoMatches:
-    case CSSSelector::kPseudoIS:
+    case CSSSelector::kPseudoIs:
+    case CSSSelector::kPseudoWhere:
     default:
       NOTREACHED();
       break;
@@ -1388,6 +1391,22 @@ bool SelectorChecker::MatchesFocusVisiblePseudoClass(const Element& element) {
 
   return element.IsFocused() && (!last_focus_from_mouse || had_keyboard_event ||
                                  always_show_focus_ring);
+}
+
+// static
+bool SelectorChecker::MatchesSpatialNavigationFocusPseudoClass(
+    const Element& element) {
+  if (!IsSpatialNavigationEnabled(element.GetDocument().GetFrame()))
+    return false;
+  if (RuntimeEnabledFeatures::SpatialNavigationForcesOutlineEnabled()) {
+    // TODO(mthiesse): Decouple spatial navigation target from focus, so that
+    // if spat nav is enabled, but not used, we don't override focus ring
+    // behavior on that element.
+    return element.IsFocused() && IsFrameFocused(element);
+  }
+  return IsHTMLOptionElement(element) &&
+         ToHTMLOptionElement(element).SpatialNavigationFocused() &&
+         IsFrameFocused(element);
 }
 
 }  // namespace blink

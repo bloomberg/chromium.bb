@@ -84,6 +84,7 @@ class DateTimeEditElement final : public HTMLDivElement,
 
   static DateTimeEditElement* Create(Document&, EditControlOwner&);
 
+  DateTimeEditElement(Document&, EditControlOwner&);
   ~DateTimeEditElement() override;
   void Trace(blink::Visitor*) override;
 
@@ -124,8 +125,6 @@ class DateTimeEditElement final : public HTMLDivElement,
   //  7. millisecond
   //  8. AM/PM
   static const int kMaximumNumberOfFields = 8;
-
-  DateTimeEditElement(Document&, EditControlOwner&);
 
   DateTimeFieldElement* FieldAt(wtf_size_t) const;
   wtf_size_t FieldIndexOf(const DateTimeFieldElement&) const;

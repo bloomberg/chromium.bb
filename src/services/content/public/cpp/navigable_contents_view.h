@@ -78,11 +78,15 @@ class COMPONENT_EXPORT(CONTENT_SERVICE_CPP) NavigableContentsView {
   gfx::NativeView native_view() const { return view_->native_view(); }
 #endif  // defined(TOOLKIT_VIEWS) && defined(USE_AURA)
 
+  // Has this view notify the UI subsystem of an accessibility tree change.
+  void NotifyAccessibilityTreeChange();
+
  private:
+  friend class FakeNavigableContents;
   friend class NavigableContents;
   friend class NavigableContentsImpl;
 
-  NavigableContentsView();
+  explicit NavigableContentsView(NavigableContents* contents_);
 
   // Establishes a hierarchical relationship between this view's native UI
   // object and another native UI object within the Content Service.
@@ -93,6 +97,8 @@ class COMPONENT_EXPORT(CONTENT_SERVICE_CPP) NavigableContentsView {
   static void RegisterInProcessEmbedCallback(
       const base::UnguessableToken& token,
       base::OnceCallback<void(NavigableContentsView*)> callback);
+
+  NavigableContents* const contents_;
 
 #if defined(TOOLKIT_VIEWS) && defined(USE_AURA)
   // This NavigableContents's Window and corresponding View.

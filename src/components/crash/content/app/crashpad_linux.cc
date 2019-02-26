@@ -366,12 +366,15 @@ bool StartHandlerForClient(int fd) {
   return HandlerStarter::Get()->StartHandlerForClient(fd);
 }
 
-base::FilePath PlatformCrashpadInitialization(bool initial_client,
-                                              bool browser_process,
-                                              bool embedded_handler,
-                                              const std::string& user_data_dir,
-                                              const base::FilePath& exe_path) {
+base::FilePath PlatformCrashpadInitialization(
+    bool initial_client,
+    bool browser_process,
+    bool embedded_handler,
+    const std::string& user_data_dir,
+    const base::FilePath& exe_path,
+    const std::vector<std::string>& initial_arguments) {
   DCHECK_EQ(initial_client, browser_process);
+  DCHECK(initial_arguments.empty());
 
   // Not used on Linux/Android.
   DCHECK(!embedded_handler);

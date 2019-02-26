@@ -4,9 +4,11 @@
 
 #include "chrome/browser/profiles/renderer_updater.h"
 
+#include <utility>
+
 #include "chrome/browser/content_settings/host_content_settings_map_factory.h"
 #include "chrome/browser/profiles/profile.h"
-#include "chrome/browser/signin/signin_manager_factory.h"
+#include "chrome/browser/signin/identity_manager_factory.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/common/renderer_configuration.mojom.h"
 #include "components/content_settings/core/browser/content_settings_utils.h"
@@ -50,9 +52,10 @@ void GetGuestViewDefaultContentSettingRules(
 #endif  // BUILDFLAG(ENABLE_EXTENSIONS)
 }  // namespace
 
-RendererUpdater::RendererUpdater(Profile* profile) : profile_(profile) {
-  signin_manager_ = SigninManagerFactory::GetForProfile(profile_);
-  signin_manager_->AddObserver(this);
+RendererUpdater::RendererUpdater(Profile* profile)
+    : profile_(profile), identity_manager_observer_(this) {
+  identity_manager_ = IdentityManagerFactory::GetForProfile(profile);
+  identity_manager_observer_.Add(identity_manager_);
   variations_http_header_provider_ =
       variations::VariationsHttpHeaderProvider::GetInstance();
   variations_http_header_provider_->AddObserver(this);
@@ -84,12 +87,12 @@ RendererUpdater::RendererUpdater(Profile* profile) : profile_(profile) {
 }
 
 RendererUpdater::~RendererUpdater() {
-  DCHECK(!signin_manager_);
+  DCHECK(!identity_manager_);
 }
 
 void RendererUpdater::Shutdown() {
-  signin_manager_->RemoveObserver(this);
-  signin_manager_ = nullptr;
+  identity_manager_observer_.RemoveAll();
+  identity_manager_ = nullptr;
   variations_http_header_provider_->RemoveObserver(this);
   variations_http_header_provider_ = nullptr;
 }
@@ -150,11 +153,11 @@ RendererUpdater::GetRendererConfiguration(
   return renderer_configuration;
 }
 
-void RendererUpdater::GoogleSigninSucceeded(const AccountInfo& account_info) {
+void RendererUpdater::OnPrimaryAccountSet(const AccountInfo& account_info) {
   UpdateAllRenderers();
 }
 
-void RendererUpdater::GoogleSignedOut(const AccountInfo& account_info) {
+void RendererUpdater::OnPrimaryAccountCleared(const AccountInfo& account_info) {
   UpdateAllRenderers();
 }
 
@@ -174,11 +177,12 @@ void RendererUpdater::UpdateAllRenderers() {
 
 void RendererUpdater::UpdateRenderer(
     chrome::mojom::RendererConfigurationAssociatedPtr* renderer_configuration) {
-  bool is_signed_in = signin_manager_->IsAuthenticated();
   (*renderer_configuration)
-      ->SetConfiguration(force_google_safesearch_.GetValue(),
-                         force_youtube_restrict_.GetValue(),
-                         allowed_domains_for_apps_.GetValue(),
-                         is_signed_in ? cached_variation_ids_header_signed_in_
-                                      : cached_variation_ids_header_);
+      ->SetConfiguration(chrome::mojom::DynamicParams::New(
+          force_google_safesearch_.GetValue(),
+          force_youtube_restrict_.GetValue(),
+          allowed_domains_for_apps_.GetValue(),
+          identity_manager_->HasPrimaryAccount()
+              ? cached_variation_ids_header_signed_in_
+              : cached_variation_ids_header_));
 }

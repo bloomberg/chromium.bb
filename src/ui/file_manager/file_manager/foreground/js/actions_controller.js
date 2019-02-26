@@ -173,7 +173,16 @@ ActionsController.prototype.onSelectionChangeThrottled_ = function() {
         if (selection !== this.selectionHandler_.selection)
           return;
         this.fileListActionsModel_ = actionsModel;
+        // Before updating the UI we need to ensure that this.menuContext_ has a
+        // reasonable value or nothing will happen. We will save and restore the
+        // existing value.
+        const oldMenuContext = this.menuContext_;
+        if (this.menuContext_ === ActionsController.Context.UNKNOWN) {
+          // FILE_LIST should be a reasonable default.
+          this.menuContext_ = ActionsController.Context.FILE_LIST;
+        }
         this.updateUI_();
+        this.menuContext_ = oldMenuContext;
       }.bind(this));
     }.bind(this));
 

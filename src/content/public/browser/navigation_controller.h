@@ -207,6 +207,11 @@ class NavigationController {
     // is used by embedders where the activation has occurred outside the page.
     WasActivatedOption was_activated;
 
+    // If this navigation was initiated from a link that specified the
+    // hrefTranslate attribute, this contains the attribute's value (a BCP47
+    // language code). Empty otherwise.
+    std::string href_translate;
+
     explicit LoadURLParams(const GURL& url);
     ~LoadURLParams();
 

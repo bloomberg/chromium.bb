@@ -5,7 +5,7 @@
 #import "ios/web/net/cookies/wk_http_system_cookie_store.h"
 
 #import <Foundation/Foundation.h>
-#import <WebKit/Webkit.h>
+#import <WebKit/WebKit.h>
 
 #include <memory>
 

@@ -84,13 +84,6 @@ void BrowserAccessibilityManagerWin::FireFocusEvent(
     BrowserAccessibility* node) {
   BrowserAccessibilityManager::FireFocusEvent(node);
   DCHECK(node);
-  // On Windows, we always fire a FOCUS event on the root of a frame before
-  // firing a focus event within that frame.
-  if (node->manager() != last_focused_manager_ &&
-      node != node->manager()->GetRoot()) {
-    FireWinAccessibilityEvent(EVENT_OBJECT_FOCUS, node->manager()->GetRoot());
-  }
-
   FireWinAccessibilityEvent(EVENT_OBJECT_FOCUS, node);
 }
 

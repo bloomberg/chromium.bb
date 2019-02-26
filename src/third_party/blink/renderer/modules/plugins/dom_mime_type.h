@@ -39,8 +39,10 @@ class DOMMimeType final : public ScriptWrappable, public ContextClient {
  public:
   static DOMMimeType* Create(LocalFrame* frame,
                              const MimeClassInfo& mime_class_info) {
-    return new DOMMimeType(frame, mime_class_info);
+    return MakeGarbageCollected<DOMMimeType>(frame, mime_class_info);
   }
+
+  DOMMimeType(LocalFrame*, const MimeClassInfo&);
 
   const String& type() const;
   String suffixes() const;
@@ -50,8 +52,6 @@ class DOMMimeType final : public ScriptWrappable, public ContextClient {
   void Trace(blink::Visitor*) override;
 
  private:
-  DOMMimeType(LocalFrame*, const MimeClassInfo&);
-
   Member<const MimeClassInfo> mime_class_info_;
 };
 

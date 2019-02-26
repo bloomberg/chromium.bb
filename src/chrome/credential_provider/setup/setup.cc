@@ -6,7 +6,7 @@
 // that the app can be made entireless silent, as required by omaha.
 
 #include <Windows.h>
-#include <shlobj.h> // Needed for IsUserAnAdmin()
+#include <shlobj.h>  // Needed for IsUserAnAdmin()
 
 #include <stdlib.h>
 #include <string>
@@ -25,14 +25,20 @@
 #include "base/stl_util.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_piece.h"
+#include "base/strings/utf_string_conversions.h"
 #include "base/win/process_startup_helper.h"
 #include "base/win/scoped_handle.h"
 #include "base/win/win_util.h"
 #include "base/win/windows_version.h"
 #include "chrome/common/chrome_version.h"
 #include "chrome/credential_provider/eventlog/gcp_eventlog_messages.h"
+#include "chrome/credential_provider/gaiacp/gcp_utils.h"
 #include "chrome/credential_provider/gaiacp/logging.h"
+#include "chrome/credential_provider/setup/gcp_installer_crash_reporting.h"
 #include "chrome/credential_provider/setup/setup_lib.h"
+#include "components/crash/content/app/crash_switches.h"
+#include "components/crash/content/app/run_as_crashpad_handler_win.h"
+#include "content/public/common/content_switches.h"
 
 using credential_provider::putHR;
 
@@ -58,14 +64,47 @@ int APIENTRY wWinMain(HINSTANCE hInstance,
   base::AtExitManager exit_manager;
   base::CommandLine::Init(0, nullptr);
 
+  base::CommandLine* cmdline = base::CommandLine::ForCurrentProcess();
+
+  std::string process_type =
+      cmdline->GetSwitchValueASCII(switches::kProcessType);
+
+  if (process_type == crash_reporter::switches::kCrashpadHandler) {
+    return crash_reporter::RunAsCrashpadHandler(*cmdline, base::FilePath(),
+                                                switches::kProcessType, "");
+  }
+
+  credential_provider::ConfigureGcpInstallerCrashReporting(*cmdline);
+
   // Initialize logging.
   logging::LoggingSettings settings;
   settings.logging_dest = logging::LOG_NONE;
+
+  // See if the log file path was specified on the command line.
+  base::FilePath log_file_path = cmdline->GetSwitchValuePath("log-file");
+  if (!log_file_path.empty()) {
+    settings.logging_dest = logging::LOG_TO_FILE;
+    settings.log_file = log_file_path.value().c_str();
+  }
+
   logging::InitLogging(settings);
   logging::SetLogItems(true,    // Enable process id.
                        true,    // Enable thread id.
                        true,    // Enable timestamp.
                        false);  // Enable tickcount.
+
+  if (cmdline->HasSwitch(switches::kLoggingLevel)) {
+    std::string log_level =
+        cmdline->GetSwitchValueASCII(switches::kLoggingLevel);
+    int level = 0;
+    if (base::StringToInt(log_level, &level) && level >= 0 &&
+        level < logging::LOG_NUM_SEVERITIES) {
+      logging::SetMinLogLevel(level);
+    } else {
+      LOGFN(WARNING) << "Bad log level: " << log_level;
+    }
+  }
+
   logging::SetEventSource("GCP", GCP_CATEGORY, MSG_LOG_MESSAGE);
 
   // Make sure the process exits cleanly on unexpected errors.
@@ -74,19 +113,13 @@ int APIENTRY wWinMain(HINSTANCE hInstance,
   base::win::RegisterInvalidParamHandler();
   base::win::SetupCRT(*base::CommandLine::ForCurrentProcess());
 
-  wchar_t module[MAX_PATH];
-  DWORD module_length = ::GetModuleFileName(hInstance, module,
-                                            base::size(module));
-  if (module_length == 0) {
-    HRESULT hr = HRESULT_FROM_WIN32(::GetLastError());
-    LOGFN(ERROR) << "GetModuleFileName hr=" << putHR(hr);
-    return -1;
-  } else if (module_length == base::size(module)) {
-    LOGFN(ERROR) << "GetModuleFileName: module name too long";
+  base::FilePath gcp_setup_exe_path;
+  hr = credential_provider::GetPathToDllFromHandle(hInstance,
+                                                   &gcp_setup_exe_path);
+  if (FAILED(hr)) {
+    LOGFN(ERROR) << "GetPathToDllFromHandle hr=" << putHR(hr);
     return -1;
   }
-
-  base::FilePath gcp_setup_exe_path(base::StringPiece16(module, module_length));
 
   wchar_t time_string[64];
   if (::GetTimeFormatEx(LOCALE_NAME_USER_DEFAULT, 0, nullptr, nullptr,
@@ -121,14 +154,12 @@ int APIENTRY wWinMain(HINSTANCE hInstance,
   }
 
   // Parse command line.
-  base::CommandLine* cmdline = base::CommandLine::ForCurrentProcess();
-  bool is_uninstall = cmdline->HasSwitch(
-      credential_provider::switches::kUninstall);
-  base::FilePath path = cmdline->GetSwitchValuePath(
-      credential_provider::switches::kInstallPath);
-  std::string parent_handle_str =
-      cmdline->GetSwitchValueASCII(
-          credential_provider::switches::kParentHandle);
+  bool is_uninstall =
+      cmdline->HasSwitch(credential_provider::switches::kUninstall);
+  base::FilePath path =
+      cmdline->GetSwitchValuePath(credential_provider::switches::kInstallPath);
+  std::string parent_handle_str = cmdline->GetSwitchValueASCII(
+      credential_provider::switches::kParentHandle);
 
   if (is_uninstall) {
     // If this is a user invoked uninstall, copy the exe to the temp directory

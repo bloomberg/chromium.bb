@@ -7,6 +7,7 @@
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/blink/public/platform/task_type.h"
+#include "third_party/blink/renderer/bindings/core/v8/sanitize_script_errors.h"
 #include "third_party/blink/renderer/bindings/core/v8/v8_cache_options.h"
 #include "third_party/blink/renderer/core/events/message_event.h"
 #include "third_party/blink/renderer/core/inspector/console_message_storage.h"
@@ -22,7 +23,6 @@
 #include "third_party/blink/renderer/core/workers/worker_thread.h"
 #include "third_party/blink/renderer/core/workers/worker_thread_test_helper.h"
 #include "third_party/blink/renderer/platform/cross_thread_functional.h"
-#include "third_party/blink/renderer/platform/loader/fetch/access_control_status.h"
 #include "third_party/blink/renderer/platform/testing/unit_test_helpers.h"
 #include "third_party/blink/renderer/platform/weborigin/security_policy.h"
 
@@ -30,9 +30,10 @@ namespace blink {
 
 class DedicatedWorkerThreadForTest final : public DedicatedWorkerThread {
  public:
-  DedicatedWorkerThreadForTest(DedicatedWorkerObjectProxy& worker_object_proxy)
+  DedicatedWorkerThreadForTest(ExecutionContext* parent_execution_context,
+                               DedicatedWorkerObjectProxy& worker_object_proxy)
       : DedicatedWorkerThread("fake worker name",
-                              nullptr /* parent_execution_context*/,
+                              parent_execution_context,
                               worker_object_proxy) {
     worker_backing_thread_ = WorkerBackingThread::Create(
         ThreadCreationParams(WebThreadType::kTestThread));
@@ -40,7 +41,7 @@ class DedicatedWorkerThreadForTest final : public DedicatedWorkerThread {
 
   WorkerOrWorkletGlobalScope* CreateWorkerGlobalScope(
       std::unique_ptr<GlobalScopeCreationParams> creation_params) override {
-    auto* global_scope = new DedicatedWorkerGlobalScope(
+    auto* global_scope = MakeGarbageCollected<DedicatedWorkerGlobalScope>(
         "fake worker name", std::move(creation_params), this, time_origin_);
     // Initializing a global scope with a dummy creation params may emit warning
     // messages (e.g., invalid CSP directives). Clear them here for tests that
@@ -133,8 +134,9 @@ class DedicatedWorkerMessagingProxyForTest
         To<Document>(GetExecutionContext())->GetSettings());
     InitializeWorkerThread(
         std::make_unique<GlobalScopeCreationParams>(
-            script_url, ScriptType::kClassic, "fake user agent", headers,
-            kReferrerPolicyDefault, security_origin_.get(),
+            script_url, mojom::ScriptType::kClassic, "fake user agent",
+            nullptr /* web_worker_fetch_context */, headers,
+            network::mojom::ReferrerPolicy::kDefault, security_origin_.get(),
             false /* starter_secure_context */,
             CalculateHttpsState(security_origin_.get()),
             nullptr /* worker_clients */, mojom::IPAddressSpace::kLocal,
@@ -144,9 +146,9 @@ class DedicatedWorkerMessagingProxyForTest
         WorkerBackingThreadStartupData(
             WorkerBackingThreadStartupData::HeapLimitMode::kDefault,
             WorkerBackingThreadStartupData::AtomicsWaitMode::kAllow));
-    GetWorkerThread()->EvaluateClassicScript(
-        script_url, kOpaqueResource, source, nullptr /* cached_meta_data */,
-        v8_inspector::V8StackTraceId());
+    GetWorkerThread()->EvaluateClassicScript(script_url, source,
+                                             nullptr /* cached_meta_data */,
+                                             v8_inspector::V8StackTraceId());
   }
 
   DedicatedWorkerThreadForTest* GetDedicatedWorkerThread() {
@@ -159,7 +161,8 @@ class DedicatedWorkerMessagingProxyForTest
 
  private:
   std::unique_ptr<WorkerThread> CreateWorkerThread() override {
-    return std::make_unique<DedicatedWorkerThreadForTest>(WorkerObjectProxy());
+    return std::make_unique<DedicatedWorkerThreadForTest>(GetExecutionContext(),
+                                                          WorkerObjectProxy());
   }
 
   scoped_refptr<const SecurityOrigin> security_origin_;
@@ -172,7 +175,8 @@ class DedicatedWorkerTest : public PageTestBase {
   void SetUp() override {
     PageTestBase::SetUp(IntSize());
     worker_messaging_proxy_ =
-        new DedicatedWorkerMessagingProxyForTest(&GetDocument());
+        MakeGarbageCollected<DedicatedWorkerMessagingProxyForTest>(
+            &GetDocument());
   }
 
   void TearDown() override {

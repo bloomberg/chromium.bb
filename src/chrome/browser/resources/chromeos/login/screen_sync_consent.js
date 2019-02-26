@@ -23,6 +23,7 @@ login.createScreen('SyncConsentScreen', 'sync-consent', function() {
      */
     onBeforeShow: function(data) {
       Oobe.getInstance().headerHidden = true;
+      $('login-header-bar').signinUIState = SIGNIN_UI_STATE.SYNC_CONSENT;
     },
 
     /**
@@ -30,6 +31,7 @@ login.createScreen('SyncConsentScreen', 'sync-consent', function() {
      */
     onBeforeHide: function() {
       this.setThrobberVisible(false /*visible*/);
+      $('login-header-bar').signinUIState = SIGNIN_UI_STATE.HIDDEN;
     },
 
     /**

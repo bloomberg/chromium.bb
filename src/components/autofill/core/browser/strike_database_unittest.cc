@@ -18,15 +18,18 @@
 namespace autofill {
 namespace {
 
-// Note: This class is NOT the same as test_strike_database.h. This is an actual
-// implementation of StrikeDatabase, but with helper functions added for easier
-// test setup.
+// Note: This class is NOT the same as test_strike_database.h. This is an
+// actual implementation of StrikeDatabase, but with helper functions
+// added for easier test setup. If you want a TestStrikeDatabase, please use the
+// one in test_strike_database.h.  This one is purely for this unit test class.
 class TestStrikeDatabase : public StrikeDatabase {
  public:
   TestStrikeDatabase(const base::FilePath& database_dir)
-      : StrikeDatabase(database_dir) {}
+      : StrikeDatabase(database_dir) {
+    database_initialized_ = true;
+  }
 
-  void AddEntries(
+  void AddProtoEntries(
       std::vector<std::pair<std::string, StrikeData>> entries_to_add,
       const SetValueCallback& callback) {
     std::unique_ptr<leveldb_proto::ProtoDatabase<StrikeData>::KeyEntryVector>
@@ -42,6 +45,20 @@ class TestStrikeDatabase : public StrikeDatabase {
 
  private:
   DISALLOW_COPY_AND_ASSIGN(TestStrikeDatabase);
+
+  // Do not use. This virtual function needed to be implemented but
+  // TestStrikeDatabase is not a project class.
+  std::string GetProjectPrefix() override {
+    NOTIMPLEMENTED();
+    return " ";
+  }
+
+  // Do not use. This virtual function needed to be implemented but
+  // TestStrikeDatabase is not a project class.
+  int GetMaxStrikesLimit() override {
+    NOTIMPLEMENTED();
+    return 0;
+  }
 };
 
 }  // anonymous namespace
@@ -52,73 +69,60 @@ class StrikeDatabaseTest : public ::testing::Test {
  public:
   StrikeDatabaseTest() : strike_database_(InitFilePath()) {}
 
-  void AddEntries(
+  void AddProtoEntries(
       std::vector<std::pair<std::string, StrikeData>> entries_to_add) {
     base::RunLoop run_loop;
-    strike_database_.AddEntries(
+    strike_database_.AddProtoEntries(
         entries_to_add,
-        base::BindRepeating(&StrikeDatabaseTest::OnAddEntries,
+        base::BindRepeating(&StrikeDatabaseTest::OnAddProtoEntries,
                             base::Unretained(this), run_loop.QuitClosure()));
     run_loop.Run();
   }
 
-  void OnAddEntries(base::RepeatingClosure run_loop_closure, bool success) {
-    run_loop_closure.Run();
-  }
-
-  void OnGetStrikes(base::RepeatingClosure run_loop_closure, int num_strikes) {
-    num_strikes_ = num_strikes;
-    run_loop_closure.Run();
-  }
-
-  int GetStrikes(std::string key) {
-    base::RunLoop run_loop;
-    strike_database_.GetStrikes(
-        key,
-        base::BindRepeating(&StrikeDatabaseTest::OnGetStrikes,
-                            base::Unretained(this), run_loop.QuitClosure()));
-    run_loop.Run();
-    return num_strikes_;
-  }
-
-  void OnAddStrike(base::RepeatingClosure run_loop_closure, int num_strikes) {
-    num_strikes_ = num_strikes;
-    run_loop_closure.Run();
-  }
-
-  int AddStrike(std::string key) {
-    base::RunLoop run_loop;
-    strike_database_.AddStrike(
-        key,
-        base::BindRepeating(&StrikeDatabaseTest::OnAddStrike,
-                            base::Unretained(this), run_loop.QuitClosure()));
-    run_loop.Run();
-    return num_strikes_;
-  }
-
-  void OnClearAllStrikesForKey(base::RepeatingClosure run_loop_closure,
-                               bool success) {
-    run_loop_closure.Run();
-  }
-
-  void ClearAllStrikesForKey(const std::string key) {
-    base::RunLoop run_loop;
-    strike_database_.ClearAllStrikesForKey(
-        key,
-        base::BindRepeating(&StrikeDatabaseTest::OnClearAllStrikesForKey,
-                            base::Unretained(this), run_loop.QuitClosure()));
-    run_loop.Run();
-  }
-
-  void OnClearAllStrikes(base::RepeatingClosure run_loop_closure,
+  void OnAddProtoEntries(base::RepeatingClosure run_loop_closure,
                          bool success) {
     run_loop_closure.Run();
   }
 
-  void ClearAllStrikes() {
+  void OnGetProtoStrikes(base::RepeatingClosure run_loop_closure,
+                         int num_strikes) {
+    num_strikes_ = num_strikes;
+    run_loop_closure.Run();
+  }
+
+  int GetProtoStrikes(std::string key) {
     base::RunLoop run_loop;
-    strike_database_.ClearAllStrikes(
-        base::BindRepeating(&StrikeDatabaseTest::OnClearAllStrikesForKey,
+    strike_database_.GetProtoStrikes(
+        key,
+        base::BindRepeating(&StrikeDatabaseTest::OnGetProtoStrikes,
+                            base::Unretained(this), run_loop.QuitClosure()));
+    run_loop.Run();
+    return num_strikes_;
+  }
+
+  void OnClearAllProtoStrikesForKey(base::RepeatingClosure run_loop_closure,
+                                    bool success) {
+    run_loop_closure.Run();
+  }
+
+  void ClearAllProtoStrikesForKey(const std::string key) {
+    base::RunLoop run_loop;
+    strike_database_.ClearAllProtoStrikesForKey(
+        key,
+        base::BindRepeating(&StrikeDatabaseTest::OnClearAllProtoStrikesForKey,
+                            base::Unretained(this), run_loop.QuitClosure()));
+    run_loop.Run();
+  }
+
+  void OnClearAllProtoStrikes(base::RepeatingClosure run_loop_closure,
+                              bool success) {
+    run_loop_closure.Run();
+  }
+
+  void ClearAllProtoStrikes() {
+    base::RunLoop run_loop;
+    strike_database_.ClearAllProtoStrikes(
+        base::BindRepeating(&StrikeDatabaseTest::OnClearAllProtoStrikesForKey,
                             base::Unretained(this), run_loop.QuitClosure()));
     run_loop.Run();
   }
@@ -142,17 +146,9 @@ class StrikeDatabaseTest : public ::testing::Test {
   std::unique_ptr<StrikeData> strike_data_;
 };
 
-TEST_F(StrikeDatabaseTest, AddStrikeTest) {
+TEST_F(StrikeDatabaseTest, GetStrikesForMissingKeyTest) {
   const std::string key = "12345";
-  int strikes = AddStrike(key);
-  EXPECT_EQ(1, strikes);
-  strikes = AddStrike(key);
-  EXPECT_EQ(2, strikes);
-}
-
-TEST_F(StrikeDatabaseTest, GetStrikeForZeroStrikesTest) {
-  const std::string key = "12345";
-  int strikes = GetStrikes(key);
+  int strikes = GetProtoStrikes(key);
   EXPECT_EQ(0, strikes);
 }
 
@@ -163,16 +159,16 @@ TEST_F(StrikeDatabaseTest, GetStrikeForNonZeroStrikesTest) {
   StrikeData data;
   data.set_num_strikes(3);
   entries.push_back(std::make_pair(key, data));
-  AddEntries(entries);
+  AddProtoEntries(entries);
 
-  int strikes = GetStrikes(key);
+  int strikes = GetProtoStrikes(key);
   EXPECT_EQ(3, strikes);
 }
 
-TEST_F(StrikeDatabaseTest, ClearStrikesForZeroStrikesTest) {
+TEST_F(StrikeDatabaseTest, ClearStrikesForMissingKeyTest) {
   const std::string key = "12345";
-  ClearAllStrikesForKey(key);
-  int strikes = GetStrikes(key);
+  ClearAllProtoStrikesForKey(key);
+  int strikes = GetProtoStrikes(key);
   EXPECT_EQ(0, strikes);
 }
 
@@ -183,12 +179,12 @@ TEST_F(StrikeDatabaseTest, ClearStrikesForNonZeroStrikesTest) {
   StrikeData data;
   data.set_num_strikes(3);
   entries.push_back(std::make_pair(key, data));
-  AddEntries(entries);
+  AddProtoEntries(entries);
 
-  int strikes = GetStrikes(key);
+  int strikes = GetProtoStrikes(key);
   EXPECT_EQ(3, strikes);
-  ClearAllStrikesForKey(key);
-  strikes = GetStrikes(key);
+  ClearAllProtoStrikesForKey(key);
+  strikes = GetProtoStrikes(key);
   EXPECT_EQ(0, strikes);
 }
 
@@ -204,20 +200,20 @@ TEST_F(StrikeDatabaseTest, ClearStrikesForMultipleNonZeroStrikesEntriesTest) {
   StrikeData data2;
   data2.set_num_strikes(5);
   entries.push_back(std::make_pair(key2, data2));
-  AddEntries(entries);
+  AddProtoEntries(entries);
 
-  int strikes = GetStrikes(key1);
+  int strikes = GetProtoStrikes(key1);
   EXPECT_EQ(3, strikes);
-  strikes = GetStrikes(key2);
+  strikes = GetProtoStrikes(key2);
   EXPECT_EQ(5, strikes);
-  ClearAllStrikesForKey(key1);
-  strikes = GetStrikes(key1);
+  ClearAllProtoStrikesForKey(key1);
+  strikes = GetProtoStrikes(key1);
   EXPECT_EQ(0, strikes);
-  strikes = GetStrikes(key2);
+  strikes = GetProtoStrikes(key2);
   EXPECT_EQ(5, strikes);
 }
 
-TEST_F(StrikeDatabaseTest, ClearAllStrikesTest) {
+TEST_F(StrikeDatabaseTest, ClearAllProtoStrikesTest) {
   // Set up database with 3 pre-existing strikes at |key1|, and 5 pre-existing
   // strikes at |key2|.
   const std::string key1 = "12345";
@@ -229,47 +225,13 @@ TEST_F(StrikeDatabaseTest, ClearAllStrikesTest) {
   StrikeData data2;
   data2.set_num_strikes(5);
   entries.push_back(std::make_pair(key2, data2));
-  AddEntries(entries);
+  AddProtoEntries(entries);
 
-  EXPECT_EQ(3, GetStrikes(key1));
-  EXPECT_EQ(5, GetStrikes(key2));
-  ClearAllStrikes();
-  EXPECT_EQ(0, GetStrikes(key1));
-  EXPECT_EQ(0, GetStrikes(key2));
-}
-
-TEST_F(StrikeDatabaseTest, GetKeyForCreditCardSave) {
-  const std::string last_four = "1234";
-  EXPECT_EQ("creditCardSave__1234",
-            strike_database_.GetKeyForCreditCardSave(last_four));
-}
-
-TEST_F(StrikeDatabaseTest, GetPrefixFromKey) {
-  const std::string key = "creditCardSave__1234";
-  EXPECT_EQ("creditCardSave", strike_database_.GetPrefixFromKey(key));
-}
-
-TEST_F(StrikeDatabaseTest, CreditCardSaveNthStrikeAddedHistogram) {
-  const std::string last_four1 = "1234";
-  const std::string last_four2 = "9876";
-  const std::string key1 = "NotACreditCard";
-  // 1st strike added for |last_four1|.
-  AddStrike(strike_database_.GetKeyForCreditCardSave(last_four1));
-  // 2nd strike added for |last_four1|.
-  AddStrike(strike_database_.GetKeyForCreditCardSave(last_four1));
-  // 1st strike added for |last_four2|.
-  AddStrike(strike_database_.GetKeyForCreditCardSave(last_four2));
-  // Shouldn't be counted in histogram since key doesn't have prefix for credit
-  // cards.
-  AddStrike(key1);
-  std::vector<base::Bucket> buckets = GetHistogramTester()->GetAllSamples(
-      "Autofill.StrikeDatabase.NthStrikeAdded.CreditCardSave");
-  // There should be two buckets, one for 1st strike, one for 2nd strike count.
-  ASSERT_EQ(2U, buckets.size());
-  // Both |last_four1| and |last_four2| have 1st strikes recorded.
-  EXPECT_EQ(2, buckets[0].count);
-  // Only |last_four1| has 2nd strike recorded.
-  EXPECT_EQ(1, buckets[1].count);
+  EXPECT_EQ(3, GetProtoStrikes(key1));
+  EXPECT_EQ(5, GetProtoStrikes(key2));
+  ClearAllProtoStrikes();
+  EXPECT_EQ(0, GetProtoStrikes(key1));
+  EXPECT_EQ(0, GetProtoStrikes(key2));
 }
 
 }  // namespace autofill

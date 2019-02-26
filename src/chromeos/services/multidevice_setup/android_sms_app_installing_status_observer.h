@@ -50,10 +50,11 @@ class AndroidSmsAppInstallingStatusObserver
   void OnHostStatusChange(const HostStatusProvider::HostStatusWithDevice&
                               host_status_with_device) override;
 
-  // FeatureStateManager:;Observer:
+  // FeatureStateManager::Observer:
   void OnFeatureStatesChange(
       const FeatureStateManager::FeatureStatesMap& feature_states_map) override;
 
+  bool IsPwaNeeded();
   void InstallPwaIfNeeded();
 
   HostStatusProvider* host_status_provider_;

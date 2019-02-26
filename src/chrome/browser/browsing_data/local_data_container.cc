@@ -8,6 +8,7 @@
 #include "chrome/browser/browsing_data/browsing_data_channel_id_helper.h"
 #include "chrome/browser/browsing_data/browsing_data_flash_lso_helper.h"
 #include "chrome/browser/browsing_data/cookies_tree_model.h"
+#include "content/public/browser/storage_usage_info.h"
 #include "net/cookies/canonical_cookie.h"
 
 ///////////////////////////////////////////////////////////////////////////////

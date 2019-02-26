@@ -98,10 +98,8 @@ public class TestVrShellDelegate extends VrShellDelegate {
         getVrShell().performKeyboardInputForTesting(inputType, inputString);
     }
 
-    public void registerUiOperationCallbackForTesting(
-            int actionType, Runnable resultCallback, int timeoutMs, int elementName) {
-        getVrShell().registerUiOperationCallbackForTesting(
-                actionType, resultCallback, timeoutMs, elementName);
+    public void registerUiOperationCallbackForTesting(VrShell.UiOperationData operationData) {
+        getVrShell().registerUiOperationCallbackForTesting(operationData);
     }
 
     public void saveNextFrameBufferToDiskForTesting(String filepathBase) {

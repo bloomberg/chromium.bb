@@ -10,6 +10,7 @@
 
 #include "core/fxcrt/cfx_decimal.h"
 #include "core/fxcrt/fx_extension.h"
+#include "core/fxcrt/xml/cfx_xmlelement.h"
 #include "core/fxcrt/xml/cfx_xmltext.h"
 #include "fxjs/cfxjse_engine.h"
 #include "fxjs/cfxjse_value.h"
@@ -20,6 +21,7 @@
 #include "fxjs/xfa/cjx_instancemanager.h"
 #include "third_party/base/compiler_specific.h"
 #include "third_party/base/ptr_util.h"
+#include "third_party/base/stl_util.h"
 #include "xfa/fxfa/cxfa_ffnotify.h"
 #include "xfa/fxfa/cxfa_ffwidget.h"
 #include "xfa/fxfa/parser/cxfa_border.h"
@@ -163,13 +165,13 @@ int32_t CJX_Object::Subform_and_SubformSet_InstanceIndex() {
 }
 
 bool CJX_Object::HasMethod(const WideString& func) const {
-  return pdfium::ContainsKey(method_specs_, func.UTF8Encode());
+  return pdfium::ContainsKey(method_specs_, func.ToUTF8());
 }
 
 CJS_Result CJX_Object::RunMethod(
     const WideString& func,
     const std::vector<v8::Local<v8::Value>>& params) {
-  auto it = method_specs_.find(func.UTF8Encode());
+  auto it = method_specs_.find(func.ToUTF8());
   if (it == method_specs_.end())
     return CJS_Result::Failure(JSMessage::kUnknownMethod);
 
@@ -202,7 +204,7 @@ void CJX_Object::ThrowArgumentMismatchException() const {
 
 void CJX_Object::ThrowException(const WideString& str) const {
   ASSERT(!str.IsEmpty());
-  FXJSE_ThrowMessage(str.UTF8Encode().AsStringView());
+  FXJSE_ThrowMessage(str.ToUTF8().AsStringView());
 }
 
 bool CJX_Object::HasAttribute(XFA_Attribute eAttr) {
@@ -621,8 +623,8 @@ void CJX_Object::SetContent(const WideString& wsContent,
               i++;
             }
           }
-          for (const auto& pArrayNode : *(pBind->GetBindItems())) {
-            if (pArrayNode.Get() != ToNode(GetXFAObject())) {
+          for (auto* pArrayNode : *(pBind->GetBindItems())) {
+            if (pArrayNode != ToNode(GetXFAObject())) {
               pArrayNode->JSObject()->SetContent(wsContent, wsContent, bNotify,
                                                  bScriptModify, false);
             }
@@ -647,8 +649,8 @@ void CJX_Object::SetContent(const WideString& wsContent,
       if (pBindNode && bSyncData) {
         pBindNode->JSObject()->SetContent(wsContent, wsXMLValue, bNotify,
                                           bScriptModify, false);
-        for (const auto& pArrayNode : *(pBindNode->GetBindItems())) {
-          if (pArrayNode.Get() != ToNode(GetXFAObject())) {
+        for (auto* pArrayNode : *(pBindNode->GetBindItems())) {
+          if (pArrayNode != ToNode(GetXFAObject())) {
             pArrayNode->JSObject()->SetContent(wsContent, wsContent, bNotify,
                                                true, false);
           }
@@ -720,7 +722,7 @@ void CJX_Object::SetContent(const WideString& wsContent,
 
   SetAttributeValue(wsContent, wsXMLValue, bNotify, bScriptModify);
   if (pBindNode && bSyncData) {
-    for (const auto& pArrayNode : *(pBindNode->GetBindItems())) {
+    for (auto* pArrayNode : *(pBindNode->GetBindItems())) {
       pArrayNode->JSObject()->SetContent(wsContent, wsContent, bNotify,
                                          bScriptModify, false);
     }
@@ -1143,7 +1145,7 @@ void CJX_Object::Script_Attribute_String(CFXJSE_Value* pValue,
                                          bool bSetting,
                                          XFA_Attribute eAttribute) {
   if (!bSetting) {
-    pValue->SetString(GetAttribute(eAttribute).UTF8Encode().AsStringView());
+    pValue->SetString(GetAttribute(eAttribute).ToUTF8().AsStringView());
     return;
   }
 
@@ -1276,7 +1278,7 @@ void CJX_Object::Script_Som_FillColor(CFXJSE_Value* pValue,
   int32_t b;
   std::tie(a, r, g, b) = ArgbDecode(color);
   pValue->SetString(
-      WideString::Format(L"%d,%d,%d", r, g, b).UTF8Encode().AsStringView());
+      WideString::Format(L"%d,%d,%d", r, g, b).ToUTF8().AsStringView());
 }
 
 void CJX_Object::Script_Som_BorderColor(CFXJSE_Value* pValue,
@@ -1307,7 +1309,7 @@ void CJX_Object::Script_Som_BorderColor(CFXJSE_Value* pValue,
   int32_t b;
   std::tie(a, r, g, b) = ArgbDecode(color);
   pValue->SetString(
-      WideString::Format(L"%d,%d,%d", r, g, b).UTF8Encode().AsStringView());
+      WideString::Format(L"%d,%d,%d", r, g, b).ToUTF8().AsStringView());
 }
 
 void CJX_Object::Script_Som_BorderWidth(CFXJSE_Value* pValue,
@@ -1318,7 +1320,7 @@ void CJX_Object::Script_Som_BorderWidth(CFXJSE_Value* pValue,
     CXFA_Edge* edge = border->GetEdgeIfExists(0);
     CXFA_Measurement thickness =
         edge ? edge->GetMSThickness() : CXFA_Measurement(0.5, XFA_Unit::Pt);
-    pValue->SetString(thickness.ToString().UTF8Encode().AsStringView());
+    pValue->SetString(thickness.ToString().ToUTF8().AsStringView());
     return;
   }
 
@@ -1387,7 +1389,7 @@ void CJX_Object::Script_Som_Message(CFXJSE_Value* pValue,
     default:
       break;
   }
-  pValue->SetString(wsMessage.UTF8Encode().AsStringView());
+  pValue->SetString(wsMessage.ToUTF8().AsStringView());
 }
 
 void CJX_Object::Script_Som_ValidationMessage(CFXJSE_Value* pValue,
@@ -1451,7 +1453,7 @@ void CJX_Object::Script_Som_DefaultValue(CFXJSE_Value* pValue,
     CXFA_Node* pContainerNode = nullptr;
     if (ToNode(GetXFAObject())->GetPacketType() == XFA_PacketType::Datasets) {
       WideString wsPicture;
-      for (const auto& pFormNode : *(ToNode(GetXFAObject())->GetBindItems())) {
+      for (auto* pFormNode : *(ToNode(GetXFAObject())->GetBindItems())) {
         if (!pFormNode || pFormNode->HasRemovedChildren())
           continue;
 
@@ -1487,7 +1489,7 @@ void CJX_Object::Script_Som_DefaultValue(CFXJSE_Value* pValue,
     CFX_Decimal decimal(content.AsStringView());
     pValue->SetFloat((float)(double)decimal);
   } else {
-    pValue->SetString(content.UTF8Encode().AsStringView());
+    pValue->SetString(content.ToUTF8().AsStringView());
   }
 }
 
@@ -1504,7 +1506,7 @@ void CJX_Object::Script_Som_DefaultValue_Read(CFXJSE_Value* pValue,
     pValue->SetNull();
     return;
   }
-  pValue->SetString(content.UTF8Encode().AsStringView());
+  pValue->SetString(content.ToUTF8().AsStringView());
 }
 
 void CJX_Object::Script_Som_DataNode(CFXJSE_Value* pValue,
@@ -1539,7 +1541,7 @@ void CJX_Object::Script_Som_Mandatory(CFXJSE_Value* pValue,
   }
 
   WideString str = CXFA_Node::AttributeEnumToName(validate->GetNullTest());
-  pValue->SetString(str.UTF8Encode().AsStringView());
+  pValue->SetString(str.ToUTF8().AsStringView());
 }
 
 void CJX_Object::Script_Som_InstanceIndex(CFXJSE_Value* pValue,
@@ -1626,7 +1628,7 @@ void CJX_Object::Script_Form_Checksum(CFXJSE_Value* pValue,
   }
 
   Optional<WideString> checksum = TryAttribute(XFA_Attribute::Checksum, false);
-  pValue->SetString(checksum ? checksum->UTF8Encode().AsStringView() : "");
+  pValue->SetString(checksum ? checksum->ToUTF8().AsStringView() : "");
 }
 
 void CJX_Object::Script_ExclGroup_ErrorText(CFXJSE_Value* pValue,

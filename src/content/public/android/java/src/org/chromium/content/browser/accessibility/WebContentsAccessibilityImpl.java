@@ -946,7 +946,9 @@ public class WebContentsAccessibilityImpl extends AccessibilityNodeProvider
 
     @CalledByNative
     private void handleSliderChanged(int id) {
-        sendAccessibilityEvent(id, AccessibilityEvent.TYPE_VIEW_SCROLLED);
+        // Sending a TYPE_VIEW_SELECTED event triggers talkback to report new
+        // slider value
+        sendAccessibilityEvent(id, AccessibilityEvent.TYPE_VIEW_SELECTED);
     }
 
     @CalledByNative

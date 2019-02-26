@@ -7,101 +7,60 @@
 /**
  * Tests restoring window geometry of the Files app.
  */
-testcase.restoreGeometry = function() {
-  var appId;
-  var appId2;
-  StepsRunner.run([
-    // Set up File Manager.
-    function() {
-      setupAndWaitUntilReady(null, RootPath.DOWNLOADS, this.next);
-    },
-    // Resize the window to minimal dimensions.
-    function(results) {
-      appId = results.windowId;
-      remoteCall.callRemoteTestUtil(
-          'resizeWindow', appId, [640, 480], this.next);
-    },
-    // Check the current window's size.
-    function() {
-      remoteCall.waitForWindowGeometry(appId, 640, 480).then(this.next);
-    },
-    // Enlarge the window by 10 pixels.
-    function(result) {
-      remoteCall.callRemoteTestUtil(
-          'resizeWindow', appId, [650, 490], this.next);
-    },
-    // Check the current window's size.
-    function() {
-      remoteCall.waitForWindowGeometry(appId, 650, 490).then(this.next);
-    },
-    // Open another window, where the current view is restored.
-    function() {
-      setupAndWaitUntilReady(null, RootPath.DOWNLOADS, this.next);
-    },
-    // Check the next window's size.
-    function(results) {
-      appId2 = results.windowId;
-      remoteCall.waitForWindowGeometry(appId2, 650, 490).then(this.next);
-    },
-    // Check for errors.
-    function() {
-      checkIfNoErrorsOccured(this.next);
-    }
-  ]);
+testcase.restoreGeometry = async function() {
+  // Set up Files app.
+  let {appId} = await setupAndWaitUntilReady(null, RootPath.DOWNLOADS);
+
+  // Resize the window to minimal dimensions.
+  await remoteCall.callRemoteTestUtil('resizeWindow', appId, [640, 480]);
+
+  // Check the current window's size.
+  await remoteCall.waitForWindowGeometry(appId, 640, 480);
+
+  // Enlarge the window by 10 pixels.
+  await remoteCall.callRemoteTestUtil('resizeWindow', appId, [650, 490]);
+
+  // Check the current window's size.
+  await remoteCall.waitForWindowGeometry(appId, 650, 490);
+
+  // Open another window, where the current view is restored.
+  ({appId} = await setupAndWaitUntilReady(null, RootPath.DOWNLOADS));
+
+  // Check the next window's size.
+  await remoteCall.waitForWindowGeometry(appId, 650, 490);
 };
 
 /**
  * Tests restoring a maximized Files app window.
  */
-testcase.restoreGeometryMaximized = function() {
-  var appId;
-  var appId2;
+testcase.restoreGeometryMaximized = async function() {
   var caller = getCaller();
-  StepsRunner.run([
-    // Set up File Manager.
-    function() {
-      setupAndWaitUntilReady(null, RootPath.DOWNLOADS, this.next);
-    },
-    // Maximize the window
-    function(results) {
-      appId = results.windowId;
-      remoteCall.callRemoteTestUtil('maximizeWindow', appId, [], this.next);
-    },
-    // Check that the first window is maximized.
-    function() {
-      return repeatUntil(function() {
-        return remoteCall.callRemoteTestUtil('isWindowMaximized', appId, [])
-            .then(function(isMaximized) {
-              if (isMaximized)
-                return true;
-              else
-                return pending(caller, 'Waiting window maximized...');
-            });
-      }).then(this.next);
-    },
-    // Close the window.
-    function() {
-      remoteCall.closeWindowAndWait(appId).then(this.next);
-    },
-    // Open a Files app window again.
-    function() {
-      setupAndWaitUntilReady(null, RootPath.DOWNLOADS, this.next);
-    },
-    // Check that the newly opened window is maximized initially.
-    function(results) {
-      appId2 = results.windowId;
-      return repeatUntil(function() {
-        return remoteCall.callRemoteTestUtil('isWindowMaximized', appId2, [])
-            .then(function(isMaximized) {
-              if (isMaximized)
-                return true;
-              else
-                return pending(caller, 'Waiting window maximized...');
-            });
-      }).then(this.next);
-    },
-    function() {
-      checkIfNoErrorsOccured(this.next);
+
+  // Set up Files app.
+  let {appId} = await setupAndWaitUntilReady(null, RootPath.DOWNLOADS);
+
+  // Maximize the window
+  await remoteCall.callRemoteTestUtil('maximizeWindow', appId, []);
+
+  // Check that the first window is maximized.
+  await repeatUntil(async function() {
+    if (await remoteCall.callRemoteTestUtil('isWindowMaximized', appId, [])) {
+      return true;
     }
-  ]);
+    return pending(caller, 'Waiting window maximized...');
+  });
+
+  // Close the window.
+  await remoteCall.closeWindowAndWait(appId);
+
+  // Open a Files app window again.
+  ({appId} = await setupAndWaitUntilReady(null, RootPath.DOWNLOADS));
+
+  // Check that the newly opened window is maximized initially.
+  await repeatUntil(async function() {
+    if (await remoteCall.callRemoteTestUtil('isWindowMaximized', appId, [])) {
+      return true;
+    }
+    return pending(caller, 'Waiting window maximized...');
+  });
 };

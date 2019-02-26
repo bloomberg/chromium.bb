@@ -242,9 +242,7 @@ public class ContextualSearchRankerLoggerImpl implements ContextualSearchInterac
         if (value instanceof Boolean) {
             logToNative(feature, ((boolean) value ? 1 : 0));
         } else if (value instanceof Integer) {
-            logToNative(feature, Long.valueOf((int) value));
-        } else if (value instanceof Long) {
-            logToNative(feature, (long) value);
+            logToNative(feature, (int) value);
         } else if (value instanceof Character) {
             logToNative(feature, Character.getNumericValue((char) value));
         } else {
@@ -259,10 +257,10 @@ public class ContextualSearchRankerLoggerImpl implements ContextualSearchInterac
      * @param feature The feature to log.
      * @param value The value to log.
      */
-    private void logToNative(@Feature int feature, long value) {
+    private void logToNative(@Feature int feature, int value) {
         String featureName = getFeatureName(feature);
         assert featureName != null : "No Name for feature " + feature;
-        nativeLogLong(mNativePointer, featureName, value);
+        nativeLogInt32(mNativePointer, featureName, value);
     }
 
     /**
@@ -299,8 +297,8 @@ public class ContextualSearchRankerLoggerImpl implements ContextualSearchInterac
     // ============================================================================================
     private native long nativeInit();
     private native void nativeDestroy(long nativeContextualSearchRankerLoggerImpl);
-    private native void nativeLogLong(
-            long nativeContextualSearchRankerLoggerImpl, String featureString, long value);
+    private native void nativeLogInt32(
+            long nativeContextualSearchRankerLoggerImpl, String featureString, int value);
     private native void nativeSetupLoggingAndRanker(
             long nativeContextualSearchRankerLoggerImpl, WebContents basePageWebContents);
     // Returns an AssistRankerPrediction integer value.

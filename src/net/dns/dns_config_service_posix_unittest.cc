@@ -16,7 +16,7 @@
 #include "net/base/ip_address.h"
 #include "net/dns/dns_config.h"
 #include "net/dns/dns_config_service_posix.h"
-#include "net/dns/dns_protocol.h"
+#include "net/dns/public/dns_protocol.h"
 
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -189,6 +189,7 @@ TEST(DnsConfigServicePosixTest, DestroyWhileJobsWorking) {
       new internal::DnsConfigServicePosix());
   service->ReadConfig(base::Bind(&DummyConfigCallback));
   service.reset();
+  scoped_task_environment.RunUntilIdle();
   base::PlatformThread::Sleep(base::TimeDelta::FromMilliseconds(1000));
 }
 
@@ -215,6 +216,7 @@ class DnsConfigServicePosixTest : public testing::Test {
 
   void TearDown() override { ASSERT_TRUE(base::DeleteFile(temp_file_, false)); }
 
+  base::test::ScopedTaskEnvironment scoped_task_environment_;
   bool seen_config_;
   base::FilePath temp_file_;
   std::unique_ptr<DnsConfigServicePosix> service_;
@@ -223,11 +225,9 @@ class DnsConfigServicePosixTest : public testing::Test {
 
 // Regression test for https://crbug.com/704662.
 TEST_F(DnsConfigServicePosixTest, ChangeConfigMultipleTimes) {
-  base::test::ScopedTaskEnvironment scoped_task_environment;
-
   service_->WatchConfig(base::Bind(&DnsConfigServicePosixTest::OnConfigChanged,
                                    base::Unretained(this)));
-  scoped_task_environment.RunUntilIdle();
+  scoped_task_environment_.RunUntilIdle();
 
   for (int i = 0; i < 5; i++) {
     service_->OnConfigChanged(true);
@@ -235,7 +235,7 @@ TEST_F(DnsConfigServicePosixTest, ChangeConfigMultipleTimes) {
     // called if the new config is different from the old one, so this can't be
     // ExpectChange().
     base::PlatformThread::Sleep(base::TimeDelta::FromMilliseconds(50));
-    scoped_task_environment.RunUntilIdle();
+    scoped_task_environment_.RunUntilIdle();
   }
 
   // There should never be more than 4 nameservers in a real config.

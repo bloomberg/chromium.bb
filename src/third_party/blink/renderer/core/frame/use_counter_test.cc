@@ -5,7 +5,6 @@
 #include "third_party/blink/renderer/core/frame/use_counter.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/blink/public/mojom/use_counter/css_property_id.mojom-blink.h"
-#include "third_party/blink/renderer/core/css/css_test_helper.h"
 #include "third_party/blink/renderer/core/frame/deprecation.h"
 #include "third_party/blink/renderer/core/html/html_html_element.h"
 #include "third_party/blink/renderer/core/loader/document_loader.h"
@@ -63,6 +62,11 @@ class UseCounterTest : public testing::Test {
       UseCounter::Context context = UseCounter::kDefaultContext);
   std::unique_ptr<DummyPageHolder> dummy_;
   HistogramTester histogram_tester_;
+
+  void UpdateAllLifecyclePhases(Document& document) {
+    document.View()->UpdateAllLifecyclePhases(
+        DocumentLifecycle::LifecycleUpdateReason::kTest);
+  }
 };
 
 template <typename T>
@@ -100,7 +104,7 @@ void UseCounterTest::HistogramBasicTest(
   // After a page load, the histograms will be updated, even when the URL
   // scheme is internal
   UseCounter use_counter1(context);
-  SetURL(URLTestHelpers::ToKURL(url));
+  SetURL(url_test_helpers::ToKURL(url));
   did_commit_load(GetFrame(), use_counter1);
   histogram_tester_.ExpectBucketCount(histogram, histogram_map(item), 1);
   histogram_tester_.ExpectBucketCount(histogram, histogram_map(second_item), 1);
@@ -150,16 +154,18 @@ TEST_F(UseCounterTest, SVGImageContextFeatures) {
       kSvgUrl, UseCounter::kSVGImageContext);
 }
 
-TEST_F(UseCounterTest, CSSSelectorPseudoIS) {
+TEST_F(UseCounterTest, CSSSelectorPseudoWhere) {
   std::unique_ptr<DummyPageHolder> dummy_page_holder =
       DummyPageHolder::Create(IntSize(800, 600));
   Page::InsertOrdinaryPageForTesting(&dummy_page_holder->GetPage());
   Document& document = dummy_page_holder->GetDocument();
-  WebFeature feature = WebFeature::kCSSSelectorPseudoIS;
+  WebFeature feature = WebFeature::kCSSSelectorPseudoWhere;
   EXPECT_FALSE(UseCounter::IsCounted(document, feature));
   document.documentElement()->SetInnerHTMLFromString(
-      "<style>.a+:is(.b, .c+.d) { color: red; }</style>");
+      "<style>.a+:where(.b, .c+.d) { color: red; }</style>");
   EXPECT_TRUE(UseCounter::IsCounted(document, feature));
+  EXPECT_FALSE(
+      UseCounter::IsCounted(document, WebFeature::kCSSSelectorPseudoIs));
 }
 
 /*
@@ -205,16 +211,18 @@ TEST_F(UseCounterTest, CSSTypedOMStylePropertyMap) {
   EXPECT_TRUE(use_counter.IsCounted(GetDocument(), feature));
 }
 
-TEST_F(UseCounterTest, CSSSelectorPseudoMatches) {
+TEST_F(UseCounterTest, CSSSelectorPseudoIs) {
   std::unique_ptr<DummyPageHolder> dummy_page_holder =
       DummyPageHolder::Create(IntSize(800, 600));
   Page::InsertOrdinaryPageForTesting(&dummy_page_holder->GetPage());
   Document& document = dummy_page_holder->GetDocument();
-  WebFeature feature = WebFeature::kCSSSelectorPseudoMatches;
+  WebFeature feature = WebFeature::kCSSSelectorPseudoIs;
   EXPECT_FALSE(UseCounter::IsCounted(document, feature));
   document.documentElement()->SetInnerHTMLFromString(
-      "<style>.a+:matches(.b, .c+.d) { color: red; }</style>");
+      "<style>.a+:is(.b, .c+.d) { color: red; }</style>");
   EXPECT_TRUE(UseCounter::IsCounted(document, feature));
+  EXPECT_FALSE(
+      UseCounter::IsCounted(document, WebFeature::kCSSSelectorPseudoWhere));
 }
 
 TEST_F(UseCounterTest, CSSContainLayoutNonPositionedDescendants) {
@@ -227,7 +235,7 @@ TEST_F(UseCounterTest, CSSContainLayoutNonPositionedDescendants) {
   document.documentElement()->SetInnerHTMLFromString(
       "<div style='contain: layout;'>"
       "</div>");
-  document.View()->UpdateAllLifecyclePhases();
+  UpdateAllLifecyclePhases(document);
   EXPECT_FALSE(UseCounter::IsCounted(document, feature));
 }
 
@@ -242,7 +250,7 @@ TEST_F(UseCounterTest, CSSContainLayoutAbsolutelyPositionedDescendants) {
       "<div style='contain: layout;'>"
       "  <div style='position: absolute;'></div>"
       "</div>");
-  document.View()->UpdateAllLifecyclePhases();
+  UpdateAllLifecyclePhases(document);
   EXPECT_TRUE(UseCounter::IsCounted(document, feature));
 }
 
@@ -258,7 +266,7 @@ TEST_F(UseCounterTest,
       "<div style='position: relative; contain: layout;'>"
       "  <div style='position: absolute;'></div>"
       "</div>");
-  document.View()->UpdateAllLifecyclePhases();
+  UpdateAllLifecyclePhases(document);
   EXPECT_FALSE(UseCounter::IsCounted(document, feature));
 }
 
@@ -273,7 +281,7 @@ TEST_F(UseCounterTest, CSSContainLayoutFixedPositionedDescendants) {
       "<div style='contain: layout;'>"
       "  <div style='position: fixed;'></div>"
       "</div>");
-  document.View()->UpdateAllLifecyclePhases();
+  UpdateAllLifecyclePhases(document);
   EXPECT_TRUE(UseCounter::IsCounted(document, feature));
 }
 
@@ -289,7 +297,7 @@ TEST_F(UseCounterTest,
       "<div style='transform: translateX(100px); contain: layout;'>"
       "  <div style='position: fixed;'></div>"
       "</div>");
-  document.View()->UpdateAllLifecyclePhases();
+  UpdateAllLifecyclePhases(document);
   EXPECT_FALSE(UseCounter::IsCounted(document, feature));
 }
 
@@ -303,7 +311,7 @@ TEST_F(UseCounterTest, CSSGridLayoutPercentageColumnIndefiniteWidth) {
   document.documentElement()->SetInnerHTMLFromString(
       "<div style='display: inline-grid; grid-template-columns: 50%;'>"
       "</div>");
-  document.View()->UpdateAllLifecyclePhases();
+  UpdateAllLifecyclePhases(document);
   EXPECT_FALSE(UseCounter::IsCounted(document, feature));
 }
 
@@ -317,7 +325,7 @@ TEST_F(UseCounterTest, CSSGridLayoutPercentageRowIndefiniteHeight) {
   document.documentElement()->SetInnerHTMLFromString(
       "<div style='display: inline-grid; grid-template-rows: 50%;'>"
       "</div>");
-  document.View()->UpdateAllLifecyclePhases();
+  UpdateAllLifecyclePhases(document);
   EXPECT_TRUE(UseCounter::IsCounted(document, feature));
 }
 
@@ -330,7 +338,7 @@ TEST_F(UseCounterTest, CSSFlexibleBox) {
   EXPECT_FALSE(UseCounter::IsCounted(document, feature));
   document.documentElement()->SetInnerHTMLFromString(
       "<div style='display: flex;'>flexbox</div>");
-  document.View()->UpdateAllLifecyclePhases();
+  UpdateAllLifecyclePhases(document);
   EXPECT_TRUE(UseCounter::IsCounted(document, feature));
 }
 
@@ -343,7 +351,7 @@ TEST_F(UseCounterTest, CSSFlexibleBoxInline) {
   EXPECT_FALSE(UseCounter::IsCounted(document, feature));
   document.documentElement()->SetInnerHTMLFromString(
       "<div style='display: inline-flex;'>flexbox</div>");
-  document.View()->UpdateAllLifecyclePhases();
+  UpdateAllLifecyclePhases(document);
   EXPECT_TRUE(UseCounter::IsCounted(document, feature));
 }
 
@@ -357,7 +365,7 @@ TEST_F(UseCounterTest, CSSFlexibleBoxButton) {
   WebFeature feature = WebFeature::kCSSFlexibleBox;
   EXPECT_FALSE(UseCounter::IsCounted(document, feature));
   document.documentElement()->SetInnerHTMLFromString("<button>button</button>");
-  document.View()->UpdateAllLifecyclePhases();
+  UpdateAllLifecyclePhases(document);
   EXPECT_FALSE(UseCounter::IsCounted(document, feature));
 }
 
@@ -409,6 +417,29 @@ TEST_F(DeprecationTest, InspectorDisablesDeprecation) {
   EXPECT_FALSE(deprecation_.IsSuppressed(property));
   Deprecation::CountDeprecation(GetFrame(), feature);
   EXPECT_TRUE(use_counter_.HasRecordedMeasurement(feature));
+}
+
+TEST_F(UseCounterTest, CSSUnknownNamespacePrefixInSelector) {
+  std::unique_ptr<DummyPageHolder> dummy_page_holder =
+      DummyPageHolder::Create(IntSize(800, 600));
+  Page::InsertOrdinaryPageForTesting(&dummy_page_holder->GetPage());
+  Document& document = dummy_page_holder->GetDocument();
+  WebFeature feature = WebFeature::kCSSUnknownNamespacePrefixInSelector;
+  EXPECT_FALSE(UseCounter::IsCounted(document, feature));
+
+  document.documentElement()->SetInnerHTMLFromString(R"HTML(
+    <style>
+      @namespace svg url(http://www.w3.org/2000/svg);
+      svg|a {}
+      a {}
+    </style>
+  )HTML");
+  UpdateAllLifecyclePhases(document);
+  EXPECT_FALSE(UseCounter::IsCounted(document, feature));
+
+  document.documentElement()->SetInnerHTMLFromString("<style>foo|a {}</style>");
+  UpdateAllLifecyclePhases(document);
+  EXPECT_TRUE(UseCounter::IsCounted(document, feature));
 }
 
 }  // namespace blink

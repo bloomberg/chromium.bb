@@ -15,8 +15,9 @@
 #include "base/memory/ptr_util.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/single_thread_task_runner.h"
+#include "base/thread_annotations.h"
+#include "base/threading/sequenced_task_runner_handle.h"
 #include "base/threading/thread_task_runner_handle.h"
-#include "media/audio/null_audio_sink.h"
 #include "media/base/audio_timestamp_helper.h"
 #include "media/base/bind_to_current_loop.h"
 #include "media/base/media_log.h"
@@ -101,7 +102,7 @@ class WebAudioSourceProviderImpl::TeeFilter
   // acquire a lock to read |copy_audio_bus_callback_| when necessary.
   std::atomic<bool> copy_required_;
   base::Lock copy_lock_;
-  CopyAudioCB copy_audio_bus_callback_;
+  CopyAudioCB copy_audio_bus_callback_ GUARDED_BY(copy_lock_);
 
   DISALLOW_COPY_AND_ASSIGN(TeeFilter);
 };
@@ -129,8 +130,13 @@ void WebAudioSourceProviderImpl::SetClient(
   base::AutoLock auto_lock(sink_lock_);
   if (client) {
     // Detach the audio renderer from normal playback.
-    if (sink_)
+    if (sink_) {
       sink_->Stop();
+
+      // It's not possible to resume an element after disconnection, so just
+      // drop the sink entirely for now.
+      sink_ = nullptr;
+    }
 
     // The client will now take control by calling provideInput() periodically.
     client_ = client;
@@ -147,15 +153,9 @@ void WebAudioSourceProviderImpl::SetClient(
     return;
   }
 
-  // Restore normal playback.
+  // Drop client, but normal playback can't be restored. This is okay, the only
+  // way to disconnect a client is internally at time of destruction.
   client_ = nullptr;
-  if (sink_) {
-    sink_->SetVolume(volume_);
-    if (state_ >= kStarted)
-      sink_->Start();
-    if (state_ >= kPlaying)
-      sink_->Play();
-  }
 }
 
 void WebAudioSourceProviderImpl::ProvideInput(
@@ -195,25 +195,10 @@ void WebAudioSourceProviderImpl::Initialize(const AudioParameters& params,
   base::AutoLock auto_lock(sink_lock_);
   DCHECK_EQ(state_, kStopped);
 
-  OutputDeviceStatus device_status =
-      sink_ ? sink_->GetOutputDeviceInfo().device_status()
-            : OUTPUT_DEVICE_STATUS_ERROR_NOT_FOUND;
-
-  UMA_HISTOGRAM_ENUMERATION("Media.WebAudioSourceProvider.SinkStatus",
-                            device_status, OUTPUT_DEVICE_STATUS_MAX + 1);
-
-  if (device_status != OUTPUT_DEVICE_STATUS_OK) {
-    // Since null sink is always OK, we will fall back to it once and forever.
-    if (sink_)
-      sink_->Stop();
-    sink_ = CreateFallbackSink();
-    MEDIA_LOG(ERROR, media_log_)
-        << "Output device error, falling back to null sink";
-  }
-
   tee_filter_->Initialize(renderer, params.channels(), params.sample_rate());
 
-  sink_->Initialize(params, tee_filter_.get());
+  if (sink_)
+    sink_->Initialize(params, tee_filter_.get());
 
   if (set_format_cb_)
     std::move(set_format_cb_).Run();
@@ -224,14 +209,14 @@ void WebAudioSourceProviderImpl::Start() {
   DCHECK(tee_filter_);
   DCHECK_EQ(state_, kStopped);
   state_ = kStarted;
-  if (!client_)
+  if (!client_ && sink_)
     sink_->Start();
 }
 
 void WebAudioSourceProviderImpl::Stop() {
   base::AutoLock auto_lock(sink_lock_);
   state_ = kStopped;
-  if (!client_)
+  if (!client_ && sink_)
     sink_->Stop();
 }
 
@@ -239,7 +224,7 @@ void WebAudioSourceProviderImpl::Play() {
   base::AutoLock auto_lock(sink_lock_);
   DCHECK_EQ(state_, kStarted);
   state_ = kPlaying;
-  if (!client_)
+  if (!client_ && sink_)
     sink_->Play();
 }
 
@@ -247,7 +232,7 @@ void WebAudioSourceProviderImpl::Pause() {
   base::AutoLock auto_lock(sink_lock_);
   DCHECK(state_ == kPlaying || state_ == kStarted);
   state_ = kStarted;
-  if (!client_)
+  if (!client_ && sink_)
     sink_->Pause();
 }
 
@@ -260,9 +245,24 @@ bool WebAudioSourceProviderImpl::SetVolume(double volume) {
 }
 
 OutputDeviceInfo WebAudioSourceProviderImpl::GetOutputDeviceInfo() {
+  NOTREACHED();  // The blocking API is intentionally not supported.
+  return OutputDeviceInfo();
+}
+
+void WebAudioSourceProviderImpl::GetOutputDeviceInfoAsync(
+    OutputDeviceInfoCB info_cb) {
   base::AutoLock auto_lock(sink_lock_);
-  return sink_ ? sink_->GetOutputDeviceInfo()
-               : OutputDeviceInfo(OUTPUT_DEVICE_STATUS_ERROR_NOT_FOUND);
+  if (sink_) {
+    sink_->GetOutputDeviceInfoAsync(std::move(info_cb));
+    return;
+  }
+
+  // Just return empty hardware parameters. When a |client_| is attached, the
+  // underlying audio renderer will prefer the media parameters. See
+  // IsOptimizedForHardwareParameters() for more details.
+  base::SequencedTaskRunnerHandle::Get()->PostTask(
+      FROM_HERE, base::BindOnce(std::move(info_cb),
+                                OutputDeviceInfo(OUTPUT_DEVICE_STATUS_OK)));
 }
 
 bool WebAudioSourceProviderImpl::IsOptimizedForHardwareParameters() {
@@ -277,12 +277,12 @@ bool WebAudioSourceProviderImpl::CurrentThreadIsRenderingThread() {
 
 void WebAudioSourceProviderImpl::SwitchOutputDevice(
     const std::string& device_id,
-    const OutputDeviceStatusCB& callback) {
+    OutputDeviceStatusCB callback) {
   base::AutoLock auto_lock(sink_lock_);
   if (client_ || !sink_)
-    callback.Run(OUTPUT_DEVICE_STATUS_ERROR_INTERNAL);
+    std::move(callback).Run(OUTPUT_DEVICE_STATUS_ERROR_INTERNAL);
   else
-    sink_->SwitchOutputDevice(device_id, callback);
+    sink_->SwitchOutputDevice(device_id, std::move(callback));
 }
 
 void WebAudioSourceProviderImpl::SetCopyAudioCallback(CopyAudioCB callback) {
@@ -306,12 +306,6 @@ void WebAudioSourceProviderImpl::OnSetFormat() {
 
   // Inform Blink about the audio stream format.
   client_->SetFormat(tee_filter_->channels(), tee_filter_->sample_rate());
-}
-
-scoped_refptr<SwitchableAudioRendererSink>
-WebAudioSourceProviderImpl::CreateFallbackSink() {
-  // Assuming it is called on media thread.
-  return new NullAudioSink(base::ThreadTaskRunnerHandle::Get());
 }
 
 int WebAudioSourceProviderImpl::TeeFilter::Render(

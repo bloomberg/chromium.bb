@@ -7,11 +7,14 @@
 
 #include "cc/layers/video_frame_provider.h"
 #include "components/viz/common/surfaces/surface_id.h"
-#include "media/base/video_rotation.h"
 #include "third_party/blink/public/platform/web_common.h"
 
 namespace cc {
 class LayerTreeSettings;
+}
+
+namespace media {
+enum VideoRotation : int;
 }
 
 namespace viz {
@@ -53,9 +56,11 @@ class BLINK_PLATFORM_EXPORT WebVideoFrameSubmitter
   virtual void SetIsOpaque(bool) = 0;
 
   // Prepares the compositor frame sink to accept frames by providing
-  // a SurfaceId. The callback is to be used when on context loss to prevent
-  // the submitter from continuing to submit frames with invalid resources.
+  // a SurfaceId, with its associated allocation time. The callback is to be
+  // used when on context loss to prevent the submitter from continuing to
+  // submit frames with invalid resources.
   virtual void EnableSubmission(viz::SurfaceId,
+                                base::TimeTicks,
                                 WebFrameSinkDestroyedCallback) = 0;
 
   // Updates whether we should submit frames or not based on whether the video

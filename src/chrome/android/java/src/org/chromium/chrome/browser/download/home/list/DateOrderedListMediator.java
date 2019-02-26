@@ -74,6 +74,7 @@ class DateOrderedListMediator {
     private final ThumbnailProvider mThumbnailProvider;
     private final MediatorSelectionObserver mSelectionObserver;
     private final SelectionDelegate<ListItem> mSelectionDelegate;
+    private final DownloadManagerUiConfig mUiConfig;
 
     private final OffTheRecordOfflineItemFilter mOffTheRecordFilter;
     private final InvalidStateOfflineItemFilter mInvalidStateFilter;
@@ -135,11 +136,12 @@ class DateOrderedListMediator {
         //                             [DateOrderedListMutator] ->
         //                                 [ListItemModel]
 
-        mProvider = new OfflineContentProviderGlue(provider, config.isOffTheRecord);
+        mProvider = new OfflineContentProviderGlue(provider, config);
         mShareController = shareController;
         mModel = model;
         mDeleteController = deleteController;
         mSelectionDelegate = selectionDelegate;
+        mUiConfig = config;
 
         mSource = new OfflineItemSource(mProvider);
         mOffTheRecordFilter = new OffTheRecordOfflineItemFilter(config.isOffTheRecord, mSource);
@@ -154,7 +156,8 @@ class DateOrderedListMediator {
 
         mSearchFilter.addObserver(new EmptyStateObserver(mSearchFilter, dateOrderedListObserver));
         mThumbnailProvider = new ThumbnailProviderImpl(
-                ((ChromeApplication) ContextUtils.getApplicationContext()).getReferencePool());
+                ((ChromeApplication) ContextUtils.getApplicationContext()).getReferencePool(),
+                config.inMemoryThumbnailCacheSizeBytes);
         mSelectionObserver = new MediatorSelectionObserver(selectionDelegate);
 
         mModel.getProperties().set(ListProperties.ENABLE_ITEM_ANIMATIONS, true);
@@ -358,8 +361,8 @@ class DateOrderedListMediator {
             return () -> {};
         }
 
-        ThumbnailRequest request =
-                new ThumbnailRequestGlue(mProvider, item, iconWidthPx, iconHeightPx, callback);
+        ThumbnailRequest request = new ThumbnailRequestGlue(mProvider, item, iconWidthPx,
+                iconHeightPx, mUiConfig.maxThumbnailScaleFactor, callback);
         mThumbnailProvider.getThumbnail(request);
         return () -> mThumbnailProvider.cancelRetrieval(request);
     }

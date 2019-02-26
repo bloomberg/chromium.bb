@@ -5,6 +5,7 @@
 #include "ui/accessibility/ax_relative_bounds.h"
 
 #include "base/strings/string_number_conversions.h"
+#include "ui/accessibility/ax_enum_util.h"
 #include "ui/gfx/transform.h"
 
 using base::IntToString;
@@ -30,6 +31,8 @@ AXRelativeBounds& AXRelativeBounds::operator=(AXRelativeBounds other) {
   bounds = other.bounds;
   if (other.transform)
     transform.reset(new gfx::Transform(*other.transform));
+  else
+    transform.reset(nullptr);
   return *this;
 }
 

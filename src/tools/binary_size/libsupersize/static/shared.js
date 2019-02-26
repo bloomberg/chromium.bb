@@ -18,6 +18,8 @@
  * arrays indicate this is a leaf node.
  * @prop {TreeNode | null} parent Parent tree node. null if this is a root node.
  * @prop {string} idPath Full path to this node.
+ * @prop {string} srcPath Path to the source containing this symbol.
+ * @prop {string} component OWNERS Component for this symbol.
  * @prop {number} shortNameIndex The name of the node is include in the idPath.
  * This index indicates where to start to slice the idPath to read the name.
  * @prop {number} size Byte size of this node and its children.

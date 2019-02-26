@@ -4,9 +4,11 @@
 
 #include "chrome/browser/usb/web_usb_service_impl.h"
 
+#include <memory>
 #include <utility>
 
 #include "base/bind.h"
+#include "base/stl_util.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/usb/usb_blocklist.h"
 #include "chrome/browser/usb/usb_chooser_context_factory.h"
@@ -23,6 +25,11 @@ WebUsbServiceImpl::WebUsbServiceImpl(
   DCHECK(render_frame_host_);
   content::WebContents* web_contents =
       content::WebContents::FromRenderFrameHost(render_frame_host_);
+  // This class is destroyed on cross-origin navigations and so it is safe to
+  // cache these values.
+  requesting_origin_ = render_frame_host_->GetLastCommittedURL().GetOrigin();
+  embedding_origin_ =
+      web_contents->GetMainFrame()->GetLastCommittedURL().GetOrigin();
   Profile* profile =
       Profile::FromBrowserContext(web_contents->GetBrowserContext());
   chooser_context_ = UsbChooserContextFactory::GetForProfile(profile);
@@ -54,13 +61,8 @@ bool WebUsbServiceImpl::HasDevicePermission(
   if (!chooser_context_)
     return false;
 
-  content::WebContents* web_contents =
-      content::WebContents::FromRenderFrameHost(render_frame_host_);
-  content::RenderFrameHost* main_frame = web_contents->GetMainFrame();
-
-  return chooser_context_->HasDevicePermission(
-      render_frame_host_->GetLastCommittedURL().GetOrigin(),
-      main_frame->GetLastCommittedURL().GetOrigin(), device_info);
+  return chooser_context_->HasDevicePermission(requesting_origin_,
+                                               embedding_origin_, device_info);
 }
 
 void WebUsbServiceImpl::GetDevices(GetDevicesCallback callback) {
@@ -89,11 +91,17 @@ void WebUsbServiceImpl::GetDevice(
   if (!chooser_context_)
     return;
 
-  // Try to bind with the new device to be created for DeviceOpened/Closed
-  // events. It is safe to pass this request directly to UsbDeviceManager
-  // because |guid| is unguessable.
+  auto* device_info = chooser_context_->GetDeviceInfo(guid);
+  if (!device_info || !HasDevicePermission(*device_info))
+    return;
+
+  // Connect Blink to the native device and keep a binding to this for the
+  // UsbDeviceClient interface so we can receive DeviceOpened/Closed events.
+  // This binding will also be closed to notify the device service to close
+  // the connection if permission is revoked.
   device::mojom::UsbDeviceClientPtr device_client;
-  device_client_bindings_.AddBinding(this, mojo::MakeRequest(&device_client));
+  device_client_bindings_[guid].AddBinding(this,
+                                           mojo::MakeRequest(&device_client));
   chooser_context_->GetDevice(guid, std::move(device_request),
                               std::move(device_client));
 }
@@ -129,6 +137,7 @@ void WebUsbServiceImpl::OnDeviceAdded(
 
 void WebUsbServiceImpl::OnDeviceRemoved(
     const device::mojom::UsbDeviceInfo& device_info) {
+  device_client_bindings_.erase(device_info.guid);
   if (!HasDevicePermission(device_info))
     return;
 
@@ -136,6 +145,24 @@ void WebUsbServiceImpl::OnDeviceRemoved(
       [&device_info](device::mojom::UsbDeviceManagerClient* client) {
         client->OnDeviceRemoved(device_info.Clone());
       });
+}
+
+void WebUsbServiceImpl::OnPermissionRevoked(const GURL& requesting_origin,
+                                            const GURL& embedding_origin) {
+  if (requesting_origin_ != requesting_origin ||
+      embedding_origin_ != embedding_origin) {
+    return;
+  }
+
+  // Close the connection between Blink and the device if the device lost
+  // permission.
+  base::EraseIf(device_client_bindings_, [this](const auto& entry) {
+    auto* device_info = chooser_context_->GetDeviceInfo(entry.first);
+    if (!device_info)
+      return true;
+
+    return !HasDevicePermission(*device_info);
+  });
 }
 
 void WebUsbServiceImpl::OnDeviceManagerConnectionError() {

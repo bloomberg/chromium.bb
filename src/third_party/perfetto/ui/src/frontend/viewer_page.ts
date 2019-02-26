@@ -18,7 +18,6 @@ import {QueryResponse} from '../common/queries';
 import {TimeSpan} from '../common/time';
 
 import {copyToClipboard} from './clipboard';
-import {FlameGraphPanel} from './flame_graph_panel';
 import {globals} from './globals';
 import {HeaderPanel} from './header_panel';
 import {OverviewTimelinePanel} from './overview_timeline_panel';
@@ -27,8 +26,10 @@ import {PanAndZoomHandler} from './pan_and_zoom_handler';
 import {Panel} from './panel';
 import {AnyAttrsVnode, PanelContainer} from './panel_container';
 import {TimeAxisPanel} from './time_axis_panel';
+import {TrackGroupPanel} from './track_group_panel';
 import {TRACK_SHELL_WIDTH} from './track_panel';
 import {TrackPanel} from './track_panel';
+
 
 const MAX_ZOOM_SPAN_SEC = 1e-4;  // 0.1 ms.
 
@@ -59,7 +60,7 @@ class QueryTable extends Panel {
             `Query result - ${Math.round(resp.durationMs)} ms`,
             m('span.code', resp.query)),
           resp.error ? null :
-                       m('button',
+                       m('button.query-copy',
                          {
                            onclick: () => {
                              const lines: string[][] = [];
@@ -132,6 +133,7 @@ class TraceViewer implements m.ClassComponent {
           tStart = tEnd - origDelta;
         }
         frontendLocalState.updateVisibleTime(new TimeSpan(tStart, tEnd));
+        globals.rafScheduler.scheduleRedraw();
       },
       onZoomed: (_: number, zoomRatio: number) => {
         const vizTime = frontendLocalState.visibleWindowTime;
@@ -159,9 +161,22 @@ class TraceViewer implements m.ClassComponent {
           m(HeaderPanel, {title: 'Tracks', key: 'tracksheader'}),
           ...globals.state.scrollingTracks.map(
               id => m(TrackPanel, {key: id, id})),
-          m(FlameGraphPanel, {key: 'flamegraph'}),
         ] :
         [];
+
+    for (const group of Object.values(globals.state.trackGroups)) {
+      scrollingPanels.push(m(TrackGroupPanel, {
+        trackGroupId: group.id,
+        key: `trackgroup-${group.id}`,
+      }));
+      if (group.collapsed) continue;
+      for (const trackId of group.tracks) {
+        scrollingPanels.push(m(TrackPanel, {
+          key: `track-${group.id}-${trackId}`,
+          id: trackId,
+        }));
+      }
+    }
     scrollingPanels.unshift(m(QueryTable));
 
     return m(

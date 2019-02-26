@@ -46,18 +46,27 @@ class MIDIMessageEvent final : public Event {
  public:
   static MIDIMessageEvent* Create(base::TimeTicks time_stamp,
                                   DOMUint8Array* data) {
-    return new MIDIMessageEvent(time_stamp, data);
+    return MakeGarbageCollected<MIDIMessageEvent>(time_stamp, data);
   }
 
   static MIDIMessageEvent* Create(const AtomicString& type,
-                                  const MIDIMessageEventInit& initializer) {
-    return new MIDIMessageEvent(type, initializer);
+                                  const MIDIMessageEventInit* initializer) {
+    return MakeGarbageCollected<MIDIMessageEvent>(type, initializer);
   }
+
+  MIDIMessageEvent(base::TimeTicks time_stamp, DOMUint8Array* data)
+      : Event(event_type_names::kMidimessage,
+              Bubbles::kYes,
+              Cancelable::kNo,
+              time_stamp),
+        data_(data) {}
+  MIDIMessageEvent(const AtomicString& type,
+                   const MIDIMessageEventInit* initializer);
 
   DOMUint8Array* data() { return data_; }
 
   const AtomicString& InterfaceName() const override {
-    return EventNames::MIDIMessageEvent;
+    return event_interface_names::kMIDIMessageEvent;
   }
 
   void Trace(blink::Visitor* visitor) override {
@@ -66,16 +75,6 @@ class MIDIMessageEvent final : public Event {
   }
 
  private:
-  MIDIMessageEvent(base::TimeTicks time_stamp, DOMUint8Array* data)
-      : Event(EventTypeNames::midimessage,
-              Bubbles::kYes,
-              Cancelable::kNo,
-              time_stamp),
-        data_(data) {}
-
-  MIDIMessageEvent(const AtomicString& type,
-                   const MIDIMessageEventInit& initializer);
-
   Member<DOMUint8Array> data_;
 };
 

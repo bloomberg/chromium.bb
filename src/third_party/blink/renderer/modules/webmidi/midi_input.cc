@@ -35,6 +35,7 @@
 #include "third_party/blink/renderer/modules/webmidi/midi_access.h"
 #include "third_party/blink/renderer/modules/webmidi/midi_message_event.h"
 #include "third_party/blink/renderer/platform/heap/handle.h"
+#include "third_party/blink/renderer/platform/wtf/std_lib_extras.h"
 
 namespace blink {
 
@@ -47,7 +48,8 @@ MIDIInput* MIDIInput::Create(MIDIAccess* access,
                              const String& version,
                              PortState state) {
   DCHECK(access);
-  return new MIDIInput(access, id, manufacturer, name, version, state);
+  return MakeGarbageCollected<MIDIInput>(access, id, manufacturer, name,
+                                         version, state);
 }
 
 MIDIInput::MIDIInput(MIDIAccess* access,
@@ -59,7 +61,7 @@ MIDIInput::MIDIInput(MIDIAccess* access,
     : MIDIPort(access, id, manufacturer, name, kTypeInput, version, state) {}
 
 EventListener* MIDIInput::onmidimessage() {
-  return GetAttributeEventListener(EventTypeNames::midimessage);
+  return GetAttributeEventListener(event_type_names::kMidimessage);
 }
 
 void MIDIInput::setOnmidimessage(EventListener* listener) {
@@ -67,14 +69,14 @@ void MIDIInput::setOnmidimessage(EventListener* listener) {
   // See http://www.w3.org/TR/webmidi/#widl-MIDIPort-open-Promise-MIDIPort
   open();
 
-  SetAttributeEventListener(EventTypeNames::midimessage, listener);
+  SetAttributeEventListener(event_type_names::kMidimessage, listener);
 }
 
 void MIDIInput::AddedEventListener(
     const AtomicString& event_type,
     RegisteredEventListener& registered_listener) {
   MIDIPort::AddedEventListener(event_type, registered_listener);
-  if (event_type == EventTypeNames::midimessage) {
+  if (event_type == event_type_names::kMidimessage) {
     // Implicit open. See setOnmidimessage().
     open();
   }
@@ -98,7 +100,8 @@ void MIDIInput::DidReceiveMIDIData(unsigned port_index,
   // the current process has an explicit permission to handle sysex message.
   if (data[0] == 0xf0 && !midiAccess()->sysexEnabled())
     return;
-  DOMUint8Array* array = DOMUint8Array::Create(data, length);
+  DOMUint8Array* array =
+      DOMUint8Array::Create(data, SafeCast<unsigned>(length));
   DispatchEvent(*MIDIMessageEvent::Create(time_stamp, array));
 
   UseCounter::Count(*To<Document>(GetExecutionContext()),

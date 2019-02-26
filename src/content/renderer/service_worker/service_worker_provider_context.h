@@ -146,12 +146,6 @@ class CONTENT_EXPORT ServiceWorkerProviderContext
   // to this client's container host.
   mojom::ServiceWorkerContainerHostPtrInfo CloneContainerHostPtrInfo();
 
-  // For service worker clients. Returns the registration object described by
-  // |info|. Creates a new object if needed, or else returns the existing one.
-  scoped_refptr<WebServiceWorkerRegistrationImpl>
-  GetOrCreateServiceWorkerRegistrationObject(
-      blink::mojom::ServiceWorkerRegistrationObjectInfoPtr info);
-
   // Called when ServiceWorkerNetworkProvider is destructed. This function
   // severs the Mojo binding to the browser-side ServiceWorkerProviderHost. The
   // reason ServiceWorkerNetworkProvider is special compared to the other
@@ -201,15 +195,6 @@ class CONTENT_EXPORT ServiceWorkerProviderContext
   void PostMessageToClient(blink::mojom::ServiceWorkerObjectInfoPtr source,
                            blink::TransferableMessage message) override;
   void CountFeature(blink::mojom::WebFeature feature) override;
-
-  // For service worker clients. Keeps the mapping from registration_id to
-  // ServiceWorkerRegistration object.
-  void AddServiceWorkerRegistrationObject(
-      int64_t registration_id,
-      WebServiceWorkerRegistrationImpl* registration);
-  void RemoveServiceWorkerRegistrationObject(int64_t registration_id);
-  bool ContainsServiceWorkerRegistrationObjectForTesting(
-      int64_t registration_id);
 
   // S13nServiceWorker:
   // For service worker clients.

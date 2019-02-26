@@ -18,8 +18,8 @@
 #import "base/strings/sys_string_conversions.h"
 #include "base/timer/elapsed_timer.h"
 #include "components/consent_auditor/consent_auditor.h"
+#include "components/signin/core/browser/account_consistency_method.h"
 #include "components/signin/core/browser/account_tracker_service.h"
-#include "components/signin/core/browser/profile_management_switches.h"
 #include "components/signin/core/browser/signin_metrics.h"
 #include "components/strings/grit/components_strings.h"
 #include "components/unified_consent/feature.h"
@@ -42,10 +42,10 @@
 #include "ios/chrome/browser/ui/authentication/unified_consent/unified_consent_coordinator.h"
 #import "ios/chrome/browser/ui/colors/MDCPalette+CrAdditions.h"
 #import "ios/chrome/browser/ui/commands/application_commands.h"
-#import "ios/chrome/browser/ui/rtl_geometry.h"
-#import "ios/chrome/browser/ui/ui_util.h"
-#import "ios/chrome/browser/ui/uikit_ui_util.h"
 #import "ios/chrome/browser/ui/util/label_link_controller.h"
+#import "ios/chrome/browser/ui/util/rtl_geometry.h"
+#import "ios/chrome/browser/ui/util/ui_util.h"
+#import "ios/chrome/browser/ui/util/uikit_ui_util.h"
 #include "ios/chrome/browser/unified_consent/unified_consent_service_factory.h"
 #include "ios/chrome/common/string_util.h"
 #include "ios/chrome/grit/ios_chromium_strings.h"
@@ -300,7 +300,7 @@ enum AuthenticationState {
         UnifiedConsentServiceFactory::GetForBrowserState(_browserState);
     // |unifiedConsentService| may be null in unit tests.
     if (unifiedConsentService)
-      unifiedConsentService->SetUnifiedConsentGiven(true);
+      unifiedConsentService->EnableGoogleServices();
   }
   SyncSetupServiceFactory::GetForBrowserState(_browserState)->CommitChanges();
   [self acceptSignInAndShowAccountsSettings:_unifiedConsentCoordinator
@@ -654,13 +654,19 @@ enum AuthenticationState {
 - (void)enterIdentityPickerState {
   // Add the account selector view controller.
   if (_unifiedConsentEnabled) {
-    _unifiedConsentCoordinator = [[UnifiedConsentCoordinator alloc] init];
-    _unifiedConsentCoordinator.interactable = YES;
-    _unifiedConsentCoordinator.delegate = self;
-    if (_selectedIdentity)
-      _unifiedConsentCoordinator.selectedIdentity = _selectedIdentity;
-    [_unifiedConsentCoordinator start];
-    [self showEmbeddedViewController:_unifiedConsentCoordinator.viewController];
+    if (!_unifiedConsentCoordinator) {
+      // The user can refuse to sign-in into a managed account, so the state
+      // returns to "IdentityPicker". In that case, there is no need to create a
+      // new UnifiedConsentCoordinator. The current one should be used.
+      _unifiedConsentCoordinator = [[UnifiedConsentCoordinator alloc] init];
+      _unifiedConsentCoordinator.delegate = self;
+      if (_selectedIdentity)
+        _unifiedConsentCoordinator.selectedIdentity = _selectedIdentity;
+      [_unifiedConsentCoordinator start];
+      [self
+          showEmbeddedViewController:_unifiedConsentCoordinator.viewController];
+    }
+    DCHECK_EQ(_embeddedView, _unifiedConsentCoordinator.viewController.view);
   } else {
     // Reset the selected identity.
     [self setSelectedIdentity:nil];
@@ -1041,9 +1047,7 @@ enum AuthenticationState {
   primaryButtonLayout.position.originY = CGRectGetHeight(self.view.bounds) -
                                          constants.ButtonBottomPadding -
                                          constants.ButtonHeight;
-  if (@available(iOS 11.0, *)) {
-    primaryButtonLayout.position.originY -= self.view.safeAreaInsets.bottom;
-  }
+  primaryButtonLayout.position.originY -= self.view.safeAreaInsets.bottom;
   primaryButtonLayout.size.height = constants.ButtonHeight;
   [_primaryButton setFrame:LayoutRectGetRect(primaryButtonLayout)];
 

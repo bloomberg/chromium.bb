@@ -21,8 +21,8 @@
 #import "ios/chrome/browser/ui/omnibox/omnibox_util.h"
 #import "ios/chrome/browser/ui/omnibox/popup/omnibox_popup_mediator.h"
 #include "ios/chrome/browser/ui/omnibox/popup/omnibox_popup_view_suggestions_delegate.h"
-#include "ios/chrome/browser/ui/ui_util.h"
-#import "ios/chrome/browser/ui/uikit_ui_util.h"
+#include "ios/chrome/browser/ui/util/ui_util.h"
+#import "ios/chrome/browser/ui/util/uikit_ui_util.h"
 #include "ios/chrome/grit/ios_theme_resources.h"
 #include "ios/web/public/web_thread.h"
 #include "net/url_request/url_request_context_getter.h"
@@ -99,8 +99,8 @@ void OmniboxPopupViewIOS::OnMatchHighlighted(size_t row) {
 
 void OmniboxPopupViewIOS::OnMatchSelected(
     const AutocompleteMatch& selectedMatch,
-    size_t row) {
-  WindowOpenDisposition disposition = WindowOpenDisposition::CURRENT_TAB;
+    size_t row,
+    WindowOpenDisposition disposition) {
   base::RecordAction(UserMetricsAction("MobileOmniboxUse"));
 
   // OpenMatch() may close the popup, which will clear the result set and, by

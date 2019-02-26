@@ -394,7 +394,7 @@ TEST_F(SessionStorageNamespaceImplMojoTest, RemoveOriginData) {
       .WillOnce(base::test::RunClosure(loop.QuitClosure()));
 
   EXPECT_CALL(listener_, OnCommitResult(DatabaseError::OK)).Times(1);
-  namespace_impl->RemoveOriginData(test_origin1_);
+  namespace_impl->RemoveOriginData(test_origin1_, base::DoNothing());
 
   std::vector<blink::mojom::KeyValuePtr> data;
   EXPECT_TRUE(test::GetAllSync(leveldb_1.get(), &data));
@@ -422,7 +422,7 @@ TEST_F(SessionStorageNamespaceImplMojoTest, RemoveOriginDataWithoutBinding) {
   base::RunLoop loop;
   EXPECT_CALL(listener_, OnCommitResult(DatabaseError::OK))
       .WillOnce(base::test::RunClosure(loop.QuitClosure()));
-  namespace_impl->RemoveOriginData(test_origin1_);
+  namespace_impl->RemoveOriginData(test_origin1_, base::DoNothing());
   loop.Run();
 
   EXPECT_CALL(listener_, OnDataMapDestruction(StdStringToUint8Vector("0")))

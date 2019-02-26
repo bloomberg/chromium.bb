@@ -353,22 +353,22 @@ def _ReplaceBinary(payload, binary):
     trigger ChromeDriver's mechanism for locating the Chrome binary.
   """
   if ("desiredCapabilities" in payload
-      and "chromeOptions" in payload["desiredCapabilities"]):
+      and "goog:chromeOptions" in payload["desiredCapabilities"]):
     if binary:
-      (payload["desiredCapabilities"]["chromeOptions"]
+      (payload["desiredCapabilities"]["goog:chromeOptions"]
        ["binary"]) = binary
-    elif "binary" in payload["desiredCapabilities"]["chromeOptions"]:
-      del payload["desiredCapabilities"]["chromeOptions"]["binary"]
+    elif "binary" in payload["desiredCapabilities"]["goog:chromeOptions"]:
+      del payload["desiredCapabilities"]["goog:chromeOptions"]["binary"]
 
   elif binary:
     if "desiredCapabilities" not in payload:
       payload["desiredCapabilities"] = {
-          "chromeOptions": {
+          "goog:chromeOptions": {
               "binary": binary
           }
       }
-    elif "chromeOptions" not in payload["desiredCapabilities"]:
-      payload["desiredCapabilities"]["chromeOptions"] = {
+    elif "goog:chromeOptions" not in payload["desiredCapabilities"]:
+      payload["desiredCapabilities"]["goog:chromeOptions"] = {
           "binary": binary
       }
 
@@ -399,7 +399,7 @@ class _Payload(object):
     word InitSession:
     [1532467931.153][INFO]: [<session_id>] COMMAND InitSession {
        "desiredCapabilities": {
-          "chromeOptions": {
+          "goog:chromeOptions": {
              "args": [ "no-sandbox", "disable-gpu" ],
              "binary": "<binary_path>"
           }

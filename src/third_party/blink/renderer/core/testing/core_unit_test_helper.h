@@ -14,18 +14,24 @@
 #include "third_party/blink/renderer/core/frame/settings.h"
 #include "third_party/blink/renderer/core/html/html_element.h"
 #include "third_party/blink/renderer/core/layout/layout_view.h"
+#include "third_party/blink/renderer/core/layout/ng/layout_ng_block_flow.h"
 #include "third_party/blink/renderer/core/loader/empty_clients.h"
+#include "third_party/blink/renderer/core/paint/ng/ng_paint_fragment.h"
 #include "third_party/blink/renderer/core/testing/page_test_base.h"
 #include "third_party/blink/renderer/core/testing/use_mock_scrollbar_settings.h"
 #include "third_party/blink/renderer/platform/wtf/allocator.h"
 
 namespace blink {
 
+class PaintLayer;
+
 class SingleChildLocalFrameClient final : public EmptyLocalFrameClient {
  public:
   static SingleChildLocalFrameClient* Create() {
-    return new SingleChildLocalFrameClient();
+    return MakeGarbageCollected<SingleChildLocalFrameClient>();
   }
+
+  explicit SingleChildLocalFrameClient() = default;
 
   void Trace(blink::Visitor* visitor) override {
     visitor->Trace(child_);
@@ -40,16 +46,16 @@ class SingleChildLocalFrameClient final : public EmptyLocalFrameClient {
   void DidDetachChild() { child_ = nullptr; }
 
  private:
-  explicit SingleChildLocalFrameClient() = default;
-
   Member<LocalFrame> child_;
 };
 
 class LocalFrameClientWithParent final : public EmptyLocalFrameClient {
  public:
   static LocalFrameClientWithParent* Create(LocalFrame* parent) {
-    return new LocalFrameClientWithParent(parent);
+    return MakeGarbageCollected<LocalFrameClientWithParent>(parent);
   }
+
+  explicit LocalFrameClientWithParent(LocalFrame* parent) : parent_(parent) {}
 
   void Trace(blink::Visitor* visitor) override {
     visitor->Trace(parent_);
@@ -62,8 +68,6 @@ class LocalFrameClientWithParent final : public EmptyLocalFrameClient {
   LocalFrame* Top() const override { return parent_.Get(); }
 
  private:
-  explicit LocalFrameClientWithParent(LocalFrame* parent) : parent_(parent) {}
-
   Member<LocalFrame> parent_;
 };
 
@@ -98,15 +102,33 @@ class RenderingTest : public PageTestBase, public UseMockScrollbarSettings {
 
   // Both enables compositing and runs the document lifecycle.
   void EnableCompositing() {
+    // This Page is not actually being shown by a compositor, but we act like it
+    // will in order to test behaviour.
     GetPage().GetSettings().SetAcceleratedCompositingEnabled(true);
     GetDocument().View()->SetParentVisible(true);
     GetDocument().View()->SetSelfVisible(true);
-    GetDocument().View()->UpdateAllLifecyclePhases();
+    UpdateAllLifecyclePhasesForTest();
   }
 
   LayoutObject* GetLayoutObjectByElementId(const char* id) const {
     const auto* element = GetElementById(id);
     return element ? element->GetLayoutObject() : nullptr;
+  }
+
+  PaintLayer* GetPaintLayerByElementId(const char* id) {
+    return ToLayoutBoxModelObject(GetLayoutObjectByElementId(id))->Layer();
+  }
+
+  DisplayItemClient* GetDisplayItemClientFromLayoutObject(
+      LayoutObject* obj) const {
+    LayoutNGBlockFlow* block_flow = ToLayoutNGBlockFlowOrNull(obj);
+    if (block_flow && block_flow->PaintFragment())
+      return block_flow->PaintFragment();
+    return obj;
+  }
+
+  DisplayItemClient* GetDisplayItemClientFromElementId(const char* id) const {
+    return GetDisplayItemClientFromLayoutObject(GetLayoutObjectByElementId(id));
   }
 
  private:

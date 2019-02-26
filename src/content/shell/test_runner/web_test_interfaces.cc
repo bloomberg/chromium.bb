@@ -43,10 +43,8 @@ void WebTestInterfaces::SetTestIsRunning(bool running) {
 }
 
 void WebTestInterfaces::ConfigureForTestWithURL(const blink::WebURL& test_url,
-                                                bool generate_pixels,
-                                                bool initial_configuration) {
-  interfaces_->ConfigureForTestWithURL(test_url, generate_pixels,
-                                       initial_configuration);
+                                                bool protocol_mode) {
+  interfaces_->ConfigureForTestWithURL(test_url, protocol_mode);
 }
 
 WebTestRunner* WebTestInterfaces::TestRunner() {

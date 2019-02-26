@@ -6,8 +6,11 @@
 #include "base/json/json_reader.h"
 #include "base/json/string_escape.h"
 #include "base/macros.h"
+#include "base/stl_util.h"
 #include "build/build_config.h"
 #include "chrome/browser/browser_process.h"
+#include "chrome/browser/chromeos/login/demo_mode/demo_setup_controller.h"
+#include "chrome/browser/chromeos/login/demo_mode/demo_setup_test_utils.h"
 #include "chrome/browser/chromeos/login/enrollment/enrollment_screen.h"
 #include "chrome/browser/chromeos/login/enrollment/enterprise_enrollment_helper.h"
 #include "chrome/browser/chromeos/login/enrollment/enterprise_enrollment_helper_impl.h"
@@ -21,6 +24,7 @@
 #include "chrome/browser/chromeos/login/wizard_controller.h"
 #include "chrome/browser/chromeos/policy/browser_policy_connector_chromeos.h"
 #include "chrome/browser/chromeos/policy/enrollment_status_chromeos.h"
+#include "chromeos/chromeos_switches.h"
 #include "chromeos/chromeos_test_utils.h"
 #include "chromeos/dbus/dbus_switches.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
@@ -29,9 +33,14 @@
 #include "chromeos/dbus/shill_manager_client.h"
 #include "chromeos/dbus/upstart_client.h"
 #include "chromeos/network/network_state_handler.h"
+#include "components/language/core/browser/pref_names.h"
+#include "components/prefs/pref_service.h"
 #include "content/public/test/browser_test_utils.h"
 #include "content/public/test/test_utils.h"
+#include "ui/base/ime/chromeos/input_method_manager.h"
+#include "ui/base/ime/chromeos/input_method_util.h"
 
+using chromeos::test::SetupDummyOfflinePolicyDir;
 using testing::_;
 using testing::Invoke;
 using testing::InvokeWithoutArgs;
@@ -177,18 +186,7 @@ class EnterpriseEnrollmentTestBase : public LoginManagerTest {
 
   // Submits regular enrollment credentials.
   void SubmitEnrollmentCredentials() {
-    // Trigger an authCompleted event from the authenticator.
-    // clang-format off
-    js_checker().Evaluate(
-      "$('oauth-enrollment').authenticator_.dispatchEvent("
-          "new CustomEvent('authCompleted',"
-                          "{"
-                            "detail: {"
-                              "email: 'testuser@test.com',"
-                              "authCode: 'test_auth_code'"
-                            "}"
-                          "}));");
-    // clang-format on
+    enrollment_screen()->OnLoginDone("testuser@test.com", "test_auth_code");
   }
 
   void DisableAttributePromptUpdate() {
@@ -600,9 +598,18 @@ class EnterpriseEnrollmentConfigurationTest
 
     // WebUI exists now, finish the setup.
     InitializeWebContents();
+
+    base::RunLoop().RunUntilIdle();
   }
 
-  void ResetHelper() { enrollment_screen()->enrollment_helper_.reset(); }
+  void SimulateOfflineEnvironment() {
+    DemoSetupController* controller =
+        WizardController::default_controller()->demo_setup_controller();
+
+    // Simulate offline data directory.
+    ASSERT_TRUE(test::SetupDummyOfflinePolicyDir("test", &fake_policy_dir_));
+    controller->SetOfflineDataDirForTest(fake_policy_dir_.GetPath());
+  }
 
   void SetUpInProcessBrowserTestFixture() override {
     OobeConfiguration::set_skip_check_for_testing(true);
@@ -631,6 +638,10 @@ class EnterpriseEnrollmentConfigurationTest
     command_line->AppendSwitchPath(chromeos::switches::kFakeOobeConfiguration,
                                    file);
 
+    command_line->AppendSwitch(chromeos::switches::kEnableOfflineDemoMode);
+    command_line->AppendSwitchASCII(switches::kArcAvailability,
+                                    "officially-supported");
+
     EnterpriseEnrollmentTestBase::SetUpCommandLine(command_line);
   }
 
@@ -656,26 +667,34 @@ class EnterpriseEnrollmentConfigurationTest
     NetworkHandler::Get()->network_state_handler()->SetCheckPortalList("");
   }
 
+  void TearDownOnMainThread() override {
+    enrollment_screen()->enrollment_helper_.reset();
+    EnterpriseEnrollmentTestBase::TearDownOnMainThread();
+  }
+
  protected:
   // Owned by DBusThreadManagerSetter
   chromeos::FakeUpdateEngineClient* fake_update_engine_client_;
+
+  base::ScopedTempDir fake_policy_dir_;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(EnterpriseEnrollmentConfigurationTest);
 };
 
+#if defined(MEMORY_SANITIZER)
+#define TEST_DISABLED_ON_MSAN(test_fixture, test_name) \
+  IN_PROC_BROWSER_TEST_F(test_fixture, DISABLED_##test_name)
+#else
+#define TEST_DISABLED_ON_MSAN(test_fixture, test_name) \
+  IN_PROC_BROWSER_TEST_F(test_fixture, test_name)
+#endif
+
 // Shows the enrollment screen and simulates an enrollment complete event. We
 // verify that the enrollmenth helper receives the correct auth code.
 // Flaky on MSAN. https://crbug.com/876362
-#if defined(MEMORY_SANITIZER)
-#define MAYBE_TestAuthCodeGetsProperlyReceivedFromGaia \
-  DISABLED_TestAuthCodeGetsProperlyReceivedFromGaia
-#else
-#define MAYBE_TestAuthCodeGetsProperlyReceivedFromGaia \
-  TestAuthCodeGetsProperlyReceivedFromGaia
-#endif
-IN_PROC_BROWSER_TEST_F(EnterpriseEnrollmentTest,
-                       MAYBE_TestAuthCodeGetsProperlyReceivedFromGaia) {
+TEST_DISABLED_ON_MSAN(EnterpriseEnrollmentTest,
+                      TestAuthCodeGetsProperlyReceivedFromGaia) {
   ShowEnrollmentScreen();
   ExpectEnrollmentCredentials();
   SubmitEnrollmentCredentials();
@@ -704,15 +723,8 @@ IN_PROC_BROWSER_TEST_F(EnterpriseEnrollmentTest,
 // Shows the enrollment screen and simulates a successful enrollment. Verifies
 // that the success screen is then displayed.
 // Flaky on MSAN. https://crbug.com/876362
-#if defined(MEMORY_SANITIZER)
-#define MAYBE_TestProperPageGetsLoadedOnEnrollmentSuccess \
-  DISABLED_TestProperPageGetsLoadedOnEnrollmentSuccess
-#else
-#define MAYBE_TestProperPageGetsLoadedOnEnrollmentSuccess \
-  TestProperPageGetsLoadedOnEnrollmentSuccess
-#endif
-IN_PROC_BROWSER_TEST_F(EnterpriseEnrollmentTest,
-                       MAYBE_TestProperPageGetsLoadedOnEnrollmentSuccess) {
+TEST_DISABLED_ON_MSAN(EnterpriseEnrollmentTest,
+                      TestProperPageGetsLoadedOnEnrollmentSuccess) {
   ShowEnrollmentScreen();
   DisableAttributePromptUpdate();
   SubmitEnrollmentCredentials();
@@ -731,15 +743,8 @@ IN_PROC_BROWSER_TEST_F(EnterpriseEnrollmentTest,
 // Verifies that the data the user enters into the attribute prompt screen is
 // received by the enrollment helper.
 // Flaky on MSAN. https://crbug.com/876362
-#if defined(MEMORY_SANITIZER)
-#define MAYBE_TestAttributePromptPageGetsLoaded \
-  DISABLED_TestAttributePromptPageGetsLoaded
-#else
-#define MAYBE_TestAttributePromptPageGetsLoaded \
-  TestAttributePromptPageGetsLoaded
-#endif
-IN_PROC_BROWSER_TEST_F(EnterpriseEnrollmentTest,
-                       MAYBE_TestAttributePromptPageGetsLoaded) {
+TEST_DISABLED_ON_MSAN(EnterpriseEnrollmentTest,
+                      TestAttributePromptPageGetsLoaded) {
   ShowEnrollmentScreen();
   ExpectAttributePromptUpdate();
   SubmitEnrollmentCredentials();
@@ -760,8 +765,9 @@ IN_PROC_BROWSER_TEST_F(EnterpriseEnrollmentTest,
 // Directory domain join screen. Verifies the domain join screen is displayed.
 // Submits Active Directory credentials. Verifies that the AuthpolicyClient
 // calls us back with the correct realm.
-IN_PROC_BROWSER_TEST_F(ActiveDirectoryJoinTest,
-                       TestActiveDirectoryEnrollment_Success) {
+// Timeouts on MSAN with polymer2. https://crbug.com/887577
+TEST_DISABLED_ON_MSAN(ActiveDirectoryJoinTest,
+                      TestActiveDirectoryEnrollment_Success) {
   ShowEnrollmentScreen();
   DisableAttributePromptUpdate();
   SetupActiveDirectoryJoin(kAdUserDomain, std::string());
@@ -794,8 +800,9 @@ IN_PROC_BROWSER_TEST_F(ActiveDirectoryJoinTest,
 
 // Verifies that the distinguished name specified on the Active Directory join
 // domain screen correctly parsed and passed into AuthPolicyClient.
-IN_PROC_BROWSER_TEST_F(ActiveDirectoryJoinTest,
-                       TestActiveDirectoryEnrollment_DistinguishedName) {
+// Timeouts on MSAN with polymer2. https://crbug.com/887577
+TEST_DISABLED_ON_MSAN(ActiveDirectoryJoinTest,
+                      TestActiveDirectoryEnrollment_DistinguishedName) {
   ShowEnrollmentScreen();
   DisableAttributePromptUpdate();
   SetupActiveDirectoryJoin(kAdMachineDomain, std::string());
@@ -833,8 +840,9 @@ IN_PROC_BROWSER_TEST_F(ActiveDirectoryJoinTest,
 // Directory domain join screen. Verifies the domain join screen is displayed.
 // Submits Active Directory different incorrect credentials. Verifies that the
 // correct error is displayed.
-IN_PROC_BROWSER_TEST_F(ActiveDirectoryJoinTest,
-                       TestActiveDirectoryEnrollment_UIErrors) {
+// Timeouts on MSAN with polymer2. https://crbug.com/887577
+TEST_DISABLED_ON_MSAN(ActiveDirectoryJoinTest,
+                      TestActiveDirectoryEnrollment_UIErrors) {
   ShowEnrollmentScreen();
   SetupActiveDirectoryJoin(kAdUserDomain, std::string());
   SubmitEnrollmentCredentials();
@@ -882,8 +890,9 @@ IN_PROC_BROWSER_TEST_F(ActiveDirectoryJoinTest,
 
 // Check that correct error card is shown (Active Directory one). Also checks
 // that hitting retry shows Active Directory screen again.
-IN_PROC_BROWSER_TEST_F(ActiveDirectoryJoinTest,
-                       TestActiveDirectoryEnrollment_ErrorCard) {
+// Timeouts on MSAN with polymer2. https://crbug.com/887577
+TEST_DISABLED_ON_MSAN(ActiveDirectoryJoinTest,
+                      TestActiveDirectoryEnrollment_ErrorCard) {
   ShowEnrollmentScreen();
   SetupActiveDirectoryJoin(kAdUserDomain, std::string());
   SubmitEnrollmentCredentials();
@@ -906,64 +915,11 @@ IN_PROC_BROWSER_TEST_F(ActiveDirectoryJoinTest,
   enrollment_screen()->enrollment_helper_.reset();
 }
 
-// Check that configuration lets correctly pass Welcome screen.
-IN_PROC_BROWSER_TEST_F(EnterpriseEnrollmentConfigurationTest,
-                       TestLeaveWelcomeScreen) {
-  LoadConfiguration();
-  OobeScreenWaiter(OobeScreen::SCREEN_OOBE_NETWORK).Wait();
-  // We have to remove the enrollment_helper before the dtor gets called.
-  ResetHelper();
-}
-
-// Check that configuration lets correctly select a network by GUID.
-IN_PROC_BROWSER_TEST_F(EnterpriseEnrollmentConfigurationTest,
-                       TestSelectNetwork) {
-  LoadConfiguration();
-  OobeScreenWaiter(OobeScreen::SCREEN_OOBE_EULA).Wait();
-  // We have to remove the enrollment_helper before the dtor gets called.
-  ResetHelper();
-}
-
-// Check that when configuration has ONC and EULA, we get to update screen.
-IN_PROC_BROWSER_TEST_F(EnterpriseEnrollmentConfigurationTest, TestAcceptEula) {
-  UpdateEngineClient::Status status;
-  status.status = UpdateEngineClient::UPDATE_STATUS_DOWNLOADING;
-  status.download_progress = 0.1;
-  fake_update_engine_client_->set_default_status(status);
-
-  LoadConfiguration();
-  OobeScreenWaiter(OobeScreen::SCREEN_OOBE_UPDATE).Wait();
-  // We have to remove the enrollment_helper before the dtor gets called.
-  ResetHelper();
-}
-
-// Check that when configuration has ONC and EULA, we get to update screen.
-IN_PROC_BROWSER_TEST_F(EnterpriseEnrollmentConfigurationTest, TestSkipUpdate) {
-  LoadConfiguration();
-  OobeScreenWaiter(OobeScreen::SCREEN_OOBE_ENROLLMENT).Wait();
-  EXPECT_TRUE(IsStepDisplayed("signin"));
-  // We have to remove the enrollment_helper before the dtor gets called.
-  ResetHelper();
-}
-
-// Check that when configuration has requisition, it gets applied at the
-// beginning.
-IN_PROC_BROWSER_TEST_F(EnterpriseEnrollmentConfigurationTest,
-                       TestDeviceRequisition) {
-  LoadConfiguration();
-  OobeScreenWaiter(OobeScreen::SCREEN_OOBE_EULA).Wait();
-  auto* policy_manager = g_browser_process->platform_part()
-                             ->browser_policy_connector_chromeos()
-                             ->GetDeviceCloudPolicyManager();
-  EXPECT_EQ(policy_manager->GetDeviceRequisition(), "some_requisition");
-  // We have to remove the enrollment_helper before the dtor gets called.
-  ResetHelper();
-}
-
 // Check that configuration for the streamline Active Directory domain join
 // propagates correctly to the Domain Join UI.
-IN_PROC_BROWSER_TEST_F(ActiveDirectoryJoinTest,
-                       TestActiveDirectoryEnrollment_Streamline) {
+// Timeouts on MSAN with polymer2. https://crbug.com/887577
+TEST_DISABLED_ON_MSAN(ActiveDirectoryJoinTest,
+                      TestActiveDirectoryEnrollment_Streamline) {
   ShowEnrollmentScreen();
   std::string binary_config;
   EXPECT_TRUE(base::Base64Decode(kAdDomainJoinEncryptedConfig, &binary_config));
@@ -1004,6 +960,141 @@ IN_PROC_BROWSER_TEST_F(ActiveDirectoryJoinTest,
   // Go through configuration.
   CheckPossibleConfiguration(kAdDomainJoinUnlockedConfig);
   enrollment_screen()->enrollment_helper_.reset();
+}
+
+// Check that configuration lets correctly pass Welcome screen.
+IN_PROC_BROWSER_TEST_F(EnterpriseEnrollmentConfigurationTest,
+                       TestLeaveWelcomeScreen) {
+  LoadConfiguration();
+  OobeScreenWaiter(OobeScreen::SCREEN_OOBE_NETWORK).Wait();
+}
+
+// Check that language and input methods are set correctly.
+IN_PROC_BROWSER_TEST_F(EnterpriseEnrollmentConfigurationTest,
+                       TestSwitchLanguageIME) {
+  LoadConfiguration();
+  OobeScreenWaiter(OobeScreen::SCREEN_OOBE_NETWORK).Wait();
+
+  chromeos::input_method::InputMethodManager* imm =
+      chromeos::input_method::InputMethodManager::Get();
+
+  // Configuration specified in TestSwitchLanguageIME.json sets non-default
+  // input method fo German (xkb:de:neo:ger) to ensure that input method value
+  // is propagated correctly. We need to migrate public IME name to internal
+  // scheme to be able to compare them.
+
+  const std::string ime_id =
+      imm->GetInputMethodUtil()->MigrateInputMethod("xkb:de:neo:ger");
+  EXPECT_EQ(ime_id, imm->GetActiveIMEState()->GetCurrentInputMethod().id());
+
+  const std::string language_code = g_browser_process->local_state()->GetString(
+      language::prefs::kApplicationLocale);
+  EXPECT_EQ("de", language_code);
+}
+
+// Check that configuration lets correctly start Demo mode setup.
+IN_PROC_BROWSER_TEST_F(EnterpriseEnrollmentConfigurationTest,
+                       TestEnableDemoMode) {
+  LoadConfiguration();
+  OobeScreenWaiter(OobeScreen::SCREEN_OOBE_DEMO_PREFERENCES).Wait();
+}
+
+// Check that configuration lets correctly pass through demo preferences.
+IN_PROC_BROWSER_TEST_F(EnterpriseEnrollmentConfigurationTest,
+                       TestDemoModePreferences) {
+  LoadConfiguration();
+  OobeScreenWaiter(OobeScreen::SCREEN_OOBE_NETWORK).Wait();
+}
+
+// Check that configuration lets correctly use offline demo mode on network
+// screen.
+IN_PROC_BROWSER_TEST_F(EnterpriseEnrollmentConfigurationTest,
+                       TestDemoModeOfflineNetwork) {
+  LoadConfiguration();
+  OobeScreenWaiter(OobeScreen::SCREEN_OOBE_EULA).Wait();
+}
+
+// Check that configuration lets correctly use offline demo mode on EULA
+// screen.
+IN_PROC_BROWSER_TEST_F(EnterpriseEnrollmentConfigurationTest,
+                       TestDemoModeAcceptEula) {
+  LoadConfiguration();
+  OobeScreenWaiter(OobeScreen::SCREEN_ARC_TERMS_OF_SERVICE).Wait();
+}
+
+// Check that configuration lets correctly use offline demo mode on ARC++ ToS
+// screen.
+IN_PROC_BROWSER_TEST_F(EnterpriseEnrollmentConfigurationTest,
+                       TestDemoModeAcceptArcTos) {
+  LoadConfiguration();
+  OobeScreenWaiter(OobeScreen::SCREEN_OOBE_DEMO_PREFERENCES).Wait();
+
+  js_checker().Evaluate(
+      "login.ArcTermsOfServiceScreen.setTosForTesting('Test "
+      "Play Store Terms of Service');");
+  SimulateOfflineEnvironment();
+  js_checker().Evaluate(
+      "$('demo-preferences-content').$$('oobe-dialog')."
+      "querySelector('oobe-text-button').click();");
+
+  OobeScreenWaiter(OobeScreen::SCREEN_OOBE_DEMO_SETUP).Wait();
+}
+
+// Check that configuration lets correctly select a network by GUID.
+IN_PROC_BROWSER_TEST_F(EnterpriseEnrollmentConfigurationTest,
+                       TestSelectNetwork) {
+  LoadConfiguration();
+  OobeScreenWaiter(OobeScreen::SCREEN_OOBE_EULA).Wait();
+}
+
+// Check that configuration would proceed if there is a connected network.
+IN_PROC_BROWSER_TEST_F(EnterpriseEnrollmentConfigurationTest,
+                       TestSelectConnectedNetwork) {
+  StartWizard();
+  LoadConfiguration();
+  OobeScreenWaiter(OobeScreen::SCREEN_OOBE_EULA).Wait();
+}
+
+// Check that configuration would not proceed with connected network if
+// welcome screen is not automated.
+IN_PROC_BROWSER_TEST_F(EnterpriseEnrollmentConfigurationTest,
+                       TestConnectedNetworkNoWelcome) {
+  StartWizard();
+  LoadConfiguration();
+
+  OobeUI* oobe_ui = LoginDisplayHost::default_host()->GetOobeUI();
+  ASSERT_EQ(OobeScreen::SCREEN_OOBE_WELCOME, oobe_ui->current_screen());
+}
+
+// Check that when configuration has ONC and EULA, we get to update screen.
+IN_PROC_BROWSER_TEST_F(EnterpriseEnrollmentConfigurationTest, TestAcceptEula) {
+  UpdateEngineClient::Status status;
+  status.status = UpdateEngineClient::UPDATE_STATUS_DOWNLOADING;
+  status.download_progress = 0.1;
+  fake_update_engine_client_->set_default_status(status);
+
+  LoadConfiguration();
+  OobeScreenWaiter(OobeScreen::SCREEN_OOBE_UPDATE).Wait();
+}
+
+// Check that configuration allows to skip Update screen and get to Enrollment
+// screen.
+IN_PROC_BROWSER_TEST_F(EnterpriseEnrollmentConfigurationTest, TestSkipUpdate) {
+  LoadConfiguration();
+  OobeScreenWaiter(OobeScreen::SCREEN_OOBE_ENROLLMENT).Wait();
+  EXPECT_TRUE(IsStepDisplayed("signin"));
+}
+
+// Check that when configuration has requisition, it gets applied at the
+// beginning.
+IN_PROC_BROWSER_TEST_F(EnterpriseEnrollmentConfigurationTest,
+                       TestDeviceRequisition) {
+  LoadConfiguration();
+  OobeScreenWaiter(OobeScreen::SCREEN_OOBE_EULA).Wait();
+  auto* policy_manager = g_browser_process->platform_part()
+                             ->browser_policy_connector_chromeos()
+                             ->GetDeviceCloudPolicyManager();
+  EXPECT_EQ(policy_manager->GetDeviceRequisition(), "some_requisition");
 }
 
 }  // namespace chromeos

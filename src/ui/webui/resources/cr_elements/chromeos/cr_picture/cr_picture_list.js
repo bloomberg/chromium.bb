@@ -128,7 +128,7 @@ Polymer({
    * @param {string} imageUrl
    */
   setSelectedImageUrl(imageUrl) {
-    var image = this.$.selector.items.find(function(image) {
+    const image = this.$.selector.items.find(function(image) {
       return image.dataset.url == imageUrl;
     });
     if (image) {
@@ -193,9 +193,9 @@ Polymer({
     if (!this.selectedItem)
       return;
 
-    var selector = /** @type {IronSelectorElement} */ (this.$.selector);
-    var prevSelected = this.selectedItem;
-    var activate = false;
+    const selector = /** @type {IronSelectorElement} */ (this.$.selector);
+    const prevSelected = this.selectedItem;
+    let activate = false;
     switch (e.detail.key) {
       case 'enter':
       case 'space':
@@ -244,9 +244,9 @@ Polymer({
    * @private
    */
   onIronActivate_: function(event) {
-    var type = event.detail.item.dataset.type;
+    const type = event.detail.item.dataset.type;
     // Don't change focus when activating the camera via mouse.
-    var activate = type != CrPicture.SelectionTypes.CAMERA;
+    const activate = type != CrPicture.SelectionTypes.CAMERA;
     this.selectImage_(event.detail.item, activate);
   },
 

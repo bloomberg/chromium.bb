@@ -25,6 +25,7 @@ cast_shared_library("libcast_shell_android") {
     "//chromecast/base:jni_headers",
     "//chromecast/base/metrics",
     "//chromecast/browser",
+    "//components/crash/android:crash_android",
     "//content/public/app:both",
     "//content/public/browser",
     "//skia",

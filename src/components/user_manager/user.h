@@ -185,6 +185,9 @@ class USER_MANAGER_EXPORT User : public UserInfo {
   // True if the user Profile is created.
   bool is_profile_created() const { return profile_is_created_; }
 
+  // True if user has google account (not a guest or managed user).
+  bool has_gaia_account() const;
+
   static User* CreatePublicAccountUserForTesting(const AccountId& account_id) {
     return CreatePublicAccountUser(account_id);
   }
@@ -273,9 +276,6 @@ class USER_MANAGER_EXPORT User : public UserInfo {
   void set_is_active(bool is_active) { is_active_ = is_active; }
 
   void SetProfileIsCreated();
-
-  // True if user has google account (not a guest or managed user).
-  bool has_gaia_account() const;
 
   virtual void SetAffiliation(bool is_affiliated);
 

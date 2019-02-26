@@ -111,8 +111,7 @@ bool ShouldProfileNonRendererProcessType(Mode mode, int process_type) {
 
 void StartProfilingNonRendererChildOnIOThread(
     base::WeakPtr<Controller> controller,
-    const content::ChildProcessData& data,
-    base::ProcessId pid) {
+    const content::ChildProcessData& data) {
   DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::IO));
 
   if (!controller)
@@ -130,7 +129,8 @@ void StartProfilingNonRendererChildOnIOThread(
 
   // Tell the child process to start profiling.
   ProfilingClientBinder client(host);
-  controller->StartProfilingClient(client.take(), pid, process_type);
+  controller->StartProfilingClient(client.take(), data.GetProcess().Pid(),
+                                   process_type);
 }
 
 void StartProfilingClientOnIOThread(base::WeakPtr<Controller> controller,
@@ -177,8 +177,8 @@ void StartProfilingPidOnIOThread(base::WeakPtr<Controller> controller,
   for (content::BrowserChildProcessHostIterator browser_child_iter;
        !browser_child_iter.Done(); ++browser_child_iter) {
     const content::ChildProcessData& data = browser_child_iter.GetData();
-    if (base::GetProcId(data.GetHandle()) == pid) {
-      StartProfilingNonRendererChildOnIOThread(controller, data, pid);
+    if (data.GetProcess().Pid() == pid) {
+      StartProfilingNonRendererChildOnIOThread(controller, data);
       return;
     }
   }
@@ -200,9 +200,8 @@ void StartProfilingNonRenderersIfNecessaryOnIOThread(
        !browser_child_iter.Done(); ++browser_child_iter) {
     const content::ChildProcessData& data = browser_child_iter.GetData();
     if (ShouldProfileNonRendererProcessType(mode, data.process_type) &&
-        data.IsHandleValid()) {
-      StartProfilingNonRendererChildOnIOThread(
-          controller, data, base::GetProcId(data.GetHandle()));
+        data.GetProcess().IsValid()) {
+      StartProfilingNonRendererChildOnIOThread(controller, data);
     }
   }
 }
@@ -312,10 +311,9 @@ void ClientConnectionManager::StartProfilingNonRendererChild(
     const content::ChildProcessData& data) {
   DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
   base::CreateSingleThreadTaskRunnerWithTraits({content::BrowserThread::IO})
-      ->PostTask(
-          FROM_HERE,
-          base::BindOnce(&StartProfilingNonRendererChildOnIOThread, controller_,
-                         data.Duplicate(), base::GetProcId(data.GetHandle())));
+      ->PostTask(FROM_HERE,
+                 base::BindOnce(&StartProfilingNonRendererChildOnIOThread,
+                                controller_, data.Duplicate()));
 }
 
 void ClientConnectionManager::Observe(

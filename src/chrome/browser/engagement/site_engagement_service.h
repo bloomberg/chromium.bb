@@ -138,6 +138,9 @@ class SiteEngagementService : public KeyedService,
   // Returns an array of engagement score details for all origins which have
   // a score, whether due to direct engagement, or other factors that cause
   // an engagement bonus to be applied.
+  //
+  // Note that this method is quite expensive, so try to avoid calling it in
+  // performance-critical code.
   std::vector<mojom::SiteEngagementDetails> GetAllDetails() const;
 
   // Update the engagement score of |url| for a notification interaction.
@@ -240,8 +243,11 @@ class SiteEngagementService : public KeyedService,
   // left it once they return.
   void CleanupEngagementScores(bool update_last_engagement_time) const;
 
-  // Records UMA metrics.
-  void RecordMetrics();
+  // Possibly records UMA metrics if we haven't recorded them lately.
+  void MaybeRecordMetrics();
+
+  // Actually records metrics for the engagement in |details|.
+  void RecordMetrics(std::vector<mojom::SiteEngagementDetails>);
 
   // Returns true if we should record engagement for this URL. Currently,
   // engagement is only earned for HTTP and HTTPS.
@@ -297,8 +303,6 @@ class SiteEngagementService : public KeyedService,
   // Returns the number of origins with maximum daily and total engagement
   // respectively.
   int OriginsWithMaxDailyEngagement() const;
-  int OriginsWithMaxEngagement(
-      const std::vector<mojom::SiteEngagementDetails>& details) const;
 
   // Update site engagement scores after a history deletion.
   void UpdateEngagementScores(

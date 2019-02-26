@@ -188,7 +188,7 @@ cr.define('settings_payments_section', function() {
       return test_util.whenAttributeIs(creditCardDialog.$.dialog, 'open', '')
           .then(function() {
             const now = new Date();
-            const maxYear = now.getFullYear() + 9;
+            const maxYear = now.getFullYear() + 19;
             const yearOptions = creditCardDialog.$.year.options;
 
             assertEquals('2015', yearOptions[0].textContent.trim());
@@ -203,9 +203,9 @@ cr.define('settings_payments_section', function() {
     test('verifyVeryFutureCreditCardYear', function() {
       const creditCard = FakeDataMaker.creditCardEntry();
 
-      // Expiring 20 years from now is unusual.
+      // Expiring 25 years from now is unusual.
       const now = new Date();
-      const farFutureYear = now.getFullYear() + 20;
+      const farFutureYear = now.getFullYear() + 25;
       creditCard.expirationYear = farFutureYear.toString();
 
       const creditCardDialog = createCreditCardDialog(creditCard);
@@ -232,7 +232,7 @@ cr.define('settings_payments_section', function() {
       const now = new Date();
       const nearFutureYear = now.getFullYear() + 2;
       creditCard.expirationYear = nearFutureYear.toString();
-      const maxYear = now.getFullYear() + 9;
+      const maxYear = now.getFullYear() + 19;
 
       const creditCardDialog = createCreditCardDialog(creditCard);
 

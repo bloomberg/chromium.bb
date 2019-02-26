@@ -142,7 +142,7 @@ bool HTMLFormControlElementWithState::ShouldAutocomplete() const {
 }
 
 bool HTMLFormControlElementWithState::IsWearingAutofillAnchorMantle() const {
-  return FormControlType() == InputTypeNames::hidden;
+  return FormControlType() == input_type_names::kHidden;
 }
 
 String HTMLFormControlElementWithState::IDLExposedAutofillValue() const {
@@ -152,7 +152,7 @@ String HTMLFormControlElementWithState::IDLExposedAutofillValue() const {
   // https://html.spec.whatwg.org/multipage/form-control-infrastructure.html#autofill-processing-model
   // 1. If the element has no autocomplete attribute, then jump to the step
   // labeled default.
-  const AtomicString& value = FastGetAttribute(HTMLNames::autocompleteAttr);
+  const AtomicString& value = FastGetAttribute(html_names::kAutocompleteAttr);
   if (value.IsNull())
     return g_empty_string;
 
@@ -281,7 +281,7 @@ String HTMLFormControlElementWithState::IDLExposedAutofillValue() const {
 
 void HTMLFormControlElementWithState::setIDLExposedAutofillValue(
     const String& autocomplete_value) {
-  setAttribute(HTMLNames::autocompleteAttr, AtomicString(autocomplete_value));
+  setAttribute(html_names::kAutocompleteAttr, AtomicString(autocomplete_value));
 }
 
 void HTMLFormControlElementWithState::NotifyFormStateChanged() {

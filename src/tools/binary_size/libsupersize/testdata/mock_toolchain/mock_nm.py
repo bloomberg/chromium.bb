@@ -18,6 +18,10 @@ _ELF_OUTPUT = """002b6e20 t $t
 002a0010 t BarAlias()
 002a0000 t blink::ContiguousContainerBase::shrinkToFit()
 002a0000 t BazAlias(bool)
+002a2000 t OUTLINED_FUNCTION_0
+002a2020 t OUTLINED_FUNCTION_1
+002a2020 t OUTLINED_FUNCTION_2
+002a2020 t aliasedWithOutlinedFunction()
 002b6bb8 t $t.22
 """.format(_SHRINK_TO_FIT_CLONE)
 
@@ -62,6 +66,9 @@ _OBJECT_OUTPUTS = {
          'ink::ContiguousContainerBase&&)'),
         ('01010101 t (anonymous namespace)::blink::PaintChunker::releasePaintCh'
          'unks() [clone .part.1]'),
+        ('01010101 t OUTLINED_FUNCTION_0'),
+        ('01010101 t OUTLINED_FUNCTION_1'),
+        ('01010101 t OUTLINED_FUNCTION_2'),
     ],
     'obj/base/base/page_allocator.o': [
         '01010101 t _GLOBAL__sub_I_page_allocator.cc',
@@ -73,24 +80,24 @@ _OBJECT_OUTPUTS = {
         '01010101 t extFromUUseMapping(signed char, unsigned int, int)',
         '01010101 t Name',
         '01010101 v vtable for mojo::MessageReceiver',
-        '01010101 r kMethodsAnimationFrameTimeHistogram',
+        '01010101 r kMethodsAnimationFrameTimeHistogram (.llvm.12341234)',
         '01010101 r google::protobuf::internal::pLinuxKernelCmpxchg',
     ],
     'obj/third_party/ffmpeg/libffmpeg_internal.a': [
         '',
         'fft_float.o:',
         '01010101 b ff_cos_65536',
-        '01010101 b ff_cos_131072',
+        '01010101 b ff_cos_131072.1.llvm.43214321',
         '002a0010 t FooAlias()',
         '002b6bb8 t $t',
         '002a0010 t BarAlias()',
-        ''
-        'fft_fixed.o:'
+        '',
+        'fft_fixed.o:',
         '01010101 b ff_cos_131072_fixed',
     ],
     '../../third_party/gvr-android-sdk/libgvr_shim_static_arm.a': [
         '',
-        'libcontroller_api_impl.a_controller_api_impl.o:'
+        'libcontroller_api_impl.a_controller_api_impl.o:',
         '01010101 d .Lswitch.table.45',
         '',
         'libport_android_jni.a_jni_utils.o:',

@@ -47,13 +47,13 @@ class MODULES_EXPORT AudioBuffer final : public ScriptWrappable {
 
  public:
   static AudioBuffer* Create(unsigned number_of_channels,
-                             size_t number_of_frames,
+                             uint32_t number_of_frames,
                              float sample_rate);
   static AudioBuffer* Create(unsigned number_of_channels,
-                             size_t number_of_frames,
+                             uint32_t number_of_frames,
                              float sample_rate,
                              ExceptionState&);
-  static AudioBuffer* Create(const AudioBufferOptions&, ExceptionState&);
+  static AudioBuffer* Create(const AudioBufferOptions*, ExceptionState&);
 
   // Creates an AudioBuffer with uninitialized contents.  This should
   // only be used where we are guaranteed to initialize the contents
@@ -61,7 +61,7 @@ class MODULES_EXPORT AudioBuffer final : public ScriptWrappable {
   // is done.  |OfflineAudioContext::startRendering()| is one such
   // place.
   static AudioBuffer* CreateUninitialized(unsigned number_of_channels,
-                                          size_t number_of_frames,
+                                          uint32_t number_of_frames,
                                           float sample_rate);
 
   // Returns 0 if data is not a valid audio file.
@@ -73,7 +73,7 @@ class MODULES_EXPORT AudioBuffer final : public ScriptWrappable {
   static AudioBuffer* CreateFromAudioBus(AudioBus*);
 
   // Format
-  size_t length() const { return length_; }
+  uint32_t length() const { return length_; }
   double duration() const {
     return length() / static_cast<double>(sampleRate());
   }
@@ -85,18 +85,18 @@ class MODULES_EXPORT AudioBuffer final : public ScriptWrappable {
                                             ExceptionState&);
   NotShared<DOMFloat32Array> getChannelData(unsigned channel_index);
   void copyFromChannel(NotShared<DOMFloat32Array>,
-                       long channel_number,
+                       int32_t channel_number,
                        ExceptionState&);
   void copyFromChannel(NotShared<DOMFloat32Array>,
-                       long channel_number,
-                       unsigned long start_in_channel,
+                       int32_t channel_number,
+                       uint32_t start_in_channel,
                        ExceptionState&);
   void copyToChannel(NotShared<DOMFloat32Array>,
-                     long channel_number,
+                     int32_t channel_number,
                      ExceptionState&);
   void copyToChannel(NotShared<DOMFloat32Array>,
-                     long channel_number,
-                     unsigned long start_in_channel,
+                     int32_t channel_number,
+                     uint32_t start_in_channel,
                      ExceptionState&);
 
   void Zero();
@@ -115,17 +115,17 @@ class MODULES_EXPORT AudioBuffer final : public ScriptWrappable {
   explicit AudioBuffer(AudioBus*);
 
   static DOMFloat32Array* CreateFloat32ArrayOrNull(
-      size_t length,
+      uint32_t length,
       InitializationPolicy allocation_policy = kZeroInitialize);
 
   AudioBuffer(unsigned number_of_channels,
-              size_t number_of_frames,
+              uint32_t number_of_frames,
               float sample_rate,
               InitializationPolicy allocation_policy = kZeroInitialize);
   bool CreatedSuccessfully(unsigned desired_number_of_channels) const;
 
   float sample_rate_;
-  size_t length_;
+  uint32_t length_;
 
   HeapVector<Member<DOMFloat32Array>> channels_;
 };

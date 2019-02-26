@@ -135,24 +135,32 @@ class DummyCryptoServerStreamHelper
 }  // namespace
 
 P2PQuicTransportImpl::P2PQuicTransportImpl(
-    P2PQuicTransportConfig p2p_transport_config,
+    Delegate* delegate,
+    P2PQuicPacketTransport* packet_transport,
+    const P2PQuicTransportConfig& p2p_transport_config,
     std::unique_ptr<net::QuicChromiumConnectionHelper> helper,
     std::unique_ptr<quic::QuicConnection> connection,
     const quic::QuicConfig& quic_config,
     quic::QuicClock* clock)
-    : quic::QuicSession(connection.get(), nullptr /* visitor */, quic_config),
+    : quic::QuicSession(connection.get(),
+                        nullptr /* visitor */,
+                        quic_config,
+                        quic::CurrentSupportedVersions()),
       helper_(std::move(helper)),
       connection_(std::move(connection)),
-      perspective_(p2p_transport_config.is_server
-                       ? quic::Perspective::IS_SERVER
-                       : quic::Perspective::IS_CLIENT),
-      packet_transport_(p2p_transport_config.packet_transport),
-      delegate_(p2p_transport_config.delegate),
-      clock_(clock) {
+      perspective_(p2p_transport_config.perspective),
+      packet_transport_(packet_transport),
+      delegate_(delegate),
+      clock_(clock),
+      stream_delegate_read_buffer_size_(
+          p2p_transport_config.stream_delegate_read_buffer_size),
+      stream_write_buffer_size_(p2p_transport_config.stream_write_buffer_size) {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   DCHECK(delegate_);
   DCHECK(clock_);
   DCHECK(packet_transport_);
+  DCHECK_GT(stream_delegate_read_buffer_size_, 0u);
+  DCHECK_GT(stream_write_buffer_size_, 0u);
   DCHECK_GT(p2p_transport_config.certificates.size(), 0u);
   if (p2p_transport_config.can_respond_to_crypto_handshake) {
     InitializeCryptoStream();
@@ -232,12 +240,7 @@ P2PQuicStreamImpl* P2PQuicTransportImpl::CreateOutgoingBidirectionalStream() {
   return stream;
 }
 
-P2PQuicStreamImpl* P2PQuicTransportImpl::CreateOutgoingUnidirectionalStream() {
-  DCHECK(false);
-  return nullptr;
-}
-
-P2PQuicStreamImpl* P2PQuicTransportImpl::CreateIncomingDynamicStream(
+P2PQuicStreamImpl* P2PQuicTransportImpl::CreateIncomingStream(
     quic::QuicStreamId id) {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   P2PQuicStreamImpl* stream = CreateStreamInternal(id);
@@ -252,7 +255,8 @@ P2PQuicStreamImpl* P2PQuicTransportImpl::CreateStreamInternal(
   DCHECK(crypto_stream_);
   DCHECK(IsEncryptionEstablished());
   DCHECK(!IsClosed());
-  return new P2PQuicStreamImpl(id, this);
+  return new P2PQuicStreamImpl(id, this, stream_delegate_read_buffer_size_,
+                               stream_write_buffer_size_);
 }
 
 void P2PQuicTransportImpl::InitializeCryptoStream() {

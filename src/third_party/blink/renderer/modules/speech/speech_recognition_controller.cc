@@ -46,7 +46,7 @@ SpeechRecognitionController::~SpeechRecognitionController() {
 
 SpeechRecognitionController* SpeechRecognitionController::Create(
     LocalFrame& frame) {
-  return new SpeechRecognitionController(frame);
+  return MakeGarbageCollected<SpeechRecognitionController>(frame);
 }
 
 void SpeechRecognitionController::Start(

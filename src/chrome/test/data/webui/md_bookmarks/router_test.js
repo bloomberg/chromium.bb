@@ -39,37 +39,31 @@ suite('<bookmarks-router>', function() {
     assertEquals('2', store.lastAction.id);
   });
 
-  test('route updates from ID', function() {
+  test('route updates from ID', async function() {
     store.data.selectedFolder = '2';
     store.notifyObservers();
 
-    return Promise.resolve()
-        .then(function() {
-          assertEquals('chrome://bookmarks/?id=2', window.location.href);
-          store.data.selectedFolder = '1';
-          store.notifyObservers();
-        })
-        .then(function() {
-          // Selecting Bookmarks bar clears route.
-          assertEquals('chrome://bookmarks/', window.location.href);
-        });
+    await PolymerTest.flushTasks();
+    assertEquals('chrome://bookmarks/?id=2', window.location.href);
+    store.data.selectedFolder = '1';
+    store.notifyObservers();
+    await PolymerTest.flushTasks();
+    // Selecting Bookmarks bar clears route.
+    assertEquals('chrome://bookmarks/', window.location.href);
   });
 
-  test('route updates from search', function() {
+  test('route updates from search', async function() {
     store.data.search = {term: 'bloop'};
     store.notifyObservers();
+    await PolymerTest.flushTasks();
 
-    return Promise.resolve()
-        .then(function() {
-          assertEquals('chrome://bookmarks/?q=bloop', window.location.href);
+    assertEquals('chrome://bookmarks/?q=bloop', window.location.href);
 
-          // Ensure that the route doesn't change when the search finishes.
-          store.data.selectedFolder = null;
-          store.notifyObservers();
-        })
-        .then(function() {
-          assertEquals('chrome://bookmarks/?q=bloop', window.location.href);
-        });
+    // Ensure that the route doesn't change when the search finishes.
+    store.data.selectedFolder = null;
+    store.notifyObservers();
+    await PolymerTest.flushTasks();
+    assertEquals('chrome://bookmarks/?q=bloop', window.location.href);
   });
 
   test('bookmarks bar selected with empty route', function() {

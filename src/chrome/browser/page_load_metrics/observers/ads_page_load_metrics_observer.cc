@@ -10,6 +10,7 @@
 #include "base/feature_list.h"
 #include "base/logging.h"
 #include "base/strings/string_util.h"
+#include "chrome/browser/page_load_metrics/metrics_web_contents_observer.h"
 #include "chrome/browser/page_load_metrics/page_load_metrics_util.h"
 #include "chrome/common/chrome_features.h"
 #include "content/public/browser/navigation_handle.h"
@@ -18,6 +19,8 @@
 #include "net/base/mime_util.h"
 #include "services/metrics/public/cpp/ukm_builders.h"
 #include "services/metrics/public/cpp/ukm_recorder.h"
+#include "third_party/blink/public/common/download/download_stats.h"
+#include "third_party/blink/public/common/frame/sandbox_flags.h"
 #include "third_party/blink/public/common/mime_util/mime_util.h"
 #include "url/gurl.h"
 
@@ -83,6 +86,18 @@ bool DetectGoogleAd(content::NavigationHandle* navigation_handle) {
   return url.host_piece() == "tpc.googlesyndication.com" &&
          base::StartsWith(url.path_piece(), "/safeframe",
                           base::CompareCase::SENSITIVE);
+}
+
+bool IsSubframeSameOriginToMainFrame(content::RenderFrameHost* sub_host,
+                                     bool use_parent_origin) {
+  DCHECK(sub_host);
+  content::RenderFrameHost* main_host =
+      content::WebContents::FromRenderFrameHost(sub_host)->GetMainFrame();
+  if (use_parent_origin)
+    sub_host = sub_host->GetParent();
+  url::Origin subframe_origin = sub_host->GetLastCommittedOrigin();
+  url::Origin mainframe_origin = main_host->GetLastCommittedOrigin();
+  return subframe_origin.IsSameOriginWith(mainframe_origin);
 }
 
 using ResourceMimeType = AdsPageLoadMetricsObserver::ResourceMimeType;
@@ -182,13 +197,8 @@ void AdsPageLoadMetricsObserver::RecordAdFrameData(
   if (!ad_data && ad_types.any()) {
     AdOriginStatus origin_status = AdOriginStatus::kUnknown;
     if (ad_host) {
-      content::RenderFrameHost* main_host =
-          content::WebContents::FromRenderFrameHost(ad_host)->GetMainFrame();
       // For ads triggered on render, their origin is their parent's origin.
-      if (!frame_navigated)
-        ad_host = ad_host->GetParent();
-      origin_status = main_host->GetLastCommittedOrigin().IsSameOriginWith(
-                          ad_host->GetLastCommittedOrigin())
+      origin_status = IsSubframeSameOriginToMainFrame(ad_host, !frame_navigated)
                           ? AdOriginStatus::kSame
                           : AdOriginStatus::kCross;
     }
@@ -217,13 +227,52 @@ void AdsPageLoadMetricsObserver::OnDidFinishSubFrameNavigation(
     content::NavigationHandle* navigation_handle) {
   FrameTreeNodeId frame_tree_node_id = navigation_handle->GetFrameTreeNodeId();
   AdTypes ad_types = DetectAds(navigation_handle);
+
   // NOTE: Frame look-up only used for determining cross-origin status, not
   // granting security permissions.
   content::RenderFrameHost* ad_host = FindFrameMaybeUnsafe(navigation_handle);
 
+  if (navigation_handle->IsDownload()) {
+    bool sandboxed = ad_host->IsSandboxed(blink::WebSandboxFlags::kDownloads);
+    bool gesture = navigation_handle->HasUserGesture();
+
+    unsigned value = 0;
+    if (sandboxed)
+      value |= blink::DownloadStats::kSandboxBit;
+    if (!IsSubframeSameOriginToMainFrame(ad_host, /*use_parent_origin=*/false))
+      value |= blink::DownloadStats::kCrossOriginBit;
+    if (ad_types.any())
+      value |= blink::DownloadStats::kAdBit;
+    if (gesture)
+      value |= blink::DownloadStats::kGestureBit;
+    blink::DownloadStats::RecordSubframeSandboxOriginAdGesture(value);
+
+    if (sandboxed) {
+      blink::mojom::WebFeature web_feature =
+          gesture ? blink::mojom::WebFeature::
+                        kNavigationDownloadInSandboxWithUserGesture
+                  : blink::mojom::WebFeature::
+                        kNavigationDownloadInSandboxWithoutUserGesture;
+      page_load_metrics::mojom::PageLoadFeatures page_load_features(
+          {web_feature}, {} /* css_properties */,
+          {} /* animated_css_properties */);
+      page_load_metrics::MetricsWebContentsObserver::RecordFeatureUsage(
+          ad_host, page_load_features);
+    }
+  }
+
   RecordAdFrameData(frame_tree_node_id, ad_types, ad_host,
                     /*frame_navigated=*/true);
   ProcessOngoingNavigationResource(frame_tree_node_id);
+}
+
+void AdsPageLoadMetricsObserver::OnDidInternalNavigationAbort(
+    content::NavigationHandle* navigation_handle) {
+  // Main frame navigation
+  if (navigation_handle->IsDownload()) {
+    blink::DownloadStats::RecordMainFrameHasGesture(
+        navigation_handle->HasUserGesture());
+  }
 }
 
 page_load_metrics::PageLoadMetricsObserver::ObservePolicy

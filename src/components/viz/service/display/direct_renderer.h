@@ -233,7 +233,7 @@ class VIZ_SERVICE_EXPORT DirectRenderer {
   // A map from RenderPass id to the filters used when drawing the RenderPass.
   base::flat_map<RenderPassId, cc::FilterOperations*> render_pass_filters_;
   base::flat_map<RenderPassId, cc::FilterOperations*>
-      render_pass_background_filters_;
+      render_pass_backdrop_filters_;
 
   bool visible_ = false;
   bool disable_color_checks_for_testing_ = false;

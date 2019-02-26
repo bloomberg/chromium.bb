@@ -137,7 +137,8 @@ bool SerializedMrfuAppLaunchPredictor::FromProto(
 }
 
 HourAppLaunchPredictor::HourAppLaunchPredictor()
-    : last_save_timestamp_(base::Time::Now()) {}
+    : last_save_timestamp_(base::Time::Now()),
+      bin_weights_(BinWeightsFromFlagOrDefault()) {}
 
 HourAppLaunchPredictor::~HourAppLaunchPredictor() = default;
 
@@ -157,7 +158,6 @@ base::flat_map<std::string, float> HourAppLaunchPredictor::Rank() {
   const auto& frequency_table_map =
       proto_.hour_app_launch_predictor().binned_frequency_table();
 
-  const std::vector<float> weights = BinWeightsFromFlagOrDefault();
   for (size_t i = 0; i < base::size(kAdjacentHourBin); ++i) {
     // Finds adjacent bin and weight.
     const int adj_bin =
@@ -167,7 +167,7 @@ base::flat_map<std::string, float> HourAppLaunchPredictor::Rank() {
       continue;
 
     const auto& frequency_table = find_frequency_table->second;
-    const float weight = weights[i];
+    const float weight = bin_weights_[i];
 
     // Accumulates the frequency to the output.
     if (frequency_table.total_counts() > 0) {

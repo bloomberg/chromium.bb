@@ -132,6 +132,14 @@ class BaseSearchProvider : public AutocompleteProvider {
       int accepted_suggestion,
       bool append_extra_query_params_from_command_line);
 
+  // Returns the appropriate value for the fill_into_edit field of an
+  // AutcompleteMatch. The result consists of the suggestion text from
+  // |suggest_result|, optionally prepended by the keyword from |template_url|
+  // if |suggest_result| is from the keyword provider.
+  static base::string16 GetFillIntoEdit(
+      const SearchSuggestionParser::SuggestResult& suggest_result,
+      const TemplateURL* template_url);
+
   // Returns whether we can send the URL of the current page in any suggest
   // requests.  Doing this requires that all the following hold:
   // * The suggest request is sent over HTTPS.  This avoids leaking the current

@@ -37,7 +37,7 @@ Worklet::~Worklet() {
 // https://drafts.css-houdini.org/worklets/#dom-worklet-addmodule
 ScriptPromise Worklet::addModule(ScriptState* script_state,
                                  const String& module_url,
-                                 const WorkletOptions& options) {
+                                 const WorkletOptions* options) {
   DCHECK(IsMainThread());
   if (!GetExecutionContext()) {
     return ScriptPromise::RejectWithDOMException(
@@ -67,7 +67,8 @@ ScriptPromise Worklet::addModule(ScriptState* script_state,
     return promise;
   }
 
-  WorkletPendingTasks* pending_tasks =  new WorkletPendingTasks(this, resolver);
+  WorkletPendingTasks* pending_tasks =
+      MakeGarbageCollected<WorkletPendingTasks>(this, resolver);
   pending_tasks_set_.insert(pending_tasks);
 
   // Step 5: "Return promise, and then continue running this algorithm in
@@ -78,7 +79,7 @@ ScriptPromise Worklet::addModule(ScriptState* script_state,
       ->GetTaskRunner(TaskType::kInternalLoading)
       ->PostTask(FROM_HERE,
                  WTF::Bind(&Worklet::FetchAndInvokeScript, WrapPersistent(this),
-                           module_url_record, options.credentials(),
+                           module_url_record, options->credentials(),
                            WrapPersistent(pending_tasks)));
   return promise;
 }
@@ -164,7 +165,7 @@ void Worklet::FetchAndInvokeScript(const KURL& module_url_record,
   }
 }
 
-size_t Worklet::SelectGlobalScope() {
+wtf_size_t Worklet::SelectGlobalScope() {
   DCHECK_EQ(GetNumberOfGlobalScopes(), 1u);
   return 0u;
 }

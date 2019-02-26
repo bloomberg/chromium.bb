@@ -310,6 +310,8 @@ class EventGeneratorDelegateMac : public ui::EventTarget,
                               gfx::Point* point) const override {}
   void ConvertPointToTarget(const ui::EventTarget* target,
                             gfx::Point* point) const override {}
+  void ConvertPointFromWindow(gfx::NativeWindow window,
+                              gfx::Point* point) const override {}
   void ConvertPointFromHost(const ui::EventTarget* hosted_target,
                             gfx::Point* point) const override {}
   ui::EventDispatchDetails DispatchKeyEventToIME(EventTarget* target,
@@ -386,15 +388,16 @@ EventGeneratorDelegateMac::EventGeneratorDelegateMac(
   // Retain the NSWindow (note it can be nil). This matches Cocoa's tendency to
   // have autoreleased objects, or objects still in the event queue, that
   // reference the NSWindow.
-  window_.reset([window retain]);
+  window_.reset([window.GetNativeNSWindow() retain]);
 
   // Normally, edit menu items have a `nil` target. This results in -[NSMenu
   // performKeyEquivalent:] relying on -[NSApplication targetForAction:to:from:]
   // to find a target starting at the first responder of the key window. Since
   // non-interactive tests have no key window, that won't work. So set (or
   // clear) the target explicitly on all menu items.
-  [[fake_menu_ itemArray] makeObjectsPerformSelector:@selector(setTarget:)
-                                          withObject:[window firstResponder]];
+  [[fake_menu_ itemArray]
+      makeObjectsPerformSelector:@selector(setTarget:)
+                      withObject:[window.GetNativeNSWindow() firstResponder]];
 
   if (owner_) {
     swizzle_pressed_.reset(new base::mac::ScopedObjCClassSwizzler(
@@ -557,11 +560,12 @@ void EventGeneratorDelegateMac::OnScrollEvent(ui::ScrollEvent* event) {
 gfx::Point EventGeneratorDelegateMac::CenterOfTarget(
     const ui::EventTarget* target) const {
   DCHECK_EQ(target, this);
-  return CenterOfWindow(window_);
+  return CenterOfWindow(gfx::NativeWindow(window_));
 }
 
 gfx::Point EventGeneratorDelegateMac::CenterOfWindow(
-    gfx::NativeWindow window) const {
+    gfx::NativeWindow native_window) const {
+  NSWindow* window = native_window.GetNativeNSWindow();
   DCHECK_EQ(window, window_);
   // Assume the window is at the top-left of the coordinate system (even if
   // AppKit has moved it into the work area) see ConvertRootPointToTarget().
@@ -617,7 +621,7 @@ CreateEventGeneratorDelegateMac(ui::test::EventGenerator* owner,
 
   // The location is the point in the root window which, for desktop widgets, is
   // the widget itself.
-  gfx::Point point_in_root = generator->current_location();
+  gfx::Point point_in_root = generator->current_screen_location();
   NSWindow* window = EventGeneratorDelegateMac::instance()->window();
   NSPoint point_in_window = ConvertRootPointToTarget(window, point_in_root);
   return ui::ConvertPointFromWindowToScreen(window, point_in_window);

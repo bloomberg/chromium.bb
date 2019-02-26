@@ -683,10 +683,11 @@ ByteString GenerateIconAppStream(CPDF_IconFit& fit,
   if (rcIcon.IsEmpty() || !pIconStream)
     return ByteString();
 
-  CPWL_Icon icon;
   CPWL_Wnd::CreateParams cp;
   cp.dwFlags = PWS_VISIBLE;
-  icon.Create(cp);
+
+  CPWL_Icon icon(cp, nullptr);
+  icon.Realize();
   icon.SetIconFit(&fit);
   icon.SetPDFStream(pIconStream);
   if (!icon.Move(rcIcon, false, false))
@@ -1932,8 +1933,8 @@ void CPWL_AppStream::Write(const ByteString& sAPType,
 
   CPDF_Dictionary* pStreamDict = pStream->GetDict();
   if (!pStreamDict) {
-    auto pNewDict = pdfium::MakeUnique<CPDF_Dictionary>(
-        widget_->GetPDFAnnot()->GetDocument()->GetByteStringPool());
+    auto pNewDict =
+        widget_->GetPDFAnnot()->GetDocument()->New<CPDF_Dictionary>();
     pStreamDict = pNewDict.get();
     pStreamDict->SetNewFor<CPDF_Name>("Type", "XObject");
     pStreamDict->SetNewFor<CPDF_Name>("Subtype", "Form");

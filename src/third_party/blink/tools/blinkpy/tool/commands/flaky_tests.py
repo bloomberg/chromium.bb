@@ -59,7 +59,7 @@ class FlakyTests(Command):
         '/dashboards/flakiness_dashboard.html%23tests=XXXXXXX')
 
     HEADER = (
-        'Manually add bug numbers for these and then put the lines in LayoutTests/TestExpectations.\n'
+        'Manually add bug numbers for these and then put the lines in web_tests/TestExpectations.\n'
         'Look up the test in the flakiness dashboard first to see if the the platform\n'
         'specifiers should be made more general.\n\n'
         'Bug template:\n%s\n') % BUG_TEMPLATE

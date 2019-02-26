@@ -18,7 +18,7 @@
 #import "ios/chrome/browser/ui/authentication/signin_earlgrey_utils.h"
 #import "ios/chrome/browser/ui/authentication/signin_promo_view.h"
 #import "ios/chrome/browser/ui/tab_grid/tab_grid_egtest_util.h"
-#include "ios/chrome/browser/ui/ui_util.h"
+#include "ios/chrome/browser/ui/util/ui_util.h"
 #include "ios/chrome/grit/ios_strings.h"
 #import "ios/chrome/test/app/chrome_test_util.h"
 #import "ios/chrome/test/app/sync_test_util.h"
@@ -144,19 +144,19 @@ void ClearBrowsingData() {
 
 void OpenNewIncognitoTab() {
   NSUInteger incognito_tab_count = GetIncognitoTabCount();
-  chrome_test_util::OpenNewIncognitoTab();
+  [ChromeEarlGrey openNewIncognitoTab];
   [ChromeEarlGrey waitForIncognitoTabCount:(incognito_tab_count + 1)];
   GREYAssert(IsIncognitoMode(), @"Failed to switch to incognito mode.");
 }
 
 void CloseCurrentIncognitoTab() {
   NSUInteger incognito_tab_count = GetIncognitoTabCount();
-  chrome_test_util::CloseCurrentTab();
+  [ChromeEarlGrey closeCurrentTab];
   [ChromeEarlGrey waitForIncognitoTabCount:(incognito_tab_count - 1)];
 }
 
 void CloseAllIncognitoTabs() {
-  GREYAssert(chrome_test_util::CloseAllIncognitoTabs(), @"Tabs did not close");
+  [ChromeEarlGrey closeAllIncognitoTabs];
   [ChromeEarlGrey waitForIncognitoTabCount:0];
 
   // The user is dropped into the tab grid after closing the last incognito tab.
@@ -171,7 +171,7 @@ void CloseAllIncognitoTabs() {
 
 void OpenNewRegularTab() {
   NSUInteger tab_count = chrome_test_util::GetMainTabCount();
-  chrome_test_util::OpenNewTab();
+  [ChromeEarlGrey openNewTab];
   [ChromeEarlGrey waitForMainTabCount:(tab_count + 1)];
 }
 
@@ -302,7 +302,7 @@ void SignOut() {
   OpenNewRegularTab();
   AssertUKMEnabled(false);
 
-  GREYAssert(chrome_test_util::CloseAllIncognitoTabs(), @"Tabs did not close");
+  [ChromeEarlGrey closeAllIncognitoTabs];
   [ChromeEarlGrey waitForIncognitoTabCount:0];
   AssertUKMEnabled(true);
 

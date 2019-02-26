@@ -185,6 +185,10 @@ class CORE_EXPORT LayoutInline : public LayoutBoxModelObject {
   NGPaintFragment* FirstInlineFragment() const final;
   void SetFirstInlineFragment(NGPaintFragment*) final;
 
+  // Return true if this inline doesn't occur on any lines, i.e. when it creates
+  // no fragments.
+  bool IsEmpty() const { return !FirstLineBox() && !FirstInlineFragment(); }
+
   LayoutBoxModelObject* VirtualContinuation() const final {
     return Continuation();
   }
@@ -209,12 +213,24 @@ class CORE_EXPORT LayoutInline : public LayoutBoxModelObject {
   using LayoutBoxModelObject::SetContinuation;
 
   bool AlwaysCreateLineBoxes() const {
+    DCHECK(!IsInLayoutNGInlineFormattingContext());
     return AlwaysCreateLineBoxesForLayoutInline();
   }
   void SetAlwaysCreateLineBoxes(bool always_create_line_boxes = true) {
+    DCHECK(!IsInLayoutNGInlineFormattingContext());
     SetAlwaysCreateLineBoxesForLayoutInline(always_create_line_boxes);
   }
   void UpdateAlwaysCreateLineBoxes(bool full_layout);
+
+  // True if this inline box should force creation of NGPhysicalBoxFragment.
+  bool ShouldCreateBoxFragment() const {
+    DCHECK(IsInLayoutNGInlineFormattingContext());
+    return AlwaysCreateLineBoxesForLayoutInline();
+  }
+  void SetShouldCreateBoxFragment(bool value = true) {
+    SetAlwaysCreateLineBoxesForLayoutInline(value);
+  }
+  void UpdateShouldCreateBoxFragment();
 
   LayoutRect LocalCaretRect(const InlineBox*,
                             int,
@@ -271,6 +287,11 @@ class CORE_EXPORT LayoutInline : public LayoutBoxModelObject {
   LayoutObjectChildList* Children() { return &children_; }
 
   bool IsLayoutInline() const final { return true; }
+
+  // Compute the initial value of |ShouldCreateBoxFragment()| for this
+  // LayoutInline. It maybe flipped to true later for other conditions.
+  bool ComputeInitialShouldCreateBoxFragment() const;
+  bool ComputeInitialShouldCreateBoxFragment(const ComputedStyle& style) const;
 
   LayoutRect CulledInlineVisualOverflowBoundingBox() const;
   InlineBox* CulledInlineFirstLineBox() const;

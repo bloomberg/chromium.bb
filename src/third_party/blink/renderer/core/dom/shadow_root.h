@@ -56,8 +56,10 @@ class CORE_EXPORT ShadowRoot final : public DocumentFragment, public TreeScope {
 
  public:
   static ShadowRoot* Create(Document& document, ShadowRootType type) {
-    return new ShadowRoot(document, type);
+    return MakeGarbageCollected<ShadowRoot>(document, type);
   }
+
+  ShadowRoot(Document&, ShadowRootType);
 
   // Disambiguate between Node and TreeScope hierarchies; TreeScope's
   // implementation is simpler.
@@ -105,9 +107,6 @@ class CORE_EXPORT ShadowRoot final : public DocumentFragment, public TreeScope {
   }
   bool IsUserAgent() const { return GetType() == ShadowRootType::kUserAgent; }
 
-  void AttachLayoutTree(AttachContext&) override;
-  void DetachLayoutTree(const AttachContext& = AttachContext()) override;
-
   InsertionNotificationRequest InsertedInto(ContainerNode&) override;
   void RemovedFrom(ContainerNode&) override;
 
@@ -129,6 +128,8 @@ class CORE_EXPORT ShadowRoot final : public DocumentFragment, public TreeScope {
     DCHECK(slot_assignment_);
     return *slot_assignment_;
   }
+
+  bool HasSlotAssignment() { return slot_assignment_; }
 
   HTMLSlotElement* AssignedSlotFor(const Node&);
   void DidAddSlot(HTMLSlotElement&);
@@ -173,7 +174,6 @@ class CORE_EXPORT ShadowRoot final : public DocumentFragment, public TreeScope {
   void Trace(blink::Visitor*) override;
 
  private:
-  ShadowRoot(Document&, ShadowRootType);
   ~ShadowRoot() override;
 
   void ChildrenChanged(const ChildrenChange&) override;

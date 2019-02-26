@@ -10,7 +10,7 @@
 namespace blink {
 
 IIRProcessor::IIRProcessor(float sample_rate,
-                           size_t number_of_channels,
+                           uint32_t number_of_channels,
                            const Vector<double>& feedforward_coef,
                            const Vector<double>& feedback_coef,
                            bool is_filter_stable)
@@ -66,7 +66,7 @@ std::unique_ptr<AudioDSPKernel> IIRProcessor::CreateKernel() {
 
 void IIRProcessor::Process(const AudioBus* source,
                            AudioBus* destination,
-                           size_t frames_to_process) {
+                           uint32_t frames_to_process) {
   if (!IsInitialized()) {
     destination->Zero();
     return;

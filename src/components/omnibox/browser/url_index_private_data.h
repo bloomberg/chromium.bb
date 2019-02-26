@@ -250,11 +250,6 @@ class URLIndexPrivateData
       const String16Vector& terms,
       WordStarts* terms_to_word_starts_offsets);
 
-  static void CalculateWordStartsOffsets(
-      const String16Vector& terms,
-      bool force_break_on_underscore,
-      WordStarts* terms_to_word_starts_offsets);
-
   // Indexes one URL history item as described by |row|. Returns true if the
   // row was actually indexed. |scheme_whitelist| is used to filter
   // non-qualifying schemes.  If |history_db| is not NULL then this function

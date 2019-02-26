@@ -6,7 +6,6 @@
 <translation id="1759842336958782510">Chrome</translation>
 <translation id="1816764564654397850">Google Chrome Gizlilik Uyarısı</translation>
 <translation id="1863312987075920112">Bu uygulamayı kullanarak Chrome’un <ph name="BEGIN_LINK_TOS" />Hizmet Şartları<ph name="END_LINK_TOS" />'nı ve <ph name="BEGIN_LINK_PRIVACY" />Gizlilik Uyarısı<ph name="END_LINK_PRIVACY" />'nı kabul etmiş olursunuz.</translation>
-<translation id="1878302395768190018">Bunu istediğiniz zaman Chrome Ayarlarından özelleştirebilirsiniz</translation>
 <translation id="2147651015520127414">Chrome, bu web sitesi sertifikasının <ph name="ISSUER" /> tarafından yayınlandığını doğruladı.</translation>
 <translation id="2334084861041072223">Telif Hakkı <ph name="YEAR" /> Google Inc. Tüm hakları saklıdır.</translation>
 <translation id="2342981853652716282">Tüm cihazlarınızda yer işaretlerinizi, şifrelerinizi almak ve daha pek çok şey yapmak için Chrome'da oturum açın.</translation>
@@ -16,6 +15,7 @@
 <translation id="2576431527583832481">Chrome daha da iyi hale geldi! Yeni bir sürüm var.</translation>
 <translation id="257708665678654955">Google Chrome'un bir dahaki sefere bu siteden <ph name="LANGUAGE_NAME" /> dilindeki sayfaları çevirmeyi önermesini ister misiniz?</translation>
 <translation id="2943166482989655199">Google'a sistem ve kullanım verilerini göndererek Chrome ürününü ve güvenliğini iyileştirin</translation>
+<translation id="3030414234702425231"><ph name="SIGNOUT_MANAGED_DOMAIN" /> tarafından yönetilen bir hesabın oturumunu kapattığınız için Chrome verileriniz bu cihazdan silinecek. Ancak verileriniz Google Hesabınızda kalmaya devam edecek.</translation>
 <translation id="3148434565183091099">Yer işaretlerinizi tüm cihazlarınızda almak için Chrome'da oturum açın.</translation>
 <translation id="3148688391461398285">Konumunuza dayalı olarak Chrome'da daha iyi deneyim elde edin.</translation>
 <translation id="3167189358072330585">Hesabınız Google Chrome'da kullanılamıyor. Lütfen alan adı yöneticinizle iletişim kurun veya oturum açmak için normal bir Google Hesabı kullanın.</translation>
@@ -32,18 +32,17 @@
 <translation id="447252321002412580">Chrome'un özelliklerini ve performansını iyileştirmeye yardımcı olun</translation>
 <translation id="4523886039239821078">Bazı eklentiler Chrome'un kilitlenmesine neden oluyor. Lütfen şunların yüklemelerini kaldırın:</translation>
 <translation id="4615174829807303908"><ph name="SIGNOUT_MANAGED_DOMAIN" /> tarafından yönetilen bir hesabın oturumunu kapatıyorsunuz. Bu işlemle Chrome verileriniz bu cihazdan silinir, ancak Google hesabınızda kalmaya devam eder.</translation>
-<translation id="5240817131241497236">Chrome'da senkronizasyon, kişiselleştirme ve diğer Google hizmetlerini kontrol eden ayarlar değişti. Bu durum geçerli ayarlarınızı etkileyebilir.</translation>
 <translation id="5389212809648216794">Kameranız başka bir uygulama tarafından kullanıldığından Google Chrome, kameranızı kullanamıyor.</translation>
 <translation id="5489543008378040943"><ph name="BEGIN_LINK" />Ayarlar<ph name="END_LINK" />'ı istediğiniz zaman özelleştirebilirsiniz. Google; Chrome'u ve Çeviri, Arama, reklamlar gibi diğer Google hizmetlerini kişiselleştirmek için ziyaret ettiğiniz sitelerdeki içeriği, tarayıcı etkileşimlerini ve etkinlikleri kullanabilir.</translation>
 <translation id="5639704535586432836">Ayarlar &gt; Gizlilik &gt; Kamera &gt; Google Chrome'a gidin ve kamerayı açın.</translation>
 <translation id="5642200033778930880">Google Chrome, kameranızı Bölünmüş Görünüm modunda kullanamıyor</translation>
-<translation id="5703130498371792817">Chrome'u kullanmayı seviyor musunuz?<ph name="BEGIN_LINK" />Bu uygulamaya oy verin<ph name="END_LINK" /></translation>
 <translation id="5854621639439811139">Chrome için ipucu: Geri, İleri ve Ara gibi bazı düğmeler artık ekranınızın alt bölümünde bulunuyor.</translation>
 <translation id="6036420186814142909">Google Chrome İnternet verilerinizi yönetmenize ve web sayfalarını hızlı yükleyebilmenize yardımcı olacak özelliklere sahiptir.
 <ph name="BEGIN_LINK" />Daha fazla bilgi edinin<ph name="END_LINK" /></translation>
 <translation id="6573431926118603307">Diğer cihazlarınızda Chrome ile açtığınız sekmeler burada görünür.</translation>
 <translation id="6600954340915313787">Chrome'a kopyalandı</translation>
 <translation id="6648150602980899529"><ph name="DOMAIN" /> tarafından yönetilen bir hesapla oturum açıyorsunuz ve yöneticiye tüm Chrome verileriniz üzerinde denetim olanağı veriyorsunuz. Verileriniz kalıcı olarak bu hesaba bağlanacaktır. Chrome'da oturumu kapattığınızda verileriniz bu cihazdan silinir ancak Google Hesabınızda kalmaya devam eder.</translation>
+<translation id="6676840375528380067">Chrome verileriniz bu cihazdan temizlensin mi?</translation>
 <translation id="690638524486313356">Google Chrome Hizmet Şartları</translation>
 <translation id="7165736900384873061">Google Chrome QR tarayıcısını kullanmaya başlayın</translation>
 <translation id="7172660552945675509">İpucu: <ph name="BEGIN_LINK" />Chrome'u yuva bölümüne taşıyın<ph name="END_LINK" /></translation>

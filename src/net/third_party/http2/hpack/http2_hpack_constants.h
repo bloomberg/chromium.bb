@@ -57,6 +57,7 @@ HTTP2_EXPORT_PRIVATE Http2String HpackEntryTypeToString(HpackEntryType v);
 // Inserts the name of the enum member into |out|.
 HTTP2_EXPORT_PRIVATE std::ostream& operator<<(std::ostream& out,
                                               HpackEntryType v);
+
 }  // namespace http2
 
 #endif  // NET_THIRD_PARTY_HTTP2_HPACK_HTTP2_HPACK_CONSTANTS_H_

@@ -140,8 +140,8 @@ MediaPipelineBackend* CastMediaShlib::CreateMediaPipelineBackend(
 double CastMediaShlib::GetMediaClockRate() {
   int ppm = 0;
   if (!g_rate_offset_element) {
-    VLOG(1) << "g_rate_offset_element is null, ALSA rate offset control will "
-               "not be possible.";
+    LOG(INFO) << "g_rate_offset_element is null, ALSA rate offset control will "
+                 "not be possible.";
     return kOneMhzReference;
   }
   snd_ctl_elem_value_t* rate_offset_ppm;
@@ -171,8 +171,8 @@ void CastMediaShlib::MediaClockRateRange(double* minimum_rate,
 bool CastMediaShlib::SetMediaClockRate(double new_rate) {
   int new_ppm = new_rate - kOneMhzReference;
   if (!g_rate_offset_element) {
-    VLOG(1) << "g_rate_offset_element is null, ALSA rate offset control will "
-               "not be possible.";
+    LOG(INFO) << "g_rate_offset_element is null, ALSA rate offset control will "
+                 "not be possible.";
     return false;
   }
   snd_ctl_elem_value_t* rate_offset_ppm;

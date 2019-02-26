@@ -38,6 +38,8 @@ class ImageBitmap;
 class CORE_EXPORT UnpackedSerializedScriptValue
     : public GarbageCollectedFinalized<UnpackedSerializedScriptValue> {
  public:
+  // Callers should use SerializedScriptValue::Unpack.
+  explicit UnpackedSerializedScriptValue(scoped_refptr<SerializedScriptValue>);
   ~UnpackedSerializedScriptValue();
 
   void Trace(blink::Visitor*);
@@ -58,9 +60,6 @@ class CORE_EXPORT UnpackedSerializedScriptValue
       const DeserializeOptions& = DeserializeOptions());
 
  private:
-  // Private so that callers use SerializedScriptValue::Unpack.
-  explicit UnpackedSerializedScriptValue(scoped_refptr<SerializedScriptValue>);
-
   // The underlying serialized data.
   scoped_refptr<SerializedScriptValue> value_;
 

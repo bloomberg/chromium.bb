@@ -162,9 +162,11 @@ CSSKeyframeRule* CSSKeyframesRule::Item(unsigned index) const {
   DCHECK_EQ(child_rule_cssom_wrappers_.size(),
             keyframes_rule_->Keyframes().size());
   Member<CSSKeyframeRule>& rule = child_rule_cssom_wrappers_[index];
-  if (!rule)
-    rule = new CSSKeyframeRule(keyframes_rule_->Keyframes()[index].Get(),
-                               const_cast<CSSKeyframesRule*>(this));
+  if (!rule) {
+    rule = MakeGarbageCollected<CSSKeyframeRule>(
+        keyframes_rule_->Keyframes()[index].Get(),
+        const_cast<CSSKeyframesRule*>(this));
+  }
 
   return rule.Get();
 }

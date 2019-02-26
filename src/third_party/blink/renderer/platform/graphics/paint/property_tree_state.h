@@ -8,9 +8,6 @@
 #include "third_party/blink/renderer/platform/graphics/paint/clip_paint_property_node.h"
 #include "third_party/blink/renderer/platform/graphics/paint/effect_paint_property_node.h"
 #include "third_party/blink/renderer/platform/graphics/paint/transform_paint_property_node.h"
-#include "third_party/blink/renderer/platform/wtf/hash_functions.h"
-#include "third_party/blink/renderer/platform/wtf/hash_traits.h"
-#include "third_party/blink/renderer/platform/wtf/text/string_builder.h"
 
 namespace blink {
 
@@ -40,12 +37,6 @@ class PLATFORM_EXPORT PropertyTreeState {
   void SetEffect(const EffectPaintPropertyNode* node) { effect_ = node; }
 
   static const PropertyTreeState& Root();
-
-  // Returns the compositor element id, if any, for this property state. If
-  // neither the effect nor transform nodes have a compositor element id then a
-  // default instance is returned.
-  const CompositorElementId GetCompositorElementId(
-      const CompositorElementIdSet& element_ids) const;
 
   void ClearChangedToRoot() const {
     Transform()->ClearChangedToRoot();
@@ -77,6 +68,9 @@ inline bool operator==(const PropertyTreeState& a, const PropertyTreeState& b) {
 inline bool operator!=(const PropertyTreeState& a, const PropertyTreeState& b) {
   return !(a == b);
 }
+
+PLATFORM_EXPORT std::ostream& operator<<(std::ostream&,
+                                         const PropertyTreeState&);
 
 }  // namespace blink
 

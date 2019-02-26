@@ -58,7 +58,7 @@ class COMPONENT_EXPORT(SERVICE_MANAGER_CPP) ServiceBinding
 
   bool is_bound() const { return binding_.is_bound(); }
 
-  Identity identity() const { return identity_; }
+  const Identity& identity() const { return identity_; }
 
   // Returns a usable Connector which can make outgoing interface requests
   // identifying as the service to which this ServiceBinding is bound.
@@ -96,6 +96,61 @@ class COMPONENT_EXPORT(SERVICE_MANAGER_CPP) ServiceBinding
   //
   // Must only be called on a bound ServiceBinding.
   void Close();
+
+  // Allows the caller to intercept all requests for a specific interface
+  // targeting any instance of the service |service_name| running in the calling
+  // process. Prefer the template helpers for clarity.
+  using BinderForTesting =
+      base::RepeatingCallback<void(const BindSourceInfo&,
+                                   mojo::ScopedMessagePipeHandle)>;
+  static void OverrideInterfaceBinderForTesting(
+      const std::string& service_name,
+      const std::string& interface_name,
+      const BinderForTesting& binder);
+  static void ClearInterfaceBinderOverrideForTesting(
+      const std::string& service_name,
+      const std::string& interface_name);
+
+  template <typename Interface>
+  using TypedBinderWithInfoForTesting =
+      base::RepeatingCallback<void(const BindSourceInfo&,
+                                   mojo::InterfaceRequest<Interface>)>;
+  template <typename Interface>
+  static void OverrideInterfaceBinderForTesting(
+      const std::string& service_name,
+      const TypedBinderWithInfoForTesting<Interface>& binder) {
+    ServiceBinding::OverrideInterfaceBinderForTesting(
+        service_name, Interface::Name_,
+        base::BindRepeating(
+            [](const TypedBinderWithInfoForTesting<Interface>& binder,
+               const BindSourceInfo& info, mojo::ScopedMessagePipeHandle pipe) {
+              binder.Run(info,
+                         mojo::InterfaceRequest<Interface>(std::move(pipe)));
+            },
+            binder));
+  }
+  template <typename Interface>
+  using TypedBinderForTesting =
+      base::RepeatingCallback<void(mojo::InterfaceRequest<Interface>)>;
+  template <typename Interface>
+  static void OverrideInterfaceBinderForTesting(
+      const std::string& service_name,
+      const TypedBinderForTesting<Interface>& binder) {
+    ServiceBinding::OverrideInterfaceBinderForTesting(
+        service_name, base::BindRepeating(
+                          [](const TypedBinderForTesting<Interface>& binder,
+                             const BindSourceInfo& info,
+                             mojo::InterfaceRequest<Interface> request) {
+                            binder.Run(std::move(request));
+                          },
+                          binder));
+  }
+
+  template <typename Interface>
+  static void ClearInterfaceBinderOverrideForTesting(
+      const std::string& service_name) {
+    ClearInterfaceBinderOverrideForTesting(service_name, Interface::Name_);
+  }
 
  private:
   void OnConnectionError();

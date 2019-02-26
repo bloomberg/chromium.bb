@@ -13,6 +13,7 @@
 #include "base/memory/ref_counted.h"
 #include "extensions/common/manifest.h"
 #include "extensions/common/message_bundle.h"
+#include "third_party/skia/include/core/SkColor.h"
 
 class ExtensionIconSet;
 class GURL;
@@ -123,6 +124,7 @@ void SetReportErrorForInvisibleIconForTesting(bool value);
 bool ValidateExtensionIconSet(const ExtensionIconSet& icon_set,
                               const Extension* extension,
                               int error_message_id,
+                              SkColor background_color,
                               std::string* error);
 
 // Loads extension message catalogs and returns message bundle.

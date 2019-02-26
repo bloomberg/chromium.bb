@@ -282,8 +282,14 @@
     ]
   },
   {
-    "name": "$result",
-    "reason": "Uncaught Exception: ValueError(\"invalid value for install_mode: ''\",)",
-    "status_code": -1
+    "failure": {
+      "exception": {
+        "traceback": [
+          "<omitted by recipe engine>"
+        ]
+      },
+      "humanReason": "Uncaught Exception: ValueError(\"invalid value for install_mode: ''\",)"
+    },
+    "name": "$result"
   }
 ]

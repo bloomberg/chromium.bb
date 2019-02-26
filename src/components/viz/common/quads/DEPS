@@ -8,6 +8,7 @@ include_rules = [
 
   "+gpu/command_buffer/common",
   "+third_party/skia",
+  "+ui/gl/dc_renderer_layer_params.h",
   "+ui/latency",
 ]
 

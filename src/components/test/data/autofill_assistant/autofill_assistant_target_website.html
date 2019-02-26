@@ -16,16 +16,50 @@ found in the LICENSE file.
         var button = document.getElementById("button");
         button.parentNode.removeChild(button);
       }
+
+      var removeTouchArea = function(element) {
+        var touch_area = document.getElementById(element);
+        touch_area.parentNode.removeChild(touch_area);
+      }
+
+      var moveTouchAreaTwoAndThree = function() {
+        var touch_area_two = document.getElementById("touch_area_two");
+        setTimeout(function(){touch_area_two.style.left = "100px";}, 100);
+        setTimeout(function(){touch_area_two.style.left = "200px";}, 200);
+        setTimeout(function(){touch_area_two.style.left = "300px";}, 300);
+        setTimeout(function(){touch_area_two.style.left = "100px";}, 400);
+        setTimeout(function(){touch_area_two.style.left = "200px";}, 500);
+        setTimeout(function(){touch_area_two.style.left = "300px";}, 600);
+
+        var touch_area_three = document.getElementById("touch_area_three");
+        setTimeout(function(){touch_area_three.style.top += "100px";}, 100);
+        setTimeout(function(){touch_area_three.style.top += "200px";}, 200);
+        setTimeout(function(){touch_area_three.style.top += "300px";}, 300);
+        setTimeout(function(){touch_area_three.style.top += "400px";}, 400);
+        setTimeout(function(){touch_area_three.style.top += "500px";}, 500);
+        setTimeout(function(){touch_area_three.style.top += "600px";}, 600);
+      }
     </script>
 
     <style>
       #full_height_section {
         height: 100vh;
       }
+
+      #touch_area_three {
+        position: absolute;
+      }
     </style>
   </head>
 
-  <body>
+  <body onload="moveTouchAreaTwoAndThree()">
+    <!-- Touch area can be accessed without needing scroll.-->
+    <div>
+      <p id="touch_area_one" ontouchend="removeTouchArea('touch_area_one')">
+        Touchable Area One</p>
+      <br>
+    </div>
+
     <!--
     Intentionally make this section has the full height of the window
     to force scroll when operating on the elements below not in this
@@ -33,6 +67,18 @@ found in the LICENSE file.
     -->
     <div id="full_height_section">
       <p>Blank Section</p>
+    </div>
+
+    <div>
+      <p id="touch_area_two" ontouchend="removeTouchArea('touch_area_two')">
+        Touchable Area Two</p>
+      <br>
+    </div>
+
+    <div>
+      <p id="touch_area_three" ontouchend="removeTouchArea('touch_area_three')">
+        Touchable Area Three</p>
+      <br>
     </div>
 
     <div>
@@ -50,12 +96,39 @@ found in the LICENSE file.
     </div>
 
     <div>
-      <input id="input" type="field" value="helloworld" />
+      <input id="input1" type="field" value="helloworld1" />
+    </div>
+    <div>
+      <input id="input2" type="field" value="helloworld2" />
+    </div>
+    <div>
+      <input id="input3" type="field" value="helloworld3" />
+    </div>
+    <div>
+      <input id="input4" type="field" value="helloworld4" />
+    </div>
+    <div>
+      <input id="input5" type="field" value="helloworld5" />
+    </div>
+    <div>
+      <input id="uppercase_input" type="field" value="HELLOWORLD6" />
+    </div>
+    <div>
+      <input id="input6" type="field" value="" />
     </div>
 
     <div id="testOuterHtml"><span>Span</span><p>Paragraph</p></div>
 
+    <div id="hidden" style="display: none;">This text is hidden</div>
+
     <iframe id="iframe" name="test_iframe" width="100%" height="500" src=
         "autofill_assistant_target_website_iframe_one.html"></iframe>
+
+    <script>
+      let upperCaseInput = document.querySelector("#uppercase_input");
+      document.addEventListener('keyup', () => {
+        upperCaseInput.value = upperCaseInput.value.toUpperCase();
+      });
+    </script>
   </body>
 </html>

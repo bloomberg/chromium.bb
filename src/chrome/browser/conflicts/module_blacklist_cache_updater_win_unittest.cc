@@ -349,10 +349,10 @@ TEST_F(ModuleBlacklistCacheUpdaterTest, RegisteredModules) {
   const std::string module_basename = base::UTF16ToUTF8(
       base::i18n::ToLower(module_key2.module_path.BaseName().value()));
   base::SHA1HashBytes(reinterpret_cast<const uint8_t*>(module_basename.data()),
-                      module_basename.length(), expected.basename_hash);
+                      module_basename.length(), &expected.basename_hash[0]);
   const std::string module_code_id = GenerateCodeId(module_key2);
   base::SHA1HashBytes(reinterpret_cast<const uint8_t*>(module_code_id.data()),
-                      module_code_id.length(), expected.code_id_hash);
+                      module_code_id.length(), &expected.code_id_hash[0]);
 
   EXPECT_TRUE(internal::ModuleEqual()(expected, blacklisted_modules[0]));
 }

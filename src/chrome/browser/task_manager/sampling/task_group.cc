@@ -17,8 +17,6 @@
 #include "components/nacl/browser/nacl_browser.h"
 #include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
-#include "content/public/browser/memory_coordinator.h"
-#include "content/public/common/content_features.h"
 #include "gpu/ipc/common/memory_stats.h"
 
 #if defined(OS_WIN)
@@ -93,13 +91,15 @@ TaskGroup::TaskGroup(
       on_background_calculations_done_(on_background_calculations_done),
       worker_thread_sampler_(nullptr),
       shared_sampler_(shared_sampler),
+#if defined(OS_CHROMEOS)
+      arc_shared_sampler_(nullptr),
+#endif  // defined(OS_CHROMEOS)
       expected_on_bg_done_flags_(kBackgroundRefreshTypesMask),
       current_on_bg_done_flags_(0),
       platform_independent_cpu_usage_(0.0),
       swapped_mem_bytes_(-1),
       memory_footprint_(-1),
       gpu_memory_(-1),
-      memory_state_(base::MemoryState::UNKNOWN),
       per_process_network_usage_rate_(-1),
       cumulative_per_process_network_usage_(0),
 #if defined(OS_WIN)
@@ -143,6 +143,10 @@ TaskGroup::TaskGroup(
 
 TaskGroup::~TaskGroup() {
   shared_sampler_->UnregisterCallback(process_id_);
+#if defined(OS_CHROMEOS)
+  if (arc_shared_sampler_)
+    arc_shared_sampler_->UnregisterCallback(process_id_);
+#endif  // defined(OS_CHROMEOS)
 }
 
 void TaskGroup::AddTask(Task* task) {
@@ -214,22 +218,13 @@ void TaskGroup::Refresh(const gpu::VideoMemoryUsageStats& gpu_memory_stats,
     refresh_flags &= ~shared_refresh_flags;
   }
 
-  // 6- Refresh memory state when memory coordinator is enabled.
-  if (TaskManagerObserver::IsResourceRefreshEnabled(REFRESH_TYPE_MEMORY_STATE,
-                                                    refresh_flags) &&
-      base::FeatureList::IsEnabled(features::kMemoryCoordinator)) {
-    memory_state_ =
-        content::MemoryCoordinator::GetInstance()->GetStateForProcess(
-            process_handle_);
-  }
-
   // The remaining resource refreshes are time consuming and cannot be done on
   // the UI thread. Do them all on the worker thread using the TaskGroupSampler.
-  // 7-  CPU usage.
-  // 8-  Memory usage.
-  // 9-  Idle Wakeups per second.
-  // 10-  (Linux and ChromeOS only) The number of file descriptors current open.
-  // 11- Process priority (foreground vs. background).
+  // 6-  CPU usage.
+  // 7-  Memory usage.
+  // 8-  Idle Wakeups per second.
+  // 9-  (Linux and ChromeOS only) The number of file descriptors current open.
+  // 10- Process priority (foreground vs. background).
   if (worker_thread_sampler_)
     worker_thread_sampler_->Refresh(refresh_flags);
 }
@@ -250,6 +245,16 @@ void TaskGroup::ClearCurrentBackgroundCalculationsFlags() {
 bool TaskGroup::AreBackgroundCalculationsDone() const {
   return expected_on_bg_done_flags_ == current_on_bg_done_flags_;
 }
+
+#if defined(OS_CHROMEOS)
+void TaskGroup::SetArcSampler(ArcSharedSampler* sampler) {
+  DCHECK(sampler);
+  arc_shared_sampler_ = sampler;
+  arc_shared_sampler_->RegisterCallback(
+      process_id_, base::BindRepeating(&TaskGroup::OnArcSamplerRefreshDone,
+                                       weak_ptr_factory_.GetWeakPtr()));
+}
+#endif  // defined(OS_CHROMEOS)
 
 void TaskGroup::RefreshGpuMemory(
     const gpu::VideoMemoryUsageStats& gpu_memory_stats) {
@@ -355,6 +360,14 @@ void TaskGroup::OnSamplerRefreshDone(
   OnBackgroundRefreshTypeFinished(expected_on_bg_done_flags_ &
                                   shared_sampler_->GetSupportedFlags());
 }
+
+#if defined(OS_CHROMEOS)
+void TaskGroup::OnArcSamplerRefreshDone(
+    base::Optional<ArcSharedSampler::MemoryFootprintBytes> memory_footprint) {
+  if (memory_footprint)
+    set_footprint_bytes(*memory_footprint);
+}
+#endif  // defined(OS_CHROMEOS)
 
 void TaskGroup::OnBackgroundRefreshTypeFinished(int64_t finished_refresh_type) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);

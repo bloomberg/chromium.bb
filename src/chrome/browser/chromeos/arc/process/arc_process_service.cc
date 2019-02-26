@@ -10,17 +10,22 @@
 #include "chrome/browser/chromeos/arc/process/arc_process_service.h"
 
 #include <algorithm>
+#include <set>
 #include <string>
 #include <unordered_map>
 #include <unordered_set>
 #include <utility>
 
+#include "base/bind.h"
 #include "base/callback.h"
+#include "base/containers/flat_set.h"
 #include "base/containers/queue.h"
 #include "base/logging.h"
+#include "base/memory/scoped_refptr.h"
 #include "base/memory/singleton.h"
 #include "base/process/process.h"
 #include "base/process/process_iterator.h"
+#include "base/stl_util.h"
 #include "base/task/post_task.h"
 #include "base/task/task_traits.h"
 #include "base/task_runner_util.h"
@@ -28,6 +33,8 @@
 #include "components/arc/arc_bridge_service.h"
 #include "components/arc/arc_browser_context_keyed_service_factory_base.h"
 #include "content/public/browser/browser_thread.h"
+#include "services/resource_coordinator/public/cpp/memory_instrumentation/global_memory_dump.h"
+#include "services/resource_coordinator/public/mojom/memory_instrumentation/memory_instrumentation.mojom.h"
 
 namespace arc {
 
@@ -196,6 +203,41 @@ std::vector<ArcProcess> UpdateAndReturnProcessList(
   return FilterProcessList(pid_map, std::move(processes));
 }
 
+std::unique_ptr<memory_instrumentation::GlobalMemoryDump>
+UpdateAndReturnMemoryInfo(
+    scoped_refptr<ArcProcessService::NSPidToPidMap> nspid_map,
+    memory_instrumentation::mojom::GlobalMemoryDumpPtr dump) {
+  ArcProcessService::NSPidToPidMap& pid_map = *nspid_map;
+  // Cleanup dead processes in pid_map
+  // TODO(wvk) should we be cleaning dead processes here too ?
+  base::flat_set<ProcessId> nspid_to_remove;
+  for (const auto& entry : pid_map)
+    nspid_to_remove.insert(entry.first);
+
+  bool unmapped_nspid = false;
+  for (const auto& proc : dump->process_dumps) {
+    // erase() returns 0 if couldn't find the key (new process)
+    if (nspid_to_remove.erase(proc->pid) == 0) {
+      pid_map[proc->pid] = base::kNullProcessId;
+      unmapped_nspid = true;
+    }
+  }
+  for (const auto& old_nspid : nspid_to_remove)
+    pid_map.erase(old_nspid);
+
+  if (unmapped_nspid)
+    UpdateNspidToPidMap(nspid_map);
+
+  // Return memory info only for processes that have a mapping nspid->pid
+  for (auto& proc : dump->process_dumps) {
+    auto it = pid_map.find(proc->pid);
+    proc->pid = it == pid_map.end() ? kNullProcessId : it->second;
+  }
+  base::EraseIf(dump->process_dumps,
+                [](const auto& proc) { return proc->pid == kNullProcessId; });
+  return memory_instrumentation::GlobalMemoryDump::MoveFrom(std::move(dump));
+}
+
 void Reset(scoped_refptr<ArcProcessService::NSPidToPidMap> pid_map) {
   if (pid_map.get())
     pid_map->clear();
@@ -289,16 +331,74 @@ bool ArcProcessService::RequestAppProcessList(
   return true;
 }
 
+bool ArcProcessService::RequestAppMemoryInfo(
+    RequestMemoryInfoCallback callback) {
+  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
+  if (!connection_ready_)
+    return false;
+
+  mojom::ProcessInstance* process_instance = ARC_GET_INSTANCE_FOR_METHOD(
+      arc_bridge_service_->process(), RequestApplicationProcessMemoryInfo);
+  if (!process_instance) {
+    LOG(ERROR) << "could not find method / get ProcessInstance";
+    return false;
+  }
+  process_instance->RequestApplicationProcessMemoryInfo(
+      base::BindOnce(&ArcProcessService::OnReceiveMemoryInfo,
+                     weak_ptr_factory_.GetWeakPtr(), std::move(callback)));
+  return true;
+}
+
+bool ArcProcessService::RequestSystemMemoryInfo(
+    RequestMemoryInfoCallback callback) {
+  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
+  if (!connection_ready_)
+    return false;
+  base::PostTaskAndReplyWithResult(
+      task_runner_.get(), FROM_HERE, base::BindOnce(&GetArcSystemProcessList),
+      base::BindOnce(&ArcProcessService::OnGetSystemProcessList,
+                     weak_ptr_factory_.GetWeakPtr(), std::move(callback)));
+  return true;
+}
+
 void ArcProcessService::OnReceiveProcessList(
     const RequestProcessListCallback& callback,
     std::vector<mojom::RunningAppProcessInfoPtr> processes) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
-
   base::PostTaskAndReplyWithResult(
       task_runner_.get(), FROM_HERE,
       base::Bind(&UpdateAndReturnProcessList, nspid_to_pid_,
                  base::Passed(&processes)),
       callback);
+}
+
+void ArcProcessService::OnReceiveMemoryInfo(
+    RequestMemoryInfoCallback callback,
+    memory_instrumentation::mojom::GlobalMemoryDumpPtr dump) {
+  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
+  base::PostTaskAndReplyWithResult(
+      task_runner_.get(), FROM_HERE,
+      base::BindOnce(&UpdateAndReturnMemoryInfo, nspid_to_pid_,
+                     std::move(dump)),
+      std::move(callback));
+}
+
+void ArcProcessService::OnGetSystemProcessList(
+    RequestMemoryInfoCallback callback,
+    std::vector<ArcProcess> procs) {
+  mojom::ProcessInstance* process_instance = ARC_GET_INSTANCE_FOR_METHOD(
+      arc_bridge_service_->process(), RequestSystemProcessMemoryInfo);
+  if (!process_instance) {
+    LOG(ERROR) << "could not find method / get ProcessInstance";
+    return;
+  }
+  std::vector<uint32_t> nspids;
+  for (const auto& proc : procs)
+    nspids.push_back(proc.nspid());
+  process_instance->RequestSystemProcessMemoryInfo(
+      nspids,
+      base::BindOnce(&ArcProcessService::OnReceiveMemoryInfo,
+                     weak_ptr_factory_.GetWeakPtr(), std::move(callback)));
 }
 
 void ArcProcessService::OnConnectionReady() {

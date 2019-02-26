@@ -134,8 +134,7 @@ struct TileDataEnc;
 struct VP9_COMP;
 struct macroblock;
 
-int64_t vp9_compute_rd_mult_based_on_qindex(const struct VP9_COMP *cpi,
-                                            int qindex);
+int vp9_compute_rd_mult_based_on_qindex(const struct VP9_COMP *cpi, int qindex);
 
 int vp9_compute_rd_mult(const struct VP9_COMP *cpi, int qindex);
 
@@ -145,7 +144,7 @@ void vp9_initialize_rd_consts(struct VP9_COMP *cpi);
 
 void vp9_initialize_me_consts(struct VP9_COMP *cpi, MACROBLOCK *x, int qindex);
 
-void vp9_model_rd_from_var_lapndz(unsigned int var, unsigned int n,
+void vp9_model_rd_from_var_lapndz(unsigned int var, unsigned int n_log2,
                                   unsigned int qstep, int *rate, int64_t *dist);
 
 void vp9_model_rd_from_var_lapndz_vec(unsigned int var[MAX_MB_PLANE],
@@ -176,8 +175,8 @@ void vp9_set_rd_speed_thresholds(struct VP9_COMP *cpi);
 
 void vp9_set_rd_speed_thresholds_sub8x8(struct VP9_COMP *cpi);
 
-void vp9_update_rd_thresh_fact(int (*fact)[MAX_MODES], int rd_thresh, int bsize,
-                               int best_mode_index);
+void vp9_update_rd_thresh_fact(int (*factor_buf)[MAX_MODES], int rd_thresh,
+                               int bsize, int best_mode_index);
 
 static INLINE int rd_less_than_thresh(int64_t best_rd, int thresh,
                                       const int *const thresh_fact) {

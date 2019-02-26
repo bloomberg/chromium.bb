@@ -34,6 +34,8 @@ struct WebRtcLogUploadDoneData : public WebRtcLogPaths {
   WebRtcLoggingHandlerHost::UploadDoneCallback callback;
   scoped_refptr<WebRtcLoggingHandlerHost> host;
   std::string local_log_id;
+  // Used for statistics. See |WebRtcLoggingHandlerHost::web_app_id_|.
+  int web_app_id;
 };
 
 // WebRtcLogUploader uploads WebRTC logs, keeps count of how many logs have

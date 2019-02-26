@@ -50,9 +50,10 @@ class HTMLVideoElementTest : public PageTestBase {
         std::make_unique<HTMLVideoElementMockMediaPlayer>();
     media_player_ = mock_media_player.get();
 
-    SetupPageWithClients(
-        nullptr, new HTMLVideoElementFrameClient(std::move(mock_media_player)),
-        nullptr);
+    SetupPageWithClients(nullptr,
+                         MakeGarbageCollected<HTMLVideoElementFrameClient>(
+                             std::move(mock_media_player)),
+                         nullptr);
     video_ = HTMLVideoElement::Create(GetDocument());
     GetDocument().body()->appendChild(video_);
   }
@@ -76,7 +77,7 @@ TEST_F(HTMLVideoElementTest, PictureInPictureInterstitialAndTextContainer) {
   scoped_refptr<cc::Layer> layer = cc::Layer::Create();
   SetFakeCcLayer(layer.get());
 
-  video()->SetBooleanAttribute(HTMLNames::controlsAttr, true);
+  video()->SetBooleanAttribute(html_names::kControlsAttr, true);
   video()->SetSrc("http://example.com/foo.mp4");
   test::RunPendingTasks();
 
@@ -100,7 +101,7 @@ TEST_F(HTMLVideoElementTest, PictureInPictureInterstitial_Reattach) {
   scoped_refptr<cc::Layer> layer = cc::Layer::Create();
   SetFakeCcLayer(layer.get());
 
-  video()->SetBooleanAttribute(HTMLNames::controlsAttr, true);
+  video()->SetBooleanAttribute(html_names::kControlsAttr, true);
   video()->SetSrc("http://example.com/foo.mp4");
   test::RunPendingTasks();
 

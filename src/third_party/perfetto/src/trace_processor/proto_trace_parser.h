@@ -18,6 +18,8 @@
 #define SRC_TRACE_PROCESSOR_PROTO_TRACE_PARSER_H_
 
 #include <stdint.h>
+
+#include <array>
 #include <memory>
 
 #include "perfetto/base/string_view.h"
@@ -59,9 +61,14 @@ class ProtoTraceParser {
                                  uint64_t timestamp,
                                  TraceBlobView);
   void ParseProcessTree(TraceBlobView);
+  void ParseProcessStats(uint64_t timestamp, TraceBlobView);
+  void ParseProcMemCounters(uint64_t timestamp, TraceBlobView);
   void ParseSchedSwitch(uint32_t cpu, uint64_t timestamp, TraceBlobView);
   void ParseCpuFreq(uint64_t timestamp, TraceBlobView);
-  void ParsePrint(uint32_t cpu, uint64_t timestamp, TraceBlobView);
+  void ParsePrint(uint32_t cpu,
+                  uint64_t timestamp,
+                  uint32_t pid,
+                  TraceBlobView);
   void ParseThread(TraceBlobView);
   void ParseProcess(TraceBlobView);
   void ParseSysStats(uint64_t ts, TraceBlobView);
@@ -69,6 +76,12 @@ class ProtoTraceParser {
   void ParseVmStat(uint64_t ts, TraceBlobView);
   void ParseCpuTimes(uint64_t ts, TraceBlobView);
   void ParseIrqCount(uint64_t ts, TraceBlobView, bool is_soft);
+  void ParseRssStat(uint64_t ts, uint32_t pid, TraceBlobView);
+  void ParseIonHeapGrow(uint64_t ts, uint32_t pid, TraceBlobView);
+  void ParseIonHeapShrink(uint64_t ts, uint32_t pid, TraceBlobView);
+  void ParseSignalDeliver(uint64_t ts, uint32_t pid, TraceBlobView);
+  void ParseSignalGenerate(uint64_t ts, TraceBlobView);
+  void ParseLowmemoryKill(uint64_t ts, TraceBlobView);
 
  private:
   TraceProcessorContext* context_;
@@ -85,8 +98,18 @@ class ProtoTraceParser {
   const StringId cpu_times_io_wait_ns_id_;
   const StringId cpu_times_irq_ns_id_;
   const StringId cpu_times_softirq_ns_id_;
+  const StringId ion_heap_grow_id_;
+  const StringId ion_heap_shrink_id_;
+  const StringId signal_deliver_id_;
+  const StringId signal_generate_id_;
   std::vector<StringId> meminfo_strs_id_;
   std::vector<StringId> vmstat_strs_id_;
+  std::vector<StringId> rss_members_;
+
+  // Maps a proto field number from ProcessStats::MemCounters to its StringId.
+  // Keep kProcMemCounterSize equal to 1 + max proto field id of MemCounters.
+  static constexpr size_t kProcMemCounterSize = 10;
+  std::array<StringId, kProcMemCounterSize> proc_mem_counter_names_{};
 };
 
 }  // namespace trace_processor

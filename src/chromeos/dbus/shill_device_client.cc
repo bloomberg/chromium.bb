@@ -214,6 +214,19 @@ class ShillDeviceClientImpl : public ShillDeviceClient {
                                           error_callback);
   }
 
+  void AddWakeOnPacketOfTypes(const dbus::ObjectPath& device_path,
+                              const std::vector<std::string>& types,
+                              const base::Closure& callback,
+                              const ErrorCallback& error_callback) override {
+    dbus::MethodCall method_call(shill::kFlimflamDeviceInterface,
+                                 shill::kAddWakeOnPacketOfTypesFunction);
+    dbus::MessageWriter writer(&method_call);
+    writer.AppendArrayOfStrings(types);
+    GetHelper(device_path)
+        ->CallVoidMethodWithErrorCallback(&method_call, callback,
+                                          error_callback);
+  }
+
   void RemoveWakeOnPacketConnection(
       const dbus::ObjectPath& device_path,
       const net::IPEndPoint& ip_endpoint,
@@ -227,6 +240,19 @@ class ShillDeviceClientImpl : public ShillDeviceClient {
                                  shill::kRemoveWakeOnPacketConnectionFunction);
     dbus::MessageWriter writer(&method_call);
     writer.AppendString(ip_endpoint.ToStringWithoutPort());
+    GetHelper(device_path)
+        ->CallVoidMethodWithErrorCallback(&method_call, callback,
+                                          error_callback);
+  }
+
+  void RemoveWakeOnPacketOfTypes(const dbus::ObjectPath& device_path,
+                                 const std::vector<std::string>& types,
+                                 const base::Closure& callback,
+                                 const ErrorCallback& error_callback) override {
+    dbus::MethodCall method_call(shill::kFlimflamDeviceInterface,
+                                 shill::kRemoveWakeOnPacketOfTypesFunction);
+    dbus::MessageWriter writer(&method_call);
+    writer.AppendArrayOfStrings(types);
     GetHelper(device_path)
         ->CallVoidMethodWithErrorCallback(&method_call, callback,
                                           error_callback);

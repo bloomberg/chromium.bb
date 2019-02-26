@@ -11,6 +11,11 @@ Polymer({
   ],
 
   properties: {
+    actionButton: {
+      type: Boolean,
+      value: false,
+    },
+
     endJustified: {
       type: Boolean,
       value: false,
@@ -18,6 +23,12 @@ Polymer({
     },
 
     label: String,
+
+    disabled: {
+      type: Boolean,
+      value: false,
+      reflectToAttribute: true,
+    },
 
     /** @private */
     enforced_: {
@@ -36,4 +47,23 @@ Polymer({
     e.preventDefault();
     e.stopPropagation();
   },
+
+  /**
+   * @param {!boolean} actionButton
+   * @return {string} Class of the paper-button.
+   * @private
+   */
+  getClass_: function(actionButton) {
+    return actionButton ? "action-button" : "";
+  },
+
+  /**
+   * @param {!boolean} enforced
+   * @param {!boolean} disabled
+   * @return {boolean} True if the button should be enabled.
+   * @private
+   */
+  buttonEnabled_(enforced, disabled) {
+    return !enforced && !disabled;
+  }
 });

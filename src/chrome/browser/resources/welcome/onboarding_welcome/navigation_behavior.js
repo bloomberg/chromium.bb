@@ -52,30 +52,119 @@ cr.define('welcome', function() {
   /** @type {!Set<!PolymerElement>} */
   const routeObservers = new Set();
 
+  /** @type {?PolymerElement} */
+  let currentRouteElement;
+
   // Notifies all the elements that extended NavigationBehavior.
   function notifyObservers() {
+    if (currentRouteElement) {
+      (/** @type {{onRouteExit: Function}} */ (currentRouteElement))
+          .onRouteExit();
+      currentRouteElement = null;
+    }
+
     const route = /** @type {!welcome.Routes} */ (history.state.route);
     const step = history.state.step;
-    routeObservers.forEach((observer) => {
-      observer.onRouteChange(route, step);
+    routeObservers.forEach(observer => {
+      (/** @type {{onRouteChange: Function}} */ (observer))
+          .onRouteChange(route, step);
+
+      // Modules are only attached to DOM if they're for the current route, so
+      // as long as the id of an element matches up to the current step, it
+      // means that element is for the current route.
+      if (observer.id == `step-${step}`) {
+        currentRouteElement = observer;
+      }
     });
+
+    // If currentRouteElement is not null, it means there was a new route.
+    if (currentRouteElement) {
+      (/** @type {{onRouteEnter: Function}} */ (currentRouteElement))
+          .onRouteEnter();
+      (/** @type {{updateFocusForA11y: Function}} */ (currentRouteElement))
+          .updateFocusForA11y();
+    }
   }
 
   // Notifies all elements when browser history is popped.
   window.addEventListener('popstate', notifyObservers);
 
-  /** @polymerBehavior */
+  // Notify the active element before unload.
+  window.addEventListener('beforeunload', () => {
+    if (currentRouteElement) {
+      (/** @type {{onRouteUnload: Function}} */ (currentRouteElement))
+          .onRouteUnload();
+    }
+  });
+
+  function navigateToNextStep() {
+    history.pushState(
+        {
+          route: history.state.route,
+          step: history.state.step + 1,
+        },
+        '', `/${history.state.route}`);
+    notifyObservers();
+  }
+
+  /**
+   * @param {!welcome.Routes} route
+   * @param {number} step
+   */
+  function navigateTo(route, step) {
+    assert([
+      Routes.LANDING,
+      Routes.NEW_USER,
+      Routes.RETURNING_USER,
+    ].includes(route));
+
+    history.pushState(
+        {
+          route: route,
+          step: step,
+        },
+        '', '/' + (route === Routes.LANDING ? '' : route));
+    notifyObservers();
+  }
+
+  /**
+   * Elements can override onRoute(Change|Enter|Exit) to handle route changes.
+   * Order of hooks being called:
+   *   1) onRouteExit() on the old route
+   *   2) onRouteChange() on all subscribed routes
+   *   3) onRouteEnter() on the new route
+   *
+   * @polymerBehavior
+   */
   const NavigationBehavior = {
     /** @override */
     attached: function() {
       assert(!routeObservers.has(this));
       routeObservers.add(this);
 
+      const route = /** @type {!welcome.Routes} */ (history.state.route);
+      const step = history.state.step;
+
       // history state was set when page loaded, so when the element first
       // attaches, call the route-change handler to initialize first.
-      this.onRouteChange(
-          /** @type {!welcome.Routes} */ (history.state.route),
-          history.state.step);
+      this.onRouteChange(route, step);
+
+      // Modules are only attached to DOM if they're for the current route, so
+      // as long as the id of an element matches up to the current step, it
+      // means that element is for the current route.
+      if (this.id == `step-${step}`) {
+        currentRouteElement = this;
+        this.onRouteEnter();
+        this.updateFocusForA11y();
+      }
+    },
+
+    /** Called to update focus when progressing through the modules. */
+    updateFocusForA11y: function() {
+      const header = this.$$('h1');
+      if (header) {
+        Polymer.RenderStatus.afterNextRender(this, () => header.focus());
+      }
     },
 
     /** @override */
@@ -83,42 +172,23 @@ cr.define('welcome', function() {
       assert(routeObservers.delete(this));
     },
 
-    /** Elements can override onRouteChange to handle route changes. */
-    onRouteChange: function() {},
-
-    navigateToNextStep: function() {
-      history.pushState(
-          {
-            route: history.state.route,
-            step: history.state.step + 1,
-          },
-          '', `/${history.state.route}`);
-      notifyObservers();
-    },
-
     /**
      * @param {!welcome.Routes} route
      * @param {number} step
      */
-    navigateTo: function(route, step) {
-      assert([
-        Routes.LANDING,
-        Routes.NEW_USER,
-        Routes.RETURNING_USER,
-      ].includes(route));
+    onRouteChange: function(route, step) {},
 
-      history.pushState(
-          {
-            route: route,
-            step: step,
-          },
-          '', '/' + (route === Routes.LANDING ? '' : route));
-      notifyObservers();
-    },
+    onRouteEnter: function() {},
+
+    onRouteExit: function() {},
+
+    onRouteUnload: function() {},
   };
 
   return {
     NavigationBehavior: NavigationBehavior,
+    navigateTo: navigateTo,
+    navigateToNextStep: navigateToNextStep,
     Routes: Routes,
   };
 });

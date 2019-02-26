@@ -20,6 +20,7 @@ using v8::Maybe;
 using v8::MaybeLocal;
 using v8::Number;
 using v8::Object;
+using v8::Promise;
 using v8::String;
 using v8::Uint32;
 using v8::Value;
@@ -43,7 +44,9 @@ Local<Value> Converter<bool>::ToV8(Isolate* isolate, bool val) {
 }
 
 bool Converter<bool>::FromV8(Isolate* isolate, Local<Value> val, bool* out) {
-  return FromMaybe(val->BooleanValue(isolate->GetCurrentContext()), out);
+  *out = val->BooleanValue(isolate);
+  // BooleanValue cannot throw.
+  return true;
 }
 
 Local<Value> Converter<int32_t>::ToV8(Isolate* isolate, int32_t val) {
@@ -168,6 +171,20 @@ bool Converter<Local<Object>>::FromV8(Isolate* isolate,
   if (!val->IsObject())
     return false;
   *out = Local<Object>::Cast(val);
+  return true;
+}
+
+Local<Value> Converter<Local<Promise>>::ToV8(Isolate* isolate,
+                                             Local<Promise> val) {
+  return val.As<Value>();
+}
+
+bool Converter<Local<Promise>>::FromV8(Isolate* isolate,
+                                       Local<Value> val,
+                                       Local<Promise>* out) {
+  if (!val->IsPromise())
+    return false;
+  *out = Local<Promise>::Cast(val);
   return true;
 }
 

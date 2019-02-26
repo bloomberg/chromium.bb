@@ -25,6 +25,8 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 
 import org.chromium.base.ThreadUtils;
+import org.chromium.base.test.util.DisabledTest;
+import org.chromium.base.test.util.FlakyTest;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ChromeTabbedActivity;
 import org.chromium.chrome.browser.customtabs.CustomTabActivity;
@@ -92,6 +94,7 @@ public class FirstRunIntegrationTest {
 
     @Test
     @SmallTest
+    @FlakyTest(message = "crbug.com/907548")
     public void testRedirectChromeTabbedActivityToFirstRun() {
         final String asyncClassName = ChromeTabbedActivity.class.getName();
         runFirstRunRedirectTestForActivity(asyncClassName, () -> {
@@ -185,6 +188,7 @@ public class FirstRunIntegrationTest {
 
     @Test
     @SmallTest
+    @DisabledTest // https://crbug.com/901488
     public void testAbortFirstRun() throws Exception {
         Instrumentation instrumentation = InstrumentationRegistry.getInstrumentation();
         final ActivityMonitor launcherActivityMonitor =

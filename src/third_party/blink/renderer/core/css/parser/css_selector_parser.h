@@ -80,6 +80,7 @@ class CORE_EXPORT CSSSelectorParser {
   SplitCompoundAtImplicitShadowCrossingCombinator(
       std::unique_ptr<CSSParserSelector> compound_selector);
   void RecordUsageAndDeprecations(const CSSSelectorList&);
+  void CountRejectedNot(CSSParserTokenRange&);
 
   Member<const CSSParserContext> context_;
   Member<const StyleSheetContents> style_sheet_;

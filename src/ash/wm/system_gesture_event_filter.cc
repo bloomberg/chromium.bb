@@ -8,7 +8,7 @@
 #include "ash/wm/gestures/overview_gesture_handler.h"
 #include "base/metrics/user_metrics.h"
 #include "ui/aura/window.h"
-#include "ui/base/touch/touch_device.h"
+#include "ui/base/pointer/pointer_device.h"
 #include "ui/events/event.h"
 #include "ui/events/event_constants.h"
 

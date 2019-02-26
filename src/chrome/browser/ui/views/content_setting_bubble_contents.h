@@ -6,6 +6,7 @@
 #define CHROME_BROWSER_UI_VIEWS_CONTENT_SETTING_BUBBLE_CONTENTS_H_
 
 #include <map>
+#include <memory>
 
 #include "base/compiler_specific.h"
 #include "base/macros.h"
@@ -43,7 +44,7 @@ class ContentSettingBubbleContents : public content::WebContentsObserver,
                                      public ContentSettingBubbleModel::Owner {
  public:
   ContentSettingBubbleContents(
-      ContentSettingBubbleModel* content_setting_bubble_model,
+      std::unique_ptr<ContentSettingBubbleModel> content_setting_bubble_model,
       content::WebContents* web_contents,
       views::View* anchor_view,
       views::BubbleBorder::Arrow arrow);

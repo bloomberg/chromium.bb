@@ -71,9 +71,14 @@ class TestAnimationEffectEventDelegate : public AnimationEffect::EventDelegate {
 class TestAnimationEffect : public AnimationEffect {
  public:
   static TestAnimationEffect* Create(const Timing& specified) {
-    return new TestAnimationEffect(specified,
-                                   new TestAnimationEffectEventDelegate());
+    return MakeGarbageCollected<TestAnimationEffect>(
+        specified, MakeGarbageCollected<TestAnimationEffectEventDelegate>());
   }
+
+  TestAnimationEffect(const Timing& specified,
+                      TestAnimationEffectEventDelegate* event_delegate)
+      : AnimationEffect(specified, event_delegate),
+        event_delegate_(event_delegate) {}
 
   void UpdateInheritedTime(double time) {
     UpdateInheritedTime(time, kTimingUpdateForAnimationFrame);
@@ -115,11 +120,6 @@ class TestAnimationEffect : public AnimationEffect {
   }
 
  private:
-  TestAnimationEffect(const Timing& specified,
-                      TestAnimationEffectEventDelegate* event_delegate)
-      : AnimationEffect(specified, event_delegate),
-        event_delegate_(event_delegate) {}
-
   Member<TestAnimationEffectEventDelegate> event_delegate_;
   mutable double local_time_;
   mutable double time_to_next_iteration_;
@@ -726,54 +726,54 @@ TEST(AnimationAnimationEffectTest, UpdateTiming) {
   Timing timing;
   TestAnimationEffect* effect = TestAnimationEffect::Create(timing);
 
-  EXPECT_EQ(0, effect->getTiming().delay());
-  OptionalEffectTiming effect_timing;
-  effect_timing.setDelay(2);
+  EXPECT_EQ(0, effect->getTiming()->delay());
+  OptionalEffectTiming* effect_timing = OptionalEffectTiming::Create();
+  effect_timing->setDelay(2);
   effect->updateTiming(effect_timing);
-  EXPECT_EQ(2, effect->getTiming().delay());
+  EXPECT_EQ(2, effect->getTiming()->delay());
 
-  EXPECT_EQ(0, effect->getTiming().endDelay());
-  effect_timing = OptionalEffectTiming();
-  effect_timing.setEndDelay(0.5);
+  EXPECT_EQ(0, effect->getTiming()->endDelay());
+  effect_timing = OptionalEffectTiming::Create();
+  effect_timing->setEndDelay(0.5);
   effect->updateTiming(effect_timing);
-  EXPECT_EQ(0.5, effect->getTiming().endDelay());
+  EXPECT_EQ(0.5, effect->getTiming()->endDelay());
 
-  EXPECT_EQ("auto", effect->getTiming().fill());
-  effect_timing = OptionalEffectTiming();
-  effect_timing.setFill("backwards");
+  EXPECT_EQ("auto", effect->getTiming()->fill());
+  effect_timing = OptionalEffectTiming::Create();
+  effect_timing->setFill("backwards");
   effect->updateTiming(effect_timing);
-  EXPECT_EQ("backwards", effect->getTiming().fill());
+  EXPECT_EQ("backwards", effect->getTiming()->fill());
 
-  EXPECT_EQ(0, effect->getTiming().iterationStart());
-  effect_timing = OptionalEffectTiming();
-  effect_timing.setIterationStart(2);
+  EXPECT_EQ(0, effect->getTiming()->iterationStart());
+  effect_timing = OptionalEffectTiming::Create();
+  effect_timing->setIterationStart(2);
   effect->updateTiming(effect_timing);
-  EXPECT_EQ(2, effect->getTiming().iterationStart());
+  EXPECT_EQ(2, effect->getTiming()->iterationStart());
 
-  EXPECT_EQ(1, effect->getTiming().iterations());
-  effect_timing = OptionalEffectTiming();
-  effect_timing.setIterations(10);
+  EXPECT_EQ(1, effect->getTiming()->iterations());
+  effect_timing = OptionalEffectTiming::Create();
+  effect_timing->setIterations(10);
   effect->updateTiming(effect_timing);
-  EXPECT_EQ(10, effect->getTiming().iterations());
+  EXPECT_EQ(10, effect->getTiming()->iterations());
 
-  EXPECT_EQ("normal", effect->getTiming().direction());
-  effect_timing = OptionalEffectTiming();
-  effect_timing.setDirection("reverse");
+  EXPECT_EQ("normal", effect->getTiming()->direction());
+  effect_timing = OptionalEffectTiming::Create();
+  effect_timing->setDirection("reverse");
   effect->updateTiming(effect_timing);
-  EXPECT_EQ("reverse", effect->getTiming().direction());
+  EXPECT_EQ("reverse", effect->getTiming()->direction());
 
-  EXPECT_EQ("linear", effect->getTiming().easing());
-  effect_timing = OptionalEffectTiming();
-  effect_timing.setEasing("ease-in-out");
+  EXPECT_EQ("linear", effect->getTiming()->easing());
+  effect_timing = OptionalEffectTiming::Create();
+  effect_timing->setEasing("ease-in-out");
   effect->updateTiming(effect_timing);
-  EXPECT_EQ("ease-in-out", effect->getTiming().easing());
+  EXPECT_EQ("ease-in-out", effect->getTiming()->easing());
 
-  EXPECT_EQ("auto", effect->getTiming().duration().GetAsString());
-  effect_timing = OptionalEffectTiming();
-  effect_timing.setDuration(
+  EXPECT_EQ("auto", effect->getTiming()->duration().GetAsString());
+  effect_timing = OptionalEffectTiming::Create();
+  effect_timing->setDuration(
       UnrestrictedDoubleOrString::FromUnrestrictedDouble(2.5));
   effect->updateTiming(effect_timing);
-  EXPECT_EQ(2.5, effect->getTiming().duration().GetAsUnrestrictedDouble());
+  EXPECT_EQ(2.5, effect->getTiming()->duration().GetAsUnrestrictedDouble());
 }
 
 TEST(AnimationAnimationEffectTest, UpdateTimingThrowsWhenExpected) {
@@ -783,43 +783,43 @@ TEST(AnimationAnimationEffectTest, UpdateTimingThrowsWhenExpected) {
   DummyExceptionStateForTesting exception_state;
 
   // iterationStart must be non-negative
-  OptionalEffectTiming effect_timing;
-  effect_timing.setIterationStart(-10);
+  OptionalEffectTiming* effect_timing = OptionalEffectTiming::Create();
+  effect_timing->setIterationStart(-10);
   effect->updateTiming(effect_timing, exception_state);
   EXPECT_TRUE(exception_state.HadException());
 
   // iterations must be non-negative and non-null.
   exception_state.ClearException();
-  effect_timing = OptionalEffectTiming();
-  effect_timing.setIterations(-2);
+  effect_timing = OptionalEffectTiming::Create();
+  effect_timing->setIterations(-2);
   effect->updateTiming(effect_timing, exception_state);
   EXPECT_TRUE(exception_state.HadException());
 
   exception_state.ClearException();
-  effect_timing = OptionalEffectTiming();
-  effect_timing.setIterations(std::numeric_limits<double>::quiet_NaN());
+  effect_timing = OptionalEffectTiming::Create();
+  effect_timing->setIterations(std::numeric_limits<double>::quiet_NaN());
   effect->updateTiming(effect_timing, exception_state);
   EXPECT_TRUE(exception_state.HadException());
 
   // If it is a number, duration must be non-negative and non-null.
   exception_state.ClearException();
-  effect_timing = OptionalEffectTiming();
-  effect_timing.setDuration(
+  effect_timing = OptionalEffectTiming::Create();
+  effect_timing->setDuration(
       UnrestrictedDoubleOrString::FromUnrestrictedDouble(-100));
   effect->updateTiming(effect_timing, exception_state);
   EXPECT_TRUE(exception_state.HadException());
 
   exception_state.ClearException();
-  effect_timing = OptionalEffectTiming();
-  effect_timing.setDuration(UnrestrictedDoubleOrString::FromUnrestrictedDouble(
+  effect_timing = OptionalEffectTiming::Create();
+  effect_timing->setDuration(UnrestrictedDoubleOrString::FromUnrestrictedDouble(
       std::numeric_limits<double>::quiet_NaN()));
   effect->updateTiming(effect_timing, exception_state);
   EXPECT_TRUE(exception_state.HadException());
 
   // easing must be a valid timing function
   exception_state.ClearException();
-  effect_timing = OptionalEffectTiming();
-  effect_timing.setEasing("my-custom-timing-function");
+  effect_timing = OptionalEffectTiming::Create();
+  effect_timing->setEasing("my-custom-timing-function");
   effect->updateTiming(effect_timing, exception_state);
   EXPECT_TRUE(exception_state.HadException());
 }
@@ -828,13 +828,14 @@ TEST(AnimationAnimationEffectTest, UpdateTimingInformsOwnerOnChange) {
   Timing timing;
   TestAnimationEffect* effect = TestAnimationEffect::Create(timing);
 
-  MockAnimationEffectOwner* owner = new MockAnimationEffectOwner();
+  MockAnimationEffectOwner* owner =
+      MakeGarbageCollected<MockAnimationEffectOwner>();
   effect->Attach(owner);
 
   EXPECT_CALL(*owner, EffectInvalidated()).Times(1);
 
-  OptionalEffectTiming effect_timing;
-  effect_timing.setDelay(5);
+  OptionalEffectTiming* effect_timing = OptionalEffectTiming::Create();
+  effect_timing->setDelay(5);
   effect->updateTiming(effect_timing);
 }
 
@@ -850,35 +851,36 @@ TEST(AnimationAnimationEffectTest, UpdateTimingNoChange) {
   timing.timing_function = CubicBezierTimingFunction::Create(1, 1, 0.3, 0.3);
   TestAnimationEffect* effect = TestAnimationEffect::Create(timing);
 
-  MockAnimationEffectOwner* owner = new MockAnimationEffectOwner();
+  MockAnimationEffectOwner* owner =
+      MakeGarbageCollected<MockAnimationEffectOwner>();
   effect->Attach(owner);
 
   // None of the below calls to updateTime should cause the AnimationEffect to
   // update, as they all match the existing timing information.
   EXPECT_CALL(*owner, EffectInvalidated()).Times(0);
 
-  OptionalEffectTiming effect_timing;
+  OptionalEffectTiming* effect_timing = OptionalEffectTiming::Create();
   effect->updateTiming(effect_timing);
 
-  effect_timing = OptionalEffectTiming();
-  effect_timing.setDelay(0);
+  effect_timing = OptionalEffectTiming::Create();
+  effect_timing->setDelay(0);
   effect->updateTiming(effect_timing);
 
-  effect_timing = OptionalEffectTiming();
-  effect_timing.setEndDelay(5000);
-  effect_timing.setFill("both");
-  effect_timing.setIterationStart(0.1);
+  effect_timing = OptionalEffectTiming::Create();
+  effect_timing->setEndDelay(5000);
+  effect_timing->setFill("both");
+  effect_timing->setIterationStart(0.1);
   effect->updateTiming(effect_timing);
 
-  effect_timing = OptionalEffectTiming();
-  effect_timing.setIterations(3);
-  effect_timing.setDuration(
+  effect_timing = OptionalEffectTiming::Create();
+  effect_timing->setIterations(3);
+  effect_timing->setDuration(
       UnrestrictedDoubleOrString::FromUnrestrictedDouble(2000));
-  effect_timing.setDirection("alternate-reverse");
+  effect_timing->setDirection("alternate-reverse");
   effect->updateTiming(effect_timing);
 
-  effect_timing = OptionalEffectTiming();
-  effect_timing.setEasing("cubic-bezier(1, 1, 0.3, 0.3)");
+  effect_timing = OptionalEffectTiming::Create();
+  effect_timing->setEasing("cubic-bezier(1, 1, 0.3, 0.3)");
   effect->updateTiming(effect_timing);
 }
 

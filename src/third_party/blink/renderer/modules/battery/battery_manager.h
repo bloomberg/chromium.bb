@@ -33,7 +33,7 @@ class BatteryManager final : public EventTargetWithInlineData,
 
   // EventTarget implementation.
   const WTF::AtomicString& InterfaceName() const override {
-    return EventTargetNames::BatteryManager;
+    return event_target_names::kBatteryManager;
   }
   ExecutionContext* GetExecutionContext() const override {
     return ContextLifecycleObserver::GetExecutionContext();
@@ -44,10 +44,11 @@ class BatteryManager final : public EventTargetWithInlineData,
   double dischargingTime();
   double level();
 
-  DEFINE_ATTRIBUTE_EVENT_LISTENER(chargingchange);
-  DEFINE_ATTRIBUTE_EVENT_LISTENER(chargingtimechange);
-  DEFINE_ATTRIBUTE_EVENT_LISTENER(dischargingtimechange);
-  DEFINE_ATTRIBUTE_EVENT_LISTENER(levelchange);
+  DEFINE_ATTRIBUTE_EVENT_LISTENER(chargingchange, kChargingchange);
+  DEFINE_ATTRIBUTE_EVENT_LISTENER(chargingtimechange, kChargingtimechange);
+  DEFINE_ATTRIBUTE_EVENT_LISTENER(dischargingtimechange,
+                                  kDischargingtimechange);
+  DEFINE_ATTRIBUTE_EVENT_LISTENER(levelchange, kLevelchange);
 
   // Inherited from PlatformEventController.
   void DidUpdateData() override;

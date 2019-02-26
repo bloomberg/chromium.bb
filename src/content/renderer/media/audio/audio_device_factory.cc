@@ -8,6 +8,8 @@
 
 #include "base/logging.h"
 #include "base/metrics/histogram_macros.h"
+#include "base/no_destructor.h"
+#include "base/task/post_task.h"
 #include "base/threading/platform_thread.h"
 #include "build/build_config.h"
 #include "content/common/content_constants_internal.h"
@@ -15,6 +17,7 @@
 #include "content/renderer/media/audio/audio_input_ipc_factory.h"
 #include "content/renderer/media/audio/audio_output_ipc_factory.h"
 #include "content/renderer/media/audio/audio_renderer_mixer_manager.h"
+#include "content/renderer/media/audio/audio_renderer_sink_cache_impl.h"
 #include "content/renderer/media/audio/mojo_audio_input_ipc.h"
 #include "content/renderer/render_frame_impl.h"
 #include "content/renderer/render_thread_impl.h"
@@ -29,6 +32,7 @@ namespace content {
 AudioDeviceFactory* AudioDeviceFactory::factory_ = nullptr;
 
 namespace {
+
 #if defined(OS_WIN) || defined(OS_MACOSX) || \
     (defined(OS_LINUX) && !defined(OS_CHROMEOS))
 // Due to driver deadlock issues on Windows (http://crbug/422522) there is a
@@ -36,33 +40,34 @@ namespace {
 // In this case we will time out, to avoid renderer hang forever waiting for
 // device authorization (http://crbug/615589). This will result in "no audio".
 // There are also cases when authorization takes too long on Mac and Linux.
-const int64_t kMaxAuthorizationTimeoutMs = 10000;
+constexpr int64_t kMaxAuthorizationTimeoutMs = 10000;
 #else
-const int64_t kMaxAuthorizationTimeoutMs = 0;  // No timeout.
+constexpr int64_t kMaxAuthorizationTimeoutMs = 0;  // No timeout.
 #endif
+
+base::TimeDelta GetDefaultAuthTimeout() {
+  // Set authorization request timeout at 80% of renderer hung timeout,
+  // but no more than kMaxAuthorizationTimeout.
+  return base::TimeDelta::FromMilliseconds(
+      std::min(kHungRendererDelayMs * 8 / 10, kMaxAuthorizationTimeoutMs));
+}
 
 scoped_refptr<media::AudioOutputDevice> NewOutputDevice(
     int render_frame_id,
-    const media::AudioSinkParameters& params) {
+    const media::AudioSinkParameters& params,
+    base::TimeDelta auth_timeout) {
   auto device = base::MakeRefCounted<media::AudioOutputDevice>(
       AudioOutputIPCFactory::get()->CreateAudioOutputIPC(render_frame_id),
-      AudioOutputIPCFactory::get()->io_task_runner(), params,
-      // Set authorization request timeout at 80% of renderer hung timeout,
-      // but no more than kMaxAuthorizationTimeout.
-      base::TimeDelta::FromMilliseconds(
-          std::min(kHungRendererDelayMs * 8 / 10, kMaxAuthorizationTimeoutMs)));
+      AudioOutputIPCFactory::get()->io_task_runner(), params, auth_timeout);
   device->RequestDeviceAuthorization();
   return device;
 }
 
 // This is where we decide which audio will go to mixers and which one to
-// AudioOutpuDevice directly.
+// AudioOutputDevice directly.
 bool IsMixable(AudioDeviceFactory::SourceType source_type) {
-  if (source_type == AudioDeviceFactory::kSourceMediaElement)
-    return true;  // Must ALWAYS go through mixer.
-
-  // Mix everything if experiment is enabled; otherwise mix nothing else.
-  return base::FeatureList::IsEnabled(media::kNewAudioRenderingMixingStrategy);
+  // Media element must ALWAYS go through mixer.
+  return source_type == AudioDeviceFactory::kSourceMediaElement;
 }
 
 scoped_refptr<media::SwitchableAudioRendererSink> NewMixableSink(
@@ -73,10 +78,9 @@ scoped_refptr<media::SwitchableAudioRendererSink> NewMixableSink(
   DCHECK(render_thread) << "RenderThreadImpl is not instantiated, or "
                         << "GetOutputDeviceInfo() is called on a wrong thread ";
   DCHECK(!params.processing_id.has_value());
-  return scoped_refptr<media::AudioRendererMixerInput>(
-      render_thread->GetAudioRendererMixerManager()->CreateInput(
-          render_frame_id, params.session_id, params.device_id,
-          AudioDeviceFactory::GetSourceLatencyType(source_type)));
+  return render_thread->GetAudioRendererMixerManager()->CreateInput(
+      render_frame_id, params.session_id, params.device_id,
+      AudioDeviceFactory::GetSourceLatencyType(source_type));
 }
 
 }  // namespace
@@ -105,7 +109,9 @@ scoped_refptr<media::AudioRendererSink>
 AudioDeviceFactory::NewAudioRendererMixerSink(
     int render_frame_id,
     const media::AudioSinkParameters& params) {
-  return NewFinalAudioRendererSink(render_frame_id, params);
+  // AudioRendererMixer sinks are always used asynchronously and thus can
+  // operate without a timeout value.
+  return NewFinalAudioRendererSink(render_frame_id, params, base::TimeDelta());
 }
 
 // static
@@ -130,7 +136,8 @@ AudioDeviceFactory::NewAudioRendererSink(
 
   UMA_HISTOGRAM_BOOLEAN("Media.Audio.Render.SinkCache.UsedForSinkCreation",
                         false);
-  return NewFinalAudioRendererSink(render_frame_id, params);
+  return NewFinalAudioRendererSink(render_frame_id, params,
+                                   GetDefaultAuthTimeout());
 }
 
 // static
@@ -178,11 +185,23 @@ AudioDeviceFactory::NewAudioCapturerSource(
 media::OutputDeviceInfo AudioDeviceFactory::GetOutputDeviceInfo(
     int render_frame_id,
     const media::AudioSinkParameters& params) {
-  RenderThreadImpl* render_thread = RenderThreadImpl::current();
-  DCHECK(render_thread) << "RenderThreadImpl is not instantiated, or "
-                        << "GetOutputDeviceInfo() is called on a wrong thread ";
-  return render_thread->GetAudioRendererMixerManager()->GetOutputDeviceInfo(
-      render_frame_id, params.session_id, params.device_id);
+  DCHECK(RenderThreadImpl::current())
+      << "RenderThreadImpl is not instantiated, or "
+      << "GetOutputDeviceInfo() is called on a wrong thread ";
+
+  constexpr base::TimeDelta kDeleteTimeout =
+      base::TimeDelta::FromMilliseconds(5000);
+
+  // There's one process wide instance that lives on the render thread.
+  static base::NoDestructor<AudioRendererSinkCacheImpl> cache(
+      base::CreateSequencedTaskRunnerWithTraits(
+          {base::TaskPriority::BEST_EFFORT,
+           base::TaskShutdownBehavior::CONTINUE_ON_SHUTDOWN}),
+      base::BindRepeating(&AudioDeviceFactory::NewAudioRendererSink,
+                          AudioDeviceFactory::kSourceNone),
+      kDeleteTimeout);
+  return cache->GetSinkInfo(render_frame_id, params.session_id,
+                            params.device_id);
 }
 
 AudioDeviceFactory::AudioDeviceFactory() {
@@ -198,15 +217,17 @@ AudioDeviceFactory::~AudioDeviceFactory() {
 scoped_refptr<media::AudioRendererSink>
 AudioDeviceFactory::NewFinalAudioRendererSink(
     int render_frame_id,
-    const media::AudioSinkParameters& params) {
+    const media::AudioSinkParameters& params,
+    base::TimeDelta auth_timeout) {
   if (factory_) {
     scoped_refptr<media::AudioRendererSink> sink =
-        factory_->CreateFinalAudioRendererSink(render_frame_id, params);
+        factory_->CreateFinalAudioRendererSink(render_frame_id, params,
+                                               auth_timeout);
     if (sink)
       return sink;
   }
 
-  return NewOutputDevice(render_frame_id, params);
+  return NewOutputDevice(render_frame_id, params, auth_timeout);
 }
 
 }  // namespace content

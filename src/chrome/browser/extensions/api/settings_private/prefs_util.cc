@@ -163,6 +163,8 @@ const PrefsUtil::TypedPrefMap& PrefsUtil::GetWhitelistedKeys() {
 #if defined(OS_MACOSX)
   (*s_whitelist)[::prefs::kWebkitTabsToLinks] =
       settings_api::PrefType::PREF_TYPE_BOOLEAN;
+  (*s_whitelist)[::prefs::kConfirmToQuitEnabled] =
+      settings_api::PrefType::PREF_TYPE_BOOLEAN;
 #endif
 
   // On startup.
@@ -181,6 +183,8 @@ const PrefsUtil::TypedPrefMap& PrefsUtil::GetWhitelistedKeys() {
 #if defined(OS_CHROMEOS)
   (*s_whitelist)[::prefs::kNetworkFileSharesAllowed] =
       settings_api::PrefType::PREF_TYPE_BOOLEAN;
+  (*s_whitelist)[::prefs::kMostRecentlyUsedNetworkFileShareURL] =
+      settings_api::PrefType::PREF_TYPE_STRING;
 #endif
 
   // Printing settings.
@@ -211,8 +215,6 @@ const PrefsUtil::TypedPrefMap& PrefsUtil::GetWhitelistedKeys() {
   (*s_whitelist)[::prefs::kSafeBrowsingScoutReportingEnabled] =
       settings_api::PrefType::PREF_TYPE_BOOLEAN;
   (*s_whitelist)[::prefs::kSearchSuggestEnabled] =
-      settings_api::PrefType::PREF_TYPE_BOOLEAN;
-  (*s_whitelist)[::unified_consent::prefs::kUnifiedConsentGiven] =
       settings_api::PrefType::PREF_TYPE_BOOLEAN;
   (*s_whitelist)
       [::unified_consent::prefs::kUrlKeyedAnonymizedDataCollectionEnabled] =
@@ -297,8 +299,6 @@ const PrefsUtil::TypedPrefMap& PrefsUtil::GetWhitelistedKeys() {
   // kEnableAutoScreenLock is read-only.
   (*s_whitelist)[ash::prefs::kEnableAutoScreenLock] =
       settings_api::PrefType::PREF_TYPE_BOOLEAN;
-  (*s_whitelist)[proximity_auth::prefs::kEasyUnlockProximityThreshold] =
-      settings_api::PrefType::PREF_TYPE_NUMBER;
   (*s_whitelist)[ash::prefs::kMessageCenterLockScreenMode] =
       settings_api::PrefType::PREF_TYPE_STRING;
 
@@ -316,6 +316,12 @@ const PrefsUtil::TypedPrefMap& PrefsUtil::GetWhitelistedKeys() {
       settings_api::PrefType::PREF_TYPE_BOOLEAN;
   (*s_whitelist)[ash::prefs::kAccessibilityAutoclickDelayMs] =
       settings_api::PrefType::PREF_TYPE_BOOLEAN;
+  (*s_whitelist)[ash::prefs::kAccessibilityAutoclickEventType] =
+      settings_api::PrefType::PREF_TYPE_NUMBER;
+  (*s_whitelist)[ash::prefs::kAccessibilityAutoclickRevertToLeftClick] =
+      settings_api::PrefType::PREF_TYPE_BOOLEAN;
+  (*s_whitelist)[ash::prefs::kAccessibilityAutoclickMovementThreshold] =
+      settings_api::PrefType::PREF_TYPE_NUMBER;
   (*s_whitelist)[ash::prefs::kAccessibilityCaretHighlightEnabled] =
       settings_api::PrefType::PREF_TYPE_BOOLEAN;
   (*s_whitelist)[ash::prefs::kAccessibilityCursorHighlightEnabled] =
@@ -408,6 +414,12 @@ const PrefsUtil::TypedPrefMap& PrefsUtil::GetWhitelistedKeys() {
       settings_api::PrefType::PREF_TYPE_BOOLEAN;
   (*s_whitelist)[::ash::prefs::kUserBluetoothAdapterEnabled] =
       settings_api::PrefType::PREF_TYPE_BOOLEAN;
+  (*s_whitelist)[::prefs::kVpnConfigAllowed] =
+      settings_api::PrefType::PREF_TYPE_BOOLEAN;
+  (*s_whitelist)[arc::prefs::kAlwaysOnVpnPackage] =
+      settings_api::PrefType::PREF_TYPE_STRING;
+  (*s_whitelist)[arc::prefs::kAlwaysOnVpnLockdown] =
+      settings_api::PrefType::PREF_TYPE_BOOLEAN;
 
   // Timezone settings.
   (*s_whitelist)[chromeos::kSystemTimezone] =
@@ -492,6 +504,10 @@ const PrefsUtil::TypedPrefMap& PrefsUtil::GetWhitelistedKeys() {
       settings_api::PrefType::PREF_TYPE_NUMBER;
   (*s_whitelist)[::prefs::kLanguageXkbAutoRepeatInterval] =
       settings_api::PrefType::PREF_TYPE_NUMBER;
+  (*s_whitelist)[chromeos::kDeviceDisplayResolution] =
+      settings_api::PrefType::PREF_TYPE_DICTIONARY;
+  (*s_whitelist)[chromeos::kDisplayRotationDefault] =
+      settings_api::PrefType::PREF_TYPE_DICTIONARY;
 
   // Native Printing settings.
   (*s_whitelist)[::prefs::kUserNativePrintersAllowed] =
@@ -773,19 +789,27 @@ settings_private::SetPrefResult PrefsUtil::SetCrosSettingsPref(
     const std::string& pref_name,
     const base::Value* value) {
 #if defined(OS_CHROMEOS)
-  chromeos::OwnerSettingsServiceChromeOS* service =
-      chromeos::OwnerSettingsServiceChromeOSFactory::GetForBrowserContext(
-          profile_);
-
-  // Check if setting requires owner.
-  if (service && service->HandlesSetting(pref_name)) {
-    if (service->Set(pref_name, *value))
+  if (pref_name == chromeos::kSystemTimezone) {
+    std::string string_value;
+    if (!value->GetAsString(&string_value))
+      return settings_private::SetPrefResult::PREF_TYPE_MISMATCH;
+    const user_manager::User* user =
+        chromeos::ProfileHelper::Get()->GetUserByProfile(profile_);
+    if (user && chromeos::system::SetSystemTimezone(user, string_value))
       return settings_private::SetPrefResult::SUCCESS;
     return settings_private::SetPrefResult::PREF_NOT_MODIFIABLE;
   }
 
-  CrosSettings::Get()->Set(pref_name, *value);
-  return settings_private::SetPrefResult::SUCCESS;
+  chromeos::OwnerSettingsServiceChromeOS* service =
+      chromeos::OwnerSettingsServiceChromeOSFactory::GetForBrowserContext(
+          profile_);
+
+  if (service && service->HandlesSetting(pref_name) &&
+      service->Set(pref_name, *value)) {
+    return settings_private::SetPrefResult::SUCCESS;
+  }
+  return settings_private::SetPrefResult::PREF_NOT_MODIFIABLE;
+
 #else
   return settings_private::SetPrefResult::PREF_NOT_FOUND;
 #endif
@@ -798,13 +822,9 @@ bool PrefsUtil::AppendToListCrosSetting(const std::string& pref_name,
       chromeos::OwnerSettingsServiceChromeOSFactory::GetForBrowserContext(
           profile_);
 
-  // Returns false if not the owner, for settings requiring owner.
-  if (service && service->HandlesSetting(pref_name)) {
-    return service->AppendToList(pref_name, value);
-  }
+  return service && service->HandlesSetting(pref_name) &&
+         service->AppendToList(pref_name, value);
 
-  CrosSettings::Get()->AppendToList(pref_name, &value);
-  return true;
 #else
   return false;
 #endif
@@ -817,13 +837,9 @@ bool PrefsUtil::RemoveFromListCrosSetting(const std::string& pref_name,
       chromeos::OwnerSettingsServiceChromeOSFactory::GetForBrowserContext(
           profile_);
 
-  // Returns false if not the owner, for settings requiring owner.
-  if (service && service->HandlesSetting(pref_name)) {
-    return service->RemoveFromList(pref_name, value);
-  }
+  return service && service->HandlesSetting(pref_name) &&
+         service->RemoveFromList(pref_name, value);
 
-  CrosSettings::Get()->RemoveFromList(pref_name, &value);
-  return true;
 #else
   return false;
 #endif

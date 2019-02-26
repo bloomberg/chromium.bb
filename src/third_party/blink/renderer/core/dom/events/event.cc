@@ -27,6 +27,7 @@
 #include "third_party/blink/renderer/core/dom/events/event_target.h"
 #include "third_party/blink/renderer/core/dom/events/window_event_context.h"
 #include "third_party/blink/renderer/core/dom/static_node_list.h"
+#include "third_party/blink/renderer/core/event_interface_names.h"
 #include "third_party/blink/renderer/core/events/focus_event.h"
 #include "third_party/blink/renderer/core/events/mouse_event.h"
 #include "third_party/blink/renderer/core/events/pointer_event.h"
@@ -45,16 +46,16 @@ static bool IsEventTypeScopedInV0(const AtomicString& event_type) {
   // WebKit never allowed selectstart event to cross the the shadow DOM
   // boundary.  Changing this breaks existing sites.
   // See https://bugs.webkit.org/show_bug.cgi?id=52195 for details.
-  return event_type == EventTypeNames::abort ||
-         event_type == EventTypeNames::change ||
-         event_type == EventTypeNames::error ||
-         event_type == EventTypeNames::load ||
-         event_type == EventTypeNames::reset ||
-         event_type == EventTypeNames::resize ||
-         event_type == EventTypeNames::scroll ||
-         event_type == EventTypeNames::select ||
-         event_type == EventTypeNames::selectstart ||
-         event_type == EventTypeNames::slotchange;
+  return event_type == event_type_names::kAbort ||
+         event_type == event_type_names::kChange ||
+         event_type == event_type_names::kError ||
+         event_type == event_type_names::kLoad ||
+         event_type == event_type_names::kReset ||
+         event_type == event_type_names::kResize ||
+         event_type == event_type_names::kScroll ||
+         event_type == event_type_names::kSelect ||
+         event_type == event_type_names::kSelectstart ||
+         event_type == event_type_names::kSlotchange;
 }
 
 Event::Event() : Event("", Bubbles::kNo, Cancelable::kNo) {
@@ -108,13 +109,13 @@ Event::Event(const AtomicString& event_type,
       platform_time_stamp_(platform_time_stamp) {}
 
 Event::Event(const AtomicString& event_type,
-             const EventInit& initializer,
+             const EventInit* initializer,
              TimeTicks platform_time_stamp)
     : Event(event_type,
-            initializer.bubbles() ? Bubbles::kYes : Bubbles::kNo,
-            initializer.cancelable() ? Cancelable::kYes : Cancelable::kNo,
-            initializer.composed() ? ComposedMode::kComposed
-                                   : ComposedMode::kScoped,
+            initializer->bubbles() ? Bubbles::kYes : Bubbles::kNo,
+            initializer->cancelable() ? Cancelable::kYes : Cancelable::kNo,
+            initializer->composed() ? ComposedMode::kComposed
+                                    : ComposedMode::kScoped,
             platform_time_stamp) {}
 
 Event::~Event() = default;
@@ -172,7 +173,7 @@ void Event::setLegacyReturnValue(ScriptState* script_state, bool return_value) {
 }
 
 const AtomicString& Event::InterfaceName() const {
-  return EventNames::Event;
+  return event_interface_names::kEvent;
 }
 
 bool Event::HasInterface(const AtomicString& name) const {
@@ -298,7 +299,7 @@ void Event::SetUnderlyingEvent(Event* ue) {
 
 void Event::InitEventPath(Node& node) {
   if (!event_path_) {
-    event_path_ = new EventPath(node, this);
+    event_path_ = MakeGarbageCollected<EventPath>(node, this);
   } else {
     event_path_->InitializeWith(node, this);
   }

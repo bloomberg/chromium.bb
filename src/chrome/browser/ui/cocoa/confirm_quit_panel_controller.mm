@@ -151,8 +151,9 @@ const NSTimeInterval kTimeDeltaFuzzFactor = 1.0;
 - (NSEvent*)pumpEventQueueForKeyUp:(NSApplication*)app untilDate:(NSDate*)date;
 - (void)hideAllWindowsForApplication:(NSApplication*)app
                         withDuration:(NSTimeInterval)duration;
-// Returns the Accelerator for the Quit menu item.
-+ (NSMenuItem*)quitAccelerator;
+// Returns the menu item for the Quit menu item, or a thrown-together default
+// one if no Quit menu item exists.
++ (NSMenuItem*)quitMenuItem;
 @end
 
 ConfirmQuitPanelController* g_confirmQuitPanelController = nil;
@@ -197,17 +198,7 @@ ConfirmQuitPanelController* g_confirmQuitPanelController = nil;
   return self;
 }
 
-+ (BOOL)eventTriggersFeature:(NSEvent*)event {
-  if ([event type] != NSKeyDown)
-    return NO;
-  NSMenuItem* item = [self quitAccelerator];
-  return item.keyEquivalentModifierMask ==
-             ([event modifierFlags] & NSDeviceIndependentModifierFlagsMask) &&
-         [item.keyEquivalent
-             isEqualToString:[event charactersIgnoringModifiers]];
-}
-
-- (NSApplicationTerminateReply)runModalLoopForApplication:(NSApplication*)app {
+- (BOOL)runModalLoopForApplication:(NSApplication*)app {
   base::scoped_nsobject<ConfirmQuitPanelController> keepAlive([self retain]);
 
   // If this is the second of two such attempts to quit within a certain time
@@ -236,7 +227,7 @@ ConfirmQuitPanelController* g_confirmQuitPanelController = nil;
       confirm_quit::RecordHistogram(confirm_quit::kDoubleTap);
     else
       confirm_quit::RecordHistogram(confirm_quit::kTapHold);
-    return NSTerminateNow;
+    return YES;
   } else {
     [lastQuitAttempt release];  // Harmless if already nil.
     lastQuitAttempt = [timeNow retain];  // Record this attempt for next time.
@@ -286,16 +277,16 @@ ConfirmQuitPanelController* g_confirmQuitPanelController = nil;
     // The user held down the combination long enough that quitting should
     // happen.
     confirm_quit::RecordHistogram(confirm_quit::kHoldDuration);
-    return NSTerminateNow;
+    return YES;
   } else {
     // Slowly fade the confirm window out in case the user doesn't
     // understand what they have to do to quit.
     [self dismissPanel];
-    return NSTerminateCancel;
+    return NO;
   }
 
   // Default case: terminate.
-  return NSTerminateNow;
+  return YES;
 }
 
 - (void)windowWillClose:(NSNotification*)notif {
@@ -347,7 +338,7 @@ ConfirmQuitPanelController* g_confirmQuitPanelController = nil;
 // key combination for quit. It then gets the modifiers and builds a string
 // to display them.
 + (NSString*)keyCommandString {
-  return [[self class] keyCombinationForAccelerator:[self quitAccelerator]];
+  return [[self class] keyCombinationForMenuItem:[self quitMenuItem]];
 }
 
 // Runs a nested loop that pumps the event queue until the next KeyUp event.
@@ -368,10 +359,8 @@ ConfirmQuitPanelController* g_confirmQuitPanelController = nil;
   [animation startAnimation];
 }
 
-// This looks at the Main Menu and determines what the user has set as the
-// key combination for quit. It then gets the modifiers and builds an object
-// to hold the data.
-+ (NSMenuItem*)quitAccelerator {
+// This returns the NSMenuItem that quits the application.
++ (NSMenuItem*)quitMenuItem {
   NSMenu* mainMenu = [NSApp mainMenu];
   // Get the application menu (i.e. Chromium).
   NSMenu* appMenu = [[mainMenu itemAtIndex:0] submenu];
@@ -390,7 +379,7 @@ ConfirmQuitPanelController* g_confirmQuitPanelController = nil;
   return item;
 }
 
-+ (NSString*)keyCombinationForAccelerator:(NSMenuItem*)item {
++ (NSString*)keyCombinationForMenuItem:(NSMenuItem*)item {
   NSMutableString* string = [NSMutableString string];
   NSUInteger modifiers = item.keyEquivalentModifierMask;
 

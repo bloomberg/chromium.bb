@@ -89,7 +89,7 @@ void ApplicationCache::abort() {
 }
 
 const AtomicString& ApplicationCache::InterfaceName() const {
-  return EventTargetNames::ApplicationCache;
+  return event_target_names::kApplicationCache;
 }
 
 ExecutionContext* ApplicationCache::GetExecutionContext() const {
@@ -100,24 +100,24 @@ const AtomicString& ApplicationCache::ToEventType(
     ApplicationCacheHost::EventID id) {
   switch (id) {
     case ApplicationCacheHost::kCheckingEvent:
-      return EventTypeNames::checking;
+      return event_type_names::kChecking;
     case ApplicationCacheHost::kErrorEvent:
-      return EventTypeNames::error;
+      return event_type_names::kError;
     case ApplicationCacheHost::kNoupdateEvent:
-      return EventTypeNames::noupdate;
+      return event_type_names::kNoupdate;
     case ApplicationCacheHost::kDownloadingEvent:
-      return EventTypeNames::downloading;
+      return event_type_names::kDownloading;
     case ApplicationCacheHost::kProgressEvent:
-      return EventTypeNames::progress;
+      return event_type_names::kProgress;
     case ApplicationCacheHost::kUpdatereadyEvent:
-      return EventTypeNames::updateready;
+      return event_type_names::kUpdateready;
     case ApplicationCacheHost::kCachedEvent:
-      return EventTypeNames::cached;
+      return event_type_names::kCached;
     case ApplicationCacheHost::kObsoleteEvent:
-      return EventTypeNames::obsolete;
+      return event_type_names::kObsolete;
   }
   NOTREACHED();
-  return EventTypeNames::error;
+  return event_type_names::kError;
 }
 
 void ApplicationCache::RecordAPIUseType() const {

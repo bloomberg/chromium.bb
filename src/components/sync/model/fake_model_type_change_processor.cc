@@ -21,10 +21,7 @@ FakeModelTypeChangeProcessor::FakeModelTypeChangeProcessor(
     base::WeakPtr<ModelTypeControllerDelegate> delegate)
     : delegate_(delegate) {}
 
-FakeModelTypeChangeProcessor::~FakeModelTypeChangeProcessor() {
-  // If this fails we were expecting an error but never got one.
-  EXPECT_FALSE(expect_error_);
-}
+FakeModelTypeChangeProcessor::~FakeModelTypeChangeProcessor() {}
 
 void FakeModelTypeChangeProcessor::Put(
     const std::string& client_tag,
@@ -40,11 +37,16 @@ void FakeModelTypeChangeProcessor::UpdateStorageKey(
     const std::string& storage_key,
     MetadataChangeList* metadata_change_list) {}
 
-void FakeModelTypeChangeProcessor::UntrackEntity(
-    const EntityData& entity_data) {}
-
 void FakeModelTypeChangeProcessor::UntrackEntityForStorageKey(
     const std::string& storage_key) {}
+
+void FakeModelTypeChangeProcessor::UntrackEntityForClientTagHash(
+    const std::string& client_tag_hash) {}
+
+bool FakeModelTypeChangeProcessor::IsEntityUnsynced(
+    const std::string& storage_key) {
+  return false;
+}
 
 void FakeModelTypeChangeProcessor::OnModelStarting(
     ModelTypeSyncBridge* bridge) {}
@@ -61,17 +63,16 @@ std::string FakeModelTypeChangeProcessor::TrackedAccountId() {
 }
 
 void FakeModelTypeChangeProcessor::ReportError(const ModelError& error) {
-  EXPECT_TRUE(expect_error_) << error.ToString();
-  expect_error_ = false;
+  error_ = error;
+}
+
+base::Optional<ModelError> FakeModelTypeChangeProcessor::GetError() const {
+  return error_;
 }
 
 base::WeakPtr<ModelTypeControllerDelegate>
 FakeModelTypeChangeProcessor::GetControllerDelegate() {
   return delegate_;
-}
-
-void FakeModelTypeChangeProcessor::ExpectError() {
-  expect_error_ = true;
 }
 
 }  // namespace syncer

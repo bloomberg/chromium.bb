@@ -11,6 +11,7 @@
 <translation id="1299858300159559687">Распечатать страницу</translation>
 <translation id="1383876407941801731">Поиск</translation>
 <translation id="1454364489140280055"><ph name="CTRL" /><ph name="SEPARATOR1" /><ph name="SHIFT1" /><ph name="SEPARATOR2" /><ph name="G" /> или <ph name="SHIFT2" /><ph name="SEPARATOR3" /><ph name="ENTER" /></translation>
+<translation id="1477442857810932985">Перейти к концу строки</translation>
 <translation id="1510238584712386396">Панель запуска</translation>
 <translation id="152892567002884378">Увеличить громкость</translation>
 <translation id="1560480564179555003"><ph name="SHIFT" /><ph name="SEPARATOR1" /><ph name="ALT" /><ph name="SEPARATOR2" /><ph name="L" />, затем <ph name="ESC" /></translation>
@@ -191,6 +192,7 @@
 <translation id="9041599225465145264">Вставить содержимое из буфера обмена</translation>
 <translation id="9052808072970550123">Переключиться на следующего пользователя</translation>
 <translation id="906458777597946297">Развернуть окно</translation>
+<translation id="9091855755813503076">Перейти к началу строки</translation>
 <translation id="9106898733795143799">Страница и браузер</translation>
 <translation id="9162942292291287644">По запросу "<ph name="QUERY" />" ничего не найдено</translation>
 <translation id="9179672198516322668">Часто используемые быстрые клавиши</translation>

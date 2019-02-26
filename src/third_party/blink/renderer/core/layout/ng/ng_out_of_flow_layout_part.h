@@ -10,6 +10,7 @@
 #include "base/optional.h"
 #include "third_party/blink/renderer/core/layout/ng/geometry/ng_physical_offset.h"
 #include "third_party/blink/renderer/core/layout/ng/ng_absolute_utils.h"
+#include "third_party/blink/renderer/core/style/computed_style_base_constants.h"
 #include "third_party/blink/renderer/platform/wtf/hash_map.h"
 
 namespace blink {
@@ -18,14 +19,14 @@ class ComputedStyle;
 class LayoutBox;
 class LayoutObject;
 class NGBlockNode;
-class NGFragmentBuilder;
+class NGBoxFragmentBuilder;
 class NGConstraintSpace;
 class NGLayoutResult;
 struct NGOutOfFlowPositionedDescendant;
 
 // Helper class for positioning of out-of-flow blocks.
-// It should be used together with NGFragmentBuilder.
-// See NGFragmentBuilder::AddOutOfFlowChildCandidate documentation
+// It should be used together with NGBoxFragmentBuilder.
+// See NGBoxFragmentBuilder::AddOutOfFlowChildCandidate documentation
 // for example of using these classes together.
 class CORE_EXPORT NGOutOfFlowLayoutPart {
   STACK_ALLOCATED();
@@ -37,12 +38,15 @@ class CORE_EXPORT NGOutOfFlowLayoutPart {
   // block" of such an out-of-flow positioned descendant isn't a true block (but
   // e.g. a relatively positioned inline instead), the containing block here is
   // the containing block of said non-block.
-  NGOutOfFlowLayoutPart(NGFragmentBuilder* container_builder,
-                        bool contains_absolute,
-                        bool contains_fixed,
-                        const NGBoxStrut& borders_and_scrollers,
-                        const NGConstraintSpace& container_space,
-                        const ComputedStyle& container_style);
+  NGOutOfFlowLayoutPart(
+      NGBoxFragmentBuilder* container_builder,
+      bool contains_absolute,
+      bool contains_fixed,
+      const NGBoxStrut& borders_and_scrollers,
+      const NGConstraintSpace& container_space,
+      const ComputedStyle& container_style,
+      base::Optional<NGLogicalSize> initial_containing_block_fixed_size =
+          base::nullopt);
 
   // Normally this function lays out and positions all out-of-flow objects
   // from the container_builder and additional ones it discovers through laying
@@ -70,7 +74,9 @@ class CORE_EXPORT NGOutOfFlowLayoutPart {
     // Containing block style.
     const ComputedStyle* style;
     // Logical in containing block coordinates.
-    NGLogicalSize content_size;
+    NGLogicalSize content_size_for_absolute;
+    // Content size for fixed is different for icb
+    NGLogicalSize content_size_for_fixed;
     // Content offset wrt border box.
     NGLogicalOffset content_offset;
     // Physical content offset wrt border box.
@@ -78,6 +84,11 @@ class CORE_EXPORT NGOutOfFlowLayoutPart {
     // Logical offset of container padding box
     // wrt default containing block padding box.
     NGLogicalOffset default_container_offset;
+
+    NGLogicalSize ContentSize(EPosition position) const {
+      return position == EPosition::kAbsolute ? content_size_for_absolute
+                                              : content_size_for_fixed;
+    }
   };
 
   ContainingBlockInfo GetContainingBlockInfo(
@@ -98,10 +109,9 @@ class CORE_EXPORT NGOutOfFlowLayoutPart {
       const base::Optional<LayoutUnit>& block_estimate,
       const NGAbsolutePhysicalPosition& node_position);
 
-  NGFragmentBuilder* container_builder_;
+  NGBoxFragmentBuilder* container_builder_;
   bool contains_absolute_;
   bool contains_fixed_;
-  NGPhysicalSize icb_size_;
   ContainingBlockInfo default_containing_block_;
   HashMap<const LayoutObject*, ContainingBlockInfo> containing_blocks_map_;
 };

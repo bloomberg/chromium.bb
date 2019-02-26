@@ -56,8 +56,9 @@ IDBKeyRange* IDBKeyRange::FromScriptValue(ExecutionContext* context,
   }
 
   IDBKey* const upper_compressed = key.get();
-  return new IDBKeyRange(std::move(key), upper_compressed, nullptr,
-                         kLowerBoundClosed, kUpperBoundClosed);
+  return MakeGarbageCollected<IDBKeyRange>(std::move(key), upper_compressed,
+                                           nullptr, kLowerBoundClosed,
+                                           kUpperBoundClosed);
 }
 
 IDBKeyRange::IDBKeyRange(std::unique_ptr<IDBKey> lower,
@@ -95,8 +96,9 @@ IDBKeyRange* IDBKeyRange::only(std::unique_ptr<IDBKey> key,
   }
 
   IDBKey* const upper_compressed = key.get();
-  return new IDBKeyRange(std::move(key), upper_compressed, nullptr,
-                         kLowerBoundClosed, kUpperBoundClosed);
+  return MakeGarbageCollected<IDBKeyRange>(std::move(key), upper_compressed,
+                                           nullptr, kLowerBoundClosed,
+                                           kUpperBoundClosed);
 }
 
 IDBKeyRange* IDBKeyRange::only(ScriptState* script_state,
@@ -114,8 +116,9 @@ IDBKeyRange* IDBKeyRange::only(ScriptState* script_state,
   }
 
   IDBKey* const upper_compressed = key.get();
-  return new IDBKeyRange(std::move(key), upper_compressed, nullptr,
-                         kLowerBoundClosed, kUpperBoundClosed);
+  return MakeGarbageCollected<IDBKeyRange>(std::move(key), upper_compressed,
+                                           nullptr, kLowerBoundClosed,
+                                           kUpperBoundClosed);
 }
 
 IDBKeyRange* IDBKeyRange::lowerBound(ScriptState* script_state,

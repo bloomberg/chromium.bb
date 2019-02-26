@@ -94,7 +94,7 @@ class WPTExpectationsUpdater(object):
         # At this point, test_expectations looks like: {
         #     'test-with-failing-result': {
         #         ('port-name1', 'port-name2'): SimpleTestResult,
-        #         'port-name3': SimpleTestResult
+        #         'port-name3': AnotherSimpleTestResult
         #     }
         # }
 
@@ -268,9 +268,10 @@ class WPTExpectationsUpdater(object):
         # expectation is correct.
         # We also want to skip any new manual tests that are not automated;
         # see crbug.com/708241 for context.
-        if ('MISSING' in actual_results or
-                '-manual.' in test_name and 'TIMEOUT' in actual_results):
+        if 'MISSING' in actual_results:
             return {'Skip'}
+        if '-manual.' in test_name and 'TIMEOUT' in actual_results:
+            return {'WontFix'}
         expectations = set()
         failure_types = {'TEXT', 'IMAGE+TEXT', 'IMAGE', 'AUDIO'}
         other_types = {'TIMEOUT', 'CRASH', 'PASS'}
@@ -309,11 +310,11 @@ class WPTExpectationsUpdater(object):
                 _log.warning('Non-WPT test "%s" unexpectedly passed to create_line_dict.', test_name)
                 continue
             for port_names, result in sorted(port_results.iteritems()):
-                line_dict[test_name].append(self._create_line(test_name, port_names, result))
+                line_dict[test_name].extend(self._create_lines(test_name, port_names, result))
         return line_dict
 
-    def _create_line(self, test_name, port_names, result):
-        """Constructs a test expectation line string.
+    def _create_lines(self, test_name, port_names, result):
+        """Constructs test expectation line strings.
 
         Args:
             test_name: The test name string.
@@ -321,8 +322,10 @@ class WPTExpectationsUpdater(object):
             result: A SimpleTestResult.
 
         Returns:
-            A string that contains a line of test expectation.
+            A list of strings which each is a line of test expectation for given
+            |test_name|.
         """
+        lines = []
         port_names = self.tuple_or_value_to_list(port_names)
 
         # The set of ports with no results is assumed to have have no
@@ -336,38 +339,43 @@ class WPTExpectationsUpdater(object):
         # also apply to any ports that we weren't able to get results for.
         port_names.extend(self.ports_with_no_results)
 
-        specifier_part = self.specifier_part(test_name, port_names)
+        expectations = '[ %s ]' % ' '.join(self.get_expectations(result, test_name))
+        for specifier in self.normalized_specifiers(test_name, port_names):
+            line_parts = []
+            if specifier:
+                line_parts.append('[ %s ]' % specifier)
+            line_parts.append(test_name)
+            line_parts.append(expectations)
 
-        line_parts = [result.bug]
-        if specifier_part:
-            line_parts.append(specifier_part)
-        line_parts.append(test_name)
-        line_parts.append('[ %s ]' % ' '.join(self.get_expectations(result, test_name)))
+            # Only add the bug link if the expectations do not include WontFix.
+            if 'WontFix' not in expectations:
+                line_parts.insert(0, result.bug)
 
-        return ' '.join(line_parts)
+            lines.append(' '.join(line_parts))
+        return lines
 
-    def specifier_part(self, test_name, port_names):
-        """Returns the specifier part for a new test expectations line.
+    def normalized_specifiers(self, test_name, port_names):
+        """Converts and simplifies ports into platform specifiers.
 
         Args:
             test_name: The test name string.
             port_names: A list of full port names that the line should apply to.
 
         Returns:
-            The specifier part of the new expectation line, e.g. "[ Mac ]".
-            This will be an empty string if the line should apply to all platforms.
+            A list of specifier string, e.g. ["Mac", "Win"].
+            [''] will be returned if the line should apply to all platforms.
         """
         specifiers = []
         for name in sorted(port_names):
             specifiers.append(self.host.builders.version_specifier_for_port_name(name))
 
         if self.specifiers_can_extend_to_all_platforms(specifiers, test_name):
-            return ''
+            return ['']
 
         specifiers = self.simplify_specifiers(specifiers, self.port.configuration_specifier_macros())
         if not specifiers:
-            return ''
-        return '[ %s ]' % ' '.join(specifiers)
+            return ['']
+        return specifiers
 
     @staticmethod
     def tuple_or_value_to_list(tuple_or_value):
@@ -447,32 +455,51 @@ class WPTExpectationsUpdater(object):
         comment line. If this marker comment line is not found, then everything
         including the marker line is appended to the end of the file.
 
+        All WontFix tests are inserted to NeverFixTests file instead of TextExpectations
+        file.
+
         Args:
             line_dict: A dictionary from test names to a list of test expectation lines.
         """
         if not line_dict:
-            _log.info('No lines to write to TestExpectations.')
+            _log.info('No lines to write to TestExpectations nor NeverFixTests.')
             return
 
-        _log.info('Lines to write to TestExpectations:')
         line_list = []
+        wont_fix_list = []
         for lines in line_dict.itervalues():
             for line in lines:
-                line_list.append(line)
-                _log.info('  %s', line)
+                if 'WontFix' in line:
+                    wont_fix_list.append(line)
+                else:
+                    line_list.append(line)
 
-        expectations_file_path = self.port.path_to_generic_test_expectations_file()
-        file_contents = self.host.filesystem.read_text_file(expectations_file_path)
+        if line_list:
+            _log.info('Lines to write to TestExpectations:\n %s', '\n'.join(line_list))
+            # Writes to TestExpectations file.
+            expectations_file_path = self.port.path_to_generic_test_expectations_file()
+            file_contents = self.host.filesystem.read_text_file(expectations_file_path)
 
-        marker_comment_index = file_contents.find(MARKER_COMMENT)
-        if marker_comment_index == -1:
-            file_contents += '\n%s\n' % MARKER_COMMENT
-            file_contents += '\n'.join(line_list)
-        else:
-            end_of_marker_line = (file_contents[marker_comment_index:].find('\n')) + marker_comment_index
-            file_contents = file_contents[:end_of_marker_line + 1] + '\n'.join(line_list) + file_contents[end_of_marker_line:]
+            marker_comment_index = file_contents.find(MARKER_COMMENT)
+            if marker_comment_index == -1:
+                file_contents += '\n%s\n' % MARKER_COMMENT
+                file_contents += '\n'.join(line_list)
+            else:
+                end_of_marker_line = (file_contents[marker_comment_index:].find('\n')) + marker_comment_index
+                file_contents = file_contents[:end_of_marker_line + 1] + '\n'.join(line_list) + file_contents[end_of_marker_line:]
 
-        self.host.filesystem.write_text_file(expectations_file_path, file_contents)
+            self.host.filesystem.write_text_file(expectations_file_path, file_contents)
+
+        if wont_fix_list:
+            _log.info('Lines to write to NeverFixTests:\n %s', '\n'.join(wont_fix_list))
+            # Writes to NeverFixTests file.
+            wont_fix_path = self.port.path_to_never_fix_tests_file()
+            wont_fix_file_content = self.host.filesystem.read_text_file(wont_fix_path)
+            if not wont_fix_file_content.endswith('\n'):
+                wont_fix_file_content += '\n'
+            wont_fix_file_content += '\n'.join(wont_fix_list)
+            wont_fix_file_content += '\n'
+            self.host.filesystem.write_text_file(wont_fix_path, wont_fix_file_content)
 
     # TODO(robertma): Unit test this method.
     def download_text_baselines(self, test_results):

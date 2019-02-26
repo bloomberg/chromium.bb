@@ -22,6 +22,7 @@
 #include "components/autofill/core/browser/autofill_type.h"
 #include "components/autofill/core/browser/field_types.h"
 #include "components/autofill/core/browser/form_types.h"
+#include "components/autofill/core/browser/proto/api_v1.pb.h"
 #include "components/autofill/core/browser/proto/server.pb.h"
 #include "components/autofill/core/common/password_form.h"
 #include "components/autofill/core/common/submission_source.h"
@@ -47,6 +48,8 @@ enum class PasswordAttribute {
 
 struct FormData;
 struct FormDataPredictions;
+
+class RandomizedEncoder;
 
 // FormStructure stores a single HTML form together with the values entered
 // in the fields along with additional information needed by Autofill.
@@ -81,6 +84,11 @@ class FormStructure {
   static void ParseQueryResponse(std::string response,
                                  const std::vector<FormStructure*>& forms,
                                  AutofillMetrics::FormInteractionsUkmLogger*);
+
+  static void ParseApiQueryResponse(
+      base::StringPiece payload,
+      const std::vector<FormStructure*>& forms,
+      AutofillMetrics::FormInteractionsUkmLogger*);
 
   // Parses the field types from the server query response. |forms| must be the
   // same as the one passed to EncodeQueryRequest when constructing the query.
@@ -215,6 +223,10 @@ class FormStructure {
 
   const base::string16& form_name() const { return form_name_; }
 
+  const base::string16& id_attribute() const { return id_attribute_; }
+
+  const base::string16& name_attribute() const { return name_attribute_; }
+
   const GURL& source_url() const { return source_url_; }
 
   const GURL& target_url() const { return target_url_; }
@@ -233,8 +245,9 @@ class FormStructure {
     return has_author_specified_upi_vpa_hint_;
   }
 
-  void set_submission_event(
-      PasswordForm::SubmissionIndicatorEvent submission_event) {
+  bool has_password_field() const { return has_password_field_; }
+
+  void set_submission_event(SubmissionIndicatorEvent submission_event) {
     submission_event_ = submission_event;
   }
 
@@ -287,8 +300,7 @@ class FormStructure {
     return password_length_vote_;
   }
 
-  PasswordForm::SubmissionIndicatorEvent get_submission_event_for_testing()
-      const {
+  SubmissionIndicatorEvent get_submission_event_for_testing() const {
     return submission_event_;
   }
 #endif
@@ -308,6 +320,16 @@ class FormStructure {
   base::string16 GetIdentifierForRefill() const;
 
   int developer_engagement_metrics() { return developer_engagement_metrics_; };
+
+  void set_randomized_encoder(std::unique_ptr<RandomizedEncoder> encoder);
+
+  void set_is_rich_query_enabled(bool v) { is_rich_query_enabled_ = v; }
+
+  const std::string& page_language() const { return page_language_; }
+
+  void set_page_language(std::string language) {
+    page_language_ = std::move(language);
+  }
 
  private:
   friend class AutofillMergeTest;
@@ -453,12 +475,25 @@ class FormStructure {
   static base::string16 FindLongestCommonPrefix(
       const std::vector<base::string16>& strings);
 
+  // The language detected for this form's page, prior to any translations
+  // performed by Chrome.
+  std::string page_language_;
+
+  // The id attribute of the form.
+  base::string16 id_attribute_;
+
+  // The name attribute of the form.
+  base::string16 name_attribute_;
+
   // The name of the form.
   base::string16 form_name_;
 
+  // The title of form submission button.
+  base::string16 button_title_;
+
   // The type of the event that was taken as an indication that the form has
   // been successfully submitted.
-  PasswordForm::SubmissionIndicatorEvent submission_event_;
+  SubmissionIndicatorEvent submission_event_;
 
   // The source URL.
   GURL source_url_;
@@ -543,6 +578,14 @@ class FormStructure {
   int developer_engagement_metrics_;
 
   SubmissionSource submission_source_ = SubmissionSource::NONE;
+
+  // The randomized encoder to use to encode form metadata during upload.
+  // If this is nullptr, no randomized metadata will be sent.
+  std::unique_ptr<RandomizedEncoder> randomized_encoder_;
+
+  // True iff queries encoded from this form structure should include rich
+  // form/field metadata.
+  bool is_rich_query_enabled_ = false;
 
   DISALLOW_COPY_AND_ASSIGN(FormStructure);
 };

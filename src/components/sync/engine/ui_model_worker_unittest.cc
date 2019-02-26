@@ -27,7 +27,7 @@ SyncerError DoWork(
     base::Closure work) {
   DCHECK(thread_verifier->BelongsToCurrentThread());
   work.Run();
-  return SYNCER_OK;
+  return SyncerError(SyncerError::SYNCER_OK);
 }
 
 // Converts |work| to a WorkCallback that will verify that it's run on the

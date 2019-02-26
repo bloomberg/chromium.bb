@@ -30,7 +30,7 @@
 namespace blink {
 
 WaveShaperProcessor::WaveShaperProcessor(float sample_rate,
-                                         size_t number_of_channels)
+                                         unsigned number_of_channels)
     : AudioDSPKernelProcessor(sample_rate, number_of_channels),
       oversample_(kOverSampleNone) {}
 
@@ -91,7 +91,7 @@ void WaveShaperProcessor::SetOversample(OverSampleType oversample) {
 
 void WaveShaperProcessor::Process(const AudioBus* source,
                                   AudioBus* destination,
-                                  size_t frames_to_process) {
+                                  uint32_t frames_to_process) {
   if (!IsInitialized()) {
     destination->Zero();
     return;

@@ -33,7 +33,9 @@ constexpr size_t kLayoutTestMaxMessageChunkSize =
 DevToolsProtocolTestBindings::DevToolsProtocolTestBindings(
     WebContents* devtools)
     : WebContentsObserver(devtools),
-      agent_host_(DevToolsAgentHost::CreateForDiscovery()) {
+      agent_host_(DevToolsAgentHost::CreateForBrowser(
+          nullptr,
+          DevToolsAgentHost::CreateServerSocketCallback())) {
   agent_host_->AttachClient(this);
 }
 

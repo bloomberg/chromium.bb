@@ -22,6 +22,7 @@
 #include "content/public/browser/network_service_instance.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/common/content_switches.h"
+#include "content/public/common/service_names.mojom.h"
 #include "content/public/test/browser_test_utils.h"
 #include "content/public/test/content_browser_test.h"
 #include "content/public/test/content_browser_test_utils.h"
@@ -30,12 +31,15 @@
 #include "content/shell/browser/shell.h"
 #include "content/shell/browser/shell_browser_context.h"
 #include "content/test/storage_partition_test_utils.h"
+#include "mojo/public/cpp/bindings/sync_call_restrictions.h"
 #include "net/dns/mock_host_resolver.h"
 #include "net/test/embedded_test_server/http_request.h"
 #include "net/traffic_annotation/network_traffic_annotation_test_helper.h"
 #include "services/network/public/cpp/features.h"
 #include "services/network/public/cpp/simple_url_loader.h"
 #include "services/network/public/mojom/network_service.mojom.h"
+#include "services/network/public/mojom/network_service_test.mojom.h"
+#include "services/service_manager/public/cpp/connector.h"
 
 #if BUILDFLAG(ENABLE_PLUGINS)
 #include "content/public/test/ppapi_test_utils.h"
@@ -112,8 +116,10 @@ void WaitForCondition(base::RepeatingCallback<bool()> condition) {
 class ServiceWorkerStatusObserver : public ServiceWorkerContextCoreObserver {
  public:
   void WaitForState(EmbeddedWorkerStatus expected_status) {
-    if (latest_status_ == expected_status)
-      return;
+    for (const auto& status : statuses_in_past_) {
+      if (status == expected_status)
+        return;
+    }
 
     expected_status_ = expected_status;
     base::RunLoop loop;
@@ -124,7 +130,7 @@ class ServiceWorkerStatusObserver : public ServiceWorkerContextCoreObserver {
  private:
   void OnRunningStateChanged(int64_t version_id,
                              EmbeddedWorkerStatus running_status) override {
-    latest_status_ = running_status;
+    statuses_in_past_.push_back(running_status);
     if (expected_status_.has_value() &&
         running_status == expected_status_.value()) {
       std::move(callback_).Run();
@@ -132,14 +138,12 @@ class ServiceWorkerStatusObserver : public ServiceWorkerContextCoreObserver {
   }
 
   base::Optional<EmbeddedWorkerStatus> expected_status_;
-  EmbeddedWorkerStatus latest_status_;
+  std::vector<EmbeddedWorkerStatus> statuses_in_past_;
   base::OnceClosure callback_;
 };
 
 }  // namespace
 
-// This test source has been excluded from Android as Android doesn't have
-// out-of-process Network Service.
 class NetworkServiceRestartBrowserTest : public ContentBrowserTest {
  public:
   NetworkServiceRestartBrowserTest() {
@@ -298,6 +302,8 @@ class NetworkServiceRestartBrowserTest : public ContentBrowserTest {
 
 IN_PROC_BROWSER_TEST_F(NetworkServiceRestartBrowserTest,
                        NetworkServiceProcessRecovery) {
+  if (IsNetworkServiceRunningInProcess())
+    return;
   network::mojom::NetworkContextPtr network_context = CreateNetworkContext();
   EXPECT_EQ(net::OK, LoadBasicRequest(network_context.get(), GetTestURL()));
   EXPECT_TRUE(network_context.is_bound());
@@ -330,15 +336,17 @@ void IncrementInt(int* i) {
 // This test verifies basic functionality of RegisterNetworkServiceCrashHandler
 // and UnregisterNetworkServiceCrashHandler.
 IN_PROC_BROWSER_TEST_F(NetworkServiceRestartBrowserTest, CrashHandlers) {
+  if (IsNetworkServiceRunningInProcess())
+    return;
   network::mojom::NetworkContextPtr network_context = CreateNetworkContext();
   EXPECT_TRUE(network_context.is_bound());
 
   // Register 2 crash handlers.
   int counter1 = 0;
   int counter2 = 0;
-  NetworkServiceCrashHandlerId handler_id1 = RegisterNetworkServiceCrashHandler(
+  auto handler1 = RegisterNetworkServiceCrashHandler(
       base::BindRepeating(&IncrementInt, base::Unretained(&counter1)));
-  NetworkServiceCrashHandlerId handler_id2 = RegisterNetworkServiceCrashHandler(
+  auto handler2 = RegisterNetworkServiceCrashHandler(
       base::BindRepeating(&IncrementInt, base::Unretained(&counter2)));
 
   // Crash the NetworkService process.
@@ -359,7 +367,7 @@ IN_PROC_BROWSER_TEST_F(NetworkServiceRestartBrowserTest, CrashHandlers) {
   EXPECT_TRUE(network_context.is_bound());
 
   // Unregister one of the handlers.
-  UnregisterNetworkServiceCrashHandler(handler_id2);
+  handler2.reset();
 
   // Crash the NetworkService process.
   SimulateNetworkServiceCrash();
@@ -373,15 +381,14 @@ IN_PROC_BROWSER_TEST_F(NetworkServiceRestartBrowserTest, CrashHandlers) {
   // Verify only the first crash handler executed.
   EXPECT_EQ(2, counter1);
   EXPECT_EQ(1, counter2);
-
-  // Test cleanup.
-  UnregisterNetworkServiceCrashHandler(handler_id1);
 }
 
 // Make sure |StoragePartitionImpl::GetNetworkContext()| returns valid interface
 // after crash.
 IN_PROC_BROWSER_TEST_F(NetworkServiceRestartBrowserTest,
                        StoragePartitionImplGetNetworkContext) {
+  if (IsNetworkServiceRunningInProcess())
+    return;
   StoragePartitionImpl* partition = static_cast<StoragePartitionImpl*>(
       BrowserContext::GetDefaultStoragePartition(browser_context()));
 
@@ -405,6 +412,8 @@ IN_PROC_BROWSER_TEST_F(NetworkServiceRestartBrowserTest,
 // Make sure |URLLoaderFactoryGetter| returns valid interface after crash.
 IN_PROC_BROWSER_TEST_F(NetworkServiceRestartBrowserTest,
                        URLLoaderFactoryGetterGetNetworkFactory) {
+  if (IsNetworkServiceRunningInProcess())
+    return;
   StoragePartitionImpl* partition = static_cast<StoragePartitionImpl*>(
       BrowserContext::GetDefaultStoragePartition(browser_context()));
   scoped_refptr<URLLoaderFactoryGetter> url_loader_factory_getter =
@@ -433,6 +442,8 @@ IN_PROC_BROWSER_TEST_F(NetworkServiceRestartBrowserTest,
 // crashes.
 IN_PROC_BROWSER_TEST_F(NetworkServiceRestartBrowserTest,
                        BrowserIOSharedURLLoaderFactory) {
+  if (IsNetworkServiceRunningInProcess())
+    return;
   StoragePartitionImpl* partition = static_cast<StoragePartitionImpl*>(
       BrowserContext::GetDefaultStoragePartition(browser_context()));
 
@@ -458,6 +469,8 @@ IN_PROC_BROWSER_TEST_F(NetworkServiceRestartBrowserTest,
 // it's called after the StoragePartition is deleted.
 IN_PROC_BROWSER_TEST_F(NetworkServiceRestartBrowserTest,
                        BrowserIOSharedFactoryAfterStoragePartitionGone) {
+  if (IsNetworkServiceRunningInProcess())
+    return;
   base::ScopedAllowBlockingForTesting allow_blocking;
   std::unique_ptr<ShellBrowserContext> browser_context =
       std::make_unique<ShellBrowserContext>(true, nullptr);
@@ -477,6 +490,8 @@ IN_PROC_BROWSER_TEST_F(NetworkServiceRestartBrowserTest,
 // Make sure basic navigation works after crash.
 IN_PROC_BROWSER_TEST_F(NetworkServiceRestartBrowserTest,
                        NavigationURLLoaderBasic) {
+  if (IsNetworkServiceRunningInProcess())
+    return;
   StoragePartitionImpl* partition = static_cast<StoragePartitionImpl*>(
       BrowserContext::GetDefaultStoragePartition(browser_context()));
 
@@ -497,6 +512,8 @@ IN_PROC_BROWSER_TEST_F(NetworkServiceRestartBrowserTest,
 
 // Make sure basic XHR works after crash.
 IN_PROC_BROWSER_TEST_F(NetworkServiceRestartBrowserTest, BasicXHR) {
+  if (IsNetworkServiceRunningInProcess())
+    return;
   StoragePartitionImpl* partition = static_cast<StoragePartitionImpl*>(
       BrowserContext::GetDefaultStoragePartition(browser_context()));
 
@@ -522,6 +539,8 @@ IN_PROC_BROWSER_TEST_F(NetworkServiceRestartBrowserTest, BasicXHR) {
 // |StoragePartition::GetURLLoaderFactoryForBrowserProcess()| continues to work
 // after crashes.
 IN_PROC_BROWSER_TEST_F(NetworkServiceRestartBrowserTest, BrowserUIFactory) {
+  if (IsNetworkServiceRunningInProcess())
+    return;
   auto* partition =
       BrowserContext::GetDefaultStoragePartition(browser_context());
   auto* factory = partition->GetURLLoaderFactoryForBrowserProcess().get();
@@ -540,6 +559,8 @@ IN_PROC_BROWSER_TEST_F(NetworkServiceRestartBrowserTest, BrowserUIFactory) {
 // it's called after the StoragePartition is deleted.
 IN_PROC_BROWSER_TEST_F(NetworkServiceRestartBrowserTest,
                        BrowserUIFactoryAfterStoragePartitionGone) {
+  if (IsNetworkServiceRunningInProcess())
+    return;
   base::ScopedAllowBlockingForTesting allow_blocking;
   std::unique_ptr<ShellBrowserContext> browser_context =
       std::make_unique<ShellBrowserContext>(true, nullptr);
@@ -567,6 +588,8 @@ IN_PROC_BROWSER_TEST_F(NetworkServiceRestartBrowserTest,
 #endif
 IN_PROC_BROWSER_TEST_F(NetworkServiceRestartBrowserTest,
                        MAYBE_BrowserIOFactoryInfo) {
+  if (IsNetworkServiceRunningInProcess())
+    return;
   auto* partition =
       BrowserContext::GetDefaultStoragePartition(browser_context());
   auto shared_url_loader_factory_info =
@@ -589,6 +612,8 @@ IN_PROC_BROWSER_TEST_F(NetworkServiceRestartBrowserTest,
 // |StoragePartition::GetURLLoaderFactoryForBrowserProcessIOThread()| continues
 // to work after crashes.
 IN_PROC_BROWSER_TEST_F(NetworkServiceRestartBrowserTest, BrowserIOFactory) {
+  if (IsNetworkServiceRunningInProcess())
+    return;
   auto* partition =
       BrowserContext::GetDefaultStoragePartition(browser_context());
   auto factory_owner = IOThreadSharedURLLoaderFactoryOwner::Create(
@@ -608,6 +633,8 @@ IN_PROC_BROWSER_TEST_F(NetworkServiceRestartBrowserTest, BrowserIOFactory) {
 
 // Make sure the window from |window.open()| can load XHR after crash.
 IN_PROC_BROWSER_TEST_F(NetworkServiceRestartBrowserTest, WindowOpenXHR) {
+  if (IsNetworkServiceRunningInProcess())
+    return;
   StoragePartitionImpl* partition = static_cast<StoragePartitionImpl*>(
       BrowserContext::GetDefaultStoragePartition(browser_context()));
 
@@ -631,6 +658,8 @@ IN_PROC_BROWSER_TEST_F(NetworkServiceRestartBrowserTest, WindowOpenXHR) {
 
 // Make sure worker fetch works after crash.
 IN_PROC_BROWSER_TEST_F(NetworkServiceRestartBrowserTest, WorkerFetch) {
+  if (IsNetworkServiceRunningInProcess())
+    return;
   StoragePartitionImpl* partition = static_cast<StoragePartitionImpl*>(
       BrowserContext::GetDefaultStoragePartition(browser_context()));
 
@@ -654,6 +683,8 @@ IN_PROC_BROWSER_TEST_F(NetworkServiceRestartBrowserTest, WorkerFetch) {
 
 // Make sure multiple workers are tracked correctly and work after crash.
 IN_PROC_BROWSER_TEST_F(NetworkServiceRestartBrowserTest, MultipleWorkerFetch) {
+  if (IsNetworkServiceRunningInProcess())
+    return;
   StoragePartitionImpl* partition = static_cast<StoragePartitionImpl*>(
       BrowserContext::GetDefaultStoragePartition(browser_context()));
 
@@ -691,19 +722,12 @@ IN_PROC_BROWSER_TEST_F(NetworkServiceRestartBrowserTest, MultipleWorkerFetch) {
   EXPECT_EQ(last_request_relative_url(), "/title2.html");
 }
 
-// Flaky on Linux TSan (https://crbug.com/889855)
-#if defined(OS_LINUX) && defined(THREAD_SANITIZER)
-#define MAYBE_FetchFromServiceWorkerControlledPage_NoFetchHandler \
-  DISABLED_FetchFromServiceWorkerControlledPage_NoFetchHandler
-#else
-#define MAYBE_FetchFromServiceWorkerControlledPage_NoFetchHandler \
-  FetchFromServiceWorkerControlledPage_NoFetchHandler
-#endif
 // Make sure fetch from a page controlled by a service worker which doesn't have
 // a fetch handler works after crash.
-IN_PROC_BROWSER_TEST_F(
-    NetworkServiceRestartBrowserTest,
-    MAYBE_FetchFromServiceWorkerControlledPage_NoFetchHandler) {
+IN_PROC_BROWSER_TEST_F(NetworkServiceRestartBrowserTest,
+                       FetchFromServiceWorkerControlledPage_NoFetchHandler) {
+  if (IsNetworkServiceRunningInProcess())
+    return;
   StoragePartitionImpl* partition = static_cast<StoragePartitionImpl*>(
       BrowserContext::GetDefaultStoragePartition(browser_context()));
   ServiceWorkerStatusObserver observer;
@@ -741,18 +765,12 @@ IN_PROC_BROWSER_TEST_F(
   service_worker_context->RemoveObserver(&observer);
 }
 
-// Flaky on Linux TSan (https://crbug.com/889855)
-#if defined(OS_LINUX) && defined(THREAD_SANITIZER)
-#define MAYBE_FetchFromServiceWorkerControlledPage_PassThrough \
-  DISABLED_FetchFromServiceWorkerControlledPage_PassThrough
-#else
-#define MAYBE_FetchFromServiceWorkerControlledPage_PassThrough \
-  FetchFromServiceWorkerControlledPage_PassThrough
-#endif
 // Make sure fetch from a page controlled by a service worker which has a fetch
 // handler but falls back to the network works after crash.
 IN_PROC_BROWSER_TEST_F(NetworkServiceRestartBrowserTest,
-                       MAYBE_FetchFromServiceWorkerControlledPage_PassThrough) {
+                       FetchFromServiceWorkerControlledPage_PassThrough) {
+  if (IsNetworkServiceRunningInProcess())
+    return;
   StoragePartitionImpl* partition = static_cast<StoragePartitionImpl*>(
       BrowserContext::GetDefaultStoragePartition(browser_context()));
   ServiceWorkerStatusObserver observer;
@@ -790,19 +808,12 @@ IN_PROC_BROWSER_TEST_F(NetworkServiceRestartBrowserTest,
   service_worker_context->RemoveObserver(&observer);
 }
 
-// Flaky on Linux TSan (https://crbug.com/889855)
-#if defined(OS_LINUX) && defined(THREAD_SANITIZER)
-#define MAYBE_FetchFromServiceWorkerControlledPage_RespondWithFetch \
-  DISABLED_FetchFromServiceWorkerControlledPage_RespondWithFetch
-#else
-#define MAYBE_FetchFromServiceWorkerControlledPage_RespondWithFetch \
-  FetchFromServiceWorkerControlledPage_RespondWithFetch
-#endif
 // Make sure fetch from a page controlled by a service worker which has a fetch
 // handler and responds with fetch() works after crash.
-IN_PROC_BROWSER_TEST_F(
-    NetworkServiceRestartBrowserTest,
-    MAYBE_FetchFromServiceWorkerControlledPage_RespondWithFetch) {
+IN_PROC_BROWSER_TEST_F(NetworkServiceRestartBrowserTest,
+                       FetchFromServiceWorkerControlledPage_RespondWithFetch) {
+  if (IsNetworkServiceRunningInProcess())
+    return;
   StoragePartitionImpl* partition = static_cast<StoragePartitionImpl*>(
       BrowserContext::GetDefaultStoragePartition(browser_context()));
   ServiceWorkerStatusObserver observer;
@@ -843,6 +854,8 @@ IN_PROC_BROWSER_TEST_F(
 
 // Make sure fetch from service worker context works after crash.
 IN_PROC_BROWSER_TEST_F(NetworkServiceRestartBrowserTest, ServiceWorkerFetch) {
+  if (IsNetworkServiceRunningInProcess())
+    return;
   StoragePartitionImpl* partition = static_cast<StoragePartitionImpl*>(
       BrowserContext::GetDefaultStoragePartition(browser_context()));
   ServiceWorkerStatusObserver observer;
@@ -878,8 +891,16 @@ IN_PROC_BROWSER_TEST_F(NetworkServiceRestartBrowserTest, ServiceWorkerFetch) {
   service_worker_context->RemoveObserver(&observer);
 }
 
+// TODO(crbug.com/154571): Shared workers are not available on Android.
+#if defined(OS_ANDROID)
+#define MAYBE_SharedWorker DISABLED_SharedWorker
+#else
+#define MAYBE_SharedWorker SharedWorker
+#endif
 // Make sure shared workers terminate after crash.
-IN_PROC_BROWSER_TEST_F(NetworkServiceRestartBrowserTest, SharedWorker) {
+IN_PROC_BROWSER_TEST_F(NetworkServiceRestartBrowserTest, MAYBE_SharedWorker) {
+  if (IsNetworkServiceRunningInProcess())
+    return;
   StoragePartitionImpl* partition = static_cast<StoragePartitionImpl*>(
       BrowserContext::GetDefaultStoragePartition(browser_context()));
 
@@ -913,6 +934,8 @@ IN_PROC_BROWSER_TEST_F(NetworkServiceRestartBrowserTest, SharedWorker) {
 // after process closed.
 IN_PROC_BROWSER_TEST_F(NetworkServiceRestartBrowserTest,
                        GetNetworkUsagesClosed) {
+  if (IsNetworkServiceRunningInProcess())
+    return;
   EXPECT_TRUE(NavigateToURL(shell(), GetTestURL()));
   Shell* shell2 = CreateBrowser();
   EXPECT_TRUE(NavigateToURL(shell2, GetTestURL()));
@@ -953,6 +976,8 @@ IN_PROC_BROWSER_TEST_F(NetworkServiceRestartBrowserTest,
 // crash. See 'network_usage_accumulator_unittest' for quantified tests.
 IN_PROC_BROWSER_TEST_F(NetworkServiceRestartBrowserTest,
                        GetNetworkUsagesCrashed) {
+  if (IsNetworkServiceRunningInProcess())
+    return;
   EXPECT_TRUE(NavigateToURL(shell(), GetTestURL()));
   Shell* shell2 = CreateBrowser();
   EXPECT_TRUE(NavigateToURL(shell2, GetTestURL()));
@@ -986,6 +1011,8 @@ IN_PROC_BROWSER_TEST_F(NetworkServiceRestartBrowserTest,
 
 // Make sure cookie access doesn't hang or fail after a network process crash.
 IN_PROC_BROWSER_TEST_F(NetworkServiceRestartBrowserTest, Cookies) {
+  if (IsNetworkServiceRunningInProcess())
+    return;
   auto* web_contents = shell()->web_contents();
   ASSERT_TRUE(
       NavigateToURL(shell(), embedded_test_server()->GetURL("/title1.html")));
@@ -1027,6 +1054,8 @@ IN_PROC_BROWSER_TEST_F(NetworkServiceRestartBrowserTest, Cookies) {
 // Make sure that "trusted" plugins continue to be able to issue cross-origin
 // requests after a network process crash.
 IN_PROC_BROWSER_TEST_F(NetworkServiceRestartBrowserTest, Plugin) {
+  if (IsNetworkServiceRunningInProcess())
+    return;
   auto* web_contents = shell()->web_contents();
   ASSERT_TRUE(NavigateToURL(web_contents,
                             embedded_test_server()->GetURL("/title1.html")));
@@ -1086,5 +1115,33 @@ IN_PROC_BROWSER_TEST_F(NetworkServiceRestartBrowserTest, Plugin) {
       EvalJs(web_contents, fetch_script));
 }
 #endif
+
+// TODO(crbug.com/901026): Fix deadlock on process startup on Android.
+#if defined(OS_ANDROID)
+#define MAYBE_SyncCallDuringRestart DISABLED_SyncCallDuringRestart
+#else
+#define MAYBE_SyncCallDuringRestart SyncCallDuringRestart
+#endif
+IN_PROC_BROWSER_TEST_F(NetworkServiceRestartBrowserTest,
+                       MAYBE_SyncCallDuringRestart) {
+  if (IsNetworkServiceRunningInProcess())
+    return;
+  network::mojom::NetworkServiceTestPtr network_service_test;
+  base::RunLoop run_loop;
+  ServiceManagerConnection::GetForProcess()->GetConnector()->BindInterface(
+      mojom::kNetworkServiceName, &network_service_test);
+
+  // Crash the network service, but do not wait for full startup.
+  network_service_test.set_connection_error_handler(run_loop.QuitClosure());
+  network_service_test->SimulateCrash();
+  run_loop.Run();
+
+  ServiceManagerConnection::GetForProcess()->GetConnector()->BindInterface(
+      mojom::kNetworkServiceName, &network_service_test);
+
+  // Sync call should be fine, even though network process is still starting up.
+  mojo::ScopedAllowSyncCallForTesting allow_sync_call;
+  network_service_test->AddRules({});
+}
 
 }  // namespace content

@@ -27,6 +27,14 @@ import java.nio.file.Paths;
 import java.nio.file.StandardCopyOption;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collection;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.Future;
 import java.util.zip.CRC32;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipInputStream;
@@ -44,76 +52,114 @@ class ByteCodeProcessor {
     private static final String CLASS_FILE_SUFFIX = ".class";
     private static final String TEMPORARY_FILE_SUFFIX = ".temp";
     private static final int BUFFER_SIZE = 16384;
+    private static boolean sVerbose;
+    private static boolean sIsPrebuilt;
+    private static boolean sShouldAssert;
+    private static boolean sShouldUseCustomResources;
+    private static boolean sShouldUseThreadAnnotations;
+    private static boolean sShouldCheckClassPath;
+    private static ClassLoader sDirectClassPathClassLoader;
+    private static ClassLoader sFullClassPathClassLoader;
+    private static Set<String> sFullClassPathJarPaths;
+    private static ClassPathValidator sValidator;
 
-    private static void writeZipEntry(ZipOutputStream zipStream, String zipPath, byte[] data)
-            throws IOException {
-        ZipEntry entry = new ZipEntry(zipPath);
-        entry.setMethod(ZipEntry.STORED);
-        entry.setTime(0);
-        entry.setSize(data.length);
-        CRC32 crc = new CRC32();
-        crc.update(data);
-        entry.setCrc(crc.getValue());
-        zipStream.putNextEntry(entry);
-        zipStream.write(data);
-        zipStream.closeEntry();
+    private static class EntryDataPair {
+        private final ZipEntry mEntry;
+        private final byte[] mData;
+
+        private EntryDataPair(ZipEntry mEntry, byte[] mData) {
+            this.mEntry = mEntry;
+            this.mData = mData;
+        }
+
+        private static EntryDataPair create(String zipPath, byte[] data) {
+            ZipEntry entry = new ZipEntry(zipPath);
+            entry.setMethod(ZipEntry.STORED);
+            entry.setTime(0);
+            entry.setSize(data.length);
+            CRC32 crc = new CRC32();
+            crc.update(data);
+            entry.setCrc(crc.getValue());
+            return new EntryDataPair(entry, data);
+        }
     }
 
-    private static void process(String inputJarPath, String outputJarPath, boolean shouldAssert,
-            boolean shouldUseCustomResources, boolean shouldUseThreadAnnotations,
-            ClassLoader classPathJarsClassLoader) {
+    private static EntryDataPair processEntry(ZipEntry entry, byte[] data)
+            throws ClassPathValidator.ClassNotLoadedException {
+        // Copy all non-.class files to the output jar.
+        if (entry.isDirectory() || !entry.getName().endsWith(CLASS_FILE_SUFFIX)) {
+            return new EntryDataPair(entry, data);
+        }
+
+        ClassReader reader = new ClassReader(data);
+
+        if (sShouldCheckClassPath) {
+            sValidator.validateClassPathsAndOutput(reader, sDirectClassPathClassLoader,
+                    sFullClassPathClassLoader, sFullClassPathJarPaths, sIsPrebuilt, sVerbose);
+        }
+
+        ClassWriter writer;
+        if (sShouldUseCustomResources) {
+            // Use the COMPUTE_FRAMES flag to have asm figure out the stack map frames.
+            // This is necessary because GCMBaseIntentService in android_gcm_java contains
+            // incorrect stack map frames. This option slows down processing time by 2x.
+            writer = new CustomClassLoaderClassWriter(
+                    sFullClassPathClassLoader, reader, COMPUTE_FRAMES);
+        } else {
+            writer = new ClassWriter(reader, 0);
+        }
+        ClassVisitor chain = writer;
+        /* DEBUGGING:
+         To see the bytecode for a specific class:
+           if (entry.getName().contains("YourClassName")) {
+             chain = new TraceClassVisitor(chain, new PrintWriter(System.out));
+           }
+         To see objectweb.asm code that will generate bytecode for a given class:
+           java -cp "third_party/ow2_asm/lib/asm-5.0.1.jar:third_party/ow2_asm/lib/"\
+               "asm-util-5.0.1.jar:out/Debug/lib.java/jar_containing_yourclass.jar" \
+               org.objectweb.asm.util.ASMifier org.package.YourClassName
+        */
+        if (sShouldUseThreadAnnotations) {
+            chain = new ThreadAssertionClassAdapter(chain);
+        }
+        if (sShouldAssert) {
+            chain = new AssertionEnablerClassAdapter(chain);
+        }
+        if (sShouldUseCustomResources) {
+            chain = new CustomResourcesClassAdapter(
+                    chain, reader.getClassName(), reader.getSuperName(), sFullClassPathClassLoader);
+        }
+        reader.accept(chain, 0);
+        byte[] patchedByteCode = writer.toByteArray();
+        return EntryDataPair.create(entry.getName(), patchedByteCode);
+    }
+
+    private static void process(String inputJarPath, String outputJarPath)
+            throws ClassPathValidator.ClassNotLoadedException, ExecutionException,
+                   InterruptedException {
         String tempJarPath = outputJarPath + TEMPORARY_FILE_SUFFIX;
+        ExecutorService executorService =
+                Executors.newFixedThreadPool(Runtime.getRuntime().availableProcessors());
         try (ZipInputStream inputStream = new ZipInputStream(
                      new BufferedInputStream(new FileInputStream(inputJarPath)));
                 ZipOutputStream tempStream = new ZipOutputStream(
                         new BufferedOutputStream(new FileOutputStream(tempJarPath)))) {
-            ZipEntry entry;
-
-            while ((entry = inputStream.getNextEntry()) != null) {
-                // Copy all non-.class files to the output jar.
-                if (entry.isDirectory() || !entry.getName().endsWith(CLASS_FILE_SUFFIX)) {
-                    tempStream.putNextEntry(entry);
-                    tempStream.write(readAllBytes(inputStream));
-                    tempStream.closeEntry();
-                    continue;
+            List<Future<EntryDataPair>> list = new ArrayList<>();
+            while (true) {
+                ZipEntry entry = inputStream.getNextEntry();
+                if (entry == null) {
+                    break;
                 }
-
-                ClassReader reader = new ClassReader(readAllBytes(inputStream));
-
-                ClassWriter writer;
-                if (shouldUseCustomResources) {
-                    // Use the COMPUTE_FRAMES flag to have asm figure out the stack map frames.
-                    // This is necessary because GCMBaseIntentService in android_gcm_java contains
-                    // incorrect stack map frames. This option slows down processing time by 2x.
-                    writer = new CustomClassLoaderClassWriter(
-                            classPathJarsClassLoader, reader, COMPUTE_FRAMES);
-                } else {
-                    writer = new ClassWriter(reader, 0);
-                }
-                ClassVisitor chain = writer;
-                /* DEBUGGING:
-                 To see the bytecode for a specific class:
-                   if (entry.getName().contains("YourClassName")) {
-                     chain = new TraceClassVisitor(chain, new PrintWriter(System.out));
-                   }
-                 To see objectweb.asm code that will generate bytecode for a given class:
-                   java -cp "third_party/ow2_asm/lib/asm-5.0.1.jar:third_party/ow2_asm/lib/"\
-                       "asm-util-5.0.1.jar:out/Debug/lib.java/jar_containing_yourclass.jar" \
-                       org.objectweb.asm.util.ASMifier org.package.YourClassName
-                */
-                if (shouldUseThreadAnnotations) {
-                    chain = new ThreadAssertionClassAdapter(chain);
-                }
-                if (shouldAssert) {
-                    chain = new AssertionEnablerClassAdapter(chain);
-                }
-                if (shouldUseCustomResources) {
-                    chain = new CustomResourcesClassAdapter(chain, reader.getClassName(),
-                            reader.getSuperName(), classPathJarsClassLoader);
-                }
-                reader.accept(chain, 0);
-                byte[] patchedByteCode = writer.toByteArray();
-                writeZipEntry(tempStream, entry.getName(), patchedByteCode);
+                byte[] data = readAllBytes(inputStream);
+                list.add(executorService.submit(() -> processEntry(entry, data)));
+            }
+            executorService.shutdown(); // This is essential in order to avoid waiting infinitely.
+            // Write the zip file entries in order to preserve determinism.
+            for (Future<EntryDataPair> futurePair : list) {
+                EntryDataPair pair = futurePair.get();
+                tempStream.putNextEntry(pair.mEntry);
+                tempStream.write(pair.mData);
+                tempStream.closeEntry();
             }
         } catch (IOException e) {
             throw new RuntimeException(e);
@@ -124,6 +170,15 @@ class ByteCodeProcessor {
             Files.move(src, dest, StandardCopyOption.REPLACE_EXISTING);
         } catch (IOException ioException) {
             throw new RuntimeException(ioException);
+        }
+
+        if (sValidator.getNumClassPathErrors() > 0) {
+            System.err.println("Missing " + sValidator.getNumClassPathErrors()
+                    + " classes missing in direct classpath. To fix, add GN deps for:");
+            for (String s : sValidator.getClassPathMissingJars()) {
+                System.err.println(s);
+            }
+            System.exit(1);
         }
     }
 
@@ -141,11 +196,12 @@ class ByteCodeProcessor {
      * Loads a list of jars and returns a ClassLoader capable of loading all classes found in the
      * given jars.
      */
-    private static ClassLoader loadJars(ArrayList<String> paths) {
+    static ClassLoader loadJars(Collection<String> paths) {
         URL[] jarUrls = new URL[paths.size()];
-        for (int i = 0; i < paths.size(); ++i) {
+        int i = 0;
+        for (String path : paths) {
             try {
-                jarUrls[i] = new File(paths.get(i)).toURI().toURL();
+                jarUrls[i++] = new File(path).toURI().toURL();
             } catch (MalformedURLException e) {
                 throw new RuntimeException(e);
             }
@@ -153,23 +209,43 @@ class ByteCodeProcessor {
         return new URLClassLoader(jarUrls);
     }
 
-    public static void main(String[] args) {
+    public static void main(String[] args) throws ClassPathValidator.ClassNotLoadedException,
+                                                  ExecutionException, InterruptedException {
         // Invoke this script using //build/android/gyp/bytecode_processor.py
-        String inputJarPath = args[0];
-        String outputJarPath = args[1];
-        boolean shouldAssert = args[2].equals("--enable-assert");
-        boolean shouldUseCustomResources = args[3].equals("--enable-custom-resources");
-        boolean shouldUseThreadAnnotations = args[4].equals("--enable-thread-annotations");
+        int currIndex = 0;
+        String inputJarPath = args[currIndex++];
+        String outputJarPath = args[currIndex++];
+        sVerbose = args[currIndex++].equals("--verbose");
+        sIsPrebuilt = args[currIndex++].equals("--is-prebuilt");
+        sShouldAssert = args[currIndex++].equals("--enable-assert");
+        sShouldUseCustomResources = args[currIndex++].equals("--enable-custom-resources");
+        sShouldUseThreadAnnotations = args[currIndex++].equals("--enable-thread-annotations");
+        sShouldCheckClassPath = args[currIndex++].equals("--enable-check-class-path");
+        int sdkJarsLength = Integer.parseInt(args[currIndex++]);
+        List<String> sdkJarPaths =
+                Arrays.asList(Arrays.copyOfRange(args, currIndex, currIndex + sdkJarsLength));
+        currIndex += sdkJarsLength;
+
+        int directJarsLength = Integer.parseInt(args[currIndex++]);
+        ArrayList<String> directClassPathJarPaths = new ArrayList<>();
+        directClassPathJarPaths.add(inputJarPath);
+        directClassPathJarPaths.addAll(sdkJarPaths);
+        directClassPathJarPaths.addAll(
+                Arrays.asList(Arrays.copyOfRange(args, currIndex, currIndex + directJarsLength)));
+        currIndex += directJarsLength;
+        sDirectClassPathClassLoader = loadJars(directClassPathJarPaths);
 
         // Load all jars that are on the classpath for the input jar for analyzing class hierarchy.
-        ClassLoader classPathJarsClassLoader = null;
-        if (shouldUseCustomResources) {
-            ArrayList<String> classPathJarsPaths = new ArrayList<>();
-            classPathJarsPaths.add(inputJarPath);
-            classPathJarsPaths.addAll(Arrays.asList(Arrays.copyOfRange(args, 4, args.length)));
-            classPathJarsClassLoader = loadJars(classPathJarsPaths);
-        }
-        process(inputJarPath, outputJarPath, shouldAssert, shouldUseCustomResources,
-                shouldUseThreadAnnotations, classPathJarsClassLoader);
+        sFullClassPathJarPaths = new HashSet<>();
+        sFullClassPathJarPaths.clear();
+        sFullClassPathJarPaths.add(inputJarPath);
+        sFullClassPathJarPaths.addAll(sdkJarPaths);
+        sFullClassPathJarPaths.addAll(
+                Arrays.asList(Arrays.copyOfRange(args, currIndex, args.length)));
+        sFullClassPathClassLoader = loadJars(sFullClassPathJarPaths);
+        sFullClassPathJarPaths.removeAll(directClassPathJarPaths);
+
+        sValidator = new ClassPathValidator();
+        process(inputJarPath, outputJarPath);
     }
 }

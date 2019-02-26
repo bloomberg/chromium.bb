@@ -278,8 +278,8 @@ TEST_F(InsertTextCommandTest, AnchorElementWithBlockCrash) {
   // Since the HTML parser rejects it as there are nested <a> elements.
   // We are contructing the remaining DOM manually.
   Element* const anchor = GetDocument().QuerySelector("a");
-  Element* nested_anchor = GetDocument().CreateRawElement(HTMLNames::aTag);
-  Element* iElement = GetDocument().CreateRawElement(HTMLNames::iTag);
+  Element* nested_anchor = GetDocument().CreateRawElement(html_names::kATag);
+  Element* iElement = GetDocument().CreateRawElement(html_names::kITag);
 
   nested_anchor->setAttribute("href", "www");
   iElement->SetInnerHTMLFromString("home");

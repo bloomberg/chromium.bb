@@ -50,12 +50,13 @@ class SingleClientDirectorySyncTest : public SyncTest {
   DISALLOW_COPY_AND_ASSIGN(SingleClientDirectorySyncTest);
 };
 
-void WaitForExistingTasksOnLoop(base::MessageLoop* loop) {
+void WaitForExistingTasksOnTaskRunner(
+    scoped_refptr<base::SingleThreadTaskRunner> task_runner) {
   base::RunLoop run_loop;
   // Post a task to |loop| that will, in turn, post a task back to the current
   // sequenced task runner to quit the nested loop.
-  loop->task_runner()->PostTaskAndReply(FROM_HERE, base::DoNothing(),
-                                        run_loop.QuitClosure());
+  task_runner->PostTaskAndReply(FROM_HERE, base::DoNothing(),
+                                run_loop.QuitClosure());
   run_loop.Run();
 }
 
@@ -86,7 +87,7 @@ IN_PROC_BROWSER_TEST_F(SingleClientDirectorySyncTest,
 
   ASSERT_TRUE(SetupSync()) << "SetupSync() failed.";
   browser_sync::ProfileSyncService* sync_service = GetSyncService(0);
-  FilePath directory_path = sync_service->GetSyncClient()
+  FilePath directory_path = sync_service->GetSyncClientForTest()
                                 ->GetModelTypeStoreService()
                                 ->GetSyncDataPath();
   ASSERT_TRUE(FolderContainsFiles(directory_path));
@@ -98,8 +99,8 @@ IN_PROC_BROWSER_TEST_F(SingleClientDirectorySyncTest,
                                                 run_loop.QuitClosure());
   run_loop.Run();
   // Wait for the directory deletion to finish.
-  base::MessageLoop* sync_loop = sync_service->GetSyncLoopForTest();
-  WaitForExistingTasksOnLoop(sync_loop);
+  WaitForExistingTasksOnTaskRunner(
+      sync_service->GetSyncThreadTaskRunnerForTest());
   ASSERT_FALSE(FolderContainsFiles(directory_path));
 }
 
@@ -117,11 +118,12 @@ IN_PROC_BROWSER_TEST_F(SingleClientDirectorySyncTest,
   // completes.
   browser_sync::ProfileSyncService* sync_service = GetSyncService(0);
   sync_service->FlushDirectory();
-  base::MessageLoop* sync_loop = sync_service->GetSyncLoopForTest();
-  WaitForExistingTasksOnLoop(sync_loop);
+  scoped_refptr<base::SingleThreadTaskRunner> sync_thread_task_runner =
+      sync_service->GetSyncThreadTaskRunnerForTest();
+  WaitForExistingTasksOnTaskRunner(sync_thread_task_runner);
 
   // Now corrupt the database.
-  FilePath directory_path = sync_service->GetSyncClient()
+  FilePath directory_path = sync_service->GetSyncClientForTest()
                                 ->GetModelTypeStoreService()
                                 ->GetSyncDataPath();
   const FilePath sync_db(directory_path.Append(
@@ -153,7 +155,7 @@ IN_PROC_BROWSER_TEST_F(SingleClientDirectorySyncTest,
 
   // Wait until the sync loop has processed any existing tasks and see that the
   // directory no longer exists.
-  WaitForExistingTasksOnLoop(sync_loop);
+  WaitForExistingTasksOnTaskRunner(sync_thread_task_runner);
   ASSERT_FALSE(FolderContainsFiles(directory_path));
 }
 

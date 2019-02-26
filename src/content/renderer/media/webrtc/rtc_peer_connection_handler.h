@@ -27,6 +27,7 @@
 #include "ipc/ipc_platform_file.h"
 #include "third_party/blink/public/platform/web_media_stream_source.h"
 #include "third_party/blink/public/platform/web_rtc_peer_connection_handler.h"
+#include "third_party/blink/public/platform/web_rtc_stats.h"
 #include "third_party/blink/public/platform/web_rtc_stats_request.h"
 #include "third_party/blink/public/platform/web_rtc_stats_response.h"
 
@@ -150,8 +151,8 @@ class CONTENT_EXPORT RTCPeerConnectionHandler
                                        bool result);
 
   void GetStats(const blink::WebRTCStatsRequest& request) override;
-  void GetStats(
-      std::unique_ptr<blink::WebRTCStatsReportCallback> callback) override;
+  void GetStats(std::unique_ptr<blink::WebRTCStatsReportCallback> callback,
+                blink::RTCStatsFilter) override;
   webrtc::RTCErrorOr<std::unique_ptr<blink::WebRTCRtpTransceiver>>
   AddTransceiverWithTrack(const blink::WebMediaStreamTrack& web_track,
                           const webrtc::RtpTransceiverInit& init) override;
@@ -185,9 +186,11 @@ class CONTENT_EXPORT RTCPeerConnectionHandler
   virtual void CloseClientPeerConnection();
 
   // Start recording an event log.
+  // TODO(crbug.com/775415): Remove he version with IPC::PlatformFileForTransit,
+  // since it's no longer used.
   void StartEventLog(IPC::PlatformFileForTransit file,
                      int64_t max_file_size_bytes);
-  void StartEventLog();
+  void StartEventLog(int output_period_ms);
   // Stop recording an event log.
   void StopEventLog();
 
@@ -210,6 +213,8 @@ class CONTENT_EXPORT RTCPeerConnectionHandler
       webrtc::PeerConnectionInterface::SignalingState new_state);
   void OnIceConnectionChange(
       webrtc::PeerConnectionInterface::IceConnectionState new_state);
+  void OnConnectionChange(
+      webrtc::PeerConnectionInterface::PeerConnectionState new_state);
   void OnIceGatheringChange(
       webrtc::PeerConnectionInterface::IceGatheringState new_state);
   void OnRenegotiationNeeded();

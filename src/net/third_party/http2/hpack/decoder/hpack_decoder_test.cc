@@ -21,8 +21,8 @@
 #include "net/third_party/http2/hpack/tools/hpack_example.h"
 #include "net/third_party/http2/http2_constants.h"
 #include "net/third_party/http2/platform/api/http2_string.h"
-#include "net/third_party/http2/tools/failure.h"
-#include "net/third_party/http2/tools/http2_random.h"
+#include "net/third_party/http2/platform/api/http2_test_helpers.h"
+#include "net/third_party/http2/test_tools/http2_random.h"
 #include "net/third_party/http2/tools/random_util.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -145,8 +145,7 @@ class HpackDecoderTest : public ::testing::TestWithParam<bool>,
     if (fragment_the_hpack_block_) {
       // See note in ctor regarding RNG.
       while (!block.empty()) {
-        size_t fragment_size =
-            GenerateRandomSizeSkewedLow(block.size(), &random_);
+        size_t fragment_size = random_.RandomSizeSkewedLow(block.size());
         DecodeBuffer db(block.substr(0, fragment_size));
         VERIFY_TRUE(decoder_.DecodeFragment(&db));
         VERIFY_EQ(0u, db.Remaining());

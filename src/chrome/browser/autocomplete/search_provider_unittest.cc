@@ -39,7 +39,6 @@
 #include "components/omnibox/browser/autocomplete_provider_listener.h"
 #include "components/omnibox/browser/history_url_provider.h"
 #include "components/omnibox/browser/omnibox_field_trial.h"
-#include "components/omnibox/browser/omnibox_switches.h"
 #include "components/omnibox/browser/suggestion_answer.h"
 #include "components/prefs/pref_service.h"
 #include "components/search_engines/search_engine_type.h"
@@ -3528,8 +3527,8 @@ TEST_F(SearchProviderTest, AnswersCache) {
   AutocompleteResult result;
   ACMatches matches;
   AutocompleteMatch match1;
-  match1.answer_contents = base::ASCIIToUTF16("m1");
-  match1.answer_type = base::ASCIIToUTF16("2334");
+  match1.answer = SuggestionAnswer();
+  match1.answer->set_type(2334);
   match1.fill_into_edit = base::ASCIIToUTF16("weather los angeles");
 
   AutocompleteMatch non_answer_match1;
@@ -3545,7 +3544,7 @@ TEST_F(SearchProviderTest, AnswersCache) {
   // Without scored results, no answers will be retrieved.
   AnswersQueryData answer = provider_->FindAnswersPrefetchData();
   EXPECT_TRUE(answer.full_query_text.empty());
-  EXPECT_TRUE(answer.query_type.empty());
+  EXPECT_EQ(-1, answer.query_type);
 
   // Inject a scored result, which will trigger answer retrieval.
   base::string16 query = base::ASCIIToUTF16("weather los angeles");
@@ -3558,7 +3557,7 @@ TEST_F(SearchProviderTest, AnswersCache) {
   provider_->transformed_default_history_results_.push_back(suggest_result);
   answer = provider_->FindAnswersPrefetchData();
   EXPECT_EQ(base::ASCIIToUTF16("weather los angeles"), answer.full_query_text);
-  EXPECT_EQ(base::ASCIIToUTF16("2334"), answer.query_type);
+  EXPECT_EQ(2334, answer.query_type);
 }
 
 TEST_F(SearchProviderTest, RemoveExtraAnswers) {
@@ -3572,14 +3571,8 @@ TEST_F(SearchProviderTest, RemoveExtraAnswers) {
   ACMatches matches;
   AutocompleteMatch match1, match2, match3, match4, match5;
   match1.answer = answer1;
-  match1.answer_contents = base::ASCIIToUTF16("the answer");
-  match1.answer_type = base::ASCIIToUTF16("42");
   match3.answer = answer2;
-  match3.answer_contents = base::ASCIIToUTF16("not to play");
-  match3.answer_type = base::ASCIIToUTF16("1983");
   match5.answer = answer3;
-  match5.answer_contents = base::ASCIIToUTF16("a person");
-  match5.answer_type = base::ASCIIToUTF16("423");
 
   matches.push_back(match1);
   matches.push_back(match2);
@@ -3588,20 +3581,11 @@ TEST_F(SearchProviderTest, RemoveExtraAnswers) {
   matches.push_back(match5);
 
   SearchProvider::RemoveExtraAnswers(&matches);
-  EXPECT_EQ(base::ASCIIToUTF16("the answer"), matches[0].answer_contents);
-  EXPECT_EQ(base::ASCIIToUTF16("42"), matches[0].answer_type);
+  EXPECT_EQ(42, matches[0].answer->type());
   EXPECT_TRUE(answer1.Equals(*matches[0].answer));
-  EXPECT_TRUE(matches[1].answer_contents.empty());
-  EXPECT_TRUE(matches[1].answer_type.empty());
   EXPECT_FALSE(matches[1].answer);
-  EXPECT_TRUE(matches[2].answer_contents.empty());
-  EXPECT_TRUE(matches[2].answer_type.empty());
   EXPECT_FALSE(matches[2].answer);
-  EXPECT_TRUE(matches[3].answer_contents.empty());
-  EXPECT_TRUE(matches[3].answer_type.empty());
   EXPECT_FALSE(matches[3].answer);
-  EXPECT_TRUE(matches[4].answer_contents.empty());
-  EXPECT_TRUE(matches[4].answer_type.empty());
   EXPECT_FALSE(matches[4].answer);
 }
 
@@ -3615,31 +3599,6 @@ TEST_F(SearchProviderTest, DoesNotProvideOnFocus) {
   EXPECT_TRUE(provider_->matches().empty());
 }
 
-// SearchProviderWarmUpTest --------------------------------------------------
-//
-// Like SearchProviderTest.  The only addition is that it's a
-// TestWithParam<bool>, where the boolean parameter represents whether the
-// omnibox::kSearchProviderWarmUpOnFocus feature flag should be enabled.
-class SearchProviderWarmUpTest : public SearchProviderTest,
-                                 public testing::WithParamInterface<bool> {
- public:
-  SearchProviderWarmUpTest() {}
-  void SetUp() override;
-
- protected:
-  base::test::ScopedFeatureList feature_list_;
-
-  DISALLOW_COPY_AND_ASSIGN(SearchProviderWarmUpTest);
-};
-
-void SearchProviderWarmUpTest::SetUp() {
-  if (GetParam())
-    feature_list_.InitAndEnableFeature(omnibox::kSearchProviderWarmUpOnFocus);
-  else
-    feature_list_.InitAndDisableFeature(omnibox::kSearchProviderWarmUpOnFocus);
-  SearchProviderTest::SetUp();
-}
-
 #if defined(THREAD_SANITIZER)
 // SearchProviderTest.SendsWarmUpRequestOnFocus is flaky on Linux TSan Tests
 // crbug.com/891959.
@@ -3647,22 +3606,30 @@ void SearchProviderWarmUpTest::SetUp() {
 #else
 #define MAYBE_SendsWarmUpRequestOnFocus SendsWarmUpRequestOnFocus
 #endif  // defined(THREAD_SANITIZER)
-TEST_P(SearchProviderWarmUpTest, MAYBE_SendsWarmUpRequestOnFocus) {
+TEST_F(SearchProviderTest, MAYBE_SendsWarmUpRequestOnFocus) {
   AutocompleteInput input(base::ASCIIToUTF16("f"),
                           metrics::OmniboxEventProto::OTHER,
                           ChromeAutocompleteSchemeClassifier(&profile_));
   input.set_prefer_keyword(true);
   input.set_from_omnibox_focus(true);
 
-  if (!GetParam()) {  // The warm-up feature ought to be disabled.
-    // The provider immediately terminates with no matches.
+  {
+    // First, verify that without the warm-up feature enabled, the provider
+    // immediately terminates with no matches.
+    base::test::ScopedFeatureList feature_list;
+    feature_list.InitAndDisableFeature(omnibox::kSearchProviderWarmUpOnFocus);
     provider_->Start(input, false);
     // RunUntilIdle so that SearchProvider has a chance to create the
     // URLFetchers (if it wants to, which it shouldn't in this case).
     base::RunLoop().RunUntilIdle();
     EXPECT_TRUE(provider_->done());
     EXPECT_TRUE(provider_->matches().empty());
-  } else {  // The warm-up feature ought to be enabled.
+  }
+
+  {
+    // Then, check the behavior with the warm-up feature enabled.
+    base::test::ScopedFeatureList feature_list;
+    feature_list.InitAndEnableFeature(omnibox::kSearchProviderWarmUpOnFocus);
     provider_->Start(input, false);
     // RunUntilIdle so that SearchProvider create the URLFetcher.
     base::RunLoop().RunUntilIdle();
@@ -3680,7 +3647,3 @@ TEST_P(SearchProviderWarmUpTest, MAYBE_SendsWarmUpRequestOnFocus) {
     EXPECT_TRUE(provider_->matches().empty());
   }
 }
-
-INSTANTIATE_TEST_CASE_P(SearchProviderTest,
-                        SearchProviderWarmUpTest,
-                        testing::Values(false, true));

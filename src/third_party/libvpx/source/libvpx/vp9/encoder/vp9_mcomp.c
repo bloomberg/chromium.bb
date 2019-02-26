@@ -367,14 +367,12 @@ static void get_cost_surf_min(int *cost_list, int *ir, int *ic, int bits) {
   *ir = (int)divide_and_round(x1 * b, y1);
 }
 
-uint32_t vp9_skip_sub_pixel_tree(const MACROBLOCK *x, MV *bestmv,
-                                 const MV *ref_mv, int allow_hp,
-                                 int error_per_bit,
-                                 const vp9_variance_fn_ptr_t *vfp,
-                                 int forced_stop, int iters_per_step,
-                                 int *cost_list, int *mvjcost, int *mvcost[2],
-                                 uint32_t *distortion, uint32_t *sse1,
-                                 const uint8_t *second_pred, int w, int h) {
+uint32_t vp9_skip_sub_pixel_tree(
+    const MACROBLOCK *x, MV *bestmv, const MV *ref_mv, int allow_hp,
+    int error_per_bit, const vp9_variance_fn_ptr_t *vfp, int forced_stop,
+    int iters_per_step, int *cost_list, int *mvjcost, int *mvcost[2],
+    uint32_t *distortion, uint32_t *sse1, const uint8_t *second_pred, int w,
+    int h, int use_accurate_subpel_search) {
   SETUP_SUBPEL_SEARCH;
   besterr = setup_center_error(xd, bestmv, ref_mv, error_per_bit, vfp, z,
                                src_stride, y, y_stride, second_pred, w, h,
@@ -397,6 +395,7 @@ uint32_t vp9_skip_sub_pixel_tree(const MACROBLOCK *x, MV *bestmv,
   (void)sse;
   (void)thismse;
   (void)cost_list;
+  (void)use_accurate_subpel_search;
 
   return besterr;
 }
@@ -406,7 +405,7 @@ uint32_t vp9_find_best_sub_pixel_tree_pruned_evenmore(
     int error_per_bit, const vp9_variance_fn_ptr_t *vfp, int forced_stop,
     int iters_per_step, int *cost_list, int *mvjcost, int *mvcost[2],
     uint32_t *distortion, uint32_t *sse1, const uint8_t *second_pred, int w,
-    int h) {
+    int h, int use_accurate_subpel_search) {
   SETUP_SUBPEL_SEARCH;
   besterr = setup_center_error(xd, bestmv, ref_mv, error_per_bit, vfp, z,
                                src_stride, y, y_stride, second_pred, w, h,
@@ -418,6 +417,7 @@ uint32_t vp9_find_best_sub_pixel_tree_pruned_evenmore(
   (void)allow_hp;
   (void)forced_stop;
   (void)hstep;
+  (void)use_accurate_subpel_search;
 
   if (cost_list && cost_list[0] != INT_MAX && cost_list[1] != INT_MAX &&
       cost_list[2] != INT_MAX && cost_list[3] != INT_MAX &&
@@ -471,8 +471,10 @@ uint32_t vp9_find_best_sub_pixel_tree_pruned_more(
     int error_per_bit, const vp9_variance_fn_ptr_t *vfp, int forced_stop,
     int iters_per_step, int *cost_list, int *mvjcost, int *mvcost[2],
     uint32_t *distortion, uint32_t *sse1, const uint8_t *second_pred, int w,
-    int h) {
+    int h, int use_accurate_subpel_search) {
   SETUP_SUBPEL_SEARCH;
+  (void)use_accurate_subpel_search;
+
   besterr = setup_center_error(xd, bestmv, ref_mv, error_per_bit, vfp, z,
                                src_stride, y, y_stride, second_pred, w, h,
                                offset, mvjcost, mvcost, sse1, distortion);
@@ -531,8 +533,10 @@ uint32_t vp9_find_best_sub_pixel_tree_pruned(
     int error_per_bit, const vp9_variance_fn_ptr_t *vfp, int forced_stop,
     int iters_per_step, int *cost_list, int *mvjcost, int *mvcost[2],
     uint32_t *distortion, uint32_t *sse1, const uint8_t *second_pred, int w,
-    int h) {
+    int h, int use_accurate_subpel_search) {
   SETUP_SUBPEL_SEARCH;
+  (void)use_accurate_subpel_search;
+
   besterr = setup_center_error(xd, bestmv, ref_mv, error_per_bit, vfp, z,
                                src_stride, y, y_stride, second_pred, w, h,
                                offset, mvjcost, mvcost, sse1, distortion);
@@ -617,12 +621,119 @@ static const MV search_step_table[12] = {
 };
 /* clang-format on */
 
+static int accurate_sub_pel_search(
+    const MACROBLOCKD *xd, const MV *this_mv, const struct scale_factors *sf,
+    const InterpKernel *kernel, const vp9_variance_fn_ptr_t *vfp,
+    const uint8_t *const src_address, const int src_stride,
+    const uint8_t *const pre_address, int y_stride, const uint8_t *second_pred,
+    int w, int h, uint32_t *sse) {
+#if CONFIG_VP9_HIGHBITDEPTH
+  uint64_t besterr;
+  assert(sf->x_step_q4 == 16 && sf->y_step_q4 == 16);
+  assert(w != 0 && h != 0);
+  if (xd->cur_buf->flags & YV12_FLAG_HIGHBITDEPTH) {
+    DECLARE_ALIGNED(16, uint16_t, pred16[64 * 64]);
+    vp9_highbd_build_inter_predictor(CONVERT_TO_SHORTPTR(pre_address), y_stride,
+                                     pred16, w, this_mv, sf, w, h, 0, kernel,
+                                     MV_PRECISION_Q3, 0, 0, xd->bd);
+    if (second_pred != NULL) {
+      DECLARE_ALIGNED(16, uint16_t, comp_pred16[64 * 64]);
+      vpx_highbd_comp_avg_pred(comp_pred16, CONVERT_TO_SHORTPTR(second_pred), w,
+                               h, pred16, w);
+      besterr = vfp->vf(CONVERT_TO_BYTEPTR(comp_pred16), w, src_address,
+                        src_stride, sse);
+    } else {
+      besterr =
+          vfp->vf(CONVERT_TO_BYTEPTR(pred16), w, src_address, src_stride, sse);
+    }
+  } else {
+    DECLARE_ALIGNED(16, uint8_t, pred[64 * 64]);
+    vp9_build_inter_predictor(pre_address, y_stride, pred, w, this_mv, sf, w, h,
+                              0, kernel, MV_PRECISION_Q3, 0, 0);
+    if (second_pred != NULL) {
+      DECLARE_ALIGNED(16, uint8_t, comp_pred[64 * 64]);
+      vpx_comp_avg_pred(comp_pred, second_pred, w, h, pred, w);
+      besterr = vfp->vf(comp_pred, w, src_address, src_stride, sse);
+    } else {
+      besterr = vfp->vf(pred, w, src_address, src_stride, sse);
+    }
+  }
+  if (besterr >= UINT_MAX) return UINT_MAX;
+  return (int)besterr;
+#else
+  int besterr;
+  DECLARE_ALIGNED(16, uint8_t, pred[64 * 64]);
+  assert(sf->x_step_q4 == 16 && sf->y_step_q4 == 16);
+  assert(w != 0 && h != 0);
+  (void)xd;
+
+  vp9_build_inter_predictor(pre_address, y_stride, pred, w, this_mv, sf, w, h,
+                            0, kernel, MV_PRECISION_Q3, 0, 0);
+  if (second_pred != NULL) {
+    DECLARE_ALIGNED(16, uint8_t, comp_pred[64 * 64]);
+    vpx_comp_avg_pred(comp_pred, second_pred, w, h, pred, w);
+    besterr = vfp->vf(comp_pred, w, src_address, src_stride, sse);
+  } else {
+    besterr = vfp->vf(pred, w, src_address, src_stride, sse);
+  }
+  return besterr;
+#endif  // CONFIG_VP9_HIGHBITDEPTH
+}
+
+// TODO(yunqing): this part can be further refactored.
+#if CONFIG_VP9_HIGHBITDEPTH
+/* checks if (r, c) has better score than previous best */
+#define CHECK_BETTER1(v, r, c)                                                 \
+  if (c >= minc && c <= maxc && r >= minr && r <= maxr) {                      \
+    int64_t tmpmse;                                                            \
+    const MV mv = { r, c };                                                    \
+    const MV ref_mv = { rr, rc };                                              \
+    thismse =                                                                  \
+        accurate_sub_pel_search(xd, &mv, x->me_sf, kernel, vfp, z, src_stride, \
+                                y, y_stride, second_pred, w, h, &sse);         \
+    tmpmse = thismse;                                                          \
+    tmpmse += mv_err_cost(&mv, &ref_mv, mvjcost, mvcost, error_per_bit);       \
+    if (tmpmse >= INT_MAX) {                                                   \
+      v = INT_MAX;                                                             \
+    } else if ((v = (uint32_t)tmpmse) < besterr) {                             \
+      besterr = v;                                                             \
+      br = r;                                                                  \
+      bc = c;                                                                  \
+      *distortion = thismse;                                                   \
+      *sse1 = sse;                                                             \
+    }                                                                          \
+  } else {                                                                     \
+    v = INT_MAX;                                                               \
+  }
+#else
+/* checks if (r, c) has better score than previous best */
+#define CHECK_BETTER1(v, r, c)                                                 \
+  if (c >= minc && c <= maxc && r >= minr && r <= maxr) {                      \
+    const MV mv = { r, c };                                                    \
+    const MV ref_mv = { rr, rc };                                              \
+    thismse =                                                                  \
+        accurate_sub_pel_search(xd, &mv, x->me_sf, kernel, vfp, z, src_stride, \
+                                y, y_stride, second_pred, w, h, &sse);         \
+    if ((v = mv_err_cost(&mv, &ref_mv, mvjcost, mvcost, error_per_bit) +       \
+             thismse) < besterr) {                                             \
+      besterr = v;                                                             \
+      br = r;                                                                  \
+      bc = c;                                                                  \
+      *distortion = thismse;                                                   \
+      *sse1 = sse;                                                             \
+    }                                                                          \
+  } else {                                                                     \
+    v = INT_MAX;                                                               \
+  }
+
+#endif
+
 uint32_t vp9_find_best_sub_pixel_tree(
     const MACROBLOCK *x, MV *bestmv, const MV *ref_mv, int allow_hp,
     int error_per_bit, const vp9_variance_fn_ptr_t *vfp, int forced_stop,
     int iters_per_step, int *cost_list, int *mvjcost, int *mvcost[2],
     uint32_t *distortion, uint32_t *sse1, const uint8_t *second_pred, int w,
-    int h) {
+    int h, int use_accurate_subpel_search) {
   const uint8_t *const z = x->plane[0].src.buf;
   const uint8_t *const src_address = z;
   const int src_stride = x->plane[0].src.stride;
@@ -650,6 +761,17 @@ uint32_t vp9_find_best_sub_pixel_tree(
   int kr, kc;
   MvLimits subpel_mv_limits;
 
+  // TODO(yunqing): need to add 4-tap filter optimization to speed up the
+  // encoder.
+  const InterpKernel *kernel =
+      (use_accurate_subpel_search > 0)
+          ? ((use_accurate_subpel_search == USE_4_TAPS)
+                 ? vp9_filter_kernels[FOURTAP]
+                 : ((use_accurate_subpel_search == USE_8_TAPS)
+                        ? vp9_filter_kernels[EIGHTTAP]
+                        : vp9_filter_kernels[EIGHTTAP_SHARP]))
+          : vp9_filter_kernels[BILINEAR];
+
   vp9_set_subpel_mv_search_range(&subpel_mv_limits, &x->mv_limits, ref_mv);
   minc = subpel_mv_limits.col_min;
   maxc = subpel_mv_limits.col_max;
@@ -674,16 +796,25 @@ uint32_t vp9_find_best_sub_pixel_tree(
       tr = br + search_step[idx].row;
       tc = bc + search_step[idx].col;
       if (tc >= minc && tc <= maxc && tr >= minr && tr <= maxr) {
-        const uint8_t *const pre_address = y + (tr >> 3) * y_stride + (tc >> 3);
         MV this_mv;
         this_mv.row = tr;
         this_mv.col = tc;
-        if (second_pred == NULL)
-          thismse = vfp->svf(pre_address, y_stride, sp(tc), sp(tr), src_address,
-                             src_stride, &sse);
-        else
-          thismse = vfp->svaf(pre_address, y_stride, sp(tc), sp(tr),
-                              src_address, src_stride, &sse, second_pred);
+
+        if (use_accurate_subpel_search) {
+          thismse = accurate_sub_pel_search(xd, &this_mv, x->me_sf, kernel, vfp,
+                                            src_address, src_stride, y,
+                                            y_stride, second_pred, w, h, &sse);
+        } else {
+          const uint8_t *const pre_address =
+              y + (tr >> 3) * y_stride + (tc >> 3);
+          if (second_pred == NULL)
+            thismse = vfp->svf(pre_address, y_stride, sp(tc), sp(tr),
+                               src_address, src_stride, &sse);
+          else
+            thismse = vfp->svaf(pre_address, y_stride, sp(tc), sp(tr),
+                                src_address, src_stride, &sse, second_pred);
+        }
+
         cost_array[idx] = thismse + mv_err_cost(&this_mv, ref_mv, mvjcost,
                                                 mvcost, error_per_bit);
 
@@ -705,14 +836,21 @@ uint32_t vp9_find_best_sub_pixel_tree(
     tc = bc + kc;
     tr = br + kr;
     if (tc >= minc && tc <= maxc && tr >= minr && tr <= maxr) {
-      const uint8_t *const pre_address = y + (tr >> 3) * y_stride + (tc >> 3);
       MV this_mv = { tr, tc };
-      if (second_pred == NULL)
-        thismse = vfp->svf(pre_address, y_stride, sp(tc), sp(tr), src_address,
-                           src_stride, &sse);
-      else
-        thismse = vfp->svaf(pre_address, y_stride, sp(tc), sp(tr), src_address,
-                            src_stride, &sse, second_pred);
+      if (use_accurate_subpel_search) {
+        thismse = accurate_sub_pel_search(xd, &this_mv, x->me_sf, kernel, vfp,
+                                          src_address, src_stride, y, y_stride,
+                                          second_pred, w, h, &sse);
+      } else {
+        const uint8_t *const pre_address = y + (tr >> 3) * y_stride + (tc >> 3);
+        if (second_pred == NULL)
+          thismse = vfp->svf(pre_address, y_stride, sp(tc), sp(tr), src_address,
+                             src_stride, &sse);
+        else
+          thismse = vfp->svaf(pre_address, y_stride, sp(tc), sp(tr),
+                              src_address, src_stride, &sse, second_pred);
+      }
+
       cost_array[4] = thismse + mv_err_cost(&this_mv, ref_mv, mvjcost, mvcost,
                                             error_per_bit);
 
@@ -743,20 +881,36 @@ uint32_t vp9_find_best_sub_pixel_tree(
       if (tr == br && tc != bc) {
         kc = bc - tc;
         if (iters_per_step == 1) {
-          CHECK_BETTER(second, br0, bc0 + kc);
+          if (use_accurate_subpel_search) {
+            CHECK_BETTER1(second, br0, bc0 + kc);
+          } else {
+            CHECK_BETTER(second, br0, bc0 + kc);
+          }
         }
       } else if (tr != br && tc == bc) {
         kr = br - tr;
         if (iters_per_step == 1) {
-          CHECK_BETTER(second, br0 + kr, bc0);
+          if (use_accurate_subpel_search) {
+            CHECK_BETTER1(second, br0 + kr, bc0);
+          } else {
+            CHECK_BETTER(second, br0 + kr, bc0);
+          }
         }
       }
 
       if (iters_per_step > 1) {
-        CHECK_BETTER(second, br0 + kr, bc0);
-        CHECK_BETTER(second, br0, bc0 + kc);
-        if (br0 != br || bc0 != bc) {
-          CHECK_BETTER(second, br0 + kr, bc0 + kc);
+        if (use_accurate_subpel_search) {
+          CHECK_BETTER1(second, br0 + kr, bc0);
+          CHECK_BETTER1(second, br0, bc0 + kc);
+          if (br0 != br || bc0 != bc) {
+            CHECK_BETTER1(second, br0 + kr, bc0 + kc);
+          }
+        } else {
+          CHECK_BETTER(second, br0 + kr, bc0);
+          CHECK_BETTER(second, br0, bc0 + kc);
+          if (br0 != br || bc0 != bc) {
+            CHECK_BETTER(second, br0 + kr, bc0 + kc);
+          }
         }
       }
     }
@@ -781,6 +935,7 @@ uint32_t vp9_find_best_sub_pixel_tree(
 }
 
 #undef CHECK_BETTER
+#undef CHECK_BETTER1
 
 static INLINE int check_bounds(const MvLimits *mv_limits, int row, int col,
                                int range) {
@@ -1578,9 +1733,10 @@ static int exhuastive_mesh_search(const MACROBLOCK *x, MV *ref_mv, MV *best_mv,
 }
 
 #if CONFIG_NON_GREEDY_MV
-static double nb_mvs_inconsistency(const MV *mv, const int_mv *nb_mvs) {
+double av1_nb_mvs_inconsistency(const MV *mv, const int_mv *nb_mvs) {
   int i;
-  double best_cost = -1;
+  int update = 0;
+  double best_cost = 0;
   vpx_clear_system_state();
   for (i = 0; i < NB_MVS_NUM; ++i) {
     if (nb_mvs[i].as_int != INVALID_MV) {
@@ -1589,18 +1745,15 @@ static double nb_mvs_inconsistency(const MV *mv, const int_mv *nb_mvs) {
       const double col_diff = mv->col - nb_mv.col;
       double cost = row_diff * row_diff + col_diff * col_diff;
       cost = log2(1 + cost);
-      if (best_cost < 0) {
+      if (update == 0) {
         best_cost = cost;
+        update = 1;
       } else {
         best_cost = cost < best_cost ? cost : best_cost;
       }
     }
   }
-  if (best_cost < 0) {
-    return 0;
-  } else {
-    return best_cost;
-  }
+  return best_cost;
 }
 
 double vp9_diamond_search_sad_new(const MACROBLOCK *x,
@@ -1646,7 +1799,7 @@ double vp9_diamond_search_sad_new(const MACROBLOCK *x,
 
   // Check the starting position
   *best_mv_dist = fn_ptr->sdf(what, what_stride, in_what, in_what_stride);
-  *best_mv_cost = nb_mvs_inconsistency(best_full_mv, nb_full_mvs);
+  *best_mv_cost = av1_nb_mvs_inconsistency(best_full_mv, nb_full_mvs);
   bestsad = (*best_mv_dist) + lambda * (*best_mv_cost);
 
   i = 0;
@@ -1679,7 +1832,8 @@ double vp9_diamond_search_sad_new(const MACROBLOCK *x,
           const MV this_mv = { best_full_mv->row + ss_mv[i].row,
                                best_full_mv->col + ss_mv[i].col };
           const double mv_dist = sad_array[t];
-          const double mv_cost = nb_mvs_inconsistency(&this_mv, nb_full_mvs);
+          const double mv_cost =
+              av1_nb_mvs_inconsistency(&this_mv, nb_full_mvs);
           double thissad = mv_dist + lambda * mv_cost;
           if (thissad < bestsad) {
             bestsad = thissad;
@@ -1699,7 +1853,8 @@ double vp9_diamond_search_sad_new(const MACROBLOCK *x,
           const uint8_t *const check_here = ss_os[i] + best_address;
           const double mv_dist =
               fn_ptr->sdf(what, what_stride, check_here, in_what_stride);
-          const double mv_cost = nb_mvs_inconsistency(&this_mv, nb_full_mvs);
+          const double mv_cost =
+              av1_nb_mvs_inconsistency(&this_mv, nb_full_mvs);
           double thissad = mv_dist + lambda * mv_cost;
           if (thissad < bestsad) {
             bestsad = thissad;
@@ -2285,7 +2440,7 @@ double vp9_refining_search_sad_new(const MACROBLOCK *x, MV *best_full_mv,
   vpx_clear_system_state();
   *best_mv_dist =
       fn_ptr->sdf(what->buf, what->stride, best_address, in_what->stride);
-  *best_mv_cost = nb_mvs_inconsistency(best_full_mv, nb_full_mvs);
+  *best_mv_cost = av1_nb_mvs_inconsistency(best_full_mv, nb_full_mvs);
   best_sad = (*best_mv_dist) + lambda * (*best_mv_cost);
 
   for (i = 0; i < search_range; i++) {
@@ -2307,7 +2462,7 @@ double vp9_refining_search_sad_new(const MACROBLOCK *x, MV *best_full_mv,
         const MV mv = { best_full_mv->row + neighbors[j].row,
                         best_full_mv->col + neighbors[j].col };
         const double mv_dist = sads[j];
-        const double mv_cost = nb_mvs_inconsistency(&mv, nb_full_mvs);
+        const double mv_cost = av1_nb_mvs_inconsistency(&mv, nb_full_mvs);
         const double thissad = mv_dist + lambda * mv_cost;
         if (thissad < best_sad) {
           best_sad = thissad;
@@ -2325,7 +2480,7 @@ double vp9_refining_search_sad_new(const MACROBLOCK *x, MV *best_full_mv,
           const double mv_dist =
               fn_ptr->sdf(what->buf, what->stride,
                           get_buf_from_mv(in_what, &mv), in_what->stride);
-          const double mv_cost = nb_mvs_inconsistency(&mv, nb_full_mvs);
+          const double mv_cost = av1_nb_mvs_inconsistency(&mv, nb_full_mvs);
           const double thissad = mv_dist + lambda * mv_cost;
           if (thissad < best_sad) {
             best_sad = thissad;
@@ -2587,7 +2742,8 @@ int vp9_full_pixel_search(VP9_COMP *cpi, MACROBLOCK *x, BLOCK_SIZE bsize,
   (void)tc;            \
   (void)sse;           \
   (void)thismse;       \
-  (void)cost_list;
+  (void)cost_list;     \
+  (void)use_accurate_subpel_search;
 
 // Return the maximum MV.
 uint32_t vp9_return_max_sub_pixel_mv(
@@ -2595,7 +2751,7 @@ uint32_t vp9_return_max_sub_pixel_mv(
     int error_per_bit, const vp9_variance_fn_ptr_t *vfp, int forced_stop,
     int iters_per_step, int *cost_list, int *mvjcost, int *mvcost[2],
     uint32_t *distortion, uint32_t *sse1, const uint8_t *second_pred, int w,
-    int h) {
+    int h, int use_accurate_subpel_search) {
   COMMON_MV_TEST;
 
   (void)minr;
@@ -2617,7 +2773,7 @@ uint32_t vp9_return_min_sub_pixel_mv(
     int error_per_bit, const vp9_variance_fn_ptr_t *vfp, int forced_stop,
     int iters_per_step, int *cost_list, int *mvjcost, int *mvcost[2],
     uint32_t *distortion, uint32_t *sse1, const uint8_t *second_pred, int w,
-    int h) {
+    int h, int use_accurate_subpel_search) {
   COMMON_MV_TEST;
 
   (void)maxr;

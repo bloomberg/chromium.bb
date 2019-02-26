@@ -23,7 +23,8 @@ WebPushClient& PushController::ClientFrom(LocalFrame* frame) {
 const char PushController::kSupplementName[] = "PushController";
 
 void ProvidePushControllerTo(LocalFrame& frame, WebPushClient* client) {
-  PushController::ProvideTo(frame, new PushController(frame, client));
+  PushController::ProvideTo(
+      frame, MakeGarbageCollected<PushController>(frame, client));
 }
 
 }  // namespace blink

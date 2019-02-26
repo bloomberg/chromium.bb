@@ -57,6 +57,11 @@ class TraceCategoryTest : public testing::Test {
     GetOrCreateCategoryByName("__test_race", &cat);
     EXPECT_NE(nullptr, cat);
   }
+
+  static constexpr TraceCategory* GetBuiltinCategoryByName(
+      const char* category_group) {
+    return CategoryRegistry::GetBuiltinCategoryByName(category_group);
+  }
 };
 
 TEST_F(TraceCategoryTest, Basic) {
@@ -107,10 +112,10 @@ TEST_F(TraceCategoryTest, Basic) {
   int num_test_categories_seen = 0;
   for (const TraceCategory& cat : GetAllCategories()) {
     if (strcmp(cat.name(), kMetadataName) == 0)
-      ASSERT_TRUE(CategoryRegistry::IsBuiltinCategory(&cat));
+      ASSERT_TRUE(CategoryRegistry::IsMetaCategory(&cat));
 
     if (strncmp(cat.name(), "__test_basic_", 13) == 0) {
-      ASSERT_FALSE(CategoryRegistry::IsBuiltinCategory(&cat));
+      ASSERT_FALSE(CategoryRegistry::IsMetaCategory(&cat));
       num_test_categories_seen++;
     }
   }
@@ -149,6 +154,19 @@ TEST_F(TraceCategoryTest, MAYBE_ThreadRaces) {
       num_times_seen++;
   }
   ASSERT_EQ(1, num_times_seen);
+}
+
+// Tests getting trace categories by name at compile-time.
+TEST_F(TraceCategoryTest, GetCategoryAtCompileTime) {
+  static_assert(GetBuiltinCategoryByName("nonexistent") == nullptr,
+                "nonexistent found");
+#if defined(OS_WIN) && defined(COMPONENT_BUILD)
+  static_assert(GetBuiltinCategoryByName("toplevel") == nullptr,
+                "toplevel found");
+#else
+  static_assert(GetBuiltinCategoryByName("toplevel") != nullptr,
+                "toplevel not found");
+#endif
 }
 
 }  // namespace trace_event

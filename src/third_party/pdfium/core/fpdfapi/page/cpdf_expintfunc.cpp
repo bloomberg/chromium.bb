@@ -10,6 +10,7 @@
 #include "core/fpdfapi/parser/cpdf_dictionary.h"
 #include "core/fpdfapi/parser/cpdf_number.h"
 #include "core/fxcrt/fx_memory.h"
+#include "third_party/base/stl_util.h"
 
 CPDF_ExpIntFunc::CPDF_ExpIntFunc()
     : CPDF_Function(Type::kType2ExpotentialInterpolation) {}
@@ -30,7 +31,7 @@ bool CPDF_ExpIntFunc::v_Init(const CPDF_Object* pObj,
 
   const CPDF_Array* pArray0 = pDict->GetArrayFor("C0");
   if (pArray0 && m_nOutputs == 0)
-    m_nOutputs = pArray0->GetCount();
+    m_nOutputs = pArray0->size();
   if (m_nOutputs == 0)
     m_nOutputs = 1;
 

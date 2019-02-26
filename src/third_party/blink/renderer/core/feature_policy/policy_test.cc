@@ -42,7 +42,7 @@ class DocumentPolicyTest : public PolicyTest {
  public:
   void SetUp() override {
     PolicyTest::SetUp();
-    policy_ = new DocumentPolicy(document_);
+    policy_ = MakeGarbageCollected<DocumentPolicy>(document_);
   }
 };
 
@@ -50,8 +50,9 @@ class IFramePolicyTest : public PolicyTest {
  public:
   void SetUp() override {
     PolicyTest::SetUp();
-    policy_ = new IFramePolicy(document_, {},
-                               SecurityOrigin::CreateFromString(kSelfOrigin));
+    policy_ = MakeGarbageCollected<IFramePolicy>(
+        document_, ParsedFeaturePolicy(),
+        SecurityOrigin::CreateFromString(kSelfOrigin));
   }
 };
 

@@ -40,6 +40,10 @@ class PermissionStatus final : public EventTargetWithInlineData,
   static PermissionStatus* CreateAndListen(ExecutionContext*,
                                            MojoPermissionStatus,
                                            MojoPermissionDescriptor);
+
+  PermissionStatus(ExecutionContext*,
+                   MojoPermissionStatus,
+                   MojoPermissionDescriptor);
   ~PermissionStatus() override;
   void Dispose();
 
@@ -57,15 +61,11 @@ class PermissionStatus final : public EventTargetWithInlineData,
 
   String state() const;
 
-  DEFINE_ATTRIBUTE_EVENT_LISTENER(change);
+  DEFINE_ATTRIBUTE_EVENT_LISTENER(change, kChange);
 
   void Trace(blink::Visitor*) override;
 
  private:
-  PermissionStatus(ExecutionContext*,
-                   MojoPermissionStatus,
-                   MojoPermissionDescriptor);
-
   void StartListening();
   void StopListening();
 

@@ -484,7 +484,7 @@ ImmutableString ArrayString(const TType &type)
     if (!type.isArray())
         return ImmutableString("");
 
-    const TVector<unsigned int> &arraySizes = *type.getArraySizes();
+    const TVector<unsigned int> &arraySizes         = *type.getArraySizes();
     constexpr const size_t kMaxDecimalDigitsPerSize = 10u;
     ImmutableStringBuilder arrayString(arraySizes.size() * (kMaxDecimalDigitsPerSize + 2u));
     for (auto arraySizeIter = arraySizes.rbegin(); arraySizeIter != arraySizes.rend();
@@ -753,30 +753,28 @@ bool IsOutputVulkan(ShShaderOutput output)
 
 bool IsInShaderStorageBlock(TIntermTyped *node)
 {
-    TIntermBinary *binaryNode   = nullptr;
     TIntermSwizzle *swizzleNode = node->getAsSwizzleNode();
     if (swizzleNode)
     {
-        binaryNode = swizzleNode->getOperand()->getAsBinaryNode();
-        if (binaryNode)
-        {
-            return IsInShaderStorageBlock(binaryNode->getLeft());
-        }
-        TIntermSymbol *symbolNode = swizzleNode->getOperand()->getAsSymbolNode();
-        if (symbolNode)
-        {
-            return symbolNode->getQualifier() == EvqBuffer;
-        }
+        return IsInShaderStorageBlock(swizzleNode->getOperand());
     }
-    binaryNode = node->getAsBinaryNode();
 
+    TIntermBinary *binaryNode = node->getAsBinaryNode();
     if (binaryNode)
     {
-        return IsInShaderStorageBlock(binaryNode->getLeft());
+        switch (binaryNode->getOp())
+        {
+            case EOpIndexDirectInterfaceBlock:
+            case EOpIndexIndirect:
+            case EOpIndexDirect:
+            case EOpIndexDirectStruct:
+                return IsInShaderStorageBlock(binaryNode->getLeft());
+            default:
+                return false;
+        }
     }
 
     const TType &type = node->getType();
-
     return type.getQualifier() == EvqBuffer;
 }
 

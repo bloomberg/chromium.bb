@@ -69,7 +69,8 @@ void ThrowScriptForbiddenException(v8::Isolate* isolate) {
   V8ThrowException::ThrowError(isolate, "Script execution is forbidden.");
 }
 
-v8::Local<v8::Value> ThrowStackOverflowExceptionIfNeeded(v8::Isolate* isolate) {
+v8::MaybeLocal<v8::Value> ThrowStackOverflowExceptionIfNeeded(
+    v8::Isolate* isolate) {
   if (V8PerIsolateData::From(isolate)->IsHandlingRecursionLevelError()) {
     // If we are already handling a recursion level error, we should
     // not invoke v8::Function::Call.
@@ -80,12 +81,13 @@ v8::Local<v8::Value> ThrowStackOverflowExceptionIfNeeded(v8::Isolate* isolate) {
   V8PerIsolateData::From(isolate)->SetIsHandlingRecursionLevelError(true);
 
   ScriptForbiddenScope::AllowUserAgentScript allow_script;
-  v8::Local<v8::Value> result =
-      v8::Function::New(isolate->GetCurrentContext(),
-                        ThrowStackOverflowException, v8::Local<v8::Value>(), 0,
+  v8::Local<v8::Context> context = isolate->GetCurrentContext();
+  v8::MaybeLocal<v8::Value> result =
+      v8::Function::New(context, ThrowStackOverflowException,
+                        v8::Local<v8::Value>(), 0,
                         v8::ConstructorBehavior::kThrow)
           .ToLocalChecked()
-          ->Call(v8::Undefined(isolate), 0, nullptr);
+          ->Call(context, v8::Undefined(isolate), 0, nullptr);
 
   V8PerIsolateData::From(isolate)->SetIsHandlingRecursionLevelError(false);
   return result;
@@ -98,7 +100,7 @@ v8::MaybeLocal<v8::Script> CompileScriptInternal(
     v8::ScriptOrigin origin,
     v8::ScriptCompiler::CompileOptions compile_options,
     v8::ScriptCompiler::NoCacheReason no_cache_reason,
-    InspectorCompileScriptEvent::V8CacheResult* cache_result) {
+    inspector_compile_script_event::V8CacheResult* cache_result) {
   v8::Local<v8::String> code = V8String(isolate, source_code.Source());
 
   if (ScriptStreamer* streamer = source_code.Streamer()) {
@@ -147,7 +149,7 @@ v8::MaybeLocal<v8::Script> CompileScriptInternal(
       }
       if (cache_result) {
         cache_result->consume_result = base::make_optional(
-            InspectorCompileScriptEvent::V8CacheResult::ConsumeResult(
+            inspector_compile_script_event::V8CacheResult::ConsumeResult(
                 v8::ScriptCompiler::kConsumeCodeCache, cached_data->length,
                 cached_data->rejected));
       }
@@ -171,7 +173,7 @@ v8::MaybeLocal<v8::Script> CompileScriptInternal(
 v8::MaybeLocal<v8::Script> V8ScriptRunner::CompileScript(
     ScriptState* script_state,
     const ScriptSourceCode& source,
-    AccessControlStatus access_control_status,
+    SanitizeScriptErrors sanitize_script_errors,
     v8::ScriptCompiler::CompileOptions compile_options,
     v8::ScriptCompiler::NoCacheReason no_cache_reason,
     const ReferrerScriptInfo& referrer_info) {
@@ -198,9 +200,11 @@ v8::MaybeLocal<v8::Script> V8ScriptRunner::CompileScript(
       V8String(isolate, file_name),
       v8::Integer::New(isolate, script_start_position.line_.ZeroBasedInt()),
       v8::Integer::New(isolate, script_start_position.column_.ZeroBasedInt()),
-      v8::Boolean::New(isolate, access_control_status == kSharableCrossOrigin),
+      v8::Boolean::New(isolate, sanitize_script_errors ==
+                                    SanitizeScriptErrors::kDoNotSanitize),
       v8::Local<v8::Integer>(), V8String(isolate, source.SourceMapUrl()),
-      v8::Boolean::New(isolate, access_control_status == kOpaqueResource),
+      v8::Boolean::New(
+          isolate, sanitize_script_errors == SanitizeScriptErrors::kSanitize),
       v8::False(isolate),  // is_wasm
       v8::False(isolate),  // is_module
       referrer_info.ToV8HostDefinedOptions(isolate));
@@ -210,12 +214,12 @@ v8::MaybeLocal<v8::Script> V8ScriptRunner::CompileScript(
                                  compile_options, no_cache_reason, nullptr);
   }
 
-  InspectorCompileScriptEvent::V8CacheResult cache_result;
+  inspector_compile_script_event::V8CacheResult cache_result;
   v8::MaybeLocal<v8::Script> script =
       CompileScriptInternal(isolate, execution_context, source, origin,
                             compile_options, no_cache_reason, &cache_result);
   TRACE_EVENT_END1(kTraceEventCategoryGroup, "v8.compile", "data",
-                   InspectorCompileScriptEvent::Data(
+                   inspector_compile_script_event::Data(
                        file_name, script_start_position, cache_result,
                        source.Streamer(), source.NotStreamingReason()));
   return script;
@@ -225,22 +229,23 @@ v8::MaybeLocal<v8::Module> V8ScriptRunner::CompileModule(
     v8::Isolate* isolate,
     const String& source,
     const String& file_name,
-    AccessControlStatus access_control_status,
     const TextPosition& start_position,
     const ReferrerScriptInfo& referrer_info) {
   TRACE_EVENT1("v8,devtools.timeline", "v8.compileModule", "fileName",
                file_name.Utf8());
 
+  // |resource_is_shared_cross_origin| is always true and |resource_is_opaque|
+  // is always false because CORS is enforced to module scripts.
   v8::ScriptOrigin origin(
       V8String(isolate, file_name),
       v8::Integer::New(isolate, start_position.line_.ZeroBasedInt()),
       v8::Integer::New(isolate, start_position.column_.ZeroBasedInt()),
-      v8::Boolean::New(isolate, access_control_status == kSharableCrossOrigin),
-      v8::Local<v8::Integer>(),    // script id
-      v8::String::Empty(isolate),  // source_map_url
-      v8::Boolean::New(isolate, access_control_status == kOpaqueResource),
-      v8::False(isolate),  // is_wasm
-      v8::True(isolate),   // is_module
+      v8::Boolean::New(isolate, true),   // resource_is_shared_cross_origin
+      v8::Local<v8::Integer>(),          // script id
+      v8::String::Empty(isolate),        // source_map_url
+      v8::Boolean::New(isolate, false),  // resource_is_opaque
+      v8::False(isolate),                // is_wasm
+      v8::True(isolate),                 // is_module
       referrer_info.ToV8HostDefinedOptions(isolate));
 
   v8::ScriptCompiler::Source script_source(V8String(isolate, source), origin);
@@ -311,9 +316,9 @@ v8::MaybeLocal<v8::Value> V8ScriptRunner::CompileAndRunInternalScript(
   // Use default ScriptReferrerInfo here:
   // - nonce: empty for internal script, and
   // - parser_state: always "not parser inserted" for internal scripts.
-  if (!V8ScriptRunner::CompileScript(script_state, source_code,
-                                     kSharableCrossOrigin, compile_options,
-                                     no_cache_reason, ReferrerScriptInfo())
+  if (!V8ScriptRunner::CompileScript(
+           script_state, source_code, SanitizeScriptErrors::kDoNotSanitize,
+           compile_options, no_cache_reason, ReferrerScriptInfo())
            .ToLocal(&script))
     return v8::MaybeLocal<v8::Value>();
 
@@ -339,8 +344,7 @@ v8::MaybeLocal<v8::Value> V8ScriptRunner::CallAsConstructor(
 
   int depth = v8::MicrotasksScope::GetCurrentDepth(isolate);
   if (depth >= kMaxRecursionDepth)
-    return v8::MaybeLocal<v8::Value>(
-        ThrowStackOverflowExceptionIfNeeded(isolate));
+    return ThrowStackOverflowExceptionIfNeeded(isolate);
 
   CHECK(!context->IsIteratingOverObservers());
 
@@ -382,8 +386,7 @@ v8::MaybeLocal<v8::Value> V8ScriptRunner::CallFunction(
 
   int depth = v8::MicrotasksScope::GetCurrentDepth(isolate);
   if (depth >= kMaxRecursionDepth)
-    return v8::MaybeLocal<v8::Value>(
-        ThrowStackOverflowExceptionIfNeeded(isolate));
+    return ThrowStackOverflowExceptionIfNeeded(isolate);
 
   CHECK(!context->IsIteratingOverObservers());
 

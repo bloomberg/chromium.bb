@@ -83,7 +83,7 @@ sk_sp<SkSurface> SkSurface_Gpu::onNewSurface(const SkImageInfo& info) {
                                        origin, &this->props());
 }
 
-sk_sp<SkImage> SkSurface_Gpu::onNewImageSnapshot() {
+sk_sp<SkImage> SkSurface_Gpu::onNewImageSnapshot(const SkIRect* subset) {
     GrRenderTargetContext* rtc = fDevice->accessRenderTargetContext();
     if (!rtc) {
         return nullptr;
@@ -98,10 +98,14 @@ sk_sp<SkImage> SkSurface_Gpu::onNewImageSnapshot() {
     SkBudgeted budgeted = rtc->asSurfaceProxy()->isBudgeted();
 
     sk_sp<GrTextureProxy> srcProxy = rtc->asTextureProxyRef();
-    // If the original render target is a buffer originally created by the client, then we don't
-    // want to ever retarget the SkSurface at another buffer we create. Force a copy now to avoid
-    // copy-on-write.
-    if (!srcProxy || rtc->priv().refsWrappedObjects()) {
+
+    if (subset) {
+        srcProxy = GrSurfaceProxy::Copy(ctx, rtc->asSurfaceProxy(), rtc->mipMapped(), *subset,
+                                        budgeted);
+    } else if (!srcProxy || rtc->priv().refsWrappedObjects()) {
+        // If the original render target is a buffer originally created by the client, then we don't
+        // want to ever retarget the SkSurface at another buffer we create. Force a copy now to avoid
+        // copy-on-write.
         SkASSERT(rtc->origin() == rtc->asSurfaceProxy()->origin());
 
         srcProxy = GrSurfaceProxy::Copy(ctx, rtc->asSurfaceProxy(), rtc->mipMapped(), budgeted);
@@ -262,15 +266,7 @@ bool SkSurface_Gpu::onDraw(const SkDeferredDisplayList* ddl) {
 ///////////////////////////////////////////////////////////////////////////////
 
 bool SkSurface_Gpu::Valid(const SkImageInfo& info) {
-    switch (info.colorType()) {
-        case kRGBA_F16_SkColorType:
-        case kRGBA_F32_SkColorType:
-        case kRGBA_8888_SkColorType:
-        case kBGRA_8888_SkColorType:
-            return true;
-        default:
-            return !info.colorSpace();
-    }
+    return true;
 }
 
 bool SkSurface_Gpu::Valid(const GrCaps* caps, GrPixelConfig config, SkColorSpace* colorSpace) {
@@ -278,13 +274,8 @@ bool SkSurface_Gpu::Valid(const GrCaps* caps, GrPixelConfig config, SkColorSpace
         case kSRGBA_8888_GrPixelConfig:
         case kSBGRA_8888_GrPixelConfig:
             return caps->srgbSupport();
-        case kRGBA_half_GrPixelConfig:
-        case kRGBA_float_GrPixelConfig:
-        case kRGBA_8888_GrPixelConfig:
-        case kBGRA_8888_GrPixelConfig:
-            return true;
         default:
-            return !colorSpace;
+            return true;
     }
 }
 
@@ -313,8 +304,11 @@ sk_sp<SkSurface> SkSurface::MakeRenderTarget(GrContext* context,
     desc.fConfig = c.config();
     desc.fSampleCnt = c.stencilCount();
 
+    const GrBackendFormat format =
+            context->contextPriv().caps()->getBackendFormatFromColorType(c.colorType());
+
     sk_sp<GrSurfaceContext> sc(
-            context->contextPriv().makeDeferredSurfaceContext(desc, c.origin(),
+            context->contextPriv().makeDeferredSurfaceContext(format, desc, c.origin(),
                                                               GrMipMapped(c.isMipMapped()),
                                                               SkBackingFit::kExact, budgeted,
                                                               c.refColorSpace(),

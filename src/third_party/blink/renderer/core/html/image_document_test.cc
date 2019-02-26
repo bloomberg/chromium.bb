@@ -99,7 +99,7 @@ void ImageDocumentTest::CreateDocumentWithoutLoadingImage(int view_width,
                                                           int view_height) {
   Page::PageClients page_clients;
   FillWithEmptyClients(page_clients);
-  chrome_client_ = new WindowToViewportScalingChromeClient();
+  chrome_client_ = MakeGarbageCollected<WindowToViewportScalingChromeClient>();
   page_clients.chrome_client = chrome_client_;
   dummy_page_holder_ =
       DummyPageHolder::Create(IntSize(view_width, view_height), &page_clients);

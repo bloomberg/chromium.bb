@@ -9,20 +9,6 @@
 #include "base/values.h"
 #include "content/public/browser/web_ui_message_handler.h"
 
-class PrefService;
-
-namespace bookmarks {
-class BookmarkModel;
-}  // namespace bookmarks
-
-namespace content {
-class WebUIDataSource;
-}  // namespace content
-
-namespace favicon {
-class FaviconService;
-}  // namespace favicon
-
 namespace nux {
 
 extern const char* kGoogleAppsInteractionHistogram;
@@ -38,30 +24,15 @@ enum class GoogleAppsInteraction {
 
 class GoogleAppsHandler : public content::WebUIMessageHandler {
  public:
-  GoogleAppsHandler(PrefService* prefs,
-                    favicon::FaviconService* favicon_service,
-                    bookmarks::BookmarkModel* bookmark_model);
+  GoogleAppsHandler();
   ~GoogleAppsHandler() override;
 
   // WebUIMessageHandler:
   void RegisterMessages() override;
 
   // Callbacks for JS APIs.
-  void HandleRejectGoogleApps(const base::ListValue* args);
-  void HandleAddGoogleApps(const base::ListValue* args);
-
-  // Adds webui sources.
-  static void AddSources(content::WebUIDataSource* html_source);
-
- private:
-  // Weak reference.
-  PrefService* prefs_;
-
-  // Weak reference.
-  favicon::FaviconService* favicon_service_;
-
-  // Weak reference.
-  bookmarks::BookmarkModel* bookmark_model_;
+  void HandleCacheGoogleAppIcon(const base::ListValue* args);
+  void HandleGetGoogleAppsList(const base::ListValue* args);
 
   DISALLOW_COPY_AND_ASSIGN(GoogleAppsHandler);
 };

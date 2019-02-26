@@ -5,6 +5,8 @@
 #ifndef CHROME_BROWSER_UI_VIEWS_FRAME_OPAQUE_BROWSER_FRAME_VIEW_LAYOUT_H_
 #define CHROME_BROWSER_UI_VIEWS_FRAME_OPAQUE_BROWSER_FRAME_VIEW_LAYOUT_H_
 
+#include <vector>
+
 #include "base/macros.h"
 #include "chrome/browser/ui/frame_button_display_types.h"
 #include "chrome/browser/ui/views/frame/opaque_browser_frame_view.h"
@@ -31,7 +33,8 @@ class OpaqueBrowserFrameViewLayout : public views::LayoutManager {
   // Constants public for testing only.
   static constexpr int kNonClientExtraTopThickness = 1;
   static const int kFrameBorderThickness;
-  static const int kTitlebarTopEdgeThickness;
+  static const int kTopFrameEdgeThickness;
+  static const int kSideFrameEdgeThickness;
   static const int kIconLeftSpacing;
   static const int kIconTitleSpacing;
   static const int kCaptionSpacing;
@@ -51,8 +54,6 @@ class OpaqueBrowserFrameViewLayout : public views::LayoutManager {
 
   gfx::Rect GetBoundsForTabStrip(const gfx::Size& tabstrip_preferred_size,
                                  int total_width) const;
-
-  gfx::Size GetMinimumSize(int available_width) const;
 
   // Returns the bounds of the window required to display the content area at
   // the specified bounds.
@@ -86,14 +87,15 @@ class OpaqueBrowserFrameViewLayout : public views::LayoutManager {
   virtual int CaptionButtonY(chrome::FrameButtonDisplayType button_id,
                              bool restored) const;
 
-  // Returns the initial spacing between the edge of the browser window and the
-  // first button.
-  virtual int TopAreaPadding() const;
-
-  // Returns the thickness of the 3D edge along the top of the titlebar.  If
+  // Returns the thickness of the top 3D edge of the window frame.  If
   // |restored| is true, acts as if the window is restored regardless of the
   // real mode.
-  int TitlebarTopThickness(bool restored) const;
+  int FrameTopThickness(bool restored) const;
+
+  // Returns the thickness of the left and right 3D edges of the window frame.
+  // If |restored| is true, acts as if the window is restored regardless of the
+  // real mode.
+  int FrameSideThickness(bool restored) const;
 
   // Returns the bounds of the titlebar icon (or where the icon would be if
   // there was one).
@@ -128,6 +130,11 @@ class OpaqueBrowserFrameViewLayout : public views::LayoutManager {
   // Returns the extra thickness of the area above the tabs.
   int GetNonClientRestoredExtraThickness() const;
 
+  // views::LayoutManager:
+  // Called explicitly from OpaqueBrowserFrameView so we can't group it with
+  // the other overrides.
+  gfx::Size GetMinimumSize(const views::View* host) const override;
+
  protected:
   // Whether a specific button should be inserted on the leading or trailing
   // side.
@@ -136,10 +143,18 @@ class OpaqueBrowserFrameViewLayout : public views::LayoutManager {
     ALIGN_TRAILING
   };
 
+  struct TopAreaPadding {
+    int leading;
+    int trailing;
+  };
+
   // views::LayoutManager:
   void Layout(views::View* host) override;
 
-  bool has_trailing_buttons() const { return has_trailing_buttons_; }
+  // Returns the spacing between the edge of the browser window and the first
+  // frame buttons.
+  virtual TopAreaPadding GetTopAreaPadding(bool has_leading_buttons,
+                                           bool has_trailing_buttons) const;
 
   virtual bool ShouldDrawImageMirrored(views::ImageButton* button,
                                        ButtonAlignment alignment) const;
@@ -176,6 +191,15 @@ class OpaqueBrowserFrameViewLayout : public views::LayoutManager {
   // Internal implementation of ViewAdded() and ViewRemoved().
   void SetView(int id, views::View* view);
 
+  // Returns the spacing between the edge of the browser window and the first
+  // frame buttons.
+  TopAreaPadding GetTopAreaPadding() const;
+
+  // Returns true if a 3D edge should be drawn around the window frame.  If
+  // |restored| is true, acts as if the window is restored regardless of the
+  // real mode.
+  bool IsFrameEdgeVisible(bool restored) const;
+
   // views::LayoutManager:
   gfx::Size GetPreferredSize(const views::View* host) const override;
   void ViewAdded(views::View* host, views::View* view) override;
@@ -187,10 +211,10 @@ class OpaqueBrowserFrameViewLayout : public views::LayoutManager {
   // The layout of the window icon, if visible.
   gfx::Rect window_icon_bounds_;
 
-  // Whether any of the window control buttons were packed on the
-  // leading or trailing sides.
-  bool has_leading_buttons_;
-  bool has_trailing_buttons_;
+  // Whether any of the window control buttons were packed on the leading or
+  // trailing sides.  This state is only valid while Layout() is being run.
+  bool placed_leading_button_;
+  bool placed_trailing_button_;
 
   // Extra offset from the top of the frame to the top of the window control
   // buttons. Configurable based on platform and whether we are under test.

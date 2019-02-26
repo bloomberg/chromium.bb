@@ -22,51 +22,54 @@
 
 namespace ui {
 
-ScenicWindow::ScenicWindow(
-    ScenicWindowManager* window_manager,
-    PlatformWindowDelegate* delegate,
-    fidl::InterfaceRequest<fuchsia::ui::viewsv1token::ViewOwner>
-        view_owner_request)
+ScenicWindow::ScenicWindow(ScenicWindowManager* window_manager,
+                           PlatformWindowDelegate* delegate,
+                           zx::eventpair view_token)
     : manager_(window_manager),
       delegate_(delegate),
       window_id_(manager_->AddWindow(this)),
       event_dispatcher_(this),
       view_listener_binding_(this),
-      scenic_session_(manager_->GetScenic(), this),
+      scenic_session_(manager_->GetScenic()),
+      parent_node_(&scenic_session_),
+      node_(&scenic_session_),
+      input_node_(&scenic_session_),
+      render_node_(&scenic_session_),
       input_listener_binding_(this) {
-  // Create event pair to import parent view node to Scenic. One end is passed
-  // directly to Scenic in ImportResource command and the second one is passed
-  // to ViewManager::CreateView(). ViewManager will passes it to Scenic when the
-  // view is added to a container.
-  zx::eventpair parent_export_token;
-  zx::eventpair parent_import_token;
-  zx_status_t status =
-      zx::eventpair::create(0u, &parent_import_token, &parent_export_token);
-  ZX_CHECK(status == ZX_OK, status) << "zx_eventpair_create()";
+  scenic_session_.set_error_handler(
+      fit::bind_member(this, &ScenicWindow::OnScenicError));
+  scenic_session_.set_event_handler(
+      fit::bind_member(this, &ScenicWindow::OnScenicEvents));
 
-  // Create a new node and add it as a child to the parent.
-  parent_node_id_ = scenic_session_.ImportResource(
-      fuchsia::ui::gfx::ImportSpec::NODE, std::move(parent_import_token));
-  node_id_ = scenic_session_.CreateEntityNode();
-  scenic_session_.AddNodeChild(parent_node_id_, node_id_);
+  // Import parent node and create event pair to pass to the ViewManager.
+  zx::eventpair parent_export_token;
+  parent_node_.BindAsRequest(&parent_export_token);
 
   // Subscribe to metrics events from the parent node. These events are used to
   // get the device pixel ratio for the screen.
-  scenic_session_.SetEventMask(parent_node_id_,
-                               fuchsia::ui::gfx::kMetricsEventMask);
+  parent_node_.SetEventMask(fuchsia::ui::gfx::kMetricsEventMask);
+  parent_node_.AddChild(node_);
+
+  // Add input shape.
+  input_node_.SetShape(scenic::Rectangle(&scenic_session_, 1.f, 1.f));
+  node_.AddChild(input_node_);
+
+  // Add rendering subtree. Hit testing is disabled to prevent GPU process from
+  // receiving input.
+  render_node_.SetHitTestBehavior(fuchsia::ui::gfx::HitTestBehavior::kSuppress);
+  node_.AddChild(render_node_);
 
   // Create the view.
-  manager_->GetViewManager()->CreateView(
-      view_.NewRequest(), std::move(view_owner_request),
+  manager_->GetViewManager()->CreateView2(
+      view_.NewRequest(), std::move(view_token),
       view_listener_binding_.NewBinding(), std::move(parent_export_token),
       "Chromium");
   view_.set_error_handler(fit::bind_member(this, &ScenicWindow::OnViewError));
   view_listener_binding_.set_error_handler(
       fit::bind_member(this, &ScenicWindow::OnViewError));
 
-  // Setup input event listener.
-  // TODO(crbug.com/881591): Migrate off InputConnection and use IMEService
-  // for receiving keyboard input instead.
+  // Setup ViewsV1 input event listener.
+  // TODO(crbug.com/881591): Remove this when ViewsV1 deprecation is complete.
   fuchsia::sys::ServiceProviderPtr view_service_provider;
   view_->GetServiceProvider(view_service_provider.NewRequest());
   view_service_provider->ConnectToService(
@@ -74,31 +77,27 @@ ScenicWindow::ScenicWindow(
       input_connection_.NewRequest().TakeChannel());
   input_connection_->SetEventListener(input_listener_binding_.NewBinding());
 
-  // Add shape node for window.
-  shape_id_ = scenic_session_.CreateShapeNode();
-  scenic_session_.AddNodeChild(node_id_, shape_id_);
-  material_id_ = scenic_session_.CreateMaterial();
-  scenic_session_.SetNodeMaterial(shape_id_, material_id_);
-
   // Call Present() to ensure that the scenic session commands are processed,
   // which is necessary to receive metrics event from Scenic.
-  scenic_session_.Present();
+  scenic_session_.Present(
+      /*presentation_time=*/0, [](fuchsia::images::PresentationInfo info) {});
 
   delegate_->OnAcceleratedWidgetAvailable(window_id_);
 }
 
 ScenicWindow::~ScenicWindow() {
-  scenic_session_.ReleaseResource(node_id_);
-  scenic_session_.ReleaseResource(parent_node_id_);
-  scenic_session_.ReleaseResource(shape_id_);
-  scenic_session_.ReleaseResource(material_id_);
-
   manager_->RemoveWindow(window_id_, this);
-  view_.Unbind();
 }
 
-void ScenicWindow::SetTexture(ScenicSession::ResourceId texture) {
-  scenic_session_.SetMaterialTexture(material_id_, texture);
+void ScenicWindow::ExportRenderingEntity(zx::eventpair export_token) {
+  scenic::EntityNode export_node(&scenic_session_);
+
+  render_node_.DetachChildren();
+  render_node_.AddChild(export_node);
+
+  export_node.Export(std::move(export_token));
+  scenic_session_.Present(
+      /*presentation_time=*/0, [](fuchsia::images::PresentationInfo info) {});
 }
 
 gfx::Rect ScenicWindow::GetBounds() {
@@ -115,15 +114,16 @@ void ScenicWindow::SetTitle(const base::string16& title) {
 }
 
 void ScenicWindow::Show() {
-  NOTIMPLEMENTED();
+  parent_node_.AddChild(node_);
 }
 
 void ScenicWindow::Hide() {
-  NOTIMPLEMENTED();
+  node_.Detach();
 }
 
 void ScenicWindow::Close() {
-  NOTIMPLEMENTED();
+  Hide();
+  delegate_->OnClosed();
 }
 
 void ScenicWindow::PrepareForShutdown() {
@@ -201,16 +201,16 @@ void ScenicWindow::UpdateSize() {
 
   // Translate the node by half of the view dimensions to put it in the center
   // of the view.
-  const float translation[] = {size_dips_.width() / 2.0,
-                               size_dips_.height() / 2.0, 0.f};
+  node_.SetTranslation(size_dips_.width() / 2.0, size_dips_.height() / 2.0,
+                       0.f);
 
-  // Set node shape to rectangle that matches size of the view.
-  ScenicSession::ResourceId rect_id =
-      scenic_session_.CreateRectangle(size_dips_.width(), size_dips_.height());
-  scenic_session_.SetNodeShape(shape_id_, rect_id);
-  scenic_session_.SetNodeTranslation(shape_id_, translation);
-  scenic_session_.ReleaseResource(rect_id);
-  scenic_session_.Present();
+  // Scale the node so that surface rect can always be 1x1.
+  node_.SetScale(size_dips_.width(), size_dips_.height(), 1.f);
+
+  // This is necessary when using vulkan because ImagePipes are presented
+  // separately and we need to make sure our sizes change is committed.
+  scenic_session_.Present(
+      /*presentation_time=*/0, [](fuchsia::images::PresentationInfo info) {});
 
   delegate_->OnBoundsChanged(size_rect);
 }
@@ -228,30 +228,41 @@ void ScenicWindow::OnPropertiesChanged(
   callback();
 }
 
-void ScenicWindow::OnScenicError(const std::string& error) {
-  LOG(ERROR) << "ScenicSession failed: " << error;
+void ScenicWindow::OnScenicError(zx_status_t status) {
+  LOG(ERROR) << "scenic::Session failed with code " << status << ".";
   delegate_->OnClosed();
 }
 
 void ScenicWindow::OnScenicEvents(
-    const std::vector<fuchsia::ui::scenic::Event>& events) {
-  for (const auto& event : events) {
-    if (!event.is_gfx() || !event.gfx().is_metrics())
-      continue;
+    fidl::VectorPtr<fuchsia::ui::scenic::Event> events) {
+  for (const auto& event : *events) {
+    if (event.is_gfx()) {
+      if (!event.gfx().is_metrics())
+        continue;
 
-    auto& metrics = event.gfx().metrics();
-    if (metrics.node_id != parent_node_id_)
-      continue;
+      auto& metrics = event.gfx().metrics();
+      if (metrics.node_id != parent_node_.id())
+        continue;
 
-    device_pixel_ratio_ =
-        std::max(metrics.metrics.scale_x, metrics.metrics.scale_y);
+      device_pixel_ratio_ =
+          std::max(metrics.metrics.scale_x, metrics.metrics.scale_y);
 
-    ScenicScreen* screen = manager_->screen();
-    if (screen)
-      screen->OnWindowMetrics(window_id_, device_pixel_ratio_);
+      ScenicScreen* screen = manager_->screen();
+      if (screen)
+        screen->OnWindowMetrics(window_id_, device_pixel_ratio_);
 
-    if (!size_dips_.IsEmpty())
-      UpdateSize();
+      if (!size_dips_.IsEmpty())
+        UpdateSize();
+    } else if (event.is_input()) {
+      auto& input_event = event.input();
+      if (input_event.is_focus()) {
+        delegate_->OnActivationChanged(input_event.focus().focused);
+      } else {
+        // Scenic doesn't care if the input event was handled, so ignore the
+        // "handled" status.
+        ignore_result(event_dispatcher_.ProcessEvent(input_event));
+      }
+    }
   }
 }
 
@@ -269,8 +280,8 @@ void ScenicWindow::OnEvent(fuchsia::ui::input::InputEvent event,
   callback(result);
 }
 
-void ScenicWindow::OnViewError() {
-  VLOG(1) << "viewsv1::View connection was closed.";
+void ScenicWindow::OnViewError(zx_status_t status) {
+  VLOG(1) << "viewsv1::View connection was closed with code " << status << ".";
   delegate_->OnClosed();
 }
 

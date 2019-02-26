@@ -77,26 +77,24 @@ class HostZoomMap {
   // Returns the HostZoomMap associated with this WebContent's main frame. If
   // multiple WebContents share the same SiteInstance, then they share a single
   // HostZoomMap.
-  CONTENT_EXPORT static HostZoomMap* GetForWebContents(
-      const WebContents* contents);
+  CONTENT_EXPORT static HostZoomMap* GetForWebContents(WebContents* contents);
 
   // Returns the current zoom level for the specified WebContents. May be
   // temporary or host-specific.
-  CONTENT_EXPORT static double GetZoomLevel(const WebContents* web_contents);
+  CONTENT_EXPORT static double GetZoomLevel(WebContents* web_contents);
 
   // Returns true if the page scale factor for the WebContents is one.
-  CONTENT_EXPORT static bool PageScaleFactorIsOne(
-      const WebContents* web_contents);
+  CONTENT_EXPORT static bool PageScaleFactorIsOne(WebContents* web_contents);
 
   // Sets the current zoom level for the specified WebContents. The level may
   // be temporary or host-specific depending on the particular WebContents.
-  CONTENT_EXPORT static void SetZoomLevel(const WebContents* web_contents,
+  CONTENT_EXPORT static void SetZoomLevel(WebContents* web_contents,
                                           double level);
 
   // Send an IPC to refresh any displayed error page's zoom levels. Needs to
   // be called since error pages don't get loaded via the normal channel.
   CONTENT_EXPORT static void SendErrorPageZoomLevelRefresh(
-      const WebContents* web_contents);
+      WebContents* web_contents);
 
   // Set or clear whether or not the page scale factor for a view is one.
   virtual void SetPageScaleFactorIsOneForView(

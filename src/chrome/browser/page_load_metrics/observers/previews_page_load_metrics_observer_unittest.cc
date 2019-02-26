@@ -18,6 +18,7 @@
 #include "chrome/browser/page_load_metrics/observers/page_load_metrics_observer_test_harness.h"
 #include "chrome/browser/page_load_metrics/page_load_metrics_observer.h"
 #include "chrome/browser/page_load_metrics/page_load_tracker.h"
+#include "chrome/browser/previews/previews_ui_tab_helper.h"
 #include "chrome/common/page_load_metrics/page_load_timing.h"
 #include "chrome/common/page_load_metrics/test/page_load_metrics_test_util.h"
 #include "components/previews/content/previews_user_data.h"
@@ -84,15 +85,10 @@ class PreviewsPageLoadMetricsObserverTest
         content::NavigationSimulator::CreateRendererInitiated(
             GURL(kDefaultTestUrl), main_rfh());
     navigation_simulator->Start();
-    auto chrome_navigation_data = std::make_unique<ChromeNavigationData>();
-    chrome_navigation_data->set_previews_state(previews_state);
-
-    auto data = std::make_unique<previews::PreviewsUserData>(1);
-    chrome_navigation_data->set_previews_user_data(std::move(data));
-
-    content::WebContentsTester::For(web_contents())
-        ->SetNavigationData(navigation_simulator->GetNavigationHandle(),
-                            std::move(chrome_navigation_data));
+    PreviewsUITabHelper::FromWebContents(web_contents())
+        ->CreatePreviewsUserDataForNavigationHandle(
+            navigation_simulator->GetNavigationHandle(), 1u)
+        ->set_committed_previews_state(previews_state);
     navigation_simulator->Commit();
     return navigation_simulator->GetGlobalRequestID();
   }
@@ -168,6 +164,11 @@ class PreviewsPageLoadMetricsObserverTest
   void WriteToSavings(const GURL& url, int64_t bytes_savings) {
     savings_url_ = url;
     bytes_savings_ = bytes_savings;
+  }
+
+  void SetUp() override {
+    page_load_metrics::PageLoadMetricsObserverTestHarness::SetUp();
+    PreviewsUITabHelper::CreateForWebContents(web_contents());
   }
 
  protected:

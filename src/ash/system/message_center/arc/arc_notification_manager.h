@@ -54,6 +54,10 @@ class ArcNotificationManager
   void CloseMessageCenter() override;
   void OnDoNotDisturbStatusUpdated(
       arc::mojom::ArcDoNotDisturbStatusPtr status) override;
+  void OnLockScreenSettingUpdated(
+      arc::mojom::ArcLockScreenNotificationSettingPtr setting) override;
+  void ProcessUserAction(
+      arc::mojom::ArcNotificationUserActionDataPtr data) override;
 
   // Methods called from ArcNotificationItem:
   void SendNotificationRemovedFromChrome(const std::string& key);
@@ -65,13 +69,17 @@ class ArcNotificationManager
   bool IsOpeningSettingsSupported() const;
   void SendNotificationToggleExpansionOnChrome(const std::string& key);
   void SetDoNotDisturbStatusOnAndroid(bool enabled);
-  void CancelLongPress(const std::string& key);
+  void CancelPress(const std::string& key);
+  void SetNotificationConfiguration();
 
  private:
   // Helper class to own MojoChannel and ConnectionHolder.
   class InstanceOwner;
 
   bool ShouldIgnoreNotification(arc::mojom::ArcNotificationData* data);
+
+  void PerformUserAction(uint32_t id, bool open_message_center);
+  void CancelUserAction(uint32_t id);
 
   // Invoked when |get_app_id_callback_| gets back the app id.
   void OnGotAppId(arc::mojom::ArcNotificationDataPtr data,

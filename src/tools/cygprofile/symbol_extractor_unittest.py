@@ -6,37 +6,67 @@
 import symbol_extractor
 import unittest
 
+
+# The number of spaces that objdump prefixes each symbol with.
+SPACES = ' ' * 14
+
+
 class TestSymbolInfo(unittest.TestCase):
   def testIgnoresBlankLine(self):
     symbol_info = symbol_extractor._FromObjdumpLine('')
     self.assertIsNone(symbol_info)
 
   def testIgnoresMalformedLine(self):
-    # This line is too short.
-    line = ('00c1b228      F .text  00000060 _ZN20trace_event')
+    # This line is too short: only 6 flags.
+    line = ('00c1b228      F .text\t00000060' + SPACES + '_ZN20trace_event')
     symbol_info = symbol_extractor._FromObjdumpLine(line)
     self.assertIsNone(symbol_info)
-    # This line has the wrong marker.
-    line = '00c1b228 l     f .text  00000060 _ZN20trace_event'
-    symbol_info = symbol_extractor._FromObjdumpLine(line)
-    self.assertIsNone(symbol_info)
+
+  def testWrongSymbolType(self):
+    # This line has unsupported 'f' as symbol type.
+    line = '00c1b228 l     f .text\t00000060' + SPACES + '_ZN20trace_event'
+    self.assertRaises(AssertionError, symbol_extractor._FromObjdumpLine, line)
 
   def testAssertionErrorOnInvalidLines(self):
     # This line has an invalid scope.
-    line = ('00c1b228 z     F .text  00000060 _ZN20trace_event')
+    line = ('00c1b228 z     F .text\t00000060' + SPACES + '_ZN20trace_event')
     self.assertRaises(AssertionError, symbol_extractor._FromObjdumpLine, line)
-    # This line has too many fields.
-    line = ('00c1b228 l     F .text  00000060 _ZN20trace_event too many')
+    # This line has the symbol name with spaces in it.
+    line = ('00c1b228 l     F .text\t00000060' + SPACES +
+        '_ZN20trace_event too many')
     self.assertRaises(AssertionError, symbol_extractor._FromObjdumpLine, line)
-    # This line has invalid characters in the symbol.
-    line = ('00c1b228 l     F .text  00000060 _ZN20trace_?bad')
+    # This line has invalid characters in the symbol name.
+    line = ('00c1b228 l     F .text\t00000060' + SPACES + '_ZN20trace_?bad')
     self.assertRaises(AssertionError, symbol_extractor._FromObjdumpLine, line)
     # This line has an invalid character at the start of the symbol name.
-    line = ('00c1b228 l     F .text  00000060 $_ZN20trace_bad')
+    line = ('00c1b228 l     F .text\t00000060' + SPACES + '$_ZN20trace_bad')
     self.assertRaises(AssertionError, symbol_extractor._FromObjdumpLine, line)
 
+  def testSymbolTypeObject(self):
+    # Builds with ThinLTO produce symbols of type 'O'.
+    line = ('009faf60 l     O .text\t00000500' + SPACES + 'AES_Td')
+    symbol_info = symbol_extractor._FromObjdumpLine(line)
+    self.assertIsNotNone(symbol_info)
+    self.assertEquals(0x009faf60, symbol_info.offset)
+    self.assertEquals('.text', symbol_info.section)
+    self.assertEquals(0x500, symbol_info.size)
+    self.assertEquals('AES_Td', symbol_info.name)
+
+  def testSymbolFromLocalLabel(self):
+    line = ('00f64b80 l       .text\t00000000' + SPACES + 'Builtins_Abort')
+    symbol_info = symbol_extractor._FromObjdumpLine(line)
+    self.assertIsNone(symbol_info)
+
+  def testStartOfText(self):
+    line = ('00918000 l       .text\t00000000' + SPACES +
+        '.hidden linker_script_start_of_text')
+    symbol_info = symbol_extractor._FromObjdumpLine(line)
+    self.assertIsNotNone(symbol_info)
+    self.assertEquals(0x00918000, symbol_info.offset)
+    self.assertEquals('linker_script_start_of_text', symbol_info.name)
+
   def testSymbolInfo(self):
-    line = ('00c1c05c l     F .text  0000002c '
+    line = ('00c1c05c l     F .text\t0000002c' + SPACES +
             '_GLOBAL__sub_I_chrome_main_delegate.cc')
     test_name = '_GLOBAL__sub_I_chrome_main_delegate.cc'
     test_offset = 0x00c1c05c
@@ -50,7 +80,7 @@ class TestSymbolInfo(unittest.TestCase):
     self.assertEquals(test_section, symbol_info.section)
 
   def testHiddenSymbol(self):
-    line = ('00c1c05c l     F .text  0000002c '
+    line = ('00c1c05c l     F .text\t0000002c' + SPACES +
             '.hidden _GLOBAL__sub_I_chrome_main_delegate.cc')
     test_name = '_GLOBAL__sub_I_chrome_main_delegate.cc'
     test_offset = 0x00c1c05c
@@ -66,7 +96,8 @@ class TestSymbolInfo(unittest.TestCase):
   def testDollarInSymbolName(self):
     # A $ character elsewhere in the symbol name is fine.
     # This is an example of a lambda function name from Clang.
-    line = ('00c1b228 l     F .text  00000060 _ZZL11get_globalsvENK3$_1clEv')
+    line = ('00c1b228 l     F .text\t00000060' + SPACES +
+       '_ZZL11get_globalsvENK3$_1clEv')
     symbol_info = symbol_extractor._FromObjdumpLine(line)
     self.assertIsNotNone(symbol_info)
     self.assertEquals(0xc1b228, symbol_info.offset)
@@ -79,10 +110,10 @@ class TestSymbolInfosFromStream(unittest.TestCase):
   def testSymbolInfosFromStream(self):
     lines = ['Garbage',
              '',
-             '00c1c05c l     F .text  0000002c first',
+             '00c1c05c l     F .text\t0000002c' + SPACES + 'first',
              ''
              'more garbage',
-             '00155 g     F .text  00000012 second']
+             '00155 g     F .text\t00000012' + SPACES + 'second']
     symbol_infos = symbol_extractor._SymbolInfosFromStream(lines)
     self.assertEquals(len(symbol_infos), 2)
     first = symbol_extractor.SymbolInfo('first', 0x00c1c05c, 0x2c, '.text')

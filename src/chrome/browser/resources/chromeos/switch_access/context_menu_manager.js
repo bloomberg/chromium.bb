@@ -9,10 +9,10 @@
 
 class ContextMenuManager {
   /**
-   * @param {!AutomationManager} automationManager
+   * @param {!NavigationManager} navigationManager
    * @param {!chrome.automation.AutomationNode} desktop
    */
-  constructor(automationManager, desktop) {
+  constructor(navigationManager, desktop) {
     /**
      * A list of the ContextMenu actions that are currently enabled.
      * @private {!Array<ContextMenuManager.Action>}
@@ -21,9 +21,9 @@ class ContextMenuManager {
 
     /**
      * The parent automation manager.
-     * @private {!AutomationManager}
+     * @private {!NavigationManager}
      */
-    this.automationManager_ = automationManager;
+    this.navigationManager_ = navigationManager;
 
     /**
      * The root node of the screen.
@@ -193,7 +193,7 @@ class ContextMenuManager {
     this.exit();
 
     if (event.data === ContextMenuManager.Action.CLICK)
-      this.automationManager_.selectCurrentNode();
+      this.navigationManager_.selectCurrentNode();
     else if (event.data === ContextMenuManager.Action.DICTATION)
       chrome.accessibilityPrivate.toggleDictation();
     else if (event.data === ContextMenuManager.Action.OPTIONS)
@@ -203,13 +203,13 @@ class ContextMenuManager {
         event.data === ContextMenuManager.Action.SCROLL_UP ||
         event.data === ContextMenuManager.Action.SCROLL_LEFT ||
         event.data === ContextMenuManager.Action.SCROLL_RIGHT)
-      this.automationManager_.scroll(event.data);
+      this.navigationManager_.scroll(event.data);
   }
 
   /**
    * Send a message to the context menu to update the focus ring around the
    * current node.
-   * TODO(zhelfins): Revisit focus rings before launch
+   * TODO(anastasi): Revisit focus rings before launch
    * @private
    * @param {boolean=} opt_clear If true, will clear the focus ring.
    */

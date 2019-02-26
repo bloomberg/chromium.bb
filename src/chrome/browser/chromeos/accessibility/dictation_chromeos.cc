@@ -61,9 +61,15 @@ ui::IMEInputContextHandlerInterface* GetInputContext() {
 DictationChromeos::DictationChromeos(Profile* profile)
     : composition_(std::make_unique<ui::CompositionText>()),
       profile_(profile),
-      weak_ptr_factory_(this) {}
+      weak_ptr_factory_(this) {
+  if (GetInputContext() && GetInputContext()->GetInputMethod())
+    GetInputContext()->GetInputMethod()->AddObserver(this);
+}
 
-DictationChromeos::~DictationChromeos() = default;
+DictationChromeos::~DictationChromeos() {
+  if (GetInputContext() && GetInputContext()->GetInputMethod())
+    GetInputContext()->GetInputMethod()->RemoveObserver(this);
+}
 
 bool DictationChromeos::OnToggleDictation() {
   if (speech_recognizer_) {
@@ -112,6 +118,18 @@ void DictationChromeos::OnSpeechRecognitionStateChanged(
 
 void DictationChromeos::GetSpeechAuthParameters(std::string* auth_scope,
                                                 std::string* auth_token) {}
+
+void DictationChromeos::OnTextInputStateChanged(
+    const ui::TextInputClient* client) {
+  if (!client)
+    return;
+
+  if (client->GetFocusReason() ==
+      ui::TextInputClient::FocusReason::FOCUS_REASON_NONE)
+    return;
+
+  DictationOff();
+}
 
 void DictationChromeos::DictationOff() {
   if (!speech_recognizer_)

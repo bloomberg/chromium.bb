@@ -5,7 +5,7 @@
 #include "third_party/blink/renderer/core/css/properties/longhands/overscroll_behavior_y.h"
 
 namespace blink {
-namespace CSSLonghand {
+namespace css_longhand {
 
 const CSSValue* OverscrollBehaviorY::CSSValueFromComputedStyleInternal(
     const ComputedStyle& style,
@@ -16,5 +16,5 @@ const CSSValue* OverscrollBehaviorY::CSSValueFromComputedStyleInternal(
   return CSSIdentifierValue::Create(style.OverscrollBehaviorY());
 }
 
-}  // namespace CSSLonghand
+}  // namespace css_longhand
 }  // namespace blink

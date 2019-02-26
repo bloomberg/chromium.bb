@@ -51,9 +51,9 @@ class CORE_EXPORT FontFaceSet : public EventTargetWithInlineData,
             context.GetTaskRunner(TaskType::kInternalDefault))) {}
   ~FontFaceSet() override = default;
 
-  DEFINE_ATTRIBUTE_EVENT_LISTENER(loading);
-  DEFINE_ATTRIBUTE_EVENT_LISTENER(loadingdone);
-  DEFINE_ATTRIBUTE_EVENT_LISTENER(loadingerror);
+  DEFINE_ATTRIBUTE_EVENT_LISTENER(loading, kLoading);
+  DEFINE_ATTRIBUTE_EVENT_LISTENER(loadingdone, kLoadingdone);
+  DEFINE_ATTRIBUTE_EVENT_LISTENER(loadingerror, kLoadingerror);
 
   bool check(const String& font, const String& text, ExceptionState&);
   ScriptPromise load(ScriptState*, const String& font, const String& text);
@@ -64,7 +64,7 @@ class CORE_EXPORT FontFaceSet : public EventTargetWithInlineData,
   }
 
   const AtomicString& InterfaceName() const override {
-    return EventTargetNames::FontFaceSet;
+    return event_target_names::kFontFaceSet;
   }
 
   FontFaceSet* addForBinding(ScriptState*, FontFace*, ExceptionState&);
@@ -146,7 +146,14 @@ class CORE_EXPORT FontFaceSet : public EventTargetWithInlineData,
    public:
     static LoadFontPromiseResolver* Create(FontFaceArray faces,
                                            ScriptState* script_state) {
-      return new LoadFontPromiseResolver(faces, script_state);
+      return MakeGarbageCollected<LoadFontPromiseResolver>(faces, script_state);
+    }
+
+    LoadFontPromiseResolver(FontFaceArray faces, ScriptState* script_state)
+        : num_loading_(faces.size()),
+          error_occured_(false),
+          resolver_(ScriptPromiseResolver::Create(script_state)) {
+      font_faces_.swap(faces);
     }
 
     void LoadFonts();
@@ -158,13 +165,6 @@ class CORE_EXPORT FontFaceSet : public EventTargetWithInlineData,
     void Trace(blink::Visitor*) override;
 
    private:
-    LoadFontPromiseResolver(FontFaceArray faces, ScriptState* script_state)
-        : num_loading_(faces.size()),
-          error_occured_(false),
-          resolver_(ScriptPromiseResolver::Create(script_state)) {
-      font_faces_.swap(faces);
-    }
-
     HeapVector<Member<FontFace>> font_faces_;
     int num_loading_;
     bool error_occured_;

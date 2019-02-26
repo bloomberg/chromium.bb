@@ -19,7 +19,7 @@
 #include "content/renderer/input/main_thread_event_queue.h"
 #include "content/renderer/render_thread_impl.h"
 #include "testing/gtest/include/gtest/gtest.h"
-#include "third_party/blink/public/platform/scheduler/test/mock_renderer_scheduler.h"
+#include "third_party/blink/public/platform/scheduler/test/web_mock_thread_scheduler.h"
 
 using blink::WebInputEvent;
 using blink::WebMouseEvent;
@@ -55,7 +55,9 @@ class HandledTask {
 class HandledEvent : public HandledTask {
  public:
   explicit HandledEvent(const blink::WebCoalescedInputEvent& event)
-      : event_(event.Event(), event.GetCoalescedEventsPointers()) {}
+      : event_(event.Event(),
+               event.GetCoalescedEventsPointers(),
+               event.GetPredictedEventsPointers()) {}
   ~HandledEvent() override {}
 
   blink::WebCoalescedInputEvent* taskAsEvent() override { return &event_; }
@@ -156,7 +158,7 @@ class MainThreadEventQueueTest : public testing::Test,
 
   void SetUp() override {
     queue_ = new MainThreadEventQueue(this, main_task_runner_,
-                                      &renderer_scheduler_, true);
+                                      &thread_scheduler_, true);
     queue_->set_use_raf_fallback_timer(false);
   }
 
@@ -232,7 +234,7 @@ class MainThreadEventQueueTest : public testing::Test,
 
  protected:
   scoped_refptr<base::TestSimpleTaskRunner> main_task_runner_;
-  blink::scheduler::MockRendererScheduler renderer_scheduler_;
+  blink::scheduler::WebMockThreadScheduler thread_scheduler_;
   scoped_refptr<MainThreadEventQueue> queue_;
   std::vector<std::unique_ptr<HandledTask>> handled_tasks_;
   std::unique_ptr<HandledEventCallbackTracker> handler_callback_;
@@ -254,7 +256,7 @@ TEST_F(MainThreadEventQueueTest, NonBlockingWheel) {
   EXPECT_FALSE(main_task_runner_->HasPendingTask());
   EXPECT_EQ(0u, event_queue().size());
 
-  EXPECT_CALL(renderer_scheduler_,
+  EXPECT_CALL(thread_scheduler_,
               DidHandleInputEventOnMainThread(testing::_, testing::_))
       .Times(0);
 
@@ -340,7 +342,7 @@ TEST_F(MainThreadEventQueueTest, NonBlockingWheel) {
 }
 
 TEST_F(MainThreadEventQueueTest, NonBlockingTouch) {
-  EXPECT_CALL(renderer_scheduler_,
+  EXPECT_CALL(thread_scheduler_,
               DidHandleInputEventOnMainThread(testing::_, testing::_))
       .Times(0);
 
@@ -445,7 +447,7 @@ TEST_F(MainThreadEventQueueTest, BlockingTouch) {
   kEvents[3].PressPoint(10, 10);
   kEvents[3].MovePoint(0, 35, 35);
 
-  EXPECT_CALL(renderer_scheduler_,
+  EXPECT_CALL(thread_scheduler_,
               DidHandleInputEventOnMainThread(testing::_, testing::_))
       .Times(3);
   {
@@ -499,7 +501,7 @@ TEST_F(MainThreadEventQueueTest, InterleavedEvents) {
   kTouchEvents[1].PressPoint(10, 10);
   kTouchEvents[1].MovePoint(0, 30, 30);
 
-  EXPECT_CALL(renderer_scheduler_,
+  EXPECT_CALL(thread_scheduler_,
               DidHandleInputEventOnMainThread(testing::_, testing::_))
       .Times(0);
 
@@ -570,7 +572,7 @@ TEST_F(MainThreadEventQueueTest, RafAlignedMouseInput) {
   EXPECT_FALSE(main_task_runner_->HasPendingTask());
   EXPECT_EQ(0u, event_queue().size());
 
-  EXPECT_CALL(renderer_scheduler_,
+  EXPECT_CALL(thread_scheduler_,
               DidHandleInputEventOnMainThread(testing::_, testing::_))
       .Times(0);
 
@@ -642,7 +644,7 @@ TEST_F(MainThreadEventQueueTest, RafAlignedTouchInput) {
   EXPECT_FALSE(main_task_runner_->HasPendingTask());
   EXPECT_EQ(0u, event_queue().size());
 
-  EXPECT_CALL(renderer_scheduler_,
+  EXPECT_CALL(thread_scheduler_,
               DidHandleInputEventOnMainThread(testing::_, testing::_))
       .Times(3);
 
@@ -716,7 +718,7 @@ TEST_F(MainThreadEventQueueTest, RafAlignedTouchInputCoalescedMoves) {
   kEvents[1].MovePoint(0, 20, 20);
   kEvents[0].dispatch_type = WebInputEvent::kEventNonBlocking;
 
-  EXPECT_CALL(renderer_scheduler_,
+  EXPECT_CALL(thread_scheduler_,
               DidHandleInputEventOnMainThread(testing::_, testing::_))
       .Times(4);
 
@@ -779,7 +781,7 @@ TEST_F(MainThreadEventQueueTest, RafAlignedTouchInputCoalescedMoves) {
 }
 
 TEST_F(MainThreadEventQueueTest, RafAlignedTouchInputThrottlingMoves) {
-  EXPECT_CALL(renderer_scheduler_,
+  EXPECT_CALL(thread_scheduler_,
               DidHandleInputEventOnMainThread(testing::_, testing::_))
       .Times(3);
 
@@ -834,7 +836,7 @@ TEST_F(MainThreadEventQueueTest, LowLatency) {
   EXPECT_FALSE(main_task_runner_->HasPendingTask());
   EXPECT_EQ(0u, event_queue().size());
 
-  EXPECT_CALL(renderer_scheduler_,
+  EXPECT_CALL(thread_scheduler_,
               DidHandleInputEventOnMainThread(testing::_, testing::_))
       .Times(0);
 
@@ -902,7 +904,7 @@ TEST_F(MainThreadEventQueueTest, BlockingTouchesDuringFling) {
   kEvents.touch_start_or_first_touch_move = true;
   set_enable_fling_passive_listener_flag(true);
 
-  EXPECT_CALL(renderer_scheduler_,
+  EXPECT_CALL(thread_scheduler_,
               DidHandleInputEventOnMainThread(testing::_, testing::_))
       .Times(4);
 
@@ -990,7 +992,7 @@ TEST_F(MainThreadEventQueueTest, BlockingTouchesOutsideFling) {
   kEvents.touch_start_or_first_touch_move = true;
   set_enable_fling_passive_listener_flag(false);
 
-  EXPECT_CALL(renderer_scheduler_,
+  EXPECT_CALL(thread_scheduler_,
               DidHandleInputEventOnMainThread(testing::_, testing::_))
       .Times(4);
 
@@ -1087,7 +1089,7 @@ class MainThreadEventQueueInitializationTest
 
  protected:
   scoped_refptr<MainThreadEventQueue> queue_;
-  blink::scheduler::MockRendererScheduler renderer_scheduler_;
+  blink::scheduler::WebMockThreadScheduler thread_scheduler_;
   scoped_refptr<base::TestSimpleTaskRunner> main_task_runner_;
 };
 
@@ -1119,7 +1121,7 @@ TEST_F(MainThreadEventQueueTest, QueuingClosureWithRafEvent) {
   EXPECT_TRUE(main_task_runner_->HasPendingTask());
   EXPECT_FALSE(needs_main_frame_);
 
-  EXPECT_CALL(renderer_scheduler_,
+  EXPECT_CALL(thread_scheduler_,
               DidHandleInputEventOnMainThread(testing::_, testing::_))
       .Times(2);
 
@@ -1163,7 +1165,7 @@ TEST_F(MainThreadEventQueueTest, QueuingClosuresBetweenEvents) {
   EXPECT_FALSE(main_task_runner_->HasPendingTask());
   EXPECT_EQ(0u, event_queue().size());
 
-  EXPECT_CALL(renderer_scheduler_,
+  EXPECT_CALL(thread_scheduler_,
               DidHandleInputEventOnMainThread(testing::_, testing::_))
       .Times(2);
 
@@ -1204,7 +1206,7 @@ TEST_F(MainThreadEventQueueTest, BlockingTouchMoveBecomesNonBlocking) {
   EXPECT_FALSE(main_task_runner_->HasPendingTask());
   EXPECT_EQ(0u, event_queue().size());
 
-  EXPECT_CALL(renderer_scheduler_,
+  EXPECT_CALL(thread_scheduler_,
               DidHandleInputEventOnMainThread(testing::_, testing::_))
       .Times(3);
   EXPECT_EQ(WebInputEvent::kBlocking, kEvents[0].dispatch_type);
@@ -1249,7 +1251,7 @@ TEST_F(MainThreadEventQueueTest, BlockingTouchMoveWithTouchEnd) {
   EXPECT_FALSE(main_task_runner_->HasPendingTask());
   EXPECT_EQ(0u, event_queue().size());
 
-  EXPECT_CALL(renderer_scheduler_,
+  EXPECT_CALL(thread_scheduler_,
               DidHandleInputEventOnMainThread(testing::_, testing::_))
       .Times(3);
   EXPECT_EQ(WebInputEvent::kBlocking, kEvents[0].dispatch_type);
@@ -1287,7 +1289,7 @@ TEST_F(MainThreadEventQueueTest, UnbufferedDispatchTouchEvent) {
   EXPECT_FALSE(main_task_runner_->HasPendingTask());
   EXPECT_EQ(0u, event_queue().size());
 
-  EXPECT_CALL(renderer_scheduler_,
+  EXPECT_CALL(thread_scheduler_,
               DidHandleInputEventOnMainThread(testing::_, testing::_))
       .Times(3);
 
@@ -1349,7 +1351,7 @@ TEST_F(MainThreadEventQueueTest, PointerRawMoveEvents) {
   EXPECT_FALSE(main_task_runner_->HasPendingTask());
   EXPECT_EQ(0u, event_queue().size());
 
-  EXPECT_CALL(renderer_scheduler_,
+  EXPECT_CALL(thread_scheduler_,
               DidHandleInputEventOnMainThread(testing::_, testing::_))
       .Times(0);
 
@@ -1395,7 +1397,7 @@ TEST_F(MainThreadEventQueueTest, UnbufferedDispatchMouseEvent) {
   EXPECT_FALSE(main_task_runner_->HasPendingTask());
   EXPECT_EQ(0u, event_queue().size());
 
-  EXPECT_CALL(renderer_scheduler_,
+  EXPECT_CALL(thread_scheduler_,
               DidHandleInputEventOnMainThread(testing::_, testing::_))
       .Times(0);
 

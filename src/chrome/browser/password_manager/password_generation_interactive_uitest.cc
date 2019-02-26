@@ -5,6 +5,7 @@
 #include "base/command_line.h"
 #include "base/run_loop.h"
 #include "base/strings/utf_string_conversions.h"
+#include "base/test/metrics/histogram_tester.h"
 #include "base/test/scoped_feature_list.h"
 #include "build/build_config.h"
 #include "chrome/browser/password_manager/chrome_password_manager_client.h"
@@ -18,7 +19,6 @@
 #include "chrome/test/base/ui_test_utils.h"
 #include "components/autofill/core/browser/autofill_test_utils.h"
 #include "components/autofill/core/common/autofill_features.h"
-#include "components/autofill/core/common/autofill_switches.h"
 #include "components/password_manager/core/browser/new_password_form_manager.h"
 #include "components/password_manager/core/browser/password_generation_manager.h"
 #include "components/password_manager/core/browser/password_manager_util.h"
@@ -97,10 +97,6 @@ class PasswordGenerationInteractiveTest
     // Make sure the feature is enabled.
     scoped_feature_list_.InitAndEnableFeature(
         autofill::features::kAutomaticPasswordGeneration);
-
-    // Don't require ping from autofill or blacklist checking.
-    command_line->AppendSwitch(
-        autofill::switches::kLocalHeuristicsOnlyForPasswordGeneration);
   }
 
   void SetUpOnMainThread() override {
@@ -113,19 +109,16 @@ class PasswordGenerationInteractiveTest
     ChromePasswordManagerClient* client =
         ChromePasswordManagerClient::FromWebContents(WebContents());
     client->SetTestObserver(&observer_);
+    // The base class should enable password generation.
+    ASSERT_NE(password_manager::NOT_SYNCING, client->GetPasswordSyncState());
     password_manager::NewPasswordFormManager::
         set_wait_for_server_predictions_for_filling(false);
 
-    NavigateToFile("/password/signup_form.html");
+    NavigateToFile("/password/signup_form_new_password.html");
   }
 
   void TearDownOnMainThread() override {
     PasswordManagerBrowserTestBase::TearDownOnMainThread();
-
-    // Clean up UI.
-    ChromePasswordManagerClient* client =
-        ChromePasswordManagerClient::FromWebContents(WebContents());
-    client->HidePasswordGenerationPopup();
 
     autofill::test::ReenableSystemServices();
   }
@@ -202,6 +195,7 @@ IN_PROC_BROWSER_TEST_F(PasswordGenerationInteractiveTest,
                        PopupShownAndPasswordSelected) {
   FocusPasswordField();
   EXPECT_TRUE(GenerationPopupShowing());
+  base::HistogramTester histogram_tester;
   SendKeyToPopup(ui::VKEY_DOWN);
   SendKeyToPopup(ui::VKEY_RETURN);
 
@@ -215,6 +209,15 @@ IN_PROC_BROWSER_TEST_F(PasswordGenerationInteractiveTest,
   // Re-focusing the password field should show the editing popup.
   FocusPasswordField();
   EXPECT_TRUE(EditingPopupShowing());
+
+  // The metrics are recorded when the form manager is destroyed. Closing the
+  // tab enforces it.
+  CloseAllBrowsers();
+  histogram_tester.ExpectUniqueSample(
+      "PasswordGeneration.UserDecision",
+      password_manager::PasswordFormMetricsRecorder::GeneratedPasswordStatus::
+          kPasswordAccepted,
+      1);
 }
 
 IN_PROC_BROWSER_TEST_F(PasswordGenerationInteractiveTest,
@@ -232,20 +235,30 @@ IN_PROC_BROWSER_TEST_F(PasswordGenerationInteractiveTest,
   EXPECT_TRUE(EditingPopupShowing());
 
   // Delete the password. The generation prompt should be visible.
+  base::HistogramTester histogram_tester;
   SimulateUserDeletingFieldContent("password_field");
   WaitForPopupStatusChange();
   EXPECT_FALSE(EditingPopupShowing());
   EXPECT_TRUE(GenerationPopupShowing());
+
+  // The metrics are recorded on navigation when the frame is destroyed.
+  NavigateToFile("/password/done.html");
+  histogram_tester.ExpectUniqueSample(
+      "PasswordGeneration.UserDecision",
+      password_manager::PasswordFormMetricsRecorder::GeneratedPasswordStatus::
+          kPasswordDeleted,
+      1);
 }
 
 IN_PROC_BROWSER_TEST_F(PasswordGenerationInteractiveTest,
                        PopupShownManuallyAndPasswordErased) {
   NavigateToFile("/password/password_form.html");
-
   FocusPasswordField();
+  EXPECT_FALSE(GenerationPopupShowing());
   // The same flow happens when user generates a password from the context menu.
   password_manager_util::UserTriggeredManualGenerationFromContextMenu(
       ChromePasswordManagerClient::FromWebContents(WebContents()));
+  WaitForPopupStatusChange();
   EXPECT_TRUE(GenerationPopupShowing());
   SendKeyToPopup(ui::VKEY_DOWN);
   SendKeyToPopup(ui::VKEY_RETURN);

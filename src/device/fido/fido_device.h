@@ -63,6 +63,7 @@ class COMPONENT_EXPORT(DEVICE_FIDO) FidoDevice {
   virtual base::string16 GetDisplayName() const;
   virtual FidoTransportProtocol DeviceTransport() const = 0;
   virtual bool IsInPairingMode() const;
+  virtual bool IsPaired() const;
   virtual base::WeakPtr<FidoDevice> GetWeakPtr() = 0;
 
   // Sends a speculative AuthenticatorGetInfo request to determine whether the

@@ -646,6 +646,17 @@ bool GrGLInterface::validate() const {
         }
     }
 
+    if ((kGL_GrGLStandard == fStandard && glVer >= GR_GL_VER(4,1)) ||
+        (kGLES_GrGLStandard == fStandard && glVer >= GR_GL_VER(3,0))) {
+        if (!fFunctions.fBindSampler ||
+            !fFunctions.fDeleteSamplers  ||
+            !fFunctions.fGenSamplers ||
+            !fFunctions.fSamplerParameteri ||
+            !fFunctions.fSamplerParameteriv) {
+            RETURN_FALSE_INTERFACE;
+        }
+    }
+
     return true;
 }
 

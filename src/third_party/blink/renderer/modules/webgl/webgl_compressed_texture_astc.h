@@ -23,11 +23,10 @@ class WebGLCompressedTextureASTC final : public WebGLExtension {
   static bool Supported(WebGLRenderingContextBase*);
   static const char* ExtensionName();
 
+  explicit WebGLCompressedTextureASTC(WebGLRenderingContextBase*);
+
   WebGLExtensionName GetName() const override;
   static const BlockSizeCompressASTC kBlockSizeCompressASTC[];
-
- private:
-  explicit WebGLCompressedTextureASTC(WebGLRenderingContextBase*);
 };
 
 }  // namespace blink

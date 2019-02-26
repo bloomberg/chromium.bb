@@ -163,19 +163,6 @@ FloodFillInkDropRipple::~FloodFillInkDropRipple() {
   AbortAllAnimations();
 }
 
-void FloodFillInkDropRipple::HostSizeChanged(const gfx::Size& new_size) {
-  root_layer_.SetBounds(CalculateClipBounds(new_size, clip_insets_));
-  switch (target_ink_drop_state()) {
-    case InkDropState::ACTION_PENDING:
-    case InkDropState::ALTERNATE_ACTION_PENDING:
-    case InkDropState::ACTIVATED:
-      painted_layer_.SetTransform(GetMaxSizeTargetTransform());
-      break;
-    default:
-      break;
-  }
-}
-
 void FloodFillInkDropRipple::SnapToActivated() {
   InkDropRipple::SnapToActivated();
   SetOpacity(visible_opacity_);

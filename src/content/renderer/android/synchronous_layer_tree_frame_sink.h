@@ -20,6 +20,8 @@
 #include "cc/trees/managed_memory_policy.h"
 #include "components/viz/common/frame_sinks/begin_frame_source.h"
 #include "components/viz/common/quads/compositor_frame.h"
+#include "components/viz/common/surfaces/local_surface_id_allocation.h"
+#include "components/viz/common/surfaces/parent_local_surface_id_allocator.h"
 #include "components/viz/service/display/display_client.h"
 #include "components/viz/service/display_embedder/server_shared_bitmap_manager.h"
 #include "ipc/ipc_message.h"
@@ -91,7 +93,8 @@ class SynchronousLayerTreeFrameSink
   // cc::LayerTreeFrameSink implementation.
   bool BindToClient(cc::LayerTreeFrameSinkClient* sink_client) override;
   void DetachFromClient() override;
-  void SubmitCompositorFrame(viz::CompositorFrame frame) override;
+  void SubmitCompositorFrame(viz::CompositorFrame frame,
+                             bool show_hit_test_borders) override;
   void DidNotProduceFrame(const viz::BeginFrameAck& ack) override;
   void DidAllocateSharedBitmap(mojo::ScopedSharedBufferHandle buffer,
                                const viz::SharedBitmapId& id) override;
@@ -108,10 +111,9 @@ class SynchronousLayerTreeFrameSink
   // viz::mojom::CompositorFrameSinkClient implementation.
   void DidReceiveCompositorFrameAck(
       const std::vector<viz::ReturnedResource>& resources) override;
-  void DidPresentCompositorFrame(
-      uint32_t presentation_token,
-      const gfx::PresentationFeedback& feedback) override;
-  void OnBeginFrame(const viz::BeginFrameArgs& args) override;
+  void OnBeginFrame(const viz::BeginFrameArgs& args,
+                    const base::flat_map<uint32_t, gfx::PresentationFeedback>&
+                        feedbacks) override;
   void ReclaimResources(
       const std::vector<viz::ReturnedResource>& resources) override;
   void OnBeginFramePausedChanged(bool paused) override;
@@ -165,9 +167,8 @@ class SynchronousLayerTreeFrameSink
 
   class StubDisplayClient : public viz::DisplayClient {
     void DisplayOutputSurfaceLost() override {}
-    void DisplayWillDrawAndSwap(
-        bool will_draw_and_swap,
-        const viz::RenderPassList& render_passes) override {}
+    void DisplayWillDrawAndSwap(bool will_draw_and_swap,
+                                viz::RenderPassList* render_passes) override {}
     void DisplayDidDrawAndSwap() override {}
     void DisplayDidReceiveCALayerParams(
         const gfx::CALayerParams& ca_layer_params) override {}
@@ -179,10 +180,10 @@ class SynchronousLayerTreeFrameSink
   // TODO(danakj): These don't to be stored in unique_ptrs when OutputSurface
   // is owned/destroyed on the compositor thread.
   std::unique_ptr<viz::FrameSinkManagerImpl> frame_sink_manager_;
-  std::unique_ptr<viz::ParentLocalSurfaceIdAllocator>
-      parent_local_surface_id_allocator_;
-  viz::LocalSurfaceId child_local_surface_id_;
-  viz::LocalSurfaceId root_local_surface_id_;
+  viz::ParentLocalSurfaceIdAllocator root_local_surface_id_allocator_;
+  viz::ParentLocalSurfaceIdAllocator child_local_surface_id_allocator_;
+  viz::LocalSurfaceIdAllocation child_local_surface_id_allocation_;
+  viz::LocalSurfaceIdAllocation root_local_surface_id_allocation_;
   gfx::Size child_size_;
   gfx::Size display_size_;
   float device_scale_factor_ = 0;

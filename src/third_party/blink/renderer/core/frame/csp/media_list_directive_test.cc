@@ -139,8 +139,8 @@ TEST_F(MediaListDirectiveTest, Subsumes) {
   for (const auto& test : cases) {
     HeapVector<Member<MediaListDirective>> policies_b;
     for (auto* const policy : test.policies_b) {
-      policies_b.push_back(
-          new MediaListDirective("plugin-types", policy, csp.Get()));
+      policies_b.push_back(MakeGarbageCollected<MediaListDirective>(
+          "plugin-types", policy, csp.Get()));
     }
 
     EXPECT_EQ(a.Subsumes(policies_b), test.subsumed);

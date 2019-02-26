@@ -15,7 +15,6 @@ import android.os.Vibrator;
 import android.provider.Settings;
 import android.support.annotation.IntDef;
 import android.support.v4.view.accessibility.AccessibilityEventCompat;
-import android.support.v7.widget.AppCompatImageButton;
 import android.text.Editable;
 import android.text.InputType;
 import android.text.Selection;
@@ -25,6 +24,7 @@ import android.view.ActionMode;
 import android.view.Gravity;
 import android.view.KeyEvent;
 import android.view.View;
+import android.widget.ImageButton;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 
@@ -60,10 +60,10 @@ public class FindToolbar extends LinearLayout
 
     private static final long ACCESSIBLE_ANNOUNCEMENT_DELAY_MILLIS = 500;
 
-    @IntDef({FindToolbarState.SHOWN, FindToolbarState.SHOWING, FindToolbarState.HIDDEN,
-            FindToolbarState.HIDING})
+    @IntDef({FindLocationBarState.SHOWN, FindLocationBarState.SHOWING, FindLocationBarState.HIDDEN,
+            FindLocationBarState.HIDING})
     @Retention(RetentionPolicy.SOURCE)
-    private @interface FindToolbarState {
+    private @interface FindLocationBarState {
         int SHOWN = 0;
         int SHOWING = 1;
         int HIDDEN = 2;
@@ -73,9 +73,9 @@ public class FindToolbar extends LinearLayout
     // Toolbar UI
     private TextView mFindStatus;
     protected FindQuery mFindQuery;
-    protected AppCompatImageButton mCloseFindButton;
-    protected AppCompatImageButton mFindPrevButton;
-    protected AppCompatImageButton mFindNextButton;
+    protected ImageButton mCloseFindButton;
+    protected ImageButton mFindPrevButton;
+    protected ImageButton mFindNextButton;
 
     private FindResultBar mResultBar;
 
@@ -97,10 +97,10 @@ public class FindToolbar extends LinearLayout
     /** Whether the search key should trigger a new search. */
     private boolean mSearchKeyShouldTriggerSearch;
 
-    @FindToolbarState
-    private int mCurrentState = FindToolbarState.HIDDEN;
-    @FindToolbarState
-    private int mDesiredState = FindToolbarState.HIDDEN;
+    @FindLocationBarState
+    private int mCurrentState = FindLocationBarState.HIDDEN;
+    @FindLocationBarState
+    private int mDesiredState = FindLocationBarState.HIDDEN;
 
     private Handler mHandler = new Handler();
     private Runnable mAccessibleAnnouncementRunnable;
@@ -310,7 +310,7 @@ public class FindToolbar extends LinearLayout
 
         mFindStatus = (TextView) findViewById(R.id.find_status);
 
-        mFindPrevButton = (AppCompatImageButton) findViewById(R.id.find_prev_button);
+        mFindPrevButton = findViewById(R.id.find_prev_button);
         mFindPrevButton.setOnClickListener(new OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -318,7 +318,7 @@ public class FindToolbar extends LinearLayout
             }
         });
 
-        mFindNextButton = (AppCompatImageButton) findViewById(R.id.find_next_button);
+        mFindNextButton = findViewById(R.id.find_next_button);
         mFindNextButton.setOnClickListener(new OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -328,7 +328,7 @@ public class FindToolbar extends LinearLayout
 
         setPrevNextEnabled(false);
 
-        mCloseFindButton = (AppCompatImageButton) findViewById(R.id.close_find_button);
+        mCloseFindButton = findViewById(R.id.close_find_button);
         mCloseFindButton.setOnClickListener(new OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -560,14 +560,14 @@ public class FindToolbar extends LinearLayout
         ThreadUtils.checkUiThread();
         if (!isWebContentAvailable()) return;
 
-        if (mCurrentState == FindToolbarState.SHOWN) {
+        if (mCurrentState == FindLocationBarState.SHOWN) {
             requestQueryFocus();
             return;
         }
 
-        mDesiredState = FindToolbarState.SHOWN;
-        if (mCurrentState != FindToolbarState.HIDDEN) return;
-        setCurrentState(FindToolbarState.SHOWING);
+        mDesiredState = FindLocationBarState.SHOWN;
+        if (mCurrentState != FindLocationBarState.HIDDEN) return;
+        setCurrentState(FindLocationBarState.SHOWING);
         handleActivate();
     }
 
@@ -592,7 +592,7 @@ public class FindToolbar extends LinearLayout
         setResultsBarVisibility(true);
         updateVisualsForTabModel(mTabModelSelector.isIncognitoSelected());
 
-        setCurrentState(FindToolbarState.SHOWN);
+        setCurrentState(FindLocationBarState.SHOWN);
     }
 
     /**
@@ -609,9 +609,9 @@ public class FindToolbar extends LinearLayout
     public final void deactivate(boolean clearSelection) {
         ThreadUtils.checkUiThread();
 
-        mDesiredState = FindToolbarState.HIDDEN;
-        if (mCurrentState != FindToolbarState.SHOWN) return;
-        setCurrentState(FindToolbarState.HIDING);
+        mDesiredState = FindLocationBarState.HIDDEN;
+        if (mCurrentState != FindLocationBarState.SHOWN) return;
+        setCurrentState(FindLocationBarState.HIDING);
         handleDeactivation(clearSelection);
     }
 
@@ -644,28 +644,30 @@ public class FindToolbar extends LinearLayout
         mFindInPageBridge = null;
         mCurrentTab = null;
 
-        setCurrentState(FindToolbarState.HIDDEN);
+        setCurrentState(FindLocationBarState.HIDDEN);
     }
 
-    private void setCurrentState(@FindToolbarState int state) {
+    private void setCurrentState(@FindLocationBarState int state) {
         mCurrentState = state;
 
         // Notify the observers if we hit the transition states.
         if (mObserver != null) {
-            if (mCurrentState == FindToolbarState.HIDDEN) {
+            if (mCurrentState == FindLocationBarState.HIDDEN) {
                 mObserver.onFindToolbarHidden();
-            } else if (mCurrentState == FindToolbarState.SHOWN) {
+            } else if (mCurrentState == FindLocationBarState.SHOWN) {
                 mObserver.onFindToolbarShown();
             }
         }
 
         // Ensure the current state reflects the desired state if the state change happened while
         // processing the previous state change.
-        assert mDesiredState == FindToolbarState.HIDDEN || mDesiredState == FindToolbarState.SHOWN;
-        if (mCurrentState == FindToolbarState.HIDDEN && mDesiredState == FindToolbarState.SHOWN) {
+        assert mDesiredState == FindLocationBarState.HIDDEN
+                || mDesiredState == FindLocationBarState.SHOWN;
+        if (mCurrentState == FindLocationBarState.HIDDEN
+                && mDesiredState == FindLocationBarState.SHOWN) {
             activate();
-        } else if (mCurrentState == FindToolbarState.SHOWN
-                && mDesiredState == FindToolbarState.HIDDEN) {
+        } else if (mCurrentState == FindLocationBarState.SHOWN
+                && mDesiredState == FindLocationBarState.HIDDEN) {
             deactivate();
         }
     }

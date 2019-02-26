@@ -29,7 +29,6 @@
 #include "chrome/browser/ui/browser_dialogs.h"
 #include "chrome/browser/ui/browser_finder.h"
 #include "chrome/browser/web_applications/components/web_app_helpers.h"
-#include "chrome/common/extensions/api/webstore/webstore_api_constants.h"
 #include "chrome/common/extensions/extension_constants.h"
 #include "chrome/common/extensions/manifest_handlers/app_launch_info.h"
 #include "chrome/common/render_messages.h"
@@ -107,10 +106,13 @@ TabHelper::TabHelper(content::WebContents* web_contents)
   BookmarkManagerPrivateDragEventRouter::CreateForWebContents(web_contents);
 }
 
-void TabHelper::CreateHostedAppFromWebContents(bool shortcut_app_requested) {
+void TabHelper::CreateHostedAppFromWebContents(bool shortcut_app_requested,
+                                               OnceInstallCallback callback) {
   DCHECK(CanCreateBookmarkApp());
   if (pending_web_app_action_ != NONE)
     return;
+
+  install_callback_ = std::move(callback);
 
   // Start fetching web app info for CreateApplicationShortcut dialog and show
   // the dialog when the data is available in OnDidGetWebApplicationInfo.
@@ -198,6 +200,10 @@ void TabHelper::FinishCreateBookmarkApp(
                     blink::kWebDisplayModeStandalone);
   }
   pending_web_app_action_ = NONE;
+
+  const bool success = !!extension;
+  const ExtensionId app_id = extension ? extension->id() : ExtensionId();
+  std::move(install_callback_).Run(app_id, success);
 }
 
 void TabHelper::RenderFrameCreated(content::RenderFrameHost* host) {
@@ -360,8 +366,8 @@ void TabHelper::UpdateExtensionAppIcon(const Extension* extension) {
                                    ExtensionIconSet::MATCH_BIGGER),
         gfx::Size(extension_misc::EXTENSION_ICON_SMALL,
                   extension_misc::EXTENSION_ICON_SMALL),
-        base::Bind(&TabHelper::OnImageLoaded,
-                   image_loader_ptr_factory_.GetWeakPtr()));
+        base::BindOnce(&TabHelper::OnImageLoaded,
+                       image_loader_ptr_factory_.GetWeakPtr()));
   }
 }
 

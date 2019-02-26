@@ -170,36 +170,41 @@ std::unique_ptr<Entry> Entry::Deserialize(const base::Value& manifest_root) {
     if (const base::Value* instance_sharing_value =
             options->FindKey("instance_sharing")) {
       const std::string& instance_sharing = instance_sharing_value->GetString();
-      if (instance_sharing == "none")
+      if (instance_sharing == "none") {
         options_struct.instance_sharing =
             ServiceOptions::InstanceSharingType::NONE;
-      else if (instance_sharing == "singleton")
+      } else if (instance_sharing == "singleton") {
         options_struct.instance_sharing =
             ServiceOptions::InstanceSharingType::SINGLETON;
-      else if (instance_sharing == "shared_instance_across_users")
+      } else if (instance_sharing == "shared_instance_across_users" ||
+                 instance_sharing == "shared_across_instance_groups") {
         options_struct.instance_sharing =
-            ServiceOptions::InstanceSharingType::SHARED_INSTANCE_ACROSS_USERS;
-      else
+            ServiceOptions::InstanceSharingType::SHARED_ACROSS_INSTANCE_GROUPS;
+      } else {
         LOG(ERROR) << "Entry::Deserialize invalid instance sharing type: "
                    << instance_sharing;
+      }
     }
 
-    if (const base::Value* can_connect_to_other_services_as_any_user_value =
-            options->FindKey("can_connect_to_other_services_as_any_user"))
-      options_struct.can_connect_to_other_services_as_any_user =
-          can_connect_to_other_services_as_any_user_value->GetBool();
+    if (const base::Value* can_connect_to_instances_in_any_group =
+            options->FindKey("can_connect_to_other_services_as_any_user")) {
+      options_struct.can_connect_to_instances_in_any_group =
+          can_connect_to_instances_in_any_group->GetBool();
+    }
 
     if (const base::Value*
             can_connect_to_other_services_with_any_instance_name_value =
                 options->FindKey(
-                    "can_connect_to_other_services_with_any_instance_name"))
+                    "can_connect_to_other_services_with_any_instance_name")) {
       options_struct.can_connect_to_other_services_with_any_instance_name =
           can_connect_to_other_services_with_any_instance_name_value->GetBool();
+    }
 
     if (const base::Value* can_create_other_service_instances_value =
-            options->FindKey("can_create_other_service_instances"))
+            options->FindKey("can_create_other_service_instances")) {
       options_struct.can_create_other_service_instances =
           can_create_other_service_instances_value->GetBool();
+    }
 
     entry->AddOptions(std::move(options_struct));
   }

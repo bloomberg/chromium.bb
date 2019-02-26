@@ -4,14 +4,19 @@
 
 #include "ui/ozone/platform/scenic/vulkan_implementation_scenic.h"
 
+#include <lib/ui/scenic/cpp/commands.h>
+#include <lib/ui/scenic/cpp/session.h>
 #include <lib/zx/channel.h>
 
+#include "base/bind_helpers.h"
 #include "base/files/file_path.h"
 #include "base/fuchsia/fuchsia_logging.h"
+#include "base/macros.h"
 #include "base/native_library.h"
 #include "gpu/vulkan/vulkan_function_pointers.h"
 #include "gpu/vulkan/vulkan_instance.h"
 #include "gpu/vulkan/vulkan_surface.h"
+#include "mojo/public/cpp/system/platform_handle.h"
 #include "ui/gfx/gpu_fence.h"
 #include "ui/ozone/platform/scenic/scenic_window.h"
 #include "ui/ozone/platform/scenic/scenic_window_manager.h"
@@ -19,9 +24,71 @@
 
 namespace ui {
 
+namespace {
+
+// Holds resources necessary for presenting to a View using a VkSurfaceKHR.
+class ScenicSurface {
+ public:
+  ScenicSurface(fuchsia::ui::scenic::Scenic* scenic,
+                mojom::ScenicGpuHost* gpu_host,
+                gfx::AcceleratedWidget window)
+      : scenic_(scenic),
+        parent_(&scenic_),
+        shape_(&scenic_),
+        material_(&scenic_),
+        gpu_host_(gpu_host),
+        window_(window) {
+    shape_.SetShape(scenic::Rectangle(&scenic_, 1.f, 1.f));
+    shape_.SetMaterial(material_);
+  }
+
+  // Sets the texture of the surface to a new image pipe.
+  void SetTextureToNewImagePipe(
+      fidl::InterfaceRequest<fuchsia::images::ImagePipe> image_pipe_request) {
+    uint32_t image_pipe_id = scenic_.AllocResourceId();
+    scenic_.Enqueue(scenic::NewCreateImagePipeCmd(
+        image_pipe_id, std::move(image_pipe_request)));
+    material_.SetTexture(image_pipe_id);
+    scenic_.ReleaseResource(image_pipe_id);
+  }
+
+  // Links the surface to the window in the browser process.
+  //
+  // Scenic does not care about order here; it's totally fine for imports to
+  // cause exports, and that's what's done here.
+  void LinkToParent() {
+    zx::eventpair export_token;
+    parent_.BindAsRequest(&export_token);
+    parent_.AddChild(shape_);
+    gpu_host_->ExportParent(window_,
+                            mojo::WrapPlatformHandle(
+                                mojo::PlatformHandle(std::move(export_token))));
+  }
+
+  // Flushes commands to scenic & executes them.
+  void Commit() {
+    scenic_.Present(
+        /*presentation_time=*/0, [](fuchsia::images::PresentationInfo info) {});
+  }
+
+ private:
+  scenic::Session scenic_;
+  scenic::ImportNode parent_;
+  scenic::ShapeNode shape_;
+  scenic::Material material_;
+
+  mojom::ScenicGpuHost* gpu_host_ = nullptr;
+  gfx::AcceleratedWidget window_ = gfx::kNullAcceleratedWidget;
+
+  DISALLOW_COPY_AND_ASSIGN(ScenicSurface);
+};
+
+}  // namespace
+
 VulkanImplementationScenic::VulkanImplementationScenic(
-    ScenicWindowManager* scenic_window_manager)
-    : scenic_window_manager_(scenic_window_manager) {}
+    mojom::ScenicGpuHost* scenic_gpu_host,
+    fuchsia::ui::scenic::Scenic* scenic)
+    : scenic_gpu_host_(scenic_gpu_host), scenic_(scenic) {}
 
 VulkanImplementationScenic::~VulkanImplementationScenic() = default;
 
@@ -72,16 +139,14 @@ VkInstance VulkanImplementationScenic::GetVulkanInstance() {
 
 std::unique_ptr<gpu::VulkanSurface>
 VulkanImplementationScenic::CreateViewSurface(gfx::AcceleratedWidget window) {
-  ScenicWindow* scenic_window = scenic_window_manager_->GetWindow(window);
-  if (!scenic_window)
-    return nullptr;
-  ScenicSession* scenic_session = scenic_window->scenic_session();
+  auto scenic_surface =
+      std::make_unique<ScenicSurface>(scenic_, scenic_gpu_host_, window);
+
+  // Attach the surface to the window.
+  scenic_surface->LinkToParent();
+
   fuchsia::images::ImagePipePtr image_pipe;
-  ScenicSession::ResourceId image_pipe_id =
-      scenic_session->CreateImagePipe(image_pipe.NewRequest());
-  scenic_window->SetTexture(image_pipe_id);
-  scenic_session->ReleaseResource(image_pipe_id);
-  scenic_session->Present();
+  scenic_surface->SetTextureToNewImagePipe(image_pipe.NewRequest());
 
   VkSurfaceKHR surface;
   VkMagmaSurfaceCreateInfoKHR surface_create_info = {};
@@ -98,7 +163,17 @@ VulkanImplementationScenic::CreateViewSurface(gfx::AcceleratedWidget window) {
     LOG(FATAL) << "vkCreateMagmaSurfaceKHR failed: " << result;
   }
 
-  return std::make_unique<gpu::VulkanSurface>(GetVulkanInstance(), surface);
+  // Execute the initialization commands. Once this is done we won't need to
+  // make any further changes to ScenicSurface other than to keep it alive; the
+  // texture can be replaced through the vulkan swapchain API.
+  scenic_surface->Commit();
+
+  auto destruction_callback =
+      base::BindOnce(base::DoNothing::Once<std::unique_ptr<ScenicSurface>>(),
+                     std::move(scenic_surface));
+
+  return std::make_unique<gpu::VulkanSurface>(GetVulkanInstance(), surface,
+                                              std::move(destruction_callback));
 }
 
 bool VulkanImplementationScenic::GetPhysicalDevicePresentationSupport(

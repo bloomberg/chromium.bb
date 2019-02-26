@@ -56,7 +56,8 @@ class QuicStreamHost final : public base::SupportsWeakPtr<QuicStreamHost>,
   scoped_refptr<base::SingleThreadTaskRunner> proxy_thread() const;
 
   void Reset();
-  void Finish();
+  void MarkReceivedDataConsumed(uint32_t amount);
+  void WriteData(Vector<uint8_t> data, bool fin);
 
  private:
   // Instruct the QuicTransportHost to remove and delete this stream host.
@@ -64,7 +65,8 @@ class QuicStreamHost final : public base::SupportsWeakPtr<QuicStreamHost>,
 
   // P2PQuicStream::Delegate overrides.
   void OnRemoteReset() override;
-  void OnRemoteFinish() override;
+  void OnDataReceived(Vector<uint8_t> data, bool fin) override;
+  void OnWriteDataConsumed(uint32_t amount) override;
 
   // Up reference. Owned by QuicTransportProxy.
   QuicTransportHost* transport_host_ = nullptr;
@@ -73,10 +75,10 @@ class QuicStreamHost final : public base::SupportsWeakPtr<QuicStreamHost>,
   // Back reference. Owned by QuicTransportProxy.
   base::WeakPtr<QuicStreamProxy> stream_proxy_;
 
-  // |readable_| transitions to false when OnRemoteFinish() is called.
+  // |readable_| transitions to false when OnDataReceived(_, true) is called.
   bool readable_ = true;
-  // |writeable_| transitions to false when Finish() is called.
-  bool writeable_ = true;
+  // |writable_| transitions to false when WriteData(_, true) is called.
+  bool writable_ = true;
 
   THREAD_CHECKER(thread_checker_);
 };

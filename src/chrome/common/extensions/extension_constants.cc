@@ -25,7 +25,6 @@ const char kCloudPrintAppId[] = "mfehgcgbbipciphmccgaenjidiccnmng";
 const char kDataSaverExtensionId[] = "pfmgfdlgomnbgkofeojodiodmgpgmkac";
 const char kDriveExtensionId[] = "ghbmnnjooekpmoecnnnilnnbdlolhkhi";
 const char kDriveHostedAppId[] = "apdfllckaahabafndbhieahigkjlhalf";
-const char kEasyUnlockAppId[] = "mkaemigholebcgchlkbankmihknojeak";
 const char kEnterpriseWebStoreAppId[] = "afchcafgojfnemjkcbhfekplkmjaldaa";
 const char kGmailAppId[] = "pjkljhegncpnkpknbcohdijeoejaedia";
 const char kGoogleDocAppId[] = "aohghmighlieiainnegkcijnfilokake";
@@ -44,6 +43,7 @@ const char kCroshBuiltinAppId[] = "nkoccljplnhpfnfiajclkommnmllphnl";
 const char kTextEditorAppId[] = "mmfbcljfglbokpmkimbfghdkjmjhdgbg";
 const char kInAppPaymentsSupportAppId[] = "nmmhkkegccagdldgiimedpiccmgmieda";
 const char kMediaRouterStableExtensionId[] = "pkedcjkdefgpdelpbcmbmeomcjbeemfm";
+const char kCloudReportingExtensionId[] = "oempjldejiginopiohodkdoklcjklbaa";
 
 #if defined(OS_CHROMEOS)
 const char kAssessmentAssistantExtensionId[] =
@@ -59,12 +59,15 @@ const char kConnectivityDiagnosticsPath[] =
 const char kConnectivityDiagnosticsLauncherPath[] =
     "/usr/share/chromeos-assets/connectivity_diagnostics_launcher";
 const char kFirstRunDialogId[] = "jdgcneonijmofocbhmijhacgchbihela";
-const char kSpeechSynthesisExtensionPath[] =
+const char kEspeakSpeechSynthesisExtensionPath[] =
+    "/usr/share/chromeos-assets/speech_synthesis/espeak-ng";
+const char kEspeakSpeechSynthesisExtensionId[] =
+    "dakbfdmgjiabojdgbiljlhgjbokobjpg";
+const char kGoogleSpeechSynthesisExtensionPath[] =
     "/usr/share/chromeos-assets/speech_synthesis/patts";
-const char kSpeechSynthesisExtensionId[] =
+const char kGoogleSpeechSynthesisExtensionId[] =
     "gjjabgpgjpampikjhjpfhneeoapjbjaf";
 const char kWallpaperManagerId[] = "obklkkbkpaoaejdabbfldmcfplpdgolj";
-const char kWebstoreWidgetAppId[] = "fbjakikfhfdajcamjleinfciajelkpek";
 const char kZipArchiverExtensionId[] = "dmboannefpncccogfdikhmhpmdnddgoe";
 const char kZipArchiverExtensionPath[] = "chromeos/zip_archiver";
 #endif

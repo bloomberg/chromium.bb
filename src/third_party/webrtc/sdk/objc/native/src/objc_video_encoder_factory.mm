@@ -86,21 +86,20 @@ class ObjCVideoEncoder : public VideoEncoder {
                  frameTypes:rtcFrameTypes];
   }
 
-  int32_t SetChannelParameters(uint32_t packet_loss, int64_t rtt) { return WEBRTC_VIDEO_CODEC_OK; }
-
   int32_t SetRates(uint32_t bitrate, uint32_t framerate) {
     return [encoder_ setBitrate:bitrate framerate:framerate];
   }
 
-  bool SupportsNativeHandle() const { return true; }
+  VideoEncoder::EncoderInfo GetEncoderInfo() const {
+    EncoderInfo info;
+    info.supports_native_handle = true;
+    info.implementation_name = implementation_name_;
 
-  VideoEncoder::ScalingSettings GetScalingSettings() const {
     RTCVideoEncoderQpThresholds *qp_thresholds = [encoder_ scalingSettings];
-    return qp_thresholds ? ScalingSettings(qp_thresholds.low, qp_thresholds.high) :
-                           ScalingSettings::kOff;
+    info.scaling_settings = qp_thresholds ? ScalingSettings(qp_thresholds.low, qp_thresholds.high) :
+                                            ScalingSettings::kOff;
+    return info;
   }
-
-  const char *ImplementationName() const { return implementation_name_.c_str(); }
 
  private:
   id<RTCVideoEncoder> encoder_;

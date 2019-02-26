@@ -25,10 +25,10 @@
 #include "chrome/browser/chromeos/profiles/profile_helper.h"
 #include "chrome/browser/chromeos/settings/cros_settings.h"
 #include "chrome/browser/chromeos/settings/device_settings_provider.h"
-#include "chrome/browser/chromeos/settings/install_attributes.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chromeos/chromeos_switches.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
+#include "chromeos/settings/install_attributes.h"
 #include "chromeos/tpm/tpm_token_loader.h"
 #include "components/ownership/owner_key_util.h"
 #include "components/prefs/pref_service.h"
@@ -116,9 +116,12 @@ void ContinueLoadPrivateKeyOnIOThread(
     crypto::ScopedPK11Slot private_slot) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
 
+  // TODO(eseckler): It seems loading the key is important for the UsersPrivate
+  // extension API to work correctly during startup, which is why we cannot
+  // currently use the BEST_EFFORT TaskPriority here.
   scoped_refptr<base::TaskRunner> task_runner =
       base::CreateTaskRunnerWithTraits(
-          {base::MayBlock(), base::TaskPriority::BEST_EFFORT,
+          {base::MayBlock(), base::TaskPriority::USER_VISIBLE,
            base::TaskShutdownBehavior::SKIP_ON_SHUTDOWN});
   task_runner->PostTask(
       FROM_HERE,
@@ -286,10 +289,6 @@ void OwnerSettingsServiceChromeOS::IsOwnerAsync(
 }
 
 bool OwnerSettingsServiceChromeOS::HandlesSetting(const std::string& setting) {
-  if (base::CommandLine::ForCurrentProcess()->HasSwitch(
-          switches::kStubCrosSettings)) {
-    return false;
-  }
   return DeviceSettingsProvider::IsDeviceSetting(setting);
 }
 

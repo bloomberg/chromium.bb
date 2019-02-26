@@ -13,15 +13,17 @@ compiler:
   - gcc
 
 env:
-  - REACTOR_BACKEND=LLVM
   - REACTOR_BACKEND=Subzero
+  - REACTOR_BACKEND=LLVM SWIFTSHADER_LLVM_VERSION=3
+  - REACTOR_BACKEND=LLVM SWIFTSHADER_LLVM_VERSION=7
 
 script:
   - $CXX --version
   - mkdir build && cd build
   - cmake -DREACTOR_BACKEND=$REACTOR_BACKEND ..
-  - make
+  - make -j2
   - ./unittests
+  - ./ReactorUnitTests
 
 notifications:
   email:

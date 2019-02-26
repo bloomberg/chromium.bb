@@ -106,6 +106,13 @@ test("device_unittests") {
     "test/run_all_unittests.cc",
   ]
 
+  if (is_fuchsia) {
+    sources += [
+      "bluetooth/test/bluetooth_test_fuchsia.cc",
+      "bluetooth/test/bluetooth_test_fuchsia.h",
+    ]
+  }
+
   deps = [
     "//base/test:test_support",
     "//base/third_party/dynamic_annotations:dynamic_annotations",

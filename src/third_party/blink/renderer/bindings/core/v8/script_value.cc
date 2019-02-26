@@ -35,6 +35,28 @@
 #include "third_party/blink/renderer/platform/bindings/script_state.h"
 
 namespace blink {
+namespace {
+
+v8::Local<v8::Value> ToWorldSafeValue(ScriptState* target_script_state,
+                                      v8::Local<v8::Value> value) {
+  if (value.IsEmpty() || !value->IsObject())
+    return value;
+
+  v8::Local<v8::Context> creation_context =
+      value.As<v8::Object>()->CreationContext();
+  v8::Isolate* isolate = target_script_state->GetIsolate();
+  if (&ScriptState::From(creation_context)->World() ==
+      &target_script_state->World()) {
+    return value;
+  }
+
+  v8::Context::Scope target_context_scope(target_script_state->GetContext());
+  scoped_refptr<SerializedScriptValue> serialized =
+      SerializedScriptValue::SerializeAndSwallowExceptions(isolate, value);
+  return serialized->Deserialize(isolate);
+}
+
+}  // namespace
 
 v8::Local<v8::Value> ScriptValue::V8Value() const {
   if (IsEmpty())
@@ -56,15 +78,9 @@ v8::Local<v8::Value> ScriptValue::V8ValueFor(
     ScriptState* target_script_state) const {
   if (IsEmpty())
     return v8::Local<v8::Value>();
-  v8::Isolate* isolate = target_script_state->GetIsolate();
-  if (&script_state_->World() == &target_script_state->World())
-    return value_->NewLocal(isolate);
 
-  DCHECK(isolate->InContext());
-  v8::Local<v8::Value> value = value_->NewLocal(isolate);
-  scoped_refptr<SerializedScriptValue> serialized =
-      SerializedScriptValue::SerializeAndSwallowExceptions(isolate, value);
-  return serialized->Deserialize(isolate);
+  return ToWorldSafeValue(target_script_state,
+                          value_->NewLocal(target_script_state->GetIsolate()));
 }
 
 bool ScriptValue::ToString(String& result) const {
@@ -81,6 +97,16 @@ bool ScriptValue::ToString(String& result) const {
 
 ScriptValue ScriptValue::CreateNull(ScriptState* script_state) {
   return ScriptValue(script_state, v8::Null(script_state->GetIsolate()));
+}
+
+// static
+ScriptValue ScriptValue::ToWorldSafeScriptValue(
+    ScriptState* target_script_state,
+    const TraceWrapperV8Reference<v8::Value>& value) {
+  return ScriptValue(
+      target_script_state,
+      ToWorldSafeValue(target_script_state,
+                       value.NewLocal(target_script_state->GetIsolate())));
 }
 
 }  // namespace blink

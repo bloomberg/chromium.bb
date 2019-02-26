@@ -7,8 +7,7 @@
 
 // Constants from the HTTP/2 spec, RFC 7540, and associated helper functions.
 
-#include <stdint.h>
-
+#include <cstdint>
 #include <iosfwd>
 #include <ostream>
 

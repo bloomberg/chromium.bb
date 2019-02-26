@@ -14,6 +14,9 @@
 #include "components/offline_pages/core/background/request_queue_store.h"
 #include "components/offline_pages/core/background/scheduler.h"
 
+namespace content {
+class BrowserContext;
+}
 namespace network {
 class NetworkQualityTracker;
 }
@@ -44,6 +47,8 @@ class RequestCoordinatorStubTaco {
       std::unique_ptr<network::NetworkQualityTracker> network_quality_tracker);
   void SetOfflinePagesUkmReporter(
       std::unique_ptr<OfflinePagesUkmReporter> ukm_reporter);
+  void SetRequestCoordinatorDelegate(
+      std::unique_ptr<RequestCoordinator::ActiveTabInfo> delegate);
 
   // Creates and caches an instance of RequestCoordinator, using default or
   // overridden stub dependencies.
@@ -55,7 +60,21 @@ class RequestCoordinatorStubTaco {
 
   RequestCoordinator* request_coordinator();
 
+  // A factory function that can be used with
+  // RequestCoordinatorFactory::SetTestingFactoryAndUse.
+  base::RepeatingCallback<
+      std::unique_ptr<KeyedService>(content::BrowserContext*)>
+  FactoryFunction();
+
  private:
+  base::WeakPtr<RequestCoordinatorStubTaco> GetWeakPtr() {
+    return weak_ptr_factory_.GetWeakPtr();
+  }
+
+  static std::unique_ptr<KeyedService> InternalFactoryFunction(
+      base::WeakPtr<RequestCoordinatorStubTaco> taco,
+      content::BrowserContext*);
+
   bool store_overridden_ = false;
   bool queue_overridden_ = false;
 
@@ -65,8 +84,14 @@ class RequestCoordinatorStubTaco {
   std::unique_ptr<Scheduler> scheduler_;
   std::unique_ptr<network::NetworkQualityTracker> network_quality_tracker_;
   std::unique_ptr<OfflinePagesUkmReporter> ukm_reporter_;
+  std::unique_ptr<RequestCoordinator::ActiveTabInfo> active_tab_info_;
 
-  std::unique_ptr<RequestCoordinator> request_coordinator_;
+  // This is null if the request coordinator was given to the
+  // RequestCoordinatorFactory through the factory function.
+  std::unique_ptr<RequestCoordinator> owned_request_coordinator_;
+  RequestCoordinator* request_coordinator_ = nullptr;
+
+  base::WeakPtrFactory<RequestCoordinatorStubTaco> weak_ptr_factory_{this};
 };
 }  // namespace offline_pages
 #endif  // COMPONENTS_OFFLINE_PAGES_CORE_BACKGROUND_REQUEST_COORDINATOR_STUB_TACO_H_

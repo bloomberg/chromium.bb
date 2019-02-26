@@ -132,6 +132,7 @@ before_install:
   - echo "$CFG" && echo "$GN_ARGS"
   - export ASAN_SYMBOLIZER_PATH="$(which llvm-symbolizer
       || echo /usr/bin/llvm-symbolizer-*)"
+  - pip install --user protobuf
 
 install:
   - |
@@ -174,10 +175,12 @@ script:
         "out/dist/$TEST_TARGET"
       done
       BENCHMARK_FUNCTIONAL_TEST_ONLY=true out/dist/perfetto_benchmarks
+      tools/diff_test_trace_processor.py out/dist/trace_processor_shell
       if [[ "$CFG" == *-libfuzzer ]]; then
         # Run a single iteration each to make sure they are not crashing.
         out/dist/end_to_end_shared_memory_fuzzer -runs=1
         out/dist/buffered_frame_deserializer_fuzzer -runs=1
+        out/dist/unwinding_fuzzer -runs=1
       fi
     fi
 

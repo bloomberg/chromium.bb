@@ -109,6 +109,8 @@ class CONTENT_EXPORT UserMediaProcessor
 
   // MediaStreamDispatcherEventHandler implementation.
   void OnDeviceStopped(const MediaStreamDevice& device) override;
+  void OnDeviceChanged(const MediaStreamDevice& old_device,
+                       const MediaStreamDevice& new_device) override;
 
   void set_media_stream_dispatcher_host_for_testing(
       mojom::MediaStreamDispatcherHostPtr dispatcher_host) {

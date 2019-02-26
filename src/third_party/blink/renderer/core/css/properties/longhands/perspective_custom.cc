@@ -12,20 +12,20 @@
 #include "third_party/blink/renderer/core/style/computed_style.h"
 
 namespace blink {
-namespace CSSLonghand {
+namespace css_longhand {
 
 const CSSValue* Perspective::ParseSingleValue(
     CSSParserTokenRange& range,
     const CSSParserContext& context,
     const CSSParserLocalContext& localContext) const {
   if (range.Peek().Id() == CSSValueNone)
-    return CSSPropertyParserHelpers::ConsumeIdent(range);
-  CSSPrimitiveValue* parsed_value = CSSPropertyParserHelpers::ConsumeLength(
+    return css_property_parser_helpers::ConsumeIdent(range);
+  CSSPrimitiveValue* parsed_value = css_property_parser_helpers::ConsumeLength(
       range, context.Mode(), kValueRangeAll);
   bool use_legacy_parsing = localContext.UseAliasParsing();
   if (!parsed_value && use_legacy_parsing) {
     double perspective;
-    if (!CSSPropertyParserHelpers::ConsumeNumberRaw(range, perspective))
+    if (!css_property_parser_helpers::ConsumeNumberRaw(range, perspective))
       return nullptr;
     context.Count(WebFeature::kUnitlessPerspectiveInPerspectiveProperty);
     parsed_value = CSSPrimitiveValue::Create(
@@ -48,5 +48,5 @@ const CSSValue* Perspective::CSSValueFromComputedStyleInternal(
   return ZoomAdjustedPixelValue(style.Perspective(), style);
 }
 
-}  // namespace CSSLonghand
+}  // namespace css_longhand
 }  // namespace blink

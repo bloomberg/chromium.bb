@@ -75,7 +75,14 @@ struct COMPONENT_EXPORT(NETWORK_CPP_BASE) ResourceRequest {
   // Network Service), so the value is stored here (rather than in |headers|)
   // and later populated in the headers after CORS check.
   // TODO(toyoshim): Remove it once PPAPI is deprecated.
-  std::string requested_with;
+  std::string requested_with_header;
+
+  // 'X-Client-Data' header value. See comments for |requested_with_header|
+  // above, too.
+  // TODO(toyoshim): Consider to rename this to have a chrome specific prefix
+  // such as 'Chrome-' instead of 'X-', and to add 'Chrome-' prefixed header
+  // names into the forbidden header name list.
+  std::string client_data_header;
 
   // net::URLRequest load flags (0 by default).
   int load_flags = 0;
@@ -116,8 +123,8 @@ struct COMPONENT_EXPORT(NETWORK_CPP_BASE) ResourceRequest {
   bool is_external_request = false;
 
   // A policy to decide if CORS-preflight fetch should be performed.
-  mojom::CORSPreflightPolicy cors_preflight_policy =
-      mojom::CORSPreflightPolicy::kConsiderPreflight;
+  mojom::CorsPreflightPolicy cors_preflight_policy =
+      mojom::CorsPreflightPolicy::kConsiderPreflight;
 
   // Indicates which frame (or worker context) the request is being loaded into.
   // -1 corresponds to kInvalidServiceWorkerProviderId.
@@ -138,9 +145,9 @@ struct COMPONENT_EXPORT(NETWORK_CPP_BASE) ResourceRequest {
   // https://fetch.spec.whatwg.org/#concept-request-mode
   // Used mainly by CORS handling (out-of-blink CORS), CORB, Service Worker.
   // CORS handling needs a proper origin (including a unique opaque origin).
-  // Hence a request with kSameOrigin, kCORS, or kCORSWithForcedPreflight should
+  // Hence a request with kSameOrigin, kCors, or kCorsWithForcedPreflight should
   // have a non-null request_initiator.
-  mojom::FetchRequestMode fetch_request_mode = mojom::FetchRequestMode::kNoCORS;
+  mojom::FetchRequestMode fetch_request_mode = mojom::FetchRequestMode::kNoCors;
 
   // https://fetch.spec.whatwg.org/#concept-request-credentials-mode
   // Used mainly by CORS handling (out-of-blink CORS), Service Worker.
@@ -151,7 +158,7 @@ struct COMPONENT_EXPORT(NETWORK_CPP_BASE) ResourceRequest {
 
   // https://fetch.spec.whatwg.org/#concept-request-redirect-mode
   // Used mainly by CORS handling (out-of-blink CORS), Service Worker.
-  // This member must be kFollow as long as |fetch_request_mode| is kNoCORS.
+  // This member must be kFollow as long as |fetch_request_mode| is kNoCors.
   mojom::FetchRedirectMode fetch_redirect_mode =
       mojom::FetchRedirectMode::kFollow;
 
@@ -237,6 +244,9 @@ struct COMPONENT_EXPORT(NETWORK_CPP_BASE) ResourceRequest {
   // that match the custom proxy config, and would otherwise be made direct.
   net::HttpRequestHeaders custom_proxy_pre_cache_headers;
   net::HttpRequestHeaders custom_proxy_post_cache_headers;
+
+  // Whether to use the alternate proxies set in the custom proxy config.
+  bool custom_proxy_use_alternate_proxy_list = false;
 
   // See https://fetch.spec.whatwg.org/#concept-request-window
   //

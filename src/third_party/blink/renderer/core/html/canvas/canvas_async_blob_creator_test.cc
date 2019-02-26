@@ -63,8 +63,7 @@ void MockCanvasAsyncBlobCreator::PostDelayedTaskToCurrentThread(
     base::OnceClosure task,
     double delay_ms) {
   DCHECK(IsMainThread());
-  Platform::Current()->MainThread()->GetTaskRunner()->PostTask(location,
-                                                               std::move(task));
+  Thread::Current()->GetTaskRunner()->PostTask(location, std::move(task));
 }
 
 //==============================================================================
@@ -99,7 +98,7 @@ class MockCanvasAsyncBlobCreatorWithoutComplete
 
  protected:
   void ScheduleInitiateEncoding(double quality) override {
-    Platform::Current()->MainThread()->GetTaskRunner()->PostTask(
+    Thread::Current()->GetTaskRunner()->PostTask(
         FROM_HERE,
         WTF::Bind(&MockCanvasAsyncBlobCreatorWithoutComplete::InitiateEncoding,
                   WrapPersistent(this), quality, TimeTicks::Max()));
@@ -142,22 +141,25 @@ scoped_refptr<StaticBitmapImage> CreateTransparentImage(int width, int height) {
 
 void CanvasAsyncBlobCreatorTest::
     PrepareMockCanvasAsyncBlobCreatorWithoutStart() {
-  async_blob_creator_ = new MockCanvasAsyncBlobCreatorWithoutStart(
-      CreateTransparentImage(20, 20), &GetDocument());
+  async_blob_creator_ =
+      MakeGarbageCollected<MockCanvasAsyncBlobCreatorWithoutStart>(
+          CreateTransparentImage(20, 20), &GetDocument());
 }
 
 void CanvasAsyncBlobCreatorTest::
     PrepareMockCanvasAsyncBlobCreatorWithoutComplete() {
-  async_blob_creator_ = new MockCanvasAsyncBlobCreatorWithoutComplete(
-      CreateTransparentImage(20, 20), &GetDocument());
+  async_blob_creator_ =
+      MakeGarbageCollected<MockCanvasAsyncBlobCreatorWithoutComplete>(
+          CreateTransparentImage(20, 20), &GetDocument());
 }
 
 void CanvasAsyncBlobCreatorTest::PrepareMockCanvasAsyncBlobCreatorFail() {
   // We reuse the class MockCanvasAsyncBlobCreatorWithoutComplete because
   // this test case is expected to fail at initialization step before
   // completion.
-  async_blob_creator_ = new MockCanvasAsyncBlobCreatorWithoutComplete(
-      CreateTransparentImage(20, 20), &GetDocument(), true);
+  async_blob_creator_ =
+      MakeGarbageCollected<MockCanvasAsyncBlobCreatorWithoutComplete>(
+          CreateTransparentImage(20, 20), &GetDocument(), true);
 }
 
 void CanvasAsyncBlobCreatorTest::TearDown() {
@@ -273,11 +275,11 @@ TEST_F(CanvasAsyncBlobCreatorTest, ColorManagedConvertToBlob) {
               StaticBitmapImage::Create(source_image);
 
           // Prepare encoding options
-          ImageEncodeOptions options;
-          options.setQuality(1);
-          options.setType(blob_mime_type);
-          options.setColorSpace(blob_color_space);
-          options.setPixelFormat(blob_pixel_format);
+          ImageEncodeOptions* options = ImageEncodeOptions::Create();
+          options->setQuality(1);
+          options->setType(blob_mime_type);
+          options->setColorSpace(blob_color_space);
+          options->setPixelFormat(blob_pixel_format);
 
           // Encode the image using CanvasAsyncBlobCreator
           CanvasAsyncBlobCreator* async_blob_creator =

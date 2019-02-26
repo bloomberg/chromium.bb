@@ -25,6 +25,8 @@ class CORE_EXPORT InternalPopupMenu final : public PopupMenu,
                                             public PagePopupClient {
  public:
   static InternalPopupMenu* Create(ChromeClient*, HTMLSelectElement&);
+
+  InternalPopupMenu(ChromeClient*, HTMLSelectElement&);
   ~InternalPopupMenu() override;
   void Trace(blink::Visitor*) override;
 
@@ -33,8 +35,6 @@ class CORE_EXPORT InternalPopupMenu final : public PopupMenu,
   void Dispose();
 
  private:
-  InternalPopupMenu(ChromeClient*, HTMLSelectElement&);
-
   class ItemIterationContext;
   void AddOption(ItemIterationContext&, HTMLOptionElement&);
   void AddOptGroup(ItemIterationContext&, HTMLOptGroupElement&);

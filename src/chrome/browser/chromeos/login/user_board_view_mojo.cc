@@ -56,9 +56,6 @@ ash::mojom::EasyUnlockIconOptionsPtr ToEasyUnlockIconOptionsPtr(
   if (icon_options.hardlock_on_click())
     options->hardlock_on_click = true;
 
-  if (icon_options.is_trial_run())
-    options->is_trial_run = true;
-
   return options;
 }
 
@@ -89,6 +86,14 @@ void UserBoardViewMojo::SetPublicSessionLocales(
   // Send a request to get keyboard layouts for |default_locale|.
   LoginScreenClient::Get()->RequestPublicSessionKeyboardLayouts(account_id,
                                                                 default_locale);
+}
+
+void UserBoardViewMojo::SetPublicSessionShowFullManagementDisclosure(
+    bool show_full_management_disclosure) {
+  LoginScreenClient::Get()
+      ->login_screen()
+      ->SetPublicSessionShowFullManagementDisclosure(
+          show_full_management_disclosure);
 }
 
 void UserBoardViewMojo::ShowBannerMessage(const base::string16& message,

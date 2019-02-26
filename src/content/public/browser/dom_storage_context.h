@@ -15,7 +15,7 @@ class GURL;
 namespace content {
 
 class BrowserContext;
-struct LocalStorageUsageInfo;
+struct StorageUsageInfo;
 class SessionStorageNamespace;
 struct SessionStorageUsageInfo;
 
@@ -23,7 +23,7 @@ struct SessionStorageUsageInfo;
 class DOMStorageContext {
  public:
   using GetLocalStorageUsageCallback =
-      base::OnceCallback<void(const std::vector<LocalStorageUsageInfo>&)>;
+      base::OnceCallback<void(const std::vector<StorageUsageInfo>&)>;
 
   using GetSessionStorageUsageCallback =
       base::OnceCallback<void(const std::vector<SessionStorageUsageInfo>&)>;
@@ -42,9 +42,14 @@ class DOMStorageContext {
   virtual void DeleteLocalStorage(const GURL& origin_url,
                                   base::OnceClosure callback) = 0;
 
+  // Removes traces of deleted data from the local storage backend.
+  virtual void PerformLocalStorageCleanup(base::OnceClosure callback) = 0;
+
   // Deletes the session storage data identified by |usage_info|.
-  virtual void DeleteSessionStorage(
-      const SessionStorageUsageInfo& usage_info) = 0;
+  virtual void DeleteSessionStorage(const SessionStorageUsageInfo& usage_info,
+                                    base::OnceClosure callback) = 0;
+
+  virtual void PerformSessionStorageCleanup(base::OnceClosure callback) = 0;
 
   // If this is called, sessionStorage data will be stored on disk, and can be
   // restored after a browser restart (with RecreateSessionStorage). This

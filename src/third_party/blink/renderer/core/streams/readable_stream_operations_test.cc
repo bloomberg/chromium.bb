@@ -11,14 +11,19 @@
 #include "third_party/blink/renderer/bindings/core/v8/v8_binding_for_testing.h"
 #include "third_party/blink/renderer/bindings/core/v8/v8_extras_test_utils.h"
 #include "third_party/blink/renderer/bindings/core/v8/v8_iterator_result_value.h"
+#include "third_party/blink/renderer/bindings/core/v8/v8_readable_stream.h"
 #include "third_party/blink/renderer/core/dom/document.h"
+#include "third_party/blink/renderer/core/messaging/message_channel.h"
+#include "third_party/blink/renderer/core/streams/readable_stream.h"
 #include "third_party/blink/renderer/core/streams/readable_stream_default_controller_wrapper.h"
-#include "third_party/blink/renderer/core/streams/underlying_source_base.h"
+#include "third_party/blink/renderer/core/streams/test_underlying_source.h"
 #include "third_party/blink/renderer/platform/bindings/exception_state.h"
 #include "third_party/blink/renderer/platform/bindings/script_state.h"
 #include "third_party/blink/renderer/platform/bindings/v8_binding_macros.h"
 #include "third_party/blink/renderer/platform/bindings/v8_throw_exception.h"
 #include "third_party/blink/renderer/platform/heap/handle.h"
+#include "third_party/blink/renderer/platform/runtime_enabled_features.h"
+#include "third_party/blink/renderer/platform/testing/unit_test_helpers.h"
 #include "v8/include/v8.h"
 
 namespace blink {
@@ -104,18 +109,6 @@ class ReaderFunction : public ScriptFunction {
   Member<Iteration> iteration_;
 };
 
-class TestUnderlyingSource final : public UnderlyingSourceBase {
- public:
-  explicit TestUnderlyingSource(ScriptState* script_state)
-      : UnderlyingSourceBase(script_state) {}
-
-  // Just expose the controller methods for easy testing
-  void Enqueue(ScriptValue value) { Controller()->Enqueue(value); }
-  void Close() { Controller()->Close(); }
-  void GetError(ScriptValue value) { Controller()->GetError(value); }
-  double DesiredSize() { return Controller()->DesiredSize(); }
-};
-
 TEST(ReadableStreamOperationsTest, IsReadableStream) {
   V8TestingScope scope;
   TryCatchScope try_catch_scope(scope.GetIsolate());
@@ -138,8 +131,18 @@ TEST(ReadableStreamOperationsTest, IsReadableStream) {
                    .value_or(true));
   ScriptValue stream = EvalWithPrintingError(&scope, "new ReadableStream()");
   EXPECT_FALSE(stream.IsEmpty());
+  EXPECT_FALSE(ReadableStreamOperations::IsReadableStream(
+                   scope.GetScriptState(), stream, ASSERT_NO_EXCEPTION)
+                   .value_or(false));
+  ASSERT_TRUE(V8ReadableStream::HasInstance(stream.V8Value().As<v8::Object>(),
+                                            scope.GetIsolate()));
+
+  ScriptValue internal_stream =
+      V8ReadableStream::ToImpl(stream.V8Value().As<v8::Object>())
+          ->GetInternalStream(scope.GetScriptState());
+  ASSERT_FALSE(internal_stream.IsEmpty());
   EXPECT_TRUE(ReadableStreamOperations::IsReadableStream(
-                  scope.GetScriptState(), stream, ASSERT_NO_EXCEPTION)
+                  scope.GetScriptState(), internal_stream, ASSERT_NO_EXCEPTION)
                   .value_or(false));
 }
 
@@ -174,31 +177,36 @@ TEST(ReadableStreamOperationsTest, IsReadableStreamDefaultReaderInvalid) {
 TEST(ReadableStreamOperationsTest, GetReader) {
   V8TestingScope scope;
   TryCatchScope try_catch_scope(scope.GetIsolate());
-  ScriptValue stream = EvalWithPrintingError(&scope, "new ReadableStream()");
-  EXPECT_FALSE(stream.IsEmpty());
+  auto* stream =
+      ReadableStream::Create(scope.GetScriptState(), ASSERT_NO_EXCEPTION);
+  ASSERT_TRUE(stream);
 
-  EXPECT_FALSE(ReadableStreamOperations::IsLocked(scope.GetScriptState(),
-                                                  stream, ASSERT_NO_EXCEPTION)
-                   .value_or(true));
+  ScriptValue internal_stream =
+      stream->GetInternalStream(scope.GetScriptState());
+  ASSERT_FALSE(internal_stream.IsEmpty());
+
+  EXPECT_EQ(ReadableStreamOperations::IsLocked(
+                scope.GetScriptState(), internal_stream, ASSERT_NO_EXCEPTION),
+            base::make_optional(false));
   ScriptValue reader;
-  reader = ReadableStreamOperations::GetReader(scope.GetScriptState(), stream,
-                                               ASSERT_NO_EXCEPTION);
-  EXPECT_TRUE(ReadableStreamOperations::IsLocked(scope.GetScriptState(), stream,
-                                                 ASSERT_NO_EXCEPTION)
-                  .value_or(false));
+  reader = ReadableStreamOperations::GetReader(
+      scope.GetScriptState(), internal_stream, ASSERT_NO_EXCEPTION);
   ASSERT_FALSE(reader.IsEmpty());
+  EXPECT_EQ(ReadableStreamOperations::IsLocked(
+                scope.GetScriptState(), internal_stream, ASSERT_NO_EXCEPTION),
+            base::make_optional(true));
 
-  EXPECT_FALSE(ReadableStreamOperations::IsReadableStream(
-                   scope.GetScriptState(), reader, ASSERT_NO_EXCEPTION)
-                   .value_or(true));
-  EXPECT_TRUE(ReadableStreamOperations::IsReadableStreamDefaultReader(
-                  scope.GetScriptState(), reader, ASSERT_NO_EXCEPTION)
-                  .value_or(false));
+  EXPECT_EQ(ReadableStreamOperations::IsReadableStream(
+                scope.GetScriptState(), reader, ASSERT_NO_EXCEPTION),
+            base::make_optional(false));
+  EXPECT_EQ(ReadableStreamOperations::IsReadableStreamDefaultReader(
+                scope.GetScriptState(), reader, ASSERT_NO_EXCEPTION),
+            base::make_optional(true));
 
   // Already locked!
   DummyExceptionStateForTesting exception_state;
-  reader = ReadableStreamOperations::GetReader(scope.GetScriptState(), stream,
-                                               exception_state);
+  reader = ReadableStreamOperations::GetReader(
+      scope.GetScriptState(), internal_stream, exception_state);
   EXPECT_TRUE(exception_state.HadException());
   EXPECT_TRUE(reader.IsEmpty());
 }
@@ -206,19 +214,21 @@ TEST(ReadableStreamOperationsTest, GetReader) {
 TEST(ReadableStreamOperationsTest, IsDisturbed) {
   V8TestingScope scope;
   TryCatchScope try_catch_scope(scope.GetIsolate());
-  ScriptValue stream =
-      EvalWithPrintingError(&scope, "stream = new ReadableStream()");
-  EXPECT_FALSE(stream.IsEmpty());
+  auto* stream =
+      ReadableStream::Create(scope.GetScriptState(), ASSERT_NO_EXCEPTION);
+  ASSERT_TRUE(stream);
 
-  EXPECT_FALSE(ReadableStreamOperations::IsDisturbed(
-                   scope.GetScriptState(), stream, ASSERT_NO_EXCEPTION)
-                   .value_or(true));
+  ScriptValue internal_stream =
+      stream->GetInternalStream(scope.GetScriptState());
+  EXPECT_EQ(ReadableStreamOperations::IsDisturbed(
+                scope.GetScriptState(), internal_stream, ASSERT_NO_EXCEPTION),
+            base::make_optional(false));
 
-  ASSERT_FALSE(EvalWithPrintingError(&scope, "stream.cancel()").IsEmpty());
+  stream->cancel(scope.GetScriptState(), ASSERT_NO_EXCEPTION);
 
-  EXPECT_TRUE(ReadableStreamOperations::IsDisturbed(scope.GetScriptState(),
-                                                    stream, ASSERT_NO_EXCEPTION)
-                  .value_or(false));
+  EXPECT_EQ(ReadableStreamOperations::IsDisturbed(
+                scope.GetScriptState(), internal_stream, ASSERT_NO_EXCEPTION),
+            base::make_optional(true));
 }
 
 TEST(ReadableStreamOperationsTest, Read) {
@@ -346,15 +356,19 @@ TEST(ReadableStreamOperationsTest,
       scope.GetScriptState(), 10);
   ASSERT_FALSE(strategy.IsEmpty());
 
-  ScriptValue stream = ReadableStreamOperations::CreateReadableStream(
+  ScriptValue internal_stream = ReadableStreamOperations::CreateReadableStream(
       scope.GetScriptState(), underlying_source, strategy);
-  ASSERT_FALSE(stream.IsEmpty());
+  ASSERT_FALSE(internal_stream.IsEmpty());
+
+  auto* stream = ReadableStream::CreateFromInternalStream(
+      scope.GetScriptState(), internal_stream, ASSERT_NO_EXCEPTION);
+  ASSERT_TRUE(stream);
 
   v8::Local<v8::Object> global = scope.GetScriptState()->GetContext()->Global();
   ASSERT_TRUE(global
                   ->Set(scope.GetContext(),
                         V8String(scope.GetIsolate(), "stream"),
-                        stream.V8Value())
+                        ToV8(stream, scope.GetScriptState()))
                   .IsJust());
 
   EXPECT_FALSE(underlying_source->HasPendingActivity());
@@ -373,87 +387,155 @@ TEST(ReadableStreamOperationsTest,
 TEST(ReadableStreamOperationsTest, IsReadable) {
   V8TestingScope scope;
   TryCatchScope try_catch_scope(scope.GetIsolate());
-  ScriptValue readable = EvalWithPrintingError(&scope, "new ReadableStream()");
-  ScriptValue closed = EvalWithPrintingError(
-      &scope, "new ReadableStream({start: c => c.close()})");
-  ScriptValue errored = EvalWithPrintingError(
-      &scope, "new ReadableStream({start: c => c.error()})");
-  ASSERT_FALSE(readable.IsEmpty());
-  ASSERT_FALSE(closed.IsEmpty());
-  ASSERT_FALSE(errored.IsEmpty());
 
-  EXPECT_TRUE(ReadableStreamOperations::IsReadable(
-                  scope.GetScriptState(), readable, ASSERT_NO_EXCEPTION)
-                  .value_or(false));
-  EXPECT_FALSE(ReadableStreamOperations::IsReadable(scope.GetScriptState(),
-                                                    closed, ASSERT_NO_EXCEPTION)
-                   .value_or(true));
-  EXPECT_FALSE(ReadableStreamOperations::IsReadable(
-                   scope.GetScriptState(), errored, ASSERT_NO_EXCEPTION)
-                   .value_or(true));
+  auto* readable =
+      ReadableStream::Create(scope.GetScriptState(), ASSERT_NO_EXCEPTION);
+  ASSERT_TRUE(readable);
+
+  auto* closing_source =
+      MakeGarbageCollected<TestUnderlyingSource>(scope.GetScriptState());
+  auto* closed = ReadableStream::CreateWithCountQueueingStrategy(
+      scope.GetScriptState(), closing_source, 0);
+  ASSERT_TRUE(closed);
+  closing_source->Close();
+
+  auto* erroring_source =
+      MakeGarbageCollected<TestUnderlyingSource>(scope.GetScriptState());
+  auto* errored = ReadableStream::CreateWithCountQueueingStrategy(
+      scope.GetScriptState(), erroring_source, 0);
+  ASSERT_TRUE(errored);
+  erroring_source->SetError(
+      ScriptValue(scope.GetScriptState(), v8::Undefined(scope.GetIsolate())));
+
+  EXPECT_EQ(ReadableStreamOperations::IsReadable(
+                scope.GetScriptState(),
+                readable->GetInternalStream(scope.GetScriptState()),
+                ASSERT_NO_EXCEPTION),
+            base::make_optional(true));
+  EXPECT_EQ(ReadableStreamOperations::IsReadable(
+                scope.GetScriptState(),
+                closed->GetInternalStream(scope.GetScriptState()),
+                ASSERT_NO_EXCEPTION),
+            base::make_optional(false));
+  EXPECT_EQ(ReadableStreamOperations::IsReadable(
+                scope.GetScriptState(),
+                errored->GetInternalStream(scope.GetScriptState()),
+                ASSERT_NO_EXCEPTION),
+            base::make_optional(false));
 }
 
 TEST(ReadableStreamOperationsTest, IsClosed) {
   V8TestingScope scope;
   TryCatchScope try_catch_scope(scope.GetIsolate());
-  ScriptValue readable = EvalWithPrintingError(&scope, "new ReadableStream()");
-  ScriptValue closed = EvalWithPrintingError(
-      &scope, "new ReadableStream({start: c => c.close()})");
-  ScriptValue errored = EvalWithPrintingError(
-      &scope, "new ReadableStream({start: c => c.error()})");
-  ASSERT_FALSE(readable.IsEmpty());
-  ASSERT_FALSE(closed.IsEmpty());
-  ASSERT_FALSE(errored.IsEmpty());
 
-  EXPECT_FALSE(ReadableStreamOperations::IsClosed(scope.GetScriptState(),
-                                                  readable, ASSERT_NO_EXCEPTION)
-                   .value_or(true));
-  EXPECT_TRUE(ReadableStreamOperations::IsClosed(scope.GetScriptState(), closed,
-                                                 ASSERT_NO_EXCEPTION)
-                  .value_or(false));
-  EXPECT_FALSE(ReadableStreamOperations::IsClosed(scope.GetScriptState(),
-                                                  errored, ASSERT_NO_EXCEPTION)
-                   .value_or(true));
+  ReadableStream* readable =
+      ReadableStream::Create(scope.GetScriptState(), ASSERT_NO_EXCEPTION);
+  ASSERT_TRUE(readable);
+
+  auto* closing_source =
+      MakeGarbageCollected<TestUnderlyingSource>(scope.GetScriptState());
+  auto* closed = ReadableStream::CreateWithCountQueueingStrategy(
+      scope.GetScriptState(), closing_source, 0);
+  ASSERT_TRUE(closed);
+  closing_source->Close();
+
+  auto* erroring_source =
+      MakeGarbageCollected<TestUnderlyingSource>(scope.GetScriptState());
+  auto* errored = ReadableStream::CreateWithCountQueueingStrategy(
+      scope.GetScriptState(), erroring_source, 0);
+  ASSERT_TRUE(errored);
+  erroring_source->SetError(
+      ScriptValue(scope.GetScriptState(), v8::Undefined(scope.GetIsolate())));
+
+  EXPECT_EQ(ReadableStreamOperations::IsClosed(
+                scope.GetScriptState(),
+                readable->GetInternalStream(scope.GetScriptState()),
+                ASSERT_NO_EXCEPTION),
+            base::make_optional(false));
+  EXPECT_EQ(ReadableStreamOperations::IsClosed(
+                scope.GetScriptState(),
+                closed->GetInternalStream(scope.GetScriptState()),
+                ASSERT_NO_EXCEPTION),
+            base::make_optional(true));
+  EXPECT_EQ(ReadableStreamOperations::IsClosed(
+                scope.GetScriptState(),
+                errored->GetInternalStream(scope.GetScriptState()),
+                ASSERT_NO_EXCEPTION),
+            base::make_optional(false));
 }
 
 TEST(ReadableStreamOperationsTest, IsErrored) {
   V8TestingScope scope;
   TryCatchScope try_catch_scope(scope.GetIsolate());
-  ScriptValue readable = EvalWithPrintingError(&scope, "new ReadableStream()");
-  ScriptValue closed = EvalWithPrintingError(
-      &scope, "new ReadableStream({start: c => c.close()})");
-  ScriptValue errored = EvalWithPrintingError(
-      &scope, "new ReadableStream({start: c => c.error()})");
-  ASSERT_FALSE(readable.IsEmpty());
-  ASSERT_FALSE(closed.IsEmpty());
-  ASSERT_FALSE(errored.IsEmpty());
 
-  EXPECT_FALSE(ReadableStreamOperations::IsErrored(
-                   scope.GetScriptState(), readable, ASSERT_NO_EXCEPTION)
-                   .value_or(true));
-  EXPECT_FALSE(ReadableStreamOperations::IsErrored(scope.GetScriptState(),
-                                                   closed, ASSERT_NO_EXCEPTION)
-                   .value_or(true));
-  EXPECT_TRUE(ReadableStreamOperations::IsErrored(scope.GetScriptState(),
-                                                  errored, ASSERT_NO_EXCEPTION)
-                  .value_or(false));
+  auto* readable =
+      ReadableStream::Create(scope.GetScriptState(), ASSERT_NO_EXCEPTION);
+  ASSERT_TRUE(readable);
+
+  auto* closing_source =
+      MakeGarbageCollected<TestUnderlyingSource>(scope.GetScriptState());
+  ReadableStream* closed = ReadableStream::CreateWithCountQueueingStrategy(
+      scope.GetScriptState(), closing_source, 0);
+  ASSERT_TRUE(closed);
+  closing_source->Close();
+
+  auto* erroring_source =
+      MakeGarbageCollected<TestUnderlyingSource>(scope.GetScriptState());
+  auto* errored = ReadableStream::CreateWithCountQueueingStrategy(
+      scope.GetScriptState(), erroring_source, 0);
+  ASSERT_TRUE(errored);
+  erroring_source->SetError(
+      ScriptValue(scope.GetScriptState(), v8::Undefined(scope.GetIsolate())));
+
+  EXPECT_EQ(ReadableStreamOperations::IsErrored(
+                scope.GetScriptState(),
+                readable->GetInternalStream(scope.GetScriptState()),
+                ASSERT_NO_EXCEPTION),
+            base::make_optional(false));
+  EXPECT_EQ(ReadableStreamOperations::IsErrored(
+                scope.GetScriptState(),
+                closed->GetInternalStream(scope.GetScriptState()),
+                ASSERT_NO_EXCEPTION),
+            base::make_optional(false));
+  EXPECT_EQ(ReadableStreamOperations::IsErrored(
+                scope.GetScriptState(),
+                errored->GetInternalStream(scope.GetScriptState()),
+                ASSERT_NO_EXCEPTION),
+            base::make_optional(true));
 }
 
 TEST(ReadableStreamOperationsTest, Tee) {
   V8TestingScope scope;
   TryCatchScope try_catch_scope(scope.GetIsolate());
+  v8::Local<v8::Context> context = scope.GetScriptState()->GetContext();
   NonThrowableExceptionState exception_state;
-  ScriptValue original =
-      EvalWithPrintingError(&scope,
-                            "var controller;"
-                            "new ReadableStream({start: c => controller = c})");
-  ASSERT_FALSE(original.IsEmpty());
-  ScriptValue new1, new2;
-  ReadableStreamOperations::Tee(scope.GetScriptState(), original, &new1, &new2,
-                                exception_state);
+  auto* source =
+      MakeGarbageCollected<TestUnderlyingSource>(scope.GetScriptState());
+  auto* stream = ReadableStream::CreateWithCountQueueingStrategy(
+      scope.GetScriptState(), source, 0);
+  ASSERT_TRUE(stream);
 
-  ASSERT_FALSE(new1.IsEmpty());
-  ASSERT_FALSE(new2.IsEmpty());
+  ScriptValue result = ReadableStreamOperations::Tee(
+      scope.GetScriptState(), stream->GetInternalStream(scope.GetScriptState()),
+      exception_state);
+  ASSERT_FALSE(result.IsEmpty());
+  ASSERT_TRUE(result.IsObject());
+
+  v8::Local<v8::Value> v8_branch1, v8_branch2;
+  ASSERT_TRUE(
+      result.V8Value().As<v8::Object>()->Get(context, 0).ToLocal(&v8_branch1));
+  ASSERT_TRUE(
+      result.V8Value().As<v8::Object>()->Get(context, 1).ToLocal(&v8_branch2));
+
+  ScriptValue new1(scope.GetScriptState(), v8_branch1);
+  ScriptValue new2(scope.GetScriptState(), v8_branch2);
+
+  ASSERT_TRUE(ReadableStreamOperations::IsReadableStream(
+                  scope.GetScriptState(), new1, ASSERT_NO_EXCEPTION)
+                  .value_or(true));
+  ASSERT_TRUE(ReadableStreamOperations::IsReadableStream(
+                  scope.GetScriptState(), new2, ASSERT_NO_EXCEPTION)
+                  .value_or(true));
 
   ScriptValue reader1 = ReadableStreamOperations::GetReader(
       scope.GetScriptState(), new1, exception_state);
@@ -478,8 +560,8 @@ TEST(ReadableStreamOperationsTest, Tee) {
   EXPECT_FALSE(it1->IsSet());
   EXPECT_FALSE(it2->IsSet());
 
-  ASSERT_FALSE(
-      EvalWithPrintingError(&scope, "controller.enqueue('hello')").IsEmpty());
+  source->Enqueue(ScriptValue(scope.GetScriptState(),
+                              V8String(scope.GetIsolate(), "hello")));
   v8::MicrotasksScope::PerformCheckpoint(scope.GetIsolate());
 
   EXPECT_TRUE(it1->IsSet());
@@ -490,6 +572,48 @@ TEST(ReadableStreamOperationsTest, Tee) {
   EXPECT_TRUE(it2->IsValid());
   EXPECT_FALSE(it2->IsDone());
   EXPECT_EQ("hello", it2->Value());
+}
+
+TEST(ReadableStreamOperationsTest, Serialize) {
+  RuntimeEnabledFeatures::SetTransferableStreamsEnabled(true);
+
+  V8TestingScope scope;
+  TryCatchScope try_catch_scope(scope.GetIsolate());
+  auto* source =
+      MakeGarbageCollected<TestUnderlyingSource>(scope.GetScriptState());
+  auto* stream = ReadableStream::CreateWithCountQueueingStrategy(
+      scope.GetScriptState(), source, 0);
+  ASSERT_TRUE(stream);
+
+  source->Enqueue(ScriptValue(scope.GetScriptState(),
+                              V8String(scope.GetIsolate(), "hello")));
+  ScriptValue internal_stream =
+      stream->GetInternalStream(scope.GetScriptState());
+  MessageChannel* channel = MessageChannel::Create(scope.GetExecutionContext());
+  ReadableStreamOperations::Serialize(scope.GetScriptState(), internal_stream,
+                                      channel->port1(), ASSERT_NO_EXCEPTION);
+  EXPECT_TRUE(ReadableStreamOperations::IsLocked(
+      scope.GetScriptState(), internal_stream, ASSERT_NO_EXCEPTION));
+  ScriptValue transferred = ReadableStreamOperations::Deserialize(
+      scope.GetScriptState(), channel->port2(), ASSERT_NO_EXCEPTION);
+  ASSERT_FALSE(transferred.IsEmpty());
+  ScriptValue reader = ReadableStreamOperations::GetReader(
+      scope.GetScriptState(), transferred, ASSERT_NO_EXCEPTION);
+  ASSERT_FALSE(reader.IsEmpty());
+  Iteration* it = new Iteration();
+  ReadableStreamOperations::DefaultReaderRead(scope.GetScriptState(), reader)
+      .Then(ReaderFunction::CreateFunction(scope.GetScriptState(), it),
+            ReadableStreamOperationsTestNotReached::CreateFunction(
+                scope.GetScriptState()));
+  // Let the message pass through the MessagePort.
+  test::RunPendingTasks();
+  // Let the Read promise resolve.
+  v8::MicrotasksScope::PerformCheckpoint(scope.GetIsolate());
+
+  EXPECT_TRUE(it->IsSet());
+  EXPECT_TRUE(it->IsValid());
+  EXPECT_FALSE(it->IsDone());
+  EXPECT_EQ("hello", it->Value());
 }
 
 }  // namespace

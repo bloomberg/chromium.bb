@@ -524,6 +524,55 @@ class GarbageCollected {
   DISALLOW_COPY_AND_ASSIGN(GarbageCollected);
 };
 
+template <typename T, bool is_mixin = IsGarbageCollectedMixin<T>::value>
+class ConstructTrait {
+ public:
+};
+
+template <typename T>
+class ConstructTrait<T, false> {
+ public:
+  template <typename... Args>
+  static T* Construct(Args&&... args) {
+    void* memory =
+        T::AllocateObject(sizeof(T), IsEagerlyFinalizedType<T>::value);
+    HeapObjectHeader* header = HeapObjectHeader::FromPayload(memory);
+    header->MarkIsInConstruction();
+    // Placement new as regular operator new() is deleted.
+    T* object = ::new (memory) T(std::forward<Args>(args)...);
+    header->UnmarkIsInConstruction();
+    return object;
+  }
+};
+
+template <typename T>
+class ConstructTrait<T, true> {
+ public:
+  template <typename... Args>
+  NO_SANITIZE_UNRELATED_CAST static T* Construct(Args&&... args) {
+    void* memory =
+        T::AllocateObject(sizeof(T), IsEagerlyFinalizedType<T>::value);
+    HeapObjectHeader* header = HeapObjectHeader::FromPayload(memory);
+    header->MarkIsInConstruction();
+    ThreadState* state =
+        ThreadStateFor<ThreadingTrait<T>::kAffinity>::GetState();
+    state->EnterGCForbiddenScopeIfNeeded(
+        &(reinterpret_cast<T*>(memory)->mixin_constructor_marker_));
+    // Placement new as regular operator new() is deleted.
+    T* object = ::new (memory) T(std::forward<Args>(args)...);
+    header->UnmarkIsInConstruction();
+    return object;
+  }
+};
+
+// Constructs an instance of T, which is a garbage collected type.
+template <typename T, typename... Args>
+T* MakeGarbageCollected(Args&&... args) {
+  static_assert(WTF::IsGarbageCollectedType<T>::value,
+                "T needs to be a garbage collected object");
+  return ConstructTrait<T>::Construct(std::forward<Args>(args)...);
+}
+
 // Assigning class types to their arenas.
 //
 // We use sized arenas for most 'normal' objects to improve memory locality.

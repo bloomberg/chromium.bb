@@ -179,7 +179,7 @@ base::string16 UninstallView::GetItemAt(int index) {
 namespace chrome {
 
 int ShowUninstallBrowserPrompt() {
-  DCHECK(base::MessageLoopForUI::IsCurrent());
+  DCHECK(base::MessageLoopCurrentForUI::IsSet());
   int result = service_manager::RESULT_CODE_NORMAL_EXIT;
 
   base::RunLoop run_loop;

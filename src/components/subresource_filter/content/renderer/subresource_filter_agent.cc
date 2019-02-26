@@ -251,7 +251,7 @@ void SubresourceFilterAgent::DidCommitProvisionalLoad(
       AsWeakPtr()));
   auto filter = std::make_unique<WebDocumentSubresourceFilterImpl>(
       url::Origin::Create(url), activation_state, std::move(ruleset),
-      std::move(first_disallowed_load_callback), IsAdSubframe());
+      std::move(first_disallowed_load_callback));
   filter->set_ad_resource_tracker(ad_resource_tracker_.get());
   filter_for_last_committed_load_ = filter->AsWeakPtr();
   SetSubresourceFilterForCommittedLoad(std::move(filter));
@@ -286,8 +286,7 @@ void SubresourceFilterAgent::WillCreateWorkerFetchContext(
           std::move(ruleset_file),
           base::BindOnce(&SubresourceFilterAgent::
                              SignalFirstSubresourceDisallowedForCommittedLoad,
-                         AsWeakPtr()),
-          IsAdSubframe()));
+                         AsWeakPtr())));
 }
 
 }  // namespace subresource_filter

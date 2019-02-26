@@ -15,6 +15,8 @@ blink_modules_sources("media_controls") {
     "elements/media_control_button_panel_element.h",
     "elements/media_control_cast_button_element.cc",
     "elements/media_control_cast_button_element.h",
+    "elements/media_control_consts.cc",
+    "elements/media_control_consts.h",
     "elements/media_control_current_time_display_element.cc",
     "elements/media_control_current_time_display_element.h",
     "elements/media_control_display_cutout_fullscreen_button_element.cc",
@@ -91,7 +93,6 @@ blink_modules_sources("media_controls") {
   deps = [
     ":media_controls_resources",
     "//services/service_manager/public/cpp",
-    "//third_party/blink/public:media_controls_resources_header",
   ]
 }
 

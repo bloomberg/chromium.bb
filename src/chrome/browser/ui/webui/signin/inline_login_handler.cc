@@ -83,7 +83,6 @@ void InlineLoginHandler::HandleInitializeMessage(const base::ListValue* args) {
           content::StoragePartition::REMOVE_DATA_MASK_ALL,
           content::StoragePartition::QUOTA_MANAGED_STORAGE_MASK_ALL,
           GURL(),
-          content::StoragePartition::OriginMatcherFunction(),
           base::Time(),
           base::Time::Max(),
           base::Bind(&InlineLoginHandler::ContinueHandleInitializeMessage,

@@ -18,17 +18,18 @@
 #include "rtc_base/flags.h"
 #include "rtc_base/format_macros.h"
 #include "rtc_base/memory_usage.h"
-#include "rtc_base/pathutils.h"
 #include "system_wrappers/include/cpu_info.h"
 #include "test/call_test.h"
+#include "test/testsupport/fileutils.h"
 #include "test/testsupport/frame_writer.h"
 #include "test/testsupport/perf_test.h"
 #include "test/testsupport/test_artifacts.h"
 
-DEFINE_bool(save_worst_frame,
-            false,
-            "Enable saving a frame with the lowest PSNR to a jpeg file in the "
-            "test_artifacts_dir");
+WEBRTC_DEFINE_bool(
+    save_worst_frame,
+    false,
+    "Enable saving a frame with the lowest PSNR to a jpeg file in the "
+    "test_artifacts_dir");
 
 namespace webrtc {
 namespace {
@@ -90,7 +91,6 @@ VideoAnalyzer::VideoAnalyzer(test::LayerFilteringTransport* transport,
       avg_ssim_threshold_(avg_ssim_threshold),
       is_quick_test_enabled_(is_quick_test_enabled),
       stats_polling_thread_(&PollStatsThread, this, "StatsPoller"),
-      comparison_available_event_(false, false),
       done_(true, false),
       clock_(clock),
       start_ms_(clock->TimeInMilliseconds()) {
@@ -606,7 +606,7 @@ void VideoAnalyzer::PrintResults() {
     std::string output_dir;
     test::GetTestArtifactsDir(&output_dir);
     std::string output_path =
-        rtc::Pathname(output_dir, test_label_ + ".jpg").pathname();
+        test::JoinFilename(output_dir, test_label_ + ".jpg");
     RTC_LOG(LS_INFO) << "Saving worst frame to " << output_path;
     test::JpegFrameWriter frame_writer(output_path);
     RTC_CHECK(

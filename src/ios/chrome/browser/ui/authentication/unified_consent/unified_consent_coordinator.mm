@@ -28,8 +28,8 @@
 // Identity chooser coordinator.
 @property(nonatomic, strong)
     IdentityChooserCoordinator* identityChooserCoordinator;
-// YES if no default identity as been set before starting the coordinator.
-@property(nonatomic, assign) BOOL shouldOpenIdentityChooserDialogWhenAppearing;
+// YES if the user choose an identity (or accept the default identity selected).
+@property(nonatomic, assign) BOOL identitySelectedByUser;
 
 @end
 
@@ -39,10 +39,8 @@
 @synthesize unifiedConsentMediator = _unifiedConsentMediator;
 @synthesize unifiedConsentViewController = _unifiedConsentViewController;
 @synthesize settingsLinkWasTapped = _settingsLinkWasTapped;
-@synthesize interactable = _interactable;
 @synthesize identityChooserCoordinator = _identityChooserCoordinator;
-@synthesize shouldOpenIdentityChooserDialogWhenAppearing =
-    _shouldOpenIdentityChooserDialogWhenAppearing;
+@synthesize identitySelectedByUser = _identitySelectedByUser;
 
 - (instancetype)init {
   self = [super init];
@@ -56,14 +54,6 @@
 }
 
 - (void)start {
-  self.unifiedConsentViewController.interactable = self.interactable;
-  // If no selected identity has been set, the identity chooser dialog needs
-  // to be opened when the view will appear. This test has to be done before
-  // to start the mediator since it will select a default one on start.
-  // When the unified consent isn't interactable, the identity chooser cannot be
-  // displayed. So it shouldn't be opened when the view appears.
-  self.shouldOpenIdentityChooserDialogWhenAppearing =
-      !self.unifiedConsentMediator.selectedIdentity && self.interactable;
   [self.unifiedConsentMediator start];
 }
 
@@ -72,6 +62,7 @@
 }
 
 - (void)setSelectedIdentity:(ChromeIdentity*)selectedIdentity {
+  self.identitySelectedByUser = YES;
   self.unifiedConsentMediator.selectedIdentity = selectedIdentity;
 }
 
@@ -111,7 +102,9 @@
 
 - (void)unifiedConsentViewControllerViewDidAppear:
     (UnifiedConsentViewController*)controller {
-  if (!self.shouldOpenIdentityChooserDialogWhenAppearing)
+  // Only opens automatically the identity chooser dialog if the user didn't
+  // select an identity.
+  if (self.identitySelectedByUser)
     return;
   CGFloat midX = CGRectGetMidX(self.unifiedConsentViewController.view.bounds);
   CGFloat midY = CGRectGetMidY(self.unifiedConsentViewController.view.bounds);

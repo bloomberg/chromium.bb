@@ -24,12 +24,15 @@
 #include "chrome/browser/extensions/standard_management_policy_provider.h"
 #include "chrome/browser/profiles/incognito_helpers.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/common/extensions/extension_constants.h"
+#include "chrome/common/pref_names.h"
 #include "components/crx_file/id_util.h"
 #include "components/keyed_service/content/browser_context_dependency_manager.h"
 #include "components/pref_registry/pref_registry_syncable.h"
 #include "components/prefs/pref_service.h"
 #include "extensions/browser/pref_names.h"
 #include "extensions/common/extension.h"
+#include "extensions/common/extension_urls.h"
 #include "extensions/common/manifest_constants.h"
 #include "extensions/common/permissions/api_permission_set.h"
 #include "extensions/common/permissions/permission_set.h"
@@ -65,6 +68,10 @@ ExtensionManagement::ExtensionManagement(Profile* profile)
   pref_change_registrar_.Add(pref_names::kAllowedTypes, pref_change_callback);
   pref_change_registrar_.Add(pref_names::kExtensionManagement,
                              pref_change_callback);
+#if !defined(OS_CHROMEOS)
+  pref_change_registrar_.Add(prefs::kCloudReportingEnabled,
+                             pref_change_callback);
+#endif
   // Note that both |global_settings_| and |default_settings_| will be null
   // before first call to Refresh(), so in order to resolve this, Refresh() must
   // be called in the initialization of ExtensionManagement.
@@ -159,7 +166,13 @@ bool ExtensionManagement::IsOffstoreInstallAllowed(
 }
 
 bool ExtensionManagement::IsAllowedManifestType(
-    Manifest::Type manifest_type) const {
+    Manifest::Type manifest_type,
+    const std::string& extension_id) const {
+  if (extension_id == extension_misc::kCloudReportingExtensionId &&
+      IsCloudReportingPolicyEnabled()) {
+    return true;
+  }
+
   if (!global_settings_->has_restricted_allowed_types)
     return true;
   const std::vector<Manifest::Type>& allowed_types =
@@ -169,6 +182,13 @@ bool ExtensionManagement::IsAllowedManifestType(
 
 APIPermissionSet ExtensionManagement::GetBlockedAPIPermissions(
     const Extension* extension) const {
+  // The Chrome Reporting extension is sideloaded via the CloudReportingEnabled
+  // policy and is not subject to permission withholding.
+  if (extension->id() == extension_misc::kCloudReportingExtensionId &&
+      IsCloudReportingPolicyEnabled()) {
+    return APIPermissionSet();
+  }
+
   // Fetch per-extension blocked permissions setting.
   auto iter_id = settings_by_id_.find(extension->id());
 
@@ -441,12 +461,14 @@ void ExtensionManagement::Refresh() {
       }
     }
   }
+
+  UpdateForcedCloudReportingExtension();
 }
 
 const base::Value* ExtensionManagement::LoadPreference(
     const char* pref_name,
     bool force_managed,
-    base::Value::Type expected_type) {
+    base::Value::Type expected_type) const {
   if (!pref_service_)
     return nullptr;
   const PrefService::Preference* pref =
@@ -505,6 +527,32 @@ void ExtensionManagement::UpdateForcedExtensions(
       by_id->update_url = update_url;
     }
   }
+}
+
+void ExtensionManagement::UpdateForcedCloudReportingExtension() {
+  if (!IsCloudReportingPolicyEnabled())
+    return;
+
+  // Adds the Chrome Reporting extension to the force install list if
+  // CloudReportingEnabled policy is set to True. Overrides any existing setting
+  // for that extension from other policies.
+  internal::IndividualSettings* settings =
+      AccessById(extension_misc::kCloudReportingExtensionId);
+  settings->Reset();
+  settings->minimum_version_required.reset();
+  settings->installation_mode = INSTALLATION_FORCED;
+  settings->update_url = extension_urls::kChromeWebstoreUpdateURL;
+}
+
+bool ExtensionManagement::IsCloudReportingPolicyEnabled() const {
+#if !defined(OS_CHROMEOS)
+  const base::Value* policy_value =
+      LoadPreference(prefs::kCloudReportingEnabled,
+                     /* force_managed = */ true, base::Value::Type::BOOLEAN);
+  return policy_value && policy_value->GetBool();
+#else
+  return false;
+#endif
 }
 
 internal::IndividualSettings* ExtensionManagement::AccessById(

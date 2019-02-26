@@ -57,7 +57,7 @@
 #include "chrome/browser/prerender/prerender_test_utils.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_io_data.h"
-#include "chrome/browser/speech/tts_controller.h"
+#include "chrome/browser/speech/tts_controller_delegate_impl.h"
 #include "chrome/browser/speech/tts_platform.h"
 #include "chrome/browser/task_manager/mock_web_contents_task_manager.h"
 #include "chrome/browser/task_manager/providers/web_contents/web_contents_tags_manager.h"
@@ -100,9 +100,9 @@
 #include "content/public/browser/render_process_host.h"
 #include "content/public/browser/render_view_host.h"
 #include "content/public/browser/site_instance.h"
+#include "content/public/browser/tts_controller.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_contents_observer.h"
-#include "content/public/common/browser_side_navigation_policy.h"
 #include "content/public/common/content_switches.h"
 #include "content/public/common/url_constants.h"
 #include "content/public/test/browser_test_utils.h"
@@ -1692,83 +1692,6 @@ IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest, PrerenderQuickQuit) {
                    FINAL_STATUS_APP_TERMINATING, 0);
 }
 
-// Checks that we don't prerender in an infinite loop.
-IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest, PrerenderInfiniteLoop) {
-  const char* const kHtmlFileA = "/prerender/prerender_infinite_a.html";
-  const char* const kHtmlFileB = "/prerender/prerender_infinite_b.html";
-
-  std::vector<FinalStatus> expected_final_status_queue;
-  expected_final_status_queue.push_back(FINAL_STATUS_USED);
-  expected_final_status_queue.push_back(FINAL_STATUS_APP_TERMINATING);
-
-  std::vector<std::unique_ptr<TestPrerender>> prerenders =
-      PrerenderTestURL(kHtmlFileA, expected_final_status_queue, 1);
-  ASSERT_TRUE(prerenders[0]->contents());
-  // Assert that the pending prerender is in there already. This relies on the
-  // fact that the renderer sends out the AddLinkRelPrerender IPC before sending
-  // the page load one.
-  EXPECT_EQ(2U, GetLinkPrerenderCount());
-  EXPECT_EQ(1U, GetRunningLinkPrerenderCount());
-
-  // Next url should be in pending list but not an active entry.
-  EXPECT_FALSE(UrlIsInPrerenderManager(kHtmlFileB));
-
-  NavigateToDestURL();
-
-  // Make sure the PrerenderContents for the next url is now in the manager and
-  // not pending. This relies on pending prerenders being resolved in the same
-  // event loop iteration as OnPrerenderStop.
-  EXPECT_TRUE(UrlIsInPrerenderManager(kHtmlFileB));
-  EXPECT_EQ(1U, GetLinkPrerenderCount());
-  EXPECT_EQ(1U, GetRunningLinkPrerenderCount());
-}
-
-// Checks that we don't prerender in an infinite loop and multiple links are
-// handled correctly.
-IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest,
-                       DISABLED_PrerenderInfiniteLoopMultiple) {
-  const char* const kHtmlFileA =
-      "/prerender/prerender_infinite_a_multiple.html";
-  const char* const kHtmlFileB =
-      "/prerender/prerender_infinite_b_multiple.html";
-  const char* const kHtmlFileC =
-      "/prerender/prerender_infinite_c_multiple.html";
-
-  // This test is conceptually simplest if concurrency is at two, since we
-  // don't have to worry about which of kHtmlFileB or kHtmlFileC gets evicted.
-  GetPrerenderManager()->mutable_config().max_link_concurrency = 2;
-  GetPrerenderManager()->mutable_config().max_link_concurrency_per_launcher = 2;
-
-  std::vector<FinalStatus> expected_final_status_queue;
-  expected_final_status_queue.push_back(FINAL_STATUS_USED);
-  expected_final_status_queue.push_back(FINAL_STATUS_APP_TERMINATING);
-  expected_final_status_queue.push_back(FINAL_STATUS_APP_TERMINATING);
-
-  std::vector<std::unique_ptr<TestPrerender>> prerenders =
-      PrerenderTestURL(kHtmlFileA, expected_final_status_queue, 1);
-  ASSERT_TRUE(prerenders[0]->contents());
-
-  // Next url should be in pending list but not an active entry. This relies on
-  // the fact that the renderer sends out the AddLinkRelPrerender IPC before
-  // sending the page load one.
-  EXPECT_EQ(3U, GetLinkPrerenderCount());
-  EXPECT_EQ(1U, GetRunningLinkPrerenderCount());
-  EXPECT_FALSE(UrlIsInPrerenderManager(kHtmlFileB));
-  EXPECT_FALSE(UrlIsInPrerenderManager(kHtmlFileC));
-
-  NavigateToDestURL();
-
-  // Make sure the PrerenderContents for the next urls are now in the manager
-  // and not pending. One and only one of the URLs (the last seen) should be the
-  // active entry. This relies on pending prerenders being resolved in the same
-  // event loop iteration as OnPrerenderStop.
-  bool url_b_is_active_prerender = UrlIsInPrerenderManager(kHtmlFileB);
-  bool url_c_is_active_prerender = UrlIsInPrerenderManager(kHtmlFileC);
-  EXPECT_TRUE(url_b_is_active_prerender && url_c_is_active_prerender);
-  EXPECT_EQ(2U, GetLinkPrerenderCount());
-  EXPECT_EQ(2U, GetRunningLinkPrerenderCount());
-}
-
 // Checks that pending prerenders are aborted (and never launched) when launched
 // by a prerender that itself gets aborted.
 IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest, PrerenderAbortPendingOnCancel) {
@@ -3152,10 +3075,11 @@ class HangingURLLoader : public network::mojom::URLLoader {
       : client_(std::move(client)) {}
   ~HangingURLLoader() override {}
   // mojom::URLLoader implementation:
-  void FollowRedirect(const base::Optional<std::vector<std::string>>&
-                          to_be_removed_request_headers,
-                      const base::Optional<net::HttpRequestHeaders>&
-                          modified_request_headers) override {}
+  void FollowRedirect(
+      const base::Optional<std::vector<std::string>>&
+          to_be_removed_request_headers,
+      const base::Optional<net::HttpRequestHeaders>& modified_request_headers,
+      const base::Optional<GURL>& new_url) override {}
   void ProceedWithResponse() override {}
   void SetPriority(net::RequestPriority priority,
                    int32_t intra_priority_value) override {
@@ -3542,33 +3466,33 @@ IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest,
 
 // When instantiated, mocks out the global text-to-speech engine with something
 // that emulates speaking any phrase for the duration of 0ms.
-class TtsPlatformMock : public TtsPlatformImpl {
+class TtsPlatformMock : public TtsPlatform {
  public:
   TtsPlatformMock() : speaking_requested_(false) {
-    TtsController::GetInstance()->SetPlatformImpl(this);
+    TtsControllerDelegateImpl::GetInstance()->SetTtsPlatform(this);
   }
 
-  ~TtsPlatformMock() override {
-    TtsController::GetInstance()->SetPlatformImpl(
-        TtsPlatformImpl::GetInstance());
+  virtual ~TtsPlatformMock() {
+    TtsControllerDelegateImpl::GetInstance()->SetTtsPlatform(
+        TtsPlatform::GetInstance());
   }
 
   bool speaking_requested() { return speaking_requested_; }
 
-  // TtsPlatformImpl:
+  // TtsPlatform:
 
   bool PlatformImplAvailable() override { return true; }
 
   bool Speak(int utterance_id,
              const std::string& utterance,
              const std::string& lang,
-             const VoiceData& voice,
-             const UtteranceContinuousParameters& params) override {
+             const content::VoiceData& voice,
+             const content::UtteranceContinuousParameters& params) override {
     speaking_requested_ = true;
     // Dispatch the end of speaking back to the page.
-    TtsController::GetInstance()->OnTtsEvent(utterance_id, TTS_EVENT_END,
-                                             static_cast<int>(utterance.size()),
-                                             std::string());
+    content::TtsController::GetInstance()->OnTtsEvent(
+        utterance_id, content::TTS_EVENT_END,
+        static_cast<int>(utterance.size()), std::string());
     return true;
   }
 
@@ -3576,17 +3500,32 @@ class TtsPlatformMock : public TtsPlatformImpl {
 
   bool IsSpeaking() override { return false; }
 
-  void GetVoices(std::vector<VoiceData>* out_voices) override {
-    out_voices->push_back(VoiceData());
-    VoiceData& voice = out_voices->back();
+  void GetVoices(std::vector<content::VoiceData>* out_voices) override {
+    out_voices->push_back(content::VoiceData());
+    content::VoiceData& voice = out_voices->back();
     voice.native = true;
     voice.name = "TtsPlatformMock";
-    voice.events.insert(TTS_EVENT_END);
+    voice.events.insert(content::TTS_EVENT_END);
   }
 
   void Pause() override {}
 
   void Resume() override {}
+
+  bool LoadBuiltInTtsExtension(
+      content::BrowserContext* browser_context) override {
+    return false;
+  }
+
+  void WillSpeakUtteranceWithVoice(
+      const content::Utterance* utterance,
+      const content::VoiceData& voice_data) override {}
+
+  void SetError(const std::string& error) override {}
+
+  std::string GetError() override { return std::string(); }
+
+  void ClearError() override {}
 
  private:
   bool speaking_requested_;

@@ -97,7 +97,7 @@ NSImage* NSImageFromPNG(const std::vector<gfx::ImagePNGRep>& image_png_reps,
     [image addRepresentation:ns_image_rep];
   }
 
-  return image.release();
+  return image.autorelease();
 }
 
 gfx::Size NSImageSize(NSImage* image) {

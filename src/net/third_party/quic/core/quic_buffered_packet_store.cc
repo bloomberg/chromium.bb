@@ -55,7 +55,9 @@ BufferedPacket& BufferedPacket::operator=(BufferedPacket&& other) = default;
 BufferedPacket::~BufferedPacket() {}
 
 BufferedPacketList::BufferedPacketList()
-    : creation_time(QuicTime::Zero()), ietf_quic(false) {}
+    : creation_time(QuicTime::Zero()),
+      ietf_quic(false),
+      version(PROTOCOL_UNSUPPORTED, QUIC_VERSION_UNSUPPORTED) {}
 
 BufferedPacketList::BufferedPacketList(BufferedPacketList&& other) = default;
 
@@ -84,13 +86,16 @@ EnqueuePacketResult QuicBufferedPacketStore::EnqueuePacket(
     QuicSocketAddress server_address,
     QuicSocketAddress client_address,
     bool is_chlo,
-    const QuicString& alpn) {
+    const QuicString& alpn,
+    const ParsedQuicVersion& version) {
   QUIC_BUG_IF(!FLAGS_quic_allow_chlo_buffering)
       << "Shouldn't buffer packets if disabled via flag.";
   QUIC_BUG_IF(is_chlo && QuicContainsKey(connections_with_chlo_, connection_id))
       << "Shouldn't buffer duplicated CHLO on connection " << connection_id;
   QUIC_BUG_IF(!is_chlo && !alpn.empty())
       << "Shouldn't have an ALPN defined for a non-CHLO packet.";
+  QUIC_BUG_IF(is_chlo && version.transport_version == QUIC_VERSION_UNSUPPORTED)
+      << "Should have version for CHLO packet.";
 
   if (!QuicContainsKey(undecryptable_packets_, connection_id) &&
       ShouldBufferPacket(is_chlo)) {
@@ -101,6 +106,7 @@ EnqueuePacketResult QuicBufferedPacketStore::EnqueuePacket(
     undecryptable_packets_.emplace(
         std::make_pair(connection_id, BufferedPacketList()));
     undecryptable_packets_.back().second.ietf_quic = ietf_quic;
+    undecryptable_packets_.back().second.version = version;
   }
   CHECK(QuicContainsKey(undecryptable_packets_, connection_id));
   BufferedPacketList& queue =
@@ -134,6 +140,8 @@ EnqueuePacketResult QuicBufferedPacketStore::EnqueuePacket(
     queue.buffered_packets.push_front(std::move(new_entry));
     queue.alpn = alpn;
     connections_with_chlo_[connection_id] = false;  // Dummy value.
+    // Set the version of buffered packets of this connection on CHLO.
+    queue.version = version;
   } else {
     // Buffer non-CHLO packets in arrival order.
     queue.buffered_packets.push_back(std::move(new_entry));

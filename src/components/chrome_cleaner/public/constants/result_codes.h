@@ -114,9 +114,9 @@ enum ResultCodeValues : ResultCode {
   // longer used.
   // 27
 
-  // This code is used when the reporter didn't find any UwS but the signature
-  // matcher was invalid.
-  RESULT_CODE_NO_PUPS_FOUND_NO_SIGNATURE_MATCHER = 28,
+  // DEPRECATED. This code was used when the reporter didn't find any UwS but
+  // the signature matcher was invalid.
+  // 28
 
   // This code is used when the validation step detects that one or more PUP
   // files are remaining after a cleanup and fails to remove them.
@@ -216,7 +216,7 @@ enum ResultCodeValues : ResultCode {
 
   // The target process for the JSON parser sandbox disconnected from the IPC
   // while the pipe was still needed by the broker process.
-  RESULT_CODE_JSON_PARSER_SANDBOX_DISCONNECTED_TOO_SOON = 54,
+  RESULT_CODE_PARSER_SANDBOX_DISCONNECTED_TOO_SOON = 54,
 
   // The target process for the zip archiver sandbox disconnected from the IPC
   // while the pipe was still needed by the broker process.

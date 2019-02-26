@@ -18,6 +18,7 @@
 #include "base/macros.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/test/scoped_feature_list.h"
+#include "ui/base/ime/composition_text.h"
 #include "ui/chromeos/search_box/search_box_constants.h"
 #include "ui/chromeos/search_box/search_box_view_delegate.h"
 #include "ui/events/base_event_utils.h"
@@ -307,22 +308,22 @@ class SearchBoxViewAutocompleteTest
   // expect only typed characters otherwise.
   void ExpectAutocompleteSuggestion(bool should_autocomplete) {
     if (should_autocomplete) {
-      // Search box autocomplete suggestion is accepted and reflected in Search
-      // Model.
-      EXPECT_EQ(view()->search_box()->text(),
+      // Search box autocomplete suggestion is accepted, but it should not
+      // trigger another query, thus it is not reflected in Search Model.
+      EXPECT_EQ(base::ASCIIToUTF16("hello world!"),
+                view()->search_box()->text());
+      EXPECT_EQ(base::ASCIIToUTF16("he"),
                 view_delegate()->GetSearchModel()->search_box()->text());
-      EXPECT_EQ(view()->search_box()->text(),
-                base::ASCIIToUTF16("hello world!"));
     } else {
       // Search box autocomplete suggestion is removed and is reflected in
       // SearchModel.
       EXPECT_EQ(view()->search_box()->text(),
                 view_delegate()->GetSearchModel()->search_box()->text());
-      EXPECT_EQ(view()->search_box()->text(), base::ASCIIToUTF16("he"));
+      EXPECT_EQ(base::ASCIIToUTF16("he"), view()->search_box()->text());
       // ProcessAutocomplete should be a no-op.
       view()->ProcessAutocomplete();
       // The autocomplete suggestion should still not be present.
-      EXPECT_EQ(view()->search_box()->text(), base::ASCIIToUTF16("he"));
+      EXPECT_EQ(base::ASCIIToUTF16("he"), view()->search_box()->text());
     }
   }
 
@@ -530,15 +531,16 @@ TEST_F(SearchBoxViewAutocompleteTest, SearchBoxAutocompletesAcceptsNextChar) {
   KeyPress(ui::VKEY_H);
   KeyPress(ui::VKEY_E);
   view()->ProcessAutocomplete();
-  // Forward the next key in the autocomplete suggestion to HandleKeyEvent(). We
-  // use HandleKeyEvent() because KeyPress() will replace the existing
-  // highlighted text and add a repeat character.
-  ui::KeyEvent event(ui::ET_KEY_PRESSED, ui::VKEY_L, ui::EF_NONE);
-  static_cast<views::TextfieldController*>(view())->HandleKeyEvent(
-      view()->search_box(), event);
+
+  // After typing L, the highlighted text will be replaced by L.
+  KeyPress(ui::VKEY_L);
   base::string16 selected_text = view()->search_box()->GetSelectedText();
-  // The autocomplete text should be preserved after hitting the next key in the
-  // suggestion.
+  EXPECT_EQ(view()->search_box()->text(), base::ASCIIToUTF16("hel"));
+  EXPECT_EQ(base::ASCIIToUTF16(""), selected_text);
+
+  // After handling autocomplete, the highlighted text will show again.
+  view()->ProcessAutocomplete();
+  selected_text = view()->search_box()->GetSelectedText();
   EXPECT_EQ(view()->search_box()->text(), base::ASCIIToUTF16("hello world!"));
   EXPECT_EQ(base::ASCIIToUTF16("lo world!"), selected_text);
 }
@@ -565,6 +567,34 @@ TEST_P(SearchBoxViewAutocompleteTest,
        SearchBoxDeletesAutocompleteTextOnlyAfterUpDownLeftRightBackspace) {
   TestKeyEvent(ui::KeyEvent(ui::ET_KEY_PRESSED, key_code(), ui::EF_NONE),
                false);
+}
+
+// Tests that autocomplete is not handled if IME is using composition text.
+TEST_F(SearchBoxViewAutocompleteTest, SearchBoxAutocompletesNotHandledForIME) {
+  // Add a search result with a non-empty title field.
+  CreateSearchResult(ash::SearchResultDisplayType::kList, 1.0,
+                     base::ASCIIToUTF16("hello world!"), base::string16());
+
+  // Simulate uncomposited text. The autocomplete should be handled.
+  view()->search_box()->SetText(base::ASCIIToUTF16("he"));
+  view()->set_highlight_range_for_test(gfx::Range(2, 2));
+  view()->ProcessAutocomplete();
+
+  base::string16 selected_text = view()->search_box()->GetSelectedText();
+  EXPECT_EQ(view()->search_box()->text(), base::ASCIIToUTF16("hello world!"));
+  EXPECT_EQ(base::ASCIIToUTF16("llo world!"), selected_text);
+  view()->search_box()->SetText(base::string16());
+
+  // Simulate IME composition text. The autocomplete should not be handled.
+  ui::CompositionText composition_text;
+  composition_text.text = base::ASCIIToUTF16("he");
+  view()->search_box()->SetCompositionText(composition_text);
+  view()->set_highlight_range_for_test(gfx::Range(2, 2));
+  view()->ProcessAutocomplete();
+
+  selected_text = view()->search_box()->GetSelectedText();
+  EXPECT_EQ(view()->search_box()->text(), base::ASCIIToUTF16("he"));
+  EXPECT_EQ(base::ASCIIToUTF16(""), selected_text);
 }
 
 }  // namespace test

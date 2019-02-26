@@ -50,8 +50,6 @@ class FakeAsynchronousShutdownObjectContainerFactory
 
   // AsynchronousShutdownObjectContainerImpl::Factory:
   std::unique_ptr<AsynchronousShutdownObjectContainer> BuildInstance(
-      scoped_refptr<device::BluetoothAdapter> adapter,
-      cryptauth::CryptAuthService* cryptauth_service,
       device_sync::DeviceSyncClient* device_sync_client,
       secure_channel::SecureChannelClient* secure_channel_client,
       TetherHostFetcher* tether_host_fetcher,
@@ -161,9 +159,8 @@ class TetherComponentImplTest : public testing::Test {
         fake_crash_recovery_manager_factory_.get());
 
     component_ = TetherComponentImpl::Factory::NewInstance(
-        nullptr /* cryptauth_service */, nullptr /* device_sync_client */,
-        nullptr /* secure_channel_client */, nullptr /* tether_host_fetcher */,
-        nullptr /* notification_presenter */,
+        nullptr /* device_sync_client */, nullptr /* secure_channel_client */,
+        nullptr /* tether_host_fetcher */, nullptr /* notification_presenter */,
         nullptr /* gms_core_notifications_state_tracker */,
         nullptr /* pref_service */, nullptr /* network_state_handler */,
         nullptr /* managed_network_configuration_handler */,

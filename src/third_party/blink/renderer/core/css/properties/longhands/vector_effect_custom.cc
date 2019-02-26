@@ -5,7 +5,7 @@
 #include "third_party/blink/renderer/core/css/properties/longhands/vector_effect.h"
 
 namespace blink {
-namespace CSSLonghand {
+namespace css_longhand {
 
 const CSSValue* VectorEffect::CSSValueFromComputedStyleInternal(
     const ComputedStyle& style,
@@ -16,5 +16,5 @@ const CSSValue* VectorEffect::CSSValueFromComputedStyleInternal(
   return CSSIdentifierValue::Create(svg_style.VectorEffect());
 }
 
-}  // namespace CSSLonghand
+}  // namespace css_longhand
 }  // namespace blink

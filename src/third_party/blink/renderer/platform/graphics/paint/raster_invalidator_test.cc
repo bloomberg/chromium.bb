@@ -688,4 +688,103 @@ TEST_F(RasterInvalidatorTest, EffectLocalTransformSpaceChangeNoInvalidation) {
   FinishCycle(*artifact);
 }
 
+TEST_P(RasterInvalidatorTest, AliasEffectParentChanges) {
+  RasterInvalidator invalidator(kNoopRasterInvalidation);
+
+  CompositorFilterOperations filter;
+  filter.AppendOpacityFilter(0.5);
+  // Create an effect and an alias for that effect.
+  auto e1 = CreateFilterEffect(e0(), &t0(), &c0(), filter);
+  auto alias_effect = EffectPaintPropertyNode::CreateAlias(*e1);
+
+  // The artifact has a chunk pointing to the alias.
+  PropertyTreeState layer_state(&t0(), &c0(), &e0());
+  PropertyTreeState chunk_state(&t0(), &c0(), alias_effect.get());
+  auto artifact = TestPaintArtifact().Chunk(0).Properties(chunk_state).Build();
+
+  invalidator.Generate(artifact, kDefaultLayerBounds, layer_state);
+  FinishCycle(*artifact);
+
+  invalidator.SetTracksRasterInvalidations(true);
+  // Reparent the aliased effect, so the chunk doesn't change the actual alias
+  // node, but its parent is now different.
+  alias_effect->Update(e0(), EffectPaintPropertyNode::State{});
+
+  // We expect to get invalidations since the effect unaliased effect is
+  // actually different now.
+  invalidator.Generate(artifact, kDefaultLayerBounds, layer_state);
+  const auto& invalidations = TrackedRasterInvalidations(invalidator);
+  ASSERT_EQ(1u, invalidations.size());
+  EXPECT_CHUNK_INVALIDATION(invalidations, 0, artifact->PaintChunks()[0],
+                            PaintInvalidationReason::kPaintProperty);
+  FinishCycle(*artifact);
+}
+
+TEST_P(RasterInvalidatorTest, NestedAliasEffectParentChanges) {
+  RasterInvalidator invalidator(kNoopRasterInvalidation);
+
+  CompositorFilterOperations filter;
+  filter.AppendOpacityFilter(0.5);
+  // Create an effect and an alias for that effect.
+  auto e1 = CreateFilterEffect(e0(), &t0(), &c0(), filter);
+  auto alias_effect_1 = EffectPaintPropertyNode::CreateAlias(*e1);
+  auto alias_effect_2 = EffectPaintPropertyNode::CreateAlias(*alias_effect_1);
+
+  // The artifact has a chunk pointing to the nested alias.
+  PropertyTreeState layer_state(&t0(), &c0(), &e0());
+  PropertyTreeState chunk_state(&t0(), &c0(), alias_effect_2.get());
+  auto artifact = TestPaintArtifact().Chunk(0).Properties(chunk_state).Build();
+
+  invalidator.Generate(artifact, kDefaultLayerBounds, layer_state);
+  FinishCycle(*artifact);
+
+  invalidator.SetTracksRasterInvalidations(true);
+  // Reparent the parent aliased effect, so the chunk doesn't change the actual
+  // alias node, but its parent is now different, this also ensures that the
+  // nested alias is unchanged.
+  alias_effect_1->Update(e0(), EffectPaintPropertyNode::State{});
+
+  // We expect to get invalidations since the effect unaliased effect is
+  // actually different now.
+  invalidator.Generate(artifact, kDefaultLayerBounds, layer_state);
+  const auto& invalidations = TrackedRasterInvalidations(invalidator);
+  ASSERT_EQ(1u, invalidations.size());
+  EXPECT_CHUNK_INVALIDATION(invalidations, 0, artifact->PaintChunks()[0],
+                            PaintInvalidationReason::kPaintProperty);
+  FinishCycle(*artifact);
+}
+
+TEST_P(RasterInvalidatorTest, EffectWithAliasTransformWhoseParentChanges) {
+  RasterInvalidator invalidator(kNoopRasterInvalidation);
+
+  auto t1 = CreateTransform(t0(), TransformationMatrix().Scale(5));
+  auto alias_transform = TransformPaintPropertyNode::CreateAlias(*t1);
+
+  CompositorFilterOperations filter;
+  filter.AppendBlurFilter(0);
+  // Create an effect and an alias for that effect.
+  auto e1 = CreateFilterEffect(e0(), alias_transform.get(), &c0(), filter);
+
+  // The artifact has a chunk pointing to the alias.
+  PropertyTreeState layer_state(&t0(), &c0(), &e0());
+  PropertyTreeState chunk_state(&t0(), &c0(), e1.get());
+  auto artifact = TestPaintArtifact().Chunk(0).Properties(chunk_state).Build();
+
+  invalidator.Generate(artifact, kDefaultLayerBounds, layer_state);
+  FinishCycle(*artifact);
+
+  invalidator.SetTracksRasterInvalidations(true);
+  // Reparent the aliased effect, so the chunk doesn't change the actual alias
+  // node, but its parent is now different.
+  alias_transform->Update(t0(), TransformPaintPropertyNode::State{});
+
+  // We expect to get invalidations since the effect unaliased effect is
+  // actually different now.
+  invalidator.Generate(artifact, kDefaultLayerBounds, layer_state);
+  const auto& invalidations = TrackedRasterInvalidations(invalidator);
+  ASSERT_EQ(1u, invalidations.size());
+  EXPECT_CHUNK_INVALIDATION(invalidations, 0, artifact->PaintChunks()[0],
+                            PaintInvalidationReason::kPaintProperty);
+  FinishCycle(*artifact);
+}
 }  // namespace blink

@@ -23,9 +23,13 @@ class METRICS_EXPORT UkmEntryBuilderBase {
  public:
   virtual ~UkmEntryBuilderBase();
 
-  // Records the complete entry into the recorder.  If recorder is null, the
-  // entry is simply discarded.
+  // Records the complete entry into the recorder. If recorder is null, the
+  // entry is simply discarded. The |entry_| is used up by this call so
+  // further calls to this or TakeEntry() will do nothing.
   void Record(UkmRecorder* recorder);
+
+  // Extracts the created UkmEntryPtr. Record() cannot be called after this.
+  mojom::UkmEntryPtr TakeEntry();
 
  protected:
   UkmEntryBuilderBase(base::UkmSourceId source_id, uint64_t event_hash);

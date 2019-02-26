@@ -15,6 +15,13 @@ public {{ 'static ' if not top_level }}final class {{enum|name}} {
     public static final int {{field|name}} = {{enum_value(enum, field, loop.index0)}};
 {% endfor %}
 
+{%-   if enum.min_value is not none %}
+    public static final int MIN_VALUE = (int) ({{enum.min_value}});
+{%-   endif %}
+{%-   if enum.max_value is not none %}
+    public static final int MAX_VALUE = (int) ({{enum.max_value}});
+{%-   endif %}
+
     private static final boolean IS_EXTENSIBLE = {% if enum.extensible %}true{% else %}false{% endif %};
 
     public static boolean isKnownValue(int value) {

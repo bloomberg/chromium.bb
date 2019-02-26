@@ -19,17 +19,27 @@ UploadDomAction::UploadDomAction(const ActionProto& proto)
 
 UploadDomAction::~UploadDomAction() {}
 
-void UploadDomAction::ProcessAction(ActionDelegate* delegate,
-                                    ProcessActionCallback callback) {
-  processed_action_proto_ = std::make_unique<ProcessedActionProto>();
+void UploadDomAction::InternalProcessAction(ActionDelegate* delegate,
+                                            ProcessActionCallback callback) {
+  DCHECK_GT(proto_.upload_dom().tree_root().selectors_size(), 0);
+  delegate->ShortWaitForElementExist(
+      ExtractSelector(proto_.upload_dom().tree_root()),
+      base::BindOnce(&UploadDomAction::OnWaitForElement,
+                     weak_ptr_factory_.GetWeakPtr(), base::Unretained(delegate),
+                     std::move(callback)));
+}
 
-  std::vector<std::string> selectors;
-  for (const auto& selector : proto_.upload_dom().tree_root().selectors()) {
-    selectors.emplace_back(selector);
+void UploadDomAction::OnWaitForElement(ActionDelegate* delegate,
+                                       ProcessActionCallback callback,
+                                       bool element_found) {
+  if (!element_found) {
+    UpdateProcessedAction(ELEMENT_RESOLUTION_FAILED);
+    std::move(callback).Run(std::move(processed_action_proto_));
+    return;
   }
-  DCHECK(!selectors.empty());
+
   delegate->GetOuterHtml(
-      selectors,
+      ExtractSelector(proto_.upload_dom().tree_root()),
       base::BindOnce(&UploadDomAction::OnGetOuterHtml,
                      weak_ptr_factory_.GetWeakPtr(), std::move(callback)));
 }
@@ -37,8 +47,6 @@ void UploadDomAction::ProcessAction(ActionDelegate* delegate,
 void UploadDomAction::OnGetOuterHtml(ProcessActionCallback callback,
                                      bool successful,
                                      const std::string& outer_html) {
-  // TODO(crbug.com/806868): Distinguish element not found from other error and
-  // report them as ELEMENT_RESOLUTION_FAILED.
   if (!successful) {
     UpdateProcessedAction(OTHER_ACTION_STATUS);
     std::move(callback).Run(std::move(processed_action_proto_));

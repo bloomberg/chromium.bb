@@ -61,6 +61,7 @@
 #include "chrome/browser/ui/browser_navigator_params.h"
 #include "chrome/browser/ui/chrome_pages.h"
 #include "chrome/browser/ui/exclusive_access/keyboard_lock_controller.h"
+#include "chrome/browser/ui/passwords/manage_passwords_view_utils.h"
 #include "chrome/browser/ui/tab_contents/core_tab_helper.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/browser/web_applications/components/web_app_helpers.h"
@@ -85,6 +86,7 @@
 #include "components/omnibox/browser/autocomplete_classifier.h"
 #include "components/omnibox/browser/autocomplete_match.h"
 #include "components/password_manager/content/browser/content_password_manager_driver.h"
+#include "components/password_manager/core/browser/password_manager_metrics_util.h"
 #include "components/password_manager/core/browser/password_manager_util.h"
 #include "components/prefs/pref_member.h"
 #include "components/prefs/pref_service.h"
@@ -1027,43 +1029,30 @@ void RenderViewContextMenu::AppendDevtoolsForUnpackedExtensions() {
 
 void RenderViewContextMenu::AppendLinkItems() {
   if (!params_.link_url.is_empty()) {
-    if (base::FeatureList::IsEnabled(features::kDesktopPWAWindowing)) {
-      const Browser* browser = GetBrowser();
-      const bool is_app = browser && browser->is_app();
+    const Browser* browser = GetBrowser();
+    const bool in_app =
+        base::FeatureList::IsEnabled(features::kDesktopPWAWindowing) &&
+        browser && browser->is_app();
 
-      AppendOpenInBookmarkAppLinkItems();
-
-      menu_model_.AddItemWithStringId(
-          IDC_CONTENT_CONTEXT_OPENLINKNEWTAB,
-          is_app ? IDS_CONTENT_CONTEXT_OPENLINKNEWTAB_INAPP
-                 : IDS_CONTENT_CONTEXT_OPENLINKNEWTAB);
-      if (!is_app) {
-        menu_model_.AddItemWithStringId(IDC_CONTENT_CONTEXT_OPENLINKNEWWINDOW,
-                                        IDS_CONTENT_CONTEXT_OPENLINKNEWWINDOW);
-      }
-
-      if (params_.link_url.is_valid()) {
-        AppendProtocolHandlerSubMenu();
-      }
-
-      menu_model_.AddItemWithStringId(
-          IDC_CONTENT_CONTEXT_OPENLINKOFFTHERECORD,
-          is_app ? IDS_CONTENT_CONTEXT_OPENLINKOFFTHERECORD_INAPP
-                 : IDS_CONTENT_CONTEXT_OPENLINKOFFTHERECORD);
-
-    } else {
-      menu_model_.AddItemWithStringId(IDC_CONTENT_CONTEXT_OPENLINKNEWTAB,
-                                      IDS_CONTENT_CONTEXT_OPENLINKNEWTAB);
+    menu_model_.AddItemWithStringId(
+        IDC_CONTENT_CONTEXT_OPENLINKNEWTAB,
+        in_app ? IDS_CONTENT_CONTEXT_OPENLINKNEWTAB_INAPP
+               : IDS_CONTENT_CONTEXT_OPENLINKNEWTAB);
+    if (!in_app) {
       menu_model_.AddItemWithStringId(IDC_CONTENT_CONTEXT_OPENLINKNEWWINDOW,
                                       IDS_CONTENT_CONTEXT_OPENLINKNEWWINDOW);
-      if (params_.link_url.is_valid()) {
-        AppendProtocolHandlerSubMenu();
-      }
-
-      menu_model_.AddItemWithStringId(IDC_CONTENT_CONTEXT_OPENLINKOFFTHERECORD,
-                                      IDS_CONTENT_CONTEXT_OPENLINKOFFTHERECORD);
     }
 
+    if (params_.link_url.is_valid()) {
+      AppendProtocolHandlerSubMenu();
+    }
+
+    menu_model_.AddItemWithStringId(
+        IDC_CONTENT_CONTEXT_OPENLINKOFFTHERECORD,
+        in_app ? IDS_CONTENT_CONTEXT_OPENLINKOFFTHERECORD_INAPP
+               : IDS_CONTENT_CONTEXT_OPENLINKOFFTHERECORD);
+
+    AppendOpenInBookmarkAppLinkItems();
     AppendOpenWithLinkItems();
 
     // While ChromeOS supports multiple profiles, only one can be open at a
@@ -1185,6 +1174,9 @@ void RenderViewContextMenu::AppendSmartSelectionActionItems() {
 }
 
 void RenderViewContextMenu::AppendOpenInBookmarkAppLinkItems() {
+  if (!base::FeatureList::IsEnabled(features::kDesktopPWAWindowing))
+    return;
+
   const Extension* pwa = extensions::util::GetInstalledPwaForUrl(
       browser_context_, params_.link_url);
   if (!pwa)
@@ -2098,9 +2090,12 @@ void RenderViewContextMenu::ExecuteCommand(int id, int event_flags) {
       break;
 
     case IDC_CONTENT_CONTEXT_SHOWALLSAVEDPASSWORDS:
-      password_manager_util::UserTriggeredShowAllSavedPasswordsFromContextMenu(
-          autofill::ChromeAutofillClient::FromWebContents(
-              source_web_contents_));
+      NavigateToManagePasswordsPage(
+          GetBrowser(),
+          password_manager::ManagePasswordsReferrer::kPasswordContextMenu);
+      password_manager::metrics_util::LogContextOfShowAllSavedPasswordsAccepted(
+          password_manager::metrics_util::
+              SHOW_ALL_SAVED_PASSWORDS_CONTEXT_CONTEXT_MENU);
       break;
 
     case IDC_CONTENT_CONTEXT_PICTUREINPICTURE:
@@ -2546,8 +2541,9 @@ void RenderViewContextMenu::ExecPlayPause() {
   else
     base::RecordAction(UserMetricsAction("MediaContextMenu_Pause"));
 
-  MediaPlayerActionAt(gfx::Point(params_.x, params_.y),
-                      WebMediaPlayerAction(WebMediaPlayerAction::kPlay, play));
+  MediaPlayerActionAt(
+      gfx::Point(params_.x, params_.y),
+      WebMediaPlayerAction(WebMediaPlayerAction::Type::kPlay, play));
 }
 
 void RenderViewContextMenu::ExecMute() {
@@ -2557,15 +2553,16 @@ void RenderViewContextMenu::ExecMute() {
   else
     base::RecordAction(UserMetricsAction("MediaContextMenu_Unmute"));
 
-  MediaPlayerActionAt(gfx::Point(params_.x, params_.y),
-                      WebMediaPlayerAction(WebMediaPlayerAction::kMute, mute));
+  MediaPlayerActionAt(
+      gfx::Point(params_.x, params_.y),
+      WebMediaPlayerAction(WebMediaPlayerAction::Type::kMute, mute));
 }
 
 void RenderViewContextMenu::ExecLoop() {
   base::RecordAction(UserMetricsAction("MediaContextMenu_Loop"));
   MediaPlayerActionAt(
       gfx::Point(params_.x, params_.y),
-      WebMediaPlayerAction(WebMediaPlayerAction::kLoop,
+      WebMediaPlayerAction(WebMediaPlayerAction::Type::kLoop,
                            !IsCommandIdChecked(IDC_CONTENT_CONTEXT_LOOP)));
 }
 
@@ -2573,7 +2570,7 @@ void RenderViewContextMenu::ExecControls() {
   base::RecordAction(UserMetricsAction("MediaContextMenu_Controls"));
   MediaPlayerActionAt(
       gfx::Point(params_.x, params_.y),
-      WebMediaPlayerAction(WebMediaPlayerAction::kControls,
+      WebMediaPlayerAction(WebMediaPlayerAction::Type::kControls,
                            !IsCommandIdChecked(IDC_CONTENT_CONTEXT_CONTROLS)));
 }
 
@@ -2705,7 +2702,7 @@ void RenderViewContextMenu::ExecPictureInPicture() {
 
   MediaPlayerActionAt(
       gfx::Point(params_.x, params_.y),
-      WebMediaPlayerAction(WebMediaPlayerAction::kPictureInPicture,
+      WebMediaPlayerAction(WebMediaPlayerAction::Type::kPictureInPicture,
                            !picture_in_picture_active));
 }
 

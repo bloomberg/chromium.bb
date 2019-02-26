@@ -65,7 +65,7 @@ SubresourceIntegrity::IntegrityFeatures SubresourceIntegrityHelper::GetFeatures(
     ExecutionContext* execution_context) {
   bool allow_signatures =
       RuntimeEnabledFeatures::SignatureBasedIntegrityEnabledByRuntimeFlag() ||
-      OriginTrials::SignatureBasedIntegrityEnabled(execution_context);
+      origin_trials::SignatureBasedIntegrityEnabled(execution_context);
   return allow_signatures ? SubresourceIntegrity::IntegrityFeatures::kSignatures
                           : SubresourceIntegrity::IntegrityFeatures::kDefault;
 }

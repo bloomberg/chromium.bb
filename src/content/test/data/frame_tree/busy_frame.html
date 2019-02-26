@@ -7,9 +7,11 @@ function countToInfinity() {
     i = i + 1;
   }
 }
-window.onload = () => {requestAnimationFrame(() => {setTimeout("countToInfinity()")})};
+function lookBusy() {requestAnimationFrame(() => {setTimeout("countToInfinity()")})};
 </script>
 <body>
 This page counts to infinity after submitting a compositor frame.
+A cross-origin iframe is added to ensure that a hit test query is sent to this frame.
+<iframe src="/cross-site/bar.com/title1.html"></iframe>
 </body>
 </html>

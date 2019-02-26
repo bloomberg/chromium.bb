@@ -33,6 +33,7 @@ LLVM_TARGETS = [
     ('AArch64', ('__aarch64__',)),
     ('ARM', ('__arm__',)),
     ('X86', ('__i386__', '__x86_64__')),
+    ('Mips', ('__mips__',)),
 ]
 
 LLVM_TRIPLES = {
@@ -47,6 +48,11 @@ LLVM_TRIPLES = {
         ('__i386__', 'i686-pc-linux-gnu'),
         ('__arm__', 'armv7-linux-gnueabihf'),
         ('__aarch64__', 'aarch64-linux-gnu'),
+        ('__mips__', 'mipsel-linux-gnu'),
+        ('__mips64', 'mips64el-linux-gnuabi64'),
+    ],
+    'darwin': [
+        ('__x86_64__', 'x86_64-apple-darwin'),
     ],
 }
 
@@ -64,7 +70,7 @@ LLVM_OPTIONS = [
 def _parse_args():
     parser = argparse.ArgumentParser()
     parser.add_argument('name', help='destination name',
-                        choices=['android', 'linux'])
+                        choices=['android', 'linux', 'darwin'])
     parser.add_argument('-j', '--jobs', help='parallel compilation', type=int)
     return parser.parse_args()
 
@@ -102,6 +108,7 @@ def copy_common_generated_files(dst_base):
         os.path.join('lib', 'Target', 'AArch64'),
         os.path.join('lib', 'Target', 'ARM'),
         os.path.join('lib', 'Target', 'X86'),
+        os.path.join('lib', 'Target', 'Mips'),
         os.path.join('lib', 'Transforms', 'InstCombine'),
     ]
     for subdir in subdirs:

@@ -5,10 +5,16 @@
 #include "ui/views/accessibility/view_ax_platform_node_delegate.h"
 
 #include "base/strings/utf_string_conversions.h"
+#include "ui/accessibility/ax_action_data.h"
+#include "ui/accessibility/ax_enums.mojom.h"
 #include "ui/accessibility/ax_node_data.h"
+#include "ui/gfx/geometry/rect.h"
 #include "ui/gfx/geometry/rect_conversions.h"
+#include "ui/gfx/geometry/size.h"
 #include "ui/views/accessibility/ax_aura_obj_cache.h"
 #include "ui/views/accessibility/ax_aura_obj_wrapper.h"
+#include "ui/views/accessibility/ax_event_manager.h"
+#include "ui/views/accessibility/ax_event_observer.h"
 #include "ui/views/accessibility/ax_widget_obj_wrapper.h"
 #include "ui/views/controls/button/button.h"
 #include "ui/views/controls/label.h"
@@ -101,8 +107,8 @@ TEST_F(ViewAXPlatformNodeDelegateTest, RoleShouldMatch) {
 }
 
 TEST_F(ViewAXPlatformNodeDelegateTest, BoundsShouldMatch) {
-  gfx::Rect bounds =
-      gfx::ToEnclosingRect(button_accessibility()->GetData().location);
+  gfx::Rect bounds = gfx::ToEnclosingRect(
+      button_accessibility()->GetData().relative_bounds.bounds);
   gfx::Rect screen_bounds =
       button_accessibility()->GetUnclippedScreenBoundsRect();
 
@@ -174,13 +180,16 @@ class DerivedTestView : public View {
   void OnBlur() override { SetVisible(false); }
 };
 
-class AxTestViewsDelegate : public TestViewsDelegate {
+class TestAXEventObserver : public AXEventObserver {
  public:
-  AxTestViewsDelegate() = default;
-  ~AxTestViewsDelegate() override = default;
+  TestAXEventObserver() { AXEventManager::Get()->AddObserver(this); }
 
-  void NotifyAccessibilityEvent(View* view,
-                                ax::mojom::Event event_type) override {
+  ~TestAXEventObserver() override {
+    AXEventManager::Get()->RemoveObserver(this);
+  }
+
+  // AXEventObserver:
+  void OnViewEvent(View* view, ax::mojom::Event event_type) override {
     AXAuraObjCache* ax = AXAuraObjCache::GetInstance();
     std::vector<AXAuraObjWrapper*> out_children;
     AXAuraObjWrapper* ax_obj = ax->GetOrCreate(view->GetWidget());
@@ -188,24 +197,17 @@ class AxTestViewsDelegate : public TestViewsDelegate {
   }
 
  private:
-  DISALLOW_COPY_AND_ASSIGN(AxTestViewsDelegate);
+  DISALLOW_COPY_AND_ASSIGN(TestAXEventObserver);
 };
 
-class ViewAccessibilityTest : public ViewsTestBase {
- public:
-  ViewAccessibilityTest() = default;
-  ~ViewAccessibilityTest() override = default;
-  void SetUp() override {
-    std::unique_ptr<TestViewsDelegate> views_delegate(
-        new AxTestViewsDelegate());
-    set_views_delegate(std::move(views_delegate));
-    ViewsTestBase::SetUp();
-  }
-};
+using ViewAccessibilityTest = ViewsTestBase;
 
 // Check if the destruction of the widget ends successfully if |view|'s
 // visibility changed during destruction.
 TEST_F(ViewAccessibilityTest, LayoutCalledInvalidateRootView) {
+  // TODO: Construct a real AutomationManagerAura rather than using this
+  // observer to simulate it.
+  TestAXEventObserver observer;
   std::unique_ptr<Widget> widget(new Widget);
   Widget::InitParams params = CreateParams(Widget::InitParams::TYPE_POPUP);
   params.ownership = Widget::InitParams::WIDGET_OWNS_NATIVE_WIDGET;

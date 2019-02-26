@@ -117,7 +117,8 @@ CPDF_Font* CBA_FontMap::FindResFontSameCharset(const CPDF_Dictionary* pResDict,
 
   CPDF_Document* pDocument = GetDocument();
   CPDF_Font* pFind = nullptr;
-  for (const auto& it : *pFonts) {
+  CPDF_DictionaryLocker locker(pFonts);
+  for (const auto& it : locker) {
     const ByteString& csKey = it.first;
     if (!it.second)
       continue;
@@ -167,8 +168,7 @@ void CBA_FontMap::AddFontToAnnotDict(CPDF_Font* pFont,
 
   CPDF_Dictionary* pStreamDict = pStream->GetDict();
   if (!pStreamDict) {
-    auto pOwnedDict =
-        pdfium::MakeUnique<CPDF_Dictionary>(m_pDocument->GetByteStringPool());
+    auto pOwnedDict = m_pDocument->New<CPDF_Dictionary>();
     pStreamDict = pOwnedDict.get();
     pStream->InitStream({}, std::move(pOwnedDict));
   }

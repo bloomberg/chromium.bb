@@ -15,6 +15,7 @@ import org.chromium.chrome.browser.ChromeFeatureList;
 import org.chromium.chrome.browser.modaldialog.DialogDismissalCause;
 import org.chromium.chrome.browser.modaldialog.ModalDialogManager;
 import org.chromium.chrome.browser.modaldialog.ModalDialogView;
+import org.chromium.chrome.browser.modelutil.PropertyModel;
 import org.chromium.chrome.browser.vr.VrModuleProvider;
 import org.chromium.chrome.browser.widget.bottomsheet.BottomSheet;
 import org.chromium.chrome.browser.widget.bottomsheet.EmptyBottomSheetObserver;
@@ -262,9 +263,9 @@ public class PermissionDialogController
 
         if (useAppModalDialogView()) {
             mModalDialogManager = mDialogDelegate.getTab().getActivity().getModalDialogManager();
-            mAppModalDialogView = PermissionAppModalDialogView.create(this, mDialogDelegate);
+            mAppModalDialogView = new PermissionAppModalDialogView(this, mDialogDelegate);
             mModalDialogManager.showDialog(
-                    mAppModalDialogView, ModalDialogManager.ModalDialogType.APP);
+                    mAppModalDialogView.getDialogModel(), ModalDialogManager.ModalDialogType.APP);
         } else {
             mDialogView = new PermissionDialogView(mDialogDelegate);
             mDialogView.createView(
@@ -282,7 +283,8 @@ public class PermissionDialogController
             mDialogDelegate = null;
             if (mState == State.PROMPT_OPEN) {
                 if (useAppModalDialogView()) {
-                    mModalDialogManager.dismissDialog(mAppModalDialogView);
+                    mModalDialogManager.dismissDialog(mAppModalDialogView.getDialogModel(),
+                            DialogDismissalCause.DISMISSED_BY_NATIVE);
                 } else {
                     mDialogView.dismiss();
                 }
@@ -298,24 +300,27 @@ public class PermissionDialogController
     }
 
     @Override
-    public void onDismiss(@DialogDismissalCause int dismissalCause) {
+    public void onDismiss(PropertyModel model, @DialogDismissalCause int dismissalCause) {
         mDismissListener.onDismiss(null);
         mAppModalDialogView = null;
     }
 
     @Override
-    public void onClick(@ModalDialogView.ButtonType int buttonType) {
+    public void onClick(PropertyModel model, @ModalDialogView.ButtonType int buttonType) {
         switch (buttonType) {
             case ModalDialogView.ButtonType.POSITIVE:
                 mPositiveClickListener.onClick(null, 0);
+                mModalDialogManager.dismissDialog(
+                        model, DialogDismissalCause.POSITIVE_BUTTON_CLICKED);
                 break;
             case ModalDialogView.ButtonType.NEGATIVE:
                 mNegativeClickListener.onClick(null, 0);
+                mModalDialogManager.dismissDialog(
+                        model, DialogDismissalCause.NEGATIVE_BUTTON_CLICKED);
                 break;
             default:
                 assert false : "Unexpected button pressed in dialog: " + buttonType;
         }
-        mModalDialogManager.dismissDialog(mAppModalDialogView);
     }
 
     private void destroyDelegate() {

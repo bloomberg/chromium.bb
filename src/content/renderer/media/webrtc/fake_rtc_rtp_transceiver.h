@@ -43,7 +43,8 @@ class CONTENT_EXPORT FakeRTCRtpSender : public blink::WebRTCRtpSender {
   void SetParameters(blink::WebVector<webrtc::RtpEncodingParameters>,
                      webrtc::DegradationPreference,
                      blink::WebRTCVoidRequest) override;
-  void GetStats(std::unique_ptr<blink::WebRTCStatsReportCallback>) override;
+  void GetStats(std::unique_ptr<blink::WebRTCStatsReportCallback>,
+                blink::RTCStatsFilter) override;
 
  private:
   base::Optional<std::string> track_id_;
@@ -64,7 +65,8 @@ class CONTENT_EXPORT FakeRTCRtpReceiver : public blink::WebRTCRtpReceiver {
   blink::WebVector<blink::WebString> StreamIds() const override;
   blink::WebVector<std::unique_ptr<blink::WebRTCRtpContributingSource>>
   GetSources() override;
-  void GetStats(std::unique_ptr<blink::WebRTCStatsReportCallback>) override;
+  void GetStats(std::unique_ptr<blink::WebRTCStatsReportCallback>,
+                blink::RTCStatsFilter) override;
 
  private:
   blink::WebMediaStreamTrack track_;

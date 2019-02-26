@@ -11,7 +11,7 @@
 #include "third_party/blink/renderer/core/style/computed_style.h"
 
 namespace blink {
-namespace CSSShorthand {
+namespace css_shorthand {
 
 bool BackgroundPosition::ParseShorthand(
     bool important,
@@ -22,20 +22,20 @@ bool BackgroundPosition::ParseShorthand(
   CSSValue* result_x = nullptr;
   CSSValue* result_y = nullptr;
 
-  if (!CSSParsingUtils::ConsumeBackgroundPosition(
-          range, context, CSSPropertyParserHelpers::UnitlessQuirk::kAllow,
+  if (!css_parsing_utils::ConsumeBackgroundPosition(
+          range, context, css_property_parser_helpers::UnitlessQuirk::kAllow,
           result_x, result_y) ||
       !range.AtEnd())
     return false;
 
-  CSSPropertyParserHelpers::AddProperty(
+  css_property_parser_helpers::AddProperty(
       CSSPropertyBackgroundPositionX, CSSPropertyBackgroundPosition, *result_x,
-      important, CSSPropertyParserHelpers::IsImplicitProperty::kNotImplicit,
+      important, css_property_parser_helpers::IsImplicitProperty::kNotImplicit,
       properties);
 
-  CSSPropertyParserHelpers::AddProperty(
+  css_property_parser_helpers::AddProperty(
       CSSPropertyBackgroundPositionY, CSSPropertyBackgroundPosition, *result_y,
-      important, CSSPropertyParserHelpers::IsImplicitProperty::kNotImplicit,
+      important, css_property_parser_helpers::IsImplicitProperty::kNotImplicit,
       properties);
   return true;
 }
@@ -50,5 +50,5 @@ const CSSValue* BackgroundPosition::CSSValueFromComputedStyleInternal(
       *this, style, &style.BackgroundLayers());
 }
 
-}  // namespace CSSShorthand
+}  // namespace css_shorthand
 }  // namespace blink

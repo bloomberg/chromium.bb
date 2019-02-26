@@ -19,6 +19,7 @@
 #include "chrome/browser/safe_browsing/test_safe_browsing_database_helper.h"
 #include "chrome/browser/subresource_filter/subresource_filter_profile_context.h"
 #include "chrome/browser/subresource_filter/subresource_filter_profile_context_factory.h"
+#include "chrome/browser/subresource_filter/test_ruleset_publisher.h"
 #include "chrome/browser/ui/blocked_content/safe_browsing_triggered_popup_blocker.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
@@ -57,13 +58,6 @@ void SubresourceFilterBrowserTest::TearDown() {
 }
 
 void SubresourceFilterBrowserTest::SetUpOnMainThread() {
-  // Note: even after startup, tasks posted to be run after startup are
-  // artificially delayed up to 10s. To avoid that delay in tests, just fake
-  // being after startup internally so there is no delay when writing and
-  // publishing rulesets.
-  g_browser_process->subresource_filter_ruleset_service()
-      ->SetIsAfterStartupForTesting();
-
   base::FilePath test_data_dir;
   ASSERT_TRUE(base::PathService::Get(chrome::DIR_TEST_DATA, &test_data_dir));
   embedded_test_server()->ServeFilesFromDirectory(test_data_dir);
@@ -222,6 +216,27 @@ void SubresourceFilterBrowserTest::SetRulesetWithRules(
   ruleset_creator_.CreateRulesetWithRules(rules, &test_ruleset_pair);
   ASSERT_NO_FATAL_FAILURE(
       test_ruleset_publisher_.SetRuleset(test_ruleset_pair.unindexed));
+}
+
+
+void SubresourceFilterBrowserTest::OpenAndPublishRuleset(
+    RulesetService* ruleset_service,
+    const base::FilePath& indexed_ruleset_path) {
+  base::File index_file;
+  base::RunLoop open_loop;
+  auto open_callback = base::BindOnce(
+      [](base::OnceClosure quit_closure, base::File* out, base::File result) {
+        *out = std::move(result);
+        std::move(quit_closure).Run();
+      },
+      open_loop.QuitClosure(), &index_file);
+  IndexedRulesetVersion version =
+      ruleset_service->GetMostRecentlyIndexedVersion();
+  ruleset_service->GetRulesetDealer()->TryOpenAndSetRulesetFile(
+      indexed_ruleset_path, version.checksum, std::move(open_callback));
+  open_loop.Run();
+  ASSERT_TRUE(index_file.IsValid());
+  ruleset_service->OnRulesetSet(std::move(index_file));
 }
 
 void SubresourceFilterBrowserTest::ResetConfiguration(Configuration config) {

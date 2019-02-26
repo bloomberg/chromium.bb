@@ -69,7 +69,7 @@ class DisplayInfoProviderChromeosTest : public ash::AshTestBase {
     connector_ = service_manager::Connector::Create(&request);
     service_manager::Connector::TestApi test_api(connector_.get());
     test_api.OverrideBinderForTesting(
-        service_manager::Identity(ash::mojom::kServiceName),
+        service_manager::ServiceFilter::ByName(ash::mojom::kServiceName),
         ash::mojom::CrosDisplayConfigController::Name_,
         base::BindRepeating(&DisplayInfoProviderChromeosTest::
                                 AddCrosDisplayConfigControllerBinding,
@@ -778,10 +778,11 @@ TEST_F(DisplayInfoProviderChromeosTest, UnifiedModeLayout) {
   EXPECT_TRUE(SetDisplayLayout(layout));
   EXPECT_EQ(gfx::Size(650, 743),
             display::Screen::GetScreen()->GetPrimaryDisplay().size());
-  EXPECT_EQ(displays[3].id,
-            std::to_string(GetDisplayManager()
+  EXPECT_EQ(displays[2].id,
+            std::to_string(ash::Shell::Get()
+                               ->display_configuration_controller()
                                ->GetPrimaryMirroringDisplayForUnifiedDesktop()
-                               ->id()));
+                               .id()));
 
   // Confirm the new layout.
   DisplayLayoutList new_layout = GetDisplayLayout();

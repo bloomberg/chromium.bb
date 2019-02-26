@@ -8,7 +8,6 @@
 
 #include <algorithm>
 #include <memory>
-#include <utility>
 
 #include "base/i18n/icu_string_conversions.h"
 #include "base/json/json_reader.h"
@@ -17,10 +16,15 @@
 #include "base/logging.h"
 #include "base/metrics/histogram_functions.h"
 #include "base/metrics/histogram_macros.h"
+#include "base/no_destructor.h"
+#include "base/strings/string_number_conversions.h"
+#include "base/strings/string_split.h"
+#include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/values.h"
 #include "components/omnibox/browser/autocomplete_i18n.h"
 #include "components/omnibox/browser/autocomplete_input.h"
+#include "components/omnibox/browser/autocomplete_provider.h"
 #include "components/omnibox/browser/omnibox_field_trial.h"
 #include "components/omnibox/browser/url_prefix.h"
 #include "components/url_formatter/url_fixer.h"
@@ -29,7 +33,6 @@
 #include "services/network/public/cpp/resource_response.h"
 #include "services/network/public/cpp/simple_url_loader.h"
 #include "ui/base/device_form_factor.h"
-#include "ui/base/material_design/material_design_controller.h"
 #include "url/url_constants.h"
 
 namespace {
@@ -176,50 +179,15 @@ void SearchSuggestionParser::SuggestResult::ClassifyMatchContents(
     // so, leave it as is.
     return;
   }
-  match_contents_class_.clear();
-  // We do intra-string highlighting for suggestions - the suggested segment
-  // will be highlighted, e.g. for input_text = "you" the suggestion may be
-  // "youtube", so we'll bold the "tube" section: you*tube*.
-  if (input_text != match_contents_) {
-    if (lookup_position == match_contents_.end()) {
-      // The input text is not a substring of the query string, e.g. input
-      // text is "slasdot" and the query string is "slashdot", so we bold the
-      // whole thing.
-      match_contents_class_.push_back(
-          ACMatchClassification(0, ACMatchClassification::MATCH));
-    } else {
-      // We don't iterate over the string here annotating all matches because
-      // it looks odd to have every occurrence of a substring that may be as
-      // short as a single character highlighted in a query suggestion result,
-      // e.g. for input text "s" and query string "southwest airlines", it
-      // looks odd if both the first and last s are highlighted.
-      const size_t lookup_index = lookup_position - match_contents_.begin();
-      if (lookup_index != 0) {
-        match_contents_class_.push_back(
-            ACMatchClassification(0, ACMatchClassification::MATCH));
-      }
-      match_contents_class_.push_back(
-          ACMatchClassification(lookup_index, ACMatchClassification::NONE));
-      size_t next_fragment_position = lookup_index + lookup_text.length();
-      if (next_fragment_position < match_contents_.length()) {
-        match_contents_class_.push_back(ACMatchClassification(
-            next_fragment_position, ACMatchClassification::MATCH));
-      }
-    }
-  } else {
-    // Otherwise, match_contents_ is a verbatim (what-you-typed) match, either
-    // for the default provider or a keyword search provider.
-    match_contents_class_.push_back(
-        ACMatchClassification(0, ACMatchClassification::NONE));
-  }
+
+  match_contents_class_ = AutocompleteProvider::ClassifyAllMatchesInString(
+      input_text,
+      SearchSuggestionParser::GetOrCreateWordMapForInputText(input_text),
+      match_contents_, true);
 }
 
 void SearchSuggestionParser::SuggestResult::SetAnswer(
-    const base::string16& answer_contents,
-    const base::string16& answer_type,
     const SuggestionAnswer& answer) {
-  answer_contents_ = answer_contents;
-  answer_type_ = answer_type;
   answer_ = answer;
 }
 
@@ -290,13 +258,11 @@ SearchSuggestionParser::NavigationResult::CalculateAndClassifyMatchContents(
 
   bool match_in_scheme = false;
   bool match_in_subdomain = false;
-  bool match_after_host = false;
   AutocompleteMatch::GetMatchComponents(
       GURL(formatted_url_), {{match_start, match_start + input_text.length()}},
-      &match_in_scheme, &match_in_subdomain, &match_after_host);
+      &match_in_scheme, &match_in_subdomain);
   auto format_types = AutocompleteMatch::GetFormatTypes(
-      GURL(input_text).has_scheme() || match_in_scheme, match_in_subdomain,
-      match_after_host);
+      GURL(input_text).has_scheme() || match_in_scheme, match_in_subdomain);
 
   base::string16 match_contents =
       url_formatter::FormatUrl(url_, format_types, net::UnescapeRule::SPACES,
@@ -547,8 +513,6 @@ bool SearchSuggestionParser::ParseSuggestResults(
       }
 
       base::string16 match_contents_prefix;
-      base::string16 answer_contents;
-      base::string16 answer_type;
       SuggestionAnswer answer;
       bool answer_parsed_successfully = false;
       std::string image_dominant_color;
@@ -570,6 +534,7 @@ bool SearchSuggestionParser::ParseSuggestResults(
 
           // Extract the Answer, if provided.
           const base::DictionaryValue* answer_json = nullptr;
+          base::string16 answer_type;
           if (suggestion_detail->GetDictionary("ansa", &answer_json) &&
               suggestion_detail->GetString("ansb", &answer_type)) {
             if (SuggestionAnswer::ParseAnswer(answer_json, answer_type,
@@ -577,11 +542,6 @@ bool SearchSuggestionParser::ParseSuggestResults(
               base::UmaHistogramSparse("Omnibox.AnswerParseType",
                                        answer.type());
               answer_parsed_successfully = true;
-              std::string contents;
-              base::JSONWriter::Write(*answer_json, &contents);
-              answer_contents = base::UTF8ToUTF16(contents);
-            } else {
-              answer_type = base::string16();
             }
             UMA_HISTOGRAM_BOOLEAN("Omnibox.AnswerParseSuccess",
                                   answer_parsed_successfully);
@@ -606,12 +566,32 @@ bool SearchSuggestionParser::ParseSuggestResults(
           relevances != nullptr,
           should_prefetch,
           trimmed_input));
-      if (answer_parsed_successfully) {
-        results->suggest_results.back().SetAnswer(answer_contents, answer_type,
-                                                  answer);
-      }
+      if (answer_parsed_successfully)
+        results->suggest_results.back().SetAnswer(answer);
     }
   }
   results->relevances_from_server = relevances != nullptr;
   return true;
+}
+
+// static
+const AutocompleteProvider::WordMap&
+SearchSuggestionParser::GetOrCreateWordMapForInputText(
+    const base::string16& input_text) {
+  auto& cache = GetWordMapCache();
+  if (cache.first != input_text) {
+    auto new_cache = std::make_pair(
+        input_text, AutocompleteProvider::CreateWordMapForString(input_text));
+    cache.swap(new_cache);
+  }
+  return cache.second;
+}
+
+// static
+std::pair<base::string16, AutocompleteProvider::WordMap>&
+SearchSuggestionParser::GetWordMapCache() {
+  static base::NoDestructor<
+      std::pair<base::string16, AutocompleteProvider::WordMap>>
+      word_map_cache;
+  return *word_map_cache;
 }

@@ -237,6 +237,8 @@ bool IsCertificateCleared() {
     [[EarlGrey selectElementWithMatcher:SettingsDoneButton()]
         performAction:grey_tap()];
   }
+
+  [super tearDown];
 }
 
 // Closes a sub-settings menu, and then the general Settings menu.
@@ -607,15 +609,14 @@ bool IsCertificateCleared() {
 // Verifies that Settings opens when signed-out and in Incognito mode.
 // This tests that crbug.com/607335 has not regressed.
 - (void)testSettingsSignedOutIncognito {
-  chrome_test_util::OpenNewIncognitoTab();
-
+  [ChromeEarlGrey openNewIncognitoTab];
   [ChromeEarlGreyUI openSettingsMenu];
   [[EarlGrey selectElementWithMatcher:SettingsCollectionView()]
       assertWithMatcher:grey_notNil()];
 
   [[EarlGrey selectElementWithMatcher:SettingsDoneButton()]
       performAction:grey_tap()];
-  GREYAssert(chrome_test_util::CloseAllIncognitoTabs(), @"Tabs did not close");
+  [ChromeEarlGrey closeAllIncognitoTabs];
 }
 
 // Verifies the UI elements are accessible on the Settings page.

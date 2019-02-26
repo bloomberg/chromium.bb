@@ -4,7 +4,7 @@
 
 #include "chrome/browser/chromeos/extensions/autotest_private/autotest_private_api.h"
 
-#include <memory>
+#include <set>
 #include <sstream>
 #include <utility>
 
@@ -19,6 +19,9 @@
 #include "base/metrics/statistics_recorder.h"
 #include "base/strings/strcat.h"
 #include "base/strings/string_number_conversions.h"
+#include "base/task/post_task.h"
+#include "base/threading/thread_task_runner_handle.h"
+#include "base/time/time.h"
 #include "base/values.h"
 #include "build/build_config.h"
 #include "chrome/browser/chromeos/arc/arc_util.h"
@@ -45,6 +48,7 @@
 #include "chromeos/services/machine_learning/public/cpp/service_connection.h"
 #include "components/arc/arc_prefs.h"
 #include "components/user_manager/user_manager.h"
+#include "content/public/browser/histogram_fetcher.h"
 #include "content/public/common/service_manager_connection.h"
 #include "extensions/browser/extension_function_registry.h"
 #include "extensions/browser/extension_registry.h"
@@ -67,6 +71,10 @@ namespace {
 
 constexpr char kCrostiniNotAvailableForCurrentUserError[] =
     "Crostini is not available for the current user";
+
+// Amount of time to give other processes to report their histograms.
+constexpr base::TimeDelta kHistogramsRefreshTimeout =
+    base::TimeDelta::FromSeconds(10);
 
 int AccessArray(const volatile int arr[], const volatile int* index) {
   return arr[*index];
@@ -603,12 +611,30 @@ ExtensionFunction::ResponseAction AutotestPrivateGetHistogramFunction::Run() {
   EXTENSION_FUNCTION_VALIDATE(params);
   DVLOG(1) << "AutotestPrivateGetHistogramFunction " << params->name;
 
+  // Collect histogram data from other processes before responding. Otherwise,
+  // we'd report stale data for histograms that are e.g. recorded by renderers.
+  content::FetchHistogramsAsynchronously(
+      base::ThreadTaskRunnerHandle::Get(),
+      base::BindRepeating(
+          &AutotestPrivateGetHistogramFunction::RespondOnHistogramsFetched,
+          this, params->name),
+      kHistogramsRefreshTimeout);
+  return RespondLater();
+}
+
+void AutotestPrivateGetHistogramFunction::RespondOnHistogramsFetched(
+    const std::string& name) {
+  // Incorporate the data collected by content::FetchHistogramsAsynchronously().
+  base::StatisticsRecorder::ImportProvidedHistograms();
+  Respond(GetHistogram(name));
+}
+
+ExtensionFunction::ResponseValue
+AutotestPrivateGetHistogramFunction::GetHistogram(const std::string& name) {
   const base::HistogramBase* histogram =
-      base::StatisticsRecorder::FindHistogram(params->name);
-  if (!histogram) {
-    return RespondNow(
-        Error(base::StrCat({"Histogram ", params->name, " not found"})));
-  }
+      base::StatisticsRecorder::FindHistogram(name);
+  if (!histogram)
+    return Error(base::StrCat({"Histogram ", name, " not found"}));
 
   std::unique_ptr<base::HistogramSamples> samples =
       histogram->SnapshotSamples();
@@ -628,7 +654,7 @@ ExtensionFunction::ResponseAction AutotestPrivateGetHistogramFunction::Run() {
     result.buckets.push_back(std::move(bucket));
   }
 
-  return RespondNow(OneArgument(result.ToValue()));
+  return OneArgument(result.ToValue());
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -754,8 +780,8 @@ AutotestPrivateRunCrostiniInstallerFunction::Run() {
 }
 
 void AutotestPrivateRunCrostiniInstallerFunction::CrostiniRestarted(
-    crostini::ConciergeClientResult result) {
-  if (result == crostini::ConciergeClientResult::SUCCESS) {
+    crostini::CrostiniResult result) {
+  if (result == crostini::CrostiniResult::SUCCESS) {
     Respond(NoArguments());
   } else {
     Respond(Error("Error installing crostini"));
@@ -789,8 +815,8 @@ AutotestPrivateRunCrostiniUninstallerFunction::Run() {
 }
 
 void AutotestPrivateRunCrostiniUninstallerFunction::CrostiniRemoved(
-    crostini::ConciergeClientResult result) {
-  if (result == crostini::ConciergeClientResult::SUCCESS)
+    crostini::CrostiniResult result) {
+  if (result == crostini::CrostiniResult::SUCCESS)
     Respond(NoArguments());
   else
     Respond(Error("Error uninstalling crostini"));
@@ -965,6 +991,76 @@ void AutotestPrivateBootstrapMachineLearningServiceFunction::ModelLoaded(
 
 void AutotestPrivateBootstrapMachineLearningServiceFunction::ConnectionError() {
   Respond(Error("ML Service connection error"));
+}
+
+///////////////////////////////////////////////////////////////////////////////
+// AutotestPrivateSetAssistantEnabled
+///////////////////////////////////////////////////////////////////////////////
+
+AutotestPrivateSetAssistantEnabledFunction::
+    AutotestPrivateSetAssistantEnabledFunction() {
+  auto* connection = content::ServiceManagerConnection::GetForProcess();
+  assistant_state_.Init(connection->GetConnector());
+  assistant_state_.AddObserver(this);
+}
+
+AutotestPrivateSetAssistantEnabledFunction::
+    ~AutotestPrivateSetAssistantEnabledFunction() {
+  assistant_state_.RemoveObserver(this);
+}
+
+ExtensionFunction::ResponseAction
+AutotestPrivateSetAssistantEnabledFunction::Run() {
+  DVLOG(1) << "AutotestPrivateSetAssistantEnabledFunction";
+
+  std::unique_ptr<api::autotest_private::SetAssistantEnabled::Params> params(
+      api::autotest_private::SetAssistantEnabled::Params::Create(*args_));
+  EXTENSION_FUNCTION_VALIDATE(params);
+
+  Profile* profile = Profile::FromBrowserContext(browser_context());
+  if (arc::IsAssistantAllowedForProfile(profile) !=
+      ash::mojom::AssistantAllowedState::ALLOWED) {
+    return RespondNow(Error("Assistant is not available for the current user"));
+  }
+
+  profile->GetPrefs()->SetBoolean(arc::prefs::kVoiceInteractionEnabled,
+                                  params->enabled);
+  // |NOT_READY| means service not running
+  // |STOPPED| means service running but UI not shown
+  auto new_state = params->enabled
+                       ? ash::mojom::VoiceInteractionState::STOPPED
+                       : ash::mojom::VoiceInteractionState::NOT_READY;
+
+  if (assistant_state_.voice_interaction_state() == new_state)
+    return RespondNow(NoArguments());
+
+  // Assistant service has not responded yet, set up a delayed timer to wait for
+  // it and holder a reference to |this|. Also make sure we stop and respond
+  // when timeout.
+  expected_state_ = new_state;
+  timeout_timer_.Start(
+      FROM_HERE, base::TimeDelta::FromMilliseconds(params->timeout_ms),
+      base::BindOnce(&AutotestPrivateSetAssistantEnabledFunction::Timeout,
+                     this));
+  return RespondLater();
+}
+
+void AutotestPrivateSetAssistantEnabledFunction::
+    OnVoiceInteractionStatusChanged(ash::mojom::VoiceInteractionState state) {
+  DCHECK(expected_state_);
+
+  // The service could go through |NOT_READY| then to |STOPPED| during enable
+  // flow if this API is called before the initial state is reported.
+  if (expected_state_ != state)
+    return;
+
+  Respond(NoArguments());
+  expected_state_.reset();
+  timeout_timer_.AbandonAndStop();
+}
+
+void AutotestPrivateSetAssistantEnabledFunction::Timeout() {
+  Respond(Error("Assistant service timed out"));
 }
 
 ///////////////////////////////////////////////////////////////////////////////

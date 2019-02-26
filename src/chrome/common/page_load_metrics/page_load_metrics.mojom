@@ -35,6 +35,18 @@ struct PaintTiming {
 
   // (Experimental) Time when the page's primary content is painted.
   mojo_base.mojom.TimeDelta? first_meaningful_paint;
+
+  // (Experimental) Time when the page's largest image is painted.
+  mojo_base.mojom.TimeDelta? largest_image_paint;
+
+  // (Experimental) Time when the page's last image is painted.
+  mojo_base.mojom.TimeDelta? last_image_paint;
+
+  // (Experimental) Time when the page's largest text is painted.
+  mojo_base.mojom.TimeDelta? largest_text_paint;
+
+  // (Experimental) Time when the page's last text is painted.
+  mojo_base.mojom.TimeDelta? last_text_paint;
 };
 
 // TimeDeltas below represent durations of time during the page load.
@@ -168,7 +180,7 @@ struct ResourceDataUpdate {
   int64 received_data_length = 0;
 
   // The length of the response body for the resource before removing any
-  // content encodings.
+  // content encodings. Only set for complete resources.
   int64 encoded_body_length = 0;
 
   // Whether this resource load has completed.
@@ -192,6 +204,18 @@ struct ResourceDataUpdate {
 
   // Mime type for the resource found in the network response header.
   string mime_type;
+
+  // Whether the scheme of this resource indicates a secure connection.
+  bool is_secure_scheme;
+
+  // Whether this resource was fetched via proxy.
+  bool proxy_used;
+};
+
+// Metrics about how the page rendered during the browsing session.
+struct PageRenderData {
+  // How much visible elements in the frame shifted (bit.ly/lsm-explainer).
+  float layout_jank_score;
 };
 
 // Sent from renderer to browser process when the PageLoadTiming for the
@@ -200,5 +224,6 @@ interface PageLoadMetrics {
   UpdateTiming(PageLoadTiming page_load_timing,
                PageLoadMetadata page_load_metadata,
                PageLoadFeatures new_features,
-               array<ResourceDataUpdate> resources);
+               array<ResourceDataUpdate> resources,
+               PageRenderData render_data);
 };

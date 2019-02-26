@@ -2028,7 +2028,7 @@
           FT_Int  linear_vadvance;
 
 
-          /* Each time we call load_truetype_glyph in this loop, the   */
+          /* Each time we call `load_truetype_glyph' in this loop, the */
           /* value of `gloader.base.subglyphs' can change due to table */
           /* reallocations.  We thus need to recompute the subglyph    */
           /* pointer on each iteration.                                */
@@ -2071,12 +2071,14 @@
           if ( num_points == num_base_points )
             continue;
 
-          /* gloader->base.outline consists of three parts:               */
-          /* 0 -(1)-> start_point -(2)-> num_base_points -(3)-> n_points. */
-          /*                                                              */
-          /* (1): exists from the beginning                               */
-          /* (2): components that have been loaded so far                 */
-          /* (3): the newly loaded component                              */
+          /* gloader->base.outline consists of three parts:           */
+          /*                                                          */
+          /* 0 ----> start_point ----> num_base_points ----> n_points */
+          /*    (1)               (2)                   (3)           */
+          /*                                                          */
+          /* (1) points that exist from the beginning                 */
+          /* (2) component points that have been loaded so far        */
+          /* (3) points of the newly loaded component                 */
           error = TT_Process_Composite_Component( loader,
                                                   subglyph,
                                                   start_point,
@@ -2158,7 +2160,7 @@
 
     glyph->metrics.horiBearingX = bbox.xMin;
     glyph->metrics.horiBearingY = bbox.yMax;
-    glyph->metrics.horiAdvance  = loader->pp2.x - loader->pp1.x;
+    glyph->metrics.horiAdvance  = SUB_LONG(loader->pp2.x, loader->pp1.x);
 
     /* Adjust advance width to the value contained in the hdmx table   */
     /* unless FT_LOAD_COMPUTE_METRICS is set or backward compatibility */

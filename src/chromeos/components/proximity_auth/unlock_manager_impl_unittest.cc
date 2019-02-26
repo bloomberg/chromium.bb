@@ -126,8 +126,6 @@ class TestUnlockManager : public UnlockManagerImpl {
   std::unique_ptr<ProximityMonitor> CreateProximityMonitor(
       RemoteDeviceLifeCycle* life_cycle,
       ProximityAuthPrefManager* pref_manager) override {
-    EXPECT_EQ(cryptauth::kTestRemoteDevicePublicKey,
-              life_cycle->GetConnection()->remote_device().public_key());
     std::unique_ptr<MockProximityMonitor> proximity_monitor(
         new NiceMock<MockProximityMonitor>());
     proximity_monitor_ = proximity_monitor.get();
@@ -183,9 +181,7 @@ class ProximityAuthUnlockManagerImplTest : public testing::Test {
     ScreenlockBridge::Get()->SetLockHandler(nullptr);
   }
 
-  void InitializeTest(bool multidevice_flags_enabled) {
-    SetMultiDeviceApi(multidevice_flags_enabled);
-
+  void SetUp() override {
     ON_CALL(*bluetooth_adapter_, IsPresent()).WillByDefault(Return(true));
     ON_CALL(*bluetooth_adapter_, IsPowered()).WillByDefault(Return(true));
     ON_CALL(messenger_, SupportsSignIn()).WillByDefault(Return(true));
@@ -194,24 +190,11 @@ class ProximityAuthUnlockManagerImplTest : public testing::Test {
     ON_CALL(messenger_, GetChannel())
         .WillByDefault(Return(fake_client_channel_.get()));
 
-    life_cycle_.set_connection(&connection_);
     life_cycle_.set_messenger(&messenger_);
     life_cycle_.set_channel(fake_client_channel_.get());
     ScreenlockBridge::Get()->SetLockHandler(&lock_handler_);
 
     chromeos::DBusThreadManager::Initialize();
-  }
-
-  void SetMultiDeviceApi(bool enabled) {
-    static const std::vector<base::Feature> kFeatures{
-        chromeos::features::kMultiDeviceApi,
-        chromeos::features::kEnableUnifiedMultiDeviceSetup};
-
-    scoped_feature_list_.InitWithFeatures(
-        (enabled ? kFeatures
-                 : std::vector<base::Feature>() /* enable_features */),
-        (enabled ? std::vector<base::Feature>()
-                 : kFeatures /* disable_features */));
   }
 
   void CreateUnlockManager(
@@ -259,14 +242,12 @@ class ProximityAuthUnlockManagerImplTest : public testing::Test {
 };
 
 TEST_F(ProximityAuthUnlockManagerImplTest, IsUnlockAllowed_InitialState) {
-  InitializeTest(false /* multidevice_flags_enabled */);
   CreateUnlockManager(ProximityAuthSystem::SESSION_LOCK);
   EXPECT_FALSE(unlock_manager_->IsUnlockAllowed());
 }
 
 TEST_F(ProximityAuthUnlockManagerImplTest,
        IsUnlockAllowed_SessionLock_AllGood) {
-  InitializeTest(false /* multidevice_flags_enabled */);
   CreateUnlockManager(ProximityAuthSystem::SESSION_LOCK);
 
   unlock_manager_->SetRemoteDeviceLifeCycle(&life_cycle_);
@@ -279,7 +260,6 @@ TEST_F(ProximityAuthUnlockManagerImplTest,
 }
 
 TEST_F(ProximityAuthUnlockManagerImplTest, IsUnlockAllowed_SignIn_AllGood) {
-  InitializeTest(false /* multidevice_flags_enabled */);
   CreateUnlockManager(ProximityAuthSystem::SIGN_IN);
   unlock_manager_->SetRemoteDeviceLifeCycle(&life_cycle_);
 
@@ -295,7 +275,6 @@ TEST_F(ProximityAuthUnlockManagerImplTest, IsUnlockAllowed_SignIn_AllGood) {
 
 TEST_F(ProximityAuthUnlockManagerImplTest,
        IsUnlockAllowed_SignIn_MessengerDoesNotSupportSignIn) {
-  InitializeTest(false /* multidevice_flags_enabled */);
   CreateUnlockManager(ProximityAuthSystem::SIGN_IN);
   unlock_manager_->SetRemoteDeviceLifeCycle(&life_cycle_);
 
@@ -311,7 +290,6 @@ TEST_F(ProximityAuthUnlockManagerImplTest,
 
 TEST_F(ProximityAuthUnlockManagerImplTest,
        IsUnlockAllowed_DisallowedByProximityMonitor) {
-  InitializeTest(false /* multidevice_flags_enabled */);
   CreateUnlockManager(ProximityAuthSystem::SESSION_LOCK);
 
   unlock_manager_->SetRemoteDeviceLifeCycle(&life_cycle_);
@@ -326,10 +304,8 @@ TEST_F(ProximityAuthUnlockManagerImplTest,
 
 TEST_F(ProximityAuthUnlockManagerImplTest,
        IsUnlockAllowed_SecureChannelNotEstablished) {
-  InitializeTest(false /* multidevice_flags_enabled */);
   CreateUnlockManager(ProximityAuthSystem::SESSION_LOCK);
 
-  life_cycle_.set_connection(nullptr);
   life_cycle_.set_messenger(nullptr);
   unlock_manager_->SetRemoteDeviceLifeCycle(&life_cycle_);
   life_cycle_.ChangeState(RemoteDeviceLifeCycle::State::AUTHENTICATING);
@@ -341,7 +317,6 @@ TEST_F(ProximityAuthUnlockManagerImplTest,
 
 TEST_F(ProximityAuthUnlockManagerImplTest,
        IsUnlockAllowed_RemoteDeviceLifeCycleIsNull) {
-  InitializeTest(false /* multidevice_flags_enabled */);
   CreateUnlockManager(ProximityAuthSystem::SESSION_LOCK);
 
   unlock_manager_->SetRemoteDeviceLifeCycle(nullptr);
@@ -352,7 +327,6 @@ TEST_F(ProximityAuthUnlockManagerImplTest,
 
 TEST_F(ProximityAuthUnlockManagerImplTest,
        IsUnlockAllowed_RemoteScreenlockStateLocked) {
-  InitializeTest(false /* multidevice_flags_enabled */);
   CreateUnlockManager(ProximityAuthSystem::SESSION_LOCK);
 
   unlock_manager_->SetRemoteDeviceLifeCycle(&life_cycle_);
@@ -366,7 +340,6 @@ TEST_F(ProximityAuthUnlockManagerImplTest,
 
 TEST_F(ProximityAuthUnlockManagerImplTest,
        IsUnlockAllowed_RemoteScreenlockStateUnknown) {
-  InitializeTest(false /* multidevice_flags_enabled */);
   CreateUnlockManager(ProximityAuthSystem::SESSION_LOCK);
 
   unlock_manager_->SetRemoteDeviceLifeCycle(&life_cycle_);
@@ -380,7 +353,6 @@ TEST_F(ProximityAuthUnlockManagerImplTest,
 
 TEST_F(ProximityAuthUnlockManagerImplTest,
        IsUnlockAllowed_RemoteScreenlockStateDisabled) {
-  InitializeTest(false /* multidevice_flags_enabled */);
   CreateUnlockManager(ProximityAuthSystem::SESSION_LOCK);
 
   unlock_manager_->SetRemoteDeviceLifeCycle(&life_cycle_);
@@ -394,7 +366,6 @@ TEST_F(ProximityAuthUnlockManagerImplTest,
 
 TEST_F(ProximityAuthUnlockManagerImplTest,
        IsUnlockAllowed_RemoteScreenlockStateNotYetReceived) {
-  InitializeTest(false /* multidevice_flags_enabled */);
   CreateUnlockManager(ProximityAuthSystem::SESSION_LOCK);
 
   unlock_manager_->SetRemoteDeviceLifeCycle(&life_cycle_);
@@ -406,7 +377,6 @@ TEST_F(ProximityAuthUnlockManagerImplTest,
 }
 
 TEST_F(ProximityAuthUnlockManagerImplTest, SetRemoteDeviceLifeCycle_SetToNull) {
-  InitializeTest(false /* multidevice_flags_enabled */);
   CreateUnlockManager(ProximityAuthSystem::SESSION_LOCK);
   SimulateUserPresentState();
 
@@ -417,7 +387,6 @@ TEST_F(ProximityAuthUnlockManagerImplTest, SetRemoteDeviceLifeCycle_SetToNull) {
 
 TEST_F(ProximityAuthUnlockManagerImplTest,
        SetRemoteDeviceLifeCycle_ExistingRemoteDeviceLifeCycle) {
-  InitializeTest(false /* multidevice_flags_enabled */);
   CreateUnlockManager(ProximityAuthSystem::SESSION_LOCK);
   SimulateUserPresentState();
 
@@ -427,7 +396,6 @@ TEST_F(ProximityAuthUnlockManagerImplTest,
 
 TEST_F(ProximityAuthUnlockManagerImplTest,
        SetRemoteDeviceLifeCycle_AuthenticationFailed) {
-  InitializeTest(false /* multidevice_flags_enabled */);
   CreateUnlockManager(ProximityAuthSystem::SESSION_LOCK);
   SimulateUserPresentState();
 
@@ -441,7 +409,6 @@ TEST_F(ProximityAuthUnlockManagerImplTest,
 }
 
 TEST_F(ProximityAuthUnlockManagerImplTest, SetRemoteDeviceLifeCycle_WakingUp) {
-  InitializeTest(false /* multidevice_flags_enabled */);
   CreateUnlockManager(ProximityAuthSystem::SESSION_LOCK);
   SimulateUserPresentState();
 
@@ -456,10 +423,8 @@ TEST_F(ProximityAuthUnlockManagerImplTest, SetRemoteDeviceLifeCycle_WakingUp) {
 
 TEST_F(ProximityAuthUnlockManagerImplTest,
        SetRemoteDeviceLifeCycle_TimesOutBeforeConnection) {
-  InitializeTest(false /* multidevice_flags_enabled */);
   CreateUnlockManager(ProximityAuthSystem::SESSION_LOCK);
 
-  life_cycle_.set_connection(nullptr);
   life_cycle_.set_messenger(nullptr);
   life_cycle_.ChangeState(RemoteDeviceLifeCycle::State::FINDING_CONNECTION);
 
@@ -475,7 +440,6 @@ TEST_F(ProximityAuthUnlockManagerImplTest,
 
 TEST_F(ProximityAuthUnlockManagerImplTest,
        SetRemoteDeviceLifeCycle_NullRemoteDeviceLifeCycle_NoProximityMonitor) {
-  InitializeTest(false /* multidevice_flags_enabled */);
   CreateUnlockManager(ProximityAuthSystem::SESSION_LOCK);
   SimulateUserPresentState();
   unlock_manager_->SetRemoteDeviceLifeCycle(nullptr);
@@ -484,7 +448,6 @@ TEST_F(ProximityAuthUnlockManagerImplTest,
 TEST_F(
     ProximityAuthUnlockManagerImplTest,
     SetRemoteDeviceLifeCycle_ConnectingRemoteDeviceLifeCycle_StopsProximityMonitor) {
-  InitializeTest(false /* multidevice_flags_enabled */);
   CreateUnlockManager(ProximityAuthSystem::SESSION_LOCK);
   SimulateUserPresentState();
 
@@ -497,7 +460,6 @@ TEST_F(
 TEST_F(
     ProximityAuthUnlockManagerImplTest,
     SetRemoteDeviceLifeCycle_ConnectedRemoteDeviceLifeCycle_StartsProximityMonitor) {
-  InitializeTest(false /* multidevice_flags_enabled */);
   CreateUnlockManager(ProximityAuthSystem::SESSION_LOCK);
   unlock_manager_->SetRemoteDeviceLifeCycle(&life_cycle_);
 
@@ -509,7 +471,6 @@ TEST_F(
 }
 
 TEST_F(ProximityAuthUnlockManagerImplTest, BluetoothAdapterNotPresent) {
-  InitializeTest(false /* multidevice_flags_enabled */);
   ON_CALL(*bluetooth_adapter_, IsPresent()).WillByDefault(Return(false));
 
   CreateUnlockManager(ProximityAuthSystem::SESSION_LOCK);
@@ -522,7 +483,6 @@ TEST_F(ProximityAuthUnlockManagerImplTest, BluetoothAdapterNotPresent) {
 }
 
 TEST_F(ProximityAuthUnlockManagerImplTest, BluetoothAdapterPowerChanges) {
-  InitializeTest(false /* multidevice_flags_enabled */);
   ON_CALL(*bluetooth_adapter_, IsPowered()).WillByDefault(Return(false));
 
   CreateUnlockManager(ProximityAuthSystem::SESSION_LOCK);
@@ -542,7 +502,6 @@ TEST_F(ProximityAuthUnlockManagerImplTest, BluetoothAdapterPowerChanges) {
 
 TEST_F(ProximityAuthUnlockManagerImplTest,
        OnLifeCycleStateChanged_SecureChannelEstablished_RegistersAsObserver) {
-  InitializeTest(false /* multidevice_flags_enabled */);
   CreateUnlockManager(ProximityAuthSystem::SESSION_LOCK);
   SimulateUserPresentState();
   EXPECT_CALL(messenger_, AddObserver(unlock_manager_.get()));
@@ -551,7 +510,6 @@ TEST_F(ProximityAuthUnlockManagerImplTest,
 
 TEST_F(ProximityAuthUnlockManagerImplTest,
        OnLifeCycleStateChanged_StartsProximityMonitor) {
-  InitializeTest(false /* multidevice_flags_enabled */);
   CreateUnlockManager(ProximityAuthSystem::SESSION_LOCK);
   SimulateUserPresentState();
   EXPECT_TRUE(proximity_monitor()->started());
@@ -560,7 +518,6 @@ TEST_F(ProximityAuthUnlockManagerImplTest,
 
 TEST_F(ProximityAuthUnlockManagerImplTest,
        OnLifeCycleStateChanged_StopsProximityMonitor) {
-  InitializeTest(false /* multidevice_flags_enabled */);
   CreateUnlockManager(ProximityAuthSystem::SESSION_LOCK);
   SimulateUserPresentState();
 
@@ -572,7 +529,6 @@ TEST_F(ProximityAuthUnlockManagerImplTest,
 
 TEST_F(ProximityAuthUnlockManagerImplTest,
        OnLifeCycleStateChanged_AuthenticationFailed_UpdatesScreenlockState) {
-  InitializeTest(false /* multidevice_flags_enabled */);
   CreateUnlockManager(ProximityAuthSystem::SESSION_LOCK);
   SimulateUserPresentState();
 
@@ -584,7 +540,6 @@ TEST_F(ProximityAuthUnlockManagerImplTest,
 
 TEST_F(ProximityAuthUnlockManagerImplTest,
        OnLifeCycleStateChanged_FindingConnection_UpdatesScreenlockState) {
-  InitializeTest(false /* multidevice_flags_enabled */);
   CreateUnlockManager(ProximityAuthSystem::SESSION_LOCK);
 
   EXPECT_CALL(proximity_auth_client_,
@@ -594,7 +549,6 @@ TEST_F(ProximityAuthUnlockManagerImplTest,
 
 TEST_F(ProximityAuthUnlockManagerImplTest,
        OnLifeCycleStateChanged_Authenticating_UpdatesScreenlockState) {
-  InitializeTest(false /* multidevice_flags_enabled */);
   CreateUnlockManager(ProximityAuthSystem::SESSION_LOCK);
   EXPECT_CALL(proximity_auth_client_,
               UpdateScreenlockState(ScreenlockState::BLUETOOTH_CONNECTING));
@@ -607,7 +561,6 @@ TEST_F(ProximityAuthUnlockManagerImplTest,
 
 TEST_F(ProximityAuthUnlockManagerImplTest,
        OnDisconnected_UnregistersAsObserver) {
-  InitializeTest(false /* multidevice_flags_enabled */);
   CreateUnlockManager(ProximityAuthSystem::SESSION_LOCK);
   SimulateUserPresentState();
   life_cycle_.ChangeState(RemoteDeviceLifeCycle::State::AUTHENTICATION_FAILED);
@@ -621,7 +574,6 @@ TEST_F(ProximityAuthUnlockManagerImplTest,
 
 TEST_F(ProximityAuthUnlockManagerImplTest,
        OnScreenDidUnlock_StopsProximityMonitor) {
-  InitializeTest(false /* multidevice_flags_enabled */);
   CreateUnlockManager(ProximityAuthSystem::SESSION_LOCK);
   SimulateUserPresentState();
 
@@ -632,7 +584,6 @@ TEST_F(ProximityAuthUnlockManagerImplTest,
 
 TEST_F(ProximityAuthUnlockManagerImplTest,
        OnScreenDidLock_StartsProximityMonitor) {
-  InitializeTest(false /* multidevice_flags_enabled */);
   CreateUnlockManager(ProximityAuthSystem::SESSION_LOCK);
   unlock_manager_->SetRemoteDeviceLifeCycle(&life_cycle_);
 
@@ -646,7 +597,6 @@ TEST_F(ProximityAuthUnlockManagerImplTest,
 }
 
 TEST_F(ProximityAuthUnlockManagerImplTest, OnScreenDidLock_SetsWakingUpState) {
-  InitializeTest(false /* multidevice_flags_enabled */);
   CreateUnlockManager(ProximityAuthSystem::SESSION_LOCK);
 
   EXPECT_CALL(proximity_auth_client_,
@@ -662,7 +612,6 @@ TEST_F(ProximityAuthUnlockManagerImplTest, OnScreenDidLock_SetsWakingUpState) {
 
 TEST_F(ProximityAuthUnlockManagerImplTest,
        OnDecryptResponse_NoAuthAttemptInProgress) {
-  InitializeTest(false /* multidevice_flags_enabled */);
   CreateUnlockManager(ProximityAuthSystem::SESSION_LOCK);
   SimulateUserPresentState();
 
@@ -672,7 +621,6 @@ TEST_F(ProximityAuthUnlockManagerImplTest,
 
 TEST_F(ProximityAuthUnlockManagerImplTest,
        OnUnlockEventSent_NoAuthAttemptInProgress) {
-  InitializeTest(false /* multidevice_flags_enabled */);
   CreateUnlockManager(ProximityAuthSystem::SESSION_LOCK);
   SimulateUserPresentState();
 
@@ -682,7 +630,6 @@ TEST_F(ProximityAuthUnlockManagerImplTest,
 
 TEST_F(ProximityAuthUnlockManagerImplTest,
        OnUnlockResponse_NoAuthAttemptInProgress) {
-  InitializeTest(false /* multidevice_flags_enabled */);
   CreateUnlockManager(ProximityAuthSystem::SESSION_LOCK);
   SimulateUserPresentState();
 
@@ -692,7 +639,6 @@ TEST_F(ProximityAuthUnlockManagerImplTest,
 
 TEST_F(ProximityAuthUnlockManagerImplTest,
        OnAuthAttempted_NoRemoteDeviceLifeCycle) {
-  InitializeTest(false /* multidevice_flags_enabled */);
   CreateUnlockManager(ProximityAuthSystem::SESSION_LOCK);
   SimulateUserPresentState();
 
@@ -703,7 +649,6 @@ TEST_F(ProximityAuthUnlockManagerImplTest,
 }
 
 TEST_F(ProximityAuthUnlockManagerImplTest, OnAuthAttempted_UnlockNotAllowed) {
-  InitializeTest(false /* multidevice_flags_enabled */);
   CreateUnlockManager(ProximityAuthSystem::SESSION_LOCK);
   SimulateUserPresentState();
 
@@ -714,7 +659,6 @@ TEST_F(ProximityAuthUnlockManagerImplTest, OnAuthAttempted_UnlockNotAllowed) {
 }
 
 TEST_F(ProximityAuthUnlockManagerImplTest, OnAuthAttempted_NotUserClick) {
-  InitializeTest(false /* multidevice_flags_enabled */);
   CreateUnlockManager(ProximityAuthSystem::SESSION_LOCK);
   SimulateUserPresentState();
 
@@ -723,7 +667,6 @@ TEST_F(ProximityAuthUnlockManagerImplTest, OnAuthAttempted_NotUserClick) {
 }
 
 TEST_F(ProximityAuthUnlockManagerImplTest, OnAuthAttempted_DuplicateCall) {
-  InitializeTest(false /* multidevice_flags_enabled */);
   CreateUnlockManager(ProximityAuthSystem::SESSION_LOCK);
   SimulateUserPresentState();
 
@@ -735,7 +678,6 @@ TEST_F(ProximityAuthUnlockManagerImplTest, OnAuthAttempted_DuplicateCall) {
 }
 
 TEST_F(ProximityAuthUnlockManagerImplTest, OnAuthAttempted_TimesOut) {
-  InitializeTest(false /* multidevice_flags_enabled */);
   CreateUnlockManager(ProximityAuthSystem::SESSION_LOCK);
   SimulateUserPresentState();
 
@@ -748,7 +690,6 @@ TEST_F(ProximityAuthUnlockManagerImplTest, OnAuthAttempted_TimesOut) {
 
 TEST_F(ProximityAuthUnlockManagerImplTest,
        OnAuthAttempted_DoesntTimeOutFollowingResponse) {
-  InitializeTest(false /* multidevice_flags_enabled */);
   CreateUnlockManager(ProximityAuthSystem::SESSION_LOCK);
   SimulateUserPresentState();
 
@@ -764,7 +705,6 @@ TEST_F(ProximityAuthUnlockManagerImplTest,
 
 TEST_F(ProximityAuthUnlockManagerImplTest,
        OnAuthAttempted_Unlock_SupportsSignIn_UnlockRequestFails) {
-  InitializeTest(false /* multidevice_flags_enabled */);
   ON_CALL(messenger_, SupportsSignIn()).WillByDefault(Return(true));
   CreateUnlockManager(ProximityAuthSystem::SESSION_LOCK);
   SimulateUserPresentState();
@@ -778,7 +718,6 @@ TEST_F(ProximityAuthUnlockManagerImplTest,
 
 TEST_F(ProximityAuthUnlockManagerImplTest,
        OnAuthAttempted_Unlock_WithSignIn_RequestSucceeds_EventSendFails) {
-  InitializeTest(false /* multidevice_flags_enabled */);
   ON_CALL(messenger_, SupportsSignIn()).WillByDefault(Return(true));
   CreateUnlockManager(ProximityAuthSystem::SESSION_LOCK);
   SimulateUserPresentState();
@@ -795,7 +734,6 @@ TEST_F(ProximityAuthUnlockManagerImplTest,
 
 TEST_F(ProximityAuthUnlockManagerImplTest,
        OnAuthAttempted_Unlock_WithSignIn_RequestSucceeds_EventSendSucceeds) {
-  InitializeTest(false /* multidevice_flags_enabled */);
   ON_CALL(messenger_, SupportsSignIn()).WillByDefault(Return(true));
   CreateUnlockManager(ProximityAuthSystem::SESSION_LOCK);
   SimulateUserPresentState();
@@ -812,7 +750,6 @@ TEST_F(ProximityAuthUnlockManagerImplTest,
 
 TEST_F(ProximityAuthUnlockManagerImplTest,
        OnAuthAttempted_Unlock_DoesntSupportSignIn_UnlockEventSendFails) {
-  InitializeTest(false /* multidevice_flags_enabled */);
   ON_CALL(messenger_, SupportsSignIn()).WillByDefault(Return(false));
   CreateUnlockManager(ProximityAuthSystem::SESSION_LOCK);
   SimulateUserPresentState();
@@ -826,7 +763,6 @@ TEST_F(ProximityAuthUnlockManagerImplTest,
 
 TEST_F(ProximityAuthUnlockManagerImplTest,
        OnAuthAttempted_Unlock_SupportsSignIn_UnlockEventSendSucceeds) {
-  InitializeTest(false /* multidevice_flags_enabled */);
   ON_CALL(messenger_, SupportsSignIn()).WillByDefault(Return(false));
   CreateUnlockManager(ProximityAuthSystem::SESSION_LOCK);
   SimulateUserPresentState();
@@ -839,37 +775,6 @@ TEST_F(ProximityAuthUnlockManagerImplTest,
 }
 
 TEST_F(ProximityAuthUnlockManagerImplTest, OnAuthAttempted_SignIn_Success) {
-  InitializeTest(false /* multidevice_flags_enabled */);
-  ON_CALL(messenger_, SupportsSignIn()).WillByDefault(Return(true));
-  CreateUnlockManager(ProximityAuthSystem::SIGN_IN);
-  SimulateUserPresentState();
-
-  std::string channel_binding_data = secure_context_.GetChannelBindingData();
-  EXPECT_CALL(proximity_auth_client_,
-              GetChallengeForUserAndDevice(remote_device_.user_id(),
-                                           remote_device_.public_key(),
-                                           channel_binding_data, _))
-      .WillOnce(Invoke(
-          [](const std::string& user_id, const std::string& public_key,
-             const std::string& channel_binding_data,
-             base::Callback<void(const std::string& challenge)> callback) {
-            callback.Run(kChallenge);
-          }));
-
-  EXPECT_CALL(messenger_, RequestDecryption(kChallenge));
-  unlock_manager_->OnAuthAttempted(mojom::AuthType::USER_CLICK);
-
-  EXPECT_CALL(messenger_, DispatchUnlockEvent());
-  unlock_manager_->OnDecryptResponse(kSignInSecret);
-
-  EXPECT_CALL(proximity_auth_client_, FinalizeSignin(kSignInSecret));
-  unlock_manager_->OnUnlockEventSent(true);
-}
-
-TEST_F(ProximityAuthUnlockManagerImplTest,
-       OnAuthAttempted_SignIn_Success_MultiDeviceApiEnabled) {
-  InitializeTest(true /* multidevice_flags_enabled */);
-
   ON_CALL(messenger_, SupportsSignIn()).WillByDefault(Return(true));
   CreateUnlockManager(ProximityAuthSystem::SIGN_IN);
   SimulateUserPresentState();
@@ -907,61 +812,6 @@ TEST_F(ProximityAuthUnlockManagerImplTest,
 
   EXPECT_CALL(proximity_auth_client_, FinalizeSignin(kSignInSecret));
   unlock_manager_->OnUnlockEventSent(true);
-}
-
-TEST_F(ProximityAuthUnlockManagerImplTest,
-       OnAuthAttempted_SignIn_UnlockEventSendFails) {
-  InitializeTest(false /* multidevice_flags_enabled */);
-  ON_CALL(messenger_, SupportsSignIn()).WillByDefault(Return(true));
-  CreateUnlockManager(ProximityAuthSystem::SIGN_IN);
-  SimulateUserPresentState();
-
-  std::string channel_binding_data = secure_context_.GetChannelBindingData();
-  EXPECT_CALL(proximity_auth_client_,
-              GetChallengeForUserAndDevice(remote_device_.user_id(),
-                                           remote_device_.public_key(),
-                                           channel_binding_data, _))
-      .WillOnce(Invoke(
-          [](const std::string& user_id, const std::string& public_key,
-             const std::string& channel_binding_data,
-             base::Callback<void(const std::string& challenge)> callback) {
-            callback.Run(kChallenge);
-          }));
-
-  EXPECT_CALL(messenger_, RequestDecryption(kChallenge));
-  unlock_manager_->OnAuthAttempted(mojom::AuthType::USER_CLICK);
-
-  EXPECT_CALL(messenger_, DispatchUnlockEvent());
-  unlock_manager_->OnDecryptResponse(kSignInSecret);
-
-  EXPECT_CALL(proximity_auth_client_, FinalizeSignin(std::string()));
-  unlock_manager_->OnUnlockEventSent(false);
-}
-
-TEST_F(ProximityAuthUnlockManagerImplTest,
-       OnAuthAttempted_SignIn_DecryptRequestFails) {
-  InitializeTest(false /* multidevice_flags_enabled */);
-  ON_CALL(messenger_, SupportsSignIn()).WillByDefault(Return(true));
-  CreateUnlockManager(ProximityAuthSystem::SIGN_IN);
-  SimulateUserPresentState();
-
-  std::string channel_binding_data = secure_context_.GetChannelBindingData();
-  EXPECT_CALL(proximity_auth_client_,
-              GetChallengeForUserAndDevice(remote_device_.user_id(),
-                                           remote_device_.public_key(),
-                                           channel_binding_data, _))
-      .WillOnce(Invoke(
-          [](const std::string& user_id, const std::string& public_key,
-             const std::string& channel_binding_data,
-             base::Callback<void(const std::string& challenge)> callback) {
-            callback.Run(kChallenge);
-          }));
-
-  EXPECT_CALL(messenger_, RequestDecryption(kChallenge));
-  unlock_manager_->OnAuthAttempted(mojom::AuthType::USER_CLICK);
-
-  EXPECT_CALL(proximity_auth_client_, FinalizeSignin(std::string()));
-  unlock_manager_->OnDecryptResponse(std::string());
 }
 
 }  // namespace proximity_auth

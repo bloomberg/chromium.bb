@@ -55,12 +55,15 @@ void LayerTreeFrameSinkHolder::DeleteWhenLastResourceHasBeenReclaimed(
       viz::BeginFrameArgs::kStartingFrameNumber;
   frame.metadata.begin_frame_ack.has_damage = true;
   frame.metadata.device_scale_factor = holder->last_frame_device_scale_factor_;
+  frame.metadata.local_surface_id_allocation_time =
+      holder->last_local_surface_id_allocation_time_;
   std::unique_ptr<viz::RenderPass> pass = viz::RenderPass::Create();
   pass->SetNew(1, gfx::Rect(holder->last_frame_size_in_pixels_),
                gfx::Rect(holder->last_frame_size_in_pixels_), gfx::Transform());
   frame.render_pass_list.push_back(std::move(pass));
   holder->last_frame_resources_.clear();
-  holder->frame_sink_->SubmitCompositorFrame(std::move(frame));
+  holder->frame_sink_->SubmitCompositorFrame(std::move(frame),
+                                             /*show_hit_test_borders=*/false);
 
   // Delete sink holder immediately if not waiting for resources to be
   // reclaimed.
@@ -81,10 +84,13 @@ void LayerTreeFrameSinkHolder::SubmitCompositorFrame(
     viz::CompositorFrame frame) {
   last_frame_size_in_pixels_ = frame.size_in_pixels();
   last_frame_device_scale_factor_ = frame.metadata.device_scale_factor;
+  last_local_surface_id_allocation_time_ =
+      frame.metadata.local_surface_id_allocation_time;
   last_frame_resources_.clear();
   for (auto& resource : frame.resource_list)
     last_frame_resources_.push_back(resource.id);
-  frame_sink_->SubmitCompositorFrame(std::move(frame));
+  frame_sink_->SubmitCompositorFrame(std::move(frame),
+                                     /*show_hit_test_borders=*/false);
 }
 
 void LayerTreeFrameSinkHolder::DidNotProduceFrame(

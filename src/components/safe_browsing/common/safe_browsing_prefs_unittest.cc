@@ -26,10 +26,6 @@ class SafeBrowsingPrefsTest : public ::testing::Test {
     prefs_.registry()->RegisterBooleanPref(
         prefs::kSafeBrowsingScoutReportingEnabled, false);
     prefs_.registry()->RegisterBooleanPref(
-        prefs::kSafeBrowsingScoutGroupSelected, false);
-    prefs_.registry()->RegisterBooleanPref(
-        prefs::kSafeBrowsingSawInterstitialExtendedReporting, false);
-    prefs_.registry()->RegisterBooleanPref(
         prefs::kSafeBrowsingSawInterstitialScoutReporting, false);
     prefs_.registry()->RegisterStringPref(
         prefs::kPasswordProtectionChangePasswordURL, "");
@@ -37,55 +33,27 @@ class SafeBrowsingPrefsTest : public ::testing::Test {
     prefs_.registry()->RegisterBooleanPref(
         prefs::kSafeBrowsingExtendedReportingOptInAllowed, true);
     prefs_.registry()->RegisterListPref(prefs::kSafeBrowsingWhitelistDomains);
-
-    ResetExperiments(/*can_show_scout=*/false);
   }
 
-  void ResetPrefs(bool scout_reporting, bool scout_group) {
+  void ResetPrefs(bool scout_reporting) {
     prefs_.SetBoolean(prefs::kSafeBrowsingScoutReportingEnabled,
                       scout_reporting);
-    prefs_.SetBoolean(prefs::kSafeBrowsingScoutGroupSelected, scout_group);
   }
 
-  void ResetExperiments(bool can_show_scout) {
-    std::vector<base::StringPiece> enabled_features;
-    std::vector<base::StringPiece> disabled_features;
-
-    auto* target_vector =
-        can_show_scout ? &enabled_features : &disabled_features;
-    target_vector->push_back(kCanShowScoutOptIn.name);
-
-    feature_list_.reset(new base::test::ScopedFeatureList);
-    feature_list_->InitFromCommandLine(
-        base::JoinString(enabled_features, ","),
-        base::JoinString(disabled_features, ","));
-  }
-
-  bool IsScoutGroupSelected() {
-    return prefs_.GetBoolean(prefs::kSafeBrowsingScoutGroupSelected);
-  }
-
-  void ExpectPrefs(bool scout_reporting, bool scout_group) {
-    LOG(INFO) << "Pref values: scout=" << scout_reporting
-              << " scout_group=" << scout_group;
+  void ExpectPrefs(bool scout_reporting) {
+    LOG(INFO) << "Pref values: scout=" << scout_reporting;
     EXPECT_EQ(scout_reporting,
               prefs_.GetBoolean(prefs::kSafeBrowsingScoutReportingEnabled));
-    EXPECT_EQ(scout_group,
-              prefs_.GetBoolean(prefs::kSafeBrowsingScoutGroupSelected));
   }
 
-  void ExpectPrefsExist(bool scout_reporting, bool scout_group) {
-    LOG(INFO) << "Prefs exist: scout=" << scout_reporting
-              << " scout_group=" << scout_group;
+  void ExpectPrefsExist(bool scout_reporting) {
+    LOG(INFO) << "Prefs exist: scout=" << scout_reporting;
     EXPECT_EQ(scout_reporting,
               prefs_.HasPrefPath(prefs::kSafeBrowsingScoutReportingEnabled));
-    EXPECT_EQ(scout_group,
-              prefs_.HasPrefPath(prefs::kSafeBrowsingScoutGroupSelected));
   }
   TestingPrefServiceSimple prefs_;
 
  private:
-  std::unique_ptr<base::test::ScopedFeatureList> feature_list_;
   content::TestBrowserThreadBundle thread_bundle_;
 };
 
@@ -98,28 +66,15 @@ class SafeBrowsingPrefsTest : public ::testing::Test {
   GetSafeBrowsingExtendedReportingLevel
 #endif
 TEST_F(SafeBrowsingPrefsTest, MAYBE_GetSafeBrowsingExtendedReportingLevel) {
-  // By Default, extneded reporting is off.
+  // By Default, extended reporting is off.
   EXPECT_EQ(SBER_LEVEL_OFF, GetExtendedReportingLevel(prefs_));
 
-  // The value of the Scout pref affects the reporting level directly,
-  // regardless of the experiment configuration since Scout is the only level
-  // we are using.
-  // No scout group.
-  ResetPrefs(/*scout_reporting=*/true, /*scout_group=*/false);
+  // The value of the Scout pref affects the reporting level directly.
+  ResetPrefs(/*scout_reporting=*/true);
   EXPECT_EQ(SBER_LEVEL_SCOUT, GetExtendedReportingLevel(prefs_));
-  // Scout group but no experiment.
-  ResetPrefs(/*scout_reporting=*/true, /*scout_group=*/true);
-  EXPECT_EQ(SBER_LEVEL_SCOUT, GetExtendedReportingLevel(prefs_));
-  ResetExperiments(/*can_show_scout=*/true);
   // Scout pref off, so reporting is off.
-  ResetPrefs(/*scout_reporting=*/false, /*scout_group=*/true);
+  ResetPrefs(/*scout_reporting=*/false);
   EXPECT_EQ(SBER_LEVEL_OFF, GetExtendedReportingLevel(prefs_));
-  // Scout pref off with the experiment group off, so reporting remains off.
-  ResetPrefs(/*scout_reporting=*/false, /*scout_group=*/true);
-  EXPECT_EQ(SBER_LEVEL_OFF, GetExtendedReportingLevel(prefs_));
-  // Turning on Scout gives us Scout level reporting
-  ResetPrefs(/*scout_reporting=*/true, /*scout_group=*/true);
-  EXPECT_EQ(SBER_LEVEL_SCOUT, GetExtendedReportingLevel(prefs_));
 }
 
 // TODO(crbug.com/881476) disabled for flaky crashes.

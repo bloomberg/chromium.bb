@@ -32,21 +32,6 @@
     },
     {
       "board": {
-        "public_codename": "amd64-generic-goofy",
-        "is_active": true,
-        "builder_name": "amd64-generic-goofy"
-      },
-      "delta_type": "OMAHA",
-      "channel": "canary",
-      "chrome_os_version": "9756.0.0",
-      "chrome_version": "61.0.3159.0",
-      "milestone": 61,
-      "generate_delta": true,
-      "delta_payload_tests": true,
-      "full_payload_tests": false
-    },
-    {
-      "board": {
         "public_codename": "amenia",
         "is_active": false,
         "builder_name": "amenia"

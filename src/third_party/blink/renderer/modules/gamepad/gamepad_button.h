@@ -18,6 +18,8 @@ class GamepadButton final : public ScriptWrappable {
  public:
   static GamepadButton* Create();
 
+  GamepadButton();
+
   double value() const { return value_; }
   void SetValue(double val) { value_ = val; }
 
@@ -31,7 +33,6 @@ class GamepadButton final : public ScriptWrappable {
   void UpdateValuesFrom(const device::GamepadButton&);
 
  private:
-  GamepadButton();
   double value_;
   bool pressed_;
   bool touched_;

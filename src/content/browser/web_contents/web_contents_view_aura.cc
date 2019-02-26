@@ -1127,7 +1127,8 @@ void WebContentsViewAura::OnWindowTargetVisibilityChanged(bool visible) {
 }
 
 void WebContentsViewAura::OnWindowOcclusionChanged(
-    aura::Window::OcclusionState occlusion_state) {
+    aura::Window::OcclusionState occlusion_state,
+    const SkRegion&) {
   UpdateWebContentsVisibility();
 }
 

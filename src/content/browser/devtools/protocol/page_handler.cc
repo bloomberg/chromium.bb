@@ -10,7 +10,6 @@
 #include <utility>
 #include <vector>
 
-#include "base/base64.h"
 #include "base/bind.h"
 #include "base/location.h"
 #include "base/memory/ref_counted.h"
@@ -26,6 +25,7 @@
 #include "content/browser/devtools/devtools_agent_host_impl.h"
 #include "content/browser/devtools/protocol/devtools_download_manager_delegate.h"
 #include "content/browser/devtools/protocol/devtools_download_manager_helper.h"
+#include "content/browser/devtools/protocol/devtools_mhtml_helper.h"
 #include "content/browser/devtools/protocol/emulation_handler.h"
 #include "content/browser/frame_host/navigation_request.h"
 #include "content/browser/frame_host/navigator.h"
@@ -45,7 +45,6 @@
 #include "content/public/browser/render_widget_host.h"
 #include "content/public/browser/storage_partition.h"
 #include "content/public/browser/web_contents_delegate.h"
-#include "content/public/common/browser_side_navigation_policy.h"
 #include "content/public/common/referrer.h"
 #include "content/public/common/result_codes.h"
 #include "content/public/common/use_zoom_for_dsf_policy.h"
@@ -68,6 +67,7 @@ namespace protocol {
 
 namespace {
 
+constexpr const char* kMhtml = "mhtml";
 constexpr const char* kPng = "png";
 constexpr const char* kJpeg = "jpeg";
 constexpr int kDefaultScreenshotQuality = 80;
@@ -75,9 +75,9 @@ constexpr int kFrameRetryDelayMs = 100;
 constexpr int kCaptureRetryLimit = 2;
 constexpr int kMaxScreencastFramesInFlight = 2;
 
-std::string EncodeImage(const gfx::Image& image,
-                        const std::string& format,
-                        int quality) {
+Binary EncodeImage(const gfx::Image& image,
+                   const std::string& format,
+                   int quality) {
   DCHECK(!image.IsEmpty());
 
   scoped_refptr<base::RefCountedMemory> data;
@@ -90,20 +90,14 @@ std::string EncodeImage(const gfx::Image& image,
   }
 
   if (!data || !data->front())
-    return std::string();
+    return protocol::Binary();
 
-  std::string base_64_data;
-  base::Base64Encode(
-      base::StringPiece(reinterpret_cast<const char*>(data->front()),
-                        data->size()),
-      &base_64_data);
-
-  return base_64_data;
+  return Binary::fromRefCounted(data);
 }
 
-std::string EncodeSkBitmap(const SkBitmap& image,
-                           const std::string& format,
-                           int quality) {
+Binary EncodeSkBitmap(const SkBitmap& image,
+                      const std::string& format,
+                      int quality) {
   return EncodeImage(gfx::Image::CreateFrom1xBitmap(image), format, quality);
 }
 
@@ -488,8 +482,8 @@ void PageHandler::Navigate(const std::string& url,
   }
 
   NavigationController::LoadURLParams params(gurl);
-  params.referrer =
-      Referrer(GURL(referrer.fromMaybe("")), blink::kWebReferrerPolicyDefault);
+  params.referrer = Referrer(GURL(referrer.fromMaybe("")),
+                             network::mojom::ReferrerPolicy::kDefault);
   params.transition_type = type;
   params.frame_tree_node_id = frame_tree_node->frame_tree_node_id();
   frame_tree_node->navigator()->GetController()->LoadURLWithParams(params);
@@ -595,6 +589,17 @@ Response PageHandler::NavigateToHistoryEntry(int entry_id) {
   }
 
   return Response::InvalidParams("No entry with passed id");
+}
+
+void PageHandler::CaptureSnapshot(
+    Maybe<std::string> format,
+    std::unique_ptr<CaptureSnapshotCallback> callback) {
+  std::string snapshot_format = format.fromMaybe(kMhtml);
+  if (snapshot_format != kMhtml) {
+    callback->sendFailure(Response::Error("Unsupported snapshot format"));
+    return;
+  }
+  DevToolsMHTMLHelper::Capture(weak_factory_.GetWeakPtr(), std::move(callback));
 }
 
 void PageHandler::CaptureScreenshot(
@@ -1036,8 +1041,8 @@ void PageHandler::ScreencastFrameCaptured(
 
 void PageHandler::ScreencastFrameEncoded(
     std::unique_ptr<Page::ScreencastFrameMetadata> page_metadata,
-    const std::string& data) {
-  if (data.empty()) {
+    const protocol::Binary& data) {
+  if (data.size() == 0) {
     --frames_in_flight_;
     return;  // Encode failed.
   }

@@ -2,10 +2,10 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
+import("//mojo/public/tools/bindings/mojom.gni")
 import("//services/catalog/public/tools/catalog.gni")
 import("//services/service_manager/public/cpp/service.gni")
 import("//services/service_manager/public/service_manifest.gni")
-import("//mojo/public/tools/bindings/mojom.gni")
 import("//testing/test.gni")
 
 source_set("lifecycle") {
@@ -18,10 +18,12 @@ source_set("lifecycle") {
     "//base",
     "//base/test:test_support",
     "//services/service_manager/public/cpp",
-    "//services/service_manager/public/cpp:service_test_support",
+    "//services/service_manager/public/cpp/test:test_support",
     "//services/service_manager/public/mojom",
     "//services/service_manager/runner/common",
+    "//services/service_manager/tests:catalog_source",
     "//services/service_manager/tests:util",
+    "//testing/gtest",
   ]
 
   data_deps = [

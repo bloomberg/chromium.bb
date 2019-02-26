@@ -52,8 +52,10 @@ class CORE_EXPORT FrameConsole final
     : public GarbageCollectedFinalized<FrameConsole> {
  public:
   static FrameConsole* Create(LocalFrame& frame) {
-    return new FrameConsole(frame);
+    return MakeGarbageCollected<FrameConsole>(frame);
   }
+
+  explicit FrameConsole(LocalFrame&);
 
   void AddMessage(ConsoleMessage*);
 
@@ -74,8 +76,6 @@ class CORE_EXPORT FrameConsole final
   void Trace(blink::Visitor*);
 
  private:
-  explicit FrameConsole(LocalFrame&);
-
   Member<LocalFrame> frame_;
 };
 

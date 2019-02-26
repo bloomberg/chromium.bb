@@ -393,7 +393,7 @@ void UdpPacketSocket::HandleReadResult(int result, pp::NetAddress address) {
     rtc::SocketAddress socket_address;
     PpNetAddressToSocketAddress(address, &socket_address);
     SignalReadPacket(this, &receive_buffer_[0], result, socket_address,
-                     rtc::CreatePacketTime(0));
+                     rtc::TimeMicros());
   } else if (result != PP_ERROR_ABORTED) {
     LOG(ERROR) << "Received error when reading from UDP socket: " << result;
   }

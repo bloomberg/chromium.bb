@@ -289,6 +289,10 @@
       "svgparse_",
       "_",
       "image",
+      "gen_platf",
+      "error",
+      "_",
+      "image",
       "_",
       "interlaced1.png",
       "_",
@@ -391,8 +395,7 @@
     "name": "symbolized dm"
   },
   {
-    "name": "$result",
-    "recipe_result": null,
-    "status_code": 0
+    "jsonResult": null,
+    "name": "$result"
   }
 ]

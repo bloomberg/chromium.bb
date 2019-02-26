@@ -6,11 +6,7 @@
 #define COMPONENTS_NTP_SNIPPETS_REMOTE_TEST_UTILS_H_
 
 #include <memory>
-#include <string>
-#include <vector>
 
-#include "build/build_config.h"
-#include "components/sync/driver/fake_sync_service.h"
 #include "components/sync_preferences/testing_pref_service_syncable.h"
 
 using sync_preferences::TestingPrefServiceSyncable;
@@ -19,33 +15,15 @@ namespace ntp_snippets {
 
 namespace test {
 
-class FakeSyncService : public syncer::FakeSyncService {
- public:
-  FakeSyncService();
-  ~FakeSyncService() override;
-
-  int GetDisableReasons() const override;
-  bool IsEncryptEverythingEnabled() const override;
-  syncer::ModelTypeSet GetActiveDataTypes() const override;
-
-  bool is_encrypt_everything_enabled_;
-  syncer::ModelTypeSet active_data_types_;
-};
-
-// Common utilities for remote suggestion tests, handles initializing fakes for
-// sync and signin.
+// Common utilities for remote suggestion tests, handles initializing fakes.
 class RemoteSuggestionsTestUtils {
  public:
   RemoteSuggestionsTestUtils();
   ~RemoteSuggestionsTestUtils();
 
-  void ResetSigninManager();
-
-  FakeSyncService* fake_sync_service() { return fake_sync_service_.get(); }
   TestingPrefServiceSyncable* pref_service() { return pref_service_.get(); }
 
  private:
-  std::unique_ptr<FakeSyncService> fake_sync_service_;
   std::unique_ptr<TestingPrefServiceSyncable> pref_service_;
 };
 

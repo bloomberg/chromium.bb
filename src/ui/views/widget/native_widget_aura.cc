@@ -175,7 +175,7 @@ void NativeWidgetAura::InitNativeWidget(const Widget::InitParams& params) {
 
   window_->Init(params.layer_type);
   // Set name after layer init so it propagates to layer.
-  window_->SetName(params.name);
+  window_->SetName(params.name.empty() ? "NativeWidgetAura" : params.name);
   if (params.type == Widget::InitParams::TYPE_CONTROL)
     window_->Show();
 
@@ -594,9 +594,8 @@ void NativeWidgetAura::Activate() {
 
   // We don't necessarily have a root window yet. This can happen with
   // constrained windows.
-  if (window_->GetRootWindow()) {
+  if (window_->GetRootWindow())
     wm::GetActivationClient(window_->GetRootWindow())->ActivateWindow(window_);
-  }
   if (window_->GetProperty(aura::client::kDrawAttentionKey))
     window_->SetProperty(aura::client::kDrawAttentionKey, false);
 }

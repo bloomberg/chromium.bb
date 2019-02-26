@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 #include "base/optional.h"
+#include "base/strings/utf_string_conversions.h"
 #include "pdf/pdfium/pdfium_engine.h"
 #include "pdf/pdfium/pdfium_test_base.h"
 #include "pdf/test/test_client.h"
@@ -109,6 +110,44 @@ TEST_F(FindTextTest, FindLineBreakText) {
   }
 
   engine->StartFind("is the first system", /*case_sensitive=*/true);
+}
+
+TEST_F(FindTextTest, FindSimpleQuotationMarkText) {
+  FindTextTestClient client;
+  std::unique_ptr<PDFiumEngine> engine =
+      InitializeEngine(&client, FILE_PATH_LITERAL("bug_142627.pdf"));
+  ASSERT_TRUE(engine);
+
+  {
+    InSequence sequence;
+
+    EXPECT_CALL(client, NotifyNumberOfFindResultsChanged(1, false));
+    EXPECT_CALL(client, NotifySelectedFindResultChanged(0));
+    EXPECT_CALL(client, NotifyNumberOfFindResultsChanged(2, false));
+    EXPECT_CALL(client, NotifyNumberOfFindResultsChanged(2, true));
+  }
+
+  engine->StartFind("don't", /*case_sensitive=*/true);
+}
+
+TEST_F(FindTextTest, FindFancyQuotationMarkText) {
+  FindTextTestClient client;
+  std::unique_ptr<PDFiumEngine> engine =
+      InitializeEngine(&client, FILE_PATH_LITERAL("bug_142627.pdf"));
+  ASSERT_TRUE(engine);
+
+  {
+    InSequence sequence;
+
+    EXPECT_CALL(client, NotifyNumberOfFindResultsChanged(1, false));
+    EXPECT_CALL(client, NotifySelectedFindResultChanged(0));
+    EXPECT_CALL(client, NotifyNumberOfFindResultsChanged(2, false));
+    EXPECT_CALL(client, NotifyNumberOfFindResultsChanged(2, true));
+  }
+
+  // don't, using right apostrophe instead of a single quotation mark
+  base::string16 term = {'d', 'o', 'n', 0x2019, 't'};
+  engine->StartFind(base::UTF16ToUTF8(term), /*case_sensitive=*/true);
 }
 
 }  // namespace chrome_pdf

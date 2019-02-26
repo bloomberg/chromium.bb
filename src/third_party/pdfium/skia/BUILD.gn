@@ -6,6 +6,7 @@ import("//build/config/features.gni")
 import("//build/config/ui.gni")
 import("//testing/test.gni")
 import("//third_party/skia/gn/shared_sources.gni")
+import("//third_party/skia/third_party/skcms/skcms.gni")
 
 if (current_cpu == "arm") {
   import("//build/config/arm.gni")
@@ -80,21 +81,24 @@ config("skia_config") {
 # Internal-facing config for Skia library code.
 config("skia_library_config") {
   # These include directories are only included for Skia code and are not
-  # exported to dependents. It's not clear if this is on purpose, but this
-  # matches the GYP build.
+  # exported to dependents.
   include_dirs = [
+    "//third_party/skia/include/codec",
+    "//third_party/skia/include/docs",
     "//third_party/skia/include/private",
     "//third_party/skia/include/client/android",
+    "//third_party/skia/src/codec",
     "//third_party/skia/src/core",
     "//third_party/skia/src/image",
+    "//third_party/skia/src/lazy",
     "//third_party/skia/src/opts",
     "//third_party/skia/src/pdf",
     "//third_party/skia/src/ports",
     "//third_party/skia/src/sfnt",
     "//third_party/skia/src/shaders",
+    "//third_party/skia/src/shaders/gradients",
     "//third_party/skia/src/sksl",
     "//third_party/skia/src/utils",
-    "//third_party/skia/src/lazy",
   ]
   if (is_mac || is_ios) {
     include_dirs += [ "//third_party/skia/include/utils/mac" ]
@@ -177,6 +181,29 @@ config("skia_library_config") {
   }
 }
 
+source_set("skcms") {
+  cflags = []
+  if (!is_win || is_clang) {
+    cflags += [
+      "-w",
+      "-std=c11",
+    ]
+  }
+
+  # LLVM automatically sets the equivalent of GCC's -mfp16-format=ieee on ARM
+  # builds by default, while GCC itself does not. We need it to enable support
+  # for half-precision floating point data types used by SKCMS on ARM.
+  if (is_linux && !is_clang && current_cpu == "arm") {
+    cflags += [ "-mfp16-format=ieee" ]
+  }
+
+  public = [
+    "//third_party/skia/third_party/skcms/skcms.h",
+  ]
+  sources =
+      rebase_path(skcms_sources, ".", "//third_party/skia/third_party/skcms")
+}
+
 component("skia") {
   sources = [
     # PDFium sources.
@@ -185,11 +212,10 @@ component("skia") {
   ]
 
   # The skia sources values are relative to the skia_dir, so we need to rebase.
-  sources += skia_core_sources
-  sources += skia_effects_sources
   sources += skia_sksl_sources
   sources += skia_utils_sources
   sources += [
+    "//third_party/skia/src/codec/SkMasks.cpp",
     "//third_party/skia/src/fonts/SkFontMgr_indirect.cpp",
     "//third_party/skia/src/fonts/SkRemotableFontMgr.cpp",
     "//third_party/skia/src/images/SkImageEncoder.cpp",
@@ -315,9 +341,13 @@ component("skia") {
   public_configs = [ ":skia_config" ]
 
   deps = [
+    ":skcms",
     ":skia_opts",
     "../third_party:zlib",
     "//:freetype_common",
+  ]
+  public_deps = [
+    ":skia_core_and_effects",
   ]
 
   if (is_linux) {
@@ -332,13 +362,6 @@ component("skia") {
       "//third_party/expat",
       "//third_party/freetype-android:freetype",
     ]
-  }
-
-  if (skia_support_pdf) {
-    deps += [ "//third_party/sfntly" ]
-    sources += skia_pdf_sources
-  } else {
-    sources += [ "//third_party/skia/src/pdf/SkDocument_PDF_None.cpp" ]
   }
 
   if (is_android && !is_debug) {
@@ -359,11 +382,53 @@ component("skia") {
     # To disable warning "CGContextSelectFont' is deprecated"
     cflags = [ "-Wno-deprecated-declarations" ]
   }
+
+  if (skia_support_pdf) {
+    deps += [ "//third_party/sfntly" ]
+    sources += skia_pdf_sources
+  } else {
+    sources += [ "//third_party/skia/src/pdf/SkDocument_PDF_None.cpp" ]
+  }
+}
+
+# Template for things that are logically part of :skia, but need to be split out
+# so custom compile flags can be applied.
+#
+# These are all opted out of check_includes, due to (logically) being part of
+# skia.
+template("skia_source_set") {
+  source_set(target_name) {
+    forward_variables_from(invoker, "*")
+
+    check_includes = false
+
+    if (!is_debug) {
+      configs -= [ "//build/config/compiler:default_optimization" ]
+      configs += [ "//build/config/compiler:optimize_max" ]
+    }
+
+    configs -= [ "//build/config/compiler:chromium_code" ]
+    configs += [
+      ":skia_config",
+      ":skia_library_config",
+      "//build/config/compiler:no_chromium_code",
+    ]
+    public_configs = [ ":skia_config" ]
+  }
+}
+
+skia_source_set("skia_core_and_effects") {
+  defines = skia_core_defines
+  sources = skia_core_sources
+  sources += skia_effects_sources
+  sources += skia_effects_imagefilter_sources
+
+  visibility = [ ":skia" ]
 }
 
 # Separated out so it can be compiled with different flags for SSE.
 if (current_cpu == "x86" || current_cpu == "x64") {
-  source_set("skia_opts_sse3") {
+  skia_source_set("skia_opts_sse3") {
     sources = skia_opts.ssse3_sources
     if (!is_win || is_clang) {
       cflags = [ "-mssse3" ]
@@ -372,14 +437,8 @@ if (current_cpu == "x86" || current_cpu == "x64") {
       defines = [ "SK_CPU_SSE_LEVEL=31" ]
     }
     visibility = [ ":skia_opts" ]
-    configs -= [ "//build/config/compiler:chromium_code" ]
-    configs += [
-      ":skia_config",
-      ":skia_library_config",
-      "//build/config/compiler:no_chromium_code",
-    ]
   }
-  source_set("skia_opts_sse41") {
+  skia_source_set("skia_opts_sse41") {
     sources = skia_opts.sse41_sources
     if (!is_win || is_clang) {
       cflags = [ "-msse4.1" ]
@@ -388,14 +447,8 @@ if (current_cpu == "x86" || current_cpu == "x64") {
       defines = [ "SK_CPU_SSE_LEVEL=41" ]
     }
     visibility = [ ":skia_opts" ]
-    configs -= [ "//build/config/compiler:chromium_code" ]
-    configs += [
-      ":skia_config",
-      ":skia_library_config",
-      "//build/config/compiler:no_chromium_code",
-    ]
   }
-  source_set("skia_opts_sse42") {
+  skia_source_set("skia_opts_sse42") {
     sources = skia_opts.sse42_sources
     if (!is_win || is_clang) {
       cflags = [ "-msse4.2" ]
@@ -404,14 +457,8 @@ if (current_cpu == "x86" || current_cpu == "x64") {
       defines = [ "SK_CPU_SSE_LEVEL=42" ]
     }
     visibility = [ ":skia_opts" ]
-    configs -= [ "//build/config/compiler:chromium_code" ]
-    configs += [
-      ":skia_config",
-      ":skia_library_config",
-      "//build/config/compiler:no_chromium_code",
-    ]
   }
-  source_set("skia_opts_avx") {
+  skia_source_set("skia_opts_avx") {
     sources = skia_opts.avx_sources
     if (!is_win) {
       cflags = [ "-mavx" ]
@@ -420,14 +467,8 @@ if (current_cpu == "x86" || current_cpu == "x64") {
       cflags = [ "/arch:AVX" ]
     }
     visibility = [ ":skia_opts" ]
-    configs -= [ "//build/config/compiler:chromium_code" ]
-    configs += [
-      ":skia_config",
-      ":skia_library_config",
-      "//build/config/compiler:no_chromium_code",
-    ]
   }
-  source_set("skia_opts_hsw") {
+  skia_source_set("skia_opts_hsw") {
     sources = skia_opts.hsw_sources
     if (!is_win) {
       cflags = [
@@ -442,15 +483,10 @@ if (current_cpu == "x86" || current_cpu == "x64") {
       cflags = [ "/arch:AVX2" ]
     }
     visibility = [ ":skia_opts" ]
-    configs -= [ "//build/config/compiler:chromium_code" ]
-    configs += [
-      ":skia_config",
-      ":skia_library_config",
-      "//build/config/compiler:no_chromium_code",
-    ]
   }
 }
-source_set("skia_opts") {
+
+skia_source_set("skia_opts") {
   cflags = []
   defines = []
 
@@ -504,13 +540,6 @@ source_set("skia_opts") {
     configs -= [ "//build/config/compiler:default_optimization" ]
     configs += [ "//build/config/compiler:optimize_max" ]
   }
-
-  configs -= [ "//build/config/compiler:chromium_code" ]
-  configs += [
-    ":skia_config",
-    ":skia_library_config",
-    "//build/config/compiler:no_chromium_code",
-  ]
 
   visibility = [ ":skia" ]
 }

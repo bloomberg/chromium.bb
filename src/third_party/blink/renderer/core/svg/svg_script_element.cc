@@ -35,21 +35,21 @@ namespace blink {
 
 inline SVGScriptElement::SVGScriptElement(Document& document,
                                           const CreateElementFlags flags)
-    : SVGElement(SVGNames::scriptTag, document),
+    : SVGElement(svg_names::kScriptTag, document),
       SVGURIReference(this),
       loader_(InitializeScriptLoader(flags.IsCreatedByParser(),
                                      flags.WasAlreadyStarted())) {}
 
 SVGScriptElement* SVGScriptElement::Create(Document& document,
                                            const CreateElementFlags flags) {
-  return new SVGScriptElement(document, flags);
+  return MakeGarbageCollected<SVGScriptElement>(document, flags);
 }
 
 void SVGScriptElement::ParseAttribute(
     const AttributeModificationParams& params) {
-  if (params.name == HTMLNames::onerrorAttr) {
+  if (params.name == html_names::kOnerrorAttr) {
     SetAttributeEventListener(
-        EventTypeNames::error,
+        event_type_names::kError,
         CreateAttributeEventListener(
             this, params.name, params.new_value,
             JSEventHandler::HandlerType::kOnErrorEventHandler));
@@ -109,7 +109,7 @@ String SVGScriptElement::SourceAttributeValue() const {
 }
 
 String SVGScriptElement::TypeAttributeValue() const {
-  return getAttribute(SVGNames::typeAttr).GetString();
+  return getAttribute(svg_names::kTypeAttr).GetString();
 }
 
 String SVGScriptElement::TextFromChildren() {
@@ -156,12 +156,12 @@ Element* SVGScriptElement::CloneWithoutAttributesAndChildren(
 }
 
 void SVGScriptElement::DispatchLoadEvent() {
-  DispatchEvent(*Event::Create(EventTypeNames::load));
+  DispatchEvent(*Event::Create(event_type_names::kLoad));
   have_fired_load_ = true;
 }
 
 void SVGScriptElement::DispatchErrorEvent() {
-  DispatchEvent(*Event::Create(EventTypeNames::error));
+  DispatchEvent(*Event::Create(event_type_names::kError));
 }
 
 void SVGScriptElement::SetScriptElementForBinding(
@@ -172,8 +172,8 @@ void SVGScriptElement::SetScriptElementForBinding(
 
 #if DCHECK_IS_ON()
 bool SVGScriptElement::IsAnimatableAttribute(const QualifiedName& name) const {
-  if (name == SVGNames::typeAttr || name == SVGNames::hrefAttr ||
-      name == XLinkNames::hrefAttr)
+  if (name == svg_names::kTypeAttr || name == svg_names::kHrefAttr ||
+      name == xlink_names::kHrefAttr)
     return false;
   return SVGElement::IsAnimatableAttribute(name);
 }

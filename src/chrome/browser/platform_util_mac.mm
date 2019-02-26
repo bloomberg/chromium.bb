@@ -84,44 +84,50 @@ void OpenExternal(Profile* profile, const GURL& url) {
 }
 
 gfx::NativeWindow GetTopLevel(gfx::NativeView view) {
-  return [view window];
+  return gfx::NativeWindow([view.GetNativeNSView() window]);
 }
 
-gfx::NativeView GetViewForWindow(gfx::NativeWindow window) {
+gfx::NativeView GetViewForWindow(gfx::NativeWindow native_window) {
+  NSWindow* window = native_window.GetNativeNSWindow();
   DCHECK(window);
   DCHECK([window contentView]);
-  return [window contentView];
+  return gfx::NativeView([window contentView]);
 }
 
 gfx::NativeView GetParent(gfx::NativeView view) {
-  return nil;
+  return gfx::NativeView(nil);
 }
 
-bool IsWindowActive(gfx::NativeWindow window) {
+bool IsWindowActive(gfx::NativeWindow native_window) {
   // If |window| is a doppelganger NSWindow being used to track an NSWindow that
   // is being hosted in another process, then use the views::Widget interface to
   // interact with it.
-  views::Widget* widget = views::Widget::GetWidgetForNativeWindow(window);
+  views::Widget* widget =
+      views::Widget::GetWidgetForNativeWindow(native_window);
   if (widget)
     return widget->IsActive();
 
+  NSWindow* window = native_window.GetNativeNSWindow();
   return [window isKeyWindow] || [window isMainWindow];
 }
 
-void ActivateWindow(gfx::NativeWindow window) {
-  views::Widget* widget = views::Widget::GetWidgetForNativeWindow(window);
+void ActivateWindow(gfx::NativeWindow native_window) {
+  views::Widget* widget =
+      views::Widget::GetWidgetForNativeWindow(native_window);
   if (widget)
     return widget->Activate();
 
+  NSWindow* window = native_window.GetNativeNSWindow();
   [window makeKeyAndOrderFront:nil];
 }
 
-bool IsVisible(gfx::NativeView view) {
-  views::Widget* widget = views::Widget::GetWidgetForNativeView(view);
+bool IsVisible(gfx::NativeView native_view) {
+  views::Widget* widget = views::Widget::GetWidgetForNativeView(native_view);
   if (widget)
     return widget->IsVisible();
 
   // A reasonable approximation of how you'd expect this to behave.
+  NSView* view = native_view.GetNativeNSView();
   return (view &&
           ![view isHiddenOrHasHiddenAncestor] &&
           [view window] &&

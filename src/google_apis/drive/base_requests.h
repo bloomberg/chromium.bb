@@ -223,10 +223,9 @@ class UrlFetchRequestBase : public AuthenticatedRequestInterface,
     scoped_refptr<base::SequencedTaskRunner> blocking_task_runner_;
   };
 
-  // Write the data in |string_piece| to disk and call |resume| once complete on
+  // Write the data in |file_data| to disk and call |resume| once complete on
   // a blocking sequence.
-  static bool WriteFileData(base::StringPiece string_piece,
-                            DownloadData* download_data);
+  static bool WriteFileData(std::string file_data, DownloadData* download_data);
 
   // Called by SimpleURLLoader to report download progress.
   void OnDownloadProgress(const ProgressCallback& progress_callback,

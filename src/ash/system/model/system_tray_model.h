@@ -37,6 +37,8 @@ class SystemTrayModel : public mojom::SystemTray {
   void SetEnterpriseDisplayDomain(const std::string& enterprise_display_domain,
                                   bool active_directory_managed) override;
   void SetPerformanceTracingIconVisible(bool visible) override;
+  void SetLocaleList(std::vector<mojom::LocaleInfoPtr> locale_list,
+                     const std::string& current_locale_iso_code) override;
   void ShowUpdateIcon(mojom::UpdateSeverity severity,
                       bool factory_reset_required,
                       bool rollback,
@@ -59,6 +61,13 @@ class SystemTrayModel : public mojom::SystemTray {
   UpdateModel* update_model() { return update_model_.get(); }
   VirtualKeyboardModel* virtual_keyboard() { return virtual_keyboard_.get(); }
 
+  const std::vector<mojom::LocaleInfoPtr>& locale_list() {
+    return locale_list_;
+  }
+  std::string current_locale_iso_code() const {
+    return current_locale_iso_code_;
+  }
+
   const mojom::SystemTrayClientPtr& client_ptr() { return client_ptr_; }
 
  private:
@@ -68,6 +77,9 @@ class SystemTrayModel : public mojom::SystemTray {
   std::unique_ptr<TracingModel> tracing_;
   std::unique_ptr<UpdateModel> update_model_;
   std::unique_ptr<VirtualKeyboardModel> virtual_keyboard_;
+
+  std::vector<mojom::LocaleInfoPtr> locale_list_;
+  std::string current_locale_iso_code_;
 
   // TODO(tetsui): Add following as a sub-model of SystemTrayModel:
   // * BluetoothModel

@@ -148,12 +148,8 @@
 #define IDC_MANAGE_EXTENSIONS           40022
 #define IDC_DEV_TOOLS_INSPECT           40023
 #define IDC_UPGRADE_DIALOG              40024
-#define IDC_SHOW_KEYBOARD_OVERLAY       40027
 #define IDC_PROFILING_ENABLED           40028
 #define IDC_BOOKMARKS_MENU              40029
-// TODO(atwilson): Remove IDC_SHOW_SYNC_SETUP when we officially allow signin
-// when sync is disabled.
-#define IDC_SHOW_SYNC_SETUP             40030
 #define IDC_SHOW_SIGNIN                 40030
 #define IDC_EXTENSION_ERRORS            40031
 #define IDC_SHOW_SIGNIN_ERROR           40032
@@ -180,6 +176,7 @@
 #define IDC_SHOW_BETA_FORUM             40252
 #define IDC_TOGGLE_JAVASCRIPT_APPLE_EVENTS 40253
 #define IDC_INSTALL_PWA                 40254
+#define IDC_MANAGED_UI_HELP             40255
 
 // Spell-check
 // Insert any additional suggestions before _LAST; these have to be consecutive.
@@ -336,10 +333,9 @@
 #define IDC_MEDIA_ROUTER_REPORT_ISSUE 51203
 #define IDC_MEDIA_ROUTER_ALWAYS_SHOW_TOOLBAR_ACTION 51204
 #define IDC_MEDIA_ROUTER_CLOUD_SERVICES_TOGGLE 51205
-#define IDC_MEDIA_ROUTER_MANAGE_DEVICES 51206
-#define IDC_MEDIA_ROUTER_SHOWN_BY_POLICY 51207
-#define IDC_MEDIA_ROUTER_SHOW_IN_TOOLBAR 51208
-#define IDC_MEDIA_ROUTER_TOGGLE_MEDIA_REMOTING 51209
+#define IDC_MEDIA_ROUTER_SHOWN_BY_POLICY 51206
+#define IDC_MEDIA_ROUTER_SHOW_IN_TOOLBAR 51207
+#define IDC_MEDIA_ROUTER_TOGGLE_MEDIA_REMOTING 51208
 
 // Context menu items for media stream status tray
 #define IDC_MEDIA_STREAM_DEVICE_STATUS_TRAY 51300

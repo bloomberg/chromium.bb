@@ -115,10 +115,12 @@ void PassthroughTouchEventQueue::ProcessTouchAck(
     InputEventAckSource ack_source,
     InputEventAckState ack_result,
     const LatencyInfo& latency_info,
-    const uint32_t unique_touch_event_id) {
+    const uint32_t unique_touch_event_id,
+    bool should_stop_timeout_monitor) {
   TRACE_EVENT0("input", "PassthroughTouchEventQueue::ProcessTouchAck");
   if (timeout_handler_ &&
-      timeout_handler_->ConfirmTouchEvent(unique_touch_event_id, ack_result))
+      timeout_handler_->ConfirmTouchEvent(unique_touch_event_id, ack_result,
+                                          should_stop_timeout_monitor))
     return;
 
   auto touch_event_iter = outstanding_touches_.begin();
@@ -131,11 +133,10 @@ void PassthroughTouchEventQueue::ProcessTouchAck(
   if (touch_event_iter == outstanding_touches_.end())
     return;
 
-  TouchEventWithLatencyInfoAndAckState event = *touch_event_iter;
-  touch_event_iter = outstanding_touches_.erase(touch_event_iter);
+  TouchEventWithLatencyInfoAndAckState& event =
+      const_cast<TouchEventWithLatencyInfoAndAckState&>(*touch_event_iter);
   event.latency.AddNewLatencyFrom(latency_info);
   event.set_ack_info(ack_source, ack_result);
-  outstanding_touches_.insert(touch_event_iter, event);
 
   AckCompletedEvents();
 }
@@ -195,6 +196,7 @@ bool PassthroughTouchEventQueue::Empty() const {
 
 void PassthroughTouchEventQueue::FlushQueue() {
   drop_remaining_touches_in_sequence_ = true;
+  client_->FlushDeferredGestureQueue();
   while (!outstanding_touches_.empty()) {
     auto iter = outstanding_touches_.begin();
     TouchEventWithLatencyInfoAndAckState event = *iter;
@@ -204,6 +206,11 @@ void PassthroughTouchEventQueue::FlushQueue() {
                          INPUT_EVENT_ACK_STATE_NO_CONSUMER_EXISTS);
     AckTouchEventToClient(event, event.ack_source(), event.ack_state());
   }
+}
+
+void PassthroughTouchEventQueue::StopTimeoutMonitor() {
+  if (timeout_handler_)
+    timeout_handler_->StopTimeoutMonitor();
 }
 
 void PassthroughTouchEventQueue::AckCompletedEvents() {

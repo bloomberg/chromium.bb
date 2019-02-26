@@ -10,6 +10,7 @@
 #include "base/metrics/histogram_macros.h"
 #include "components/metrics/metrics_service.h"
 #include "ios/chrome/browser/crash_report/breakpad_helper.h"
+#include "ios/chrome/browser/crash_report/main_thread_freeze_detector.h"
 #import "ios/chrome/browser/metrics/previous_session_info.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
@@ -40,9 +41,19 @@ bool MobileSessionShutdownMetricsProvider::HasPreviousSessionData() {
 
 void MobileSessionShutdownMetricsProvider::ProvidePreviousSessionData(
     metrics::ChromeUserMetricsExtension* uma_proto) {
-  // If this is the first launch after an upgrade, existing crash reports may
-  // have been deleted before this code runs, so log this case in its own
-  // bucket.
+  // If app was upgraded since the last session, even if the previous session
+  // ended in an unclean shutdown (crash, may or may not be UTE), this should
+  // *not* be logged into one of the Foreground* or Background* states of
+  // MobileSessionShutdownType. The crash is really from the pre-upgraded
+  // version of app. Logging it now will incorrectly inflate the current
+  // version's crash count with a crash that happened in a previous version of
+  // the app.
+  //
+  // Not counting first run after upgrade does *not* bias the distribution of
+  // the 4 Foreground* termination states because the reason of a crash would
+  // not be affected by an imminent upgrade of Chrome app. Thus, the ratio of
+  // Foreground shutdowns w/ crash log vs. w/o crash log is expected to be the
+  // same regardless of whether First Launch after Upgrade is considered or not.
   if (IsFirstLaunchAfterUpgrade()) {
     LogShutdownType(FIRST_LAUNCH_AFTER_UPGRADE);
     return;
@@ -55,18 +66,23 @@ void MobileSessionShutdownMetricsProvider::ProvidePreviousSessionData(
     return;
   }
 
+  // If the last app lifetime ended with main thread not responding, log it as
+  // main thread frozen shutdown.
+  if (LastSessionEndedFrozen()) {
+    LogShutdownType(SHUTDOWN_IN_FOREGROUND_WITH_MAIN_THREAD_FROZEN);
+    return;
+  }
+
   // If the last app lifetime ended in a crash, log the type of crash.
   MobileSessionShutdownType shutdown_type;
-  const bool with_crash_log =
-      HasUploadedCrashReportsInBackground() || HasCrashLogs();
   if (ReceivedMemoryWarningBeforeLastShutdown()) {
-    if (with_crash_log) {
+    if (HasCrashLogs()) {
       shutdown_type = SHUTDOWN_IN_FOREGROUND_WITH_CRASH_LOG_WITH_MEMORY_WARNING;
     } else {
       shutdown_type = SHUTDOWN_IN_FOREGROUND_NO_CRASH_LOG_WITH_MEMORY_WARNING;
     }
   } else {
-    if (with_crash_log) {
+    if (HasCrashLogs()) {
       shutdown_type = SHUTDOWN_IN_FOREGROUND_WITH_CRASH_LOG_NO_MEMORY_WARNING;
     } else {
       shutdown_type = SHUTDOWN_IN_FOREGROUND_NO_CRASH_LOG_NO_MEMORY_WARNING;
@@ -83,9 +99,8 @@ bool MobileSessionShutdownMetricsProvider::HasCrashLogs() {
   return breakpad_helper::HasReportToUpload();
 }
 
-bool MobileSessionShutdownMetricsProvider::
-    HasUploadedCrashReportsInBackground() {
-  return false;
+bool MobileSessionShutdownMetricsProvider::LastSessionEndedFrozen() {
+  return [MainThreadFreezeDetector sharedInstance].lastSessionEndedFrozen;
 }
 
 bool MobileSessionShutdownMetricsProvider::

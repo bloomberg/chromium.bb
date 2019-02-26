@@ -6,6 +6,8 @@
 
 #include "fpdfsdk/pwl/cpwl_edit_ctrl.h"
 
+#include <utility>
+
 #include "core/fpdfdoc/cpvt_word.h"
 #include "core/fxge/fx_font.h"
 #include "fpdfsdk/pwl/cpwl_caret.h"
@@ -16,16 +18,18 @@
 #include "public/fpdf_fwlevent.h"
 #include "third_party/base/ptr_util.h"
 
-CPWL_EditCtrl::CPWL_EditCtrl() : m_pEdit(pdfium::MakeUnique<CPWL_EditImpl>()) {}
+CPWL_EditCtrl::CPWL_EditCtrl(const CreateParams& cp,
+                             std::unique_ptr<PrivateData> pAttachedData)
+    : CPWL_Wnd(cp, std::move(pAttachedData)),
+      m_pEdit(pdfium::MakeUnique<CPWL_EditImpl>()) {
+  GetCreationParams()->eCursorType = FXCT_VBEAM;
+}
 
 CPWL_EditCtrl::~CPWL_EditCtrl() = default;
 
-void CPWL_EditCtrl::OnCreate(CreateParams* pParamsToAdjust) {
-  pParamsToAdjust->eCursorType = FXCT_VBEAM;
-}
 
 void CPWL_EditCtrl::OnCreated() {
-  SetFontSize(GetCreationParams().fFontSize);
+  SetFontSize(GetCreationParams()->fFontSize);
   m_pEdit->SetFontMap(GetFontMap());
   m_pEdit->SetNotify(this);
   m_pEdit->Initialize();
@@ -84,17 +88,17 @@ void CPWL_EditCtrl::CreateEditCaret(const CreateParams& cp) {
   if (m_pEditCaret)
     return;
 
-  m_pEditCaret = new CPWL_Caret;
-  m_pEditCaret->SetInvalidRect(GetClientRect());
-
   CreateParams ecp = cp;
-  ecp.pParentWnd = this;
   ecp.dwFlags = PWS_CHILD | PWS_NOREFRESHCLIP;
   ecp.dwBorderWidth = 0;
   ecp.nBorderStyle = BorderStyle::SOLID;
   ecp.rcRectWnd = CFX_FloatRect();
 
-  m_pEditCaret->Create(ecp);
+  auto pCaret = pdfium::MakeUnique<CPWL_Caret>(ecp, CloneAttachedData());
+  m_pEditCaret = pCaret.get();
+  m_pEditCaret->SetInvalidRect(GetClientRect());
+  AddChild(std::move(pCaret));
+  m_pEditCaret->Realize();
 }
 
 void CPWL_EditCtrl::SetFontSize(float fFontSize) {

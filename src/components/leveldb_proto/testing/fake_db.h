@@ -16,22 +16,23 @@
 #include "base/files/file_path.h"
 #include "base/task/post_task.h"
 #include "base/test/test_simple_task_runner.h"
-#include "components/leveldb_proto/proto_database.h"
+#include "components/leveldb_proto/unique_proto_database.h"
 
 namespace leveldb_proto {
 namespace test {
 
 template <typename T>
-class FakeDB : public ProtoDatabase<T> {
+class FakeDB : public UniqueProtoDatabase<T> {
   using Callback = base::OnceCallback<void(bool)>;
 
  public:
   using EntryMap = std::map<std::string, T>;
 
   explicit FakeDB(EntryMap* db);
-  ~FakeDB() override;
 
   // ProtoDatabase implementation.
+  void Init(const std::string& client_name,
+            typename ProtoDatabase<T>::InitCallback callback) override;
   void Init(const char* client_name,
             const base::FilePath& database_dir,
             const leveldb_env::Options& options,
@@ -122,12 +123,17 @@ class FakeDB : public ProtoDatabase<T> {
 
 template <typename T>
 FakeDB<T>::FakeDB(EntryMap* db)
-    : ProtoDatabase<T>(base::MakeRefCounted<base::TestSimpleTaskRunner>()) {
+    : UniqueProtoDatabase<T>(
+          base::MakeRefCounted<base::TestSimpleTaskRunner>()) {
   db_ = db;
 }
 
 template <typename T>
-FakeDB<T>::~FakeDB() {}
+void FakeDB<T>::Init(const std::string& client_name,
+                     typename ProtoDatabase<T>::InitCallback callback) {
+  Init(client_name.c_str(), base::FilePath(FILE_PATH_LITERAL("db_dir")),
+       leveldb_proto::CreateSimpleOptions(), std::move(callback));
+}
 
 template <typename T>
 void FakeDB<T>::Init(const char* client_name,

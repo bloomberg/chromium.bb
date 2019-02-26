@@ -28,9 +28,7 @@
 
 namespace blink {
 
-template <>
-const SVGEnumerationStringEntries&
-GetStaticStringEntries<ChannelSelectorType>();
+DECLARE_SVG_ENUM_MAP(ChannelSelectorType);
 
 class SVGFEDisplacementMapElement final
     : public SVGFilterPrimitiveStandardAttributes {

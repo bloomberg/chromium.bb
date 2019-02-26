@@ -22,6 +22,7 @@
 #include "chrome/browser/browser_process_platform_part.h"
 #include "chrome/browser/chromeos/idle_detector.h"
 #include "chrome/browser/chromeos/login/demo_mode/demo_app_launcher.h"
+#include "chrome/browser/chromeos/login/demo_mode/demo_resources.h"
 #include "chrome/browser/chromeos/login/demo_mode/demo_session.h"
 #include "chrome/browser/chromeos/login/users/chrome_user_manager.h"
 #include "chrome/browser/chromeos/policy/browser_policy_connector_chromeos.h"
@@ -234,8 +235,7 @@ void DemoModeResourcesRemover::AttemptRemoval(RemovalReason reason,
   base::PostTaskWithTraitsAndReplyWithResult(
       FROM_HERE,
       {base::MayBlock(), base::TaskShutdownBehavior::SKIP_ON_SHUTDOWN},
-      base::BindOnce(&RemoveDirectory,
-                     DemoSession::GetPreInstalledDemoResourcesPath()),
+      base::BindOnce(&RemoveDirectory, DemoResources::GetPreInstalledPath()),
       base::BindOnce(&DemoModeResourcesRemover::OnRemovalDone,
                      weak_ptr_factory_.GetWeakPtr()));
 }

@@ -189,7 +189,8 @@ bool ApplyProxyConfigToProxyInfo(const net::ProxyConfig& proxy_config,
     return false;
   proxy_config.proxy_rules().Apply(url, data_reduction_proxy_info);
   data_reduction_proxy_info->DeprioritizeBadProxies(proxy_retry_info);
-  return !data_reduction_proxy_info->proxy_server().is_direct();
+  return !data_reduction_proxy_info->is_empty() &&
+         !data_reduction_proxy_info->proxy_server().is_direct();
 }
 
 int64_t CalculateOCLFromOFCL(const net::URLRequest& request) {
@@ -271,23 +272,6 @@ int64_t EstimateOriginalReceivedBytes(const net::URLRequest& request,
          EstimateOriginalBodySize(request, lofi_decider);
 }
 
-ProxyScheme ConvertNetProxySchemeToProxyScheme(
-    net::ProxyServer::Scheme scheme) {
-  switch (scheme) {
-    case net::ProxyServer::SCHEME_HTTP:
-      return PROXY_SCHEME_HTTP;
-    case net::ProxyServer::SCHEME_HTTPS:
-      return PROXY_SCHEME_HTTPS;
-    case net::ProxyServer::SCHEME_QUIC:
-      return PROXY_SCHEME_QUIC;
-    case net::ProxyServer::SCHEME_DIRECT:
-      return PROXY_SCHEME_DIRECT;
-    default:
-      NOTREACHED() << scheme;
-      return PROXY_SCHEME_UNKNOWN;
-  }
-}
-
 const char* GetSiteBreakdownOtherHostName() {
   return kOtherHostName;
 }
@@ -340,20 +324,6 @@ PageloadMetrics_ConnectionType ProtoConnectionTypeFromConnectionType(
   }
 }
 
-RequestInfo_Protocol ProtoRequestInfoProtocolFromRequestInfoProtocol(
-    DataReductionProxyData::RequestInfo::Protocol protocol) {
-  switch (protocol) {
-    case DataReductionProxyData::RequestInfo::Protocol::HTTP:
-      return RequestInfo_Protocol_HTTP;
-    case DataReductionProxyData::RequestInfo::Protocol::HTTPS:
-      return RequestInfo_Protocol_HTTPS;
-    case DataReductionProxyData::RequestInfo::Protocol::QUIC:
-      return RequestInfo_Protocol_QUIC;
-    case DataReductionProxyData::RequestInfo::Protocol::UNKNOWN:
-      return RequestInfo_Protocol_UNKNOWN;
-  }
-}
-
 net::ProxyServer::Scheme SchemeFromProxyScheme(
     ProxyServer_ProxyScheme proxy_scheme) {
   switch (proxy_scheme) {
@@ -374,6 +344,25 @@ ProxyServer_ProxyScheme ProxySchemeFromScheme(net::ProxyServer::Scheme scheme) {
       return ProxyServer_ProxyScheme_HTTPS;
     default:
       return ProxyServer_ProxyScheme_UNSPECIFIED;
+  }
+}
+
+HTTPSLitePagePreviewInfo_Status
+ProtoLitePageRedirectStatusFromLitePageRedirectStatus(
+    previews::ServerLitePageStatus status) {
+  switch (status) {
+    case previews::ServerLitePageStatus::kUnknown:
+      return HTTPSLitePagePreviewInfo_Status_UNKNOWN;
+    case previews::ServerLitePageStatus::kSuccess:
+      return HTTPSLitePagePreviewInfo_Status_SUCCESS;
+    case previews::ServerLitePageStatus::kBypass:
+      return HTTPSLitePagePreviewInfo_Status_BYPASS;
+    case previews::ServerLitePageStatus::kRedirect:
+      return HTTPSLitePagePreviewInfo_Status_REDIRECT;
+    case previews::ServerLitePageStatus::kFailure:
+      return HTTPSLitePagePreviewInfo_Status_FAILURE;
+    case previews::ServerLitePageStatus::kControl:
+      return HTTPSLitePagePreviewInfo_Status_CONTROL;
   }
 }
 

@@ -215,8 +215,9 @@ if (is_android || is_chromeos) {
     android_sdk_tools_bundle_aapt2 =
         "//third_party/android_build_tools/aapt2/aapt2"
 
-    # Path to r8.jar. If specified, will be used instead of ProGuard for optimization.
-    experimental_r8_path = ""
+    # Use r8 for Java optimization rather than ProGuard.
+    # This will evenutally be the default. https://crbug.com/872904
+    experimental_use_r8 = false
   }
 
   # We need a second declare_args block to make sure we are using the overridden

@@ -19,6 +19,7 @@ namespace blink {
 class BodyStreamBuffer;
 class ExceptionState;
 class ExecutionContext;
+class ReadableStream;
 class ScriptState;
 
 // This class represents Body mix-in defined in the fetch spec
@@ -45,7 +46,7 @@ class CORE_EXPORT Body : public ScriptWrappable,
   ScriptPromise formData(ScriptState*, ExceptionState&);
   ScriptPromise json(ScriptState*, ExceptionState&);
   ScriptPromise text(ScriptState*, ExceptionState&);
-  ScriptValue body(ScriptState*);
+  ReadableStream* body();
   virtual BodyStreamBuffer* BodyBuffer() = 0;
   virtual const BodyStreamBuffer* BodyBuffer() const = 0;
 
@@ -74,7 +75,7 @@ class CORE_EXPORT Body : public ScriptWrappable,
  protected:
   // A version of IsBodyUsed() which catches exceptions and returns
   // false. Should never be used outside DCHECK().
-  virtual bool IsBodyUsedForDCheck();
+  virtual bool IsBodyUsedForDCheck(ExceptionState& exception_state);
 
  private:
   // TODO(e_hakkinen): Fix |MimeType()| to always contain parameters and

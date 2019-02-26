@@ -9,12 +9,16 @@
 #include "ash/session/session_controller.h"
 #include "ash/session/test_session_controller_client.h"
 #include "ash/shell.h"
+#include "ash/system/session/logout_confirmation_controller.h"
 #include "ash/system/status_area_widget.h"
 #include "ash/test/ash_test_base.h"
 #include "ash/test/ash_test_helper.h"
 #include "ash/test_shell_delegate.h"
 #include "base/macros.h"
+#include "base/test/metrics/user_action_tester.h"
 #include "components/prefs/pref_service.h"
+#include "ui/events/base_event_utils.h"
+#include "ui/views/controls/button/md_text_button.h"
 
 namespace ash {
 namespace {
@@ -68,6 +72,67 @@ TEST_F(LogoutButtonTrayTest, Visibility) {
   // Resetting the pref hides the button.
   pref_service()->SetBoolean(prefs::kShowLogoutButtonInTray, false);
   EXPECT_FALSE(button->visible());
+}
+
+TEST_F(LogoutButtonTrayTest, ButtonPressed) {
+  constexpr char kUserEmail[] = "user1@test.com";
+  constexpr char kUserAction[] = "DemoMode.ExitFromShelf";
+
+  LogoutButtonTray* const tray = Shell::GetPrimaryRootWindowController()
+                                     ->GetStatusAreaWidget()
+                                     ->logout_button_tray_for_testing();
+  ASSERT_TRUE(tray);
+  views::MdTextButton* const button = tray->button_for_test();
+  SessionController* const session_controller =
+      Shell::Get()->session_controller();
+  TestSessionControllerClient* const session_client =
+      GetSessionControllerClient();
+  base::UserActionTester user_action_tester;
+  const ui::MouseEvent event(ui::ET_MOUSE_PRESSED, gfx::Point(), gfx::Point(),
+                             ui::EventTimeForNow(), 0, 0);
+  PrefService* const pref_service =
+      Shell::Get()->session_controller()->GetUserPrefServiceForUser(
+          AccountId::FromUserEmail(kUserEmail));
+
+  SimulateUserLogin(kUserEmail);
+  EXPECT_EQ(0, session_client->request_sign_out_count());
+  EXPECT_EQ(0, user_action_tester.GetActionCount(kUserAction));
+  EXPECT_EQ(0, Shell::Get()
+                   ->logout_confirmation_controller()
+                   ->confirm_logout_count_for_test());
+
+  // Sign out immediately when duration is zero.
+  pref_service->SetInteger(prefs::kLogoutDialogDurationMs, 0);
+  tray->ButtonPressed(button, event);
+  session_controller->FlushMojoForTest();
+  EXPECT_EQ(1, session_client->request_sign_out_count());
+  EXPECT_EQ(0, user_action_tester.GetActionCount(kUserAction));
+  EXPECT_EQ(0, Shell::Get()
+                   ->logout_confirmation_controller()
+                   ->confirm_logout_count_for_test());
+
+  // Call |LogoutConfirmationController::ConfirmLogout| when duration is
+  // non-zero.
+  pref_service->SetInteger(prefs::kLogoutDialogDurationMs, 1000);
+  tray->ButtonPressed(button, event);
+  session_controller->FlushMojoForTest();
+  EXPECT_EQ(1, session_client->request_sign_out_count());
+  EXPECT_EQ(0, user_action_tester.GetActionCount(kUserAction));
+  EXPECT_EQ(1, Shell::Get()
+                   ->logout_confirmation_controller()
+                   ->confirm_logout_count_for_test());
+
+  // Sign out immediately and record user action when duration is zero and it is
+  // demo session.
+  pref_service->SetInteger(prefs::kLogoutDialogDurationMs, 0);
+  session_client->SetIsDemoSession();
+  tray->ButtonPressed(button, event);
+  session_controller->FlushMojoForTest();
+  EXPECT_EQ(2, session_client->request_sign_out_count());
+  EXPECT_EQ(1, user_action_tester.GetActionCount(kUserAction));
+  EXPECT_EQ(1, Shell::Get()
+                   ->logout_confirmation_controller()
+                   ->confirm_logout_count_for_test());
 }
 
 }  // namespace

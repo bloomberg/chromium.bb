@@ -890,6 +890,10 @@ CancelCallback FakeDriveService::CopyResource(
   if (!last_modified.is_null()) {
     new_file->set_modified_date(last_modified);
     new_file->set_modified_by_me_date(last_modified);
+  } else {
+    auto now = base::Time::Now();
+    new_file->set_modified_date(now);
+    new_file->set_modified_by_me_date(now);
   }
 
   AddNewChangestamp(new_change, new_file->team_drive_id());
@@ -1225,10 +1229,14 @@ CancelCallback FakeDriveService::ResumeUpload(
   }
 
   std::string content_data;
-  if (!base::ReadFileToString(local_file_path, &content_data)) {
-    session->uploaded_size = end_position;
-    completion_callback.Run(DRIVE_FILE_ERROR, std::unique_ptr<FileResource>());
-    return CancelCallback();
+  {
+    base::ScopedAllowBlockingForTesting allow_io;
+    if (!base::ReadFileToString(local_file_path, &content_data)) {
+      session->uploaded_size = end_position;
+      completion_callback.Run(DRIVE_FILE_ERROR,
+                              std::unique_ptr<FileResource>());
+      return CancelCallback();
+    }
   }
   session->uploaded_size = end_position;
 

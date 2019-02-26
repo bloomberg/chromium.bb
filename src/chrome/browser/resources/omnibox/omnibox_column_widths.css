@@ -1,0 +1,65 @@
+/* Copyright 2018 The Chromium Authors. All rights reserved.
+ * Use of this source code is governed by a BSD-style license that can be
+ * found in the LICENSE file. */
+
+.column-provider-name {
+  width: 100%;
+}
+
+.column-type {
+  width: 160%;
+}
+
+.column-relevance {
+  width: 100%;
+}
+
+.column-contents {
+  width: 200%;
+}
+
+.column-description {
+  width: 280%;
+}
+
+.column-destination-url {
+  width: 220%;
+}
+
+.column-fill-into-edit {
+  width: 180%;
+}
+
+.column-inline-autocompletion {
+  width: 180%;
+}
+
+.column-transition {
+  width: 60px;
+}
+
+.column-associated-keyword {
+  width: 120%;
+}
+
+.column-keyword {
+  width: 120%;
+}
+
+.column-additional-info {
+  width: 240%;
+}
+
+.column-additional-properties {
+  width: 240%;
+}
+
+.column-allowed-to-be-default-match,
+.column-starred,
+.column-has-tab-match,
+.column-deletable,
+.column-from-previous,
+.column-provider-done,
+.column-duplicates {
+  width: 18px;
+}

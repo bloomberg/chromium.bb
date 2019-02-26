@@ -39,6 +39,8 @@ class HTMLOptionsCollection final : public HTMLCollection {
  public:
   static HTMLOptionsCollection* Create(ContainerNode&, CollectionType);
 
+  explicit HTMLOptionsCollection(ContainerNode&);
+
   HTMLOptionElement* item(unsigned offset) const {
     return ToHTMLOptionElement(HTMLCollection::item(offset));
   }
@@ -57,8 +59,6 @@ class HTMLOptionsCollection final : public HTMLCollection {
   bool ElementMatches(const HTMLElement&) const;
 
  private:
-  explicit HTMLOptionsCollection(ContainerNode&);
-
   void SupportedPropertyNames(Vector<String>& names) override;
 };
 

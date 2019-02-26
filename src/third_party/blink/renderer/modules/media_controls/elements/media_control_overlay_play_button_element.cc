@@ -39,7 +39,7 @@ MediaControlOverlayPlayButtonElement::MediaControlOverlayPlayButtonElement(
     : MediaControlInputElement(media_controls, kMediaPlayButton),
       internal_button_(nullptr) {
   EnsureUserAgentShadowRoot();
-  setType(InputTypeNames::button);
+  setType(input_type_names::kButton);
   SetShadowPseudoId(AtomicString("-webkit-media-controls-overlay-play-button"));
 
   if (MediaControlsImpl::IsModern()) {
@@ -76,8 +76,7 @@ void MediaControlOverlayPlayButtonElement::MaybePlayPause() {
   // state. This allows potential recovery for transient network and decoder
   // resource issues.
   const String& url = MediaElement().currentSrc().GetString();
-  if (MediaElement().error() && !HTMLMediaElement::IsMediaStreamURL(url) &&
-      !HTMLMediaSource::Lookup(url)) {
+  if (MediaElement().error() && !HTMLMediaSource::Lookup(url)) {
     MediaElement().load();
   }
 
@@ -92,7 +91,7 @@ void MediaControlOverlayPlayButtonElement::MaybePlayPause() {
 }
 
 void MediaControlOverlayPlayButtonElement::DefaultEventHandler(Event& event) {
-  if (event.type() == EventTypeNames::click) {
+  if (event.type() == event_type_names::kClick) {
     event.SetDefaultHandled();
     MaybePlayPause();
   }

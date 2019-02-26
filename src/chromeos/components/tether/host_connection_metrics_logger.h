@@ -11,7 +11,6 @@
 #include "base/gtest_prod_util.h"
 #include "base/macros.h"
 #include "chromeos/components/tether/active_host.h"
-#include "chromeos/components/tether/ble_connection_manager.h"
 
 namespace base {
 class Clock;
@@ -24,9 +23,7 @@ namespace tether {
 // Wrapper around metrics reporting for host connection results. Clients are
 // expected to report the result of a host connection attempt once it has
 // concluded.
-class HostConnectionMetricsLogger
-    : public BleConnectionManager::MetricsObserver,
-      public ActiveHost::Observer {
+class HostConnectionMetricsLogger : public ActiveHost::Observer {
  public:
   enum ConnectionToHostResult {
     CONNECTION_RESULT_PROVISIONING_FAILED,
@@ -49,15 +46,10 @@ class HostConnectionMetricsLogger
   virtual void RecordConnectionToHostResult(ConnectionToHostResult result,
                                             const std::string& device_id);
 
-  HostConnectionMetricsLogger(BleConnectionManager* connection_manager,
-                              ActiveHost* active_host);
+  HostConnectionMetricsLogger(ActiveHost* active_host);
   virtual ~HostConnectionMetricsLogger();
 
  protected:
-  // BleConnectionManager::MetricsObserver:
-  void OnAdvertisementReceived(const std::string& device_id,
-                               bool is_background_advertisement) override;
-
   // ActiveHost::Observer:
   void OnActiveHostChanged(
       const ActiveHost::ActiveHostChangeInfo& change_info) override;
@@ -201,11 +193,9 @@ class HostConnectionMetricsLogger
 
   void SetClockForTesting(base::Clock* test_clock);
 
-  BleConnectionManager* connection_manager_;
   ActiveHost* active_host_;
   base::Clock* clock_;
 
-  std::map<std::string, bool> device_id_to_received_background_advertisement_;
   base::Time connect_to_host_start_time_;
   std::string active_host_device_id_;
 

@@ -35,6 +35,7 @@ PageTimingMetricsSender::PageTimingMetricsSender(
       last_timing_(std::move(initial_timing)),
       metadata_(mojom::PageLoadMetadata::New()),
       new_features_(mojom::PageLoadFeatures::New()),
+      render_data_(),
       buffer_timer_delay_ms_(kBufferTimerDelayMillis) {
   page_resource_data_use_.emplace(
       std::piecewise_construct,
@@ -90,7 +91,14 @@ void PageTimingMetricsSender::DidObserveNewCssPropertyUsage(int css_property,
   }
 }
 
+void PageTimingMetricsSender::DidObserveLayoutJank(double jank_fraction) {
+  DCHECK(jank_fraction > 0);
+  render_data_.layout_jank_score += jank_fraction;
+  EnsureSendTimer();
+}
+
 void PageTimingMetricsSender::DidStartResponse(
+    const GURL& response_url,
     int resource_id,
     const network::ResourceResponseHead& response_head) {
   DCHECK(!base::ContainsKey(page_resource_data_use_, resource_id));
@@ -98,7 +106,8 @@ void PageTimingMetricsSender::DidStartResponse(
   auto resource_it = page_resource_data_use_.emplace(
       std::piecewise_construct, std::forward_as_tuple(resource_id),
       std::forward_as_tuple(std::make_unique<PageResourceDataUse>()));
-  resource_it.first->second->DidStartResponse(resource_id, response_head);
+  resource_it.first->second->DidStartResponse(response_url, resource_id,
+                                              response_head);
 }
 
 void PageTimingMetricsSender::DidReceiveTransferSizeUpdate(
@@ -200,7 +209,7 @@ void PageTimingMetricsSender::SendNow() {
     }
   }
   sender_->SendTiming(last_timing_, metadata_, std::move(new_features_),
-                      std::move(resources));
+                      std::move(resources), render_data_);
   new_features_ = mojom::PageLoadFeatures::New();
   modified_resources_.clear();
 }

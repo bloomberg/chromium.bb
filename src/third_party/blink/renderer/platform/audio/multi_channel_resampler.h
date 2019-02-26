@@ -49,7 +49,7 @@ class PLATFORM_EXPORT MultiChannelResampler {
   // Process given AudioSourceProvider for streaming applications.
   void Process(AudioSourceProvider*,
                AudioBus* destination,
-               size_t frames_to_process);
+               uint32_t frames_to_process);
 
  private:
   // FIXME: the mac port can have a more highly optimized implementation based

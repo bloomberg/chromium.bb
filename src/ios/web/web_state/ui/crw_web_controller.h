@@ -91,11 +91,6 @@ class WebStateImpl;
 // Returns the x, y offset the content has been scrolled.
 @property(nonatomic, readonly) CGPoint scrollPosition;
 
-// YES if JavaScript dialogs and window open requests should be suppressed.
-// Default is NO. When dialog is suppressed
-// |WebStateObserver::DidSuppressDialog| will be called.
-@property(nonatomic, assign) BOOL shouldSuppressDialogs;
-
 // YES if the web process backing WebView is believed to currently be crashed.
 @property(nonatomic, assign, getter=isWebProcessCrashed) BOOL webProcessCrashed;
 
@@ -153,8 +148,11 @@ class WebStateImpl;
 // appropriate, as this method won't display any error to the user.
 - (GURL)currentURLWithTrustLevel:(web::URLVerificationTrustLevel*)trustLevel;
 
-// Methods for navigation and properties to interrogate state.
-- (void)reload;
+// Reloads web view. |isRendererInitiated| is YES for renderer-initiated
+// navigation. |isRendererInitiated| is NO for browser-initiated navigation.
+- (void)reloadWithRendererInitiatedNavigation:(BOOL)isRendererInitiated;
+
+// Stops web view loading.
 - (void)stopLoading;
 
 // Loads the URL indicated by current session state.
@@ -184,10 +182,6 @@ class WebStateImpl;
 // Records the state (scroll position, form values, whatever can be harvested)
 // from the current page into the current session entry.
 - (void)recordStateInHistory;
-// Restores the state for this page from session history.
-// TODO(stuartmorgan): This is public only temporarily; once refactoring is
-// complete it will be handled internally.
-- (void)restoreStateFromHistory;
 
 // Notifies the CRWWebController that it has been shown.
 - (void)wasShown;
@@ -212,8 +206,9 @@ class WebStateImpl;
             (web::NavigationInitiationType)type
                                           hasUserGesture:(BOOL)hasUserGesture;
 
-// Takes snapshot of web view with |rect|. |completion| is always called, but
-// |snapshot| may be nil. Prior to iOS 11, |completion| is called with a nil
+// Takes snapshot of web view with |rect|. |rect| should be in self.view's
+// coordinate system.  |completion| is always called, but |snapshot| may be nil.
+// Prior to iOS 11, |completion| is called with a nil
 // snapshot.
 - (void)takeSnapshotWithRect:(CGRect)rect
                   completion:(void (^)(UIImage* snapshot))completion;

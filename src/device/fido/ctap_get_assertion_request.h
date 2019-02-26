@@ -7,6 +7,7 @@
 
 #include <stdint.h>
 
+#include <array>
 #include <string>
 #include <vector>
 
@@ -14,6 +15,7 @@
 #include "base/containers/span.h"
 #include "base/macros.h"
 #include "base/optional.h"
+#include "crypto/sha2.h"
 #include "device/fido/cable/cable_discovery_data.h"
 #include "device/fido/fido_constants.h"
 #include "device/fido/public_key_credential_descriptor.h"
@@ -25,9 +27,9 @@ namespace device {
 // https://fidoalliance.org/specs/fido-v2.0-rd-20161004/fido-client-to-authenticator-protocol-v2.0-rd-20161004.html#authenticatorgetassertion
 class COMPONENT_EXPORT(DEVICE_FIDO) CtapGetAssertionRequest {
  public:
-  CtapGetAssertionRequest(
-      std::string rp_id,
-      base::span<const uint8_t, kClientDataHashLength> client_data_hash);
+  using ClientDataHash = std::array<uint8_t, kClientDataHashLength>;
+
+  CtapGetAssertionRequest(std::string rp_id, std::string client_data_json);
   CtapGetAssertionRequest(const CtapGetAssertionRequest& that);
   CtapGetAssertionRequest(CtapGetAssertionRequest&& that);
   CtapGetAssertionRequest& operator=(const CtapGetAssertionRequest& other);
@@ -48,9 +50,7 @@ class COMPONENT_EXPORT(DEVICE_FIDO) CtapGetAssertionRequest {
   CtapGetAssertionRequest& SetPinProtocol(uint8_t pin_protocol);
   CtapGetAssertionRequest& SetCableExtension(
       std::vector<CableDiscoveryData> cable_extension);
-  CtapGetAssertionRequest& SetAlternativeApplicationParameter(
-      base::span<const uint8_t, kRpIdHashLength>
-          alternative_application_parameter);
+  CtapGetAssertionRequest& SetAppId(std::string app_id);
 
   // Return true if the given RP ID hash from a response is valid for this
   // request.
@@ -58,6 +58,7 @@ class COMPONENT_EXPORT(DEVICE_FIDO) CtapGetAssertionRequest {
       const std::array<uint8_t, kRpIdHashLength>& response_rp_id_hash);
 
   const std::string& rp_id() const { return rp_id_; }
+  const std::string& client_data_json() const { return client_data_json_; }
   const std::array<uint8_t, kClientDataHashLength>& client_data_hash() const {
     return client_data_hash_;
   }
@@ -85,9 +86,16 @@ class COMPONENT_EXPORT(DEVICE_FIDO) CtapGetAssertionRequest {
   alternative_application_parameter() const {
     return alternative_application_parameter_;
   }
+  const base::Optional<std::string>& app_id() const { return app_id_; }
+
+  bool is_incognito_mode() const { return is_incognito_mode_; }
+  void set_is_incognito_mode(bool is_incognito_mode) {
+    is_incognito_mode_ = is_incognito_mode;
+  }
 
  private:
   std::string rp_id_;
+  std::string client_data_json_;
   std::array<uint8_t, kClientDataHashLength> client_data_hash_;
   UserVerificationRequirement user_verification_ =
       UserVerificationRequirement::kPreferred;
@@ -97,13 +105,12 @@ class COMPONENT_EXPORT(DEVICE_FIDO) CtapGetAssertionRequest {
   base::Optional<std::vector<uint8_t>> pin_auth_;
   base::Optional<uint8_t> pin_protocol_;
   base::Optional<std::vector<CableDiscoveryData>> cable_extension_;
-  base::Optional<std::array<uint8_t, kRpIdHashLength>>
+  base::Optional<std::string> app_id_;
+  base::Optional<std::array<uint8_t, crypto::kSHA256Length>>
       alternative_application_parameter_;
-};
 
-COMPONENT_EXPORT(DEVICE_FIDO)
-base::Optional<CtapGetAssertionRequest> ParseCtapGetAssertionRequest(
-    base::span<const uint8_t> request_bytes);
+  bool is_incognito_mode_ = false;
+};
 
 }  // namespace device
 

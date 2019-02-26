@@ -27,7 +27,7 @@
 #include "third_party/blink/public/common/page/launching_process_state.h"
 #include "third_party/blink/public/platform/web_mouse_wheel_event.h"
 #include "third_party/blink/public/platform/web_touch_event.h"
-#include "third_party/blink/renderer/platform/scheduler/child/features.h"
+#include "third_party/blink/renderer/platform/scheduler/common/features.h"
 #include "third_party/blink/renderer/platform/scheduler/common/throttling/budget_pool.h"
 #include "third_party/blink/renderer/platform/scheduler/main_thread/auto_advancing_virtual_time_domain.h"
 #include "third_party/blink/renderer/platform/scheduler/main_thread/frame_scheduler_impl.h"
@@ -2258,7 +2258,8 @@ class MainThreadSchedulerImplWithMessageLoopTest
     clock_.Advance(base::TimeDelta::FromMilliseconds(5));
     Initialize(std::make_unique<MainThreadSchedulerImplForTest>(
         base::sequence_manager::SequenceManagerForTest::Create(
-            message_loop_.get(), message_loop_->task_runner(), &clock_),
+            message_loop_->GetMessageLoopBase(), message_loop_->task_runner(),
+            &clock_),
         base::nullopt));
   }
 

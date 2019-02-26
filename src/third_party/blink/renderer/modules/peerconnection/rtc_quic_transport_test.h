@@ -33,6 +33,16 @@ class RTCQuicTransportTest : public RTCIceTransportTest {
       RTCIceTransport* ice_transport,
       const HeapVector<Member<RTCCertificate>>& certificates,
       std::unique_ptr<MockP2PQuicTransportFactory> mock_factory);
+
+  // Construct a new RTCQuicTransport and RTCIceTransport and call start() on
+  // both objects.
+  RTCQuicTransport* CreateConnectedQuicTransport(
+      V8TestingScope& scope,
+      P2PQuicTransport::Delegate** delegate_out = nullptr);
+  RTCQuicTransport* CreateConnectedQuicTransport(
+      V8TestingScope& scope,
+      std::unique_ptr<MockP2PQuicTransport> mock_transport,
+      P2PQuicTransport::Delegate** delegate_out = nullptr);
 };
 
 }  // namespace blink

@@ -93,10 +93,10 @@ TEST_F(FetchResponseDataTest, ToWebServiceWorkerBasicType) {
   CheckHeaders(web_response);
 }
 
-TEST_F(FetchResponseDataTest, CORSFilter) {
+TEST_F(FetchResponseDataTest, CorsFilter) {
   FetchResponseData* internal_response = CreateInternalResponse();
   FetchResponseData* cors_response_data =
-      internal_response->CreateCORSFilteredResponse(WebHTTPHeaderSet());
+      internal_response->CreateCorsFilteredResponse(WebHTTPHeaderSet());
 
   EXPECT_EQ(internal_response, cors_response_data->InternalResponse());
 
@@ -111,13 +111,13 @@ TEST_F(FetchResponseDataTest, CORSFilter) {
 }
 
 TEST_F(FetchResponseDataTest,
-       CORSFilterOnResponseWithAccessControlExposeHeaders) {
+       CorsFilterOnResponseWithAccessControlExposeHeaders) {
   FetchResponseData* internal_response = CreateInternalResponse();
   internal_response->HeaderList()->Append("access-control-expose-headers",
                                           "set-cookie, bar");
 
   FetchResponseData* cors_response_data =
-      internal_response->CreateCORSFilteredResponse({"set-cookie", "bar"});
+      internal_response->CreateCorsFilteredResponse({"set-cookie", "bar"});
 
   EXPECT_EQ(internal_response, cors_response_data->InternalResponse());
 
@@ -128,10 +128,10 @@ TEST_F(FetchResponseDataTest,
   EXPECT_EQ("bar", bar_value);
 }
 
-TEST_F(FetchResponseDataTest, CORSFilterWithEmptyHeaderSet) {
+TEST_F(FetchResponseDataTest, CorsFilterWithEmptyHeaderSet) {
   FetchResponseData* internal_response = CreateInternalResponse();
   FetchResponseData* cors_response_data =
-      internal_response->CreateCORSFilteredResponse(WebHTTPHeaderSet());
+      internal_response->CreateCorsFilteredResponse(WebHTTPHeaderSet());
 
   EXPECT_EQ(internal_response, cors_response_data->InternalResponse());
 
@@ -146,13 +146,13 @@ TEST_F(FetchResponseDataTest, CORSFilterWithEmptyHeaderSet) {
 }
 
 TEST_F(FetchResponseDataTest,
-       CORSFilterWithEmptyHeaderSetOnResponseWithAccessControlExposeHeaders) {
+       CorsFilterWithEmptyHeaderSetOnResponseWithAccessControlExposeHeaders) {
   FetchResponseData* internal_response = CreateInternalResponse();
   internal_response->HeaderList()->Append("access-control-expose-headers",
                                           "set-cookie, bar");
 
   FetchResponseData* cors_response_data =
-      internal_response->CreateCORSFilteredResponse(WebHTTPHeaderSet());
+      internal_response->CreateCorsFilteredResponse(WebHTTPHeaderSet());
 
   EXPECT_EQ(internal_response, cors_response_data->InternalResponse());
 
@@ -166,14 +166,14 @@ TEST_F(FetchResponseDataTest,
   EXPECT_EQ("no-cache", cache_control_value);
 }
 
-TEST_F(FetchResponseDataTest, CORSFilterWithExplicitHeaderSet) {
+TEST_F(FetchResponseDataTest, CorsFilterWithExplicitHeaderSet) {
   FetchResponseData* internal_response = CreateInternalResponse();
   WebHTTPHeaderSet exposed_headers;
   exposed_headers.insert("set-cookie");
   exposed_headers.insert("bar");
 
   FetchResponseData* cors_response_data =
-      internal_response->CreateCORSFilteredResponse(exposed_headers);
+      internal_response->CreateCorsFilteredResponse(exposed_headers);
 
   EXPECT_EQ(internal_response, cors_response_data->InternalResponse());
 
@@ -184,14 +184,14 @@ TEST_F(FetchResponseDataTest, CORSFilterWithExplicitHeaderSet) {
   EXPECT_EQ("bar", bar_value);
 }
 
-TEST_F(FetchResponseDataTest, ToWebServiceWorkerCORSType) {
+TEST_F(FetchResponseDataTest, ToWebServiceWorkerCorsType) {
   WebServiceWorkerResponse web_response;
   FetchResponseData* internal_response = CreateInternalResponse();
   FetchResponseData* cors_response_data =
-      internal_response->CreateCORSFilteredResponse(WebHTTPHeaderSet());
+      internal_response->CreateCorsFilteredResponse(WebHTTPHeaderSet());
 
   cors_response_data->PopulateWebServiceWorkerResponse(web_response);
-  EXPECT_EQ(network::mojom::FetchResponseType::kCORS,
+  EXPECT_EQ(network::mojom::FetchResponseType::kCors,
             web_response.ResponseType());
   CheckHeaders(web_response);
 }

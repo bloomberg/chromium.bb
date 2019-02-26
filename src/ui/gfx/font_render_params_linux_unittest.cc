@@ -15,7 +15,7 @@
 #include "build/build_config.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/gfx/font.h"
-#include "ui/gfx/linux_font_delegate.h"
+#include "ui/gfx/skia_font_delegate.h"
 
 namespace gfx {
 
@@ -33,9 +33,9 @@ const char kFontconfigMatchFontHeader[] = "  <match target=\"font\">\n";
 const char kFontconfigMatchPatternHeader[] = "  <match target=\"pattern\">\n";
 const char kFontconfigMatchFooter[] = "  </match>\n";
 
-// Implementation of LinuxFontDelegate that returns a canned FontRenderParams
+// Implementation of SkiaFontDelegate that returns a canned FontRenderParams
 // struct. This is used to isolate tests from the system's local configuration.
-class TestFontDelegate : public LinuxFontDelegate {
+class TestFontDelegate : public SkiaFontDelegate {
  public:
   TestFontDelegate() {}
   ~TestFontDelegate() override {}
@@ -130,14 +130,14 @@ class FontRenderParamsTest : public testing::Test {
  public:
   FontRenderParamsTest() {
     CHECK(temp_dir_.CreateUniqueTempDir());
-    original_font_delegate_ = LinuxFontDelegate::instance();
-    LinuxFontDelegate::SetInstance(&test_font_delegate_);
+    original_font_delegate_ = SkiaFontDelegate::instance();
+    SkiaFontDelegate::SetInstance(&test_font_delegate_);
     ClearFontRenderParamsCacheForTest();
   }
 
   ~FontRenderParamsTest() override {
-    LinuxFontDelegate::SetInstance(
-        const_cast<LinuxFontDelegate*>(original_font_delegate_));
+    SkiaFontDelegate::SetInstance(
+        const_cast<SkiaFontDelegate*>(original_font_delegate_));
   }
 
   void SetUp() override {
@@ -153,7 +153,7 @@ class FontRenderParamsTest : public testing::Test {
 
  protected:
   base::ScopedTempDir temp_dir_;
-  const LinuxFontDelegate* original_font_delegate_;
+  const SkiaFontDelegate* original_font_delegate_;
   TestFontDelegate test_font_delegate_;
 
  private:
@@ -394,7 +394,7 @@ TEST_F(FontRenderParamsTest, ForceSubpixelPositioning) {
 }
 
 TEST_F(FontRenderParamsTest, OnlySetConfiguredValues) {
-  // Configure the LinuxFontDelegate (which queries GtkSettings on desktop
+  // Configure the SkiaFontDelegate (which queries GtkSettings on desktop
   // Linux) to request subpixel rendering.
   FontRenderParams system_params;
   system_params.subpixel_rendering = FontRenderParams::SUBPIXEL_RENDERING_RGB;

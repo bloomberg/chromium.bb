@@ -150,12 +150,12 @@ Polymer({
       return;
 
     /** @type {!CrOnc.ProxySettings} */
-    var proxy = this.createDefaultProxySettings_();
+    const proxy = this.createDefaultProxySettings_();
 
     // For shared networks with unmanaged proxy settings, ignore any saved
     // proxy settings (use the default values).
     if (this.isShared_()) {
-      var property = this.getProxySettingsTypeProperty_();
+      const property = this.getProxySettingsTypeProperty_();
       if (!this.isControlled(property) && !this.useSharedProxies) {
         this.setProxyAsync_(proxy);
         return;  // Proxy settings will be ignored.
@@ -163,30 +163,29 @@ Polymer({
     }
 
     /** @type {!chrome.networkingPrivate.ManagedProxySettings|undefined} */
-    var proxySettings = this.networkProperties.ProxySettings;
+    const proxySettings = this.networkProperties.ProxySettings;
     if (proxySettings) {
       proxy.Type = /** @type {!CrOnc.ProxySettingsType} */ (
           CrOnc.getActiveValue(proxySettings.Type));
       if (proxySettings.Manual) {
-        proxy.Manual.HTTPProxy = /** @type {!CrOnc.ProxyLocation|undefined} */ (
-                                     CrOnc.getSimpleActiveProperties(
-                                         proxySettings.Manual.HTTPProxy)) ||
+        proxy.Manual.HTTPProxy =
+            /** @type {!CrOnc.ProxyLocation|undefined} */ (
+                CrOnc.getActiveProperties(proxySettings.Manual.HTTPProxy)) ||
             {Host: '', Port: 80};
         proxy.Manual.SecureHTTPProxy =
             /** @type {!CrOnc.ProxyLocation|undefined} */ (
-                CrOnc.getSimpleActiveProperties(
+                CrOnc.getActiveProperties(
                     proxySettings.Manual.SecureHTTPProxy)) ||
             {Host: '', Port: 80};
         proxy.Manual.FTPProxy =
             /** @type {!CrOnc.ProxyLocation|undefined} */ (
-                CrOnc.getSimpleActiveProperties(
-                    proxySettings.Manual.FTPProxy)) ||
+                CrOnc.getActiveProperties(proxySettings.Manual.FTPProxy)) ||
             {Host: '', Port: 80};
         proxy.Manual.SOCKS =
             /** @type {!CrOnc.ProxyLocation|undefined} */ (
-                CrOnc.getSimpleActiveProperties(proxySettings.Manual.SOCKS)) ||
+                CrOnc.getActiveProperties(proxySettings.Manual.SOCKS)) ||
             {Host: '', Port: 80};
-        var jsonHttp = proxy.Manual.HTTPProxy;
+        const jsonHttp = proxy.Manual.HTTPProxy;
         this.useSameProxy_ =
             (CrOnc.proxyMatches(jsonHttp, proxy.Manual.SecureHTTPProxy) &&
              CrOnc.proxyMatches(jsonHttp, proxy.Manual.FTPProxy) &&
@@ -207,7 +206,7 @@ Polymer({
     proxy.Manual = proxy.Manual || this.savedManual_;
 
     // Set the Web Proxy Auto Discovery URL.
-    var ipv4 =
+    const ipv4 =
         CrOnc.getIPConfigForType(this.networkProperties, CrOnc.IPType.IPV4);
     this.WPAD_ = (ipv4 && ipv4.WebProxyAutoDiscoveryUrl) ||
         this.i18n('networkProxyWpadNone');
@@ -255,11 +254,11 @@ Polymer({
    * @private
    */
   sendProxyChange_: function() {
-    var proxy =
+    const proxy =
         /** @type {!CrOnc.ProxySettings} */ (Object.assign({}, this.proxy_));
     if (proxy.Type == CrOnc.ProxySettingsType.MANUAL) {
-      var manual = proxy.Manual;
-      var defaultProxy = manual.HTTPProxy || {Host: '', Port: 80};
+      const manual = proxy.Manual;
+      const defaultProxy = manual.HTTPProxy || {Host: '', Port: 80};
       if (this.useSameProxy_) {
         proxy.Manual.SecureHTTPProxy = /** @type {!CrOnc.ProxyLocation} */ (
             Object.assign({}, defaultProxy));
@@ -294,12 +293,12 @@ Polymer({
    * @private
    */
   onTypeChange_: function(event) {
-    var target = /** @type {!HTMLSelectElement} */ (event.target);
-    var type = /** @type {chrome.networkingPrivate.ProxySettingsType} */ (
+    const target = /** @type {!HTMLSelectElement} */ (event.target);
+    const type = /** @type {chrome.networkingPrivate.ProxySettingsType} */ (
         target.value);
     this.set('proxy_.Type', type);
-    var proxyTypeChangeIsReady;
-    var elementToFocus;
+    let proxyTypeChangeIsReady;
+    let elementToFocus;
     switch (type) {
       case CrOnc.ProxySettingsType.DIRECT:
       case CrOnc.ProxySettingsType.WPAD:
@@ -347,7 +346,7 @@ Polymer({
 
   /** @private */
   onAddProxyExclusionTap_: function() {
-    var value = this.$.proxyExclusion.value;
+    const value = this.$.proxyExclusion.value;
     if (!value)
       return;
     this.push('proxy_.ExcludeDomains', value);
@@ -415,7 +414,7 @@ Polymer({
       return false;
     if (!this.networkProperties.hasOwnProperty('ProxySettings'))
       return true;  // No proxy settings defined, so not enforced.
-    var property = /** @type {!CrOnc.ManagedProperty|undefined} */ (
+    const property = /** @type {!CrOnc.ManagedProperty|undefined} */ (
         this.get('ProxySettings.' + propertyName, this.networkProperties));
     if (!property)
       return true;
@@ -448,8 +447,8 @@ Polymer({
   isSaveManualProxyEnabled_: function() {
     if (!this.proxyIsUserModified_)
       return false;
-    var manual = this.proxy_.Manual;
-    var httpHost = this.get('HTTPProxy.Host', manual);
+    const manual = this.proxy_.Manual;
+    const httpHost = this.get('HTTPProxy.Host', manual);
     if (this.useSameProxy_)
       return !!httpHost;
     return !!httpHost || !!this.get('SecureHTTPProxy.Host', manual) ||

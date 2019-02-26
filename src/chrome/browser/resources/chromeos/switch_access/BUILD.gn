@@ -3,6 +3,7 @@
 # found in the LICENSE file.
 
 import("//build/config/features.gni")
+import("//chrome/common/features.gni")
 import("//testing/test.gni")
 import("//chrome/test/base/js2gtest.gni")
 import("//chrome/browser/resources/chromeos/chromevox/run_jsbundler.gni")
@@ -31,12 +32,12 @@ run_jsbundler("switch_access_copied_files") {
     "../select_to_speak/closure_shim.js",
     "//third_party/chromevox/third_party/closure-library/closure/goog/base.js",
     "auto_scan_manager.js",
-    "automation_manager.js",
     "background.js",
     "commands.js",
     "context_menu_manager.js",
     "keyboard_handler.js",
     "message_handler.js",
+    "navigation_manager.js",
     "options.css",
     "options.html",
     "options.js",
@@ -55,23 +56,43 @@ run_jsbundler("switch_access_copied_files") {
   ]
 }
 
-test("switch_access_tests") {
+source_set("browser_tests") {
+  testonly = true
+  assert(enable_extensions)
+
   deps = [
-    ":switch_access_webuijs_tests",
-    "//chrome/test:browser_tests_runner",
+    ":switch_access_extjs_tests",
+  ]
+
+  data = [
+    "//chrome/browser/resources/chromeos/chromevox/",
+    "//chrome/browser/resources/chromeos/switch_access/",
+    "//chrome/third_party/mock4js/",
+    "//third_party/accessibility-audit/axs_testing.js",
+    "//third_party/chaijs/chai.js",
+    "//ui/webui/resources/js/cr.js",
   ]
 }
 
-js2gtest("switch_access_webuijs_tests") {
-  test_type = "webui"
+js2gtest("switch_access_extjs_tests") {
+  test_type = "extension"
   sources = [
-    "auto_scan_manager_unittest.gtestjs",
-    "switch_access_predicate_unittest.gtestjs",
+    "auto_scan_manager_test.extjs",
+    "switch_access_predicate_test.extjs",
   ]
-  extra_js_files = [
-    "auto_scan_manager.js",
-    "switch_access_predicate.js",
-    "test_support.js",
+  gen_include_files = [
+    "../chromevox/testing/callback_helper.js",
+    "switch_access_e2e_test_base.js",
+  ]
+
+  # The test base classes generate C++ code with these deps.
+  deps = [
+    "//ash",
+    "//base",
+    "//chrome/browser/chromeos",
+    "//chrome/common",
+    "//chromeos",
+    "//ui/keyboard",
   ]
   defines = [ "HAS_OUT_OF_PROC_TEST_RUNNER" ]
 }
@@ -120,12 +141,12 @@ manifest("switch_access_guest_manifest") {
 js_type_check("closure_compile") {
   deps = [
     ":auto_scan_manager",
-    ":automation_manager",
     ":background",
     ":commands",
     ":context_menu_manager",
     ":keyboard_handler",
     ":message_handler",
+    ":navigation_manager",
     ":options",
     ":prefs",
     ":switch_access_predicate",
@@ -144,7 +165,7 @@ js_library("auto_scan_manager") {
   ]
 }
 
-js_library("automation_manager") {
+js_library("navigation_manager") {
   deps = [
     ":switch_access_predicate",
     "../chromevox:constants",
@@ -203,10 +224,10 @@ js_library("prefs") {
 js_library("switch_access") {
   deps = [
     ":auto_scan_manager",
-    ":automation_manager",
     ":commands",
     ":keyboard_handler",
     ":message_handler",
+    ":navigation_manager",
     ":prefs",
   ]
   externs_list = [

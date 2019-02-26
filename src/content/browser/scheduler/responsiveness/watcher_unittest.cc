@@ -167,6 +167,22 @@ TEST_F(ResponsivenessWatcherTest, TaskNesting) {
   EXPECT_EQ(0, watcher_->NumTasksOnIOThread());
 }
 
+// Test that native events use execution time instead of queue + execution time.
+TEST_F(ResponsivenessWatcherTest, NativeEvents) {
+  base::TimeTicks start_time = base::TimeTicks::Now();
+
+  void* opaque_identifier = reinterpret_cast<void*>(0x1234);
+  watcher_->WillRunEventOnUIThread(opaque_identifier);
+  watcher_->DidRunEventOnUIThread(opaque_identifier);
+
+  ASSERT_EQ(1, watcher_->NumTasksOnUIThread());
+
+  // The queue time should be after |start_time|, since we actually measure
+  // execution time rather than queue time + execution time for native events.
+  EXPECT_GE(watcher_->QueueTimesUIThread()[0], start_time);
+  EXPECT_EQ(0, watcher_->NumTasksOnIOThread());
+}
+
 class ResponsivenessWatcherRealIOThreadTest : public testing::Test {
  public:
   ResponsivenessWatcherRealIOThreadTest()
@@ -200,13 +216,7 @@ class ResponsivenessWatcherRealIOThreadTest : public testing::Test {
   scoped_refptr<FakeWatcher> watcher_;
 };
 
-// Flaky on Linux TSAN. https://crbug.com/876561
-#if defined(OS_LINUX) && defined(THREAD_SANITIZER)
-#define MAYBE_MessageLoopObserver DISABLED_MessageLoopObserver
-#else
-#define MAYBE_MessageLoopObserver MessageLoopObserver
-#endif
-TEST_F(ResponsivenessWatcherRealIOThreadTest, MAYBE_MessageLoopObserver) {
+TEST_F(ResponsivenessWatcherRealIOThreadTest, MessageLoopObserver) {
   // Post a do-nothing task onto the UI thread.
   base::PostTaskWithTraits(FROM_HERE, {content::BrowserThread::UI},
                            base::BindOnce([]() {}));

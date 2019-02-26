@@ -21,7 +21,7 @@ import "services/viz/public/interfaces/compositing/surface_id.mojom";
 import "third_party/blink/public/mojom/blob/blob_url_store.mojom";
 import "third_party/blink/public/mojom/feature_policy/feature_policy.mojom";
 import "third_party/blink/public/mojom/frame/navigation_initiator.mojom";
-import "third_party/blink/public/platform/referrer.mojom";
+import "third_party/blink/public/mojom/referrer.mojom";
 import "third_party/blink/public/web/commit_result.mojom";
 import "third_party/blink/public/web/devtools_agent.mojom";
 import "third_party/blink/public/web/window_features.mojom";
@@ -369,6 +369,12 @@ interface FrameHost {
   // Notifies the browser that the current frame has either become or is no
   // longer fullscreen.
   FullscreenStateChanged(bool is_fullscreen);
+
+  // Notifies the browser of a new frame's crash ID. In the event of a renderer
+  // crash, this ID can be used by the browser to associate a crash report with
+  // this renderer.
+  // https://www.w3.org/TR/reporting/#crashreportbody-crashid
+  NotifyWebReportingCrashID(string crash_id);
 
   // Updates information to determine whether a user gesture should carryover to
   // future navigations. This is needed so navigations within a certain

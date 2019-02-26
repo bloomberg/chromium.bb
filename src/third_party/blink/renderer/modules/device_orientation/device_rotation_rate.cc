@@ -24,40 +24,44 @@
  */
 
 #include "third_party/blink/renderer/modules/device_orientation/device_rotation_rate.h"
+#include "third_party/blink/renderer/modules/device_orientation/device_rotation_rate_init.h"
 
 namespace blink {
 
-DeviceRotationRate::DeviceRotationRate(
-    DeviceMotionData::RotationRate* rotation_rate)
-    : rotation_rate_(rotation_rate) {}
+DeviceRotationRate* DeviceRotationRate::Create(double alpha,
+                                               double beta,
+                                               double gamma) {
+  return MakeGarbageCollected<DeviceRotationRate>(alpha, beta, gamma);
+}
 
-void DeviceRotationRate::Trace(blink::Visitor* visitor) {
-  visitor->Trace(rotation_rate_);
-  ScriptWrappable::Trace(visitor);
+DeviceRotationRate* DeviceRotationRate::Create(
+    const DeviceRotationRateInit* init) {
+  double alpha = init->hasAlpha() ? init->alpha() : NAN;
+  double beta = init->hasBeta() ? init->beta() : NAN;
+  double gamma = init->hasGamma() ? init->gamma() : NAN;
+  return DeviceRotationRate::Create(alpha, beta, gamma);
+}
+
+DeviceRotationRate::DeviceRotationRate(double alpha, double beta, double gamma)
+    : alpha_(alpha), beta_(beta), gamma_(gamma) {}
+
+bool DeviceRotationRate::HasRotationData() const {
+  return !std::isnan(alpha_) || !std::isnan(beta_) || !std::isnan(gamma_);
 }
 
 double DeviceRotationRate::alpha(bool& is_null) const {
-  if (rotation_rate_->CanProvideAlpha())
-    return rotation_rate_->Alpha();
-
-  is_null = true;
-  return 0;
+  is_null = std::isnan(alpha_);
+  return alpha_;
 }
 
 double DeviceRotationRate::beta(bool& is_null) const {
-  if (rotation_rate_->CanProvideBeta())
-    return rotation_rate_->Beta();
-
-  is_null = true;
-  return 0;
+  is_null = std::isnan(beta_);
+  return beta_;
 }
 
 double DeviceRotationRate::gamma(bool& is_null) const {
-  if (rotation_rate_->CanProvideGamma())
-    return rotation_rate_->Gamma();
-
-  is_null = true;
-  return 0;
+  is_null = std::isnan(gamma_);
+  return gamma_;
 }
 
 }  // namespace blink

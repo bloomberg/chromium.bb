@@ -3,8 +3,8 @@
 # found in the LICENSE file.
 
 # To create CIPD package run the following command.
-# cipd create --pkg-def cipd.yaml -tag version:3.2.0-alpha18-4804415-cr0
-package: chromium/third_party/android_tools_aapt2
+# cipd create --pkg-def cipd.yaml -tag version:3.3.0-beta01-5013011-cr0
+package: chromium/third_party/android_build_tools/aapt2
 description: Android SDK tool to build App Bundles
 data:
   - file: aapt2

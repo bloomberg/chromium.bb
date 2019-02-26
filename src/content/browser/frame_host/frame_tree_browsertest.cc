@@ -687,6 +687,36 @@ IN_PROC_BROWSER_TEST_F(FrameTreeBrowserTest, SubframeOpenerSetForNewWindow) {
   EXPECT_EQ(nullptr, popup_root->opener());
 }
 
+// Tests that the user activation bits get cleared when a same-site document is
+// installed in the frame.
+IN_PROC_BROWSER_TEST_F(FrameTreeBrowserTest,
+                       ClearUserActivationForNewDocument) {
+  GURL main_url(embedded_test_server()->GetURL("/frame_tree/top.html"));
+  EXPECT_TRUE(NavigateToURL(shell(), main_url));
+
+  // It is safe to obtain the root frame tree node here, as it doesn't change.
+  FrameTreeNode* root = static_cast<WebContentsImpl*>(shell()->web_contents())
+                            ->GetFrameTree()
+                            ->root();
+
+  EXPECT_FALSE(root->HasBeenActivated());
+  EXPECT_FALSE(root->HasTransientUserActivation());
+
+  // Set the user activation bits.
+  root->UpdateUserActivationState(
+      blink::UserActivationUpdateType::kNotifyActivation);
+  EXPECT_TRUE(root->HasBeenActivated());
+  EXPECT_TRUE(root->HasTransientUserActivation());
+
+  // Install a new same-site document to check the clearing of user activation
+  // bits.
+  GURL url(embedded_test_server()->GetURL("/title1.html"));
+  EXPECT_TRUE(NavigateToURL(shell(), url));
+
+  EXPECT_FALSE(root->HasBeenActivated());
+  EXPECT_FALSE(root->HasTransientUserActivation());
+}
+
 class CrossProcessFrameTreeBrowserTest : public ContentBrowserTest {
  public:
   CrossProcessFrameTreeBrowserTest() {}
@@ -839,6 +869,37 @@ IN_PROC_BROWSER_TEST_F(CrossProcessFrameTreeBrowserTest,
             popup_root->current_frame_host()->active_sandbox_flags());
 }
 
+// Tests that the user activation bits get cleared when a cross-site document is
+// installed in the frame.
+IN_PROC_BROWSER_TEST_F(CrossProcessFrameTreeBrowserTest,
+                       ClearUserActivationForNewDocument) {
+  GURL main_url(embedded_test_server()->GetURL("/frame_tree/top.html"));
+  EXPECT_TRUE(NavigateToURL(shell(), main_url));
+
+  // It is safe to obtain the root frame tree node here, as it doesn't change.
+  FrameTreeNode* root = static_cast<WebContentsImpl*>(shell()->web_contents())
+                            ->GetFrameTree()
+                            ->root();
+
+  EXPECT_FALSE(root->HasBeenActivated());
+  EXPECT_FALSE(root->HasTransientUserActivation());
+
+  // Set the user activation bits.
+  root->UpdateUserActivationState(
+      blink::UserActivationUpdateType::kNotifyActivation);
+  EXPECT_TRUE(root->HasBeenActivated());
+  EXPECT_TRUE(root->HasTransientUserActivation());
+
+  // Install a new cross-site document to check the clearing of user activation
+  // bits.
+  GURL cross_site_url(
+      embedded_test_server()->GetURL("foo.com", "/title2.html"));
+  EXPECT_TRUE(NavigateToURL(shell(), cross_site_url));
+
+  EXPECT_FALSE(root->HasBeenActivated());
+  EXPECT_FALSE(root->HasTransientUserActivation());
+}
+
 // FrameTreeBrowserTest variant where we isolate http://*.is, Iceland's top
 // level domain. This is an analogue to isolating extensions, which we can use
 // inside content_browsertests, where extensions don't exist. Iceland, like an
@@ -849,11 +910,15 @@ class IsolateIcelandFrameTreeBrowserTest : public ContentBrowserTest {
   IsolateIcelandFrameTreeBrowserTest() {}
 
   void SetUpCommandLine(base::CommandLine* command_line) override {
-    // blink suppresses navigations to blob URLs of origins different from the
+    // Blink suppresses navigations to blob URLs of origins different from the
     // frame initiating the navigation. We disable those checks for this test,
     // to test what happens in a compromise scenario.
     command_line->AppendSwitch(switches::kDisableWebSecurity);
-    command_line->AppendSwitchASCII(switches::kIsolateSitesForTesting, "*.is");
+
+    // ProcessSwitchForIsolatedBlob test below requires that one of URLs used in
+    // the test (blob:http://b.is:2932/) belongs to an isolated origin.
+    command_line->AppendSwitchASCII(switches::kIsolateOrigins,
+                                    "http://b.is:2932/");
   }
 
   void SetUpOnMainThread() override {
@@ -879,7 +944,7 @@ IN_PROC_BROWSER_TEST_F(IsolateIcelandFrameTreeBrowserTest,
 
   // The navigation targets an invalid blob url; that's intentional to trigger
   // an error response. The response should commit in a process dedicated to
-  // http://b.is.
+  // http://b.is:2932.
   EXPECT_EQ(
       "done",
       EvalJs(
@@ -896,7 +961,7 @@ IN_PROC_BROWSER_TEST_F(IsolateIcelandFrameTreeBrowserTest,
       " Site A ------------ proxies for B\n"
       "   +--Site B ------- proxies for A\n"
       "Where A = http://a.com/\n"
-      "      B = http://b.is/",
+      "      B = http://b.is:2932/",
       FrameTreeVisualizer().DepictFrameTree(root));
 }
 

@@ -58,7 +58,7 @@ void AndroidSmsPairingStateTrackerImpl::OnCookiesRetrieved(
   bool was_previously_paired = was_paired_on_last_update_;
   for (const auto& cookie : cookies) {
     if (cookie.Name() == kMessagesPairStateCookieName) {
-      PA_LOG(INFO) << "Cookie says Messages paired: " << cookie.Value();
+      PA_LOG(VERBOSE) << "Cookie says Messages paired: " << cookie.Value();
       was_paired_on_last_update_ = cookie.Value() == kPairedCookieValue;
       if (was_previously_paired != was_paired_on_last_update_)
         NotifyPairingStateChanged();

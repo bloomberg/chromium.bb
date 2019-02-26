@@ -8,6 +8,7 @@
 #include <stddef.h>
 
 #include <list>
+#include <map>
 #include <string>
 
 #include "base/gtest_prod_util.h"
@@ -118,7 +119,7 @@ class NET_EXPORT HttpAuthCache {
   // This also defines the worst-case lookup times (which grow linearly
   // with number of elements in the cache).
   enum { kMaxNumPathsPerRealmEntry = 10 };
-  enum { kMaxNumRealmEntries = 10 };
+  enum { kMaxNumRealmEntries = 20 };
 
   HttpAuthCache();
   ~HttpAuthCache();
@@ -203,17 +204,16 @@ class NET_EXPORT HttpAuthCache {
   void set_clock_for_testing(const base::Clock* clock) { clock_ = clock; }
 
  private:
-  typedef std::list<Entry> EntryList;
-  EntryList entries_;
+  using EntryMap = std::multimap<GURL, Entry>;
+  EntryMap entries_;
 
   const base::TickClock* tick_clock_ = base::DefaultTickClock::GetInstance();
   const base::Clock* clock_ = base::DefaultClock::GetInstance();
 
-  // Moves an entry towards the beginning of the entry list by one place, if it
-  // is not already at the beginning. This makes the more frequently accessed
-  // entries migrate towards the beginning of the list.
-  // Returns: the given entry, after possible move.
-  Entry* MoveEntryTowardsBeginning(EntryList::iterator entry_it);
+  EntryMap::iterator LookupEntryIt(const GURL& origin,
+                                   const std::string& realm,
+                                   HttpAuth::Scheme scheme);
+  void EvictLeastRecentlyUsedEntry();
 };
 
 // An authentication realm entry.

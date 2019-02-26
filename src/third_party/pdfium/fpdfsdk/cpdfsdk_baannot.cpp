@@ -50,9 +50,8 @@ CPDF_Dictionary* CPDFSDK_BAAnnot::GetAPDict() const {
 }
 
 void CPDFSDK_BAAnnot::SetRect(const CFX_FloatRect& rect) {
-  ASSERT(rect.right - rect.left >= GetMinWidth());
-  ASSERT(rect.top - rect.bottom >= GetMinHeight());
-
+  ASSERT(rect.right - rect.left >= 1.0f);
+  ASSERT(rect.top - rect.bottom >= 1.0f);
   CPDF_Dictionary* pDict = GetAnnotDict();
   m_pAnnot->GetDocument()->AddOrphan(pDict->RemoveFor("Rect"));
   pDict->SetRectFor("Rect", rect);
@@ -199,9 +198,9 @@ BorderStyle CPDFSDK_BAAnnot::GetBorderStyle() const {
 
   CPDF_Array* pBorder = GetAnnotDict()->GetArrayFor("Border");
   if (pBorder) {
-    if (pBorder->GetCount() >= 4) {
+    if (pBorder->size() >= 4) {
       CPDF_Array* pDP = pBorder->GetArrayAt(3);
-      if (pDP && pDP->GetCount() > 0)
+      if (pDP && pDP->size() > 0)
         return BorderStyle::DASH;
     }
   }
@@ -228,7 +227,7 @@ CPDF_Action CPDFSDK_BAAnnot::GetAAction(CPDF_AAction::AActionType eAAT) {
   if (AAction.ActionExist(eAAT))
     return AAction.GetAction(eAAT);
 
-  if (eAAT == CPDF_AAction::ButtonUp)
+  if (eAAT == CPDF_AAction::kButtonUp)
     return GetAction();
 
   return CPDF_Action(nullptr);

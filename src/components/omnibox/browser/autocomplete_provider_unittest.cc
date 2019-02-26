@@ -199,6 +199,36 @@ void TestProvider::AddResultsWithSearchTermsArgs(
   }
 }
 
+// Helper class to make running tests of ClassifyAllMatchesInString() more
+// convenient.
+class ClassifyTest {
+ public:
+  ClassifyTest(const base::string16& text,
+               const bool text_is_query,
+               ACMatchClassifications matches);
+  ~ClassifyTest();
+
+  ACMatchClassifications RunTest(const base::string16& find_text);
+
+ private:
+  const base::string16 text_;
+  const bool text_is_query_;
+  const ACMatchClassifications matches_;
+};
+
+ClassifyTest::ClassifyTest(const base::string16& text,
+                           const bool text_is_query,
+                           ACMatchClassifications matches)
+    : text_(text), text_is_query_(text_is_query), matches_(matches) {}
+
+ClassifyTest::~ClassifyTest() {}
+
+ACMatchClassifications ClassifyTest::RunTest(const base::string16& find_text) {
+  return AutocompleteProvider::ClassifyAllMatchesInString(
+      find_text, AutocompleteProvider::CreateWordMapForString(find_text), text_,
+      text_is_query_, matches_);
+}
+
 class AutocompleteProviderTest : public testing::Test {
  public:
   AutocompleteProviderTest();
@@ -775,4 +805,161 @@ TEST_F(AutocompleteProviderTest, GetDestinationURL) {
   EXPECT_TRUE(search_provider_field_trial_triggered_in_session());
   url = GetDestinationURL(match, base::TimeDelta::FromMilliseconds(2456));
   EXPECT_EQ("//aqs=chrome.0.69i57j69i58j5l2j0l3j69i59.2456j1j4&", url.path());
+}
+
+TEST_F(AutocompleteProviderTest, ClassifyAllMatchesInString) {
+  ResetControllerWithKeywordAndSearchProviders();
+
+  using base::ASCIIToUTF16;
+  ACMatchClassifications matches =
+      AutocompleteMatch::ClassificationsFromString("0,0");
+  ClassifyTest classify_test(ASCIIToUTF16("A man, a plan, a canal Panama"),
+                             /*text_is_query=*/false, matches);
+
+  ACMatchClassifications spans_a = classify_test.RunTest(ASCIIToUTF16("man"));
+  // ACMatch spans should be: '--MMM------------------------'
+  EXPECT_EQ("0,0,2,2,5,0", AutocompleteMatch::ClassificationsToString(spans_a));
+
+  ACMatchClassifications spans_b = classify_test.RunTest(ASCIIToUTF16("man p"));
+  // ACMatch spans should be: '--MMM----M-------------M-----'
+  EXPECT_EQ("0,0,2,2,5,0,9,2,10,0,23,2,24,0",
+            AutocompleteMatch::ClassificationsToString(spans_b));
+
+  ACMatchClassifications spans_c =
+      classify_test.RunTest(ASCIIToUTF16("man plan panama"));
+  // ACMatch spans should be:'--MMM----MMMM----------MMMMMM'
+  EXPECT_EQ("0,0,2,2,5,0,9,2,13,0,23,2",
+            AutocompleteMatch::ClassificationsToString(spans_c));
+
+  ClassifyTest classify_test2(
+      ASCIIToUTF16("Yahoo! Sports - Sports News, "
+                   "Scores, Rumors, Fantasy Games, and more"),
+      /*text_is_query=*/false, matches);
+
+  ACMatchClassifications spans_d = classify_test2.RunTest(ASCIIToUTF16("ne"));
+  // ACMatch spans should match first two letters of the "news".
+  EXPECT_EQ("0,0,23,2,25,0",
+            AutocompleteMatch::ClassificationsToString(spans_d));
+
+  ACMatchClassifications spans_e =
+      classify_test2.RunTest(ASCIIToUTF16("news r"));
+  EXPECT_EQ(
+      "0,0,10,2,11,0,19,2,20,0,23,2,27,0,32,2,33,0,37,2,38,0,41,2,42,0,"
+      "66,2,67,0",
+      AutocompleteMatch::ClassificationsToString(spans_e));
+
+  matches = AutocompleteMatch::ClassificationsFromString("0,1");
+  ClassifyTest classify_test3(ASCIIToUTF16("livescore.goal.com"),
+                              /*text_is_query=*/false, matches);
+
+  ACMatchClassifications spans_f = classify_test3.RunTest(ASCIIToUTF16("go"));
+  // ACMatch spans should match first two letters of the "goal".
+  EXPECT_EQ("0,1,10,3,12,1",
+            AutocompleteMatch::ClassificationsToString(spans_f));
+
+  matches = AutocompleteMatch::ClassificationsFromString("0,0,13,1");
+  ClassifyTest classify_test4(ASCIIToUTF16("Email login: mail.somecorp.com"),
+                              /*text_is_query=*/false, matches);
+
+  ACMatchClassifications spans_g = classify_test4.RunTest(ASCIIToUTF16("ail"));
+  EXPECT_EQ("0,0,2,2,5,0,13,1,14,3,17,1",
+            AutocompleteMatch::ClassificationsToString(spans_g));
+
+  ACMatchClassifications spans_h =
+      classify_test4.RunTest(ASCIIToUTF16("lo log"));
+  EXPECT_EQ("0,0,6,2,9,0,13,1",
+            AutocompleteMatch::ClassificationsToString(spans_h));
+
+  ACMatchClassifications spans_i =
+      classify_test4.RunTest(ASCIIToUTF16("ail em"));
+  // 'Email' and 'ail' should be matched.
+  EXPECT_EQ("0,2,5,0,13,1,14,3,17,1",
+            AutocompleteMatch::ClassificationsToString(spans_i));
+
+  // Some web sites do not have a description.  If the string being searched is
+  // empty, the classifications must also be empty: http://crbug.com/148647
+  // Extra parens in the next line hack around C++03's "most vexing parse".
+  class ClassifyTest classify_test5((base::string16()), /*text_is_query=*/false,
+                                    ACMatchClassifications());
+  ACMatchClassifications spans_j = classify_test5.RunTest(ASCIIToUTF16("man"));
+  ASSERT_EQ(0U, spans_j.size());
+
+  // Matches which end at beginning of classification merge properly.
+  matches = AutocompleteMatch::ClassificationsFromString("0,4,9,0");
+  ClassifyTest classify_test6(ASCIIToUTF16("html password example"),
+                              /*text_is_query=*/false, matches);
+
+  // Extra space in the next string avoids having the string be a prefix of the
+  // text above, which would allow for two different valid classification sets,
+  // one of which uses two spans (the first of which would mark all of "html
+  // pass" as a match) and one which uses four (which marks the individual words
+  // as matches but not the space between them).  This way only the latter is
+  // valid.
+  ACMatchClassifications spans_k =
+      classify_test6.RunTest(ASCIIToUTF16("html  pass"));
+  EXPECT_EQ("0,6,4,4,5,6,9,0",
+            AutocompleteMatch::ClassificationsToString(spans_k));
+
+  // Multiple matches with both beginning and end at beginning of
+  // classifications merge properly.
+  matches = AutocompleteMatch::ClassificationsFromString("0,1,11,0");
+  ClassifyTest classify_test7(ASCIIToUTF16("http://a.co is great"),
+                              /*text_is_query=*/false, matches);
+
+  ACMatchClassifications spans_l =
+      classify_test7.RunTest(ASCIIToUTF16("ht co"));
+  EXPECT_EQ("0,3,2,1,9,3,11,0",
+            AutocompleteMatch::ClassificationsToString(spans_l));
+
+  // Queries should be classify the same way as google search autocomplete
+  // suggestions.
+  matches = AutocompleteMatch::ClassificationsFromString("0,0");
+  ClassifyTest classify_test8(ASCIIToUTF16("panama canal"),
+                              /*text_is_query=*/true, matches);
+
+  ACMatchClassifications spans_m = classify_test8.RunTest(ASCIIToUTF16("pan"));
+  // ACMatch spans should be: "---MMMMMMMMM";
+  EXPECT_EQ("0,0,3,2", AutocompleteMatch::ClassificationsToString(spans_m));
+  ACMatchClassifications spans_n =
+      classify_test8.RunTest(ASCIIToUTF16("canal"));
+  // ACMatch spans should be: "MMMMMM-----";
+  EXPECT_EQ("0,2,7,0", AutocompleteMatch::ClassificationsToString(spans_n));
+
+  // Search autocomplete suggesion.
+  ClassifyTest classify_test9(ASCIIToUTF16("comcast webmail login"),
+                              /*text_is_query=*/true, ACMatchClassifications());
+
+  // Matches first and first part of middle word and the last word..
+  ACMatchClassifications spans_o =
+      classify_test9.RunTest(ASCIIToUTF16("comcast web login"));
+  // ACMatch spans should be: "-----------MMMMM-----";
+  EXPECT_EQ("0,0,11,2,16,0",
+            AutocompleteMatch::ClassificationsToString(spans_o));
+
+  // Matches partial word in the middle of suggestion.
+  ACMatchClassifications spans_p =
+      classify_test9.RunTest(ASCIIToUTF16("web"));
+  // ACMatch spans should be: "MMMMMMMM---MMMMMMMMMM";
+  EXPECT_EQ("0,2,8,0,11,2",
+            AutocompleteMatch::ClassificationsToString(spans_p));
+
+  ClassifyTest classify_test10(ASCIIToUTF16("comcast.net web mail login"),
+                              /*text_is_query=*/true, ACMatchClassifications());
+
+  ACMatchClassifications spans_q =
+      classify_test10.RunTest(ASCIIToUTF16("comcast web login"));
+  // ACMatch spans should be: "-------MMMMM----MMMMM-----";
+  EXPECT_EQ("0,0,7,2,12,0,16,2,21,0",
+            AutocompleteMatch::ClassificationsToString(spans_q));
+
+  // Same with |classify_test10| except using characters in
+  // base::kWhitespaceASCIIAs16 instead of white space.
+  ClassifyTest classify_test11(ASCIIToUTF16("comcast.net\x0aweb\x0dmail login"),
+                              /*text_is_query=*/true, ACMatchClassifications());
+
+  ACMatchClassifications spans_r =
+      classify_test11.RunTest(ASCIIToUTF16("comcast web login"));
+  // ACMatch spans should be: "-------MMMMM----MMMMM-----";
+  EXPECT_EQ("0,0,7,2,12,0,16,2,21,0",
+            AutocompleteMatch::ClassificationsToString(spans_r));
 }

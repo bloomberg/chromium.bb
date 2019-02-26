@@ -10,43 +10,42 @@
 #include "libANGLE/renderer/vulkan/SyncVk.h"
 
 #include "common/debug.h"
+#include "libANGLE/Context.h"
+#include "libANGLE/renderer/vulkan/ContextVk.h"
+#include "libANGLE/renderer/vulkan/vk_utils.h"
 
 namespace rx
 {
 
-SyncVk::SyncVk() : SyncImpl()
+SyncVk::SyncVk() : SyncImpl() {}
+
+SyncVk::~SyncVk() {}
+
+angle::Result SyncVk::set(const gl::Context *context, GLenum condition, GLbitfield flags)
 {
+    ANGLE_VK_UNREACHABLE(vk::GetImpl(context));
+    return angle::Result::Stop();
 }
 
-SyncVk::~SyncVk()
+angle::Result SyncVk::clientWait(const gl::Context *context,
+                                 GLbitfield flags,
+                                 GLuint64 timeout,
+                                 GLenum *outResult)
 {
+    ANGLE_VK_UNREACHABLE(vk::GetImpl(context));
+    return angle::Result::Stop();
 }
 
-gl::Error SyncVk::set(const gl::Context *context, GLenum condition, GLbitfield flags)
+angle::Result SyncVk::serverWait(const gl::Context *context, GLbitfield flags, GLuint64 timeout)
 {
-    UNIMPLEMENTED();
-    return gl::InternalError();
+    ANGLE_VK_UNREACHABLE(vk::GetImpl(context));
+    return angle::Result::Stop();
 }
 
-gl::Error SyncVk::clientWait(const gl::Context *context,
-                             GLbitfield flags,
-                             GLuint64 timeout,
-                             GLenum *outResult)
+angle::Result SyncVk::getStatus(const gl::Context *context, GLint *outResult)
 {
-    UNIMPLEMENTED();
-    return gl::InternalError();
-}
-
-gl::Error SyncVk::serverWait(const gl::Context *context, GLbitfield flags, GLuint64 timeout)
-{
-    UNIMPLEMENTED();
-    return gl::InternalError();
-}
-
-gl::Error SyncVk::getStatus(const gl::Context *context, GLint *outResult)
-{
-    UNIMPLEMENTED();
-    return gl::InternalError();
+    ANGLE_VK_UNREACHABLE(vk::GetImpl(context));
+    return angle::Result::Stop();
 }
 
 }  // namespace rx

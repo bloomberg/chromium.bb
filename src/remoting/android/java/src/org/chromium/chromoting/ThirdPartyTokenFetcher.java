@@ -14,6 +14,7 @@ import android.net.Uri;
 import android.text.TextUtils;
 import android.util.Base64;
 
+import org.chromium.base.ContextUtils;
 import org.chromium.base.Log;
 import org.chromium.base.SecureRandomInitializer;
 
@@ -87,7 +88,7 @@ public class ThirdPartyTokenFetcher {
         this.mCallback = callback;
         this.mTokenUrlPatterns = tokenUrlPatterns;
 
-        this.mRedirectUriScheme = context.getApplicationContext().getPackageName();
+        this.mRedirectUriScheme = ContextUtils.getApplicationContext().getPackageName();
 
         // We don't follow the OAuth spec (http://tools.ietf.org/html/rfc6749#section-3.1.2) of the
         // redirect URI as it is possible for the other applications to intercept the redirect URI.
@@ -230,8 +231,7 @@ public class ThirdPartyTokenFetcher {
         public static void setEnabled(Activity context, boolean enabled) {
             int enabledState = enabled ? PackageManager.COMPONENT_ENABLED_STATE_ENABLED
                                        : PackageManager.COMPONENT_ENABLED_STATE_DEFAULT;
-            ComponentName component = new ComponentName(
-                    context.getApplicationContext(),
+            ComponentName component = new ComponentName(ContextUtils.getApplicationContext(),
                     ThirdPartyTokenFetcher.OAuthRedirectActivity.class);
             context.getPackageManager().setComponentEnabledSetting(
                     component,

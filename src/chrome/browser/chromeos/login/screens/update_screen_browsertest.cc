@@ -10,14 +10,16 @@
 #include "base/macros.h"
 #include "base/run_loop.h"
 #include "chrome/browser/browser_process.h"
+#include "chrome/browser/chromeos/login/login_wizard.h"
 #include "chrome/browser/chromeos/login/screens/mock_base_screen_delegate.h"
 #include "chrome/browser/chromeos/login/screens/mock_error_screen.h"
 #include "chrome/browser/chromeos/login/screens/network_error.h"
 #include "chrome/browser/chromeos/login/startup_utils.h"
-#include "chrome/browser/chromeos/login/test/wizard_in_process_browser_test.h"
+#include "chrome/browser/chromeos/login/ui/login_display_host.h"
 #include "chrome/browser/chromeos/login/wizard_controller.h"
 #include "chrome/browser/chromeos/net/network_portal_detector_test_impl.h"
 #include "chrome/common/pref_names.h"
+#include "chrome/test/base/in_process_browser_test.h"
 #include "chromeos/chromeos_switches.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
 #include "chromeos/dbus/fake_update_engine_client.h"
@@ -42,20 +44,18 @@ const char kStubWifiGuid[] = "wlan0";
 
 }  // namespace
 
-class UpdateScreenTest : public WizardInProcessBrowserTest {
+class UpdateScreenTest : public InProcessBrowserTest {
  public:
-  UpdateScreenTest()
-      : WizardInProcessBrowserTest(OobeScreen::SCREEN_OOBE_UPDATE),
-        fake_update_engine_client_(nullptr),
-        network_portal_detector_(nullptr) {}
+  UpdateScreenTest() = default;
+  ~UpdateScreenTest() override = default;
 
- protected:
+  // InProcessBrowserTest:
   void SetUpInProcessBrowserTestFixture() override {
-    fake_update_engine_client_ = new FakeUpdateEngineClient;
+    fake_update_engine_client_ = new FakeUpdateEngineClient();
     chromeos::DBusThreadManager::GetSetterForTesting()->SetUpdateEngineClient(
         std::unique_ptr<UpdateEngineClient>(fake_update_engine_client_));
 
-    WizardInProcessBrowserTest::SetUpInProcessBrowserTestFixture();
+    InProcessBrowserTest::SetUpInProcessBrowserTestFixture();
 
     // Setup network portal detector to return online state for both
     // ethernet and wifi networks. Ethernet is an active network by
@@ -81,7 +81,7 @@ class UpdateScreenTest : public WizardInProcessBrowserTest {
         .Times(AnyNumber())
         .WillRepeatedly(Return(mock_error_screen_.get()));
 
-    WizardInProcessBrowserTest::SetUpOnMainThread();
+    ShowLoginWizard(OobeScreen::SCREEN_OOBE_UPDATE);
 
     ASSERT_TRUE(WizardController::default_controller() != nullptr);
     update_screen_ = UpdateScreen::Get(
@@ -93,16 +93,22 @@ class UpdateScreenTest : public WizardInProcessBrowserTest {
   }
 
   void TearDownOnMainThread() override {
-    WizardInProcessBrowserTest::TearDownOnMainThread();
+    InProcessBrowserTest::TearDownOnMainThread();
+
+    base::RunLoop run_loop;
+    LoginDisplayHost::default_host()->Finalize(run_loop.QuitClosure());
+    run_loop.Run();
+
     mock_error_screen_.reset();
     mock_network_error_view_.reset();
   }
 
   void TearDownInProcessBrowserTestFixture() override {
     network_portal_detector::Shutdown();
-    WizardInProcessBrowserTest::TearDownInProcessBrowserTestFixture();
+    InProcessBrowserTest::TearDownInProcessBrowserTestFixture();
   }
 
+ protected:
   void SetDefaultNetwork(const std::string& guid) {
     DCHECK(network_portal_detector_);
     network_portal_detector_->SetDefaultNetworkForTesting(guid);
@@ -120,12 +126,13 @@ class UpdateScreenTest : public WizardInProcessBrowserTest {
     network_portal_detector_->NotifyObserversForTesting();
   }
 
-  FakeUpdateEngineClient* fake_update_engine_client_;
   std::unique_ptr<MockBaseScreenDelegate> mock_base_screen_delegate_;
   std::unique_ptr<MockNetworkErrorView> mock_network_error_view_;
   std::unique_ptr<MockErrorScreen> mock_error_screen_;
-  UpdateScreen* update_screen_;
-  NetworkPortalDetectorTestImpl* network_portal_detector_;
+  FakeUpdateEngineClient* fake_update_engine_client_ = nullptr;  // Unowned.
+  UpdateScreen* update_screen_ = nullptr;                        // Unowned.
+  NetworkPortalDetectorTestImpl* network_portal_detector_ =
+      nullptr;  // Unowned.
 
  private:
   DISALLOW_COPY_AND_ASSIGN(UpdateScreenTest);

@@ -44,25 +44,25 @@ SourceBufferList::~SourceBufferList() = default;
 
 void SourceBufferList::Add(SourceBuffer* buffer) {
   list_.push_back(buffer);
-  ScheduleEvent(EventTypeNames::addsourcebuffer);
+  ScheduleEvent(event_type_names::kAddsourcebuffer);
 }
 
-void SourceBufferList::insert(size_t position, SourceBuffer* buffer) {
+void SourceBufferList::insert(wtf_size_t position, SourceBuffer* buffer) {
   list_.insert(position, buffer);
-  ScheduleEvent(EventTypeNames::addsourcebuffer);
+  ScheduleEvent(event_type_names::kAddsourcebuffer);
 }
 
 void SourceBufferList::Remove(SourceBuffer* buffer) {
-  size_t index = list_.Find(buffer);
+  wtf_size_t index = list_.Find(buffer);
   if (index == kNotFound)
     return;
   list_.EraseAt(index);
-  ScheduleEvent(EventTypeNames::removesourcebuffer);
+  ScheduleEvent(event_type_names::kRemovesourcebuffer);
 }
 
 void SourceBufferList::Clear() {
   list_.clear();
-  ScheduleEvent(EventTypeNames::removesourcebuffer);
+  ScheduleEvent(event_type_names::kRemovesourcebuffer);
 }
 
 void SourceBufferList::ScheduleEvent(const AtomicString& event_name) {
@@ -75,7 +75,7 @@ void SourceBufferList::ScheduleEvent(const AtomicString& event_name) {
 }
 
 const AtomicString& SourceBufferList::InterfaceName() const {
-  return EventTargetNames::SourceBufferList;
+  return event_target_names::kSourceBufferList;
 }
 
 void SourceBufferList::Trace(blink::Visitor* visitor) {

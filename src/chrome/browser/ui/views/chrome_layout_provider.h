@@ -32,6 +32,11 @@ enum ChromeDistanceMetric {
   DISTANCE_CONTENT_LIST_VERTICAL_MULTI,
   // Vertical spacing between a list of multiple controls in one column.
   DISTANCE_CONTROL_LIST_VERTICAL,
+  // Width of the space in a dropdown button between its label and down arrow.
+  DISTANCE_DROPDOWN_BUTTON_LABEL_ARROW_SPACING,
+  // Width of the horizontal padding in a dropdown button between the down arrow
+  // and the button's border.
+  DISTANCE_DROPDOWN_BUTTON_RIGHT_MARGIN,
   // Smaller horizontal spacing between other controls that are logically
   // related.
   DISTANCE_RELATED_CONTROL_HORIZONTAL_SMALL,

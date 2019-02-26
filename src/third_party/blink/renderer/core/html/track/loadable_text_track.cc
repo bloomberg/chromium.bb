@@ -43,7 +43,7 @@ LoadableTextTrack::LoadableTextTrack(HTMLTrackElement* track)
 LoadableTextTrack::~LoadableTextTrack() = default;
 
 bool LoadableTextTrack::IsDefault() const {
-  return track_element_->FastHasAttribute(HTMLNames::defaultAttr);
+  return track_element_->FastHasAttribute(html_names::kDefaultAttr);
 }
 
 void LoadableTextTrack::setMode(const AtomicString& mode) {

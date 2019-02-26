@@ -375,7 +375,7 @@ void DOMFileSystemBase::GetParent(
 void DOMFileSystemBase::GetFile(
     const EntryBase* entry,
     const String& path,
-    const FileSystemFlags& flags,
+    const FileSystemFlags* flags,
     EntryCallbacks::OnDidGetEntryCallback* success_callback,
     ErrorCallbackBase* error_callback,
     SynchronousType synchronous_type) {
@@ -390,11 +390,11 @@ void DOMFileSystemBase::GetFile(
   const KURL& url = CreateFileSystemURL(absolute_path);
   FileSystemDispatcher& dispatcher = FileSystemDispatcher::From(context_);
 
-  if (flags.createFlag()) {
+  if (flags->createFlag()) {
     if (synchronous_type == kSynchronous)
-      dispatcher.CreateFileSync(url, flags.exclusive(), std::move(callbacks));
+      dispatcher.CreateFileSync(url, flags->exclusive(), std::move(callbacks));
     else
-      dispatcher.CreateFile(url, flags.exclusive(), std::move(callbacks));
+      dispatcher.CreateFile(url, flags->exclusive(), std::move(callbacks));
   } else {
     if (synchronous_type == kSynchronous) {
       dispatcher.ExistsSync(url, /*is_directory=*/false, std::move(callbacks));
@@ -407,7 +407,7 @@ void DOMFileSystemBase::GetFile(
 void DOMFileSystemBase::GetDirectory(
     const EntryBase* entry,
     const String& path,
-    const FileSystemFlags& flags,
+    const FileSystemFlags* flags,
     EntryCallbacks::OnDidGetEntryCallback* success_callback,
     ErrorCallbackBase* error_callback,
     SynchronousType synchronous_type) {
@@ -422,12 +422,12 @@ void DOMFileSystemBase::GetDirectory(
   const KURL& url = CreateFileSystemURL(absolute_path);
   FileSystemDispatcher& dispatcher = FileSystemDispatcher::From(context_);
 
-  if (flags.createFlag()) {
+  if (flags->createFlag()) {
     if (synchronous_type == kSynchronous) {
-      dispatcher.CreateDirectorySync(url, flags.exclusive(),
+      dispatcher.CreateDirectorySync(url, flags->exclusive(),
                                      /*recursive=*/false, std::move(callbacks));
     } else {
-      dispatcher.CreateDirectory(url, flags.exclusive(), /*recursive=*/false,
+      dispatcher.CreateDirectory(url, flags->exclusive(), /*recursive=*/false,
                                  std::move(callbacks));
     }
   } else {

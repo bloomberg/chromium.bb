@@ -53,7 +53,7 @@ void SVGShapePainter::Paint(const PaintInfo& paint_info) {
           .CullRectSkipsPainting(paint_info_before_filtering)) {
     return;
   }
-  // Shapes cannot have children so do not call UpdateCullRect.
+  // Shapes cannot have children so do not call TransformCullRect.
 
   ScopedSVGTransformState transform_state(
       paint_info_before_filtering, layout_svg_shape_,
@@ -249,7 +249,7 @@ void SVGShapePainter::PaintMarker(const PaintInfo& paint_info,
   // It's expensive to track the transformed paint cull rect for each
   // marker so just disable culling. The shape paint call will already
   // be culled if it is outside the paint info cull rect.
-  marker_paint_info.cull_rect_ = CullRect(LayoutRect::InfiniteIntRect());
+  marker_paint_info.ApplyInfiniteCullRect();
 
   SVGContainerPainter(marker).Paint(marker_paint_info);
   builder.EndRecording(*canvas);

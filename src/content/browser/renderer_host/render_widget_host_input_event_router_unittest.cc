@@ -299,12 +299,22 @@ void RenderWidgetHostInputEventRouterTest::InitVizHitTestData(
       std::make_unique<viz::HitTestQuery>();
 
   std::vector<viz::AggregatedHitTestRegion> hit_test_data;
+  uint32_t async_hit_test_reasons_root =
+      (view_root_flags & viz::HitTestRegionFlags::kHitTestAsk)
+          ? viz::AsyncHitTestReasons::kIrregularClip
+          : viz::AsyncHitTestReasons::kNotAsyncHitTest;
+  uint32_t async_hit_test_reasons_other =
+      (view_other_flags & viz::HitTestRegionFlags::kHitTestAsk)
+          ? viz::AsyncHitTestReasons::kIrregularClip
+          : viz::AsyncHitTestReasons::kNotAsyncHitTest;
   hit_test_data.push_back(viz::AggregatedHitTestRegion(
       view_root_->GetFrameSinkId(), view_root_flags,
-      view_root_->GetViewBounds(), gfx::Transform(), 1));
+      view_root_->GetViewBounds(), gfx::Transform(), 1,
+      async_hit_test_reasons_root));
   hit_test_data.push_back(viz::AggregatedHitTestRegion(
       view_other_->GetFrameSinkId(), view_other_flags,
-      view_other_->GetViewBounds(), gfx::Transform(), 0));
+      view_other_->GetViewBounds(), gfx::Transform(), 0,
+      async_hit_test_reasons_other));
   hit_test_map[view_root_->GetFrameSinkId()]
       ->OnAggregatedHitTestRegionListUpdated(hit_test_data);
 

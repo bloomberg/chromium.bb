@@ -1,6 +1,6 @@
 # Using a chroot
 
-If you want to run layout tests and you're not running Lucid, you'll get errors
+If you want to run web tests and you're not running Lucid, you'll get errors
 due to version differences in libfreetype. To work around this, you can use a
 chroot.
 
@@ -65,16 +65,16 @@ fi
 ### Running X apps
 
 I also have `DISPLAY=:0` in my `$debian_chroot` section so I can run test_shell
-or layout tests without manually setting my display every time.  Your display
+or web tests without manually setting my display every time.  Your display
 number may vary (`echo $DISPLAY` outside the chroot to see what your display
 number is).
 
 You can also use `Xvfb` if you only want to
-[run tests headless](layout_tests_linux.md#Using-an-embedded-X-server).
+[run tests headless](web_tests_linux.md#Using-an-embedded-X-server).
 
-### Having layout test results open in a browser
+### Having web test results open in a browser
 
-After running layout tests, you should get a new browser tab or window that
+After running web tests, you should get a new browser tab or window that
 opens results.html.  If you get an error "Failed to open
 file:///path/to/results.html, check the
 following conditions.

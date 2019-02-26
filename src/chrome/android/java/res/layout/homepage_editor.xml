@@ -6,6 +6,7 @@
 <FrameLayout
     xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent" >
 
@@ -26,7 +27,9 @@
                 style="@style/PreferenceScreenLayout"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content" >
+                <!-- TODO(crbug.com/900912): Fix and remove lint ignore -->
                 <EditText
+                    tools:ignore="Autofill"
                     android:id="@+id/homepage_url_edit"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
@@ -39,17 +42,17 @@
             <View style="@style/ButtonBarTopDivider" />
 
             <LinearLayout style="@style/ButtonBar" >
-                <Button
+                <org.chromium.ui.widget.ButtonCompat
                     android:id="@+id/homepage_reset"
                     style="@style/ButtonBarButton"
                     android:text="@string/reset" />
 
-                <Button
+                <org.chromium.ui.widget.ButtonCompat
                     android:id="@+id/homepage_cancel"
                     style="@style/ButtonBarButton"
                     android:text="@string/cancel" />
 
-                <Button
+                <org.chromium.ui.widget.ButtonCompat
                     android:id="@+id/homepage_save"
                     style="@style/ButtonBarButton"
                     android:text="@string/save" />

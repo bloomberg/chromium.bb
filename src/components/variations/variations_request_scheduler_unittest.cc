@@ -6,13 +6,13 @@
 
 #include "base/bind.h"
 #include "base/bind_helpers.h"
-#include "base/message_loop/message_loop.h"
+#include "base/test/scoped_task_environment.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace variations {
 
 TEST(VariationsRequestSchedulerTest, ScheduleFetchShortly) {
-  base::MessageLoopForUI message_loop_;
+  base::test::ScopedTaskEnvironment task_environment;
 
   const base::Closure task = base::DoNothing();
   VariationsRequestScheduler scheduler(task);

@@ -13,21 +13,21 @@
 #include "third_party/blink/renderer/modules/background_fetch/background_fetch_event_init.h"
 #include "third_party/blink/renderer/modules/background_fetch/background_fetch_icon_loader.h"
 #include "third_party/blink/renderer/modules/background_fetch/background_fetch_registration.h"
-#include "third_party/blink/renderer/modules/background_fetch/background_fetch_settled_fetch.h"
 #include "third_party/blink/renderer/modules/background_fetch/background_fetch_ui_options.h"
-#include "third_party/blink/renderer/modules/event_modules_names.h"
+#include "third_party/blink/renderer/modules/event_interface_modules_names.h"
+#include "third_party/blink/renderer/modules/service_worker/wait_until_observer.h"
 #include "third_party/blink/renderer/platform/bindings/script_state.h"
 
 namespace blink {
 
 BackgroundFetchUpdateUIEvent::BackgroundFetchUpdateUIEvent(
     const AtomicString& type,
-    const BackgroundFetchEventInit& initializer)
+    const BackgroundFetchEventInit* initializer)
     : BackgroundFetchEvent(type, initializer, nullptr /* observer */) {}
 
 BackgroundFetchUpdateUIEvent::BackgroundFetchUpdateUIEvent(
     const AtomicString& type,
-    const BackgroundFetchEventInit& initializer,
+    const BackgroundFetchEventInit* initializer,
     WaitUntilObserver* observer,
     ServiceWorkerRegistration* registration)
     : BackgroundFetchEvent(type, initializer, observer),
@@ -43,13 +43,20 @@ void BackgroundFetchUpdateUIEvent::Trace(blink::Visitor* visitor) {
 
 ScriptPromise BackgroundFetchUpdateUIEvent::updateUI(
     ScriptState* script_state,
-    const BackgroundFetchUIOptions& ui_options) {
+    const BackgroundFetchUIOptions* ui_options) {
+  if (observer_ && !observer_->IsEventActive(script_state)) {
+    // Return a rejected promise as the event is no longer active.
+    return ScriptPromise::RejectWithDOMException(
+        script_state,
+        DOMException::Create(DOMExceptionCode::kInvalidStateError,
+                             "ExtendableEvent is no longer active."));
+  }
   if (update_ui_called_) {
     // Return a rejected promise as this method should only be called once.
-    return ScriptPromise::Reject(
+    return ScriptPromise::RejectWithDOMException(
         script_state,
-        V8ThrowException::CreateTypeError(script_state->GetIsolate(),
-                                          "updateUI may only be called once."));
+        DOMException::Create(DOMExceptionCode::kInvalidStateError,
+                             "updateUI may only be called once."));
   }
 
   update_ui_called_ = true;
@@ -63,7 +70,7 @@ ScriptPromise BackgroundFetchUpdateUIEvent::updateUI(
   }
   DCHECK(!registration_->unique_id().IsEmpty());
 
-  if (!ui_options.hasTitle() && ui_options.icons().IsEmpty()) {
+  if (!ui_options->hasTitle() && ui_options->icons().IsEmpty()) {
     // Nothing to update, just return a resolved promise.
     return ScriptPromise::CastUndefined(script_state);
   }
@@ -71,18 +78,18 @@ ScriptPromise BackgroundFetchUpdateUIEvent::updateUI(
   ScriptPromiseResolver* resolver = ScriptPromiseResolver::Create(script_state);
   ScriptPromise promise = resolver->Promise();
 
-  if (ui_options.icons().IsEmpty()) {
-    DidGetIcon(resolver, ui_options.title(), SkBitmap(),
+  if (ui_options->icons().IsEmpty()) {
+    DidGetIcon(resolver, ui_options->title(), SkBitmap(),
                -1 /* ideal_to_chosen_icon_size */);
   } else {
     DCHECK(!loader_);
     loader_ = new BackgroundFetchIconLoader();
     DCHECK(loader_);
     loader_->Start(BackgroundFetchBridge::From(service_worker_registration_),
-                   ExecutionContext::From(script_state), ui_options.icons(),
+                   ExecutionContext::From(script_state), ui_options->icons(),
                    WTF::Bind(&BackgroundFetchUpdateUIEvent::DidGetIcon,
                              WrapPersistent(this), WrapPersistent(resolver),
-                             ui_options.title()));
+                             ui_options->title()));
   }
 
   return promise;

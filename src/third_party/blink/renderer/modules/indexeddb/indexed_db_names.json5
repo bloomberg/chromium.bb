@@ -1,6 +1,6 @@
 {
   metadata: {
-    namespace: "IndexedDB",
+    namespace: "indexed_db_names",
   },
 
   data: [
@@ -30,10 +30,7 @@
     // https://github.com/WICG/indexed-db-observers/blob/gh-pages/EXPLAINER.md//records
     "add",
     "put",
-    {
-      name: "delete",
-      Symbol: "kDelete",
-    },
+    "delete",
     "clear",
   ],
 }

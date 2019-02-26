@@ -34,12 +34,11 @@
 #include "third_party/blink/renderer/core/layout/hit_test_result.h"
 #include "third_party/blink/renderer/core/layout/layout_analyzer.h"
 #include "third_party/blink/renderer/core/layout/layout_theme.h"
+#include "third_party/blink/renderer/core/paint/paint_layer.h"
 #include "third_party/blink/renderer/core/paint/text_control_single_line_painter.h"
 #include "third_party/blink/renderer/platform/fonts/simple_font_data.h"
 
 namespace blink {
-
-using namespace HTMLNames;
 
 LayoutTextControlSingleLine::LayoutTextControlSingleLine(
     HTMLInputElement* element)
@@ -49,18 +48,18 @@ LayoutTextControlSingleLine::~LayoutTextControlSingleLine() = default;
 
 inline Element* LayoutTextControlSingleLine::ContainerElement() const {
   return InputElement()->UserAgentShadowRoot()->getElementById(
-      ShadowElementNames::TextFieldContainer());
+      shadow_element_names::TextFieldContainer());
 }
 
 inline Element* LayoutTextControlSingleLine::EditingViewPortElement() const {
   return InputElement()->UserAgentShadowRoot()->getElementById(
-      ShadowElementNames::EditingViewPort());
+      shadow_element_names::EditingViewPort());
 }
 
 inline HTMLElement* LayoutTextControlSingleLine::InnerSpinButtonElement()
     const {
   return ToHTMLElement(InputElement()->UserAgentShadowRoot()->getElementById(
-      ShadowElementNames::SpinButton()));
+      shadow_element_names::SpinButton()));
 }
 
 void LayoutTextControlSingleLine::Paint(const PaintInfo& paint_info) const {
@@ -178,7 +177,7 @@ void LayoutTextControlSingleLine::CapsLockStateMayHaveChanged() {
 
   if (LocalFrame* frame = GetDocument().GetFrame())
     should_draw_caps_lock_indicator =
-        InputElement()->type() == InputTypeNames::password &&
+        InputElement()->type() == input_type_names::kPassword &&
         frame->Selection().FrameIsFocusedAndActive() &&
         GetDocument().FocusedElement() == GetNode() &&
         KeyboardEventManager::CurrentCapsLockState();
@@ -243,10 +242,10 @@ LayoutUnit LayoutTextControlSingleLine::PreferredContentLogicalWidth(
     if (LayoutBox* spin_layout_object =
             spin_button ? spin_button->GetLayoutBox() : nullptr) {
       result += spin_layout_object->BorderAndPaddingLogicalWidth();
-      // Since the width of spinLayoutObject is not calculated yet,
-      // spinLayoutObject->logicalWidth() returns 0.
-      // So ensureComputedStyle()->logicalWidth() is used instead.
-      result += spin_button->EnsureComputedStyle()->LogicalWidth().Value();
+      // Since the width of spin_layout_object is not calculated yet,
+      // spin_layout_object->LogicalWidth() returns 0. Use the computed logical
+      // width instead.
+      result += spin_layout_object->StyleRef().LogicalWidth().Value();
     }
   }
 
@@ -315,6 +314,25 @@ void LayoutTextControlSingleLine::SetScrollTop(LayoutUnit new_top) {
 
 HTMLInputElement* LayoutTextControlSingleLine::InputElement() const {
   return ToHTMLInputElement(GetNode());
+}
+
+void LayoutTextControlSingleLine::ComputeVisualOverflow(
+    const LayoutRect& previous_visual_overflow_rect,
+    bool recompute_floats) {
+  AddVisualOverflowFromChildren();
+
+  AddVisualEffectOverflow();
+  AddVisualOverflowFromTheme();
+
+  if (recompute_floats || CreatesNewFormattingContext() ||
+      HasSelfPaintingLayer())
+    AddVisualOverflowFromFloats();
+
+  if (VisualOverflowRect() != previous_visual_overflow_rect) {
+    if (Layer())
+      Layer()->SetNeedsCompositingInputsUpdate();
+    GetFrameView()->SetIntersectionObservationState(LocalFrameView::kDesired);
+  }
 }
 
 }  // namespace blink

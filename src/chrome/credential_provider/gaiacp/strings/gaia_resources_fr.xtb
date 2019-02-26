@@ -3,15 +3,17 @@
 <translationbundle lang="fr">
 <translation id="1296843352074373664">Utilisateur Google</translation>
 <translation id="1383286653814676580">Utilisé pour exécuter la page de connexion du fournisseur d'informations d'identification Google.</translation>
-<translation id="2119303206591679297">La connexion avec ce compte Google n'est pas autorisée.</translation>
-<translation id="3374277789313311065">Une erreur interne s'est produite. Si le problème persiste, veuillez le signaler à Google.</translation>
-<translation id="3713454256426064844">Connectez-vous avec votre compte Google.</translation>
-<translation id="440343981193409132">Connectez-vous à l'aide du nouveau mot de passe de votre compte Google.</translation>
-<translation id="4735679347289592174">Échec de la connexion à votre compte Google. Veuillez réessayer. Assurez-vous que l'ordinateur est bien connecté à Internet. Si l'erreur persiste, veuillez le signaler à Google.</translation>
-<translation id="7000592418234387954">Connexion avec le compte Google</translation>
+<translation id="195232392645680541">Connectez-vous avec votre compte Google.</translation>
+<translation id="3623301090691182018">Connexion au compte Google</translation>
+<translation id="4057329986137569701">Une erreur interne s'est produite.</translation>
+<translation id="4128734677223009352">Échec de la connexion à votre compte Google. Assurez-vous que l'ordinateur est connecté à Internet, puis réessayez.</translation>
+<translation id="4307406925561182259">Connectez-vous à l'aide du nouveau mot de passe de votre compte Google.</translation>
+<translation id="6064337552080329342">Mot de passe incorrect. Veuillez réessayer.</translation>
+<translation id="6613125771987245372">La connexion avec ce compte Google n'est pas autorisée. Essayez avec un autre compte.</translation>
+<translation id="7357241217513796177">Vérifiez que vous disposez bien d'une connexion réseau, puis réessayez.</translation>
+<translation id="7463006580194749499">Ajouter une personne</translation>
 <translation id="8474372283141585908">Fournisseur d'informations d'identification Google</translation>
 <translation id="866458870819756755">Impossible de créer le compte utilisateur.</translation>
 <translation id="8860262547644202689">Outil d'aide du fournisseur d'informations d'identification Google</translation>
-<translation id="8912362522468806198">Compte Google</translation>
 <translation id="9094033019050270033">Modifier le mot de passe</translation>
 </translationbundle>

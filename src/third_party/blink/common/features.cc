@@ -18,25 +18,59 @@ const base::Feature kEagerCacheStorageSetupForServiceWorkers{
     "EagerCacheStorageSetupForServiceWorkers",
     base::FEATURE_ENABLED_BY_DEFAULT};
 
+// Controls the user-specified viewport restriction for GPU Rasterization on
+// mobile. See https://crbug.com/899399
+const base::Feature kEnableGpuRasterizationViewportRestriction{
+    "EnableGpuRasterizationViewportRestriction",
+    base::FEATURE_ENABLED_BY_DEFAULT};
+
+// Enable FCP++ by experiment. See https://crbug.com/869924
+const base::Feature kFirstContentfulPaintPlusPlus{
+    "FirstContentfulPaintPlusPlus", base::FEATURE_DISABLED_BY_DEFAULT};
+
+// Tracks "jank" from layout objects changing their visual location between
+// animation frames (see crbug.com/581518).
+const base::Feature kJankTracking{"JankTracking",
+                                  base::FEATURE_DISABLED_BY_DEFAULT};
+
+// Enable a new compositing mode called BlinkGenPropertyTrees where Blink
+// generates the compositor property trees. See: https://crbug.com/836884.
+const base::Feature kBlinkGenPropertyTrees{"BlinkGenPropertyTrees",
+                                           base::FEATURE_DISABLED_BY_DEFAULT};
+
 // Enable LayoutNG.
 const base::Feature kLayoutNG{"LayoutNG", base::FEATURE_DISABLED_BY_DEFAULT};
+
+const base::Feature kMixedContentAutoupgrade{"AutoupgradeMixedContent",
+                                             base::FEATURE_DISABLED_BY_DEFAULT};
 
 // Enable mojo Blob URL interface and better blob URL lifetime management.
 // Can be enabled independently of NetworkService.
 const base::Feature kMojoBlobURLs{"MojoBlobURLs",
                                   base::FEATURE_DISABLED_BY_DEFAULT};
 
-// Nested workers. See https://crbug.com/31666
-const base::Feature kNestedWorkers{"NestedWorkers",
-                                   base::FEATURE_ENABLED_BY_DEFAULT};
-
-// Onion souping for all DOMStorage. Requires that kMojoSessionStorage is
-// enabled. https://crbug.com/781870
+// Onion souping for all DOMStorage. https://crbug.com/781870
 const base::Feature kOnionSoupDOMStorage{"OnionSoupDOMStorage",
                                          base::FEATURE_DISABLED_BY_DEFAULT};
 
 // Enable Portals. https://crbug.com/865123.
 const base::Feature kPortals{"Portals", base::FEATURE_DISABLED_BY_DEFAULT};
+
+// Enable Implicit Root Scroller. https://crbug.com/903260.
+const base::Feature kImplicitRootScroller{"ImplicitRootScroller",
+                                          base::FEATURE_DISABLED_BY_DEFAULT};
+
+// Enables usage of getDisplayMedia() that allows capture of web content, see
+// https://crbug.com/865060.
+const base::Feature kRTCGetDisplayMedia{"RTCGetDisplayMedia",
+                                        base::FEATURE_ENABLED_BY_DEFAULT};
+
+// Changes the default RTCPeerConnection constructor behavior to use Unified
+// Plan as the SDP semantics. When the feature is enabled, Unified Plan is used
+// unless the default is overridden (by passing {sdpSemantics:'plan-b'} as the
+// argument).
+const base::Feature kRTCUnifiedPlanByDefault{"RTCUnifiedPlanByDefault",
+                                             base::FEATURE_DISABLED_BY_DEFAULT};
 
 // Used to control the collection of anchor element metrics (crbug.com/856683).
 // If kRecordAnchorMetricsClicked is enabled, then metrics of anchor elements
@@ -59,7 +93,7 @@ const base::Feature kServiceWorkerParallelSideDataReading{
 // Enable new service worker glue for NetworkService. Can be
 // enabled independently of NetworkService.
 const base::Feature kServiceWorkerServicification{
-    "ServiceWorkerServicification", base::FEATURE_DISABLED_BY_DEFAULT};
+    "ServiceWorkerServicification", base::FEATURE_ENABLED_BY_DEFAULT};
 
 // Freeze scheduler task queues in background after allowed grace time.
 // "stop" is a legacy name.
@@ -83,24 +117,15 @@ const base::Feature kStopNonTimersInBackground {
 #endif
 };
 
+// Enables the site isolated Wasm code cache that is keyed on the resource URL
+// and the origin lock of the renderer that is requesting the resource. When
+// this flag is enabled, content/GeneratedCodeCache handles code cache requests.
+const base::Feature kWasmCodeCache = {"WasmCodeCache",
+                                      base::FEATURE_DISABLED_BY_DEFAULT};
+
 // Writable files and native filesystem access. https://crbug.com/853326
 const base::Feature kWritableFilesAPI{"WritableFilesAPI",
                                       base::FEATURE_DISABLED_BY_DEFAULT};
-
-const base::Feature kMixedContentAutoupgrade{"AutoupgradeMixedContent",
-                                             base::FEATURE_DISABLED_BY_DEFAULT};
-
-// Tracks "jank" from layout objects changing their visual location between
-// animation frames (see crbug.com/581518).
-const base::Feature kJankTracking{"JankTracking",
-                                  base::FEATURE_DISABLED_BY_DEFAULT};
-
-// Changes the default RTCPeerConnection constructor behavior to use Unified
-// Plan as the SDP semantics. When the feature is enabled, Unified Plan is used
-// unless the default is overridden (by passing {sdpSemantics:'plan-b'} as the
-// argument).
-const base::Feature kRTCUnifiedPlanByDefault{"RTCUnifiedPlanByDefault",
-                                             base::FEATURE_DISABLED_BY_DEFAULT};
 
 const char kAutofillPreviewStyleExperimentBgColorParameterName[] = "bg_color";
 

@@ -33,9 +33,11 @@
 #include <memory>
 
 #include "build/build_config.h"
+#include "services/network/public/mojom/referrer_policy.mojom-shared.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/blink/public/platform/web_application_cache_host.h"
+#include "third_party/blink/renderer/bindings/core/v8/isolated_world_csp.h"
 #include "third_party/blink/renderer/bindings/core/v8/v8_binding_for_core.h"
 #include "third_party/blink/renderer/bindings/core/v8/v8_binding_for_testing.h"
 #include "third_party/blink/renderer/core/dom/document_fragment.h"
@@ -56,7 +58,6 @@
 #include "third_party/blink/renderer/core/testing/page_test_base.h"
 #include "third_party/blink/renderer/platform/heap/handle.h"
 #include "third_party/blink/renderer/platform/testing/runtime_enabled_features_test_helpers.h"
-#include "third_party/blink/renderer/platform/weborigin/referrer_policy.h"
 #include "third_party/blink/renderer/platform/weborigin/scheme_registry.h"
 #include "third_party/blink/renderer/platform/weborigin/security_origin.h"
 #include "third_party/blink/renderer/platform/wtf/text/string_builder.h"
@@ -73,7 +74,7 @@ class DocumentTest : public PageTestBase {
 void DocumentTest::SetHtmlInnerHTML(const char* html_content) {
   GetDocument().documentElement()->SetInnerHTMLFromString(
       String::FromUTF8(html_content));
-  GetDocument().View()->UpdateAllLifecyclePhases();
+  UpdateAllLifecyclePhasesForTest();
 }
 
 namespace {
@@ -357,8 +358,8 @@ TEST_F(DocumentTest, DomTreeVersionForRemoval) {
   Document& doc = GetDocument();
   {
     DocumentFragment* fragment = DocumentFragment::Create(doc);
-    fragment->appendChild(Element::Create(HTMLNames::divTag, &doc));
-    fragment->appendChild(Element::Create(HTMLNames::spanTag, &doc));
+    fragment->appendChild(Element::Create(html_names::kDivTag, &doc));
+    fragment->appendChild(Element::Create(html_names::kSpanTag, &doc));
     uint64_t original_version = doc.DomTreeVersion();
     fragment->RemoveChildren();
     EXPECT_EQ(original_version + 1, doc.DomTreeVersion())
@@ -367,8 +368,8 @@ TEST_F(DocumentTest, DomTreeVersionForRemoval) {
 
   {
     DocumentFragment* fragment = DocumentFragment::Create(doc);
-    Node* child = Element::Create(HTMLNames::divTag, &doc);
-    child->appendChild(Element::Create(HTMLNames::spanTag, &doc));
+    Node* child = Element::Create(html_names::kDivTag, &doc);
+    child->appendChild(Element::Create(html_names::kSpanTag, &doc));
     fragment->appendChild(child);
     uint64_t original_version = doc.DomTreeVersion();
     fragment->removeChild(child);
@@ -417,50 +418,50 @@ TEST_F(DocumentTest, LinkManifest) {
 
   // Check that we use the first manifest with <link rel=manifest>
   auto* link = HTMLLinkElement::Create(GetDocument(), CreateElementFlags());
-  link->setAttribute(blink::HTMLNames::relAttr, "manifest");
-  link->setAttribute(blink::HTMLNames::hrefAttr, "foo.json");
+  link->setAttribute(blink::html_names::kRelAttr, "manifest");
+  link->setAttribute(blink::html_names::kHrefAttr, "foo.json");
   GetDocument().head()->AppendChild(link);
   EXPECT_EQ(link, GetDocument().LinkManifest());
 
   auto* link2 = HTMLLinkElement::Create(GetDocument(), CreateElementFlags());
-  link2->setAttribute(blink::HTMLNames::relAttr, "manifest");
-  link2->setAttribute(blink::HTMLNames::hrefAttr, "bar.json");
+  link2->setAttribute(blink::html_names::kRelAttr, "manifest");
+  link2->setAttribute(blink::html_names::kHrefAttr, "bar.json");
   GetDocument().head()->InsertBefore(link2, link);
   EXPECT_EQ(link2, GetDocument().LinkManifest());
   GetDocument().head()->AppendChild(link2);
   EXPECT_EQ(link, GetDocument().LinkManifest());
 
   // Check that crazy URLs are accepted.
-  link->setAttribute(blink::HTMLNames::hrefAttr, "http:foo.json");
+  link->setAttribute(blink::html_names::kHrefAttr, "http:foo.json");
   EXPECT_EQ(link, GetDocument().LinkManifest());
 
   // Check that empty URLs are accepted.
-  link->setAttribute(blink::HTMLNames::hrefAttr, "");
+  link->setAttribute(blink::html_names::kHrefAttr, "");
   EXPECT_EQ(link, GetDocument().LinkManifest());
 
   // Check that URLs from different origins are accepted.
-  link->setAttribute(blink::HTMLNames::hrefAttr,
+  link->setAttribute(blink::html_names::kHrefAttr,
                      "http://example.org/manifest.json");
   EXPECT_EQ(link, GetDocument().LinkManifest());
-  link->setAttribute(blink::HTMLNames::hrefAttr,
+  link->setAttribute(blink::html_names::kHrefAttr,
                      "http://foo.example.org/manifest.json");
   EXPECT_EQ(link, GetDocument().LinkManifest());
-  link->setAttribute(blink::HTMLNames::hrefAttr,
+  link->setAttribute(blink::html_names::kHrefAttr,
                      "http://foo.bar/manifest.json");
   EXPECT_EQ(link, GetDocument().LinkManifest());
 
   // More than one token in @rel is accepted.
-  link->setAttribute(blink::HTMLNames::relAttr, "foo bar manifest");
+  link->setAttribute(blink::html_names::kRelAttr, "foo bar manifest");
   EXPECT_EQ(link, GetDocument().LinkManifest());
 
   // Such as spaces around the token.
-  link->setAttribute(blink::HTMLNames::relAttr, " manifest ");
+  link->setAttribute(blink::html_names::kRelAttr, " manifest ");
   EXPECT_EQ(link, GetDocument().LinkManifest());
 
   // Check that rel=manifest actually matters.
-  link->setAttribute(blink::HTMLNames::relAttr, "");
+  link->setAttribute(blink::html_names::kRelAttr, "");
   EXPECT_EQ(link2, GetDocument().LinkManifest());
-  link->setAttribute(blink::HTMLNames::relAttr, "manifest");
+  link->setAttribute(blink::html_names::kRelAttr, "manifest");
 
   // Check that link outside of the <head> are ignored.
   GetDocument().head()->RemoveChild(link);
@@ -472,58 +473,68 @@ TEST_F(DocumentTest, LinkManifest) {
   GetDocument().head()->AppendChild(link2);
 
   // Check that some attribute values do not have an effect.
-  link->setAttribute(blink::HTMLNames::crossoriginAttr, "use-credentials");
+  link->setAttribute(blink::html_names::kCrossoriginAttr, "use-credentials");
   EXPECT_EQ(link, GetDocument().LinkManifest());
-  link->setAttribute(blink::HTMLNames::hreflangAttr, "klingon");
+  link->setAttribute(blink::html_names::kHreflangAttr, "klingon");
   EXPECT_EQ(link, GetDocument().LinkManifest());
-  link->setAttribute(blink::HTMLNames::typeAttr, "image/gif");
+  link->setAttribute(blink::html_names::kTypeAttr, "image/gif");
   EXPECT_EQ(link, GetDocument().LinkManifest());
-  link->setAttribute(blink::HTMLNames::sizesAttr, "16x16");
+  link->setAttribute(blink::html_names::kSizesAttr, "16x16");
   EXPECT_EQ(link, GetDocument().LinkManifest());
-  link->setAttribute(blink::HTMLNames::mediaAttr, "print");
+  link->setAttribute(blink::html_names::kMediaAttr, "print");
   EXPECT_EQ(link, GetDocument().LinkManifest());
 }
 
 TEST_F(DocumentTest, referrerPolicyParsing) {
-  EXPECT_EQ(kReferrerPolicyDefault, GetDocument().GetReferrerPolicy());
+  EXPECT_EQ(network::mojom::ReferrerPolicy::kDefault,
+            GetDocument().GetReferrerPolicy());
 
   struct TestCase {
     const char* policy;
-    ReferrerPolicy expected;
+    network::mojom::ReferrerPolicy expected;
     bool is_legacy;
   } tests[] = {
-      {"", kReferrerPolicyDefault, false},
+      {"", network::mojom::ReferrerPolicy::kDefault, false},
       // Test that invalid policy values are ignored.
-      {"not-a-real-policy", kReferrerPolicyDefault, false},
-      {"not-a-real-policy,also-not-a-real-policy", kReferrerPolicyDefault,
+      {"not-a-real-policy", network::mojom::ReferrerPolicy::kDefault, false},
+      {"not-a-real-policy,also-not-a-real-policy",
+       network::mojom::ReferrerPolicy::kDefault, false},
+      {"not-a-real-policy,unsafe-url", network::mojom::ReferrerPolicy::kAlways,
        false},
-      {"not-a-real-policy,unsafe-url", kReferrerPolicyAlways, false},
-      {"unsafe-url,not-a-real-policy", kReferrerPolicyAlways, false},
+      {"unsafe-url,not-a-real-policy", network::mojom::ReferrerPolicy::kAlways,
+       false},
       // Test parsing each of the policy values.
-      {"always", kReferrerPolicyAlways, true},
-      {"default", kReferrerPolicyNoReferrerWhenDowngrade, true},
-      {"never", kReferrerPolicyNever, true},
-      {"no-referrer", kReferrerPolicyNever, false},
-      {"default", kReferrerPolicyNoReferrerWhenDowngrade, true},
-      {"no-referrer-when-downgrade", kReferrerPolicyNoReferrerWhenDowngrade,
-       false},
-      {"origin", kReferrerPolicyOrigin, false},
-      {"origin-when-crossorigin", kReferrerPolicyOriginWhenCrossOrigin, true},
-      {"origin-when-cross-origin", kReferrerPolicyOriginWhenCrossOrigin, false},
-      {"same-origin", kReferrerPolicySameOrigin, false},
-      {"strict-origin", kReferrerPolicyStrictOrigin, false},
+      {"always", network::mojom::ReferrerPolicy::kAlways, true},
+      {"default", network::mojom::ReferrerPolicy::kNoReferrerWhenDowngrade,
+       true},
+      {"never", network::mojom::ReferrerPolicy::kNever, true},
+      {"no-referrer", network::mojom::ReferrerPolicy::kNever, false},
+      {"default", network::mojom::ReferrerPolicy::kNoReferrerWhenDowngrade,
+       true},
+      {"no-referrer-when-downgrade",
+       network::mojom::ReferrerPolicy::kNoReferrerWhenDowngrade, false},
+      {"origin", network::mojom::ReferrerPolicy::kOrigin, false},
+      {"origin-when-crossorigin",
+       network::mojom::ReferrerPolicy::kOriginWhenCrossOrigin, true},
+      {"origin-when-cross-origin",
+       network::mojom::ReferrerPolicy::kOriginWhenCrossOrigin, false},
+      {"same-origin", network::mojom::ReferrerPolicy::kSameOrigin, false},
+      {"strict-origin", network::mojom::ReferrerPolicy::kStrictOrigin, false},
       {"strict-origin-when-cross-origin",
-       kReferrerPolicyStrictOriginWhenCrossOrigin, false},
-      {"unsafe-url", kReferrerPolicyAlways},
+       network::mojom::ReferrerPolicy::
+           kNoReferrerWhenDowngradeOriginWhenCrossOrigin,
+       false},
+      {"unsafe-url", network::mojom::ReferrerPolicy::kAlways},
   };
 
   for (auto test : tests) {
-    GetDocument().SetReferrerPolicy(kReferrerPolicyDefault);
+    GetDocument().SetReferrerPolicy(network::mojom::ReferrerPolicy::kDefault);
     if (test.is_legacy) {
       // Legacy keyword support must be explicitly enabled for the policy to
       // parse successfully.
       GetDocument().ParseAndSetReferrerPolicy(test.policy);
-      EXPECT_EQ(kReferrerPolicyDefault, GetDocument().GetReferrerPolicy());
+      EXPECT_EQ(network::mojom::ReferrerPolicy::kDefault,
+                GetDocument().GetReferrerPolicy());
       GetDocument().ParseAndSetReferrerPolicy(test.policy, true);
     } else {
       GetDocument().ParseAndSetReferrerPolicy(test.policy);
@@ -558,19 +569,19 @@ TEST_F(DocumentTest, StyleVersion) {
   EXPECT_TRUE(element);
 
   uint64_t previous_style_version = GetDocument().StyleVersion();
-  element->setAttribute(blink::HTMLNames::classAttr, "notfound");
+  element->setAttribute(blink::html_names::kClassAttr, "notfound");
   EXPECT_EQ(previous_style_version, GetDocument().StyleVersion());
 
-  GetDocument().View()->UpdateAllLifecyclePhases();
+  UpdateAllLifecyclePhasesForTest();
 
   previous_style_version = GetDocument().StyleVersion();
-  element->setAttribute(blink::HTMLNames::classAttr, "a");
+  element->setAttribute(blink::html_names::kClassAttr, "a");
   EXPECT_NE(previous_style_version, GetDocument().StyleVersion());
 
-  GetDocument().View()->UpdateAllLifecyclePhases();
+  UpdateAllLifecyclePhasesForTest();
 
   previous_style_version = GetDocument().StyleVersion();
-  element->setAttribute(blink::HTMLNames::classAttr, "a b");
+  element->setAttribute(blink::html_names::kClassAttr, "a b");
   EXPECT_NE(previous_style_version, GetDocument().StyleVersion());
 }
 
@@ -620,13 +631,13 @@ TEST_F(DocumentTest, SynchronousMutationNotifier) {
   EXPECT_EQ(GetDocument(), observer.LifecycleContext());
   EXPECT_EQ(0, observer.CountContextDestroyedCalled());
 
-  Element* div_node = GetDocument().CreateRawElement(HTMLNames::divTag);
+  Element* div_node = GetDocument().CreateRawElement(html_names::kDivTag);
   GetDocument().body()->AppendChild(div_node);
 
-  Element* bold_node = GetDocument().CreateRawElement(HTMLNames::bTag);
+  Element* bold_node = GetDocument().CreateRawElement(html_names::kBTag);
   div_node->AppendChild(bold_node);
 
-  Element* italic_node = GetDocument().CreateRawElement(HTMLNames::iTag);
+  Element* italic_node = GetDocument().CreateRawElement(html_names::kITag);
   div_node->AppendChild(italic_node);
 
   Node* text_node = GetDocument().createTextNode("0123456789");
@@ -686,7 +697,7 @@ TEST_F(DocumentTest, SynchronousMutationNotifierMergeTextNodes) {
 TEST_F(DocumentTest, SynchronousMutationNotifierMoveTreeToNewDocument) {
   auto& observer = *new TestSynchronousMutationObserver(GetDocument());
 
-  Node* move_sample = GetDocument().CreateRawElement(HTMLNames::divTag);
+  Node* move_sample = GetDocument().CreateRawElement(html_names::kDivTag);
   move_sample->appendChild(GetDocument().createTextNode("a123"));
   move_sample->appendChild(GetDocument().createTextNode("b456"));
   GetDocument().body()->AppendChild(move_sample);
@@ -710,7 +721,8 @@ TEST_F(DocumentTest, SynchronousMutationNotifieReplaceChild) {
   auto& observer = *new TestSynchronousMutationObserver(GetDocument());
   Element* const replaced_node = GetDocument().body();
   GetDocument().documentElement()->ReplaceChild(
-      GetDocument().CreateRawElement(HTMLNames::divTag), GetDocument().body());
+      GetDocument().CreateRawElement(html_names::kDivTag),
+      GetDocument().body());
   ASSERT_EQ(2u, observer.ChildrenChangedNodes().size());
   EXPECT_EQ(GetDocument().documentElement(),
             observer.ChildrenChangedNodes()[0]);
@@ -820,9 +832,10 @@ TEST_F(DocumentTest, ValidationMessageCleanup) {
   // true. It's necessary to kick unload process.
   GetDocument().ImplicitOpen(kForceSynchronousParsing);
   GetDocument().CancelParsing();
-  GetDocument().AppendChild(GetDocument().CreateRawElement(HTMLNames::htmlTag));
+  GetDocument().AppendChild(
+      GetDocument().CreateRawElement(html_names::kHTMLTag));
   SetHtmlInnerHTML("<body><input required></body>");
-  Element* script = GetDocument().CreateRawElement(HTMLNames::scriptTag);
+  Element* script = GetDocument().CreateRawElement(html_names::kScriptTag);
   script->setTextContent(
       "window.onunload = function() {"
       "document.querySelector('input').reportValidity(); };");
@@ -968,17 +981,19 @@ TEST_F(DocumentTest, CanExecuteScriptsWithSandboxAndIsolatedWorld) {
   ScriptState* isolated_world_without_csp_script_state =
       ToScriptState(frame, *world_without_csp);
   ASSERT_TRUE(world_without_csp->IsIsolatedWorld());
-  EXPECT_FALSE(world_without_csp->IsolatedWorldHasContentSecurityPolicy());
+  EXPECT_FALSE(IsolatedWorldCSP::Get().HasContentSecurityPolicy(
+      kIsolatedWorldWithoutCSPId));
 
   constexpr int kIsolatedWorldWithCSPId = 2;
   scoped_refptr<DOMWrapperWorld> world_with_csp =
       DOMWrapperWorld::EnsureIsolatedWorld(isolate, kIsolatedWorldWithCSPId);
-  DOMWrapperWorld::SetIsolatedWorldContentSecurityPolicy(
+  IsolatedWorldCSP::Get().SetContentSecurityPolicy(
       kIsolatedWorldWithCSPId, String::FromUTF8("script-src *"));
   ScriptState* isolated_world_with_csp_script_state =
       ToScriptState(frame, *world_with_csp);
   ASSERT_TRUE(world_with_csp->IsIsolatedWorld());
-  EXPECT_TRUE(world_with_csp->IsolatedWorldHasContentSecurityPolicy());
+  EXPECT_TRUE(IsolatedWorldCSP::Get().HasContentSecurityPolicy(
+      kIsolatedWorldWithCSPId));
 
   {
     // Since the page is sandboxed, main world script execution shouldn't be
@@ -1143,7 +1158,7 @@ class ParameterizedViewportFitDocumentTest
     }
 
     GetDocument().documentElement()->SetInnerHTMLFromString(html.ToString());
-    GetDocument().View()->UpdateAllLifecyclePhases();
+    UpdateAllLifecyclePhasesForTest();
   }
 };
 

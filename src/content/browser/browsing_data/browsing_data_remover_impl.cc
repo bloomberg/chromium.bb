@@ -284,6 +284,13 @@ void BrowsingDataRemoverImpl::RemoveImpl(
   base::RepeatingCallback<bool(const GURL& url)> filter =
       filter_builder.BuildGeneralFilter();
 
+  // Some backends support a filter that |is_null()| to make complete deletion
+  // more efficient.
+  base::RepeatingCallback<bool(const GURL&)> nullable_filter =
+      filter_builder.IsEmptyBlacklist()
+          ? base::RepeatingCallback<bool(const GURL&)>()
+          : filter;
+
   //////////////////////////////////////////////////////////////////////////////
   // DATA_TYPE_DOWNLOADS
   if ((remove_mask & DATA_TYPE_DOWNLOADS) &&
@@ -402,12 +409,15 @@ void BrowsingDataRemoverImpl::RemoveImpl(
     BrowsingDataRemoverDelegate::EmbedderOriginTypeMatcher embedder_matcher;
     if (embedder_delegate_)
       embedder_matcher = embedder_delegate_->GetOriginTypeMatcher();
+    bool perform_cleanup =
+        delete_begin_.is_null() && delete_end_.is_max() &&
+        filter_builder.GetMode() == BrowsingDataFilterBuilder::BLACKLIST;
 
     storage_partition->ClearData(
         storage_partition_remove_mask, quota_storage_remove_mask,
         base::BindRepeating(&DoesOriginMatchMaskAndURLs, origin_type_mask_,
                             filter, std::move(embedder_matcher)),
-        std::move(deletion_filter), delete_begin_, delete_end_,
+        std::move(deletion_filter), perform_cleanup, delete_begin_, delete_end_,
         CreatePendingTaskCompletionClosure());
   }
 
@@ -431,12 +441,11 @@ void BrowsingDataRemoverImpl::RemoveImpl(
           CreatePendingTaskCompletionClosureForMojo());
     } else {
       storage_partition->ClearHttpAndMediaCaches(
-          delete_begin, delete_end,
-          filter_builder.IsEmptyBlacklist()
-              ? base::Callback<bool(const GURL&)>()
-              : filter,
+          delete_begin, delete_end, nullable_filter,
           CreatePendingTaskCompletionClosureForMojo());
     }
+    storage_partition->ClearCodeCaches(
+        CreatePendingTaskCompletionClosureForMojo());
 
     // When clearing cache, wipe accumulated network related data
     // (TransportSecurityState and HttpServerPropertiesManager data).

@@ -43,9 +43,8 @@ class APIPermissionSet : public BaseSetOperators<APIPermissionSet> {
 
   void insert(APIPermission::ID id);
 
-  // Insert |permission| into the APIPermissionSet. The APIPermissionSet will
-  // take the ownership of |permission|,
-  void insert(APIPermission* permission);
+  // Inserts |permission| into the APIPermissionSet.
+  void insert(std::unique_ptr<APIPermission> permission);
 
   // Parses permissions from |permissions| and adds the parsed permissions to
   // |api_permissions|. If |source| is kDisallowInternalPermissions, treat

@@ -44,7 +44,7 @@ class AnimationEvent final : public Event {
                               pseudo_element);
   }
   static AnimationEvent* Create(const AtomicString& type,
-                                const AnimationEventInit& initializer) {
+                                const AnimationEventInit* initializer) {
     return new AnimationEvent(type, initializer);
   }
 
@@ -64,7 +64,7 @@ class AnimationEvent final : public Event {
                  const String& animation_name,
                  double elapsed_time,
                  const String& pseudo_element);
-  AnimationEvent(const AtomicString&, const AnimationEventInit&);
+  AnimationEvent(const AtomicString&, const AnimationEventInit*);
 
   String animation_name_;
   double elapsed_time_;

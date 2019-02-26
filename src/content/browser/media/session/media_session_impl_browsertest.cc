@@ -184,11 +184,11 @@ class MediaSessionImplBrowserTest : public content::ContentBrowserTest {
   }
 
   void UISeekForward() {
-    media_session_->SeekForward(base::TimeDelta::FromSeconds(1));
+    media_session_->Seek(base::TimeDelta::FromSeconds(1));
   }
 
   void UISeekBackward() {
-    media_session_->SeekBackward(base::TimeDelta::FromSeconds(1));
+    media_session_->Seek(base::TimeDelta::FromSeconds(-1));
   }
 
   void SystemStartDucking() { media_session_->StartDucking(); }
@@ -1705,7 +1705,7 @@ IN_PROC_BROWSER_TEST_P(MediaSessionImplParamBrowserTest,
               MediaSessionMetadataChanged(Eq(base::nullopt)));
   EXPECT_CALL(*mock_media_session_observer(),
               MediaSessionActionsChanged(
-                  Eq(std::set<blink::mojom::MediaSessionAction>())));
+                  Eq(std::set<media_session::mojom::MediaSessionAction>())));
   media_session_->AddObserver(mock_media_session_observer());
 }
 
@@ -1721,8 +1721,8 @@ IN_PROC_BROWSER_TEST_P(MediaSessionImplParamBrowserTest,
   mock_media_session_service_->SetMetadata(metadata);
 
   mock_media_session_service_->EnableAction(
-      blink::mojom::MediaSessionAction::PLAY);
-  std::set<blink::mojom::MediaSessionAction> expectedActions =
+      media_session::mojom::MediaSessionAction::kPlay);
+  std::set<media_session::mojom::MediaSessionAction> expectedActions =
       mock_media_session_service_->actions();
 
   // Make sure the service is routed,

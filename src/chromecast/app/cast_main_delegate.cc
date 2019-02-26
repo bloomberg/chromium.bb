@@ -14,12 +14,15 @@
 #include "base/files/file_enumerator.h"
 #include "base/files/file_util.h"
 #include "base/logging.h"
+#include "base/metrics/field_trial.h"
 #include "base/no_destructor.h"
 #include "base/path_service.h"
 #include "base/posix/global_descriptors.h"
 #include "build/build_config.h"
 #include "chromecast/base/cast_paths.h"
+#include "chromecast/base/chromecast_switches.h"
 #include "chromecast/browser/cast_content_browser_client.h"
+#include "chromecast/browser/cast_feature_list_creator.h"
 #include "chromecast/chromecast_buildflags.h"
 #include "chromecast/common/cast_resource_delegate.h"
 #include "chromecast/common/global_descriptors.h"
@@ -143,20 +146,24 @@ void CastMainDelegate::PreSandboxStartup() {
   std::string process_type =
       command_line->GetSwitchValueASCII(switches::kProcessType);
 
-// TODO(crbug.com/753619): Enable crash reporting on Fuchsia.
+  bool enable_crash_reporter = !command_line->HasSwitch(
+      switches::kDisableCrashReporter);
+  if (enable_crash_reporter) {
+  // TODO(crbug.com/753619): Enable crash reporting on Fuchsia.
 #if defined(OS_ANDROID)
-  base::FilePath log_file;
-  base::PathService::Get(FILE_CAST_ANDROID_LOG, &log_file);
-  chromecast::CrashHandler::Initialize(process_type, log_file);
+    base::FilePath log_file;
+    base::PathService::Get(FILE_CAST_ANDROID_LOG, &log_file);
+    chromecast::CrashHandler::Initialize(process_type, log_file);
 #elif defined(OS_LINUX)
-  crash_reporter::SetCrashReporterClient(GetCastCrashReporter());
+    crash_reporter::SetCrashReporterClient(GetCastCrashReporter());
 
-  if (process_type != service_manager::switches::kZygoteProcess) {
-    CastCrashReporterClient::InitCrashReporter(process_type);
-  }
+    if (process_type != service_manager::switches::kZygoteProcess) {
+      CastCrashReporterClient::InitCrashReporter(process_type);
+    }
 #endif  // defined(OS_LINUX)
 
-  crash_reporter::InitializeCrashKeys();
+    crash_reporter::InitializeCrashKeys();
+  }
 
   InitializeResourceBundle();
 }
@@ -180,17 +187,38 @@ int CastMainDelegate::RunProcess(
 #if defined(OS_LINUX)
 void CastMainDelegate::ZygoteForked() {
   const base::CommandLine* command_line(base::CommandLine::ForCurrentProcess());
-  std::string process_type =
-      command_line->GetSwitchValueASCII(switches::kProcessType);
-  CastCrashReporterClient::InitCrashReporter(process_type);
+  bool enable_crash_reporter = !command_line->HasSwitch(
+      switches::kDisableCrashReporter);
+  if (enable_crash_reporter) {
+    std::string process_type =
+        command_line->GetSwitchValueASCII(switches::kProcessType);
+    CastCrashReporterClient::InitCrashReporter(process_type);
+  }
 }
 #endif  // defined(OS_LINUX)
 
 bool CastMainDelegate::ShouldCreateFeatureList() {
-  // TODO(https://crbug.com/887459): Move the creation of FeatureList from
-  // CastBrowserMainParts::PreCreateThreads() to
-  // CastMainDelegate::PostEarlyInitialization().
   return false;
+}
+
+void CastMainDelegate::PostEarlyInitialization(bool is_running_tests) {
+  DCHECK(cast_feature_list_creator_);
+
+#if !defined(OS_ANDROID)
+  // PrefService requires home directory to be created before the pref
+  // store can be initialized properly.
+  base::FilePath home_dir;
+  CHECK(base::PathService::Get(DIR_CAST_HOME, &home_dir));
+  CHECK(base::CreateDirectory(home_dir));
+#endif  // !defined(OS_ANDROID)
+
+  // The |FieldTrialList| is a dependency of the feature list.
+  field_trial_list_ = std::make_unique<base::FieldTrialList>(nullptr);
+
+  // Initialize the base::FeatureList and the PrefService (which it depends on),
+  // so objects initialized after this point can use features from
+  // base::FeatureList.
+  cast_feature_list_creator_->CreatePrefServiceAndFeatureList();
 }
 
 void CastMainDelegate::InitializeResourceBundle() {
@@ -241,7 +269,10 @@ void CastMainDelegate::InitializeResourceBundle() {
 }
 
 content::ContentBrowserClient* CastMainDelegate::CreateContentBrowserClient() {
-  browser_client_ = CastContentBrowserClient::Create();
+  DCHECK(!cast_feature_list_creator_);
+  cast_feature_list_creator_ = std::make_unique<CastFeatureListCreator>();
+  browser_client_ =
+      CastContentBrowserClient::Create(cast_feature_list_creator_.get());
   return browser_client_.get();
 }
 

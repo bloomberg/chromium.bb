@@ -5,11 +5,11 @@
 #include "chrome/browser/supervised_user/legacy/custodian_profile_downloader_service.h"
 
 #include "chrome/browser/profiles/profile.h"
-#include "chrome/browser/signin/signin_manager_factory.h"
+#include "chrome/browser/signin/identity_manager_factory.h"
 #include "chrome/common/pref_names.h"
 #include "components/prefs/pref_service.h"
-#include "components/signin/core/browser/signin_manager.h"
 #include "google_apis/gaia/gaia_auth_util.h"
+#include "services/identity/public/cpp/identity_manager.h"
 
 CustodianProfileDownloaderService::CustodianProfileDownloaderService(
     Profile* custodian_profile)
@@ -25,8 +25,8 @@ void CustodianProfileDownloaderService::Shutdown() {
 void CustodianProfileDownloaderService::DownloadProfile(
     const DownloadProfileCallback& callback) {
   // The user must be logged in.
-  if (!SigninManagerFactory::GetForProfile(custodian_profile_)
-          ->IsAuthenticated()) {
+  if (!IdentityManagerFactory::GetForProfile(custodian_profile_)
+           ->HasPrimaryAccount()) {
     return;
   }
 

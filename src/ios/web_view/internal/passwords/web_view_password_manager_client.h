@@ -83,7 +83,7 @@ class WebViewPasswordManagerClient
   void NotifySuccessfulLoginWithExistingPassword(
       const autofill::PasswordForm& form) override;
   void NotifyStorePasswordCalled() override;
-  bool IsSavingAndFillingEnabledForCurrentPage() const override;
+  bool IsSavingAndFillingEnabled(const GURL& url) const override;
   const GURL& GetLastCommittedEntryURL() const override;
   const password_manager::CredentialsFilter* GetStoreResultFilter()
       const override;
@@ -97,7 +97,7 @@ class WebViewPasswordManagerClient
   void PromptUserToEnableAutosignin() override;
   password_manager::PasswordManager* GetPasswordManager() override;
 
-  id<CWVPasswordManagerClientDelegate> delegate_;  // (weak)
+  __weak id<CWVPasswordManagerClientDelegate> delegate_;
 
   // The preference associated with
   // password_manager::prefs::kCredentialsEnableService.

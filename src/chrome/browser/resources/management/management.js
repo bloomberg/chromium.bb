@@ -89,6 +89,18 @@ cr.define('management', function() {
 
         $('extensions').hidden = false;
       });
+
+      this.browserProxy_.getLocalTrustRootsInfo().then(function(
+          trustRootsConfigured) {
+        if (trustRootsConfigured) {
+          $('trust-roots-configuration').textContent =
+              loadTimeData.getString('managementTrustRootsConfigured');
+        } else {
+          $('trust-roots-configuration').textContent =
+              loadTimeData.getString('managementTrustRootsNotConfigured');
+        }
+        $('trust-roots').hidden = false;
+      });
     }
   }
 
@@ -110,6 +122,12 @@ cr.define('management', function() {
      * @return {!Promise<!Array<!Extension>>} List of extensions.
      */
     getExtensions() {}
+
+    /**
+     * @return {!Promise<string>} Message describing trust root configuration
+     * status.
+     */
+    getLocalTrustRootsInfo() {}
   }
 
   /**
@@ -129,6 +147,11 @@ cr.define('management', function() {
     /** @override */
     getExtensions() {
       return cr.sendWithPromise('getExtensions');
+    }
+
+    /** @override */
+    getLocalTrustRootsInfo() {
+      return cr.sendWithPromise('getLocalTrustRootsInfo');
     }
   }
 

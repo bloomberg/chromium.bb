@@ -33,7 +33,7 @@
 #include <gtest/gtest.h>
 
 namespace WTF {
-namespace ArenaTestHelpers {
+namespace arena_test_helpers {
 
 // An allocator for the PODArena which tracks the regions which have
 // been allocated.
@@ -65,7 +65,7 @@ class TrackedAllocator final : public PODArena::FastMallocAllocator {
   Vector<void*> allocated_regions_;
 };
 
-}  // namespace ArenaTestHelpers
+}  // namespace arena_test_helpers
 }  // namespace WTF
 
 #endif  // THIRD_PARTY_BLINK_RENDERER_PLATFORM_WTF_POD_ARENA_TEST_HELPERS_H_

@@ -9,7 +9,7 @@
 #include "third_party/blink/renderer/core/frame/web_feature.h"
 
 namespace blink {
-namespace CSSLonghand {
+namespace css_longhand {
 
 const CSSValue* Resize::CSSValueFromComputedStyleInternal(
     const ComputedStyle& style,
@@ -25,30 +25,17 @@ void Resize::ApplyValue(StyleResolverState& state,
   const CSSIdentifierValue& identifier_value = ToCSSIdentifierValue(value);
 
   EResize r = EResize::kNone;
-  CSSValueID id = identifier_value.GetValueID();
-  switch (id) {
-    case CSSValueAuto:
-      if (Settings* settings = state.GetDocument().GetSettings()) {
-        r = settings->GetTextAreasAreResizable() ? EResize::kBoth
-                                                 : EResize::kNone;
-      }
-      UseCounter::Count(state.GetDocument(), WebFeature::kCSSResizeAuto);
-      break;
-    case CSSValueBlock:
-    case CSSValueInline:
-      if ((id == CSSValueBlock) ==
-          IsHorizontalWritingMode(state.Style()->GetWritingMode())) {
-        r = EResize::kVertical;
-      } else {
-        r = EResize::kHorizontal;
-      }
-      break;
-    default:
-      r = identifier_value.ConvertTo<EResize>();
-      break;
+  if (identifier_value.GetValueID() == CSSValueAuto) {
+    if (Settings* settings = state.GetDocument().GetSettings()) {
+      r = settings->GetTextAreasAreResizable() ? EResize::kBoth
+                                               : EResize::kNone;
+    }
+    UseCounter::Count(state.GetDocument(), WebFeature::kCSSResizeAuto);
+  } else {
+    r = identifier_value.ConvertTo<EResize>();
   }
   state.Style()->SetResize(r);
 }
 
-}  // namespace CSSLonghand
+}  // namespace css_longhand
 }  // namespace blink

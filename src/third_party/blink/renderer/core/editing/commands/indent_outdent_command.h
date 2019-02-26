@@ -34,14 +34,14 @@ class CORE_EXPORT IndentOutdentCommand final : public ApplyBlockElementCommand {
  public:
   enum EIndentType { kIndent, kOutdent };
   static IndentOutdentCommand* Create(Document& document, EIndentType type) {
-    return new IndentOutdentCommand(document, type);
+    return MakeGarbageCollected<IndentOutdentCommand>(document, type);
   }
+
+  IndentOutdentCommand(Document&, EIndentType);
 
   bool PreservesTypingStyle() const override { return true; }
 
  private:
-  IndentOutdentCommand(Document&, EIndentType);
-
   InputEvent::InputType GetInputType() const override;
 
   void OutdentRegion(const VisiblePosition&,

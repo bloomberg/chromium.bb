@@ -7,7 +7,7 @@
 
 #include "base/single_thread_task_runner.h"
 #include "third_party/blink/renderer/modules/webgl/webgl_shared_platform_3d_object.h"
-#include "third_party/blink/renderer/platform/web_task_runner.h"
+#include "third_party/blink/renderer/platform/scheduler/public/post_cancellable_task.h"
 
 namespace gpu {
 namespace gles2 {
@@ -23,6 +23,7 @@ class WebGLQuery : public WebGLSharedPlatform3DObject {
   DEFINE_WRAPPERTYPEINFO();
 
  public:
+  explicit WebGLQuery(WebGL2RenderingContextBase*);
   ~WebGLQuery() override;
 
   static WebGLQuery* Create(WebGL2RenderingContextBase*);
@@ -38,8 +39,6 @@ class WebGLQuery : public WebGLSharedPlatform3DObject {
   GLuint GetQueryResult();
 
  protected:
-  explicit WebGLQuery(WebGL2RenderingContextBase*);
-
   void DeleteObjectImpl(gpu::gles2::GLES2Interface*) override;
 
  private:

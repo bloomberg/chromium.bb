@@ -52,7 +52,7 @@ V8PerContextData::V8PerContextData(v8::Local<v8::Context> context)
       context_holder_(std::make_unique<gin::ContextHolder>(isolate_)),
       context_(isolate_, context),
       activity_logger_(nullptr),
-      data_map_(new DataMap()) {
+      data_map_(MakeGarbageCollected<DataMap>()) {
   context_holder_->SetContext(context);
   context_.Get().AnnotateStrongRetainer("blink::V8PerContextData::context_");
 

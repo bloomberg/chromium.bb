@@ -7,6 +7,7 @@
 
 #include "third_party/blink/renderer/core/animation/animation_clock.h"
 #include "third_party/blink/renderer/core/core_export.h"
+#include "third_party/blink/renderer/core/dom/document_lifecycle.h"
 #include "third_party/blink/renderer/platform/heap/handle.h"
 
 namespace blink {
@@ -17,6 +18,9 @@ class Page;
 class CORE_EXPORT PageAnimator final : public GarbageCollected<PageAnimator> {
  public:
   static PageAnimator* Create(Page&);
+
+  explicit PageAnimator(Page&);
+
   void Trace(blink::Visitor*);
   void ScheduleVisualUpdate(LocalFrame*);
   void ServiceScriptedAnimations(
@@ -31,14 +35,14 @@ class CORE_EXPORT PageAnimator final : public GarbageCollected<PageAnimator> {
   void SetSuppressFrameRequestsWorkaroundFor704763Only(bool);
 
   // See documents of methods with the same names in LocalFrameView class.
-  void UpdateAllLifecyclePhases(LocalFrame& root_frame);
+  void UpdateAllLifecyclePhases(
+      LocalFrame& root_frame,
+      DocumentLifecycle::LifecycleUpdateReason reason);
   void UpdateAllLifecyclePhasesExceptPaint(LocalFrame& root_frame);
   void UpdateLifecycleToLayoutClean(LocalFrame& root_frame);
   AnimationClock& Clock() { return animation_clock_; }
 
  private:
-  explicit PageAnimator(Page&);
-
   Member<Page> page_;
   bool servicing_animations_;
   bool updating_layout_and_style_for_painting_;

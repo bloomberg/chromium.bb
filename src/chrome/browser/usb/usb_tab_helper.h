@@ -49,10 +49,13 @@ class UsbTabHelper : public content::WebContentsObserver,
 
   // content::WebContentsObserver overrides:
   void RenderFrameDeleted(content::RenderFrameHost* render_frame_host) override;
+  void RenderFrameHostChanged(content::RenderFrameHost* old_host,
+                              content::RenderFrameHost* new_host) override;
   void DidFinishNavigation(content::NavigationHandle* handle) override;
 
   FrameUsbServices* GetFrameUsbService(
       content::RenderFrameHost* render_frame_host);
+  void DeleteFrameServices(content::RenderFrameHost* render_frame_host);
 
   base::WeakPtr<WebUsbChooser> GetUsbChooser(
       content::RenderFrameHost* render_frame_host);

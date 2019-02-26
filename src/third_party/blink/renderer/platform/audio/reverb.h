@@ -59,7 +59,7 @@ class PLATFORM_EXPORT Reverb {
 
   void Process(const AudioBus* source_bus,
                AudioBus* destination_bus,
-               size_t frames_to_process);
+               uint32_t frames_to_process);
   void Reset();
 
   size_t ImpulseResponseLength() const { return impulse_response_length_; }

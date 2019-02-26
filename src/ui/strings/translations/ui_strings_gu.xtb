@@ -30,16 +30,19 @@
 <translation id="1871244248791675517">Ins</translation>
 <translation id="1884435127456172652"><ph name="NUMBER" /> %</translation>
 <translation id="1901303067676059328">&amp;બધા પસંદ કરો</translation>
+<translation id="1938451708255335766">વિંડો ડિસ્પ્લે ઘનતાને ગોઠવવા માટે, ઍપને ફરીથી શરૂ કરો.</translation>
 <translation id="2141853158323869627">{DAYS,plural, =1{1 દિ}one{# દિ}other{# દિ}}</translation>
 <translation id="2148716181193084225">આજે</translation>
 <translation id="2168039046890040389">પૃષ્ઠ ઉપર</translation>
 <translation id="2190355936436201913">(ખાલી)</translation>
+<translation id="2192232475740621500">ઓછી ઘનતાનો ઉપયોગ કરો</translation>
 <translation id="219905428774326614">લૉન્ચર, બધી ઍપ</translation>
 <translation id="2267918077332197517">આ સાઇટના બધા નોટિફિકેશનો અવરોધિત કરો</translation>
 <translation id="2289052229480071835">તમારી સ્ક્રીન પર ટચ કરવાના લક્ષ્યોને ટૅપ કરો.</translation>
 <translation id="2295140143284145483">સર્વેક્ષણ</translation>
 <translation id="2297836609126180313"><ph name="QUANTITY" /> TB/s</translation>
 <translation id="24452542372838207">નોટિફિકેશન વિસ્તૃત કરો</translation>
+<translation id="2445449901874883781">વધારે ઘનતાનો ઉપયોગ કરો</translation>
 <translation id="2482878487686419369">સૂચનાઓ</translation>
 <translation id="2497284189126895209">બધી ફાઇલો</translation>
 <translation id="2515586267016047495">Alt</translation>
@@ -60,6 +63,7 @@
 <translation id="3234408098842461169">નીચલો એરો</translation>
 <translation id="3291688615589870984">{DAYS,plural, =1{1 દિવસ}one{# દિવસ}other{# દિવસ}}</translation>
 <translation id="335581015389089642">ભાષા</translation>
+<translation id="3479552764303398839">હમણાં નહીં</translation>
 <translation id="3600566671520689681">{DAYS,plural, =1{1 દિવસ બાકી}one{# દિવસ બાકી}other{# દિવસ બાકી}}</translation>
 <translation id="3618849550573277856">“<ph name="LOOKUP_STRING" />” શોધો</translation>
 <translation id="364720409959344976">અપલોડ કરવા માટે ફોલ્ડર પસંદ કરો</translation>
@@ -99,6 +103,7 @@
 <translation id="5613020302032141669">ડાબો એરો</translation>
 <translation id="5754277640426581776">{MINUTES,plural, =1{1 મિનિટ}one{# મિનિટ}other{# મિનિટ}}</translation>
 <translation id="5768079895599174203">{DAYS,plural, =1{1 દિવસ અને }one{# દિવસ અને }other{# દિવસ અને }}</translation>
+<translation id="5895138241574237353">પુનઃપ્રારંભ કરો</translation>
 <translation id="5906667377645263094">{SECONDS,plural, =1{1 સેકન્ડ બાકી}one{# સેકન્ડ બાકી}other{# સેકન્ડ બાકી}}</translation>
 <translation id="5941711191222866238">નાનું કરો</translation>
 <translation id="5943826764092288734">{HOURS,plural, =1{1 કલાક}one{# કલાક}other{# કલાક}}</translation>

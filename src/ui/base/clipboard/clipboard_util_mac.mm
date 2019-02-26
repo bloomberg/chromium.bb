@@ -150,10 +150,8 @@ bool ClipboardUtil::URLsAndTitlesFromPasteboard(NSPasteboard* pboard,
   if ([bookmarkPairs count] != 2)
     return false;
 
-  NSArray* urlsArr =
-      base::mac::ObjCCast<NSArray>([bookmarkPairs objectAtIndex:0]);
-  NSArray* titlesArr =
-      base::mac::ObjCCast<NSArray>([bookmarkPairs objectAtIndex:1]);
+  NSArray* urlsArr = base::mac::ObjCCast<NSArray>(bookmarkPairs[0]);
+  NSArray* titlesArr = base::mac::ObjCCast<NSArray>(bookmarkPairs[1]);
 
   if (!urlsArr || !titlesArr)
     return false;
@@ -193,6 +191,27 @@ NSPasteboard* ClipboardUtil::PasteboardFromType(ui::ClipboardType type) {
   }
 
   return [NSPasteboard pasteboardWithName:type_string];
+}
+
+// static
+NSString* ClipboardUtil::GetHTMLFromRTFOnPasteboard(NSPasteboard* pboard) {
+  NSData* rtfData = [pboard dataForType:NSRTFPboardType];
+  if (!rtfData)
+    return nil;
+
+  NSAttributedString* attributed =
+      [[[NSAttributedString alloc] initWithRTF:rtfData
+                            documentAttributes:nil] autorelease];
+  NSData* htmlData =
+      [attributed dataFromRange:NSMakeRange(0, [attributed length])
+             documentAttributes:@{
+               NSDocumentTypeDocumentAttribute : NSHTMLTextDocumentType
+             }
+                          error:nil];
+
+  // According to the docs, NSHTMLTextDocumentType is UTF8.
+  return [[[NSString alloc] initWithData:htmlData
+                                encoding:NSUTF8StringEncoding] autorelease];
 }
 
 }  // namespace ui

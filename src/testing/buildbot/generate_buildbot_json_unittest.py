@@ -40,6 +40,19 @@ class FakeBBGen(generate_buildbot_json.BBJSONGenerator):
   def write_file(self, relative_path, contents):
     self.files[relative_path] = contents
 
+  # pragma pylint: disable=arguments-differ
+  def check_output_file_consistency(self, verbose=False, dump=True):
+    try:
+      super(FakeBBGen, self).check_output_file_consistency(verbose)
+    except generate_buildbot_json.BBGenErr:
+      if verbose and dump:
+          # Assume we want to see the difference in the waterfalls'
+          # generated output to make it easier to rebaseline the test.
+          for line in self.printed_lines:
+            print line
+      raise
+# pragma pylint: enable=arguments-differ
+
 
 FOO_GTESTS_WATERFALL = """\
 [
@@ -111,165 +124,6 @@ FOO_GTESTS_MULTI_DIMENSION_WATERFALL = """\
 ]
 """
 
-FOO_GTESTS_WATERFALL_MIXIN_WATERFALL = """\
-[
-  {
-    'mixins': ['waterfall_mixin'],
-    'name': 'chromium.test',
-    'machines': {
-      'Fake Tester': {
-        'swarming': {},
-        'test_suites': {
-          'gtest_tests': 'foo_tests',
-        },
-      },
-    },
-  },
-]
-"""
-
-FOO_GTESTS_BUILDER_MIXIN_WATERFALL = """\
-[
-  {
-    'name': 'chromium.test',
-    'machines': {
-      'Fake Tester': {
-        'mixins': ['builder_mixin'],
-        'swarming': {},
-        'test_suites': {
-          'gtest_tests': 'foo_tests',
-        },
-      },
-    },
-  },
-]
-"""
-
-FOO_GTESTS_BUILDER_MIXIN_NON_SWARMING_WATERFALL = """\
-[
-  {
-    'name': 'chromium.test',
-    'machines': {
-      'Fake Tester': {
-        'mixins': ['random_mixin'],
-        'swarming': {},
-        'test_suites': {
-          'gtest_tests': 'foo_tests',
-        },
-      },
-    },
-  },
-]
-"""
-
-FOO_GTESTS_DIMENSIONS_MIXIN_WATERFALL = """\
-[
-  {
-    'name': 'chromium.test',
-    'machines': {
-      'Fake Tester': {
-        'mixins': ['dimension_mixin'],
-        'swarming': {},
-        'test_suites': {
-          'gtest_tests': 'foo_tests',
-        },
-      },
-    },
-  },
-]
-"""
-
-FOO_GPU_TELEMETRY_TEST_DIMENSIONS_WATERFALL = """\
-[
-  {
-    'name': 'chromium.test',
-    'machines': {
-      'Fake Tester': {
-        'mixins': ['dimension_mixin'],
-        'os_type': 'win',
-        'browser_config': 'release',
-        'test_suites': {
-          'gpu_telemetry_tests': 'foo_tests',
-        },
-      },
-    },
-  },
-]
-"""
-
-# Swarming mixins must be a list, a single string is not allowed.
-FOO_GTESTS_INVALID_LIST_MIXIN_WATERFALL = """\
-[
-  {
-    'name': 'chromium.test',
-    'machines': {
-      'Fake Tester': {
-        'mixins': 'dimension_mixin',
-        'swarming': {},
-        'test_suites': {
-          'gtest_tests': 'foo_tests',
-        },
-      },
-    },
-  },
-]
-"""
-FOO_GTESTS_INVALID_NOTFOUND_MIXIN_WATERFALL = """\
-[
-  {
-    'name': 'chromium.test',
-    'machines': {
-      'Fake Tester': {
-        'mixins': ['nonexistant'],
-        'swarming': {},
-        'test_suites': {
-          'gtest_tests': 'foo_tests',
-        },
-      },
-    },
-  },
-]
-"""
-
-FOO_GTESTS_TEST_MIXIN_WATERFALL = """\
-[
-  {
-    'mixins': ['waterfall_mixin'],
-    'name': 'chromium.test',
-    'machines': {
-      'Fake Tester': {
-        'swarming': {},
-        'test_suites': {
-          'gtest_tests': 'foo_tests',
-        },
-      },
-    },
-  },
-]
-"""
-
-FOO_GTESTS_SORTING_MIXINS_WATERFALL = """\
-[
-  {
-    'mixins': ['a_mixin', 'b_mixin', 'c_mixin'],
-    'name': 'chromium.test',
-    'machines': {
-      'Fake Tester': {
-        'swarming': {
-          'dimension_sets': [
-            {
-              'kvm': '1',
-            },
-          ],
-        },
-        'test_suites': {
-          'gtest_tests': 'foo_tests',
-        },
-      },
-    },
-  },
-]
-"""
 
 FOO_LINUX_GTESTS_WATERFALL = """\
 [
@@ -371,22 +225,6 @@ FOO_CTS_WATERFALL = """\
     'name': 'chromium.test',
     'machines': {
       'Fake Tester': {
-        'test_suites': {
-          'cts_tests': 'foo_cts_tests',
-        },
-      },
-    },
-  },
-]
-"""
-
-FOO_CTS_WATERFALL_MIXINS = """\
-[
-  {
-    'name': 'chromium.test',
-    'machines': {
-      'Fake Tester': {
-        'mixins': ['test_mixin'],
         'test_suites': {
           'cts_tests': 'foo_cts_tests',
         },
@@ -606,25 +444,6 @@ FOO_TEST_SUITE_WITH_ENABLE_FEATURES = """\
 }
 """
 
-FOO_TEST_SUITE_WITH_MIXIN = """\
-{
-  'basic_suites': {
-    'foo_tests': {
-      'foo_test': {
-        'swarming': {
-          'dimension_sets': [
-            {
-              'integrity': 'high',
-            }
-          ],
-          'expiration': 120,
-        },
-        'mixins': ['test_mixin'],
-      },
-    },
-  },
-}
-"""
 
 FOO_SCRIPT_SUITE = """\
 {
@@ -1366,159 +1185,14 @@ MULTI_DIMENSION_OUTPUT = """\
         "trigger_script": {
           "args": [
             "--multiple-trigger-configs",
-            "[{\\"gpu\\": \\"none\\", \\"os\\": \\"1\\"}, \
+            "[{\\"gpu\\": \\"none\\", \\"integrity\\": \\"high\\", \
+\\"os\\": \\"1\\"}, \
 {\\"gpu\\": \\"none\\", \\"os\\": \\"2\\"}]",
             "--multiple-dimension-script-verbose",
             "True"
           ],
           "script": "//testing/trigger_scripts/trigger_multiple_dimensions.py"
         }
-      }
-    ]
-  }
-}
-"""
-
-WATERFALL_MIXIN_WATERFALL_OUTPUT = """\
-{
-  "AAAAA1 AUTOGENERATED FILE DO NOT EDIT": {},
-  "AAAAA2 See generate_buildbot_json.py to make changes": {},
-  "Fake Tester": {
-    "gtest_tests": [
-      {
-        "swarming": {
-          "can_use_on_swarming_builders": true,
-          "dimension_sets": [
-            {
-              "integrity": "high"
-            }
-          ],
-          "expiration": 120,
-          "value": "waterfall"
-        },
-        "test": "foo_test"
-      }
-    ]
-  }
-}
-"""
-
-WATERFALL_MIXIN_WATERFALL_EXCEPTION_OUTPUT = """\
-{
-  "AAAAA1 AUTOGENERATED FILE DO NOT EDIT": {},
-  "AAAAA2 See generate_buildbot_json.py to make changes": {},
-  "Fake Tester": {
-    "gtest_tests": [
-      {
-        "swarming": {
-          "can_use_on_swarming_builders": true,
-          "dimension_sets": [
-            {
-              "integrity": "high"
-            }
-          ],
-          "expiration": 120,
-          "value": "exception"
-        },
-        "test": "foo_test"
-      }
-    ]
-  }
-}
-"""
-
-BUILDER_MIXIN_WATERFALL_OUTPUT = """\
-{
-  "AAAAA1 AUTOGENERATED FILE DO NOT EDIT": {},
-  "AAAAA2 See generate_buildbot_json.py to make changes": {},
-  "Fake Tester": {
-    "gtest_tests": [
-      {
-        "swarming": {
-          "can_use_on_swarming_builders": true,
-          "dimension_sets": [
-            {
-              "integrity": "high"
-            }
-          ],
-          "expiration": 120,
-          "value": "builder"
-        },
-        "test": "foo_test"
-      }
-    ]
-  }
-}
-"""
-
-BUILDER_MIXIN_NON_SWARMING_WATERFALL_OUTPUT = """\
-{
-  "AAAAA1 AUTOGENERATED FILE DO NOT EDIT": {},
-  "AAAAA2 See generate_buildbot_json.py to make changes": {},
-  "Fake Tester": {
-    "gtest_tests": [
-      {
-        "swarming": {
-          "can_use_on_swarming_builders": true,
-          "dimension_sets": [
-            {
-              "integrity": "high"
-            }
-          ],
-          "expiration": 120
-        },
-        "test": "foo_test",
-        "value": "random"
-      }
-    ]
-  }
-}
-"""
-
-TEST_MIXIN_WATERFALL_OUTPUT = """\
-{
-  "AAAAA1 AUTOGENERATED FILE DO NOT EDIT": {},
-  "AAAAA2 See generate_buildbot_json.py to make changes": {},
-  "Fake Tester": {
-    "gtest_tests": [
-      {
-        "swarming": {
-          "can_use_on_swarming_builders": true,
-          "dimension_sets": [
-            {
-              "integrity": "high",
-              "kvm": "1"
-            }
-          ],
-          "expiration": 120,
-          "value": "test"
-        },
-        "test": "foo_test"
-      }
-    ]
-  }
-}
-"""
-
-DIMENSIONS_MIXIN_WATERFALL_OUTPUT = """\
-{
-  "AAAAA1 AUTOGENERATED FILE DO NOT EDIT": {},
-  "AAAAA2 See generate_buildbot_json.py to make changes": {},
-  "Fake Tester": {
-    "gtest_tests": [
-      {
-        "swarming": {
-          "can_use_on_swarming_builders": true,
-          "dimension_sets": [
-            {
-              "iama": "mixin",
-              "integrity": "high"
-            }
-          ],
-          "expiration": 120,
-          "value": "test"
-        },
-        "test": "foo_test"
       }
     ]
   }
@@ -1574,77 +1248,6 @@ consoles {
     name: "buildbucket/luci.chromium.ci/Fake Tester"
     name: "buildbucket/luci.chromium.ci/Really Fake Tester"
   }
-}
-"""
-
-# These mixins are invalid; if passed to check_input_file_consistency, they will
-# fail. These are used for output file consistency checks.
-SWARMING_MIXINS = """\
-{
-  'builder_mixin': {
-    'swarming': {
-      'value': 'builder',
-    },
-  },
-  'dimension_mixin': {
-    'swarming': {
-      'dimensions': {
-        'iama': 'mixin',
-      },
-    },
-  },
-  'random_mixin': {
-    'value': 'random',
-  },
-  'test_mixin': {
-    'swarming': {
-      'value': 'test',
-    },
-  },
-  'waterfall_mixin': {
-    'swarming': {
-      'value': 'waterfall',
-    },
-  },
-}
-"""
-
-SWARMING_MIXINS_DUPLICATED = """\
-{
-  'builder_mixin': {
-    'value': 'builder',
-  },
-  'builder_mixin': {
-    'value': 'builder',
-  },
-}
-"""
-
-SWARMING_MIXINS_UNSORTED = """\
-{
-  'b_mixin': {
-    'b': 'b',
-  },
-  'a_mixin': {
-    'a': 'a',
-  },
-  'c_mixin': {
-    'c': 'c',
-  },
-}
-"""
-
-SWARMING_MIXINS_SORTED = """\
-{
-  'a_mixin': {
-    'a': 'a',
-  },
-  'b_mixin': {
-    'b': 'b',
-  },
-  'c_mixin': {
-    'c': 'c',
-  },
 }
 """
 
@@ -2145,7 +1748,7 @@ class UnitTest(unittest.TestCase):
     fbb.files['chromium.test.json'] = (
       '\n' + COMPOSITION_WATERFALL_FILTERED_OUTPUT)
     with self.assertRaises(generate_buildbot_json.BBGenErr):
-      fbb.check_output_file_consistency(verbose=True)
+      fbb.check_output_file_consistency(verbose=True, dump=False)
     joined_lines = ' '.join(fbb.printed_lines)
     self.assertRegexpMatches(
         joined_lines, 'Waterfall chromium.test did not have the following'
@@ -2231,145 +1834,6 @@ class UnitTest(unittest.TestCase):
                     LUCI_MILO_CFG)
     with self.assertRaises(generate_buildbot_json.BBGenErr):
       fbb.check_input_file_consistency(verbose=True)
-    self.assertFalse(fbb.printed_lines)
-
-  def test_mixins_waterfall(self):
-    fbb = FakeBBGen(FOO_GTESTS_WATERFALL_MIXIN_WATERFALL,
-                    FOO_TEST_SUITE,
-                    EMPTY_PYL_FILE,
-                    SWARMING_MIXINS,
-                    LUCI_MILO_CFG)
-    fbb.files['chromium.test.json'] = WATERFALL_MIXIN_WATERFALL_OUTPUT
-    fbb.check_output_file_consistency(verbose=True)
-    self.assertFalse(fbb.printed_lines)
-
-  def test_mixins_waterfall_exception_overrides(self):
-    fbb = FakeBBGen(FOO_GTESTS_WATERFALL_MIXIN_WATERFALL,
-                    FOO_TEST_SUITE,
-                    SCRIPT_WITH_ARGS_SWARMING_EXCEPTIONS,
-                    SWARMING_MIXINS,
-                    LUCI_MILO_CFG)
-    fbb.files['chromium.test.json'] = WATERFALL_MIXIN_WATERFALL_EXCEPTION_OUTPUT
-    fbb.check_output_file_consistency(verbose=True)
-    self.assertFalse(fbb.printed_lines)
-
-  def test_mixins_builder(self):
-    fbb = FakeBBGen(FOO_GTESTS_BUILDER_MIXIN_WATERFALL,
-                    FOO_TEST_SUITE,
-                    EMPTY_PYL_FILE,
-                    SWARMING_MIXINS,
-                    LUCI_MILO_CFG)
-    fbb.files['chromium.test.json'] = BUILDER_MIXIN_WATERFALL_OUTPUT
-    fbb.check_output_file_consistency(verbose=True)
-    self.assertFalse(fbb.printed_lines)
-
-  def test_mixins_builder_non_swarming(self):
-    fbb = FakeBBGen(FOO_GTESTS_BUILDER_MIXIN_NON_SWARMING_WATERFALL,
-                    FOO_TEST_SUITE,
-                    EMPTY_PYL_FILE,
-                    SWARMING_MIXINS,
-                    LUCI_MILO_CFG)
-    fbb.files['chromium.test.json'] = (
-        BUILDER_MIXIN_NON_SWARMING_WATERFALL_OUTPUT)
-    fbb.check_output_file_consistency(verbose=True)
-    self.assertFalse(fbb.printed_lines)
-
-  def test_mixins_test(self):
-    fbb = FakeBBGen(FOO_GTESTS_WATERFALL,
-                    FOO_TEST_SUITE_WITH_MIXIN,
-                    EMPTY_PYL_FILE,
-                    SWARMING_MIXINS,
-                    LUCI_MILO_CFG)
-    fbb.files['chromium.test.json'] = TEST_MIXIN_WATERFALL_OUTPUT
-    fbb.check_output_file_consistency(verbose=True)
-    self.assertFalse(fbb.printed_lines)
-
-  def test_mixins_dimension(self):
-    fbb = FakeBBGen(FOO_GTESTS_DIMENSIONS_MIXIN_WATERFALL,
-                    FOO_TEST_SUITE_WITH_MIXIN,
-                    EMPTY_PYL_FILE,
-                    SWARMING_MIXINS,
-                    LUCI_MILO_CFG)
-    fbb.files['chromium.test.json'] = DIMENSIONS_MIXIN_WATERFALL_OUTPUT
-    fbb.check_output_file_consistency(verbose=True)
-    self.assertFalse(fbb.printed_lines)
-
-  def test_mixins_dimension_gpu(self):
-    fbb = FakeBBGen(FOO_GPU_TELEMETRY_TEST_DIMENSIONS_WATERFALL,
-                    FOO_TEST_SUITE_WITH_MIXIN,
-                    EMPTY_PYL_FILE,
-                    SWARMING_MIXINS,
-                    LUCI_MILO_CFG)
-    fbb.files['chromium.test.json'] = GPU_DIMENSIONS_WATERFALL_OUTPUT
-    fbb.check_output_file_consistency(verbose=True)
-    self.assertFalse(fbb.printed_lines)
-
-  def test_mixins_unreferenced(self):
-    fbb = FakeBBGen(FOO_GTESTS_WATERFALL,
-                    FOO_TEST_SUITE_WITH_MIXIN,
-                    EMPTY_PYL_FILE,
-                    SWARMING_MIXINS,
-                    LUCI_MILO_CFG)
-    with self.assertRaisesRegexp(generate_buildbot_json.BBGenErr,
-                                 '.*mixins are unreferenced.*'):
-      fbb.check_input_file_consistency(verbose=True)
-    self.assertFalse(fbb.printed_lines)
-
-  def test_mixins_cts(self):
-    fbb = FakeBBGen(FOO_CTS_WATERFALL_MIXINS,
-                    FOO_CTS_SUITE ,
-                    EMPTY_PYL_FILE,
-                    EMPTY_PYL_FILE,
-                    LUCI_MILO_CFG)
-    fbb.files['chromium.test.json'] = CTS_OUTPUT
-    fbb.check_input_file_consistency(verbose=True)
-    fbb.check_output_file_consistency(verbose=True)
-    self.assertFalse(fbb.printed_lines)
-
-  def test_mixins_unused(self):
-    fbb = FakeBBGen(FOO_GTESTS_INVALID_NOTFOUND_MIXIN_WATERFALL,
-                    FOO_TEST_SUITE_WITH_MIXIN,
-                    EMPTY_PYL_FILE,
-                    SWARMING_MIXINS,
-                    LUCI_MILO_CFG)
-    fbb.files['chromium.test.json'] = DIMENSIONS_MIXIN_WATERFALL_OUTPUT
-    with self.assertRaises(generate_buildbot_json.BBGenErr):
-      fbb.check_output_file_consistency(verbose=True)
-    self.assertFalse(fbb.printed_lines)
-
-  def test_mixins_list(self):
-    fbb = FakeBBGen(FOO_GTESTS_INVALID_LIST_MIXIN_WATERFALL,
-                    FOO_TEST_SUITE_WITH_MIXIN,
-                    EMPTY_PYL_FILE,
-                    SWARMING_MIXINS,
-                    LUCI_MILO_CFG)
-    fbb.files['chromium.test.json'] = DIMENSIONS_MIXIN_WATERFALL_OUTPUT
-    with self.assertRaises(generate_buildbot_json.BBGenErr):
-      fbb.check_output_file_consistency(verbose=True)
-    self.assertFalse(fbb.printed_lines)
-
-  def test_mixins_must_be_sorted(self):
-    fbb = FakeBBGen(FOO_GTESTS_SORTING_MIXINS_WATERFALL,
-                    FOO_TEST_SUITE,
-                    EMPTY_PYL_FILE,
-                    SWARMING_MIXINS_SORTED,
-                    LUCI_MILO_CFG)
-    fbb.check_input_file_consistency(verbose=True)
-    self.assertFalse(fbb.printed_lines)
-
-    fbb = FakeBBGen(FOO_GTESTS_SORTING_MIXINS_WATERFALL,
-                    FOO_TEST_SUITE,
-                    EMPTY_PYL_FILE,
-                    SWARMING_MIXINS_UNSORTED,
-                    LUCI_MILO_CFG)
-    with self.assertRaises(generate_buildbot_json.BBGenErr):
-      fbb.check_input_file_consistency(verbose=True)
-    joined_lines = ' '.join(fbb.printed_lines)
-    self.assertRegexpMatches(
-        joined_lines, '.*\+._mixin.*')
-    self.assertRegexpMatches(
-        joined_lines, '.*\-._mixin.*')
-    fbb.printed_lines = []
     self.assertFalse(fbb.printed_lines)
 
   def test_waterfalls_must_be_sorted(self):
@@ -2468,7 +1932,614 @@ class UnitTest(unittest.TestCase):
       fbb.printed_lines = []
       self.assertFalse(fbb.printed_lines)
 
-  def test_mixins_no_duplicate_keys(self):
+
+FOO_GTESTS_WATERFALL_MIXIN_WATERFALL = """\
+[
+  {
+    'mixins': ['waterfall_mixin'],
+    'name': 'chromium.test',
+    'machines': {
+      'Fake Tester': {
+        'swarming': {},
+        'test_suites': {
+          'gtest_tests': 'foo_tests',
+        },
+      },
+    },
+  },
+]
+"""
+
+FOO_GTESTS_BUILDER_MIXIN_WATERFALL = """\
+[
+  {
+    'name': 'chromium.test',
+    'machines': {
+      'Fake Tester': {
+        'mixins': ['builder_mixin'],
+        'swarming': {},
+        'test_suites': {
+          'gtest_tests': 'foo_tests',
+        },
+      },
+    },
+  },
+]
+"""
+
+FOO_GTESTS_BUILDER_MIXIN_NON_SWARMING_WATERFALL = """\
+[
+  {
+    'name': 'chromium.test',
+    'machines': {
+      'Fake Tester': {
+        'mixins': ['random_mixin'],
+        'swarming': {},
+        'test_suites': {
+          'gtest_tests': 'foo_tests',
+        },
+      },
+    },
+  },
+]
+"""
+
+FOO_GTESTS_DIMENSIONS_MIXIN_WATERFALL = """\
+[
+  {
+    'name': 'chromium.test',
+    'machines': {
+      'Fake Tester': {
+        'mixins': ['dimension_mixin'],
+        'swarming': {},
+        'test_suites': {
+          'gtest_tests': 'foo_tests',
+        },
+      },
+    },
+  },
+]
+"""
+
+FOO_GPU_TELEMETRY_TEST_DIMENSIONS_WATERFALL = """\
+[
+  {
+    'name': 'chromium.test',
+    'machines': {
+      'Fake Tester': {
+        'mixins': ['dimension_mixin'],
+        'os_type': 'win',
+        'browser_config': 'release',
+        'test_suites': {
+          'gpu_telemetry_tests': 'foo_tests',
+        },
+      },
+    },
+  },
+]
+"""
+
+# Swarming mixins must be a list, a single string is not allowed.
+FOO_GTESTS_INVALID_LIST_MIXIN_WATERFALL = """\
+[
+  {
+    'name': 'chromium.test',
+    'machines': {
+      'Fake Tester': {
+        'mixins': 'dimension_mixin',
+        'swarming': {},
+        'test_suites': {
+          'gtest_tests': 'foo_tests',
+        },
+      },
+    },
+  },
+]
+"""
+FOO_GTESTS_INVALID_NOTFOUND_MIXIN_WATERFALL = """\
+[
+  {
+    'name': 'chromium.test',
+    'machines': {
+      'Fake Tester': {
+        'mixins': ['nonexistant'],
+        'swarming': {},
+        'test_suites': {
+          'gtest_tests': 'foo_tests',
+        },
+      },
+    },
+  },
+]
+"""
+
+FOO_GTESTS_TEST_MIXIN_WATERFALL = """\
+[
+  {
+    'mixins': ['waterfall_mixin'],
+    'name': 'chromium.test',
+    'machines': {
+      'Fake Tester': {
+        'swarming': {},
+        'test_suites': {
+          'gtest_tests': 'foo_tests',
+        },
+      },
+    },
+  },
+]
+"""
+
+FOO_GTESTS_SORTING_MIXINS_WATERFALL = """\
+[
+  {
+    'mixins': ['a_mixin', 'b_mixin', 'c_mixin'],
+    'name': 'chromium.test',
+    'machines': {
+      'Fake Tester': {
+        'swarming': {
+          'dimension_sets': [
+            {
+              'kvm': '1',
+            },
+          ],
+        },
+        'test_suites': {
+          'gtest_tests': 'foo_tests',
+        },
+      },
+    },
+  },
+]
+"""
+
+FOO_TEST_SUITE_WITH_MIXIN = """\
+{
+  'basic_suites': {
+    'foo_tests': {
+      'foo_test': {
+        'swarming': {
+          'dimension_sets': [
+            {
+              'integrity': 'high',
+            }
+          ],
+          'expiration': 120,
+        },
+        'mixins': ['test_mixin'],
+      },
+    },
+  },
+}
+"""
+
+# These mixins are invalid; if passed to check_input_file_consistency, they will
+# fail. These are used for output file consistency checks.
+SWARMING_MIXINS = """\
+{
+  'builder_mixin': {
+    'swarming': {
+      'value': 'builder',
+    },
+  },
+  'dimension_mixin': {
+    'swarming': {
+      'dimensions': {
+        'iama': 'mixin',
+      },
+    },
+  },
+  'random_mixin': {
+    'value': 'random',
+  },
+  'test_mixin': {
+    'swarming': {
+      'value': 'test',
+    },
+  },
+  'waterfall_mixin': {
+    'swarming': {
+      'value': 'waterfall',
+    },
+  },
+}
+"""
+
+SWARMING_MIXINS_APPEND = """\
+{
+  'builder_mixin': {
+    '$mixin_append': {
+      'args': [ '--mixin-argument' ],
+    },
+  },
+}
+"""
+
+SWARMING_MIXINS_APPEND_NOT_LIST = """\
+{
+  'builder_mixin': {
+    '$mixin_append': {
+      'args': 'I am not a list',
+    },
+  },
+}
+"""
+
+SWARMING_MIXINS_APPEND_TO_SWARMING = """\
+{
+  'builder_mixin': {
+    '$mixin_append': {
+      'swarming': [ 'swarming!' ],
+    },
+  },
+}
+"""
+
+SWARMING_MIXINS_DUPLICATED = """\
+{
+  'builder_mixin': {
+    'value': 'builder',
+  },
+  'builder_mixin': {
+    'value': 'builder',
+  },
+}
+"""
+
+SWARMING_MIXINS_UNSORTED = """\
+{
+  'b_mixin': {
+    'b': 'b',
+  },
+  'a_mixin': {
+    'a': 'a',
+  },
+  'c_mixin': {
+    'c': 'c',
+  },
+}
+"""
+
+SWARMING_MIXINS_SORTED = """\
+{
+  'a_mixin': {
+    'a': 'a',
+  },
+  'b_mixin': {
+    'b': 'b',
+  },
+  'c_mixin': {
+    'c': 'c',
+  },
+}
+"""
+
+FOO_CTS_WATERFALL_MIXINS = """\
+[
+  {
+    'name': 'chromium.test',
+    'machines': {
+      'Fake Tester': {
+        'mixins': ['test_mixin'],
+        'test_suites': {
+          'cts_tests': 'foo_cts_tests',
+        },
+      },
+    },
+  },
+]
+"""
+
+WATERFALL_MIXIN_WATERFALL_OUTPUT = """\
+{
+  "AAAAA1 AUTOGENERATED FILE DO NOT EDIT": {},
+  "AAAAA2 See generate_buildbot_json.py to make changes": {},
+  "Fake Tester": {
+    "gtest_tests": [
+      {
+        "swarming": {
+          "can_use_on_swarming_builders": true,
+          "dimension_sets": [
+            {
+              "integrity": "high"
+            }
+          ],
+          "expiration": 120,
+          "value": "waterfall"
+        },
+        "test": "foo_test"
+      }
+    ]
+  }
+}
+"""
+
+WATERFALL_MIXIN_WATERFALL_EXCEPTION_OUTPUT = """\
+{
+  "AAAAA1 AUTOGENERATED FILE DO NOT EDIT": {},
+  "AAAAA2 See generate_buildbot_json.py to make changes": {},
+  "Fake Tester": {
+    "gtest_tests": [
+      {
+        "swarming": {
+          "can_use_on_swarming_builders": true,
+          "dimension_sets": [
+            {
+              "integrity": "high"
+            }
+          ],
+          "expiration": 120,
+          "value": "exception"
+        },
+        "test": "foo_test"
+      }
+    ]
+  }
+}
+"""
+
+BUILDER_MIXIN_WATERFALL_OUTPUT = """\
+{
+  "AAAAA1 AUTOGENERATED FILE DO NOT EDIT": {},
+  "AAAAA2 See generate_buildbot_json.py to make changes": {},
+  "Fake Tester": {
+    "gtest_tests": [
+      {
+        "swarming": {
+          "can_use_on_swarming_builders": true,
+          "dimension_sets": [
+            {
+              "integrity": "high"
+            }
+          ],
+          "expiration": 120,
+          "value": "builder"
+        },
+        "test": "foo_test"
+      }
+    ]
+  }
+}
+"""
+
+BUILDER_MIXIN_NON_SWARMING_WATERFALL_OUTPUT = """\
+{
+  "AAAAA1 AUTOGENERATED FILE DO NOT EDIT": {},
+  "AAAAA2 See generate_buildbot_json.py to make changes": {},
+  "Fake Tester": {
+    "gtest_tests": [
+      {
+        "swarming": {
+          "can_use_on_swarming_builders": true,
+          "dimension_sets": [
+            {
+              "integrity": "high"
+            }
+          ],
+          "expiration": 120
+        },
+        "test": "foo_test",
+        "value": "random"
+      }
+    ]
+  }
+}
+"""
+
+BUILDER_MIXIN_APPEND_ARGS_WATERFALL_OUTPUT = """\
+{
+  "AAAAA1 AUTOGENERATED FILE DO NOT EDIT": {},
+  "AAAAA2 See generate_buildbot_json.py to make changes": {},
+  "Fake Tester": {
+    "gtest_tests": [
+      {
+        "args": [
+          "--c_arg",
+          "--mixin-argument"
+        ],
+        "swarming": {
+          "can_use_on_swarming_builders": true
+        },
+        "test": "foo_test"
+      }
+    ]
+  }
+}
+"""
+
+TEST_MIXIN_WATERFALL_OUTPUT = """\
+{
+  "AAAAA1 AUTOGENERATED FILE DO NOT EDIT": {},
+  "AAAAA2 See generate_buildbot_json.py to make changes": {},
+  "Fake Tester": {
+    "gtest_tests": [
+      {
+        "swarming": {
+          "can_use_on_swarming_builders": true,
+          "dimension_sets": [
+            {
+              "integrity": "high",
+              "kvm": "1"
+            }
+          ],
+          "expiration": 120,
+          "value": "test"
+        },
+        "test": "foo_test"
+      }
+    ]
+  }
+}
+"""
+
+DIMENSIONS_MIXIN_WATERFALL_OUTPUT = """\
+{
+  "AAAAA1 AUTOGENERATED FILE DO NOT EDIT": {},
+  "AAAAA2 See generate_buildbot_json.py to make changes": {},
+  "Fake Tester": {
+    "gtest_tests": [
+      {
+        "swarming": {
+          "can_use_on_swarming_builders": true,
+          "dimension_sets": [
+            {
+              "iama": "mixin",
+              "integrity": "high"
+            }
+          ],
+          "expiration": 120,
+          "value": "test"
+        },
+        "test": "foo_test"
+      }
+    ]
+  }
+}
+"""
+
+class MixinTests(unittest.TestCase):
+  """Tests for the mixins feature."""
+  def test_mixins_must_be_sorted(self):
+    fbb = FakeBBGen(FOO_GTESTS_SORTING_MIXINS_WATERFALL,
+                    FOO_TEST_SUITE,
+                    EMPTY_PYL_FILE,
+                    SWARMING_MIXINS_SORTED,
+                    LUCI_MILO_CFG)
+    fbb.check_input_file_consistency(verbose=True)
+    self.assertFalse(fbb.printed_lines)
+
+    fbb = FakeBBGen(FOO_GTESTS_SORTING_MIXINS_WATERFALL,
+                    FOO_TEST_SUITE,
+                    EMPTY_PYL_FILE,
+                    SWARMING_MIXINS_UNSORTED,
+                    LUCI_MILO_CFG)
+    with self.assertRaises(generate_buildbot_json.BBGenErr):
+      fbb.check_input_file_consistency(verbose=True)
+    joined_lines = ' '.join(fbb.printed_lines)
+    self.assertRegexpMatches(
+        joined_lines, '.*\+._mixin.*')
+    self.assertRegexpMatches(
+        joined_lines, '.*\-._mixin.*')
+    fbb.printed_lines = []
+    self.assertFalse(fbb.printed_lines)
+
+  def test_waterfall(self):
+    fbb = FakeBBGen(FOO_GTESTS_WATERFALL_MIXIN_WATERFALL,
+                    FOO_TEST_SUITE,
+                    EMPTY_PYL_FILE,
+                    SWARMING_MIXINS,
+                    LUCI_MILO_CFG)
+    fbb.files['chromium.test.json'] = WATERFALL_MIXIN_WATERFALL_OUTPUT
+    fbb.check_output_file_consistency(verbose=True)
+    self.assertFalse(fbb.printed_lines)
+
+  def test_waterfall_exception_overrides(self):
+    fbb = FakeBBGen(FOO_GTESTS_WATERFALL_MIXIN_WATERFALL,
+                    FOO_TEST_SUITE,
+                    SCRIPT_WITH_ARGS_SWARMING_EXCEPTIONS,
+                    SWARMING_MIXINS,
+                    LUCI_MILO_CFG)
+    fbb.files['chromium.test.json'] = WATERFALL_MIXIN_WATERFALL_EXCEPTION_OUTPUT
+    fbb.check_output_file_consistency(verbose=True)
+    self.assertFalse(fbb.printed_lines)
+
+  def test_builder(self):
+    fbb = FakeBBGen(FOO_GTESTS_BUILDER_MIXIN_WATERFALL,
+                    FOO_TEST_SUITE,
+                    EMPTY_PYL_FILE,
+                    SWARMING_MIXINS,
+                    LUCI_MILO_CFG)
+    fbb.files['chromium.test.json'] = BUILDER_MIXIN_WATERFALL_OUTPUT
+    fbb.check_output_file_consistency(verbose=True)
+    self.assertFalse(fbb.printed_lines)
+
+  def test_builder_non_swarming(self):
+    fbb = FakeBBGen(FOO_GTESTS_BUILDER_MIXIN_NON_SWARMING_WATERFALL,
+                    FOO_TEST_SUITE,
+                    EMPTY_PYL_FILE,
+                    SWARMING_MIXINS,
+                    LUCI_MILO_CFG)
+    fbb.files['chromium.test.json'] = (
+        BUILDER_MIXIN_NON_SWARMING_WATERFALL_OUTPUT)
+    fbb.check_output_file_consistency(verbose=True)
+    self.assertFalse(fbb.printed_lines)
+
+  def test_test_suite(self):
+    fbb = FakeBBGen(FOO_GTESTS_WATERFALL,
+                    FOO_TEST_SUITE_WITH_MIXIN,
+                    EMPTY_PYL_FILE,
+                    SWARMING_MIXINS,
+                    LUCI_MILO_CFG)
+    fbb.files['chromium.test.json'] = TEST_MIXIN_WATERFALL_OUTPUT
+    fbb.check_output_file_consistency(verbose=True)
+    self.assertFalse(fbb.printed_lines)
+
+  def test_dimension(self):
+    fbb = FakeBBGen(FOO_GTESTS_DIMENSIONS_MIXIN_WATERFALL,
+                    FOO_TEST_SUITE_WITH_MIXIN,
+                    EMPTY_PYL_FILE,
+                    SWARMING_MIXINS,
+                    LUCI_MILO_CFG)
+    fbb.files['chromium.test.json'] = DIMENSIONS_MIXIN_WATERFALL_OUTPUT
+    fbb.check_output_file_consistency(verbose=True)
+    self.assertFalse(fbb.printed_lines)
+
+  def test_dimension_gpu(self):
+    fbb = FakeBBGen(FOO_GPU_TELEMETRY_TEST_DIMENSIONS_WATERFALL,
+                    FOO_TEST_SUITE_WITH_MIXIN,
+                    EMPTY_PYL_FILE,
+                    SWARMING_MIXINS,
+                    LUCI_MILO_CFG)
+    fbb.files['chromium.test.json'] = GPU_DIMENSIONS_WATERFALL_OUTPUT
+    fbb.check_output_file_consistency(verbose=True)
+    self.assertFalse(fbb.printed_lines)
+
+  def test_unreferenced(self):
+    fbb = FakeBBGen(FOO_GTESTS_WATERFALL,
+                    FOO_TEST_SUITE_WITH_MIXIN,
+                    EMPTY_PYL_FILE,
+                    SWARMING_MIXINS,
+                    LUCI_MILO_CFG)
+    with self.assertRaisesRegexp(generate_buildbot_json.BBGenErr,
+                                 '.*mixins are unreferenced.*'):
+      fbb.check_input_file_consistency(verbose=True)
+    self.assertFalse(fbb.printed_lines)
+
+  def test_cts(self):
+    fbb = FakeBBGen(FOO_CTS_WATERFALL_MIXINS,
+                    FOO_CTS_SUITE ,
+                    EMPTY_PYL_FILE,
+                    EMPTY_PYL_FILE,
+                    LUCI_MILO_CFG)
+    fbb.files['chromium.test.json'] = CTS_OUTPUT
+    fbb.check_input_file_consistency(verbose=True)
+    fbb.check_output_file_consistency(verbose=True)
+    self.assertFalse(fbb.printed_lines)
+
+  def test_unused(self):
+    fbb = FakeBBGen(FOO_GTESTS_INVALID_NOTFOUND_MIXIN_WATERFALL,
+                    FOO_TEST_SUITE_WITH_MIXIN,
+                    EMPTY_PYL_FILE,
+                    SWARMING_MIXINS,
+                    LUCI_MILO_CFG)
+    fbb.files['chromium.test.json'] = DIMENSIONS_MIXIN_WATERFALL_OUTPUT
+    with self.assertRaises(generate_buildbot_json.BBGenErr):
+      fbb.check_output_file_consistency(verbose=True)
+    self.assertFalse(fbb.printed_lines)
+
+  def test_list(self):
+    fbb = FakeBBGen(FOO_GTESTS_INVALID_LIST_MIXIN_WATERFALL,
+                    FOO_TEST_SUITE_WITH_MIXIN,
+                    EMPTY_PYL_FILE,
+                    SWARMING_MIXINS,
+                    LUCI_MILO_CFG)
+    fbb.files['chromium.test.json'] = DIMENSIONS_MIXIN_WATERFALL_OUTPUT
+    with self.assertRaises(generate_buildbot_json.BBGenErr):
+      fbb.check_output_file_consistency(verbose=True)
+    self.assertFalse(fbb.printed_lines)
+
+
+  def test_no_duplicate_keys(self):
     fbb = FakeBBGen(FOO_GTESTS_BUILDER_MIXIN_WATERFALL,
                     FOO_TEST_SUITE,
                     EMPTY_PYL_FILE,
@@ -2510,7 +2581,39 @@ class UnitTest(unittest.TestCase):
           '<snip>',
         ])
 
+  def test_mixin_append_args(self):
+    fbb = FakeBBGen(FOO_GTESTS_BUILDER_MIXIN_WATERFALL,
+                    FOO_TEST_SUITE_WITH_ARGS,
+                    EMPTY_PYL_FILE,
+                    SWARMING_MIXINS_APPEND,
+                    LUCI_MILO_CFG)
+    fbb.files['chromium.test.json'] = BUILDER_MIXIN_APPEND_ARGS_WATERFALL_OUTPUT
+    fbb.check_output_file_consistency(verbose=True)
+    self.assertFalse(fbb.printed_lines)
 
+  def test_mixin_append_mixin_field_not_list(self):
+    fbb = FakeBBGen(FOO_GTESTS_BUILDER_MIXIN_WATERFALL,
+                    FOO_TEST_SUITE_WITH_ARGS,
+                    EMPTY_PYL_FILE,
+                    SWARMING_MIXINS_APPEND_NOT_LIST,
+                    LUCI_MILO_CFG)
+    with self.assertRaisesRegexp(
+        generate_buildbot_json.BBGenErr,
+        'Key "args" in \$mixin_append must be a list.'):
+      fbb.check_output_file_consistency(verbose=True)
+    self.assertFalse(fbb.printed_lines)
+
+  def test_mixin_append_test_field_not_list(self):
+    fbb = FakeBBGen(FOO_GTESTS_BUILDER_MIXIN_WATERFALL,
+                    FOO_TEST_SUITE,
+                    EMPTY_PYL_FILE,
+                    SWARMING_MIXINS_APPEND_TO_SWARMING,
+                    LUCI_MILO_CFG)
+    with self.assertRaisesRegexp(
+        generate_buildbot_json.BBGenErr,
+        'Cannot apply \$mixin_append to non-list "swarming".'):
+      fbb.check_output_file_consistency(verbose=True)
+    self.assertFalse(fbb.printed_lines)
 
 if __name__ == '__main__':
   unittest.main()

@@ -23,7 +23,7 @@ namespace cors {
 namespace legacy {
 
 // Registers whitelisted secure origins and hostname patterns for CORS checks in
-// CORSURLLoader.
+// CorsURLLoader.
 COMPONENT_EXPORT(NETWORK_CPP)
 void RegisterSecureOrigins(const std::vector<std::string>& secure_origins);
 

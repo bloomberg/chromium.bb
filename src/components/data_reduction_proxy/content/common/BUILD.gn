@@ -26,6 +26,7 @@ source_set("unit_tests") {
 
   deps = [
     ":common",
+    "//base/test:test_support",
     "//components/data_reduction_proxy/core/common",
     "//content/public/common",
     "//net",

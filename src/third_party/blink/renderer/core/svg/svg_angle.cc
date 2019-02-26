@@ -22,6 +22,7 @@
 #include "third_party/blink/renderer/core/svg/svg_angle.h"
 
 #include "third_party/blink/renderer/core/svg/svg_animation_element.h"
+#include "third_party/blink/renderer/core/svg/svg_enumeration_map.h"
 #include "third_party/blink/renderer/core/svg/svg_parser_utilities.h"
 #include "third_party/blink/renderer/platform/wtf/math_extras.h"
 #include "third_party/blink/renderer/platform/wtf/text/wtf_string.h"
@@ -29,21 +30,14 @@
 namespace blink {
 
 template <>
-const SVGEnumerationStringEntries&
-GetStaticStringEntries<SVGMarkerOrientType>() {
-  DEFINE_STATIC_LOCAL(SVGEnumerationStringEntries, entries, ());
-  if (entries.IsEmpty()) {
-    entries.push_back(std::make_pair(kSVGMarkerOrientAuto, "auto"));
-    entries.push_back(std::make_pair(kSVGMarkerOrientAngle, "angle"));
-    entries.push_back(
-        std::make_pair(kSVGMarkerOrientAutoStartReverse, "auto-start-reverse"));
-  }
+const SVGEnumerationMap& GetEnumerationMap<SVGMarkerOrientType>() {
+  static const SVGEnumerationMap::Entry enum_items[] = {
+      {kSVGMarkerOrientAuto, "auto"},
+      {kSVGMarkerOrientAngle, "angle"},
+      {kSVGMarkerOrientAutoStartReverse, "auto-start-reverse"},
+  };
+  static const SVGEnumerationMap entries(enum_items, kSVGMarkerOrientAngle);
   return entries;
-}
-
-template <>
-unsigned short GetMaxExposedEnumValue<SVGMarkerOrientType>() {
-  return kSVGMarkerOrientAngle;
 }
 
 SVGMarkerOrientEnumeration::SVGMarkerOrientEnumeration(SVGAngle* angle)
@@ -109,8 +103,8 @@ void SVGAngle::Trace(blink::Visitor* visitor) {
 }
 
 SVGAngle* SVGAngle::Clone() const {
-  return new SVGAngle(unit_type_, value_in_specified_units_,
-                      orient_type_->EnumValue());
+  return MakeGarbageCollected<SVGAngle>(unit_type_, value_in_specified_units_,
+                                        orient_type_->EnumValue());
 }
 
 float SVGAngle::Value() const {

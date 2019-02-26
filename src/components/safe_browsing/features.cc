@@ -22,12 +22,9 @@ namespace safe_browsing {
 const base::Feature kAdSamplerTriggerFeature{"SafeBrowsingAdSamplerTrigger",
                                              base::FEATURE_DISABLED_BY_DEFAULT};
 
-const base::Feature kAdvancedProtectionStatusFeature{
-    "AdvancedProtectionStatus", base::FEATURE_DISABLED_BY_DEFAULT};
-
 // Controls the billing interstitial UI.
 const base::Feature kBillingInterstitial{"BillingInterstitial",
-                                         base::FEATURE_DISABLED_BY_DEFAULT};
+                                         base::FEATURE_ENABLED_BY_DEFAULT};
 
 // If enabled in pre-network-service world, SafeBrowsing URL checks are done by
 // applying SafeBrowsing's URLLoaderThrottle subclasses to ThrottlingURLLoader.
@@ -41,9 +38,6 @@ const base::Feature kCheckByURLLoaderThrottle{
 
 const base::Feature kForceEnableResetPasswordWebUI{
     "ForceEnableResetPasswordWebUI", base::FEATURE_DISABLED_BY_DEFAULT};
-
-const base::Feature kInspectDownloadedRarFiles{
-    "InspectDownloadedRarFiles", base::FEATURE_DISABLED_BY_DEFAULT};
 
 const base::Feature kSuspiciousSiteTriggerQuotaFeature{
     "SafeBrowsingSuspiciousSiteTriggerQuota", base::FEATURE_ENABLED_BY_DEFAULT};
@@ -68,11 +62,9 @@ constexpr struct {
   bool probabilistically_enabled;
 } kExperimentalFeatures[]{
     {&kAdSamplerTriggerFeature, false},
-    {&kAdvancedProtectionStatusFeature, true},
     {&kBillingInterstitial, true},
     {&kCheckByURLLoaderThrottle, true},
     {&kForceEnableResetPasswordWebUI, true},
-    {&kInspectDownloadedRarFiles, true},
     {&kSuspiciousSiteTriggerQuotaFeature, true},
     {&kThreatDomDetailsTagAndAttributeFeature, false},
     {&kTriggerThrottlerDailyQuotaFeature, false},

@@ -9,20 +9,24 @@
 
 #include <vector>
 
-#include "fxjs/js_define.h"
+#include "fxjs/cjs_object.h"
+#include "fxjs/cjs_result.h"
 
 class CJS_PublicMethods final : public CJS_Object {
  public:
-  CJS_PublicMethods(v8::Local<v8::Object> pObject, CJS_Runtime* pRuntime);
-  ~CJS_PublicMethods() override;
+  CJS_PublicMethods() = delete;
 
   static void DefineJSObjects(CFXJS_Engine* pEngine);
-  static double MakeRegularDate(const WideString& value,
-                                const WideString& format,
-                                bool* bWrongFormat);
+
+  static double ParseDate(const WideString& value, bool* bWrongFormat);
+  static double ParseDateAsGMT(const WideString& value);
+  static double ParseDateUsingFormat(const WideString& value,
+                                     const WideString& format,
+                                     bool* bWrongFormat);
 
   // Exposed for testing.
-  static WideString MakeFormatDate(double dDate, const WideString& format);
+  static WideString PrintDateUsingFormat(double dDate,
+                                         const WideString& format);
   static bool IsNumber(const WideString& str);
 
   static CJS_Result AFNumber_Format(
@@ -135,25 +139,13 @@ class CJS_PublicMethods final : public CJS_Object {
   static void AFExtractNums_static(
       const v8::FunctionCallbackInfo<v8::Value>& info);
 
-  static const JSMethodSpec GlobalFunctionSpecs[];
-  static int ParseStringInteger(const WideString& str,
-                                size_t nStart,
-                                size_t* pSkip,
-                                size_t nMaxStep);
-  static WideString ParseStringString(const WideString& str,
-                                      size_t nStart,
-                                      size_t* pSkip);
-  static double ParseNormalDate(const WideString& value, bool* bWrongFormat);
-  static double MakeInterDate(const WideString& value);
-
   static bool MaskSatisfied(wchar_t c_Change, wchar_t c_Mask);
   static bool IsReservedMaskChar(wchar_t ch);
-
-  static double AF_Simple(const wchar_t* sFuction,
-                          double dValue1,
-                          double dValue2);
   static v8::Local<v8::Array> AF_MakeArrayFromList(CJS_Runtime* pRuntime,
                                                    v8::Local<v8::Value> val);
+
+ private:
+  static const JSMethodSpec GlobalFunctionSpecs[];
 };
 
 #endif  // FXJS_CJS_PUBLICMETHODS_H_

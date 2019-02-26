@@ -9,6 +9,7 @@
 #include "ash/app_list/app_list_controller_impl.h"
 #include "ash/public/cpp/window_properties.h"
 #include "ash/root_window_controller.h"
+#include "ash/scoped_animation_disabler.h"
 #include "ash/session/session_controller.h"
 #include "ash/shell.h"
 #include "ash/wallpaper/wallpaper_controller.h"
@@ -21,6 +22,7 @@
 #include "ash/wm/root_window_finder.h"
 #include "ash/wm/screen_pinning_controller.h"
 #include "ash/wm/splitview/split_view_controller.h"
+#include "ash/wm/tablet_mode/tablet_mode_controller.h"
 #include "ash/wm/window_state.h"
 #include "ash/wm/window_util.h"
 #include "base/containers/unique_ptr_adapters.h"
@@ -31,6 +33,7 @@
 #include "ui/gfx/animation/animation_delegate.h"
 #include "ui/gfx/animation/slide_animation.h"
 #include "ui/wm/core/window_util.h"
+#include "ui/wm/public/activation_client.h"
 
 namespace ash {
 
@@ -51,40 +54,6 @@ constexpr int kOcclusionPauseDurationForStartMs = 50;
 // may re-enter overview mode immediately, contents are ready.
 constexpr int kOcclusionPauseDurationForEndMs = 500;
 
-// Returns true if |window| should be hidden when entering overview.
-bool ShouldHideWindowInOverview(const aura::Window* window) {
-  return window->GetProperty(ash::kHideInOverviewKey);
-}
-
-// Returns true if |window| should be excluded from overview.
-bool ShouldExcludeWindowFromOverview(const aura::Window* window) {
-  if (ShouldHideWindowInOverview(window))
-    return true;
-
-  // Other non-selectable windows will be ignored in overview.
-  if (!WindowSelector::IsSelectable(window))
-    return true;
-
-  // Remove the default snapped window from the window list. The default
-  // snapped window occupies one side of the screen, while the other windows
-  // occupy the other side of the screen in overview mode. The default snap
-  // position is the position where the window was first snapped. See
-  // |default_snap_position_| in SplitViewController for more detail.
-  if (Shell::Get()->IsSplitViewModeActive() &&
-      window ==
-          Shell::Get()->split_view_controller()->GetDefaultSnappedWindow()) {
-    return true;
-  }
-
-  // The window that currently being dragged should be ignored in overview grid.
-  // e.g, a browser window can be dragged through tabs, or app windows can be
-  // dragged through swiping from the specific top area of the display.
-  if (wm::GetWindowState(window)->is_dragged())
-    return true;
-
-  return false;
-}
-
 bool IsBlurAllowed() {
   return !g_disable_wallpaper_blur_for_tests &&
          Shell::Get()->wallpaper_controller()->IsBlurAllowed();
@@ -95,8 +64,8 @@ bool IsBlurAllowed() {
 bool ShouldSlideInOutOverview(const std::vector<aura::Window*>& windows) {
   // No sliding if home launcher is not available.
   if (!Shell::Get()
-           ->app_list_controller()
-           ->IsHomeLauncherEnabledInTabletMode()) {
+           ->tablet_mode_controller()
+           ->IsTabletModeWindowManagerEnabled()) {
     return false;
   }
 
@@ -250,10 +219,14 @@ class WindowSelectorController::OverviewBlurController
 };
 
 WindowSelectorController::WindowSelectorController()
-    : overview_blur_controller_(std::make_unique<OverviewBlurController>()),
-      weak_ptr_factory_(this) {}
+    : occlusion_pause_duration_for_end_ms_(kOcclusionPauseDurationForEndMs),
+      overview_blur_controller_(std::make_unique<OverviewBlurController>()),
+      weak_ptr_factory_(this) {
+  Shell::Get()->activation_client()->AddObserver(this);
+}
 
 WindowSelectorController::~WindowSelectorController() {
+  Shell::Get()->activation_client()->RemoveObserver(this);
   overview_blur_controller_.reset();
 
   // Destroy widgets that may be still animating if shell shuts down soon after
@@ -291,16 +264,14 @@ bool WindowSelectorController::ToggleOverview(
 
   auto windows = Shell::Get()->mru_window_tracker()->BuildMruWindowList();
 
-  // Hidden windows will be removed by ShouldExcludeWindowFromOverview so we
+  // Hidden windows will be removed by wm::ShouldExcludeForOverview so we
   // must copy them out first.
   std::vector<aura::Window*> hide_windows(windows.size());
-  auto end = std::copy_if(windows.begin(), windows.end(), hide_windows.begin(),
-                          ShouldHideWindowInOverview);
+  auto end = std::copy_if(
+      windows.begin(), windows.end(), hide_windows.begin(),
+      [](aura::Window* w) { return w->GetProperty(kHideInOverviewKey); });
   hide_windows.resize(end - hide_windows.begin());
-
-  end = std::remove_if(windows.begin(), windows.end(),
-                       ShouldExcludeWindowFromOverview);
-  windows.resize(end - windows.begin());
+  base::EraseIf(windows, wm::ShouldExcludeForOverview);
 
   // We may want to slide the overview grid in or out in some cases, even if
   // not explicitly stated.
@@ -318,7 +289,7 @@ bool WindowSelectorController::ToggleOverview(
       return true;
     }
 
-    // Suspend occlusion tracker until the enter animation is complete.
+    // Suspend occlusion tracker until the exit animation is complete.
     reset_pauser_task_.Cancel();
     occlusion_tracker_pauser_ =
         std::make_unique<aura::WindowOcclusionTracker::ScopedPause>(
@@ -336,9 +307,9 @@ bool WindowSelectorController::ToggleOverview(
         if (wm::GetWindowState(window)->IsMinimized())
           continue;
 
-        window->SetProperty(aura::client::kAnimationsDisabledKey, true);
+        ScopedAnimationDisabler disable(window);
+        window->Hide();
         wm::GetWindowState(window)->Minimize();
-        window->ClearProperty(aura::client::kAnimationsDisabledKey);
       }
     }
 
@@ -352,10 +323,10 @@ bool WindowSelectorController::ToggleOverview(
     for (const auto& animation : delayed_animations_)
       animation->Shutdown();
     if (!delayed_animations_.empty())
-      OnStartingAnimationComplete(/*canceled=*/true);
+      OnEndingAnimationComplete(/*canceled=*/true);
     delayed_animations_.clear();
 
-    // Suspend occlusion tracker until the exit animation is complete.
+    // Suspend occlusion tracker until the enter animation is complete.
     reset_pauser_task_.Cancel();
     occlusion_tracker_pauser_ =
         std::make_unique<aura::WindowOcclusionTracker::ScopedPause>(
@@ -391,7 +362,7 @@ void WindowSelectorController::OnEndingAnimationComplete(bool canceled) {
       &WindowSelectorController::ResetPauser, weak_ptr_factory_.GetWeakPtr()));
   base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
       FROM_HERE, reset_pauser_task_.callback(),
-      base::TimeDelta::FromMilliseconds(kOcclusionPauseDurationForEndMs));
+      base::TimeDelta::FromMilliseconds(occlusion_pause_duration_for_end_ms_));
 }
 
 void WindowSelectorController::ResetPauser() {
@@ -507,7 +478,6 @@ void WindowSelectorController::OnOverviewButtonTrayLongPressed(
 
   // Do nothing if no item was retrieved, or if the retrieved item is
   // unsnappable.
-  // TODO(sammiequon): Bounce the window if it is not snappable.
   if (!item_to_snap ||
       !split_view_controller->CanSnap(item_to_snap->GetWindow())) {
     return;
@@ -536,8 +506,15 @@ void WindowSelectorController::OnSelectionEnded() {
   if (is_shutting_down_)
     return;
 
+  if (!occlusion_tracker_pauser_) {
+    reset_pauser_task_.Cancel();
+    occlusion_tracker_pauser_ =
+        std::make_unique<aura::WindowOcclusionTracker::ScopedPause>(
+            Shell::Get()->aura_env());
+  }
+
   if (!start_animations_.empty())
-    OnEndingAnimationComplete(/*canceled=*/true);
+    OnStartingAnimationComplete(/*canceled=*/true);
   start_animations_.clear();
 
   window_selector_->UpdateMaskAndShadow(/*show=*/false);
@@ -545,14 +522,17 @@ void WindowSelectorController::OnSelectionEnded() {
   Shell::Get()->NotifyOverviewModeEnding();
   auto* window_selector = window_selector_.release();
   window_selector->Shutdown();
-  // There may be no delayed animations in tests, so unblur right away.
-  if (delayed_animations_.empty() && IsBlurAllowed())
-    overview_blur_controller_->Unblur();
   // Don't delete |window_selector_| yet since the stack is still using it.
   base::ThreadTaskRunnerHandle::Get()->DeleteSoon(FROM_HERE, window_selector);
   last_selection_time_ = base::Time::Now();
   Shell::Get()->NotifyOverviewModeEnded();
   is_shutting_down_ = false;
+  // There may be no delayed animations in tests, so unblur right away.
+  if (delayed_animations_.empty()) {
+    if (IsBlurAllowed())
+      overview_blur_controller_->Unblur();
+    OnEndingAnimationComplete(/*canceled=*/false);
+  }
 }
 
 void WindowSelectorController::AddDelayedAnimationObserver(
@@ -576,6 +556,23 @@ void WindowSelectorController::RemoveAndDestroyAnimationObserver(
       overview_blur_controller_->Unblur();
 
     OnEndingAnimationComplete(/*canceled=*/false);
+  }
+}
+
+void WindowSelectorController::OnWindowActivating(ActivationReason reason,
+                                                  aura::Window* gained_active,
+                                                  aura::Window* lost_active) {
+  if (window_selector_)
+    window_selector_->OnWindowActivating(reason, gained_active, lost_active);
+}
+
+void WindowSelectorController::OnAttemptToReactivateWindow(
+    aura::Window* request_active,
+    aura::Window* actual_active) {
+  if (window_selector_) {
+    window_selector_->OnWindowActivating(
+        ::wm::ActivationChangeObserver::ActivationReason::ACTIVATION_CLIENT,
+        request_active, actual_active);
   }
 }
 

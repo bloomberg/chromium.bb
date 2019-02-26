@@ -59,23 +59,10 @@ class TopControlsSlideControllerChromeOS
   void OnTabletModeToggled(bool tablet_mode_enabled) override;
 
   // TabStripModelObserver:
-  // TODO(afakhry): The below overrides are deprecated, but we have to keep
-  // using them until Browser and BrowserView are migrated to the new API.
-  void TabInsertedAt(TabStripModel* tab_strip_model,
-                     content::WebContents* contents,
-                     int index,
-                     bool foreground) override;
-  void TabDetachedAt(content::WebContents* contents,
-                     int previous_index,
-                     bool was_active) override;
-  void ActiveTabChanged(content::WebContents* old_contents,
-                        content::WebContents* new_contents,
-                        int index,
-                        int reason) override;
-  void TabReplacedAt(TabStripModel* tab_strip_model,
-                     content::WebContents* old_contents,
-                     content::WebContents* new_contents,
-                     int index) override;
+  void OnTabStripModelChanged(
+      TabStripModel* tab_strip_model,
+      const TabStripModelChange& change,
+      const TabStripSelectionChange& selection) override;
   void SetTabNeedsAttentionAt(int index, bool attention) override;
 
   // content::NotificationObserver:

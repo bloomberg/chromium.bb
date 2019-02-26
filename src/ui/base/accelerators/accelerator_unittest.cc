@@ -35,13 +35,7 @@ TEST(AcceleratorTest, TimeStamp) {
   EXPECT_EQ(event_time, accelerator_b.time_stamp());
 }
 
-#if defined(OS_ANDROID)
-// Keyboard shortcuts don't have meaningful text on Android.
-#define MAYBE_GetShortcutText DISABLED_GetShortcutText
-#else
-#define MAYBE_GetShortcutText GetShortcutText
-#endif
-TEST(AcceleratorTest, MAYBE_GetShortcutText) {
+TEST(AcceleratorTest, GetShortcutText) {
   struct {
     KeyboardCode code;
     int modifiers;

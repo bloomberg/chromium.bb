@@ -7,7 +7,10 @@
 #include "ash/display/display_animator.h"
 #include "ash/display/display_util.h"
 #include "ash/display/window_tree_host_manager.h"
+#include "ash/public/cpp/shelf_types.h"
+#include "ash/root_window_controller.h"
 #include "ash/rotator/screen_rotation_animator.h"
+#include "ash/shelf/shelf.h"
 #include "ash/shell.h"
 #include "ash/strings/grit/ash_strings.h"
 #include "base/time/time.h"
@@ -18,6 +21,8 @@
 #include "ui/display/manager/display_manager.h"
 
 DEFINE_UI_CLASS_PROPERTY_TYPE(ash::ScreenRotationAnimator*);
+
+namespace ash {
 
 namespace {
 
@@ -39,9 +44,26 @@ DEFINE_OWNED_UI_CLASS_PROPERTY_KEY(ash::ScreenRotationAnimator,
 
 bool g_disable_animator_for_test = false;
 
-}  // namespace
+display::DisplayPositionInUnifiedMatrix GetUnifiedModeShelfCellPosition() {
+  const ShelfAlignment alignment =
+      Shell::GetPrimaryRootWindowController()->shelf()->alignment();
+  switch (alignment) {
+    case SHELF_ALIGNMENT_BOTTOM:
+    case SHELF_ALIGNMENT_BOTTOM_LOCKED:
+      return display::DisplayPositionInUnifiedMatrix::kBottomLeft;
 
-namespace ash {
+    case SHELF_ALIGNMENT_LEFT:
+      return display::DisplayPositionInUnifiedMatrix::kTopLeft;
+
+    case SHELF_ALIGNMENT_RIGHT:
+      return display::DisplayPositionInUnifiedMatrix::kTopRight;
+  }
+
+  NOTREACHED();
+  return display::DisplayPositionInUnifiedMatrix::kBottomLeft;
+}
+
+}  // namespace
 
 class DisplayConfigurationController::DisplayChangeLimiter {
  public:
@@ -175,6 +197,15 @@ void DisplayConfigurationController::SetPrimaryDisplayId(int64_t display_id,
   } else {
     SetPrimaryDisplayIdImpl(display_id);
   }
+}
+
+display::Display
+DisplayConfigurationController::GetPrimaryMirroringDisplayForUnifiedDesktop()
+    const {
+  DCHECK(display_manager_->IsInUnifiedMode());
+
+  return display_manager_->GetMirroringDisplayForUnifiedDesktop(
+      GetUnifiedModeShelfCellPosition());
 }
 
 void DisplayConfigurationController::OnDisplayConfigurationChanged() {

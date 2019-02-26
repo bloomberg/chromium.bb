@@ -22,15 +22,15 @@ class USBInTransferResult final : public ScriptWrappable {
                                      const Vector<uint8_t>& data) {
     DOMDataView* data_view = DOMDataView::Create(
         DOMArrayBuffer::Create(data.data(), data.size()), 0, data.size());
-    return new USBInTransferResult(status, data_view);
+    return MakeGarbageCollected<USBInTransferResult>(status, data_view);
   }
 
   static USBInTransferResult* Create(const String& status) {
-    return new USBInTransferResult(status, nullptr);
+    return MakeGarbageCollected<USBInTransferResult>(status, nullptr);
   }
 
   static USBInTransferResult* Create(const String& status, DOMDataView* data) {
-    return new USBInTransferResult(status, data);
+    return MakeGarbageCollected<USBInTransferResult>(status, data);
   }
 
   USBInTransferResult(const String& status, DOMDataView* data)

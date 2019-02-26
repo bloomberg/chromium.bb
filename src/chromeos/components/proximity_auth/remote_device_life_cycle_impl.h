@@ -16,9 +16,6 @@
 #include "chromeos/services/secure_channel/public/cpp/client/connection_attempt.h"
 #include "chromeos/services/secure_channel/public/cpp/client/secure_channel_client.h"
 #include "chromeos/services/secure_channel/public/mojom/secure_channel.mojom.h"
-#include "components/cryptauth/authenticator.h"
-#include "components/cryptauth/connection.h"
-#include "components/cryptauth/connection_finder.h"
 #include "components/cryptauth/remote_device_ref.h"
 
 namespace chromeos {
@@ -27,10 +24,6 @@ class ClientChannel;
 class SecureChannelClient;
 }  // namespace secure_channel
 }  // namespace chromeos
-
-namespace cryptauth {
-class SecureContext;
-}
 
 namespace proximity_auth {
 
@@ -53,23 +46,12 @@ class RemoteDeviceLifeCycleImpl
   // RemoteDeviceLifeCycle:
   void Start() override;
   cryptauth::RemoteDeviceRef GetRemoteDevice() const override;
-  cryptauth::Connection* GetConnection() const override;
   chromeos::secure_channel::ClientChannel* GetChannel() const override;
 
   RemoteDeviceLifeCycle::State GetState() const override;
   Messenger* GetMessenger() override;
   void AddObserver(Observer* observer) override;
   void RemoveObserver(Observer* observer) override;
-
- protected:
-  // Creates and returns a cryptauth::ConnectionFinder instance for
-  // |remote_device_|.
-  // Exposed for testing.
-  virtual std::unique_ptr<cryptauth::ConnectionFinder> CreateConnectionFinder();
-
-  // Creates and returns an Authenticator instance for |connection_|.
-  // Exposed for testing.
-  virtual std::unique_ptr<cryptauth::Authenticator> CreateAuthenticator();
 
  private:
   // Transitions to |new_state|, and notifies observers.
@@ -81,11 +63,6 @@ class RemoteDeviceLifeCycleImpl
 
   // Called when |connection_finder_| finds a connection.
   void OnConnectionFound(std::unique_ptr<cryptauth::Connection> connection);
-
-  // Callback when |authenticator_| completes authentication.
-  void OnAuthenticationResult(
-      cryptauth::Authenticator::Result result,
-      std::unique_ptr<cryptauth::SecureContext> secure_context);
 
   // Creates the messenger which parses status updates.
   void CreateMessenger();
@@ -116,24 +93,9 @@ class RemoteDeviceLifeCycleImpl
   base::ObserverList<Observer>::Unchecked observers_{
       base::ObserverListPolicy::EXISTING_ONLY};
 
-  // The connection that is established by |connection_finder_|.
-  std::unique_ptr<cryptauth::Connection> connection_;
-
-  // Context for encrypting and decrypting messages. Created after
-  // authentication succeeds. Ownership is eventually passed to |messenger_|.
-  std::unique_ptr<cryptauth::SecureContext> secure_context_;
-
   // The messenger for sending and receiving messages in the
   // SECURE_CHANNEL_ESTABLISHED state.
   std::unique_ptr<Messenger> messenger_;
-
-  // Authenticates the remote device after it is connected. Used in the
-  // AUTHENTICATING state.
-  std::unique_ptr<cryptauth::Authenticator> authenticator_;
-
-  // Used in the FINDING_CONNECTION state to establish a connection to the
-  // remote device.
-  std::unique_ptr<cryptauth::ConnectionFinder> connection_finder_;
 
   std::unique_ptr<chromeos::secure_channel::ConnectionAttempt>
       connection_attempt_;

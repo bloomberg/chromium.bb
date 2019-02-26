@@ -8,8 +8,8 @@
 // DO NOT MODIFY!
 
 // clang-format off
-#ifndef TestDictionaryDerivedImplementedAs_h
-#define TestDictionaryDerivedImplementedAs_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_BINDINGS_TESTS_RESULTS_CORE_TEST_DICTIONARY_DERIVED_H_
+#define THIRD_PARTY_BLINK_RENDERER_BINDINGS_TESTS_RESULTS_CORE_TEST_DICTIONARY_DERIVED_H_
 
 #include "third_party/blink/renderer/bindings/core/v8/string_or_double.h"
 #include "third_party/blink/renderer/bindings/tests/idls/core/test_dictionary.h"
@@ -21,12 +21,11 @@
 namespace blink {
 
 class CORE_EXPORT TestDictionaryDerivedImplementedAs : public TestDictionary {
-  DISALLOW_NEW();
  public:
+  static TestDictionaryDerivedImplementedAs* Create() { return MakeGarbageCollected<TestDictionaryDerivedImplementedAs>(); }
+
   TestDictionaryDerivedImplementedAs();
   virtual ~TestDictionaryDerivedImplementedAs();
-  TestDictionaryDerivedImplementedAs(const TestDictionaryDerivedImplementedAs&);
-  TestDictionaryDerivedImplementedAs& operator=(const TestDictionaryDerivedImplementedAs&);
 
   bool hasDerivedStringMember() const { return !derived_string_member_.IsNull(); }
   const String& derivedStringMember() const {
@@ -84,4 +83,4 @@ void TestDictionaryDerivedImplementedAs::setRequiredLongMember(int32_t value) {
 
 }  // namespace blink
 
-#endif  // TestDictionaryDerivedImplementedAs_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_BINDINGS_TESTS_RESULTS_CORE_TEST_DICTIONARY_DERIVED_H_

@@ -9,12 +9,18 @@ namespace remoting {
 namespace protocol {
 
 // Used for negotiating client-host capabilities for touch events.
-const char kTouchEventsCapability[] = "touchEvents";
+constexpr char kTouchEventsCapability[] = "touchEvents";
 
-const char kSendInitialResolution[] = "sendInitialResolution";
-const char kRateLimitResizeRequests[] = "rateLimitResizeRequests";
+constexpr char kSendInitialResolution[] = "sendInitialResolution";
+constexpr char kRateLimitResizeRequests[] = "rateLimitResizeRequests";
 
-const char kFileTransferCapability[] = "fileTransfer";
+constexpr char kFileTransferCapability[] = "fileTransfer";
+
+// TODO(joedow): Ideally these would be dynamically created via the
+// DataChannelManager, we should consider moving them there if we begin using
+// WebRTC data channels for individual features more frequently.
+constexpr char kLockWorkstationAction[] = "lockWorkstationAction";
+constexpr char kSendAttentionSequenceAction[] = "sendAttentionSequenceAction";
 
 }  // namespace protocol
 }  // namespace remoting

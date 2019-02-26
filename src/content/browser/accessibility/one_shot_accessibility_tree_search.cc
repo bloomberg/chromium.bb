@@ -424,7 +424,7 @@ bool AccessibilityRadioGroupPredicate(
 
 bool AccessibilityTablePredicate(
     BrowserAccessibility* start, BrowserAccessibility* node) {
-  return ui::IsTableLikeRole(node->GetRole());
+  return ui::IsTableLike(node->GetRole());
 }
 
 bool AccessibilityTextfieldPredicate(
@@ -434,23 +434,17 @@ bool AccessibilityTextfieldPredicate(
 
 bool AccessibilityTextStyleBoldPredicate(
     BrowserAccessibility* start, BrowserAccessibility* node) {
-  int32_t style = node->GetIntAttribute(ax::mojom::IntAttribute::kTextStyle);
-  return 0 !=
-         (style & static_cast<int32_t>(ax::mojom::TextStyle::kTextStyleBold));
+  return node->GetData().HasTextStyle(ax::mojom::TextStyle::kBold);
 }
 
 bool AccessibilityTextStyleItalicPredicate(
     BrowserAccessibility* start, BrowserAccessibility* node) {
-  int32_t style = node->GetIntAttribute(ax::mojom::IntAttribute::kTextStyle);
-  return 0 !=
-         (style & static_cast<int32_t>(ax::mojom::TextStyle::kTextStyleItalic));
+  return node->GetData().HasTextStyle(ax::mojom::TextStyle::kItalic);
 }
 
 bool AccessibilityTextStyleUnderlinePredicate(
     BrowserAccessibility* start, BrowserAccessibility* node) {
-  int32_t style = node->GetIntAttribute(ax::mojom::IntAttribute::kTextStyle);
-  return 0 != (style &
-               static_cast<int32_t>(ax::mojom::TextStyle::kTextStyleUnderline));
+  return node->GetData().HasTextStyle(ax::mojom::TextStyle::kUnderline);
 }
 
 bool AccessibilityTreePredicate(

@@ -129,9 +129,22 @@ URLChecker::URLChecker(
     const net::NetworkTrafficAnnotationTag& traffic_annotation,
     const std::string& country,
     size_t cache_size)
+    : URLChecker(std::move(url_loader_factory),
+                 traffic_annotation,
+                 country,
+                 cache_size,
+                 google_apis::GetAPIKey()) {}
+
+URLChecker::URLChecker(
+    scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory,
+    const net::NetworkTrafficAnnotationTag& traffic_annotation,
+    const std::string& country,
+    size_t cache_size,
+    const std::string& api_key)
     : url_loader_factory_(std::move(url_loader_factory)),
       traffic_annotation_(traffic_annotation),
       country_(country),
+      api_key_(api_key),
       cache_(cache_size),
       cache_timeout_(
           base::TimeDelta::FromSeconds(kDefaultCacheTimeoutSeconds)) {}
@@ -181,7 +194,6 @@ bool URLChecker::CheckURL(const GURL& url, CheckCallback callback) {
   }
 
   DVLOG(1) << "Checking URL " << url;
-  std::string api_key = google_apis::GetAPIKey();
   auto resource_request = std::make_unique<network::ResourceRequest>();
   resource_request->url = GURL(kSafeSearchApiUrl);
   resource_request->method = "POST";
@@ -191,7 +203,7 @@ bool URLChecker::CheckURL(const GURL& url, CheckCallback callback) {
       network::SimpleURLLoader::Create(std::move(resource_request),
                                        traffic_annotation_);
   simple_url_loader->AttachStringForUpload(
-      BuildRequestData(api_key, url, country_), kDataContentType);
+      BuildRequestData(api_key_, url, country_), kDataContentType);
   auto it = checks_in_progress_.insert(
       checks_in_progress_.begin(),
       std::make_unique<Check>(url, std::move(simple_url_loader),

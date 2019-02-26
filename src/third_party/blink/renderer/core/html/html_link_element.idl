@@ -36,6 +36,8 @@ interface HTMLLinkElement : HTMLElement {
     [CEReactions, Reflect, ReflectOnly=("","no-referrer","origin","no-referrer-when-downgrade","origin-when-cross-origin","unsafe-url"), ReflectMissing="", ReflectInvalid=""] attribute DOMString referrerPolicy;
     [PutForwards=value] readonly attribute DOMTokenList sizes;
     [CEReactions, RuntimeEnabled=PriorityHints, Reflect, ReflectOnly=("low", "auto", "high"), ReflectMissing="auto", ReflectInvalid="auto"] attribute DOMString importance;
+    [RuntimeEnabled=PreloadImageSrcSet, CEReactions, Reflect] attribute DOMString imageSrcset;
+    [RuntimeEnabled=PreloadImageSrcSet, CEReactions, Reflect] attribute DOMString imageSizes;
 
     // obsolete members
     // https://html.spec.whatwg.org/#HTMLLinkElement-partial

@@ -12,7 +12,6 @@
 #include "content/browser/renderer_host/render_widget_host_impl.h"
 #include "content/browser/renderer_host/render_widget_host_view_aura.h"
 #include "content/browser/renderer_host/ui_events_helper.h"
-#include "ui/aura/event_injector.h"
 #include "ui/aura/window.h"
 #include "ui/aura/window_tree_host.h"
 #include "ui/events/blink/blink_event_util.h"
@@ -48,7 +47,6 @@ void SyntheticGestureTargetAura::DispatchWebTouchEventToPlatform(
 
   aura::Window* window = GetWindow();
   aura::WindowTreeHost* host = window->GetHost();
-  aura::EventInjector injector;
 
   for (const auto& event : events) {
     event->ConvertLocationToTarget(window, host->window());
@@ -60,7 +58,8 @@ void SyntheticGestureTargetAura::DispatchWebTouchEventToPlatform(
         gfx::ScalePoint(event->root_location_f(), device_scale_factor_);
     event->set_location_f(device_location);
     event->set_root_location_f(device_root_location);
-    ui::EventDispatchDetails details = injector.Inject(host, event.get());
+    ui::EventDispatchDetails details =
+        event_injector_.Inject(host, event.get());
     if (details.dispatcher_destroyed)
       break;
   }
@@ -98,9 +97,8 @@ void SyntheticGestureTargetAura::DispatchWebMouseWheelEventToPlatform(
 
   aura::Window* window = GetWindow();
   wheel_event.ConvertLocationToTarget(window, window->GetRootWindow());
-  aura::EventInjector injector;
   ui::EventDispatchDetails details =
-      injector.Inject(window->GetHost(), &wheel_event);
+      event_injector_.Inject(window->GetHost(), &wheel_event);
   if (details.dispatcher_destroyed)
     return;
 }
@@ -113,7 +111,6 @@ void SyntheticGestureTargetAura::DispatchWebGestureEventToPlatform(
   ui::EventType event_type = ui::WebEventTypeToEventType(web_gesture.GetType());
   int flags = ui::WebEventModifiersToEventFlags(web_gesture.GetModifiers());
   aura::Window* window = GetWindow();
-  aura::EventInjector injector;
 
   if (blink::WebInputEvent::IsPinchGestureEventType(web_gesture.GetType())) {
     ui::GestureEventDetails pinch_details(event_type);
@@ -128,7 +125,7 @@ void SyntheticGestureTargetAura::DispatchWebGestureEventToPlatform(
 
     pinch_event.ConvertLocationToTarget(window, window->GetRootWindow());
 
-    injector.Inject(window->GetHost(), &pinch_event);
+    event_injector_.Inject(window->GetHost(), &pinch_event);
     return;
   }
 
@@ -145,7 +142,7 @@ void SyntheticGestureTargetAura::DispatchWebGestureEventToPlatform(
   scroll_event.set_location_f(location);
   scroll_event.set_root_location_f(location);
   scroll_event.ConvertLocationToTarget(window, window->GetRootWindow());
-  injector.Inject(window->GetHost(), &scroll_event);
+  event_injector_.Inject(window->GetHost(), &scroll_event);
 }
 
 void SyntheticGestureTargetAura::DispatchWebMouseEventToPlatform(
@@ -167,9 +164,8 @@ void SyntheticGestureTargetAura::DispatchWebMouseEventToPlatform(
 
   aura::Window* window = GetWindow();
   mouse_event.ConvertLocationToTarget(window, window->GetRootWindow());
-  aura::EventInjector injector;
   ui::EventDispatchDetails details =
-      injector.Inject(window->GetHost(), &mouse_event);
+      event_injector_.Inject(window->GetHost(), &mouse_event);
   if (details.dispatcher_destroyed)
     return;
 }
@@ -180,11 +176,8 @@ SyntheticGestureTargetAura::GetDefaultSyntheticGestureSourceType() const {
 }
 
 float SyntheticGestureTargetAura::GetTouchSlopInDips() const {
-  // - 1 because Aura considers a pointer to be moving if it has moved at least
-  // 'max_touch_move_in_pixels_for_click' pixels.
   return ui::GestureConfiguration::GetInstance()
-             ->max_touch_move_in_pixels_for_click() -
-         1;
+      ->max_touch_move_in_pixels_for_click();
 }
 
 float SyntheticGestureTargetAura::GetSpanSlopInDips() const {

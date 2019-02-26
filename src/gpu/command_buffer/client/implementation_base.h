@@ -97,13 +97,11 @@ class GLES2_IMPL_EXPORT ImplementationBase
 
   // Gets the value of the result.
   template <typename T>
-  T GetResultAs() {
-    return static_cast<T>(GetResultBuffer());
+  ScopedResultPtr<T> GetResultAs() {
+    return ScopedResultPtr<T>(transfer_buffer_);
   }
 
-  void* GetResultBuffer();
   int32_t GetResultShmId();
-  uint32_t GetResultShmOffset();
 
   // TODO(gman): These bucket functions really seem like they belong in
   // CommandBufferHelper (or maybe BucketHelper?). Unfortunately they need
@@ -113,7 +111,7 @@ class GLES2_IMPL_EXPORT ImplementationBase
   bool GetBucketContents(uint32_t bucket_id, std::vector<int8_t>* data);
 
   // Sets the contents of a bucket.
-  void SetBucketContents(uint32_t bucket_id, const void* data, size_t size);
+  void SetBucketContents(uint32_t bucket_id, const void* data, uint32_t size);
 
   // Sets the contents of a bucket as a string.
   void SetBucketAsCString(uint32_t bucket_id, const char* str);

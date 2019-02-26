@@ -69,7 +69,7 @@ class PLATFORM_EXPORT XRWebGLDrawingBuffer
   void BeginDestruction();
 
  private:
-  struct ColorBuffer : public RefCounted<ColorBuffer> {
+  struct PLATFORM_EXPORT ColorBuffer : public RefCounted<ColorBuffer> {
     ColorBuffer(XRWebGLDrawingBuffer*, const IntSize&, GLuint texture_id);
     ~ColorBuffer();
 

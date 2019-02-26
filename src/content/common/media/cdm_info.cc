@@ -4,7 +4,6 @@
 
 #include "content/public/common/cdm_info.h"
 
-#include "base/guid.h"
 #include "base/logging.h"
 
 namespace content {
@@ -26,7 +25,7 @@ CdmCapability::CdmCapability(const CdmCapability& other) = default;
 CdmCapability::~CdmCapability() = default;
 
 CdmInfo::CdmInfo(const std::string& name,
-                 const std::string& guid,
+                 const base::Token& guid,
                  const base::Version& version,
                  const base::FilePath& path,
                  const std::string& file_system_id,
@@ -41,7 +40,6 @@ CdmInfo::CdmInfo(const std::string& name,
       capability(std::move(capability)),
       supported_key_system(supported_key_system),
       supports_sub_key_systems(supports_sub_key_systems) {
-  DCHECK(base::IsValidGUID(guid));
   DCHECK(!capability.encryption_schemes.empty());
 }
 

@@ -47,6 +47,8 @@ class CORE_EXPORT OffscreenCanvas final
 
  public:
   static OffscreenCanvas* Create(unsigned width, unsigned height);
+
+  explicit OffscreenCanvas(const IntSize&);
   ~OffscreenCanvas() override;
   void Dispose();
 
@@ -65,6 +67,7 @@ class CORE_EXPORT OffscreenCanvas final
 
   const IntSize& Size() const override { return size_; }
   void SetSize(const IntSize&);
+  void RecordTransfer();
 
   void SetPlaceholderCanvasId(DOMNodeId canvas_id);
   DOMNodeId PlaceholderCanvasId() const { return placeholder_canvas_id_; }
@@ -114,14 +117,15 @@ class CORE_EXPORT OffscreenCanvas final
   // Partial CanvasResourceHost implementation
   void NotifyGpuContextLost() override {}
   void SetNeedsCompositingUpdate() override {}
-  void UpdateMemoryUsage() override {}  // TODO(crbug.com/842693): implement
+  // TODO(fserb): Merge this with HTMLCanvasElement::UpdateMemoryUsage
+  void UpdateMemoryUsage() override;
   SkFilterQuality FilterQuality() const override {
     return kLow_SkFilterQuality;  // TODO(crbug.com/856654)
   }
 
   // EventTarget implementation
   const AtomicString& InterfaceName() const final {
-    return EventTargetNames::OffscreenCanvas;
+    return event_target_names::kOffscreenCanvas;
   }
   ExecutionContext* GetExecutionContext() const override {
     return execution_context_.Get();
@@ -140,7 +144,7 @@ class CORE_EXPORT OffscreenCanvas final
   ScriptPromise CreateImageBitmap(ScriptState*,
                                   EventTarget&,
                                   base::Optional<IntRect>,
-                                  const ImageBitmapOptions&) final;
+                                  const ImageBitmapOptions*) final;
 
   // CanvasImageSource implementation
   scoped_refptr<Image> GetSourceImageForCanvas(SourceImageStatus*,
@@ -168,8 +172,9 @@ class CORE_EXPORT OffscreenCanvas final
   void Trace(blink::Visitor*) override;
 
  private:
+  int32_t memory_usage_ = 0;
+
   friend class OffscreenCanvasTest;
-  explicit OffscreenCanvas(const IntSize&);
   using ContextFactoryVector =
       Vector<std::unique_ptr<CanvasRenderingContextFactory>>;
   static ContextFactoryVector& RenderingContextFactories();

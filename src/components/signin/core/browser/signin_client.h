@@ -12,8 +12,8 @@
 #include "base/time/time.h"
 #include "build/build_config.h"
 #include "components/keyed_service/core/keyed_service.h"
+#include "components/signin/core/browser/account_consistency_method.h"
 #include "components/signin/core/browser/account_info.h"
-#include "components/signin/core/browser/profile_management_switches.h"
 #include "components/signin/core/browser/signin_metrics.h"
 #include "google_apis/gaia/gaia_auth_fetcher.h"
 #include "url/gurl.h"
@@ -41,9 +41,6 @@ class SigninClient : public KeyedService {
 
   ~SigninClient() override = default;
 
-  // Perform Chrome-specific sign out. This happens when user signs out.
-  virtual void OnSignedOut() = 0;
-
   // Call when done local initialization and SigninClient can initiate any work
   // it has to do that may require other components (like ProfileManager) to be
   // available.
@@ -63,12 +60,6 @@ class SigninClient : public KeyedService {
   // Returns a string containing the version info of the product in which the
   // Signin component is being used.
   virtual std::string GetProductVersion() = 0;
-
-  // Called after Google signin has succeeded.
-  virtual void OnSignedIn(const std::string& account_id,
-                          const std::string& gaia_id,
-                          const std::string& username,
-                          const std::string& password) {}
 
   // Called after Google signin has succeeded and GetUserInfo has returned.
   virtual void PostSignedIn(const std::string& account_id,
@@ -106,7 +97,7 @@ class SigninClient : public KeyedService {
   // Creates a new platform-specific GaiaAuthFetcher.
   virtual std::unique_ptr<GaiaAuthFetcher> CreateGaiaAuthFetcher(
       GaiaAuthConsumer* consumer,
-      const std::string& source,
+      gaia::GaiaSource source,
       scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory) = 0;
 
   // Called once the credentials has been copied to another SigninManager.

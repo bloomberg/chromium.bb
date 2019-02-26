@@ -96,14 +96,16 @@ bool NaClBrokerHost::LaunchLoader(
 
 void NaClBrokerHost::OnLoaderLaunched(int launch_id,
                                       base::ProcessHandle handle) {
-  NaClBrokerService::GetInstance()->OnLoaderLaunched(launch_id, handle);
+  NaClBrokerService::GetInstance()->OnLoaderLaunched(launch_id,
+                                                     base::Process(handle));
 }
 
 bool NaClBrokerHost::LaunchDebugExceptionHandler(
     int32_t pid,
     base::ProcessHandle process_handle,
     const std::string& startup_info) {
-  base::ProcessHandle broker_process = process_->GetData().GetHandle();
+  base::ProcessHandle broker_process =
+      process_->GetData().GetProcess().Handle();
   base::ProcessHandle handle_in_broker_process;
   if (!DuplicateHandle(::GetCurrentProcess(), process_handle,
                        broker_process, &handle_in_broker_process,

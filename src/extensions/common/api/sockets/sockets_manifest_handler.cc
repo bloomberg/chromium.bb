@@ -36,7 +36,7 @@ ManifestPermission* SocketsManifestHandler::CreateInitialRequiredPermission(
     const Extension* extension) {
   SocketsManifestData* data = SocketsManifestData::Get(extension);
   if (data)
-    return data->permission()->Clone();
+    return data->permission()->Clone().release();
   return NULL;
 }
 

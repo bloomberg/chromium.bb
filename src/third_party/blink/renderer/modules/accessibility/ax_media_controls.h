@@ -101,6 +101,8 @@ class AccessibilityMediaVolumeSlider final : public AXSlider {
 class AXMediaControlsContainer final : public AccessibilityMediaControl {
  public:
   static AXObject* Create(LayoutObject*, AXObjectCacheImpl&);
+
+  AXMediaControlsContainer(LayoutObject*, AXObjectCacheImpl&);
   ~AXMediaControlsContainer() override = default;
 
   ax::mojom::Role RoleValue() const override {
@@ -118,7 +120,6 @@ class AXMediaControlsContainer final : public AccessibilityMediaControl {
                      AXObjectVector* description_objects) const override;
 
  private:
-  AXMediaControlsContainer(LayoutObject*, AXObjectCacheImpl&);
   bool ComputeAccessibilityIsIgnored(IgnoredReasons* = nullptr) const override;
 
   DISALLOW_COPY_AND_ASSIGN(AXMediaControlsContainer);

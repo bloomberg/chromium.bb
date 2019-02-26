@@ -44,11 +44,11 @@ void HTMLCanvasPainter::PaintReplaced(const PaintInfo& paint_info,
       canvas->RenderingContext()->IsComposited()) {
     if (cc::Layer* layer = canvas->RenderingContext()->CcLayer()) {
       IntRect pixel_snapped_rect = PixelSnappedIntRect(paint_rect);
-      layer->SetBounds(static_cast<gfx::Size>(pixel_snapped_rect.Size()));
+      layer->SetOffsetToTransformParent(
+          gfx::Vector2dF(pixel_snapped_rect.X(), pixel_snapped_rect.Y()));
+      layer->SetBounds(gfx::Size(pixel_snapped_rect.Size()));
       layer->SetIsDrawable(true);
-      RecordForeignLayer(
-          context, layout_html_canvas_, DisplayItem::kForeignLayerCanvas, layer,
-          FloatPoint(pixel_snapped_rect.Location()), pixel_snapped_rect.Size());
+      RecordForeignLayer(context, DisplayItem::kForeignLayerCanvas, layer);
       return;
     }
   }

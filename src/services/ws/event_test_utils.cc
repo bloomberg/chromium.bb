@@ -33,15 +33,6 @@ std::string EventToEventType(const ui::Event* event) {
       return "MOUSE_PRESSED";
     case ui::ET_MOUSE_RELEASED:
       return "MOUSE_RELEASED";
-
-    case ui::ET_POINTER_DOWN:
-      return "POINTER_DOWN";
-    case ui::ET_POINTER_ENTERED:
-      return "POINTER_ENTERED";
-    case ui::ET_POINTER_MOVED:
-      return "POINTER_MOVED";
-    case ui::ET_POINTER_UP:
-      return "POINTER_UP";
     default:
       break;
   }

@@ -6,11 +6,11 @@
 #define THIRD_PARTY_BLINK_PUBLIC_PLATFORM_MODULES_SERVICE_WORKER_WEB_SERVICE_WORKER_REQUEST_H_
 
 #include "mojo/public/cpp/system/message_pipe.h"
+#include "services/network/public/mojom/referrer_policy.mojom-shared.h"
 #include "services/network/public/mojom/request_context_frame_type.mojom-shared.h"
 #include "third_party/blink/public/platform/modules/fetch/fetch_api_request.mojom-shared.h"
 #include "third_party/blink/public/platform/web_common.h"
 #include "third_party/blink/public/platform/web_private_ptr.h"
-#include "third_party/blink/public/platform/web_referrer_policy.h"
 #include "third_party/blink/public/platform/web_string.h"
 #include "third_party/blink/public/platform/web_url.h"
 #include "third_party/blink/public/platform/web_url_request.h"
@@ -18,10 +18,10 @@
 #if INSIDE_BLINK
 #include <utility>
 #include "third_party/blink/public/mojom/blob/blob.mojom-blink.h"  // nogncheck
-#include "third_party/blink/renderer/platform/network/http_header_map.h"
-#include "third_party/blink/renderer/platform/weborigin/referrer.h"
-#include "third_party/blink/renderer/platform/wtf/forward.h"
-#include "third_party/blink/renderer/platform/wtf/text/string_hash.h"
+#include "third_party/blink/renderer/platform/network/http_header_map.h"  // nogncheck
+#include "third_party/blink/renderer/platform/weborigin/referrer.h"  // nogncheck
+#include "third_party/blink/renderer/platform/wtf/forward.h"  // nogncheck
+#include "third_party/blink/renderer/platform/wtf/text/string_hash.h"  // nogncheck
 #endif
 
 namespace base {
@@ -34,6 +34,12 @@ class WebHTTPHeaderVisitor;
 class WebServiceWorkerRequestPrivate;
 
 // Represents a request for a web resource.
+//
+// Now this is used only to carry the request data of a fetch event dispatched
+// towards a service worker, from //content across the boundary into Blink.
+// TODO(crbug.com/879019): Remove this class once we make the following Mojo
+// interface receive the fetch event directly inside Blink.
+//  - content.mojom.ServiceWorker
 class BLINK_PLATFORM_EXPORT WebServiceWorkerRequest {
  public:
   ~WebServiceWorkerRequest() { Reset(); }
@@ -71,9 +77,9 @@ class BLINK_PLATFORM_EXPORT WebServiceWorkerRequest {
                long long size,
                mojo::ScopedMessagePipeHandle);
 
-  void SetReferrer(const WebString&, WebReferrerPolicy);
+  void SetReferrer(const WebString&, network::mojom::ReferrerPolicy);
   WebURL ReferrerUrl() const;
-  WebReferrerPolicy GetReferrerPolicy() const;
+  network::mojom::ReferrerPolicy GetReferrerPolicy() const;
 
   void SetMode(network::mojom::FetchRequestMode);
   network::mojom::FetchRequestMode Mode() const;

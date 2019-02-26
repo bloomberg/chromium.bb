@@ -28,6 +28,13 @@ class CHROMEOS_EXPORT SeneschalClient : public DBusClient {
       const vm_tools::seneschal::SharePathRequest& request,
       DBusMethodCallback<vm_tools::seneschal::SharePathResponse> callback) = 0;
 
+  // Unshares a path in the Chrome OS host with the container.
+  // |callback| is called after the method call finishes.
+  virtual void UnsharePath(
+      const vm_tools::seneschal::UnsharePathRequest& request,
+      DBusMethodCallback<vm_tools::seneschal::UnsharePathResponse>
+          callback) = 0;
+
  protected:
   // Create() should be used instead.
   SeneschalClient();

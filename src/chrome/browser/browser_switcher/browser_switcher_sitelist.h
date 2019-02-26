@@ -52,6 +52,11 @@ class BrowserSwitcherSitelistImpl : public BrowserSwitcherSitelist {
   void OnUrlListChanged();
   void OnGreylistChanged();
 
+  // Returns true if there are any rules configured.
+  bool IsActive() const;
+
+  bool ShouldSwitchImpl(const GURL& url) const;
+
   struct RuleSet {
     RuleSet();
     ~RuleSet();

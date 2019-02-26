@@ -20,10 +20,13 @@
 
 namespace base {
 
+class PostTaskAndroid;
+
 // Valid priorities supported by the task scheduler. Note: internal algorithms
 // depend on priorities being expressed as a continuous zero-based list from
 // lowest to highest priority. Users of this API shouldn't otherwise care about
 // nor use the underlying values.
+// GENERATED_JAVA_ENUM_PACKAGE: org.chromium.base.task
 enum class TaskPriority {
   // This will always be equal to the lowest priority available.
   LOWEST = 0,
@@ -209,6 +212,12 @@ class BASE_EXPORT TaskTraits {
     return TaskTraits(left, right);
   }
 
+  // Sets the priority of tasks with these traits to |priority|.
+  void UpdatePriority(TaskPriority priority) {
+    priority_ = priority;
+    priority_set_explicitly_ = true;
+  }
+
   // Returns true if the priority was set explicitly.
   constexpr bool priority_set_explicitly() const {
     return priority_set_explicitly_;
@@ -246,6 +255,26 @@ class BASE_EXPORT TaskTraits {
   }
 
  private:
+  friend PostTaskAndroid;
+
+  // For use by PostTaskAndroid.
+  TaskTraits(bool priority_set_explicitly,
+             TaskPriority priority,
+             bool shutdown_behavior_set_explicitly,
+             TaskShutdownBehavior shutdown_behavior,
+             bool may_block,
+             bool with_base_sync_primitives,
+             TaskTraitsExtensionStorage extension)
+      : extension_(extension),
+        priority_(priority),
+        shutdown_behavior_(shutdown_behavior),
+        priority_set_explicitly_(priority_set_explicitly),
+        shutdown_behavior_set_explicitly_(shutdown_behavior_set_explicitly),
+        may_block_(may_block),
+        with_base_sync_primitives_(with_base_sync_primitives) {
+    static_assert(sizeof(TaskTraits) == 24, "Keep this constructor up to date");
+  }
+
   constexpr TaskTraits(const TaskTraits& left, const TaskTraits& right)
       : extension_(right.extension_.extension_id !=
                            TaskTraitsExtensionStorage::kInvalidExtensionId

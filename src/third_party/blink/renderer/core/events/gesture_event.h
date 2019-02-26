@@ -36,6 +36,8 @@ namespace blink {
 class CORE_EXPORT GestureEvent final : public UIEventWithKeyState {
  public:
   static GestureEvent* Create(AbstractView*, const WebGestureEvent&);
+
+  GestureEvent(const AtomicString&, AbstractView*, const WebGestureEvent&);
   ~GestureEvent() override = default;
 
   bool IsGestureEvent() const override;
@@ -47,8 +49,6 @@ class CORE_EXPORT GestureEvent final : public UIEventWithKeyState {
   void Trace(blink::Visitor*) override;
 
  private:
-  GestureEvent(const AtomicString&, AbstractView*, const WebGestureEvent&);
-
   WebGestureEvent native_event_;
 };
 

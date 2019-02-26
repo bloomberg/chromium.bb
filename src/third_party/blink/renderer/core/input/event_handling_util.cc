@@ -14,7 +14,7 @@
 #include "third_party/blink/renderer/core/scroll/scrollable_area.h"
 
 namespace blink {
-namespace EventHandlingUtil {
+namespace event_handling_util {
 
 HitTestResult HitTestResultInFrame(
     LocalFrame* frame,
@@ -129,7 +129,7 @@ MouseEventWithHitTestResults PerformMouseEventHitTest(
       mev);
 }
 
-LocalFrame* SubframeForTargetNode(Node* node) {
+LocalFrame* SubframeForTargetNode(Node* node, bool* is_remote_frame) {
   if (!node)
     return nullptr;
 
@@ -141,18 +141,29 @@ LocalFrame* SubframeForTargetNode(Node* node) {
       ToLayoutEmbeddedContent(layout_object)->ChildFrameView();
   if (!frame_view)
     return nullptr;
-  if (!frame_view->IsLocalFrameView())
+  if (!frame_view->IsLocalFrameView()) {
+    if (is_remote_frame)
+      *is_remote_frame = true;
     return nullptr;
+  }
 
   return &ToLocalFrameView(frame_view)->GetFrame();
 }
 
-LocalFrame* SubframeForHitTestResult(
-    const MouseEventWithHitTestResults& hit_test_result) {
+LocalFrame* GetTargetSubframe(
+    const MouseEventWithHitTestResults& hit_test_result,
+    Node* capturing_node,
+    bool* is_remote_frame) {
+  if (capturing_node) {
+    return event_handling_util::SubframeForTargetNode(capturing_node,
+                                                      is_remote_frame);
+  }
+
   if (!hit_test_result.IsOverEmbeddedContentView())
     return nullptr;
-  return SubframeForTargetNode(hit_test_result.InnerNode());
+
+  return SubframeForTargetNode(hit_test_result.InnerNode(), is_remote_frame);
 }
 
-}  // namespace EventHandlingUtil
+}  // namespace event_handling_util
 }  // namespace blink

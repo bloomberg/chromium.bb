@@ -37,12 +37,12 @@
             android:background="@drawable/ic_search"
             android:contentDescription="@string/search" />
 
-        <Button
+        <org.chromium.ui.widget.ButtonCompat
             android:id="@+id/done"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:enabled="false"
             android:text="@string/done"
-            style="@style/MainButtonStyle" />
+            style="@style/TextButton" />
     </LinearLayout>
 </org.chromium.chrome.browser.contacts_picker.ContactsPickerToolbar>

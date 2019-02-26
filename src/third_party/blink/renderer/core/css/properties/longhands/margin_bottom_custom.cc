@@ -13,14 +13,15 @@
 #include "third_party/blink/renderer/core/style/computed_style.h"
 
 namespace blink {
-namespace CSSLonghand {
+namespace css_longhand {
 
 const CSSValue* MarginBottom::ParseSingleValue(
     CSSParserTokenRange& range,
     const CSSParserContext& context,
     const CSSParserLocalContext&) const {
-  return CSSParsingUtils::ConsumeMarginOrOffset(
-      range, context.Mode(), CSSPropertyParserHelpers::UnitlessQuirk::kAllow);
+  return css_parsing_utils::ConsumeMarginOrOffset(
+      range, context.Mode(),
+      css_property_parser_helpers::UnitlessQuirk::kAllow);
 }
 
 bool MarginBottom::IsLayoutDependent(const ComputedStyle* style,
@@ -44,5 +45,5 @@ const CSSValue* MarginBottom::CSSValueFromComputedStyleInternal(
                                 style);
 }
 
-}  // namespace CSSLonghand
+}  // namespace css_longhand
 }  // namespace blink

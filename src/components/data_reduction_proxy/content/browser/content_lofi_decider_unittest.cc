@@ -11,11 +11,11 @@
 
 #include "base/command_line.h"
 #include "base/macros.h"
-#include "base/message_loop/message_loop.h"
 #include "base/metrics/field_trial.h"
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
 #include "base/test/scoped_feature_list.h"
+#include "base/test/scoped_task_environment.h"
 #include "build/build_config.h"
 #include "components/data_reduction_proxy/core/browser/data_reduction_proxy_config_test_utils.h"
 #include "components/data_reduction_proxy/core/browser/data_reduction_proxy_data.h"
@@ -215,7 +215,8 @@ class ContentLoFiDeciderTest : public testing::Test {
   }
 
  protected:
-  base::MessageLoopForIO message_loop_;
+  base::test::ScopedTaskEnvironment task_environment_{
+      base::test::ScopedTaskEnvironment::MainThreadType::IO};
   net::TestURLRequestContext context_;
   net::TestDelegate delegate_;
   std::unique_ptr<DataReductionProxyTestContext> test_context_;
@@ -423,20 +424,6 @@ TEST_F(ContentLoFiDeciderTest, RemoveAcceptTransformHeader) {
   EXPECT_TRUE(headers.HasHeader(chrome_proxy_accept_transform_header()));
   lofi_decider->RemoveAcceptTransformHeader(&headers);
   EXPECT_FALSE(headers.HasHeader(chrome_proxy_accept_transform_header()));
-}
-
-TEST_F(ContentLoFiDeciderTest, ShouldRecordLoFiUMA) {
-  std::unique_ptr<data_reduction_proxy::ContentLoFiDecider> lofi_decider(
-      new data_reduction_proxy::ContentLoFiDecider());
-  std::unique_ptr<net::URLRequest> request1 = CreateRequestByType(
-      content::RESOURCE_TYPE_IMAGE, false, content::SERVER_LOFI_ON);
-  EXPECT_TRUE(lofi_decider->ShouldRecordLoFiUMA(*request1));
-  std::unique_ptr<net::URLRequest> request2 = CreateRequestByType(
-      content::RESOURCE_TYPE_MAIN_FRAME, false, content::PREVIEWS_OFF);
-  EXPECT_FALSE(lofi_decider->ShouldRecordLoFiUMA(*request2));
-  std::unique_ptr<net::URLRequest> request3 = CreateRequestByType(
-      content::RESOURCE_TYPE_MAIN_FRAME, false, content::SERVER_LITE_PAGE_ON);
-  EXPECT_TRUE(lofi_decider->ShouldRecordLoFiUMA(*request3));
 }
 
 TEST_F(ContentLoFiDeciderTest, NoTransformDoesNotAddHeader) {

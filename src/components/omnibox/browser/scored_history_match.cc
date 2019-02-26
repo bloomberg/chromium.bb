@@ -148,7 +148,6 @@ ScoredHistoryMatch::ScoredHistoryMatch(
   input_location = 0;
   match_in_scheme = false;
   match_in_subdomain = false;
-  match_after_host = false;
   innermost_match = false;
 
   // NOTE: Call Init() before doing any validity checking to ensure that the
@@ -336,7 +335,7 @@ ScoredHistoryMatch::ScoredHistoryMatch(
         std::make_pair(url_match.offset, url_match.offset + url_match.length));
   }
   AutocompleteMatch::GetMatchComponents(gurl, match_positions, &match_in_scheme,
-                                        &match_in_subdomain, &match_after_host);
+                                        &match_in_subdomain);
 }
 
 ScoredHistoryMatch::ScoredHistoryMatch(const ScoredHistoryMatch& other) =

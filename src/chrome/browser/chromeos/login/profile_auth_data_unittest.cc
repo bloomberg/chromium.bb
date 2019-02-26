@@ -26,9 +26,6 @@
 #include "net/http/http_auth_cache.h"
 #include "net/http/http_network_session.h"
 #include "net/http/http_transaction_factory.h"
-#include "net/ssl/channel_id_service.h"
-#include "net/ssl/channel_id_store.h"
-#include "net/test/channel_id_test_util.h"
 #include "net/url_request/url_request_context.h"
 #include "net/url_request/url_request_context_getter.h"
 #include "services/network/public/mojom/cookie_manager.mojom.h"
@@ -54,8 +51,6 @@ const char kGAIACookieDomain[] = "google.com";
 const char kSAMLIdPCookieDomain[] = "example.com";
 const char kSAMLIdPCookieDomainWithWildcard[] = ".example.com";
 
-const char kChannelIDServerIdentifier[] = "server";
-
 }  // namespace
 
 class ProfileAuthDataTest : public testing::Test {
@@ -65,73 +60,55 @@ class ProfileAuthDataTest : public testing::Test {
 
   void PopulateUserBrowserContext();
 
-  void Transfer(bool transfer_auth_cookies_and_channel_ids_on_first_login,
+  void Transfer(bool transfer_auth_cookies_on_first_login,
                 bool transfer_saml_auth_cookies_on_subsequent_login);
 
   net::CookieList GetUserCookies();
-  net::ChannelIDStore::ChannelIDList GetUserChannelIDs();
 
   void VerifyTransferredUserProxyAuthEntry();
   void VerifyUserCookies(const std::string& expected_gaia_cookie_value,
                          const std::string& expected_saml_idp_cookie_value);
-  void VerifyUserChannelID(crypto::ECPrivateKey* expected_key);
-
- protected:
-  std::unique_ptr<crypto::ECPrivateKey> channel_id_key1_;
-  std::unique_ptr<crypto::ECPrivateKey> channel_id_key2_;
 
  private:
-  void PopulateBrowserContext(
-      content::BrowserContext* browser_context,
-      const std::string& proxy_auth_password,
-      const std::string& cookie_value,
-      std::unique_ptr<crypto::ECPrivateKey> channel_id_key);
+  void PopulateBrowserContext(content::BrowserContext* browser_context,
+                              const std::string& proxy_auth_password,
+                              const std::string& cookie_value);
 
   net::URLRequestContext* GetRequestContext(
       content::BrowserContext* browser_context);
   net::HttpAuthCache* GetProxyAuth(content::BrowserContext* browser_context);
   network::mojom::CookieManager* GetCookies(
       content::BrowserContext* browser_context);
-  net::ChannelIDStore* GetChannelIDs(content::BrowserContext* browser_context);
-
-  void StoreChannelIDListAndQuitLoop(
-      const net::ChannelIDStore::ChannelIDList& channel_id_list);
 
   content::TestBrowserThreadBundle thread_bundle_;
 
   TestingProfile login_browser_context_;
   TestingProfile user_browser_context_;
-
-  net::ChannelIDStore::ChannelIDList user_channel_id_list_;
-
-  std::unique_ptr<base::RunLoop> run_loop_;
 };
 
 void ProfileAuthDataTest::SetUp() {
-  channel_id_key1_ = crypto::ECPrivateKey::Create();
-  channel_id_key2_ = crypto::ECPrivateKey::Create();
   PopulateBrowserContext(&login_browser_context_, kProxyAuthPassword1,
-                         kCookieValue1, channel_id_key1_->Copy());
+                         kCookieValue1);
 }
 
 void ProfileAuthDataTest::PopulateUserBrowserContext() {
   PopulateBrowserContext(&user_browser_context_, kProxyAuthPassword2,
-                         kCookieValue2, channel_id_key2_->Copy());
+                         kCookieValue2);
 }
 
 void ProfileAuthDataTest::Transfer(
-    bool transfer_auth_cookies_and_channel_ids_on_first_login,
+    bool transfer_auth_cookies_on_first_login,
     bool transfer_saml_auth_cookies_on_subsequent_login) {
   base::RunLoop run_loop;
-  ProfileAuthData::Transfer(
-      content::BrowserContext::GetDefaultStoragePartition(
-          &login_browser_context_),
-      content::BrowserContext::GetDefaultStoragePartition(
-          &user_browser_context_),
-      transfer_auth_cookies_and_channel_ids_on_first_login,
-      transfer_saml_auth_cookies_on_subsequent_login, run_loop.QuitClosure());
+  ProfileAuthData::Transfer(content::BrowserContext::GetDefaultStoragePartition(
+                                &login_browser_context_),
+                            content::BrowserContext::GetDefaultStoragePartition(
+                                &user_browser_context_),
+                            transfer_auth_cookies_on_first_login,
+                            transfer_saml_auth_cookies_on_subsequent_login,
+                            run_loop.QuitClosure());
   run_loop.Run();
-  if (!transfer_auth_cookies_and_channel_ids_on_first_login &&
+  if (!transfer_auth_cookies_on_first_login &&
       !transfer_saml_auth_cookies_on_subsequent_login) {
     // When only proxy auth state is being transferred, the completion callback
     // is invoked before the transfer has actually completed. Spin the loop once
@@ -151,16 +128,6 @@ net::CookieList ProfileAuthDataTest::GetUserCookies() {
           }));
   run_loop.Run();
   return result;
-}
-
-net::ChannelIDStore::ChannelIDList ProfileAuthDataTest::GetUserChannelIDs() {
-  run_loop_.reset(new base::RunLoop);
-  GetChannelIDs(&user_browser_context_)
-      ->GetAllChannelIDs(
-          base::Bind(&ProfileAuthDataTest::StoreChannelIDListAndQuitLoop,
-                     base::Unretained(this)));
-  run_loop_->Run();
-  return user_channel_id_list_;
 }
 
 void ProfileAuthDataTest::VerifyTransferredUserProxyAuthEntry() {
@@ -196,20 +163,10 @@ void ProfileAuthDataTest::VerifyUserCookies(
   EXPECT_EQ(kGAIACookieDomain, cookie->Domain());
 }
 
-void ProfileAuthDataTest::VerifyUserChannelID(
-    crypto::ECPrivateKey* expected_key) {
-  net::ChannelIDStore::ChannelIDList user_channel_ids = GetUserChannelIDs();
-  ASSERT_EQ(1u, user_channel_ids.size());
-  net::ChannelIDStore::ChannelID* channel_id = &user_channel_ids.front();
-  EXPECT_EQ(kChannelIDServerIdentifier, channel_id->server_identifier());
-  EXPECT_TRUE(net::KeysEqual(expected_key, channel_id->key()));
-}
-
 void ProfileAuthDataTest::PopulateBrowserContext(
     content::BrowserContext* browser_context,
     const std::string& proxy_auth_password,
-    const std::string& cookie_value,
-    std::unique_ptr<crypto::ECPrivateKey> channel_id_key) {
+    const std::string& cookie_value) {
   GetProxyAuth(browser_context)
       ->Add(GURL(kProxyAuthURL), kProxyAuthRealm,
             net::HttpAuth::AUTH_SCHEME_BASIC, kProxyAuthChallenge,
@@ -245,10 +202,6 @@ void ProfileAuthDataTest::PopulateBrowserContext(
           std::string(), base::Time(), base::Time(), base::Time(), true, false,
           net::CookieSameSite::DEFAULT_MODE, net::COOKIE_PRIORITY_DEFAULT),
       true /*secure_source*/, true /*modify_http_only*/, base::DoNothing());
-
-  GetChannelIDs(browser_context)
-      ->SetChannelID(std::make_unique<net::ChannelIDStore::ChannelID>(
-          kChannelIDServerIdentifier, base::Time(), std::move(channel_id_key)));
 }
 
 net::URLRequestContext* ProfileAuthDataTest::GetRequestContext(
@@ -272,43 +225,26 @@ network::mojom::CookieManager* ProfileAuthDataTest::GetCookies(
       ->GetCookieManagerForBrowserProcess();
 }
 
-net::ChannelIDStore* ProfileAuthDataTest::GetChannelIDs(
-    content::BrowserContext* browser_context) {
-  return GetRequestContext(browser_context)
-      ->channel_id_service()
-      ->GetChannelIDStore();
-}
-
-void ProfileAuthDataTest::StoreChannelIDListAndQuitLoop(
-    const net::ChannelIDStore::ChannelIDList& channel_id_list) {
-  user_channel_id_list_ = channel_id_list;
-  run_loop_->Quit();
-}
-
-// Verifies that when no transfer of auth cookies or channel IDs is requested,
-// only the proxy auth state is transferred.
+// Verifies that when no transfer of auth cookies is requested, only the proxy
+// auth state is transferred.
 TEST_F(ProfileAuthDataTest, DoNotTransfer) {
   Transfer(false, false);
 
   VerifyTransferredUserProxyAuthEntry();
   EXPECT_TRUE(GetUserCookies().empty());
-  EXPECT_TRUE(GetUserChannelIDs().empty());
 }
 
-// Verifies that when the transfer of auth cookies and channel IDs on first
-// login is requested, they do get transferred along with the proxy auth state
-// on first login.
+// Verifies that when the transfer of auth cookies on first login is requested,
+// they do get transferred along with the proxy auth state on first login.
 TEST_F(ProfileAuthDataTest, TransferOnFirstLoginWithNewProfile) {
   Transfer(true, false);
 
   VerifyTransferredUserProxyAuthEntry();
   VerifyUserCookies(kCookieValue1, kCookieValue1);
-  VerifyUserChannelID(channel_id_key1_.get());
 }
 
-// Verifies that even if the transfer of auth cookies and channel IDs on first
-// login is requested, only the proxy auth state is transferred on subsequent
-// login.
+// Verifies that even if the transfer of auth cookies on first login is
+// requested, only the proxy auth state is transferred on subsequent login.
 TEST_F(ProfileAuthDataTest, TransferOnFirstLoginWithExistingProfile) {
   PopulateUserBrowserContext();
 
@@ -316,7 +252,6 @@ TEST_F(ProfileAuthDataTest, TransferOnFirstLoginWithExistingProfile) {
 
   VerifyTransferredUserProxyAuthEntry();
   VerifyUserCookies(kCookieValue2, kCookieValue2);
-  VerifyUserChannelID(channel_id_key2_.get());
 }
 
 // Verifies that when the transfer of auth cookies set by a SAML IdP on
@@ -329,7 +264,6 @@ TEST_F(ProfileAuthDataTest, TransferOnSubsequentLogin) {
 
   VerifyTransferredUserProxyAuthEntry();
   VerifyUserCookies(kCookieValue2, kCookieValue1);
-  VerifyUserChannelID(channel_id_key2_.get());
 }
 
 }  // namespace chromeos

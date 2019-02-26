@@ -15,6 +15,10 @@
 #include "base/optional.h"
 #include "url/gurl.h"
 
+#ifdef OS_ANDROID
+#include "base/android/scoped_java_ref.h"
+#endif
+
 namespace base {
 class DictionaryValue;
 }
@@ -37,8 +41,11 @@ class SuggestionAnswer {
   // These values are based on the server-side type AnswerTriggererKey. Do not
   // remove values from this enum (or the client/server will become out of
   // sync).
+  //
+  // A Java counterpart will be generated for this enum.
+  // GENERATED_JAVA_ENUM_PACKAGE: org.chromium.components.omnibox
   enum AnswerType {
-    ANSWER_TYPE_INVALID,
+    ANSWER_TYPE_INVALID = 0,
     ANSWER_TYPE_DICTIONARY,
     ANSWER_TYPE_FINANCE,
     ANSWER_TYPE_KNOWLEDGE_GRAPH,
@@ -57,6 +64,10 @@ class SuggestionAnswer {
 
   // These values are named and numbered to match a specification at go/ais_api.
   // The values are only used for answer results.
+  //
+  // A Java counterpart will be generated for this enum.
+  // GENERATED_JAVA_ENUM_PACKAGE: org.chromium.components.omnibox
+  // GENERATED_JAVA_CLASS_NAME_OVERRIDE: AnswerTextType
   enum TextType {
     // Deprecated: ANSWER = 1,
     // Deprecated: HEADLINE = 2,
@@ -89,8 +100,12 @@ class SuggestionAnswer {
   // based on a finite set of text types instead of answer properties and rules.
   // Performance is also improved by doing this once at parse time instead of
   // every time render text is invalidated.
+  //
+  // A Java counterpart will be generated for this enum.
+  // GENERATED_JAVA_ENUM_PACKAGE: org.chromium.components.omnibox
+  // GENERATED_JAVA_CLASS_NAME_OVERRIDE: AnswerTextStyle
   enum class TextStyle {
-    NONE,
+    NONE = 0,
     NORMAL,
     NORMAL_DIM,
     SECONDARY,
@@ -222,6 +237,10 @@ class SuggestionAnswer {
 
   // For new answers, replace old answer text types with appropriate new types.
   void InterpretTextTypes();
+
+#ifdef OS_ANDROID
+  base::android::ScopedJavaLocalRef<jobject> CreateJavaObject() const;
+#endif
 
  private:
   GURL image_url_;

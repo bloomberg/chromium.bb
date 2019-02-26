@@ -19,6 +19,7 @@
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
+#include "base/no_destructor.h"
 #include "base/strings/string_util.h"
 #include "base/time/time.h"
 #include "content/public/browser/content_browser_client.h"
@@ -185,13 +186,19 @@ class WebRequestAPI : public BrowserContextKeyedAPI,
   // BrowserContext, |*factory_request| is swapped out for a new request which
   // proxies through an internal URLLoaderFactory. This supports lifetime
   // observation and control on behalf of the WebRequest API.
+  // |frame| and |render_process_id| are the frame and render process id in
+  // which the URLLoaderFactory will be used. |frame| can be nullptr for
+  // factories proxied for service worker.
   //
   // Returns |true| if the URLLoaderFactory will be proxied; |false| otherwise.
   // Only used when the Network Service is enabled.
   bool MaybeProxyURLLoaderFactory(
+      content::BrowserContext* browser_context,
       content::RenderFrameHost* frame,
+      int render_process_id,
       bool is_navigation,
-      network::mojom::URLLoaderFactoryRequest* factory_request);
+      network::mojom::URLLoaderFactoryRequest* factory_request,
+      network::mojom::TrustedURLLoaderHeaderClientPtrInfo* header_client);
 
   // Any request which requires authentication to complete will be bounced
   // through this method iff Network Service is enabled.
@@ -199,6 +206,7 @@ class WebRequestAPI : public BrowserContextKeyedAPI,
   // If this returns |true|, |callback| will eventually be invoked on the UI
   // thread.
   bool MaybeProxyAuthRequest(
+      content::BrowserContext* browser_context,
       net::AuthChallengeInfo* auth_info,
       scoped_refptr<net::HttpResponseHeaders> response_headers,
       const content::GlobalRequestID& request_id,
@@ -467,8 +475,15 @@ class ExtensionWebRequestEventRouter {
   // The callback is then deleted.
   void AddCallbackForPageLoad(const base::Closure& callback);
 
+  // Whether there is a listener matching the request that has
+  // ExtraInfoSpec::EXTRA_HEADERS set.
+  bool HasExtraHeadersListener(void* browser_context,
+                               const extensions::InfoMap* extension_info_map,
+                               const WebRequestInfo* request);
+
  private:
   friend class WebRequestAPI;
+  friend class base::NoDestructor<ExtensionWebRequestEventRouter>;
   FRIEND_TEST_ALL_PREFIXES(ExtensionWebRequestTest,
                            BlockingEventPrecedenceRedirect);
   FRIEND_TEST_ALL_PREFIXES(ExtensionWebRequestTest,
@@ -609,7 +624,8 @@ class ExtensionWebRequestEventRouter {
                            const std::string& extension_id,
                            const std::string& event_name,
                            uint64_t request_id,
-                           EventResponse* response);
+                           EventResponse* response,
+                           int extra_info_spec);
 
   // Processes the generated deltas from blocked_requests_ on the specified
   // request. If |call_back| is true, the callback registered in

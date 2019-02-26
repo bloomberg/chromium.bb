@@ -23,6 +23,7 @@ enum MobileSessionShutdownType {
   SHUTDOWN_IN_FOREGROUND_NO_CRASH_LOG_WITH_MEMORY_WARNING,
   SHUTDOWN_IN_FOREGROUND_WITH_CRASH_LOG_WITH_MEMORY_WARNING,
   FIRST_LAUNCH_AFTER_UPGRADE,
+  SHUTDOWN_IN_FOREGROUND_WITH_MAIN_THREAD_FROZEN,
   MOBILE_SESSION_SHUTDOWN_TYPE_COUNT,
 };
 
@@ -49,14 +50,11 @@ class MobileSessionShutdownMetricsProvider : public metrics::MetricsProvider {
   // Whether there are crash reports to upload.
   virtual bool HasCrashLogs();
 
-  // Whether there were crash reports that have been uploaded in background
-  // since the last full start.
-  // TODO(crbug.com/795802): This method should be removed now that
-  // Crash Reports are no longer being uploaded in the background.
-  virtual bool HasUploadedCrashReportsInBackground();
-
   // Whether there was a memory warning shortly before last shutdown.
   virtual bool ReceivedMemoryWarningBeforeLastShutdown();
+
+  // Whether the main thread was frozen on previous session termination.
+  virtual bool LastSessionEndedFrozen();
 
  private:
   metrics::MetricsService* metrics_service_;

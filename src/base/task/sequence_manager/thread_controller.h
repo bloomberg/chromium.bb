@@ -5,15 +5,16 @@
 #ifndef BASE_TASK_SEQUENCE_MANAGER_THREAD_CONTROLLER_H_
 #define BASE_TASK_SEQUENCE_MANAGER_THREAD_CONTROLLER_H_
 
-#include "base/message_loop/timer_slack.h"
-#include "base/run_loop.h"
+#include "base/message_loop/message_pump.h"
 #include "base/single_thread_task_runner.h"
 #include "base/task/sequence_manager/lazy_now.h"
 #include "base/time/time.h"
+#include "build/build_config.h"
 
 namespace base {
 
-class MessageLoop;
+class MessageLoopBase;
+class MessagePump;
 class TickClock;
 struct PendingTask;
 
@@ -68,9 +69,36 @@ class ThreadController {
   // Has no effect on some platforms.
   virtual void SetTimerSlack(TimerSlack timer_slack) = 0;
 
-  // Completes delayed initialization of a ThreadControllers created with a null
-  // MessageLoop. May only be called once.
-  virtual void SetMessageLoop(MessageLoop* message_loop) = 0;
+  // Completes delayed initialization of unbound ThreadControllers.
+  // BindToCurrentThread(MessageLoopBase*) or BindToCurrentThread(MessagePump*)
+  // may only be called once.
+  virtual void BindToCurrentThread(MessageLoopBase* message_loop_base) = 0;
+
+  // Completes delayed initialization of unbound ThreadControllers.
+  // BindToCurrentThread(MessageLoopBase*) or BindToCurrentThread(MessagePump*)
+  // may only be called once.
+  virtual void BindToCurrentThread(
+      std::unique_ptr<MessagePump> message_pump) = 0;
+
+  // Explicitly allow or disallow task execution. Implicitly disallowed when
+  // entering a nested runloop.
+  virtual void SetTaskExecutionAllowed(bool allowed) = 0;
+
+  // Whether task execution is allowed or not.
+  virtual bool IsTaskExecutionAllowed() const = 0;
+
+  // Returns the MessagePump we're bound to if any.
+  virtual MessagePump* GetBoundMessagePump() const = 0;
+
+  // Returns true if the current run loop should quit when idle.
+  virtual bool ShouldQuitRunLoopWhenIdle() = 0;
+
+#if defined(OS_IOS) || defined(OS_ANDROID)
+  // On iOS, the main message loop cannot be Run().  Instead call
+  // AttachToMessagePump(), which connects this ThreadController to the
+  // UI thread's CFRunLoop and allows PostTask() to work.
+  virtual void AttachToMessagePump() = 0;
+#endif
 
   // TODO(altimin): Get rid of the methods below.
   // These methods exist due to current integration of SequenceManager
@@ -79,6 +107,7 @@ class ThreadController {
   virtual bool RunsTasksInCurrentSequence() = 0;
   virtual const TickClock* GetClock() = 0;
   virtual void SetDefaultTaskRunner(scoped_refptr<SingleThreadTaskRunner>) = 0;
+  virtual scoped_refptr<SingleThreadTaskRunner> GetDefaultTaskRunner() = 0;
   virtual void RestoreDefaultTaskRunner() = 0;
   virtual void AddNestingObserver(RunLoop::NestingObserver* observer) = 0;
   virtual void RemoveNestingObserver(RunLoop::NestingObserver* observer) = 0;

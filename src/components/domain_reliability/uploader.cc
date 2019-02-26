@@ -76,14 +76,14 @@ class DomainReliabilityUploaderImpl
       int max_upload_depth,
       const GURL& upload_url,
       const DomainReliabilityUploader::UploadCallback& callback) override {
-    VLOG(1) << "Uploading report to " << upload_url;
-    VLOG(2) << "Report JSON: " << report_json;
+    DVLOG(1) << "Uploading report to " << upload_url;
+    DVLOG(2) << "Report JSON: " << report_json;
 
     if (discard_uploads_)
       discarded_upload_count_++;
 
     if (discard_uploads_ || shutdown_) {
-      VLOG(1) << "Discarding report instead of uploading.";
+      DVLOG(1) << "Discarding report instead of uploading.";
       UploadResult result;
       result.status = UploadResult::SUCCESS;
       callback.Run(result);
@@ -134,7 +134,7 @@ class DomainReliabilityUploaderImpl
 
   void SetDiscardUploads(bool discard_uploads) override {
     discard_uploads_ = discard_uploads;
-    VLOG(1) << "Setting discard_uploads to " << discard_uploads;
+    DVLOG(1) << "Setting discard_uploads to " << discard_uploads;
   }
 
   void Shutdown() override {
@@ -169,9 +169,9 @@ class DomainReliabilityUploaderImpl
       }
     }
 
-    VLOG(1) << "Upload finished with net error " << net_error
-            << ", response code " << http_response_code
-            << ", retry after " << retry_after;
+    DVLOG(1) << "Upload finished with net error " << net_error
+             << ", response code " << http_response_code << ", retry after "
+             << retry_after;
 
     base::UmaHistogramSparse("DomainReliability.UploadResponseCode",
                              http_response_code);

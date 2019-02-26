@@ -6,10 +6,10 @@
 #define IOS_CHROME_BROWSER_UI_BROWSER_VIEW_CONTROLLER_H_
 
 #import <MessageUI/MessageUI.h>
-#import <StoreKit/StoreKit.h>
 #import <UIKit/UIKit.h>
 
 #import "base/ios/block_types.h"
+#import "ios/chrome/browser/ui/page_info/requirements/page_info_presentation.h"
 #import "ios/chrome/browser/ui/settings/sync_utils/sync_presenter.h"
 #import "ios/chrome/browser/ui/side_swipe/side_swipe_controller.h"
 #import "ios/chrome/browser/ui/toolbar/toolbar_coordinator_delegate.h"
@@ -19,6 +19,7 @@
 @protocol ApplicationCommands;
 @protocol BrowserCommands;
 @class BrowserViewControllerDependencyFactory;
+@class CommandDispatcher;
 class GURL;
 @protocol OmniboxFocuser;
 @protocol PopupMenuCommands;
@@ -36,10 +37,11 @@ class ChromeBrowserState;
 // The top-level view controller for the browser UI. Manages other controllers
 // which implement the interface.
 @interface BrowserViewController
-    : UIViewController<LogoAnimationControllerOwnerOwner,
-                       SyncPresenter,
-                       ToolbarCoordinatorDelegate,
-                       UrlLoader>
+    : UIViewController <LogoAnimationControllerOwnerOwner,
+                        PageInfoPresentation,
+                        SyncPresenter,
+                        ToolbarCoordinatorDelegate,
+                        UrlLoader>
 
 // Initializes a new BVC from its nib. |model| must not be nil. The
 // webUsageSuspended property for this BVC will be based on |model|, and future
@@ -50,6 +52,7 @@ class ChromeBrowserState;
               browserState:(ios::ChromeBrowserState*)browserState
          dependencyFactory:(BrowserViewControllerDependencyFactory*)factory
 applicationCommandEndpoint:(id<ApplicationCommands>)applicationCommandEndpoint
+         commandDispatcher:(CommandDispatcher*)commandDispatcher
     NS_DESIGNATED_INITIALIZER;
 
 - (instancetype)initWithNibName:(NSString*)nibNameOrNil
@@ -103,20 +106,10 @@ applicationCommandEndpoint:(id<ApplicationCommands>)applicationCommandEndpoint
 // bubble will not be shown.
 - (void)presentBubblesIfEligible;
 
-// Called when the browser state provided to this instance is being destroyed.
-// At this point the browser will no longer ever be active, and will likely be
-// deallocated soon.
-- (void)browserStateDestroyed;
-
 // Opens a new tab as if originating from |originPoint| and |focusOmnibox|.
 - (void)openNewTabFromOriginPoint:(CGPoint)originPoint
                      focusOmnibox:(BOOL)focusOmnibox;
 
-// Add a new tab with the given url, appends it to the end of the model,
-// and makes it the selected tab. The selected tab is returned.
-- (Tab*)addSelectedTabWithURL:(const GURL&)url
-                   transition:(ui::PageTransition)transition;
-
 // Add a new tab with the given url, at the given |position|,
 // and makes it the selected tab. The selected tab is returned.
 // If |position| == NSNotFound the tab will be added at the end of the stack.
@@ -124,14 +117,10 @@ applicationCommandEndpoint:(id<ApplicationCommands>)applicationCommandEndpoint
                       atIndex:(NSUInteger)position
                    transition:(ui::PageTransition)transition;
 
-// Add a new tab with the given url, at the given |position|,
-// and makes it the selected tab. The selected tab is returned.
-// If |position| == NSNotFound the tab will be added at the end of the stack.
-// |tabAddedCompletion| is called after the tab is added (if not nil).
-- (Tab*)addSelectedTabWithURL:(const GURL&)url
-                      atIndex:(NSUInteger)position
-                   transition:(ui::PageTransition)transition
-           tabAddedCompletion:(ProceduralBlock)tabAddedCompletion;
+// Adds |tabAddedCompletion| to the completion block (if any) that will be run
+// the next time a tab is added to the TabModel this object was initialized
+// with.
+- (void)appendTabAddedCompletion:(ProceduralBlock)tabAddedCompletion;
 
 // Informs the BVC that a new foreground tab is about to be opened. This is
 // intended to be called before setWebUsageSuspended:NO in cases where a new tab

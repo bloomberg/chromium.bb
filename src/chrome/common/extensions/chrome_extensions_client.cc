@@ -19,6 +19,7 @@
 #include "chrome/common/extensions/chrome_extensions_api_provider.h"
 #include "chrome/common/extensions/manifest_handlers/theme_handler.h"
 #include "chrome/common/url_constants.h"
+#include "chrome/common/webui_url_constants.h"
 #include "chrome/grit/chromium_strings.h"
 #include "components/version_info/version_info.h"
 #include "content/public/common/url_constants.h"
@@ -29,9 +30,11 @@
 #include "extensions/common/extension_icon_set.h"
 #include "extensions/common/extension_urls.h"
 #include "extensions/common/features/feature_channel.h"
+#include "extensions/common/manifest.h"
 #include "extensions/common/manifest_constants.h"
 #include "extensions/common/manifest_handlers/icons_handler.h"
 #include "extensions/common/permissions/api_permission_set.h"
+#include "extensions/common/permissions/permissions_data.h"
 #include "extensions/common/url_pattern.h"
 #include "extensions/common/url_pattern_set.h"
 #include "ui/base/l10n/l10n_util.h"
@@ -263,6 +266,39 @@ bool ChromeExtensionsClient::ExtensionAPIEnabledInExtensionServiceWorkers()
 
 std::string ChromeExtensionsClient::GetUserAgent() const {
   return ::GetUserAgent();
+}
+
+void ChromeExtensionsClient::AddOriginAccessPermissions(
+    const Extension& extension,
+    bool is_extension_active,
+    std::vector<network::mojom::CorsOriginPatternPtr>* origin_patterns) const {
+  // Allow component extensions to access chrome://theme/.
+  //
+  // We don't want to grant these permissions to inactive component extensions,
+  // to avoid granting them in "unblessed" (non-extension) processes.  If a
+  // component extension somehow starts as inactive and becomes active later,
+  // we'll re-init the origin permissions, so there's no danger in being
+  // conservative. Components shouldn't be subject to enterprise policy controls
+  // or blocking access to the webstore so they get the highest priority
+  // allowlist entry.
+  if (extensions::Manifest::IsComponentLocation(extension.location()) &&
+      is_extension_active) {
+    origin_patterns->push_back(network::mojom::CorsOriginPattern::New(
+        content::kChromeUIScheme, chrome::kChromeUIThemeHost,
+        network::mojom::CorsOriginAccessMatchMode::kDisallowSubdomains,
+        network::mojom::CorsOriginAccessMatchPriority::kMaxPriority));
+  }
+
+  // TODO(jstritar): We should try to remove this special case. Also, these
+  // whitelist entries need to be updated when the kManagement permission
+  // changes.
+  if (is_extension_active && extension.permissions_data()->HasAPIPermission(
+                                 extensions::APIPermission::kManagement)) {
+    origin_patterns->push_back(network::mojom::CorsOriginPattern::New(
+        content::kChromeUIScheme, chrome::kChromeUIExtensionIconHost,
+        network::mojom::CorsOriginAccessMatchMode::kDisallowSubdomains,
+        network::mojom::CorsOriginAccessMatchPriority::kDefaultPriority));
+  }
 }
 
 }  // namespace extensions

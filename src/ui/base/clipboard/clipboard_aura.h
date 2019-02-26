@@ -13,10 +13,11 @@
 
 namespace ui {
 
+class AuraClipboard;
+
 class ClipboardAura : public Clipboard {
  private:
   friend class Clipboard;
-
   ClipboardAura();
   ~ClipboardAura() override;
 
@@ -59,6 +60,8 @@ class ClipboardAura : public Clipboard {
   void WriteData(const FormatType& format,
                  const char* data_data,
                  size_t data_len) override;
+
+  const std::unique_ptr<AuraClipboard> clipboard_internal_;
 
   DISALLOW_COPY_AND_ASSIGN(ClipboardAura);
 };

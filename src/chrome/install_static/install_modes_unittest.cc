@@ -97,6 +97,9 @@ TEST(InstallModes, VerifyModes) {
     // Every mode must have an elevator CLSID.
     ASSERT_THAT(mode.elevator_clsid, Ne(CLSID_NULL));
 
+    // Every mode must have an elevator IID.
+    ASSERT_THAT(mode.elevator_iid, Ne(CLSID_NULL));
+
     // UNSUPPORTED and kUseGoogleUpdateIntegration are mutually exclusive.
     if (kUseGoogleUpdateIntegration)
       ASSERT_THAT(mode.channel_strategy, Ne(ChannelStrategy::UNSUPPORTED));

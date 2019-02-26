@@ -7,7 +7,8 @@
 
 namespace web {
 
-// A class with this type may be registered via WebThread::SetDelegate.
+// WebThread::SetDelegate was deprecated, this is now only used by
+// WebThread::SetIOThreadDelegate.
 //
 // If registered as such, it will schedule to run Init() before the
 // message loop begins, and receive a CleanUp() call right after the message

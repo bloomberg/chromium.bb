@@ -4,6 +4,8 @@
 
 #include "ui/views/views_delegate.h"
 
+#include <utility>
+
 #include "base/command_line.h"
 #include "build/build_config.h"
 #include "ui/views/views_touch_selection_controller_factory.h"
@@ -14,11 +16,12 @@
 #endif
 
 namespace views {
+
 namespace {
 
 ViewsDelegate* views_delegate = nullptr;
 
-}
+}  // namespace
 
 ViewsDelegate::ViewsDelegate()
     : editing_controller_factory_(new ViewsTouchEditingControllerFactory) {
@@ -57,9 +60,6 @@ bool ViewsDelegate::GetSavedWindowPlacement(
     ui::WindowShowState* show_state) const {
   return false;
 }
-
-void ViewsDelegate::NotifyAccessibilityEvent(View* view,
-                                             ax::mojom::Event event_type) {}
 
 void ViewsDelegate::NotifyMenuItemFocused(const base::string16& menu_name,
                                           const base::string16& menu_item_name,
@@ -128,20 +128,11 @@ int ViewsDelegate::GetAppbarAutohideEdges(HMONITOR monitor,
 }
 #endif
 
-bool ViewsDelegate::ShouldMirrorArrowsInRTL() const {
-  return true;
+#if defined(USE_AURA)
+void ViewsDelegate::SetTouchSelectionMenuRunner(
+    std::unique_ptr<TouchSelectionMenuRunnerViews> menu_runner) {
+  touch_selection_menu_runner_ = std::move(menu_runner);
 }
-
-void ViewsDelegate::AddPointerWatcher(PointerWatcher*, bool) {
-  NOTREACHED();
-}
-
-void ViewsDelegate::RemovePointerWatcher(PointerWatcher*) {
-  NOTREACHED();
-}
-
-bool ViewsDelegate::IsPointerWatcherSupported() const {
-  return false;
-}
+#endif
 
 }  // namespace views

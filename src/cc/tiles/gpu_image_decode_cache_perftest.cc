@@ -47,17 +47,18 @@ class GpuImageDecodeCachePerfTest
                kTimeCheckInterval),
         context_provider_(base::MakeRefCounted<TestInProcessContextProvider>(
             UseTransferCache(),
-            false /* support_locking */)),
-        cache_(context_provider_.get(),
-               UseTransferCache(),
-               kRGBA_8888_SkColorType,
-               kCacheSize,
-               MaxTextureSize(),
-               PaintImage::kDefaultGeneratorClientId) {
+            false /* support_locking */)) {
     // Initializing context here is ok because image decode cache does not use
     // context provider in its constructor.
     gpu::ContextResult result = context_provider_->BindToCurrentThread();
     DCHECK_EQ(result, gpu::ContextResult::kSuccess);
+  }
+
+  void CreateCache(sk_sp<SkColorSpace> color_space = nullptr) {
+    cache_ = std::make_unique<GpuImageDecodeCache>(
+        context_provider_.get(), UseTransferCache(), kRGBA_8888_SkColorType,
+        kCacheSize, MaxTextureSize(), PaintImage::kDefaultGeneratorClientId,
+        std::move(color_space));
   }
 
  protected:
@@ -88,7 +89,7 @@ class GpuImageDecodeCachePerfTest
 
   LapTimer timer_;
   scoped_refptr<TestInProcessContextProvider> context_provider_;
-  GpuImageDecodeCache cache_;
+  std::unique_ptr<GpuImageDecodeCache> cache_;
 };
 
 INSTANTIATE_TEST_CASE_P(P,
@@ -98,6 +99,7 @@ INSTANTIATE_TEST_CASE_P(P,
                                         TestMode::kSw));
 
 TEST_P(GpuImageDecodeCachePerfTest, DecodeWithColorConversion) {
+  CreateCache(gfx::ColorSpace::CreateXYZD50().ToSkColorSpace());
   timer_.Reset();
   do {
     DrawImage image(
@@ -106,11 +108,10 @@ TEST_P(GpuImageDecodeCachePerfTest, DecodeWithColorConversion) {
             .set_image(CreateImage(1024, 2048), PaintImage::GetNextContentId())
             .TakePaintImage(),
         SkIRect::MakeWH(1024, 2048), kMedium_SkFilterQuality,
-        CreateMatrix(SkSize::Make(1.0f, 1.0f)), 0u,
-        gfx::ColorSpace::CreateXYZD50());
+        CreateMatrix(SkSize::Make(1.0f, 1.0f)), 0u);
 
-    DecodedDrawImage decoded_image = cache_.GetDecodedImageForDraw(image);
-    cache_.DrawWithImageFinished(image, decoded_image);
+    DecodedDrawImage decoded_image = cache_->GetDecodedImageForDraw(image);
+    cache_->DrawWithImageFinished(image, decoded_image);
     timer_.NextLap();
   } while (!timer_.HasTimeLimitExpired());
 
@@ -131,6 +132,7 @@ TEST_P(GpuImageDecodeCachePerfTestNoSw, DecodeWithMips) {
       context_provider_->GrContext(), SkBudgeted::kNo,
       SkImageInfo::MakeN32Premul(2048, 2048));
 
+  CreateCache();
   timer_.Reset();
   do {
     DrawImage image(
@@ -139,9 +141,9 @@ TEST_P(GpuImageDecodeCachePerfTestNoSw, DecodeWithMips) {
             .set_image(CreateImage(1024, 2048), PaintImage::GetNextContentId())
             .TakePaintImage(),
         SkIRect::MakeWH(1024, 2048), kMedium_SkFilterQuality,
-        CreateMatrix(SkSize::Make(0.6f, 0.6f)), 0u, gfx::ColorSpace());
+        CreateMatrix(SkSize::Make(0.6f, 0.6f)), 0u);
 
-    DecodedDrawImage decoded_image = cache_.GetDecodedImageForDraw(image);
+    DecodedDrawImage decoded_image = cache_->GetDecodedImageForDraw(image);
 
     if (GetParam() == TestMode::kGpu) {
       SkPaint paint;
@@ -152,7 +154,7 @@ TEST_P(GpuImageDecodeCachePerfTestNoSw, DecodeWithMips) {
       surface->prepareForExternalIO();
     }
 
-    cache_.DrawWithImageFinished(image, decoded_image);
+    cache_->DrawWithImageFinished(image, decoded_image);
     timer_.NextLap();
   } while (!timer_.HasTimeLimitExpired());
 
@@ -162,21 +164,21 @@ TEST_P(GpuImageDecodeCachePerfTestNoSw, DecodeWithMips) {
 
 TEST_P(GpuImageDecodeCachePerfTest, AcquireExistingImages) {
   timer_.Reset();
+  CreateCache(gfx::ColorSpace::CreateXYZD50().ToSkColorSpace());
   DrawImage image(
       PaintImageBuilder::WithDefault()
           .set_id(PaintImage::GetNextId())
           .set_image(CreateImage(1024, 2048), PaintImage::GetNextContentId())
           .TakePaintImage(),
       SkIRect::MakeWH(1024, 2048), kMedium_SkFilterQuality,
-      CreateMatrix(SkSize::Make(1.0f, 1.0f)), 0u,
-      gfx::ColorSpace::CreateXYZD50());
+      CreateMatrix(SkSize::Make(1.0f, 1.0f)), 0u);
 
-  DecodedDrawImage decoded_image = cache_.GetDecodedImageForDraw(image);
-  cache_.DrawWithImageFinished(image, decoded_image);
+  DecodedDrawImage decoded_image = cache_->GetDecodedImageForDraw(image);
+  cache_->DrawWithImageFinished(image, decoded_image);
 
   do {
-    DecodedDrawImage decoded_image = cache_.GetDecodedImageForDraw(image);
-    cache_.DrawWithImageFinished(image, decoded_image);
+    DecodedDrawImage decoded_image = cache_->GetDecodedImageForDraw(image);
+    cache_->DrawWithImageFinished(image, decoded_image);
     timer_.NextLap();
   } while (!timer_.HasTimeLimitExpired());
 

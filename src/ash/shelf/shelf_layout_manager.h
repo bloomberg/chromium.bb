@@ -110,13 +110,13 @@ class ASH_EXPORT ShelfLayoutManager
   // Invoked by the shelf when the auto-hide state may have changed.
   void UpdateAutoHideState();
 
-  // TODO(mash): Add similar event handling support for mash.
   // Updates the auto-hide state for mouse events.
   void UpdateAutoHideForMouseEvent(ui::MouseEvent* event, aura::Window* target);
 
-  // Process the gesture events on |target|.
-  void ProcessGestureEventOnWindow(ui::GestureEvent* event,
-                                   aura::Window* target);
+  // Called by AutoHideEventHandler to process the gesture events when shelf is
+  // auto hide.
+  void ProcessGestureEventOfAutoHideShelf(ui::GestureEvent* event,
+                                          aura::Window* target);
 
   ShelfVisibilityState visibility_state() const {
     return state_.visibility_state;
@@ -285,6 +285,9 @@ class ASH_EXPORT ShelfLayoutManager
                               bool animate,
                               ui::ImplicitAnimationObserver* observer);
 
+  // Returns whether the virtual keyboard is currently being shown.
+  bool IsKeyboardShown() const;
+
   // Stops any animations and progresses them to the end.
   void StopAnimating();
 
@@ -342,6 +345,9 @@ class ASH_EXPORT ShelfLayoutManager
   // Returns true if there is a fullscreen or maximized window open that causes
   // the shelf to be autohidden.
   bool IsShelfAutoHideForFullscreenMaximized() const;
+
+  // Returns true if the home gesture handler should handle the event.
+  bool ShouldHomeGestureHandleEvent(float scroll_y) const;
 
   // Gesture related functions:
   bool StartGestureDrag(const ui::GestureEvent& gesture_in_screen);

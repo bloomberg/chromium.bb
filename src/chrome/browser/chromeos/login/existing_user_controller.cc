@@ -1284,6 +1284,7 @@ void ExistingUserController::LoginAsGuest() {
 
 void ExistingUserController::LoginAsPublicSession(
     const UserContext& user_context) {
+  VLOG(2) << "LoginAsPublicSession";
   PerformPreLoginActions(user_context);
 
   // If there is no public account with the given user ID, logging in is not
@@ -1291,6 +1292,7 @@ void ExistingUserController::LoginAsPublicSession(
   const user_manager::User* user =
       user_manager::UserManager::Get()->FindUser(user_context.GetAccountId());
   if (!user || user->GetType() != user_manager::USER_TYPE_PUBLIC_ACCOUNT) {
+    VLOG(2) << "Public session user not found";
     PerformLoginFinishedActions(true /* start auto login timer */);
     return;
   }
@@ -1336,6 +1338,7 @@ void ExistingUserController::LoginAsPublicSession(
     // The list of suitable keyboard layouts is constructed asynchronously. Once
     // it has been retrieved, |SetPublicSessionKeyboardLayoutAndLogin| will
     // select the first layout from the list and continue login.
+    VLOG(2) << "Requesting keyboard layouts for public session";
     GetKeyboardLayoutsForLocale(
         base::Bind(
             &ExistingUserController::SetPublicSessionKeyboardLayoutAndLogin,
@@ -1363,6 +1366,7 @@ void ExistingUserController::ConfigureAutoLogin() {
   std::string auto_login_account_id;
   cros_settings_->GetString(kAccountsPrefDeviceLocalAccountAutoLoginId,
                             &auto_login_account_id);
+  VLOG(2) << "Autologin account in prefs: " << auto_login_account_id;
   const std::vector<policy::DeviceLocalAccount> device_local_accounts =
       policy::GetDeviceLocalAccounts(cros_settings_);
 
@@ -1373,6 +1377,7 @@ void ExistingUserController::ConfigureAutoLogin() {
     if (it->account_id == auto_login_account_id) {
       public_session_auto_login_account_id_ =
           AccountId::FromUserEmail(it->user_id);
+      VLOG(2) << "PublicSession autologin found: " << it->user_id;
       break;
     }
   }
@@ -1382,6 +1387,7 @@ void ExistingUserController::ConfigureAutoLogin() {
           public_session_auto_login_account_id_);
   if (!public_session_user || public_session_user->GetType() !=
                                   user_manager::USER_TYPE_PUBLIC_ACCOUNT) {
+    VLOG(2) << "PublicSession autologin user not found";
     public_session_auto_login_account_id_ = EmptyAccountId();
   }
 
@@ -1394,6 +1400,7 @@ void ExistingUserController::ConfigureAutoLogin() {
       arc_kiosk_user->GetType() != user_manager::USER_TYPE_ARC_KIOSK_APP ||
       KioskAppLaunchError::Get() != KioskAppLaunchError::NONE) {
     arc_kiosk_auto_login_account_id_ = EmptyAccountId();
+    VLOG(2) << "ARC Kiosk autologin user not found";
   }
 
   if (!cros_settings_->GetInteger(kAccountsPrefDeviceLocalAccountAutoLoginDelay,
@@ -1419,6 +1426,7 @@ void ExistingUserController::ResetAutoLoginTimer() {
 
 void ExistingUserController::OnPublicSessionAutoLoginTimerFire() {
   CHECK(auto_launch_ready_ && public_session_auto_login_account_id_.is_valid());
+  VLOG(2) << "Public session autologin fired";
   SigninSpecifics signin_specifics;
   signin_specifics.is_auto_login = true;
   Login(UserContext(user_manager::USER_TYPE_PUBLIC_ACCOUNT,
@@ -1428,6 +1436,7 @@ void ExistingUserController::OnPublicSessionAutoLoginTimerFire() {
 
 void ExistingUserController::OnArcKioskAutoLoginTimerFire() {
   CHECK(auto_launch_ready_ && (arc_kiosk_auto_login_account_id_.is_valid()));
+  VLOG(2) << "ARC kiosk autologin fired";
   SigninSpecifics signin_specifics;
   signin_specifics.is_auto_login = true;
   Login(UserContext(user_manager::USER_TYPE_ARC_KIOSK_APP,
@@ -1436,6 +1445,8 @@ void ExistingUserController::OnArcKioskAutoLoginTimerFire() {
 }
 
 void ExistingUserController::StopAutoLoginTimer() {
+  VLOG(2) << "Stopping autologin timer that is "
+          << (auto_login_timer_ ? "" : "not ") << "running";
   if (auto_login_timer_)
     auto_login_timer_->Stop();
 }
@@ -1466,8 +1477,15 @@ void ExistingUserController::StartAutoLoginTimer() {
   if (!auto_launch_ready_ || is_login_in_progress_ ||
       (!public_session_auto_login_account_id_.is_valid() &&
        !arc_kiosk_auto_login_account_id_.is_valid())) {
+    VLOG(2) << "Not starting autologin timer, because:";
+    VLOG_IF(2, !auto_launch_ready_) << "* Not ready;";
+    VLOG_IF(2, is_login_in_progress_) << "* Login is in process;";
+    VLOG_IF(2, (!public_session_auto_login_account_id_.is_valid() &&
+                !arc_kiosk_auto_login_account_id_.is_valid()))
+        << "* No valid autologin account;";
     return;
   }
+  VLOG(2) << "Starting autologin timer with delay: " << auto_login_delay_;
 
   if (auto_login_timer_ && auto_login_timer_->IsRunning()) {
     StopAutoLoginTimer();
@@ -1478,11 +1496,15 @@ void ExistingUserController::StartAutoLoginTimer() {
     auto_login_timer_.reset(new base::OneShotTimer);
 
   if (public_session_auto_login_account_id_.is_valid()) {
+    VLOG(2) << "Public session autologin will be fired in " << auto_login_delay_
+            << "ms";
     auto_login_timer_->Start(
         FROM_HERE, base::TimeDelta::FromMilliseconds(auto_login_delay_),
         base::Bind(&ExistingUserController::OnPublicSessionAutoLoginTimerFire,
                    weak_factory_.GetWeakPtr()));
   } else {
+    VLOG(2) << "ARC kiosk autologin will be fired in " << auto_login_delay_
+            << "ms";
     auto_login_timer_->Start(
         FROM_HERE, base::TimeDelta::FromMilliseconds(auto_login_delay_),
         base::Bind(&ExistingUserController::OnArcKioskAutoLoginTimerFire,
@@ -1555,6 +1577,8 @@ void ExistingUserController::SetPublicSessionKeyboardLayoutAndLogin(
 void ExistingUserController::LoginAsPublicSessionInternal(
     const UserContext& user_context) {
   // Only one instance of LoginPerformer should exist at a time.
+  VLOG(2) << "LoginAsPublicSessionInternal for user: "
+          << user_context.GetAccountId();
   login_performer_.reset(nullptr);
   login_performer_.reset(new ChromeLoginPerformer(this));
   login_performer_->LoginAsPublicSession(user_context);
@@ -1688,6 +1712,7 @@ void ExistingUserController::DoCompleteLogin(
 void ExistingUserController::DoLogin(const UserContext& user_context,
                                      const SigninSpecifics& specifics) {
   last_login_attempt_was_auto_login_ = specifics.is_auto_login;
+  VLOG(2) << "DoLogin with a user type: " << user_context.GetUserType();
 
   if (user_context.GetUserType() == user_manager::USER_TYPE_GUEST) {
     if (!specifics.guest_mode_url.empty()) {

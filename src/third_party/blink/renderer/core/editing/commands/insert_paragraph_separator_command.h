@@ -39,18 +39,18 @@ class CORE_EXPORT InsertParagraphSeparatorCommand final
       Document& document,
       bool use_default_paragraph_element = false,
       bool paste_blockquote_into_unquoted_area = false) {
-    return new InsertParagraphSeparatorCommand(
+    return MakeGarbageCollected<InsertParagraphSeparatorCommand>(
         document, use_default_paragraph_element,
         paste_blockquote_into_unquoted_area);
   }
 
-  void Trace(blink::Visitor*) override;
-
- private:
   InsertParagraphSeparatorCommand(Document&,
                                   bool use_default_paragraph_element,
                                   bool paste_blockquote_into_unquoted_area);
 
+  void Trace(blink::Visitor*) override;
+
+ private:
   void DoApply(EditingState*) override;
 
   void CalculateStyleBeforeInsertion(const Position&);

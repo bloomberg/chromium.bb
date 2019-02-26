@@ -23,12 +23,12 @@ namespace blink {
 
 ServiceWorkerClient* ServiceWorkerClient::Create(
     const WebServiceWorkerClientInfo& info) {
-  return new ServiceWorkerClient(info);
+  return MakeGarbageCollected<ServiceWorkerClient>(info);
 }
 
 ServiceWorkerClient* ServiceWorkerClient::Create(
     const mojom::blink::ServiceWorkerClientInfo& info) {
-  return new ServiceWorkerClient(info);
+  return MakeGarbageCollected<ServiceWorkerClient>(info);
 }
 
 ServiceWorkerClient::ServiceWorkerClient(const WebServiceWorkerClientInfo& info)
@@ -83,15 +83,15 @@ void ServiceWorkerClient::postMessage(ScriptState* script_state,
                                       const ScriptValue& message,
                                       Vector<ScriptValue>& transfer,
                                       ExceptionState& exception_state) {
-  PostMessageOptions options;
+  PostMessageOptions* options = PostMessageOptions::Create();
   if (!transfer.IsEmpty())
-    options.setTransfer(transfer);
+    options->setTransfer(transfer);
   postMessage(script_state, message, options, exception_state);
 }
 
 void ServiceWorkerClient::postMessage(ScriptState* script_state,
                                       const ScriptValue& message,
-                                      const PostMessageOptions& options,
+                                      const PostMessageOptions* options,
                                       ExceptionState& exception_state) {
   ExecutionContext* context = ExecutionContext::From(script_state);
   Transferables transferables;

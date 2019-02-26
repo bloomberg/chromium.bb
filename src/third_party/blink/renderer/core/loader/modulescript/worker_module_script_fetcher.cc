@@ -4,11 +4,11 @@
 
 #include "third_party/blink/renderer/core/loader/modulescript/worker_module_script_fetcher.h"
 
+#include "services/network/public/mojom/referrer_policy.mojom-shared.h"
 #include "third_party/blink/renderer/core/inspector/console_message.h"
 #include "third_party/blink/renderer/core/workers/worker_global_scope.h"
 #include "third_party/blink/renderer/platform/loader/fetch/resource_fetcher.h"
 #include "third_party/blink/renderer/platform/network/http_names.h"
-#include "third_party/blink/renderer/platform/weborigin/referrer_policy.h"
 #include "third_party/blink/renderer/platform/weborigin/security_policy.h"
 
 namespace blink {
@@ -33,7 +33,8 @@ void WorkerModuleScriptFetcher::Fetch(FetchParameters& fetch_params,
   // Step 13.2. "Fetch request, and asynchronously wait to run the remaining
   // steps as part of fetch's process response for the response response." [spec
   // text]
-  ScriptResource::Fetch(fetch_params, global_scope_->EnsureFetcher(), this);
+  ScriptResource::Fetch(fetch_params, global_scope_->EnsureFetcher(), this,
+                        ScriptResource::kNoStreaming);
 }
 
 void WorkerModuleScriptFetcher::Trace(blink::Visitor* visitor) {
@@ -82,9 +83,10 @@ void WorkerModuleScriptFetcher::NotifyFinished(Resource* resource) {
     // Step 13.5. "Set worker global scope's referrer policy to the result of
     // parsing the `Referrer-Policy` header of response." [spec text]
     const String referrer_policy_header =
-        resource->GetResponse().HttpHeaderField(HTTPNames::Referrer_Policy);
+        resource->GetResponse().HttpHeaderField(http_names::kReferrerPolicy);
     if (!referrer_policy_header.IsNull()) {
-      ReferrerPolicy referrer_policy = kReferrerPolicyDefault;
+      network::mojom::ReferrerPolicy referrer_policy =
+          network::mojom::ReferrerPolicy::kDefault;
       SecurityPolicy::ReferrerPolicyFromHeaderValue(
           referrer_policy_header, kDoNotSupportReferrerPolicyLegacyKeywords,
           &referrer_policy);
@@ -98,8 +100,7 @@ void WorkerModuleScriptFetcher::NotifyFinished(Resource* resource) {
 
   ModuleScriptCreationParams params(
       script_resource->GetResponse().Url(), script_resource->SourceText(),
-      script_resource->GetResourceRequest().GetFetchCredentialsMode(),
-      script_resource->CalculateAccessControlStatus());
+      script_resource->GetResourceRequest().GetFetchCredentialsMode());
 
   // Step 13.7. "Asynchronously complete the perform the fetch steps with
   // response." [spec text]

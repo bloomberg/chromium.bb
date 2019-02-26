@@ -54,9 +54,7 @@ std::string GetIdForIcon(ScreenlockBridge::UserPodCustomIcon icon) {
 }  // namespace
 
 ScreenlockBridge::UserPodCustomIconOptions::UserPodCustomIconOptions()
-    : autoshow_tooltip_(false),
-      hardlock_on_click_(false),
-      is_trial_run_(false) {}
+    : autoshow_tooltip_(false), hardlock_on_click_(false) {}
 
 ScreenlockBridge::UserPodCustomIconOptions::~UserPodCustomIconOptions() {}
 
@@ -77,9 +75,6 @@ ScreenlockBridge::UserPodCustomIconOptions::ToDictionaryValue() const {
 
   if (hardlock_on_click_)
     result->SetBoolean("hardlockOnClick", true);
-
-  if (is_trial_run_)
-    result->SetBoolean("isTrialRun", true);
 
   return result;
 }
@@ -103,10 +98,6 @@ void ScreenlockBridge::UserPodCustomIconOptions::SetAriaLabel(
 
 void ScreenlockBridge::UserPodCustomIconOptions::SetHardlockOnClick() {
   hardlock_on_click_ = true;
-}
-
-void ScreenlockBridge::UserPodCustomIconOptions::SetTrialRun() {
-  is_trial_run_ = true;
 }
 
 std::string ScreenlockBridge::UserPodCustomIconOptions::GetIDString() const {

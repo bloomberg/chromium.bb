@@ -468,9 +468,6 @@ class MostVisitedThumbnails
   DISALLOW_COPY_AND_ASSIGN(MostVisitedThumbnails);
 };
 
-// Map from host to visit count, sorted by visit count descending.
-typedef std::vector<std::pair<std::string, int>> TopHostsList;
-
 // Map from origins to a count of matching URLs and the last visited time to any
 // URL under that origin.
 typedef std::map<GURL, std::pair<int, base::Time>> OriginCountAndLastVisitMap;

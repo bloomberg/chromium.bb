@@ -115,8 +115,7 @@ class CONTENT_EXPORT ServiceWorkerFetchDispatcher {
       ServiceWorkerVersion* version,
       int event_finish_id,
       scoped_refptr<URLLoaderAssets> url_loader_assets,
-      blink::mojom::ServiceWorkerEventStatus status,
-      base::TimeTicks dispatch_event_time);
+      blink::mojom::ServiceWorkerEventStatus status);
 
   ServiceWorkerMetrics::EventType GetEventType() const;
 

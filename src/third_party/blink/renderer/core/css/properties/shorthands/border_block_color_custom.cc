@@ -10,7 +10,7 @@
 #include "third_party/blink/renderer/core/style_property_shorthand.h"
 
 namespace blink {
-namespace CSSShorthand {
+namespace css_shorthand {
 
 bool BorderBlockColor::ParseShorthand(
     bool important,
@@ -18,7 +18,7 @@ bool BorderBlockColor::ParseShorthand(
     const CSSParserContext& context,
     const CSSParserLocalContext&,
     HeapVector<CSSPropertyValue, 256>& properties) const {
-  return CSSPropertyParserHelpers::ConsumeShorthandVia2Longhands(
+  return css_property_parser_helpers::ConsumeShorthandVia2Longhands(
       borderBlockColorShorthand(), important, context, range, properties);
 }
 
@@ -33,5 +33,5 @@ const CSSValue* BorderBlockColor::CSSValueFromComputedStyleInternal(
       allow_visited_style);
 }
 
-}  // namespace CSSShorthand
+}  // namespace css_shorthand
 }  // namespace blink

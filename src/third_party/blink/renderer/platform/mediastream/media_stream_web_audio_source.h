@@ -58,7 +58,7 @@ class MediaStreamWebAudioSource : public AudioSourceProvider {
   explicit MediaStreamWebAudioSource(std::unique_ptr<WebAudioSourceProvider>);
 
   // blink::AudioSourceProvider implementation.
-  void ProvideInput(AudioBus*, size_t frames_to_process) override;
+  void ProvideInput(AudioBus*, uint32_t frames_to_process) override;
 
   std::unique_ptr<WebAudioSourceProvider> web_audio_source_provider_;
 };

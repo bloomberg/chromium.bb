@@ -23,6 +23,7 @@ class BuiltInFunctionEmulator;
 
 namespace sh
 {
+class AtomicCounterFunctionHLSL;
 class ImageFunctionHLSL;
 class ResourcesHLSL;
 class StructureHLSL;
@@ -31,7 +32,7 @@ class TSymbolTable;
 class TVariable;
 class UnfoldShortCircuit;
 
-using ReferencedVariables       = std::map<int, const TVariable *>;
+using ReferencedVariables = std::map<int, const TVariable *>;
 
 class OutputHLSL : public TIntermTraverser
 {
@@ -56,8 +57,6 @@ class OutputHLSL : public TIntermTraverser
     const std::map<std::string, unsigned int> &getUniformBlockRegisterMap() const;
     const std::map<std::string, unsigned int> &getUniformRegisterMap() const;
 
-    static TString zeroInitializer(const TType &type);
-
     TInfoSinkBase &getInfoSink()
     {
         ASSERT(!mInfoSinkStack.empty());
@@ -66,6 +65,8 @@ class OutputHLSL : public TIntermTraverser
 
   protected:
     friend class ShaderStorageBlockOutputHLSL;
+
+    TString zeroInitializer(const TType &type) const;
 
     void writeReferencedAttributes(TInfoSinkBase &out) const;
     void writeReferencedVaryings(TInfoSinkBase &out) const;
@@ -177,6 +178,7 @@ class OutputHLSL : public TIntermTraverser
     ResourcesHLSL *mResourcesHLSL;
     TextureFunctionHLSL *mTextureFunctionHLSL;
     ImageFunctionHLSL *mImageFunctionHLSL;
+    AtomicCounterFunctionHLSL *mAtomicCounterFunctionHLSL;
 
     // Parameters determining what goes in the header output
     bool mUsesFragColor;
@@ -200,6 +202,7 @@ class OutputHLSL : public TIntermTraverser
     bool mUsesDiscardRewriting;
     bool mUsesNestedBreak;
     bool mRequiresIEEEStrictCompiling;
+    mutable bool mUseZeroArray;
 
     int mNumRenderTargets;
 
@@ -259,6 +262,6 @@ class OutputHLSL : public TIntermTraverser
     bool ancestorEvaluatesToSamplerInStruct();
     ShaderStorageBlockOutputHLSL *mSSBOOutputHLSL;
 };
-}
+}  // namespace sh
 
 #endif  // COMPILER_TRANSLATOR_OUTPUTHLSL_H_

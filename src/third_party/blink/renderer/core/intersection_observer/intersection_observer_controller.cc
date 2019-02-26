@@ -12,13 +12,14 @@
 #include "third_party/blink/renderer/core/intersection_observer/intersection_observation.h"
 #include "third_party/blink/renderer/core/timing/dom_window_performance.h"
 #include "third_party/blink/renderer/platform/instrumentation/tracing/trace_event.h"
+#include "third_party/blink/renderer/platform/wtf/functional.h"
 
 namespace blink {
 
 IntersectionObserverController* IntersectionObserverController::Create(
     Document* document) {
   IntersectionObserverController* result =
-      new IntersectionObserverController(document);
+      MakeGarbageCollected<IntersectionObserverController>(document);
   result->PauseIfNeeded();
   return result;
 }

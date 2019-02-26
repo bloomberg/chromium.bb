@@ -8,10 +8,12 @@
 #include <vector>
 
 #include "base/test/metrics/histogram_tester.h"
+#include "components/ukm/test_ukm_recorder.h"
+#include "services/metrics/public/cpp/ukm_builders.h"
+#include "services/metrics/public/cpp/ukm_recorder.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/blink/renderer/core/frame/local_frame.h"
 #include "third_party/blink/renderer/core/loader/frame_loader.h"
-#include "third_party/blink/renderer/core/loader/previews_resource_loading_hints.h"
 #include "third_party/blink/renderer/core/testing/dummy_page_holder.h"
 #include "third_party/blink/renderer/core/testing/page_test_base.h"
 #include "third_party/blink/renderer/platform/geometry/int_size.h"
@@ -38,7 +40,8 @@ TEST_F(PreviewsResourceLoadingHintsTest, NoPatterns) {
   std::vector<WTF::String> subresources_to_block;
 
   PreviewsResourceLoadingHints* hints = PreviewsResourceLoadingHints::Create(
-      dummy_page_holder_->GetDocument(), subresources_to_block);
+      dummy_page_holder_->GetDocument(), ukm::UkmRecorder::GetNewSourceID(),
+      subresources_to_block);
   EXPECT_TRUE(hints->AllowLoad(KURL("https://www.example.com/"),
                                ResourceLoadPriority::kHighest));
 }
@@ -48,7 +51,8 @@ TEST_F(PreviewsResourceLoadingHintsTest, OnePattern) {
   subresources_to_block.push_back("foo.jpg");
 
   PreviewsResourceLoadingHints* hints = PreviewsResourceLoadingHints::Create(
-      dummy_page_holder_->GetDocument(), subresources_to_block);
+      dummy_page_holder_->GetDocument(), ukm::UkmRecorder::GetNewSourceID(),
+      subresources_to_block);
 
   const struct {
     KURL url;
@@ -102,7 +106,8 @@ TEST_F(PreviewsResourceLoadingHintsTest, MultiplePatterns) {
   subresources_to_block.push_back(".example2.com/baz.jpg");
 
   PreviewsResourceLoadingHints* hints = PreviewsResourceLoadingHints::Create(
-      dummy_page_holder_->GetDocument(), subresources_to_block);
+      dummy_page_holder_->GetDocument(), ukm::UkmRecorder::GetNewSourceID(),
+      subresources_to_block);
 
   const struct {
     KURL url;
@@ -132,7 +137,8 @@ TEST_F(PreviewsResourceLoadingHintsTest, OnePatternHistogramChecker) {
   subresources_to_block.push_back("foo.jpg");
 
   PreviewsResourceLoadingHints* hints = PreviewsResourceLoadingHints::Create(
-      dummy_page_holder_->GetDocument(), subresources_to_block);
+      dummy_page_holder_->GetDocument(), ukm::UkmRecorder::GetNewSourceID(),
+      subresources_to_block);
 
   const struct {
     KURL url;
@@ -176,6 +182,84 @@ TEST_F(PreviewsResourceLoadingHintsTest, OnePatternHistogramChecker) {
           test.resource_load_priority, 1);
     }
   }
+}
+
+TEST_F(PreviewsResourceLoadingHintsTest, MultiplePatternUKMChecker) {
+  std::vector<WTF::String> subresources_to_block;
+  subresources_to_block.push_back(".example1.com/low_1.jpg");
+  subresources_to_block.push_back(".example1.com/very_low_1.jpg");
+  subresources_to_block.push_back(".example1.com/very_high_1.jpg");
+  subresources_to_block.push_back(".example1.com/medium_1_and_medium_4.jpg");
+  subresources_to_block.push_back(".example1.com/unused_1.jpg");
+  subresources_to_block.push_back(".example2.com/medium_2.jpg");
+  subresources_to_block.push_back(".example2.com/unused_2.jpg");
+  subresources_to_block.push_back(".example3.com/unused_3.jpg");
+  subresources_to_block.push_back(".example3.com/very_low_2_and_medium_3.jpg");
+
+  PreviewsResourceLoadingHints* hints = PreviewsResourceLoadingHints::Create(
+      dummy_page_holder_->GetDocument(), ukm::UkmRecorder::GetNewSourceID(),
+      subresources_to_block);
+
+  const struct {
+    KURL url;
+    ResourceLoadPriority resource_load_priority;
+  } resources_to_load[] = {
+      {KURL("https://www.example1.com/"), ResourceLoadPriority::kHigh},
+      {KURL("https://www.example1.com/foo.js"), ResourceLoadPriority::kLow},
+      {KURL("https://www.example1.com/very_low_1.jpg"),
+       ResourceLoadPriority::kVeryLow},
+      {KURL("https://www.example1.com/low_1.jpg"), ResourceLoadPriority::kLow},
+      {KURL("https://www.example1.com/very_high_1.jpg"),
+       ResourceLoadPriority::kVeryHigh},
+      {KURL("https://www.example1.com/pages/foo.jpg"),
+       ResourceLoadPriority::kVeryLow},
+      {KURL("https://www.example1.com/foobar.jpg"),
+       ResourceLoadPriority::kVeryHigh},
+      {KURL("https://www.example1.com/barfoo.jpg"),
+       ResourceLoadPriority::kVeryHigh},
+      {KURL("http://www.example1.com/foo.jpg"), ResourceLoadPriority::kLow},
+      {KURL("http://www.example1.com/medium_1_and_medium_4.jpg"),
+       ResourceLoadPriority::kMedium},
+      {KURL("http://www.example2.com/medium_2.jpg"),
+       ResourceLoadPriority::kMedium},
+      {KURL("http://www.example2.com/pages/baz.jpg"),
+       ResourceLoadPriority::kLow},
+      {KURL("http://www.example2.com/baz.html"),
+       ResourceLoadPriority::kVeryHigh},
+      {KURL("http://www.example3.com/very_low_2_and_medium_3.jpg"),
+       ResourceLoadPriority::kVeryLow},
+      {KURL("http://www.example3.com/very_low_2_and_medium_3.jpg"),
+       ResourceLoadPriority::kMedium},
+      {KURL("http://www.example1.com/medium_1_and_medium_4.jpg"),
+       ResourceLoadPriority::kMedium},
+  };
+
+  for (const auto& resource_to_load : resources_to_load) {
+    hints->AllowLoad(resource_to_load.url,
+                     resource_to_load.resource_load_priority);
+  }
+
+  ukm::TestAutoSetUkmRecorder test_ukm_recorder;
+  hints->RecordUKM(&test_ukm_recorder);
+
+  using UkmEntry = ukm::builders::PreviewsResourceLoadingHints;
+  auto entries = test_ukm_recorder.GetEntriesByName(UkmEntry::kEntryName);
+  ASSERT_EQ(1u, entries.size());
+  const auto* entry = entries[0];
+  test_ukm_recorder.ExpectEntryMetric(
+      entry, UkmEntry::kpatterns_to_block_totalName, 9);
+  test_ukm_recorder.ExpectEntryMetric(entry,
+                                      UkmEntry::kpatterns_to_block_usedName, 6);
+  test_ukm_recorder.ExpectEntryMetric(
+      entry, UkmEntry::kblocked_very_low_priorityName, 2);
+  test_ukm_recorder.ExpectEntryMetric(entry,
+                                      UkmEntry::kblocked_low_priorityName, 1);
+  test_ukm_recorder.ExpectEntryMetric(
+      entry, UkmEntry::kblocked_medium_priorityName, 4);
+  test_ukm_recorder.ExpectEntryMetric(entry,
+                                      UkmEntry::kblocked_high_priorityName, 0);
+  test_ukm_recorder.ExpectEntryMetric(
+      entry, UkmEntry::kblocked_very_high_priorityName, 1);
 }
 
 }  // namespace

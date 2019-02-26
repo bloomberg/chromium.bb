@@ -298,13 +298,22 @@ class LocalDeviceInstrumentationTestRun(
         individual_device_set_up,
         self._test_instance.GetDataDependencies())
     if self._test_instance.wait_for_java_debugger:
+      apk = self._test_instance.apk_under_test or self._test_instance.test_apk
       logging.warning('*' * 80)
       logging.warning('Waiting for debugger to attach to process: %s',
-                      self._test_instance.apk_under_test.GetPackageName())
+                      apk.GetPackageName())
       logging.warning('*' * 80)
 
   #override
   def TearDown(self):
+    # By default, teardown will invoke ADB. When receiving SIGTERM due to a
+    # timeout, there's a high probability that ADB is non-responsive. In these
+    # cases, sending an ADB command will potentially take a long time to time
+    # out. Before this happens, the process will be hard-killed for not
+    # responding to SIGTERM fast enough.
+    if self._received_sigterm:
+      return
+
     @local_device_environment.handle_shard_failures_with(
         self._env.BlacklistDevice)
     @trace_event.traced

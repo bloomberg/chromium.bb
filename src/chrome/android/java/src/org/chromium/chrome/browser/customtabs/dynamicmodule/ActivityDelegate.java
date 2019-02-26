@@ -7,6 +7,8 @@ package org.chromium.chrome.browser.customtabs.dynamicmodule;
 import android.os.Bundle;
 import android.os.RemoteException;
 
+import org.chromium.base.VisibleForTesting;
+
 /**
  * A wrapper around a {@link IActivityDelegate}.
  *
@@ -15,112 +17,94 @@ import android.os.RemoteException;
 public class ActivityDelegate {
     private final IActivityDelegate mActivityDelegate;
 
+    private interface RemoteRunnable { void run() throws RemoteException; }
+
+    private interface RemoteCallable<T> { T call() throws RemoteException; }
+
+    private void safeRun(RemoteRunnable runnable) {
+        try {
+            runnable.run();
+        } catch (RemoteException e) {
+            assert false;
+        }
+    }
+
+    private <T> T safeCall(RemoteCallable<T> callable, T defaultReturn) {
+        try {
+            return callable.call();
+        } catch (RemoteException e) {
+            assert false;
+        }
+
+        return defaultReturn;
+    }
+
     public ActivityDelegate(IActivityDelegate activityDelegate) {
         mActivityDelegate = activityDelegate;
     }
 
     public void onCreate(Bundle savedInstanceState) {
-        try {
-            mActivityDelegate.onCreate(savedInstanceState);
-        } catch (RemoteException e) {
-            assert false;
-        }
+        safeRun(() -> mActivityDelegate.onCreate(savedInstanceState));
     }
 
     public void onPostCreate(Bundle savedInstanceState) {
-        try {
-            mActivityDelegate.onPostCreate(savedInstanceState);
-        } catch (RemoteException e) {
-            assert false;
-        }
+        safeRun(() -> mActivityDelegate.onPostCreate(savedInstanceState));
     }
 
     public void onStart() {
-        try {
-            mActivityDelegate.onStart();
-        } catch (RemoteException e) {
-            assert false;
-        }
+        safeRun(mActivityDelegate::onStart);
     }
 
     public void onStop() {
-        try {
-            mActivityDelegate.onStop();
-        } catch (RemoteException e) {
-            assert false;
-        }
+        safeRun(mActivityDelegate::onStop);
     }
 
     public void onWindowFocusChanged(boolean hasFocus) {
-        try {
-            mActivityDelegate.onWindowFocusChanged(hasFocus);
-        } catch (RemoteException e) {
-            assert false;
-        }
+        safeRun(() -> mActivityDelegate.onWindowFocusChanged(hasFocus));
     }
 
     public void onSaveInstanceState(Bundle outState) {
-        try {
-            mActivityDelegate.onSaveInstanceState(outState);
-        } catch (RemoteException e) {
-            assert false;
-        }
+        safeRun(() -> mActivityDelegate.onSaveInstanceState(outState));
     }
 
     public void onRestoreInstanceState(Bundle savedInstanceState) {
-        try {
-            mActivityDelegate.onRestoreInstanceState(savedInstanceState);
-        } catch (RemoteException e) {
-            assert false;
-        }
+        safeRun(() -> mActivityDelegate.onRestoreInstanceState(savedInstanceState));
     }
 
     public void onResume() {
-        try {
-            mActivityDelegate.onResume();
-        } catch (RemoteException e) {
-            assert false;
-        }
+        safeRun(mActivityDelegate::onResume);
     }
 
     public void onPause() {
-        try {
-            mActivityDelegate.onPause();
-        } catch (RemoteException e) {
-            assert false;
-        }
+        safeRun(mActivityDelegate::onPause);
     }
 
     public void onDestroy() {
-        try {
-            mActivityDelegate.onDestroy();
-        } catch (RemoteException e) {
-            assert false;
-        }
+        safeRun(mActivityDelegate::onDestroy);
     }
 
     public boolean onBackPressed() {
-        try {
-            return mActivityDelegate.onBackPressed();
-        } catch (RemoteException e) {
-            assert false;
-        }
-        return false;
+        return safeCall(mActivityDelegate::onBackPressed, false);
     }
 
     public void onBackPressedAsync(Runnable notHandledRunnable) {
-        try {
-            mActivityDelegate.onBackPressedAsync(ObjectWrapper.wrap(notHandledRunnable));
-        } catch (RemoteException e) {
-            assert false;
-        }
+        safeRun(() -> mActivityDelegate.onBackPressedAsync(ObjectWrapper.wrap(notHandledRunnable)));
     }
 
     public void onNavigationEvent(int navigationEvent, Bundle extras) {
-        try {
-            mActivityDelegate.onNavigationEvent(navigationEvent, extras);
-        } catch (RemoteException e) {
-            assert false;
-        }
+        safeRun(() -> mActivityDelegate.onNavigationEvent(navigationEvent, extras));
+    }
+
+    public void onMessageChannelReady() {
+        safeRun(mActivityDelegate::onMessageChannelReady);
+    }
+
+    public void onPostMessage(String message) {
+        safeRun(() -> mActivityDelegate.onPostMessage(message));
+    }
+
+    @VisibleForTesting
+    public IActivityDelegate getIActivityDelegateForTesting() {
+        return mActivityDelegate;
     }
 }

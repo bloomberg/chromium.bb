@@ -103,7 +103,8 @@ class WebRTCPeerConnectionHandler {
   // Gets stats using the new stats collection API, see
   // third_party/webrtc/api/stats/.  These will replace the old stats collection
   // API when the new API has matured enough.
-  virtual void GetStats(std::unique_ptr<WebRTCStatsReportCallback>) = 0;
+  virtual void GetStats(std::unique_ptr<WebRTCStatsReportCallback>,
+                        RTCStatsFilter) = 0;
   virtual WebRTCDataChannelHandler* CreateDataChannel(
       const WebString& label,
       const WebRTCDataChannelInit&) = 0;

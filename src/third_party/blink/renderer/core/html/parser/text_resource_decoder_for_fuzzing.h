@@ -22,7 +22,7 @@ class TextResourceDecoderForFuzzing : public TextResourceDecoder {
   static TextResourceDecoderOptions FuzzedOption(
       FuzzedDataProvider& fuzzed_data) {
     switch (static_cast<TextResourceDecoderOptions::EncodingDetectionOption>(
-        fuzzed_data.ConsumeInt32InRange(
+        fuzzed_data.ConsumeIntegralInRange<int32_t>(
             TextResourceDecoderOptions::kUseAllAutoDetection,
             TextResourceDecoderOptions::kAlwaysUseUTF8ForText))) {
       case TextResourceDecoderOptions::kUseAllAutoDetection:
@@ -42,7 +42,7 @@ class TextResourceDecoderForFuzzing : public TextResourceDecoder {
   static TextResourceDecoderOptions::ContentType FuzzedContentType(
       FuzzedDataProvider& fuzzed_data) {
     return static_cast<TextResourceDecoderOptions::ContentType>(
-        fuzzed_data.ConsumeInt32InRange(
+        fuzzed_data.ConsumeIntegralInRange<int32_t>(
             TextResourceDecoderOptions::kPlainTextContent,
             TextResourceDecoderOptions::kMaxContentType));
   }

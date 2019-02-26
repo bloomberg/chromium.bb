@@ -9,6 +9,7 @@
 #include "base/ios/ios_util.h"
 #include "base/memory/ref_counted.h"
 #include "base/run_loop.h"
+#include "google_apis/gaia/gaia_constants.h"
 #include "google_apis/gaia/gaia_urls.h"
 #include "ios/chrome/browser/browser_state/test_chrome_browser_state.h"
 #include "ios/chrome/browser/signin/gaia_auth_fetcher_ios_private.h"
@@ -68,9 +69,9 @@ class GaiaAuthFetcherIOSTest : public PlatformTest {
     browser_state_ = TestChromeBrowserState::Builder().Build();
 
     ActiveStateManager::FromBrowserState(browser_state())->SetActive(true);
-    gaia_auth_fetcher_.reset(new GaiaAuthFetcherIOS(&consumer_, std::string(),
-                                                    test_shared_loader_factory_,
-                                                    browser_state()));
+    gaia_auth_fetcher_.reset(
+        new GaiaAuthFetcherIOS(&consumer_, gaia::GaiaSource::kChrome,
+                               test_shared_loader_factory_, browser_state()));
     gaia_auth_fetcher_->bridge_.reset(new FakeGaiaAuthFetcherIOSBridge(
         gaia_auth_fetcher_.get(), browser_state()));
   }
@@ -106,15 +107,8 @@ TEST_F(GaiaAuthFetcherIOSTest, StartOAuthLoginCancelled) {
       GoogleServiceAuthError(GoogleServiceAuthError::REQUEST_CANCELED);
   EXPECT_CALL(consumer_, OnClientLoginFailure(expected_error)).Times(1);
 
-  if (base::ios::IsRunningOnIOS11OrLater()) {
-    [static_cast<WKWebView*>([GetMockWKWebView() expect])
-        loadRequest:[OCMArg any]];
-  } else {
-    // TODO(crbug.com/740987): Remove this code once iOS 10 is dropped.
-    [static_cast<WKWebView*>([GetMockWKWebView() expect])
-        loadHTMLString:[OCMArg any]
-               baseURL:[OCMArg any]];
-  }
+  [static_cast<WKWebView*>([GetMockWKWebView() expect])
+      loadRequest:[OCMArg any]];
   [[GetMockWKWebView() expect] stopLoading];
 
   gaia_auth_fetcher_->StartOAuthLogin("fake_token", "gaia");
@@ -161,7 +155,7 @@ TEST_F(GaiaAuthFetcherIOSTest, StartGetCheckConnectionInfo) {
   // Set up the fake response.
   test_url_loader_factory_.AddResponse(
       GaiaUrls::GetInstance()
-          ->GetCheckConnectionInfoURLWithSource(std::string())
+          ->GetCheckConnectionInfoURLWithSource(GaiaConstants::kChromeSource)
           .spec(),
       data);
 

@@ -177,6 +177,22 @@ class CalledProcessError(Exception):
     return 'Command failed: {}\n{}'.format(copyable_command, self.output)
 
 
+def FilterLines(output, filter_string):
+  """Output filter from build_utils.CheckOutput.
+
+  Args:
+    output: Executable output as from build_utils.CheckOutput.
+    filter_string: An RE string that will filter (remove) matching
+        lines from |output|.
+
+  Returns:
+    The filtered output, as a single string.
+  """
+  re_filter = re.compile(filter_string)
+  return '\n'.join(
+      line for line in output.splitlines() if not re_filter.search(line))
+
+
 # This can be used in most cases like subprocess.check_output(). The output,
 # particularly when the command fails, better highlights the command's failure.
 # If the command fails, raises a build_utils.CalledProcessError.
@@ -305,8 +321,18 @@ def AddToZipHermetic(zip_file, zip_path, src_path=None, data=None,
     zip_file.writestr(zipinfo, os.readlink(src_path))
     return
 
+  # zipfile.write() does
+  #     external_attr = (os.stat(src_path)[0] & 0xFFFF) << 16L
+  # but we want to use _HERMETIC_FILE_ATTR, so manually set
+  # the few attr bits we care about.
   if src_path:
-    with file(src_path) as f:
+    st = os.stat(src_path)
+    for mode in (stat.S_IXUSR, stat.S_IXGRP, stat.S_IXOTH):
+      if st.st_mode & mode:
+        zipinfo.external_attr |= mode << 16L
+
+  if src_path:
+    with open(src_path, 'rb') as f:
       data = f.read()
 
   # zipfile will deflate even when it makes the file bigger. To avoid
@@ -322,15 +348,17 @@ def AddToZipHermetic(zip_file, zip_path, src_path=None, data=None,
   zip_file.writestr(zipinfo, data, compress_type)
 
 
-def DoZip(inputs, output, base_dir=None, compress_fn=None):
+def DoZip(inputs, output, base_dir=None, compress_fn=None,
+          zip_prefix_path=None):
   """Creates a zip file from a list of files.
 
   Args:
     inputs: A list of paths to zip, or a list of (zip_path, fs_path) tuples.
-    output: Destination .zip file.
+    output: Path, fileobj, or ZipFile instance to add files to.
     base_dir: Prefix to strip from inputs.
     compress_fn: Applied to each input to determine whether or not to compress.
         By default, items will be |zipfile.ZIP_STORED|.
+    zip_prefix_path: Path prepended to file path in zip file.
   """
   input_tuples = []
   for tup in inputs:
@@ -340,13 +368,23 @@ def DoZip(inputs, output, base_dir=None, compress_fn=None):
 
   # Sort by zip path to ensure stable zip ordering.
   input_tuples.sort(key=lambda tup: tup[0])
-  with zipfile.ZipFile(output, 'w') as outfile:
+
+  out_zip = output
+  if not isinstance(output, zipfile.ZipFile):
+    out_zip = zipfile.ZipFile(output, 'w')
+
+  try:
     for zip_path, fs_path in input_tuples:
+      if zip_prefix_path:
+        zip_path = os.path.join(zip_prefix_path, zip_path)
       compress = compress_fn(zip_path) if compress_fn else None
-      AddToZipHermetic(outfile, zip_path, src_path=fs_path, compress=compress)
+      AddToZipHermetic(out_zip, zip_path, src_path=fs_path, compress=compress)
+  finally:
+    if output is not out_zip:
+      out_zip.close()
 
 
-def ZipDir(output, base_dir, compress_fn=None):
+def ZipDir(output, base_dir, compress_fn=None, zip_prefix_path=None):
   """Creates a zip file from a directory."""
   inputs = []
   for root, _, files in os.walk(base_dir):
@@ -354,7 +392,8 @@ def ZipDir(output, base_dir, compress_fn=None):
       inputs.append(os.path.join(root, f))
 
   with AtomicOutput(output) as f:
-    DoZip(inputs, f, base_dir, compress_fn=compress_fn)
+    DoZip(inputs, f, base_dir, compress_fn=compress_fn,
+          zip_prefix_path=zip_prefix_path)
 
 
 def MatchesGlob(path, filters):
@@ -362,23 +401,21 @@ def MatchesGlob(path, filters):
   return filters and any(fnmatch.fnmatch(path, f) for f in filters)
 
 
-def MergeZips(output, input_zips, path_transform=None):
+def MergeZips(output, input_zips, path_transform=None, compress=None):
   """Combines all files from |input_zips| into |output|.
 
   Args:
-    output: Path or ZipFile instance to add files to.
+    output: Path, fileobj, or ZipFile instance to add files to.
     input_zips: Iterable of paths to zip files to merge.
     path_transform: Called for each entry path. Returns a new path, or None to
         skip the file.
+    compress: Overrides compression setting from origin zip entries.
   """
   path_transform = path_transform or (lambda p: p)
   added_names = set()
 
-  output_is_already_open = not isinstance(output, basestring)
-  if output_is_already_open:
-    assert isinstance(output, zipfile.ZipFile)
-    out_zip = output
-  else:
+  out_zip = output
+  if not isinstance(output, zipfile.ZipFile):
     out_zip = zipfile.ZipFile(output, 'w')
 
   try:
@@ -395,11 +432,18 @@ def MergeZips(output, input_zips, path_transform=None):
             continue
           already_added = dst_name in added_names
           if not already_added:
-            AddToZipHermetic(out_zip, dst_name, data=in_zip.read(info),
-                             compress=info.compress_type != zipfile.ZIP_STORED)
+            if compress is not None:
+              compress_entry = compress
+            else:
+              compress_entry = info.compress_type != zipfile.ZIP_STORED
+            AddToZipHermetic(
+                out_zip,
+                dst_name,
+                data=in_zip.read(info),
+                compress=compress_entry)
             added_names.add(dst_name)
   finally:
-    if not output_is_already_open:
+    if output is not out_zip:
       out_zip.close()
 
 
@@ -483,6 +527,7 @@ def AddDepfileOption(parser):
 
 def WriteDepfile(depfile_path, first_gn_output, inputs=None, add_pydeps=True):
   assert depfile_path != first_gn_output  # http://crbug.com/646165
+  assert not isinstance(inputs, basestring)  # Easy mistake to make
   inputs = inputs or []
   if add_pydeps:
     inputs = _ComputePythonDependencies() + inputs
@@ -530,7 +575,7 @@ def ExpandFileArgs(args):
     for k in lookup_path[1:]:
       expansion = expansion[k]
 
-    # This should match ParseGNList. The output is either a GN-formatted list
+    # This should match ParseGnList. The output is either a GN-formatted list
     # or a literal (with no quotes).
     if isinstance(expansion, list):
       new_args[i] = arg[:match.start()] + gn_helpers.ToGNString(expansion)

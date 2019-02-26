@@ -35,5 +35,5 @@ public interface IsomorphicObjectBoundaryInterface {
      * @return The peer object associated with this object, which either exists already, or has
      *         been freshly created and recorded.
      */
-    Object getOrCreatePeer(Callable<Object> creationCallable) throws Exception;
+    Object getOrCreatePeer(Callable<Object> creationCallable);
 }

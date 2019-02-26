@@ -59,24 +59,23 @@ class MODULES_EXPORT IDBAny : public GarbageCollectedFinalized<IDBAny> {
   static IDBAny* CreateNull();
   template <typename T>
   static IDBAny* Create(T* idb_object) {
-    return new IDBAny(idb_object);
+    return MakeGarbageCollected<IDBAny>(idb_object);
   }
   static IDBAny* Create(DOMStringList* dom_string_list) {
-    return new IDBAny(dom_string_list);
+    return MakeGarbageCollected<IDBAny>(dom_string_list);
   }
-  static IDBAny* Create(int64_t value) { return new IDBAny(value); }
+  static IDBAny* Create(int64_t value) {
+    return MakeGarbageCollected<IDBAny>(value);
+  }
   static IDBAny* Create(std::unique_ptr<IDBKey> key) {
-    return new IDBAny(std::move(key));
+    return MakeGarbageCollected<IDBAny>(std::move(key));
   }
   static IDBAny* Create(std::unique_ptr<IDBValue> value) {
-    return new IDBAny(std::move(value));
+    return MakeGarbageCollected<IDBAny>(std::move(value));
   }
   static IDBAny* Create(Vector<std::unique_ptr<IDBValue>> values) {
-    return new IDBAny(std::move(values));
+    return MakeGarbageCollected<IDBAny>(std::move(values));
   }
-  ~IDBAny();
-  void Trace(blink::Visitor*);
-  void ContextWillBeDestroyed();
 
   enum Type {
     kUndefinedType = 0,
@@ -91,6 +90,19 @@ class MODULES_EXPORT IDBAny : public GarbageCollectedFinalized<IDBAny> {
     kIDBValueArrayType
   };
 
+  explicit IDBAny(Type);
+  explicit IDBAny(DOMStringList*);
+  explicit IDBAny(IDBCursor*);
+  explicit IDBAny(IDBDatabase*);
+  explicit IDBAny(std::unique_ptr<IDBKey>);
+  explicit IDBAny(Vector<std::unique_ptr<IDBValue>>);
+  explicit IDBAny(std::unique_ptr<IDBValue>);
+  explicit IDBAny(int64_t);
+  ~IDBAny();
+
+  void Trace(blink::Visitor*);
+  void ContextWillBeDestroyed();
+
   Type GetType() const { return type_; }
   // Use type() to figure out which one of these you're allowed to call.
   DOMStringList* DomStringList() const;
@@ -103,15 +115,6 @@ class MODULES_EXPORT IDBAny : public GarbageCollectedFinalized<IDBAny> {
   const IDBKey* Key() const;
 
  private:
-  explicit IDBAny(Type);
-  explicit IDBAny(DOMStringList*);
-  explicit IDBAny(IDBCursor*);
-  explicit IDBAny(IDBDatabase*);
-  explicit IDBAny(std::unique_ptr<IDBKey>);
-  explicit IDBAny(Vector<std::unique_ptr<IDBValue>>);
-  explicit IDBAny(std::unique_ptr<IDBValue>);
-  explicit IDBAny(int64_t);
-
   const Type type_;
 
   // Only one of the following should ever be in use at any given time.

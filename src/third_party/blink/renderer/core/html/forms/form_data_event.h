@@ -16,6 +16,9 @@ class FormDataEvent : public Event {
 
  public:
   static FormDataEvent* Create(FormData& form_data);
+
+  FormDataEvent(FormData& form_data);
+
   void Trace(Visitor* visitor) override;
 
   FormData* formData() const { return form_data_; };
@@ -23,8 +26,6 @@ class FormDataEvent : public Event {
   const AtomicString& InterfaceName() const override;
 
  private:
-  FormDataEvent(FormData& form_data);
-
   Member<FormData> form_data_;
 };
 

@@ -7,11 +7,13 @@
 #include <cmath>
 #include <memory>
 
+#include "ash/accelerators/accelerator_controller.h"
 #include "ash/display/mouse_cursor_event_filter.h"
 #include "ash/public/cpp/shell_window_ids.h"
 #include "ash/screenshot_delegate.h"
 #include "ash/shell.h"
 #include "ash/wm/window_util.h"
+#include "services/ws/window_service.h"
 #include "ui/aura/client/capture_client.h"
 #include "ui/aura/client/screen_position_client.h"
 #include "ui/aura/window_targeter.h"
@@ -22,6 +24,7 @@
 #include "ui/events/event_handler.h"
 #include "ui/gfx/canvas.h"
 #include "ui/views/widget/widget.h"
+#include "ui/wm/core/accelerator_filter.h"
 #include "ui/wm/core/cursor_manager.h"
 
 namespace ash {
@@ -62,6 +65,19 @@ aura::Window* FindWindowForEvent(const ui::LocatedEvent& event) {
   // Restore State.
   aura::client::SetCaptureClient(root, original_capture_client);
   return selected;
+}
+
+// Returns true if the |window| is top-level.
+bool IsTopLevelWindow(aura::Window* window) {
+  if (!window)
+    return false;
+  if (window->type() == aura::client::WINDOW_TYPE_CONTROL ||
+      !window->delegate()) {
+    return false;
+  }
+  if (ws::WindowService::HasRemoteClient(window))
+    return ws::WindowService::IsTopLevelWindow(window);
+  return true;
 }
 
 }  // namespace
@@ -395,10 +411,8 @@ void ScreenshotController::UpdateSelectedWindow(const ui::LocatedEvent& event) {
   aura::Window* selected = FindWindowForEvent(event);
 
   // Find a window that is backed with a widget.
-  while (selected && (selected->type() == aura::client::WINDOW_TYPE_CONTROL ||
-                      !selected->delegate())) {
+  while (selected && !IsTopLevelWindow(selected))
     selected = selected->parent();
-  }
 
   if (selected->parent()->id() == kShellWindowId_WallpaperContainer ||
       selected->parent()->id() == kShellWindowId_LockScreenWallpaperContainer)
@@ -448,6 +462,18 @@ void ScreenshotController::OnKeyEvent(ui::KeyEvent* event) {
   // they should be able to continue manipulating the screen.
   if (!pen_events_only_)
     event->StopPropagation();
+
+  // Key event is blocked. So have to record current accelerator here.
+  if (event->stopped_propagation()) {
+    if (::wm::AcceleratorFilter::ShouldFilter(event))
+      return;
+
+    ui::Accelerator accelerator(*event);
+    ash::Shell::Get()
+        ->accelerator_controller()
+        ->accelerator_history()
+        ->StoreCurrentAccelerator(accelerator);
+  }
 }
 
 void ScreenshotController::OnMouseEvent(ui::MouseEvent* event) {

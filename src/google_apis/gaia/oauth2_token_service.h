@@ -142,8 +142,21 @@ class OAuth2TokenService {
                                             const ScopeSet& scopes,
                                             GoogleServiceAuthError error,
                                             base::Time expiration_time) {}
-    virtual void OnTokenRemoved(const std::string& account_id,
-                                const ScopeSet& scopes) {}
+    // Called when an access token was removed.
+    virtual void OnAccessTokenRemoved(const std::string& account_id,
+                                      const ScopeSet& scopes) {}
+
+    // Caled when a new refresh token is available. Contains diagnostic
+    // information about the source of the update credentials operation.
+    virtual void OnRefreshTokenAvailableFromSource(
+        const std::string& account_id,
+        bool is_refresh_token_valid,
+        const std::string& source) {}
+
+    // Called when a refreh token is revoked. Contains diagnostic information
+    // about the source that initiated the revokation operation.
+    virtual void OnRefreshTokenRevokedFromSource(const std::string& account_id,
+                                                 const std::string& source) {}
   };
 
   explicit OAuth2TokenService(
@@ -168,6 +181,13 @@ class OAuth2TokenService {
   virtual std::unique_ptr<Request> StartRequest(const std::string& account_id,
                                                 const ScopeSet& scopes,
                                                 Consumer* consumer);
+
+  // Try to get refresh token from delegate. If it is accessible (i.e. not
+  // empty), return it directly, otherwise start request to get access token.
+  // Used for getting tokens to send to Gaia Multilogin endpoint.
+  std::unique_ptr<OAuth2TokenService::Request> StartRequestForMultilogin(
+      const std::string& account_id,
+      OAuth2TokenService::Consumer* consumer);
 
   // This method does the same as |StartRequest| except it uses |client_id| and
   // |client_secret| to identify OAuth client app instead of using
@@ -204,10 +224,6 @@ class OAuth2TokenService {
   // will be returned.
   GoogleServiceAuthError GetAuthError(const std::string& account_id) const;
 
-  // This method cancels all token requests, revoke all refresh tokens and
-  // cached access tokens.
-  void RevokeAllCredentials();
-
   // Mark an OAuth2 |access_token| issued for |account_id| and |scopes| as
   // invalid. This should be done if the token was received from this class,
   // but was not accepted by the server (e.g., the server returned
@@ -223,6 +239,13 @@ class OAuth2TokenService {
                                       const std::string& client_id,
                                       const ScopeSet& scopes,
                                       const std::string& access_token);
+
+  // Removes token from cache (if it is cached) and calls
+  // InvalidateTokenForMultilogin method of the delegate. This should be done if
+  // the token was received from this class, but was not accepted by the server
+  // (e.g., the server returned 401 Unauthorized).
+  virtual void InvalidateTokenForMultilogin(const std::string& failed_account,
+                                            const std::string& token);
 
   void set_max_authorization_token_fetch_retries_for_testing(int max_retries);
   // Returns the current number of pending fetchers matching given params.
@@ -315,6 +338,11 @@ class OAuth2TokenService {
                                          const std::string& client_id,
                                          const ScopeSet& scopes,
                                          const std::string& access_token);
+
+  const base::ObserverList<DiagnosticsObserver, true>::Unchecked&
+  GetDiagnicsObservers() {
+    return diagnostics_observer_list_;
+  }
 
  private:
   class Fetcher;

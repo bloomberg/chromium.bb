@@ -30,7 +30,6 @@
 #include "base/macros.h"
 #include "base/template_util.h"
 #include "build/build_config.h"
-#include "third_party/blink/renderer/platform/wtf/alignment.h"
 #include "third_party/blink/renderer/platform/wtf/allocator/partition_allocator.h"
 #include "third_party/blink/renderer/platform/wtf/construct_traits.h"
 #include "third_party/blink/renderer/platform/wtf/container_annotations.h"
@@ -271,12 +270,7 @@ struct VectorFiller<true, T, Allocator> {
   STATIC_ONLY(VectorFiller);
   static void UninitializedFill(T* dst, T* dst_end, const T& val) {
     static_assert(sizeof(T) == sizeof(char), "size of type should be one");
-#if defined(COMPILER_GCC) && defined(_FORTIFY_SOURCE)
-    if (!__builtin_constant_p(dst_end - dst) || (!(dst_end - dst)))
-      memset(dst, val, dst_end - dst);
-#else
     memset(dst, val, dst_end - dst);
-#endif
   }
 };
 

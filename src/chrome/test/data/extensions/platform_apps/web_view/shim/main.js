@@ -3074,8 +3074,11 @@ function testFocusWhileFocused() {
     // Focus twice, then make sure that the internal element is still focused.
     webview.focus();
     webview.focus();
-    embedder.test.assertTrue(document.activeElement = webview);
-    embedder.test.assertTrue(webview.shadowRoot.activeElement);
+    embedder.test.assertEq(document.activeElement, webview);
+    var webviewPrivates =
+        chrome.test.getModuleSystem(webview).privates(webview);
+    var shadowRoot = webviewPrivates.internal.shadowRoot;
+    embedder.test.assertTrue(shadowRoot.activeElement);
     embedder.test.succeed();
   });
 

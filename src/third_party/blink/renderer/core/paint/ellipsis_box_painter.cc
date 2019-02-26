@@ -36,13 +36,11 @@ void EllipsisBoxPainter::PaintEllipsis(const PaintInfo& paint_info,
   box_origin.MoveBy(paint_offset);
 
   GraphicsContext& context = paint_info.context;
-  DisplayItem::Type display_item_type =
-      DisplayItem::PaintPhaseToDrawingType(paint_info.phase);
   if (DrawingRecorder::UseCachedDrawingIfPossible(context, ellipsis_box_,
-                                                  display_item_type))
+                                                  paint_info.phase))
     return;
 
-  DrawingRecorder recorder(context, ellipsis_box_, display_item_type);
+  DrawingRecorder recorder(context, ellipsis_box_, paint_info.phase);
 
   LayoutRect box_rect(box_origin,
                       LayoutSize(ellipsis_box_.LogicalWidth(),

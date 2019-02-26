@@ -11,6 +11,7 @@
 #include "net/third_party/quic/core/crypto/crypto_protocol.h"
 #include "net/third_party/quic/core/crypto/crypto_utils.h"
 #include "net/third_party/quic/core/quic_session.h"
+#include "net/third_party/quic/platform/api/quic_client_stats.h"
 #include "net/third_party/quic/platform/api/quic_flags.h"
 #include "net/third_party/quic/platform/api/quic_logging.h"
 #include "net/third_party/quic/platform/api/quic_str_cat.h"
@@ -96,6 +97,7 @@ QuicCryptoClientHandshaker::QuicCryptoClientHandshaker(
       proof_handler_(proof_handler),
       verify_ok_(false),
       stateless_reject_received_(false),
+      proof_verify_start_time_(QuicTime::Zero()),
       num_scup_messages_received_(0),
       encryption_established_(false),
       handshake_confirmed_(false),
@@ -272,7 +274,7 @@ void QuicCryptoClientHandshaker::DoInitialize(
     // the proof.
     DCHECK(crypto_config_->proof_verifier());
     // Track proof verification time when cached server config is used.
-    proof_verify_start_time_ = base::TimeTicks::Now();
+    proof_verify_start_time_ = session()->connection()->clock()->Now();
     chlo_hash_ = cached->chlo_hash();
     // If the cached state needs to be verified, do it now.
     next_state_ = STATE_VERIFY_PROOF;
@@ -318,8 +320,8 @@ void QuicCryptoClientHandshaker::DoSendCHLO(
 
   if (!cached->IsComplete(session()->connection()->clock()->WallNow())) {
     crypto_config_->FillInchoateClientHello(
-        server_id_, session()->connection()->supported_versions().front(),
-        cached, session()->connection()->random_generator(),
+        server_id_, session()->supported_versions().front(), cached,
+        session()->connection()->random_generator(),
         /* demand_x509_proof= */ true, crypto_negotiated_params_, &out);
     // Pad the inchoate client hello to fill up a packet.
     const QuicByteCount kFramingOverhead = 50;  // A rough estimate.
@@ -328,14 +330,12 @@ void QuicCryptoClientHandshaker::DoSendCHLO(
     if (max_packet_size <= kFramingOverhead) {
       QUIC_DLOG(DFATAL) << "max_packet_length (" << max_packet_size
                         << ") has no room for framing overhead.";
-      RecordInternalErrorLocation(QUIC_CRYPTO_CLIENT_HANDSHAKER_MAX_PACKET);
       stream_->CloseConnectionWithDetails(QUIC_INTERNAL_ERROR,
                                           "max_packet_size too smalll");
       return;
     }
     if (kClientHelloMinimumSize > max_packet_size - kFramingOverhead) {
       QUIC_DLOG(DFATAL) << "Client hello won't fit in a single packet.";
-      RecordInternalErrorLocation(QUIC_CRYPTO_CLIENT_HANDSHAKER_CHLO);
       stream_->CloseConnectionWithDetails(QUIC_INTERNAL_ERROR,
                                           "CHLO too large");
       return;
@@ -362,7 +362,7 @@ void QuicCryptoClientHandshaker::DoSendCHLO(
   QuicString error_details;
   QuicErrorCode error = crypto_config_->FillClientHello(
       server_id_, session()->connection()->connection_id(),
-      session()->connection()->supported_versions().front(), cached,
+      session()->supported_versions().front(), cached,
       session()->connection()->clock()->WallNow(),
       session()->connection()->random_generator(), channel_id_key_.get(),
       crypto_negotiated_params_, &out, &error_details);
@@ -428,11 +428,11 @@ void QuicCryptoClientHandshaker::DoReceiveREJ(
     }
     DVLOG(1) << "Reasons for rejection: " << packed_error;
     if (num_client_hellos_ == QuicCryptoClientStream::kMaxClientHellos) {
-      base::UmaHistogramSparse("Net.QuicClientHelloRejectReasons.TooMany",
-                               packed_error);
+      QuicClientSparseHistogram("QuicClientHelloRejectReasons.TooMany",
+                                packed_error);
     }
-    base::UmaHistogramSparse("Net.QuicClientHelloRejectReasons.Secure",
-                             packed_error);
+    QuicClientSparseHistogram("QuicClientHelloRejectReasons.Secure",
+                              packed_error);
   }
 
   // Receipt of a REJ message means that the server received the CHLO
@@ -500,9 +500,12 @@ QuicAsyncStatus QuicCryptoClientHandshaker::DoVerifyProof(
 
 void QuicCryptoClientHandshaker::DoVerifyProofComplete(
     QuicCryptoClientConfig::CachedState* cached) {
-  if (!proof_verify_start_time_.is_null()) {
-    UMA_HISTOGRAM_TIMES("Net.QuicSession.VerifyProofTime.CachedServerConfig",
-                        base::TimeTicks::Now() - proof_verify_start_time_);
+  if (proof_verify_start_time_.IsInitialized()) {
+    QUIC_CLIENT_HISTOGRAM_TIMES(
+        "QuicSession.VerifyProofTime.CachedServerConfig",
+        (session()->connection()->clock()->Now() - proof_verify_start_time_),
+        QuicTime::Delta::FromMilliseconds(1), QuicTime::Delta::FromSeconds(10),
+        50, "");
   }
   if (!verify_ok_) {
     if (verify_details_) {
@@ -514,8 +517,8 @@ void QuicCryptoClientHandshaker::DoVerifyProofComplete(
       return;
     }
     next_state_ = STATE_NONE;
-    UMA_HISTOGRAM_BOOLEAN("Net.QuicVerifyProofFailed.HandshakeConfirmed",
-                          handshake_confirmed());
+    QUIC_CLIENT_HISTOGRAM_BOOL("QuicVerifyProofFailed.HandshakeConfirmed",
+                               handshake_confirmed(), "");
     stream_->CloseConnectionWithDetails(
         QUIC_PROOF_INVALID, "Proof invalid: " + verify_error_details_);
     return;
@@ -665,8 +668,8 @@ void QuicCryptoClientHandshaker::DoInitializeServerConfigUpdate(
     update_ignored = true;
     next_state_ = STATE_NONE;
   }
-  UMA_HISTOGRAM_COUNTS_1M("Net.QuicNumServerConfig.UpdateMessagesIgnored",
-                          update_ignored);
+  QUIC_CLIENT_HISTOGRAM_COUNTS("QuicNumServerConfig.UpdateMessagesIgnored",
+                               update_ignored, 1, 1000000, 50, "");
 }
 
 void QuicCryptoClientHandshaker::SetCachedProofValid(

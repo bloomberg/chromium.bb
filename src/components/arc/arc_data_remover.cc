@@ -10,10 +10,14 @@
 #include "base/callback_helpers.h"
 #include "base/logging.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
-#include "chromeos/dbus/session_manager_client.h"
+#include "chromeos/dbus/upstart_client.h"
 #include "components/arc/arc_prefs.h"
 
 namespace arc {
+
+// The conversion of upstart job names to dbus object paths is undocumented. See
+// function nih_dbus_path in libnih for the implementation.
+constexpr char kArcRemoveDataUpstartJob[] = "arc_2dremove_2ddata";
 
 ArcDataRemover::ArcDataRemover(PrefService* prefs,
                                const cryptohome::Identification& cryptohome_id)
@@ -42,11 +46,13 @@ void ArcDataRemover::Run(RunCallback callback) {
   }
 
   VLOG(1) << "Starting ARC data removal";
-  auto* session_manager_client =
-      chromeos::DBusThreadManager::Get()->GetSessionManagerClient();
-  DCHECK(session_manager_client);
-  session_manager_client->RemoveArcData(
-      cryptohome::CreateAccountIdentifierFromIdentification(cryptohome_id_),
+  auto* upstart_client = chromeos::DBusThreadManager::Get()->GetUpstartClient();
+  DCHECK(upstart_client);
+  const std::string account_id =
+      cryptohome::CreateAccountIdentifierFromIdentification(cryptohome_id_)
+          .account_id();
+  upstart_client->StartJob(
+      kArcRemoveDataUpstartJob, {"CHROMEOS_USER=" + account_id},
       base::AdaptCallbackForRepeating(
           base::BindOnce(&ArcDataRemover::OnDataRemoved,
                          weak_factory_.GetWeakPtr(), std::move(callback))));
@@ -59,7 +65,7 @@ void ArcDataRemover::OnDataRemoved(RunCallback callback, bool success) {
     VLOG(1) << "ARC data removal successful";
   } else {
     LOG(ERROR) << "Request for ARC user data removal failed. "
-               << "See session_manager logs for more details.";
+               << "See upstart logs for more details.";
   }
   pref_.SetValue(false);
 

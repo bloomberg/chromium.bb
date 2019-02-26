@@ -7,7 +7,7 @@
 
 #include "net/third_party/http2/decoder/http2_structure_decoder.h"
 
-#include "net/third_party/http2/tools/http2_random.h"
+#include "net/third_party/http2/test_tools/http2_random.h"
 
 namespace http2 {
 namespace test {
@@ -15,7 +15,7 @@ namespace test {
 class Http2StructureDecoderPeer {
  public:
   // Overwrite the Http2StructureDecoder instance with random values.
-  static void Randomize(Http2StructureDecoder* p, RandomBase* rng);
+  static void Randomize(Http2StructureDecoder* p, Http2Random* rng);
 };
 
 }  // namespace test

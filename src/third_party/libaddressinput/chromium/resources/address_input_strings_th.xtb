@@ -3,13 +3,13 @@
 <translationbundle lang="th">
 <translation id="1340068511406764697">คุณต้องระบุรหัสไปรษณีย์ ตัวอย่างเช่น <ph name="EXAMPLE" /> หากไม่ทราบรหัสไปรษณีย์ ให้ค้นหา<ph name="BEGIN_LINK" />ที่นี่<ph name="END_LINK" /></translation>
 <translation id="2053553514270667976">รหัสไปรษณีย์</translation>
-<translation id="2096368010154057602">จังหวัด</translation>
+<translation id="2096368010154057602">แผนก</translation>
 <translation id="2577522251608256362">ย่านใกล้เคียง</translation>
 <translation id="3050787670591910834">คุณต้องระบุรหัสไปรษณีย์ ตัวอย่างเช่น <ph name="EXAMPLE" /></translation>
 <translation id="3174168572213147020">เกาะ</translation>
 <translation id="3713769522066937702">ไม่รู้จักรูปแบบรหัสไปรษณีย์นี้ ตัวอย่างรหัสไปรษณีย์ที่ถูกต้อง: <ph name="EXAMPLE" /> หากไม่ทราบรหัสไปรษณีย์ ให้ค้นหา<ph name="BEGIN_LINK" />ที่นี่<ph name="END_LINK" /></translation>
 <translation id="3882422586004212847">ไม่รู้จักรูปแบบรหัสไปรษณีย์นี้ ตัวอย่างรหัสไปรษณีย์ที่ถูกต้อง: <ph name="EXAMPLE" /></translation>
-<translation id="3885155851504623709">เมือง</translation>
+<translation id="3885155851504623709">Parish</translation>
 <translation id="43113324827158664">ต้องป้อนข้อมูลในช่องนี้</translation>
 <translation id="4376888869070172068">ไม่รู้จักรหัสไปรษณีย์นี้</translation>
 <translation id="4518701284698680367">คุณต้องระบุรหัสไปรษณีย์ ตัวอย่างเช่น <ph name="EXAMPLE" /> หากไม่ทราบรหัสไปรษณีย์ ให้ค้นหา<ph name="BEGIN_LINK" />ที่นี่<ph name="END_LINK" /></translation>
@@ -29,8 +29,8 @@
 <translation id="6777217372746654521">ดูเหมือนว่าที่อยู่นี้จะเป็นตู้ไปรษณีย์ โปรดใช้ที่อยู่จริง</translation>
 <translation id="6839929833149231406">พื้นที่</translation>
 <translation id="684852933191805996">แขวง</translation>
-<translation id="6970216967273061347">เขต</translation>
-<translation id="7087282848513945231">อำเภอ</translation>
+<translation id="6970216967273061347">อำเภอ</translation>
+<translation id="7087282848513945231">ประเทศ</translation>
 <translation id="7139724024395191329">เอมิเรต</translation>
 <translation id="7393381084163773901">ที่อยู่ถนน</translation>
 <translation id="7602447984296396718">ดูเหมือนว่ารหัสไปรษณีย์นี้จะไม่ตรงกับส่วนที่เหลือของที่อยู่นี้</translation>

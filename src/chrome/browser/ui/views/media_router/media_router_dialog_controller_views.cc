@@ -32,8 +32,10 @@ MediaRouterDialogControllerImplBase::GetOrCreateForWebContents(
 
 MediaRouterDialogControllerViews::~MediaRouterDialogControllerViews() {
   Reset();
-  if (CastDialogView::GetCurrentDialogWidget())
-    CastDialogView::GetCurrentDialogWidget()->RemoveObserver(this);
+  if (dialog_widget_) {
+    dialog_widget_->RemoveObserver(this);
+    dialog_widget_ = nullptr;
+  }
 }
 
 // static
@@ -64,7 +66,10 @@ void MediaRouterDialogControllerViews::CreateMediaRouterDialog() {
     CastDialogView::ShowDialogTopCentered(ui_.get(), browser,
                                           dialog_creation_time);
   }
-  CastDialogView::GetCurrentDialogWidget()->AddObserver(this);
+  dialog_widget_ = CastDialogView::GetCurrentDialogWidget();
+  dialog_widget_->AddObserver(this);
+  if (dialog_creation_callback_)
+    dialog_creation_callback_.Run();
 }
 
 void MediaRouterDialogControllerViews::CloseMediaRouterDialog() {
@@ -76,18 +81,23 @@ bool MediaRouterDialogControllerViews::IsShowingMediaRouterDialog() const {
 }
 
 void MediaRouterDialogControllerViews::Reset() {
-  MediaRouterDialogControllerImplBase::Reset();
-  ui_.reset();
+  // If |ui_| is null, Reset() has already been called.
+  if (ui_) {
+    MediaRouterDialogControllerImplBase::Reset();
+    ui_.reset();
+  }
 }
 
 void MediaRouterDialogControllerViews::OnWidgetClosing(views::Widget* widget) {
-  DCHECK_EQ(CastDialogView::GetCurrentDialogWidget(), widget);
+  DCHECK_EQ(dialog_widget_, widget);
   Reset();
+  dialog_widget_->RemoveObserver(this);
+  dialog_widget_ = nullptr;
 }
 
-void MediaRouterDialogControllerViews::OnWidgetDestroying(
-    views::Widget* widget) {
-  widget->RemoveObserver(this);
+void MediaRouterDialogControllerViews::SetDialogCreationCallbackForTesting(
+    base::RepeatingClosure callback) {
+  dialog_creation_callback_ = std::move(callback);
 }
 
 MediaRouterDialogControllerViews::MediaRouterDialogControllerViews(

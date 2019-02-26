@@ -14,13 +14,12 @@
 #include "ui/aura/client/screen_position_client.h"
 #include "ui/aura/env.h"
 #include "ui/compositor/paint_recorder.h"
-#include "ui/display/display.h"
-#include "ui/display/screen.h"
 #include "ui/events/event.h"
 #include "ui/gfx/canvas.h"
 #include "ui/gfx/render_text.h"
 #include "ui/views/background.h"
 #include "ui/views/border.h"
+#include "ui/wm/core/window_util.h"
 
 namespace ui_devtools {
 
@@ -491,6 +490,10 @@ void OverlayAgentAura::ShowDistancesInHighlightOverlay(int pinned_id,
 }
 
 Response OverlayAgentAura::HighlightNode(int node_id, bool show_size) {
+  UIElement* element = dom_agent()->GetElementFromNodeId(node_id);
+  if (!element)
+    return Response::Error("No node found with that id");
+
   if (!layer_for_highlighting_) {
     layer_for_highlighting_.reset(new ui::Layer(ui::LayerType::LAYER_TEXTURED));
     layer_for_highlighting_->set_name("HighlightingLayer");
@@ -498,30 +501,20 @@ Response OverlayAgentAura::HighlightNode(int node_id, bool show_size) {
     layer_for_highlighting_->SetFillsBoundsOpaquely(false);
   }
 
-  UIElement* element = dom_agent()->GetElementFromNodeId(node_id);
-  std::pair<gfx::NativeWindow, gfx::Rect> window_and_bounds =
-      element
-          ? element->GetNodeWindowAndBounds()
-          : std::make_pair<gfx::NativeWindow, gfx::Rect>(nullptr, gfx::Rect());
-
-  if (!window_and_bounds.first)
-    return Response::Error("No node found with that id");
-
   highlight_rect_config_ = HighlightRectsConfiguration::NO_DRAW;
   show_size_on_canvas_ = show_size;
-  UpdateHighlight(window_and_bounds);
-
-  if (!layer_for_highlighting_->visible())
-    layer_for_highlighting_->SetVisible(true);
-
+  layer_for_highlighting_->SetVisible(
+      UpdateHighlight(element->GetNodeWindowAndBounds()));
   return Response::OK();
 }
 
-void OverlayAgentAura::UpdateHighlight(
+bool OverlayAgentAura::UpdateHighlight(
     const std::pair<gfx::NativeWindow, gfx::Rect>& window_and_bounds) {
-  display::Display display =
-      display::Screen::GetScreen()->GetDisplayNearestWindow(
-          window_and_bounds.first);
+  if (window_and_bounds.second.IsEmpty()) {
+    hovered_rect_.SetRect(0, 0, 0, 0);
+    return false;
+  }
+
   gfx::NativeWindow root = window_and_bounds.first->GetRootWindow();
   layer_for_highlighting_->SetBounds(root->bounds());
   layer_for_highlighting_->SchedulePaint(root->bounds());
@@ -537,6 +530,7 @@ void OverlayAgentAura::UpdateHighlight(
   gfx::Point origin = hovered_rect_.origin();
   screen_position_client->ConvertPointFromScreen(root, &origin);
   hovered_rect_.set_origin(origin);
+  return true;
 }
 
 void OverlayAgentAura::OnMouseEvent(ui::MouseEvent* event) {
@@ -563,26 +557,35 @@ void OverlayAgentAura::OnMouseEvent(ui::MouseEvent* event) {
 
   // Find node id of element whose bounds contain the mouse pointer location.
   int element_id = FindElementIdTargetedByPoint(event);
+  if (!element_id)
+    return;
 
-  if (pinned_id_ == element_id) {
+#if defined(USE_AURA)
+  aura::Window* target = static_cast<aura::Window*>(event->target());
+  bool active_window = ::wm::IsActiveWindow(
+      target->GetRootWindow()->GetEventHandlerForPoint(event->root_location()));
+#else
+  bool active_window = true;
+#endif
+  if (pinned_id_ == element_id && active_window) {
     event->SetHandled();
     return;
   }
 
   // Pin the hover element on click.
   if (event->type() == ui::ET_MOUSE_PRESSED) {
-    event->SetHandled();
-    if (element_id)
-      SetPinnedNodeId(element_id);
-  } else if (element_id && !pinned_id_) {
-    // Display only guidelines if hovering without a pinned element.
-    frontend()->nodeHighlightRequested(element_id);
-    HighlightNode(element_id, false /* show_size */);
-  } else if (element_id && pinned_id_) {
+    if (active_window)
+      event->SetHandled();
+    SetPinnedNodeId(element_id);
+  } else if (pinned_id_) {
     // If hovering with a pinned element, then show distances between the pinned
     // element and the hover element.
     HighlightNode(element_id, false /* show_size */);
     ShowDistancesInHighlightOverlay(pinned_id_, element_id);
+  } else {
+    // Display only guidelines if hovering without a pinned element.
+    frontend()->nodeHighlightRequested(element_id);
+    HighlightNode(element_id, false /* show_size */);
   }
 }
 

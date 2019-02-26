@@ -25,6 +25,10 @@ extern const char kHistogramDomContentLoaded[];
 extern const char kHistogramLoad[];
 extern const char kHistogramFirstContentfulPaint[];
 extern const char kHistogramFirstMeaningfulPaint[];
+extern const char kHistogramLargestImagePaint[];
+extern const char kHistogramLastImagePaint[];
+extern const char kHistogramLargestTextPaint[];
+extern const char kHistogramLastTextPaint[];
 extern const char kHistogramTimeToInteractive[];
 extern const char kHistogramParseDuration[];
 extern const char kHistogramParseBlockedOnScriptLoad[];
@@ -63,6 +67,7 @@ extern const char kHistogramFirstScrollInputAfterFirstPaint[];
 extern const char kHistogramPageLoadTotalBytes[];
 extern const char kHistogramPageLoadNetworkBytes[];
 extern const char kHistogramPageLoadCacheBytes[];
+extern const char kHistogramPageLoadNetworkBytesIncludingHeaders[];
 
 extern const char kHistogramLoadTypeTotalBytesForwardBack[];
 extern const char kHistogramLoadTypeNetworkBytesForwardBack[];
@@ -210,6 +215,21 @@ class CorePageLoadMetricsObserver
   void OnUserInput(const blink::WebInputEvent& event) override;
   void OnLoadedResource(const page_load_metrics::ExtraRequestCompleteInfo&
                             extra_request_complete_info) override;
+  void OnResourceDataUseObserved(
+      const std::vector<page_load_metrics::mojom::ResourceDataUpdatePtr>&
+          resources) override;
+  void OnLargestImagePaintInMainFrameDocument(
+      const page_load_metrics::mojom::PageLoadTiming& timing,
+      const page_load_metrics::PageLoadExtraInfo& info) override;
+  void OnLastImagePaintInMainFrameDocument(
+      const page_load_metrics::mojom::PageLoadTiming& timing,
+      const page_load_metrics::PageLoadExtraInfo& info) override;
+  void OnLargestTextPaintInMainFrameDocument(
+      const page_load_metrics::mojom::PageLoadTiming& timing,
+      const page_load_metrics::PageLoadExtraInfo& info) override;
+  void OnLastTextPaintInMainFrameDocument(
+      const page_load_metrics::mojom::PageLoadTiming& timing,
+      const page_load_metrics::PageLoadExtraInfo& info) override;
 
  private:
   void RecordTimingHistograms(
@@ -232,10 +252,14 @@ class CorePageLoadMetricsObserver
   int num_cache_resources_;
   int num_network_resources_;
 
-  // The number of body (not header) prefilter bytes consumed by requests for
-  // the page.
+  // The number of body (not header) prefilter bytes consumed by completed
+  // requests for the page.
   int64_t cache_bytes_;
   int64_t network_bytes_;
+
+  // The number of prefilter bytes consumed by completed and partial network
+  // requests for the page.
+  int64_t network_bytes_including_headers_;
 
   // Size of the redirect chain, which excludes the first URL.
   int redirect_chain_size_;

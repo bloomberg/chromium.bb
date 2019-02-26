@@ -33,8 +33,11 @@ class CORE_EXPORT ModuleMap final : public GarbageCollected<ModuleMap>,
 
  public:
   static ModuleMap* Create(Modulator* modulator) {
-    return new ModuleMap(modulator);
+    return MakeGarbageCollected<ModuleMap>(modulator);
   }
+
+  explicit ModuleMap(Modulator*);
+
   void Trace(blink::Visitor*);
   const char* NameInHeapSnapshot() const override { return "ModuleMap"; }
 
@@ -54,8 +57,6 @@ class CORE_EXPORT ModuleMap final : public GarbageCollected<ModuleMap>,
   Modulator* GetModulator() { return modulator_; }
 
  private:
-  explicit ModuleMap(Modulator*);
-
   using MapImpl = HeapHashMap<KURL, TraceWrapperMember<Entry>>;
 
   // A module map is a map of absolute URLs to map entry.

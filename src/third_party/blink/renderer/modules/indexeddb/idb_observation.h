@@ -8,6 +8,7 @@
 #include <memory>
 
 #include "third_party/blink/public/common/indexeddb/web_idb_types.h"
+#include "third_party/blink/public/mojom/indexeddb/indexeddb.mojom-blink.h"
 #include "third_party/blink/renderer/bindings/core/v8/script_value.h"
 #include "third_party/blink/renderer/platform/bindings/script_wrappable.h"
 #include "third_party/blink/renderer/platform/heap/handle.h"
@@ -23,11 +24,12 @@ class IDBObservation final : public ScriptWrappable {
   DEFINE_WRAPPERTYPEINFO();
 
  public:
-  static WebIDBOperationType StringToOperationType(const String&);
+  static mojom::IDBOperationType StringToOperationType(const String&);
 
   // Consumes the WebIDBObservation.
   static IDBObservation* Create(WebIDBObservation, v8::Isolate*);
 
+  IDBObservation(WebIDBObservation, v8::Isolate*);
   ~IDBObservation() override;
 
   void Trace(blink::Visitor*) override;
@@ -38,11 +40,9 @@ class IDBObservation final : public ScriptWrappable {
   const String& type() const;
 
  private:
-  IDBObservation(WebIDBObservation, v8::Isolate*);
-
   Member<IDBKeyRange> key_range_;
   Member<IDBAny> value_;
-  const WebIDBOperationType operation_type_;
+  const mojom::IDBOperationType operation_type_;
 };
 
 }  // namespace blink

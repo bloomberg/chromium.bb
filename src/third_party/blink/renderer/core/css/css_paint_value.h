@@ -18,15 +18,18 @@ namespace blink {
 class CORE_EXPORT CSSPaintValue : public CSSImageGeneratorValue {
  public:
   static CSSPaintValue* Create(CSSCustomIdentValue* name) {
-    return new CSSPaintValue(name);
+    return MakeGarbageCollected<CSSPaintValue>(name);
   }
 
   static CSSPaintValue* Create(
       CSSCustomIdentValue* name,
       Vector<scoped_refptr<CSSVariableData>>& variable_data) {
-    return new CSSPaintValue(name, variable_data);
+    return MakeGarbageCollected<CSSPaintValue>(name, variable_data);
   }
 
+  explicit CSSPaintValue(CSSCustomIdentValue* name);
+  CSSPaintValue(CSSCustomIdentValue* name,
+                Vector<scoped_refptr<CSSVariableData>>&);
   ~CSSPaintValue();
 
   String CustomCSSText() const;
@@ -59,11 +62,6 @@ class CORE_EXPORT CSSPaintValue : public CSSImageGeneratorValue {
   void TraceAfterDispatch(blink::Visitor*);
 
  private:
-  explicit CSSPaintValue(CSSCustomIdentValue* name);
-
-  CSSPaintValue(CSSCustomIdentValue* name,
-                Vector<scoped_refptr<CSSVariableData>>&);
-
   class Observer final : public CSSPaintImageGenerator::Observer {
    public:
     explicit Observer(CSSPaintValue* owner_value) : owner_value_(owner_value) {}

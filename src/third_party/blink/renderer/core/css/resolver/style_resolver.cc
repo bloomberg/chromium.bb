@@ -46,6 +46,7 @@
 #include "third_party/blink/renderer/core/css/css_identifier_value.h"
 #include "third_party/blink/renderer/core/css/css_keyframe_rule.h"
 #include "third_party/blink/renderer/core/css/css_keyframes_rule.h"
+#include "third_party/blink/renderer/core/css/css_property_names.h"
 #include "third_party/blink/renderer/core/css/css_property_value_set.h"
 #include "third_party/blink/renderer/core/css/css_reflect_value.h"
 #include "third_party/blink/renderer/core/css/css_rule_list.h"
@@ -60,6 +61,7 @@
 #include "third_party/blink/renderer/core/css/page_rule_collector.h"
 #include "third_party/blink/renderer/core/css/part_names.h"
 #include "third_party/blink/renderer/core/css/properties/css_property.h"
+#include "third_party/blink/renderer/core/css/properties/css_property_ref.h"
 #include "third_party/blink/renderer/core/css/resolver/animated_style_builder.h"
 #include "third_party/blink/renderer/core/css/resolver/css_variable_animator.h"
 #include "third_party/blink/renderer/core/css/resolver/css_variable_resolver.h"
@@ -74,7 +76,6 @@
 #include "third_party/blink/renderer/core/css/style_engine.h"
 #include "third_party/blink/renderer/core/css/style_rule_import.h"
 #include "third_party/blink/renderer/core/css/style_sheet_contents.h"
-#include "third_party/blink/renderer/core/css_property_names.h"
 #include "third_party/blink/renderer/core/dom/first_letter_pseudo_element.h"
 #include "third_party/blink/renderer/core/dom/node_computed_style.h"
 #include "third_party/blink/renderer/core/dom/shadow_root.h"
@@ -91,6 +92,7 @@
 #include "third_party/blink/renderer/core/media_type_names.h"
 #include "third_party/blink/renderer/core/probe/core_probes.h"
 #include "third_party/blink/renderer/core/style/style_inherited_variables.h"
+#include "third_party/blink/renderer/core/style/style_initial_data.h"
 #include "third_party/blink/renderer/core/style_property_shorthand.h"
 #include "third_party/blink/renderer/core/svg/svg_element.h"
 #include "third_party/blink/renderer/platform/runtime_enabled_features.h"
@@ -114,9 +116,7 @@ void SetAnimationUpdateIfNeeded(StyleResolverState& state, Element& element) {
 
 }  // namespace
 
-using namespace HTMLNames;
-
-ComputedStyle* StyleResolver::style_not_yet_available_;
+using namespace html_names;
 
 static CSSPropertyValueSet* LeftToRightDeclaration() {
   DEFINE_STATIC_LOCAL(Persistent<MutableCSSPropertyValueSet>,
@@ -215,8 +215,12 @@ static void MatchCustomElementRules(const Element& element,
           element.GetCustomElementDefinition()) {
     if (definition->HasDefaultStyleSheets()) {
       for (CSSStyleSheet* style : definition->DefaultStyleSheets()) {
-        collector.CollectMatchingRules(MatchRequest(
-            element.GetDocument().GetStyleEngine().RuleSetForSheet(*style)));
+        if (!style)
+          continue;
+        RuleSet* rule_set =
+            element.GetDocument().GetStyleEngine().RuleSetForSheet(*style);
+        if (rule_set)
+          collector.CollectMatchingRules(MatchRequest(rule_set));
       }
     }
   }
@@ -238,12 +242,44 @@ static void MatchHostAndCustomElementRules(const Element& element,
   collector.FinishAddingAuthorRulesForTreeScope();
 }
 
+static void MatchSlottedRules(const Element&, ElementRuleCollector&);
+static void MatchSlottedRulesForUAHost(const Element& element,
+                                       ElementRuleCollector& collector) {
+  if (element.ShadowPseudoId() != "-webkit-input-placeholder")
+    return;
+
+  // We allow ::placeholder pseudo element after ::slotted(). Since we are
+  // matching such pseudo elements starting from inside the UA shadow DOM of
+  // the element having the placeholder, we need to match ::slotted rules from
+  // the scopes to which the placeholder's host element may be slotted.
+  //
+  // Example:
+  //
+  // <div id=host>
+  //   <:shadow-root>
+  //     <style>::slotted(input)::placeholder { color: green }</style>
+  //     <slot />
+  //   </:shadow-root>
+  //   <input placeholder="PLACEHOLDER-TEXT">
+  //     <:ua-shadow-root>
+  //       ... <placeholder>PLACEHOLDER-TEXT</placeholder> ...
+  //     </:ua-shadow-root>
+  //   </input>
+  // </div>
+  //
+  // Here we need to match the ::slotted rule from the #host shadow tree where
+  // the input is slotted on the placeholder element.
+  DCHECK(element.OwnerShadowHost());
+  MatchSlottedRules(*element.OwnerShadowHost(), collector);
+}
+
 // Matches `::slotted` selectors. It matches rules in the element's slot's
 // scope. If that slot is itself slotted it will match rules in the slot's
 // slot's scope and so on. The result is that it considers a chain of scopes
 // descending from the element's own scope.
 static void MatchSlottedRules(const Element& element,
                               ElementRuleCollector& collector) {
+  MatchSlottedRulesForUAHost(element, collector);
   HTMLSlotElement* slot = element.AssignedSlot();
   if (!slot)
     return;
@@ -290,11 +326,11 @@ void StyleResolver::MatchPseudoPartRules(const Element& element,
   if (!RuntimeEnabledFeatures::CSSPartPseudoElementEnabled())
     return;
 
-  const SpaceSplitString* part_names = element.PartNames();
-  if (!part_names)
+  DOMTokenList* part = element.GetPart();
+  if (!part)
     return;
 
-  PartNames current_names(*part_names);
+  PartNames current_names(part->TokenSet());
 
   // ::part selectors in the shadow host's scope and above can match this
   // element.
@@ -416,7 +452,6 @@ void StyleResolver::MatchAuthorRules(const Element& element,
     MatchAuthorRulesV0(element, collector);
     return;
   }
-
   MatchHostAndCustomElementRules(element, collector);
 
   ScopedStyleResolver* element_scope_resolver = ScopedResolverFor(element);
@@ -654,24 +689,6 @@ scoped_refptr<ComputedStyle> StyleResolver::StyleForElement(
   DCHECK(GetDocument().GetFrame());
   DCHECK(GetDocument().GetSettings());
 
-  // Once an element has a layout object or non-layout style, we don't try to
-  // destroy it, since that means it could be rendering already and we cannot
-  // arbitrarily change its style during loading.
-  if (!GetDocument().IsRenderingReady() && !element->GetLayoutObject() &&
-      !element->NonLayoutObjectComputedStyle()) {
-    if (!style_not_yet_available_) {
-      auto style = ComputedStyle::Create();
-      style->AddRef();
-      style_not_yet_available_ = style.get();
-      style_not_yet_available_->SetDisplay(EDisplay::kNone);
-      style_not_yet_available_->GetFont().Update(
-          GetDocument().GetStyleEngine().GetFontSelector());
-    }
-
-    GetDocument().SetHasNodesWithPlaceholderStyle();
-    return style_not_yet_available_;
-  }
-
   GetDocument().GetStyleEngine().IncStyleForElementCount();
   INCREMENT_STYLE_STATS_COUNTER(GetDocument().GetStyleEngine(), elements_styled,
                                 1);
@@ -741,7 +758,7 @@ scoped_refptr<ComputedStyle> StyleResolver::StyleForElement(
                   matching_behavior != kMatchAllRulesExcludingSMIL);
 
     // TODO(dominicc): Remove this counter when Issue 590014 is fixed.
-    if (element->HasTagName(HTMLNames::summaryTag)) {
+    if (element->HasTagName(html_names::kSummaryTag)) {
       MatchedPropertiesRange matched_range =
           collector.MatchedResult().AuthorRules();
       for (const auto& matched : matched_range) {
@@ -827,7 +844,7 @@ AnimatableValue* StyleResolver::CreateAnimatableValueSnapshot(
                            parent_style);
   state.SetStyle(ComputedStyle::Clone(base_style));
   if (value) {
-    StyleBuilder::ApplyProperty(property.GetCSSProperty(), state, *value);
+    StyleBuilder::ApplyProperty(property.GetCSSPropertyName(), state, *value);
     state.GetFontBuilder().CreateFont(
         state.GetDocument().GetStyleEngine().GetFontSelector(),
         state.StyleRef());
@@ -1008,6 +1025,12 @@ scoped_refptr<ComputedStyle> StyleResolver::InitialStyleForElement(
                                    ? EUserModify::kReadWrite
                                    : EUserModify::kReadOnly);
   document.SetupFontBuilder(*initial_style);
+
+  scoped_refptr<StyleInitialData> initial_data =
+      document.GetStyleEngine().MaybeCreateAndGetInitialData();
+  if (initial_data)
+    initial_style->SetInitialData(std::move(initial_data));
+
   return initial_style;
 }
 
@@ -1452,6 +1475,25 @@ void StyleResolver::ApplyAllProperty(
   }
 }
 
+template <CSSPropertyPriority priority>
+static inline void ApplyProperty(
+    const CSSPropertyValueSet::PropertyReference& reference,
+    StyleResolverState& state) {
+  static_assert(
+      priority != kResolveVariables,
+      "Application of custom properties must use specialized template");
+  DCHECK_NE(reference.Id(), CSSPropertyVariable);
+  StyleBuilder::ApplyProperty(reference.Property(), state, reference.Value());
+}
+
+template <>
+inline void ApplyProperty<kResolveVariables>(
+    const CSSPropertyValueSet::PropertyReference& reference,
+    StyleResolverState& state) {
+  CSSPropertyRef ref(reference.Name(), state.GetDocument());
+  StyleBuilder::ApplyProperty(ref.GetProperty(), state, reference.Value());
+}
+
 template <CSSPropertyPriority priority,
           StyleResolver::ShouldUpdateNeedsApplyPass shouldUpdateNeedsApplyPass>
 void StyleResolver::ApplyProperties(
@@ -1504,7 +1546,7 @@ void StyleResolver::ApplyProperties(
     if (!CSSPropertyPriorityData<priority>::PropertyHasPriority(property_id))
       continue;
 
-    StyleBuilder::ApplyProperty(current.Property(), state, current.Value());
+    ApplyProperty<priority>(current, state);
   }
 }
 
@@ -1929,8 +1971,8 @@ void StyleResolver::ComputeFont(ComputedStyle* style,
 void StyleResolver::UpdateMediaType() {
   if (LocalFrameView* view = GetDocument().View()) {
     bool was_print = print_media_type_;
-    print_media_type_ =
-        DeprecatedEqualIgnoringCase(view->MediaType(), MediaTypeNames::print);
+    print_media_type_ = DeprecatedEqualIgnoringCase(view->MediaType(),
+                                                    media_type_names::kPrint);
     if (was_print != print_media_type_)
       matched_properties_cache_.ClearViewportDependent();
   }

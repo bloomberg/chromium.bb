@@ -17,10 +17,8 @@
 #include "base/single_thread_task_runner.h"
 #include "base/task/post_task.h"
 #include "base/task/task_executor.h"
-#include "base/threading/thread_restrictions.h"
 #include "ios/web/public/web_task_traits.h"
 #include "ios/web/public/web_thread_delegate.h"
-#include "net/url_request/url_fetcher.h"
 
 namespace web {
 
@@ -86,11 +84,11 @@ struct WebThreadTaskRunners {
 base::LazyInstance<WebThreadTaskRunners>::Leaky g_task_runners =
     LAZY_INSTANCE_INITIALIZER;
 
+using WebThreadDelegateAtomicPtr = base::subtle::AtomicWord;
+
 struct WebThreadGlobals {
   WebThreadGlobals() {
     memset(threads, 0, WebThread::ID_COUNT * sizeof(threads[0]));
-    memset(thread_delegates, 0,
-           WebThread::ID_COUNT * sizeof(thread_delegates[0]));
   }
 
   // This lock protects |threads|. Do not read or modify that array
@@ -103,9 +101,10 @@ struct WebThreadGlobals {
   // array upon destruction.
   WebThreadImpl* threads[WebThread::ID_COUNT];
 
-  // Only atomic operations are used on this array. The delegates are not owned
-  // by this array, rather by whoever calls WebThread::SetDelegate.
-  WebThreadDelegate* thread_delegates[WebThread::ID_COUNT];
+  // Only atomic operations are used on this pointer. The delegate isn't owned
+  // by WebThreadGlobals, rather by whoever calls
+  // WebThread::SetIOThreadDelegate.
+  WebThreadDelegateAtomicPtr io_thread_delegate;
 };
 
 base::LazyInstance<WebThreadGlobals>::Leaky g_globals =
@@ -132,23 +131,22 @@ bool PostTaskHelper(WebThread::ID identifier,
   if (!target_thread_outlives_current)
     globals.lock.Acquire();
 
-  base::MessageLoop* message_loop =
-      globals.threads[identifier] ? globals.threads[identifier]->message_loop()
+  scoped_refptr<base::SingleThreadTaskRunner> task_runner =
+      globals.threads[identifier] ? globals.threads[identifier]->task_runner()
                                   : nullptr;
-  if (message_loop) {
+  if (task_runner) {
     if (nestable) {
-      message_loop->task_runner()->PostDelayedTask(from_here, std::move(task),
-                                                   delay);
+      task_runner->PostDelayedTask(from_here, std::move(task), delay);
     } else {
-      message_loop->task_runner()->PostNonNestableDelayedTask(
-          from_here, std::move(task), delay);
+      task_runner->PostNonNestableDelayedTask(from_here, std::move(task),
+                                              delay);
     }
   }
 
   if (!target_thread_outlives_current)
     globals.lock.Release();
 
-  return !!message_loop;
+  return !!task_runner;
 }
 
 class WebThreadTaskExecutor : public base::TaskExecutor {
@@ -217,23 +215,12 @@ WebThreadImpl::WebThreadImpl(ID identifier, base::MessageLoop* message_loop)
 }
 
 void WebThreadImpl::Init() {
-  WebThreadGlobals& globals = g_globals.Get();
-
-  using base::subtle::AtomicWord;
-  AtomicWord* storage =
-      reinterpret_cast<AtomicWord*>(&globals.thread_delegates[identifier_]);
-  AtomicWord stored_pointer = base::subtle::NoBarrier_Load(storage);
-  WebThreadDelegate* delegate =
-      reinterpret_cast<WebThreadDelegate*>(stored_pointer);
-  if (delegate) {
-    delegate->Init();
-  }
-
-  if (WebThread::CurrentlyOn(WebThread::IO)) {
-    // Though this thread is called the "IO" thread, it actually just routes
-    // messages around; it shouldn't be allowed to perform any blocking disk
-    // I/O.
-    base::DisallowUnresponsiveTasks();
+  if (identifier_ == WebThread::IO) {
+    WebThreadGlobals& globals = g_globals.Get();
+    WebThreadDelegateAtomicPtr delegate =
+        base::subtle::NoBarrier_Load(&globals.io_thread_delegate);
+    if (delegate)
+      reinterpret_cast<WebThreadDelegate*>(delegate)->Init();
   }
 }
 
@@ -267,20 +254,13 @@ void WebThreadImpl::Run(base::RunLoop* run_loop) {
 }
 
 void WebThreadImpl::CleanUp() {
-  if (WebThread::CurrentlyOn(WebThread::IO))
-    IOThreadPreCleanUp();
-
-  WebThreadGlobals& globals = g_globals.Get();
-
-  using base::subtle::AtomicWord;
-  AtomicWord* storage =
-      reinterpret_cast<AtomicWord*>(&globals.thread_delegates[identifier_]);
-  AtomicWord stored_pointer = base::subtle::NoBarrier_Load(storage);
-  WebThreadDelegate* delegate =
-      reinterpret_cast<WebThreadDelegate*>(stored_pointer);
-
-  if (delegate)
-    delegate->CleanUp();
+  if (identifier_ == WebThread::IO) {
+    WebThreadGlobals& globals = g_globals.Get();
+    WebThreadDelegateAtomicPtr delegate =
+        base::subtle::NoBarrier_Load(&globals.io_thread_delegate);
+    if (delegate)
+      reinterpret_cast<WebThreadDelegate*>(delegate)->CleanUp();
+  }
 }
 
 void WebThreadImpl::Initialize() {
@@ -290,14 +270,6 @@ void WebThreadImpl::Initialize() {
   DCHECK(identifier_ >= 0 && identifier_ < ID_COUNT);
   DCHECK(globals.threads[identifier_] == nullptr);
   globals.threads[identifier_] = this;
-}
-
-void WebThreadImpl::IOThreadPreCleanUp() {
-  // Kill all things that might be holding onto
-  // net::URLRequest/net::URLRequestContexts.
-
-  // Destroy all URLRequests started by URLFetchers.
-  net::URLFetcher::CancelAll();
 }
 
 WebThreadImpl::~WebThreadImpl() {
@@ -335,8 +307,7 @@ bool WebThread::CurrentlyOn(ID identifier) {
   base::AutoLock lock(globals.lock);
   DCHECK(identifier >= 0 && identifier < ID_COUNT);
   return globals.threads[identifier] &&
-         globals.threads[identifier]->message_loop() ==
-             base::MessageLoop::current();
+         globals.threads[identifier]->task_runner()->BelongsToCurrentThread();
 }
 
 // static
@@ -358,11 +329,10 @@ bool WebThread::GetCurrentThreadIdentifier(ID* identifier) {
   if (!g_globals.IsCreated())
     return false;
 
-  base::MessageLoop* cur_message_loop = base::MessageLoop::current();
   WebThreadGlobals& globals = g_globals.Get();
   for (int i = 0; i < ID_COUNT; ++i) {
     if (globals.threads[i] &&
-        globals.threads[i]->message_loop() == cur_message_loop) {
+        globals.threads[i]->task_runner()->BelongsToCurrentThread()) {
       *identifier = globals.threads[i]->identifier_;
       return true;
     }
@@ -378,16 +348,16 @@ scoped_refptr<base::SingleThreadTaskRunner> WebThread::GetTaskRunnerForThread(
 }
 
 // static
-void WebThread::SetDelegate(ID identifier, WebThreadDelegate* delegate) {
+void WebThread::SetIOThreadDelegate(WebThreadDelegate* delegate) {
   using base::subtle::AtomicWord;
   WebThreadGlobals& globals = g_globals.Get();
-  AtomicWord* storage =
-      reinterpret_cast<AtomicWord*>(&globals.thread_delegates[identifier]);
-  AtomicWord old_pointer = base::subtle::NoBarrier_AtomicExchange(
-      storage, reinterpret_cast<AtomicWord>(delegate));
+  WebThreadDelegateAtomicPtr old_delegate =
+      base::subtle::NoBarrier_AtomicExchange(
+          &globals.io_thread_delegate,
+          reinterpret_cast<WebThreadDelegateAtomicPtr>(delegate));
 
   // This catches registration when previously registered.
-  DCHECK(!delegate || !old_pointer);
+  DCHECK(!delegate || !old_delegate);
 }
 
 // static

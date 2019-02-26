@@ -56,11 +56,11 @@ class TestAshMessageCenterClient : public mojom::AshMessageCenterClient {
     std::vector<mojom::NotifierUiDataPtr> ui_data;
     if (!no_notifiers_) {
       ui_data.push_back(mojom::NotifierUiData::New(
-          NotifierId(NotifierId::APPLICATION, "id"),
+          NotifierId(message_center::NotifierType::APPLICATION, "id"),
           base::ASCIIToUTF16("title"), true /* enabled */, false /* enforced */,
           gfx::ImageSkia()));
       ui_data.push_back(mojom::NotifierUiData::New(
-          NotifierId(NotifierId::APPLICATION, "id2"),
+          NotifierId(message_center::NotifierType::APPLICATION, "id2"),
           base::ASCIIToUTF16("other title"), false /* enabled */,
           false /* enforced */, gfx::ImageSkia()));
     }
@@ -72,6 +72,7 @@ class TestAshMessageCenterClient : public mojom::AshMessageCenterClient {
       GetArcAppIdByPackageNameCallback callback) override {
     std::move(callback).Run(std::string());
   }
+  void ShowLockScreenNotificationSettings() override {}
 
  private:
   bool no_notifiers_ = false;

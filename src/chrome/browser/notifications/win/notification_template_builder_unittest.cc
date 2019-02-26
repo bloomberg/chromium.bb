@@ -8,12 +8,12 @@
 #include <string>
 
 #include "base/macros.h"
-#include "base/memory/weak_ptr.h"
 #include "base/strings/string16.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
-#include "chrome/browser/notifications/win/mock_notification_image_retainer.h"
+#include "base/test/scoped_task_environment.h"
+#include "chrome/browser/notifications/win/fake_notification_image_retainer.h"
 #include "chrome/browser/notifications/win/notification_launch_id.h"
 #include "chrome/grit/chromium_strings.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -32,7 +32,6 @@ const char kNotificationId[] = "notification_id";
 const char kNotificationTitle[] = "My Title";
 const char kNotificationMessage[] = "My Message";
 const char kNotificationOrigin[] = "https://example.com";
-const char kProfileId[] = "Default";
 
 bool FixedTime(base::Time* time) {
   base::Time::Exploded exploded = {0};
@@ -52,57 +51,48 @@ class NotificationTemplateBuilderTest : public ::testing::Test {
   NotificationTemplateBuilderTest() = default;
   ~NotificationTemplateBuilderTest() override = default;
 
-  void SetUp() override {
-    NotificationTemplateBuilder::OverrideContextMenuLabelForTesting(
-        kContextMenuLabel);
-  }
+  void SetUp() override { SetContextMenuLabelForTesting(kContextMenuLabel); }
 
-  void TearDown() override {
-    NotificationTemplateBuilder::OverrideContextMenuLabelForTesting(nullptr);
-  }
+  void TearDown() override { SetContextMenuLabelForTesting(nullptr); }
 
  protected:
   // Builds a notification object and initializes it to default values.
-  std::unique_ptr<message_center::Notification> InitializeBasicNotification() {
+  message_center::Notification BuildNotification() {
+    // Set a fixed timestamp, to avoid having to test against current timestamp.
+    base::Time timestamp;
+    if (!FixedTime(&timestamp))
+      return message_center::Notification();
+
     GURL origin_url(kNotificationOrigin);
-    auto notification = std::make_unique<message_center::Notification>(
+    message_center::Notification notification = message_center::Notification(
         message_center::NOTIFICATION_TYPE_SIMPLE, kNotificationId,
         base::UTF8ToUTF16(kNotificationTitle),
         base::UTF8ToUTF16(kNotificationMessage), gfx::Image() /* icon */,
         base::string16() /* display_source */, origin_url,
         NotifierId(origin_url), RichNotificationData(), nullptr /* delegate */);
-    // Set a fixed timestamp, to avoid having to test against current timestamp.
-    base::Time timestamp;
-    if (!FixedTime(&timestamp))
-      return nullptr;
-    notification->set_timestamp(timestamp);
+    notification.set_timestamp(timestamp);
     return notification;
   }
 
   // Converts the notification data to XML and verifies it is as expected. Calls
   // must be wrapped in ASSERT_NO_FATAL_FAILURE().
   void VerifyXml(const message_center::Notification& notification,
-                 const base::string16& xml_template) {
-    auto image_retainer = std::make_unique<MockNotificationImageRetainer>();
+                 const base::string16& expected_xml_template) {
+    FakeNotificationImageRetainer image_retainer;
     NotificationLaunchId launch_id(kEncodedId);
-    template_ = NotificationTemplateBuilder::Build(
-        image_retainer->AsWeakPtr(), launch_id, kProfileId, notification);
-
-    ASSERT_TRUE(template_);
-
-    EXPECT_EQ(template_->GetNotificationTemplate(), xml_template);
+    base::string16 xml_template =
+        BuildNotificationTemplate(&image_retainer, launch_id, notification);
+    EXPECT_EQ(xml_template, expected_xml_template);
   }
 
- protected:
-  std::unique_ptr<NotificationTemplateBuilder> template_;
+  base::test::ScopedTaskEnvironment scoped_task_environment_;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(NotificationTemplateBuilderTest);
 };
 
 TEST_F(NotificationTemplateBuilderTest, SimpleToast) {
-  std::unique_ptr<message_center::Notification> notification =
-      InitializeBasicNotification();
+  message_center::Notification notification = BuildNotification();
 
   const wchar_t kExpectedXml[] =
       LR"(<toast launch="0|0|Default|0|https://example.com/|notification_id" displayTimestamp="1998-09-04T01:02:03Z">
@@ -119,17 +109,16 @@ TEST_F(NotificationTemplateBuilderTest, SimpleToast) {
 </toast>
 )";
 
-  ASSERT_NO_FATAL_FAILURE(VerifyXml(*notification, kExpectedXml));
+  ASSERT_NO_FATAL_FAILURE(VerifyXml(notification, kExpectedXml));
 }
 
 TEST_F(NotificationTemplateBuilderTest, Buttons) {
-  std::unique_ptr<message_center::Notification> notification =
-      InitializeBasicNotification();
+  message_center::Notification notification = BuildNotification();
 
   std::vector<message_center::ButtonInfo> buttons;
   buttons.emplace_back(base::ASCIIToUTF16("Button1"));
   buttons.emplace_back(base::ASCIIToUTF16("Button2"));
-  notification->set_buttons(buttons);
+  notification.set_buttons(buttons);
 
   const wchar_t kExpectedXml[] =
       LR"(<toast launch="0|0|Default|0|https://example.com/|notification_id" displayTimestamp="1998-09-04T01:02:03Z">
@@ -148,19 +137,18 @@ TEST_F(NotificationTemplateBuilderTest, Buttons) {
 </toast>
 )";
 
-  ASSERT_NO_FATAL_FAILURE(VerifyXml(*notification, kExpectedXml));
+  ASSERT_NO_FATAL_FAILURE(VerifyXml(notification, kExpectedXml));
 }
 
 TEST_F(NotificationTemplateBuilderTest, InlineReplies) {
-  std::unique_ptr<message_center::Notification> notification =
-      InitializeBasicNotification();
+  message_center::Notification notification = BuildNotification();
 
   std::vector<message_center::ButtonInfo> buttons;
   message_center::ButtonInfo button1(base::ASCIIToUTF16("Button1"));
   button1.placeholder = base::ASCIIToUTF16("Reply here");
   buttons.emplace_back(button1);
   buttons.emplace_back(base::ASCIIToUTF16("Button2"));
-  notification->set_buttons(buttons);
+  notification.set_buttons(buttons);
 
   const wchar_t kExpectedXml[] =
       LR"(<toast launch="0|0|Default|0|https://example.com/|notification_id" displayTimestamp="1998-09-04T01:02:03Z">
@@ -180,12 +168,11 @@ TEST_F(NotificationTemplateBuilderTest, InlineReplies) {
 </toast>
 )";
 
-  ASSERT_NO_FATAL_FAILURE(VerifyXml(*notification, kExpectedXml));
+  ASSERT_NO_FATAL_FAILURE(VerifyXml(notification, kExpectedXml));
 }
 
 TEST_F(NotificationTemplateBuilderTest, InlineRepliesDoubleInput) {
-  std::unique_ptr<message_center::Notification> notification =
-      InitializeBasicNotification();
+  message_center::Notification notification = BuildNotification();
 
   std::vector<message_center::ButtonInfo> buttons;
   message_center::ButtonInfo button1(base::ASCIIToUTF16("Button1"));
@@ -194,7 +181,7 @@ TEST_F(NotificationTemplateBuilderTest, InlineRepliesDoubleInput) {
   message_center::ButtonInfo button2(base::ASCIIToUTF16("Button2"));
   button2.placeholder = base::ASCIIToUTF16("Should not appear");
   buttons.emplace_back(button2);
-  notification->set_buttons(buttons);
+  notification.set_buttons(buttons);
 
   const wchar_t kExpectedXml[] =
       LR"(<toast launch="0|0|Default|0|https://example.com/|notification_id" displayTimestamp="1998-09-04T01:02:03Z">
@@ -214,19 +201,18 @@ TEST_F(NotificationTemplateBuilderTest, InlineRepliesDoubleInput) {
 </toast>
 )";
 
-  ASSERT_NO_FATAL_FAILURE(VerifyXml(*notification, kExpectedXml));
+  ASSERT_NO_FATAL_FAILURE(VerifyXml(notification, kExpectedXml));
 }
 
 TEST_F(NotificationTemplateBuilderTest, InlineRepliesTextTypeNotFirst) {
-  std::unique_ptr<message_center::Notification> notification =
-      InitializeBasicNotification();
+  message_center::Notification notification = BuildNotification();
 
   std::vector<message_center::ButtonInfo> buttons;
   buttons.emplace_back(base::ASCIIToUTF16("Button1"));
   message_center::ButtonInfo button2(base::ASCIIToUTF16("Button2"));
   button2.placeholder = base::ASCIIToUTF16("Reply here");
   buttons.emplace_back(button2);
-  notification->set_buttons(buttons);
+  notification.set_buttons(buttons);
 
   const wchar_t kExpectedXml[] =
       LR"(<toast launch="0|0|Default|0|https://example.com/|notification_id" displayTimestamp="1998-09-04T01:02:03Z">
@@ -246,13 +232,12 @@ TEST_F(NotificationTemplateBuilderTest, InlineRepliesTextTypeNotFirst) {
 </toast>
 )";
 
-  ASSERT_NO_FATAL_FAILURE(VerifyXml(*notification, kExpectedXml));
+  ASSERT_NO_FATAL_FAILURE(VerifyXml(notification, kExpectedXml));
 }
 
 TEST_F(NotificationTemplateBuilderTest, Silent) {
-  std::unique_ptr<message_center::Notification> notification =
-      InitializeBasicNotification();
-  notification->set_silent(true);
+  message_center::Notification notification = BuildNotification();
+  notification.set_silent(true);
 
   const wchar_t kExpectedXml[] =
       LR"(<toast launch="0|0|Default|0|https://example.com/|notification_id" displayTimestamp="1998-09-04T01:02:03Z">
@@ -270,17 +255,16 @@ TEST_F(NotificationTemplateBuilderTest, Silent) {
 </toast>
 )";
 
-  ASSERT_NO_FATAL_FAILURE(VerifyXml(*notification, kExpectedXml));
+  ASSERT_NO_FATAL_FAILURE(VerifyXml(notification, kExpectedXml));
 }
 
 TEST_F(NotificationTemplateBuilderTest, RequireInteraction) {
-  std::unique_ptr<message_center::Notification> notification =
-      InitializeBasicNotification();
+  message_center::Notification notification = BuildNotification();
 
   std::vector<message_center::ButtonInfo> buttons;
   buttons.emplace_back(base::ASCIIToUTF16("Button1"));
-  notification->set_buttons(buttons);
-  notification->set_never_timeout(true);
+  notification.set_buttons(buttons);
+  notification.set_never_timeout(true);
 
   const wchar_t kExpectedXml[] =
       LR"(<toast launch="0|0|Default|0|https://example.com/|notification_id" scenario="reminder" displayTimestamp="1998-09-04T01:02:03Z">
@@ -298,14 +282,12 @@ TEST_F(NotificationTemplateBuilderTest, RequireInteraction) {
 </toast>
 )";
 
-  ASSERT_NO_FATAL_FAILURE(VerifyXml(*notification, kExpectedXml));
+  ASSERT_NO_FATAL_FAILURE(VerifyXml(notification, kExpectedXml));
 }
 
 TEST_F(NotificationTemplateBuilderTest, NullTimestamp) {
-  std::unique_ptr<message_center::Notification> notification =
-      InitializeBasicNotification();
-  base::Time timestamp;
-  notification->set_timestamp(timestamp);
+  message_center::Notification notification = BuildNotification();
+  notification.set_timestamp(base::Time());
 
   const wchar_t kExpectedXml[] =
       LR"(<toast launch="0|0|Default|0|https://example.com/|notification_id">
@@ -322,14 +304,14 @@ TEST_F(NotificationTemplateBuilderTest, NullTimestamp) {
 </toast>
 )";
 
-  ASSERT_NO_FATAL_FAILURE(VerifyXml(*notification, kExpectedXml));
+  ASSERT_NO_FATAL_FAILURE(VerifyXml(notification, kExpectedXml));
 }
 
 TEST_F(NotificationTemplateBuilderTest, LocalizedContextMenu) {
-  std::unique_ptr<message_center::Notification> notification =
-      InitializeBasicNotification();
+  message_center::Notification notification = BuildNotification();
+
   // Disable overriding context menu label.
-  NotificationTemplateBuilder::OverrideContextMenuLabelForTesting(nullptr);
+  SetContextMenuLabelForTesting(nullptr);
 
   const wchar_t kExpectedXmlTemplate[] =
       LR"(<toast launch="0|0|Default|0|https://example.com/|notification_id" displayTimestamp="1998-09-04T01:02:03Z">
@@ -351,26 +333,25 @@ TEST_F(NotificationTemplateBuilderTest, LocalizedContextMenu) {
   base::string16 expected_xml =
       base::StringPrintf(kExpectedXmlTemplate, settings_msg.c_str());
 
-  ASSERT_NO_FATAL_FAILURE(VerifyXml(*notification, expected_xml));
+  ASSERT_NO_FATAL_FAILURE(VerifyXml(notification, expected_xml));
 }
 
 TEST_F(NotificationTemplateBuilderTest, Images) {
-  std::unique_ptr<message_center::Notification> notification =
-      InitializeBasicNotification();
+  message_center::Notification notification = BuildNotification();
 
   SkBitmap icon;
   icon.allocN32Pixels(64, 64);
   icon.eraseARGB(255, 100, 150, 200);
 
-  notification->set_icon(gfx::Image::CreateFrom1xBitmap(icon));
-  notification->set_image(gfx::Image::CreateFrom1xBitmap(icon));
+  notification.set_icon(gfx::Image::CreateFrom1xBitmap(icon));
+  notification.set_image(gfx::Image::CreateFrom1xBitmap(icon));
 
   std::vector<message_center::ButtonInfo> buttons;
   message_center::ButtonInfo button(base::ASCIIToUTF16("Button1"));
   button.placeholder = base::ASCIIToUTF16("Reply here");
   button.icon = gfx::Image::CreateFrom1xBitmap(icon);
   buttons.emplace_back(button);
-  notification->set_buttons(buttons);
+  notification.set_buttons(buttons);
 
   const wchar_t kExpectedXml[] =
       LR"(<toast launch="0|0|Default|0|https://example.com/|notification_id" displayTimestamp="1998-09-04T01:02:03Z">
@@ -391,14 +372,13 @@ TEST_F(NotificationTemplateBuilderTest, Images) {
 </toast>
 )";
 
-  ASSERT_NO_FATAL_FAILURE(VerifyXml(*notification, kExpectedXml));
+  ASSERT_NO_FATAL_FAILURE(VerifyXml(notification, kExpectedXml));
 }
 
 TEST_F(NotificationTemplateBuilderTest, ContextMessage) {
-  std::unique_ptr<message_center::Notification> notification =
-      InitializeBasicNotification();
+  message_center::Notification notification = BuildNotification();
 
-  notification->set_context_message(L"context_message");
+  notification.set_context_message(L"context_message");
 
   const wchar_t kExpectedXml[] =
       LR"(<toast launch="0|0|Default|0|https://example.com/|notification_id" displayTimestamp="1998-09-04T01:02:03Z">
@@ -415,17 +395,16 @@ TEST_F(NotificationTemplateBuilderTest, ContextMessage) {
 </toast>
 )";
 
-  ASSERT_NO_FATAL_FAILURE(VerifyXml(*notification, kExpectedXml));
+  ASSERT_NO_FATAL_FAILURE(VerifyXml(notification, kExpectedXml));
 }
 
 TEST_F(NotificationTemplateBuilderTest, ExtensionNoContextMessage) {
-  std::unique_ptr<message_center::Notification> notification =
-      InitializeBasicNotification();
+  message_center::Notification notification = BuildNotification();
 
   // Explicitly not setting context message to ensure attribution is not added.
   // Explicitly set origin url to something non http/https to ensure that origin
   // is not used as attribution.
-  notification->set_origin_url(
+  notification.set_origin_url(
       GURL("chrome-extension://bfojpkhoiegeigfifhdnbeobmhlahdle/"));
 
   const wchar_t kExpectedXml[] =
@@ -442,15 +421,14 @@ TEST_F(NotificationTemplateBuilderTest, ExtensionNoContextMessage) {
 </toast>
 )";
 
-  ASSERT_NO_FATAL_FAILURE(VerifyXml(*notification, kExpectedXml));
+  ASSERT_NO_FATAL_FAILURE(VerifyXml(notification, kExpectedXml));
 }
 
 TEST_F(NotificationTemplateBuilderTest, ProgressBar) {
-  std::unique_ptr<message_center::Notification> notification =
-      InitializeBasicNotification();
+  message_center::Notification notification = BuildNotification();
 
-  notification->set_type(message_center::NOTIFICATION_TYPE_PROGRESS);
-  notification->set_progress(30);
+  notification.set_type(message_center::NOTIFICATION_TYPE_PROGRESS);
+  notification.set_progress(30);
 
   const wchar_t kExpectedXml[] =
       LR"(<toast launch="0|0|Default|0|https://example.com/|notification_id" displayTimestamp="1998-09-04T01:02:03Z">
@@ -468,21 +446,20 @@ TEST_F(NotificationTemplateBuilderTest, ProgressBar) {
 </toast>
 )";
 
-  ASSERT_NO_FATAL_FAILURE(VerifyXml(*notification, kExpectedXml));
+  ASSERT_NO_FATAL_FAILURE(VerifyXml(notification, kExpectedXml));
 }
 
 TEST_F(NotificationTemplateBuilderTest, ListEntries) {
-  std::unique_ptr<message_center::Notification> notification =
-      InitializeBasicNotification();
+  message_center::Notification notification = BuildNotification();
 
-  notification->set_type(message_center::NOTIFICATION_TYPE_MULTIPLE);
+  notification.set_type(message_center::NOTIFICATION_TYPE_MULTIPLE);
   std::vector<message_center::NotificationItem> items;
   items.push_back({L"title1", L"message1"});
   items.push_back({L"title2", L"message2"});
   items.push_back({L"title3", L"message3"});
   items.push_back({L"title4", L"message4"});
   items.push_back({L"title5", L"message5"});  // Will be truncated.
-  notification->set_items(items);
+  notification.set_items(items);
 
   const wchar_t kExpectedXml[] =
       LR"(<toast launch="0|0|Default|0|https://example.com/|notification_id" displayTimestamp="1998-09-04T01:02:03Z">
@@ -503,5 +480,5 @@ title4 - message4
 </toast>
 )";
 
-  ASSERT_NO_FATAL_FAILURE(VerifyXml(*notification, kExpectedXml));
+  ASSERT_NO_FATAL_FAILURE(VerifyXml(notification, kExpectedXml));
 }

@@ -15,6 +15,7 @@
         android:layout_width="match_parent"
         android:layout_height="280dp" />
     <EditText
+        tools:ignore="LabelFor"
         android:id="@+id/edittext"
         android:inputType="text"
         android:layout_below="@+id/webview"

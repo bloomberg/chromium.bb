@@ -30,7 +30,8 @@
 [
     CheckSecurity=Receiver,
     ImplementedAs=DOMWindow,
-    PrimaryGlobal
+    Global=Window,
+    Exposed=Window
 ] interface Window : EventTarget {
     // the current browsing context
     // FIXME: The spec uses the WindowProxy type for this and many other attributes.
@@ -74,7 +75,7 @@
     [CrossOrigin, Custom=Setter] attribute Window opener;
     [Replaceable, CrossOrigin] readonly attribute Window? parent;
     [CheckSecurity=ReturnValue, Custom=Getter] readonly attribute Element? frameElement;
-    [CallWith=(ExecutionContext,CurrentWindow,EnteredWindow), RaisesException] Window? open(optional [TreatNullAs=EmptyString] URLString url="", optional DOMString target = "_blank", optional [TreatNullAs=EmptyString] DOMString features = "");
+    [CallWith=(ExecutionContext,CurrentWindow,EnteredWindow), RaisesException] Window? open(optional URLString url="", optional DOMString target = "_blank", optional [TreatNullAs=EmptyString] DOMString features = "");
 
     // indexed properties
     // https://html.spec.whatwg.org/C/browsers.html#windowproxy-getownproperty
@@ -96,7 +97,7 @@
 
     [CrossOrigin, CallWith=CurrentWindow, RaisesException] void postMessage(any message, USVString targetOrigin, optional sequence<object> transfer = []);
 
-    [CrossOrigin, CallWith=CurrentWindow, RaisesException, RuntimeEnabled=PostMessageOptions] void postMessage(any message, optional WindowPostMessageOptions options);
+    [CrossOrigin, CallWith=CurrentWindow, RaisesException] void postMessage(any message, optional WindowPostMessageOptions options);
 
     // WindowOrWorkerGlobalScope mixin
     // https://html.spec.whatwg.org/#windoworworkerglobalscope-mixin
@@ -146,11 +147,11 @@
     [Replaceable] readonly attribute double pageXOffset;
     [Replaceable] readonly attribute double scrollY;
     [Replaceable] readonly attribute double pageYOffset;
-    [RuntimeEnabled=CSSOMSmoothScroll] void scroll(optional ScrollToOptions options);
+    void scroll(optional ScrollToOptions options);
     void scroll(unrestricted double x, unrestricted double y);
-    [RuntimeEnabled=CSSOMSmoothScroll] void scrollTo(optional ScrollToOptions options);
+    void scrollTo(optional ScrollToOptions options);
     void scrollTo(unrestricted double x, unrestricted double y);
-    [RuntimeEnabled=CSSOMSmoothScroll] void scrollBy(optional ScrollToOptions options);
+    void scrollBy(optional ScrollToOptions options);
     void scrollBy(unrestricted double x, unrestricted double y);
 
     // Visual Viewport API
@@ -186,6 +187,9 @@
     // https://github.com/WICG/aom/blob/HEAD/explainer.md
     [RuntimeEnabled=AccessibilityObjectModel, CallWith=ScriptState] Promise<ComputedAccessibleNode> getComputedAccessibleNode(Element element);
 
+    // TODO(yhirano): Move this to url.idl when LegacyWindowAlias is supported.
+    attribute URLConstructor webkitURL;
+
     // Non-standard APIs
     [MeasureAs=WindowClientInformation, Replaceable] readonly attribute Navigator clientInformation;
     [Replaceable, MeasureAs=WindowEvent, Custom=Getter, NotEnumerable] readonly attribute Event event;
@@ -204,7 +208,6 @@
     [MeasureAs=StyleMedia] readonly attribute StyleMedia styleMedia;
     [DeprecateAs=PrefixedRequestAnimationFrame] long webkitRequestAnimationFrame(FrameRequestCallback callback);
     [DeprecateAs=PrefixedCancelAnimationFrame, ImplementedAs=cancelAnimationFrame] void webkitCancelAnimationFrame(long id);
-    [DeprecateAs=PrefixedWindowURL] attribute URLConstructor webkitURL;
     [MeasureAs=PrefixedMutationObserverConstructor] attribute MutationObserverConstructor WebKitMutationObserver;
 
     // Event handler attributes
@@ -225,10 +228,9 @@
 
     //TrustedTypes API
     //http://github.com/wicg/trusted-types
-    [RuntimeEnabled=TrustedDOMTypes] readonly attribute TrustedTypePolicyFactory TrustedTypes;
+    [RuntimeEnabled=TrustedDOMTypes, Unforgeable] readonly attribute TrustedTypePolicyFactory TrustedTypes;
 };
 
 Window implements GlobalEventHandlers;
-Window implements WindowBase64;
 Window implements WindowEventHandlers;
-Window implements WindowTimers;
+Window implements WindowOrWorkerGlobalScope;

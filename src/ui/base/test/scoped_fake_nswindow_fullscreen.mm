@@ -106,7 +106,7 @@ class ScopedFakeNSWindowFullscreen::Impl {
     [[NSNotificationCenter defaultCenter]
         postNotificationName:NSWindowWillStartLiveResizeNotification
                       object:window];
-    DCHECK(base::MessageLoopForUI::IsCurrent());
+    DCHECK(base::MessageLoopCurrentForUI::IsSet());
     base::ThreadTaskRunnerHandle::Get()->PostTask(
         FROM_HERE, base::Bind(&Impl::FinishEnterFullscreen,
                               base::Unretained(this), fullscreen_content_size));
@@ -145,7 +145,7 @@ class ScopedFakeNSWindowFullscreen::Impl {
         postNotificationName:NSWindowWillExitFullScreenNotification
                       object:window_];
 
-    DCHECK(base::MessageLoopForUI::IsCurrent());
+    DCHECK(base::MessageLoopCurrentForUI::IsSet());
     base::ThreadTaskRunnerHandle::Get()->PostTask(
         FROM_HERE,
         base::Bind(&Impl::FinishExitFullscreen, base::Unretained(this)));

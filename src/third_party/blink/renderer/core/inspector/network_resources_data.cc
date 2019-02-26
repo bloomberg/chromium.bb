@@ -46,7 +46,8 @@ XHRReplayData* XHRReplayData::Create(const AtomicString& method,
                                      const KURL& url,
                                      bool async,
                                      bool include_credentials) {
-  return new XHRReplayData(method, url, async, include_credentials);
+  return MakeGarbageCollected<XHRReplayData>(method, url, async,
+                                             include_credentials);
 }
 
 void XHRReplayData::AddHeader(const AtomicString& key,
@@ -202,8 +203,8 @@ void NetworkResourcesData::ResourceCreated(
     const KURL& requested_url,
     scoped_refptr<EncodedFormData> post_data) {
   EnsureNoDataForRequestId(request_id);
-  ResourceData* data =
-      new ResourceData(this, context, request_id, loader_id, requested_url);
+  ResourceData* data = MakeGarbageCollected<ResourceData>(
+      this, context, request_id, loader_id, requested_url);
   request_id_to_resource_data_map_.Set(request_id, data);
   if (post_data &&
       PrepareToAddResourceData(request_id, post_data->SizeInBytes())) {
@@ -368,20 +369,21 @@ NetworkResourcesData::Resources() {
   return result;
 }
 
-int NetworkResourcesData::GetAndClearPendingEncodedDataLength(
+int64_t NetworkResourcesData::GetAndClearPendingEncodedDataLength(
     const String& request_id) {
   ResourceData* resource_data = ResourceDataForRequestId(request_id);
   if (!resource_data)
     return 0;
 
-  int pending_encoded_data_length = resource_data->PendingEncodedDataLength();
+  int64_t pending_encoded_data_length =
+      resource_data->PendingEncodedDataLength();
   resource_data->ClearPendingEncodedDataLength();
   return pending_encoded_data_length;
 }
 
 void NetworkResourcesData::AddPendingEncodedDataLength(
     const String& request_id,
-    int encoded_data_length) {
+    size_t encoded_data_length) {
   ResourceData* resource_data = ResourceDataForRequestId(request_id);
   if (!resource_data)
     return;

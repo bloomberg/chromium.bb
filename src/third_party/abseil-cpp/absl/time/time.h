@@ -163,6 +163,11 @@ class Duration {
   Duration& operator*=(float r) { return *this *= static_cast<double>(r); }
   Duration& operator/=(float r) { return *this /= static_cast<double>(r); }
 
+  template <typename H>
+  friend H AbslHashValue(H h, Duration d) {
+    return H::combine(std::move(h), d.rep_hi_, d.rep_lo_);
+  }
+
  private:
   friend constexpr int64_t time_internal::GetRepHi(Duration d);
   friend constexpr uint32_t time_internal::GetRepLo(Duration d);
@@ -321,6 +326,9 @@ Duration Ceil(Duration d, Duration unit);
 //   inf == inf / 2
 //   0 == d / inf
 //   INT64_MAX == inf / d
+//
+//   d < inf
+//   -inf < d
 //
 //   // Division by zero returns infinity, or INT64_MIN/MAX where appropriate.
 //   inf == d / 0
@@ -607,6 +615,11 @@ class Time {
   //
   // Returns the breakdown of this instant in the given TimeZone.
   Breakdown In(TimeZone tz) const;
+
+  template <typename H>
+  friend H AbslHashValue(H h, Time t) {
+    return H::combine(std::move(h), t.rep_);
+  }
 
  private:
   friend constexpr Time time_internal::FromUnixDuration(Duration d);
@@ -1055,6 +1068,11 @@ class TimeZone {
   explicit operator time_internal::cctz::time_zone() const { return cz_; }
 
   std::string name() const { return cz_.name(); }
+
+  template <typename H>
+  friend H AbslHashValue(H h, TimeZone tz) {
+    return H::combine(std::move(h), tz.cz_);
+  }
 
  private:
   friend bool operator==(TimeZone a, TimeZone b) { return a.cz_ == b.cz_; }

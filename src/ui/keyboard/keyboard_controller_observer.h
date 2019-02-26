@@ -67,19 +67,20 @@ class KEYBOARD_EXPORT KeyboardControllerObserver {
   virtual void OnKeyboardAppearanceChanged(
       const KeyboardStateDescriptor& state) {}
 
-  // Called when the keyboard is effectively disabled (i.e. when the UI / window
-  // is destroyed, not when keyboard::IsKeyboardEnabled() changes), e.g. when
-  // user switches convertible to laptop mode or the active user changes.
-  virtual void OnKeyboardDisabled() {}
+  // Called when an enable flag affecting the requested enabled state changes.
+  virtual void OnKeyboardEnableFlagsChanged(
+      std::set<mojom::KeyboardEnableFlag>& keyboard_enable_flags) {}
+
+  // Called when the keyboard is enabled or disabled. NOTE: This is called
+  // when Enabled() or Disabled() is called, not when the requested enabled
+  // state (IsEnableRequested) changes.
+  virtual void OnKeyboardEnabledChanged(bool is_enabled) {}
 
   // Called when the keyboard has been hidden and the hiding animation finished
-  // successfully. This is same as |state| == HIDDEN on OnStateChanged.
+  // successfully.
   // When |is_temporary_hide| is true, this hide is immediately followed by a
   // show (e.g. when changing to floating keyboard)
   virtual void OnKeyboardHidden(bool is_temporary_hide) {}
-
-  // Called when the state changed.
-  virtual void OnStateChanged(KeyboardControllerState state) {}
 
   // Called when the virtual keyboard IME config changed.
   virtual void OnKeyboardConfigChanged() {}

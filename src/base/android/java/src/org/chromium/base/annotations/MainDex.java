@@ -12,8 +12,8 @@ import java.lang.annotation.Target;
 /**
  * An annotation that signals that a class should be kept in the main dex file.
  *
- * This generally means it's used by renderer processes, which can't load secondary dexes
- * on K and below.
+ * This generally means it's used by child processes (renderer/utility), which can't load secondary
+ * dexes on K and below.
  */
 @Target({ElementType.CONSTRUCTOR, ElementType.METHOD, ElementType.TYPE})
 @Retention(RetentionPolicy.CLASS)

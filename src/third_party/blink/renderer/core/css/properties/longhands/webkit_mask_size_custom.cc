@@ -10,13 +10,13 @@
 #include "third_party/blink/renderer/core/style/computed_style.h"
 
 namespace blink {
-namespace CSSLonghand {
+namespace css_longhand {
 
 const CSSValue* WebkitMaskSize::ParseSingleValue(
     CSSParserTokenRange& range,
     const CSSParserContext& context,
     const CSSParserLocalContext& local_context) const {
-  return CSSParsingUtils::ParseBackgroundOrMaskSize(
+  return css_parsing_utils::ParseBackgroundOrMaskSize(
       range, context, local_context, WebFeature::kNegativeMaskSize);
 }
 
@@ -30,5 +30,5 @@ const CSSValue* WebkitMaskSize::CSSValueFromComputedStyleInternal(
   return ComputedStyleUtils::BackgroundImageOrWebkitMaskSize(style, fill_layer);
 }
 
-}  // namespace CSSLonghand
+}  // namespace css_longhand
 }  // namespace blink

@@ -9,6 +9,7 @@ import android.content.Context;
 import org.chromium.base.ContextUtils;
 import org.chromium.base.VisibleForTesting;
 import org.chromium.base.annotations.JNINamespace;
+import org.chromium.base.annotations.UsedByReflection;
 import org.chromium.chrome.browser.background_task_scheduler.NativeBackgroundTask;
 import org.chromium.chrome.browser.background_task_scheduler.NativeBackgroundTask.StartBeforeNativeResult;
 import org.chromium.chrome.browser.offlinepages.DeviceConditions;
@@ -29,6 +30,7 @@ import java.util.concurrent.TimeUnit;
  * approximately daily so that freshness is maintained.
  */
 @JNINamespace("explore_sites")
+@UsedByReflection("BackgroundTaskReflection.java")
 public class ExploreSitesBackgroundTask extends NativeBackgroundTask {
     private static final String TAG = "ESBackgroundTask";
     public static final int DEFAULT_DELAY_HOURS = 25;
@@ -93,8 +95,18 @@ public class ExploreSitesBackgroundTask extends NativeBackgroundTask {
                 ContextUtils.getApplicationContext(), TaskIds.EXPLORE_SITES_REFRESH_JOB_ID);
     }
 
+    /**
+     * Cancels an obsolete task ID that was saved in JobScheduler with the wrong background task
+     * class name.
+     */
+    public static void cancelObsoleteTaskId() {
+        BackgroundTaskSchedulerFactory.getScheduler().cancel(ContextUtils.getApplicationContext(),
+                TaskIds.DEPRECATED_EXPLORE_SITES_REFRESH_JOB_ID);
+    }
+
     // Begins the periodic update task.
     public static void schedule(boolean updateCurrent) {
+        cancelObsoleteTaskId();
         TaskInfo.Builder taskInfoBuilder =
                 TaskInfo.createPeriodicTask(TaskIds.EXPLORE_SITES_REFRESH_JOB_ID,
                                 ExploreSitesBackgroundTask.class,

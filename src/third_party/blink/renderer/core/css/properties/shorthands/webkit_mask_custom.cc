@@ -7,7 +7,7 @@
 #include "third_party/blink/renderer/core/css/properties/css_parsing_utils.h"
 
 namespace blink {
-namespace CSSShorthand {
+namespace css_shorthand {
 
 bool WebkitMask::ParseShorthand(
     bool important,
@@ -15,9 +15,9 @@ bool WebkitMask::ParseShorthand(
     const CSSParserContext& context,
     const CSSParserLocalContext& local_context,
     HeapVector<CSSPropertyValue, 256>& properties) const {
-  return CSSParsingUtils::ParseBackgroundOrMask(important, range, context,
-                                                local_context, properties);
+  return css_parsing_utils::ParseBackgroundOrMask(important, range, context,
+                                                  local_context, properties);
 }
 
-}  // namespace CSSShorthand
+}  // namespace css_shorthand
 }  // namespace blink

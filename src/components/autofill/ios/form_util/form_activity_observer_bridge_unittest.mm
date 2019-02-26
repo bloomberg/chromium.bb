@@ -108,7 +108,6 @@ TEST_F(FormActivityObserverBridgeTest, FormActivityRegistered) {
   autofill::FormActivityParams params;
   web::FakeWebFrame sender_frame("sender_frame", true, GURL::EmptyGURL());
   params.form_name = "form-name";
-  params.field_name = "field-name";
   params.field_type = "field-type";
   params.type = "type";
   params.value = "value";
@@ -120,8 +119,6 @@ TEST_F(FormActivityObserverBridgeTest, FormActivityRegistered) {
   EXPECT_EQ(&sender_frame, [observer_ formActivityInfo]->sender_frame);
   EXPECT_EQ(params.form_name,
             [observer_ formActivityInfo]->form_activity.form_name);
-  EXPECT_EQ(params.field_name,
-            [observer_ formActivityInfo]->form_activity.field_name);
   EXPECT_EQ(params.field_type,
             [observer_ formActivityInfo]->form_activity.field_type);
   EXPECT_EQ(params.type, [observer_ formActivityInfo]->form_activity.type);

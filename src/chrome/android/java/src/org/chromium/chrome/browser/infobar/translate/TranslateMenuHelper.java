@@ -8,7 +8,6 @@ import android.content.Context;
 import android.graphics.Rect;
 import android.os.Build;
 import android.support.v4.content.ContextCompat;
-import android.support.v7.widget.AppCompatImageView;
 import android.view.ContextThemeWrapper;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -16,6 +15,7 @@ import android.view.View.MeasureSpec;
 import android.view.ViewGroup;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
+import android.widget.ImageView;
 import android.widget.ListPopupWindow;
 import android.widget.PopupWindow;
 import android.widget.TextView;
@@ -287,8 +287,7 @@ public class TranslateMenuHelper implements AdapterView.OnItemClickListener {
                     menuItemView = getItemView(
                             menuItemView, position, parent, R.layout.translate_menu_item_checked);
 
-                    AppCompatImageView checkboxIcon =
-                            (AppCompatImageView) menuItemView.findViewById(R.id.menu_item_icon);
+                    ImageView checkboxIcon = menuItemView.findViewById(R.id.menu_item_icon);
                     if (getItem(position).mId == TranslateMenu.ID_OVERFLOW_ALWAYS_TRANSLATE
                             && mOptions.getTranslateState(TranslateOptions.Type.ALWAYS_LANGUAGE)) {
                         checkboxIcon.setVisibility(View.VISIBLE);

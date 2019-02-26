@@ -22,9 +22,8 @@
 #include <memory>
 #include <set>
 
-#include "gtest/gtest_prod.h"
+#include "perfetto/base/gtest_prod_util.h"
 #include "perfetto/base/logging.h"
-#include "perfetto/base/page_allocator.h"
 #include "perfetto/base/time.h"
 #include "perfetto/base/weak_ptr.h"
 #include "perfetto/tracing/core/basic_types.h"
@@ -204,9 +203,16 @@ class TracingServiceImpl : public TracingService {
 
   // Represents an active data source for a tracing session.
   struct DataSourceInstance {
+    DataSourceInstance(DataSourceInstanceID id,
+                       const DataSourceConfig& cfg,
+                       const std::string& ds_name,
+                       bool notify)
+        : instance_id(id),
+          config(cfg),
+          data_source_name(ds_name),
+          will_notify_on_stop(notify) {}
     DataSourceInstance(const DataSourceInstance&) = delete;
     DataSourceInstance& operator=(const DataSourceInstance&) = delete;
-    DataSourceInstance(DataSourceInstance&&) noexcept = default;
 
     DataSourceInstanceID instance_id;
     DataSourceConfig config;
@@ -312,6 +318,7 @@ class TracingServiceImpl : public TracingService {
   void OnFlushTimeout(TracingSessionID, FlushRequestID);
   void OnDisableTracingTimeout(TracingSessionID);
   void DisableTracingNotifyConsumerAndFlushFile(TracingSession*);
+  void PeriodicFlushTask(TracingSessionID, bool post_next_only);
   TraceBuffer* GetBufferByID(BufferID);
 
   base::TaskRunner* const task_runner_;

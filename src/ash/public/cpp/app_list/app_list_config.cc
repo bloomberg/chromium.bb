@@ -6,6 +6,7 @@
 
 #include "ash/public/cpp/app_list/app_list_features.h"
 #include "base/macros.h"
+#include "base/no_destructor.h"
 #include "ui/gfx/color_palette.h"
 
 namespace app_list {
@@ -23,8 +24,8 @@ AppListConfig::AppListConfig()
       grid_focus_dimension_(64),
       grid_focus_corner_radius_(8),
       search_tile_icon_dimension_(48),
-      search_tile_badge_icon_dimension_(12),
-      search_tile_badge_background_radius_(10),
+      search_tile_badge_icon_dimension_(22),
+      search_tile_badge_icon_offset_(5),
       search_list_icon_dimension_(18),
       search_list_badge_icon_dimension_(14),
       suggestion_chip_icon_dimension_(48),
@@ -68,7 +69,8 @@ AppListConfig::AppListConfig()
     grid_icon_dimension_ = 64;
     grid_icon_bottom_padding_ = 24;
     grid_title_top_padding_ = 82;
-    grid_title_width_ = 96;
+    grid_title_horizontal_padding_ = 0;
+    grid_title_width_ = grid_tile_width_;
     grid_focus_dimension_ = 80;
     grid_focus_corner_radius_ = 12;
     suggestion_chip_icon_dimension_ = 16;
@@ -101,8 +103,8 @@ AppListConfig::~AppListConfig() = default;
 
 // static
 const AppListConfig& AppListConfig::instance() {
-  CR_DEFINE_STATIC_LOCAL(AppListConfig, instance, ());
-  return instance;
+  static const base::NoDestructor<AppListConfig> instance;
+  return *instance;
 }
 
 int AppListConfig::GetPreferredIconDimension(

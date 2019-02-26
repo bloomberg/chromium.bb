@@ -60,7 +60,7 @@ class Gpu::GpuPtrIO {
     if (gpu_ptr_.encountered_error()) {
       ConnectionError();
     } else {
-      gpu_ptr_->EstablishGpuChannel(base::BindRepeating(
+      gpu_ptr_->EstablishGpuChannel(base::BindOnce(
           &GpuPtrIO::OnEstablishedGpuChannel, base::Unretained(this)));
     }
   }
@@ -188,7 +188,7 @@ class Gpu::EstablishRequest
       establish_event_->Signal();
     } else {
       main_task_runner_->PostTask(
-          FROM_HERE, base::Bind(&EstablishRequest::FinishOnMain, this));
+          FROM_HERE, base::BindOnce(&EstablishRequest::FinishOnMain, this));
     }
   }
 
@@ -221,7 +221,7 @@ void Gpu::GpuPtrIO::ConnectionError() {
   establish_request_->OnEstablishedGpuChannel(
       0, mojo::ScopedMessagePipeHandle(), gpu::GPUInfo(),
       gpu::GpuFeatureInfo());
-  establish_request_ = nullptr;
+  establish_request_.reset();
 }
 
 void Gpu::GpuPtrIO::OnEstablishedGpuChannel(
@@ -235,7 +235,7 @@ void Gpu::GpuPtrIO::OnEstablishedGpuChannel(
   establish_request_->OnEstablishedGpuChannel(
       client_id, std::move(channel_handle), std::move(gpu_info),
       std::move(gpu_feature_info));
-  establish_request_ = nullptr;
+  establish_request_.reset();
 }
 
 Gpu::Gpu(GpuPtrFactory factory,
@@ -272,7 +272,7 @@ Gpu::~Gpu() {
   DCHECK(main_task_runner_->BelongsToCurrentThread());
   if (pending_request_) {
     pending_request_->Cancel();
-    pending_request_ = nullptr;
+    pending_request_.reset();
   }
 
   if (gpu_channel_)
@@ -345,7 +345,7 @@ void Gpu::EstablishGpuChannel(gpu::GpuChannelEstablishedCallback callback) {
 }
 
 scoped_refptr<gpu::GpuChannelHost> Gpu::EstablishGpuChannelSync() {
-  TRACE_EVENT0("mus", "Gpu::EstablishGpuChannelSync");
+  TRACE_EVENT0("gpu", "Gpu::EstablishGpuChannelSync");
   DCHECK(main_task_runner_->BelongsToCurrentThread());
 
   scoped_refptr<gpu::GpuChannelHost> channel = GetGpuChannel();
@@ -373,14 +373,14 @@ void Gpu::LoseChannel() {
   DCHECK(main_task_runner_->BelongsToCurrentThread());
   if (gpu_channel_) {
     gpu_channel_->DestroyChannel();
-    gpu_channel_ = nullptr;
+    gpu_channel_.reset();
   }
 }
 
 scoped_refptr<gpu::GpuChannelHost> Gpu::GetGpuChannel() {
   DCHECK(main_task_runner_->BelongsToCurrentThread());
   if (gpu_channel_ && gpu_channel_->IsLost())
-    gpu_channel_ = nullptr;
+    gpu_channel_.reset();
   return gpu_channel_;
 }
 
@@ -402,7 +402,7 @@ void Gpu::OnEstablishedGpuChannel() {
   DCHECK(!gpu_channel_);
 
   gpu_channel_ = pending_request_->gpu_channel();
-  pending_request_ = nullptr;
+  pending_request_.reset();
 
   std::vector<gpu::GpuChannelEstablishedCallback> callbacks;
   callbacks.swap(establish_callbacks_);

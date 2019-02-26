@@ -64,8 +64,7 @@ bool BeginRecording(const std::string& data64,
     return false;
 
   return TracingController::GetInstance()->StartTracing(
-      trace_config,
-      base::Bind(&OnRecordingEnabledAck, callback));
+      trace_config, base::BindOnce(&OnRecordingEnabledAck, callback));
 }
 
 void OnRecordingEnabledAck(const WebUIDataSource::GotDataCallback& callback) {
@@ -108,7 +107,7 @@ bool OnBeginJSONRequest(const std::string& path,
                         const WebUIDataSource::GotDataCallback& callback) {
   if (path == "json/categories") {
     return TracingController::GetInstance()->GetCategories(
-        base::Bind(OnGotCategories, callback));
+        base::BindOnce(OnGotCategories, callback));
   }
 
   const char kBeginRecordingPath[] = "json/begin_recording?";
@@ -119,11 +118,11 @@ bool OnBeginJSONRequest(const std::string& path,
   }
   if (path == "json/get_buffer_percent_full") {
     return TracingController::GetInstance()->GetTraceBufferUsage(
-        base::Bind(OnTraceBufferUsageResult, callback));
+        base::BindOnce(OnTraceBufferUsageResult, callback));
   }
   if (path == "json/get_buffer_status") {
     return TracingController::GetInstance()->GetTraceBufferUsage(
-        base::Bind(OnTraceBufferStatusResult, callback));
+        base::BindOnce(OnTraceBufferStatusResult, callback));
   }
   if (path == "json/end_recording_compressed") {
     if (!TracingController::GetInstance()->IsTracing())

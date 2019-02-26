@@ -44,7 +44,7 @@
 namespace blink {
 
 class ConsoleMessage;
-class FetchClientSettingsObjectImpl;
+class FetchClientSettingsObject;
 class Frame;
 class FrameFetchContext;
 class LocalFrame;
@@ -87,7 +87,7 @@ class CORE_EXPORT MixedContentChecker final {
   static bool IsWebSocketAllowed(const WorkerFetchContext&, const KURL&);
 
   static bool IsMixedContent(const SecurityOrigin*, const KURL&);
-  static bool IsMixedContent(const FetchClientSettingsObjectImpl&, const KURL&);
+  static bool IsMixedContent(const FetchClientSettingsObject&, const KURL&);
   static bool IsMixedFormAction(LocalFrame*,
                                 const KURL&,
                                 SecurityViolationReportingPolicy =
@@ -122,6 +122,14 @@ class CORE_EXPORT MixedContentChecker final {
                                 bool was_allowed,
                                 bool had_redirect,
                                 std::unique_ptr<SourceLocation>);
+
+  static ConsoleMessage* CreateConsoleMessageAboutFetchAutoupgrade(
+      const KURL& main_resource_url,
+      const KURL& mixed_content_url);
+
+  static ConsoleMessage* CreateConsoleMessageAboutWebSocketAutoupgrade(
+      const KURL& main_resource_url,
+      const KURL& mixed_content_url);
 
  private:
   FRIEND_TEST_ALL_PREFIXES(MixedContentCheckerTest, HandleCertificateError);

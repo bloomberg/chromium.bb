@@ -4,6 +4,8 @@
 
 #include "components/password_manager/core/browser/form_parsing/password_field_prediction.h"
 
+#include <vector>
+
 #include "base/stl_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "components/autofill/core/browser/form_structure.h"
@@ -91,6 +93,71 @@ TEST(FormPredictionsTest, ConvertToFormPredictions) {
       EXPECT_EQ(test_fields[i].expected_type, it->second.type);
       EXPECT_EQ(test_fields[i].may_use_prefilled_placeholder,
                 it->second.may_use_prefilled_placeholder);
+    }
+  }
+}
+
+TEST(FormPredictionsTest, ConvertToFormPredictions_SynthesiseConfirmation) {
+  struct TestField {
+    std::string name;
+    std::string form_control_type;
+    ServerFieldType input_type;
+    ServerFieldType expected_type;
+  };
+  const std::vector<TestField> kTestForms[] = {
+      {
+          {"username", "text", USERNAME, USERNAME},
+          {"new password", "password", ACCOUNT_CREATION_PASSWORD,
+           ACCOUNT_CREATION_PASSWORD},
+          // Same name and type means same signature. As a second new-password
+          // field with this signature, the next field should be re-classified
+          // to confirmation password.
+          {"new password", "password", ACCOUNT_CREATION_PASSWORD,
+           CONFIRMATION_PASSWORD},
+      },
+      {
+          {"username", "text", USERNAME, USERNAME},
+          {"new password duplicate", "password", ACCOUNT_CREATION_PASSWORD,
+           ACCOUNT_CREATION_PASSWORD},
+          // An explicit confirmation password above should override the
+          // 2-new-passwords heuristic.
+          {"new password duplicate", "password", ACCOUNT_CREATION_PASSWORD,
+           ACCOUNT_CREATION_PASSWORD},
+          {"confirm_password", "password", CONFIRMATION_PASSWORD,
+           CONFIRMATION_PASSWORD},
+      },
+  };
+
+  for (const std::vector<TestField>& test_form : kTestForms) {
+    FormData form_data;
+    for (size_t i = 0; i < test_form.size(); ++i) {
+      FormFieldData field;
+      field.unique_renderer_id = i + 1000;
+      field.name = ASCIIToUTF16(test_form[i].name);
+      field.form_control_type = test_form[i].form_control_type;
+      form_data.fields.push_back(field);
+    }
+
+    FormStructure form_structure(form_data);
+    // Set server predictions and create expected votes.
+    for (size_t i = 0; i < test_form.size(); ++i) {
+      AutofillField* field = form_structure.field(i);
+      field->set_server_type(test_form[i].input_type);
+    }
+
+    FormPredictions actual_predictions =
+        ConvertToFormPredictions(form_structure);
+
+    for (size_t i = 0; i < form_data.fields.size(); ++i) {
+      SCOPED_TRACE(testing::Message()
+                   << "field description: name=" << test_form[i].name
+                   << ", form control type=" << test_form[i].form_control_type
+                   << ", input type=" << test_form[i].input_type
+                   << ", expected type=" << test_form[i].expected_type
+                   << ", synthesised FormFieldData=" << form_data.fields[i]);
+      auto it = actual_predictions.find(form_data.fields[i].unique_renderer_id);
+      ASSERT_NE(actual_predictions.end(), it);
+      EXPECT_EQ(test_form[i].expected_type, it->second.type);
     }
   }
 }

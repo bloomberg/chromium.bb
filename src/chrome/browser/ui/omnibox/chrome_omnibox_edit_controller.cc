@@ -11,7 +11,7 @@
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_list.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
-#include "components/toolbar/toolbar_model.h"
+#include "components/omnibox/browser/location_bar_model.h"
 #include "extensions/buildflags/buildflags.h"
 
 #if BUILDFLAG(ENABLE_EXTENSIONS)
@@ -37,7 +37,7 @@ void ChromeOmniboxEditController::OnAutocompleteAccept(
 }
 
 void ChromeOmniboxEditController::OnInputInProgress(bool in_progress) {
-  GetToolbarModel()->set_input_in_progress(in_progress);
+  GetLocationBarModel()->set_input_in_progress(in_progress);
   UpdateWithoutTabRestore();
 }
 

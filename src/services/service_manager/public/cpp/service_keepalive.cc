@@ -6,19 +6,27 @@
 
 #include "base/bind.h"
 #include "base/task/post_task.h"
+#include "services/service_manager/public/cpp/service_binding.h"
 #include "services/service_manager/public/cpp/service_context.h"
 
 namespace service_manager {
 
+ServiceKeepalive::ServiceKeepalive(ServiceBinding* binding,
+                                   base::Optional<base::TimeDelta> idle_timeout)
+    : binding_(binding),
+      idle_timeout_(idle_timeout),
+      ref_factory_(base::BindRepeating(&ServiceKeepalive::OnRefCountZero,
+                                       base::Unretained(this))) {
+  ref_factory_.SetRefAddedCallback(base::BindRepeating(
+      &ServiceKeepalive::OnRefAdded, base::Unretained(this)));
+}
+
 ServiceKeepalive::ServiceKeepalive(ServiceContext* context,
-                                   base::Optional<base::TimeDelta> idle_timeout,
-                                   TimeoutObserver* timeout_observer)
+                                   base::Optional<base::TimeDelta> idle_timeout)
     : context_(context),
       idle_timeout_(idle_timeout),
-      timeout_observer_(timeout_observer),
       ref_factory_(base::BindRepeating(&ServiceKeepalive::OnRefCountZero,
-                                       base::Unretained(this))),
-      weak_ptr_factory_(this) {
+                                       base::Unretained(this))) {
   ref_factory_.SetRefAddedCallback(base::BindRepeating(
       &ServiceKeepalive::OnRefAdded, base::Unretained(this)));
 }
@@ -33,24 +41,39 @@ bool ServiceKeepalive::HasNoRefs() {
   return ref_factory_.HasNoRefs();
 }
 
+void ServiceKeepalive::AddObserver(Observer* observer) {
+  observers_.AddObserver(observer);
+}
+
+void ServiceKeepalive::RemoveObserver(Observer* observer) {
+  observers_.RemoveObserver(observer);
+}
+
 void ServiceKeepalive::OnRefAdded() {
-  if (idle_timer_.IsRunning() && timeout_observer_)
-    timeout_observer_->OnTimeoutCancelled();
-  idle_timer_.Stop();
+  if (idle_timer_) {
+    idle_timer_.reset();
+    for (auto& observer : observers_)
+      observer.OnIdleTimeoutCancelled();
+  }
 }
 
 void ServiceKeepalive::OnRefCountZero() {
   if (!idle_timeout_.has_value())
     return;
-  idle_timer_.Start(FROM_HERE, idle_timeout_.value(),
-                    base::BindRepeating(&ServiceKeepalive::OnTimerExpired,
-                                        weak_ptr_factory_.GetWeakPtr()));
+  idle_timer_.emplace();
+  idle_timer_->Start(FROM_HERE, *idle_timeout_,
+                     base::BindRepeating(&ServiceKeepalive::OnTimerExpired,
+                                         base::Unretained(this)));
 }
 
 void ServiceKeepalive::OnTimerExpired() {
-  if (timeout_observer_)
-    timeout_observer_->OnTimeoutExpired();
-  context_->CreateQuitClosure().Run();
+  for (auto& observer : observers_)
+    observer.OnIdleTimeout();
+
+  if (context_)
+    context_->CreateQuitClosure().Run();
+  else
+    binding_->RequestClose();
 }
 
 }  // namespace service_manager

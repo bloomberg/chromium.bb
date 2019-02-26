@@ -230,14 +230,16 @@ AutofillProfile::AutofillProfile(const std::string& guid,
     : AutofillDataModel(guid, origin),
       phone_number_(this),
       record_type_(LOCAL_PROFILE),
-      has_converted_(false) {}
+      has_converted_(false),
+      weak_ptr_factory_(this) {}
 
 AutofillProfile::AutofillProfile(RecordType type, const std::string& server_id)
     : AutofillDataModel(base::GenerateGUID(), std::string()),
       phone_number_(this),
       server_id_(server_id),
       record_type_(type),
-      has_converted_(false) {
+      has_converted_(false),
+      weak_ptr_factory_(this) {
   DCHECK(type == SERVER_PROFILE);
 }
 
@@ -245,10 +247,13 @@ AutofillProfile::AutofillProfile()
     : AutofillDataModel(base::GenerateGUID(), std::string()),
       phone_number_(this),
       record_type_(LOCAL_PROFILE),
-      has_converted_(false) {}
+      has_converted_(false),
+      weak_ptr_factory_(this) {}
 
 AutofillProfile::AutofillProfile(const AutofillProfile& profile)
-    : AutofillDataModel(std::string(), std::string()), phone_number_(this) {
+    : AutofillDataModel(std::string(), std::string()),
+      phone_number_(this),
+      weak_ptr_factory_(this) {
   operator=(profile);
 }
 
@@ -855,9 +860,10 @@ AutofillProfile::ValidityState AutofillProfile::GetValidityState(
   return (it == server_validity_states_.end()) ? UNVALIDATED : it->second;
 }
 
-void AutofillProfile::SetValidityState(ServerFieldType type,
-                                       ValidityState validity,
-                                       ValidationSource validation_source) {
+void AutofillProfile::SetValidityState(
+    ServerFieldType type,
+    ValidityState validity,
+    ValidationSource validation_source) const {
   if (validation_source == CLIENT) {
     // Do not save validity of unsupported types.
     if (!IsClientValidationSupportedForType(type))
@@ -870,15 +876,12 @@ void AutofillProfile::SetValidityState(ServerFieldType type,
 }
 
 void AutofillProfile::UpdateServerValidityMap(
-    const ProfileValidityMap& validity_map) {
+    const ProfileValidityMap& validity_map) const {
   server_validity_states_.clear();
-
   const auto& field_validity_states = validity_map.field_validity_states();
-  for (auto current_pair = field_validity_states.begin();
-       current_pair != field_validity_states.end(); ++current_pair) {
-    const auto& field_type = static_cast<ServerFieldType>(current_pair->first);
-    const auto& field_validity =
-        static_cast<ValidityState>(current_pair->second);
+  for (const auto& current_pair : field_validity_states) {
+    const auto field_type = static_cast<ServerFieldType>(current_pair.first);
+    const auto field_validity = static_cast<ValidityState>(current_pair.second);
     server_validity_states_[field_type] = field_validity;
   }
 }
@@ -908,7 +911,8 @@ int AutofillProfile::GetClientValidityBitfieldValue() const {
   return validity_value;
 }
 
-void AutofillProfile::SetClientValidityFromBitfieldValue(int bitfield_value) {
+void AutofillProfile::SetClientValidityFromBitfieldValue(
+    int bitfield_value) const {
   // Compute the bitmask based on the number a bits per type. For example, this
   // could be the two least significant bits (0b11).
   const int kBitmask = (1 << kValidityBitsPerType) - 1;

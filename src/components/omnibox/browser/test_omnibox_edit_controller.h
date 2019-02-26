@@ -6,20 +6,20 @@
 #define COMPONENTS_OMNIBOX_BROWSER_TEST_OMNIBOX_EDIT_CONTROLLER_H_
 
 #include "components/omnibox/browser/omnibox_edit_controller.h"
-#include "components/toolbar/test_toolbar_model.h"
+#include "components/omnibox/browser/test_location_bar_model.h"
 
 class TestOmniboxEditController : public OmniboxEditController {
  public:
   TestOmniboxEditController() {}
 
   // OmniboxEditController:
-  TestToolbarModel* GetToolbarModel() override;
-  const TestToolbarModel* GetToolbarModel() const override;
+  TestLocationBarModel* GetLocationBarModel() override;
+  const TestLocationBarModel* GetLocationBarModel() const override;
 
   using OmniboxEditController::destination_url;
 
  private:
-  TestToolbarModel toolbar_model_;
+  TestLocationBarModel location_bar_model_;
 
   DISALLOW_COPY_AND_ASSIGN(TestOmniboxEditController);
 };

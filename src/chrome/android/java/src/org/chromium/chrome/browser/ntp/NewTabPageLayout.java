@@ -26,7 +26,6 @@ import android.widget.TextView;
 import org.chromium.base.TraceEvent;
 import org.chromium.base.VisibleForTesting;
 import org.chromium.chrome.R;
-import org.chromium.chrome.browser.ChromeFeatureList;
 import org.chromium.chrome.browser.compositor.layouts.EmptyOverviewModeObserver;
 import org.chromium.chrome.browser.compositor.layouts.LayoutManager;
 import org.chromium.chrome.browser.compositor.layouts.LayoutManagerChrome;
@@ -138,15 +137,6 @@ public class NewTabPageLayout extends LinearLayout implements TileGroup.Observer
     private int mSearchBoxBoundsVerticalInset;
 
     private ScrollDelegate mScrollDelegate;
-
-    /**
-     * @return Whether the simplified NTP ablation experiment arm which removes the additional
-     *         suggestions sections without replacing them with shortcut buttons is enabled.
-     */
-    public static boolean isSimplifiedNtpAblationEnabled() {
-        return ChromeFeatureList.getFieldTrialParamByFeatureAsBoolean(
-                ChromeFeatureList.SIMPLIFIED_NTP, PARAM_SIMPLIFIED_NTP_ABLATION, true);
-    }
 
     /**
      * A delegate used to obtain information about scroll state and perform various scroll
@@ -266,7 +256,6 @@ public class NewTabPageLayout extends LinearLayout implements TileGroup.Observer
         }
         mNoSearchLogoSpacer = findViewById(R.id.no_search_logo_spacer);
 
-        initializeShortcuts();
         initializeSearchBoxTextView();
         initializeVoiceSearchButton();
         initializeLayoutChangeListener();
@@ -918,23 +907,6 @@ public class NewTabPageLayout extends LinearLayout implements TileGroup.Observer
                     .removeOverviewModeObserver(mOverviewObserver);
             mOverviewObserver = null;
         }
-    }
-
-    private void initializeShortcuts() {
-        if (!ChromeFeatureList.isEnabled(ChromeFeatureList.SIMPLIFIED_NTP)
-                || isSimplifiedNtpAblationEnabled()) {
-            return;
-        }
-
-        ViewStub shortcutsStub = findViewById(R.id.shortcuts_stub);
-        mShortcutsView = (ViewGroup) shortcutsStub.inflate();
-
-        mShortcutsView.findViewById(R.id.bookmarks_button)
-                .setOnClickListener(view -> mManager.getNavigationDelegate().navigateToBookmarks());
-
-        mShortcutsView.findViewById(R.id.downloads_button)
-                .setOnClickListener(
-                        view -> mManager.getNavigationDelegate().navigateToDownloadManager());
     }
 
     /**

@@ -13,7 +13,7 @@
     android:paddingEnd="@dimen/pref_languages_padding"
     style="@style/ListItemContainer">
 
-    <android.support.v7.widget.AppCompatImageView
+    <org.chromium.ui.widget.ChromeImageView
         android:id="@+id/icon_view"
         style="@style/ListItemStartIcon"
         app:tint="@color/dark_mode_tint" />

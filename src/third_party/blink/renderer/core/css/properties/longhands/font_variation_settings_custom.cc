@@ -35,21 +35,21 @@ cssvalue::CSSFontVariationValue* ConsumeFontVariationTag(
   }
 
   double tag_value = 0;
-  if (!CSSPropertyParserHelpers::ConsumeNumberRaw(range, tag_value))
+  if (!css_property_parser_helpers::ConsumeNumberRaw(range, tag_value))
     return nullptr;
   return cssvalue::CSSFontVariationValue::Create(tag,
                                                  clampTo<float>(tag_value));
 }
 
 }  // namespace
-namespace CSSLonghand {
+namespace css_longhand {
 
 const CSSValue* FontVariationSettings::ParseSingleValue(
     CSSParserTokenRange& range,
     const CSSParserContext& context,
     const CSSParserLocalContext&) const {
   if (range.Peek().Id() == CSSValueNormal)
-    return CSSPropertyParserHelpers::ConsumeIdent(range);
+    return css_property_parser_helpers::ConsumeIdent(range);
   CSSValueList* variation_settings = CSSValueList::CreateCommaSeparated();
   do {
     cssvalue::CSSFontVariationValue* font_variation_value =
@@ -57,7 +57,7 @@ const CSSValue* FontVariationSettings::ParseSingleValue(
     if (!font_variation_value)
       return nullptr;
     variation_settings->Append(*font_variation_value);
-  } while (CSSPropertyParserHelpers::ConsumeCommaIncludingWhitespace(range));
+  } while (css_property_parser_helpers::ConsumeCommaIncludingWhitespace(range));
   return variation_settings;
 }
 
@@ -82,5 +82,5 @@ const CSSValue* FontVariationSettings::CSSValueFromComputedStyleInternal(
   return list;
 }
 
-}  // namespace CSSLonghand
+}  // namespace css_longhand
 }  // namespace blink

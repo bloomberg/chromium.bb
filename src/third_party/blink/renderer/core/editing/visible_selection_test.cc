@@ -110,7 +110,6 @@ TEST_F(VisibleSelectionTest, expandUsingGranularity) {
   Node* three = shadow_root->getElementById("three")->firstChild();
   Node* four = shadow_root->getElementById("four")->firstChild();
   Node* five = shadow_root->getElementById("five")->firstChild();
-  Node* space = shadow_root->getElementById("space")->firstChild();
 
   VisibleSelection selection;
   VisibleSelectionInFlatTree selection_in_flat_tree;
@@ -149,8 +148,8 @@ TEST_F(VisibleSelectionTest, expandUsingGranularity) {
 
   EXPECT_EQ(selection.Start(), selection.Base());
   EXPECT_EQ(selection.End(), selection.Extent());
-  EXPECT_EQ(Position(space, 0), selection.Start());
-  EXPECT_EQ(Position(five, 5), selection.End());
+  EXPECT_EQ(Position(three, 0), selection.Start());
+  EXPECT_EQ(Position(four, 4), selection.End());
 
   EXPECT_EQ(selection_in_flat_tree.Start(), selection_in_flat_tree.Base());
   EXPECT_EQ(selection_in_flat_tree.End(), selection_in_flat_tree.Extent());
@@ -212,7 +211,8 @@ TEST_F(VisibleSelectionTest, expandUsingGranularity) {
 
   EXPECT_EQ(selection.Start(), selection.Base());
   EXPECT_EQ(selection.End(), selection.Extent());
-  EXPECT_EQ(Position(five, 0), selection.Start());
+  // DOM tree canonicalization moves position to a wrong place
+  EXPECT_EQ(Position(five, 5), selection.Start());
   EXPECT_EQ(Position(five, 5), selection.End());
 
   EXPECT_EQ(selection_in_flat_tree.Start(), selection_in_flat_tree.Base());
@@ -658,6 +658,18 @@ TEST_F(VisibleSelectionTest, WordGranularity) {
   }
 }
 
+// https://crbug.com/901492
+TEST_F(VisibleSelectionTest, WordGranularityAfterTextControl) {
+  const PositionInFlatTree position =
+      ToPositionInFlatTree(SetCaretTextToBody("foo<input value=\"bla\">b|ar"));
+  const VisibleSelectionInFlatTree selection =
+      CreateVisibleSelectionWithGranularity(
+          SelectionInFlatTree::Builder().Collapse(position).Build(),
+          TextGranularity::kWord);
+  EXPECT_EQ("foo<input value=\"bla\"><div>bla</div></input>^bar|",
+            GetSelectionTextInFlatTreeFromBody(selection.AsSelection()));
+}
+
 // This is for crbug.com/627783, simulating restoring selection
 // in undo stack.
 TEST_F(VisibleSelectionTest, updateIfNeededWithShadowHost) {
@@ -685,7 +697,7 @@ TEST_F(VisibleSelectionTest, updateIfNeededWithShadowHost) {
 // This is a regression test for https://crbug.com/825120
 TEST_F(VisibleSelectionTest, BackwardSelectionWithMultipleEmptyBodies) {
   Element* body = GetDocument().body();
-  Element* new_body = GetDocument().CreateRawElement(HTMLNames::bodyTag);
+  Element* new_body = GetDocument().CreateRawElement(html_names::kBodyTag);
   body->appendChild(new_body);
   GetDocument().UpdateStyleAndLayout();
 

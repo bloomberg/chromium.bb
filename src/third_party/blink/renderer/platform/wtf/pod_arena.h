@@ -115,17 +115,13 @@ class PODArena final : public RefCounted<PODArena> {
         current_(nullptr),
         current_chunk_size_(kDefaultChunkSize) {}
 
-  // Returns the alignment requirement for classes and structs on the
-  // current platform.
-  template <class T>
-  static size_t MinAlignment() {
-    return WTF_ALIGN_OF(T);
-  }
-
   template <class T>
   void* AllocateBase() {
+    static_assert(
+        sizeof(T) % alignof(T) == 0,
+        "We are guaranteed that sizeof(T) is a multiple of alignof(T).");
     void* ptr = nullptr;
-    size_t rounded_size = RoundUp(sizeof(T), MinAlignment<T>());
+    size_t rounded_size = sizeof(T);
     if (current_)
       ptr = current_->Allocate(rounded_size);
 
@@ -138,12 +134,6 @@ class PODArena final : public RefCounted<PODArena> {
       ptr = current_->Allocate(rounded_size);
     }
     return ptr;
-  }
-
-  // Rounds up the given allocation size to the specified alignment.
-  size_t RoundUp(size_t size, size_t alignment) {
-    DCHECK(!(alignment % 2));
-    return (size + alignment - 1) & ~(alignment - 1);
   }
 
   // Manages a chunk of memory and individual allocations out of it.

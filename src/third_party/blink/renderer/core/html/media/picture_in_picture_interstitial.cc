@@ -57,9 +57,9 @@ class PictureInPictureInterstitial::VideoElementResizeObserverDelegate final
 PictureInPictureInterstitial::PictureInPictureInterstitial(
     HTMLVideoElement& videoElement)
     : HTMLDivElement(videoElement.GetDocument()),
-      resize_observer_(
-          ResizeObserver::Create(videoElement.GetDocument(),
-                                 new VideoElementResizeObserverDelegate(this))),
+      resize_observer_(ResizeObserver::Create(
+          videoElement.GetDocument(),
+          MakeGarbageCollected<VideoElementResizeObserverDelegate>(this))),
       interstitial_timer_(
           videoElement.GetDocument().GetTaskRunner(TaskType::kInternalMedia),
           this,
@@ -70,7 +70,7 @@ PictureInPictureInterstitial::PictureInPictureInterstitial(
   background_image_ = HTMLImageElement::Create(GetDocument());
   background_image_->SetShadowPseudoId(
       AtomicString("-internal-media-interstitial-background-image"));
-  background_image_->SetSrc(videoElement.getAttribute(HTMLNames::posterAttr));
+  background_image_->SetSrc(videoElement.getAttribute(html_names::kPosterAttr));
   ParserAppendChild(background_image_);
 
   message_element_ = HTMLDivElement::Create(GetDocument());
@@ -119,9 +119,9 @@ void PictureInPictureInterstitial::Hide() {
 Node::InsertionNotificationRequest PictureInPictureInterstitial::InsertedInto(
     ContainerNode& root) {
   if (GetVideoElement().isConnected() && !resize_observer_) {
-    resize_observer_ =
-        ResizeObserver::Create(GetVideoElement().GetDocument(),
-                               new VideoElementResizeObserverDelegate(this));
+    resize_observer_ = ResizeObserver::Create(
+        GetVideoElement().GetDocument(),
+        MakeGarbageCollected<VideoElementResizeObserverDelegate>(this));
     resize_observer_->observe(&GetVideoElement());
   }
 
@@ -157,7 +157,7 @@ void PictureInPictureInterstitial::ToggleInterstitialTimerFired(TimerBase*) {
 
 void PictureInPictureInterstitial::OnPosterImageChanged() {
   background_image_->SetSrc(
-      GetVideoElement().getAttribute(HTMLNames::posterAttr));
+      GetVideoElement().getAttribute(html_names::kPosterAttr));
 }
 
 void PictureInPictureInterstitial::Trace(blink::Visitor* visitor) {

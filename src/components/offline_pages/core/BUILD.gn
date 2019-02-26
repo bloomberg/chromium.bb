@@ -12,6 +12,8 @@ static_library("core") {
     "archive_manager.h",
     "archive_validator.cc",
     "archive_validator.h",
+    "auto_fetch.cc",
+    "auto_fetch.h",
     "background_snapshot_controller.cc",
     "background_snapshot_controller.h",
     "client_id.cc",
@@ -58,6 +60,8 @@ static_library("core") {
     "model/store_thumbnail_task.h",
     "model/update_file_path_task.cc",
     "model/update_file_path_task.h",
+    "offline_clock.cc",
+    "offline_clock.h",
     "offline_event_logger.cc",
     "offline_event_logger.h",
     "offline_page_archiver.cc",
@@ -119,6 +123,8 @@ static_library("test_support") {
     "stub_offline_page_model.h",
     "stub_system_download_manager.cc",
     "stub_system_download_manager.h",
+    "test_scoped_offline_clock.cc",
+    "test_scoped_offline_clock.h",
   ]
 
   deps = [
@@ -152,6 +158,7 @@ source_set("unit_tests") {
   sources = [
     "archive_manager_unittest.cc",
     "archive_validator_unittest.cc",
+    "auto_fetch_unittest.cc",
     "background_snapshot_controller_unittest.cc",
     "client_policy_controller_unittest.cc",
     "model/add_page_task_unittest.cc",

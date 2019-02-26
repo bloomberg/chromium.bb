@@ -2,28 +2,31 @@
 #External
  DirectWrite TrueType Windows Linux Android iOS __ANDROID_API__ AHardwareBuffer
  FreeType FreeType-based Harfbuzz
- LCD RGB sRGB BGR RGBA ARGB YUV YUVA SDTV HDTV
+ LCD RGB sRGB BGR RGBA ARGB YUV YUVA HSV SDTV HDTV
  Unicode Unicode5 UTF-8 UTF-16 UTF-32 ASCII Unichar
  API
  BMP GIF HEIF ICO JPEG PNG WBMP WebP
  CPU
- GPU GPU-backed OpenGL Vulkan I/O MSAA
+ GPU GPU-backed OpenGL Vulkan VkDevice I/O MSAA
  PDF XPS
  RFC
  NaN NaNs
- U16CPU
-
- C C++ SIZE_MAX C_FILE
+ bool U16CPU int int8_t int16_t int32_t int64_t uint8_t uint16_t uint32_t uint64_t size_t
+ nullptr
+ malloc() calloc() assert() std::move()
+ C C++ SIZE_MAX C_FILE FILE
  CSS HTML
 
- Sa Da Sc Dc max min # temporary until figure out what to do
+ affine destructor multitexturing representable subclasses descender descenders grayscale kerning
+ unhinted no-parameter
+ 
+ Sa Da Sc Dc 0xAARRGGBB # temporary until figure out what to do
 
- SkUserConfig  # not external, but still thinking about how markup refers to this
+ SkUserConfig.h  # not external, but still thinking about how markup refers to this
  SkXXX.h        # ditto
  SkXXX_Reference # ditto
  Skia           # ditto
  SK_ABORT       # ditto
- SK_API         # ditto
  SK_DEBUG       # ditto
  SK_RELEASE     # ditto
  SK_USE_FREETYPE_EMBOLDEN # ditto
@@ -46,38 +49,6 @@ FT_LOAD_NO_HINTING
 FT_Load_Glyph
 
 #External ##
-
-# this jargon requires a substitute to lower-case the word. The word is uppercase because
-# it is not a dictionary word. An alternative would be to put this in an exception list
-# in the spell checker
-#Topic Destructor
-#Substitute destructor
-##
-
-# see comment for Destructor above
-#Topic Subclasses
-#Substitute subclasses
-##
-
-# see comment for Destructor above
-#Topic Descenders
-#Substitute descenders
-##
-
-# see comment for Destructor above
-#Topic Grayscale
-#Substitute grayscale
-##
-
-# see comment for Destructor above
-#Topic Kerning
-#Substitute kerning
-##
-
-# see comment for Destructor above
-#Topic Unhinted
-#Substitute unhinted
-##
 
 # this jargon requires a substitute to space the phrase.
 #Topic Little_Endian
@@ -217,8 +188,8 @@ FT_Load_Glyph
 ##
 
 #Topic Create_Color_Space_Xform_Canvas
-#Method std::unique_ptr<SkCanvas> SK_API SkCreateColorSpaceXformCanvas(SkCanvas* target,
-                                                                       sk_sp<SkColorSpace> targetCS)
+#Method std::unique_ptr<SkCanvas> SkCreateColorSpaceXformCanvas(SkCanvas* target,
+                                                                sk_sp<SkColorSpace> targetCS)
 ##
 ##
 
@@ -245,7 +216,7 @@ FT_Load_Glyph
 ##
 
 #Topic Debugging
-#Method SK_API void SkDebugf(const char format[], ...)
+#Method void SkDebugf(const char format[], ...)
 ##
 ##
 
@@ -260,6 +231,14 @@ FT_Load_Glyph
 
 #Topic Deserial_Procs
 #Struct SkDeserialProcs
+#Member SkDeserialPictureProc   fPictureProc
+##
+#Member void*   fPictureCtx
+##
+#Member SkDeserialTypefaceProc   fTypefaceProc
+##
+#Member void*   fTypefaceCtx
+##
 ##
 ##
 
@@ -354,6 +333,217 @@ FT_Load_Glyph
 #Subtopic ##
 #Subtopic Engine
 ##
+#Enum SkTextEncoding
+#Const kUTF8_SkTextEncoding 0
+##
+#Const kUTF16_SkTextEncoding 1
+##
+#Const kUTF32_SkTextEncoding 2
+##
+#Const kGlyphID_SkTextEncoding 3
+##
+##
+#Class SkFont
+##
+#EnumClass SkFontHinting
+#Const kNone 0
+#Line # glyph outlines unchanged ##
+    Leaves glyph outlines unchanged from their native representation.
+    With FreeType, this is equivalent to the FT_LOAD_NO_HINTING
+    bit-field constant supplied to FT_Load_Glyph, which indicates that the vector
+    outline being loaded should not be fitted to the pixel grid but simply scaled
+    to 26.6 fractional pixels.
+##
+#Const kSlight 1
+#Line # minimal modification to improve contrast ##
+    Modifies glyph outlines minimally to improve contrast.
+    With FreeType, this is equivalent in spirit to the
+    FT_LOAD_TARGET_LIGHT value supplied to FT_Load_Glyph. It chooses a
+    lighter hinting algorithm for non-monochrome modes.
+    Generated Glyphs may be fuzzy but better resemble their original shape.
+##
+#Const kNormal 2
+#Line # glyph outlines modified to improve contrast ##
+    Modifies glyph outlines to improve contrast. This is the default.
+    With FreeType, this supplies FT_LOAD_TARGET_NORMAL to FT_Load_Glyph,
+    choosing the default hinting algorithm, which is optimized for standard
+    gray-level rendering.
+##
+#Const kFull 3
+#Line # modifies glyph outlines for maximum contrast ##
+    Modifies glyph outlines for maximum contrast. With FreeType, this selects
+    FT_LOAD_TARGET_LCD or FT_LOAD_TARGET_LCD_V if kLCDRenderText_Flag is set.
+    FT_LOAD_TARGET_LCD is a variant of FT_LOAD_TARGET_NORMAL optimized for
+    horizontally decimated LCD displays; FT_LOAD_TARGET_LCD_V is a
+    variant of FT_LOAD_TARGET_NORMAL optimized for vertically decimated LCD displays.
+##
+##
+#Struct SkFontMetrics
+#Line # values computed by Font_Manager using Typeface ##
+
+    SkFontMetrics is filled out by SkPaint::getFontMetrics. SkFontMetrics contents
+    reflect the values
+    computed by Font_Manager using Typeface. Values are set to zero if they are
+    not available.
+
+    All vertical values are relative to the baseline, on a y-axis pointing down.
+    Zero is on the baseline, negative values are above the baseline, and positive
+    values are below the baseline.
+
+    fUnderlineThickness and fUnderlinePosition have a bit set in fFlags if their values
+    are valid, since their value may be zero.
+
+    fStrikeoutThickness and fStrikeoutPosition have a bit set in fFlags if their values
+    are valid, since their value may be zero.
+
+    #Enum FontMetricsFlags
+    #Line # valid Font_Metrics ##
+
+    FontMetricsFlags are set in fFlags when underline and strikeout metrics are valid;
+    the underline or strikeout metric may be valid and zero.
+    Fonts with embedded bitmaps may not have valid underline or strikeout metrics.
+
+        #Const kUnderlineThicknessIsValid_Flag 0x0001
+        #Line # set if fUnderlineThickness is valid ##
+        ##
+        #Const kUnderlinePositionIsValid_Flag  0x0002
+        #Line # set if fUnderlinePosition is valid ##
+        ##
+        #Const kStrikeoutThicknessIsValid_Flag 0x0004
+        #Line # set if fStrikeoutThickness is valid ##
+        ##
+        #Const kStrikeoutPositionIsValid_Flag  0x0008
+        #Line # set if fStrikeoutPosition is valid ##
+        ##
+
+    #Enum ##
+
+    #Member uint32_t    fFlags
+    #Line # is set to FontMetricsFlags when metrics are valid ##
+    ##
+
+    #Member SkScalar    fTop
+    #Line # extent above baseline ##
+        Greatest extent above the baseline for any glyph.
+        Typically less than zero.
+    ##
+
+    #Member SkScalar    fAscent
+    #Line # distance to reserve above baseline ##
+        Recommended distance above the baseline to reserve for a line of text.
+        Typically less than zero.
+    ##
+
+    #Member SkScalar    fDescent
+    #Line # distance to reserve below baseline ##
+        Recommended distance below the baseline to reserve for a line of text.
+        Typically greater than zero.
+    ##
+
+    #Member SkScalar    fBottom
+    #Line # extent below baseline ##
+        Greatest extent below the baseline for any glyph.
+        Typically greater than zero.
+    ##
+
+    #Member SkScalar    fLeading
+    #Line # distance to add between lines ##
+        Recommended distance to add between lines of text.
+        Typically greater than or equal to zero.
+    ##
+
+    #Member SkScalar    fAvgCharWidth
+    #Line # average character width ##
+        Average character width, if it is available.
+        Zero if no average width is stored in the font.
+    ##
+
+    #Member SkScalar    fMaxCharWidth
+    #Line # maximum character width ##
+    ##
+
+    #Member SkScalar    fXMin
+    #Line # minimum x ##
+        Minimum bounding box x-axis value for all Glyphs.
+        Typically less than zero.
+    ##
+
+    #Member SkScalar    fXMax
+    #Line # maximum x ##
+        Maximum bounding box x-axis value for all Glyphs.
+        Typically greater than zero.
+    ##
+
+    #Member SkScalar    fXHeight
+    #Line # height of lower-case 'x' ##
+        May be zero if no lower-case height is stored in the font.
+    ##
+
+    #Member SkScalar    fCapHeight
+    #Line # height of an upper-case letter ##
+        May be zero if no upper-case height is stored in the font.
+    ##
+
+    #Member SkScalar    fUnderlineThickness
+    #Line # underline thickness ##
+        If the metric is valid, the kUnderlineThicknessIsValid_Flag is set in fFlags.
+        If kUnderlineThicknessIsValid_Flag is clear, fUnderlineThickness is zero.
+    ##
+
+    #Member SkScalar    fUnderlinePosition
+    #Line # underline position relative to baseline ##
+       Position of the top of the underline stroke relative to the baseline.
+       Typically positive when valid.
+
+       If the metric is valid, the kUnderlinePositionIsValid_Flag is set in fFlags.
+       If kUnderlinePositionIsValid_Flag is clear, fUnderlinePosition is zero.
+    ##
+
+    #Member SkScalar    fStrikeoutThickness
+    #Line # strikeout thickness ##
+
+        If the metric is valid, the kStrikeoutThicknessIsValid_Flag is set in fFlags.
+        If kStrikeoutThicknessIsValid_Flag is clear, fStrikeoutThickness is zero.
+    ##
+
+    #Member SkScalar    fStrikeoutPosition
+    #Line # strikeout position relative to baseline ##
+        Position of the bottom of the strikeout stroke relative to the baseline.
+        Typically negative when valid.
+
+        If the metric is valid, the kStrikeoutPositionIsValid_Flag is set in fFlags.
+        If kStrikeoutPositionIsValid_Flag is clear, fStrikeoutPosition is zero.
+    ##
+
+    #Method bool hasUnderlineThickness(SkScalar* thickness) const
+    #Line # returns underline thickness if set ##
+
+#NoExample
+        ##
+    ##
+
+    #Method bool hasUnderlinePosition(SkScalar* position) const
+    #Line # returns underline position if set ##
+
+#NoExample
+        ##
+    ##
+
+    #Method bool hasStrikeoutThickness(SkScalar* thickness) const
+    #Line # returns strikeout thickness if set ##
+
+#NoExample
+        ##
+    ##
+
+    #Method bool hasStrikeoutPosition(SkScalar* position) const
+    #Line # returns strikeout position if set ##
+
+#NoExample
+        ##
+    ##
+
+#Struct ##
 #Topic ##
 
 #Topic Font_Manager
@@ -368,6 +558,8 @@ FT_Load_Glyph
 #Topic GPU_Context
 #Substitute GPU context
 #Class GrContext
+#Method void abandonContext()
+##
 #Method void flush()
 ##
 ##
@@ -401,6 +593,10 @@ FT_Load_Glyph
 
 #Topic ISize
 #Struct SkISize
+#Method int32_t width() const
+##
+#Method int32_t height() const
+##
 ##
 ##
 
@@ -432,7 +628,17 @@ FT_Load_Glyph
 #Topic ##
 
 # to be in Topic Math
-    #Method static inline bool sk_64_isS32(int64_t value)
+    #Method Luminosity(dstColor)
+    # this permits using Luminosity() in documentation
+    ##
+    #Method Saturation(dstColor)
+    # this permits using Saturation() in documentation
+    ##
+    #Method SetLuminosity(srcSaturation, dstLuminosity)
+    # this permits using SetLuminosity() in documentation
+    ##
+    #Method SetSaturation(srcSaturation, dstSaturation)
+    # this permits using SetSaturation() in documentation
     ##
     #Method SkIntToScalar(x)
     ##
@@ -452,6 +658,23 @@ FT_Load_Glyph
     ##
     #Method template <typename D, typename S> inline bool SkTFitsIn(S s)
     ##
+    #Method float abs(float x)
+    # this permits using abs(x) in documentation
+    ##
+    #Method float max(float x)
+    # this permits using max(x) in documentation
+    ##
+    #Method float min(float x)
+    # this permits using max(x) in documentation
+    ##
+    #Method float sizeof(float x)
+    # this permits using sizeof(x) in documentation
+    ##
+    #Method float sqrt(float x)
+    # this permits using sqrt(x) in documentation
+    ##
+    #Method static inline bool sk_64_isS32(int64_t value)
+    ##
 # end of Topic Math
 
 #Topic Meta_Data
@@ -466,11 +689,10 @@ FT_Load_Glyph
 #Topic Nine_Patch
 ##
 
-# to be in Topic Number_Types
+# to be in Topic Number_Types ?
     #Typedef uint16_t SkGlyphID
     #Typedef ##
     #Topic Scalar
-    #Alias Scalar ##
     #Alias Scalars ##
     #Typedef float SkScalar
     #Typedef ##
@@ -549,7 +771,7 @@ FT_Load_Glyph
 #Topic PathOps
     #Enum SkPathOp
     ##
-    #Method bool SK_API Op(const SkPath& one, const SkPath& two, SkPathOp op, SkPath* result)
+    #Method bool Op(const SkPath& one, const SkPath& two, SkPathOp op, SkPath* result)
     ##
 #Topic ##
 
@@ -626,9 +848,11 @@ FT_Load_Glyph
 # end of Topic Rasterizer
 
 #Topic Reference_Count
-#Substitute SkRefCnt
 #Class SkRefCnt
 #Class ##
+##
+
+#Topic Smart_Pointer
 #Class sk_sp
 #Class ##
 #Topic ##
@@ -643,11 +867,27 @@ FT_Load_Glyph
 
 #Topic RSXform
 #Struct SkRSXform
+#Member SkScalar fSCos
+##
+#Member SkScalar fSSin
+##
+#Member SkScalar fTx
+##
+#Member SkScalar fTy
+##
 ##
 ##
 
 #Topic Serial_Procs
 #Struct SkSerialProcs
+#Member SkSerialPictureProc   fPictureProc
+##
+#Member void*   fPictureCtx
+##
+#Member SkSerialTypefaceProc   fTypefaceProc
+##
+#Member void*   fTypefaceCtx
+##
 ##
 ##
 
@@ -672,6 +912,10 @@ FT_Load_Glyph
 
 #Topic Size
 #Struct SkSize
+#Method int32_t width() const
+##
+#Method int32_t height() const
+##
 ##
 ##
 
@@ -712,6 +956,9 @@ FT_Load_Glyph
 #Subtopic Canvas
 ##
 #Subtopic Arc
+##
+#Subtopic Sweep_Flag
+#Substitute SVG sweep-flag
 ##
 ##
 
@@ -802,8 +1049,4 @@ FT_Load_Glyph
 #Topic Xfermode_Image_Filter
 #Class SkXfermodeImageFilter
 ##
-##
-
-# temporary while ref is separated from overview
-#Topic Zero_Length_Contour
 ##

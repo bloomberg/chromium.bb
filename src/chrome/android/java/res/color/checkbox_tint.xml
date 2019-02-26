@@ -5,5 +5,5 @@
 -->
 <selector xmlns:android="http://schemas.android.com/apk/res/android">
     <item android:state_checked="true" android:color="@color/light_active_color" />
-    <item android:color="@color/light_normal_color"/>
+    <item android:color="@color/control_normal_color"/>
 </selector>

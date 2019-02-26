@@ -1,9 +1,8 @@
 {% filter format_blink_cpp_source_code %}
 
 {% include 'copyright_block.txt' %}
-
-#ifndef {{cpp_class}}_h
-#define {{cpp_class}}_h
+#ifndef {{header_guard}}
+#define {{header_guard}}
 
 {% for filename in header_includes %}
 #include "{{filename}}"
@@ -20,9 +19,13 @@ class {{exported}}{{cpp_class}} final : public CallbackFunctionBase {
   static {{cpp_class}}* Create(
       {%- if is_treat_non_object_as_null %}v8::Local<v8::Object>
       {%- else %}v8::Local<v8::Function>{% endif %} callback_function) {
-    return new {{cpp_class}}(callback_function);
+    return MakeGarbageCollected<{{cpp_class}}>(callback_function);
   }
 
+  explicit {{cpp_class}}(
+      {%- if is_treat_non_object_as_null %}v8::Local<v8::Object>
+      {%- else %}v8::Local<v8::Function>{% endif %} callback_function)
+      : CallbackFunctionBase(callback_function) {}
   ~{{cpp_class}}() override = default;
 
   // NameClient overrides:
@@ -62,12 +65,6 @@ class {{exported}}{{cpp_class}} final : public CallbackFunctionBase {
   // This function may throw unlike InvokeAndReportException.
   v8::Maybe<{{return_cpp_type}}> InvokeWithoutRunnabilityCheck({{argument_declarations | join(', ')}}) WARN_UNUSED_RESULT;
 {% endif %}
-
- private:
-  explicit {{cpp_class}}(
-      {%- if is_treat_non_object_as_null %}v8::Local<v8::Object>
-      {%- else %}v8::Local<v8::Function>{% endif %} callback_function)
-      : CallbackFunctionBase(callback_function) {}
 };
 
 template <>
@@ -107,6 +104,6 @@ Persistent<{{cpp_class}}> WrapPersistent({{cpp_class}}*) = delete;
 
 }  // namespace blink
 
-#endif  // {{cpp_class}}_h
+#endif  // {{header_guard}}
 
 {% endfilter %}{# format_blink_cpp_source_code #}

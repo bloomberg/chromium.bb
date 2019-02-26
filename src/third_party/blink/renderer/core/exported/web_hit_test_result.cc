@@ -42,13 +42,14 @@ class WebHitTestResultPrivate
  public:
   static WebHitTestResultPrivate* Create(const HitTestResult&);
   static WebHitTestResultPrivate* Create(const WebHitTestResultPrivate&);
+
+  WebHitTestResultPrivate(const HitTestResult&);
+  WebHitTestResultPrivate(const WebHitTestResultPrivate&);
+
   void Trace(blink::Visitor* visitor) { visitor->Trace(result_); }
   const HitTestResult& Result() const { return result_; }
 
  private:
-  WebHitTestResultPrivate(const HitTestResult&);
-  WebHitTestResultPrivate(const WebHitTestResultPrivate&);
-
   HitTestResult result_;
 };
 
@@ -62,12 +63,12 @@ inline WebHitTestResultPrivate::WebHitTestResultPrivate(
 
 WebHitTestResultPrivate* WebHitTestResultPrivate::Create(
     const HitTestResult& result) {
-  return new WebHitTestResultPrivate(result);
+  return MakeGarbageCollected<WebHitTestResultPrivate>(result);
 }
 
 WebHitTestResultPrivate* WebHitTestResultPrivate::Create(
     const WebHitTestResultPrivate& result) {
-  return new WebHitTestResultPrivate(result);
+  return MakeGarbageCollected<WebHitTestResultPrivate>(result);
 }
 
 WebNode WebHitTestResult::GetNode() const {

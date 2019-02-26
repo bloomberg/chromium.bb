@@ -136,24 +136,27 @@ void RemoveGattServicesChangedHandler(IBluetoothLEDevice* ble_device,
   }
 }
 
+void RemoveNameChangedHandler(IBluetoothLEDevice* ble_device,
+                              EventRegistrationToken token) {
+  HRESULT hr = ble_device->remove_NameChanged(token);
+  if (FAILED(hr)) {
+    VLOG(2) << "Removing NameChanged Handler failed: "
+            << logging::SystemErrorCodeToString(hr);
+  }
+}
+
 }  // namespace
 
-BluetoothDeviceWinrt::BluetoothDeviceWinrt(
-    BluetoothAdapterWinrt* adapter,
-    uint64_t raw_address,
-    base::Optional<std::string> local_name)
+BluetoothDeviceWinrt::BluetoothDeviceWinrt(BluetoothAdapterWinrt* adapter,
+                                           uint64_t raw_address)
     : BluetoothDevice(adapter),
       raw_address_(raw_address),
       address_(CanonicalizeAddress(raw_address)),
-      local_name_(std::move(local_name)),
       weak_ptr_factory_(this) {}
 
 BluetoothDeviceWinrt::~BluetoothDeviceWinrt() {
   CloseDevice(ble_device_);
-  if (!connection_changed_token_)
-    return;
-
-  RemoveConnectionStatusHandler(ble_device_.Get(), *connection_changed_token_);
+  ClearEventRegistrations();
 }
 
 uint32_t BluetoothDeviceWinrt::GetBluetoothClass() const {
@@ -201,6 +204,10 @@ base::Optional<std::string> BluetoothDeviceWinrt::GetName() const {
     VLOG(2) << "Getting Name failed: " << logging::SystemErrorCodeToString(hr);
     return local_name_;
   }
+
+  // Prefer returning |local_name_| over an empty string.
+  if (!name)
+    return local_name_;
 
   return base::win::ScopedHString(name).GetAsUTF8();
 }
@@ -404,6 +411,14 @@ std::string BluetoothDeviceWinrt::CanonicalizeAddress(uint64_t address) {
   return bluetooth_address;
 }
 
+void BluetoothDeviceWinrt::UpdateLocalName(
+    base::Optional<std::string> local_name) {
+  if (!local_name)
+    return;
+
+  local_name_ = std::move(local_name);
+}
+
 void BluetoothDeviceWinrt::CreateGattConnectionImpl() {
   ComPtr<IBluetoothLEDeviceStatics> device_statics;
   HRESULT hr = GetBluetoothLEDeviceStaticsActivationFactory(&device_statics);
@@ -482,15 +497,12 @@ void BluetoothDeviceWinrt::OnFromBluetoothAddress(
     return;
   }
 
-  if (connection_changed_token_) {
-    // As we are about to replace |ble_device_| with |ble_device| we will also
-    // unregister the existing event handler and add a new one to the new
-    // device.
-    RemoveConnectionStatusHandler(ble_device_.Get(),
-                                  *connection_changed_token_);
-  }
+  // As we are about to replace |ble_device_| with |ble_device| existing event
+  // handlers need to be unregistered. New ones will be added below.
+  ClearEventRegistrations();
 
   ble_device_ = std::move(ble_device);
+
   connection_changed_token_ = AddTypedEventHandler(
       ble_device_.Get(), &IBluetoothLEDevice::add_ConnectionStatusChanged,
       base::BindRepeating(&BluetoothDeviceWinrt::OnConnectionStatusChanged,
@@ -502,11 +514,6 @@ void BluetoothDeviceWinrt::OnFromBluetoothAddress(
   // explicit check ourselves.
   if (IsGattConnected())
     DidConnectGatt();
-
-  if (gatt_services_changed_token_) {
-    RemoveGattServicesChangedHandler(ble_device_.Get(),
-                                     *gatt_services_changed_token_);
-  }
 
   gatt_services_changed_token_ = AddTypedEventHandler(
       ble_device_.Get(), &IBluetoothLEDevice::add_GattServicesChanged,
@@ -520,6 +527,11 @@ void BluetoothDeviceWinrt::OnFromBluetoothAddress(
   gatt_discoverer_->StartGattDiscovery(
       base::BindOnce(&BluetoothDeviceWinrt::OnGattDiscoveryComplete,
                      weak_ptr_factory_.GetWeakPtr()));
+
+  name_changed_token_ = AddTypedEventHandler(
+      ble_device_.Get(), &IBluetoothLEDevice::add_NameChanged,
+      base::BindRepeating(&BluetoothDeviceWinrt::OnNameChanged,
+                          weak_ptr_factory_.GetWeakPtr()));
 }
 
 void BluetoothDeviceWinrt::OnConnectionStatusChanged(
@@ -552,6 +564,12 @@ void BluetoothDeviceWinrt::OnGattServicesChanged(IBluetoothLEDevice* ble_device,
         base::BindOnce(&BluetoothDeviceWinrt::OnGattDiscoveryComplete,
                        weak_ptr_factory_.GetWeakPtr()));
   }
+}
+
+void BluetoothDeviceWinrt::OnNameChanged(IBluetoothLEDevice* ble_device,
+                                         IInspectable* object) {
+  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
+  adapter_->NotifyDeviceChanged(this);
 }
 
 void BluetoothDeviceWinrt::OnGattDiscoveryComplete(bool success) {
@@ -598,6 +616,21 @@ void BluetoothDeviceWinrt::ClearGattServices() {
   gatt_services_.clear();
   device_uuids_.ClearServiceUUIDs();
   SetGattServicesDiscoveryComplete(false);
+}
+
+void BluetoothDeviceWinrt::ClearEventRegistrations() {
+  if (connection_changed_token_) {
+    RemoveConnectionStatusHandler(ble_device_.Get(),
+                                  *connection_changed_token_);
+  }
+
+  if (gatt_services_changed_token_) {
+    RemoveGattServicesChangedHandler(ble_device_.Get(),
+                                     *gatt_services_changed_token_);
+  }
+
+  if (name_changed_token_)
+    RemoveNameChangedHandler(ble_device_.Get(), *name_changed_token_);
 }
 
 }  // namespace device

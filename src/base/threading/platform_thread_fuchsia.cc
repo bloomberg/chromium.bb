@@ -36,7 +36,7 @@ bool PlatformThread::CanIncreaseThreadPriority(ThreadPriority priority) {
 }
 
 // static
-void PlatformThread::SetCurrentThreadPriority(ThreadPriority priority) {
+void PlatformThread::SetCurrentThreadPriorityImpl(ThreadPriority priority) {
   if (priority != ThreadPriority::NORMAL) {
     NOTIMPLEMENTED() << "setting ThreadPriority " << static_cast<int>(priority);
   }

@@ -27,6 +27,7 @@
 #include "ui/gfx/color_palette.h"
 #include "ui/gfx/geometry/point.h"
 #include "ui/gfx/geometry/rect.h"
+#include "ui/views/accessible_pane_view.h"
 #include "ui/views/animation/bounds_animator.h"
 #include "ui/views/controls/button/image_button.h"
 #include "ui/views/mouse_watcher.h"
@@ -62,7 +63,7 @@ class ImageView;
 //  - It takes part in Tab Drag & Drop with Tab, TabDragHelper and
 //    DraggedTab, focusing on tasks that require reshuffling other tabs
 //    in response to dragged tabs.
-class TabStrip : public views::View,
+class TabStrip : public views::AccessiblePaneView,
                  public views::ButtonListener,
                  public views::MouseWatcherListener,
                  public views::ViewTargeterDelegate,
@@ -109,8 +110,11 @@ class TabStrip : public views::View,
   TabAlertState GetTabAlertState(int tab_index) const;
 
   // Updates the loading animations displayed by tabs in the tabstrip to the
-  // next frame.
-  void UpdateLoadingAnimations();
+  // next frame. The |elapsed_time| parameter is shared between tabs and used to
+  // keep the throbbers in sync.
+  void UpdateLoadingAnimations(const base::TimeDelta& elapsed_time);
+
+  bool IsAnyIconAnimating() const;
 
   // If |adjust_layout| is true the stacked layout changes based on whether the
   // user uses a mouse or a touch device with the tabstrip.
@@ -161,6 +165,9 @@ class TabStrip : public views::View,
   // to clip).
   bool ShouldTabBeVisible(const Tab* tab) const;
 
+  // Returns whether or not strokes should be drawn around and under the tabs.
+  bool ShouldDrawStrokes() const;
+
   // Invoked when the selection is updated.
   void SetSelection(const ui::ListSelectionModel& new_selection);
 
@@ -196,6 +203,31 @@ class TabStrip : public views::View,
 
   // Returns true if a drag session is currently active.
   bool IsDragSessionActive() const;
+
+  // Returns the index where the dragged WebContents should be inserted into
+  // this tabstrip given the DraggedTabView's bounds |dragged_bounds| in
+  // coordinates relative to |attached_tabstrip_| and has had the mirroring
+  // transformation applied.
+  // |mouse_has_ever_moved_left| and |mouse_has_ever_moved_right| are used
+  // only in stacked tabs cases.
+  // NOTE: this is invoked from Attach() before the tabs have been inserted.
+  int GetInsertionIndexForDraggedBounds(const gfx::Rect& dragged_bounds,
+                                        bool attaching,
+                                        int num_dragged_tabs,
+                                        bool mouse_has_ever_moved_left,
+                                        bool mouse_has_ever_moved_right) const;
+
+  // Returns true if |dragged_bounds| is close enough to the next stacked tab
+  // so that the active tab should be dragged there.
+  bool ShouldDragToNextStackedTab(const gfx::Rect& dragged_bounds,
+                                  int index,
+                                  bool mouse_has_ever_moved_right) const;
+
+  // Returns true if |dragged_bounds| is close enough to the previous stacked
+  // tab so that the active tab should be dragged there.
+  bool ShouldDragToPreviousStackedTab(const gfx::Rect& dragged_bounds,
+                                      int index,
+                                      bool mouse_has_ever_moved_left) const;
 
   // Returns true if a tab is being dragged into this tab strip.
   bool IsActiveDropTarget() const;
@@ -249,10 +281,14 @@ class TabStrip : public views::View,
   int GetStrokeThickness() const override;
   bool CanPaintThrobberToLayer() const override;
   bool HasVisibleBackgroundTabShapes() const override;
+  bool ShouldPaintAsActiveFrame() const override;
   SkColor GetToolbarTopSeparatorColor() const override;
   SkColor GetTabSeparatorColor() const override;
-  SkColor GetTabBackgroundColor(TabState state) const override;
-  SkColor GetTabForegroundColor(TabState state) const override;
+  SkColor GetTabBackgroundColor(
+      TabState tab_state,
+      BrowserNonClientFrameView::ActiveState active_state =
+          BrowserNonClientFrameView::kUseCurrent) const override;
+  SkColor GetTabForegroundColor(TabState tab_state) const override;
   base::string16 GetAccessibleTabName(const Tab* tab) const override;
   int GetBackgroundResourceId(
       bool* has_custom_image,
@@ -381,6 +417,22 @@ class TabStrip : public views::View,
   // Returns the bounds needed for each of the tabs, relative to a leading
   // coordinate of 0 for the left edge of the first tab's bounds.
   static std::vector<gfx::Rect> CalculateBoundsForDraggedTabs(const Tabs& tabs);
+
+  // Used by GetInsertionIndexForDraggedBounds() when the tabstrip is stacked.
+  int GetInsertionIndexForDraggedBoundsStacked(
+      const gfx::Rect& dragged_bounds,
+      bool mouse_has_ever_moved_left,
+      bool mouse_has_ever_moved_right) const;
+
+  // Determines the index to insert tabs at. |dragged_bounds| is the bounds of
+  // the tab being dragged, |start| the index of the tab to start looking from.
+  // The search proceeds to the end of the strip.
+  int GetInsertionIndexFrom(const gfx::Rect& dragged_bounds, int start) const;
+
+  // Like GetInsertionIndexFrom(), but searches backwards from |start| to the
+  // beginning of the strip.
+  int GetInsertionIndexFromReversed(const gfx::Rect& dragged_bounds,
+                                    int start) const;
 
   // Returns the X coordinate the first tab should start at.
   int TabStartX() const;
@@ -579,7 +631,7 @@ class TabStrip : public views::View,
   views::View* TargetForRect(views::View* root, const gfx::Rect& rect) override;
 
   // ui::MaterialDesignControllerObserver:
-  void OnMdModeChanged() override;
+  void OnTouchUiChanged() override;
 
   // -- Member Variables ------------------------------------------------------
 

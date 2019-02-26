@@ -18,7 +18,7 @@
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
 #include "base/synchronization/waitable_event.h"
-#include "base/sys_info.h"
+#include "base/system/sys_info.h"
 #include "base/test/test_message_loop.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "build/build_config.h"
@@ -719,6 +719,20 @@ TEST_F(AudioManagerTest, DefaultCommunicationsLabelsContainRealLabels) {
   AudioDeviceDescriptions outputs;
   device_info_accessor_->GetAudioOutputDeviceDescriptions(&outputs);
   CheckDescriptionLabels(outputs, default_output_id, communications_output_id);
+}
+
+// GetPreferredOutputStreamParameters() can make changes to its input_params,
+// ensure that creating a stream with the default parameters always works.
+TEST_F(AudioManagerTest, CheckMakeOutputStreamWithPreferredParameters) {
+  ABORT_AUDIO_TEST_IF_NOT(OutputDevicesAvailable());
+
+  AudioParameters params;
+  GetDefaultOutputStreamParameters(&params);
+  ASSERT_TRUE(params.IsValid());
+
+  AudioOutputStream* stream =
+      audio_manager_->MakeAudioOutputStreamProxy(params, "");
+  ASSERT_TRUE(stream);
 }
 
 #if defined(OS_MACOSX) || defined(USE_CRAS)

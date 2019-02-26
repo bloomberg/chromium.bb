@@ -11,6 +11,7 @@
 #include "base/lazy_instance.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
+#include "base/stl_util.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/stringprintf.h"
 #include "base/trace_event/process_memory_dump.h"
@@ -98,11 +99,19 @@ bool ServerSharedBitmapManager::ChildAllocatedSharedBitmap(
     const SharedBitmapId& id) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
+  // Duplicate ids are not allowed.
+  if (base::ContainsKey(handle_map_, id))
+    return false;
+
   base::SharedMemoryHandle memory_handle;
   size_t buffer_size;
   MojoResult result = mojo::UnwrapSharedMemoryHandle(
       std::move(buffer), &memory_handle, &buffer_size, nullptr);
-  DCHECK_EQ(result, MOJO_RESULT_OK);
+
+  // This function handles public API requests, so verify we unwrapped a shared
+  // memory handle before trying to use the handle.
+  if (result != MOJO_RESULT_OK)
+    return false;
 
   auto data = base::MakeRefCounted<BitmapData>(buffer_size);
   data->memory = std::make_unique<base::SharedMemory>(memory_handle, false);
@@ -112,8 +121,6 @@ bool ServerSharedBitmapManager::ChildAllocatedSharedBitmap(
   data->memory->Map(data->buffer_size);
   data->memory->Close();
 
-  if (handle_map_.find(id) != handle_map_.end())
-    return false;
   handle_map_[id] = std::move(data);
   return true;
 }

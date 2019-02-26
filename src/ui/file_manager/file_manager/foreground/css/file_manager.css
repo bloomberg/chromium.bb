@@ -381,9 +381,7 @@ body.check-select #search-button > .icon {
 }
 
 body.check-select #share-menu-button > .icon {
-  background-image: -webkit-image-set(
-      url(../images/files/ui/share.png) 1x,
-      url(../images/files/ui/2x/share.png) 2x);
+  background-image: url(../images/files/ui/share.svg);
 }
 
 #delete-button > .icon {
@@ -393,9 +391,7 @@ body.check-select #share-menu-button > .icon {
 }
 
 body.check-select #delete-button > .icon {
-  background-image: -webkit-image-set(
-      url(../images/files/ui/delete.png) 1x,
-      url(../images/files/ui/2x/delete.png) 2x);
+  background-image: url(../images/files/ui/delete.svg);
 }
 
 #view-button > .icon {
@@ -445,9 +441,7 @@ body.check-select #gear-button {
 }
 
 #selection-menu-button > .icon {
-  background-image: -webkit-image-set(
-      url(../images/files/ui/menu.png) 1x,
-      url(../images/files/ui/2x/menu.png) 2x);
+  background-image: url(../images/files/ui/menu.svg);
 }
 
 body:not(.check-select) #selection-menu-button {
@@ -1896,6 +1890,34 @@ body[drive='error'] #unmounted-panel > .error,
   min-height: 30px;
 }
 
+.install-linux-package-details-frame {
+  border: 1px solid lightgray;
+  display: block;
+  height: 150px;
+  overflow: scroll;
+  padding: 8px 10px;
+  user-select: text;
+}
+
+.install-linux-package-details-label {
+  color: #5a5a5a;
+  font-weight: 500;
+  margin-bottom: 10px;
+}
+
+.install-linux-package-detail-label {
+  color: #5a5a5a;
+  display: inline;
+  font-weight: 500;
+  margin-inline-end: 5px;
+}
+
+.install-linux-package-detail-value {
+  display: inline;
+  margin-bottom: 5px;
+  white-space: pre-wrap;
+}
+
 .drive-welcome-wrapper {
   /* drive_welcome.css will override it once loaded. */
   display: none;
@@ -2058,7 +2080,6 @@ list.autocomplete-suggestions > [lead] {
 #progress-center {
   background-color: transparent;
   border-top: 1px solid rgb(214, 214, 214);
-  overflow: hidden;
   position: relative;
   transition: background-color 300ms linear,
               border 300ms linear;
@@ -2069,7 +2090,9 @@ list.autocomplete-suggestions > [lead] {
 }
 
 #progress-center-open-view {
+  max-height: 40vh;
   opacity: 1;
+  overflow-y: auto;
   padding-top: 10px;
   transition: opacity 300ms linear;
 }
@@ -2126,6 +2149,7 @@ list.autocomplete-suggestions > [lead] {
   -webkit-padding-end: 12px;
   -webkit-padding-start: 16px;
   flex: 1 0 0;
+  overflow: hidden;
 }
 
 #progress-center .progress-bar {
@@ -2154,7 +2178,7 @@ list.autocomplete-suggestions > [lead] {
 }
 
 #progress-center .button-frame {
-  align-self: flex-end;
+  align-self: flex-start;
   flex: none;
 }
 
@@ -2228,7 +2252,7 @@ li#progress-center-close-view.error.single button.dismiss,
 
 #progress-center-close-view.quiet button.cancel,
 #progress-center li:not(.cancelable) button.cancel {
-  visibility: hidden;
+  display: none;
 }
 
 .text-measure {
@@ -2272,4 +2296,9 @@ cr-input:not(:defined) {
   padding: 0 8px;
   position: absolute;
   z-index: 1000;  /* same height as files-tooltip */
+}
+
+files-toast {
+  /* Must be above the splitter (500) but below menu-like UI (550). */
+  z-index: 520;
 }

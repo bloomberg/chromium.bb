@@ -22,57 +22,21 @@ namespace net {
 
 namespace {
 
-enum class HeaderOutcome {
-  DISCARDED_NO_REPORTING_SERVICE = 0,
-  DISCARDED_INVALID_SSL_INFO = 1,
-  DISCARDED_CERT_STATUS_ERROR = 2,
-  DISCARDED_JSON_TOO_BIG = 3,
-  DISCARDED_JSON_INVALID = 4,
-  PARSED = 5,
-
-  MAX
-};
+using HeaderEndpointGroupOutcome =
+    ReportingHeaderParser::HeaderEndpointGroupOutcome;
+using HeaderEndpointOutcome = ReportingHeaderParser::HeaderEndpointOutcome;
+using HeaderOutcome = ReportingHeaderParser::HeaderOutcome;
 
 void RecordHeaderOutcome(HeaderOutcome outcome) {
-  UMA_HISTOGRAM_ENUMERATION("Net.Reporting.HeaderOutcome", outcome,
-                            HeaderOutcome::MAX);
+  UMA_HISTOGRAM_ENUMERATION(ReportingHeaderParser::kHeaderOutcomeHistogram,
+                            outcome, HeaderOutcome::MAX);
 }
-
-enum class HeaderEndpointGroupOutcome {
-  DISCARDED_NOT_DICTIONARY = 0,
-  DISCARDED_GROUP_NOT_STRING = 1,
-  DISCARDED_TTL_MISSING = 2,
-  DISCARDED_TTL_NOT_INTEGER = 3,
-  DISCARDED_TTL_NEGATIVE = 4,
-  DISCARDED_ENDPOINTS_MISSING = 5,
-  DISCARDED_ENDPOINTS_NOT_LIST = 6,
-
-  PARSED = 7,
-
-  MAX
-};
 
 void RecordHeaderEndpointGroupOutcome(HeaderEndpointGroupOutcome outcome) {
-  UMA_HISTOGRAM_ENUMERATION("Net.Reporting.HeaderEndpointGroupOutcome", outcome,
-                            HeaderEndpointGroupOutcome::MAX);
+  UMA_HISTOGRAM_ENUMERATION(
+      ReportingHeaderParser::kHeaderEndpointGroupOutcomeHistogram, outcome,
+      HeaderEndpointGroupOutcome::MAX);
 }
-
-enum class HeaderEndpointOutcome {
-  DISCARDED_NOT_DICTIONARY = 0,
-  DISCARDED_URL_MISSING = 1,
-  DISCARDED_URL_NOT_STRING = 2,
-  DISCARDED_URL_INVALID = 3,
-  DISCARDED_URL_INSECURE = 4,
-  DISCARDED_PRIORITY_NOT_INTEGER = 5,
-  DISCARDED_WEIGHT_NOT_INTEGER = 6,
-  DISCARDED_WEIGHT_NOT_POSITIVE = 7,
-
-  REMOVED = 8,
-  SET_REJECTED_BY_DELEGATE = 9,
-  SET = 10,
-
-  MAX
-};
 
 bool EndpointParsedSuccessfully(HeaderEndpointOutcome outcome) {
   return outcome == HeaderEndpointOutcome::REMOVED ||
@@ -81,8 +45,9 @@ bool EndpointParsedSuccessfully(HeaderEndpointOutcome outcome) {
 }
 
 void RecordHeaderEndpointOutcome(HeaderEndpointOutcome outcome) {
-  UMA_HISTOGRAM_ENUMERATION("Net.Reporting.HeaderEndpointOutcome", outcome,
-                            HeaderEndpointOutcome::MAX);
+  UMA_HISTOGRAM_ENUMERATION(
+      ReportingHeaderParser::kHeaderEndpointOutcomeHistogram, outcome,
+      HeaderEndpointOutcome::MAX);
 }
 
 const char kUrlKey[] = "url";
@@ -215,6 +180,18 @@ HeaderEndpointGroupOutcome ProcessEndpointGroup(ReportingDelegate* delegate,
 }
 
 }  // namespace
+
+// static
+const char ReportingHeaderParser::kHeaderOutcomeHistogram[] =
+    "Net.Reporting.HeaderOutcome";
+
+// static
+const char ReportingHeaderParser::kHeaderEndpointGroupOutcomeHistogram[] =
+    "Net.Reporting.HeaderEndpointGroupOutcome";
+
+// static
+const char ReportingHeaderParser::kHeaderEndpointOutcomeHistogram[] =
+    "Net.Reporting.HeaderEndpointOutcome";
 
 // static
 void ReportingHeaderParser::RecordHeaderDiscardedForNoReportingService() {

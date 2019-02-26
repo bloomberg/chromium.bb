@@ -103,7 +103,7 @@ void QpackProgressiveEncoder::Next(size_t max_encoded_bytes,
   DCHECK(HasNext());
   DCHECK_NE(0u, max_encoded_bytes);
 
-  while (max_encoded_bytes > 0 && HasNext()) {
+  while (HasNext()) {
     size_t encoded_bytes = 0;
 
     switch (state_) {
@@ -132,6 +132,13 @@ void QpackProgressiveEncoder::Next(size_t max_encoded_bytes,
 
     DCHECK_LE(encoded_bytes, max_encoded_bytes);
     max_encoded_bytes -= encoded_bytes;
+
+    // Run VarintDone state (even with no more space to write left, since this
+    // state does not write) so that |header_list_iterator_| is incremented and
+    // thus HasNext() returns correct value if encoding has completed.
+    if (max_encoded_bytes == 0 && state_ != State::kVarintDone) {
+      return;
+    }
   }
 }
 
@@ -148,7 +155,7 @@ size_t QpackProgressiveEncoder::DoStart(size_t max_encoded_bytes,
       literal_value_ = false;
 
       output->push_back(varint_encoder_.StartEncoding(
-          kIndexedHeaderFieldOpcode | kIndexedHeaderFieldStaticBit,
+          kIndexedHeaderFieldOpcodeValue | kIndexedHeaderFieldStaticBit,
           kIndexedHeaderFieldPrefixLength, index));
 
       break;
@@ -157,7 +164,7 @@ size_t QpackProgressiveEncoder::DoStart(size_t max_encoded_bytes,
       literal_value_ = true;
 
       output->push_back(varint_encoder_.StartEncoding(
-          kLiteralHeaderFieldNameReferenceOpcode |
+          kLiteralHeaderFieldNameReferenceOpcodeValue |
               kLiteralHeaderFieldNameReferenceStaticBit,
           kLiteralHeaderFieldNameReferencePrefixLength, index));
 
@@ -172,12 +179,12 @@ size_t QpackProgressiveEncoder::DoStart(size_t max_encoded_bytes,
       if (huffman_encoded_string_.size() < name.size()) {
         string_to_write_ = huffman_encoded_string_;
         output->push_back(varint_encoder_.StartEncoding(
-            kLiteralHeaderFieldOpcode | kLiteralNameHuffmanMask,
+            kLiteralHeaderFieldOpcodeValue | kLiteralNameHuffmanMask,
             kLiteralHeaderFieldPrefixLength, string_to_write_.size()));
       } else {
         string_to_write_ = name;
         output->push_back(varint_encoder_.StartEncoding(
-            kLiteralHeaderFieldOpcode, kLiteralHeaderFieldPrefixLength,
+            kLiteralHeaderFieldOpcodeValue, kLiteralHeaderFieldPrefixLength,
             string_to_write_.size()));
       }
       break;

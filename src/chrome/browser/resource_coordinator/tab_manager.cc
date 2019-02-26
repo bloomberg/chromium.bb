@@ -21,9 +21,9 @@
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
-#include "base/sys_info.h"
+#include "base/system/sys_info.h"
 #include "base/threading/thread.h"
-#include "base/trace_event/trace_event_argument.h"
+#include "base/trace_event/traced_value.h"
 #include "build/build_config.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/media/webrtc/media_capture_devices_dispatcher.h"
@@ -31,6 +31,7 @@
 #include "chrome/browser/memory/oom_memory_details.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/resource_coordinator/background_tab_navigation_throttle.h"
+#include "chrome/browser/resource_coordinator/tab_activity_watcher.h"
 #include "chrome/browser/resource_coordinator/tab_lifecycle_unit_external.h"
 #include "chrome/browser/resource_coordinator/tab_manager.h"
 #include "chrome/browser/resource_coordinator/tab_manager_features.h"
@@ -166,7 +167,8 @@ class TabManager::TabManagerSessionRestoreObserver final
 
 constexpr base::TimeDelta TabManager::kDefaultMinTimeToPurge;
 
-TabManager::TabManager()
+TabManager::TabManager(PageSignalReceiver* page_signal_receiver,
+                       TabLoadTracker* tab_load_tracker)
     : state_transitions_callback_(
           base::BindRepeating(&TabManager::PerformStateTransitions,
                               base::Unretained(this))),
@@ -175,6 +177,7 @@ TabManager::TabManager()
       restored_tab_count_(0u),
       background_tab_loading_mode_(BackgroundTabLoadingMode::kStaggered),
       loading_slots_(kNumOfLoadingSlots),
+      tab_load_tracker_(tab_load_tracker),
       weak_ptr_factory_(this) {
 #if defined(OS_CHROMEOS)
   delegate_.reset(new TabManagerDelegate(weak_ptr_factory_.GetWeakPtr()));
@@ -183,12 +186,12 @@ TabManager::TabManager()
   session_restore_observer_.reset(new TabManagerSessionRestoreObserver(this));
   if (PageSignalReceiver::IsEnabled()) {
     resource_coordinator_signal_observer_.reset(
-        new ResourceCoordinatorSignalObserver());
+        new ResourceCoordinatorSignalObserver(page_signal_receiver));
   }
   stats_collector_.reset(new TabManagerStatsCollector());
   proactive_freeze_discard_params_ =
       GetStaticProactiveTabFreezeAndDiscardParams();
-  TabLoadTracker::Get()->AddObserver(this);
+  tab_load_tracker_->AddObserver(this);
   intervention_policy_database_.reset(new InterventionPolicyDatabase());
 
   // TabManager works in the absence of DesktopSessionDurationTracker for tests.
@@ -197,7 +200,7 @@ TabManager::TabManager()
 }
 
 TabManager::~TabManager() {
-  TabLoadTracker::Get()->RemoveObserver(this);
+  tab_load_tracker_->RemoveObserver(this);
   resource_coordinator_signal_observer_.reset();
   Stop();
 
@@ -277,11 +280,12 @@ LifecycleUnitVector TabManager::GetSortedLifecycleUnits() {
   lifecycle_units_and_sort_keys.reserve(lifecycle_units_.size());
   for (auto* lifecycle_unit : lifecycle_units_)
     lifecycle_units_and_sort_keys.emplace_back(lifecycle_unit);
+
   std::sort(lifecycle_units_and_sort_keys.begin(),
             lifecycle_units_and_sort_keys.end());
 
   LifecycleUnitVector sorted_lifecycle_units;
-  sorted_lifecycle_units.reserve(lifecycle_units_.size());
+  sorted_lifecycle_units.reserve(lifecycle_units_and_sort_keys.size());
   for (auto& lifecycle_unit_and_sort_key : lifecycle_units_and_sort_keys) {
     sorted_lifecycle_units.push_back(
         lifecycle_unit_and_sort_key.lifecycle_unit);
@@ -291,8 +295,11 @@ LifecycleUnitVector TabManager::GetSortedLifecycleUnits() {
 }
 
 void TabManager::DiscardTab(LifecycleUnitDiscardReason reason) {
-  if (reason == LifecycleUnitDiscardReason::URGENT)
+  if (reason == LifecycleUnitDiscardReason::URGENT) {
     stats_collector_->RecordWillDiscardUrgently(GetNumAliveTabs());
+    resource_coordinator::TabActivityWatcher::GetInstance()
+        ->LogOldestNTabFeatures();
+  }
 
 #if defined(OS_CHROMEOS)
   // Call Chrome OS specific low memory handling process.

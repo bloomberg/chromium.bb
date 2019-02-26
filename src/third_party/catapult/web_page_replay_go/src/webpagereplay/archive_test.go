@@ -7,6 +7,7 @@ package webpagereplay
 import (
 	"net/http"
 	"net/http/httptest"
+	"net/url"
 	"testing"
 )
 
@@ -33,7 +34,7 @@ func TestFindRequestFuzzyMatching(t *testing.T) {
 	const newUrl = "https://example.com/a/b/c/+/query?usegapi=1&foo=yay&c=d&a=y"
 	newReq := httptest.NewRequest("GET", newUrl, nil)
 
-	_, foundResp, err := a.FindRequest(newReq, "https")
+	_, foundResp, err := a.FindRequest(newReq)
 	if err != nil {
 		t.Fatalf("failed to find %s: %v", newUrl, err)
 	}
@@ -64,7 +65,7 @@ func TestFindClosest(t *testing.T) {
 	// Check that u1 is returned. FindRequest was previously non-deterministic,
 	// due to random map iteration, so run the test several times.
 	for i := 0; i < 10; i++ {
-		foundReq, foundResp, err := a.FindRequest(newReq, "https")
+		foundReq, foundResp, err := a.FindRequest(newReq)
 		if err != nil {
 			t.Fatalf("failed to find %s: %v", newUrl, err)
 		}
@@ -103,7 +104,7 @@ func TestMatchHeaders(t *testing.T) {
 	newReq := httptest.NewRequest("GET", u, nil)
 	newReq.Header = headers
 
-	foundReq, _, err := a.FindRequest(newReq, "https")
+	foundReq, _, err := a.FindRequest(newReq)
 	if err != nil {
 		t.Fatalf("failed to find %s: %v", u, err)
 	}
@@ -127,11 +128,93 @@ func TestNoHeadersMatch(t *testing.T) {
 	newReq.Header = headers
 	newReq.Header.Set("Accept-Encoding", "gzip, deflate")
 
-	foundReq, _, err := a.FindRequest(newReq, "https")
+	foundReq, _, err := a.FindRequest(newReq)
 	if err != nil {
 		t.Fatalf("failed to find %s: %v", u, err)
 	}
 	if got, want := foundReq.Header.Get("Accept-Encoding"), "gzip, deflate, br"; got != want {
 		t.Fatalf("expected %s , actual %s\n", want, got)
+	}
+}
+
+func TestMerge(t *testing.T) {
+	a := newArchive()
+	b := newArchive()
+	const host = "example.com"
+	a.Requests[host] = make(map[string][]*ArchivedRequest)
+	b.Requests[host] = make(map[string][]*ArchivedRequest)
+	// Create three requests with very closely matching params; only the first one
+	// is different.
+	const u1 = "https://example.com/index.html?a=AB&b=1&c=2"
+	a.Requests[host][u1] = []*ArchivedRequest{createArchivedRequest(t, u1, nil)}
+	b.Requests[host][u1] = []*ArchivedRequest{createArchivedRequest(t, u1, nil)}
+
+	const u2 = "https://example.com/index.html?a=A&b=1&c=2"
+	a.Requests[host][u2] = []*ArchivedRequest{createArchivedRequest(t, u2, nil)}
+
+	const u3 = "https://example.com/index.html?a=B&b=1&c=2"
+	b.Requests[host][u3] = []*ArchivedRequest{createArchivedRequest(t, u3, nil)}
+
+	// Merging an archive with itself should yield the same results.
+	if len(a.Requests[host]) != 2 {
+		t.Fatalf("Expected 2 requests in archive a")
+	}
+	_ = a.Merge(&a)
+	if len(a.Requests[host]) != 2 {
+		t.Fatalf("Expected 2 requests in archive a")
+	}
+
+	if len(b.Requests[host]) != 2 {
+		t.Fatalf("Expected 2 requests in archive b")
+	}
+	_ = b.Merge(&b)
+	if len(b.Requests[host]) != 2 {
+		t.Fatalf("Expected 2 requests in archive b")
+	}
+
+	// Merge b into a.
+	_ = a.Merge(&b)
+	if size := len(a.Requests[host]); size != 3 {
+		t.Fatalf("Expected 3 requests in archive a but got %d", size)
+	}
+	if len(b.Requests[host]) != 2 {
+		t.Fatalf("Expected 2 requests in archive b")
+	}
+}
+
+func TestAdd(t *testing.T) {
+	// generate a test server so we can capture and inspect the request
+	testServer := httptest.NewServer(http.HandlerFunc(func(res http.ResponseWriter, req *http.Request) {
+		res.Write([]byte("body"))
+	}))
+	defer func() { testServer.Close() }()
+
+	a := newArchive()
+	if len(a.Requests) != 0 {
+		t.Fatalf("Expected empty archive")
+	}
+
+	requestURL, _ := url.Parse(testServer.URL)
+	requestURLString := testServer.URL
+	a.Add("GET", requestURLString)
+
+	requestMap := a.Requests[requestURL.Host]
+	if len(requestMap) != 1 {
+		t.Fatalf("Expected 1 requests in archive a")
+	}
+	if len(requestMap[requestURLString]) != 1 {
+		t.Fatalf("Expected 1 requests in archive a")
+	}
+
+	requestURLString2 := requestURLString + "?q=something"
+	a.Add("GET", requestURLString2)
+	if len(requestMap) != 2 {
+		t.Fatalf("Expected 1 requests in archive a")
+	}
+	if len(requestMap[requestURLString]) != 1 {
+		t.Fatalf("Expected 1 requests in archive a")
+	}
+	if len(requestMap[requestURLString2]) != 1 {
+		t.Fatalf("Expected 1 requests in archive a")
 	}
 }

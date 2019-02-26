@@ -94,7 +94,7 @@ Polymer({
    * @private
    */
   computeIsSpinnerShown_: function() {
-    var showSpinner = this.spinnerActive && this.showingSearch;
+    const showSpinner = this.spinnerActive && this.showingSearch;
     if (showSpinner)
       this.$.spinnerTemplate.if = true;
     return showSpinner;

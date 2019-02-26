@@ -15,10 +15,12 @@ import android.provider.Settings;
 import org.chromium.base.ContextUtils;
 import org.chromium.base.VisibleForTesting;
 import org.chromium.chrome.R;
+import org.chromium.chrome.browser.AppHooks;
 import org.chromium.chrome.browser.ChromeFeatureList;
 import org.chromium.chrome.browser.contextual_suggestions.ContextualSuggestionsEnabledStateUtils;
 import org.chromium.chrome.browser.net.spdyproxy.DataReductionProxySettings;
 import org.chromium.chrome.browser.partnercustomizations.HomepageManager;
+import org.chromium.chrome.browser.password_manager.ManagePasswordsReferrer;
 import org.chromium.chrome.browser.preferences.datareduction.DataReductionPreferences;
 import org.chromium.chrome.browser.search_engines.TemplateUrl;
 import org.chromium.chrome.browser.search_engines.TemplateUrlService;
@@ -44,6 +46,8 @@ public class MainPreferences extends PreferenceFragment
     public static final String PREF_NOTIFICATIONS = "notifications";
     public static final String PREF_LANGUAGES = "languages";
     public static final String PREF_DOWNLOADS = "downloads";
+    public static final String PREF_DEVELOPER = "developer";
+    public static final String PREF_AUTOFILL_ASSISTANT = "autofill_assistant";
 
     public static final String AUTOFILL_GUID = "guid";
     // Needs to be in sync with kSettingsOrigin[] in
@@ -110,6 +114,8 @@ public class MainPreferences extends PreferenceFragment
         setManagedPreferenceDelegateForPreference(PREF_SAVED_PASSWORDS);
         setManagedPreferenceDelegateForPreference(PREF_DATA_REDUCTION);
 
+        updatePasswordsPreference();
+
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
             // If we are on Android O+ the Notifications preference should lead to the Android
             // Settings notifications page, not to Chrome's notifications settings page.
@@ -151,6 +157,16 @@ public class MainPreferences extends PreferenceFragment
         // This checks whether the flag for Downloads Preferences is enabled.
         if (!ChromeFeatureList.isEnabled(ChromeFeatureList.DOWNLOADS_LOCATION_CHANGE)) {
             getPreferenceScreen().removePreference(findPreference(PREF_DOWNLOADS));
+        }
+
+        // Developer preferences are only shown when the feature is enabled.
+        if (!ChromeFeatureList.isEnabled(ChromeFeatureList.DEVELOPER_PREFERENCES)) {
+            getPreferenceScreen().removePreference(findPreference(PREF_DEVELOPER));
+        }
+
+        // This checks whether Autofill Assistant is enabled.
+        if (!ChromeFeatureList.isEnabled(ChromeFeatureList.AUTOFILL_ASSISTANT)) {
+            getPreferenceScreen().removePreference(findPreference(PREF_AUTOFILL_ASSISTANT));
         }
     }
 
@@ -233,6 +249,15 @@ public class MainPreferences extends PreferenceFragment
         Preference searchEnginePreference = findPreference(PREF_SEARCH_ENGINE);
         searchEnginePreference.setEnabled(true);
         searchEnginePreference.setSummary(defaultSearchEngineName);
+    }
+
+    private void updatePasswordsPreference() {
+        Preference passwordsPreference = findPreference(PREF_SAVED_PASSWORDS);
+        passwordsPreference.setOnPreferenceClickListener(preference -> {
+            AppHooks.get().createManagePasswordsUIProvider().showManagePasswordsUI(
+                    getActivity(), ManagePasswordsReferrer.CHROME_SETTINGS);
+            return true;
+        });
     }
 
     private void setOnOffSummary(Preference pref, boolean isOn) {

@@ -74,15 +74,16 @@ void PlatformApiImpl::DummyAuthProvider::Reset() {}
 PlatformApiImpl::PlatformApiImpl(
     service_manager::Connector* connector,
     device::mojom::BatteryMonitorPtr battery_monitor,
-    bool enable_hotword,
-    scoped_refptr<base::SingleThreadTaskRunner> background_task_runner)
-    : audio_input_provider_(connector, enable_hotword),
+    scoped_refptr<base::SingleThreadTaskRunner> background_task_runner,
+    network::NetworkConnectionTracker* network_connection_tracker)
+    : audio_input_provider_(connector),
       audio_output_provider_(connector, background_task_runner),
+      network_provider_(network_connection_tracker),
       system_provider_(std::move(battery_monitor)) {}
 
 PlatformApiImpl::~PlatformApiImpl() = default;
 
-AudioInputProvider& PlatformApiImpl::GetAudioInputProvider() {
+AudioInputProviderImpl& PlatformApiImpl::GetAudioInputProvider() {
   return audio_input_provider_;
 }
 

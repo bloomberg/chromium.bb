@@ -26,6 +26,7 @@ class QuicSpdyClientSession : public QuicSpdyClientSessionBase {
   // Takes ownership of |connection|. Caller retains ownership of
   // |promised_by_url|.
   QuicSpdyClientSession(const QuicConfig& config,
+                        const ParsedQuicVersionVector& supported_versions,
                         QuicConnection* connection,
                         const QuicServerId& server_id,
                         QuicCryptoClientConfig* crypto_config,
@@ -65,12 +66,12 @@ class QuicSpdyClientSession : public QuicSpdyClientSessionBase {
 
  protected:
   // QuicSession methods:
-  QuicSpdyStream* CreateIncomingDynamicStream(QuicStreamId id) override;
+  QuicSpdyStream* CreateIncomingStream(QuicStreamId id) override;
   // If an outgoing stream can be created, return true.
-  bool ShouldCreateOutgoingDynamicStream() override;
+  bool ShouldCreateOutgoingStream() override;
 
   // If an incoming stream can be created, return true.
-  bool ShouldCreateIncomingDynamicStream(QuicStreamId id) override;
+  bool ShouldCreateIncomingStream(QuicStreamId id) override;
 
   // Create the crypto stream. Called by Initialize().
   virtual std::unique_ptr<QuicCryptoClientStreamBase> CreateQuicCryptoStream();

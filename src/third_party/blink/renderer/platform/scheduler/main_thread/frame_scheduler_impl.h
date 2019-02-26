@@ -20,12 +20,12 @@
 #include "services/metrics/public/cpp/ukm_source_id.h"
 #include "third_party/blink/public/platform/task_type.h"
 #include "third_party/blink/renderer/platform/platform_export.h"
+#include "third_party/blink/renderer/platform/scheduler/common/tracing_helper.h"
 #include "third_party/blink/renderer/platform/scheduler/main_thread/frame_origin_type.h"
 #include "third_party/blink/renderer/platform/scheduler/main_thread/frame_task_queue_controller.h"
 #include "third_party/blink/renderer/platform/scheduler/main_thread/main_thread_task_queue.h"
 #include "third_party/blink/renderer/platform/scheduler/main_thread/page_visibility_state.h"
 #include "third_party/blink/renderer/platform/scheduler/public/frame_scheduler.h"
-#include "third_party/blink/renderer/platform/scheduler/util/tracing_helper.h"
 #include "third_party/blink/renderer/platform/scheduler/worker/worker_scheduler_proxy.h"
 #include "third_party/blink/renderer/platform/wtf/hash_map.h"
 
@@ -244,6 +244,7 @@ class PLATFORM_EXPORT FrameSchedulerImpl : public FrameScheduler,
   static MainThreadTaskQueue::QueueTraits DeferrableTaskQueueTraits();
   static MainThreadTaskQueue::QueueTraits PausableTaskQueueTraits();
   static MainThreadTaskQueue::QueueTraits UnpausableTaskQueueTraits();
+  static MainThreadTaskQueue::QueueTraits ForegroundOnlyTaskQueueTraits();
 
   const FrameScheduler::FrameType frame_type_;
 
@@ -265,25 +266,27 @@ class PLATFORM_EXPORT FrameSchedulerImpl : public FrameScheduler,
   FrameScheduler::Delegate* delegate_;              // NOT OWNED
   base::trace_event::BlameContext* blame_context_;  // NOT OWNED
   SchedulingLifecycleState throttling_state_;
-  TraceableState<bool, kTracingCategoryNameInfo> frame_visible_;
-  TraceableState<bool, kTracingCategoryNameInfo> frame_paused_;
-  TraceableState<FrameOriginType, kTracingCategoryNameInfo> frame_origin_type_;
-  TraceableState<bool, kTracingCategoryNameInfo> subresource_loading_paused_;
-  StateTracer<kTracingCategoryNameInfo> url_tracer_;
-  TraceableState<bool, kTracingCategoryNameInfo> task_queues_throttled_;
+  TraceableState<bool, TracingCategoryName::kInfo> frame_visible_;
+  TraceableState<bool, TracingCategoryName::kInfo> frame_paused_;
+  TraceableState<FrameOriginType, TracingCategoryName::kInfo>
+      frame_origin_type_;
+  TraceableState<bool, TracingCategoryName::kInfo> subresource_loading_paused_;
+  StateTracer<TracingCategoryName::kInfo> url_tracer_;
+  TraceableState<bool, TracingCategoryName::kInfo> task_queues_throttled_;
   // TODO(kraynov): https://crbug.com/827113
   // Trace active connection count.
   int active_connection_count_;
   size_t subresource_loading_pause_count_;
-  TraceableState<bool, kTracingCategoryNameInfo> has_active_connection_;
+  TraceableState<bool, TracingCategoryName::kInfo> has_active_connection_;
 
   // These are the states of the Page.
   // They should be accessed via GetPageScheduler()->SetPageState().
   // they are here because we don't support page-level tracing yet.
-  TraceableState<bool, kTracingCategoryNameInfo> page_frozen_for_tracing_;
-  TraceableState<PageVisibilityState, kTracingCategoryNameInfo>
+  TraceableState<bool, TracingCategoryName::kInfo> page_frozen_for_tracing_;
+  TraceableState<PageVisibilityState, TracingCategoryName::kInfo>
       page_visibility_for_tracing_;
-  TraceableState<bool, kTracingCategoryNameInfo> page_keep_active_for_tracing_;
+  TraceableState<bool, TracingCategoryName::kInfo>
+      page_keep_active_for_tracing_;
 
   base::WeakPtrFactory<FrameSchedulerImpl> weak_factory_;
 

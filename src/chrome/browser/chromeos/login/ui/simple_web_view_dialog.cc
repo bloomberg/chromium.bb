@@ -21,9 +21,9 @@
 #include "chrome/browser/ui/views/toolbar/reload_button.h"
 #include "chrome/grit/generated_resources.h"
 #include "chrome/grit/theme_resources.h"
+#include "components/omnibox/browser/location_bar_model_impl.h"
 #include "components/password_manager/core/browser/password_manager.h"
 #include "components/strings/grit/components_strings.h"
-#include "components/toolbar/toolbar_model_impl.h"
 #include "content/public/browser/navigation_controller.h"
 #include "content/public/browser/navigation_entry.h"
 #include "content/public/browser/web_contents.h"
@@ -156,11 +156,11 @@ void SimpleWebViewDialog::StartLoad(const GURL& url) {
 }
 
 void SimpleWebViewDialog::Init() {
-  // Create the security state model that the toolbar model needs.
+  // Create the security state model that the location bar model needs.
   if (web_view_->GetWebContents())
     SecurityStateTabHelper::CreateForWebContents(web_view_->GetWebContents());
-  toolbar_model_.reset(
-      new ToolbarModelImpl(this, content::kMaxURLDisplayChars));
+  location_bar_model_.reset(
+      new LocationBarModelImpl(this, content::kMaxURLDisplayChars));
 
   SetBackground(views::CreateSolidBackground(kDialogColor));
 
@@ -275,12 +275,12 @@ WebContents* SimpleWebViewDialog::GetWebContents() {
   return nullptr;
 }
 
-ToolbarModel* SimpleWebViewDialog::GetToolbarModel() {
-  return toolbar_model_.get();
+LocationBarModel* SimpleWebViewDialog::GetLocationBarModel() {
+  return location_bar_model_.get();
 }
 
-const ToolbarModel* SimpleWebViewDialog::GetToolbarModel() const {
-  return toolbar_model_.get();
+const LocationBarModel* SimpleWebViewDialog::GetLocationBarModel() const {
+  return location_bar_model_.get();
 }
 
 ContentSettingBubbleModelDelegate*

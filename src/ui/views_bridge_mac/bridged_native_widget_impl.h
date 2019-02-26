@@ -66,16 +66,12 @@ class VIEWS_EXPORT BridgedNativeWidgetImpl
   static gfx::Size GetWindowSizeForClientSize(NSWindow* window,
                                               const gfx::Size& size);
 
-  // Retrieves the bridge associated with the given NSWindow. Returns null if
-  // the supplied handle has no associated Widget.
-  static BridgedNativeWidgetImpl* GetFromNativeWindow(NSWindow* window);
-
   // Retrieve a BridgedNativeWidgetImpl* from its id.
   static BridgedNativeWidgetImpl* GetFromId(uint64_t bridged_native_widget_id);
 
   // Create an NSWindow for the specified parameters.
   static base::scoped_nsobject<NativeWidgetMacNSWindow> CreateNSWindow(
-      views_bridge_mac::mojom::CreateWindowParams* params);
+      const views_bridge_mac::mojom::CreateWindowParams* params);
 
   // Creates one side of the bridge. |host| and |parent| must not be NULL.
   BridgedNativeWidgetImpl(uint64_t bridged_native_widget_id,
@@ -169,12 +165,13 @@ class VIEWS_EXPORT BridgedNativeWidgetImpl
   bool wants_to_be_visible() const { return wants_to_be_visible_; }
   bool in_fullscreen_transition() const { return in_fullscreen_transition_; }
 
-  // Enables or disables all window animations.
-  void SetAnimationEnabled(bool animate);
-
   // Whether to run a custom animation for the provided |transition|.
   bool ShouldRunCustomAnimationFor(
       views_bridge_mac::mojom::VisibilityTransition transition) const;
+
+  // Redispatch a keyboard event using the widget's window's CommandDispatcher.
+  // Return true if the event is handled.
+  bool RedispatchKeyEvent(NSEvent* event);
 
   // display::DisplayObserver:
   void OnDisplayMetricsChanged(const display::Display& display,
@@ -203,6 +200,7 @@ class VIEWS_EXPORT BridgedNativeWidgetImpl
                         const gfx::Size& minimum_content_size) override;
   void SetVisibilityState(
       views_bridge_mac::mojom::WindowVisibilityState new_state) override;
+  void SetAnimationEnabled(bool animation_enabled) override;
   void SetTransitionsToAnimate(
       views_bridge_mac::mojom::VisibilityTransition transitions) override;
   void SetVisibleOnAllSpaces(bool always_visible) override;
@@ -221,6 +219,12 @@ class VIEWS_EXPORT BridgedNativeWidgetImpl
   void UpdateTooltip() override;
   void AcquireCapture() override;
   void ReleaseCapture() override;
+  void RedispatchKeyEvent(uint64_t type,
+                          uint64_t modifier_flags,
+                          double timestamp,
+                          const base::string16& characters,
+                          const base::string16& characters_ignoring_modifiers,
+                          uint32_t key_code) override;
 
   // TODO(ccameron): This method exists temporarily as we move all direct access
   // of TextInputClient out of BridgedContentView.

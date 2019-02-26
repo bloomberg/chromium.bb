@@ -13,6 +13,7 @@
 #include "components/viz/common/viz_common_export.h"
 #include "third_party/skia/include/core/SkColor.h"
 #include "ui/gfx/geometry/rect_f.h"
+#include "ui/gl/dc_renderer_layer_params.h"
 
 namespace viz {
 
@@ -35,7 +36,8 @@ class VIZ_COMMON_EXPORT TextureDrawQuad : public DrawQuad {
               const float vertex_opacity[4],
               bool y_flipped,
               bool nearest_neighbor,
-              bool secure_output_only);
+              bool secure_output_only,
+              ui::ProtectedVideoType protected_video_type);
 
   void SetAll(const SharedQuadState* shared_quad_state,
               const gfx::Rect& rect,
@@ -50,7 +52,8 @@ class VIZ_COMMON_EXPORT TextureDrawQuad : public DrawQuad {
               const float vertex_opacity[4],
               bool y_flipped,
               bool nearest_neighbor,
-              bool secure_output_only);
+              bool secure_output_only,
+              ui::ProtectedVideoType protected_video_type);
 
   bool premultiplied_alpha = false;
   gfx::PointF uv_top_left;
@@ -59,7 +62,15 @@ class VIZ_COMMON_EXPORT TextureDrawQuad : public DrawQuad {
   float vertex_opacity[4] = {0, 0, 0, 0};
   bool y_flipped = false;
   bool nearest_neighbor = false;
+
+  // True if the quad must only be GPU composited if shown on secure outputs.
   bool secure_output_only = false;
+
+  // kClear if the contents do not require any special protection. See enum of a
+  // list of protected content types. Protected contents cannot be displayed via
+  // regular display path. They need either a protected output or a protected
+  // hardware overlay.
+  ui::ProtectedVideoType protected_video_type = ui::ProtectedVideoType::kClear;
 
   struct OverlayResources {
     OverlayResources();

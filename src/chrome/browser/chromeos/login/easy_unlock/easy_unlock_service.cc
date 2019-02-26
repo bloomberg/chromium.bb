@@ -6,15 +6,13 @@
 
 #include <utility>
 
-#include "apps/app_lifetime_monitor.h"
-#include "apps/app_lifetime_monitor_factory.h"
 #include "base/bind.h"
 #include "base/command_line.h"
 #include "base/guid.h"
 #include "base/logging.h"
 #include "base/macros.h"
 #include "base/metrics/histogram_macros.h"
-#include "base/sys_info.h"
+#include "base/system/sys_info.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/time/time.h"
 #include "base/values.h"
@@ -22,10 +20,8 @@
 #include "build/build_config.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chromeos/login/easy_unlock/chrome_proximity_auth_client.h"
-#include "chrome/browser/chromeos/login/easy_unlock/easy_unlock_app_manager.h"
 #include "chrome/browser/chromeos/login/easy_unlock/easy_unlock_key_manager.h"
 #include "chrome/browser/chromeos/login/easy_unlock/easy_unlock_service_factory.h"
-#include "chrome/browser/chromeos/login/easy_unlock/easy_unlock_service_observer.h"
 #include "chrome/browser/chromeos/login/easy_unlock/easy_unlock_tpm_key_manager.h"
 #include "chrome/browser/chromeos/login/easy_unlock/easy_unlock_tpm_key_manager_factory.h"
 #include "chrome/browser/chromeos/login/session/user_session_manager.h"
@@ -39,6 +35,7 @@
 #include "chromeos/components/proximity_auth/proximity_auth_profile_pref_manager.h"
 #include "chromeos/components/proximity_auth/proximity_auth_system.h"
 #include "chromeos/components/proximity_auth/screenlock_bridge.h"
+#include "chromeos/components/proximity_auth/smart_lock_metrics_recorder.h"
 #include "chromeos/components/proximity_auth/switches.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
 #include "chromeos/dbus/power_manager_client.h"
@@ -84,20 +81,14 @@ EasyUnlockService* EasyUnlockService::GetForUser(
 }
 
 class EasyUnlockService::BluetoothDetector
-    : public device::BluetoothAdapter::Observer,
-      public apps::AppLifetimeMonitor::Observer {
+    : public device::BluetoothAdapter::Observer {
  public:
   explicit BluetoothDetector(EasyUnlockService* service)
-      : service_(service), weak_ptr_factory_(this) {
-    apps::AppLifetimeMonitorFactory::GetForBrowserContext(service_->profile())
-        ->AddObserver(this);
-  }
+      : service_(service), weak_ptr_factory_(this) {}
 
   ~BluetoothDetector() override {
     if (adapter_.get())
       adapter_->RemoveObserver(this);
-    apps::AppLifetimeMonitorFactory::GetForBrowserContext(service_->profile())
-        ->RemoveObserver(this);
   }
 
   void Initialize() {
@@ -127,21 +118,6 @@ class EasyUnlockService::BluetoothDetector
     // to be turned on except through the Easy Unlock setup. If we step on any
     // toes in the future then we need to revisit this guard.
     if (adapter_->IsDiscoverable())
-      TurnOffBluetoothDiscoverability();
-  }
-
-  // apps::AppLifetimeMonitor::Observer:
-  void OnAppDeactivated(content::BrowserContext* context,
-                        const std::string& app_id) override {
-    // TODO(tengs): Refactor the lifetime management to EasyUnlockAppManager.
-    if (app_id == extension_misc::kEasyUnlockAppId)
-      TurnOffBluetoothDiscoverability();
-  }
-
-  void OnAppStop(content::BrowserContext* context,
-                 const std::string& app_id) override {
-    // TODO(tengs): Refactor the lifetime management to EasyUnlockAppManager.
-    if (app_id == extension_misc::kEasyUnlockAppId)
       TurnOffBluetoothDiscoverability();
   }
 
@@ -258,12 +234,10 @@ void EasyUnlockService::ResetLocalStateForUser(const AccountId& account_id) {
   EasyUnlockTpmKeyManager::ResetLocalStateForUser(account_id);
 }
 
-void EasyUnlockService::Initialize(
-    std::unique_ptr<EasyUnlockAppManager> app_manager) {
-  app_manager_ = std::move(app_manager);
-  app_manager_->EnsureReady(
-      base::Bind(&EasyUnlockService::InitializeOnAppManagerReady,
-                 weak_ptr_factory_.GetWeakPtr()));
+void EasyUnlockService::Initialize() {
+  InitializeInternal();
+
+  bluetooth_detector_->Initialize();
 }
 
 proximity_auth::ProximityAuthPrefManager*
@@ -295,10 +269,6 @@ bool EasyUnlockService::IsChromeOSLoginEnabled() const {
 
 bool EasyUnlockService::IsInLegacyHostMode() const {
   return false;
-}
-
-void EasyUnlockService::OpenSetupApp() {
-  app_manager_->LaunchSetup();
 }
 
 void EasyUnlockService::SetHardlockState(
@@ -376,9 +346,12 @@ bool EasyUnlockService::UpdateScreenlockState(ScreenlockState state) {
       HandleAuthFailure(GetAccountId());
   }
 
-  for (EasyUnlockServiceObserver& observer : observers_)
-    observer.OnScreenlockStateChanged(state);
   return true;
+}
+
+void EasyUnlockService::OnUserEnteredPassword() {
+  if (proximity_auth_system_)
+    proximity_auth_system_->CancelConnectionAttempt();
 }
 
 void EasyUnlockService::AttemptAuth(const AccountId& account_id) {
@@ -386,23 +359,45 @@ void EasyUnlockService::AttemptAuth(const AccountId& account_id) {
       GetType() == TYPE_REGULAR ? EasyUnlockAuthAttempt::TYPE_UNLOCK
                                 : EasyUnlockAuthAttempt::TYPE_SIGNIN;
   if (auth_attempt_) {
-    PA_LOG(INFO) << "Already attempting auth, skipping this request.";
+    PA_LOG(VERBOSE) << "Already attempting auth, skipping this request.";
+    if (auth_attempt_type == EasyUnlockAuthAttempt::TYPE_UNLOCK) {
+      SmartLockMetricsRecorder::RecordAuthResultUnlockFailure(
+          SmartLockMetricsRecorder::SmartLockAuthResultFailureReason::
+              kAlreadyAttemptingAuth);
+    }
     return;
   }
 
   if (!GetAccountId().is_valid()) {
     PA_LOG(ERROR) << "Empty user account. Auth attempt failed.";
+    if (auth_attempt_type == EasyUnlockAuthAttempt::TYPE_UNLOCK) {
+      SmartLockMetricsRecorder::RecordAuthResultUnlockFailure(
+          SmartLockMetricsRecorder::SmartLockAuthResultFailureReason::
+              kEmptyUserAccount);
+    }
     return;
   }
 
-  CHECK(GetAccountId() == account_id)
-      << "Check failed: " << GetAccountId().Serialize() << " vs "
-      << account_id.Serialize();
+  if (GetAccountId() != account_id) {
+    if (auth_attempt_type == EasyUnlockAuthAttempt::TYPE_UNLOCK) {
+      SmartLockMetricsRecorder::RecordAuthResultUnlockFailure(
+          SmartLockMetricsRecorder::SmartLockAuthResultFailureReason::
+              kInvalidAccoundId);
+    }
+    PA_LOG(ERROR) << "Check failed: " << GetAccountId().Serialize() << " vs "
+                  << account_id.Serialize();
+    return;
+  }
 
-  auth_attempt_.reset(new EasyUnlockAuthAttempt(app_manager_.get(), account_id,
-                                                auth_attempt_type));
-  if (!auth_attempt_->Start())
+  auth_attempt_.reset(new EasyUnlockAuthAttempt(account_id, auth_attempt_type));
+  if (!auth_attempt_->Start()) {
+    if (auth_attempt_type == EasyUnlockAuthAttempt::TYPE_UNLOCK) {
+      SmartLockMetricsRecorder::RecordAuthResultUnlockFailure(
+          SmartLockMetricsRecorder::SmartLockAuthResultFailureReason::
+              kAuthAttemptCannotStart);
+    }
     auth_attempt_.reset();
+  }
 
   // TODO(tengs): We notify ProximityAuthSystem whenever unlock attempts are
   // attempted. However, we ideally should refactor the auth attempt logic to
@@ -494,27 +489,6 @@ void EasyUnlockService::CheckCryptohomeKeysAndMaybeHardlock() {
                  weak_ptr_factory_.GetWeakPtr(), account_id, paired_devices));
 }
 
-void EasyUnlockService::SetTrialRun() {
-  DCHECK_EQ(GetType(), TYPE_REGULAR);
-
-  EasyUnlockScreenlockStateHandler* handler = GetScreenlockStateHandler();
-  if (handler)
-    handler->SetTrialRun();
-}
-
-void EasyUnlockService::RecordClickOnLockIcon() {
-  if (screenlock_state_handler_)
-    screenlock_state_handler_->RecordClickOnLockIcon();
-}
-
-void EasyUnlockService::AddObserver(EasyUnlockServiceObserver* observer) {
-  observers_.AddObserver(observer);
-}
-
-void EasyUnlockService::RemoveObserver(EasyUnlockServiceObserver* observer) {
-  observers_.RemoveObserver(observer);
-}
-
 void EasyUnlockService::Shutdown() {
   if (shut_down_)
     return;
@@ -533,7 +507,6 @@ void EasyUnlockService::Shutdown() {
 void EasyUnlockService::UpdateAppState() {
   if (IsAllowed()) {
     EnsureTpmKeyPresentIfNeeded();
-    app_manager_->LoadApp();
 
     if (proximity_auth_system_)
       proximity_auth_system_->Start();
@@ -545,28 +518,17 @@ void EasyUnlockService::UpdateAppState() {
 
     // If the service is not allowed due to bluetooth not being detected just
     // after system suspend is done, give bluetooth more time to be detected
-    // before disabling the app (and resetting screenlock state).
+    // before resetting screenlock state.
     bluetooth_waking_up = power_monitor_.get() && power_monitor_->waking_up() &&
                           !bluetooth_detector_->IsPresent();
 
     if (!bluetooth_waking_up) {
-      app_manager_->DisableAppIfLoaded();
-
       if (proximity_auth_system_)
         proximity_auth_system_->Stop();
 
       power_monitor_.reset();
     }
   }
-}
-
-void EasyUnlockService::DisableAppWithoutResettingScreenlockState() {
-  app_manager_->DisableAppIfLoaded();
-}
-
-void EasyUnlockService::NotifyTurnOffOperationStatusChanged() {
-  for (EasyUnlockServiceObserver& observer : observers_)
-    observer.OnTurnOffOperationStatusChanged();
 }
 
 void EasyUnlockService::ResetScreenlockState() {
@@ -582,14 +544,6 @@ void EasyUnlockService::SetScreenlockHardlockedState(
   }
   if (state != EasyUnlockScreenlockStateHandler::NO_HARDLOCK)
     auth_attempt_.reset();
-}
-
-void EasyUnlockService::InitializeOnAppManagerReady() {
-  CHECK(app_manager_.get());
-
-  InitializeInternal();
-
-  bluetooth_detector_->Initialize();
 }
 
 void EasyUnlockService::OnBluetoothAdapterPresentChanged() {
@@ -690,7 +644,7 @@ void EasyUnlockService::SetProximityAuthDevices(
   }
 
   if (!proximity_auth_system_) {
-    PA_LOG(INFO) << "Creating ProximityAuthSystem.";
+    PA_LOG(VERBOSE) << "Creating ProximityAuthSystem.";
     proximity_auth_system_.reset(new proximity_auth::ProximityAuthSystem(
         GetType() == TYPE_SIGNIN
             ? proximity_auth::ProximityAuthSystem::SIGN_IN
@@ -729,10 +683,7 @@ void EasyUnlockService::OnCryptohomeKeysFetchedForChecking(
   }
 }
 
-void EasyUnlockService::HandleUserReauth(const UserContext& user_context) {}
-
 void EasyUnlockService::PrepareForSuspend() {
-  app_manager_->DisableAppIfLoaded();
   if (screenlock_state_handler_ && screenlock_state_handler_->IsActive())
     UpdateScreenlockState(ScreenlockState::BLUETOOTH_CONNECTING);
   if (proximity_auth_system_)

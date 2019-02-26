@@ -11,7 +11,7 @@
 #include "third_party/blink/renderer/core/style_property_shorthand.h"
 
 namespace blink {
-namespace CSSShorthand {
+namespace css_shorthand {
 
 bool Padding::ParseShorthand(
     bool important,
@@ -19,7 +19,7 @@ bool Padding::ParseShorthand(
     const CSSParserContext& context,
     const CSSParserLocalContext&,
     HeapVector<CSSPropertyValue, 256>& properties) const {
-  return CSSPropertyParserHelpers::ConsumeShorthandVia4Longhands(
+  return css_property_parser_helpers::ConsumeShorthandVia4Longhands(
       paddingShorthand(), important, context, range, properties);
 }
 
@@ -42,5 +42,5 @@ const CSSValue* Padding::CSSValueFromComputedStyleInternal(
                                                      allow_visited_style);
 }
 
-}  // namespace CSSShorthand
+}  // namespace css_shorthand
 }  // namespace blink

@@ -45,9 +45,9 @@
 #include "third_party/blink/renderer/platform/loader/subresource_integrity.h"
 #include "third_party/blink/renderer/platform/memory_coordinator.h"
 #include "third_party/blink/renderer/platform/platform_export.h"
+#include "third_party/blink/renderer/platform/scheduler/public/post_cancellable_task.h"
 #include "third_party/blink/renderer/platform/shared_buffer.h"
 #include "third_party/blink/renderer/platform/timer.h"
-#include "third_party/blink/renderer/platform/web_task_runner.h"
 #include "third_party/blink/renderer/platform/wtf/allocator.h"
 #include "third_party/blink/renderer/platform/wtf/hash_counted_set.h"
 #include "third_party/blink/renderer/platform/wtf/hash_set.h"
@@ -316,6 +316,10 @@ class PLATFORM_EXPORT Resource : public GarbageCollectedFinalized<Resource>,
   // revalidation is started SetStaleRevalidationStarted() should be called.
   bool StaleRevalidationRequested() const;
 
+  // Returns true if any response returned from the upstream in the redirect
+  // chain accessed the network.
+  bool NetworkAccessed() const;
+
   // Set that stale revalidation has been started so that subsequent
   // requests won't trigger it again. When stale revalidation is completed
   // this resource will be removed from the MemoryCache so there is no
@@ -354,10 +358,10 @@ class PLATFORM_EXPORT Resource : public GarbageCollectedFinalized<Resource>,
   void SetEncodedDataLength(int64_t value) {
     response_.SetEncodedDataLength(value);
   }
-  void SetEncodedBodyLength(int value) {
+  void SetEncodedBodyLength(int64_t value) {
     response_.SetEncodedBodyLength(value);
   }
-  void SetDecodedBodyLength(int value) {
+  void SetDecodedBodyLength(int64_t value) {
     response_.SetDecodedBodyLength(value);
   }
 
@@ -427,6 +431,19 @@ class PLATFORM_EXPORT Resource : public GarbageCollectedFinalized<Resource>,
  protected:
   Resource(const ResourceRequest&, ResourceType, const ResourceLoaderOptions&);
 
+  // Returns true if the resource has finished any processing it wanted to do
+  // after loading. Should only be used to decide whether to call
+  // NotifyFinished.
+  //
+  // By default this is the same as being loaded (i.e. no processing), but it is
+  // used by ScriptResource to signal that streaming JavaScript compilation
+  // completed. Note that classes overloading this method should also overload
+  // NotifyFinished to not call Resource::NotifyFinished until this value
+  // becomes true.
+  // TODO(hiroshige): Remove this when ScriptResourceContent is introduced.
+  virtual bool IsFinishedInternal() const { return IsLoaded(); }
+
+  virtual void NotifyDataReceived(const char* data, size_t size);
   virtual void NotifyFinished();
 
   void MarkClientFinished(ResourceClient*);
@@ -532,12 +549,6 @@ class PLATFORM_EXPORT Resource : public GarbageCollectedFinalized<Resource>,
   size_t encoded_size_memory_usage_;
   size_t decoded_size_;
 
-  // Resource::CalculateOverheadSize() is affected by changes in
-  // |m_resourceRequest.url()|, but |m_overheadSize| is not updated after
-  // initial |m_resourceRequest| is given, to reduce MemoryCache manipulation
-  // and thus potential bugs. crbug.com/594644
-  const size_t overhead_size_;
-
   String cache_identifier_;
 
   bool link_preload_;
@@ -566,6 +577,13 @@ class PLATFORM_EXPORT Resource : public GarbageCollectedFinalized<Resource>,
   TaskHandle async_finish_pending_clients_task_;
 
   ResourceRequest resource_request_;
+
+  // Resource::CalculateOverheadSize() is affected by changes in
+  // |m_resourceRequest.url()|, but |m_overheadSize| is not updated after
+  // initial |m_resourceRequest| is given, to reduce MemoryCache manipulation
+  // and thus potential bugs. crbug.com/594644
+  const size_t overhead_size_;
+
   Member<ResourceLoader> loader_;
   ResourceResponse response_;
 

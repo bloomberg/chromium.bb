@@ -61,7 +61,7 @@ int LLVMFuzzerTestOneInput(const uint8_t* data, size_t size) {
   media_data.primary_pointer_type = kPointerTypeFine;
   media_data.default_font_size = 16;
   media_data.three_d_enabled = true;
-  media_data.media_type = MediaTypeNames::screen;
+  media_data.media_type = media_type_names::kScreen;
   media_data.strict_mode = true;
   media_data.display_mode = kWebDisplayModeBrowser;
 
@@ -75,7 +75,9 @@ int LLVMFuzzerTestOneInput(const uint8_t* data, size_t size) {
   CString bytes = fuzzed_data.ConsumeRemainingBytes();
   String decoded_bytes = decoder.Decode(bytes.data(), bytes.length());
   scanner->AppendToEnd(decoded_bytes);
-  PreloadRequestStream requests = scanner->Scan(document_url, nullptr);
+  bool has_csp_meta_tag_unused = false;
+  PreloadRequestStream requests =
+      scanner->Scan(document_url, nullptr, has_csp_meta_tag_unused);
   preloader.TakeAndPreload(requests);
   return 0;
 }

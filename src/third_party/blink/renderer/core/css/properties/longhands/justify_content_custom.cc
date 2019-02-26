@@ -9,19 +9,19 @@
 #include "third_party/blink/renderer/core/style/computed_style.h"
 
 namespace blink {
-namespace CSSLonghand {
+namespace css_longhand {
 
 const CSSValue* JustifyContent::ParseSingleValue(
     CSSParserTokenRange& range,
     const CSSParserContext& context,
     const CSSParserLocalContext&) const {
   // justify-content property does not allow the <baseline-position> values.
-  if (CSSPropertyParserHelpers::IdentMatches<CSSValueFirst, CSSValueLast,
-                                             CSSValueBaseline>(
+  if (css_property_parser_helpers::IdentMatches<CSSValueFirst, CSSValueLast,
+                                                CSSValueBaseline>(
           range.Peek().Id()))
     return nullptr;
-  return CSSParsingUtils::ConsumeContentDistributionOverflowPosition(
-      range, CSSParsingUtils::IsContentPositionOrLeftOrRightKeyword);
+  return css_parsing_utils::ConsumeContentDistributionOverflowPosition(
+      range, css_parsing_utils::IsContentPositionOrLeftOrRightKeyword);
 }
 
 const CSSValue* JustifyContent::CSSValueFromComputedStyleInternal(
@@ -35,5 +35,5 @@ const CSSValue* JustifyContent::CSSValueFromComputedStyleInternal(
           style.JustifyContent());
 }
 
-}  // namespace CSSLonghand
+}  // namespace css_longhand
 }  // namespace blink

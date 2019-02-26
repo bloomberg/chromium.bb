@@ -32,6 +32,7 @@
 
 #include <memory>
 #include "services/network/public/cpp/shared_url_loader_factory.h"
+#include "services/network/public/mojom/referrer_policy.mojom-shared.h"
 #include "third_party/blink/public/mojom/service_worker/service_worker_installed_scripts_manager.mojom-blink.h"
 #include "third_party/blink/public/platform/modules/service_worker/web_service_worker_network_provider.h"
 #include "third_party/blink/public/platform/modules/service_worker/web_service_worker_provider.h"
@@ -46,6 +47,7 @@
 #include "third_party/blink/renderer/core/execution_context/security_context.h"
 #include "third_party/blink/renderer/core/frame/csp/content_security_policy.h"
 #include "third_party/blink/renderer/core/inspector/console_message.h"
+#include "third_party/blink/renderer/core/inspector/worker_devtools_params.h"
 #include "third_party/blink/renderer/core/loader/frame_load_request.h"
 #include "third_party/blink/renderer/core/loader/worker_fetch_context.h"
 #include "third_party/blink/renderer/core/probe/core_probes.h"
@@ -55,7 +57,6 @@
 #include "third_party/blink/renderer/core/workers/worker_classic_script_loader.h"
 #include "third_party/blink/renderer/core/workers/worker_content_settings_client.h"
 #include "third_party/blink/renderer/core/workers/worker_global_scope.h"
-#include "third_party/blink/renderer/core/workers/worker_inspector_proxy.h"
 #include "third_party/blink/renderer/modules/indexeddb/indexed_db_client.h"
 #include "third_party/blink/renderer/modules/service_worker/service_worker_global_scope_client.h"
 #include "third_party/blink/renderer/modules/service_worker/service_worker_global_scope_proxy.h"
@@ -65,10 +66,8 @@
 #include "third_party/blink/renderer/platform/instrumentation/tracing/trace_event.h"
 #include "third_party/blink/renderer/platform/loader/fetch/substitute_data.h"
 #include "third_party/blink/renderer/platform/network/network_utils.h"
-#include "third_party/blink/renderer/platform/runtime_enabled_features.h"
 #include "third_party/blink/renderer/platform/shared_buffer.h"
 #include "third_party/blink/renderer/platform/weborigin/kurl.h"
-#include "third_party/blink/renderer/platform/weborigin/referrer_policy.h"
 #include "third_party/blink/renderer/platform/weborigin/security_origin.h"
 #include "third_party/blink/renderer/platform/weborigin/security_policy.h"
 #include "third_party/blink/renderer/platform/wtf/functional.h"
@@ -123,7 +122,6 @@ WebEmbeddedWorkerImpl::WebEmbeddedWorkerImpl(
         interface_provider_info)
     : worker_context_client_(std::move(client)),
       content_settings_client_(std::move(content_settings_client)),
-      worker_inspector_proxy_(WorkerInspectorProxy::Create()),
       pause_after_download_state_(kDontPauseAfterDownload),
       waiting_for_debugger_state_(kNotWaitingForDebugger),
       cache_storage_info_(std::move(cache_storage_info)),
@@ -169,7 +167,7 @@ void WebEmbeddedWorkerImpl::StartWorkerContext(
   // https://crbug.com/590714
   KURL script_url = worker_start_data_.script_url;
   worker_start_data_.address_space = mojom::IPAddressSpace::kPublic;
-  if (NetworkUtils::IsReservedIPAddress(script_url.Host()))
+  if (network_utils::IsReservedIPAddress(script_url.Host()))
     worker_start_data_.address_space = mojom::IPAddressSpace::kPrivate;
   if (SecurityOrigin::Create(script_url)->IsLocalhost())
     worker_start_data_.address_space = mojom::IPAddressSpace::kLocal;
@@ -231,7 +229,8 @@ void WebEmbeddedWorkerImpl::TerminateWorkerContext() {
     return;
   }
   worker_thread_->Terminate();
-  worker_inspector_proxy_->WorkerThreadTerminated();
+  DevToolsAgent::WorkerThreadTerminated(shadow_page_->GetDocument(),
+                                        worker_thread_.get());
 }
 
 void WebEmbeddedWorkerImpl::ResumeAfterDownload() {
@@ -280,11 +279,6 @@ void WebEmbeddedWorkerImpl::BindDevToolsAgent(
           std::move(devtools_agent_request)));
 }
 
-void WebEmbeddedWorkerImpl::PostMessageToPageInspector(int session_id,
-                                                       const String& message) {
-  worker_inspector_proxy_->DispatchMessageFromWorker(session_id, message);
-}
-
 std::unique_ptr<WebApplicationCacheHost>
 WebEmbeddedWorkerImpl::CreateApplicationCacheHost(
     WebApplicationCacheHostClient*) {
@@ -310,16 +304,24 @@ void WebEmbeddedWorkerImpl::OnShadowPageInitialized() {
     return;
   }
 
+  // If this is a module service worker, start the worker thread now. The worker
+  // thread will fetch the script.
+  if (worker_start_data_.script_type == mojom::ScriptType::kModule) {
+    StartWorkerThread();
+    return;
+  }
+
   // Note: We only get here if this is a new (i.e., not installed) service
   // worker.
   DCHECK(!main_script_loader_);
-  main_script_loader_ = WorkerClassicScriptLoader::Create();
+  main_script_loader_ = MakeGarbageCollected<WorkerClassicScriptLoader>();
   main_script_loader_->LoadTopLevelScriptAsynchronously(
       *shadow_page_->GetDocument(), worker_start_data_.script_url,
       mojom::RequestContextType::SERVICE_WORKER,
       network::mojom::FetchRequestMode::kSameOrigin,
       network::mojom::FetchCredentialsMode::kSameOrigin,
-      worker_start_data_.address_space, base::OnceClosure(),
+      worker_start_data_.address_space, false /* is_nested_worker */,
+      base::OnceClosure(),
       Bind(&WebEmbeddedWorkerImpl::OnScriptLoaderFinished,
            WTF::Unretained(this)));
   // Do nothing here since OnScriptLoaderFinished() might have been already
@@ -374,17 +376,13 @@ void WebEmbeddedWorkerImpl::StartWorkerThread() {
   ProvideContentSettingsClientToWorker(worker_clients,
                                        std::move(content_settings_client_));
   ProvideServiceWorkerGlobalScopeClientToWorker(
-      worker_clients,
-      new ServiceWorkerGlobalScopeClient(*worker_context_client_));
+      worker_clients, MakeGarbageCollected<ServiceWorkerGlobalScopeClient>(
+                          *worker_context_client_));
 
-  std::unique_ptr<WebWorkerFetchContext> web_worker_fetch_context =
+  // |web_worker_fetch_context| is null in some unit tests.
+  scoped_refptr<WebWorkerFetchContext> web_worker_fetch_context =
       worker_context_client_->CreateServiceWorkerFetchContext(
           shadow_page_->DocumentLoader()->GetServiceWorkerNetworkProvider());
-  // |web_worker_fetch_context| is null in some unit tests.
-  if (web_worker_fetch_context) {
-    ProvideWorkerFetchContextToWorker(worker_clients,
-                                      std::move(web_worker_fetch_context));
-  }
 
   std::unique_ptr<WorkerSettings> worker_settings =
       std::make_unique<WorkerSettings>(document->GetSettings());
@@ -393,28 +391,21 @@ void WebEmbeddedWorkerImpl::StartWorkerThread() {
   String source_code;
   std::unique_ptr<Vector<char>> cached_meta_data;
 
-  // TODO(https://crbug.com/824647): Use blink::mojom::ScriptType everywhere
-  // and deprecate blink::ScriptType.
-  // Remove this line after removed all blink::ScriptType.
-  ScriptType script_type =
-      (worker_start_data_.script_type == mojom::ScriptType::kModule)
-          ? ScriptType::kModule
-          : ScriptType::kClassic;
-
   // |main_script_loader_| isn't created if the InstalledScriptsManager had the
   // script.
   if (main_script_loader_) {
     ContentSecurityPolicy* content_security_policy =
         main_script_loader_->GetContentSecurityPolicy();
-    ReferrerPolicy referrer_policy = kReferrerPolicyDefault;
+    network::mojom::ReferrerPolicy referrer_policy =
+        network::mojom::ReferrerPolicy::kDefault;
     if (!main_script_loader_->GetReferrerPolicy().IsNull()) {
       SecurityPolicy::ReferrerPolicyFromHeaderValue(
           main_script_loader_->GetReferrerPolicy(),
           kDoNotSupportReferrerPolicyLegacyKeywords, &referrer_policy);
     }
     global_scope_creation_params = std::make_unique<GlobalScopeCreationParams>(
-        worker_start_data_.script_url, script_type,
-        worker_start_data_.user_agent,
+        worker_start_data_.script_url, worker_start_data_.script_type,
+        worker_start_data_.user_agent, std::move(web_worker_fetch_context),
         content_security_policy ? content_security_policy->Headers()
                                 : Vector<CSPHeaderAndType>(),
         referrer_policy, starter_origin, starter_secure_context,
@@ -432,10 +423,11 @@ void WebEmbeddedWorkerImpl::StartWorkerThread() {
     // We don't have to set ContentSecurityPolicy and ReferrerPolicy. They're
     // served by the installed scripts manager on the worker thread.
     global_scope_creation_params = std::make_unique<GlobalScopeCreationParams>(
-        worker_start_data_.script_url, script_type,
-        worker_start_data_.user_agent, Vector<CSPHeaderAndType>(),
-        kReferrerPolicyDefault, starter_origin, starter_secure_context,
-        starter_https_state, worker_clients, worker_start_data_.address_space,
+        worker_start_data_.script_url, worker_start_data_.script_type,
+        worker_start_data_.user_agent, std::move(web_worker_fetch_context),
+        Vector<CSPHeaderAndType>(), network::mojom::ReferrerPolicy::kDefault,
+        starter_origin, starter_secure_context, starter_https_state,
+        worker_clients, worker_start_data_.address_space,
         nullptr /* OriginTrialTokens */, devtools_worker_token_,
         std::move(worker_settings),
         static_cast<V8CacheOptions>(worker_start_data_.v8_cache_options),
@@ -443,38 +435,35 @@ void WebEmbeddedWorkerImpl::StartWorkerThread() {
         std::move(interface_provider_info_));
   }
 
-  if (RuntimeEnabledFeatures::ServiceWorkerScriptFullCodeCacheEnabled()) {
-    global_scope_creation_params->v8_cache_options =
-        kV8CacheOptionsFullCodeWithoutHeatCheck;
-  }
+  // Generate the full code cache in the first execution of the script.
+  global_scope_creation_params->v8_cache_options =
+      kV8CacheOptionsFullCodeWithoutHeatCheck;
 
   worker_thread_ = std::make_unique<ServiceWorkerThread>(
       ServiceWorkerGlobalScopeProxy::Create(*this, *worker_context_client_),
       std::move(installed_scripts_manager_), std::move(cache_storage_info_));
 
+  auto devtools_params = DevToolsAgent::WorkerThreadCreated(
+      document, worker_thread_.get(), worker_start_data_.script_url);
+
   // We have a dummy document here for loading but it doesn't really represent
   // the document/frame of associated document(s) for this worker. Here we
   // populate the task runners with default task runners of the main thread.
-  worker_thread_->Start(
-      std::move(global_scope_creation_params),
-      WorkerBackingThreadStartupData::CreateDefault(),
-      worker_inspector_proxy_->ShouldPauseOnWorkerStart(document),
-      ParentExecutionContextTaskRunners::Create());
-
-  worker_inspector_proxy_->WorkerThreadCreated(document, worker_thread_.get(),
-                                               worker_start_data_.script_url);
+  worker_thread_->Start(std::move(global_scope_creation_params),
+                        WorkerBackingThreadStartupData::CreateDefault(),
+                        std::move(devtools_params),
+                        ParentExecutionContextTaskRunners::Create());
 
   // > Switching on job’s worker type, run these substeps with the following
   // > options:
   // https://w3c.github.io/ServiceWorker/#update-algorithm
-  if (script_type == ScriptType::kClassic) {
+  if (worker_start_data_.script_type == mojom::ScriptType::kClassic) {
     // > "classic": Fetch a classic worker script given job’s serialized script
     // > url, job’s client, "serviceworker", and the to-be-created environment
     // > settings object for this service worker.
-    // Service worker is origin-bound, so use kSharableCrossOrigin.
     worker_thread_->EvaluateClassicScript(
-        worker_start_data_.script_url, kSharableCrossOrigin, source_code,
-        std::move(cached_meta_data), v8_inspector::V8StackTraceId());
+        worker_start_data_.script_url, source_code, std::move(cached_meta_data),
+        v8_inspector::V8StackTraceId());
   } else {
     // > "module": Fetch a module worker script graph given job’s serialized
     // > script url, job’s client, "serviceworker", "omit", and the

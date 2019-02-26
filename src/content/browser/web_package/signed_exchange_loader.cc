@@ -33,6 +33,8 @@ namespace content {
 namespace {
 
 constexpr char kLoadResultHistogram[] = "SignedExchange.LoadResult";
+constexpr char kPrefetchLoadResultHistogram[] =
+    "SignedExchange.Prefetch.LoadResult";
 
 net::RedirectInfo CreateRedirectInfo(const GURL& new_url,
                                      const GURL& outer_request_url) {
@@ -129,6 +131,11 @@ SignedExchangeLoader::SignedExchangeLoader(
   DCHECK(signed_exchange_utils::IsSignedExchangeHandlingEnabled());
   DCHECK(outer_request_url_.is_valid());
 
+  if (!(load_flags_ & net::LOAD_PREFETCH)) {
+    metric_recorder_->OnSignedExchangeNonPrefetch(
+        outer_request_url_, outer_response_.response_time);
+  }
+
   // https://wicg.github.io/webpackage/draft-yasskin-http-origin-signed-responses.html#privacy-considerations
   // This can be difficult to determine when the exchange is being loaded from
   // local disk, but when the client itself requested the exchange over a
@@ -136,8 +143,15 @@ SignedExchangeLoader::SignedExchangeLoader(
   // transport layer, and MUST NOT accept exchanges transferred over plain HTTP
   // without TLS. [spec text]
   if (!IsOriginSecure(outer_request_url)) {
-    UMA_HISTOGRAM_ENUMERATION(kLoadResultHistogram,
-                              SignedExchangeLoadResult::kSXGServedFromNonHTTPS);
+    const SignedExchangeLoadResult result =
+        SignedExchangeLoadResult::kSXGServedFromNonHTTPS;
+    UMA_HISTOGRAM_ENUMERATION(kLoadResultHistogram, result);
+    if (load_flags_ & net::LOAD_PREFETCH) {
+      UMA_HISTOGRAM_ENUMERATION(kPrefetchLoadResultHistogram, result);
+      metric_recorder_->OnSignedExchangePrefetchFinished(
+          outer_request_url_, outer_response_.response_time);
+    }
+
     devtools_proxy_->ReportError(
         "Signed exchange response from non secure origin is not supported.",
         base::nullopt /* error_field */);
@@ -242,7 +256,8 @@ void SignedExchangeLoader::OnComplete(
 void SignedExchangeLoader::FollowRedirect(
     const base::Optional<std::vector<std::string>>&
         to_be_removed_request_headers,
-    const base::Optional<net::HttpRequestHeaders>& modified_request_headers) {
+    const base::Optional<net::HttpRequestHeaders>& modified_request_headers,
+    const base::Optional<GURL>& new_url) {
   NOTREACHED();
 }
 
@@ -282,9 +297,10 @@ void SignedExchangeLoader::OnHTTPExchangeFound(
     const network::ResourceResponseHead& resource_response,
     std::unique_ptr<net::SourceStream> payload_stream) {
   UMA_HISTOGRAM_ENUMERATION(kLoadResultHistogram, result);
-
   if (load_flags_ & net::LOAD_PREFETCH) {
-    metric_recorder_->OnSignedExchangePrefetchFinished(request_url, error);
+    UMA_HISTOGRAM_ENUMERATION(kPrefetchLoadResultHistogram, result);
+    metric_recorder_->OnSignedExchangePrefetchFinished(
+        outer_request_url_, outer_response_.response_time);
   }
 
   if (error) {
@@ -295,9 +311,10 @@ void SignedExchangeLoader::OnHTTPExchangeFound(
       forwarding_client_->OnComplete(network::URLLoaderCompletionStatus(error));
       return;
     }
+
     // Make a fallback redirect to |request_url|.
-    DCHECK(!has_redirected_to_fallback_url_);
-    has_redirected_to_fallback_url_ = true;
+    DCHECK(!fallback_url_);
+    fallback_url_ = request_url;
     DCHECK(outer_response_timing_info_);
     forwarding_client_->OnReceiveRedirect(
         CreateRedirectInfo(request_url, outer_request_url_),
@@ -305,6 +322,7 @@ void SignedExchangeLoader::OnHTTPExchangeFound(
     forwarding_client_.reset();
     return;
   }
+  inner_request_url_ = request_url;
 
   // TODO(https://crbug.com/803774): Handle no-GET request_method as a error.
   DCHECK(outer_response_timing_info_);
@@ -329,6 +347,8 @@ void SignedExchangeLoader::OnHTTPExchangeFound(
         network::mojom::kURLLoadOptionSendSSLInfoWithResponse)) {
     inner_response_head_shown_to_client.ssl_info = base::nullopt;
   }
+  inner_response_head_shown_to_client.was_fetched_via_cache =
+      outer_response_.was_fetched_via_cache;
   client_->OnReceiveResponse(inner_response_head_shown_to_client);
 
   // Currently we always assume that we have body.
@@ -358,6 +378,7 @@ void SignedExchangeLoader::FinishReadingBody(int result) {
   // TODO(https://crbug.com/803774): Fill the data length information too.
   network::URLLoaderCompletionStatus status;
   status.error_code = result;
+  status.completion_time = base::TimeTicks::Now();
 
   if (ssl_info_) {
     DCHECK((url_loader_options_ &

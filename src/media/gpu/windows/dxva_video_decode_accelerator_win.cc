@@ -66,6 +66,7 @@
 
 namespace {
 
+#if defined(ARCH_CPU_X86_FAMILY)
 // AMD
 // Path is appended on to the PROGRAM_FILES base path.
 const wchar_t kAMDVPXDecoderDLLPath[] =
@@ -85,6 +86,7 @@ const CLSID CLSID_AMDWebmMfVp9Dec = {
     0x67d6,
     0x48ab,
     {0x89, 0xfb, 0xa6, 0xec, 0x65, 0x55, 0x49, 0x70}};
+#endif
 
 const wchar_t kMSVP9DecoderDLLName[] = L"MSVP9DEC.dll";
 
@@ -346,8 +348,7 @@ namespace media {
 
 static const VideoCodecProfile kSupportedProfiles[] = {
     H264PROFILE_BASELINE, H264PROFILE_MAIN,    H264PROFILE_HIGH,
-    VP8PROFILE_ANY,       VP9PROFILE_PROFILE0, VP9PROFILE_PROFILE1,
-    VP9PROFILE_PROFILE2,  VP9PROFILE_PROFILE3};
+    VP8PROFILE_ANY,       VP9PROFILE_PROFILE0, VP9PROFILE_PROFILE2};
 
 CreateDXGIDeviceManager
     DXVAVideoDecodeAccelerator::create_dxgi_device_manager_ = NULL;
@@ -618,49 +619,12 @@ class VP9ConfigChangeDetector : public ConfigChangeDetector {
   // Detects stream configuration changes.
   // Returns false on failure.
   bool DetectConfig(const uint8_t* stream, unsigned int size) override {
-    parser_.SetStream(stream, size);
+    parser_.SetStream(stream, size, nullptr);
     Vp9FrameHeader fhdr;
-    while (parser_.ParseNextFrame(&fhdr) == Vp9Parser::kOk) {
+    std::unique_ptr<DecryptConfig> null_config;
+    while (parser_.ParseNextFrame(&fhdr, &null_config) == Vp9Parser::kOk) {
       visible_rect_ = gfx::Rect(fhdr.render_width, fhdr.render_height);
-
-      // TODO(hubbe): move the conversion from Vp9FrameHeader to VideoColorSpace
-      // into a common, reusable location.
-      color_space_.range = fhdr.color_range ? gfx::ColorSpace::RangeID::FULL
-                                            : gfx::ColorSpace::RangeID::INVALID;
-      color_space_.primaries = VideoColorSpace::PrimaryID::INVALID;
-      color_space_.transfer = VideoColorSpace::TransferID::INVALID;
-      color_space_.matrix = VideoColorSpace::MatrixID::INVALID;
-      switch (fhdr.color_space) {
-        case Vp9ColorSpace::RESERVED:
-        case Vp9ColorSpace::UNKNOWN:
-          break;
-        case Vp9ColorSpace::BT_601:
-        case Vp9ColorSpace::SMPTE_170:
-          color_space_.primaries = VideoColorSpace::PrimaryID::SMPTE170M;
-          color_space_.transfer = VideoColorSpace::TransferID::SMPTE170M;
-          color_space_.matrix = VideoColorSpace::MatrixID::SMPTE170M;
-          break;
-        case Vp9ColorSpace::BT_709:
-          color_space_.primaries = VideoColorSpace::PrimaryID::BT709;
-          color_space_.transfer = VideoColorSpace::TransferID::BT709;
-          color_space_.matrix = VideoColorSpace::MatrixID::BT709;
-          break;
-        case Vp9ColorSpace::SMPTE_240:
-          color_space_.primaries = VideoColorSpace::PrimaryID::SMPTE240M;
-          color_space_.transfer = VideoColorSpace::TransferID::SMPTE240M;
-          color_space_.matrix = VideoColorSpace::MatrixID::SMPTE240M;
-          break;
-        case Vp9ColorSpace::BT_2020:
-          color_space_.primaries = VideoColorSpace::PrimaryID::BT2020;
-          color_space_.transfer = VideoColorSpace::TransferID::BT2020_10;
-          color_space_.matrix = VideoColorSpace::MatrixID::BT2020_NCL;
-          break;
-        case Vp9ColorSpace::SRGB:
-          color_space_.primaries = VideoColorSpace::PrimaryID::BT709;
-          color_space_.transfer = VideoColorSpace::TransferID::IEC61966_2_1;
-          color_space_.matrix = VideoColorSpace::MatrixID::BT709;
-          break;
-      }
+      color_space_ = fhdr.GetColorSpace();
 
       gfx::Size new_size(fhdr.frame_width, fhdr.frame_height);
       if (!size_.IsEmpty() && !pending_config_changed_ && !config_changed_ &&
@@ -809,11 +773,8 @@ bool DXVAVideoDecodeAccelerator::Initialize(const Config& config,
       break;
     }
   }
-  if (!profile_supported) {
-    RETURN_AND_NOTIFY_ON_FAILURE(false,
-                                 "Unsupported h.264, vp8, or vp9 profile",
-                                 PLATFORM_FAILURE, false);
-  }
+  RETURN_ON_FAILURE(profile_supported, "Unsupported h.264, vp8, or vp9 profile",
+                    false);
 
   if (config.profile == VP9PROFILE_PROFILE2 ||
       config.profile == VP9PROFILE_PROFILE3 ||
@@ -858,47 +819,38 @@ bool DXVAVideoDecodeAccelerator::Initialize(const Config& config,
         ::GetProcAddress(dxgi_manager_dll, "MFCreateDXGIDeviceManager"));
   }
 
-  RETURN_AND_NOTIFY_ON_FAILURE(make_context_current_cb_.Run(),
-                               "Failed to make context current",
-                               PLATFORM_FAILURE, false);
+  RETURN_ON_FAILURE(make_context_current_cb_.Run(),
+                    "Failed to make context current", false);
 
-  RETURN_AND_NOTIFY_ON_FAILURE(
+  RETURN_ON_FAILURE(
       gl::g_driver_egl.ext.b_EGL_ANGLE_surface_d3d_texture_2d_share_handle,
-      "EGL_ANGLE_surface_d3d_texture_2d_share_handle unavailable",
-      PLATFORM_FAILURE, false);
+      "EGL_ANGLE_surface_d3d_texture_2d_share_handle unavailable", false);
 
-  RETURN_AND_NOTIFY_ON_FAILURE(gl::GLFence::IsSupported(),
-                               "GL fences are unsupported", PLATFORM_FAILURE,
-                               false);
+  RETURN_ON_FAILURE(gl::GLFence::IsSupported(), "GL fences are unsupported",
+                    false);
 
   State state = GetState();
-  RETURN_AND_NOTIFY_ON_FAILURE((state == kUninitialized),
-                               "Initialize: invalid state: " << state,
-                               ILLEGAL_STATE, false);
+  RETURN_ON_FAILURE((state == kUninitialized),
+                    "Initialize: invalid state: " << state, false);
 
-  RETURN_AND_NOTIFY_ON_FAILURE(InitializeMediaFoundation(),
-                               "Could not initialize Media Foundartion",
-                               PLATFORM_FAILURE, false);
+  RETURN_ON_FAILURE(InitializeMediaFoundation(),
+                    "Could not initialize Media Foundartion", false);
 
   config_ = config;
 
-  RETURN_AND_NOTIFY_ON_FAILURE(InitDecoder(config.profile),
-                               "Failed to initialize decoder", PLATFORM_FAILURE,
-                               false);
+  RETURN_ON_FAILURE(InitDecoder(config.profile), "Failed to initialize decoder",
+                    false);
 
-  RETURN_AND_NOTIFY_ON_FAILURE(GetStreamsInfoAndBufferReqs(),
-                               "Failed to get input/output stream info.",
-                               PLATFORM_FAILURE, false);
+  RETURN_ON_FAILURE(GetStreamsInfoAndBufferReqs(),
+                    "Failed to get input/output stream info.", false);
 
-  RETURN_AND_NOTIFY_ON_FAILURE(
+  RETURN_ON_FAILURE(
       SendMFTMessage(MFT_MESSAGE_NOTIFY_BEGIN_STREAMING, 0),
-      "Send MFT_MESSAGE_NOTIFY_BEGIN_STREAMING notification failed",
-      PLATFORM_FAILURE, false);
+      "Send MFT_MESSAGE_NOTIFY_BEGIN_STREAMING notification failed", false);
 
-  RETURN_AND_NOTIFY_ON_FAILURE(
+  RETURN_ON_FAILURE(
       SendMFTMessage(MFT_MESSAGE_NOTIFY_START_OF_STREAM, 0),
-      "Send MFT_MESSAGE_NOTIFY_START_OF_STREAM notification failed",
-      PLATFORM_FAILURE, false);
+      "Send MFT_MESSAGE_NOTIFY_START_OF_STREAM notification failed", false);
 
   if (codec_ == kCodecH264)
     config_change_detector_.reset(new H264ConfigChangeDetector);
@@ -1637,6 +1589,8 @@ bool DXVAVideoDecodeAccelerator::InitDecoder(VideoCodecProfile profile) {
       program_files_key = base::DIR_PROGRAM_FILES6432;
     }
 
+// Avoid loading AMD VP9 decoder on Windows ARM64.
+#if defined(ARCH_CPU_X86_FAMILY)
     // AMD
     if (!decoder_dll &&
         enable_accelerated_vpx_decode_ & gpu::GpuPreferences::VPX_VENDOR_AMD &&
@@ -1651,6 +1605,7 @@ bool DXVAVideoDecodeAccelerator::InitDecoder(VideoCodecProfile profile) {
                                       LOAD_WITH_ALTERED_SEARCH_PATH);
       }
     }
+#endif
   }
 
   if (!decoder_dll) {

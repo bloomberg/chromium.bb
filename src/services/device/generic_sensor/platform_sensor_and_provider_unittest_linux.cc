@@ -2,12 +2,15 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include <memory>
+
 #include "base/files/file_util.h"
 #include "base/files/scoped_temp_dir.h"
 #include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
+#include "base/threading/thread_restrictions.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "services/device/generic_sensor/generic_sensor_consts.h"
 #include "services/device/generic_sensor/linux/sensor_data_linux.h"
@@ -146,19 +149,25 @@ class PlatformSensorAndProviderLinuxTest : public ::testing::Test {
     provider_->SetSensorDeviceManagerForTesting(std::move(manager));
 
     ASSERT_TRUE(sensors_dir_.CreateUniqueTempDir());
+
+    disallow_blocking_.reset(new base::ScopedDisallowBlocking);
   }
 
   void TearDown() override {
+    // TODO(rakuco): It should be possible to make |disallow_blocking_| a
+    // regular, non-std::unique_ptr member once we port
+    // PlatformSensorProviderLinux and accompanying APIs to base::PostTask().
+    // At the moment we need to turn |disallow_blocking_| off here because
+    // stopping PlatformSensorProviderLinux's polling thread is a blocking
+    // operation.
+    disallow_blocking_.reset(nullptr);
+
     provider_->SetSensorDeviceManagerForTesting(nullptr);
     ASSERT_TRUE(sensors_dir_.Delete());
     base::RunLoop().RunUntilIdle();
   }
 
  protected:
-  void SensorsCreated(scoped_refptr<PlatformSensor> sensor) {
-    platform_sensor_vector_.push_back(sensor);
-  }
-
   void SensorCreated(scoped_refptr<PlatformSensor> sensor) {
     platform_sensor_ = sensor;
     run_loop_->Quit();
@@ -189,31 +198,35 @@ class PlatformSensorAndProviderLinuxTest : public ::testing::Test {
     SensorPathsLinux data;
     EXPECT_TRUE(InitSensorData(type, &data));
 
-    base::FilePath sensor_dir = sensors_dir_.GetPath();
-    if (!data.sensor_scale_name.empty() && scaling != 0) {
-      base::FilePath sensor_scale_file =
-          base::FilePath(sensor_dir).Append(data.sensor_scale_name);
-      WriteValueToFile(sensor_scale_file, scaling);
-    }
+    {
+      base::ScopedAllowBlockingForTesting allow_blocking;
 
-    if (!data.sensor_offset_file_name.empty()) {
-      base::FilePath sensor_offset_file =
-          base::FilePath(sensor_dir).Append(data.sensor_offset_file_name);
-      WriteValueToFile(sensor_offset_file, offset);
-    }
+      base::FilePath sensor_dir = sensors_dir_.GetPath();
+      if (!data.sensor_scale_name.empty() && scaling != 0) {
+        base::FilePath sensor_scale_file =
+            base::FilePath(sensor_dir).Append(data.sensor_scale_name);
+        WriteValueToFile(sensor_scale_file, scaling);
+      }
 
-    if (!data.sensor_frequency_file_name.empty() && frequency != 0) {
-      base::FilePath sensor_frequency_file =
-          base::FilePath(sensor_dir).Append(data.sensor_frequency_file_name);
-      WriteValueToFile(sensor_frequency_file, frequency);
-    }
+      if (!data.sensor_offset_file_name.empty()) {
+        base::FilePath sensor_offset_file =
+            base::FilePath(sensor_dir).Append(data.sensor_offset_file_name);
+        WriteValueToFile(sensor_offset_file, offset);
+      }
 
-    uint32_t i = 0;
-    for (const auto& file_names : data.sensor_file_names) {
-      for (const auto& name : file_names) {
-        base::FilePath sensor_file = base::FilePath(sensor_dir).Append(name);
-        WriteValueToFile(sensor_file, values[i++]);
-        break;
+      if (!data.sensor_frequency_file_name.empty() && frequency != 0) {
+        base::FilePath sensor_frequency_file =
+            base::FilePath(sensor_dir).Append(data.sensor_frequency_file_name);
+        WriteValueToFile(sensor_frequency_file, frequency);
+      }
+
+      uint32_t i = 0;
+      for (const auto& file_names : data.sensor_file_names) {
+        for (const auto& name : file_names) {
+          base::FilePath sensor_file = base::FilePath(sensor_dir).Append(name);
+          WriteValueToFile(sensor_file, values[i++]);
+          break;
+        }
       }
     }
   }
@@ -235,6 +248,7 @@ class PlatformSensorAndProviderLinuxTest : public ::testing::Test {
     ON_CALL(*manager_, GetUdevDeviceGetSysattrValue(IsNull(), _))
         .WillByDefault(Invoke(
             [sensor_dir](udev_device* dev, const std::string& attribute) {
+              base::ScopedAllowBlockingForTesting allow_blocking;
               return ReadValueFromFile(sensor_dir, attribute);
             }));
   }
@@ -275,8 +289,11 @@ class PlatformSensorAndProviderLinuxTest : public ::testing::Test {
   // Generates a "remove device" event by removed sensors' directory and
   // notifies the mock service about "removed" event.
   void GenerateDeviceRemovedEvent(const base::FilePath& sensor_dir) {
+    {
+      base::ScopedAllowBlockingForTesting allow_blocking;
+      DeleteFile(sensor_dir);
+    }
     udev_device* dev = nullptr;
-    DeleteFile(sensor_dir);
     bool success = base::ThreadTaskRunnerHandle::Get()->PostTask(
         FROM_HERE, base::Bind(&MockSensorDeviceManager::DeviceRemoved,
                               base::Unretained(manager_), dev /* not used */));
@@ -285,12 +302,15 @@ class PlatformSensorAndProviderLinuxTest : public ::testing::Test {
 
   MockSensorDeviceManager* manager_;
   scoped_refptr<PlatformSensor> platform_sensor_;
-  std::vector<scoped_refptr<PlatformSensor>> platform_sensor_vector_;
   base::MessageLoop message_loop_;
   std::unique_ptr<base::RunLoop> run_loop_;
   PlatformSensorProviderLinux* provider_;
   // Holds base dir where a sensor dir is located.
   base::ScopedTempDir sensors_dir_;
+
+  // Used to simulate the non-test scenario where we're running in an IO thread
+  // that forbids blocking operations.
+  std::unique_ptr<base::ScopedDisallowBlocking> disallow_blocking_;
 };
 
 // Tests sensor is not returned if not implemented.

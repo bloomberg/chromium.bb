@@ -33,7 +33,9 @@ import org.chromium.base.test.util.UrlUtils;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ChromeSwitches;
 import org.chromium.chrome.browser.ChromeTabbedActivity;
+import org.chromium.chrome.browser.modaldialog.ModalDialogProperties;
 import org.chromium.chrome.browser.modaldialog.ModalDialogView;
+import org.chromium.chrome.browser.modelutil.PropertyModel;
 import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
 import org.chromium.chrome.test.ChromeTabbedActivityTestRule;
 import org.chromium.content_public.browser.LoadUrlParams;
@@ -47,17 +49,14 @@ import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeoutException;
 
 /**
- * Test suite for displaying and functioning of JavaScript tab modal dialogs. Some of the tests
- * are identical to ModalDialogTest.java and some are for tab-modal features.
+ * Test suite for displaying and functioning of tab modal JavaScript alert, confirm and prompt.
  */
 @RunWith(ChromeJUnit4ClassRunner.class)
-@CommandLineFlags.
-Add({"enable-features=TabModalJsDialog", ChromeSwitches.DISABLE_FIRST_RUN_EXPERIENCE})
+@CommandLineFlags.Add({ChromeSwitches.DISABLE_FIRST_RUN_EXPERIENCE})
 public class JavascriptTabModalDialogTest {
     @Rule
     public ChromeTabbedActivityTestRule mActivityTestRule = new ChromeTabbedActivityTestRule();
 
-    private static final String TAG = "JsTabModalDialogTest";
     private static final String EMPTY_PAGE = UrlUtils.encodeHtmlDataUri(
             "<html><title>Modal Dialog Test</title><p>Testcase.</p></title></html>");
     private static final String OTHER_PAGE = UrlUtils.encodeHtmlDataUri(
@@ -105,8 +104,9 @@ public class JavascriptTabModalDialogTest {
         Assert.assertNotNull("No dialog showing.", jsDialog);
 
         ThreadUtils.runOnUiThreadBlocking(() -> {
-            jsDialog.onClick(ModalDialogView.ButtonType.POSITIVE);
-            jsDialog.onClick(ModalDialogView.ButtonType.POSITIVE);
+            PropertyModel model = mActivity.getModalDialogManager().getCurrentDialogForTest();
+            jsDialog.onClick(model, ModalDialogView.ButtonType.POSITIVE);
+            jsDialog.onClick(model, ModalDialogView.ButtonType.POSITIVE);
         });
 
         Assert.assertTrue("JavaScript execution should continue after closing prompt.",
@@ -193,6 +193,9 @@ public class JavascriptTabModalDialogTest {
         mActivity.setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE);
         assertScrollViewFocusabilityInAlertDialog(
                 "alert(new Array(200).join('Long message!'));", true);
+
+        // Reset to portrait mode.
+        mActivity.setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_PORTRAIT);
     }
 
     private void assertScrollViewFocusabilityInAlertDialog(
@@ -307,8 +310,10 @@ public class JavascriptTabModalDialogTest {
      * showing.
      */
     private JavascriptTabModalDialog getCurrentDialog() throws ExecutionException {
-        return (JavascriptTabModalDialog) ThreadUtils.runOnUiThreadBlocking(
-                () -> mActivity.getModalDialogManager().getCurrentDialogForTest().getController());
+        return (JavascriptTabModalDialog) ThreadUtils.runOnUiThreadBlocking(() -> {
+            PropertyModel model = mActivity.getModalDialogManager().getCurrentDialogForTest();
+            return model != null ? model.get(ModalDialogProperties.CONTROLLER) : null;
+        });
     }
 
     /**

@@ -153,7 +153,8 @@ void GetCurrentProxyConfig(const NetworkTrafficAnnotationTag traffic_annotation,
   if (GetBoolFromDictionary(config_dict.get(),
                             kSCPropNetProxiesExcludeSimpleHostnames,
                             false)) {
-    proxy_config.proxy_rules().bypass_rules.AddRuleToBypassLocal();
+    proxy_config.proxy_rules()
+        .bypass_rules.PrependRuleToBypassSimpleHostnames();
   }
 
   *config = ProxyConfigWithAnnotation(proxy_config, traffic_annotation);

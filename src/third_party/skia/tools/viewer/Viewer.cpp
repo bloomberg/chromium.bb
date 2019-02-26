@@ -15,7 +15,6 @@
 #include "SampleSlide.h"
 #include "SkCanvas.h"
 #include "SkColorSpacePriv.h"
-#include "SkColorSpaceXformCanvas.h"
 #include "SkCommandLineFlags.h"
 #include "SkCommonFlags.h"
 #include "SkCommonFlagsGpu.h"
@@ -191,6 +190,9 @@ Viewer::Viewer(int argc, char** argv, void* platformData)
     , fRotation(0.0f)
     , fOffset{0.5f, 0.5f}
     , fGestureDevice(GestureDevice::kNone)
+    , fTiled(false)
+    , fDrawTileBoundaries(false)
+    , fTileScale{0.25f, 0.25f}
     , fPerspectiveMode(kPerspective_Off)
 {
     SkGraphics::Init();
@@ -281,15 +283,12 @@ Viewer::Viewer(int argc, char** argv, void* platformData)
     fCommands.addCommand('c', "Modes", "Cycle color mode", [this]() {
         switch (fColorMode) {
             case ColorMode::kLegacy:
-                this->setColorMode(ColorMode::kColorManagedSRGB8888_NonLinearBlending);
+                this->setColorMode(ColorMode::kColorManaged8888);
                 break;
-            case ColorMode::kColorManagedSRGB8888_NonLinearBlending:
-                this->setColorMode(ColorMode::kColorManagedSRGB8888);
+            case ColorMode::kColorManaged8888:
+                this->setColorMode(ColorMode::kColorManagedF16);
                 break;
-            case ColorMode::kColorManagedSRGB8888:
-                this->setColorMode(ColorMode::kColorManagedLinearF16);
-                break;
-            case ColorMode::kColorManagedLinearF16:
+            case ColorMode::kColorManagedF16:
                 this->setColorMode(ColorMode::kLegacy);
                 break;
         }
@@ -359,20 +358,20 @@ Viewer::Viewer(int argc, char** argv, void* platformData)
     fCommands.addCommand('H', "Paint", "Hinting mode", [this]() {
         if (!fPaintOverrides.fHinting) {
             fPaintOverrides.fHinting = true;
-            fPaint.setHinting(SkPaint::kNo_Hinting);
+            fPaint.setHinting(kNo_SkFontHinting);
         } else {
-            switch (fPaint.getHinting()) {
-                case SkPaint::kNo_Hinting:
-                    fPaint.setHinting(SkPaint::kSlight_Hinting);
+            switch ((SkFontHinting)fPaint.getHinting()) {
+                case kNo_SkFontHinting:
+                    fPaint.setHinting(kSlight_SkFontHinting);
                     break;
-                case SkPaint::kSlight_Hinting:
-                    fPaint.setHinting(SkPaint::kNormal_Hinting);
+                case kSlight_SkFontHinting:
+                    fPaint.setHinting(kNormal_SkFontHinting);
                     break;
-                case SkPaint::kNormal_Hinting:
-                    fPaint.setHinting(SkPaint::kFull_Hinting);
+                case kNormal_SkFontHinting:
+                    fPaint.setHinting(kFull_SkFontHinting);
                     break;
-                case SkPaint::kFull_Hinting:
-                    fPaint.setHinting(SkPaint::kNo_Hinting);
+                case kFull_SkFontHinting:
+                    fPaint.setHinting(kNo_SkFontHinting);
                     fPaintOverrides.fHinting = false;
                     break;
             }
@@ -708,21 +707,19 @@ void Viewer::updateTitle() {
               "Bitmap Text", "No Bitmap Text");
     paintFlag(SkPaint::kAutoHinting_Flag, &SkPaint::isAutohinted,
               "Force Autohint", "No Force Autohint");
-    paintFlag(SkPaint::kVerticalText_Flag, &SkPaint::isVerticalText,
-              "Vertical Text", "No Vertical Text");
 
     if (fPaintOverrides.fHinting) {
-        switch (fPaint.getHinting()) {
-            case SkPaint::kNo_Hinting:
+        switch ((SkFontHinting)fPaint.getHinting()) {
+            case kNo_SkFontHinting:
                 paintTitle.append("No Hinting");
                 break;
-            case SkPaint::kSlight_Hinting:
+            case kSlight_SkFontHinting:
                 paintTitle.append("Slight Hinting");
                 break;
-            case SkPaint::kNormal_Hinting:
+            case kNormal_SkFontHinting:
                 paintTitle.append("Normal Hinting");
                 break;
-            case SkPaint::kFull_Hinting:
+            case kFull_SkFontHinting:
                 paintTitle.append("Full Hinting");
                 break;
         }
@@ -733,13 +730,10 @@ void Viewer::updateTitle() {
         case ColorMode::kLegacy:
             title.append(" Legacy 8888");
             break;
-        case ColorMode::kColorManagedSRGB8888_NonLinearBlending:
-            title.append(" ColorManaged 8888 (Nonlinear blending)");
-            break;
-        case ColorMode::kColorManagedSRGB8888:
+        case ColorMode::kColorManaged8888:
             title.append(" ColorManaged 8888");
             break;
-        case ColorMode::kColorManagedLinearF16:
+        case ColorMode::kColorManagedF16:
             title.append(" ColorManaged F16");
             break;
     }
@@ -752,11 +746,9 @@ void Viewer::updateTitle() {
                 break;
             }
         }
-        title.appendf(" %s", curPrimaries >= 0 ? gNamedPrimaries[curPrimaries].fName : "Custom");
-
-        if (ColorMode::kColorManagedSRGB8888_NonLinearBlending == fColorMode) {
-            title.appendf(" Gamma %f", fColorSpaceTransferFn.fG);
-        }
+        title.appendf(" %s Gamma %f",
+                      curPrimaries >= 0 ? gNamedPrimaries[curPrimaries].fName : "Custom",
+                      fColorSpaceTransferFn.fG);
     }
 
     const DisplayParams& params = fWindow->getRequestedDisplayParams();
@@ -964,18 +956,6 @@ void Viewer::setBackend(sk_app::Window::BackendType backendType) {
 
 void Viewer::setColorMode(ColorMode colorMode) {
     fColorMode = colorMode;
-
-    // When we're in color managed mode, we tag our window surface as sRGB. If we've switched into
-    // or out of legacy/nonlinear mode, we need to update our window configuration.
-    DisplayParams params = fWindow->getRequestedDisplayParams();
-    bool wasInLegacy = !SkToBool(params.fColorSpace);
-    bool wantLegacy = (ColorMode::kLegacy == fColorMode) ||
-                      (ColorMode::kColorManagedSRGB8888_NonLinearBlending == fColorMode);
-    if (wasInLegacy != wantLegacy) {
-        params.fColorSpace = wantLegacy ? nullptr : SkColorSpace::MakeSRGB();
-        fWindow->setRequestedDisplayParams(params);
-    }
-
     this->updateTitle();
     fWindow->inval();
 }
@@ -1087,9 +1067,6 @@ public:
         if (fPaintOverrides->fFlags & SkPaint::kAutoHinting_Flag) {
             paint->writable()->setAutohinted(fPaint->isAutohinted());
         }
-        if (fPaintOverrides->fFlags & SkPaint::kVerticalText_Flag) {
-            paint->writable()->setVerticalText(fPaint->isVerticalText());
-        }
 
         return true;
     }
@@ -1105,29 +1082,17 @@ void Viewer::drawSlide(SkCanvas* canvas) {
     fLastImage.reset();
 
     // If we're in any of the color managed modes, construct the color space we're going to use
-    sk_sp<SkColorSpace> cs = nullptr;
+    sk_sp<SkColorSpace> colorSpace = nullptr;
     if (ColorMode::kLegacy != fColorMode) {
-        auto transferFn = (ColorMode::kColorManagedLinearF16 == fColorMode)
-            ? SkColorSpace::kLinear_RenderTargetGamma : SkColorSpace::kSRGB_RenderTargetGamma;
         SkMatrix44 toXYZ;
         SkAssertResult(fColorSpacePrimaries.toXYZD50(&toXYZ));
-        if (ColorMode::kColorManagedSRGB8888_NonLinearBlending == fColorMode) {
-            cs = SkColorSpace::MakeRGB(fColorSpaceTransferFn, toXYZ);
-        } else {
-            cs = SkColorSpace::MakeRGB(transferFn, toXYZ);
-        }
+        colorSpace = SkColorSpace::MakeRGB(fColorSpaceTransferFn, toXYZ);
     }
 
     if (fSaveToSKP) {
         SkPictureRecorder recorder;
         SkCanvas* recorderCanvas = recorder.beginRecording(
                 SkRect::Make(fSlides[fCurrentSlide]->getDimensions()));
-        // In xform-canvas mode, record the transformed output
-        std::unique_ptr<SkCanvas> xformCanvas = nullptr;
-        if (ColorMode::kColorManagedSRGB8888_NonLinearBlending == fColorMode) {
-            xformCanvas = SkCreateColorSpaceXformCanvas(recorderCanvas, cs);
-            recorderCanvas = xformCanvas.get();
-        }
         fSlides[fCurrentSlide]->draw(recorderCanvas);
         sk_sp<SkPicture> picture(recorder.finishRecordingAsPicture());
         SkFILEWStream stream("sample_app.skp");
@@ -1135,51 +1100,74 @@ void Viewer::drawSlide(SkCanvas* canvas) {
         fSaveToSKP = false;
     }
 
-    // If we're in F16, or we're zooming, or we're in color correct 8888 and the gamut isn't sRGB,
-    // we need to render offscreen. We also need to render offscreen if we're in any raster mode,
-    // because the window surface is actually GL, or we're doing fake perspective.
+    // Grab some things we'll need to make surfaces (for tiling or general offscreen rendering)
+    SkColorType colorType = (ColorMode::kColorManagedF16 == fColorMode) ? kRGBA_F16_SkColorType
+                                                                        : kN32_SkColorType;
+    SkSurfaceProps props(SkSurfaceProps::kLegacyFontHost_InitType);
+    canvas->getProps(&props);
+
+    auto make_surface = [=](int w, int h) {
+        SkImageInfo info = SkImageInfo::Make(w, h, colorType, kPremul_SkAlphaType, colorSpace);
+        return Window::kRaster_BackendType == this->fBackendType
+                ? SkSurface::MakeRaster(info, &props)
+                : canvas->makeSurface(info, &props);
+    };
+
+    // We need to render offscreen if we're...
+    // ... in fake perspective or zooming (so we have a snapped copy of the results)
+    // ... in any raster mode, because the window surface is actually GL
+    // ... in any color managed mode, because we always make the window surface with no color space
     sk_sp<SkSurface> offscreenSurface = nullptr;
-    std::unique_ptr<SkCanvas> threadedCanvas;
-    if (Window::kRaster_BackendType == fBackendType ||
-        kPerspective_Fake == fPerspectiveMode ||
-        ColorMode::kColorManagedLinearF16 == fColorMode ||
+    if (kPerspective_Fake == fPerspectiveMode ||
         fShowZoomWindow ||
-        (ColorMode::kColorManagedSRGB8888 == fColorMode &&
-         !primaries_equal(fColorSpacePrimaries, gSrgbPrimaries))) {
+        Window::kRaster_BackendType == fBackendType ||
+        colorSpace != nullptr) {
 
-        SkColorType colorType = (ColorMode::kColorManagedLinearF16 == fColorMode)
-            ? kRGBA_F16_SkColorType : kN32_SkColorType;
-        // In nonlinear blending mode, we actually use a legacy off-screen canvas, and wrap it
-        // with a special canvas (below) that has the color space attached
-        sk_sp<SkColorSpace> offscreenColorSpace =
-            (ColorMode::kColorManagedSRGB8888_NonLinearBlending == fColorMode) ? nullptr : cs;
-        SkImageInfo info = SkImageInfo::Make(fWindow->width(), fWindow->height(), colorType,
-                                             kPremul_SkAlphaType, std::move(offscreenColorSpace));
-        SkSurfaceProps props(SkSurfaceProps::kLegacyFontHost_InitType);
-        canvas->getProps(&props);
-        offscreenSurface = Window::kRaster_BackendType == fBackendType
-                         ? SkSurface::MakeRaster(info, &props)
-                         : canvas->makeSurface(info);
-        SkPixmap offscreenPixmap;
+        offscreenSurface = make_surface(fWindow->width(), fWindow->height());
         slideCanvas = offscreenSurface->getCanvas();
-    }
-
-    std::unique_ptr<SkCanvas> xformCanvas = nullptr;
-    if (ColorMode::kColorManagedSRGB8888_NonLinearBlending == fColorMode) {
-        xformCanvas = SkCreateColorSpaceXformCanvas(slideCanvas, cs);
-        slideCanvas = xformCanvas.get();
     }
 
     int count = slideCanvas->save();
     slideCanvas->clear(SK_ColorWHITE);
-    slideCanvas->concat(computeMatrix());
-    if (kPerspective_Real == fPerspectiveMode) {
-        slideCanvas->clipRect(SkRect::MakeWH(fWindow->width(), fWindow->height()));
-    }
     // Time the painting logic of the slide
     fStatsLayer.beginTiming(fPaintTimer);
-    OveridePaintFilterCanvas filterCanvas(slideCanvas, &fPaint, &fPaintOverrides);
-    fSlides[fCurrentSlide]->draw(&filterCanvas);
+    if (fTiled) {
+        int tileW = SkScalarCeilToInt(fWindow->width() * fTileScale.width());
+        int tileH = SkScalarCeilToInt(fWindow->height() * fTileScale.height());
+        sk_sp<SkSurface> tileSurface = make_surface(tileW, tileH);
+        SkCanvas* tileCanvas = tileSurface->getCanvas();
+        SkMatrix m = this->computeMatrix();
+        for (int y = 0; y < fWindow->height(); y += tileH) {
+            for (int x = 0; x < fWindow->width(); x += tileW) {
+                SkAutoCanvasRestore acr(tileCanvas, true);
+                tileCanvas->translate(-x, -y);
+                tileCanvas->clear(SK_ColorTRANSPARENT);
+                tileCanvas->concat(m);
+                OveridePaintFilterCanvas filterCanvas(tileCanvas, &fPaint, &fPaintOverrides);
+                fSlides[fCurrentSlide]->draw(&filterCanvas);
+                tileSurface->draw(slideCanvas, x, y, nullptr);
+            }
+        }
+
+        // Draw borders between tiles
+        if (fDrawTileBoundaries) {
+            SkPaint border;
+            border.setColor(0x60FF00FF);
+            border.setStyle(SkPaint::kStroke_Style);
+            for (int y = 0; y < fWindow->height(); y += tileH) {
+                for (int x = 0; x < fWindow->width(); x += tileW) {
+                    slideCanvas->drawRect(SkRect::MakeXYWH(x, y, tileW, tileH), border);
+                }
+            }
+        }
+    } else {
+        slideCanvas->concat(this->computeMatrix());
+        if (kPerspective_Real == fPerspectiveMode) {
+            slideCanvas->clipRect(SkRect::MakeWH(fWindow->width(), fWindow->height()));
+        }
+        OveridePaintFilterCanvas filterCanvas(slideCanvas, &fPaint, &fPaintOverrides);
+        fSlides[fCurrentSlide]->draw(&filterCanvas);
+    }
     fStatsLayer.endTiming(fPaintTimer);
     slideCanvas->restoreToCount(count);
 
@@ -1192,10 +1180,6 @@ void Viewer::drawSlide(SkCanvas* canvas) {
     if (offscreenSurface) {
         fLastImage = offscreenSurface->makeImageSnapshot();
 
-        // Tag the image with the sRGB gamut, so no further color space conversion happens
-        sk_sp<SkColorSpace> srgb = (ColorMode::kColorManagedLinearF16 == fColorMode)
-            ? SkColorSpace::MakeSRGBLinear() : SkColorSpace::MakeSRGB();
-        auto retaggedImage = SkImageMakeRasterCopyAndAssignColorSpace(fLastImage.get(), srgb.get());
         SkPaint paint;
         paint.setBlendMode(SkBlendMode::kSrc);
         int prePerspectiveCount = canvas->save();
@@ -1204,7 +1188,7 @@ void Viewer::drawSlide(SkCanvas* canvas) {
             canvas->clear(SK_ColorWHITE);
             canvas->concat(this->computePerspectiveMatrix());
         }
-        canvas->drawImage(retaggedImage, 0, 0, &paint);
+        canvas->drawImage(fLastImage, 0, 0, &paint);
         canvas->restoreToCount(prePerspectiveCount);
     }
 }
@@ -1220,6 +1204,11 @@ void Viewer::onPaint(SkCanvas* canvas) {
     fCommands.drawHelp(canvas);
 
     this->drawImGui();
+
+    if (GrContext* ctx = fWindow->getGrContext()) {
+        // Clean out cache items that haven't been used in more than 10 seconds.
+        ctx->performDeferredCleanup(std::chrono::seconds(10));
+    }
 }
 
 void Viewer::onResize(int width, int height) {
@@ -1599,6 +1588,12 @@ void Viewer::drawImGui() {
                     paramsChanged = true;
                     fOffset = {0.5f, 0.5f};
                 }
+                if (ImGui::CollapsingHeader("Tiling")) {
+                    ImGui::Checkbox("Enable", &fTiled);
+                    ImGui::Checkbox("Draw Boundaries", &fDrawTileBoundaries);
+                    ImGui::SliderFloat("Horizontal", &fTileScale.fWidth, 0.1f, 1.0f);
+                    ImGui::SliderFloat("Vertical", &fTileScale.fHeight, 0.1f, 1.0f);
+                }
                 int perspectiveMode = static_cast<int>(fPerspectiveMode);
                 if (ImGui::Combo("Perspective", &perspectiveMode, "Off\0Real\0Fake\0\0")) {
                     fPerspectiveMode = static_cast<PerspectiveMode>(perspectiveMode);
@@ -1614,17 +1609,17 @@ void Viewer::drawImGui() {
             if (ImGui::CollapsingHeader("Paint")) {
                 int hintingIdx = 0;
                 if (fPaintOverrides.fHinting) {
-                    hintingIdx = fPaint.getHinting() + 1;
+                    hintingIdx = static_cast<unsigned>(fPaint.getHinting()) + 1;
                 }
                 if (ImGui::Combo("Hinting", &hintingIdx,
                                  "Default\0None\0Slight\0Normal\0Full\0\0"))
                 {
                     if (hintingIdx == 0) {
                         fPaintOverrides.fHinting = false;
-                        fPaint.setHinting(SkPaint::kNo_Hinting);
+                        fPaint.setHinting(kNo_SkFontHinting);
                     } else {
                         fPaintOverrides.fHinting = true;
-                        SkPaint::Hinting hinting = SkTo<SkPaint::Hinting>(hintingIdx - 1);
+                        SkFontHinting hinting = SkTo<SkFontHinting>(hintingIdx - 1);
                         fPaint.setHinting(hinting);
                     }
                     paramsChanged = true;
@@ -1732,11 +1727,6 @@ void Viewer::drawImGui() {
                           SkPaint::kAutoHinting_Flag,
                           &SkPaint::isAutohinted, &SkPaint::setAutohinted);
 
-                paintFlag("Vertical Text",
-                          "Default\0No Vertical Text\0Vertical Text\0\0",
-                          SkPaint::kVerticalText_Flag,
-                          &SkPaint::isVerticalText, &SkPaint::setVerticalText);
-
                 ImGui::Checkbox("Override TextSize", &fPaintOverrides.fTextSize);
                 if (fPaintOverrides.fTextSize) {
                     ImGui::DragFloat2("TextRange", fPaintOverrides.fTextSizeRange,
@@ -1820,17 +1810,11 @@ void Viewer::drawImGui() {
                 };
 
                 cmButton(ColorMode::kLegacy, "Legacy 8888");
-                cmButton(ColorMode::kColorManagedSRGB8888_NonLinearBlending,
-                         "Color Managed 8888 (Nonlinear blending)");
-                cmButton(ColorMode::kColorManagedSRGB8888, "Color Managed 8888");
-                cmButton(ColorMode::kColorManagedLinearF16, "Color Managed F16");
+                cmButton(ColorMode::kColorManaged8888, "Color Managed 8888");
+                cmButton(ColorMode::kColorManagedF16, "Color Managed F16");
 
                 if (newMode != fColorMode) {
-                    // It isn't safe to switch color mode now (in the middle of painting). We might
-                    // tear down the back-end, etc... Defer this change until the next onIdle.
-                    fDeferredActions.push_back([=]() {
-                        this->setColorMode(newMode);
-                    });
+                    this->setColorMode(newMode);
                 }
 
                 // Pick from common gamuts:
@@ -1842,10 +1826,8 @@ void Viewer::drawImGui() {
                     }
                 }
 
-                // When we're in xform canvas mode, we can alter the transfer function, too
-                if (ColorMode::kColorManagedSRGB8888_NonLinearBlending == fColorMode) {
-                    ImGui::SliderFloat("Gamma", &fColorSpaceTransferFn.fG, 0.5f, 3.5f);
-                }
+                // Let user adjust the gamma
+                ImGui::SliderFloat("Gamma", &fColorSpaceTransferFn.fG, 0.5f, 3.5f);
 
                 if (ImGui::Combo("Primaries", &primariesIdx,
                                  "sRGB\0AdobeRGB\0P3\0Rec. 2020\0Custom\0\0")) {

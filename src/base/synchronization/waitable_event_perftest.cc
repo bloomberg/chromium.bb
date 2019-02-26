@@ -150,7 +150,8 @@ TEST(WaitableEventPerfTest, MultipleThreads) {
   PrintPerfWaitableEvent(&signaler, "_signaler", "multithread-1000-samples");
 }
 
-TEST(WaitableEventPerfTest, Throughput) {
+// See crbug.com/848499.
+TEST(WaitableEventPerfTest, DISABLED_Throughput) {
   // Reserve a lot of sample space.
   const size_t kCapacity = 500000;
   TraceWaitableEvent event(kCapacity);

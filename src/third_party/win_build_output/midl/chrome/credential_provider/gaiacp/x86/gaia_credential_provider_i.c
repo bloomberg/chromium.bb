@@ -8,7 +8,7 @@
  /* File created by MIDL compiler version 8.xx.xxxx */
 /* at a redacted point in time
  */
-/* Compiler settings for ../../chrome/credential_provider/gaiacp/gaia_credential_provider.idl:
+/* Compiler settings for gen/chrome/credential_provider/gaiacp/gaia_credential_provider.idl:
     Oicf, W1, Zp8, env=Win32 (32b run), target_arch=X86 8.xx.xxxx 
     protocol : dce , ms_ext, c_ext, robust
     error checks: allocation ref bounds_check enum stub_data 
@@ -82,13 +82,7 @@ MIDL_DEFINE_GUID(IID, IID_IReauthCredential,0xCC75BCEA,0xA636,0x4798,0xBF,0x8E,0
 MIDL_DEFINE_GUID(IID, LIBID_GaiaCredentialProviderLib,0x4ADC3A52,0x8673,0x4CE3,0x81,0xF6,0x83,0x3D,0x18,0xBE,0xEB,0xA2);
 
 
-MIDL_DEFINE_GUID(CLSID, CLSID_GaiaCredentialProvider,0x0B5BFDF0,0x4594,0x47AC,0x94,0x0A,0xCF,0xC6,0x9A,0xBC,0x56,0x1C);
-
-
-MIDL_DEFINE_GUID(CLSID, CLSID_GaiaCredential,0x44AF95AC,0x6B23,0x4C54,0x94,0xBE,0xED,0xB1,0xCB,0x52,0xDA,0xFD);
-
-
-MIDL_DEFINE_GUID(CLSID, CLSID_ReauthCredential,0xE6CC5D8B,0x54C2,0x4586,0xAD,0xC3,0x74,0x8E,0xD1,0x62,0x84,0xB7);
+MIDL_DEFINE_GUID(CLSID, CLSID_GaiaCredentialProvider,0x0b5bfdf0,0x4594,0x47ac,0x94,0x0a,0xcf,0xc6,0x9a,0xbc,0x56,0x1c);
 
 #undef MIDL_DEFINE_GUID
 

@@ -38,16 +38,16 @@ TEST_F(LayoutTextControlTest,
   auto* inputElement = GetHTMLInputElementById("input");
   inputElement->focus();
   inputElement->SetSelectionRange(1, 3);
-  GetDocument().View()->UpdateAllLifecyclePhases();
+  UpdateAllLifecyclePhasesForTest();
 
   auto* selectedText = GetInnerLayoutText(inputElement);
   EXPECT_FALSE(selectedText->ShouldInvalidateSelection());
 
-  inputElement->setAttribute(HTMLNames::classAttr, "pseudoSelection");
+  inputElement->setAttribute(html_names::kClassAttr, "pseudoSelection");
   GetDocument().View()->UpdateLifecycleToLayoutClean();
   EXPECT_TRUE(selectedText->ShouldInvalidateSelection());
 
-  GetDocument().View()->UpdateAllLifecyclePhases();
+  UpdateAllLifecyclePhasesForTest();
   EXPECT_FALSE(selectedText->ShouldInvalidateSelection());
 }
 
@@ -63,16 +63,16 @@ TEST_F(LayoutTextControlTest,
   auto* inputElement = GetHTMLInputElementById("input");
   inputElement->focus();
   inputElement->SetSelectionRange(1, 3);
-  GetDocument().View()->UpdateAllLifecyclePhases();
+  UpdateAllLifecyclePhasesForTest();
 
   auto* selectedText = GetInnerLayoutText(inputElement);
   EXPECT_FALSE(selectedText->ShouldInvalidateSelection());
 
-  inputElement->setAttribute(HTMLNames::classAttr, "pseudoSelection");
+  inputElement->setAttribute(html_names::kClassAttr, "pseudoSelection");
   GetDocument().View()->UpdateLifecycleToLayoutClean();
   EXPECT_TRUE(selectedText->ShouldInvalidateSelection());
 
-  GetDocument().View()->UpdateAllLifecyclePhases();
+  UpdateAllLifecyclePhasesForTest();
   EXPECT_FALSE(selectedText->ShouldInvalidateSelection());
 }
 
@@ -88,16 +88,16 @@ TEST_F(LayoutTextControlTest,
   auto* inputElement = GetHTMLInputElementById("input");
   inputElement->focus();
   inputElement->SetSelectionRange(1, 3);
-  GetDocument().View()->UpdateAllLifecyclePhases();
+  UpdateAllLifecyclePhasesForTest();
 
   auto* selectedText = GetInnerLayoutText(inputElement);
   EXPECT_FALSE(selectedText->ShouldInvalidateSelection());
 
-  inputElement->removeAttribute(HTMLNames::classAttr);
+  inputElement->removeAttribute(html_names::kClassAttr);
   GetDocument().View()->UpdateLifecycleToLayoutClean();
   EXPECT_TRUE(selectedText->ShouldInvalidateSelection());
 
-  GetDocument().View()->UpdateAllLifecyclePhases();
+  UpdateAllLifecyclePhasesForTest();
   EXPECT_FALSE(selectedText->ShouldInvalidateSelection());
 }
 

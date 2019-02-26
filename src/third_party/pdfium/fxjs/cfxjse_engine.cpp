@@ -12,9 +12,12 @@
 #include "core/fxcrt/cfx_widetextbuf.h"
 #include "core/fxcrt/fx_extension.h"
 #include "fxjs/cfxjse_class.h"
+#include "fxjs/cfxjse_context.h"
+#include "fxjs/cfxjse_formcalc_context.h"
 #include "fxjs/cfxjse_resolveprocessor.h"
 #include "fxjs/cfxjse_value.h"
 #include "fxjs/cjs_runtime.h"
+#include "fxjs/xfa/cjx_object.h"
 #include "third_party/base/ptr_util.h"
 #include "third_party/base/stl_util.h"
 #include "xfa/fxfa/cxfa_eventparam.h"
@@ -505,7 +508,7 @@ bool CFXJSE_Engine::RunVariablesScript(CXFA_Node* pScriptNode) {
   if (!wsScript)
     return false;
 
-  ByteString btScript = wsScript->UTF8Encode();
+  ByteString btScript = wsScript->ToUTF8();
   auto hRetValue = pdfium::MakeUnique<CFXJSE_Value>(GetIsolate());
   CXFA_Node* pThisObject = pParent->GetParent();
   CFXJSE_Context* pVariablesContext =

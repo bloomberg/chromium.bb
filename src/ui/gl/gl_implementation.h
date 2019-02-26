@@ -21,16 +21,20 @@ namespace gl {
 class GLApi;
 
 // The GL implementation currently in use.
+// These values are persisted to logs. Entries should not be renumbered and
+// numeric values should never be reused. It should match enum GLImplementation
+// in /tool/metrics/histograms/enums.xml
 enum GLImplementation {
-  kGLImplementationNone,
-  kGLImplementationDesktopGL,
-  kGLImplementationDesktopGLCoreProfile,
-  kGLImplementationSwiftShaderGL,
-  kGLImplementationAppleGL,
-  kGLImplementationEGLGLES2,
-  kGLImplementationMockGL,
-  kGLImplementationStubGL,
-  kGLImplementationDisabled,
+  kGLImplementationNone = 0,
+  kGLImplementationDesktopGL = 1,
+  kGLImplementationDesktopGLCoreProfile = 2,
+  kGLImplementationSwiftShaderGL = 3,
+  kGLImplementationAppleGL = 4,
+  kGLImplementationEGLGLES2 = 5,
+  kGLImplementationMockGL = 6,
+  kGLImplementationStubGL = 7,
+  kGLImplementationDisabled = 8,
+  kMaxValue = kGLImplementationDisabled,
 };
 
 struct GL_EXPORT GLWindowSystemBindingInfo {

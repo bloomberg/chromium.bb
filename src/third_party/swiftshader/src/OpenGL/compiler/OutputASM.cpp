@@ -1848,11 +1848,6 @@ namespace glsl
 			return false;
 		}
 
-		if(loop.isDeterministic())
-		{
-			 deterministicVariables.insert(loop.index->getId());
-		}
-
 		bool unroll = (loop.iterations <= 4);
 
 		TIntermNode *init = node->getInit();
@@ -1860,6 +1855,16 @@ namespace glsl
 		TIntermTyped *expression = node->getExpression();
 		TIntermNode *body = node->getBody();
 		Constant True(true);
+
+		if(loop.isDeterministic())
+		{
+			 deterministicVariables.insert(loop.index->getId());
+
+			 if(!unroll)
+			 {
+				 emit(sw::Shader::OPCODE_SCALAR);   // Unrolled loops don't have an ENDWHILE to disable scalar mode.
+			 }
+		}
 
 		if(node->getType() == ELoopDoWhile)
 		{
@@ -1925,6 +1930,11 @@ namespace glsl
 				}
 
 				emit(sw::Shader::OPCODE_TEST);
+
+				if(loop.isDeterministic())
+				{
+					emit(sw::Shader::OPCODE_SCALAR);
+				}
 
 				if(expression)
 				{

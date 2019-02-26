@@ -15,6 +15,7 @@
 #include "ui/accessibility/mojom/ax_host.mojom.h"
 #include "ui/display/display_observer.h"
 #include "ui/views/accessibility/ax_aura_obj_cache.h"
+#include "ui/views/accessibility/ax_event_observer.h"
 #include "ui/views/mus/mus_export.h"
 #include "ui/views/widget/widget_observer.h"
 
@@ -40,7 +41,8 @@ class Widget;
 class VIEWS_MUS_EXPORT AXRemoteHost : public ax::mojom::AXRemoteHost,
                                       public WidgetObserver,
                                       public display::DisplayObserver,
-                                      public AXAuraObjCache::Delegate {
+                                      public AXAuraObjCache::Delegate,
+                                      public AXEventObserver {
  public:
   AXRemoteHost();
   ~AXRemoteHost() override;
@@ -55,9 +57,6 @@ class VIEWS_MUS_EXPORT AXRemoteHost : public ax::mojom::AXRemoteHost,
   // events and tree changes.
   void StartMonitoringWidget(Widget* widget);
   void StopMonitoringWidget();
-
-  // Handles an event fired upon a |view|.
-  void HandleEvent(View* view, ax::mojom::Event event_type);
 
   // ax::mojom::AXRemoteHost:
   void OnAutomationEnabled(bool enabled) override;
@@ -75,6 +74,9 @@ class VIEWS_MUS_EXPORT AXRemoteHost : public ax::mojom::AXRemoteHost,
   void OnChildWindowRemoved(AXAuraObjWrapper* parent) override;
   void OnEvent(AXAuraObjWrapper* aura_obj,
                ax::mojom::Event event_type) override;
+
+  // AXEventObserver:
+  void OnViewEvent(View* view, ax::mojom::Event event_type) override;
 
   void FlushForTesting();
   Widget* widget_for_testing() { return widget_; }

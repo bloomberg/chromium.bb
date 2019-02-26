@@ -41,7 +41,7 @@ ServiceWorkerRegistration::ServiceWorkerRegistration(
     const blink::mojom::ServiceWorkerRegistrationOptions& options,
     int64_t registration_id,
     base::WeakPtr<ServiceWorkerContextCore> context)
-    : pattern_(options.scope),
+    : scope_(options.scope),
       update_via_cache_(options.update_via_cache),
       registration_id_(registration_id),
       is_deleted_(false),
@@ -104,7 +104,7 @@ void ServiceWorkerRegistration::NotifyVersionAttributesChanged(
 ServiceWorkerRegistrationInfo ServiceWorkerRegistration::GetInfo() {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
   return ServiceWorkerRegistrationInfo(
-      pattern(), update_via_cache(), registration_id_,
+      scope(), update_via_cache(), registration_id_,
       is_deleted_ ? ServiceWorkerRegistrationInfo::IS_DELETED
                   : ServiceWorkerRegistrationInfo::IS_NOT_DELETED,
       GetVersionInfo(active_version_.get()),
@@ -231,7 +231,7 @@ void ServiceWorkerRegistration::ClaimClients() {
 
   for (std::unique_ptr<ServiceWorkerContextCore::ProviderHostIterator> it =
            context_->GetClientProviderHostIterator(
-               pattern_.GetOrigin(), false /* include_reserved_clients */);
+               scope_.GetOrigin(), false /* include_reserved_clients */);
        !it->IsAtEnd(); it->Advance()) {
     ServiceWorkerProviderHost* host = it->GetProviderHost();
     if (host->controller() == active_version())
@@ -251,7 +251,7 @@ void ServiceWorkerRegistration::ClearWhenReady() {
 
   context_->storage()->NotifyUninstallingRegistration(this);
   context_->storage()->DeleteRegistration(
-      id(), pattern().GetOrigin(),
+      id(), scope().GetOrigin(),
       AdaptCallbackForRepeating(
           base::BindOnce(&ServiceWorkerRegistration::OnDeleteFinished, this)));
 
@@ -450,7 +450,7 @@ void ServiceWorkerRegistration::DeleteVersion(
   if (!active_version() && !waiting_version()) {
     // Delete the records from the db.
     context_->storage()->DeleteRegistration(
-        id(), pattern().GetOrigin(),
+        id(), scope().GetOrigin(),
         base::BindOnce(&ServiceWorkerRegistration::OnDeleteFinished, protect));
     // But not from memory if there is a version in the pipeline.
     // TODO(falken): Fix this logic. There could be a running register job for

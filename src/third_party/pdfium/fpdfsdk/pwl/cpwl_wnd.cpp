@@ -8,6 +8,7 @@
 
 #include <map>
 #include <sstream>
+#include <utility>
 #include <vector>
 
 #include "core/fxge/cfx_renderdevice.h"
@@ -110,24 +111,17 @@ class CPWL_MsgControl final : public Observable<CPWL_MsgControl> {
   UnownedPtr<CPWL_Wnd> m_pMainKeyboardWnd;
 };
 
-CPWL_Wnd::CPWL_Wnd()
-    : m_rcWindow(),
-      m_rcClip(),
-      m_bCreated(false),
-      m_bVisible(false),
-      m_bNotifying(false),
-      m_bEnabled(true) {}
+CPWL_Wnd::CPWL_Wnd(const CreateParams& cp,
+                   std::unique_ptr<PrivateData> pAttachedData)
+    : m_CreationParams(cp), m_pAttachedData(std::move(pAttachedData)) {}
 
 CPWL_Wnd::~CPWL_Wnd() {
   ASSERT(!m_bCreated);
 }
 
-void CPWL_Wnd::Create(const CreateParams& cp) {
-  if (IsValid())
-    return;
+void CPWL_Wnd::Realize() {
+  ASSERT(!m_bCreated);
 
-  m_CreationParams = cp;
-  OnCreate(&m_CreationParams);
   m_CreationParams.rcRectWnd.Normalize();
   m_rcWindow = m_CreationParams.rcRectWnd;
   m_rcClip = m_rcWindow;
@@ -136,8 +130,6 @@ void CPWL_Wnd::Create(const CreateParams& cp) {
     m_rcClip.Normalize();
   }
   CreateMsgControl();
-  if (m_CreationParams.pParentWnd)
-    m_CreationParams.pParentWnd->AddChild(this);
 
   CreateParams ccp = m_CreationParams;
   ccp.dwFlags &= 0xFFFF0000L;  // remove sub styles
@@ -150,8 +142,6 @@ void CPWL_Wnd::Create(const CreateParams& cp) {
 
   m_bCreated = true;
 }
-
-void CPWL_Wnd::OnCreate(CreateParams* pParamsToAdjust) {}
 
 void CPWL_Wnd::OnCreated() {}
 
@@ -172,21 +162,16 @@ void CPWL_Wnd::Destroy() {
   OnDestroy();
   if (m_bCreated) {
     m_pVScrollBar = nullptr;
-    for (auto it = m_Children.rbegin(); it != m_Children.rend(); ++it) {
-      CPWL_Wnd* pChild = *it;
-      if (pChild) {
-        *it = nullptr;
-        pChild->Destroy();
-        delete pChild;
-      }
+    while (!m_Children.empty()) {
+      std::unique_ptr<CPWL_Wnd> pChild = std::move(m_Children.back());
+      m_Children.pop_back();
+      pChild->Destroy();
     }
-    if (m_CreationParams.pParentWnd)
-      m_CreationParams.pParentWnd->RemoveChild(this);
-
+    if (m_pParent)
+      m_pParent->RemoveChild(this);
     m_bCreated = false;
   }
   DestroyMsgControl();
-  m_Children.clear();
 }
 
 bool CPWL_Wnd::Move(const CFX_FloatRect& rcNew, bool bReset, bool bRefresh) {
@@ -250,17 +235,14 @@ void CPWL_Wnd::DrawThisAppearance(CFX_RenderDevice* pDevice,
 
 void CPWL_Wnd::DrawChildAppearance(CFX_RenderDevice* pDevice,
                                    const CFX_Matrix& mtUser2Device) {
-  for (CPWL_Wnd* pChild : m_Children) {
-    if (!pChild)
-      continue;
-
+  for (const auto& pChild : m_Children) {
     CFX_Matrix mt = pChild->GetChildMatrix();
     if (mt.IsIdentity()) {
       pChild->DrawAppearance(pDevice, mtUser2Device);
-    } else {
-      mt.Concat(mtUser2Device);
-      pChild->DrawAppearance(pDevice, mt);
+      continue;
     }
+    mt.Concat(mtUser2Device);
+    pChild->DrawAppearance(pDevice, mt);
   }
 }
 
@@ -299,8 +281,8 @@ bool CPWL_Wnd::InvalidateRect(CFX_FloatRect* pRect) {
       return false;                                                \
     if (!IsWndCaptureKeyboard(this))                               \
       return false;                                                \
-    for (auto* pChild : m_Children) {                              \
-      if (pChild && IsWndCaptureKeyboard(pChild))                  \
+    for (const auto& pChild : m_Children) {                        \
+      if (IsWndCaptureKeyboard(pChild.get()))                      \
         return pChild->key_method_name(nChar, nFlag);              \
     }                                                              \
     return false;                                                  \
@@ -315,8 +297,8 @@ PWL_IMPLEMENT_KEY_METHOD(OnChar)
     if (!IsValid() || !IsVisible() || !IsEnabled())                            \
       return false;                                                            \
     if (IsWndCaptureMouse(this)) {                                             \
-      for (auto* pChild : m_Children) {                                        \
-        if (pChild && IsWndCaptureMouse(pChild)) {                             \
+      for (const auto& pChild : m_Children) {                                  \
+        if (IsWndCaptureMouse(pChild.get())) {                                 \
           return pChild->mouse_method_name(pChild->ParentToChild(point),       \
                                            nFlag);                             \
         }                                                                      \
@@ -324,8 +306,8 @@ PWL_IMPLEMENT_KEY_METHOD(OnChar)
       SetCursor();                                                             \
       return false;                                                            \
     }                                                                          \
-    for (auto* pChild : m_Children) {                                          \
-      if (pChild && pChild->WndHitTest(pChild->ParentToChild(point))) {        \
+    for (const auto& pChild : m_Children) {                                    \
+      if (pChild->WndHitTest(pChild->ParentToChild(point))) {                  \
         return pChild->mouse_method_name(pChild->ParentToChild(point), nFlag); \
       }                                                                        \
     }                                                                          \
@@ -378,24 +360,29 @@ bool CPWL_Wnd::OnMouseWheel(short zDelta,
   if (!IsWndCaptureKeyboard(this))
     return false;
 
-  for (auto* pChild : m_Children) {
-    if (pChild && IsWndCaptureKeyboard(pChild))
+  for (const auto& pChild : m_Children) {
+    if (IsWndCaptureKeyboard(pChild.get()))
       return pChild->OnMouseWheel(zDelta, pChild->ParentToChild(point), nFlag);
   }
   return false;
 }
 
-void CPWL_Wnd::AddChild(CPWL_Wnd* pWnd) {
-  m_Children.push_back(pWnd);
+void CPWL_Wnd::AddChild(std::unique_ptr<CPWL_Wnd> pWnd) {
+  ASSERT(!pWnd->m_pParent);
+  pWnd->m_pParent = this;
+  m_Children.push_back(std::move(pWnd));
 }
 
 void CPWL_Wnd::RemoveChild(CPWL_Wnd* pWnd) {
-  for (auto it = m_Children.rbegin(); it != m_Children.rend(); ++it) {
-    if (*it && *it == pWnd) {
-      m_Children.erase(std::next(it).base());
-      break;
-    }
-  }
+  ASSERT(pWnd->m_pParent == this);
+  auto it = std::find(m_Children.begin(), m_Children.end(),
+                      pdfium::FakeUniquePtr<CPWL_Wnd>(pWnd));
+  if (it == m_Children.end())
+    return;
+
+  // TODO(tsepez): murky ownership.
+  it->release();
+  m_Children.erase(it);
 }
 
 void CPWL_Wnd::SetScrollInfo(const PWL_SCROLL_INFO& info) {}
@@ -494,18 +481,17 @@ void CPWL_Wnd::CreateVScrollBar(const CreateParams& cp) {
     return;
 
   CreateParams scp = cp;
-
-  // flags
   scp.dwFlags =
       PWS_CHILD | PWS_BACKGROUND | PWS_AUTOTRANSPARENT | PWS_NOREFRESHCLIP;
-
-  scp.pParentWnd = this;
   scp.sBackgroundColor = PWL_DEFAULT_WHITECOLOR;
   scp.eCursorType = FXCT_ARROW;
   scp.nTransparency = PWL_SCROLLBAR_TRANSPARENCY;
 
-  m_pVScrollBar = new CPWL_ScrollBar(SBT_VSCROLL);
-  m_pVScrollBar->Create(scp);
+  auto pBar =
+      pdfium::MakeUnique<CPWL_ScrollBar>(scp, CloneAttachedData(), SBT_VSCROLL);
+  m_pVScrollBar = pBar.get();
+  AddChild(std::move(pBar));
+  m_pVScrollBar->Realize();
 }
 
 void CPWL_Wnd::SetCapture() {
@@ -514,10 +500,9 @@ void CPWL_Wnd::SetCapture() {
 }
 
 void CPWL_Wnd::ReleaseCapture() {
-  for (auto* pChild : m_Children) {
-    if (pChild)
-      pChild->ReleaseCapture();
-  }
+  for (const auto& pChild : m_Children)
+    pChild->ReleaseCapture();
+
   if (CPWL_MsgControl* pMsgCtrl = GetMsgControl())
     pMsgCtrl->ReleaseCapture();
 }
@@ -541,6 +526,10 @@ void CPWL_Wnd::OnSetFocus() {}
 
 void CPWL_Wnd::OnKillFocus() {}
 
+std::unique_ptr<CPWL_Wnd::PrivateData> CPWL_Wnd::CloneAttachedData() const {
+  return m_pAttachedData ? m_pAttachedData->Clone() : nullptr;
+}
+
 bool CPWL_Wnd::WndHitTest(const CFX_PointF& point) const {
   return IsValid() && IsVisible() && GetWindowRect().Contains(point);
 }
@@ -554,13 +543,10 @@ bool CPWL_Wnd::SetVisible(bool bVisible) {
     return true;
 
   ObservedPtr thisObserved(this);
-
-  for (auto* pChild : m_Children) {
-    if (pChild) {
-      pChild->SetVisible(bVisible);
-      if (!thisObserved)
-        return false;
-    }
+  for (const auto& pChild : m_Children) {
+    pChild->SetVisible(bVisible);
+    if (!thisObserved)
+      return false;
   }
 
   if (bVisible != m_bVisible) {
@@ -615,10 +601,8 @@ void CPWL_Wnd::CreateChildWnd(const CreateParams& cp) {}
 
 void CPWL_Wnd::SetCursor() {
   if (IsValid()) {
-    if (CFX_SystemHandler* pSH = GetSystemHandler()) {
-      int32_t nCursorType = GetCreationParams().eCursorType;
-      pSH->SetCursor(nCursorType);
-    }
+    if (CFX_SystemHandler* pSH = GetSystemHandler())
+      pSH->SetCursor(GetCreationParams()->eCursorType);
   }
 }
 
@@ -704,10 +688,9 @@ int32_t CPWL_Wnd::GetTransparency() {
 }
 
 void CPWL_Wnd::SetTransparency(int32_t nTransparency) {
-  for (auto* pChild : m_Children) {
-    if (pChild)
-      pChild->SetTransparency(nTransparency);
-  }
+  for (const auto& pChild : m_Children)
+    pChild->SetTransparency(nTransparency);
+
   m_CreationParams.nTransparency = nTransparency;
 }
 
@@ -775,9 +758,8 @@ void CPWL_Wnd::EnableWindow(bool bEnable) {
   if (m_bEnabled == bEnable)
     return;
 
-  for (auto* pChild : m_Children) {
-    if (pChild)
-      pChild->EnableWindow(bEnable);
-  }
+  for (const auto& pChild : m_Children)
+    pChild->EnableWindow(bEnable);
+
   m_bEnabled = bEnable;
 }

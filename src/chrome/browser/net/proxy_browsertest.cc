@@ -6,6 +6,7 @@
 #include "base/files/file_path.h"
 #include "base/location.h"
 #include "base/macros.h"
+#include "base/run_loop.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/test/bind_test_util.h"
@@ -39,10 +40,6 @@
 #include "url/gurl.h"
 
 namespace {
-
-// PAC script that sends all requests to an invalid proxy server.
-const base::FilePath::CharType kPACScript[] = FILE_PATH_LITERAL(
-    "bad_server.pac");
 
 // Verify kPACScript is installed as the PAC script.
 void VerifyProxyScript(Browser* browser) {
@@ -119,6 +116,12 @@ class ProxyBrowserTest : public InProcessBrowserTest {
   void SetUpCommandLine(base::CommandLine* command_line) override {
     command_line->AppendSwitchASCII(switches::kProxyServer,
                                     proxy_server_.host_port_pair().ToString());
+
+    // TODO(https://crbug.com/901896): Don't rely on proxying localhost (Relied
+    // on by BasicAuthWSConnect)
+    command_line->AppendSwitchASCII(
+        switches::kProxyBypassList,
+        net::ProxyBypassRules::GetRulesToSubtractImplicit());
   }
 
  protected:
@@ -129,16 +132,10 @@ class ProxyBrowserTest : public InProcessBrowserTest {
   DISALLOW_COPY_AND_ASSIGN(ProxyBrowserTest);
 };
 
-// We bypass manually installed proxy for localhost on chromeos.
-#if defined(OS_CHROMEOS)
-#define MAYBE_BasicAuthWSConnect DISABLED_BasicAuthWSConnect
-#else
-#define MAYBE_BasicAuthWSConnect BasicAuthWSConnect
-#endif
 // Test that the browser can establish a WebSocket connection via a proxy
 // that requires basic authentication. This test also checks the headers
 // arrive at WebSocket server.
-IN_PROC_BROWSER_TEST_F(ProxyBrowserTest, MAYBE_BasicAuthWSConnect) {
+IN_PROC_BROWSER_TEST_F(ProxyBrowserTest, BasicAuthWSConnect) {
   // Launch WebSocket server.
   net::SpawnedTestServer ws_server(net::SpawnedTestServer::TYPE_WS,
                                    net::GetWebSocketTestDataDirectory());
@@ -170,13 +167,15 @@ IN_PROC_BROWSER_TEST_F(ProxyBrowserTest, MAYBE_BasicAuthWSConnect) {
   EXPECT_TRUE(observer.auth_handled());
 }
 
-// Fetch PAC script via an http:// URL.
-class HttpProxyScriptBrowserTest : public InProcessBrowserTest {
+// Fetches a PAC script via an http:// URL, and ensures that requests to
+// http://www.google.com fail with ERR_PROXY_CONNECTION_FAILED (by virtue of
+// PAC file having selected a non-existent PROXY server).
+class BaseHttpProxyScriptBrowserTest : public InProcessBrowserTest {
  public:
-  HttpProxyScriptBrowserTest() {
+  BaseHttpProxyScriptBrowserTest() {
     http_server_.ServeFilesFromSourceDirectory("chrome/test/data");
   }
-  ~HttpProxyScriptBrowserTest() override {}
+  ~BaseHttpProxyScriptBrowserTest() override {}
 
   void SetUp() override {
     ASSERT_TRUE(http_server_.Start());
@@ -184,18 +183,57 @@ class HttpProxyScriptBrowserTest : public InProcessBrowserTest {
   }
 
   void SetUpCommandLine(base::CommandLine* command_line) override {
-    base::FilePath pac_script_path(FILE_PATH_LITERAL("/"));
-    command_line->AppendSwitchASCII(switches::kProxyPacUrl, http_server_.GetURL(
-        pac_script_path.Append(kPACScript).MaybeAsASCII()).spec());
+    command_line->AppendSwitchASCII(
+        switches::kProxyPacUrl,
+        http_server_.GetURL("/" + GetPacFilename()).spec());
   }
+
+ protected:
+  virtual std::string GetPacFilename() = 0;
 
  private:
   net::EmbeddedTestServer http_server_;
+  DISALLOW_COPY_AND_ASSIGN(BaseHttpProxyScriptBrowserTest);
+};
 
+// Tests the use of a PAC script that rejects requests to http://www.google.com/
+class HttpProxyScriptBrowserTest : public BaseHttpProxyScriptBrowserTest {
+ public:
+  HttpProxyScriptBrowserTest() = default;
+  ~HttpProxyScriptBrowserTest() override {}
+
+  std::string GetPacFilename() override {
+    // PAC script that sends all requests to an invalid proxy server.
+    return "bad_server.pac";
+  }
+
+ private:
   DISALLOW_COPY_AND_ASSIGN(HttpProxyScriptBrowserTest);
 };
 
 IN_PROC_BROWSER_TEST_F(HttpProxyScriptBrowserTest, Verify) {
+  VerifyProxyScript(browser());
+}
+
+// Tests the use of a PAC script that rejects requests to http://www.google.com/
+// when myIpAddress() and myIpAddressEx() appear to be working.
+class MyIpAddressProxyScriptBrowserTest
+    : public BaseHttpProxyScriptBrowserTest {
+ public:
+  MyIpAddressProxyScriptBrowserTest() = default;
+  ~MyIpAddressProxyScriptBrowserTest() override {}
+
+  std::string GetPacFilename() override {
+    // PAC script that sends all requests to an invalid proxy server provided
+    // myIpAddress() and myIpAddressEx() are not loopback addresses.
+    return "my_ip_address.pac";
+  }
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(MyIpAddressProxyScriptBrowserTest);
+};
+
+IN_PROC_BROWSER_TEST_F(MyIpAddressProxyScriptBrowserTest, Verify) {
   VerifyProxyScript(browser());
 }
 

@@ -39,6 +39,7 @@ using blink::WebElement;
 using blink::WebInputElement;
 using blink::WebNode;
 using blink::WebString;
+using testing::_;
 
 namespace autofill {
 
@@ -192,7 +193,7 @@ class PasswordGenerationAgentTestForHtmlAnnotation
   DISALLOW_COPY_AND_ASSIGN(PasswordGenerationAgentTestForHtmlAnnotation);
 };
 
-const char kSigninFormHTML[] =
+constexpr char kSigninFormHTML[] =
     "<FORM name = 'blah' action = 'http://www.random.com/'> "
     "  <INPUT type = 'text' id = 'username'/> "
     "  <INPUT type = 'password' id = 'password'/> "
@@ -200,7 +201,7 @@ const char kSigninFormHTML[] =
     "  <INPUT type = 'submit' value = 'LOGIN' />"
     "</FORM>";
 
-const char kAccountCreationFormHTML[] =
+constexpr char kAccountCreationFormHTML[] =
     "<FORM id = 'blah' action = 'http://www.random.com/pa/th?q=1&p=3#first'> "
     "  <INPUT type = 'text' id = 'username'/> "
     "  <INPUT type = 'password' id = 'first_password' size = 5/>"
@@ -210,7 +211,7 @@ const char kAccountCreationFormHTML[] =
     "  <INPUT type = 'submit' value = 'LOGIN' />"
     "</FORM>";
 
-const char kAccountCreationNoForm[] =
+constexpr char kAccountCreationNoForm[] =
     "<INPUT type = 'text' id = 'username'/> "
     "<INPUT type = 'password' id = 'first_password' size = 5/>"
     "<INPUT type = 'password' id = 'second_password' size = 5/> "
@@ -218,7 +219,17 @@ const char kAccountCreationNoForm[] =
     "<INPUT type = 'button' id = 'dummy'/> "
     "<INPUT type = 'submit' value = 'LOGIN' />";
 
-const char kDisabledElementAccountCreationFormHTML[] =
+constexpr char kAccountCreationNoIds[] =
+    "<FORM action = 'http://www.random.com/pa/th?q=1&p=3#first'> "
+    "  <INPUT type = 'text'/> "
+    "  <INPUT type = 'password' class='first_password'/>"
+    "  <INPUT type = 'password' class='second_password'/> "
+    "  <INPUT type = 'text'/> "
+    "  <INPUT type = 'button' id = 'dummy'/> "
+    "  <INPUT type = 'submit' value = 'LOGIN'/>"
+    "</FORM>";
+
+constexpr char kDisabledElementAccountCreationFormHTML[] =
     "<FORM name = 'blah' action = 'http://www.random.com/'> "
     "  <INPUT type = 'text' id = 'username'/> "
     "  <INPUT type = 'password' id = 'first_password' "
@@ -230,7 +241,7 @@ const char kDisabledElementAccountCreationFormHTML[] =
     "  <INPUT type = 'submit' value = 'LOGIN' />"
     "</FORM>";
 
-const char kHiddenPasswordAccountCreationFormHTML[] =
+constexpr char kHiddenPasswordAccountCreationFormHTML[] =
     "<FORM name = 'blah' action = 'http://www.random.com/'> "
     "  <INPUT type = 'text' id = 'username'/> "
     "  <INPUT type = 'password' id = 'first_password'/> "
@@ -239,7 +250,7 @@ const char kHiddenPasswordAccountCreationFormHTML[] =
     "  <INPUT type = 'submit' value = 'LOGIN' />"
     "</FORM>";
 
-const char kInvalidActionAccountCreationFormHTML[] =
+constexpr char kInvalidActionAccountCreationFormHTML[] =
     "<FORM name = 'blah' action = 'invalid'> "
     "  <INPUT type = 'text' id = 'username'/> "
     "  <INPUT type = 'password' id = 'first_password'/> "
@@ -248,7 +259,7 @@ const char kInvalidActionAccountCreationFormHTML[] =
     "  <INPUT type = 'submit' value = 'LOGIN' />"
     "</FORM>";
 
-const char kMultipleAccountCreationFormHTML[] =
+constexpr char kMultipleAccountCreationFormHTML[] =
     "<FORM name = 'login' action = 'http://www.random.com/'> "
     "  <INPUT type = 'text' id = 'random'/> "
     "  <INPUT type = 'text' id = 'username'/> "
@@ -265,7 +276,7 @@ const char kMultipleAccountCreationFormHTML[] =
     "  <INPUT type = 'submit' value = 'LOGIN' />"
     "</FORM>";
 
-const char kBothAutocompleteAttributesFormHTML[] =
+constexpr char kBothAutocompleteAttributesFormHTML[] =
     "<FORM name = 'blah' action = 'http://www.random.com/'> "
     "  <INPUT type = 'text' autocomplete='username' id = 'username'/> "
     "  <INPUT type = 'password' id = 'first_password' "
@@ -275,7 +286,7 @@ const char kBothAutocompleteAttributesFormHTML[] =
     "  <INPUT type = 'submit' value = 'LOGIN' />"
     "</FORM>";
 
-const char kUsernameAutocompleteAttributeFormHTML[] =
+constexpr char kUsernameAutocompleteAttributeFormHTML[] =
     "<FORM name = 'blah' action = 'http://www.random.com/'> "
     "  <INPUT type = 'text' autocomplete='username' id = 'username'/> "
     "  <INPUT type = 'password' id = 'first_password' size = 5/>"
@@ -284,7 +295,7 @@ const char kUsernameAutocompleteAttributeFormHTML[] =
     "  <INPUT type = 'submit' value = 'LOGIN' />"
     "</FORM>";
 
-const char kNewPasswordAutocompleteAttributeFormHTML[] =
+constexpr char kNewPasswordAutocompleteAttributeFormHTML[] =
     "<FORM name = 'blah' action = 'http://www.random.com/'> "
     "  <INPUT type = 'text' id = 'username'/> "
     "  <INPUT type = 'password' id = 'first_password' "
@@ -294,7 +305,7 @@ const char kNewPasswordAutocompleteAttributeFormHTML[] =
     "  <INPUT type = 'submit' value = 'LOGIN' />"
     "</FORM>";
 
-const char kCurrentAndNewPasswordAutocompleteAttributeFormHTML[] =
+constexpr char kCurrentAndNewPasswordAutocompleteAttributeFormHTML[] =
     "<FORM name = 'blah' action = 'http://www.random.com/'> "
     "  <INPUT type = 'password' id = 'old_password' "
     "         autocomplete='current-password'/>"
@@ -306,7 +317,7 @@ const char kCurrentAndNewPasswordAutocompleteAttributeFormHTML[] =
     "  <INPUT type = 'submit' value = 'LOGIN' />"
     "</FORM>";
 
-const char kPasswordChangeFormHTML[] =
+constexpr char kPasswordChangeFormHTML[] =
     "<FORM name = 'ChangeWithUsernameForm' action = 'http://www.bidule.com'> "
     "  <INPUT type = 'text' id = 'username'/> "
     "  <INPUT type = 'password' id = 'password'/> "
@@ -316,7 +327,7 @@ const char kPasswordChangeFormHTML[] =
     "  <INPUT type = 'submit' value = 'Login'/> "
     "</FORM>";
 
-const char kPasswordFormAndSpanHTML[] =
+constexpr char kPasswordFormAndSpanHTML[] =
     "<FORM name = 'blah' action = 'http://www.random.com/pa/th?q=1&p=3#first'>"
     "  <INPUT type = 'text' id = 'username'/> "
     "  <INPUT type = 'password' id = 'password'/> "
@@ -456,6 +467,7 @@ TEST_F(PasswordGenerationAgentTest, EditingTest) {
   EXPECT_CALL(fake_pw_client_,
               PresaveGeneratedPassword(testing::Field(
                   &autofill::PasswordForm::password_value, edited_password)));
+  EXPECT_CALL(fake_pw_client_, ShowPasswordEditingPopup(_, _));
   SimulateUserInputChangeForElement(&first_password_element,
                                     edited_password_ascii);
   EXPECT_EQ(edited_password, first_password_element.Value().Utf16());
@@ -476,6 +488,58 @@ TEST_F(PasswordGenerationAgentTest, EditingTest) {
   // and trigger generation again.
   base::RunLoop().RunUntilIdle();
   EXPECT_TRUE(GetCalledAutomaticGenerationStatusChangedTrue());
+}
+
+TEST_F(PasswordGenerationAgentTest, EditingEventsTest) {
+  LoadHTMLWithUserGesture(kAccountCreationFormHTML);
+  SetNotBlacklistedMessage(password_generation_, kAccountCreationFormHTML);
+  SetAccountCreationFormsDetectedMessage(password_generation_,
+                                         GetMainFrame()->GetDocument(), 0, 1);
+
+  // Generate password.
+  FocusField("first_password");
+  base::string16 password = base::ASCIIToUTF16("random_password");
+  EXPECT_CALL(fake_pw_client_,
+              PresaveGeneratedPassword(testing::Field(
+                  &autofill::PasswordForm::password_value, password)));
+  password_generation_->GeneratedPasswordAccepted(password);
+  fake_pw_client_.Flush();
+  fake_pw_client_.reset_called_automatic_generation_status_changed_true();
+  testing::Mock::VerifyAndClearExpectations(&fake_pw_client_);
+
+  // Start removing characters one by one and observe the events sent to the
+  // browser.
+  EXPECT_CALL(fake_pw_client_, ShowPasswordEditingPopup(_, _));
+  FocusField("first_password");
+  fake_pw_client_.Flush();
+  testing::Mock::VerifyAndClearExpectations(&fake_pw_client_);
+  size_t max_chars_to_delete_before_editing =
+      password.length() -
+      PasswordGenerationAgent::kMinimumLengthForEditedPassword;
+  for (size_t i = 0; i < max_chars_to_delete_before_editing; ++i) {
+    password.erase(password.end() - 1);
+    EXPECT_CALL(fake_pw_client_,
+                PresaveGeneratedPassword(testing::Field(
+                    &autofill::PasswordForm::password_value, password)));
+    SimulateUserTypingASCIICharacter(ui::VKEY_BACK, true);
+    fake_pw_client_.Flush();
+    fake_driver_.Flush();
+    EXPECT_TRUE(fake_driver_.last_focused_element_was_fillable());
+    EXPECT_TRUE(fake_driver_.last_focused_input_was_password());
+    testing::Mock::VerifyAndClearExpectations(&fake_pw_client_);
+  }
+
+  // Delete one more character and move back to the generation state.
+  EXPECT_CALL(fake_pw_client_, PasswordNoLongerGenerated(_));
+  SimulateUserTypingASCIICharacter(ui::VKEY_BACK, true);
+  fake_pw_client_.Flush();
+  // The remaining characters no longer count as a generated password, so
+  // generation should be offered again.
+  EXPECT_TRUE(GetCalledAutomaticGenerationStatusChangedTrue());
+  // Last focused element shouldn't change while editing.
+  fake_driver_.Flush();
+  EXPECT_TRUE(fake_driver_.last_focused_element_was_fillable());
+  EXPECT_TRUE(fake_driver_.last_focused_input_was_password());
 }
 
 TEST_F(PasswordGenerationAgentTest, BlacklistedTest) {
@@ -605,6 +669,7 @@ TEST_F(PasswordGenerationAgentTest, MinimumLengthForEditedPassword) {
   testing::Mock::VerifyAndClearExpectations(&fake_pw_client_);
 
   // Delete most of the password.
+  EXPECT_CALL(fake_pw_client_, ShowPasswordEditingPopup(_, _));
   FocusField("first_password");
   size_t max_chars_to_delete =
       password.length() -
@@ -789,6 +854,33 @@ TEST_F(PasswordGenerationAgentTest, ManualGenerationNoFormTest) {
   ExpectManualGenerationAvailable("second_password", false);
 }
 
+TEST_F(PasswordGenerationAgentTest, ManualGenerationDoesntSuppressAutomatic) {
+  LoadHTMLWithUserGesture(kAccountCreationFormHTML);
+  SetNotBlacklistedMessage(password_generation_, kAccountCreationFormHTML);
+  SetAccountCreationFormsDetectedMessage(password_generation_,
+                                         GetMainFrame()->GetDocument(), 0, 1);
+  ExpectAutomaticGenerationAvailable("first_password", true);
+  // The browser may show a standard password dropdown with the "Generate"
+  // option. In this case manual generation is triggered.
+  password_generation_->UserTriggeredGeneratePassword();
+
+  // Move the focus away to somewhere.
+  FocusField("address");
+
+  // Moving the focus back should trigger the automatic generation again.
+  ExpectAutomaticGenerationAvailable("first_password", true);
+}
+
+TEST_F(PasswordGenerationAgentTest, ManualGenerationNoIds) {
+  LoadHTMLWithUserGesture(kAccountCreationNoIds);
+  ExecuteJavaScriptForTests(
+      "document.getElementsByClassName('first_password')[0].focus();");
+  password_generation_->UserTriggeredGeneratePassword();
+  // TODO(crbug/866444): generation doesn't work properly on the password field
+  // without name and id. Temporarily it's disabled.
+  EXPECT_FALSE(GetCalledShowManualPasswordGenerationPopup());
+}
+
 TEST_F(PasswordGenerationAgentTest, PresavingGeneratedPassword) {
   const struct {
     const char* form;
@@ -811,6 +903,7 @@ TEST_F(PasswordGenerationAgentTest, PresavingGeneratedPassword) {
     password_generation_->GeneratedPasswordAccepted(password);
     base::RunLoop().RunUntilIdle();
 
+    EXPECT_CALL(fake_pw_client_, ShowPasswordEditingPopup(_, _));
     FocusField(test_case.generation_element);
     EXPECT_CALL(fake_pw_client_, PresaveGeneratedPassword(testing::_));
     SimulateUserTypingASCIICharacter('a', true);
@@ -821,6 +914,7 @@ TEST_F(PasswordGenerationAgentTest, PresavingGeneratedPassword) {
     SimulateUserTypingASCIICharacter('X', true);
     base::RunLoop().RunUntilIdle();
 
+    EXPECT_CALL(fake_pw_client_, ShowPasswordEditingPopup(_, _));
     FocusField(test_case.generation_element);
     EXPECT_CALL(fake_pw_client_, PasswordNoLongerGenerated(testing::_));
     for (size_t i = 0; i < password.length(); ++i)
@@ -933,7 +1027,9 @@ TEST_F(PasswordGenerationAgentTest, RevealPassword) {
   for (bool clickOnInputField : kFalseTrue) {
     SCOPED_TRACE(testing::Message("clickOnInputField = ") << clickOnInputField);
     // Click on the generation field to reveal the password value.
+    EXPECT_CALL(fake_pw_client_, ShowPasswordEditingPopup(_, _));
     FocusField(kGenerationElementId);
+    fake_pw_client_.Flush();
 
     WebDocument document = GetMainFrame()->GetDocument();
     blink::WebElement element = document.GetElementById(
@@ -1113,6 +1209,7 @@ TEST_F(PasswordGenerationAgentTest, PasswordUnmaskedUntilCompleteDeletion) {
   // Delete characters of the generated password until only
   // |kMinimumLengthForEditedPassword| - 1 chars remain.
   fake_pw_client_.reset_called_automatic_generation_status_changed_true();
+  EXPECT_CALL(fake_pw_client_, ShowPasswordEditingPopup(_, _));
   FocusField(kGenerationElementId);
   EXPECT_CALL(fake_pw_client_, PasswordNoLongerGenerated(testing::_));
   size_t max_chars_to_delete =
@@ -1163,6 +1260,7 @@ TEST_F(PasswordGenerationAgentTest, ShortPasswordMaskedAfterChangingFocus) {
   // Delete characters of the generated password until only
   // |kMinimumLengthForEditedPassword| - 1 chars remain.
   fake_pw_client_.reset_called_automatic_generation_status_changed_true();
+  EXPECT_CALL(fake_pw_client_, ShowPasswordEditingPopup(_, _));
   FocusField(kGenerationElementId);
   EXPECT_CALL(fake_pw_client_, PasswordNoLongerGenerated(testing::_));
   size_t max_chars_to_delete =

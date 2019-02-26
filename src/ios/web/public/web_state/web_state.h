@@ -116,12 +116,6 @@ class WebState : public base::SupportsUserData {
   virtual bool IsWebUsageEnabled() const = 0;
   virtual void SetWebUsageEnabled(bool enabled) = 0;
 
-  // Whether or not JavaScript dialogs and window open requests
-  // should be suppressed. Default is false. When dialog is suppressed
-  // |WebStateObserver::DidSuppressDialog| will be called.
-  virtual bool ShouldSuppressDialogs() const = 0;
-  virtual void SetShouldSuppressDialogs(bool should_suppress) = 0;
-
   // The view containing the contents of the current web page. If the view has
   // been purged due to low memory, this will recreate it. It is up to the
   // caller to size the view.
@@ -312,9 +306,10 @@ class WebState : public base::SupportsUserData {
   // Callback used to handle snapshots. The parameter is the snapshot image.
   typedef base::OnceCallback<void(gfx::Image)> SnapshotCallback;
 
-  // Takes a snapshot of this WebState with |rect|. |callback| is asynchronously
-  // invoked after performing the snapshot. Prior to iOS 11, the callback is
-  // invoked with a nil snapshot.
+  // Takes a snapshot of this WebState with |rect|. |rect| should be specified
+  // in the coordinate system of the view returned by GetView(). |callback| is
+  // asynchronously invoked after performing the snapshot. Prior to iOS 11, the
+  // callback is invoked with a nil snapshot.
   virtual void TakeSnapshot(CGRect rect, SnapshotCallback callback) = 0;
 
   // Adds and removes observers for page navigation notifications. The order in

@@ -173,11 +173,25 @@ bool KeyframeEffectModelBase::SnapshotCompositableProperties(
         parent_style, should_snapshot_property_callback,
         should_snapshot_keyframe_callback);
   }
+
   // Custom properties need to be handled separately, since not all values
   // can be animated.  Need to resolve the value of each custom property to
   // ensure that it can be animated.
+  const PropertyRegistry* property_registry =
+      element.GetDocument().GetPropertyRegistry();
+  if (!property_registry) {
+    // TODO(kevers): Change to DCHECK once CSSVariables2Enabled flag is removed.
+    return updated;
+  }
+
   if (auto* inherited_variables = computed_style.InheritedVariables()) {
     for (const auto& name : inherited_variables->GetCustomPropertyNames()) {
+      if (property_registry->WasReferenced(name)) {
+        // This variable has been referenced as a property value at least once
+        // during style resolution in the document. Animating this property on
+        // the compositor could introduce misalignment in frame synchronization.
+        continue;
+      }
       updated |= SnapshotCompositorKeyFrames(
           PropertyHandle(name), element, computed_style, parent_style,
           should_snapshot_property_callback, should_snapshot_keyframe_callback);
@@ -185,6 +199,12 @@ bool KeyframeEffectModelBase::SnapshotCompositableProperties(
   }
   if (auto* non_inherited_variables = computed_style.NonInheritedVariables()) {
     for (const auto& name : non_inherited_variables->GetCustomPropertyNames()) {
+      // TODO(kevers): Check if referenced in computed style. References
+      // elsewhere in the document should not prevent compositing.
+      if (property_registry->WasReferenced(name)) {
+        // Avoid potential side-effect of animating on compositor.
+        continue;
+      }
       updated |= SnapshotCompositorKeyFrames(
           PropertyHandle(name), element, computed_style, parent_style,
           should_snapshot_property_callback, should_snapshot_keyframe_callback);
@@ -290,7 +310,7 @@ void KeyframeEffectModelBase::EnsureKeyframeGroups() const {
   if (keyframe_groups_)
     return;
 
-  keyframe_groups_ = new KeyframeGroupMap;
+  keyframe_groups_ = MakeGarbageCollected<KeyframeGroupMap>();
   scoped_refptr<TimingFunction> zero_offset_easing = default_keyframe_easing_;
   Vector<double> computed_offsets = GetComputedOffsets(keyframes_);
   DCHECK_EQ(computed_offsets.size(), keyframes_.size());

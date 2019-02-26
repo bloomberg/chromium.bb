@@ -26,6 +26,7 @@ import org.junit.Test;
 import org.junit.rules.TestRule;
 import org.junit.runner.RunWith;
 
+import org.chromium.base.CollectionUtil;
 import org.chromium.base.test.BaseJUnit4ClassRunner;
 import org.chromium.base.test.util.Feature;
 import org.chromium.base.test.util.MinAndroidSdkLevel;
@@ -65,8 +66,7 @@ public class ChannelsInitializerTest {
         mNativeLibraryTestRule.loadNativeLibraryNoBrowserProcess();
 
         mContext = InstrumentationRegistry.getTargetContext();
-        mNotificationManagerProxy = new NotificationManagerProxyImpl(
-                (NotificationManager) mContext.getSystemService(Context.NOTIFICATION_SERVICE));
+        mNotificationManagerProxy = new NotificationManagerProxyImpl(mContext);
         mChannelsInitializer =
                 new ChannelsInitializer(mNotificationManagerProxy, mContext.getResources());
 
@@ -131,6 +131,24 @@ public class ChannelsInitializerTest {
         assertThat(mNotificationManagerProxy.getNotificationChannelGroups(), hasSize(1));
         assertThat(mNotificationManagerProxy.getNotificationChannelGroups().get(0).getId(),
                 is(ChannelDefinitions.ChannelGroupId.GENERAL));
+    }
+
+    @Test
+    @SmallTest
+    @MinAndroidSdkLevel(Build.VERSION_CODES.O)
+    @TargetApi(Build.VERSION_CODES.O)
+    @Feature({"Browser", "Notifications"})
+    public void testUpdateLocale_otherChannelsDoNotThrowException() throws Exception {
+        NotificationChannelGroup group =
+                ChannelDefinitions.getChannelGroup(ChannelDefinitions.ChannelGroupId.GENERAL)
+                        .toNotificationChannelGroup(mContext.getResources());
+        NotificationChannel channel =
+                new NotificationChannel("ACCOUNT", "Account", NotificationManager.IMPORTANCE_LOW);
+        channel.setGroup(ChannelDefinitions.ChannelGroupId.GENERAL);
+        mNotificationManagerProxy.createNotificationChannelGroup(group);
+        mNotificationManagerProxy.createNotificationChannel(channel);
+        mContext = InstrumentationRegistry.getTargetContext();
+        mChannelsInitializer.updateLocale(mContext.getResources());
     }
 
     @Test
@@ -291,6 +309,17 @@ public class ChannelsInitializerTest {
     public void testEnsureInitialized_multipleCalls() throws Exception {
         mChannelsInitializer.ensureInitialized(ChannelDefinitions.ChannelId.SITES);
         mChannelsInitializer.ensureInitialized(ChannelDefinitions.ChannelId.BROWSER);
+        assertThat(getChannelsIgnoringDefault(), hasSize(2));
+    }
+
+    @Test
+    @SmallTest
+    @MinAndroidSdkLevel(Build.VERSION_CODES.O)
+    @TargetApi(Build.VERSION_CODES.O)
+    @Feature({"Browser", "Notifications"})
+    public void testEnsureInitialized_multipleIds() throws Exception {
+        mChannelsInitializer.ensureInitialized(CollectionUtil.newHashSet(
+                ChannelDefinitions.ChannelId.SITES, ChannelDefinitions.ChannelId.BROWSER));
         assertThat(getChannelsIgnoringDefault(), hasSize(2));
     }
 

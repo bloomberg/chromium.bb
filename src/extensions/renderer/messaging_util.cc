@@ -14,6 +14,7 @@
 #include "extensions/common/extension.h"
 #include "extensions/common/manifest.h"
 #include "extensions/common/manifest_handlers/background_info.h"
+#include "extensions/renderer/get_script_context.h"
 #include "extensions/renderer/script_context.h"
 #include "gin/converter.h"
 #include "gin/dictionary.h"
@@ -75,7 +76,10 @@ std::unique_ptr<Message> MessageFromV8(v8::Local<v8::Context> context,
     return nullptr;
   }
 
-  return MessageFromJSONString(isolate, stringified, error_out);
+  ScriptContext* script_context = GetScriptContextFromV8Context(context);
+  blink::WebLocalFrame* web_frame =
+      script_context ? script_context->web_frame() : nullptr;
+  return MessageFromJSONString(isolate, stringified, error_out, web_frame);
 }
 
 std::unique_ptr<Message> MessageFromJSONString(

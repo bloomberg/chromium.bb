@@ -34,7 +34,7 @@
       <h1 slot="title">
         [[i18nDynamic(locale, 'demoSetupProgressScreenTitle')]]
       </h1>
-      <div slot="footer" class="flex layout vertical center">
+      <div slot="footer" class="flex layout vertical center center-justified">
         <paper-spinner-lite id="spinner" dir="ltr" active></paper-spinner-lite>
       </div>
     </oobe-dialog>
@@ -45,18 +45,24 @@
           icon1x="demo-setup-32:computer" icon2x="demo-setup-64:computer">
       </hd-iron-icon>
       <h1 slot="title">[[i18nDynamic(locale, 'demoSetupErrorScreenTitle')]]</h1>
-      <div slot="subtitle">
-        [[i18nDynamic(locale, 'demoSetupErrorScreenSubtitle')]]
-      </div>
-      <div slot="footer" class="flex layout vertical center">
+      <div slot="subtitle">[[errorMessage_]]</div>
+      <div slot="footer" class="flex layout vertical center center-justified">
         <img srcset="images/alert-illustration_1x.svg 1x,
             images/alert-illustration_2x.svg 2x">
       </div>
       <div slot="bottom-buttons" class="layout horizontal justified">
-        <oobe-back-button inverse on-tap="onCloseClicked_"></oobe-back-button>
-        <oobe-text-button inverse on-tap="onRetryClicked_">
+        <oobe-back-button inverse on-tap="onCloseClicked_"
+            disabled="[[isPowerwashRequired_]]"></oobe-back-button>
+        <oobe-text-button id="retryButton" on-tap="onRetryClicked_"
+            inverse hidden="[[isPowerwashRequired_]]">
           <div>
             [[i18nDynamic(locale, 'demoSetupErrorScreenRetryButtonLabel')]]
+          </div>
+        </oobe-text-button>
+        <oobe-text-button id="powerwashButton" on-tap="onPowerwashClicked_"
+            inverse hidden="[[!isPowerwashRequired_]]">
+          <div>
+            [[i18nDynamic(locale, 'demoSetupErrorScreenPowerwashButtonLabel')]]
           </div>
         </oobe-text-button>
       </div>

@@ -70,7 +70,7 @@
 #include "chrome/browser/chromeos/policy/device_local_account_policy_service.h"
 #include "chrome/browser/chromeos/policy/user_cloud_policy_manager_chromeos.h"
 #include "chrome/browser/chromeos/policy/user_policy_manager_factory_chromeos.h"
-#include "chrome/browser/chromeos/settings/install_attributes.h"
+#include "chromeos/settings/install_attributes.h"
 #include "components/user_manager/user_manager.h"
 #else
 #include "chrome/browser/policy/cloud/user_cloud_policy_manager_factory.h"

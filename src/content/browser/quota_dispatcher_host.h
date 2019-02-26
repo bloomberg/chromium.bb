@@ -7,6 +7,7 @@
 
 #include "base/macros.h"
 #include "content/public/browser/quota_permission_context.h"
+#include "storage/browser/quota/quota_manager.h"
 #include "third_party/blink/public/mojom/quota/quota_dispatcher_host.mojom.h"
 
 namespace storage {
@@ -49,10 +50,11 @@ class QuotaDispatcherHost : public blink::mojom::QuotaDispatcherHost {
                            RequestStorageQuotaCallback callback) override;
 
  private:
-  void DidQueryStorageUsageAndQuota(RequestStorageQuotaCallback callback,
+  void DidQueryStorageUsageAndQuota(QueryStorageUsageAndQuotaCallback callback,
                                     blink::mojom::QuotaStatusCode status,
                                     int64_t usage,
-                                    int64_t quota);
+                                    int64_t quota,
+                                    blink::mojom::UsageBreakdownPtr);
   void DidGetPersistentUsageAndQuota(const url::Origin& origin,
                                      blink::mojom::StorageType storage_type,
                                      uint64_t requested_quota,

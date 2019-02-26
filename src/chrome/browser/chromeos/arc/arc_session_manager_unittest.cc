@@ -894,7 +894,7 @@ class ArcSessionManagerArcAlwaysStartTest : public ArcSessionManagerTest {
   ArcSessionManagerArcAlwaysStartTest() = default;
 
   void SetUp() override {
-    SetArcAlwaysStartForTesting(false);
+    SetArcAlwaysStartWithoutPlayStoreForTesting();
     ArcSessionManagerTest::SetUp();
   }
 
@@ -1213,7 +1213,7 @@ class ArcSessionOobeOptInNegotiatorTest
   void ReportResult(bool accepted) {
     for (auto& observer : observer_list_) {
       if (accepted)
-        observer.OnAccept();
+        observer.OnAccept(false);
       else
         observer.OnSkip();
     }

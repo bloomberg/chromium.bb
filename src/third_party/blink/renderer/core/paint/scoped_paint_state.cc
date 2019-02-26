@@ -32,9 +32,7 @@ void ScopedPaintState::AdjustForPaintOffsetTranslation(
   }
 
   adjusted_paint_info_.emplace(input_paint_info_);
-  DCHECK(paint_offset_translation->Matrix().IsAffine());
-  adjusted_paint_info_->UpdateCullRect(
-      paint_offset_translation->Matrix().ToAffineTransform());
+  adjusted_paint_info_->TransformCullRect(paint_offset_translation);
 }
 
 void ScopedPaintState::FinishPaintOffsetTranslationAsDrawing() {
@@ -45,11 +43,7 @@ void ScopedPaintState::FinishPaintOffsetTranslationAsDrawing() {
 }
 
 void ScopedBoxContentsPaintState::AdjustForBoxContents(const LayoutBox& box) {
-  DCHECK((input_paint_info_.phase != PaintPhase::kSelfBlockBackgroundOnly ||
-          BoxModelObjectPainter::
-              IsPaintingBackgroundOfPaintContainerIntoScrollingContentsLayer(
-                  &box, input_paint_info_)) &&
-         input_paint_info_.phase != PaintPhase::kSelfOutlineOnly &&
+  DCHECK(input_paint_info_.phase != PaintPhase::kSelfOutlineOnly &&
          input_paint_info_.phase != PaintPhase::kMask);
 
   if (!fragment_to_paint_ || !fragment_to_paint_->HasLocalBorderBoxProperties())
@@ -75,16 +69,17 @@ void ScopedBoxContentsPaintState::AdjustForBoxContents(const LayoutBox& box) {
   // descendant objects' Paint() method, e.g. inline boxes.
   paint_offset_ += box.ScrollOrigin();
 
+  // If a LayoutView is using infinite cull rect, we are painting with viewport
+  // clip disabled, so don't cull the scrolling contents. This is just for
+  // completeness because we always paint the whole scrolling background even
+  // with a smaller cull rect, and the scrolling document contents are under the
+  // layer of document element which will use infinite cull rect calculated in
+  // PaintLayerPainter::AdjustForPaintProperties().
+  if (box.IsLayoutView() && input_paint_info_.GetCullRect().IsInfinite())
+    return;
+
   adjusted_paint_info_.emplace(input_paint_info_);
-  DCHECK(scroll_translation->Matrix().IsAffine());
-  if (RuntimeEnabledFeatures::SlimmingPaintV2Enabled()) {
-    adjusted_paint_info_->UpdateCullRectForScrollingContents(
-        EnclosingIntRect(box.OverflowClipRect(paint_offset_)),
-        scroll_translation->Matrix().ToAffineTransform());
-  } else {
-    adjusted_paint_info_->UpdateCullRect(
-        scroll_translation->Matrix().ToAffineTransform());
-  }
+  adjusted_paint_info_->TransformCullRect(scroll_translation);
 }
 
 }  // namespace blink

@@ -15,7 +15,7 @@
 
 using ::testing::_;
 using ::testing::Contains;
-using ::testing::ElementsAre;
+using ::testing::Eq;
 using ::testing::InSequence;
 using ::testing::Key;
 using ::testing::Not;
@@ -39,9 +39,19 @@ class BatchElementCheckerTest : public testing::Test {
     element_exists_results_[name] = result;
   }
 
-  base::OnceCallback<void(bool)> ElementExistenceCallback(
+  BatchElementChecker::ElementCheckCallback ElementExistenceCallback(
       const std::string& name) {
     return base::BindOnce(&BatchElementCheckerTest::OnElementExistenceCheck,
+                          base::Unretained(this), name);
+  }
+
+  void OnElementVisibilityCheck(const std::string& name, bool result) {
+    element_visible_results_[name] = result;
+  }
+
+  BatchElementChecker::ElementCheckCallback ElementVisibilityCallback(
+      const std::string& name) {
+    return base::BindOnce(&BatchElementCheckerTest::OnElementVisibilityCheck,
                           base::Unretained(this), name);
   }
 
@@ -51,7 +61,7 @@ class BatchElementCheckerTest : public testing::Test {
     get_field_value_results_[name] = value;
   }
 
-  base::OnceCallback<void(bool, const std::string&)> FieldValueCallback(
+  BatchElementChecker::GetFieldValueCallback FieldValueCallback(
       const std::string& name) {
     return base::BindOnce(&BatchElementCheckerTest::OnFieldValueCheck,
                           base::Unretained(this), name);
@@ -85,16 +95,25 @@ class BatchElementCheckerTest : public testing::Test {
   MockWebController mock_web_controller_;
   BatchElementChecker checks_;
   std::map<std::string, bool> element_exists_results_;
+  std::map<std::string, bool> element_visible_results_;
   std::map<std::string, std::string> get_field_value_results_;
   std::set<std::string> all_done_;
   std::map<std::string, int> try_done_;
 };
 
+TEST_F(BatchElementCheckerTest, AllFoundIfEmpty) {
+  EXPECT_TRUE(checks_.all_found());
+  checks_.AddElementCheck(kExistenceCheck, Selector({"exists"}),
+                          ElementExistenceCallback("exists"));
+  EXPECT_FALSE(checks_.all_found());
+}
+
 TEST_F(BatchElementCheckerTest, OneElementFound) {
-  EXPECT_CALL(mock_web_controller_, OnElementExists(ElementsAre("exists"), _))
-      .WillOnce(RunOnceCallback<1>(true));
-  checks_.AddElementExistenceCheck({"exists"},
-                                   ElementExistenceCallback("exists"));
+  EXPECT_CALL(mock_web_controller_,
+              OnElementCheck(kExistenceCheck, Eq(Selector({"exists"})), _))
+      .WillOnce(RunOnceCallback<2>(true));
+  checks_.AddElementCheck(kExistenceCheck, Selector({"exists"}),
+                          ElementExistenceCallback("exists"));
   RunOnce("run_once");
 
   EXPECT_THAT(element_exists_results_, Contains(Pair("exists", true)));
@@ -103,11 +122,12 @@ TEST_F(BatchElementCheckerTest, OneElementFound) {
 }
 
 TEST_F(BatchElementCheckerTest, OneElementNotFound) {
-  EXPECT_CALL(mock_web_controller_,
-              OnElementExists(ElementsAre("does_not_exist"), _))
-      .WillOnce(RunOnceCallback<1>(false));
-  checks_.AddElementExistenceCheck({"does_not_exist"},
-                                   ElementExistenceCallback("does_not_exist"));
+  EXPECT_CALL(
+      mock_web_controller_,
+      OnElementCheck(kExistenceCheck, Eq(Selector({"does_not_exist"})), _))
+      .WillOnce(RunOnceCallback<2>(false));
+  checks_.AddElementCheck(kExistenceCheck, Selector({"does_not_exist"}),
+                          ElementExistenceCallback("does_not_exist"));
   RunOnce("run_once");
 
   EXPECT_THAT(element_exists_results_, Contains(Pair("does_not_exist", false)));
@@ -116,9 +136,9 @@ TEST_F(BatchElementCheckerTest, OneElementNotFound) {
 }
 
 TEST_F(BatchElementCheckerTest, OneFieldValueFound) {
-  EXPECT_CALL(mock_web_controller_, OnGetFieldValue(ElementsAre("field"), _))
+  EXPECT_CALL(mock_web_controller_, OnGetFieldValue(Eq(Selector({"field"})), _))
       .WillOnce(RunOnceCallback<1>(true, "some value"));
-  checks_.AddFieldValueCheck({"field"}, FieldValueCallback("field"));
+  checks_.AddFieldValueCheck(Selector({"field"}), FieldValueCallback("field"));
   RunOnce("run_once");
 
   EXPECT_THAT(get_field_value_results_, Contains(Pair("field", "some value")));
@@ -127,9 +147,9 @@ TEST_F(BatchElementCheckerTest, OneFieldValueFound) {
 }
 
 TEST_F(BatchElementCheckerTest, OneFieldValueNotFound) {
-  EXPECT_CALL(mock_web_controller_, OnGetFieldValue(ElementsAre("field"), _))
+  EXPECT_CALL(mock_web_controller_, OnGetFieldValue(Eq(Selector({"field"})), _))
       .WillOnce(RunOnceCallback<1>(false, ""));
-  checks_.AddFieldValueCheck({"field"}, FieldValueCallback("field"));
+  checks_.AddFieldValueCheck(Selector({"field"}), FieldValueCallback("field"));
   RunOnce("run_once");
 
   EXPECT_THAT(get_field_value_results_, Contains(Pair("field", "")));
@@ -138,9 +158,9 @@ TEST_F(BatchElementCheckerTest, OneFieldValueNotFound) {
 }
 
 TEST_F(BatchElementCheckerTest, OneFieldValueEmpty) {
-  EXPECT_CALL(mock_web_controller_, OnGetFieldValue(ElementsAre("field"), _))
+  EXPECT_CALL(mock_web_controller_, OnGetFieldValue(Eq(Selector({"field"})), _))
       .WillOnce(RunOnceCallback<1>(true, ""));
-  checks_.AddFieldValueCheck({"field"}, FieldValueCallback("field"));
+  checks_.AddFieldValueCheck(Selector({"field"}), FieldValueCallback("field"));
   RunOnce("run_once");
 
   EXPECT_THAT(get_field_value_results_, Contains(Pair("field", "")));
@@ -149,22 +169,28 @@ TEST_F(BatchElementCheckerTest, OneFieldValueEmpty) {
 }
 
 TEST_F(BatchElementCheckerTest, MultipleElements) {
-  EXPECT_CALL(mock_web_controller_, OnElementExists(ElementsAre("1"), _))
-      .WillOnce(RunOnceCallback<1>(true));
-  EXPECT_CALL(mock_web_controller_, OnElementExists(ElementsAre("2"), _))
-      .WillOnce(RunOnceCallback<1>(true));
-  EXPECT_CALL(mock_web_controller_, OnElementExists(ElementsAre("3"), _))
-      .WillOnce(RunOnceCallback<1>(false));
-  EXPECT_CALL(mock_web_controller_, OnGetFieldValue(ElementsAre("4"), _))
+  EXPECT_CALL(mock_web_controller_,
+              OnElementCheck(kExistenceCheck, Eq(Selector({"1"})), _))
+      .WillOnce(RunOnceCallback<2>(true));
+  EXPECT_CALL(mock_web_controller_,
+              OnElementCheck(kExistenceCheck, Eq(Selector({"2"})), _))
+      .WillOnce(RunOnceCallback<2>(true));
+  EXPECT_CALL(mock_web_controller_,
+              OnElementCheck(kExistenceCheck, Eq(Selector({"3"})), _))
+      .WillOnce(RunOnceCallback<2>(false));
+  EXPECT_CALL(mock_web_controller_, OnGetFieldValue(Eq(Selector({"4"})), _))
       .WillOnce(RunOnceCallback<1>(true, "value"));
-  EXPECT_CALL(mock_web_controller_, OnGetFieldValue(ElementsAre("5"), _))
+  EXPECT_CALL(mock_web_controller_, OnGetFieldValue(Eq(Selector({"5"})), _))
       .WillOnce(RunOnceCallback<1>(false, ""));
 
-  checks_.AddElementExistenceCheck({"1"}, ElementExistenceCallback("1"));
-  checks_.AddElementExistenceCheck({"2"}, ElementExistenceCallback("2"));
-  checks_.AddElementExistenceCheck({"3"}, ElementExistenceCallback("3"));
-  checks_.AddFieldValueCheck({"4"}, FieldValueCallback("4"));
-  checks_.AddFieldValueCheck({"5"}, FieldValueCallback("5"));
+  checks_.AddElementCheck(kExistenceCheck, Selector({"1"}),
+                          ElementExistenceCallback("1"));
+  checks_.AddElementCheck(kExistenceCheck, Selector({"2"}),
+                          ElementExistenceCallback("2"));
+  checks_.AddElementCheck(kExistenceCheck, Selector({"3"}),
+                          ElementExistenceCallback("3"));
+  checks_.AddFieldValueCheck(Selector({"4"}), FieldValueCallback("4"));
+  checks_.AddFieldValueCheck(Selector({"5"}), FieldValueCallback("5"));
   RunOnce("run_once");
 
   EXPECT_THAT(element_exists_results_, Contains(Pair("1", true)));
@@ -176,50 +202,70 @@ TEST_F(BatchElementCheckerTest, MultipleElements) {
   EXPECT_FALSE(checks_.all_found());
 }
 
-TEST_F(BatchElementCheckerTest, Deduplicate) {
-  EXPECT_CALL(mock_web_controller_, OnElementExists(ElementsAre("1"), _))
-      .WillOnce(RunOnceCallback<1>(true));
-  EXPECT_CALL(mock_web_controller_, OnGetFieldValue(ElementsAre("2"), _))
-      .WillOnce(RunOnceCallback<1>(true, "value2"));
-  EXPECT_CALL(mock_web_controller_, OnGetFieldValue(ElementsAre("3"), _))
-      .WillOnce(RunOnceCallback<1>(true, "value3"));
+TEST_F(BatchElementCheckerTest, DeduplicateElementExists) {
+  EXPECT_CALL(mock_web_controller_,
+              OnElementCheck(kExistenceCheck, Eq(Selector({"1"})), _))
+      .WillOnce(RunOnceCallback<2>(true));
+  EXPECT_CALL(mock_web_controller_,
+              OnElementCheck(kExistenceCheck, Eq(Selector({"2"})), _))
+      .WillOnce(RunOnceCallback<2>(true));
 
-  // Deduplicate two AddElementExistenceCheck for the same element:
-  checks_.AddElementExistenceCheck({"1"}, ElementExistenceCallback("first 1"));
-  checks_.AddElementExistenceCheck({"1"}, ElementExistenceCallback("second 1"));
-
-  // Deduplicate an AddElementExistenceCheck and a AddFieldValueCheck for the
-  // same element:
-  checks_.AddElementExistenceCheck({"2"}, ElementExistenceCallback("first 2"));
-  checks_.AddFieldValueCheck({"2"}, FieldValueCallback("second 2"));
-
-  // Deduplicate two AddFieldValueCheck for the same element:
-  checks_.AddFieldValueCheck({"3"}, FieldValueCallback("first 3"));
-  checks_.AddFieldValueCheck({"3"}, FieldValueCallback("second 3"));
+  checks_.AddElementCheck(kExistenceCheck, Selector({"1"}),
+                          ElementExistenceCallback("first 1"));
+  checks_.AddElementCheck(kExistenceCheck, Selector({"1"}),
+                          ElementExistenceCallback("second 1"));
+  checks_.AddElementCheck(kExistenceCheck, Selector({"2"}),
+                          ElementExistenceCallback("2"));
 
   RunOnce("run_once");
 
   EXPECT_THAT(element_exists_results_, Contains(Pair("first 1", true)));
   EXPECT_THAT(element_exists_results_, Contains(Pair("second 1", true)));
-  EXPECT_THAT(element_exists_results_, Contains(Pair("first 2", true)));
-  EXPECT_THAT(get_field_value_results_, Contains(Pair("second 2", "value2")));
-  EXPECT_THAT(get_field_value_results_, Contains(Pair("first 3", "value3")));
-  EXPECT_THAT(get_field_value_results_, Contains(Pair("second 3", "value3")));
+  EXPECT_THAT(element_exists_results_, Contains(Pair("2", true)));
   EXPECT_THAT(all_done_, Contains("run_once"));
 }
+
+TEST_F(BatchElementCheckerTest, DeduplicateElementVisible) {
+  EXPECT_CALL(mock_web_controller_,
+              OnElementCheck(kVisibilityCheck, Eq(Selector({"1"})), _))
+      .WillOnce(RunOnceCallback<2>(true));
+  EXPECT_CALL(mock_web_controller_,
+              OnElementCheck(kVisibilityCheck, Eq(Selector({"2"})), _))
+      .WillOnce(RunOnceCallback<2>(true));
+
+  checks_.AddElementCheck(kVisibilityCheck, Selector({"1"}),
+                          ElementVisibilityCallback("first 1"));
+  checks_.AddElementCheck(kVisibilityCheck, Selector({"1"}),
+                          ElementVisibilityCallback("second 1"));
+  checks_.AddElementCheck(kVisibilityCheck, Selector({"2"}),
+                          ElementVisibilityCallback("2"));
+
+  RunOnce("run_once");
+
+  EXPECT_THAT(element_visible_results_, Contains(Pair("first 1", true)));
+  EXPECT_THAT(element_visible_results_, Contains(Pair("second 1", true)));
+  EXPECT_THAT(element_visible_results_, Contains(Pair("2", true)));
+  EXPECT_THAT(all_done_, Contains("run_once"));
+}
+
+// Deduplicate get field
 
 TEST_F(BatchElementCheckerTest, EventuallyFindAll) {
   {
     InSequence seq;
 
-    EXPECT_CALL(mock_web_controller_, OnElementExists(ElementsAre("1"), _))
-        .WillOnce(RunOnceCallback<1>(true));
-    EXPECT_CALL(mock_web_controller_, OnElementExists(ElementsAre("2"), _))
-        .WillOnce(RunOnceCallback<1>(false))
-        .WillOnce(RunOnceCallback<1>(true));
+    EXPECT_CALL(mock_web_controller_,
+                OnElementCheck(kExistenceCheck, Eq(Selector({"1"})), _))
+        .WillOnce(RunOnceCallback<2>(true));
+    EXPECT_CALL(mock_web_controller_,
+                OnElementCheck(kExistenceCheck, Eq(Selector({"2"})), _))
+        .WillOnce(RunOnceCallback<2>(false))
+        .WillOnce(RunOnceCallback<2>(true));
   }
-  checks_.AddElementExistenceCheck({"1"}, ElementExistenceCallback("1"));
-  checks_.AddElementExistenceCheck({"2"}, ElementExistenceCallback("2"));
+  checks_.AddElementCheck(kExistenceCheck, Selector({"1"}),
+                          ElementExistenceCallback("1"));
+  checks_.AddElementCheck(kExistenceCheck, Selector({"2"}),
+                          ElementExistenceCallback("2"));
   checks_.Run(base::TimeDelta::FromSeconds(1), base::DoNothing(),
               DoneCallback("all_done"));
 
@@ -243,14 +289,18 @@ TEST_F(BatchElementCheckerTest, EventuallyFindSome) {
   {
     InSequence seq;
 
-    EXPECT_CALL(mock_web_controller_, OnElementExists(ElementsAre("1"), _))
-        .WillOnce(RunOnceCallback<1>(true));
-    EXPECT_CALL(mock_web_controller_, OnElementExists(ElementsAre("2"), _))
+    EXPECT_CALL(mock_web_controller_,
+                OnElementCheck(kExistenceCheck, Eq(Selector({"1"})), _))
+        .WillOnce(RunOnceCallback<2>(true));
+    EXPECT_CALL(mock_web_controller_,
+                OnElementCheck(kExistenceCheck, Eq(Selector({"2"})), _))
         .Times(3)
-        .WillRepeatedly(RunOnceCallback<1>(false));
+        .WillRepeatedly(RunOnceCallback<2>(false));
   }
-  checks_.AddElementExistenceCheck({"1"}, ElementExistenceCallback("1"));
-  checks_.AddElementExistenceCheck({"2"}, ElementExistenceCallback("2"));
+  checks_.AddElementCheck(kExistenceCheck, Selector({"1"}),
+                          ElementExistenceCallback("1"));
+  checks_.AddElementCheck(kExistenceCheck, Selector({"2"}),
+                          ElementExistenceCallback("2"));
   checks_.Run(3 * kTimeUnit, base::DoNothing(), DoneCallback("all_done"));
 
   // The first try should have run, not fully successful, and should now be
@@ -274,11 +324,13 @@ TEST_F(BatchElementCheckerTest, EventuallyFindSome) {
 }
 
 TEST_F(BatchElementCheckerTest, TryDoneCallback) {
-  EXPECT_CALL(mock_web_controller_, OnElementExists(ElementsAre("element"), _))
-      .WillOnce(RunOnceCallback<1>(false))
-      .WillOnce(RunOnceCallback<1>(true));
+  EXPECT_CALL(mock_web_controller_,
+              OnElementCheck(kExistenceCheck, Eq(Selector({"element"})), _))
+      .WillOnce(RunOnceCallback<2>(false))
+      .WillOnce(RunOnceCallback<2>(true));
 
-  checks_.AddElementExistenceCheck({"element"}, base::DoNothing());
+  checks_.AddElementCheck(kExistenceCheck, Selector({"element"}),
+                          base::DoNothing());
   checks_.Run(base::TimeDelta::FromSeconds(1), TryCallback("try"),
               DoneCallback("all_done"));
 
@@ -293,11 +345,12 @@ TEST_F(BatchElementCheckerTest, TryDoneCallback) {
 }
 
 TEST_F(BatchElementCheckerTest, TryOnceGivenSmallDuration) {
-  EXPECT_CALL(mock_web_controller_,
-              OnElementExists(ElementsAre("does_not_exist"), _))
-      .WillOnce(RunOnceCallback<1>(false));
-  checks_.AddElementExistenceCheck({"does_not_exist"},
-                                   ElementExistenceCallback("does_not_exist"));
+  EXPECT_CALL(
+      mock_web_controller_,
+      OnElementCheck(kExistenceCheck, Eq(Selector({"does_not_exist"})), _))
+      .WillOnce(RunOnceCallback<2>(false));
+  checks_.AddElementCheck(kExistenceCheck, Selector({"does_not_exist"}),
+                          ElementExistenceCallback("does_not_exist"));
 
   checks_.Run(base::TimeDelta::FromMilliseconds(10), base::DoNothing(),
               DoneCallback("all_done"));
@@ -306,26 +359,6 @@ TEST_F(BatchElementCheckerTest, TryOnceGivenSmallDuration) {
   EXPECT_THAT(element_exists_results_, Contains(Pair("does_not_exist", false)));
   EXPECT_THAT(all_done_, Contains("all_done"));
   EXPECT_FALSE(checks_.all_found());
-}
-
-TEST_F(BatchElementCheckerTest, StopTrying) {
-  EXPECT_CALL(mock_web_controller_, OnElementExists(ElementsAre("element"), _))
-      .WillRepeatedly(RunOnceCallback<1>(false));
-
-  checks_.AddElementExistenceCheck({"element"}, base::DoNothing());
-  checks_.Run(base::TimeDelta::FromSeconds(1), TryCallback("try"),
-              DoneCallback("all_done"));
-
-  // The first try does not fully succeed.
-  EXPECT_THAT(try_done_, Contains(Pair("try", 1)));
-  EXPECT_THAT(all_done_, Not(Contains("all_done")));
-
-  checks_.StopTrying();
-
-  // Give up on the second try, because of StopTrying.
-  AdvanceTime();
-  EXPECT_THAT(try_done_, Contains(Pair("try", 2)));
-  EXPECT_THAT(all_done_, Contains("all_done"));
 }
 
 }  // namespace

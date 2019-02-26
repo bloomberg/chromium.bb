@@ -117,6 +117,9 @@
         "load:games:spychase": {
             "DEFAULT": "system_health_mobile_005.wprgo"
         },
+        "load:games:spychase:2018": {
+            "DEFAULT": "system_health_mobile_aebce60cc6.wprgo"
+        },
         "load:media:9gag": {
             "DEFAULT": "system_health_mobile_003.wprgo"
         },
@@ -129,17 +132,32 @@
         "load:media:flickr": {
             "DEFAULT": "system_health_mobile_003.wprgo"
         },
+        "load:media:flickr:2018": {
+            "DEFAULT": "system_health_mobile_3d332e7f0f.wprgo"
+        },
         "load:media:google_images": {
             "DEFAULT": "system_health_mobile_003.wprgo"
+        },
+        "load:media:google_images:2018": {
+            "DEFAULT": "system_health_mobile_cac60dab45.wprgo"
         },
         "load:media:imgur": {
             "DEFAULT": "system_health_mobile_035.wprgo"
         },
+        "load:media:imgur:2018": {
+            "DEFAULT": "system_health_mobile_f78afe9f96.wprgo"
+        },
         "load:media:soundcloud": {
             "DEFAULT": "system_health_mobile_003.wprgo"
         },
+        "load:media:soundcloud:2018": {
+            "DEFAULT": "system_health_mobile_41c6b74f52.wprgo"
+        },
         "load:media:youtube": {
             "DEFAULT": "system_health_mobile_003.wprgo"
+        },
+        "load:media:youtube:2018": {
+            "DEFAULT": "system_health_mobile_2d7e2af174.wprgo"
         },
         "load:news:bbc": {
             "DEFAULT": "system_health_mobile_002.wprgo"
@@ -177,17 +195,29 @@
         "load:news:wikipedia": {
             "DEFAULT": "system_health_mobile_002.wprgo"
         },
+        "load:news:wikipedia:2018": {
+            "DEFAULT": "system_health_mobile_69876ae4b7.wprgo"
+        },
         "load:search:amazon": {
             "DEFAULT": "system_health_mobile_000.wprgo"
         },
         "load:search:baidu": {
             "DEFAULT": "system_health_mobile_000.wprgo"
         },
+        "load:search:baidu:2018": {
+            "DEFAULT": "system_health_mobile_028870b3b5.wprgo"
+        },
         "load:search:ebay": {
             "DEFAULT": "system_health_mobile_000.wprgo"
         },
+        "load:search:ebay:2018": {
+            "DEFAULT": "system_health_mobile_b32499ce35.wprgo"
+        },
         "load:search:google": {
             "DEFAULT": "system_health_mobile_029.wprgo"
+        },
+        "load:search:google:2018": {
+            "DEFAULT": "system_health_mobile_09493f5937.wprgo"
         },
         "load:search:taobao": {
             "DEFAULT": "system_health_mobile_000.wprgo"
@@ -195,8 +225,14 @@
         "load:search:yahoo": {
             "DEFAULT": "system_health_mobile_000.wprgo"
         },
+        "load:search:yahoo:2018": {
+            "DEFAULT": "system_health_mobile_4367fb5828.wprgo"
+        },
         "load:search:yandex": {
             "DEFAULT": "system_health_mobile_000.wprgo"
+        },
+        "load:search:yandex:2018": {
+            "DEFAULT": "system_health_mobile_5d042249d1.wprgo"
         },
         "load:social:facebook": {
             "DEFAULT": "system_health_mobile_028.wprgo"
@@ -230,6 +266,9 @@
         },
         "load:tools:stackoverflow": {
             "DEFAULT": "system_health_mobile_004.wprgo"
+        },
+        "load:tools:stackoverflow:2018": {
+            "DEFAULT": "system_health_mobile_fea9d8ae01.wprgo"
         },
         "load:tools:weather": {
             "DEFAULT": "system_health_mobile_004.wprgo"

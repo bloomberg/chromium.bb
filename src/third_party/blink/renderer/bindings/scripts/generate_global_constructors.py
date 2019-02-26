@@ -97,7 +97,8 @@ def record_global_constructors(idl_filename):
             global_name_to_constructors[argument['exposed']].extend(new_constructors_list)
     else:
         # Exposed=env or Exposed=(env1,...) case
-        exposed_global_names = extended_attributes.get('Exposed', 'Window').strip('()').split(',')
+        exposed_value = extended_attributes.get('Exposed', 'Window')
+        exposed_global_names = map(str.strip, exposed_value.strip('()').split(','))
         new_constructors_list = generate_global_constructors_list(interface_name, extended_attributes)
         for name in exposed_global_names:
             global_name_to_constructors[name].extend(new_constructors_list)
@@ -153,14 +154,14 @@ def write_global_constructors_partial_interface(interface_name, idl_filename, co
 def main():
     options, args = parse_options()
 
-    # Input IDL files are passed in a file, due to OS command line length
-    # limits. This is generated at GYP time, which is ok b/c files are static.
+    # File paths of input IDL files are passed in a file, which is generated at
+    # GN time. It is OK because the target IDL files are static.
     idl_files = read_file_to_list(options.idl_files_list)
 
     # Output IDL files (to generate) are passed at the command line, since
     # these are in the build directory, which is determined at build time, not
-    # GYP time.
-    # These are passed as pairs of GlobalObjectName, GlobalObject.idl
+    # GN time.
+    # These are passed as pairs of GlobalObjectName, global_object.idl
     interface_name_idl_filename = [(args[i], args[i + 1])
                                    for i in range(0, len(args), 2)]
 
@@ -175,8 +176,7 @@ def main():
     if not exposed_global_names.issubset(known_global_names):
         unknown_global_names = exposed_global_names.difference(known_global_names)
         raise ValueError('The following global names were used in '
-                         '[Exposed=xxx] but do not match any [Global] / '
-                         '[PrimaryGlobal] interface: %s'
+                         '[Exposed=xxx] but do not match any global names: %s'
                          % list(unknown_global_names))
 
     # Write partial interfaces containing constructor attributes for each

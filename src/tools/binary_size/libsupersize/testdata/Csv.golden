@@ -43,7 +43,7 @@ GroupCount,Address,SizeWithoutPadding,Padding,NumAliases,PSS,Section,Name
 ,0x28d948,28,0,1,28.0,t,_GLOBAL__sub_I_pacing_sender.cc
 ,0x28d964,38,0,1,38.0,t,extFromUUseMapping
 ,0x28d98a,32,0,1,32.0,t,extFromUUseMapping
-3,,0,35830760,1,35830760.0,t,** symbol gaps
+3,,0,35826678,1,35826678.0,t,** symbol gaps
 ,0x28f000,448,0,1,448.0,t,ucnv_extMatchFromU
 ,0x28f1c8,20,8,1,28.0,t,_GLOBAL__sub_I_SkDeviceProfile.cpp
 ,0x28f1e0,69120,4,1,69124.0,t,foo_bar
@@ -55,6 +55,9 @@ GroupCount,Address,SizeWithoutPadding,Padding,NumAliases,PSS,Section,Name
 ,0x2a0010,12,0,4,3.0,t,blink::ContiguousContainerBase::shrinkToFit
 ,0x2a0020,24,4,1,28.0,t,blink::ContiguousContainerBase::ContiguousContainerBase
 ,0x2a1000,94,0,1,94.0,t,blink::PaintChunker::releasePaintChunks
+,0x2a2000,32,4002,1,4034.0,t,** outlined function
+,0x2a2020,48,0,2,24.0,t,** outlined function * 2
+,0x2a2020,48,0,2,24.0,t,aliasedWithOutlinedFunction
 ,0x0,262144,0,1,262144.0,b,ff_cos_131072
 ,0x0,131072,0,1,131072.0,b,ff_cos_131072_fixed
 ,0x0,131072,0,1,131072.0,b,ff_cos_65536

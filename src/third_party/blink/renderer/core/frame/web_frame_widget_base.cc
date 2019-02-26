@@ -12,6 +12,7 @@
 #include "third_party/blink/public/web/web_local_frame.h"
 #include "third_party/blink/public/web/web_widget_client.h"
 #include "third_party/blink/renderer/core/dom/element.h"
+#include "third_party/blink/renderer/core/dom/layout_tree_builder_traversal.h"
 #include "third_party/blink/renderer/core/dom/user_gesture_indicator.h"
 #include "third_party/blink/renderer/core/events/web_input_event_conversion.h"
 #include "third_party/blink/renderer/core/events/wheel_event.h"
@@ -21,6 +22,9 @@
 #include "third_party/blink/renderer/core/frame/web_local_frame_impl.h"
 #include "third_party/blink/renderer/core/input/context_menu_allowed_scope.h"
 #include "third_party/blink/renderer/core/input/event_handler.h"
+#include "third_party/blink/renderer/core/layout/hit_test_location.h"
+#include "third_party/blink/renderer/core/layout/hit_test_request.h"
+#include "third_party/blink/renderer/core/layout/layout_object.h"
 #include "third_party/blink/renderer/core/page/context_menu_controller.h"
 #include "third_party/blink/renderer/core/page/drag_actions.h"
 #include "third_party/blink/renderer/core/page/drag_controller.h"
@@ -65,6 +69,39 @@ void WebFrameWidgetBase::Close() {
 
 WebLocalFrame* WebFrameWidgetBase::LocalRoot() const {
   return local_root_;
+}
+
+WebRect WebFrameWidgetBase::ComputeBlockBound(
+    const gfx::Point& point_in_root_frame,
+    bool ignore_clipping) const {
+  HitTestLocation location(local_root_->GetFrameView()->ConvertFromRootFrame(
+      LayoutPoint(IntPoint(point_in_root_frame))));
+  HitTestRequest::HitTestRequestType hit_type =
+      HitTestRequest::kReadOnly | HitTestRequest::kActive |
+      (ignore_clipping ? HitTestRequest::kIgnoreClipping : 0);
+  HitTestResult result =
+      local_root_->GetFrame()->GetEventHandler().HitTestResultAtLocation(
+          location, hit_type);
+  result.SetToShadowHostIfInRestrictedShadowRoot();
+
+  Node* node = result.InnerNodeOrImageMapImage();
+  if (!node)
+    return WebRect();
+
+  // Find the block type node based on the hit node.
+  // FIXME: This wants to walk flat tree with
+  // LayoutTreeBuilderTraversal::parent().
+  while (node &&
+         (!node->GetLayoutObject() || node->GetLayoutObject()->IsInline()))
+    node = LayoutTreeBuilderTraversal::Parent(*node);
+
+  // Return the bounding box in the root frame's coordinate space.
+  if (node) {
+    IntRect absolute_rect = node->GetLayoutObject()->AbsoluteBoundingBoxRect();
+    LocalFrame* frame = node->GetDocument().GetFrame();
+    return frame->View()->ConvertToRootFrame(absolute_rect);
+  }
+  return WebRect();
 }
 
 void WebFrameWidgetBase::UpdateAllLifecyclePhasesAndCompositeForTesting(
@@ -195,7 +232,7 @@ void WebFrameWidgetBase::DragSourceSystemDragEnded() {
 }
 
 void WebFrameWidgetBase::CancelDrag() {
-  // It's possible for us this to be callback while we're not doing a drag if
+  // It's possible for this to be called while we're not doing a drag if
   // it's from a previous page that got unloaded.
   if (!doing_drag_and_drop_)
     return;
@@ -203,11 +240,11 @@ void WebFrameWidgetBase::CancelDrag() {
   doing_drag_and_drop_ = false;
 }
 
-void WebFrameWidgetBase::StartDragging(WebReferrerPolicy policy,
+void WebFrameWidgetBase::StartDragging(network::mojom::ReferrerPolicy policy,
                                        const WebDragData& data,
                                        WebDragOperationsMask mask,
                                        const SkBitmap& drag_image,
-                                       const WebPoint& drag_image_offset) {
+                                       const gfx::Point& drag_image_offset) {
   doing_drag_and_drop_ = true;
   Client()->StartDragging(policy, data, mask, drag_image, drag_image_offset);
 }
@@ -317,7 +354,7 @@ void WebFrameWidgetBase::PointerLockMouseEvent(
   AtomicString event_type;
   switch (input_event.GetType()) {
     case WebInputEvent::kMouseDown:
-      event_type = EventTypeNames::mousedown;
+      event_type = event_type_names::kMousedown;
       if (!GetPage() || !GetPage()->GetPointerLockController().GetElement())
         break;
       gesture_indicator =
@@ -330,12 +367,12 @@ void WebFrameWidgetBase::PointerLockMouseEvent(
       pointer_lock_gesture_token_ = gesture_indicator->CurrentToken();
       break;
     case WebInputEvent::kMouseUp:
-      event_type = EventTypeNames::mouseup;
+      event_type = event_type_names::kMouseup;
       gesture_indicator = std::make_unique<UserGestureIndicator>(
           std::move(pointer_lock_gesture_token_));
       break;
     case WebInputEvent::kMouseMove:
-      event_type = EventTypeNames::mousemove;
+      event_type = event_type_names::kMousemove;
       break;
     default:
       NOTREACHED() << input_event.GetType();
@@ -347,6 +384,9 @@ void WebFrameWidgetBase::PointerLockMouseEvent(
         TransformWebMouseEventVector(
             local_root_->GetFrameView(),
             coalesced_event.GetCoalescedEventsPointers()),
+        TransformWebMouseEventVector(
+            local_root_->GetFrameView(),
+            coalesced_event.GetPredictedEventsPointers()),
         event_type);
   }
 }

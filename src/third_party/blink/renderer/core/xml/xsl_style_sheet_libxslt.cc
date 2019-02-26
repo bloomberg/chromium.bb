@@ -224,7 +224,7 @@ void XSLStyleSheet::LoadChildSheet(const String& href) {
 
   const String& url_string = url.GetString();
   ResourceLoaderOptions fetch_options;
-  fetch_options.initiator_info.name = FetchInitiatorTypeNames::xml;
+  fetch_options.initiator_info.name = fetch_initiator_type_names::kXml;
   FetchParameters params(
       ResourceRequest(OwnerDocument()->CompleteURL(url_string)), fetch_options);
   params.MutableResourceRequest().SetFetchRequestMode(
@@ -234,8 +234,8 @@ void XSLStyleSheet::LoadChildSheet(const String& href) {
   if (!resource->Sheet())
     return;
 
-  XSLStyleSheet* style_sheet =
-      new XSLStyleSheet(this, url_string, resource->GetResponse().Url());
+  XSLStyleSheet* style_sheet = MakeGarbageCollected<XSLStyleSheet>(
+      this, url_string, resource->GetResponse().Url());
   children_.push_back(style_sheet);
   style_sheet->ParseString(resource->Sheet());
   CheckLoaded();

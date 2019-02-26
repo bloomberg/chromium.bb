@@ -8,7 +8,6 @@
 
 #include "base/logging.h"
 #include "ios/public/provider/chrome/browser/distribution/test_app_distribution_provider.h"
-#include "ios/public/provider/chrome/browser/external_search/test_external_search_provider.h"
 #include "ios/public/provider/chrome/browser/images/test_branded_image_provider.h"
 #include "ios/public/provider/chrome/browser/mailto/test_mailto_handler_provider.h"
 #include "ios/public/provider/chrome/browser/omaha/test_omaha_service_provider.h"
@@ -37,7 +36,6 @@ TestChromeBrowserProvider::TestChromeBrowserProvider()
       voice_search_provider_(std::make_unique<TestVoiceSearchProvider>()),
       user_feedback_provider_(std::make_unique<TestUserFeedbackProvider>()),
       spotlight_provider_(std::make_unique<TestSpotlightProvider>()),
-      external_search_provider_(std::make_unique<TestExternalSearchProvider>()),
       mailto_handler_provider_(std::make_unique<TestMailtoHandlerProvider>()),
       fullscreen_provider_(std::make_unique<FullscreenProvider>()) {}
 
@@ -93,11 +91,6 @@ UserFeedbackProvider* TestChromeBrowserProvider::GetUserFeedbackProvider()
 
 SpotlightProvider* TestChromeBrowserProvider::GetSpotlightProvider() const {
   return spotlight_provider_.get();
-}
-
-ExternalSearchProvider* TestChromeBrowserProvider::GetExternalSearchProvider()
-    const {
-  return external_search_provider_.get();
 }
 
 FullscreenProvider* TestChromeBrowserProvider::GetFullscreenProvider() const {

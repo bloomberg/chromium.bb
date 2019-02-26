@@ -74,24 +74,25 @@ ExternalDateTimeChooser* ExternalDateTimeChooser::Create(
     DateTimeChooserClient* client,
     const DateTimeChooserParameters& parameters) {
   DCHECK(chrome_client);
-  ExternalDateTimeChooser* chooser = new ExternalDateTimeChooser(client);
+  ExternalDateTimeChooser* chooser =
+      MakeGarbageCollected<ExternalDateTimeChooser>(client);
   if (!chooser->OpenDateTimeChooser(chrome_client, web_view_client, parameters))
     chooser = nullptr;
   return chooser;
 }
 
 static WebDateTimeInputType ToWebDateTimeInputType(const AtomicString& source) {
-  if (source == InputTypeNames::date)
+  if (source == input_type_names::kDate)
     return kWebDateTimeInputTypeDate;
-  if (source == InputTypeNames::datetime)
+  if (source == input_type_names::kDatetime)
     return kWebDateTimeInputTypeDateTime;
-  if (source == InputTypeNames::datetime_local)
+  if (source == input_type_names::kDatetimeLocal)
     return kWebDateTimeInputTypeDateTimeLocal;
-  if (source == InputTypeNames::month)
+  if (source == input_type_names::kMonth)
     return kWebDateTimeInputTypeMonth;
-  if (source == InputTypeNames::time)
+  if (source == input_type_names::kTime)
     return kWebDateTimeInputTypeTime;
-  if (source == InputTypeNames::week)
+  if (source == input_type_names::kWeek)
     return kWebDateTimeInputTypeWeek;
   return kWebDateTimeInputTypeNone;
 }

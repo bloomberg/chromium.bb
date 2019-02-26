@@ -19,6 +19,7 @@
 #include "base/numerics/safe_conversions.h"
 #include "base/path_service.h"
 #include "base/run_loop.h"
+#include "base/threading/thread_restrictions.h"
 #include "chrome/browser/chromeos/login/login_manager_test.h"
 #include "chrome/browser/chromeos/login/startup_utils.h"
 #include "chrome/browser/chromeos/login/ui/login_display_host.h"
@@ -258,6 +259,7 @@ class WallpaperPolicyTest : public LoginManagerTest,
   }
 
   std::string ConstructPolicy(const std::string& relative_path) const {
+    base::ScopedAllowBlockingForTesting allow_io;
     std::string image_data;
     if (!base::ReadFileToString(test_data_dir_.Append(relative_path),
                                 &image_data)) {

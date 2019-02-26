@@ -30,9 +30,8 @@
 #ifndef THIRD_PARTY_BLINK_RENDERER_CORE_HTML_FORMS_FILE_CHOOSER_H_
 #define THIRD_PARTY_BLINK_RENDERER_CORE_HTML_FORMS_FILE_CHOOSER_H_
 
+#include "mojo/public/cpp/bindings/binding.h"
 #include "third_party/blink/public/mojom/choosers/file_chooser.mojom-blink.h"
-#include "third_party/blink/public/web/web_file_chooser_completion.h"
-#include "third_party/blink/public/web/web_file_chooser_params.h"
 #include "third_party/blink/renderer/core/page/popup_opening_observer.h"
 #include "third_party/blink/renderer/platform/heap/handle.h"
 #include "third_party/blink/renderer/platform/heap/persistent.h"
@@ -52,12 +51,17 @@ using FileChooserFileInfoList = Vector<mojom::blink::FileChooserFileInfoPtr>;
 
 class CORE_EXPORT FileChooserClient : public PopupOpeningObserver {
  public:
-  virtual void FilesChosen(const FileChooserFileInfoList&) = 0;
+  virtual void FilesChosen(FileChooserFileInfoList,
+                           const base::FilePath& base_dir) = 0;
   virtual LocalFrame* FrameOrNull() const = 0;
   ~FileChooserClient() override;
 
+  // Accessor for chooser_. This returns null before NewFileChooser() and after
+  // DisconnectFileChooser().
+  FileChooser* FileChooserOrNull() const { return chooser_.get(); }
+
  protected:
-  FileChooser* NewFileChooser(const WebFileChooserParams&);
+  FileChooser* NewFileChooser(const mojom::blink::FileChooserParams&);
   bool HasConnectedFileChooser() const { return chooser_.get(); }
 
   // This should be called if a user chose files or cancel the dialog.
@@ -67,39 +71,35 @@ class CORE_EXPORT FileChooserClient : public PopupOpeningObserver {
   scoped_refptr<FileChooser> chooser_;
 };
 
-class FileChooser : public RefCounted<FileChooser>,
-                    public WebFileChooserCompletion {
+class FileChooser : public RefCounted<FileChooser> {
  public:
   CORE_EXPORT static scoped_refptr<FileChooser> Create(
       FileChooserClient*,
-      const WebFileChooserParams&);
-  ~FileChooser() override;
+      const mojom::blink::FileChooserParams&);
+  CORE_EXPORT ~FileChooser();
 
   LocalFrame* FrameOrNull() const {
     return client_ ? client_->FrameOrNull() : nullptr;
   }
   void DisconnectClient() { client_ = nullptr; }
 
-  const WebFileChooserParams& Params() const { return params_; }
+  const mojom::blink::FileChooserParams& Params() const { return *params_; }
 
   bool OpenFileChooser(ChromeClientImpl& chrome_client_impl);
+  void EnumerateChosenDirectory();
 
  private:
-  FileChooser(FileChooserClient*, const WebFileChooserParams&);
+  FileChooser(FileChooserClient*, const mojom::blink::FileChooserParams&);
 
   void DidCloseChooser();
 
-  // WebFileChooserCompletion implementation:
-  void DidChooseFile(const WebVector<WebString>& file_names) override;
-  void DidChooseFile(const WebVector<SelectedFileInfo>& files) override;
-
-  // FIXME: We should probably just pass file paths that could be virtual paths
-  // with proper display names rather than passing structs.
-  void ChooseFiles(const FileChooserFileInfoList& files);
+  // mojom::blink::FileChooser callback
+  void DidChooseFiles(mojom::blink::FileChooserResultPtr result);
 
   WeakPersistent<FileChooserClient> client_;
-  WebFileChooserParams params_;
+  mojom::blink::FileChooserParamsPtr params_;
   Persistent<ChromeClientImpl> chrome_client_impl_;
+  mojom::blink::FileChooserPtr file_chooser_;
 };
 
 CORE_EXPORT mojom::blink::FileChooserFileInfoPtr

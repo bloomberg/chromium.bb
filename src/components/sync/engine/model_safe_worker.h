@@ -24,7 +24,7 @@ class DictionaryValue;
 
 namespace syncer {
 
-using WorkCallback = base::OnceCallback<enum SyncerError(void)>;
+using WorkCallback = base::OnceCallback<SyncerError(void)>;
 
 enum ModelSafeGroup {
   GROUP_PASSIVE = 0,   // Models that are just "passively" being synced; e.g.

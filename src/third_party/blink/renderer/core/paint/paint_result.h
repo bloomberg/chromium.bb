@@ -12,12 +12,12 @@ enum PaintResult {
   // The layer/object is fully painted. This includes cases that nothing needs
   // painting regardless of the paint rect.
   kFullyPainted,
-  // Some part of the layer/object is out of the paint rect and may be not fully
-  // painted.  The results cannot be cached because they may change when paint
+  // Some part of the layer/object is out of the cull rect and may be not fully
+  // painted. The results cannot be cached because they may change when cull
   // rect changes.
-  kMayBeClippedByPaintDirtyRect,
+  kMayBeClippedByCullRect,
 
-  kMaxPaintResult = kMayBeClippedByPaintDirtyRect,
+  kMaxPaintResult = kMayBeClippedByCullRect,
 };
 
 }  // namespace blink

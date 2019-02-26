@@ -4,6 +4,7 @@
 
 #include "storage/browser/blob/blob_data_item.h"
 
+#include <algorithm>
 #include <memory>
 #include <utility>
 
@@ -211,7 +212,8 @@ bool operator==(const BlobDataItem& a, const BlobDataItem& b) {
     return false;
   switch (a.type()) {
     case BlobDataItem::Type::kBytes:
-      return a.bytes() == b.bytes();
+      return std::equal(a.bytes().begin(), a.bytes().end(), b.bytes().begin(),
+                        b.bytes().end());
     case BlobDataItem::Type::kBytesDescription:
       return true;
     case BlobDataItem::Type::kFile:

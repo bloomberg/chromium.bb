@@ -11,7 +11,7 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-add_library(SPIRV-Tools-opt
+set(SPIRV_TOOLS_OPT_SOURCES
   aggressive_dead_code_elim_pass.h
   basic_block.h
   block_merge_pass.h
@@ -46,8 +46,10 @@ add_library(SPIRV-Tools-opt
   inline_exhaustive_pass.h
   inline_opaque_pass.h
   inline_pass.h
+  inst_bindless_check_pass.h
   instruction.h
   instruction_list.h
+  instrument_pass.h
   ir_builder.h
   ir_context.h
   ir_loader.h
@@ -75,6 +77,7 @@ add_library(SPIRV-Tools-opt
   pass.h
   pass_manager.h
   private_to_local_pass.h
+  process_lines_pass.h
   propagator.h
   reduce_load_size.h
   redundancy_elimination.h
@@ -134,8 +137,10 @@ add_library(SPIRV-Tools-opt
   inline_exhaustive_pass.cpp
   inline_opaque_pass.cpp
   inline_pass.cpp
+  inst_bindless_check_pass.cpp
   instruction.cpp
   instruction_list.cpp
+  instrument_pass.cpp
   ir_context.cpp
   ir_loader.cpp
   licm_pass.cpp
@@ -161,6 +166,7 @@ add_library(SPIRV-Tools-opt
   pass.cpp
   pass_manager.cpp
   private_to_local_pass.cpp
+  process_lines_pass.cpp
   propagator.cpp
   reduce_load_size.cpp
   redundancy_elimination.cpp
@@ -185,6 +191,15 @@ add_library(SPIRV-Tools-opt
   workaround1209.cpp
 )
 
+if(MSVC)
+  # Enable parallel builds across four cores for this lib
+  add_definitions(/MP4)
+endif()
+
+spvtools_pch(SPIRV_TOOLS_OPT_SOURCES pch_source_opt)
+
+add_library(SPIRV-Tools-opt ${SPIRV_TOOLS_OPT_SOURCES})
+
 spvtools_default_compile_options(SPIRV-Tools-opt)
 target_include_directories(SPIRV-Tools-opt
   PUBLIC ${spirv-tools_SOURCE_DIR}/include
@@ -204,8 +219,3 @@ if(ENABLE_SPIRV_TOOLS_INSTALL)
     LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}
     ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR})
 endif(ENABLE_SPIRV_TOOLS_INSTALL)
-    
-if(MSVC)
-  # Enable parallel builds across four cores for this lib
-  add_definitions(/MP4)
-endif()

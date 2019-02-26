@@ -17,6 +17,9 @@
 namespace content {
 
 struct CONTENT_EXPORT IndexedDBValue {
+  // Destructively converts an IndexedDBValue to a Mojo Value.
+  static blink::mojom::IDBValuePtr ConvertAndEraseValue(IndexedDBValue* value);
+
   IndexedDBValue();
   IndexedDBValue(const std::string& input_bits,
                  const std::vector<IndexedDBBlobInfo>& input_blob_info);

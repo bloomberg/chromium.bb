@@ -4,6 +4,7 @@
 
 #include "chrome/browser/ui/ash/assistant/assistant_setup.h"
 
+#include "ash/public/cpp/notification_utils.h"
 #include "ash/public/cpp/vector_icons/vector_icons.h"
 #include "ash/public/interfaces/assistant_controller.mojom.h"
 #include "ash/public/interfaces/constants.mojom.h"
@@ -78,12 +79,12 @@ class AssistantHotwordNotificationDelegate
 
 AssistantSetup::AssistantSetup(service_manager::Connector* connector)
     : connector_(connector), binding_(this) {
-  // Bind to the Assistant controller in ash.
-  ash::mojom::AssistantControllerPtr assistant_controller;
-  connector_->BindInterface(ash::mojom::kServiceName, &assistant_controller);
+  // Bind to the AssistantSetupController in ash.
+  ash::mojom::AssistantSetupControllerPtr setup_controller;
+  connector_->BindInterface(ash::mojom::kServiceName, &setup_controller);
   ash::mojom::AssistantSetupPtr ptr;
   binding_.Bind(mojo::MakeRequest(&ptr));
-  assistant_controller->SetAssistantSetup(std::move(ptr));
+  setup_controller->SetAssistantSetup(std::move(ptr));
 
   arc::VoiceInteractionControllerClient::Get()->AddObserver(this);
 }
@@ -130,10 +131,10 @@ void AssistantSetup::OnStateChanged(ash::mojom::VoiceInteractionState state) {
   const base::string16 display_source =
       base::UTF8ToUTF16(kAssistantDisplaySource);
 
-  auto notification = message_center::Notification::CreateSystemNotification(
+  auto notification = ash::CreateSystemNotification(
       message_center::NOTIFICATION_TYPE_SIMPLE, kHotwordNotificationId, title,
       base::string16(), display_source, GURL(),
-      message_center::NotifierId(message_center::NotifierId::SYSTEM_COMPONENT,
+      message_center::NotifierId(message_center::NotifierType::SYSTEM_COMPONENT,
                                  kNotifierAssistant),
       {}, base::MakeRefCounted<AssistantHotwordNotificationDelegate>(profile),
       ash::kNotificationAssistantIcon,

@@ -43,13 +43,14 @@ using PreprocessingTest = GlslangTest<::testing::TestWithParam<std::string>>;
 
 TEST_P(PreprocessingTest, FromFile)
 {
-    loadFilePreprocessAndCheck(GLSLANG_TEST_DIRECTORY, GetParam());
+    loadFilePreprocessAndCheck(GlobalTestSettings.testRoot, GetParam());
 }
 
 // clang-format off
 INSTANTIATE_TEST_CASE_P(
     Glsl, PreprocessingTest,
     ::testing::ValuesIn(std::vector<std::string>({
+        "preprocessor.bad_arg.vert",
         "preprocessor.cpp_style_line_directive.vert",
         "preprocessor.cpp_style___FILE__.vert",
         "preprocessor.edge_cases.vert",
@@ -65,6 +66,7 @@ INSTANTIATE_TEST_CASE_P(
         "preprocessor.success_if_parse_would_fail.vert",
         "preprocessor.defined.vert",
         "preprocessor.many.endif.vert",
+        "preprocessor.eof_missing.vert",
     })),
     FileNameAsCustomTestSuffix
 );

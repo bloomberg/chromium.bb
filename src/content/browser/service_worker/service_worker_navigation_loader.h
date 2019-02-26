@@ -28,6 +28,7 @@
 namespace content {
 
 class ServiceWorkerVersion;
+class ServiceWorkerProviderHost;
 
 // S13nServiceWorker:
 // ServiceWorkerNavigationLoader is the URLLoader used for main resource
@@ -107,9 +108,11 @@ class CONTENT_EXPORT ServiceWorkerNavigationLoader
     // |binding_| is bound and the fetch event is being dispatched to the
     // service worker.
     kStarted,
-    // The response head has been sent to |url_loader_client_|. The response
-    // body is being streamed.
+    // The response head has been sent to |url_loader_client_|.
     kSentHeader,
+    // The data pipe for the response body has been sent to
+    // |url_loader_client_|. The body is being written to the pipe.
+    kSentBody,
     // OnComplete() was called on |url_loader_client_|, or fallback to network
     // occurred so the request was not handled.
     kCompleted,
@@ -135,14 +138,25 @@ class CONTENT_EXPORT ServiceWorkerNavigationLoader
 
   // Calls url_loader_client_->OnReceiveResponse() with |response_head_|.
   void CommitResponseHeaders();
-  // Calls url_loader_client_->OnComplete().
-  void CommitCompleted(int error_code);
+
+  // Calls url_loader_client_->OnStartLoadingResponseBody() with
+  // |response_body|.
+  void CommitResponseBody(mojo::ScopedDataPipeConsumerHandle response_body);
+
+  // Creates and sends an empty response's body with the net::OK status.
+  // Sends net::ERR_INSUFFICIENT_RESOURCES when it can't be created.
+  void CommitEmptyResponseAndComplete();
+
+  // Calls url_loader_client_->OnComplete(). |reason| will be recorded as an
+  // argument of TRACE_EVENT.
+  void CommitCompleted(int error_code, const char* reason);
 
   // network::mojom::URLLoader:
-  void FollowRedirect(const base::Optional<std::vector<std::string>>&
-                          to_be_removed_request_headers,
-                      const base::Optional<net::HttpRequestHeaders>&
-                          modified_request_headers) override;
+  void FollowRedirect(
+      const base::Optional<std::vector<std::string>>&
+          to_be_removed_request_headers,
+      const base::Optional<net::HttpRequestHeaders>& modified_request_headers,
+      const base::Optional<GURL>& new_url) override;
   void ProceedWithResponse() override;
   void SetPriority(net::RequestPriority priority,
                    int32_t intra_priority_value) override;
@@ -153,9 +167,6 @@ class CONTENT_EXPORT ServiceWorkerNavigationLoader
 
   void OnConnectionClosed();
   void DeleteIfNeeded();
-
-  void ReportDestination(
-      ServiceWorkerMetrics::MainResourceRequestDestination destination);
 
   // Records loading milestones. Called only after ForwardToServiceWorker() is
   // called and there was no error. |handled| is true when a fetch handler

@@ -20,6 +20,7 @@
 #include "media/base/cdm_context.h"
 #include "media/base/decoder_buffer.h"
 #include "media/base/media_switches.h"
+#include "media/base/scoped_async_trace.h"
 #include "media/base/video_codecs.h"
 #include "media/base/video_decoder_config.h"
 #include "media/base/video_frame.h"
@@ -154,12 +155,17 @@ MediaCodecVideoDecoder::MediaCodecVideoDecoder(
 
 MediaCodecVideoDecoder::~MediaCodecVideoDecoder() {
   DVLOG(2) << __func__;
+  TRACE_EVENT0("media", "MediaCodecVideoDecoder::~MediaCodecVideoDecoder");
   ReleaseCodec();
   codec_allocator_->StopThread(this);
 }
 
 void MediaCodecVideoDecoder::Destroy() {
   DVLOG(1) << __func__;
+  TRACE_EVENT0("media", "MediaCodecVideoDecoder::Destroy");
+
+  // Cancel pending callbacks.
+  weak_factory_.InvalidateWeakPtrs();
 
   if (media_crypto_context_) {
     // Cancel previously registered callback (if any).
@@ -310,6 +316,7 @@ void MediaCodecVideoDecoder::OnKeyAdded() {
 
 void MediaCodecVideoDecoder::StartLazyInit() {
   DVLOG(2) << __func__;
+  TRACE_EVENT0("media", "MediaCodecVideoDecoder::StartLazyInit");
   lazy_init_pending_ = false;
   codec_allocator_->StartThread(this);
 
@@ -333,6 +340,8 @@ void MediaCodecVideoDecoder::StartLazyInit() {
 void MediaCodecVideoDecoder::OnVideoFrameFactoryInitialized(
     scoped_refptr<TextureOwner> texture_owner) {
   DVLOG(2) << __func__;
+  TRACE_EVENT0("media",
+               "MediaCodecVideoDecoder::OnVideoFrameFactoryInitialized");
   if (!texture_owner) {
     EnterTerminalState(State::kError);
     return;
@@ -376,6 +385,8 @@ void MediaCodecVideoDecoder::OnSurfaceChosen(
   DVLOG(2) << __func__;
   DCHECK(state_ == State::kInitializing ||
          device_info_->IsSetOutputSurfaceSupported());
+  TRACE_EVENT1("media", "MediaCodecVideoDecoder::OnSurfaceChosen", "overlay",
+               overlay ? "yes" : "no");
 
   if (overlay) {
     overlay->AddSurfaceDestroyedCallback(
@@ -397,6 +408,7 @@ void MediaCodecVideoDecoder::OnSurfaceChosen(
 void MediaCodecVideoDecoder::OnSurfaceDestroyed(AndroidOverlay* overlay) {
   DVLOG(2) << __func__;
   DCHECK_NE(state_, State::kInitializing);
+  TRACE_EVENT0("media", "MediaCodecVideoDecoder::OnSurfaceDestroyed");
 
   // If SetOutputSurface() is not supported we only ever observe destruction of
   // a single overlay so this must be the one we're using. In this case it's
@@ -733,12 +745,16 @@ bool MediaCodecVideoDecoder::DequeueOutput() {
           1);  // PRESUBMIT_IGNORE_UMA_MAX
 
   gfx::Rect visible_rect(output_buffer->size());
+  std::unique_ptr<ScopedAsyncTrace> async_trace =
+      ScopedAsyncTrace::CreateIfEnabled(
+          "MediaCodecVideoDecoder::CreateVideoFrame");
   video_frame_factory_->CreateVideoFrame(
       std::move(output_buffer), presentation_time,
       GetNaturalSize(visible_rect, decoder_config_.GetPixelAspectRatio()),
       CreatePromotionHintCB(),
-      base::Bind(&MediaCodecVideoDecoder::ForwardVideoFrame,
-                 weak_factory_.GetWeakPtr(), reset_generation_));
+      base::BindOnce(&MediaCodecVideoDecoder::ForwardVideoFrame,
+                     weak_factory_.GetWeakPtr(), reset_generation_,
+                     std::move(async_trace)));
   return true;
 }
 
@@ -754,6 +770,7 @@ void MediaCodecVideoDecoder::RunEosDecodeCb(int reset_generation) {
 
 void MediaCodecVideoDecoder::ForwardVideoFrame(
     int reset_generation,
+    std::unique_ptr<ScopedAsyncTrace> async_trace,
     const scoped_refptr<VideoFrame>& frame) {
   DVLOG(3) << __func__ << " : "
            << (frame ? frame->AsHumanReadableString() : "null");
@@ -780,6 +797,7 @@ void MediaCodecVideoDecoder::Reset(const base::Closure& closure) {
 
 void MediaCodecVideoDecoder::StartDrainingCodec(DrainType drain_type) {
   DVLOG(2) << __func__;
+  TRACE_EVENT0("media", "MediaCodecVideoDecoder::StartDrainingCodec");
   DCHECK(pending_decodes_.empty());
   // It's okay if there's already a drain ongoing. We'll only enqueue an EOS if
   // the codec isn't already draining.
@@ -820,6 +838,7 @@ void MediaCodecVideoDecoder::StartDrainingCodec(DrainType drain_type) {
 
 void MediaCodecVideoDecoder::OnCodecDrained() {
   DVLOG(2) << __func__;
+  TRACE_EVENT0("media", "MediaCodecVideoDecoder::OnCodecDrained");
   DrainType drain_type = *drain_type_;
   drain_type_.reset();
 

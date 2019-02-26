@@ -59,6 +59,36 @@ AwWebContentsDelegate::AwWebContentsDelegate(JNIEnv* env, jobject obj)
 
 AwWebContentsDelegate::~AwWebContentsDelegate() {}
 
+void AwWebContentsDelegate::RendererUnresponsive(
+    content::WebContents* source,
+    content::RenderWidgetHost* render_widget_host,
+    base::RepeatingClosure hang_monitor_restarter) {
+  AwContents* aw_contents = AwContents::FromWebContents(source);
+  if (!aw_contents)
+    return;
+
+  content::RenderProcessHost* render_process_host =
+      render_widget_host->GetProcess();
+  if (render_process_host->IsInitializedAndNotDead()) {
+    aw_contents->RendererUnresponsive(render_widget_host->GetProcess());
+    hang_monitor_restarter.Run();
+  }
+}
+
+void AwWebContentsDelegate::RendererResponsive(
+    content::WebContents* source,
+    content::RenderWidgetHost* render_widget_host) {
+  AwContents* aw_contents = AwContents::FromWebContents(source);
+  if (!aw_contents)
+    return;
+
+  content::RenderProcessHost* render_process_host =
+      render_widget_host->GetProcess();
+  if (render_process_host->IsInitializedAndNotDead()) {
+    aw_contents->RendererResponsive(render_widget_host->GetProcess());
+  }
+}
+
 content::JavaScriptDialogManager*
 AwWebContentsDelegate::GetJavaScriptDialogManager(WebContents* source) {
   return g_javascript_dialog_manager.Pointer();
@@ -338,9 +368,12 @@ static void JNI_AwWebContentsDelegate_FilesSelectedInChooser(
       file_info->display_name = display_name_str[i];
     files.push_back(FileChooserFileInfo::NewNativeFile(std::move(file_info)));
   }
+  base::FilePath base_dir;
   FileChooserParams::Mode mode;
   if (mode_flags & kFileChooserModeOpenFolder) {
     mode = FileChooserParams::Mode::kUploadFolder;
+    // We'd like to set |base_dir| to a folder which a user selected. But it's
+    // impossible with WebChromeClient API in the current Android.
   } else if (mode_flags & kFileChooserModeOpenMultiple) {
     mode = FileChooserParams::Mode::kOpenMultiple;
   } else {
@@ -348,7 +381,7 @@ static void JNI_AwWebContentsDelegate_FilesSelectedInChooser(
   }
   DVLOG(0) << "File Chooser result: mode = " << mode
            << ", file paths = " << base::JoinString(file_path_str, ":");
-  listener->FileSelected(std::move(files), mode);
+  listener->FileSelected(std::move(files), base_dir, mode);
 }
 
 }  // namespace android_webview

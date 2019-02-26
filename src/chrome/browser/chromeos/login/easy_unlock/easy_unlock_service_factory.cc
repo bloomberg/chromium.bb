@@ -9,7 +9,6 @@
 #include "build/build_config.h"
 #include "chrome/browser/chromeos/cryptauth/chrome_cryptauth_service_factory.h"
 #include "chrome/browser/chromeos/device_sync/device_sync_client_factory.h"
-#include "chrome/browser/chromeos/login/easy_unlock/easy_unlock_app_manager.h"
 #include "chrome/browser/chromeos/login/easy_unlock/easy_unlock_service.h"
 #include "chrome/browser/chromeos/login/easy_unlock/easy_unlock_service_regular.h"
 #include "chrome/browser/chromeos/login/easy_unlock/easy_unlock_service_signin_chromeos.h"
@@ -20,7 +19,6 @@
 #include "chrome/browser/profiles/incognito_helpers.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/common/chrome_switches.h"
-#include "chrome/grit/browser_resources.h"
 #include "chromeos/services/multidevice_setup/public/cpp/prefs.h"
 #include "chromeos/services/multidevice_setup/public/mojom/multidevice_setup.mojom.h"
 #include "components/keyed_service/content/browser_context_dependency_manager.h"
@@ -88,7 +86,6 @@ EasyUnlockServiceFactory::~EasyUnlockServiceFactory() {}
 KeyedService* EasyUnlockServiceFactory::BuildServiceInstanceFor(
     content::BrowserContext* context) const {
   EasyUnlockService* service = NULL;
-  int manifest_id = 0;
 
   if (!IsFeatureAllowed(context))
     return nullptr;
@@ -106,7 +103,6 @@ KeyedService* EasyUnlockServiceFactory::BuildServiceInstanceFor(
         Profile::FromBrowserContext(context),
         secure_channel::SecureChannelClientProvider::GetInstance()
             ->GetClient());
-    manifest_id = IDR_EASY_UNLOCK_MANIFEST_SIGNIN;
   }
 
   if (!service) {
@@ -117,16 +113,13 @@ KeyedService* EasyUnlockServiceFactory::BuildServiceInstanceFor(
             Profile::FromBrowserContext(context)),
         multidevice_setup::MultiDeviceSetupClientFactory::GetForProfile(
             Profile::FromBrowserContext(context)));
-    manifest_id = IDR_EASY_UNLOCK_MANIFEST;
   }
 
   const base::FilePath app_path = app_path_for_testing_.empty()
                                       ? GetEasyUnlockAppPath()
                                       : app_path_for_testing_;
 
-  service->Initialize(EasyUnlockAppManager::Create(
-      extensions::ExtensionSystem::Get(context), manifest_id, app_path));
-
+  service->Initialize();
   return service;
 }
 

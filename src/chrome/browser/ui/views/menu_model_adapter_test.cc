@@ -66,12 +66,12 @@ class CommonMenuModel : public ui::MenuModel {
   bool GetIconAt(int index, gfx::Image* icon) override { return false; }
 
   ui::ButtonMenuItemModel* GetButtonMenuItemAt(int index) const override {
-    return NULL;
+    return nullptr;
   }
 
   bool IsEnabledAt(int index) const override { return true; }
 
-  ui::MenuModel* GetSubmenuModelAt(int index) const override { return NULL; }
+  ui::MenuModel* GetSubmenuModelAt(int index) const override { return nullptr; }
 
   void HighlightChangedTo(int index) override {}
 
@@ -79,7 +79,9 @@ class CommonMenuModel : public ui::MenuModel {
 
   void SetMenuModelDelegate(ui::MenuModelDelegate* delegate) override {}
 
-  ui::MenuModelDelegate* GetMenuModelDelegate() const override { return NULL; }
+  ui::MenuModelDelegate* GetMenuModelDelegate() const override {
+    return nullptr;
+  }
 
  private:
   DISALLOW_COPY_AND_ASSIGN(CommonMenuModel);
@@ -162,18 +164,17 @@ class MenuModelAdapterTest : public ViewEventTestBase,
  public:
   MenuModelAdapterTest()
       : ViewEventTestBase(),
-        button_(NULL),
+        button_(nullptr),
         menu_model_adapter_(&top_menu_model_),
-        menu_(NULL) {
-  }
+        menu_(nullptr) {}
 
   ~MenuModelAdapterTest() override {}
 
   // ViewEventTestBase implementation.
 
   void SetUp() override {
-    button_ = new views::MenuButton(base::ASCIIToUTF16("Menu Adapter Test"),
-                                    this, true);
+    button_ =
+        new views::MenuButton(base::ASCIIToUTF16("Menu Adapter Test"), this);
 
     menu_ = menu_model_adapter_.CreateMenu();
     menu_runner_.reset(
@@ -183,8 +184,8 @@ class MenuModelAdapterTest : public ViewEventTestBase,
   }
 
   void TearDown() override {
-    menu_runner_.reset(NULL);
-    menu_ = NULL;
+    menu_runner_ = nullptr;
+    menu_ = nullptr;
     ViewEventTestBase::TearDown();
   }
 
@@ -233,7 +234,7 @@ class MenuModelAdapterTest : public ViewEventTestBase,
 
     menu_model_adapter_.BuildMenu(menu_);
 
-    ASSERT_TRUE(base::MessageLoopForUI::IsCurrent());
+    ASSERT_TRUE(base::MessageLoopCurrentForUI::IsSet());
     base::ThreadTaskRunnerHandle::Get()->PostTask(
         FROM_HERE, CreateEventTask(this, &MenuModelAdapterTest::Step3));
   }

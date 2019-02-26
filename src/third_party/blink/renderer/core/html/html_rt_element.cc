@@ -9,10 +9,10 @@
 
 namespace blink {
 
-using namespace HTMLNames;
+using namespace html_names;
 
 inline HTMLRTElement::HTMLRTElement(Document& document)
-    : HTMLElement(rtTag, document) {}
+    : HTMLElement(kRtTag, document) {}
 
 DEFINE_NODE_FACTORY(HTMLRTElement)
 

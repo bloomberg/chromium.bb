@@ -13,10 +13,12 @@
 #include "base/metrics/histogram_macros.h"
 #include "base/sha1.h"
 #include "base/strings/string_number_conversions.h"
+#include "base/strings/string_util.h"
 #include "base/timer/elapsed_timer.h"
 #include "components/metrics/persisted_logs_metrics.h"
 #include "components/prefs/pref_service.h"
 #include "components/prefs/scoped_user_pref_update.h"
+#include "crypto/hmac.h"
 #include "third_party/zlib/google/compression_utils.h"
 
 namespace metrics {
@@ -24,6 +26,7 @@ namespace metrics {
 namespace {
 
 const char kLogHashKey[] = "hash";
+const char kLogSignatureKey[] = "signature";
 const char kLogTimestampKey[] = "timestamp";
 const char kLogDataKey[] = "data";
 
@@ -43,6 +46,10 @@ std::string DecodeFromBase64(const std::string& to_convert) {
 
 }  // namespace
 
+PersistedLogs::LogInfo::LogInfo() {}
+PersistedLogs::LogInfo::LogInfo(const PersistedLogs::LogInfo& other) = default;
+PersistedLogs::LogInfo::~LogInfo() {}
+
 void PersistedLogs::LogInfo::Init(PersistedLogsMetrics* metrics,
                                   const std::string& log_data,
                                   const std::string& log_timestamp) {
@@ -56,6 +63,17 @@ void PersistedLogs::LogInfo::Init(PersistedLogsMetrics* metrics,
   metrics->RecordCompressionRatio(compressed_log_data.size(), log_data.size());
 
   hash = base::SHA1HashString(log_data);
+
+  // TODO(crbug.com/906202): Add an actual key for signing.
+  crypto::HMAC hmac(crypto::HMAC::SHA256);
+  const size_t digest_length = hmac.DigestLength();
+  unsigned char* hmac_data = reinterpret_cast<unsigned char*>(
+      base::WriteInto(&signature, digest_length + 1));
+  if (!hmac.Init(std::string()) ||
+      !hmac.Sign(log_data, hmac_data, digest_length)) {
+    NOTREACHED() << "HMAC signing failed";
+  }
+
   timestamp = log_timestamp;
 }
 
@@ -88,16 +106,22 @@ bool PersistedLogs::has_staged_log() const {
   return staged_log_index_ != -1;
 }
 
-// Returns the element in the front of the list.
+// Returns the compressed data of the element in the front of the list.
 const std::string& PersistedLogs::staged_log() const {
   DCHECK(has_staged_log());
   return list_[staged_log_index_].compressed_log_data;
 }
 
-// Returns the element in the front of the list.
+// Returns the hash of element in the front of the list.
 const std::string& PersistedLogs::staged_log_hash() const {
   DCHECK(has_staged_log());
   return list_[staged_log_index_].hash;
+}
+
+// Returns the signature of element in the front of the list.
+const std::string& PersistedLogs::staged_log_signature() const {
+  DCHECK(has_staged_log());
+  return list_[staged_log_index_].signature;
 }
 
 // Returns the timestamp of the element in the front of the list.
@@ -162,7 +186,8 @@ void PersistedLogs::ReadLogsFromPrefList(const base::ListValue& list_value) {
     const base::DictionaryValue* dict;
     if (!list_value.GetDictionary(i, &dict) ||
         !dict->GetString(kLogDataKey, &list_[i].compressed_log_data) ||
-        !dict->GetString(kLogHashKey, &list_[i].hash)) {
+        !dict->GetString(kLogHashKey, &list_[i].hash) ||
+        !dict->GetString(kLogSignatureKey, &list_[i].signature)) {
       list_.clear();
       metrics_->RecordLogReadStatus(
           PersistedLogsMetrics::LOG_STRING_CORRUPTION);
@@ -172,6 +197,8 @@ void PersistedLogs::ReadLogsFromPrefList(const base::ListValue& list_value) {
     list_[i].compressed_log_data =
         DecodeFromBase64(list_[i].compressed_log_data);
     list_[i].hash = DecodeFromBase64(list_[i].hash);
+    list_[i].signature = DecodeFromBase64(list_[i].signature);
+
     // Ignoring the success of this step as timestamp might not be there for
     // older logs.
     // NOTE: Should be added to the check with other fields once migration is
@@ -215,6 +242,7 @@ void PersistedLogs::WriteLogsToPrefList(base::ListValue* list_value) const {
     std::unique_ptr<base::DictionaryValue> dict_value(
         new base::DictionaryValue);
     dict_value->SetString(kLogHashKey, EncodeToBase64(list_[i].hash));
+    dict_value->SetString(kLogSignatureKey, EncodeToBase64(list_[i].signature));
     dict_value->SetString(kLogDataKey,
                           EncodeToBase64(list_[i].compressed_log_data));
     dict_value->SetString(kLogTimestampKey, list_[i].timestamp);

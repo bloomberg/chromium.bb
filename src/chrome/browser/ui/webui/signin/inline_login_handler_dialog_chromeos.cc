@@ -6,17 +6,29 @@
 
 #include <string>
 
+#include "base/logging.h"
 #include "base/macros.h"
 #include "chrome/browser/ui/webui/chromeos/system_web_dialog_delegate.h"
 #include "chrome/common/webui_url_constants.h"
+#include "ui/aura/window.h"
 
 namespace chromeos {
 
+namespace {
+
+InlineLoginHandlerDialogChromeOS* dialog = nullptr;
+
+}  // namespace
+
 // static
 void InlineLoginHandlerDialogChromeOS::Show() {
+  if (dialog) {
+    dialog->dialog_window()->Focus();
+    return;
+  }
+
   // Will be deleted by |SystemWebDialogDelegate::OnDialogClosed|.
-  InlineLoginHandlerDialogChromeOS* dialog =
-      new InlineLoginHandlerDialogChromeOS();
+  dialog = new InlineLoginHandlerDialogChromeOS();
   dialog->ShowSystemDialog(false /* is_minimal_style */);
 }
 
@@ -24,7 +36,10 @@ InlineLoginHandlerDialogChromeOS::InlineLoginHandlerDialogChromeOS()
     : SystemWebDialogDelegate(GURL(chrome::kChromeUIChromeSigninURL),
                               base::string16() /* title */) {}
 
-InlineLoginHandlerDialogChromeOS::~InlineLoginHandlerDialogChromeOS() = default;
+InlineLoginHandlerDialogChromeOS::~InlineLoginHandlerDialogChromeOS() {
+  DCHECK_EQ(this, dialog);
+  dialog = nullptr;
+}
 
 std::string InlineLoginHandlerDialogChromeOS::GetDialogArgs() const {
   return std::string();

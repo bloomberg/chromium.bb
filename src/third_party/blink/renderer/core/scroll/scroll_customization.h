@@ -10,7 +10,7 @@
 #include "third_party/blink/renderer/core/core_export.h"
 
 namespace blink {
-namespace ScrollCustomization {
+namespace scroll_customization {
 using ScrollDirection = uint8_t;
 
 constexpr ScrollDirection kScrollDirectionNone = 0;
@@ -27,7 +27,7 @@ constexpr ScrollDirection kScrollDirectionAuto =
 
 CORE_EXPORT ScrollDirection GetScrollDirectionFromDeltas(double delta_x,
                                                          double delta_y);
-}  // namespace ScrollCustomization
+}  // namespace scroll_customization
 }  // namespace blink
 
 #endif  // THIRD_PARTY_BLINK_RENDERER_CORE_SCROLL_SCROLL_CUSTOMIZATION_H_

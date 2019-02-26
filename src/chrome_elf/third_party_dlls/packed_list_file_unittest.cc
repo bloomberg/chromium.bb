@@ -79,8 +79,6 @@ bool GetTestModules(std::vector<TestModule>* test_modules,
   base::FilePath path;
   char buffer[kPageSize];
   PIMAGE_NT_HEADERS nt_headers = nullptr;
-  std::string code_id;
-  std::string basename_hash;
   test_modules->clear();
   packed_modules->clear();
 
@@ -106,15 +104,11 @@ bool GetTestModules(std::vector<TestModule>* test_modules,
     test_modules->push_back(test_module);
 
     // SHA1 hash the two strings, and copy them into the module array.
-    code_id = base::StringPrintf("%08lX%lx", test_module.timedatestamp,
-                                 test_module.imagesize);
-    code_id = elf_sha1::SHA1HashString(code_id);
-    basename_hash = elf_sha1::SHA1HashString(test_module.basename);
-
     PackedListModule packed_module;
-    ::memcpy(packed_module.code_id_hash, code_id.data(), elf_sha1::kSHA1Length);
-    ::memcpy(packed_module.basename_hash, basename_hash.data(),
-             elf_sha1::kSHA1Length);
+    packed_module.code_id_hash = elf_sha1::SHA1HashString(
+        GetFingerprintString(test_module.timedatestamp, test_module.imagesize));
+    packed_module.basename_hash =
+        elf_sha1::SHA1HashString(test_module.basename);
     packed_modules->push_back(packed_module);
   }
 
@@ -198,22 +192,18 @@ TEST_F(ThirdPartyFileTest, Success) {
   // Init.
   ASSERT_EQ(InitFromFile(), ThirdPartyStatus::kSuccess);
 
-  std::string fingerprint_hash;
-  std::string name_hash;
-
   // Test matching.
   for (const auto& test_module : GetTestArray()) {
-    fingerprint_hash =
-        GetFingerprintString(test_module.timedatestamp, test_module.imagesize);
-    fingerprint_hash = elf_sha1::SHA1HashString(fingerprint_hash);
-    name_hash = elf_sha1::SHA1HashString(test_module.basename);
+    elf_sha1::Digest name_hash = elf_sha1::SHA1HashString(test_module.basename);
+    elf_sha1::Digest fingerprint_hash = elf_sha1::SHA1HashString(
+        GetFingerprintString(test_module.timedatestamp, test_module.imagesize));
     EXPECT_TRUE(IsModuleListed(name_hash, fingerprint_hash));
   }
 
   // Test a failure to match.
-  fingerprint_hash = GetFingerprintString(0x12345678, 1337);
-  fingerprint_hash = elf_sha1::SHA1HashString(fingerprint_hash);
-  name_hash = elf_sha1::SHA1HashString("booya.dll");
+  elf_sha1::Digest name_hash = elf_sha1::SHA1HashString("booya.dll");
+  elf_sha1::Digest fingerprint_hash =
+      elf_sha1::SHA1HashString(GetFingerprintString(0x12345678, 1337));
   EXPECT_FALSE(IsModuleListed(name_hash, fingerprint_hash));
 }
 
@@ -222,9 +212,9 @@ TEST_F(ThirdPartyFileTest, NoFiles) {
   // kFileNotFound is a non-fatal status code.
   ASSERT_EQ(InitFromFile(), ThirdPartyStatus::kFileNotFound);
 
-  std::string fingerprint_hash = GetFingerprintString(0x12345678, 1337);
-  fingerprint_hash = elf_sha1::SHA1HashString(fingerprint_hash);
-  std::string name_hash = elf_sha1::SHA1HashString("booya.dll");
+  elf_sha1::Digest name_hash = elf_sha1::SHA1HashString("booya.dll");
+  elf_sha1::Digest fingerprint_hash =
+      elf_sha1::SHA1HashString(GetFingerprintString(0x12345678, 1337));
   EXPECT_FALSE(IsModuleListed(name_hash, fingerprint_hash));
 }
 

@@ -47,6 +47,9 @@ class MESSAGE_CENTER_EXPORT BoundedLabel : public views::View {
   int GetLineHeight() const;
   int GetLineLimit() const;
 
+  // Gets the FontList used by this label.
+  const gfx::FontList& font_list() const;
+
   // Pass in a -1 width to use the preferred width, a -1 limit to skip limits.
   int GetLinesForWidthAndLimit(int width, int limit);
   gfx::Size GetSizeForWidthAndLines(int width, int lines);

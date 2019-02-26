@@ -17,7 +17,6 @@
 <translation id="2647554856022461007">Chromium อาจใช้บริการเว็บเพื่อปรับปรุงประสบการณ์การท่องเว็บของคุณ คุณสามารถเลือกปิดบริการเหล่านี้ได้ <ph name="BEGIN_LINK" />ดูข้อมูลเพิ่มเติม<ph name="END_LINK" /></translation>
 <translation id="2687023731466035790">ใช้ฟีเจอร์เจ๋งๆ จาก Google ใน Chromium</translation>
 <translation id="2730884209570016437">Chromium ไม่สามารถใช้กล้องถ่ายรูปเนื่องจากแอปพลิเคชันอื่นใช้งานอยู่</translation>
-<translation id="2797210818057553964">คุณปรับแต่งตัวเลือกนี้ได้ทุกเมื่อในการตั้งค่า Chromium</translation>
 <translation id="2915596697727466327">Chromium ใช้ Face ID เพื่อยืนยันสิทธิ์ในการเข้าถึงรหัสผ่าน</translation>
 <translation id="3256316712990552818">คัดลอกลงใน Chromium แล้ว</translation>
 <translation id="3413120535237193088">ลงชื่อเข้าใช้ Chromium เพื่อรับบุ๊กมาร์กในอุปกรณ์ทุกเครื่องของคุณ</translation>
@@ -31,8 +30,8 @@
 <translation id="4555020257205549924">เมื่อเปิดฟีเจอร์นี้ Chromium จะเสนอให้แปลหน้าต่างๆ ที่เขียนด้วยภาษาอื่นโดยใช้ Google แปลภาษา <ph name="BEGIN_LINK" />ดูข้อมูลเพิ่มเติม<ph name="END_LINK" /></translation>
 <translation id="4787850887676698916">แท็บที่คุณเปิดไว้ใน Chromium ในอุปกรณ์เครื่องอื่นๆ จะปรากฏที่นี่</translation>
 <translation id="495292094137889840">เริ่มใช้โปรแกรมสแกนโค้ด QR ของ Chromium</translation>
+<translation id="4999538639245140991">เนื่องจากคุณกำลังออกจากระบบบัญชีที่จัดการโดย <ph name="SIGNOUT_MANAGED_DOMAIN" /> ข้อมูล Chromium ของคุณจะถูกลบออกจากอุปกรณ์นี้ แต่ข้อมูลจะยังคงอยู่ในบัญชี Google</translation>
 <translation id="5231355151045086930">ออกจากระบบ Chromium</translation>
-<translation id="5416919929805616771">หากคุณชอบ Chromium โปรด<ph name="BEGIN_LINK" />ให้คะแนนแอปนี้<ph name="END_LINK" /></translation>
 <translation id="5862307444128926510">ยินดีต้อนรับสู่ Chromium</translation>
 <translation id="5945387852661427312">คุณกำลังลงชื่อเข้าใช้ด้วยบัญชีที่จัดการโดย <ph name="DOMAIN" /> และทำให้ผู้ดูแลระบบของโดเมนควบคุมข้อมูล Chromium ของคุณได้ ข้อมูลของคุณจะโยงกับบัญชีนี้อย่างถาวร การออกจากระบบ Chromium จะลบข้อมูลของคุณจากอุปกรณ์เครื่องนี้ แต่ข้อมูลจะยังจัดเก็บอยู่ในบัญชี Google</translation>
 <translation id="6068866989048414399">ข้อกำหนดในการให้บริการ Chromium</translation>
@@ -47,10 +46,10 @@
 <translation id="7337881442233988129">Chromium</translation>
 <translation id="7357211569052832586">ระบบได้นำข้อมูลที่เลือกไว้ออกจาก Chromium และอุปกรณ์ที่ซิงค์แล้ว บัญชี Google ของคุณอาจมีประวัติการท่องเว็บในรูปแบบอื่นๆ เช่น การค้นหาและกิจกรรมจากบริการอื่นๆ ของ Google ที่ history.google.com</translation>
 <translation id="7400689562045506105">ใช้ Chromium ได้ทุกที่</translation>
-<translation id="7499048969477415415">การตั้งค่าที่ควบคุมการซิงค์ การปรับเปลี่ยนในแบบของคุณ และบริการอื่นๆ ของ Google ใน Chromium มีการเปลี่ยนแปลง ซึ่งอาจส่งผลต่อการตั้งค่าปัจจุบัน</translation>
 <translation id="7674213385180944843">เปิดการตั้งค่า &gt; ความเป็นส่วนตัว &gt; กล้อง &gt; Chromium แล้วเปิดกล้องถ่ายรูป</translation>
 <translation id="7746854981345936341">เคล็ดลับสำหรับ Chromium ตอนนี้บางปุ่มแสดงอยู่ที่ด้านล่างของหน้าจอแล้ว เช่น ปุ่มกลับ ไปข้างหน้า และค้นหา</translation>
 <translation id="786327964234957808">คุณกำลังเปลี่ยนบัญชีในการซิงค์จาก <ph name="USER_EMAIL1" /> เป็น <ph name="USER_EMAIL2" /> ข้อมูล Chromium ที่มีอยู่ของคุณจัดการโดย <ph name="DOMAIN" /> การเปลี่ยนบัญชีจะลบข้อมูลจากอุปกรณ์นี้ แต่ข้อมูลจะยังคงอยู่ใน <ph name="USER_EMAIL1" /></translation>
+<translation id="8073677936375100957">ล้างข้อมูล Chromium ของคุณออกจากอุปกรณ์นี้ไหม</translation>
 <translation id="8175055321229419309">เคล็ดลับ: <ph name="BEGIN_LINK" />ย้าย Chromium ไปไว้ที่ Dock<ph name="END_LINK" /></translation>
 <translation id="8252885722420466166">รับประสบการณ์การใช้งาน Google ที่ดีขึ้นใน Chromium โดยอิงจากตำแหน่งของคุณ</translation>
 <translation id="8508544542427105412">คุณปรับแต่ง<ph name="BEGIN_LINK" />การตั้งค่า<ph name="END_LINK" />ได้ทุกเมื่อ Google อาจใช้เนื้อหาในเว็บไซต์ที่คุณเข้าชม รวมถึงการโต้ตอบและกิจกรรมในเบราว์เซอร์เพื่อปรับ Chromium และบริการของ Google อย่างเช่น แปลภาษา, Search และโฆษณาให้เหมาะกับคุณ</translation>

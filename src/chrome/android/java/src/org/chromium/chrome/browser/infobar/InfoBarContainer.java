@@ -31,7 +31,6 @@ import org.chromium.chrome.browser.widget.bottomsheet.BottomSheet;
 import org.chromium.chrome.browser.widget.bottomsheet.BottomSheetObserver;
 import org.chromium.chrome.browser.widget.bottomsheet.EmptyBottomSheetObserver;
 import org.chromium.content_public.browser.WebContents;
-import org.chromium.ui.KeyboardVisibilityDelegate;
 import org.chromium.ui.base.WindowAndroid;
 import org.chromium.ui.display.DisplayAndroid;
 import org.chromium.ui.display.DisplayUtil;
@@ -130,7 +129,9 @@ public class InfoBarContainer extends SwipableOverlayView implements UserData {
             WebContents webContents = tab.getWebContents();
             if (webContents != null && webContents != getWebContents()) {
                 setWebContents(webContents);
-                nativeSetWebContents(mNativeInfoBarContainer, webContents);
+                if (mNativeInfoBarContainer != 0) {
+                    nativeSetWebContents(mNativeInfoBarContainer, webContents);
+                }
             }
 
             mTabView.removeOnAttachStateChangeListener(mAttachedStateListener);
@@ -170,11 +171,11 @@ public class InfoBarContainer extends SwipableOverlayView implements UserData {
     /** Helper class to manage showing in-product help bubbles over specific info bars. */
     private final IPHInfoBarSupport mIPHSupport;
 
-    /** Native InfoBarContainer pointer which will be set by nativeInit(). */
-    private final long mNativeInfoBarContainer;
-
     /** The list of all InfoBars in this container, regardless of whether they've been shown yet. */
     private final ArrayList<InfoBar> mInfoBars = new ArrayList<InfoBar>();
+
+    /** Native InfoBarContainer pointer which will be set by nativeInit(). */
+    private long mNativeInfoBarContainer;
 
     /** True when this container has been emptied and its native counterpart has been destroyed. */
     private boolean mDestroyed;
@@ -248,6 +249,9 @@ public class InfoBarContainer extends SwipableOverlayView implements UserData {
 
         mLayout.addAnimationListener(mIPHSupport);
         addObserver(mIPHSupport);
+
+        mTab.getWindowAndroid().getKeyboardDelegate().addKeyboardVisibilityListener(
+                this::updateVisibilityForKeyboard);
 
         // Chromium's InfoBarContainer may add an InfoBar immediately during this initialization
         // call, so make sure everything in the InfoBarContainer is completely ready beforehand.
@@ -429,6 +433,7 @@ public class InfoBarContainer extends SwipableOverlayView implements UserData {
         mDestroyed = true;
         if (mNativeInfoBarContainer != 0) {
             nativeDestroy(mNativeInfoBarContainer);
+            mNativeInfoBarContainer = 0;
         }
     }
 
@@ -514,15 +519,10 @@ public class InfoBarContainer extends SwipableOverlayView implements UserData {
         }
     }
 
-    @Override
-    protected void onLayout(boolean changed, int l, int t, int r, int b) {
-        // Hide the View when the keyboard is showing.
+    private void updateVisibilityForKeyboard(boolean isKeyboardShowing) {
         boolean isShowing = (getVisibility() == View.VISIBLE);
-        if (KeyboardVisibilityDelegate.getInstance().isKeyboardShowing(
-                    getContext(), InfoBarContainer.this)) {
+        if (isKeyboardShowing) {
             if (isShowing) {
-                // Set to invisible (instead of gone) so that onLayout() will be called when the
-                // keyboard is dismissed.
                 setVisibility(View.INVISIBLE);
             }
         } else {
@@ -530,8 +530,6 @@ public class InfoBarContainer extends SwipableOverlayView implements UserData {
                 setVisibility(View.VISIBLE);
             }
         }
-
-        super.onLayout(changed, l, t, r, b);
     }
 
     @Override

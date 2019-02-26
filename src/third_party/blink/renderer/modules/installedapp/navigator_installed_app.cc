@@ -36,7 +36,7 @@ NavigatorInstalledApp& NavigatorInstalledApp::From(Navigator& navigator) {
   NavigatorInstalledApp* supplement =
       Supplement<Navigator>::From<NavigatorInstalledApp>(navigator);
   if (!supplement) {
-    supplement = new NavigatorInstalledApp(navigator);
+    supplement = MakeGarbageCollected<NavigatorInstalledApp>(navigator);
     ProvideTo(navigator, supplement);
   }
   return *supplement;

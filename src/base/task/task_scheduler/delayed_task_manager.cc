@@ -15,6 +15,8 @@
 namespace base {
 namespace internal {
 
+DelayedTaskManager::DelayedTask::DelayedTask() = default;
+
 DelayedTaskManager::DelayedTask::DelayedTask(Task task,
                                              PostTaskNowCallback callback)
     : task(std::move(task)), callback(std::move(callback)) {}
@@ -27,9 +29,9 @@ DelayedTaskManager::DelayedTask::~DelayedTask() = default;
 DelayedTaskManager::DelayedTask& DelayedTaskManager::DelayedTask::operator=(
     DelayedTaskManager::DelayedTask&& other) = default;
 
-bool DelayedTaskManager::DelayedTask::operator>(
+bool DelayedTaskManager::DelayedTask::operator<=(
     const DelayedTask& other) const {
-  return task.delayed_run_time > other.task.delayed_run_time;
+  return task.delayed_run_time <= other.task.delayed_run_time;
 }
 
 bool DelayedTaskManager::DelayedTask::IsScheduled() const {
@@ -77,8 +79,8 @@ void DelayedTaskManager::AddDelayedTask(
   TimeTicks process_ripe_tasks_time;
   {
     AutoSchedulerLock auto_lock(queue_lock_);
-    delayed_task_queue_.emplace(std::move(task),
-                                std::move(post_task_now_callback));
+    delayed_task_queue_.insert(
+        DelayedTask(std::move(task), std::move(post_task_now_callback)));
     // Not started yet.
     if (service_thread_task_runner_ == nullptr)
       return;
@@ -95,15 +97,13 @@ void DelayedTaskManager::ProcessRipeTasks() {
     AutoSchedulerLock auto_lock(queue_lock_);
     const TimeTicks now = tick_clock_->NowTicks();
     while (!delayed_task_queue_.empty() &&
-           delayed_task_queue_.top().task.delayed_run_time <= now) {
+           delayed_task_queue_.Min().task.delayed_run_time <= now) {
       // The const_cast on top is okay since the DelayedTask is
-      // transactionnaly being popped from |delayed_task_queue_| right after
-      // and the move doesn't alter the sort order (a requirement for the
-      // Windows STL's consistency debug-checks for
-      // std::priority_queue::top()).
+      // transactionally being popped from |delayed_task_queue_| right after
+      // and the move doesn't alter the sort order.
       ripe_delayed_tasks.push_back(
-          std::move(const_cast<DelayedTask&>(delayed_task_queue_.top())));
-      delayed_task_queue_.pop();
+          std::move(const_cast<DelayedTask&>(delayed_task_queue_.Min())));
+      delayed_task_queue_.Pop();
     }
     process_ripe_tasks_time = GetTimeToScheduleProcessRipeTasksLockRequired();
   }
@@ -119,10 +119,9 @@ TimeTicks DelayedTaskManager::GetTimeToScheduleProcessRipeTasksLockRequired() {
   if (delayed_task_queue_.empty())
     return TimeTicks::Max();
   // The const_cast on top is okay since |IsScheduled()| and |SetScheduled()|
-  // don't alter the sort order (a requirement for the Windows STL's consistency
-  // debug-checks for std::priority_queue::top())
+  // don't alter the sort order.
   DelayedTask& ripest_delayed_task =
-      const_cast<DelayedTask&>(delayed_task_queue_.top());
+      const_cast<DelayedTask&>(delayed_task_queue_.Min());
   if (ripest_delayed_task.IsScheduled())
     return TimeTicks::Max();
   ripest_delayed_task.SetScheduled();

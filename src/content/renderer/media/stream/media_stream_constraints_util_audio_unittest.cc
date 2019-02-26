@@ -9,6 +9,7 @@
 #include <string>
 #include <utility>
 
+#include "base/stl_util.h"
 #include "base/test/scoped_task_environment.h"
 #include "content/renderer/media/stream/local_media_stream_audio_source.h"
 #include "content/renderer/media/stream/media_stream_audio_source.h"
@@ -54,8 +55,7 @@ using AudioPropertiesBoolMembers =
 
 template <typename T>
 static bool Contains(const std::vector<T>& vector, T value) {
-  auto it = std::find(vector.begin(), vector.end(), value);
-  return it != vector.end();
+  return base::ContainsValue(vector, value);
 }
 
 }  // namespace

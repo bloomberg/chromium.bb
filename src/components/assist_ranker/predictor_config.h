@@ -30,21 +30,25 @@ struct PredictorConfig {
                   const LogType log_type,
                   const base::flat_set<std::string>* feature_whitelist,
                   const base::Feature* field_trial,
-                  const base::FeatureParam<std::string>* field_trial_url_param)
+                  const base::FeatureParam<std::string>* field_trial_url_param,
+                  float field_trial_threshold_replacement_param)
       : model_name(model_name),
         logging_name(logging_name),
         uma_prefix(uma_prefix),
         log_type(log_type),
         feature_whitelist(feature_whitelist),
         field_trial(field_trial),
-        field_trial_url_param(field_trial_url_param) {}
-  const char* model_name;
-  const char* logging_name;
-  const char* uma_prefix;
+        field_trial_url_param(field_trial_url_param),
+        field_trial_threshold_replacement_param(
+            field_trial_threshold_replacement_param) {}
+  const char* const model_name;
+  const char* const logging_name;
+  const char* const uma_prefix;
   const LogType log_type;
   const base::flat_set<std::string>* feature_whitelist;
   const base::Feature* field_trial;
   const base::FeatureParam<std::string>* field_trial_url_param;
+  const float field_trial_threshold_replacement_param;
 };
 
 }  // namespace assist_ranker

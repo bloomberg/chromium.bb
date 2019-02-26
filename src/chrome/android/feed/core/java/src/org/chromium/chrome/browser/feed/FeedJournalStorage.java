@@ -50,44 +50,61 @@ public class FeedJournalStorage implements JournalStorage {
 
     @Override
     public void read(String journalName, Consumer < Result < List<byte[]>>> consumer) {
-        assert mFeedJournalBridge != null;
-        mFeedJournalBridge.loadJournal(journalName, (byte[][] entries) -> {
-            List<byte[]> journal = Arrays.asList(entries);
-            consumer.accept(Result.success(journal));
-        }, (Void ignored) -> consumer.accept(Result.failure()));
+        if (mFeedJournalBridge == null) {
+            consumer.accept(Result.failure());
+        } else {
+            mFeedJournalBridge.loadJournal(journalName, (byte[][] entries) -> {
+                List<byte[]> journal = Arrays.asList(entries);
+                consumer.accept(Result.success(journal));
+            }, (Void ignored) -> consumer.accept(Result.failure()));
+        }
     }
 
     @Override
     public void commit(JournalMutation mutation, Consumer<CommitResult> consumer) {
-        assert mFeedJournalBridge != null;
-        mFeedJournalBridge.commitJournalMutation(mutation,
-                (Boolean result)
-                        -> consumer.accept(result ? CommitResult.SUCCESS : CommitResult.FAILURE));
+        if (mFeedJournalBridge == null) {
+            consumer.accept(CommitResult.FAILURE);
+        } else {
+            mFeedJournalBridge.commitJournalMutation(mutation,
+                    (Boolean result)
+                            -> consumer.accept(
+                                    result ? CommitResult.SUCCESS : CommitResult.FAILURE));
+        }
     }
 
     @Override
     public void exists(String journalName, Consumer<Result<Boolean>> consumer) {
-        assert mFeedJournalBridge != null;
-        mFeedJournalBridge.doesJournalExist(journalName,
-                (Boolean exist)
-                        -> consumer.accept(Result.success(exist)),
-                (Void ignored) -> consumer.accept(Result.failure()));
+        if (mFeedJournalBridge == null) {
+            consumer.accept(Result.failure());
+        } else {
+            mFeedJournalBridge.doesJournalExist(journalName,
+                    (Boolean exist)
+                            -> consumer.accept(Result.success(exist)),
+                    (Void ignored) -> consumer.accept(Result.failure()));
+        }
     }
 
     @Override
     public void getAllJournals(Consumer < Result < List<String>>> consumer) {
-        assert mFeedJournalBridge != null;
-        mFeedJournalBridge.loadAllJournalKeys(
-                (String[] data)
-                        -> consumer.accept(Result.success(Arrays.asList(data))),
-                (Void ignored) -> consumer.accept(Result.failure()));
+        if (mFeedJournalBridge == null) {
+            consumer.accept(Result.failure());
+        } else {
+            mFeedJournalBridge.loadAllJournalKeys(
+                    (String[] data)
+                            -> consumer.accept(Result.success(Arrays.asList(data))),
+                    (Void ignored) -> consumer.accept(Result.failure()));
+        }
     }
 
     @Override
     public void deleteAll(Consumer<CommitResult> consumer) {
-        assert mFeedJournalBridge != null;
-        mFeedJournalBridge.deleteAllJournals(
-                (Boolean result)
-                        -> consumer.accept(result ? CommitResult.SUCCESS : CommitResult.FAILURE));
+        if (mFeedJournalBridge == null) {
+            consumer.accept(CommitResult.FAILURE);
+        } else {
+            mFeedJournalBridge.deleteAllJournals(
+                    (Boolean result)
+                            -> consumer.accept(
+                                    result ? CommitResult.SUCCESS : CommitResult.FAILURE));
+        }
     }
 }

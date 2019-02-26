@@ -25,6 +25,21 @@ syncer::ModelTypeSet AllowedTypesInStandaloneTransportMode() {
   return allowed_types;
 }
 
+class SyncDisabledByUserChecker : public SingleClientStatusChangeChecker {
+ public:
+  explicit SyncDisabledByUserChecker(browser_sync::ProfileSyncService* service)
+      : SingleClientStatusChangeChecker(service) {}
+
+  bool IsExitConditionSatisfied() override {
+    return service()->HasDisableReason(
+        syncer::SyncService::DISABLE_REASON_USER_CHOICE);
+  }
+
+  std::string GetDebugMessage() const override {
+    return "Sync Disabled by User";
+  }
+};
+
 class SingleClientStandaloneTransportSyncTest : public SyncTest {
  public:
   SingleClientStandaloneTransportSyncTest() : SyncTest(SINGLE_CLIENT) {
@@ -76,7 +91,7 @@ IN_PROC_BROWSER_TEST_F(SingleClientStandaloneTransportSyncTest,
   EXPECT_EQ(syncer::SyncService::TransportState::ACTIVE,
             GetSyncService(0)->GetTransportState());
 
-  ASSERT_TRUE(GetSyncService(0)->IsFirstSetupComplete());
+  ASSERT_TRUE(GetSyncService(0)->GetUserSettings()->IsFirstSetupComplete());
 
   EXPECT_TRUE(GetSyncService(0)->IsSyncFeatureEnabled());
   EXPECT_TRUE(GetSyncService(0)->IsSyncFeatureActive());
@@ -100,7 +115,7 @@ IN_PROC_BROWSER_TEST_F(SingleClientStandaloneTransportSyncTest,
   EXPECT_EQ(syncer::SyncService::TransportState::ACTIVE,
             GetSyncService(0)->GetTransportState());
 
-  ASSERT_FALSE(GetSyncService(0)->IsFirstSetupComplete());
+  ASSERT_FALSE(GetSyncService(0)->GetUserSettings()->IsFirstSetupComplete());
 
   EXPECT_FALSE(GetSyncService(0)->IsSyncFeatureEnabled());
   EXPECT_FALSE(GetSyncService(0)->IsSyncFeatureActive());
@@ -129,13 +144,13 @@ IN_PROC_BROWSER_TEST_F(SingleClientStandaloneTransportSyncTest,
   // Make sure that some model type which is not allowed in transport-only mode
   // got activated.
   ASSERT_FALSE(AllowedTypesInStandaloneTransportMode().Has(syncer::BOOKMARKS));
-  ASSERT_TRUE(
-      GetSyncService(0)->GetPreferredDataTypes().Has(syncer::BOOKMARKS));
+  ASSERT_TRUE(GetSyncService(0)->GetUserSettings()->GetChosenDataTypes().Has(
+      syncer::BOOKMARKS));
   EXPECT_TRUE(GetSyncService(0)->GetActiveDataTypes().Has(syncer::BOOKMARKS));
 
   // Turn off Sync-the-feature by user choice. The machinery should start up
   // again in transport-only mode.
-  GetSyncService(0)->RequestStop(syncer::SyncService::KEEP_DATA);
+  GetSyncService(0)->GetUserSettings()->SetSyncRequested(false);
   EXPECT_TRUE(GetClient(0)->AwaitSyncSetupCompletion(
       /*skip_passphrase_verification=*/false));
 
@@ -150,7 +165,7 @@ IN_PROC_BROWSER_TEST_F(SingleClientStandaloneTransportSyncTest,
   EXPECT_TRUE(bad_types.Empty()) << syncer::ModelTypeSetToString(bad_types);
 
   // Finally, turn Sync-the-feature on again.
-  GetSyncService(0)->RequestStart();
+  GetSyncService(0)->GetUserSettings()->SetSyncRequested(true);
   EXPECT_TRUE(GetClient(0)->AwaitSyncSetupCompletion(
       /*skip_passphrase_verification=*/false));
   EXPECT_EQ(syncer::SyncService::TransportState::ACTIVE,
@@ -158,6 +173,57 @@ IN_PROC_BROWSER_TEST_F(SingleClientStandaloneTransportSyncTest,
   EXPECT_TRUE(GetSyncService(0)->IsSyncFeatureEnabled());
   EXPECT_TRUE(GetSyncService(0)->IsSyncFeatureActive());
   EXPECT_TRUE(GetSyncService(0)->GetActiveDataTypes().Has(syncer::BOOKMARKS));
+}
+
+// Tests the behavior of receiving a "Reset Sync" operation from the dashboard
+// while Sync-the-feature is active: On non-ChromeOS, this signs the user out,
+// so Sync will be fully disabled. On ChromeOS, there is no sign-out, so
+// Sync-the-transport will start.
+IN_PROC_BROWSER_TEST_F(SingleClientStandaloneTransportSyncTest,
+                       HandlesResetFromDashboardWhenSyncActive) {
+  ASSERT_TRUE(SetupClients()) << "SetupClients() failed.";
+
+  // Set up Sync-the-feature.
+  ASSERT_TRUE(GetClient(0)->SetupSync());
+  ASSERT_EQ(syncer::SyncService::TransportState::ACTIVE,
+            GetSyncService(0)->GetTransportState());
+  ASSERT_TRUE(GetSyncService(0)->IsSyncFeatureEnabled());
+  ASSERT_TRUE(GetSyncService(0)->IsSyncFeatureActive());
+
+  // Trigger a "Reset Sync" from the dashboard and wait for it to apply.
+  ASSERT_TRUE(GetFakeServer()->TriggerActionableError(
+      sync_pb::SyncEnums::NOT_MY_BIRTHDAY, "Reset Sync from Dashboard",
+      "https://chrome.google.com/sync",
+      sync_pb::SyncEnums::DISABLE_SYNC_ON_CLIENT));
+  EXPECT_TRUE(SyncDisabledByUserChecker(GetSyncService(0)).Wait());
+  GetFakeServer()->ClearActionableError();
+
+  // On all platforms, Sync-the-feature should now be disabled.
+  EXPECT_FALSE(GetSyncService(0)->IsSyncFeatureEnabled());
+  EXPECT_TRUE(GetSyncService(0)->HasDisableReason(
+      syncer::SyncService::DISABLE_REASON_USER_CHOICE));
+
+#if defined(OS_CHROMEOS)
+  // On ChromeOS, Sync should start up again in standalone transport mode.
+  EXPECT_FALSE(GetSyncService(0)->HasDisableReason(
+      syncer::SyncService::DISABLE_REASON_NOT_SIGNED_IN));
+  EXPECT_NE(syncer::SyncService::TransportState::DISABLED,
+            GetSyncService(0)->GetTransportState());
+
+  EXPECT_TRUE(GetClient(0)->AwaitSyncSetupCompletion(
+      /*skip_passphrase_verification=*/false));
+  EXPECT_EQ(syncer::SyncService::TransportState::ACTIVE,
+            GetSyncService(0)->GetTransportState());
+  EXPECT_FALSE(GetSyncService(0)->IsSyncFeatureEnabled());
+#else
+  // On non-ChromeOS platforms, the "Reset Sync" operation also signs the user
+  // out, so Sync should now be fully disabled. Note that this behavior may
+  // change in the future, see crbug.com/246839.
+  EXPECT_TRUE(GetSyncService(0)->HasDisableReason(
+      syncer::SyncService::DISABLE_REASON_NOT_SIGNED_IN));
+  EXPECT_EQ(syncer::SyncService::TransportState::DISABLED,
+            GetSyncService(0)->GetTransportState());
+#endif  // defined(OS_CHROMEOS)
 }
 
 }  // namespace

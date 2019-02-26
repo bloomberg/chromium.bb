@@ -22,6 +22,7 @@
 #include "chrome/common/content_restriction.h"
 #include "net/base/escape.h"
 #include "pdf/pdf.h"
+#include "pdf/pdf_features.h"
 #include "ppapi/c/dev/ppb_cursor_control_dev.h"
 #include "ppapi/c/pp_errors.h"
 #include "ppapi/c/pp_rect.h"
@@ -50,16 +51,12 @@ namespace chrome_pdf {
 
 namespace {
 
-const base::Feature kSaveEditedPDFFormExperiment{
-    "SaveEditedPDFForm", base::FEATURE_DISABLED_BY_DEFAULT};
-
 constexpr char kChromePrint[] = "chrome://print/";
 constexpr char kChromeExtension[] =
     "chrome-extension://mhjfbmdgcfjbbpaeojofohoefgiehjai";
 
 // Constants used in handling postMessage() messages.
 constexpr char kType[] = "type";
-constexpr char kJSId[] = "id";
 // Beep messge arguments. (Plugin -> Page).
 constexpr char kJSBeepType[] = "beep";
 // Viewport message arguments. (Page -> Plugin).
@@ -159,9 +156,6 @@ constexpr char kJSGetNamedDestination[] = "namedDestination";
 // Reply with the page number of the named destination (Plugin -> Page)
 constexpr char kJSGetNamedDestinationReplyType[] = "getNamedDestinationReply";
 constexpr char kJSNamedDestinationPageNumber[] = "pageNumber";
-
-constexpr char kJSTransformPagePointType[] = "transformPagePoint";
-constexpr char kJSTransformPagePointReplyType[] = "transformPagePointReply";
 
 // Selecting text in document (Plugin -> Page)
 constexpr char kJSSetIsSelectingType[] = "setIsSelecting";
@@ -544,10 +538,14 @@ void OutOfProcessInstance::HandleMessage(const pp::Var& message) {
 
   std::string type = dict.Get(kType).AsString();
 
-  if (type == kJSViewportType && dict.Get(pp::Var(kJSXOffset)).is_number() &&
-      dict.Get(pp::Var(kJSYOffset)).is_number() &&
-      dict.Get(pp::Var(kJSZoom)).is_number() &&
-      dict.Get(pp::Var(kJSPinchPhase)).is_number()) {
+  if (type == kJSViewportType) {
+    if (!(dict.Get(pp::Var(kJSXOffset)).is_number() &&
+          dict.Get(pp::Var(kJSYOffset)).is_number() &&
+          dict.Get(pp::Var(kJSZoom)).is_number() &&
+          dict.Get(pp::Var(kJSPinchPhase)).is_number())) {
+      NOTREACHED();
+      return;
+    }
     received_viewport_message_ = true;
     stop_scrolling_ = false;
     PinchPhase pinch_phase =
@@ -652,8 +650,11 @@ void OutOfProcessInstance::HandleMessage(const pp::Var& message) {
     scroll_offset = BoundScrollOffsetToDocument(scroll_offset);
     engine_->ScrolledToXPosition(scroll_offset.x() * device_scale_);
     engine_->ScrolledToYPosition(scroll_offset.y() * device_scale_);
-  } else if (type == kJSGetPasswordCompleteType &&
-             dict.Get(pp::Var(kJSPassword)).is_string()) {
+  } else if (type == kJSGetPasswordCompleteType) {
+    if (!dict.Get(pp::Var(kJSPassword)).is_string()) {
+      NOTREACHED();
+      return;
+    }
     if (password_callback_) {
       pp::CompletionCallbackWithOutput<pp::Var> callback = *password_callback_;
       password_callback_.reset();
@@ -664,7 +665,11 @@ void OutOfProcessInstance::HandleMessage(const pp::Var& message) {
     }
   } else if (type == kJSPrintType) {
     Print();
-  } else if (type == kJSSaveType && dict.Get(pp::Var(kJSToken)).is_string()) {
+  } else if (type == kJSSaveType) {
+    if (!dict.Get(pp::Var(kJSToken)).is_string()) {
+      NOTREACHED();
+      return;
+    }
     Save(dict.Get(pp::Var(kJSToken)).AsString());
   } else if (type == kJSRotateClockwiseType) {
     RotateClockwise();
@@ -672,10 +677,14 @@ void OutOfProcessInstance::HandleMessage(const pp::Var& message) {
     RotateCounterclockwise();
   } else if (type == kJSSelectAllType) {
     engine_->SelectAll();
-  } else if (type == kJSResetPrintPreviewModeType &&
-             dict.Get(pp::Var(kJSPrintPreviewUrl)).is_string() &&
-             dict.Get(pp::Var(kJSPrintPreviewGrayscale)).is_bool() &&
-             dict.Get(pp::Var(kJSPrintPreviewPageCount)).is_int()) {
+  } else if (type == kJSResetPrintPreviewModeType) {
+    if (!(dict.Get(pp::Var(kJSPrintPreviewUrl)).is_string() &&
+          dict.Get(pp::Var(kJSPrintPreviewGrayscale)).is_bool() &&
+          dict.Get(pp::Var(kJSPrintPreviewPageCount)).is_int())) {
+      NOTREACHED();
+      return;
+    }
+
     // For security reasons, crash if the URL that is trying to be loaded here
     // isn't a print preview one.
     std::string url = dict.Get(pp::Var(kJSPrintPreviewUrl)).AsString();
@@ -721,9 +730,13 @@ void OutOfProcessInstance::HandleMessage(const pp::Var& message) {
 
     paint_manager_.InvalidateRect(pp::Rect(pp::Point(), plugin_size_));
     PrintPreviewHistogramEnumeration(PRINT_PREVIEW_SHOWN);
-  } else if (type == kJSLoadPreviewPageType &&
-             dict.Get(pp::Var(kJSPreviewPageUrl)).is_string() &&
-             dict.Get(pp::Var(kJSPreviewPageIndex)).is_int()) {
+  } else if (type == kJSLoadPreviewPageType) {
+    if (!(dict.Get(pp::Var(kJSPreviewPageUrl)).is_string() &&
+          dict.Get(pp::Var(kJSPreviewPageIndex)).is_int())) {
+      NOTREACHED();
+      return;
+    }
+
     std::string url = dict.Get(pp::Var(kJSPreviewPageUrl)).AsString();
     // For security reasons we crash if the URL that is trying to be loaded here
     // isn't a print preview one.
@@ -740,8 +753,11 @@ void OutOfProcessInstance::HandleMessage(const pp::Var& message) {
     reply.Set(pp::Var(kType), pp::Var(kJSGetSelectedTextReplyType));
     reply.Set(pp::Var(kJSSelectedText), selected_text);
     PostMessage(reply);
-  } else if (type == kJSGetNamedDestinationType &&
-             dict.Get(pp::Var(kJSGetNamedDestination)).is_string()) {
+  } else if (type == kJSGetNamedDestinationType) {
+    if (!dict.Get(pp::Var(kJSGetNamedDestination)).is_string()) {
+      NOTREACHED();
+      return;
+    }
     base::Optional<PDFEngine::NamedDestination> named_destination =
         engine_->GetNamedDestination(
             dict.Get(pp::Var(kJSGetNamedDestination)).AsString());
@@ -750,22 +766,6 @@ void OutOfProcessInstance::HandleMessage(const pp::Var& message) {
     reply.Set(
         pp::Var(kJSNamedDestinationPageNumber),
         named_destination ? static_cast<int>(named_destination->page) : -1);
-    PostMessage(reply);
-  } else if (type == kJSTransformPagePointType &&
-             dict.Get(pp::Var(kJSPageNumber)).is_int() &&
-             dict.Get(pp::Var(kJSPageX)).is_int() &&
-             dict.Get(pp::Var(kJSPageY)).is_int() &&
-             dict.Get(pp::Var(kJSId)).is_int()) {
-    gfx::PointF page_xy(dict.Get(pp::Var(kJSPageX)).AsInt(),
-                        dict.Get(pp::Var(kJSPageY)).AsInt());
-    gfx::PointF device_xy = engine_->TransformPagePoint(
-        dict.Get(pp::Var(kJSPageNumber)).AsInt(), page_xy);
-
-    pp::VarDictionary reply;
-    reply.Set(pp::Var(kType), pp::Var(kJSTransformPagePointReplyType));
-    reply.Set(pp::Var(kJSPositionX), device_xy.x());
-    reply.Set(pp::Var(kJSPositionY), device_xy.y());
-    reply.Set(pp::Var(kJSId), dict.Get(pp::Var(kJSId)).AsInt());
     PostMessage(reply);
   } else {
     NOTREACHED();
@@ -1360,7 +1360,7 @@ void OutOfProcessInstance::ScrollBy(const pp::Point& point) {
 }
 
 void OutOfProcessInstance::ScrollToPage(int page) {
-  if (engine_->GetNumberOfPages() == 0)
+  if (!engine_ || engine_->GetNumberOfPages() == 0)
     return;
 
   pp::VarDictionary message;
@@ -1476,7 +1476,7 @@ void OutOfProcessInstance::GetDocumentPassword(
 void OutOfProcessInstance::Save(const std::string& token) {
   engine_->KillFormFocus();
 
-  if (!base::FeatureList::IsEnabled(kSaveEditedPDFFormExperiment) ||
+  if (!base::FeatureList::IsEnabled(features::kSaveEditedPDFForm) ||
       !edit_mode_) {
     ConsumeSaveToken(token);
     pp::PDF::SaveAs(this);
@@ -1557,8 +1557,9 @@ void OutOfProcessInstance::Email(const std::string& to,
 }
 
 void OutOfProcessInstance::Print() {
-  if (!engine_->HasPermission(PDFEngine::PERMISSION_PRINT_LOW_QUALITY) &&
-      !engine_->HasPermission(PDFEngine::PERMISSION_PRINT_HIGH_QUALITY)) {
+  if (!engine_ ||
+      (!engine_->HasPermission(PDFEngine::PERMISSION_PRINT_LOW_QUALITY) &&
+       !engine_->HasPermission(PDFEngine::PERMISSION_PRINT_HIGH_QUALITY))) {
     return;
   }
 

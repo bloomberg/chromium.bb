@@ -31,7 +31,7 @@
 namespace blink {
 
 WebGLRenderbuffer* WebGLRenderbuffer::Create(WebGLRenderingContextBase* ctx) {
-  return new WebGLRenderbuffer(ctx);
+  return MakeGarbageCollected<WebGLRenderbuffer>(ctx);
 }
 
 WebGLRenderbuffer::WebGLRenderbuffer(WebGLRenderingContextBase* ctx)

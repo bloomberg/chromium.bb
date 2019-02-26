@@ -105,6 +105,7 @@ test("components_unittests") {
     "//components/gcm_driver/crypto:unit_tests",
     "//components/google/core/browser:unit_tests",
     "//components/grpc_support/test:unit_tests",
+    "//components/gwp_asan:unit_tests",
     "//components/history/core/browser:unit_tests",
     "//components/history/core/common:unit_tests",
     "//components/image_fetcher/core:unit_tests",
@@ -157,7 +158,6 @@ test("components_unittests") {
     "//components/sync_sessions:unit_tests",
     "//components/task_scheduler_util:unit_tests",
     "//components/test:run_all_unittests",
-    "//components/toolbar:unit_tests",
     "//components/translate/core/browser:unit_tests",
     "//components/translate/core/common:unit_tests",
     "//components/translate/core/language_detection:unit_tests",
@@ -177,7 +177,10 @@ test("components_unittests") {
   ]
 
   if (toolkit_views && use_aura) {
-    deps += [ "//components/ui_devtools/views:unit_tests" ]
+    deps += [
+      "//components/ui_devtools:unit_tests",
+      "//components/ui_devtools/views:unit_tests",
+    ]
   }
 
   if (enable_nacl) {
@@ -221,6 +224,7 @@ test("components_unittests") {
       "//components/history/content/browser:unit_tests",
       "//components/invalidation/impl:unit_tests",
       "//components/invalidation/public:unit_tests",
+      "//components/journey:unit_tests",
       "//components/keyed_service/content:unit_tests",
       "//components/language/content/browser:unit_tests",
       "//components/link_header_util:unit_tests",
@@ -275,6 +279,8 @@ test("components_unittests") {
       "//base:base_java_unittest_support",
       "//components/autofill_assistant/browser:unit_tests",
       "//components/cdm/browser:unit_tests",
+      "//components/crash/android:java",
+      "//components/crash/android:unit_tests",
       "//components/gcm_driver/instance_id:test_support",
       "//components/gcm_driver/instance_id/android:instance_id_driver_java",
       "//components/gcm_driver/instance_id/android:instance_id_driver_test_support_java",
@@ -284,6 +290,7 @@ test("components_unittests") {
       "//components/signin/core/browser",
       "//components/signin/core/browser/android:java",
       "//components/spellcheck/browser/android:java",
+      "//components/tracing:tracing_test_helper_java",
       "//components/variations/android:variations_java",
       "//components/web_restrictions:test_support",
       "//components/web_restrictions:test_support_java",
@@ -328,7 +335,6 @@ test("components_unittests") {
       "//components/cryptauth:unit_tests",
       "//components/ownership:unit_tests",
       "//components/pairing:unit_tests",
-      "//components/sync_wifi:unit_tests",
       "//components/timers:unit_tests",
       "//components/user_manager:unit_tests",
     ]

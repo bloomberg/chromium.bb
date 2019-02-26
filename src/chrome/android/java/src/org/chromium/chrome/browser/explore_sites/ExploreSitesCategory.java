@@ -26,6 +26,8 @@ public class ExploreSitesCategory {
     // The ID to use when creating the More button, that should not scroll the ESP when clicked.
     public static final int MORE_BUTTON_ID = -1;
 
+    static final int MAX_COLUMNS = 4;
+
     // This enum must match the numbering for ExploreSites.CategoryClick in histograms.xml.  Do not
     // reorder or remove items, only add new items before COUNT.
     @Retention(RetentionPolicy.SOURCE)
@@ -69,6 +71,7 @@ public class ExploreSitesCategory {
     private Drawable mDrawable;
     // Populated only for ESP.
     private List<ExploreSitesSite> mSites;
+    private int mNumBlacklisted;
 
     /**
      * Creates an explore sites category data structure.
@@ -113,17 +116,36 @@ public class ExploreSitesCategory {
 
     public void addSite(ExploreSitesSite site) {
         mSites.add(site);
+        if (site.getModel().get(ExploreSitesSite.BLACKLISTED_KEY)) {
+            mNumBlacklisted++;
+        }
+    }
+
+    public int getNumDisplayed() {
+        return mSites.size() - mNumBlacklisted;
+    }
+
+    public int getMaxRows() {
+        return mSites.size() / MAX_COLUMNS;
     }
 
     public boolean removeSite(int siteIndex) {
         if (siteIndex > mSites.size() || siteIndex < 0) return false;
-        mSites.remove(siteIndex);
+        mSites.get(siteIndex).getModel().set(ExploreSitesSite.BLACKLISTED_KEY, true);
 
-        // Reset the tile indices to account for removed tiles.
+        // Reset the tile indices to account for removed tile.
+        int tileIndex = mSites.get(siteIndex).getModel().get(ExploreSitesSite.TILE_INDEX_KEY);
+        mSites.get(siteIndex).getModel().set(
+                ExploreSitesSite.TILE_INDEX_KEY, ExploreSitesSite.DEFAULT_TILE_INDEX);
+
         for (int i = siteIndex; i < mSites.size(); ++i) {
             ExploreSitesSite site = mSites.get(i);
-            site.getModel().set(ExploreSitesSite.TILE_INDEX_KEY, i);
+            if (!mSites.get(siteIndex).getModel().get(ExploreSitesSite.BLACKLISTED_KEY)) {
+                site.getModel().set(ExploreSitesSite.TILE_INDEX_KEY, tileIndex);
+                tileIndex++;
+            }
         }
+        mNumBlacklisted++;
         return true;
     }
 

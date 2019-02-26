@@ -19,12 +19,22 @@
 <h1>The activeTab permission</h1>
 
 <p>
-The <code>activeTab</code> permission gives an extension temporary access to the currently active tab when the user <em>invokes</em> the extension - for example by clicking its <a href="browserAction">browser action</a>. Access to the tab lasts until the tab is navigated or closed.
+The <code>activeTab</code> permission gives an extension temporary access to the
+currently active tab when the user <em>invokes</em> the extension - for example
+by clicking its <a href="browserAction">browser action</a>. Access to the tab
+lasts while the user is on that page, and is revoked when the user navigates
+away or closes the tab.
 </p>
 
 <p>
 This serves as an alternative for many uses of <code>&lt;all_urls&gt;</code>, but displays <em>no warning message</em> during installation:
 </p>
+
+<b>Note:</b> From M72 onwards, the <code>activeTab</code> permission will be
+granted until the user navigates to a different origin. That is, if the user
+invokes the extension on https://example.com and then navigates to
+https://example.com/foo, the extension will continue to have access to the page.
+If the user navigates to https://chromium.org, access is revoked.
 
 <table id="active-tab-images" class="simple">
   <tr>
@@ -85,7 +95,11 @@ Without <code>activeTab</code>, this extension would need to request full, persi
 </p>
 
 <p>
-In contrast, an extension with the <code>activeTab</code> permission only obtains access to a tab in response to an explicit user gesture. If the extension is compromised the attacker would need to wait for the user to invoke the extension before obtaining access. And that access only lasts until the tab is navigated or closed.
+In contrast, an extension with the <code>activeTab</code> permission only
+obtains access to a tab in response to an explicit user gesture. If the
+extension is compromised the attacker would need to wait for the user to invoke
+the extension before obtaining access. And that access only lasts until the tab
+is navigated or is closed.
 </p>
 
 <h2 id="what-activeTab-allows">What activeTab allows</h2>

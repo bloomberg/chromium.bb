@@ -19,7 +19,6 @@ class FocusRowDelegate {
    */
   onFocus(row, e) {
     this.listItem_.lastFocused = e.path[0];
-    this.listItem_.tabIndex = -1;
   }
 
   /**
@@ -53,7 +52,9 @@ class VirtualFocusRow extends cr.ui.FocusRow {
  * behavior, which encapsulates focus controls of mouse and keyboards.
  * To use this behavior:
  *    - The parent element should pass a "last-focused" attribute double-bound
- *      to the row items, to track the last-focused element across rows.
+ *      to the row items, to track the last-focused element across rows, and
+ *      a "list-blurred" attribute double-bound to the row items, to track
+ *      whether the list of row items has been blurred.
  *    - There must be a container in the extending element with the
  *      [focus-row-container] attribute that contains all focusable controls.
  *    - On each of the focusable controls, there must be a [focus-row-control]
@@ -86,7 +87,18 @@ const FocusRowBehavior = {
       type: Number,
       observer: 'ironListTabIndexChanged_',
     },
+
+    listBlurred: {
+      type: Boolean,
+      notify: true,
+    },
   },
+
+  /** @private {?Element} */
+  firstControl_: null,
+
+  /** @private {!Array<!MutationObserver>} */
+  controlObservers_: [],
 
   /** @override */
   attached: function() {
@@ -114,13 +126,42 @@ const FocusRowBehavior = {
     this.unlisten(this, 'dom-change', 'addItems_');
     this.unlisten(this, 'mousedown', 'onMouseDown_');
     this.unlisten(this, 'blur', 'onBlur_');
+    this.removeObservers_();
     if (this.row_)
       this.row_.destroy();
   },
 
   /** @private */
+  updateFirstControl_: function() {
+    const newFirstControl = this.row_.getFirstFocusable();
+    if (newFirstControl === this.firstControl_)
+      return;
+
+    if (this.firstControl_)
+      this.unlisten(this.firstControl_, 'keydown', 'onFirstControlKeydown_');
+    this.firstControl_ = newFirstControl;
+    if (this.firstControl_) {
+      this.listen(
+          /** @type {!Element} */ (this.firstControl_), 'keydown',
+          'onFirstControlKeydown_');
+    }
+  },
+
+  /** @private */
+  removeObservers_: function() {
+    if (this.firstControl_)
+      this.unlisten(this.firstControl_, 'keydown', 'onFirstControlKeydown_');
+    if (this.controlObservers_.length > 0)
+      this.controlObservers_.forEach(observer => {
+        observer.disconnect();
+      });
+    this.controlObservers_ = [];
+  },
+
+  /** @private */
   addItems_: function() {
     if (this.row_) {
+      this.removeObservers_();
       this.row_.destroy();
 
       const controls = this.root.querySelectorAll('[focus-row-control]');
@@ -130,28 +171,91 @@ const FocusRowBehavior = {
             control.getAttribute('focus-type'),
             /** @type {!HTMLElement} */
             (cr.ui.FocusRow.getFocusableElement(control)));
+        this.addMutationObservers_(assert(control));
       });
+      this.updateFirstControl_();
+    }
+  },
+
+  /**
+   * @return {!MutationObserver}
+   * @private
+   */
+  createObserver_: function() {
+    return new MutationObserver(mutations => {
+      const mutation = mutations[0];
+      if (mutation.attributeName === 'style' && mutation.oldValue) {
+        const newStyle =
+            window.getComputedStyle(/** @type {!Element} */ (mutation.target));
+        const oldDisplayValue = mutation.oldValue.match(/^display:(.*)(?=;)/);
+        const oldVisibilityValue =
+            mutation.oldValue.match(/^visibility:(.*)(?=;)/);
+        // Return early if display and visibility have not changed.
+        if (oldDisplayValue && newStyle.display === oldDisplayValue[1].trim() &&
+            oldVisibilityValue &&
+            newStyle.visibility === oldVisibilityValue[1].trim()) {
+          return;
+        }
+      }
+      this.updateFirstControl_();
+    });
+  },
+
+  /**
+   * The first focusable control changes if hidden, disabled, or style.display
+   * changes for the control or any of its ancestors. Add mutation observers to
+   * watch for these changes in order to ensure the first control keydown
+   * listener is always on the correct element.
+   * @param {!Element} control
+   * @private
+   */
+  addMutationObservers_: function(control) {
+    let current = control;
+    while (current && current != this.root) {
+      const currentObserver = this.createObserver_();
+      currentObserver.observe(current, {
+        attributes: true,
+        attributeFilter: ['hidden', 'disabled', 'style'],
+        attributeOldValue: true,
+      });
+      this.controlObservers_.push(currentObserver);
+      current = current.parentNode;
     }
   },
 
   /**
    * This function gets called when the row itself receives the focus event.
+   * @param {!Event} e The focus event
    * @private
    */
-  onFocus_: function() {
+  onFocus_: function(e) {
     if (this.mouseFocused_) {
       this.mouseFocused_ = false;  // Consume and reset flag.
       return;
     }
 
-    if (this.lastFocused) {
+    // If focus is being restored from outside the item and the event is fired
+    // by the list item itself, focus the first control so that the user can tab
+    // through all the controls. When the user shift-tabs back to the row, or
+    // focus is restored to the row from a dropdown on the last item, the last
+    // child item will be focused before the row itself. Since this is the
+    // desired behavior, do not shift focus to the first item in these cases.
+    const restoreFocusToFirst =
+        this.listBlurred && e.composedPath()[0] === this;
+
+    if (this.lastFocused && !restoreFocusToFirst) {
       this.row_.getEquivalentElement(this.lastFocused).focus();
     } else {
-      const firstFocusable = assert(this.row_.getFirstFocusable());
+      const firstFocusable = assert(this.firstControl_);
       firstFocusable.focus();
     }
+    this.listBlurred = false;
+  },
 
-    this.tabIndex = -1;
+  /** @param {!KeyboardEvent} e */
+  onFirstControlKeydown_: function(e) {
+    if (e.shiftKey && e.key === 'Tab')
+      this.focus();
   },
 
   /** @private */
@@ -165,8 +269,16 @@ const FocusRowBehavior = {
     this.mouseFocused_ = true;  // Set flag to not do any control-focusing.
   },
 
-  /** @private */
-  onBlur_: function() {
+  /**
+   * @param {!Event} e
+   * @private
+   */
+  onBlur_: function(e) {
     this.mouseFocused_ = false;  // Reset flag since it's not active anymore.
-  }
+
+    const node =
+        e.relatedTarget ? /** @type {!Node} */ (e.relatedTarget) : null;
+    if (!this.parentNode.contains(node))
+      this.listBlurred = true;
+  },
 };

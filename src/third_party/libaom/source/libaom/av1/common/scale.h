@@ -39,7 +39,7 @@ struct scale_factors {
   aom_highbd_convolve_fn_t highbd_convolve[2][2][2];
 };
 
-MV32 av1_scale_mv(const MV *mv, int x, int y, const struct scale_factors *sf);
+MV32 av1_scale_mv(const MV32 *mv, int x, int y, const struct scale_factors *sf);
 
 void av1_setup_scale_factors_for_frame(struct scale_factors *sf, int other_w,
                                        int other_h, int this_w, int this_h);

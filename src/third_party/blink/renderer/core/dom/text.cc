@@ -46,11 +46,11 @@
 namespace blink {
 
 Text* Text::Create(Document& document, const String& data) {
-  return new Text(document, data, kCreateText);
+  return MakeGarbageCollected<Text>(document, data, kCreateText);
 }
 
 Text* Text::CreateEditingText(Document& document, const String& data) {
-  return new Text(document, data, kCreateEditingText);
+  return MakeGarbageCollected<Text>(document, data, kCreateEditingText);
 }
 
 Node* Text::MergeNextSiblingNodesIfPossible() {
@@ -288,7 +288,7 @@ bool Text::TextLayoutObjectIsNeeded(const AttachContext& context,
   if (style.Display() == EDisplay::kNone)
     return false;
 
-  if (!ContainsOnlyWhitespace())
+  if (!ContainsOnlyWhitespaceOrEmpty())
     return true;
 
   if (!CanHaveWhitespaceChildren(parent, style, context))

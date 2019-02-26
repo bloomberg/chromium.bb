@@ -57,15 +57,13 @@
 #include "components/cookie_config/cookie_store_util.h"
 #include "components/data_reduction_proxy/core/browser/data_reduction_proxy_io_data.h"
 #include "components/dom_distiller/core/url_constants.h"
-#include "components/domain_reliability/monitor.h"
 #include "components/metrics/metrics_pref_names.h"
 #include "components/metrics/metrics_service.h"
 #include "components/net_log/chrome_net_log.h"
 #include "components/policy/core/common/cloud/policy_header_service.h"
 #include "components/policy/core/common/cloud/user_cloud_policy_manager.h"
 #include "components/prefs/pref_service.h"
-#include "components/previews/content/previews_decider_impl.h"
-#include "components/signin/core/browser/profile_management_switches.h"
+#include "components/signin/core/browser/account_consistency_method.h"
 #include "components/signin/core/browser/signin_pref_names.h"
 #include "components/sync/base/pref_names.h"
 #include "components/url_formatter/url_fixer.h"
@@ -131,12 +129,10 @@
 #include "chrome/browser/chromeos/certificate_provider/certificate_provider_service_factory.h"
 #include "chrome/browser/chromeos/fileapi/external_file_protocol_handler.h"
 #include "chrome/browser/chromeos/login/startup_utils.h"
-#include "chrome/browser/chromeos/net/cert_verify_proc_chromeos.h"
 #include "chrome/browser/chromeos/net/client_cert_filter_chromeos.h"
 #include "chrome/browser/chromeos/net/client_cert_store_chromeos.h"
 #include "chrome/browser/chromeos/policy/policy_cert_service.h"
 #include "chrome/browser/chromeos/policy/policy_cert_service_factory.h"
-#include "chrome/browser/chromeos/policy/policy_cert_verifier.h"
 #include "chrome/browser/chromeos/profiles/profile_helper.h"
 #include "chrome/browser/chromeos/settings/cros_settings.h"
 #include "chrome/browser/net/nss_context.h"
@@ -149,6 +145,8 @@
 #include "components/user_manager/user_manager.h"
 #include "crypto/nss_util.h"
 #include "crypto/nss_util_internal.h"
+#include "services/network/cert_verifier_with_trust_anchors.h"
+#include "services/network/cert_verify_proc_chromeos.h"
 #endif  // defined(OS_CHROMEOS)
 
 #if defined(USE_NSS_CERTS)
@@ -376,6 +374,9 @@ void ProfileIOData::InitializeOnUIThread(Profile* profile) {
       ProtocolHandlerRegistryFactory::GetForBrowserContext(profile);
   DCHECK(protocol_handler_registry);
 
+  protocol_handler_registry_io_thread_delegate_ =
+      protocol_handler_registry->io_thread_delegate();
+
   // The profile instance is only available here in the InitializeOnUIThread
   // method, so we create the url job factory here, then save it for
   // later delivery to the job factory in Init().
@@ -578,7 +579,6 @@ ProfileIOData::ProfileIOData(Profile::ProfileType profile_type)
       main_request_context_(nullptr),
       resource_context_(new ResourceContext(this)),
       chrome_network_delegate_unowned_(nullptr),
-      domain_reliability_monitor_unowned_(nullptr),
       profile_type_(profile_type) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
 }
@@ -628,9 +628,6 @@ ProfileIOData::~ProfileIOData() {
     memcpy(&media_context_vtable_cache[current_context],
            static_cast<void*>(it->second), sizeof(void*));
   }
-
-  if (domain_reliability_monitor_unowned_)
-    domain_reliability_monitor_unowned_->Shutdown();
 
   current_context = 0;
   for (auto it = isolated_media_request_context_map_.begin();
@@ -861,21 +858,6 @@ bool ProfileIOData::IsOffTheRecord() const {
       || profile_type() == Profile::GUEST_PROFILE;
 }
 
-void ProfileIOData::InitializeMetricsEnabledStateOnUIThread() {
-  DCHECK_CURRENTLY_ON(BrowserThread::UI);
-  // Prep the PrefMember and send it to the IO thread, since this value will be
-  // read from there.
-  enable_metrics_.Init(metrics::prefs::kMetricsReportingEnabled,
-                       g_browser_process->local_state());
-  enable_metrics_.MoveToThread(
-      base::CreateSingleThreadTaskRunnerWithTraits({BrowserThread::IO}));
-}
-
-bool ProfileIOData::GetMetricsEnabledStateOnIOThread() const {
-  DCHECK_CURRENTLY_ON(BrowserThread::IO);
-  return enable_metrics_.GetValue();
-}
-
 chrome_browser_net::Predictor* ProfileIOData::GetPredictor() {
   return nullptr;
 }
@@ -919,25 +901,12 @@ void ProfileIOData::set_data_reduction_proxy_io_data(
   data_reduction_proxy_io_data_ = std::move(data_reduction_proxy_io_data);
 }
 
-void ProfileIOData::set_previews_decider_impl(
-    std::unique_ptr<previews::PreviewsDeciderImpl> previews_decider_impl)
-    const {
-  previews_decider_impl_ = std::move(previews_decider_impl);
-}
-
 ProfileIOData::ResourceContext::ResourceContext(ProfileIOData* io_data)
-    : io_data_(io_data),
-      request_context_(NULL) {
+    : io_data_(io_data) {
   DCHECK(io_data);
 }
 
 ProfileIOData::ResourceContext::~ResourceContext() {}
-
-net::URLRequestContext* ProfileIOData::ResourceContext::GetRequestContext()  {
-  DCHECK_CURRENTLY_ON(BrowserThread::IO);
-  DCHECK(io_data_->initialized_);
-  return request_context_;
-}
 
 void ProfileIOData::Init(
     content::ProtocolHandlerMap* protocol_handlers,
@@ -1040,7 +1009,7 @@ void ProfileIOData::Init(
       // The private slot won't be ready by this point. It shouldn't be
       // necessary for cert trust purposes anyway.
       scoped_refptr<net::CertVerifyProc> verify_proc(
-          new chromeos::CertVerifyProcChromeOS(std::move(public_slot)));
+          new network::CertVerifyProcChromeOS(std::move(public_slot)));
       if (profile_params_->policy_cert_verifier) {
         profile_params_->policy_cert_verifier->InitializeOnIOThread(
             verify_proc);
@@ -1089,21 +1058,6 @@ void ProfileIOData::Init(
             std::move(profile_params_->main_network_context_request),
             std::move(profile_params_->main_network_context_params),
             std::move(builder), &main_request_context_);
-
-    if (chrome_network_delegate_unowned_->domain_reliability_monitor()) {
-      // Save a pointer to shut down Domain Reliability cleanly before the
-      // URLRequestContext is dismantled.
-      domain_reliability_monitor_unowned_ =
-          chrome_network_delegate_unowned_->domain_reliability_monitor();
-
-      domain_reliability_monitor_unowned_->InitURLRequestContext(
-          main_request_context_);
-      domain_reliability_monitor_unowned_->AddBakedInConfigs();
-      domain_reliability_monitor_unowned_->SetDiscardUploads(
-          !GetMetricsEnabledStateOnIOThread());
-    }
-
-    resource_context_->request_context_ = main_request_context_;
   }
 
   OnMainRequestContextCreated(profile_params_.get());
@@ -1244,7 +1198,6 @@ void ProfileIOData::ShutdownOnUIThread(
   force_google_safesearch_.Destroy();
   force_youtube_restrict_.Destroy();
   allowed_domains_for_apps_.Destroy();
-  enable_metrics_.Destroy();
   safe_browsing_enabled_.Destroy();
   safe_browsing_whitelist_domains_.Destroy();
   network_prediction_options_.Destroy();

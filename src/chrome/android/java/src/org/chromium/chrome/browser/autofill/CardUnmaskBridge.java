@@ -12,6 +12,7 @@ import org.chromium.base.annotations.JNINamespace;
 import org.chromium.chrome.browser.ChromeActivity;
 import org.chromium.chrome.browser.ResourceId;
 import org.chromium.chrome.browser.autofill.CardUnmaskPrompt.CardUnmaskPromptDelegate;
+import org.chromium.chrome.browser.modaldialog.DialogDismissalCause;
 import org.chromium.ui.base.WindowAndroid;
 
 /**
@@ -106,7 +107,9 @@ public class CardUnmaskBridge implements CardUnmaskPromptDelegate {
      */
     @CalledByNative
     private void dismiss() {
-        if (mCardUnmaskPrompt != null) mCardUnmaskPrompt.dismiss();
+        if (mCardUnmaskPrompt != null) {
+            mCardUnmaskPrompt.dismiss(DialogDismissalCause.DISMISSED_BY_NATIVE);
+        }
     }
 
     /**

@@ -4,7 +4,7 @@
 
 #include "chrome/browser/android/oom_intervention/near_oom_monitor.h"
 
-#include "base/sys_info.h"
+#include "base/system/sys_info.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "chrome/browser/android/oom_intervention/oom_intervention_config.h"
 #include "jni/NearOomMonitor_jni.h"

@@ -87,6 +87,9 @@ class CORE_EXPORT DocumentLifecycle {
     kStopped,
   };
 
+  // This must be kept coordinated with WebWidget::LifecycleUpdateReason
+  enum LifecycleUpdateReason { kBeginMainFrame, kTest, kOther };
+
   class Scope {
     STACK_ALLOCATED();
 

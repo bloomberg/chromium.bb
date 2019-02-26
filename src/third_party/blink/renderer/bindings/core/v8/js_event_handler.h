@@ -29,8 +29,22 @@ class CORE_EXPORT JSEventHandler : public JSBasedEventListener {
                                 v8::Local<v8::Object> listener,
                                 const V8PrivateProperty::Symbol& property,
                                 HandlerType type) {
-    return new JSEventHandler(script_state, listener, property, type);
+    return MakeGarbageCollected<JSEventHandler>(script_state, listener,
+                                                property, type);
   }
+
+  JSEventHandler(ScriptState* script_state,
+                 v8::Local<v8::Object> listener,
+                 const V8PrivateProperty::Symbol& property,
+                 HandlerType type)
+      : JSBasedEventListener(kJSEventHandlerType),
+        event_handler_(V8EventHandlerNonNull::Create(listener)),
+        type_(type) {
+    Attach(script_state, listener, property, this);
+  }
+
+  explicit JSEventHandler(HandlerType type)
+      : JSBasedEventListener(kJSEventHandlerType), type_(type) {}
 
   // blink::CustomWrappable overrides:
   void Trace(blink::Visitor* visitor) override;
@@ -50,19 +64,6 @@ class CORE_EXPORT JSEventHandler : public JSBasedEventListener {
   v8::Local<v8::Value> GetEffectiveFunction(EventTarget&) override;
 
  protected:
-  JSEventHandler(ScriptState* script_state,
-                 v8::Local<v8::Object> listener,
-                 const V8PrivateProperty::Symbol& property,
-                 HandlerType type)
-      : JSBasedEventListener(kJSEventHandlerType),
-        event_handler_(V8EventHandlerNonNull::Create(listener)),
-        type_(type) {
-    Attach(script_state, listener, property, this);
-  }
-
-  explicit JSEventHandler(HandlerType type)
-      : JSBasedEventListener(kJSEventHandlerType), type_(type) {}
-
   // blink::JSBasedEventListener override:
   v8::Isolate* GetIsolate() const override {
     return event_handler_->GetIsolate();
@@ -94,9 +95,9 @@ class CORE_EXPORT JSEventHandler : public JSBasedEventListener {
   // blink::JSBasedEventListener override:
   // Performs "The event handler processing algorithm"
   // https://html.spec.whatwg.org/C/webappapis.html#the-event-handler-processing-algorithm
-  void CallListenerFunction(EventTarget&,
-                            Event&,
-                            v8::Local<v8::Value> js_event) override;
+  void InvokeInternal(EventTarget&,
+                      Event&,
+                      v8::Local<v8::Value> js_event) override;
 
   TraceWrapperMember<V8EventHandlerNonNull> event_handler_;
   const HandlerType type_;

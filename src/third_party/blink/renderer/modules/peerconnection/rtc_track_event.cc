@@ -13,17 +13,17 @@
 namespace blink {
 
 RTCTrackEvent* RTCTrackEvent::Create(const AtomicString& type,
-                                     const RTCTrackEventInit& eventInitDict) {
-  return new RTCTrackEvent(type, eventInitDict);
+                                     const RTCTrackEventInit* eventInitDict) {
+  return MakeGarbageCollected<RTCTrackEvent>(type, eventInitDict);
 }
 
 RTCTrackEvent::RTCTrackEvent(const AtomicString& type,
-                             const RTCTrackEventInit& eventInitDict)
+                             const RTCTrackEventInit* eventInitDict)
     : Event(type, eventInitDict),
-      receiver_(eventInitDict.receiver()),
-      track_(eventInitDict.track()),
-      streams_(eventInitDict.streams()),
-      transceiver_(eventInitDict.transceiver()) {
+      receiver_(eventInitDict->receiver()),
+      track_(eventInitDict->track()),
+      streams_(eventInitDict->streams()),
+      transceiver_(eventInitDict->transceiver()) {
   DCHECK(receiver_);
   DCHECK(track_);
 }
@@ -32,7 +32,7 @@ RTCTrackEvent::RTCTrackEvent(RTCRtpReceiver* receiver,
                              MediaStreamTrack* track,
                              const HeapVector<Member<MediaStream>>& streams,
                              RTCRtpTransceiver* transceiver)
-    : Event(EventTypeNames::track, Bubbles::kNo, Cancelable::kNo),
+    : Event(event_type_names::kTrack, Bubbles::kNo, Cancelable::kNo),
       receiver_(receiver),
       track_(track),
       streams_(streams),

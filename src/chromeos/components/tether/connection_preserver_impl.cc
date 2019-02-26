@@ -5,9 +5,7 @@
 #include "chromeos/components/tether/connection_preserver_impl.h"
 
 #include "base/timer/timer.h"
-#include "chromeos/chromeos_features.h"
 #include "chromeos/components/proximity_auth/logging/logging.h"
-#include "chromeos/components/tether/ble_connection_manager.h"
 #include "chromeos/components/tether/tether_host_response_recorder.h"
 #include "chromeos/network/network_state.h"
 #include "chromeos/network/network_state_handler.h"
@@ -27,17 +25,14 @@ const char kTetherFeature[] = "magic_tether";
 ConnectionPreserverImpl::ConnectionPreserverImpl(
     device_sync::DeviceSyncClient* device_sync_client,
     secure_channel::SecureChannelClient* secure_channel_client,
-    BleConnectionManager* ble_connection_manager,
     NetworkStateHandler* network_state_handler,
     ActiveHost* active_host,
     TetherHostResponseRecorder* tether_host_response_recorder)
     : device_sync_client_(device_sync_client),
       secure_channel_client_(secure_channel_client),
-      ble_connection_manager_(ble_connection_manager),
       network_state_handler_(network_state_handler),
       active_host_(active_host),
       tether_host_response_recorder_(tether_host_response_recorder),
-      request_id_(base::UnguessableToken::Create()),
       preserved_connection_timer_(std::make_unique<base::OneShotTimer>()),
       weak_ptr_factory_(this) {
   active_host_->AddObserver(this);
@@ -75,16 +70,15 @@ void ConnectionPreserverImpl::HandleSuccessfulTetherAvailabilityResponse(
     RemovePreservedConnectionIfPresent();
     SetPreservedConnection(device_id);
   } else {
-    PA_LOG(INFO) << "The connection to device with ID "
-                 << cryptauth::RemoteDeviceRef::TruncateDeviceIdForLogs(
-                        device_id)
-                 << " was not preserved; another device has higher priority.";
+    PA_LOG(VERBOSE)
+        << "The connection to device with ID "
+        << cryptauth::RemoteDeviceRef::TruncateDeviceIdForLogs(device_id)
+        << " was not preserved; another device has higher priority.";
   }
 }
 
 void ConnectionPreserverImpl::OnConnectionAttemptFailure(
     secure_channel::mojom::ConnectionAttemptFailureReason reason) {
-  DCHECK(base::FeatureList::IsEnabled(chromeos::features::kMultiDeviceApi));
   PA_LOG(WARNING) << "Failed to connect to device "
                   << cryptauth::RemoteDeviceRef::TruncateDeviceIdForLogs(
                          preserved_connection_device_id_)
@@ -94,10 +88,9 @@ void ConnectionPreserverImpl::OnConnectionAttemptFailure(
 
 void ConnectionPreserverImpl::OnConnection(
     std::unique_ptr<secure_channel::ClientChannel> channel) {
-  DCHECK(base::FeatureList::IsEnabled(chromeos::features::kMultiDeviceApi));
-  PA_LOG(INFO) << "Successfully preserved connection for device: "
-               << cryptauth::RemoteDeviceRef::TruncateDeviceIdForLogs(
-                      preserved_connection_device_id_);
+  PA_LOG(VERBOSE) << "Successfully preserved connection for device: "
+                  << cryptauth::RemoteDeviceRef::TruncateDeviceIdForLogs(
+                         preserved_connection_device_id_);
 
   // Simply hold on to the ClientChannel until the connection should no longer
   // be preserved.
@@ -105,10 +98,9 @@ void ConnectionPreserverImpl::OnConnection(
 }
 
 void ConnectionPreserverImpl::OnDisconnected() {
-  DCHECK(base::FeatureList::IsEnabled(chromeos::features::kMultiDeviceApi));
-  PA_LOG(INFO) << "Remote device disconnected from this device: "
-               << cryptauth::RemoteDeviceRef::TruncateDeviceIdForLogs(
-                      preserved_connection_device_id_);
+  PA_LOG(VERBOSE) << "Remote device disconnected from this device: "
+                  << cryptauth::RemoteDeviceRef::TruncateDeviceIdForLogs(
+                         preserved_connection_device_id_);
   RemovePreservedConnectionIfPresent();
 }
 
@@ -164,32 +156,27 @@ void ConnectionPreserverImpl::SetPreservedConnection(
     const std::string& device_id) {
   DCHECK(preserved_connection_device_id_.empty());
 
-  PA_LOG(INFO) << "Preserving connection to device with ID "
-               << cryptauth::RemoteDeviceRef::TruncateDeviceIdForLogs(device_id)
-               << ".";
+  PA_LOG(VERBOSE) << "Preserving connection to device with ID "
+                  << cryptauth::RemoteDeviceRef::TruncateDeviceIdForLogs(
+                         device_id)
+                  << ".";
 
   preserved_connection_device_id_ = device_id;
 
-  if (base::FeatureList::IsEnabled(chromeos::features::kMultiDeviceApi)) {
-    base::Optional<cryptauth::RemoteDeviceRef> remote_device =
-        GetRemoteDevice(preserved_connection_device_id_);
-    if (!remote_device) {
-      PA_LOG(ERROR) << "Given invalid remote device ID: "
-                    << cryptauth::RemoteDeviceRef::TruncateDeviceIdForLogs(
-                           preserved_connection_device_id_);
-      RemovePreservedConnectionIfPresent();
-      return;
-    }
-
-    connection_attempt_ = secure_channel_client_->ListenForConnectionFromDevice(
-        *remote_device, *device_sync_client_->GetLocalDeviceMetadata(),
-        kTetherFeature, secure_channel::ConnectionPriority::kLow);
-    connection_attempt_->SetDelegate(this);
-  } else {
-    ble_connection_manager_->RegisterRemoteDevice(
-        preserved_connection_device_id_, request_id_,
-        secure_channel::ConnectionPriority::kLow);
+  base::Optional<cryptauth::RemoteDeviceRef> remote_device =
+      GetRemoteDevice(preserved_connection_device_id_);
+  if (!remote_device) {
+    PA_LOG(ERROR) << "Given invalid remote device ID: "
+                  << cryptauth::RemoteDeviceRef::TruncateDeviceIdForLogs(
+                         preserved_connection_device_id_);
+    RemovePreservedConnectionIfPresent();
+    return;
   }
+
+  connection_attempt_ = secure_channel_client_->ListenForConnectionFromDevice(
+      *remote_device, *device_sync_client_->GetLocalDeviceMetadata(),
+      kTetherFeature, secure_channel::ConnectionPriority::kLow);
+  connection_attempt_->SetDelegate(this);
 
   preserved_connection_timer_->Start(
       FROM_HERE, base::TimeDelta::FromSeconds(kTimeoutSeconds),
@@ -201,18 +188,13 @@ void ConnectionPreserverImpl::RemovePreservedConnectionIfPresent() {
   if (preserved_connection_device_id_.empty())
     return;
 
-  PA_LOG(INFO) << "Removing preserved connection to device with ID "
-               << cryptauth::RemoteDeviceRef::TruncateDeviceIdForLogs(
-                      preserved_connection_device_id_)
-               << ".";
+  PA_LOG(VERBOSE) << "Removing preserved connection to device with ID "
+                  << cryptauth::RemoteDeviceRef::TruncateDeviceIdForLogs(
+                         preserved_connection_device_id_)
+                  << ".";
 
-  if (base::FeatureList::IsEnabled(chromeos::features::kMultiDeviceApi)) {
-    connection_attempt_.reset();
-    client_channel_.reset();
-  } else {
-    ble_connection_manager_->UnregisterRemoteDevice(
-        preserved_connection_device_id_, request_id_);
-  }
+  connection_attempt_.reset();
+  client_channel_.reset();
 
   preserved_connection_device_id_.clear();
   preserved_connection_timer_->Stop();
@@ -220,7 +202,6 @@ void ConnectionPreserverImpl::RemovePreservedConnectionIfPresent() {
 
 base::Optional<cryptauth::RemoteDeviceRef>
 ConnectionPreserverImpl::GetRemoteDevice(const std::string device_id) {
-  DCHECK(base::FeatureList::IsEnabled(chromeos::features::kMultiDeviceApi));
   for (const auto& remote_device : device_sync_client_->GetSyncedDevices()) {
     if (remote_device.GetDeviceId() == device_id)
       return remote_device;

@@ -76,7 +76,7 @@ ShadowRoot::ShadowRoot(Document& document, ShadowRootType type)
       needs_distribution_recalc_(false),
       unused_(0) {
   if (IsV0())
-    shadow_root_v0_ = new ShadowRootV0(*this);
+    shadow_root_v0_ = MakeGarbageCollected<ShadowRootV0>(*this);
 }
 
 ShadowRoot::~ShadowRoot() = default;
@@ -164,21 +164,6 @@ void ShadowRoot::RebuildLayoutTree(WhitespaceAttacher& whitespace_attacher) {
   ClearChildNeedsReattachLayoutTree();
 }
 
-void ShadowRoot::AttachLayoutTree(AttachContext& context) {
-  Node::AttachContext children_context(context);
-  DocumentFragment::AttachLayoutTree(children_context);
-}
-
-void ShadowRoot::DetachLayoutTree(const AttachContext& context) {
-  Node::AttachContext children_context(context);
-  children_context.clear_invalidation = true;
-  GetDocument()
-      .GetStyleEngine()
-      .GetPendingNodeInvalidations()
-      .ClearInvalidation(*this);
-  DocumentFragment::DetachLayoutTree(children_context);
-}
-
 Node::InsertionNotificationRequest ShadowRoot::InsertedInto(
     ContainerNode& insertion_point) {
   DocumentFragment::InsertedInto(insertion_point);
@@ -216,12 +201,6 @@ void ShadowRoot::RemovedFrom(ContainerNode& insertion_point) {
       if (root)
         root->RemoveChildShadowRoot();
       registered_with_parent_shadow_root_ = false;
-    }
-    if (NeedsStyleInvalidation()) {
-      GetDocument()
-          .GetStyleEngine()
-          .GetPendingNodeInvalidations()
-          .ClearInvalidation(*this);
     }
   }
 

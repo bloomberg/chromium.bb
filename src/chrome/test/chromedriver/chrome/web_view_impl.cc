@@ -409,7 +409,7 @@ Status WebViewImpl::DispatchTouchEventsForMouseEvents(
   // thread to get consistent behavior.
   base::DictionaryValue params;
   params.SetString("expression",
-                   "new Promise(x => setTimeout(() => setTimeout(x, 20), 20)");
+                   "new Promise(x => setTimeout(() => setTimeout(x, 20), 20))");
   params.SetBoolean("awaitPromise", true);
   client_->SendCommand("Runtime.evaluate", params);
   for (auto it = events.begin(); it != events.end(); ++it) {

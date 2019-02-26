@@ -4,6 +4,8 @@
 
 #include "third_party/blink/renderer/modules/animationworklet/animation_worklet_global_scope.h"
 
+#include "base/metrics/histogram_macros.h"
+#include "base/timer/elapsed_timer.h"
 #include "third_party/blink/renderer/bindings/core/v8/serialization/serialized_script_value.h"
 #include "third_party/blink/renderer/bindings/core/v8/v8_object_parser.h"
 #include "third_party/blink/renderer/bindings/core/v8/worker_or_worklet_script_controller.h"
@@ -15,6 +17,7 @@
 #include "third_party/blink/renderer/platform/bindings/v8_binding_macros.h"
 #include "third_party/blink/renderer/platform/bindings/v8_object_constructor.h"
 #include "third_party/blink/renderer/platform/weborigin/security_origin.h"
+#include "third_party/blink/renderer/platform/wtf/time.h"
 
 namespace blink {
 
@@ -25,8 +28,7 @@ void UpdateAnimation(Animator* animator,
                      WorkletAnimationId id,
                      double current_time,
                      AnimationWorkletDispatcherOutput* result) {
-  AnimationWorkletDispatcherOutput::AnimationState animation_output(
-      id, base::nullopt);
+  AnimationWorkletDispatcherOutput::AnimationState animation_output(id);
   if (animator->Animate(script_state, current_time, &animation_output)) {
     result->animations.push_back(std::move(animation_output));
   }
@@ -66,9 +68,10 @@ void AnimationWorkletGlobalScope::Dispose() {
 Animator* AnimationWorkletGlobalScope::CreateAnimatorFor(
     int animation_id,
     const String& name,
-    WorkletAnimationOptions* options) {
+    WorkletAnimationOptions* options,
+    int num_effects) {
   DCHECK(!animators_.at(animation_id));
-  Animator* animator = CreateInstance(name, options);
+  Animator* animator = CreateInstance(name, options, num_effects);
   if (!animator)
     return nullptr;
   animators_.Set(animation_id, animator);
@@ -78,6 +81,7 @@ Animator* AnimationWorkletGlobalScope::CreateAnimatorFor(
 
 std::unique_ptr<AnimationWorkletOutput> AnimationWorkletGlobalScope::Mutate(
     const AnimationWorkletInput& mutator_input) {
+  base::ElapsedTimer timer;
   DCHECK(IsContextThread());
 
   ScriptState* script_state = ScriptController()->GetScriptState();
@@ -99,7 +103,8 @@ std::unique_ptr<AnimationWorkletOutput> AnimationWorkletGlobalScope::Mutate(
     WorkletAnimationOptions* options =
         static_cast<WorkletAnimationOptions*>(animation.options.get());
 
-    Animator* animator = CreateAnimatorFor(id, name, options);
+    Animator* animator =
+        CreateAnimatorFor(id, name, options, animation.num_effects);
     if (!animator)
       continue;
 
@@ -121,11 +126,19 @@ std::unique_ptr<AnimationWorkletOutput> AnimationWorkletGlobalScope::Mutate(
   for (const auto& worklet_animation_id : mutator_input.peeked_animations) {
     int id = worklet_animation_id.animation_id;
     Animator* animator = animators_.at(id);
+    if (!animator)
+      continue;
 
-    result->animations.emplace_back(
-        worklet_animation_id,
-        animator ? animator->GetLastLocalTime() : base::nullopt);
+    AnimationWorkletDispatcherOutput::AnimationState animation_output(
+        worklet_animation_id);
+    animation_output.local_times = animator->GetLocalTimes();
+    result->animations.push_back(animation_output);
   }
+
+  UMA_HISTOGRAM_CUSTOM_MICROSECONDS_TIMES(
+      "Animation.AnimationWorklet.GlobalScope.MutateDuration", timer.Elapsed(),
+      base::TimeDelta::FromMicroseconds(1),
+      base::TimeDelta::FromMilliseconds(100), 50);
 
   return result;
 }
@@ -185,7 +198,8 @@ void AnimationWorkletGlobalScope::registerAnimator(
 
 Animator* AnimationWorkletGlobalScope::CreateInstance(
     const String& name,
-    WorkletAnimationOptions* options) {
+    WorkletAnimationOptions* options,
+    int num_effects) {
   DCHECK(IsContextThread());
   AnimatorDefinition* definition = animator_definitions_.at(name);
   if (!definition)
@@ -206,7 +220,7 @@ Animator* AnimationWorkletGlobalScope::CreateInstance(
            .ToLocal(&instance))
     return nullptr;
 
-  return new Animator(isolate, definition, instance);
+  return new Animator(isolate, definition, instance, num_effects);
 }
 
 AnimatorDefinition* AnimationWorkletGlobalScope::FindDefinitionForTest(

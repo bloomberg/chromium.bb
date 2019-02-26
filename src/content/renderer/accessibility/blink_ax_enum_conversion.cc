@@ -8,24 +8,6 @@
 
 namespace content {
 
-ax::mojom::TextStyle AXTextStyleFromBlink(blink::WebAXTextStyle text_style) {
-  uint32_t browser_text_style =
-      static_cast<uint32_t>(ax::mojom::TextStyle::kNone);
-  if (text_style & blink::kWebAXTextStyleBold)
-    browser_text_style |=
-        static_cast<int32_t>(ax::mojom::TextStyle::kTextStyleBold);
-  if (text_style & blink::kWebAXTextStyleItalic)
-    browser_text_style |=
-        static_cast<int32_t>(ax::mojom::TextStyle::kTextStyleItalic);
-  if (text_style & blink::kWebAXTextStyleUnderline)
-    browser_text_style |=
-        static_cast<int32_t>(ax::mojom::TextStyle::kTextStyleUnderline);
-  if (text_style & blink::kWebAXTextStyleLineThrough)
-    browser_text_style |=
-        static_cast<int32_t>(ax::mojom::TextStyle::kTextStyleLineThrough);
-  return static_cast<ax::mojom::TextStyle>(browser_text_style);
-}
-
 void AXStateFromBlink(const blink::WebAXObject& o, ui::AXNodeData* dst) {
   blink::WebAXExpanded expanded = o.IsExpanded();
   if (expanded) {
@@ -45,6 +27,9 @@ void AXStateFromBlink(const blink::WebAXObject& o, ui::AXNodeData* dst) {
 
   if (o.IsAutofillAvailable())
     dst->AddState(ax::mojom::State::kAutofillAvailable);
+
+  if (o.IsDefault())
+    dst->AddState(ax::mojom::State::kDefault);
 
   if (o.IsHovered())
     dst->AddState(ax::mojom::State::kHovered);

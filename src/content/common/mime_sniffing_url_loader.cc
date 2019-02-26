@@ -109,9 +109,8 @@ void MimeSniffingURLLoader::OnComplete(
   DCHECK(!complete_status_.has_value());
   switch (state_) {
     case State::kWaitForBody:
-      // OnComplete() is called without OnStartLoadingResponseBody(). There is
-      // no response body in this case. Use |kDefaultMimeType| as its mime type
-      // even though it's empty.
+      // An error occured before receiving any data.
+      DCHECK_NE(net::OK, status.error_code);
       state_ = State::kCompleted;
       response_head_.mime_type = kDefaultMimeType;
       if (!throttle_) {
@@ -122,11 +121,11 @@ void MimeSniffingURLLoader::OnComplete(
       destination_url_loader_client_->OnComplete(status);
       return;
     case State::kSniffing:
-      // Defer calling OnComplete() since we defer calling
-      // OnStartLoadingResponseBody() until mime sniffing has been finished.
+    case State::kSending:
+      // Defer calling OnComplete() until mime sniffing has finished and all
+      // data is sent.
       complete_status_ = status;
       return;
-    case State::kSending:
     case State::kCompleted:
       destination_url_loader_client_->OnComplete(status);
       return;
@@ -140,7 +139,8 @@ void MimeSniffingURLLoader::OnComplete(
 void MimeSniffingURLLoader::FollowRedirect(
     const base::Optional<std::vector<std::string>>&
         to_be_removed_request_headers,
-    const base::Optional<net::HttpRequestHeaders>& modified_request_headers) {
+    const base::Optional<net::HttpRequestHeaders>& modified_request_headers,
+    const base::Optional<GURL>& new_url) {
   // MimeSniffingURLLoader starts handling the request after
   // OnReceivedResponse(). A redirect response is not expected.
   NOTREACHED();
@@ -230,19 +230,9 @@ void MimeSniffingURLLoader::OnBodyWritable(MojoResult) {
 void MimeSniffingURLLoader::CompleteSniffing() {
   DCHECK_EQ(State::kSniffing, state_);
   if (buffered_body_.empty()) {
-    // A data pipe for the body was received but no body was provided. Don't
-    // propagate OnStartLoadingResponseBody() in this case. We treat this
-    // situation as the same as when OnStartLoadingResponseBody() was not
-    // called.
-    //
-    // TODO(crbug.com/826868): Remove this once all loaders are aligned.
-    state_ = State::kWaitForBody;
-    if (complete_status_.has_value()) {
-      auto status = complete_status_.value();
-      complete_status_.reset();
-      OnComplete(status);
-    }
-    return;
+    // The URLLoader ended before sending any data. There is not enough
+    // information to determine the MIME type.
+    response_head_.mime_type = kDefaultMimeType;
   }
 
   state_ = State::kSending;
@@ -265,18 +255,27 @@ void MimeSniffingURLLoader::CompleteSniffing() {
       MOJO_HANDLE_SIGNAL_WRITABLE | MOJO_HANDLE_SIGNAL_PEER_CLOSED,
       base::BindRepeating(&MimeSniffingURLLoader::OnBodyWritable,
                           base::Unretained(this)));
-  // Send deferred messages.
+
+  // Send deferred message.
   destination_url_loader_client_->OnStartLoadingResponseBody(
       std::move(body_to_send));
-  // Call OnComplete() if OnComplete() has already been called.
-  if (complete_status_.has_value())
-    destination_url_loader_client_->OnComplete(complete_status_.value());
-  SendReceivedBodyToClient();
+
+  if (bytes_remaining_in_buffer_) {
+    SendReceivedBodyToClient();
+    return;
+  }
+
+  CompleteSending();
 }
 
 void MimeSniffingURLLoader::CompleteSending() {
   DCHECK_EQ(State::kSending, state_);
   state_ = State::kCompleted;
+  // Call client's OnComplete() if |this|'s OnComplete() has already been
+  // called.
+  if (complete_status_.has_value())
+    destination_url_loader_client_->OnComplete(complete_status_.value());
+
   body_consumer_watcher_.Cancel();
   body_producer_watcher_.Cancel();
   body_consumer_handle_.reset();

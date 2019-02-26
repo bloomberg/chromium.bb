@@ -61,8 +61,7 @@ class TSymbol : angle::NonCopyable
           mSymbolType(symbolType),
           mExtension(extension),
           mSymbolClass(symbolClass)
-    {
-    }
+    {}
 
     const ImmutableString mName;
 
@@ -102,8 +101,7 @@ class TVariable : public TSymbol
         : TSymbol(id, name, symbolType, extension, SymbolClass::Variable),
           mType(type),
           unionArray(nullptr)
-    {
-    }
+    {}
 
   private:
     const TType *mType;
@@ -235,6 +233,7 @@ class TFunction : public TSymbol
 
     bool isMain() const;
     bool isImageFunction() const;
+    bool isAtomicCounterFunction() const;
     bool hasSamplerInStructParams() const;
 
     // Note: Only to be used for static built-in functions!
@@ -256,8 +255,7 @@ class TFunction : public TSymbol
           defined(false),
           mHasPrototypeDeclaration(false),
           mKnownToNotHaveSideEffects(knownToNotHaveSideEffects)
-    {
-    }
+    {}
 
   private:
     ImmutableString buildMangledName() const;

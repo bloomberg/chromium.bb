@@ -14,13 +14,12 @@
 
 #include "LLVMRoutine.hpp"
 
-#include "Common/Memory.hpp"
-#include "Common/Thread.hpp"
-#include "Common/Types.hpp"
+#include "ExecutableMemory.hpp"
+#include "Thread.hpp"
 
-namespace sw
+namespace rr
 {
-#if SWIFTSHADER_LLVM_VERSION < 7
+#if REACTOR_LLVM_VERSION < 7
 	LLVMRoutine::LLVMRoutine(int bufferSize) : bufferSize(bufferSize)
 	{
 		void *memory = allocateExecutable(bufferSize);

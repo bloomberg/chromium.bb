@@ -33,16 +33,17 @@
 
 #include "base/macros.h"
 #include "services/service_manager/public/cpp/binder_registry.h"
+#include "third_party/blink/public/common/dom_storage/session_storage_namespace_id.h"
 #include "third_party/blink/renderer/core/core_export.h"
 #include "third_party/blink/renderer/platform/wtf/allocator.h"
 
 namespace blink {
 
+class DevToolsSession;
 class Document;
 class HTMLMediaElement;
 class InspectedFrames;
 class InspectorDOMAgent;
-class InspectorSession;
 class LocalFrame;
 class MediaControls;
 class Page;
@@ -93,7 +94,7 @@ class CORE_EXPORT CoreInitializer {
   // These methods typically create agents and append them to a session.
   // TODO(nverne): remove this and restore to WebDevToolsAgentImpl once that
   // class is a controller/ crbug:731490
-  virtual void InitInspectorAgentSession(InspectorSession*,
+  virtual void InitInspectorAgentSession(DevToolsSession*,
                                          bool,
                                          InspectorDOMAgent*,
                                          InspectedFrames*,
@@ -115,7 +116,11 @@ class CORE_EXPORT CoreInitializer {
   virtual void ProvideModulesToPage(Page&, WebViewClient*) const = 0;
   virtual void ForceNextWebGLContextCreationToFail() const = 0;
 
-  virtual void CollectAllGarbageForAnimationWorklet() const = 0;
+  virtual void CollectAllGarbageForAnimationAndPaintWorklet() const = 0;
+
+  virtual void CloneSessionStorage(
+      Page* clone_from_page,
+      const SessionStorageNamespaceId& clone_to_namespace) = 0;
 
  protected:
   // CoreInitializer is only instantiated by subclass ModulesInitializer.

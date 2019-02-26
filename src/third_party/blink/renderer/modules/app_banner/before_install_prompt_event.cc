@@ -36,13 +36,13 @@ BeforeInstallPromptEvent::BeforeInstallPromptEvent(
 BeforeInstallPromptEvent::BeforeInstallPromptEvent(
     ExecutionContext* execution_context,
     const AtomicString& name,
-    const BeforeInstallPromptEventInit& init)
+    const BeforeInstallPromptEventInit* init)
     : Event(name, init),
       ContextClient(execution_context),
       binding_(this),
       require_gesture_(true) {
-  if (init.hasPlatforms())
-    platforms_ = init.platforms();
+  if (init->hasPlatforms())
+    platforms_ = init->platforms();
 }
 
 BeforeInstallPromptEvent::~BeforeInstallPromptEvent() = default;
@@ -97,7 +97,7 @@ ScriptPromise BeforeInstallPromptEvent::prompt(ScriptState* script_state) {
 }
 
 const AtomicString& BeforeInstallPromptEvent::InterfaceName() const {
-  return EventNames::BeforeInstallPromptEvent;
+  return event_interface_names::kBeforeInstallPromptEvent;
 }
 
 void BeforeInstallPromptEvent::preventDefault() {
@@ -114,16 +114,16 @@ bool BeforeInstallPromptEvent::HasPendingActivity() const {
 }
 
 void BeforeInstallPromptEvent::BannerAccepted(const String& platform) {
-  AppBannerPromptResult result;
-  result.setPlatform(platform);
-  result.setOutcome("accepted");
+  AppBannerPromptResult* result = AppBannerPromptResult::Create();
+  result->setPlatform(platform);
+  result->setOutcome("accepted");
   user_choice_->Resolve(result);
 }
 
 void BeforeInstallPromptEvent::BannerDismissed() {
-  AppBannerPromptResult result;
-  result.setPlatform(g_empty_atom);
-  result.setOutcome("dismissed");
+  AppBannerPromptResult* result = AppBannerPromptResult::Create();
+  result->setPlatform(g_empty_atom);
+  result->setOutcome("dismissed");
   user_choice_->Resolve(result);
 }
 

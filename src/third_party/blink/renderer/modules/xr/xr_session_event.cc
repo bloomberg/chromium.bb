@@ -12,16 +12,16 @@ XRSessionEvent::XRSessionEvent(const AtomicString& type, XRSession* session)
     : Event(type, Bubbles::kNo, Cancelable::kYes), session_(session) {}
 
 XRSessionEvent::XRSessionEvent(const AtomicString& type,
-                               const XRSessionEventInit& initializer)
+                               const XRSessionEventInit* initializer)
     : Event(type, initializer) {
-  if (initializer.hasSession())
-    session_ = initializer.session();
+  if (initializer->hasSession())
+    session_ = initializer->session();
 }
 
 XRSessionEvent::~XRSessionEvent() = default;
 
 const AtomicString& XRSessionEvent::InterfaceName() const {
-  return EventNames::XRSessionEvent;
+  return event_interface_names::kXRSessionEvent;
 }
 
 void XRSessionEvent::Trace(blink::Visitor* visitor) {

@@ -23,7 +23,9 @@ import android.widget.ScrollView;
 
 import org.chromium.chrome.browser.modaldialog.DialogDismissalCause;
 import org.chromium.chrome.browser.modaldialog.ModalDialogManager;
+import org.chromium.chrome.browser.modaldialog.ModalDialogProperties;
 import org.chromium.chrome.browser.modaldialog.ModalDialogView;
+import org.chromium.chrome.browser.modelutil.PropertyModel;
 import org.chromium.ui.interpolators.BakedBezierInterpolator;
 
 /**
@@ -40,7 +42,7 @@ class PageInfoDialog {
     // The dialog implementation.
     // mSheetDialog is set if the dialog appears as a sheet. Otherwise, mModalDialog is set.
     private final Dialog mSheetDialog;
-    private final ModalDialogView mModalDialog;
+    private final PropertyModel mModalDialogModel;
     @NonNull
     private final ModalDialogManager mManager;
     @NonNull
@@ -97,9 +99,9 @@ class PageInfoDialog {
 
         if (isSheet) {
             mSheetDialog = createSheetDialog(context, container);
-            mModalDialog = null;
+            mModalDialogModel = null;
         } else {
-            mModalDialog = createModalDialog(container);
+            mModalDialogModel = createModalDialog(container);
             mSheetDialog = null;
         }
     }
@@ -109,7 +111,7 @@ class PageInfoDialog {
         if (mIsSheet) {
             mSheetDialog.show();
         } else {
-            mManager.showDialog(mModalDialog, ModalDialogManager.ModalDialogType.APP);
+            mManager.showDialog(mModalDialogModel, ModalDialogManager.ModalDialogType.APP);
         }
     }
 
@@ -123,7 +125,7 @@ class PageInfoDialog {
         if (mIsSheet) {
             mSheetDialog.dismiss();
         } else {
-            mManager.dismissDialog(mModalDialog);
+            mManager.dismissDialog(mModalDialogModel, DialogDismissalCause.UNKNOWN);
         }
     }
 
@@ -158,7 +160,7 @@ class PageInfoDialog {
         sheetDialog.setOnDismissListener(new DialogInterface.OnDismissListener() {
             @Override
             public void onDismiss(DialogInterface dialog) {
-                mController.onDismiss(DialogDismissalCause.UNKNOWN);
+                mController.onDismiss(null, DialogDismissalCause.UNKNOWN);
             }
         });
 
@@ -172,11 +174,12 @@ class PageInfoDialog {
         return sheetDialog;
     }
 
-    private ModalDialogView createModalDialog(View container) {
-        ModalDialogView.Params params = new ModalDialogView.Params();
-        params.customView = container;
-        params.cancelOnTouchOutside = true;
-        return new ModalDialogView(mController, params);
+    private PropertyModel createModalDialog(View container) {
+        return new PropertyModel.Builder(ModalDialogProperties.ALL_KEYS)
+                .with(ModalDialogProperties.CONTROLLER, mController)
+                .with(ModalDialogProperties.CUSTOM_VIEW, container)
+                .with(ModalDialogProperties.CANCEL_ON_TOUCH_OUTSIDE, true)
+                .build();
     }
 
     private ViewGroup createSheetContainer(Context context, View tabView) {

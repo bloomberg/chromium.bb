@@ -97,6 +97,7 @@ class MODULES_EXPORT AXObjectCacheImpl
   // changed.
   void TextChanged(LayoutObject*) override;
   void TextChanged(AXObject*, Node* optional_node = nullptr);
+  void FocusableChanged(Element* element);
   void DocumentTitleChanged() override;
   // Called when a node has just been attached, so we can make sure we have the
   // right subclass of AXObject.
@@ -295,7 +296,9 @@ class MODULES_EXPORT AXObjectCacheImpl
   mojom::blink::PermissionServicePtr permission_service_;
   mojo::Binding<mojom::blink::PermissionObserver> permission_observer_binding_;
 
-  HeapVector<Member<Node>> nodes_changed_during_layout_;
+  VectorOf<Node> nodes_changed_during_layout_;
+  typedef VectorOfPairs<QualifiedName, Element> AttributesChangedVector;
+  AttributesChangedVector attributes_changed_during_layout_;
 
   DISALLOW_COPY_AND_ASSIGN(AXObjectCacheImpl);
 };

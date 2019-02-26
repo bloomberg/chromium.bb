@@ -18,13 +18,15 @@ extern const base::Feature kNetworkErrorLogging;
 COMPONENT_EXPORT(NETWORK_CPP)
 extern const base::Feature kNetworkService;
 COMPONENT_EXPORT(NETWORK_CPP)
-extern const base::Feature kOutOfBlinkCORS;
+extern const base::Feature kOutOfBlinkCors;
 COMPONENT_EXPORT(NETWORK_CPP)
 extern const base::Feature kReporting;
 COMPONENT_EXPORT(NETWORK_CPP)
 extern const base::Feature kThrottleDelayable;
 COMPONENT_EXPORT(NETWORK_CPP)
 extern const base::Feature kDelayRequestsOnMultiplexedConnections;
+COMPONENT_EXPORT(NETWORK_CPP)
+extern const base::Feature kUnthrottleRequestsAfterLongQueuingDelay;
 
 }  // namespace features
 }  // namespace network

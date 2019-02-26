@@ -42,8 +42,11 @@ class DOMMimeTypeArray final : public ScriptWrappable,
 
  public:
   static DOMMimeTypeArray* Create(LocalFrame* frame) {
-    return new DOMMimeTypeArray(frame);
+    return MakeGarbageCollected<DOMMimeTypeArray>(frame);
   }
+
+  explicit DOMMimeTypeArray(LocalFrame*);
+
   void UpdatePluginData();
 
   unsigned length() const;
@@ -58,7 +61,6 @@ class DOMMimeTypeArray final : public ScriptWrappable,
   void Trace(blink::Visitor*) override;
 
  private:
-  explicit DOMMimeTypeArray(LocalFrame*);
   PluginData* GetPluginData() const;
   void ContextDestroyed(ExecutionContext*) override;
 

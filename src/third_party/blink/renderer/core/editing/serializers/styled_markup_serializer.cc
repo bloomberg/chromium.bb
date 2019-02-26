@@ -79,7 +79,7 @@ bool HandleSelectionBoundary<EditingInFlatTreeStrategy>(const Node& node) {
 
 }  // namespace
 
-using namespace HTMLNames;
+using namespace html_names;
 
 template <typename Strategy>
 class StyledMarkupTraverser {
@@ -230,7 +230,7 @@ String StyledMarkupSerializer<Strategy>::CreateMarkup() {
         *start_.ComputeContainerNode(), *end_.ComputeContainerNode());
     DCHECK(common_ancestor);
     HTMLBodyElement* body = ToHTMLBodyElement(EnclosingElementWithTag(
-        Position::FirstPositionInNode(*common_ancestor), bodyTag));
+        Position::FirstPositionInNode(*common_ancestor), kBodyTag));
     HTMLBodyElement* fully_selected_root = nullptr;
     // FIXME: Do this for all fully selected blocks, not just the body.
     if (body && AreSameRanges(body, start_, end_))
@@ -252,10 +252,10 @@ String StyledMarkupSerializer<Strategy>::CreateMarkup() {
              !fully_selected_root_style->Style() ||
              !fully_selected_root_style->Style()->GetPropertyCSSValue(
                  CSSPropertyBackgroundImage)) &&
-            fully_selected_root->hasAttribute(backgroundAttr)) {
+            fully_selected_root->hasAttribute(kBackgroundAttr)) {
           fully_selected_root_style->Style()->SetProperty(
               CSSPropertyBackgroundImage,
-              "url('" + fully_selected_root->getAttribute(backgroundAttr) +
+              "url('" + fully_selected_root->getAttribute(kBackgroundAttr) +
                   "')",
               /* important */ false,
               fully_selected_root->GetDocument().GetSecureContextMode());
@@ -361,7 +361,7 @@ Node* StyledMarkupTraverser<Strategy>::Traverse(Node* start_node,
       if (!n->GetLayoutObject() &&
           (!n->IsElementNode() || !ToElement(n)->HasDisplayContentsStyle()) &&
           !EnclosingElementWithTag(FirstPositionInOrBeforeNode(*n),
-                                   selectTag)) {
+                                   kSelectTag)) {
         next = Strategy::NextSkippingChildren(*n);
         // Don't skip over pastEnd.
         if (past_end && Strategy::IsDescendantOf(*past_end, *n))

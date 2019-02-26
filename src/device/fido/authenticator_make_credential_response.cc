@@ -18,7 +18,7 @@ namespace device {
 // static
 base::Optional<AuthenticatorMakeCredentialResponse>
 AuthenticatorMakeCredentialResponse::CreateFromU2fRegisterResponse(
-    FidoTransportProtocol transport_used,
+    base::Optional<FidoTransportProtocol> transport_used,
     base::span<const uint8_t, kRpIdHashLength> relying_party_id_hash,
     base::span<const uint8_t> u2f_data) {
   auto public_key = ECPublicKey::ExtractFromU2fRegistrationResponse(
@@ -58,7 +58,7 @@ AuthenticatorMakeCredentialResponse::CreateFromU2fRegisterResponse(
 }
 
 AuthenticatorMakeCredentialResponse::AuthenticatorMakeCredentialResponse(
-    FidoTransportProtocol transport_used,
+    base::Optional<FidoTransportProtocol> transport_used,
     AttestationObject attestation_object)
     : ResponseData(attestation_object.GetCredentialId()),
       attestation_object_(std::move(attestation_object)),
@@ -78,8 +78,9 @@ AuthenticatorMakeCredentialResponse::GetCBOREncodedAttestationObject() const {
   return attestation_object_.SerializeToCBOREncodedBytes();
 }
 
-void AuthenticatorMakeCredentialResponse::EraseAttestationStatement() {
-  attestation_object_.EraseAttestationStatement();
+void AuthenticatorMakeCredentialResponse::EraseAttestationStatement(
+    AttestationObject::AAGUID erase_aaguid) {
+  attestation_object_.EraseAttestationStatement(erase_aaguid);
 }
 
 bool AuthenticatorMakeCredentialResponse::IsSelfAttestation() {

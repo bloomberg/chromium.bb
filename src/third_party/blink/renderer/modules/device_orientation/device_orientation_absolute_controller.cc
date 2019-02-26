@@ -25,7 +25,8 @@ DeviceOrientationAbsoluteController& DeviceOrientationAbsoluteController::From(
   DeviceOrientationAbsoluteController* controller =
       Supplement<Document>::From<DeviceOrientationAbsoluteController>(document);
   if (!controller) {
-    controller = new DeviceOrientationAbsoluteController(document);
+    controller =
+        MakeGarbageCollected<DeviceOrientationAbsoluteController>(document);
     Supplement<Document>::ProvideTo(document, controller);
   }
   return *controller;
@@ -67,7 +68,7 @@ void DeviceOrientationAbsoluteController::DidAddEventListener(
 }
 
 const AtomicString& DeviceOrientationAbsoluteController::EventTypeName() const {
-  return EventTypeNames::deviceorientationabsolute;
+  return event_type_names::kDeviceorientationabsolute;
 }
 
 void DeviceOrientationAbsoluteController::Trace(blink::Visitor* visitor) {

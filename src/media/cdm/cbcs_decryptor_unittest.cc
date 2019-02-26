@@ -4,6 +4,7 @@
 
 #include "media/cdm/cbcs_decryptor.h"
 
+#include <algorithm>
 #include <array>
 #include <memory>
 
@@ -177,10 +178,11 @@ TEST_F(CbcsDecryptorTest, AdditionalData) {
   EXPECT_EQ(encrypted_buffer->is_key_frame(), decrypted_buffer->is_key_frame());
   EXPECT_EQ(encrypted_buffer->side_data_size(),
             decrypted_buffer->side_data_size());
-  EXPECT_EQ(base::make_span(encrypted_buffer->side_data(),
-                            encrypted_buffer->side_data_size()),
-            base::make_span(decrypted_buffer->side_data(),
-                            decrypted_buffer->side_data_size()));
+  EXPECT_TRUE(std::equal(
+      encrypted_buffer->side_data(),
+      encrypted_buffer->side_data() + encrypted_buffer->side_data_size(),
+      decrypted_buffer->side_data(),
+      decrypted_buffer->side_data() + encrypted_buffer->side_data_size()));
 }
 
 TEST_F(CbcsDecryptorTest, DifferentPattern) {

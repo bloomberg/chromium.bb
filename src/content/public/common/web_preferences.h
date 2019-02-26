@@ -14,7 +14,7 @@
 #include "build/build_config.h"
 #include "content/common/content_export.h"
 #include "net/nqe/effective_connection_type.h"
-#include "ui/base/touch/touch_device.h"
+#include "ui/base/pointer/pointer_device.h"
 #include "url/gurl.h"
 
 namespace blink {
@@ -131,7 +131,7 @@ struct CONTENT_EXPORT WebPreferences {
   bool application_cache_enabled;
   bool tabs_to_links;
   bool history_entry_requires_user_gesture;
-  bool disable_pushstate_throttle;
+  bool disable_ipc_flooding_protection;
   bool hyperlink_auditing_enabled;
   bool allow_universal_access_from_file_urls;
   bool allow_file_access_from_file_urls;
@@ -238,7 +238,7 @@ struct CONTENT_EXPORT WebPreferences {
   float device_scale_adjustment;
   bool force_enable_zoom;
   bool fullscreen_supported;
-  std::string media_playback_gesture_whitelist_scope;
+  GURL media_playback_gesture_whitelist_scope;
   GURL default_video_poster_url;
   bool support_deprecated_target_density_dpi;
   bool use_legacy_background_size_shorthand_behavior;
@@ -319,6 +319,9 @@ struct CONTENT_EXPORT WebPreferences {
   // estimate corresponding to |network_quality_estimator_web_holdback|
   // regardless of the actual quality.
   net::EffectiveConnectionType network_quality_estimator_web_holdback;
+
+  // Whether lazy loading of frames and images is enabled.
+  bool lazy_load_enabled = true;
 
   // Specifies how close a lazily loaded iframe or image should be from the
   // viewport before it should start being loaded in, depending on the effective

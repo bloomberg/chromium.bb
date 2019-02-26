@@ -47,8 +47,8 @@ struct WebAssociatedURLLoaderOptions {
   // When true, omit origin related checks. USE WITH CARE.
   bool grant_universal_access = false;
 
-  network::mojom::CORSPreflightPolicy preflight_policy =
-      network::mojom::CORSPreflightPolicy::kConsiderPreflight;
+  network::mojom::CorsPreflightPolicy preflight_policy =
+      network::mojom::CorsPreflightPolicy::kConsiderPreflight;
 };
 
 }  // namespace blink

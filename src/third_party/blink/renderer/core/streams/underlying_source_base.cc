@@ -18,7 +18,8 @@ ScriptPromise UnderlyingSourceBase::startWrapper(ScriptState* script_state,
   // construct multiple streams).
   DCHECK(!controller_);
 
-  controller_ = new ReadableStreamDefaultControllerWrapper(js_controller);
+  controller_ = MakeGarbageCollected<ReadableStreamDefaultControllerWrapper>(
+      js_controller);
 
   return Start(script_state);
 }

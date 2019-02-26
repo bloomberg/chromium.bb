@@ -11,6 +11,8 @@
 #include "ash/wm/splitview/split_view_controller.h"
 #include "ash/wm/wm_toplevel_window_event_handler.h"
 #include "base/memory/weak_ptr.h"
+#include "base/optional.h"
+#include "ui/aura/window_occlusion_tracker.h"
 #include "ui/wm/core/shadow_types.h"
 
 namespace ash {
@@ -140,6 +142,9 @@ class TabletModeWindowDragDelegate {
   // The drag indicators will only show up after the window has been moved. Once
   // the window is moved, it will stay as 'moved'.
   bool did_move_ = false;
+
+  base::Optional<aura::WindowOcclusionTracker::ScopedExclude>
+      occlusion_excluder_;
 
   base::WeakPtrFactory<TabletModeWindowDragDelegate> weak_ptr_factory_;
 

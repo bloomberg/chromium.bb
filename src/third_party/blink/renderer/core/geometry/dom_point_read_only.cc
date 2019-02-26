@@ -18,7 +18,7 @@ DOMPointReadOnly* DOMPointReadOnly::Create(double x,
                                            double y,
                                            double z,
                                            double w) {
-  return new DOMPointReadOnly(x, y, z, w);
+  return MakeGarbageCollected<DOMPointReadOnly>(x, y, z, w);
 }
 
 ScriptValue DOMPointReadOnly::toJSONForBinding(
@@ -31,11 +31,12 @@ ScriptValue DOMPointReadOnly::toJSONForBinding(
   return result.GetScriptValue();
 }
 
-DOMPointReadOnly* DOMPointReadOnly::fromPoint(const DOMPointInit& other) {
-  return new DOMPointReadOnly(other.x(), other.y(), other.z(), other.w());
+DOMPointReadOnly* DOMPointReadOnly::fromPoint(const DOMPointInit* other) {
+  return MakeGarbageCollected<DOMPointReadOnly>(other->x(), other->y(),
+                                                other->z(), other->w());
 }
 
-DOMPoint* DOMPointReadOnly::matrixTransform(DOMMatrixInit& other,
+DOMPoint* DOMPointReadOnly::matrixTransform(DOMMatrixInit* other,
                                             ExceptionState& exception_state) {
   DOMMatrixReadOnly* matrix =
       DOMMatrixReadOnly::fromMatrix(other, exception_state);

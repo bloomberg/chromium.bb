@@ -77,8 +77,10 @@ using Checkpoint = testing::StrictMock<testing::MockFunction<void(int)>>;
 class StubLocalFrameClientWithParent final : public EmptyLocalFrameClient {
  public:
   static StubLocalFrameClientWithParent* Create(Frame* parent) {
-    return new StubLocalFrameClientWithParent(parent);
+    return MakeGarbageCollected<StubLocalFrameClientWithParent>(parent);
   }
+
+  explicit StubLocalFrameClientWithParent(Frame* parent) : parent_(parent) {}
 
   void Trace(blink::Visitor* visitor) override {
     visitor->Trace(parent_);
@@ -88,8 +90,6 @@ class StubLocalFrameClientWithParent final : public EmptyLocalFrameClient {
   Frame* Parent() const override { return parent_.Get(); }
 
  private:
-  explicit StubLocalFrameClientWithParent(Frame* parent) : parent_(parent) {}
-
   Member<Frame> parent_;
 };
 
@@ -109,9 +109,7 @@ class FixedPolicySubresourceFilter : public WebDocumentSubresourceFilter {
   FixedPolicySubresourceFilter(LoadPolicy policy,
                                int* filtered_load_counter,
                                bool is_associated_with_ad_subframe)
-      : policy_(policy),
-        filtered_load_counter_(filtered_load_counter),
-        is_associated_with_ad_subframe_(is_associated_with_ad_subframe) {}
+      : policy_(policy), filtered_load_counter_(filtered_load_counter) {}
 
   LoadPolicy GetLoadPolicy(const WebURL& resource_url,
                            mojom::RequestContextType) override {
@@ -126,14 +124,9 @@ class FixedPolicySubresourceFilter : public WebDocumentSubresourceFilter {
 
   bool ShouldLogToConsole() override { return false; }
 
-  bool GetIsAssociatedWithAdSubframe() const override {
-    return is_associated_with_ad_subframe_;
-  }
-
  private:
   const LoadPolicy policy_;
   int* filtered_load_counter_;
-  bool is_associated_with_ad_subframe_;
 };
 
 class FrameFetchContextTest : public testing::Test {
@@ -356,14 +349,14 @@ class FrameFetchContextModifyRequestTest : public FrameFetchContextTest {
 
     EXPECT_EQ(
         should_prefer ? String("1") : String(),
-        resource_request.HttpHeaderField(HTTPNames::Upgrade_Insecure_Requests));
+        resource_request.HttpHeaderField(http_names::kUpgradeInsecureRequests));
 
     // Calling modifyRequestForCSP more than once shouldn't affect the
     // header.
     if (should_prefer) {
       fetch_context->ModifyRequestForCSP(resource_request);
       EXPECT_EQ("1", resource_request.HttpHeaderField(
-                         HTTPNames::Upgrade_Insecure_Requests));
+                         http_names::kUpgradeInsecureRequests));
     }
   }
 
@@ -395,7 +388,7 @@ class FrameFetchContextModifyRequestTest : public FrameFetchContextTest {
     fetch_context->ModifyRequestForCSP(resource_request);
 
     EXPECT_EQ(expected_required_csp,
-              resource_request.HttpHeaderField(HTTPNames::Sec_Required_CSP));
+              resource_request.HttpHeaderField(http_names::kSecRequiredCSP));
   }
 
   void SetFrameOwnerBasedOnFrameType(
@@ -407,7 +400,7 @@ class FrameFetchContextModifyRequestTest : public FrameFetchContextTest {
       return;
     }
 
-    iframe->setAttribute(HTMLNames::cspAttr, potential_value);
+    iframe->setAttribute(html_names::kCspAttr, potential_value);
     document->GetFrame()->SetOwner(iframe);
   }
 
@@ -848,7 +841,7 @@ TEST_F(FrameFetchContextTest, MainResourceCachePolicy) {
 
   // Post
   ResourceRequest post_request("http://www.example.com");
-  post_request.SetHTTPMethod(HTTPNames::POST);
+  post_request.SetHTTPMethod(http_names::kPOST);
   EXPECT_EQ(mojom::FetchCacheMode::kValidateCache,
             fetch_context->ResourceRequestCachePolicy(
                 post_request, ResourceType::kMainResource,
@@ -871,7 +864,7 @@ TEST_F(FrameFetchContextTest, MainResourceCachePolicy) {
   // Conditional request
   document->Loader()->SetLoadType(WebFrameLoadType::kStandard);
   ResourceRequest conditional("http://www.example.com");
-  conditional.SetHTTPHeaderField(HTTPNames::If_Modified_Since, "foo");
+  conditional.SetHTTPHeaderField(http_names::kIfModifiedSince, "foo");
   EXPECT_EQ(
       mojom::FetchCacheMode::kValidateCache,
       fetch_context->ResourceRequestCachePolicy(
@@ -955,7 +948,7 @@ TEST_F(FrameFetchContextTest, SubResourceCachePolicy) {
   // Conditional request
   document->Loader()->SetLoadType(WebFrameLoadType::kStandard);
   ResourceRequest conditional("http://www.example.com/mock");
-  conditional.SetHTTPHeaderField(HTTPNames::If_Modified_Since, "foo");
+  conditional.SetHTTPHeaderField(http_names::kIfModifiedSince, "foo");
   EXPECT_EQ(mojom::FetchCacheMode::kValidateCache,
             fetch_context->ResourceRequestCachePolicy(
                 conditional, ResourceType::kMock, FetchParameters::kNoDefer));
@@ -1187,17 +1180,6 @@ TEST_F(FrameFetchContextSubresourceFilterTest, WouldDisallow) {
   EXPECT_EQ(0, GetFilteredLoadCallCount());
 }
 
-// Tests that if a subresource is allowed as per subresource filter ruleset but
-// is fetched from a frame that is tagged as an ad, then the subresource should
-// be tagged as well.
-TEST_F(FrameFetchContextSubresourceFilterTest, AdTaggingBasedOnFrame) {
-  SetFilterPolicy(WebDocumentSubresourceFilter::kAllow,
-                  true /* is_associated_with_ad_subframe */);
-
-  EXPECT_EQ(base::nullopt, CanRequestAndVerifyIsAd(true));
-  EXPECT_EQ(0, GetFilteredLoadCallCount());
-}
-
 TEST_F(FrameFetchContextTest, AddAdditionalRequestHeadersWhenDetached) {
   const KURL document_url("https://www2.example.com/fuga/hoge.html");
   const String origin = "https://www2.example.com";
@@ -1207,15 +1189,16 @@ TEST_F(FrameFetchContextTest, AddAdditionalRequestHeadersWhenDetached) {
   GetNetworkStateNotifier().SetSaveDataEnabledOverride(true);
   document->SetSecurityOrigin(SecurityOrigin::Create(KURL(origin)));
   document->SetURL(document_url);
-  document->SetReferrerPolicy(kReferrerPolicyOrigin);
+  document->SetReferrerPolicy(network::mojom::ReferrerPolicy::kOrigin);
   document->SetAddressSpace(mojom::IPAddressSpace::kPublic);
 
   dummy_page_holder = nullptr;
 
   fetch_context->AddAdditionalRequestHeaders(request, kFetchSubresource);
 
-  EXPECT_EQ(origin, request.HttpHeaderField(HTTPNames::Origin));
-  EXPECT_EQ(String(origin + "/"), request.HttpHeaderField(HTTPNames::Referer));
+  EXPECT_EQ(origin, request.HttpHeaderField(http_names::kOrigin));
+  EXPECT_EQ(String(origin + "/"),
+            request.HttpHeaderField(http_names::kReferer));
   EXPECT_EQ(String(), request.HttpHeaderField("Save-Data"));
 }
 
@@ -1253,7 +1236,7 @@ TEST_F(FrameFetchContextMockedLocalFrameClientTest,
   fetch_context->PrepareRequest(request,
                                 FetchContext::RedirectType::kNotForRedirect);
 
-  EXPECT_EQ("hi", request.HttpHeaderField(HTTPNames::User_Agent));
+  EXPECT_EQ("hi", request.HttpHeaderField(http_names::kUserAgent));
 }
 
 TEST_F(FrameFetchContextTest, DispatchWillSendRequestWhenDetached) {
@@ -1340,12 +1323,12 @@ TEST_F(FrameFetchContextTest, RecordLoadingActivityWhenDetached) {
 
   dummy_page_holder = nullptr;
 
-  fetch_context->RecordLoadingActivity(request, ResourceType::kRaw,
-                                       FetchInitiatorTypeNames::xmlhttprequest);
+  fetch_context->RecordLoadingActivity(
+      request, ResourceType::kRaw, fetch_initiator_type_names::kXmlhttprequest);
   // Should not crash.
 
   fetch_context->RecordLoadingActivity(request, ResourceType::kRaw,
-                                       FetchInitiatorTypeNames::document);
+                                       fetch_initiator_type_names::kDocument);
   // Should not crash.
 }
 

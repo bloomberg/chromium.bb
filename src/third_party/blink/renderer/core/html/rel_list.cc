@@ -15,7 +15,7 @@
 namespace blink {
 
 RelList::RelList(Element* element)
-    : DOMTokenList(*element, HTMLNames::relAttr) {}
+    : DOMTokenList(*element, html_names::kRelAttr) {}
 
 static HashSet<AtomicString>& SupportedTokensLink() {
   DEFINE_STATIC_LOCAL(
@@ -41,14 +41,13 @@ static HashSet<AtomicString>& SupportedTokensAnchorAndArea() {
 bool RelList::ValidateTokenValue(const AtomicString& token_value,
                                  ExceptionState&) const {
   //  https://html.spec.whatwg.org/multipage/links.html#linkTypes
-  if (GetElement().HasTagName(HTMLNames::linkTag)) {
+  if (GetElement().HasTagName(html_names::kLinkTag)) {
     if (SupportedTokensLink().Contains(token_value) ||
-        (RuntimeEnabledFeatures::ModulePreloadEnabled() &&
-         token_value == "modulepreload")) {
+        token_value == "modulepreload") {
       return true;
     }
-  } else if ((GetElement().HasTagName(HTMLNames::aTag) ||
-              GetElement().HasTagName(HTMLNames::areaTag)) &&
+  } else if ((GetElement().HasTagName(html_names::kATag) ||
+              GetElement().HasTagName(html_names::kAreaTag)) &&
              SupportedTokensAnchorAndArea().Contains(token_value)) {
     return true;
   }

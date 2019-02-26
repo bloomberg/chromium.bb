@@ -483,25 +483,10 @@ EVENT_TYPE(SSL_CLIENT_CERT_REQUESTED)
 // The SSL stack blocked on a private key operation. The following parameters
 // are attached to the event.
 //   {
-//     "hash": <hash function used>,
+//     "algorithm": <TLS signature algorithm used>,
+//     "provider": <Human-readable name of the crypto provider>,
 //   }
 EVENT_TYPE(SSL_PRIVATE_KEY_OP)
-
-// The start/end of getting a Channel ID key.
-//
-// The START event contains these parameters:
-//   {
-//     "ephemeral": <Whether or not the Channel ID store is ephemeral>,
-//     "service": <Unique identifier for the ChannelIDService used>,
-//     "store": <Unique identifier for the ChannelIDStore used>,
-//   }
-//
-// The END event may contain these parameters:
-//   {
-//     "net_error": <Net error code>,
-//     "key": <Hex-encoded EC point of public key (uncompressed point format)>,
-//   }
-EVENT_TYPE(SSL_GET_CHANNEL_ID)
 
 // A client certificate (or none) was provided to the SSL library to be sent
 // to the SSL server.
@@ -826,6 +811,7 @@ EVENT_TYPE(SOCKET_POOL_CONNECTING_N_SOCKETS)
 //      "url": <String of URL being loaded>,
 //      "method": <The method ("POST" or "GET" or "HEAD" etc..)>,
 //      "load_flags": <Numeric value of the combined load flags>,
+//      "privacy_mode": <True if privacy mode is enabled for the request>
 //      "priority": <Numeric priority of the request>,
 //      "upload_id" <String of upload body identifier, if present>,
 //   }
@@ -2853,88 +2839,6 @@ EVENT_TYPE(SIMPLE_CACHE_ENTRY_CLOSE_BEGIN)
 // This event is created when the Simple Cache finishes a CloseEntry call.  It
 // contains no parameters.
 EVENT_TYPE(SIMPLE_CACHE_ENTRY_CLOSE_END)
-
-// -----------------------------------------------------------------------------
-// Data Reduction Proxy events.
-// -----------------------------------------------------------------------------
-
-// This event is created when the data reduction proxy has been turned on or
-// off. It always contains the parameter:
-//  {
-//    "enabled": <true if the proxy is enabled>
-//  }
-//
-// If it is enabled, it contains additional parameters:
-//  {
-//    "primary_restricted": <Whether the primary proxy is restricted or not>,
-//    "fallback_restricted": <Whether the fallback proxy is restricted or not>,
-//    "primary_origin": <The primary proxy origin address>,
-//    "fallback_origin": <The fallback proxy origin address>,
-//    "ssl_origin": <The SSL proxy origin address>,
-//  }
-EVENT_TYPE(DATA_REDUCTION_PROXY_ENABLED)
-
-// The start/end of a canary request is sent to the data reduction proxy.
-//
-// The BEGIN phase contains the following parameters:
-//  {
-//    "url": <The URL of the canary endpoint>,
-//  }
-//
-// The END phase contains the following parameters:
-//  {
-//    "net_error": <The net_error of the completion of the canary request>,
-//    "http_response_code": <The HTTP response code of the canary request>,
-//    "check_succeeded": <Whether a secure Data Reduction Proxy can be used or
-//                        not>
-//  }
-EVENT_TYPE(DATA_REDUCTION_PROXY_CANARY_REQUEST)
-
-// This event is created when a response to the canary request has been
-// received with the following parameters:
-//  {
-//    "headers": <The list of header:value pairs>,
-//  }
-EVENT_TYPE(DATA_REDUCTION_PROXY_CANARY_RESPONSE_RECEIVED)
-
-// This event is created when a bypass event takes place with the following
-// parameters:
-//  {
-//    "action": <For DRP proxy sourced bypasses in the chrome-proxy header,
-//               the bypass type>,
-//    "bypass_type": <For non-DRP proxy sourced bypasses, the bypass type>,
-//    "url": <The origin URL of the remote endpoint which resulted in the
-//            bypass>,
-//    "bypass_duration_seconds": <The length of time to be in a bypass state>,
-//  }
-EVENT_TYPE(DATA_REDUCTION_PROXY_BYPASS_REQUESTED)
-
-// This event is created when the data reduction proxy configuration changes
-// (i.e. a switch between primary and fallback) with the following parameters:
-//  {
-//    "proxy_server": <The URL of the proxy server no longer being used>,
-//    "net_error": <The net_error encountered when using the proxy server; this
-//                  can be 0 if the proxy server is explicitly skipped>,
-//  }
-EVENT_TYPE(DATA_REDUCTION_PROXY_FALLBACK)
-
-// The start/end of a config request is sent to the Data Saver Config API
-// service.
-//
-// The BEGIN phase contains the following parameters:
-//  {
-//    "url": <The URL of the service endpoint>,
-//  }
-//
-// The END phase contains the following parameters:
-//  {
-//    "net_error": <The net_error of the completion of the config request>,
-//    "http_response_code": <The HTTP response code of the config request>,
-//    "failure_count": <The number of consecutive config request failures>,
-//    "retry_delay_seconds": <The length of time after which another config
-//                            request will be made>,
-//  }
-EVENT_TYPE(DATA_REDUCTION_PROXY_CONFIG_REQUEST)
 
 // Marks start of UploadDataStream that is logged on initialization.
 // The END phase contains the following parameters:

@@ -131,13 +131,44 @@ void ExpectTreesAreIdentical(Layer* root_layer,
 }
 
 class TreeSynchronizerTest : public testing::Test {
+ public:
+  void ResetLayerTreeHost(const LayerTreeSettings& settings) {
+    host_ = FakeLayerTreeHost::Create(&client_, &task_graph_runner_,
+                                      animation_host_.get(), settings);
+    host_->host_impl()->CreatePendingTree();
+  }
+
+  scoped_refptr<Layer> SetupScrollLayer() {
+    FakeLayerTreeHostImpl* host_impl = host_->host_impl();
+
+    scoped_refptr<Layer> layer_tree_root = Layer::Create();
+    scoped_refptr<Layer> scroll_layer = Layer::Create();
+
+    ElementId scroll_element_id = ElementId(5);
+    scroll_layer->SetElementId(scroll_element_id);
+
+    layer_tree_root->AddChild(scroll_layer);
+
+    scroll_layer->SetScrollable(gfx::Size(1, 1));
+    scroll_layer->SetBounds(gfx::Size(10, 10));
+
+    host_->SetRootLayer(layer_tree_root);
+    host_->BuildPropertyTreesForTesting();
+    host_->CommitAndCreatePendingTree();
+    host_impl->ActivateSyncTree();
+
+    ExpectTreesAreIdentical(layer_tree_root.get(),
+                            host_impl->active_tree()->root_layer_for_testing(),
+                            host_impl->active_tree());
+
+    return scroll_layer;
+  }
+
  protected:
   TreeSynchronizerTest()
-      : animation_host_(AnimationHost::CreateForTesting(ThreadInstance::MAIN)),
-        host_(FakeLayerTreeHost::Create(&client_,
-                                        &task_graph_runner_,
-                                        animation_host_.get())) {
-    host_->host_impl()->CreatePendingTree();
+      : animation_host_(AnimationHost::CreateForTesting(ThreadInstance::MAIN)) {
+    LayerTreeSettings settings;
+    ResetLayerTreeHost(settings);
   }
 
   FakeLayerTreeHostClient client_;
@@ -658,7 +689,8 @@ TEST_F(TreeSynchronizerTest, SynchronizeScrollTreeScrollOffsetMap) {
 
   // Pull ScrollOffset delta for main thread, and change offset on main thread
   std::unique_ptr<ScrollAndScaleSet> scroll_info(new ScrollAndScaleSet());
-  scroll_tree.CollectScrollDeltas(scroll_info.get(), ElementId());
+  scroll_tree.CollectScrollDeltas(scroll_info.get(), ElementId(),
+                                  settings.commit_fractional_scroll_deltas);
   host_->proxy()->SetNeedsCommit();
   host_->ApplyScrollAndScale(scroll_info.get());
   EXPECT_EQ(gfx::ScrollOffset(20, 30), scroll_layer->CurrentScrollOffset());
@@ -739,6 +771,54 @@ TEST_F(TreeSynchronizerTest, RefreshPropertyTreesCachedData) {
       CombinedAnimationScale(0.f, 0.f),
       host_impl->active_tree()->property_trees()->GetAnimationScales(
           transform_layer->transform_tree_index(), host_impl->active_tree()));
+}
+
+TEST_F(TreeSynchronizerTest, RoundedScrollDeltasOnCommit) {
+  LayerTreeSettings settings;
+  settings.commit_fractional_scroll_deltas = false;
+  ResetLayerTreeHost(settings);
+
+  host_->InitializeSingleThreaded(&single_thread_client_,
+                                  base::ThreadTaskRunnerHandle::Get());
+
+  scoped_refptr<Layer> scroll_layer = SetupScrollLayer();
+
+  // Scroll the layer by a fractional amount.
+  FakeLayerTreeHostImpl* host_impl = host_->host_impl();
+  LayerImpl* scroll_layer_impl =
+      host_impl->active_tree()->LayerById(scroll_layer->id());
+  scroll_layer_impl->ScrollBy(gfx::Vector2dF(0, 1.75f));
+
+  // When we collect the scroll deltas, we should have truncated the fractional
+  // part because the commit_fractional_scroll_deltas setting is enabled.
+  std::unique_ptr<ScrollAndScaleSet> scroll_info =
+      host_impl->ProcessScrollDeltas();
+  ASSERT_EQ(1u, scroll_info->scrolls.size());
+  EXPECT_EQ(2.f, scroll_info->scrolls[0].scroll_delta.y());
+}
+
+TEST_F(TreeSynchronizerTest, PreserveFractionalScrollDeltasOnCommit) {
+  LayerTreeSettings settings;
+  settings.commit_fractional_scroll_deltas = true;
+  ResetLayerTreeHost(settings);
+
+  host_->InitializeSingleThreaded(&single_thread_client_,
+                                  base::ThreadTaskRunnerHandle::Get());
+
+  scoped_refptr<Layer> scroll_layer = SetupScrollLayer();
+
+  // Scroll the layer by a fractional amount.
+  FakeLayerTreeHostImpl* host_impl = host_->host_impl();
+  LayerImpl* scroll_layer_impl =
+      host_impl->active_tree()->LayerById(scroll_layer->id());
+  scroll_layer_impl->ScrollBy(gfx::Vector2dF(0, 1.75f));
+
+  // When we collect the scroll deltas, we should keep the fractional part
+  // because the commit_fractional_scroll_deltas setting is disabled.
+  std::unique_ptr<ScrollAndScaleSet> scroll_info =
+      host_impl->ProcessScrollDeltas();
+  ASSERT_EQ(1u, scroll_info->scrolls.size());
+  EXPECT_EQ(1.75f, scroll_info->scrolls[0].scroll_delta.y());
 }
 
 }  // namespace

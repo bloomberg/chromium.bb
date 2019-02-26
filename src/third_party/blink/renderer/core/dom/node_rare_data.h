@@ -32,6 +32,7 @@ namespace blink {
 class ComputedStyle;
 enum class DynamicRestyleFlags;
 enum class ElementFlags;
+class FlatTreeNodeData;
 class LayoutObject;
 class MutationObserverRegistration;
 class NodeListsNodeData;
@@ -40,6 +41,8 @@ class NodeMutationObserverData final
     : public GarbageCollected<NodeMutationObserverData> {
  public:
   static NodeMutationObserverData* Create();
+
+  NodeMutationObserverData() = default;
 
   const HeapVector<TraceWrapperMember<MutationObserverRegistration>>&
   Registry() {
@@ -59,8 +62,6 @@ class NodeMutationObserverData final
   void Trace(blink::Visitor* visitor);
 
  private:
-  NodeMutationObserverData() = default;
-
   HeapVector<TraceWrapperMember<MutationObserverRegistration>> registry_;
   HeapHashSet<TraceWrapperMember<MutationObserverRegistration>>
       transient_registry_;
@@ -119,7 +120,16 @@ class NodeRareData : public GarbageCollectedFinalized<NodeRareData>,
                      public NodeRareDataBase {
  public:
   static NodeRareData* Create(NodeRenderingData* node_layout_data) {
-    return new NodeRareData(node_layout_data);
+    return MakeGarbageCollected<NodeRareData>(node_layout_data);
+  }
+
+  explicit NodeRareData(NodeRenderingData* node_layout_data)
+      : NodeRareDataBase(node_layout_data),
+        connected_frame_count_(0),
+        element_flags_(0),
+        restyle_flags_(0),
+        is_element_rare_data_(false) {
+    CHECK_NE(node_layout_data, nullptr);
   }
 
   void ClearNodeLists() { node_lists_.Clear(); }
@@ -133,6 +143,9 @@ class NodeRareData : public GarbageCollectedFinalized<NodeRareData>,
       return CreateNodeLists();
     return *node_lists_;
   }
+
+  FlatTreeNodeData* GetFlatTreeNodeData() const { return flat_tree_node_data_; }
+  FlatTreeNodeData& EnsureFlatTreeNodeData();
 
   NodeMutationObserverData* MutationObserverData() {
     return mutation_observer_data_.Get();
@@ -182,21 +195,12 @@ class NodeRareData : public GarbageCollectedFinalized<NodeRareData>,
   void TraceAfterDispatch(blink::Visitor*);
   void FinalizeGarbageCollectedObject();
 
- protected:
-  explicit NodeRareData(NodeRenderingData* node_layout_data)
-      : NodeRareDataBase(node_layout_data),
-        connected_frame_count_(0),
-        element_flags_(0),
-        restyle_flags_(0),
-        is_element_rare_data_(false) {
-    CHECK_NE(node_layout_data, nullptr);
-  }
-
  private:
   NodeListsNodeData& CreateNodeLists();
 
   TraceWrapperMember<NodeListsNodeData> node_lists_;
   TraceWrapperMember<NodeMutationObserverData> mutation_observer_data_;
+  Member<FlatTreeNodeData> flat_tree_node_data_;
 
   unsigned connected_frame_count_ : kConnectedFrameCountBits;
   unsigned element_flags_ : kNumberOfElementFlags;

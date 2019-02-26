@@ -61,6 +61,7 @@ std::unique_ptr<KeyframeModel> KeyframeModel::CreateImplInstance(
   DCHECK(!is_controlling_instance_);
   std::unique_ptr<KeyframeModel> to_return(
       new KeyframeModel(curve_->Clone(), id_, group_, target_property_id_));
+  to_return->element_id_ = element_id_;
   to_return->run_state_ = initial_run_state;
   to_return->iterations_ = iterations_;
   to_return->iteration_start_ = iteration_start_;
@@ -263,8 +264,7 @@ base::TimeDelta KeyframeModel::TrimLocalTimeToCurrentIteration(
 }
 
 void KeyframeModel::PushPropertiesTo(KeyframeModel* other) const {
-  // Currently, we only push changes due to pausing and resuming KeyframeModels
-  // on the main thread.
+  other->element_id_ = element_id_;
   if (run_state_ == KeyframeModel::PAUSED ||
       other->run_state_ == KeyframeModel::PAUSED) {
     other->run_state_ = run_state_;

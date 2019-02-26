@@ -40,7 +40,7 @@ class LayerTreeSettings;
 class RenderFrameMetadataObserver;
 class TaskGraphRunner;
 class UkmRecorderFactory;
-class ScopedDeferCommits;
+class ScopedDeferMainFrameUpdate;
 }  // namespace cc
 
 namespace gfx {
@@ -77,6 +77,7 @@ class CONTENT_EXPORT LayerTreeView
                   std::unique_ptr<cc::UkmRecorderFactory> ukm_recorder_factory);
 
   void SetNeverVisible();
+  void SetVisible(bool visible);
   const base::WeakPtr<cc::InputHandler>& GetInputHandler();
   void SetNeedsDisplayOnAllLayers();
   void SetRasterizeOnlyVisibleContent();
@@ -107,14 +108,23 @@ class CONTENT_EXPORT LayerTreeView
   bool SendMessageToMicroBenchmark(int id, std::unique_ptr<base::Value> value);
   void SetFrameSinkId(const viz::FrameSinkId& frame_sink_id);
   void SetRasterColorSpace(const gfx::ColorSpace& color_space);
+  void SetExternalPageScaleFactor(float page_scale_factor);
   void ClearCachesOnNextCommit();
   void SetContentSourceId(uint32_t source_id);
-  void SetViewportSizeAndScale(const gfx::Size& device_viewport_size,
-                               float device_scale_factor,
-                               const viz::LocalSurfaceId& local_surface_id);
+  void SetViewportSizeAndScale(
+      const gfx::Size& device_viewport_size,
+      float device_scale_factor,
+      const viz::LocalSurfaceIdAllocation& local_surface_id_allocation);
   void RequestNewLocalSurfaceId();
+  void RequestForceSendMetadata();
   void SetViewportVisibleRect(const gfx::Rect& visible_rect);
   void SetURLForUkm(const GURL& url);
+  // Call this if the compositor is becoming non-visible in a way that it won't
+  // be used any longer. In this case, becoming visible is longer but this
+  // releases more resources (such as its use of the GpuChannel).
+  // TODO(crbug.com/419087): This is to support a swapped out RenderWidget which
+  // should just be destroyed instead.
+  void ReleaseLayerTreeFrameSink();
 
   // blink::WebLayerTreeView implementation.
   viz::FrameSinkId GetFrameSinkId() override;
@@ -123,7 +133,6 @@ class CONTENT_EXPORT LayerTreeView
   cc::AnimationHost* CompositorAnimationHost() override;
   gfx::Size GetViewportSize() const override;
   void SetBackgroundColor(SkColor color) override;
-  void SetVisible(bool visible) override;
   void SetPageScaleFactorAndLimits(float page_scale_factor,
                                    float minimum,
                                    float maximum) override;
@@ -141,7 +150,8 @@ class CONTENT_EXPORT LayerTreeView
   // including updates to the compositor state, optionally including
   // rasterization.
   void UpdateAllLifecyclePhasesAndCompositeForTesting(bool do_raster) override;
-  std::unique_ptr<cc::ScopedDeferCommits> DeferCommits() override;
+  std::unique_ptr<cc::ScopedDeferMainFrameUpdate> DeferMainFrameUpdate()
+      override;
   void RegisterViewportLayers(const ViewportLayers& viewport_layers) override;
   void ClearViewportLayers() override;
   void RegisterSelection(const cc::LayerSelection& selection) override;
@@ -160,6 +170,7 @@ class CONTENT_EXPORT LayerTreeView
   void SetShowPaintRects(bool show) override;
   void SetShowDebugBorders(bool show) override;
   void SetShowScrollBottleneckRects(bool show) override;
+  void SetShowHitTestBorders(bool show) override;
   void NotifySwapTime(ReportTimeCallback callback) override;
 
   void UpdateBrowserControlsState(cc::BrowserControlsState constraints,
@@ -171,6 +182,7 @@ class CONTENT_EXPORT LayerTreeView
   void SetBrowserControlsShownRatio(float) override;
   void RequestDecode(const cc::PaintImage& image,
                      base::OnceCallback<void(bool)> callback) override;
+  void RequestPresentationCallback(base::OnceClosure callback) override;
 
   void SetOverscrollBehavior(const cc::OverscrollBehavior&) override;
 
@@ -180,7 +192,7 @@ class CONTENT_EXPORT LayerTreeView
   void BeginMainFrame(const viz::BeginFrameArgs& args) override;
   void BeginMainFrameNotExpectedSoon() override;
   void BeginMainFrameNotExpectedUntil(base::TimeTicks time) override;
-  void UpdateLayerTreeHost() override;
+  void UpdateLayerTreeHost(bool record_main_frame_metrics) override;
   void ApplyViewportChanges(const cc::ApplyViewportChangesArgs& args) override;
   void RecordWheelAndTouchScrollingCount(bool has_scrolled_by_wheel,
                                          bool has_scrolled_by_touch) override;

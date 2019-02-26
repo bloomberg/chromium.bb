@@ -52,8 +52,7 @@ void PasswordGenerationManager::PrefetchSpec(const GURL& origin) {
     return;
 
   // Fetch password requirements for the domain.
-  if (IsRequirementsFetchingEnabled())
-    password_requirements_service->PrefetchSpec(origin);
+  password_requirements_service->PrefetchSpec(origin);
 }
 
 void PasswordGenerationManager::ProcessPasswordRequirements(
@@ -126,7 +125,7 @@ bool PasswordGenerationManager::IsGenerationEnabled(bool log_debug_data) const {
         new BrowserSavePasswordProgressLogger(client_->GetLogManager()));
   }
 
-  if (!client_->IsSavingAndFillingEnabledForCurrentPage()) {
+  if (!client_->IsSavingAndFillingEnabled(driver_->GetLastCommittedURL())) {
     if (logger)
       logger->LogMessage(Logger::STRING_GENERATION_DISABLED_SAVING_DISABLED);
     return false;
@@ -138,10 +137,6 @@ bool PasswordGenerationManager::IsGenerationEnabled(bool log_debug_data) const {
     logger->LogMessage(Logger::STRING_GENERATION_DISABLED_NO_SYNC);
 
   return false;
-}
-
-bool PasswordGenerationManager::IsRequirementsFetchingEnabled() const {
-  return client_->GetHistorySyncState() == SYNCING_NORMAL_ENCRYPTION;
 }
 
 base::string16 PasswordGenerationManager::GeneratePassword(

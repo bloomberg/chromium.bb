@@ -51,11 +51,12 @@ GrGLTexture::GrGLTexture(GrGLGpu* gpu, SkBudgeted budgeted, const GrSurfaceDesc&
 }
 
 GrGLTexture::GrGLTexture(GrGLGpu* gpu, Wrapped, const GrSurfaceDesc& desc,
-                         GrMipMapsStatus mipMapsStatus, const IDDesc& idDesc)
+                         GrMipMapsStatus mipMapsStatus, const IDDesc& idDesc,
+                         bool purgeImmediately)
         : GrSurface(gpu, desc)
         , INHERITED(gpu, desc, TextureTypeFromTarget(idDesc.fInfo.fTarget), mipMapsStatus) {
     this->init(desc, idDesc);
-    this->registerWithCacheWrapped();
+    this->registerWithCacheWrapped(purgeImmediately);
 }
 
 GrGLTexture::GrGLTexture(GrGLGpu* gpu, const GrSurfaceDesc& desc, const IDDesc& idDesc,
@@ -68,8 +69,7 @@ GrGLTexture::GrGLTexture(GrGLGpu* gpu, const GrSurfaceDesc& desc, const IDDesc& 
 void GrGLTexture::init(const GrSurfaceDesc& desc, const IDDesc& idDesc) {
     SkASSERT(0 != idDesc.fInfo.fID);
     SkASSERT(0 != idDesc.fInfo.fFormat);
-    fTexParams.invalidate();
-    fTexParamsTimestamp = GrGpu::kExpiredTimestamp;
+    fParamsTimestamp = GrGpu::kExpiredTimestamp;
     fID = idDesc.fInfo.fID;
     fFormat = idDesc.fInfo.fFormat;
     fTextureIDOwnership = idDesc.fOwnership;
@@ -104,9 +104,16 @@ GrBackendTexture GrGLTexture::getBackendTexture() const {
     return GrBackendTexture(this->width(), this->height(), this->texturePriv().mipMapped(), info);
 }
 
+GrBackendFormat GrGLTexture::backendFormat() const {
+    return GrBackendFormat::MakeGL(fFormat,
+                                   target_from_texture_type(this->texturePriv().textureType()));
+}
+
 sk_sp<GrGLTexture> GrGLTexture::MakeWrapped(GrGLGpu* gpu, const GrSurfaceDesc& desc,
-                                            GrMipMapsStatus mipMapsStatus, const IDDesc& idDesc) {
-    return sk_sp<GrGLTexture>(new GrGLTexture(gpu, kWrapped, desc, mipMapsStatus, idDesc));
+                                            GrMipMapsStatus mipMapsStatus, const IDDesc& idDesc,
+                                            bool purgeImmediately) {
+    return sk_sp<GrGLTexture>(new GrGLTexture(gpu, kWrapped, desc, mipMapsStatus, idDesc,
+                                              purgeImmediately));
 }
 
 bool GrGLTexture::onStealBackendTexture(GrBackendTexture* backendTexture,

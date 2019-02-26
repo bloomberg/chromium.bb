@@ -57,7 +57,7 @@
 
 namespace blink {
 
-using namespace HTMLNames;
+using namespace html_names;
 
 static const int kRangeDefaultMinimum = 0;
 static const int kRangeDefaultMaximum = 100;
@@ -71,7 +71,7 @@ static Decimal EnsureMaximum(const Decimal& proposed_value,
 }
 
 InputType* RangeInputType::Create(HTMLInputElement& element) {
-  return new RangeInputType(element);
+  return MakeGarbageCollected<RangeInputType>(element);
 }
 
 RangeInputType::RangeInputType(HTMLInputElement& element)
@@ -103,7 +103,7 @@ void RangeInputType::CountUsage() {
 }
 
 const AtomicString& RangeInputType::FormControlType() const {
-  return InputTypeNames::range;
+  return input_type_names::kRange;
 }
 
 double RangeInputType::ValueAsDouble() const {
@@ -132,16 +132,16 @@ StepRange RangeInputType::CreateStepRange(
       (kRangeDefaultStep, kRangeDefaultStepBase, kRangeStepScaleFactor));
 
   const Decimal step_base = FindStepBase(kRangeDefaultStepBase);
-  const Decimal minimum = ParseToNumber(GetElement().FastGetAttribute(minAttr),
+  const Decimal minimum = ParseToNumber(GetElement().FastGetAttribute(kMinAttr),
                                         kRangeDefaultMinimum);
   const Decimal maximum =
-      EnsureMaximum(ParseToNumber(GetElement().FastGetAttribute(maxAttr),
+      EnsureMaximum(ParseToNumber(GetElement().FastGetAttribute(kMaxAttr),
                                   kRangeDefaultMaximum),
                     minimum);
 
   const Decimal step =
       StepRange::ParseStep(any_step_handling, step_description,
-                           GetElement().FastGetAttribute(stepAttr));
+                           GetElement().FastGetAttribute(kStepAttr));
   // Range type always has range limitations because it has default
   // minimum/maximum.
   // https://html.spec.whatwg.org/multipage/forms.html#range-state-(type=range):concept-input-min-default
@@ -187,7 +187,7 @@ void RangeInputType::HandleKeydownEvent(KeyboardEvent& event) {
   // FIXME: We can't use stepUp() for the step value "any". So, we increase
   // or decrease the value by 1/100 of the value range. Is it reasonable?
   const Decimal step = DeprecatedEqualIgnoringCase(
-                           GetElement().FastGetAttribute(stepAttr), "any")
+                           GetElement().FastGetAttribute(kStepAttr), "any")
                            ? (step_range.Maximum() - step_range.Minimum()) / 100
                            : step_range.Step();
   const Decimal big_step =
@@ -245,7 +245,7 @@ void RangeInputType::CreateShadowSubtree() {
   Document& document = GetElement().GetDocument();
   HTMLDivElement* track = HTMLDivElement::Create(document);
   track->SetShadowPseudoId(AtomicString("-webkit-slider-runnable-track"));
-  track->setAttribute(idAttr, ShadowElementNames::SliderTrack());
+  track->setAttribute(kIdAttr, shadow_element_names::SliderTrack());
   track->AppendChild(SliderThumbElement::Create(document));
   HTMLElement* container = SliderContainerElement::Create(document);
   container->AppendChild(track);
@@ -330,12 +330,12 @@ bool RangeInputType::ShouldRespectListAttribute() {
 inline SliderThumbElement* RangeInputType::GetSliderThumbElement() const {
   return ToSliderThumbElementOrDie(
       GetElement().UserAgentShadowRoot()->getElementById(
-          ShadowElementNames::SliderThumb()));
+          shadow_element_names::SliderThumb()));
 }
 
 inline Element* RangeInputType::SliderTrackElement() const {
   return GetElement().UserAgentShadowRoot()->getElementById(
-      ShadowElementNames::SliderTrack());
+      shadow_element_names::SliderTrack());
 }
 
 void RangeInputType::ListAttributeTargetChanged() {
@@ -343,9 +343,10 @@ void RangeInputType::ListAttributeTargetChanged() {
   if (auto* object = GetElement().GetLayoutObject())
     object->SetSubtreeShouldDoFullPaintInvalidation();
   Element* slider_track_element = SliderTrackElement();
-  if (slider_track_element->GetLayoutObject())
+  if (slider_track_element->GetLayoutObject()) {
     slider_track_element->GetLayoutObject()->SetNeedsLayout(
-        LayoutInvalidationReason::kAttributeChanged);
+        layout_invalidation_reason::kAttributeChanged);
+  }
 }
 
 static bool DecimalCompare(const Decimal& a, const Decimal& b) {

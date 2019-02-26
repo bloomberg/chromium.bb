@@ -19,7 +19,7 @@ const base::Feature kNetworkService{"NetworkService",
                                     base::FEATURE_DISABLED_BY_DEFAULT};
 
 // Out of Blink CORS
-const base::Feature kOutOfBlinkCORS{"OutOfBlinkCORS",
+const base::Feature kOutOfBlinkCors{"OutOfBlinkCors",
                                     base::FEATURE_DISABLED_BY_DEFAULT};
 
 const base::Feature kReporting{"Reporting", base::FEATURE_ENABLED_BY_DEFAULT};
@@ -41,6 +41,14 @@ const base::Feature kThrottleDelayable{"ThrottleDelayable",
 // servers are not subject to kMaxNumDelayableRequestsPerHostPerClient limit.
 const base::Feature kDelayRequestsOnMultiplexedConnections{
     "DelayRequestsOnMultiplexedConnections", base::FEATURE_ENABLED_BY_DEFAULT};
+
+// When kUnthrottleRequestsAfterLongQueuingDelay is enabled, an upper bound
+// is placed on how long the resource scheduler can queue any given request.
+// Once a request is queued for more than the specified duration, the request
+// is dispatched to the network.
+const base::Feature kUnthrottleRequestsAfterLongQueuingDelay{
+    "UnthrottleRequestsAfterLongQueuingDelay",
+    base::FEATURE_DISABLED_BY_DEFAULT};
 
 }  // namespace features
 }  // namespace network

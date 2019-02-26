@@ -30,8 +30,12 @@ VulkanSurface::~VulkanSurface() {
   DCHECK_EQ(static_cast<VkSurfaceKHR>(VK_NULL_HANDLE), surface_);
 }
 
-VulkanSurface::VulkanSurface(VkInstance vk_instance, VkSurfaceKHR surface)
-    : vk_instance_(vk_instance), surface_(surface) {
+VulkanSurface::VulkanSurface(VkInstance vk_instance,
+                             VkSurfaceKHR surface,
+                             base::OnceClosure destruction_callback)
+    : vk_instance_(vk_instance),
+      surface_(surface),
+      destruction_callback_(std::move(destruction_callback)) {
   DCHECK_NE(static_cast<VkSurfaceKHR>(VK_NULL_HANDLE), surface_);
 }
 
@@ -114,6 +118,7 @@ void VulkanSurface::Destroy() {
   swap_chain_->Destroy();
   vkDestroySurfaceKHR(vk_instance_, surface_, nullptr);
   surface_ = VK_NULL_HANDLE;
+  std::move(destruction_callback_).Run();
 }
 
 gfx::SwapResult VulkanSurface::SwapBuffers() {

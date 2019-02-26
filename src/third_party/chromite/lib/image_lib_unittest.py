@@ -11,7 +11,9 @@ import gc
 import glob
 import os
 
+from chromite.lib import cros_build_lib
 from chromite.lib import cros_test_lib
+from chromite.lib import git
 from chromite.lib import image_lib
 from chromite.lib import osutils
 from chromite.lib import partial_mock
@@ -139,3 +141,118 @@ class LsbUtilsTest(cros_test_lib.MockTempDirTestCase):
     expected_content = ('y=2\nx=1\nfoo=bar\nnewkey2=value2\na=3\n'
                         'newkey1=value1\nb=4\n')
     self.assertFileContents(lsb_release_file, expected_content)
+
+
+class BuildImagePathTest(cros_test_lib.MockTempDirTestCase):
+  """BuildImagePath tests."""
+
+  def setUp(self):
+    self.board = 'board'
+    self.board_dir = os.path.join(self.tempdir, self.board)
+
+    D = cros_test_lib.Directory
+    filesystem = (
+        D(self.board, ('recovery_image.bin', 'other_image.bin')),
+        'full_path_image.bin',
+    )
+    cros_test_lib.CreateOnDiskHierarchy(self.tempdir, filesystem)
+
+    self.full_path = os.path.join(self.tempdir, 'full_path_image.bin')
+
+  def testBuildImagePath(self):
+    """BuildImagePath tests."""
+    self.PatchObject(image_lib, 'GetLatestImageLink',
+                     return_value=os.path.join(self.tempdir, self.board))
+
+    # Board and full image path provided.
+    result = image_lib.BuildImagePath(self.board, self.full_path)
+    self.assertEqual(self.full_path, result)
+
+    # Only full image path provided.
+    result = image_lib.BuildImagePath(None, self.full_path)
+    self.assertEqual(self.full_path, result)
+
+    # Full image path provided that does not exist.
+    with self.assertRaises(image_lib.ImageDoesNotExistError):
+      image_lib.BuildImagePath(self.board, '/does/not/exist')
+    with self.assertRaises(image_lib.ImageDoesNotExistError):
+      image_lib.BuildImagePath(None, '/does/not/exist')
+
+    # Default image is used.
+    result = image_lib.BuildImagePath(self.board, None)
+    self.assertEqual(os.path.join(self.board_dir, 'recovery_image.bin'), result)
+
+    # Image basename provided.
+    result = image_lib.BuildImagePath(self.board, 'other_image.bin')
+    self.assertEqual(os.path.join(self.board_dir, 'other_image.bin'), result)
+
+    # Image basename provided that does not exist.
+    with self.assertRaises(image_lib.ImageDoesNotExistError):
+      image_lib.BuildImagePath(self.board, 'does_not_exist.bin')
+
+    default_mock = self.PatchObject(cros_build_lib, 'GetDefaultBoard')
+
+    # Nothing provided, and no default.
+    default_mock.return_value = None
+    with self.assertRaises(image_lib.ImageDoesNotExistError):
+      image_lib.BuildImagePath(None, None)
+
+    # Nothing provided, with default.
+    default_mock.return_value = 'board'
+    result = image_lib.BuildImagePath(None, None)
+    self.assertEqual(os.path.join(self.board_dir, 'recovery_image.bin'), result)
+
+
+class SecurityTestConfigTest(cros_test_lib.RunCommandTempDirTestCase):
+  """SecurityTestConfig class tests."""
+
+  # pylint: disable=protected-access
+
+  def setUp(self):
+    self.image = '/path/to/image.bin'
+    self.baselines = '/path/to/baselines'
+    self.vboot_hash = 'abc123'
+    self.config = image_lib.SecurityTestConfig(self.image, self.baselines,
+                                               self.vboot_hash, self.tempdir)
+
+  def testVbootCheckout(self):
+    """Test normal flow - clone and checkout."""
+    clone_patch = self.PatchObject(git, 'Clone')
+    self.config._VbootCheckout()
+    clone_patch.assert_called_once()
+    self.assertCommandContains(['git', 'checkout', self.vboot_hash])
+
+    # Make sure it doesn't try to clone & checkout again after already having
+    # done so successfully.
+    clone_patch = self.PatchObject(git, 'Clone')
+    self.config._VbootCheckout()
+    clone_patch.assert_not_called()
+
+  def testVbootCheckoutError(self):
+    """Test exceptions in a git command."""
+    rce = cros_build_lib.RunCommandError('error', None)
+    self.PatchObject(git, 'Clone', side_effect=rce)
+    with self.assertRaises(image_lib.VbootCheckoutError):
+      self.config._VbootCheckout()
+
+  def testVbootCheckoutNoDirectory(self):
+    """Test the error handling when the directory does not exist."""
+    # Test directory that does not exist.
+    self.config.directory = '/DOES/NOT/EXIST'
+    with self.assertRaises(image_lib.SecurityConfigDirectoryError):
+      self.config._VbootCheckout()
+
+  def testRunCheck(self):
+    """RunCheck tests."""
+    # No config argument when running check.
+    self.config.RunCheck('check1', False)
+    check1 = os.path.join(self.config._checks_dir, 'ensure_check1.sh')
+    config1 = os.path.join(self.baselines, 'ensure_check1.config')
+    self.assertCommandContains([check1, self.image])
+    self.assertCommandContains([config1], expected=False)
+
+    # Include config argument when running check.
+    self.config.RunCheck('check2', True)
+    check2 = os.path.join(self.config._checks_dir, 'ensure_check2.sh')
+    config2 = os.path.join(self.baselines, 'ensure_check2.config')
+    self.assertCommandContains([check2, self.image, config2])

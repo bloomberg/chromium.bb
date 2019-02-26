@@ -10,13 +10,13 @@
 #include "third_party/blink/renderer/core/style/computed_style.h"
 
 namespace blink {
-namespace CSSLonghand {
+namespace css_longhand {
 
 const CSSValue* FontVariantCaps::ParseSingleValue(
     CSSParserTokenRange& range,
     const CSSParserContext& context,
     const CSSParserLocalContext&) const {
-  return CSSPropertyParserHelpers::ConsumeIdent<
+  return css_property_parser_helpers::ConsumeIdent<
       CSSValueNormal, CSSValueSmallCaps, CSSValueAllSmallCaps,
       CSSValuePetiteCaps, CSSValueAllPetiteCaps, CSSValueUnicase,
       CSSValueTitlingCaps>(range);
@@ -31,5 +31,5 @@ const CSSValue* FontVariantCaps::CSSValueFromComputedStyleInternal(
   return ComputedStyleUtils::ValueForFontVariantCaps(style);
 }
 
-}  // namespace CSSLonghand
+}  // namespace css_longhand
 }  // namespace blink

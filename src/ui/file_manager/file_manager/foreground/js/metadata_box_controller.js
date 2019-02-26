@@ -109,7 +109,7 @@ MetadataBoxController.prototype.updateView_ = function() {
     return;
   this.metadataModel_
       .get([entry], MetadataBoxController.GENERAL_METADATA_NAME.concat([
-        'hosted', 'externalFileUrl'
+        'alternateUrl', 'externalFileUrl', 'hosted'
       ]))
       .then(this.onGeneralMetadataLoaded_.bind(this, entry, isSameEntry));
 };
@@ -144,7 +144,7 @@ MetadataBoxController.prototype.onGeneralMetadataLoaded_ = function(
         this.fileMetadataFormatter_.formatModDate(item.modificationTime);
   }
 
-  if (item.externalFileUrl) {
+  if (item.externalFileUrl || item.alternateUrl) {
     this.metadataModel_.get([entry], ['contentMimeType']).then(function(items) {
       var item = items[0];
       this.metadataBox_.mediaMimeType = item.contentMimeType;
@@ -157,7 +157,7 @@ MetadataBoxController.prototype.onGeneralMetadataLoaded_ = function(
   }
 
   if (['image', 'video', 'audio'].includes(type)) {
-    if (item.externalFileUrl) {
+    if (item.externalFileUrl || item.alternateUrl) {
       this.metadataModel_.get([entry], ['imageHeight', 'imageWidth'])
           .then(function(items) {
             var item = items[0];

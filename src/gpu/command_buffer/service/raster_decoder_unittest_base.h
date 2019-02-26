@@ -15,6 +15,7 @@
 #include <vector>
 
 #include "base/message_loop/message_loop.h"
+#include "components/viz/common/resources/resource_format.h"
 #include "gpu/command_buffer/client/client_test_helper.h"
 #include "gpu/command_buffer/common/gles2_cmd_utils.h"
 #include "gpu/command_buffer/common/raster_cmd_format.h"
@@ -180,7 +181,12 @@ class RasterDecoderTestBase : public ::testing::TestWithParam<bool>,
   void SetupInitStateManualExpectationsForDoLineWidth(GLfloat width);
   void ExpectEnableDisable(GLenum cap, bool enable);
 
-  void SetupTexture();
+  void CreateFakeTexture(GLuint client_id,
+                         GLuint service_id,
+                         viz::ResourceFormat resource_format,
+                         GLsizei width,
+                         GLsizei height,
+                         bool cleared);
 
   // Note that the error is returned as GLint instead of GLenum.
   // This is because there is a mismatch in the types of GLenum and
@@ -193,9 +199,6 @@ class RasterDecoderTestBase : public ::testing::TestWithParam<bool>,
   void DoBindTexture(GLenum target, GLuint client_id, GLuint service_id);
   void DoDeleteTexture(GLuint client_id, GLuint service_id);
   void SetScopedTextureBinderExpectations(GLenum target);
-  void DoTexStorage2D(GLuint client_id,
-                      GLsizei width,
-                      GLsizei height);
 
   void SetupClearTextureExpectations(GLuint service_id,
                                      GLuint old_service_id,

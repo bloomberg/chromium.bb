@@ -10,15 +10,15 @@
 #include "third_party/blink/renderer/core/style/computed_style.h"
 
 namespace blink {
-namespace CSSLonghand {
+namespace css_longhand {
 
 const CSSValue* AnimationFillMode::ParseSingleValue(
     CSSParserTokenRange& range,
     const CSSParserContext&,
     const CSSParserLocalContext&) const {
-  return CSSPropertyParserHelpers::ConsumeCommaSeparatedList(
-      CSSPropertyParserHelpers::ConsumeIdent<CSSValueNone, CSSValueForwards,
-                                             CSSValueBackwards, CSSValueBoth>,
+  return css_property_parser_helpers::ConsumeCommaSeparatedList(
+      css_property_parser_helpers::ConsumeIdent<
+          CSSValueNone, CSSValueForwards, CSSValueBackwards, CSSValueBoth>,
       range);
 }
 
@@ -47,5 +47,5 @@ const CSSValue* AnimationFillMode::InitialValue() const {
   return value;
 }
 
-}  // namespace CSSLonghand
+}  // namespace css_longhand
 }  // namespace blink

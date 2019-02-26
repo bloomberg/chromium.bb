@@ -82,6 +82,7 @@ class CORE_EXPORT InspectorOverlayAgent final
   protocol::Response setShowDebugBorders(bool) override;
   protocol::Response setShowFPSCounter(bool) override;
   protocol::Response setShowScrollBottleneckRects(bool) override;
+  protocol::Response setShowHitTestBorders(bool) override;
   protocol::Response setShowViewportSizeOnResize(bool) override;
   protocol::Response setPausedInDebuggerMessage(
       protocol::Maybe<String>) override;
@@ -224,6 +225,7 @@ class CORE_EXPORT InspectorOverlayAgent final
   InspectorAgentState::Boolean show_fps_counter_;
   InspectorAgentState::Boolean show_paint_rects_;
   InspectorAgentState::Boolean show_scroll_bottleneck_rects_;
+  InspectorAgentState::Boolean show_hit_test_borders_;
   InspectorAgentState::Boolean show_size_on_resize_;
   InspectorAgentState::String paused_in_debugger_message_;
   DISALLOW_COPY_AND_ASSIGN(InspectorOverlayAgent);

@@ -45,17 +45,19 @@ public:
                                           sk_sp<GrColorSpaceXform>,
                                           GrPrimitiveType* overridePrimType = nullptr);
 
-    GrDrawVerticesOp(const Helper::MakeArgs&, GrColor, sk_sp<SkVertices>,
+    GrDrawVerticesOp(const Helper::MakeArgs&, const SkPMColor4f&, sk_sp<SkVertices>,
                      const SkVertices::Bone bones[], int boneCount, GrPrimitiveType, GrAAType,
                      sk_sp<GrColorSpaceXform>, const SkMatrix& viewMatrix);
 
     const char* name() const override { return "DrawVerticesOp"; }
 
-    void visitProxies(const VisitProxyFunc& func) const override {
+    void visitProxies(const VisitProxyFunc& func, VisitorType) const override {
         fHelper.visitProxies(func);
     }
 
+#ifdef SK_DEBUG
     SkString dumpInfo() const override;
+#endif
 
     FixedFunctionFlags fixedFunctionFlags() const override;
 
@@ -101,7 +103,7 @@ private:
     CombineResult onCombineIfPossible(GrOp* t, const GrCaps&) override;
 
     struct Mesh {
-        GrColor fColor;  // Used if this->hasPerVertexColors() is false.
+        SkPMColor4f fColor;  // Used if this->hasPerVertexColors() is false.
         sk_sp<SkVertices> fVertices;
         SkMatrix fViewMatrix;
         bool fIgnoreTexCoords;

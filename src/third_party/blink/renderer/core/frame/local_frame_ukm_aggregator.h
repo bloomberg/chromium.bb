@@ -16,10 +16,10 @@ class UkmRecorder;
 namespace blink {
 class CustomCountHistogram;
 
-// This class aggregates and records time based UKM and UMA metrics
+// This class aggregaties and records time based UKM and UMA metrics
 // for LocalFrameView. The simplest way to use it is via the
-// SCOPED_UMA_AND_UKM_HIERARCHICAL_TIMER macro in LocalFrameView combined
-// with LocalFrameView::RecordEndOfFrameMetrics.
+// SCOPED_UMA_AND_UKM_TIMER macro combined with
+// LocalFrameView::RecordEndOfFrameMetrics.
 //
 // It takes the following constructor parameters:
 // - source_id: UKM Source ID associated with the events.
@@ -42,19 +42,17 @@ class CustomCountHistogram;
 //
 // When the primary timed execution completes, this aggregator stores the
 // primary time and computes metrics that depend on it. The results are
-// aggregated. A UKM event is
+// aggregated. UMA metrics are updated at this time. A UKM event is
 // generated in one of two situations:
 //  - If a sample is added that lies in the next event frequency interval (this
 //    will generate an event for the previous interval)
 //  - If the aggregator is destroyed (this will generate an event for any
 //    remaining samples in the aggregator)
-// UMA ratio-related metrics are only reported when an event is generated to
-// reduce the overhead of metric gathering.
 //
 // Note that no event is generated if there were no primary samples in an
 // interval.
 //
-// Sample usage (see also SCOPED_UMA_AND_UKM_HIERARCHICAL_TIMER):
+// Sample usage (see also SCOPED_UMA_AND_UKM_TIMER):
 //   std::unique_ptr<UkmHierarchicalTimeAggregator> aggregator(
 //      new UkmHierarchicalTimeAggregator(
 //              GetSourceId(),
@@ -70,7 +68,7 @@ class CustomCountHistogram;
 //   // At this point an sample for kMetric2 is recorded.
 //   ...
 //   // When the primary time completes
-//   aggregator->RecordPrimaryMetric(time_delta);
+//   aggregator->RecordEndOfFrameMetrics(time_delta);
 //   // This records a primary sample and the sub-metrics that depend on it.
 //   // It may generate an event.
 //   ...
@@ -86,7 +84,7 @@ class CustomCountHistogram;
 //   "sub_metric3.Average", "sub_metric3.WorstCase"
 //   "sub_metric1.AverageRatio", "sub_metric1.WorstCaseRatio",
 //   "sub_metric2.AverageRatio", "sub_metric2.WorstCaseRatio",
-//   "sub_metric3.AverageRatio", "sub_metric3.WorstCaseRation"
+//   "sub_metric3.AverageRatio", "sub_metric3.WorstCaseRatio"
 //
 // It will report 13 UMA values:
 //   "primary_uma_counter",
@@ -103,6 +101,23 @@ class CustomCountHistogram;
 //
 // If the source_id/recorder changes then a new
 // UkmHierarchicalTimeAggregator has to be created.
+// Defines a UKM that is part of a hierarchical ukm, recorded in
+// microseconds equal to the duration of the current lexical scope after
+// declaration of the macro. Example usage:
+//
+// void LocalFrameView::DoExpensiveThing() {
+//   SCOPED_UMA_AND_UKM_TIMER(kUkmEnumName);
+//   // Do computation of expensive thing
+//
+// }
+//
+// |ukm_enum| should be an entry in LocalFrameUkmAggregator's enum of
+// metric names (which in turn corresponds to names in from ukm.xml).
+
+#define SCOPED_UMA_AND_UKM_TIMER(aggregator, ukm_enum) \
+  auto scoped_ukm_hierarchical_timer =                 \
+      aggregator.GetScopedTimer(static_cast<size_t>(ukm_enum));
+
 class CORE_EXPORT LocalFrameUkmAggregator {
  public:
   // Changing these values requires changing the names of metrics specified
@@ -116,6 +131,7 @@ class CORE_EXPORT LocalFrameUkmAggregator {
     kPrePaint,
     kStyleAndLayout,
     kForcedStyleAndLayout,
+    kScrollingCoordinator,
     kCount
   };
 
@@ -125,9 +141,15 @@ class CORE_EXPORT LocalFrameUkmAggregator {
   // Add an entry in this arrray every time a new metric is added.
   static const Vector<String>& metric_strings() {
     // Leaky construction to avoid exit-time destruction.
-    static const Vector<String>* strings = new Vector<String>{
-        "Compositing", "CompositingCommit", "IntersectionObservation", "Paint",
-        "PrePaint",    "StyleAndLayout",    "ForcedStyleAndLayout"};
+    static const Vector<String>* strings =
+        new Vector<String>{"Compositing",
+                           "CompositingCommit",
+                           "IntersectionObservation",
+                           "Paint",
+                           "PrePaint",
+                           "StyleAndLayout",
+                           "ForcedStyleAndLayout",
+                           "ScrollingCoordinator"};
     return *strings;
   }
 
@@ -169,14 +191,16 @@ class CORE_EXPORT LocalFrameUkmAggregator {
   // correspond to the matching index in metric_names.
   ScopedUkmHierarchicalTimer GetScopedTimer(size_t metric_index);
 
-  // Record a primary sample, that also computes the ratios for the
+  // Record a main frame time metric, that also computes the ratios for the
   // sub-metrics and may generate an event.
-  void RecordPrimarySample(TimeTicks start, TimeTicks end);
+  void RecordEndOfFrameMetrics(TimeTicks start, TimeTicks end);
 
   // Record a sample for a sub-metric. This should only be used when
   // a ScopedUkmHierarchicalTimer cannot be used (such as when the timed
   // interval does not fall inside a single calling function).
   void RecordSample(size_t metric_index, TimeTicks start, TimeTicks end);
+
+  void BeginMainFrame();
 
  private:
   struct AbsoluteMetricRecord {
@@ -194,19 +218,19 @@ class CORE_EXPORT LocalFrameUkmAggregator {
     }
   };
 
-  struct RatioMetricRecord {
+  struct MainFramePercentageRecord {
     String worst_case_metric_name;
     String average_metric_name;
     Vector<std::unique_ptr<CustomCountHistogram>> uma_counters_per_bucket;
     TimeDelta interval_duration;
-    double total_ratio;
-    double worst_case_ratio;
+    unsigned total_percentage;
+    unsigned worst_case_percentage;
     size_t sample_count;
 
     void reset() {
       interval_duration = TimeDelta();
-      total_ratio = 0;
-      worst_case_ratio = 0;
+      total_percentage = 0;
+      worst_case_percentage = 0;
       sample_count = 0u;
     }
   };
@@ -220,8 +244,12 @@ class CORE_EXPORT LocalFrameUkmAggregator {
   const TimeDelta event_frequency_;
   AbsoluteMetricRecord primary_metric_;
   Vector<AbsoluteMetricRecord> absolute_metric_records_;
-  Vector<RatioMetricRecord> ratio_metric_records_;
+  Vector<MainFramePercentageRecord> main_frame_percentage_records_;
   TimeTicks last_flushed_time_;
+
+  // Set by BeginMainFrame() and cleared in RecordMEndOfFrameMetrics.
+  // Main frame metrics are only recorded if this is true.
+  bool in_main_frame_update_ = false;
 
   bool has_data_ = false;
 

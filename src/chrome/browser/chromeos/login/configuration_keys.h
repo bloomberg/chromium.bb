@@ -12,19 +12,29 @@ namespace configuration {
 // Configuration keys that are used to automate OOBE screens go here.
 // Please keep keys grouped by screens and ordered according to OOBE flow.
 
+extern const char kLanguage[];
+extern const char kInputMethod[];
 extern const char kWelcomeNext[];
+extern const char kEnableDemoMode[];
+
+extern const char kDemoModePreferencesNext[];
 
 extern const char kNetworkSelectGUID[];
+extern const char kNetworkOfflineDemo[];
+extern const char kNetworkUseConnected[];
 
 extern const char kDeviceRequisition[];
 
 extern const char kEULASendUsageStatistics[];
 extern const char kEULAAutoAccept[];
 
+extern const char kArcTosAutoAccept[];
+
 extern const char kUpdateSkipUpdate[];
 
 extern const char kWizardAutoEnroll[];
 
+extern const char kRestoreAfterRollback[];
 extern const char kEnrollmentLicenseType[];
 extern const char kEnrollmentAssetId[];
 extern const char kEnrollmentLocation[];

@@ -15,6 +15,7 @@
 #include "third_party/blink/renderer/platform/testing/runtime_enabled_features_test_helpers.h"
 
 namespace blink {
+namespace test {
 
 namespace {
 
@@ -872,6 +873,9 @@ TEST_F(AccessibilityTest, FromPositionInARIAHidden) {
   ASSERT_NE(nullptr, ax_container);
   ASSERT_EQ(ax::mojom::Role::kMain, ax_container->RoleValue());
   ASSERT_EQ(2, ax_container->ChildCount());
+  const AXObject* ax_before = GetAXObjectByElementId("before");
+  ASSERT_NE(nullptr, ax_before);
+  ASSERT_EQ(ax::mojom::Role::kParagraph, ax_before->RoleValue());
   const AXObject* ax_after = GetAXObjectByElementId("after");
   ASSERT_NE(nullptr, ax_after);
   ASSERT_EQ(ax::mojom::Role::kParagraph, ax_after->RoleValue());
@@ -884,14 +888,23 @@ TEST_F(AccessibilityTest, FromPositionInARIAHidden) {
   const auto positions = {position_first, position_before, position_after};
 
   for (const auto& position : positions) {
+    //
+    // |kMoveLeft| will create "after children" positions that are anchored to
+    // the paragraph before the element that is aria-hidden.
+    //
+    // |kMoveRight| will create positions that are anchored to the paragraph
+    // after the element that is aria-hidden.
+    //
+
     const auto ax_position_left =
         AXPosition::FromPosition(position, TextAffinity::kDownstream,
                                  AXPositionAdjustmentBehavior::kMoveLeft);
     EXPECT_TRUE(ax_position_left.IsValid());
     EXPECT_FALSE(ax_position_left.IsTextPosition());
-    EXPECT_EQ(ax_container, ax_position_left.ContainerObject());
+    EXPECT_EQ(ax_before, ax_position_left.ContainerObject());
     EXPECT_EQ(1, ax_position_left.ChildIndex());
-    EXPECT_EQ(ax_after, ax_position_left.ChildAfterTreePosition());
+    // This is an "after children" position.
+    EXPECT_EQ(nullptr, ax_position_left.ChildAfterTreePosition());
 
     const auto ax_position_right =
         AXPosition::FromPosition(position, TextAffinity::kDownstream,
@@ -1393,4 +1406,5 @@ TEST_F(AccessibilityTest, DISABLED_PositionInVirtualAOMNode) {
   EXPECT_EQ(ax_after, ax_position_after_from_dom.ChildAfterTreePosition());
 }
 
+}  // namespace test
 }  // namespace blink

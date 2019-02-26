@@ -26,6 +26,8 @@ class MediaRouterViewsUI : public MediaRouterUIBase,
   void StartCasting(const std::string& sink_id,
                     MediaCastMode cast_mode) override;
   void StopCasting(const std::string& route_id) override;
+  void ChooseLocalFile(
+      base::OnceCallback<void(const ui::SelectedFileInfo*)> callback) override;
 
   // MediaRouterUIBase:
   std::vector<MediaSinkWithCastModes> GetEnabledSinks() const override;
@@ -62,6 +64,7 @@ class MediaRouterViewsUI : public MediaRouterUIBase,
   // MediaRouterFileDialogDelegate:
   void FileDialogFileSelected(const ui::SelectedFileInfo& file_info) override;
   void FileDialogSelectionFailed(const IssueInfo& issue) override;
+  void FileDialogSelectionCanceled() override;
 
   // This value is set whenever there is an outstanding issue.
   base::Optional<Issue> issue_;
@@ -80,6 +83,9 @@ class MediaRouterViewsUI : public MediaRouterUIBase,
   // Observers for dialog model updates.
   // TODO(takumif): CastDialogModel should manage the observers.
   base::ObserverList<CastDialogController::Observer>::Unchecked observers_;
+
+  base::OnceCallback<void(const ui::SelectedFileInfo*)>
+      file_selection_callback_;
 
   DISALLOW_COPY_AND_ASSIGN(MediaRouterViewsUI);
 };

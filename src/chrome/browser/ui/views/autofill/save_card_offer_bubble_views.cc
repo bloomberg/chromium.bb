@@ -6,6 +6,7 @@
 
 #include <memory>
 
+#include "base/strings/string_number_conversions.h"
 #include "base/strings/utf_string_conversions.h"
 #include "build/build_config.h"
 #include "chrome/app/vector_icons/vector_icons.h"
@@ -13,25 +14,28 @@
 #include "chrome/browser/ui/views/autofill/dialog_view_ids.h"
 #include "chrome/browser/ui/views/chrome_layout_provider.h"
 #include "chrome/browser/ui/views/chrome_typography.h"
+#include "chrome/grit/generated_resources.h"
 #include "components/autofill/core/browser/autofill_experiments.h"
 #include "components/autofill/core/browser/autofill_metrics.h"
 #include "components/autofill/core/browser/credit_card.h"
 #include "components/autofill/core/browser/legal_message_line.h"
 #include "components/autofill/core/browser/ui/save_card_bubble_controller.h"
+#include "components/autofill/core/browser/validation.h"
+#include "components/autofill/core/common/autofill_clock.h"
 #include "components/autofill/core/common/autofill_features.h"
 #include "components/strings/grit/components_strings.h"
 #include "ui/base/l10n/l10n_util.h"
-#include "ui/base/material_design/material_design_controller.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/gfx/color_palette.h"
 #include "ui/gfx/geometry/insets.h"
 #include "ui/gfx/image/image_skia_operations.h"
 #include "ui/gfx/paint_vector_icon.h"
 #include "ui/views/border.h"
+#include "ui/views/bubble/bubble_border.h"
 #include "ui/views/bubble/bubble_frame_view.h"
 #include "ui/views/bubble/tooltip_icon.h"
-#include "ui/views/controls/button/blue_button.h"
 #include "ui/views/controls/button/label_button.h"
+#include "ui/views/controls/combobox/combobox.h"
 #include "ui/views/controls/label.h"
 #include "ui/views/controls/separator.h"
 #include "ui/views/controls/styled_label.h"
@@ -43,6 +47,7 @@
 namespace autofill {
 
 namespace {
+const int kTooltipBubbleWidth = 320;
 const int kTooltipIconSize = 12;
 }  // namespace
 
@@ -51,8 +56,23 @@ SaveCardOfferBubbleViews::SaveCardOfferBubbleViews(
     const gfx::Point& anchor_point,
     content::WebContents* web_contents,
     SaveCardBubbleController* controller)
-    : SaveCardBubbleViews(anchor_view, anchor_point, web_contents, controller),
-      web_contents_(web_contents) {}
+    : SaveCardBubbleViews(anchor_view, anchor_point, web_contents, controller) {
+}
+
+views::View* SaveCardOfferBubbleViews::CreateExtraView() {
+  if (controller()->GetSyncState() !=
+      AutofillSyncSigninState::kSignedInAndWalletSyncTransportEnabled) {
+    return nullptr;
+  }
+
+  auto* upload_explanation_tooltip =
+      new views::TooltipIcon(l10n_util::GetStringUTF16(
+          IDS_AUTOFILL_SAVE_CARD_PROMPT_UPLOAD_EXPLANATION_TOOLTIP));
+  upload_explanation_tooltip->set_bubble_width(kTooltipBubbleWidth);
+  upload_explanation_tooltip->set_anchor_point_arrow(
+      views::BubbleBorder::Arrow::TOP_RIGHT);
+  return upload_explanation_tooltip;
+}
 
 views::View* SaveCardOfferBubbleViews::CreateFootnoteView() {
   if (controller()->GetLegalMessageLines().empty())
@@ -66,11 +86,25 @@ views::View* SaveCardOfferBubbleViews::CreateFootnoteView() {
 }
 
 bool SaveCardOfferBubbleViews::Accept() {
-  if (controller())
-    controller()->OnSaveButton(cardholder_name_textfield_
-                                   ? cardholder_name_textfield_->text()
-                                   : base::string16());
+  if (controller()) {
+    controller()->OnSaveButton(
+        {cardholder_name_textfield_ ? cardholder_name_textfield_->text()
+                                    : base::string16(),
+         month_input_dropdown_ ? month_input_dropdown_->model()->GetItemAt(
+                                     month_input_dropdown_->selected_index())
+                               : base::string16(),
+         year_input_dropdown_ ? year_input_dropdown_->model()->GetItemAt(
+                                    year_input_dropdown_->selected_index())
+                              : base::string16()});
+  }
   return true;
+}
+
+int SaveCardOfferBubbleViews::GetDialogButtons() const {
+  return base::FeatureList::IsEnabled(
+             features::kAutofillSaveCardImprovedUserConsent)
+             ? ui::DIALOG_BUTTON_OK | ui::DIALOG_BUTTON_CANCEL
+             : ui::DIALOG_BUTTON_OK;
 }
 
 base::string16 SaveCardOfferBubbleViews::GetDialogButtonLabel(
@@ -87,12 +121,34 @@ bool SaveCardOfferBubbleViews::IsDialogButtonEnabled(
 
   DCHECK_EQ(ui::DIALOG_BUTTON_OK, button);
   if (cardholder_name_textfield_) {
+    // Make sure we are not requesting cardholder name and expiration date at
+    // the same time.
+    DCHECK(!month_input_dropdown_ && !year_input_dropdown_);
     // If requesting the user confirm the name, it cannot be blank.
     base::string16 trimmed_text;
     base::TrimWhitespace(cardholder_name_textfield_->text(), base::TRIM_ALL,
                          &trimmed_text);
     return !trimmed_text.empty();
   }
+  // If requesting the user select the expiration date, it cannot be unselected
+  // or expired.
+  if (month_input_dropdown_ || year_input_dropdown_) {
+    // Make sure we are not requesting cardholder name and expiration date at
+    // the same time.
+    DCHECK(!cardholder_name_textfield_);
+    int month_value = 0, year_value = 0;
+    if (!base::StringToInt(month_input_dropdown_->model()->GetItemAt(
+                               month_input_dropdown_->selected_index()),
+                           &month_value) ||
+        !base::StringToInt(year_input_dropdown_->model()->GetItemAt(
+                               year_input_dropdown_->selected_index()),
+                           &year_value)) {
+      return false;
+    }
+    return IsValidCreditCardExpirationDate(year_value, month_value,
+                                           AutofillClock::Now());
+  }
+
   return true;
 }
 
@@ -102,13 +158,19 @@ void SaveCardOfferBubbleViews::StyledLabelLinkClicked(views::StyledLabel* label,
   if (!controller())
     return;
 
-  legal_message_view_->OnLinkClicked(label, range, web_contents_);
+  controller()->OnLegalMessageLinkClicked(
+      legal_message_view_->GetUrlForLink(label, range));
 }
 
 void SaveCardOfferBubbleViews::ContentsChanged(
     views::Textfield* sender,
     const base::string16& new_contents) {
   DCHECK_EQ(cardholder_name_textfield_, sender);
+  DialogModelChanged();
+}
+
+void SaveCardOfferBubbleViews::OnPerformAction(views::Combobox* sender) {
+  DCHECK(month_input_dropdown_ == sender || year_input_dropdown_ == sender);
   DialogModelChanged();
 }
 
@@ -192,7 +254,51 @@ std::unique_ptr<views::View> SaveCardOfferBubbleViews::CreateMainContentView() {
     view->AddChildView(cardholder_name_view.release());
   }
 
+  if (controller()->ShouldRequestExpirationDateFromUser())
+    view->AddChildView(CreateRequestExpirationDateView().release());
+
   return view;
+}
+
+std::unique_ptr<views::View>
+SaveCardOfferBubbleViews::CreateRequestExpirationDateView() {
+  auto expiration_date_view = std::make_unique<views::View>();
+  ChromeLayoutProvider* provider = ChromeLayoutProvider::Get();
+  expiration_date_view->SetLayoutManager(std::make_unique<views::BoxLayout>(
+      views::BoxLayout::kVertical, gfx::Insets(),
+      provider->GetDistanceMetric(views::DISTANCE_RELATED_CONTROL_VERTICAL)));
+  expiration_date_view->set_id(DialogViewId::EXPIRATION_DATE_VIEW);
+
+  // Set up the month and year comboboxes.
+  month_input_dropdown_ = new views::Combobox(&month_combobox_model_);
+  month_input_dropdown_->set_listener(this);
+  month_input_dropdown_->SetAccessibleName(
+      l10n_util::GetStringUTF16(IDS_AUTOFILL_DIALOG_PLACEHOLDER_EXPIRY_MONTH));
+  month_input_dropdown_->set_id(DialogViewId::EXPIRATION_DATE_DROPBOX_MONTH);
+
+  year_input_dropdown_ = new views::Combobox(&year_combobox_model_);
+  year_input_dropdown_->set_listener(this);
+  year_input_dropdown_->SetAccessibleName(
+      l10n_util::GetStringUTF16(IDS_AUTOFILL_DIALOG_PLACEHOLDER_EXPIRY_YEAR));
+  year_input_dropdown_->set_id(DialogViewId::EXPIRATION_DATE_DROPBOX_YEAR);
+
+  auto input_row = std::make_unique<views::View>();
+  input_row->SetLayoutManager(std::make_unique<views::BoxLayout>(
+      views::BoxLayout::kHorizontal, gfx::Insets(),
+      provider->GetDistanceMetric(DISTANCE_RELATED_CONTROL_HORIZONTAL_SMALL)));
+  input_row->AddChildView(month_input_dropdown_);
+  input_row->AddChildView(year_input_dropdown_);
+
+  // Set up expiration date label.
+  auto expiration_date_label = std::make_unique<views::Label>(
+      l10n_util::GetStringUTF16(IDS_AUTOFILL_FIELD_LABEL_EXPIRATION_DATE),
+      CONTEXT_BODY_TEXT_LARGE, ChromeTextStyle::STYLE_SECONDARY);
+  expiration_date_label->SetHorizontalAlignment(gfx::ALIGN_LEFT);
+
+  expiration_date_view->AddChildView(expiration_date_label.release());
+  expiration_date_view->AddChildView(input_row.release());
+
+  return expiration_date_view;
 }
 
 }  // namespace autofill

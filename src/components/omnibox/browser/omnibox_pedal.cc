@@ -10,6 +10,10 @@
 #include "components/omnibox/browser/omnibox_field_trial.h"
 #include "ui/base/l10n/l10n_util.h"
 
+#if (!defined(OS_ANDROID) || BUILDFLAG(ENABLE_VR)) && !defined(OS_IOS)
+#include "components/omnibox/browser/vector_icons.h"  // nogncheck
+#endif
+
 OmniboxPedal::LabelStrings::LabelStrings(int id_hint,
                                          int id_hint_short,
                                          int id_suggestion_contents)
@@ -50,6 +54,17 @@ void OmniboxPedal::Execute(OmniboxPedal::ExecutionContext& context) const {
   DCHECK(IsNavigation());
   OpenURL(context, url_);
 }
+
+bool OmniboxPedal::IsReadyToTrigger(
+    const AutocompleteProviderClient& client) const {
+  return true;
+}
+
+#if (!defined(OS_ANDROID) || BUILDFLAG(ENABLE_VR)) && !defined(OS_IOS)
+const gfx::VectorIcon& OmniboxPedal::GetVectorIcon() const {
+  return omnibox::kPedalIcon;
+}
+#endif
 
 bool OmniboxPedal::IsTriggerMatch(const base::string16& match_text) const {
   return triggers_.find(match_text) != triggers_.end();

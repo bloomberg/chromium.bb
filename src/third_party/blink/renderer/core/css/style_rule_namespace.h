@@ -14,11 +14,14 @@ namespace blink {
 class StyleRuleNamespace final : public StyleRuleBase {
  public:
   static StyleRuleNamespace* Create(AtomicString prefix, AtomicString uri) {
-    return new StyleRuleNamespace(prefix, uri);
+    return MakeGarbageCollected<StyleRuleNamespace>(prefix, uri);
   }
 
+  StyleRuleNamespace(AtomicString prefix, AtomicString uri)
+      : StyleRuleBase(kNamespace), prefix_(prefix), uri_(uri) {}
+
   StyleRuleNamespace* Copy() const {
-    return new StyleRuleNamespace(prefix_, uri_);
+    return MakeGarbageCollected<StyleRuleNamespace>(prefix_, uri_);
   }
 
   AtomicString Prefix() const { return prefix_; }
@@ -29,9 +32,6 @@ class StyleRuleNamespace final : public StyleRuleBase {
   }
 
  private:
-  StyleRuleNamespace(AtomicString prefix, AtomicString uri)
-      : StyleRuleBase(kNamespace), prefix_(prefix), uri_(uri) {}
-
   AtomicString prefix_;
   AtomicString uri_;
 };

@@ -4,10 +4,9 @@
 
 package org.chromium.chrome.browser.contextualsearch;
 
+import android.support.annotation.Nullable;
+
 import java.net.URL;
-
-import javax.annotation.Nullable;
-
 
 /**
  * An interface for network communication between the Contextual Search client and server.
@@ -44,8 +43,8 @@ public interface ContextualSearchNetworkCommunicator {
     void handleSearchTermResolutionResponse(boolean isNetworkUnavailable, int responseCode,
             String searchTerm, String displayText, String alternateTerm, String mid,
             boolean doPreventPreload, int selectionStartAdjust, int selectionEndAdjust,
-            String contextLanguage, String thumbnailUrl, String caption,
-            String quickActionUri, int quickActionCategory);
+            String contextLanguage, String thumbnailUrl, String caption, String quickActionUri,
+            int quickActionCategory);
 
     /**
      * @return Whether the device is currently online.

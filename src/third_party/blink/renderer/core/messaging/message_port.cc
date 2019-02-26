@@ -56,7 +56,7 @@ constexpr base::TimeDelta kYieldThreshold =
     base::TimeDelta::FromMilliseconds(50);
 
 MessagePort* MessagePort::Create(ExecutionContext& execution_context) {
-  return new MessagePort(execution_context);
+  return MakeGarbageCollected<MessagePort>(execution_context);
 }
 
 MessagePort::MessagePort(ExecutionContext& execution_context)
@@ -71,15 +71,15 @@ void MessagePort::postMessage(ScriptState* script_state,
                               const ScriptValue& message,
                               Vector<ScriptValue>& transfer,
                               ExceptionState& exception_state) {
-  PostMessageOptions options;
+  PostMessageOptions* options = PostMessageOptions::Create();
   if (!transfer.IsEmpty())
-    options.setTransfer(transfer);
+    options->setTransfer(transfer);
   postMessage(script_state, message, options, exception_state);
 }
 
 void MessagePort::postMessage(ScriptState* script_state,
                               const ScriptValue& message,
-                              const PostMessageOptions& options,
+                              const PostMessageOptions* options,
                               ExceptionState& exception_state) {
   if (!IsEntangled())
     return;
@@ -177,7 +177,7 @@ void MessagePort::Entangle(MessagePortChannel channel) {
 }
 
 const AtomicString& MessagePort::InterfaceName() const {
-  return EventTargetNames::MessagePort;
+  return event_target_names::kMessagePort;
 }
 
 bool MessagePort::HasPendingActivity() const {
@@ -246,7 +246,7 @@ MessagePortArray* MessagePort::EntanglePorts(
   // https://html.spec.whatwg.org/multipage/comms.html#message-ports
   // |ports| should be an empty array, not null even when there is no ports.
   wtf_size_t count = SafeCast<wtf_size_t>(channels.size());
-  MessagePortArray* port_array = new MessagePortArray(count);
+  MessagePortArray* port_array = MakeGarbageCollected<MessagePortArray>(count);
   for (wtf_size_t i = 0; i < count; ++i) {
     MessagePort* port = MessagePort::Create(context);
     port->Entangle(std::move(channels[i]));
@@ -290,9 +290,9 @@ bool MessagePort::Accept(mojo::Message* mojo_message) {
 
   // WorkerGlobalScope::close() in Worker onmessage handler should prevent
   // the next message from dispatching.
-  if (GetExecutionContext()->IsWorkerGlobalScope() &&
-      ToWorkerGlobalScope(GetExecutionContext())->IsClosing()) {
-    return true;
+  if (auto* scope = DynamicTo<WorkerGlobalScope>(GetExecutionContext())) {
+    if (scope->IsClosing())
+      return true;
   }
 
   Event* evt;
@@ -303,9 +303,9 @@ bool MessagePort::Accept(mojo::Message* mojo_message) {
         *GetExecutionContext(), std::move(message.ports));
     UserActivation* user_activation = nullptr;
     if (message.user_activation) {
-      user_activation =
-          new UserActivation(message.user_activation->has_been_active,
-                             message.user_activation->was_active);
+      user_activation = MakeGarbageCollected<UserActivation>(
+          message.user_activation->has_been_active,
+          message.user_activation->was_active);
     }
     evt = MessageEvent::Create(ports, std::move(message.message),
                                user_activation);

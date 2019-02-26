@@ -44,8 +44,10 @@ namespace cssvalue {
 class CSSBasicShapeCircleValue final : public CSSValue {
  public:
   static CSSBasicShapeCircleValue* Create() {
-    return new CSSBasicShapeCircleValue;
+    return MakeGarbageCollected<CSSBasicShapeCircleValue>();
   }
+
+  CSSBasicShapeCircleValue() : CSSValue(kBasicShapeCircleClass) {}
 
   String CustomCSSText() const;
   bool Equals(const CSSBasicShapeCircleValue&) const;
@@ -62,8 +64,6 @@ class CSSBasicShapeCircleValue final : public CSSValue {
   void TraceAfterDispatch(blink::Visitor*);
 
  private:
-  CSSBasicShapeCircleValue() : CSSValue(kBasicShapeCircleClass) {}
-
   Member<CSSValue> center_x_;
   Member<CSSValue> center_y_;
   Member<CSSValue> radius_;
@@ -72,8 +72,10 @@ class CSSBasicShapeCircleValue final : public CSSValue {
 class CSSBasicShapeEllipseValue final : public CSSValue {
  public:
   static CSSBasicShapeEllipseValue* Create() {
-    return new CSSBasicShapeEllipseValue;
+    return MakeGarbageCollected<CSSBasicShapeEllipseValue>();
   }
+
+  CSSBasicShapeEllipseValue() : CSSValue(kBasicShapeEllipseClass) {}
 
   String CustomCSSText() const;
   bool Equals(const CSSBasicShapeEllipseValue&) const;
@@ -92,8 +94,6 @@ class CSSBasicShapeEllipseValue final : public CSSValue {
   void TraceAfterDispatch(blink::Visitor*);
 
  private:
-  CSSBasicShapeEllipseValue() : CSSValue(kBasicShapeEllipseClass) {}
-
   Member<CSSValue> center_x_;
   Member<CSSValue> center_y_;
   Member<CSSValue> radius_x_;
@@ -103,8 +103,11 @@ class CSSBasicShapeEllipseValue final : public CSSValue {
 class CSSBasicShapePolygonValue final : public CSSValue {
  public:
   static CSSBasicShapePolygonValue* Create() {
-    return new CSSBasicShapePolygonValue;
+    return MakeGarbageCollected<CSSBasicShapePolygonValue>();
   }
+
+  CSSBasicShapePolygonValue()
+      : CSSValue(kBasicShapePolygonClass), wind_rule_(RULE_NONZERO) {}
 
   void AppendPoint(CSSPrimitiveValue* x, CSSPrimitiveValue* y) {
     values_.push_back(x);
@@ -127,9 +130,6 @@ class CSSBasicShapePolygonValue final : public CSSValue {
   void TraceAfterDispatch(blink::Visitor*);
 
  private:
-  CSSBasicShapePolygonValue()
-      : CSSValue(kBasicShapePolygonClass), wind_rule_(RULE_NONZERO) {}
-
   HeapVector<Member<CSSPrimitiveValue>> values_;
   WindRule wind_rule_;
 };
@@ -137,8 +137,10 @@ class CSSBasicShapePolygonValue final : public CSSValue {
 class CSSBasicShapeInsetValue final : public CSSValue {
  public:
   static CSSBasicShapeInsetValue* Create() {
-    return new CSSBasicShapeInsetValue;
+    return MakeGarbageCollected<CSSBasicShapeInsetValue>();
   }
+
+  CSSBasicShapeInsetValue() : CSSValue(kBasicShapeInsetClass) {}
 
   CSSPrimitiveValue* Top() const { return top_.Get(); }
   CSSPrimitiveValue* Right() const { return right_.Get(); }
@@ -196,8 +198,6 @@ class CSSBasicShapeInsetValue final : public CSSValue {
   void TraceAfterDispatch(blink::Visitor*);
 
  private:
-  CSSBasicShapeInsetValue() : CSSValue(kBasicShapeInsetClass) {}
-
   Member<CSSPrimitiveValue> top_;
   Member<CSSPrimitiveValue> right_;
   Member<CSSPrimitiveValue> bottom_;

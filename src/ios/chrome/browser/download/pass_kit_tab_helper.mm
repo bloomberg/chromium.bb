@@ -20,8 +20,6 @@
 #error "This file requires ARC support."
 #endif
 
-DEFINE_WEB_STATE_USER_DATA_KEY(PassKitTabHelper);
-
 const char kUmaDownloadPassKitResult[] = "Download.IOSDownloadPassKitResult";
 
 namespace {

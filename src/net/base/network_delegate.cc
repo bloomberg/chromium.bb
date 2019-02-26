@@ -23,7 +23,7 @@ NetworkDelegate::~NetworkDelegate() {
 int NetworkDelegate::NotifyBeforeURLRequest(URLRequest* request,
                                             CompletionOnceCallback callback,
                                             GURL* new_url) {
-  TRACE_EVENT0(kNetTracingCategory, "NetworkDelegate::NotifyBeforeURLRequest");
+  TRACE_EVENT0(NetTracingCategory(), "NetworkDelegate::NotifyBeforeURLRequest");
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   DCHECK(request);
   DCHECK(!callback.is_null());
@@ -37,7 +37,7 @@ int NetworkDelegate::NotifyBeforeStartTransaction(
     URLRequest* request,
     CompletionOnceCallback callback,
     HttpRequestHeaders* headers) {
-  TRACE_EVENT0(kNetTracingCategory,
+  TRACE_EVENT0(NetTracingCategory(),
                "NetworkDelegate::NotifyBeforeStartTransation");
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   DCHECK(headers);
@@ -58,7 +58,7 @@ void NetworkDelegate::NotifyBeforeSendHeaders(
 void NetworkDelegate::NotifyStartTransaction(
     URLRequest* request,
     const HttpRequestHeaders& headers) {
-  TRACE_EVENT0(kNetTracingCategory, "NetworkDelegate::NotifyStartTransaction");
+  TRACE_EVENT0(NetTracingCategory(), "NetworkDelegate::NotifyStartTransaction");
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   OnStartTransaction(request, headers);
 }
@@ -69,7 +69,7 @@ int NetworkDelegate::NotifyHeadersReceived(
     const HttpResponseHeaders* original_response_headers,
     scoped_refptr<HttpResponseHeaders>* override_response_headers,
     GURL* allowed_unsafe_redirect_url) {
-  TRACE_EVENT0(kNetTracingCategory, "NetworkDelegate::NotifyHeadersReceived");
+  TRACE_EVENT0(NetTracingCategory(), "NetworkDelegate::NotifyHeadersReceived");
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   DCHECK(original_response_headers);
   DCHECK(!callback.is_null());
@@ -88,7 +88,7 @@ void NetworkDelegate::NotifyResponseStarted(URLRequest* request,
 
 void NetworkDelegate::NotifyNetworkBytesReceived(URLRequest* request,
                                                  int64_t bytes_received) {
-  TRACE_EVENT0(kNetTracingCategory,
+  TRACE_EVENT0(NetTracingCategory(),
                "NetworkDelegate::NotifyNetworkBytesReceived");
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   DCHECK_GT(bytes_received, 0);
@@ -112,14 +112,14 @@ void NetworkDelegate::NotifyBeforeRedirect(URLRequest* request,
 void NetworkDelegate::NotifyCompleted(URLRequest* request,
                                       bool started,
                                       int net_error) {
-  TRACE_EVENT0(kNetTracingCategory, "NetworkDelegate::NotifyCompleted");
+  TRACE_EVENT0(NetTracingCategory(), "NetworkDelegate::NotifyCompleted");
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   DCHECK(request);
   OnCompleted(request, started, net_error);
 }
 
 void NetworkDelegate::NotifyURLRequestDestroyed(URLRequest* request) {
-  TRACE_EVENT0(kNetTracingCategory,
+  TRACE_EVENT0(NetTracingCategory(),
                "NetworkDelegate::NotifyURLRequestDestroyed");
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   DCHECK(request);
@@ -165,15 +165,11 @@ bool NetworkDelegate::CanAccessFile(const URLRequest& request,
   return OnCanAccessFile(request, original_path, absolute_path);
 }
 
-bool NetworkDelegate::CanEnablePrivacyMode(const GURL& url,
-                                           const GURL& site_for_cookies) const {
-  TRACE_EVENT0(kNetTracingCategory, "NetworkDelegate::CanEnablePrivacyMode");
+bool NetworkDelegate::ForcePrivacyMode(const GURL& url,
+                                       const GURL& site_for_cookies) const {
+  TRACE_EVENT0(NetTracingCategory(), "NetworkDelegate::ForcePrivacyMode");
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
-  return OnCanEnablePrivacyMode(url, site_for_cookies);
-}
-
-bool NetworkDelegate::AreExperimentalCookieFeaturesEnabled() const {
-  return OnAreExperimentalCookieFeaturesEnabled();
+  return OnForcePrivacyMode(url, site_for_cookies);
 }
 
 bool NetworkDelegate::CancelURLRequestWithPolicyViolatingReferrerHeader(

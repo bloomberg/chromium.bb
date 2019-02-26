@@ -11,10 +11,8 @@ import os
 
 from chromite.lib import cros_test_lib
 from chromite.lib import gs
-from chromite.lib import osutils
 
 from chromite.lib.paygen import filelib
-from chromite.lib.paygen import gslib
 from chromite.lib.paygen import urilib
 
 
@@ -22,93 +20,7 @@ from chromite.lib.paygen import urilib
 # pylint: disable=protected-access
 
 
-class TestFileManipulation(cros_test_lib.TempDirTestCase):
-  """Test general urilib file methods together."""
-
-  # pylint: disable=attribute-defined-outside-init
-
-  FILE1 = 'file1'
-  FILE2 = 'file2'
-  SUBDIR = 'subdir'
-  SUBFILE = '%s/file3' % SUBDIR
-
-  FILE1_CONTENTS = 'Howdy doody there dandy'
-  FILE2_CONTENTS = 'Once upon a time in a galaxy far far away.'
-  SUBFILE_CONTENTS = 'Five little monkeys jumped on the bed.'
-
-  def setUp(self):
-    # Use a subdir specifically for the cache so we can use the tempdir for
-    # other things (including tempfiles by gsutil/etc...).
-    self.filesdir = os.path.join(self.tempdir, 'unittest-cache')
-    osutils.SafeMakedirs(self.filesdir)
-    self.ctx = gs.GSContext()
-
-  def _SetUpDirs(self, uri):
-    self.gs_dir = uri
-
-    self.file1_local = os.path.join(self.filesdir, self.FILE1)
-    self.file2_local = os.path.join(self.filesdir, self.FILE2)
-    self.subdir_local = os.path.join(self.filesdir, self.SUBDIR)
-    self.subfile_local = os.path.join(self.filesdir, self.SUBFILE)
-
-    self.file1_gs = os.path.join(self.gs_dir, self.FILE1)
-    self.file2_gs = os.path.join(self.gs_dir, self.FILE2)
-    self.subdir_gs = os.path.join(self.gs_dir, self.SUBDIR)
-    self.subfile_gs = os.path.join(self.gs_dir, self.SUBFILE)
-
-    # Pre-populate local dir with contents.
-    with open(self.file1_local, 'w') as out1:
-      out1.write(self.FILE1_CONTENTS)
-
-    with open(self.file2_local, 'w') as out2:
-      out2.write(self.FILE2_CONTENTS)
-
-    os.makedirs(self.subdir_local)
-
-    with open(self.subfile_local, 'w') as out3:
-      out3.write(self.SUBFILE_CONTENTS)
-
-  @cros_test_lib.NetworkTest()
-  def testIntegration(self):
-    with gs.TemporaryURL('urilib_unittest') as uri:
-      self._runIntegrationTest(uri)
-
-  def _runIntegrationTest(self, uri):
-    """Run integration test under |uri|."""
-    self._SetUpDirs(uri)
-
-    self.assertTrue(self.ctx.Exists(self.filesdir, as_dir=True))
-    self.assertTrue(self.ctx.Exists(self.file1_local))
-    self.assertTrue(self.ctx.Exists(self.file2_local))
-    self.assertTrue(self.ctx.Exists(self.subfile_local))
-    self.assertTrue(self.ctx.Exists(self.subdir_local, as_dir=True))
-
-    self.assertFalse(self.ctx.Exists(self.file1_gs))
-    self.assertFalse(self.ctx.Exists(self.file2_gs))
-    self.assertFalse(self.ctx.Exists(self.subfile_gs))
-
-    shallow_local_files = [self.file1_local, self.file2_local]
-    deep_local_files = shallow_local_files + [self.subfile_local]
-    shallow_gs_files = [self.file1_gs, self.file2_gs]
-    deep_gs_files = shallow_gs_files + [self.subfile_gs]
-
-    # Test ListFiles, local version.
-    self.assertEquals(set(shallow_local_files),
-                      set(urilib.ListFiles(self.filesdir)))
-    self.assertEquals(set(deep_local_files),
-                      set(urilib.ListFiles(self.filesdir, recurse=True)))
-
-    # Test ListFiles, GS version.
-    urilib.Copy(self.file1_local, self.gs_dir + '/')
-    urilib.Copy(self.file2_local, self.gs_dir + '/')
-    urilib.Copy(self.subfile_local, self.gs_dir + '/%s/' % self.SUBDIR)
-    self.assertEquals(set(shallow_gs_files),
-                      set(urilib.ListFiles(self.gs_dir)))
-    self.assertEquals(set(deep_gs_files),
-                      set(urilib.ListFiles(self.gs_dir, recurse=True)))
-
-
-class TestUrilib(cros_test_lib.MoxTempDirTestCase):
+class TestUrilib(cros_test_lib.MockTempDirTestCase):
   """Test urilib module."""
 
   def testExtractProtocol(self):
@@ -182,58 +94,31 @@ index %s..%s 100644
     local_path = '/some/local/path'
     http_path = 'http://host.domain/some/path'
 
-    result = 'TheResult'
-
-    self.mox.StubOutWithMock(gslib, 'Copy')
-    self.mox.StubOutWithMock(filelib, 'Copy')
-    self.mox.StubOutWithMock(urilib, 'URLRetrieve')
+    gs_mock = self.PatchObject(gs.GSContext, 'Copy')
+    file_mock = self.PatchObject(filelib, 'Copy')
+    urlretrieve_mock = self.PatchObject(urilib, 'URLRetrieve')
 
     # Set up the test replay script.
     # Run 1, two local files.
-    filelib.Copy(local_path, local_path + '.1').AndReturn(result)
-    # Run 2, local and GS.
-    gslib.Copy(local_path, gs_path).AndReturn(result)
-    # Run 4, GS and GS
-    gslib.Copy(gs_path, gs_path + '.1').AndReturn(result)
-    # Run 7, HTTP and local
-    urilib.URLRetrieve(http_path, local_path).AndReturn(result)
-    # Run 8, local and HTTP
-    self.mox.ReplayAll()
+    urilib.Copy(local_path, local_path + '.1')
+    file_mock.assert_called_once_with(local_path, local_path + '.1')
+    file_mock.reset_mock()
 
-    # Run the test verification.
-    self.assertEquals(result, urilib.Copy(local_path, local_path + '.1'))
-    self.assertEquals(result, urilib.Copy(local_path, gs_path))
-    self.assertEquals(result, urilib.Copy(gs_path, gs_path + '.1'))
-    self.assertEquals(result, urilib.Copy(http_path, local_path))
+    # Run 2, local and GS.
+    urilib.Copy(local_path, gs_path)
+    gs_mock.assert_called_once_with(local_path, gs_path)
+    gs_mock.reset_mock()
+
+    # Run 4, GS and GS
+    urilib.Copy(gs_path, gs_path + '.1')
+    gs_mock.assert_called_once_with(gs_path, gs_path + '.1')
+    gs_mock.reset_mock()
+
+    # Run 7, HTTP and local
+    urilib.Copy(http_path, local_path)
+    urlretrieve_mock.assert_called_once_with(http_path, local_path)
+    urlretrieve_mock.reset_mock()
+
+    # Run 8, local and HTTP
     self.assertRaises(urilib.NotSupportedBetweenTypes, urilib.Copy,
                       local_path, http_path)
-    self.mox.VerifyAll()
-
-  def testListFiles(self):
-    gs_path = 'gs://bucket/some/path'
-    local_path = '/some/local/path'
-    http_path = 'http://host.domain/some/path'
-
-    result = 'TheResult'
-    patt = 'TheFilePattern'
-
-    self.mox.StubOutWithMock(gslib, 'ListFiles')
-    self.mox.StubOutWithMock(filelib, 'ListFiles')
-
-    # Set up the test replay script.
-    # Run 1, local.
-    filelib.ListFiles(
-        local_path, recurse=True, filepattern=None,
-        sort=False).AndReturn(result)
-    # Run 2, GS.
-    gslib.ListFiles(
-        gs_path, recurse=False, filepattern=patt, sort=True).AndReturn(result)
-    # Run 4, HTTP.
-    self.mox.ReplayAll()
-
-    # Run the test verification.
-    self.assertEquals(result, urilib.ListFiles(local_path, recurse=True))
-    self.assertEquals(result, urilib.ListFiles(gs_path, filepattern=patt,
-                                               sort=True))
-    self.assertRaises(urilib.NotSupportedForType, urilib.ListFiles, http_path)
-    self.mox.VerifyAll()

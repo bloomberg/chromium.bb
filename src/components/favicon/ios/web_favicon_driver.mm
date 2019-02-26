@@ -60,7 +60,7 @@ bool WebFaviconDriver::FaviconIsValid() const {
 
 GURL WebFaviconDriver::GetActiveURL() {
   web::NavigationItem* item =
-      web_state_->GetNavigationManager()->GetVisibleItem();
+      web_state_->GetNavigationManager()->GetLastCommittedItem();
   return item ? item->GetURL() : GURL();
 }
 

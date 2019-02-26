@@ -60,7 +60,7 @@ class TextDecoderStream::Transformer final : public TransformStreamTransformer {
         return;
       }
       const char* start = static_cast<const char*>(view->BaseAddress());
-      size_t length = view->byteLength();
+      uint32_t length = view->byteLength();
       DecodeAndEnqueue(start, length, WTF::FlushBehavior::kDoNotFlush,
                        controller, exception_state);
       return;
@@ -74,7 +74,7 @@ class TextDecoderStream::Transformer final : public TransformStreamTransformer {
       return;
     }
     const char* start = static_cast<const char*>(array_buffer->Data());
-    size_t length = array_buffer->ByteLength();
+    uint32_t length = array_buffer->ByteLength();
     DecodeAndEnqueue(start, length, WTF::FlushBehavior::kDoNotFlush, controller,
                      exception_state);
   }
@@ -95,7 +95,7 @@ class TextDecoderStream::Transformer final : public TransformStreamTransformer {
   // Implements the second part of "decode and enqueue a chunk" as well as the
   // "flush and enqueue" algorithm.
   void DecodeAndEnqueue(const char* start,
-                        size_t length,
+                        uint32_t length,
                         WTF::FlushBehavior flush,
                         TransformStreamDefaultController* controller,
                         ExceptionState& exception_state) {
@@ -144,10 +144,10 @@ class TextDecoderStream::Transformer final : public TransformStreamTransformer {
 
 TextDecoderStream* TextDecoderStream::Create(ScriptState* script_state,
                                              const String& label,
-                                             const TextDecoderOptions& options,
+                                             const TextDecoderOptions* options,
                                              ExceptionState& exception_state) {
   WTF::TextEncoding encoding(
-      label.StripWhiteSpace(&Encoding::IsASCIIWhiteSpace));
+      label.StripWhiteSpace(&encoding::IsASCIIWhiteSpace));
   // The replacement encoding is not valid, but the Encoding API also
   // rejects aliases of the replacement encoding.
   if (!encoding.IsValid() ||
@@ -167,14 +167,12 @@ String TextDecoderStream::encoding() const {
   return String(encoding_.GetName()).LowerASCII();
 }
 
-ScriptValue TextDecoderStream::readable(ScriptState* script_state,
-                                        ExceptionState& exception_state) const {
-  return transform_->Readable(script_state, exception_state);
+ReadableStream* TextDecoderStream::readable() const {
+  return transform_->Readable();
 }
 
-ScriptValue TextDecoderStream::writable(ScriptState* script_state,
-                                        ExceptionState& exception_state) const {
-  return transform_->Writable(script_state, exception_state);
+WritableStream* TextDecoderStream::writable() const {
+  return transform_->Writable();
 }
 
 void TextDecoderStream::Trace(Visitor* visitor) {
@@ -184,12 +182,12 @@ void TextDecoderStream::Trace(Visitor* visitor) {
 
 TextDecoderStream::TextDecoderStream(ScriptState* script_state,
                                      const WTF::TextEncoding& encoding,
-                                     const TextDecoderOptions& options,
+                                     const TextDecoderOptions* options,
                                      ExceptionState& exception_state)
-    : transform_(new TransformStream()),
+    : transform_(MakeGarbageCollected<TransformStream>()),
       encoding_(encoding),
-      fatal_(options.fatal()),
-      ignore_bom_(options.ignoreBOM()) {
+      fatal_(options->fatal()),
+      ignore_bom_(options->ignoreBOM()) {
   if (!RetainWrapperDuringConstruction(this, script_state)) {
     exception_state.ThrowDOMException(DOMExceptionCode::kInvalidStateError,
                                       "Cannot queue task to retain wrapper");

@@ -8,7 +8,6 @@ import android.annotation.TargetApi;
 import android.app.NotificationChannel;
 import android.app.NotificationChannelGroup;
 import android.app.NotificationManager;
-import android.content.Context;
 import android.os.Build;
 import android.support.annotation.Nullable;
 
@@ -38,10 +37,8 @@ public class SiteChannelsManager {
     }
 
     private static class LazyHolder {
-        public static final SiteChannelsManager INSTANCE =
-                new SiteChannelsManager(new NotificationManagerProxyImpl(
-                        (NotificationManager) ContextUtils.getApplicationContext().getSystemService(
-                                Context.NOTIFICATION_SERVICE)));
+        public static final SiteChannelsManager INSTANCE = new SiteChannelsManager(
+                new NotificationManagerProxyImpl(ContextUtils.getApplicationContext()));
     }
 
     @VisibleForTesting

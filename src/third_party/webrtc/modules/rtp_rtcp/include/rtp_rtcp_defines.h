@@ -27,27 +27,19 @@
 #define IP_PACKET_SIZE 1500  // we assume ethernet
 
 namespace webrtc {
+class RtpPacket;
 namespace rtcp {
 class TransportFeedback;
 }
 
 const int kVideoPayloadTypeFrequency = 90000;
-// TODO(solenberg): RTP time stamp rate for RTCP is fixed at 8k, this is legacy
-// and should be fixed.
-// See: https://bugs.chromium.org/p/webrtc/issues/detail?id=6458
+
+// TODO(bugs.webrtc.org/6458): Remove this when all the depending projects are
+// updated to correctly set rtp rate for RtcpSender.
 const int kBogusRtpRateForAudioRtcp = 8000;
 
 // Minimum RTP header size in bytes.
 const uint8_t kRtpHeaderSize = 12;
-
-struct RtcpIntervalConfig final {
-  RtcpIntervalConfig() = default;
-  RtcpIntervalConfig(int64_t video_interval_ms, int64_t audio_interval_ms)
-      : video_interval_ms(video_interval_ms),
-        audio_interval_ms(audio_interval_ms) {}
-  int64_t video_interval_ms = 1000;
-  int64_t audio_interval_ms = 5000;
-};
 
 struct AudioPayload {
   SdpAudioFormat format;
@@ -112,6 +104,7 @@ enum RTPExtensionType : int {
   kRtpExtensionRepairedRtpStreamId,
   kRtpExtensionMid,
   kRtpExtensionGenericFrameDescriptor,
+  kRtpExtensionHdrMetadata,
   kRtpExtensionNumberOfExtensions  // Must be the last entity in the enum.
 };
 
@@ -220,15 +213,6 @@ struct RtpState {
   int64_t capture_time_ms;
   int64_t last_timestamp_time_ms;
   bool media_has_been_sent;
-};
-
-class RtpData {
- public:
-  virtual ~RtpData() {}
-
-  virtual int32_t OnReceivedPayloadData(const uint8_t* payload_data,
-                                        size_t payload_size,
-                                        const WebRtcRTPHeader* rtp_header) = 0;
 };
 
 // Callback interface for packets recovered by FlexFEC or ULPFEC. In
@@ -457,13 +441,8 @@ struct RtpPacketCounter {
     packets -= other.packets;
   }
 
-  void AddPacket(size_t packet_length, const RTPHeader& header) {
-    ++packets;
-    header_bytes += header.headerLength;
-    padding_bytes += header.paddingLength;
-    payload_bytes +=
-        packet_length - (header.headerLength + header.paddingLength);
-  }
+  // Not inlined, since use of RtpPacket would result in circular includes.
+  void AddPacket(const RtpPacket& packet);
 
   size_t TotalBytes() const {
     return header_bytes + payload_bytes + padding_bytes;

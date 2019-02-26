@@ -57,13 +57,13 @@ class DraggedIsolatedFileSystemImpl final
 
   static DraggedIsolatedFileSystemImpl* From(DataObject*);
 
+  DraggedIsolatedFileSystemImpl() = default;
+
   void Trace(blink::Visitor*) override;
 
   static void PrepareForDataObject(DataObject*);
 
  private:
-  DraggedIsolatedFileSystemImpl() = default;
-
   HeapHashMap<String, Member<DOMFileSystem>> filesystems_;
 };
 

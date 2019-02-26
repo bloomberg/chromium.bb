@@ -58,7 +58,7 @@ SharedWorker* SharedWorker::Create(ExecutionContext* context,
 
   UseCounter::Count(context, WebFeature::kSharedWorkerStart);
 
-  SharedWorker* worker = new SharedWorker(context);
+  SharedWorker* worker = MakeGarbageCollected<SharedWorker>(context);
 
   MessageChannel* channel = MessageChannel::Create(context);
   worker->port_ = channel->port1();
@@ -99,7 +99,7 @@ SharedWorker* SharedWorker::Create(ExecutionContext* context,
 SharedWorker::~SharedWorker() = default;
 
 const AtomicString& SharedWorker::InterfaceName() const {
-  return EventTargetNames::SharedWorker;
+  return event_target_names::kSharedWorker;
 }
 
 bool SharedWorker::HasPendingActivity() const {

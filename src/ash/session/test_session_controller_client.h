@@ -11,6 +11,8 @@
 
 #include "ash/public/interfaces/session_controller.mojom.h"
 #include "base/macros.h"
+#include "base/optional.h"
+#include "base/token.h"
 #include "components/user_manager/user_type.h"
 #include "mojo/public/cpp/bindings/binding.h"
 
@@ -41,6 +43,12 @@ class TestSessionControllerClient : public ash::mojom::SessionControllerClient {
   // Sets up the default state of SessionController.
   void Reset();
 
+  void set_use_lower_case_user_id(bool value) {
+    use_lower_case_user_id_ = value;
+  }
+
+  int request_sign_out_count() const { return request_sign_out_count_; }
+
   // Helpers to set SessionController state.
   void SetCanLockScreen(bool can_lock);
   void SetShouldLockScreenAutomatically(bool should_lock);
@@ -66,7 +74,8 @@ class TestSessionControllerClient : public ash::mojom::SessionControllerClient {
       bool enable_settings = true,
       bool provide_pref_service = true,
       bool is_new_profile = false,
-      const std::string& service_user_id = std::string());
+      const base::Optional<base::Token>& service_instance_group =
+          base::nullopt);
 
   // Creates a test PrefService and associates it with the user.
   void ProvidePrefServiceForUser(const AccountId& account_id);
@@ -91,6 +100,9 @@ class TestSessionControllerClient : public ash::mojom::SessionControllerClient {
 
   int fake_session_id_ = 0;
   mojom::SessionInfoPtr session_info_;
+
+  bool use_lower_case_user_id_ = true;
+  int request_sign_out_count_ = 0;
 
   DISALLOW_COPY_AND_ASSIGN(TestSessionControllerClient);
 };

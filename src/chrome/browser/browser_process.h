@@ -49,7 +49,7 @@ class SafeBrowsingService;
 }
 
 namespace subresource_filter {
-class ContentRulesetService;
+class RulesetService;
 }
 
 namespace variations {
@@ -113,6 +113,7 @@ class RapporServiceImpl;
 }
 
 namespace resource_coordinator {
+class ResourceCoordinatorParts;
 class TabManager;
 }
 
@@ -244,7 +245,7 @@ class BrowserProcess {
 
   // Returns the service providing versioned storage for rules used by the Safe
   // Browsing subresource filter.
-  virtual subresource_filter::ContentRulesetService*
+  virtual subresource_filter::RulesetService*
   subresource_filter_ruleset_service() = 0;
 
   // Returns the service used to provide hints for what optimizations can be
@@ -279,7 +280,12 @@ class BrowserProcess {
   virtual gcm::GCMDriver* gcm_driver() = 0;
 
   // Returns the tab manager. On non-supported platforms, this returns null.
+  // TODO(sebmarchand): Update callers to
+  // resource_coordinator_parts()->tab_manager() and remove this.
   virtual resource_coordinator::TabManager* GetTabManager() = 0;
+
+  virtual resource_coordinator::ResourceCoordinatorParts*
+  resource_coordinator_parts() = 0;
 
   // Returns the default web client state of Chrome (i.e., was it the user's
   // default browser) at the time a previous check was made sometime between

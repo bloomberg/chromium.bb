@@ -17,6 +17,7 @@
 #include "ash/shell.h"
 #include "ash/wm/default_window_resizer.h"
 #include "ash/wm/drag_window_resizer.h"
+#include "ash/wm/pip/pip_window_resizer.h"
 #include "ash/wm/tablet_mode/tablet_mode_browser_window_drag_controller.h"
 #include "ash/wm/tablet_mode/tablet_mode_controller.h"
 #include "ash/wm/window_positioning_utils.h"
@@ -117,10 +118,15 @@ std::unique_ptr<WindowResizer> CreateWindowResizer(
   // refactor and eliminate chaining.
   std::unique_ptr<WindowResizer> window_resizer;
 
+  if (window_state->IsPip()) {
+    window_state->CreateDragDetails(point_in_parent, window_component, source);
+    window_resizer = std::make_unique<PipWindowResizer>(window_state);
+    return window_resizer;
+  }
+
   if (Shell::Get()
           ->tablet_mode_controller()
-          ->IsTabletModeWindowManagerEnabled() &&
-      !window_state->IsPip()) {
+          ->IsTabletModeWindowManagerEnabled()) {
     if (!CanDragInTabletMode(window, window_component))
       return nullptr;
 
@@ -132,7 +138,7 @@ std::unique_ptr<WindowResizer> CreateWindowResizer(
     return window_resizer;
   }
 
-  if (!window_state->IsNormalOrSnapped() && !window_state->IsPip())
+  if (!window_state->IsNormalOrSnapped())
     return nullptr;
 
   int bounds_change =
@@ -553,11 +559,7 @@ void WorkspaceWindowResizer::FlingOrSwipe(ui::GestureEvent* event) {
   if (event->type() == ui::ET_SCROLL_FLING_START) {
     CompleteDrag();
 
-    // TODO(pkotwicz): Fix tests which inadvertently start flings and check
-    // window_resizer_->IsMove() instead of the hittest component at |event|'s
-    // location.
-    if (wm::GetNonClientComponent(GetTarget(), event->location()) !=
-            HTCAPTION ||
+    if (details().bounds_change != WindowResizer::kBoundsChange_Repositions ||
         !wm::GetWindowState(GetTarget())->IsNormalOrSnapped()) {
       return;
     }

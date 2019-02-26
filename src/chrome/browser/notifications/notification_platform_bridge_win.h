@@ -38,6 +38,7 @@ class NotificationPlatformBridgeWin : public NotificationPlatformBridge {
   void GetDisplayed(Profile* profile,
                     GetDisplayedNotificationsCallback callback) const override;
   void SetReadyCallback(NotificationBridgeReadyCallback callback) override;
+  void DisplayServiceShutDown(Profile* profile) override;
 
   // Handles notification activation encoded in |command_line| from the
   // notification_helper process.
@@ -56,7 +57,7 @@ class NotificationPlatformBridgeWin : public NotificationPlatformBridge {
   FRIEND_TEST_ALL_PREFIXES(NotificationPlatformBridgeWinUITest, HandleEvent);
   FRIEND_TEST_ALL_PREFIXES(NotificationPlatformBridgeWinUITest, HandleSettings);
   FRIEND_TEST_ALL_PREFIXES(NotificationPlatformBridgeWinUITest,
-                           DisplayWithMockAC);
+                           DisplayWithFakeAC);
 
   // Simulates a click/dismiss event. Only for use in testing.
   // Note: Ownership of |notification| and |args| is retained by the caller.
@@ -80,7 +81,7 @@ class NotificationPlatformBridgeWin : public NotificationPlatformBridge {
   Microsoft::WRL::ComPtr<ABI::Windows::UI::Notifications::IToastNotification>
   GetToastNotificationForTesting(
       const message_center::Notification& notification,
-      const NotificationTemplateBuilder& notification_template_builder,
+      const base::string16& xml_template,
       const std::string& profile_id,
       bool incognito);
 

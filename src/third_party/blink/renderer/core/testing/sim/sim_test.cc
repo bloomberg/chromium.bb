@@ -12,8 +12,8 @@
 #include "third_party/blink/renderer/core/frame/local_dom_window.h"
 #include "third_party/blink/renderer/core/frame/web_local_frame_impl.h"
 #include "third_party/blink/renderer/core/scroll/scrollbar_theme.h"
-#include "third_party/blink/renderer/platform/layout_test_support.h"
 #include "third_party/blink/renderer/platform/testing/unit_test_helpers.h"
+#include "third_party/blink/renderer/platform/web_test_support.h"
 
 namespace blink {
 
@@ -30,7 +30,7 @@ SimTest::SimTest()
   // updateScrollerStyleForNewRecommendedScrollerStyle which then does
   // FrameView::scrollbarStyleChanged and will adjust the scrollbar existence
   // in the middle of a test.
-  LayoutTestSupport::SetMockThemeEnabledForTest(true);
+  WebTestSupport::SetMockThemeEnabledForTest(true);
   ScrollbarTheme::SetMockScrollbarsEnabled(true);
   // Threaded animations are usually enabled for blink. However these tests use
   // synchronous compositing, which can not run threaded animations.
@@ -46,7 +46,7 @@ SimTest::~SimTest() {
   test::RunPendingTasks();
 
   Document::SetThreadedParsingEnabledForTesting(true);
-  LayoutTestSupport::SetMockThemeEnabledForTest(false);
+  WebTestSupport::SetMockThemeEnabledForTest(false);
   ScrollbarTheme::SetMockScrollbarsEnabled(false);
   content::TestBlinkWebUnitTestSupport::SetThreadedAnimationEnabled(true);
   WebCache::Clear();

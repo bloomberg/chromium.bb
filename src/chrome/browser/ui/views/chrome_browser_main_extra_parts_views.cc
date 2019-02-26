@@ -51,6 +51,10 @@
 #include "ui/base/l10n/l10n_util.h"
 #endif  // defined(OS_LINUX) && !defined(OS_CHROMEOS)
 
+#if defined(OS_CHROMEOS)
+#include "ui/base/ui_base_features.h"
+#endif
+
 ChromeBrowserMainExtraPartsViews::ChromeBrowserMainExtraPartsViews() {
 }
 
@@ -90,12 +94,22 @@ void ChromeBrowserMainExtraPartsViews::PreCreateThreads() {
 void ChromeBrowserMainExtraPartsViews::PreProfileInit() {
 #if defined(USE_AURA)
   // Start devtools server
+  constexpr int kUiDevToolsDefaultPort = 9223;
   network::mojom::NetworkContext* network_context =
       g_browser_process->system_network_context_manager()->GetContext();
-  devtools_server_ = ui_devtools::UiDevToolsServer::Create(
-      network_context, switches::kEnableUiDevTools, 9223);
+  devtools_server_ = ui_devtools::UiDevToolsServer::CreateForViews(
+      network_context, switches::kEnableUiDevTools, kUiDevToolsDefaultPort);
   if (devtools_server_) {
     auto dom_backend = std::make_unique<ui_devtools::DOMAgentAura>();
+#if defined(OS_CHROMEOS)
+    // OverlayAgentAura intends to handle input events targeting any UI surface,
+    // and so installs itself as a local aura::Env pre-target ui::EventHandler.
+    // In multi-process Mash, Chrome's local aura::Env can only handle events
+    // target Chrome's own aura::Windows, not those targeting Ash or mojo apps.
+    // TODO(crbug.com/896977): Init the devtools server in Ash on Chrome OS.
+    LOG_IF(WARNING, features::IsMultiProcessMash())
+        << "Chrome cannot handle Ash system ui and mojo app events in Mash.";
+#endif
     auto overlay_backend =
         std::make_unique<ui_devtools::OverlayAgentAura>(dom_backend.get());
     auto css_backend =

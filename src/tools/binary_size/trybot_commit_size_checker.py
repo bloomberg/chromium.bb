@@ -39,8 +39,10 @@ There is guidance at:
 https://chromium.googlesource.com/chromium/src/+/master/docs/speed/apk_size_regressions.md#Debugging-Apk-Size-Increase
 
 If the growth is expected / justified, then you can bypass this bot failure by
-adding "Binary-Size: $JUSTIFICATION" to your commit description. Here are some
-examples:
+adding "Binary-Size: $JUSTIFICATION" footer to your commit message (must go at
+the bottom of the message, similar to "Bug:").
+
+Here are some examples:
 
 Binary-Size: Increase is due to translations and so cannot be avoided.
 Binary-Size: Increase is due to new images, which are already optimally encoded.

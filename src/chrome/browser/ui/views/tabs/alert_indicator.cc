@@ -78,23 +78,21 @@ gfx::Image GetTabAlertIndicatorImage(TabAlertState alert_state,
                                      SkColor button_color) {
   const gfx::VectorIcon* icon = nullptr;
   int image_width = GetLayoutConstant(TAB_ALERT_INDICATOR_ICON_WIDTH);
-  const bool is_touch_optimized_ui =
-      ui::MaterialDesignController::IsTouchOptimizedUiEnabled();
+  const bool touch_ui = ui::MaterialDesignController::touch_ui();
   switch (alert_state) {
     case TabAlertState::AUDIO_PLAYING:
-      icon = is_touch_optimized_ui ? &kTabAudioRoundedIcon : &kTabAudioIcon;
+      icon = touch_ui ? &kTabAudioRoundedIcon : &kTabAudioIcon;
       break;
     case TabAlertState::AUDIO_MUTING:
-      icon = is_touch_optimized_ui ? &kTabAudioMutingRoundedIcon
-                                   : &kTabAudioMutingIcon;
+      icon = touch_ui ? &kTabAudioMutingRoundedIcon : &kTabAudioMutingIcon;
       break;
     case TabAlertState::MEDIA_RECORDING:
     case TabAlertState::DESKTOP_CAPTURING:
       icon = &kTabMediaRecordingIcon;
       break;
     case TabAlertState::TAB_CAPTURING:
-      icon = is_touch_optimized_ui ? &kTabMediaCapturingWithArrowIcon
-                                   : &kTabMediaCapturingIcon;
+      icon =
+          touch_ui ? &kTabMediaCapturingWithArrowIcon : &kTabMediaCapturingIcon;
       // Tab capturing and presenting icon uses a different width compared to
       // the other tab alert indicator icons.
       image_width = GetLayoutConstant(TAB_ALERT_INDICATOR_CAPTURE_ICON_WIDTH);

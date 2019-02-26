@@ -9,6 +9,7 @@
 #include <algorithm>
 
 #include "fpdfsdk/cpdfsdk_formfillenvironment.h"
+#include "fxjs/cfx_globaldata.h"
 #include "fxjs/cjs_annot.h"
 #include "fxjs/cjs_app.h"
 #include "fxjs/cjs_border.h"
@@ -24,14 +25,11 @@
 #include "fxjs/cjs_global.h"
 #include "fxjs/cjs_globalarrays.h"
 #include "fxjs/cjs_globalconsts.h"
-#include "fxjs/cjs_globaldata.h"
 #include "fxjs/cjs_highlight.h"
 #include "fxjs/cjs_icon.h"
 #include "fxjs/cjs_object.h"
 #include "fxjs/cjs_position.h"
-#include "fxjs/cjs_printparamsobj.h"
 #include "fxjs/cjs_publicmethods.h"
-#include "fxjs/cjs_report.h"
 #include "fxjs/cjs_scalehow.h"
 #include "fxjs/cjs_scalewhen.h"
 #include "fxjs/cjs_style.h"
@@ -39,9 +37,7 @@
 #include "fxjs/cjs_util.h"
 #include "fxjs/cjs_zoomtype.h"
 #include "fxjs/js_define.h"
-#include "public/fpdf_formfill.h"
 #include "third_party/base/ptr_util.h"
-#include "third_party/base/stl_util.h"
 
 #ifdef PDF_ENABLE_XFA
 #include "fxjs/cfxjse_value.h"
@@ -126,14 +122,9 @@ void CJS_Runtime::DefineJSObjects() {
   CJS_GlobalConsts::DefineJSObjects(this);
   CJS_GlobalArrays::DefineJSObjects(this);
 
-  // ObjDefIDs 21 - 23.
+  // ObjDefIDs 21 - 22.
   CJS_TimerObj::DefineJSObjects(this);
-  CJS_PrintParamsObj::DefineJSObjects(this);
   CJS_Annot::DefineJSObjects(this);
-}
-
-CJS_Runtime* CJS_Runtime::AsCJSRuntime() {
-  return this;
 }
 
 IJS_EventContext* CJS_Runtime::NewEventContext() {
@@ -192,6 +183,10 @@ WideString ChangeObjName(const WideString& str) {
   return sRet;
 }
 
+CJS_Runtime* CJS_Runtime::AsCJSRuntime() {
+  return this;
+}
+
 bool CJS_Runtime::GetValueByNameFromGlobalObject(const ByteStringView& utf8Name,
                                                  CFXJSE_Value* pValue) {
   v8::Isolate::Scope isolate_scope(GetIsolate());
@@ -202,8 +197,13 @@ bool CJS_Runtime::GetValueByNameFromGlobalObject(const ByteStringView& utf8Name,
       v8::String::NewFromUtf8(GetIsolate(), utf8Name.unterminated_c_str(),
                               v8::NewStringType::kNormal, utf8Name.GetLength())
           .ToLocalChecked();
-  v8::Local<v8::Value> propvalue =
-      context->Global()->Get(context, str).ToLocalChecked();
+  v8::MaybeLocal<v8::Value> maybe_propvalue =
+      context->Global()->Get(context, str);
+  if (maybe_propvalue.IsEmpty()) {
+    pValue->SetUndefined();
+    return false;
+  }
+  v8::Local<v8::Value> propvalue = maybe_propvalue.ToLocalChecked();
   if (propvalue.IsEmpty()) {
     pValue->SetUndefined();
     return false;

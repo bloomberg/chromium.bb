@@ -5,7 +5,7 @@
 package org.chromium.chrome.browser.snackbar;
 
 import android.content.Context;
-import android.content.Intent;
+import android.os.Bundle;
 
 import org.chromium.base.CommandLine;
 import org.chromium.chrome.R;
@@ -130,10 +130,10 @@ public class DataReductionPromoSnackbarController implements SnackbarManager.Sna
     @Override
     public void onAction(Object actionData) {
         assert mContext != null;
-        Intent intent = PreferencesLauncher.createIntentForSettingsPage(
-                mContext, DataReductionPreferences.class.getName());
-        intent.putExtra(FROM_PROMO, true);
-        mContext.startActivity(intent);
+        Bundle fragmentArgs = new Bundle();
+        fragmentArgs.putBoolean(FROM_PROMO, true);
+        PreferencesLauncher.launchSettingsPage(
+                mContext, DataReductionPreferences.class, fragmentArgs);
     }
 
     @Override

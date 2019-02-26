@@ -137,8 +137,8 @@ void MultideviceHandler::UpdatePageContent() {
   std::unique_ptr<base::DictionaryValue> page_content_dictionary =
       GeneratePageContentDataDictionary();
   DCHECK(page_content_dictionary);
-  PA_LOG(INFO) << "Updating MultiDevice settings page content with: "
-               << *page_content_dictionary << ".";
+  PA_LOG(VERBOSE) << "Updating MultiDevice settings page content with: "
+                  << *page_content_dictionary << ".";
   FireWebUIListener("settings.updateMultidevicePageContentData",
                     *page_content_dictionary);
 }
@@ -166,8 +166,8 @@ void MultideviceHandler::HandleGetPageContent(const base::ListValue* args) {
   std::unique_ptr<base::DictionaryValue> page_content_dictionary =
       GeneratePageContentDataDictionary();
   DCHECK(page_content_dictionary);
-  PA_LOG(INFO) << "Responding to getPageContentData() request with: "
-               << *page_content_dictionary << ".";
+  PA_LOG(VERBOSE) << "Responding to getPageContentData() request with: "
+                  << *page_content_dictionary << ".";
 
   ResolveJavascriptCallback(base::Value(callback_id), *page_content_dictionary);
 }
@@ -213,9 +213,8 @@ void MultideviceHandler::HandleRetryPendingHostSetup(
 }
 
 void MultideviceHandler::HandleSetUpAndroidSms(const base::ListValue* args) {
-  PA_LOG(INFO) << "SetUpSMS triggered.";
   DCHECK(args->empty());
-  android_sms_app_helper_->InstallAndLaunchAndroidSmsApp();
+  android_sms_app_helper_->SetUpAndLaunchAndroidSmsApp();
 }
 
 void MultideviceHandler::HandleGetSmartLockSignInEnabled(

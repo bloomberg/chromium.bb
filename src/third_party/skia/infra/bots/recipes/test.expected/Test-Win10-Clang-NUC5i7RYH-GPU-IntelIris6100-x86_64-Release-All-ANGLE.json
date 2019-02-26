@@ -322,6 +322,10 @@
       "rle4-height-negative.bmp",
       "_",
       "image",
+      "gen_platf",
+      "error",
+      "_",
+      "image",
       "_",
       "interlaced1.png",
       "_",
@@ -420,6 +424,7 @@
       "~BlurMaskBiggerThanDest",
       "~^ProcessorOptimizationValidationTest$",
       "--nonativeFonts",
+      "--reduceOpListSplitting",
       "--verbose"
     ],
     "env": {
@@ -429,8 +434,7 @@
     "name": "dm"
   },
   {
-    "name": "$result",
-    "recipe_result": null,
-    "status_code": 0
+    "jsonResult": null,
+    "name": "$result"
   }
 ]

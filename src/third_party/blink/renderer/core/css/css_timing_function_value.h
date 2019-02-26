@@ -40,8 +40,16 @@ class CSSCubicBezierTimingFunctionValue : public CSSValue {
                                                    double y1,
                                                    double x2,
                                                    double y2) {
-    return new CSSCubicBezierTimingFunctionValue(x1, y1, x2, y2);
+    return MakeGarbageCollected<CSSCubicBezierTimingFunctionValue>(x1, y1, x2,
+                                                                   y2);
   }
+
+  CSSCubicBezierTimingFunctionValue(double x1, double y1, double x2, double y2)
+      : CSSValue(kCubicBezierTimingFunctionClass),
+        x1_(x1),
+        y1_(y1),
+        x2_(x2),
+        y2_(y2) {}
 
   String CustomCSSText() const;
 
@@ -57,13 +65,6 @@ class CSSCubicBezierTimingFunctionValue : public CSSValue {
   }
 
  private:
-  CSSCubicBezierTimingFunctionValue(double x1, double y1, double x2, double y2)
-      : CSSValue(kCubicBezierTimingFunctionClass),
-        x1_(x1),
-        y1_(y1),
-        x2_(x2),
-        y2_(y2) {}
-
   double x1_;
   double y1_;
   double x2_;
@@ -78,8 +79,15 @@ class CSSStepsTimingFunctionValue : public CSSValue {
   static CSSStepsTimingFunctionValue* Create(
       int steps,
       StepsTimingFunction::StepPosition step_position) {
-    return new CSSStepsTimingFunctionValue(steps, step_position);
+    return MakeGarbageCollected<CSSStepsTimingFunctionValue>(steps,
+                                                             step_position);
   }
+
+  CSSStepsTimingFunctionValue(int steps,
+                              StepsTimingFunction::StepPosition step_position)
+      : CSSValue(kStepsTimingFunctionClass),
+        steps_(steps),
+        step_position_(step_position) {}
 
   int NumberOfSteps() const { return steps_; }
   StepsTimingFunction::StepPosition GetStepPosition() const {
@@ -95,12 +103,6 @@ class CSSStepsTimingFunctionValue : public CSSValue {
   }
 
  private:
-  CSSStepsTimingFunctionValue(int steps,
-                              StepsTimingFunction::StepPosition step_position)
-      : CSSValue(kStepsTimingFunctionClass),
-        steps_(steps),
-        step_position_(step_position) {}
-
   int steps_;
   StepsTimingFunction::StepPosition step_position_;
 };
@@ -111,7 +113,12 @@ DEFINE_CSS_VALUE_TYPE_CASTS(CSSStepsTimingFunctionValue,
 class CSSFramesTimingFunctionValue : public CSSValue {
  public:
   static CSSFramesTimingFunctionValue* Create(int frames) {
-    return new CSSFramesTimingFunctionValue(frames);
+    return MakeGarbageCollected<CSSFramesTimingFunctionValue>(frames);
+  }
+
+  CSSFramesTimingFunctionValue(int frames)
+      : CSSValue(kFramesTimingFunctionClass), frames_(frames) {
+    DCHECK(RuntimeEnabledFeatures::FramesTimingFunctionEnabled());
   }
 
   int NumberOfFrames() const { return frames_; }
@@ -125,11 +132,6 @@ class CSSFramesTimingFunctionValue : public CSSValue {
   }
 
  private:
-  CSSFramesTimingFunctionValue(int frames)
-      : CSSValue(kFramesTimingFunctionClass), frames_(frames) {
-    DCHECK(RuntimeEnabledFeatures::FramesTimingFunctionEnabled());
-  }
-
   int frames_;
 };
 

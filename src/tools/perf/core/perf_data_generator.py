@@ -8,7 +8,7 @@
 """Script to generate chromium.perf.json in
 the src/testing/buildbot directory and benchmark.csv in the src/tools/perf
 directory. Maintaining these files by hand is too unwieldy.
-Note: chromium.perf.fyi.json is updated manuall for now until crbug.com/757933
+Note: chromium.perf.fyi.json is updated manually for now until crbug.com/757933
 is complete.
 """
 import argparse
@@ -42,8 +42,12 @@ from py_utils import discover
 # bisecting Chrome builds with their web tests. For questions or to report
 # issues, please contact johnchen@chromium.org.
 BUILDER_ADDITIONAL_COMPILE_TARGETS = {
-    'android-builder-perf': ['microdump_stackwalk', 'angle_perftests'],
-    'android_arm64-builder-perf': ['microdump_stackwalk', 'angle_perftests'],
+    'android-builder-perf': [
+        'microdump_stackwalk', 'angle_perftests', 'chrome_apk'
+    ],
+    'android_arm64-builder-perf': [
+        'microdump_stackwalk', 'angle_perftests', 'chrome_apk'
+    ],
     'linux-builder-perf': ['chromedriver'],
     'mac-builder-perf': ['chromedriver'],
     'win32-builder-perf': ['chromedriver'],
@@ -62,44 +66,22 @@ BUILDER_ADDITIONAL_COMPILE_TARGETS = {
 #     will run on all shards.
 # telemetry: boolean indicating if this is a telemetry test.  If omitted
 #     assumed to be true.
+
+# TODO(crbug.com/902089): automatically generate --test-shard-map-filename
+# arguments once we track all the perf FYI builders to core/bot_platforms.py
 NEW_PERF_RECIPE_FYI_TESTERS = {
   'testers' : {
-    'One Buildbot Step Test Builder': {
-      'tests': [
-        {
-          'isolate': 'telemetry_perf_tests_without_chrome',
-          'extra_args': [
-            '--xvfb',
-            '--run-ref-build',
-            '--test-shard-map-filename=benchmark_bot_map.json'
-          ],
-          'num_shards': 3
-        },
-        {
-          'isolate': 'load_library_perf_tests',
-          'num_shards': 1,
-          'telemetry': False,
-        }
-      ],
-      'platform': 'linux',
-      'dimension': {
-        'gpu': 'none',
-        'pool': 'chrome.tests.perf-fyi',
-        'os': 'Linux',
-      },
-      'testing': True,
-    },
     'android-pixel2_webview-perf': {
       'tests': [
         {
           'isolate': 'performance_webview_test_suite',
           'extra_args': [
-            '--test-shard-map-filename=android_pixel2_webview_shard_map.json',
+            '--test-shard-map-filename=android-pixel2_webview-perf_map.json',
           ],
           'num_shards': 7
         }
       ],
-      'platform': 'android-webview',
+      'platform': 'android-webview-google',
       'dimension': {
         'pool': 'chrome.tests.perf-webview-fyi',
         'os': 'Android',
@@ -114,12 +96,12 @@ NEW_PERF_RECIPE_FYI_TESTERS = {
           'isolate': 'performance_test_suite',
           'extra_args': [
             '--run-ref-build',
-            '--test-shard-map-filename=android_pixel2_shard_map.json',
+            '--test-shard-map-filename=android-pixel2-perf_map.json',
           ],
           'num_shards': 7
         }
       ],
-      'platform': 'android',
+      'platform': 'android-chrome',
       'dimension': {
         'pool': 'chrome.tests.perf-fyi',
         'os': 'Android',
@@ -133,12 +115,12 @@ NEW_PERF_RECIPE_FYI_TESTERS = {
         {
           'isolate': 'performance_webview_test_suite',
           'extra_args': [
-              '--test-shard-map-filename=android_go_webview_shard_map.json',
+              '--test-shard-map-filename=android-go_webview-perf_map.json',
           ],
           'num_shards': 25
         }
       ],
-      'platform': 'android-webview',
+      'platform': 'android-webview-google',
       'dimension': {
         'pool': 'chrome.tests.perf-webview',
         'os': 'Android',
@@ -214,6 +196,11 @@ NEW_PERF_RECIPE_MIGRATED_TESTERS = {
           'extra_args': [
               '--shard-timeout=300'
           ],
+        },
+        {
+          'isolate': 'base_perftests',
+          'num_shards': 1,
+          'telemetry': False,
         }
       ],
       'platform': 'android',
@@ -334,6 +321,11 @@ NEW_PERF_RECIPE_MIGRATED_TESTERS = {
           'isolate': 'views_perftests',
           'num_shards': 1,
           'telemetry': False,
+        },
+        {
+          'isolate': 'base_perftests',
+          'num_shards': 1,
+          'telemetry': False,
         }
       ],
       'platform': 'win',
@@ -354,7 +346,6 @@ NEW_PERF_RECIPE_MIGRATED_TESTERS = {
               '--test-shard-map-filename=win_7_perf_map.json',
           ],
         },
-        # crbug.com/735679 enable performance_browser_tests
         {
           'isolate': 'load_library_perf_tests',
           'num_shards': 1,
@@ -390,7 +381,6 @@ NEW_PERF_RECIPE_MIGRATED_TESTERS = {
               '--assert-gpu-compositing',
           ],
         },
-        # crbug.com/735679 enable performance_browser_tests
         {
           'isolate': 'load_library_perf_tests',
           'num_shards': 1,
@@ -448,12 +438,12 @@ NEW_PERF_RECIPE_MIGRATED_TESTERS = {
           ],
         },
         {
-          'isolate': 'load_library_perf_tests',
+          'isolate': 'performance_browser_tests',
           'num_shards': 1,
           'telemetry': False,
         },
         {
-          'isolate': 'performance_browser_tests',
+          'isolate': 'load_library_perf_tests',
           'num_shards': 1,
           'telemetry': False,
         }
@@ -478,6 +468,11 @@ NEW_PERF_RECIPE_MIGRATED_TESTERS = {
           ],
         },
         {
+          'isolate': 'performance_browser_tests',
+          'num_shards': 1,
+          'telemetry': False,
+        },
+        {
           'isolate': 'load_library_perf_tests',
           'num_shards': 1,
           'telemetry': False,
@@ -494,6 +489,11 @@ NEW_PERF_RECIPE_MIGRATED_TESTERS = {
         },
         {
           'isolate': 'media_perftests',
+          'num_shards': 1,
+          'telemetry': False,
+        },
+        {
+          'isolate': 'base_perftests',
           'num_shards': 1,
           'telemetry': False,
         }
@@ -517,6 +517,11 @@ NEW_PERF_RECIPE_MIGRATED_TESTERS = {
           'num_shards': 26
         },
         {
+          'isolate': 'performance_browser_tests',
+          'num_shards': 1,
+          'telemetry': False,
+        },
+        {
           'isolate': 'net_perftests',
           'num_shards': 1,
           'telemetry': False,
@@ -528,6 +533,11 @@ NEW_PERF_RECIPE_MIGRATED_TESTERS = {
         },
         {
           'isolate': 'media_perftests',
+          'num_shards': 1,
+          'telemetry': False,
+        },
+        {
+          'isolate': 'base_perftests',
           'num_shards': 1,
           'telemetry': False,
         }
@@ -612,6 +622,11 @@ NON_TELEMETRY_BENCHMARKS = {
     'angle_perftests': BenchmarkMetadata(
         'jmadill@chromium.org, chrome-gpu-perf-owners@chromium.org',
         'Internals>GPU>ANGLE'),
+    'base_perftests': BenchmarkMetadata(
+        'skyostil@chromium.org, gab@chromium.org',
+        'Internals>SequenceManager',
+        ('https://chromium.googlesource.com/chromium/src/+/HEAD/base/' +
+         'README.md#performance-testing')),
     'validating_command_buffer_perftests': BenchmarkMetadata(
         'piman@chromium.org, chrome-gpu-perf-owners@chromium.org',
         'Internals>GPU'),
@@ -853,7 +868,7 @@ def validate_tests(waterfall, waterfall_file, benchmark_file, labs_docs_file):
 
   return up_to_date
 
-def add_common_test_properties(test_entry, tester_config):
+def add_common_test_properties(test_entry):
   test_entry['trigger_script'] = {
       'script': '//testing/trigger_scripts/perf_device_trigger.py',
       'args': [
@@ -862,19 +877,8 @@ def add_common_test_properties(test_entry, tester_config):
       ],
   }
 
-  if tester_config['platform'] == 'win':
-    service_account_path = (
-        'C:\\creds\\service_accounts\\'
-        'service-account-chromium-perf-histograms.json')
-  else:
-    service_account_path = (
-        '/creds/service_accounts/service-account-chromium-perf-histograms.json')
   test_entry['merge'] = {
       'script': '//tools/perf/process_perf_results.py',
-      'args': [
-        '--service-account-file',
-        service_account_path
-      ],
   }
 
 def generate_telemetry_args(tester_config):
@@ -885,8 +889,8 @@ def generate_telemetry_args(tester_config):
     browser_name = 'reference'
   elif tester_config['platform'] == 'android':
     browser_name = 'android-chromium'
-  elif tester_config['platform'] == 'android-webview':
-    browser_name = 'android-webview'
+  elif tester_config['platform'].startswith('android-'):
+    browser_name = tester_config['platform']
   elif (tester_config['platform'] == 'win'
     and tester_config['target_bits'] == 64):
     browser_name = 'release_x64'
@@ -899,7 +903,7 @@ def generate_telemetry_args(tester_config):
     '--upload-results'
   ]
 
-  if browser_name == 'android-webview':
+  if browser_name.startswith('android-webview'):
     test_args.append(
         '--webview-embedder-apk=../../out/Release/apks/SystemWebViewShell.apk')
 
@@ -945,14 +949,17 @@ def generate_performance_test(tester_config, test):
   # For now we either get shards from the number of devices specified
   # or a test entry needs to specify the num shards if it supports
   # soft device affinity.
-  add_common_test_properties(result, tester_config)
+  add_common_test_properties(result)
   shards = test.get('num_shards')
   result['swarming'] = {
     # Always say this is true regardless of whether the tester
     # supports swarming. It doesn't hurt.
     'can_use_on_swarming_builders': True,
     'expiration': 2 * 60 * 60, # 2 hours pending max
-    'hard_timeout': 7 * 60 * 60, # 7 hours timeout for full suite
+    # TODO(crbug.com/865538): once we have plenty of windows hardwares,
+    # to shards perf benchmarks on Win builders, reduce this hard timeout limit
+    # to ~2 hrs.
+    'hard_timeout': 10 * 60 * 60, # 10 hours timeout for full suite
     'ignore_task_failure': False,
     'io_timeout': 30 * 60, # 30 minutes
     'dimension_sets': [

@@ -15,7 +15,10 @@ namespace web {
 
 FakeDownloadTask::FakeDownloadTask(const GURL& original_url,
                                    const std::string& mime_type)
-    : original_url_(original_url), mime_type_(mime_type), identifier_(@"") {}
+    : original_url_(original_url),
+      original_mime_type_(mime_type),
+      mime_type_(mime_type),
+      identifier_(@"") {}
 
 FakeDownloadTask::~FakeDownloadTask() {
   for (auto& observer : observers_)
@@ -76,6 +79,10 @@ int FakeDownloadTask::GetPercentComplete() const {
 
 std::string FakeDownloadTask::GetContentDisposition() const {
   return content_disposition_;
+}
+
+std::string FakeDownloadTask::GetOriginalMimeType() const {
+  return original_mime_type_;
 }
 
 std::string FakeDownloadTask::GetMimeType() const {

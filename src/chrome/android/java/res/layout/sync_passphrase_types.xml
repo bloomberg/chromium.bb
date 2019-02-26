@@ -13,10 +13,4 @@
         android:id="@+id/passphrase_types"
         android:layout_width="match_parent"
         android:layout_height="wrap_content" />
-    <org.chromium.ui.widget.TextViewWithClickableSpans
-        android:id="@+id/reset_sync_text"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_marginTop="25dp"
-        android:visibility="gone" />
 </LinearLayout>

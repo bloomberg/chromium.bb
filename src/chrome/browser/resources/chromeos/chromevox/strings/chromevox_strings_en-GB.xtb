@@ -20,7 +20,6 @@
 <translation id="1087788677726983142">Hide event stream filters</translation>
 <translation id="1088219014394087294">No headings.</translation>
 <translation id="1106741348836243114">Turn sound feedback (earcons) on or off.</translation>
-<translation id="1108651818222110612">subti</translation>
 <translation id="1120743664840974483">{"a": "alpha", "b": "bravo", "c": "charlie", "d": "delta", "e": "echo", "f": "foxtrot", "g": "golf", "h": "hotel", "i": "india", "j": "juliet","k": "kilo", "l": "lima", "m": "mike", "n": "november", "o": "oscar","p": "papa", "q": "quebec", "r": "romeo", "s": "sierra", "t": "tango", "u": "uniform", "v": "victor", "w": "whiskey","x": "xray", "y": "yankee", "z": "zulu"}</translation>
 <translation id="1120938014254001895">Swipe two fingers up</translation>
 <translation id="1124771028211010580">Current display style is side by side.</translation>
@@ -44,12 +43,15 @@ If you've finished with the tutorial, use ChromeVox to navigate to the Close but
 <translation id="1251750620252348585">Next level 6 heading</translation>
 <translation id="1275718070701477396">Selected</translation>
 <translation id="1286609444451033486">Press Search+Space to toggle.</translation>
+<translation id="1291286136605998134">Toggle button</translation>
+<translation id="1303806948938513162">Tap with 4 fingers to enter the ChromeVox menus</translation>
 <translation id="1319608975892113573">No previous block quote.</translation>
 <translation id="1321576897702511272">Hide ChromeVox help</translation>
 <translation id="1331702245475014624"><ph name="INDEX" /> of <ph name="TOTAL" /></translation>
 <translation id="1334095593597963605">character and word echo</translation>
 <translation id="1339428534620983148">Previous table column</translation>
 <translation id="1342835525016946179">article</translation>
+<translation id="1346059596910821859">Tip</translation>
 <translation id="1346748346194534595">Right</translation>
 <translation id="135978014023467274">You've been updated to ChromeVox 63!</translation>
 <translation id="136718599399906424">Next table row</translation>
@@ -159,6 +161,7 @@ If you've finished with the tutorial, use ChromeVox to navigate to the Close but
 <translation id="2422937916923936891">Menu item tick box</translation>
 <translation id="2428534162001909979">Command Menus</translation>
 <translation id="2429669115401274487">p.m.</translation>
+<translation id="242998846562331953">Subtitle</translation>
 <translation id="2435413342408885429"><ph name="KEY" /> is now the new ChromeVox modifier.</translation>
 <translation id="2450814015951372393">Tick box</translation>
 <translation id="2462626033734746142">Radio button group</translation>
@@ -194,7 +197,6 @@ If you've finished with the tutorial, use ChromeVox to navigate to the Close but
 <translation id="2737520612859577214">Superscript end</translation>
 <translation id="2749275490991666823">Ticked</translation>
 <translation id="27527859628328957">Jump to next focusable item</translation>
-<translation id="276402504937943375">toc</translation>
 <translation id="2770781857296573485">Enter group exploration</translation>
 <translation id="2777845298774924149">Exited</translation>
 <translation id="2781264313200109999">Link start</translation>
@@ -238,6 +240,7 @@ If you've finished with the tutorial, use ChromeVox to navigate to the Close but
 <translation id="3046838483509668188">ChromeVox Options</translation>
 <translation id="3047143736589213134">Experimental keymap</translation>
 <translation id="3060756054951570867"><ph name="TITLE" /> menu opened</translation>
+<translation id="3060880924447482063">Swipe left or right to move by item</translation>
 <translation id="3070245424257836917">Swipe three fingers up</translation>
 <translation id="3078345202707391975">Next level 2 heading</translation>
 <translation id="3078740164268491126">table</translation>
@@ -331,6 +334,7 @@ If you've finished with the tutorial, use ChromeVox to navigate to the Close but
 <translation id="3389259863310851658">Previous form field</translation>
 <translation id="3390225400784126843">Next different element.</translation>
 <translation id="3392045790598181549"><ph name="NAME" />, menu item</translation>
+<translation id="3393605254399152980">Drag one finger to hear what you touch</translation>
 <translation id="3406283310380167331">Show forms list</translation>
 <translation id="3423495725743882470">row $1 column $2</translation>
 <translation id="3457000393508828486">Partially pressed</translation>
@@ -346,6 +350,7 @@ If you've finished with the tutorial, use ChromeVox to navigate to the Close but
 <translation id="3497063866483065785">{COUNT,plural, =1{question mark}other{# question marks}}</translation>
 <translation id="3514822174137761109">{COUNT,plural, =1{caret}other{# carets}}</translation>
 <translation id="352577523970648069">An editable text field</translation>
+<translation id="3549680091535286226">Tap with 2 fingers to temporarily stop speech</translation>
 <translation id="3568702578574425662"><ph name="NAME" />, tick box not ticked</translation>
 <translation id="3589661172894441357">Glossary</translation>
 <translation id="3599054940393788245">Not inside math</translation>
@@ -383,6 +388,7 @@ If you've finished with the tutorial, use ChromeVox to navigate to the Close but
 <translation id="3930498801443296724">Pullquote</translation>
 <translation id="3941269780691800708">Speak text under the mouse.</translation>
 <translation id="3962990492275676168">Start reading from current location</translation>
+<translation id="3989324057180830702">tgl btn</translation>
 <translation id="4004802134384979325">ticked</translation>
 <translation id="4006140876663370126">img</translation>
 <translation id="4038349100599457191">Month control</translation>
@@ -396,6 +402,7 @@ If you've finished with the tutorial, use ChromeVox to navigate to the Close but
 <translation id="4058278702844053247">A page load in progress</translation>
 <translation id="4065205963140826639">Try using Search + Right Arrow now to find the Next button, then press Search + Space to click it.</translation>
 <translation id="4081085052247739398">{COUNT,plural, =1{TILDE}other{# tildes}}</translation>
+<translation id="4086311032171418648">Stopping Learn Mode.</translation>
 <translation id="409334809956508737">Previous Object</translation>
 <translation id="4099274309791143834">with submenu</translation>
 <translation id="4101527861445851766">A ticked tick box</translation>
@@ -408,6 +415,7 @@ If you've finished with the tutorial, use ChromeVox to navigate to the Close but
 <translation id="4166192625054637755">Subscript end</translation>
 <translation id="4173994908659439270">No next editable text field.</translation>
 <translation id="4176463684765177261">Disabled</translation>
+<translation id="4187322598335821254">Swipe up or down to move by line</translation>
 <translation id="4188530942454211480">Previous Sentence</translation>
 <translation id="4191918948604314587">A button</translation>
 <translation id="419265409837491189">Go to the previous column</translation>
@@ -498,6 +506,7 @@ If you've finished with the tutorial, use ChromeVox to navigate to the Close but
 <translation id="4877261390094455813">Enter a search query.</translation>
 <translation id="4886524826165775965"><ph name="INDEX" />/<ph name="TOTAL" /></translation>
 <translation id="489907760999452556">Internal link</translation>
+<translation id="4915087353619183190">Starting Learn Mode. Press a qwerty key, refreshable braille key or touch gesture to learn its function. Press control with w or escape to exit.</translation>
 <translation id="492295894462528572">Foreword</translation>
 <translation id="495170559598752135">Actions</translation>
 <translation id="4953585991029886728">Edit text</translation>
@@ -693,6 +702,7 @@ If you've finished with the tutorial, use ChromeVox to navigate to the Close but
 <translation id="641759969622533235">{COUNT,plural, =1{colon}other{# colons}}</translation>
 <translation id="6438968337250688271"><ph name="NAME" />, menu</translation>
 <translation id="6444046323172968959">Alert dialogue</translation>
+<translation id="6452403590345320472">Table of contents</translation>
 <translation id="6459511626086141404">Flat keymap</translation>
 <translation id="6468049171101508116">Next button</translation>
 <translation id="646954774886932461">Index</translation>
@@ -705,6 +715,7 @@ If you've finished with the tutorial, use ChromeVox to navigate to the Close but
 <translation id="6583174818554398774">Move to next at granularity</translation>
 <translation id="6587021927234520429">No next level 4 heading.</translation>
 <translation id="6601344353291556895">Enable verbose descriptions.</translation>
+<translation id="6609828810966525877">Explore more gestures in Learn Mode and the Chromebook Help Centre</translation>
 <translation id="6615602925644411249">Find in page.</translation>
 <translation id="6628427060004938651">Part</translation>
 <translation id="6633350132811819843">No next table.</translation>
@@ -756,6 +767,7 @@ To close a tab, press Control+W.
 To move forward between open tabs, use Control+Tab.
 To open the Chrome browser menu, press Alt+F.</translation>
 <translation id="7086377898680121060">Brightness up</translation>
+<translation id="7088743565397416204">Double-tap to activate what is focused</translation>
 <translation id="7095834689119144465">Edit text numeric only</translation>
 <translation id="7096001299300236431">Previous media</translation>
 <translation id="7116595520562830928">multln</translation>
@@ -811,6 +823,7 @@ To open the Chrome browser menu, press Alt+F.</translation>
 <translation id="7491962110804786152">tab</translation>
 <translation id="7492049978501397201">Entered dialogue</translation>
 <translation id="7518543783849163354">To temporarily stop ChromeVox from speaking, press the Control key.</translation>
+<translation id="7521682724501952239">You can use ChromeVox with the touchscreen.</translation>
 <translation id="7532613204005497612">June</translation>
 <translation id="7552432549459840808">Helpful Chrome Shortcuts</translation>
 <translation id="7579911500627256166">dot <ph name="DOT" /></translation>
@@ -824,7 +837,6 @@ To open the Chrome browser menu, press Alt+F.</translation>
 <translation id="7625690649919402823">Next table</translation>
 <translation id="7628927569678398026"><ph name="LOCALE" /> (<ph name="VARIANT" />), Grade <ph name="GRADE" /></translation>
 <translation id="7641134354185483015">No previous level 3 heading.</translation>
-<translation id="7647456547678091388">tip</translation>
 <translation id="7659376057562985921"><ph name="VALUE" />, <ph name="NAME" />, text box</translation>
 <translation id="7663318257180412551">Heading 2</translation>
 <translation id="7674576868851035240">Next link</translation>
@@ -870,6 +882,7 @@ To open the Chrome browser menu, press Alt+F.</translation>
 <translation id="8076492880354921740">Tabs</translation>
 <translation id="8091452896542422286">Space</translation>
 <translation id="8110647606445335195">No ARIA landmarks.</translation>
+<translation id="8138880386467279117">Tap</translation>
 <translation id="8153880621934657047">Not inside table.</translation>
 <translation id="817440585505441544">{COUNT,plural, =1{underscore}other{# underscores}}</translation>
 <translation id="8179976553408161302">Enter</translation>

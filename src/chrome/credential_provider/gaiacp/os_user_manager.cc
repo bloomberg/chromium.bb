@@ -87,7 +87,7 @@ HRESULT OSUserManager::GenerateRandomPassword(wchar_t* password, int length) {
   int has_lower;
   int has_digit;
   int has_punct;
-  {
+  do {
     cur_length = 0;
     has_upper = 0;
     has_lower = 0;
@@ -157,8 +157,7 @@ HRESULT OSUserManager::GenerateRandomPassword(wchar_t* password, int length) {
     //   - ~4 in every million will run this loop at least twice
     //   - ~4 in every 250 billion will run this loop at least thrice
     //   - ~4 in every 6.25e13 will run this loop at least four times
-  }
-  while (!IS_PASSWORD_STRONG_ENOUGH());
+  } while (!IS_PASSWORD_STRONG_ENOUGH());
 
   ::CryptReleaseContext(prov, 0);
 
@@ -198,10 +197,9 @@ HRESULT OSUserManager::AddUser(const wchar_t* username,
     if (nsts != NERR_Success) {
       LOGFN(ERROR) << "NetUserSetInfo nsts=" << nsts;
     }
-  } else if (!add_to_users_group && nsts == NERR_UserExists) {
-    // If adding the special "gaia" account, and if the error is "user already
-    // exists", consider this is a success.
-    // TODO: might want to check that account permissions are not permissive.
+  } else if (nsts == NERR_UserExists) {
+    // TODO: If adding the special "gaia" account might want to check that
+    // account permissions are not too permissive.
     LOGFN(INFO) << "Using existing gaia user";
     user_found = true;
   } else {
@@ -232,16 +230,19 @@ HRESULT OSUserManager::AddUser(const wchar_t* username,
       member_info.lgrmi0_sid = user_info->usri4_user_sid;
       nsts = ::NetLocalGroupAddMembers(
           nullptr, L"Users", 0, reinterpret_cast<LPBYTE>(&member_info), 1);
-      if (nsts != NERR_Success) {
+      if (nsts != NERR_Success && nsts != ERROR_MEMBER_IN_ALIAS) {
         LOGFN(ERROR) << "NetLocalGroupAddMembers nsts=" << nsts;
+      } else {
+        nsts = NERR_Success;
       }
     }
 
     ::NetApiBufferFree(buffer);
   }
 
-  return HRESULT_FROM_WIN32(
-      (nsts == NERR_Success && user_found) ? NERR_UserExists : nsts);
+  return (nsts == NERR_Success && user_found)
+             ? HRESULT_FROM_WIN32(NERR_UserExists)
+             : (nsts == NERR_Success ? S_OK : HRESULT_FROM_WIN32(nsts));
 }
 
 HRESULT OSUserManager::SetUserPassword(const wchar_t* username,
@@ -259,6 +260,14 @@ HRESULT OSUserManager::SetUserPassword(const wchar_t* username,
   }
 
   return HRESULT_FROM_WIN32(nsts);
+}
+
+HRESULT OSUserManager::CreateLogonToken(const wchar_t* username,
+                                        const wchar_t* password,
+                                        bool interactive,
+                                        base::win::ScopedHandle* token) {
+  return ::credential_provider::CreateLogonToken(username, password,
+                                                 interactive, token);
 }
 
 HRESULT OSUserManager::GetUserSID(const wchar_t* username, PSID* sid) {
@@ -283,7 +292,9 @@ HRESULT OSUserManager::GetUserSID(const wchar_t* username, PSID* sid) {
   return HRESULT_FROM_WIN32(nsts);
 }
 
-HRESULT OSUserManager::FindUserBySID(const wchar_t* sid) {
+HRESULT OSUserManager::FindUserBySID(const wchar_t* sid,
+                                     wchar_t* username,
+                                     DWORD length) {
   PSID psid;
   if (!::ConvertStringSidToSidW(sid, &psid)) {
     HRESULT hr = HRESULT_FROM_WIN32(::GetLastError());
@@ -291,17 +302,26 @@ HRESULT OSUserManager::FindUserBySID(const wchar_t* sid) {
     return hr;
   }
 
+  // Maximum domain length is 256 characters including null.
+  // https://support.microsoft.com/en-ca/help/909264/naming-conventions-in-active-directory-for-computers-domains-sites-and
   HRESULT hr = S_OK;
-  DWORD name_length = 0;
-  DWORD domain_length = 0;
+  DWORD name_length = username ? length : 0;
+  wchar_t domain[256];
+  DWORD domain_length = base::size(domain);
   SID_NAME_USE use;
-  if (!::LookupAccountSid(nullptr, psid, nullptr, &name_length, nullptr,
+  if (!::LookupAccountSid(nullptr, psid, username, &name_length, domain,
                           &domain_length, &use)) {
     hr = HRESULT_FROM_WIN32(::GetLastError());
-    if (hr != HRESULT_FROM_WIN32(ERROR_NONE_MAPPED))
-      LOGFN(ERROR) << "LookupAccountSid hr=" << putHR(hr);
+    if (hr != HRESULT_FROM_WIN32(ERROR_NONE_MAPPED)) {
+      if (length == 0 && hr == HRESULT_FROM_WIN32(ERROR_INSUFFICIENT_BUFFER)) {
+        hr = S_OK;
+      } else {
+        LOGFN(ERROR) << "LookupAccountSid hr=" << putHR(hr);
+      }
+    }
   }
 
+  LOGFN(INFO) << "username=" << username;
   ::LocalFree(psid);
   return hr;
 }
@@ -315,8 +335,13 @@ HRESULT OSUserManager::RemoveUser(const wchar_t* username,
   base::win::ScopedHandle token;
   wchar_t profiledir[MAX_PATH + 1];
 
-  // Get the user's profile directory.
-  HRESULT hr = CreateLogonToken(username, password, &token);
+  // Get the user's profile directory.  Try a batch logon first, and if that
+  // fails then try an interactive logon.
+  HRESULT hr =
+      CreateLogonToken(username, password, /*interactive=*/false, &token);
+  if (FAILED(hr))
+    hr = CreateLogonToken(username, password, /*interactive=*/true, &token);
+
   if (SUCCEEDED(hr)) {
     // Get the gaia user's profile directory so that it can be deleted.
     DWORD length = base::size(profiledir) - 1;

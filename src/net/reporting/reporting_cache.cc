@@ -414,6 +414,8 @@ class ReportingCacheImpl : public ReportingCache {
                                         const GURL& endpoint) override {
     const ReportingClient* client =
         GetClientByOriginAndEndpoint(origin, endpoint);
+    if (!client)
+      return;
     RemoveClient(client);
 
     context_->NotifyCacheUpdated();

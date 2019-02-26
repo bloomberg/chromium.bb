@@ -7,6 +7,7 @@
 #include "fpdfsdk/pwl/cpwl_list_box.h"
 
 #include <sstream>
+#include <utility>
 
 #include "core/fxge/cfx_renderdevice.h"
 #include "fpdfsdk/pwl/cpwl_edit.h"
@@ -64,13 +65,12 @@ void CPWL_List_Notify::IOnInvalidateRect(CFX_FloatRect* pRect) {
   m_pList->InvalidateRect(pRect);
 }
 
-CPWL_ListBox::CPWL_ListBox()
-    : m_pList(new CPWL_ListCtrl),
-      m_bMouseDown(false),
-      m_bHoverSel(false),
-      m_pFillerNotify(nullptr) {}
+CPWL_ListBox::CPWL_ListBox(const CreateParams& cp,
+                           std::unique_ptr<PrivateData> pAttachedData)
+    : CPWL_Wnd(cp, std::move(pAttachedData)),
+      m_pList(pdfium::MakeUnique<CPWL_ListCtrl>()) {}
 
-CPWL_ListBox::~CPWL_ListBox() {}
+CPWL_ListBox::~CPWL_ListBox() = default;
 
 void CPWL_ListBox::OnCreated() {
   m_pList->SetFontMap(GetFontMap());
@@ -79,7 +79,7 @@ void CPWL_ListBox::OnCreated() {
 
   SetHoverSel(HasFlag(PLBS_HOVERSEL));
   m_pList->SetMultipleSel(HasFlag(PLBS_MULTIPLESEL));
-  m_pList->SetFontSize(GetCreationParams().fFontSize);
+  m_pList->SetFontSize(GetCreationParams()->fFontSize);
 
   m_bHoverSel = HasFlag(PLBS_HOVERSEL);
 }

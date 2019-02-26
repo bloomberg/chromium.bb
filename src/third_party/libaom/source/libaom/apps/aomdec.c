@@ -143,7 +143,7 @@ static INLINE int libyuv_scale(aom_image_t *src, aom_image_t *dst,
 }
 #endif
 
-void show_help(FILE *fout, int shorthelp) {
+static void show_help(FILE *fout, int shorthelp) {
   fprintf(fout, "Usage: %s <options> filename\n\n", exec_name);
 
   if (shorthelp) {
@@ -779,7 +779,7 @@ static int main_loop(int argc, const char **argv_) {
     aom_usec_timer_start(&timer);
 
     if (flush_decoder) {
-      // Flush the decoder in frame parallel decode.
+      // Flush the decoder.
       if (aom_codec_decode(&decoder, NULL, 0, NULL)) {
         warn("Failed to flush decoder: %s", aom_codec_error(&decoder));
       }
@@ -900,6 +900,11 @@ static int main_loop(int argc, const char **argv_) {
                   y4m_buf, sizeof(y4m_buf), aom_input_ctx.width,
                   aom_input_ctx.height, &aom_input_ctx.framerate,
                   img->monochrome, img->csp, img->fmt, img->bit_depth);
+              if (img->csp == AOM_CSP_COLOCATED) {
+                fprintf(stderr,
+                        "Warning: Y4M lacks a colorspace for colocated "
+                        "chroma. Using a placeholder.\n");
+              }
               if (do_md5) {
                 MD5Update(&md5_ctx, (md5byte *)y4m_buf, (unsigned int)len);
               } else {

@@ -6,6 +6,7 @@
 
 #include "third_party/blink/renderer/core/layout/ng/inline/ng_inline_node.h"
 #include "third_party/blink/renderer/core/layout/ng/ng_constraint_space.h"
+#include "third_party/blink/renderer/platform/fonts/shaping/shape_result_view.h"
 
 namespace blink {
 
@@ -25,30 +26,10 @@ NGInlineItemResult::NGInlineItemResult(const NGInlineItem* item,
 
 void NGLineInfo::SetLineStyle(const NGInlineNode& node,
                               const NGInlineItemsData& items_data,
-                              const NGConstraintSpace& constraint_space,
-                              bool is_first_line,
-                              bool use_first_line_style,
-                              bool is_after_forced_break) {
+                              bool use_first_line_style) {
   use_first_line_style_ = use_first_line_style;
   items_data_ = &items_data;
   line_style_ = node.GetLayoutBox()->Style(use_first_line_style_);
-
-  if (line_style_->ShouldUseTextIndent(is_first_line, is_after_forced_break)) {
-    // 'text-indent' applies to block container, and percentage is of its
-    // containing block.
-    // https://drafts.csswg.org/css-text-3/#valdef-text-indent-percentage
-    // In our constraint space tree, parent constraint space is of its
-    // containing block.
-    // TODO(kojii): ComputeMinMaxSize does not know parent constraint
-    // space that we cannot compute percent for text-indent.
-    const Length& length = line_style_->TextIndent();
-    LayoutUnit maximum_value;
-    if (length.IsPercentOrCalc())
-      maximum_value = constraint_space.ParentPercentageResolutionInlineSize();
-    text_indent_ = MinimumValueForLength(length, maximum_value);
-  } else {
-    text_indent_ = LayoutUnit();
-  }
 }
 
 #if DCHECK_IS_ON()
@@ -60,8 +41,8 @@ void NGInlineItemResult::CheckConsistency(bool during_line_break) const {
       return;
     DCHECK(shape_result);
     DCHECK_EQ(end_offset - start_offset, shape_result->NumCharacters());
-    DCHECK_EQ(start_offset, shape_result->StartIndexForResult());
-    DCHECK_EQ(end_offset, shape_result->EndIndexForResult());
+    DCHECK_EQ(start_offset, shape_result->StartIndex());
+    DCHECK_EQ(end_offset, shape_result->EndIndex());
   }
 }
 #endif

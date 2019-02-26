@@ -25,6 +25,8 @@
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/task/post_task.h"
+#include "base/test/bind_test_util.h"
+#include "base/threading/thread_restrictions.h"
 #include "base/values.h"
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/chromeos/login/existing_user_controller.h"
@@ -81,6 +83,7 @@
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/render_frame_host.h"
+#include "content/public/browser/storage_partition.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_contents_observer.h"
 #include "content/public/test/browser_test_utils.h"
@@ -209,11 +212,13 @@ void FakeSamlIdp::SetUp(const std::string& base_path, const GURL& gaia_url) {
 }
 
 void FakeSamlIdp::SetLoginHTMLTemplate(const std::string& template_file) {
+  base::ScopedAllowBlockingForTesting allow_io;
   EXPECT_TRUE(base::ReadFileToString(html_template_dir_.Append(template_file),
                                      &login_html_template_));
 }
 
 void FakeSamlIdp::SetLoginAuthHTMLTemplate(const std::string& template_file) {
+  base::ScopedAllowBlockingForTesting allow_io;
   EXPECT_TRUE(base::ReadFileToString(html_template_dir_.Append(template_file),
                                      &login_auth_html_template_));
 }
@@ -1046,12 +1051,6 @@ class SAMLPolicyTest : public SamlTest {
   void GetCookies();
 
  protected:
-  void GetCookiesOnIOThread(
-      const scoped_refptr<net::URLRequestContextGetter>& request_context,
-      const base::Closure& callback);
-  void StoreCookieList(const base::Closure& callback,
-                       const net::CookieList& cookie_list);
-
   policy::DevicePolicyCrosTestHelper test_helper_;
 
   // FakeDBusThreadManager uses FakeSessionManagerClient.
@@ -1288,28 +1287,15 @@ void SAMLPolicyTest::GetCookies() {
       user_manager::UserManager::Get()->GetActiveUser());
   ASSERT_TRUE(profile);
   base::RunLoop run_loop;
-  base::PostTaskWithTraits(
-      FROM_HERE, {content::BrowserThread::IO},
-      base::BindOnce(&SAMLPolicyTest::GetCookiesOnIOThread,
-                     base::Unretained(this),
-                     scoped_refptr<net::URLRequestContextGetter>(
-                         profile->GetRequestContext()),
-                     run_loop.QuitClosure()));
+  network::mojom::CookieManagerPtr cookie_manager;
+  content::BrowserContext::GetDefaultStoragePartition(profile)
+      ->GetCookieManagerForBrowserProcess()
+      ->GetAllCookies(base::BindLambdaForTesting(
+          [&](const std::vector<net::CanonicalCookie>& cookies) {
+            cookie_list_ = cookies;
+            run_loop.Quit();
+          }));
   run_loop.Run();
-}
-
-void SAMLPolicyTest::GetCookiesOnIOThread(
-    const scoped_refptr<net::URLRequestContextGetter>& request_context,
-    const base::Closure& callback) {
-  request_context->GetURLRequestContext()->cookie_store()->GetAllCookiesAsync(
-      base::BindOnce(&SAMLPolicyTest::StoreCookieList, base::Unretained(this),
-                     callback));
-}
-
-void SAMLPolicyTest::StoreCookieList(const base::Closure& callback,
-                                     const net::CookieList& cookie_list) {
-  cookie_list_ = cookie_list;
-  base::PostTaskWithTraits(FROM_HERE, {content::BrowserThread::UI}, callback);
 }
 
 IN_PROC_BROWSER_TEST_F(SAMLPolicyTest, PRE_NoSAML) {

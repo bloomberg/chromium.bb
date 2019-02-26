@@ -11,6 +11,7 @@
 
 #include "base/files/file_util.h"
 #include "base/memory/ref_counted.h"
+#include "base/threading/thread_restrictions.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "ui/gfx/image/image_skia.h"
@@ -52,7 +53,10 @@ ImageLoader::~ImageLoader() {}
 
 std::unique_ptr<gfx::ImageSkia> ImageLoader::Load() {
   std::string image_data;
-  ReadFileToString(path_, &image_data);
+  {
+    base::ScopedAllowBlockingForTesting allow_io;
+    ReadFileToString(path_, &image_data);
+  }
   const ImageDecoder::ImageCodec codec =
       (path_.Extension() == FILE_PATH_LITERAL(".jpg")
            ? ImageDecoder::ROBUST_JPEG_CODEC

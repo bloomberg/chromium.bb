@@ -55,7 +55,7 @@ public class SyncPreference extends Preference {
      * of error, passphrase required or disabled in Android.
      */
     static boolean showSyncErrorIcon(Context context) {
-        if (!AndroidSyncSettings.isMasterSyncEnabled()) {
+        if (!AndroidSyncSettings.get().isMasterSyncEnabled()) {
             return true;
         }
 
@@ -87,7 +87,7 @@ public class SyncPreference extends Preference {
         ProfileSyncService profileSyncService = ProfileSyncService.get();
         Resources res = context.getResources();
 
-        if (!AndroidSyncSettings.isMasterSyncEnabled()) {
+        if (!AndroidSyncSettings.get().isMasterSyncEnabled()) {
             return res.getString(R.string.sync_android_master_sync_disabled);
         }
 
@@ -111,7 +111,7 @@ public class SyncPreference extends Preference {
         }
 
         String accountName = ChromeSigninController.get().getSignedInAccountName();
-        boolean syncEnabled = AndroidSyncSettings.isSyncEnabled();
+        boolean syncEnabled = AndroidSyncSettings.get().isSyncEnabled();
         if (syncEnabled) {
             if (!profileSyncService.isSyncActive()) {
                 return res.getString(R.string.sync_setup_progress);

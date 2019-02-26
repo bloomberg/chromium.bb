@@ -20,13 +20,15 @@
 #include <set>
 #include <string>
 #include <unordered_map>
+#include <utility>
 #include <vector>
 
-#include "api/mediatypes.h"
+#include "absl/strings/match.h"
 #include "api/candidate.h"
 #include "api/cryptoparams.h"
 #include "api/jsepicecandidate.h"
 #include "api/jsepsessiondescription.h"
+#include "api/mediatypes.h"
 // for RtpExtension
 #include "api/rtpparameters.h"
 #include "media/base/codec.h"
@@ -335,9 +337,10 @@ static bool ParseIceOptions(const std::string& line,
 static bool ParseExtmap(const std::string& line,
                         RtpExtension* extmap,
                         SdpParseError* error);
-static bool ParseFingerprintAttribute(const std::string& line,
-                                      rtc::SSLFingerprint** fingerprint,
-                                      SdpParseError* error);
+static bool ParseFingerprintAttribute(
+    const std::string& line,
+    std::unique_ptr<rtc::SSLFingerprint>* fingerprint,
+    SdpParseError* error);
 static bool ParseDtlsSetup(const std::string& line,
                            cricket::ConnectionRole* role,
                            SdpParseError* error);
@@ -854,7 +857,7 @@ std::string SdpSerialize(const JsepSessionDescription& jdesc) {
   }
 
   // Mixed one- and two-byte header extension.
-  if (desc->mixed_one_two_byte_header_extensions_supported()) {
+  if (desc->extmap_allow_mixed()) {
     InitAttrLine(kAttributeExtmapAllowMixed, &os);
     AddLine(os.str(), &message);
   }
@@ -1310,8 +1313,8 @@ void BuildMediaDescription(const ContentInfo* content_info,
 
       if (data_desc->use_sctpmap()) {
         for (const cricket::DataCodec& codec : data_desc->codecs()) {
-          if (cricket::CodecNamesEq(codec.name,
-                                    cricket::kGoogleSctpDataCodecName) &&
+          if (absl::EqualsIgnoreCase(codec.name,
+                                     cricket::kGoogleSctpDataCodecName) &&
               codec.GetParam(cricket::kCodecParamPort, &sctp_port)) {
             break;
           }
@@ -1494,7 +1497,7 @@ void BuildRtpContentAttributes(const MediaContentDescription* media_desc,
   // The attribute MUST be either on session level or media level. We support
   // responding on both levels, however, we don't respond on media level if it's
   // set on session level.
-  if (media_desc->mixed_one_two_byte_header_extensions_supported() ==
+  if (media_desc->extmap_allow_mixed_enum() ==
       MediaContentDescription::kMedia) {
     InitAttrLine(kAttributeExtmapAllowMixed, &os);
     AddLine(os.str(), message);
@@ -1749,7 +1752,7 @@ void AddRtcpFbLines(const T& codec, std::string* message) {
 
 bool AddSctpDataCodec(DataContentDescription* media_desc, int sctp_port) {
   for (const auto& codec : media_desc->codecs()) {
-    if (cricket::CodecNamesEq(codec.name, cricket::kGoogleSctpDataCodecName)) {
+    if (absl::EqualsIgnoreCase(codec.name, cricket::kGoogleSctpDataCodecName)) {
       return ParseFailed("", "Can't have multiple sctp port attributes.", NULL);
     }
   }
@@ -2018,7 +2021,7 @@ bool ParseSessionDescription(const std::string& message,
   std::string line;
 
   desc->set_msid_supported(false);
-  desc->set_mixed_one_two_byte_header_extensions_supported(false);
+  desc->set_extmap_allow_mixed(false);
   // RFC 4566
   // v=  (protocol version)
   if (!GetLineWithType(message, pos, &line, kLineTypeVersion)) {
@@ -2139,11 +2142,11 @@ bool ParseSessionDescription(const std::string& message,
             "Can't have multiple fingerprint attributes at the same level.",
             error);
       }
-      rtc::SSLFingerprint* fingerprint = NULL;
+      std::unique_ptr<rtc::SSLFingerprint> fingerprint;
       if (!ParseFingerprintAttribute(line, &fingerprint, error)) {
         return false;
       }
-      session_td->identity_fingerprint.reset(fingerprint);
+      session_td->identity_fingerprint = std::move(fingerprint);
     } else if (HasAttribute(line, kAttributeSetup)) {
       if (!ParseDtlsSetup(line, &(session_td->connection_role), error)) {
         return false;
@@ -2156,7 +2159,7 @@ bool ParseSessionDescription(const std::string& message,
       desc->set_msid_supported(
           CaseInsensitiveFind(semantics, kMediaStreamSemantic));
     } else if (HasAttribute(line, kAttributeExtmapAllowMixed)) {
-      desc->set_mixed_one_two_byte_header_extensions_supported(true);
+      desc->set_extmap_allow_mixed(true);
     } else if (HasAttribute(line, kAttributeExtmap)) {
       RtpExtension extmap;
       if (!ParseExtmap(line, &extmap, error)) {
@@ -2190,9 +2193,10 @@ bool ParseGroupAttribute(const std::string& line,
   return true;
 }
 
-static bool ParseFingerprintAttribute(const std::string& line,
-                                      rtc::SSLFingerprint** fingerprint,
-                                      SdpParseError* error) {
+static bool ParseFingerprintAttribute(
+    const std::string& line,
+    std::unique_ptr<rtc::SSLFingerprint>* fingerprint,
+    SdpParseError* error) {
   if (!IsLineType(line, kLineTypeAttributes) ||
       !HasAttribute(line, kAttributeFingerprint)) {
     return ParseFailedExpectLine(line, 0, kLineTypeAttributes,
@@ -2218,7 +2222,8 @@ static bool ParseFingerprintAttribute(const std::string& line,
                  ::tolower);
 
   // The second field is the digest value. De-hexify it.
-  *fingerprint = rtc::SSLFingerprint::CreateFromRfc4572(algorithm, fields[1]);
+  *fingerprint =
+      rtc::SSLFingerprint::CreateUniqueFromRfc4572(algorithm, fields[1]);
   if (!*fingerprint) {
     return ParseFailed(line, "Failed to create fingerprint from the digest.",
                        error);
@@ -2358,20 +2363,6 @@ static C* ParseContentDescription(const std::string& message,
                                   std::vector<JsepIceCandidate*>* candidates,
                                   webrtc::SdpParseError* error) {
   C* media_desc = new C();
-  switch (media_type) {
-    case cricket::MEDIA_TYPE_AUDIO:
-      *content_name = cricket::CN_AUDIO;
-      break;
-    case cricket::MEDIA_TYPE_VIDEO:
-      *content_name = cricket::CN_VIDEO;
-      break;
-    case cricket::MEDIA_TYPE_DATA:
-      *content_name = cricket::CN_DATA;
-      break;
-    default:
-      RTC_NOTREACHED();
-      break;
-  }
   if (!ParseContent(message, media_type, mline_index, protocol, payload_types,
                     pos, content_name, bundle_only, msid_signaling, media_desc,
                     transport, candidates, error)) {
@@ -2526,10 +2517,6 @@ bool ParseMediaDescription(const std::string& message,
     }
 
     if (IsRtp(protocol)) {
-      if (desc->mixed_one_two_byte_header_extensions_supported()) {
-        content->set_mixed_one_two_byte_header_extensions_supported(
-            MediaContentDescription::kSession);
-      }
       // Set the extmap.
       if (!session_extmaps.empty() &&
           !content->rtp_header_extensions().empty()) {
@@ -2558,14 +2545,7 @@ bool ParseMediaDescription(const std::string& message,
                                           : MediaProtocolType::kRtp,
                      content_rejected, bundle_only, content.release());
     // Create TransportInfo with the media level "ice-pwd" and "ice-ufrag".
-    TransportInfo transport_info(content_name, transport);
-
-    if (!desc->AddTransportInfo(transport_info)) {
-      rtc::StringBuilder description;
-      description << "Failed to AddTransportInfo with content name: "
-                  << content_name;
-      return ParseFailed("", description.str(), error);
-    }
+    desc->AddTransportInfo(TransportInfo(content_name, transport));
   }
 
   desc->set_msid_signaling(msid_signaling);
@@ -2862,12 +2842,11 @@ bool ParseContent(const std::string& message,
         return false;
       }
     } else if (HasAttribute(line, kAttributeFingerprint)) {
-      rtc::SSLFingerprint* fingerprint = NULL;
-
+      std::unique_ptr<rtc::SSLFingerprint> fingerprint;
       if (!ParseFingerprintAttribute(line, &fingerprint, error)) {
         return false;
       }
-      transport->identity_fingerprint.reset(fingerprint);
+      transport->identity_fingerprint = std::move(fingerprint);
     } else if (HasAttribute(line, kAttributeSetup)) {
       if (!ParseDtlsSetup(line, &(transport->connection_role), error)) {
         return false;
@@ -2931,7 +2910,7 @@ bool ParseContent(const std::string& message,
       } else if (HasAttribute(line, kAttributeSendRecv)) {
         media_desc->set_direction(RtpTransceiverDirection::kSendRecv);
       } else if (HasAttribute(line, kAttributeExtmapAllowMixed)) {
-        media_desc->set_mixed_one_two_byte_header_extensions_supported(
+        media_desc->set_extmap_allow_mixed_enum(
             MediaContentDescription::kMedia);
       } else if (HasAttribute(line, kAttributeExtmap)) {
         RtpExtension extmap;

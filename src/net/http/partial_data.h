@@ -125,6 +125,8 @@ class PartialData {
 
   bool initial_validation() const { return initial_validation_; }
 
+  bool range_requested() const { return range_requested_; }
+
  private:
   // Returns the length to use when scanning the cache.
   int GetNextRangeLen();
@@ -150,6 +152,7 @@ class PartialData {
   HttpByteRange byte_range_;  // The range requested by the user.
   // The clean set of extra headers (no ranges).
   HttpRequestHeaders extra_headers_;
+  bool range_requested_;  // ###
   bool range_present_;  // True if next range entry is already stored.
   bool final_range_;
   bool sparse_entry_;

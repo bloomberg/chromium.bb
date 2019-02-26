@@ -69,6 +69,7 @@ class DownloadTaskImpl : public DownloadTask {
   int64_t GetReceivedBytes() const override;
   int GetPercentComplete() const override;
   std::string GetContentDisposition() const override;
+  std::string GetOriginalMimeType() const override;
   std::string GetMimeType() const override;
   ui::PageTransition GetTransitionType() const override;
   base::string16 GetSuggestedFilename() const override;
@@ -122,6 +123,7 @@ class DownloadTaskImpl : public DownloadTask {
   int64_t received_bytes_ = 0;
   int percent_complete_ = -1;
   std::string content_disposition_;
+  std::string original_mime_type_;
   std::string mime_type_;
   ui::PageTransition page_transition_ = ui::PAGE_TRANSITION_LINK;
   NSString* identifier_ = nil;

@@ -16,6 +16,7 @@ import org.chromium.base.library_loader.LibraryProcessType;
 import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ChromeFeatureList;
+import org.chromium.chrome.browser.compositor.bottombar.ephemeraltab.EphemeralTabPanel;
 import org.chromium.chrome.browser.contextmenu.ChromeContextMenuItem.Item;
 import org.chromium.chrome.browser.firstrun.FirstRunStatus;
 import org.chromium.chrome.browser.locale.LocaleManager;
@@ -67,8 +68,10 @@ public class ChromeContextMenuPopulator implements ContextMenuPopulator {
     }
 
     static class ContextMenuUma {
-        // Note: these values must match the ContextMenuOption enum in histograms.xml.
-        @IntDef({Action.OPEN_IN_NEW_TAB, Action.OPEN_IN_INCOGNITO_TAB, Action.COPY_LINK_ADDRESS,
+        // Note: these values must match the ContextMenuOption enum in enums.xml.
+        // Only add values to the end, right before NUM_ENTRIES!
+        @IntDef({
+                Action.OPEN_IN_NEW_TAB, Action.OPEN_IN_INCOGNITO_TAB, Action.COPY_LINK_ADDRESS,
                 Action.COPY_EMAIL_ADDRESS, Action.COPY_LINK_TEXT, Action.SAVE_LINK,
                 Action.SAVE_IMAGE, Action.OPEN_IMAGE, Action.OPEN_IMAGE_IN_NEW_TAB,
                 Action.SEARCH_BY_IMAGE, Action.LOAD_ORIGINAL_IMAGE, Action.SAVE_VIDEO,
@@ -76,7 +79,8 @@ public class ChromeContextMenuPopulator implements ContextMenuPopulator {
                 Action.ADD_TO_CONTACTS, Action.CALL, Action.SEND_TEXT_MESSAGE,
                 Action.COPY_PHONE_NUMBER, Action.OPEN_IN_NEW_CHROME_TAB,
                 Action.OPEN_IN_CHROME_INCOGNITO_TAB, Action.OPEN_IN_BROWSER, Action.OPEN_IN_CHROME,
-                Action.SHARE_LINK})
+                Action.SHARE_LINK, Action.OPEN_IN_EPHEMERAL_TAB, Action.OPEN_IMAGE_IN_EPHEMERAL_TAB,
+        })
         @Retention(RetentionPolicy.SOURCE)
         public @interface Action {
             int OPEN_IN_NEW_TAB = 0;
@@ -103,10 +107,12 @@ public class ChromeContextMenuPopulator implements ContextMenuPopulator {
             int OPEN_IN_BROWSER = 35;
             int OPEN_IN_CHROME = 36;
             int SHARE_LINK = 37;
-            int NUM_ENTRIES = 38;
+            int OPEN_IN_EPHEMERAL_TAB = 38;
+            int OPEN_IMAGE_IN_EPHEMERAL_TAB = 39;
+            int NUM_ENTRIES = 40;
         }
 
-        // Note: these values must match the ContextMenuSaveLinkType enum in histograms.xml.
+        // Note: these values must match the ContextMenuSaveLinkType enum in enums.xml.
         // Only add new values at the end, right before NUM_TYPES. We depend on these specific
         // values in UMA histograms.
         @IntDef({Type.UNKNOWN, Type.TEXT, Type.IMAGE, Type.AUDIO, Type.VIDEO, Type.PDF})
@@ -121,7 +127,7 @@ public class ChromeContextMenuPopulator implements ContextMenuPopulator {
             int NUM_ENTRIES = 6;
         }
 
-        // Note: these values must match the ContextMenuSaveImage enum in histograms.xml.
+        // Note: these values must match the ContextMenuSaveImage enum in enums.xml.
         // Only add new values at the end, right before NUM_ENTRIES.
         @IntDef({TypeSaveImage.LOADED, TypeSaveImage.FETCHED_LOFI, TypeSaveImage.NOT_DOWNLOADABLE,
                 TypeSaveImage.DISABLED_AND_IS_NOT_IMAGE_PARAM,
@@ -253,6 +259,9 @@ public class ChromeContextMenuPopulator implements ContextMenuPopulator {
                 if (mDelegate.isOpenInOtherWindowSupported()) {
                     linkTab.add(new ChromeContextMenuItem(Item.OPEN_IN_OTHER_WINDOW));
                 }
+                if (EphemeralTabPanel.isSupported()) {
+                    linkTab.add(new ChromeContextMenuItem(Item.OPEN_IN_EPHEMERAL_TAB));
+                }
             }
             if (!MailTo.isMailTo(params.getLinkUrl())
                     && !UrlUtilities.isTelScheme(params.getLinkUrl())) {
@@ -318,6 +327,9 @@ public class ChromeContextMenuPopulator implements ContextMenuPopulator {
                 }
                 if (mMode == ContextMenuMode.NORMAL) {
                     imageTab.add(new ChromeContextMenuItem(Item.OPEN_IMAGE_IN_NEW_TAB));
+                }
+                if (EphemeralTabPanel.isSupported()) {
+                    imageTab.add(new ChromeContextMenuItem(Item.OPEN_IMAGE_IN_EPHEMERAL_TAB));
                 }
                 if (isSrcDownloadableScheme) {
                     imageTab.add(new ChromeContextMenuItem(Item.SAVE_IMAGE));
@@ -398,21 +410,27 @@ public class ChromeContextMenuPopulator implements ContextMenuPopulator {
 
     @Override
     public boolean onItemSelected(ContextMenuHelper helper, ContextMenuParams params, int itemId) {
-        if (itemId == R.id.contextmenu_open_in_other_window) {
-            ContextMenuUma.record(params, ContextMenuUma.Action.OPEN_IN_OTHER_WINDOW);
-            mDelegate.onOpenInOtherWindow(params.getUrl(), params.getReferrer());
-        } else if (itemId == R.id.contextmenu_open_in_new_tab) {
+        if (itemId == R.id.contextmenu_open_in_new_tab) {
             ContextMenuUma.record(params, ContextMenuUma.Action.OPEN_IN_NEW_TAB);
             mDelegate.onOpenInNewTab(params.getUrl(), params.getReferrer());
         } else if (itemId == R.id.contextmenu_open_in_incognito_tab) {
             ContextMenuUma.record(params, ContextMenuUma.Action.OPEN_IN_INCOGNITO_TAB);
             mDelegate.onOpenInNewIncognitoTab(params.getUrl());
+        } else if (itemId == R.id.contextmenu_open_in_other_window) {
+            ContextMenuUma.record(params, ContextMenuUma.Action.OPEN_IN_OTHER_WINDOW);
+            mDelegate.onOpenInOtherWindow(params.getUrl(), params.getReferrer());
+        } else if (itemId == R.id.contextmenu_open_in_ephemeral_tab) {
+            ContextMenuUma.record(params, ContextMenuUma.Action.OPEN_IN_EPHEMERAL_TAB);
+            mDelegate.onOpenInEphemeralTab(params.getUrl(), params.getLinkText());
         } else if (itemId == R.id.contextmenu_open_image) {
             ContextMenuUma.record(params, ContextMenuUma.Action.OPEN_IMAGE);
             mDelegate.onOpenImageUrl(params.getSrcUrl(), params.getReferrer());
         } else if (itemId == R.id.contextmenu_open_image_in_new_tab) {
             ContextMenuUma.record(params, ContextMenuUma.Action.OPEN_IMAGE_IN_NEW_TAB);
             mDelegate.onOpenImageInNewTab(params.getSrcUrl(), params.getReferrer());
+        } else if (itemId == R.id.contextmenu_open_image_in_ephemeral_tab) {
+            ContextMenuUma.record(params, ContextMenuUma.Action.OPEN_IMAGE_IN_EPHEMERAL_TAB);
+            mDelegate.onOpenInEphemeralTab(params.getSrcUrl(), params.getTitleText());
         } else if (itemId == R.id.contextmenu_load_original_image) {
             ContextMenuUma.record(params, ContextMenuUma.Action.LOAD_ORIGINAL_IMAGE);
             DataReductionProxyUma.previewsLoFiContextMenuAction(

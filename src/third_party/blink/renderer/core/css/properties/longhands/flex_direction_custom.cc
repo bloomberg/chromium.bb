@@ -5,7 +5,7 @@
 #include "third_party/blink/renderer/core/css/properties/longhands/flex_direction.h"
 
 namespace blink {
-namespace CSSLonghand {
+namespace css_longhand {
 
 const CSSValue* FlexDirection::CSSValueFromComputedStyleInternal(
     const ComputedStyle& style,
@@ -16,5 +16,5 @@ const CSSValue* FlexDirection::CSSValueFromComputedStyleInternal(
   return CSSIdentifierValue::Create(style.FlexDirection());
 }
 
-}  // namespace CSSLonghand
+}  // namespace css_longhand
 }  // namespace blink

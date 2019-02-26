@@ -15,6 +15,7 @@
 #include "net/base/address_list.h"
 #include "net/base/ip_endpoint.h"
 #include "net/traffic_annotation/network_traffic_annotation.h"
+#include "services/network/public/cpp/network_service_buildflags.h"
 #include "services/network/public/mojom/cookie_manager.mojom.h"
 #include "services/network/public/mojom/host_resolver.mojom.h"
 #include "services/network/public/mojom/network_service.mojom.h"
@@ -70,12 +71,28 @@ class TestNetworkContext : public mojom::NetworkContext {
   void ClearNetworkErrorLogging(
       mojom::ClearDataFilterPtr filter,
       ClearNetworkErrorLoggingCallback callback) override {}
+  void ClearDomainReliability(
+      mojom::ClearDataFilterPtr filter,
+      DomainReliabilityClearMode mode,
+      ClearDomainReliabilityCallback callback) override {}
+  void GetDomainReliabilityJSON(
+      GetDomainReliabilityJSONCallback callback) override {}
+  void QueueReport(const std::string& type,
+                   const std::string& group,
+                   const GURL& url,
+                   const base::Optional<std::string>& user_agent,
+                   base::Value body) override {}
   void CloseAllConnections(CloseAllConnectionsCallback callback) override {}
   void CloseIdleConnections(CloseIdleConnectionsCallback callback) override {}
   void SetNetworkConditions(const base::UnguessableToken& throttling_profile_id,
                             mojom::NetworkConditionsPtr conditions) override {}
   void SetAcceptLanguage(const std::string& new_accept_language) override {}
   void SetEnableReferrers(bool enable_referrers) override {}
+#if defined(OS_CHROMEOS)
+  void UpdateAdditionalCertificates(
+      mojom::AdditionalCertificatesPtr additional_certificates) override {}
+#endif
+#if BUILDFLAG(IS_CT_SUPPORTED)
   void SetCTPolicy(
       const std::vector<std::string>& required_hosts,
       const std::vector<std::string>& excluded_hosts,
@@ -90,6 +107,7 @@ class TestNetworkContext : public mojom::NetworkContext {
                              SetExpectCTTestReportCallback callback) override {}
   void GetExpectCTState(const std::string& domain,
                         GetExpectCTStateCallback callback) override {}
+#endif  // BUILDFLAG(IS_CT_SUPPORTED)
   void CreateUDPSocket(mojom::UDPSocketRequest request,
                        mojom::UDPSocketReceiverPtr receiver) override {}
   void CreateTCPServerSocket(
@@ -125,7 +143,9 @@ class TestNetworkContext : public mojom::NetworkContext {
   void ResolveHost(const net::HostPortPair& host,
                    mojom::ResolveHostParametersPtr optional_parameters,
                    mojom::ResolveHostClientPtr response_client) override {}
-  void CreateHostResolver(mojom::HostResolverRequest request) override {}
+  void CreateHostResolver(
+      const base::Optional<net::DnsConfigOverrides>& config_overrides,
+      mojom::HostResolverRequest request) override {}
   void WriteCacheMetadata(const GURL& url,
                           net::RequestPriority priority,
                           base::Time expected_response_time,
@@ -149,9 +169,16 @@ class TestNetworkContext : public mojom::NetworkContext {
                AddHSTSCallback callback) override {}
   void GetHSTSState(const std::string& domain,
                     GetHSTSStateCallback callback) override {}
+  void EnableStaticKeyPinningForTesting(
+      EnableStaticKeyPinningForTestingCallback callback) override {}
   void SetFailingHttpTransactionForTesting(
       int32_t rv,
       SetFailingHttpTransactionForTestingCallback callback) override {}
+  void VerifyCertificateForTesting(
+      const scoped_refptr<net::X509Certificate>& certificate,
+      const std::string& hostname,
+      const std::string& ocsp_response,
+      VerifyCertificateForTestingCallback callback) override {}
   void PreconnectSockets(uint32_t num_streams,
                          const GURL& url,
                          int32_t load_flags,
@@ -160,6 +187,8 @@ class TestNetworkContext : public mojom::NetworkContext {
       mojom::P2PTrustedSocketManagerClientPtr client,
       mojom::P2PTrustedSocketManagerRequest trusted_socket_manager,
       mojom::P2PSocketManagerRequest socket_manager_request) override {}
+  void CreateMdnsResponder(
+      mojom::MdnsResponderRequest responder_request) override {}
   void ResetURLLoaderFactories() override {}
   void ForceReloadProxyConfig(
       ForceReloadProxyConfigCallback callback) override {}
@@ -167,6 +196,15 @@ class TestNetworkContext : public mojom::NetworkContext {
   void DeleteDynamicDataForHost(
       const std::string& host,
       DeleteDynamicDataForHostCallback callback) override {}
+  void AddDomainReliabilityContextForTesting(
+      const GURL& origin,
+      const GURL& upload_url,
+      AddDomainReliabilityContextForTestingCallback callback) override {}
+  void ForceDomainReliabilityUploadsForTesting(
+      ForceDomainReliabilityUploadsForTestingCallback callback) override {}
+  void LookupBasicAuthCredentials(
+      const GURL& url,
+      LookupBasicAuthCredentialsCallback callback) override {}
 };
 
 }  // namespace network

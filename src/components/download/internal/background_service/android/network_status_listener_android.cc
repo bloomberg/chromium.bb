@@ -5,6 +5,7 @@
 #include "components/download/internal/background_service/android/network_status_listener_android.h"
 
 #include "base/android/jni_android.h"
+#include "base/trace_event/trace_event.h"
 #include "jni/NetworkStatusListenerAndroid_jni.h"
 
 namespace download {
@@ -25,8 +26,9 @@ void NetworkStatusListenerAndroid::NotifyNetworkChange(
 
 void NetworkStatusListenerAndroid::Start(
     NetworkStatusListener::Observer* observer) {
-  NetworkStatusListener::Start(observer);
+  TRACE_EVENT0("download_service", "NetworkStatusListenerAndroid.Start");
 
+  NetworkStatusListener::Start(observer);
   JNIEnv* env = base::android::AttachCurrentThread();
   java_obj_.Reset(env, Java_NetworkStatusListenerAndroid_create(
                            env, reinterpret_cast<intptr_t>(this))

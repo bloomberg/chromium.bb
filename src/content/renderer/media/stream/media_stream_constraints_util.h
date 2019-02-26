@@ -25,6 +25,8 @@ template <typename T>
 class NumericRangeSet;
 }  // namespace media_constraints
 
+extern const double kMinDeviceCaptureFrameRate;
+
 // This class represents the output the SelectSettings algorithm for video
 // constraints (see https://w3c.github.io/mediacapture-main/#dfn-selectsettings)
 // The input to SelectSettings is a user-supplied constraints object, and its
@@ -228,7 +230,7 @@ class CONTENT_EXPORT AudioCaptureSettings {
 // Method to get boolean value of constraint with |name| from constraints.
 // Returns true if the constraint is specified in either mandatory or optional
 // constraints.
-bool CONTENT_EXPORT GetConstraintValueAsBoolean(
+CONTENT_EXPORT bool GetConstraintValueAsBoolean(
     const blink::WebMediaConstraints& constraints,
     const blink::BooleanConstraint blink::WebMediaTrackConstraintSet::*picker,
     bool* value);
@@ -236,17 +238,17 @@ bool CONTENT_EXPORT GetConstraintValueAsBoolean(
 // Method to get int value of constraint with |name| from constraints.
 // Returns true if the constraint is specified in either mandatory or Optional
 // constraints.
-bool CONTENT_EXPORT GetConstraintValueAsInteger(
+CONTENT_EXPORT bool GetConstraintValueAsInteger(
     const blink::WebMediaConstraints& constraints,
     const blink::LongConstraint blink::WebMediaTrackConstraintSet::*picker,
     int* value);
 
-bool CONTENT_EXPORT GetConstraintMinAsInteger(
+CONTENT_EXPORT bool GetConstraintMinAsInteger(
     const blink::WebMediaConstraints& constraints,
     const blink::LongConstraint blink::WebMediaTrackConstraintSet::*picker,
     int* value);
 
-bool CONTENT_EXPORT GetConstraintMaxAsInteger(
+CONTENT_EXPORT bool GetConstraintMaxAsInteger(
     const blink::WebMediaConstraints& constraints,
     const blink::LongConstraint blink::WebMediaTrackConstraintSet::*picker,
     int* value);
@@ -254,17 +256,17 @@ bool CONTENT_EXPORT GetConstraintMaxAsInteger(
 // Method to get double precision value of constraint with |name| from
 // constraints. Returns true if the constraint is specified in either mandatory
 // or Optional constraints.
-bool CONTENT_EXPORT GetConstraintValueAsDouble(
+CONTENT_EXPORT bool GetConstraintValueAsDouble(
     const blink::WebMediaConstraints& constraints,
     const blink::DoubleConstraint blink::WebMediaTrackConstraintSet::*picker,
     double* value);
 
-bool CONTENT_EXPORT GetConstraintMinAsDouble(
+CONTENT_EXPORT bool GetConstraintMinAsDouble(
     const blink::WebMediaConstraints& constraints,
     const blink::DoubleConstraint blink::WebMediaTrackConstraintSet::*picker,
     double* value);
 
-bool CONTENT_EXPORT GetConstraintMaxAsDouble(
+CONTENT_EXPORT bool GetConstraintMaxAsDouble(
     const blink::WebMediaConstraints& constraints,
     const blink::DoubleConstraint blink::WebMediaTrackConstraintSet::*picker,
     double* value);
@@ -272,7 +274,7 @@ bool CONTENT_EXPORT GetConstraintMaxAsDouble(
 // Method to get std::string value of constraint with |name| from constraints.
 // Returns true if the constraint is specified in either mandatory or Optional
 // constraints.
-bool CONTENT_EXPORT GetConstraintValueAsString(
+CONTENT_EXPORT bool GetConstraintValueAsString(
     const blink::WebMediaConstraints& constraints,
     const blink::StringConstraint blink::WebMediaTrackConstraintSet::*picker,
     std::string* value);
@@ -320,30 +322,34 @@ bool IsDeviceCapture(const blink::WebMediaConstraints& constraints);
 // This function selects track settings from a set of candidate resolutions and
 // frame rates, given the source video-capture format and ideal values.
 // The output are settings for a VideoTrackAdapter, which can adjust the
-// resolution and frame rate of the source, and consist of maximum (or
-// target) width, height and frame rate, and minimum and maximum aspect ratio.
+// resolution and frame rate of the source, and consist of
+// target width, height and frame rate, and minimum and maximum aspect ratio.
 // * Minimum and maximum aspect ratios are taken from |resolution_set| and are
 //   not affected by ideal values.
 // * The selected frame rate is always the value within the |frame_rate_set|
-//   range that is closest to the ideal frame rate (or the source frame rate
-//   if no ideal is supplied). If the chosen frame rate is greater than or equal
-//   to the source's frame rate, a value of 0.0 is returned, which means that
-//   there will be no frame-rate adjustment.
-// * Width and height are selected using the
-//   ResolutionSet::SelectClosestPointToIdeal function, using ideal values from
+//   range that is closest to the ideal frame rate (or closest to the source
+//   frame rate if no ideal is supplied). If the chosen frame rate is greater
+//   than or equal to the source's frame rate, a value of 0.0 is returned, which
+//   means that there will be no frame-rate adjustment.
+// * If |enable_rescale| is false, no target width and height are computed.
+// * If |enable_rescale| is true, the target width and height are selected using
+//   the ResolutionSet::SelectClosestPointToIdeal function, using ideal values
+//   for the width, height and aspectRatio properties from
 //   |basic_constraint_set| and using the source's width and height as the
 //   default resolution. The width and height returned by
 //   SelectClosestPointToIdeal are rounded to the nearest int. For more details,
 //   see the documentation for ResolutionSet::SelectClosestPointToIdeal.
 // Note that this function ignores the min/max/exact values from
-// |basic_constraint_set|. Only its ideal values are used.
+// |basic_constraint_set|. Only the ideal values for the width, height,
+// aspectRatio and frameRate are used.
 // This function has undefined behavior if any of |resolution_set| or
 // |frame_rate_set| are empty.
-VideoTrackAdapterSettings CONTENT_EXPORT SelectVideoTrackAdapterSettings(
+CONTENT_EXPORT VideoTrackAdapterSettings SelectVideoTrackAdapterSettings(
     const blink::WebMediaTrackConstraintSet& basic_constraint_set,
     const media_constraints::ResolutionSet& resolution_set,
     const media_constraints::NumericRangeSet<double>& frame_rate_set,
-    const media::VideoCaptureFormat& source_format);
+    const media::VideoCaptureFormat& source_format,
+    bool enable_rescale);
 
 // Generic distance function between two values for numeric constraints. Based
 // on the fitness-distance function described in
@@ -358,7 +364,7 @@ double StringConstraintFitnessDistance(
 
 // This method computes capabilities for a video source based on the given
 // |formats|. |facing_mode| is valid only in case of video device capture.
-blink::WebMediaStreamSource::Capabilities CONTENT_EXPORT
+CONTENT_EXPORT blink::WebMediaStreamSource::Capabilities
 ComputeCapabilitiesForVideoSource(
     const blink::WebString& device_id,
     const media::VideoCaptureFormats& formats,

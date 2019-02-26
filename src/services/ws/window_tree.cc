@@ -20,7 +20,7 @@
 #include "services/ws/common/util.h"
 #include "services/ws/drag_drop_delegate.h"
 #include "services/ws/embedding.h"
-#include "services/ws/pointer_watcher.h"
+#include "services/ws/event_observer_helper.h"
 #include "services/ws/public/cpp/property_type_converters.h"
 #include "services/ws/server_window.h"
 #include "services/ws/topmost_window_observer.h"
@@ -30,7 +30,6 @@
 #include "services/ws/window_service_delegate.h"
 #include "services/ws/window_service_observer.h"
 #include "ui/aura/client/aura_constants.h"
-#include "ui/aura/client/screen_position_client.h"
 #include "ui/aura/client/transient_window_client.h"
 #include "ui/aura/env.h"
 #include "ui/aura/mus/os_exchange_data_provider_mus.h"
@@ -48,6 +47,7 @@
 #include "ui/display/screen.h"
 #include "ui/events/event_utils.h"
 #include "ui/events/gestures/gesture_recognizer.h"
+#include "ui/events/mojo/event_struct_traits.h"
 #include "ui/gfx/image/image_skia.h"
 #include "ui/wm/core/capture_controller.h"
 #include "ui/wm/core/window_modality_controller.h"
@@ -184,22 +184,22 @@ void WindowTree::SendEventToClient(aura::Window* window,
   // Events should only come to windows connected to displays.
   DCHECK(window->GetHost());
   const int64_t display_id = window->GetHost()->GetDisplayId();
-  const bool matches_pointer_watcher =
-      pointer_watcher_ && pointer_watcher_->DoesEventMatch(event);
-  if (pointer_watcher_)
-    pointer_watcher_->ClearPendingEvent();
+  const bool matches_event_observer =
+      event_observer_helper_ && event_observer_helper_->DoesEventMatch(event);
+  if (event_observer_helper_)
+    event_observer_helper_->ClearPendingEvent();
 
   for (WindowServiceObserver& observer : window_service_->observers())
-    observer.OnWillSendEventToClient(client_id_, event_id);
+    observer.OnWillSendEventToClient(client_id_, event_id, event);
 
   std::unique_ptr<ui::Event> event_to_send = ui::Event::Clone(event);
-  // Translate the root location for located events. Event's root location
-  // should be in the coordinate of the root window, however the root for the
-  // target window in the client can be different from the one in the server,
-  // thus the root location needs to be converted from the original coordinate
-  // to the one used in the client. See also 'WindowTreeTest.EventLocation' test
-  // case.
   if (event.IsLocatedEvent()) {
+    // Translate the root location for located events. Event's root location
+    // should be in the coordinate of the root window, however the root for the
+    // target window in the client can be different from the one in the server,
+    // thus the root location needs to be converted from the original coordinate
+    // to the one used in the client. See also 'WindowTreeTest.EventLocation'
+    // test case.
     ClientRoot* client_root = FindClientRootContaining(window);
     // The |client_root| may have been removed on shutdown.
     if (client_root) {
@@ -212,17 +212,33 @@ void WindowTree::SendEventToClient(aura::Window* window,
   }
   DVLOG(4) << "SendEventToClient window="
            << ServerWindow::GetMayBeNull(window)->GetIdForDebugging()
-           << " event_type=" << ui::EventTypeName(event.type());
+           << " event_type=" << ui::EventTypeName(event.type())
+           << " event_id=" << event_id;
   window_tree_client_->OnWindowInputEvent(
       event_id, TransportIdForWindow(window), display_id,
-      std::move(event_to_send), matches_pointer_watcher);
+      std::move(event_to_send), matches_event_observer);
 }
 
-void WindowTree::SendPointerWatcherEventToClient(
-    int64_t display_id,
-    std::unique_ptr<ui::Event> event) {
-  window_tree_client_->OnPointerEventObserved(std::move(event),
-                                              kInvalidTransportId, display_id);
+void WindowTree::SendObservedEventToClient(int64_t display_id,
+                                           std::unique_ptr<ui::Event> event) {
+  if (event->IsLocatedEvent()) {
+    // Send event locations in screen coordinates, since the client will have no
+    // knowledge of the event's target window.
+    ui::LocatedEvent* located_event = event->AsLocatedEvent();
+    gfx::PointF location = located_event->root_location_f();
+    display::Display display;
+    if (located_event->target()) {
+      location = located_event->target()->GetScreenLocationF(*located_event);
+    } else if (display::Screen::GetScreen()->GetDisplayWithDisplayId(
+                   display_id, &display)) {
+      location += display.bounds().OffsetFromOrigin();
+    }
+    located_event->set_location_f(location);
+    located_event->set_root_location_f(location);
+  }
+  DVLOG(4) << "SendObservedEventToClient event_type="
+           << ui::EventTypeName(event->type());
+  window_tree_client_->OnObservedInputEvent(std::move(event));
 }
 
 bool WindowTree::IsTopLevel(aura::Window* window) {
@@ -299,6 +315,11 @@ bool WindowTree::HasAtLeastOneRootWithCompositorFrameSink() {
 
 bool WindowTree::IsWindowKnown(aura::Window* window) const {
   return window && known_windows_map_.count(window) > 0u;
+}
+
+Id WindowTree::TransportIdForWindow(aura::Window* window) const {
+  DCHECK(IsWindowKnown(window));
+  return ClientWindowIdToTransportId(ClientWindowIdForWindow(window));
 }
 
 ClientWindowId WindowTree::ClientWindowIdForWindow(aura::Window* window) const {
@@ -622,11 +643,6 @@ Id WindowTree::ClientWindowIdToTransportId(
   return (client_id << 32) | client_window_id.sink_id();
 }
 
-Id WindowTree::TransportIdForWindow(aura::Window* window) const {
-  DCHECK(IsWindowKnown(window));
-  return ClientWindowIdToTransportId(ClientWindowIdForWindow(window));
-}
-
 ClientWindowId WindowTree::MakeClientWindowId(Id transport_window_id) const {
   if (!ClientIdFromTransportId(transport_window_id))
     return ClientWindowId(client_id_, transport_window_id);
@@ -712,6 +728,14 @@ void WindowTree::SendTopmostWindows(
                                                 : kInvalidTransportId);
   }
   window_tree_client_->OnTopmostWindowChanged(topmost_ids);
+}
+
+void WindowTree::SendOcclusionState(aura::Window* window) {
+  DCHECK(IsWindowKnown(window));
+
+  window_tree_client_->OnOcclusionStateChanged(
+      TransportIdForWindow(window),
+      aura::WindowOcclusionStateToMojom(window->occlusion_state()));
 }
 
 bool WindowTree::NewWindowImpl(
@@ -1009,6 +1033,8 @@ bool WindowTree::SetWindowVisibilityImpl(const ClientWindowId& window_id,
       (IsClientRootWindow(window) && can_change_root_window_visibility_)) {
     if (window->TargetVisibility() == visible)
       return true;
+    ClientChange change(property_change_tracker_.get(), window,
+                        ClientChangeType::kVisibility);
     if (visible)
       window->Show();
     else
@@ -1151,12 +1177,10 @@ bool WindowTree::SetWindowBoundsImpl(
   if (IsLocalSurfaceIdAssignedByClient(window))
     server_window->set_local_surface_id(local_surface_id);
 
-  aura::client::ScreenPositionClient* screen_position_client =
-      aura::client::GetScreenPositionClient(window->GetRootWindow());
-  if (IsTopLevel(window) && screen_position_client) {
+  if (IsTopLevel(window)) {
     display::Display dst_display =
         display::Screen::GetScreen()->GetDisplayMatching(bounds);
-    screen_position_client->SetBounds(window, bounds, dst_display);
+    window->SetBoundsInScreen(bounds, dst_display);
   } else {
     window->SetBounds(bounds);
   }
@@ -1350,6 +1374,16 @@ void WindowTree::OnWindowDestroyed(aura::Window* window) {
   RemoveWindowFromKnownWindows(window, delete_if_owned);
 }
 
+void WindowTree::OnWindowVisibilityChanging(aura::Window* window,
+                                            bool visible) {
+  if (property_change_tracker_->IsProcessingChangeForWindow(
+          window, ClientChangeType::kVisibility)) {
+    return;
+  }
+  window_tree_client_->OnWindowVisibilityChanged(TransportIdForWindow(window),
+                                                 visible);
+}
+
 void WindowTree::OnCaptureChanged(aura::Window* lost_capture,
                                   aura::Window* gained_capture) {
   if (property_change_tracker_->IsProcessingChangeForWindow(
@@ -1458,16 +1492,18 @@ void WindowTree::ReleaseCapture(uint32_t change_id, Id transport_window_id) {
       change_id, ReleaseCaptureImpl(MakeClientWindowId(transport_window_id)));
 }
 
-void WindowTree::StartPointerWatcher(bool want_moves) {
-  if (!pointer_watcher_)
-    pointer_watcher_ = std::make_unique<PointerWatcher>(this);
-  pointer_watcher_->set_types_to_watch(
-      want_moves ? PointerWatcher::TypesToWatch::kUpDownMoveWheel
-                 : PointerWatcher::TypesToWatch::kUpDown);
-}
-
-void WindowTree::StopPointerWatcher() {
-  pointer_watcher_.reset();
+void WindowTree::ObserveEventTypes(
+    const std::vector<ui::mojom::EventType>& types) {
+  if (types.empty()) {
+    event_observer_helper_.reset();
+  } else {
+    if (!event_observer_helper_)
+      event_observer_helper_ = std::make_unique<EventObserverHelper>(this);
+    std::set<ui::EventType> event_types;
+    for (auto type : types)
+      event_types.insert(mojo::ConvertTo<ui::EventType>(type));
+    event_observer_helper_->set_types(event_types);
+  }
 }
 
 void WindowTree::SetWindowBounds(
@@ -1483,6 +1519,9 @@ void WindowTree::SetWindowBounds(
 void WindowTree::SetWindowTransform(uint32_t change_id,
                                     Id window_id,
                                     const gfx::Transform& transform) {
+  // NOTE: Tests may time out if they trigger this NOTIMPLEMENTED because
+  // the change is not ack'd. The code under test may need to change to
+  // avoid triggering window transforms outside the window manager.
   NOTIMPLEMENTED_LOG_ONCE();
 }
 
@@ -1854,6 +1893,7 @@ void WindowTree::SetEventTargetingPolicy(Id transport_window_id,
 
 void WindowTree::OnWindowInputEventAck(uint32_t event_id,
                                        mojom::EventResult result) {
+  DVLOG(4) << "OnWindowInputEventAck id=" << event_id;
   std::unique_ptr<ui::Event> key_event;
   if (!in_flight_key_events_.empty() &&
       in_flight_key_events_.front()->id == event_id) {
@@ -1868,13 +1908,13 @@ void WindowTree::OnWindowInputEventAck(uint32_t event_id,
     return;
   }
 
-  for (WindowServiceObserver& observer : window_service_->observers())
-    observer.OnClientAckedEvent(client_id_, event_id);
-
   if (key_event && result == mojom::EventResult::UNHANDLED) {
     window_service_->delegate()->OnUnhandledKeyEvent(
         *(key_event->AsKeyEvent()));
   }
+
+  for (WindowServiceObserver& observer : window_service_->observers())
+    observer.OnClientAckedEvent(client_id_, event_id);
 }
 
 void WindowTree::DeactivateWindow(Id transport_window_id) {
@@ -2111,6 +2151,35 @@ void WindowTree::TransferGestureEventsTo(Id current_id,
       current_window, new_window,
       should_cancel ? ui::TransferTouchesBehavior::kCancel
                     : ui::TransferTouchesBehavior::kDontCancel);
+}
+
+void WindowTree::TrackOcclusionState(Id transport_window_id) {
+  aura::Window* window = GetWindowByTransportId(transport_window_id);
+  if (!window) {
+    DVLOG(1) << "TrackOcclusionState failed (no window)";
+    return;
+  }
+  if (!IsClientCreatedWindow(window)) {
+    DVLOG(1) << "TrackOcclusionState failed (access denied)";
+    return;
+  }
+
+  window->TrackOcclusionState();
+}
+
+void WindowTree::PauseWindowOcclusionTracking() {
+  window_occlusion_tracking_pauses_.emplace_back(
+      std::make_unique<aura::WindowOcclusionTracker::ScopedPause>(
+          window_service_->env()));
+}
+
+void WindowTree::UnpauseWindowOcclusionTracking() {
+  if (window_occlusion_tracking_pauses_.empty()) {
+    DVLOG(1) << "Unbalanced UnpauseWindowOcclusionTracking call.";
+    return;
+  }
+
+  window_occlusion_tracking_pauses_.pop_back();
 }
 
 }  // namespace ws

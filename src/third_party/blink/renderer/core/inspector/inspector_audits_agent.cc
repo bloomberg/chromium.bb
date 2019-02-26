@@ -16,7 +16,7 @@ namespace blink {
 using protocol::Maybe;
 using protocol::Response;
 
-namespace EncodingEnum = protocol::Audits::GetEncodedResponse::EncodingEnum;
+namespace encoding_enum = protocol::Audits::GetEncodedResponse::EncodingEnum;
 
 namespace {
 
@@ -79,11 +79,11 @@ protocol::Response InspectorAuditsAgent::getEncodedResponse(
     const String& encoding,
     Maybe<double> quality,
     Maybe<bool> size_only,
-    Maybe<String>* out_body,
+    Maybe<protocol::Binary>* out_body,
     int* out_original_size,
     int* out_encoded_size) {
-  DCHECK(encoding == EncodingEnum::Jpeg || encoding == EncodingEnum::Png ||
-         encoding == EncodingEnum::Webp);
+  DCHECK(encoding == encoding_enum::Jpeg || encoding == encoding_enum::Png ||
+         encoding == encoding_enum::Webp);
 
   String body;
   bool is_base64_encoded;
@@ -105,11 +105,12 @@ protocol::Response InspectorAuditsAgent::getEncodedResponse(
     return Response::Error("Could not encode image with given settings");
   }
 
-  if (!size_only.fromMaybe(false))
-    *out_body = Base64Encode(encoded_image);
-
   *out_original_size = static_cast<int>(base64_decoded_buffer.size());
   *out_encoded_size = static_cast<int>(encoded_image.size());
+
+  if (!size_only.fromMaybe(false)) {
+    *out_body = protocol::Binary::fromVector(std::move(encoded_image));
+  }
   return Response::OK();
 }
 

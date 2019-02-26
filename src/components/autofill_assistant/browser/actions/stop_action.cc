@@ -18,10 +18,9 @@ StopAction::StopAction(const ActionProto& proto) : Action(proto) {
 
 StopAction::~StopAction() {}
 
-void StopAction::ProcessAction(ActionDelegate* delegate,
-                               ProcessActionCallback callback) {
+void StopAction::InternalProcessAction(ActionDelegate* delegate,
+                                       ProcessActionCallback callback) {
   delegate->Shutdown();
-  processed_action_proto_ = std::make_unique<ProcessedActionProto>();
   UpdateProcessedAction(ACTION_APPLIED);
   std::move(callback).Run(std::move(processed_action_proto_));
 }

@@ -2,9 +2,9 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-import("//third_party/blink/renderer/modules/modules.gni")
 import("//third_party/blink/renderer/bindings/scripts/scripts.gni")
 import("//third_party/blink/renderer/build/scripts/scripts.gni")
+import("//third_party/blink/renderer/modules/modules.gni")
 
 group("bindings_modules_generated") {
   visibility = [ "//third_party/blink/*" ]
@@ -28,6 +28,8 @@ generate_event_interfaces("modules_bindings_generated_event_interfaces") {
     "//third_party/blink/renderer/modules/device_orientation/device_orientation_event.idl",
     "//third_party/blink/renderer/modules/encryptedmedia/media_encrypted_event.idl",
     "//third_party/blink/renderer/modules/encryptedmedia/media_key_message_event.idl",
+    "//third_party/blink/renderer/modules/gamepad/gamepad_axis_event.idl",
+    "//third_party/blink/renderer/modules/gamepad/gamepad_button_event.idl",
     "//third_party/blink/renderer/modules/gamepad/gamepad_event.idl",
     "//third_party/blink/renderer/modules/indexeddb/idb_version_change_event.idl",
     "//third_party/blink/renderer/modules/mediarecorder/blob_event.idl",
@@ -66,28 +68,23 @@ generate_event_interfaces("modules_bindings_generated_event_interfaces") {
     "//third_party/blink/renderer/modules/xr/xr_input_source_event.idl",
     "//third_party/blink/renderer/modules/xr/xr_session_event.idl",
   ]
-  output_file = "event_modules_names.json5"
+
+  output_file = "modules/event_interface_modules_names.json5"
   suffix = "Modules"
 }
 
 make_event_factory("event_modules") {
   visibility = [ ":*" ]
-  in_files =
-      [ "$root_gen_dir/third_party/blink/renderer/event_modules_names.json5" ]
+  in_files = [ "$blink_modules_output_dir/event_interface_modules_names.json5" ]
   outputs = [
     "$blink_modules_output_dir/event_modules_factory.cc",
   ]
   deps = make_core_generated_deps + [ "//third_party/blink/renderer/bindings/modules:modules_bindings_generated_event_interfaces" ]
-  deps += [
-    "//device/gamepad/public/mojom:mojom_blink",
-    "//media/midi:mojo_blink",
-  ]
 }
 
 make_names("event_modules_names") {
   visibility = [ ":*" ]
-  in_files =
-      [ "$root_gen_dir/third_party/blink/renderer/event_modules_names.json5" ]
+  in_files = [ "$blink_modules_output_dir/event_interface_modules_names.json5" ]
   output_dir = blink_modules_output_dir
   deps = make_core_generated_deps + [ "//third_party/blink/renderer/bindings/modules:modules_bindings_generated_event_interfaces" ]
 }
@@ -197,6 +194,8 @@ source_set("generated") {
     ":event_modules",
     ":event_modules_names",
     ":event_target_modules_names",
+    "//media/midi:mojo_blink_headers",
+    "//third_party/blink/public/mojom:mojom_modules_blink_headers",
     "//third_party/blink/renderer/core",
     "//third_party/blink/renderer/platform/wtf",
     "//v8",
@@ -204,8 +203,16 @@ source_set("generated") {
 }
 
 generate_web_idl_collection("modules_web_idl_collection") {
-  sources = modules_definition_idl_files + modules_dependency_idl_files
-  output = "WebIdlCollectionForModules.pickle"
+  # |sources| contains all IDL files under modules/.
+  sources = modules_definition_idl_files + modules_static_interface_idl_files +
+            modules_all_dependency_idl_files
+  output = "web_idl_collection_for_modules.pickle"
   component = "modules"
   output_dir = bindings_modules_output_dir
+
+  deps = [
+    "//third_party/blink/renderer/bindings/modules:modules_core_global_constructors_idls",
+    "//third_party/blink/renderer/bindings/modules:modules_global_constructors_idls",
+    "//third_party/blink/renderer/bindings/modules/v8:bindings_modules_origin_trial_features",
+  ]
 }

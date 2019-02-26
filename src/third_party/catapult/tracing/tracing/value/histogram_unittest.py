@@ -4,14 +4,16 @@
 
 import json
 import math
-import time
 import unittest
 
 from tracing.value import histogram
+from tracing.value.diagnostics import date_range
 from tracing.value.diagnostics import diagnostic
 from tracing.value.diagnostics import diagnostic_ref
 from tracing.value.diagnostics import generic_set
+from tracing.value.diagnostics import related_event_set
 from tracing.value.diagnostics import reserved_infos
+from tracing.value.diagnostics import unmergeable_diagnostic_set as ums
 
 # pylint: disable=too-many-lines
 
@@ -19,18 +21,18 @@ class PercentToStringUnittest(unittest.TestCase):
   def testPercentToString(self):
     with self.assertRaises(Exception) as ex:
       histogram.PercentToString(-1)
-    self.assertEqual(ex.exception.message, 'percent must be in [0,1]')
+    self.assertEqual(str(ex.exception), 'percent must be in [0,1]')
 
     with self.assertRaises(Exception) as ex:
       histogram.PercentToString(2)
-    self.assertEqual(ex.exception.message, 'percent must be in [0,1]')
+    self.assertEqual(str(ex.exception), 'percent must be in [0,1]')
 
     self.assertEqual(histogram.PercentToString(0), '000')
     self.assertEqual(histogram.PercentToString(1), '100')
 
     with self.assertRaises(Exception) as ex:
       histogram.PercentToString(float('nan'))
-    self.assertEqual(ex.exception.message, 'Unexpected percent')
+    self.assertEqual(str(ex.exception), 'Unexpected percent')
 
     self.assertEqual(histogram.PercentToString(0.50), '050')
     self.assertEqual(histogram.PercentToString(0.95), '095')
@@ -39,11 +41,11 @@ class PercentToStringUnittest(unittest.TestCase):
 class StatisticsUnittest(unittest.TestCase):
   def testFindHighIndexInSortedArray(self):
     self.assertEqual(histogram.FindHighIndexInSortedArray(
-        range(0, -10, -1), lambda x: x + 5), 6)
+        list(range(0, -10, -1)), lambda x: x + 5), 6)
 
   def testUniformlySampleArray(self):
     self.assertEqual(len(histogram.UniformlySampleArray(
-        range(10), 5)), 5)
+        list(range(10)), 5)), 5)
 
   def testUniformlySampleStream(self):
     samples = []
@@ -143,7 +145,7 @@ class RunningStatisticsUnittest(unittest.TestCase):
 
 
 def ToJSON(x):
-  return json.dumps(x, separators=(',', ':'))
+  return json.dumps(x, separators=(',', ':'), sort_keys=True)
 
 
 class HistogramUnittest(unittest.TestCase):
@@ -214,7 +216,7 @@ class HistogramUnittest(unittest.TestCase):
 
     # Add samples to most bins so that allBinsArray is more efficient than
     # allBinsDict.
-    for i in xrange(10, 100):
+    for i in range(10, 100):
       hist.AddSample(10 * i)
     d = hist.AsDict()
     self.assertEqual(697, len(ToJSON(d)))
@@ -307,7 +309,7 @@ class HistogramUnittest(unittest.TestCase):
     Check([0, 11], 0.5, 10.5, 10, 1)
     Check([0, 6, 11], 0.5, 10.5, 10, 1)
     array = []
-    for i in xrange(1000):
+    for i in range(1000):
       array.append((i * i) % 10 + 1)
     Check(array, 0.5, 10.5, 10, 1e-3)
     # If the real percentile is outside the bin range then the approximation
@@ -323,7 +325,7 @@ class HistogramUnittest(unittest.TestCase):
     self.assertEqual(boundaries.range.max, expected_max_boundary)
 
     # Check that the boundaries can be used multiple times.
-    for _ in xrange(3):
+    for _ in range(3):
       hist = histogram.Histogram('', 'unitless', boundaries)
       self.assertEqual(len(expected_bin_ranges), len(hist.bins))
       for j, hbin in enumerate(hist.bins):
@@ -512,7 +514,7 @@ class HistogramUnittest(unittest.TestCase):
     self.assertEqual(hist1.max_num_sample_values, 120)
     values0 = []
     values1 = []
-    for i in xrange(10):
+    for i in range(10):
       values0.append(i)
       hist0.AddSample(i)
       values1.append(10 + i)
@@ -524,13 +526,13 @@ class HistogramUnittest(unittest.TestCase):
     hist2 = hist0.Clone()
     self.assertDeepEqual(hist2.sample_values, values0 + values1)
 
-    for i in xrange(200):
+    for i in range(200):
       hist0.AddSample(i)
     self.assertEqual(len(hist0.sample_values), hist0.max_num_sample_values)
 
     hist3 = histogram.Histogram('', 'unitless', self.TEST_BOUNDARIES)
     hist3.max_num_sample_values = 10
-    for i in xrange(100):
+    for i in range(100):
       hist3.AddSample(i)
     self.assertEqual(len(hist3.sample_values), 10)
 
@@ -569,209 +571,6 @@ class HistogramUnittest(unittest.TestCase):
     self.assertEqual(4, hist.GetApproximatePercentile(1))
 
 
-class TagMapUnittest(unittest.TestCase):
-
-  def testEquality(self):
-    tags0 = {
-        'tag1': ['path1', 'path2'],
-        'tag2': ['path1', 'path2', 'path3']
-    }
-    tags1 = {
-        'tag1': ['path1', 'path2'],
-        'tag2': ['path1', 'path2', 'path3']
-    }
-    info0 = histogram.TagMap({'tagsToStoryNames': tags0})
-    info1 = histogram.TagMap({'tagsToStoryNames': tags1})
-    self.assertEqual(info0, info1)
-
-  def testInequality(self):
-    tags0 = {
-        'tag1': ['path1', 'path2'],
-        'tag2': ['path1', 'path2', 'path3']
-    }
-    tags1 = {
-        'tag1': ['path1', 'path2']
-    }
-    info0 = histogram.TagMap({'tagsToStoryNames': tags0})
-    info1 = histogram.TagMap({'tagsToStoryNames': tags1})
-    self.assertNotEqual(info0, info1)
-
-  def testRoundtrip(self):
-    tags = {
-        'tag1': ['path1', 'path2', 'path3'],
-        'tag2': ['path1', 'path4'],
-        'tag3': ['path5'],
-    }
-    info = histogram.TagMap({'tagsToStoryNames': tags})
-    d = info.AsDict()
-    clone = diagnostic.Diagnostic.FromDict(d)
-    self.assertEqual(ToJSON(d), ToJSON(clone.AsDict()))
-    self.assertSetEqual(
-        clone.tags_to_story_names['tag1'], set(tags['tag1']))
-    self.assertSetEqual(
-        clone.tags_to_story_names['tag2'], set(tags['tag2']))
-    self.assertSetEqual(
-        clone.tags_to_story_names['tag3'], set(tags['tag3']))
-
-  def AddTagAndStoryDisplayName(self):
-    tagmap = histogram.TagMap({})
-    self.assertDictEqual({}, tagmap.tags_to_story_names)
-
-    tagmap.AddTagAndStoryDisplayName('foo', 'bar')
-    self.assertListEqual(['foo'], tagmap.tags_to_story_names.keys())
-    self.assertSetEqual(set(['bar']), tagmap.tags_to_story_names['foo'])
-
-    tagmap.AddTagAndStoryDisplayName('foo', 'bar2')
-    self.assertListEqual(['foo'], tagmap.tags_to_story_names.keys())
-    self.assertSetEqual(
-        set(['bar', 'bar2']), tagmap.tags_to_story_names['foo'])
-
-  def testMerge(self):
-    t0 = histogram.TagMap({
-        'tagsToStoryNames': {
-            'press': ['story0', 'story1'],
-            'desktop': ['story0', 'story1', 'story2']
-        }})
-
-    t1 = histogram.TagMap({
-        'tagsToStoryNames': {
-            'press': ['story3', 'story4'],
-            'android': ['story3', 'story4', 'story5']
-        }})
-
-    self.assertFalse(t0.CanAddDiagnostic(generic_set.GenericSet([])))
-    self.assertTrue(t0.CanAddDiagnostic(t1))
-
-    m0 = diagnostic.Diagnostic.FromDict(t0.AsDict())
-
-    self.assertTrue(isinstance(m0, histogram.TagMap))
-    self.assertFalse(
-        m0.CanAddDiagnostic(generic_set.GenericSet([])))
-    self.assertTrue(m0.CanAddDiagnostic(t1))
-
-    m0.AddDiagnostic(t1)
-
-    m1 = diagnostic.Diagnostic.FromDict(t1.AsDict())
-    m1.AddDiagnostic(t0)
-
-    self.assertDictEqual(m0.AsDict(), m1.AsDict())
-
-    m2 = diagnostic.Diagnostic.FromDict(t1.AsDict())
-
-    self.assertNotEqual(m2.AsDict(), m0.AsDict())
-
-    # Test round-tripping of merged diagnostic
-    clone = diagnostic.Diagnostic.FromDict(m0.AsDict())
-
-    self.assertSetEqual(
-        set(clone.tags_to_story_names.keys()),
-        set(['press', 'desktop', 'android']))
-    self.assertSetEqual(
-        clone.tags_to_story_names.get('press'),
-        set(['story0', 'story1', 'story3', 'story4']))
-    self.assertSetEqual(
-        clone.tags_to_story_names.get('desktop'),
-        set(['story0', 'story1', 'story2']))
-    self.assertSetEqual(
-        clone.tags_to_story_names.get('android'),
-        set(['story3', 'story4', 'story5']))
-
-
-class RelatedEventSetUnittest(unittest.TestCase):
-  def testRoundtrip(self):
-    events = histogram.RelatedEventSet()
-    events.Add({
-        'stableId': '0.0',
-        'title': 'foo',
-        'start': 0,
-        'duration': 1,
-    })
-    d = events.AsDict()
-    clone = diagnostic.Diagnostic.FromDict(d)
-    self.assertEqual(ToJSON(d), ToJSON(clone.AsDict()))
-    self.assertEqual(len(events), 1)
-    event = list(events)[0]
-    self.assertEqual(event['stableId'], '0.0')
-    self.assertEqual(event['title'], 'foo')
-    self.assertEqual(event['start'], 0)
-    self.assertEqual(event['duration'], 1)
-
-
-class RelatedNameMapUnittest(unittest.TestCase):
-  def testRoundtrip(self):
-    names = histogram.RelatedNameMap()
-    names.Set('a', 'A')
-    d = names.AsDict()
-    clone = diagnostic.Diagnostic.FromDict(d)
-    self.assertEqual(ToJSON(d), ToJSON(clone.AsDict()))
-    self.assertEqual(clone.Get('a'), 'A')
-
-  def testMerge(self):
-    a_names = histogram.RelatedNameMap()
-    a_names.Set('a', 'A')
-    b_names = histogram.RelatedNameMap()
-    b_names.Set('b', 'B')
-    self.assertTrue(a_names.CanAddDiagnostic(b_names))
-    self.assertTrue(b_names.CanAddDiagnostic(a_names))
-    self.assertFalse(a_names.CanAddDiagnostic(generic_set.GenericSet([])))
-
-    a_names.AddDiagnostic(b_names)
-    self.assertEqual(a_names.Get('b'), 'B')
-    a_names.AddDiagnostic(b_names)
-    self.assertEqual(a_names.Get('b'), 'B')
-
-    b_names.Set('a', 'C')
-    with self.assertRaises(ValueError):
-      a_names.AddDiagnostic(b_names)
-
-  def testEquals(self):
-    a_names = histogram.RelatedNameMap()
-    a_names.Set('a', 'A')
-    self.assertNotEqual(a_names, generic_set.GenericSet([]))
-    b_names = histogram.RelatedNameMap()
-    self.assertNotEqual(a_names, b_names)
-    b_names.Set('a', 'B')
-    self.assertNotEqual(a_names, b_names)
-    b_names.Set('a', 'A')
-    self.assertEqual(a_names, b_names)
-
-
-class RelatedHistogramBreakdownUnittest(unittest.TestCase):
-  def testRoundtrip(self):
-    breakdown = histogram.RelatedHistogramBreakdown()
-    hista = histogram.Histogram('a', 'unitless')
-    histb = histogram.Histogram('b', 'unitless')
-    breakdown.Add(hista)
-    breakdown.Add(histb)
-    d = breakdown.AsDict()
-    clone = diagnostic.Diagnostic.FromDict(d)
-    self.assertEqual(ToJSON(d), ToJSON(clone.AsDict()))
-    self.assertEqual(hista.guid, clone.Get('a').guid)
-    self.assertEqual(histb.guid, clone.Get('b').guid)
-
-
-class DateRangeUnittest(unittest.TestCase):
-
-  def testRoundtrip(self):
-    dr = histogram.DateRange(1496693745000)
-    dr.AddDiagnostic(histogram.DateRange(1496693746000))
-    self.assertEqual(time.mktime(dr.min_date.timetuple()), 1496693745)
-    self.assertEqual(time.mktime(dr.max_date.timetuple()), 1496693746)
-    clone = diagnostic.Diagnostic.FromDict(dr.AsDict())
-    self.assertEqual(clone.min_date, dr.min_date)
-    self.assertEqual(clone.max_date, dr.max_date)
-
-  def testMinTimestamp(self):
-    dr = histogram.DateRange(1496693745123)
-    dr.AddDiagnostic(histogram.DateRange(1496693746123))
-    self.assertEqual(dr.min_timestamp, 1496693745123)
-
-  def testMaxTimestamp(self):
-    dr = histogram.DateRange(1496693745123)
-    dr.AddDiagnostic(histogram.DateRange(1496693746123))
-    self.assertEqual(dr.max_timestamp, 1496693746123)
-
-
 class DiagnosticMapUnittest(unittest.TestCase):
   def testDisallowReservedNames(self):
     diagnostics = histogram.DiagnosticMap()
@@ -779,11 +578,11 @@ class DiagnosticMapUnittest(unittest.TestCase):
       diagnostics[None] = generic_set.GenericSet(())
     with self.assertRaises(TypeError):
       diagnostics['generic'] = None
-    diagnostics[reserved_infos.TRACE_URLS.name] = histogram.DateRange(0)
+    diagnostics[reserved_infos.TRACE_URLS.name] = date_range.DateRange(0)
     diagnostics.DisallowReservedNames()
     diagnostics[reserved_infos.TRACE_URLS.name] = generic_set.GenericSet(())
     with self.assertRaises(TypeError):
-      diagnostics[reserved_infos.TRACE_URLS.name] = histogram.DateRange(0)
+      diagnostics[reserved_infos.TRACE_URLS.name] = date_range.DateRange(0)
 
   def testResetGuid(self):
     generic = generic_set.GenericSet(['generic diagnostic'])
@@ -824,7 +623,7 @@ class DiagnosticMapUnittest(unittest.TestCase):
     self.assertEqual('bar', g.guid)
 
   def testMerge(self):
-    events = histogram.RelatedEventSet()
+    events = related_event_set.RelatedEventSet()
     events.Add({
         'stableId': '0.0',
         'title': 'foo',
@@ -857,19 +656,16 @@ class DiagnosticMapUnittest(unittest.TestCase):
     hist4 = histogram.Histogram('', 'count')
     hist4.diagnostics['a'] = related_map
     hist.diagnostics.Merge(hist4.diagnostics)
-    self.assertIsInstance(
-        hist.diagnostics['a'], histogram.UnmergeableDiagnosticSet)
+    self.assertIsInstance(hist.diagnostics['a'], ums.UnmergeableDiagnosticSet)
     diagnostics = list(hist.diagnostics['a'])
     self.assertIs(generic, diagnostics[0])
     self.assertIs(related_map, diagnostics[1])
 
     # UnmergeableDiagnosticSets are mergeable.
     hist5 = histogram.Histogram('', 'count')
-    hist5.diagnostics['a'] = histogram.UnmergeableDiagnosticSet(
-        [events, generic2])
+    hist5.diagnostics['a'] = ums.UnmergeableDiagnosticSet([events, generic2])
     hist.diagnostics.Merge(hist5.diagnostics)
-    self.assertIsInstance(
-        hist.diagnostics['a'], histogram.UnmergeableDiagnosticSet)
+    self.assertIsInstance(hist.diagnostics['a'], ums.UnmergeableDiagnosticSet)
     diagnostics = list(hist.diagnostics['a'])
     self.assertIs(generic, diagnostics[0])
     self.assertIs(related_map, diagnostics[1])

@@ -15,7 +15,7 @@ WebGLSync* WebGLFenceSync::Create(WebGL2RenderingContextBase* ctx,
                                   GLbitfield flags) {
   DCHECK(condition == GL_SYNC_GPU_COMMANDS_COMPLETE);
   DCHECK(flags == 0);
-  return new WebGLFenceSync(ctx, condition, flags);
+  return MakeGarbageCollected<WebGLFenceSync>(ctx, condition, flags);
 }
 
 WebGLFenceSync::WebGLFenceSync(WebGL2RenderingContextBase* ctx,

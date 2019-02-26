@@ -5,6 +5,7 @@
 #include "chrome/browser/ui/extensions/hosted_app_browser_controller.h"
 
 #include "base/metrics/histogram_macros.h"
+#include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/engagement/site_engagement_service.h"
 #include "chrome/browser/extensions/extension_util.h"
 #include "chrome/browser/extensions/tab_helper.h"
@@ -121,7 +122,7 @@ const char kPwaWindowEngagementTypeHistogram[] =
 bool HostedAppBrowserController::IsForExperimentalHostedAppBrowser(
     const Browser* browser) {
   return browser && browser->hosted_app_controller() &&
-         base::FeatureList::IsEnabled(::features::kDesktopPWAWindowing);
+         browser->hosted_app_controller()->IsForExperimentalHostedAppBrowser();
 }
 
 // static
@@ -171,7 +172,18 @@ HostedAppBrowserController::~HostedAppBrowserController() {
   browser_->tab_strip_model()->RemoveObserver(this);
 }
 
-bool HostedAppBrowserController::ShouldShowLocationBar() const {
+bool HostedAppBrowserController::IsForSystemWebApp() const {
+  const Extension* extension = GetExtension();
+
+  return extension && extension->from_bookmark() &&
+         extension->location() == Manifest::EXTERNAL_COMPONENT;
+}
+
+bool HostedAppBrowserController::IsForExperimentalHostedAppBrowser() const {
+  return base::FeatureList::IsEnabled(::features::kDesktopPWAWindowing);
+}
+
+bool HostedAppBrowserController::ShouldShowToolbar() const {
   // The extension can be null if this is invoked after uninstall.
   const Extension* extension = GetExtension();
   if (!extension)
@@ -179,10 +191,10 @@ bool HostedAppBrowserController::ShouldShowLocationBar() const {
 
   DCHECK(extension->is_hosted_app());
 
-  const content::WebContents* web_contents =
+  content::WebContents* web_contents =
       browser_->tab_strip_model()->GetActiveWebContents();
 
-  // Don't show a location bar until a navigation has occurred.
+  // Don't show a toolbar until a navigation has occurred.
   if (!web_contents || web_contents->GetLastCommittedURL().is_empty())
     return false;
 
@@ -199,16 +211,16 @@ bool HostedAppBrowserController::ShouldShowLocationBar() const {
   // starts, even if the navigation hasn't committed yet.
   GURL visible_url = web_contents->GetVisibleURL();
 
-  // The current page must be secure for us to hide the location bar. However,
-  // the chrome-extension:// and chrome:// launch URL apps can hide the location
-  // bar, if the current WebContents URLs are the same as the launch scheme.
+  // The current page must be secure for us to hide the toolbar. However,
+  // the chrome-extension:// and chrome:// launch URL apps can hide the toolbar,
+  // if the current WebContents URLs are the same as the launch scheme.
   //
   // Note that the launch scheme may be insecure, but as long as the current
-  // page's scheme is secure, we can hide the location bar.
+  // page's scheme is secure, we can hide the toolbar.
   base::StringPiece secure_page_scheme =
       is_internal_launch_scheme ? launch_scheme : url::kHttpsScheme;
 
-  // Insecure page schemes show the location bar.
+  // Insecure page schemes show the toolbar.
   if (last_committed_url.scheme_piece() != secure_page_scheme ||
       visible_url.scheme_piece() != secure_page_scheme) {
     return true;
@@ -216,23 +228,26 @@ bool HostedAppBrowserController::ShouldShowLocationBar() const {
 
   // Page URLs that are not within scope
   // (https://www.w3.org/TR/appmanifest/#dfn-within-scope) of the app
-  // corresponding to |launch_url| show the location bar.
+  // corresponding to |launch_url| show the toolbar.
   if (!IsSameScope(launch_url, last_committed_url,
                    web_contents->GetBrowserContext()) ||
       !IsSameScope(launch_url, visible_url, web_contents->GetBrowserContext()))
     return true;
 
-  // Insecure external web sites show the location bar.
+  // Insecure external web sites show the toolbar.
   if (!is_internal_launch_scheme && !IsSiteSecure(web_contents))
     return true;
 
   return false;
 }
 
-void HostedAppBrowserController::UpdateLocationBarVisibility(
-    bool animate) const {
-  browser_->window()->GetLocationBar()->UpdateLocationBarVisibility(
-      ShouldShowLocationBar(), animate);
+void HostedAppBrowserController::UpdateToolbarVisibility(bool animate) const {
+  browser_->window()->UpdateToolbarVisibility(ShouldShowToolbar(), animate);
+}
+
+bool HostedAppBrowserController::ShouldShowHostedAppButtonContainer() const {
+  // System Web Apps don't get the Hosted App buttons.
+  return IsForExperimentalHostedAppBrowser() && !IsForSystemWebApp();
 }
 
 gfx::ImageSkia HostedAppBrowserController::GetWindowAppIcon() const {
@@ -278,6 +293,16 @@ base::Optional<SkColor> HostedAppBrowserController::GetThemeColor() const {
 }
 
 base::string16 HostedAppBrowserController::GetTitle() const {
+  // When showing the location bar, display the name of the app, instead of the
+  // current page as the title.
+  // Note: We only do this when the CustomTab UI is enabled, as otherwise the
+  // title of the current page will not be displayed anywhere.
+  if (ShouldShowToolbar() &&
+      base::FeatureList::IsEnabled(features::kDesktopPWAsCustomTabUI)) {
+    const Extension* extension = GetExtension();
+    return base::UTF8ToUTF16(extension->name());
+  }
+
   content::WebContents* web_contents =
       browser_->tab_strip_model()->GetActiveWebContents();
   if (!web_contents)
@@ -336,16 +361,24 @@ void HostedAppBrowserController::OnEngagementEvent(
                             SiteEngagementService::ENGAGEMENT_LAST);
 }
 
-void HostedAppBrowserController::TabInsertedAt(TabStripModel* tab_strip_model,
-                                               content::WebContents* contents,
-                                               int index,
-                                               bool foreground) {
+void HostedAppBrowserController::OnTabStripModelChanged(
+    TabStripModel* tab_strip_model,
+    const TabStripModelChange& change,
+    const TabStripSelectionChange& selection) {
+  if (change.type() == TabStripModelChange::kInserted) {
+    for (const auto& delta : change.deltas())
+      OnTabInserted(delta.insert.contents);
+  } else if (change.type() == TabStripModelChange::kRemoved) {
+    for (const auto& delta : change.deltas())
+      OnTabRemoved(delta.remove.contents);
+  }
+}
+
+void HostedAppBrowserController::OnTabInserted(content::WebContents* contents) {
   HostedAppBrowserController::SetAppPrefsForWebContents(this, contents);
 }
 
-void HostedAppBrowserController::TabDetachedAt(content::WebContents* contents,
-                                               int index,
-                                               bool was_active) {
+void HostedAppBrowserController::OnTabRemoved(content::WebContents* contents) {
   auto* rvh = contents->GetRenderViewHost();
 
   contents->GetMutableRendererPrefs()->can_accept_load_drops = true;

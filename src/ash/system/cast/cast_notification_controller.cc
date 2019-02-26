@@ -4,7 +4,7 @@
 
 #include "ash/system/cast/cast_notification_controller.h"
 
-#include "ash/public/cpp/ash_features.h"
+#include "ash/public/cpp/notification_utils.h"
 #include "ash/resources/vector_icons/vector_icons.h"
 #include "ash/shell.h"
 #include "ash/strings/grit/ash_strings.h"
@@ -67,10 +67,6 @@ CastNotificationController::~CastNotificationController() {
 
 void CastNotificationController::OnDevicesUpdated(
     std::vector<mojom::SinkAndRoutePtr> devices) {
-  // The notification is only shown when UnifiedSystemTray is enabled.
-  if (!features::IsSystemTrayUnifiedEnabled())
-    return;
-
   if (ShouldShowNotification())
     ShowNotification(std::move(devices));
   else
@@ -94,20 +90,18 @@ void CastNotificationController::ShowNotification(
     data.buttons.push_back(message_center::ButtonInfo(
         l10n_util::GetStringUTF16(IDS_ASH_STATUS_TRAY_CAST_STOP)));
 
-    std::unique_ptr<Notification> notification =
-        Notification::CreateSystemNotification(
-            message_center::NOTIFICATION_TYPE_SIMPLE, kNotificationId,
-            GetNotificationTitle(sink, route), GetNotificationMessage(route),
-            base::string16() /* display_source */, GURL(),
-            message_center::NotifierId(
-                message_center::NotifierId::SYSTEM_COMPONENT, kNotifierId),
-            data,
-            base::MakeRefCounted<
-                message_center::HandleNotificationClickDelegate>(
-                base::BindRepeating(&CastNotificationController::StopCasting,
-                                    weak_ptr_factory_.GetWeakPtr())),
-            kSystemMenuCastIcon,
-            message_center::SystemNotificationWarningLevel::NORMAL);
+    std::unique_ptr<Notification> notification = ash::CreateSystemNotification(
+        message_center::NOTIFICATION_TYPE_SIMPLE, kNotificationId,
+        GetNotificationTitle(sink, route), GetNotificationMessage(route),
+        base::string16() /* display_source */, GURL(),
+        message_center::NotifierId(
+            message_center::NotifierType::SYSTEM_COMPONENT, kNotifierId),
+        data,
+        base::MakeRefCounted<message_center::HandleNotificationClickDelegate>(
+            base::BindRepeating(&CastNotificationController::StopCasting,
+                                weak_ptr_factory_.GetWeakPtr())),
+        kSystemMenuCastIcon,
+        message_center::SystemNotificationWarningLevel::NORMAL);
     notification->set_pinned(true);
     MessageCenter::Get()->AddNotification(std::move(notification));
 

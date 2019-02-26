@@ -368,28 +368,6 @@ class NetworkingPrivateVerifyDestinationFunction
   DISALLOW_COPY_AND_ASSIGN(NetworkingPrivateVerifyDestinationFunction);
 };
 
-// Implements the chrome.networkingPrivate.verifyAndEncryptCredentials method.
-class NetworkingPrivateVerifyAndEncryptCredentialsFunction
-    : public UIThreadExtensionFunction {
- public:
-  NetworkingPrivateVerifyAndEncryptCredentialsFunction() {}
-  DECLARE_EXTENSION_FUNCTION("networkingPrivate.verifyAndEncryptCredentials",
-                             NETWORKINGPRIVATE_VERIFYANDENCRYPTCREDENTIALS);
-
- protected:
-  ~NetworkingPrivateVerifyAndEncryptCredentialsFunction() override;
-
-  // ExtensionFunction:
-  ResponseAction Run() override;
-
-  void Success(const std::string& result);
-  void Failure(const std::string& error);
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(
-      NetworkingPrivateVerifyAndEncryptCredentialsFunction);
-};
-
 // Implements the chrome.networkingPrivate.verifyAndEncryptData method.
 class NetworkingPrivateVerifyAndEncryptDataFunction
     : public UIThreadExtensionFunction {

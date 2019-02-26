@@ -5,6 +5,7 @@
 #include "chrome/browser/chromeos/file_manager/file_manager_jstest_base.h"
 
 #include "base/path_service.h"
+#include "base/threading/thread_restrictions.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/test/base/ui_test_utils.h"
@@ -19,7 +20,10 @@ void FileManagerJsTestBase::RunTest(const base::FilePath& file) {
   base::FilePath root_path;
   ASSERT_TRUE(base::PathService::Get(base::DIR_SOURCE_ROOT, &root_path));
   base::FilePath full_path = root_path.Append(base_path_).Append(file);
-  ASSERT_TRUE(base::PathExists(full_path)) << full_path.value();
+  {
+    base::ScopedAllowBlockingForTesting allow_io;
+    ASSERT_TRUE(base::PathExists(full_path)) << full_path.value();
+  }
   RunTestImpl(net::FilePathToFileURL(full_path));
 }
 

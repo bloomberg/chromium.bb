@@ -16,11 +16,11 @@
 #include "third_party/blink/renderer/platform/fonts/shaping/shape_result_inline_headers.h"
 #include "third_party/blink/renderer/platform/fonts/shaping/shape_result_spacing.h"
 #include "third_party/blink/renderer/platform/fonts/shaping/shape_result_test_info.h"
-#include "third_party/blink/renderer/platform/layout_test_support.h"
 #include "third_party/blink/renderer/platform/testing/font_test_helpers.h"
 #include "third_party/blink/renderer/platform/testing/unit_test_helpers.h"
 #include "third_party/blink/renderer/platform/text/text_break_iterator.h"
 #include "third_party/blink/renderer/platform/text/text_run.h"
+#include "third_party/blink/renderer/platform/web_test_support.h"
 #include "third_party/blink/renderer/platform/wtf/vector.h"
 
 using testing::ElementsAre;
@@ -114,40 +114,40 @@ class HarfBuzzShaperTest : public testing::Test {
 class ScopedSubpixelOverride {
  public:
   ScopedSubpixelOverride(bool b) {
-    prev_layout_test_ = LayoutTestSupport::IsRunningLayoutTest();
+    prev_layout_test_ = WebTestSupport::IsRunningWebTest();
     prev_subpixel_allowed_ =
-        LayoutTestSupport::IsTextSubpixelPositioningAllowedForTest();
-    prev_antialias_ = LayoutTestSupport::IsFontAntialiasingEnabledForTest();
+        WebTestSupport::IsTextSubpixelPositioningAllowedForTest();
+    prev_antialias_ = WebTestSupport::IsFontAntialiasingEnabledForTest();
     prev_fd_subpixel_ = FontDescription::SubpixelPositioning();
 
-    // This is required for all LayoutTestSupport settings to have effects.
-    LayoutTestSupport::SetIsRunningLayoutTest(true);
+    // This is required for all WebTestSupport settings to have effects.
+    WebTestSupport::SetIsRunningWebTest(true);
 
     if (b) {
       // Allow subpixel positioning.
-      LayoutTestSupport::SetTextSubpixelPositioningAllowedForTest(true);
+      WebTestSupport::SetTextSubpixelPositioningAllowedForTest(true);
 
       // Now, enable subpixel positioning in platform-specific ways.
 
       // Mac always enables subpixel positioning.
 
       // On Windows, subpixel positioning also requires antialiasing.
-      LayoutTestSupport::SetFontAntialiasingEnabledForTest(true);
+      WebTestSupport::SetFontAntialiasingEnabledForTest(true);
 
       // On platforms other than Windows and Mac this needs to be set as
       // well.
       FontDescription::SetSubpixelPositioning(true);
     } else {
       // Explicitly disallow all subpixel positioning.
-      LayoutTestSupport::SetTextSubpixelPositioningAllowedForTest(false);
+      WebTestSupport::SetTextSubpixelPositioningAllowedForTest(false);
     }
   }
   ~ScopedSubpixelOverride() {
     FontDescription::SetSubpixelPositioning(prev_fd_subpixel_);
-    LayoutTestSupport::SetFontAntialiasingEnabledForTest(prev_antialias_);
-    LayoutTestSupport::SetTextSubpixelPositioningAllowedForTest(
+    WebTestSupport::SetFontAntialiasingEnabledForTest(prev_antialias_);
+    WebTestSupport::SetTextSubpixelPositioningAllowedForTest(
         prev_subpixel_allowed_);
-    LayoutTestSupport::SetIsRunningLayoutTest(prev_layout_test_);
+    WebTestSupport::SetIsRunningWebTest(prev_layout_test_);
 
     // Fonts cached with a different subpixel positioning state are not
     // automatically invalidated and need to be cleared between test
@@ -245,11 +245,9 @@ TEST_F(HarfBuzzShaperTest, ResolveCandidateRunsUnicodeVariants) {
 // If the specified VS is not in the font, it's mapped to .notdef.
 // then hb_ot_hide_default_ignorables() swaps it to a space with zero-advance.
 // http://lists.freedesktop.org/archives/harfbuzz/2015-May/004888.html
-#if !defined(OS_MACOSX)
       EXPECT_EQ(TestInfo(result)->FontDataForTesting(0)->SpaceGlyph(),
                 TestInfo(result)->GlyphForTesting(0, 1))
           << test.name;
-#endif
       EXPECT_EQ(0.f, TestInfo(result)->AdvanceForTesting(0, 1)) << test.name;
     } else {
       EXPECT_EQ(1u, num_glyphs) << test.name;
@@ -413,8 +411,9 @@ TEST_F(HarfBuzzShaperTest, ShapeLatinSegment) {
 }
 
 // Represents the case where a part of a cluster has a different color.
-// <div>0x647<span style="color: red;">0x64A</span></div>
-// TODO(crbug.com/689155): Still fails on Mac, AAT?
+// <div>0x647<span style="color: red;">0x64A</span></
+// Cannot be enabled on Mac yet, compare
+// https:// https://github.com/harfbuzz/harfbuzz/issues/1415
 #if defined(OS_MACOSX)
 #define MAYBE_ShapeArabicWithContext DISABLED_ShapeArabicWithContext
 #else
@@ -517,9 +516,6 @@ TEST_F(HarfBuzzShaperTest, ShapeVerticalMixed) {
   HarfBuzzShaper shaper(string);
   scoped_refptr<ShapeResult> result = shaper.Shape(&font, direction);
 
-  // Check width and bounds are not too much different. ".1" is heuristic.
-  EXPECT_NEAR(result->Width(), result->Bounds().Width(), result->Width() * .1);
-
   // Shape each run and merge them using CopyRange. Bounds() should match.
   scoped_refptr<ShapeResult> result1 = shaper.Shape(&font, direction, 0, 3);
   scoped_refptr<ShapeResult> result2 =
@@ -533,15 +529,24 @@ TEST_F(HarfBuzzShaperTest, ShapeVerticalMixed) {
   EXPECT_EQ(result->Bounds(), composite_result->Bounds());
 }
 
-TEST_P(ShapeParameterTest, MissingGlyph) {
-  // U+FFF0 is not assigned as of Unicode 10.0.
-  String string(
-      u"\uFFF0"
-      u"Hello");
+class ShapeStringTest : public HarfBuzzShaperTest,
+                        public testing::WithParamInterface<const char16_t*> {};
+
+INSTANTIATE_TEST_CASE_P(HarfBuzzShaperTest,
+                        ShapeStringTest,
+                        testing::Values(
+                            // U+FFF0 is not assigned as of Unicode 10.0.
+                            u"\uFFF0",
+                            u"\uFFF0Hello",
+                            // U+00AD SOFT HYPHEN often does not have glyphs.
+                            u"\u00AD"));
+
+TEST_P(ShapeStringTest, MissingGlyph) {
+  String string(GetParam());
   HarfBuzzShaper shaper(string);
-  scoped_refptr<ShapeResult> result = ShapeWithParameter(&shaper);
-  EXPECT_EQ(0u, result->StartIndexForResult());
-  EXPECT_EQ(string.length(), result->EndIndexForResult());
+  scoped_refptr<ShapeResult> result = shaper.Shape(&font, TextDirection::kLtr);
+  EXPECT_EQ(0u, result->StartIndex());
+  EXPECT_EQ(string.length(), result->EndIndex());
 }
 
 // Test splitting runs by kMaxCharacterIndex using a simple string that has code
@@ -640,8 +645,8 @@ TEST_P(ShapeParameterTest, ZeroWidthSpace) {
   const unsigned length = base::size(string);
   HarfBuzzShaper shaper(String(string, length));
   scoped_refptr<ShapeResult> result = ShapeWithParameter(&shaper);
-  EXPECT_EQ(0u, result->StartIndexForResult());
-  EXPECT_EQ(length, result->EndIndexForResult());
+  EXPECT_EQ(0u, result->StartIndex());
+  EXPECT_EQ(length, result->EndIndex());
 #if DCHECK_IS_ON()
   result->CheckConsistency();
 #endif
@@ -717,17 +722,14 @@ static struct GlyphDataRangeTestData {
     // The two code points form a grapheme cluster, which produces two glyphs.
     // Character index array should be [0, 0].
     {u"\u05E9\u05B0", TextDirection::kRtl, 0, 0, 1, 0, 2},
-#if !defined(OS_MACOSX)
     // ZWJ tests taken from fast/text/international/zerowidthjoiner.html
     // Character index array should be [6, 3, 3, 3, 0, 0, 0].
-    // Mac shapes differently and that glyph index expectations do not match.
     {u"\u0639\u200D\u200D\u0639\u200D\u200D\u0639", TextDirection::kRtl, 0, 0,
      1, 4, 7},
     {u"\u0639\u200D\u200D\u0639\u200D\u200D\u0639", TextDirection::kRtl, 0, 2,
      5, 1, 4},
     {u"\u0639\u200D\u200D\u0639\u200D\u200D\u0639", TextDirection::kRtl, 0, 4,
      7, 0, 1},
-#endif
 };
 
 std::ostream& operator<<(std::ostream& ostream,
@@ -1106,14 +1108,14 @@ TEST_P(ShapeResultCopyRangeTest, Split) {
   scoped_refptr<ShapeResult> result1 = ShapeResult::Create(&font, 0, direction);
   result->CopyRange(0, test_data.break_point, result1.get());
   EXPECT_EQ(test_data.break_point, result1->NumCharacters());
-  EXPECT_EQ(0u, result1->StartIndexForResult());
-  EXPECT_EQ(test_data.break_point, result1->EndIndexForResult());
+  EXPECT_EQ(0u, result1->StartIndex());
+  EXPECT_EQ(test_data.break_point, result1->EndIndex());
 
   scoped_refptr<ShapeResult> result2 = ShapeResult::Create(&font, 0, direction);
   result->CopyRange(test_data.break_point, string.length(), result2.get());
   EXPECT_EQ(string.length() - test_data.break_point, result2->NumCharacters());
-  EXPECT_EQ(test_data.break_point, result2->StartIndexForResult());
-  EXPECT_EQ(string.length(), result2->EndIndexForResult());
+  EXPECT_EQ(test_data.break_point, result2->StartIndex());
+  EXPECT_EQ(string.length(), result2->EndIndex());
 
   // Combine them.
   scoped_refptr<ShapeResult> composite_result =
@@ -1301,8 +1303,8 @@ TEST_F(HarfBuzzShaperTest, SubRange) {
   scoped_refptr<ShapeResult> result = shaper.Shape(&font, direction);
 
   scoped_refptr<ShapeResult> sub_range = result->SubRange(4, 7);
-  DCHECK_EQ(4u, sub_range->StartIndexForResult());
-  DCHECK_EQ(7u, sub_range->EndIndexForResult());
+  DCHECK_EQ(4u, sub_range->StartIndex());
+  DCHECK_EQ(7u, sub_range->EndIndex());
   DCHECK_EQ(3u, sub_range->NumCharacters());
   DCHECK_EQ(result->Direction(), sub_range->Direction());
 }
@@ -1399,60 +1401,59 @@ TEST_F(HarfBuzzShaperTest, SafeToBreakLatinDiscretionaryLigatures) {
           "third_party/MEgalopolis/MEgalopolisExtra.woff"),
       16, &ligatures);
 
-  // RA and CA form ligatures, most glyph pairs have kerning.
-  String string(u"ABRACADABRA");
-  HarfBuzzShaper shaper(string);
+  // $ ./hb-shape   --shaper=ot --features="dlig=1,kern" --show-flags
+  // MEgalopolisExtra.ttf  "RADDAYoVaDD"
+  // [R_A=0+1150|D=2+729|D=3+699|A=4+608#1|Y=5+608#1|o=6+696#1|V=7+652#1|a=8+657#1|D=9+729|D=10+729]
+  // RA Ligature, unkerned D D, D A kerns, A Y kerns, Y o kerns, o V kerns, V a
+  // kerns, no kerning with D.
+  String test_word(u"RADDAYoVaDD");
+  unsigned safe_to_break_positions[] = {2, 3, 9, 10};
+  HarfBuzzShaper shaper(test_word);
   scoped_refptr<ShapeResult> result =
       shaper.Shape(&testFont, TextDirection::kLtr);
-  EXPECT_EQ(6u, result->NextSafeToBreakOffset(1));    // After CA ligature.
-  EXPECT_EQ(6u, result->NextSafeToBreakOffset(6));    // After CA ligature.
-  EXPECT_EQ(11u, result->NextSafeToBreakOffset(7));   // At end of string.
-  EXPECT_EQ(11u, result->NextSafeToBreakOffset(9));   // At end of string.
-  EXPECT_EQ(11u, result->NextSafeToBreakOffset(10));  // At end of string.
 
-  // Add zero-width spaces at the safe to break offsets.
-  String refString(u"ABRACA\u200BDAB\u200BRA");
-  HarfBuzzShaper refShaper(refString);
+  unsigned compare_safe_to_break_position = 0;
+  for (unsigned i = 1; i < test_word.length() - 1; ++i) {
+    EXPECT_EQ(safe_to_break_positions[compare_safe_to_break_position],
+              result->NextSafeToBreakOffset(i));
+    if (i == safe_to_break_positions[compare_safe_to_break_position])
+      compare_safe_to_break_position++;
+  }
+
+  // Add zero-width spaces at some of the safe to break offsets.
+  String inserted_zero_width_spaces = test_word;
+  inserted_zero_width_spaces.Ensure16Bit();
+  unsigned enlarged_by = 0;
+  for (unsigned safe_to_break_position : safe_to_break_positions) {
+    inserted_zero_width_spaces.insert(u"\u200B",
+                                      safe_to_break_position + enlarged_by++);
+  }
+  HarfBuzzShaper refShaper(inserted_zero_width_spaces);
   scoped_refptr<ShapeResult> referenceResult =
       refShaper.Shape(&testFont, TextDirection::kLtr);
 
   // Results should be identical if it truly is safe to break at the designated
-  // safe-to-break offsets
+  // safe-to-break offsets because otherwise, the zero-width spaces would have
+  // altered the text spacing, for example by breaking apart ligatures or
+  // kerning pairs.
   EXPECT_EQ(result->SnappedWidth(), referenceResult->SnappedWidth());
   EXPECT_EQ(result->Bounds(), referenceResult->Bounds());
-  EXPECT_EQ(result->SnappedStartPositionForOffset(0),
-            referenceResult->SnappedStartPositionForOffset(0));
-  EXPECT_EQ(result->SnappedStartPositionForOffset(1),
-            referenceResult->SnappedStartPositionForOffset(1));
-  EXPECT_EQ(result->SnappedStartPositionForOffset(2),
-            referenceResult->SnappedStartPositionForOffset(2));
-  EXPECT_EQ(result->SnappedStartPositionForOffset(3),
-            referenceResult->SnappedStartPositionForOffset(3));
-  EXPECT_EQ(result->SnappedStartPositionForOffset(4),
-            referenceResult->SnappedStartPositionForOffset(4));
-  EXPECT_EQ(result->SnappedStartPositionForOffset(5),
-            referenceResult->SnappedStartPositionForOffset(5));
 
-  // First zero-width space is at position 6 so the the matching character in
-  // the reference results is 7.
-  EXPECT_EQ(result->SnappedStartPositionForOffset(6),
-            referenceResult->SnappedStartPositionForOffset(7));
-  EXPECT_EQ(result->SnappedStartPositionForOffset(7),
-            referenceResult->SnappedStartPositionForOffset(8));
-  EXPECT_EQ(result->SnappedStartPositionForOffset(8),
-            referenceResult->SnappedStartPositionForOffset(9));
-
-  // Second zero-width space is at position 9 so the the matching character in
-  // the reference results is 11.
-  EXPECT_EQ(result->SnappedStartPositionForOffset(9),
-            referenceResult->SnappedStartPositionForOffset(11));
-  EXPECT_EQ(result->SnappedStartPositionForOffset(10),
-            referenceResult->SnappedStartPositionForOffset(12));
+  // Zero-width spaces were inserted, so we need to account for that by
+  // offseting the index that we compare against.
+  unsigned inserts_offset = 0;
+  for (unsigned i = 0; i < test_word.length(); ++i) {
+    if (i == safe_to_break_positions[inserts_offset])
+      inserts_offset++;
+    EXPECT_EQ(
+        result->SnappedStartPositionForOffset(i),
+        referenceResult->SnappedStartPositionForOffset(i + inserts_offset));
+  }
 }
 
-// TODO(crbug.com/870712): This test fails on Mac due to AAT shaping and
-// font fallback differences on Android.
-#if defined(OS_MACOSX) || defined(OS_ANDROID)
+// TODO(crbug.com/870712): This test fails due to font fallback differences on
+// Android.
+#if defined(OS_ANDROID)
 #define MAYBE_SafeToBreakArabicCommonLigatures \
   DISABLED_SafeToBreakArabicCommonLigatures
 #else
@@ -1469,33 +1470,27 @@ TEST_F(HarfBuzzShaperTest, MAYBE_SafeToBreakArabicCommonLigatures) {
   HarfBuzzShaper shaper(string);
   scoped_refptr<ShapeResult> result = shaper.Shape(&font, TextDirection::kRtl);
 
-  // Safe to break at 0, 3, 4, 5, 7, and 11.
-  EXPECT_EQ(0u, result->NextSafeToBreakOffset(0));
-  EXPECT_EQ(3u, result->NextSafeToBreakOffset(1));
-  EXPECT_EQ(3u, result->NextSafeToBreakOffset(2));
-  EXPECT_EQ(3u, result->NextSafeToBreakOffset(3));
-  EXPECT_EQ(4u, result->NextSafeToBreakOffset(4));
-  EXPECT_EQ(5u, result->NextSafeToBreakOffset(5));
-  EXPECT_EQ(7u, result->NextSafeToBreakOffset(6));
-  EXPECT_EQ(7u, result->NextSafeToBreakOffset(7));
-  EXPECT_EQ(11u, result->NextSafeToBreakOffset(8));
-  EXPECT_EQ(11u, result->NextSafeToBreakOffset(9));
-  EXPECT_EQ(11u, result->NextSafeToBreakOffset(10));
-  EXPECT_EQ(11u, result->NextSafeToBreakOffset(11));
-  EXPECT_EQ(12u, result->NextSafeToBreakOffset(12));
+  std::vector<unsigned> safe_to_break_positions;
+
+#if defined(OS_MACOSX)
+  safe_to_break_positions = {0, 2, 3, 4, 11};
+#else
+  safe_to_break_positions = {0, 3, 4, 5, 7, 11};
+#endif
+  unsigned compare_safe_to_break_position = 0;
+  for (unsigned i = 0; i < string.length() - 1; ++i) {
+    EXPECT_EQ(safe_to_break_positions[compare_safe_to_break_position],
+              result->NextSafeToBreakOffset(i));
+    if (i == safe_to_break_positions[compare_safe_to_break_position])
+      compare_safe_to_break_position++;
+  }
 }
 
 // TODO(layout-dev): Expand RTL test coverage and add tests for mixed
 // directionality strings.
 
 // Test when some characters are missing in |runs_|.
-// RTL on Mac may not have runs for all characters. crbug.com/774034
-#if defined(OS_MACOSX)
-#define MAYBE_SafeToBreakMissingRun DISABLED_SafeToBreakMissingRun
-#else
-#define MAYBE_SafeToBreakMissingRun SafeToBreakMissingRun
-#endif
-TEST_P(ShapeParameterTest, MAYBE_SafeToBreakMissingRun) {
+TEST_P(ShapeParameterTest, SafeToBreakMissingRun) {
   TextDirection direction = GetParam();
   scoped_refptr<ShapeResult> result = ShapeResult::Create(&font, 8, direction);
   result->InsertRunForTesting(2, 1, direction, {0});
@@ -1506,8 +1501,8 @@ TEST_P(ShapeParameterTest, MAYBE_SafeToBreakMissingRun) {
   result->CheckConsistency();
 #endif
 
-  EXPECT_EQ(2u, result->StartIndexForResult());
-  EXPECT_EQ(10u, result->EndIndexForResult());
+  EXPECT_EQ(2u, result->StartIndex());
+  EXPECT_EQ(10u, result->EndIndex());
 
   EXPECT_EQ(2u, result->NextSafeToBreakOffset(2));
   EXPECT_EQ(3u, result->NextSafeToBreakOffset(3));

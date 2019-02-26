@@ -27,6 +27,21 @@ class CHROMEOS_EXPORT UpstartClient : public DBusClient {
   // For normal usage, access the singleton via DBusThreadManager::Get().
   static UpstartClient* Create();
 
+  // Starts an Upstart job.
+  // |job|: Name of Upstart job.
+  // |upstart_env|: List of upstart environment variables to be passed to the
+  // upstart service.
+  // |callback|: Called with a response.
+  virtual void StartJob(const std::string& job,
+                        const std::vector<std::string>& upstart_env,
+                        VoidDBusMethodCallback callback) = 0;
+
+  // Stops an Upstart job.
+  // |job|: Name of Upstart job.
+  // |callback|: Called with a response.
+  virtual void StopJob(const std::string& job,
+                       VoidDBusMethodCallback callback) = 0;
+
   // Starts authpolicyd.
   virtual void StartAuthPolicyService() = 0;
 
@@ -47,10 +62,6 @@ class CHROMEOS_EXPORT UpstartClient : public DBusClient {
 
   // Provides an interface for stopping the media analytics process.
   virtual void StopMediaAnalytics(VoidDBusMethodCallback callback) = 0;
-
-  // Starts the bluetooth logging service.
-  virtual void StartBluetoothLogging() = 0;
-
  protected:
   // Create() should be used instead.
   UpstartClient();

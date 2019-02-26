@@ -31,6 +31,7 @@
 <translation id="1351937230027495976">Réduire le menu</translation>
 <translation id="1383876407941801731">Rechercher</translation>
 <translation id="1419738280318246476">Déverrouiller l'appareil pour effectuer l'action de notification</translation>
+<translation id="1455242230282523554">Afficher les paramètres de langue</translation>
 <translation id="1467432559032391204">Vers la gauche</translation>
 <translation id="1484102317210609525"><ph name="DEVICE_NAME" /> (HDMI/DP)</translation>
 <translation id="1520303207432623762">{NUM_APPS,plural, =1{Afficher les paramètres de notification. Les notifications sont désactivées pour une application}one{Afficher les paramètres de notification. Les notifications sont désactivées pour # application}other{Afficher les paramètres de notification. Les notifications sont désactivées pour # applications}}</translation>
@@ -38,8 +39,8 @@
 <translation id="1537254971476575106">Loupe plein écran</translation>
 <translation id="15373452373711364">Grand curseur</translation>
 <translation id="1550523713251050646">Cliquez pour obtenir plus d'options.</translation>
-<translation id="1567387640189251553">Un clavier différent a été branché depuis la dernière fois où vous avez saisi votre mot de passe. Il est possible que ce soit pour enregistrer les touches sur lesquelles vous appuyez et vous soutirer ainsi des informations.</translation>
 <translation id="1570871743947603115">Activer/Désactiver le Bluetooth. <ph name="STATE_TEXT" /></translation>
+<translation id="1589090746204042747">Accéder à toutes vos activités dans cette session</translation>
 <translation id="1608626060424371292">Supprimer cet utilisateur</translation>
 <translation id="1621499497873603021">Temps restant avant que la batterie ne soit vide : <ph name="TIME_LEFT" />.</translation>
 <translation id="1654477262762802994">Soumettre une requête vocale</translation>
@@ -111,8 +112,8 @@
 <translation id="2727977024730340865">L'appareil est branché à un chargeur de faible puissance. Il se peut que la charge ne soit pas fiable.</translation>
 <translation id="2761704814324807722">Barre d'état – Heure : <ph name="TIME" />, <ph name="BATTERY" /></translation>
 <translation id="277257480934873581">Reconnexion à <ph name="NAME" />…</translation>
-<translation id="2790844815106384441">Choisir si les sites Web peuvent utiliser les services de localisation ou le micro, la caméra ou d'autres fonctionnalités de l'appareil</translation>
 <translation id="2792498699870441125">Alt + Recherche</translation>
+<translation id="2803734122639935495">Pour déverrouiller l'appareil, saisissez votre mot de passe</translation>
 <translation id="2819276065543622893">Vous allez être déconnecté maintenant.</translation>
 <translation id="2825619548187458965">Étagère</translation>
 <translation id="2844169650293029770">Appareil USB de type C (port situé sur la gauche de l'appareil, à l'avant)</translation>
@@ -126,6 +127,7 @@
 <translation id="2946119680249604491">Ajouter une connexion</translation>
 <translation id="2961963223658824723">Une erreur s'est produite. Veuillez réessayer dans quelques secondes.</translation>
 <translation id="2963773877003373896">mod3</translation>
+<translation id="2970920913501714344">Installer des applications, des extensions et des thèmes</translation>
 <translation id="2995447421581609334">Afficher les appareils Cast.</translation>
 <translation id="2996462380875591307">Le mode Loupe ancrée est activé. Appuyez de nouveau sur Ctrl+Recherche+D pour le désactiver.</translation>
 <translation id="3000461861112256445">Audio mono</translation>
@@ -155,6 +157,7 @@
 <translation id="3413817803639110246">Aucune notification</translation>
 <translation id="3445925074670675829">Appareil USB de type C</translation>
 <translation id="3454224730401036106">La connexion a été établie sur un réseau plus sûr</translation>
+<translation id="3465223694362104965">Un autre clavier a été connecté à cet appareil depuis votre dernière connexion. Avant d'utiliser ce clavier, assurez-vous qu'il s'agit d'un clavier de confiance.</translation>
 <translation id="3477079411857374384">Ctrl+Maj+Espace</translation>
 <translation id="3510164367642747937">Mettre le curseur de la souris en surbrillance</translation>
 <translation id="3510503721818156981">Chromebook est connecté à un nouveau téléphone</translation>
@@ -173,6 +176,7 @@
 <translation id="3783640748446814672">alt</translation>
 <translation id="3784455785234192852">Verrouiller</translation>
 <translation id="3798670284305777884">Haut-parleur (interne)</translation>
+<translation id="3799080171973636491">Vous avez appuyé sur le raccourci clavier de la loupe plein écran. Voulez-vous l'activer ?</translation>
 <translation id="380165613292957338">Bonjour, comment puis-je vous aider ?</translation>
 <translation id="383629559565718788">Afficher les paramètres du clavier</translation>
 <translation id="3846575436967432996">Aucune information disponible concernant le réseau</translation>
@@ -190,7 +194,7 @@
 <translation id="4065525899979931964">{NUM_APPS,plural, =1{Notifications désactivées pour une application}one{Notifications désactivées pour # application}other{Notifications désactivées pour # applications}}</translation>
 <translation id="4072264167173457037">Signal de moyenne intensité</translation>
 <translation id="4146833061457621061">Joue de la musique</translation>
-<translation id="4200057768455216496">Vous avez utilisé le raccourci de la loupe ancrée. Voulez-vous l'activer ?</translation>
+<translation id="4181841719683918333">Langues</translation>
 <translation id="4217571870635786043">Dictée</translation>
 <translation id="4261870227682513959">Afficher les paramètres de notification. Les notifications sont désactivées</translation>
 <translation id="4269883910223712419">L'administrateur de cet appareil peut :</translation>
@@ -198,6 +202,7 @@
 <translation id="4279490309300973883">Mise en miroir</translation>
 <translation id="4292681942966152062">Activation de <ph name="NETWORK_NAME" />…</translation>
 <translation id="4321179778687042513">ctrl</translation>
+<translation id="4321776623976362024">Vous avez appuyé sur le raccourci clavier du contraste élevé. Voulez-vous l'activer ?</translation>
 <translation id="4331809312908958774">Chrome OS
 </translation>
 <translation id="4338109981321384717">Loupe</translation>
@@ -205,6 +210,7 @@
 <translation id="435527878592612277">Sélectionner votre photo</translation>
 <translation id="4378551569595875038">Connexion</translation>
 <translation id="4379531060876907730">Voici vos outils de stylet</translation>
+<translation id="4389184120735010762">Vous avez appuyé sur le raccourci clavier de la loupe ancrée. Voulez-vous l'activer ?</translation>
 <translation id="4421231901400348175">Partager le contrôle de votre écran avec <ph name="HELPER_NAME" /> via l'assistance à distance</translation>
 <translation id="4430019312045809116">Volume</translation>
 <translation id="4450893287417543264">Ne plus afficher</translation>
@@ -220,6 +226,7 @@
 <translation id="4628757576491864469">Appareils</translation>
 <translation id="4659419629803378708">ChromeVox activé</translation>
 <translation id="4734965478015604180">Horizontal</translation>
+<translation id="476166673298332917">L'administrateur de cet appareil a accès à toute votre activité de navigation.</translation>
 <translation id="4774338217796918551">Revenez demain à <ph name="COME_BACK_TIME" />.</translation>
 <translation id="4776917500594043016">Mot de passe de <ph name="USER_EMAIL_ADDRESS" /></translation>
 <translation id="4778095205580009397">L'Assistant Google n'est pas disponible dans une session de démonstration.</translation>
@@ -242,6 +249,7 @@
 <translation id="5207949376430453814">Mettre le curseur de texte en surbrillance</translation>
 <translation id="5222676887888702881">Déconnexion</translation>
 <translation id="523505283826916779">Paramètres d'accessibilité</translation>
+<translation id="5302048478445481009">Langue</translation>
 <translation id="5313326810920013265">Paramètres Bluetooth</translation>
 <translation id="5331975486040154427">Appareil USB de type C (port situé sur la gauche de l'appareil, à l'arrière)</translation>
 <translation id="5379115545237091094">Trop de tentatives</translation>
@@ -254,13 +262,14 @@
 <translation id="5537725057119320332">Caster</translation>
 <translation id="5548285847212963613">L'extension "<ph name="EXTENSION_NAME" />" peut aider à se connecter à ce réseau.</translation>
 <translation id="554893713779400387">Activer ou désactiver la dictée</translation>
-<translation id="5554214597676791969">Pour vous reconnecter, saisissez votre mot de passe</translation>
 <translation id="5571066253365925590">Bluetooth activé</translation>
 <translation id="5597451508971090205"><ph name="SHORT_WEEKDAY" /> <ph name="DATE" /></translation>
 <translation id="5600837773213129531">Appuyez sur Ctrl+Alt+Z pour désactiver les commentaires audio.</translation>
+<translation id="5626283214046138476">Votre compte d'utilisateur supervisé arrive bientôt à expiration.</translation>
 <translation id="5648021990716966815">Connecteur micro</translation>
 <translation id="5669267381087807207">Activation</translation>
 <translation id="5673434351075758678">La langue utilisée est passée de "<ph name="FROM_LOCALE" />" à "<ph name="TO_LOCALE" />" après la synchronisation de vos paramètres.</translation>
+<translation id="5691772641933328258">Empreinte digitale non reconnue</translation>
 <translation id="5710450975648804523">Mode "Ne pas déranger" activé</translation>
 <translation id="574392208103952083">Moyenne</translation>
 <translation id="5744083938413354016">Déplacement tactile</translation>
@@ -301,7 +310,6 @@
 <translation id="6284232397434400372">Résolution modifiée</translation>
 <translation id="6297287540776456956">Utiliser le stylet pour sélectionner une zone</translation>
 <translation id="6310121235600822547">L'écran "<ph name="DISPLAY_NAME" />" a effectué une rotation de <ph name="ROTATION" />.</translation>
-<translation id="632744581670418035">Clavier en superposition</translation>
 <translation id="6344698853700675736">Activer/Désactiver Éclairage nocturne</translation>
 <translation id="6376931439017688372">Bluetooth activé</translation>
 <translation id="639644700271529076">La touche de verrouillage des majuscules est désactivée.</translation>
@@ -323,6 +331,7 @@
 <translation id="6627638273713273709">Rechercher+Maj+K</translation>
 <translation id="6650933572246256093">L'appareil Bluetooth "<ph name="DEVICE_NAME" />" demande l'autorisation de s'associer. Veuillez saisir le code d'authentification suivant sur l'appareil : <ph name="PASSKEY" />.</translation>
 <translation id="6657585470893396449">Mot de passe</translation>
+<translation id="6665545700722362599">Autoriser les sites Web, les applications et les extensions à utiliser les services de localisation ou le micro, l'appareil photo ou d'autres fonctionnalités de l'appareil</translation>
 <translation id="6691659475504239918">Recherche+Maj+H</translation>
 <translation id="6696025732084565524">Votre clavier amovible nécessite une mise à jour critique</translation>
 <translation id="6700713906295497288">Bouton de menu IME</translation>
@@ -333,7 +342,6 @@
 <translation id="6751826523481687655">Le suivi des performances est activé</translation>
 <translation id="6785414152754474415">La batterie est chargée à <ph name="PERCENTAGE" /> % et en charge.</translation>
 <translation id="6803622936009808957">Impossible de dupliquer les écrans, car aucune résolution compatible n'a été détectée. Le bureau étendu a été activé à la place.</translation>
-<translation id="6814658242098378692">Gérer les applications, les extensions et les thèmes</translation>
 <translation id="6820676911989879663">Faites une pause !</translation>
 <translation id="683971173229319003">Recherche+L</translation>
 <translation id="6857811139397017780">Activer <ph name="NETWORKSERVICE" /></translation>
@@ -344,7 +352,6 @@
 <translation id="698231206551913481">L'ensemble des données locales et des fichiers associés à cet utilisateur seront définitivement supprimés en même temps que ce dernier.</translation>
 <translation id="7015766095477679451">Revenez à <ph name="COME_BACK_TIME" />.</translation>
 <translation id="7029814467594812963">Quitter la session</translation>
-<translation id="7037152028959403492">Vous avez utilisé le raccourci du contraste élevé. Voulez-vous l'activer ?</translation>
 <translation id="7066646422045619941">Votre administrateur a désactivé ce réseau.</translation>
 <translation id="7067196344162293536">Rotation automatique</translation>
 <translation id="7068360136237591149">Ouvre des fichiers</translation>
@@ -374,7 +381,6 @@
 <translation id="7564874036684306347">Le déplacement de fenêtres vers un autre écran peut entraîner un comportement inattendu. Par exemple, les notifications, les fenêtres et les boîtes de dialogue peuvent s'afficher sur les deux écrans.</translation>
 <translation id="7569509451529460200">Braille et ChromeVox activés</translation>
 <translation id="7593891976182323525">Recherche ou Maj</translation>
-<translation id="7604942372593434070">Accède à votre activité de navigation</translation>
 <translation id="7645176681409127223"><ph name="USER_NAME" /> (propriétaire)</translation>
 <translation id="7647488630410863958">Déverrouiller l'appareil pour consulter vos notifications</translation>
 <translation id="7649070708921625228">Aide</translation>
@@ -383,6 +389,7 @@
 <translation id="7705524343798198388">VPN</translation>
 <translation id="7723389094756330927">{NUM_NOTIFICATIONS,plural, =1{1 notification}one{# notification}other{# notifications}}</translation>
 <translation id="776344839111254542">Cliquer pour afficher les informations relatives à la mise à jour</translation>
+<translation id="7780159184141939021">Rotation d'écran</translation>
 <translation id="7796353162336583443">Appuyez sur le bouton du stylet situé sur l'étagère pour prendre des notes, effectuer des captures d'écran et utiliser l'Assistant Google, le pointeur laser ou la loupe.</translation>
 <translation id="7798302898096527229">Appuyez sur Rechercher ou Maj pour annuler.</translation>
 <translation id="7814236020522506259"><ph name="HOUR" /> et <ph name="MINUTE" /></translation>
@@ -390,14 +397,17 @@
 <translation id="7842211907556571265">Connexion à <ph name="NETWORK_NAME" />…</translation>
 <translation id="7842569679327885685">Avertissement : Fonctionnalité expérimentale</translation>
 <translation id="7846634333498149051">Clavier</translation>
+<translation id="7868900307798234037">Déverrouillage en cours avec votre empreinte digitale</translation>
 <translation id="7886169021410746335">Régler les paramètres de confidentialité</translation>
 <translation id="7886277072580235377">Votre session Internet est effacée lorsque vous vous déconnectez. <ph name="LEARN_MORE" /></translation>
 <translation id="788781083998633524">Envoie un e-mail</translation>
+<translation id="7897375687985782769">Vous avez appuyé sur le raccourci clavier de rotation d'écran. Voulez-vous faire pivoter l'écran ?</translation>
 <translation id="7904094684485781019">L'administrateur de ce compte a désactivé la connexion multicompte.</translation>
 <translation id="7933084174919150729">L'Assistant Google n'est disponible que pour le profil principal.</translation>
 <translation id="79341161159229895">Compte géré par <ph name="FIRST_PARENT_EMAIL" /> et <ph name="SECOND_PARENT_EMAIL" /></translation>
 <translation id="7977927628060636163">Recherche de réseaux mobiles…</translation>
 <translation id="7982789257301363584">Réseau</translation>
+<translation id="7984197416080286869">Trop de tentatives avec votre empreinte digitale</translation>
 <translation id="7994370417837006925">Connexion multicompte</translation>
 <translation id="8000066093800657092">Aucun réseau détecté</translation>
 <translation id="8029241286966751120">Le mode Loupe plein écran est activé. Appuyez de nouveau sur Ctrl+Recherche+M pour le désactiver.</translation>
@@ -409,7 +419,6 @@
 <translation id="8132793192354020517">Connecté à <ph name="NAME" /></translation>
 <translation id="813913629614996137">Initialisation…</translation>
 <translation id="8142699993796781067">Réseau privé</translation>
-<translation id="8152119955266188852">Vous avez utilisé le raccourci de la loupe plein écran. Voulez-vous l'activer ?</translation>
 <translation id="8190698733819146287">Personnaliser les langues et la saisie...</translation>
 <translation id="8192202700944119416">Les notifications sont masquées.</translation>
 <translation id="8236042855478648955">Il est temps de faire une pause</translation>

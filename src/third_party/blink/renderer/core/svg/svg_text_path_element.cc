@@ -22,46 +22,44 @@
 
 #include "third_party/blink/renderer/core/dom/id_target_observer.h"
 #include "third_party/blink/renderer/core/layout/svg/layout_svg_text_path.h"
+#include "third_party/blink/renderer/core/svg/svg_enumeration_map.h"
 
 namespace blink {
 
 template <>
-const SVGEnumerationStringEntries&
-GetStaticStringEntries<SVGTextPathMethodType>() {
-  DEFINE_STATIC_LOCAL(SVGEnumerationStringEntries, entries, ());
-  if (entries.IsEmpty()) {
-    entries.push_back(std::make_pair(kSVGTextPathMethodAlign, "align"));
-    entries.push_back(std::make_pair(kSVGTextPathMethodStretch, "stretch"));
-  }
+const SVGEnumerationMap& GetEnumerationMap<SVGTextPathMethodType>() {
+  static const SVGEnumerationMap::Entry enum_items[] = {
+      {kSVGTextPathMethodAlign, "align"},
+      {kSVGTextPathMethodStretch, "stretch"},
+  };
+  static const SVGEnumerationMap entries(enum_items);
   return entries;
 }
 
 template <>
-const SVGEnumerationStringEntries&
-GetStaticStringEntries<SVGTextPathSpacingType>() {
-  DEFINE_STATIC_LOCAL(SVGEnumerationStringEntries, entries, ());
-  if (entries.IsEmpty()) {
-    entries.push_back(std::make_pair(kSVGTextPathSpacingAuto, "auto"));
-    entries.push_back(std::make_pair(kSVGTextPathSpacingExact, "exact"));
-  }
+const SVGEnumerationMap& GetEnumerationMap<SVGTextPathSpacingType>() {
+  static const SVGEnumerationMap::Entry enum_items[] = {
+      {kSVGTextPathSpacingAuto, "auto"}, {kSVGTextPathSpacingExact, "exact"},
+  };
+  static const SVGEnumerationMap entries(enum_items);
   return entries;
 }
 
 inline SVGTextPathElement::SVGTextPathElement(Document& document)
-    : SVGTextContentElement(SVGNames::textPathTag, document),
+    : SVGTextContentElement(svg_names::kTextPathTag, document),
       SVGURIReference(this),
       start_offset_(
           SVGAnimatedLength::Create(this,
-                                    SVGNames::startOffsetAttr,
+                                    svg_names::kStartOffsetAttr,
                                     SVGLengthMode::kWidth,
                                     SVGLength::Initial::kUnitlessZero)),
       method_(SVGAnimatedEnumeration<SVGTextPathMethodType>::Create(
           this,
-          SVGNames::methodAttr,
+          svg_names::kMethodAttr,
           kSVGTextPathMethodAlign)),
       spacing_(SVGAnimatedEnumeration<SVGTextPathSpacingType>::Create(
           this,
-          SVGNames::spacingAttr,
+          svg_names::kSpacingAttr,
           kSVGTextPathSpacingExact)) {
   AddToPropertyMap(start_offset_);
   AddToPropertyMap(method_);
@@ -93,11 +91,12 @@ void SVGTextPathElement::SvgAttributeChanged(const QualifiedName& attr_name) {
     return;
   }
 
-  if (attr_name == SVGNames::startOffsetAttr)
+  if (attr_name == svg_names::kStartOffsetAttr)
     UpdateRelativeLengthsInformation();
 
-  if (attr_name == SVGNames::startOffsetAttr ||
-      attr_name == SVGNames::methodAttr || attr_name == SVGNames::spacingAttr) {
+  if (attr_name == svg_names::kStartOffsetAttr ||
+      attr_name == svg_names::kMethodAttr ||
+      attr_name == svg_names::kSpacingAttr) {
     SVGElement::InvalidationGuard invalidation_guard(this);
     if (LayoutObject* object = GetLayoutObject())
       MarkForLayoutAndParentResourceInvalidation(*object);

@@ -17,13 +17,12 @@ class DocumentAllNameCollection final : public HTMLNameCollection {
                                            CollectionType type,
                                            const AtomicString& name) {
     DCHECK_EQ(type, kDocumentAllNamedItems);
-    return new DocumentAllNameCollection(document, name);
+    return MakeGarbageCollected<DocumentAllNameCollection>(document, name);
   }
 
-  bool ElementMatches(const Element&) const;
-
- private:
   DocumentAllNameCollection(ContainerNode& document, const AtomicString& name);
+
+  bool ElementMatches(const Element&) const;
 };
 
 DEFINE_TYPE_CASTS(DocumentAllNameCollection,

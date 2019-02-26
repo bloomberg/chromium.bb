@@ -27,7 +27,7 @@
 #include "third_party/blink/renderer/core/css/css_resolution_units.h"
 #include "third_party/blink/renderer/core/css/css_to_length_conversion_data.h"
 #include "third_party/blink/renderer/core/css/css_value_pool.h"
-#include "third_party/blink/renderer/platform/layout_unit.h"
+#include "third_party/blink/renderer/platform/geometry/layout_unit.h"
 #include "third_party/blink/renderer/platform/wtf/size_assertions.h"
 #include "third_party/blink/renderer/platform/wtf/std_lib_extras.h"
 
@@ -95,37 +95,39 @@ CSSPrimitiveValue* CSSPrimitiveValue::Create(double value, UnitType type) {
     value = 0;
 
   if (value < 0 || value > CSSValuePool::kMaximumCacheableIntegerValue)
-    return new CSSPrimitiveValue(value, type);
+    return MakeGarbageCollected<CSSPrimitiveValue>(value, type);
 
-  int int_value = static_cast<int>(value);
+  int int_value = clampTo<int>(value);
   if (value != int_value)
-    return new CSSPrimitiveValue(value, type);
+    return MakeGarbageCollected<CSSPrimitiveValue>(value, type);
 
   CSSValuePool& pool = CssValuePool();
   CSSPrimitiveValue* result = nullptr;
   switch (type) {
     case CSSPrimitiveValue::UnitType::kPixels:
       result = pool.PixelCacheValue(int_value);
-      if (!result)
-        result = pool.SetPixelCacheValue(int_value,
-                                         new CSSPrimitiveValue(value, type));
+      if (!result) {
+        result = pool.SetPixelCacheValue(
+            int_value, MakeGarbageCollected<CSSPrimitiveValue>(value, type));
+      }
       return result;
     case CSSPrimitiveValue::UnitType::kPercentage:
       result = pool.PercentCacheValue(int_value);
-      if (!result)
-        result = pool.SetPercentCacheValue(int_value,
-                                           new CSSPrimitiveValue(value, type));
+      if (!result) {
+        result = pool.SetPercentCacheValue(
+            int_value, MakeGarbageCollected<CSSPrimitiveValue>(value, type));
+      }
       return result;
     case CSSPrimitiveValue::UnitType::kNumber:
     case CSSPrimitiveValue::UnitType::kInteger:
       result = pool.NumberCacheValue(int_value);
       if (!result)
         result = pool.SetNumberCacheValue(
-            int_value, new CSSPrimitiveValue(
+            int_value, MakeGarbageCollected<CSSPrimitiveValue>(
                            value, CSSPrimitiveValue::UnitType::kInteger));
       return result;
     default:
-      return new CSSPrimitiveValue(value, type);
+      return MakeGarbageCollected<CSSPrimitiveValue>(value, type);
   }
 }
 

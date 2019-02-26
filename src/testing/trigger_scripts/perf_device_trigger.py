@@ -129,7 +129,9 @@ class PerfDeviceTriggerer(base_test_triggerer.BaseTestTriggerer):
         self._print_device_affinity_info({}, {},
           self._eligible_bots_by_ids, args.shards)
       raise ValueError('Not enough available machines exist in in swarming'
-                       'pool. Contact labs to rack in more hardware')
+                       'pool.  Shards requested (%d) exceeds available bots '
+                       '(%d).' % (
+                           args.shards, len(self._eligible_bots_by_ids)))
 
     shard_to_bot_assignment_map = {}
     unallocated_bots_by_ids = copy.deepcopy(self._eligible_bots_by_ids)

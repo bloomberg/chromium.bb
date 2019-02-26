@@ -17,15 +17,16 @@
 #include "chrome/browser/ui/views/chrome_typography.h"
 #include "chrome/browser/ui/views/toolbar/toolbar_ink_drop_util.h"
 #include "ui/accessibility/ax_node_data.h"
-#include "ui/base/material_design/material_design_controller.h"
 #include "ui/base/models/menu_model.h"
 #include "ui/display/display.h"
 #include "ui/display/screen.h"
+#include "ui/views/animation/ink_drop.h"
+#include "ui/views/animation/ink_drop_highlight.h"
+#include "ui/views/background.h"
 #include "ui/views/controls/button/label_button_border.h"
 #include "ui/views/controls/menu/menu_item_view.h"
 #include "ui/views/controls/menu/menu_model_adapter.h"
 #include "ui/views/controls/menu/menu_runner.h"
-#include "ui/views/view_properties.h"
 #include "ui/views/widget/widget.h"
 
 ToolbarButton::ToolbarButton(views::ButtonListener* listener)
@@ -119,10 +120,7 @@ bool ToolbarButton::IsMenuShowing() const {
 }
 
 void ToolbarButton::OnBoundsChanged(const gfx::Rect& previous_bounds) {
-  SetProperty(
-      views::kHighlightPathKey,
-      CreateToolbarHighlightPath(this, gfx::Insets(0, leading_margin_, 0, 0))
-          .release());
+  SetToolbarButtonHighlightPath(this, gfx::Insets(0, leading_margin_, 0, 0));
 
   UpdateHighlightBackgroundAndInsets();
   LabelButton::OnBoundsChanged(previous_bounds);
@@ -220,35 +218,12 @@ void ToolbarButton::GetAccessibleNodeData(ui::AXNodeData* node_data) {
 }
 
 std::unique_ptr<views::InkDrop> ToolbarButton::CreateInkDrop() {
-  return CreateToolbarInkDrop<LabelButton>(this);
-}
-
-std::unique_ptr<views::InkDropRipple> ToolbarButton::CreateInkDropRipple()
-    const {
-  return CreateToolbarInkDropRipple<LabelButton>(
-      this, GetInkDropCenterBasedOnLastEvent(),
-      gfx::Insets(0, leading_margin_, 0, 0));
+  return CreateToolbarInkDrop(this);
 }
 
 std::unique_ptr<views::InkDropHighlight> ToolbarButton::CreateInkDropHighlight()
     const {
-  if (highlight_color_) {
-    const int highlight_radius =
-        ChromeLayoutProvider::Get()->GetCornerRadiusMetric(
-            views::EMPHASIS_MAXIMUM, size());
-
-    // TODO(pbos): Unify with CreateToolbarInkDropHighlight which currently
-    // assumes a square inkdrop and uses different bounds for the center point.
-    auto highlight = std::make_unique<views::InkDropHighlight>(
-        size(), highlight_radius,
-        gfx::PointF(GetMirroredRect(GetLocalBounds()).CenterPoint()),
-        GetInkDropBaseColor());
-    highlight->set_visible_opacity(kToolbarInkDropHighlightVisibleOpacity);
-    return highlight;
-  }
-
-  return CreateToolbarInkDropHighlight<LabelButton>(
-      this, GetMirroredRect(GetContentsBounds()).CenterPoint());
+  return CreateToolbarInkDropHighlight(this);
 }
 
 SkColor ToolbarButton::GetInkDropBaseColor() const {
@@ -328,8 +303,10 @@ void ToolbarButton::OnMenuClosed() {
   menu_showing_ = false;
 
   // Set the state back to normal after the drop down menu is closed.
-  if (state() != STATE_DISABLED)
+  if (state() != STATE_DISABLED) {
+    GetInkDrop()->SetHovered(IsMouseHovered());
     SetState(STATE_NORMAL);
+  }
 
   menu_runner_.reset();
   menu_model_adapter_.reset();

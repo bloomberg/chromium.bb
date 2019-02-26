@@ -6,14 +6,10 @@
 #define CHROME_BROWSER_USB_WEB_USB_DETECTOR_H_
 
 #include "base/macros.h"
-#include "base/scoped_observer.h"
-#include "device/usb/usb_service.h"
+#include "device/usb/public/mojom/device_manager.mojom.h"
+#include "mojo/public/cpp/bindings/associated_binding.h"
 
-namespace device {
-class UsbDevice;
-}
-
-class WebUsbDetector : public device::UsbService::Observer {
+class WebUsbDetector : public device::mojom::UsbDeviceManagerClient {
  public:
   WebUsbDetector();
   ~WebUsbDetector() override;
@@ -21,12 +17,20 @@ class WebUsbDetector : public device::UsbService::Observer {
   // Initializes the WebUsbDetector.
   void Initialize();
 
- private:
-  // device::UsbService::observer:
-  void OnDeviceAdded(scoped_refptr<device::UsbDevice> device) override;
-  void OnDeviceRemoved(scoped_refptr<device::UsbDevice> device) override;
+  void SetDeviceManagerForTesting(
+      device::mojom::UsbDeviceManagerPtr fake_device_manager);
 
-  ScopedObserver<device::UsbService, device::UsbService::Observer> observer_;
+ private:
+  // device::mojom::UsbDeviceManagerClient implementation.
+  void OnDeviceAdded(device::mojom::UsbDeviceInfoPtr device_info) override;
+  void OnDeviceRemoved(device::mojom::UsbDeviceInfoPtr device_info) override;
+
+  void OnDeviceManagerConnectionError();
+
+  // Connection to |device_manager_instance_|.
+  device::mojom::UsbDeviceManagerPtr device_manager_;
+  mojo::AssociatedBinding<device::mojom::UsbDeviceManagerClient>
+      client_binding_;
 
   DISALLOW_COPY_AND_ASSIGN(WebUsbDetector);
 };

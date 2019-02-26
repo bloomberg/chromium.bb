@@ -191,7 +191,7 @@ class AbstractPayloadDecoderTest : public PayloadDecoderBaseTest {
   AssertionResult DecodePayloadAndValidateSeveralWays(
       Http2StringPiece payload,
       const FrameParts& expected) {
-    NoArgValidator validator = [&expected, this]() -> AssertionResult {
+    auto validator = [&expected, this]() -> AssertionResult {
       VERIFY_FALSE(listener_.IsInProgress());
       VERIFY_EQ(1u, listener_.size());
       VERIFY_AND_RETURN_SUCCESS(expected.VerifyEquals(*listener_.frame(0)));
@@ -306,7 +306,7 @@ class AbstractPayloadDecoderTest : public PayloadDecoderBaseTest {
   ::testing::AssertionResult VerifyDetectsFrameSizeError(
       uint8_t required_flags,
       Http2StringPiece unpadded_payload,
-      ApproveSize approve_size) {
+      const ApproveSize& approve_size) {
     Http2FrameType frame_type = DecoderPeer::FrameType();
     uint8_t known_flags = KnownFlagsMaskForFrameType(frame_type);
     VERIFY_EQ(0, known_flags & Http2FrameFlag::PADDED);

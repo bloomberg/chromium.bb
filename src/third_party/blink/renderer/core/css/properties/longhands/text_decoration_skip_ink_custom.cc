@@ -8,7 +8,7 @@
 #include "third_party/blink/renderer/core/style/computed_style.h"
 
 namespace blink {
-namespace CSSLonghand {
+namespace css_longhand {
 
 const CSSValue* TextDecorationSkipInk::CSSValueFromComputedStyleInternal(
     const ComputedStyle& style,
@@ -20,5 +20,5 @@ const CSSValue* TextDecorationSkipInk::CSSValueFromComputedStyleInternal(
       style.TextDecorationSkipInk());
 }
 
-}  // namespace CSSLonghand
+}  // namespace css_longhand
 }  // namespace blink

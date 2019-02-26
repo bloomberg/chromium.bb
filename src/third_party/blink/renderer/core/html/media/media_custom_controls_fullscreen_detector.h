@@ -35,7 +35,7 @@ class CORE_EXPORT MediaCustomControlsFullscreenDetector final
   friend class HTMLMediaElementEventListenersTest;
 
   // EventListener implementation.
-  void handleEvent(ExecutionContext*, Event*) override;
+  void Invoke(ExecutionContext*, Event*) override;
 
   HTMLVideoElement& VideoElement() { return *video_element_; }
 

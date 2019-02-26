@@ -6,6 +6,7 @@
 
 #include <aura-shell-client-protocol.h>
 #include <fcntl.h>
+#include <fullscreen-shell-unstable-v1-client-protocol.h>
 #include <linux-dmabuf-unstable-v1-client-protocol.h>
 #include <presentation-time-client-protocol.h>
 #include <wayland-client-core.h>
@@ -63,6 +64,9 @@ const char kUseDrm[] = "use-drm";
 // Specifies if client should be fullscreen.
 const char kFullscreen[] = "fullscreen";
 
+// Specifies if client should y-invert the dmabuf surfaces.
+const char kYInvert[] = "y-invert";
+
 }  // namespace switches
 
 namespace {
@@ -79,6 +83,10 @@ const size_t kBytesPerPixel = 4;
 // DRI render node path template.
 const char kDriRenderNodeTemplate[] = "/dev/dri/renderD%u";
 #endif
+
+ClientBase* CastToClientBase(void* data) {
+  return static_cast<ClientBase*>(data);
+}
 
 void RegistryHandler(void* data,
                      wl_registry* registry,
@@ -115,6 +123,12 @@ void RegistryHandler(void* data,
     globals->input_timestamps_manager.reset(
         static_cast<zwp_input_timestamps_manager_v1*>(wl_registry_bind(
             registry, id, &zwp_input_timestamps_manager_v1_interface, 1)));
+  } else if (strcmp(interface, "zwp_fullscreen_shell_v1") == 0) {
+    globals->fullscreen_shell.reset(static_cast<zwp_fullscreen_shell_v1*>(
+        wl_registry_bind(registry, id, &zwp_fullscreen_shell_v1_interface, 1)));
+  } else if (strcmp(interface, "wl_output") == 0) {
+    globals->output.reset(static_cast<wl_output*>(
+        wl_registry_bind(registry, id, &wl_output_interface, 1)));
   }
 }
 
@@ -177,8 +191,8 @@ std::unique_ptr<ScopedVkInstance> CreateVkInstance() {
   };
 
   std::unique_ptr<ScopedVkInstance> vk_instance(new ScopedVkInstance());
-  VkResult result =
-      vkCreateInstance(&create_info, nullptr, vk_instance->receive());
+  VkResult result = vkCreateInstance(
+      &create_info, nullptr, ScopedVkInstance::Receiver(*vk_instance).get());
   CHECK_EQ(VK_SUCCESS, result)
       << "Failed to create a Vulkan instance. Do you have an ICD "
          "driver (e.g: "
@@ -214,7 +228,7 @@ std::unique_ptr<ScopedVkDevice> CreateVkDevice(VkInstance vk_instance,
   };
   std::unique_ptr<ScopedVkDevice> vk_device(new ScopedVkDevice());
   result = vkCreateDevice(physical_device, &device_create_info, nullptr,
-                          vk_device->receive());
+                          ScopedVkDevice::Receiver(*vk_device).get());
   CHECK_EQ(VK_SUCCESS, result);
   return vk_device;
 }
@@ -251,8 +265,9 @@ std::unique_ptr<ScopedVkRenderPass> CreateVkRenderPass(VkDevice vk_device) {
   };
   std::unique_ptr<ScopedVkRenderPass> vk_render_pass(
       new ScopedVkRenderPass(VK_NULL_HANDLE, {vk_device}));
-  VkResult result = vkCreateRenderPass(vk_device, &render_pass_create_info,
-                                       nullptr, vk_render_pass->receive());
+  VkResult result =
+      vkCreateRenderPass(vk_device, &render_pass_create_info, nullptr,
+                         ScopedVkRenderPass::Receiver(*vk_render_pass).get());
   CHECK_EQ(VK_SUCCESS, result);
   return vk_render_pass;
 }
@@ -268,8 +283,9 @@ std::unique_ptr<ScopedVkCommandPool> CreateVkCommandPool(
   };
   std::unique_ptr<ScopedVkCommandPool> vk_command_pool(
       new ScopedVkCommandPool(VK_NULL_HANDLE, {vk_device}));
-  VkResult result = vkCreateCommandPool(vk_device, &command_pool_create_info,
-                                        nullptr, vk_command_pool->receive());
+  VkResult result = vkCreateCommandPool(
+      vk_device, &command_pool_create_info, nullptr,
+      ScopedVkCommandPool::Receiver(*vk_command_pool).get());
   CHECK_EQ(VK_SUCCESS, result);
   return vk_command_pool;
 }
@@ -332,6 +348,8 @@ bool ClientBase::InitParams::FromCommandLine(
   fullscreen = command_line.HasSwitch(switches::kFullscreen);
   transparent_background =
       command_line.HasSwitch(switches::kTransparentBackground);
+
+  y_invert = command_line.HasSwitch(switches::kYInvert);
   return true;
 }
 
@@ -373,6 +391,7 @@ bool ClientBase::Init(const InitParams& params) {
       gfx::ScaleSize(gfx::SizeF(surface_size_), 1.0f / params.scale));
   fullscreen_ = params.fullscreen;
   transparent_background_ = params.transparent_background;
+  y_invert_ = params.y_invert;
 
   display_.reset(wl_display_connect(nullptr));
   if (!display_) {
@@ -400,16 +419,8 @@ bool ClientBase::Init(const InitParams& params) {
     LOG(ERROR) << "Can't find linux_dmabuf interface";
     return false;
   }
-  if (!globals_.shell) {
-    LOG(ERROR) << "Can't find shell interface";
-    return false;
-  }
   if (!globals_.seat) {
     LOG(ERROR) << "Can't find seat interface";
-    return false;
-  }
-  if (!globals_.aura_shell) {
-    LOG(ERROR) << "Can't find aura shell interface";
     return false;
   }
 
@@ -491,23 +502,6 @@ bool ClientBase::Init(const InitParams& params) {
 #endif  // defined(USE_VULKAN)
   }
 #endif  // defined(USE_GBM)
-  for (size_t i = 0; i < params.num_buffers; ++i) {
-    auto buffer = CreateBuffer(size_, params.drm_format, params.bo_usage);
-    if (!buffer) {
-      LOG(ERROR) << "Failed to create buffer";
-      return false;
-    }
-    buffers_.push_back(std::move(buffer));
-  }
-
-  for (size_t i = 0; i < buffers_.size(); ++i) {
-    // If the buffer handle doesn't exist, we would either be killed by the
-    // server or die here.
-    if (!buffers_[i]->buffer) {
-      LOG(ERROR) << "buffer handle uninitialized.";
-      return false;
-    }
-  }
 
   surface_.reset(static_cast<wl_surface*>(
       wl_compositor_create_surface(globals_.compositor.get())));
@@ -527,33 +521,126 @@ bool ClientBase::Init(const InitParams& params) {
     wl_region_add(opaque_region.get(), 0, 0, size_.width(), size_.height());
     wl_surface_set_opaque_region(surface_.get(), opaque_region.get());
   }
-  std::unique_ptr<wl_shell_surface> shell_surface(
-      static_cast<wl_shell_surface*>(
-          wl_shell_get_shell_surface(globals_.shell.get(), surface_.get())));
-  if (!shell_surface) {
-    LOG(ERROR) << "Can't get shell surface";
-    return false;
-  }
 
-  wl_shell_surface_set_title(shell_surface.get(), params.title.c_str());
+  if (params.allocate_buffers_with_output_mode) {
+    static wl_output_listener kOutputListener = {
+        [](void* data, struct wl_output* wl_output, int32_t x, int32_t y,
+           int32_t physical_width, int32_t physical_height, int32_t subpixel,
+           const char* make, const char* model, int32_t transform) {
+          CastToClientBase(data)->HandleGeometry(
+              data, wl_output, x, y, physical_width, physical_height, subpixel,
+              make, model, transform);
+        },
+        [](void* data, struct wl_output* wl_output, uint32_t flags,
+           int32_t width, int32_t height, int32_t refresh) {
+          CastToClientBase(data)->HandleMode(data, wl_output, flags, width,
+                                             height, refresh);
+        },
+        [](void* data, struct wl_output* wl_output) {
+          CastToClientBase(data)->HandleDone(data, wl_output);
+        },
+        [](void* data, struct wl_output* wl_output, int32_t factor) {
+          CastToClientBase(data)->HandleScale(data, wl_output, factor);
+        }};
 
-  std::unique_ptr<zaura_surface> aura_surface(
-      static_cast<zaura_surface*>(
-          zaura_shell_get_aura_surface(globals_.aura_shell.get(),
-                                       surface_.get())));
-  if (!aura_surface) {
-    LOG(ERROR) << "Can't get aura surface";
-    return false;
-  }
-
-  zaura_surface_set_frame(aura_surface.get(), ZAURA_SURFACE_FRAME_TYPE_NORMAL);
-
-  if (fullscreen_) {
-    wl_shell_surface_set_fullscreen(shell_surface.get(),
-                                    WL_SHELL_SURFACE_FULLSCREEN_METHOD_DEFAULT,
-                                    0, nullptr);
+    wl_output_add_listener(globals_.output.get(), &kOutputListener, this);
   } else {
-    wl_shell_surface_set_toplevel(shell_surface.get());
+    for (size_t i = 0; i < params.num_buffers; ++i) {
+      auto buffer = CreateBuffer(size_, params.drm_format, params.bo_usage);
+      if (!buffer) {
+        LOG(ERROR) << "Failed to create buffer";
+        return false;
+      }
+      buffers_.push_back(std::move(buffer));
+    }
+
+    for (size_t i = 0; i < buffers_.size(); ++i) {
+      // If the buffer handle doesn't exist, we would either be killed by the
+      // server or die here.
+      if (!buffers_[i]->buffer) {
+        LOG(ERROR) << "buffer handle uninitialized.";
+        return false;
+      }
+    }
+  }
+
+  if (params.use_fullscreen_shell) {
+    zwp_fullscreen_shell_v1_present_surface(globals_.fullscreen_shell.get(),
+                                            surface_.get(), 0, nullptr);
+
+  } else {
+    if (!globals_.shell) {
+      LOG(ERROR) << "Can't find shell interface";
+      return false;
+    }
+    if (!globals_.aura_shell) {
+      LOG(ERROR) << "Can't find aura shell interface";
+      return false;
+    }
+    std::unique_ptr<wl_shell_surface> shell_surface(
+        static_cast<wl_shell_surface*>(
+            wl_shell_get_shell_surface(globals_.shell.get(), surface_.get())));
+    if (!shell_surface) {
+      LOG(ERROR) << "Can't get shell surface";
+      return false;
+    }
+
+    wl_shell_surface_set_title(shell_surface.get(), params.title.c_str());
+
+    std::unique_ptr<zaura_surface> aura_surface(
+        static_cast<zaura_surface*>(zaura_shell_get_aura_surface(
+            globals_.aura_shell.get(), surface_.get())));
+    if (!aura_surface) {
+      LOG(ERROR) << "Can't get aura surface";
+      return false;
+    }
+
+    zaura_surface_set_frame(aura_surface.get(),
+                            ZAURA_SURFACE_FRAME_TYPE_NORMAL);
+
+    if (fullscreen_) {
+      wl_shell_surface_set_fullscreen(
+          shell_surface.get(), WL_SHELL_SURFACE_FULLSCREEN_METHOD_DEFAULT, 0,
+          nullptr);
+    } else {
+      wl_shell_surface_set_toplevel(shell_surface.get());
+    }
+  }
+
+  if (params.use_touch) {
+    static wl_touch_listener kTouchListener = {
+        [](void* data, struct wl_touch* wl_touch, uint32_t serial,
+           uint32_t time, struct wl_surface* surface, int32_t id, wl_fixed_t x,
+           wl_fixed_t y) {
+          CastToClientBase(data)->HandleDown(data, wl_touch, serial, time,
+                                             surface, id, x, y);
+        },
+        [](void* data, struct wl_touch* wl_touch, uint32_t serial,
+           uint32_t time, int32_t id) {
+          CastToClientBase(data)->HandleUp(data, wl_touch, serial, time, id);
+        },
+        [](void* data, struct wl_touch* wl_touch, uint32_t time, int32_t id,
+           wl_fixed_t x, wl_fixed_t y) {
+          CastToClientBase(data)->HandleMotion(data, wl_touch, time, id, x, y);
+        },
+        [](void* data, struct wl_touch* wl_touch) {
+          CastToClientBase(data)->HandleFrame(data, wl_touch);
+        },
+        [](void* data, struct wl_touch* wl_touch) {
+          CastToClientBase(data)->HandleCancel(data, wl_touch);
+        },
+        [](void* data, struct wl_touch* wl_touch, int32_t id, wl_fixed_t major,
+           wl_fixed_t minor) {
+          CastToClientBase(data)->HandleShape(data, wl_touch, id, major, minor);
+        },
+        [](void* data, struct wl_touch* wl_touch, int32_t id,
+           wl_fixed_t orientation) {
+          CastToClientBase(data)->HandleOrientation(data, wl_touch, id,
+                                                    orientation);
+        }};
+
+    wl_touch* touch = wl_seat_get_touch(globals_.seat.get());
+    wl_touch_add_listener(touch, &kTouchListener, this);
   }
 
   return true;
@@ -567,7 +654,71 @@ ClientBase::ClientBase() {}
 ClientBase::~ClientBase() {}
 
 ////////////////////////////////////////////////////////////////////////////////
-// ClientBase, private:
+// wl_touch_listener
+
+void ClientBase::HandleDown(void* data,
+                            struct wl_touch* wl_touch,
+                            uint32_t serial,
+                            uint32_t time,
+                            struct wl_surface* surface,
+                            int32_t id,
+                            wl_fixed_t x,
+                            wl_fixed_t y) {}
+
+void ClientBase::HandleUp(void* data,
+                          struct wl_touch* wl_touch,
+                          uint32_t serial,
+                          uint32_t time,
+                          int32_t id) {}
+
+void ClientBase::HandleMotion(void* data,
+                              struct wl_touch* wl_touch,
+                              uint32_t time,
+                              int32_t id,
+                              wl_fixed_t x,
+                              wl_fixed_t y) {}
+
+void ClientBase::HandleFrame(void* data, struct wl_touch* wl_touch) {}
+
+void ClientBase::HandleCancel(void* data, struct wl_touch* wl_touch) {}
+
+void ClientBase::HandleShape(void* data,
+                             struct wl_touch* wl_touch,
+                             int32_t id,
+                             wl_fixed_t major,
+                             wl_fixed_t minor) {}
+
+void ClientBase::HandleOrientation(void* data,
+                                   struct wl_touch* wl_touch,
+                                   int32_t id,
+                                   wl_fixed_t orientation) {}
+
+////////////////////////////////////////////////////////////////////////////////
+// wl_output_listener
+
+void ClientBase::HandleGeometry(void* data,
+                                struct wl_output* wl_output,
+                                int32_t x,
+                                int32_t y,
+                                int32_t physical_width,
+                                int32_t physical_height,
+                                int32_t subpixel,
+                                const char* make,
+                                const char* model,
+                                int32_t transform) {}
+
+void ClientBase::HandleMode(void* data,
+                            struct wl_output* wl_output,
+                            uint32_t flags,
+                            int32_t width,
+                            int32_t height,
+                            int32_t refresh) {}
+
+void ClientBase::HandleDone(void* data, struct wl_output* wl_output) {}
+
+void ClientBase::HandleScale(void* data,
+                             struct wl_output* wl_output,
+                             int32_t factor) {}
 
 std::unique_ptr<ClientBase::Buffer> ClientBase::CreateBuffer(
     const gfx::Size& size,
@@ -576,7 +727,7 @@ std::unique_ptr<ClientBase::Buffer> ClientBase::CreateBuffer(
   std::unique_ptr<Buffer> buffer;
 #if defined(USE_GBM)
   if (device_) {
-    buffer = CreateDrmBuffer(size, drm_format, bo_usage);
+    buffer = CreateDrmBuffer(size, drm_format, bo_usage, y_invert_);
     CHECK(buffer) << "Can't create drm buffer";
   }
 #endif
@@ -614,7 +765,8 @@ std::unique_ptr<ClientBase::Buffer> ClientBase::CreateBuffer(
 std::unique_ptr<ClientBase::Buffer> ClientBase::CreateDrmBuffer(
     const gfx::Size& size,
     int32_t drm_format,
-    int32_t bo_usage) {
+    int32_t bo_usage,
+    bool y_invert) {
   std::unique_ptr<Buffer> buffer;
 #if defined(USE_GBM)
   if (device_) {
@@ -636,8 +788,12 @@ std::unique_ptr<ClientBase::Buffer> ClientBase::CreateDrmBuffer(
       zwp_linux_buffer_params_v1_add(buffer->params.get(), fd.get(), i, offset,
                                      stride, 0, 0);
     }
+    uint32_t flags = 0;
+    if (y_invert)
+      flags |= ZWP_LINUX_BUFFER_PARAMS_V1_FLAGS_Y_INVERT;
+
     buffer->buffer.reset(zwp_linux_buffer_params_v1_create_immed(
-        buffer->params.get(), size.width(), size.height(), drm_format, 0));
+        buffer->params.get(), size.width(), size.height(), drm_format, flags));
 
     if (gbm_bo_get_num_planes(buffer->bo.get()) != 1)
       return buffer;
@@ -709,7 +865,8 @@ std::unique_ptr<ClientBase::Buffer> ClientBase::CreateDrmBuffer(
         new ScopedVkImage(VK_NULL_HANDLE, {vk_device_->get()}));
     VkResult result = create_dma_buf_image_intel(
         vk_device_->get(), &dma_buf_image_create_info, nullptr,
-        buffer->vk_memory->receive(), buffer->vk_image->receive());
+        ScopedVkDeviceMemory::Receiver(*buffer->vk_memory).get(),
+        ScopedVkImage::Receiver(*buffer->vk_image).get());
 
     if (result != VK_SUCCESS) {
       LOG(ERROR) << "Failed to create a Vulkan image from a dmabuf.";
@@ -739,8 +896,9 @@ std::unique_ptr<ClientBase::Buffer> ClientBase::CreateDrmBuffer(
 
     buffer->vk_image_view.reset(
         new ScopedVkImageView(VK_NULL_HANDLE, {vk_device_->get()}));
-    result = vkCreateImageView(vk_device_->get(), &vk_image_view_create_info,
-                               nullptr, buffer->vk_image_view->receive());
+    result = vkCreateImageView(
+        vk_device_->get(), &vk_image_view_create_info, nullptr,
+        ScopedVkImageView::Receiver(*buffer->vk_image_view).get());
     if (result != VK_SUCCESS) {
       LOG(ERROR) << "Failed to create a Vulkan image view.";
       return buffer;
@@ -757,8 +915,9 @@ std::unique_ptr<ClientBase::Buffer> ClientBase::CreateDrmBuffer(
     buffer->vk_framebuffer.reset(
         new ScopedVkFramebuffer(VK_NULL_HANDLE, {vk_device_->get()}));
 
-    result = vkCreateFramebuffer(vk_device_->get(), &vk_framebuffer_create_info,
-                                 nullptr, buffer->vk_framebuffer->receive());
+    result = vkCreateFramebuffer(
+        vk_device_->get(), &vk_framebuffer_create_info, nullptr,
+        ScopedVkFramebuffer::Receiver(*buffer->vk_framebuffer).get());
     if (result != VK_SUCCESS) {
       LOG(ERROR) << "Failed to create a Vulkan framebuffer.";
       return buffer;

@@ -16,6 +16,7 @@
 #include "core/fpdfapi/parser/cpdf_dictionary.h"
 #include "core/fpdfapi/parser/cpdf_stream.h"
 #include "third_party/base/ptr_util.h"
+#include "third_party/base/stl_util.h"
 
 // static
 std::unique_ptr<CPDF_Function> CPDF_Function::Load(
@@ -85,7 +86,7 @@ bool CPDF_Function::Init(const CPDF_Object* pObj,
   if (!pDomains)
     return false;
 
-  m_nInputs = pDomains->GetCount() / 2;
+  m_nInputs = pDomains->size() / 2;
   if (m_nInputs == 0)
     return false;
 
@@ -95,7 +96,7 @@ bool CPDF_Function::Init(const CPDF_Object* pObj,
     m_Domains[i] = pDomains->GetFloatAt(i);
 
   const CPDF_Array* pRanges = pDict->GetArrayFor("Range");
-  m_nOutputs = pRanges ? pRanges->GetCount() / 2 : 0;
+  m_nOutputs = pRanges ? pRanges->size() / 2 : 0;
 
   // Ranges are required for type 0 and type 4 functions. A non-zero
   // |m_nOutputs| here implied Ranges meets the requirements.

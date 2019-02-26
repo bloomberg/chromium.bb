@@ -116,8 +116,9 @@ class WebFrameSerializerSanitizationTest : public testing::Test {
     KURL parsed_url(url);
     String file_path("frameserialization/" + file_name);
     RegisterMockedFileURLLoad(parsed_url, file_path, mime_type);
-    FrameTestHelpers::LoadFrame(MainFrameImpl(), url.Utf8().data());
-    MainFrameImpl()->GetFrame()->View()->UpdateAllLifecyclePhases();
+    frame_test_helpers::LoadFrame(MainFrameImpl(), url.Utf8().data());
+    MainFrameImpl()->GetFrame()->View()->UpdateAllLifecyclePhases(
+        DocumentLifecycle::LifecycleUpdateReason::kTest);
   }
 
   String GenerateMHTML(const bool only_body_parts) {
@@ -171,7 +172,8 @@ class WebFrameSerializerSanitizationTest : public testing::Test {
     shadow_root->SetDelegatesFocus(delegates_focus);
     shadow_root->SetInnerHTMLFromString(String::FromUTF8(shadow_content),
                                         ASSERT_NO_EXCEPTION);
-    scope.GetDocument().View()->UpdateAllLifecyclePhases();
+    scope.GetDocument().View()->UpdateAllLifecyclePhases(
+        DocumentLifecycle::LifecycleUpdateReason::kTest);
     return shadow_root;
   }
 
@@ -182,7 +184,7 @@ class WebFrameSerializerSanitizationTest : public testing::Test {
   void RegisterMockedFileURLLoad(const KURL& url,
                                  const String& file_path,
                                  const String& mime_type = "image/png") {
-    URLTestHelpers::RegisterMockedURLLoad(
+    url_test_helpers::RegisterMockedURLLoad(
         url, test::CoreTestDataPath(file_path.Utf8().data()), mime_type);
   }
 
@@ -193,7 +195,7 @@ class WebFrameSerializerSanitizationTest : public testing::Test {
   HistogramTester histogram_tester_;
 
  private:
-  FrameTestHelpers::WebViewHelper helper_;
+  frame_test_helpers::WebViewHelper helper_;
   SimpleMHTMLPartsGenerationDelegate mhtml_delegate_;
 };
 

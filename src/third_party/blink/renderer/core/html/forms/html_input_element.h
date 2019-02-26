@@ -56,6 +56,8 @@ class CORE_EXPORT HTMLInputElement
 
  public:
   static HTMLInputElement* Create(Document&, const CreateElementFlags);
+
+  HTMLInputElement(Document&, const CreateElementFlags);
   ~HTMLInputElement() override;
   void Trace(blink::Visitor*) override;
 
@@ -64,7 +66,7 @@ class CORE_EXPORT HTMLInputElement
 
   bool HasPendingActivity() const final;
 
-  DEFINE_ATTRIBUTE_EVENT_LISTENER(webkitspeechchange);
+  DEFINE_ATTRIBUTE_EVENT_LISTENER(webkitspeechchange, kWebkitspeechchange);
 
   bool ShouldAutocomplete() const final;
 
@@ -107,7 +109,7 @@ class CORE_EXPORT HTMLInputElement
   bool IsTextField() const;
   // Do not add type check predicates for concrete input types; e.g.  isImage,
   // isRadio, isFile.  If you want to check the input type, you may use
-  // |input->type() == InputTypeNames::image|, etc.
+  // |input->type() == input_type_names::kImage|, etc.
 
   // Returns whether this field is or has ever been a password field so that
   // its value can be protected from memorization by autofill or keyboards.
@@ -190,7 +192,7 @@ class CORE_EXPORT HTMLInputElement
   LayoutObject* CreateLayoutObject(const ComputedStyle&) override;
   void DetachLayoutTree(const AttachContext& = AttachContext()) final;
   void UpdateFocusAppearanceWithOptions(SelectionBehaviorOnFocus,
-                                        const FocusOptions&) final;
+                                        const FocusOptions*) final;
 
   // FIXME: For isActivatedSubmit and setActivatedSubmit, we should use the
   // NVI-idiom here by making it private virtual in all classes and expose a
@@ -268,7 +270,7 @@ class CORE_EXPORT HTMLInputElement
 
   void EndEditing();
 
-  static FileChooserFileInfoList FilesFromFileInputFormControlState(
+  static Vector<String> FilesFromFileInputFormControlState(
       const FormControlState&);
 
   bool MatchesReadOnlyPseudoClass() const final;
@@ -307,8 +309,6 @@ class CORE_EXPORT HTMLInputElement
   void ChildrenChanged(const ChildrenChange&) override;
 
  protected:
-  HTMLInputElement(Document&, const CreateElementFlags);
-
   void DefaultEventHandler(Event&) override;
   void CreateShadowSubtree();
 

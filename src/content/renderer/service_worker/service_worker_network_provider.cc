@@ -9,7 +9,6 @@
 #include "content/common/navigation_params.h"
 #include "content/common/service_worker/service_worker_provider.mojom.h"
 #include "content/common/service_worker/service_worker_utils.h"
-#include "content/public/common/browser_side_navigation_policy.h"
 #include "content/public/common/origin_util.h"
 #include "content/renderer/loader/request_extra_data.h"
 #include "content/renderer/render_thread_impl.h"

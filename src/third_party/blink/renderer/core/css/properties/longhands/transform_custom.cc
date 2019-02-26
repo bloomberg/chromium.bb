@@ -14,13 +14,13 @@
 #include "third_party/blink/renderer/core/style/computed_style.h"
 
 namespace blink {
-namespace CSSLonghand {
+namespace css_longhand {
 
 const CSSValue* Transform::ParseSingleValue(
     CSSParserTokenRange& range,
     const CSSParserContext& context,
     const CSSParserLocalContext& local_context) const {
-  return CSSParsingUtils::ConsumeTransformList(range, context, local_context);
+  return css_parsing_utils::ConsumeTransformList(range, context, local_context);
 }
 
 bool Transform::IsLayoutDependent(const ComputedStyle* style,
@@ -37,5 +37,5 @@ const CSSValue* Transform::CSSValueFromComputedStyleInternal(
   return ComputedStyleUtils::ComputedTransform(layout_object, style);
 }
 
-}  // namespace CSSLonghand
+}  // namespace css_longhand
 }  // namespace blink

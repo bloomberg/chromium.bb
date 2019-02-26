@@ -142,6 +142,7 @@ ContentSuggestionsMostVisitedItem* ConvertNTPTile(
   suggestion.URL = tile.url;
   suggestion.source = tile.source;
   suggestion.titleSource = tile.title_source;
+  suggestion.accessibilityTraits = UIAccessibilityTraitButton;
 
   suggestion.suggestionIdentifier = [[ContentSuggestionIdentifier alloc] init];
   suggestion.suggestionIdentifier.IDInSection = tile.url.spec();
@@ -169,20 +170,20 @@ content_suggestions::StatusCode ConvertStatusCode(ntp_snippets::Status status) {
 
 ContentSuggestionsMostVisitedActionItem* BookmarkActionItem() {
   return [[ContentSuggestionsMostVisitedActionItem alloc]
-      initWithAction:ContentSuggestionsMostVisitedActionBookmark];
+      initWithCollectionShortcutType:NTPCollectionShortcutTypeBookmark];
 }
 
 ContentSuggestionsMostVisitedActionItem* ReadingListActionItem() {
   return [[ContentSuggestionsMostVisitedActionItem alloc]
-      initWithAction:ContentSuggestionsMostVisitedActionReadingList];
+      initWithCollectionShortcutType:NTPCollectionShortcutTypeReadingList];
 }
 
 ContentSuggestionsMostVisitedActionItem* RecentTabsActionItem() {
   return [[ContentSuggestionsMostVisitedActionItem alloc]
-      initWithAction:ContentSuggestionsMostVisitedActionRecentTabs];
+      initWithCollectionShortcutType:NTPCollectionShortcutTypeRecentTabs];
 }
 
 ContentSuggestionsMostVisitedActionItem* HistoryActionItem() {
   return [[ContentSuggestionsMostVisitedActionItem alloc]
-      initWithAction:ContentSuggestionsMostVisitedActionHistory];
+      initWithCollectionShortcutType:NTPCollectionShortcutTypeHistory];
 }

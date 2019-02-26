@@ -102,17 +102,6 @@ MovableDisplaySnapshots DrmGpuDisplayManager::GetDisplays() {
   return params_list;
 }
 
-void DrmGpuDisplayManager::GetScanoutFormats(
-    gfx::AcceleratedWidget widget,
-    std::vector<gfx::BufferFormat>* scanout_formats) {
-  const std::vector<uint32_t>& fourcc_formats =
-      drm_device_manager_->GetDrmDevice(widget)
-          ->plane_manager()
-          ->GetSupportedFormats();
-  for (auto& fourcc : fourcc_formats)
-    scanout_formats->push_back(GetBufferFormatFromFourCCFormat(fourcc));
-}
-
 bool DrmGpuDisplayManager::TakeDisplayControl() {
   const DrmDeviceVector& devices = drm_device_manager_->GetDrmDevices();
   bool status = true;

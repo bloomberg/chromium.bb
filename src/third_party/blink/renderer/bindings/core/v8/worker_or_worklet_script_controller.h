@@ -32,11 +32,11 @@
 #define THIRD_PARTY_BLINK_RENDERER_BINDINGS_CORE_V8_WORKER_OR_WORKLET_SCRIPT_CONTROLLER_H_
 
 #include "third_party/blink/renderer/bindings/core/v8/rejected_promises.h"
+#include "third_party/blink/renderer/bindings/core/v8/sanitize_script_errors.h"
 #include "third_party/blink/renderer/bindings/core/v8/script_value.h"
 #include "third_party/blink/renderer/bindings/core/v8/v8_binding_for_core.h"
 #include "third_party/blink/renderer/bindings/core/v8/v8_cache_options.h"
 #include "third_party/blink/renderer/core/core_export.h"
-#include "third_party/blink/renderer/platform/loader/fetch/access_control_status.h"
 #include "third_party/blink/renderer/platform/wtf/allocator.h"
 #include "third_party/blink/renderer/platform/wtf/text/text_position.h"
 #include "v8/include/v8.h"
@@ -55,6 +55,8 @@ class CORE_EXPORT WorkerOrWorkletScriptController final
  public:
   static WorkerOrWorkletScriptController* Create(WorkerOrWorkletGlobalScope*,
                                                  v8::Isolate*);
+
+  WorkerOrWorkletScriptController(WorkerOrWorkletGlobalScope*, v8::Isolate*);
   virtual ~WorkerOrWorkletScriptController();
   void Dispose();
 
@@ -62,7 +64,7 @@ class CORE_EXPORT WorkerOrWorkletScriptController final
 
   // Returns true if the evaluation completed with no uncaught exception.
   bool Evaluate(const ScriptSourceCode&,
-                AccessControlStatus access_control_status,
+                SanitizeScriptErrors sanitize_script_errors,
                 ErrorEvent** = nullptr,
                 V8CacheOptions = kV8CacheOptionsDefault);
 
@@ -104,12 +106,11 @@ class CORE_EXPORT WorkerOrWorkletScriptController final
   ScriptValue EvaluateAndReturnValueForTest(const ScriptSourceCode&);
 
  private:
-  WorkerOrWorkletScriptController(WorkerOrWorkletGlobalScope*, v8::Isolate*);
   class ExecutionState;
 
   // Evaluate a script file in the current execution environment.
   ScriptValue EvaluateInternal(const ScriptSourceCode&,
-                               AccessControlStatus,
+                               SanitizeScriptErrors,
                                V8CacheOptions);
   void DisposeContextIfNeeded();
 

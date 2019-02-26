@@ -1072,18 +1072,6 @@ namespace networkingPrivate {
     static void verifyDestination(VerificationProperties properties,
                                   BooleanCallback callback);
 
-    // Verifies that the device is a trusted device and retrieves encrypted
-    // network credentials.
-    // |properties|: Properties of the destination to use in verifying that it
-    //     is a trusted device.
-    // |networkGuid|: The GUID of the Cellular network to activate.
-    // |callback|: A callback function that receives base64-encoded encrypted
-    //     credential data to send to a trusted device.
-    [nodoc, deprecated = "Use networking.castPrivate API."]
-    static void verifyAndEncryptCredentials(VerificationProperties properties,
-                                            DOMString networkGuid,
-                                            StringCallback callback);
-
     // Verifies that the device is a trusted device and encrypts supplied
     // data with device public key.
     // |properties|: Properties of the destination to use in verifying that it

@@ -2245,11 +2245,16 @@ void GLES2TraceImplementation::ScheduleDCLayerCHROMIUM(
     GLuint edge_aa_mask,
     const GLfloat* bounds_rect,
     GLuint filter,
-    bool is_protected_video) {
+    GLuint protected_video_type) {
   TRACE_EVENT_BINARY_EFFICIENT0("gpu", "GLES2Trace::ScheduleDCLayerCHROMIUM");
   gl_->ScheduleDCLayerCHROMIUM(num_textures, contents_texture_ids,
                                contents_rect, background_color, edge_aa_mask,
-                               bounds_rect, filter, is_protected_video);
+                               bounds_rect, filter, protected_video_type);
+}
+
+void GLES2TraceImplementation::SetActiveURLCHROMIUM(const char* url) {
+  TRACE_EVENT_BINARY_EFFICIENT0("gpu", "GLES2Trace::SetActiveURLCHROMIUM");
+  gl_->SetActiveURLCHROMIUM(url);
 }
 
 void GLES2TraceImplementation::MatrixLoadfCHROMIUM(GLenum matrixMode,
@@ -2656,6 +2661,29 @@ void GLES2TraceImplementation::MaxShaderCompilerThreadsKHR(GLuint count) {
   TRACE_EVENT_BINARY_EFFICIENT0("gpu",
                                 "GLES2Trace::MaxShaderCompilerThreadsKHR");
   gl_->MaxShaderCompilerThreadsKHR(count);
+}
+
+GLuint GLES2TraceImplementation::CreateAndTexStorage2DSharedImageCHROMIUM(
+    GLenum internalFormat,
+    const GLbyte* mailbox) {
+  TRACE_EVENT_BINARY_EFFICIENT0(
+      "gpu", "GLES2Trace::CreateAndTexStorage2DSharedImageCHROMIUM");
+  return gl_->CreateAndTexStorage2DSharedImageCHROMIUM(internalFormat, mailbox);
+}
+
+void GLES2TraceImplementation::BeginSharedImageAccessDirectCHROMIUM(
+    GLuint texture,
+    GLenum mode) {
+  TRACE_EVENT_BINARY_EFFICIENT0(
+      "gpu", "GLES2Trace::BeginSharedImageAccessDirectCHROMIUM");
+  gl_->BeginSharedImageAccessDirectCHROMIUM(texture, mode);
+}
+
+void GLES2TraceImplementation::EndSharedImageAccessDirectCHROMIUM(
+    GLuint texture) {
+  TRACE_EVENT_BINARY_EFFICIENT0(
+      "gpu", "GLES2Trace::EndSharedImageAccessDirectCHROMIUM");
+  gl_->EndSharedImageAccessDirectCHROMIUM(texture);
 }
 
 #endif  // GPU_COMMAND_BUFFER_CLIENT_GLES2_TRACE_IMPLEMENTATION_IMPL_AUTOGEN_H_

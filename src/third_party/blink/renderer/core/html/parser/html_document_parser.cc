@@ -64,7 +64,7 @@
 
 namespace blink {
 
-using namespace HTMLNames;
+using namespace html_names;
 
 // This is a direct transcription of step 4 from:
 // http://www.whatwg.org/specs/web-apps/current-work/multipage/the-end.html#fragment-case
@@ -77,19 +77,19 @@ static HTMLTokenizer::State TokenizerStateForContextElement(
 
   const QualifiedName& context_tag = context_element->TagQName();
 
-  if (context_tag.Matches(titleTag) || context_tag.Matches(textareaTag))
+  if (context_tag.Matches(kTitleTag) || context_tag.Matches(kTextareaTag))
     return HTMLTokenizer::kRCDATAState;
-  if (context_tag.Matches(styleTag) || context_tag.Matches(xmpTag) ||
-      context_tag.Matches(iframeTag) ||
-      (context_tag.Matches(noembedTag) && options.plugins_enabled) ||
-      (context_tag.Matches(noscriptTag) && options.script_enabled) ||
-      context_tag.Matches(noframesTag))
+  if (context_tag.Matches(kStyleTag) || context_tag.Matches(kXmpTag) ||
+      context_tag.Matches(kIFrameTag) ||
+      (context_tag.Matches(kNoembedTag) && options.plugins_enabled) ||
+      (context_tag.Matches(kNoscriptTag) && options.script_enabled) ||
+      context_tag.Matches(kNoframesTag))
     return report_errors ? HTMLTokenizer::kRAWTEXTState
                          : HTMLTokenizer::kPLAINTEXTState;
-  if (context_tag.Matches(scriptTag))
+  if (context_tag.Matches(kScriptTag))
     return report_errors ? HTMLTokenizer::kScriptDataState
                          : HTMLTokenizer::kPLAINTEXTState;
-  if (context_tag.Matches(plaintextTag))
+  if (context_tag.Matches(kPlaintextTag))
     return HTMLTokenizer::kPLAINTEXTState;
   return HTMLTokenizer::kDataState;
 }
@@ -1211,8 +1211,9 @@ std::unique_ptr<HTMLPreloadScanner> HTMLDocumentParser::CreatePreloadScanner(
 }
 
 void HTMLDocumentParser::ScanAndPreload(HTMLPreloadScanner* scanner) {
-  PreloadRequestStream requests =
-      scanner->Scan(GetDocument()->ValidBaseElementURL(), nullptr);
+  bool seen_csp_meta_tag = false;
+  PreloadRequestStream requests = scanner->Scan(
+      GetDocument()->ValidBaseElementURL(), nullptr, seen_csp_meta_tag);
   preloader_->TakeAndPreload(requests);
 }
 

@@ -16,7 +16,7 @@
 #include "base/mac/scoped_cftyperef.h"
 #include "base/mac/scoped_nsobject.h"
 #include "base/strings/string_number_conversions.h"
-#include "components/cbor/cbor_writer.h"
+#include "components/cbor/writer.h"
 #include "device/fido/ec_public_key.h"
 #include "device/fido/fido_constants.h"
 #include "device/fido/fido_parsing_utils.h"
@@ -28,14 +28,15 @@ namespace mac {
 
 using base::ScopedCFTypeRef;
 using base::scoped_nsobject;
-using cbor::CBORWriter;
-using cbor::CBORValue;
+using cbor::Writer;
+using cbor::Value;
 
-// WebAuthn requires an all-zero AAGUID for authenticators using
-// self-attestation.
-constexpr std::array<uint8_t, 16> kAaguid = {0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
-                                             0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
-                                             0x00, 0x00, 0x00, 0x00};
+// The Touch ID authenticator AAGUID value. Despite using self-attestation,
+// Chrome will return this non-zero AAGUID for all MakeCredential
+// responses coming from the Touch ID platform authenticator.
+constexpr std::array<uint8_t, 16> kAaguid = {0xad, 0xce, 0x00, 0x02, 0x35, 0xbc,
+                                             0xc6, 0x0a, 0x64, 0x8b, 0x0b, 0x25,
+                                             0xf1, 0xf0, 0x55, 0x03};
 
 // SecKeyRefToECPublicKey converts a SecKeyRef for a public key into an
 // equivalent |ECPublicKey| instance. It returns |nullptr| if the key cannot be

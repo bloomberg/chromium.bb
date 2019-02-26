@@ -6,7 +6,9 @@
 #define NGPhysicalSize_h
 
 #include "third_party/blink/renderer/core/core_export.h"
-#include "third_party/blink/renderer/platform/layout_unit.h"
+#include "third_party/blink/renderer/core/layout/ng/geometry/ng_logical_size.h"
+#include "third_party/blink/renderer/platform/geometry/layout_size.h"
+#include "third_party/blink/renderer/platform/geometry/layout_unit.h"
 #include "third_party/blink/renderer/platform/text/writing_mode.h"
 
 namespace blink {
@@ -24,9 +26,17 @@ struct CORE_EXPORT NGPhysicalSize {
   LayoutUnit width;
   LayoutUnit height;
 
-  NGLogicalSize ConvertToLogical(WritingMode mode) const;
+  NGLogicalSize ConvertToLogical(WritingMode mode) const {
+    return mode == WritingMode::kHorizontalTb ? NGLogicalSize(width, height)
+                                              : NGLogicalSize(height, width);
+  }
 
-  bool operator==(const NGPhysicalSize& other) const;
+  bool operator==(const NGPhysicalSize& other) const {
+    return std::tie(other.width, other.height) == std::tie(width, height);
+  }
+  bool operator!=(const NGPhysicalSize& other) const {
+    return !(*this == other);
+  }
 
   bool IsEmpty() const {
     return width == LayoutUnit() || height == LayoutUnit();
@@ -37,12 +47,19 @@ struct CORE_EXPORT NGPhysicalSize {
 
   // Conversions from/to existing code. New code prefers type safety for
   // logical/physical distinctions.
-  LayoutSize ToLayoutSize() const;
+  LayoutSize ToLayoutSize() const { return {width, height}; }
 
   String ToString() const;
 };
 
 CORE_EXPORT std::ostream& operator<<(std::ostream&, const NGPhysicalSize&);
+
+inline NGPhysicalSize ToNGPhysicalSize(const NGLogicalSize& other,
+                                       WritingMode mode) {
+  return mode == WritingMode::kHorizontalTb
+             ? NGPhysicalSize(other.inline_size, other.block_size)
+             : NGPhysicalSize(other.block_size, other.inline_size);
+}
 
 }  // namespace blink
 

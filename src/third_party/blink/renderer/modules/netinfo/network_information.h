@@ -28,6 +28,8 @@ class NetworkInformation final
 
  public:
   static NetworkInformation* Create(ExecutionContext*);
+
+  explicit NetworkInformation(ExecutionContext*);
   ~NetworkInformation() override;
 
   String type() const;
@@ -59,8 +61,8 @@ class NetworkInformation final
 
   void Trace(blink::Visitor*) override;
 
-  DEFINE_ATTRIBUTE_EVENT_LISTENER(change);
-  DEFINE_ATTRIBUTE_EVENT_LISTENER(typechange);  // Deprecated
+  DEFINE_ATTRIBUTE_EVENT_LISTENER(change, kChange);
+  DEFINE_ATTRIBUTE_EVENT_LISTENER(typechange, kTypechange);  // Deprecated
 
  protected:
   // EventTarget overrides.
@@ -70,7 +72,6 @@ class NetworkInformation final
                             const RegisteredEventListener&) final;
 
  private:
-  explicit NetworkInformation(ExecutionContext*);
   void StartObserving();
   void StopObserving();
 

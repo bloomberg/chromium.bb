@@ -63,8 +63,7 @@ class SyncBackendHostImpl : public SyncEngine, public InvalidationHandler {
   void InvalidateCredentials() override;
   void StartConfiguration() override;
   void StartSyncingWithServer() override;
-  void SetEncryptionPassphrase(const std::string& passphrase,
-                               bool is_explicit) override;
+  void SetEncryptionPassphrase(const std::string& passphrase) override;
   void SetDecryptionPassphrase(const std::string& passphrase) override;
   void StopSyncingForShutdown() override;
   void Shutdown(ShutdownReason reason) override;
@@ -84,7 +83,6 @@ class SyncBackendHostImpl : public SyncEngine, public InvalidationHandler {
   Status GetDetailedStatus() override;
   void HasUnsyncedItemsForTest(
       base::OnceCallback<void(bool)> cb) const override;
-  bool IsCryptographerReady(const BaseTransaction* trans) const override;
   void GetModelSafeRoutingInfo(ModelSafeRoutingInfo* out) const override;
   void FlushDirectory() const override;
   void RequestBufferedProtocolEventsAndEnableForwarding() override;
@@ -95,6 +93,7 @@ class SyncBackendHostImpl : public SyncEngine, public InvalidationHandler {
   void OnCookieJarChanged(bool account_mismatch,
                           bool empty_jar,
                           const base::Closure& callback) override;
+  void SetInvalidationsForSessionsEnabled(bool enabled) override;
 
   // InvalidationHandler implementation.
   void OnInvalidatorStateChange(InvalidatorState state) override;
@@ -175,11 +174,6 @@ class SyncBackendHostImpl : public SyncEngine, public InvalidationHandler {
   void HandleSyncCycleCompletedOnFrontendLoop(
       const SyncCycleSnapshot& snapshot);
 
-  // Called when the syncer failed to perform a configuration and will
-  // eventually retry. FinishingConfigurationOnFrontendLoop(..) will be called
-  // on successful completion.
-  void RetryConfigurationOnFrontendLoop(const base::Closure& retry_callback);
-
   // For convenience, checks if initialization state is INITIALIZED.
   bool initialized() const { return initialized_; }
 
@@ -229,6 +223,8 @@ class SyncBackendHostImpl : public SyncEngine, public InvalidationHandler {
 
   invalidation::InvalidationService* invalidator_;
   bool invalidation_handler_registered_ = false;
+  ModelTypeSet last_enabled_types_;
+  bool sessions_invalidation_enabled_ = false;
 
   // Checks that we're on the same thread this was constructed on (UI thread).
   SEQUENCE_CHECKER(sequence_checker_);

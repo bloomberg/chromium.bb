@@ -27,7 +27,6 @@ class Env;
 #endif
 
 namespace ui {
-class EventHandler;
 class ListSelectionModel;
 }
 namespace views {
@@ -35,6 +34,7 @@ class View;
 class ViewTracker;
 }
 class Browser;
+class EscapeTracker;
 class Tab;
 class TabDragControllerTest;
 class TabStrip;
@@ -104,6 +104,9 @@ class TabDragController : public views::WidgetObserver,
   // Returns true if there is a drag underway.
   static bool IsActive();
 
+  // Returns the pointer of |source_tabstrip_|.
+  static TabStrip* GetSourceTabStrip();
+
   // Sets the move behavior. Has no effect if started_drag() is true.
   void SetMoveBehavior(MoveBehavior behavior);
   MoveBehavior move_behavior() const { return move_behavior_; }
@@ -111,18 +114,20 @@ class TabDragController : public views::WidgetObserver,
   EventSource event_source() const { return event_source_; }
 
   // See description above fields for details on these.
-  bool active() const { return active_; }
+  bool active() const { return current_state_ != DragState::kStopped; }
   const TabStrip* attached_tabstrip() const { return attached_tabstrip_; }
 
   // Returns true if a drag started.
-  bool started_drag() const { return started_drag_; }
+  bool started_drag() const { return current_state_ != DragState::kNotStarted; }
 
   // Returns true if mutating the TabStripModel.
   bool is_mutating() const { return is_mutating_; }
 
   // Returns true if we've detached from a tabstrip and are running a nested
   // move message loop.
-  bool is_dragging_window() const { return is_dragging_window_; }
+  bool is_dragging_window() const {
+    return current_state_ == DragState::kDraggingWindow;
+  }
 
   // Returns true if currently dragging a tab with |contents|.
   bool IsDraggingTab(content::WebContents* contents);
@@ -139,6 +144,24 @@ class TabDragController : public views::WidgetObserver,
   // Used to indicate the direction the mouse has moved when attached.
   static const int kMovedMouseLeft  = 1 << 0;
   static const int kMovedMouseRight = 1 << 1;
+
+  enum class DragState {
+    // The drag has not yet started; the user has not dragged far enough to
+    // begin a session.
+    kNotStarted,
+    // The session is dragging a set of tabs within |attached_tabstrip_|.
+    kDraggingTabs,
+    // The session is dragging a window; |attached_tabstrip_| is that window's
+    // tabstrip.
+    kDraggingWindow,
+    // The session is waiting for the nested move loop to exit to transition
+    // to kDraggingTabs.  Not used on all platforms.
+    kWaitingToDragTabs,
+    // The session is waiting for the nested move loop to exit to end the drag.
+    kWaitingToStop,
+    // The drag session has completed or been canceled.
+    kStopped
+  };
 
   enum class Liveness {
     ALIVE,
@@ -161,15 +184,6 @@ class TabDragController : public views::WidgetObserver,
   enum ReleaseCapture {
     RELEASE_CAPTURE,
     DONT_RELEASE_CAPTURE,
-  };
-
-  // Specifies what should happen when RunMoveLoop completes.
-  enum EndRunLoopBehavior {
-    // Indicates the drag should end.
-    END_RUN_LOOP_STOP_DRAGGING,
-
-    // Indicates the drag should continue.
-    END_RUN_LOOP_CONTINUE_DRAGGING
   };
 
   // Enumeration of the possible positions the detached tab may detach from.
@@ -331,37 +345,6 @@ class TabDragController : public views::WidgetObserver,
   // dragging.
   void RunMoveLoop(const gfx::Vector2d& drag_offset);
 
-  // Determines the index to insert tabs at. |dragged_bounds| is the bounds of
-  // the tab being dragged, |start| the index of the tab to start looking from.
-  // The search proceeds to the end of the strip.
-  int GetInsertionIndexFrom(const gfx::Rect& dragged_bounds, int start) const;
-
-  // Like GetInsertionIndexFrom(), but searches backwards from |start| to the
-  // beginning of the strip.
-  int GetInsertionIndexFromReversed(const gfx::Rect& dragged_bounds,
-                                    int start) const;
-
-  // Returns the index where the dragged WebContents should be inserted into
-  // |attached_tabstrip_| given the DraggedTabView's bounds |dragged_bounds| in
-  // coordinates relative to |attached_tabstrip_| and has had the mirroring
-  // transformation applied.
-  // NOTE: this is invoked from Attach() before the tabs have been inserted.
-  int GetInsertionIndexForDraggedBounds(const gfx::Rect& dragged_bounds) const;
-
-  // Returns true if |dragged_bounds| is close enough to the next stacked tab
-  // so that the active tab should be dragged there.
-  bool ShouldDragToNextStackedTab(const gfx::Rect& dragged_bounds,
-                                  int index) const;
-
-  // Returns true if |dragged_bounds| is close enough to the previous stacked
-  // tab so that the active tab should be dragged there.
-  bool ShouldDragToPreviousStackedTab(const gfx::Rect& dragged_bounds,
-                                      int index) const;
-
-  // Used by GetInsertionIndexForDraggedBounds() when the tabstrip is stacked.
-  int GetInsertionIndexForDraggedBoundsStacked(
-      const gfx::Rect& dragged_bounds) const;
-
   // Retrieves the bounds of the dragged tabs relative to the attached TabStrip.
   // |tab_strip_point| is in the attached TabStrip's coordinate system.
   gfx::Rect GetDraggedViewTabStripBounds(const gfx::Point& tab_strip_point);
@@ -492,11 +475,6 @@ class TabDragController : public views::WidgetObserver,
   // whenever the dragged tabs are attached to a new tabstrip.
   void SetTabDraggingInfo();
 
-  // Clears the flag to indicate that the tab dragging is happening in the
-  // tabstrip. This is separated from ClearTabDraggingInfo() since this needs
-  // to happen slightly before ClearTabDraggingInfo().
-  void ClearIsDraggingTabs();
-
   // Clears the tab dragging info for the current dragged tabstrip. This
   // function is supposed to be called whenever the dragged tabs are detached
   // from the old tabstrip or the tab dragging is ended.
@@ -505,6 +483,12 @@ class TabDragController : public views::WidgetObserver,
   // Sets |deferred_target_tabstrip_| and updates its corresponding window
   // property.
   void SetDeferredTargetTabstrip(TabStrip* deferred_target_tabstrip);
+
+  DragState current_state_;
+
+  // Whether a drag to |window| should be blocked (for example, if the window
+  // is showing a modal).
+  bool ShouldDisallowDrag(gfx::NativeWindow window);
 
   EventSource event_source_;
 
@@ -573,12 +557,6 @@ class TabDragController : public views::WidgetObserver,
   // StartMoveStackedTimerIfNecessary().
   base::OneShotTimer move_stacked_timer_;
 
-  // Did the mouse move enough that we started a drag?
-  bool started_drag_;
-
-  // Is the drag active?
-  bool active_;
-
   DragData drag_data_;
 
   // Index of the source tab in |drag_data_|.
@@ -605,18 +583,20 @@ class TabDragController : public views::WidgetObserver,
   MoveBehavior move_behavior_;
 
   // Updated as the mouse is moved when attached. Indicates whether the mouse
-  // has ever moved to the left or right. If the tabs are ever detached this
-  // is set to kMovedMouseRight | kMovedMouseLeft.
-  int mouse_move_direction_;
+  // has ever moved to the left. If the tabs are ever detached this is set to
+  // true.
+  bool mouse_has_ever_moved_left_;
+
+  // Updated as the mouse is moved when attached. Indicates whether the mouse
+  // has ever moved to the right. If the tabs are ever detached this is set
+  // to true.
+  bool mouse_has_ever_moved_right_;
 
   // Last location used in screen coordinates.
   gfx::Point last_point_in_screen_;
 
   // The following are needed when detaching into a browser
   // (|detach_into_browser_| is true).
-
-  // See description above getter.
-  bool is_dragging_window_;
 
   // True if |attached_tabstrip_| is in a browser specifically created for
   // the drag.
@@ -631,11 +611,6 @@ class TabDragController : public views::WidgetObserver,
   // True if the initial drag resulted in restoring the window (because it was
   // maximized).
   bool did_restore_window_;
-
-  EndRunLoopBehavior end_run_loop_behavior_;
-
-  // If true, we're waiting for a move loop to complete.
-  bool waiting_for_run_loop_to_exit_;
 
   // The TabStrip to attach to after the move loop completes.
   TabStrip* tab_strip_to_attach_to_after_exit_;
@@ -655,7 +630,7 @@ class TabDragController : public views::WidgetObserver,
   int attach_x_;
   int attach_index_;
 
-  std::unique_ptr<ui::EventHandler> escape_tracker_;
+  std::unique_ptr<EscapeTracker> escape_tracker_;
 
   std::unique_ptr<WindowFinder> window_finder_;
 

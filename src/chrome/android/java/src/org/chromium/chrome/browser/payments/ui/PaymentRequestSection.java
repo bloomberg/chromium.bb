@@ -127,7 +127,7 @@ public abstract class PaymentRequestSection extends LinearLayout implements View
     static final int DISPLAY_MODE_FOCUSED = 5;
 
     /** Checking mode: Gray background, spinner overlay hides everything except the title. */
-    static final int DISPLAY_MODE_CHECKING = 6;
+    public static final int DISPLAY_MODE_CHECKING = 6;
 
     protected final SectionDelegate mDelegate;
     protected final int mLargeSpacing;

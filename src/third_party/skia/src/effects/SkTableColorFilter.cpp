@@ -91,8 +91,6 @@ public:
             GrContext*, const GrColorSpaceInfo&) const override;
 #endif
 
-    SK_DECLARE_PUBLIC_FLATTENABLE_DESERIALIZATION_PROCS(SkTable_ColorFilter)
-
     enum {
         kA_Flag = 1 << 0,
         kR_Flag = 1 << 1,
@@ -129,6 +127,8 @@ protected:
     void flatten(SkWriteBuffer&) const override;
 
 private:
+    SK_FLATTENABLE_HOOKS(SkTable_ColorFilter)
+
     mutable const SkBitmap* fBitmap; // lazily allocated
 
     uint8_t fStorage[256 * 4];
@@ -473,6 +473,6 @@ sk_sp<SkColorFilter> SkTableColorFilter::MakeARGB(const uint8_t tableA[256],
     return sk_make_sp<SkTable_ColorFilter>(tableA, tableR, tableG, tableB);
 }
 
-SK_DEFINE_FLATTENABLE_REGISTRAR_GROUP_START(SkTableColorFilter)
-    SK_DEFINE_FLATTENABLE_REGISTRAR_ENTRY(SkTable_ColorFilter)
-SK_DEFINE_FLATTENABLE_REGISTRAR_GROUP_END
+void SkTableColorFilter::RegisterFlattenables() {
+    SK_REGISTER_FLATTENABLE(SkTable_ColorFilter)
+}

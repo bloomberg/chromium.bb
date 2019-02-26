@@ -14,6 +14,8 @@
 
 #include <stddef.h>
 
+#include <cstdint>
+
 #include "base/logging.h"
 #include "net/third_party/http2/decoder/decode_buffer.h"
 #include "net/third_party/http2/decoder/decode_status.h"

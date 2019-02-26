@@ -114,6 +114,7 @@ if (!is_android && !is_mac) {
     ]
     if (is_win) {
       public_deps += [ ":reorder_imports" ]
+      data_deps += [ ":reorder_imports" ]
     }
     if (use_aura && (is_win || is_linux)) {
       data_deps += [ "//chrome/app:service_manifests" ]
@@ -273,7 +274,7 @@ if (!is_android && !is_mac) {
           "//chrome/common:buildflags",
         ]
 
-        ldflags = [ "-pie" ]
+        ldflags = []
 
         # Chrome OS debug builds for arm need to pass --long-plt to the linker.
         # See https://bugs.chromium.org/p/chromium/issues/detail?id=583532
@@ -282,11 +283,7 @@ if (!is_android && !is_mac) {
         }
 
         if (is_desktop_linux && !is_component_build && !using_sanitizer) {
-          if (is_safestack) {
-            version_script = "//build/linux/chrome.safestack.map"
-          } else {
-            version_script = "//build/linux/chrome.map"
-          }
+          version_script = "//build/linux/chrome.map"
           inputs = [
             version_script,
           ]
@@ -408,6 +405,7 @@ if (is_win) {
       "//chrome/install_static:secondary_module",
       "//chrome_elf",
       "//components/crash/content/app",
+      "//components/gwp_asan/client",
       "//components/policy:generated",
       "//content/app/resources",
       "//content/public/common:service_names",
@@ -514,6 +512,7 @@ if (is_win) {
         "//chrome_elf",
         "//components/browser_watcher:browser_watcher_client",
         "//components/crash/content/app",
+        "//components/gwp_asan/client",
         "//content/public/app:child",
         "//content/public/common:service_names",
         "//headless:headless_shell_child_lib",
@@ -640,10 +639,6 @@ if (is_win) {
       "//chrome/common:version_header",
     ]
 
-    if (is_chrome_branded) {
-      deps += [ ":chrome_helpers" ]
-    }
-
     if (enable_stripping) {
       # At link time, preserve the global symbols specified in the .exports
       # file. All other global symbols will be marked as private. The default
@@ -738,18 +733,6 @@ if (is_win) {
       ":chrome_app_strings",
       "//components/policy:chrome_manifest_bundle",
     ]
-  }
-
-  if (is_chrome_branded) {
-    bundle_data("chrome_helpers") {
-      sources = [
-        "installer/mac/internal/keychain_reauthorizers/$chrome_mac_bundle_id",
-      ]
-
-      outputs = [
-        "{{bundle_contents_dir}}/Helpers/{{source_file_part}}",
-      ]
-    }
   }
 
   bundle_data("chrome_versioned_bundle_data") {
@@ -1582,6 +1565,7 @@ group("extra_resources") {
   if (!is_android) {
     public_deps += [
       "//chrome/browser/resources:component_extension_resources",
+      "//chrome/browser/resources:local_ntp_resources",
       "//chrome/browser/resources:settings_resources",
     ]
   }
@@ -1593,6 +1577,10 @@ group("extra_resources") {
       "//chrome/browser/resources/chromeos/select_to_speak:build",
       "//chrome/browser/resources/chromeos/switch_access:build",
     ]
+  }
+
+  if (!is_android && !is_chromeos) {
+    public_deps += [ "//chrome/browser/resources:onboarding_welcome_resources" ]
   }
 
   if (enable_extensions) {
@@ -1646,25 +1634,27 @@ if (is_chrome_branded && !is_android) {
   }
 }
 
-chrome_paks("packed_resources") {
-  if (is_mac) {
-    output_dir = "$root_gen_dir/repack"
-    copy_data_to_bundle = true
-  } else {
-    output_dir = root_out_dir
-  }
+if (!is_android) {
+  chrome_paks("packed_resources") {
+    if (is_mac) {
+      output_dir = "$root_gen_dir/repack"
+      copy_data_to_bundle = true
+    } else {
+      output_dir = root_out_dir
+    }
 
-  if (enable_resource_whitelist_generation) {
-    repack_whitelist = chrome_resource_whitelist
-    deps = [
-      "//chrome:resource_whitelist",
-    ]
-  }
+    if (enable_resource_whitelist_generation) {
+      repack_whitelist = chrome_resource_whitelist
+      deps = [
+        "//chrome:resource_whitelist",
+      ]
+    }
 
-  if (is_chrome_branded && !is_mac && !is_android) {
-    public_deps = [
-      ":default_apps",
-    ]
+    if (is_chrome_branded && !is_mac) {
+      public_deps = [
+        ":default_apps",
+      ]
+    }
   }
 }
 

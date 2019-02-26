@@ -8,7 +8,7 @@
 #include "third_party/blink/renderer/modules/peerconnection/adapters/quic_transport_host.h"
 #include "third_party/blink/renderer/modules/peerconnection/adapters/web_rtc_cross_thread_copier.h"
 #include "third_party/blink/renderer/platform/cross_thread_functional.h"
-#include "third_party/blink/renderer/platform/web_task_runner.h"
+#include "third_party/blink/renderer/platform/scheduler/public/post_cross_thread_task.h"
 
 namespace blink {
 
@@ -49,13 +49,22 @@ void QuicStreamHost::Reset() {
   Delete();
 }
 
-void QuicStreamHost::Finish() {
+void QuicStreamHost::MarkReceivedDataConsumed(uint32_t amount) {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   DCHECK(p2p_stream_);
-  p2p_stream_->Finish();
-  writeable_ = false;
-  if (!readable_ && !writeable_) {
-    Delete();
+  p2p_stream_->MarkReceivedDataConsumed(amount);
+}
+
+void QuicStreamHost::WriteData(Vector<uint8_t> data, bool fin) {
+  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
+  DCHECK(p2p_stream_);
+  p2p_stream_->WriteData(data, fin);
+  if (fin) {
+    DCHECK(writable_);
+    writable_ = false;
+    if (!readable_ && !writable_) {
+      Delete();
+    }
   }
 }
 
@@ -67,15 +76,24 @@ void QuicStreamHost::OnRemoteReset() {
   Delete();
 }
 
-void QuicStreamHost::OnRemoteFinish() {
+void QuicStreamHost::OnDataReceived(Vector<uint8_t> data, bool fin) {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
-  PostCrossThreadTask(
-      *proxy_thread(), FROM_HERE,
-      CrossThreadBind(&QuicStreamProxy::OnRemoteFinish, stream_proxy_));
-  readable_ = false;
-  if (!readable_ && !writeable_) {
-    Delete();
+  PostCrossThreadTask(*proxy_thread(), FROM_HERE,
+                      CrossThreadBind(&QuicStreamProxy::OnDataReceived,
+                                      stream_proxy_, std::move(data), fin));
+  if (fin) {
+    readable_ = false;
+    if (!readable_ && !writable_) {
+      Delete();
+    }
   }
+}
+
+void QuicStreamHost::OnWriteDataConsumed(uint32_t amount) {
+  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
+  PostCrossThreadTask(*proxy_thread(), FROM_HERE,
+                      CrossThreadBind(&QuicStreamProxy::OnWriteDataConsumed,
+                                      stream_proxy_, amount));
 }
 
 void QuicStreamHost::Delete() {

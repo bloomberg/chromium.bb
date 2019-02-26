@@ -141,16 +141,6 @@ class CONTENT_EXPORT RenderWidgetHostView {
   // Returns the currently selected text.
   virtual base::string16 GetSelectedText() = 0;
 
-  // Returns part of the text on the page which includes the selected text plus
-  // possibly several characters before and after it.
-  virtual base::string16 GetSurroundingText() = 0;
-
-  // Returns the range of the selection in the page.
-  virtual gfx::Range GetSelectedRange() = 0;
-
-  // The offset of the surrounding text relative to the start of the total text.
-  virtual size_t GetOffsetForSurroundingText() = 0;
-
   // This only returns non-null on platforms that implement touch
   // selection editing (TSE), currently Aura and (soon) Android.
   // TODO(wjmaclean): update this comment when OOPIF TSE is implemented on
@@ -225,7 +215,7 @@ class CONTENT_EXPORT RenderWidgetHostView {
       base::OnceCallback<void(const SkBitmap&)> callback) = 0;
 
   // Ensures that all surfaces are synchronized for the next call to
-  // CopyFromSurface. This is used by LayoutTests.
+  // CopyFromSurface. This is used by web tests.
   virtual void EnsureSurfaceSynchronizedForLayoutTest() = 0;
 
   // Creates a video capturer, which will allow the caller to receive a stream

@@ -77,19 +77,12 @@ class FakeBluetoothInstance : public mojom::BluetoothInstance {
   void OnAdapterProperties(
       mojom::BluetoothStatus status,
       std::vector<mojom::BluetoothPropertyPtr> properties) override;
-  void OnRemoteDeviceProperties(
-      mojom::BluetoothStatus status,
-      mojom::BluetoothAddressPtr address,
-      std::vector<mojom::BluetoothPropertyPtr> properties) override;
   void OnDeviceFound(
       std::vector<mojom::BluetoothPropertyPtr> properties) override;
   void OnDiscoveryStateChanged(mojom::BluetoothDiscoveryState state) override;
   void OnBondStateChanged(mojom::BluetoothStatus status,
                           mojom::BluetoothAddressPtr remote_addr,
                           mojom::BluetoothBondState state) override;
-  void OnAclStateChanged(mojom::BluetoothStatus status,
-                         mojom::BluetoothAddressPtr remote_addr,
-                         mojom::BluetoothAclState state) override;
   void OnLEDeviceFoundForN(
       mojom::BluetoothAddressPtr addr,
       int32_t rssi,

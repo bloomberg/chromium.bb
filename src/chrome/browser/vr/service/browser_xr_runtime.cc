@@ -42,6 +42,11 @@ void BrowserXRRuntime::OnDisplayInfoChanged(
   for (XRDeviceImpl* device : renderer_device_connections_) {
     device->RuntimesChanged();
   }
+
+  // Notify observers of the new display info.
+  for (BrowserXRRuntimeObserver& observer : observers_) {
+    observer.SetVRDisplayInfo(display_info_.Clone());
+  }
 }
 
 void BrowserXRRuntime::StopImmersiveSession() {

@@ -53,6 +53,7 @@ void vp9_init_layer_context(VP9_COMP *const cpi) {
   svc->previous_frame_is_intra_only = 0;
   svc->superframe_has_layer_sync = 0;
   svc->use_set_ref_frame_config = 0;
+  svc->num_encoded_top_layer = 0;
 
   for (i = 0; i < REF_FRAMES; ++i) {
     svc->fb_idx_spatial_layer_id[i] = -1;
@@ -329,6 +330,7 @@ void vp9_restore_layer_context(VP9_COMP *const cpi) {
   LAYER_CONTEXT *const lc = get_layer_context(cpi);
   const int old_frame_since_key = cpi->rc.frames_since_key;
   const int old_frame_to_key = cpi->rc.frames_to_key;
+  const int old_ext_use_post_encode_drop = cpi->rc.ext_use_post_encode_drop;
 
   cpi->rc = lc->rc;
   cpi->twopass = lc->twopass;
@@ -346,7 +348,7 @@ void vp9_restore_layer_context(VP9_COMP *const cpi) {
     cpi->rc.frames_since_key = old_frame_since_key;
     cpi->rc.frames_to_key = old_frame_to_key;
   }
-
+  cpi->rc.ext_use_post_encode_drop = old_ext_use_post_encode_drop;
   // For spatial-svc, allow cyclic-refresh to be applied on the spatial layers,
   // for the base temporal layer.
   if (cpi->oxcf.aq_mode == CYCLIC_REFRESH_AQ &&
@@ -736,6 +738,8 @@ int vp9_one_pass_cbr_svc_start_layer(VP9_COMP *const cpi) {
   }
   svc->force_zero_mode_spatial_ref = 1;
   svc->mi_stride[svc->spatial_layer_id] = cpi->common.mi_stride;
+  svc->mi_rows[svc->spatial_layer_id] = cpi->common.mi_rows;
+  svc->mi_cols[svc->spatial_layer_id] = cpi->common.mi_cols;
 
   if (svc->temporal_layering_mode == VP9E_TEMPORAL_LAYERING_MODE_0212) {
     set_flags_and_fb_idx_for_temporal_mode3(cpi);
@@ -931,7 +935,7 @@ void vp9_free_svc_cyclic_refresh(VP9_COMP *const cpi) {
 }
 
 // Reset on key frame: reset counters, references and buffer updates.
-void vp9_svc_reset_key_frame(VP9_COMP *const cpi) {
+void vp9_svc_reset_temporal_layers(VP9_COMP *const cpi, int is_key) {
   int sl, tl;
   SVC *const svc = &cpi->svc;
   LAYER_CONTEXT *lc = NULL;
@@ -939,7 +943,7 @@ void vp9_svc_reset_key_frame(VP9_COMP *const cpi) {
     for (tl = 0; tl < svc->number_temporal_layers; ++tl) {
       lc = &cpi->svc.layer_context[sl * svc->number_temporal_layers + tl];
       lc->current_video_frame_in_layer = 0;
-      lc->frames_from_key_frame = 0;
+      if (is_key) lc->frames_from_key_frame = 0;
     }
   }
   if (svc->temporal_layering_mode == VP9E_TEMPORAL_LAYERING_MODE_0212) {
@@ -1089,13 +1093,16 @@ void vp9_svc_assert_constraints_pattern(VP9_COMP *const cpi) {
     }
   } else if (svc->use_gf_temporal_ref_current_layer &&
              !svc->layer_context[svc->temporal_layer_id].is_key_frame) {
-    // If the usage of golden as second long term reference is enabled for this
-    // layer, then temporal_layer_id of that reference must be base temporal
-    // layer 0, and spatial_layer_id of that reference must be same as current
-    // spatial_layer_id.
-    assert(svc->fb_idx_spatial_layer_id[cpi->gld_fb_idx] ==
-           svc->spatial_layer_id);
-    assert(svc->fb_idx_temporal_layer_id[cpi->gld_fb_idx] == 0);
+    // For the usage of golden as second long term reference: the
+    // temporal_layer_id of that reference must be base temporal layer 0, and
+    // spatial_layer_id of that reference must be same as current
+    // spatial_layer_id. If not, disable feature.
+    // TODO(marpan): Investigate when this can happen, and maybe put this check
+    // and reset in a different place.
+    if (svc->fb_idx_spatial_layer_id[cpi->gld_fb_idx] !=
+            svc->spatial_layer_id ||
+        svc->fb_idx_temporal_layer_id[cpi->gld_fb_idx] != 0)
+      svc->use_gf_temporal_ref_current_layer = 0;
   }
 }
 
@@ -1107,7 +1114,8 @@ void vp9_svc_check_spatial_layer_sync(VP9_COMP *const cpi) {
     if (svc->spatial_layer_id == 0) {
       // On base spatial layer: if the current superframe has a layer sync then
       // reset the pattern counters and reset to base temporal layer.
-      if (svc->superframe_has_layer_sync) vp9_svc_reset_key_frame(cpi);
+      if (svc->superframe_has_layer_sync)
+        vp9_svc_reset_temporal_layers(cpi, cpi->common.frame_type == KEY_FRAME);
     }
     // If the layer sync is set for this current spatial layer then
     // disable the temporal reference.

@@ -34,14 +34,16 @@
 #include <memory>
 #include "third_party/blink/renderer/platform/fonts/canvas_rotation_in_vertical.h"
 #include "third_party/blink/renderer/platform/fonts/glyph.h"
+#include "third_party/blink/renderer/platform/fonts/simple_font_data.h"
 #include "third_party/blink/renderer/platform/geometry/float_rect.h"
-#include "third_party/blink/renderer/platform/layout_unit.h"
+#include "third_party/blink/renderer/platform/geometry/layout_unit.h"
 #include "third_party/blink/renderer/platform/platform_export.h"
 #include "third_party/blink/renderer/platform/text/text_direction.h"
 #include "third_party/blink/renderer/platform/wtf/forward.h"
 #include "third_party/blink/renderer/platform/wtf/hash_set.h"
 #include "third_party/blink/renderer/platform/wtf/noncopyable.h"
 #include "third_party/blink/renderer/platform/wtf/ref_counted.h"
+#include "third_party/blink/renderer/platform/wtf/text/unicode.h"
 #include "third_party/blink/renderer/platform/wtf/vector.h"
 
 struct hb_buffer_t;
@@ -52,8 +54,8 @@ struct CharacterRange;
 class Font;
 template <typename TextContainerType>
 class PLATFORM_EXPORT ShapeResultSpacing;
-class SimpleFontData;
 class TextRun;
+class ShapeResultView;
 
 enum class AdjustMidCluster {
   // Adjust the middle of a grapheme cluster to the logical end boundary.
@@ -142,8 +144,8 @@ class PLATFORM_EXPORT ShapeResult : public RefCounted<ShapeResult> {
                                   float start_x = 0) const;
 
   // The character start/end index of a range shape result.
-  unsigned StartIndexForResult() const { return start_index_; }
-  unsigned EndIndexForResult() const { return start_index_ + num_characters_; }
+  unsigned StartIndex() const { return start_index_; }
+  unsigned EndIndex() const { return start_index_ + num_characters_; }
   void FallbackFonts(HashSet<const SimpleFontData*>*) const;
   TextDirection Direction() const {
     return static_cast<TextDirection>(direction_);
@@ -162,12 +164,12 @@ class PLATFORM_EXPORT ShapeResult : public RefCounted<ShapeResult> {
   // Returns the next or previous offsets respectively at which it is safe to
   // break without reshaping.
   // The |offset| given and the return value is for the original string, between
-  // |StartIndexForResult| and |EndIndexForResult|.
+  // |StartIndex| and |EndIndex|.
   // TODO(eae): Remove these ones the cached versions are used everywhere.
   unsigned NextSafeToBreakOffset(unsigned offset) const;
   unsigned PreviousSafeToBreakOffset(unsigned offset) const;
 
-  // Returns the offset, relative to StartIndexForResult, whose (origin,
+  // Returns the offset, relative to StartIndex, whose (origin,
   // origin+advance) contains |x|.
   unsigned OffsetForPosition(float x, BreakGlyphsOption) const;
   // Returns the offset whose glyph boundary is nearest to |x|. Depends on
@@ -194,7 +196,7 @@ class PLATFORM_EXPORT ShapeResult : public RefCounted<ShapeResult> {
     return CaretOffsetForHitTest(x, text, break_glyphs_option);
   }
 
-  // Returns the position for a given offset, relative to StartIndexForResult.
+  // Returns the position for a given offset, relative to StartIndex.
   float PositionForOffset(unsigned offset,
                           AdjustMidCluster = AdjustMidCluster::kToEnd) const;
   // Similar to |PositionForOffset| with mid-glyph (mid-ligature) support.
@@ -222,7 +224,7 @@ class PLATFORM_EXPORT ShapeResult : public RefCounted<ShapeResult> {
   // break without reshaping. Operates on a cache (that needs to be pre-computed
   // using EnsurePositionData) and does not take partial glyphs into account.
   // The |offset| given and the return value is for the original string, between
-  // |StartIndexForResult| and |EndIndexForResult|.
+  // |StartIndex| and |EndIndex|.
   unsigned CachedNextSafeToBreakOffset(unsigned offset) const;
   unsigned CachedPreviousSafeToBreakOffset(unsigned offset) const;
 
@@ -230,17 +232,33 @@ class PLATFORM_EXPORT ShapeResult : public RefCounted<ShapeResult> {
   // configured to |ShapeResultSpacing|.
   // |text_start_offset| adjusts the character index in the ShapeResult before
   // giving it to |ShapeResultSpacing|. It can be negative if
-  // |StartIndexForResult()| is larger than the text in |ShapeResultSpacing|.
+  // |StartIndex()| is larger than the text in |ShapeResultSpacing|.
   void ApplySpacing(ShapeResultSpacing<String>&, int text_start_offset = 0);
   scoped_refptr<ShapeResult> ApplySpacingToCopy(ShapeResultSpacing<TextRun>&,
                                          const TextRun&) const;
 
   // Append a copy of a range within an existing result to another result.
-  void CopyRange(unsigned start, unsigned end, ShapeResult*) const;
+  //
+  // For sequential copies the opaque_context in/out parameter can be used to
+  // improve performance by avoding a linear scan to find the first run for the
+  // range. It should be set to zero for the first call and the resulting out
+  // value for one call is the appropiate input value for the next.
+  // NOTE: opaque_context assumes non-overlapping ranges.
+  void CopyRange(unsigned start,
+                 unsigned end,
+                 ShapeResult*,
+                 unsigned* opaque_context = nullptr) const;
 
   // Create a new ShapeResult instance from a range within an existing result.
+  //
+  // For sequential copies the opaque_context in/out parameter can be used to
+  // improve performance by avoding a linear scan to find the first run for the
+  // range. It should be set to zero for the first call and the resulting out
+  // value for one call is the appropiate input value for the next.
+  // NOTE: opaque_context assumes non-overlapping ranges.
   scoped_refptr<ShapeResult> SubRange(unsigned start_offset,
-                                      unsigned end_offset) const;
+                                      unsigned end_offset,
+                                      unsigned* opaque_context = nullptr) const;
 
   // Create a new ShapeResult instance with the start offset adjusted.
   scoped_refptr<ShapeResult> CopyAdjustedOffset(unsigned start_offset) const;
@@ -298,7 +316,9 @@ class PLATFORM_EXPORT ShapeResult : public RefCounted<ShapeResult> {
 #endif
 
  protected:
-  ShapeResult(const SimpleFontData*, unsigned num_characters, TextDirection);
+  ShapeResult(scoped_refptr<const SimpleFontData>,
+              unsigned num_characters,
+              TextDirection);
   ShapeResult(const Font*, unsigned num_characters, TextDirection);
   ShapeResult(const ShapeResult&);
 
@@ -312,6 +332,11 @@ class PLATFORM_EXPORT ShapeResult : public RefCounted<ShapeResult> {
   // Ensure |grapheme_| is computed. |BreakGlyphs| is valid only when
   // |grapheme_| is computed.
   void EnsureGraphemes(const StringView& text) const;
+
+  static unsigned CountGraphemesInCluster(const UChar*,
+                                          unsigned str_length,
+                                          uint16_t start_index,
+                                          uint16_t end_index);
 
   struct GlyphIndexResult {
     STACK_ALLOCATED();
@@ -382,14 +407,11 @@ class PLATFORM_EXPORT ShapeResult : public RefCounted<ShapeResult> {
                              unsigned start_glyph,
                              unsigned num_glyphs,
                              hb_buffer_t*);
-  template <bool is_horizontal_run>
-  void ComputeGlyphBounds(const ShapeResult::RunInfo&);
-  void InsertRun(std::unique_ptr<ShapeResult::RunInfo>,
+  void InsertRun(scoped_refptr<ShapeResult::RunInfo>,
                  unsigned start_glyph,
                  unsigned num_glyphs,
                  hb_buffer_t*);
-  void InsertRun(std::unique_ptr<ShapeResult::RunInfo>);
-  void InsertRunForIndex(unsigned start_character_index);
+  void InsertRun(scoped_refptr<ShapeResult::RunInfo>);
   void ReorderRtlRuns(unsigned run_size_before);
   unsigned ComputeStartIndex() const;
   void UpdateStartIndex();
@@ -399,7 +421,7 @@ class PLATFORM_EXPORT ShapeResult : public RefCounted<ShapeResult> {
 
   float width_;
   FloatRect glyph_bounding_box_;
-  Vector<std::unique_ptr<RunInfo>> runs_;
+  Vector<scoped_refptr<RunInfo>> runs_;
   scoped_refptr<const SimpleFontData> primary_font_;
   mutable std::unique_ptr<CharacterPositionData> character_position_;
 
@@ -418,6 +440,7 @@ class PLATFORM_EXPORT ShapeResult : public RefCounted<ShapeResult> {
   friend class HarfBuzzShaper;
   friend class ShapeResultBuffer;
   friend class ShapeResultBloberizer;
+  friend class ShapeResultView;
 };
 
 PLATFORM_EXPORT std::ostream& operator<<(std::ostream&, const ShapeResult&);

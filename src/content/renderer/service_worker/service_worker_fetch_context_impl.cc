@@ -55,19 +55,23 @@ void ServiceWorkerFetchContextImpl::InitializeOnWorkerThread() {
       terminate_sync_load_event_);
   preference_watcher_binding_.Bind(std::move(preference_watcher_request_));
 
-  url_loader_factory_ = network::SharedURLLoaderFactory::Create(
-      std::move(url_loader_factory_info_));
+  web_url_loader_factory_ = std::make_unique<WebURLLoaderFactoryImpl>(
+      resource_dispatcher_->GetWeakPtr(),
+      network::SharedURLLoaderFactory::Create(
+          std::move(url_loader_factory_info_)));
+
   if (script_loader_factory_info_) {
-    script_loader_factory_ = network::SharedURLLoaderFactory::Create(
-        std::move(script_loader_factory_info_));
+    web_script_loader_factory_ =
+        std::make_unique<content::WebURLLoaderFactoryImpl>(
+            resource_dispatcher_->GetWeakPtr(),
+            network::SharedURLLoaderFactory::Create(
+                std::move(script_loader_factory_info_)));
   }
 }
 
-std::unique_ptr<blink::WebURLLoaderFactory>
-ServiceWorkerFetchContextImpl::CreateURLLoaderFactory() {
-  DCHECK(url_loader_factory_);
-  return std::make_unique<WebURLLoaderFactoryImpl>(
-      resource_dispatcher_->GetWeakPtr(), std::move(url_loader_factory_));
+blink::WebURLLoaderFactory*
+ServiceWorkerFetchContextImpl::GetURLLoaderFactory() {
+  return web_url_loader_factory_.get();
 }
 
 std::unique_ptr<blink::WebURLLoaderFactory>
@@ -81,12 +85,9 @@ ServiceWorkerFetchContextImpl::WrapURLLoaderFactory(
               network::mojom::URLLoaderFactory::Version_)));
 }
 
-std::unique_ptr<blink::WebURLLoaderFactory>
-ServiceWorkerFetchContextImpl::CreateScriptLoaderFactory() {
-  if (!script_loader_factory_)
-    return nullptr;
-  return std::make_unique<content::WebURLLoaderFactoryImpl>(
-      resource_dispatcher_->GetWeakPtr(), std::move(script_loader_factory_));
+blink::WebURLLoaderFactory*
+ServiceWorkerFetchContextImpl::GetScriptLoaderFactory() {
+  return web_script_loader_factory_.get();
 }
 
 void ServiceWorkerFetchContextImpl::WillSendRequest(
@@ -107,7 +108,7 @@ void ServiceWorkerFetchContextImpl::WillSendRequest(
 
   if (!renderer_preferences_.enable_referrers) {
     request.SetHTTPReferrer(blink::WebString(),
-                            blink::kWebReferrerPolicyDefault);
+                            network::mojom::ReferrerPolicy::kDefault);
   }
 }
 

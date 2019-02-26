@@ -24,14 +24,15 @@ class MediaControlLoadingPanelElementTest : public PageTestBase {
     // Create page and add a video element with controls.
     PageTestBase::SetUp();
     media_element_ = HTMLVideoElement::Create(GetDocument());
-    media_element_->SetBooleanAttribute(HTMLNames::controlsAttr, true);
+    media_element_->SetBooleanAttribute(html_names::kControlsAttr, true);
     GetDocument().body()->AppendChild(media_element_);
 
     // Create instance of MediaControlInputElement to run tests on.
     media_controls_ =
         static_cast<MediaControlsImpl*>(media_element_->GetMediaControls());
     ASSERT_NE(media_controls_, nullptr);
-    loading_element_ = new MediaControlLoadingPanelElement(*media_controls_);
+    loading_element_ =
+        MakeGarbageCollected<MediaControlLoadingPanelElement>(*media_controls_);
   }
 
  protected:
@@ -90,7 +91,7 @@ class MediaControlLoadingPanelElementTest : public PageTestBase {
 
   void SimulateAnimationIterations(int count) {
     for (int i = 0; i < count; i++) {
-      TriggerEvent(EventTypeNames::animationiteration);
+      TriggerEvent(event_type_names::kAnimationiteration);
     }
   }
 
@@ -103,7 +104,7 @@ class MediaControlLoadingPanelElementTest : public PageTestBase {
     ExpectAnimationIterationCount("infinite");
   }
 
-  void SimulateAnimationEnd() { TriggerEvent(EventTypeNames::animationend); }
+  void SimulateAnimationEnd() { TriggerEvent(event_type_names::kAnimationend); }
 
   void SimulateControlsHidden() { loading_element_->OnControlsHidden(); }
 

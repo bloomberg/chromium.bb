@@ -34,7 +34,7 @@ class LockManager final : public ScriptWrappable,
                         ExceptionState&);
   ScriptPromise request(ScriptState*,
                         const String& name,
-                        const LockOptions&,
+                        const LockOptions*,
                         V8LockGrantedCallback*,
                         ExceptionState&);
 

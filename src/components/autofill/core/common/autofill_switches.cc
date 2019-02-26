@@ -8,8 +8,19 @@
 namespace autofill {
 namespace switches {
 
+// Sets the API key that will be used when calling Autofill API instead of
+// using Chrome's baked key by default. You can use this to test new versions
+// of the API that are not linked to the Chrome baked key yet.
+const char kAutofillAPIKey[] = "autofill-api-key";
+
 // Override the default autofill server URL with "scheme://host[:port]/prefix/".
 const char kAutofillServerURL[] = "autofill-server-url";
+
+// The randomized encoding type to use when sending metadata uploads. The
+// value of the parameter must be one of the valid integer values of the
+// AutofillRandomizedValue_EncodingType enum.
+extern const char kAutofillMetadataUploadEncoding[] =
+    "autofill-metadata-upload-encoding";
 
 // Force hiding the local save checkbox in the autofill dialog box for getting
 // the full credit card number for a wallet card. The card will never be stored
@@ -29,11 +40,6 @@ const char kEnableSuggestionsWithSubstringMatch[] =
 // Ignores autocomplete="off" for Autofill data (profiles + credit cards).
 const char kIgnoreAutocompleteOffForAutofill[] =
     "ignore-autocomplete-off-autofill";
-
-// Removes the requirement that we recieved a ping from the autofill servers
-// and that the user doesn't have the given form blacklisted. Used in testing.
-const char kLocalHeuristicsOnlyForPasswordGeneration[] =
-    "local-heuristics-only-for-password-generation";
 
 // Annotates forms with Autofill field type predictions.
 const char kShowAutofillTypePredictions[]   = "show-autofill-type-predictions";

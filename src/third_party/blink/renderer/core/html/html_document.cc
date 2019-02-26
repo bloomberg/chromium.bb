@@ -61,7 +61,7 @@
 
 namespace blink {
 
-using namespace HTMLNames;
+using namespace html_names;
 
 HTMLDocument::HTMLDocument(const DocumentInit& initializer,
                            DocumentClassFlags extended_document_classes)
@@ -74,11 +74,11 @@ HTMLDocument::HTMLDocument(const DocumentInit& initializer,
 }
 
 HTMLDocument* HTMLDocument::Create(const DocumentInit& initializer) {
-  return new HTMLDocument(initializer);
+  return MakeGarbageCollected<HTMLDocument>(initializer);
 }
 
 HTMLDocument* HTMLDocument::CreateForTest() {
-  return new HTMLDocument(DocumentInit::Create());
+  return MakeGarbageCollected<HTMLDocument>(DocumentInit::Create());
 }
 
 HTMLDocument::~HTMLDocument() = default;
@@ -123,18 +123,18 @@ static HashSet<StringImpl*>* CreateHtmlCaseInsensitiveAttributesSet() {
   HashSet<StringImpl*>* attr_set = new HashSet<StringImpl*>;
 
   const QualifiedName* case_insensitive_attributes[] = {
-      &accept_charsetAttr, &acceptAttr,     &alignAttr,    &alinkAttr,
-      &axisAttr,           &bgcolorAttr,    &charsetAttr,  &checkedAttr,
-      &clearAttr,          &codetypeAttr,   &colorAttr,    &compactAttr,
-      &declareAttr,        &deferAttr,      &dirAttr,      &directionAttr,
-      &disabledAttr,       &enctypeAttr,    &faceAttr,     &frameAttr,
-      &hreflangAttr,       &http_equivAttr, &langAttr,     &languageAttr,
-      &linkAttr,           &mediaAttr,      &methodAttr,   &multipleAttr,
-      &nohrefAttr,         &noresizeAttr,   &noshadeAttr,  &nowrapAttr,
-      &readonlyAttr,       &relAttr,        &revAttr,      &rulesAttr,
-      &scopeAttr,          &scrollingAttr,  &selectedAttr, &shapeAttr,
-      &targetAttr,         &textAttr,       &typeAttr,     &valignAttr,
-      &valuetypeAttr,      &vlinkAttr};
+      &kAcceptCharsetAttr, &kAcceptAttr,    &kAlignAttr,    &kAlinkAttr,
+      &kAxisAttr,          &kBgcolorAttr,   &kCharsetAttr,  &kCheckedAttr,
+      &kClearAttr,         &kCodetypeAttr,  &kColorAttr,    &kCompactAttr,
+      &kDeclareAttr,       &kDeferAttr,     &kDirAttr,      &kDirectionAttr,
+      &kDisabledAttr,      &kEnctypeAttr,   &kFaceAttr,     &kFrameAttr,
+      &kHreflangAttr,      &kHttpEquivAttr, &kLangAttr,     &kLanguageAttr,
+      &kLinkAttr,          &kMediaAttr,     &kMethodAttr,   &kMultipleAttr,
+      &kNohrefAttr,        &kNoresizeAttr,  &kNoshadeAttr,  &kNowrapAttr,
+      &kReadonlyAttr,      &kRelAttr,       &kRevAttr,      &kRulesAttr,
+      &kScopeAttr,         &kScrollingAttr, &kSelectedAttr, &kShapeAttr,
+      &kTargetAttr,        &kTextAttr,      &kTypeAttr,     &kValignAttr,
+      &kValuetypeAttr,     &kVlinkAttr};
 
   attr_set->ReserveCapacityForSize(arraysize(case_insensitive_attributes));
   for (const QualifiedName* attr : case_insensitive_attributes)

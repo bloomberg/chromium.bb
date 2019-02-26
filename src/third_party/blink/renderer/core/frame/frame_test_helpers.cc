@@ -58,7 +58,7 @@
 #include "third_party/blink/renderer/platform/wtf/text/string_builder.h"
 
 namespace blink {
-namespace FrameTestHelpers {
+namespace frame_test_helpers {
 
 namespace {
 
@@ -113,11 +113,12 @@ std::unique_ptr<WebNavigationParams> BuildDummyNavigationParams() {
 }  // namespace
 
 void LoadFrame(WebLocalFrame* frame, const std::string& url) {
-  WebURL web_url(URLTestHelpers::ToKURL(url));
+  WebLocalFrameImpl* impl = ToWebLocalFrameImpl(frame);
+  WebURL web_url(url_test_helpers::ToKURL(url));
   if (web_url.ProtocolIs("javascript")) {
-    frame->LoadJavaScriptURL(web_url);
+    impl->LoadJavaScriptURL(web_url);
   } else {
-    frame->CommitNavigation(
+    impl->CommitNavigation(
         WebURLRequest(web_url), blink::WebFrameLoadType::kStandard,
         blink::WebHistoryItem(), false, base::UnguessableToken::Create(),
         BuildDummyNavigationParams(), nullptr /* extra_data */);
@@ -128,15 +129,17 @@ void LoadFrame(WebLocalFrame* frame, const std::string& url) {
 void LoadHTMLString(WebLocalFrame* frame,
                     const std::string& html,
                     const WebURL& base_url) {
-  frame->LoadHTMLString(WebData(html.data(), html.size()), base_url);
+  WebLocalFrameImpl* impl = ToWebLocalFrameImpl(frame);
+  impl->LoadHTMLString(WebData(html.data(), html.size()), base_url, WebURL());
   PumpPendingRequestsForFrameToLoad(frame);
 }
 
 void LoadHistoryItem(WebLocalFrame* frame,
                      const WebHistoryItem& item,
                      mojom::FetchCacheMode cache_mode) {
+  WebLocalFrameImpl* impl = ToWebLocalFrameImpl(frame);
   HistoryItem* history_item = item;
-  frame->CommitNavigation(
+  impl->CommitNavigation(
       WrappedResourceRequest(history_item->GenerateResourceRequest(cache_mode)),
       WebFrameLoadType::kBackForward, item, false /* is_client_redirect */,
       base::UnguessableToken::Create(), BuildDummyNavigationParams(),
@@ -246,7 +249,8 @@ WebLocalFrameImpl* CreateLocalChild(WebRemoteFrame& parent,
   client = CreateDefaultClientIfNeeded(client, owned_client);
   WebLocalFrameImpl* frame = ToWebLocalFrameImpl(parent.CreateLocalChild(
       WebTreeScopeType::kDocument, name, WebSandboxFlags::kNone, client,
-      nullptr, previous_sibling, ParsedFeaturePolicy(), properties, nullptr));
+      nullptr, previous_sibling, ParsedFeaturePolicy(), properties,
+      FrameOwnerElementType::kIframe, nullptr));
   client->Bind(frame, std::move(owned_client));
 
   std::unique_ptr<TestWebWidgetClient> owned_widget_client;
@@ -273,7 +277,7 @@ WebRemoteFrameImpl* CreateRemoteChild(
   client = CreateDefaultClientIfNeeded(client, owned_client);
   auto* frame = ToWebRemoteFrameImpl(parent.CreateRemoteChild(
       WebTreeScopeType::kDocument, name, WebSandboxFlags::kNone,
-      ParsedFeaturePolicy(), client, nullptr));
+      ParsedFeaturePolicy(), FrameOwnerElementType::kIframe, client, nullptr));
   client->Bind(frame, std::move(owned_client));
   if (!security_origin)
     security_origin = SecurityOrigin::CreateUniqueOpaque();
@@ -428,7 +432,7 @@ void TestWebFrameClient::Bind(WebLocalFrame* frame,
                               std::unique_ptr<TestWebFrameClient> self_owned) {
   DCHECK(!frame_);
   DCHECK(!self_owned || self_owned.get() == this);
-  frame_ = frame;
+  frame_ = ToWebLocalFrameImpl(frame);
   self_owned_ = std::move(self_owned);
 }
 
@@ -456,7 +460,8 @@ WebLocalFrame* TestWebFrameClient::CreateChildFrame(
     const WebString& fallback_name,
     WebSandboxFlags sandbox_flags,
     const ParsedFeaturePolicy& container_policy,
-    const WebFrameOwnerProperties& frame_owner_properties) {
+    const WebFrameOwnerProperties& frame_owner_properties,
+    FrameOwnerElementType owner_type) {
   return CreateLocalChild(*parent, scope);
 }
 
@@ -467,6 +472,14 @@ void TestWebFrameClient::DidStartLoading() {
 void TestWebFrameClient::DidStopLoading() {
   DCHECK_GT(loads_in_progress_, 0);
   --loads_in_progress_;
+}
+
+void TestWebFrameClient::BeginNavigation(
+    std::unique_ptr<WebNavigationInfo> info) {
+  frame_->CommitNavigation(
+      info->url_request, info->frame_load_type, blink::WebHistoryItem(),
+      info->is_client_redirect, base::UnguessableToken::Create(),
+      nullptr /* navigation_params */, nullptr /* extra_data */);
 }
 
 void TestWebFrameClient::DidCreateDocumentLoader(
@@ -512,9 +525,9 @@ content::LayerTreeView* LayerTreeViewFactory::Initialize(
 
   layer_tree_view_ = std::make_unique<content::LayerTreeView>(
       specified_delegate ? specified_delegate : &delegate_,
-      Platform::Current()->CurrentThread()->GetTaskRunner(),
+      Thread::Current()->GetTaskRunner(),
       /*compositor_thread=*/nullptr, &test_task_graph_runner_,
-      &fake_renderer_scheduler_);
+      &fake_thread_scheduler_);
   layer_tree_view_->Initialize(settings,
                                std::make_unique<cc::TestUkmRecorderFactory>());
   return layer_tree_view_.get();
@@ -528,5 +541,5 @@ TestWebViewClient::TestWebViewClient(content::LayerTreeViewDelegate* delegate) {
   layer_tree_view_ = layer_tree_view_factory_.Initialize(delegate);
 }
 
-}  // namespace FrameTestHelpers
+}  // namespace frame_test_helpers
 }  // namespace blink

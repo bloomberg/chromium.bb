@@ -177,6 +177,7 @@ BSSL_NAMESPACE_BEGIN
 enum ssl_client_hs_state_t {
   state_start_connect = 0,
   state_enter_early_data,
+  state_early_reverify_server_certificate,
   state_read_hello_verify_request,
   state_read_server_hello,
   state_tls13,
@@ -459,17 +460,33 @@ static enum ssl_hs_wait_t do_enter_early_data(SSL_HANDSHAKE *hs) {
   if (!tls13_init_early_key_schedule(hs, ssl->session->master_key,
                                      ssl->session->master_key_length) ||
       !tls13_derive_early_secrets(hs) ||
-      !tls13_set_traffic_key(ssl, evp_aead_seal, hs->early_traffic_secret,
-                             hs->hash_len)) {
+      !tls13_set_traffic_key(ssl, ssl_encryption_early_data, evp_aead_seal,
+                             hs->early_traffic_secret, hs->hash_len)) {
     return ssl_hs_error;
   }
 
   // Stash the early data session, so connection properties may be queried out
   // of it.
-  hs->in_early_data = true;
   hs->early_session = UpRef(ssl->session);
-  hs->can_early_write = true;
+  hs->state = state_early_reverify_server_certificate;
+  return ssl_hs_ok;
+}
 
+static enum ssl_hs_wait_t do_early_reverify_server_certificate(SSL_HANDSHAKE *hs) {
+  if (hs->ssl->ctx->reverify_on_resume) {
+    switch (ssl_reverify_peer_cert(hs)) {
+    case ssl_verify_ok:
+      break;
+    case ssl_verify_invalid:
+      return ssl_hs_error;
+    case ssl_verify_retry:
+      hs->state = state_early_reverify_server_certificate;
+      return ssl_hs_certificate_verify;
+    }
+  }
+
+  hs->in_early_data = true;
+  hs->can_early_write = true;
   hs->state = state_read_server_hello;
   return ssl_hs_early_return;
 }
@@ -595,10 +612,14 @@ static enum ssl_hs_wait_t do_read_server_hello(SSL_HANDSHAKE *hs) {
     static_assert(
         sizeof(kTLS12DowngradeRandom) == sizeof(kTLS13DowngradeRandom),
         "downgrade signals have different size");
+    static_assert(
+        sizeof(kJDK11DowngradeRandom) == sizeof(kTLS13DowngradeRandom),
+        "downgrade signals have different size");
     auto suffix =
         MakeConstSpan(ssl->s3->server_random, sizeof(ssl->s3->server_random))
             .subspan(SSL3_RANDOM_SIZE - sizeof(kTLS13DowngradeRandom));
-    if (suffix == kTLS12DowngradeRandom || suffix == kTLS13DowngradeRandom) {
+    if (suffix == kTLS12DowngradeRandom || suffix == kTLS13DowngradeRandom ||
+        suffix == kJDK11DowngradeRandom) {
       ssl->s3->tls13_downgrade = true;
       if (!hs->config->ignore_tls13_downgrade) {
         OPENSSL_PUT_ERROR(SSL, SSL_R_TLS13_DOWNGRADE);
@@ -1692,6 +1713,9 @@ enum ssl_hs_wait_t ssl_client_handshake(SSL_HANDSHAKE *hs) {
       case state_enter_early_data:
         ret = do_enter_early_data(hs);
         break;
+      case state_early_reverify_server_certificate:
+        ret = do_early_reverify_server_certificate(hs);
+        break;
       case state_read_hello_verify_request:
         ret = do_read_hello_verify_request(hs);
         break;
@@ -1775,6 +1799,8 @@ const char *ssl_client_handshake_state(SSL_HANDSHAKE *hs) {
       return "TLS client start_connect";
     case state_enter_early_data:
       return "TLS client enter_early_data";
+    case state_early_reverify_server_certificate:
+      return "TLS client early_reverify_server_certificate";
     case state_read_hello_verify_request:
       return "TLS client read_hello_verify_request";
     case state_read_server_hello:

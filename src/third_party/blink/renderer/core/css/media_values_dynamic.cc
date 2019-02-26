@@ -21,7 +21,7 @@ MediaValues* MediaValuesDynamic::Create(LocalFrame* frame) {
   if (!frame || !frame->View() || !frame->GetDocument() ||
       !frame->GetDocument()->GetLayoutView())
     return MediaValuesCached::Create();
-  return new MediaValuesDynamic(frame);
+  return MakeGarbageCollected<MediaValuesDynamic>(frame);
 }
 
 MediaValuesDynamic::MediaValuesDynamic(LocalFrame* frame)
@@ -44,9 +44,9 @@ MediaValuesDynamic::MediaValuesDynamic(LocalFrame* frame,
 }
 
 MediaValues* MediaValuesDynamic::Copy() const {
-  return new MediaValuesDynamic(frame_, viewport_dimensions_overridden_,
-                                viewport_width_override_,
-                                viewport_height_override_);
+  return MakeGarbageCollected<MediaValuesDynamic>(
+      frame_, viewport_dimensions_overridden_, viewport_width_override_,
+      viewport_height_override_);
 }
 
 bool MediaValuesDynamic::ComputeLength(double value,

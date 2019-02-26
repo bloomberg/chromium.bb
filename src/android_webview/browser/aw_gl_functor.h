@@ -25,14 +25,17 @@ class AwGLFunctor : public RenderThreadManagerClient {
                               const base::android::JavaParamRef<jobject>& obj);
   jlong GetAwDrawGLViewContext(JNIEnv* env,
                                const base::android::JavaParamRef<jobject>& obj);
+  jlong GetCompositorFrameConsumer(
+      JNIEnv* env,
+      const base::android::JavaParamRef<jobject>& obj);
   jlong GetAwDrawGLFunction(JNIEnv* env,
                             const base::android::JavaParamRef<jobject>& obj);
 
+ private:
   CompositorFrameConsumer* GetCompositorFrameConsumer() {
     return &render_thread_manager_;
   }
 
- private:
   JavaObjectWeakGlobalRef java_ref_;
   RenderThreadManager render_thread_manager_;
 };

@@ -831,35 +831,21 @@ TEST_F(TextureMemoryTrackerTest, LightweightRef) {
   Texture* texture = texture_ref_->texture();
   MemoryTypeTracker* old_tracker = texture->GetMemTracker();
 
-  MockMemoryTracker other_tracker;
-  MemoryTypeTracker lightweight_tracker(&other_tracker);
   EXPECT_MEMORY_ALLOCATION_CHANGE(64, 0);
-  EXPECT_CALL(other_tracker, TrackMemoryAllocatedChange(64))
-      .Times(1)
-      .RetiresOnSaturation();
-  texture->SetLightweightRef(&lightweight_tracker);
-  EXPECT_EQ(&lightweight_tracker, texture->GetMemTracker());
+  texture->SetLightweightRef();
+  EXPECT_EQ(nullptr, texture->GetMemTracker());
 
   EXPECT_MEMORY_ALLOCATION_CHANGE(0, 64);
-  EXPECT_CALL(other_tracker, TrackMemoryAllocatedChange(-64))
-      .Times(1)
-      .RetiresOnSaturation();
   texture->RemoveLightweightRef(true);
   EXPECT_EQ(old_tracker, texture->GetMemTracker());
 
   EXPECT_MEMORY_ALLOCATION_CHANGE(64, 0);
-  EXPECT_CALL(other_tracker, TrackMemoryAllocatedChange(64))
-      .Times(1)
-      .RetiresOnSaturation();
-  texture->SetLightweightRef(&lightweight_tracker);
-  EXPECT_EQ(&lightweight_tracker, texture->GetMemTracker());
+  texture->SetLightweightRef();
+  EXPECT_EQ(nullptr, texture->GetMemTracker());
 
   manager_->RemoveTexture(texture_ref_->client_id());
   texture_ref_ = nullptr;
 
-  EXPECT_CALL(other_tracker, TrackMemoryAllocatedChange(-64))
-      .Times(1)
-      .RetiresOnSaturation();
   EXPECT_CALL(*gl_,
               DeleteTextures(1, ::testing::Pointee(texture->service_id())))
       .Times(1)

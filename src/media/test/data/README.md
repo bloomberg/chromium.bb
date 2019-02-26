@@ -34,6 +34,9 @@ Opus Audio only WebM file.
 #### bear-vp8-webvtt.webm
 WebM VP8 video with WebVTT subtitle track.
 
+#### bear-1280x720.mp4
+AAC audio and H264 high profile video.
+
 #### bear-1280x720-avt_subt_frag.mp4
 Fragmented bear_1280x720.mp4 with text track containing srt from
 bear-vp8-webvtt.webm as a 'subt' handler type.
@@ -42,6 +45,9 @@ bear-vp8-webvtt.webm as a 'subt' handler type.
 #### bear-1280x720-av_frag-initsegment-mvhd_version_0-mvhd_duration_bits_all_set.mp4:
 Just the first initialization segment of bear-1280x720_av_frag.mp4, modified to
 have the mvhd version 0 32-bit duration field set to all 1's.
+
+#### media/test/data/negative-audio-timestamps.avi
+A truncated audio/video file with audio packet timestamps of -1. We need to ensure that these packets arent dropped.
 
 ### FLAC
 
@@ -81,6 +87,69 @@ ffmpeg -i sfx.flac -map 0:0 -acodec copy -strict -2 sfx-flac.mp4
 Fragmented audio-only 44.1kHz FLAC in MP4 file, created using:
 ```
 ffmpeg -i sfx.flac -map 0:0 -acodec copy -strict -2 -movflags frag_keyframe+empty_moov+default_base_moof sfx-flac_frag.mp4
+```
+
+### AV1
+
+Unless noted otherwise, the codec string is `av01.0.04M.08` for 8-bit files,
+and `av01.0.04M.10` for 10-bit files.
+
+#### bear.y4m
+Not an AV1 file, but all of the following commands rely on this file. It was
+created using vpxdec with the following command:
+```
+vpxdec path/to/chrome/src/media/test/data/bear-vp9.webm -o bear.y4m
+```
+
+#### bear-av1.mp4
+Created using FFmpeg with the following commands:
+```
+ffmpeg -i bear.y4m -vcodec libaom-av1 -strict -2 -y -f mp4 -b:v 50k \
+  bear-av1-slowstart.mp4
+ffmpeg -i bear-av1-slowstart.mp4 -vcodec copy -strict -2 -y -f mp4 \
+  -movflags frag_keyframe+empty_moov+default_base_moof+faststart bear-av1.mp4
+```
+
+#### bear-av1.webm
+Created using aomenc with the following command:
+```
+aomenc bear.y4m --lag-in-frames=0 --target-bitrate=50 --fps=30000/1001 \
+  --cpu-used=8 --test-decode=fatal -o bear-av1.webm
+```
+
+#### bear-av1-480x360.webm
+Created using FFmpeg and aomenc with the following commands:
+```
+ffmpeg -i bear.y4m -vf scale=-1:360 -f rawvideo bear_360P.yuv
+aomenc bear_360P.yuv -w 480 -h 360 --fps=30000/1001 --cpu-used=8 \
+  --lag-in-frames=0 --test-decode=fatal --target-bitrate=50 \
+  -o bear-av1-480x360.webm
+```
+
+#### bear-av1-640x480.webm
+Created using FFmpeg and aomenc with the following commands:
+```
+ffmpeg -i bear.y4m -vf scale=-1:480 -f rawvideo bear_480P.yuv
+aomenc bear_480P.yuv -w 640 -h 480 --fps=30000/1001 --cpu-used=8 \
+  --lag-in-frames=0 --test-decode=fatal --target-bitrate=50 \
+  -o bear-av1-640x480.webm
+```
+
+#### bear-av1-320x180-10bit.mp4
+Created using FFmpeg with the following command:
+```
+ffmpeg -i bear-av1-320x180-10bit.webm -vcodec copy -f mp4 \
+  -movflags frag_keyframe+empty_moov+default_base_moof+faststart \
+  bear-av1-320x180-10bit.mp4
+```
+
+#### bear-av1-320x180-10bit.webm
+Created using vpxdec and aomenc with the following commands:
+```
+vpxdec bear-320x180-hi10p-vp9.webm -o bear-320x180-10bit.y4m
+aomenc bear-320x180-10bit.y4m --lag-in-frames=0 --target-bitrate=50 \
+  --fps=30000/1001 --cpu-used=8 --bit-depth=10 --test-decode=fatal \
+  -o bear-av1-320x180-10bit.webm
 ```
 
 ### Alpha Channel
@@ -316,6 +385,9 @@ bear-vp9-opus.webm with video track encrypted using key ID [1] and key [2].
 A fragmented MP4 version of the audio track of bear-640x360.mp4 encrypted (ISO
 CENC) using key ID [1] and key [2].
 
+**Note**: bear-640x360.mp4 file does not exist any more. Files encrypted from
+it has AAC audio and H264 high profile video (if applicable).
+
 #### bear-640x360-a_frag-cenc-key_rotation.mp4
 A fragmented MP4 version of the audio track of bear-640x360.mp4 encrypted (ISO
 CENC) using key ID [1] and key [2] with key rotation [3].
@@ -360,6 +432,34 @@ bear-320x240-audio-only.webm encrypted using key ID [1] and key [2].
 #### frame_size_change-av_enc-v.webm
 third_party/WebKit/LayoutTests/media/resources/frame_size_change.webm encrypted
 using key ID [1] and key [2].
+
+### AV1
+
+Unless noted otherwise, the codec string is `av01.0.04M.08` for 8-bit files,
+and `av01.0.04M.10` for 10-bit files.
+
+#### bear-av1-cenc.mp4
+Encrypted version of bear-av1.mp4. Encrypted by [Shaka Packager] built locally
+at commit 53aa775ea488c0ffd3a2e1cb78ad000154e414e1 using key ID [1] and key [2].
+```
+packager in=bear-av1.mp4,stream=video,output=bear-av1-cenc.mp4
+         --enable_raw_key_encryption --protection_scheme cenc --clear_lead 0
+         --keys label=:key_id=30313233343536373839303132333435:key=ebdd62f16814d27b68ef122afce4ae3c
+         --pssh 000000327073736800000000EDEF8BA979D64ACEA3C827DCD51D21ED000000121210303132333435363738393031323334350000003470737368010000001077EFECC0B24D02ACE33C1E52E2FB4B000000013031323334353637383930313233343500000000
+```
+
+#### bear-av1-cenc.webm
+Same as bear-av1-cenc.mp4, except that the output name is bear-av1-cenc.webm.
+
+#### bear-av1-320x180-10bit-cenc.mp4
+Same as bear-av1-cenc.mp4, except that the input name is
+bear-av1-320x180-10bit.mp4, and the output name is
+bear-av1-320x180-10bit-cenc.mp4.
+
+#### bear-av1-320x180-10bit-cenc.webm
+Same as bear-av1-cenc.mp4, except that the input name is
+bear-av1-320x180-10bit.webm, and the output name is
+bear-av1-320x180-10bit-cenc.webm.
 
 ### Encryption Scheme Test
 
@@ -458,6 +558,12 @@ These differ between implementations because color space-converted frames are
 not specified to the last bit and GLES shader/texture filtering
 precision varies.
 
+#### test-25fps.h264.frames.md5:
+MD5s of frame which is decoded with Intel VAAPI and V4L2 decoders and is
+converted to I420 pixel format. Written out by
+video_decode_accelerator_unittest when input file is test-25fps.h264.
+This value must be identical on all platforms.
+
 #### test-25fps.vp8
 ffmpeg git-2012-07-19-a8d8e86, libvpx ToT 7/19, chromium r147247,
 mkvextract v5.0.1
@@ -469,6 +575,12 @@ ffmpeg -i test-25fps.h264 -vcodec libvpx -an test-25fps.webm && \
 #### test-25fps.vp8.md5
 MD5 of RGB thumbnail rendered version of test-25fps.vp8. Written out by
 video_decode_accelerator_unittest.
+
+#### test-25fps.vp8.frames.md5:
+MD5s of frame which is decoded with Intel VAAPI and V4L2 decoders and is
+converted to I420 pixel format. Written out by
+video_decode_accelerator_unittest when input file is test-25fps.vp8.
+This value must be identical on all platforms.
 
 #### test-25fps.vp9
 avconv 9.16-6:9.16-0ubuntu0.14.04.1, vpxenc v1.3.0
@@ -487,6 +599,12 @@ vpxenc test-25fps_i420.yuv -o test-25fps.vp9 --codec=vp9 -w 320 -h 240 --ivf \
 MD5 of RGB thumbnail rendered version of test-25fps.vp9. Written out by
 video_decode_accelerator_unittest.
 
+#### test-25fps.vp9.frames.md5:
+MD5s of frame which is decoded with Intel VAAPI and V4L2 decoders and is
+converted to I420 pixel format. Written out by
+video_decode_accelerator_unittest when input file is test-25fps.vp9.
+This value must be identical on all platforms.
+
 #### test-25fps.vp9_2
 Similar to test-25fps.vp9, substituting the option `--profile=0` with
 `--profile=2 --bit-depth=10` to vpxenc. (Note that vpxenc must have been
@@ -495,6 +613,28 @@ configured with the option --enable-vp9-highbitdepth).
 #### test-25fps.vp9_2.md5
 MD5 of RGB thumbnail rendered version of test-25fps.vp9_2. Written out by
 video_decode_accelerator_unittest.
+
+#### test-25fps.vp9_2.frames.md5:
+MD5s of frame which is decoded with Intel VAAPI and V4L2 decoders and is
+converted to I420 pixel format. Written out by
+video_decode_accelerator_unittest when input file is test-25fps.vp9_2.
+This value must be identical on all platforms.
+
+
+### VP9 video with show_existing_frame flag
+
+#### vp90_2_10_show_existing_frame2.vp9.ivf
+VP9 video with show_existing_frame flag. The original test stream comes from
+Android CTS.
+```
+ffmpeg -i vp90_2_17_show_existing_frame.vp9 -vcodec copy -an -f ivf \
+    vp90_2_17_show_existing_frame.vp9.ivf
+```
+
+#### vp90_2_10_show_existing_frame2.vp9.ivf.md5
+MD5 of RGB thumbnail rendered version of vp90_2_10_show_existing_frame2.vp9.ivf.
+Written out by video_decode_accelerator_unittest.
+
 
 ### bear
 
@@ -572,6 +712,18 @@ The frame sizes change between 1080p and 720p every 24 frames.
 
 #### bear_320x192_40frames.yuv
 First 40 raw i420 frames of bear-1280x720.mp4 scaled down to 320x192 for
+video_encode_accelerator_unittest.
+
+#### bear_320x192_40frames.nv12.yuv
+First 40 raw nv12 frames of bear-1280x720.mp4 scaled down to 320x192 for
+video_encode_accelerator_unittest.
+
+#### bear_320x192_40frames.nv21.yuv
+First 40 raw nv21 frames of bear-1280x720.mp4 scaled down to 320x192 for
+video_encode_accelerator_unittest.
+
+#### bear_320x192_40frames.yv12.yuv
+First 40 raw yv12 frames of bear-1280x720.mp4 scaled down to 320x192 for
 video_encode_accelerator_unittest.
 
 ###  VP9 parser test files:

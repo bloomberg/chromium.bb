@@ -18,12 +18,11 @@
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
-#include "base/sys_info.h"
+#include "base/system/sys_info.h"
 #include "base/values.h"
 #include "build/build_config.h"
 #include "components/feedback/system_logs/system_logs_fetcher.h"
 #include "components/feedback/tracing_manager.h"
-#include "content/public/common/browser_side_navigation_policy.h"
 #include "extensions/browser/api/extensions_api_client.h"
 #include "extensions/browser/api/feedback_private/feedback_private_delegate.h"
 #include "extensions/browser/api/feedback_private/feedback_service.h"
@@ -56,9 +55,9 @@ static base::LazyInstance<BrowserContextKeyedAPIFactory<FeedbackPrivateAPI>>::
 namespace {
 
 constexpr base::FilePath::CharType kBluetoothLogsFilePath[] =
-    FILE_PATH_LITERAL("/var/log/bluetooth/log.gz");
+    FILE_PATH_LITERAL("/var/log/bluetooth/log.bz2");
 
-constexpr char kBluetoothLogsAttachmentName[] = "bluetooth_logs.gz";
+constexpr char kBluetoothLogsAttachmentName[] = "bluetooth_logs.bz2";
 
 // Getting the filename of a blob prepends a "C:\fakepath" to the filename.
 // This is undesirable, strip it if it exists.

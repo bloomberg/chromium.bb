@@ -35,7 +35,6 @@
 #include "third_party/blink/renderer/platform/audio/audio_utilities.h"
 #include "third_party/blink/renderer/platform/audio/denormal_disabler.h"
 #include "third_party/blink/renderer/platform/instrumentation/tracing/trace_event.h"
-#include "third_party/blink/renderer/platform/wtf/atomics.h"
 
 namespace blink {
 
@@ -86,7 +85,7 @@ void DefaultAudioDestinationHandler::Uninitialize() {
 }
 
 void DefaultAudioDestinationHandler::SetChannelCount(
-    unsigned long channel_count,
+    unsigned channel_count,
     ExceptionState& exception_state) {
   DCHECK(IsMainThread());
 
@@ -134,7 +133,7 @@ void DefaultAudioDestinationHandler::RestartRendering() {
   StartRendering();
 }
 
-unsigned long DefaultAudioDestinationHandler::MaxChannelCount() const {
+uint32_t DefaultAudioDestinationHandler::MaxChannelCount() const {
   return AudioDestination::MaxChannelCount();
 }
 
@@ -147,7 +146,7 @@ double DefaultAudioDestinationHandler::SampleRate() const {
 
 void DefaultAudioDestinationHandler::Render(
     AudioBus* destination_bus,
-    size_t number_of_frames,
+    uint32_t number_of_frames,
     const AudioIOPosition& output_position) {
   TRACE_EVENT0("webaudio", "DefaultAudioDestinationHandler::Render");
 
@@ -198,8 +197,7 @@ void DefaultAudioDestinationHandler::Render(
   Context()->HandlePostRenderTasks(destination_bus);
 
   // Advances the current sample-frame.
-  size_t new_sample_frame = current_sample_frame_ + number_of_frames;
-  ReleaseStore(&current_sample_frame_, new_sample_frame);
+  AdvanceCurrentSampleFrame(number_of_frames);
 
   Context()->UpdateWorkletGlobalScopeOnRenderingThread();
 }
@@ -259,7 +257,8 @@ DefaultAudioDestinationNode::DefaultAudioDestinationNode(
 DefaultAudioDestinationNode* DefaultAudioDestinationNode::Create(
     BaseAudioContext* context,
     const WebAudioLatencyHint& latency_hint) {
-  return new DefaultAudioDestinationNode(*context, latency_hint);
+  return MakeGarbageCollected<DefaultAudioDestinationNode>(*context,
+                                                           latency_hint);
 }
 
 }  // namespace blink

@@ -12,6 +12,7 @@
 #include "chrome/browser/ui/ash/launcher/arc_app_window_launcher_controller.h"
 #include "chrome/browser/ui/ash/launcher/arc_app_window_launcher_item_controller.h"
 #include "components/exo/shell_surface_base.h"
+#include "components/exo/shell_surface_util.h"
 #include "extensions/common/constants.h"
 #include "ui/aura/window.h"
 #include "ui/gfx/codec/png_codec.h"
@@ -22,6 +23,8 @@
 namespace {
 constexpr base::TimeDelta kSetDefaultIconDelayMs =
     base::TimeDelta::FromMilliseconds(1000);
+
+constexpr int kArcAppWindowIconSize = extension_misc::EXTENSION_ICON_MEDIUM;
 }  // namespace
 
 ArcAppWindow::ArcAppWindow(int task_id,
@@ -96,7 +99,7 @@ void ArcAppWindow::OnAppImageUpdated(const std::string& app_id,
 void ArcAppWindow::SetDefaultAppIcon() {
   if (!app_icon_loader_) {
     app_icon_loader_ = std::make_unique<ArcAppIconLoader>(
-        profile_, extension_misc::EXTENSION_ICON_SMALL, this);
+        profile_, kArcAppWindowIconSize, this);
   }
   DCHECK(!image_fetching_);
   base::AutoReset<bool> auto_image_fetching(&image_fetching_, true);
@@ -107,7 +110,7 @@ void ArcAppWindow::SetIcon(const gfx::ImageSkia& icon) {
   // Reset any pending request to set default app icon.
   apply_default_image_timer_.Stop();
 
-  if (!exo::ShellSurfaceBase::GetMainSurface(GetNativeWindow())) {
+  if (!exo::GetShellMainSurface(GetNativeWindow())) {
     // Support unit tests where we don't have exo system initialized.
     views::NativeWidgetAura::AssignIconToAuraWindow(
         GetNativeWindow(), gfx::ImageSkia() /* window_icon */,
@@ -121,12 +124,17 @@ void ArcAppWindow::SetIcon(const gfx::ImageSkia& icon) {
   shell_surface->SetIcon(icon);
 }
 
-void ArcAppWindow::OnImageDecoded(const SkBitmap& decoded_image) {
+void ArcAppWindow::OnImageDecoded(const SkBitmap& decoded_bitmap) {
   // Use the custom icon and stop observing updates.
   app_icon_loader_.reset();
+  const gfx::ImageSkia decoded_image(gfx::ImageSkiaRep(decoded_bitmap, 1.0f));
+  if (kArcAppWindowIconSize > decoded_image.width() ||
+      kArcAppWindowIconSize > decoded_image.height()) {
+    LOG(WARNING) << "An icon of size " << decoded_image.width() << "x"
+                 << decoded_image.height()
+                 << " is being scaled up and will look blurry.";
+  }
   SetIcon(gfx::ImageSkiaOperations::CreateResizedImage(
-      gfx::ImageSkia(gfx::ImageSkiaRep(decoded_image, 1.0f)),
-      skia::ImageOperations::RESIZE_BEST,
-      gfx::Size(extension_misc::EXTENSION_ICON_SMALL,
-                extension_misc::EXTENSION_ICON_SMALL)));
+      decoded_image, skia::ImageOperations::RESIZE_BEST,
+      gfx::Size(kArcAppWindowIconSize, kArcAppWindowIconSize)));
 }

@@ -3,8 +3,12 @@
 // found in the LICENSE file.
 
 #include "mojo/public/cpp/bindings/lib/binding_state.h"
-
 #include "mojo/public/cpp/bindings/lib/task_runner_helper.h"
+#include "mojo/public/cpp/bindings/mojo_buildflags.h"
+
+#if BUILDFLAG(MOJO_RANDOM_DELAYS_ENABLED)
+#include "mojo/public/cpp/bindings/lib/test_random_mojo_delays.h"
+#endif
 
 namespace mojo {
 namespace internal {
@@ -40,6 +44,8 @@ bool BindingStateBase::WaitForIncomingMethodCall(MojoDeadline deadline) {
 void BindingStateBase::Close() {
   if (!router_)
     return;
+
+  weak_ptr_factory_.InvalidateWeakPtrs();
 
   endpoint_client_.reset();
   router_->CloseMessagePipe();
@@ -92,6 +98,7 @@ void BindingStateBase::BindInternal(
 
   auto sequenced_runner =
       GetTaskRunnerToUseFromUserProvidedTaskRunner(std::move(runner));
+
   MultiplexRouter::Config config =
       passes_associated_kinds
           ? MultiplexRouter::MULTI_INTERFACE
@@ -106,7 +113,12 @@ void BindingStateBase::BindInternal(
       router_->CreateLocalEndpointHandle(kMasterInterfaceId), stub,
       std::move(request_validator), has_sync_methods,
       std::move(sequenced_runner), interface_version));
+
+#if BUILDFLAG(MOJO_RANDOM_DELAYS_ENABLED)
+  MakeBindingRandomlyPaused(base::SequencedTaskRunnerHandle::Get(),
+                            weak_ptr_factory_.GetWeakPtr());
+#endif
 }
 
-}  // namesapce internal
+}  // namespace internal
 }  // namespace mojo

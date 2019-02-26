@@ -4,6 +4,7 @@
 
 #include "chrome/browser/chromeos/arc/notification/arc_supervision_transition_notification.h"
 
+#include "ash/public/cpp/notification_utils.h"
 #include "ash/public/cpp/vector_icons/vector_icons.h"
 #include "base/bind.h"
 #include "base/macros.h"
@@ -92,12 +93,12 @@ void ShowSupervisionTransitionNotification(Profile* profile) {
          transition == ArcSupervisionTransition::REGULAR_TO_CHILD);
 
   message_center::NotifierId notifier_id(
-      message_center::NotifierId::SYSTEM_COMPONENT, kNotifierId);
+      message_center::NotifierType::SYSTEM_COMPONENT, kNotifierId);
   notifier_id.profile_id =
       multi_user_util::GetAccountIdFromProfile(profile).GetUserEmail();
 
   std::unique_ptr<message_center::Notification> notification =
-      message_center::Notification::CreateSystemNotification(
+      ash::CreateSystemNotification(
           message_center::NOTIFICATION_TYPE_SIMPLE,
           kSupervisionTransitionNotificationId,
           l10n_util::GetStringUTF16(IDS_ARC_CHILD_TRANSITION_TITLE),

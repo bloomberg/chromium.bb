@@ -366,8 +366,6 @@ class LocalDiscoveryUITest : public WebUIBrowserTest {
                                          kResponseRegisterComplete);
 
     identity::MakePrimaryAccountAvailable(
-        SigninManagerFactory::GetForProfile(browser()->profile()),
-        ProfileOAuth2TokenServiceFactory::GetForProfile(browser()->profile()),
         IdentityManagerFactory::GetForProfile(browser()->profile()),
         kSampleUser);
 

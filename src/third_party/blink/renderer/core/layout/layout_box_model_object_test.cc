@@ -432,7 +432,7 @@ TEST_F(LayoutBoxModelObjectTest, StickyPositionConstraintInvalidation) {
   EXPECT_TRUE(sticky->Layer()->NeedsCompositingInputsUpdate());
 
   // After updating compositing inputs we should have the updated position.
-  GetDocument().View()->UpdateAllLifecyclePhases();
+  UpdateAllLifecyclePhasesForTest();
   EXPECT_EQ(50.f, scrollable_area->GetStickyConstraintsMap()
                       .at(sticky->Layer())
                       .scroll_container_relative_sticky_box_rect.Location()
@@ -1089,7 +1089,7 @@ TEST_F(LayoutBoxModelObjectTest, InvalidatePaintLayerOnStackedChange) {
   EXPECT_FALSE(parent->StyleRef().IsStacked());
   EXPECT_NE(parent, original_compositing_container->GetLayoutObject());
 
-  target_element->setAttribute(HTMLNames::classAttr, "non-stacked");
+  target_element->setAttribute(html_names::kClassAttr, "non-stacked");
   GetDocument().View()->UpdateLifecycleToLayoutClean();
 
   EXPECT_FALSE(target->StyleRef().IsStacked());
@@ -1098,8 +1098,8 @@ TEST_F(LayoutBoxModelObjectTest, InvalidatePaintLayerOnStackedChange) {
   auto* new_compositing_container = target->Layer()->CompositingContainer();
   EXPECT_EQ(parent, new_compositing_container->GetLayoutObject());
 
-  GetDocument().View()->UpdateAllLifecyclePhases();
-  target_element->setAttribute(HTMLNames::classAttr, "stacked");
+  UpdateAllLifecyclePhasesForTest();
+  target_element->setAttribute(html_names::kClassAttr, "stacked");
   GetDocument().View()->UpdateLifecycleToLayoutClean();
 
   EXPECT_TRUE(target->StyleRef().IsStacked());
@@ -1141,7 +1141,7 @@ TEST_F(LayoutBoxModelObjectTest, StickyRemovedFromRootScrollableArea) {
   // overflow layer to nullptr.
   ToElement(scroller->GetNode())
       ->SetInlineStyleProperty(CSSPropertyOverflow, "scroll");
-  GetDocument().View()->UpdateAllLifecyclePhases();
+  UpdateAllLifecyclePhasesForTest();
 
   // The sticky element should no longer be viewport constrained.
   EXPECT_FALSE(GetDocument().View()->HasViewportConstrainedObjects());
@@ -1169,17 +1169,17 @@ TEST_F(LayoutBoxModelObjectTest, BackfaceVisibilityChange) {
   ASSERT_NE(nullptr, target_layer);
   EXPECT_FALSE(target_layer->NeedsRepaint());
 
-  target->setAttribute(HTMLNames::styleAttr,
+  target->setAttribute(html_names::kStyleAttr,
                        base_style + "; backface-visibility: hidden");
   GetDocument().View()->UpdateAllLifecyclePhasesExceptPaint();
   EXPECT_TRUE(target_layer->NeedsRepaint());
-  GetDocument().View()->UpdateAllLifecyclePhases();
+  UpdateAllLifecyclePhasesForTest();
   EXPECT_FALSE(target_layer->NeedsRepaint());
 
-  target->setAttribute(HTMLNames::styleAttr, base_style);
+  target->setAttribute(html_names::kStyleAttr, base_style);
   GetDocument().View()->UpdateAllLifecyclePhasesExceptPaint();
   EXPECT_TRUE(target_layer->NeedsRepaint());
-  GetDocument().View()->UpdateAllLifecyclePhases();
+  UpdateAllLifecyclePhasesForTest();
   EXPECT_FALSE(target_layer->NeedsRepaint());
 }
 

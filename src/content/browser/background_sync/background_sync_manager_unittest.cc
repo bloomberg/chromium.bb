@@ -50,8 +50,8 @@ namespace {
 using ::testing::Return;
 using ::testing::_;
 
-const char kPattern1[] = "https://example.com/a";
-const char kPattern2[] = "https://example.com/b";
+const char kScope1[] = "https://example.com/a";
+const char kScope2[] = "https://example.com/b";
 const char kScript1[] = "https://example.com/a/script.js";
 const char kScript2[] = "https://example.com/b/script.js";
 
@@ -88,10 +88,7 @@ class BackgroundSyncManagerTest : public testing::Test {
   BackgroundSyncManagerTest()
       : browser_thread_bundle_(TestBrowserThreadBundle::IO_MAINLOOP) {
     sync_options_1_.tag = "foo";
-    sync_options_1_.network_state = NETWORK_STATE_ONLINE;
-
     sync_options_2_.tag = "bar";
-    sync_options_2_.network_state = NETWORK_STATE_ONLINE;
   }
 
   void SetUp() override {
@@ -135,9 +132,9 @@ class BackgroundSyncManagerTest : public testing::Test {
     bool called_1 = false;
     bool called_2 = false;
     blink::mojom::ServiceWorkerRegistrationOptions options1;
-    options1.scope = GURL(kPattern1);
+    options1.scope = GURL(kScope1);
     blink::mojom::ServiceWorkerRegistrationOptions options2;
-    options2.scope = GURL(kPattern2);
+    options2.scope = GURL(kScope2);
     helper_->context()->RegisterServiceWorker(
         GURL(kScript1), options1,
         base::BindOnce(&RegisterServiceWorkerCallback, &called_1,
@@ -154,12 +151,12 @@ class BackgroundSyncManagerTest : public testing::Test {
     // Hang onto the registrations as they need to be "live" when
     // calling BackgroundSyncManager::Register.
     helper_->context_wrapper()->FindReadyRegistrationForId(
-        sw_registration_id_1_, GURL(kPattern1).GetOrigin(),
+        sw_registration_id_1_, GURL(kScope1).GetOrigin(),
         base::BindOnce(FindServiceWorkerRegistrationCallback,
                        &sw_registration_1_));
 
     helper_->context_wrapper()->FindReadyRegistrationForId(
-        sw_registration_id_2_, GURL(kPattern1).GetOrigin(),
+        sw_registration_id_2_, GURL(kScope1).GetOrigin(),
         base::BindOnce(FindServiceWorkerRegistrationCallback,
                        &sw_registration_2_));
     base::RunLoop().RunUntilIdle();
@@ -260,6 +257,15 @@ class BackgroundSyncManagerTest : public testing::Test {
             base::Unretained(this), &was_called));
     base::RunLoop().RunUntilIdle();
     EXPECT_TRUE(was_called);
+
+    // Mock the client receiving the response and calling
+    // DidResolveRegistration.
+    if (callback_status_ == BACKGROUND_SYNC_STATUS_OK) {
+      background_sync_manager_->DidResolveRegistration(sw_registration_id,
+                                                       options.tag);
+      base::RunLoop().RunUntilIdle();
+    }
+
     return callback_status_ == BACKGROUND_SYNC_STATUS_OK;
   }
 
@@ -330,16 +336,16 @@ class BackgroundSyncManagerTest : public testing::Test {
   void UnregisterServiceWorker(uint64_t sw_registration_id) {
     bool called = false;
     helper_->context()->UnregisterServiceWorker(
-        PatternForSWId(sw_registration_id),
+        ScopeForSWId(sw_registration_id),
         base::BindOnce(&UnregisterServiceWorkerCallback, &called));
     base::RunLoop().RunUntilIdle();
     EXPECT_TRUE(called);
   }
 
-  GURL PatternForSWId(int64_t sw_id) {
+  GURL ScopeForSWId(int64_t sw_id) {
     EXPECT_TRUE(sw_id == sw_registration_id_1_ ||
                 sw_id == sw_registration_id_2_);
-    return sw_id == sw_registration_id_1_ ? GURL(kPattern1) : GURL(kPattern2);
+    return sw_id == sw_registration_id_1_ ? GURL(kScope1) : GURL(kScope2);
   }
 
   void SetupForSyncEvent(
@@ -439,11 +445,51 @@ TEST_F(BackgroundSyncManagerTest, Register) {
   EXPECT_TRUE(Register(sync_options_1_));
 }
 
+TEST_F(BackgroundSyncManagerTest, RegisterAndWaitToFireUntilResolved) {
+  InitSyncEventTest();
+  bool was_called = false;
+  background_sync_manager_->Register(
+      sw_registration_id_1_, sync_options_1_,
+      base::BindOnce(&BackgroundSyncManagerTest::StatusAndRegistrationCallback,
+                     base::Unretained(this), &was_called));
+  base::RunLoop().RunUntilIdle();
+  EXPECT_TRUE(was_called);
+
+  // Verify that the sync event hasn't fired yet, as it should wait for the
+  // client to acknowledge with DidResolveRegistration.
+  EXPECT_EQ(0, sync_events_called_);
+
+  background_sync_manager_->DidResolveRegistration(sw_registration_id_1_,
+                                                   sync_options_1_.tag);
+  base::RunLoop().RunUntilIdle();
+  EXPECT_EQ(1, sync_events_called_);
+}
+
+TEST_F(BackgroundSyncManagerTest, ResolveInvalidRegistration) {
+  InitSyncEventTest();
+  bool was_called = false;
+  background_sync_manager_->Register(
+      sw_registration_id_1_, sync_options_1_,
+      base::BindOnce(&BackgroundSyncManagerTest::StatusAndRegistrationCallback,
+                     base::Unretained(this), &was_called));
+  base::RunLoop().RunUntilIdle();
+  EXPECT_TRUE(was_called);
+
+  // Verify that the sync event hasn't fired yet, as it should wait for the
+  // client to acknowledge with DidResolveRegistration.
+  EXPECT_EQ(0, sync_events_called_);
+
+  // Resolve a non-existing registration.
+  background_sync_manager_->DidResolveRegistration(sw_registration_id_1_,
+                                                   "unknown_tag");
+  base::RunLoop().RunUntilIdle();
+  EXPECT_EQ(0, sync_events_called_);
+}
+
 TEST_F(BackgroundSyncManagerTest, RegistrationIntact) {
   EXPECT_TRUE(Register(sync_options_1_));
   EXPECT_STREQ(sync_options_1_.tag.c_str(),
                callback_registration_->options()->tag.c_str());
-  EXPECT_TRUE(callback_registration_->IsValid());
 }
 
 TEST_F(BackgroundSyncManagerTest, RegisterWithoutLiveSWRegistration) {
@@ -481,7 +527,7 @@ TEST_F(BackgroundSyncManagerTest, RegisterBadBackend) {
 }
 
 TEST_F(BackgroundSyncManagerTest, RegisterPermissionDenied) {
-  GURL expected_origin = GURL(kPattern1).GetOrigin();
+  GURL expected_origin = GURL(kScope1).GetOrigin();
   MockPermissionManager* mock_permission_manager =
       GetPermissionControllerDelegate();
 
@@ -493,7 +539,7 @@ TEST_F(BackgroundSyncManagerTest, RegisterPermissionDenied) {
 }
 
 TEST_F(BackgroundSyncManagerTest, RegisterPermissionGranted) {
-  GURL expected_origin = GURL(kPattern1).GetOrigin();
+  GURL expected_origin = GURL(kScope1).GetOrigin();
   MockPermissionManager* mock_permission_manager =
       GetPermissionControllerDelegate();
 
@@ -586,16 +632,6 @@ TEST_F(BackgroundSyncManagerTest, RegisterMaxTagLength) {
   sync_options_2_.tag = std::string(MaxTagLength() + 1, 'b');
   EXPECT_FALSE(Register(sync_options_2_));
   EXPECT_EQ(BACKGROUND_SYNC_STATUS_NOT_ALLOWED, callback_status_);
-}
-
-TEST_F(BackgroundSyncManagerTest, RegistrationIncreasesId) {
-  EXPECT_TRUE(Register(sync_options_1_));
-  BackgroundSyncRegistration::RegistrationId cur_id =
-      callback_registration_->id();
-
-  EXPECT_TRUE(GetRegistration(sync_options_1_));
-  EXPECT_TRUE(Register(sync_options_2_));
-  EXPECT_LT(cur_id, callback_registration_->id());
 }
 
 TEST_F(BackgroundSyncManagerTest, RebootRecovery) {
@@ -747,29 +783,11 @@ TEST_F(BackgroundSyncManagerTest, DisabledManagerWorksAfterDeleteAndStartOver) {
   EXPECT_TRUE(GetRegistration(sync_options_2_));
 }
 
-TEST_F(BackgroundSyncManagerTest, RegistrationEqualsId) {
-  BackgroundSyncRegistration reg_1;
-  BackgroundSyncRegistration reg_2;
-
-  EXPECT_TRUE(reg_1.Equals(reg_2));
-  reg_2.set_id(reg_1.id() + 1);
-  EXPECT_TRUE(reg_1.Equals(reg_2));
-}
-
 TEST_F(BackgroundSyncManagerTest, RegistrationEqualsTag) {
   BackgroundSyncRegistration reg_1;
   BackgroundSyncRegistration reg_2;
   EXPECT_TRUE(reg_1.Equals(reg_2));
   reg_2.options()->tag = "bar";
-  EXPECT_FALSE(reg_1.Equals(reg_2));
-}
-
-TEST_F(BackgroundSyncManagerTest, RegistrationEqualsNetworkState) {
-  BackgroundSyncRegistration reg_1;
-  BackgroundSyncRegistration reg_2;
-  EXPECT_TRUE(reg_1.Equals(reg_2));
-  reg_1.options()->network_state = NETWORK_STATE_ANY;
-  reg_2.options()->network_state = NETWORK_STATE_ONLINE;
   EXPECT_FALSE(reg_1.Equals(reg_2));
 }
 
@@ -779,8 +797,6 @@ TEST_F(BackgroundSyncManagerTest, StoreAndRetrievePreservesValues) {
 
   // Set non-default values for each field.
   options.tag = "foo";
-  EXPECT_NE(NETWORK_STATE_AVOID_CELLULAR, options.network_state);
-  options.network_state = NETWORK_STATE_AVOID_CELLULAR;
 
   // Store the registration.
   EXPECT_TRUE(Register(options));
@@ -1124,7 +1140,7 @@ TEST_F(BackgroundSyncManagerTest, NotifyBackgroundSyncRegistered) {
   EXPECT_EQ(0, GetController()->registration_count());
   EXPECT_TRUE(Register(sync_options_1_));
   EXPECT_EQ(1, GetController()->registration_count());
-  EXPECT_EQ(GURL(kPattern1).GetOrigin().spec(),
+  EXPECT_EQ(GURL(kScope1).GetOrigin().spec(),
             GetController()->registration_origin().spec());
 }
 

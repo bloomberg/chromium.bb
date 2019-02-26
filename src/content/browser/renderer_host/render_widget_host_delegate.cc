@@ -35,6 +35,11 @@ bool RenderWidgetHostDelegate::HandleWheelEvent(
   return false;
 }
 
+bool RenderWidgetHostDelegate::HandleKeyboardEvent(
+    const NativeWebKeyboardEvent& event) {
+  return false;
+}
+
 bool RenderWidgetHostDelegate::ShouldIgnoreInputEvents() {
   return false;
 }
@@ -44,7 +49,7 @@ bool RenderWidgetHostDelegate::PreHandleGestureEvent(
   return false;
 }
 
-double RenderWidgetHostDelegate::GetPendingPageZoomLevel() const {
+double RenderWidgetHostDelegate::GetPendingPageZoomLevel() {
   return 0.0;
 }
 
@@ -77,7 +82,7 @@ RenderWidgetHostDelegate::GetRenderWidgetHostWithPageFocus() {
   return nullptr;
 }
 
-bool RenderWidgetHostDelegate::IsFullscreenForCurrentTab() const {
+bool RenderWidgetHostDelegate::IsFullscreenForCurrentTab() {
   return false;
 }
 
@@ -150,6 +155,10 @@ WebContents* RenderWidgetHostDelegate::GetAsWebContents() {
 
 bool RenderWidgetHostDelegate::IsShowingContextMenuOnPage() const {
   return false;
+}
+
+InputEventShim* RenderWidgetHostDelegate::GetInputEventShim() const {
+  return nullptr;
 }
 
 }  // namespace content

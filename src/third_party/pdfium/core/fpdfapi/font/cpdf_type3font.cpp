@@ -16,7 +16,6 @@
 #include "core/fpdfapi/parser/cpdf_stream.h"
 #include "core/fxcrt/fx_system.h"
 #include "third_party/base/ptr_util.h"
-#include "third_party/base/stl_util.h"
 
 namespace {
 
@@ -69,7 +68,7 @@ bool CPDF_Type3Font::Load() {
   if (StartChar >= 0 && static_cast<size_t>(StartChar) < kCharLimit) {
     const CPDF_Array* pWidthArray = m_pFontDict->GetArrayFor("Widths");
     if (pWidthArray) {
-      size_t count = std::min(pWidthArray->GetCount(), kCharLimit);
+      size_t count = std::min(pWidthArray->size(), kCharLimit);
       count = std::min(count, kCharLimit - StartChar);
       for (size_t i = 0; i < count; i++) {
         m_CharWidthL[StartChar + i] =

@@ -21,7 +21,7 @@ class ContextState;
 struct IndexRange;
 class Path;
 struct Workarounds;
-}
+}  // namespace gl
 
 namespace egl
 {
@@ -49,42 +49,6 @@ class RendererGL : angle::NonCopyable
 
     angle::Result flush();
     angle::Result finish();
-
-    angle::Result drawArrays(const gl::Context *context,
-                             gl::PrimitiveMode mode,
-                             GLint first,
-                             GLsizei count);
-    angle::Result drawArraysInstanced(const gl::Context *context,
-                                      gl::PrimitiveMode mode,
-                                      GLint first,
-                                      GLsizei count,
-                                      GLsizei instanceCount);
-
-    angle::Result drawElements(const gl::Context *context,
-                               gl::PrimitiveMode mode,
-                               GLsizei count,
-                               GLenum type,
-                               const void *indices);
-    angle::Result drawElementsInstanced(const gl::Context *context,
-                                        gl::PrimitiveMode mode,
-                                        GLsizei count,
-                                        GLenum type,
-                                        const void *indices,
-                                        GLsizei instances);
-    angle::Result drawRangeElements(const gl::Context *context,
-                                    gl::PrimitiveMode mode,
-                                    GLuint start,
-                                    GLuint end,
-                                    GLsizei count,
-                                    GLenum type,
-                                    const void *indices);
-    angle::Result drawArraysIndirect(const gl::Context *context,
-                                     gl::PrimitiveMode mode,
-                                     const void *indirect);
-    angle::Result drawElementsIndirect(const gl::Context *context,
-                                       gl::PrimitiveMode mode,
-                                       GLenum type,
-                                       const void *indirect);
 
     // CHROMIUM_path_rendering implementation
     void stencilFillPath(const gl::ContextState &state,

@@ -8,13 +8,15 @@
 #ifndef GrVkImage_DEFINED
 #define GrVkImage_DEFINED
 
+#include "GrVkVulkan.h"
+
 #include "GrVkResource.h"
 
+#include "GrBackendSurface.h"
 #include "GrTypesPriv.h"
 #include "GrVkImageLayout.h"
 #include "SkTypes.h"
 
-#include "vk/GrVkDefines.h"
 #include "vk/GrVkTypes.h"
 
 class GrVkGpu;
@@ -42,6 +44,9 @@ public:
     VkImage image() const { return fInfo.fImage; }
     const GrVkAlloc& alloc() const { return fInfo.fAlloc; }
     VkFormat imageFormat() const { return fInfo.fFormat; }
+    GrBackendFormat getBackendFormat() const {
+        return GrBackendFormat::MakeVk(this->imageFormat());
+    }
     uint32_t mipLevels() const { return fInfo.fLevelCount; }
     const Resource* resource() const { return fResource; }
     bool isLinearTiled() const {

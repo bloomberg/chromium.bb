@@ -56,7 +56,7 @@ class PLATFORM_EXPORT FFTConvolver {
   void Process(const FFTFrame* fft_kernel,
                const float* source_p,
                float* dest_p,
-               size_t frames_to_process);
+               uint32_t frames_to_process);
 
   void Reset();
 

@@ -175,7 +175,7 @@ class Shell : public WebContentsDelegate,
       RenderFrameHost* frame,
       const BluetoothChooser::EventHandler& event_handler) override;
 #if defined(OS_MACOSX)
-  void HandleKeyboardEvent(WebContents* source,
+  bool HandleKeyboardEvent(WebContents* source,
                            const NativeWebKeyboardEvent& event) override;
 #endif
   bool DidAddMessageToConsole(WebContents* source,

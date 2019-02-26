@@ -42,7 +42,7 @@ TEST_F(CompositingRequirementsUpdaterTest, FixedPosOverlap) {
 
   GetDocument().View()->LayoutViewport()->ScrollBy(ScrollOffset(0, 100),
                                                    kUserScroll);
-  GetDocument().View()->UpdateAllLifecyclePhases();
+  UpdateAllLifecyclePhasesForTest();
 
   // No longer overlaps the first div.
   EXPECT_EQ(CompositingReason::kNone, fixed->Layer()->GetCompositingReasons());
@@ -69,38 +69,11 @@ TEST_F(CompositingRequirementsUpdaterTest,
   EXPECT_FALSE(target->GetCompositingReasons());
 
   // Now make |target| self-painting.
-  GetDocument().getElementById("target")->setAttribute(HTMLNames::styleAttr,
+  GetDocument().getElementById("target")->setAttribute(html_names::kStyleAttr,
                                                        "position: relative");
-  GetDocument().View()->UpdateAllLifecyclePhases();
+  UpdateAllLifecyclePhasesForTest();
 
   EXPECT_EQ(CompositingReason::kOverlap, target->GetCompositingReasons());
-}
-
-TEST_F(CompositingRequirementsUpdaterTest,
-       NoAssumedOverlapReasonForNonSelfPaintingLayer) {
-  SetBodyInnerHTML(R"HTML(
-    <style>
-      #target {
-       overflow: auto;
-       width: 100px;
-       height: 100px;
-     }
-    </style>
-    <div style="position: relative; width: 500px; height: 300px;
-        transform: translateZ(0)"></div>
-    <div id=target></div>
-  )HTML");
-
-  PaintLayer* target =
-      ToLayoutBoxModelObject(GetLayoutObjectByElementId("target"))->Layer();
-  EXPECT_FALSE(target->GetCompositingReasons());
-
-  // Now make |target| self-painting.
-  GetDocument().getElementById("target")->setAttribute(HTMLNames::styleAttr,
-                                                       "position: relative");
-  GetDocument().View()->UpdateAllLifecyclePhases();
-  EXPECT_EQ(CompositingReason::kAssumedOverlap,
-            target->GetCompositingReasons());
 }
 
 TEST_F(CompositingRequirementsUpdaterTest,
@@ -123,9 +96,9 @@ TEST_F(CompositingRequirementsUpdaterTest,
   EXPECT_FALSE(target->GetCompositingReasons());
 
   // Now make |target| self-painting.
-  GetDocument().getElementById("target")->setAttribute(HTMLNames::styleAttr,
+  GetDocument().getElementById("target")->setAttribute(html_names::kStyleAttr,
                                                        "position: relative");
-  GetDocument().View()->UpdateAllLifecyclePhases();
+  UpdateAllLifecyclePhasesForTest();
   EXPECT_EQ(CompositingReason::kClipsCompositingDescendants,
             target->GetCompositingReasons());
 }
@@ -160,9 +133,9 @@ TEST_F(CompositingRequirementsUpdaterTest,
 
   GetDocument().View()->SetTracksPaintInvalidations(true);
 
-  GetDocument().getElementById("target")->setAttribute(HTMLNames::styleAttr,
+  GetDocument().getElementById("target")->setAttribute(html_names::kStyleAttr,
                                                        "display: none");
-  GetDocument().View()->UpdateAllLifecyclePhases();
+  UpdateAllLifecyclePhasesForTest();
 
   EXPECT_EQ(kNotComposited, squashed->GetCompositingState());
   auto* tracking = GetDocument()

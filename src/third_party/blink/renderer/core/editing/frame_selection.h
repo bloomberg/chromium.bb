@@ -125,8 +125,10 @@ class CORE_EXPORT FrameSelection final
 
  public:
   static FrameSelection* Create(LocalFrame& frame) {
-    return new FrameSelection(frame);
+    return MakeGarbageCollected<FrameSelection>(frame);
   }
+
+  explicit FrameSelection(LocalFrame&);
   ~FrameSelection();
 
   bool IsAvailable() const { return LifecycleContext(); }
@@ -204,7 +206,7 @@ class CORE_EXPORT FrameSelection final
   SelectionInDOMTree GetSelectionInDOMTree() const;
   bool IsDirectional() const;
 
-  void DocumentAttached(Document*);
+  void DidAttachDocument(Document*);
 
   void DidLayout();
   void CommitAppearanceIfNeeded();
@@ -282,8 +284,6 @@ class CORE_EXPORT FrameSelection final
   friend class FrameSelectionTest;
   friend class PaintControllerPaintTestBase;
   friend class SelectionControllerTest;
-
-  explicit FrameSelection(LocalFrame&);
 
   const DisplayItemClient& CaretDisplayItemClientForTesting() const;
 

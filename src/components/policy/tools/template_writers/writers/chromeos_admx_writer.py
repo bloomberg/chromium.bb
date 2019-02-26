@@ -3,7 +3,6 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-
 import base64
 
 from writers import admx_writer
@@ -36,4 +35,4 @@ class ChromeOSADMXWriter(admx_writer.ADMXWriter):
 
   # Overridden.
   def _GetAdmxElementType(self, policy):
-    return AdmxElementType.GetType(policy, allow_multi_strings = True)
+    return AdmxElementType.GetType(policy, allow_multi_strings=True)

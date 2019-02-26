@@ -726,55 +726,6 @@ void NetworkingPrivateVerifyDestinationFunction::Failure(
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-// NetworkingPrivateVerifyAndEncryptCredentialsFunction
-
-NetworkingPrivateVerifyAndEncryptCredentialsFunction::
-    ~NetworkingPrivateVerifyAndEncryptCredentialsFunction() {
-}
-
-ExtensionFunction::ResponseAction
-NetworkingPrivateVerifyAndEncryptCredentialsFunction::Run() {
-  // This method is private - as such, it should not be exposed through public
-  // networking.onc API.
-  // TODO(tbarzic): Consider exposing this via separate API.
-  // http://crbug.com/678737
-  if (!HasPrivateNetworkingAccess(extension(), source_context_type(),
-                                  source_url())) {
-    return RespondNow(Error(kPrivateOnlyError));
-  }
-  std::unique_ptr<private_api::VerifyAndEncryptCredentials::Params> params =
-      private_api::VerifyAndEncryptCredentials::Params::Create(*args_);
-  EXTENSION_FUNCTION_VALIDATE(params);
-
-  NetworkingCastPrivateDelegate* delegate =
-      ExtensionsAPIClient::Get()->GetNetworkingCastPrivateDelegate();
-  if (!delegate)
-    return RespondNow(Error("Not supported."));
-
-  delegate->VerifyAndEncryptCredentials(
-      params->network_guid, AsCastCredentials(params->properties),
-      base::Bind(&NetworkingPrivateVerifyAndEncryptCredentialsFunction::Success,
-                 this),
-      base::Bind(&NetworkingPrivateVerifyAndEncryptCredentialsFunction::Failure,
-                 this));
-  // Success() or Failure() might have been called synchronously at this point.
-  // In that case this function has already called Respond(). Return
-  // AlreadyResponded() in that case.
-  return did_respond() ? AlreadyResponded() : RespondLater();
-}
-
-void NetworkingPrivateVerifyAndEncryptCredentialsFunction::Success(
-    const std::string& result) {
-  Respond(ArgumentList(
-      private_api::VerifyAndEncryptCredentials::Results::Create(result)));
-}
-
-void NetworkingPrivateVerifyAndEncryptCredentialsFunction::Failure(
-    const std::string& error) {
-  Respond(Error(error));
-}
-
-////////////////////////////////////////////////////////////////////////////////
 // NetworkingPrivateVerifyAndEncryptDataFunction
 
 NetworkingPrivateVerifyAndEncryptDataFunction::

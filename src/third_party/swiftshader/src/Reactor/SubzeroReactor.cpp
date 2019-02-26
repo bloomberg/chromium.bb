@@ -15,8 +15,7 @@
 #include "Reactor.hpp"
 
 #include "Optimizer.hpp"
-
-#include "Common/Memory.hpp"
+#include "ExecutableMemory.hpp"
 
 #include "src/IceTypes.h"
 #include "src/IceCfg.h"
@@ -49,7 +48,7 @@
 #endif
 #endif
 
-//#include <mutex>
+#include <mutex>
 #include <limits>
 #include <iostream>
 #include <cassert>
@@ -60,7 +59,7 @@ namespace
 	Ice::Cfg *function = nullptr;
 	Ice::CfgNode *basicBlock = nullptr;
 	Ice::CfgLocalAllocatorScope *allocator = nullptr;
-	sw::Routine *routine = nullptr;
+	rr::Routine *routine = nullptr;
 
 	std::mutex codegenMutex;
 
@@ -107,6 +106,8 @@ namespace
 				return true;
 			#elif defined(__i386__) || defined(__x86_64__)
 				return false;
+			#elif defined(__mips__)
+				return false;
 			#else
 				#error "Unknown architecture"
 			#endif
@@ -130,7 +131,7 @@ namespace
 	const bool emulateMismatchedBitCast = CPUID::ARM;
 }
 
-namespace sw
+namespace rr
 {
 	enum EmulatedType
 	{
@@ -216,8 +217,6 @@ namespace sw
 	{
 		const SectionHeader *target = elfSection(elfHeader, relocationTable.sh_info);
 
-		intptr_t address = (intptr_t)elfHeader + target->sh_offset;
-		int32_t *patchSite = (int*)(address + relocation.r_offset);
 		uint32_t index = relocation.getSymbol();
 		int table = relocationTable.sh_link;
 		void *symbolValue = nullptr;
@@ -248,6 +247,9 @@ namespace sw
 				return nullptr;
 			}
 		}
+
+		intptr_t address = (intptr_t)elfHeader + target->sh_offset;
+		unaligned_ptr<int32_t> patchSite = (int32_t*)(address + relocation.r_offset);
 
 		if(CPUID::ARM)
 		{
@@ -300,8 +302,6 @@ namespace sw
 	{
 		const SectionHeader *target = elfSection(elfHeader, relocationTable.sh_info);
 
-		intptr_t address = (intptr_t)elfHeader + target->sh_offset;
-		int32_t *patchSite = (int*)(address + relocation.r_offset);
 		uint32_t index = relocation.getSymbol();
 		int table = relocationTable.sh_link;
 		void *symbolValue = nullptr;
@@ -333,19 +333,23 @@ namespace sw
 			}
 		}
 
+		intptr_t address = (intptr_t)elfHeader + target->sh_offset;
+		unaligned_ptr<int32_t> patchSite32 = (int32_t*)(address + relocation.r_offset);
+		unaligned_ptr<int64_t> patchSite64 = (int64_t*)(address + relocation.r_offset);
+
 		switch(relocation.getType())
 		{
 		case R_X86_64_NONE:
 			// No relocation
 			break;
 		case R_X86_64_64:
-			*(int64_t*)patchSite = (int64_t)((intptr_t)symbolValue + *(int64_t*)patchSite) + relocation.r_addend;
+			*patchSite64 = (int64_t)((intptr_t)symbolValue + *patchSite64 + relocation.r_addend);
 			break;
 		case R_X86_64_PC32:
-			*patchSite = (int32_t)((intptr_t)symbolValue + *patchSite - (intptr_t)patchSite) + relocation.r_addend;
+			*patchSite32 = (int32_t)((intptr_t)symbolValue + *patchSite32 - (intptr_t)patchSite32 + relocation.r_addend);
 			break;
 		case R_X86_64_32S:
-			*patchSite = (int32_t)((intptr_t)symbolValue + *patchSite) + relocation.r_addend;
+			*patchSite32 = (int32_t)((intptr_t)symbolValue + *patchSite32 + relocation.r_addend);
 			break;
 		default:
 			assert(false && "Unsupported relocation type");
@@ -374,6 +378,8 @@ namespace sw
 			assert(sizeof(void*) == 4 && elfHeader->e_machine == EM_ARM);
 		#elif defined(__aarch64__)
 			assert(sizeof(void*) == 8 && elfHeader->e_machine == EM_AARCH64);
+		#elif defined(__mips__)
+			assert(sizeof(void*) == 4 && elfHeader->e_machine == EM_MIPS);
 		#else
 			#error "Unsupported platform"
 		#endif
@@ -527,6 +533,9 @@ namespace sw
 		#if defined(__arm__)
 			Flags.setTargetArch(Ice::Target_ARM32);
 			Flags.setTargetInstructionSet(Ice::ARM32InstructionSet_HWDivArm);
+		#elif defined(__mips__)
+			Flags.setTargetArch(Ice::Target_MIPS32);
+			Flags.setTargetInstructionSet(Ice::BaseInstructionSet);
 		#else   // x86
 			Flags.setTargetArch(sizeof(void*) == 8 ? Ice::Target_X8664 : Ice::Target_X8632);
 			Flags.setTargetInstructionSet(CPUID::SSE4_1 ? Ice::X86InstructionSet_SSE4_1 : Ice::X86InstructionSet_SSE2);
@@ -612,7 +621,7 @@ namespace sw
 
 	void Nucleus::optimize()
 	{
-		sw::optimize(::function);
+		rr::optimize(::function);
 	}
 
 	Value *Nucleus::allocateStackVariable(Type *t, int arraySize)

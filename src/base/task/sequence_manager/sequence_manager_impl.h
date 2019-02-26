@@ -28,13 +28,14 @@
 #include "base/synchronization/lock.h"
 #include "base/task/sequence_manager/associated_thread_id.h"
 #include "base/task/sequence_manager/enqueue_order.h"
-#include "base/task/sequence_manager/graceful_queue_shutdown_helper.h"
 #include "base/task/sequence_manager/moveable_auto_lock.h"
 #include "base/task/sequence_manager/sequence_manager.h"
 #include "base/task/sequence_manager/task_queue_impl.h"
 #include "base/task/sequence_manager/task_queue_selector.h"
 #include "base/task/sequence_manager/thread_controller.h"
 #include "base/threading/thread_checker.h"
+#include "base/time/default_tick_clock.h"
+#include "build/build_config.h"
 
 namespace base {
 
@@ -74,7 +75,8 @@ class BASE_EXPORT SequenceManagerImpl
     : public SequenceManager,
       public internal::SequencedTaskSource,
       public internal::TaskQueueSelector::Observer,
-      public RunLoop::NestingObserver {
+      public RunLoop::NestingObserver,
+      public MessageLoopBase {
  public:
   using Observer = SequenceManager::Observer;
 
@@ -95,15 +97,19 @@ class BASE_EXPORT SequenceManagerImpl
   //
   // This function should be called only once per MessageLoop.
   static std::unique_ptr<SequenceManagerImpl> CreateUnbound(
-      MessageLoop* message_loop);
+      MessageLoopBase* message_loop_base,
+      const TickClock* clock = DefaultTickClock::GetInstance());
+
+  static std::unique_ptr<SequenceManagerImpl> CreateUnboundWithPump(
+      MessageLoop::Type type,
+      const TickClock* clock = DefaultTickClock::GetInstance());
 
   // SequenceManager implementation:
   void BindToCurrentThread() override;
-  void BindToMessageLoop(MessageLoop* message_loop) override;
+  void BindToMessageLoop(MessageLoopBase* message_loop_base) override;
+  void BindToMessagePump(std::unique_ptr<MessagePump> message_pump) override;
   void CompleteInitializationOnBoundThread() override;
   void SetObserver(Observer* observer) override;
-  void AddTaskObserver(MessageLoop::TaskObserver* task_observer) override;
-  void RemoveTaskObserver(MessageLoop::TaskObserver* task_observer) override;
   void AddTaskTimeObserver(TaskTimeObserver* task_time_observer) override;
   void RemoveTaskTimeObserver(TaskTimeObserver* task_time_observer) override;
   void RegisterTimeDomain(TimeDomain* time_domain) override;
@@ -120,11 +126,43 @@ class BASE_EXPORT SequenceManagerImpl
   void EnableCrashKeys(const char* file_name_crash_key,
                        const char* function_name_crash_key) override;
   const MetricRecordingSettings& GetMetricRecordingSettings() const override;
+  size_t GetPendingTaskCountForTesting() const override;
+  scoped_refptr<TaskQueue> CreateTaskQueue(
+      const TaskQueue::Spec& spec) override;
 
-  // Implementation of SequencedTaskSource:
+  // SequencedTaskSource implementation:
   Optional<PendingTask> TakeTask() override;
   void DidRunTask() override;
-  TimeDelta DelayTillNextTask(LazyNow* lazy_now) override;
+  TimeDelta DelayTillNextTask(LazyNow* lazy_now) const override;
+  bool HasPendingHighResolutionTasks() override;
+  bool OnSystemIdle() override;
+
+  // MessageLoopBase implementation:
+  void AddTaskObserver(MessageLoop::TaskObserver* task_observer) override;
+  void RemoveTaskObserver(MessageLoop::TaskObserver* task_observer) override;
+  void AddDestructionObserver(
+      MessageLoopCurrent::DestructionObserver* destruction_observer) override;
+  void RemoveDestructionObserver(
+      MessageLoopCurrent::DestructionObserver* destruction_observer) override;
+  // TODO(alexclarke): Remove this as part of https://crbug.com/825327.
+  void SetTaskRunner(
+      scoped_refptr<SingleThreadTaskRunner> task_runner) override;
+  // TODO(alexclarke): Remove this as part of https://crbug.com/825327.
+  scoped_refptr<SingleThreadTaskRunner> GetTaskRunner() override;
+  std::string GetThreadName() const override;
+  bool IsBoundToCurrentThread() const override;
+  MessagePump* GetMessagePump() const override;
+  bool IsType(MessageLoop::Type type) const override;
+  void SetAddQueueTimeToTasks(bool enable) override;
+  void SetTaskExecutionAllowed(bool allowed) override;
+  bool IsTaskExecutionAllowed() const override;
+#if defined(OS_IOS) || defined(OS_ANDROID)
+  void AttachToMessagePump() override;
+#endif
+  bool IsIdleForTesting() override;
+  void BindToCurrentThread(std::unique_ptr<MessagePump> pump) override;
+  void DeletePendingTasks() override;
+  bool HasTasks() override;
 
   // Requests that a task to process work is posted on the main task runner.
   // These tasks are de-duplicated in two buckets: main-thread and all other
@@ -150,8 +188,9 @@ class BASE_EXPORT SequenceManagerImpl
   void UnregisterTaskQueueImpl(
       std::unique_ptr<internal::TaskQueueImpl> task_queue);
 
-  scoped_refptr<internal::GracefulQueueShutdownHelper>
-  GetGracefulQueueShutdownHelper() const;
+  // Schedule a call to UnregisterTaskQueueImpl as soon as it's safe to do so.
+  void ShutdownTaskQueueGracefully(
+      std::unique_ptr<internal::TaskQueueImpl> task_queue);
 
   const scoped_refptr<AssociatedThreadId>& associated_thread() const {
     return associated_thread_;
@@ -159,14 +198,11 @@ class BASE_EXPORT SequenceManagerImpl
 
   WeakPtr<SequenceManagerImpl> GetWeakPtr();
 
-  // TODO(alexclarke): Remove when possible.
-  bool SetCrashKeysAndCheckIsTaskCancelled(const PendingTask& task) const;
-
  protected:
   // Create a task queue manager where |controller| controls the thread
   // on which the tasks are eventually run.
-  explicit SequenceManagerImpl(
-      std::unique_ptr<internal::ThreadController> controller);
+  SequenceManagerImpl(std::unique_ptr<internal::ThreadController> controller,
+                      MessageLoop::Type type);
 
   friend class internal::TaskQueueImpl;
   friend class ::base::sequence_manager::SequenceManagerForTest;
@@ -242,25 +278,29 @@ class BASE_EXPORT SequenceManagerImpl
     //   internal scheduling code does not expect queues to be pulled
     //   from underneath.
 
+    // Scratch space used to store the contents of
+    // any_thread().incoming_immediate_work_list for use by
+    // ReloadEmptyWorkQueues.  We keep hold of this vector to avoid unnecessary
+    // memory allocations. This should have the same size as |active_queues|.
+    // DO NOT RELY ON THE VALIDITY OF THE POINTERS WITHIN!
+    std::vector<internal::TaskQueueImpl*> queues_to_reload;
     std::set<internal::TaskQueueImpl*> active_queues;
+
     std::map<internal::TaskQueueImpl*, std::unique_ptr<internal::TaskQueueImpl>>
         queues_to_gracefully_shutdown;
     std::map<internal::TaskQueueImpl*, std::unique_ptr<internal::TaskQueueImpl>>
         queues_to_delete;
 
-    // Scratch space used to store the contents of
-    // any_thread().incoming_immediate_work_list for use by
-    // ReloadEmptyWorkQueues.  We keep hold of this vector to avoid unnecessary
-    // memory allocations.
-    std::vector<internal::TaskQueueImpl*> queues_to_reload;
-
     bool task_was_run_on_quiescence_monitored_queue = false;
     bool nesting_observer_registered_ = false;
 
     // Due to nested runloops more than one task can be executing concurrently.
-    std::list<ExecutingTask> task_execution_stack;
+    std::vector<ExecutingTask> task_execution_stack;
 
     Observer* observer = nullptr;  // NOT OWNED
+
+    ObserverList<MessageLoopCurrent::DestructionObserver>::Unchecked
+        destruction_observers;
   };
 
   // TaskQueueSelector::Observer:
@@ -284,16 +324,18 @@ class BASE_EXPORT SequenceManagerImpl
 
   internal::EnqueueOrder GetNextSequenceNumber();
 
+  bool GetAddQueueTimeToTasks();
+
   std::unique_ptr<trace_event::ConvertableToTraceFormat>
   AsValueWithSelectorResult(bool should_run,
                             internal::WorkQueue* selected_work_queue) const;
 
   // Adds |queue| to |any_thread().has_incoming_immediate_work_| and if
-  // |queue_is_blocked| is false it makes sure a DoWork is posted.
+  // |schedule_work| is true it makes sure a DoWork is posted.
   // Can be called from any thread.
   void OnQueueHasIncomingImmediateWork(internal::TaskQueueImpl* queue,
                                        internal::EnqueueOrder enqueue_order,
-                                       bool queue_is_blocked);
+                                       bool schedule_work);
 
   // Returns true if |task_queue| was added to the list, or false if it was
   // already in the list.  If |task_queue| was inserted, the |order| is set
@@ -309,11 +351,10 @@ class BASE_EXPORT SequenceManagerImpl
   std::unique_ptr<internal::TaskQueueImpl> CreateTaskQueueImpl(
       const TaskQueue::Spec& spec) override;
 
-  void TakeQueuesToGracefullyShutdownFromHelper();
-
   // Deletes queues marked for deletion and empty queues marked for shutdown.
   void CleanUpQueues();
 
+  bool ShouldRecordTaskTiming(const internal::TaskQueueImpl* task_queue);
   bool ShouldRecordCPUTimeForTask();
 
   // Helper to terminate all scoped trace events to allow starting new ones
@@ -327,12 +368,10 @@ class BASE_EXPORT SequenceManagerImpl
 
   scoped_refptr<AssociatedThreadId> associated_thread_;
 
-  const scoped_refptr<internal::GracefulQueueShutdownHelper>
-      graceful_shutdown_helper_;
-
   internal::EnqueueOrder::Generator enqueue_order_generator_;
 
-  std::unique_ptr<internal::ThreadController> controller_;
+  const std::unique_ptr<internal::ThreadController> controller_;
+  const MessageLoop::Type type_;
 
   mutable Lock any_thread_lock_;
   AnyThread any_thread_;
@@ -347,6 +386,9 @@ class BASE_EXPORT SequenceManagerImpl
   }
 
   const MetricRecordingSettings metric_recording_settings_;
+
+  // Whether to add the queue time to tasks.
+  base::subtle::Atomic32 add_queue_time_to_tasks_ = 0;
 
   // A check to bail out early during memory corruption.
   // https://crbug.com/757940

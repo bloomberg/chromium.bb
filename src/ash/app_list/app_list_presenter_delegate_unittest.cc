@@ -6,11 +6,18 @@
 #include <memory>
 
 #include "ash/app_list/model/app_list_view_state.h"
+#include "ash/app_list/pagination_model.h"
 #include "ash/app_list/presenter/app_list_presenter_impl.h"
 #include "ash/app_list/test/app_list_test_helper.h"
+#include "ash/app_list/test/app_list_test_model.h"
+#include "ash/app_list/test/app_list_test_view_delegate.h"
 #include "ash/app_list/views/app_list_main_view.h"
 #include "ash/app_list/views/app_list_view.h"
+#include "ash/app_list/views/apps_container_view.h"
+#include "ash/app_list/views/apps_grid_view.h"
+#include "ash/app_list/views/contents_view.h"
 #include "ash/app_list/views/search_box_view.h"
+#include "ash/app_list/views/test/apps_grid_view_test_api.h"
 #include "ash/public/cpp/app_list/app_list_config.h"
 #include "ash/public/cpp/app_list/app_list_features.h"
 #include "ash/public/cpp/app_list/app_list_switches.h"
@@ -48,7 +55,7 @@
 #include "ui/display/test/display_manager_test_api.h"
 #include "ui/events/test/event_generator.h"
 #include "ui/keyboard/keyboard_controller.h"
-#include "ui/keyboard/keyboard_switches.h"
+#include "ui/keyboard/public/keyboard_switches.h"
 #include "ui/keyboard/test/keyboard_test_util.h"
 #include "ui/views/controls/textfield/textfield.h"
 
@@ -101,8 +108,6 @@ class AppListPresenterDelegateTest : public AshTestBase,
   // testing::Test:
   void SetUp() override {
     app_list::AppListView::SetShortAnimationForTesting(true);
-    base::CommandLine::ForCurrentProcess()->AppendSwitch(
-        keyboard::switches::kEnableVirtualKeyboard);
     AshTestBase::SetUp();
 
     // Make the display big enough to hold the app list.
@@ -136,29 +141,107 @@ class AppListPresenterDelegateTest : public AshTestBase,
   DISALLOW_COPY_AND_ASSIGN(AppListPresenterDelegateTest);
 };
 
+// Used to test app_list behavior with a populated apps_grid
+class PopulatedAppListTest : public AshTestBase,
+                             public testing::WithParamInterface<bool> {
+ public:
+  PopulatedAppListTest() = default;
+  ~PopulatedAppListTest() override = default;
+
+  void SetUp() override {
+    app_list::AppListView::SetShortAnimationForTesting(true);
+    base::CommandLine::ForCurrentProcess()->AppendSwitch(
+        keyboard::switches::kEnableVirtualKeyboard);
+    AshTestBase::SetUp();
+
+    // Make the display big enough to hold the app list.
+    UpdateDisplay("1024x768");
+
+    app_list_test_delegate_ =
+        std::make_unique<app_list::test::AppListTestViewDelegate>();
+
+    app_list_test_model_ = app_list_test_delegate_->GetTestModel();
+  }
+
+  void TearDown() override {
+    AshTestBase::TearDown();
+    app_list::AppListView::SetShortAnimationForTesting(false);
+  }
+
+ protected:
+  void CreateAndOpenAppList() {
+    app_list_view_ = new app_list::AppListView(app_list_test_delegate_.get());
+    app_list::AppListView::InitParams params;
+    params.parent = CurrentContext();
+    app_list_view_->Initialize(params);
+  }
+
+  void InitializeAppsGrid() {
+    if (!app_list_view_)
+      CreateAndOpenAppList();
+    apps_grid_view_ = app_list_view_->app_list_main_view()
+                          ->contents_view()
+                          ->GetAppsContainerView()
+                          ->apps_grid_view();
+    apps_grid_test_api_ =
+        std::make_unique<app_list::test::AppsGridViewTestApi>(apps_grid_view_);
+  }
+  gfx::Rect GetItemRectOnCurrentPageAt(int row, int col) const {
+    DCHECK_GT(app_list_test_model_->top_level_item_list()->item_count(), 0u);
+    return apps_grid_test_api_->GetItemTileRectOnCurrentPageAt(row, col);
+  }
+
+  app_list::test::AppListTestModel* app_list_test_model_ = nullptr;
+  std::unique_ptr<app_list::test::AppsGridViewTestApi> apps_grid_test_api_;
+  std::unique_ptr<app_list::test::AppListTestViewDelegate>
+      app_list_test_delegate_;
+  app_list::AppListView* app_list_view_ = nullptr;  // Owned by native widget.
+  app_list::AppsGridView* apps_grid_view_ =
+      nullptr;  // Owned by |app_list_view_|.
+};
+
 // Instantiate the Boolean which is used to toggle mouse and touch events in
 // the parameterized tests.
 INSTANTIATE_TEST_CASE_P(, AppListPresenterDelegateTest, testing::Bool());
 
-// Test a variety of behaviors in tablet mode when home launcher is not enabled.
-class AppListPresenterDelegateNonHomeLauncherTest
-    : public AppListPresenterDelegateTest {
- public:
-  AppListPresenterDelegateNonHomeLauncherTest() = default;
-  ~AppListPresenterDelegateNonHomeLauncherTest() override = default;
+TEST_F(PopulatedAppListTest, TappingAppsGridClosesVirtualKeyboard) {
+  InitializeAppsGrid();
+  app_list_test_model_->PopulateApps(2);
+  gfx::Point between_apps = GetItemRectOnCurrentPageAt(0, 0).right_center();
+  gfx::Point empty_space = GetItemRectOnCurrentPageAt(0, 2).CenterPoint();
 
-  // testing::Test:
-  void SetUp() override {
-    scoped_feature_list_.InitWithFeatures(
-        {}, {app_list_features::kEnableHomeLauncher});
-    AppListPresenterDelegateTest::SetUp();
-  }
+  ui::GestureEvent tap_between(between_apps.x(), between_apps.y(), 0,
+                               base::TimeTicks(),
+                               ui::GestureEventDetails(ui::ET_GESTURE_TAP));
+  ui::GestureEvent tap_outside(empty_space.x(), empty_space.y(), 0,
+                               base::TimeTicks(),
+                               ui::GestureEventDetails(ui::ET_GESTURE_TAP));
 
- private:
-  base::test::ScopedFeatureList scoped_feature_list_;
+  // Manually show the virtual keyboard.
+  auto* const keyboard_controller = keyboard::KeyboardController::Get();
+  keyboard_controller->ShowKeyboard(true /* locked */);
+  ASSERT_TRUE(keyboard::WaitUntilShown());
 
-  DISALLOW_COPY_AND_ASSIGN(AppListPresenterDelegateNonHomeLauncherTest);
-};
+  // Touch the apps_grid outside of any apps
+  apps_grid_view_->OnGestureEvent(&tap_outside);
+  // Expect that the event is ignored here and allowed to propogate to app_list
+  EXPECT_FALSE(tap_outside.handled());
+  // Hit the app_list with the same event
+  app_list_view_->OnGestureEvent(&tap_outside);
+  // Expect that the event is handled and the keyboard is closed.
+  EXPECT_TRUE(tap_outside.handled());
+  EXPECT_FALSE(keyboard_controller->IsKeyboardVisible());
+
+  // Reshow the VKeyboard
+  keyboard_controller->ShowKeyboard(true);
+  ASSERT_TRUE(keyboard::WaitUntilShown());
+
+  // Touch the apps_grid between two apps
+  apps_grid_view_->OnGestureEvent(&tap_between);
+  // Expect the event to be handled in the grid, and the keyboard to be closed.
+  EXPECT_TRUE(tap_between.handled());
+  EXPECT_FALSE(keyboard_controller->IsKeyboardVisible());
+}
 
 // Tests that app list hides when focus moves to a normal window.
 TEST_F(AppListPresenterDelegateTest, HideOnFocusOut) {
@@ -351,36 +434,6 @@ TEST_F(AppListPresenterDelegateTest, TabletModeTextStateTransitions) {
 }
 
 // Tests that the app list state responds correctly to tablet mode being
-// enabled while the app list is being shown.
-TEST_F(AppListPresenterDelegateNonHomeLauncherTest,
-       PeekingToFullscreenWhenTabletModeIsActive) {
-  // TODO(newcomer): Investigate mash failures crbug.com/726838
-  GetAppListTestHelper()->ShowAndRunLoop(GetPrimaryDisplayId());
-  GetAppListTestHelper()->CheckState(app_list::AppListViewState::PEEKING);
-  // Enable tablet mode, this should force the app list to switch to the
-  // fullscreen equivalent of the current state.
-  EnableTabletMode(true);
-  GetAppListTestHelper()->CheckState(
-      app_list::AppListViewState::FULLSCREEN_ALL_APPS);
-  // Disable tablet mode, the state of the app list should not change.
-  EnableTabletMode(false);
-  GetAppListTestHelper()->CheckState(
-      app_list::AppListViewState::FULLSCREEN_ALL_APPS);
-  // Enter text in the searchbox, the app list should transition to fullscreen
-  // search.
-  ui::test::EventGenerator* generator = GetEventGenerator();
-  generator->PressKey(ui::KeyboardCode::VKEY_0, 0);
-  GetAppListTestHelper()->CheckState(
-      app_list::AppListViewState::FULLSCREEN_SEARCH);
-
-  // Delete the text in the searchbox, the app list should transition to
-  // fullscreen all apps. generator->PressKey(ui::KeyboardCode::VKEY_BACK, 0);
-  generator->PressKey(ui::KeyboardCode::VKEY_BACK, 0);
-  GetAppListTestHelper()->CheckState(
-      app_list::AppListViewState::FULLSCREEN_ALL_APPS);
-}
-
-// Tests that the app list state responds correctly to tablet mode being
 // enabled while the app list is being shown with half launcher.
 TEST_F(AppListPresenterDelegateTest, HalfToFullscreenWhenTabletModeIsActive) {
   // TODO(newcomer): Investigate mash failures crbug.com/726838
@@ -468,49 +521,6 @@ TEST_F(AppListPresenterDelegateTest, AppListViewDragHandler) {
 
   // Execute a long downward drag, this should close the app list.
   generator->GestureScrollSequence(gfx::Point(10, 10), gfx::Point(10, 900),
-                                   base::TimeDelta::FromMilliseconds(100), 10);
-  GetAppListTestHelper()->WaitUntilIdle();
-  GetAppListTestHelper()->CheckState(app_list::AppListViewState::CLOSED);
-  GetAppListTestHelper()->CheckVisibility(false);
-}
-
-// Tests that the app list view handles drag properly in tablet mode.
-TEST_F(AppListPresenterDelegateNonHomeLauncherTest,
-       AppListViewDragHandlerTabletModeFromAllApps) {
-  // TODO(newcomer): Investigate mash failures crbug.com/726838
-  EnableTabletMode(true);
-  GetAppListTestHelper()->ShowAndRunLoop(GetPrimaryDisplayId());
-  GetAppListTestHelper()->CheckState(
-      app_list::AppListViewState::FULLSCREEN_ALL_APPS);
-
-  ui::test::EventGenerator* generator = GetEventGenerator();
-  // Drag down.
-  generator->GestureScrollSequence(gfx::Point(0, 0), gfx::Point(0, 720),
-                                   base::TimeDelta::FromMilliseconds(100), 10);
-  GetAppListTestHelper()->WaitUntilIdle();
-  GetAppListTestHelper()->CheckState(app_list::AppListViewState::CLOSED);
-  GetAppListTestHelper()->CheckVisibility(false);
-}
-
-// Tests that the state of the app list changes properly with drag input from
-// fullscreen search.
-TEST_F(AppListPresenterDelegateNonHomeLauncherTest,
-       AppListViewDragHandlerTabletModeFromSearch) {
-  // TODO(newcomer): Investigate mash failures crbug.com/726838
-  EnableTabletMode(true);
-  GetAppListTestHelper()->ShowAndRunLoop(GetPrimaryDisplayId());
-  GetAppListTestHelper()->CheckState(
-      app_list::AppListViewState::FULLSCREEN_ALL_APPS);
-
-  // Type in the search box to transition to |FULLSCREEN_SEARCH|.
-  ui::test::EventGenerator* generator = GetEventGenerator();
-  generator->PressKey(ui::KeyboardCode::VKEY_0, 0);
-  GetAppListTestHelper()->WaitUntilIdle();
-  GetAppListTestHelper()->CheckState(
-      app_list::AppListViewState::FULLSCREEN_SEARCH);
-
-  // Drag down, this should close the app list.
-  generator->GestureScrollSequence(gfx::Point(0, 0), gfx::Point(0, 720),
                                    base::TimeDelta::FromMilliseconds(100), 10);
   GetAppListTestHelper()->WaitUntilIdle();
   GetAppListTestHelper()->CheckState(app_list::AppListViewState::CLOSED);
@@ -784,65 +794,6 @@ TEST_P(AppListPresenterDelegateTest, TapAndClickEnablesSearchBox) {
   GetAppListTestHelper()->CheckVisibility(false);
 }
 
-// Tests that tapping or clicking the body of the applist with an active virtual
-// keyboard results in the virtual keyboard closing with no side effects.
-TEST_P(AppListPresenterDelegateTest,
-       TapAppListWithVirtualKeyboardDismissesVirtualKeyboard) {
-  const bool test_click = GetParam();
-  GetAppListTestHelper()->ShowAndRunLoop(GetPrimaryDisplayId());
-  EnableTabletMode(true);
-
-  // Tap to activate the searchbox.
-  ui::test::EventGenerator* generator = GetEventGenerator();
-  generator->GestureTapAt(GetPointInsideSearchbox());
-
-  // Enter some text in the searchbox, the applist should transition to
-  // fullscreen search.
-  generator->PressKey(ui::KeyboardCode::VKEY_0, 0);
-  GetAppListTestHelper()->WaitUntilIdle();
-  GetAppListTestHelper()->CheckState(
-      app_list::AppListViewState::FULLSCREEN_SEARCH);
-
-  // Manually show the virtual keyboard.
-  auto* const keyboard_controller = keyboard::KeyboardController::Get();
-  keyboard_controller->ShowKeyboard(true);
-  keyboard_controller->GetKeyboardWindow()->SetBounds(
-      keyboard::KeyboardBoundsFromRootBounds(
-          Shell::GetPrimaryRootWindow()->bounds(), 100));
-  keyboard_controller->NotifyKeyboardWindowLoaded();
-  EXPECT_TRUE(keyboard_controller->IsKeyboardVisible());
-
-  // Tap or click outside the searchbox, the virtual keyboard should hide.
-  if (test_click) {
-    generator->MoveMouseTo(GetPointOutsideSearchbox());
-    generator->ClickLeftButton();
-    generator->ReleaseLeftButton();
-  } else {
-    generator->GestureTapAt(GetPointOutsideSearchbox());
-  }
-  EXPECT_FALSE(keyboard_controller->IsKeyboardVisible());
-
-  // The searchbox should still be active and the AppListView should still be in
-  // FULLSCREEN_SEARCH.
-  GetAppListTestHelper()->WaitUntilIdle();
-  GetAppListTestHelper()->CheckState(
-      app_list::AppListViewState::FULLSCREEN_SEARCH);
-  EXPECT_TRUE(GetAppListView()->search_box_view()->is_search_box_active());
-
-  // Tap or click the body of the AppList again, the searchbox should deactivate
-  // and the applist should be in FULLSCREEN_ALL_APPS.
-  if (test_click) {
-    generator->MoveMouseTo(GetPointOutsideSearchbox());
-    generator->ClickLeftButton();
-    generator->ReleaseLeftButton();
-  } else {
-    generator->GestureTapAt(GetPointOutsideSearchbox());
-  }
-  GetAppListTestHelper()->CheckState(
-      app_list::AppListViewState::FULLSCREEN_ALL_APPS);
-  EXPECT_FALSE(GetAppListView()->search_box_view()->is_search_box_active());
-}
-
 // Tests that the shelf background displays/hides with bottom shelf
 // alignment.
 TEST_F(AppListPresenterDelegateTest,
@@ -1066,7 +1017,7 @@ TEST_F(AppListPresenterDelegateTest,
   GetAppListTestHelper()->ShowAndRunLoop(GetPrimaryDisplayId());
   GetAppListTestHelper()->CheckState(app_list::AppListViewState::PEEKING);
 
-  GetAppListView()->HandleScroll(-30, ui::ET_MOUSEWHEEL);
+  GetAppListView()->HandleScroll(gfx::Vector2d(0, -30), ui::ET_MOUSEWHEEL);
 
   GetAppListTestHelper()->CheckState(
       app_list::AppListViewState::FULLSCREEN_ALL_APPS);
@@ -1149,6 +1100,13 @@ TEST_F(AppListPresenterDelegateTest, SearchBoxShownOnSmallDisplay) {
   EXPECT_LE(0, view->GetWidget()->GetNativeView()->bounds().y());
 }
 
+// Tests that no crash occurs after an attempt to show app list in an invalid
+// display.
+TEST_F(AppListPresenterDelegateTest, ShowInInvalidDisplay) {
+  GetAppListTestHelper()->ShowAndRunLoop(display::kInvalidDisplayId);
+  GetAppListTestHelper()->CheckState(app_list::AppListViewState::CLOSED);
+}
+
 // Test a variety of behaviors for home launcher (app list in tablet mode).
 class AppListPresenterDelegateHomeLauncherTest
     : public AppListPresenterDelegateTest {
@@ -1159,9 +1117,7 @@ class AppListPresenterDelegateHomeLauncherTest
   // testing::Test:
   void SetUp() override {
     scoped_feature_list_.InitWithFeatures(
-        {app_list_features::kEnableHomeLauncher,
-         app_list_features::kEnableBackgroundBlur},
-        {});
+        {app_list_features::kEnableBackgroundBlur}, {});
     AppListPresenterDelegateTest::SetUp();
     GetAppListTestHelper()->WaitUntilIdle();
   }
@@ -1227,9 +1183,9 @@ TEST_F(AppListPresenterDelegateHomeLauncherTest, BackgroundOpacity) {
       GetAppListView()->GetAppListBackgroundShieldForTest()->layer();
   EXPECT_EQ(0.7f, background_layer->opacity());
 
-  // Turn on tablet mode. The background sheild opacity should be 10%.
+  // Turn on tablet mode. The background shield should be transparent.
   EnableTabletMode(true);
-  EXPECT_EQ(0.4f, background_layer->opacity());
+  EXPECT_EQ(0.f, background_layer->opacity());
 }
 
 // Tests that the background blur is disabled for the app list.
@@ -1680,6 +1636,82 @@ TEST_F(AppListPresenterDelegateHomeLauncherTest,
   EnableTabletMode(true);
   GetAppListTestHelper()->CheckVisibility(true);
   EXPECT_EQ(window.get(), wm::GetActiveWindow());
+}
+
+// Tests that involve the virtual keyboard.
+class AppListPresenterDelegateVirtualKeyboardTest
+    : public AppListPresenterDelegateTest {
+ public:
+  AppListPresenterDelegateVirtualKeyboardTest() = default;
+  ~AppListPresenterDelegateVirtualKeyboardTest() override = default;
+
+  // AppListPresenterDelegateTest:
+  void SetUp() override {
+    base::CommandLine::ForCurrentProcess()->AppendSwitch(
+        keyboard::switches::kEnableVirtualKeyboard);
+    AppListPresenterDelegateTest::SetUp();
+  }
+};
+
+// Instantiate the Boolean which is used to toggle mouse and touch events in
+// the parameterized tests.
+INSTANTIATE_TEST_CASE_P(,
+                        AppListPresenterDelegateVirtualKeyboardTest,
+                        testing::Bool());
+
+// Tests that tapping or clicking the body of the applist with an active virtual
+// keyboard results in the virtual keyboard closing with no side effects.
+TEST_P(AppListPresenterDelegateVirtualKeyboardTest,
+       TapAppListWithVirtualKeyboardDismissesVirtualKeyboard) {
+  const bool test_click = GetParam();
+  GetAppListTestHelper()->ShowAndRunLoop(GetPrimaryDisplayId());
+  EnableTabletMode(true);
+
+  // Tap to activate the searchbox.
+  ui::test::EventGenerator* generator = GetEventGenerator();
+  generator->GestureTapAt(GetPointInsideSearchbox());
+
+  // Enter some text in the searchbox, the applist should transition to
+  // fullscreen search.
+  generator->PressKey(ui::KeyboardCode::VKEY_0, 0);
+  GetAppListTestHelper()->WaitUntilIdle();
+  GetAppListTestHelper()->CheckState(
+      app_list::AppListViewState::FULLSCREEN_SEARCH);
+
+  // Manually show the virtual keyboard.
+  auto* const keyboard_controller = keyboard::KeyboardController::Get();
+  keyboard_controller->ShowKeyboard(true);
+  ASSERT_TRUE(keyboard::WaitUntilShown());
+
+  // Tap or click outside the searchbox, the virtual keyboard should hide.
+  if (test_click) {
+    generator->MoveMouseTo(GetPointOutsideSearchbox());
+    generator->ClickLeftButton();
+    generator->ReleaseLeftButton();
+  } else {
+    generator->GestureTapAt(GetPointOutsideSearchbox());
+  }
+  EXPECT_FALSE(keyboard_controller->IsKeyboardVisible());
+
+  // The searchbox should still be active and the AppListView should still be in
+  // FULLSCREEN_SEARCH.
+  GetAppListTestHelper()->WaitUntilIdle();
+  GetAppListTestHelper()->CheckState(
+      app_list::AppListViewState::FULLSCREEN_SEARCH);
+  EXPECT_TRUE(GetAppListView()->search_box_view()->is_search_box_active());
+
+  // Tap or click the body of the AppList again, the searchbox should deactivate
+  // and the applist should be in FULLSCREEN_ALL_APPS.
+  if (test_click) {
+    generator->MoveMouseTo(GetPointOutsideSearchbox());
+    generator->ClickLeftButton();
+    generator->ReleaseLeftButton();
+  } else {
+    generator->GestureTapAt(GetPointOutsideSearchbox());
+  }
+  GetAppListTestHelper()->CheckState(
+      app_list::AppListViewState::FULLSCREEN_ALL_APPS);
+  EXPECT_FALSE(GetAppListView()->search_box_view()->is_search_box_active());
 }
 
 }  // namespace ash

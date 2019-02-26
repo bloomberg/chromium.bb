@@ -545,24 +545,6 @@ util.AppCache.cleanup_ = function(map) {
 };
 
 /**
- * Returns true if the board of the device matches the given prefix. Caution:
- * There are cases in which the name of one board is a prefix for a different
- * (only slightly related) board: E.g. daisy and daisy-spring, peach-pi and
- * peach-pit, and maybe others. See also base::GetLsbReleaseBoard().
- * @param {string} boardPrefix The board prefix to match against. (ex.
- *     "x86-mario". Prefix is used as the actual board name comes with suffix
- *     like "x86-mario-something".
- * @return {boolean} True if the board of the device matches the given prefix.
- */
-util.boardIs = function(boardPrefix) {
-  // The board name should be lower-cased, but making it case-insensitive for
-  // backward compatibility just in case.
-  var board = str('CHROMEOS_RELEASE_BOARD');
-  var pattern = new RegExp('^' + boardPrefix, 'i');
-  return board.match(pattern) != null;
-};
-
-/**
  * Adds an isFocused method to the current window object.
  */
 util.addIsFocusedMethod = function() {
@@ -892,8 +874,8 @@ util.collator = new Intl.Collator(
 
 /**
  * Compare by name. The 2 entries must be in same directory.
- * @param {Entry} entry1 First entry.
- * @param {Entry} entry2 Second entry.
+ * @param {Entry|FilesAppEntry} entry1 First entry.
+ * @param {Entry|FilesAppEntry} entry2 Second entry.
  * @return {number} Compare result.
  */
 util.compareName = function(entry1, entry2) {
@@ -902,12 +884,48 @@ util.compareName = function(entry1, entry2) {
 
 /**
  * Compare by path.
- * @param {Entry} entry1 First entry.
- * @param {Entry} entry2 Second entry.
+ * @param {Entry|FilesAppEntry} entry1 First entry.
+ * @param {Entry|FilesAppEntry} entry2 Second entry.
  * @return {number} Compare result.
  */
 util.comparePath = function(entry1, entry2) {
   return util.collator.compare(entry1.fullPath, entry2.fullPath);
+};
+
+/**
+ * @param {!Array<Entry|FilesAppEntry>} bottomEntries entries that should be
+ * grouped in the bottom, used for sorting Linux and Play files entries after
+ * other folders in MyFiles.
+ * return {function(Entry|FilesAppEntry, Entry|FilesAppEntry) to compare entries
+ * by name.
+ */
+util.compareNameAndGroupBottomEntries = function(bottomEntries) {
+  const childrenMap = new Map();
+  bottomEntries.forEach((entry) => {
+    childrenMap.set(entry.toURL(), entry);
+  });
+
+  /**
+   * Compare entries putting entries from |bottomEntries| in the bottom and
+   * sort by name within entries that are the same type in regards to
+   * |bottomEntries|.
+   * @param {Entry|FilesAppEntry} entry1 First entry.
+   * @param {Entry|FilesAppEntry} entry2 First entry.
+   */
+  function compare_(entry1, entry2) {
+    // Bottom entry here means Linux or Play files, which should appear after
+    // all native entries.
+    const isBottomlEntry1 = childrenMap.has(entry1.toURL()) ? 1 : 0;
+    const isBottomlEntry2 = childrenMap.has(entry2.toURL()) ? 1 : 0;
+
+    // When there are the same type, just compare by name.
+    if (isBottomlEntry1 === isBottomlEntry2)
+      return util.compareName(entry1, entry2);
+
+    return isBottomlEntry1 - isBottomlEntry2;
+  }
+
+  return compare_;
 };
 
 /**
@@ -946,19 +964,32 @@ util.isChildEntry = function(entry, directory) {
 util.isDescendantEntry = function(ancestorEntry, childEntry) {
   if (!ancestorEntry.isDirectory)
     return false;
-  if (ancestorEntry instanceof EntryList) {
-    const entryList = /** @type {EntryList} */ (ancestorEntry);
-    return entryList.children.some(ancestorChild => {
+
+  // For EntryList and VolumeEntry they can contain entries from different
+  // files systems, so we should check its getUIChildren.
+  const entryList = util.toEntryList(ancestorEntry);
+  if (entryList.getUIChildren) {
+    // VolumeEntry has to check to root entry descendant entry.
+    const nativeEntry = entryList.getNativeEntry();
+    if (nativeEntry &&
+        util.isSameFileSystem(nativeEntry.filesystem, childEntry.filesystem)) {
+      return util.isDescendantEntry(
+          /** @type {!DirectoryEntry} */ (nativeEntry), childEntry);
+    }
+
+    return entryList.getUIChildren().some(ancestorChild => {
       if (util.isSameEntry(ancestorChild, childEntry))
         return true;
 
-      // rootEntry might not be resolved yet.
-      const volumeEntry = ancestorChild.rootEntry;
+      // root entry might not be resolved yet.
+      const volumeEntry =
+          /** @type {DirectoryEntry} */ (ancestorChild.getNativeEntry());
       return volumeEntry &&
           (util.isSameEntry(volumeEntry, childEntry) ||
            util.isDescendantEntry(volumeEntry, childEntry));
     });
   }
+
   if (!util.isSameFileSystem(ancestorEntry.filesystem, childEntry.filesystem))
     return false;
   if (util.isSameEntry(ancestorEntry, childEntry))
@@ -1150,7 +1181,7 @@ util.splitExtension = function(path) {
 util.getRootTypeLabel = function(locationInfo) {
   switch (locationInfo.rootType) {
     case VolumeManagerCommon.RootType.DOWNLOADS:
-      return str('DOWNLOADS_DIRECTORY_LABEL');
+      return locationInfo.volumeInfo.label;
     case VolumeManagerCommon.RootType.DRIVE:
       return str('DRIVE_MY_DRIVE_LABEL');
     case VolumeManagerCommon.RootType.TEAM_DRIVE:
@@ -1165,12 +1196,17 @@ util.getRootTypeLabel = function(locationInfo) {
     // By this reason, we return the label of the Team Drives grand root here.
     case VolumeManagerCommon.RootType.TEAM_DRIVES_GRAND_ROOT:
       return str('DRIVE_TEAM_DRIVES_LABEL');
+    case VolumeManagerCommon.RootType.COMPUTER:
+    case VolumeManagerCommon.RootType.COMPUTERS_GRAND_ROOT:
+      return str('DRIVE_COMPUTERS_LABEL');
     case VolumeManagerCommon.RootType.DRIVE_OFFLINE:
       return str('DRIVE_OFFLINE_COLLECTION_LABEL');
     case VolumeManagerCommon.RootType.DRIVE_SHARED_WITH_ME:
       return str('DRIVE_SHARED_WITH_ME_COLLECTION_LABEL');
     case VolumeManagerCommon.RootType.DRIVE_RECENT:
       return str('DRIVE_RECENT_COLLECTION_LABEL');
+    case VolumeManagerCommon.RootType.DRIVE_FAKE_ROOT:
+      return str('DRIVE_DIRECTORY_LABEL');
     case VolumeManagerCommon.RootType.RECENT:
       return str('RECENT_ROOT_LABEL');
     case VolumeManagerCommon.RootType.CROSTINI:
@@ -1208,7 +1244,7 @@ util.getRootTypeLabel = function(locationInfo) {
  * Returns the localized name of the entry.
  *
  * @param {EntryLocation} locationInfo
- * @param {!Entry} entry The entry to be retrieve the name of.
+ * @param {!Entry|!FakeEntry} entry The entry to be retrieve the name of.
  * @return {?string} The localized name.
  */
 util.getEntryLabel = function(locationInfo, entry) {
@@ -1344,9 +1380,9 @@ util.validateExternalDriveName = function(name, volumeInfo) {
 };
 
 /**
- * Adds a foregorund listener to the background page components.
- * The lisner will be removed when the foreground window is closed.
- * @param {!cr.EventTarget} target
+ * Adds a foreground listener to the background page components.
+ * The listener will be removed when the foreground window is closed.
+ * @param {!EventTarget} target
  * @param {string} type
  * @param {Function} handler
  */
@@ -1407,21 +1443,6 @@ util.isTouchModeEnabled = function() {
         });
   });
 };
-
-/**
- * Returns if the My Files navigation should be disabled.
- * @return {!Promise<boolean>} Resolves with true if flag
- * "disable-my-files-navigation" is set to true.
- */
-util.isMyFilesNavigationDisabled = function() {
-  return new Promise(resolve => {
-    chrome.commandLinePrivate.hasSwitch(
-        'disable-my-files-navigation', isDisabled => {
-          resolve(isDisabled);
-        });
-  });
-};
-
 
 /**
  * Retrieves all entries inside the given |rootEntry|.
@@ -1511,6 +1532,16 @@ util.toFilesAppEntry = function(entry) {
 };
 
 /**
+ * Casts an Entry to a EntryList, to access a FilesAppEntry-specific
+ * property without Closure compiler complaining.
+ * @param {Entry|FilesAppEntry} entry
+ * @return {EntryList}
+ */
+util.toEntryList = function(entry) {
+  return /** @type {EntryList} */ (entry);
+};
+
+/**
  * Returns true if entry is FileSystemEntry or FileSystemDirectoryEntry, it
  * returns false if it's FakeEntry or any one of the FilesAppEntry types.
  * TODO(lucmult): Wrap Entry in a FilesAppEntry derived class and remove
@@ -1522,4 +1553,27 @@ util.isNativeEntry = function(entry) {
   entry = util.toFilesAppEntry(entry);
   // Only FilesAppEntry types has |type_name| attribute.
   return entry.type_name === undefined;
+};
+
+/**
+ * For FilesAppEntry types that wraps a native entry, returns the native entry
+ * to be able to send to fileManagerPrivate API.
+ * @param {Entry|FilesAppEntry} entry
+ * @return {Entry|FilesAppEntry}
+ */
+util.unwrapEntry = function(entry) {
+  if (!entry)
+    return entry;
+
+  const nativeEntry = entry.getNativeEntry && entry.getNativeEntry();
+  if (nativeEntry)
+    return nativeEntry;
+
+  return entry;
+};
+
+/** @return {boolean} */
+util.isMyFilesVolumeEnabled = function() {
+  return loadTimeData.valueExists('MY_FILES_VOLUME_ENABLED') &&
+      loadTimeData.getBoolean('MY_FILES_VOLUME_ENABLED');
 };

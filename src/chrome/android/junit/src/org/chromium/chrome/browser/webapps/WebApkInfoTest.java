@@ -114,6 +114,7 @@ public class WebApkInfoTest {
         bundle.putString(WebApkMetaDataKeys.START_URL, START_URL);
         bundle.putString(WebApkMetaDataKeys.ICON_URLS_AND_ICON_MURMUR2_HASHES,
                 ICON_URL + " " + ICON_MURMUR2_HASH);
+        bundle.putString(WebApkMetaDataKeys.SHARE_METHOD, "GET");
         WebApkTestHelper.registerWebApkWithMetaData(WEBAPK_PACKAGE_NAME, bundle);
 
         Intent intent = new Intent();
@@ -121,6 +122,7 @@ public class WebApkInfoTest {
         intent.putExtra(ShortcutHelper.EXTRA_FORCE_NAVIGATION, true);
         intent.putExtra(ShortcutHelper.EXTRA_URL, START_URL);
         intent.putExtra(ShortcutHelper.EXTRA_SOURCE, ShortcutSource.NOTIFICATION);
+        intent.putExtra(WebApkConstants.EXTRA_USE_TRANSPARENT_SPLASH, true);
 
         WebApkInfo info = WebApkInfo.create(intent);
 
@@ -136,7 +138,7 @@ public class WebApkInfoTest {
         Assert.assertEquals(1L, info.themeColor());
         Assert.assertTrue(info.hasValidBackgroundColor());
         Assert.assertEquals(2L, info.backgroundColor());
-        Assert.assertEquals(WEBAPK_PACKAGE_NAME, info.apkPackageName());
+        Assert.assertEquals(WEBAPK_PACKAGE_NAME, info.webApkPackageName());
         Assert.assertEquals(SHELL_APK_VERSION, info.shellApkVersion());
         Assert.assertEquals(MANIFEST_URL, info.manifestUrl());
         Assert.assertEquals(START_URL, info.manifestStartUrl());
@@ -147,10 +149,14 @@ public class WebApkInfoTest {
         Assert.assertEquals(ICON_MURMUR2_HASH, info.iconUrlToMurmur2HashMap().get(ICON_URL));
 
         Assert.assertEquals(SOURCE, info.source());
+        Assert.assertTrue(info.useTransparentSplash());
 
         Assert.assertEquals(null, info.icon());
         Assert.assertEquals(null, info.badgeIcon());
         Assert.assertEquals(null, info.splashIcon());
+
+        WebApkInfo.ShareTarget shareTarget = info.shareTarget();
+        Assert.assertNotNull(shareTarget);
     }
 
     /**
@@ -414,5 +420,23 @@ public class WebApkInfoTest {
         intent.putExtra(ShortcutHelper.EXTRA_URL, START_URL);
         info = WebApkInfo.create(intent);
         Assert.assertEquals(WebApkInfo.WebApkDistributor.OTHER, info.distributor());
+    }
+
+    /**
+     * Test that {@link WebApkInfo#shareTarget()} returns a non-null but empty object if the WebAPK
+     * does not handle share intents.
+     */
+    @Test
+    public void testGetShareTargetNotNullEvenIfDoesNotHandleShareIntents() {
+        Bundle bundle = new Bundle();
+        bundle.putString(WebApkMetaDataKeys.START_URL, START_URL);
+        WebApkTestHelper.registerWebApkWithMetaData(WEBAPK_PACKAGE_NAME, bundle);
+        Intent intent = new Intent();
+        intent.putExtra(WebApkConstants.EXTRA_WEBAPK_PACKAGE_NAME, WEBAPK_PACKAGE_NAME);
+        intent.putExtra(ShortcutHelper.EXTRA_URL, START_URL);
+        WebApkInfo info = WebApkInfo.create(intent);
+
+        Assert.assertNotNull(info.shareTarget());
+        Assert.assertEquals("", info.shareTarget().getAction());
     }
 }

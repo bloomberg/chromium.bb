@@ -159,6 +159,22 @@ public class RenderTestRule extends TestWatcher {
             }
         });
 
+        compareForResult(testBitmap, id);
+    }
+
+    /**
+     * Compares the given |testBitmap| to the golden with the |id|. The RenderTestRule will throw
+     * an exception after the test method has completed if the view does not match the golden or if
+     * a golden is missing on a device it should be present (see
+     * {@link RenderTestRule#RENDER_TEST_MODEL_SDK_PAIRS}).
+     *
+     * Tests should prefer {@link RenderTestRule#render(View, String) render} to this if possible.
+     *
+     * @throws IOException if the rendered image cannot be saved to the device.
+     */
+    public void compareForResult(Bitmap testBitmap, String id) throws IOException {
+        Assert.assertTrue("Render Tests must have the RenderTest feature.", mHasRenderTestFeature);
+
         String filename = imageName(mTestClassName, mVariantPrefix, id);
 
         BitmapFactory.Options options = new BitmapFactory.Options();
@@ -324,6 +340,9 @@ public class RenderTestRule extends TestWatcher {
     private static Pair<ComparisonResult, Bitmap> compareBitmapToGolden(
             Bitmap render, Bitmap golden) {
         if (golden == null) return Pair.create(ComparisonResult.GOLDEN_NOT_FOUND, null);
+        // This comparison is much, much faster than doing a pixel-by-pixel comparison, so try this
+        // first and only fall back to the pixel comparison if it fails.
+        if (render.sameAs(golden)) return Pair.create(ComparisonResult.MATCH, null);
 
         Bitmap diff = Bitmap.createBitmap(Math.max(render.getWidth(), golden.getWidth()),
                 Math.max(render.getHeight(), golden.getHeight()), render.getConfig());

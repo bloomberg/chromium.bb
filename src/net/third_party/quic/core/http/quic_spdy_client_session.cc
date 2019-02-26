@@ -8,6 +8,7 @@
 #include "net/third_party/quic/core/http/quic_spdy_client_stream.h"
 #include "net/third_party/quic/core/http/spdy_utils.h"
 #include "net/third_party/quic/core/quic_server_id.h"
+#include "net/third_party/quic/core/quic_utils.h"
 #include "net/third_party/quic/platform/api/quic_bug_tracker.h"
 #include "net/third_party/quic/platform/api/quic_flag_utils.h"
 #include "net/third_party/quic/platform/api/quic_flags.h"
@@ -19,11 +20,15 @@ namespace quic {
 
 QuicSpdyClientSession::QuicSpdyClientSession(
     const QuicConfig& config,
+    const ParsedQuicVersionVector& supported_versions,
     QuicConnection* connection,
     const QuicServerId& server_id,
     QuicCryptoClientConfig* crypto_config,
     QuicClientPushPromiseIndex* push_promise_index)
-    : QuicSpdyClientSessionBase(connection, push_promise_index, config),
+    : QuicSpdyClientSessionBase(connection,
+                                push_promise_index,
+                                config,
+                                supported_versions),
       server_id_(server_id),
       crypto_config_(crypto_config),
       respect_goaway_(true) {}
@@ -41,12 +46,13 @@ void QuicSpdyClientSession::OnProofValid(
 void QuicSpdyClientSession::OnProofVerifyDetailsAvailable(
     const ProofVerifyDetails& /*verify_details*/) {}
 
-bool QuicSpdyClientSession::ShouldCreateOutgoingDynamicStream() {
+bool QuicSpdyClientSession::ShouldCreateOutgoingStream() {
   if (!crypto_stream_->encryption_established()) {
     QUIC_DLOG(INFO) << "Encryption not active so no outgoing stream created.";
     return false;
   }
-  if (!GetQuicFlag(FLAGS_quic_use_common_stream_check)) {
+  if (!GetQuicReloadableFlag(quic_use_common_stream_check) &&
+      connection()->transport_version() != QUIC_VERSION_99) {
     if (GetNumOpenOutgoingStreams() >= max_open_outgoing_streams()) {
       QUIC_DLOG(INFO) << "Failed to create a new outgoing stream. "
                       << "Already " << GetNumOpenOutgoingStreams() << " open.";
@@ -64,13 +70,13 @@ bool QuicSpdyClientSession::ShouldCreateOutgoingDynamicStream() {
                     << "Already received goaway.";
     return false;
   }
-  QUIC_FLAG_COUNT_N(quic_use_common_stream_check, 1, 2);
+  QUIC_FLAG_COUNT_N(quic_reloadable_flag_quic_use_common_stream_check, 1, 2);
   return CanOpenNextOutgoingStream();
 }
 
 QuicSpdyClientStream*
 QuicSpdyClientSession::CreateOutgoingBidirectionalStream() {
-  if (!ShouldCreateOutgoingDynamicStream()) {
+  if (!ShouldCreateOutgoingStream()) {
     return nullptr;
   }
   std::unique_ptr<QuicSpdyClientStream> stream = CreateClientStream();
@@ -113,9 +119,9 @@ int QuicSpdyClientSession::GetNumReceivedServerConfigUpdates() const {
   return crypto_stream_->num_scup_messages_received();
 }
 
-bool QuicSpdyClientSession::ShouldCreateIncomingDynamicStream(QuicStreamId id) {
+bool QuicSpdyClientSession::ShouldCreateIncomingStream(QuicStreamId id) {
   if (!connection()->connected()) {
-    QUIC_BUG << "ShouldCreateIncomingDynamicStream called when disconnected";
+    QUIC_BUG << "ShouldCreateIncomingStream called when disconnected";
     return false;
   }
   if (goaway_received() && respect_goaway_) {
@@ -123,7 +129,8 @@ bool QuicSpdyClientSession::ShouldCreateIncomingDynamicStream(QuicStreamId id) {
                     << "Already received goaway.";
     return false;
   }
-  if (id % 2 != 0) {
+  if (QuicUtils::IsClientInitiatedStreamId(connection()->transport_version(),
+                                           id)) {
     QUIC_LOG(WARNING) << "Received invalid push stream id " << id;
     connection()->CloseConnection(
         QUIC_INVALID_STREAM_ID, "Server created odd numbered stream",
@@ -133,9 +140,8 @@ bool QuicSpdyClientSession::ShouldCreateIncomingDynamicStream(QuicStreamId id) {
   return true;
 }
 
-QuicSpdyStream* QuicSpdyClientSession::CreateIncomingDynamicStream(
-    QuicStreamId id) {
-  if (!ShouldCreateIncomingDynamicStream(id)) {
+QuicSpdyStream* QuicSpdyClientSession::CreateIncomingStream(QuicStreamId id) {
+  if (!ShouldCreateIncomingStream(id)) {
     return nullptr;
   }
   QuicSpdyStream* stream =

@@ -113,20 +113,27 @@ base::string16 UsbChooserController::GetOption(size_t index) const {
   if (it->second == 1)
     return device_name;
 
+  if (!chooser_context_)
+    return device_name;
+
+  auto* device_info = chooser_context_->GetDeviceInfo(devices_[index].first);
+  if (!device_info || !device_info->serial_number)
+    return device_name;
+
   return l10n_util::GetStringFUTF16(IDS_DEVICE_CHOOSER_DEVICE_NAME_WITH_ID,
-                                    device_name,
-                                    devices_[index].first->serial_number
-                                        ? *devices_[index].first->serial_number
-                                        : base::string16());
+                                    device_name, *device_info->serial_number);
 }
 
 bool UsbChooserController::IsPaired(size_t index) const {
-  auto& device_info = *devices_[index].first;
   if (!chooser_context_)
     return false;
 
+  auto* device_info = chooser_context_->GetDeviceInfo(devices_[index].first);
+  if (!device_info)
+    return false;
+
   return chooser_context_->HasDevicePermission(requesting_origin_,
-                                               embedding_origin_, device_info);
+                                               embedding_origin_, *device_info);
 }
 
 void UsbChooserController::Select(const std::vector<size_t>& indices) {
@@ -134,15 +141,20 @@ void UsbChooserController::Select(const std::vector<size_t>& indices) {
   size_t index = indices[0];
   DCHECK_LT(index, devices_.size());
 
-  if (chooser_context_) {
-    chooser_context_->GrantDevicePermission(
-        requesting_origin_, embedding_origin_, *devices_[index].first);
+  if (!chooser_context_) {
+    // Return nullptr for GetPermissionCallback.
+    std::move(callback_).Run(nullptr);
+    return;
   }
 
-  std::move(callback_).Run(devices_[index].first.Clone());
+  auto* device_info = chooser_context_->GetDeviceInfo(devices_[index].first);
+  DCHECK(device_info);
+  chooser_context_->GrantDevicePermission(requesting_origin_, embedding_origin_,
+                                          *device_info);
+  std::move(callback_).Run(device_info->Clone());
 
   RecordWebUsbChooserClosure(
-      devices_[index].first->serial_number->empty()
+      device_info->serial_number->empty()
           ? WEBUSB_CHOOSER_CLOSED_EPHEMERAL_PERMISSION_GRANTED
           : WEBUSB_CHOOSER_CLOSED_PERMISSION_GRANTED);
 }
@@ -166,7 +178,7 @@ void UsbChooserController::OnDeviceAdded(
     const device::mojom::UsbDeviceInfo& device_info) {
   if (DisplayDevice(device_info)) {
     base::string16 device_name = FormatUsbDeviceName(device_info);
-    devices_.push_back(std::make_pair(device_info.Clone(), device_name));
+    devices_.push_back(std::make_pair(device_info.guid, device_name));
     ++device_name_map_[device_name];
     if (view())
       view()->OnOptionAdded(devices_.size() - 1);
@@ -176,7 +188,7 @@ void UsbChooserController::OnDeviceAdded(
 void UsbChooserController::OnDeviceRemoved(
     const device::mojom::UsbDeviceInfo& device_info) {
   for (auto it = devices_.begin(); it != devices_.end(); ++it) {
-    if (it->first->guid == device_info.guid) {
+    if (it->first == device_info.guid) {
       size_t index = it - devices_.begin();
       DCHECK_GT(device_name_map_[it->second], 0);
       if (--device_name_map_[it->second] == 0)
@@ -201,7 +213,7 @@ void UsbChooserController::GotUsbDeviceList(
     DCHECK(device_info);
     if (DisplayDevice(*device_info)) {
       base::string16 device_name = FormatUsbDeviceName(*device_info);
-      devices_.push_back(std::make_pair(std::move(device_info), device_name));
+      devices_.push_back(std::make_pair(device_info->guid, device_name));
       ++device_name_map_[device_name];
     }
   }

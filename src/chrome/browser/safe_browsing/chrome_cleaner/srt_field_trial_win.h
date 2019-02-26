@@ -74,6 +74,10 @@ extern const base::Feature kChromeCleanupDistributionFeature;
 // files.
 extern const base::Feature kChromeCleanupQuarantineFeature;
 
+// Extensions cleanup feature. When enabled, Chrome Cleaner will prompt users
+// for, and cleanup, bad extensions.
+extern const base::Feature kChromeCleanupExtensionsFeature;
+
 extern const char kSRTPromptTrial[];
 
 // Returns true if this Chrome is in a field trial group which shows the SRT

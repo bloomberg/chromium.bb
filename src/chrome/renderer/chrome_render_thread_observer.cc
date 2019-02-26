@@ -20,6 +20,7 @@
 #include "base/memory/weak_ptr.h"
 #include "base/metrics/histogram.h"
 #include "base/metrics/statistics_recorder.h"
+#include "base/no_destructor.h"
 #include "base/path_service.h"
 #include "base/single_thread_task_runner.h"
 #include "base/strings/utf_string_conversions.h"
@@ -132,13 +133,14 @@ class RendererResourceDelegate : public content::ResourceDispatcherDelegate {
   DISALLOW_COPY_AND_ASSIGN(RendererResourceDelegate);
 };
 
+chrome::mojom::DynamicParams* GetDynamicConfigParams() {
+  static base::NoDestructor<chrome::mojom::DynamicParams> dynamic_params;
+  return dynamic_params.get();
+}
+
 }  // namespace
 
 bool ChromeRenderThreadObserver::is_incognito_process_ = false;
-bool ChromeRenderThreadObserver::force_safe_search_ = false;
-int32_t ChromeRenderThreadObserver::youtube_restrict_ = 0;
-std::string* ChromeRenderThreadObserver::allowed_domains_for_apps_ = nullptr;
-std::string* ChromeRenderThreadObserver::variation_ids_header_ = nullptr;
 
 ChromeRenderThreadObserver::ChromeRenderThreadObserver()
     : visited_link_slave_(new visitedlink::VisitedLinkSlave),
@@ -177,6 +179,12 @@ ChromeRenderThreadObserver::ChromeRenderThreadObserver()
 
 ChromeRenderThreadObserver::~ChromeRenderThreadObserver() {}
 
+// static
+const chrome::mojom::DynamicParams&
+ChromeRenderThreadObserver::GetDynamicParams() {
+  return *GetDynamicConfigParams();
+}
+
 void ChromeRenderThreadObserver::RegisterMojoInterfaces(
     blink::AssociatedInterfaceRegistry* associated_interfaces) {
   associated_interfaces->AddInterface(base::Bind(
@@ -196,18 +204,8 @@ void ChromeRenderThreadObserver::SetInitialConfiguration(
 }
 
 void ChromeRenderThreadObserver::SetConfiguration(
-    bool force_safe_search,
-    int32_t youtube_restrict,
-    const std::string& allowed_domains_for_apps,
-    const std::string& variation_ids_header) {
-  force_safe_search_ = force_safe_search;
-  youtube_restrict_ = youtube_restrict;
-  if (!allowed_domains_for_apps_)
-    allowed_domains_for_apps_ = new std::string();
-  *allowed_domains_for_apps_ = allowed_domains_for_apps;
-  if (!variation_ids_header_)
-    variation_ids_header_ = new std::string();
-  *variation_ids_header_ = variation_ids_header;
+    chrome::mojom::DynamicParamsPtr params) {
+  *GetDynamicConfigParams() = std::move(*params);
 }
 
 void ChromeRenderThreadObserver::SetContentSettingRules(

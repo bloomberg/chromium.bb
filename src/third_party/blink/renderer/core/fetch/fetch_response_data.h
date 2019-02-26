@@ -13,7 +13,7 @@
 #include "third_party/blink/public/mojom/fetch/fetch_api_response.mojom-blink.h"
 #include "third_party/blink/public/platform/modules/fetch/fetch_api_request.mojom-blink.h"
 #include "third_party/blink/public/platform/modules/service_worker/web_service_worker_request.h"
-#include "third_party/blink/public/platform/web_cors.h"
+#include "third_party/blink/public/platform/web_http_header_set.h"
 #include "third_party/blink/renderer/core/core_export.h"
 #include "third_party/blink/renderer/core/fetch/body_stream_buffer.h"
 #include "third_party/blink/renderer/platform/heap/handle.h"
@@ -44,8 +44,12 @@ class CORE_EXPORT FetchResponseData final
   static FetchResponseData* CreateNetworkErrorResponse();
   static FetchResponseData* CreateWithBuffer(BodyStreamBuffer*);
 
+  FetchResponseData(network::mojom::FetchResponseType,
+                    unsigned short,
+                    AtomicString);
+
   FetchResponseData* CreateBasicFilteredResponse() const;
-  FetchResponseData* CreateCORSFilteredResponse(
+  FetchResponseData* CreateCorsFilteredResponse(
       const WebHTTPHeaderSet& exposed_headers) const;
   FetchResponseData* CreateOpaqueFilteredResponse() const;
   FetchResponseData* CreateOpaqueRedirectFilteredResponse() const;
@@ -106,10 +110,6 @@ class CORE_EXPORT FetchResponseData final
   void Trace(blink::Visitor*);
 
  private:
-  FetchResponseData(network::mojom::FetchResponseType,
-                    unsigned short,
-                    AtomicString);
-
   network::mojom::FetchResponseType type_;
   std::unique_ptr<TerminationReason> termination_reason_;
   Vector<KURL> url_list_;

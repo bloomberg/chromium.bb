@@ -5,7 +5,7 @@
 #include "third_party/blink/renderer/core/scroll/scroll_customization.h"
 
 namespace blink {
-namespace ScrollCustomization {
+namespace scroll_customization {
 
 ScrollDirection GetScrollDirectionFromDeltas(double delta_x, double delta_y) {
   // TODO(ekaramad, tdresser): Find out the right value for kEpsilon here (see
@@ -31,5 +31,5 @@ ScrollDirection GetScrollDirectionFromDeltas(double delta_x, double delta_y) {
   return direction;
 }
 
-}  // namespace ScrollCustomization
+}  // namespace scroll_customization
 }  // namespace blink

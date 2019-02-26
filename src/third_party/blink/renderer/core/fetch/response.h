@@ -36,13 +36,13 @@ class CORE_EXPORT Response final : public Body {
   static Response* Create(ScriptState*, ExceptionState&);
   static Response* Create(ScriptState*,
                           ScriptValue body,
-                          const ResponseInit&,
+                          const ResponseInit*,
                           ExceptionState&);
 
   static Response* Create(ScriptState*,
                           BodyStreamBuffer*,
                           const String& content_type,
-                          const ResponseInit&,
+                          const ResponseInit*,
                           ExceptionState&);
   static Response* Create(ExecutionContext*, FetchResponseData*);
   static Response* Create(ScriptState*, mojom::blink::FetchAPIResponse&);
@@ -54,6 +54,10 @@ class CORE_EXPORT Response final : public Body {
                             const String& url,
                             unsigned short status,
                             ExceptionState&);
+
+  explicit Response(ExecutionContext*);
+  Response(ExecutionContext*, FetchResponseData*);
+  Response(ExecutionContext*, FetchResponseData*, Headers*);
 
   const FetchResponseData* GetResponse() const { return response_; }
 
@@ -105,13 +109,9 @@ class CORE_EXPORT Response final : public Body {
  protected:
   // A version of IsBodyUsed() which catches exceptions and returns
   // false. Should never be used outside DCHECK().
-  bool IsBodyUsedForDCheck() override;
+  bool IsBodyUsedForDCheck(ExceptionState&) override;
 
  private:
-  explicit Response(ExecutionContext*);
-  Response(ExecutionContext*, FetchResponseData*);
-  Response(ExecutionContext*, FetchResponseData*, Headers*);
-
   const TraceWrapperMember<FetchResponseData> response_;
   const Member<Headers> headers_;
   DISALLOW_COPY_AND_ASSIGN(Response);

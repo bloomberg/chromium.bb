@@ -28,13 +28,13 @@ namespace blink {
 
 MediaStreamEvent* MediaStreamEvent::Create(const AtomicString& type,
                                            MediaStream* stream) {
-  return new MediaStreamEvent(type, stream);
+  return MakeGarbageCollected<MediaStreamEvent>(type, stream);
 }
 
 MediaStreamEvent* MediaStreamEvent::Create(
     const AtomicString& type,
-    const MediaStreamEventInit& initializer) {
-  return new MediaStreamEvent(type, initializer);
+    const MediaStreamEventInit* initializer) {
+  return MakeGarbageCollected<MediaStreamEvent>(type, initializer);
 }
 
 MediaStreamEvent::MediaStreamEvent(const AtomicString& type,
@@ -42,10 +42,10 @@ MediaStreamEvent::MediaStreamEvent(const AtomicString& type,
     : Event(type, Bubbles::kNo, Cancelable::kNo), stream_(stream) {}
 
 MediaStreamEvent::MediaStreamEvent(const AtomicString& type,
-                                   const MediaStreamEventInit& initializer)
+                                   const MediaStreamEventInit* initializer)
     : Event(type, initializer) {
-  if (initializer.hasStream())
-    stream_ = initializer.stream();
+  if (initializer->hasStream())
+    stream_ = initializer->stream();
 }
 
 MediaStreamEvent::~MediaStreamEvent() = default;
@@ -60,7 +60,7 @@ MediaStream* MediaStreamEvent::stream(bool& is_null) const {
 }
 
 const AtomicString& MediaStreamEvent::InterfaceName() const {
-  return EventNames::MediaStreamEvent;
+  return event_interface_names::kMediaStreamEvent;
 }
 
 void MediaStreamEvent::Trace(blink::Visitor* visitor) {

@@ -17,6 +17,7 @@
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/browser_process_platform_part.h"
 #include "chrome/browser/chromeos/login/ui/views/user_board_view.h"
+#include "chrome/browser/chromeos/login/users/chrome_user_manager.h"
 #include "chrome/browser/chromeos/policy/browser_policy_connector_chromeos.h"
 #include "chrome/browser/ui/webui/chromeos/login/l10n_util.h"
 #include "chrome/browser/ui/webui/chromeos/login/signin_screen_handler.h"
@@ -76,6 +77,7 @@ void ChromeUserSelectionScreen::OnPolicyUpdated(const std::string& user_id) {
 
   CheckForPublicSessionDisplayNameChange(broker);
   CheckForPublicSessionLocalePolicyChange(broker);
+  CheckIfFullManagementDisclosureNeeded(broker);
 }
 
 void ChromeUserSelectionScreen::OnDeviceLocalAccountsChanged() {
@@ -151,6 +153,12 @@ void ChromeUserSelectionScreen::CheckForPublicSessionLocalePolicyChange(
     recommended_locales = new_recommended_locales;
 }
 
+void ChromeUserSelectionScreen::CheckIfFullManagementDisclosureNeeded(
+    policy::DeviceLocalAccountPolicyBroker* broker) {
+  SetPublicSessionShowFullManagementDisclosure(
+      ChromeUserManager::Get()->IsFullManagementDisclosureNeeded(broker));
+}
+
 void ChromeUserSelectionScreen::SetPublicSessionDisplayName(
     const AccountId& account_id) {
   const user_manager::User* user =
@@ -189,6 +197,12 @@ void ChromeUserSelectionScreen::SetPublicSessionLocales(
   view_->SetPublicSessionLocales(account_id, std::move(available_locales),
                                  default_locale,
                                  two_or_more_recommended_locales);
+}
+
+void ChromeUserSelectionScreen::SetPublicSessionShowFullManagementDisclosure(
+    bool show_full_management_disclosure) {
+  view_->SetPublicSessionShowFullManagementDisclosure(
+      show_full_management_disclosure);
 }
 
 }  // namespace chromeos

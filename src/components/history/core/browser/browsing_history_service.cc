@@ -31,7 +31,7 @@ namespace history {
 namespace {
 
 // The amount of time to wait for a response from the WebHistoryService.
-static const int kWebHistoryTimeoutSeconds = 3;
+constexpr int kWebHistoryTimeoutSeconds = 3;
 
 // Buckets for UMA histograms.
 enum WebHistoryQueryBuckets {
@@ -147,7 +147,7 @@ bool BrowsingHistoryService::HistoryEntry::SortByTimeDescending(
   return entry1.time > entry2.time;
 }
 
-BrowsingHistoryService::QueryResultsInfo::~QueryResultsInfo() {}
+BrowsingHistoryService::QueryResultsInfo::~QueryResultsInfo() = default;
 
 BrowsingHistoryService::BrowsingHistoryService(
     BrowsingHistoryDriver* driver,
@@ -474,8 +474,9 @@ void BrowsingHistoryService::MergeDuplicateResults(
 
     // Keep this visit if it's the first visit to this URL on the current day.
     if (current_day_entries.count(entry.url) == 0) {
+      const auto entry_url = entry.url;
       deduped.push_back(std::move(entry));
-      current_day_entries[entry.url] = &deduped.back();
+      current_day_entries[entry_url] = &deduped.back();
     } else {
       // Keep track of the timestamps of all visits to the URL on the same day.
       HistoryEntry* matching_entry = current_day_entries[entry.url];
@@ -539,13 +540,12 @@ void BrowsingHistoryService::QueryComplete(
   std::vector<HistoryEntry>& output = state->local_results;
   output.reserve(output.size() + results->size());
 
-  for (size_t i = 0; i < results->size(); ++i) {
-    URLResult const& page = (*results)[i];
+  for (const auto& page : *results) {
     // TODO(dubroy): Use sane time (crbug.com/146090) here when it's ready.
-    output.push_back(HistoryEntry(HistoryEntry::LOCAL_ENTRY, page.url(),
-                                  page.title(), page.visit_time(),
-                                  std::string(), !state->search_text.empty(),
-                                  page.snippet().text(), page.blocked_visit()));
+    output.emplace_back(HistoryEntry(
+        HistoryEntry::LOCAL_ENTRY, page.url(), page.title(), page.visit_time(),
+        std::string(), !state->search_text.empty(), page.snippet().text(),
+        page.blocked_visit()));
   }
 
   state->local_status =
@@ -565,7 +565,7 @@ void BrowsingHistoryService::ReturnResultsToDriver(
   // with new results, and these two sets may contain duplicates. Assuming every
   // call to Web History is successful, we shouldn't be able to have empty sync
   // results at the same time as we have pending local.
-  if (state->remote_results.size()) {
+  if (!state->remote_results.empty()) {
     MergeDuplicateResults(state.get(), &results);
 
     // In the best case, we expect that all local results are duplicated on
@@ -681,7 +681,7 @@ void BrowsingHistoryService::WebHistoryQueryComplete(
           std::string client_id;
           id->GetString("client_id", &client_id);
 
-          state->remote_results.push_back(HistoryEntry(
+          state->remote_results.emplace_back(HistoryEntry(
               HistoryEntry::REMOTE_ENTRY, gurl, title, time, client_id,
               !state->search_text.empty(), base::string16(),
               /* blocked_visit */ false));

@@ -376,9 +376,8 @@ bool DeleteFileAfterReboot(const FilePath& path) {
   if (path.value().length() >= MAX_PATH)
     return false;
 
-  return MoveFileEx(path.value().c_str(), NULL,
-                    MOVEFILE_DELAY_UNTIL_REBOOT |
-                        MOVEFILE_REPLACE_EXISTING) != FALSE;
+  return ::MoveFileEx(path.value().c_str(), nullptr,
+                      MOVEFILE_DELAY_UNTIL_REBOOT);
 }
 
 bool ReplaceFile(const FilePath& from_path,

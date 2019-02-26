@@ -16,7 +16,7 @@
 #include "base/optional.h"
 #include "base/values.h"
 #include "services/data_decoder/public/mojom/json_parser.mojom.h"
-#include "services/service_manager/public/cpp/identity.h"
+#include "services/service_manager/public/cpp/service_filter.h"
 
 namespace service_manager {
 class Connector;
@@ -60,7 +60,7 @@ class JsonFileSanitizer {
   // promptly (some background tasks may still run).
   static std::unique_ptr<JsonFileSanitizer> CreateAndStart(
       service_manager::Connector* connector,
-      const service_manager::Identity& identity,
+      const service_manager::ServiceFilter& service_filter,
       const std::set<base::FilePath>& file_paths,
       Callback callback);
 
@@ -71,7 +71,7 @@ class JsonFileSanitizer {
                     Callback callback);
 
   void Start(service_manager::Connector* connector,
-             const service_manager::Identity& identity);
+             const service_manager::ServiceFilter& service_filter);
 
   void JsonFileRead(const base::FilePath& file_path,
                     std::tuple<std::string, bool, bool> read_and_delete_result);

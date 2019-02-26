@@ -35,7 +35,8 @@ function printSecond(result) {
 }
 
 /**
- * Checks for existence of Bob Pay twice.
+ * Checks for existence of Bob Pay twice, with the same payment method specific
+ * parameters.
  */
 function buy() {  // eslint-disable-line no-unused-vars
   first = null;
@@ -43,7 +44,10 @@ function buy() {  // eslint-disable-line no-unused-vars
 
   try {
     new PaymentRequest(
-        [{supportedMethods: 'https://bobpay.com'}],
+        [{
+          supportedMethods: 'https://bobpay.com',
+          data: {'bobPayParameter': '1'},
+        }],
         {total: {label: 'Total', amount: {currency: 'USD', value: '5.00'}}})
         .canMakePayment()
         .then(function(result) {
@@ -58,7 +62,10 @@ function buy() {  // eslint-disable-line no-unused-vars
 
   try {
     new PaymentRequest(
-        [{supportedMethods: 'https://bobpay.com'}],
+        [{
+          supportedMethods: 'https://bobpay.com',
+          data: {'bobPayParameter': '1'},
+        }],
         {total: {label: 'Total', amount: {currency: 'USD', value: '5.00'}}})
         .canMakePayment()
         .then(function(result) {
@@ -81,7 +88,10 @@ function otherBuy() {  // eslint-disable-line no-unused-vars
 
   try {
     new PaymentRequest(
-        [{supportedMethods: 'https://bobpay.com'}],
+        [{
+          supportedMethods: 'https://bobpay.com',
+          data: {'bobPayParameter': '1'},
+        }],
         {total: {label: 'Total', amount: {currency: 'USD', value: '5.00'}}})
         .canMakePayment()
         .then(function(result) {
@@ -96,7 +106,10 @@ function otherBuy() {  // eslint-disable-line no-unused-vars
 
   try {
     new PaymentRequest(
-        [{supportedMethods: 'https://alicepay.com'}],
+        [{
+          supportedMethods: 'https://alicepay.com',
+          data: {'alicePayParameter': '2'},
+        }],
         {total: {label: 'Total', amount: {currency: 'USD', value: '5.00'}}})
         .canMakePayment()
         .then(function(result) {

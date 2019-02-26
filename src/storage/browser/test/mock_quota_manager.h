@@ -125,6 +125,7 @@ class MockQuotaManager : public QuotaManager {
     ~StorageInfo();
     int64_t usage;
     int64_t quota;
+    blink::mojom::UsageBreakdownPtr usage_breakdown;
   };
 
   // This must be called via MockQuotaManagerProxy.

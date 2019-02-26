@@ -4,9 +4,12 @@
 
 package org.chromium.chrome.browser.explore_sites;
 
+import android.content.Context;
 import android.support.annotation.IntDef;
 import android.support.annotation.Nullable;
 import android.support.v7.widget.RecyclerView;
+import android.text.SpannableString;
+import android.text.SpannableStringBuilder;
 
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.modelutil.ListObservable;
@@ -21,6 +24,8 @@ import org.chromium.chrome.browser.native_page.NativePageNavigationDelegate;
 import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.chrome.browser.widget.LoadingView;
 import org.chromium.chrome.browser.widget.RoundedIconGenerator;
+import org.chromium.ui.widget.ChromeBulletSpan;
+import org.chromium.ui.widget.TextViewWithLeading;
 
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
@@ -65,10 +70,10 @@ class CategoryCardAdapter extends ListObservableImpl<Void>
 
     @Override
     public int getItemCount() {
-        // If not loaded, return 2 for title and error/loading section
+        // If not loaded, return 1 error/loading section
         if (mCategoryModel.get(ExploreSitesPage.STATUS_KEY)
                 != ExploreSitesPage.CatalogLoadingState.SUCCESS) {
-            return 2;
+            return 1;
         }
         // Add 1 for title.
         return mCategoryModel.get(ExploreSitesPage.CATEGORY_LIST_KEY).size() + 1;
@@ -77,7 +82,6 @@ class CategoryCardAdapter extends ListObservableImpl<Void>
     @Override
     @ViewType
     public int getItemViewType(int position) {
-        if (position == 0) return ViewType.HEADER;
         switch (mCategoryModel.get(ExploreSitesPage.STATUS_KEY)) {
             case ExploreSitesPage.CatalogLoadingState.ERROR:
                 return ViewType.ERROR;
@@ -85,6 +89,7 @@ class CategoryCardAdapter extends ListObservableImpl<Void>
             case ExploreSitesPage.CatalogLoadingState.LOADING_NET:
                 return ViewType.LOADING;
             case ExploreSitesPage.CatalogLoadingState.SUCCESS:
+                if (position == 0) return ViewType.HEADER;
                 return ViewType.CATEGORY;
             default:
                 assert(false);
@@ -105,6 +110,18 @@ class CategoryCardAdapter extends ListObservableImpl<Void>
             // Start spinner.
             LoadingView spinner = holder.itemView.findViewById(R.id.loading);
             spinner.showLoadingUI();
+        } else if (holder.getItemViewType() == ViewType.ERROR) {
+            TextViewWithLeading textView = holder.itemView.findViewById(R.id.error_view_next_steps);
+            Context context = textView.getContext();
+            SpannableStringBuilder spannableString = new SpannableStringBuilder();
+            SpannableString tip1 = new SpannableString(
+                    context.getString(R.string.explore_sites_loading_error_next_steps_reload));
+            SpannableString tip2 = new SpannableString(context.getString(
+                    R.string.explore_sites_loading_error_next_steps_check_connection));
+            tip1.setSpan(new ChromeBulletSpan(context), 0, tip1.length(), 0);
+            tip2.setSpan(new ChromeBulletSpan(context), 0, tip2.length(), 0);
+            spannableString.append(tip1).append("\n").append(tip2);
+            textView.setText(spannableString);
         }
     }
 
@@ -114,11 +131,11 @@ class CategoryCardAdapter extends ListObservableImpl<Void>
         if (key == ExploreSitesPage.STATUS_KEY) {
             int status = mCategoryModel.get(ExploreSitesPage.STATUS_KEY);
             if (status != ExploreSitesPage.CatalogLoadingState.SUCCESS) {
-                notifyItemChanged(1);
+                notifyItemChanged(0);
             } else {
                 // If it's success, we must "remove" the loading view.
                 // Loading the categories is taken care of by the list observer.
-                notifyItemRangeRemoved(/* index= */ 1, /* count= */ 1);
+                notifyItemRangeRemoved(/* index= */ 0, /* count= */ 1);
             }
         }
         if (key == ExploreSitesPage.SCROLL_TO_CATEGORY_KEY) {

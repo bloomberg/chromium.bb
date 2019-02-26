@@ -32,7 +32,7 @@ int WorkerInternalsFetch::getResourcePriority(
     return static_cast<int>(ResourceLoadPriority::kUnresolved);
 
   Resource* resource = worker_global->Fetcher()->AllResources().at(
-      URLTestHelpers::ToKURL(url.Utf8().data()));
+      url_test_helpers::ToKURL(url.Utf8().data()));
 
   if (!resource)
     return static_cast<int>(ResourceLoadPriority::kUnresolved);

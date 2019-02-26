@@ -22,18 +22,13 @@ struct AccountInfo;
 class GoogleServiceAuthError;
 class GURL;
 
-namespace sync_sessions {
-class OpenTabsUIDelegate;
-}  // namespace sync_sessions
-
 namespace syncer {
 
-class BaseTransaction;
 class JsController;
 class ProtocolEventObserver;
-class SyncClient;
 class SyncCycleSnapshot;
 struct SyncTokenStatus;
+class SyncUserSettings;
 class TypeDebugInfoObserver;
 struct SyncStatus;
 struct UserShare;
@@ -90,7 +85,7 @@ class SyncService : public DataTypeEncryptionHandler, public KeyedService {
     // yet. Note that during subsequent browser startups, Sync starts
     // automatically, i.e. no prod is necessary, but during the first start Sync
     // does need a kick. This usually happens via starting (not finishing!) the
-    // initial setup, or via an explicit call to RequestStart.
+    // initial setup, or via a call to SyncUserSettings::SetSyncRequested.
     // TODO(crbug.com/839834): Check whether this state is necessary, or if Sync
     // can just always start up if all conditions are fulfilled (that's what
     // happens in practice anyway).
@@ -117,14 +112,6 @@ class SyncService : public DataTypeEncryptionHandler, public KeyedService {
     ACTIVE
   };
 
-  // Used to specify the kind of passphrase with which sync data is encrypted.
-  enum PassphraseType {
-    IMPLICIT,  // The user did not provide a custom passphrase for encryption.
-               // We implicitly use the GAIA password in such cases.
-    EXPLICIT,  // The user selected the "use custom passphrase" radio button
-               // during sync setup and provided a passphrase.
-  };
-
   // Passed as an argument to RequestStop to control whether or not the sync
   // engine should clear its data directory when it shuts down. See
   // RequestStop for more information.
@@ -134,6 +121,9 @@ class SyncService : public DataTypeEncryptionHandler, public KeyedService {
   };
 
   ~SyncService() override {}
+
+  virtual SyncUserSettings* GetUserSettings() = 0;
+  virtual const SyncUserSettings* GetUserSettings() const = 0;
 
   //////////////////////////////////////////////////////////////////////////////
   // BASIC STATE ACCESS
@@ -198,8 +188,10 @@ class SyncService : public DataTypeEncryptionHandler, public KeyedService {
   // Sync-the-feature is disabled by the user, by enterprise policy, etc.
   bool IsEngineInitialized() const;
 
-  // Equivalent to having no disable reasons, i.e.
-  // "GetDisableReasons() == DISABLE_REASON_NONE".
+  // Returns whether Sync-the-feature can (attempt to) start. This means that
+  // there is a primary account and no disable reasons. It does *not* require
+  // first-time Sync setup to be complete, because that can only happen after
+  // the engine has started.
   // Note: This refers to Sync-the-feature. Sync-the-transport may be running
   // even if this is false.
   bool CanSyncFeatureStart() const;
@@ -223,19 +215,6 @@ class SyncService : public DataTypeEncryptionHandler, public KeyedService {
   // Note: This refers to Sync-the-feature. Sync-the-transport may be active
   // independent of first-setup state.
   bool IsFirstSetupInProgress() const;
-
-  // Whether the user has completed the initial Sync setup. This does not mean
-  // that sync is currently running (due to delayed startup, unrecoverable
-  // errors, or shutdown). If you want to know whether Sync is actually running,
-  // use GetTransportState or IsSyncFeatureActive instead.
-  // Note: This refers to Sync-the-feature. Sync-the-transport may be active
-  // independent of first-setup state.
-  virtual bool IsFirstSetupComplete() const = 0;
-
-  // Called when Sync has been setup by the user and can be started.
-  // Note: This refers to Sync-the-feature. Sync-the-transport may be active
-  // independent of first-setup state.
-  virtual void SetFirstSetupComplete() = 0;
 
   //////////////////////////////////////////////////////////////////////////////
   // SETUP-IN-PROGRESS HANDLING
@@ -274,12 +253,6 @@ class SyncService : public DataTypeEncryptionHandler, public KeyedService {
   // ACTIONS / STATE CHANGE REQUESTS
   //////////////////////////////////////////////////////////////////////////////
 
-  // The user requests that sync start. This only actually starts sync if
-  // IsSyncAllowed is true and the user is signed in. Once sync starts,
-  // other things such as IsFirstSetupComplete being false can still prevent
-  // it from moving into the "active" state.
-  virtual void RequestStart() = 0;
-
   // Stops sync at the user's request. |data_fate| controls whether the sync
   // engine should clear its data directory when it shuts down. Generally
   // KEEP_DATA is used when the user just stops sync, and CLEAR_DATA is used
@@ -293,14 +266,6 @@ class SyncService : public DataTypeEncryptionHandler, public KeyedService {
   // still in deferred start mode, meaning the SyncableService hasn't been
   // told to MergeDataAndStartSyncing yet.
   virtual void OnDataTypeRequestsSyncStartup(ModelType type) = 0;
-
-  // Called when a user chooses which data types to sync. |sync_everything|
-  // represents whether they chose the "keep everything synced" option; if
-  // true, |chosen_types| will be ignored and all data types will be synced.
-  // |sync_everything| means "sync all current and future data types."
-  // |chosen_types| must be a subset of UserSelectableTypes().
-  virtual void OnUserChoseDatatypes(bool sync_everything,
-                                    ModelTypeSet chosen_types) = 0;
 
   // Triggers a GetUpdates call for the specified |types|, pulling any new data
   // from the sync server. Used by tests and debug UI (sync-internals).
@@ -316,6 +281,14 @@ class SyncService : public DataTypeEncryptionHandler, public KeyedService {
   // stop |type|. Otherwise, it will trigger reconfiguration so that |type| gets
   // started again.
   virtual void ReadyForStartChanged(ModelType type) = 0;
+
+  // Enables/disables invalidations for session sync related datatypes.
+  // The session sync generates a lot of changes, which results into many
+  // invalidations. This can negatively affect the
+  // battery life on Android. For that reason, on Android, the invalidations for
+  // the Sessions should be received only when user is interested in session
+  // sync data, e.g. the history sync page is opened.
+  virtual void SetInvalidationsForSessionsEnabled(bool enabled) = 0;
 
   //////////////////////////////////////////////////////////////////////////////
   // OBSERVERS
@@ -356,10 +329,7 @@ class SyncService : public DataTypeEncryptionHandler, public KeyedService {
   // Asynchronously sets the passphrase to |passphrase| for encryption. |type|
   // specifies whether the passphrase is a custom passphrase or the GAIA
   // password being reused as a passphrase.
-  // TODO(atwilson): Change this so external callers can only set an EXPLICIT
-  // passphrase with this API.
-  virtual void SetEncryptionPassphrase(const std::string& passphrase,
-                                       PassphraseType type) = 0;
+  virtual void SetEncryptionPassphrase(const std::string& passphrase) = 0;
 
   // Asynchronously decrypts pending keys using |passphrase|. Returns false
   // immediately if the passphrase could not be used to decrypt a locally cached
@@ -367,21 +337,9 @@ class SyncService : public DataTypeEncryptionHandler, public KeyedService {
   virtual bool SetDecryptionPassphrase(const std::string& passphrase)
       WARN_UNUSED_RESULT = 0;
 
-  // Checks whether the Cryptographer is ready to encrypt and decrypt updates
-  // for sensitive data types. Caller must be holding a syncer::BaseTransaction
-  // to ensure thread safety.
-  virtual bool IsCryptographerReady(const BaseTransaction* trans) const = 0;
-
   //////////////////////////////////////////////////////////////////////////////
   // ACCESS TO INNER OBJECTS
   //////////////////////////////////////////////////////////////////////////////
-
-  // TODO(crbug.com/865936): Move this down into ProfileSyncService.
-  virtual SyncClient* GetSyncClient() const = 0;
-
-  // Return the active OpenTabsUIDelegate. If open/proxy tabs is not enabled or
-  // not currently syncing, returns nullptr.
-  virtual sync_sessions::OpenTabsUIDelegate* GetOpenTabsUIDelegate() = 0;
 
   // TODO(akalin): This is called mostly by ModelAssociators and
   // tests.  Figure out how to pass the handle to the ModelAssociators

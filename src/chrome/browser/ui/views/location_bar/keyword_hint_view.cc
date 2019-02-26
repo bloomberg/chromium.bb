@@ -73,7 +73,7 @@ KeywordHintView::KeywordHintView(views::ButtonListener* listener,
   // Use leaf alert role so that name is spoken by screen reader, but redundant
   // child label text is not also spoken.
   GetViewAccessibility().OverrideRole(ax::mojom::Role::kGenericContainer);
-  GetViewAccessibility().OverrideIsLeaf();
+  GetViewAccessibility().OverrideIsLeaf(true);
 }
 
 KeywordHintView::~KeywordHintView() {}
@@ -171,17 +171,20 @@ const char* KeywordHintView::GetClassName() const {
 }
 
 void KeywordHintView::Layout() {
-  int chip_width = chip_container_->GetPreferredSize().width();
+  const int chip_width = chip_container_->GetPreferredSize().width();
+  const int chip_height = GetLayoutConstant(LOCATION_BAR_ICON_SIZE) +
+                          chip_container_->GetInsets().height();
+  // |chip_container_|'s size must be updated before calling GetInsets(), since
+  // that function reads its height.
+  chip_container_->SetSize(gfx::Size(chip_width, chip_height));
   bool show_labels = width() - GetInsets().width() > chip_width;
   gfx::Size leading_size(leading_label_->GetPreferredSize());
   leading_label_->SetBounds(GetInsets().left(), 0,
                             show_labels ? leading_size.width() : 0, height());
-  const int chip_height = GetLayoutConstant(LOCATION_BAR_ICON_SIZE) +
-                          chip_container_->GetInsets().height();
 
   const int chip_vertical_padding = std::max(0, height() - chip_height) / 2;
-  chip_container_->SetBounds(leading_label_->bounds().right(),
-                             chip_vertical_padding, chip_width, chip_height);
+  chip_container_->SetPosition(
+      gfx::Point(leading_label_->bounds().right(), chip_vertical_padding));
   gfx::Size trailing_size(trailing_label_->GetPreferredSize());
   trailing_label_->SetBounds(chip_container_->bounds().right(), 0,
                              show_labels ? trailing_size.width() : 0, height());

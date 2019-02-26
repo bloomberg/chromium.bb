@@ -35,7 +35,7 @@ namespace blink {
 
 DataTransferItemList* DataTransferItemList::Create(DataTransfer* data_transfer,
                                                    DataObject* list) {
-  return new DataTransferItemList(data_transfer, list);
+  return MakeGarbageCollected<DataTransferItemList>(data_transfer, list);
 }
 
 uint32_t DataTransferItemList::length() const {

@@ -93,6 +93,25 @@ const char kArcVoiceInteractionValuePropAccepted[] =
 // Integer pref indicating the ecryptfs to ext4 migration strategy. One of
 // options: forbidden = 0, migrate = 1, wipe = 2 or ask the user = 3.
 const char kEcryptfsMigrationStrategy[] = "ecryptfs_migration_strategy";
+// A preference that persists total engagement time across sessions, which is
+// accumulated and sent to UMA once a day.
+const char kEngagementTimeTotal[] = "arc.metrics.engagement_time.total";
+// A preference that persists foreground engagement time across sessions, which
+// is accumulated and sent to UMA once a day.
+const char kEngagementTimeForeground[] =
+    "arc.metrics.engagement_time.foreground";
+// A preference that persists background engagement time across sessions, which
+// is accumulated and sent to UMA once a day.
+const char kEngagementTimeBackground[] =
+    "arc.metrics.engagement_time.background";
+// A preference that saves the OS version when engagement time was last
+// recorded. Old results will be discarded if a version change is detected.
+const char kEngagementTimeOsVersion[] =
+    "arc.metrics.engagement_time.os_version";
+// A preference that saves the day ID (number of days since origin of Time) when
+// engagement time was last recorded. Accumulated results are sent to UMA if day
+// ID has changed.
+const char kEngagementTimeDayId[] = "arc.metrics.engagement_time.day_id";
 // A preference that indicates the user has accepted voice interaction activity
 // control settings.
 const char kVoiceInteractionActivityControlAccepted[] =
@@ -157,6 +176,11 @@ void RegisterProfilePrefs(PrefRegistrySimple* registry) {
   registry->RegisterBooleanPref(kArcTermsAccepted, false);
   registry->RegisterBooleanPref(kArcTermsShownInOobe, false);
   registry->RegisterBooleanPref(kArcVoiceInteractionValuePropAccepted, false);
+  registry->RegisterTimeDeltaPref(kEngagementTimeBackground, base::TimeDelta());
+  registry->RegisterIntegerPref(kEngagementTimeDayId, 0);
+  registry->RegisterTimeDeltaPref(kEngagementTimeForeground, base::TimeDelta());
+  registry->RegisterStringPref(kEngagementTimeOsVersion, "");
+  registry->RegisterTimeDeltaPref(kEngagementTimeTotal, base::TimeDelta());
   registry->RegisterBooleanPref(kVoiceInteractionContextEnabled, false);
   registry->RegisterBooleanPref(kVoiceInteractionEnabled, false);
   registry->RegisterBooleanPref(kVoiceInteractionHotwordEnabled, false);

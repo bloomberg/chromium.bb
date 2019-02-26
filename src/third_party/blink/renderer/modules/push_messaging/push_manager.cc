@@ -51,7 +51,7 @@ Vector<String> PushManager::supportedContentEncodings() {
 }
 
 ScriptPromise PushManager::subscribe(ScriptState* script_state,
-                                     const PushSubscriptionOptionsInit& options,
+                                     const PushSubscriptionOptionsInit* options,
                                      ExceptionState& exception_state) {
   if (!registration_->active())
     return ScriptPromise::RejectWithDOMException(
@@ -79,13 +79,13 @@ ScriptPromise PushManager::subscribe(ScriptState* script_state,
           DOMException::Create(DOMExceptionCode::kInvalidStateError,
                                "Document is detached from window."));
     PushController::ClientFrom(frame).Subscribe(
-        registration_->WebRegistration(), web_options,
+        registration_->RegistrationId(), web_options,
         LocalFrame::HasTransientUserActivation(frame,
                                                true /* check_if_main_thread */),
         std::make_unique<PushSubscriptionCallbacks>(resolver, registration_));
   } else {
     PushProvider()->Subscribe(
-        registration_->WebRegistration(), web_options,
+        registration_->RegistrationId(), web_options,
         LocalFrame::HasTransientUserActivation(nullptr,
                                                true /* check_if_main_thread */),
         std::make_unique<PushSubscriptionCallbacks>(resolver, registration_));
@@ -99,14 +99,14 @@ ScriptPromise PushManager::getSubscription(ScriptState* script_state) {
   ScriptPromise promise = resolver->Promise();
 
   PushProvider()->GetSubscription(
-      registration_->WebRegistration(),
+      registration_->RegistrationId(),
       std::make_unique<PushSubscriptionCallbacks>(resolver, registration_));
   return promise;
 }
 
 ScriptPromise PushManager::permissionState(
     ScriptState* script_state,
-    const PushSubscriptionOptionsInit& options,
+    const PushSubscriptionOptionsInit* options,
     ExceptionState& exception_state) {
   if (auto* document =
           DynamicTo<Document>(ExecutionContext::From(script_state))) {

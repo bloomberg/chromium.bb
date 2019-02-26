@@ -12,6 +12,7 @@
 
 #include "base/i18n/rtl.h"
 #include "base/strings/string16.h"
+#include "build/build_config.h"
 
 namespace base {
 class Pickle;
@@ -118,16 +119,39 @@ struct FormFieldData {
   // Comparison operator exposed for STL map. Uses label, then name to sort.
   bool operator<(const FormFieldData& field) const;
 
+#if defined(OS_IOS)
+  // The identifier which uniquely addresses this field in the DOM. This is an
+  // ephemeral value which is not guaranteed to be stable across page loads. It
+  // serves to allow a given field to be found during the current navigation.
+  //
+  // TODO(crbug.com/896689): Expand the logic/application of this to other
+  // platforms and/or merge this concept with |unique_renderer_id|.
+  base::string16 unique_id;
+#define EXPECT_EQ_UNIQUE_ID() EXPECT_EQ(expected.unique_id, actual.unique_id)
+#else
+#define EXPECT_EQ_UNIQUE_ID()
+#endif
+
+  // The name by which autofill knows this field. This is generally either the
+  // name attribute or the id_attribute value, which-ever is non-empty with
+  // priority given to the name_attribute. This value is used when computing
+  // form signatures.
+  // TODO(crbug/896689): remove this and use attributes/unique_id instead.
+  base::string16 name;
+
   // If you add more, be sure to update the comparison operators, SameFieldAs,
   // serializing functions (in the .cc file) and the constructor.
+  base::string16 id_attribute;
+  base::string16 name_attribute;
   base::string16 label;
-  base::string16 name;
-  base::string16 id;
   base::string16 value;
   std::string form_control_type;
   std::string autocomplete_attribute;
   base::string16 placeholder;
   base::string16 css_classes;
+  base::string16 aria_label;
+  base::string16 aria_description;
+
   // Unique renderer id which is returned by function
   // WebFormControlElement::UniqueRendererFormControlId(). It is not persistant
   // between page loads, so it is not saved and not used in comparison in
@@ -181,6 +205,7 @@ std::ostream& operator<<(std::ostream& os, const FormFieldData& field);
 // |FormFieldData|s in test code.
 #define EXPECT_FORM_FIELD_DATA_EQUALS(expected, actual)                        \
   do {                                                                         \
+    EXPECT_EQ_UNIQUE_ID();                                                     \
     EXPECT_EQ(expected.label, actual.label);                                   \
     EXPECT_EQ(expected.name, actual.name);                                     \
     EXPECT_EQ(expected.value, actual.value);                                   \
@@ -193,7 +218,8 @@ std::ostream& operator<<(std::ostream& os, const FormFieldData& field);
     EXPECT_EQ(expected.section, actual.section);                               \
     EXPECT_EQ(expected.check_status, actual.check_status);                     \
     EXPECT_EQ(expected.properties_mask, actual.properties_mask);               \
-    EXPECT_EQ(expected.id, actual.id);                                         \
+    EXPECT_EQ(expected.id_attribute, actual.id_attribute);                     \
+    EXPECT_EQ(expected.name_attribute, actual.name_attribute);                 \
   } while (0)
 
 }  // namespace autofill

@@ -9,29 +9,25 @@
 #include "base/feature_list.h"
 #import "base/ios/block_types.h"
 #include "base/scoped_observer.h"
-#include "components/reading_list/core/reading_list_model.h"
 #import "ios/chrome/browser/browser_state/chrome_browser_state.h"
-#import "ios/chrome/browser/reading_list/reading_list_model_factory.h"
 #import "ios/chrome/browser/snapshots/snapshot_cache.h"
 #import "ios/chrome/browser/snapshots/snapshot_cache_factory.h"
 #import "ios/chrome/browser/snapshots/snapshot_tab_helper.h"
 #import "ios/chrome/browser/tabs/tab.h"
 #import "ios/chrome/browser/tabs/tab_model_observer.h"
-#import "ios/chrome/browser/tabs/tab_private.h"
 #import "ios/chrome/browser/ui/fullscreen/animated_scoped_fullscreen_disabler.h"
 #import "ios/chrome/browser/ui/fullscreen/fullscreen_controller_factory.h"
 #import "ios/chrome/browser/ui/fullscreen/scoped_fullscreen_disabler.h"
-#import "ios/chrome/browser/ui/reading_list/reading_list_side_swipe_provider.h"
 #import "ios/chrome/browser/ui/side_swipe/card_side_swipe_view.h"
-#import "ios/chrome/browser/ui/side_swipe/history_side_swipe_provider.h"
 #import "ios/chrome/browser/ui/side_swipe/side_swipe_navigation_view.h"
 #import "ios/chrome/browser/ui/side_swipe/side_swipe_util.h"
 #import "ios/chrome/browser/ui/side_swipe_gesture_recognizer.h"
 #import "ios/chrome/browser/ui/tabs/requirements/tab_strip_highlighting.h"
 #include "ios/chrome/browser/ui/toolbar/public/side_swipe_toolbar_interacting.h"
 #import "ios/chrome/browser/ui/toolbar/public/side_swipe_toolbar_interacting.h"
-#include "ios/chrome/browser/ui/ui_util.h"
+#include "ios/chrome/browser/ui/util/ui_util.h"
 #import "ios/chrome/browser/web/page_placeholder_tab_helper.h"
+#import "ios/web/public/navigation_item.h"
 #import "ios/web/public/web_client.h"
 #import "ios/web/public/web_state/web_state_observer_bridge.h"
 
@@ -95,14 +91,6 @@ const NSUInteger kIpadGreySwipeTabCount = 8;
   // Curtain over web view while waiting for it to load.
   UIView* curtain_;
 
-  // Provides forward/back action for history entries.
-  HistorySideSwipeProvider* historySideSwipeProvider_;
-
-  // Provides forward action for reading list.
-  ReadingListSideSwipeProvider* readingListSideSwipeProvider_;
-
-  __weak id<SideSwipeContentProvider> currentContentProvider_;
-
   // The disabler that prevents the toolbar from being scrolled away when the
   // side swipe gesture is being recognized.
   std::unique_ptr<ScopedFullscreenDisabler> fullscreenDisabler_;
@@ -114,6 +102,11 @@ const NSUInteger kIpadGreySwipeTabCount = 8;
   // Browser state passed to the initialiser.
   ios::ChromeBrowserState* browserState_;
 }
+
+// Whether to allow navigating from the leading edge.
+@property(nonatomic, assign) BOOL leadingEdgeNavigationEnabled;
+// Whether to allow navigating from the trailing edge.
+@property(nonatomic, assign) BOOL trailingEdgeNavigationEnabled;
 
 // Load grey snapshots for the next |kIpadGreySwipeTabCount| tabs in
 // |direction|.
@@ -151,13 +144,6 @@ const NSUInteger kIpadGreySwipeTabCount = 8;
   if (self) {
     model_ = model;
     [model_ addObserver:self];
-    historySideSwipeProvider_ =
-        [[HistorySideSwipeProvider alloc] initWithTabModel:model_];
-
-    readingListSideSwipeProvider_ = [[ReadingListSideSwipeProvider alloc]
-        initWithReadingList:ReadingListModelFactory::GetForBrowserState(
-                                browserState)];
-
     webStateObserverBridge_ =
         std::make_unique<web::WebStateObserverBridge>(self);
     scopedWebStateObserver_ =
@@ -220,11 +206,17 @@ const NSUInteger kIpadGreySwipeTabCount = 8;
 - (BOOL)gestureRecognizer:(UIGestureRecognizer*)gestureRecognizer
     shouldBeRequiredToFailByGestureRecognizer:
         (UIGestureRecognizer*)otherGestureRecognizer {
-  // Only take precedence over a pan gesture recognizer so that moving up and
+  // Take precedence over a pan gesture recognizer so that moving up and
   // down while swiping doesn't trigger overscroll actions.
   if ([otherGestureRecognizer isKindOfClass:[UIPanGestureRecognizer class]]) {
     return YES;
   }
+  // Take precedence over a WKWebView side swipe gesture.
+  if ([otherGestureRecognizer
+          isKindOfClass:[UIScreenEdgePanGestureRecognizer class]]) {
+    return YES;
+  }
+
   return NO;
 }
 
@@ -258,6 +250,16 @@ const NSUInteger kIpadGreySwipeTabCount = 8;
       CGRectInset([[swipeDelegate_ sideSwipeContentView] frame], -1, -1);
   if (CGRectContainsPoint(contentViewFrame, location)) {
     if (![gesture isEqual:swipeGestureRecognizer_]) {
+      return NO;
+    }
+
+    if (gesture.direction == UISwipeGestureRecognizerDirectionRight &&
+        !self.leadingEdgeNavigationEnabled) {
+      return NO;
+    }
+
+    if (gesture.direction == UISwipeGestureRecognizerDirectionLeft &&
+        !self.trailingEdgeNavigationEnabled) {
       return NO;
     }
     swipeType_ = SwipeType::CHANGE_PAGE;
@@ -403,20 +405,14 @@ const NSUInteger kIpadGreySwipeTabCount = 8;
   }
 }
 
-- (id<SideSwipeContentProvider>)contentProviderForGesture:(BOOL)goBack {
-  if (goBack && [historySideSwipeProvider_ canGoBack]) {
-    return historySideSwipeProvider_;
+- (BOOL)canNavigate:(BOOL)goBack {
+  if (goBack && [[model_ currentTab] canGoBack]) {
+    return YES;
   }
-  if (!goBack && [historySideSwipeProvider_ canGoForward]) {
-    return historySideSwipeProvider_;
+  if (!goBack && [[model_ currentTab] canGoForward]) {
+    return YES;
   }
-  if (goBack && [readingListSideSwipeProvider_ canGoBack]) {
-    return readingListSideSwipeProvider_;
-  }
-  if (!goBack && [readingListSideSwipeProvider_ canGoForward]) {
-    return readingListSideSwipeProvider_;
-  }
-  return nil;
+  return NO;
 }
 
 // Show swipe to navigate.
@@ -433,9 +429,6 @@ const NSUInteger kIpadGreySwipeTabCount = 8;
     [swipeDelegate_ updateAccessoryViewsForSideSwipeWithVisibility:NO];
     BOOL goBack = IsSwipingBack(gesture.direction);
 
-    currentContentProvider_ = [self contentProviderForGesture:goBack];
-    BOOL canNavigate = currentContentProvider_ != nil;
-
     CGRect gestureBounds = gesture.view.bounds;
     CGFloat headerHeight = [swipeDelegate_ headerHeightForSideSwipe];
     CGRect navigationFrame =
@@ -447,9 +440,8 @@ const NSUInteger kIpadGreySwipeTabCount = 8;
     pageSideSwipeView_ = [[SideSwipeNavigationView alloc]
         initWithFrame:navigationFrame
         withDirection:gesture.direction
-          canNavigate:canNavigate
-                image:[currentContentProvider_ paneIcon]
-        rotateForward:[currentContentProvider_ rotateForwardIcon]];
+          canNavigate:[self canNavigate:goBack]
+                image:[UIImage imageNamed:@"side_swipe_navigation_back"]];
     [pageSideSwipeView_ setTargetView:[swipeDelegate_ sideSwipeContentView]];
 
     [gesture.view insertSubview:pageSideSwipeView_
@@ -468,9 +460,9 @@ const NSUInteger kIpadGreySwipeTabCount = 8;
         BOOL wantsBack = IsSwipingBack(gesture.direction);
         web::WebState* webState = [weakCurrentTab webState];
         if (wantsBack) {
-          [currentContentProvider_ goBack:webState];
+          [[model_ currentTab] goBack];
         } else {
-          [currentContentProvider_ goForward:webState];
+          [[model_ currentTab] goForward];
         }
 
         // Checking -IsLoading() is likely incorrect, but to narrow the scope of
@@ -507,9 +499,11 @@ const NSUInteger kIpadGreySwipeTabCount = 8;
     CGRect frame = [[swipeDelegate_ sideSwipeContentView] frame];
 
     // Add horizontal stack view controller.
+    // TODO(crbug.com/904992): Do not use SnapshotGeneratorDelegate from
+    // SideSwipeController.
     CGFloat headerHeight =
-        [self.snapshotDelegate
-            snapshotEdgeInsetsForWebState:currentTab.webState]
+        [self.snapshotDelegate snapshotGenerator:nil
+                   snapshotEdgeInsetsForWebState:currentTab.webState]
             .top;
 
     if (tabSideSwipeView_) {
@@ -549,6 +543,7 @@ const NSUInteger kIpadGreySwipeTabCount = 8;
 
     // Remove content area so it doesn't receive any pan events.
     [[swipeDelegate_ sideSwipeContentView] removeFromSuperview];
+    [swipeDelegate_ didRemoveSideSwipeContentView];
   }
 
   [tabSideSwipeView_ handleHorizontalPan:gesture];
@@ -582,6 +577,41 @@ const NSUInteger kIpadGreySwipeTabCount = 8;
   [curtain_ removeFromSuperview];
   curtain_ = nil;
   completionHandler();
+}
+
+- (void)updateNavigationEdgeSwipeForWebState:(web::WebState*)webState {
+  // With slim nav disabled, always use SideSwipeController's edge swipe for
+  // navigation.
+  if (!web::GetWebClient()->IsSlimNavigationManagerEnabled()) {
+    self.leadingEdgeNavigationEnabled = YES;
+    self.trailingEdgeNavigationEnabled = YES;
+    return;
+  }
+
+  // With slim nav enabled, disable SideSwipeController's edge swipe for a
+  // typical navigation.  Continue to use SideSwipeController when on, before,
+  // or after a native page.
+  self.leadingEdgeNavigationEnabled = NO;
+  self.trailingEdgeNavigationEnabled = NO;
+
+  web::NavigationItem* item =
+      webState->GetNavigationManager()->GetVisibleItem();
+  if (item && UseNativeSwipe(item)) {
+    self.leadingEdgeNavigationEnabled = YES;
+    self.trailingEdgeNavigationEnabled = YES;
+  }
+
+  // If the previous page is an NTP, enable leading edge swipe.
+  web::NavigationItemList backItems =
+      webState->GetNavigationManager()->GetBackwardItems();
+  if (backItems.size() > 0 && UseNativeSwipe(backItems[0]))
+    self.leadingEdgeNavigationEnabled = YES;
+
+  // If the next page is an NTP, enable trailing edge swipe.
+  web::NavigationItemList fordwardItems =
+      webState->GetNavigationManager()->GetForwardItems();
+  if (fordwardItems.size() > 0 && UseNativeSwipe(fordwardItems[0]))
+    self.trailingEdgeNavigationEnabled = YES;
 }
 
 #pragma mark - CRWWebStateObserver Methods
@@ -619,6 +649,12 @@ const NSUInteger kIpadGreySwipeTabCount = 8;
   // the gesture recognizer.
   [swipeGestureRecognizer_ setEnabled:NO];
   [swipeGestureRecognizer_ setEnabled:YES];
+
+  [self updateNavigationEdgeSwipeForWebState:newTab.webState];
+}
+
+- (void)tabModel:(TabModel*)model didChangeTab:(Tab*)tab {
+  [self updateNavigationEdgeSwipeForWebState:tab.webState];
 }
 
 @end

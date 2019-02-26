@@ -8,6 +8,7 @@
 #include <errno.h>
 #include <sys/mman.h>
 
+#include "base/logging.h"
 #include "build/build_config.h"
 
 #if defined(OS_MACOSX)
@@ -116,11 +117,18 @@ void* TrimMappingInternal(void* base,
   return ret;
 }
 
-bool SetSystemPagesAccessInternal(
+bool TrySetSystemPagesAccessInternal(
     void* address,
     size_t length,
     PageAccessibilityConfiguration accessibility) {
   return 0 == mprotect(address, length, GetAccessFlags(accessibility));
+}
+
+void SetSystemPagesAccessInternal(
+    void* address,
+    size_t length,
+    PageAccessibilityConfiguration accessibility) {
+  CHECK_EQ(0, mprotect(address, length, GetAccessFlags(accessibility)));
 }
 
 void FreePagesInternal(void* address, size_t length) {

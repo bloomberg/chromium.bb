@@ -4,15 +4,15 @@
 
 // https://notifications.spec.whatwg.org/#dictdef-notificationaction
 
-[RuntimeEnabled=NotificationInlineReplies] enum NotificationActionType {
+enum NotificationActionType {
     "button",
     "text"
 };
 
 dictionary NotificationAction {
-    [RuntimeEnabled=NotificationInlineReplies] NotificationActionType type = "button";
+    NotificationActionType type = "button";
     required DOMString action;
     required DOMString title;
     USVString icon;
-    [RuntimeEnabled=NotificationInlineReplies] DOMString? placeholder = null;
+    DOMString? placeholder = null;
 };

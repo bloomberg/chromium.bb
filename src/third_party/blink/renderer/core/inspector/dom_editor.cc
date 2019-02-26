@@ -94,8 +94,8 @@ class DOMEditor::InsertBeforeAction final : public InspectorHistory::Action {
 
   bool Perform(ExceptionState& exception_state) override {
     if (node_->parentNode()) {
-      remove_child_action_ =
-          new RemoveChildAction(node_->parentNode(), node_.Get());
+      remove_child_action_ = MakeGarbageCollected<RemoveChildAction>(
+          node_->parentNode(), node_.Get());
       if (!remove_child_action_->Perform(exception_state))
         return false;
     }
@@ -225,8 +225,8 @@ class DOMEditor::SetOuterHTMLAction final : public InspectorHistory::Action {
         next_sibling_(node->nextSibling()),
         html_(html),
         new_node_(nullptr),
-        history_(new InspectorHistory()),
-        dom_editor_(new DOMEditor(history_.Get())) {}
+        history_(MakeGarbageCollected<InspectorHistory>()),
+        dom_editor_(MakeGarbageCollected<DOMEditor>(history_.Get())) {}
 
   bool Perform(ExceptionState& exception_state) override {
     old_html_ = CreateMarkup(node_.Get());
@@ -384,14 +384,16 @@ bool DOMEditor::InsertBefore(ContainerNode* parent_node,
                              Node* anchor_node,
                              ExceptionState& exception_state) {
   return history_->Perform(
-      new InsertBeforeAction(parent_node, node, anchor_node), exception_state);
+      MakeGarbageCollected<InsertBeforeAction>(parent_node, node, anchor_node),
+      exception_state);
 }
 
 bool DOMEditor::RemoveChild(ContainerNode* parent_node,
                             Node* node,
                             ExceptionState& exception_state) {
-  return history_->Perform(new RemoveChildAction(parent_node, node),
-                           exception_state);
+  return history_->Perform(
+      MakeGarbageCollected<RemoveChildAction>(parent_node, node),
+      exception_state);
 }
 
 bool DOMEditor::SetAttribute(Element* element,
@@ -399,7 +401,8 @@ bool DOMEditor::SetAttribute(Element* element,
                              const String& value,
                              ExceptionState& exception_state) {
   return history_->Perform(
-      new SetAttributeAction(element, AtomicString(name), AtomicString(value)),
+      MakeGarbageCollected<SetAttributeAction>(element, AtomicString(name),
+                                               AtomicString(value)),
       exception_state);
 }
 
@@ -407,14 +410,16 @@ bool DOMEditor::RemoveAttribute(Element* element,
                                 const String& name,
                                 ExceptionState& exception_state) {
   return history_->Perform(
-      new RemoveAttributeAction(element, AtomicString(name)), exception_state);
+      MakeGarbageCollected<RemoveAttributeAction>(element, AtomicString(name)),
+      exception_state);
 }
 
 bool DOMEditor::SetOuterHTML(Node* node,
                              const String& html,
                              Node** new_node,
                              ExceptionState& exception_state) {
-  SetOuterHTMLAction* action = new SetOuterHTMLAction(node, html);
+  SetOuterHTMLAction* action =
+      MakeGarbageCollected<SetOuterHTMLAction>(node, html);
   bool result = history_->Perform(action, exception_state);
   if (result)
     *new_node = action->NewNode();
@@ -424,24 +429,25 @@ bool DOMEditor::SetOuterHTML(Node* node,
 bool DOMEditor::ReplaceWholeText(Text* text_node,
                                  const String& text,
                                  ExceptionState& exception_state) {
-  return history_->Perform(new ReplaceWholeTextAction(text_node, text),
-                           exception_state);
+  return history_->Perform(
+      MakeGarbageCollected<ReplaceWholeTextAction>(text_node, text),
+      exception_state);
 }
 
 bool DOMEditor::ReplaceChild(ContainerNode* parent_node,
                              Node* new_node,
                              Node* old_node,
                              ExceptionState& exception_state) {
-  return history_->Perform(
-      new ReplaceChildNodeAction(parent_node, new_node, old_node),
-      exception_state);
+  return history_->Perform(MakeGarbageCollected<ReplaceChildNodeAction>(
+                               parent_node, new_node, old_node),
+                           exception_state);
 }
 
 bool DOMEditor::SetNodeValue(Node* node,
                              const String& value,
                              ExceptionState& exception_state) {
-  return history_->Perform(new SetNodeValueAction(node, value),
-                           exception_state);
+  return history_->Perform(
+      MakeGarbageCollected<SetNodeValueAction>(node, value), exception_state);
 }
 
 static Response ToResponse(ExceptionState& exception_state) {

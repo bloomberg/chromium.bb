@@ -332,8 +332,9 @@ const AtomicString& StyleSheetContents::NamespaceURIFromPrefix(
 void StyleSheetContents::ParseAuthorStyleSheet(
     const CSSStyleSheetResource* cached_style_sheet,
     const SecurityOrigin* security_origin) {
-  TRACE_EVENT1("blink,devtools.timeline", "ParseAuthorStyleSheet", "data",
-               InspectorParseAuthorStyleSheetEvent::Data(cached_style_sheet));
+  TRACE_EVENT1(
+      "blink,devtools.timeline", "ParseAuthorStyleSheet", "data",
+      inspector_parse_author_style_sheet_event::Data(cached_style_sheet));
   TimeTicks start_time = CurrentTimeTicks();
 
   bool is_same_origin_request =
@@ -360,10 +361,10 @@ void StyleSheetContents::ParseAuthorStyleSheet(
       cached_style_sheet->SheetText(parser_context_, mime_type_check);
 
   const ResourceResponse& response = cached_style_sheet->GetResponse();
-  source_map_url_ = response.HttpHeaderField(HTTPNames::SourceMap);
+  source_map_url_ = response.HttpHeaderField(http_names::kSourceMap);
   if (source_map_url_.IsEmpty()) {
     // Try to get deprecated header.
-    source_map_url_ = response.HttpHeaderField(HTTPNames::X_SourceMap);
+    source_map_url_ = response.HttpHeaderField(http_names::kXSourceMap);
   }
 
   const CSSParserContext* context =
@@ -535,6 +536,7 @@ static bool ChildRulesHaveFailedOrCanceledSubresources(
       case StyleRuleBase::kKeyframe:
       case StyleRuleBase::kSupports:
       case StyleRuleBase::kViewport:
+      case StyleRuleBase::kFontFeatureValues:
         break;
     }
   }

@@ -242,7 +242,7 @@ void OculusDevice::StopOvrSession() {
   }
 }
 
-void OculusDevice::OnMagicWindowFrameDataRequest(
+void OculusDevice::OnGetInlineFrameData(
     mojom::XRFrameDataProvider::GetFrameDataCallback callback) {
   if (!session_) {
     std::move(callback).Run(nullptr);

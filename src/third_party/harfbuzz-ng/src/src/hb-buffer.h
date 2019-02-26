@@ -89,11 +89,14 @@ typedef struct hb_glyph_info_t
  * 				   of each line after line-breaking, or limiting
  * 				   the reshaping to a small piece around the
  * 				   breaking point only.
+ * @HB_GLYPH_FLAG_DEFINED: All the currently defined flags.
+ *
+ * Since: 1.5.0
  */
 typedef enum { /*< flags >*/
   HB_GLYPH_FLAG_UNSAFE_TO_BREAK		= 0x00000001,
 
-  HB_GLYPH_FLAG_DEFINED			= 0x00000001 /*< skip >*/ /* OR of all defined flags */
+  HB_GLYPH_FLAG_DEFINED			= 0x00000001 /* OR of all defined flags */
 } hb_glyph_flags_t;
 
 HB_EXTERN hb_glyph_flags_t
@@ -340,6 +343,13 @@ hb_buffer_set_replacement_codepoint (hb_buffer_t    *buffer,
 
 HB_EXTERN hb_codepoint_t
 hb_buffer_get_replacement_codepoint (hb_buffer_t    *buffer);
+
+HB_EXTERN void
+hb_buffer_set_invisible_glyph (hb_buffer_t    *buffer,
+			       hb_codepoint_t  invisible);
+
+HB_EXTERN hb_codepoint_t
+hb_buffer_get_invisible_glyph (hb_buffer_t    *buffer);
 
 
 HB_EXTERN void

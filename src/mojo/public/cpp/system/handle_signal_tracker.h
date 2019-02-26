@@ -12,6 +12,10 @@
 #include "mojo/public/cpp/system/simple_watcher.h"
 #include "mojo/public/cpp/system/system_export.h"
 
+namespace base {
+class SequencedTaskRunner;
+}
+
 namespace mojo {
 
 // This class helps track the state of specific signal on a handle so that
@@ -29,7 +33,10 @@ class MOJO_CPP_SYSTEM_EXPORT HandleSignalTracker {
 
   // Constructs a tracker which tracks |signals| on |handle|. |signals| may
   // be any single signal flag or any combination of signal flags.
-  HandleSignalTracker(Handle handle, MojoHandleSignals signals);
+  HandleSignalTracker(Handle handle,
+                      MojoHandleSignals signals,
+                      scoped_refptr<base::SequencedTaskRunner> task_runner =
+                          base::SequencedTaskRunnerHandle::Get());
   ~HandleSignalTracker();
 
   const HandleSignalsState& last_known_state() const {

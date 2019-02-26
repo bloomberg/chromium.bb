@@ -375,17 +375,6 @@ Polymer({
     this.set('settings.layout.available', this.isLayoutAvailable_(caps));
     this.set('settings.color.available', this.destination.hasColorCapability);
 
-    if (this.destination.isColorManaged) {
-      // |this.setSetting| does nothing if policy is present.
-      // We want to set the value nevertheless so we call |this.set| directly.
-      this.set('settings.color.value', this.destination.colorPolicyValue);
-    }
-    this.set('settings.color.setByPolicy', this.destination.isColorManaged);
-
-    if (this.destination.isDuplexManaged)
-      this.set('settings.duplex.value', this.destination.duplexPolicyValue);
-    this.set('settings.duplex.setByPolicy', this.destination.isDuplexManaged);
-
     this.set(
         'settings.dpi.available',
         !!caps && !!caps.dpi && !!caps.dpi.option &&
@@ -612,7 +601,7 @@ Polymer({
 
   /** @private */
   updateRecentDestinations_: function() {
-    if (!this.initialized_)
+    if (!this.initialized_ || !this.destination)
       return;
 
     // Determine if this destination is already in the recent destinations,
@@ -717,6 +706,33 @@ Polymer({
     this.initialized_ = true;
     this.stickySettings_ = null;
     this.stickySettingsChanged_();
+  },
+
+  /**
+   * Restricts settings and applies defaults as defined by policy applicable to
+   * current destination.
+   */
+  applyDestinationSpecificPolicies: function() {
+    const colorPolicy = this.destination.colorPolicy;
+    const colorValue =
+        colorPolicy ? colorPolicy : this.destination.defaultColorPolicy;
+    if (colorValue) {
+      // |this.setSetting| does nothing if policy is present.
+      // We want to set the value nevertheless so we call |this.set| directly.
+      this.set(
+          'settings.color.value', colorValue == print_preview.ColorMode.COLOR);
+    }
+    this.set('settings.color.setByPolicy', !!colorPolicy);
+
+    const duplexPolicy = this.destination.duplexPolicy;
+    const duplexValue =
+        duplexPolicy ? duplexPolicy : this.destination.defaultDuplexPolicy;
+    if (duplexValue) {
+      this.set(
+          'settings.duplex.value',
+          duplexValue != print_preview.DuplexModeRestriction.SIMPLEX);
+    }
+    this.set('settings.duplex.setByPolicy', !!duplexPolicy);
   },
 
   /** @return {boolean} Whether the model has been initialized. */

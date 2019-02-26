@@ -8,11 +8,12 @@
 #include <memory>
 
 #include "ash/ash_export.h"
+#include "ash/public/cpp/assistant/default_voice_interaction_observer.h"
 #include "ash/public/interfaces/voice_interaction_controller.mojom.h"
 #include "ash/session/session_observer.h"
+#include "ash/shelf/shelf_control_button.h"
 #include "ash/shell_observer.h"
 #include "base/macros.h"
-#include "mojo/public/cpp/bindings/binding.h"
 #include "third_party/skia/include/core/SkColor.h"
 #include "ui/views/controls/button/image_button.h"
 
@@ -28,10 +29,10 @@ class Shelf;
 class ShelfView;
 
 // Button used for the AppList icon on the shelf.
-class ASH_EXPORT AppListButton : public views::ImageButton,
+class ASH_EXPORT AppListButton : public ShelfControlButton,
                                  public ShellObserver,
                                  public SessionObserver,
-                                 public mojom::VoiceInteractionObserver {
+                                 public DefaultVoiceInteractionObserver {
  public:
   AppListButton(InkDropButtonListener* listener,
                 ShelfView* shelf_view,
@@ -45,10 +46,6 @@ class ASH_EXPORT AppListButton : public views::ImageButton,
 
   // views::ImageButton:
   void OnGestureEvent(ui::GestureEvent* event) override;
-
-  // Get the center point of the app list button circle used to draw its
-  // background and ink drops.
-  gfx::Point GetCenterPoint() const;
 
  protected:
   // views::ImageButton:
@@ -73,12 +70,7 @@ class ASH_EXPORT AppListButton : public views::ImageButton,
   void OnVoiceInteractionStatusChanged(
       mojom::VoiceInteractionState state) override;
   void OnVoiceInteractionSettingsEnabled(bool enabled) override;
-  void OnVoiceInteractionContextEnabled(bool enabled) override {}
-  void OnVoiceInteractionHotwordEnabled(bool enabled) override {}
   void OnVoiceInteractionSetupCompleted(bool completed) override;
-  void OnAssistantFeatureAllowedChanged(
-      mojom::AssistantAllowedState state) override {}
-  void OnLocaleChanged(const std::string& locale) override {}
 
   // SessionObserver:
   void OnActiveUserSessionChanged(const AccountId& account_id) override;
@@ -104,8 +96,6 @@ class ASH_EXPORT AppListButton : public views::ImageButton,
   std::unique_ptr<base::OneShotTimer> assistant_animation_delay_timer_;
   std::unique_ptr<base::OneShotTimer> assistant_animation_hide_delay_timer_;
   base::TimeTicks voice_interaction_start_timestamp_;
-
-  mojo::Binding<mojom::VoiceInteractionObserver> voice_interaction_binding_;
 
   DISALLOW_COPY_AND_ASSIGN(AppListButton);
 };

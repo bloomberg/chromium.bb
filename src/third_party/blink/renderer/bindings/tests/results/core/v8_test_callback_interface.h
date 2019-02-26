@@ -8,9 +8,8 @@
 // DO NOT MODIFY!
 
 // clang-format off
-
-#ifndef V8TestCallbackInterface_h
-#define V8TestCallbackInterface_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_BINDINGS_TESTS_RESULTS_CORE_V8_TEST_CALLBACK_INTERFACE_H_
+#define THIRD_PARTY_BLINK_RENDERER_BINDINGS_TESTS_RESULTS_CORE_V8_TEST_CALLBACK_INTERFACE_H_
 
 #include "third_party/blink/renderer/core/core_export.h"
 #include "third_party/blink/renderer/platform/bindings/callback_interface_base.h"
@@ -27,6 +26,11 @@ class CORE_EXPORT V8TestCallbackInterface final : public CallbackInterfaceBase {
   // See also crbug.com/886588
   static V8TestCallbackInterface* CreateOrNull(v8::Local<v8::Object> callback_object);
 
+  explicit V8TestCallbackInterface(
+      v8::Local<v8::Object> callback_object,
+      v8::Local<v8::Context> callback_object_creation_context)
+      : CallbackInterfaceBase(callback_object, callback_object_creation_context,
+                              kNotSingleOperation) {}
   ~V8TestCallbackInterface() override = default;
 
   // NameClient overrides:
@@ -67,13 +71,6 @@ class CORE_EXPORT V8TestCallbackInterface final : public CallbackInterfaceBase {
   // Performs "call a user object's operation".
   // https://heycam.github.io/webidl/#call-a-user-objects-operation
   v8::Maybe<void> customVoidMethodTestInterfaceEmptyArg(ScriptWrappable* callback_this_value, TestInterfaceEmpty* testInterfaceEmptyArg) WARN_UNUSED_RESULT;
-
- private:
-  explicit V8TestCallbackInterface(
-      v8::Local<v8::Object> callback_object,
-      v8::Local<v8::Context> callback_object_creation_context)
-      : CallbackInterfaceBase(callback_object, callback_object_creation_context,
-                              kNotSingleOperation) {}
 };
 
 template <>
@@ -115,4 +112,4 @@ Persistent<V8TestCallbackInterface> WrapPersistent(V8TestCallbackInterface*) = d
 
 }  // namespace blink
 
-#endif  // V8TestCallbackInterface_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_BINDINGS_TESTS_RESULTS_CORE_V8_TEST_CALLBACK_INTERFACE_H_

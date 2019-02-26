@@ -13,10 +13,7 @@
 #include "content/public/common/content_client.h"
 #include "content/public/common/content_paths.h"
 #include "content/public/test/test_content_client_initializer.h"
-#include "gpu/config/gpu_info_collector.h"
-#include "gpu/config/gpu_preferences.h"
-#include "gpu/config/gpu_util.h"
-#include "gpu/ipc/in_process_command_buffer.h"
+#include "gpu/ipc/test_gpu_thread_holder.h"
 #include "media/base/media.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/gl/init/gl_factory.h"
@@ -89,14 +86,9 @@ void ContentTestSuite::Initialize() {
   bool is_child_process = command_line->HasSwitch(switches::kTestChildProcess);
   if (!is_child_process) {
     gl::GLSurfaceTestSupport::InitializeNoExtensionsOneOff();
-    gpu::GPUInfo gpu_info;
-    gpu::CollectGraphicsInfoForTesting(&gpu_info);
-    gpu::GpuFeatureInfo gpu_feature_info = gpu::ComputeGpuFeatureInfo(
-        gpu_info, gpu::GpuPreferences(), command_line, nullptr);
-    gpu::InProcessCommandBuffer::InitializeDefaultServiceForTesting(
-        gpu_feature_info);
+    auto* gpu_feature_info = gpu::GetTestGpuThreadHolder()->GetGpuFeatureInfo();
     gl::init::SetDisabledExtensionsPlatform(
-        gpu_feature_info.disabled_extensions);
+        gpu_feature_info->disabled_extensions);
     gl::init::InitializeExtensionSettingsOneOffPlatform();
   }
   testing::TestEventListeners& listeners =

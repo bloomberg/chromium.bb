@@ -18,7 +18,7 @@ module.exports = function(config) {
     ],
 
     proxies: {
-      "/pathkit/": "/base/npm-wasm/bin/test/"
+      '/pathkit/': '/base/npm-wasm/bin/test/'
     },
 
     // test results reporter to use
@@ -80,7 +80,7 @@ module.exports = function(config) {
     ];
 
     cfg.proxies = {
-      "/pathkit/": "/base/npm-asmjs/bin/test/"
+      '/pathkit/': '/base/npm-asmjs/bin/test/'
     };
   } else {
     console.log('wasm is under test');

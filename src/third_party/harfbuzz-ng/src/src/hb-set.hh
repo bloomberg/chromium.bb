@@ -39,9 +39,13 @@
 
 struct hb_set_t
 {
+  HB_NO_COPY_ASSIGN (hb_set_t);
+  inline hb_set_t (void) { init (); }
+  inline ~hb_set_t (void) { fini (); }
+
   struct page_map_t
   {
-    inline int cmp (const page_map_t *o) const { return (int) o->major - (int) major; }
+    inline int cmp (const page_map_t &o) const { return (int) o.major - (int) major; }
 
     uint32_t major;
     uint32_t index;
@@ -49,8 +53,8 @@ struct hb_set_t
 
   struct page_t
   {
-    inline void init0 (void) { memset (&v, 0, sizeof (v)); }
-    inline void init1 (void) { memset (&v, 0xff, sizeof (v)); }
+    inline void init0 (void) { v.clear (); }
+    inline void init1 (void) { v.clear (0xFF); }
 
     inline unsigned int len (void) const
     { return ARRAY_LENGTH_CONST (v); }
@@ -86,7 +90,7 @@ struct hb_set_t
 
     inline bool is_equal (const page_t *other) const
     {
-      return 0 == memcmp (&v, &other->v, sizeof (v));
+      return 0 == hb_memcmp (&v, &other->v, sizeof (v));
     }
 
     inline unsigned int get_population (void) const
@@ -199,6 +203,7 @@ struct hb_set_t
   }
   inline void fini_shallow (void)
   {
+    population = 0;
     page_map.fini ();
     pages.fini ();
   }
@@ -220,15 +225,17 @@ struct hb_set_t
     return true;
   }
 
-  inline void clear (void) {
-    if (unlikely (hb_object_is_inert (this)))
+  inline void clear (void)
+  {
+    if (unlikely (hb_object_is_immutable (this)))
       return;
     successful = true;
     population = 0;
     page_map.resize (0);
     pages.resize (0);
   }
-  inline bool is_empty (void) const {
+  inline bool is_empty (void) const
+  {
     unsigned int count = pages.len;
     for (unsigned int i = 0; i < count; i++)
       if (!pages[i].is_empty ())
@@ -334,11 +341,11 @@ struct hb_set_t
   {
     /* TODO perform op even if !successful. */
     if (unlikely (!successful)) return;
-    page_t *p = page_for (g);
-    if (!p)
+    page_t *page = page_for (g);
+    if (!page)
       return;
     dirty ();
-    p->del (g);
+    page->del (g);
   }
   inline void del_range (hb_codepoint_t a, hb_codepoint_t b)
   {
@@ -350,10 +357,10 @@ struct hb_set_t
   }
   inline bool has (hb_codepoint_t g) const
   {
-    const page_t *p = page_for (g);
-    if (!p)
+    const page_t *page = page_for (g);
+    if (!page)
       return false;
-    return p->has (g);
+    return page->has (g);
   }
   inline bool intersects (hb_codepoint_t first,
 			  hb_codepoint_t last) const
@@ -368,8 +375,8 @@ struct hb_set_t
     if (!resize (count))
       return;
     population = other->population;
-    memcpy (pages.arrayZ, other->pages.arrayZ, count * sizeof (pages.arrayZ[0]));
-    memcpy (page_map.arrayZ, other->page_map.arrayZ, count * sizeof (page_map.arrayZ[0]));
+    memcpy (pages, other->pages, count * pages.item_size);
+    memcpy (page_map, other->page_map, count * page_map.item_size);
   }
 
   inline bool is_equal (const hb_set_t *other) const
@@ -537,7 +544,7 @@ struct hb_set_t
 
     page_map_t map = {get_major (*codepoint), 0};
     unsigned int i;
-    page_map.bfind (map, &i);
+    page_map.bfind (map, &i, HB_BFIND_NOT_FOUND_STORE_CLOSEST);
     if (i < page_map.len && page_map[i].major == map.major)
     {
       if (pages[page_map[i].index].next (codepoint))
@@ -568,7 +575,7 @@ struct hb_set_t
 
     page_map_t map = {get_major (*codepoint), 0};
     unsigned int i;
-    page_map.bfind (map, &i);
+    page_map.bfind (map, &i, HB_BFIND_NOT_FOUND_STORE_CLOSEST);
     if (i < page_map.len && page_map[i].major == map.major)
     {
       if (pages[page_map[i].index].previous (codepoint))
@@ -663,13 +670,15 @@ struct hb_set_t
   {
     page_map_t map = {get_major (g), pages.len};
     unsigned int i;
-    if (!page_map.bfind (map, &i))
+    if (!page_map.bfind (map, &i, HB_BFIND_NOT_FOUND_STORE_CLOSEST))
     {
       if (!resize (pages.len + 1))
 	return nullptr;
 
       pages[map.index].init0 ();
-      memmove (&page_map[i + 1], &page_map[i], (page_map.len - 1 - i) * sizeof (page_map[0]));
+      memmove (page_map + i + 1,
+	       page_map + i,
+	       (page_map.len - 1 - i) * sizeof (page_map[0]));
       page_map[i] = map;
     }
     return &pages[page_map[i].index];

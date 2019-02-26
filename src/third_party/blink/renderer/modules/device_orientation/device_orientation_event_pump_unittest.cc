@@ -87,7 +87,7 @@ class DeviceOrientationEventPumpTest : public testing::Test {
   void SetUp() override {
     device::mojom::SensorProviderPtrInfo sensor_provider_ptr_info;
     sensor_provider_.Bind(mojo::MakeRequest(&sensor_provider_ptr_info));
-    auto* orientation_pump = new DeviceOrientationEventPump(
+    auto* orientation_pump = MakeGarbageCollected<DeviceOrientationEventPump>(
         base::ThreadTaskRunnerHandle::Get(), false /* absolute */);
     orientation_pump->SetSensorProviderForTesting(
         device::mojom::blink::SensorProviderPtr(
@@ -95,7 +95,8 @@ class DeviceOrientationEventPumpTest : public testing::Test {
                 sensor_provider_ptr_info.PassHandle(),
                 device::mojom::SensorProvider::Version_)));
 
-    controller_ = new MockDeviceOrientationController(orientation_pump);
+    controller_ =
+        MakeGarbageCollected<MockDeviceOrientationController>(orientation_pump);
 
     ExpectRelativeOrientationSensorStateToBe(
         DeviceOrientationEventPump::SensorState::NOT_INITIALIZED);
@@ -726,15 +727,16 @@ class DeviceAbsoluteOrientationEventPumpTest : public testing::Test {
   void SetUp() override {
     device::mojom::SensorProviderPtrInfo sensor_provider_ptr_info;
     sensor_provider_.Bind(mojo::MakeRequest(&sensor_provider_ptr_info));
-    auto* absolute_orientation_pump = new DeviceOrientationEventPump(
-        base::ThreadTaskRunnerHandle::Get(), true /* absolute */);
+    auto* absolute_orientation_pump =
+        MakeGarbageCollected<DeviceOrientationEventPump>(
+            base::ThreadTaskRunnerHandle::Get(), true /* absolute */);
     absolute_orientation_pump->SetSensorProviderForTesting(
         device::mojom::blink::SensorProviderPtr(
             device::mojom::blink::SensorProviderPtrInfo(
                 sensor_provider_ptr_info.PassHandle(),
                 device::mojom::SensorProvider::Version_)));
-    controller_ =
-        new MockDeviceOrientationController(absolute_orientation_pump);
+    controller_ = MakeGarbageCollected<MockDeviceOrientationController>(
+        absolute_orientation_pump);
 
     ExpectAbsoluteOrientationSensorStateToBe(
         DeviceOrientationEventPump::SensorState::NOT_INITIALIZED);

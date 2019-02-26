@@ -5,15 +5,11 @@
 #import "ios/chrome/browser/ui/authentication/signed_in_accounts_view_controller.h"
 
 #import "base/mac/foundation_util.h"
-#include "components/signin/core/browser/account_tracker_service.h"
-#include "components/signin/core/browser/profile_oauth2_token_service.h"
-#include "components/signin/ios/browser/oauth2_token_service_observer_bridge.h"
 #include "ios/chrome/browser/browser_state/chrome_browser_state.h"
-#include "ios/chrome/browser/signin/account_tracker_service_factory.h"
 #include "ios/chrome/browser/signin/authentication_service.h"
 #include "ios/chrome/browser/signin/authentication_service_factory.h"
 #include "ios/chrome/browser/signin/chrome_identity_service_observer_bridge.h"
-#include "ios/chrome/browser/signin/profile_oauth2_token_service_factory.h"
+#include "ios/chrome/browser/signin/identity_manager_factory.h"
 #import "ios/chrome/browser/ui/authentication/resized_avatar_cache.h"
 #import "ios/chrome/browser/ui/collection_view/cells/collection_view_account_item.h"
 #import "ios/chrome/browser/ui/collection_view/collection_view_controller.h"
@@ -31,6 +27,8 @@
 #import "ios/third_party/material_components_ios/src/components/Dialogs/src/MaterialDialogs.h"
 #import "ios/third_party/material_components_ios/src/components/Palettes/src/MaterialPalettes.h"
 #import "ios/third_party/material_components_ios/src/components/Typography/src/MaterialTypography.h"
+#include "services/identity/public/cpp/identity_manager.h"
+#import "services/identity/public/objc/identity_manager_observer_bridge.h"
 #include "ui/base/l10n/l10n_util_mac.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
@@ -39,7 +37,7 @@
 
 namespace {
 
-const int kMaxShownAccounts = 3;
+const size_t kMaxShownAccounts = 3;
 const CGFloat kAccountsExtraBottomInset = 16;
 const CGFloat kVerticalPadding = 24;
 const CGFloat kButtonVerticalPadding = 16;
@@ -110,16 +108,14 @@ BOOL gSignedInAccountsViewControllerIsShown = NO;
 - (void)loadModel {
   [super loadModel];
   CollectionViewModel* model = self.collectionViewModel;
+  [model addSectionWithIdentifier:SectionIdentifierAccounts];
+
   NSMutableDictionary<NSString*, CollectionViewItem*>* mutableIdentityMap =
       [[NSMutableDictionary alloc] init];
 
-  [model addSectionWithIdentifier:SectionIdentifierAccounts];
-  ProfileOAuth2TokenService* oauth2_service =
-      ProfileOAuth2TokenServiceFactory::GetForBrowserState(_browserState);
-  AccountTrackerService* accountTracker =
-      ios::AccountTrackerServiceFactory::GetForBrowserState(_browserState);
-  for (const std::string& account_id : oauth2_service->GetAccounts()) {
-    AccountInfo account = accountTracker->GetAccountInfo(account_id);
+  identity::IdentityManager* identityManager =
+      IdentityManagerFactory::GetForBrowserState(_browserState);
+  for (const auto& account : identityManager->GetAccountsWithRefreshTokens()) {
     ChromeIdentity* identity = ios::GetChromeBrowserProvider()
                                    ->GetChromeIdentityService()
                                    ->GetIdentityWithGaiaID(account.gaia);
@@ -181,10 +177,11 @@ BOOL gSignedInAccountsViewControllerIsShown = NO;
 
 @end
 
-@interface SignedInAccountsViewController ()<
-    OAuth2TokenServiceObserverBridgeDelegate> {
+@interface SignedInAccountsViewController () <
+    IdentityManagerObserverBridgeDelegate> {
   ios::ChromeBrowserState* _browserState;  // Weak.
-  std::unique_ptr<OAuth2TokenServiceObserverBridge> _tokenServiceObserver;
+  std::unique_ptr<identity::IdentityManagerObserverBridge>
+      _identityManagerObserver;
   MDCDialogTransitionController* _transitionController;
 
   UILabel* _titleLabel;
@@ -219,9 +216,9 @@ BOOL gSignedInAccountsViewControllerIsShown = NO;
   if (self) {
     _browserState = browserState;
     _dispatcher = dispatcher;
-    _tokenServiceObserver.reset(new OAuth2TokenServiceObserverBridge(
-        ProfileOAuth2TokenServiceFactory::GetForBrowserState(_browserState),
-        self));
+    _identityManagerObserver =
+        std::make_unique<identity::IdentityManagerObserverBridge>(
+            IdentityManagerFactory::GetForBrowserState(_browserState), self);
     _transitionController = [[MDCDialogTransitionController alloc] init];
     self.modalPresentationStyle = UIModalPresentationCustom;
     self.transitioningDelegate = _transitionController;
@@ -246,13 +243,14 @@ BOOL gSignedInAccountsViewControllerIsShown = NO;
 #pragma mark UIViewController
 
 - (CGSize)preferredContentSize {
-  CGFloat width = MIN(kDialogMaxWidth,
-                      self.presentingViewController.view.bounds.size.width -
-                          2 * kMDCMinHorizontalPadding);
-  OAuth2TokenService* token_service =
-      ProfileOAuth2TokenServiceFactory::GetForBrowserState(_browserState);
+  CGFloat width = std::min(
+      kDialogMaxWidth, self.presentingViewController.view.bounds.size.width -
+                           2 * kMDCMinHorizontalPadding);
+  identity::IdentityManager* identityManager =
+      IdentityManagerFactory::GetForBrowserState(_browserState);
   int shownAccounts =
-      MIN(kMaxShownAccounts, token_service->GetAccounts().size());
+      std::min(kMaxShownAccounts,
+               identityManager->GetAccountsWithRefreshTokens().size());
   CGSize maxSize = CGSizeMake(width - 2 * kHorizontalPadding, CGFLOAT_MAX);
   CGSize buttonSize = [_primaryButton sizeThatFits:maxSize];
   CGSize infoSize = [_infoLabel sizeThatFits:maxSize];
@@ -388,12 +386,12 @@ BOOL gSignedInAccountsViewControllerIsShown = NO;
   }];
 }
 
-#pragma mark OAuth2TokenServiceObserverBridgeDelegate
+#pragma mark IdentityManagerObserverBridgeDelegate
 
-- (void)onEndBatchChanges {
-  ProfileOAuth2TokenService* tokenService =
-      ProfileOAuth2TokenServiceFactory::GetForBrowserState(_browserState);
-  if (tokenService->GetAccounts().empty()) {
+- (void)onEndBatchOfRefreshTokenStateChanges {
+  identity::IdentityManager* identityManager =
+      IdentityManagerFactory::GetForBrowserState(_browserState);
+  if (identityManager->GetAccountsWithRefreshTokens().empty()) {
     [self dismissWithCompletion:nil];
     return;
   }

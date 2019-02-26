@@ -15,7 +15,7 @@ class MediaSettingsRange final : public ScriptWrappable {
 
  public:
   static MediaSettingsRange* Create(double max, double min, double step) {
-    return new MediaSettingsRange(max, min, step);
+    return MakeGarbageCollected<MediaSettingsRange>(max, min, step);
   }
   static MediaSettingsRange* Create(media::mojom::blink::RangePtr range) {
     return MediaSettingsRange::Create(*range);
@@ -24,14 +24,14 @@ class MediaSettingsRange final : public ScriptWrappable {
     return MediaSettingsRange::Create(range.max, range.min, range.step);
   }
 
+  MediaSettingsRange(double max, double min, double step)
+      : max_(max), min_(min), step_(step) {}
+
   double max() const { return max_; }
   double min() const { return min_; }
   double step() const { return step_; }
 
  private:
-  MediaSettingsRange(double max, double min, double step)
-      : max_(max), min_(min), step_(step) {}
-
   double max_;
   double min_;
   double step_;

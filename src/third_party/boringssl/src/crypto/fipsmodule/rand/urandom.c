@@ -34,7 +34,24 @@
 #include <sys/ioctl.h>
 #endif
 #include <sys/syscall.h>
+
+#if !defined(OPENSSL_ANDROID)
+#define OPENSSL_HAS_GETAUXVAL
 #endif
+// glibc prior to 2.16 does not have getauxval and sys/auxv.h. Android has some
+// host builds (i.e. not building for Android itself, so |OPENSSL_ANDROID| is
+// unset) which are still using a 2.15 sysroot.
+//
+// TODO(davidben): Remove this once Android updates their sysroot.
+#if defined(__GLIBC_PREREQ)
+#if !__GLIBC_PREREQ(2, 16)
+#undef OPENSSL_HAS_GETAUXVAL
+#endif
+#endif
+#if defined(OPENSSL_HAS_GETAUXVAL)
+#include <sys/auxv.h>
+#endif
+#endif  // OPENSSL_LINUX
 
 #include <openssl/thread.h>
 #include <openssl/mem.h>
@@ -133,11 +150,21 @@ static void init_once(void) {
       boringssl_getrandom(&dummy, sizeof(dummy), GRND_NONBLOCK);
 
   if (getrandom_ret == -1 && errno == EAGAIN) {
-    fprintf(
-        stderr,
-        "getrandom indicates that the entropy pool has not been initialized. "
-        "Rather than continue with poor entropy, this process will block until "
-        "entropy is available.\n");
+    // Attempt to get the path of the current process to aid in debugging when
+    // something blocks.
+    const char *current_process = "<unknown>";
+#if defined(OPENSSL_HAS_GETAUXVAL)
+    const unsigned long getauxval_ret = getauxval(AT_EXECFN);
+    if (getauxval_ret != 0) {
+      current_process = (const char *)getauxval_ret;
+    }
+#endif
+
+    fprintf(stderr,
+            "%s: getrandom indicates that the entropy pool has not been "
+            "initialized. Rather than continue with poor entropy, this process "
+            "will block until entropy is available.\n",
+            current_process);
 
     getrandom_ret =
         boringssl_getrandom(&dummy, sizeof(dummy), 0 /* no flags */);

@@ -67,11 +67,6 @@ void ParamTraits<net::IPAddress>::Log(const param_type& p, std::string* l) {
 #include "ipc/struct_constructor_macros.h"
 #include "p2p_param_traits.h"
 
-// Generate destructors.
-#undef SERVICES_NETWORK_PUBLIC_CPP_P2P_PARAM_TRAITS_H_
-#include "ipc/struct_destructor_macros.h"
-#include "p2p_param_traits.h"
-
 // Generate param traits write methods.
 #undef SERVICES_NETWORK_PUBLIC_CPP_P2P_PARAM_TRAITS_H_
 #include "ipc/param_traits_write_macros.h"

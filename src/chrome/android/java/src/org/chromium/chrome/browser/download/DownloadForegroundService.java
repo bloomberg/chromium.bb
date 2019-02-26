@@ -292,7 +292,7 @@ public class DownloadForegroundService extends Service {
 
     @VisibleForTesting
     int getNewNotificationIdFor(int oldNotificationId) {
-        return DownloadNotificationService2.getNewNotificationIdFor(oldNotificationId);
+        return DownloadNotificationService.getNewNotificationIdFor(oldNotificationId);
     }
 
     @VisibleForTesting

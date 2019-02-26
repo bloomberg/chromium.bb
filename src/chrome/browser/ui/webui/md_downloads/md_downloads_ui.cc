@@ -44,7 +44,9 @@ content::WebUIDataSource* CreateDownloadsUIHTMLSource(Profile* profile) {
       content::WebUIDataSource::Create(chrome::kChromeUIDownloadsHost);
 
   source->AddLocalizedString("title", IDS_DOWNLOAD_TITLE);
-  source->AddLocalizedString("searchResultsFor", IDS_SEARCH_RESULTS);
+  source->AddLocalizedString("searchResultsPlural", IDS_SEARCH_RESULTS_PLURAL);
+  source->AddLocalizedString("searchResultsSingular",
+                             IDS_SEARCH_RESULTS_SINGULAR);
   source->AddLocalizedString("downloads", IDS_DOWNLOAD_TITLE);
 
   source->AddLocalizedString("clearAll", IDS_DOWNLOAD_LINK_CLEAR_ALL);
@@ -82,6 +84,8 @@ content::WebUIDataSource* CreateDownloadsUIHTMLSource(Profile* profile) {
   source->AddLocalizedString("controlCancel", IDS_DOWNLOAD_LINK_CANCEL);
   source->AddLocalizedString("controlResume", IDS_DOWNLOAD_LINK_RESUME);
   source->AddLocalizedString("controlRemoveFromList", IDS_DOWNLOAD_LINK_REMOVE);
+  source->AddLocalizedString("controlRemoveFromListAriaLabel",
+                             IDS_DOWNLOAD_LINK_REMOVE_ARIA_LABEL);
   source->AddLocalizedString("controlRetry", IDS_MD_DOWNLOAD_LINK_RETRY);
   source->AddLocalizedString("controlledByUrl", IDS_DOWNLOAD_BY_EXTENSION_URL);
 

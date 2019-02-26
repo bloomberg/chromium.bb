@@ -32,11 +32,8 @@
 
 #include "third_party/blink/renderer/core/dom/node_computed_style.h"
 #include "third_party/blink/renderer/core/html/html_progress_element.h"
-#include "third_party/blink/renderer/core/html_names.h"
 
 namespace blink {
-
-using namespace HTMLNames;
 
 ProgressShadowElement::ProgressShadowElement(Document& document)
     : HTMLDivElement(document) {}

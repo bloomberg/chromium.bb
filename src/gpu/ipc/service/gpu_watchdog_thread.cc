@@ -17,11 +17,13 @@
 #include "base/location.h"
 #include "base/macros.h"
 #include "base/memory/ptr_util.h"
+#include "base/message_loop/message_loop_current.h"
 #include "base/power_monitor/power_monitor.h"
 #include "base/process/process.h"
 #include "base/single_thread_task_runner.h"
 #include "base/strings/stringprintf.h"
 #include "base/threading/platform_thread.h"
+#include "base/threading/thread_task_runner_handle.h"
 #include "build/build_config.h"
 
 #if defined(OS_WIN)
@@ -55,7 +57,7 @@ const unsigned char text[20] = "check";
 
 GpuWatchdogThread::GpuWatchdogThread()
     : base::Thread("Watchdog"),
-      watched_message_loop_(base::MessageLoop::current()),
+      watched_task_runner_(base::ThreadTaskRunnerHandle::Get()),
       timeout_(base::TimeDelta::FromMilliseconds(kGpuTimeout)),
       armed_(false),
       task_observer_(this),
@@ -89,7 +91,7 @@ GpuWatchdogThread::GpuWatchdogThread()
   tty_file_ = base::OpenFile(base::FilePath(kTtyFilePath), "r");
   SetupXServer();
 #endif
-  watched_message_loop_->AddTaskObserver(&task_observer_);
+  base::MessageLoopCurrent::Get()->AddTaskObserver(&task_observer_);
 }
 
 // static
@@ -219,6 +221,8 @@ void GpuWatchdogThread::SuspensionCounter::OnReleaseRef() {
 }
 
 GpuWatchdogThread::~GpuWatchdogThread() {
+  DCHECK(watched_task_runner_->BelongsToCurrentThread());
+
   Stop();
   suspension_counter_.OnWatchdogThreadStopped();
 
@@ -240,7 +244,7 @@ GpuWatchdogThread::~GpuWatchdogThread() {
   }
 #endif
 
-  watched_message_loop_->RemoveTaskObserver(&task_observer_);
+  base::MessageLoopCurrent::Get()->RemoveTaskObserver(&task_observer_);
 }
 
 void GpuWatchdogThread::OnAcknowledge() {
@@ -321,7 +325,7 @@ void GpuWatchdogThread::OnCheck(bool after_suspend) {
   // Post a task to the monitored thread that does nothing but wake up the
   // TaskObserver. Any other tasks that are pending on the watched thread will
   // also wake up the observer. This simply ensures there is at least one.
-  watched_message_loop_->task_runner()->PostTask(FROM_HERE, base::DoNothing());
+  watched_task_runner_->PostTask(FROM_HERE, base::DoNothing());
 
   // Post a task to the watchdog thread to exit if the monitored thread does
   // not respond in time.
@@ -360,8 +364,7 @@ void GpuWatchdogThread::OnCheckTimeout() {
 
     // Post a task that does nothing on the watched thread to bump its priority
     // and make it more likely to get scheduled.
-    watched_message_loop_->task_runner()->PostTask(FROM_HERE,
-                                                   base::DoNothing());
+    watched_task_runner_->PostTask(FROM_HERE, base::DoNothing());
     return;
   }
 

@@ -57,6 +57,8 @@ class MODULES_EXPORT RemotePlayback final
 
   static RemotePlayback* Create(HTMLMediaElement&);
 
+  explicit RemotePlayback(HTMLMediaElement&);
+
   // Notifies this object that disableRemotePlayback attribute was set on the
   // corresponding media element.
   void RemotePlaybackDisabled();
@@ -124,9 +126,9 @@ class MODULES_EXPORT RemotePlayback final
   // ContextLifecycleObserver implementation.
   void ContextDestroyed(ExecutionContext*) override;
 
-  DEFINE_ATTRIBUTE_EVENT_LISTENER(connecting);
-  DEFINE_ATTRIBUTE_EVENT_LISTENER(connect);
-  DEFINE_ATTRIBUTE_EVENT_LISTENER(disconnect);
+  DEFINE_ATTRIBUTE_EVENT_LISTENER(connecting, kConnecting);
+  DEFINE_ATTRIBUTE_EVENT_LISTENER(connect, kConnect);
+  DEFINE_ATTRIBUTE_EVENT_LISTENER(disconnect, kDisconnect);
 
   void Trace(blink::Visitor*) override;
 
@@ -134,8 +136,6 @@ class MODULES_EXPORT RemotePlayback final
   friend class V8RemotePlayback;
   friend class RemotePlaybackTest;
   friend class MediaControlsImplTest;
-
-  explicit RemotePlayback(HTMLMediaElement&);
 
   // Calls the specified availability callback with the current availability.
   // Need a void() method to post it as a task.

@@ -205,7 +205,7 @@ void CheckFeatureUsage(const SiteCharacteristicsDataReader* reader,
 }
 
 void CheckIfTabCanCommunicateWithUserWhileInBackground(
-    const content::WebContents* web_contents,
+    content::WebContents* web_contents,
     DecisionDetails* details) {
   DCHECK(details);
 
@@ -447,7 +447,7 @@ base::ProcessHandle TabLifecycleUnitSource::TabLifecycleUnit::GetProcessHandle()
 LifecycleUnit::SortKey TabLifecycleUnitSource::TabLifecycleUnit::GetSortKey()
     const {
   if (base::FeatureList::IsEnabled(features::kTabRanker)) {
-    base::Optional<float> reactivation_score =
+    const base::Optional<float> reactivation_score =
         resource_coordinator::TabActivityWatcher::GetInstance()
             ->CalculateReactivationScore(web_contents());
     if (reactivation_score.has_value())

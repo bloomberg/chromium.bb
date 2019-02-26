@@ -62,6 +62,7 @@
     <style include="iron-flex iron-flex-alignment iron-positioning
                     cr-shared-style">
     </style>
+    <link rel="stylesheet" href="../../oobe_iron_flex_layout_fix.css">
     <style include="settings-shared"></style>
     <link rel="stylesheet" href="discover_module_pin_setup.css">
     <oobe-dialog id="loading" role="dialog" no-header no-footer-padding
@@ -121,7 +122,12 @@
         [[i18nDynamic(locale, 'discoverPinSetupSubtitle1')]]
       </div>
       <div slot="subtitle" hidden="[[isStepHidden_(step_, 'done')]]">
-        [[i18nDynamic(locale, 'discoverPinSetupSubtitle3')]]<BR>
+        <div hidden="[[hasLoginSupport_]]">
+          [[i18nDynamic(locale, 'discoverPinSetupSubtitle3NoLogin')]]<br>
+        </div>
+        <div hidden="[[!hasLoginSupport_]]">
+          [[i18nDynamic(locale, 'discoverPinSetupSubtitle3WithLogin')]]<br>
+        </div>
       </div>
       <div slot="footer" class="flex layout horizontal center-justified">
           <setup-pin-keyboard id="pinKeyboard"

@@ -31,21 +31,21 @@ TEST(BufferingDataPipeWriterTest, WriteMany) {
   MojoResult result = mojo::CreateDataPipe(&options, &producer, &consumer);
   ASSERT_EQ(MOJO_RESULT_OK, result);
 
-  constexpr size_t total = kCapacity * 3;
-  constexpr size_t writing_chunk_size = 5;
-  constexpr size_t reading_chunk_size = 7;
+  constexpr wtf_size_t total = kCapacity * 3;
+  constexpr wtf_size_t writing_chunk_size = 5;
+  constexpr wtf_size_t reading_chunk_size = 7;
   Vector<char> input, output;
 
-  for (size_t i = 0; i < total; ++i)
+  for (wtf_size_t i = 0; i < total; ++i)
     input.push_back(static_cast<char>(engine() % 26 + 'A'));
 
   auto writer = std::make_unique<BufferingDataPipeWriter>(
       std::move(producer), platform->test_task_runner().get());
 
-  for (size_t i = 0; i < total;) {
+  for (wtf_size_t i = 0; i < total;) {
     // We use a temporary buffer to check that the buffer is copied immediately.
     char temp[writing_chunk_size] = {};
-    size_t size = std::min(total - i, writing_chunk_size);
+    wtf_size_t size = std::min(total - i, writing_chunk_size);
 
     std::copy(input.data() + i, input.data() + i + size, temp);
     ASSERT_TRUE(writer->Write(temp, size));

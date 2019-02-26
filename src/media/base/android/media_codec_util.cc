@@ -222,9 +222,9 @@ std::set<int> MediaCodecUtil::GetEncoderColorFormats(
   ScopedJavaLocalRef<jintArray> j_color_format_array =
       Java_MediaCodecUtil_getEncoderColorFormatsForMime(env, j_mime);
 
-  if (j_color_format_array.obj()) {
+  if (!j_color_format_array.is_null()) {
     std::vector<int> formats;
-    JavaIntArrayToIntVector(env, j_color_format_array.obj(), &formats);
+    JavaIntArrayToIntVector(env, j_color_format_array, &formats);
     color_formats = std::set<int>(formats.begin(), formats.end());
   }
 

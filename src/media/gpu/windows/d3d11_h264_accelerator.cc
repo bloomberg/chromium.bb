@@ -67,13 +67,13 @@ D3D11H264Accelerator::D3D11H264Accelerator(
     CdmProxyContext* cdm_proxy_context,
     Microsoft::WRL::ComPtr<ID3D11VideoDecoder> video_decoder,
     Microsoft::WRL::ComPtr<ID3D11VideoDevice> video_device,
-    Microsoft::WRL::ComPtr<ID3D11VideoContext1> video_context)
+    std::unique_ptr<VideoContextWrapper> video_context)
     : client_(client),
       media_log_(media_log),
       cdm_proxy_context_(cdm_proxy_context),
       video_decoder_(video_decoder),
       video_device_(video_device),
-      video_context_(video_context) {}
+      video_context_(std::move(video_context)) {}
 
 D3D11H264Accelerator::~D3D11H264Accelerator() {}
 
@@ -94,10 +94,6 @@ Status D3D11H264Accelerator::SubmitFrameMetadata(
     const H264Picture::Vector& ref_pic_listb1,
     const scoped_refptr<H264Picture>& pic) {
   const bool is_encrypted = pic->decrypt_config();
-  if (is_encrypted && !cdm_proxy_context_) {
-    RecordFailure("The input is encrypted but there is no proxy context.");
-    return Status::kFail;
-  }
 
   std::unique_ptr<D3D11_VIDEO_DECODER_BEGIN_FRAME_CRYPTO_SESSION> content_key;
   // This decrypt context has to be outside the if block because pKeyInfo in
@@ -477,7 +473,7 @@ bool D3D11H264Accelerator::SubmitSliceData() {
     return false;
   }
 
-  D3D11_VIDEO_DECODER_BUFFER_DESC1 buffers[4] = {};
+  VideoContextWrapper::VideoBufferWrapper buffers[4] = {};
   buffers[0].BufferType = D3D11_VIDEO_DECODER_BUFFER_PICTURE_PARAMETERS;
   buffers[0].DataOffset = 0;
   buffers[0].DataSize = sizeof(DXVA_PicParams_H264);
@@ -502,8 +498,8 @@ bool D3D11H264Accelerator::SubmitSliceData() {
     }
   }
 
-  hr = video_context_->SubmitDecoderBuffers1(video_decoder_.Get(),
-                                             base::size(buffers), buffers);
+  hr = video_context_->SubmitDecoderBuffers(video_decoder_.Get(),
+                                            base::size(buffers), buffers);
   current_offset_ = 0;
   slice_info_.clear();
   bitstream_buffer_bytes_ = nullptr;

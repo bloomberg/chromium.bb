@@ -4,6 +4,8 @@
 
 #include "storage/browser/blob/blob_builder_from_stream.h"
 
+#include <algorithm>
+
 #include "base/files/file_util.h"
 #include "base/files/scoped_temp_dir.h"
 #include "base/rand_util.h"
@@ -130,8 +132,10 @@ class BlobBuilderFromStreamTestWithDelayedLimits
         EXPECT_LE(item->length(), kTestBlobStorageMaxBlobMemorySize);
         ASSERT_LE(next_memory_offset + item->length(), in_memory_data.size());
 
-        EXPECT_EQ(in_memory_data.subspan(next_memory_offset, item->length()),
-                  item->bytes());
+        EXPECT_TRUE(std::equal(
+            in_memory_data.begin() + next_memory_offset,
+            in_memory_data.begin() + next_memory_offset + item->length(),
+            item->bytes().begin(), item->bytes().end()));
 
         next_memory_offset += item->length();
       } else if (item->type() == BlobDataItem::Type::kFile) {
@@ -144,8 +148,10 @@ class BlobBuilderFromStreamTestWithDelayedLimits
         std::string file_contents;
         EXPECT_TRUE(base::ReadFileToString(item->path(), &file_contents));
         EXPECT_EQ(item->length(), file_contents.size());
-        EXPECT_EQ(on_disk_data.subspan(next_file_offset, item->length()),
-                  base::make_span(file_contents));
+        EXPECT_TRUE(
+            std::equal(on_disk_data.begin() + next_file_offset,
+                       on_disk_data.begin() + next_file_offset + item->length(),
+                       file_contents.begin(), file_contents.end()));
 
         next_file_offset += item->length();
         if (next_file_offset < on_disk_data.size()) {

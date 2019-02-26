@@ -27,7 +27,7 @@
 namespace blink {
 
 RTCStatsResponse* RTCStatsResponse::Create() {
-  return new RTCStatsResponse();
+  return MakeGarbageCollected<RTCStatsResponse>();
 }
 
 RTCStatsResponse::RTCStatsResponse() = default;

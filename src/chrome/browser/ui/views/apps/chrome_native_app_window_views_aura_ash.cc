@@ -12,10 +12,12 @@
 #include "ash/public/cpp/ash_constants.h"
 #include "ash/public/cpp/ash_switches.h"
 #include "ash/public/cpp/immersive/immersive_fullscreen_controller.h"
+#include "ash/public/cpp/menu_utils.h"
 #include "ash/public/cpp/shelf_types.h"
 #include "ash/public/cpp/shell_window_ids.h"
 #include "ash/public/cpp/window_properties.h"
 #include "ash/public/cpp/window_state_type.h"
+#include "ash/public/interfaces/constants.mojom.h"
 #include "ash/wm/window_state.h"  // mash-ok
 #include "base/logging.h"
 #include "chrome/browser/chromeos/note_taking_helper.h"
@@ -26,10 +28,14 @@
 #include "chrome/browser/ui/ash/tablet_mode_client.h"
 #include "chrome/browser/ui/exclusive_access/exclusive_access_manager.h"
 #include "chrome/browser/ui/views/exclusive_access_bubble_views.h"
+#include "components/session_manager/core/session_manager.h"
+#include "extensions/common/constants.h"
 #include "services/ws/public/cpp/property_type_converters.h"
 #include "services/ws/public/mojom/window_manager.mojom.h"
 #include "ui/aura/client/aura_constants.h"
 #include "ui/aura/mus/property_converter.h"
+#include "ui/aura/mus/window_mus.h"
+#include "ui/aura/mus/window_tree_client.h"
 #include "ui/aura/mus/window_tree_host_mus.h"
 #include "ui/aura/window.h"
 #include "ui/base/hit_test.h"
@@ -43,21 +49,53 @@
 #include "ui/views/controls/menu/menu_model_adapter.h"
 #include "ui/views/controls/menu/menu_runner.h"
 #include "ui/views/controls/webview/webview.h"
+#include "ui/views/mus/mus_client.h"
 #include "ui/views/widget/widget.h"
 #include "ui/wm/core/coordinate_conversion.h"
 
 using extensions::AppWindow;
+
+namespace {
+
+// The feedback dialog is modal during OOBE and login because it must stay above
+// the views login UI and the webui GAIA login dialog.
+bool IsLoginFeedbackModalDialog(const AppWindow* app_window) {
+  if (app_window->extension_id() != extension_misc::kFeedbackExtensionId)
+    return false;
+
+  using session_manager::SessionState;
+  SessionState state = session_manager::SessionManager::Get()->session_state();
+  return state == SessionState::OOBE || state == SessionState::LOGIN_PRIMARY ||
+         state == SessionState::LOGIN_SECONDARY;
+}
+
+}  // namespace
 
 ChromeNativeAppWindowViewsAuraAsh::ChromeNativeAppWindowViewsAuraAsh()
     : exclusive_access_manager_(
           std::make_unique<ExclusiveAccessManager>(this)) {
   if (TabletModeClient::Get())
     TabletModeClient::Get()->AddObserver(this);
+
+  if (features::IsSingleProcessMash()) {
+    // There is no MultiUserWindowManager at the login screen, but users can
+    // open the feedback app.
+    if (MultiUserWindowManager::GetInstance())
+      MultiUserWindowManager::GetInstance()->AddObserver(this);
+
+    ash_window_manager_ =
+        views::MusClient::Get()
+            ->window_tree_client()
+            ->BindWindowManagerInterface<ash::mojom::AshWindowManager>();
+  }
 }
 
 ChromeNativeAppWindowViewsAuraAsh::~ChromeNativeAppWindowViewsAuraAsh() {
   if (TabletModeClient::Get())
     TabletModeClient::Get()->RemoveObserver(this);
+
+  if (features::IsSingleProcessMash() && MultiUserWindowManager::GetInstance())
+    MultiUserWindowManager::GetInstance()->RemoveObserver(this);
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -89,14 +127,27 @@ void ChromeNativeAppWindowViewsAuraAsh::OnBeforeWidgetInit(
     views::Widget* widget) {
   ChromeNativeAppWindowViewsAura::OnBeforeWidgetInit(create_params, init_params,
                                                      widget);
-  if (create_params.is_ime_window || create_params.show_on_lock_screen) {
-    // Put ime windows and lock screen windows into their respective window
-    // containers on the primary display.
-    int container_id = create_params.is_ime_window
-                           ? ash::kShellWindowId_ImeWindowParentContainer
-                           : ash::kShellWindowId_LockActionHandlerContainer;
-    ash_util::SetupWidgetInitParamsForContainer(init_params, container_id);
+  // Some windows need to be placed in special containers, for example to make
+  // them visible at the login or lock screen.
+  base::Optional<int> container_id;
+  if (IsLoginFeedbackModalDialog(app_window()))
+    container_id = ash::kShellWindowId_LockSystemModalContainer;
+  else if (create_params.is_ime_window)
+    container_id = ash::kShellWindowId_ImeWindowParentContainer;
+  else if (create_params.show_on_lock_screen)
+    container_id = ash::kShellWindowId_LockActionHandlerContainer;
+
+  if (container_id.has_value())
+    ash_util::SetupWidgetInitParamsForContainer(init_params, *container_id);
+
+  // Resizable lock screen apps will end up maximized by ash. Do it now to
+  // save back-and-forth communication with the window manager. Right now all
+  // lock screen apps either end up maximized (e.g. Keep) or are not resizable.
+  if (create_params.show_on_lock_screen && create_params.resizable) {
+    DCHECK_EQ(ui::SHOW_STATE_DEFAULT, init_params->show_state);
+    init_params->show_state = ui::SHOW_STATE_MAXIMIZED;
   }
+
   if (HasFrameColor()) {
     init_params
         ->mus_properties[ws::mojom::WindowManager::kFrameActiveColor_Property] =
@@ -128,6 +179,12 @@ ChromeNativeAppWindowViewsAuraAsh::CreateNonStandardAppFrame() {
                         ash::kResizeOutsideBoundsSize,
                         ash::kResizeAreaCornerSize);
   return frame;
+}
+
+ui::ModalType ChromeNativeAppWindowViewsAuraAsh::GetModalType() const {
+  if (IsLoginFeedbackModalDialog(app_window()))
+    return ui::MODAL_TYPE_SYSTEM;
+  return ChromeNativeAppWindowViewsAura::GetModalType();
 }
 
 bool ChromeNativeAppWindowViewsAuraAsh::ShouldRemoveStandardFrame() {
@@ -190,6 +247,8 @@ void ChromeNativeAppWindowViewsAuraAsh::ShowContextMenuForView(
     views::View* source,
     const gfx::Point& p,
     ui::MenuSourceType source_type) {
+  DCHECK(!features::IsUsingWindowService());
+
   menu_model_ = CreateMultiUserContextMenu(GetNativeWindow());
   if (!menu_model_.get())
     return;
@@ -387,15 +446,6 @@ void ChromeNativeAppWindowViewsAuraAsh::UnhideDownloadShelf() {}
 
 void ChromeNativeAppWindowViewsAuraAsh::HideDownloadShelf() {}
 
-bool ChromeNativeAppWindowViewsAuraAsh::ShouldHideUIForFullscreen() const {
-  return false;
-}
-
-ExclusiveAccessBubbleViews*
-ChromeNativeAppWindowViewsAuraAsh::GetExclusiveAccessBubble() {
-  return exclusive_access_bubble_.get();
-}
-
 bool ChromeNativeAppWindowViewsAuraAsh::CanUserExitFullscreen() const {
   return true;
 }
@@ -465,6 +515,7 @@ void ChromeNativeAppWindowViewsAuraAsh::OnPostWindowStateTypeChange(
     ash::wm::WindowState* window_state,
     ash::mojom::WindowStateType old_type) {
   DCHECK(!features::IsUsingWindowService());
+  DCHECK(!IsFrameless());
   DCHECK_EQ(GetNativeWindow(), window_state->window());
   if (window_state->IsFullscreen() != app_window()->IsFullscreen()) {
     // Report OS-initiated state changes to |app_window()|. This is done in
@@ -512,14 +563,41 @@ void ChromeNativeAppWindowViewsAuraAsh::OnWindowDestroying(
   observed_window_.Remove(window);
 }
 
+void ChromeNativeAppWindowViewsAuraAsh::OnOwnerEntryAdded(
+    aura::Window* window) {
+  OnOwnerEntryChanged(window);
+}
+
+void ChromeNativeAppWindowViewsAuraAsh::OnOwnerEntryChanged(
+    aura::Window* window) {
+  if (window != GetWidget()->GetNativeWindow())
+    return;
+
+  std::unique_ptr<ui::MenuModel> menu_model =
+      CreateMultiUserContextMenu(GetNativeWindow());
+
+  ash::mojom::MenuDelegatePtr delegate;
+  binding_.Close();
+  binding_.Bind(mojo::MakeRequest(&delegate));
+  ash_window_manager_->SetWindowFrameMenuItems(
+      aura::WindowMus::Get(GetWidget()->GetNativeWindow()->GetRootWindow())
+          ->server_id(),
+      ash::menu_utils::GetMojoMenuItemsFromModel(menu_model.get()),
+      std::move(delegate));
+}
+
+void ChromeNativeAppWindowViewsAuraAsh::MenuItemActivated(int command_id) {
+  ExecuteVisitDesktopCommand(command_id, GetWidget()->GetNativeWindow());
+}
+
 void ChromeNativeAppWindowViewsAuraAsh::OnMenuClosed() {
   menu_runner_.reset();
   menu_model_.reset();
 }
 
 bool ChromeNativeAppWindowViewsAuraAsh::ShouldEnableImmersiveMode() const {
-  // No immersive mode for forced fullscreen.
-  if (app_window()->IsForcedFullscreen())
+  // No immersive mode for forced fullscreen or frameless windows.
+  if (app_window()->IsForcedFullscreen() || IsFrameless())
     return false;
 
   // Always use immersive mode in a public session in fullscreen state.
@@ -536,8 +614,6 @@ bool ChromeNativeAppWindowViewsAuraAsh::ShouldEnableImmersiveMode() const {
   // have access to window controls. Non resizable windows do not gain
   // size by hidding the title bar, so it is not hidden and thus there
   // is no need for immersive mode.
-  // TODO(sammiequon): Investigate whether we should check
-  // resizability using WindowState instead of CanResize.
   // TODO(crbug.com/801619): This adds a little extra animation
   // when minimizing or unminimizing window.
   return client && client->tablet_mode_enabled() && CanResize() &&

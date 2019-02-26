@@ -18,11 +18,21 @@
 
 namespace feed {
 
+namespace {
+
+// Fixed "now" to make tests more deterministic.
+char kNowString[] = "2018-06-11 15:41";
+
+}  // namespace
+
 class RefreshThrottlerTest : public testing::Test {
  public:
   RefreshThrottlerTest() {
     RefreshThrottler::RegisterProfilePrefs(test_prefs_.registry());
-    test_clock_.SetNow(base::Time::Now());
+
+    base::Time now;
+    EXPECT_TRUE(base::Time::FromUTCString(kNowString, &now));
+    test_clock_.SetNow(now);
 
     variations::testing::VariationParamsManager variation_params(
         kInterestFeedContentSuggestions.name,

@@ -79,6 +79,7 @@ class CONTENT_EXPORT NavigationHandleImpl : public NavigationHandle {
           blink::mojom::RequestContextType::UNSPECIFIED,
       blink::WebMixedContentContextType mixed_content_context_type =
           blink::WebMixedContentContextType::kBlockable,
+      const std::string& href_translate = std::string(),
       base::TimeTicks input_start = base::TimeTicks());
 
   ~NavigationHandleImpl() override;
@@ -149,7 +150,9 @@ class CONTENT_EXPORT NavigationHandleImpl : public NavigationHandle {
       base::Optional<net::SSLInfo> ssl_info) override;
   NavigationThrottle::ThrottleCheckResult CallWillProcessResponseForTesting(
       RenderFrameHost* render_frame_host,
-      const std::string& raw_response_header) override;
+      const std::string& raw_response_header,
+      bool was_cached,
+      const net::ProxyServer& proxy_server) override;
   void CallDidCommitNavigationForTesting(const GURL& url) override;
   void CallResumeForTesting() override;
   bool IsDeferredForTesting() override;
@@ -163,6 +166,9 @@ class CONTENT_EXPORT NavigationHandleImpl : public NavigationHandle {
   bool IsDownload() override;
   bool IsFormSubmission() override;
   bool IsSignedExchangeInnerResponse() override;
+  bool WasResponseCached() override;
+  const net::ProxyServer& GetProxyServer() override;
+  const std::string& GetHrefTranslate() override;
 
   const std::string& origin_policy() const { return origin_policy_; }
   void set_origin_policy(const std::string& origin_policy) {
@@ -297,6 +303,7 @@ class CONTENT_EXPORT NavigationHandleImpl : public NavigationHandle {
       bool is_download,
       bool is_stream,
       bool is_signed_exchange_inner_response,
+      bool was_cached,
       const ThrottleChecksFinishedCallback& callback);
 
   // Returns the FrameTreeNode this navigation is happening in.
@@ -364,6 +371,10 @@ class CONTENT_EXPORT NavigationHandleImpl : public NavigationHandle {
     source_location_ = source_location;
   }
 
+  void set_proxy_server(const net::ProxyServer& proxy_server) {
+    proxy_server_ = proxy_server;
+  }
+
   // Sets ID of the RenderProcessHost we expect the navigation to commit in.
   // This is used to inform the RenderProcessHost to expect a navigation to the
   // url we're navigating to.
@@ -401,6 +412,7 @@ class CONTENT_EXPORT NavigationHandleImpl : public NavigationHandle {
       bool is_external_protocol,
       blink::mojom::RequestContextType request_context_type,
       blink::WebMixedContentContextType mixed_content_context_type,
+      const std::string& href_translate,
       base::TimeTicks input_start);
 
   NavigationThrottle::ThrottleCheckResult CheckWillStartRequest();
@@ -445,6 +457,11 @@ class CONTENT_EXPORT NavigationHandleImpl : public NavigationHandle {
   // long time.
   void OnCommitTimeout();
 
+  // Called by the RenderProcessHost to handle the case when the process
+  // changed its state of being blocked.
+  void RenderProcessBlockedStateChanged(bool blocked);
+
+  void StopCommitTimeout();
   void RestartCommitTimeout();
 
   // See NavigationHandle for a description of those member variables.
@@ -465,6 +482,7 @@ class CONTENT_EXPORT NavigationHandleImpl : public NavigationHandle {
   scoped_refptr<net::HttpResponseHeaders> response_headers_;
   net::HttpResponseInfo::ConnectionInfo connection_info_;
   net::SSLInfo ssl_info_;
+  std::string href_translate_;
 
   // The original url of the navigation. This may differ from |url_| if the
   // navigation encounters redirects.
@@ -509,6 +527,11 @@ class CONTENT_EXPORT NavigationHandleImpl : public NavigationHandle {
 
   // Timer for detecting an unexpectedly long time to commit a navigation.
   base::OneShotTimer commit_timeout_timer_;
+
+  // The subscription to the notification of the changing of the render
+  // process's blocked state.
+  std::unique_ptr<base::CallbackList<void(bool)>::Subscription>
+      render_process_blocked_state_changed_subscription_;
 
   // The unique id of the corresponding NavigationEntry.
   int pending_nav_entry_id_;
@@ -596,6 +619,12 @@ class CONTENT_EXPORT NavigationHandleImpl : public NavigationHandle {
 
   // True if the target is an inner response of a signed exchange.
   bool is_signed_exchange_inner_response_;
+
+  // Whether the response was cached.
+  bool was_cached_;
+
+  // Which proxy server was used for this navigation, if any.
+  net::ProxyServer proxy_server_;
 
   // False by default unless the navigation started within a context menu.
   bool started_from_context_menu_;

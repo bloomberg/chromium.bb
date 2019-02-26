@@ -27,7 +27,6 @@ class GlRenderer : public BaseGraphicsDelegate {
 
   // GraphicsDelegate implementation.
   bool Initialize(const scoped_refptr<gl::GLSurface>& surface) override;
-  void OnResume() override;
   FovRectangles GetRecommendedFovs() override;
   float GetZNear() override;
   RenderInfo GetRenderInfo(FrameType frame_type,

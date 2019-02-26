@@ -51,6 +51,7 @@ static_library("vr_android") {
     "vr_input_connection.cc",
     "vr_input_connection.h",
     "vr_module_provider.cc",
+    "vr_module_provider.h",
     "vr_shell.cc",
     "vr_shell.h",
     "vr_shell_delegate.cc",
@@ -76,12 +77,13 @@ static_library("vr_android") {
       "arcore_device/arcore_gl_thread.h",
       "arcore_device/arcore_impl.cc",
       "arcore_device/arcore_impl.h",
+      "arcore_device/arcore_install_utils.h",
       "arcore_device/arcore_java_utils.cc",
       "arcore_device/arcore_java_utils.h",
+      "arcore_device/arcore_permission_helper.cc",
+      "arcore_device/arcore_permission_helper.h",
       "arcore_device/arcore_shim.cc",
       "arcore_device/arcore_shim.h",
-      "arcore_device/fake_arcore.cc",
-      "arcore_device/fake_arcore.h",
     ]
   }
 
@@ -211,7 +213,37 @@ if (enable_arcore) {
 if (current_toolchain == default_toolchain) {
   generate_jni_registration("jni_registration") {
     target = ":java"
-    output = "$target_gen_dir/${target_name}.h"
+    header_output = "$target_gen_dir/${target_name}.h"
     namespace = "vr"
   }
+}
+
+test("vr_android_unittests") {
+  sources = [
+    "arcore_device/arcore_device_unittest.cc",
+    "arcore_device/fake_arcore.cc",
+    "arcore_device/fake_arcore.h",
+    "register_jni.cc",
+    "test/ar_test_suite.cc",
+    "test/ar_test_suite.h",
+    "test/run_all_unittests.cc",
+  ]
+
+  libs = [ "android" ]
+
+  deps = [
+    ":jni_registration",
+    ":vr_android",
+    "//base/test:test_support",
+    "//chrome/browser:browser",
+    "//components/translate/core/language_detection:language_detection",
+    "//device/vr:fakes",
+    "//device/vr/public/mojom",
+    "//mojo/core/embedder",
+    "//mojo/public/cpp/bindings",
+    "//services/network:test_support",
+    "//testing/android/native_test:native_test_native_code",
+    "//testing/gmock",
+    "//testing/gtest:gtest",
+  ]
 }

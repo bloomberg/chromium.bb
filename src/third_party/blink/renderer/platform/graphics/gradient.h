@@ -57,11 +57,17 @@ class PLATFORM_EXPORT Gradient : public RefCounted<Gradient> {
     kUnpremultiplied,
   };
 
+  enum class DegenerateHandling {
+    kAllow,
+    kDisallow,
+  };
+
   static scoped_refptr<Gradient> CreateLinear(
       const FloatPoint& p0,
       const FloatPoint& p1,
       GradientSpreadMethod = kSpreadMethodPad,
-      ColorInterpolation = ColorInterpolation::kUnpremultiplied);
+      ColorInterpolation = ColorInterpolation::kUnpremultiplied,
+      DegenerateHandling = DegenerateHandling::kAllow);
 
   static scoped_refptr<Gradient> CreateRadial(
       const FloatPoint& p0,
@@ -70,7 +76,8 @@ class PLATFORM_EXPORT Gradient : public RefCounted<Gradient> {
       float r1,
       float aspect_ratio = 1,
       GradientSpreadMethod = kSpreadMethodPad,
-      ColorInterpolation = ColorInterpolation::kUnpremultiplied);
+      ColorInterpolation = ColorInterpolation::kUnpremultiplied,
+      DegenerateHandling = DegenerateHandling::kAllow);
 
   static scoped_refptr<Gradient> CreateConic(
       const FloatPoint& position,
@@ -78,7 +85,8 @@ class PLATFORM_EXPORT Gradient : public RefCounted<Gradient> {
       float start_angle,
       float end_angle,
       GradientSpreadMethod = kSpreadMethodPad,
-      ColorInterpolation = ColorInterpolation::kUnpremultiplied);
+      ColorInterpolation = ColorInterpolation::kUnpremultiplied,
+      DegenerateHandling = DegenerateHandling::kAllow);
 
   virtual ~Gradient();
 
@@ -100,7 +108,7 @@ class PLATFORM_EXPORT Gradient : public RefCounted<Gradient> {
   void ApplyToFlags(PaintFlags&, const SkMatrix& local_matrix);
 
  protected:
-  Gradient(Type, GradientSpreadMethod, ColorInterpolation);
+  Gradient(Type, GradientSpreadMethod, ColorInterpolation, DegenerateHandling);
 
   using ColorBuffer = Vector<SkColor, 8>;
   using OffsetBuffer = Vector<SkScalar, 8>;
@@ -110,6 +118,10 @@ class PLATFORM_EXPORT Gradient : public RefCounted<Gradient> {
                                           uint32_t flags,
                                           const SkMatrix&,
                                           SkColor) const = 0;
+
+  DegenerateHandling GetDegenerateHandling() const {
+    return degenerate_handling_;
+  }
 
  private:
   sk_sp<PaintShader> CreateShaderInternal(const SkMatrix& local_matrix);
@@ -122,6 +134,7 @@ class PLATFORM_EXPORT Gradient : public RefCounted<Gradient> {
   const Type type_;
   const GradientSpreadMethod spread_method_;
   const ColorInterpolation color_interpolation_;
+  const DegenerateHandling degenerate_handling_;
 
   Vector<ColorStop, 2> stops_;
   bool stops_sorted_;

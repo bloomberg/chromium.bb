@@ -30,6 +30,7 @@
 #include "ui/views/test/test_views_delegate.h"
 #include "ui/views/test/views_test_base.h"
 #include "ui/views/widget/root_view.h"
+#include "ui/views/widget/widget_utils.h"
 
 #if defined(USE_AURA)
 #include "ui/aura/client/drag_drop_client.h"
@@ -43,6 +44,10 @@
 #if defined(USE_X11)
 #include "ui/events/test/events_test_utils_x11.h"
 #include "ui/gfx/x/x11.h"
+#endif
+
+#if defined(OS_CHROMEOS)
+#include "ui/base/ui_base_features.h"
 #endif
 
 namespace views {
@@ -324,7 +329,7 @@ class MenuControllerTest : public ViewsTestBase {
     set_views_delegate(std::move(views_delegate));
     ViewsTestBase::SetUp();
     Init();
-    ASSERT_TRUE(base::MessageLoopForUI::IsCurrent());
+    ASSERT_TRUE(base::MessageLoopCurrentForUI::IsSet());
   }
 
   void TearDown() override {
@@ -604,8 +609,8 @@ class MenuControllerTest : public ViewsTestBase {
     Widget::InitParams params = CreateParams(Widget::InitParams::TYPE_POPUP);
     params.ownership = Widget::InitParams::WIDGET_OWNS_NATIVE_WIDGET;
     owner_->Init(params);
-    event_generator_.reset(
-        new ui::test::EventGenerator(owner_->GetNativeWindow()));
+    event_generator_ =
+        std::make_unique<ui::test::EventGenerator>(GetRootWindow(owner()));
     owner_->Show();
 
     SetupMenuItem();
@@ -654,8 +659,7 @@ TEST_F(MenuControllerTest, EventTargeter) {
     // With the aura::NullWindowTargeter instantiated and assigned we expect
     // the menu to not handle the key event.
     aura::ScopedWindowTargeter scoped_targeter(
-        owner()->GetNativeWindow()->GetRootWindow(),
-        std::make_unique<aura::NullWindowTargeter>());
+        GetRootWindow(owner()), std::make_unique<aura::NullWindowTargeter>());
     PressKey(ui::VKEY_ESCAPE);
     EXPECT_EQ(MenuController::EXIT_NONE, menu_exit_type());
   }
@@ -672,8 +676,7 @@ TEST_F(MenuControllerTest, EventTargeter) {
 // details. When the ids aren't managed correctly, we get stuck down touches.
 TEST_F(MenuControllerTest, TouchIdsReleasedCorrectly) {
   TestEventHandler test_event_handler;
-  owner()->GetNativeWindow()->GetRootWindow()->AddPreTargetHandler(
-      &test_event_handler);
+  GetRootWindow(owner())->AddPreTargetHandler(&test_event_handler);
 
   std::vector<int> devices;
   devices.push_back(1);
@@ -692,8 +695,7 @@ TEST_F(MenuControllerTest, TouchIdsReleasedCorrectly) {
   EXPECT_EQ(MenuController::EXIT_ALL, menu_exit_type());
   EXPECT_EQ(0, test_event_handler.outstanding_touches());
 
-  owner()->GetNativeWindow()->GetRootWindow()->RemovePreTargetHandler(
-      &test_event_handler);
+  GetRootWindow(owner())->RemovePreTargetHandler(&test_event_handler);
 }
 #endif  // defined(USE_X11)
 
@@ -772,6 +774,66 @@ TEST_F(MenuControllerTest, InitialSelectedItem) {
   // single enabled item in the menu.
   EXPECT_EQ(nullptr, FindNextSelectableMenuItem(menu_item(), 1));
   EXPECT_EQ(nullptr, FindPreviousSelectableMenuItem(menu_item(), 1));
+
+  // Clear references in menu controller to the menu item that is going away.
+  ResetSelection();
+}
+
+// Tests that opening the menu and pressing 'Home' selects the first menu item.
+TEST_F(MenuControllerTest, FirstSelectedItem) {
+  SetPendingStateItem(menu_item()->GetSubmenu()->GetMenuItemAt(0));
+  EXPECT_EQ(1, pending_state_item()->GetCommand());
+
+  // Select the first menu item.
+  DispatchKey(ui::VKEY_HOME);
+  EXPECT_EQ(1, pending_state_item()->GetCommand());
+
+  // Fake initial root item selection and submenu showing.
+  SetPendingStateItem(menu_item());
+  EXPECT_EQ(0, pending_state_item()->GetCommand());
+
+  // Select the first menu item.
+  DispatchKey(ui::VKEY_HOME);
+  EXPECT_EQ(1, pending_state_item()->GetCommand());
+
+  // Select the last item.
+  SetPendingStateItem(menu_item()->GetSubmenu()->GetMenuItemAt(3));
+  EXPECT_EQ(4, pending_state_item()->GetCommand());
+
+  // Select the first menu item.
+  DispatchKey(ui::VKEY_HOME);
+  EXPECT_EQ(1, pending_state_item()->GetCommand());
+
+  // Clear references in menu controller to the menu item that is going away.
+  ResetSelection();
+}
+
+// Tests that opening the menu and pressing 'End' selects the last enabled menu
+// item.
+TEST_F(MenuControllerTest, LastSelectedItem) {
+  // Fake initial root item selection and submenu showing.
+  SetPendingStateItem(menu_item());
+  EXPECT_EQ(0, pending_state_item()->GetCommand());
+
+  // Select the last menu item.
+  DispatchKey(ui::VKEY_END);
+  EXPECT_EQ(4, pending_state_item()->GetCommand());
+
+  // Select the last item.
+  SetPendingStateItem(menu_item()->GetSubmenu()->GetMenuItemAt(3));
+  EXPECT_EQ(4, pending_state_item()->GetCommand());
+
+  // Select the last menu item.
+  DispatchKey(ui::VKEY_END);
+  EXPECT_EQ(4, pending_state_item()->GetCommand());
+
+  // Select the first item.
+  SetPendingStateItem(menu_item()->GetSubmenu()->GetMenuItemAt(0));
+  EXPECT_EQ(1, pending_state_item()->GetCommand());
+
+  // Select the last menu item.
+  DispatchKey(ui::VKEY_END);
+  EXPECT_EQ(4, pending_state_item()->GetCommand());
 
   // Clear references in menu controller to the menu item that is going away.
   ResetSelection();
@@ -1669,7 +1731,7 @@ TEST_F(MenuControllerTest, MouseAtMenuItemOnShow) {
   // and show the menu.
   gfx::Size item_size = first_item->CalculatePreferredSize();
   gfx::Point location(item_size.width() / 2, item_size.height() / 2);
-  owner()->GetNativeWindow()->GetRootWindow()->MoveCursorTo(location);
+  GetRootWindow(owner())->MoveCursorTo(location);
   menu_controller()->Run(owner(), nullptr, menu_item.get(), gfx::Rect(),
                          MENU_ANCHOR_TOPLEFT, false, false);
 
@@ -1704,9 +1766,15 @@ TEST_F(MenuControllerTest, AsynchronousCancelEvent) {
   EXPECT_EQ(MenuController::EXIT_ALL, controller->exit_type());
 }
 
-// Tests that if a menu is ran without a widget, that MenuPreTargetHandler does
-// not cause a crash.
+// Tests that menus without parent widgets do not crash in MenuPreTargetHandler.
+// This is generally true, except on Chrome OS running with the window service.
+// In that case, a DCHECK fires to ensure menus can consume parents' key events.
 TEST_F(MenuControllerTest, RunWithoutWidgetDoesntCrash) {
+#if defined(OS_CHROMEOS)
+  if (features::IsUsingWindowService())
+    return;
+#endif  // OS_CHROMEOS
+
   ExitMenuRun();
   MenuController* controller = menu_controller();
   controller->Run(nullptr, nullptr, menu_item(), gfx::Rect(),
@@ -1723,12 +1791,8 @@ TEST_F(MenuControllerTest, MenuControllerReplacedDuringDrag) {
   TestDragDropClient drag_drop_client(
       base::Bind(&MenuControllerTest::TestMenuControllerReplacementDuringDrag,
                  base::Unretained(this)));
-  aura::client::SetDragDropClient(menu_item()
-                                      ->GetSubmenu()
-                                      ->GetWidget()
-                                      ->GetNativeWindow()
-                                      ->GetRootWindow(),
-                                  &drag_drop_client);
+  aura::client::SetDragDropClient(
+      GetRootWindow(menu_item()->GetSubmenu()->GetWidget()), &drag_drop_client);
   StartDrag();
 }
 
@@ -1741,12 +1805,8 @@ TEST_F(MenuControllerTest, CancelAllDuringDrag) {
   AddButtonMenuItems();
   TestDragDropClient drag_drop_client(base::Bind(
       &MenuControllerTest::TestCancelAllDuringDrag, base::Unretained(this)));
-  aura::client::SetDragDropClient(menu_item()
-                                      ->GetSubmenu()
-                                      ->GetWidget()
-                                      ->GetNativeWindow()
-                                      ->GetRootWindow(),
-                                  &drag_drop_client);
+  aura::client::SetDragDropClient(
+      GetRootWindow(menu_item()->GetSubmenu()->GetWidget()), &drag_drop_client);
   StartDrag();
 }
 

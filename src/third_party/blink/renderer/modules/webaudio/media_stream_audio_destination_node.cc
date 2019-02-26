@@ -40,17 +40,17 @@ namespace blink {
 
 // WebAudioCapturerSource ignores the channel count beyond 8, so we set the
 // block here to avoid anything can cause the crash.
-static const unsigned long kMaxChannelCount = 8;
+static const uint32_t kMaxChannelCount = 8;
 
 MediaStreamAudioDestinationHandler::MediaStreamAudioDestinationHandler(
     AudioNode& node,
-    size_t number_of_channels)
+    uint32_t number_of_channels)
     : AudioBasicInspectorHandler(kNodeTypeMediaStreamAudioDestination,
                                  node,
                                  node.context()->sampleRate(),
                                  number_of_channels),
       mix_bus_(AudioBus::Create(number_of_channels,
-                                AudioUtilities::kRenderQuantumFrames)) {
+                                audio_utilities::kRenderQuantumFrames)) {
   source_ = MediaStreamSource::Create("WebAudio-" + CreateCanonicalUUIDString(),
                                       MediaStreamSource::kTypeAudio,
                                       "MediaStreamAudioDestinationNode", false,
@@ -72,7 +72,7 @@ MediaStreamAudioDestinationHandler::MediaStreamAudioDestinationHandler(
 
 scoped_refptr<MediaStreamAudioDestinationHandler>
 MediaStreamAudioDestinationHandler::Create(AudioNode& node,
-                                           size_t number_of_channels) {
+                                           uint32_t number_of_channels) {
   return base::AdoptRef(
       new MediaStreamAudioDestinationHandler(node, number_of_channels));
 }
@@ -81,7 +81,7 @@ MediaStreamAudioDestinationHandler::~MediaStreamAudioDestinationHandler() {
   Uninitialize();
 }
 
-void MediaStreamAudioDestinationHandler::Process(size_t number_of_frames) {
+void MediaStreamAudioDestinationHandler::Process(uint32_t number_of_frames) {
   // Conform the input bus into the internal mix bus, which represents
   // MediaStreamDestination's channel count.
 
@@ -95,7 +95,7 @@ void MediaStreamAudioDestinationHandler::Process(size_t number_of_frames) {
   if (try_locker.Locked()) {
     unsigned count = ChannelCount();
     if (count != mix_bus_->NumberOfChannels()) {
-      mix_bus_ = AudioBus::Create(count, AudioUtilities::kRenderQuantumFrames);
+      mix_bus_ = AudioBus::Create(count, audio_utilities::kRenderQuantumFrames);
       // setAudioFormat has an internal lock.  This can cause audio to
       // glitch.  This is outside of our control.
       source_->SetAudioFormat(count, Context()->sampleRate());
@@ -110,7 +110,7 @@ void MediaStreamAudioDestinationHandler::Process(size_t number_of_frames) {
 }
 
 void MediaStreamAudioDestinationHandler::SetChannelCount(
-    unsigned long channel_count,
+    unsigned channel_count,
     ExceptionState& exception_state) {
   DCHECK(IsMainThread());
 
@@ -135,7 +135,7 @@ void MediaStreamAudioDestinationHandler::SetChannelCount(
   AudioHandler::SetChannelCount(channel_count, exception_state);
 }
 
-unsigned long MediaStreamAudioDestinationHandler::MaxChannelCount() const {
+uint32_t MediaStreamAudioDestinationHandler::MaxChannelCount() const {
   return kMaxChannelCount;
 }
 
@@ -143,7 +143,7 @@ unsigned long MediaStreamAudioDestinationHandler::MaxChannelCount() const {
 
 MediaStreamAudioDestinationNode::MediaStreamAudioDestinationNode(
     AudioContext& context,
-    size_t number_of_channels)
+    uint32_t number_of_channels)
     : AudioBasicInspectorNode(context) {
   SetHandler(
       MediaStreamAudioDestinationHandler::Create(*this, number_of_channels));
@@ -151,7 +151,7 @@ MediaStreamAudioDestinationNode::MediaStreamAudioDestinationNode(
 
 MediaStreamAudioDestinationNode* MediaStreamAudioDestinationNode::Create(
     AudioContext& context,
-    size_t number_of_channels,
+    uint32_t number_of_channels,
     ExceptionState& exception_state) {
   DCHECK(IsMainThread());
 
@@ -160,25 +160,26 @@ MediaStreamAudioDestinationNode* MediaStreamAudioDestinationNode::Create(
     return nullptr;
   }
 
-  return new MediaStreamAudioDestinationNode(context, number_of_channels);
+  return MakeGarbageCollected<MediaStreamAudioDestinationNode>(
+      context, number_of_channels);
 }
 
 MediaStreamAudioDestinationNode* MediaStreamAudioDestinationNode::Create(
     AudioContext* context,
-    const AudioNodeOptions& options,
+    const AudioNodeOptions* options,
     ExceptionState& exception_state) {
   DCHECK(IsMainThread());
 
   // Default to stereo; |options| will update it approriately if needed.
   MediaStreamAudioDestinationNode* node =
-      new MediaStreamAudioDestinationNode(*context, 2);
+      MakeGarbageCollected<MediaStreamAudioDestinationNode>(*context, 2);
 
   // Need to handle channelCount here ourselves because the upper
   // limit is different from the normal AudioNode::setChannelCount
   // limit of 32.  Error messages will sometimes show the wrong
   // limits.
-  if (options.hasChannelCount())
-    node->setChannelCount(options.channelCount(), exception_state);
+  if (options->hasChannelCount())
+    node->setChannelCount(options->channelCount(), exception_state);
 
   node->HandleChannelOptions(options, exception_state);
 

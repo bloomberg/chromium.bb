@@ -34,7 +34,7 @@ def load_libcxx_pretty_printers(compile_dir):
   src_dir, _ = git.communicate()
   if git.returncode:
     return
-  libcxx_pretty_printers = os.path.join(src_dir.rstrip(), 'third_party',
+  libcxx_pretty_printers = os.path.join(str(src_dir).rstrip(), 'third_party',
                                         'libcxx-pretty-printers', 'src')
   if not os.path.isdir(libcxx_pretty_printers):
     return

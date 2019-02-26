@@ -38,6 +38,7 @@
 #include "ui/aura/mus/embed_root.h"
 #include "ui/aura/mus/embed_root_delegate.h"
 #include "ui/aura/mus/focus_synchronizer.h"
+#include "ui/aura/mus/gesture_recognizer_impl_mus.h"
 #include "ui/aura/mus/gesture_synchronizer.h"
 #include "ui/aura/mus/in_flight_change.h"
 #include "ui/aura/mus/input_method_mus.h"
@@ -65,6 +66,8 @@
 #include "ui/display/screen.h"
 #include "ui/display/types/display_constants.h"
 #include "ui/events/event.h"
+#include "ui/events/event_observer.h"
+#include "ui/events/mojo/event_struct_traits.h"
 #include "ui/gfx/geometry/dip_util.h"
 #include "ui/gfx/geometry/insets.h"
 #include "ui/gfx/geometry/size.h"
@@ -219,6 +222,11 @@ bool WindowTreeClient::WaitForDisplays() {
   return valid_wait;
 }
 
+WindowMus* WindowTreeClient::GetWindowByServerId(ws::Id id) {
+  IdToWindowMap::const_iterator it = windows_.find(id);
+  return it != windows_.end() ? it->second : nullptr;
+}
+
 void WindowTreeClient::SetCanFocus(Window* window, bool can_focus) {
   DCHECK(tree_);
   DCHECK(window);
@@ -254,6 +262,21 @@ void WindowTreeClient::SetHitTestInsets(WindowMus* window,
                                         const gfx::Insets& touch) {
   DCHECK(tree_);
   tree_->SetHitTestInsets(window->server_id(), mouse, touch);
+}
+
+void WindowTreeClient::TrackOcclusionState(WindowMus* window) {
+  DCHECK(tree_);
+  tree_->TrackOcclusionState(window->server_id());
+}
+
+void WindowTreeClient::PauseWindowOcclusionTracking() {
+  DCHECK(tree_);
+  tree_->PauseWindowOcclusionTracking();
+}
+
+void WindowTreeClient::UnpauseWindowOcclusionTracking() {
+  DCHECK(tree_);
+  tree_->UnpauseWindowOcclusionTracking();
 }
 
 void WindowTreeClient::RegisterFrameSinkId(
@@ -354,11 +377,6 @@ void WindowTreeClient::RegisterWindowMus(WindowMus* window) {
     window->GetWindow()->set_frame_sink_id(
         port->GenerateFrameSinkIdFromServerId());
   }
-}
-
-WindowMus* WindowTreeClient::GetWindowByServerId(ws::Id id) {
-  IdToWindowMap::const_iterator it = windows_.find(id);
-  return it != windows_.end() ? it->second : nullptr;
 }
 
 bool WindowTreeClient::IsWindowKnown(aura::Window* window) {
@@ -536,6 +554,8 @@ void WindowTreeClient::WindowTreeConnectionEstablished(
   drag_drop_controller_ = std::make_unique<DragDropControllerMus>(this, tree_);
   capture_synchronizer_ = std::make_unique<CaptureSynchronizer>(this, tree_);
   focus_synchronizer_ = std::make_unique<FocusSynchronizer>(this, tree_);
+  Env::GetInstance()->SetGestureRecognizer(
+      std::make_unique<GestureRecognizerImplMus>(this));
   gesture_synchronizer_ = std::make_unique<GestureSynchronizer>(tree_);
 }
 
@@ -645,28 +665,11 @@ void WindowTreeClient::SetWindowVisibleFromServer(WindowMus* window,
     window_tree_host->Hide();
 }
 
-void WindowTreeClient::NotifyPointerEventObserved(ui::PointerEvent* event,
-                                                  uint64_t display_id,
-                                                  WindowMus* window_mus) {
-  aura::Window* window = window_mus ? window_mus->GetWindow() : nullptr;
-  gfx::Point location_in_screen;
-  if (window) {
-    location_in_screen = event->location();
-    client::GetScreenPositionClient(window->GetRootWindow())
-        ->ConvertPointToScreen(window, &location_in_screen);
-  } else {
-    // When there is no window force the root and location to be the same.
-    // They may differ if |window| was valid at the time of the event, but
-    // was since deleted.
-    event->set_location_f(event->root_location_f());
-    location_in_screen = event->root_location();
-    display::Display display;
-    if (display::Screen::GetScreen()->GetDisplayWithDisplayId(display_id,
-                                                              &display)) {
-      location_in_screen += display.bounds().OffsetFromOrigin();
-    }
-  }
-  delegate_->OnPointerEventObserved(*event, location_in_screen, window);
+void WindowTreeClient::UpdateObservedEventTypes() {
+  std::vector<ui::mojom::EventType> types;
+  for (auto type : event_type_to_observer_count_)
+    types.push_back(mojo::ConvertTo<ui::mojom::EventType>(type.first));
+  tree_->ObserveEventTypes(types);
 }
 
 void WindowTreeClient::ScheduleInFlightBoundsChange(
@@ -675,7 +678,8 @@ void WindowTreeClient::ScheduleInFlightBoundsChange(
     const gfx::Rect& new_bounds) {
   const uint32_t change_id =
       ScheduleInFlightChange(std::make_unique<InFlightBoundsChange>(
-          this, window, old_bounds, window->GetLocalSurfaceId()));
+          this, window, old_bounds,
+          window->GetLocalSurfaceIdAllocation().local_surface_id()));
   base::Optional<viz::LocalSurfaceId> local_surface_id;
   if (window->GetWindow()->IsEmbeddingClient() ||
       window->HasLocalLayerTreeFrameSink()) {
@@ -726,21 +730,23 @@ void WindowTreeClient::OnWindowMusDestroyed(WindowMus* window, Origin origin) {
   // deletion. The connection to the server is about to be dropped and the
   // server will take appropriate action.
   // TODO: decide how to deal with windows not owned by this client.
+  base::Optional<uint32_t> delete_change_id;
   if (!in_shutdown_ && origin == Origin::CLIENT &&
       (WasCreatedByThisClient(window) || IsRoot(window))) {
-    const uint32_t change_id =
+    delete_change_id =
         ScheduleInFlightChange(std::make_unique<CrashInFlightChange>(
             window, ChangeType::DELETE_WINDOW));
-    tree_->DeleteWindow(change_id, window->server_id());
+    tree_->DeleteWindow(delete_change_id.value(), window->server_id());
   }
 
   windows_.erase(window->server_id());
 
-  // Remove any InFlightChanges associated with the window.
+  // Remove any InFlightChanges associated with the window, except the delete.
   std::set<uint32_t> in_flight_change_ids_to_remove;
   for (const auto& pair : in_flight_map_) {
-    if (pair.second->window() == window)
-      in_flight_change_ids_to_remove.insert(pair.first);
+    const uint32_t change_id = pair.first;
+    if (pair.second->window() == window && change_id != delete_change_id)
+      in_flight_change_ids_to_remove.insert(change_id);
   }
   for (auto change_id : in_flight_change_ids_to_remove)
     in_flight_map_.erase(change_id);
@@ -900,17 +906,36 @@ gfx::Point WindowTreeClient::GetCursorScreenPoint() {
                     static_cast<int16_t>(location & 0xFFFF));
 }
 
-void WindowTreeClient::StartPointerWatcher(bool want_moves) {
-  if (has_pointer_watcher_)
-    StopPointerWatcher();
-  has_pointer_watcher_ = true;
-  tree_->StartPointerWatcher(want_moves);
+void WindowTreeClient::OnEarlyShutdown() {
+  if (compositor_context_factory_)
+    compositor_context_factory_->ResetSharedWorkerContextProvider();
 }
 
-void WindowTreeClient::StopPointerWatcher() {
-  DCHECK(has_pointer_watcher_);
-  tree_->StopPointerWatcher();
-  has_pointer_watcher_ = false;
+void WindowTreeClient::OnEventObserverAdded(
+    ui::EventObserver* observer,
+    const std::set<ui::EventType>& types) {
+  bool requires_update = false;
+  for (auto type : types) {
+    requires_update |= (event_type_to_observer_count_[type] == 0);
+    ++event_type_to_observer_count_[type];
+  }
+  if (requires_update)
+    UpdateObservedEventTypes();
+}
+
+void WindowTreeClient::OnEventObserverRemoved(
+    ui::EventObserver* observer,
+    const std::set<ui::EventType>& types) {
+  bool requires_update = false;
+  for (auto type : types) {
+    --event_type_to_observer_count_[type];
+    requires_update |= (event_type_to_observer_count_[type] == 0);
+    DCHECK_GE(event_type_to_observer_count_[type], 0);
+    if (event_type_to_observer_count_[type] <= 0)
+      event_type_to_observer_count_.erase(type);
+  }
+  if (requires_update)
+    UpdateObservedEventTypes();
 }
 
 void WindowTreeClient::AddObserver(WindowTreeClientObserver* observer) {
@@ -941,6 +966,10 @@ void WindowTreeClient::SetEventTargetingPolicy(
     ws::mojom::EventTargetingPolicy policy) {
   DCHECK(tree_);
   tree_->SetEventTargetingPolicy(window->server_id(), policy);
+}
+
+void WindowTreeClient::OnClientId(uint32_t client_id) {
+  id_ = client_id;
 }
 
 void WindowTreeClient::OnEmbed(
@@ -1268,28 +1297,9 @@ void WindowTreeClient::OnWindowInputEvent(uint32_t event_id,
                                           ws::Id window_id,
                                           int64_t display_id,
                                           std::unique_ptr<ui::Event> event,
-                                          bool matches_pointer_watcher) {
+                                          bool matches_event_observer) {
   DCHECK(event);
   WindowMus* window = GetWindowByServerId(window_id);  // May be null.
-
-  DCHECK(!event->IsPointerEvent());
-
-  if (matches_pointer_watcher && has_pointer_watcher_) {
-    // TODO(sky): remove this once PointerWatcher doesn't need PointerEvent.
-    // https://crbug.com/865781
-    std::unique_ptr<ui::Event> pointer_event;
-    if (event->IsMouseEvent()) {
-      pointer_event =
-          std::make_unique<ui::PointerEvent>(*event->AsMouseEvent());
-    } else if (event->IsTouchEvent()) {
-      pointer_event =
-          std::make_unique<ui::PointerEvent>(*event->AsTouchEvent());
-    } else {
-      NOTREACHED();
-    }
-    NotifyPointerEventObserved(pointer_event->AsPointerEvent(), display_id,
-                               window);
-  }
 
   // If the window has already been deleted, use |event| to update event states
   // kept in aura::Env.
@@ -1302,6 +1312,20 @@ void WindowTreeClient::OnWindowInputEvent(uint32_t event_id,
       env_controller->UpdateStateForTouchEvent(*event->AsTouchEvent());
     tree_->OnWindowInputEventAck(event_id, ws::mojom::EventResult::UNHANDLED);
     return;
+  }
+
+  if (matches_event_observer) {
+    std::unique_ptr<ui::Event> cloned_event(ui::Event::Clone(*event));
+    // Set the window as the event target, so event locations will be useful.
+    aura::Window* aura_window = window ? window->GetWindow() : nullptr;
+    ui::Event::DispatcherApi(cloned_event.get()).set_target(aura_window);
+    // The root location of located events should be in screen coordinates.
+    if (cloned_event->IsLocatedEvent() && cloned_event->target()) {
+      ui::LocatedEvent* located_event = cloned_event->AsLocatedEvent();
+      auto root = located_event->target()->GetScreenLocationF(*located_event);
+      located_event->set_root_location_f(root);
+    }
+    Env::GetInstance()->NotifyEventObservers(*cloned_event);
   }
 
   if (event->IsKeyEvent()) {
@@ -1328,16 +1352,9 @@ void WindowTreeClient::OnWindowInputEvent(uint32_t event_id,
   ack_handler.set_handled(event->handled());
 }
 
-void WindowTreeClient::OnPointerEventObserved(std::unique_ptr<ui::Event> event,
-                                              ws::Id window_id,
-                                              int64_t display_id) {
+void WindowTreeClient::OnObservedInputEvent(std::unique_ptr<ui::Event> event) {
   DCHECK(event);
-  DCHECK(event->IsPointerEvent());
-  if (!has_pointer_watcher_)
-    return;
-
-  NotifyPointerEventObserved(event->AsPointerEvent(), display_id,
-                             GetWindowByServerId(window_id));
+  Env::GetInstance()->NotifyEventObservers(*event);
 }
 
 void WindowTreeClient::OnWindowFocused(ws::Id focused_window_id) {
@@ -1453,6 +1470,8 @@ void WindowTreeClient::OnChangeCompleted(uint32_t change_id, bool success) {
     current_move_loop_change_ = 0;
     on_current_move_finished_.Run(success);
     on_current_move_finished_.Reset();
+    for (auto& observer : observers_)
+      observer.OnWindowMoveEnded(success);
   }
 
   if (!change)
@@ -1479,6 +1498,17 @@ void WindowTreeClient::OnChangeCompleted(uint32_t change_id, bool success) {
 void WindowTreeClient::GetScreenProviderObserver(
     ws::mojom::ScreenProviderObserverAssociatedRequest observer) {
   screen_provider_observer_binding_.Bind(std::move(observer));
+}
+
+void WindowTreeClient::OnOcclusionStateChanged(
+    ws::Id window_id,
+    ws::mojom::OcclusionState occlusion_state) {
+  WindowMus* window = GetWindowByServerId(window_id);
+  if (!window)
+    return;
+
+  WindowPortMus::Get(window->GetWindow())
+      ->SetOcclusionStateFromServer(occlusion_state);
 }
 
 void WindowTreeClient::OnDisplaysChanged(
@@ -1570,6 +1600,10 @@ void WindowTreeClient::OnWindowTreeHostPerformWindowMove(
   // Tell the window manager to take over moving us.
   tree_->PerformWindowMove(current_move_loop_change_, window_mus->server_id(),
                            source, cursor_location);
+  for (auto& observer : observers_) {
+    observer.OnWindowMoveStarted(window_tree_host->window(), cursor_location,
+                                 source);
+  }
 }
 
 void WindowTreeClient::OnWindowTreeHostCancelWindowMove(

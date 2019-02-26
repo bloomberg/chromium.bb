@@ -35,6 +35,7 @@ class WebGLTexture final : public WebGLSharedPlatform3DObject {
   DEFINE_WRAPPERTYPEINFO();
 
  public:
+  explicit WebGLTexture(WebGLRenderingContextBase*);
   ~WebGLTexture() override;
 
   static WebGLTexture* Create(WebGLRenderingContextBase*);
@@ -72,8 +73,6 @@ class WebGLTexture final : public WebGLSharedPlatform3DObject {
   }
 
  private:
-  explicit WebGLTexture(WebGLRenderingContextBase*);
-
   void DeleteObjectImpl(gpu::gles2::GLES2Interface*) override;
 
   bool IsTexture() const override { return true; }

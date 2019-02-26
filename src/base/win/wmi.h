@@ -71,18 +71,27 @@ BASE_EXPORT bool SetWmiClassMethodParameter(IWbemClassObject* class_method,
 BASE_EXPORT bool WmiLaunchProcess(const string16& command_line,
                                   int* process_id);
 
-// This class contains functionality of the WMI class 'Win32_ComputerSystem'.
-// More info: http://msdn.microsoft.com/en-us/library/aa394102(VS.85).aspx
+// An encapsulation of information retrieved from the 'Win32_ComputerSystem' and
+// 'Win32_Bios' WMI classes; see :
+// https://docs.microsoft.com/en-us/windows/desktop/CIMWin32Prov/win32-computersystem
+// https://docs.microsoft.com/en-us/windows/desktop/CIMWin32Prov/win32-systembios
 class BASE_EXPORT WmiComputerSystemInfo {
  public:
   static WmiComputerSystemInfo Get();
 
   const string16& manufacturer() const { return manufacturer_; }
   const string16& model() const { return model_; }
+  const string16& serial_number() const { return serial_number_; }
 
  private:
+  void PopulateModelAndManufacturer(
+      const Microsoft::WRL::ComPtr<IWbemServices>& services);
+  void PopulateSerialNumber(
+      const Microsoft::WRL::ComPtr<IWbemServices>& services);
+
   string16 manufacturer_;
   string16 model_;
+  string16 serial_number_;
 };
 
 }  // namespace win

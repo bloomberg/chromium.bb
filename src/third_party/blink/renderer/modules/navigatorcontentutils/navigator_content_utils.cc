@@ -92,7 +92,7 @@ static bool IsSchemeWhitelisted(const String& scheme) {
     InitCustomSchemeHandlerWhitelist();
 
   StringBuilder builder;
-  builder.Append(scheme.DeprecatedLower().Ascii().data());
+  builder.Append(scheme.LowerASCII());
 
   return g_scheme_whitelist->Contains(builder.ToString());
 }
@@ -192,7 +192,8 @@ const char NavigatorContentUtils::kSupplementName[] = "NavigatorContentUtils";
 void NavigatorContentUtils::ProvideTo(Navigator& navigator,
                                       NavigatorContentUtilsClient* client) {
   Supplement<Navigator>::ProvideTo(
-      navigator, new NavigatorContentUtils(navigator, client));
+      navigator,
+      MakeGarbageCollected<NavigatorContentUtils>(navigator, client));
 }
 
 }  // namespace blink

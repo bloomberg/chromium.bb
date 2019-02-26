@@ -38,9 +38,9 @@ GainHandler::GainHandler(AudioNode& node,
     : AudioHandler(kNodeTypeGain, node, sample_rate),
       gain_(&gain),
       sample_accurate_gain_values_(
-          AudioUtilities::kRenderQuantumFrames)  // FIXME: can probably
-                                                 // share temp buffer
-                                                 // in context
+          audio_utilities::kRenderQuantumFrames)  // FIXME: can probably
+                                                  // share temp buffer
+                                                  // in context
 {
   AddInput();
   AddOutput(1);
@@ -54,7 +54,7 @@ scoped_refptr<GainHandler> GainHandler::Create(AudioNode& node,
   return base::AdoptRef(new GainHandler(node, sample_rate, gain));
 }
 
-void GainHandler::Process(size_t frames_to_process) {
+void GainHandler::Process(uint32_t frames_to_process) {
   // FIXME: for some cases there is a nice optimization to avoid processing
   // here, and let the gain change happen in the summing junction input of the
   // AudioNode we're connected to.  Then we can avoid all of the following:
@@ -89,11 +89,11 @@ void GainHandler::Process(size_t frames_to_process) {
   }
 }
 
-void GainHandler::ProcessOnlyAudioParams(size_t frames_to_process) {
+void GainHandler::ProcessOnlyAudioParams(uint32_t frames_to_process) {
   DCHECK(Context()->IsAudioThread());
-  DCHECK_LE(frames_to_process, AudioUtilities::kRenderQuantumFrames);
+  DCHECK_LE(frames_to_process, audio_utilities::kRenderQuantumFrames);
 
-  float values[AudioUtilities::kRenderQuantumFrames];
+  float values[audio_utilities::kRenderQuantumFrames];
 
   gain_->CalculateSampleAccurateValues(values, frames_to_process);
 }
@@ -154,11 +154,11 @@ GainNode* GainNode::Create(BaseAudioContext& context,
     return nullptr;
   }
 
-  return new GainNode(context);
+  return MakeGarbageCollected<GainNode>(context);
 }
 
 GainNode* GainNode::Create(BaseAudioContext* context,
-                           const GainOptions& options,
+                           const GainOptions* options,
                            ExceptionState& exception_state) {
   GainNode* node = Create(*context, exception_state);
 
@@ -167,7 +167,7 @@ GainNode* GainNode::Create(BaseAudioContext* context,
 
   node->HandleChannelOptions(options, exception_state);
 
-  node->gain()->setValue(options.gain());
+  node->gain()->setValue(options->gain());
 
   return node;
 }

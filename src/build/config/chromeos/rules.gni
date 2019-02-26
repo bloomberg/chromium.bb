@@ -33,7 +33,8 @@ template("generate_vm_runner_script") {
   _cache_path_prefix =
       "//build/cros_cache/chrome-sdk/tarballs/${cros_board}+${cros_sdk_version}"
   _vm_image_path = "${_cache_path_prefix}+chromiumos_qemu_image.tar.xz/"
-  _qemu_dir = "${_cache_path_prefix}+qemu/"
+  _qemu_dir = "${_cache_path_prefix}+app-emulation/"
+  _firmware_dir = "${_cache_path_prefix}+sys-firmware/"
 
   forward_variables_from(invoker,
                          [
@@ -91,6 +92,7 @@ template("generate_vm_runner_script") {
       # as data here so that changes to it will trigger analyze.
       "//chromeos/CHROMEOS_LKGM",
       "//third_party/chromite/",
+      _firmware_dir,
       _vm_image_path,
       _qemu_dir,
     ]

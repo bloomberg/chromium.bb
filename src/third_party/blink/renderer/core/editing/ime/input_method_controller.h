@@ -58,6 +58,8 @@ class CORE_EXPORT InputMethodController final
   };
 
   static InputMethodController* Create(LocalFrame&);
+
+  explicit InputMethodController(LocalFrame&);
   virtual ~InputMethodController();
   void Trace(blink::Visitor*) override;
 
@@ -89,7 +91,7 @@ class CORE_EXPORT InputMethodController final
   EphemeralRange CompositionEphemeralRange() const;
 
   void Clear();
-  void DocumentAttached(Document*);
+  void DidAttachDocument(Document*);
 
   PlainTextRange GetSelectionOffsets() const;
   // Returns true if setting selection to specified offsets, otherwise false.
@@ -119,8 +121,6 @@ class CORE_EXPORT InputMethodController final
   Member<LocalFrame> frame_;
   Member<Range> composition_range_;
   bool has_composition_;
-
-  explicit InputMethodController(LocalFrame&);
 
   Editor& GetEditor() const;
   LocalFrame& GetFrame() const {
@@ -181,6 +181,14 @@ class CORE_EXPORT InputMethodController final
 
   // Returns true if selection offsets were successfully set.
   bool SetSelectionOffsets(const PlainTextRange&, TypingContinuation);
+
+  // There are few cases we need to remove suggestion markers which are also in
+  // composing range. (SuggestionSpan with FLAG_AUTO_CORRECTION and
+  // Spanned#SPAN_COMPOSING)
+  //   1) FinishComposingText()
+  //   2) CommitText()
+  //   3) SetComposingText() (SetComposition())
+  void RemoveSuggestionMarkerInCompositionRange();
 
   FRIEND_TEST_ALL_PREFIXES(InputMethodControllerTest,
                            InputModeOfFocusedElement);

@@ -90,9 +90,7 @@ BookmarkAppConfirmationView::BookmarkAppConfirmationView(
 
   // When CanHostedAppsOpenInWindows() returns false, do not show the open as
   // window checkbox to avoid confusing users.
-  // Desktop PWAs will choose the display mode automatically.
-  if (extensions::util::CanHostedAppsOpenInWindows() &&
-      !base::FeatureList::IsEnabled(features::kDesktopPWAWindowing)) {
+  if (extensions::util::CanHostedAppsOpenInWindows()) {
     open_as_window_checkbox_ = new views::Checkbox(
         l10n_util::GetStringUTF16(IDS_BOOKMARK_APP_BUBBLE_OPEN_AS_WINDOW));
     open_as_window_checkbox_->SetChecked(web_app_info_.open_as_window);

@@ -635,7 +635,22 @@ intptr_t WideString::ReferenceCountForTesting() const {
   return m_pData ? m_pData->m_nRefs : 0;
 }
 
-// static
+bool WideString::IsASCII() const {
+  for (wchar_t wc : *this) {
+    if (wc <= 0 || wc > 127)  // Questionable signedness of wchar_t.
+      return false;
+  }
+  return true;
+}
+
+ByteString WideString::ToASCII() const {
+  ByteString result;
+  result.Reserve(GetLength());
+  for (wchar_t wc : *this)
+    result.InsertAtBack(static_cast<char>(wc & 0x7f));
+  return result;
+}
+
 ByteString WideString::ToDefANSI() const {
   int src_len = GetLength();
   int dest_len = FXSYS_WideCharToMultiByte(
@@ -654,11 +669,11 @@ ByteString WideString::ToDefANSI() const {
   return bstr;
 }
 
-ByteString WideString::UTF8Encode() const {
+ByteString WideString::ToUTF8() const {
   return FX_UTF8Encode(AsStringView());
 }
 
-ByteString WideString::UTF16LE_Encode() const {
+ByteString WideString::ToUTF16LE() const {
   if (!m_pData)
     return ByteString("\0\0", 2);
 
@@ -864,7 +879,16 @@ size_t WideString::Replace(const WideStringView& pOld,
 }
 
 // static
-WideString WideString::FromLocal(const ByteStringView& bstr) {
+WideString WideString::FromASCII(const ByteStringView& bstr) {
+  WideString result;
+  result.Reserve(bstr.GetLength());
+  for (char c : bstr)
+    result.InsertAtBack(static_cast<wchar_t>(c & 0x7f));
+  return result;
+}
+
+// static
+WideString WideString::FromDefANSI(const ByteStringView& bstr) {
   int src_len = bstr.GetLength();
   int dest_len = FXSYS_MultiByteToWideChar(
       FX_CODEPAGE_DefANSI, 0, bstr.unterminated_c_str(), src_len, nullptr, 0);
@@ -1033,7 +1057,7 @@ std::wostream& operator<<(std::wostream& os, const WideString& str) {
 }
 
 std::ostream& operator<<(std::ostream& os, const WideString& str) {
-  os << str.UTF8Encode();
+  os << str.ToUTF8();
   return os;
 }
 

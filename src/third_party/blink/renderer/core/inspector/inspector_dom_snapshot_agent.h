@@ -6,7 +6,7 @@
 #define THIRD_PARTY_BLINK_RENDERER_CORE_INSPECTOR_INSPECTOR_DOM_SNAPSHOT_AGENT_H_
 
 #include "base/macros.h"
-#include "third_party/blink/renderer/core/css_property_names.h"
+#include "third_party/blink/renderer/core/css/css_property_names.h"
 #include "third_party/blink/renderer/core/dom/dom_node_ids.h"
 #include "third_party/blink/renderer/core/inspector/inspector_base_agent.h"
 #include "third_party/blink/renderer/core/inspector/protocol/DOMSnapshot.h"
@@ -28,9 +28,11 @@ class CORE_EXPORT InspectorDOMSnapshotAgent final
   static InspectorDOMSnapshotAgent* Create(
       InspectedFrames* inspected_frames,
       InspectorDOMDebuggerAgent* dom_debugger_agent) {
-    return new InspectorDOMSnapshotAgent(inspected_frames, dom_debugger_agent);
+    return MakeGarbageCollected<InspectorDOMSnapshotAgent>(inspected_frames,
+                                                           dom_debugger_agent);
   }
 
+  InspectorDOMSnapshotAgent(InspectedFrames*, InspectorDOMDebuggerAgent*);
   ~InspectorDOMSnapshotAgent() override;
   void Trace(blink::Visitor*) override;
 
@@ -60,7 +62,6 @@ class CORE_EXPORT InspectorDOMSnapshotAgent final
   void DidInsertDOMNode(Node*);
 
  private:
-  InspectorDOMSnapshotAgent(InspectedFrames*, InspectorDOMDebuggerAgent*);
   // Unconditionally enables the agent, even if |enabled_.Get()==true|.
   // For idempotence, call enable().
   void EnableAndReset();

@@ -5,15 +5,15 @@
 #include "net/third_party/http2/hpack/decoder/hpack_entry_type_decoder.h"
 
 #include "base/logging.h"
+#include "net/third_party/http2/platform/api/http2_bug_tracker.h"
 #include "net/third_party/http2/platform/api/http2_string_utils.h"
-#include "net/third_party/http2/tools/http2_bug_tracker.h"
 
 namespace http2 {
 
 Http2String HpackEntryTypeDecoder::DebugString() const {
   return Http2StrCat(
       "HpackEntryTypeDecoder(varint_decoder=", varint_decoder_.DebugString(),
-      ", entry_type = ", entry_type_, ") ");
+      ", entry_type=", entry_type_, ")");
 }
 
 std::ostream& operator<<(std::ostream& out, const HpackEntryTypeDecoder& v) {

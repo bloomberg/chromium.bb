@@ -30,17 +30,18 @@ namespace {
 
 constexpr char kRequestAbortedMessage[] = "The request was aborted.";
 
-LockInfo ToLockInfo(const mojom::blink::LockInfoPtr& record) {
-  LockInfo info;
-  info.setMode(Lock::ModeToString(record->mode));
-  info.setName(record->name);
-  info.setClientId(record->client_id);
+LockInfo* ToLockInfo(const mojom::blink::LockInfoPtr& record) {
+  LockInfo* info = LockInfo::Create();
+  ;
+  info->setMode(Lock::ModeToString(record->mode));
+  info->setName(record->name);
+  info->setClientId(record->client_id);
   return info;
 }
 
-HeapVector<LockInfo> ToLockInfos(
+HeapVector<Member<LockInfo>> ToLockInfos(
     const Vector<mojom::blink::LockInfoPtr>& records) {
-  HeapVector<LockInfo> out;
+  HeapVector<Member<LockInfo>> out;
   out.ReserveInitialCapacity(records.size());
   for (const auto& record : records)
     out.push_back(ToLockInfo(record));
@@ -188,12 +189,13 @@ ScriptPromise LockManager::request(ScriptState* script_state,
                                    const String& name,
                                    V8LockGrantedCallback* callback,
                                    ExceptionState& exception_state) {
-  return request(script_state, name, LockOptions(), callback, exception_state);
+  return request(script_state, name, LockOptions::Create(), callback,
+                 exception_state);
 }
 
 ScriptPromise LockManager::request(ScriptState* script_state,
                                    const String& name,
-                                   const LockOptions& options,
+                                   const LockOptions* options,
                                    V8LockGrantedCallback* callback,
                                    ExceptionState& exception_state) {
   ExecutionContext* context = ExecutionContext::From(script_state);
@@ -219,7 +221,7 @@ ScriptPromise LockManager::request(ScriptState* script_state,
     }
   }
 
-  mojom::blink::LockMode mode = Lock::StringToMode(options.mode());
+  mojom::blink::LockMode mode = Lock::StringToMode(options->mode());
 
   // 6. Otherwise, if name starts with U+002D HYPHEN-MINUS (-), then reject
   // promise with a "NotSupportedError" DOMException.
@@ -232,7 +234,7 @@ ScriptPromise LockManager::request(ScriptState* script_state,
   // 7. Otherwise, if both options’ steal dictionary member and option’s
   // ifAvailable dictionary member are true, then reject promise with a
   // "NotSupportedError" DOMException.
-  if (options.steal() && options.ifAvailable()) {
+  if (options->steal() && options->ifAvailable()) {
     exception_state.ThrowDOMException(
         DOMExceptionCode::kNotSupportedError,
         "The 'steal' and 'ifAvailable' options cannot be used together.");
@@ -242,7 +244,7 @@ ScriptPromise LockManager::request(ScriptState* script_state,
   // 8. Otherwise, if options’ steal dictionary member is true and option’s mode
   // dictionary member is not "exclusive", then reject promise with a
   // "NotSupportedError" DOMException.
-  if (options.steal() && mode != mojom::blink::LockMode::EXCLUSIVE) {
+  if (options->steal() && mode != mojom::blink::LockMode::EXCLUSIVE) {
     exception_state.ThrowDOMException(
         DOMExceptionCode::kNotSupportedError,
         "The 'steal' option may only be used with 'exclusive' locks.");
@@ -253,13 +255,13 @@ ScriptPromise LockManager::request(ScriptState* script_state,
   // of options’ steal dictionary member or options’ ifAvailable dictionary
   // member is true, then reject promise with a "NotSupportedError"
   // DOMException.
-  if (options.hasSignal() && options.ifAvailable()) {
+  if (options->hasSignal() && options->ifAvailable()) {
     exception_state.ThrowDOMException(
         DOMExceptionCode::kNotSupportedError,
         "The 'signal' and 'ifAvailable' options cannot be used together.");
     return ScriptPromise();
   }
-  if (options.hasSignal() && options.steal()) {
+  if (options->hasSignal() && options->steal()) {
     exception_state.ThrowDOMException(
         DOMExceptionCode::kNotSupportedError,
         "The 'signal' and 'steal' options cannot be used together.");
@@ -268,17 +270,17 @@ ScriptPromise LockManager::request(ScriptState* script_state,
 
   // 10. Otherwise, if options’ signal dictionary member is present and its
   // aborted flag is set, then reject promise with an "AbortError" DOMException.
-  if (options.hasSignal() && options.signal()->aborted()) {
+  if (options->hasSignal() && options->signal()->aborted()) {
     exception_state.ThrowDOMException(DOMExceptionCode::kAbortError,
                                       kRequestAbortedMessage);
     return ScriptPromise();
   }
 
   mojom::blink::LockManager::WaitMode wait =
-      options.steal()
-          ? mojom::blink::LockManager::WaitMode::PREEMPT
-          : options.ifAvailable() ? mojom::blink::LockManager::WaitMode::NO_WAIT
-                                  : mojom::blink::LockManager::WaitMode::WAIT;
+      options->steal() ? mojom::blink::LockManager::WaitMode::PREEMPT
+                       : options->ifAvailable()
+                             ? mojom::blink::LockManager::WaitMode::NO_WAIT
+                             : mojom::blink::LockManager::WaitMode::WAIT;
 
   ScriptPromiseResolver* resolver = ScriptPromiseResolver::Create(script_state);
   ScriptPromise promise = resolver->Promise();
@@ -288,19 +290,19 @@ ScriptPromise LockManager::request(ScriptState* script_state,
   // promise, the current agent, environment’s id, origin, callback, name,
   // options’ mode dictionary member, options’ ifAvailable dictionary member,
   // and options’ steal dictionary member.
-  LockRequestImpl* request = new LockRequestImpl(
+  LockRequestImpl* request = MakeGarbageCollected<LockRequestImpl>(
       callback, resolver, name, mode, mojo::MakeRequest(&request_ptr), this);
   AddPendingRequest(request);
 
   // 11.2. If options’ signal dictionary member is present, then add the
   // following abort steps to options’ signal dictionary member:
-  if (options.hasSignal()) {
+  if (options->hasSignal()) {
     // 11.2.1. Enqueue the steps to abort the request request to the lock task
     // queue.
     // 11.2.2. Reject promise with an "AbortError" DOMException.
-    options.signal()->AddAlgorithm(WTF::Bind(&LockRequestImpl::Abort,
-                                             WrapWeakPersistent(request),
-                                             String(kRequestAbortedMessage)));
+    options->signal()->AddAlgorithm(WTF::Bind(&LockRequestImpl::Abort,
+                                              WrapWeakPersistent(request),
+                                              String(kRequestAbortedMessage)));
   }
 
   service_->RequestLock(name, mode, wait, std::move(request_ptr));
@@ -339,9 +341,9 @@ ScriptPromise LockManager::query(ScriptState* script_state,
       [](ScriptPromiseResolver* resolver,
          Vector<mojom::blink::LockInfoPtr> pending,
          Vector<mojom::blink::LockInfoPtr> held) {
-        LockManagerSnapshot snapshot;
-        snapshot.setPending(ToLockInfos(pending));
-        snapshot.setHeld(ToLockInfos(held));
+        LockManagerSnapshot* snapshot = LockManagerSnapshot::Create();
+        snapshot->setPending(ToLockInfos(pending));
+        snapshot->setHeld(ToLockInfos(held));
         resolver->Resolve(snapshot);
       },
       WrapPersistent(resolver)));

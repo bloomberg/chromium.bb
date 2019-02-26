@@ -44,14 +44,14 @@ SyncerError ClearServerData::SendRequest(SyncCycle* cycle) {
                                                     post_result, response);
   cycle->SendProtocolEvent(response_event);
 
-  if (post_result != SYNCER_OK) {
+  if (post_result.value() != SyncerError::SYNCER_OK) {
     DVLOG(1) << "Post ClearServerData failed";
     return post_result;
   }
 
   if (!response.has_clear_server_data()) {
     DVLOG(1) << "ClearServerData response has no ClearServerData body!";
-    return SERVER_RESPONSE_VALIDATION_FAILED;
+    return SyncerError(SyncerError::SERVER_RESPONSE_VALIDATION_FAILED);
   }
 
   if (cycle->context()->debug_info_getter()) {

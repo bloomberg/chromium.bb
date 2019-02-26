@@ -73,6 +73,25 @@ class FeedJournalBridge {
                           const base::android::JavaRef<jobject>& j_this);
 
  private:
+  void OnLoadJournalDone(
+      base::android::ScopedJavaGlobalRef<jobject> success_callback,
+      base::android::ScopedJavaGlobalRef<jobject> failure_callback,
+      bool success,
+      std::vector<std::string> entries);
+  void OnLoadJournalKeyDone(
+      base::android::ScopedJavaGlobalRef<jobject> success_callback,
+      base::android::ScopedJavaGlobalRef<jobject> failure_callback,
+      bool success,
+      std::vector<std::string> entries);
+  void OnStorageCheckExistingCallbackDone(
+      base::android::ScopedJavaGlobalRef<jobject> success_callback,
+      base::android::ScopedJavaGlobalRef<jobject> failure_callback,
+      bool success,
+      bool exists);
+  void OnStorageBooleanCallbackDone(
+      base::android::ScopedJavaGlobalRef<jobject> callback,
+      bool exists);
+
   // This unique_ptr will hold a list of JournalOperations which are not
   // committed yet. After send |journal_mutation_| to database, this unique_ptr
   // will be reset.

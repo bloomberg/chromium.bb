@@ -17,6 +17,7 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/common/chrome_switches.h"
 #include "components/prefs/pref_service.h"
+#include "components/services/unzip/public/interfaces/constants.mojom.h"
 #include "components/services/unzip/unzip_service.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/common/service_manager_connection.h"
@@ -32,6 +33,7 @@
 #include "extensions/browser/value_store/test_value_store_factory.h"
 #include "extensions/browser/value_store/testing_value_store.h"
 #include "services/data_decoder/data_decoder_service.h"
+#include "services/data_decoder/public/mojom/constants.mojom.h"
 #include "services/service_manager/public/cpp/test/test_connector_factory.h"
 #if defined(OS_CHROMEOS)
 #include "components/user_manager/user_manager.h"
@@ -79,14 +81,14 @@ ExtensionService* TestExtensionSystem::CreateExtensionService(
       &ready_));
 
   if (!connector_factory_) {
-    service_manager::TestConnectorFactory::NameToServiceMap services;
-    services.insert(std::make_pair(
-        "data_decoder", std::make_unique<data_decoder::DataDecoderService>()));
-    services.insert(
-        std::make_pair("unzip_service", unzip::UnzipService::CreateService()));
     connector_factory_ =
-        service_manager::TestConnectorFactory::CreateForServices(
-            std::move(services));
+        std::make_unique<service_manager::TestConnectorFactory>();
+    connector_factory_->set_ignore_quit_requests(true);
+    data_decoder_ = std::make_unique<data_decoder::DataDecoderService>(
+        connector_factory_->RegisterInstance(
+            data_decoder::mojom::kServiceName));
+    unzip_service_ = std::make_unique<unzip::UnzipService>(
+        connector_factory_->RegisterInstance(unzip::mojom::kServiceName));
     connector_ = connector_factory_->CreateConnector();
     CrxInstaller::set_connector_for_test(connector_.get());
   }

@@ -120,6 +120,25 @@ void GetFilePathWithReplacements(const std::string& original_file_path,
   *replacement_path = new_file_path;
 }
 
+// Returns false if there were errors, otherwise true.
+bool UpdateReplacedText(const RequestQuery& query, std::string* data) {
+  auto replace_text = query.find("replace_text");
+  if (replace_text == query.end())
+    return true;
+
+  for (const auto& replacement : replace_text->second) {
+    if (replacement.find(":") == std::string::npos)
+      return false;
+    std::string find;
+    std::string with;
+    base::Base64Decode(replacement.substr(0, replacement.find(":")), &find);
+    base::Base64Decode(replacement.substr(replacement.find(":") + 1), &with);
+    base::ReplaceSubstringsAfterOffset(data, 0, find, with);
+  }
+
+  return true;
+}
+
 // Handles |request| by serving a file from under |server_root|.
 std::unique_ptr<HttpResponse> HandleFileRequest(
     const base::FilePath& server_root,
@@ -180,17 +199,8 @@ std::unique_ptr<HttpResponse> HandleFileRequest(
   if (request.method == METHOD_HEAD)
     file_contents = "";
 
-  if (query.find("replace_text") != query.end()) {
-    for (const auto& replacement : query["replace_text"]) {
-      if (replacement.find(":") == std::string::npos)
-        return std::move(failed_response);
-      std::string find;
-      std::string with;
-      base::Base64Decode(replacement.substr(0, replacement.find(":")), &find);
-      base::Base64Decode(replacement.substr(replacement.find(":") + 1), &with);
-      base::ReplaceSubstringsAfterOffset(&file_contents, 0, find, with);
-    }
-  }
+  if (!UpdateReplacedText(query, &file_contents))
+    return std::move(failed_response);
 
   base::FilePath::StringPieceType mock_headers_extension;
 #if defined(OS_WIN)
@@ -205,8 +215,10 @@ std::unique_ptr<HttpResponse> HandleFileRequest(
   if (base::PathExists(headers_path)) {
     std::string headers_contents;
 
-    if (!base::ReadFileToString(headers_path, &headers_contents))
+    if (!base::ReadFileToString(headers_path, &headers_contents) ||
+        !UpdateReplacedText(query, &headers_contents)) {
       return nullptr;
+    }
 
     return std::make_unique<RawHttpResponse>(headers_contents, file_contents);
   }

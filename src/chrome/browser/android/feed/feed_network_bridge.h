@@ -6,9 +6,11 @@
 #define CHROME_BROWSER_ANDROID_FEED_FEED_NETWORK_BRIDGE_H_
 
 #include <jni.h>
+#include <vector>
 
 #include "base/android/scoped_java_ref.h"
 #include "base/macros.h"
+#include "base/memory/weak_ptr.h"
 
 namespace feed {
 
@@ -22,6 +24,7 @@ class FeedNetworkBridge {
  public:
   explicit FeedNetworkBridge(
       const base::android::JavaParamRef<jobject>& j_profile);
+  ~FeedNetworkBridge();
 
   void Destroy(JNIEnv* env, const base::android::JavaParamRef<jobject>& j_this);
 
@@ -33,8 +36,17 @@ class FeedNetworkBridge {
       const base::android::JavaParamRef<jbyteArray>& j_body,
       const base::android::JavaParamRef<jobject>& j_callback);
 
+  void CancelRequests(JNIEnv* env,
+                      const base::android::JavaParamRef<jobject>& j_this);
+
  private:
+  void OnResult(const base::android::ScopedJavaGlobalRef<jobject>& j_callback,
+                int32_t http_code,
+                std::vector<uint8_t> response_bytes);
+
   FeedNetworkingHost* networking_host_;
+
+  base::WeakPtrFactory<FeedNetworkBridge> weak_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(FeedNetworkBridge);
 };

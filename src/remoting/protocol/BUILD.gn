@@ -54,6 +54,8 @@ static_library("protocol") {
     "datagram_channel_factory.h",
     "errors.cc",
     "errors.h",
+    "file_transfer_helpers.cc",
+    "file_transfer_helpers.h",
     "frame_consumer.h",
     "frame_stats.cc",
     "frame_stats.h",
@@ -257,6 +259,7 @@ static_library("protocol") {
     }
 
     deps += [
+      "//third_party/webrtc/api:create_peerconnection_factory",
       "//third_party/webrtc/api/audio_codecs:audio_codecs_api",
       "//third_party/webrtc/api/audio_codecs/opus:audio_decoder_opus",
       "//third_party/webrtc/api/audio_codecs/opus:audio_encoder_opus",

@@ -29,7 +29,7 @@ void SVGImagePainter::Paint(const PaintInfo& paint_info) {
           .CullRectSkipsPainting(paint_info_before_filtering)) {
     return;
   }
-  // Images cannot have children so do not call UpdateCullRect.
+  // Images cannot have children so do not call TransformCullRect.
 
   ScopedSVGTransformState transform_state(
       paint_info_before_filtering, layout_svg_image_,

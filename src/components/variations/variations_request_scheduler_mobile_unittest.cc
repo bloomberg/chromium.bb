@@ -5,7 +5,7 @@
 #include "components/variations/variations_request_scheduler_mobile.h"
 
 #include "base/bind.h"
-#include "base/message_loop/message_loop.h"
+#include "base/test/scoped_task_environment.h"
 #include "components/prefs/pref_registry_simple.h"
 #include "components/prefs/testing_pref_service.h"
 #include "components/variations/pref_names.h"
@@ -16,7 +16,7 @@ namespace variations {
 namespace {
 
 // Simple method used to verify a Callback has been triggered.
-void Increment(int *n) {
+void Increment(int* n) {
   (*n)++;
 }
 
@@ -49,7 +49,7 @@ TEST(VariationsRequestSchedulerMobileTest, StartRun) {
 }
 
 TEST(VariationsRequestSchedulerMobileTest, OnAppEnterForegroundNoRun) {
-  base::MessageLoopForUI message_loop_;
+  base::test::ScopedTaskEnvironment task_environment;
 
   TestingPrefServiceSimple prefs;
 
@@ -76,7 +76,7 @@ TEST(VariationsRequestSchedulerMobileTest, OnAppEnterForegroundNoRun) {
 }
 
 TEST(VariationsRequestSchedulerMobileTest, OnAppEnterForegroundRun) {
-  base::MessageLoopForUI message_loop_;
+  base::test::ScopedTaskEnvironment task_environment;
 
   TestingPrefServiceSimple prefs;
 
@@ -102,7 +102,7 @@ TEST(VariationsRequestSchedulerMobileTest, OnAppEnterForegroundRun) {
 }
 
 TEST(VariationsRequestSchedulerMobileTest, OnAppEnterForegroundOnStartup) {
-  base::MessageLoopForUI message_loop_;
+  base::test::ScopedTaskEnvironment task_environment;
 
   TestingPrefServiceSimple prefs;
 

@@ -22,25 +22,24 @@
 #include "third_party/blink/renderer/core/svg/svg_gradient_element.h"
 
 #include "third_party/blink/renderer/core/css/style_change_reason.h"
-#include "third_party/blink/renderer/core/dom/attribute.h"
 #include "third_party/blink/renderer/core/dom/element_traversal.h"
 #include "third_party/blink/renderer/core/dom/id_target_observer.h"
 #include "third_party/blink/renderer/core/layout/svg/layout_svg_resource_container.h"
 #include "third_party/blink/renderer/core/svg/gradient_attributes.h"
+#include "third_party/blink/renderer/core/svg/svg_enumeration_map.h"
 #include "third_party/blink/renderer/core/svg/svg_stop_element.h"
 #include "third_party/blink/renderer/core/svg/svg_transform_list.h"
 
 namespace blink {
 
 template <>
-const SVGEnumerationStringEntries&
-GetStaticStringEntries<SVGSpreadMethodType>() {
-  DEFINE_STATIC_LOCAL(SVGEnumerationStringEntries, entries, ());
-  if (entries.IsEmpty()) {
-    entries.push_back(std::make_pair(kSVGSpreadMethodPad, "pad"));
-    entries.push_back(std::make_pair(kSVGSpreadMethodReflect, "reflect"));
-    entries.push_back(std::make_pair(kSVGSpreadMethodRepeat, "repeat"));
-  }
+const SVGEnumerationMap& GetEnumerationMap<SVGSpreadMethodType>() {
+  static const SVGEnumerationMap::Entry enum_items[] = {
+      {kSVGSpreadMethodPad, "pad"},
+      {kSVGSpreadMethodReflect, "reflect"},
+      {kSVGSpreadMethodRepeat, "repeat"},
+  };
+  static const SVGEnumerationMap entries(enum_items);
   return entries;
 }
 
@@ -50,15 +49,15 @@ SVGGradientElement::SVGGradientElement(const QualifiedName& tag_name,
       SVGURIReference(this),
       gradient_transform_(
           SVGAnimatedTransformList::Create(this,
-                                           SVGNames::gradientTransformAttr,
+                                           svg_names::kGradientTransformAttr,
                                            CSSPropertyTransform)),
       spread_method_(SVGAnimatedEnumeration<SVGSpreadMethodType>::Create(
           this,
-          SVGNames::spreadMethodAttr,
+          svg_names::kSpreadMethodAttr,
           kSVGSpreadMethodPad)),
       gradient_units_(SVGAnimatedEnumeration<SVGUnitTypes::SVGUnitType>::Create(
           this,
-          SVGNames::gradientUnitsAttr,
+          svg_names::kGradientUnitsAttr,
           SVGUnitTypes::kSvgUnitTypeObjectboundingbox)) {
   AddToPropertyMap(gradient_transform_);
   AddToPropertyMap(spread_method_);
@@ -82,7 +81,7 @@ void SVGGradientElement::BuildPendingResource() {
   if (auto* gradient = ToSVGGradientElementOrNull(target))
     AddReferenceTo(gradient);
 
-  InvalidateGradient(LayoutInvalidationReason::kSvgResourceInvalidated);
+  InvalidateGradient(layout_invalidation_reason::kSvgResourceInvalidated);
 }
 
 void SVGGradientElement::ClearResourceReferences() {
@@ -94,7 +93,7 @@ void SVGGradientElement::CollectStyleForPresentationAttribute(
     const QualifiedName& name,
     const AtomicString& value,
     MutableCSSPropertyValueSet* style) {
-  if (name == SVGNames::gradientTransformAttr) {
+  if (name == svg_names::kGradientTransformAttr) {
     AddPropertyToPresentationAttributeStyle(
         style, CSSPropertyTransform,
         *gradient_transform_->CurrentValue()->CssValue());
@@ -104,17 +103,17 @@ void SVGGradientElement::CollectStyleForPresentationAttribute(
 }
 
 void SVGGradientElement::SvgAttributeChanged(const QualifiedName& attr_name) {
-  if (attr_name == SVGNames::gradientTransformAttr) {
+  if (attr_name == svg_names::kGradientTransformAttr) {
     InvalidateSVGPresentationAttributeStyle();
     SetNeedsStyleRecalc(kLocalStyleChange,
                         StyleChangeReasonForTracing::FromAttribute(attr_name));
   }
 
-  if (attr_name == SVGNames::gradientUnitsAttr ||
-      attr_name == SVGNames::gradientTransformAttr ||
-      attr_name == SVGNames::spreadMethodAttr) {
+  if (attr_name == svg_names::kGradientUnitsAttr ||
+      attr_name == svg_names::kGradientTransformAttr ||
+      attr_name == svg_names::kSpreadMethodAttr) {
     SVGElement::InvalidationGuard invalidation_guard(this);
-    InvalidateGradient(LayoutInvalidationReason::kAttributeChanged);
+    InvalidateGradient(layout_invalidation_reason::kAttributeChanged);
     return;
   }
 
@@ -147,7 +146,7 @@ void SVGGradientElement::ChildrenChanged(const ChildrenChange& change) {
   if (change.by_parser)
     return;
 
-  InvalidateGradient(LayoutInvalidationReason::kChildChanged);
+  InvalidateGradient(layout_invalidation_reason::kChildChanged);
 }
 
 void SVGGradientElement::InvalidateGradient(
@@ -160,7 +159,7 @@ void SVGGradientElement::InvalidateDependentGradients() {
   NotifyIncomingReferences([](SVGElement& element) {
     if (auto* gradient = ToSVGGradientElementOrNull(element)) {
       gradient->InvalidateGradient(
-          LayoutInvalidationReason::kSvgResourceInvalidated);
+          layout_invalidation_reason::kSvgResourceInvalidated);
     }
   });
 }

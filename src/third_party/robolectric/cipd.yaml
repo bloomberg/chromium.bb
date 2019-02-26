@@ -7,6 +7,7 @@
 package: chromium/third_party/robolectric
 description: robolectric modified Android SDKs
 data:
+  - file: lib/android-all-4.1.2_r1-robolectric-0.jar
   - file: lib/android-all-4.3_r2-robolectric-0.jar
   - file: lib/android-all-5.0.0_r2-robolectric-1.jar
   - file: lib/android-all-7.1.0_r7-robolectric-0.jar

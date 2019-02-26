@@ -6,7 +6,7 @@
 
 <link rel="import" href="chrome://resources/html/polymer.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/font-roboto/roboto.html">
-<link rel="import" href="chrome://resources/polymer/v1_0/paper-slider/paper-slider.html">
+<link rel="import" href="chrome://resources/cr_elements/cr_slider/cr_slider.html">
 <link rel="import" href="chrome-extension://hhaomjibdihmijegdhdafkllkbggdgoj/foreground/elements/files_icon_button.html">
 <link rel="import" href="repeat_button.html">
 
@@ -61,17 +61,17 @@
         <!-- Play/pause button and seek slider in the bottom line. -->
         <div class="time-container">
           <div class="time-spacer">[[computeTimeString_(duration, duration)]]</div>
-          <div class="time">[[computeDisplayTimeString_(dragging, time, seekingTime, duration)]]</div>
+          <div class="time">[[computeTimeString_(time, duration)]]</div>
         </div>
-        <paper-slider id="timeSlider" max="[[duration]]" value="{{time::change}}"></paper-slider>
-
+        <cr-slider id="timeSlider" max="[[duration]]" value="[[time]]"
+            on-dragging-changed="onSeekingChanged_" no-keybindings></cr-slider>
         <!-- Volume button and slider in the bottom line. -->
         <files-icon-button
             id="volumeButton"
             class="volume media-button"
             on-click="volumeClick">
         </files-icon-button>
-        <paper-slider id="volumeSlider"></paper-slider>
+        <cr-slider id="volumeSlider"></cr-slider>
       </div>
     </div>
   </template>

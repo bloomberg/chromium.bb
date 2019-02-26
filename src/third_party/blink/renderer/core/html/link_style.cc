@@ -4,6 +4,7 @@
 
 #include "third_party/blink/renderer/core/html/link_style.h"
 
+#include "services/network/public/mojom/referrer_policy.mojom-shared.h"
 #include "third_party/blink/renderer/core/css/style_sheet_contents.h"
 #include "third_party/blink/renderer/core/dom/document.h"
 #include "third_party/blink/renderer/core/frame/csp/content_security_policy.h"
@@ -21,13 +22,12 @@
 #include "third_party/blink/renderer/platform/network/mime/content_type.h"
 #include "third_party/blink/renderer/platform/network/mime/mime_type_registry.h"
 #include "third_party/blink/renderer/platform/weborigin/kurl.h"
-#include "third_party/blink/renderer/platform/weborigin/referrer_policy.h"
 #include "third_party/blink/renderer/platform/weborigin/security_policy.h"
 #include "third_party/blink/renderer/platform/wtf/text/atomic_string.h"
 
 namespace blink {
 
-using namespace HTMLNames;
+using namespace html_names;
 
 static bool StyleSheetTypeIsSupported(const String& type) {
   String trimmed_type = ContentType(type).GetType();
@@ -36,7 +36,7 @@ static bool StyleSheetTypeIsSupported(const String& type) {
 }
 
 LinkStyle* LinkStyle::Create(HTMLLinkElement* owner) {
-  return new LinkStyle(owner);
+  return MakeGarbageCollected<LinkStyle>(owner);
 }
 
 LinkStyle::LinkStyle(HTMLLinkElement* owner)
@@ -73,7 +73,7 @@ void LinkStyle::NotifyFinished(Resource* resource) {
   // See the comment in pending_script.cc about why this check is necessary
   // here, instead of in the resource fetcher. https://crbug.com/500701.
   if (!cached_style_sheet->ErrorOccurred() &&
-      !owner_->FastGetAttribute(integrityAttr).IsEmpty() &&
+      !owner_->FastGetAttribute(kIntegrityAttr).IsEmpty() &&
       !cached_style_sheet->IntegrityMetadata().IsEmpty()) {
     ResourceIntegrityDisposition disposition =
         cached_style_sheet->IntegrityDisposition();
@@ -263,7 +263,7 @@ LinkStyle::LoadReturnValue LinkStyle::LoadStylesheetIfNeeded(
   if (GetResource()) {
     RemovePendingSheet();
     ClearResource();
-    ClearFetchFollowingCORS();
+    ClearFetchFollowingCors();
   }
 
   if (!owner_->ShouldLoadLink())
@@ -292,7 +292,7 @@ LinkStyle::LoadReturnValue LinkStyle::LoadStylesheetIfNeeded(
   AddPendingSheet(blocking ? kBlocking : kNonBlocking);
 
   if (params.cross_origin != kCrossOriginAttributeNotSet) {
-    SetFetchFollowingCORS();
+    SetFetchFollowingCors();
   }
 
   // Load stylesheets that are not needed for the layout immediately with low
@@ -321,14 +321,14 @@ void LinkStyle::Process() {
   DCHECK(owner_->ShouldProcessStyle());
   const LinkLoadParameters params(
       owner_->RelAttribute(),
-      GetCrossOriginAttributeValue(owner_->FastGetAttribute(crossoriginAttr)),
+      GetCrossOriginAttributeValue(owner_->FastGetAttribute(kCrossoriginAttr)),
       owner_->TypeValue().DeprecatedLower(),
       owner_->AsValue().DeprecatedLower(), owner_->Media().DeprecatedLower(),
       owner_->nonce(), owner_->IntegrityValue(),
       owner_->ImportanceValue().LowerASCII(), owner_->GetReferrerPolicy(),
-      owner_->GetNonEmptyURLAttribute(hrefAttr),
-      owner_->FastGetAttribute(srcsetAttr),
-      owner_->FastGetAttribute(imgsizesAttr));
+      owner_->GetNonEmptyURLAttribute(kHrefAttr),
+      owner_->FastGetAttribute(kImagesrcsetAttr),
+      owner_->FastGetAttribute(kImagesizesAttr));
 
   WTF::TextEncoding charset = GetCharset();
 
@@ -368,7 +368,7 @@ void LinkStyle::SetSheetTitle(const String& title) {
   if (title.IsEmpty() || !IsUnset() || owner_->IsAlternate())
     return;
 
-  const KURL& href = owner_->GetNonEmptyURLAttribute(hrefAttr);
+  const KURL& href = owner_->GetNonEmptyURLAttribute(kHrefAttr);
   if (href.IsValid() && !href.IsEmpty())
     GetDocument().GetStyleEngine().SetPreferredStylesheetSetNameIfNotSet(title);
 }

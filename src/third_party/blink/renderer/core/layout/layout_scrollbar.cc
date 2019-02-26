@@ -40,7 +40,8 @@ Scrollbar* LayoutScrollbar::CreateCustomScrollbar(
     ScrollableArea* scrollable_area,
     ScrollbarOrientation orientation,
     Element* style_source) {
-  return new LayoutScrollbar(scrollable_area, orientation, style_source);
+  return MakeGarbageCollected<LayoutScrollbar>(scrollable_area, orientation,
+                                               style_source);
 }
 
 LayoutScrollbar::LayoutScrollbar(ScrollableArea* scrollable_area,

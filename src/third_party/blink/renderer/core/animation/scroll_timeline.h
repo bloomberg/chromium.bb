@@ -36,8 +36,14 @@ class CORE_EXPORT ScrollTimeline final : public AnimationTimeline {
   };
 
   static ScrollTimeline* Create(Document&,
-                                ScrollTimelineOptions,
+                                ScrollTimelineOptions*,
                                 ExceptionState&);
+
+  ScrollTimeline(Element*,
+                 ScrollDirection,
+                 CSSPrimitiveValue*,
+                 CSSPrimitiveValue*,
+                 double);
 
   // AnimationTimeline implementation.
   double currentTime(bool& is_null) final;
@@ -53,9 +59,16 @@ class CORE_EXPORT ScrollTimeline final : public AnimationTimeline {
   // Returns the Node that should actually have the ScrollableArea (if one
   // exists). This can differ from |scrollSource| when |scroll_source_| is the
   // Document's scrollingElement.
-  Node* ResolvedScrollSource() const;
-
+  Node* ResolvedScrollSource() const { return resolved_scroll_source_; }
   ScrollDirection GetOrientation() const { return orientation_; }
+
+  void GetCurrentAndMaxOffset(const LayoutBox*,
+                              double& current_offset,
+                              double& max_offset) const;
+  void ResolveScrollStartAndEnd(const LayoutBox*,
+                                double max_offset,
+                                double& resolved_start_scroll_offset,
+                                double& resolved_end_scroll_offset) const;
 
   // Must be called when this ScrollTimeline is attached/detached from an
   // animation.
@@ -72,18 +85,11 @@ class CORE_EXPORT ScrollTimeline final : public AnimationTimeline {
   static bool HasActiveScrollTimeline(Node* node);
 
  private:
-  ScrollTimeline(Element*,
-                 ScrollDirection,
-                 CSSPrimitiveValue*,
-                 CSSPrimitiveValue*,
-                 double);
-
-  void ResolveScrollStartAndEnd(const LayoutBox*,
-                                double max_offset,
-                                double& resolved_start_scroll_offset,
-                                double& resolved_end_scroll_offset);
-
+  // Use |scroll_source_| only to implement the web-exposed API but use
+  // resolved_scroll_source_ to actually access the scroll related properties.
   Member<Element> scroll_source_;
+  Member<Node> resolved_scroll_source_;
+
   ScrollDirection orientation_;
   Member<CSSPrimitiveValue> start_scroll_offset_;
   Member<CSSPrimitiveValue> end_scroll_offset_;

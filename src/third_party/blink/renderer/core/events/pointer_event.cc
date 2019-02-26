@@ -11,7 +11,7 @@
 namespace blink {
 
 PointerEvent::PointerEvent(const AtomicString& type,
-                           const PointerEventInit& initializer,
+                           const PointerEventInit* initializer,
                            TimeTicks platform_time_stamp)
     : MouseEvent(type, initializer, platform_time_stamp),
       pointer_id_(0),
@@ -23,30 +23,35 @@ PointerEvent::PointerEvent(const AtomicString& type,
       tangential_pressure_(0),
       twist_(0),
       is_primary_(false),
-      coalesced_events_targets_dirty_(false) {
-  if (initializer.hasPointerId())
-    pointer_id_ = initializer.pointerId();
-  if (initializer.hasWidth())
-    width_ = initializer.width();
-  if (initializer.hasHeight())
-    height_ = initializer.height();
-  if (initializer.hasPressure())
-    pressure_ = initializer.pressure();
-  if (initializer.hasTiltX())
-    tilt_x_ = initializer.tiltX();
-  if (initializer.hasTiltY())
-    tilt_y_ = initializer.tiltY();
-  if (initializer.hasTangentialPressure())
-    tangential_pressure_ = initializer.tangentialPressure();
-  if (initializer.hasTwist())
-    twist_ = initializer.twist();
-  if (initializer.hasPointerType())
-    pointer_type_ = initializer.pointerType();
-  if (initializer.hasIsPrimary())
-    is_primary_ = initializer.isPrimary();
-  if (initializer.hasCoalescedEvents()) {
-    for (auto coalesced_event : initializer.coalescedEvents())
+      coalesced_events_targets_dirty_(false),
+      predicted_events_targets_dirty_(false) {
+  if (initializer->hasPointerId())
+    pointer_id_ = initializer->pointerId();
+  if (initializer->hasWidth())
+    width_ = initializer->width();
+  if (initializer->hasHeight())
+    height_ = initializer->height();
+  if (initializer->hasPressure())
+    pressure_ = initializer->pressure();
+  if (initializer->hasTiltX())
+    tilt_x_ = initializer->tiltX();
+  if (initializer->hasTiltY())
+    tilt_y_ = initializer->tiltY();
+  if (initializer->hasTangentialPressure())
+    tangential_pressure_ = initializer->tangentialPressure();
+  if (initializer->hasTwist())
+    twist_ = initializer->twist();
+  if (initializer->hasPointerType())
+    pointer_type_ = initializer->pointerType();
+  if (initializer->hasIsPrimary())
+    is_primary_ = initializer->isPrimary();
+  if (initializer->hasCoalescedEvents()) {
+    for (auto coalesced_event : initializer->coalescedEvents())
       coalesced_events_.push_back(coalesced_event);
+  }
+  if (initializer->hasPredictedEvents()) {
+    for (auto predicted_event : initializer->predictedEvents())
+      predicted_events_.push_back(predicted_event);
   }
 }
 
@@ -58,57 +63,12 @@ bool PointerEvent::IsPointerEvent() const {
   return true;
 }
 
-double PointerEvent::screenX() const {
-  return (!RuntimeEnabledFeatures::FractionalMouseTypePointerEventEnabled() &&
-          pointer_type_ == "mouse")
-             ? static_cast<int>(screen_location_.X())
-             : screen_location_.X();
-}
-
-double PointerEvent::screenY() const {
-  return (!RuntimeEnabledFeatures::FractionalMouseTypePointerEventEnabled() &&
-          pointer_type_ == "mouse")
-             ? static_cast<int>(screen_location_.Y())
-             : screen_location_.Y();
-}
-
-double PointerEvent::clientX() const {
-  return (!RuntimeEnabledFeatures::FractionalMouseTypePointerEventEnabled() &&
-          pointer_type_ == "mouse")
-             ? static_cast<int>(client_location_.X())
-             : client_location_.X();
-}
-
-double PointerEvent::clientY() const {
-  return (!RuntimeEnabledFeatures::FractionalMouseTypePointerEventEnabled() &&
-          pointer_type_ == "mouse")
-             ? static_cast<int>(client_location_.Y())
-             : client_location_.Y();
-}
-
-double PointerEvent::pageX() const {
-  return (!RuntimeEnabledFeatures::FractionalMouseTypePointerEventEnabled() &&
-          pointer_type_ == "mouse")
-             ? static_cast<int>(page_location_.X())
-             : page_location_.X();
-}
-
-double PointerEvent::pageY() const {
-  return (!RuntimeEnabledFeatures::FractionalMouseTypePointerEventEnabled() &&
-          pointer_type_ == "mouse")
-             ? static_cast<int>(page_location_.Y())
-             : page_location_.Y();
-}
-
 double PointerEvent::offsetX() {
   if (!HasPosition())
     return 0;
   if (!has_cached_relative_position_)
     ComputeRelativePosition();
-  return (!RuntimeEnabledFeatures::FractionalMouseTypePointerEventEnabled() &&
-          pointer_type_ == "mouse")
-             ? std::round(offset_location_.X())
-             : offset_location_.X();
+  return offset_location_.X();
 }
 
 double PointerEvent::offsetY() {
@@ -116,14 +76,12 @@ double PointerEvent::offsetY() {
     return 0;
   if (!has_cached_relative_position_)
     ComputeRelativePosition();
-  return (!RuntimeEnabledFeatures::FractionalMouseTypePointerEventEnabled() &&
-          pointer_type_ == "mouse")
-             ? std::round(offset_location_.Y())
-             : offset_location_.Y();
+  return offset_location_.Y();
 }
 
 void PointerEvent::ReceivedTarget() {
   coalesced_events_targets_dirty_ = true;
+  predicted_events_targets_dirty_ = true;
   MouseEvent::ReceivedTarget();
 }
 
@@ -144,6 +102,15 @@ HeapVector<Member<PointerEvent>> PointerEvent::getCoalescedEvents() {
   return coalesced_events_;
 }
 
+HeapVector<Member<PointerEvent>> PointerEvent::getPredictedEvents() {
+  if (predicted_events_targets_dirty_) {
+    for (auto predicted_event : predicted_events_)
+      predicted_event->SetTarget(target());
+    predicted_events_targets_dirty_ = false;
+  }
+  return predicted_events_;
+}
+
 TimeTicks PointerEvent::OldestPlatformTimeStamp() const {
   if (coalesced_events_.size() > 0) {
     // Assume that time stamps of coalesced events are in ascending order.
@@ -154,6 +121,7 @@ TimeTicks PointerEvent::OldestPlatformTimeStamp() const {
 
 void PointerEvent::Trace(blink::Visitor* visitor) {
   visitor->Trace(coalesced_events_);
+  visitor->Trace(predicted_events_);
   MouseEvent::Trace(visitor);
 }
 

@@ -3,7 +3,6 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-
 from writers import xml_formatted_writer
 from xml.dom import minidom
 from xml.sax import saxutils as xml_escape
@@ -74,8 +73,8 @@ class AndroidPolicyWriter(xml_formatted_writer.XMLFormattedWriter):
 
     items = policy.get('items')
     if items is not None:
-      entries = [ item['caption'] for item in items ]
-      values = [ item['value'] for item in items ]
+      entries = [item['caption'] for item in items]
+      values = [item['value'] for item in items]
       self.AddStringArrayResource(name + 'Entries', entries)
       self.AddStringArrayResource(name + 'Values', values)
 

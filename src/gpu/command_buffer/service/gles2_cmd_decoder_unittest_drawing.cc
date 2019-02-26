@@ -2304,7 +2304,7 @@ TEST_P(GLES2DecoderManualInitTest, DrawClearsDepthTexture) {
       .WillOnce(Return(GL_FRAMEBUFFER_COMPLETE))
       .RetiresOnSaturation();
 
-  EXPECT_CALL(*gl_, ColorMask(1, 1, 1, 1)).Times(1).RetiresOnSaturation();
+  SetupExpectationsForColorMask(true, true, true, true);
   EXPECT_CALL(*gl_, ClearColor(0.0f, 0.0f, 0.0f, 0.0f))
       .Times(1)
       .RetiresOnSaturation();
@@ -2378,7 +2378,7 @@ TEST_P(GLES2DecoderManualInitTest, DrawClearsLargeTexture) {
       .WillOnce(Return(GL_FRAMEBUFFER_COMPLETE))
       .RetiresOnSaturation();
 
-  EXPECT_CALL(*gl_, ColorMask(1, 1, 1, 1)).Times(1).RetiresOnSaturation();
+  SetupExpectationsForColorMask(true, true, true, true);
   EXPECT_CALL(*gl_, ClearColor(0.0f, 0.0f, 0.0f, 0.0f))
       .Times(1)
       .RetiresOnSaturation();

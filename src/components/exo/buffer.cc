@@ -19,7 +19,7 @@
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/time/time.h"
 #include "base/trace_event/trace_event.h"
-#include "base/trace_event/trace_event_argument.h"
+#include "base/trace_event/traced_value.h"
 #include "components/exo/layer_tree_frame_sink_holder.h"
 #include "components/exo/wm_helper.h"
 #include "components/viz/common/gpu/context_provider.h"
@@ -388,18 +388,21 @@ Buffer::Buffer(std::unique_ptr<gfx::GpuMemoryBuffer> gpu_memory_buffer)
              GL_TEXTURE_2D /* texture_target */,
              GL_COMMANDS_COMPLETED_CHROMIUM /* query_type */,
              true /* use_zero_copy */,
-             false /* is_overlay_candidate */) {}
+             false /* is_overlay_candidate */,
+             false /* y_invert */) {}
 
 Buffer::Buffer(std::unique_ptr<gfx::GpuMemoryBuffer> gpu_memory_buffer,
                unsigned texture_target,
                unsigned query_type,
                bool use_zero_copy,
-               bool is_overlay_candidate)
+               bool is_overlay_candidate,
+               bool y_invert)
     : gpu_memory_buffer_(std::move(gpu_memory_buffer)),
       texture_target_(texture_target),
       query_type_(query_type),
       use_zero_copy_(use_zero_copy),
       is_overlay_candidate_(is_overlay_candidate),
+      y_invert_(y_invert),
       wait_for_release_delay_(
           base::TimeDelta::FromMilliseconds(kWaitForReleaseDelayMs)) {}
 

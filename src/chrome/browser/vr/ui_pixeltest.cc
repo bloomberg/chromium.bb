@@ -4,10 +4,10 @@
 
 #include "base/strings/utf_string_conversions.h"
 #include "build/build_config.h"
-#include "chrome/browser/vr/model/toolbar_state.h"
+#include "chrome/browser/vr/model/location_bar_state.h"
 #include "chrome/browser/vr/test/constants.h"
 #include "chrome/browser/vr/test/ui_pixel_test.h"
-#include "components/toolbar/vector_icons.h"
+#include "components/omnibox/browser/vector_icons.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace vr {
@@ -24,8 +24,8 @@ TEST_F(UiPixelTest, DrawVrBrowsingMode) {
   ui_initial_state.in_web_vr = false;
   ui_initial_state.web_vr_autopresentation_expected = false;
   MakeUi(ui_initial_state,
-         ToolbarState(GURL("https://example.com"), security_state::SECURE,
-                      &toolbar::kHttpsValidIcon, true, false));
+         LocationBarState(GURL("https://example.com"), security_state::SECURE,
+                          &omnibox::kHttpsValidIcon, true, false));
 
   // Draw UI.
   DrawUi(gfx::Vector3dF(0.0f, 0.0f, -1.0f), gfx::Point3F(0.5f, -0.5f, 0.0f),

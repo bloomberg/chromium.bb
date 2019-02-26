@@ -27,11 +27,7 @@ LayoutMultiColumnSpannerPlaceholder::CreateAnonymous(
       new LayoutMultiColumnSpannerPlaceholder(&layout_object_in_flow_thread);
   Document& document = layout_object_in_flow_thread.GetDocument();
   new_spanner->SetDocumentForAnonymous(&document);
-  scoped_refptr<ComputedStyle> new_style =
-      ComputedStyle::CreateAnonymousStyleWithDisplay(parent_style,
-                                                     EDisplay::kBlock);
-  CopyMarginProperties(*new_style, layout_object_in_flow_thread.StyleRef());
-  new_spanner->SetStyle(new_style);
+  new_spanner->UpdateProperties(parent_style);
   return new_spanner;
 }
 
@@ -56,17 +52,20 @@ void LayoutMultiColumnSpannerPlaceholder::
       // its containing block chain, we need to mark it here, or we risk that
       // the object isn't laid out.
       object_in_flow_thread->Parent()->SetNeedsLayout(
-          LayoutInvalidationReason::kColumnsChanged);
+          layout_invalidation_reason::kColumnsChanged);
     }
     return;
   }
-  UpdateMarginProperties();
+  UpdateProperties(Parent()->StyleRef());
 }
 
-void LayoutMultiColumnSpannerPlaceholder::UpdateMarginProperties() {
-  scoped_refptr<ComputedStyle> new_style = ComputedStyle::Clone(StyleRef());
+void LayoutMultiColumnSpannerPlaceholder::UpdateProperties(
+    const ComputedStyle& parent_style) {
+  scoped_refptr<ComputedStyle> new_style =
+      ComputedStyle::CreateAnonymousStyleWithDisplay(parent_style,
+                                                     EDisplay::kBlock);
   CopyMarginProperties(*new_style, layout_object_in_flow_thread_->StyleRef());
-  SetStyle(new_style);
+  SetStyle(std::move(new_style));
 }
 
 void LayoutMultiColumnSpannerPlaceholder::InsertedIntoTree() {
@@ -74,7 +73,7 @@ void LayoutMultiColumnSpannerPlaceholder::InsertedIntoTree() {
   // The object may previously have been laid out as a non-spanner, but since
   // it's a spanner now, it needs to be relaid out.
   layout_object_in_flow_thread_->SetNeedsLayoutAndPrefWidthsRecalc(
-      LayoutInvalidationReason::kColumnsChanged);
+      layout_invalidation_reason::kColumnsChanged);
 }
 
 void LayoutMultiColumnSpannerPlaceholder::WillBeRemovedFromTree() {
@@ -85,7 +84,7 @@ void LayoutMultiColumnSpannerPlaceholder::WillBeRemovedFromTree() {
     // might live on. Since it's not a spanner anymore, it needs to be relaid
     // out.
     ex_spanner->SetNeedsLayoutAndPrefWidthsRecalc(
-        LayoutInvalidationReason::kColumnsChanged);
+        layout_invalidation_reason::kColumnsChanged);
   }
   LayoutBox::WillBeRemovedFromTree();
 }

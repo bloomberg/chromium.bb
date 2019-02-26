@@ -170,15 +170,11 @@ class SupervisedUserService : public KeyedService,
   void SetSafeSearchURLReporter(
       std::unique_ptr<SafeSearchURLReporter> reporter);
 
-  // Returns true if the syncer::SESSIONS type should be included in Sync.
-  // Public for testing.
-  bool IncludesSyncSessionsType() const;
-
   // ProfileKeyedService override:
   void Shutdown() override;
 
   // SyncTypePreferenceProvider implementation:
-  syncer::ModelTypeSet GetPreferredDataTypes() const override;
+  syncer::ModelTypeSet GetForcedDataTypes() const override;
 
 #if !defined(OS_ANDROID)
   // BrowserListObserver implementation:
@@ -307,16 +303,6 @@ class SupervisedUserService : public KeyedService,
   // Updates the manual overrides for URLs in the URL filters when the
   // corresponding preference is changed.
   void UpdateManualURLs();
-
-  // Subscribes to the SupervisedUserPrefStore, refreshes
-  // |includes_sync_sessions_type_| and triggers reconfiguring the
-  // ProfileSyncService.
-  void OnForceSessionSyncChanged();
-
-  // The option a custodian sets to either record or prevent recording the
-  // supervised user's history. Set by |FetchNewSessionSyncState()| and
-  // defaults to true.
-  bool includes_sync_sessions_type_;
 
   // Owns us via the KeyedService mechanism.
   Profile* profile_;

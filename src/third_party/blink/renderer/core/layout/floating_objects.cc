@@ -47,24 +47,20 @@ struct SameSizeAsFloatingObject {
 static_assert(sizeof(FloatingObject) == sizeof(SameSizeAsFloatingObject),
               "FloatingObject should stay small");
 
-FloatingObject::FloatingObject(LayoutBox* layout_object)
+FloatingObject::FloatingObject(LayoutBox* layout_object, Type type)
     : layout_object_(layout_object),
       originating_line_(nullptr),
+      type_(type),
       should_paint_(true),
       is_descendant_(false),
       is_placed_(false),
       is_lowest_non_overhanging_float_in_child_(false)
 #if DCHECK_IS_ON()
       ,
-      is_in_placed_tree_(false)
+      is_in_placed_tree_(false),
+      has_geometry_(false)
 #endif
 {
-  EFloat type = layout_object->StyleRef().Floating();
-  DCHECK_NE(type, EFloat::kNone);
-  if (type == EFloat::kLeft)
-    type_ = kFloatLeft;
-  else if (type == EFloat::kRight)
-    type_ = kFloatRight;
 }
 
 FloatingObject::FloatingObject(LayoutBox* layout_object,
@@ -84,15 +80,16 @@ FloatingObject::FloatingObject(LayoutBox* layout_object,
           is_lowest_non_overhanging_float_in_child)
 #if DCHECK_IS_ON()
       ,
-      is_in_placed_tree_(false)
+      is_in_placed_tree_(false),
+      has_geometry_(false)
 #endif
 {
 }
 
-std::unique_ptr<FloatingObject> FloatingObject::Create(
-    LayoutBox* layout_object) {
+std::unique_ptr<FloatingObject> FloatingObject::Create(LayoutBox* layout_object,
+                                                       Type type) {
   std::unique_ptr<FloatingObject> new_obj =
-      base::WrapUnique(new FloatingObject(layout_object));
+      base::WrapUnique(new FloatingObject(layout_object, type));
 
   // If a layer exists, the float will paint itself. Otherwise someone else
   // will.
@@ -127,6 +124,9 @@ std::unique_ptr<FloatingObject> FloatingObject::UnsafeClone() const {
       new FloatingObject(GetLayoutObject(), GetType(), frame_rect_,
                          should_paint_, is_descendant_, false));
   clone_object->is_placed_ = is_placed_;
+#if DCHECK_IS_ON()
+  clone_object->has_geometry_ = has_geometry_;
+#endif
   return clone_object;
 }
 
@@ -516,6 +516,7 @@ inline FloatingObjectInterval FloatingObjects::IntervalForFloatingObject(
 }
 
 void FloatingObjects::AddPlacedObject(FloatingObject& floating_object) {
+  DCHECK(!layout_object_->IsLayoutNGMixin());
   DCHECK(!floating_object.IsInPlacedTree());
 
   floating_object.SetIsPlaced(true);
@@ -529,6 +530,7 @@ void FloatingObjects::AddPlacedObject(FloatingObject& floating_object) {
 }
 
 void FloatingObjects::RemovePlacedObject(FloatingObject& floating_object) {
+  DCHECK(!layout_object_->IsLayoutNGMixin());
   DCHECK(floating_object.IsPlaced());
   DCHECK(floating_object.IsInPlacedTree());
 

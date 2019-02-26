@@ -106,7 +106,7 @@ public class UmaSessionStats {
                     .keyboard != Configuration.KEYBOARD_NOKEYS;
             mTabModelSelectorTabObserver = new TabModelSelectorTabObserver(mTabModelSelector) {
                 @Override
-                public void onPageLoadFinished(Tab tab) {
+                public void onPageLoadFinished(Tab tab, String url) {
                     recordPageLoadStats(tab);
                 }
             };

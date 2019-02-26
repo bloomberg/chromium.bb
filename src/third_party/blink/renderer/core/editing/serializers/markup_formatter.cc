@@ -46,7 +46,7 @@
 
 namespace blink {
 
-using namespace HTMLNames;
+using namespace html_names;
 
 struct EntityDescription {
   UChar entity;
@@ -354,62 +354,90 @@ void MarkupFormatter::AppendAttribute(StringBuilder& result,
                                       Namespaces* namespaces) {
   bool document_is_html = SerializeAsHTMLDocument(element);
 
-  QualifiedName prefixed_name = attribute.GetName();
   if (document_is_html) {
-    if (attribute.NamespaceURI() == XMLNSNames::xmlnsNamespaceURI) {
+    // https://html.spec.whatwg.org/multipage/parsing.html#attribute's-serialised-name
+    QualifiedName prefixed_name = attribute.GetName();
+    if (attribute.NamespaceURI() == xmlns_names::kNamespaceURI) {
       if (!attribute.Prefix() && attribute.LocalName() != g_xmlns_atom)
         prefixed_name.SetPrefix(g_xmlns_atom);
-    } else if (attribute.NamespaceURI() == XMLNames::xmlNamespaceURI) {
+    } else if (attribute.NamespaceURI() == xml_names::kNamespaceURI) {
       prefixed_name.SetPrefix(g_xml_atom);
-    } else if (attribute.NamespaceURI() == XLinkNames::xlinkNamespaceURI) {
+    } else if (attribute.NamespaceURI() == xlink_names::kNamespaceURI) {
       prefixed_name.SetPrefix(g_xlink_atom);
     }
     result.Append(' ');
     result.Append(prefixed_name.ToString());
   } else {
-    if (attribute.NamespaceURI() == XMLNSNames::xmlnsNamespaceURI) {
+    // https://w3c.github.io/DOM-Parsing/#serializing-an-element-s-attributes
+
+    // 3.3. Let attribute namespace be the value of attr's namespaceURI value.
+    const AtomicString& attribute_namespace = attribute.NamespaceURI();
+
+    // 3.4. Let candidate prefix be null.
+    AtomicString candidate_prefix;
+
+    // 3.5. If attribute namespace is not null, then run these sub-steps:
+
+    // 3.5.1. Let candidate prefix be the result of retrieving a preferred
+    // prefix string from map given namespace attribute namespace with preferred
+    // prefix being attr's prefix value.
+    // TODO(tkent): Implement it. crbug.com/906807
+    candidate_prefix = attribute.Prefix();
+
+    // 3.5.2. If the value of attribute namespace is the XMLNS namespace, then
+    // run these steps:
+    if (attribute_namespace == xmlns_names::kNamespaceURI) {
       if (!attribute.Prefix() && attribute.LocalName() != g_xmlns_atom)
-        prefixed_name.SetPrefix(g_xmlns_atom);
+        candidate_prefix = g_xmlns_atom;
       // Account for the namespace attribute we're about to append.
       if (namespaces) {
         const AtomicString& lookup_key =
             (!attribute.Prefix()) ? g_empty_atom : attribute.LocalName();
         namespaces->Set(lookup_key, attribute.Value());
       }
-    } else if (attribute.NamespaceURI() == XMLNames::xmlNamespaceURI) {
-      if (!attribute.Prefix())
-        prefixed_name.SetPrefix(g_xml_atom);
+    } else if (attribute_namespace == xml_names::kNamespaceURI) {
+      if (!candidate_prefix)
+        candidate_prefix = g_xml_atom;
     } else {
-      if (attribute.NamespaceURI() == XLinkNames::xlinkNamespaceURI) {
-        if (!attribute.Prefix())
-          prefixed_name.SetPrefix(g_xlink_atom);
+      if (attribute_namespace == xlink_names::kNamespaceURI) {
+        if (!candidate_prefix)
+          candidate_prefix = g_xlink_atom;
       }
 
+      // 3.5.3. Otherwise, the attribute namespace in not the XMLNS namespace.
+      // Run these steps:
       if (namespaces && ShouldAddNamespaceAttribute(attribute, element)) {
-        if (!prefixed_name.Prefix()) {
+        if (!candidate_prefix) {
           // This behavior is in process of being standardized. See
           // crbug.com/248044 and
           // https://www.w3.org/Bugs/Public/show_bug.cgi?id=24208
           String prefix_prefix("ns", 2u);
-          for (unsigned i = attribute.NamespaceURI().Impl()->ExistingHash();;
-               ++i) {
+          for (unsigned i = attribute_namespace.Impl()->ExistingHash();; ++i) {
             AtomicString new_prefix(String(prefix_prefix + String::Number(i)));
             AtomicString found_uri = namespaces->at(new_prefix);
-            if (found_uri == attribute.NamespaceURI() ||
-                found_uri == g_null_atom) {
+            if (found_uri == attribute_namespace || found_uri == g_null_atom) {
               // We already generated a prefix for this namespace.
-              prefixed_name.SetPrefix(new_prefix);
+              candidate_prefix = new_prefix;
               break;
             }
           }
         }
-        DCHECK(prefixed_name.Prefix());
-        AppendNamespace(result, prefixed_name.Prefix(),
-                        attribute.NamespaceURI(), *namespaces);
+        // 3.5.3.2. Append the following to result, in the order listed:
+        DCHECK(candidate_prefix);
+        AppendNamespace(result, candidate_prefix, attribute_namespace,
+                        *namespaces);
       }
     }
+    // 3.6. Append a " " (U+0020 SPACE) to result.
     result.Append(' ');
-    result.Append(prefixed_name.ToString());
+    // 3.7. If candidate prefix is not null, then append to result the
+    // concatenation of candidate prefix with ":" (U+003A COLON).
+    if (candidate_prefix) {
+      result.Append(candidate_prefix);
+      result.Append(':');
+    }
+    // 3.9.1. The value of attr's localName;
+    result.Append(attribute.LocalName());
   }
 
   result.Append('=');
@@ -452,7 +480,7 @@ bool MarkupFormatter::ShouldAddNamespaceAttribute(
     const Element& element) const {
   // xmlns and xmlns:prefix attributes should be handled by another branch in
   // appendAttribute.
-  DCHECK_NE(attribute.NamespaceURI(), XMLNSNames::xmlnsNamespaceURI);
+  DCHECK_NE(attribute.NamespaceURI(), xmlns_names::kNamespaceURI);
 
   // Attributes are in the null namespace by default.
   if (!attribute.NamespaceURI())
@@ -476,11 +504,11 @@ EntityMask MarkupFormatter::EntityMaskForText(const Text& text) const {
     parent_name = &(text.parentElement())->TagQName();
 
   if (parent_name &&
-      (*parent_name == scriptTag || *parent_name == styleTag ||
-       *parent_name == xmpTag || *parent_name == iframeTag ||
-       *parent_name == plaintextTag || *parent_name == noembedTag ||
-       *parent_name == noframesTag ||
-       (*parent_name == noscriptTag && text.GetDocument().GetFrame() &&
+      (*parent_name == kScriptTag || *parent_name == kStyleTag ||
+       *parent_name == kXmpTag || *parent_name == kIFrameTag ||
+       *parent_name == kPlaintextTag || *parent_name == kNoembedTag ||
+       *parent_name == kNoframesTag ||
+       (*parent_name == kNoscriptTag && text.GetDocument().GetFrame() &&
         text.GetDocument().CanExecuteScripts(kNotAboutToExecuteScript))))
     return kEntityMaskInCDATA;
   return kEntityMaskInHTMLPCDATA;

@@ -102,7 +102,8 @@ class WebEmbeddedWorkerImplTest : public testing::Test {
     worker_ = WebEmbeddedWorkerImpl::CreateForTesting(
         std::move(client), std::move(installed_scripts_manager));
 
-    WebURL script_url = URLTestHelpers::ToKURL("https://www.example.com/sw.js");
+    WebURL script_url =
+        url_test_helpers::ToKURL("https://www.example.com/sw.js");
     WebURLResponse response(script_url);
     response.SetMIMEType("text/javascript");
     response.SetHTTPStatusCode(200);
@@ -116,7 +117,7 @@ class WebEmbeddedWorkerImplTest : public testing::Test {
         WebEmbeddedWorkerStartData::kDontPauseAfterDownload;
     start_data_.wait_for_debugger_mode =
         WebEmbeddedWorkerStartData::kDontWaitForDebugger;
-    start_data_.v8_cache_options = WebSettings::kV8CacheOptionsDefault;
+    start_data_.v8_cache_options = WebSettings::V8CacheOptions::kDefault;
   }
 
   void TearDown() override {
@@ -209,7 +210,7 @@ TEST_F(WebEmbeddedWorkerImplTest, TerminateWhilePausedAfterDownload) {
 
 TEST_F(WebEmbeddedWorkerImplTest, ScriptNotFound) {
   WebURL script_url =
-      URLTestHelpers::ToKURL("https://www.example.com/sw-404.js");
+      url_test_helpers::ToKURL("https://www.example.com/sw-404.js");
   WebURLResponse response;
   response.SetMIMEType("text/javascript");
   response.SetHTTPStatusCode(404);

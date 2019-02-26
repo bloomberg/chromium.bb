@@ -10,7 +10,7 @@
 #include "base/metrics/histogram_macros.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/time/default_clock.h"
-#include "chromeos/chromeos_features.h"
+#include "chromeos/chromeos_switches.h"
 #include "chromeos/components/proximity_auth/logging/logging.h"
 #include "chromeos/network/network_handler.h"
 #include "chromeos/network/network_state.h"
@@ -33,13 +33,6 @@ namespace {
 // seconds apart.
 const int64_t kMaxNumSecondsBetweenBatchScans = 60;
 
-// If Tether and Smart Lock use their own BLE channel logic, instead of the
-// shared SecureChannel API (i.e. |chromeos::features::kMultiDeviceApi| is
-// disabled), scanning immediately after the device is unlocked may cause
-// unwanted interactions with Smart Lock BLE channels. The scan is delayed
-// slightly in order to circumvent this issue.
-const int64_t kNumSecondsToDelayScanAfterUnlock = 3;
-
 // Minimum value for the scan length metric.
 const int64_t kMinScanMetricSeconds = 1;
 
@@ -59,7 +52,6 @@ HostScanSchedulerImpl::HostScanSchedulerImpl(
       host_scanner_(host_scanner),
       session_manager_(session_manager),
       host_scan_batch_timer_(std::make_unique<base::OneShotTimer>()),
-      delay_scan_after_unlock_timer_(std::make_unique<base::OneShotTimer>()),
       clock_(base::DefaultClock::GetInstance()),
       task_runner_(base::ThreadTaskRunnerHandle::Get()),
       is_screen_locked_(session_manager_->IsScreenLocked()),
@@ -90,12 +82,15 @@ HostScanSchedulerImpl::~HostScanSchedulerImpl() {
 }
 
 void HostScanSchedulerImpl::AttemptScanIfOffline() {
+  const chromeos::NetworkTypePattern network_type_pattern =
+      chromeos::switches::ShouldTetherHostScansIgnoreWiredConnections()
+          ? chromeos::NetworkTypePattern::Wireless()
+          : chromeos::NetworkTypePattern::Default();
   const chromeos::NetworkState* first_network =
-      network_state_handler_->FirstNetworkByType(
-          chromeos::NetworkTypePattern::Default());
+      network_state_handler_->FirstNetworkByType(network_type_pattern);
   if (IsOnlineOrHasActiveTetherConnection(first_network)) {
-    PA_LOG(INFO) << "Skipping scan attempt because the device is already "
-                    "connected to a network.";
+    PA_LOG(VERBOSE) << "Skipping scan attempt because the device is already "
+                       "connected to a network.";
     return;
   }
 
@@ -103,8 +98,8 @@ void HostScanSchedulerImpl::AttemptScanIfOffline() {
 }
 
 void HostScanSchedulerImpl::DefaultNetworkChanged(const NetworkState* network) {
-  // If there is an active (i.e., connecting or connected) network, there is no
-  // need to schedule a scan.
+  // If there is an active (i.e., connecting or connected) network, there is
+  // no need to schedule a scan.
   if (IsOnlineOrHasActiveTetherConnection(network)) {
     return;
   }
@@ -112,7 +107,8 @@ void HostScanSchedulerImpl::DefaultNetworkChanged(const NetworkState* network) {
   // Schedule a scan as part of a new task. Posting a task here ensures that
   // processing the default network change is done after other
   // NetworkStateHandlerObservers are finished running. Processing the
-  // network change immediately can cause crashes; see https://crbug.com/800370.
+  // network change immediately can cause crashes; see
+  // https://crbug.com/800370.
   task_runner_->PostTask(FROM_HERE,
                          base::BindOnce(&HostScanSchedulerImpl::AttemptScan,
                                         weak_ptr_factory_.GetWeakPtr()));
@@ -140,35 +136,22 @@ void HostScanSchedulerImpl::OnSessionStateChanged() {
   if (is_screen_locked_) {
     // If the screen is now locked, stop any ongoing scan.
     host_scanner_->StopScan();
-    if (!base::FeatureList::IsEnabled(chromeos::features::kMultiDeviceApi))
-      delay_scan_after_unlock_timer_->Stop();
     return;
   }
 
   if (!was_screen_locked)
     return;
 
-  // If the device was just unlocked, start a scan if not already connected to a
-  // network.
-  if (base::FeatureList::IsEnabled(chromeos::features::kMultiDeviceApi)) {
-    AttemptScanIfOffline();
-  } else {
-    delay_scan_after_unlock_timer_->Start(
-        FROM_HERE,
-        base::TimeDelta::FromSeconds(kNumSecondsToDelayScanAfterUnlock),
-        base::BindRepeating(&HostScanSchedulerImpl::AttemptScanIfOffline,
-                            weak_ptr_factory_.GetWeakPtr()));
-  }
+  // If the device was just unlocked, start a scan if not already connected to
+  // a network.
+  AttemptScanIfOffline();
 }
 
 void HostScanSchedulerImpl::SetTestDoubles(
     std::unique_ptr<base::OneShotTimer> test_host_scan_batch_timer,
-    std::unique_ptr<base::OneShotTimer> test_delay_scan_after_unlock_timer,
     base::Clock* test_clock,
     scoped_refptr<base::TaskRunner> test_task_runner) {
   host_scan_batch_timer_ = std::move(test_host_scan_batch_timer);
-  delay_scan_after_unlock_timer_ =
-      std::move(test_delay_scan_after_unlock_timer);
   clock_ = test_clock;
   task_runner_ = test_task_runner;
 }
@@ -180,7 +163,7 @@ void HostScanSchedulerImpl::AttemptScan() {
 
   // If the screen is locked, a host scan should not occur.
   if (session_manager_->IsScreenLocked()) {
-    PA_LOG(INFO) << "Skipping scan attempt because the screen is locked.";
+    PA_LOG(VERBOSE) << "Skipping scan attempt because the screen is locked.";
     return;
   }
 
@@ -192,9 +175,6 @@ void HostScanSchedulerImpl::AttemptScan() {
     host_scan_batch_timer_->Stop();
   else
     last_scan_batch_start_timestamp_ = clock_->Now();
-
-  if (!base::FeatureList::IsEnabled(chromeos::features::kMultiDeviceApi))
-    delay_scan_after_unlock_timer_->Stop();
 
   host_scanner_->StartScan();
   network_state_handler_->SetTetherScanState(true);
@@ -225,8 +205,8 @@ void HostScanSchedulerImpl::LogHostScanBatchMetric() {
       base::TimeDelta::FromDays(kMaxScanMetricsDays) /* max */,
       kNumMetricsBuckets /* bucket_count */);
 
-  PA_LOG(INFO) << "Logging host scan batch duration. Duration was "
-               << batch_duration.InSeconds() << " seconds.";
+  PA_LOG(VERBOSE) << "Logging host scan batch duration. Duration was "
+                  << batch_duration.InSeconds() << " seconds.";
 }
 
 }  // namespace tether

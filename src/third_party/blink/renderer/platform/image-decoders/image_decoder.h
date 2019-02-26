@@ -443,7 +443,7 @@ class PLATFORM_EXPORT ImageDecoder {
   //
   // Before calling this, verify that frame |index| exists by checking that
   // |index| is smaller than |frame_buffer_cache_|.size().
-  virtual bool FrameStatusSufficientForSuccessors(size_t index) {
+  virtual bool FrameStatusSufficientForSuccessors(wtf_size_t index) {
     DCHECK(index < frame_buffer_cache_.size());
     ImageFrame::Status frame_status = frame_buffer_cache_[index].GetStatus();
     return frame_status == ImageFrame::kFramePartial ||

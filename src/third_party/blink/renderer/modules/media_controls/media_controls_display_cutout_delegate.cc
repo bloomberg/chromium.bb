@@ -43,17 +43,18 @@ MediaControlsDisplayCutoutDelegate::MediaControlsDisplayCutoutDelegate(
 void MediaControlsDisplayCutoutDelegate::Attach() {
   DCHECK(video_element_->isConnected());
 
-  GetDocument().addEventListener(EventTypeNames::fullscreenchange, this, true);
-  GetDocument().addEventListener(EventTypeNames::webkitfullscreenchange, this,
+  GetDocument().addEventListener(event_type_names::kFullscreenchange, this,
                                  true);
+  GetDocument().addEventListener(event_type_names::kWebkitfullscreenchange,
+                                 this, true);
 }
 
 void MediaControlsDisplayCutoutDelegate::Detach() {
   DCHECK(!video_element_->isConnected());
 
-  GetDocument().removeEventListener(EventTypeNames::fullscreenchange, this,
+  GetDocument().removeEventListener(event_type_names::kFullscreenchange, this,
                                     true);
-  GetDocument().removeEventListener(EventTypeNames::webkitfullscreenchange,
+  GetDocument().removeEventListener(event_type_names::kWebkitfullscreenchange,
                                     this, true);
 }
 
@@ -68,30 +69,32 @@ void MediaControlsDisplayCutoutDelegate::Trace(blink::Visitor* visitor) {
 }
 
 void MediaControlsDisplayCutoutDelegate::DidEnterFullscreen() {
-  video_element_->addEventListener(EventTypeNames::touchstart, this, true);
-  video_element_->addEventListener(EventTypeNames::touchend, this, true);
-  video_element_->addEventListener(EventTypeNames::touchmove, this, true);
-  video_element_->addEventListener(EventTypeNames::touchcancel, this, true);
+  video_element_->addEventListener(event_type_names::kTouchstart, this, true);
+  video_element_->addEventListener(event_type_names::kTouchend, this, true);
+  video_element_->addEventListener(event_type_names::kTouchmove, this, true);
+  video_element_->addEventListener(event_type_names::kTouchcancel, this, true);
 }
 
 void MediaControlsDisplayCutoutDelegate::DidExitFullscreen() {
   GetDocument().GetViewportData().SetExpandIntoDisplayCutout(false);
 
-  video_element_->removeEventListener(EventTypeNames::touchstart, this, true);
-  video_element_->removeEventListener(EventTypeNames::touchend, this, true);
-  video_element_->removeEventListener(EventTypeNames::touchmove, this, true);
-  video_element_->removeEventListener(EventTypeNames::touchcancel, this, true);
+  video_element_->removeEventListener(event_type_names::kTouchstart, this,
+                                      true);
+  video_element_->removeEventListener(event_type_names::kTouchend, this, true);
+  video_element_->removeEventListener(event_type_names::kTouchmove, this, true);
+  video_element_->removeEventListener(event_type_names::kTouchcancel, this,
+                                      true);
 }
 
-void MediaControlsDisplayCutoutDelegate::handleEvent(
+void MediaControlsDisplayCutoutDelegate::Invoke(
     ExecutionContext* execution_context,
     Event* event) {
   if (event->IsTouchEvent()) {
     HandleTouchEvent(ToTouchEvent(event));
     return;
   }
-  if (event->type() == EventTypeNames::fullscreenchange ||
-      event->type() == EventTypeNames::webkitfullscreenchange) {
+  if (event->type() == event_type_names::kFullscreenchange ||
+      event->type() == event_type_names::kWebkitfullscreenchange) {
     // The fullscreen state has changed.
     if (video_element_->IsFullscreen()) {
       DidEnterFullscreen();
@@ -118,7 +121,7 @@ void MediaControlsDisplayCutoutDelegate::HandleTouchEvent(TouchEvent* event) {
 
   // If it is a touch start event then we should flush any previous points we
   // have stored.
-  if (event->type() == EventTypeNames::touchstart)
+  if (event->type() == event_type_names::kTouchstart)
     previous_.reset();
 
   // Extract the two touch points and calculate the distance.
@@ -154,8 +157,8 @@ void MediaControlsDisplayCutoutDelegate::HandleTouchEvent(TouchEvent* event) {
 
   // If we are finishing a touch then clear any stored value, otherwise store
   // the latest distance.
-  if (event->type() == EventTypeNames::touchend ||
-      event->type() == EventTypeNames::touchcancel) {
+  if (event->type() == event_type_names::kTouchend ||
+      event->type() == event_type_names::kTouchcancel) {
     DCHECK(previous_.has_value());
     previous_.reset();
   } else {

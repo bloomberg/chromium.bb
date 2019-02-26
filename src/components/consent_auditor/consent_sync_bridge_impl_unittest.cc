@@ -10,11 +10,9 @@
 
 #include "base/bind.h"
 #include "base/bind_helpers.h"
-#include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
-#include "base/test/bind_test_util.h"
+#include "base/test/scoped_task_environment.h"
 #include "components/sync/model/data_batch.h"
-#include "components/sync/model/data_type_activation_request.h"
 #include "components/sync/model/mock_model_type_change_processor.h"
 #include "components/sync/model/model_type_store_test_util.h"
 #include "components/sync/protocol/sync.pb.h"
@@ -28,7 +26,7 @@ using sync_pb::UserConsentSpecifics;
 using testing::_;
 using testing::ElementsAre;
 using testing::Eq;
-using testing::Invoke;
+using testing::InvokeWithoutArgs;
 using testing::IsEmpty;
 using testing::IsNull;
 using testing::NotNull;
@@ -68,20 +66,35 @@ std::unique_ptr<UserConsentSpecifics> SpecificsUniquePtr(
       CreateSpecifics(client_consent_time_usec));
 }
 
-DataTypeActivationRequest CreateActivationRequest(
-    const std::string& account_id) {
-  DataTypeActivationRequest request;
-  request.authenticated_account_id = account_id;
-  return request;
-}
-
 class ConsentSyncBridgeImplTest : public testing::Test {
  protected:
-  ConsentSyncBridgeImplTest() {
+  ConsentSyncBridgeImplTest() { ResetBridge(); }
+
+  void ResetBridge() {
+    OnceModelTypeStoreFactory store_factory;
+    if (bridge_) {
+      // Carry over the underlying store from previous bridge instances.
+      std::unique_ptr<ModelTypeStore> store = bridge_->StealStoreForTest();
+      bridge_.reset();
+      store_factory =
+          ModelTypeStoreTestUtil::MoveStoreToFactory(std::move(store));
+    } else {
+      store_factory = ModelTypeStoreTestUtil::FactoryForInMemoryStoreForTest();
+    }
+
     bridge_ = std::make_unique<ConsentSyncBridgeImpl>(
-        ModelTypeStoreTestUtil::FactoryForInMemoryStoreForTest(),
-        mock_processor_.CreateForwardingProcessor());
+        std::move(store_factory), mock_processor_.CreateForwardingProcessor());
+  }
+
+  void WaitUntilModelReadyToSync(const std::string& account_id) {
+    base::RunLoop loop;
+    base::RepeatingClosure quit_closure = loop.QuitClosure();
+    // Let the bridge initialize fully, which should run ModelReadyToSync().
+    ON_CALL(*processor(), ModelReadyToSync(_))
+        .WillByDefault(InvokeWithoutArgs([=]() { quit_closure.Run(); }));
+    loop.Run();
     ON_CALL(*processor(), IsTrackingMetadata()).WillByDefault(Return(true));
+    ON_CALL(*processor(), TrackedAccountId()).WillByDefault(Return(account_id));
   }
 
   static std::string GetStorageKey(const UserConsentSpecifics& specifics) {
@@ -92,14 +105,9 @@ class ConsentSyncBridgeImplTest : public testing::Test {
   MockModelTypeChangeProcessor* processor() { return &mock_processor_; }
 
   std::map<std::string, sync_pb::EntitySpecifics> GetAllData() {
-    return GetAllDataFromBridge(bridge_.get());
-  }
-
-  static std::map<std::string, sync_pb::EntitySpecifics> GetAllDataFromBridge(
-      ConsentSyncBridgeImpl* bridge) {
     base::RunLoop loop;
     std::unique_ptr<DataBatch> batch;
-    bridge->GetAllDataForDebugging(base::BindOnce(
+    bridge_->GetAllDataForDebugging(base::BindOnce(
         [](base::RunLoop* loop, std::unique_ptr<DataBatch>* out_batch,
            std::unique_ptr<DataBatch> batch) {
           *out_batch = std::move(batch);
@@ -146,17 +154,18 @@ class ConsentSyncBridgeImplTest : public testing::Test {
   }
 
  private:
-  std::unique_ptr<ConsentSyncBridgeImpl> bridge_;
+  base::test::ScopedTaskEnvironment task_environment_;
   testing::NiceMock<MockModelTypeChangeProcessor> mock_processor_;
-  base::MessageLoop message_loop_;
+  std::unique_ptr<ConsentSyncBridgeImpl> bridge_;
 };
 
 TEST_F(ConsentSyncBridgeImplTest, ShouldCallModelReadyToSyncOnStartup) {
   EXPECT_CALL(*processor(), ModelReadyToSync(NotNull()));
-  base::RunLoop().RunUntilIdle();
+  WaitUntilModelReadyToSync("account_id");
 }
 
 TEST_F(ConsentSyncBridgeImplTest, ShouldRecordSingleConsent) {
+  WaitUntilModelReadyToSync("account_id");
   const UserConsentSpecifics specifics(
       CreateSpecifics(/*client_consent_time_usec=*/1u));
   std::string storage_key;
@@ -171,6 +180,7 @@ TEST_F(ConsentSyncBridgeImplTest, ShouldRecordSingleConsent) {
 }
 
 TEST_F(ConsentSyncBridgeImplTest, ShouldNotDeleteConsentsWhenSyncIsDisabled) {
+  WaitUntilModelReadyToSync("account_id");
   UserConsentSpecifics user_consent_specifics(
       CreateSpecifics(/*client_consent_time_usec=*/2u));
   bridge()->RecordConsent(
@@ -190,6 +200,7 @@ TEST_F(ConsentSyncBridgeImplTest, ShouldNotDeleteConsentsWhenSyncIsDisabled) {
 
 TEST_F(ConsentSyncBridgeImplTest,
        ShouldRecordMultipleConsentsAndDeduplicateByTime) {
+  WaitUntilModelReadyToSync("account_id");
   std::set<std::string> unique_storage_keys;
   EXPECT_CALL(*processor(), Put(_, _, _))
       .Times(4)
@@ -211,6 +222,7 @@ TEST_F(ConsentSyncBridgeImplTest,
 
 TEST_F(ConsentSyncBridgeImplTest,
        ShouldDeleteCommitedConsentsAfterApplySyncChanges) {
+  WaitUntilModelReadyToSync("account_id");
   std::string first_storage_key;
   std::string second_storage_key;
   EXPECT_CALL(*processor(), Put(_, _, _))
@@ -230,20 +242,18 @@ TEST_F(ConsentSyncBridgeImplTest,
   EXPECT_THAT(GetData(second_storage_key), NotNull());
 }
 
-TEST_F(ConsentSyncBridgeImplTest,
-       ShouldRecordConsentsEvenBeforeProcessorInitialization) {
-  // Processor initializations depends on the store initialization. The consent
-  // may be recorded before the store is initialized.
-  ON_CALL(*processor(), IsTrackingMetadata()).WillByDefault(Return(false));
+TEST_F(ConsentSyncBridgeImplTest, ShouldRecordConsentsBeforeSyncEnabled) {
+  WaitUntilModelReadyToSync(/*account_id=*/"");
   // The consent must be recorded, but not propagated anywhere while the
-  // initilization is in progress.
+  // initialization is in progress and sync is still disabled.
   EXPECT_CALL(*processor(), Put(_, _, _)).Times(0);
   bridge()->RecordConsent(SpecificsUniquePtr(/*client_consent_time_usec=*/1u));
-
-  // When store is fully initialized, the consent should be reported to the
-  // processor.
+  // When sync is enabled, the consent should be reported to the processor.
   ON_CALL(*processor(), IsTrackingMetadata()).WillByDefault(Return(true));
+  ON_CALL(*processor(), TrackedAccountId()).WillByDefault(Return("account_id"));
   EXPECT_CALL(*processor(), Put(_, _, _));
+  bridge()->MergeSyncData(WriteBatch::CreateMetadataChangeList(),
+                          EntityChangeList());
   base::RunLoop().RunUntilIdle();
 }
 
@@ -251,8 +261,7 @@ TEST_F(ConsentSyncBridgeImplTest,
 // initialized.
 TEST_F(ConsentSyncBridgeImplTest,
        ShouldSubmitBufferedConsentsWhenStoreIsInitialized) {
-  // Wait until bridge() is ready to avoid interference with processor() mock.
-  base::RunLoop().RunUntilIdle();
+  EXPECT_CALL(*processor(), ModelReadyToSync(_)).Times(0);
 
   UserConsentSpecifics first_consent =
       CreateSpecifics(/*client_consent_time_usec=*/1u);
@@ -261,39 +270,22 @@ TEST_F(ConsentSyncBridgeImplTest,
       CreateSpecifics(/*client_consent_time_usec=*/2u);
   second_consent.set_account_id("account_id");
 
-  ON_CALL(*processor(), IsTrackingMetadata()).WillByDefault(Return(false));
-  ModelType store_init_type;
-  ModelTypeStore::InitCallback store_init_callback;
-  ConsentSyncBridgeImpl late_init_bridge(
-      base::BindLambdaForTesting(
-          [&](ModelType type, ModelTypeStore::InitCallback callback) {
-            store_init_type = type;
-            store_init_callback = std::move(callback);
-          }),
-      processor()->CreateForwardingProcessor());
-
-  // Record consent before the store is initialized.
-  late_init_bridge.RecordConsent(
+  // Record consent before the store is initialized (ModelReadyToSync() not
+  // called yet).
+  bridge()->RecordConsent(
       std::make_unique<UserConsentSpecifics>(first_consent));
 
-  // Initialize the store.
+  // Wait until the store is initialized.
   EXPECT_CALL(*processor(), ModelReadyToSync(NotNull()));
-  ON_CALL(*processor(), IsTrackingMetadata()).WillByDefault(Return(true));
-  std::move(store_init_callback)
-      .Run(/*error=*/base::nullopt,
-           ModelTypeStoreTestUtil::CreateInMemoryStoreForTest(store_init_type));
-  base::RunLoop().RunUntilIdle();
-
-  late_init_bridge.OnSyncStarting(CreateActivationRequest("account_id"));
+  WaitUntilModelReadyToSync("account_id");
 
   // Record consent after initializaiton is done.
-  late_init_bridge.RecordConsent(
+  bridge()->RecordConsent(
       std::make_unique<UserConsentSpecifics>(second_consent));
 
   // Both the pre-initialization and post-initialization consents must be
   // handled after initialization as usual.
-  base::RunLoop().RunUntilIdle();
-  ASSERT_THAT(GetAllDataFromBridge(&late_init_bridge),
+  EXPECT_THAT(GetAllData(),
               UnorderedElementsAre(Pair(GetStorageKey(first_consent),
                                         MatchesUserConsent(first_consent)),
                                    Pair(GetStorageKey(second_consent),
@@ -302,6 +294,8 @@ TEST_F(ConsentSyncBridgeImplTest,
 
 TEST_F(ConsentSyncBridgeImplTest,
        ShouldReportPreviouslyPersistedConsentsWhenSyncIsReenabled) {
+  WaitUntilModelReadyToSync("account_id");
+
   UserConsentSpecifics consent =
       CreateSpecifics(/*client_consent_time_usec=*/1u);
   consent.set_account_id("account_id");
@@ -319,120 +313,61 @@ TEST_F(ConsentSyncBridgeImplTest,
   ASSERT_THAT(GetAllData(), SizeIs(1));
 
   // Reenable sync.
-  ON_CALL(*processor(), IsTrackingMetadata()).WillByDefault(Return(true));
-  // The previously preserved consent should be resubmitted to the processor
-  // when sync is re-enabled.
   EXPECT_CALL(*processor(), Put(GetStorageKey(consent), _, _));
-  bridge()->OnSyncStarting(CreateActivationRequest("account_id"));
+  ON_CALL(*processor(), TrackedAccountId()).WillByDefault(Return("account_id"));
+  bridge()->MergeSyncData(WriteBatch::CreateMetadataChangeList(),
+                          EntityChangeList());
 
   // The bridge may asynchronously query the store to choose what to resubmit.
   base::RunLoop().RunUntilIdle();
 }
 
 TEST_F(ConsentSyncBridgeImplTest,
-       ShouldReportPersistedConsentsOnStartupEvenWithLateStoreInitialization) {
-  // Wait until bridge() is ready to avoid interference with processor() mock.
-  base::RunLoop().RunUntilIdle();
-
+       ShouldReportPersistedConsentsOnStartupWithSyncAlreadyEnabled) {
+  // Persist a consent while sync is enabled.
+  WaitUntilModelReadyToSync("account_id");
   UserConsentSpecifics consent =
       CreateSpecifics(/*client_consent_time_usec=*/1u);
   consent.set_account_id("account_id");
-
-  ON_CALL(*processor(), IsTrackingMetadata()).WillByDefault(Return(false));
-  ModelType store_init_type;
-  ModelTypeStore::InitCallback store_init_callback;
-  ConsentSyncBridgeImpl late_init_bridge(
-      base::BindLambdaForTesting(
-          [&](ModelType type, ModelTypeStore::InitCallback callback) {
-            store_init_type = type;
-            store_init_callback = std::move(callback);
-          }),
-      processor()->CreateForwardingProcessor());
-
-  // Sync is active, but the store is not ready yet.
-  EXPECT_CALL(*processor(), ModelReadyToSync(_)).Times(0);
-  late_init_bridge.OnSyncStarting(CreateActivationRequest("account_id"));
-
-  // Initialize the store.
-  std::unique_ptr<ModelTypeStore> store =
-      ModelTypeStoreTestUtil::CreateInMemoryStoreForTest(store_init_type);
-
-  // TODO(vitaliii): Try to avoid putting the data directly into the store (e.g.
-  // by using a forwarding store), because this is an implementation detail.
-  // However, currently the bridge owns the store and there is no obvious way to
-  // preserve it.
-
-  // Put the consent manually to simulate a restart with disabled sync.
-  auto batch = store->CreateWriteBatch();
-  batch->WriteData(GetStorageKey(consent), consent.SerializeAsString());
-  store->CommitWriteBatch(std::move(batch), base::DoNothing());
+  bridge()->RecordConsent(std::make_unique<UserConsentSpecifics>(consent));
   base::RunLoop().RunUntilIdle();
+  ASSERT_THAT(GetAllData(), SizeIs(1));
 
-  EXPECT_CALL(*processor(), ModelReadyToSync(NotNull()));
-  ON_CALL(*processor(), IsTrackingMetadata()).WillByDefault(Return(true));
-  std::string storage_key;
-  // The previously preserved consent should be resubmitted to the processor
-  // when the store is initilized, because the sync has already been re-enabled.
+  // Restart the bridge, mimic-ing a browser restart.
   EXPECT_CALL(*processor(), Put(GetStorageKey(consent), _, _));
-  std::move(store_init_callback).Run(/*error=*/base::nullopt, std::move(store));
+  ResetBridge();
 
   // The bridge may asynchronously query the store to choose what to resubmit.
   base::RunLoop().RunUntilIdle();
 }
 
-TEST_F(ConsentSyncBridgeImplTest,
-       ShouldReportPersistedConsentsOnStartupEvenWithLateSyncInitialization) {
-  // Wait until bridge() is ready to avoid interference with processor() mock.
-  base::RunLoop().RunUntilIdle();
-
+TEST_F(ConsentSyncBridgeImplTest, ShouldReportPersistedConsentsOnSyncEnabled) {
+  // Persist a consent before sync is enabled.
+  WaitUntilModelReadyToSync(/*account=id=*/"");
   UserConsentSpecifics consent =
       CreateSpecifics(/*client_consent_time_usec=*/1u);
   consent.set_account_id("account_id");
-
-  ON_CALL(*processor(), IsTrackingMetadata()).WillByDefault(Return(false));
-  ModelType store_init_type;
-  ModelTypeStore::InitCallback store_init_callback;
-  ConsentSyncBridgeImpl late_init_bridge(
-      base::BindLambdaForTesting(
-          [&](ModelType type, ModelTypeStore::InitCallback callback) {
-            store_init_type = type;
-            store_init_callback = std::move(callback);
-          }),
-      processor()->CreateForwardingProcessor());
-
-  // Initialize the store.
-  std::unique_ptr<ModelTypeStore> store =
-      ModelTypeStoreTestUtil::CreateInMemoryStoreForTest(store_init_type);
-
-  // TODO(vitaliii): Try to avoid putting the data directly into the store (e.g.
-  // by using a forwarding store), because this is an implementation detail.
-  // However, currently the bridge owns the store and there is no obvious way to
-  // preserve it.
-
-  // Put the consent manually to simulate a restart with disabled sync.
-  auto batch = store->CreateWriteBatch();
-  batch->WriteData(GetStorageKey(consent), consent.SerializeAsString());
-  store->CommitWriteBatch(std::move(batch), base::DoNothing());
+  bridge()->RecordConsent(std::make_unique<UserConsentSpecifics>(consent));
   base::RunLoop().RunUntilIdle();
+  ASSERT_THAT(GetAllData(), SizeIs(1));
 
-  // The store has been initialized, but the sync is not active yet.
-  ON_CALL(*processor(), IsTrackingMetadata()).WillByDefault(Return(true));
-  EXPECT_CALL(*processor(), ModelReadyToSync(NotNull()));
-  std::move(store_init_callback).Run(/*error=*/base::nullopt, std::move(store));
-  base::RunLoop().RunUntilIdle();
+  // Restart the bridge, mimic-ing a browser restart. We expect no Put()
+  // until sync is enabled.
+  EXPECT_CALL(*processor(), Put(_, _, _)).Times(0);
+  ResetBridge();
+  WaitUntilModelReadyToSync(/*account_id=*/"");
 
-  late_init_bridge.OnSyncStarting(CreateActivationRequest("account_id"));
-
-  // The previously preserved consent should be resubmitted to the processor
-  // when sync is re-enabled, because the store has already been initialized.
+  // Enable sync.
   EXPECT_CALL(*processor(), Put(GetStorageKey(consent), _, _));
-  // The bridge may asynchronously query the store to choose what to resubmit.
+  ON_CALL(*processor(), TrackedAccountId()).WillByDefault(Return("account_id"));
+  bridge()->MergeSyncData(WriteBatch::CreateMetadataChangeList(),
+                          EntityChangeList());
   base::RunLoop().RunUntilIdle();
 }
 
 TEST_F(ConsentSyncBridgeImplTest,
        ShouldResubmitPersistedConsentOnlyIfSameAccount) {
-  // This consent is being recorded while sync is stopped.
+  WaitUntilModelReadyToSync("first_account");
   UserConsentSpecifics user_consent_specifics(
       CreateSpecifics(/*client_consent_time_usec=*/2u));
   user_consent_specifics.set_account_id("first_account");
@@ -453,8 +388,10 @@ TEST_F(ConsentSyncBridgeImplTest,
   // The previous account consent should not be resubmited, because the new sync
   // account is different.
   EXPECT_CALL(*processor(), Put(_, _, _)).Times(0);
-  ON_CALL(*processor(), IsTrackingMetadata()).WillByDefault(Return(true));
-  bridge()->OnSyncStarting(CreateActivationRequest("second_account"));
+  ON_CALL(*processor(), TrackedAccountId())
+      .WillByDefault(Return("second_account"));
+  bridge()->MergeSyncData(WriteBatch::CreateMetadataChangeList(),
+                          EntityChangeList());
   base::RunLoop().RunUntilIdle();
 
   EXPECT_THAT(
@@ -465,7 +402,10 @@ TEST_F(ConsentSyncBridgeImplTest,
   // This time their consent should be resubmitted, because it is for the same
   // account.
   EXPECT_CALL(*processor(), Put(GetStorageKey(user_consent_specifics), _, _));
-  bridge()->OnSyncStarting(CreateActivationRequest("first_account"));
+  ON_CALL(*processor(), TrackedAccountId())
+      .WillByDefault(Return("first_account"));
+  bridge()->MergeSyncData(WriteBatch::CreateMetadataChangeList(),
+                          EntityChangeList());
   // The bridge may asynchronously query the store to choose what to resubmit.
   base::RunLoop().RunUntilIdle();
 }

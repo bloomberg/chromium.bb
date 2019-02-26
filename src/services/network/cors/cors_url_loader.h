@@ -9,6 +9,7 @@
 #include "base/optional.h"
 #include "mojo/public/cpp/bindings/binding.h"
 #include "net/traffic_annotation/network_traffic_annotation.h"
+#include "services/network/cors/preflight_controller.h"
 #include "services/network/public/cpp/cors/cors_error_status.h"
 #include "services/network/public/cpp/cors/preflight_timing_info.h"
 #include "services/network/public/mojom/fetch_api.mojom.h"
@@ -25,9 +26,9 @@ class OriginAccessList;
 // Wrapper class that adds cross-origin resource sharing capabilities
 // (https://fetch.spec.whatwg.org/#http-cors-protocol), delegating requests as
 // well as potential preflight requests to the supplied
-// |network_loader_factory|. It is owned by the CORSURLLoaderFactory that
+// |network_loader_factory|. It is owned by the CorsURLLoaderFactory that
 // created it.
-class COMPONENT_EXPORT(NETWORK_SERVICE) CORSURLLoader
+class COMPONENT_EXPORT(NETWORK_SERVICE) CorsURLLoader
     : public mojom::URLLoader,
       public mojom::URLLoaderClient {
  public:
@@ -36,7 +37,7 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) CORSURLLoader
   // Assumes network_loader_factory outlives this loader.
   // TODO(yhirano): Remove |request_finalizer| when the network service is
   // fully enabled.
-  CORSURLLoader(
+  CorsURLLoader(
       mojom::URLLoaderRequest loader_request,
       int32_t routing_id,
       int32_t request_id,
@@ -47,19 +48,21 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) CORSURLLoader
       const net::MutableNetworkTrafficAnnotationTag& traffic_annotation,
       mojom::URLLoaderFactory* network_loader_factory,
       const base::RepeatingCallback<void(int)>& request_finalizer,
-      const OriginAccessList* origin_access_list);
+      const OriginAccessList* origin_access_list,
+      PreflightController* preflight_controller);
 
-  ~CORSURLLoader() override;
+  ~CorsURLLoader() override;
 
   // Starts processing the request. This is expected to be called right after
   // the constructor.
   void Start();
 
   // mojom::URLLoader overrides:
-  void FollowRedirect(const base::Optional<std::vector<std::string>>&
-                          to_be_removed_request_headers,
-                      const base::Optional<net::HttpRequestHeaders>&
-                          modified_request_headers) override;
+  void FollowRedirect(
+      const base::Optional<std::vector<std::string>>&
+          to_be_removed_request_headers,
+      const base::Optional<net::HttpRequestHeaders>& modified_request_headers,
+      const base::Optional<GURL>& new_url) override;
   void ProceedWithResponse() override;
   void SetPriority(net::RequestPriority priority,
                    int intra_priority_value) override;
@@ -83,7 +86,7 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) CORSURLLoader
   void StartRequest();
   void StartNetworkRequest(
       int net_error,
-      base::Optional<CORSErrorStatus> status,
+      base::Optional<CorsErrorStatus> status,
       base::Optional<PreflightTimingInfo> preflight_timing_info);
 
   // Called when there is a connection error on the upstream pipe used for the
@@ -95,7 +98,7 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) CORSURLLoader
 
   void OnConnectionError();
 
-  void SetCORSFlagIfNeeded();
+  void SetCorsFlagIfNeeded();
 
   static base::Optional<std::string> GetHeaderString(
       const ResourceResponseHead& response,
@@ -110,7 +113,7 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) CORSURLLoader
 
   DeleteCallback delete_callback_;
 
-  // This raw URLLoaderFactory pointer is shared with the CORSURLLoaderFactory
+  // This raw URLLoaderFactory pointer is shared with the CorsURLLoaderFactory
   // that created and owns this object.
   mojom::URLLoaderFactory* network_loader_factory_;
 
@@ -132,9 +135,9 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) CORSURLLoader
   mojom::FetchResponseType response_tainting_ =
       mojom::FetchResponseType::kBasic;
 
-  // A flag to indicate that the instance is waiting for that forwarding_client_
-  // calls FollowRedirect.
-  bool is_waiting_follow_redirect_call_ = false;
+  // Holds the URL of a redirect if it's currently deferred, waiting for
+  // forwarding_client_ to call FollowRedirect.
+  std::unique_ptr<GURL> deferred_redirect_url_;
 
   // Corresponds to the Fetch spec, https://fetch.spec.whatwg.org/.
   bool fetch_cors_flag_ = false;
@@ -159,11 +162,12 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) CORSURLLoader
 
   // Outlives |this|.
   const OriginAccessList* const origin_access_list_;
+  PreflightController* preflight_controller_;
 
   // Used to run asynchronous class instance bound callbacks safely.
-  base::WeakPtrFactory<CORSURLLoader> weak_factory_;
+  base::WeakPtrFactory<CorsURLLoader> weak_factory_;
 
-  DISALLOW_COPY_AND_ASSIGN(CORSURLLoader);
+  DISALLOW_COPY_AND_ASSIGN(CorsURLLoader);
 };
 
 }  // namespace cors

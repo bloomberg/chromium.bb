@@ -134,9 +134,6 @@ bool TrayBubbleView::Delegate::ShouldEnableExtraKeyboardAccessibility() {
 
 void TrayBubbleView::Delegate::HideBubble(const TrayBubbleView* bubble_view) {}
 
-void TrayBubbleView::Delegate::ProcessGestureEventForBubble(
-    ui::GestureEvent* event) {}
-
 TrayBubbleView::InitParams::InitParams() = default;
 
 TrayBubbleView::InitParams::InitParams(const InitParams& other) = default;
@@ -441,11 +438,6 @@ void TrayBubbleView::GetAccessibleNodeData(ui::AXNodeData* node_data) {
     node_data->role = ax::mojom::Role::kWindow;
     node_data->SetName(delegate_->GetAccessibleNameForBubble());
   }
-}
-
-void TrayBubbleView::OnGestureEvent(ui::GestureEvent* event) {
-  if (delegate_)
-    delegate_->ProcessGestureEventForBubble(event);
 }
 
 void TrayBubbleView::MouseMovedOutOfHost() {

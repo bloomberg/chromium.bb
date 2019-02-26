@@ -421,9 +421,8 @@ ComPtr<IBluetoothLEAdvertisement> GetAdvertisement(
   return advertisement;
 }
 
-base::Optional<std::string> GetDeviceName(
-    IBluetoothLEAdvertisementReceivedEventArgs* received) {
-  ComPtr<IBluetoothLEAdvertisement> advertisement = GetAdvertisement(received);
+base::Optional<std::string> ExtractDeviceName(
+    IBluetoothLEAdvertisement* advertisement) {
   if (!advertisement)
     return base::nullopt;
 
@@ -434,6 +433,10 @@ base::Optional<std::string> GetDeviceName(
             << logging::SystemErrorCodeToString(hr);
     return base::nullopt;
   }
+
+  // Return early otherwise ScopedHString will create an empty string.
+  if (!local_name)
+    return base::nullopt;
 
   return base::win::ScopedHString(local_name).GetAsUTF8();
 }
@@ -449,6 +452,8 @@ void ExtractAndUpdateAdvertisementData(
   }
 
   ComPtr<IBluetoothLEAdvertisement> advertisement = GetAdvertisement(received);
+  static_cast<BluetoothDeviceWinrt*>(device)->UpdateLocalName(
+      ExtractDeviceName(advertisement.Get()));
   device->UpdateAdvertisementData(rssi, ExtractFlags(advertisement.Get()),
                                   ExtractAdvertisedUUIDs(advertisement.Get()),
                                   ExtractTxPower(advertisement.Get()),
@@ -871,10 +876,8 @@ BluetoothAdapterWinrt::CreateAdvertisement() const {
 }
 
 std::unique_ptr<BluetoothDeviceWinrt> BluetoothAdapterWinrt::CreateDevice(
-    uint64_t raw_address,
-    base::Optional<std::string> local_name) {
-  return std::make_unique<BluetoothDeviceWinrt>(this, raw_address,
-                                                std::move(local_name));
+    uint64_t raw_address) {
+  return std::make_unique<BluetoothDeviceWinrt>(this, raw_address);
 }
 
 void BluetoothAdapterWinrt::OnGetDefaultAdapter(
@@ -1144,8 +1147,7 @@ void BluetoothAdapterWinrt::OnAdvertisementReceived(
   if (is_new_device) {
     bool was_inserted = false;
     std::tie(it, was_inserted) = devices_.emplace(
-        std::move(bluetooth_address),
-        CreateDevice(raw_bluetooth_address, GetDeviceName(received)));
+        std::move(bluetooth_address), CreateDevice(raw_bluetooth_address));
     DCHECK(was_inserted);
   }
 

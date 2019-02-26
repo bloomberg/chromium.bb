@@ -1175,9 +1175,9 @@ over one end of the master interface, or over one end of another associated
 interface which itself already has a master interface.
 
 If you want to test an associated interface endpoint without first
-associating it, you can use `mojo::MakeIsolatedRequest()`. This will create
-working associated interface endpoints which are not actually associated with
-anything else.
+associating it, you can use `mojo::MakeRequestAssociatedWithDedicatedPipe`. This
+will create working associated interface endpoints which are not actually
+associated with anything else.
 
 ### Read more
 
@@ -1332,6 +1332,35 @@ height, its message will be rejected and the pipe will be closed. In this way,
 type mapping can serve to enable custom validation logic in addition to making
 callsites and interface implemention more convenient.
 
+When the struct fields have non-primitive types, e.g. string or array,
+returning a read-only view of the data in the accessor is recommended to
+avoid copying. It is safe because the input object is guaranteed to
+outlive the usage of the result returned by the accessor method.
+
+The following example uses `StringPiece` to return a view of the GURL's
+data (`//url/mojom/url_gurl_mojom_traits.h`):
+
+``` cpp
+#include "base/strings/string_piece.h"
+#include "url/gurl.h"
+#include "url/mojom/url.mojom.h"
+#include "url/url_constants.h"
+
+namespace mojo {
+
+template <>
+struct StructTraits<url::mojom::UrlDataView, GURL> {
+  static base::StringPiece url(const GURL& r) {
+    if (r.possibly_invalid_spec().length() > url::kMaxURLChars ||
+        !r.is_valid()) {
+      return base::StringPiece();
+    }
+    return base::StringPiece(r.possibly_invalid_spec().c_str(),
+                             r.possibly_invalid_spec().length());
+  }
+}  // namespace mojo
+```
+
 ### Enabling a New Type Mapping
 
 We've defined the `StructTraits` necessary, but we still need to teach the
@@ -1343,6 +1372,7 @@ Let's place this `geometry.typemap` file alongside our Mojom file:
 
 ```
 mojom = "//ui/gfx/geometry/mojo/geometry.mojom"
+os_whitelist = [ "android" ]
 public_headers = [ "//ui/gfx/geometry/rect.h" ]
 traits_headers = [ "//ui/gfx/geometry/mojo/geometry_struct_traits.h" ]
 sources = [
@@ -1360,6 +1390,8 @@ Let's look at each of the variables above:
 * `mojom`: Specifies the `mojom` file to which the typemap applies. Many
   typemaps may apply to the same `mojom` file, but any given typemap may only
   apply to a single `mojom` file.
+* `os_whitelist`: Optional list of specific platforms this typemap
+  should be constrained to.
 * `public_headers`: Additional headers required by any code which would depend
   on the Mojom definition of `gfx.mojom.Rect` now that the typemap is applied.
   Any headers required for the native target type definition should be listed

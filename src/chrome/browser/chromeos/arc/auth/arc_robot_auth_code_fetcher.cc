@@ -59,8 +59,10 @@ void ArcRobotAuthCodeFetcher::Fetch(FetchCallback callback) {
   policy::DeviceManagementService* service = GetDeviceManagementService();
   fetch_request_job_.reset(service->CreateJob(
       policy::DeviceManagementRequestJob::TYPE_API_AUTH_CODE_FETCH,
-      g_browser_process->system_network_context_manager()
-          ->GetSharedURLLoaderFactory()));
+      url_loader_factory_for_testing()
+          ? url_loader_factory_for_testing()
+          : g_browser_process->system_network_context_manager()
+                ->GetSharedURLLoaderFactory()));
 
   fetch_request_job_->SetAuthData(
       policy::DMAuth::FromDMToken(client->dm_token()));

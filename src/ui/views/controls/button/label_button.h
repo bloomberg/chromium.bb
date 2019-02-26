@@ -28,9 +28,6 @@ class LabelButtonLabel;
 // LabelButton is a button with text and an icon, it's not focusable by default.
 class VIEWS_EXPORT LabelButton : public Button, public NativeThemeDelegate {
  public:
-  // The length of the hover fade animation.
-  static const int kHoverAnimationDurationMs;
-
   static const char kViewClassName[];
 
   // Creates a LabelButton with ButtonPressed() events sent to |listener| and
@@ -101,6 +98,7 @@ class VIEWS_EXPORT LabelButton : public Button, public NativeThemeDelegate {
   std::unique_ptr<InkDrop> CreateInkDrop() override;
   std::unique_ptr<InkDropRipple> CreateInkDropRipple() const override;
   std::unique_ptr<InkDropHighlight> CreateInkDropHighlight() const override;
+  void GetAccessibleNodeData(ui::AXNodeData* node_data) override;
 
  protected:
   ImageView* image() const { return image_; }

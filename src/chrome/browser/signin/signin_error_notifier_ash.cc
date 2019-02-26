@@ -4,6 +4,7 @@
 
 #include "chrome/browser/signin/signin_error_notifier_ash.h"
 
+#include "ash/public/cpp/notification_utils.h"
 #include "ash/public/cpp/vector_icons/vector_icons.h"
 #include "base/logging.h"
 #include "base/macros.h"
@@ -87,7 +88,7 @@ void SigninErrorNotifier::OnErrorChanged() {
       l10n_util::GetStringUTF16(IDS_SYNC_RELOGIN_LINK_LABEL)));
 
   message_center::NotifierId notifier_id(
-      message_center::NotifierId::SYSTEM_COMPONENT,
+      message_center::NotifierType::SYSTEM_COMPONENT,
       kProfileSigninNotificationId);
 
   // Set |profile_id| for multi-user notification blocker.
@@ -95,7 +96,7 @@ void SigninErrorNotifier::OnErrorChanged() {
       multi_user_util::GetAccountIdFromProfile(profile_).GetUserEmail();
 
   std::unique_ptr<message_center::Notification> notification =
-      message_center::Notification::CreateSystemNotification(
+      ash::CreateSystemNotification(
           message_center::NOTIFICATION_TYPE_SIMPLE, notification_id_,
           l10n_util::GetStringUTF16(IDS_SIGNIN_ERROR_BUBBLE_VIEW_TITLE),
           GetMessageBody(),

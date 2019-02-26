@@ -50,17 +50,18 @@ class KURL;
 class MemoryCacheEntry final : public GarbageCollected<MemoryCacheEntry> {
  public:
   static MemoryCacheEntry* Create(Resource* resource) {
-    return new MemoryCacheEntry(resource);
+    return MakeGarbageCollected<MemoryCacheEntry>(resource);
   }
+
+  explicit MemoryCacheEntry(Resource* resource)
+      : last_decoded_access_time_(0.0), resource_(resource) {}
+
   void Trace(blink::Visitor*);
   Resource* GetResource() const { return resource_; }
 
   double last_decoded_access_time_;  // Used as a thrash guard
 
  private:
-  explicit MemoryCacheEntry(Resource* resource)
-      : last_decoded_access_time_(0.0), resource_(resource) {}
-
   void ClearResourceWeak(Visitor*);
 
   WeakMember<Resource> resource_;
@@ -80,6 +81,8 @@ class PLATFORM_EXPORT MemoryCache final
  public:
   static MemoryCache* Create(
       scoped_refptr<base::SingleThreadTaskRunner> task_runner);
+
+  explicit MemoryCache(scoped_refptr<base::SingleThreadTaskRunner> task_runner);
   ~MemoryCache() override;
   void Trace(blink::Visitor*) override;
 
@@ -181,8 +184,6 @@ class PLATFORM_EXPORT MemoryCache final
   using ResourceMapIndex = HeapHashMap<String, Member<ResourceMap>>;
   ResourceMap* EnsureResourceMap(const String& cache_identifier);
   ResourceMapIndex resource_maps_;
-
-  explicit MemoryCache(scoped_refptr<base::SingleThreadTaskRunner> task_runner);
 
   void AddInternal(ResourceMap*, MemoryCacheEntry*);
   void RemoveInternal(ResourceMap*, const ResourceMap::iterator&);

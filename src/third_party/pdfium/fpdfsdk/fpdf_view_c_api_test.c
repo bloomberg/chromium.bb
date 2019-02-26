@@ -134,6 +134,7 @@ int CheckPDFiumCApi() {
     CHK(FPDFImageObj_GetImageFilter);
     CHK(FPDFImageObj_GetImageFilterCount);
     CHK(FPDFImageObj_GetImageMetadata);
+    CHK(FPDFImageObj_GetMatrix);
     CHK(FPDFImageObj_LoadJpegFile);
     CHK(FPDFImageObj_LoadJpegFileInline);
     CHK(FPDFImageObj_SetBitmap);
@@ -157,6 +158,8 @@ int CheckPDFiumCApi() {
     CHK(FPDFPageObj_Destroy);
     CHK(FPDFPageObj_GetBounds);
     CHK(FPDFPageObj_GetFillColor);
+    CHK(FPDFPageObj_GetLineCap);
+    CHK(FPDFPageObj_GetLineJoin);
     CHK(FPDFPageObj_GetMark);
     CHK(FPDFPageObj_GetStrokeColor);
     CHK(FPDFPageObj_GetStrokeWidth);
@@ -216,6 +219,7 @@ int CheckPDFiumCApi() {
 
     // fpdf_ext.h
     CHK(FPDFDoc_GetPageMode);
+    CHK(FSDK_SetLocaltimeFunction);
     CHK(FSDK_SetTimeFunction);
     CHK(FSDK_SetUnSpObjProcessHandler);
 
@@ -240,6 +244,7 @@ int CheckPDFiumCApi() {
     CHK(FORM_OnFocus);
     CHK(FORM_OnKeyDown);
     CHK(FORM_OnKeyUp);
+    CHK(FORM_OnLButtonDoubleClick);
     CHK(FORM_OnLButtonDown);
     CHK(FORM_OnLButtonUp);
     CHK(FORM_OnMouseMove);
@@ -333,12 +338,16 @@ int CheckPDFiumCApi() {
     // fpdf_transformpage.h
     CHK(FPDFPageObj_TransformClipPath);
     CHK(FPDFPage_GetArtBox);
+    CHK(FPDFPage_GetBleedBox);
     CHK(FPDFPage_GetCropBox);
     CHK(FPDFPage_GetMediaBox);
+    CHK(FPDFPage_GetTrimBox);
     CHK(FPDFPage_InsertClipPath);
     CHK(FPDFPage_SetArtBox);
+    CHK(FPDFPage_SetBleedBox);
     CHK(FPDFPage_SetCropBox);
     CHK(FPDFPage_SetMediaBox);
+    CHK(FPDFPage_SetTrimBox);
     CHK(FPDFPage_TransFormWithClip);
     CHK(FPDF_CreateClipPath);
     CHK(FPDF_DestroyClipPath);
@@ -373,6 +382,9 @@ int CheckPDFiumCApi() {
     CHK(FPDF_GetPageHeight);
     CHK(FPDF_GetPageSizeByIndex);
     CHK(FPDF_GetPageWidth);
+#ifdef PDF_ENABLE_V8
+    CHK(FPDF_GetRecommendedV8Flags);
+#endif
     CHK(FPDF_GetSecurityHandlerRevision);
     CHK(FPDF_InitLibrary);
     CHK(FPDF_InitLibraryWithConfig);

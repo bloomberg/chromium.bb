@@ -347,7 +347,7 @@ def main():
     options, _ = parse_options()
 
     # IDL files are passed in a file, due to OS command line length limits
-    idl_files = read_idl_files_list_from_file(options.idl_files_list, is_gyp_format=False)
+    idl_files = read_idl_files_list_from_file(options.idl_files_list)
 
     # Compute information for individual files
     # Information is stored in global variables interfaces_info and

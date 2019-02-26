@@ -6,6 +6,7 @@
 #include <vector>
 
 #include "base/command_line.h"
+#include "base/feature_list.h"
 #include "base/files/file_path.h"
 #include "base/macros.h"
 #include "base/path_service.h"
@@ -19,6 +20,7 @@
 #include "chrome/browser/renderer_context_menu/render_view_context_menu_browsertest_util.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
+#include "chrome/common/chrome_features.h"
 #include "chrome/test/base/in_process_browser_test.h"
 #include "chrome/test/base/ui_test_utils.h"
 #include "components/app_modal/javascript_app_modal_dialog.h"
@@ -200,14 +202,21 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessHighDPIExpiredCertBrowserTest,
   ui_test_utils::NavigateToURL(browser(), bad_cert_url);
   content::WebContents* active_web_contents =
       browser()->tab_strip_model()->GetActiveWebContents();
-  WaitForInterstitialAttach(active_web_contents);
-  EXPECT_TRUE(active_web_contents->ShowingInterstitialPage());
 
-  // Here we check the device scale factor in use via the interstitial's
-  // RenderFrameHost; doing the check directly via the 'active web contents'
-  // does not give us the device scale factor for the interstitial.
-  content::RenderFrameHost* interstitial_frame_host =
-      active_web_contents->GetInterstitialPage()->GetMainFrame();
+  content::RenderFrameHost* interstitial_frame_host;
+
+  if (base::FeatureList::IsEnabled(features::kSSLCommittedInterstitials)) {
+    interstitial_frame_host = active_web_contents->GetMainFrame();
+  } else {
+    WaitForInterstitialAttach(active_web_contents);
+    EXPECT_TRUE(active_web_contents->ShowingInterstitialPage());
+
+    // Here we check the device scale factor in use via the interstitial's
+    // RenderFrameHost; doing the check directly via the 'active web contents'
+    // does not give us the device scale factor for the interstitial.
+    interstitial_frame_host =
+        active_web_contents->GetInterstitialPage()->GetMainFrame();
+  }
 
   EXPECT_EQ(SitePerProcessHighDPIExpiredCertBrowserTest::kDeviceScaleFactor,
             GetFrameDeviceScaleFactor(interstitial_frame_host));
@@ -1021,11 +1030,9 @@ class TestBrowserClientForSpellCheck : public ChromeContentBrowserClient {
   void BindSpellCheckHostRequest(
       spellcheck::mojom::SpellCheckHostRequest request,
       const service_manager::BindSourceInfo& source_info) {
-    service_manager::Identity renderer_identity(
-        content::mojom::kRendererServiceName, source_info.identity.user_id(),
-        source_info.identity.instance());
     content::RenderProcessHost* host =
-        content::RenderProcessHost::FromRendererIdentity(renderer_identity);
+        content::RenderProcessHost::FromRendererInstanceId(
+            source_info.identity.instance_id());
     auto spell_check_host = std::make_unique<MockSpellCheckHost>(host);
     spell_check_host->SpellCheckHostRequest(std::move(request));
     spell_check_hosts_.push_back(std::move(spell_check_host));

@@ -333,6 +333,13 @@ class EBuild(object):
       r'.*-(([0-9][0-9a-z_.]*)(-r[0-9]+)?)[.]ebuild')
   _WORKON_COMMIT_PATTERN = re.compile(r'^CROS_WORKON_COMMIT=')
 
+  # These eclass files imply that src_test is defined for an ebuild.
+  _ECLASS_IMPLIES_TEST = set((
+      'cros-common.mk',
+      'cros-go',      # defines src_test
+      'tast-bundle',  # inherits cros-go
+  ))
+
   @classmethod
   def _RunCommand(cls, command, **kwargs):
     kwargs.setdefault('capture_output', True)
@@ -499,10 +506,10 @@ class EBuild(object):
     has_test = False
     for line in fileinput.input(ebuild_path):
       if line.startswith('inherit '):
-        eclasses = line.split()
+        eclasses = set(line.split())
         if 'cros-workon' in eclasses:
           is_workon = True
-        if 'cros-common.mk' in eclasses:
+        if EBuild._ECLASS_IMPLIES_TEST & eclasses:
           has_test = True
       elif line.startswith('KEYWORDS='):
         for keyword in line.split('=', 1)[1].strip("\"'").split():

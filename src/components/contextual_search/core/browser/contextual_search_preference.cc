@@ -55,8 +55,7 @@ void ContextualSearchPreference::SetPref(PrefService* pref_service,
 #endif  // BUILDFLAG
 }
 
-void ContextualSearchPreference::OnUnifiedConsentGiven(
-    PrefService* pref_service) {
+void ContextualSearchPreference::EnableIfUndecided(PrefService* pref_service) {
 #if BUILDFLAG(BUILD_CONTEXTUAL_SEARCH)
   previous_preference_metadata_ = pref_service->GetString(GetPrefName()) == ""
                                       ? WAS_UNDECIDED

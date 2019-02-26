@@ -36,14 +36,14 @@ int WriteStringToFile(const std::string& contents,
 // static
 std::unique_ptr<JsonFileSanitizer> JsonFileSanitizer::CreateAndStart(
     service_manager::Connector* connector,
-    const service_manager::Identity& identity,
+    const service_manager::ServiceFilter& service_filter,
     const std::set<base::FilePath>& file_paths,
     Callback callback) {
   // Note we can't use std::make_unique as we want to keep the constructor
   // private.
   std::unique_ptr<JsonFileSanitizer> sanitizer(
       new JsonFileSanitizer(file_paths, std::move(callback)));
-  sanitizer->Start(connector, identity);
+  sanitizer->Start(connector, service_filter);
   return sanitizer;
 }
 
@@ -55,8 +55,9 @@ JsonFileSanitizer::JsonFileSanitizer(const std::set<base::FilePath>& file_paths,
 
 JsonFileSanitizer::~JsonFileSanitizer() = default;
 
-void JsonFileSanitizer::Start(service_manager::Connector* connector,
-                              const service_manager::Identity& identity) {
+void JsonFileSanitizer::Start(
+    service_manager::Connector* connector,
+    const service_manager::ServiceFilter& service_filter) {
   if (file_paths_.empty()) {
     base::SequencedTaskRunnerHandle::Get()->PostTask(
         FROM_HERE, base::BindOnce(&JsonFileSanitizer::ReportSuccess,
@@ -64,7 +65,7 @@ void JsonFileSanitizer::Start(service_manager::Connector* connector,
     return;
   }
 
-  connector->BindInterface(identity, &json_parser_ptr_);
+  connector->BindInterface(service_filter, &json_parser_ptr_);
 
   for (const base::FilePath& path : file_paths_) {
     base::PostTaskAndReplyWithResult(

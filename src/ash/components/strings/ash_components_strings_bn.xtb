@@ -11,6 +11,7 @@
 <translation id="1299858300159559687">আপনার বর্তমান পৃষ্ঠাটি প্রিন্ট করুন</translation>
 <translation id="1383876407941801731">সার্চ করুন</translation>
 <translation id="1454364489140280055"><ph name="CTRL" /><ph name="SEPARATOR1" /><ph name="SHIFT1" /><ph name="SEPARATOR2" /><ph name="G" /> অথবা <ph name="SHIFT2" /><ph name="SEPARATOR3" /><ph name="ENTER" /></translation>
+<translation id="1477442857810932985">লাইনের শেষে যান</translation>
 <translation id="1510238584712386396">লঞ্চার</translation>
 <translation id="152892567002884378">ভলিউম বাড়ান</translation>
 <translation id="1560480564179555003"><ph name="SHIFT" /><ph name="SEPARATOR1" /><ph name="ALT" /><ph name="SEPARATOR2" /><ph name="L" />, তারপর <ph name="ESC" /></translation>
@@ -95,7 +96,7 @@
 <translation id="4556221320735744018">কীবোর্ড শর্টকাট সহায়তাকারী দেখুন</translation>
 <translation id="4628718545549558538">স্ট্যাটাস এলাকা খুলুন (যেখানে আপনার অ্যাকাউন্টের ছবি দেখানো হয়)</translation>
 <translation id="4642092649622328492">আংশিক স্ক্রিনশট নিন</translation>
-<translation id="4698850295812410683">স্টাইলাস টুল দেখুন</translation>
+<translation id="4698850295812410683">স্টাইলাস টুল দেখান</translation>
 <translation id="4801989101741319327">পরের শব্দের শেষে নিয়ে যান</translation>
 <translation id="4916163929714267752">একটি নতুন উইন্ডোতে লিঙ্কটি খুলুন</translation>
 <translation id="5030659775136592441">বুকমার্ক পরিচালক দেখান</translation>
@@ -191,6 +192,7 @@
 <translation id="9041599225465145264">ক্লিপবোর্ড থেকে কন্টেন্ট পেস্ট করুন</translation>
 <translation id="9052808072970550123">পরের ব্যবহারকারী বেছে নিন</translation>
 <translation id="906458777597946297">উইন্ডো বৃহদায়ন করুন</translation>
+<translation id="9091855755813503076">লাইনের শুরুতে যান</translation>
 <translation id="9106898733795143799">পৃষ্ঠা এবং ওয়েব ব্রাউজার</translation>
 <translation id="9162942292291287644"><ph name="QUERY" /> এর কোনও ফলাফল পাওয়া যায়নি</translation>
 <translation id="9179672198516322668">জনপ্রিয় শর্টকাট</translation>

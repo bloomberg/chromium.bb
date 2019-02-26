@@ -98,12 +98,6 @@ chmod -R "${CHMOD_MODE}" "${DEST}" >& /dev/null
 # permissions on any symbolic links.
 find "${DEST}" -type l -exec chmod -h "${CHMOD_MODE}" {} + >& /dev/null
 
-# Host OS version check, to be able to take advantage of features on newer
-# systems and fall back to slow ways of doing things on older systems.
-OS_VERSION=$(sw_vers -productVersion)
-OS_MAJOR=$(sed -Ene 's/^([0-9]+).*/\1/p' <<< ${OS_VERSION})
-OS_MINOR=$(sed -Ene 's/^([0-9]+)\.([0-9]+).*/\2/p' <<< ${OS_VERSION})
-
 # Because this script is launched by the application itself, the installation
 # process inherits the quarantine bit (LSFileQuarantineEnabled).  Any files or
 # directories created during the update will be quarantined in that case,
@@ -113,14 +107,7 @@ OS_MINOR=$(sed -Ene 's/^([0-9]+)\.([0-9]+).*/\2/p' <<< ${OS_VERSION})
 # it can be assumed that the installed copy should not be quarantined.  Use
 # xattr to drop the quarantine attribute.
 QUARANTINE_ATTR=com.apple.quarantine
-if [ ${OS_MAJOR} -gt 10 ] ||
-   ([ ${OS_MAJOR} -eq 10 ] && [ ${OS_MINOR} -ge 6 ]) ; then
-  # On 10.6, xattr supports -r for recursive operation.
-  xattr -d -r "${QUARANTINE_ATTR}" "${DEST}" >& /dev/null
-else
-  # On earlier systems, xattr doesn't support -r, so run xattr via find.
-  find "${DEST}" -exec xattr -d "${QUARANTINE_ATTR}" {} + >& /dev/null
-fi
+xattr -d -r "${QUARANTINE_ATTR}" "${DEST}" >& /dev/null
 
 # Great success!
 exit 0

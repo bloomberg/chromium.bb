@@ -27,7 +27,7 @@
         android:paddingHorizontal="@dimen/experimental_explore_sites_padding"
         android:orientation="horizontal" />
 
-    <Button
+    <org.chromium.ui.widget.ButtonCompat
         android:id="@+id/experimental_explore_sites_more_button"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
@@ -35,6 +35,7 @@
         android:layout_marginTop="@dimen/experimental_explore_sites_spacing"
         android:layout_marginHorizontal="@dimen/experimental_explore_sites_margin"
         android:layout_marginBottom="@dimen/experimental_explore_sites_spacing"
-        android:text="@string/ntp_explore_sites_more" />
+        android:text="@string/ntp_explore_sites_more"
+        style="@style/TextButton" />
 
 </LinearLayout>

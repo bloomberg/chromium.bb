@@ -37,7 +37,6 @@
 #include "ash/app_list/views/suggestion_chip_view.h"
 #include "ash/app_list/views/suggestions_container_view.h"
 #include "ash/app_list/views/test/apps_grid_view_test_api.h"
-#include "ash/public/cpp/app_list/answer_card_contents_registry.h"
 #include "ash/public/cpp/app_list/app_list_config.h"
 #include "ash/public/cpp/app_list/app_list_constants.h"
 #include "ash/public/cpp/app_list/app_list_features.h"
@@ -47,6 +46,7 @@
 #include "base/strings/utf_string_conversions.h"
 #include "base/test/icu_test_util.h"
 #include "base/test/scoped_feature_list.h"
+#include "services/content/public/cpp/test/fake_navigable_contents.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/base/models/simple_menu_model.h"
 #include "ui/chromeos/search_box/search_box_constants.h"
@@ -278,14 +278,11 @@ class AppListViewFocusTest : public views::ViewsTestBase,
     }
 
     views::ViewsTestBase::SetUp();
-    answer_card_contents_registry_ =
-        std::make_unique<AnswerCardContentsRegistry>();
-    fake_answer_card_view_ = std::make_unique<views::View>();
-    fake_answer_card_view_->set_owned_by_client();
-    fake_answer_card_token_ = answer_card_contents_registry_->Register(
-        fake_answer_card_view_.get(), /*contents_native_view=*/nullptr);
 
     // Initialize app list view.
+    fake_card_contents_.set_default_response_headers(
+        SearchResultAnswerCardView::CreateAnswerCardResponseHeadersForTest(
+            "weather", "Unimportant Title"));
     delegate_ = std::make_unique<AppListTestViewDelegate>();
     view_ = new AppListView(delegate_.get());
     AppListView::InitParams params;
@@ -325,6 +322,10 @@ class AppListViewFocusTest : public views::ViewsTestBase,
     // Disable animation timer.
     view_->GetWidget()->GetLayer()->GetAnimator()->set_disable_timer_for_test(
         true);
+
+    // The Update above will elicit a navigation. Wait for it.
+    delegate_->fake_navigable_contents_factory()
+        .WaitForAndBindNextContentsRequest(&fake_card_contents_);
   }
 
   void TearDown() override {
@@ -379,8 +380,10 @@ class AppListViewFocusTest : public views::ViewsTestBase,
             std::make_unique<TestSearchResult>();
         result->set_display_type(data.first);
         result->set_display_score(display_score);
-        if (data.first == ash::SearchResultDisplayType::kCard)
-          result->set_answer_card_contents_token(fake_answer_card_token_);
+        if (data.first == ash::SearchResultDisplayType::kCard) {
+          const GURL kFakeCardUrl = GURL("https://www.google.com/coac?q=fake");
+          result->set_query_url(kFakeCardUrl);
+        }
         results->Add(std::move(result));
       }
     }
@@ -515,8 +518,8 @@ class AppListViewFocusTest : public views::ViewsTestBase,
               focused_view());
 
     // Clean up
-    textfield->SetText(base::UTF8ToUTF16(""));
     textfield->RequestFocus();
+    textfield->SetText(base::UTF8ToUTF16(""));
   }
 
   AppListView* app_list_view() { return view_; }
@@ -592,12 +595,11 @@ class AppListViewFocusTest : public views::ViewsTestBase,
   // Restores the locale to default when destructor is called.
   base::test::ScopedRestoreICUDefaultLocale restore_locale_;
 
-  std::unique_ptr<AnswerCardContentsRegistry> answer_card_contents_registry_;
-  std::unique_ptr<views::View> fake_answer_card_view_;
-  base::UnguessableToken fake_answer_card_token_;
-
   // Used by AppListFolderView::UpdatePreferredBounds.
   keyboard::KeyboardController keyboard_controller_;
+
+  // A fake NavigableContents implementation to back card navigation requests.
+  content::FakeNavigableContents fake_card_contents_;
 
   DISALLOW_COPY_AND_ASSIGN(AppListViewFocusTest);
 };
@@ -607,42 +609,6 @@ class AppListViewFocusTest : public views::ViewsTestBase,
 INSTANTIATE_TEST_CASE_P(,
                         AppListViewFocusTest,
                         testing::ValuesIn(kAppListViewFocusTestParams));
-
-// Test behaviors in tablet mode when homcher launcher feature is enabled.
-class AppListViewHomeLauncherTest : public AppListViewTest {
- public:
-  AppListViewHomeLauncherTest() = default;
-  ~AppListViewHomeLauncherTest() override = default;
-
-  void SetUp() override {
-    scoped_feature_list_.InitAndEnableFeature(
-        app_list_features::kEnableHomeLauncher);
-    AppListViewTest::SetUp();
-  }
-
- private:
-  base::test::ScopedFeatureList scoped_feature_list_;
-
-  DISALLOW_COPY_AND_ASSIGN(AppListViewHomeLauncherTest);
-};
-
-// Test behaviors in tablet mode when homcher launcher feature is not enabled.
-class AppListViewNonHomeLauncherTest : public AppListViewTest {
- public:
-  AppListViewNonHomeLauncherTest() = default;
-  ~AppListViewNonHomeLauncherTest() override = default;
-
-  void SetUp() override {
-    scoped_feature_list_.InitAndDisableFeature(
-        app_list_features::kEnableHomeLauncher);
-    AppListViewTest::SetUp();
-  }
-
- private:
-  base::test::ScopedFeatureList scoped_feature_list_;
-
-  DISALLOW_COPY_AND_ASSIGN(AppListViewNonHomeLauncherTest);
-};
 
 }  // namespace
 
@@ -1430,7 +1396,7 @@ TEST_F(AppListViewTest, MouseWheelScrollTransitionsToFullscreen) {
   delegate_->GetTestModel()->PopulateApps(kInitialItems);
   Show();
 
-  view_->HandleScroll(-30, ui::ET_MOUSEWHEEL);
+  view_->HandleScroll(gfx::Vector2d(0, -30), ui::ET_MOUSEWHEEL);
   EXPECT_EQ(AppListViewState::FULLSCREEN_ALL_APPS, view_->app_list_state());
 }
 
@@ -1439,7 +1405,7 @@ TEST_F(AppListViewTest, GestureScrollTransitionsToFullscreen) {
   delegate_->GetTestModel()->PopulateApps(kInitialItems);
   Show();
 
-  view_->HandleScroll(-30, ui::ET_SCROLL);
+  view_->HandleScroll(gfx::Vector2d(0, -30), ui::ET_SCROLL);
   EXPECT_EQ(AppListViewState::FULLSCREEN_ALL_APPS, view_->app_list_state());
 }
 
@@ -1626,39 +1592,6 @@ TEST_F(AppListViewTest, LeaveTabletModeClosed) {
   search_box->SetText(base::string16());
   search_box->InsertText(base::UTF8ToUTF16("something"));
   view_->OnTabletModeChanged(false);
-
-  ASSERT_EQ(AppListViewState::CLOSED, view_->app_list_state());
-}
-
-// Tests that escape works after leaving tablet mode from search.
-TEST_F(AppListViewNonHomeLauncherTest, LeaveTabletModeEscapeKeyToFullscreen) {
-  // Put into fullscreen using tablet mode.
-  Initialize(0, true, false);
-  views::Textfield* search_box =
-      view_->app_list_main_view()->search_box_view()->search_box();
-
-  Show();
-  search_box->SetText(base::string16());
-  search_box->InsertText(base::UTF8ToUTF16("nothing"));
-  view_->OnTabletModeChanged(false);
-  view_->AcceleratorPressed(ui::Accelerator(ui::VKEY_ESCAPE, ui::EF_NONE));
-
-  ASSERT_EQ(AppListViewState::FULLSCREEN_ALL_APPS, view_->app_list_state());
-}
-
-// Tests that escape twice closes after leaving tablet mode from search.
-TEST_F(AppListViewNonHomeLauncherTest, LeaveTabletModeEscapeKeyTwiceToClosed) {
-  // Put into fullscreen using tablet mode.
-  Initialize(0, true, false);
-  views::Textfield* search_box =
-      view_->app_list_main_view()->search_box_view()->search_box();
-
-  Show();
-  search_box->SetText(base::string16());
-  search_box->InsertText(base::UTF8ToUTF16("nothing"));
-  view_->OnTabletModeChanged(false);
-  view_->AcceleratorPressed(ui::Accelerator(ui::VKEY_ESCAPE, ui::EF_NONE));
-  view_->AcceleratorPressed(ui::Accelerator(ui::VKEY_ESCAPE, ui::EF_NONE));
 
   ASSERT_EQ(AppListViewState::CLOSED, view_->app_list_state());
 }
@@ -2072,34 +2005,8 @@ TEST_F(AppListViewTest, DontShowContextMenuBetweenAppsInClamshellMode) {
   EXPECT_TRUE(view_->GetWidget()->IsVisible());
 }
 
-// Tests that pressing escape when in tablet mode closes the app list.
-TEST_F(AppListViewNonHomeLauncherTest, EscapeKeyTabletModeFullscreenToClosed) {
-  // Put into fullscreen by using tablet mode.
-  Initialize(0, true, false);
-
-  Show();
-  view_->AcceleratorPressed(ui::Accelerator(ui::VKEY_ESCAPE, ui::EF_NONE));
-
-  ASSERT_EQ(AppListViewState::CLOSED, view_->app_list_state());
-}
-
-// Tests that leaving tablet mode when in tablet search causes no change.
-TEST_F(AppListViewNonHomeLauncherTest, LeaveTabletModeNoChange) {
-  // Put into fullscreen using tablet mode.
-  Initialize(0, true, false);
-  views::Textfield* search_box =
-      view_->app_list_main_view()->search_box_view()->search_box();
-
-  Show();
-  search_box->SetText(base::string16());
-  search_box->InsertText(base::UTF8ToUTF16("something"));
-  view_->OnTabletModeChanged(false);
-
-  ASSERT_EQ(AppListViewState::FULLSCREEN_SEARCH, view_->app_list_state());
-}
-
 // Tests the back action in home launcher.
-TEST_F(AppListViewHomeLauncherTest, BackAction) {
+TEST_F(AppListViewTest, BackAction) {
   // Put into fullscreen using tablet mode.
   Initialize(0, true, false);
 

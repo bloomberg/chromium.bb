@@ -6,14 +6,16 @@
 
 #include <stddef.h>
 
-#include "base/run_loop.h"
 #include "base/single_thread_task_runner.h"
+#include "base/test/test_mock_time_task_runner.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "components/viz/client/client_resource_provider.h"
 #include "components/viz/common/resources/resource_sizes.h"
 #include "components/viz/common/resources/returned_resource.h"
 #include "components/viz/test/test_context_provider.h"
+#include "components/viz/test/test_context_support.h"
 #include "components/viz/test/test_shared_bitmap_manager.h"
+#include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace cc {
@@ -21,13 +23,17 @@ namespace cc {
 class ResourcePoolTest : public testing::Test {
  public:
   void SetUp() override {
-    context_provider_ = viz::TestContextProvider::Create();
+    auto context_support = std::make_unique<MockContextSupport>();
+    context_support_ = context_support.get();
+    context_provider_ =
+        viz::TestContextProvider::Create(std::move(context_support));
     context_provider_->BindToCurrentThread();
     resource_provider_ = std::make_unique<viz::ClientResourceProvider>(true);
-    task_runner_ = base::ThreadTaskRunnerHandle::Get();
+    test_task_runner_ = base::MakeRefCounted<base::TestMockTimeTaskRunner>();
     resource_pool_ = std::make_unique<ResourcePool>(
-        resource_provider_.get(), context_provider_.get(), task_runner_,
+        resource_provider_.get(), context_provider_.get(), test_task_runner_,
         ResourcePool::kDefaultExpirationDelay, false);
+    resource_pool_->SetClockForTesting(test_task_runner_->GetMockTickClock());
   }
 
   void TearDown() override {
@@ -35,6 +41,12 @@ class ResourcePoolTest : public testing::Test {
   }
 
  protected:
+  class MockContextSupport : public viz::TestContextSupport {
+   public:
+    MockContextSupport() = default;
+    MOCK_METHOD0(FlushPendingWork, void());
+  };
+
   class StubGpuBacking : public ResourcePool::GpuBacking {
    public:
     void OnMemoryDump(
@@ -46,6 +58,7 @@ class ResourcePoolTest : public testing::Test {
 
   void SetBackingOnResource(const ResourcePool::InUsePoolResource& resource) {
     auto backing = std::make_unique<StubGpuBacking>();
+    backing->mailbox = gpu::Mailbox::Generate();
     backing->mailbox_sync_token.Set(
         gpu::GPU_IO, gpu::CommandBufferId::FromUnsafeValue(1), 1);
     resource.set_gpu_backing(std::move(backing));
@@ -57,9 +70,10 @@ class ResourcePoolTest : public testing::Test {
   }
 
   viz::TestSharedBitmapManager shared_bitmap_manager_;
+  MockContextSupport* context_support_;
   scoped_refptr<viz::TestContextProvider> context_provider_;
   std::unique_ptr<viz::ClientResourceProvider> resource_provider_;
-  scoped_refptr<base::SingleThreadTaskRunner> task_runner_;
+  scoped_refptr<base::TestMockTimeTaskRunner> test_task_runner_;
   std::unique_ptr<ResourcePool> resource_pool_;
 };
 
@@ -74,6 +88,67 @@ TEST_F(ResourcePoolTest, AcquireRelease) {
   EXPECT_EQ(color_space, resource.color_space());
 
   resource_pool_->ReleaseResource(std::move(resource));
+}
+
+TEST_F(ResourcePoolTest, EventuallyEvictAndFlush) {
+  gfx::Size size(100, 100);
+  viz::ResourceFormat format = viz::RGBA_8888;
+  gfx::ColorSpace color_space = gfx::ColorSpace::CreateSRGB();
+  ResourcePool::InUsePoolResource resource =
+      resource_pool_->AcquireResource(size, format, color_space);
+  resource_pool_->ReleaseResource(std::move(resource));
+  EXPECT_EQ(1u, resource_pool_->GetTotalResourceCountForTesting());
+
+  // Expect flush after eviction and flush delay.
+  EXPECT_CALL(*context_support_, FlushPendingWork()).Times(testing::AtLeast(1));
+  test_task_runner_->FastForwardBy(ResourcePool::kDefaultExpirationDelay +
+                                   ResourcePool::kDefaultMaxFlushDelay);
+  EXPECT_EQ(0u, resource_pool_->GetTotalResourceCountForTesting());
+}
+
+TEST_F(ResourcePoolTest, FlushEvenIfMoreUnusedToEvict) {
+  gfx::Size size(100, 100);
+  viz::ResourceFormat format = viz::RGBA_8888;
+  gfx::ColorSpace color_space = gfx::ColorSpace::CreateSRGB();
+  ResourcePool::InUsePoolResource resource1 =
+      resource_pool_->AcquireResource(size, format, color_space);
+  ResourcePool::InUsePoolResource resource2 =
+      resource_pool_->AcquireResource(size, format, color_space);
+
+  // Time 0: No resources evicted yet.
+  EXPECT_EQ(2u, resource_pool_->GetTotalResourceCountForTesting());
+
+  // Space the resource last_usage out so that they don't expire at the same
+  // time. resource1 last used at time 0 (expires kDefaultExpirationDelay) and
+  // resource2 last used at last_usage_gap (expires kDefaultExpireationDelay +
+  // last_usage_gap).
+  const base::TimeDelta last_usage_gap =
+      ResourcePool::kDefaultMaxFlushDelay * 2;
+  resource_pool_->ReleaseResource(std::move(resource1));
+  test_task_runner_->FastForwardBy(last_usage_gap);
+  resource_pool_->ReleaseResource(std::move(resource2));
+
+  // Time |last_usage_gap|: No resources evicted yet.
+  EXPECT_EQ(2u, resource_pool_->GetTotalResourceCountForTesting());
+
+  // Time |kDefaultExpirationDelay|: resource1 evicted, but not resource2 yet.
+  test_task_runner_->FastForwardBy(ResourcePool::kDefaultExpirationDelay -
+                                   last_usage_gap);
+  EXPECT_EQ(1u, resource_pool_->GetTotalResourceCountForTesting());
+
+  // Expect at least one flush kDefaultMaxFlushDelay after an eviction.
+  EXPECT_CALL(*context_support_, FlushPendingWork()).Times(testing::AtLeast(1));
+  test_task_runner_->FastForwardBy(ResourcePool::kDefaultMaxFlushDelay);
+
+  // Time |kDefaultExpirationDelay + kDefaultMaxFlushDelay|:
+  // Check that flush was called and resource2 still not evicted.
+  testing::Mock::VerifyAndClearExpectations(context_support_);
+  EXPECT_EQ(1u, resource_pool_->GetTotalResourceCountForTesting());
+
+  // Wait a long time and resource2 should get evicted and flushed.
+  EXPECT_CALL(*context_support_, FlushPendingWork()).Times(testing::AtLeast(1));
+  test_task_runner_->FastForwardBy(ResourcePool::kDefaultExpirationDelay * 100);
+  EXPECT_EQ(0u, resource_pool_->GetTotalResourceCountForTesting());
 }
 
 TEST_F(ResourcePoolTest, AccountingSingleResource) {
@@ -165,7 +240,7 @@ TEST_F(ResourcePoolTest, LostResource) {
       resource_pool_->AcquireResource(size, format, color_space);
 
   SetBackingOnResource(resource);
-  resource_pool_->PrepareForExport(resource);
+  EXPECT_TRUE(resource_pool_->PrepareForExport(resource));
 
   std::vector<viz::ResourceId> export_ids = {resource.resource_id_for_export()};
   std::vector<viz::TransferableResource> transferable_resources;
@@ -183,12 +258,6 @@ TEST_F(ResourcePoolTest, LostResource) {
 }
 
 TEST_F(ResourcePoolTest, BusyResourcesNotFreed) {
-  // Set a quick resource expiration delay so that this test doesn't take long
-  // to run.
-  resource_pool_ = std::make_unique<ResourcePool>(
-      resource_provider_.get(), context_provider_.get(), task_runner_,
-      base::TimeDelta::FromMilliseconds(10), false);
-
   // Limits high enough to not be hit by this test.
   size_t bytes_limit = 10 * 1024 * 1024;
   size_t count_limit = 100;
@@ -204,7 +273,7 @@ TEST_F(ResourcePoolTest, BusyResourcesNotFreed) {
   EXPECT_EQ(1u, resource_pool_->resource_count());
 
   SetBackingOnResource(resource);
-  resource_pool_->PrepareForExport(resource);
+  EXPECT_TRUE(resource_pool_->PrepareForExport(resource));
 
   std::vector<viz::TransferableResource> transfers;
   resource_provider_->PrepareSendToParent({resource.resource_id_for_export()},
@@ -215,12 +284,9 @@ TEST_F(ResourcePoolTest, BusyResourcesNotFreed) {
   EXPECT_EQ(0u, resource_pool_->memory_usage_bytes());
   EXPECT_EQ(1u, resource_pool_->GetBusyResourceCountForTesting());
 
-  // Wait for our resource pool to evict resources. We expect resources to be
-  // released within 10 ms, give the thread up to 200.
-  base::RunLoop run_loop;
-  task_runner_->PostDelayedTask(FROM_HERE, run_loop.QuitClosure(),
-                                base::TimeDelta::FromMillisecondsD(200));
-  run_loop.Run();
+  // Wait for our resource pool to evict resources. Wait 10x the expiration
+  // delay.
+  test_task_runner_->FastForwardBy(ResourcePool::kDefaultExpirationDelay * 10);
 
   // Busy resources are still held, since they may be in flight to the display
   // compositor and should not be freed.
@@ -230,12 +296,6 @@ TEST_F(ResourcePoolTest, BusyResourcesNotFreed) {
 }
 
 TEST_F(ResourcePoolTest, UnusedResourcesEventuallyFreed) {
-  // Set a quick resource expiration delay so that this test doesn't take long
-  // to run.
-  resource_pool_ = std::make_unique<ResourcePool>(
-      resource_provider_.get(), context_provider_.get(), task_runner_,
-      base::TimeDelta::FromMilliseconds(100), false);
-
   // Limits high enough to not be hit by this test.
   size_t bytes_limit = 10 * 1024 * 1024;
   size_t count_limit = 100;
@@ -254,7 +314,7 @@ TEST_F(ResourcePoolTest, UnusedResourcesEventuallyFreed) {
 
   // Export the resource to the display compositor.
   SetBackingOnResource(resource);
-  resource_pool_->PrepareForExport(resource);
+  EXPECT_TRUE(resource_pool_->PrepareForExport(resource));
   std::vector<viz::TransferableResource> transfers;
   resource_provider_->PrepareSendToParent({resource.resource_id_for_export()},
                                           &transfers, context_provider_.get());
@@ -273,12 +333,9 @@ TEST_F(ResourcePoolTest, UnusedResourcesEventuallyFreed) {
   EXPECT_EQ(0u, resource_pool_->resource_count());
   EXPECT_EQ(0u, resource_pool_->GetBusyResourceCountForTesting());
 
-  // Wait for our resource pool to evict resources. We expect resources to be
-  // released within 100 ms, give the thread up to 200.
-  base::RunLoop run_loop;
-  task_runner_->PostDelayedTask(FROM_HERE, run_loop.QuitClosure(),
-                                base::TimeDelta::FromMillisecondsD(200));
-  run_loop.Run();
+  // Wait for our resource pool to evict resources. Wait 10x the expiration
+  // delay.
+  test_task_runner_->FastForwardBy(ResourcePool::kDefaultExpirationDelay * 10);
 
   EXPECT_EQ(0u, resource_pool_->GetTotalMemoryUsageForTesting());
 }
@@ -463,7 +520,7 @@ TEST_F(ResourcePoolTest, PurgedMemory) {
   ResourcePool::InUsePoolResource resource =
       resource_pool_->AcquireResource(size, format, color_space);
   SetBackingOnResource(resource);
-  resource_pool_->PrepareForExport(resource);
+  EXPECT_TRUE(resource_pool_->PrepareForExport(resource));
 
   EXPECT_EQ(1u, resource_pool_->GetTotalResourceCountForTesting());
   EXPECT_EQ(0u, resource_pool_->GetBusyResourceCountForTesting());
@@ -516,7 +573,7 @@ TEST_F(ResourcePoolTest, InvalidateResources) {
   ResourcePool::InUsePoolResource busy_resource =
       resource_pool_->AcquireResource(size, format, color_space);
   SetBackingOnResource(busy_resource);
-  resource_pool_->PrepareForExport(busy_resource);
+  EXPECT_TRUE(resource_pool_->PrepareForExport(busy_resource));
   EXPECT_EQ(1u, resource_pool_->GetTotalResourceCountForTesting());
   EXPECT_EQ(0u, resource_pool_->GetBusyResourceCountForTesting());
   EXPECT_EQ(1u, resource_pool_->resource_count());
@@ -582,8 +639,8 @@ TEST_F(ResourcePoolTest, ExactRequestsRespected) {
   gfx::ColorSpace color_space = gfx::ColorSpace::CreateSRGB();
 
   resource_pool_ = std::make_unique<ResourcePool>(
-      resource_provider_.get(), context_provider_.get(), task_runner_,
-      base::TimeDelta::FromMilliseconds(100), true);
+      resource_provider_.get(), context_provider_.get(), test_task_runner_,
+      ResourcePool::kDefaultExpirationDelay, true);
 
   // Create unused resource with size 100x100.
   CheckAndReturnResource(resource_pool_->AcquireResource(gfx::Size(100, 100),
@@ -635,7 +692,7 @@ TEST_F(ResourcePoolTest, MetadataSentToDisplayCompositor) {
   resource.gpu_backing()->wait_on_fence_required = true;
   resource.gpu_backing()->overlay_candidate = true;
 
-  resource_pool_->PrepareForExport(resource);
+  EXPECT_TRUE(resource_pool_->PrepareForExport(resource));
 
   std::vector<viz::TransferableResource> transfer;
   resource_provider_->PrepareSendToParent({resource.resource_id_for_export()},
@@ -654,6 +711,39 @@ TEST_F(ResourcePoolTest, MetadataSentToDisplayCompositor) {
   EXPECT_TRUE(transfer[0].read_lock_fences_enabled);
   EXPECT_TRUE(transfer[0].is_overlay_candidate);
 
+  resource_pool_->ReleaseResource(std::move(resource));
+}
+
+TEST_F(ResourcePoolTest, InvalidResource) {
+  // Limits high enough to not be hit by this test.
+  size_t bytes_limit = 10 * 1024 * 1024;
+  size_t count_limit = 100;
+  resource_pool_->SetResourceUsageLimits(bytes_limit, count_limit);
+
+  // These values are all non-default values so we can tell they are propagated.
+  gfx::Size size(100, 101);
+  viz::ResourceFormat format = viz::RGBA_4444;
+  EXPECT_NE(gfx::BufferFormat::RGBA_8888, viz::BufferFormat(format));
+  gfx::ColorSpace color_space = gfx::ColorSpace::CreateSRGB();
+  uint32_t target = 5;
+
+  ResourcePool::InUsePoolResource resource =
+      resource_pool_->AcquireResource(size, format, color_space);
+
+  // Keep a zero mailbox
+  auto backing = std::make_unique<StubGpuBacking>();
+  backing->texture_target = target;
+  backing->wait_on_fence_required = true;
+  backing->overlay_candidate = true;
+  resource.set_gpu_backing(std::move(backing));
+
+  EXPECT_FALSE(resource_pool_->PrepareForExport(resource));
+
+  resource_pool_->ReleaseResource(std::move(resource));
+
+  // Acquire another resource. The resource should not be reused.
+  resource = resource_pool_->AcquireResource(size, format, color_space);
+  EXPECT_FALSE(resource.gpu_backing());
   resource_pool_->ReleaseResource(std::move(resource));
 }
 

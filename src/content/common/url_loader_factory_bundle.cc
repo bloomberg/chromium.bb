@@ -46,6 +46,7 @@ scoped_refptr<network::SharedURLLoaderFactory>
 URLLoaderFactoryBundleInfo::CreateFactory() {
   auto other = std::make_unique<URLLoaderFactoryBundleInfo>();
   other->default_factory_info_ = std::move(default_factory_info_);
+  other->appcache_factory_info_ = std::move(appcache_factory_info_);
   other->scheme_specific_factory_infos_ =
       std::move(scheme_specific_factory_infos_);
   other->initiator_specific_factory_infos_ =
@@ -84,6 +85,10 @@ network::mojom::URLLoaderFactory* URLLoaderFactoryBundle::GetFactory(
       return it2->second.get();
   }
 
+  // AppCache factory must be used if it's given.
+  if (appcache_factory_)
+    return appcache_factory_.get();
+
   return default_factory_.get();
 }
 
@@ -112,11 +117,16 @@ URLLoaderFactoryBundle::Clone() {
   if (default_factory_)
     default_factory_->Clone(mojo::MakeRequest(&default_factory_info));
 
-  return std::make_unique<URLLoaderFactoryBundleInfo>(
+  auto info = std::make_unique<URLLoaderFactoryBundleInfo>(
       std::move(default_factory_info),
       ClonePtrMapToPtrInfoMap(scheme_specific_factories_),
       ClonePtrMapToPtrInfoMap(initiator_specific_factories_),
       bypass_redirect_checks_);
+
+  if (appcache_factory_)
+    appcache_factory_->Clone(mojo::MakeRequest(&info->appcache_factory_info()));
+
+  return info;
 }
 
 bool URLLoaderFactoryBundle::BypassRedirectChecks() const {
@@ -127,6 +137,8 @@ void URLLoaderFactoryBundle::Update(
     std::unique_ptr<URLLoaderFactoryBundleInfo> info) {
   if (info->default_factory_info())
     default_factory_.Bind(std::move(info->default_factory_info()));
+  if (info->appcache_factory_info())
+    appcache_factory_.Bind(std::move(info->appcache_factory_info()));
   BindPtrInfoMapToPtrMap(&scheme_specific_factories_,
                          std::move(info->scheme_specific_factory_infos()));
   BindPtrInfoMapToPtrMap(&initiator_specific_factories_,

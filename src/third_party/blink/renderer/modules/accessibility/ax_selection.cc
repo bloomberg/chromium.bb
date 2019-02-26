@@ -4,8 +4,11 @@
 
 #include "third_party/blink/renderer/modules/accessibility/ax_selection.h"
 
-#include "third_party/blink/renderer/core/dom/document.h"
+#include "third_party/blink/renderer/core/dom/events/event.h"
+#include "third_party/blink/renderer/core/dom/node.h"
+#include "third_party/blink/renderer/core/dom/range.h"
 #include "third_party/blink/renderer/core/editing/frame_selection.h"
+#include "third_party/blink/renderer/core/editing/position.h"
 #include "third_party/blink/renderer/core/editing/position_with_affinity.h"
 #include "third_party/blink/renderer/core/editing/selection_template.h"
 #include "third_party/blink/renderer/core/editing/set_selection_options.h"
@@ -14,6 +17,22 @@
 #include "third_party/blink/renderer/modules/accessibility/ax_object.h"
 
 namespace blink {
+
+namespace {
+
+DispatchEventResult DispatchSelectStart(Node* node) {
+  if (!node)
+    return DispatchEventResult::kNotCanceled;
+
+  return node->DispatchEvent(
+      *Event::CreateCancelableBubble(event_type_names::kSelectstart));
+}
+
+}  // namespace
+
+//
+// AXSelection::Builder
+//
 
 AXSelection::Builder& AXSelection::Builder::SetBase(const AXPosition& base) {
   DCHECK(base.IsValid());
@@ -71,8 +90,41 @@ const AXSelection AXSelection::Builder::Build() {
   return selection_;
 }
 
+//
+// AXSelection
+//
+
 // static
-const AXSelection AXSelection::FromSelection(
+void AXSelection::ClearCurrentSelection(Document& document) {
+  LocalFrame* frame = document.GetFrame();
+  if (!frame)
+    return;
+
+  FrameSelection& frame_selection = frame->Selection();
+  if (!frame_selection.IsAvailable())
+    return;
+
+  frame_selection.Clear();
+}
+
+// static
+AXSelection AXSelection::FromCurrentSelection(
+    const Document& document,
+    const AXSelectionBehavior selection_behavior) {
+  LocalFrame* frame = document.GetFrame();
+  if (!frame)
+    return {};
+
+  FrameSelection& frame_selection = frame->Selection();
+  if (!frame_selection.IsAvailable())
+    return {};
+
+  return FromSelection(frame_selection.GetSelectionInDOMTree(),
+                       selection_behavior);
+}
+
+// static
+AXSelection AXSelection::FromSelection(
     const SelectionInDOMTree& selection,
     const AXSelectionBehavior selection_behavior) {
   if (selection.IsNone())
@@ -181,30 +233,84 @@ const SelectionInDOMTree AXSelection::AsSelection(
   SelectionInDOMTree::Builder selection_builder;
   selection_builder.SetBaseAndExtent(dom_base.GetPosition(),
                                      dom_extent.GetPosition());
-  selection_builder.SetAffinity(extent_.Affinity());
+  if (extent_.IsTextPosition())
+    selection_builder.SetAffinity(extent_.Affinity());
   return selection_builder.Build();
 }
 
-void AXSelection::Select(const AXSelectionBehavior selection_behavior) {
+bool AXSelection::Select(const AXSelectionBehavior selection_behavior) {
   if (!IsValid()) {
-    NOTREACHED();
-    return;
+    NOTREACHED() << "Trying to select an invalid accessibility selection.";
+    return false;
   }
 
   const SelectionInDOMTree selection = AsSelection(selection_behavior);
   DCHECK(selection.AssertValid());
   Document* document = selection.Base().GetDocument();
   if (!document) {
-    NOTREACHED();
-    return;
+    NOTREACHED() << "Valid DOM selections should have an attached document.";
+    return false;
   }
+
   LocalFrame* frame = document->GetFrame();
   if (!frame) {
     NOTREACHED();
-    return;
+    return false;
   }
+
   FrameSelection& frame_selection = frame->Selection();
-  frame_selection.SetSelection(selection, SetSelectionOptions());
+  if (!frame_selection.IsAvailable())
+    return false;
+
+  // See the following section in the Selection API Specification:
+  // https://w3c.github.io/selection-api/#selectstart-event
+  if (DispatchSelectStart(selection.Extent().ComputeContainerNode()) !=
+      DispatchEventResult::kNotCanceled) {
+    return false;
+  }
+
+  SetSelectionOptions::Builder options_builder;
+  options_builder.SetIsDirectional(true)
+      .SetShouldCloseTyping(true)
+      .SetShouldClearTypingStyle(true)
+      .SetSetSelectionBy(SetSelectionBy::kUser);
+  frame_selection.ClearDocumentCachedRange();
+  frame_selection.SetSelection(selection, options_builder.Build());
+
+  // Cache the newly created document range. This doesn't affect the already
+  // applied selection. Note that DOM's |Range| object has a start and an end
+  // container that need to be in DOM order. See the DOM specification for more
+  // information: https://dom.spec.whatwg.org/#interface-range
+  Range* range = Range::Create(*document);
+  if (selection.Extent().IsNull()) {
+    DCHECK(selection.Base().IsNotNull())
+        << "AX selections converted to DOM selections should have at least one "
+           "endpoint non-null.\n"
+        << *this << '\n'
+        << selection;
+    range->setStart(selection.Base().ComputeContainerNode(),
+                    selection.Base().ComputeOffsetInContainerNode());
+    range->setEnd(selection.Base().ComputeContainerNode(),
+                  selection.Base().ComputeOffsetInContainerNode());
+  } else if (selection.Base() < selection.Extent()) {
+    range->setStart(selection.Base().ComputeContainerNode(),
+                    selection.Base().ComputeOffsetInContainerNode());
+    range->setEnd(selection.Extent().ComputeContainerNode(),
+                  selection.Extent().ComputeOffsetInContainerNode());
+  } else {
+    range->setStart(selection.Extent().ComputeContainerNode(),
+                    selection.Extent().ComputeOffsetInContainerNode());
+    range->setEnd(selection.Base().ComputeContainerNode(),
+                  selection.Base().ComputeOffsetInContainerNode());
+  }
+  frame_selection.CacheRangeOfDocument(range);
+  return true;
+}
+
+String AXSelection::ToString() const {
+  if (!IsValid())
+    return "Invalid AXSelection";
+  return "AXSelection from " + Base().ToString() + " to " + Extent().ToString();
 }
 
 bool operator==(const AXSelection& a, const AXSelection& b) {
@@ -217,10 +323,7 @@ bool operator!=(const AXSelection& a, const AXSelection& b) {
 }
 
 std::ostream& operator<<(std::ostream& ostream, const AXSelection& selection) {
-  if (!selection.IsValid())
-    return ostream << "Invalid AXSelection";
-  return ostream << "AXSelection from " << selection.Base() << " to "
-                 << selection.Extent();
+  return ostream << selection.ToString().Utf8().data();
 }
 
 }  // namespace blink

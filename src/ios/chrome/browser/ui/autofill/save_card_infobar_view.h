@@ -9,8 +9,6 @@
 
 #include <vector>
 
-#import "ios/chrome/browser/ui/infobars/infobar_view_sizing.h"
-
 class GURL;
 @protocol SaveCardInfoBarViewDelegate;
 
@@ -32,7 +30,7 @@ class GURL;
 // the card's label, and the card's sublabel. In the following section, optional
 // legal messages appear. The bottom section is the footer which contains a
 // an optional confirm button and an optional cancel button.
-@interface SaveCardInfoBarView : UIView<InfoBarViewSizing>
+@interface SaveCardInfoBarView : UIView
 
 @property(nonatomic, weak) id<SaveCardInfoBarViewDelegate> delegate;
 

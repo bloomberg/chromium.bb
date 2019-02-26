@@ -8,6 +8,7 @@
 
 #include "base/command_line.h"
 #include "chrome/browser/first_run/first_run_dialog.h"
+#include "chrome/browser/first_run/first_run_internal.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/test/base/in_process_browser_test.h"
 
@@ -20,11 +21,11 @@ class FirstRunInternalPosixTest : public InProcessBrowserTest {
   // InProcessBrowserTest:
   void SetUpCommandLine(base::CommandLine* command_line) override {
     command_line->AppendSwitch(switches::kForceFirstRun);
-    command_line->AppendSwitch(switches::kForceFirstRunDialog);
   }
 
   void SetUpInProcessBrowserTestFixture() override {
     InProcessBrowserTest::SetUpInProcessBrowserTestFixture();
+    internal::ForceFirstRunDialogShownForTesting(true);
     // The modal dialog will spawn and spin a nested RunLoop when
     // content::BrowserTestBase::SetUp() invokes content::ContentMain().
     // BrowserTestBase sets GetContentMainParams()->ui_task before this, but the

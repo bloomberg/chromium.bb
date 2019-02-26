@@ -10,11 +10,13 @@ AuthenticatorReference::AuthenticatorReference(
     base::StringPiece authenticator_id,
     base::StringPiece16 authenticator_display_name,
     device::FidoTransportProtocol transport,
-    bool is_in_pairing_mode)
+    bool is_in_pairing_mode,
+    bool is_paired)
     : authenticator_id_(authenticator_id),
       authenticator_display_name_(authenticator_display_name),
       transport_(transport),
-      is_in_pairing_mode_(is_in_pairing_mode) {}
+      is_in_pairing_mode_(is_in_pairing_mode),
+      is_paired_(is_paired) {}
 
 AuthenticatorReference::AuthenticatorReference(AuthenticatorReference&& data) =
     default;
@@ -30,6 +32,10 @@ void AuthenticatorReference::SetAuthenticatorId(std::string authenticator_id) {
 
 void AuthenticatorReference::SetIsInPairingMode(bool is_in_pairing_mode) {
   is_in_pairing_mode_ = is_in_pairing_mode;
+}
+
+void AuthenticatorReference::SetIsPaired(bool is_paired) {
+  is_paired_ = is_paired;
 }
 
 void AuthenticatorReference::SetDispatched(bool dispatched) {

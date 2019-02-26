@@ -4,8 +4,11 @@
 
 #include "chrome/browser/chromeos/login/screens/multidevice_setup_screen.h"
 
+#include "base/feature_list.h"
 #include "base/logging.h"
+#include "base/metrics/histogram_macros.h"
 #include "chrome/browser/chromeos/login/screens/multidevice_setup_screen_view.h"
+#include "chrome/browser/chromeos/login/users/chrome_user_manager_util.h"
 #include "chrome/browser/chromeos/multidevice_setup/multidevice_setup_client_factory.h"
 #include "chrome/browser/chromeos/multidevice_setup/oobe_completion_tracker_factory.h"
 #include "chrome/browser/profiles/profile_manager.h"
@@ -17,7 +20,8 @@ namespace chromeos {
 
 namespace {
 
-constexpr const char kFinishedUserAction[] = "setup-finished";
+constexpr const char kAcceptedSetupUserAction[] = "setup-accepted";
+constexpr const char kDeclinedSetupUserAction[] = "setup-declined";
 
 }  // namespace
 
@@ -35,6 +39,38 @@ MultiDeviceSetupScreen::~MultiDeviceSetupScreen() {
 }
 
 void MultiDeviceSetupScreen::Show() {
+  // If multi-device flags are disabled, skip the associated setup flow.
+  if (!base::FeatureList::IsEnabled(features::kMultiDeviceApi) ||
+      !base::FeatureList::IsEnabled(features::kEnableUnifiedMultiDeviceSetup)) {
+    ExitScreen();
+    return;
+  }
+
+  // Only attempt the setup flow for non-guest users.
+  if (chrome_user_manager_util::IsPublicSessionOrEphemeralLogin()) {
+    ExitScreen();
+    return;
+  }
+
+  multidevice_setup::MultiDeviceSetupClient* client =
+      multidevice_setup::MultiDeviceSetupClientFactory::GetForProfile(
+          ProfileManager::GetActiveUserProfile());
+
+  if (!client) {
+    ExitScreen();
+    return;
+  }
+
+  // If there is no eligible multi-device host phone or if there is a phone and
+  // it has already been set, skip the setup flow.
+  if (client->GetHostStatus().first !=
+      multidevice_setup::mojom::HostStatus::kEligibleHostExistsButNoHostSet) {
+    VLOG(1) << "Skipping MultiDevice setup screen; host status: "
+            << client->GetHostStatus().first;
+    ExitScreen();
+    return;
+  }
+
   view_->Show();
 
   // Record that user was presented with setup flow to prevent spam
@@ -51,12 +87,27 @@ void MultiDeviceSetupScreen::Hide() {
 }
 
 void MultiDeviceSetupScreen::OnUserAction(const std::string& action_id) {
-  if (action_id == kFinishedUserAction) {
-    Finish(ScreenExitCode::MULTIDEVICE_SETUP_FINISHED);
-    return;
+  if (action_id == kAcceptedSetupUserAction) {
+    RecordMultiDeviceSetupOOBEUserChoiceHistogram(
+        MultiDeviceSetupOOBEUserChoice::kAccepted);
+    ExitScreen();
+  } else if (action_id == kDeclinedSetupUserAction) {
+    RecordMultiDeviceSetupOOBEUserChoiceHistogram(
+        MultiDeviceSetupOOBEUserChoice::kDeclined);
+    ExitScreen();
+  } else {
+    BaseScreen::OnUserAction(action_id);
+    NOTREACHED();
   }
+}
 
-  BaseScreen::OnUserAction(action_id);
+void MultiDeviceSetupScreen::RecordMultiDeviceSetupOOBEUserChoiceHistogram(
+    MultiDeviceSetupOOBEUserChoice value) {
+  UMA_HISTOGRAM_ENUMERATION("MultiDeviceSetup.OOBE.UserChoice", value);
+}
+
+void MultiDeviceSetupScreen::ExitScreen() {
+  Finish(ScreenExitCode::MULTIDEVICE_SETUP_FINISHED);
 }
 
 }  // namespace chromeos

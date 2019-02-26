@@ -1,6 +1,6 @@
 {
   metadata: {
-    namespace: "EventType",
+    namespace: "event_type_names",
     export: "CORE_EXPORT",
   },
 
@@ -75,6 +75,7 @@
     "connect",
     "connecting",
     "connectionavailable",
+    "connectionstatechange",
     "contextlost",
     "contextmenu",
     "contextrestored",

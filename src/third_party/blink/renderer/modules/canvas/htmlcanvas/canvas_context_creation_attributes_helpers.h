@@ -11,7 +11,7 @@ class CanvasContextCreationAttributesCore;
 class CanvasContextCreationAttributesModule;
 
 CanvasContextCreationAttributesCore ToCanvasContextCreationAttributes(
-    const CanvasContextCreationAttributesModule&);
+    const CanvasContextCreationAttributesModule*);
 
 }  // namespace blink
 

@@ -20,7 +20,7 @@
 #include "chrome/browser/profiles/profile_attributes_storage.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/profiles/profile_metrics.h"
-#include "chrome/browser/signin/signin_manager_factory.h"
+#include "chrome/browser/signin/identity_manager_factory.h"
 #include "chrome/browser/signin/signin_promo_util.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_finder.h"
@@ -32,13 +32,14 @@
 #include "chrome/grit/chromium_strings.h"
 #include "chrome/grit/generated_resources.h"
 #include "components/prefs/pref_service.h"
-#include "components/signin/core/browser/signin_manager.h"
 #include "components/signin/core/browser/signin_metrics.h"
+#include "components/signin/core/browser/signin_pref_names.h"
 #include "content/public/browser/host_zoom_map.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_ui.h"
 #include "content/public/common/page_zoom.h"
 #include "net/base/escape.h"
+#include "services/identity/public/cpp/identity_manager.h"
 #include "skia/ext/image_operations.h"
 #include "third_party/skia/include/core/SkSurface.h"
 #include "ui/base/l10n/l10n_util.h"
@@ -121,8 +122,8 @@ void AppLauncherLoginHandler::HandleShowSyncLoginUI(
   if (!signin::ShouldShowPromo(profile))
     return;
 
-  std::string username = SigninManagerFactory::GetForProfile(profile)
-                             ->GetAuthenticatedAccountInfo()
+  std::string username = IdentityManagerFactory::GetForProfile(profile)
+                             ->GetPrimaryAccountInfo()
                              .email;
   if (!username.empty())
     return;
@@ -196,9 +197,10 @@ void AppLauncherLoginHandler::UpdateLogin() {
   } else {
 #if !defined(OS_CHROMEOS)
     // Chromeos does not show this status header.
-    SigninManager* signin = SigninManagerFactory::GetForProfile(
-        profile->GetOriginalProfile());
-    if (!profile->IsLegacySupervised() && signin->IsSigninAllowed()) {
+    bool is_signin_allowed =
+        profile->GetOriginalProfile()->GetPrefs()->GetBoolean(
+            prefs::kSigninAllowed);
+    if (!profile->IsLegacySupervised() && is_signin_allowed) {
       base::string16 signed_in_link = l10n_util::GetStringUTF16(
           IDS_SYNC_PROMO_NOT_SIGNED_IN_STATUS_LINK);
       signed_in_link =
@@ -236,8 +238,9 @@ bool AppLauncherLoginHandler::ShouldShow(Profile* profile) {
   // UI and the avatar menu don't exist on that platform.
   return false;
 #else
-  SigninManager* signin = SigninManagerFactory::GetForProfile(profile);
-  return !profile->IsOffTheRecord() && signin && signin->IsSigninAllowed();
+  bool is_signin_allowed =
+      profile->GetPrefs()->GetBoolean(prefs::kSigninAllowed);
+  return !profile->IsOffTheRecord() && is_signin_allowed;
 #endif
 }
 

@@ -49,7 +49,6 @@
 #include "third_party/blink/renderer/platform/bindings/exception_state.h"
 #include "third_party/blink/renderer/platform/histogram.h"
 #include "third_party/blink/renderer/platform/wtf/assertions.h"
-#include "third_party/blink/renderer/platform/wtf/atomics.h"
 #include "third_party/blink/renderer/platform/wtf/std_lib_extras.h"
 
 #include <limits>
@@ -100,7 +99,8 @@ IDBDatabase* IDBDatabase::Create(ExecutionContext* context,
                                  std::unique_ptr<WebIDBDatabase> database,
                                  IDBDatabaseCallbacks* callbacks,
                                  v8::Isolate* isolate) {
-  return new IDBDatabase(context, std::move(database), callbacks, isolate);
+  return MakeGarbageCollected<IDBDatabase>(context, std::move(database),
+                                           callbacks, isolate);
 }
 
 IDBDatabase::IDBDatabase(ExecutionContext* context,
@@ -208,7 +208,7 @@ void IDBDatabase::OnChanges(
       IDBTransaction* transaction = nullptr;
       auto it = transactions.find(map_entry.first);
       if (it != transactions.end()) {
-        const std::pair<int64_t, std::vector<int64_t>>& obs_txn = it->second;
+        const std::pair<int64_t, WebVector<int64_t>>& obs_txn = it->second;
         HashSet<String> stores;
         for (int64_t store_id : obs_txn.second) {
           stores.insert(metadata_.object_stores.at(store_id)->name);
@@ -248,7 +248,7 @@ int32_t IDBDatabase::AddObserver(
     bool include_transaction,
     bool no_records,
     bool values,
-    const std::bitset<kWebIDBOperationTypeCount>& operation_types) {
+    std::bitset<blink::kIDBOperationTypeCount> operation_types) {
   int32_t observer_id = NextObserverId();
   observers_.Set(observer_id, observer);
   Backend()->AddObserver(transaction_id, observer_id, include_transaction,
@@ -419,9 +419,9 @@ IDBTransaction* IDBDatabase::transaction(
     object_store_ids.push_back(object_store_id);
   }
 
-  WebIDBTransactionMode mode = IDBTransaction::StringToMode(mode_string);
-  if (mode != kWebIDBTransactionModeReadOnly &&
-      mode != kWebIDBTransactionModeReadWrite) {
+  mojom::IDBTransactionMode mode = IDBTransaction::StringToMode(mode_string);
+  if (mode != mojom::IDBTransactionMode::ReadOnly &&
+      mode != mojom::IDBTransactionMode::ReadWrite) {
     exception_state.ThrowTypeError(
         "The mode provided ('" + mode_string +
         "') is not one of 'readonly' or 'readwrite'.");
@@ -439,7 +439,7 @@ void IDBDatabase::ForceClose() {
   for (const auto& it : transactions_)
     it.value->abort(IGNORE_EXCEPTION_FOR_TESTING);
   this->close();
-  EnqueueEvent(Event::Create(EventTypeNames::close));
+  EnqueueEvent(Event::Create(event_type_names::kClose));
 }
 
 void IDBDatabase::close() {
@@ -493,7 +493,7 @@ void IDBDatabase::OnVersionChange(int64_t old_version, int64_t new_version) {
     new_version_nullable = new_version;
   }
   EnqueueEvent(IDBVersionChangeEvent::Create(
-      EventTypeNames::versionchange, old_version, new_version_nullable));
+      event_type_names::kVersionchange, old_version, new_version_nullable));
 }
 
 void IDBDatabase::EnqueueEvent(Event* event) {
@@ -506,12 +506,12 @@ DispatchEventResult IDBDatabase::DispatchEventInternal(Event& event) {
   IDB_TRACE("IDBDatabase::dispatchEvent");
   if (!GetExecutionContext())
     return DispatchEventResult::kCanceledBeforeDispatch;
-  DCHECK(event.type() == EventTypeNames::versionchange ||
-         event.type() == EventTypeNames::close);
+  DCHECK(event.type() == event_type_names::kVersionchange ||
+         event.type() == event_type_names::kClose);
 
   DispatchEventResult dispatch_result =
       EventTarget::DispatchEventInternal(event);
-  if (event.type() == EventTypeNames::versionchange && !close_pending_ &&
+  if (event.type() == event_type_names::kVersionchange && !close_pending_ &&
       backend_)
     backend_->VersionChangeIgnored();
   return dispatch_result;
@@ -590,7 +590,7 @@ void IDBDatabase::ContextDestroyed(ExecutionContext*) {
 }
 
 const AtomicString& IDBDatabase::InterfaceName() const {
-  return EventTargetNames::IDBDatabase;
+  return event_target_names::kIDBDatabase;
 }
 
 ExecutionContext* IDBDatabase::GetExecutionContext() const {

@@ -23,6 +23,7 @@
 #include "base/path_service.h"
 #include "base/rand_util.h"
 #include "base/run_loop.h"
+#include "base/stl_util.h"
 #include "base/strings/strcat.h"
 #include "base/strings/string16.h"
 #include "base/strings/string_number_conversions.h"
@@ -41,12 +42,12 @@
 #include "chrome/chrome_cleaner/proto/shared_pup_enums.pb.h"
 #include "chrome/chrome_cleaner/strings/string_util.h"
 #include "chrome/chrome_cleaner/test/test_file_util.h"
-#include "chrome/chrome_cleaner/test/test_name_helper.h"
 #include "chrome/chrome_cleaner/test/test_pup_data.h"
 #include "chrome/chrome_cleaner/test/test_registry_util.h"
 #include "chrome/chrome_cleaner/test/test_signature_matcher.h"
 #include "chrome/chrome_cleaner/test/test_strings.h"
 #include "chrome/chrome_cleaner/test/test_util.h"
+#include "components/chrome_cleaner/test/test_name_helper.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -118,7 +119,6 @@ void set_difference(const std::set<T>& set1,
 
 class TestScanner : public UrzaScannerImpl {
  public:
-  TestScanner() = default;
   explicit TestScanner(const MatchingOptions& options,
                        SignatureMatcherAPI* signature_matcher,
                        RegistryLogger* registry_logger)

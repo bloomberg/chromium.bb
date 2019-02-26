@@ -13,7 +13,6 @@
 #include "ash/resources/vector_icons/vector_icons.h"
 #include "ash/shell.h"
 #include "ash/strings/grit/ash_strings.h"
-#include "ash/system/user/button_from_view.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/utf_string_conversions.h"
 #include "ui/accessibility/ax_node_data.h"
@@ -304,6 +303,12 @@ class LoginPasswordView::EasyUnlockIcon : public views::Button,
 LoginPasswordView::TestApi::TestApi(LoginPasswordView* view) : view_(view) {}
 
 LoginPasswordView::TestApi::~TestApi() = default;
+
+void LoginPasswordView::TestApi::SubmitPassword(const std::string& password) {
+  view_->textfield_->SetText(base::ASCIIToUTF16(password));
+  view_->UpdateUiState();
+  view_->SubmitPassword();
+}
 
 views::Textfield* LoginPasswordView::TestApi::textfield() const {
   return view_->textfield_;

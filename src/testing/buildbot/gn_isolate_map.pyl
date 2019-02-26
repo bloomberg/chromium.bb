@@ -24,11 +24,11 @@
 # needs to be; valid values are:
 #
 #  "windowed_test_launcher"
-#  : the test is a gtest-based test that uses the "brave-new-test-launcher"
+#  : the test is a gtest-based test that uses the parallelizing TestLauncher
 #    from //base/test:test_support and needs to run under Xvfb if run on
 #    some platforms (eg. Linux Desktop and Ozone CrOS).
 #  "console_test_launcher"
-#  : the test is a gtest-based test that uses the "brave-new-test-launcher"
+#  : the test is a gtest-based test that uses the parallelizing TestLauncher
 #    from //base/test:test_support but does not need Xvfb.
 #  "additional_compile_target"
 #  : this isn't actually a test, but we still need a mapping from the
@@ -170,6 +170,17 @@
   "base_unittests": {
     "label": "//base:base_unittests",
     "type": "console_test_launcher",
+  },
+  "base_perftests": {
+    "label": "//base:base_perftests",
+    "type": "script",
+    "script": "//testing/scripts/run_performance_tests_wrapper.py",
+    "args": [
+      "base_perftests",
+      "--test-launcher-print-test-stdio=always",
+      "--test-launcher-jobs=1",
+      "--test-launcher-retry-limit=0",
+    ],
   },
   "blink_common_unittests": {
     "label": "//third_party/blink/common:blink_common_unittests",
@@ -333,10 +344,6 @@
     "label": "//chrome/android:chrome_public_test_vr_apk",
     "type": "console_test_launcher",
   },
-  "chrome_sync_shell_test_apk": {
-    "label": "//chrome/android:chrome_sync_shell_test_apk",
-    "type": "console_test_launcher",
-  },
   "chromedriver": {
     "label": "//chrome/test/chromedriver:chromedriver",
     "type": "additional_compile_target",
@@ -369,10 +376,6 @@
     "label": "//chromeos/components:chromeos_components_unittests",
     "type": "console_test_launcher",
   },
-  "chromevox_tests": {
-    "label": "//chrome/browser/resources/chromeos/chromevox:chromevox_tests",
-    "type": "windowed_test_launcher",
-  },
   "chromium_builder_asan": {
     "label": "//:chromium_builder_asan",
     "type": "additional_compile_target",
@@ -395,10 +398,6 @@
   },
   "components_gcm_driver_junit_tests": {
     "label": "//components/gcm_driver/android:components_gcm_driver_junit_tests",
-    "type": "junit_test",
-  },
-  "components_instance_id_junit_tests": {
-    "label": "//components/gcm_driver/instance_id/android:components_instance_id_junit_tests",
     "type": "junit_test",
   },
   "components_invalidation_impl_junit_tests": {
@@ -526,6 +525,11 @@
     "label": "//crypto:crypto_unittests",
     "type": "console_test_launcher",
   },
+  "dawn_end2end_tests": {
+    "label": "//third_party/dawn:dawn_end2end_tests",
+    "type": "raw",
+    "args": [],
+  },
   "dbus_unittests": {
     "label": "//dbus:dbus_unittests",
     "type": "windowed_test_launcher",
@@ -586,12 +590,20 @@
     "label": "//extensions:extensions_unittests",
     "type": "windowed_test_launcher",
   },
+  "fidlgen_js_unittests": {
+    "label": "//build/fuchsia/fidlgen_js:fidlgen_js_unittests",
+    "type": "console_test_launcher",
+  },
   "filesystem_service_unittests": {
     "label": "//components/services/filesystem:filesystem_service_unittests",
     "type": "console_test_launcher",
   },
   "gcm_unit_tests": {
     "label": "//google_apis/gcm:gcm_unit_tests",
+    "type": "console_test_launcher",
+  },
+  "gcp_unittests": {
+    "label": "//chrome/credential_provider/test:gcp_unittests",
     "type": "console_test_launcher",
   },
   "gfx_unittests": {
@@ -658,6 +670,10 @@
     "label": "//headless:headless_unittests",
     "type": "console_test_launcher",
   },
+  "http_service_tests": {
+    "label": "//webrunner/net_http:http_service_tests",
+    "type": "console_test_launcher",
+  },
   "installer_util_unittests": {
     "label": "//chrome/installer/util:installer_util_unittests",
     "type": "console_test_launcher",
@@ -687,14 +703,7 @@
     "label": "//ios/chrome/test/earl_grey:ios_chrome_manual_fill_egtests",
     "type": "raw",
     "args": [
-      "--enable-features=AutofillManualFallback",
-    ],
-  },
-  "ios_chrome_payments_egtests": {
-    "label": "//ios/chrome/test/earl_grey:ios_chrome_payments_egtests",
-    "type": "raw",
-    "args": [
-      "--enable-features=WebPayments",
+      "--enable-features=AutofillManualFallback,WebFrameMessaging",
     ],
   },
   "ios_chrome_reading_list_egtests": {
@@ -798,10 +807,6 @@
   },
   "libjingle_xmpp_unittests": {
     "label": "//third_party/libjingle_xmpp:libjingle_xmpp_unittests",
-    "type": "console_test_launcher",
-  },
-  "mac_installer_unittests": {
-    "label": "//chrome/installer/mac/app:mac_installer_unittests",
     "type": "console_test_launcher",
   },
   "mash:all" : {
@@ -1026,10 +1031,6 @@
     "label": "//sandbox/win:sbox_validation_tests",
     "type": "console_test_launcher",
   },
-  "select_to_speak_extension_tests": {
-    "label": "//chrome/browser/resources/chromeos/select_to_speak:select_to_speak_extension_tests",
-    "type": "windowed_test_launcher",
-  },
   "service_manager_unittests": {
     "label": "//services/service_manager/tests:service_manager_unittests",
     "type": "console_test_launcher",
@@ -1067,7 +1068,7 @@
     "type": "console_test_launcher",
   },
   "swiftshader_unittests": {
-    "label": "//third_party/swiftshader/tests/unittests:swiftshader_unittests",
+    "label": "//third_party/swiftshader/tests/GLESUnitTests:swiftshader_unittests",
     "type": "raw",
     "args": [],
   },
@@ -1260,6 +1261,10 @@
     "label": "//ui/native_theme:native_theme_unittests",
     "type": "windowed_test_launcher",
   },
+  "shipped_binaries": {
+    "label": "//:shipped_binaries",
+    "type": "additional_compile_target",
+  },
   "ui_android_unittests": {
     "label": "//ui/android:ui_android_unittests",
     "type": "console_test_launcher",
@@ -1338,6 +1343,10 @@
     "label": "//chrome/android/webapk/libs/client:webapk_client_junit_tests",
     "type": "junit_test",
   },
+  "webapk_shell_apk_h2o_junit_tests": {
+    "label": "//chrome/android/webapk/shell_apk:webapk_shell_apk_h2o_junit_tests",
+    "type": "junit_test",
+  },
   "webapk_shell_apk_junit_tests": {
     "label": "//chrome/android/webapk/shell_apk:webapk_shell_apk_junit_tests",
     "type": "junit_test",
@@ -1387,7 +1396,8 @@
       "../../android_webview/tools/run_cts.py",
       "--skip-expected-failures",
       "--additional-apk",
-      "apks/SystemWebView.apk"
+      "apks/SystemWebView.apk",
+      "-v",
     ],
   },
   "webkit_python_tests": {

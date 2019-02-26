@@ -4,7 +4,10 @@
 
 #include "chrome/browser/ui/views/frame/browser_desktop_window_tree_host_win.h"
 
+#include <windows.h>
+
 #include <dwmapi.h>
+#include <uxtheme.h>
 
 #include "base/macros.h"
 #include "base/process/process_handle.h"
@@ -12,7 +15,6 @@
 #include "chrome/browser/lifetime/application_lifetime.h"
 #include "chrome/browser/themes/theme_service.h"
 #include "chrome/browser/themes/theme_service_factory.h"
-#include "chrome/browser/ui/extensions/hosted_app_browser_controller.h"
 #include "chrome/browser/ui/views/frame/browser_frame.h"
 #include "chrome/browser/ui/views/frame/browser_view.h"
 #include "chrome/browser/ui/views/frame/browser_window_property_manager_win.h"
@@ -20,7 +22,6 @@
 #include "chrome/browser/ui/views/tabs/tab_strip.h"
 #include "chrome/browser/win/titlebar_config.h"
 #include "chrome/common/chrome_constants.h"
-#include "ui/base/material_design/material_design_controller.h"
 #include "ui/base/theme_provider.h"
 #include "ui/base/win/hwnd_metrics.h"
 #include "ui/display/win/screen_win.h"
@@ -38,9 +39,7 @@ BrowserDesktopWindowTreeHostWin::BrowserDesktopWindowTreeHostWin(
     : DesktopWindowTreeHostWin(native_widget_delegate,
                                desktop_native_widget_aura),
       browser_view_(browser_view),
-      browser_frame_(browser_frame),
-      did_gdi_clear_(false) {
-}
+      browser_frame_(browser_frame) {}
 
 BrowserDesktopWindowTreeHostWin::~BrowserDesktopWindowTreeHostWin() {
 }
@@ -109,6 +108,44 @@ bool BrowserDesktopWindowTreeHostWin::GetClientAreaInsets(
   return true;
 }
 
+bool BrowserDesktopWindowTreeHostWin::GetDwmFrameInsetsInPixels(
+    gfx::Insets* insets) const {
+  // For "normal" windows on Aero, we always need to reset the glass area
+  // correctly, even if we're not currently showing the native frame (e.g.
+  // because a theme is showing), so we explicitly check for that case rather
+  // than checking ShouldUseNativeFrame() here.  Using that here would mean we
+  // wouldn't reset the glass area to zero when moving from the native frame to
+  // an opaque frame, leading to graphical glitches behind the opaque frame.
+  // Instead, we use that function below to tell us whether the frame is
+  // currently native or opaque.
+  if (!GetWidget()->client_view() || !browser_view_->IsBrowserTypeNormal() ||
+      !DesktopWindowTreeHostWin::ShouldUseNativeFrame())
+    return false;
+
+  // Don't extend the glass in at all if it won't be visible.
+  if (!ShouldUseNativeFrame() || GetWidget()->IsFullscreen() ||
+      ShouldCustomDrawSystemTitlebar()) {
+    *insets = gfx::Insets();
+  } else {
+    // The glass should extend to the bottom of the tabstrip.
+    HWND hwnd = GetHWND();
+    gfx::Rect tabstrip_bounds(
+        browser_frame_->GetBoundsForTabStrip(browser_view_->tabstrip()));
+    tabstrip_bounds =
+        display::win::ScreenWin::DIPToClientRect(hwnd, tabstrip_bounds);
+
+    // The 2 px (not DIP) at the inner edges of Win 7 glass are a light and dark
+    // line, so we must inset further to account for those.
+    constexpr int kWin7GlassInset = 2;
+    const int inset = (base::win::GetVersion() < base::win::VERSION_WIN8)
+                          ? kWin7GlassInset
+                          : 0;
+    *insets =
+        gfx::Insets(tabstrip_bounds.bottom() + inset, inset, inset, inset);
+  }
+  return true;
+}
+
 void BrowserDesktopWindowTreeHostWin::HandleCreate() {
   DesktopWindowTreeHostWin::HandleCreate();
   browser_window_property_manager_ =
@@ -125,10 +162,6 @@ void BrowserDesktopWindowTreeHostWin::HandleFrameChanged() {
   // Reinitialize the status bubble, since it needs to be initialized
   // differently depending on whether or not DWM composition is enabled
   browser_view_->InitStatusBubble();
-
-  // We need to update the glass region on or off before the base class adjusts
-  // the window region.
-  UpdateDWMFrame();
   DesktopWindowTreeHostWin::HandleFrameChanged();
 }
 
@@ -161,14 +194,11 @@ bool BrowserDesktopWindowTreeHostWin::PreHandleMSG(UINT message,
 void BrowserDesktopWindowTreeHostWin::PostHandleMSG(UINT message,
                                                     WPARAM w_param,
                                                     LPARAM l_param) {
-  HWND hwnd = GetHWND();
   switch (message) {
     case WM_CREATE:
-      minimize_button_metrics_.Init(hwnd);
+      minimize_button_metrics_.Init(GetHWND());
       break;
     case WM_WINDOWPOSCHANGED: {
-      UpdateDWMFrame();
-
       // Windows lies to us about the position of the minimize button before a
       // window is visible. We use this position to place the incognito avatar
       // in RTL mode, so when the window is shown, we need to re-layout and
@@ -184,27 +214,6 @@ void BrowserDesktopWindowTreeHostWin::PostHandleMSG(UINT message,
       if (window_pos->flags & SWP_SHOWWINDOW && non_client_view) {
         non_client_view->Layout();
         non_client_view->SchedulePaint();
-      }
-      break;
-    }
-    case WM_ERASEBKGND: {
-      gfx::Insets insets;
-      if (!did_gdi_clear_ &&
-          GetClientAreaInsets(
-              &insets, MonitorFromWindow(hwnd, MONITOR_DEFAULTTONEAREST))) {
-        // This is necessary to avoid white flashing in the titlebar area around
-        // the minimize/maximize/close buttons.
-        DCHECK_EQ(0, insets.top());
-        HDC dc = GetDC(hwnd);
-        MARGINS margins = GetDWMFrameMargins();
-        RECT client_rect;
-        GetClientRect(hwnd, &client_rect);
-        HBRUSH brush = CreateSolidBrush(0);
-        RECT rect = {0, 0, client_rect.right, margins.cyTopHeight};
-        FillRect(dc, &rect, brush);
-        DeleteObject(brush);
-        ReleaseDC(hwnd, dc);
-        did_gdi_clear_ = true;
       }
       break;
     }
@@ -270,58 +279,12 @@ bool BrowserDesktopWindowTreeHostWin::ShouldWindowContentsBeTransparent()
          views::DesktopWindowTreeHostWin::ShouldWindowContentsBeTransparent();
 }
 
-void BrowserDesktopWindowTreeHostWin::FrameTypeChanged() {
-  views::DesktopWindowTreeHostWin::FrameTypeChanged();
-  did_gdi_clear_ = false;
-}
-
 ////////////////////////////////////////////////////////////////////////////////
 // BrowserDesktopWindowTreeHostWin, private:
-
-void BrowserDesktopWindowTreeHostWin::UpdateDWMFrame() {
-  // For "normal" windows on Aero, we always need to reset the glass area
-  // correctly, even if we're not currently showing the native frame (e.g.
-  // because a theme is showing), so we explicitly check for that case rather
-  // than checking browser_frame_->ShouldUseNativeFrame() here.  Using that here
-  // would mean we wouldn't reset the glass area to zero when moving from the
-  // native frame to an opaque frame, leading to graphical glitches behind the
-  // opaque frame.  Instead, we use that function below to tell us whether the
-  // frame is currently native or opaque.
-  if (!GetWidget()->client_view() || !browser_view_->IsBrowserTypeNormal() ||
-      !DesktopWindowTreeHostWin::ShouldUseNativeFrame())
-    return;
-
-  MARGINS margins = GetDWMFrameMargins();
-
-  DwmExtendFrameIntoClientArea(GetHWND(), &margins);
-}
-
-MARGINS BrowserDesktopWindowTreeHostWin::GetDWMFrameMargins() const {
-  // Don't extend the glass in at all if it won't be visible.
-  if (!ShouldUseNativeFrame() || GetWidget()->IsFullscreen() ||
-      ShouldCustomDrawSystemTitlebar())
-    return MARGINS{0};
-
-  // The glass should extend to the bottom of the tabstrip.
-  HWND hwnd = GetHWND();
-  gfx::Rect tabstrip_bounds(
-      browser_frame_->GetBoundsForTabStrip(browser_view_->tabstrip()));
-  tabstrip_bounds =
-      display::win::ScreenWin::DIPToClientRect(hwnd, tabstrip_bounds);
-
-  // The 2 px (not DIP) at the inner edges of Win 7 glass are a light and dark
-  // line, so we must inset further to account for those.
-  constexpr int kWin7GlassInset = 2;
-  const int inset =
-      (base::win::GetVersion() < base::win::VERSION_WIN8) ? kWin7GlassInset : 0;
-  return MARGINS{inset, inset, tabstrip_bounds.bottom() + inset, inset};
-}
-
 bool BrowserDesktopWindowTreeHostWin::IsOpaqueHostedAppFrame() const {
   // TODO(https://crbug.com/868239): Support Windows 7 Aero glass for hosted app
   // window titlebar controls.
-  return extensions::HostedAppBrowserController::
-             IsForExperimentalHostedAppBrowser(browser_view_->browser()) &&
+  return browser_view_->IsBrowserTypeHostedApp() &&
          base::win::GetVersion() < base::win::VERSION_WIN10;
 }
 

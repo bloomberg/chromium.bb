@@ -69,15 +69,17 @@ class SQLTransaction final : public ScriptWrappable,
   class OnProcessV8Impl : public OnProcessCallback {
    public:
     static OnProcessV8Impl* Create(V8SQLTransactionCallback* callback) {
-      return callback ? new OnProcessV8Impl(callback) : nullptr;
+      return callback ? MakeGarbageCollected<OnProcessV8Impl>(callback)
+                      : nullptr;
     }
+
+    explicit OnProcessV8Impl(V8SQLTransactionCallback* callback)
+        : callback_(ToV8PersistentCallbackInterface(callback)) {}
+
     void Trace(blink::Visitor*) override;
     bool OnProcess(SQLTransaction*) override;
 
    private:
-    explicit OnProcessV8Impl(V8SQLTransactionCallback* callback)
-        : callback_(ToV8PersistentCallbackInterface(callback)) {}
-
     Member<V8PersistentCallbackInterface<V8SQLTransactionCallback>> callback_;
   };
 
@@ -95,15 +97,17 @@ class SQLTransaction final : public ScriptWrappable,
   class OnSuccessV8Impl : public OnSuccessCallback {
    public:
     static OnSuccessV8Impl* Create(V8VoidCallback* callback) {
-      return callback ? new OnSuccessV8Impl(callback) : nullptr;
+      return callback ? MakeGarbageCollected<OnSuccessV8Impl>(callback)
+                      : nullptr;
     }
+
+    explicit OnSuccessV8Impl(V8VoidCallback* callback)
+        : callback_(ToV8PersistentCallbackInterface(callback)) {}
+
     void Trace(blink::Visitor*) override;
     void OnSuccess() override;
 
    private:
-    explicit OnSuccessV8Impl(V8VoidCallback* callback)
-        : callback_(ToV8PersistentCallbackInterface(callback)) {}
-
     Member<V8PersistentCallbackInterface<V8VoidCallback>> callback_;
   };
 
@@ -120,15 +124,16 @@ class SQLTransaction final : public ScriptWrappable,
   class OnErrorV8Impl : public OnErrorCallback {
    public:
     static OnErrorV8Impl* Create(V8SQLTransactionErrorCallback* callback) {
-      return callback ? new OnErrorV8Impl(callback) : nullptr;
+      return callback ? MakeGarbageCollected<OnErrorV8Impl>(callback) : nullptr;
     }
+
+    explicit OnErrorV8Impl(V8SQLTransactionErrorCallback* callback)
+        : callback_(ToV8PersistentCallbackInterface(callback)) {}
+
     void Trace(blink::Visitor*) override;
     bool OnError(SQLError*) override;
 
    private:
-    explicit OnErrorV8Impl(V8SQLTransactionErrorCallback* callback)
-        : callback_(ToV8PersistentCallbackInterface(callback)) {}
-
     Member<V8PersistentCallbackInterface<V8SQLTransactionErrorCallback>>
         callback_;
   };
@@ -138,6 +143,12 @@ class SQLTransaction final : public ScriptWrappable,
                                 OnSuccessCallback*,
                                 OnErrorCallback*,
                                 bool read_only);
+
+  SQLTransaction(Database*,
+                 OnProcessCallback*,
+                 OnSuccessCallback*,
+                 OnErrorCallback*,
+                 bool read_only);
   ~SQLTransaction() override;
   void Trace(blink::Visitor*) override;
 
@@ -168,12 +179,6 @@ class SQLTransaction final : public ScriptWrappable,
   void SetBackend(SQLTransactionBackend*);
 
  private:
-  SQLTransaction(Database*,
-                 OnProcessCallback*,
-                 OnSuccessCallback*,
-                 OnErrorCallback*,
-                 bool read_only);
-
   void ClearCallbacks();
 
   // State Machine functions:

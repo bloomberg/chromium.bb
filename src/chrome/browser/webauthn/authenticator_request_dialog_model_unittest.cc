@@ -15,11 +15,12 @@
 #include "base/test/scoped_task_environment.h"
 #include "chrome/browser/webauthn/authenticator_reference.h"
 #include "chrome/browser/webauthn/authenticator_transport.h"
-#include "chrome/browser/webauthn/transport_list_model.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace {
+
+constexpr char kTestPairedAuthenticatorId[] = "ble:11-22-33-44";
 
 const base::flat_set<AuthenticatorTransport> kAllTransports = {
     AuthenticatorTransport::kUsbHumanInterfaceDevice,
@@ -83,12 +84,17 @@ class AuthenticatorRequestDialogModelTest : public ::testing::Test {
   using Step = AuthenticatorRequestDialogModel::Step;
   using RequestType = ::device::FidoRequestHandlerBase::RequestType;
 
-  AuthenticatorRequestDialogModelTest() {}
+  AuthenticatorRequestDialogModelTest() {
+    test_paired_device_list_.Append(
+        std::make_unique<base::Value>(kTestPairedAuthenticatorId));
+  }
+
   ~AuthenticatorRequestDialogModelTest() override {}
 
  protected:
   base::test::ScopedTaskEnvironment task_environment_{
       base::test::ScopedTaskEnvironment::MainThreadType::MOCK_TIME};
+  base::ListValue test_paired_device_list_;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(AuthenticatorRequestDialogModelTest);
@@ -265,7 +271,8 @@ TEST_F(AuthenticatorRequestDialogModelTest, TransportAutoSelection) {
         test_case.has_touch_id_credential;
 
     AuthenticatorRequestDialogModel model;
-    model.StartFlow(std::move(transports_info), test_case.last_used_transport);
+    model.StartFlow(std::move(transports_info), test_case.last_used_transport,
+                    &test_paired_device_list_);
     EXPECT_EQ(test_case.expected_first_step, model.current_step());
 
     if (model.current_step() == Step::kTransportSelection)
@@ -281,8 +288,9 @@ TEST_F(AuthenticatorRequestDialogModelTest, TransportList) {
   transports_info.available_transports = kAllTransports;
 
   AuthenticatorRequestDialogModel model;
-  model.StartFlow(std::move(transports_info), base::nullopt);
-  EXPECT_THAT(model.transport_list_model()->transports(),
+  model.StartFlow(std::move(transports_info), base::nullopt,
+                  &test_paired_device_list_);
+  EXPECT_THAT(model.available_transports(),
               ::testing::UnorderedElementsAre(
                   AuthenticatorTransport::kUsbHumanInterfaceDevice,
                   AuthenticatorTransport::kNearFieldCommunication,
@@ -298,7 +306,7 @@ TEST_F(AuthenticatorRequestDialogModelTest, NoAvailableTransports) {
 
   EXPECT_CALL(mock_observer, OnStepTransition());
   model.StartFlow(TransportAvailabilityInfo(),
-                  AuthenticatorTransport::kInternal);
+                  AuthenticatorTransport::kInternal, &test_paired_device_list_);
   EXPECT_EQ(Step::kErrorNoAvailableTransports, model.current_step());
   testing::Mock::VerifyAndClearExpectations(&mock_observer);
 
@@ -336,7 +344,8 @@ TEST_F(AuthenticatorRequestDialogModelTest, PostMortems) {
     transports_info.available_transports = kAllTransportsWithoutCable;
 
     EXPECT_CALL(mock_observer, OnStepTransition());
-    model.StartFlow(std::move(transports_info), base::nullopt);
+    model.StartFlow(std::move(transports_info), base::nullopt,
+                    &test_paired_device_list_);
     EXPECT_EQ(Step::kTransportSelection, model.current_step());
     testing::Mock::VerifyAndClearExpectations(&mock_observer);
 
@@ -352,6 +361,35 @@ TEST_F(AuthenticatorRequestDialogModelTest, PostMortems) {
     testing::Mock::VerifyAndClearExpectations(&mock_observer);
 
     EXPECT_CALL(mock_observer, OnModelDestroyed());
+  }
+}
+
+TEST_F(AuthenticatorRequestDialogModelTest, BlePairingFlow) {
+  const struct {
+    AuthenticatorTransport transport;
+    const base::ListValue* paired_device_address_list;
+    Step expected_final_step;
+  } kTestCases[] = {
+      {AuthenticatorTransport::kBluetoothLowEnergy, nullptr,
+       Step::kBleDeviceSelection},
+      {AuthenticatorTransport::kBluetoothLowEnergy, &test_paired_device_list_,
+       Step::kBleActivate},
+  };
+
+  for (const auto test_case : kTestCases) {
+    TransportAvailabilityInfo transports_info;
+    transports_info.available_transports = {test_case.transport};
+    transports_info.can_power_on_ble_adapter = true;
+    transports_info.is_ble_powered = true;
+
+    BluetoothAdapterPowerOnCallbackReceiver power_receiver;
+    AuthenticatorRequestDialogModel model;
+    model.SetBluetoothAdapterPowerOnCallback(power_receiver.GetCallback());
+    model.StartFlow(std::move(transports_info), base::nullopt,
+                    test_case.paired_device_address_list);
+    EXPECT_EQ(test_case.expected_final_step, model.current_step());
+    EXPECT_TRUE(model.ble_adapter_is_powered());
+    EXPECT_FALSE(power_receiver.was_called());
   }
 }
 
@@ -374,7 +412,8 @@ TEST_F(AuthenticatorRequestDialogModelTest, BleAdapaterAlreadyPowered) {
     BluetoothAdapterPowerOnCallbackReceiver power_receiver;
     AuthenticatorRequestDialogModel model;
     model.SetBluetoothAdapterPowerOnCallback(power_receiver.GetCallback());
-    model.StartFlow(std::move(transports_info), base::nullopt);
+    model.StartFlow(std::move(transports_info), base::nullopt,
+                    &test_paired_device_list_);
     EXPECT_EQ(test_case.expected_final_step, model.current_step());
     EXPECT_TRUE(model.ble_adapter_is_powered());
     EXPECT_FALSE(power_receiver.was_called());
@@ -403,7 +442,8 @@ TEST_F(AuthenticatorRequestDialogModelTest,
     AuthenticatorRequestDialogModel model;
     model.AddObserver(&mock_observer);
     model.SetBluetoothAdapterPowerOnCallback(power_receiver.GetCallback());
-    model.StartFlow(std::move(transports_info), base::nullopt);
+    model.StartFlow(std::move(transports_info), base::nullopt,
+                    &test_paired_device_list_);
 
     EXPECT_EQ(Step::kBlePowerOnManual, model.current_step());
     EXPECT_FALSE(model.ble_adapter_is_powered());
@@ -442,7 +482,8 @@ TEST_F(AuthenticatorRequestDialogModelTest,
     BluetoothAdapterPowerOnCallbackReceiver power_receiver;
     AuthenticatorRequestDialogModel model;
     model.SetBluetoothAdapterPowerOnCallback(power_receiver.GetCallback());
-    model.StartFlow(std::move(transports_info), base::nullopt);
+    model.StartFlow(std::move(transports_info), base::nullopt,
+                    &test_paired_device_list_);
 
     EXPECT_EQ(Step::kBlePowerOnAutomatic, model.current_step());
 
@@ -473,13 +514,14 @@ TEST_F(AuthenticatorRequestDialogModelTest,
   model.SetRequestCallback(base::BindRepeating(
       [](int* i, const std::string& authenticator_id) { ++(*i); },
       &num_called));
-  model.saved_authenticators().emplace_back(
-      std::make_unique<AuthenticatorReference>(
-          "authenticator" /* authenticator_id */,
-          base::string16() /* authenticator_display_name */,
-          AuthenticatorTransport::kInternal, false /* is_in_pairing_mode */));
+  model.saved_authenticators().AddAuthenticator(AuthenticatorReference(
+      "authenticator" /* authenticator_id */,
+      base::string16() /* authenticator_display_name */,
+      AuthenticatorTransport::kInternal, false /* is_in_pairing_mode */,
+      false /* is_paired */));
 
-  model.StartFlow(std::move(transports_info), base::nullopt);
+  model.StartFlow(std::move(transports_info), base::nullopt,
+                  &test_paired_device_list_);
   EXPECT_EQ(AuthenticatorRequestDialogModel::Step::kTransportSelection,
             model.current_step());
   EXPECT_EQ(0, num_called);

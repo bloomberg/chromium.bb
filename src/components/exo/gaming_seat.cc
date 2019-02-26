@@ -3,9 +3,10 @@
 // found in the LICENSE file.
 
 #include "components/exo/gaming_seat.h"
+
 #include "components/exo/gamepad_delegate.h"
 #include "components/exo/gaming_seat_delegate.h"
-#include "components/exo/shell_surface.h"
+#include "components/exo/shell_surface_util.h"
 #include "components/exo/surface.h"
 #include "ui/events/ozone/gamepad/gamepad_provider_ozone.h"
 
@@ -42,7 +43,7 @@ void GamingSeat::OnWindowFocused(aura::Window* gained_focus,
     if (!target) {
       aura::Window* top_level_window = gained_focus->GetToplevelWindow();
       if (top_level_window)
-        target = ShellSurface::GetMainSurface(top_level_window);
+        target = GetShellMainSurface(top_level_window);
     }
   }
 

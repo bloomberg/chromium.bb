@@ -5,8 +5,11 @@
       document.cookie = '';
     }
 
-    function setCookie() {
-      document.cookie = 'Foo=Bar';
+    function setCookie(domain) {
+      if (domain)
+        document.cookie = 'Foo=Bar; Domain=' + domain;
+      else
+        document.cookie = 'Foo=Bar';
     }
 
     function getCookie() {

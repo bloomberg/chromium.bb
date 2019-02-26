@@ -49,7 +49,7 @@
 
 namespace {
 
-bool IsCacheableNTP(const content::WebContents* contents) {
+bool IsCacheableNTP(content::WebContents* contents) {
   const content::NavigationEntry* entry =
       contents->GetController().GetLastCommittedEntry();
   return search::NavEntryIsInstantNTP(contents, entry) &&
@@ -58,7 +58,7 @@ bool IsCacheableNTP(const content::WebContents* contents) {
 
 // Returns true if |contents| are rendered inside an Instant process.
 bool InInstantProcess(const InstantService* instant_service,
-                      const content::WebContents* contents) {
+                      content::WebContents* contents) {
   if (!instant_service || !contents)
     return false;
 
@@ -96,9 +96,9 @@ void RecordNewTabLoadTime(content::WebContents* contents) {
 // their history.
 bool IsHistorySyncEnabled(Profile* profile) {
   browser_sync::ProfileSyncService* sync =
-      ProfileSyncServiceFactory::GetInstance()->GetForProfile(profile);
-  return sync &&
-      sync->GetPreferredDataTypes().Has(syncer::HISTORY_DELETE_DIRECTIVES);
+      ProfileSyncServiceFactory::GetForProfile(profile);
+  return sync && sync->IsSyncFeatureEnabled() &&
+         sync->GetUserSettings()->GetChosenDataTypes().Has(syncer::TYPED_URLS);
 }
 
 }  // namespace
@@ -303,6 +303,13 @@ bool SearchTabHelper::OnUpdateCustomLink(const GURL& url,
   return false;
 }
 
+bool SearchTabHelper::OnReorderCustomLink(const GURL& url, int new_pos) {
+  DCHECK(!url.is_empty());
+  if (instant_service_)
+    return instant_service_->ReorderCustomLink(url, new_pos);
+  return false;
+}
+
 bool SearchTabHelper::OnDeleteCustomLink(const GURL& url) {
   DCHECK(!url.is_empty());
   if (instant_service_)
@@ -318,16 +325,6 @@ void SearchTabHelper::OnUndoCustomLinkAction() {
 void SearchTabHelper::OnResetCustomLinks() {
   if (instant_service_)
     instant_service_->ResetCustomLinks();
-}
-
-void SearchTabHelper::OnDoesUrlResolve(
-    const GURL& url,
-    chrome::mojom::EmbeddedSearch::DoesUrlResolveCallback callback) {
-  DCHECK(!url.is_empty());
-  if (instant_service_)
-    instant_service_->DoesUrlResolve(url, std::move(callback));
-  else
-    std::move(callback).Run(/*resolves=*/true, /*timeout=*/false);
 }
 
 void SearchTabHelper::OnLogEvent(NTPLoggingEventType event,

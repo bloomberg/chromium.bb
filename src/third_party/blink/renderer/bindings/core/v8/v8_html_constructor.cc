@@ -74,7 +74,7 @@ void V8HTMLConstructor::HtmlConstructor(
     // Autonomous custom element
     // 4.1. If the active function object is not HTMLElement, then throw a
     // TypeError
-    if (!V8HTMLElement::wrapperTypeInfo.Equals(&wrapper_type_info)) {
+    if (!V8HTMLElement::wrapper_type_info.Equals(&wrapper_type_info)) {
       V8ThrowException::ThrowTypeError(isolate,
                                        "Illegal constructor: autonomous custom "
                                        "elements must extend HTMLElement");

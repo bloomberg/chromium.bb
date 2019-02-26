@@ -95,7 +95,7 @@ runTests([
         ['onBeforeRequest', 'onBeforeSendHeaders', 'onSendHeaders',
          'onHeadersReceived', 'onResponseStarted', 'onCompleted']
       ],
-      {urls: ['<all_urls>']}, ['blocking', 'responseHeaders']);
+      {urls: ['<all_urls>']}, ['blocking', 'responseHeaders', 'extraHeaders']);
     // Check that the cookie was really removed.
     navigateAndWait(getURLSetCookie(), function() {
       chrome.test.listenOnce(chrome.extension.onRequest, function(request) {
@@ -199,7 +199,7 @@ runTests([
         ['onBeforeRequest', 'onBeforeSendHeaders', 'onSendHeaders',
          'onHeadersReceived', 'onResponseStarted', 'onCompleted']
       ],
-      {urls: ['<all_urls>']}, ['blocking', 'responseHeaders']);
+      {urls: ['<all_urls>']}, ['blocking', 'responseHeaders', 'extraHeaders']);
     // Check that the cookie was really removed.
     navigateAndWait(getURLNonUTF8SetCookie(), function() {
       chrome.test.listenOnce(chrome.extension.onRequest, function(request) {

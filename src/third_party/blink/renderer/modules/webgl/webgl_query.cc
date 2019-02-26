@@ -12,7 +12,7 @@
 namespace blink {
 
 WebGLQuery* WebGLQuery::Create(WebGL2RenderingContextBase* ctx) {
-  return new WebGLQuery(ctx);
+  return MakeGarbageCollected<WebGLQuery>(ctx);
 }
 
 WebGLQuery::WebGLQuery(WebGL2RenderingContextBase* ctx)
@@ -26,7 +26,7 @@ WebGLQuery::WebGLQuery(WebGL2RenderingContextBase* ctx)
         ctx->canvas()->GetDocument().GetTaskRunner(TaskType::kInternalDefault);
   } else {
     // Fallback for OffscreenCanvas (no frame scheduler)
-    task_runner_ = Platform::Current()->CurrentThread()->GetTaskRunner();
+    task_runner_ = Thread::Current()->GetTaskRunner();
   }
   GLuint query;
   ctx->ContextGL()->GenQueriesEXT(1, &query);

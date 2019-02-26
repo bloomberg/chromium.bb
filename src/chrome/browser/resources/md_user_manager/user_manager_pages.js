@@ -12,9 +12,9 @@ Polymer({
   properties: {
     /**
      * ID of the currently selected page.
-     * @private {string}
+     * @private
      */
-    selectedPage_: {type: String, value: 'user-pods-page'},
+    selectedPage_: String,
 
     /**
      * Data passed to the currently selected page.
@@ -24,6 +24,11 @@ Polymer({
   },
 
   listeners: {'change-page': 'onChangePage_'},
+
+  /** @override */
+  attached: function() {
+    this.setSelectedPage('user-pods-page');
+  },
 
   /**
    * Handler for the change-page event.
@@ -43,6 +48,8 @@ Polymer({
   setSelectedPage: function(pageId, opt_pageData) {
     this.pageData_ = opt_pageData || null;
     this.selectedPage_ = pageId;
+    /** @type {CrViewManagerElement} */ (this.$.animatedPages)
+        .switchView(this.selectedPage_);
   },
 
   /**
@@ -59,14 +66,8 @@ Polymer({
     e.stopPropagation();
   },
 
-  /**
-   * Returns True if the first argument is present in the given set of values.
-   * @param {string} selectedPage ID of the currently selected page.
-   * @param {...string} var_args Pages IDs to check the first argument against.
-   * @return {boolean}
-   */
-  isPresentIn_: function(selectedPage, var_args) {
-    const pages = Array.prototype.slice.call(arguments, 1);
-    return pages.indexOf(selectedPage) !== -1;
+  /** @return {boolean} */
+  shouldShowCreateProfile_: function() {
+    return this.selectedPage_ == 'create-user-page';
   }
 });

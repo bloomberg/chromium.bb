@@ -43,7 +43,7 @@ from blinkpy.web_tests.views import printing
 _log = logging.getLogger(__name__)
 
 
-def main(argv, stdout, stderr):
+def main(argv, stderr):
     options, args = parse_args(argv)
 
     if options.platform and 'test' in options.platform and not 'browser_test' in options.platform:
@@ -55,27 +55,31 @@ def main(argv, stdout, stderr):
     else:
         host = Host()
 
+    printer = printing.Printer(host, options, stderr)
+
     try:
         port = host.port_factory.get(options.platform, options)
     except (NotImplementedError, ValueError) as error:
-        # FIXME: is this the best way to handle unsupported port names?
-        print >> stderr, str(error)
+        _log.error(error)
+        printer.cleanup()
         return exit_codes.UNEXPECTED_ERROR_EXIT_STATUS
 
     try:
-        return run(port, options, args, stderr, stdout).exit_code
+        return run(port, options, args, printer).exit_code
 
     # We need to still handle KeyboardInterrupt, at least for blinkpy unittest cases.
     except KeyboardInterrupt:
         return exit_codes.INTERRUPTED_EXIT_STATUS
     except test_run_results.TestRunException as error:
-        print >> stderr, error.msg
+        _log.error(error.msg)
         return error.code
     except BaseException as error:
         if isinstance(error, Exception):
-            print >> stderr, '\n%s raised: %s' % (error.__class__.__name__, error)
+            _log.error('\n%s raised: %s', error.__class__.__name__, error)
             traceback.print_exc(file=stderr)
         return exit_codes.UNEXPECTED_ERROR_EXIT_STATUS
+    finally:
+        printer.cleanup()
 
 
 def deprecate(option, opt_str, _, parser):
@@ -204,21 +208,6 @@ def parse_args(args):
                 default=True,
                 help="Don't launch a browser with results after the tests are done"),
             optparse.make_option(
-                '-p',
-                '--pixel',
-                '--pixel-tests',
-                dest='pixel_tests',
-                action='store_true',
-                default=True,
-                help='Enable pixel-to-pixel PNG comparisons (enabled by default)'),
-            optparse.make_option(
-                '--no-pixel',
-                '--no-pixel-tests',
-                dest='pixel_tests',
-                action='store_false',
-                default=True,
-                help='Disable pixel-to-pixel PNG comparisons'),
-            optparse.make_option(
                 '--reset-results',
                 action='store_true',
                 default=False,
@@ -238,15 +227,6 @@ def parse_args(args):
                 dest='smoke',
                 action='store_false',
                 help='Do not run just the SmokeTests'),
-            optparse.make_option(
-                '--image-first-tests',
-                action='append',
-                default=[],
-                dest='image_first_tests',
-                help=('A directory (or test) where the test result will only be compared with the '
-                      'image baseline if an image baseline is available, and fall back to comparison '
-                      'with the text baseline when image baselines are missing. Specify multiple times '
-                      'to add multiple directories/tests.')),
         ]))
 
     option_group_definitions.append(
@@ -258,12 +238,6 @@ def parse_args(args):
                 default=[],
                 help=('Passes that environment variable to the tests '
                       '(--additional-env-var=NAME=VALUE)')),
-            optparse.make_option(
-                '--batch-size',
-                type='int',
-                default=None,
-                help=('Run a the tests in batches (n), after every n tests, the driver is '
-                      'relaunched.')),
             optparse.make_option(
                 '--build',
                 dest='build',
@@ -355,6 +329,20 @@ def parse_args(args):
                 '--profiler',
                 action='store',
                 help='Output per-test profile information, using the specified profiler.'),
+            optparse.make_option(
+                '--restart-shell-between-tests',
+                type='choice',
+                action='store',
+                choices=['always', 'never', 'on_retry',],
+                default='on_retry',
+                help=(
+                    'Restarting the shell between tests produces more '
+                    'consistent results, as it prevents state from carrying over '
+                    'from previous tests. It also increases test run time by at '
+                    'least 2X. By default, the shell is restarted when tests get '
+                    'retried, since leaking state between retries can sometimes '
+                    'mask underlying flakiness, and the whole point of retries is '
+                    'to look for flakiness.')),
             optparse.make_option(
                 '--repeat-each',
                 type='int',
@@ -511,7 +499,7 @@ def parse_args(args):
     option_parser = optparse.OptionParser(
         prog='run_web_tests.py',
         usage='%prog [options] [tests]',
-        description='Runs Blink layout tests as described in docs/testing/layout_tests.md')
+        description='Runs Blink layout tests as described in docs/testing/web_tests.md')
 
     for group_name, group_options in option_group_definitions:
         option_group = optparse.OptionGroup(option_parser, group_name)
@@ -525,8 +513,24 @@ def parse_args(args):
 
 def _set_up_derived_options(port, options, args):
     """Sets the options values that depend on other options values."""
-    if options.batch_size is None:
-        options.batch_size = port.default_batch_size()
+    # --restart-shell-between-tests is implemented by changing the batch size.
+    if options.restart_shell_between_tests == 'always':
+        options.derived_batch_size = 1
+        options.must_use_derived_batch_size = True
+    elif options.restart_shell_between_tests == 'never':
+        options.derived_batch_size = 0
+        options.must_use_derived_batch_size = True
+    else:
+        # If 'repeat_each' or 'iterations' has been set, then implicitly set the
+        # batch size to 1. If we're already repeating the tests more than once,
+        # then we're not particularly concerned with speed. Restarting content
+        # shell provides more consistent results.
+        if options.repeat_each > 1 or options.iterations > 1:
+            options.derived_batch_size = 1
+            options.must_use_derived_batch_size = True
+        else:
+            options.derived_batch_size = port.default_batch_size()
+            options.must_use_derived_batch_size = False
 
     if not options.child_processes:
         options.child_processes = port.host.environ.get(
@@ -581,36 +585,17 @@ def _set_up_derived_options(port, options, args):
     if not options.seed:
         options.seed = port.host.time()
 
-    if not options.image_first_tests:
-        image_first_tests_path = port.host.filesystem.join(port.layout_tests_dir(), 'ImageFirstTests')
-        if port.host.filesystem.exists(image_first_tests_path):
-            contents = port.host.filesystem.read_text_file(image_first_tests_path)
-            options.image_first_tests.extend(line for line in contents.splitlines(False) if line)
 
-
-def _run_tests(port, options, args, printer):
+def run(port, options, args, printer):
     _set_up_derived_options(port, options, args)
     manager = Manager(port, options, printer)
-    printer.print_config(port.results_directory())
-    return manager.run(args)
-
-
-def run(port, options, args, logging_stream, stdout):
-    logger = logging.getLogger()
-    logger.setLevel(logging.DEBUG if options.debug_rwt_logging else logging.INFO)
-
-    printer = printing.Printer(port, options, logging_stream, logger=logger)
-    try:
-        run_details = _run_tests(port, options, args, printer)
-        printer.flush()
-
-        _log.debug('')
-        _log.debug('Testing completed. Exit status: %d', run_details.exit_code)
-        return run_details
-
-    finally:
-        printer.cleanup()
+    printer.print_config(port)
+    run_details = manager.run(args)
+    _log.debug('')
+    _log.debug('Testing completed. Exit status: %d', run_details.exit_code)
+    printer.flush()
+    return run_details
 
 
 if __name__ == '__main__':
-    sys.exit(main(sys.argv[1:], sys.stdout, sys.stderr))
+    sys.exit(main(sys.argv[1:], sys.stderr))

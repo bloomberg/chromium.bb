@@ -60,6 +60,8 @@ class MODULES_EXPORT Geolocation final
 
  public:
   static Geolocation* Create(ExecutionContext*);
+
+  explicit Geolocation(ExecutionContext*);
   ~Geolocation() override;
   void Trace(blink::Visitor*) override;
 
@@ -73,13 +75,13 @@ class MODULES_EXPORT Geolocation final
   // constraints of the options.
   void getCurrentPosition(V8PositionCallback*,
                           V8PositionErrorCallback* = nullptr,
-                          const PositionOptions& = PositionOptions());
+                          const PositionOptions* = PositionOptions::Create());
 
   // Creates a watcher that will be notified whenever a new position is
   // available that meets the constraints of the options.
   int watchPosition(V8PositionCallback*,
                     V8PositionErrorCallback* = nullptr,
-                    const PositionOptions& = PositionOptions());
+                    const PositionOptions* = PositionOptions::Create());
 
   // Removes all references to the watcher, it will not be updated again.
   void clearWatch(int watch_id);
@@ -153,8 +155,6 @@ class MODULES_EXPORT Geolocation final
     void ClearWithoutTimerCheck() { BaseClass::clear(); }
   };
 
-  explicit Geolocation(ExecutionContext*);
-
   bool HasListeners() const {
     return !one_shots_.IsEmpty() || !watchers_->IsEmpty();
   }
@@ -184,7 +184,7 @@ class MODULES_EXPORT Geolocation final
   // obtained.
   void StartRequest(GeoNotifier*);
 
-  bool HaveSuitableCachedPosition(const PositionOptions&);
+  bool HaveSuitableCachedPosition(const PositionOptions*);
 
   // Record whether the origin trying to access Geolocation would be allowed
   // to access a feature that can only be accessed by secure origins.

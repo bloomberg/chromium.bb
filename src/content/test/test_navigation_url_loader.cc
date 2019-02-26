@@ -14,7 +14,7 @@
 #include "content/public/browser/render_process_host.h"
 #include "content/public/browser/ssl_status.h"
 #include "content/public/browser/web_contents.h"
-#include "content/public/common/browser_side_navigation_policy.h"
+#include "content/public/common/navigation_policy.h"
 #include "net/url_request/redirect_info.h"
 #include "services/network/public/cpp/resource_response.h"
 #include "services/network/public/mojom/url_loader_factory.mojom.h"
@@ -91,7 +91,7 @@ void TestNavigationURLLoader::CallOnResponseStarted(
 
   delegate_->OnResponseStarted(response, std::move(url_loader_client_endpoints),
                                std::move(navigation_data), global_id, false,
-                               false, PREVIEWS_OFF, base::nullopt);
+                               false, base::nullopt);
 }
 
 TestNavigationURLLoader::~TestNavigationURLLoader() {}

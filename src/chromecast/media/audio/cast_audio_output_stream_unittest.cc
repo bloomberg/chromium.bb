@@ -43,6 +43,10 @@ std::unique_ptr<service_manager::Connector> CreateConnector() {
   return service_manager::Connector::Create(&request);
 }
 
+std::string DummyGetSessionId(std::string /* audio_group_id */) {
+  return "AABBCCDDEE";
+}
+
 }  // namespace
 
 namespace chromecast {
@@ -53,13 +57,17 @@ const int64_t kDelayUs = 123;
 const int64_t kDelayTimestampUs = 123456789;
 const double kDefaultVolume = 1.0f;
 
+int on_more_data_call_count_ = 0;
 int OnMoreData(base::TimeDelta /* delay */,
                base::TimeTicks /* delay_timestamp */,
                int /* prior_frames_skipped */,
                ::media::AudioBus* dest) {
+  on_more_data_call_count_++;
   dest->Zero();
   return dest->frames();
 }
+
+}  // namespace
 
 class NotifyPushBufferCompleteTask : public chromecast::TaskRunner::Task {
  public:
@@ -247,9 +255,9 @@ class CastAudioOutputStreamTest : public ::testing::Test {
   void CreateConnectorForTesting() {
     connector_ = CreateConnector();
     // Override the MultiroomManager interface for testing.
-    service_manager::Connector::TestApi connector_test_api(connector_.get());
-    connector_test_api.OverrideBinderForTesting(
-        service_manager::Identity(chromecast::mojom::kChromecastServiceName),
+    connector_->OverrideBinderForTesting(
+        service_manager::ServiceFilter::ByName(
+            chromecast::mojom::kChromecastServiceName),
         mojom::MultiroomManager::Name_,
         base::BindRepeating(&CastAudioOutputStreamTest::BindMultiroomManager,
                             base::Unretained(this)));
@@ -268,13 +276,14 @@ class CastAudioOutputStreamTest : public ::testing::Test {
     }
 
     mock_backend_factory_ = std::make_unique<MockCmaBackendFactory>();
-    audio_manager_ = std::make_unique<CastAudioManager>(
+    audio_manager_ = base::WrapUnique(new CastAudioManager(
         std::make_unique<::media::TestAudioThread>(), nullptr,
         base::BindRepeating(&CastAudioOutputStreamTest::GetCmaBackendFactory,
                             base::Unretained(this)),
+        base::BindRepeating(&DummyGetSessionId),
         scoped_task_environment_.GetMainThreadTaskRunner(),
         scoped_task_environment_.GetMainThreadTaskRunner(), connector_.get(),
-        use_mixer);
+        use_mixer, true /* force_use_cma_backend_for_output*/));
     audio_manager_->SetConnectorForTesting(std::move(connector_));
 
     // A few AudioManager implementations post initialization tasks to
@@ -464,17 +473,25 @@ TEST_F(CastAudioOutputStreamTest, StartStopStart) {
   ASSERT_TRUE(stream->Open());
   scoped_task_environment_.RunUntilIdle();
 
+  // Set to busy, so that the OnPushBufferComplete callback is not called after
+  // the backend is stopped.
+  FakeAudioDecoder* audio_decoder = GetAudioDecoder();
+  ASSERT_TRUE(audio_decoder);
+  audio_decoder->set_pipeline_status(FakeAudioDecoder::PIPELINE_STATUS_BUSY);
+
   ::media::MockAudioSourceCallback source_callback;
   EXPECT_CALL(source_callback, OnMoreData(_, _, _, _))
       .WillRepeatedly(Invoke(OnMoreData));
   stream->Start(&source_callback);
   scoped_task_environment_.RunUntilIdle();
   stream->Stop();
+
+  // Ensure we fetch new data when restarting.
+  int last_on_more_data_call_count = on_more_data_call_count_;
   stream->Start(&source_callback);
   scoped_task_environment_.RunUntilIdle();
+  EXPECT_GT(on_more_data_call_count_, last_on_more_data_call_count);
 
-  FakeAudioDecoder* audio_decoder = GetAudioDecoder();
-  EXPECT_TRUE(audio_decoder);
   EXPECT_EQ(FakeCmaBackend::kStateRunning, cma_backend_->state());
 
   stream->Stop();
@@ -559,7 +576,7 @@ TEST_F(CastAudioOutputStreamTest, DeviceState) {
 
   stream->Stop();
   scoped_task_environment_.RunUntilIdle();
-  EXPECT_EQ(FakeCmaBackend::kStatePaused, cma_backend_->state());
+  EXPECT_EQ(FakeCmaBackend::kStateStopped, cma_backend_->state());
 
   stream->Close();
 }
@@ -689,6 +706,8 @@ TEST_F(CastAudioOutputStreamTest, DeviceBusy) {
 
   // Unblock the pipeline and verify that PushFrame resumes.
   audio_decoder->set_pipeline_status(FakeAudioDecoder::PIPELINE_STATUS_OK);
+  base::TimeDelta duration = GetAudioParams().GetBufferDuration() * 2;
+  scoped_task_environment_.FastForwardBy(duration);
   scoped_task_environment_.RunUntilIdle();
   EXPECT_LT(1u, audio_decoder->pushed_buffer_count());
 
@@ -842,15 +861,15 @@ TEST_F(CastAudioOutputStreamTest, SessionId) {
   // TODO(awolter, b/111669896): Verify that the session id is correct after
   // piping has been added. For now, we want to verify that the session id is
   // empty, so that basic MZ continues to work.
+  std::string session_id = DummyGetSessionId("");
   ASSERT_TRUE(cma_backend_);
-  EXPECT_EQ(multiroom_manager_.GetLastSessionId(), "");
+  EXPECT_EQ(multiroom_manager_.GetLastSessionId(), session_id);
   MediaPipelineDeviceParams params = cma_backend_->params();
-  EXPECT_EQ(params.session_id, "");
+  EXPECT_EQ(params.session_id, session_id);
 
   stream->Stop();
   stream->Close();
 }
 
-}  // namespace
 }  // namespace media
 }  // namespace chromecast

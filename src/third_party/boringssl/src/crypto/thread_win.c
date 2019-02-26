@@ -27,8 +27,8 @@ OPENSSL_MSVC_PRAGMA(warning(pop))
 #include <openssl/type_check.h>
 
 
-OPENSSL_COMPILE_ASSERT(sizeof(CRYPTO_MUTEX) >= sizeof(SRWLOCK),
-                       CRYPTO_MUTEX_too_small);
+OPENSSL_STATIC_ASSERT(sizeof(CRYPTO_MUTEX) >= sizeof(SRWLOCK),
+                      "CRYPTO_MUTEX is too small");
 
 static BOOL CALLBACK call_once_init(INIT_ONCE *once, void *arg, void **out) {
   void (**init)(void) = (void (**)(void))arg;
@@ -146,12 +146,18 @@ static void NTAPI thread_local_destructor(PVOID module, DWORD reason,
 // if it's not already there. (E.g. if __declspec(thread) is not used). Force
 // a reference to p_thread_callback_boringssl to prevent whole program
 // optimization from discarding the variable.
+//
+// Note, in the prefixed build, |p_thread_callback_boringssl| may be a macro.
+#define STRINGIFY(x) #x
+#define EXPAND_AND_STRINGIFY(x) STRINGIFY(x)
 #ifdef _WIN64
-#pragma comment(linker, "/INCLUDE:_tls_used")
-#pragma comment(linker, "/INCLUDE:p_thread_callback_boringssl")
+__pragma(comment(linker, "/INCLUDE:_tls_used"))
+__pragma(comment(
+    linker, "/INCLUDE:" EXPAND_AND_STRINGIFY(p_thread_callback_boringssl)))
 #else
-#pragma comment(linker, "/INCLUDE:__tls_used")
-#pragma comment(linker, "/INCLUDE:_p_thread_callback_boringssl")
+__pragma(comment(linker, "/INCLUDE:__tls_used"))
+__pragma(comment(
+    linker, "/INCLUDE:_" EXPAND_AND_STRINGIFY(p_thread_callback_boringssl)))
 #endif
 
 // .CRT$XLA to .CRT$XLZ is an array of PIMAGE_TLS_CALLBACK pointers that are

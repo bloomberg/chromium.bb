@@ -9,7 +9,7 @@ mojom("mojom") {
     "proxy_resolver.mojom",
   ]
   deps = [
-    "//net/interfaces",
+    "//services/network/public/mojom:mojom_ip_address",
     "//url/mojom:url_mojom_gurl",
   ]
 

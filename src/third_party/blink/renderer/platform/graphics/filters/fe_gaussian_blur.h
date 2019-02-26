@@ -31,6 +31,8 @@ class PLATFORM_EXPORT FEGaussianBlur final : public FilterEffect {
  public:
   static FEGaussianBlur* Create(Filter*, float, float);
 
+  FEGaussianBlur(Filter*, float, float);
+
   // Compute which destination area will be affected when applying a gaussian
   // blur effect with |stdDeviation| to an area |rect|.
   static FloatRect MapEffect(const FloatSize& std_deviation, const FloatRect&);
@@ -39,8 +41,6 @@ class PLATFORM_EXPORT FEGaussianBlur final : public FilterEffect {
                                           int indention) const override;
 
  private:
-  FEGaussianBlur(Filter*, float, float);
-
   FloatRect MapEffect(const FloatRect&) const override;
 
   sk_sp<PaintFilter> CreateImageFilter() override;

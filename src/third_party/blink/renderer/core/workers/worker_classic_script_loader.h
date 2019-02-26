@@ -35,6 +35,7 @@
 #include "third_party/blink/public/platform/web_url_request.h"
 #include "third_party/blink/renderer/core/core_export.h"
 #include "third_party/blink/renderer/core/frame/csp/content_security_policy.h"
+#include "third_party/blink/renderer/core/loader/allowed_by_nosniff.h"
 #include "third_party/blink/renderer/core/loader/threadable_loader.h"
 #include "third_party/blink/renderer/core/loader/threadable_loader_client.h"
 #include "third_party/blink/renderer/platform/loader/fetch/resource_request.h"
@@ -52,14 +53,12 @@ class ExecutionContext;
 class TextResourceDecoder;
 
 class CORE_EXPORT WorkerClassicScriptLoader final
-    : public RefCounted<WorkerClassicScriptLoader>,
+    : public GarbageCollectedFinalized<WorkerClassicScriptLoader>,
       public ThreadableLoaderClient {
-  USING_FAST_MALLOC(WorkerClassicScriptLoader);
+  USING_GARBAGE_COLLECTED_MIXIN(WorkerClassicScriptLoader);
 
  public:
-  static scoped_refptr<WorkerClassicScriptLoader> Create() {
-    return base::AdoptRef(new WorkerClassicScriptLoader());
-  }
+  WorkerClassicScriptLoader();
 
   // For importScript().
   void LoadSynchronously(ExecutionContext&,
@@ -75,6 +74,7 @@ class CORE_EXPORT WorkerClassicScriptLoader final
                                         network::mojom::FetchRequestMode,
                                         network::mojom::FetchCredentialsMode,
                                         mojom::IPAddressSpace,
+                                        bool is_nested_worker,
                                         base::OnceClosure response_callback,
                                         base::OnceClosure finished_callback);
 
@@ -93,7 +93,6 @@ class CORE_EXPORT WorkerClassicScriptLoader final
   std::unique_ptr<Vector<char>> ReleaseCachedMetadata() {
     return std::move(cached_metadata_);
   }
-  const Vector<char>* CachedMetadata() const { return cached_metadata_.get(); }
 
   ContentSecurityPolicy* GetContentSecurityPolicy() {
     return content_security_policy_.Get();
@@ -119,12 +118,9 @@ class CORE_EXPORT WorkerClassicScriptLoader final
   void DidFail(const ResourceError&) override;
   void DidFailRedirectCheck() override;
 
+  void Trace(Visitor*) override;
+
  private:
-  friend class WTF::RefCounted<WorkerClassicScriptLoader>;
-
-  WorkerClassicScriptLoader();
-  ~WorkerClassicScriptLoader() override;
-
   void NotifyError();
   void NotifyFinished();
 
@@ -134,7 +130,7 @@ class CORE_EXPORT WorkerClassicScriptLoader final
   base::OnceClosure response_callback_;
   base::OnceClosure finished_callback_;
 
-  Persistent<ThreadableLoader> threadable_loader_;
+  Member<ThreadableLoader> threadable_loader_;
   String response_encoding_;
   std::unique_ptr<TextResourceDecoder> decoder_;
   StringBuilder source_text_;
@@ -151,11 +147,14 @@ class CORE_EXPORT WorkerClassicScriptLoader final
   unsigned long identifier_ = 0;
   long long app_cache_id_ = 0;
   std::unique_ptr<Vector<char>> cached_metadata_;
-  Persistent<ContentSecurityPolicy> content_security_policy_;
-  Persistent<ExecutionContext> execution_context_;
+  Member<ContentSecurityPolicy> content_security_policy_;
+  Member<ExecutionContext> execution_context_;
   mojom::IPAddressSpace response_address_space_;
   std::unique_ptr<Vector<String>> origin_trial_tokens_;
   String referrer_policy_;
+
+  // TODO(nhiroki): Move this to FetchClientSettingsObject.
+  AllowedByNosniff::MimeTypeCheck mime_type_check_mode_;
 };
 
 }  // namespace blink

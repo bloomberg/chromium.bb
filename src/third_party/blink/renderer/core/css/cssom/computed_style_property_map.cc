@@ -9,6 +9,7 @@
 #include "third_party/blink/renderer/core/css/css_function_value.h"
 #include "third_party/blink/renderer/core/css/css_identifier_value.h"
 #include "third_party/blink/renderer/core/css/css_variable_data.h"
+#include "third_party/blink/renderer/core/css/properties/css_property_ref.h"
 #include "third_party/blink/renderer/core/dom/document.h"
 #include "third_party/blink/renderer/core/dom/pseudo_element.h"
 #include "third_party/blink/renderer/core/style/computed_style.h"
@@ -234,7 +235,8 @@ const CSSValue* ComputedStylePropertyMap::GetProperty(
     default:
       return CSSProperty::Get(property_id)
           .CSSValueFromComputedStyle(*style, nullptr /* layout_object */,
-                                     StyledNode(), false);
+                                     StyledNode(),
+                                     false /* allow_visited_style */);
   }
 }
 
@@ -243,8 +245,10 @@ const CSSValue* ComputedStylePropertyMap::GetCustomProperty(
   const ComputedStyle* style = UpdateStyle();
   if (!style)
     return nullptr;
-  return ComputedStyleCSSValueMapping::Get(
-      property_name, *style, node_->GetDocument().GetPropertyRegistry());
+  CSSPropertyRef ref(property_name, node_->GetDocument());
+  return ref.GetProperty().CSSValueFromComputedStyle(
+      *style, nullptr /* layout_object */, StyledNode(),
+      false /* allow_visited_style */);
 }
 
 void ComputedStylePropertyMap::ForEachProperty(

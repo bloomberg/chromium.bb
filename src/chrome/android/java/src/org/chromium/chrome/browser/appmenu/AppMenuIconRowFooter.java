@@ -8,9 +8,9 @@ import android.content.Context;
 import android.graphics.drawable.Drawable;
 import android.support.v4.graphics.drawable.DrawableCompat;
 import android.support.v7.content.res.AppCompatResources;
-import android.support.v7.widget.AppCompatImageButton;
 import android.util.AttributeSet;
 import android.view.View;
+import android.widget.ImageButton;
 import android.widget.LinearLayout;
 
 import org.chromium.base.ApiCompatibilityUtils;
@@ -27,11 +27,11 @@ public class AppMenuIconRowFooter extends LinearLayout implements View.OnClickLi
     private ChromeActivity mActivity;
     private AppMenu mAppMenu;
 
-    private AppCompatImageButton mForwardButton;
-    private AppCompatImageButton mBookmarkButton;
-    private AppCompatImageButton mDownloadButton;
-    private AppCompatImageButton mPageInfoButton;
-    private AppCompatImageButton mReloadButton;
+    private ImageButton mForwardButton;
+    private ImageButton mBookmarkButton;
+    private ImageButton mDownloadButton;
+    private ImageButton mPageInfoButton;
+    private ImageButton mReloadButton;
 
     public AppMenuIconRowFooter(Context context, AttributeSet attrs) {
         super(context, attrs);
@@ -41,19 +41,19 @@ public class AppMenuIconRowFooter extends LinearLayout implements View.OnClickLi
     protected void onFinishInflate() {
         super.onFinishInflate();
 
-        mForwardButton = (AppCompatImageButton) findViewById(R.id.forward_menu_id);
+        mForwardButton = findViewById(R.id.forward_menu_id);
         mForwardButton.setOnClickListener(this);
 
-        mBookmarkButton = (AppCompatImageButton) findViewById(R.id.bookmark_this_page_id);
+        mBookmarkButton = findViewById(R.id.bookmark_this_page_id);
         mBookmarkButton.setOnClickListener(this);
 
-        mDownloadButton = (AppCompatImageButton) findViewById(R.id.offline_page_id);
+        mDownloadButton = findViewById(R.id.offline_page_id);
         mDownloadButton.setOnClickListener(this);
 
-        mPageInfoButton = (AppCompatImageButton) findViewById(R.id.info_menu_id);
+        mPageInfoButton = findViewById(R.id.info_menu_id);
         mPageInfoButton.setOnClickListener(this);
 
-        mReloadButton = (AppCompatImageButton) findViewById(R.id.reload_menu_id);
+        mReloadButton = findViewById(R.id.reload_menu_id);
         mReloadButton.setOnClickListener(this);
 
         // ImageView tinting doesn't work with LevelListDrawable, use Drawable tinting instead.

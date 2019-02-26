@@ -35,10 +35,10 @@
 
 namespace blink {
 
-using namespace HTMLNames;
+using namespace html_names;
 
 inline HTMLWBRElement::HTMLWBRElement(Document& document)
-    : HTMLElement(wbrTag, document) {}
+    : HTMLElement(kWbrTag, document) {}
 
 DEFINE_NODE_FACTORY(HTMLWBRElement)
 

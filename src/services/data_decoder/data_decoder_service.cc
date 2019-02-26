@@ -6,6 +6,7 @@
 
 #include <memory>
 
+#include "base/bind.h"
 #include "base/macros.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/time/time.h"
@@ -14,29 +15,36 @@
 #include "services/data_decoder/json_parser_impl.h"
 #include "services/data_decoder/public/mojom/image_decoder.mojom.h"
 #include "services/data_decoder/xml_parser.h"
-#include "services/service_manager/public/cpp/service_context.h"
 
 namespace data_decoder {
 
-DataDecoderService::DataDecoderService() = default;
+namespace {
 
-DataDecoderService::~DataDecoderService() = default;
+constexpr auto kMaxServiceIdleTime = base::TimeDelta::FromSeconds(5);
 
-// static
-std::unique_ptr<service_manager::Service> DataDecoderService::Create() {
-  return std::make_unique<DataDecoderService>();
-}
+}  // namespace
 
-void DataDecoderService::OnStart() {
-  constexpr int kMaxServiceIdleTimeInSeconds = 5;
-  keepalive_ = std::make_unique<service_manager::ServiceKeepalive>(
-      context(), base::TimeDelta::FromSeconds(kMaxServiceIdleTimeInSeconds));
+DataDecoderService::DataDecoderService()
+    : keepalive_(&binding_, kMaxServiceIdleTime) {
   registry_.AddInterface(base::BindRepeating(
       &DataDecoderService::BindImageDecoder, base::Unretained(this)));
   registry_.AddInterface(base::BindRepeating(
       &DataDecoderService::BindJsonParser, base::Unretained(this)));
   registry_.AddInterface(base::BindRepeating(&DataDecoderService::BindXmlParser,
                                              base::Unretained(this)));
+}
+
+DataDecoderService::DataDecoderService(
+    service_manager::mojom::ServiceRequest request)
+    : DataDecoderService() {
+  BindRequest(std::move(request));
+}
+
+DataDecoderService::~DataDecoderService() = default;
+
+void DataDecoderService::BindRequest(
+    service_manager::mojom::ServiceRequest request) {
+  binding_.Bind(std::move(request));
 }
 
 void DataDecoderService::OnBindInterface(
@@ -48,18 +56,18 @@ void DataDecoderService::OnBindInterface(
 
 void DataDecoderService::BindImageDecoder(mojom::ImageDecoderRequest request) {
   mojo::MakeStrongBinding(
-      std::make_unique<ImageDecoderImpl>(keepalive_->CreateRef()),
+      std::make_unique<ImageDecoderImpl>(keepalive_.CreateRef()),
       std::move(request));
 }
 
 void DataDecoderService::BindJsonParser(mojom::JsonParserRequest request) {
   mojo::MakeStrongBinding(
-      std::make_unique<JsonParserImpl>(keepalive_->CreateRef()),
+      std::make_unique<JsonParserImpl>(keepalive_.CreateRef()),
       std::move(request));
 }
 
 void DataDecoderService::BindXmlParser(mojom::XmlParserRequest request) {
-  mojo::MakeStrongBinding(std::make_unique<XmlParser>(keepalive_->CreateRef()),
+  mojo::MakeStrongBinding(std::make_unique<XmlParser>(keepalive_.CreateRef()),
                           std::move(request));
 }
 

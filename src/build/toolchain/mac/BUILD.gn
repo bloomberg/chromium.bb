@@ -8,6 +8,7 @@
 
 import("../goma.gni")
 import("//build/config/clang/clang.gni")
+import("//build/config/coverage/coverage.gni")
 if (is_ios) {
   import("//build/config/ios/ios_sdk.gni")
 }
@@ -133,6 +134,29 @@ template("mac_toolchain") {
       cxx = analyzer_wrapper + " ${cxx}"
 
       ld = cxx
+    }
+
+    if (defined(toolchain_args.coverage_instrumentation_input_file)) {
+      toolchain_coverage_instrumentation_input_file =
+          toolchain_args.coverage_instrumentation_input_file
+    } else {
+      toolchain_coverage_instrumentation_input_file =
+          coverage_instrumentation_input_file
+    }
+    _use_clang_coverage_wrapper =
+        toolchain_coverage_instrumentation_input_file != ""
+    if (_use_clang_coverage_wrapper) {
+      assert(!use_clang_static_analyzer,
+             "Clang static analyzer wrapper and Clang code coverage wrapper " +
+                 "cannot be used together.")
+
+      _coverage_wrapper =
+          rebase_path("//build/toolchain/clang_code_coverage_wrapper.py",
+                      root_build_dir) + " --files-to-instrument=" +
+          rebase_path(toolchain_coverage_instrumentation_input_file,
+                      root_build_dir)
+      cc = _coverage_wrapper + " ${cc}"
+      cxx = _coverage_wrapper + " ${cxx}"
     }
 
     linker_driver =

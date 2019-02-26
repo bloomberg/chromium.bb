@@ -47,14 +47,7 @@ class BrightnessMonitorImpl : public BrightnessMonitor,
   void ScreenBrightnessChanged(
       const power_manager::BacklightBrightnessChange& change) override;
 
-  static std::unique_ptr<BrightnessMonitorImpl> CreateForTesting(
-      chromeos::PowerManagerClient* power_manager_client,
-      scoped_refptr<base::SequencedTaskRunner> task_runner);
-
  private:
-  BrightnessMonitorImpl(chromeos::PowerManagerClient* power_manager_client,
-                        scoped_refptr<base::SequencedTaskRunner> task_runner);
-
   void OnPowerManagerServiceAvailable(bool service_is_ready);
 
   // Sets initial brightness obtained from powerd. If nullopt is received from
@@ -82,8 +75,6 @@ class BrightnessMonitorImpl : public BrightnessMonitor,
                  chromeos::PowerManagerClient::Observer>
       power_manager_client_observer_;
   chromeos::PowerManagerClient* const power_manager_client_;
-
-  scoped_refptr<base::SequencedTaskRunner> brightness_task_runner_;
 
   // This timer is started when we receive the 1st user-requested brightness
   // change and times out after kBrightnessSampleDelay if there are no more

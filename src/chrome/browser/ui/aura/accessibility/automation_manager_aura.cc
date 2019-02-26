@@ -11,6 +11,7 @@
 #include "chrome/browser/extensions/api/automation_internal/automation_event_router.h"
 #include "chrome/common/extensions/chrome_extension_messages.h"
 #include "content/public/browser/render_frame_host.h"
+#include "extensions/common/extension_messages.h"
 #include "ui/accessibility/ax_action_data.h"
 #include "ui/accessibility/ax_enum_util.h"
 #include "ui/accessibility/ax_enums.mojom.h"
@@ -20,6 +21,7 @@
 #include "ui/aura/window.h"
 #include "ui/aura/window_tree_host.h"
 #include "ui/views/accessibility/ax_aura_obj_wrapper.h"
+#include "ui/views/accessibility/ax_event_manager.h"
 #include "ui/views/view.h"
 #include "ui/views/widget/widget.h"
 
@@ -42,6 +44,8 @@ void AutomationManagerAura::Enable() {
   Reset(false);
 
   SendEvent(current_tree_->GetRoot(), ax::mojom::Event::kLoadComplete);
+  // Intentionally not reset at shutdown since we cannot rely on the shutdown
+  // ordering of two base::Singletons.
   views::AXAuraObjCache::GetInstance()->SetDelegate(this);
 
 #if defined(OS_CHROMEOS)
@@ -69,30 +73,45 @@ void AutomationManagerAura::Disable() {
 #endif
 }
 
-void AutomationManagerAura::HandleEvent(views::View* view,
+void AutomationManagerAura::OnViewEvent(views::View* view,
                                         ax::mojom::Event event_type) {
+  CHECK(view);
+
   if (!enabled_)
     return;
-
-  if (!view) {
-    SendEvent(current_tree_->GetRoot(), event_type);
-    return;
-  }
 
   views::AXAuraObjWrapper* obj =
       views::AXAuraObjCache::GetInstance()->GetOrCreate(view);
   if (!obj)
     return;
 
+  // Ignore toplevel window activate and deactivate events. These are causing
+  // issues with ChromeOS accessibility tests and are currently only used on
+  // desktop Linux platforms.
+  // TODO(https://crbug.com/89717): Need to harmonize the firing of
+  // accessibility events between platforms.
+  if (event_type == ax::mojom::Event::kWindowActivated ||
+      event_type == ax::mojom::Event::kWindowDeactivated) {
+    return;
+  }
+
   // Post a task to handle the event at the end of the current call stack.
   // This helps us avoid firing accessibility events for transient changes.
   // because there's a chance that the underlying object being wrapped could
   // be deleted, pass the ID of the object rather than the object pointer.
-  int32_t id = obj->GetUniqueId().Get();
+  int32_t id = obj->GetUniqueId();
   base::ThreadTaskRunnerHandle::Get()->PostTask(
       FROM_HERE,
       base::BindOnce(&AutomationManagerAura::SendEventOnObjectById,
                      weak_ptr_factory_.GetWeakPtr(), id, event_type));
+}
+
+void AutomationManagerAura::HandleEvent(ax::mojom::Event event_type) {
+  views::AXAuraObjWrapper* obj = current_tree_->GetRoot();
+  if (!obj)
+    return;
+
+  AutomationManagerAura::SendEvent(obj, event_type);
 }
 
 void AutomationManagerAura::SendEventOnObjectById(int32_t id,
@@ -145,9 +164,12 @@ AutomationManagerAura::AutomationManagerAura()
     : AXHostDelegate(ui::DesktopAXTreeID()),
       enabled_(false),
       processing_events_(false),
-      weak_ptr_factory_(this) {}
+      weak_ptr_factory_(this) {
+  views::AXEventManager::Get()->AddObserver(this);
+}
 
 AutomationManagerAura::~AutomationManagerAura() {
+  views::AXEventManager::Get()->RemoveObserver(this);
 }
 
 void AutomationManagerAura::Reset(bool reset_serializer) {
@@ -199,7 +221,7 @@ void AutomationManagerAura::SendEvent(views::AXAuraObjWrapper* aura_obj,
   // ancestor) but we shouldn't fire the event on the node not in the tree.
   if (current_tree_serializer_->IsInClientTree(aura_obj)) {
     ui::AXEvent event;
-    event.id = aura_obj->GetUniqueId().Get();
+    event.id = aura_obj->GetUniqueId();
     event.event_type = event_type;
     event_bundle.events.push_back(event);
   }

@@ -63,7 +63,7 @@ class ScreenWakeLockTest : public testing::Test {
                                             WTF::Unretained(&mock_wake_lock_)));
 
     web_view_helper_.Initialize(&test_web_frame_client_);
-    URLTestHelpers::RegisterMockedURLLoadFromBase(
+    url_test_helpers::RegisterMockedURLLoadFromBase(
         WebString::FromUTF8("http://example.com/"), test::CoreTestDataPath(),
         WebString::FromUTF8("foo.html"));
     LoadFrame();
@@ -76,9 +76,12 @@ class ScreenWakeLockTest : public testing::Test {
   }
 
   void LoadFrame() {
-    FrameTestHelpers::LoadFrame(web_view_helper_.GetWebView()->MainFrameImpl(),
-                                "http://example.com/foo.html");
-    web_view_helper_.GetWebView()->UpdateAllLifecyclePhases();
+    frame_test_helpers::LoadFrame(
+        web_view_helper_.GetWebView()->MainFrameImpl(),
+        "http://example.com/foo.html");
+
+    web_view_helper_.GetWebView()->MainFrameWidget()->UpdateAllLifecyclePhases(
+        WebWidget::LifecycleUpdateReason::kTest);
   }
 
   LocalFrame* GetFrame() {
@@ -125,8 +128,8 @@ class ScreenWakeLockTest : public testing::Test {
 
   // Order of these members is important as we need to make sure that
   // test_web_frame_client_ outlives web_view_helper_ (destruction order)
-  FrameTestHelpers::TestWebFrameClient test_web_frame_client_;
-  FrameTestHelpers::WebViewHelper web_view_helper_;
+  frame_test_helpers::TestWebFrameClient test_web_frame_client_;
+  frame_test_helpers::WebViewHelper web_view_helper_;
 
   MockWakeLock mock_wake_lock_;
   ScopedTestingPlatformSupport<TestingPlatformSupport> platform_;

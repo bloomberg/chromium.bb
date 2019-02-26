@@ -7,10 +7,10 @@
 
 #include <vector>
 
-#include "base/callback.h"
+#include "base/callback_forward.h"
 #include "base/files/scoped_file.h"
+#include "base/memory/ref_counted.h"
 #include "media/base/video_frame.h"
-#include "media/base/video_types.h"
 #include "ui/gfx/geometry/size.h"
 
 namespace media {
@@ -23,27 +23,29 @@ namespace media {
 // This class exposes the interface that an image processor should implement.
 class ImageProcessor {
  public:
-  // Initializes the processor to convert from |input_format| to |output_format|
-  // and/or scale from |input_visible_size| to |output_visible_size|.
-  // Request the input buffers to be of at least |input_allocated_size| and the
-  // output buffers to be of at least |output_allocated_size|. The number of
-  // input buffers and output buffers will be |num_buffers|. Provided |error_cb|
-  // will be posted to the child thread if an error occurs after initialization.
-  // Return true if the requested configuration is supported.
-  virtual bool Initialize(VideoPixelFormat input_format,
-                          VideoPixelFormat output_format,
-                          gfx::Size input_visible_size,
-                          gfx::Size input_allocated_size,
-                          gfx::Size output_visible_size,
-                          gfx::Size output_allocated_size,
-                          int num_buffers,
-                          const base::Closure& error_cb) = 0;
+  // OutputMode is used as intermediate stage. The ultimate goal is to make
+  // ImageProcessor's clients all use IMPORT output mode.
+  // TODO(907767): Remove this once ImageProcessor always works as IMPORT mode
+  // for output.
+  enum class OutputMode {
+    ALLOCATE,
+    IMPORT
+  };
 
   // Returns input allocated size required by the processor to be fed with.
   virtual gfx::Size input_allocated_size() const = 0;
 
   // Returns output allocated size required by the processor.
   virtual gfx::Size output_allocated_size() const = 0;
+
+  // Returns input storage type.
+  virtual VideoFrame::StorageType input_storage_type() const = 0;
+
+  // Returns output storage type.
+  virtual VideoFrame::StorageType output_storage_type() const = 0;
+
+  // Returns output mode.
+  virtual OutputMode output_mode() const = 0;
 
   // Callback to be used to return the index of a processed image to the
   // client. After the client is done with the frame, call Process with the
@@ -57,7 +59,7 @@ class ImageProcessor {
   // should pass non-empty |output_dmabuf_fds| and the processed frame will be
   // stored in those buffers. If the number of |output_dmabuf_fds| is not
   // expected, this function will return false.
-  virtual bool Process(const scoped_refptr<VideoFrame>& frame,
+  virtual bool Process(scoped_refptr<VideoFrame> frame,
                        int output_buffer_index,
                        std::vector<base::ScopedFD> output_dmabuf_fds,
                        FrameReadyCB cb) = 0;

@@ -13,16 +13,19 @@ FetchClientSettingsObjectSnapshot::FetchClientSettingsObjectSnapshot(
     : FetchClientSettingsObjectSnapshot(data->base_url,
                                         data->security_origin,
                                         data->referrer_policy,
-                                        data->outgoing_referrer) {}
+                                        data->outgoing_referrer,
+                                        data->https_state) {}
 
 FetchClientSettingsObjectSnapshot::FetchClientSettingsObjectSnapshot(
     const KURL& base_url,
     const scoped_refptr<const SecurityOrigin> security_origin,
-    ReferrerPolicy referrer_policy,
-    const String& outgoing_referrer)
+    network::mojom::ReferrerPolicy referrer_policy,
+    const String& outgoing_referrer,
+    HttpsState https_state)
     : base_url_(base_url),
       security_origin_(std::move(security_origin)),
       referrer_policy_(referrer_policy),
-      outgoing_referrer_(outgoing_referrer) {}
+      outgoing_referrer_(outgoing_referrer),
+      https_state_(https_state) {}
 
 }  // namespace blink

@@ -12,6 +12,9 @@
 #include "ui/aura/mus/window_tree_host_mus_init_params.h"
 #include "ui/aura/test/aura_mus_test_base.h"
 #include "ui/aura/test/mus/test_window_tree.h"
+#include "ui/aura/test/test_window_delegate.h"
+#include "ui/aura/test/test_windows.h"
+#include "ui/events/test/event_generator.h"
 
 namespace aura {
 
@@ -20,31 +23,17 @@ class GestureSynchronizerTest : public test::AuraMusClientTestBase {
   GestureSynchronizerTest() = default;
   ~GestureSynchronizerTest() override = default;
 
-  void SetUp() override {
-    test::AuraMusClientTestBase::SetUp();
-
-    window_tree_host_ = std::make_unique<WindowTreeHostMus>(
-        CreateInitParamsForTopLevel(window_tree_client_impl()));
-    window_tree_host_->InitHost();
-    window_tree_host_->Show();
-  }
-
  protected:
   ui::GestureRecognizer* gesture_recognizer() {
     return Env::GetInstance()->gesture_recognizer();
   }
 
-  std::unique_ptr<Window> NewWindow() {
-    auto window = std::make_unique<Window>(nullptr);
-    window->Init(ui::LAYER_NOT_DRAWN);
-    window_tree_host_->window()->AddChild(window.get());
-    window->Show();
-    return window;
+  std::unique_ptr<Window> NewWindow(aura::WindowDelegate* delegate = nullptr) {
+    return std::unique_ptr<Window>(aura::test::CreateTestWindowWithDelegate(
+        delegate, 0, gfx::Rect(0, 0, 100, 100), root_window()));
   }
 
  private:
-  std::unique_ptr<WindowTreeHostMus> window_tree_host_;
-
   DISALLOW_COPY_AND_ASSIGN(GestureSynchronizerTest);
 };
 
@@ -61,10 +50,21 @@ TEST_F(GestureSynchronizerTest, CancelActiveTouchesExceptForNullptr) {
 }
 
 TEST_F(GestureSynchronizerTest, CancelActiveTouches) {
-  std::unique_ptr<Window> window = NewWindow();
+  aura::test::TestWindowDelegate delegate;
+  std::unique_ptr<Window> window = NewWindow(&delegate);
+  ui::test::EventGenerator event_generator(root_window());
+  event_generator.MoveTouch(window->GetBoundsInScreen().CenterPoint());
+  event_generator.PressTouch();
   gesture_recognizer()->CancelActiveTouches(window.get());
   EXPECT_EQ(window_tree()->last_cancelled_window_id(),
             WindowMus::Get(window.get())->server_id());
+}
+
+TEST_F(GestureSynchronizerTest, CancelActiveTouchesNotSentWithoutTouches) {
+  aura::test::TestWindowDelegate delegate;
+  std::unique_ptr<Window> window = NewWindow(&delegate);
+  gesture_recognizer()->CancelActiveTouches(window.get());
+  EXPECT_EQ(window_tree()->last_cancelled_window_id(), 0u);
 }
 
 TEST_F(GestureSynchronizerTest, TransferGestureEventsTo) {

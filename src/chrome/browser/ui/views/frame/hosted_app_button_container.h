@@ -58,14 +58,15 @@ class HostedAppButtonContainer : public views::AccessiblePaneView,
       base::TimeDelta::FromMilliseconds(800);
 
   // The total duration of the origin fade animation.
-  static const base::TimeDelta kOriginTotalDuration;
+  static base::TimeDelta OriginTotalDuration();
 
   // |active_color| and |inactive_color| indicate the colors to use
   // for button icons when the window is focused and blurred respectively.
   HostedAppButtonContainer(views::Widget* widget,
                            BrowserView* browser_view,
                            SkColor active_color,
-                           SkColor inactive_color);
+                           SkColor inactive_color,
+                           base::Optional<int> right_margin = base::nullopt);
   ~HostedAppButtonContainer() override;
 
   void UpdateContentSettingViewsVisibility();
@@ -73,6 +74,8 @@ class HostedAppButtonContainer : public views::AccessiblePaneView,
   // Sets the container to paints its buttons the active/inactive color.
   void SetPaintAsActive(bool active);
 
+  // Sets own bounds to be right aligned and vertically centered in the given
+  // space, returns a new trailing_x value.
   int LayoutInContainer(int leading_x,
                         int trailing_x,
                         int y,
@@ -113,6 +116,7 @@ class HostedAppButtonContainer : public views::AccessiblePaneView,
   gfx::Rect GetFindBarBoundingBox(int contents_height) const override;
   void FocusToolbar() override;
   views::AccessiblePaneView* GetAsAccessiblePaneView() override;
+  views::View* GetAnchorView() override;
 
   // views::WidgetObserver:
   void OnWidgetVisibilityChanged(views::Widget* widget, bool visible) override;

@@ -120,16 +120,22 @@ SmbMountResult TranslateErrorToMountResult(smbprovider::ErrorType error) {
       return SmbMountResult::UNSUPPORTED_DEVICE;
     case smbprovider::ERROR_INVALID_URL:
       return SmbMountResult::INVALID_URL;
-    case smbprovider::ERROR_FAILED:
+    case smbprovider::ERROR_IO:
+      return SmbMountResult::IO_ERROR;
     case smbprovider::ERROR_TOO_MANY_OPENED:
+      return SmbMountResult::TOO_MANY_OPENED;
     case smbprovider::ERROR_NO_MEMORY:
     case smbprovider::ERROR_NO_SPACE:
+      return SmbMountResult::OUT_OF_MEMORY;
     case smbprovider::ERROR_INVALID_OPERATION:
+      return SmbMountResult::INVALID_OPERATION;
     case smbprovider::ERROR_ABORT:
+      return SmbMountResult::ABORTED;
+    case smbprovider::ERROR_DBUS_PARSE_FAILED:
+      return SmbMountResult::DBUS_PARSE_FAILED;
     case smbprovider::ERROR_NOT_A_FILE:
     case smbprovider::ERROR_NOT_EMPTY:
-    case smbprovider::ERROR_IO:
-    case smbprovider::ERROR_DBUS_PARSE_FAILED:
+    case smbprovider::ERROR_FAILED:
       return SmbMountResult::UNKNOWN_FAILURE;
     default:
       break;

@@ -318,15 +318,15 @@ error::Error GLES2DecoderPassthroughImpl::HandleClearBufferfvImmediate(
           cmd_data);
   GLenum buffer = static_cast<GLenum>(c.buffer);
   GLint drawbuffers = static_cast<GLint>(c.drawbuffers);
-  uint32_t data_size;
-  if (!GLES2Util::ComputeDataSize<GLfloat, 4>(1, &data_size)) {
+  uint32_t value_size;
+  if (!GLES2Util::ComputeDataSize<GLfloat, 4>(1, &value_size)) {
     return error::kOutOfBounds;
   }
-  if (data_size > immediate_data_size) {
+  if (value_size > immediate_data_size) {
     return error::kOutOfBounds;
   }
   volatile const GLfloat* value = GetImmediateDataAs<volatile const GLfloat*>(
-      c, data_size, immediate_data_size);
+      c, value_size, immediate_data_size);
   if (value == nullptr) {
     return error::kOutOfBounds;
   }
@@ -347,15 +347,15 @@ error::Error GLES2DecoderPassthroughImpl::HandleClearBufferivImmediate(
           cmd_data);
   GLenum buffer = static_cast<GLenum>(c.buffer);
   GLint drawbuffers = static_cast<GLint>(c.drawbuffers);
-  uint32_t data_size;
-  if (!GLES2Util::ComputeDataSize<GLint, 4>(1, &data_size)) {
+  uint32_t value_size;
+  if (!GLES2Util::ComputeDataSize<GLint, 4>(1, &value_size)) {
     return error::kOutOfBounds;
   }
-  if (data_size > immediate_data_size) {
+  if (value_size > immediate_data_size) {
     return error::kOutOfBounds;
   }
   volatile const GLint* value = GetImmediateDataAs<volatile const GLint*>(
-      c, data_size, immediate_data_size);
+      c, value_size, immediate_data_size);
   if (value == nullptr) {
     return error::kOutOfBounds;
   }
@@ -376,15 +376,15 @@ error::Error GLES2DecoderPassthroughImpl::HandleClearBufferuivImmediate(
           cmd_data);
   GLenum buffer = static_cast<GLenum>(c.buffer);
   GLint drawbuffers = static_cast<GLint>(c.drawbuffers);
-  uint32_t data_size;
-  if (!GLES2Util::ComputeDataSize<GLuint, 4>(1, &data_size)) {
+  uint32_t value_size;
+  if (!GLES2Util::ComputeDataSize<GLuint, 4>(1, &value_size)) {
     return error::kOutOfBounds;
   }
-  if (data_size > immediate_data_size) {
+  if (value_size > immediate_data_size) {
     return error::kOutOfBounds;
   }
   volatile const GLuint* value = GetImmediateDataAs<volatile const GLuint*>(
-      c, data_size, immediate_data_size);
+      c, value_size, immediate_data_size);
   if (value == nullptr) {
     return error::kOutOfBounds;
   }
@@ -572,12 +572,12 @@ error::Error GLES2DecoderPassthroughImpl::HandleDeleteBuffersImmediate(
       *static_cast<const volatile gles2::cmds::DeleteBuffersImmediate*>(
           cmd_data);
   GLsizei n = static_cast<GLsizei>(c.n);
-  uint32_t data_size;
-  if (!SafeMultiplyUint32(n, sizeof(GLuint), &data_size)) {
+  uint32_t buffers_size;
+  if (!SafeMultiplyUint32(n, sizeof(GLuint), &buffers_size)) {
     return error::kOutOfBounds;
   }
   volatile const GLuint* buffers = GetImmediateDataAs<volatile const GLuint*>(
-      c, data_size, immediate_data_size);
+      c, buffers_size, immediate_data_size);
   if (buffers == nullptr) {
     return error::kOutOfBounds;
   }
@@ -595,12 +595,12 @@ error::Error GLES2DecoderPassthroughImpl::HandleDeleteFramebuffersImmediate(
       *static_cast<const volatile gles2::cmds::DeleteFramebuffersImmediate*>(
           cmd_data);
   GLsizei n = static_cast<GLsizei>(c.n);
-  uint32_t data_size;
-  if (!SafeMultiplyUint32(n, sizeof(GLuint), &data_size)) {
+  uint32_t framebuffers_size;
+  if (!SafeMultiplyUint32(n, sizeof(GLuint), &framebuffers_size)) {
     return error::kOutOfBounds;
   }
   volatile const GLuint* framebuffers =
-      GetImmediateDataAs<volatile const GLuint*>(c, data_size,
+      GetImmediateDataAs<volatile const GLuint*>(c, framebuffers_size,
                                                  immediate_data_size);
   if (framebuffers == nullptr) {
     return error::kOutOfBounds;
@@ -632,12 +632,12 @@ error::Error GLES2DecoderPassthroughImpl::HandleDeleteRenderbuffersImmediate(
       *static_cast<const volatile gles2::cmds::DeleteRenderbuffersImmediate*>(
           cmd_data);
   GLsizei n = static_cast<GLsizei>(c.n);
-  uint32_t data_size;
-  if (!SafeMultiplyUint32(n, sizeof(GLuint), &data_size)) {
+  uint32_t renderbuffers_size;
+  if (!SafeMultiplyUint32(n, sizeof(GLuint), &renderbuffers_size)) {
     return error::kOutOfBounds;
   }
   volatile const GLuint* renderbuffers =
-      GetImmediateDataAs<volatile const GLuint*>(c, data_size,
+      GetImmediateDataAs<volatile const GLuint*>(c, renderbuffers_size,
                                                  immediate_data_size);
   if (renderbuffers == nullptr) {
     return error::kOutOfBounds;
@@ -658,12 +658,12 @@ error::Error GLES2DecoderPassthroughImpl::HandleDeleteSamplersImmediate(
       *static_cast<const volatile gles2::cmds::DeleteSamplersImmediate*>(
           cmd_data);
   GLsizei n = static_cast<GLsizei>(c.n);
-  uint32_t data_size;
-  if (!SafeMultiplyUint32(n, sizeof(GLuint), &data_size)) {
+  uint32_t samplers_size;
+  if (!SafeMultiplyUint32(n, sizeof(GLuint), &samplers_size)) {
     return error::kOutOfBounds;
   }
   volatile const GLuint* samplers = GetImmediateDataAs<volatile const GLuint*>(
-      c, data_size, immediate_data_size);
+      c, samplers_size, immediate_data_size);
   if (samplers == nullptr) {
     return error::kOutOfBounds;
   }
@@ -709,12 +709,12 @@ error::Error GLES2DecoderPassthroughImpl::HandleDeleteTexturesImmediate(
       *static_cast<const volatile gles2::cmds::DeleteTexturesImmediate*>(
           cmd_data);
   GLsizei n = static_cast<GLsizei>(c.n);
-  uint32_t data_size;
-  if (!SafeMultiplyUint32(n, sizeof(GLuint), &data_size)) {
+  uint32_t textures_size;
+  if (!SafeMultiplyUint32(n, sizeof(GLuint), &textures_size)) {
     return error::kOutOfBounds;
   }
   volatile const GLuint* textures = GetImmediateDataAs<volatile const GLuint*>(
-      c, data_size, immediate_data_size);
+      c, textures_size, immediate_data_size);
   if (textures == nullptr) {
     return error::kOutOfBounds;
   }
@@ -736,12 +736,12 @@ GLES2DecoderPassthroughImpl::HandleDeleteTransformFeedbacksImmediate(
           const volatile gles2::cmds::DeleteTransformFeedbacksImmediate*>(
           cmd_data);
   GLsizei n = static_cast<GLsizei>(c.n);
-  uint32_t data_size;
-  if (!SafeMultiplyUint32(n, sizeof(GLuint), &data_size)) {
+  uint32_t ids_size;
+  if (!SafeMultiplyUint32(n, sizeof(GLuint), &ids_size)) {
     return error::kOutOfBounds;
   }
   volatile const GLuint* ids = GetImmediateDataAs<volatile const GLuint*>(
-      c, data_size, immediate_data_size);
+      c, ids_size, immediate_data_size);
   if (ids == nullptr) {
     return error::kOutOfBounds;
   }
@@ -956,12 +956,12 @@ error::Error GLES2DecoderPassthroughImpl::HandleGenBuffersImmediate(
   const volatile gles2::cmds::GenBuffersImmediate& c =
       *static_cast<const volatile gles2::cmds::GenBuffersImmediate*>(cmd_data);
   GLsizei n = static_cast<GLsizei>(c.n);
-  uint32_t data_size;
-  if (!SafeMultiplyUint32(n, sizeof(GLuint), &data_size)) {
+  uint32_t buffers_size;
+  if (!SafeMultiplyUint32(n, sizeof(GLuint), &buffers_size)) {
     return error::kOutOfBounds;
   }
-  volatile GLuint* buffers =
-      GetImmediateDataAs<volatile GLuint*>(c, data_size, immediate_data_size);
+  volatile GLuint* buffers = GetImmediateDataAs<volatile GLuint*>(
+      c, buffers_size, immediate_data_size);
   if (buffers == nullptr) {
     return error::kOutOfBounds;
   }
@@ -992,12 +992,12 @@ error::Error GLES2DecoderPassthroughImpl::HandleGenFramebuffersImmediate(
       *static_cast<const volatile gles2::cmds::GenFramebuffersImmediate*>(
           cmd_data);
   GLsizei n = static_cast<GLsizei>(c.n);
-  uint32_t data_size;
-  if (!SafeMultiplyUint32(n, sizeof(GLuint), &data_size)) {
+  uint32_t framebuffers_size;
+  if (!SafeMultiplyUint32(n, sizeof(GLuint), &framebuffers_size)) {
     return error::kOutOfBounds;
   }
-  volatile GLuint* framebuffers =
-      GetImmediateDataAs<volatile GLuint*>(c, data_size, immediate_data_size);
+  volatile GLuint* framebuffers = GetImmediateDataAs<volatile GLuint*>(
+      c, framebuffers_size, immediate_data_size);
   if (framebuffers == nullptr) {
     return error::kOutOfBounds;
   }
@@ -1015,12 +1015,12 @@ error::Error GLES2DecoderPassthroughImpl::HandleGenRenderbuffersImmediate(
       *static_cast<const volatile gles2::cmds::GenRenderbuffersImmediate*>(
           cmd_data);
   GLsizei n = static_cast<GLsizei>(c.n);
-  uint32_t data_size;
-  if (!SafeMultiplyUint32(n, sizeof(GLuint), &data_size)) {
+  uint32_t renderbuffers_size;
+  if (!SafeMultiplyUint32(n, sizeof(GLuint), &renderbuffers_size)) {
     return error::kOutOfBounds;
   }
-  volatile GLuint* renderbuffers =
-      GetImmediateDataAs<volatile GLuint*>(c, data_size, immediate_data_size);
+  volatile GLuint* renderbuffers = GetImmediateDataAs<volatile GLuint*>(
+      c, renderbuffers_size, immediate_data_size);
   if (renderbuffers == nullptr) {
     return error::kOutOfBounds;
   }
@@ -1039,12 +1039,12 @@ error::Error GLES2DecoderPassthroughImpl::HandleGenSamplersImmediate(
   const volatile gles2::cmds::GenSamplersImmediate& c =
       *static_cast<const volatile gles2::cmds::GenSamplersImmediate*>(cmd_data);
   GLsizei n = static_cast<GLsizei>(c.n);
-  uint32_t data_size;
-  if (!SafeMultiplyUint32(n, sizeof(GLuint), &data_size)) {
+  uint32_t samplers_size;
+  if (!SafeMultiplyUint32(n, sizeof(GLuint), &samplers_size)) {
     return error::kOutOfBounds;
   }
-  volatile GLuint* samplers =
-      GetImmediateDataAs<volatile GLuint*>(c, data_size, immediate_data_size);
+  volatile GLuint* samplers = GetImmediateDataAs<volatile GLuint*>(
+      c, samplers_size, immediate_data_size);
   if (samplers == nullptr) {
     return error::kOutOfBounds;
   }
@@ -1061,12 +1061,12 @@ error::Error GLES2DecoderPassthroughImpl::HandleGenTexturesImmediate(
   const volatile gles2::cmds::GenTexturesImmediate& c =
       *static_cast<const volatile gles2::cmds::GenTexturesImmediate*>(cmd_data);
   GLsizei n = static_cast<GLsizei>(c.n);
-  uint32_t data_size;
-  if (!SafeMultiplyUint32(n, sizeof(GLuint), &data_size)) {
+  uint32_t textures_size;
+  if (!SafeMultiplyUint32(n, sizeof(GLuint), &textures_size)) {
     return error::kOutOfBounds;
   }
-  volatile GLuint* textures =
-      GetImmediateDataAs<volatile GLuint*>(c, data_size, immediate_data_size);
+  volatile GLuint* textures = GetImmediateDataAs<volatile GLuint*>(
+      c, textures_size, immediate_data_size);
   if (textures == nullptr) {
     return error::kOutOfBounds;
   }
@@ -1086,12 +1086,12 @@ error::Error GLES2DecoderPassthroughImpl::HandleGenTransformFeedbacksImmediate(
       *static_cast<const volatile gles2::cmds::GenTransformFeedbacksImmediate*>(
           cmd_data);
   GLsizei n = static_cast<GLsizei>(c.n);
-  uint32_t data_size;
-  if (!SafeMultiplyUint32(n, sizeof(GLuint), &data_size)) {
+  uint32_t ids_size;
+  if (!SafeMultiplyUint32(n, sizeof(GLuint), &ids_size)) {
     return error::kOutOfBounds;
   }
   volatile GLuint* ids =
-      GetImmediateDataAs<volatile GLuint*>(c, data_size, immediate_data_size);
+      GetImmediateDataAs<volatile GLuint*>(c, ids_size, immediate_data_size);
   if (ids == nullptr) {
     return error::kOutOfBounds;
   }
@@ -1787,15 +1787,16 @@ error::Error GLES2DecoderPassthroughImpl::HandleInvalidateFramebufferImmediate(
           cmd_data);
   GLenum target = static_cast<GLenum>(c.target);
   GLsizei count = static_cast<GLsizei>(c.count);
-  uint32_t data_size = 0;
-  if (count >= 0 && !GLES2Util::ComputeDataSize<GLenum, 1>(count, &data_size)) {
+  uint32_t attachments_size = 0;
+  if (count >= 0 &&
+      !GLES2Util::ComputeDataSize<GLenum, 1>(count, &attachments_size)) {
     return error::kOutOfBounds;
   }
-  if (data_size > immediate_data_size) {
+  if (attachments_size > immediate_data_size) {
     return error::kOutOfBounds;
   }
   volatile const GLenum* attachments =
-      GetImmediateDataAs<volatile const GLenum*>(c, data_size,
+      GetImmediateDataAs<volatile const GLenum*>(c, attachments_size,
                                                  immediate_data_size);
   if (attachments == nullptr) {
     return error::kOutOfBounds;
@@ -1819,15 +1820,16 @@ GLES2DecoderPassthroughImpl::HandleInvalidateSubFramebufferImmediate(
           cmd_data);
   GLenum target = static_cast<GLenum>(c.target);
   GLsizei count = static_cast<GLsizei>(c.count);
-  uint32_t data_size = 0;
-  if (count >= 0 && !GLES2Util::ComputeDataSize<GLenum, 1>(count, &data_size)) {
+  uint32_t attachments_size = 0;
+  if (count >= 0 &&
+      !GLES2Util::ComputeDataSize<GLenum, 1>(count, &attachments_size)) {
     return error::kOutOfBounds;
   }
-  if (data_size > immediate_data_size) {
+  if (attachments_size > immediate_data_size) {
     return error::kOutOfBounds;
   }
   volatile const GLenum* attachments =
-      GetImmediateDataAs<volatile const GLenum*>(c, data_size,
+      GetImmediateDataAs<volatile const GLenum*>(c, attachments_size,
                                                  immediate_data_size);
   GLint x = static_cast<GLint>(c.x);
   GLint y = static_cast<GLint>(c.y);
@@ -2187,15 +2189,15 @@ error::Error GLES2DecoderPassthroughImpl::HandleSamplerParameterfvImmediate(
           cmd_data);
   GLuint sampler = c.sampler;
   GLenum pname = static_cast<GLenum>(c.pname);
-  uint32_t data_size;
-  if (!GLES2Util::ComputeDataSize<GLfloat, 1>(1, &data_size)) {
+  uint32_t params_size;
+  if (!GLES2Util::ComputeDataSize<GLfloat, 1>(1, &params_size)) {
     return error::kOutOfBounds;
   }
-  if (data_size > immediate_data_size) {
+  if (params_size > immediate_data_size) {
     return error::kOutOfBounds;
   }
   volatile const GLfloat* params = GetImmediateDataAs<volatile const GLfloat*>(
-      c, data_size, immediate_data_size);
+      c, params_size, immediate_data_size);
   if (params == nullptr) {
     return error::kOutOfBounds;
   }
@@ -2233,15 +2235,15 @@ error::Error GLES2DecoderPassthroughImpl::HandleSamplerParameterivImmediate(
           cmd_data);
   GLuint sampler = c.sampler;
   GLenum pname = static_cast<GLenum>(c.pname);
-  uint32_t data_size;
-  if (!GLES2Util::ComputeDataSize<GLint, 1>(1, &data_size)) {
+  uint32_t params_size;
+  if (!GLES2Util::ComputeDataSize<GLint, 1>(1, &params_size)) {
     return error::kOutOfBounds;
   }
-  if (data_size > immediate_data_size) {
+  if (params_size > immediate_data_size) {
     return error::kOutOfBounds;
   }
   volatile const GLint* params = GetImmediateDataAs<volatile const GLint*>(
-      c, data_size, immediate_data_size);
+      c, params_size, immediate_data_size);
   if (params == nullptr) {
     return error::kOutOfBounds;
   }
@@ -2409,15 +2411,15 @@ error::Error GLES2DecoderPassthroughImpl::HandleTexParameterfvImmediate(
           cmd_data);
   GLenum target = static_cast<GLenum>(c.target);
   GLenum pname = static_cast<GLenum>(c.pname);
-  uint32_t data_size;
-  if (!GLES2Util::ComputeDataSize<GLfloat, 1>(1, &data_size)) {
+  uint32_t params_size;
+  if (!GLES2Util::ComputeDataSize<GLfloat, 1>(1, &params_size)) {
     return error::kOutOfBounds;
   }
-  if (data_size > immediate_data_size) {
+  if (params_size > immediate_data_size) {
     return error::kOutOfBounds;
   }
   volatile const GLfloat* params = GetImmediateDataAs<volatile const GLfloat*>(
-      c, data_size, immediate_data_size);
+      c, params_size, immediate_data_size);
   if (params == nullptr) {
     return error::kOutOfBounds;
   }
@@ -2451,15 +2453,15 @@ error::Error GLES2DecoderPassthroughImpl::HandleTexParameterivImmediate(
           cmd_data);
   GLenum target = static_cast<GLenum>(c.target);
   GLenum pname = static_cast<GLenum>(c.pname);
-  uint32_t data_size;
-  if (!GLES2Util::ComputeDataSize<GLint, 1>(1, &data_size)) {
+  uint32_t params_size;
+  if (!GLES2Util::ComputeDataSize<GLint, 1>(1, &params_size)) {
     return error::kOutOfBounds;
   }
-  if (data_size > immediate_data_size) {
+  if (params_size > immediate_data_size) {
     return error::kOutOfBounds;
   }
   volatile const GLint* params = GetImmediateDataAs<volatile const GLint*>(
-      c, data_size, immediate_data_size);
+      c, params_size, immediate_data_size);
   if (params == nullptr) {
     return error::kOutOfBounds;
   }
@@ -2545,16 +2547,15 @@ error::Error GLES2DecoderPassthroughImpl::HandleUniform1fvImmediate(
       *static_cast<const volatile gles2::cmds::Uniform1fvImmediate*>(cmd_data);
   GLint location = static_cast<GLint>(c.location);
   GLsizei count = static_cast<GLsizei>(c.count);
-  uint32_t data_size = 0;
-  if (count >= 0 &&
-      !GLES2Util::ComputeDataSize<GLfloat, 1>(count, &data_size)) {
+  uint32_t v_size = 0;
+  if (count >= 0 && !GLES2Util::ComputeDataSize<GLfloat, 1>(count, &v_size)) {
     return error::kOutOfBounds;
   }
-  if (data_size > immediate_data_size) {
+  if (v_size > immediate_data_size) {
     return error::kOutOfBounds;
   }
   volatile const GLfloat* v = GetImmediateDataAs<volatile const GLfloat*>(
-      c, data_size, immediate_data_size);
+      c, v_size, immediate_data_size);
   if (v == nullptr) {
     return error::kOutOfBounds;
   }
@@ -2586,15 +2587,15 @@ error::Error GLES2DecoderPassthroughImpl::HandleUniform1ivImmediate(
       *static_cast<const volatile gles2::cmds::Uniform1ivImmediate*>(cmd_data);
   GLint location = static_cast<GLint>(c.location);
   GLsizei count = static_cast<GLsizei>(c.count);
-  uint32_t data_size = 0;
-  if (count >= 0 && !GLES2Util::ComputeDataSize<GLint, 1>(count, &data_size)) {
+  uint32_t v_size = 0;
+  if (count >= 0 && !GLES2Util::ComputeDataSize<GLint, 1>(count, &v_size)) {
     return error::kOutOfBounds;
   }
-  if (data_size > immediate_data_size) {
+  if (v_size > immediate_data_size) {
     return error::kOutOfBounds;
   }
-  volatile const GLint* v = GetImmediateDataAs<volatile const GLint*>(
-      c, data_size, immediate_data_size);
+  volatile const GLint* v =
+      GetImmediateDataAs<volatile const GLint*>(c, v_size, immediate_data_size);
   if (v == nullptr) {
     return error::kOutOfBounds;
   }
@@ -2630,15 +2631,15 @@ error::Error GLES2DecoderPassthroughImpl::HandleUniform1uivImmediate(
       *static_cast<const volatile gles2::cmds::Uniform1uivImmediate*>(cmd_data);
   GLint location = static_cast<GLint>(c.location);
   GLsizei count = static_cast<GLsizei>(c.count);
-  uint32_t data_size = 0;
-  if (count >= 0 && !GLES2Util::ComputeDataSize<GLuint, 1>(count, &data_size)) {
+  uint32_t v_size = 0;
+  if (count >= 0 && !GLES2Util::ComputeDataSize<GLuint, 1>(count, &v_size)) {
     return error::kOutOfBounds;
   }
-  if (data_size > immediate_data_size) {
+  if (v_size > immediate_data_size) {
     return error::kOutOfBounds;
   }
   volatile const GLuint* v = GetImmediateDataAs<volatile const GLuint*>(
-      c, data_size, immediate_data_size);
+      c, v_size, immediate_data_size);
   if (v == nullptr) {
     return error::kOutOfBounds;
   }
@@ -2671,16 +2672,15 @@ error::Error GLES2DecoderPassthroughImpl::HandleUniform2fvImmediate(
       *static_cast<const volatile gles2::cmds::Uniform2fvImmediate*>(cmd_data);
   GLint location = static_cast<GLint>(c.location);
   GLsizei count = static_cast<GLsizei>(c.count);
-  uint32_t data_size = 0;
-  if (count >= 0 &&
-      !GLES2Util::ComputeDataSize<GLfloat, 2>(count, &data_size)) {
+  uint32_t v_size = 0;
+  if (count >= 0 && !GLES2Util::ComputeDataSize<GLfloat, 2>(count, &v_size)) {
     return error::kOutOfBounds;
   }
-  if (data_size > immediate_data_size) {
+  if (v_size > immediate_data_size) {
     return error::kOutOfBounds;
   }
   volatile const GLfloat* v = GetImmediateDataAs<volatile const GLfloat*>(
-      c, data_size, immediate_data_size);
+      c, v_size, immediate_data_size);
   if (v == nullptr) {
     return error::kOutOfBounds;
   }
@@ -2713,15 +2713,15 @@ error::Error GLES2DecoderPassthroughImpl::HandleUniform2ivImmediate(
       *static_cast<const volatile gles2::cmds::Uniform2ivImmediate*>(cmd_data);
   GLint location = static_cast<GLint>(c.location);
   GLsizei count = static_cast<GLsizei>(c.count);
-  uint32_t data_size = 0;
-  if (count >= 0 && !GLES2Util::ComputeDataSize<GLint, 2>(count, &data_size)) {
+  uint32_t v_size = 0;
+  if (count >= 0 && !GLES2Util::ComputeDataSize<GLint, 2>(count, &v_size)) {
     return error::kOutOfBounds;
   }
-  if (data_size > immediate_data_size) {
+  if (v_size > immediate_data_size) {
     return error::kOutOfBounds;
   }
-  volatile const GLint* v = GetImmediateDataAs<volatile const GLint*>(
-      c, data_size, immediate_data_size);
+  volatile const GLint* v =
+      GetImmediateDataAs<volatile const GLint*>(c, v_size, immediate_data_size);
   if (v == nullptr) {
     return error::kOutOfBounds;
   }
@@ -2758,15 +2758,15 @@ error::Error GLES2DecoderPassthroughImpl::HandleUniform2uivImmediate(
       *static_cast<const volatile gles2::cmds::Uniform2uivImmediate*>(cmd_data);
   GLint location = static_cast<GLint>(c.location);
   GLsizei count = static_cast<GLsizei>(c.count);
-  uint32_t data_size = 0;
-  if (count >= 0 && !GLES2Util::ComputeDataSize<GLuint, 2>(count, &data_size)) {
+  uint32_t v_size = 0;
+  if (count >= 0 && !GLES2Util::ComputeDataSize<GLuint, 2>(count, &v_size)) {
     return error::kOutOfBounds;
   }
-  if (data_size > immediate_data_size) {
+  if (v_size > immediate_data_size) {
     return error::kOutOfBounds;
   }
   volatile const GLuint* v = GetImmediateDataAs<volatile const GLuint*>(
-      c, data_size, immediate_data_size);
+      c, v_size, immediate_data_size);
   if (v == nullptr) {
     return error::kOutOfBounds;
   }
@@ -2800,16 +2800,15 @@ error::Error GLES2DecoderPassthroughImpl::HandleUniform3fvImmediate(
       *static_cast<const volatile gles2::cmds::Uniform3fvImmediate*>(cmd_data);
   GLint location = static_cast<GLint>(c.location);
   GLsizei count = static_cast<GLsizei>(c.count);
-  uint32_t data_size = 0;
-  if (count >= 0 &&
-      !GLES2Util::ComputeDataSize<GLfloat, 3>(count, &data_size)) {
+  uint32_t v_size = 0;
+  if (count >= 0 && !GLES2Util::ComputeDataSize<GLfloat, 3>(count, &v_size)) {
     return error::kOutOfBounds;
   }
-  if (data_size > immediate_data_size) {
+  if (v_size > immediate_data_size) {
     return error::kOutOfBounds;
   }
   volatile const GLfloat* v = GetImmediateDataAs<volatile const GLfloat*>(
-      c, data_size, immediate_data_size);
+      c, v_size, immediate_data_size);
   if (v == nullptr) {
     return error::kOutOfBounds;
   }
@@ -2843,15 +2842,15 @@ error::Error GLES2DecoderPassthroughImpl::HandleUniform3ivImmediate(
       *static_cast<const volatile gles2::cmds::Uniform3ivImmediate*>(cmd_data);
   GLint location = static_cast<GLint>(c.location);
   GLsizei count = static_cast<GLsizei>(c.count);
-  uint32_t data_size = 0;
-  if (count >= 0 && !GLES2Util::ComputeDataSize<GLint, 3>(count, &data_size)) {
+  uint32_t v_size = 0;
+  if (count >= 0 && !GLES2Util::ComputeDataSize<GLint, 3>(count, &v_size)) {
     return error::kOutOfBounds;
   }
-  if (data_size > immediate_data_size) {
+  if (v_size > immediate_data_size) {
     return error::kOutOfBounds;
   }
-  volatile const GLint* v = GetImmediateDataAs<volatile const GLint*>(
-      c, data_size, immediate_data_size);
+  volatile const GLint* v =
+      GetImmediateDataAs<volatile const GLint*>(c, v_size, immediate_data_size);
   if (v == nullptr) {
     return error::kOutOfBounds;
   }
@@ -2889,15 +2888,15 @@ error::Error GLES2DecoderPassthroughImpl::HandleUniform3uivImmediate(
       *static_cast<const volatile gles2::cmds::Uniform3uivImmediate*>(cmd_data);
   GLint location = static_cast<GLint>(c.location);
   GLsizei count = static_cast<GLsizei>(c.count);
-  uint32_t data_size = 0;
-  if (count >= 0 && !GLES2Util::ComputeDataSize<GLuint, 3>(count, &data_size)) {
+  uint32_t v_size = 0;
+  if (count >= 0 && !GLES2Util::ComputeDataSize<GLuint, 3>(count, &v_size)) {
     return error::kOutOfBounds;
   }
-  if (data_size > immediate_data_size) {
+  if (v_size > immediate_data_size) {
     return error::kOutOfBounds;
   }
   volatile const GLuint* v = GetImmediateDataAs<volatile const GLuint*>(
-      c, data_size, immediate_data_size);
+      c, v_size, immediate_data_size);
   if (v == nullptr) {
     return error::kOutOfBounds;
   }
@@ -2932,16 +2931,15 @@ error::Error GLES2DecoderPassthroughImpl::HandleUniform4fvImmediate(
       *static_cast<const volatile gles2::cmds::Uniform4fvImmediate*>(cmd_data);
   GLint location = static_cast<GLint>(c.location);
   GLsizei count = static_cast<GLsizei>(c.count);
-  uint32_t data_size = 0;
-  if (count >= 0 &&
-      !GLES2Util::ComputeDataSize<GLfloat, 4>(count, &data_size)) {
+  uint32_t v_size = 0;
+  if (count >= 0 && !GLES2Util::ComputeDataSize<GLfloat, 4>(count, &v_size)) {
     return error::kOutOfBounds;
   }
-  if (data_size > immediate_data_size) {
+  if (v_size > immediate_data_size) {
     return error::kOutOfBounds;
   }
   volatile const GLfloat* v = GetImmediateDataAs<volatile const GLfloat*>(
-      c, data_size, immediate_data_size);
+      c, v_size, immediate_data_size);
   if (v == nullptr) {
     return error::kOutOfBounds;
   }
@@ -2976,15 +2974,15 @@ error::Error GLES2DecoderPassthroughImpl::HandleUniform4ivImmediate(
       *static_cast<const volatile gles2::cmds::Uniform4ivImmediate*>(cmd_data);
   GLint location = static_cast<GLint>(c.location);
   GLsizei count = static_cast<GLsizei>(c.count);
-  uint32_t data_size = 0;
-  if (count >= 0 && !GLES2Util::ComputeDataSize<GLint, 4>(count, &data_size)) {
+  uint32_t v_size = 0;
+  if (count >= 0 && !GLES2Util::ComputeDataSize<GLint, 4>(count, &v_size)) {
     return error::kOutOfBounds;
   }
-  if (data_size > immediate_data_size) {
+  if (v_size > immediate_data_size) {
     return error::kOutOfBounds;
   }
-  volatile const GLint* v = GetImmediateDataAs<volatile const GLint*>(
-      c, data_size, immediate_data_size);
+  volatile const GLint* v =
+      GetImmediateDataAs<volatile const GLint*>(c, v_size, immediate_data_size);
   if (v == nullptr) {
     return error::kOutOfBounds;
   }
@@ -3023,15 +3021,15 @@ error::Error GLES2DecoderPassthroughImpl::HandleUniform4uivImmediate(
       *static_cast<const volatile gles2::cmds::Uniform4uivImmediate*>(cmd_data);
   GLint location = static_cast<GLint>(c.location);
   GLsizei count = static_cast<GLsizei>(c.count);
-  uint32_t data_size = 0;
-  if (count >= 0 && !GLES2Util::ComputeDataSize<GLuint, 4>(count, &data_size)) {
+  uint32_t v_size = 0;
+  if (count >= 0 && !GLES2Util::ComputeDataSize<GLuint, 4>(count, &v_size)) {
     return error::kOutOfBounds;
   }
-  if (data_size > immediate_data_size) {
+  if (v_size > immediate_data_size) {
     return error::kOutOfBounds;
   }
   volatile const GLuint* v = GetImmediateDataAs<volatile const GLuint*>(
-      c, data_size, immediate_data_size);
+      c, v_size, immediate_data_size);
   if (v == nullptr) {
     return error::kOutOfBounds;
   }
@@ -3051,16 +3049,16 @@ error::Error GLES2DecoderPassthroughImpl::HandleUniformMatrix2fvImmediate(
   GLint location = static_cast<GLint>(c.location);
   GLsizei count = static_cast<GLsizei>(c.count);
   GLboolean transpose = static_cast<GLboolean>(c.transpose);
-  uint32_t data_size = 0;
+  uint32_t value_size = 0;
   if (count >= 0 &&
-      !GLES2Util::ComputeDataSize<GLfloat, 4>(count, &data_size)) {
+      !GLES2Util::ComputeDataSize<GLfloat, 4>(count, &value_size)) {
     return error::kOutOfBounds;
   }
-  if (data_size > immediate_data_size) {
+  if (value_size > immediate_data_size) {
     return error::kOutOfBounds;
   }
   volatile const GLfloat* value = GetImmediateDataAs<volatile const GLfloat*>(
-      c, data_size, immediate_data_size);
+      c, value_size, immediate_data_size);
   if (value == nullptr) {
     return error::kOutOfBounds;
   }
@@ -3082,16 +3080,16 @@ error::Error GLES2DecoderPassthroughImpl::HandleUniformMatrix2x3fvImmediate(
   GLint location = static_cast<GLint>(c.location);
   GLsizei count = static_cast<GLsizei>(c.count);
   GLboolean transpose = static_cast<GLboolean>(c.transpose);
-  uint32_t data_size = 0;
+  uint32_t value_size = 0;
   if (count >= 0 &&
-      !GLES2Util::ComputeDataSize<GLfloat, 6>(count, &data_size)) {
+      !GLES2Util::ComputeDataSize<GLfloat, 6>(count, &value_size)) {
     return error::kOutOfBounds;
   }
-  if (data_size > immediate_data_size) {
+  if (value_size > immediate_data_size) {
     return error::kOutOfBounds;
   }
   volatile const GLfloat* value = GetImmediateDataAs<volatile const GLfloat*>(
-      c, data_size, immediate_data_size);
+      c, value_size, immediate_data_size);
   if (value == nullptr) {
     return error::kOutOfBounds;
   }
@@ -3113,16 +3111,16 @@ error::Error GLES2DecoderPassthroughImpl::HandleUniformMatrix2x4fvImmediate(
   GLint location = static_cast<GLint>(c.location);
   GLsizei count = static_cast<GLsizei>(c.count);
   GLboolean transpose = static_cast<GLboolean>(c.transpose);
-  uint32_t data_size = 0;
+  uint32_t value_size = 0;
   if (count >= 0 &&
-      !GLES2Util::ComputeDataSize<GLfloat, 8>(count, &data_size)) {
+      !GLES2Util::ComputeDataSize<GLfloat, 8>(count, &value_size)) {
     return error::kOutOfBounds;
   }
-  if (data_size > immediate_data_size) {
+  if (value_size > immediate_data_size) {
     return error::kOutOfBounds;
   }
   volatile const GLfloat* value = GetImmediateDataAs<volatile const GLfloat*>(
-      c, data_size, immediate_data_size);
+      c, value_size, immediate_data_size);
   if (value == nullptr) {
     return error::kOutOfBounds;
   }
@@ -3142,16 +3140,16 @@ error::Error GLES2DecoderPassthroughImpl::HandleUniformMatrix3fvImmediate(
   GLint location = static_cast<GLint>(c.location);
   GLsizei count = static_cast<GLsizei>(c.count);
   GLboolean transpose = static_cast<GLboolean>(c.transpose);
-  uint32_t data_size = 0;
+  uint32_t value_size = 0;
   if (count >= 0 &&
-      !GLES2Util::ComputeDataSize<GLfloat, 9>(count, &data_size)) {
+      !GLES2Util::ComputeDataSize<GLfloat, 9>(count, &value_size)) {
     return error::kOutOfBounds;
   }
-  if (data_size > immediate_data_size) {
+  if (value_size > immediate_data_size) {
     return error::kOutOfBounds;
   }
   volatile const GLfloat* value = GetImmediateDataAs<volatile const GLfloat*>(
-      c, data_size, immediate_data_size);
+      c, value_size, immediate_data_size);
   if (value == nullptr) {
     return error::kOutOfBounds;
   }
@@ -3173,16 +3171,16 @@ error::Error GLES2DecoderPassthroughImpl::HandleUniformMatrix3x2fvImmediate(
   GLint location = static_cast<GLint>(c.location);
   GLsizei count = static_cast<GLsizei>(c.count);
   GLboolean transpose = static_cast<GLboolean>(c.transpose);
-  uint32_t data_size = 0;
+  uint32_t value_size = 0;
   if (count >= 0 &&
-      !GLES2Util::ComputeDataSize<GLfloat, 6>(count, &data_size)) {
+      !GLES2Util::ComputeDataSize<GLfloat, 6>(count, &value_size)) {
     return error::kOutOfBounds;
   }
-  if (data_size > immediate_data_size) {
+  if (value_size > immediate_data_size) {
     return error::kOutOfBounds;
   }
   volatile const GLfloat* value = GetImmediateDataAs<volatile const GLfloat*>(
-      c, data_size, immediate_data_size);
+      c, value_size, immediate_data_size);
   if (value == nullptr) {
     return error::kOutOfBounds;
   }
@@ -3204,16 +3202,16 @@ error::Error GLES2DecoderPassthroughImpl::HandleUniformMatrix3x4fvImmediate(
   GLint location = static_cast<GLint>(c.location);
   GLsizei count = static_cast<GLsizei>(c.count);
   GLboolean transpose = static_cast<GLboolean>(c.transpose);
-  uint32_t data_size = 0;
+  uint32_t value_size = 0;
   if (count >= 0 &&
-      !GLES2Util::ComputeDataSize<GLfloat, 12>(count, &data_size)) {
+      !GLES2Util::ComputeDataSize<GLfloat, 12>(count, &value_size)) {
     return error::kOutOfBounds;
   }
-  if (data_size > immediate_data_size) {
+  if (value_size > immediate_data_size) {
     return error::kOutOfBounds;
   }
   volatile const GLfloat* value = GetImmediateDataAs<volatile const GLfloat*>(
-      c, data_size, immediate_data_size);
+      c, value_size, immediate_data_size);
   if (value == nullptr) {
     return error::kOutOfBounds;
   }
@@ -3233,16 +3231,16 @@ error::Error GLES2DecoderPassthroughImpl::HandleUniformMatrix4fvImmediate(
   GLint location = static_cast<GLint>(c.location);
   GLsizei count = static_cast<GLsizei>(c.count);
   GLboolean transpose = static_cast<GLboolean>(c.transpose);
-  uint32_t data_size = 0;
+  uint32_t value_size = 0;
   if (count >= 0 &&
-      !GLES2Util::ComputeDataSize<GLfloat, 16>(count, &data_size)) {
+      !GLES2Util::ComputeDataSize<GLfloat, 16>(count, &value_size)) {
     return error::kOutOfBounds;
   }
-  if (data_size > immediate_data_size) {
+  if (value_size > immediate_data_size) {
     return error::kOutOfBounds;
   }
   volatile const GLfloat* value = GetImmediateDataAs<volatile const GLfloat*>(
-      c, data_size, immediate_data_size);
+      c, value_size, immediate_data_size);
   if (value == nullptr) {
     return error::kOutOfBounds;
   }
@@ -3264,16 +3262,16 @@ error::Error GLES2DecoderPassthroughImpl::HandleUniformMatrix4x2fvImmediate(
   GLint location = static_cast<GLint>(c.location);
   GLsizei count = static_cast<GLsizei>(c.count);
   GLboolean transpose = static_cast<GLboolean>(c.transpose);
-  uint32_t data_size = 0;
+  uint32_t value_size = 0;
   if (count >= 0 &&
-      !GLES2Util::ComputeDataSize<GLfloat, 8>(count, &data_size)) {
+      !GLES2Util::ComputeDataSize<GLfloat, 8>(count, &value_size)) {
     return error::kOutOfBounds;
   }
-  if (data_size > immediate_data_size) {
+  if (value_size > immediate_data_size) {
     return error::kOutOfBounds;
   }
   volatile const GLfloat* value = GetImmediateDataAs<volatile const GLfloat*>(
-      c, data_size, immediate_data_size);
+      c, value_size, immediate_data_size);
   if (value == nullptr) {
     return error::kOutOfBounds;
   }
@@ -3295,16 +3293,16 @@ error::Error GLES2DecoderPassthroughImpl::HandleUniformMatrix4x3fvImmediate(
   GLint location = static_cast<GLint>(c.location);
   GLsizei count = static_cast<GLsizei>(c.count);
   GLboolean transpose = static_cast<GLboolean>(c.transpose);
-  uint32_t data_size = 0;
+  uint32_t value_size = 0;
   if (count >= 0 &&
-      !GLES2Util::ComputeDataSize<GLfloat, 12>(count, &data_size)) {
+      !GLES2Util::ComputeDataSize<GLfloat, 12>(count, &value_size)) {
     return error::kOutOfBounds;
   }
-  if (data_size > immediate_data_size) {
+  if (value_size > immediate_data_size) {
     return error::kOutOfBounds;
   }
   volatile const GLfloat* value = GetImmediateDataAs<volatile const GLfloat*>(
-      c, data_size, immediate_data_size);
+      c, value_size, immediate_data_size);
   if (value == nullptr) {
     return error::kOutOfBounds;
   }
@@ -3362,15 +3360,15 @@ error::Error GLES2DecoderPassthroughImpl::HandleVertexAttrib1fvImmediate(
       *static_cast<const volatile gles2::cmds::VertexAttrib1fvImmediate*>(
           cmd_data);
   GLuint indx = static_cast<GLuint>(c.indx);
-  uint32_t data_size;
-  if (!GLES2Util::ComputeDataSize<GLfloat, 1>(1, &data_size)) {
+  uint32_t values_size;
+  if (!GLES2Util::ComputeDataSize<GLfloat, 1>(1, &values_size)) {
     return error::kOutOfBounds;
   }
-  if (data_size > immediate_data_size) {
+  if (values_size > immediate_data_size) {
     return error::kOutOfBounds;
   }
   volatile const GLfloat* values = GetImmediateDataAs<volatile const GLfloat*>(
-      c, data_size, immediate_data_size);
+      c, values_size, immediate_data_size);
   if (values == nullptr) {
     return error::kOutOfBounds;
   }
@@ -3403,15 +3401,15 @@ error::Error GLES2DecoderPassthroughImpl::HandleVertexAttrib2fvImmediate(
       *static_cast<const volatile gles2::cmds::VertexAttrib2fvImmediate*>(
           cmd_data);
   GLuint indx = static_cast<GLuint>(c.indx);
-  uint32_t data_size;
-  if (!GLES2Util::ComputeDataSize<GLfloat, 2>(1, &data_size)) {
+  uint32_t values_size;
+  if (!GLES2Util::ComputeDataSize<GLfloat, 2>(1, &values_size)) {
     return error::kOutOfBounds;
   }
-  if (data_size > immediate_data_size) {
+  if (values_size > immediate_data_size) {
     return error::kOutOfBounds;
   }
   volatile const GLfloat* values = GetImmediateDataAs<volatile const GLfloat*>(
-      c, data_size, immediate_data_size);
+      c, values_size, immediate_data_size);
   if (values == nullptr) {
     return error::kOutOfBounds;
   }
@@ -3445,15 +3443,15 @@ error::Error GLES2DecoderPassthroughImpl::HandleVertexAttrib3fvImmediate(
       *static_cast<const volatile gles2::cmds::VertexAttrib3fvImmediate*>(
           cmd_data);
   GLuint indx = static_cast<GLuint>(c.indx);
-  uint32_t data_size;
-  if (!GLES2Util::ComputeDataSize<GLfloat, 3>(1, &data_size)) {
+  uint32_t values_size;
+  if (!GLES2Util::ComputeDataSize<GLfloat, 3>(1, &values_size)) {
     return error::kOutOfBounds;
   }
-  if (data_size > immediate_data_size) {
+  if (values_size > immediate_data_size) {
     return error::kOutOfBounds;
   }
   volatile const GLfloat* values = GetImmediateDataAs<volatile const GLfloat*>(
-      c, data_size, immediate_data_size);
+      c, values_size, immediate_data_size);
   if (values == nullptr) {
     return error::kOutOfBounds;
   }
@@ -3488,15 +3486,15 @@ error::Error GLES2DecoderPassthroughImpl::HandleVertexAttrib4fvImmediate(
       *static_cast<const volatile gles2::cmds::VertexAttrib4fvImmediate*>(
           cmd_data);
   GLuint indx = static_cast<GLuint>(c.indx);
-  uint32_t data_size;
-  if (!GLES2Util::ComputeDataSize<GLfloat, 4>(1, &data_size)) {
+  uint32_t values_size;
+  if (!GLES2Util::ComputeDataSize<GLfloat, 4>(1, &values_size)) {
     return error::kOutOfBounds;
   }
-  if (data_size > immediate_data_size) {
+  if (values_size > immediate_data_size) {
     return error::kOutOfBounds;
   }
   volatile const GLfloat* values = GetImmediateDataAs<volatile const GLfloat*>(
-      c, data_size, immediate_data_size);
+      c, values_size, immediate_data_size);
   if (values == nullptr) {
     return error::kOutOfBounds;
   }
@@ -3535,15 +3533,15 @@ error::Error GLES2DecoderPassthroughImpl::HandleVertexAttribI4ivImmediate(
       *static_cast<const volatile gles2::cmds::VertexAttribI4ivImmediate*>(
           cmd_data);
   GLuint indx = static_cast<GLuint>(c.indx);
-  uint32_t data_size;
-  if (!GLES2Util::ComputeDataSize<GLint, 4>(1, &data_size)) {
+  uint32_t values_size;
+  if (!GLES2Util::ComputeDataSize<GLint, 4>(1, &values_size)) {
     return error::kOutOfBounds;
   }
-  if (data_size > immediate_data_size) {
+  if (values_size > immediate_data_size) {
     return error::kOutOfBounds;
   }
   volatile const GLint* values = GetImmediateDataAs<volatile const GLint*>(
-      c, data_size, immediate_data_size);
+      c, values_size, immediate_data_size);
   if (values == nullptr) {
     return error::kOutOfBounds;
   }
@@ -3582,15 +3580,15 @@ error::Error GLES2DecoderPassthroughImpl::HandleVertexAttribI4uivImmediate(
       *static_cast<const volatile gles2::cmds::VertexAttribI4uivImmediate*>(
           cmd_data);
   GLuint indx = static_cast<GLuint>(c.indx);
-  uint32_t data_size;
-  if (!GLES2Util::ComputeDataSize<GLuint, 4>(1, &data_size)) {
+  uint32_t values_size;
+  if (!GLES2Util::ComputeDataSize<GLuint, 4>(1, &values_size)) {
     return error::kOutOfBounds;
   }
-  if (data_size > immediate_data_size) {
+  if (values_size > immediate_data_size) {
     return error::kOutOfBounds;
   }
   volatile const GLuint* values = GetImmediateDataAs<volatile const GLuint*>(
-      c, data_size, immediate_data_size);
+      c, values_size, immediate_data_size);
   if (values == nullptr) {
     return error::kOutOfBounds;
   }
@@ -3750,12 +3748,12 @@ error::Error GLES2DecoderPassthroughImpl::HandleGenQueriesEXTImmediate(
       *static_cast<const volatile gles2::cmds::GenQueriesEXTImmediate*>(
           cmd_data);
   GLsizei n = static_cast<GLsizei>(c.n);
-  uint32_t data_size;
-  if (!SafeMultiplyUint32(n, sizeof(GLuint), &data_size)) {
+  uint32_t queries_size;
+  if (!SafeMultiplyUint32(n, sizeof(GLuint), &queries_size)) {
     return error::kOutOfBounds;
   }
-  volatile GLuint* queries =
-      GetImmediateDataAs<volatile GLuint*>(c, data_size, immediate_data_size);
+  volatile GLuint* queries = GetImmediateDataAs<volatile GLuint*>(
+      c, queries_size, immediate_data_size);
   if (queries == nullptr) {
     return error::kOutOfBounds;
   }
@@ -3773,12 +3771,12 @@ error::Error GLES2DecoderPassthroughImpl::HandleDeleteQueriesEXTImmediate(
       *static_cast<const volatile gles2::cmds::DeleteQueriesEXTImmediate*>(
           cmd_data);
   GLsizei n = static_cast<GLsizei>(c.n);
-  uint32_t data_size;
-  if (!SafeMultiplyUint32(n, sizeof(GLuint), &data_size)) {
+  uint32_t queries_size;
+  if (!SafeMultiplyUint32(n, sizeof(GLuint), &queries_size)) {
     return error::kOutOfBounds;
   }
   volatile const GLuint* queries = GetImmediateDataAs<volatile const GLuint*>(
-      c, data_size, immediate_data_size);
+      c, queries_size, immediate_data_size);
   if (queries == nullptr) {
     return error::kOutOfBounds;
   }
@@ -3834,12 +3832,12 @@ error::Error GLES2DecoderPassthroughImpl::HandleGenVertexArraysOESImmediate(
       *static_cast<const volatile gles2::cmds::GenVertexArraysOESImmediate*>(
           cmd_data);
   GLsizei n = static_cast<GLsizei>(c.n);
-  uint32_t data_size;
-  if (!SafeMultiplyUint32(n, sizeof(GLuint), &data_size)) {
+  uint32_t arrays_size;
+  if (!SafeMultiplyUint32(n, sizeof(GLuint), &arrays_size)) {
     return error::kOutOfBounds;
   }
   volatile GLuint* arrays =
-      GetImmediateDataAs<volatile GLuint*>(c, data_size, immediate_data_size);
+      GetImmediateDataAs<volatile GLuint*>(c, arrays_size, immediate_data_size);
   if (arrays == nullptr) {
     return error::kOutOfBounds;
   }
@@ -3857,12 +3855,12 @@ error::Error GLES2DecoderPassthroughImpl::HandleDeleteVertexArraysOESImmediate(
       *static_cast<const volatile gles2::cmds::DeleteVertexArraysOESImmediate*>(
           cmd_data);
   GLsizei n = static_cast<GLsizei>(c.n);
-  uint32_t data_size;
-  if (!SafeMultiplyUint32(n, sizeof(GLuint), &data_size)) {
+  uint32_t arrays_size;
+  if (!SafeMultiplyUint32(n, sizeof(GLuint), &arrays_size)) {
     return error::kOutOfBounds;
   }
   volatile const GLuint* arrays = GetImmediateDataAs<volatile const GLuint*>(
-      c, data_size, immediate_data_size);
+      c, arrays_size, immediate_data_size);
   if (arrays == nullptr) {
     return error::kOutOfBounds;
   }
@@ -4120,15 +4118,15 @@ GLES2DecoderPassthroughImpl::HandleProduceTextureDirectCHROMIUMImmediate(
           const volatile gles2::cmds::ProduceTextureDirectCHROMIUMImmediate*>(
           cmd_data);
   GLuint texture = c.texture;
-  uint32_t data_size;
-  if (!GLES2Util::ComputeDataSize<GLbyte, 16>(1, &data_size)) {
+  uint32_t mailbox_size;
+  if (!GLES2Util::ComputeDataSize<GLbyte, 16>(1, &mailbox_size)) {
     return error::kOutOfBounds;
   }
-  if (data_size > immediate_data_size) {
+  if (mailbox_size > immediate_data_size) {
     return error::kOutOfBounds;
   }
-  volatile GLbyte* mailbox =
-      GetImmediateDataAs<volatile GLbyte*>(c, data_size, immediate_data_size);
+  volatile GLbyte* mailbox = GetImmediateDataAs<volatile GLbyte*>(
+      c, mailbox_size, immediate_data_size);
   if (mailbox == nullptr) {
     return error::kOutOfBounds;
   }
@@ -4147,15 +4145,15 @@ GLES2DecoderPassthroughImpl::HandleCreateAndConsumeTextureINTERNALImmediate(
       *static_cast<const volatile gles2::cmds::
                        CreateAndConsumeTextureINTERNALImmediate*>(cmd_data);
   GLuint texture = static_cast<GLuint>(c.texture);
-  uint32_t data_size;
-  if (!GLES2Util::ComputeDataSize<GLbyte, 16>(1, &data_size)) {
+  uint32_t mailbox_size;
+  if (!GLES2Util::ComputeDataSize<GLbyte, 16>(1, &mailbox_size)) {
     return error::kOutOfBounds;
   }
-  if (data_size > immediate_data_size) {
+  if (mailbox_size > immediate_data_size) {
     return error::kOutOfBounds;
   }
   volatile const GLbyte* mailbox = GetImmediateDataAs<volatile const GLbyte*>(
-      c, data_size, immediate_data_size);
+      c, mailbox_size, immediate_data_size);
   if (mailbox == nullptr) {
     return error::kOutOfBounds;
   }
@@ -4236,15 +4234,16 @@ error::Error GLES2DecoderPassthroughImpl::HandleDiscardFramebufferEXTImmediate(
 
   GLenum target = static_cast<GLenum>(c.target);
   GLsizei count = static_cast<GLsizei>(c.count);
-  uint32_t data_size = 0;
-  if (count >= 0 && !GLES2Util::ComputeDataSize<GLenum, 1>(count, &data_size)) {
+  uint32_t attachments_size = 0;
+  if (count >= 0 &&
+      !GLES2Util::ComputeDataSize<GLenum, 1>(count, &attachments_size)) {
     return error::kOutOfBounds;
   }
-  if (data_size > immediate_data_size) {
+  if (attachments_size > immediate_data_size) {
     return error::kOutOfBounds;
   }
   volatile const GLenum* attachments =
-      GetImmediateDataAs<volatile const GLenum*>(c, data_size,
+      GetImmediateDataAs<volatile const GLenum*>(c, attachments_size,
                                                  immediate_data_size);
   if (attachments == nullptr) {
     return error::kOutOfBounds;
@@ -4303,15 +4302,15 @@ error::Error GLES2DecoderPassthroughImpl::HandleDrawBuffersEXTImmediate(
       *static_cast<const volatile gles2::cmds::DrawBuffersEXTImmediate*>(
           cmd_data);
   GLsizei count = static_cast<GLsizei>(c.count);
-  uint32_t data_size = 0;
-  if (count >= 0 && !GLES2Util::ComputeDataSize<GLenum, 1>(count, &data_size)) {
+  uint32_t bufs_size = 0;
+  if (count >= 0 && !GLES2Util::ComputeDataSize<GLenum, 1>(count, &bufs_size)) {
     return error::kOutOfBounds;
   }
-  if (data_size > immediate_data_size) {
+  if (bufs_size > immediate_data_size) {
     return error::kOutOfBounds;
   }
   volatile const GLenum* bufs = GetImmediateDataAs<volatile const GLenum*>(
-      c, data_size, immediate_data_size);
+      c, bufs_size, immediate_data_size);
   if (bufs == nullptr) {
     return error::kOutOfBounds;
   }
@@ -4330,15 +4329,16 @@ GLES2DecoderPassthroughImpl::HandleScheduleCALayerInUseQueryCHROMIUMImmediate(
       *static_cast<const volatile gles2::cmds::
                        ScheduleCALayerInUseQueryCHROMIUMImmediate*>(cmd_data);
   GLsizei count = static_cast<GLsizei>(c.count);
-  uint32_t data_size = 0;
-  if (count >= 0 && !GLES2Util::ComputeDataSize<GLuint, 1>(count, &data_size)) {
+  uint32_t textures_size = 0;
+  if (count >= 0 &&
+      !GLES2Util::ComputeDataSize<GLuint, 1>(count, &textures_size)) {
     return error::kOutOfBounds;
   }
-  if (data_size > immediate_data_size) {
+  if (textures_size > immediate_data_size) {
     return error::kOutOfBounds;
   }
   volatile const GLuint* textures = GetImmediateDataAs<volatile const GLuint*>(
-      c, data_size, immediate_data_size);
+      c, textures_size, immediate_data_size);
   if (textures == nullptr) {
     return error::kOutOfBounds;
   }
@@ -4385,15 +4385,15 @@ error::Error GLES2DecoderPassthroughImpl::HandleMatrixLoadfCHROMIUMImmediate(
   }
 
   GLenum matrixMode = static_cast<GLenum>(c.matrixMode);
-  uint32_t data_size;
-  if (!GLES2Util::ComputeDataSize<GLfloat, 16>(1, &data_size)) {
+  uint32_t m_size;
+  if (!GLES2Util::ComputeDataSize<GLfloat, 16>(1, &m_size)) {
     return error::kOutOfBounds;
   }
-  if (data_size > immediate_data_size) {
+  if (m_size > immediate_data_size) {
     return error::kOutOfBounds;
   }
   volatile const GLfloat* m = GetImmediateDataAs<volatile const GLfloat*>(
-      c, data_size, immediate_data_size);
+      c, m_size, immediate_data_size);
   if (m == nullptr) {
     return error::kOutOfBounds;
   }
@@ -4522,15 +4522,15 @@ error::Error GLES2DecoderPassthroughImpl::
               UniformMatrix4fvStreamTextureMatrixCHROMIUMImmediate*>(cmd_data);
   GLint location = static_cast<GLint>(c.location);
   GLboolean transpose = static_cast<GLboolean>(c.transpose);
-  uint32_t data_size;
-  if (!GLES2Util::ComputeDataSize<GLfloat, 16>(1, &data_size)) {
+  uint32_t transform_size;
+  if (!GLES2Util::ComputeDataSize<GLfloat, 16>(1, &transform_size)) {
     return error::kOutOfBounds;
   }
-  if (data_size > immediate_data_size) {
+  if (transform_size > immediate_data_size) {
     return error::kOutOfBounds;
   }
   volatile const GLfloat* transform =
-      GetImmediateDataAs<volatile const GLfloat*>(c, data_size,
+      GetImmediateDataAs<volatile const GLfloat*>(c, transform_size,
                                                   immediate_data_size);
   if (transform == nullptr) {
     return error::kOutOfBounds;
@@ -4574,15 +4574,15 @@ GLES2DecoderPassthroughImpl::HandleSwapBuffersWithBoundsCHROMIUMImmediate(
           cmd_data);
   GLuint64 swap_id = c.swap_id();
   GLsizei count = static_cast<GLsizei>(c.count);
-  uint32_t data_size = 0;
-  if (count >= 0 && !GLES2Util::ComputeDataSize<GLint, 4>(count, &data_size)) {
+  uint32_t rects_size = 0;
+  if (count >= 0 && !GLES2Util::ComputeDataSize<GLint, 4>(count, &rects_size)) {
     return error::kOutOfBounds;
   }
-  if (data_size > immediate_data_size) {
+  if (rects_size > immediate_data_size) {
     return error::kOutOfBounds;
   }
   volatile const GLint* rects = GetImmediateDataAs<volatile const GLint*>(
-      c, data_size, immediate_data_size);
+      c, rects_size, immediate_data_size);
   GLbitfield flags = static_cast<GLbitfield>(c.flags);
   if (rects == nullptr) {
     return error::kOutOfBounds;
@@ -4663,15 +4663,15 @@ error::Error GLES2DecoderPassthroughImpl::HandleWindowRectanglesEXTImmediate(
 
   GLenum mode = static_cast<GLenum>(c.mode);
   GLsizei count = static_cast<GLsizei>(c.count);
-  uint32_t data_size = 0;
-  if (count >= 0 && !GLES2Util::ComputeDataSize<GLint, 4>(count, &data_size)) {
+  uint32_t box_size = 0;
+  if (count >= 0 && !GLES2Util::ComputeDataSize<GLint, 4>(count, &box_size)) {
     return error::kOutOfBounds;
   }
-  if (data_size > immediate_data_size) {
+  if (box_size > immediate_data_size) {
     return error::kOutOfBounds;
   }
   volatile const GLint* box = GetImmediateDataAs<volatile const GLint*>(
-      c, data_size, immediate_data_size);
+      c, box_size, immediate_data_size);
   if (box == nullptr) {
     return error::kOutOfBounds;
   }
@@ -4743,6 +4743,69 @@ error::Error GLES2DecoderPassthroughImpl::HandleMaxShaderCompilerThreadsKHR(
 
   GLuint count = static_cast<GLuint>(c.count);
   error::Error error = DoMaxShaderCompilerThreadsKHR(count);
+  if (error != error::kNoError) {
+    return error;
+  }
+  return error::kNoError;
+}
+
+error::Error GLES2DecoderPassthroughImpl::
+    HandleCreateAndTexStorage2DSharedImageINTERNALImmediate(
+        uint32_t immediate_data_size,
+        const volatile void* cmd_data) {
+  const volatile gles2::cmds::CreateAndTexStorage2DSharedImageINTERNALImmediate&
+      c = *static_cast<const volatile gles2::cmds::
+                           CreateAndTexStorage2DSharedImageINTERNALImmediate*>(
+          cmd_data);
+  GLuint texture = static_cast<GLuint>(c.texture);
+  GLenum internalFormat = static_cast<GLenum>(c.internalFormat);
+  uint32_t mailbox_size;
+  if (!GLES2Util::ComputeDataSize<GLbyte, 16>(1, &mailbox_size)) {
+    return error::kOutOfBounds;
+  }
+  if (mailbox_size > immediate_data_size) {
+    return error::kOutOfBounds;
+  }
+  volatile const GLbyte* mailbox = GetImmediateDataAs<volatile const GLbyte*>(
+      c, mailbox_size, immediate_data_size);
+  if (mailbox == nullptr) {
+    return error::kOutOfBounds;
+  }
+  error::Error error = DoCreateAndTexStorage2DSharedImageINTERNAL(
+      texture, internalFormat, mailbox);
+  if (error != error::kNoError) {
+    return error;
+  }
+  return error::kNoError;
+}
+
+error::Error
+GLES2DecoderPassthroughImpl::HandleBeginSharedImageAccessDirectCHROMIUM(
+    uint32_t immediate_data_size,
+    const volatile void* cmd_data) {
+  const volatile gles2::cmds::BeginSharedImageAccessDirectCHROMIUM& c =
+      *static_cast<
+          const volatile gles2::cmds::BeginSharedImageAccessDirectCHROMIUM*>(
+          cmd_data);
+  GLuint texture = static_cast<GLuint>(c.texture);
+  GLenum mode = static_cast<GLenum>(c.mode);
+  error::Error error = DoBeginSharedImageAccessDirectCHROMIUM(texture, mode);
+  if (error != error::kNoError) {
+    return error;
+  }
+  return error::kNoError;
+}
+
+error::Error
+GLES2DecoderPassthroughImpl::HandleEndSharedImageAccessDirectCHROMIUM(
+    uint32_t immediate_data_size,
+    const volatile void* cmd_data) {
+  const volatile gles2::cmds::EndSharedImageAccessDirectCHROMIUM& c =
+      *static_cast<
+          const volatile gles2::cmds::EndSharedImageAccessDirectCHROMIUM*>(
+          cmd_data);
+  GLuint texture = static_cast<GLuint>(c.texture);
+  error::Error error = DoEndSharedImageAccessDirectCHROMIUM(texture);
   if (error != error::kNoError) {
     return error;
   }

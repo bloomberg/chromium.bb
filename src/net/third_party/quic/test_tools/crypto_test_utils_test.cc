@@ -5,7 +5,7 @@
 #include "net/third_party/quic/test_tools/crypto_test_utils.h"
 
 #include "net/test/gtest_util.h"
-#include "net/third_party/quic/core/crypto/crypto_server_config_protobuf.h"
+#include "net/third_party/quic/core/proto/crypto_server_config.pb.h"
 #include "net/third_party/quic/core/quic_utils.h"
 #include "net/third_party/quic/core/tls_server_handshaker.h"
 #include "net/third_party/quic/platform/api/quic_ptr_util.h"
@@ -108,7 +108,7 @@ class ShloVerifier {
 
 class CryptoTestUtilsTest : public QuicTest {};
 
-TEST(CryptoTestUtilsTest, TestGenerateFullCHLO) {
+TEST_F(CryptoTestUtilsTest, TestGenerateFullCHLO) {
   MockClock clock;
   QuicCryptoServerConfig crypto_config(
       QuicCryptoServerConfig::TESTING, QuicRandom::GetInstance(),

@@ -2,6 +2,8 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
+import("//testing/libfuzzer/fuzzer_test.gni")
+
 config("minizip_compiler_flags") {
   if (is_clang) {
     cflags = [ "-Wno-unused-function" ]
@@ -13,70 +15,104 @@ config("minizip_compiler_flags") {
         "-msse4.1",
       ]
     }
+
+    if (is_nacl) {
+      cflags += [ "-Wno-char-subscripts" ]
+    }
   }
 }
 
-config("minizip_include_dirs") {
-  include_dirs = [ "//third_party/zlib" ]
+config("minizip_public_config") {
+  include_dirs = [
+    "src/lib/brg",
+    "//third_party/zlib",
+  ]
+
+  defines = [
+    "MZ_VERSION_MADEBY_HOST_SYSTEM=MZ_HOST_SYSTEM_UNIX",
+    "HAVE_ZLIB",
+    "HAVE_PKCRYPT",
+    "HAVE_AES",
+
+    # This isn't actually low entropy. It just allows for an OS-specific
+    # random number generator.
+    "FORCE_LOWQUALITY_ENTROPY",
+  ]
 }
 
 static_library("minizip") {
   sources = [
-    "src/aes/aes.h",
-    "src/aes/aes_ni.c",
-    "src/aes/aes_ni.h",
-    "src/aes/aes_via_ace.h",
-    "src/aes/aescrypt.c",
-    "src/aes/aeskey.c",
-    "src/aes/aesopt.h",
-    "src/aes/aestab.c",
-    "src/aes/aestab.h",
-    "src/aes/brg_endian.h",
-    "src/aes/brg_types.h",
-    "src/aes/fileenc.c",
-    "src/aes/fileenc.h",
-    "src/aes/hmac.c",
-    "src/aes/hmac.h",
-    "src/aes/prng.c",
-    "src/aes/prng.h",
-    "src/aes/pwd2key.c",
-    "src/aes/pwd2key.h",
-    "src/aes/sha1.c",
-    "src/aes/sha1.h",
-    "src/crypt.c",
-    "src/crypt.h",
-    "src/ioapi.c",
-    "src/ioapi.h",
-    "src/ioapi_buf.c",
-    "src/ioapi_buf.h",
-    "src/ioapi_mem.c",
-    "src/ioapi_mem.h",
-    "src/unzip.c",
-    "src/unzip.h",
-    "src/zip.c",
-    "src/zip.h",
+    "mz_os_chrome.cc",
+    "src/lib/brg/aes.h",
+    "src/lib/brg/aescrypt.c",
+    "src/lib/brg/aeskey.c",
+    "src/lib/brg/aesopt.h",
+    "src/lib/brg/aestab.c",
+    "src/lib/brg/aestab.h",
+    "src/lib/brg/brg_endian.h",
+    "src/lib/brg/brg_types.h",
+    "src/lib/brg/hmac.c",
+    "src/lib/brg/hmac.h",
+    "src/lib/brg/sha1.c",
+    "src/lib/brg/sha1.h",
+    "src/lib/brg/sha2.c",
+    "src/lib/brg/sha2.h",
+    "src/mz.h",
+    "src/mz_crypt.c",
+    "src/mz_crypt.h",
+    "src/mz_crypt_brg.c",
+    "src/mz_os.c",
+    "src/mz_os.h",
+    "src/mz_strm.c",
+    "src/mz_strm.h",
+    "src/mz_strm_mem.c",
+    "src/mz_strm_mem.h",
+    "src/mz_strm_pkcrypt.c",
+    "src/mz_strm_pkcrypt.h",
+    "src/mz_strm_wzaes.c",
+    "src/mz_strm_wzaes.h",
+    "src/mz_strm_zlib.c",
+    "src/mz_strm_zlib.h",
+    "src/mz_zip.c",
+    "src/mz_zip.h",
+    "src/mz_zip_rw.c",
+    "src/mz_zip_rw.h",
   ]
-
-  defines = [
-    "HAVE_AES",
-    "NOCRYPT",
-  ]
-
-  if (is_nacl) {
-    defines += [ "USE_FILE32API" ]
-  }
 
   configs += [ ":minizip_compiler_flags" ]
 
-  public_configs = [ ":minizip_include_dirs" ]
+  public_configs = [ ":minizip_public_config" ]
 
   deps = [
+    "//base",
     "//third_party/zlib:zlib",
   ]
 
   visibility = [
     # NOTE: Modifying visibility list requires approval from security team.
-    "//testing/libfuzzer/fuzzers:*",
-    "//chrome/browser/resources/chromeos/zip_archiver/cpp:zip_archiver_pnacl",
+    ":minizip_compress_fuzzer",
+    ":minizip_uncompress_fuzzer",
+    "//chrome/browser/resources/chromeos/zip_archiver/cpp:zip_archiver_library",
   ]
+}
+
+fuzzer_test("minizip_compress_fuzzer") {
+  sources = [
+    "minizip_compress_fuzzer.cc",
+  ]
+  deps = [
+    ":minizip",
+    "//base",
+    "//base/test:test_support",
+  ]
+}
+
+fuzzer_test("minizip_uncompress_fuzzer") {
+  sources = [
+    "minizip_uncompress_fuzzer.cc",
+  ]
+  deps = [
+    ":minizip",
+  ]
+  seed_corpus = "minizip_uncompress_corpus"
 }

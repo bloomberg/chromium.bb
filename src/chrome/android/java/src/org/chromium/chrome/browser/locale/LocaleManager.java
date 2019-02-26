@@ -6,7 +6,6 @@ package org.chromium.chrome.browser.locale;
 
 import android.app.Activity;
 import android.content.Context;
-import android.content.Intent;
 import android.content.SharedPreferences;
 import android.os.StrictMode;
 import android.support.annotation.IntDef;
@@ -95,9 +94,7 @@ public class LocaleManager {
         @Override
         public void onAction(Object actionData) {
             Context context = ContextUtils.getApplicationContext();
-            Intent intent = PreferencesLauncher.createIntentForSettingsPage(context,
-                    SearchEnginePreference.class.getName());
-            context.startActivity(intent);
+            PreferencesLauncher.launchSettingsPage(context, SearchEnginePreference.class);
         }
     };
 

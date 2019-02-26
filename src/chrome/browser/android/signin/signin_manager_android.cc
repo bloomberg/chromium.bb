@@ -26,6 +26,7 @@
 #include "chrome/browser/policy/cloud/user_policy_signin_service_mobile.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/signin/account_tracker_service_factory.h"
+#include "chrome/browser/signin/identity_manager_factory.h"
 #include "chrome/browser/signin/oauth2_token_service_delegate_android.h"
 #include "chrome/browser/signin/profile_oauth2_token_service_factory.h"
 #include "chrome/browser/signin/signin_manager_factory.h"
@@ -37,10 +38,9 @@
 #include "components/policy/core/common/cloud/cloud_policy_store.h"
 #include "components/policy/core/common/cloud/user_cloud_policy_manager.h"
 #include "components/prefs/pref_service.h"
+#include "components/signin/core/browser/account_consistency_method.h"
 #include "components/signin/core/browser/account_tracker_service.h"
-#include "components/signin/core/browser/profile_management_switches.h"
 #include "components/signin/core/browser/profile_oauth2_token_service.h"
-#include "components/signin/core/browser/signin_manager.h"
 #include "components/signin/core/browser/signin_metrics.h"
 #include "components/signin/core/browser/signin_pref_names.h"
 #include "content/public/browser/browsing_data_filter_builder.h"
@@ -141,7 +141,7 @@ SigninManagerAndroid::SigninManagerAndroid(JNIEnv* env, jobject obj)
   java_signin_manager_.Reset(env, obj);
   profile_ = ProfileManager::GetActiveUserProfile();
   DCHECK(profile_);
-  SigninManagerFactory::GetForProfile(profile_)->AddObserver(this);
+  IdentityManagerFactory::GetForProfile(profile_)->AddObserver(this);
   pref_change_registrar_.Init(profile_->GetPrefs());
   pref_change_registrar_.Add(
       prefs::kSigninAllowed,
@@ -149,7 +149,9 @@ SigninManagerAndroid::SigninManagerAndroid(JNIEnv* env, jobject obj)
                  base::Unretained(this)));
 }
 
-SigninManagerAndroid::~SigninManagerAndroid() {}
+SigninManagerAndroid::~SigninManagerAndroid() {
+  IdentityManagerFactory::GetForProfile(profile_)->RemoveObserver(this);
+}
 
 void SigninManagerAndroid::CheckPolicyBeforeSignIn(
     JNIEnv* env,
@@ -207,6 +209,9 @@ void SigninManagerAndroid::OnSignInCompleted(
     const JavaParamRef<jobject>& obj,
     const JavaParamRef<jstring>& username) {
   DVLOG(1) << "SigninManagerAndroid::OnSignInCompleted";
+
+  // TODO(crbug.com/889902): Migrate to IdentityManager once there's an
+  // API mapping for SigninManager::OnExternalSigninCompleted().
   SigninManagerFactory::GetForProfile(profile_)->OnExternalSigninCompleted(
       base::android::ConvertJavaStringToUTF8(env, username));
 }
@@ -214,7 +219,8 @@ void SigninManagerAndroid::OnSignInCompleted(
 void SigninManagerAndroid::SignOut(JNIEnv* env,
                                    const JavaParamRef<jobject>& obj,
                                    jint signoutReason) {
-  SigninManagerFactory::GetForProfile(profile_)->SignOut(
+  IdentityManagerFactory::GetForProfile(profile_)->ClearPrimaryAccount(
+      identity::IdentityManager::ClearAccountTokensAction::kDefault,
       static_cast<signin_metrics::ProfileSignout>(signoutReason),
       // Always use IGNORE_METRIC for the profile deletion argument. Chrome
       // Android has just a single-profile which is never deleted upon
@@ -294,13 +300,13 @@ void SigninManagerAndroid::ClearLastSignedInUser(
 
 void SigninManagerAndroid::LogInSignedInUser(JNIEnv* env,
                                              const JavaParamRef<jobject>& obj) {
-  SigninManagerBase* signin_manager =
-      SigninManagerFactory::GetForProfile(profile_);
+  identity::IdentityManager* identity_manager =
+      IdentityManagerFactory::GetForProfile(profile_);
   // With the account consistency enabled let the account Reconcilor handles
   // everything.
   ProfileOAuth2TokenService* token_service =
       ProfileOAuth2TokenServiceFactory::GetForProfile(profile_);
-  const std::string& primary_acct = signin_manager->GetAuthenticatedAccountId();
+  const std::string& primary_acct = identity_manager->GetPrimaryAccountId();
 
   static_cast<OAuth2TokenServiceDelegateAndroid*>(token_service->GetDelegate())
       ->ValidateAccounts(primary_acct, true);
@@ -309,7 +315,7 @@ void SigninManagerAndroid::LogInSignedInUser(JNIEnv* env,
 jboolean SigninManagerAndroid::IsSigninAllowedByPolicy(
     JNIEnv* env,
     const JavaParamRef<jobject>& obj) {
-  return SigninManagerFactory::GetForProfile(profile_)->IsSigninAllowed();
+  return profile_->GetPrefs()->GetBoolean(prefs::kSigninAllowed);
 }
 
 jboolean SigninManagerAndroid::IsForceSigninEnabled(
@@ -323,17 +329,11 @@ jboolean SigninManagerAndroid::IsForceSigninEnabled(
 jboolean SigninManagerAndroid::IsSignedInOnNative(
     JNIEnv* env,
     const JavaParamRef<jobject>& obj) {
-  return SigninManagerFactory::GetForProfile(profile_)->IsAuthenticated();
+  return IdentityManagerFactory::GetForProfile(profile_)->HasPrimaryAccount();
 }
 
-void SigninManagerAndroid::GoogleSigninFailed(
-    const GoogleServiceAuthError& error) {}
-
-void SigninManagerAndroid::GoogleSigninSucceeded(const std::string& account_id,
-                                                 const std::string& username) {}
-
-void SigninManagerAndroid::GoogleSignedOut(const std::string& account_id,
-                                           const std::string& username) {
+void SigninManagerAndroid::OnPrimaryAccountCleared(
+    const AccountInfo& previous_primary_account_info) {
   DCHECK(thread_checker_.CalledOnValidThread());
   Java_SigninManager_onNativeSignOut(base::android::AttachCurrentThread(),
                                      java_signin_manager_);
@@ -342,7 +342,7 @@ void SigninManagerAndroid::GoogleSignedOut(const std::string& account_id,
 void SigninManagerAndroid::OnSigninAllowedPrefChanged() {
   Java_SigninManager_onSigninAllowedByPolicyChanged(
       base::android::AttachCurrentThread(), java_signin_manager_,
-      SigninManagerFactory::GetForProfile(profile_)->IsSigninAllowed());
+      profile_->GetPrefs()->GetBoolean(prefs::kSigninAllowed));
 }
 
 // static

@@ -8,6 +8,7 @@
 #include <utility>
 #include <vector>
 
+#include "base/command_line.h"
 #include "base/strings/string_piece.h"
 #include "base/time/time.h"
 #include "base/values.h"
@@ -24,6 +25,7 @@
 #include "components/metrics/metrics_pref_names.h"
 #include "components/prefs/pref_registry_simple.h"
 #include "components/prefs/pref_service.h"
+#include "components/tracing/common/tracing_switches.h"
 #include "components/variations/active_field_trials.h"
 #include "components/version_info/version_info.h"
 #include "content/public/browser/background_tracing_config.h"
@@ -103,6 +105,14 @@ Profile* GetProfile() {
 
 bool ProfileAllowsScenario(const content::BackgroundTracingConfig& config,
                            PermitMissingProfile profile_permission) {
+  // If the background tracing is specified on the command-line, we allow
+  // any scenario to be traced.
+  auto* command_line = base::CommandLine::ForCurrentProcess();
+  if (command_line->HasSwitch(switches::kEnableBackgroundTracing) &&
+      command_line->HasSwitch(switches::kTraceUploadURL)) {
+    return true;
+  }
+
   // If the profile hasn't loaded or been created yet, we allow the scenario
   // to start up, but not be finalized.
   Profile* profile = GetProfile();
@@ -152,12 +162,6 @@ bool ProfileAllowsScenario(const content::BackgroundTracingConfig& config,
 bool ChromeTracingDelegate::IsAllowedToBeginBackgroundScenario(
     const content::BackgroundTracingConfig& config,
     bool requires_anonymized_data) {
-#if defined(OS_ANDROID)
-  // TODO(oysteine): Support preemptive mode safely in Android.
-  if (config.tracing_mode() == content::BackgroundTracingConfig::PREEMPTIVE)
-    return false;
-#endif
-
   if (!ProfileAllowsScenario(config, PROFILE_NOT_REQUIRED))
     return false;
 

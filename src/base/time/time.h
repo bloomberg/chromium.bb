@@ -186,18 +186,18 @@ class BASE_EXPORT TimeDelta {
   // towards zero, std::trunc() behavior). The InXYZFloored() versions round to
   // lesser integers (std::floor() behavior). The XYZRoundedUp() versions round
   // up to greater integers (std::ceil() behavior).
-  constexpr int InDays() const;
+  int InDays() const;
   int InDaysFloored() const;
-  constexpr int InHours() const;
-  constexpr int InMinutes() const;
-  constexpr double InSecondsF() const;
-  constexpr int64_t InSeconds() const;
-  constexpr double InMillisecondsF() const;
-  constexpr int64_t InMilliseconds() const;
+  int InHours() const;
+  int InMinutes() const;
+  double InSecondsF() const;
+  int64_t InSeconds() const;
+  double InMillisecondsF() const;
+  int64_t InMilliseconds() const;
   int64_t InMillisecondsRoundedUp() const;
-  constexpr int64_t InMicroseconds() const;
-  constexpr double InMicrosecondsF() const;
-  constexpr int64_t InNanoseconds() const;
+  constexpr int64_t InMicroseconds() const { return delta_; }
+  double InMicrosecondsF() const;
+  int64_t InNanoseconds() const;
 
   // Computations with other deltas. Can easily be made constexpr with C++17 but
   // hard to do until then per limitations around
@@ -294,11 +294,6 @@ class BASE_EXPORT TimeDelta {
   // and a known-positive value.
   static constexpr TimeDelta FromProduct(int64_t value, int64_t positive_value);
 
-  // Returns |delta_| (microseconds) divided by |divisor|, or the max value
-  // representable in T if is_max().
-  template <typename T>
-  constexpr T DivideOrMax(int64_t divisor) const;
-
   // Delta in microseconds.
   int64_t delta_;
 };
@@ -326,6 +321,8 @@ template<class TimeClass>
 class TimeBase {
  public:
   static constexpr int64_t kHoursPerDay = 24;
+  static constexpr int64_t kSecondsPerMinute = 60;
+  static constexpr int64_t kSecondsPerHour = 60 * kSecondsPerMinute;
   static constexpr int64_t kMillisecondsPerSecond = 1000;
   static constexpr int64_t kMillisecondsPerDay =
       kMillisecondsPerSecond * 60 * 60 * kHoursPerDay;
@@ -642,6 +639,12 @@ class BASE_EXPORT Time : public time_internal::TimeBase<Time> {
   // in the input string, FromString assumes local time and FromUTCString
   // assumes UTC. A timezone that cannot be parsed (e.g. "UTC" which is not
   // specified in RFC822) is treated as if the timezone is not specified.
+  //
+  // WARNING: the underlying converter is very permissive. For example: it is
+  // not checked whether a given day of the week matches the date; Feb 29
+  // silently becomes Mar 1 in non-leap years; under certain conditions, whole
+  // English sentences may be parsed successfully and yield unexpected results.
+  //
   // TODO(iyengar) Move the FromString/FromTimeT/ToTimeT/FromFileTime to
   // a new time converter class.
   static bool FromString(const char* time_string,
@@ -782,64 +785,6 @@ constexpr TimeDelta TimeDelta::Max() {
 // static
 constexpr TimeDelta TimeDelta::Min() {
   return TimeDelta(std::numeric_limits<int64_t>::min());
-}
-
-// Must be defined before use below.
-template <typename T>
-constexpr T TimeDelta::DivideOrMax(int64_t divisor) const {
-  return is_max() ? std::numeric_limits<T>::max()
-                  : static_cast<T>(delta_ / divisor);
-}
-
-// Must be defined before use below.
-template <>
-constexpr double TimeDelta::DivideOrMax<double>(int64_t divisor) const {
-  return is_max() ? std::numeric_limits<double>::infinity()
-                  : static_cast<double>(delta_) / divisor;
-}
-
-constexpr int TimeDelta::InDays() const {
-  return DivideOrMax<int>(Time::kMicrosecondsPerDay);
-}
-
-constexpr int TimeDelta::InHours() const {
-  return DivideOrMax<int>(Time::kMicrosecondsPerHour);
-}
-
-constexpr int TimeDelta::InMinutes() const {
-  return DivideOrMax<int>(Time::kMicrosecondsPerMinute);
-}
-
-constexpr double TimeDelta::InSecondsF() const {
-  return DivideOrMax<double>(Time::kMicrosecondsPerSecond);
-}
-
-constexpr int64_t TimeDelta::InSeconds() const {
-  return DivideOrMax<int64_t>(Time::kMicrosecondsPerSecond);
-}
-
-constexpr double TimeDelta::InMillisecondsF() const {
-  return DivideOrMax<double>(Time::kMicrosecondsPerMillisecond);
-}
-
-constexpr int64_t TimeDelta::InMilliseconds() const {
-  return DivideOrMax<int64_t>(Time::kMicrosecondsPerMillisecond);
-}
-
-constexpr int64_t TimeDelta::InMicroseconds() const {
-  return DivideOrMax<int64_t>(1);
-}
-
-constexpr double TimeDelta::InMicrosecondsF() const {
-  return DivideOrMax<double>(1);
-}
-
-constexpr int64_t TimeDelta::InNanoseconds() const {
-  if (is_max()) {
-    // Preserve max to prevent overflow.
-    return std::numeric_limits<int64_t>::max();
-  }
-  return delta_ * Time::kNanosecondsPerMicrosecond;
 }
 
 // static

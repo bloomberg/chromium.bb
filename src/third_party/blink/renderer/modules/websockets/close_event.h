@@ -55,7 +55,7 @@ class CloseEvent final : public Event {
   }
 
   static CloseEvent* Create(const AtomicString& type,
-                            const CloseEventInit& initializer) {
+                            const CloseEventInit* initializer) {
     return new CloseEvent(type, initializer);
   }
 
@@ -65,7 +65,7 @@ class CloseEvent final : public Event {
 
   // Event function.
   const AtomicString& InterfaceName() const override {
-    return EventNames::CloseEvent;
+    return event_interface_names::kCloseEvent;
   }
 
   void Trace(blink::Visitor* visitor) override { Event::Trace(visitor); }
@@ -74,12 +74,12 @@ class CloseEvent final : public Event {
   CloseEvent() : was_clean_(false), code_(0) {}
 
   CloseEvent(bool was_clean, int code, const String& reason)
-      : Event(EventTypeNames::close, Bubbles::kNo, Cancelable::kNo),
+      : Event(event_type_names::kClose, Bubbles::kNo, Cancelable::kNo),
         was_clean_(was_clean),
         code_(code),
         reason_(reason) {}
 
-  CloseEvent(const AtomicString& type, const CloseEventInit& initializer);
+  CloseEvent(const AtomicString& type, const CloseEventInit* initializer);
 
   bool was_clean_;
   unsigned short code_;

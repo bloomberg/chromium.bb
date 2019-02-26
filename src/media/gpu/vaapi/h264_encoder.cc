@@ -6,9 +6,8 @@
 
 #include "base/bits.h"
 #include "base/stl_util.h"
+#include "media/gpu/macros.h"
 #include "media/video/h264_level_limits.h"
-
-#define DVLOGF(level) DVLOG(level) << __func__ << "(): "
 
 namespace media {
 namespace {

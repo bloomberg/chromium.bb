@@ -93,13 +93,13 @@ Settings* WindowSettings(LocalDOMWindow* executing_window) {
 }
 
 bool IsTouchScrollBlockingEvent(const AtomicString& event_type) {
-  return event_type == EventTypeNames::touchstart ||
-         event_type == EventTypeNames::touchmove;
+  return event_type == event_type_names::kTouchstart ||
+         event_type == event_type_names::kTouchmove;
 }
 
 bool IsWheelScrollBlockingEvent(const AtomicString& event_type) {
-  return event_type == EventTypeNames::mousewheel ||
-         event_type == EventTypeNames::wheel;
+  return event_type == event_type_names::kMousewheel ||
+         event_type == event_type_names::kWheel;
 }
 
 bool IsScrollBlockingEvent(const AtomicString& event_type) {
@@ -108,8 +108,8 @@ bool IsScrollBlockingEvent(const AtomicString& event_type) {
 }
 
 bool IsInstrumentedForAsyncStack(const AtomicString& event_type) {
-  return event_type == EventTypeNames::load ||
-         event_type == EventTypeNames::error;
+  return event_type == event_type_names::kLoad ||
+         event_type == event_type_names::kError;
 }
 
 base::TimeDelta BlockedEventsWarningThreshold(ExecutionContext* context,
@@ -231,20 +231,20 @@ bool EventTarget::IsTopLevelNode() {
 void EventTarget::SetDefaultAddEventListenerOptions(
     const AtomicString& event_type,
     EventListener* event_listener,
-    AddEventListenerOptionsResolved& options) {
-  options.SetPassiveSpecified(options.hasPassive());
+    AddEventListenerOptionsResolved* options) {
+  options->SetPassiveSpecified(options->hasPassive());
 
   if (!IsScrollBlockingEvent(event_type)) {
-    if (!options.hasPassive())
-      options.setPassive(false);
+    if (!options->hasPassive())
+      options->setPassive(false);
     return;
   }
 
   LocalDOMWindow* executing_window = ExecutingWindow();
   if (executing_window) {
-    if (options.hasPassive()) {
+    if (options->hasPassive()) {
       UseCounter::Count(executing_window->document(),
-                        options.passive()
+                        options->passive()
                             ? WebFeature::kAddEventListenerPassiveTrue
                             : WebFeature::kAddEventListenerPassiveFalse);
     }
@@ -252,31 +252,31 @@ void EventTarget::SetDefaultAddEventListenerOptions(
 
   if (RuntimeEnabledFeatures::PassiveDocumentEventListenersEnabled() &&
       IsTouchScrollBlockingEvent(event_type)) {
-    if (!options.hasPassive() && IsTopLevelNode()) {
-      options.setPassive(true);
-      options.SetPassiveForcedForDocumentTarget(true);
+    if (!options->hasPassive() && IsTopLevelNode()) {
+      options->setPassive(true);
+      options->SetPassiveForcedForDocumentTarget(true);
       return;
     }
   }
 
   if (IsWheelScrollBlockingEvent(event_type) && IsTopLevelNode()) {
-    if (options.hasPassive()) {
+    if (options->hasPassive()) {
       if (executing_window) {
         UseCounter::Count(
             executing_window->document(),
-            options.passive()
+            options->passive()
                 ? WebFeature::kAddDocumentLevelPassiveTrueWheelEventListener
                 : WebFeature::kAddDocumentLevelPassiveFalseWheelEventListener);
       }
-    } else {  // !options.hasPassive()
+    } else {  // !options->hasPassive()
       if (executing_window) {
         UseCounter::Count(
             executing_window->document(),
             WebFeature::kAddDocumentLevelPassiveDefaultWheelEventListener);
       }
       if (RuntimeEnabledFeatures::PassiveDocumentWheelEventListenersEnabled()) {
-        options.setPassive(true);
-        options.SetPassiveForcedForDocumentTarget(true);
+        options->setPassive(true);
+        options->SetPassiveForcedForDocumentTarget(true);
         return;
       }
     }
@@ -286,8 +286,8 @@ void EventTarget::SetDefaultAddEventListenerOptions(
   // a bound function name of "ssc_wheel" treat and no passive value default
   // passive to true. See crbug.com/501568.
   if (RuntimeEnabledFeatures::SmoothScrollJSInterventionEnabled() &&
-      event_type == EventTypeNames::mousewheel && ToLocalDOMWindow() &&
-      event_listener && !options.hasPassive()) {
+      event_type == event_type_names::kMousewheel && ToLocalDOMWindow() &&
+      event_listener && !options->hasPassive()) {
     JSBasedEventListener* v8_listener =
         JSBasedEventListener::Cast(event_listener);
     if (!v8_listener)
@@ -301,7 +301,7 @@ void EventTarget::SetDefaultAddEventListenerOptions(
                 v8::Isolate::GetCurrent(),
                 v8::Local<v8::Function>::Cast(callback_object)->GetName())) ==
             0) {
-      options.setPassive(true);
+      options->setPassive(true);
       if (executing_window) {
         UseCounter::Count(executing_window->document(),
                           WebFeature::kSmoothScrollJSInterventionActivated);
@@ -321,23 +321,23 @@ void EventTarget::SetDefaultAddEventListenerOptions(
   if (Settings* settings = WindowSettings(ExecutingWindow())) {
     switch (settings->GetPassiveListenerDefault()) {
       case PassiveListenerDefault::kFalse:
-        if (!options.hasPassive())
-          options.setPassive(false);
+        if (!options->hasPassive())
+          options->setPassive(false);
         break;
       case PassiveListenerDefault::kTrue:
-        if (!options.hasPassive())
-          options.setPassive(true);
+        if (!options->hasPassive())
+          options->setPassive(true);
         break;
       case PassiveListenerDefault::kForceAllTrue:
-        options.setPassive(true);
+        options->setPassive(true);
         break;
     }
   } else {
-    if (!options.hasPassive())
-      options.setPassive(false);
+    if (!options->hasPassive())
+      options->setPassive(false);
   }
 
-  if (!options.passive() && !options.PassiveSpecified()) {
+  if (!options->passive() && !options->PassiveSpecified()) {
     String message_text = String::Format(
         "Added non-passive event listener to a scroll-blocking '%s' event. "
         "Consider marking event handler as 'passive' to make the page more "
@@ -354,8 +354,9 @@ void EventTarget::SetDefaultAddEventListenerOptions(
 bool EventTarget::addEventListener(const AtomicString& event_type,
                                    EventListener* listener,
                                    bool use_capture) {
-  AddEventListenerOptionsResolved options;
-  options.setCapture(use_capture);
+  AddEventListenerOptionsResolved* options =
+      AddEventListenerOptionsResolved::Create();
+  options->setCapture(use_capture);
   SetDefaultAddEventListenerOptions(event_type, listener, options);
   return AddEventListenerInternal(event_type, listener, options);
 }
@@ -367,16 +368,24 @@ bool EventTarget::addEventListener(
   if (options_union.IsBoolean())
     return addEventListener(event_type, listener, options_union.GetAsBoolean());
   if (options_union.IsAddEventListenerOptions()) {
-    AddEventListenerOptionsResolved options =
+    AddEventListenerOptionsResolved* resolved_options =
+        AddEventListenerOptionsResolved::Create();
+    AddEventListenerOptions* options =
         options_union.GetAsAddEventListenerOptions();
-    return addEventListener(event_type, listener, options);
+    if (options->hasPassive())
+      resolved_options->setPassive(options->passive());
+    if (options->hasOnce())
+      resolved_options->setOnce(options->once());
+    if (options->hasCapture())
+      resolved_options->setCapture(options->capture());
+    return addEventListener(event_type, listener, resolved_options);
   }
   return addEventListener(event_type, listener);
 }
 
 bool EventTarget::addEventListener(const AtomicString& event_type,
                                    EventListener* listener,
-                                   AddEventListenerOptionsResolved& options) {
+                                   AddEventListenerOptionsResolved* options) {
   SetDefaultAddEventListenerOptions(event_type, listener, options);
   return AddEventListenerInternal(event_type, listener, options);
 }
@@ -384,7 +393,7 @@ bool EventTarget::addEventListener(const AtomicString& event_type,
 bool EventTarget::AddEventListenerInternal(
     const AtomicString& event_type,
     EventListener* listener,
-    const AddEventListenerOptionsResolved& options) {
+    const AddEventListenerOptionsResolved* options) {
   if (!listener)
     return false;
 
@@ -415,17 +424,17 @@ void EventTarget::AddedEventListener(
     RegisteredEventListener& registered_listener) {
   if (const LocalDOMWindow* executing_window = ExecutingWindow()) {
     if (const Document* document = executing_window->document()) {
-      if (event_type == EventTypeNames::auxclick)
+      if (event_type == event_type_names::kAuxclick)
         UseCounter::Count(*document, WebFeature::kAuxclickAddListenerCount);
-      else if (event_type == EventTypeNames::appinstalled)
+      else if (event_type == event_type_names::kAppinstalled)
         UseCounter::Count(*document, WebFeature::kAppInstalledEventAddListener);
-      else if (EventUtil::IsPointerEventType(event_type))
+      else if (event_util::IsPointerEventType(event_type))
         UseCounter::Count(*document, WebFeature::kPointerEventAddListenerCount);
-      else if (event_type == EventTypeNames::slotchange)
+      else if (event_type == event_type_names::kSlotchange)
         UseCounter::Count(*document, WebFeature::kSlotChangeEventAddListener);
     }
   }
-  if (EventUtil::IsDOMMutationEventType(event_type)) {
+  if (event_util::IsDOMMutationEventType(event_type)) {
     if (ExecutionContext* context = GetExecutionContext()) {
       String message_text = String::Format(
           "Added synchronous DOM mutation listener to a '%s' event. "
@@ -441,8 +450,8 @@ void EventTarget::AddedEventListener(
 bool EventTarget::removeEventListener(const AtomicString& event_type,
                                       const EventListener* listener,
                                       bool use_capture) {
-  EventListenerOptions options;
-  options.setCapture(use_capture);
+  EventListenerOptions* options = EventListenerOptions::Create();
+  options->setCapture(use_capture);
   return RemoveEventListenerInternal(event_type, listener, options);
 }
 
@@ -455,7 +464,7 @@ bool EventTarget::removeEventListener(
                                options_union.GetAsBoolean());
   }
   if (options_union.IsEventListenerOptions()) {
-    EventListenerOptions options = options_union.GetAsEventListenerOptions();
+    EventListenerOptions* options = options_union.GetAsEventListenerOptions();
     return removeEventListener(event_type, listener, options);
   }
   return removeEventListener(event_type, listener);
@@ -463,14 +472,14 @@ bool EventTarget::removeEventListener(
 
 bool EventTarget::removeEventListener(const AtomicString& event_type,
                                       const EventListener* listener,
-                                      EventListenerOptions& options) {
+                                      EventListenerOptions* options) {
   return RemoveEventListenerInternal(event_type, listener, options);
 }
 
 bool EventTarget::RemoveEventListenerInternal(
     const AtomicString& event_type,
     const EventListener* listener,
-    const EventListenerOptions& options) {
+    const EventListenerOptions* options) {
   if (!listener)
     return false;
 
@@ -596,20 +605,20 @@ DispatchEventResult EventTarget::DispatchEventInternal(Event& event) {
 }
 
 static const AtomicString& LegacyType(const Event& event) {
-  if (event.type() == EventTypeNames::transitionend)
-    return EventTypeNames::webkitTransitionEnd;
+  if (event.type() == event_type_names::kTransitionend)
+    return event_type_names::kWebkitTransitionEnd;
 
-  if (event.type() == EventTypeNames::animationstart)
-    return EventTypeNames::webkitAnimationStart;
+  if (event.type() == event_type_names::kAnimationstart)
+    return event_type_names::kWebkitAnimationStart;
 
-  if (event.type() == EventTypeNames::animationend)
-    return EventTypeNames::webkitAnimationEnd;
+  if (event.type() == event_type_names::kAnimationend)
+    return event_type_names::kWebkitAnimationEnd;
 
-  if (event.type() == EventTypeNames::animationiteration)
-    return EventTypeNames::webkitAnimationIteration;
+  if (event.type() == event_type_names::kAnimationiteration)
+    return event_type_names::kWebkitAnimationIteration;
 
-  if (event.type() == EventTypeNames::wheel)
-    return EventTypeNames::mousewheel;
+  if (event.type() == event_type_names::kWheel)
+    return event_type_names::kMousewheel;
 
   return g_empty_atom;
 }
@@ -621,27 +630,27 @@ void EventTarget::CountLegacyEvents(
   WebFeature unprefixed_feature;
   WebFeature prefixed_feature;
   WebFeature prefixed_and_unprefixed_feature;
-  if (legacy_type_name == EventTypeNames::webkitTransitionEnd) {
+  if (legacy_type_name == event_type_names::kWebkitTransitionEnd) {
     prefixed_feature = WebFeature::kPrefixedTransitionEndEvent;
     unprefixed_feature = WebFeature::kUnprefixedTransitionEndEvent;
     prefixed_and_unprefixed_feature =
         WebFeature::kPrefixedAndUnprefixedTransitionEndEvent;
-  } else if (legacy_type_name == EventTypeNames::webkitAnimationEnd) {
+  } else if (legacy_type_name == event_type_names::kWebkitAnimationEnd) {
     prefixed_feature = WebFeature::kPrefixedAnimationEndEvent;
     unprefixed_feature = WebFeature::kUnprefixedAnimationEndEvent;
     prefixed_and_unprefixed_feature =
         WebFeature::kPrefixedAndUnprefixedAnimationEndEvent;
-  } else if (legacy_type_name == EventTypeNames::webkitAnimationStart) {
+  } else if (legacy_type_name == event_type_names::kWebkitAnimationStart) {
     prefixed_feature = WebFeature::kPrefixedAnimationStartEvent;
     unprefixed_feature = WebFeature::kUnprefixedAnimationStartEvent;
     prefixed_and_unprefixed_feature =
         WebFeature::kPrefixedAndUnprefixedAnimationStartEvent;
-  } else if (legacy_type_name == EventTypeNames::webkitAnimationIteration) {
+  } else if (legacy_type_name == event_type_names::kWebkitAnimationIteration) {
     prefixed_feature = WebFeature::kPrefixedAnimationIterationEvent;
     unprefixed_feature = WebFeature::kUnprefixedAnimationIterationEvent;
     prefixed_and_unprefixed_feature =
         WebFeature::kPrefixedAndUnprefixedAnimationIterationEvent;
-  } else if (legacy_type_name == EventTypeNames::mousewheel) {
+  } else if (legacy_type_name == event_type_names::kMousewheel) {
     prefixed_feature = WebFeature::kMouseWheelEvent;
     unprefixed_feature = WebFeature::kWheelEvent;
     prefixed_and_unprefixed_feature = WebFeature::kMouseWheelAndWheelEvent;
@@ -715,66 +724,66 @@ bool EventTarget::FireEventListeners(Event& event,
   // excludes new event listeners.
   if (const LocalDOMWindow* executing_window = ExecutingWindow()) {
     if (const Document* document = executing_window->document()) {
-      if (CheckTypeThenUseCount(event, EventTypeNames::beforeunload,
+      if (CheckTypeThenUseCount(event, event_type_names::kBeforeunload,
                                 WebFeature::kDocumentBeforeUnloadFired,
                                 document)) {
         if (executing_window != executing_window->top())
           UseCounter::Count(*document, WebFeature::kSubFrameBeforeUnloadFired);
-      } else if (CheckTypeThenUseCount(event, EventTypeNames::unload,
+      } else if (CheckTypeThenUseCount(event, event_type_names::kUnload,
                                        WebFeature::kDocumentUnloadFired,
                                        document)) {
-      } else if (CheckTypeThenUseCount(event, EventTypeNames::pagehide,
+      } else if (CheckTypeThenUseCount(event, event_type_names::kPagehide,
                                        WebFeature::kDocumentPageHideFired,
                                        document)) {
-      } else if (CheckTypeThenUseCount(event, EventTypeNames::pageshow,
+      } else if (CheckTypeThenUseCount(event, event_type_names::kPageshow,
                                        WebFeature::kDocumentPageShowFired,
                                        document)) {
-      } else if (CheckTypeThenUseCount(event, EventTypeNames::DOMFocusIn,
+      } else if (CheckTypeThenUseCount(event, event_type_names::kDOMFocusIn,
                                        WebFeature::kDOMFocusInOutEvent,
                                        document)) {
-      } else if (CheckTypeThenUseCount(event, EventTypeNames::DOMFocusOut,
+      } else if (CheckTypeThenUseCount(event, event_type_names::kDOMFocusOut,
                                        WebFeature::kDOMFocusInOutEvent,
                                        document)) {
-      } else if (CheckTypeThenUseCount(event, EventTypeNames::focusin,
+      } else if (CheckTypeThenUseCount(event, event_type_names::kFocusin,
                                        WebFeature::kFocusInOutEvent,
                                        document)) {
-      } else if (CheckTypeThenUseCount(event, EventTypeNames::focusout,
+      } else if (CheckTypeThenUseCount(event, event_type_names::kFocusout,
                                        WebFeature::kFocusInOutEvent,
                                        document)) {
-      } else if (CheckTypeThenUseCount(event, EventTypeNames::textInput,
+      } else if (CheckTypeThenUseCount(event, event_type_names::kTextInput,
                                        WebFeature::kTextInputFired, document)) {
-      } else if (CheckTypeThenUseCount(event, EventTypeNames::touchstart,
+      } else if (CheckTypeThenUseCount(event, event_type_names::kTouchstart,
                                        WebFeature::kTouchStartFired,
                                        document)) {
-      } else if (CheckTypeThenUseCount(event, EventTypeNames::mousedown,
+      } else if (CheckTypeThenUseCount(event, event_type_names::kMousedown,
                                        WebFeature::kMouseDownFired, document)) {
-      } else if (CheckTypeThenUseCount(event, EventTypeNames::pointerdown,
+      } else if (CheckTypeThenUseCount(event, event_type_names::kPointerdown,
                                        WebFeature::kPointerDownFired,
                                        document)) {
         if (event.IsPointerEvent() &&
             static_cast<PointerEvent&>(event).pointerType() == "touch") {
           UseCounter::Count(*document, WebFeature::kPointerDownFiredForTouch);
         }
-      } else if (CheckTypeThenUseCount(event, EventTypeNames::pointerenter,
+      } else if (CheckTypeThenUseCount(event, event_type_names::kPointerenter,
                                        WebFeature::kPointerEnterLeaveFired,
                                        document)) {
-      } else if (CheckTypeThenUseCount(event, EventTypeNames::pointerleave,
+      } else if (CheckTypeThenUseCount(event, event_type_names::kPointerleave,
                                        WebFeature::kPointerEnterLeaveFired,
                                        document)) {
-      } else if (CheckTypeThenUseCount(event, EventTypeNames::pointerover,
+      } else if (CheckTypeThenUseCount(event, event_type_names::kPointerover,
                                        WebFeature::kPointerOverOutFired,
                                        document)) {
-      } else if (CheckTypeThenUseCount(event, EventTypeNames::pointerout,
+      } else if (CheckTypeThenUseCount(event, event_type_names::kPointerout,
                                        WebFeature::kPointerOverOutFired,
                                        document)) {
       } else if (event.eventPhase() == Event::kCapturingPhase ||
                  event.eventPhase() == Event::kBubblingPhase) {
         if (CheckTypeThenUseCount(
-                event, EventTypeNames::DOMNodeRemoved,
+                event, event_type_names::kDOMNodeRemoved,
                 WebFeature::kDOMNodeRemovedEventListenedAtNonTarget,
                 document)) {
         } else if (CheckTypeThenUseCount(
-                       event, EventTypeNames::DOMNodeRemovedFromDocument,
+                       event, event_type_names::kDOMNodeRemovedFromDocument,
                        WebFeature::
                            kDOMNodeRemovedFromDocumentEventListenedAtNonTarget,
                        document)) {
@@ -838,7 +847,7 @@ bool EventTarget::FireEventListeners(Event& event,
 
     // To match Mozilla, the AT_TARGET phase fires both capturing and bubbling
     // event listeners, even though that violates some versions of the DOM spec.
-    listener->handleEvent(context, &event);
+    listener->Invoke(context, &event);
     fired_listener = true;
 
     // If we're about to report this event listener as blocking, make sure it

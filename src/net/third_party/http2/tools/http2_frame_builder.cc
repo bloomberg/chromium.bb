@@ -65,7 +65,7 @@ void Http2FrameBuilder::AppendUInt31(uint32_t value) {
   // If you want to test the high-bit being set, call AppendUInt32 instead.
   uint32_t tmp = value & StreamIdMask();
   EXPECT_EQ(value, value & StreamIdMask())
-      << "High-bit of uint32 should be clear.";
+      << "High-bit of uint32_t should be clear.";
   value = htonl(tmp);
   AppendBytes(&value, 4);
 }

@@ -121,28 +121,6 @@ void RecordUserAcceptedAppLaunchMetric(BOOL user_accepted) {
            }];
 }
 
-// Shows an alert to launch a phone call or Facetime. The |URL| is launched if
-// the user accepts.
-- (void)showAlertAndLaunchPhoneCallOrFacetimeURL:(const GURL&)URL {
-  DCHECK(UrlHasPhoneCallScheme(URL));
-  NSURL* phoneCallOrFacetimeURL = net::NSURLWithGURL(URL);
-  NSString* prompt =
-      GetFormattedAbsoluteUrlWithSchemeRemoved(phoneCallOrFacetimeURL);
-  NSString* openLabel = GetPromptActionString(phoneCallOrFacetimeURL.scheme);
-  NSString* cancelLabel = l10n_util::GetNSString(IDS_CANCEL);
-  [self showAlertWithMessage:prompt
-           acceptActionTitle:openLabel
-           rejectActionTitle:cancelLabel
-           completionHandler:^(BOOL userAccepted) {
-             RecordUserAcceptedAppLaunchMetric(userAccepted);
-             if (userAccepted) {
-               [[UIApplication sharedApplication] openURL:phoneCallOrFacetimeURL
-                                                  options:@{}
-                                        completionHandler:nil];
-             }
-           }];
-}
-
 // Launches |URL| in a mailto handler. If a default mailto handler does not
 // exist, then a mail handler chooser is launched before the mailto handler
 // is launched.
@@ -180,26 +158,9 @@ void RecordUserAcceptedAppLaunchMetric(BOOL user_accepted) {
       UIApplicationStateActive) {
     return NO;
   }
-  if (@available(iOS 10.3, *)) {
-    if (UrlHasAppStoreScheme(URL)) {
-      [self showAlertAndLaunchAppURL:URL];
-      return YES;
-    }
-  } else {
-    // Prior to iOS 10.3, iOS does not prompt user when facetime: and
-    // facetime-audio: URL schemes are opened, so Chrome needs to present an
-    // alert before placing a phone call.
-    if (UrlHasPhoneCallScheme(URL)) {
-      [self showAlertAndLaunchPhoneCallOrFacetimeURL:URL];
-      return YES;
-    }
-    // Prior to iOS 10.3, Chrome prompts user with an alert before opening
-    // App Store when user did not tap on any links and an iTunes app URL is
-    // opened. This maintains parity with Safari in pre-10.3 environment.
-    if (!linkTransition && UrlHasAppStoreScheme(URL)) {
-      [self showAlertAndLaunchAppURL:URL];
-      return YES;
-    }
+  if (UrlHasAppStoreScheme(URL)) {
+    [self showAlertAndLaunchAppURL:URL];
+    return YES;
   }
 
   // Uses a Mailto Handler to open the appropriate app, if available.

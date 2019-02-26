@@ -4,12 +4,12 @@
 
 #include "third_party/blink/renderer/modules/notifications/notification_manager.h"
 
+#include "base/numerics/safe_conversions.h"
 #include "services/service_manager/public/cpp/interface_provider.h"
 #include "third_party/blink/public/mojom/notifications/notification.mojom-blink.h"
 #include "third_party/blink/public/platform/interface_provider.h"
 #include "third_party/blink/public/platform/modules/permissions/permission.mojom-blink.h"
 #include "third_party/blink/public/platform/modules/permissions/permission_status.mojom-blink.h"
-#include "third_party/blink/public/platform/modules/service_worker/web_service_worker_registration.h"
 #include "third_party/blink/public/platform/platform.h"
 #include "third_party/blink/renderer/bindings/core/v8/script_promise_resolver.h"
 #include "third_party/blink/renderer/core/dom/document.h"
@@ -35,7 +35,7 @@ NotificationManager* NotificationManager::From(ExecutionContext* context) {
   NotificationManager* manager =
       Supplement<ExecutionContext>::From<NotificationManager>(context);
   if (!manager) {
-    manager = new NotificationManager(*context);
+    manager = MakeGarbageCollected<NotificationManager>(*context);
     Supplement<ExecutionContext>::ProvideTo(*context, manager);
   }
 
@@ -129,7 +129,7 @@ void NotificationManager::CloseNonPersistentNotification(const String& token) {
 }
 
 void NotificationManager::DisplayPersistentNotification(
-    blink::WebServiceWorkerRegistration* service_worker_registration,
+    int64_t service_worker_registration_id,
     mojom::blink::NotificationDataPtr notification_data,
     mojom::blink::NotificationResourcesPtr notification_resources,
     ScriptPromiseResolver* resolver) {
@@ -156,7 +156,8 @@ void NotificationManager::DisplayPersistentNotification(
   DEFINE_THREAD_SAFE_STATIC_LOCAL(
       CustomCountHistogram, notification_data_size_histogram,
       ("Notifications.AuthorDataSize", 1, 1000, 50));
-  notification_data_size_histogram.Count(author_data_size);
+  notification_data_size_histogram.Count(
+      base::saturated_cast<base::HistogramBase::Sample>(author_data_size));
 
   if (author_data_size >
       mojom::blink::NotificationData::kMaximumDeveloperDataSize) {
@@ -165,8 +166,8 @@ void NotificationManager::DisplayPersistentNotification(
   }
 
   GetNotificationService()->DisplayPersistentNotification(
-      service_worker_registration->RegistrationId(),
-      std::move(notification_data), std::move(notification_resources),
+      service_worker_registration_id, std::move(notification_data),
+      std::move(notification_resources),
       WTF::Bind(&NotificationManager::DidDisplayPersistentNotification,
                 WrapPersistent(this), WrapPersistent(resolver)));
 }
@@ -193,11 +194,11 @@ void NotificationManager::ClosePersistentNotification(
 }
 
 void NotificationManager::GetNotifications(
-    WebServiceWorkerRegistration* service_worker_registration,
+    int64_t service_worker_registration_id,
     const WebString& filter_tag,
     ScriptPromiseResolver* resolver) {
   GetNotificationService()->GetNotifications(
-      service_worker_registration->RegistrationId(), filter_tag,
+      service_worker_registration_id, filter_tag,
       WTF::Bind(&NotificationManager::DidGetNotifications, WrapPersistent(this),
                 WrapPersistent(resolver)));
 }
@@ -211,7 +212,7 @@ void NotificationManager::DidGetNotifications(
   HeapVector<Member<Notification>> notifications;
   notifications.ReserveInitialCapacity(notification_ids.size());
 
-  for (size_t i = 0; i < notification_ids.size(); ++i) {
+  for (wtf_size_t i = 0; i < notification_ids.size(); ++i) {
     notifications.push_back(Notification::Create(
         resolver->GetExecutionContext(), notification_ids[i],
         std::move(notification_datas[i]), true /* showing */));

@@ -21,9 +21,9 @@
 #include "chrome/common/chrome_paths.h"
 #include "chrome/test/base/in_process_browser_test.h"
 #include "chrome/test/base/ui_test_utils.h"
+#include "components/omnibox/browser/location_bar_model_impl.h"
+#include "components/omnibox/browser/omnibox_field_trial.h"
 #include "components/security_state/core/security_state.h"
-#include "components/toolbar/toolbar_field_trial.h"
-#include "components/toolbar/toolbar_model_impl.h"
 #include "components/zoom/zoom_controller.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/common/page_zoom.h"
@@ -126,11 +126,10 @@ IN_PROC_BROWSER_TEST_F(LocationBarViewBrowserTest, BubblesCloseOnHide) {
 
 class TouchLocationBarViewBrowserTest : public LocationBarViewBrowserTest {
  public:
-  TouchLocationBarViewBrowserTest()
-      : md_mode_(ui::MaterialDesignController::Mode::MATERIAL_TOUCH_REFRESH) {}
+  TouchLocationBarViewBrowserTest() : test_api_(true) {}
 
  private:
-  ui::test::MaterialDesignControllerTestAPI md_mode_;
+  ui::test::MaterialDesignControllerTestAPI test_api_;
   DISALLOW_COPY_AND_ASSIGN(TouchLocationBarViewBrowserTest);
 };
 
@@ -229,6 +228,9 @@ class SecurityIndicatorTest : public InProcessBrowserTest {
     resource_response.mime_type = "text/html";
     resource_response.ssl_info = ssl_info;
     params->client->OnReceiveResponse(resource_response);
+    // Send an empty response's body. This pipe is not filled with data.
+    mojo::DataPipe pipe;
+    params->client->OnStartLoadingResponseBody(std::move(pipe.consumer_handle));
     network::URLLoaderCompletionStatus completion_status;
     completion_status.ssl_info = ssl_info;
     params->client->OnComplete(completion_status);
@@ -254,11 +256,11 @@ IN_PROC_BROWSER_TEST_F(SecurityIndicatorTest, CheckIndicatorText) {
 
   const std::string kDefaultVariation = std::string();
   const std::string kEvToSecureVariation(
-      toolbar::features::kSimplifyHttpsIndicatorParameterEvToSecure);
+      OmniboxFieldTrial::kSimplifyHttpsIndicatorParameterEvToSecure);
   const std::string kBothToLockVariation(
-      toolbar::features::kSimplifyHttpsIndicatorParameterBothToLock);
+      OmniboxFieldTrial::kSimplifyHttpsIndicatorParameterBothToLock);
   const std::string kKeepSecureChipVariation(
-      toolbar::features::kSimplifyHttpsIndicatorParameterKeepSecureChip);
+      OmniboxFieldTrial::kSimplifyHttpsIndicatorParameterKeepSecureChip);
 
   const struct {
     std::string feature_param;
@@ -308,11 +310,11 @@ IN_PROC_BROWSER_TEST_F(SecurityIndicatorTest, CheckIndicatorText) {
     base::test::ScopedFeatureList scoped_feature_list;
     if (c.feature_param.empty()) {
       scoped_feature_list.InitAndDisableFeature(
-          toolbar::features::kSimplifyHttpsIndicator);
+          omnibox::kSimplifyHttpsIndicator);
     } else {
       scoped_feature_list.InitAndEnableFeatureWithParameters(
-          toolbar::features::kSimplifyHttpsIndicator,
-          {{toolbar::features::kSimplifyHttpsIndicatorParameterName,
+          omnibox::kSimplifyHttpsIndicator,
+          {{OmniboxFieldTrial::kSimplifyHttpsIndicatorParameterName,
             c.feature_param}});
     }
     SetUpInterceptor(c.cert_status);
@@ -320,8 +322,9 @@ IN_PROC_BROWSER_TEST_F(SecurityIndicatorTest, CheckIndicatorText) {
     helper->GetSecurityInfo(&security_info);
     EXPECT_EQ(c.security_level, security_info.security_level);
     EXPECT_EQ(c.should_show_text,
-              location_bar_view->ShouldShowLocationIconText());
-    EXPECT_EQ(c.indicator_text, location_bar_view->GetLocationIconText());
+              location_bar_view->location_icon_view()->ShouldShowLabel());
+    EXPECT_EQ(c.indicator_text,
+              location_bar_view->location_icon_view()->GetText());
     ResetInterceptor();
   }
 }

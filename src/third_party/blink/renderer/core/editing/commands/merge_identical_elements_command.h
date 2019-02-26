@@ -34,14 +34,15 @@ class MergeIdenticalElementsCommand final : public SimpleEditCommand {
  public:
   static MergeIdenticalElementsCommand* Create(Element* element1,
                                                Element* element2) {
-    return new MergeIdenticalElementsCommand(element1, element2);
+    return MakeGarbageCollected<MergeIdenticalElementsCommand>(element1,
+                                                               element2);
   }
+
+  MergeIdenticalElementsCommand(Element*, Element*);
 
   void Trace(blink::Visitor*) override;
 
  private:
-  MergeIdenticalElementsCommand(Element*, Element*);
-
   void DoApply(EditingState*) override;
   void DoUnapply() override;
 

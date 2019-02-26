@@ -41,7 +41,7 @@ static bool ShouldCreateContext(WebGraphicsContext3DProvider* context_provider,
                                 CanvasRenderingContextHost* host) {
   if (!context_provider) {
     host->HostDispatchEvent(
-        WebGLContextEvent::Create(EventTypeNames::webglcontextcreationerror,
+        WebGLContextEvent::Create(event_type_names::kWebglcontextcreationerror,
                                   "Failed to create a WebGL2 context."));
     return false;
   }
@@ -68,12 +68,13 @@ CanvasRenderingContext* WebGL2RenderingContext::Factory::Create(
           host, attrs, Platform::kWebGL2ContextType, &using_gpu_compositing));
   if (!ShouldCreateContext(context_provider.get(), host))
     return nullptr;
-  WebGL2RenderingContext* rendering_context = new WebGL2RenderingContext(
-      host, std::move(context_provider), using_gpu_compositing, attrs);
+  WebGL2RenderingContext* rendering_context =
+      MakeGarbageCollected<WebGL2RenderingContext>(
+          host, std::move(context_provider), using_gpu_compositing, attrs);
 
   if (!rendering_context->GetDrawingBuffer()) {
     host->HostDispatchEvent(
-        WebGLContextEvent::Create(EventTypeNames::webglcontextcreationerror,
+        WebGLContextEvent::Create(event_type_names::kWebglcontextcreationerror,
                                   "Could not create a WebGL2 context."));
     return nullptr;
   }
@@ -87,7 +88,7 @@ CanvasRenderingContext* WebGL2RenderingContext::Factory::Create(
 void WebGL2RenderingContext::Factory::OnError(HTMLCanvasElement* canvas,
                                               const String& error) {
   canvas->DispatchEvent(*WebGLContextEvent::Create(
-      EventTypeNames::webglcontextcreationerror, error));
+      event_type_names::kWebglcontextcreationerror, error));
 }
 
 WebGL2RenderingContext::WebGL2RenderingContext(

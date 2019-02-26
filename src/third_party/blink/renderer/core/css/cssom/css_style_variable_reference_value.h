@@ -32,6 +32,10 @@ class CORE_EXPORT CSSStyleVariableReferenceValue final
       const String& variable,
       CSSUnparsedValue* fallback = nullptr);
 
+  CSSStyleVariableReferenceValue(const String& variable,
+                                 CSSUnparsedValue* fallback)
+      : variable_(variable), fallback_(fallback) {}
+
   const String& variable() const { return variable_; }
   void setVariable(const String&, ExceptionState&);
 
@@ -44,10 +48,6 @@ class CORE_EXPORT CSSStyleVariableReferenceValue final
   }
 
  protected:
-  CSSStyleVariableReferenceValue(const String& variable,
-                                 CSSUnparsedValue* fallback)
-      : variable_(variable), fallback_(fallback) {}
-
   String variable_;
   Member<CSSUnparsedValue> fallback_;
 

@@ -22,8 +22,6 @@
 
 namespace blink {
 
-using namespace HTMLNames;
-
 LayoutButton::LayoutButton(Element* element)
     : LayoutFlexibleBox(element), inner_(nullptr) {}
 

@@ -9,23 +9,27 @@
 
 #include <map>
 #include <memory>
+#include <ostream>
+#include <string>
 #include <tuple>
+#include <utility>
+#include <vector>
 
 #include "base/compiler_specific.h"
 #include "base/macros.h"
 #include "base/memory/scoped_refptr.h"
+#include "base/optional.h"
 #include "components/viz/common/gpu/context_lost_observer.h"
 #include "components/viz/common/viz_common_export.h"
 #include "gpu/command_buffer/client/gles2_interface.h"
 #include "ui/gfx/color_space.h"
+#include "ui/gfx/geometry/rect.h"
+#include "ui/gfx/geometry/rect_f.h"
+#include "ui/gfx/geometry/size.h"
 #include "ui/gfx/geometry/vector2d.h"
 
 namespace gfx {
 class ColorTransform;
-class Vector2dF;
-class Rect;
-class RectF;
-class Size;
 }  // namespace gfx
 
 namespace viz {
@@ -183,6 +187,7 @@ class VIZ_COMMON_EXPORT GLScaler : public ContextLostObserver {
     };
 
     Parameters();
+    Parameters(const Parameters& other);
     ~Parameters();
   };
 
@@ -204,8 +209,9 @@ class VIZ_COMMON_EXPORT GLScaler : public ContextLostObserver {
 
   // Returns the currently-configured and resolved Parameters. Note that these
   // Parameters might not be exactly the same as those that were passed to
-  // Configure() because some properties (e.g., color spaces) are auto-resolved.
-  // Results are undefined if Configure() has never been called successfully.
+  // Configure() because some properties (e.g., color spaces) are auto-resolved;
+  // however, ParametersAreEquivalent() will still return true. Results are
+  // undefined if Configure() has never been called successfully.
   const Parameters& params() const { return params_; }
 
   // Scales a portion of |src_texture| and draws the result into |dest_texture|
@@ -232,7 +238,7 @@ class VIZ_COMMON_EXPORT GLScaler : public ContextLostObserver {
   // and wrap_s/t set to CLAMP_TO_EDGE in this call.
   bool Scale(GLuint src_texture,
              const gfx::Size& src_texture_size,
-             const gfx::Vector2dF& src_offset,
+             const gfx::Vector2d& src_offset,
              GLuint dest_texture,
              const gfx::Rect& output_rect) WARN_UNUSED_RESULT {
     return ScaleToMultipleOutputs(src_texture, src_texture_size, src_offset,
@@ -243,27 +249,10 @@ class VIZ_COMMON_EXPORT GLScaler : public ContextLostObserver {
   // (see Parameters::ExportFormat).
   bool ScaleToMultipleOutputs(GLuint src_texture,
                               const gfx::Size& src_texture_size,
-                              const gfx::Vector2dF& src_offset,
+                              const gfx::Vector2d& src_offset,
                               GLuint dest_texture_0,
                               GLuint dest_texture_1,
                               const gfx::Rect& output_rect) WARN_UNUSED_RESULT;
-
-  // Given the |src_texture_size|, |src_offset| and |output_rect| arguments that
-  // would be passed to Scale(), compute the region of pixels in the source
-  // texture that would be sampled to produce a scaled result. The result is
-  // stored in |sampling_rect|, along with the |offset| to the (0,0) point
-  // relative to |sampling_rect|'s origin. Returns true to indicate success, or
-  // false if this GLScaler is not valid.
-  //
-  // This is used by clients that need to know the minimal portion of a source
-  // buffer that must be copied without affecting Scale()'s results. This
-  // method also accounts for vertical flipping.
-  bool ComputeRegionOfInfluence(const gfx::Size& src_texture_size,
-                                const gfx::Vector2dF& src_offset,
-                                const gfx::Rect& output_rect,
-                                gfx::Rect* sampling_rect,
-                                gfx::Vector2dF* offset) const
-      WARN_UNUSED_RESULT;
 
   // Returns true if from:to represent the same scale ratio as that specified in
   // |params|.
@@ -271,12 +260,19 @@ class VIZ_COMMON_EXPORT GLScaler : public ContextLostObserver {
                                           const gfx::Vector2d& from,
                                           const gfx::Vector2d& to);
 
+  // Returns true if configuring a GLScaler with either |a| or |b| will produce
+  // identical behaviors and results.
+  static bool ParametersAreEquivalent(const Parameters& a, const Parameters& b);
+
  private:
+  friend class GLScalerOverscanPixelTest;
   friend class GLScalerShaderPixelTest;
+  friend VIZ_COMMON_EXPORT std::ostream& operator<<(std::ostream&,
+                                                    const GLScaler&);
 
   using GLES2Interface = gpu::gles2::GLES2Interface;
 
-  enum Axis { HORIZONTAL, VERTICAL };
+  enum Axis { HORIZONTAL = 0, VERTICAL = 1 };
 
   // The shaders used by each stage in the scaling pipeline.
   enum class Shader : int8_t {
@@ -301,21 +297,23 @@ class VIZ_COMMON_EXPORT GLScaler : public ContextLostObserver {
    public:
     ShaderProgram(GLES2Interface* gl,
                   Shader shader,
-                  GLint texture_format,
+                  GLenum texture_type,
                   const gfx::ColorTransform* color_transform,
                   const GLenum swizzle[2]);
     ~ShaderProgram();
 
     Shader shader() const { return shader_; }
-    GLint texture_format() const { return texture_format_; }
+    GLenum texture_type() const { return texture_type_; }
 
     // UseProgram must be called with GL_ARRAY_BUFFER bound to a vertex
     // attribute buffer. |src_texture_size| is the size of the entire source
     // texture, regardless of which region is to be sampled. |src_rect| is the
     // source region, not including overscan pixels past the edges.
-    // |primary_axis| configures certain programs which scale in only one
-    // particular direction. |flip_y| causes the |src_rect| to be scanned
-    // upside-down, to produce a vertically-flipped result.
+    // |primary_axis| determines whether multiple texture samplings occur in one
+    // direction or the other (for some shaders). Note that this cannot
+    // necessarily be determined by just comparing the src and dst sizes.
+    // |flip_y| causes the |src_rect| to be scanned upside-down, to produce a
+    // vertically-flipped result.
     void UseProgram(const gfx::Size& src_texture_size,
                     const gfx::RectF& src_rect,
                     const gfx::Size& dst_size,
@@ -334,7 +332,7 @@ class VIZ_COMMON_EXPORT GLScaler : public ContextLostObserver {
    private:
     GLES2Interface* const gl_;
     const Shader shader_;
-    const GLint texture_format_;
+    const GLenum texture_type_;
 
     // A program for copying a source texture into a destination texture.
     const GLuint program_;
@@ -356,14 +354,123 @@ class VIZ_COMMON_EXPORT GLScaler : public ContextLostObserver {
     DISALLOW_COPY_AND_ASSIGN(ShaderProgram);
   };
 
+  // One scaling stage in a chain of scaler pipeline stages. Each ScalerStage
+  // owns the previous ScalerStage in the chain: At execution time, a "working
+  // backwards" approach is used: The previous "input" stage renders an
+  // intermediate result that will be used as input for the current stage.
+  //
+  // Each ScalerStage caches textures and framebuffers to avoid reallocating
+  // them for each separate image scaling, which can be expensive on some
+  // platforms/drivers.
+  class VIZ_COMMON_EXPORT ScalerStage {
+   public:
+    ScalerStage(GLES2Interface* gl,
+                Shader shader,
+                Axis primary_axis,
+                const gfx::Vector2d& scale_from,
+                const gfx::Vector2d& scale_to);
+    ~ScalerStage();
+
+    Shader shader() const { return shader_; }
+    const gfx::Vector2d& scale_from() const { return scale_from_; }
+    const gfx::Vector2d& scale_to() const { return scale_to_; }
+
+    ScalerStage* input_stage() const { return input_stage_.get(); }
+    void set_input_stage(std::unique_ptr<ScalerStage> stage) {
+      input_stage_ = std::move(stage);
+    }
+    std::unique_ptr<ScalerStage> take_input_stage() {
+      return std::move(input_stage_);
+    }
+
+    ShaderProgram* shader_program() const { return program_; }
+    void set_shader_program(ShaderProgram* program) { program_ = program; }
+
+    bool is_flipped_source() const { return is_flipped_source_; }
+    void set_is_flipped_source(bool flipped) { is_flipped_source_ = flipped; }
+
+    bool flip_output() const { return flip_output_; }
+    void set_flip_output(bool flip) { flip_output_ = flip; }
+
+    void ScaleToMultipleOutputs(GLuint src_texture,
+                                gfx::Size src_texture_size,
+                                const gfx::Vector2d& src_offset,
+                                GLuint dest_texture_0,
+                                GLuint dest_texture_1,
+                                const gfx::Rect& output_rect);
+
+   private:
+    friend class GLScalerOverscanPixelTest;
+
+    // Returns the given |output_rect| mapped to the input stage's coordinate
+    // system.
+    gfx::RectF ToSourceRect(const gfx::Rect& output_rect) const;
+
+    // Returns the given |source_rect| padded to include the overscan pixels the
+    // shader program will access.
+    gfx::Rect ToInputRect(gfx::RectF source_rect) const;
+
+    // Generates the intermediate texture and/or re-defines it if its size has
+    // changed.
+    void EnsureIntermediateTextureDefined(const gfx::Size& size);
+
+    GLES2Interface* const gl_;
+    const Shader shader_;
+    const Axis primary_axis_;
+    const gfx::Vector2d scale_from_;
+    const gfx::Vector2d scale_to_;
+
+    std::unique_ptr<ScalerStage> input_stage_;
+    ShaderProgram* program_ = nullptr;
+    bool is_flipped_source_ = false;
+    bool flip_output_ = false;
+
+    GLuint intermediate_texture_ = 0;
+    gfx::Size intermediate_texture_size_;
+    GLuint dest_framebuffer_ = 0;
+
+    DISALLOW_COPY_AND_ASSIGN(ScalerStage);
+  };
+
   // ContextLostObserver implementation.
   void OnContextLost() final;
 
   // Returns a cached ShaderProgram, creating one on-demand if necessary.
   ShaderProgram* GetShaderProgram(Shader shader,
-                                  GLint texture_format,
+                                  GLenum texture_type,
                                   const gfx::ColorTransform* color_transform,
                                   const GLenum swizzle[2]);
+
+  // Create a scaling chain using the bilinear shaders.
+  static std::unique_ptr<ScalerStage> CreateAGoodScalingChain(
+      gpu::gles2::GLES2Interface* gl,
+      const gfx::Vector2d& scale_from,
+      const gfx::Vector2d& scale_to);
+
+  // Create a scaling chain using the bicubic shaders.
+  static std::unique_ptr<ScalerStage> CreateTheBestScalingChain(
+      gpu::gles2::GLES2Interface* gl,
+      const gfx::Vector2d& scale_from,
+      const gfx::Vector2d& scale_to);
+
+  // Modifies |chain| by appending an export stage, to rearrange the image data
+  // according to the requested |export_format|. In some cases, this will delete
+  // the final stage in |chain| before appending the export stage.
+  static std::unique_ptr<ScalerStage> MaybeAppendExportStage(
+      gpu::gles2::GLES2Interface* gl,
+      std::unique_ptr<ScalerStage> chain,
+      Parameters::ExportFormat export_format);
+
+  // Returns the other of the two axes.
+  static Axis TheOtherAxis(Axis axis);
+
+  // Returns the name of the |shader| in string form, for logging purposes.
+  static const char* GetShaderName(Shader shader);
+
+  // Returns true if the given |gl| context mentions all of |names| in its
+  // extensions string.
+  static bool AreAllGLExtensionsPresent(gpu::gles2::GLES2Interface* gl,
+                                        const std::vector<std::string>& names);
 
   // The provider of the GL context. This is non-null while the GL context is
   // valid and GLScaler is observing for context loss.
@@ -372,7 +479,11 @@ class VIZ_COMMON_EXPORT GLScaler : public ContextLostObserver {
   // Set by Configure() to the resolved set of Parameters.
   Parameters params_;
 
-  // The maximum number of simultaneous draw buffers, lazy initialized by
+  // If set to true, half-float textures are supported. This is lazy-initialized
+  // by SupportsPreciseColorManagement().
+  mutable base::Optional<bool> supports_half_floats_;
+
+  // The maximum number of simultaneous draw buffers, lazy-initialized by
   // GetMaxDrawBuffersSupported(). -1 means "not yet known."
   mutable int max_draw_buffers_ = -1;
 
@@ -380,11 +491,26 @@ class VIZ_COMMON_EXPORT GLScaler : public ContextLostObserver {
   // to the arguments of GetShaderProgram(): the shader, the texture format, the
   // source and output color spaces (color transform), and the two swizzles.
   using ShaderCacheKey = std::
-      tuple<Shader, GLint, gfx::ColorSpace, gfx::ColorSpace, GLenum, GLenum>;
+      tuple<Shader, GLenum, gfx::ColorSpace, gfx::ColorSpace, GLenum, GLenum>;
   std::map<ShaderCacheKey, ShaderProgram> shader_programs_;
+
+  // The GL_ARRAY_BUFFER that holds the vertices and the texture coordinates
+  // data for sweeping the source area when a ScalerStage draws a quad (to
+  // execute its shader program).
+  GLuint vertex_attributes_buffer_ = 0;
+
+  // The chain of ScalerStages.
+  std::unique_ptr<ScalerStage> chain_;
+
+  // The color space in which the scaling stages operate.
+  gfx::ColorSpace scaling_color_space_;
 
   DISALLOW_COPY_AND_ASSIGN(GLScaler);
 };
+
+// For logging.
+VIZ_COMMON_EXPORT std::ostream& operator<<(std::ostream& out,
+                                           const GLScaler& scaler);
 
 }  // namespace viz
 

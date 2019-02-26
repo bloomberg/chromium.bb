@@ -9,11 +9,12 @@
 
 #include "base/memory/ref_counted.h"
 #include "base/time/time.h"
+#include "cc/input/browser_controls_state.h"
+#include "ui/gfx/geometry/scroll_offset.h"
 #include "ui/gfx/geometry/vector2d_f.h"
 
 namespace gfx {
 struct PresentationFeedback;
-class Vector2dF;
 }
 
 namespace viz {
@@ -24,7 +25,7 @@ namespace cc {
 
 struct ApplyViewportChangesArgs {
   // Scroll offset delta of the inner (visual) viewport.
-  gfx::Vector2dF inner_delta;
+  gfx::ScrollOffset inner_delta;
 
   // Elastic overscroll effect offset delta. This is used only on Mac. a.k.a
   // "rubber-banding" overscroll.
@@ -37,6 +38,14 @@ struct ApplyViewportChangesArgs {
   // How much the browser controls have been shown or hidden. The ratio runs
   // between 0 (hidden) and 1 (full-shown). This is additive.
   float browser_controls_delta;
+
+  // Whether the browser controls have been locked to fully hidden or shown or
+  // whether they can be freely moved.
+  BrowserControlsState browser_controls_constraint;
+
+  // Set to true when a scroll gesture being handled on the compositor has
+  // ended.
+  bool scroll_gesture_did_end;
 };
 
 // A LayerTreeHost is bound to a LayerTreeHostClient. The main rendering
@@ -80,8 +89,11 @@ class LayerTreeHostClient {
   // (Blink's notions of) style, layout, paint invalidation and compositing
   // state. (The "compositing state" will result in a mutated layer tree on the
   // LayerTreeHost via additional interface indirections which lead back to
-  // mutations on the LayerTreeHost.)
-  virtual void UpdateLayerTreeHost() = 0;
+  // mutations on the LayerTreeHost.) The |record_main_frame_metrics| flag
+  // determines whether Blink will compute metrics related to main frame update
+  // time. If true, the caller must ensure that RecordEndOfFrameMetrics is
+  // called when this method returns and the total main frame time is known.
+  virtual void UpdateLayerTreeHost(bool record_main_frame_metrics) = 0;
 
   // Notifies the client of viewport-related changes that occured in the
   // LayerTreeHost since the last commit. This typically includes things

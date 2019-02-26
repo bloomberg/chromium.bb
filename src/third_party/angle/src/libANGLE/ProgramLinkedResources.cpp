@@ -245,9 +245,7 @@ void LogUniformsExceedLimit(ShaderType shaderType,
 
 }  // anonymous namespace
 
-UniformLinker::UniformLinker(const ProgramState &state) : mState(state)
-{
-}
+UniformLinker::UniformLinker(const ProgramState &state) : mState(state) {}
 
 UniformLinker::~UniformLinker() = default;
 
@@ -354,7 +352,8 @@ bool UniformLinker::indexUniforms(InfoLog &infoLog, const ProgramBindings &unifo
     {
         const LinkedUniform &uniform = mUniforms[uniformIndex];
 
-        if (uniform.isBuiltIn() || IsAtomicCounterType(uniform.type))
+        if ((uniform.isBuiltIn() && !uniform.isEmulatedBuiltIn()) ||
+            IsAtomicCounterType(uniform.type))
         {
             continue;
         }
@@ -430,7 +429,7 @@ bool UniformLinker::gatherUniformLocationsAndCheckConflicts(
 
     for (const LinkedUniform &uniform : mUniforms)
     {
-        if (uniform.isBuiltIn())
+        if (uniform.isBuiltIn() && !uniform.isEmulatedBuiltIn())
         {
             continue;
         }
@@ -892,12 +891,9 @@ bool UniformLinker::checkMaxCombinedAtomicCounters(const Caps &caps, InfoLog &in
 // InterfaceBlockLinker implementation.
 InterfaceBlockLinker::InterfaceBlockLinker(std::vector<InterfaceBlock> *blocksOut)
     : mShaderBlocks({}), mBlocksOut(blocksOut)
-{
-}
+{}
 
-InterfaceBlockLinker::~InterfaceBlockLinker()
-{
-}
+InterfaceBlockLinker::~InterfaceBlockLinker() {}
 
 void InterfaceBlockLinker::addShaderBlocks(ShaderType shaderType,
                                            const std::vector<sh::InterfaceBlock> *blocks)
@@ -1155,12 +1151,9 @@ void InterfaceBlockLinker::defineInterfaceBlock(const GetBlockSize &getBlockSize
 UniformBlockLinker::UniformBlockLinker(std::vector<InterfaceBlock> *blocksOut,
                                        std::vector<LinkedUniform> *uniformsOut)
     : InterfaceBlockLinker(blocksOut), mUniformsOut(uniformsOut)
-{
-}
+{}
 
-UniformBlockLinker::~UniformBlockLinker()
-{
-}
+UniformBlockLinker::~UniformBlockLinker() {}
 
 void UniformBlockLinker::defineBlockMemberImpl(const sh::ShaderVariable &field,
                                                const std::string &fullName,
@@ -1196,12 +1189,9 @@ void UniformBlockLinker::updateBlockMemberActiveImpl(const std::string &fullName
 ShaderStorageBlockLinker::ShaderStorageBlockLinker(std::vector<InterfaceBlock> *blocksOut,
                                                    std::vector<BufferVariable> *bufferVariablesOut)
     : InterfaceBlockLinker(blocksOut), mBufferVariablesOut(bufferVariablesOut)
-{
-}
+{}
 
-ShaderStorageBlockLinker::~ShaderStorageBlockLinker()
-{
-}
+ShaderStorageBlockLinker::~ShaderStorageBlockLinker() {}
 
 void ShaderStorageBlockLinker::defineBlockMemberImpl(const sh::ShaderVariable &field,
                                                      const std::string &fullName,
@@ -1237,12 +1227,9 @@ void ShaderStorageBlockLinker::updateBlockMemberActiveImpl(const std::string &fu
 AtomicCounterBufferLinker::AtomicCounterBufferLinker(
     std::vector<AtomicCounterBuffer> *atomicCounterBuffersOut)
     : mAtomicCounterBuffersOut(atomicCounterBuffersOut)
-{
-}
+{}
 
-AtomicCounterBufferLinker::~AtomicCounterBufferLinker()
-{
-}
+AtomicCounterBufferLinker::~AtomicCounterBufferLinker() {}
 
 void AtomicCounterBufferLinker::link(const std::map<int, unsigned int> &sizeMap) const
 {

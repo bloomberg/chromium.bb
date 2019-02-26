@@ -1,7 +1,7 @@
 // Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
-//
+
 // QuicTime represents one point in time, stored in microsecond resolution.
 // QuicTime is monotonically increasing, even across system clock adjustments.
 // The epoch (time 0) of QuicTime is unspecified.
@@ -21,7 +21,7 @@
 #include "net/third_party/quic/platform/api/quic_export.h"
 #include "net/third_party/quic/platform/api/quic_string.h"
 
-// TODO(vasilvv): replace with with ABSL_MUST_USE_RESULT once we're using absl.
+// TODO(vasilvv): replace with ABSL_MUST_USE_RESULT once we're using absl.
 #if defined(__clang__)
 #define QUIC_TIME_WARN_UNUSED_RESULT __attribute__((warn_unused_result))
 #else
@@ -110,6 +110,13 @@ class QUIC_EXPORT_PRIVATE QuicTime {
   // Creates a new QuicTime with an infinite time.
   static constexpr QuicTime Infinite() {
     return QuicTime(Delta::kQuicInfiniteTimeUs);
+  }
+
+  QuicTime(const QuicTime& other) = default;
+
+  QuicTime& operator=(const QuicTime& other) {
+    time_ = other.time_;
+    return *this;
   }
 
   // Produce the internal value to be used when logging.  This value

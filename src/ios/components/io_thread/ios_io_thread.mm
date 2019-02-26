@@ -182,13 +182,13 @@ IOSIOThread::IOSIOThread(PrefService* local_state, net::NetLog* net_log)
   system_proxy_config_service_ = ProxyServiceFactory::CreateProxyConfigService(
       pref_proxy_config_tracker_.get());
 
-  web::WebThread::SetDelegate(web::WebThread::IO, this);
+  web::WebThread::SetIOThreadDelegate(this);
 }
 
 IOSIOThread::~IOSIOThread() {
   // This isn't needed for production code, but in tests, IOSIOThread may
   // be multiply constructed.
-  web::WebThread::SetDelegate(web::WebThread::IO, nullptr);
+  web::WebThread::SetIOThreadDelegate(nullptr);
 
   pref_proxy_config_tracker_->DetachFromPrefService();
   DCHECK(!globals_);

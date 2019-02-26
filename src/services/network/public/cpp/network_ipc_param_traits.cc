@@ -265,11 +265,6 @@ void ParamTraits<scoped_refptr<network::ResourceRequestBody>>::Log(
 #include "ipc/struct_constructor_macros.h"
 #include "network_ipc_param_traits.h"
 
-// Generate destructors.
-#undef SERVICES_NETWORK_PUBLIC_CPP_NETWORK_IPC_PARAM_TRAITS_H_
-#include "ipc/struct_destructor_macros.h"
-#include "network_ipc_param_traits.h"
-
 // Generate param traits write methods.
 #undef SERVICES_NETWORK_PUBLIC_CPP_NETWORK_IPC_PARAM_TRAITS_H_
 #include "ipc/param_traits_write_macros.h"

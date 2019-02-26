@@ -10,6 +10,8 @@
 #include <string>
 #include <utility>
 
+#include "base/logging.h"
+#include "base/time/time.h"
 #include "chrome/browser/resources/chromeos/zip_archiver/cpp/compressor_archive_minizip.h"
 #include "chrome/browser/resources/chromeos/zip_archiver/cpp/compressor_io_javascript_stream.h"
 #include "chrome/browser/resources/chromeos/zip_archiver/cpp/javascript_compressor_requestor_interface.h"
@@ -81,20 +83,21 @@ void Compressor::AddToArchive(const pp::VarDictionary& dictionary) {
 
 void Compressor::AddToArchiveCallback(int32_t,
                                       const pp::VarDictionary& dictionary) {
-  PP_DCHECK(dictionary.Get(request::key::kPathname).is_string());
+  DCHECK(dictionary.Get(request::key::kPathname).is_string());
   std::string pathname = dictionary.Get(request::key::kPathname).AsString();
 
-  PP_DCHECK(dictionary.Get(request::key::kFileSize).is_string());
+  DCHECK(dictionary.Get(request::key::kFileSize).is_string());
   int64_t file_size =
       request::GetInt64FromString(dictionary, request::key::kFileSize);
-  PP_DCHECK(file_size >= 0);
+  DCHECK_GE(file_size, 0);
 
-  PP_DCHECK(dictionary.Get(request::key::kIsDirectory).is_bool());
+  DCHECK(dictionary.Get(request::key::kIsDirectory).is_bool());
   bool is_directory = dictionary.Get(request::key::kIsDirectory).AsBool();
 
-  PP_DCHECK(dictionary.Get(request::key::kModificationTime).is_string());
-  // Since modification_time is milliseconds, we hold the value in int64_t.
-  int64_t modification_time = static_cast<int64_t>(
+  DCHECK(dictionary.Get(request::key::kModificationTime).is_string());
+  // modification_time comes from a JS Date object, which expresses time in
+  // milliseconds since the UNIX epoch.
+  base::Time modification_time = base::Time::FromJsTime(
       request::GetInt64FromString(dictionary, request::key::kModificationTime));
 
   if (!compressor_archive_->AddToArchive(pathname, file_size, modification_time,
@@ -111,18 +114,18 @@ void Compressor::AddToArchiveCallback(int32_t,
 }
 
 void Compressor::ReadFileChunkDone(const pp::VarDictionary& dictionary) {
-  PP_DCHECK(dictionary.Get(request::key::kLength).is_string());
+  DCHECK(dictionary.Get(request::key::kLength).is_string());
   int64_t read_bytes =
       request::GetInt64FromString(dictionary, request::key::kLength);
 
-  PP_DCHECK(dictionary.Get(request::key::kChunkBuffer).is_array_buffer());
+  DCHECK(dictionary.Get(request::key::kChunkBuffer).is_array_buffer());
   pp::VarArrayBuffer array_buffer(dictionary.Get(request::key::kChunkBuffer));
 
   compressor_stream_->ReadFileChunkDone(read_bytes, &array_buffer);
 }
 
 void Compressor::WriteChunkDone(const pp::VarDictionary& dictionary) {
-  PP_DCHECK(dictionary.Get(request::key::kLength).is_string());
+  DCHECK(dictionary.Get(request::key::kLength).is_string());
   int64_t written_bytes =
       request::GetInt64FromString(dictionary, request::key::kLength);
 
@@ -130,7 +133,7 @@ void Compressor::WriteChunkDone(const pp::VarDictionary& dictionary) {
 }
 
 void Compressor::CloseArchive(const pp::VarDictionary& dictionary) {
-  PP_DCHECK(dictionary.Get(request::key::kHasError).is_bool());
+  DCHECK(dictionary.Get(request::key::kHasError).is_bool());
   bool has_error = dictionary.Get(request::key::kHasError).AsBool();
 
   // If an error has occurred, no more write chunk requests are sent and

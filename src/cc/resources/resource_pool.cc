@@ -16,6 +16,7 @@
 #include "base/single_thread_task_runner.h"
 #include "base/strings/stringprintf.h"
 #include "base/threading/thread_task_runner_handle.h"
+#include "base/time/default_tick_clock.h"
 #include "base/trace_event/memory_dump_manager.h"
 #include "build/build_config.h"
 #include "cc/base/container_util.h"
@@ -67,6 +68,7 @@ bool ResourceMeetsSizeRequirements(const gfx::Size& requested_size,
 }  // namespace
 
 constexpr base::TimeDelta ResourcePool::kDefaultExpirationDelay;
+constexpr base::TimeDelta ResourcePool::kDefaultMaxFlushDelay;
 
 void ResourcePool::GpuBacking::InitOverlayCandidateAndTextureTarget(
     const viz::ResourceFormat format,
@@ -95,6 +97,8 @@ ResourcePool::ResourcePool(
       resource_expiration_delay_(expiration_delay),
       disallow_non_exact_reuse_(disallow_non_exact_reuse),
       tracing_id_(g_next_tracing_id.GetNext()),
+      flush_evicted_resources_deadline_(base::TimeTicks::Max()),
+      clock_(base::DefaultTickClock::GetInstance()),
       weak_ptr_factory_(this) {
   base::trace_event::MemoryDumpManager::GetInstance()->RegisterDumpProvider(
       this, "cc::ResourcePool", task_runner_.get());
@@ -300,34 +304,40 @@ void ResourcePool::OnResourceReleased(size_t unique_id,
   busy_resources_.erase(busy_it);
 }
 
-void ResourcePool::PrepareForExport(const InUsePoolResource& resource) {
+bool ResourcePool::PrepareForExport(const InUsePoolResource& in_use_resource) {
+  PoolResource* resource = in_use_resource.resource_;
   // Exactly one of gpu or software backing should exist.
-  DCHECK(resource.resource_->gpu_backing() ||
-         resource.resource_->software_backing());
-  DCHECK(!resource.resource_->gpu_backing() ||
-         !resource.resource_->software_backing());
+  DCHECK(resource->gpu_backing() || resource->software_backing());
+  DCHECK(!resource->gpu_backing() || !resource->software_backing());
   viz::TransferableResource transferable;
-  if (resource.resource_->gpu_backing()) {
+  if (resource->gpu_backing()) {
+    GpuBacking* gpu_backing = resource->gpu_backing();
+    if (gpu_backing->mailbox.IsZero()) {
+      // This can happen if we failed to allocate a GpuMemoryBuffer. Avoid
+      // sending an invalid resource to the parent in that case, and avoid
+      // caching/reusing the resource.
+      resource->set_resource_id(0);
+      resource->mark_avoid_reuse();
+      return false;
+    }
     transferable = viz::TransferableResource::MakeGLOverlay(
-        resource.resource_->gpu_backing()->mailbox, GL_LINEAR,
-        resource.resource_->gpu_backing()->texture_target,
-        resource.resource_->gpu_backing()->mailbox_sync_token,
-        resource.resource_->size(),
-        resource.resource_->gpu_backing()->overlay_candidate);
-    transferable.read_lock_fences_enabled =
-        resource.resource_->gpu_backing()->wait_on_fence_required;
+        gpu_backing->mailbox, GL_LINEAR, gpu_backing->texture_target,
+        gpu_backing->mailbox_sync_token, resource->size(),
+        gpu_backing->overlay_candidate);
+    transferable.read_lock_fences_enabled = gpu_backing->wait_on_fence_required;
   } else {
     transferable = viz::TransferableResource::MakeSoftware(
-        resource.resource_->software_backing()->shared_bitmap_id,
-        resource.resource_->size(), resource.resource_->format());
+        resource->software_backing()->shared_bitmap_id, resource->size(),
+        resource->format());
   }
-  transferable.format = resource.resource_->format();
-  transferable.color_space = resource.resource_->color_space();
-  resource.resource_->set_resource_id(resource_provider_->ImportResource(
+  transferable.format = resource->format();
+  transferable.color_space = resource->color_space();
+  resource->set_resource_id(resource_provider_->ImportResource(
       std::move(transferable),
       viz::SingleReleaseCallback::Create(base::BindOnce(
           &ResourcePool::OnResourceReleased, weak_ptr_factory_.GetWeakPtr(),
-          resource.resource_->unique_id()))));
+          resource->unique_id()))));
+  return true;
 }
 
 void ResourcePool::InvalidateResources() {
@@ -380,7 +390,7 @@ void ResourcePool::ReleaseResource(InUsePoolResource in_use_resource) {
   // crbug.com/598286.
   CHECK(it->second.get());
 
-  pool_resource->set_last_usage(base::TimeTicks::Now());
+  pool_resource->set_last_usage(clock_->NowTicks());
   in_use_memory_usage_bytes_ -=
       viz::ResourceSizes::UncheckedSizeInBytes<size_t>(pool_resource->size(),
                                                        pool_resource->format());
@@ -458,6 +468,10 @@ void ResourcePool::DeleteResource(std::unique_ptr<PoolResource> resource) {
       resource->size(), resource->format());
   total_memory_usage_bytes_ -= resource_bytes;
   --total_resource_count_;
+  if (flush_evicted_resources_deadline_ == base::TimeTicks::Max()) {
+    flush_evicted_resources_deadline_ =
+        clock_->NowTicks() + kDefaultMaxFlushDelay;
+  }
 }
 
 void ResourcePool::UpdateResourceContentIdAndInvalidation(
@@ -493,26 +507,27 @@ void ResourcePool::ScheduleEvictExpiredResourcesIn(
 
 void ResourcePool::EvictExpiredResources() {
   evict_expired_resources_pending_ = false;
-  base::TimeTicks current_time = base::TimeTicks::Now();
+  base::TimeTicks current_time = clock_->NowTicks();
 
   EvictResourcesNotUsedSince(current_time - resource_expiration_delay_);
 
-  if (unused_resources_.empty()) {
+  if (unused_resources_.empty() ||
+      flush_evicted_resources_deadline_ <= current_time) {
     // If nothing is evictable, we have deleted one (and possibly more)
     // resources without any new activity. Flush to ensure these deletions are
     // processed.
-    if (context_provider_) {
-      // Flush any ContextGL work as well as any SharedImageInterface work.
-      context_provider_->ContextGL()->OrderingBarrierCHROMIUM();
-      context_provider_->ContextSupport()->FlushPendingWork();
-    }
-    return;
+    FlushEvictedResources();
   }
 
-  // If we still have evictable resources, schedule a call to
-  // EvictExpiredResources at the time when the LRU buffer expires.
-  ScheduleEvictExpiredResourcesIn(GetUsageTimeForLRUResource() +
-                                  resource_expiration_delay_ - current_time);
+  if (!unused_resources_.empty()) {
+    // If we still have evictable resources, schedule a call to
+    // EvictExpiredResources for either (a) the time when the LRU buffer expires
+    // or (b) the deadline to explicitly flush previously evicted resources.
+    ScheduleEvictExpiredResourcesIn(
+        std::min(GetUsageTimeForLRUResource() + resource_expiration_delay_,
+                 flush_evicted_resources_deadline_) -
+        current_time);
+  }
 }
 
 void ResourcePool::EvictResourcesNotUsedSince(base::TimeTicks time_limit) {
@@ -536,6 +551,15 @@ base::TimeTicks ResourcePool::GetUsageTimeForLRUResource() const {
   // This is only called when we have at least one evictable resource.
   DCHECK(!busy_resources_.empty());
   return busy_resources_.back()->last_usage();
+}
+
+void ResourcePool::FlushEvictedResources() {
+  flush_evicted_resources_deadline_ = base::TimeTicks::Max();
+  if (context_provider_) {
+    // Flush any ContextGL work as well as any SharedImageInterface work.
+    context_provider_->ContextGL()->OrderingBarrierCHROMIUM();
+    context_provider_->ContextSupport()->FlushPendingWork();
+  }
 }
 
 bool ResourcePool::OnMemoryDump(const base::trace_event::MemoryDumpArgs& args,
@@ -572,6 +596,7 @@ void ResourcePool::OnMemoryPressure(
       break;
     case base::MemoryPressureListener::MEMORY_PRESSURE_LEVEL_CRITICAL:
       EvictResourcesNotUsedSince(base::TimeTicks() + base::TimeDelta::Max());
+      FlushEvictedResources();
       break;
   }
 }

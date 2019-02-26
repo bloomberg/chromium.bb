@@ -8,8 +8,8 @@
 #include "base/files/file_path.h"
 #include "base/files/file_util.h"
 #include "base/path_service.h"
-#include "components/cbor/cbor_values.h"
-#include "components/cbor/cbor_writer.h"
+#include "components/cbor/values.h"
+#include "components/cbor/writer.h"
 #include "content/browser/web_package/signed_exchange_consts.h"
 #include "content/browser/web_package/signed_exchange_prologue.h"
 #include "content/public/common/content_paths.h"
@@ -29,8 +29,8 @@ const char kSignatureString[] =
     " cert-sha256=*W7uB969dFW3Mb5ZefPS9Tq5ZbH5iSmOILpjv2qEArmI=*;"
     " date=1511128380; expires=1511733180";
 
-cbor::CBORValue CBORByteString(const char* str) {
-  return cbor::CBORValue(str, cbor::CBORValue::Type::BYTE_STRING);
+cbor::Value CBORByteString(const char* str) {
+  return cbor::Value(str, cbor::Value::Type::BYTE_STRING);
 }
 
 base::Optional<SignedExchangeEnvelope> GenerateHeaderAndParse(
@@ -38,18 +38,18 @@ base::Optional<SignedExchangeEnvelope> GenerateHeaderAndParse(
     base::StringPiece signature,
     const std::map<const char*, const char*>& request_map,
     const std::map<const char*, const char*>& response_map) {
-  cbor::CBORValue::MapValue request_cbor_map;
-  cbor::CBORValue::MapValue response_cbor_map;
+  cbor::Value::MapValue request_cbor_map;
+  cbor::Value::MapValue response_cbor_map;
   for (auto& pair : request_map)
     request_cbor_map[CBORByteString(pair.first)] = CBORByteString(pair.second);
   for (auto& pair : response_map)
     response_cbor_map[CBORByteString(pair.first)] = CBORByteString(pair.second);
 
-  cbor::CBORValue::ArrayValue array;
-  array.push_back(cbor::CBORValue(std::move(request_cbor_map)));
-  array.push_back(cbor::CBORValue(std::move(response_cbor_map)));
+  cbor::Value::ArrayValue array;
+  array.push_back(cbor::Value(std::move(request_cbor_map)));
+  array.push_back(cbor::Value(std::move(response_cbor_map)));
 
-  auto serialized = cbor::CBORWriter::Write(cbor::CBORValue(std::move(array)));
+  auto serialized = cbor::Writer::Write(cbor::Value(std::move(array)));
   return SignedExchangeEnvelope::Parse(
       fallback_url, signature,
       base::make_span(serialized->data(), serialized->size()),
@@ -136,6 +136,18 @@ TEST(SignedExchangeEnvelopeTest, UnsafeMethod) {
   ASSERT_FALSE(header.has_value());
 }
 
+TEST(SignedExchangeEnvelopeTest, InformationalResponseCode) {
+  auto header = GenerateHeaderAndParse(GURL("https://test.example.org/test/"),
+                                       kSignatureString,
+                                       {
+                                           {kMethodKey, "GET"},
+                                       },
+                                       {
+                                           {kStatusKey, "100"},
+                                       });
+  ASSERT_FALSE(header.has_value());
+}
+
 TEST(SignedExchangeEnvelopeTest, RelativeURL) {
   auto header = GenerateHeaderAndParse(GURL("test/"), kSignatureString,
                                        {
@@ -166,13 +178,12 @@ TEST(SignedExchangeEnvelopeTest, RedirectStatusShouldFail) {
   ASSERT_FALSE(header.has_value());
 }
 
-TEST(SignedExchangeEnvelopeTest, Status300ShouldSucceed) {
+TEST(SignedExchangeEnvelopeTest, Status300ShouldFail) {
   auto header = GenerateHeaderAndParse(
       GURL("https://test.example.org/test/"), kSignatureString,
       {{kMethodKey, "GET"}},
       {{kStatusKey, "300"}});  // 300 is not a redirect status.
-  ASSERT_TRUE(header.has_value());
-  EXPECT_EQ(header->response_code(), static_cast<net::HttpStatusCode>(300u));
+  ASSERT_FALSE(header.has_value());
 }
 
 TEST(SignedExchangeEnvelopeTest, StatefulRequestHeader) {

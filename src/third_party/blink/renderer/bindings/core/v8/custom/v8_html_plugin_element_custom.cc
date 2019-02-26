@@ -64,13 +64,15 @@ void GetScriptableObjectProperty(
   if (instance.IsEmpty())
     return;
 
-  v8::Local<v8::String> v8_name = V8String(info.GetIsolate(), name);
-  if (!V8CallBoolean(instance->HasOwnProperty(state->GetContext(), v8_name)))
-    return;
-
+  v8::Local<v8::String> v8_name = V8AtomicString(info.GetIsolate(), name);
+  bool has_own_property;
   v8::Local<v8::Value> value;
-  if (!instance->Get(state->GetContext(), v8_name).ToLocal(&value))
+  if (!instance->HasOwnProperty(state->GetContext(), v8_name)
+           .To(&has_own_property) ||
+      !has_own_property ||
+      !instance->Get(state->GetContext(), v8_name).ToLocal(&value)) {
     return;
+  }
 
   V8SetReturnValue(info, value);
 }
@@ -94,9 +96,13 @@ void SetScriptableObjectProperty(
     return;
 
   // Don't intercept any of the properties of the HTMLPluginElement.
-  v8::Local<v8::String> v8_name = V8String(info.GetIsolate(), name);
-  if (!V8CallBoolean(instance->HasOwnProperty(state->GetContext(), v8_name)) &&
-      V8CallBoolean(info.Holder()->Has(state->GetContext(), v8_name))) {
+  v8::Local<v8::String> v8_name = V8AtomicString(info.GetIsolate(), name);
+  v8::Local<v8::Context> context = state->GetContext();
+  bool instance_has_property;
+  bool holder_has_property;
+  if (!instance->HasOwnProperty(context, v8_name).To(&instance_has_property) ||
+      !info.Holder()->Has(context, v8_name).To(&holder_has_property) ||
+      (!instance_has_property && holder_has_property)) {
     return;
   }
 
@@ -109,14 +115,16 @@ void SetScriptableObjectProperty(
   // DOM element will also be set. For plugin's that don't intercept the call
   // (all except gTalk) this makes no difference at all. For gTalk the fact
   // that the property on the DOM element also gets set is inconsequential.
-  V8CallBoolean(
-      instance->CreateDataProperty(state->GetContext(), v8_name, value));
+  bool created;
+  if (!instance->CreateDataProperty(context, v8_name, value).To(&created))
+    return;
+
   V8SetReturnValue(info, value);
 }
 
 }  // namespace
 
-void V8HTMLEmbedElement::namedPropertyGetterCustom(
+void V8HTMLEmbedElement::NamedPropertyGetterCustom(
     const AtomicString& name,
     const v8::PropertyCallbackInfo<v8::Value>& info) {
   UseCounter::Count(CurrentExecutionContext(info.GetIsolate()),
@@ -124,7 +132,7 @@ void V8HTMLEmbedElement::namedPropertyGetterCustom(
   GetScriptableObjectProperty<V8HTMLEmbedElement>(name, info);
 }
 
-void V8HTMLObjectElement::namedPropertyGetterCustom(
+void V8HTMLObjectElement::NamedPropertyGetterCustom(
     const AtomicString& name,
     const v8::PropertyCallbackInfo<v8::Value>& info) {
   UseCounter::Count(CurrentExecutionContext(info.GetIsolate()),
@@ -132,7 +140,7 @@ void V8HTMLObjectElement::namedPropertyGetterCustom(
   GetScriptableObjectProperty<V8HTMLObjectElement>(name, info);
 }
 
-void V8HTMLEmbedElement::namedPropertySetterCustom(
+void V8HTMLEmbedElement::NamedPropertySetterCustom(
     const AtomicString& name,
     v8::Local<v8::Value> value,
     const v8::PropertyCallbackInfo<v8::Value>& info) {
@@ -141,7 +149,7 @@ void V8HTMLEmbedElement::namedPropertySetterCustom(
   SetScriptableObjectProperty<V8HTMLEmbedElement>(name, value, info);
 }
 
-void V8HTMLObjectElement::namedPropertySetterCustom(
+void V8HTMLObjectElement::NamedPropertySetterCustom(
     const AtomicString& name,
     v8::Local<v8::Value> value,
     const v8::PropertyCallbackInfo<v8::Value>& info) {

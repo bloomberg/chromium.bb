@@ -6,6 +6,7 @@
 
 #include "base/metrics/histogram_macros.h"
 #include "chrome/browser/extensions/extension_action.h"
+#include "chrome/browser/extensions/extension_ui_util.h"
 #include "chrome/browser/profiles/profile.h"
 #include "extensions/common/extension.h"
 #include "extensions/common/image_util.h"
@@ -32,7 +33,8 @@ ExtensionActionIconFactory::ExtensionActionIconFactory(
     const Extension* extension,
     ExtensionAction* action,
     Observer* observer)
-    : action_(action),
+    : profile_(profile),
+      action_(action),
       observer_(observer),
       should_check_icons_(extension->location() !=
                           extensions::Manifest::UNPACKED),
@@ -74,6 +76,11 @@ gfx::Image ExtensionActionIconFactory::GetIcon(int tab_id) {
           extensions::image_util::IsIconSufficientlyVisible(*bitmap);
       UMA_HISTOGRAM_BOOLEAN("Extensions.ManifestIconSetIconWasVisibleForPacked",
                             is_sufficiently_visible);
+      const bool is_sufficiently_visible_rendered = extensions::ui_util::
+          IsRenderedIconSufficientlyVisibleForBrowserContext(*bitmap, profile_);
+      UMA_HISTOGRAM_BOOLEAN(
+          "Extensions.ManifestIconSetIconWasVisibleForPackedRendered",
+          is_sufficiently_visible_rendered);
       if (!is_sufficiently_visible && !g_allow_invisible_icons) {
         icon = action_->GetPlaceholderIconImage();
       }

@@ -1,2 +1,2 @@
 HTTP/1.1 301 Moved permanently
-Location: https://www.redirected.com
+Location: https://www.redirected.com:{{PORT}}/simple.html

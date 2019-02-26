@@ -26,6 +26,6 @@ IcuEnvironment* env = new IcuEnvironment();
 extern "C" int LLVMFuzzerTestOneInput(const uint8_t* data, size_t size) {
   base::FuzzedDataProvider fuzzed_data(data, size);
 
-  chromeos::smb_client::SmbUrl url(fuzzed_data.ConsumeRemainingBytes());
+  chromeos::smb_client::SmbUrl url(fuzzed_data.ConsumeRemainingBytesAsString());
   return 0;
 }

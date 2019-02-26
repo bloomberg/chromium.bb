@@ -67,6 +67,7 @@ class FakeBrowserDMTokenStorage : public policy::BrowserDMTokenStorage {
   std::string InitClientId() override { return client_id_; }
   std::string InitEnrollmentToken() override { return std::string(); }
   std::string InitDMToken() override { return std::string(); }
+  bool InitEnrollmentErrorOption() override { return true; }
   void SaveDMToken(const std::string& token) override {}
 
  private:

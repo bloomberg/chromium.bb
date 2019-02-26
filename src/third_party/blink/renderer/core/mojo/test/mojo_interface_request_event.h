@@ -6,7 +6,7 @@
 #define THIRD_PARTY_BLINK_RENDERER_CORE_MOJO_TEST_MOJO_INTERFACE_REQUEST_EVENT_H_
 
 #include "third_party/blink/renderer/core/dom/events/event.h"
-#include "third_party/blink/renderer/core/event_names.h"
+#include "third_party/blink/renderer/core/event_interface_names.h"
 
 namespace blink {
 
@@ -24,28 +24,28 @@ class MojoInterfaceRequestEvent final : public Event {
   ~MojoInterfaceRequestEvent() override;
 
   static MojoInterfaceRequestEvent* Create(MojoHandle* handle) {
-    return new MojoInterfaceRequestEvent(handle);
+    return MakeGarbageCollected<MojoInterfaceRequestEvent>(handle);
   }
 
   static MojoInterfaceRequestEvent* Create(
       const AtomicString& type,
-      const MojoInterfaceRequestEventInit& initializer) {
-    return new MojoInterfaceRequestEvent(type, initializer);
+      const MojoInterfaceRequestEventInit* initializer) {
+    return MakeGarbageCollected<MojoInterfaceRequestEvent>(type, initializer);
   }
+
+  explicit MojoInterfaceRequestEvent(MojoHandle*);
+  MojoInterfaceRequestEvent(const AtomicString& type,
+                            const MojoInterfaceRequestEventInit*);
 
   MojoHandle* handle() const { return handle_; }
 
   const AtomicString& InterfaceName() const override {
-    return EventNames::MojoInterfaceRequestEvent;
+    return event_interface_names::kMojoInterfaceRequestEvent;
   }
 
   void Trace(blink::Visitor*) override;
 
  private:
-  explicit MojoInterfaceRequestEvent(MojoHandle*);
-  MojoInterfaceRequestEvent(const AtomicString& type,
-                            const MojoInterfaceRequestEventInit&);
-
   Member<MojoHandle> handle_;
 };
 

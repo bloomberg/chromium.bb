@@ -112,7 +112,7 @@ TEST_F(CompositeEditCommandTest, insertNodeBeforeWithDirtyLayoutTree) {
   Node* insert_child = GetDocument().createTextNode("foo");
   Element* ref_child = GetDocument().QuerySelector("b");
   Element* div = GetDocument().QuerySelector("div");
-  div->setAttribute(HTMLNames::contenteditableAttr, "true");
+  div->setAttribute(html_names::kContenteditableAttr, "true");
 
   EditingState editing_state;
   sample.InsertNodeBefore(insert_child, ref_child, &editing_state);
@@ -128,7 +128,7 @@ TEST_F(CompositeEditCommandTest,
   SampleCommand& sample = *new SampleCommand(GetDocument());
   Element* body = GetDocument().body();
   Node* text = body->lastChild();
-  body->setAttribute(HTMLNames::contenteditableAttr, "true");
+  body->setAttribute(html_names::kContenteditableAttr, "true");
   GetDocument().UpdateStyleAndLayout();
 
   EditingState editing_state;

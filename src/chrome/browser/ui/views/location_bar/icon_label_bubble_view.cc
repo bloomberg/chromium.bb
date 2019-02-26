@@ -167,8 +167,10 @@ bool IconLabelBubbleView::ShouldShowLabel() const {
 }
 
 void IconLabelBubbleView::SetLabel(const base::string16& label) {
+  SetAccessibleName(label);
   label_->SetText(label);
   separator_view_->SetVisible(ShouldShowSeparator());
+  separator_view_->UpdateOpacity();
 }
 
 void IconLabelBubbleView::SetImage(const gfx::ImageSkia& image_skia) {
@@ -181,10 +183,6 @@ void IconLabelBubbleView::SetFontList(const gfx::FontList& font_list) {
 
 bool IconLabelBubbleView::ShouldShowSeparator() const {
   return ShouldShowLabel();
-}
-
-bool IconLabelBubbleView::ShouldShowExtraEndSpace() const {
-  return false;
 }
 
 double IconLabelBubbleView::WidthMultiplier() const {
@@ -229,6 +227,11 @@ gfx::Size IconLabelBubbleView::CalculatePreferredSize() const {
   return GetSizeForLabelWidth(label_->GetPreferredSize().width());
 }
 
+void IconLabelBubbleView::OnBoundsChanged(const gfx::Rect& previous_bounds) {
+  ink_drop_container_->SetBoundsRect(CalculateInkDropContainerBounds());
+  views::Button::OnBoundsChanged(previous_bounds);
+}
+
 void IconLabelBubbleView::Layout() {
   // We may not have horizontal room for both the image and the trailing
   // padding. When the view is expanding (or showing-label steady state), the
@@ -266,12 +269,7 @@ void IconLabelBubbleView::Layout() {
   separator_view_->SetBounds(separator_x, separator_bounds.y(), separator_width,
                              separator_height);
 
-  gfx::Rect ink_drop_bounds = GetLocalBounds();
-  if (ShouldShowSeparator()) {
-    ink_drop_bounds.set_width(ink_drop_bounds.width() -
-                              GetEndPaddingWithSeparator());
-  }
-
+  gfx::Rect ink_drop_bounds = CalculateInkDropContainerBounds();
   ink_drop_container_->SetBoundsRect(ink_drop_bounds);
 
   if (focus_ring() && !ink_drop_bounds.IsEmpty()) {
@@ -287,17 +285,6 @@ void IconLabelBubbleView::Layout() {
 bool IconLabelBubbleView::OnMousePressed(const ui::MouseEvent& event) {
   suppress_button_release_ = IsBubbleShowing();
   return Button::OnMousePressed(event);
-}
-
-void IconLabelBubbleView::GetAccessibleNodeData(ui::AXNodeData* node_data) {
-  label_->GetAccessibleNodeData(node_data);
-  if (node_data->GetStringAttribute(ax::mojom::StringAttribute::kName)
-          .empty()) {
-    // Fallback name when there is no accessible name from the label.
-    base::string16 tooltip_text;
-    GetTooltipText(gfx::Point(), &tooltip_text);
-    node_data->SetName(tooltip_text);
-  }
 }
 
 void IconLabelBubbleView::OnNativeThemeChanged(
@@ -409,7 +396,7 @@ void IconLabelBubbleView::AnimationCanceled(const gfx::Animation* animation) {
   AnimationEnded(animation);
 }
 
-void IconLabelBubbleView::OnMdModeChanged() {
+void IconLabelBubbleView::OnTouchUiChanged() {
   UpdateBorder();
 
   // PreferredSizeChanged() incurs an expensive layout of the location bar, so
@@ -452,9 +439,7 @@ gfx::Size IconLabelBubbleView::GetSizeForLabelWidth(int label_width) const {
 int IconLabelBubbleView::GetInternalSpacing() const {
   if (image_->GetPreferredSize().IsEmpty())
     return 0;
-
-  const int default_spacing = MD::IsTouchOptimizedUiEnabled() ? 10 : 8;
-  return default_spacing + GetExtraInternalSpacing();
+  return (MD::touch_ui() ? 10 : 8) + GetExtraInternalSpacing();
 }
 
 int IconLabelBubbleView::GetExtraInternalSpacing() const {
@@ -466,15 +451,13 @@ int IconLabelBubbleView::GetSlideDurationTime() const {
 }
 
 int IconLabelBubbleView::GetWidthBetweenIconAndSeparator() const {
-  return ShouldShowSeparator() || ShouldShowExtraEndSpace()
-             ? kIconLabelBubbleSpaceBesideSeparator
-             : 0;
+  return ShouldShowSeparator() ? kIconLabelBubbleSpaceBesideSeparator : 0;
 }
 
 int IconLabelBubbleView::GetEndPaddingWithSeparator() const {
   int end_padding = ShouldShowSeparator() ? kIconLabelBubbleSpaceBesideSeparator
                                           : GetInsets().right();
-  if (ShouldShowSeparator() || ShouldShowExtraEndSpace())
+  if (ShouldShowSeparator())
     end_padding += kIconLabelBubbleSeparatorWidth;
   return end_padding;
 }
@@ -564,4 +547,11 @@ void IconLabelBubbleView::HideAnimation() {
   slide_animation_.Hide();
   GetInkDrop()->SetShowHighlightOnHover(false);
   GetInkDrop()->SetShowHighlightOnFocus(false);
+}
+
+gfx::Rect IconLabelBubbleView::CalculateInkDropContainerBounds() const {
+  gfx::Rect ink_drop_bounds = GetLocalBounds();
+  if (ShouldShowSeparator())
+    ink_drop_bounds.Inset(0, 0, GetEndPaddingWithSeparator(), 0);
+  return ink_drop_bounds;
 }

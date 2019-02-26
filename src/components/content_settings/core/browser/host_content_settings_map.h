@@ -231,6 +231,10 @@ class HostContentSettingsMap : public content_settings::Observer,
       const GURL& secondary_url,
       ContentSettingsType type) const;
 
+  // Checks whether the specified |type| controls a feature that is restricted
+  // to secure origins.
+  bool IsRestrictedToSecureOrigins(ContentSettingsType type) const;
+
   // Sets the most specific rule that currently defines the setting for the
   // given content type. TODO(raymes): Remove this once all content settings
   // are scoped to origin scope. There is no scope more narrow than origin

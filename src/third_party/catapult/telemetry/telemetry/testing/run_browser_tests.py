@@ -3,6 +3,7 @@
 # found in the LICENSE file.
 
 import fnmatch
+import os
 import re
 import sys
 import json
@@ -18,6 +19,14 @@ import typ
 from typ import arg_parser
 
 TEST_SUFFIXES = ['*_test.py', '*_tests.py', '*_unittest.py', '*_unittests.py']
+
+
+def PrintTelemetryHelp():
+  options = browser_options.BrowserFinderOptions()
+  options.browser_type = 'any'
+  parser = options.CreateParser()
+  print '\n\nCommand line arguments handled by Telemetry:'
+  parser.print_help()
 
 
 def ProcessCommandLineOptions(test_class, typ_options, args):
@@ -185,6 +194,7 @@ def LoadTestCasesToBeRun(
 def _CreateTestArgParsers():
   parser = typ.ArgumentParser(discovery=False, reporting=True, running=True)
   parser.add_argument('test', type=str, help='Name of the test suite to run')
+
   parser.add_argument(
       '--test-filter', type=str, default='', action='store',
       help='Run only tests whose names match the given filter regexp.')
@@ -244,8 +254,15 @@ def RunTests(args):
   try:
     options, extra_args = parser.parse_known_args(args)
   except arg_parser._Bailout:
+    PrintTelemetryHelp()
     return parser.exit_status
   binary_manager.InitDependencyManager(options.client_configs)
+
+  not_using_typ_expectation = False
+  if options.expectations_files:
+    parser.error('--expectation-files flag is not supported yet.')
+  else:
+    not_using_typ_expectation = True
 
   for start_dir in options.start_dirs:
     modules_to_classes = discover.DiscoverClasses(
@@ -304,6 +321,7 @@ def RunTests(args):
   runner.args.metadata = options.metadata
   runner.args.passthrough = options.passthrough
   runner.args.path = options.path
+  runner.args.repeat = options.repeat
   runner.args.retry_limit = options.retry_limit
   runner.args.test_results_server = options.test_results_server
   runner.args.test_type = options.test_type
@@ -329,7 +347,34 @@ def RunTests(args):
   except KeyboardInterrupt:
     print >> sys.stderr, "interrupted, exiting"
     ret = 130
+  finally:
+    if (options.write_full_results_to and
+        os.path.exists(options.write_full_results_to) and
+        not_using_typ_expectation):
+      # Set expectation of all skipped tests to skip to keep the test behavior
+      # the same as when typ doesn't support test expectation.
+      # (also see crbug.com/904019) for why this work around is needed)
+      # TODO(crbug.com/698902): remove this once gpu tests are converted to use
+      # typ's expectation.
+      _SetSkippedTestExpectationsToSkip(options.write_full_results_to)
   return ret
+
+
+def _SetSkippedTestExpectationsToSkip(full_results_file_path):
+  with open(full_results_file_path) as f:
+    results = json.load(f)
+  root_node = results['tests']
+  queue = [root_node]
+  while queue:
+    curr_node = queue.pop()
+    if 'actual' in curr_node:
+      if curr_node['actual'] == 'SKIP':
+        curr_node['expected'] = 'SKIP'
+    else:
+      for v in curr_node.values():
+        queue.append(v)
+  with open(full_results_file_path, 'w') as f:
+    json.dump(results, f, indent=2)
 
 
 def _SetUpProcess(child, context):

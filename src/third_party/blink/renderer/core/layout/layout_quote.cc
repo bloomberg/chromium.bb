@@ -269,8 +269,8 @@ void LayoutQuote::UpdateText() {
     fragment->SetStyle(MutableStyle());
     fragment->SetContentString(text_.Impl());
   } else {
-    fragment =
-        LayoutTextFragment::CreateAnonymous(*owning_pseudo_, text_.Impl());
+    fragment = LayoutTextFragment::CreateAnonymous(*Style(), *owning_pseudo_,
+                                                   text_.Impl());
     fragment->SetStyle(MutableStyle());
     AddChild(fragment);
   }

@@ -12,7 +12,7 @@
 #include "third_party/blink/renderer/core/style/computed_style.h"
 
 namespace blink {
-namespace CSSLonghand {
+namespace css_longhand {
 
 const CSSValue* PaddingRight::ParseSingleValue(
     CSSParserTokenRange& range,
@@ -20,7 +20,7 @@ const CSSValue* PaddingRight::ParseSingleValue(
     const CSSParserLocalContext&) const {
   return ConsumeLengthOrPercent(
       range, context.Mode(), kValueRangeNonNegative,
-      CSSPropertyParserHelpers::UnitlessQuirk::kAllow);
+      css_property_parser_helpers::UnitlessQuirk::kAllow);
 }
 
 bool PaddingRight::IsLayoutDependent(const ComputedStyle* style,
@@ -44,5 +44,5 @@ const CSSValue* PaddingRight::CSSValueFromComputedStyleInternal(
       ToLayoutBox(layout_object)->ComputedCSSPaddingRight(), style);
 }
 
-}  // namespace CSSLonghand
+}  // namespace css_longhand
 }  // namespace blink

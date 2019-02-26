@@ -54,8 +54,7 @@ class WrappedArray final : angle::NonCopyable
   public:
     template <size_t N>
     constexpr WrappedArray(const T (&data)[N]) : mArray(&data[0]), mSize(N)
-    {
-    }
+    {}
 
     constexpr WrappedArray() : mArray(nullptr), mSize(0) {}
     constexpr WrappedArray(const T *data, size_t size) : mArray(data), mSize(size) {}
@@ -152,7 +151,7 @@ inline const char *MakeStaticString(const std::string &str)
 {
     // On the heap so that no destructor runs on application exit.
     static std::set<std::string> *strings = new std::set<std::string>;
-    std::set<std::string>::iterator it = strings->find(str);
+    std::set<std::string>::iterator it    = strings->find(str);
     if (it != strings->end())
     {
         return it->c_str();
@@ -186,7 +185,7 @@ std::string ToString(const T &value)
 
 // snprintf is not defined with MSVC prior to to msvc14
 #if defined(_MSC_VER) && _MSC_VER < 1900
-#define snprintf _snprintf
+#    define snprintf _snprintf
 #endif
 
 #define GL_A1RGB5_ANGLEX 0x6AC5
@@ -251,65 +250,78 @@ std::string ToString(const T &value)
 #define GL_RGB10_A2_SSCALED_ANGLEX 0x6AEC
 #define GL_RGB10_A2_USCALED_ANGLEX 0x6AED
 
-// This internal enum is used to filter internal errors that are already handled.
-// TODO(jmadill): Remove this when refactor is done. http://anglebug.com/2491
-#define GL_INTERNAL_ERROR_ANGLEX 0x6AEE
-
 #define ANGLE_CHECK_GL_ALLOC(context, result) \
     ANGLE_CHECK(context, result, "Failed to allocate host memory", GL_OUT_OF_MEMORY)
 
 #define ANGLE_CHECK_GL_MATH(context, result) \
     ANGLE_CHECK(context, result, "Integer overflow.", GL_INVALID_OPERATION)
 
+#define ANGLE_GL_UNREACHABLE(context) \
+    UNREACHABLE();                    \
+    ANGLE_CHECK(context, false, "Unreachable Code.", GL_INVALID_OPERATION)
+
 // The below inlining code lifted from V8.
 #if defined(__clang__) || (defined(__GNUC__) && defined(__has_attribute))
-#define ANGLE_HAS_ATTRIBUTE_ALWAYS_INLINE (__has_attribute(always_inline))
-#define ANGLE_HAS___FORCEINLINE 0
+#    define ANGLE_HAS_ATTRIBUTE_ALWAYS_INLINE (__has_attribute(always_inline))
+#    define ANGLE_HAS___FORCEINLINE 0
 #elif defined(_MSC_VER)
-#define ANGLE_HAS_ATTRIBUTE_ALWAYS_INLINE 0
-#define ANGLE_HAS___FORCEINLINE 1
+#    define ANGLE_HAS_ATTRIBUTE_ALWAYS_INLINE 0
+#    define ANGLE_HAS___FORCEINLINE 1
 #else
-#define ANGLE_HAS_ATTRIBUTE_ALWAYS_INLINE 0
-#define ANGLE_HAS___FORCEINLINE 0
+#    define ANGLE_HAS_ATTRIBUTE_ALWAYS_INLINE 0
+#    define ANGLE_HAS___FORCEINLINE 0
 #endif
 
 #if defined(NDEBUG) && ANGLE_HAS_ATTRIBUTE_ALWAYS_INLINE
-#define ANGLE_INLINE inline __attribute__((always_inline))
+#    define ANGLE_INLINE inline __attribute__((always_inline))
 #elif defined(NDEBUG) && ANGLE_HAS___FORCEINLINE
-#define ANGLE_INLINE __forceinline
+#    define ANGLE_INLINE __forceinline
 #else
-#define ANGLE_INLINE inline
+#    define ANGLE_INLINE inline
 #endif
 
 #if defined(__clang__) || (defined(__GNUC__) && defined(__has_attribute))
-#if __has_attribute(noinline)
-#define ANGLE_NOINLINE __attribute__((noinline))
-#else
-#define ANGLE_NOINLINE
-#endif
+#    if __has_attribute(noinline)
+#        define ANGLE_NOINLINE __attribute__((noinline))
+#    else
+#        define ANGLE_NOINLINE
+#    endif
 #elif defined(_MSC_VER)
-#define ANGLE_NOINLINE __declspec(noinline)
+#    define ANGLE_NOINLINE __declspec(noinline)
 #else
-#define ANGLE_NOINLINE
+#    define ANGLE_NOINLINE
 #endif
 
+#if defined(__clang__) || (defined(__GNUC__) && defined(__has_attribute))
+#    if __has_attribute(format)
+#        define ANGLE_FORMAT_PRINTF(fmt, args) __attribute__((format(__printf__, fmt, args)))
+#    else
+#        define ANGLE_FORMAT_PRINTF(fmt, args)
+#    endif
+#else
+#    define ANGLE_FORMAT_PRINTF(fmt, args)
+#endif
+
+// Format messes up the # inside the macro.
+// clang-format off
 #ifndef ANGLE_STRINGIFY
-#define ANGLE_STRINGIFY(x) #x
+#    define ANGLE_STRINGIFY(x) #x
 #endif
 
 #ifndef ANGLE_MACRO_STRINGIFY
-#define ANGLE_MACRO_STRINGIFY(x) ANGLE_STRINGIFY(x)
+#    define ANGLE_MACRO_STRINGIFY(x) ANGLE_STRINGIFY(x)
 #endif
+// clang-format on
 
 // Detect support for C++17 [[nodiscard]]
 #if !defined(__has_cpp_attribute)
-#define __has_cpp_attribute(name) 0
+#    define __has_cpp_attribute(name) 0
 #endif  // !defined(__has_cpp_attribute)
 
 #if __has_cpp_attribute(nodiscard)
-#define ANGLE_NO_DISCARD [[nodiscard]]
+#    define ANGLE_NO_DISCARD [[nodiscard]]
 #else
-#define ANGLE_NO_DISCARD
+#    define ANGLE_NO_DISCARD
 #endif  // __has_cpp_attribute(nodiscard)
 
 #endif  // COMMON_ANGLEUTILS_H_

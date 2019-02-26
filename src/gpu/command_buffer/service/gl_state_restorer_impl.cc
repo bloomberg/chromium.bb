@@ -4,83 +4,84 @@
 
 #include "gpu/command_buffer/service/gl_state_restorer_impl.h"
 
-#include "gpu/command_buffer/service/decoder_context.h"
+#include "gpu/command_buffer/service/gl_context_virtual_delegate.h"
 #include "gpu/command_buffer/service/query_manager.h"
 
 namespace gpu {
 
-GLStateRestorerImpl::GLStateRestorerImpl(base::WeakPtr<DecoderContext> decoder)
-    : decoder_(decoder) {}
+GLStateRestorerImpl::GLStateRestorerImpl(
+    base::WeakPtr<GLContextVirtualDelegate> delegate)
+    : delegate_(delegate) {}
 
 GLStateRestorerImpl::~GLStateRestorerImpl() = default;
 
 bool GLStateRestorerImpl::IsInitialized() {
-  DCHECK(decoder_.get());
-  return decoder_->initialized();
+  DCHECK(delegate_.get());
+  return delegate_->initialized();
 }
 
 void GLStateRestorerImpl::RestoreState(const gl::GLStateRestorer* prev_state) {
-  DCHECK(decoder_.get());
+  DCHECK(delegate_.get());
   const GLStateRestorerImpl* restorer_impl =
       static_cast<const GLStateRestorerImpl*>(prev_state);
 
-  decoder_->RestoreState(restorer_impl ? restorer_impl->GetContextState()
-                                       : nullptr);
+  delegate_->RestoreState(restorer_impl ? restorer_impl->GetContextState()
+                                        : nullptr);
 }
 
 void GLStateRestorerImpl::RestoreAllTextureUnitAndSamplerBindings() {
-  DCHECK(decoder_.get());
-  decoder_->RestoreAllTextureUnitAndSamplerBindings(nullptr);
+  DCHECK(delegate_.get());
+  delegate_->RestoreAllTextureUnitAndSamplerBindings(nullptr);
 }
 
 void GLStateRestorerImpl::RestoreActiveTexture() {
-  DCHECK(decoder_.get());
-  decoder_->RestoreActiveTexture();
+  DCHECK(delegate_.get());
+  delegate_->RestoreActiveTexture();
 }
 
 void GLStateRestorerImpl::RestoreActiveTextureUnitBinding(unsigned int target) {
-  DCHECK(decoder_.get());
-  decoder_->RestoreActiveTextureUnitBinding(target);
+  DCHECK(delegate_.get());
+  delegate_->RestoreActiveTextureUnitBinding(target);
 }
 
 void GLStateRestorerImpl::RestoreAllExternalTextureBindingsIfNeeded() {
-  DCHECK(decoder_.get());
-  decoder_->RestoreAllExternalTextureBindingsIfNeeded();
+  DCHECK(delegate_.get());
+  delegate_->RestoreAllExternalTextureBindingsIfNeeded();
 }
 
 void GLStateRestorerImpl::RestoreFramebufferBindings() {
-  DCHECK(decoder_.get());
-  decoder_->RestoreFramebufferBindings();
+  DCHECK(delegate_.get());
+  delegate_->RestoreFramebufferBindings();
 }
 
 void GLStateRestorerImpl::RestoreProgramBindings() {
-  DCHECK(decoder_.get());
-  decoder_->RestoreProgramBindings();
+  DCHECK(delegate_.get());
+  delegate_->RestoreProgramBindings();
 }
 
 void GLStateRestorerImpl::RestoreBufferBinding(unsigned int target) {
-  DCHECK(decoder_.get());
-  decoder_->RestoreBufferBinding(target);
+  DCHECK(delegate_.get());
+  delegate_->RestoreBufferBinding(target);
 }
 
 void GLStateRestorerImpl::RestoreVertexAttribArray(unsigned int index) {
-  DCHECK(decoder_.get());
-  decoder_->RestoreVertexAttribArray(index);
+  DCHECK(delegate_.get());
+  delegate_->RestoreVertexAttribArray(index);
 }
 
 void GLStateRestorerImpl::PauseQueries() {
-  DCHECK(decoder_.get());
-  decoder_->GetQueryManager()->PauseQueries();
+  DCHECK(delegate_.get());
+  delegate_->GetQueryManager()->PauseQueries();
 }
 
 void GLStateRestorerImpl::ResumeQueries() {
-  DCHECK(decoder_.get());
-  decoder_->GetQueryManager()->ResumeQueries();
+  DCHECK(delegate_.get());
+  delegate_->GetQueryManager()->ResumeQueries();
 }
 
 const gles2::ContextState* GLStateRestorerImpl::GetContextState() const {
-  DCHECK(decoder_.get());
-  return decoder_->GetContextState();
+  DCHECK(delegate_.get());
+  return delegate_->GetContextState();
 }
 
 }  // namespace gpu

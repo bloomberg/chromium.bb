@@ -13,8 +13,11 @@ namespace blink {
 class CSSFunctionValue : public CSSValueList {
  public:
   static CSSFunctionValue* Create(CSSValueID id) {
-    return new CSSFunctionValue(id);
+    return MakeGarbageCollected<CSSFunctionValue>(id);
   }
+
+  CSSFunctionValue(CSSValueID id)
+      : CSSValueList(kFunctionClass, kCommaSeparator), value_id_(id) {}
 
   String CustomCSSText() const;
 
@@ -28,9 +31,6 @@ class CSSFunctionValue : public CSSValueList {
   }
 
  private:
-  CSSFunctionValue(CSSValueID id)
-      : CSSValueList(kFunctionClass, kCommaSeparator), value_id_(id) {}
-
   const CSSValueID value_id_;
 };
 

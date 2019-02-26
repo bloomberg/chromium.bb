@@ -61,14 +61,13 @@ VideoDecoderConfig::VideoDecoderConfig()
     : codec_(kUnknownVideoCodec),
       profile_(VIDEO_CODEC_PROFILE_UNKNOWN),
       format_(PIXEL_FORMAT_UNKNOWN),
-      color_space_(COLOR_SPACE_UNSPECIFIED),
       rotation_(VIDEO_ROTATION_0) {}
 
 VideoDecoderConfig::VideoDecoderConfig(
     VideoCodec codec,
     VideoCodecProfile profile,
     VideoPixelFormat format,
-    ColorSpace color_space,
+    const VideoColorSpace& color_space,
     VideoRotation rotation,
     const gfx::Size& coded_size,
     const gfx::Rect& visible_rect,
@@ -83,11 +82,6 @@ VideoDecoderConfig::VideoDecoderConfig(const VideoDecoderConfig& other) =
     default;
 
 VideoDecoderConfig::~VideoDecoderConfig() = default;
-
-void VideoDecoderConfig::set_color_space_info(
-    const VideoColorSpace& color_space_info) {
-  color_space_info_ = color_space_info;
-}
 
 const VideoColorSpace& VideoDecoderConfig::color_space_info() const {
   return color_space_info_;
@@ -104,7 +98,7 @@ const base::Optional<HDRMetadata>& VideoDecoderConfig::hdr_metadata() const {
 void VideoDecoderConfig::Initialize(VideoCodec codec,
                                     VideoCodecProfile profile,
                                     VideoPixelFormat format,
-                                    ColorSpace color_space,
+                                    const VideoColorSpace& color_space,
                                     VideoRotation rotation,
                                     const gfx::Size& coded_size,
                                     const gfx::Rect& visible_rect,
@@ -114,28 +108,13 @@ void VideoDecoderConfig::Initialize(VideoCodec codec,
   codec_ = codec;
   profile_ = profile;
   format_ = format;
-  color_space_ = color_space;
   rotation_ = rotation;
   coded_size_ = coded_size;
   visible_rect_ = visible_rect;
   natural_size_ = natural_size;
   extra_data_ = extra_data;
   encryption_scheme_ = encryption_scheme;
-
-  switch (color_space) {
-    case ColorSpace::COLOR_SPACE_JPEG:
-      color_space_info_ = VideoColorSpace::JPEG();
-      break;
-    case ColorSpace::COLOR_SPACE_HD_REC709:
-      color_space_info_ = VideoColorSpace::REC709();
-      break;
-    case ColorSpace::COLOR_SPACE_SD_REC601:
-      color_space_info_ = VideoColorSpace::REC601();
-      break;
-    case ColorSpace::COLOR_SPACE_UNSPECIFIED:
-    default:
-      break;
-  }
+  color_space_info_ = color_space;
 }
 
 bool VideoDecoderConfig::IsValidConfig() const {

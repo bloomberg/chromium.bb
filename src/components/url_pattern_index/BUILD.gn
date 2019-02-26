@@ -14,6 +14,8 @@ static_library("url_pattern_index") {
     "url_pattern.h",
     "url_pattern_index.cc",
     "url_pattern_index.h",
+    "url_rule_util.cc",
+    "url_rule_util.h",
   ]
 
   public_deps = [
@@ -44,17 +46,6 @@ static_library("test_support") {
   ]
 }
 
-static_library("util") {
-  sources = [
-    "url_rule_util.cc",
-    "url_rule_util.h",
-  ]
-  deps = [
-    ":url_pattern_index",
-    "//base",
-  ]
-}
-
 source_set("unit_tests") {
   testonly = true
   sources = [
@@ -69,7 +60,6 @@ source_set("unit_tests") {
   deps = [
     ":test_support",
     ":url_pattern_index",
-    ":util",
     "//base",
     "//testing/gtest",
     "//third_party/protobuf:protobuf_lite",

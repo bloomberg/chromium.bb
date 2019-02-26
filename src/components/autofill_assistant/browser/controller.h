@@ -13,6 +13,7 @@
 #include "base/macros.h"
 #include "components/autofill_assistant/browser/client.h"
 #include "components/autofill_assistant/browser/client_memory.h"
+#include "components/autofill_assistant/browser/element_area.h"
 #include "components/autofill_assistant/browser/script.h"
 #include "components/autofill_assistant/browser/script_executor_delegate.h"
 #include "components/autofill_assistant/browser/script_tracker.h"
@@ -39,10 +40,12 @@ class Controller : public ScriptExecutorDelegate,
                    private content::WebContentsObserver,
                    private content::WebContentsDelegate {
  public:
-  static void CreateAndStartForWebContents(
+  static void CreateForWebContents(
       content::WebContents* web_contents,
       std::unique_ptr<Client> client,
-      std::unique_ptr<std::map<std::string, std::string>> parameters);
+      std::unique_ptr<std::map<std::string, std::string>> parameters,
+      const std::string& locale,
+      const std::string& country_code);
 
   // Overrides ScriptExecutorDelegate:
   Service* GetService() override;
@@ -52,6 +55,9 @@ class Controller : public ScriptExecutorDelegate,
   const std::map<std::string, std::string>& GetParameters() override;
   autofill::PersonalDataManager* GetPersonalDataManager() override;
   content::WebContents* GetWebContents() override;
+  void SetTouchableElementArea(const std::vector<Selector>& elements) override;
+
+  bool IsCookieExperimentEnabled() const;
 
  private:
   friend ControllerTest;
@@ -65,9 +71,9 @@ class Controller : public ScriptExecutorDelegate,
 
   void GetOrCheckScripts(const GURL& url);
   void OnGetScripts(const GURL& url, bool result, const std::string& response);
-  void OnScriptChosen(const std::string& script_path);
+  void ExecuteScript(const std::string& script_path);
   void OnScriptExecuted(const std::string& script_path,
-                        ScriptExecutor::Result result);
+                        const ScriptExecutor::Result& result);
 
   // Check script preconditions every few seconds for a certain number of times.
   // If checks are already running, StartPeriodicScriptChecks resets the count.
@@ -77,22 +83,46 @@ class Controller : public ScriptExecutorDelegate,
   void StartPeriodicScriptChecks();
   void StopPeriodicScriptChecks();
   void OnPeriodicScriptCheck();
+  void GiveUp();
 
-  // Overrides content::UiDelegate:
+  // Runs autostart scripts from |runnable_scripts|, if the conditions are
+  // right. Returns true if a script was auto-started.
+  bool MaybeAutostartScript(const std::vector<ScriptHandle>& runnable_scripts);
+
+  // Autofill Assistant cookie logic.
+  //
+  // On startup of the controller we set a cookie. If a cookie already existed
+  // for the intial URL, we show a warning that the website has already been
+  // visited and could contain old data. The cookie is cleared (or expires) when
+  // a script terminated with a Stop action.
+  void OnGetCookie(const GURL& initial_url, bool has_cookie);
+  void OnSetCookie(const GURL& initial_url, bool result);
+  void FinishStart(const GURL& initial_url);
+
+  // Overrides autofill_assistant::UiDelegate:
+  void Start(const GURL& initialUrl) override;
   void OnClickOverlay() override;
   void OnDestroy() override;
+  void UpdateTouchableArea() override;
+  void OnUserInteractionInsideTouchableArea() override;
   void OnScriptSelected(const std::string& script_path) override;
+  std::string GetDebugContext() override;
+  bool Terminate() override;
 
   // Overrides ScriptTracker::Listener:
+  void OnNoRunnableScriptsAnymore() override;
   void OnRunnableScriptsChanged(
       const std::vector<ScriptHandle>& runnable_scripts) override;
 
   // Overrides content::WebContentsObserver:
-  void DidGetUserInteraction(const blink::WebInputEvent::Type type) override;
+  void DidAttachInterstitialPage() override;
   void DidFinishLoad(content::RenderFrameHost* render_frame_host,
                      const GURL& validated_url) override;
-  void WebContentsDestroyed() override;
+  void DidStartNavigation(
+      content::NavigationHandle* navigation_handle) override;
   void DocumentAvailableInMainFrame() override;
+  void RenderProcessGone(base::TerminationStatus status) override;
+  void WebContentsDestroyed() override;
 
   // Overrides content::WebContentsDelegate:
   void LoadProgressChanged(content::WebContents* source,
@@ -101,23 +131,39 @@ class Controller : public ScriptExecutorDelegate,
   std::unique_ptr<Client> client_;
   std::unique_ptr<WebController> web_controller_;
   std::unique_ptr<Service> service_;
-  std::unique_ptr<ScriptTracker> script_tracker_;
   std::unique_ptr<std::map<std::string, std::string>> parameters_;
+  std::unique_ptr<ClientMemory> memory_;
 
   // Domain of the last URL the controller requested scripts from.
   std::string script_domain_;
-  std::unique_ptr<ClientMemory> memory_;
-  bool allow_autostart_;
+  bool allow_autostart_ = true;
 
   // Whether a task for periodic checks is scheduled.
-  bool periodic_script_check_scheduled_;
+  bool periodic_script_check_scheduled_ = false;
 
   // Number of remaining periodic checks.
-  int periodic_script_check_count_;
+  int periodic_script_check_count_ = 0;
+  int total_script_check_count_ = 0;
 
   // Whether to clear the web_contents delegate when the controller is
   // destroyed.
-  bool clear_web_contents_delegate_;
+  bool clear_web_contents_delegate_ = false;
+
+  // Whether we should hide the overlay and show an error message after a first
+  // unsuccessful round of preconditions checking.
+  bool should_fail_after_checking_scripts_ = false;
+
+  // Area of the screen that corresponds to the current set of touchable
+  // elements.
+  ElementArea touchable_element_area_;
+
+  // Flag indicates whether it is ready to fetch and execute scripts.
+  bool started_ = false;
+
+  // Tracks scripts and script execution. It's kept at the end, as it tend to
+  // depend on everything the controller support, through script and script
+  // actions.
+  std::unique_ptr<ScriptTracker> script_tracker_;
 
   base::WeakPtrFactory<Controller> weak_ptr_factory_;
 

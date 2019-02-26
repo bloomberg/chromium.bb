@@ -108,8 +108,8 @@ SourceBuffer* SourceBuffer::Create(
     std::unique_ptr<WebSourceBuffer> web_source_buffer,
     MediaSource* source,
     EventQueue* async_event_queue) {
-  SourceBuffer* source_buffer =
-      new SourceBuffer(std::move(web_source_buffer), source, async_event_queue);
+  SourceBuffer* source_buffer = MakeGarbageCollected<SourceBuffer>(
+      std::move(web_source_buffer), source, async_event_queue);
   source_buffer->PauseIfNeeded();
   return source_buffer;
 }
@@ -508,7 +508,7 @@ void SourceBuffer::remove(double start,
 
   // 7.4. Queue a task to fire a simple event named updatestart at this
   //      SourceBuffer object.
-  ScheduleEvent(EventTypeNames::updatestart);
+  ScheduleEvent(event_type_names::kUpdatestart);
 
   // 7.5. Return control to the caller and run the rest of the steps
   //      asynchronously.
@@ -610,8 +610,8 @@ void SourceBuffer::CancelRemove() {
   updating_ = false;
 
   if (!RuntimeEnabledFeatures::MediaSourceNewAbortAndDurationEnabled()) {
-    ScheduleEvent(EventTypeNames::abort);
-    ScheduleEvent(EventTypeNames::updateend);
+    ScheduleEvent(event_type_names::kAbort);
+    ScheduleEvent(event_type_names::kUpdateend);
   }
 
   TRACE_EVENT_ASYNC_END0("media", "SourceBuffer::remove", this);
@@ -639,11 +639,11 @@ void SourceBuffer::AbortIfUpdating() {
 
   // 4.3. Queue a task to fire a simple event named abort at this SourceBuffer
   //      object.
-  ScheduleEvent(EventTypeNames::abort);
+  ScheduleEvent(event_type_names::kAbort);
 
   // 4.4. Queue a task to fire a simple event named updateend at this
   //      SourceBuffer object.
-  ScheduleEvent(EventTypeNames::updateend);
+  ScheduleEvent(event_type_names::kUpdateend);
 
   TRACE_EVENT_ASYNC_END0("media", trace_event_name, this);
 }
@@ -724,7 +724,7 @@ void SourceBuffer::RemoveMediaTracks() {
   //     to fire a simple event named change at the HTMLMediaElement audioTracks
   //     list.
   if (removed_enabled_audio_track) {
-    Event* event = Event::Create(EventTypeNames::change);
+    Event* event = Event::Create(event_type_names::kChange);
     event->SetTarget(&media_element->audioTracks());
     media_element->ScheduleEvent(event);
   }
@@ -764,7 +764,7 @@ void SourceBuffer::RemoveMediaTracks() {
   //     to fire a simple event named change at the HTMLMediaElement videoTracks
   //     list.
   if (removed_selected_video_track) {
-    Event* event = Event::Create(EventTypeNames::change);
+    Event* event = Event::Create(event_type_names::kChange);
     event->SetTarget(&media_element->videoTracks());
     media_element->ScheduleEvent(event);
   }
@@ -1175,7 +1175,7 @@ ExecutionContext* SourceBuffer::GetExecutionContext() const {
 }
 
 const AtomicString& SourceBuffer::InterfaceName() const {
-  return EventTargetNames::SourceBuffer;
+  return event_target_names::kSourceBuffer;
 }
 
 bool SourceBuffer::IsRemoved() const {
@@ -1294,7 +1294,7 @@ void SourceBuffer::AppendBufferInternal(double media_time,
 
   // 4. Queue a task to fire a simple event named updatestart at this
   //    SourceBuffer object.
-  ScheduleEvent(EventTypeNames::updatestart);
+  ScheduleEvent(event_type_names::kUpdatestart);
 
   // 5. Asynchronously run the buffer append algorithm.
   append_buffer_async_part_runner_->RunAsync();
@@ -1359,11 +1359,11 @@ void SourceBuffer::AppendBufferAsyncPart() {
 
     // 4. Queue a task to fire a simple event named update at this SourceBuffer
     //    object.
-    ScheduleEvent(EventTypeNames::update);
+    ScheduleEvent(event_type_names::kUpdate);
 
     // 5. Queue a task to fire a simple event named updateend at this
     //    SourceBuffer object.
-    ScheduleEvent(EventTypeNames::updateend);
+    ScheduleEvent(event_type_names::kUpdateend);
   }
 
   TRACE_EVENT_ASYNC_END0("media", "SourceBuffer::appendBuffer", this);
@@ -1392,11 +1392,11 @@ void SourceBuffer::RemoveAsyncPart() {
 
   // 11. Queue a task to fire a simple event named update at this SourceBuffer
   //     object.
-  ScheduleEvent(EventTypeNames::update);
+  ScheduleEvent(event_type_names::kUpdate);
 
   // 12. Queue a task to fire a simple event named updateend at this
   //     SourceBuffer object.
-  ScheduleEvent(EventTypeNames::updateend);
+  ScheduleEvent(event_type_names::kUpdateend);
 }
 
 void SourceBuffer::AppendError() {
@@ -1412,11 +1412,11 @@ void SourceBuffer::AppendError() {
 
   // 3. Queue a task to fire a simple event named error at this SourceBuffer
   //    object.
-  ScheduleEvent(EventTypeNames::error);
+  ScheduleEvent(event_type_names::kError);
 
   // 4. Queue a task to fire a simple event named updateend at this SourceBuffer
   //    object.
-  ScheduleEvent(EventTypeNames::updateend);
+  ScheduleEvent(event_type_names::kUpdateend);
 
   // 5. If decode error is true, then run the end of stream algorithm with the
   // error parameter set to "decode".

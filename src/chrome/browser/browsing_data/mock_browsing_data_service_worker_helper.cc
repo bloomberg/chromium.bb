@@ -12,6 +12,7 @@
 #include "chrome/browser/profiles/profile.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/storage_partition.h"
+#include "content/public/browser/storage_usage_info.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 MockBrowsingDataServiceWorkerHelper::MockBrowsingDataServiceWorkerHelper(
@@ -40,21 +41,12 @@ void MockBrowsingDataServiceWorkerHelper::DeleteServiceWorkers(
 
 void MockBrowsingDataServiceWorkerHelper::AddServiceWorkerSamples() {
   const GURL kOrigin1("https://swhost1:1/");
-  std::vector<GURL> scopes1;
-  scopes1.push_back(GURL("https://swhost1:1/app1/*"));
-  scopes1.push_back(GURL("https://swhost1:1/app2/*"));
   const GURL kOrigin2("https://swhost2:2/");
-  std::vector<GURL> scopes2;
-  scopes2.push_back(GURL("https://swhost2:2/*"));
 
-  content::ServiceWorkerUsageInfo info1(kOrigin1, scopes1);
-  info1.total_size_bytes = 1;
-  response_.push_back(info1);
+  response_.emplace_back(kOrigin1, 1, base::Time());
   origins_[kOrigin1] = true;
 
-  content::ServiceWorkerUsageInfo info2(kOrigin2, scopes2);
-  info2.total_size_bytes = 2;
-  response_.push_back(info2);
+  response_.emplace_back(kOrigin2, 2, base::Time());
   origins_[kOrigin2] = true;
 }
 

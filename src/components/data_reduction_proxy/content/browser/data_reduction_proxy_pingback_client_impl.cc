@@ -11,7 +11,7 @@
 #include "base/metrics/histogram_macros.h"
 #include "base/optional.h"
 #include "base/rand_util.h"
-#include "base/sys_info.h"
+#include "base/system/sys_info.h"
 #include "base/task/post_task.h"
 #include "base/task/task_traits.h"
 #include "base/time/time.h"
@@ -66,7 +66,9 @@ enum class CrashAction {
 void AddDataToPageloadMetrics(const DataReductionProxyData& request_data,
                               const DataReductionProxyPageLoadTiming& timing,
                               PageloadMetrics_RendererCrashType crash_type,
+                              std::string channel,
                               PageloadMetrics* request) {
+  request->set_channel(channel);
   request->set_session_key(request_data.session_key());
   request->set_holdback_group(params::HoldbackFieldTrialGroup());
   // For the timing events, any of them could be zero. Fill the message as a
@@ -129,6 +131,24 @@ void AddDataToPageloadMetrics(const DataReductionProxyData& request_data,
             timing.page_end_time.value())
             .release());
   }
+  if (timing.navigation_start_to_main_frame_fetch_start) {
+    request->set_allocated_navigation_start_to_main_frame_fetch_start(
+        protobuf_parser::CreateDurationFromTimeDelta(
+            timing.navigation_start_to_main_frame_fetch_start.value())
+            .release());
+  }
+  // Only set the lite page info if both the penalty and status have values.
+  if (timing.lite_page_redirect_penalty.has_value() &&
+      timing.lite_page_redirect_status.has_value()) {
+    HTTPSLitePagePreviewInfo* info = request->mutable_https_litepage_info();
+    info->set_allocated_navigation_restart_penalty(
+        protobuf_parser::CreateDurationFromTimeDelta(
+            timing.lite_page_redirect_penalty.value())
+            .release());
+    info->set_status(
+        protobuf_parser::ProtoLitePageRedirectStatusFromLitePageRedirectStatus(
+            timing.lite_page_redirect_status.value()));
+  }
 
   request->set_effective_connection_type(
       protobuf_parser::ProtoEffectiveConnectionTypeFromEffectiveConnectionType(
@@ -144,6 +164,7 @@ void AddDataToPageloadMetrics(const DataReductionProxyData& request_data,
   request->set_renderer_memory_usage_kb(timing.renderer_memory_usage_kb);
   request->set_touch_count(timing.touch_count);
   request->set_scroll_count(timing.scroll_count);
+  request->set_redirect_count(timing.redirect_count);
 
   request->set_renderer_crash_type(crash_type);
 
@@ -163,25 +184,6 @@ void AddDataToPageloadMetrics(const DataReductionProxyData& request_data,
         PageloadMetrics_PreviewsType_CLIENT_BLACKLIST_PREVENTED_PREVIEW);
   } else {
     request->set_previews_type(PageloadMetrics_PreviewsType_NONE);
-  }
-
-  for (auto request_info_data : request_data.request_info()) {
-    RequestInfo* request_info = request->add_main_frame_network_request();
-    request_info->set_protocol(
-        protobuf_parser::ProtoRequestInfoProtocolFromRequestInfoProtocol(
-            request_info_data.protocol));
-    request_info->set_proxy_bypass(request_info_data.proxy_bypass);
-    request_info->set_allocated_dns_time(
-        protobuf_parser::CreateDurationFromTimeDelta(request_info_data.dns_time)
-            .release());
-    request_info->set_allocated_connect_time(
-        protobuf_parser::CreateDurationFromTimeDelta(
-            request_info_data.connect_time)
-            .release());
-    request_info->set_allocated_http_time(
-        protobuf_parser::CreateDurationFromTimeDelta(
-            request_info_data.http_time)
-            .release());
   }
 
   // Only report opt out information if a server preview was shown (otherwise,
@@ -221,13 +223,15 @@ std::string AddBatchInfoAndSerializeRequest(
 
 DataReductionProxyPingbackClientImpl::DataReductionProxyPingbackClientImpl(
     scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory,
-    scoped_refptr<base::SingleThreadTaskRunner> ui_task_runner)
+    scoped_refptr<base::SingleThreadTaskRunner> ui_task_runner,
+    const std::string& channel)
     : url_loader_factory_(std::move(url_loader_factory)),
       pingback_url_(util::AddApiKeyToUrl(params::GetPingbackURL())),
       pingback_reporting_fraction_(0.0),
       current_loader_message_count_(0u),
       current_loader_crash_count_(0u),
       ui_task_runner_(std::move(ui_task_runner)),
+      channel_(channel),
 #if defined(OS_ANDROID)
       scoped_observer_(this),
       weak_factory_(this) {
@@ -368,7 +372,8 @@ void DataReductionProxyPingbackClientImpl::CreateReport(
     PageloadMetrics_RendererCrashType crash_type) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   PageloadMetrics* pageload_metrics = metrics_request_.add_pageloads();
-  AddDataToPageloadMetrics(request_data, timing, crash_type, pageload_metrics);
+  AddDataToPageloadMetrics(request_data, timing, crash_type, channel_,
+                           pageload_metrics);
   if (current_loader_)
     return;
   DCHECK_EQ(1, metrics_request_.pageloads_size());

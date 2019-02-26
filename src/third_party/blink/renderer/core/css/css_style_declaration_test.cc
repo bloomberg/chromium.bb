@@ -6,20 +6,22 @@
 
 #include "third_party/blink/renderer/core/css/css_rule_list.h"
 #include "third_party/blink/renderer/core/css/css_style_rule.h"
-#include "third_party/blink/renderer/core/css/css_test_helper.h"
+#include "third_party/blink/renderer/core/css/css_test_helpers.h"
 
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace blink {
 
-TEST(CSSStyleDeclarationTest, getPropertyShorthand) {
-  CSSTestHelper helper;
+using namespace css_test_helpers;
 
-  helper.AddCSSRules("div { padding: var(--p); }");
-  ASSERT_TRUE(helper.CssRules());
-  ASSERT_EQ(1u, helper.CssRules()->length());
-  ASSERT_EQ(CSSRule::kStyleRule, helper.CssRules()->item(0)->type());
-  CSSStyleRule* style_rule = ToCSSStyleRule(helper.CssRules()->item(0));
+TEST(CSSStyleDeclarationTest, getPropertyShorthand) {
+  TestStyleSheet sheet;
+
+  sheet.AddCSSRules("div { padding: var(--p); }");
+  ASSERT_TRUE(sheet.CssRules());
+  ASSERT_EQ(1u, sheet.CssRules()->length());
+  ASSERT_EQ(CSSRule::kStyleRule, sheet.CssRules()->item(0)->type());
+  CSSStyleRule* style_rule = ToCSSStyleRule(sheet.CssRules()->item(0));
   CSSStyleDeclaration* style = style_rule->style();
   ASSERT_TRUE(style);
   EXPECT_EQ(AtomicString(), style->GetPropertyShorthand("padding"));

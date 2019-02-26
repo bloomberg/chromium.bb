@@ -7,10 +7,18 @@
 
 #import <UIKit/UIKit.h>
 
+namespace web {
+class NavigationItem;
+}
+
 // If swiping to the right (or left in RTL).
 BOOL IsSwipingBack(UISwipeGestureRecognizerDirection direction);
 
 // If swiping to the left (or right in RTL).
 BOOL IsSwipingForward(UISwipeGestureRecognizerDirection direction);
+
+// Returns |YES| if the item should use Chromium native swipe.  This is true for
+// the NTP and chrome://crash.
+BOOL UseNativeSwipe(web::NavigationItem* item);
 
 #endif  // IOS_CHROME_BROWSER_UI_SIDE_SWIPE_SIDE_SWIPE_UTIL_H_

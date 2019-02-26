@@ -186,18 +186,18 @@ class MediaContentDescription {
   // Determines if it's allowed to mix one- and two-byte rtp header extensions
   // within the same rtp stream.
   enum ExtmapAllowMixed { kNo, kSession, kMedia };
-  void set_mixed_one_two_byte_header_extensions_supported(
-      ExtmapAllowMixed supported) {
-    if (supported == kMedia &&
-        mixed_one_two_byte_header_extensions_supported_ == kSession) {
+  void set_extmap_allow_mixed_enum(ExtmapAllowMixed new_extmap_allow_mixed) {
+    if (new_extmap_allow_mixed == kMedia &&
+        extmap_allow_mixed_enum_ == kSession) {
       // Do not downgrade from session level to media level.
       return;
     }
-    mixed_one_two_byte_header_extensions_supported_ = supported;
+    extmap_allow_mixed_enum_ = new_extmap_allow_mixed;
   }
-  ExtmapAllowMixed mixed_one_two_byte_header_extensions_supported() const {
-    return mixed_one_two_byte_header_extensions_supported_;
+  ExtmapAllowMixed extmap_allow_mixed_enum() const {
+    return extmap_allow_mixed_enum_;
   }
+  bool extmap_allow_mixed() const { return extmap_allow_mixed_enum_ != kNo; }
 
  protected:
   bool rtcp_mux_ = false;
@@ -215,7 +215,7 @@ class MediaContentDescription {
   // Mixed one- and two-byte header not included in offer on media level or
   // session level, but we will respond that we support it. The plan is to add
   // it to our offer on session level. See todo in SessionDescription.
-  ExtmapAllowMixed mixed_one_two_byte_header_extensions_supported_ = kNo;
+  ExtmapAllowMixed extmap_allow_mixed_enum_ = kNo;
 };
 
 // TODO(bugs.webrtc.org/8620): Remove this alias once downstream projects have
@@ -398,11 +398,6 @@ enum MsidSignaling {
 class SessionDescription {
  public:
   SessionDescription();
-  explicit SessionDescription(const ContentInfos& contents);
-  SessionDescription(const ContentInfos& contents, const ContentGroups& groups);
-  SessionDescription(const ContentInfos& contents,
-                     const TransportInfos& transports,
-                     const ContentGroups& groups);
   ~SessionDescription();
 
   SessionDescription* Copy() const;
@@ -432,6 +427,8 @@ class SessionDescription {
                   bool rejected,
                   bool bundle_only,
                   MediaContentDescription* description);
+  void AddContent(ContentInfo* content);
+
   bool RemoveContentByName(const std::string& name);
 
   // Transport accessors.
@@ -450,8 +447,7 @@ class SessionDescription {
     transport_infos_ = transport_infos;
   }
   // Adds a TransportInfo to this description.
-  // Returns false if a TransportInfo with the same name already exists.
-  bool AddTransportInfo(const TransportInfo& transport_info);
+  void AddTransportInfo(const TransportInfo& transport_info);
   bool RemoveTransportInfoByName(const std::string& name);
 
   // Group accessors.
@@ -477,20 +473,21 @@ class SessionDescription {
 
   // Determines if it's allowed to mix one- and two-byte rtp header extensions
   // within the same rtp stream.
-  void set_mixed_one_two_byte_header_extensions_supported(bool supported) {
-    mixed_one_two_byte_header_extensions_supported_ = supported;
-    MediaContentDescription::ExtmapAllowMixed extmap_allow_mixed =
+  void set_extmap_allow_mixed(bool supported) {
+    extmap_allow_mixed_ = supported;
+    MediaContentDescription::ExtmapAllowMixed media_level_setting =
         supported ? MediaContentDescription::kSession
                   : MediaContentDescription::kNo;
     for (auto& content : contents_) {
-      content.media_description()
-          ->set_mixed_one_two_byte_header_extensions_supported(
-              extmap_allow_mixed);
+      // Do not set to kNo if the current setting is kMedia.
+      if (supported || content.media_description()->extmap_allow_mixed_enum() !=
+                           MediaContentDescription::kMedia) {
+        content.media_description()->set_extmap_allow_mixed_enum(
+            media_level_setting);
+      }
     }
   }
-  bool mixed_one_two_byte_header_extensions_supported() const {
-    return mixed_one_two_byte_header_extensions_supported_;
-  }
+  bool extmap_allow_mixed() const { return extmap_allow_mixed_; }
 
  private:
   SessionDescription(const SessionDescription&);
@@ -502,11 +499,12 @@ class SessionDescription {
   // Default to what Plan B would do.
   // TODO(bugs.webrtc.org/8530): Change default to kMsidSignalingMediaSection.
   int msid_signaling_ = kMsidSignalingSsrcAttribute;
-  // TODO(kron): Activate mixed one- and two-byte header extension in offer at
-  // session level. It's currently not included in offer by default because
-  // clients prior to https://bugs.webrtc.org/9712 cannot parse this correctly.
-  // If it's included in offer to us we will respond that we support it.
-  bool mixed_one_two_byte_header_extensions_supported_ = false;
+  // TODO(webrtc:9985): Activate mixed one- and two-byte header extension in
+  // offer at session level. It's currently not included in offer by default
+  // because clients prior to https://bugs.webrtc.org/9712 cannot parse this
+  // correctly. If it's included in offer to us we will respond that we support
+  // it.
+  bool extmap_allow_mixed_ = false;
 };
 
 // Indicates whether a session description was sent by the local client or

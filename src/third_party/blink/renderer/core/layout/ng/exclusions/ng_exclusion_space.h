@@ -11,7 +11,7 @@
 #include "third_party/blink/renderer/core/layout/ng/geometry/ng_bfc_offset.h"
 #include "third_party/blink/renderer/core/layout/ng/geometry/ng_bfc_rect.h"
 #include "third_party/blink/renderer/core/style/computed_style_constants.h"
-#include "third_party/blink/renderer/platform/layout_unit.h"
+#include "third_party/blink/renderer/platform/geometry/layout_unit.h"
 #include "third_party/blink/renderer/platform/wtf/allocator.h"
 #include "third_party/blink/renderer/platform/wtf/ref_vector.h"
 #include "third_party/blink/renderer/platform/wtf/vector.h"
@@ -31,7 +31,7 @@ class CORE_EXPORT NGExclusionSpaceInternal {
   NGExclusionSpaceInternal(const NGExclusionSpaceInternal&);
   NGExclusionSpaceInternal(NGExclusionSpaceInternal&&) noexcept;
   NGExclusionSpaceInternal& operator=(const NGExclusionSpaceInternal&);
-  NGExclusionSpaceInternal& operator=(NGExclusionSpaceInternal&&);
+  NGExclusionSpaceInternal& operator=(NGExclusionSpaceInternal&&) noexcept;
   ~NGExclusionSpaceInternal() {}
 
   void Add(scoped_refptr<const NGExclusion> exclusion);
@@ -88,6 +88,15 @@ class CORE_EXPORT NGExclusionSpaceInternal {
     return !(*this == other);
   }
 
+  // This struct represents the side of a float against the "edge" of a shelf.
+  struct NGShelfEdge {
+    NGShelfEdge(LayoutUnit block_start, LayoutUnit block_end)
+        : block_start(block_start), block_end(block_end) {}
+
+    LayoutUnit block_start;
+    LayoutUnit block_end;
+  };
+
   // The shelf is an internal data-structure representing the bottom of a
   // float. A shelf has a inline-size which is defined by the line_left and
   // line_right members. E.g.
@@ -120,23 +129,26 @@ class CORE_EXPORT NGExclusionSpaceInternal {
   //  - The opportunity also holds onto a list of these edges to support
   //    css-shapes.
   struct NGShelf {
-    explicit NGShelf(LayoutUnit block_offset)
+    NGShelf(LayoutUnit block_offset, bool track_shape_exclusions)
         : block_offset(block_offset),
           line_left(LayoutUnit::Min()),
           line_right(LayoutUnit::Max()),
-          shape_exclusions(base::AdoptRef(new NGShapeExclusions)),
+          shape_exclusions(track_shape_exclusions
+                               ? base::AdoptRef(new NGShapeExclusions)
+                               : nullptr),
           has_shape_exclusions(false) {}
 
-    // The copy constructor explicitly copies the shape_exclusions member,
-    // instead of just incrementing the ref.
+    // The copy constructor explicitly copies the shape_exclusions member.
     NGShelf(const NGShelf& other)
         : block_offset(other.block_offset),
           line_left(other.line_left),
           line_right(other.line_right),
           line_left_edges(other.line_left_edges),
           line_right_edges(other.line_right_edges),
-          shape_exclusions(
-              base::AdoptRef(new NGShapeExclusions(*other.shape_exclusions))),
+          shape_exclusions(other.shape_exclusions
+                               ? base::AdoptRef(new NGShapeExclusions(
+                                     *other.shape_exclusions))
+                               : nullptr),
           has_shape_exclusions(other.has_shape_exclusions) {}
 
     NGShelf(NGShelf&& other) noexcept = default;
@@ -146,8 +158,8 @@ class CORE_EXPORT NGExclusionSpaceInternal {
     LayoutUnit line_left;
     LayoutUnit line_right;
 
-    Vector<scoped_refptr<const NGExclusion>, 1> line_left_edges;
-    Vector<scoped_refptr<const NGExclusion>, 1> line_right_edges;
+    Vector<NGShelfEdge, 1> line_left_edges;
+    Vector<NGShelfEdge, 1> line_right_edges;
 
     // shape_exclusions contains all the floats which sit below this shelf. The
     // has_shape_exclusions member will be true if shape_exclusions contains an
@@ -168,8 +180,14 @@ class CORE_EXPORT NGExclusionSpaceInternal {
   // num_exclusions_ is how many exclusions *this* instance of an exclusion
   // space has, which may differ to the number of exclusions in the Vector.
   scoped_refptr<RefVector<scoped_refptr<const NGExclusion>>> exclusions_;
-  size_t num_exclusions_;
+  wtf_size_t num_exclusions_;
   LayoutUnit both_clear_offset_;
+
+  // In order to reduce the amount of copies related to bookkeeping shape data,
+  // we initially ignore exclusions with shape data. When we first see an
+  // exclusion with shape data, we set this flag, and rebuild the
+  // DerivedGeometry data-structure, to perform the additional bookkeeping.
+  bool track_shape_exclusions_;
 
   // The derived geometry struct, is the data-structure which handles all of the
   // queries on the exclusion space. It can always be rebuilt from exclusions_
@@ -189,11 +207,11 @@ class CORE_EXPORT NGExclusionSpaceInternal {
   // exclusion space in the copy-chain is used for answering queries. Only when
   // we trigger a (rare) re-layout case will we need to rebuild the
   // derived_geometry_ data-structure.
-  struct DerivedGeometry {
+  struct CORE_EXPORT DerivedGeometry {
     USING_FAST_MALLOC(DerivedGeometry);
 
    public:
-    DerivedGeometry();
+    explicit DerivedGeometry(bool track_shape_exclusions);
     DerivedGeometry(DerivedGeometry&& o) noexcept = default;
 
     void Add(const NGExclusion& exclusion);
@@ -206,6 +224,11 @@ class CORE_EXPORT NGExclusionSpaceInternal {
     LayoutOpportunityVector AllLayoutOpportunities(
         const NGBfcOffset& offset,
         const LayoutUnit available_inline_size) const;
+
+    template <typename LambdaFunc>
+    void IterateAllLayoutOpportunities(const NGBfcOffset& offset,
+                                       const LayoutUnit available_inline_size,
+                                       const LambdaFunc&) const;
 
     LayoutUnit ClearanceOffset(EClear clear_type) const;
     LayoutUnit LastFloatBlockStart() const { return last_float_block_start_; }
@@ -244,6 +267,8 @@ class CORE_EXPORT NGExclusionSpaceInternal {
     // removing shelves to make insertion faster.
     Vector<NGShelf, 4> shelves_;
     Vector<NGLayoutOpportunity, 4> opportunities_;
+
+    bool track_shape_exclusions_;
 
     // This member is used for implementing the "top edge alignment rule" for
     // floats. Floats can be positioned at negative offsets, hence is
@@ -313,6 +338,7 @@ class CORE_EXPORT NGExclusionSpace {
         offset, available_inline_size, minimum_size);
   }
 
+  // If possible prefer FindLayoutOpportunity over this function.
   LayoutOpportunityVector AllLayoutOpportunities(
       const NGBfcOffset& offset,
       const LayoutUnit available_inline_size) const {
@@ -361,5 +387,8 @@ class CORE_EXPORT NGExclusionSpace {
 };
 
 }  // namespace blink
+
+WTF_ALLOW_MOVE_INIT_AND_COMPARE_WITH_MEM_FUNCTIONS(
+    blink::NGExclusionSpaceInternal::NGShelfEdge);
 
 #endif  // NGExclusionSpace_h

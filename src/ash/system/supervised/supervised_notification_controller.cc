@@ -4,6 +4,7 @@
 
 #include "ash/system/supervised/supervised_notification_controller.h"
 
+#include "ash/public/cpp/notification_utils.h"
 #include "ash/public/cpp/vector_icons/vector_icons.h"
 #include "ash/session/session_controller.h"
 #include "ash/shell.h"
@@ -75,18 +76,15 @@ void SupervisedNotificationController::CreateOrUpdateNotification() {
     return;
 
   // Regular supervised user.
-  std::unique_ptr<Notification> notification =
-      Notification::CreateSystemNotification(
-          message_center::NOTIFICATION_TYPE_SIMPLE, kNotificationId,
-          l10n_util::GetStringUTF16(IDS_ASH_STATUS_TRAY_SUPERVISED_LABEL),
-          GetSupervisedUserMessage(), base::string16() /* display_source */,
-          GURL(),
-          message_center::NotifierId(
-              message_center::NotifierId::SYSTEM_COMPONENT,
-              kNotifierSupervisedUser),
-          message_center::RichNotificationData(), nullptr,
-          kNotificationSupervisedUserIcon,
-          message_center::SystemNotificationWarningLevel::NORMAL);
+  std::unique_ptr<Notification> notification = ash::CreateSystemNotification(
+      message_center::NOTIFICATION_TYPE_SIMPLE, kNotificationId,
+      l10n_util::GetStringUTF16(IDS_ASH_STATUS_TRAY_SUPERVISED_LABEL),
+      GetSupervisedUserMessage(), base::string16() /* display_source */, GURL(),
+      message_center::NotifierId(message_center::NotifierType::SYSTEM_COMPONENT,
+                                 kNotifierSupervisedUser),
+      message_center::RichNotificationData(), nullptr,
+      kNotificationSupervisedUserIcon,
+      message_center::SystemNotificationWarningLevel::NORMAL);
   notification->SetSystemPriority();
   // AddNotification does an update if the notification already exists.
   MessageCenter::Get()->AddNotification(std::move(notification));

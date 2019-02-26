@@ -197,6 +197,27 @@ const char kRebootOnShutdown[] = "cros.device.reboot_on_shutdown";
 // size in bytes.
 const char kExtensionCacheSize[] = "cros.device.extension_cache_size";
 
+// A dictionary pref that sets the display resolution.
+// Pref format:
+// {
+//   "external_width": int,
+//   "external_height": int,
+//   "external_use_native": bool,
+//   "external_scale_percentage": int,
+//   "internal_scale_percentage": int,
+//   "recommended": bool
+// }
+const char kDeviceDisplayResolution[] = "cros.device_display_resolution";
+const char kDeviceDisplayResolutionKeyExternalWidth[] = "external_width";
+const char kDeviceDisplayResolutionKeyExternalHeight[] = "external_height";
+const char kDeviceDisplayResolutionKeyExternalScale[] =
+    "external_scale_percentage";
+const char kDeviceDisplayResolutionKeyExternalUseNative[] =
+    "external_use_native";
+const char kDeviceDisplayResolutionKeyInternalScale[] =
+    "internal_scale_percentage";
+const char kDeviceDisplayResolutionKeyRecommended[] = "recommended";
+
 // An integer pref that sets the display rotation at startup to a certain
 // value, overriding the user value:
 // 0 = 0 degrees rotation
@@ -270,16 +291,18 @@ const char kFineGrainedTimeZoneResolveEnabled[] =
 const char kDeviceOffHours[] = "cros.device_off_hours";
 
 // An external data pref for the printer configurations download.
-const char kDevicePrintersConfigurations[] =
-    "cros.device.printer_configurations";
+const char kDeviceNativePrinters[] = "cros.device.native_printers";
 // An enum specifying the access policy device printers should observe.
-const char kDevicePrintersAccessMode[] = "cros.device.printers_access_mode";
+const char kDeviceNativePrintersAccessMode[] =
+    "cros.device.native_printers_access_mode";
 // A list of strings representing device printer ids for which access is
 // restricted.
-const char kDevicePrintersBlacklist[] = "cros.device.printers_blacklist";
+const char kDeviceNativePrintersBlacklist[] =
+    "cros.device.native_printers_blacklist";
 // A list of strings representing the list of device printer ids which are
 // accessible.
-const char kDevicePrintersWhitelist[] = "cros.device.printers_whitelist";
+const char kDeviceNativePrintersWhitelist[] =
+    "cros.device.native_printers_whitelist";
 
 // A dictionary containing parameters controlling the TPM firmware update
 // functionality.

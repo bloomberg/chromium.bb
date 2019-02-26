@@ -16,6 +16,8 @@
 @interface ManualFillCredentialItem : TableViewItem
 
 - (instancetype)initWithCredential:(ManualFillCredential*)credential
+         isConnectedToPreviousItem:(BOOL)isConnectedToPreviousItem
+             isConnectedToNextItem:(BOOL)isConnectedToNextItem
                           delegate:(id<ManualFillContentDelegate>)delegate
     NS_DESIGNATED_INITIALIZER;
 
@@ -30,7 +32,9 @@
 // Updates the cell with the |credential|. If the user iteracts with it, the
 // |delegate| will be notified.
 - (void)setUpWithCredential:(ManualFillCredential*)credential
-                   delegate:(id<ManualFillContentDelegate>)delegate;
+    isConnectedToPreviousCell:(BOOL)isConnectedToPreviousCell
+        isConnectedToNextCell:(BOOL)isConnectedToNextCell
+                     delegate:(id<ManualFillContentDelegate>)delegate;
 
 @end
 

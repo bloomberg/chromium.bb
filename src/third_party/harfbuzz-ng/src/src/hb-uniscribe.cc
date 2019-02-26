@@ -25,7 +25,6 @@
  */
 
 #include "hb.hh"
-#define HB_SHAPER uniscribe
 #include "hb-shaper-impl.hh"
 
 #include <windows.h>
@@ -36,7 +35,17 @@
 
 #include "hb-open-file.hh"
 #include "hb-ot-name-table.hh"
-#include "hb-ot-tag.h"
+#include "hb-ot-layout.h"
+
+
+/**
+ * SECTION:hb-uniscribe
+ * @title: hb-uniscribe
+ * @short_description: Windows integration
+ * @include: hb-uniscribe.h
+ *
+ * Functions for using HarfBuzz with the Windows fonts.
+ **/
 
 
 static inline uint16_t hb_uint16_swap (const uint16_t v)
@@ -236,7 +245,7 @@ static struct hb_uniscribe_shaper_funcs_lazy_loader_t : hb_lazy_loader_t<hb_unis
 
     funcs->init ();
 
-#ifdef HB_USE_ATEXIT
+#if HB_USE_ATEXIT
     atexit (free_static_uniscribe_shaper_funcs);
 #endif
 
@@ -252,7 +261,7 @@ static struct hb_uniscribe_shaper_funcs_lazy_loader_t : hb_lazy_loader_t<hb_unis
   }
 } static_uniscribe_shaper_funcs;
 
-#ifdef HB_USE_ATEXIT
+#if HB_USE_ATEXIT
 static
 void free_static_uniscribe_shaper_funcs (void)
 {
@@ -303,9 +312,6 @@ struct range_record_t {
   unsigned int index_first; /* == start */
   unsigned int index_last;  /* == end - 1 */
 };
-
-HB_SHAPER_DATA_ENSURE_DEFINE(uniscribe, face)
-HB_SHAPER_DATA_ENSURE_DEFINE(uniscribe, font)
 
 
 /*
@@ -493,11 +499,12 @@ _hb_uniscribe_shaper_face_data_destroy (hb_uniscribe_face_data_t *data)
  * shaper font data
  */
 
-struct hb_uniscribe_font_data_t {
+struct hb_uniscribe_font_data_t
+{
   HDC hdc;
-  LOGFONTW log_font;
+  mutable LOGFONTW log_font;
   HFONT hfont;
-  SCRIPT_CACHE script_cache;
+  mutable SCRIPT_CACHE script_cache;
   double x_mult, y_mult; /* From LOGFONT space to HB space. */
 };
 
@@ -510,10 +517,7 @@ populate_log_font (LOGFONTW  *lf,
   lf->lfHeight = - (int) font_size;
   lf->lfCharSet = DEFAULT_CHARSET;
 
-  hb_face_t *face = font->face;
-  hb_uniscribe_face_data_t *face_data = HB_SHAPER_DATA_GET (face);
-
-  memcpy (lf->lfFaceName, face_data->face_name, sizeof (lf->lfFaceName));
+  memcpy (lf->lfFaceName, font->face->data.uniscribe->face_name, sizeof (lf->lfFaceName));
 
   return true;
 }
@@ -521,8 +525,6 @@ populate_log_font (LOGFONTW  *lf,
 hb_uniscribe_font_data_t *
 _hb_uniscribe_shaper_font_data_create (hb_font_t *font)
 {
-  if (unlikely (!hb_uniscribe_shaper_face_data_ensure (font->face))) return nullptr;
-
   hb_uniscribe_font_data_t *data = (hb_uniscribe_font_data_t *) calloc (1, sizeof (hb_uniscribe_font_data_t));
   if (unlikely (!data))
     return nullptr;
@@ -576,39 +578,15 @@ _hb_uniscribe_shaper_font_data_destroy (hb_uniscribe_font_data_t *data)
 LOGFONTW *
 hb_uniscribe_font_get_logfontw (hb_font_t *font)
 {
-  if (unlikely (!hb_uniscribe_shaper_font_data_ensure (font))) return nullptr;
-  hb_uniscribe_font_data_t *font_data =  HB_SHAPER_DATA_GET (font);
-  return &font_data->log_font;
+  const hb_uniscribe_font_data_t *data =  font->data.uniscribe;
+  return data ? &data->log_font : nullptr;
 }
 
 HFONT
 hb_uniscribe_font_get_hfont (hb_font_t *font)
 {
-  if (unlikely (!hb_uniscribe_shaper_font_data_ensure (font))) return nullptr;
-  hb_uniscribe_font_data_t *font_data =  HB_SHAPER_DATA_GET (font);
-  return font_data->hfont;
-}
-
-
-/*
- * shaper shape_plan data
- */
-
-struct hb_uniscribe_shape_plan_data_t {};
-
-hb_uniscribe_shape_plan_data_t *
-_hb_uniscribe_shaper_shape_plan_data_create (hb_shape_plan_t    *shape_plan HB_UNUSED,
-					     const hb_feature_t *user_features HB_UNUSED,
-					     unsigned int        num_user_features HB_UNUSED,
-					     const int          *coords HB_UNUSED,
-					     unsigned int        num_coords HB_UNUSED)
-{
-  return (hb_uniscribe_shape_plan_data_t *) HB_SHAPER_DATA_SUCCEEDED;
-}
-
-void
-_hb_uniscribe_shaper_shape_plan_data_destroy (hb_uniscribe_shape_plan_data_t *data HB_UNUSED)
-{
+  const hb_uniscribe_font_data_t *data =  font->data.uniscribe;
+  return data ? data->hfont : nullptr;
 }
 
 
@@ -625,19 +603,19 @@ _hb_uniscribe_shape (hb_shape_plan_t    *shape_plan,
 		     unsigned int        num_features)
 {
   hb_face_t *face = font->face;
-  hb_uniscribe_face_data_t *face_data = HB_SHAPER_DATA_GET (face);
-  hb_uniscribe_font_data_t *font_data = HB_SHAPER_DATA_GET (font);
+  const hb_uniscribe_face_data_t *face_data = face->data.uniscribe;
+  const hb_uniscribe_font_data_t *font_data = font->data.uniscribe;
   hb_uniscribe_shaper_funcs_t *funcs = face_data->funcs;
 
   /*
    * Set up features.
    */
-  hb_auto_t<hb_vector_t<OPENTYPE_FEATURE_RECORD> > feature_records;
-  hb_auto_t<hb_vector_t<range_record_t> > range_records;
+  hb_vector_t<OPENTYPE_FEATURE_RECORD> feature_records;
+  hb_vector_t<range_record_t> range_records;
   if (num_features)
   {
     /* Sort features by start/end events. */
-    hb_auto_t<hb_vector_t<feature_event_t> > feature_events;
+    hb_vector_t<feature_event_t> feature_events;
     for (unsigned int i = 0; i < num_features; i++)
     {
       active_feature_t feature;
@@ -672,7 +650,7 @@ _hb_uniscribe_shape (hb_shape_plan_t    *shape_plan,
     }
 
     /* Scan events and save features for each range. */
-    hb_auto_t<hb_vector_t<active_feature_t> > active_features;
+    hb_vector_t<active_feature_t> active_features;
     unsigned int last_index = 0;
     for (unsigned int i = 0; i < feature_events.len; i++)
     {
@@ -717,7 +695,7 @@ _hb_uniscribe_shape (hb_shape_plan_t    *shape_plan,
       {
         active_feature_t *feature = active_features.find (&event->feature);
 	if (feature)
-	  active_features.remove (feature - active_features.arrayZ);
+	  active_features.remove (feature - active_features);
       }
     }
 
@@ -728,7 +706,7 @@ _hb_uniscribe_shape (hb_shape_plan_t    *shape_plan,
     for (unsigned int i = 0; i < range_records.len; i++)
     {
       range_record_t *range = &range_records[i];
-      range->props.potfRecords = feature_records.arrayZ + reinterpret_cast<uintptr_t> (range->props.potfRecords);
+      range->props.potfRecords = feature_records + reinterpret_cast<uintptr_t> (range->props.potfRecords);
     }
   }
 
@@ -843,9 +821,15 @@ retry:
 
 #undef MAX_ITEMS
 
-  OPENTYPE_TAG language_tag = hb_uint32_swap (hb_ot_tag_from_language (buffer->props.language));
-  hb_auto_t<hb_vector_t<TEXTRANGE_PROPERTIES*> > range_properties;
-  hb_auto_t<hb_vector_t<int> > range_char_counts;
+  hb_tag_t lang_tag;
+  unsigned int lang_count = 1;
+  hb_ot_tags_from_script_and_language (buffer->props.script,
+				       buffer->props.language,
+				       nullptr, nullptr,
+				       &lang_count, &lang_tag);
+  OPENTYPE_TAG language_tag = hb_uint32_swap (lang_count ? lang_tag : HB_TAG_NONE);
+  hb_vector_t<TEXTRANGE_PROPERTIES*> range_properties;
+  hb_vector_t<int> range_char_counts;
 
   unsigned int glyphs_offset = 0;
   unsigned int glyphs_len;
@@ -902,8 +886,8 @@ retry:
 				     &items[i].a,
 				     script_tags[i],
 				     language_tag,
-				     range_char_counts.arrayZ,
-				     range_properties.arrayZ,
+				     range_char_counts,
+				     range_properties,
 				     range_properties.len,
 				     pchars + chars_offset,
 				     item_chars_len,
@@ -943,8 +927,8 @@ retry:
 				     &items[i].a,
 				     script_tags[i],
 				     language_tag,
-				     range_char_counts.arrayZ,
-				     range_properties.arrayZ,
+				     range_char_counts,
+				     range_properties,
 				     range_properties.len,
 				     pchars + chars_offset,
 				     log_clusters + chars_offset,

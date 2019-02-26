@@ -87,10 +87,17 @@ def check_virtual_test_suites(host, options):
 
     failures = []
     for suite in virtual_suites:
+        # A virtual test suite needs either
+        # - a top-level README.md (e.g. virtual/foo/README.md)
+        # - a README.txt for each covered dir/file (e.g.
+        #   virtual/foo/http/tests/README.txt, virtual/foo/fast/README.txt, ...)
         comps = [layout_tests_dir] + suite.name.split('/') + ['README.txt']
-        path_to_readme = fs.join(*comps)
-        if not fs.exists(path_to_readme):
-            failure = '{} is missing (each virtual suite must have one).'.format(path_to_readme)
+        path_to_readme_txt = fs.join(*comps)
+        comps = [layout_tests_dir] + suite.name.split('/')[:2] + ['README.md']
+        path_to_readme_md = fs.join(*comps)
+        if not fs.exists(path_to_readme_txt) and not fs.exists(path_to_readme_md):
+            failure = '{} and {} are both missing (each virtual suite must have one).'.format(
+                path_to_readme_txt, path_to_readme_md)
             _log.error(failure)
             failures.append(failure)
     if failures:

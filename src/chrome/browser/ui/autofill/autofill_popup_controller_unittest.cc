@@ -59,6 +59,7 @@ class MockAutofillExternalDelegate : public AutofillExternalDelegate {
   }
 
   MOCK_METHOD0(ClearPreviewedForm, void());
+  MOCK_METHOD0(OnPopupSuppressed, void());
 };
 
 class MockAutofillClient : public autofill::TestAutofillClient {

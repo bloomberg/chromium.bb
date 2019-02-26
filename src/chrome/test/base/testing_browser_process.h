@@ -29,6 +29,7 @@ class IOThread;
 class NotificationPlatformBridge;
 class NotificationUIManager;
 class PrefService;
+class SystemNotificationHelper;
 class WatchDogThread;
 
 namespace content {
@@ -53,7 +54,7 @@ class PolicyService;
 }
 
 namespace resource_coordinator {
-class TabLifecycleUnitSource;
+class ResourceCoordinatorParts;
 }
 
 class TestingBrowserProcess : public BrowserProcess {
@@ -95,8 +96,8 @@ class TestingBrowserProcess : public BrowserProcess {
   safe_browsing::SafeBrowsingService* safe_browsing_service() override;
   safe_browsing::ClientSideDetectionService* safe_browsing_detection_service()
       override;
-  subresource_filter::ContentRulesetService*
-  subresource_filter_ruleset_service() override;
+  subresource_filter::RulesetService* subresource_filter_ruleset_service()
+      override;
   optimization_guide::OptimizationGuideService* optimization_guide_service()
       override;
   net::URLRequestContextGetter* system_request_context() override;
@@ -134,6 +135,8 @@ class TestingBrowserProcess : public BrowserProcess {
 
   gcm::GCMDriver* gcm_driver() override;
   resource_coordinator::TabManager* GetTabManager() override;
+  resource_coordinator::ResourceCoordinatorParts* resource_coordinator_parts()
+      override;
   shell_integration::DefaultWebClientState CachedDefaultWebClientState()
       override;
   prefs::InProcessPrefServiceFactory* pref_service_factory() const override;
@@ -145,8 +148,7 @@ class TestingBrowserProcess : public BrowserProcess {
   void SetIOThread(IOThread* io_thread);
   void SetSafeBrowsingService(safe_browsing::SafeBrowsingService* sb_service);
   void SetRulesetService(
-      std::unique_ptr<subresource_filter::ContentRulesetService>
-          ruleset_service);
+      std::unique_ptr<subresource_filter::RulesetService> ruleset_service);
   void SetOptimizationGuideService(
       std::unique_ptr<optimization_guide::OptimizationGuideService>
           optimization_guide_service);
@@ -157,6 +159,8 @@ class TestingBrowserProcess : public BrowserProcess {
       std::unique_ptr<NotificationUIManager> notification_ui_manager);
   void SetNotificationPlatformBridge(
       std::unique_ptr<NotificationPlatformBridge> notification_platform_bridge);
+  void SetSystemNotificationHelper(
+      std::unique_ptr<SystemNotificationHelper> system_notification_helper);
   void SetRapporServiceImpl(rappor::RapporServiceImpl* rappor_service);
   void SetShuttingDown(bool is_shutting_down);
   void ShutdownBrowserPolicyConnector();
@@ -177,6 +181,7 @@ class TestingBrowserProcess : public BrowserProcess {
   std::unique_ptr<ProfileManager> profile_manager_;
   std::unique_ptr<NotificationUIManager> notification_ui_manager_;
   std::unique_ptr<NotificationPlatformBridge> notification_platform_bridge_;
+  std::unique_ptr<SystemNotificationHelper> system_notification_helper_;
   scoped_refptr<DownloadRequestLimiter> download_request_limiter_;
 
 #if BUILDFLAG(ENABLE_PRINTING)
@@ -191,20 +196,12 @@ class TestingBrowserProcess : public BrowserProcess {
 #endif
 
   scoped_refptr<safe_browsing::SafeBrowsingService> sb_service_;
-  std::unique_ptr<subresource_filter::ContentRulesetService>
+  std::unique_ptr<subresource_filter::RulesetService>
       subresource_filter_ruleset_service_;
   std::unique_ptr<optimization_guide::OptimizationGuideService>
       optimization_guide_service_;
 
   std::unique_ptr<network_time::NetworkTimeTracker> network_time_tracker_;
-
-  // |tab_manager_| is null by default and will be created when
-  // GetTabManager() is invoked on supported platforms.
-#if !defined(OS_ANDROID)
-  std::unique_ptr<resource_coordinator::TabManager> tab_manager_;
-  std::unique_ptr<resource_coordinator::TabLifecycleUnitSource>
-      tab_lifecycle_unit_source_;
-#endif
 
   // The following objects are not owned by TestingBrowserProcess:
   PrefService* local_state_;
@@ -223,6 +220,9 @@ class TestingBrowserProcess : public BrowserProcess {
   std::unique_ptr<extensions::ExtensionsBrowserClient>
       extensions_browser_client_;
 #endif
+
+  std::unique_ptr<resource_coordinator::ResourceCoordinatorParts>
+      resource_coordinator_parts_;
 
   DISALLOW_COPY_AND_ASSIGN(TestingBrowserProcess);
 };

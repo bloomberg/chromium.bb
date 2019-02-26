@@ -41,9 +41,7 @@ enum SVGSpreadMethodType {
   kSVGSpreadMethodReflect,
   kSVGSpreadMethodRepeat
 };
-template <>
-const SVGEnumerationStringEntries&
-GetStaticStringEntries<SVGSpreadMethodType>();
+DECLARE_SVG_ENUM_MAP(SVGSpreadMethodType);
 
 class SVGGradientElement : public SVGElement, public SVGURIReference {
   DEFINE_WRAPPERTYPEINFO();
@@ -97,8 +95,8 @@ class SVGGradientElement : public SVGElement, public SVGURIReference {
 };
 
 inline bool IsSVGGradientElement(const SVGElement& element) {
-  return element.HasTagName(SVGNames::radialGradientTag) ||
-         element.HasTagName(SVGNames::linearGradientTag);
+  return element.HasTagName(svg_names::kRadialGradientTag) ||
+         element.HasTagName(svg_names::kLinearGradientTag);
 }
 
 DEFINE_SVGELEMENT_TYPE_CASTS_WITH_FUNCTION(SVGGradientElement);

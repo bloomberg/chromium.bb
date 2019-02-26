@@ -173,6 +173,9 @@ class MockGLES2Decoder : public GLES2Decoder {
   MOCK_METHOD1(
       SetCopyTextureResourceManagerForTest,
       void(CopyTextureCHROMIUMResourceManager* copy_texture_resource_manager));
+  MOCK_METHOD1(
+      SetCopyTexImageBlitterForTest,
+      void(CopyTexImageResourceManager* copy_texture_resource_manager));
 
  private:
   base::WeakPtrFactory<MockGLES2Decoder> weak_ptr_factory_;

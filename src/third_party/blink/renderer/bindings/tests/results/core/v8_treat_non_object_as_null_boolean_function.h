@@ -8,12 +8,12 @@
 // DO NOT MODIFY!
 
 // clang-format off
-
-#ifndef V8TreatNonObjectAsNullBooleanFunction_h
-#define V8TreatNonObjectAsNullBooleanFunction_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_BINDINGS_TESTS_RESULTS_CORE_V8_TREAT_NON_OBJECT_AS_NULL_BOOLEAN_FUNCTION_H_
+#define THIRD_PARTY_BLINK_RENDERER_BINDINGS_TESTS_RESULTS_CORE_V8_TREAT_NON_OBJECT_AS_NULL_BOOLEAN_FUNCTION_H_
 
 #include "third_party/blink/renderer/core/core_export.h"
 #include "third_party/blink/renderer/platform/bindings/callback_function_base.h"
+#include "third_party/blink/renderer/platform/wtf/forward.h"
 
 namespace blink {
 
@@ -22,9 +22,11 @@ class ScriptWrappable;
 class CORE_EXPORT V8TreatNonObjectAsNullBooleanFunction final : public CallbackFunctionBase {
  public:
   static V8TreatNonObjectAsNullBooleanFunction* Create(v8::Local<v8::Object> callback_function) {
-    return new V8TreatNonObjectAsNullBooleanFunction(callback_function);
+    return MakeGarbageCollected<V8TreatNonObjectAsNullBooleanFunction>(callback_function);
   }
 
+  explicit V8TreatNonObjectAsNullBooleanFunction(v8::Local<v8::Object> callback_function)
+      : CallbackFunctionBase(callback_function) {}
   ~V8TreatNonObjectAsNullBooleanFunction() override = default;
 
   // NameClient overrides:
@@ -33,10 +35,6 @@ class CORE_EXPORT V8TreatNonObjectAsNullBooleanFunction final : public CallbackF
   // Performs "invoke".
   // https://heycam.github.io/webidl/#es-invoking-callback-functions
   v8::Maybe<bool> Invoke(ScriptWrappable* callback_this_value) WARN_UNUSED_RESULT;
-
- private:
-  explicit V8TreatNonObjectAsNullBooleanFunction(v8::Local<v8::Object> callback_function)
-      : CallbackFunctionBase(callback_function) {}
 };
 
 template <>
@@ -73,4 +71,4 @@ Persistent<V8TreatNonObjectAsNullBooleanFunction> WrapPersistent(V8TreatNonObjec
 
 }  // namespace blink
 
-#endif  // V8TreatNonObjectAsNullBooleanFunction_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_BINDINGS_TESTS_RESULTS_CORE_V8_TREAT_NON_OBJECT_AS_NULL_BOOLEAN_FUNCTION_H_

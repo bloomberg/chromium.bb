@@ -19,7 +19,11 @@ tr.exportTo('tr.e.chrome', function() {
     composite: [
       'CompositingInputsUpdater::update',
       'ThreadProxy::SetNeedsUpdateLayers',
-      'LayerTreeHost::UpdateLayers::CalcDrawProps',
+      'LayerTreeHost::DoUpdateLayers',
+      'LayerTreeHost::UpdateLayers::BuildPropertyTrees',
+      'LocalFrameView::pushPaintArtifactToCompositor',
+      'LocalFrameView::updateCompositedSelectionIfNeeded',
+      'LocalFrameView::RunCompositingLifecyclePhase',
       'UpdateLayerTree',
     ],
 
@@ -54,25 +58,18 @@ tr.exportTo('tr.e.chrome', function() {
     ],
 
     layout: [
-      'DisplayItemList::Finalize',
       'IntersectionObserverController::computeTrackedIntersectionObservations',
       'LocalFrameView::invalidateTree',
       'LocalFrameView::layout',
       'LocalFrameView::performLayout',
       'LocalFrameView::performPostLayoutTasks',
       'LocalFrameView::performPreLayoutTasks',
-      'FrameView::invalidateTree',
-      'FrameView::layout',
-      'FrameView::performLayout',
-      'FrameView::performPostLayoutTasks',
-      'FrameView::performPreLayoutTasks',
-      'Layer::updateLayerPositionsAfterLayout',
-      'LayerTreeHostInProcess::UpdateLayers::BuildPropertyTrees',
+      'LocalFrameView::RunStyleAndLayoutCompositingPhases',
       'Layout',
-      'LayoutView::hitTest',
       'PaintLayer::updateLayerPositionsAfterLayout',
       'ResourceLoadPriorityOptimizer::updateAllImageResourcePriorities',
-      'WebViewImpl::layout',
+      'WebViewImpl::updateAllLifecyclePhases',
+      'WebViewImpl::beginFrame',
     ],
 
     parseHTML: [
@@ -100,18 +97,17 @@ tr.exportTo('tr.e.chrome', function() {
 
     record: [
       'Canvas2DLayerBridge::flushRecordingOnly',
+      'CompositingInputsUpdater::update',
       'CompositingRequirementsUpdater::updateRecursive',
       'ContentLayerDelegate::paintContents',
-      'DeprecatedPaintLayerCompositor::updateIfNeededRecursive',
-      'DeprecatedPaintLayerCompositor::updateLayerPositionsAfterLayout',
-      'LocalFrameView::paintTree',
-      'LocalFrameView::prePaint',
+      'DisplayItemList::Finalize',
+      'LocalFrameView::RunPaintLifecyclePhase',
+      'LocalFrameView::RunPrePaintLifecyclePhase',
       'Paint',
       'PaintController::commitNewDisplayItems',
       'PaintLayerCompositor::updateIfNeededRecursive',
       'Picture::Record',
       'PictureLayer::Update',
-      'RenderLayer::updateLayerPositionsAfterLayout',
     ],
 
     style: [

@@ -12,7 +12,7 @@
 #include "base/containers/circular_deque.h"
 #include "base/macros.h"
 #include "base/time/time.h"
-#include "base/trace_event/trace_event_argument.h"
+#include "base/trace_event/traced_value.h"
 #include "ui/latency/skipped_frame_tracker.h"
 
 namespace ui {

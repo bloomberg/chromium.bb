@@ -23,7 +23,7 @@ declare_args() {
 # This config causes functions not to be automatically exported from shared
 # libraries. By default, all symbols are exported but this means there are
 # lots of exports that slow everything down. In general we explicitly mark
-# which functiosn we want to export from components.
+# which functions we want to export from components.
 #
 # Some third_party code assumes all functions are exported so this is separated
 # into its own config so such libraries can remove this config to make symbols
@@ -53,7 +53,7 @@ config("symbol_visibility_default") {
 #
 # This is required for component builds since the build generates many shared
 # libraries in the build directory that we expect to be automatically loaded.
-# It will be automatically applied in this case by :executable_ldconfig.
+# It will be automatically applied in this case by :executable_config.
 #
 # In non-component builds, certain test binaries may expect to load dynamic
 # libraries from the current directory. As long as these aren't distributed,
@@ -85,8 +85,8 @@ config("rpath_for_built_shared_libraries") {
 }
 
 # Settings for executables.
-config("executable_ldconfig") {
-  ldflags = []
+config("executable_config") {
+  ldflags = [ "-pie" ]
   if (is_android) {
     ldflags += [
       "-Bdynamic",
@@ -97,9 +97,6 @@ config("executable_ldconfig") {
     # builds.
     if (is_component_build) {
       configs = [ ":rpath_for_built_shared_libraries" ]
-    }
-    if (current_cpu == "mipsel" || current_cpu == "mips64el") {
-      ldflags += [ "-pie" ]
     }
   }
 

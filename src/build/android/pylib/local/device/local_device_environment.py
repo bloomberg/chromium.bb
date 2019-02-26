@@ -133,7 +133,8 @@ class LocalDeviceEnvironment(environment.Environment):
       device_arg = self._device_serials
 
     self._devices = device_utils.DeviceUtils.HealthyDevices(
-        self._blacklist, enable_device_files_cache=self._enable_device_cache,
+        self._blacklist, retries=5, enable_usb_resets=True,
+        enable_device_files_cache=self._enable_device_cache,
         default_retries=self._max_tries - 1, device_arg=device_arg)
 
     if self._logcat_output_file:
@@ -210,6 +211,14 @@ class LocalDeviceEnvironment(environment.Environment):
       instrumentation_tracing.stop_instrumenting()
     elif self.trace_output:
       self.DisableTracing()
+
+    # By default, teardown will invoke ADB. When receiving SIGTERM due to a
+    # timeout, there's a high probability that ADB is non-responsive. In these
+    # cases, sending an ADB command will potentially take a long time to time
+    # out. Before this happens, the process will be hard-killed for not
+    # responding to SIGTERM fast enough.
+    if self._received_sigterm:
+      return
 
     if not self._devices:
       return

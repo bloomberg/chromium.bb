@@ -27,18 +27,21 @@
  * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/blink/public/platform/platform.h"
 #include "third_party/blink/public/platform/web_url_loader_mock_factory.h"
 #include "third_party/blink/public/web/web_view.h"
+#include "third_party/blink/renderer/bindings/core/v8/v8_gc_controller.h"
 #include "third_party/blink/renderer/core/frame/frame_test_helpers.h"
+#include "third_party/blink/renderer/core/frame/web_local_frame_impl.h"
 #include "third_party/blink/renderer/platform/testing/unit_test_helpers.h"
 #include "third_party/blink/renderer/platform/testing/url_test_helpers.h"
 #include "v8/include/v8-profiler.h"
 #include "v8/include/v8.h"
 
 namespace blink {
+
+namespace {
 
 const v8::HeapGraphNode* GetProperty(v8::Isolate* isolate,
                                      const v8::HeapGraphNode* node,
@@ -55,8 +58,7 @@ const v8::HeapGraphNode* GetProperty(v8::Isolate* isolate,
   return nullptr;
 }
 
-int GetNumObjects(const char* constructor) {
-  v8::Isolate* isolate = v8::Isolate::GetCurrent();
+int GetNumObjects(v8::Isolate* isolate, const char* constructor) {
   v8::HandleScope scope(isolate);
   v8::HeapProfiler* profiler = isolate->GetHeapProfiler();
   const v8::HeapSnapshot* snapshot = profiler->TakeHeapSnapshot();
@@ -84,15 +86,23 @@ int GetNumObjects(const char* constructor) {
   return count;
 }
 
+}  // namespace
+
 class ListenerLeakTest : public testing::Test {
  public:
-  void RunTest(const std::string& filename) {
+  void RunTestAndGC(const std::string& filename) {
     std::string base_url("http://www.example.com/");
     std::string file_name(filename);
-    URLTestHelpers::RegisterMockedURLLoadFromBase(
+    url_test_helpers::RegisterMockedURLLoadFromBase(
         WebString::FromUTF8(base_url), blink::test::CoreTestDataPath(),
         WebString::FromUTF8(file_name));
     web_view_helper.InitializeAndLoad(base_url + file_name);
+    V8GCController::CollectAllGarbageForTesting(
+        isolate(), v8::EmbedderHeapTracer::EmbedderStackState::kEmpty);
+  }
+
+  v8::Isolate* isolate() const {
+    return ToIsolate(web_view_helper.LocalMainFrame()->GetFrame());
   }
 
   void TearDown() override {
@@ -102,21 +112,21 @@ class ListenerLeakTest : public testing::Test {
   }
 
  protected:
-  FrameTestHelpers::WebViewHelper web_view_helper;
+  frame_test_helpers::WebViewHelper web_view_helper;
 };
 
 // This test tries to create a reference cycle between node and its listener.
 // See http://crbug/17400.
 TEST_F(ListenerLeakTest, ReferenceCycle) {
-  RunTest("listener/listener_leak1.html");
-  ASSERT_EQ(0, GetNumObjects("EventListenerLeakTestObject1"));
+  RunTestAndGC("listener/listener_leak1.html");
+  ASSERT_EQ(0, GetNumObjects(isolate(), "EventListenerLeakTestObject1"));
 }
 
 // This test sets node onclick many times to expose a possible memory
 // leak where all listeners get referenced by the node.
 TEST_F(ListenerLeakTest, HiddenReferences) {
-  RunTest("listener/listener_leak2.html");
-  ASSERT_EQ(1, GetNumObjects("EventListenerLeakTestObject2"));
+  RunTestAndGC("listener/listener_leak2.html");
+  ASSERT_EQ(1, GetNumObjects(isolate(), "EventListenerLeakTestObject2"));
 }
 
 }  // namespace blink

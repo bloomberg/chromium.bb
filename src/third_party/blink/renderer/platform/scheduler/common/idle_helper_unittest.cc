@@ -185,7 +185,7 @@ class BaseIdleHelperTest : public testing::Test {
       // It's okay to use |test_task_runner_| just as a mock clock because
       // it isn't bound to thread and all tasks will go through a MessageLoop.
       sequence_manager = base::sequence_manager::SequenceManagerForTest::Create(
-          message_loop_.get(), message_loop_->task_runner(),
+          message_loop_->GetMessageLoopBase(), message_loop_->task_runner(),
           test_task_runner_->GetMockTickClock());
     }
     sequence_manager_ = sequence_manager.get();

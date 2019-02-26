@@ -7,4 +7,4 @@ package org.chromium.webapk.shell_apk;
 /**
  * WebAPK's main Activity.
  */
-public class MainActivity extends TransparentHostBrowserLauncherActivity {}
+public class MainActivity extends TransparentLauncherActivity {}

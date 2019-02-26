@@ -8,6 +8,7 @@
 #include <map>
 
 #include "base/strings/string16.h"
+#include "base/win/scoped_handle.h"
 #include "chrome/credential_provider/gaiacp/os_process_manager.h"
 #include "chrome/credential_provider/gaiacp/os_user_manager.h"
 #include "chrome/credential_provider/gaiacp/scoped_lsa_policy.h"
@@ -24,9 +25,6 @@ class FakeOSProcessManager : public OSProcessManager {
   ~FakeOSProcessManager() override;
 
   // OSProcessManager
-  HRESULT CreateLogonToken(const wchar_t* username,
-                           const wchar_t* password,
-                           base::win::ScopedHandle* token) override;
   HRESULT GetTokenLogonSID(const base::win::ScopedHandle& token,
                            PSID* sid) override;
   HRESULT SetupPermissionsForLogonSid(PSID sid) override;
@@ -60,8 +58,14 @@ class FakeOSUserManager : public OSUserManager {
   HRESULT SetUserPassword(const wchar_t* username,
                           const wchar_t* password,
                           DWORD* error) override;
+  HRESULT CreateLogonToken(const wchar_t* username,
+                           const wchar_t* password,
+                           bool interactive,
+                           base::win::ScopedHandle* token) override;
   HRESULT GetUserSID(const wchar_t* username, PSID* sid) override;
-  HRESULT FindUserBySID(const wchar_t* sid) override;
+  HRESULT FindUserBySID(const wchar_t* sid,
+                        wchar_t* username,
+                        DWORD length) override;
   HRESULT RemoveUser(const wchar_t* username, const wchar_t* password) override;
 
   struct UserInfo {

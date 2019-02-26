@@ -10,6 +10,7 @@
 #include <memory>
 #include <vector>
 
+#include "base/callback.h"
 #include "base/macros.h"
 #import "ios/web/navigation/navigation_item_impl.h"
 #import "ios/web/public/navigation_item_list.h"
@@ -142,6 +143,9 @@ class NavigationManagerImpl : public NavigationManager {
                                            NSString* state_object,
                                            ui::PageTransition transition) = 0;
 
+  // Returns true if session restoration is in progress.
+  virtual bool IsRestoreSessionInProgress() const = 0;
+
   // Resets the transient url rewriter list.
   void RemoveTransientURLRewriters();
 
@@ -189,6 +193,7 @@ class NavigationManagerImpl : public NavigationManager {
   void Reload(ReloadType reload_type, bool check_for_reposts) final;
   void ReloadWithUserAgentType(UserAgentType user_agent_type) final;
   void LoadIfNecessary() override;
+  void AddRestoreCompletionCallback(base::OnceClosure callback) override;
 
   // Implementation for corresponding NavigationManager getters.
   virtual NavigationItemImpl* GetPendingItemImpl() const = 0;
@@ -237,9 +242,9 @@ class NavigationManagerImpl : public NavigationManager {
       const GURL& previous_url,
       const std::vector<BrowserURLRewriter::URLRewriter>* url_rewriters) const;
 
-  // Returns the most recent NavigationItem that does not have an app-specific
-  // URL.
-  NavigationItem* GetLastCommittedNonAppSpecificItem() const;
+  // Returns the most recent NavigationItem with an URL that generates an HTTP
+  // request.
+  NavigationItem* GetLastCommittedItemWithUserAgentType() const;
 
   // Subclass specific implementation to update session state.
   virtual void FinishGoToIndex(int index,

@@ -5,6 +5,7 @@
 #include "chrome/browser/chromeos/arc/intent_helper/start_smart_selection_action_menu.h"
 
 #include <algorithm>
+#include <string>
 #include <utility>
 
 #include "base/bind.h"
@@ -44,7 +45,8 @@ void StartSmartSelectionActionMenu::InitMenu(
   if (!base::FeatureList::IsEnabled(kSmartTextSelectionFeature))
     return;
 
-  if (params.selection_text.empty())
+  const std::string converted_text = base::UTF16ToUTF8(params.selection_text);
+  if (converted_text.empty())
     return;
 
   auto* arc_service_manager = ArcServiceManager::Get();
@@ -58,15 +60,14 @@ void StartSmartSelectionActionMenu::InitMenu(
 
   base::RecordAction(base::UserMetricsAction("Arc.SmartTextSelection.Request"));
   instance->RequestTextSelectionActions(
-      base::UTF16ToUTF8(params.selection_text),
-      mojom::ScaleFactor(ui::GetSupportedScaleFactors().back()),
+      converted_text, mojom::ScaleFactor(ui::GetSupportedScaleFactors().back()),
       base::BindOnce(&StartSmartSelectionActionMenu::HandleTextSelectionActions,
                      weak_ptr_factory_.GetWeakPtr()));
 
   // Add placeholder items.
   for (size_t i = 0; i < kMaxMainMenuCommands; ++i) {
     proxy_->AddMenuItem(IDC_CONTENT_CONTEXT_START_SMART_SELECTION_ACTION1 + i,
-                        /*title=*/base::EmptyString16());
+                        /*title=*/base::string16());
   }
 }
 

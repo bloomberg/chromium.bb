@@ -285,6 +285,7 @@ TEST_F(SSLClientSocketPoolTest, BasicDirect) {
   EXPECT_THAT(rv, IsOk());
   EXPECT_TRUE(handle.is_initialized());
   EXPECT_TRUE(handle.socket());
+  EXPECT_EQ(MEDIUM, transport_socket_pool_.requests()[0]->priority());
   TestLoadTimingInfo(handle);
   EXPECT_EQ(0u, handle.connection_attempts().size());
 }
@@ -310,8 +311,38 @@ TEST_F(SSLClientSocketPoolTest, SetSocketRequestPriorityOnInitDirect) {
                         ClientSocketPool::RespectLimits::ENABLED,
                         callback.callback(), pool_.get(), NetLogWithSource()));
     EXPECT_EQ(priority, transport_socket_pool_.last_request_priority());
+    EXPECT_EQ(priority, transport_socket_pool_.requests()[i]->priority());
     handle.socket()->Disconnect();
   }
+}
+
+// Test that the SSLConnectJob passes priority changes down to the transport
+// socket pool (for the DIRECT case).
+TEST_F(SSLClientSocketPoolTest, SetSocketRequestPriorityDirect) {
+  StaticSocketDataProvider data;
+  socket_factory_.AddSocketDataProvider(&data);
+  SSLSocketDataProvider ssl(ASYNC, OK);
+  socket_factory_.AddSSLSocketDataProvider(&ssl);
+
+  CreatePool(true /* tcp pool */, false, false);
+  scoped_refptr<SSLSocketParams> params = SSLParams(ProxyServer::SCHEME_DIRECT);
+
+  ClientSocketHandle handle;
+  TestCompletionCallback callback;
+  int rv = handle.Init(kGroupName, params, MEDIUM, SocketTag(),
+                       ClientSocketPool::RespectLimits::ENABLED,
+                       callback.callback(), pool_.get(), NetLogWithSource());
+  EXPECT_THAT(rv, IsError(ERR_IO_PENDING));
+  EXPECT_FALSE(handle.is_initialized());
+  EXPECT_FALSE(handle.socket());
+  EXPECT_EQ(MEDIUM, transport_socket_pool_.requests()[0]->priority());
+
+  pool_->SetPriority(kGroupName, &handle, LOWEST);
+  EXPECT_EQ(LOWEST, transport_socket_pool_.requests()[0]->priority());
+
+  EXPECT_THAT(callback.WaitForResult(), IsOk());
+  EXPECT_TRUE(handle.is_initialized());
+  EXPECT_TRUE(handle.socket());
 }
 
 TEST_F(SSLClientSocketPoolTest, BasicDirectAsync) {
@@ -524,6 +555,36 @@ TEST_F(SSLClientSocketPoolTest, SetTransportPriorityOnInitSOCKS) {
                         ClientSocketPool::RespectLimits::ENABLED,
                         callback.callback(), pool_.get(), NetLogWithSource()));
   EXPECT_EQ(HIGHEST, transport_socket_pool_.last_request_priority());
+  EXPECT_EQ(HIGHEST, transport_socket_pool_.requests()[0]->priority());
+}
+
+// Test that the SSLConnectJob passes priority changes down to the transport
+// socket pool (for the SOCKS_PROXY case).
+TEST_F(SSLClientSocketPoolTest, SetTransportPrioritySOCKS) {
+  StaticSocketDataProvider data;
+  socket_factory_.AddSocketDataProvider(&data);
+  SSLSocketDataProvider ssl(ASYNC, OK);
+  socket_factory_.AddSSLSocketDataProvider(&ssl);
+
+  CreatePool(false, true /* http proxy pool */, true /* socks pool */);
+  scoped_refptr<SSLSocketParams> params = SSLParams(ProxyServer::SCHEME_SOCKS5);
+
+  ClientSocketHandle handle;
+  TestCompletionCallback callback;
+  int rv = handle.Init(kGroupName, params, MEDIUM, SocketTag(),
+                       ClientSocketPool::RespectLimits::ENABLED,
+                       callback.callback(), pool_.get(), NetLogWithSource());
+  EXPECT_THAT(rv, IsError(ERR_IO_PENDING));
+  EXPECT_FALSE(handle.is_initialized());
+  EXPECT_FALSE(handle.socket());
+  EXPECT_EQ(MEDIUM, transport_socket_pool_.requests()[0]->priority());
+
+  pool_->SetPriority(kGroupName, &handle, LOWEST);
+  EXPECT_EQ(LOWEST, transport_socket_pool_.requests()[0]->priority());
+
+  EXPECT_THAT(callback.WaitForResult(), IsOk());
+  EXPECT_TRUE(handle.is_initialized());
+  EXPECT_TRUE(handle.socket());
 }
 
 TEST_F(SSLClientSocketPoolTest, SOCKSBasicAsync) {
@@ -656,7 +717,12 @@ TEST_F(SSLClientSocketPoolTest, SetTransportPriorityOnInitHTTP) {
                         ClientSocketPool::RespectLimits::ENABLED,
                         callback.callback(), pool_.get(), NetLogWithSource()));
   EXPECT_EQ(HIGHEST, transport_socket_pool_.last_request_priority());
+  EXPECT_EQ(HIGHEST, transport_socket_pool_.requests()[0]->priority());
 }
+
+// TODO(chlily): Test that the SSLConnectJob passes priority changes down to the
+// transport socket pool (for the HTTP_PROXY case), once change priority is
+// implemented for HttpProxyClientSocketPool.
 
 TEST_F(SSLClientSocketPoolTest, HttpProxyBasicAsync) {
   MockWrite writes[] = {
@@ -878,6 +944,11 @@ TEST_F(SSLClientSocketPoolTest, Tag) {
   test_server.AddDefaultHandlers(base::FilePath());
   ASSERT_TRUE(test_server.Start());
 
+  // TLS 1.3 sockets aren't reused until the read side has been pumped.
+  // TODO(crbug.com/906668): Support pumping the read side and setting the
+  // socket to be reusable.
+  ssl_config_.version_max = SSL_PROTOCOL_VERSION_TLS1_2;
+
   TransportClientSocketPool tcp_pool(
       kMaxSockets, kMaxSocketsPerGroup, &host_resolver_,
       ClientSocketFactory::GetDefaultFactory(), NULL, NULL);
@@ -898,9 +969,9 @@ TEST_F(SSLClientSocketPoolTest, Tag) {
   scoped_refptr<TransportSocketParams> tcp_params(new TransportSocketParams(
       test_server.host_port_pair(), false, OnHostResolutionCallback(),
       TransportSocketParams::COMBINE_CONNECT_AND_WRITE_DEFAULT));
-  scoped_refptr<SSLSocketParams> params(
-      new SSLSocketParams(tcp_params, NULL, NULL, test_server.host_port_pair(),
-                          ssl_config_, PRIVACY_MODE_DISABLED, 0));
+  scoped_refptr<SSLSocketParams> params(new SSLSocketParams(
+      tcp_params, NULL, NULL, test_server.host_port_pair(), ssl_config_,
+      PRIVACY_MODE_DISABLED, false /* ignore_certificate_errors */));
 
   // Test socket is tagged before connected.
   uint64_t old_traffic = GetTaggedBytes(tag_val1);
@@ -968,9 +1039,9 @@ TEST_F(SSLClientSocketPoolTest, TagTwoSockets) {
   scoped_refptr<TransportSocketParams> tcp_params(new TransportSocketParams(
       test_server.host_port_pair(), false, OnHostResolutionCallback(),
       TransportSocketParams::COMBINE_CONNECT_AND_WRITE_DEFAULT));
-  scoped_refptr<SSLSocketParams> params(
-      new SSLSocketParams(tcp_params, NULL, NULL, test_server.host_port_pair(),
-                          ssl_config_, PRIVACY_MODE_DISABLED, 0));
+  scoped_refptr<SSLSocketParams> params(new SSLSocketParams(
+      tcp_params, NULL, NULL, test_server.host_port_pair(), ssl_config_,
+      PRIVACY_MODE_DISABLED, false /* ignore_certificate_errors */));
 
   // Test connect jobs that are orphaned and then adopted, appropriately apply
   // new tag. Request socket with |tag1|.
@@ -1032,9 +1103,9 @@ TEST_F(SSLClientSocketPoolTest, TagTwoSocketsFullPool) {
   scoped_refptr<TransportSocketParams> tcp_params(new TransportSocketParams(
       test_server.host_port_pair(), false, OnHostResolutionCallback(),
       TransportSocketParams::COMBINE_CONNECT_AND_WRITE_DEFAULT));
-  scoped_refptr<SSLSocketParams> params(
-      new SSLSocketParams(tcp_params, NULL, NULL, test_server.host_port_pair(),
-                          ssl_config_, PRIVACY_MODE_DISABLED, 0));
+  scoped_refptr<SSLSocketParams> params(new SSLSocketParams(
+      tcp_params, NULL, NULL, test_server.host_port_pair(), ssl_config_,
+      PRIVACY_MODE_DISABLED, false /* ignore_certificate_errors */));
 
   // Test that sockets paused by a full underlying socket pool are properly
   // connected and tagged when underlying pool is freed up.

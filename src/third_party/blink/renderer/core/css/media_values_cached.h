@@ -67,6 +67,11 @@ class CORE_EXPORT MediaValuesCached final : public MediaValues {
 
   static MediaValuesCached* Create();
   static MediaValuesCached* Create(const MediaValuesCachedData&);
+
+  MediaValuesCached();
+  MediaValuesCached(LocalFrame*);
+  MediaValuesCached(const MediaValuesCachedData&);
+
   MediaValues* Copy() const override;
   bool ComputeLength(double value,
                      CSSPrimitiveValue::UnitType,
@@ -99,10 +104,6 @@ class CORE_EXPORT MediaValuesCached final : public MediaValues {
   void OverrideViewportDimensions(double width, double height) override;
 
  protected:
-  MediaValuesCached();
-  MediaValuesCached(LocalFrame*);
-  MediaValuesCached(const MediaValuesCachedData&);
-
   MediaValuesCachedData data_;
 };
 

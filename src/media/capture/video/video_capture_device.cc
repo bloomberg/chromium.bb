@@ -42,8 +42,8 @@ void VideoCaptureDevice::SetPhotoOptions(mojom::PhotoSettingsPtr settings,
 
 void VideoCaptureDevice::TakePhoto(TakePhotoCallback callback) {}
 
-PowerLineFrequency VideoCaptureDevice::GetPowerLineFrequencyForLocation()
-    const {
+// static
+PowerLineFrequency VideoCaptureDevice::GetPowerLineFrequencyForLocation() {
   const std::string current_country = base::CountryCodeForCurrentTimezone();
   if (current_country.empty())
     return PowerLineFrequency::FREQUENCY_DEFAULT;
@@ -63,8 +63,9 @@ PowerLineFrequency VideoCaptureDevice::GetPowerLineFrequencyForLocation()
   return PowerLineFrequency::FREQUENCY_60HZ;
 }
 
+// static
 PowerLineFrequency VideoCaptureDevice::GetPowerLineFrequency(
-    const VideoCaptureParams& params) const {
+    const VideoCaptureParams& params) {
   switch (params.power_line_frequency) {
     case PowerLineFrequency::FREQUENCY_50HZ:  // fall through
     case PowerLineFrequency::FREQUENCY_60HZ:

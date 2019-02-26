@@ -8,12 +8,12 @@
 // DO NOT MODIFY!
 
 // clang-format off
-
-#ifndef V8AnyCallbackFunctionVariadicAnyArgs_h
-#define V8AnyCallbackFunctionVariadicAnyArgs_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_BINDINGS_TESTS_RESULTS_CORE_V8_ANY_CALLBACK_FUNCTION_VARIADIC_ANY_ARGS_H_
+#define THIRD_PARTY_BLINK_RENDERER_BINDINGS_TESTS_RESULTS_CORE_V8_ANY_CALLBACK_FUNCTION_VARIADIC_ANY_ARGS_H_
 
 #include "third_party/blink/renderer/core/core_export.h"
 #include "third_party/blink/renderer/platform/bindings/callback_function_base.h"
+#include "third_party/blink/renderer/platform/wtf/forward.h"
 
 namespace blink {
 
@@ -22,9 +22,11 @@ class ScriptWrappable;
 class CORE_EXPORT V8AnyCallbackFunctionVariadicAnyArgs final : public CallbackFunctionBase {
  public:
   static V8AnyCallbackFunctionVariadicAnyArgs* Create(v8::Local<v8::Function> callback_function) {
-    return new V8AnyCallbackFunctionVariadicAnyArgs(callback_function);
+    return MakeGarbageCollected<V8AnyCallbackFunctionVariadicAnyArgs>(callback_function);
   }
 
+  explicit V8AnyCallbackFunctionVariadicAnyArgs(v8::Local<v8::Function> callback_function)
+      : CallbackFunctionBase(callback_function) {}
   ~V8AnyCallbackFunctionVariadicAnyArgs() override = default;
 
   // NameClient overrides:
@@ -37,10 +39,6 @@ class CORE_EXPORT V8AnyCallbackFunctionVariadicAnyArgs final : public CallbackFu
   // Performs "construct".
   // https://heycam.github.io/webidl/#construct-a-callback-function
   v8::Maybe<ScriptValue> Construct(const Vector<ScriptValue>& arguments) WARN_UNUSED_RESULT;
-
- private:
-  explicit V8AnyCallbackFunctionVariadicAnyArgs(v8::Local<v8::Function> callback_function)
-      : CallbackFunctionBase(callback_function) {}
 };
 
 template <>
@@ -77,4 +75,4 @@ Persistent<V8AnyCallbackFunctionVariadicAnyArgs> WrapPersistent(V8AnyCallbackFun
 
 }  // namespace blink
 
-#endif  // V8AnyCallbackFunctionVariadicAnyArgs_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_BINDINGS_TESTS_RESULTS_CORE_V8_ANY_CALLBACK_FUNCTION_VARIADIC_ANY_ARGS_H_

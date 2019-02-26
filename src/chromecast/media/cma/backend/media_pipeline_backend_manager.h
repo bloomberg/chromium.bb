@@ -23,10 +23,12 @@
 namespace chromecast {
 namespace media {
 
-class AudioDecoderWrapper;
 enum class AudioContentType;
 class CastDecoderBuffer;
 class CmaBackend;
+class MediaPipelineBackendWrapper;
+class ActiveAudioDecoderWrapper;
+class ActiveMediaPipelineBackendWrapper;
 
 // This class tracks all created media backends, tracking whether or not volume
 // feedback sounds should be enabled based on the currently active backends.
@@ -90,6 +92,10 @@ class MediaPipelineBackendManager {
   std::unique_ptr<CmaBackend> CreateCmaBackend(
       const MediaPipelineDeviceParams& params);
 
+  // Inform that a backend previously created is destroyed.
+  // Must be called on the same thread as |media_task_runner_|.
+  void BackendDestroyed(MediaPipelineBackendWrapper* backend_wrapper);
+
   base::SingleThreadTaskRunner* task_runner() const {
     return media_task_runner_.get();
   }
@@ -121,12 +127,16 @@ class MediaPipelineBackendManager {
 
   bool IsPlaying(bool include_sfx, AudioContentType type);
 
- private:
-  friend class MediaPipelineBackendWrapper;
-  friend class AudioDecoderWrapper;
+  // If |power_save_enabled| is |false|, power save will be turned off and
+  // automatic power save will be disabled until this is called with |true|.
+  void SetPowerSaveEnabled(bool power_save_enabled);
 
-  void AddAudioDecoder(AudioDecoderWrapper* decoder);
-  void RemoveAudioDecoder(AudioDecoderWrapper* decoder);
+ private:
+  friend class ActiveMediaPipelineBackendWrapper;
+  friend class ActiveAudioDecoderWrapper;
+
+  void AddAudioDecoder(ActiveAudioDecoderWrapper* decoder);
+  void RemoveAudioDecoder(ActiveAudioDecoderWrapper* decoder);
 
   // Backend wrapper instances must use these APIs when allocating and releasing
   // decoder objects, so we can enforce global limit on #concurrent decoders.
@@ -156,10 +166,16 @@ class MediaPipelineBackendManager {
   scoped_refptr<base::ObserverListThreadSafe<AllowVolumeFeedbackObserver>>
       allow_volume_feedback_observers_;
 
-  base::flat_set<AudioDecoderWrapper*> audio_decoders_;
+  base::flat_set<ActiveAudioDecoderWrapper*> audio_decoders_;
   base::flat_map<AudioContentType, float> global_volume_multipliers_;
 
+  // Previously issued MediaPipelineBackendWraper that is still alive
+  // and not revoked.
+  MediaPipelineBackendWrapper* active_backend_wrapper_;
+
   BufferDelegate* buffer_delegate_;
+
+  bool power_save_enabled_ = true;
 
   base::OneShotTimer power_save_timer_;
 

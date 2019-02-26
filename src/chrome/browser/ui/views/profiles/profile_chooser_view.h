@@ -88,6 +88,7 @@ class ProfileChooserView : public content::WebContentsDelegate,
   void Init() override;
   void OnNativeThemeChanged(const ui::NativeTheme* native_theme) override;
   void WindowClosing() override;
+  void OnWidgetClosing(views::Widget* widget) override;
   bool AcceleratorPressed(const ui::Accelerator& accelerator) override;
   views::View* GetInitiallyFocusedView() override;
   int GetDialogButtons() const override;

@@ -46,7 +46,8 @@ typedef HeapHashMap<Member<Node>, Member<ChildListMutationAccumulator>>
     AccumulatorMap;
 
 static AccumulatorMap& GetAccumulatorMap() {
-  DEFINE_STATIC_LOCAL(Persistent<AccumulatorMap>, map, (new AccumulatorMap));
+  DEFINE_STATIC_LOCAL(Persistent<AccumulatorMap>, map,
+                      (MakeGarbageCollected<AccumulatorMap>()));
   return *map;
 }
 

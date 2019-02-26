@@ -128,11 +128,13 @@ TEST(CredentialsContainerTest, PendingGetRequest_NoGCCycles) {
     CredentialManagerTestingContext context(&mock_credential_manager);
     document_observer.Observe(context.GetDocument());
     CredentialsContainer::Create()->get(context.GetScriptState(),
-                                        CredentialRequestOptions());
+                                        CredentialRequestOptions::Create());
     mock_credential_manager.WaitForCallToGet();
   }
 
-  V8GCController::CollectAllGarbageForTesting(v8::Isolate::GetCurrent());
+  V8GCController::CollectAllGarbageForTesting(
+      v8::Isolate::GetCurrent(),
+      v8::EmbedderHeapTracer::EmbedderStackState::kEmpty);
   ThreadState::Current()->CollectAllGarbage();
 
   ASSERT_TRUE(document_observer.WasCollected());
@@ -150,7 +152,7 @@ TEST(CredentialsContainerTest,
 
   auto* proxy = CredentialManagerProxy::From(*context.GetDocument());
   auto promise = CredentialsContainer::Create()->get(
-      context.GetScriptState(), CredentialRequestOptions());
+      context.GetScriptState(), CredentialRequestOptions::Create());
   mock_credential_manager.WaitForCallToGet();
 
   context.GetDocument()->Shutdown();

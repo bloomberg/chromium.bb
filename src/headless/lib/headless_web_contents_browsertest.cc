@@ -6,7 +6,6 @@
 #include <string>
 #include <vector>
 
-#include "base/base64.h"
 #include "base/command_line.h"
 #include "base/json/json_writer.h"
 #include "base/logging.h"
@@ -166,13 +165,8 @@ IN_PROC_BROWSER_TEST_F(HeadlessWebContentsTest, HandleSSLError) {
 }
 
 namespace {
-bool DecodePNG(std::string base64_data, SkBitmap* bitmap) {
-  std::string png_data;
-  if (!base::Base64Decode(base64_data, &png_data))
-    return false;
-  return gfx::PNGCodec::Decode(
-      reinterpret_cast<unsigned const char*>(png_data.data()), png_data.size(),
-      bitmap);
+bool DecodePNG(const protocol::Binary& png_data, SkBitmap* bitmap) {
+  return gfx::PNGCodec::Decode(png_data.data(), png_data.size(), bitmap);
 }
 }  // namespace
 
@@ -211,10 +205,10 @@ class HeadlessWebContentsScreenshotTest
 
   void OnScreenshotCaptured(
       std::unique_ptr<page::CaptureScreenshotResult> result) {
-    std::string base64 = result->GetData();
-    EXPECT_GT(base64.length(), 0U);
+    protocol::Binary png_data = result->GetData();
+    EXPECT_GT(png_data.size(), 0U);
     SkBitmap result_bitmap;
-    EXPECT_TRUE(DecodePNG(base64, &result_bitmap));
+    EXPECT_TRUE(DecodePNG(png_data, &result_bitmap));
 
     EXPECT_EQ(800, result_bitmap.width());
     EXPECT_EQ(600, result_bitmap.height());
@@ -308,12 +302,9 @@ class HeadlessWebContentsPDFTest : public HeadlessAsyncDevTooledBrowserTest {
   }
 
   void OnPDFCreated(std::unique_ptr<page::PrintToPDFResult> result) {
-    std::string base64 = result->GetData();
-    EXPECT_GT(base64.length(), 0U);
-    std::string pdf_data;
-    EXPECT_TRUE(base::Base64Decode(base64, &pdf_data));
-
-    auto pdf_span = base::as_bytes(base::make_span(pdf_data));
+    protocol::Binary pdf_data = result->GetData();
+    EXPECT_GT(pdf_data.size(), 0U);
+    auto pdf_span = base::make_span(pdf_data.data(), pdf_data.size());
     int num_pages;
     EXPECT_TRUE(chrome_pdf::GetPDFDocInfo(pdf_span, &num_pages, nullptr));
     EXPECT_EQ(std::ceil(kDocHeight / kPaperHeight), num_pages);
@@ -472,7 +463,7 @@ class HeadlessWebContentsBeginFrameControlTest
 
     browser_devtools_client_->GetTarget()->GetExperimental()->CreateTarget(
         target::CreateTargetParams::Builder()
-            .SetUrl("about://blank")
+            .SetUrl("about:blank")
             .SetWidth(200)
             .SetHeight(200)
             .SetEnableBeginFrameControl(true)
@@ -650,10 +641,10 @@ class HeadlessWebContentsBeginFrameControlBasicTest
       // First BeginFrame should have caused damage and have a screenshot.
       EXPECT_TRUE(result->GetHasDamage());
       ASSERT_TRUE(result->HasScreenshotData());
-      std::string base64 = result->GetScreenshotData();
-      EXPECT_LT(0u, base64.length());
+      protocol::Binary png_data = result->GetScreenshotData();
+      EXPECT_LT(0u, png_data.size());
       SkBitmap result_bitmap;
-      EXPECT_TRUE(DecodePNG(base64, &result_bitmap));
+      EXPECT_TRUE(DecodePNG(png_data, &result_bitmap));
       EXPECT_EQ(200, result_bitmap.width());
       EXPECT_EQ(200, result_bitmap.height());
       SkColor expected_color = SkColorSetRGB(0x00, 0x00, 0xff);
@@ -737,10 +728,10 @@ class HeadlessWebContentsBeginFrameControlViewportTest
     EXPECT_TRUE(result->GetHasDamage());
     EXPECT_TRUE(result->HasScreenshotData());
     if (result->HasScreenshotData()) {
-      std::string base64 = result->GetScreenshotData();
-      EXPECT_LT(0u, base64.length());
+      protocol::Binary png_data = result->GetScreenshotData();
+      EXPECT_LT(0u, png_data.size());
       SkBitmap result_bitmap;
-      EXPECT_TRUE(DecodePNG(base64, &result_bitmap));
+      EXPECT_TRUE(DecodePNG(png_data, &result_bitmap));
 
       EXPECT_EQ(300, result_bitmap.width());
       EXPECT_EQ(300, result_bitmap.height());

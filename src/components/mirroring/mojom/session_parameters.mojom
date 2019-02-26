@@ -4,7 +4,7 @@
 
 module mirroring.mojom;
 
-import "net/interfaces/ip_address.mojom";
+import "services/network/public/mojom/ip_address.mojom";
 
 // The type of a mirroring session.
 enum SessionType {
@@ -16,7 +16,7 @@ enum SessionType {
 // The parameters of a mirroring session.
 struct SessionParameters {
   SessionType type;
-  net.interfaces.IPAddress receiver_address;
+  network.mojom.IPAddress receiver_address;
   string receiver_model_name;
 };
 

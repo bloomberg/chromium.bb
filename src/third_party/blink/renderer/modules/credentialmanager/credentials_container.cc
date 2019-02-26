@@ -54,6 +54,8 @@ using MojoPublicKeyCredentialRequestOptions =
     mojom::blink::PublicKeyCredentialRequestOptions;
 using mojom::blink::GetAssertionAuthenticatorResponsePtr;
 
+constexpr char kCryptotokenOrigin[] =
+    "chrome-extension://kmendfapggjehodndflmmgagdbamhnfd";
 enum class RequiredOriginType { kSecure, kSecureAndSameWithAncestors };
 
 bool IsSameOriginWithAncestors(const Frame* frame) {
@@ -133,6 +135,13 @@ bool CheckPublicKeySecurityRequirements(ScriptPromiseResolver* resolver,
     return false;
   }
 
+  auto cryptotoken_origin = SecurityOrigin::Create(KURL(kCryptotokenOrigin));
+  if (cryptotoken_origin->IsSameSchemeHostPort(origin)) {
+    // Allow CryptoToken U2F extension to assert any origin, as cryptotoken
+    // handles origin checking separately.
+    return true;
+  }
+
   if (origin->Protocol() != url::kHttpScheme &&
       origin->Protocol() != url::kHttpsScheme) {
     resolver->Reject(DOMException::Create(
@@ -156,7 +165,7 @@ bool CheckPublicKeySecurityRequirements(ScriptPromiseResolver* resolver,
   // for the IP address check.
   OriginAccessEntry access_entry(
       origin->Protocol(), effective_domain,
-      network::cors::OriginAccessEntry::MatchMode::kAllowSubdomains);
+      network::mojom::CorsOriginAccessMatchMode::kAllowSubdomains);
   if (effective_domain.IsEmpty() || access_entry.HostIsIPAddress()) {
     resolver->Reject(
         DOMException::Create(DOMExceptionCode::kSecurityError,
@@ -170,7 +179,7 @@ bool CheckPublicKeySecurityRequirements(ScriptPromiseResolver* resolver,
   if (!relying_party_id.IsNull()) {
     OriginAccessEntry access_entry(
         origin->Protocol(), relying_party_id,
-        network::cors::OriginAccessEntry::kAllowSubdomains);
+        network::mojom::CorsOriginAccessMatchMode::kAllowSubdomains);
     if (relying_party_id.IsEmpty() ||
         access_entry.MatchesDomain(*origin) !=
             network::cors::OriginAccessEntry::kMatchesOrigin) {
@@ -342,9 +351,15 @@ void OnMakePublicKeyCredentialComplete(
     AuthenticatorAttestationResponse* authenticator_response =
         AuthenticatorAttestationResponse::Create(
             client_data_buffer, attestation_buffer, credential->transports);
+
+    AuthenticationExtensionsClientOutputs* extension_outputs =
+        AuthenticationExtensionsClientOutputs::Create();
+    if (credential->echo_hmac_create_secret) {
+      extension_outputs->setHmacCreateSecret(credential->hmac_create_secret);
+    }
     resolver->Resolve(PublicKeyCredential::Create(credential->info->id, raw_id,
                                                   authenticator_response,
-                                                  {} /* extensions_outputs */));
+                                                  extension_outputs));
   } else {
     DCHECK(!credential);
     resolver->Reject(CredentialManagerErrorToDOMException(
@@ -384,9 +399,10 @@ void OnGetAssertionComplete(
         AuthenticatorAssertionResponse::Create(client_data_buffer,
                                                authenticator_buffer,
                                                signature_buffer, user_handle);
-    AuthenticationExtensionsClientOutputs extension_outputs;
+    AuthenticationExtensionsClientOutputs* extension_outputs =
+        AuthenticationExtensionsClientOutputs::Create();
     if (credential->echo_appid_extension) {
-      extension_outputs.setAppid(credential->appid_extension);
+      extension_outputs->setAppid(credential->appid_extension);
     }
     resolver->Resolve(PublicKeyCredential::Create(credential->info->id, raw_id,
                                                   authenticator_response,
@@ -408,7 +424,7 @@ CredentialsContainer::CredentialsContainer() = default;
 
 ScriptPromise CredentialsContainer::get(
     ScriptState* script_state,
-    const CredentialRequestOptions& options) {
+    const CredentialRequestOptions* options) {
   ScriptPromiseResolver* resolver = ScriptPromiseResolver::Create(script_state);
   ScriptPromise promise = resolver->Promise();
 
@@ -416,17 +432,17 @@ ScriptPromise CredentialsContainer::get(
   if (!CheckSecurityRequirementsBeforeRequest(resolver, required_origin_type))
     return promise;
 
-  if (options.hasPublicKey()) {
+  if (options->hasPublicKey()) {
     UseCounter::Count(resolver->GetExecutionContext(),
                       WebFeature::kCredentialManagerGetPublicKeyCredential);
 
-    const String& relying_party_id = options.publicKey().rpId();
+    const String& relying_party_id = options->publicKey()->rpId();
     if (!CheckPublicKeySecurityRequirements(resolver, relying_party_id))
       return promise;
 
-    if (options.publicKey().hasExtensions()) {
-      if (options.publicKey().extensions().hasAppid()) {
-        const auto& appid = options.publicKey().extensions().appid();
+    if (options->publicKey()->hasExtensions()) {
+      if (options->publicKey()->extensions()->hasAppid()) {
+        const auto& appid = options->publicKey()->extensions()->appid();
         if (!appid.IsEmpty()) {
           KURL appid_url(appid);
           if (!appid_url.IsValid()) {
@@ -438,7 +454,7 @@ ScriptPromise CredentialsContainer::get(
           }
         }
       }
-      if (options.publicKey().extensions().hasCableRegistration()) {
+      if (options->publicKey()->extensions()->hasCableRegistration()) {
         resolver->Reject(DOMException::Create(
             DOMExceptionCode::kNotSupportedError,
             "The 'cableRegistration' extension is only valid when creating "
@@ -448,7 +464,7 @@ ScriptPromise CredentialsContainer::get(
     }
 
     auto mojo_options =
-        MojoPublicKeyCredentialRequestOptions::From(options.publicKey());
+        MojoPublicKeyCredentialRequestOptions::From(options->publicKey());
     if (mojo_options) {
       if (!mojo_options->relying_party_id) {
         mojo_options->relying_party_id = resolver->GetFrame()
@@ -472,8 +488,8 @@ ScriptPromise CredentialsContainer::get(
   }
 
   Vector<KURL> providers;
-  if (options.hasFederated() && options.federated().hasProviders()) {
-    for (const auto& string : options.federated().providers()) {
+  if (options->hasFederated() && options->federated()->hasProviders()) {
+    for (const auto& string : options->federated()->providers()) {
       KURL url = KURL(NullURL(), string);
       if (url.IsValid())
         providers.push_back(std::move(url));
@@ -481,16 +497,16 @@ ScriptPromise CredentialsContainer::get(
   }
 
   CredentialMediationRequirement requirement;
-  if (options.mediation() == "silent") {
+  if (options->mediation() == "silent") {
     UseCounter::Count(ExecutionContext::From(script_state),
                       WebFeature::kCredentialManagerGetMediationSilent);
     requirement = CredentialMediationRequirement::kSilent;
-  } else if (options.mediation() == "optional") {
+  } else if (options->mediation() == "optional") {
     UseCounter::Count(ExecutionContext::From(script_state),
                       WebFeature::kCredentialManagerGetMediationOptional);
     requirement = CredentialMediationRequirement::kOptional;
   } else {
-    DCHECK_EQ("required", options.mediation());
+    DCHECK_EQ("required", options->mediation());
     UseCounter::Count(ExecutionContext::From(script_state),
                       WebFeature::kCredentialManagerGetMediationRequired);
     requirement = CredentialMediationRequirement::kRequired;
@@ -499,7 +515,7 @@ ScriptPromise CredentialsContainer::get(
   auto* credential_manager =
       CredentialManagerProxy::From(script_state)->CredentialManager();
   credential_manager->Get(
-      requirement, options.password(), std::move(providers),
+      requirement, options->password(), std::move(providers),
       WTF::Bind(&OnGetComplete,
                 WTF::Passed(std::make_unique<ScopedPromiseResolver>(resolver)),
                 required_origin_type));
@@ -545,20 +561,20 @@ ScriptPromise CredentialsContainer::store(ScriptState* script_state,
 
 ScriptPromise CredentialsContainer::create(
     ScriptState* script_state,
-    const CredentialCreationOptions& options,
+    const CredentialCreationOptions* options,
     ExceptionState& exception_state) {
   ScriptPromiseResolver* resolver = ScriptPromiseResolver::Create(script_state);
   ScriptPromise promise = resolver->Promise();
 
   auto required_origin_type =
-      options.hasPublicKey() ? RequiredOriginType::kSecureAndSameWithAncestors
-                             : RequiredOriginType::kSecure;
+      options->hasPublicKey() ? RequiredOriginType::kSecureAndSameWithAncestors
+                              : RequiredOriginType::kSecure;
 
   if (!CheckSecurityRequirementsBeforeRequest(resolver, required_origin_type))
     return promise;
 
-  if ((options.hasPassword() + options.hasFederated() +
-       options.hasPublicKey()) != 1) {
+  if ((options->hasPassword() + options->hasFederated() +
+       options->hasPublicKey()) != 1) {
     resolver->Reject(DOMException::Create(
         DOMExceptionCode::kNotSupportedError,
         "Only exactly one of 'password', 'federated', and 'publicKey' "
@@ -566,28 +582,28 @@ ScriptPromise CredentialsContainer::create(
     return promise;
   }
 
-  if (options.hasPassword()) {
+  if (options->hasPassword()) {
     resolver->Resolve(
-        options.password().IsPasswordCredentialData()
+        options->password().IsPasswordCredentialData()
             ? PasswordCredential::Create(
-                  options.password().GetAsPasswordCredentialData(),
+                  options->password().GetAsPasswordCredentialData(),
                   exception_state)
             : PasswordCredential::Create(
-                  options.password().GetAsHTMLFormElement(), exception_state));
-  } else if (options.hasFederated()) {
+                  options->password().GetAsHTMLFormElement(), exception_state));
+  } else if (options->hasFederated()) {
     resolver->Resolve(
-        FederatedCredential::Create(options.federated(), exception_state));
+        FederatedCredential::Create(options->federated(), exception_state));
   } else {
-    DCHECK(options.hasPublicKey());
+    DCHECK(options->hasPublicKey());
     UseCounter::Count(resolver->GetExecutionContext(),
                       WebFeature::kCredentialManagerCreatePublicKeyCredential);
 
-    const String& relying_party_id = options.publicKey().rp().id();
+    const String& relying_party_id = options->publicKey()->rp()->id();
     if (!CheckPublicKeySecurityRequirements(resolver, relying_party_id))
       return promise;
 
-    if (options.publicKey().hasExtensions()) {
-      if (options.publicKey().extensions().hasAppid()) {
+    if (options->publicKey()->hasExtensions()) {
+      if (options->publicKey()->extensions()->hasAppid()) {
         resolver->Reject(DOMException::Create(
             DOMExceptionCode::kNotSupportedError,
             "The 'appid' extension is only valid when requesting an assertion "
@@ -595,7 +611,7 @@ ScriptPromise CredentialsContainer::create(
             "legacy FIDO U2F API."));
         return promise;
       }
-      if (options.publicKey().extensions().hasCableAuthentication()) {
+      if (options->publicKey()->extensions()->hasCableAuthentication()) {
         resolver->Reject(DOMException::Create(
             DOMExceptionCode::kNotSupportedError,
             "The 'cableAuthentication' extension is only valid when requesting "
@@ -605,7 +621,7 @@ ScriptPromise CredentialsContainer::create(
     }
 
     auto mojo_options =
-        MojoPublicKeyCredentialCreationOptions::From(options.publicKey());
+        MojoPublicKeyCredentialCreationOptions::From(options->publicKey());
     if (mojo_options) {
       if (!mojo_options->relying_party->id) {
         mojo_options->relying_party->id = resolver->GetFrame()

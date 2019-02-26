@@ -7,14 +7,15 @@
 
 #include <string>
 
+#include "chrome_elf/sha1/sha1.h"
 #include "chrome_elf/third_party_dlls/status_codes.h"
 
 namespace third_party_dlls {
 
 // Look up a binary based on the required data points.
 // - Returns true if match found in the list.
-bool IsModuleListed(const std::string& basename_hash,
-                    const std::string& fingerprint_hash);
+bool IsModuleListed(const elf_sha1::Digest& basename_hash,
+                    const elf_sha1::Digest& fingerprint_hash);
 
 // Get the full path of the blacklist file used.
 std::wstring GetBlFilePathUsed();

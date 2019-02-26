@@ -5,7 +5,11 @@
 #ifndef GPU_IPC_SERVICE_GPU_MEMORY_BUFFER_FACTORY_ANDROID_HARDWARE_BUFFER_H_
 #define GPU_IPC_SERVICE_GPU_MEMORY_BUFFER_FACTORY_ANDROID_HARDWARE_BUFFER_H_
 
+#include <memory>
+#include <utility>
+
 #include "base/containers/flat_map.h"
+#include "base/synchronization/lock.h"
 #include "gpu/command_buffer/service/image_factory.h"
 #include "gpu/ipc/service/gpu_ipc_service_export.h"
 #include "gpu/ipc/service/gpu_memory_buffer_factory.h"
@@ -42,16 +46,18 @@ class GPU_IPC_SERVICE_EXPORT GpuMemoryBufferFactoryAndroidHardwareBuffer
       gfx::GpuMemoryBufferHandle handle,
       const gfx::Size& size,
       gfx::BufferFormat format,
-      unsigned internalformat,
       int client_id,
       SurfaceHandle surface_handle) override;
   unsigned RequiredTextureType() override;
 
  private:
+  using BufferMapKey = std::pair<gfx::GpuMemoryBufferId, int>;
   using BufferMap =
-      base::flat_map<gfx::GpuMemoryBufferId,
+      base::flat_map<BufferMapKey,
                      std::unique_ptr<GpuMemoryBufferImplAndroidHardwareBuffer>>;
-  BufferMap buffer_map_;
+
+  base::Lock lock_;
+  BufferMap buffer_map_ GUARDED_BY(lock_);
 
   DISALLOW_COPY_AND_ASSIGN(GpuMemoryBufferFactoryAndroidHardwareBuffer);
 };

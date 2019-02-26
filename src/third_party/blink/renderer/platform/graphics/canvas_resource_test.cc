@@ -16,7 +16,7 @@
 #include "third_party/blink/renderer/platform/graphics/static_bitmap_image.h"
 #include "third_party/blink/renderer/platform/graphics/test/fake_gles2_interface.h"
 #include "third_party/blink/renderer/platform/graphics/test/fake_web_graphics_context_3d_provider.h"
-#include "third_party/blink/renderer/platform/testing/testing_platform_support.h"
+#include "third_party/blink/renderer/platform/graphics/test/gpu_memory_buffer_test_platform.h"
 #include "third_party/blink/renderer/platform/wtf/functional.h"
 #include "third_party/skia/include/core/SkSurface.h"
 
@@ -37,20 +37,6 @@ class MockGLES2InterfaceWithMailboxSupport : public FakeGLES2Interface {
   MOCK_METHOD4(CreateImageCHROMIUM,
                GLuint(ClientBuffer, GLsizei, GLsizei, GLenum));
   MOCK_METHOD2(BindTexture, void(GLenum, GLuint));
-};
-
-class FakeCanvasResourcePlatformSupport : public TestingPlatformSupport {
- public:
-  void RunUntilStop() const { base::RunLoop().Run(); }
-
-  void StopRunning() const { base::RunLoop().Quit(); }
-
- private:
-  gpu::GpuMemoryBufferManager* GetGpuMemoryBufferManager() override {
-    return &test_gpu_memory_buffer_manager_;
-  }
-
-  viz::TestGpuMemoryBufferManager test_gpu_memory_buffer_manager_;
 };
 
 class CanvasResourceTest : public Test {
@@ -134,7 +120,7 @@ TEST_F(CanvasResourceTest, SkiaResourceNoMailboxLeak) {
 
 TEST_F(CanvasResourceTest, GpuMemoryBufferSyncTokenRefresh) {
   testing::InSequence s;
-  ScopedTestingPlatformSupport<FakeCanvasResourcePlatformSupport> platform;
+  ScopedTestingPlatformSupport<GpuMemoryBufferTestPlatform> platform;
 
   constexpr GLuint image_id = 1;
   const GLuint texture_target = gpu::GetPlatformSpecificTextureTarget();
@@ -204,7 +190,7 @@ TEST_F(CanvasResourceTest, GpuMemoryBufferSyncTokenRefresh) {
 }
 
 TEST_F(CanvasResourceTest, MakeAcceleratedFromAcceleratedResourceIsNoOp) {
-  ScopedTestingPlatformSupport<FakeCanvasResourcePlatformSupport> platform;
+  ScopedTestingPlatformSupport<GpuMemoryBufferTestPlatform> platform;
 
   SkImageInfo image_info =
       SkImageInfo::MakeN32(10, 10, kPremul_SkAlphaType, nullptr);
@@ -232,7 +218,7 @@ TEST_F(CanvasResourceTest, MakeAcceleratedFromAcceleratedResourceIsNoOp) {
 }
 
 TEST_F(CanvasResourceTest, MakeAcceleratedFromRasterResource) {
-  ScopedTestingPlatformSupport<FakeCanvasResourcePlatformSupport> platform;
+  ScopedTestingPlatformSupport<GpuMemoryBufferTestPlatform> platform;
 
   SkImageInfo image_info =
       SkImageInfo::MakeN32(10, 10, kPremul_SkAlphaType, nullptr);
@@ -258,7 +244,7 @@ TEST_F(CanvasResourceTest, MakeAcceleratedFromRasterResource) {
 }
 
 TEST_F(CanvasResourceTest, MakeUnacceleratedFromUnacceleratedResourceIsNoOp) {
-  ScopedTestingPlatformSupport<FakeCanvasResourcePlatformSupport> platform;
+  ScopedTestingPlatformSupport<GpuMemoryBufferTestPlatform> platform;
 
   SkImageInfo image_info =
       SkImageInfo::MakeN32(10, 10, kPremul_SkAlphaType, nullptr);
@@ -277,7 +263,7 @@ TEST_F(CanvasResourceTest, MakeUnacceleratedFromUnacceleratedResourceIsNoOp) {
 }
 
 TEST_F(CanvasResourceTest, MakeUnacceleratedFromAcceleratedResource) {
-  ScopedTestingPlatformSupport<FakeCanvasResourcePlatformSupport> platform;
+  ScopedTestingPlatformSupport<GpuMemoryBufferTestPlatform> platform;
 
   SkImageInfo image_info =
       SkImageInfo::MakeN32(10, 10, kPremul_SkAlphaType, nullptr);
@@ -315,7 +301,7 @@ void PaintToCanvasResource(CanvasResource* canvas_resource) {
 
 TEST_F(CanvasResourceTest, RamGpuMemoryBuffer_ResourcePreparation) {
   testing::InSequence s;
-  ScopedTestingPlatformSupport<FakeCanvasResourcePlatformSupport> platform;
+  ScopedTestingPlatformSupport<GpuMemoryBufferTestPlatform> platform;
 
   EXPECT_TRUE(!!context_provider_wrapper_);
   constexpr GLuint image_id = 1;
@@ -355,7 +341,7 @@ TEST_F(CanvasResourceTest, RamGpuMemoryBuffer_ResourcePreparation) {
 
 TEST_F(CanvasResourceTest, GpuMemoryBuffer_accelerated_8bit) {
   testing::InSequence s;
-  ScopedTestingPlatformSupport<FakeCanvasResourcePlatformSupport> platform;
+  ScopedTestingPlatformSupport<GpuMemoryBufferTestPlatform> platform;
   EXPECT_TRUE(!!context_provider_wrapper_);
 
   constexpr GLuint image_id = 1;
@@ -381,7 +367,7 @@ TEST_F(CanvasResourceTest, GpuMemoryBuffer_accelerated_8bit) {
 
 TEST_F(CanvasResourceTest, GpuMemoryBuffer_accelerated_float16) {
   testing::InSequence s;
-  ScopedTestingPlatformSupport<FakeCanvasResourcePlatformSupport> platform;
+  ScopedTestingPlatformSupport<GpuMemoryBufferTestPlatform> platform;
   EXPECT_TRUE(!!context_provider_wrapper_);
 
   constexpr GLuint image_id = 1;
@@ -409,7 +395,7 @@ TEST_F(CanvasResourceTest, GpuMemoryBuffer_accelerated_float16) {
 
 TEST_F(CanvasResourceTest, PrepareTransferableResource_SharedBitmap) {
   testing::InSequence s;
-  ScopedTestingPlatformSupport<FakeCanvasResourcePlatformSupport> platform;
+  ScopedTestingPlatformSupport<GpuMemoryBufferTestPlatform> platform;
   scoped_refptr<CanvasResource> canvas_resource =
       CanvasResourceSharedBitmap::Create(IntSize(10, 10), CanvasColorParams(),
                                          nullptr,  // CanvasResourceProvider

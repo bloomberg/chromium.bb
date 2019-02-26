@@ -48,8 +48,8 @@
 
 #include "third_party/blink/public/platform/task_type.h"
 #include "third_party/blink/renderer/core/animation/scroll_timeline.h"
+#include "third_party/blink/renderer/core/css/css_property_names.h"
 #include "third_party/blink/renderer/core/css/pseudo_style_request.h"
-#include "third_party/blink/renderer/core/css_property_names.h"
 #include "third_party/blink/renderer/core/dom/document.h"
 #include "third_party/blink/renderer/core/dom/shadow_root.h"
 #include "third_party/blink/renderer/core/frame/local_frame.h"
@@ -85,11 +85,11 @@
 #include "third_party/blink/renderer/platform/bindings/v8_per_isolate_data.h"
 #include "third_party/blink/renderer/platform/geometry/float_point_3d.h"
 #include "third_party/blink/renderer/platform/geometry/float_rect.h"
+#include "third_party/blink/renderer/platform/geometry/length_functions.h"
 #include "third_party/blink/renderer/platform/graphics/compositor_filter_operations.h"
 #include "third_party/blink/renderer/platform/graphics/filters/filter.h"
 #include "third_party/blink/renderer/platform/graphics/paint/geometry_mapper.h"
 #include "third_party/blink/renderer/platform/instrumentation/tracing/trace_event.h"
-#include "third_party/blink/renderer/platform/length_functions.h"
 #include "third_party/blink/renderer/platform/runtime_enabled_features.h"
 #include "third_party/blink/renderer/platform/transforms/transform_state.h"
 #include "third_party/blink/renderer/platform/transforms/transformation_matrix.h"
@@ -117,7 +117,7 @@ struct SameSizeAsPaintLayer : DisplayItemClient {
   LayoutUnit layout_units[4];
   IntSize size;
   Persistent<PaintLayerScrollableArea> scrollable_area;
-  LayoutRect previous_dirty_rect;
+  CullRect previous_cull_rect;
 };
 
 static_assert(sizeof(PaintLayer) == sizeof(SameSizeAsPaintLayer),
@@ -125,8 +125,6 @@ static_assert(sizeof(PaintLayer) == sizeof(SameSizeAsPaintLayer),
 #endif
 
 }  // namespace
-
-using namespace HTMLNames;
 
 PaintLayerRareData::PaintLayerRareData()
     : enclosing_pagination_layer(nullptr),
@@ -247,7 +245,7 @@ PaintLayerCompositor* PaintLayer::Compositor() const {
 void PaintLayer::ContentChanged(ContentChangeType change_type) {
   // updateLayerCompositingState will query compositingReasons for accelerated
   // overflow scrolling.  This is tripped by
-  // LayoutTests/compositing/content-changed-chicken-egg.html
+  // web_tests/compositing/content-changed-chicken-egg.html
   DisableCompositingQueryAsserts disabler;
 
   if (Compositor()) {
@@ -282,15 +280,6 @@ bool PaintLayer::PaintsWithFilters() const {
          GetCompositingState() != kPaintsIntoOwnBacking;
 }
 
-bool PaintLayer::PaintsWithBackdropFilters() const {
-  if (!GetLayoutObject().HasBackdropFilter())
-    return false;
-
-  // https://code.google.com/p/chromium/issues/detail?id=343759
-  DisableCompositingQueryAsserts disabler;
-  return !GetCompositedLayerMapping() ||
-         GetCompositingState() != kPaintsIntoOwnBacking;
-}
 
 LayoutSize PaintLayer::SubpixelAccumulation() const {
   return rare_data_ ? rare_data_->subpixel_accumulation : LayoutSize();
@@ -1673,7 +1662,7 @@ bool PaintLayer::HasOverflowControls() const {
 void PaintLayer::AppendSingleFragmentIgnoringPagination(
     PaintLayerFragments& fragments,
     const PaintLayer* root_layer,
-    const LayoutRect* dirty_rect,
+    const CullRect* cull_rect,
     OverlayScrollbarClipBehavior overlay_scrollbar_clip_behavior,
     ShouldRespectOverflowClipType respect_overflow_clip,
     const LayoutPoint* offset_from_root,
@@ -1685,7 +1674,7 @@ void PaintLayer::AppendSingleFragmentIgnoringPagination(
       respect_overflow_clip, sub_pixel_accumulation);
   Clipper(kUseGeometryMapper)
       .CalculateRects(clip_rects_context, &GetLayoutObject().FirstFragment(),
-                      dirty_rect, fragment.layer_bounds,
+                      cull_rect, fragment.layer_bounds,
                       fragment.background_rect, fragment.foreground_rect,
                       offset_from_root);
   fragment.root_fragment_data = &root_layer->GetLayoutObject().FirstFragment();
@@ -1714,7 +1703,7 @@ bool PaintLayer::ShouldFragmentCompositedBounds(
 void PaintLayer::CollectFragments(
     PaintLayerFragments& fragments,
     const PaintLayer* root_layer,
-    const LayoutRect* dirty_rect,
+    const CullRect* cull_rect,
     OverlayScrollbarClipBehavior overlay_scrollbar_clip_behavior,
     ShouldRespectOverflowClipType respect_overflow_clip,
     const LayoutPoint* offset_from_root,
@@ -1771,20 +1760,20 @@ void PaintLayer::CollectFragments(
         overlay_scrollbar_clip_behavior, respect_overflow_clip,
         sub_pixel_accumulation);
 
-    base::Optional<LayoutRect> fragment_dirty_rect;
-    if (dirty_rect) {
-      // |dirty_rect| is in the coordinate space of |root_layer| (i.e. the
+    base::Optional<CullRect> fragment_cull_rect;
+    if (cull_rect) {
+      // |cull_rect| is in the coordinate space of |root_layer| (i.e. the
       // space of |root_layer|'s first fragment). Map the rect to the space of
       // the current root fragment.
-      fragment_dirty_rect = *dirty_rect;
-      first_root_fragment_data.MapRectToFragment(*root_fragment_data,
-                                                 *fragment_dirty_rect);
+      auto rect = cull_rect->Rect();
+      first_root_fragment_data.MapRectToFragment(*root_fragment_data, rect);
+      fragment_cull_rect.emplace(rect);
     }
 
     Clipper(kUseGeometryMapper)
         .CalculateRects(
             clip_rects_context, fragment_data,
-            fragment_dirty_rect ? &*fragment_dirty_rect : nullptr,
+            fragment_cull_rect ? &*fragment_cull_rect : nullptr,
             fragment.layer_bounds, fragment.background_rect,
             fragment.foreground_rect,
             offset_from_root_can_be_used ? offset_from_root : nullptr);
@@ -2509,7 +2498,8 @@ bool PaintLayer::HitTestClippedOutByClipPath(
   float inverse_zoom = 1 / GetLayoutObject().StyleRef().EffectiveZoom();
   point.Scale(inverse_zoom, inverse_zoom);
   reference_box.Scale(inverse_zoom);
-  return !clipper->HitTestClipContent(reference_box, point);
+  HitTestLocation location(point);
+  return !clipper->HitTestClipContent(reference_box, location);
 }
 
 bool PaintLayer::IntersectsDamageRect(
@@ -2755,25 +2745,6 @@ GraphicsLayer* PaintLayer::GraphicsLayerBacking(const LayoutObject* obj) const {
   }
 }
 
-BackgroundPaintLocation PaintLayer::GetBackgroundPaintLocation(
-    uint32_t* reasons) const {
-  BackgroundPaintLocation location;
-  bool may_have_scrolling_layers_without_scrolling = IsRootLayer();
-  if (!ScrollsOverflow() && !may_have_scrolling_layers_without_scrolling) {
-    location = kBackgroundPaintInGraphicsLayer;
-  } else {
-    // If we care about LCD text, paint root backgrounds into scrolling contents
-    // layer even if style suggests otherwise. (For non-root scrollers, we just
-    // avoid compositing - see PLSA::ComputeNeedsCompositedScrolling.)
-    DCHECK(Compositor());
-    if (IsRootLayer() && !Compositor()->PreferCompositingToLCDTextEnabled())
-      location = kBackgroundPaintInScrollingContents;
-    else
-      location = GetLayoutObject().GetBackgroundPaintLocation(reasons);
-  }
-  return location;
-}
-
 void PaintLayer::EnsureCompositedLayerMapping() {
   if (rare_data_ && rare_data_->composited_layer_mapping)
     return;
@@ -2877,7 +2848,8 @@ bool PaintLayer::CompositesWithOpacity() const {
 }
 
 bool PaintLayer::BackgroundIsKnownToBeOpaqueInRect(
-    const LayoutRect& local_rect) const {
+    const LayoutRect& local_rect,
+    bool should_check_children) const {
   if (PaintsWithTransparency(kGlobalPaintNormalPhase))
     return false;
 
@@ -2908,6 +2880,9 @@ bool PaintLayer::BackgroundIsKnownToBeOpaqueInRect(
   // into this layer.
   if (GetLayoutObject().BackgroundIsKnownToBeOpaqueInRect(local_rect))
     return true;
+
+  if (!should_check_children)
+    return false;
 
   // We can't consult child layers if we clip, since they might cover
   // parts of the rect that are clipped out.
@@ -2942,7 +2917,7 @@ bool PaintLayer::ChildBackgroundIsKnownToBeOpaqueInRect(
     child_layer->ConvertToLayerCoords(this, child_offset);
     child_local_rect.MoveBy(-child_offset);
 
-    if (child_layer->BackgroundIsKnownToBeOpaqueInRect(child_local_rect))
+    if (child_layer->BackgroundIsKnownToBeOpaqueInRect(child_local_rect, true))
       return true;
   }
   return false;
@@ -3089,15 +3064,8 @@ bool PaintLayer::AttemptDirectCompositingUpdate(
   if (!rare_data_ || !rare_data_->composited_layer_mapping)
     return false;
 
-  // To cut off almost all the work in the compositing update for
-  // this case, we treat inline transforms has having assumed overlap
-  // (similar to how we treat animated transforms). Notice that we read
-  // CompositingReasonInlineTransform from the m_compositingReasons, which
-  // means that the inline transform actually triggered assumed overlap in
-  // the overlap map.
-  if (diff.TransformChanged() &&
-      (!rare_data_ || !(rare_data_->compositing_reasons &
-                        CompositingReason::kInlineTransform)))
+  // If a transform changed, we can't use the fast path.
+  if (diff.TransformChanged())
     return false;
 
   // We composite transparent Layers differently from non-transparent
@@ -3173,7 +3141,8 @@ void PaintLayer::StyleDidChange(StyleDifference diff,
       SetNeedsCompositingInputsUpdate();
   }
 
-  if (diff.NeedsLayout())
+  // HasAlphaChanged can affect whether a composited layer is opaque.
+  if (diff.NeedsLayout() || diff.HasAlphaChanged())
     SetNeedsCompositingInputsUpdate();
 
   // A scroller that changes background color might become opaque or not
@@ -3263,9 +3232,19 @@ void PaintLayer::UpdateCompositorFilterOperationsForFilter(
   if (!operations.IsEmpty() && !filter_on_effect_node_dirty_ &&
       reference_box == operations.ReferenceBox())
     return;
-
   operations =
       FilterEffectBuilder(reference_box, zoom).BuildFilterOperations(filter);
+}
+
+void PaintLayer::UpdateCompositorFilterOperationsForBackdropFilter(
+    CompositorFilterOperations& operations) const {
+  const auto& style = GetLayoutObject().StyleRef();
+  float zoom = style.EffectiveZoom();
+  auto filter = FilterOperationsIncludingReflection();
+  FloatRect reference_box = FilterReferenceBox(filter, zoom);
+  if (!operations.IsEmpty() && reference_box == operations.ReferenceBox())
+    return;
+  operations = CreateCompositorFilterOperationsForBackdropFilter();
 }
 
 CompositorFilterOperations
@@ -3279,8 +3258,10 @@ PaintLayer::CreateCompositorFilterOperationsForBackdropFilter() const {
 
 PaintLayerResourceInfo& PaintLayer::EnsureResourceInfo() {
   PaintLayerRareData& rare_data = EnsureRareData();
-  if (!rare_data.resource_info)
-    rare_data.resource_info = new PaintLayerResourceInfo(this);
+  if (!rare_data.resource_info) {
+    rare_data.resource_info =
+        MakeGarbageCollected<PaintLayerResourceInfo>(this);
+  }
   return *rare_data.resource_info;
 }
 

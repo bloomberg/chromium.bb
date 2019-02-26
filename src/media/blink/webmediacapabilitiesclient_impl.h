@@ -21,8 +21,9 @@ class MEDIA_BLINK_EXPORT WebMediaCapabilitiesClientImpl
 
   // Implementation of blink::WebMediaCapabilitiesClient.
   void DecodingInfo(
-      const blink::WebMediaConfiguration&,
-      std::unique_ptr<blink::WebMediaCapabilitiesQueryCallbacks>) override;
+      const blink::WebMediaDecodingConfiguration&,
+      std::unique_ptr<blink::WebMediaCapabilitiesDecodingInfoCallbacks>)
+      override;
 
   void BindVideoDecodePerfHistoryForTests(
       mojom::VideoDecodePerfHistoryPtr decode_history_ptr);

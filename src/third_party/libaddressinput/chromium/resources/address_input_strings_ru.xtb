@@ -3,7 +3,7 @@
 <translationbundle lang="ru">
 <translation id="1340068511406764697">Укажите почтовый индекс, например <ph name="EXAMPLE" />. Забыли его? Нажмите <ph name="BEGIN_LINK" />здесь<ph name="END_LINK" />.</translation>
 <translation id="2053553514270667976">Почтовый индекс</translation>
-<translation id="2096368010154057602">Округ</translation>
+<translation id="2096368010154057602">Департамент</translation>
 <translation id="2577522251608256362">Район</translation>
 <translation id="3050787670591910834">Укажите почтовый индекс, например <ph name="EXAMPLE" />.</translation>
 <translation id="3174168572213147020">Остров</translation>
@@ -27,10 +27,10 @@
 <translation id="6735419622867539268"><ph name="FIELD_VALUE" /> – недопустимое значение для этого поля.</translation>
 <translation id="6768780634682399515">Код Eircode</translation>
 <translation id="6777217372746654521">В качестве адреса указан абонентский ящик. Укажите фактический адрес.</translation>
-<translation id="6839929833149231406">Административный район</translation>
+<translation id="6839929833149231406">Район</translation>
 <translation id="684852933191805996">Таунленд</translation>
-<translation id="6970216967273061347">Район</translation>
-<translation id="7087282848513945231">Графство</translation>
+<translation id="6970216967273061347">Округ</translation>
+<translation id="7087282848513945231">Округ</translation>
 <translation id="7139724024395191329">Эмират</translation>
 <translation id="7393381084163773901">Адрес</translation>
 <translation id="7602447984296396718">Почтовый индекс не соответствует адресу.</translation>

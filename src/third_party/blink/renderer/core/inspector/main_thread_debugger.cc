@@ -82,7 +82,7 @@ LocalFrame* ToFrame(ExecutionContext* context) {
   if (auto* document = DynamicTo<Document>(context))
     return document->GetFrame();
   if (context->IsMainThreadWorkletGlobalScope())
-    return ToWorkletGlobalScope(context)->GetFrame();
+    return To<WorkletGlobalScope>(context)->GetFrame();
   return nullptr;
 }
 }
@@ -179,11 +179,11 @@ void MainThreadDebugger::ExceptionThrown(ExecutionContext* context,
     script_state =
         event->World() ? ToScriptState(frame, *event->World()) : nullptr;
   } else if (context->IsMainThreadWorkletGlobalScope()) {
-    frame = ToWorkletGlobalScope(context)->GetFrame();
+    auto* scope = To<WorkletGlobalScope>(context);
+    frame = scope->GetFrame();
     if (!frame)
       return;
-    script_state =
-        ToWorkletGlobalScope(context)->ScriptController()->GetScriptState();
+    script_state = scope->ScriptController()->GetScriptState();
   } else {
     NOTREACHED();
   }

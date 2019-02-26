@@ -6,7 +6,7 @@
 <!-- The toolbar containing the URL bar, back button, and NTP button.
 -->
 
-<org.chromium.chrome.browser.toolbar.ToolbarTablet
+<org.chromium.chrome.browser.toolbar.top.ToolbarTablet
     xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
@@ -22,7 +22,7 @@
         android:layout_height="match_parent"
         android:orientation="horizontal" >
 
-        <org.chromium.chrome.browser.toolbar.HomePageButton
+        <org.chromium.chrome.browser.toolbar.HomeButton
             android:id="@+id/home_button"
             style="@style/ToolbarButton"
             android:src="@drawable/btn_toolbar_home"
@@ -30,14 +30,14 @@
             android:visibility="gone"
             app:tint="@color/dark_mode_tint" />
 
-        <android.support.v7.widget.AppCompatImageButton
+        <org.chromium.ui.widget.ChromeImageButton
             android:id="@+id/back_button"
             style="@style/ToolbarButton"
             android:src="@drawable/btn_back"
             android:contentDescription="@string/accessibility_toolbar_btn_back"
             app:tint="@color/dark_mode_tint" />
 
-        <android.support.v7.widget.AppCompatImageButton
+        <org.chromium.ui.widget.ChromeImageButton
             android:id="@+id/forward_button"
             style="@style/ToolbarButton"
             android:src="@drawable/btn_forward"
@@ -45,7 +45,7 @@
             app:tint="@color/dark_mode_tint" />
 
         <!-- The src will be set in onFinishInflate. -->
-        <android.support.v7.widget.AppCompatImageButton
+        <org.chromium.ui.widget.ChromeImageButton
             android:id="@+id/refresh_button"
             style="@style/ToolbarButton"
             android:contentDescription="@string/accessibility_btn_refresh"
@@ -73,7 +73,7 @@
             android:layout_height="wrap_content"
             android:id="@+id/menu_button_wrapper" >
 
-            <android.support.v7.widget.AppCompatImageButton
+            <org.chromium.ui.widget.ChromeImageButton
                 android:id="@+id/menu_button"
                 style="@style/ToolbarMenuButtonTablet"
                 android:src="@drawable/ic_more_vert_black_24dp"
@@ -92,4 +92,4 @@
 
         </org.chromium.chrome.browser.toolbar.MenuButton>
     </LinearLayout>
-</org.chromium.chrome.browser.toolbar.ToolbarTablet>
+</org.chromium.chrome.browser.toolbar.top.ToolbarTablet>

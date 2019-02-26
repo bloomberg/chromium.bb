@@ -36,6 +36,7 @@ function Runner(outerContainerId, opt_config) {
   this.distanceRan = 0;
 
   this.highestScore = 0;
+  this.syncHighestScore = false;
 
   this.time = 0;
   this.runningTime = 0;
@@ -69,10 +70,12 @@ function Runner(outerContainerId, opt_config) {
     this.setupDisabledRunner();
   } else {
     this.loadImages();
+
+    window['initializeEasterEggHighScore'] =
+        this.initializeHighScore.bind(this);
   }
 }
 window['Runner'] = Runner;
-
 
 /**
  * Default game width.
@@ -779,6 +782,23 @@ Runner.prototype = {
   },
 
   /**
+   * Set the initial high score as stored in the user's profile.
+   * @param {integer} highScore
+   */
+  initializeHighScore: function(highScore) {
+    this.syncHighestScore = true;
+    highScore = Math.ceil(highScore);
+    if (highScore < this.highestScore) {
+      if (window.errorPageController) {
+        errorPageController.updateEasterEggHighScore(this.highestScore);
+      }
+      return;
+    }
+    this.highestScore = highScore;
+    this.distanceMeter.setHighScore(this.highestScore);
+  },
+
+  /**
    * Game over state.
    */
   gameOver: function() {
@@ -804,6 +824,11 @@ Runner.prototype = {
     if (this.distanceRan > this.highestScore) {
       this.highestScore = Math.ceil(this.distanceRan);
       this.distanceMeter.setHighScore(this.highestScore);
+
+      // Store the new high score in the profile.
+      if (this.syncHighestScore && window.errorPageController) {
+        errorPageController.updateEasterEggHighScore(this.highestScore);
+      }
     }
 
     // Reset the time clock.

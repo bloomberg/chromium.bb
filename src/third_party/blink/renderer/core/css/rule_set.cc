@@ -38,15 +38,12 @@
 #include "third_party/blink/renderer/core/css/style_sheet_contents.h"
 #include "third_party/blink/renderer/core/html/track/text_track_cue.h"
 #include "third_party/blink/renderer/core/html_names.h"
-#include "third_party/blink/renderer/platform/heap/heap_terminated_array_builder.h"
 #include "third_party/blink/renderer/platform/instrumentation/tracing/trace_event.h"
 #include "third_party/blink/renderer/platform/weborigin/security_origin.h"
 
 #include "third_party/blink/renderer/platform/wtf/terminated_array_builder.h"
 
 namespace blink {
-
-using namespace HTMLNames;
 
 static inline PropertyWhitelistType DeterminePropertyWhitelistType(
     const AddRuleFlags add_rule_flags,
@@ -61,6 +58,20 @@ static inline PropertyWhitelistType DeterminePropertyWhitelistType(
       return kPropertyWhitelistFirstLetter;
   }
   return kPropertyWhitelistNone;
+}
+
+RuleData* RuleData::MaybeCreate(StyleRule* rule,
+                                unsigned selector_index,
+                                unsigned position,
+                                AddRuleFlags add_rule_flags) {
+  // The selector index field in RuleData is only 13 bits so we can't support
+  // selectors at index 8192 or beyond.
+  // See https://crbug.com/804179
+  if (selector_index >= (1 << RuleData::kSelectorIndexBits))
+    return nullptr;
+  if (position >= (1 << RuleData::kPositionBits))
+    return nullptr;
+  return new RuleData(rule, selector_index, position, add_rule_flags);
 }
 
 RuleData::RuleData(StyleRule* rule,
@@ -125,6 +136,7 @@ static void ExtractSelectorValues(const CSSSelector* selector,
         case CSSSelector::kPseudoPart:
         case CSSSelector::kPseudoHost:
         case CSSSelector::kPseudoHostContext:
+        case CSSSelector::kPseudoSpatialNavigationFocus:
           pseudo_type = selector->GetPseudoType();
           break;
         case CSSSelector::kPseudoWebKitCustomElement:
@@ -196,6 +208,9 @@ bool RuleSet::FindBestRuleSetAndAdd(const CSSSelector& component,
     case CSSSelector::kPseudoWebkitAnyLink:
       link_pseudo_class_rules_.push_back(rule_data);
       return true;
+    case CSSSelector::kPseudoSpatialNavigationFocus:
+      spatial_navigation_focus_class_rules_.push_back(rule_data);
+      return true;
     case CSSSelector::kPseudoFocus:
       focus_pseudo_class_rules_.push_back(rule_data);
       return true;
@@ -228,13 +243,13 @@ bool RuleSet::FindBestRuleSetAndAdd(const CSSSelector& component,
 void RuleSet::AddRule(StyleRule* rule,
                       unsigned selector_index,
                       AddRuleFlags add_rule_flags) {
-  // The selector index field in RuleData is only 13 bits so we can't support
-  // selectors at index 8192 or beyond.
-  // See https://crbug.com/804179
-  if (selector_index >= 8192)
-    return;
   RuleData* rule_data =
-      new RuleData(rule, selector_index, rule_count_++, add_rule_flags);
+      RuleData::MaybeCreate(rule, selector_index, rule_count_, add_rule_flags);
+  if (!rule_data) {
+    // This can happen if selector_index or position is out of range.
+    return;
+  }
+  ++rule_count_;
   if (features_.CollectFeaturesFromRuleData(rule_data) ==
       RuleFeatureSet::kSelectorNeverMatches)
     return;
@@ -254,6 +269,11 @@ void RuleSet::AddPageRule(StyleRulePage* rule) {
 void RuleSet::AddFontFaceRule(StyleRuleFontFace* rule) {
   EnsurePendingRules();  // So that font_face_rules_.ShrinkToFit() gets called.
   font_face_rules_.push_back(rule);
+}
+
+void RuleSet::AddFontFeatureValuesRule(StyleRuleFontFeatureValues* rule) {
+  EnsurePendingRules();
+  font_feature_values_rules_.push_back(rule);
 }
 
 void RuleSet::AddKeyframesRule(StyleRuleKeyframes* rule) {
@@ -298,6 +318,8 @@ void RuleSet::AddChildRules(const HeapVector<Member<StyleRuleBase>>& rules,
         AddChildRules(media_rule->ChildRules(), medium, add_rule_flags);
     } else if (rule->IsFontFaceRule()) {
       AddFontFaceRule(ToStyleRuleFontFace(rule));
+    } else if (rule->IsFontFeatureValuesRule()) {
+      AddFontFeatureValuesRule(ToStyleRuleFontFeatureValues(rule));
     } else if (rule->IsKeyframesRule()) {
       AddKeyframesRule(ToStyleRuleKeyframes(rule));
     } else if (rule->IsSupportsRule() &&
@@ -347,7 +369,7 @@ void RuleSet::CompactPendingRules(PendingRuleMap& pending_map,
     Member<HeapVector<Member<const RuleData>>>& rules =
         compact_map.insert(item.key, nullptr).stored_value->value;
     if (!rules) {
-      rules = new HeapVector<Member<const RuleData>>();
+      rules = MakeGarbageCollected<HeapVector<Member<const RuleData>>>();
       rules->ReserveInitialCapacity(pending_rules->size());
     } else {
       rules->ReserveCapacity(pending_rules->size());
@@ -370,10 +392,12 @@ void RuleSet::CompactRules() {
   link_pseudo_class_rules_.ShrinkToFit();
   cue_pseudo_rules_.ShrinkToFit();
   focus_pseudo_class_rules_.ShrinkToFit();
+  spatial_navigation_focus_class_rules_.ShrinkToFit();
   universal_rules_.ShrinkToFit();
   shadow_host_rules_.ShrinkToFit();
   page_rules_.ShrinkToFit();
   font_face_rules_.ShrinkToFit();
+  font_feature_values_rules_.ShrinkToFit();
   keyframes_rules_.ShrinkToFit();
   deep_combinator_or_shadow_pseudo_rules_.ShrinkToFit();
   part_pseudo_rules_.ShrinkToFit();
@@ -404,10 +428,12 @@ void RuleSet::Trace(blink::Visitor* visitor) {
   visitor->Trace(link_pseudo_class_rules_);
   visitor->Trace(cue_pseudo_rules_);
   visitor->Trace(focus_pseudo_class_rules_);
+  visitor->Trace(spatial_navigation_focus_class_rules_);
   visitor->Trace(universal_rules_);
   visitor->Trace(shadow_host_rules_);
   visitor->Trace(page_rules_);
   visitor->Trace(font_face_rules_);
+  visitor->Trace(font_feature_values_rules_);
   visitor->Trace(keyframes_rules_);
   visitor->Trace(deep_combinator_or_shadow_pseudo_rules_);
   visitor->Trace(part_pseudo_rules_);

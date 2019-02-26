@@ -10,11 +10,12 @@
 #include "ash/app_list/test/app_list_test_view_delegate.h"
 #include "ash/app_list/test/test_search_result.h"
 #include "ash/app_list/views/search_result_view.h"
-#include "ash/public/cpp/app_list/answer_card_contents_registry.h"
 #include "ash/public/cpp/app_list/app_list_constants.h"
 #include "base/macros.h"
 #include "base/strings/utf_string_conversions.h"
-#include "base/unguessable_token.h"
+#include "mojo/public/cpp/bindings/binding.h"
+#include "mojo/public/cpp/bindings/strong_binding.h"
+#include "services/content/public/cpp/test/fake_navigable_contents.h"
 #include "ui/accessibility/ax_node_data.h"
 #include "ui/views/background.h"
 #include "ui/views/test/views_test_base.h"
@@ -37,31 +38,35 @@ class SearchResultAnswerCardViewTest : public views::ViewsTestBase {
 
     search_card_view_ = std::make_unique<views::View>();
 
+    fake_card_contents_.set_default_response_headers(
+        SearchResultAnswerCardView::CreateAnswerCardResponseHeadersForTest(
+            "weather", kResultTitle));
+
     result_container_view_ = new SearchResultAnswerCardView(&view_delegate_);
     search_card_view_->AddChildView(result_container_view_);
     result_container_view_->SetResults(
         view_delegate_.GetSearchModel()->results());
 
-    result_view_ = std::make_unique<views::View>();
-    result_view_->set_owned_by_client();
-    token_ = contents_registry_.Register(result_view_.get(),
-                                         /*contents_native_view=*/nullptr);
-
     SetUpSearchResult();
   }
 
  protected:
-  void SetUpSearchResult() {
-    SearchModel::SearchResults* results = GetResults();
-    std::unique_ptr<TestSearchResult> result =
-        std::make_unique<TestSearchResult>();
+  std::unique_ptr<TestSearchResult> CreateAnswerCardResult() {
+    const GURL kFakeQueryUrl = GURL("https://www.google.com/coac?q=fake");
+    auto result = std::make_unique<TestSearchResult>();
     result->set_display_type(ash::SearchResultDisplayType::kCard);
     result->set_title(base::UTF8ToUTF16(kResultTitle));
-    result->set_answer_card_contents_token(token_);
     result->set_display_score(kDisplayScore);
-    results->Add(std::move(result));
+    result->set_query_url(kFakeQueryUrl);
+    return result;
+  }
+
+  void SetUpSearchResult() {
+    GetResults()->Add(CreateAnswerCardResult());
 
     // Adding results will schedule Update().
+    view_delegate_.fake_navigable_contents_factory()
+        .WaitForAndBindNextContentsRequest(&fake_card_contents_);
     RunPendingMessages();
   }
 
@@ -100,7 +105,7 @@ class SearchResultAnswerCardViewTest : public views::ViewsTestBase {
     result_container_view_->child_at(0)->GetAccessibleNodeData(node_data);
   }
 
-  views::View* result_view() const { return result_view_.get(); }
+  AppListTestViewDelegate& view_delegate() { return view_delegate_; }
 
  private:
   AppListTestViewDelegate view_delegate_;
@@ -111,25 +116,17 @@ class SearchResultAnswerCardViewTest : public views::ViewsTestBase {
   // Result container that we are testing. It's a child of search_card_view_.
   // Owned by the view hierarchy.
   SearchResultAnswerCardView* result_container_view_;
-  // View sent within the search result. May be shown within
-  // result_container_view_. Has set_owned_by_client() called.
-  std::unique_ptr<views::View> result_view_;
 
-  AnswerCardContentsRegistry contents_registry_;
-  base::UnguessableToken token_;
+  // Fake NavigableContents implementation to back answer card navigations.
+  content::FakeNavigableContents fake_card_contents_;
 
   DISALLOW_COPY_AND_ASSIGN(SearchResultAnswerCardViewTest);
 };
 
 TEST_F(SearchResultAnswerCardViewTest, Basic) {
   EXPECT_EQ(kDisplayScore, GetContainerScore());
-
   EXPECT_EQ(1, GetResultCountFromView());
-
-  // Result view should be added to the hierarchy.
-  EXPECT_EQ(search_card_view(), result_view()->parent()->parent()->parent());
   ASSERT_TRUE(search_card_view()->visible());
-
   EXPECT_EQ(1, GetYSize());
 }
 
@@ -149,10 +146,39 @@ TEST_F(SearchResultAnswerCardViewTest, SpokenFeedback) {
 TEST_F(SearchResultAnswerCardViewTest, DeleteResult) {
   DeleteResult();
   EXPECT_EQ(0UL, GetResults()->item_count());
-  EXPECT_EQ(nullptr, result_view()->parent());
   EXPECT_EQ(0, GetYSize());
   ASSERT_FALSE(search_card_view()->visible());
   EXPECT_EQ(0, GetContainerScore());
+}
+
+TEST_F(SearchResultAnswerCardViewTest, RemoveEquivalent) {
+  // Ensures no results.
+  DeleteResult();
+
+  // Creates a result that will be removed later when answer card loads.
+  constexpr char kEquivalentResultId[] = "equivalent-id";
+  auto result = std::make_unique<TestSearchResult>();
+  result->set_result_id(kEquivalentResultId);
+  result->set_display_type(ash::SearchResultDisplayType::kList);
+  result->set_display_score(kDisplayScore);
+  GetResults()->Add(std::move(result));
+
+  // Creates an answer card result and associated with an equivalent result id.
+  result = CreateAnswerCardResult();
+  result->set_equivalent_result_id(kEquivalentResultId);
+  GetResults()->Add(std::move(result));
+
+  EXPECT_EQ(2u, GetResults()->item_count());
+  EXPECT_TRUE(
+      view_delegate().GetSearchModel()->FindSearchResult(kEquivalentResultId));
+
+  // Wait for the answer card result to load.
+  RunPendingMessages();
+
+  // Equivalent result should be removed.
+  EXPECT_EQ(1u, GetResults()->item_count());
+  EXPECT_FALSE(
+      view_delegate().GetSearchModel()->FindSearchResult(kEquivalentResultId));
 }
 
 }  // namespace test

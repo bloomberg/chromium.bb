@@ -24,12 +24,6 @@
 
 namespace customtabs {
 
-namespace {
-
-constexpr int kMaxResponseSize = 100 * 1024;
-
-}  // namespace
-
 // static
 void DetachedResourceRequest::CreateAndStart(
     content::BrowserContext* browser_context,

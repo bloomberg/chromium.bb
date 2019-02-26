@@ -137,7 +137,8 @@ GearMenuController.prototype.refreshRemainingSpace_ = function(
   // file systems.
   if (currentVolumeInfo.volumeType == VolumeManagerCommon.VolumeType.PROVIDED ||
       currentVolumeInfo.volumeType ==
-          VolumeManagerCommon.VolumeType.MEDIA_VIEW) {
+          VolumeManagerCommon.VolumeType.MEDIA_VIEW ||
+      currentVolumeInfo.volumeType == VolumeManagerCommon.VolumeType.ARCHIVE) {
     this.gearMenu_.setSpaceInfo(null, false);
     return;
   }
@@ -160,10 +161,5 @@ GearMenuController.prototype.onPreferencesChanged_ = function() {
       this.gearMenu_.syncButton.setAttribute('checked', '');
     else
       this.gearMenu_.syncButton.removeAttribute('checked');
-
-    if (!prefs.hostedFilesDisabled)
-      this.gearMenu_.hostedButton.setAttribute('checked', '');
-    else
-      this.gearMenu_.hostedButton.removeAttribute('checked');
   }.bind(this));
 };

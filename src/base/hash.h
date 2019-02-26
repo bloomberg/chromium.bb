@@ -47,7 +47,8 @@ inline size_t HashInts(T1 value1, T2 value2) {
   if (sizeof(T1) > sizeof(uint32_t) || (sizeof(T2) > sizeof(uint32_t)))
     return HashInts64(value1, value2);
 
-  return HashInts32(value1, value2);
+  return HashInts32(static_cast<uint32_t>(value1),
+                    static_cast<uint32_t>(value2));
 }
 
 // A templated hasher for pairs of integer types. Example:

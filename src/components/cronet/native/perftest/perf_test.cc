@@ -9,9 +9,11 @@
 #include "base/json/json_reader.h"
 #include "base/json/json_writer.h"
 #include "base/logging.h"
-#include "base/message_loop/message_loop.h"
+#include "base/memory/scoped_refptr.h"
 #include "base/run_loop.h"
+#include "base/single_thread_task_runner.h"
 #include "base/strings/stringprintf.h"
+#include "base/threading/thread_task_runner_handle.h"
 #include "base/values.h"
 #include "components/cronet/native/test/test_upload_data_provider.h"
 #include "components/cronet/native/test/test_url_request_callback.h"
@@ -126,7 +128,7 @@ class Callback : public cronet::test::TestUrlRequestCallback {
  public:
   Callback()
       : TestUrlRequestCallback(true),
-        message_loop_(base::MessageLoop::current()) {}
+        task_runner_(base::ThreadTaskRunnerHandle::Get()) {}
   ~Callback() override { Cronet_UrlRequestCallback_Destroy(callback_); }
 
   // Start one repeated UrlRequest. |iterations_completed| is used to keep track
@@ -228,11 +230,11 @@ class Callback : public cronet::test::TestUrlRequestCallback {
                  << Cronet_Error_error_code_get(error);
   }
 
-  // A simple executor that posts back to |message_loop_|.
+  // A simple executor that posts back to |task_runner_|.
   static void Execute(Cronet_ExecutorPtr self, Cronet_RunnablePtr runnable) {
     auto* callback =
         static_cast<Callback*>(Cronet_Executor_GetClientContext(self));
-    callback->message_loop_->task_runner()->PostTask(
+    callback->task_runner_->PostTask(
         FROM_HERE, cronet::test::RunnableWrapper::CreateOnceClosure(runnable));
   }
 
@@ -245,7 +247,7 @@ class Callback : public cronet::test::TestUrlRequestCallback {
   Cronet_EnginePtr engine_;
   Cronet_UrlRequestCallbackPtr callback_;
   Cronet_UploadDataProviderPtr cronet_upload_data_provider_ = nullptr;
-  base::MessageLoop* const message_loop_;
+  scoped_refptr<base::SingleThreadTaskRunner> task_runner_;
   base::RunLoop* run_loop_;
   size_t buffer_size_;
   std::unique_ptr<UploadDataProvider> upload_data_provider_;
@@ -380,7 +382,7 @@ class Benchmark {
     results_->SetInteger(name_, static_cast<int>(run_time.InMilliseconds()));
   }
 
-  base::MessageLoop message_loop_;
+  scoped_refptr<base::SingleThreadTaskRunner> task_runner_;
   const int iterations_;
   const int concurrency_;
   const size_t length_;

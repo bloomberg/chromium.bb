@@ -28,9 +28,9 @@
 #       of these change. If inputs is empty, the step will run only when the
 #       binary itself changes.
 #
-#   visibility
+#   depfile
 #   deps
-#   args   (all optional)
+#   visibility   (all optional)
 #       Same meaning as action/action_foreach.
 #
 #
@@ -85,6 +85,7 @@ template("compiled_action") {
                            [
                              "data_deps",
                              "deps",
+                             "depfile",
                              "inputs",
                              "outputs",
                              "testonly",
@@ -129,6 +130,7 @@ template("compiled_action_foreach") {
     forward_variables_from(invoker,
                            [
                              "deps",
+                             "depfile",
                              "inputs",
                              "outputs",
                              "sources",

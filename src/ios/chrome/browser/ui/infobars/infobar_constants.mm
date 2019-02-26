@@ -9,3 +9,9 @@
 #endif
 
 const int kInfobarBackgroundColor = 0xfafafa;
+
+// a11y identifier so that automation can tap on either infobar button
+NSString* const kConfirmInfobarButton1AccessibilityIdentifier =
+    @"confirmInfobarButton1AXID";
+NSString* const kConfirmInfobarButton2AccessibilityIdentifier =
+    @"confirmInfobarButton2AXID";

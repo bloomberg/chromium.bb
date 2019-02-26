@@ -80,6 +80,9 @@ _HIDDEN = 3  # optional key - presence indicates tool is hidden
 # Maps tool names to the tool's module.  Done as a list of (key, value) tuples
 # instead of a map to preserve ordering.
 _TOOLS = [
+  ['android2grd', {
+      _FACTORY: ToolAndroid2Grd,
+      _REQUIRES_INPUT : False }],
   ['build', { _FACTORY : ToolFactoryBuild, _REQUIRES_INPUT : True }],
   ['buildinfo', { _FACTORY : ToolFactoryBuildInfo, _REQUIRES_INPUT : True }],
   ['count', { _FACTORY : ToolFactoryCount, _REQUIRES_INPUT : True }],
@@ -99,9 +102,6 @@ _TOOLS = [
                   _REQUIRES_INPUT : False }],
   ['unit', { _FACTORY : ToolFactoryUnit, _REQUIRES_INPUT : False }],
   ['xmb', { _FACTORY : ToolFactoryXmb, _REQUIRES_INPUT : True }],
-  ['android2grd', {
-      _FACTORY: ToolAndroid2Grd,
-      _REQUIRES_INPUT : False }],
 ]
 
 
@@ -155,7 +155,7 @@ class Options(object):
 
   def ReadOptions(self, args):
     """Reads options from the start of args and returns the remainder."""
-    (opts, args) = getopt.getopt(args, 'vxi:p:h:')
+    (opts, args) = getopt.getopt(args, 'vxi:p:h:', ('help',))
     for (key, val) in opts:
       if key == '-h': self.hash = val
       elif key == '-i': self.input = val
@@ -168,6 +168,9 @@ class Options(object):
         self.extra_verbose = True
         util.extra_verbose = True
       elif key == '-p': self.profile_dest = val
+      elif key == '--help':
+        PrintUsage()
+        sys.exit(0)
 
     if not self.input:
       if 'GRIT_INPUT' in os.environ:
@@ -196,57 +199,65 @@ def Main(args):
   """Parses arguments and does the appropriate thing."""
   util.ChangeStdoutEncoding()
 
-  if sys.version_info < (2, 6):
-    print "GRIT requires Python 2.6 or later."
-    return 2
-  elif not args or (len(args) == 1 and args[0] == 'help'):
-    PrintUsage()
-    return 0
-  elif len(args) == 2 and args[0] == 'help':
-    tool = args[1].lower()
-    if not _GetToolInfo(tool):
-      print "No such tool.  Try running 'grit help' for a list of tools."
-      return 2
-
-    print ("Help for 'grit %s' (for general help, run 'grit help'):\n"
-           % (tool))
-    print _GetToolInfo(tool)[_FACTORY]().__doc__
-    return 0
-  else:
-    options = Options()
+  options = Options()
+  try:
     args = options.ReadOptions(args)  # args may be shorter after this
-    if not args:
-      print "No tool provided.  Try running 'grit help' for a list of tools."
-      return 2
-    tool = args[0]
-    if not _GetToolInfo(tool):
-      print "No such tool.  Try running 'grit help' for a list of tools."
-      return 2
+  except getopt.GetoptError as e:
+    print "grit:", str(e)
+    print "Try running 'grit help' for valid options."
+    return 1
+  if not args:
+    print "No tool provided.  Try running 'grit help' for a list of tools."
+    return 2
 
-    try:
-      if _GetToolInfo(tool)[_REQUIRES_INPUT]:
-        os.stat(options.input)
-    except OSError:
-      print ('Input file %s not found.\n'
-             'To specify a different input file:\n'
-             '  1. Use the GRIT_INPUT environment variable.\n'
-             '  2. Use the -i command-line option.  This overrides '
-             'GRIT_INPUT.\n'
-             '  3. Specify neither GRIT_INPUT or -i and GRIT will try to load '
-             "'resource.grd'\n"
-             '     from the current directory.' % options.input)
-      return 2
+  tool = args[0]
+  if tool == 'help':
+    if len(args) == 1:
+      PrintUsage()
+      return 0
+    else:
+      tool = args[1]
+      if not _GetToolInfo(tool):
+        print "No such tool.  Try running 'grit help' for a list of tools."
+        return 2
 
-    if options.hash:
-      grit.extern.FP.UseUnsignedFingerPrintFromModule(options.hash)
+      print ("Help for 'grit %s' (for general help, run 'grit help'):\n"
+             % (tool))
+      _GetToolInfo(tool)[_FACTORY]().ShowUsage()
+      return 0
+  if not _GetToolInfo(tool):
+    print "No such tool.  Try running 'grit help' for a list of tools."
+    return 2
 
+  try:
+    if _GetToolInfo(tool)[_REQUIRES_INPUT]:
+      os.stat(options.input)
+  except OSError:
+    print ('Input file %s not found.\n'
+           'To specify a different input file:\n'
+           '  1. Use the GRIT_INPUT environment variable.\n'
+           '  2. Use the -i command-line option.  This overrides '
+           'GRIT_INPUT.\n'
+           '  3. Specify neither GRIT_INPUT or -i and GRIT will try to load '
+           "'resource.grd'\n"
+           '     from the current directory.' % options.input)
+    return 2
+
+  if options.hash:
+    grit.extern.FP.UseUnsignedFingerPrintFromModule(options.hash)
+
+  try:
     toolobject = _GetToolInfo(tool)[_FACTORY]()
     if options.profile_dest:
       import hotshot
       prof = hotshot.Profile(options.profile_dest)
-      prof.runcall(toolobject.Run, options, args[1:])
+      return prof.runcall(toolobject.Run, options, args[1:])
     else:
-      toolobject.Run(options, args[1:])
+      return toolobject.Run(options, args[1:])
+  except getopt.GetoptError as e:
+    print "grit: %s: %s" % (tool, str(e))
+    print "Try running 'grit help %s' for valid options." % (tool,)
+    return 1
 
 
 if __name__ == '__main__':

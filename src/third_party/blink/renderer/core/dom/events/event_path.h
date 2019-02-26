@@ -62,7 +62,6 @@ class CORE_EXPORT EventPath final
   const NodeEventContext& operator[](wtf_size_t index) const {
     return node_event_contexts_[index];
   }
-  NodeEventContext& at(wtf_size_t index) { return node_event_contexts_[index]; }
   NodeEventContext& Last() { return node_event_contexts_[size() - 1]; }
 
   WindowEventContext& GetWindowEventContext() {
@@ -82,7 +81,7 @@ class CORE_EXPORT EventPath final
 
   NodeEventContext& TopNodeEventContext();
 
-  static EventTarget* EventTargetRespectingTargetRules(Node&);
+  static EventTarget& EventTargetRespectingTargetRules(Node&);
 
   void Trace(blink::Visitor*);
   void Clear() {
@@ -112,7 +111,7 @@ class CORE_EXPORT EventPath final
                        HeapVector<Member<TouchList>> adjusted_touch_list,
                        const HeapVector<Member<TreeScope>>& tree_scopes);
 
-  TreeScopeEventContext* GetTreeScopeEventContext(TreeScope*);
+  TreeScopeEventContext* GetTreeScopeEventContext(TreeScope&);
   TreeScopeEventContext* EnsureTreeScopeEventContext(Node* current_target,
                                                      TreeScope*);
 

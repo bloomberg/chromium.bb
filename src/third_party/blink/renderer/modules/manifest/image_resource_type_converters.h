@@ -13,7 +13,7 @@ namespace blink {
 
 class ManifestImageResource;
 MODULES_EXPORT Manifest::ImageResource ConvertManifestImageResource(
-    const ManifestImageResource& image_resource);
+    const ManifestImageResource* image_resource);
 
 }  // namespace blink
 
@@ -22,9 +22,9 @@ namespace mojo {
 template <>
 struct MODULES_EXPORT
     TypeConverter<blink::mojom::blink::ManifestImageResourcePtr,
-                  blink::ManifestImageResource> {
+                  blink::ManifestImageResource*> {
   static blink::mojom::blink::ManifestImageResourcePtr Convert(
-      const blink::ManifestImageResource& image_resource);
+      const blink::ManifestImageResource* image_resource);
 };
 
 }  // namespace mojo

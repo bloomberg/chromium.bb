@@ -22,6 +22,17 @@ const ElementSelector ElementSelector::ElementSelectorId(
 }
 
 // Static.
+const ElementSelector ElementSelector::ElementSelectorIdInFrame(
+    const std::string element_id,
+    const int frame_index) {
+  return ElementSelector(
+      base::StringPrintf("window.frames[%d].document.getElementById('%s')",
+                         frame_index, element_id.c_str()),
+      base::StringPrintf("in iframe with index %d, with ID %s", frame_index,
+                         element_id.c_str()));
+}
+
+// Static.
 const ElementSelector ElementSelector::ElementSelectorCss(
     const std::string css_selector) {
   const std::string script(base::StringPrintf("document.querySelector(\"%s\")",

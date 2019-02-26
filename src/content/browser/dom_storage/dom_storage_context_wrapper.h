@@ -9,7 +9,6 @@
 #include <string>
 
 #include "base/macros.h"
-#include "base/memory/memory_coordinator_client.h"
 #include "base/memory/memory_pressure_listener.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
@@ -47,8 +46,7 @@ class SessionStorageNamespaceImpl;
 // state.
 class CONTENT_EXPORT DOMStorageContextWrapper
     : public DOMStorageContext,
-      public base::RefCountedThreadSafe<DOMStorageContextWrapper>,
-      public base::MemoryCoordinatorClient {
+      public base::RefCountedThreadSafe<DOMStorageContextWrapper> {
  public:
   // If |data_path| is empty, nothing will be saved to disk.
   DOMStorageContextWrapper(
@@ -62,7 +60,10 @@ class CONTENT_EXPORT DOMStorageContextWrapper
   void GetSessionStorageUsage(GetSessionStorageUsageCallback callback) override;
   void DeleteLocalStorage(const GURL& origin,
                           base::OnceClosure callback) override;
-  void DeleteSessionStorage(const SessionStorageUsageInfo& usage_info) override;
+  void PerformLocalStorageCleanup(base::OnceClosure callback) override;
+  void DeleteSessionStorage(const SessionStorageUsageInfo& usage_info,
+                            base::OnceClosure callback) override;
+  void PerformSessionStorageCleanup(base::OnceClosure callback) override;
   void SetSaveSessionStorageOnDisk() override;
   scoped_refptr<SessionStorageNamespace> RecreateSessionStorage(
       const std::string& namespace_id) override;
@@ -120,9 +121,6 @@ class CONTENT_EXPORT DOMStorageContextWrapper
   // Called on UI thread when the system is under memory pressure.
   void OnMemoryPressure(
       base::MemoryPressureListener::MemoryPressureLevel memory_pressure_level);
-
-  // base::MemoryCoordinatorClient implementation:
-  void OnPurgeMemory() override;
 
   void PurgeMemory(DOMStorageContextImpl::PurgeOption purge_option);
 

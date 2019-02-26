@@ -4,6 +4,8 @@
 
 #include "ui/gfx/selection_model.h"
 
+#include <ostream>
+
 #include "base/format_macros.h"
 #include "base/strings/stringprintf.h"
 
@@ -35,6 +37,11 @@ std::string SelectionModel::ToString() const {
     str += selection().ToString();
   const bool backward = caret_affinity() == CURSOR_BACKWARD;
   return str + (backward ? ",BACKWARD}" : ",FORWARD}");
+}
+
+std::ostream& operator<<(std::ostream& out, const SelectionModel& model) {
+  out << model.ToString();
+  return out;
 }
 
 }  // namespace gfx

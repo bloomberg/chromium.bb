@@ -30,16 +30,19 @@
 <translation id="1871244248791675517">Ins</translation>
 <translation id="1884435127456172652"><ph name="NUMBER" /> %</translation>
 <translation id="1901303067676059328">&amp;सर्व निवडा</translation>
+<translation id="1938451708255335766">विंडो डिस्प्ले घनता अ‍ॅडजस्ट करण्यासाठी, अ‍ॅप रीस्टार्ट करा.</translation>
 <translation id="2141853158323869627">{DAYS,plural, =1{1दि}one{#दि}other{#दि}}</translation>
 <translation id="2148716181193084225">आज</translation>
 <translation id="2168039046890040389">पृष्ठ वर</translation>
 <translation id="2190355936436201913">(रिक्त)</translation>
+<translation id="2192232475740621500">कमी घनता वापरा</translation>
 <translation id="219905428774326614">लाँचर, सर्व अ‍ॅप्स</translation>
 <translation id="2267918077332197517">या साइटच्या सर्व सूचना ब्‍लॉक करा</translation>
 <translation id="2289052229480071835">आपल्या स्क्रीनवरील लक्ष्यांना स्पर्श करा टॅप करा.</translation>
 <translation id="2295140143284145483">सर्वेक्षण</translation>
 <translation id="2297836609126180313"><ph name="QUANTITY" /> TB/s</translation>
 <translation id="24452542372838207">सूचना विस्तृत करा</translation>
+<translation id="2445449901874883781">उच्च घनता वापरा</translation>
 <translation id="2482878487686419369">सूचना</translation>
 <translation id="2497284189126895209">सर्व फाइल</translation>
 <translation id="2515586267016047495">Alt</translation>
@@ -60,6 +63,7 @@
 <translation id="3234408098842461169">Down Arrow</translation>
 <translation id="3291688615589870984">{DAYS,plural, =1{1 दिवस}one{# दिवस}other{# दिवस}}</translation>
 <translation id="335581015389089642">भाषण</translation>
+<translation id="3479552764303398839">सध्या नाही</translation>
 <translation id="3600566671520689681">{DAYS,plural, =1{1 दिवस शिल्लक}one{# दिवस शिल्लक}other{# दिवस शिल्लक}}</translation>
 <translation id="3618849550573277856">“<ph name="LOOKUP_STRING" />” पहा</translation>
 <translation id="364720409959344976">अपलोड करण्यासाठी फोल्डर निवडा</translation>
@@ -99,6 +103,7 @@
 <translation id="5613020302032141669">Left Arrow</translation>
 <translation id="5754277640426581776">{MINUTES,plural, =1{1 मिनिट}one{# मिनिट}other{# मिनिटे}}</translation>
 <translation id="5768079895599174203">{DAYS,plural, =1{1 दिवस आणि }one{# दिवस आणि }other{# दिवस आणि }}</translation>
+<translation id="5895138241574237353">रीस्टार्ट करा</translation>
 <translation id="5906667377645263094">{SECONDS,plural, =1{1 सेकंद शिल्लक}one{# सेकंद शिल्लक}other{# सेकंद शिल्लक}}</translation>
 <translation id="5941711191222866238">लहान करा</translation>
 <translation id="5943826764092288734">{HOURS,plural, =1{1 तास}one{# तास}other{# तास}}</translation>
@@ -111,7 +116,7 @@
 <translation id="6142413573757616983"><ph name="QUANTITY" /> B/s</translation>
 <translation id="6156262341071374681">सर्व अ‍ॅप्सवर विस्तृत करा</translation>
 <translation id="6264365405983206840">&amp;सर्व निवडा</translation>
-<translation id="6351032674660237738">अॅप सूचना</translation>
+<translation id="6351032674660237738">ॲप सूचना</translation>
 <translation id="6364916375976753737">डावीकडे स्क्रोल करा</translation>
 <translation id="6394627529324717982">स्वल्पविराम</translation>
 <translation id="6397363302884558537">बोलणे थांबवा</translation>

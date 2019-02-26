@@ -10,7 +10,10 @@
 #include "base/strings/string_split.h"
 #include "base/test/bind_test_util.h"
 #include "base/test/metrics/histogram_tester.h"
+#include "base/test/simple_test_tick_clock.h"
 #include "base/test/test_mock_time_task_runner.h"
+#include "components/feed/feed_feature_list.h"
+#include "components/variations/variations_params_manager.h"
 #include "net/http/http_response_headers.h"
 #include "net/http/http_status_code.h"
 #include "net/traffic_annotation/network_traffic_annotation_test_helper.h"
@@ -24,6 +27,7 @@
 
 namespace feed {
 
+using base::TimeDelta;
 using testing::ElementsAre;
 using network::SharedURLLoaderFactory;
 using network::SharedURLLoaderFactoryInfo;
@@ -69,7 +73,7 @@ class FeedNetworkingHostTest : public testing::Test {
             &test_factory_);
     net_service_ = std::make_unique<FeedNetworkingHost>(
         identity_test_env_.identity_manager(), "dummy_api_key",
-        shared_url_loader_factory_);
+        shared_url_loader_factory_, mock_task_runner()->GetMockTickClock());
   }
 
   FeedNetworkingHost* service() { return net_service_.get(); }
@@ -132,8 +136,9 @@ class FeedNetworkingHostTest : public testing::Test {
               response_string);
   }
 
-  network::TestURLLoaderFactory* test_factory() {
-    return &test_factory_;
+  network::TestURLLoaderFactory* test_factory() { return &test_factory_; }
+  base::TestMockTimeTaskRunner* mock_task_runner() {
+    return mock_task_runner_.get();
   }
 
  private:
@@ -142,6 +147,7 @@ class FeedNetworkingHostTest : public testing::Test {
   std::unique_ptr<FeedNetworkingHost> net_service_;
   network::TestURLLoaderFactory test_factory_;
   scoped_refptr<network::SharedURLLoaderFactory> shared_url_loader_factory_;
+  base::SimpleTestTickClock test_tick_clock_;
 
   DISALLOW_COPY_AND_ASSIGN(FeedNetworkingHostTest);
 };
@@ -332,5 +338,61 @@ TEST_F(FeedNetworkingHostTest, ShouldIncludeAPIKeyForNoSignedInUser) {
   EXPECT_TRUE(done_callback.has_run);
 }
 #endif
+
+TEST_F(FeedNetworkingHostTest, TestDurationHistogram) {
+  base::HistogramTester histogram_tester;
+  MockResponseDoneCallback done_callback;
+  GURL url = GURL("http://foobar.com/feed");
+  std::vector<uint8_t> request_body;
+  TimeDelta duration = TimeDelta::FromMilliseconds(12345);
+
+  service()->Send(url, "POST", request_body,
+                  base::BindOnce(&MockResponseDoneCallback::Done,
+                                 base::Unretained(&done_callback)));
+  mock_task_runner()->FastForwardBy(duration);
+  Respond(url, "", net::HTTP_OK, network::URLLoaderCompletionStatus());
+
+  EXPECT_TRUE(done_callback.has_run);
+  histogram_tester.ExpectTimeBucketCount(
+      "ContentSuggestions.Feed.Network.Duration", duration, 1);
+}
+
+TEST_F(FeedNetworkingHostTest, TestDefaultTimeout) {
+  base::HistogramTester histogram_tester;
+  MockResponseDoneCallback done_callback;
+  GURL url = GURL("http://foobar.com/feed");
+  std::vector<uint8_t> request_body;
+
+  service()->Send(url, "POST", request_body,
+                  base::BindOnce(&MockResponseDoneCallback::Done,
+                                 base::Unretained(&done_callback)));
+  mock_task_runner()->FastForwardBy(TimeDelta::FromSeconds(29));
+  EXPECT_FALSE(done_callback.has_run);
+
+  mock_task_runner()->FastForwardBy(TimeDelta::FromSeconds(29));
+  EXPECT_TRUE(done_callback.has_run);
+  histogram_tester.ExpectTimeBucketCount(
+      "ContentSuggestions.Feed.Network.Duration", TimeDelta::FromSeconds(30),
+      1);
+}
+
+TEST_F(FeedNetworkingHostTest, TestParamTimeout) {
+  variations::testing::VariationParamsManager variation_params(
+      kInterestFeedContentSuggestions.name,
+      {{kTimeoutDurationSeconds.name, "2"}},
+      {kInterestFeedContentSuggestions.name});
+  MockResponseDoneCallback done_callback;
+  GURL url = GURL("http://foobar.com/feed");
+  std::vector<uint8_t> request_body;
+
+  service()->Send(url, "POST", request_body,
+                  base::BindOnce(&MockResponseDoneCallback::Done,
+                                 base::Unretained(&done_callback)));
+  mock_task_runner()->FastForwardBy(TimeDelta::FromSeconds(1));
+  EXPECT_FALSE(done_callback.has_run);
+
+  mock_task_runner()->FastForwardBy(TimeDelta::FromSeconds(1));
+  EXPECT_TRUE(done_callback.has_run);
+}
 
 }  // namespace feed

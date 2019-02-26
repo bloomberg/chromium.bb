@@ -541,7 +541,7 @@ void MediaRouterWebUIMessageHandler::OnRequestInitialData(
       media_router_ui_->routes_and_cast_modes()));
   initial_data.Set("routes", std::move(routes));
 
-  const std::set<MediaCastMode> cast_modes = media_router_ui_->cast_modes();
+  const std::set<MediaCastMode>& cast_modes = media_router_ui_->GetCastModes();
   std::unique_ptr<base::ListValue> cast_modes_list(CastModesToValue(
       cast_modes, media_router_ui_->GetPresentationRequestSourceName(),
       media_router_ui_->forced_cast_mode()));
@@ -700,7 +700,11 @@ void MediaRouterWebUIMessageHandler::OnCloseRoute(const base::ListValue* args) {
     return;
   }
   media_router_ui_->TerminateRoute(route_id);
-  UMA_HISTOGRAM_BOOLEAN("MediaRouter.Ui.Action.StopRoute", !is_local);
+  if (is_local) {
+    MediaRouterMetrics::RecordStopLocalRoute();
+  } else {
+    MediaRouterMetrics::RecordStopRemoteRoute();
+  }
 }
 
 void MediaRouterWebUIMessageHandler::OnCloseDialog(

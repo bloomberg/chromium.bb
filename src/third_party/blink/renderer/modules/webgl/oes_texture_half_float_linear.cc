@@ -40,7 +40,7 @@ WebGLExtensionName OESTextureHalfFloatLinear::GetName() const {
 
 OESTextureHalfFloatLinear* OESTextureHalfFloatLinear::Create(
     WebGLRenderingContextBase* context) {
-  return new OESTextureHalfFloatLinear(context);
+  return MakeGarbageCollected<OESTextureHalfFloatLinear>(context);
 }
 
 bool OESTextureHalfFloatLinear::Supported(WebGLRenderingContextBase* context) {

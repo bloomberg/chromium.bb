@@ -30,7 +30,7 @@
 #include "chrome/browser/sessions/tab_restore_service_factory.h"
 #include "chrome/browser/translate/chrome_translate_client.h"
 #include "chrome/browser/ui/accelerator_utils.h"
-#include "chrome/browser/ui/autofill/local_card_migration_bubble_controller_impl.h"
+#include "chrome/browser/ui/autofill/manage_migration_ui_controller.h"
 #include "chrome/browser/ui/autofill/save_card_bubble_controller_impl.h"
 #include "chrome/browser/ui/bookmarks/bookmark_utils.h"
 #include "chrome/browser/ui/bookmarks/bookmark_utils_desktop.h"
@@ -46,6 +46,8 @@
 #include "chrome/browser/ui/find_bar/find_bar.h"
 #include "chrome/browser/ui/find_bar/find_bar_controller.h"
 #include "chrome/browser/ui/find_bar/find_tab_helper.h"
+#include "chrome/browser/ui/in_product_help/reopen_tab_in_product_help.h"
+#include "chrome/browser/ui/in_product_help/reopen_tab_in_product_help_factory.h"
 #include "chrome/browser/ui/location_bar/location_bar.h"
 #include "chrome/browser/ui/passwords/manage_passwords_ui_controller.h"
 #include "chrome/browser/ui/scoped_tabbed_browser_displayer.h"
@@ -99,9 +101,9 @@
 #if BUILDFLAG(ENABLE_EXTENSIONS)
 #include "chrome/browser/extensions/api/commands/command_service.h"
 #include "chrome/browser/extensions/api/extension_action/extension_action_api.h"
-#include "chrome/browser/extensions/tab_helper.h"
 #include "chrome/browser/ui/extensions/settings_api_bubble_helpers.h"
 #include "chrome/browser/web_applications/components/web_app_helpers.h"
+#include "chrome/browser/web_applications/web_app_provider.h"
 #include "chrome/common/extensions/extension_metrics.h"
 #include "chrome/common/extensions/manifest_handlers/app_launch_info.h"
 #include "extensions/browser/extension_registry.h"
@@ -577,13 +579,13 @@ void NewWindow(Browser* browser) {
   NewEmptyWindow(browser->profile()->GetOriginalProfile());
 }
 
-void NewIncognitoWindow(Browser* browser) {
+void NewIncognitoWindow(Profile* profile) {
 #if BUILDFLAG(ENABLE_DESKTOP_IN_PRODUCT_HELP)
   feature_engagement::IncognitoWindowTrackerFactory::GetInstance()
-      ->GetForProfile(browser->profile())
+      ->GetForProfile(profile)
       ->OnIncognitoWindowOpened();
 #endif
-  NewEmptyWindow(browser->profile()->GetOffTheRecordProfile());
+  NewEmptyWindow(profile->GetOffTheRecordProfile());
 }
 
 void CloseWindow(Browser* browser) {
@@ -598,6 +600,13 @@ void NewTab(Browser* browser) {
   // user-initiated commands.
   UMA_HISTOGRAM_ENUMERATION("Tab.NewTab", TabStripModel::NEW_TAB_COMMAND,
                             TabStripModel::NEW_TAB_ENUM_COUNT);
+
+#if BUILDFLAG(ENABLE_DESKTOP_IN_PRODUCT_HELP)
+  // Notify IPH that new tab was opened.
+  auto* reopen_tab_iph =
+      ReopenTabInProductHelpFactory::GetForProfile(browser->profile());
+  reopen_tab_iph->NewTabOpened();
+#endif
 
   if (browser->is_type_tabbed()) {
     AddTabAt(browser, GURL(), -1, true);
@@ -703,8 +712,8 @@ WebContents* DuplicateTabAt(Browser* browser, int index) {
     int index = browser->tab_strip_model()->GetIndexOfWebContents(contents);
     pinned = browser->tab_strip_model()->IsTabPinned(index);
     int add_types = TabStripModel::ADD_ACTIVE |
-        TabStripModel::ADD_INHERIT_GROUP |
-        (pinned ? TabStripModel::ADD_PINNED : 0);
+                    TabStripModel::ADD_INHERIT_OPENER |
+                    (pinned ? TabStripModel::ADD_PINNED : 0);
     browser->tab_strip_model()->InsertWebContentsAt(
         index + 1, std::move(contents_dupe), add_types);
   } else {
@@ -867,10 +876,10 @@ void SaveCreditCard(Browser* browser) {
 void MigrateLocalCards(Browser* browser) {
   WebContents* web_contents =
       browser->tab_strip_model()->GetActiveWebContents();
-  autofill::LocalCardMigrationBubbleControllerImpl* controller =
-      autofill::LocalCardMigrationBubbleControllerImpl::FromWebContents(
-          web_contents);
-  controller->ReshowBubble();
+  autofill::ManageMigrationUiController* controller =
+      autofill::ManageMigrationUiController::FromWebContents(web_contents);
+  // Show migration-related Ui when the user clicks the credit card icon.
+  controller->OnUserClickedCreditCardIcon();
 }
 
 void Translate(Browser* browser) {
@@ -1004,8 +1013,11 @@ void EmailPageLocation(Browser* browser) {
 }
 
 bool CanEmailPageLocation(const Browser* browser) {
-  return browser->toolbar_model()->ShouldDisplayURL() &&
-      browser->tab_strip_model()->GetActiveWebContents()->GetURL().is_valid();
+  return browser->location_bar_model()->ShouldDisplayURL() &&
+         browser->tab_strip_model()
+             ->GetActiveWebContents()
+             ->GetURL()
+             .is_valid();
 }
 
 void CutCopyPaste(Browser* browser, int command_id) {
@@ -1256,15 +1268,13 @@ bool CanViewSource(const Browser* browser) {
 void CreateBookmarkAppFromCurrentWebContents(Browser* browser,
                                              bool force_shortcut_app) {
   base::RecordAction(UserMetricsAction("CreateHostedApp"));
-  extensions::TabHelper::FromWebContents(
-      browser->tab_strip_model()->GetActiveWebContents())
-      ->CreateHostedAppFromWebContents(force_shortcut_app);
+  web_app::WebAppProvider::InstallWebApp(
+      browser->tab_strip_model()->GetActiveWebContents(), force_shortcut_app);
 }
 
 bool CanCreateBookmarkApp(const Browser* browser) {
-  return extensions::TabHelper::FromWebContents(
-             browser->tab_strip_model()->GetActiveWebContents())
-      ->CanCreateBookmarkApp();
+  return web_app::WebAppProvider::CanInstallWebApp(
+      browser->tab_strip_model()->GetActiveWebContents());
 }
 #endif  // BUILDFLAG(ENABLE_EXTENSIONS)
 

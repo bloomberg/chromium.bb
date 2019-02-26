@@ -17,7 +17,17 @@
 
 #include "api/media_transport_interface.h"
 
+#include <cstdint>
+#include <utility>
+
 namespace webrtc {
+
+MediaTransportSettings::MediaTransportSettings() = default;
+MediaTransportSettings::MediaTransportSettings(const MediaTransportSettings&) =
+    default;
+MediaTransportSettings& MediaTransportSettings::operator=(
+    const MediaTransportSettings&) = default;
+MediaTransportSettings::~MediaTransportSettings() = default;
 
 MediaTransportEncodedAudioFrame::~MediaTransportEncodedAudioFrame() {}
 
@@ -72,5 +82,43 @@ MediaTransportEncodedVideoFrame::MediaTransportEncodedVideoFrame(
 
 MediaTransportEncodedVideoFrame::MediaTransportEncodedVideoFrame(
     MediaTransportEncodedVideoFrame&&) = default;
+
+SendDataParams::SendDataParams() = default;
+
+RTCErrorOr<std::unique_ptr<MediaTransportInterface>>
+MediaTransportFactory::CreateMediaTransport(
+    rtc::PacketTransportInternal* packet_transport,
+    rtc::Thread* network_thread,
+    bool is_caller) {
+  MediaTransportSettings settings;
+  settings.is_caller = is_caller;
+  return CreateMediaTransport(packet_transport, network_thread, settings);
+}
+
+RTCErrorOr<std::unique_ptr<MediaTransportInterface>>
+MediaTransportFactory::CreateMediaTransport(
+    rtc::PacketTransportInternal* packet_transport,
+    rtc::Thread* network_thread,
+    const MediaTransportSettings& settings) {
+  return std::unique_ptr<MediaTransportInterface>(nullptr);
+}
+
+absl::optional<TargetTransferRate>
+MediaTransportInterface::GetLatestTargetTransferRate() {
+  return absl::nullopt;
+}
+
+void MediaTransportInterface::SetNetworkChangeCallback(
+    MediaTransportNetworkChangeCallback* callback) {}
+
+void MediaTransportInterface::RemoveTargetTransferRateObserver(
+    webrtc::TargetTransferRateObserver* observer) {}
+
+void MediaTransportInterface::AddTargetTransferRateObserver(
+    webrtc::TargetTransferRateObserver* observer) {}
+
+size_t MediaTransportInterface::GetAudioPacketOverhead() const {
+  return 0;
+}
 
 }  // namespace webrtc

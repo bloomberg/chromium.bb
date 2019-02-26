@@ -66,13 +66,13 @@ Polymer({
   networkPropertiesChanged_: function() {
     if (!this.networkProperties || !this.networkProperties.Cellular)
       return;
-    var cellular = this.networkProperties.Cellular;
+    const cellular = this.networkProperties.Cellular;
     this.mobileNetworkList_ = cellular.FoundNetworks ||
         [{NetworkId: 'none', LongName: this.i18n('networkCellularNoNetworks')}];
 
     // Set selectedMobileNetworkId_ after the dom-repeat has been stamped.
     this.async(() => {
-      var selected = this.mobileNetworkList_.find(function(mobileNetwork) {
+      let selected = this.mobileNetworkList_.find(function(mobileNetwork) {
         return mobileNetwork.Status == 'current';
       });
       if (!selected)
@@ -110,7 +110,7 @@ Polymer({
         properties.ConnectionState != CrOnc.ConnectionState.NOT_CONNECTED) {
       return false;
     }
-    var found = this.get('Cellular.FoundNetworks', properties);
+    const found = this.get('Cellular.FoundNetworks', properties);
     return !!found && found.length > 0;
   },
 
@@ -122,7 +122,7 @@ Polymer({
   getSecondaryText_: function(properties) {
     if (!properties || !properties.Cellular)
       return '';
-    var cellular = properties.Cellular;
+    const cellular = properties.Cellular;
     if (cellular.Scanning)
       return this.i18n('networkCellularScanning');
     else if (this.scanRequested_)
@@ -157,7 +157,7 @@ Polymer({
    * @private
    */
   onChange_: function(event) {
-    var target = /** @type {!HTMLSelectElement} */ (event.target);
+    const target = /** @type {!HTMLSelectElement} */ (event.target);
     if (!target.value || target.value == 'none')
       return;
     this.networkingPrivate.selectCellularMobileNetwork(

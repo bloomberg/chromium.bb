@@ -37,6 +37,12 @@ class AURA_EXPORT WindowEventDispatcherObserver {
   virtual void OnWindowEventDispatcherDispatchedHeldEvents(
       WindowEventDispatcher* dispatcher) {}
 
+  // Called when the WindowEventDispatcher doesn't dispatch the event because
+  // it's not appropriate at this time. For example a TouchEvent may be ignored
+  // at certain points in a gesture.
+  virtual void OnWindowEventDispatcherIgnoredEvent(
+      WindowEventDispatcher* dispatcher) {}
+
  protected:
   virtual ~WindowEventDispatcherObserver() {}
 };

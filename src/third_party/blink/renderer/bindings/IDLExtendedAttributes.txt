@@ -57,7 +57,7 @@ EnforceRange
 Exposed=*
 FeaturePolicy=*
 FlexibleArrayBufferView
-Global=|*
+Global=*
 HTMLConstructor
 ImmutablePrototype
 ImplementedAs=*
@@ -79,7 +79,6 @@ OverrideBuiltins
 PartialInterfaceImplementedAs=*
 PermissiveDictionaryConversion
 PerWorldBindings
-PrimaryGlobal=|*
 PutForwards=*
 RaisesException=|Getter|Setter|Constructor
 Reflect=|*
@@ -101,7 +100,7 @@ Serializable
 SetterCallWith=ExecutionContext|ScriptState|ScriptArguments|CurrentWindow|EnteredWindow
 Transferable
 TreatNonObjectAsNull
-TreatNullAs=NullString|EmptyString
+TreatNullAs=EmptyString
 URL
 Unforgeable
 Unscopable

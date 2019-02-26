@@ -20,13 +20,13 @@ class WebGPUAdapter final : public ScriptWrappable {
  public:
   static WebGPUAdapter* Create(const String& name);
 
+  WebGPUAdapter(const String& name);
+
   const String& name() const;
 
   WebGPUDevice* createDevice(ExecutionContext*);
 
  private:
-  WebGPUAdapter(const String& name);
-
   String name_;
 };
 

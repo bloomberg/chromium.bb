@@ -12,7 +12,6 @@ namespace chromeos {
 namespace tether {
 
 class TetherHostFetcher;
-class BleConnectionManager;
 class DisconnectTetheringRequestSender;
 class NetworkConfigurationRemover;
 class WifiHotspotDisconnector;
@@ -32,7 +31,6 @@ class AsynchronousShutdownObjectContainer {
   virtual void Shutdown(const base::Closure& shutdown_complete_callback) = 0;
 
   virtual TetherHostFetcher* tether_host_fetcher() = 0;
-  virtual BleConnectionManager* ble_connection_manager() = 0;
   virtual DisconnectTetheringRequestSender*
   disconnect_tethering_request_sender() = 0;
   virtual NetworkConfigurationRemover* network_configuration_remover() = 0;

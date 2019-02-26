@@ -7,6 +7,7 @@
 
 #include <vector>
 
+#include "chromecast/media/base/aligned_buffer.h"
 #include "chromecast/public/media/audio_post_processor2_shlib.h"
 #include "chromecast/public/media/audio_post_processor_shlib.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -54,6 +55,13 @@ void TestDelay(AudioPostProcessor* pp, int sample_rate);
 void TestRingingTime(AudioPostProcessor* pp, int sample_rate);
 void TestPassthrough(AudioPostProcessor* pp, int sample_rate);
 
+// Measure amount of CPU time |pp| takes to run [x] seconds of stereo audio at
+// |sample_rate|.
+void AudioProcessorBenchmark(AudioPostProcessor2* pp,
+                             int sample_rate,
+                             int num_input_channels = kNumChannels);
+void AudioProcessorBenchmark(AudioPostProcessor* pp, int sample_rate);
+
 // Returns the maximum number of frames a PostProcessor may be asked to handle
 // in a single call.
 int GetMaximumFrames(int sample_rate);
@@ -77,10 +85,10 @@ float SineAmplitude(const float* data, int num_samples);
 // Return a vector of |frames| frames of |num_channels| interleaved data.
 // |frequency| is in hz.
 // Each channel, ch,  will be sin(2 *pi * frequency / sample_rate * (n + ch)).
-std::vector<float> GetSineData(int frames,
-                               float frequency,
-                               int sample_rate,
-                               int num_channels = kNumChannels);
+AlignedBuffer<float> GetSineData(int frames,
+                                 float frequency,
+                                 int sample_rate,
+                                 int num_channels = kNumChannels);
 
 // Returns a vector of interleaved chirp waveforms with |frames| frames and
 // number of channels equal to |start_frequencies.size()|.
@@ -89,9 +97,9 @@ std::vector<float> GetSineData(int frames,
 // |start_frequencies[ch]| to |end_frequencies[ch]|
 // Frequencies are normalized to (2 * freq_in_hz / sample_rate); 0 = DC, 1 =
 // nyquist.
-std::vector<float> LinearChirp(int frames,
-                               const std::vector<double>& start_frequencies,
-                               const std::vector<double>& end_frequencies);
+AlignedBuffer<float> LinearChirp(int frames,
+                                 const std::vector<double>& start_frequencies,
+                                 const std::vector<double>& end_frequencies);
 
 // Returns a vector of interleaved stereo chirp waveform with |frames| frames
 // from |start_frequency_left| to |start_frequency_left| for left channel and
@@ -101,11 +109,11 @@ std::vector<float> LinearChirp(int frames,
 // Equivalent to LinearChirp(frames,
 //                          {start_frequency_left, start_frequency_right},
 //                          {end_frequency_left, end_frequency_right})
-std::vector<float> GetStereoChirp(int frames,
-                                  float start_frequency_left,
-                                  float end_frequency_left,
-                                  float start_frequency_right,
-                                  float end_frequency_right);
+AlignedBuffer<float> GetStereoChirp(int frames,
+                                    float start_frequency_left,
+                                    float end_frequency_left,
+                                    float start_frequency_right,
+                                    float end_frequency_right);
 
 class PostProcessorTest : public ::testing::TestWithParam<int> {
  protected:

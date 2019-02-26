@@ -27,6 +27,7 @@
 #include "content/public/browser/file_url_loader.h"
 #include "content/public/browser/notification_details.h"
 #include "content/public/browser/notification_service.h"
+#include "content/public/browser/shared_cors_origin_access_list.h"
 #include "extensions/browser/extension_file_task_runner.h"
 #include "extensions/browser/extensions_browser_client.h"
 #include "extensions/browser/notification_types.h"
@@ -111,7 +112,7 @@ ExtensionDownloaderTestDelegate* g_test_delegate = nullptr;
                                 kMaxRetries + 1);                         \
   }
 
-bool ShouldRetryRequest(network::SimpleURLLoader* loader) {
+bool ShouldRetryRequest(const network::SimpleURLLoader* loader) {
   DCHECK(loader);
 
   // Since HTTP errors are now presented as ERR_FAILED by default, this will
@@ -482,9 +483,11 @@ network::mojom::URLLoaderFactory* ExtensionDownloader::GetURLLoaderFactoryToUse(
     return url_loader_factory_.get();
   }
 
-  // file:// URL support.
-  auto file_url_loader_factory =
-      content::CreateFileURLLoaderFactory(profile_path_for_url_loader_factory_);
+  // For file:// URL support, since we only issue "no-cors" requests with this
+  // factory, we can pass nullptr for the second argument.
+  auto file_url_loader_factory = content::CreateFileURLLoaderFactory(
+      profile_path_for_url_loader_factory_,
+      nullptr /* shared_cors_origin_access_list */);
   file_url_loader_factory_ = std::move(file_url_loader_factory);
   return file_url_loader_factory_.get();
 }
@@ -575,7 +578,9 @@ void ExtensionDownloader::CreateManifestLoader() {
 
 void ExtensionDownloader::OnManifestLoadComplete(
     std::unique_ptr<std::string> response_body) {
-  GURL url = manifest_loader_->GetFinalURL();
+  const GURL url = manifest_loader_->GetFinalURL();
+  DCHECK(manifests_queue_.active_request());
+
   int response_code = -1;
   if (manifest_loader_->ResponseInfo() &&
       manifest_loader_->ResponseInfo()->headers)
@@ -584,13 +589,13 @@ void ExtensionDownloader::OnManifestLoadComplete(
   VLOG(2) << response_code << " " << url;
 
   const base::TimeDelta& backoff_delay = base::TimeDelta::FromMilliseconds(0);
+  const int request_failure_count =
+      manifests_queue_.active_request_failure_count();
 
   // We want to try parsing the manifest, and if it indicates updates are
   // available, we want to fire off requests to fetch those updates.
   if (response_body && !response_body->empty()) {
-    RETRY_HISTOGRAM("ManifestFetchSuccess",
-                    manifests_queue_.active_request_failure_count(),
-                    url);
+    RETRY_HISTOGRAM("ManifestFetchSuccess", request_failure_count, url);
     VLOG(2) << "beginning manifest parse for " << url;
     auto callback = base::BindOnce(&ExtensionDownloader::HandleManifestResults,
                                    weak_ptr_factory_.GetWeakPtr(),
@@ -599,8 +604,28 @@ void ExtensionDownloader::OnManifestLoadComplete(
   } else {
     VLOG(1) << "Failed to fetch manifest '" << url.possibly_invalid_spec()
             << "' response code:" << response_code;
-    if (ShouldRetryRequest(manifest_loader_.get()) &&
-        manifests_queue_.active_request_failure_count() < kMaxRetries) {
+    const auto* loader = manifest_loader_.get();
+    if (request_failure_count == 0) {
+      DCHECK(loader);
+      // This is the first failure for this batch request, record the
+      // http/network error for each extension in the batch request.
+      const int error =
+          response_code == -1 ? loader->NetError() : response_code;
+      const std::string uma_histogram_name =
+          url.DomainIs(kGoogleDotCom)
+              ? std::string(
+                    "Extensions."
+                    "ExtensionUpdaterFirstUpdateCheckErrorsGoogleUrl")
+              : std::string(
+                    "Extensions."
+                    "ExtensionUpdaterFirstUpdateCheckErrorsNonGoogleUrl");
+      const auto& extension_ids =
+          manifests_queue_.active_request()->extension_ids();
+      for (auto it = extension_ids.begin(); it != extension_ids.end(); ++it) {
+        base::UmaHistogramSparse(uma_histogram_name, error);
+      }
+    }
+    if (ShouldRetryRequest(loader) && request_failure_count < kMaxRetries) {
       manifests_queue_.RetryRequest(backoff_delay);
     } else {
       RETRY_HISTOGRAM("ManifestFetchFailure",

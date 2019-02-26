@@ -90,7 +90,8 @@ class GtkUi : public views::LinuxUI {
   bool IsStatusIconSupported() const override;
   std::unique_ptr<views::StatusIconLinux> CreateLinuxStatusIcon(
       const gfx::ImageSkia& image,
-      const base::string16& tool_tip) const override;
+      const base::string16& tool_tip,
+      const char* id_prefix) const override;
   gfx::Image GetIconForContentType(const std::string& content_type,
                                    int size) const override;
   std::unique_ptr<views::Border> CreateNativeBorder(

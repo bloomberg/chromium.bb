@@ -25,11 +25,9 @@ void DelegatedFrameHostClientAndroid::DidReceiveCompositorFrameAck(
   render_widget_host_view_->DidReceiveCompositorFrameAck(resources);
 }
 
-void DelegatedFrameHostClientAndroid::DidPresentCompositorFrame(
-    uint32_t presentation_token,
-    const gfx::PresentationFeedback& feedback) {
-  render_widget_host_view_->DidPresentCompositorFrame(presentation_token,
-                                                      feedback);
+void DelegatedFrameHostClientAndroid::DidPresentCompositorFrames(
+    const base::flat_map<uint32_t, gfx::PresentationFeedback>& feedbacks) {
+  render_widget_host_view_->DidPresentCompositorFrames(feedbacks);
 }
 
 void DelegatedFrameHostClientAndroid::ReclaimResources(
@@ -40,6 +38,10 @@ void DelegatedFrameHostClientAndroid::ReclaimResources(
 void DelegatedFrameHostClientAndroid::OnFrameTokenChanged(
     uint32_t frame_token) {
   render_widget_host_view_->OnFrameTokenChangedForView(frame_token);
+}
+
+void DelegatedFrameHostClientAndroid::WasEvicted() {
+  render_widget_host_view_->WasEvicted();
 }
 
 }  // namespace content

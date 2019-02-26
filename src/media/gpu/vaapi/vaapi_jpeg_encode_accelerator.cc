@@ -18,19 +18,13 @@
 #include "base/trace_event/trace_event.h"
 #include "media/base/bind_to_current_loop.h"
 #include "media/base/video_frame.h"
+#include "media/filters/jpeg_parser.h"
+#include "media/gpu/macros.h"
 #include "media/gpu/vaapi/vaapi_jpeg_encoder.h"
-
-#define VLOGF(level) VLOG(level) << __func__ << "(): "
-#define DVLOGF(level) DVLOG(level) << __func__ << "(): "
 
 namespace media {
 
 namespace {
-
-// JPEG format uses 2 bytes to denote the size of a segment, and the size
-// includes the 2 bytes used for specifying it. Therefore, maximum data size
-// allowed is: 65535 - 2 = 65533.
-constexpr size_t kMaxExifSizeAllowed = 65533;
 
 // UMA results that the VaapiJpegEncodeAccelerator class reports.
 // These values are persisted to logs, and should therefore never be renumbered
@@ -123,13 +117,13 @@ void VaapiJpegEncodeAccelerator::Encoder::EncodeTask(
 
   // Recreate VASurface if the video frame's size changed.
   if (input_size != surface_size_ || va_surface_id_ == VA_INVALID_SURFACE) {
-    vaapi_wrapper_->DestroySurfaces();
+    vaapi_wrapper_->DestroyContextAndSurfaces();
     va_surface_id_ = VA_INVALID_SURFACE;
     surface_size_ = gfx::Size();
 
     std::vector<VASurfaceID> va_surfaces;
-    if (!vaapi_wrapper_->CreateSurfaces(VA_RT_FORMAT_YUV420, input_size, 1,
-                                        &va_surfaces)) {
+    if (!vaapi_wrapper_->CreateContextAndSurfaces(
+            VA_RT_FORMAT_YUV420, input_size, 1, &va_surfaces)) {
       VLOGF(1) << "Failed to create VA surface";
       notify_error_cb_.Run(buffer_id, PLATFORM_FAILURE);
       return;
@@ -312,7 +306,7 @@ void VaapiJpegEncodeAccelerator::Encode(scoped_refptr<VideoFrame> video_frame,
                                     weak_this_, buffer_id, PLATFORM_FAILURE));
       return;
     }
-    if (exif_shm->size() > kMaxExifSizeAllowed) {
+    if (exif_shm->size() > kMaxMarkerSizeAllowed) {
       VLOGF(1) << "Exif buffer too big: " << exif_shm->size();
       task_runner_->PostTask(
           FROM_HERE, base::BindOnce(&VaapiJpegEncodeAccelerator::NotifyError,

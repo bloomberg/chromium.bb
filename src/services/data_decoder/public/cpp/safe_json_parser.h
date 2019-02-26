@@ -11,6 +11,7 @@
 #include "base/callback.h"
 
 namespace base {
+class Token;
 class Value;
 }
 
@@ -56,7 +57,7 @@ class SafeJsonParser {
                          const std::string& unsafe_json,
                          const SuccessCallback& success_callback,
                          const ErrorCallback& error_callback,
-                         const std::string& batch_id);
+                         const base::Token& batch_id);
 
   static void SetFactoryForTesting(Factory factory);
 

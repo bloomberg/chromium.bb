@@ -6,8 +6,10 @@
 #define CHROME_BROWSER_CHROME_SERVICE_H_
 
 #include "base/no_destructor.h"
+#include "content/public/common/service_manager_connection.h"
 #include "mojo/public/cpp/system/message_pipe.h"
-#include "services/service_manager/embedder/embedded_service_info.h"
+#include "services/service_manager/public/cpp/embedded_service_info.h"
+#include "services/service_manager/public/mojom/service.mojom.h"
 
 namespace service_manager {
 class Connector;
@@ -25,8 +27,8 @@ class ChromeService {
   // ChromeBrowserMain takes ownership of the returned parts.
   ChromeBrowserMainExtraParts* CreateExtraParts();
 
-  service_manager::EmbeddedServiceInfo::ServiceFactory
-  CreateChromeServiceFactory();
+  content::ServiceManagerConnection::ServiceRequestHandler
+  CreateChromeServiceRequestHandler();
 
   // This is available after the content::ServiceManagerConnection is
   // initialized.
@@ -43,7 +45,7 @@ class ChromeService {
 
   void InitConnector();
 
-  std::unique_ptr<service_manager::Service> CreateChromeServiceWrapper();
+  void BindChromeServiceRequest(service_manager::mojom::ServiceRequest request);
 
   const std::unique_ptr<IOThreadContext> io_thread_context_;
 

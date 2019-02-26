@@ -38,10 +38,46 @@ class PageAction(object):
   def CleanUp(self, tab):
     pass
 
+  def __str__(self):
+    return self.__class__.__name__
+
+
+class ElementPageAction(PageAction):
+  """A PageAction which acts on DOM elements"""
+
+  def __init__(self, selector=None, text=None, element_function=None):
+    super(ElementPageAction, self).__init__()
+    self._selector = selector
+    self._text = text
+    self._element_function = element_function
+
+  def RunAction(self, tab):
+    raise NotImplementedError()
+
+  def HasElementSelector(self):
+    return (self._selector is not None or
+            self._text is not None or
+            self._element_function is not None)
+
+  def EvaluateCallback(self, tab, code, **kwargs):
+    return EvaluateCallbackWithElement(
+        tab, code, selector=self._selector, text=self._text,
+        element_function=self._element_function, **kwargs)
+
+  def __str__(self):
+    query_string = ''
+    if self._selector is not None:
+      query_string = self._selector
+    if self._text is not None:
+      query_string = 'text=%s' % self._text
+    if self._element_function:
+      query_string = 'element_function=%s' % self._element_function
+    return '%s(%s)' % (self.__class__.__name__, query_string)
+
 
 def EvaluateCallbackWithElement(
     tab, callback_js, selector=None, text=None, element_function=None,
-    wait=False, timeout_in_seconds=60):
+    wait=False, timeout_in_seconds=60, user_gesture=False):
   """Evaluates the JavaScript callback with the given element.
 
   The element may be selected via selector, text, or element_function.
@@ -70,6 +106,9 @@ def EvaluateCallbackWithElement(
         '(function() { return foo.element; })()'.
     wait: Whether to wait for the return value to be true.
     timeout_in_seconds: The timeout for wait (if waiting).
+    user_gesture: Whether execution should be treated as initiated by user
+        in the UI. Code that plays media or requests fullscreen may not take
+        effects without user_gesture set to True.
   """
   count = 0
   info_msg = ''
@@ -127,7 +166,7 @@ def EvaluateCallbackWithElement(
     tab.WaitForJavaScriptCondition(code, timeout=timeout_in_seconds)
     return True
   else:
-    return tab.EvaluateJavaScript(code)
+    return tab.EvaluateJavaScript(code, user_gesture=user_gesture)
 
 
 @decorators.Cache

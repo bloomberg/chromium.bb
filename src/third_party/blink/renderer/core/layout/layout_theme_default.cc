@@ -32,7 +32,7 @@
 #include "third_party/blink/renderer/core/style/computed_style.h"
 #include "third_party/blink/renderer/platform/data_resource_helper.h"
 #include "third_party/blink/renderer/platform/graphics/color.h"
-#include "third_party/blink/renderer/platform/layout_test_support.h"
+#include "third_party/blink/renderer/platform/web_test_support.h"
 #include "third_party/blink/renderer/platform/wtf/text/string_builder.h"
 
 namespace blink {
@@ -44,7 +44,7 @@ static const float kMinCancelButtonSize = 5;
 static const float kMaxCancelButtonSize = 21;
 
 static bool UseMockTheme() {
-  return LayoutTestSupport::IsMockThemeEnabledForTest();
+  return WebTestSupport::IsMockThemeEnabledForTest();
 }
 
 unsigned LayoutThemeDefault::active_selection_background_color_ = 0xff1e90ff;
@@ -92,9 +92,9 @@ String LayoutThemeDefault::ExtraDefaultStyleSheet() {
   String extra_style_sheet = LayoutTheme::ExtraDefaultStyleSheet();
   String multiple_fields_style_sheet =
       RuntimeEnabledFeatures::InputMultipleFieldsUIEnabled()
-          ? GetDataResourceAsASCIIString("themeInputMultipleFields.css")
+          ? GetDataResourceAsASCIIString("input_multiple_fields.css")
           : String();
-  String windows_style_sheet = GetDataResourceAsASCIIString("themeWin.css");
+  String windows_style_sheet = GetDataResourceAsASCIIString("win.css");
   StringBuilder builder;
   builder.ReserveCapacity(extra_style_sheet.length() +
                           multiple_fields_style_sheet.length() +
@@ -106,7 +106,7 @@ String LayoutThemeDefault::ExtraDefaultStyleSheet() {
 }
 
 String LayoutThemeDefault::ExtraQuirksStyleSheet() {
-  return GetDataResourceAsASCIIString("themeWinQuirks.css");
+  return GetDataResourceAsASCIIString("win_quirks.css");
 }
 
 Color LayoutThemeDefault::ActiveListBoxSelectionBackgroundColor() const {
@@ -162,6 +162,9 @@ int LayoutThemeDefault::SliderTickOffsetFromTrackCenter() const {
 }
 
 void LayoutThemeDefault::AdjustSliderThumbSize(ComputedStyle& style) const {
+  if (!Platform::Current()->ThemeEngine())
+    return;
+
   IntSize size = Platform::Current()->ThemeEngine()->GetSize(
       WebThemeEngine::kPartSliderThumb);
 
@@ -290,9 +293,9 @@ void LayoutThemeDefault::AdjustSearchFieldCancelButtonStyle(
     ComputedStyle& style) const {
   // Scale the button size based on the font size
   float font_scale = style.FontSize() / kDefaultControlFontPixelSize;
-  int cancel_button_size = lroundf(std::min(
+  int cancel_button_size = static_cast<int>(lroundf(std::min(
       std::max(kMinCancelButtonSize, kDefaultCancelButtonSize * font_scale),
-      kMaxCancelButtonSize));
+      kMaxCancelButtonSize)));
   style.SetWidth(Length(cancel_button_size, kFixed));
   style.SetHeight(Length(cancel_button_size, kFixed));
 }

@@ -53,8 +53,8 @@ import org.chromium.chrome.browser.profiles.ProfileManagerUtils;
  *    PreferenceUtils.getShowShadowOnScrollListener(...).
  */
 public class Preferences extends AppCompatActivity implements OnPreferenceStartFragmentCallback {
-    public static final String EXTRA_SHOW_FRAGMENT = "show_fragment";
-    public static final String EXTRA_SHOW_FRAGMENT_ARGUMENTS = "show_fragment_args";
+    static final String EXTRA_SHOW_FRAGMENT = "show_fragment";
+    static final String EXTRA_SHOW_FRAGMENT_ARGUMENTS = "show_fragment_args";
 
     private static final String TAG = "Preferences";
 

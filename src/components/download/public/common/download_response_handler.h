@@ -13,6 +13,7 @@
 #include "components/download/public/common/download_source.h"
 #include "components/download/public/common/download_stream.mojom.h"
 #include "components/download/public/common/download_url_parameters.h"
+#include "components/download/public/common/download_utils.h"
 #include "net/cert/cert_status_flags.h"
 #include "services/network/public/cpp/resource_response.h"
 #include "services/network/public/mojom/url_loader.mojom.h"
@@ -34,6 +35,7 @@ class COMPONENTS_DOWNLOAD_EXPORT DownloadResponseHandler
         mojom::DownloadStreamHandlePtr stream_handle) = 0;
     virtual void OnReceiveRedirect() = 0;
     virtual void OnResponseCompleted() = 0;
+    virtual bool CanRequestURL(const GURL& url) = 0;
   };
 
   DownloadResponseHandler(

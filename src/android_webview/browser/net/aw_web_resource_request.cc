@@ -8,6 +8,7 @@
 #include "net/http/http_request_headers.h"
 #include "net/http/http_response_headers.h"
 #include "net/url_request/url_request.h"
+#include "services/network/public/cpp/resource_request.h"
 #include "ui/base/page_transition_types.h"
 
 using base::android::ConvertJavaStringToUTF16;
@@ -47,6 +48,18 @@ AwWebResourceRequest::AwWebResourceRequest(const net::URLRequest& request)
     headers = request.extra_request_headers();
 
   ConvertRequestHeadersToVectors(headers, &header_names, &header_values);
+}
+
+AwWebResourceRequest::AwWebResourceRequest(
+    const network::ResourceRequest& request)
+    : url(request.url.spec()),
+      method(request.method),
+      is_main_frame(request.resource_type == content::RESOURCE_TYPE_MAIN_FRAME),
+      has_user_gesture(request.has_user_gesture),
+      is_renderer_initiated(ui::PageTransitionIsWebTriggerable(
+          static_cast<ui::PageTransition>(request.transition_type))) {
+  ConvertRequestHeadersToVectors(request.headers, &header_names,
+                                 &header_values);
 }
 
 AwWebResourceRequest::AwWebResourceRequest(

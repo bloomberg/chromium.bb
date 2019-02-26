@@ -56,17 +56,21 @@ const WebFeature kTextXmlFeatures[2][2] = {
 
 // Helper function to decide what to do with with a given mime type. This takes
 // - a mime type
-// - inputs that affect the decision (is_same_origin, is_worker_global_scope).
+// - inputs that affect the decision (is_same_origin, mime_type_check_mode).
 //
 // The return value determines whether this mime should be allowed or blocked.
 // Additionally, warn returns whether we should log a console warning about
 // expected future blocking of this resource. 'counter' determines which
-// Use counter should be used to count this.
+// Use counter should be used to count this. 'is_worker_global_scope' is used
+// for choosing 'counter' value.
 bool AllowMimeTypeAsScript(const String& mime_type,
                            bool same_origin,
+                           AllowedByNosniff::MimeTypeCheck mime_type_check_mode,
                            bool is_worker_global_scope,
                            bool& warn,
                            WebFeature& counter) {
+  using MimeTypeCheck = AllowedByNosniff::MimeTypeCheck;
+
   // The common case: A proper JavaScript MIME type
   if (MIMETypeRegistry::IsSupportedJavaScriptMIMEType(mime_type))
     return true;
@@ -94,7 +98,7 @@ bool AllowMimeTypeAsScript(const String& mime_type,
   // we still wish to accept them (or log them using UseCounter, or add a
   // deprecation warning to the console).
 
-  if (!is_worker_global_scope &&
+  if (mime_type_check_mode == MimeTypeCheck::kLax &&
       mime_type.StartsWithIgnoringASCIICase("text/") &&
       MIMETypeRegistry::IsLegacySupportedJavaScriptLanguage(
           mime_type.Substring(5))) {
@@ -116,22 +120,25 @@ bool AllowMimeTypeAsScript(const String& mime_type,
 
   // Depending on RuntimeEnabledFeatures, we'll allow, allow-but-warn, or block
   // these types when we're in a worker.
-  bool allow = !is_worker_global_scope ||
+  bool allow = mime_type_check_mode == MimeTypeCheck::kLax ||
                !RuntimeEnabledFeatures::WorkerNosniffBlockEnabled();
-  warn = allow && is_worker_global_scope &&
+  warn = allow && mime_type_check_mode == MimeTypeCheck::kStrict &&
          RuntimeEnabledFeatures::WorkerNosniffWarnEnabled();
   return allow;
 }
 
-bool MimeTypeAsScriptImpl(ExecutionContext* execution_context,
-                          const ResourceResponse& response,
-                          bool is_worker_global_scope) {
+}  // namespace
+
+bool AllowedByNosniff::MimeTypeAsScript(ExecutionContext* execution_context,
+                                        const ResourceResponse& response,
+                                        MimeTypeCheck mime_type_check_mode) {
   // The content type is really only meaningful for the http:-family & data
   // schemes.
   bool is_http_family_or_data = response.Url().ProtocolIsInHTTPFamily() ||
                                 response.Url().ProtocolIsData();
   if (!is_http_family_or_data &&
-      response.Url().LastPathComponent().EndsWith(".js")) {
+      (response.Url().LastPathComponent().EndsWith(".js") ||
+       response.Url().LastPathComponent().EndsWith(".mjs"))) {
     return true;
   }
 
@@ -139,7 +146,7 @@ bool MimeTypeAsScriptImpl(ExecutionContext* execution_context,
 
   // Allowed by nosniff?
   if (!(ParseContentTypeOptionsHeader(response.HttpHeaderField(
-            HTTPNames::X_Content_Type_Options)) != kContentTypeOptionsNosniff ||
+            http_names::kXContentTypeOptions)) != kContentTypeOptionsNosniff ||
         MIMETypeRegistry::IsSupportedJavaScriptMIMEType(mime_type))) {
     execution_context->AddConsoleMessage(ConsoleMessage::Create(
         kSecurityMessageSource, kErrorMessageLevel,
@@ -163,8 +170,9 @@ bool MimeTypeAsScriptImpl(ExecutionContext* execution_context,
   const WebFeature kWebFeatureNone = WebFeature::kNumberOfFeatures;
   bool warn = false;
   WebFeature counter = kWebFeatureNone;
-  bool allow = AllowMimeTypeAsScript(mime_type, same_origin,
-                                     is_worker_global_scope, warn, counter);
+  bool allow = AllowMimeTypeAsScript(
+      mime_type, same_origin, mime_type_check_mode,
+      execution_context->IsWorkerGlobalScope(), warn, counter);
 
   // These record usages for two MIME types (without subtypes), per same/cross
   // origin.
@@ -189,22 +197,6 @@ bool MimeTypeAsScriptImpl(ExecutionContext* execution_context,
             mime_type + "') is not executable."));
   }
   return allow;
-}
-
-}  // namespace
-
-bool AllowedByNosniff::MimeTypeAsScript(ExecutionContext* execution_context,
-                                        const ResourceResponse& response) {
-  return MimeTypeAsScriptImpl(execution_context, response,
-                              execution_context->IsWorkerGlobalScope());
-}
-
-bool AllowedByNosniff::MimeTypeAsScriptForTesting(
-    ExecutionContext* execution_context,
-    const ResourceResponse& response,
-    bool is_worker_global_scope) {
-  return MimeTypeAsScriptImpl(execution_context, response,
-                              is_worker_global_scope);
 }
 
 }  // namespace blink

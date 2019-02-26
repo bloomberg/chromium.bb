@@ -29,8 +29,8 @@
 #include "device/vr/buildflags/buildflags.h"
 #include "extensions/buildflags/buildflags.h"
 #include "services/network/public/cpp/features.h"
-#include "services/service_manager/embedder/embedded_service_info.h"
 #include "services/service_manager/public/cpp/binder_registry.h"
+#include "services/service_manager/public/cpp/embedded_service_info.h"
 #include "services/service_manager/sandbox/switches.h"
 #include "ui/base/ui_features.h"
 
@@ -94,8 +94,8 @@
 #endif
 
 #if BUILDFLAG(ENABLE_PRINTING) && defined(OS_CHROMEOS)
-#include "chrome/services/cups_ipp_validator/cups_ipp_validator_service.h"  // nogncheck
-#include "chrome/services/cups_ipp_validator/public/mojom/constants.mojom.h"  // nogncheck
+#include "chrome/services/cups_ipp_parser/cups_ipp_parser_service.h"  // nogncheck
+#include "chrome/services/cups_ipp_parser/public/mojom/constants.mojom.h"  // nogncheck
 #endif
 
 #if defined(FULL_SAFE_BROWSING) || defined(OS_CHROMEOS)
@@ -204,13 +204,6 @@ void ChromeContentUtilityClient::RegisterServices(
   services->emplace(device::mojom::kVrIsolatedServiceName, service_info);
 #endif
 
-#if BUILDFLAG(ENABLE_PRINTING)
-  service_manager::EmbeddedServiceInfo pdf_compositor_info;
-  pdf_compositor_info.factory = base::BindRepeating(
-      &printing::CreatePdfCompositorService, GetUserAgent());
-  services->emplace(printing::mojom::kServiceName, pdf_compositor_info);
-#endif
-
 #if BUILDFLAG(ENABLE_PRINT_PREVIEW) || \
     (BUILDFLAG(ENABLE_PRINTING) && defined(OS_WIN))
   service_manager::EmbeddedServiceInfo printing_info;
@@ -253,9 +246,8 @@ void ChromeContentUtilityClient::RegisterServices(
   {
     service_manager::EmbeddedServiceInfo service_info;
     service_info.factory =
-        base::BindRepeating(&CupsIppValidatorService::CreateService);
-    services->emplace(chrome::mojom::kCupsIppValidatorServiceName,
-                      service_info);
+        base::BindRepeating(&CupsIppParserService::CreateService);
+    services->emplace(chrome::mojom::kCupsIppParserServiceName, service_info);
   }
 #endif
 
@@ -266,22 +258,6 @@ void ChromeContentUtilityClient::RegisterServices(
     services->emplace(chrome::mojom::kFileUtilServiceName, service_info);
   }
 #endif
-
-#if !defined(OS_ANDROID)
-  {
-    service_manager::EmbeddedServiceInfo service_info;
-    service_info.factory =
-        base::BindRepeating(&patch::PatchService::CreateService);
-    services->emplace(patch::mojom::kServiceName, service_info);
-  }
-#endif
-
-  {
-    service_manager::EmbeddedServiceInfo service_info;
-    service_info.factory =
-        base::BindRepeating(&unzip::UnzipService::CreateService);
-    services->emplace(unzip::mojom::kServiceName, service_info);
-  }
 
 #if BUILDFLAG(ENABLE_EXTENSIONS) && !defined(OS_WIN)
   // On Windows the service is running elevated.
@@ -317,13 +293,6 @@ void ChromeContentUtilityClient::RegisterServices(
 #if defined(OS_CHROMEOS)
   // TODO(jamescook): Figure out why we have to do this when not using mash.
   mash_service_factory_->RegisterOutOfProcessServices(services);
-
-  {
-    service_manager::EmbeddedServiceInfo service_info;
-    service_info.factory =
-        base::BindRepeating(&chromeos::ime::CreateImeService);
-    services->emplace(chromeos::ime::mojom::kServiceName, service_info);
-  }
 #endif
 
 #if BUILDFLAG(ENABLE_SIMPLE_BROWSER_SERVICE_OUT_OF_PROCESS)
@@ -337,6 +306,36 @@ void ChromeContentUtilityClient::RegisterServices(
         });
     services->emplace(simple_browser::mojom::kServiceName, service_info);
   }
+#endif
+}
+
+std::unique_ptr<service_manager::Service>
+ChromeContentUtilityClient::HandleServiceRequest(
+    const std::string& service_name,
+    service_manager::mojom::ServiceRequest request) {
+  if (service_name == unzip::mojom::kServiceName)
+    return std::make_unique<unzip::UnzipService>(std::move(request));
+
+#if !defined(OS_ANDROID)
+  if (service_name == patch::mojom::kServiceName)
+    return std::make_unique<patch::PatchService>(std::move(request));
+#endif
+
+#if BUILDFLAG(ENABLE_PRINTING)
+  if (service_name == printing::mojom::kServiceName) {
+    return printing::CreatePdfCompositorService(GetUserAgent(),
+                                                std::move(request));
+  }
+#endif
+
+#if defined(OS_CHROMEOS)
+  if (service_name == chromeos::ime::mojom::kServiceName)
+    return std::make_unique<chromeos::ime::ImeService>(std::move(request));
+
+  return mash_service_factory_->HandleServiceRequest(service_name,
+                                                     std::move(request));
+#else
+  return nullptr;
 #endif
 }
 

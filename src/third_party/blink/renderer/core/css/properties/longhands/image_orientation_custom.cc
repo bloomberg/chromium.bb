@@ -11,7 +11,7 @@
 #include "third_party/blink/renderer/platform/runtime_enabled_features.h"
 
 namespace blink {
-namespace CSSLonghand {
+namespace css_longhand {
 
 const CSSValue* ImageOrientation::ParseSingleValue(
     CSSParserTokenRange& range,
@@ -19,9 +19,9 @@ const CSSValue* ImageOrientation::ParseSingleValue(
     const CSSParserLocalContext&) const {
   DCHECK(RuntimeEnabledFeatures::ImageOrientationEnabled());
   if (range.Peek().Id() == CSSValueFromImage)
-    return CSSPropertyParserHelpers::ConsumeIdent(range);
+    return css_property_parser_helpers::ConsumeIdent(range);
   if (range.Peek().GetType() != kNumberToken) {
-    CSSPrimitiveValue* angle = CSSPropertyParserHelpers::ConsumeAngle(
+    CSSPrimitiveValue* angle = css_property_parser_helpers::ConsumeAngle(
         range, &context, base::Optional<WebFeature>());
     if (angle && angle->GetDoubleValue() == 0)
       return angle;
@@ -40,5 +40,5 @@ const CSSValue* ImageOrientation::CSSValueFromComputedStyleInternal(
   return CSSPrimitiveValue::Create(0, CSSPrimitiveValue::UnitType::kDegrees);
 }
 
-}  // namespace CSSLonghand
+}  // namespace css_longhand
 }  // namespace blink

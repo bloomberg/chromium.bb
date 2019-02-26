@@ -22,26 +22,26 @@ class MODULES_EXPORT PushManager final : public ScriptWrappable {
 
  public:
   static PushManager* Create(ServiceWorkerRegistration* registration) {
-    return new PushManager(registration);
+    return MakeGarbageCollected<PushManager>(registration);
   }
+
+  explicit PushManager(ServiceWorkerRegistration* registration);
 
   // Web-exposed property:
   static Vector<String> supportedContentEncodings();
 
   // Web-exposed methods:
   ScriptPromise subscribe(ScriptState* script_state,
-                          const PushSubscriptionOptionsInit& options,
+                          const PushSubscriptionOptionsInit* options,
                           ExceptionState& exception_state);
   ScriptPromise getSubscription(ScriptState* script_state);
   ScriptPromise permissionState(ScriptState* script_state,
-                                const PushSubscriptionOptionsInit& options,
+                                const PushSubscriptionOptionsInit* options,
                                 ExceptionState& exception_state);
 
   void Trace(blink::Visitor* visitor) override;
 
  private:
-  explicit PushManager(ServiceWorkerRegistration* registration);
-
   Member<ServiceWorkerRegistration> registration_;
 };
 

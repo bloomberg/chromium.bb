@@ -112,6 +112,28 @@ class CiceroneClientImpl : public CiceroneClient {
                        weak_ptr_factory_.GetWeakPtr(), std::move(callback)));
   }
 
+  void GetLinuxPackageInfo(
+      const vm_tools::cicerone::LinuxPackageInfoRequest& request,
+      DBusMethodCallback<vm_tools::cicerone::LinuxPackageInfoResponse> callback)
+      override {
+    dbus::MethodCall method_call(
+        vm_tools::cicerone::kVmCiceroneInterface,
+        vm_tools::cicerone::kGetLinuxPackageInfoMethod);
+    dbus::MessageWriter writer(&method_call);
+
+    if (!writer.AppendProtoAsArrayOfBytes(request)) {
+      LOG(ERROR) << "Failed to encode LinuxPackageInfoRequest protobuf";
+      std::move(callback).Run(base::nullopt);
+      return;
+    }
+
+    cicerone_proxy_->CallMethod(
+        &method_call, dbus::ObjectProxy::TIMEOUT_USE_DEFAULT,
+        base::BindOnce(&CiceroneClientImpl::OnDBusProtoResponse<
+                           vm_tools::cicerone::LinuxPackageInfoResponse>,
+                       weak_ptr_factory_.GetWeakPtr(), std::move(callback)));
+  }
+
   void InstallLinuxPackage(
       const vm_tools::cicerone::InstallLinuxPackageRequest& request,
       DBusMethodCallback<vm_tools::cicerone::InstallLinuxPackageResponse>

@@ -19,18 +19,17 @@
 #include "services/resource_coordinator/webui_graph_dump_impl.h"
 #include "services/service_manager/public/cpp/binder_registry.h"
 #include "services/service_manager/public/cpp/service.h"
-#include "services/service_manager/public/cpp/service_context_ref.h"
+#include "services/service_manager/public/cpp/service_binding.h"
+#include "services/service_manager/public/cpp/service_keepalive.h"
+#include "services/service_manager/public/mojom/service.mojom.h"
 
 namespace resource_coordinator {
 
 class ResourceCoordinatorService : public service_manager::Service {
  public:
-  ResourceCoordinatorService();
+  explicit ResourceCoordinatorService(
+      service_manager::mojom::ServiceRequest request);
   ~ResourceCoordinatorService() override;
-
-  // service_manager::Service:
-  // Factory function for use as an embedded service.
-  static std::unique_ptr<service_manager::Service> Create();
 
   // service_manager::Service:
   void OnStart() override;
@@ -38,9 +37,6 @@ class ResourceCoordinatorService : public service_manager::Service {
                        const std::string& interface_name,
                        mojo::ScopedMessagePipeHandle interface_pipe) override;
 
-  service_manager::ServiceContextRefFactory* ref_factory() {
-    return ref_factory_.get();
-  }
   ukm::MojoUkmRecorder* ukm_recorder() { return ukm_recorder_.get(); }
   CoordinationUnitGraph* coordination_unit_graph() {
     return &coordination_unit_graph_;
@@ -51,6 +47,9 @@ class ResourceCoordinatorService : public service_manager::Service {
                           const service_manager::BindSourceInfo& source_info);
   void OnGraphDumpConnectionError(WebUIGraphDumpImpl* graph_dump);
 
+  service_manager::ServiceBinding service_binding_;
+  service_manager::ServiceKeepalive service_keepalive_;
+
   service_manager::BinderRegistryWithArgs<
       const service_manager::BindSourceInfo&>
       registry_;
@@ -59,14 +58,13 @@ class ResourceCoordinatorService : public service_manager::Service {
   std::unique_ptr<ukm::MojoUkmRecorder> ukm_recorder_;
   std::unique_ptr<memory_instrumentation::CoordinatorImpl>
       memory_instrumentation_coordinator_;
-  std::unique_ptr<service_manager::ServiceContextRefFactory> ref_factory_;
 
   // Current graph dump instances.
   std::vector<std::unique_ptr<WebUIGraphDumpImpl>> graph_dumps_;
 
   // WeakPtrFactory members should always come last so WeakPtrs are destructed
   // before other members.
-  base::WeakPtrFactory<ResourceCoordinatorService> weak_factory_;
+  base::WeakPtrFactory<ResourceCoordinatorService> weak_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(ResourceCoordinatorService);
 };

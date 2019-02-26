@@ -18,19 +18,6 @@ _ALL_PERF_WATERFALL_TELEMETRY_BENCHMARKS = frozenset(
     benchmark_finders.GetAllPerfBenchmarks())
 
 
-_ANDROID_GO_BENCHMARK_NAMES = {
-    'memory.top_10_mobile',
-    'system_health.memory_mobile',
-    'system_health.common_mobile',
-    'power.typical_10_mobile',
-    'startup.mobile',
-    'system_health.webview_startup',
-    'v8.browsing_mobile',
-    'speedometer',
-    'speedometer2'
-}
-
-
 class PerfPlatform(object):
   def __init__(self, name, description, is_fyi=False,
                benchmarks_names_to_run=None, num_shards=None):
@@ -132,6 +119,20 @@ WIN_7_GPU = PerfPlatform(
     num_shards=5)
 
 # Android
+
+_ANDROID_GO_BENCHMARK_NAMES = {
+    'memory.top_10_mobile',
+    'system_health.memory_mobile',
+    'system_health.common_mobile',
+    'power.typical_10_mobile',
+    'startup.mobile',
+    'system_health.webview_startup',
+    'v8.browsing_mobile',
+    'speedometer',
+    'speedometer2'
+}
+
+
 ANDROID_GO = PerfPlatform(
     'android-go-perf', 'Android O',
     num_shards=19,
@@ -155,10 +156,51 @@ ANDROID_NEXUS_6_WEBVIEW = PerfPlatform(
     num_shards=8)  # Reduced from 16 per crbug.com/891848.
 
 
+# FYI bots
+ANDROID_PIXEL2 = PerfPlatform(
+    'android-pixel2-perf', 'Android OPM1.171019.021', is_fyi=True,
+    num_shards=7)
+
+ANDROID_PIXEL2_WEBVIEW = PerfPlatform(
+    'android-pixel2_webview-perf', 'Android OPM1.171019.021', is_fyi=True,
+    num_shards=7)
+
+ANDROID_GO_WEBVIEW = PerfPlatform(
+    'android-go_webview-perf', 'Android OPM1.171019.021', is_fyi=True,
+    num_shards=25)
+
+ANDROID_NEXUS5X_PERF_FYI =  PerfPlatform(
+    'android-nexus5x-perf-fyi', 'Android MMB29Q', is_fyi=True,
+    num_shards=4, benchmarks_names_to_run={
+      'heap_profiling.mobile.disabled',
+      'heap_profiling.mobile.native',
+      'heap_profiling.mobile.pseudo',
+      'rendering.oopd.mobile',
+    })
+
+# TODO(crbug.com/902089): Add linux-perf-fyi once the bot is configured to use
+# the sharding map.
+
+
 ALL_PLATFORMS = {
     p for p in locals().values() if isinstance(p, PerfPlatform)
 }
 
+ALL_PERF_FYI_PLATFORMS = {
+    p for p in ALL_PLATFORMS if p.is_fyi
+}
+
+
+ALL_PERF_PLATFORMS = {
+    p for p in ALL_PLATFORMS if not p.is_fyi
+}
+
+
 ALL_PLATFORM_NAMES = {
     p.name for p in ALL_PLATFORMS
+}
+
+
+ALL_PERF_PLATFORM_NAMES = {
+    p.name for p in ALL_PERF_PLATFORMS
 }

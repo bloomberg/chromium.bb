@@ -14,10 +14,12 @@
 #include "chrome/browser/offline_items_collection/offline_content_aggregator_factory.h"
 #include "chrome/common/chrome_features.h"
 #include "chrome/test/base/testing_profile.h"
+#include "components/ntp_snippets/pref_names.h"
 #include "components/offline_items_collection/core/offline_content_aggregator.h"
 #include "components/offline_items_collection/core/offline_item.h"
 #include "components/offline_items_collection/core/offline_item_state.h"
 #include "components/offline_items_collection/core/test_support/mock_offline_content_provider.h"
+#include "components/prefs/pref_service.h"
 #include "content/public/test/test_browser_thread_bundle.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/gfx/image/image_unittest_util.h"
@@ -135,12 +137,14 @@ class AvailableOfflineContentTest : public testing::Test {
     content_provider_.SetVisuals({});
   }
 
-  std::vector<chrome::mojom::AvailableOfflineContentPtr> ListAndWait() {
+  std::tuple<bool, std::vector<chrome::mojom::AvailableOfflineContentPtr>>
+  ListAndWait() {
+    bool list_visible_by_prefs;
     std::vector<chrome::mojom::AvailableOfflineContentPtr> suggestions;
     chrome::mojom::AvailableOfflineContentProviderAsyncWaiter waiter(
         &provider_);
-    waiter.List(&suggestions);
-    return suggestions;
+    waiter.List(&list_visible_by_prefs, &suggestions);
+    return std::make_tuple(list_visible_by_prefs, std::move(suggestions));
   }
 
   chrome::mojom::AvailableOfflineContentSummaryPtr SummarizeAndWait() {
@@ -161,8 +165,9 @@ class AvailableOfflineContentTest : public testing::Test {
 };
 
 TEST_F(AvailableOfflineContentTest, NoContent) {
-  std::vector<chrome::mojom::AvailableOfflineContentPtr> suggestions =
-      ListAndWait();
+  bool list_visible_by_prefs;
+  std::vector<chrome::mojom::AvailableOfflineContentPtr> suggestions;
+  std::tie(list_visible_by_prefs, suggestions) = ListAndWait();
   chrome::mojom::AvailableOfflineContentSummaryPtr summary = SummarizeAndWait();
 
   EXPECT_EQ(0u, summary->total_items);
@@ -171,6 +176,7 @@ TEST_F(AvailableOfflineContentTest, NoContent) {
   EXPECT_FALSE(summary->has_video);
   EXPECT_FALSE(summary->has_audio);
   EXPECT_TRUE(suggestions.empty());
+  EXPECT_TRUE(list_visible_by_prefs);
 }
 
 TEST_F(AvailableOfflineContentTest, TooFewInterestingItems) {
@@ -182,8 +188,9 @@ TEST_F(AvailableOfflineContentTest, TooFewInterestingItems) {
                               IncompleteItem(), DangerousItem()});
 
   // Call List() and Summary().
-  std::vector<chrome::mojom::AvailableOfflineContentPtr> suggestions =
-      ListAndWait();
+  bool list_visible_by_prefs;
+  std::vector<chrome::mojom::AvailableOfflineContentPtr> suggestions;
+  std::tie(list_visible_by_prefs, suggestions) = ListAndWait();
   chrome::mojom::AvailableOfflineContentSummaryPtr summary = SummarizeAndWait();
 
   // As interesting items are below the minimum to show, nothing should be
@@ -195,6 +202,7 @@ TEST_F(AvailableOfflineContentTest, TooFewInterestingItems) {
   EXPECT_FALSE(summary->has_audio);
 
   EXPECT_TRUE(suggestions.empty());
+  EXPECT_TRUE(list_visible_by_prefs);
 }
 
 TEST_F(AvailableOfflineContentTest, FourInterestingItems) {
@@ -207,8 +215,9 @@ TEST_F(AvailableOfflineContentTest, FourInterestingItems) {
       {{SuggestedOfflinePageItem().id, TestThumbnail()}});
 
   // Call List() and Summary().
-  std::vector<chrome::mojom::AvailableOfflineContentPtr> suggestions =
-      ListAndWait();
+  bool list_visible_by_prefs;
+  std::vector<chrome::mojom::AvailableOfflineContentPtr> suggestions;
+  std::tie(list_visible_by_prefs, suggestions) = ListAndWait();
   chrome::mojom::AvailableOfflineContentSummaryPtr summary = SummarizeAndWait();
 
   // Check summary.
@@ -223,6 +232,7 @@ TEST_F(AvailableOfflineContentTest, FourInterestingItems) {
   EXPECT_EQ(SuggestedOfflinePageItem().id.id, suggestions[0]->id);
   EXPECT_EQ(VideoItem().id.id, suggestions[1]->id);
   EXPECT_EQ(AudioItem().id.id, suggestions[2]->id);
+  EXPECT_TRUE(list_visible_by_prefs);
 
   // For a single suggestion, make sure all the fields are correct. We can
   // assume the other items match.
@@ -250,10 +260,44 @@ TEST_F(AvailableOfflineContentTest, NotEnabled) {
   scoped_feature_list_->InitAndDisableFeature(features::kNewNetErrorPageUI);
   content_provider_.SetItems({SuggestedOfflinePageItem()});
 
-  std::vector<chrome::mojom::AvailableOfflineContentPtr> suggestions =
-      ListAndWait();
+  bool list_visible_by_prefs;
+  std::vector<chrome::mojom::AvailableOfflineContentPtr> suggestions;
+  std::tie(list_visible_by_prefs, suggestions) = ListAndWait();
 
   EXPECT_TRUE(suggestions.empty());
+  EXPECT_TRUE(list_visible_by_prefs);
+}
+
+TEST_F(AvailableOfflineContentTest, ListVisibilityChanges) {
+  // We need at least 4 interesting items for anything to show up at all.
+  content_provider_.SetItems({UninterestingImageItem(), VideoItem(),
+                              SuggestedOfflinePageItem(), AudioItem(),
+                              OfflinePageItem()});
+
+  content_provider_.SetVisuals(
+      {{SuggestedOfflinePageItem().id, TestThumbnail()}});
+  // Set pref to hide the list.
+  profile_.GetPrefs()->SetBoolean(ntp_snippets::prefs::kArticlesListVisible,
+                                  false);
+
+  // Call List().
+  bool list_visible_by_prefs;
+  std::vector<chrome::mojom::AvailableOfflineContentPtr> suggestions;
+  std::tie(list_visible_by_prefs, suggestions) = ListAndWait();
+
+  // Check that suggestions have been received and the list is not visible.
+  EXPECT_EQ(3ul, suggestions.size());
+  EXPECT_FALSE(list_visible_by_prefs);
+
+  // Simulate visibility changed by the user to "shown".
+  provider_.ListVisibilityChanged(true);
+
+  EXPECT_TRUE(profile_.GetPrefs()->GetBoolean(
+      ntp_snippets::prefs::kArticlesListVisible));
+
+  // Call List() again and check list is not visible.
+  std::tie(list_visible_by_prefs, suggestions) = ListAndWait();
+  EXPECT_TRUE(list_visible_by_prefs);
 }
 
 }  // namespace

@@ -176,4 +176,7 @@ message NigoriSpecifics {
   // passphrase. Valid only if custom_passphrase_key_derivation_method ==
   // SCRYPT_8192_8_11, ignored in other cases.
   optional string custom_passphrase_key_derivation_salt = 46;
+
+  // Boolean corresponding to whether send tab should be encrypted.
+  optional bool encrypt_send_tab_to_self = 47;
 }

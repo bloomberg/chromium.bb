@@ -8,6 +8,7 @@
 
 #include <vector>
 
+#include "fxjs/cfx_v8.h"
 #include "fxjs/cfxjse_value.h"
 #include "fxjs/js_resources.h"
 #include "xfa/fxfa/cxfa_eventparam.h"
@@ -89,7 +90,7 @@ void CJX_Subform::locale(CFXJSE_Value* pValue,
   }
 
   WideString wsLocaleName = GetXFANode()->GetLocaleName().value_or(L"");
-  pValue->SetString(wsLocaleName.UTF8Encode().AsStringView());
+  pValue->SetString(wsLocaleName.ToUTF8().AsStringView());
 }
 
 void CJX_Subform::instanceIndex(CFXJSE_Value* pValue,

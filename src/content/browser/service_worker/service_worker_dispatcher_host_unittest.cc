@@ -25,7 +25,6 @@
 #include "content/common/service_worker/service_worker_utils.h"
 #include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/child_process_termination_info.h"
-#include "content/public/common/browser_side_navigation_policy.h"
 #include "content/public/common/content_switches.h"
 #include "content/public/test/test_browser_thread_bundle.h"
 #include "mojo/core/embedder/embedder.h"
@@ -274,7 +273,7 @@ TEST_F(ServiceWorkerDispatcherHostTest, DuplicateProvider) {
 }
 
 TEST_F(ServiceWorkerDispatcherHostTest, CleanupOnRendererCrash) {
-  GURL pattern = GURL("https://www.example.com/");
+  GURL scope = GURL("https://www.example.com/");
   GURL script_url = GURL("https://www.example.com/service_worker.js");
   int process_id = helper_->mock_render_process_id();
 
@@ -285,7 +284,7 @@ TEST_F(ServiceWorkerDispatcherHostTest, CleanupOnRendererCrash) {
       SendProviderCreated(std::move(host_info_1));
   ServiceWorkerProviderHost* provider_host = context()->GetProviderHost(
       helper_->mock_render_process_id(), kProviderId);
-  SetUpRegistration(pattern, script_url);
+  SetUpRegistration(scope, script_url);
   EXPECT_EQ(kProviderId, provider_host->provider_id());
 
   // Start up the worker.

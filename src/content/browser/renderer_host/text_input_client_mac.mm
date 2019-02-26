@@ -106,7 +106,7 @@ uint32_t TextInputClientMac::GetCharacterIndexAtPoint(RenderWidgetHost* rwh,
   BeforeRequest();
 
   // http://crbug.com/121917
-  base::ThreadRestrictions::ScopedAllowWait allow_wait;
+  base::ScopedAllowBaseSyncPrimitives allow_wait;
   condition_.TimedWait(base::TimeDelta::FromMilliseconds(kWaitTimeout));
   AfterRequest();
 
@@ -131,7 +131,7 @@ gfx::Rect TextInputClientMac::GetFirstRectForRange(RenderWidgetHost* rwh,
   BeforeRequest();
 
   // http://crbug.com/121917
-  base::ThreadRestrictions::ScopedAllowWait allow_wait;
+  base::ScopedAllowBaseSyncPrimitives allow_wait;
   condition_.TimedWait(base::TimeDelta::FromMilliseconds(kWaitTimeout));
   AfterRequest();
 

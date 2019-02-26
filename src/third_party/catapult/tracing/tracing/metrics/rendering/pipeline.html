@@ -19,11 +19,12 @@ found in the LICENSE file.
  */
 tr.exportTo('tr.metrics.rendering', function() {
   function eventIsValidGraphicsEvent_(event, eventMap) {
-    if (!event.bindId || !event.args || !event.args.step) {
+    if (event.title !== 'Graphics.Pipeline' || !event.bindId || !event.args ||
+        !event.args.step) {
       return false;
     }
     const bindId = event.bindId;
-    if (bindId in eventMap && event.args.step in eventMap[bindId]) {
+    if (eventMap.has(bindId) && event.args.step in eventMap.get(bindId)) {
       // It is possible for a client to submit multiple compositor frames for
       // one begin-message. So most steps can be present multiple times.
       // However, a begin-frame is issued only once, and received only once. So
@@ -85,31 +86,47 @@ tr.exportTo('tr.metrics.rendering', function() {
         'CrBrowserMain');
   }
 
-  function addPipelineHistograms(histograms, model, segments) {
-    let events = [];
-    for (const thread of model.getAllThreads()) {
-      const graphicsEvents = thread.sliceGroup.slices.filter(
-          slice => {
-            if (slice.title !== 'Graphics.Pipeline') return false;
-            for (const segment of segments) {
-              if (segment.boundsRange.containsExplicitRangeInclusive(
-                  slice.start, slice.end)) {
-                return true;
-              }
-            }
-            return false;
-          }
-      );
-      events = events.concat(graphicsEvents);
-    }
-    const bindEvents = {};
-    for (const event of events) {
-      if (!eventIsValidGraphicsEvent_(event, bindEvents)) continue;
-      const bindId = event.bindId;
-      if (!(bindId in bindEvents)) {
-        bindEvents[bindId] = {};
+  function getAverageRasterTaskStartTime(sourceFrameNumber, model) {
+    const chromeHelper = model.getOrCreateHelper(
+        tr.model.helpers.ChromeModelHelper);
+    const rendererHelper = chromeHelper.rendererWithLargestPid;
+    if (!rendererHelper) return 0;
+    const rasterThreads = rendererHelper.rasterWorkerThreads;
+
+    let totalSum = 0;
+    for (const rasterThread of rasterThreads) {
+      let slicesCounted = 0;
+      let threadTotal = 0;
+      for (const slice of rasterThread.sliceGroup.topLevelSlices) {
+        if (slice.args &&
+            slice.args.source_frame_number_ &&
+            slice.args.source_frame_number_ === sourceFrameNumber) {
+          threadTotal += slice.start;
+          slicesCounted++;
+        }
       }
-      bindEvents[bindId][event.args.step] = event;
+      if (slicesCounted > 0) totalSum += (threadTotal / slicesCounted);
+    }
+    if (rasterThreads.length > 0) return (totalSum / rasterThreads.length);
+    return 0;
+  }
+
+  function addPipelineHistograms(histograms, model, segments) {
+    const ranges = segments.map(s => s.boundsRange);
+    const bindEvents = new Map();
+    for (const thread of model.getAllThreads()) {
+      for (const event of thread.sliceGroup.childEvents()) {
+        if (!eventIsValidGraphicsEvent_(event, bindEvents)) continue;
+        for (const range of ranges) {
+          if (range.containsExplicitRangeInclusive(event.start, event.end)) {
+            if (!bindEvents.has(event.bindId)) bindEvents.set(event.bindId, {});
+            break;
+          }
+        }
+        if (bindEvents.has(event.bindId)) {
+          bindEvents.get(event.bindId)[event.args.step] = event;
+        }
+      }
     }
 
     const dcThread = getDisplayCompositorThread_(model);
@@ -141,13 +158,23 @@ tr.exportTo('tr.metrics.rendering', function() {
           description: 'Latency of begin-frame message from the display ' +
           'compositor to the client, including the IPC latency and task-' +
           'queue time in the client.',
+          summaryOptions: tr.metrics.rendering.SUMMARY_OPTIONS,
         });
     const receiptToSubmit = histograms.createHistogram(
         'pipeline:begin_frame_to_frame_submission',
         tr.b.Unit.byName.timeDurationInMs_smallerIsBetter,
         [], {
           description: 'Latency between begin-frame reception and ' +
-          'CompositorFrame submission in the renderer.'
+          'CompositorFrame submission in the renderer.',
+          summaryOptions: tr.metrics.rendering.SUMMARY_OPTIONS,
+        });
+    const receiptToRaster = histograms.createHistogram(
+        'pipeline:begin_frame_to_raster_tasks',
+        tr.b.Unit.byName.timeDurationInMs_smallerIsBetter,
+        [], {
+          description: 'Latency between begin-frame reception and ' +
+          'CompositorTasks run in the compositor.',
+          summaryOptions: tr.metrics.rendering.SUMMARY_OPTIONS,
         });
     const submitToAggregate = histograms.createHistogram(
         'pipeline:frame_submission_to_display',
@@ -157,23 +184,36 @@ tr.exportTo('tr.metrics.rendering', function() {
           'renderer to display in the display-compositor, including IPC ' +
           'latency, task-queue time in the display-compositor, and ' +
           'additional processing (e.g. surface-sync etc.)',
+          summaryOptions: tr.metrics.rendering.SUMMARY_OPTIONS,
         });
     const aggregateToDraw = histograms.createHistogram(
         'pipeline:draw',
         tr.b.Unit.byName.timeDurationInMs_smallerIsBetter,
-        [], {description: 'How long it takes for the gpu-swap step.'});
+        [], {
+          description: 'How long it takes for the gpu-swap step.',
+          summaryOptions: tr.metrics.rendering.SUMMARY_OPTIONS,
+        });
 
-    for (const flow of Object.values(bindEvents)) {
+    for (const flow of bindEvents.values()) {
       // Report only for the cases that go through the complete pipeline.
       if (!flow.IssueBeginFrame || !flow.ReceiveBeginFrame ||
           !flow.SubmitCompositorFrame || !flow.SurfaceAggregation) {
         continue;
       }
+
+      const sourceFrameNumber = flow.SubmitCompositorFrame.parentSlice
+          .args.source_frame_number_;
+
+      const averageRasterStartTime =
+          getAverageRasterTaskStartTime(sourceFrameNumber, model);
+
       issueToReceipt.addSample(flow.ReceiveBeginFrame.start -
                                flow.IssueBeginFrame.start);
       receiptToSubmit.addSample(
           flow.SubmitCompositorFrame.end - flow.ReceiveBeginFrame.start,
           {breakdown: generateBreakdownForCompositorPipelineInClient_(flow)});
+      receiptToRaster.addSample(averageRasterStartTime -
+          flow.ReceiveBeginFrame.start);
       submitToAggregate.addSample(
           flow.SurfaceAggregation.end - flow.SubmitCompositorFrame.end,
           {breakdown: generateBreakdownForCompositorPipelineInService_(flow)});

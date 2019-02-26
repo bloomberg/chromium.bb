@@ -29,6 +29,7 @@ class MediaStreamDeviceObserverTest : public ::testing::Test {
                       const MediaStreamDevice& device) {
     if (success) {
       stream_label_ = label;
+      current_device_ = device;
       observer_->AddStream(label, device);
     }
 
@@ -40,6 +41,7 @@ class MediaStreamDeviceObserverTest : public ::testing::Test {
   base::test::ScopedTaskEnvironment scoped_task_environment_;
   MockMojoMediaStreamDispatcherHost mock_dispatcher_host_;
   std::unique_ptr<MediaStreamDeviceObserver> observer_;
+  MediaStreamDevice current_device_;
 };
 
 TEST_F(MediaStreamDeviceObserverTest, GetNonScreenCaptureDevices) {
@@ -81,6 +83,70 @@ TEST_F(MediaStreamDeviceObserverTest, GetNonScreenCaptureDevices) {
   // Close the device from request 1.
   observer_->RemoveStream(stream_label1);
   EXPECT_EQ(observer_->video_session_id(stream_label1),
+            MediaStreamDevice::kNoId);
+
+  // Verify that the request have been completed.
+  EXPECT_EQ(observer_->label_stream_map_.size(), 0u);
+}
+
+TEST_F(MediaStreamDeviceObserverTest, OnDeviceStopped) {
+  const int kRequestId = 5;
+
+  EXPECT_EQ(observer_->label_stream_map_.size(), 0u);
+
+  // OpenDevice request.
+  base::RunLoop run_loop1;
+  mock_dispatcher_host_.OpenDevice(
+      kRequestId, "device_path", MEDIA_DEVICE_VIDEO_CAPTURE,
+      base::BindOnce(&MediaStreamDeviceObserverTest::OnDeviceOpened,
+                     base::Unretained(this), run_loop1.QuitClosure()));
+  run_loop1.Run();
+
+  EXPECT_EQ(observer_->label_stream_map_.size(), 1u);
+
+  observer_->OnDeviceStopped(stream_label_, current_device_);
+
+  // Verify that the request have been completed.
+  EXPECT_EQ(observer_->label_stream_map_.size(), 0u);
+}
+
+TEST_F(MediaStreamDeviceObserverTest, OnDeviceChanged) {
+  const int kRequestId1 = 5;
+  const int kRequestId2 = 7;
+  const std::string example_video_id1 = "fake_video_device1";
+  const std::string example_video_id2 = "fake_video_device2";
+
+  EXPECT_EQ(observer_->label_stream_map_.size(), 0u);
+
+  // OpenDevice request.
+  base::RunLoop run_loop1;
+  mock_dispatcher_host_.OpenDevice(
+      kRequestId1, example_video_id1, MEDIA_DEVICE_VIDEO_CAPTURE,
+      base::BindOnce(&MediaStreamDeviceObserverTest::OnDeviceOpened,
+                     base::Unretained(this), run_loop1.QuitClosure()));
+  run_loop1.Run();
+
+  EXPECT_EQ(observer_->label_stream_map_.size(), 1u);
+  MediaStreamDevices video_devices = observer_->GetNonScreenCaptureDevices();
+  EXPECT_EQ(video_devices.size(), 1u);
+  EXPECT_EQ(video_devices[0].id, example_video_id1);
+
+  // OnDeviceChange request.
+  MediaStreamDevice fake_video_device(content::MEDIA_DEVICE_VIDEO_CAPTURE,
+                                      example_video_id2, "Fake Video Device");
+  fake_video_device.session_id = kRequestId2;
+  observer_->OnDeviceChanged(stream_label_, current_device_, fake_video_device);
+
+  // Verify that the device has been changed to the new |fake_video_device|.
+  EXPECT_EQ(observer_->label_stream_map_.size(), 1u);
+  video_devices = observer_->GetNonScreenCaptureDevices();
+  EXPECT_EQ(video_devices.size(), 1u);
+  EXPECT_EQ(video_devices[0].id, example_video_id2);
+  EXPECT_EQ(video_devices[0].session_id, kRequestId2);
+
+  // Close the device from request.
+  observer_->RemoveStream(stream_label_);
+  EXPECT_EQ(observer_->video_session_id(stream_label_),
             MediaStreamDevice::kNoId);
 
   // Verify that the request have been completed.

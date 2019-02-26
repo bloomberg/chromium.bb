@@ -55,4 +55,8 @@ void FakeAccessibilityHelperInstance::SetExploreByTouchEnabled(bool enabled) {
   explore_by_touch_enabled_ = enabled;
 }
 
+void FakeAccessibilityHelperInstance::RefreshWithExtraData(
+    mojom::AccessibilityActionDataPtr action_data_ptr,
+    RefreshWithExtraDataCallback callback) {}
+
 }  // namespace arc

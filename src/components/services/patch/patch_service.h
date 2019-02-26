@@ -5,32 +5,25 @@
 #ifndef COMPONENTS_SERVICES_PATCH_PATCH_SERVICE_H_
 #define COMPONENTS_SERVICES_PATCH_PATCH_SERVICE_H_
 
-#include <memory>
-
-#include "services/service_manager/public/cpp/binder_registry.h"
-#include "services/service_manager/public/cpp/service_context.h"
-#include "services/service_manager/public/cpp/service_context_ref.h"
+#include "base/macros.h"
+#include "services/service_manager/public/cpp/service.h"
+#include "services/service_manager/public/cpp/service_binding.h"
+#include "services/service_manager/public/cpp/service_keepalive.h"
 
 namespace patch {
 
 class PatchService : public service_manager::Service {
  public:
-  PatchService();
+  explicit PatchService(service_manager::mojom::ServiceRequest request);
   ~PatchService() override;
 
-  // Factory method for creating the service.
-  static std::unique_ptr<service_manager::Service> CreateService();
-
-  // Lifescycle events that occur after the service has started to spinup.
-  void OnStart() override;
   void OnBindInterface(const service_manager::BindSourceInfo& source_info,
                        const std::string& interface_name,
                        mojo::ScopedMessagePipeHandle interface_pipe) override;
 
  private:
-  // State needed to manage service lifecycle and lifecycle of bound clients.
-  std::unique_ptr<service_manager::ServiceContextRefFactory> ref_factory_;
-  service_manager::BinderRegistry registry_;
+  service_manager::ServiceBinding binding_;
+  service_manager::ServiceKeepalive keepalive_;
 
   DISALLOW_COPY_AND_ASSIGN(PatchService);
 };

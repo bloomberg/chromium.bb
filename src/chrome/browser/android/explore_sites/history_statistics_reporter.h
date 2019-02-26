@@ -33,6 +33,8 @@ class HistoryStatisticsReporter : public history::HistoryServiceObserver {
   // history::HistoryServiceObserver:
   void OnHistoryServiceLoaded(
       history::HistoryService* history_service) override;
+  void HistoryServiceBeingDeleted(
+      history::HistoryService* history_service) override;
 
   // If needed, computes/reports of history statistics. Uses Prefs to only
   // run weekly (approximately).

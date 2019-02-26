@@ -30,12 +30,16 @@
 #include "third_party/blink/renderer/core/css/style_engine.h"
 
 #include "third_party/blink/renderer/core/css/css_default_style_sheets.h"
+#include "third_party/blink/renderer/core/css/css_font_family_value.h"
 #include "third_party/blink/renderer/core/css/css_font_selector.h"
+#include "third_party/blink/renderer/core/css/css_identifier_value.h"
 #include "third_party/blink/renderer/core/css/css_style_sheet.h"
+#include "third_party/blink/renderer/core/css/css_value_list.h"
 #include "third_party/blink/renderer/core/css/document_style_environment_variables.h"
 #include "third_party/blink/renderer/core/css/document_style_sheet_collector.h"
 #include "third_party/blink/renderer/core/css/font_face_cache.h"
 #include "third_party/blink/renderer/core/css/invalidation/invalidation_set.h"
+#include "third_party/blink/renderer/core/css/property_registry.h"
 #include "third_party/blink/renderer/core/css/resolver/scoped_style_resolver.h"
 #include "third_party/blink/renderer/core/css/resolver/selector_filter_parent_scope.h"
 #include "third_party/blink/renderer/core/css/resolver/style_rule_usage_tracker.h"
@@ -47,6 +51,7 @@
 #include "third_party/blink/renderer/core/dom/element.h"
 #include "third_party/blink/renderer/core/dom/element_traversal.h"
 #include "third_party/blink/renderer/core/dom/layout_tree_builder_traversal.h"
+#include "third_party/blink/renderer/core/dom/node_computed_style.h"
 #include "third_party/blink/renderer/core/dom/processing_instruction.h"
 #include "third_party/blink/renderer/core/dom/shadow_root.h"
 #include "third_party/blink/renderer/core/dom/text.h"
@@ -60,14 +65,13 @@
 #include "third_party/blink/renderer/core/page/page.h"
 #include "third_party/blink/renderer/core/probe/core_probes.h"
 #include "third_party/blink/renderer/core/style/computed_style.h"
+#include "third_party/blink/renderer/core/style/style_initial_data.h"
 #include "third_party/blink/renderer/core/svg/svg_style_element.h"
 #include "third_party/blink/renderer/platform/fonts/font_cache.h"
 #include "third_party/blink/renderer/platform/fonts/font_selector.h"
 #include "third_party/blink/renderer/platform/instrumentation/tracing/trace_event.h"
 
 namespace blink {
-
-using namespace HTMLNames;
 
 StyleEngine::StyleEngine(Document& document)
     : document_(&document),
@@ -110,7 +114,8 @@ TreeScopeStyleSheetCollection& StyleEngine::EnsureStyleSheetCollectionFor(
       style_sheet_collection_map_.insert(&tree_scope, nullptr);
   if (result.is_new_entry) {
     result.stored_value->value =
-        new ShadowTreeStyleSheetCollection(ToShadowRoot(tree_scope));
+        MakeGarbageCollected<ShadowTreeStyleSheetCollection>(
+            ToShadowRoot(tree_scope));
   }
   return *result.stored_value->value.Get();
 }
@@ -341,7 +346,7 @@ void StyleEngine::WatchedSelectorsChanged() {
   // TODO(futhark@chromium.org): Should be able to use RuleSetInvalidation here.
   GetDocument().SetNeedsStyleRecalc(
       kSubtreeStyleChange, StyleChangeReasonForTracing::Create(
-                               StyleChangeReason::kDeclarativeContent));
+                               style_change_reason::kDeclarativeContent));
 }
 
 bool StyleEngine::ShouldUpdateDocumentStyleSheetCollection() const {
@@ -599,11 +604,37 @@ void StyleEngine::ClearFontCacheAndAddUserFonts() {
     resolver_->InvalidateMatchedPropertiesCache();
   }
 
+  default_font_display_map_.clear();
   // Rebuild the font cache with @font-face rules from user style sheets.
   for (unsigned i = 0; i < active_user_style_sheets_.size(); ++i) {
     DCHECK(active_user_style_sheets_[i].second);
-    AddFontFaceRules(*active_user_style_sheets_[i].second);
+    AddUserFontFaceRules(*active_user_style_sheets_[i].second);
+    for (const auto& rule :
+         active_user_style_sheets_[i].second->FontFeatureValuesRules()) {
+      AddDefaultFontDisplay(rule);
+    }
   }
+}
+
+void StyleEngine::AddDefaultFontDisplay(
+    const StyleRuleFontFeatureValues* rule) {
+  if (!rule->FontDisplay())
+    return;
+  for (const auto& family_value : rule->FontFamily()) {
+    if (family_value->IsFontFamilyValue()) {
+      default_font_display_map_.Set(
+          AtomicString(ToCSSFontFamilyValue(family_value)->Value()),
+          CSSValueToFontDisplay(rule->FontDisplay()));
+    }
+  }
+}
+
+FontDisplay StyleEngine::GetDefaultFontDisplay(
+    const AtomicString& family) const {
+  auto it = default_font_display_map_.find(family);
+  if (it == default_font_display_map_.end())
+    return kFontDisplayAuto;
+  return it->value;
 }
 
 void StyleEngine::UpdateGenericFontFamilySettings() {
@@ -747,7 +778,7 @@ void StyleEngine::FontsNeedUpdate(FontSelector*) {
     resolver_->InvalidateMatchedPropertiesCache();
   GetDocument().SetNeedsStyleRecalc(
       kSubtreeStyleChange,
-      StyleChangeReasonForTracing::Create(StyleChangeReason::kFonts));
+      StyleChangeReasonForTracing::Create(style_change_reason::kFonts));
   probe::fontsUpdated(document_, nullptr, String(), nullptr);
 }
 
@@ -764,7 +795,7 @@ void StyleEngine::PlatformColorsChanged() {
     resolver_->InvalidateMatchedPropertiesCache();
   GetDocument().SetNeedsStyleRecalc(
       kSubtreeStyleChange, StyleChangeReasonForTracing::Create(
-                               StyleChangeReason::kPlatformColorChange));
+                               style_change_reason::kPlatformColorChange));
 }
 
 bool StyleEngine::ShouldSkipInvalidationFor(const Element& element) const {
@@ -842,6 +873,24 @@ void StyleEngine::ClassChangedForElement(const SpaceSplitString& old_classes,
                                                          element);
 }
 
+namespace {
+
+bool HasAttributeDependentGeneratedContent(const Element& element) {
+  if (PseudoElement* before = element.GetPseudoElement(kPseudoIdBefore)) {
+    const ComputedStyle* style = before->GetComputedStyle();
+    if (style && style->HasAttrContent())
+      return true;
+  }
+  if (PseudoElement* after = element.GetPseudoElement(kPseudoIdAfter)) {
+    const ComputedStyle* style = after->GetComputedStyle();
+    if (style && style->HasAttrContent())
+      return true;
+  }
+  return false;
+}
+
+}  // namespace
+
 void StyleEngine::AttributeChangedForElement(
     const QualifiedName& attribute_name,
     Element& element) {
@@ -853,6 +902,13 @@ void StyleEngine::AttributeChangedForElement(
       invalidation_lists, element, attribute_name);
   pending_invalidations_.ScheduleInvalidationSetsForNode(invalidation_lists,
                                                          element);
+
+  if (!element.NeedsStyleRecalc() &&
+      HasAttributeDependentGeneratedContent(element)) {
+    element.SetNeedsStyleRecalc(
+        kLocalStyleChange,
+        StyleChangeReasonForTracing::FromAttribute(attribute_name));
+  }
 }
 
 void StyleEngine::IdChangedForElement(const AtomicString& old_id,
@@ -893,10 +949,10 @@ void StyleEngine::PartChangedForElement(Element& element) {
     return;
   element.SetNeedsStyleRecalc(
       kLocalStyleChange,
-      StyleChangeReasonForTracing::FromAttribute(HTMLNames::partAttr));
+      StyleChangeReasonForTracing::FromAttribute(html_names::kPartAttr));
 }
 
-void StyleEngine::PartmapChangedForElement(Element& element) {
+void StyleEngine::ExportpartsChangedForElement(Element& element) {
   if (ShouldSkipInvalidationFor(element))
     return;
   if (!element.GetShadowRoot())
@@ -1055,7 +1111,7 @@ void StyleEngine::ScheduleTypeRuleSetInvalidations(
     if (invalidation_set->InvalidatesTagName(host)) {
       host.SetNeedsStyleRecalc(kLocalStyleChange,
                                StyleChangeReasonForTracing::Create(
-                                   StyleChangeReason::kStyleSheetChange));
+                                   style_change_reason::kStyleSheetChange));
       return;
     }
   }
@@ -1088,7 +1144,7 @@ void StyleEngine::InvalidateSlottedElements(HTMLSlotElement& slot) {
     if (node->IsElementNode()) {
       node->SetNeedsStyleRecalc(kLocalStyleChange,
                                 StyleChangeReasonForTracing::Create(
-                                    StyleChangeReason::kStyleSheetChange));
+                                    style_change_reason::kStyleSheetChange));
     }
   }
 }
@@ -1204,7 +1260,7 @@ void StyleEngine::InitialStyleChanged() {
 
   GetDocument().SetNeedsStyleRecalc(
       kSubtreeStyleChange,
-      StyleChangeReasonForTracing::Create(StyleChangeReason::kSettings));
+      StyleChangeReasonForTracing::Create(style_change_reason::kSettings));
 }
 
 void StyleEngine::InitialViewportChanged() {
@@ -1238,8 +1294,9 @@ void StyleEngine::HtmlImportAddedOrRemoved() {
     MarkDocumentDirty();
     resolver->SetNeedsAppendAllSheets();
     GetDocument().SetNeedsStyleRecalc(
-        kSubtreeStyleChange, StyleChangeReasonForTracing::Create(
-                                 StyleChangeReason::kActiveStylesheetsUpdate));
+        kSubtreeStyleChange,
+        StyleChangeReasonForTracing::Create(
+            style_change_reason::kActiveStylesheetsUpdate));
   }
 }
 
@@ -1257,7 +1314,9 @@ namespace {
 enum RuleSetFlags {
   kFontFaceRules = 1 << 0,
   kKeyframesRules = 1 << 1,
-  kFullRecalcRules = 1 << 2
+  kFullRecalcRules = 1 << 2,
+  kFontFeatureValuesRules = 1 << 3,
+  kFontRules = kFontFaceRules | kFontFeatureValuesRules,
 };
 
 unsigned GetRuleSetFlags(const HeapHashSet<Member<RuleSet>> rule_sets) {
@@ -1270,6 +1329,8 @@ unsigned GetRuleSetFlags(const HeapHashSet<Member<RuleSet>> rule_sets) {
       flags |= kFontFaceRules;
     if (rule_set->NeedsFullRecalcForRuleSetInvalidation())
       flags |= kFullRecalcRules;
+    if (!rule_set->FontFeatureValuesRules().IsEmpty())
+      flags |= kFontFeatureValuesRules;
   }
   return flags;
 }
@@ -1287,8 +1348,9 @@ void StyleEngine::InvalidateForRuleSetChanges(
   if (!tree_scope.GetDocument().body() ||
       tree_scope.GetDocument().HasNodesWithPlaceholderStyle()) {
     tree_scope.GetDocument().SetNeedsStyleRecalc(
-        kSubtreeStyleChange, StyleChangeReasonForTracing::Create(
-                                 StyleChangeReason::kCleanupPlaceholderStyles));
+        kSubtreeStyleChange,
+        StyleChangeReasonForTracing::Create(
+            style_change_reason::kCleanupPlaceholderStyles));
     return;
   }
 
@@ -1304,13 +1366,18 @@ void StyleEngine::InvalidateForRuleSetChanges(
       ((changed_rule_flags & kFontFaceRules) &&
        tree_scope.RootNode().IsDocumentNode())) {
     invalidation_root.SetNeedsStyleRecalc(
-        kSubtreeStyleChange, StyleChangeReasonForTracing::Create(
-                                 StyleChangeReason::kActiveStylesheetsUpdate));
+        kSubtreeStyleChange,
+        StyleChangeReasonForTracing::Create(
+            style_change_reason::kActiveStylesheetsUpdate));
     return;
   }
 
   ScheduleInvalidationsForRuleSets(tree_scope, changed_rule_sets,
                                    invalidation_scope);
+}
+
+void StyleEngine::InvalidateInitialData() {
+  initial_data_ = nullptr;
 }
 
 void StyleEngine::ApplyUserRuleSetChanges(
@@ -1330,7 +1397,7 @@ void StyleEngine::ApplyUserRuleSetChanges(
   global_rule_set_->MarkDirty();
 
   unsigned changed_rule_flags = GetRuleSetFlags(changed_rule_sets);
-  if (changed_rule_flags & kFontFaceRules) {
+  if (changed_rule_flags & kFontRules) {
     if (ScopedStyleResolver* scoped_resolver =
             GetDocument().GetScopedStyleResolver()) {
       // User style and document scope author style shares the font cache. If
@@ -1351,7 +1418,7 @@ void StyleEngine::ApplyUserRuleSetChanges(
     for (auto* it = new_style_sheets.begin(); it != new_style_sheets.end();
          it++) {
       DCHECK(it->second);
-      AddKeyframeRules(*it->second);
+      AddUserKeyframeRules(*it->second);
     }
     ScopedStyleResolver::KeyframesRulesAdded(GetDocument());
   }
@@ -1374,7 +1441,7 @@ void StyleEngine::ApplyRuleSetChanges(
   unsigned changed_rule_flags = GetRuleSetFlags(changed_rule_sets);
 
   bool rebuild_font_cache = change == kActiveSheetsChanged &&
-                            (changed_rule_flags & kFontFaceRules) &&
+                            (changed_rule_flags & kFontRules) &&
                             tree_scope.RootNode().IsDocumentNode();
   ScopedStyleResolver* scoped_resolver = tree_scope.GetScopedStyleResolver();
   if (scoped_resolver && scoped_resolver->NeedsAppendAllSheets()) {
@@ -1422,9 +1489,9 @@ const MediaQueryEvaluator& StyleEngine::EnsureMediaQueryEvaluator() {
   if (!media_query_evaluator_) {
     if (GetDocument().GetFrame()) {
       media_query_evaluator_ =
-          new MediaQueryEvaluator(GetDocument().GetFrame());
+          MakeGarbageCollected<MediaQueryEvaluator>(GetDocument().GetFrame());
     } else {
-      media_query_evaluator_ = new MediaQueryEvaluator("all");
+      media_query_evaluator_ = MakeGarbageCollected<MediaQueryEvaluator>("all");
     }
   }
   return *media_query_evaluator_;
@@ -1476,15 +1543,16 @@ void StyleEngine::CustomPropertyRegistered() {
   // TODO(timloh): Invalidate only elements with this custom property set
   GetDocument().SetNeedsStyleRecalc(
       kSubtreeStyleChange, StyleChangeReasonForTracing::Create(
-                               StyleChangeReason::kPropertyRegistration));
+                               style_change_reason::kPropertyRegistration));
   if (resolver_)
     resolver_->InvalidateMatchedPropertiesCache();
+  InvalidateInitialData();
 }
 
 void StyleEngine::EnvironmentVariableChanged() {
   GetDocument().SetNeedsStyleRecalc(
       kSubtreeStyleChange, StyleChangeReasonForTracing::Create(
-                               StyleChangeReason::kPropertyRegistration));
+                               style_change_reason::kPropertyRegistration));
   if (resolver_)
     resolver_->InvalidateMatchedPropertiesCache();
 }
@@ -1555,7 +1623,7 @@ void StyleEngine::CollectMatchingUserRules(
   }
 }
 
-void StyleEngine::AddFontFaceRules(const RuleSet& rule_set) {
+void StyleEngine::AddUserFontFaceRules(const RuleSet& rule_set) {
   if (!font_selector_)
     return;
 
@@ -1569,14 +1637,14 @@ void StyleEngine::AddFontFaceRules(const RuleSet& rule_set) {
     resolver_->InvalidateMatchedPropertiesCache();
 }
 
-void StyleEngine::AddKeyframeRules(const RuleSet& rule_set) {
+void StyleEngine::AddUserKeyframeRules(const RuleSet& rule_set) {
   const HeapVector<Member<StyleRuleKeyframes>> keyframes_rules =
       rule_set.KeyframesRules();
   for (unsigned i = 0; i < keyframes_rules.size(); ++i)
-    AddKeyframeStyle(keyframes_rules[i]);
+    AddUserKeyframeStyle(keyframes_rules[i]);
 }
 
-void StyleEngine::AddKeyframeStyle(StyleRuleKeyframes* rule) {
+void StyleEngine::AddUserKeyframeStyle(StyleRuleKeyframes* rule) {
   AtomicString animation_name(rule->GetName());
 
   if (rule->IsVendorPrefixed()) {
@@ -1608,6 +1676,16 @@ DocumentStyleEnvironmentVariables& StyleEngine::EnsureEnvironmentVariables() {
         StyleEnvironmentVariables::GetRootInstance(), *document_);
   }
   return *environment_variables_.get();
+}
+
+scoped_refptr<StyleInitialData> StyleEngine::MaybeCreateAndGetInitialData() {
+  if (initial_data_)
+    return initial_data_;
+  if (PropertyRegistry* registry = document_->GetPropertyRegistry()) {
+    if (registry->RegistrationCount())
+      initial_data_ = StyleInitialData::Create(*registry);
+  }
+  return initial_data_;
 }
 
 void StyleEngine::RecalcStyle(StyleRecalcChange change) {

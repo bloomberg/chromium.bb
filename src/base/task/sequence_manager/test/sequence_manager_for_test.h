@@ -13,8 +13,6 @@
 
 namespace base {
 
-class MessageLoop;
-
 namespace sequence_manager {
 
 class SequenceManagerForTest : public internal::SequenceManagerImpl {
@@ -25,7 +23,7 @@ class SequenceManagerForTest : public internal::SequenceManagerImpl {
   // the given arguments. ThreadControllerImpl is slightly overridden to skip
   // nesting observers registration if message loop is absent.
   static std::unique_ptr<SequenceManagerForTest> Create(
-      MessageLoop* message_loop,
+      MessageLoopBase* message_loop_base,
       scoped_refptr<SingleThreadTaskRunner> task_runner,
       const TickClock* clock);
 
@@ -40,6 +38,7 @@ class SequenceManagerForTest : public internal::SequenceManagerImpl {
   size_t QueuesToShutdownCount();
 
   using internal::SequenceManagerImpl::GetNextSequenceNumber;
+  using internal::SequenceManagerImpl::ReloadEmptyWorkQueues;
   using internal::SequenceManagerImpl::WakeUpReadyDelayedQueues;
 
  private:

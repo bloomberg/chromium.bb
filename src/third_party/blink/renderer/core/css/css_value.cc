@@ -50,6 +50,7 @@
 #include "third_party/blink/renderer/core/css/css_image_value.h"
 #include "third_party/blink/renderer/core/css/css_inherited_value.h"
 #include "third_party/blink/renderer/core/css/css_initial_value.h"
+#include "third_party/blink/renderer/core/css/css_invalid_variable_value.h"
 #include "third_party/blink/renderer/core/css/css_layout_function_value.h"
 #include "third_party/blink/renderer/core/css/css_paint_value.h"
 #include "third_party/blink/renderer/core/css/css_path_value.h"
@@ -67,7 +68,7 @@
 #include "third_party/blink/renderer/core/css/css_value_list.h"
 #include "third_party/blink/renderer/core/css/css_value_pair.h"
 #include "third_party/blink/renderer/core/css/css_variable_reference_value.h"
-#include "third_party/blink/renderer/platform/length.h"
+#include "third_party/blink/renderer/platform/geometry/length.h"
 #include "third_party/blink/renderer/platform/wtf/size_assertions.h"
 
 namespace blink {
@@ -246,6 +247,8 @@ bool CSSValue::operator==(const CSSValue& other) const {
         return CompareCSSValues<CSSVariableReferenceValue>(*this, other);
       case kPendingSubstitutionValueClass:
         return CompareCSSValues<CSSPendingSubstitutionValue>(*this, other);
+      case kInvalidVariableValueClass:
+        return CompareCSSValues<CSSInvalidVariableValue>(*this, other);
     }
     NOTREACHED();
     return false;
@@ -351,6 +354,8 @@ String CSSValue::CssText() const {
       return ToCSSCustomPropertyDeclaration(this)->CustomCSSText();
     case kPendingSubstitutionValueClass:
       return ToCSSPendingSubstitutionValue(this)->CustomCSSText();
+    case kInvalidVariableValueClass:
+      return ToCSSInvalidVariableValue(this)->CustomCSSText();
   }
   NOTREACHED();
   return String();
@@ -503,6 +508,9 @@ void CSSValue::FinalizeGarbageCollectedObject() {
     case kPendingSubstitutionValueClass:
       ToCSSPendingSubstitutionValue(this)->~CSSPendingSubstitutionValue();
       return;
+    case kInvalidVariableValueClass:
+      ToCSSInvalidVariableValue(this)->~CSSInvalidVariableValue();
+      return;
   }
   NOTREACHED();
 }
@@ -652,6 +660,9 @@ void CSSValue::Trace(blink::Visitor* visitor) {
       return;
     case kPendingSubstitutionValueClass:
       ToCSSPendingSubstitutionValue(this)->TraceAfterDispatch(visitor);
+      return;
+    case kInvalidVariableValueClass:
+      ToCSSInvalidVariableValue(this)->TraceAfterDispatch(visitor);
       return;
   }
   NOTREACHED();

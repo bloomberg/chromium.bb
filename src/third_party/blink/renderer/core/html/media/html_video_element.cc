@@ -28,7 +28,7 @@
 #include <memory>
 #include "cc/paint/paint_canvas.h"
 #include "third_party/blink/public/platform/web_fullscreen_video_status.h"
-#include "third_party/blink/renderer/core/css_property_names.h"
+#include "third_party/blink/renderer/core/css/css_property_names.h"
 #include "third_party/blink/renderer/core/dom/attribute.h"
 #include "third_party/blink/renderer/core/dom/document.h"
 #include "third_party/blink/renderer/core/dom/dom_exception.h"
@@ -56,12 +56,12 @@
 #include "third_party/blink/renderer/platform/graphics/gpu/extensions_3d_util.h"
 #include "third_party/blink/renderer/platform/graphics/graphics_context.h"
 #include "third_party/blink/renderer/platform/histogram.h"
-#include "third_party/blink/renderer/platform/layout_test_support.h"
 #include "third_party/blink/renderer/platform/runtime_enabled_features.h"
+#include "third_party/blink/renderer/platform/web_test_support.h"
 
 namespace blink {
 
-using namespace HTMLNames;
+using namespace html_names;
 
 namespace {
 
@@ -75,7 +75,7 @@ enum VideoPersistenceControlsType {
 }  // anonymous namespace
 
 inline HTMLVideoElement::HTMLVideoElement(Document& document)
-    : HTMLMediaElement(videoTag, document),
+    : HTMLMediaElement(kVideoTag, document),
       remoting_interstitial_(nullptr),
       picture_in_picture_interstitial_(nullptr),
       in_overlay_fullscreen_video_(false) {
@@ -86,11 +86,11 @@ inline HTMLVideoElement::HTMLVideoElement(Document& document)
 
   if (RuntimeEnabledFeatures::VideoFullscreenDetectionEnabled()) {
     custom_controls_fullscreen_detector_ =
-        new MediaCustomControlsFullscreenDetector(*this);
+        MakeGarbageCollected<MediaCustomControlsFullscreenDetector>(*this);
   }
 
-  if (MediaElementParserHelpers::IsMediaElement(this) &&
-      !MediaElementParserHelpers::IsUnsizedMediaEnabled(document)) {
+  if (media_element_parser_helpers::IsMediaElement(this) &&
+      !document.IsFeatureEnabled(mojom::FeaturePolicyFeature::kUnsizedMedia)) {
     is_default_overridden_intrinsic_size_ = true;
     overridden_intrinsic_size_ =
         IntSize(LayoutReplaced::kDefaultWidth, LayoutReplaced::kDefaultHeight);
@@ -98,7 +98,7 @@ inline HTMLVideoElement::HTMLVideoElement(Document& document)
 }
 
 HTMLVideoElement* HTMLVideoElement::Create(Document& document) {
-  HTMLVideoElement* video = new HTMLVideoElement(document);
+  HTMLVideoElement* video = MakeGarbageCollected<HTMLVideoElement>(document);
   video->EnsureUserAgentShadowRoot();
   video->PauseIfNeeded();
   return video;
@@ -169,9 +169,9 @@ void HTMLVideoElement::CollectStyleForPresentationAttribute(
     const QualifiedName& name,
     const AtomicString& value,
     MutableCSSPropertyValueSet* style) {
-  if (name == widthAttr)
+  if (name == kWidthAttr)
     AddHTMLLengthToStyle(style, CSSPropertyWidth, value);
-  else if (name == heightAttr)
+  else if (name == kHeightAttr)
     AddHTMLLengthToStyle(style, CSSPropertyHeight, value);
   else
     HTMLMediaElement::CollectStyleForPresentationAttribute(name, value, style);
@@ -179,14 +179,14 @@ void HTMLVideoElement::CollectStyleForPresentationAttribute(
 
 bool HTMLVideoElement::IsPresentationAttribute(
     const QualifiedName& name) const {
-  if (name == widthAttr || name == heightAttr)
+  if (name == kWidthAttr || name == kHeightAttr)
     return true;
   return HTMLMediaElement::IsPresentationAttribute(name);
 }
 
 void HTMLVideoElement::ParseAttribute(
     const AttributeModificationParams& params) {
-  if (params.name == posterAttr) {
+  if (params.name == kPosterAttr) {
     // In case the poster attribute is set after playback, don't update the
     // display state, post playback the correct state will be picked up.
     if (GetDisplayMode() < kVideo || !HasAvailableVideoFrame()) {
@@ -216,12 +216,12 @@ void HTMLVideoElement::ParseAttribute(
       remoting_interstitial_->OnPosterImageChanged();
     if (picture_in_picture_interstitial_)
       picture_in_picture_interstitial_->OnPosterImageChanged();
-  } else if (params.name == intrinsicsizeAttr &&
+  } else if (params.name == kIntrinsicsizeAttr &&
              RuntimeEnabledFeatures::
                  ExperimentalProductivityFeaturesEnabled()) {
     String message;
     bool intrinsic_size_changed =
-        MediaElementParserHelpers::ParseIntrinsicSizeAttribute(
+        media_element_parser_helpers::ParseIntrinsicSizeAttribute(
             params.new_value, this, &overridden_intrinsic_size_,
             &is_default_overridden_intrinsic_size_, &message);
     if (!message.IsEmpty()) {
@@ -263,12 +263,12 @@ IntSize HTMLVideoElement::GetOverriddenIntrinsicSize() const {
 }
 
 bool HTMLVideoElement::IsURLAttribute(const Attribute& attribute) const {
-  return attribute.GetName() == posterAttr ||
+  return attribute.GetName() == kPosterAttr ||
          HTMLMediaElement::IsURLAttribute(attribute);
 }
 
 const AtomicString HTMLVideoElement::ImageSourceURL() const {
-  const AtomicString& url = getAttribute(posterAttr);
+  const AtomicString& url = getAttribute(kPosterAttr);
   if (!StripLeadingAndTrailingHTMLSpaces(url).IsEmpty())
     return url;
   return default_poster_url_;
@@ -376,6 +376,7 @@ void HTMLVideoElement::PaintCurrentFrame(
   } else {
     media_flags.setAlpha(0xFF);
     media_flags.setFilterQuality(kLow_SkFilterQuality);
+    media_flags.setBlendMode(SkBlendMode::kSrc);
   }
 
   GetWebMediaPlayer()->Paint(canvas, dest_rect, media_flags,
@@ -454,8 +455,8 @@ bool HTMLVideoElement::HasAvailableVideoFrame() const {
 
 void HTMLVideoElement::webkitEnterFullscreen() {
   if (!IsFullscreen()) {
-    FullscreenOptions options;
-    options.setNavigationUI("hide");
+    FullscreenOptions* options = FullscreenOptions::Create();
+    options->setNavigationUI("hide");
     Fullscreen::RequestFullscreen(*this, options,
                                   Fullscreen::RequestType::kPrefixed);
   }
@@ -489,8 +490,8 @@ void HTMLVideoElement::DidEnterFullscreen() {
     exitPictureInPicture(base::DoNothing());
 
   if (GetWebMediaPlayer()) {
-    // FIXME: There is no embedder-side handling in layout test mode.
-    if (!LayoutTestSupport::IsRunningLayoutTest())
+    // FIXME: There is no embedder-side handling in web test mode.
+    if (!WebTestSupport::IsRunningWebTest())
       GetWebMediaPlayer()->EnteredFullscreen();
     GetWebMediaPlayer()->OnDisplayTypeChanged(DisplayType());
   }
@@ -582,9 +583,8 @@ scoped_refptr<Image> HTMLVideoElement::GetSourceImageForCanvas(
   return snapshot;
 }
 
-bool HTMLVideoElement::WouldTaintOrigin(
-    const SecurityOrigin* destination_security_origin) const {
-  return !IsMediaDataCORSSameOrigin(destination_security_origin);
+bool HTMLVideoElement::WouldTaintOrigin(const SecurityOrigin*) const {
+  return !IsMediaDataCorsSameOrigin();
 }
 
 FloatSize HTMLVideoElement::ElementSize(const FloatSize&) const {
@@ -599,7 +599,7 @@ ScriptPromise HTMLVideoElement::CreateImageBitmap(
     ScriptState* script_state,
     EventTarget& event_target,
     base::Optional<IntRect> crop_rect,
-    const ImageBitmapOptions& options) {
+    const ImageBitmapOptions* options) {
   DCHECK(event_target.ToLocalDOMWindow());
   if (getNetworkState() == HTMLMediaElement::kNetworkEmpty) {
     return ScriptPromise::RejectWithDOMException(
@@ -624,7 +624,8 @@ ScriptPromise HTMLVideoElement::CreateImageBitmap(
 void HTMLVideoElement::MediaRemotingStarted(
     const WebString& remote_device_friendly_name) {
   if (!remoting_interstitial_) {
-    remoting_interstitial_ = new MediaRemotingInterstitial(*this);
+    remoting_interstitial_ =
+        MakeGarbageCollected<MediaRemotingInterstitial>(*this);
     ShadowRoot& shadow_root = EnsureUserAgentShadowRoot();
     shadow_root.InsertBefore(remoting_interstitial_, shadow_root.firstChild());
     HTMLMediaElement::AssertShadowRootChildren(shadow_root);
@@ -698,7 +699,8 @@ bool HTMLVideoElement::IsInAutoPIP() const {
 
 void HTMLVideoElement::OnEnteredPictureInPicture() {
   if (!picture_in_picture_interstitial_) {
-    picture_in_picture_interstitial_ = new PictureInPictureInterstitial(*this);
+    picture_in_picture_interstitial_ =
+        MakeGarbageCollected<PictureInPictureInterstitial>(*this);
     ShadowRoot& shadow_root = EnsureUserAgentShadowRoot();
     shadow_root.InsertBefore(picture_in_picture_interstitial_,
                              shadow_root.firstChild());
@@ -746,10 +748,10 @@ void HTMLVideoElement::SetIsEffectivelyFullscreen(
 void HTMLVideoElement::AddedEventListener(
     const AtomicString& event_type,
     RegisteredEventListener& registered_listener) {
-  if (event_type == EventTypeNames::enterpictureinpicture) {
+  if (event_type == event_type_names::kEnterpictureinpicture) {
     UseCounter::Count(GetExecutionContext(),
                       WebFeature::kEnterPictureInPictureEventListener);
-  } else if (event_type == EventTypeNames::leavepictureinpicture) {
+  } else if (event_type == event_type_names::kLeavepictureinpicture) {
     UseCounter::Count(GetExecutionContext(),
                       WebFeature::kLeavePictureInPictureEventListener);
   }

@@ -7,18 +7,21 @@
 #include <memory>
 
 #include "base/ios/ios_util.h"
-#include "ios/chrome/browser/ui/animation_util.h"
+#include "base/metrics/histogram_macros.h"
 #import "ios/chrome/browser/ui/omnibox/image_retriever.h"
 #import "ios/chrome/browser/ui/omnibox/omnibox_util.h"
 #import "ios/chrome/browser/ui/omnibox/popup/omnibox_popup_row.h"
 #import "ios/chrome/browser/ui/omnibox/popup/self_sizing_table_view.h"
 #import "ios/chrome/browser/ui/omnibox/truncating_attributed_label.h"
-#include "ios/chrome/browser/ui/rtl_geometry.h"
 #import "ios/chrome/browser/ui/toolbar/buttons/toolbar_configuration.h"
-#include "ios/chrome/browser/ui/ui_util.h"
-#import "ios/chrome/browser/ui/uikit_ui_util.h"
+#include "ios/chrome/browser/ui/util/animation_util.h"
+#include "ios/chrome/browser/ui/util/rtl_geometry.h"
+#include "ios/chrome/browser/ui/util/ui_util.h"
+#import "ios/chrome/browser/ui/util/uikit_ui_util.h"
 #include "ios/chrome/common/ui_util/constraints_ui_util.h"
+#include "ios/chrome/grit/ios_strings.h"
 #include "ios/chrome/grit/ios_theme_resources.h"
+#include "ui/base/l10n/l10n_util.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
 #error "This file requires ARC support."
@@ -27,7 +30,7 @@
 namespace {
 const int kRowCount = 6;
 const CGFloat kRowHeight = 48.0;
-const CGFloat kShortcutsRowHeight = 100;
+const CGFloat kShortcutsRowHeight = 220;
 const CGFloat kAnswerRowHeight = 64.0;
 const CGFloat kTopAndBottomPadding = 8.0;
 UIColor* BackgroundColorTablet() {
@@ -47,8 +50,9 @@ UIColor* BackgroundColorIncognito() {
 }
 }  // namespace
 
-@interface OmniboxPopupViewController ()<UITableViewDelegate,
-                                         UITableViewDataSource> {
+@interface OmniboxPopupViewController () <OmniboxPopupRowAccessibilityDelegate,
+                                          UITableViewDelegate,
+                                          UITableViewDataSource> {
   // Alignment of omnibox text. Popup text should match this alignment.
   NSTextAlignment _alignment;
 
@@ -76,6 +80,10 @@ UIColor* BackgroundColorIncognito() {
 // The cell with shortcuts to display when no results are available (only if
 // this is enabled with |shortcutsEnabled|). Lazily instantiated.
 @property(nonatomic, strong) UITableViewCell* shortcutsCell;
+
+// Time the view appeared on screen. Used to record a metric of how long this
+// view controller was on screen.
+@property(nonatomic, assign) base::TimeTicks viewAppearanceTime;
 
 @end
 
@@ -127,10 +135,7 @@ UIColor* BackgroundColorIncognito() {
 - (void)viewDidLoad {
   [super viewDidLoad];
 
-  // Respect the safe area on iOS 11 to support iPhone X.
-  if (@available(iOS 11, *)) {
-    self.tableView.insetsContentViewsToSafeArea = YES;
-  }
+  self.tableView.insetsContentViewsToSafeArea = YES;
 
   // Initialize the same size as the parent view, autoresize will correct this.
   [self.view setFrame:CGRectZero];
@@ -153,10 +158,12 @@ UIColor* BackgroundColorIncognito() {
         [NSString stringWithFormat:@"omnibox suggestion %i", i];
     row.autoresizingMask = UIViewAutoresizingFlexibleWidth;
     [rowsBuilder addObject:row];
-    [row.appendButton addTarget:self
-                         action:@selector(appendButtonTapped:)
-               forControlEvents:UIControlEventTouchUpInside];
-    [row.appendButton setTag:i];
+    [row.trailingButton addTarget:self
+                           action:@selector(trailingButtonTapped:)
+                 forControlEvents:UIControlEventTouchUpInside];
+    [row.trailingButton setTag:i];
+    row.rowNumber = i;
+    row.delegate = self;
     row.rowHeight = kRowHeight;
   }
   _rows = [rowsBuilder copy];
@@ -168,7 +175,8 @@ UIColor* BackgroundColorIncognito() {
   if ([self.tableView respondsToSelector:@selector(setLayoutMargins:)]) {
     [self.tableView setLayoutMargins:UIEdgeInsetsZero];
   }
-  self.automaticallyAdjustsScrollViewInsets = NO;
+  self.tableView.contentInsetAdjustmentBehavior =
+      UIScrollViewContentInsetAdjustmentNever;
   [self.tableView setContentInset:UIEdgeInsetsMake(kTopAndBottomPadding, 0,
                                                    kTopAndBottomPadding, 0)];
   self.tableView.estimatedRowHeight = 0;
@@ -210,6 +218,19 @@ UIColor* BackgroundColorIncognito() {
                                completion:nil];
 }
 
+#pragma mark - View lifecycle
+
+- (void)viewDidAppear:(BOOL)animated {
+  [super viewDidAppear:animated];
+  self.viewAppearanceTime = base::TimeTicks::Now();
+}
+
+- (void)viewWillDisappear:(BOOL)animated {
+  [super viewWillDisappear:animated];
+  UMA_HISTOGRAM_MEDIUM_TIMES("MobileOmnibox.PopupOpenDuration",
+                             base::TimeTicks::Now() - self.viewAppearanceTime);
+}
+
 #pragma mark - Properties accessors
 
 - (void)setIncognito:(BOOL)incognito {
@@ -237,6 +258,7 @@ UIColor* BackgroundColorIncognito() {
   DCHECK(self.shortcutsViewController);
 
   UITableViewCell* cell = [[UITableViewCell alloc] init];
+  cell.backgroundColor = [UIColor clearColor];
   [self.shortcutsViewController willMoveToParentViewController:self];
   [self addChildViewController:self.shortcutsViewController];
   [cell.contentView addSubview:self.shortcutsViewController.view];
@@ -284,7 +306,7 @@ UIColor* BackgroundColorIncognito() {
   const CGFloat kDetailCellTopPadding = 26;
   const CGFloat kTextLabelHeight = 24;
   const CGFloat kTextDetailLabelHeight = 22;
-  const CGFloat kAppendButtonWidth = 40;
+  const CGFloat kTrailingButtonWidth = 40;
   const CGFloat kAnswerLabelHeight = 36;
   const CGFloat kAnswerImageWidth = 30;
   const CGFloat kAnswerImageLeftPadding = -1;
@@ -308,7 +330,7 @@ UIColor* BackgroundColorIncognito() {
         kTextCellLeadingPadding + kAnswerImageLeftPadding;
     if (alignmentRight) {
       imageLeftPadding =
-          row.frame.size.width - (kAnswerImageWidth + kAppendButtonWidth);
+          row.frame.size.width - (kAnswerImageWidth + kTrailingButtonWidth);
     }
     CGFloat imageTopPadding = kDetailCellTopPadding + kAnswerImageTopPadding;
     row.answerImageView.frame =
@@ -338,7 +360,7 @@ UIColor* BackgroundColorIncognito() {
   [detailTextLabel setTextAlignment:_alignment];
 
   // The width must be positive for CGContextRef to be valid.
-  UIEdgeInsets safeAreaInsets = SafeAreaInsetsForView(self.view);
+  UIEdgeInsets safeAreaInsets = self.view.safeAreaInsets;
   CGRect rowBounds = UIEdgeInsetsInsetRect(self.view.bounds, safeAreaInsets);
   CGFloat labelWidth =
       MAX(40, floorf(rowBounds.size.width) - kTextCellLeadingPadding);
@@ -396,22 +418,25 @@ UIColor* BackgroundColorIncognito() {
     [row updateLeadingImage:image];
   }
 
+  row.tabMatch = match.isTabMatch;
+
   // Show append button for search history/search suggestions as the right
   // control element (aka an accessory element of a table view cell).
-  row.appendButton.hidden = !match.isAppendable;
-  [row.appendButton cancelTrackingWithEvent:nil];
+  BOOL hasVisibleTrailingButton = match.isAppendable || match.isTabMatch;
+  row.trailingButton.hidden = !hasVisibleTrailingButton;
+  [row.trailingButton cancelTrackingWithEvent:nil];
 
   // If a right accessory element is present or the text alignment is right
   // aligned, adjust the width to align with the accessory element.
-  if (match.isAppendable || alignmentRight) {
+  if (hasVisibleTrailingButton || alignmentRight) {
     LayoutRect layout =
         LayoutRectForRectInBoundingRect(textLabel.frame, self.view.frame);
-    layout.size.width -= kAppendButtonWidth;
+    layout.size.width -= kTrailingButtonWidth;
     textLabel.frame = LayoutRectGetRect(layout);
     layout =
         LayoutRectForRectInBoundingRect(detailTextLabel.frame, self.view.frame);
     layout.size.width -=
-        kAppendButtonWidth + (match.hasImage ? answerImagePadding : 0);
+        kTrailingButtonWidth + (match.hasImage ? answerImagePadding : 0);
     detailTextLabel.frame = LayoutRectGetRect(layout);
   }
 
@@ -433,6 +458,19 @@ UIColor* BackgroundColorIncognito() {
     frame.origin.x = kLTRTextInRTLLayoutLeftPadding;
     detailTextLabel.frame = frame;
   }
+
+  NSString* trailingButtonActionName =
+      row.tabMatch
+          ? l10n_util::GetNSString(IDS_IOS_OMNIBOX_POPUP_SWITCH_TO_OPEN_TAB)
+          : l10n_util::GetNSString(IDS_IOS_OMNIBOX_POPUP_APPEND);
+  UIAccessibilityCustomAction* trailingButtonAction =
+      [[UIAccessibilityCustomAction alloc]
+          initWithName:trailingButtonActionName
+                target:row
+              selector:@selector(accessibilityTrailingButtonTapped)];
+
+  row.accessibilityCustomActions =
+      hasVisibleTrailingButton ? @[ trailingButtonAction ] : nil;
 
   [textLabel setNeedsDisplay];
 }
@@ -524,9 +562,10 @@ UIColor* BackgroundColorIncognito() {
 #pragma mark -
 #pragma mark Action for append UIButton
 
-- (void)appendButtonTapped:(id)sender {
+- (void)trailingButtonTapped:(id)sender {
   NSUInteger row = [sender tag];
-  [self.delegate autocompleteResultConsumer:self didSelectRowForAppending:row];
+  [self.delegate autocompleteResultConsumer:self
+                 didTapTrailingButtonForRow:row];
 }
 
 #pragma mark -
@@ -535,19 +574,20 @@ UIColor* BackgroundColorIncognito() {
 - (void)scrollViewDidScroll:(UIScrollView*)scrollView {
   // TODO(crbug.com/733650): Default to the dragging check once it's been tested
   // on trunk.
-  if (base::ios::IsRunningOnIOS11OrLater()) {
-    if (!scrollView.dragging)
-      return;
-  } else {
-    // Setting the top inset of the scrollView to |kTopAndBottomPadding| causes
-    // a one time scrollViewDidScroll to |-kTopAndBottomPadding|.  It's easier
-    // to just ignore this one scroll tick.
-    if (scrollView.contentOffset.y == 0 - kTopAndBottomPadding)
-      return;
+  if (!scrollView.dragging)
+    return;
+
+  if (!_currentResult.count) {
+    // No need to dismiss the keyboard when there are no results.
+    return;
   }
 
+  // TODO(crbug.com/911534): The following call chain ultimately just dismisses
+  // the keyboard, but involves many layers of plumbing, and should be
+  // refactored.
   if (self.forwardsScrollEvents)
     [self.delegate autocompleteResultConsumerDidScroll:self];
+
   for (OmniboxPopupRow* row in _rows) {
     row.highlighted = NO;
   }
@@ -624,6 +664,16 @@ UIColor* BackgroundColorIncognito() {
 
 #pragma mark -
 #pragma mark Table view delegate
+
+- (BOOL)tableView:(UITableView*)tableView
+    shouldHighlightRowAtIndexPath:(NSIndexPath*)indexPath {
+  if (self.shortcutsEnabled && indexPath.row == 0 &&
+      _currentResult.count == 0) {
+    return NO;
+  }
+
+  return YES;
+}
 
 - (void)tableView:(UITableView*)tableView
     didSelectRowAtIndexPath:(NSIndexPath*)indexPath {
@@ -725,6 +775,13 @@ UIColor* BackgroundColorIncognito() {
 
 - (BOOL)useRegularWidthOffset {
   return [self showsLeadingIcons] && !IsCompactWidth();
+}
+
+#pragma mark - OmniboxPopupRowAccessibilityDelegate
+
+- (void)accessibilityTrailingButtonTappedOmniboxPopupRow:(OmniboxPopupRow*)row {
+  [self.delegate autocompleteResultConsumer:self
+                 didTapTrailingButtonForRow:row.rowNumber];
 }
 
 @end

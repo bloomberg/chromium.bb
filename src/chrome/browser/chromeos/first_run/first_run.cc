@@ -127,8 +127,8 @@ class DialogLauncher : public content::NotificationObserver {
 
     // Whether the account is supported for voice interaction.
     bool account_supported = false;
-    identity::IdentityManager* identity_manager =
-        IdentityManagerFactory::GetForProfile(profile_);
+    auto* identity_manager =
+        IdentityManagerFactory::GetForProfileIfExists(profile_);
     if (identity_manager) {
       std::string hosted_domain =
           identity_manager->GetPrimaryAccountInfo().hosted_domain;

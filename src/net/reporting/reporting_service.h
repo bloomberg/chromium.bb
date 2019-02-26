@@ -22,7 +22,6 @@ namespace net {
 
 class ReportingContext;
 struct ReportingPolicy;
-class URLRequest;
 class URLRequestContext;
 
 // The external interface to the Reporting system, used by the embedder of //net
@@ -72,10 +71,6 @@ class NET_EXPORT ReportingService {
   // Like RemoveBrowsingData except removes data for all origins without a
   // filter.
   virtual void RemoveAllBrowsingData(int data_type_mask) = 0;
-
-  // Checks how many uploads deep |request| is: 0 if it's not an upload, n+1 if
-  // it's an upload reporting on requests of at most depth n.
-  virtual int GetUploadDepth(const URLRequest& request) = 0;
 
   virtual const ReportingPolicy& GetPolicy() const = 0;
 

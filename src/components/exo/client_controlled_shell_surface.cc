@@ -10,9 +10,11 @@
 #include "ash/frame/header_view.h"
 #include "ash/frame/non_client_frame_view_ash.h"
 #include "ash/frame/wide_frame_view.h"
+#include "ash/public/cpp/ash_features.h"
 #include "ash/public/cpp/caption_buttons/caption_button_model.h"
 #include "ash/public/cpp/default_frame_header.h"
 #include "ash/public/cpp/immersive/immersive_fullscreen_controller.h"
+#include "ash/public/cpp/rounded_corner_decorator.h"
 #include "ash/public/cpp/shell_window_ids.h"
 #include "ash/public/cpp/window_properties.h"
 #include "ash/public/cpp/window_state_type.h"
@@ -30,7 +32,7 @@
 #include "base/no_destructor.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/trace_event/trace_event.h"
-#include "base/trace_event/trace_event_argument.h"
+#include "base/trace_event/traced_value.h"
 #include "components/exo/surface.h"
 #include "components/exo/wm_helper.h"
 #include "services/ws/public/mojom/window_tree_constants.mojom.h"
@@ -777,13 +779,7 @@ void ClientControlledShellSurface::SetWidgetBounds(const gfx::Rect& bounds) {
                             GetWindowState()->is_dragged() &&
                             !is_display_move_pending;
 
-  // Android PIP windows can be dismissed by swiping off the screen. Let them be
-  // positioned off-screen. Apart from swipe to dismiss, the PIP window will be
-  // kept on screen.
-  // TODO(edcourtney): This should be done as a client controlled move, not a
-  // special case.
-  if (set_bounds_locally || client_controlled_state_->set_bounds_locally() ||
-      GetWindowState()->IsPip()) {
+  if (set_bounds_locally || client_controlled_state_->set_bounds_locally()) {
     // Convert from screen to display coordinates.
     gfx::Point origin = bounds.origin();
     wm::ConvertPointFromScreen(window->parent(), &origin);
@@ -881,8 +877,15 @@ bool ClientControlledShellSurface::OnPreWidgetCommit() {
   }
 
   ash::wm::WindowState* window_state = GetWindowState();
-  if (window_state->GetStateType() == pending_window_state_)
+  if (window_state->GetStateType() == pending_window_state_) {
+    // Animate PIP window movement unless it is being dragged.
+    if (window_state->IsPip() && !window_state->is_dragged()) {
+      client_controlled_state_->set_next_bounds_change_animation_type(
+          ash::wm::ClientControlledState::kAnimationAnimated);
+    }
+
     return true;
+  }
 
   if (IsPinned(window_state)) {
     VLOG(1) << "State change was requested while pinned";
@@ -908,20 +911,21 @@ bool ClientControlledShellSurface::OnPreWidgetCommit() {
 
   // PIP windows should not be able to be active.
   if (pending_window_state_ == ash::mojom::WindowStateType::PIP) {
-    auto* window = widget_->GetNativeWindow();
-    if (wm::IsActiveWindow(window)) {
-      // In the case that a window changed state into PIP while activated,
-      // make sure to deactivate it now.
-      wm::DeactivateWindow(window);
+    if (ash::features::IsPipRoundedCornersEnabled()) {
+      decorator_ = std::make_unique<ash::RoundedCornerDecorator>(
+          window_state->window(), host_window(), host_window()->layer(),
+          ash::kPipRoundedCornerRadius);
     }
-
-    widget_->widget_delegate()->set_can_activate(false);
   } else {
-    widget_->widget_delegate()->set_can_activate(true);
+    decorator_.reset();  // Remove rounded corners.
   }
 
-  client_controlled_state_->EnterNextState(window_state, pending_window_state_,
-                                           animation_type);
+  if (client_controlled_state_->EnterNextState(window_state,
+                                               pending_window_state_)) {
+    client_controlled_state_->set_next_bounds_change_animation_type(
+        animation_type);
+  }
+
   return true;
 }
 

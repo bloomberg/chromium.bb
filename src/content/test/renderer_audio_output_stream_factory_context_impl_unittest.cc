@@ -49,9 +49,9 @@ const int kRenderProcessId = 42;
 const int kRenderFrameId = 24;
 const float kWaveFrequency = 440.f;
 const int kChannels = 1;
-const int kBuffers = 1000;
-const int kSampleFrequency = 44100;
-const int kSamplesPerBuffer = kSampleFrequency / 100;
+const int kBuffers = 100;
+const int kSampleFrequency = 8000;
+const int kSamplesPerBuffer = kSampleFrequency / 10;
 
 std::unique_ptr<media::AudioOutputStream::AudioSourceCallback>
 GetTestAudioSource() {
@@ -205,6 +205,7 @@ class RendererAudioOutputStreamFactoryIntegrationTest : public Test {
       factory_context_;
 };
 
+// It's flaky on the buildbot, http://crbug.com/761214.
 TEST_F(RendererAudioOutputStreamFactoryIntegrationTest, StreamIntegrationTest) {
   // Sets up the factory on the IO thread and runs client code on the UI thread.
   // Send a sine wave from the client and makes sure it's received by the output
@@ -233,8 +234,7 @@ TEST_F(RendererAudioOutputStreamFactoryIntegrationTest, StreamIntegrationTest) {
 
   base::Thread renderer_side_ipc_thread("Renderer IPC thread");
   ASSERT_TRUE(renderer_side_ipc_thread.Start());
-  auto renderer_ipc_task_runner =
-      renderer_side_ipc_thread.message_loop()->task_runner();
+  auto renderer_ipc_task_runner = renderer_side_ipc_thread.task_runner();
 
   // Bind |stream_factory| to |renderer_ipc_task_runner|.
   mojom::RendererAudioOutputStreamFactory* factory_ptr;

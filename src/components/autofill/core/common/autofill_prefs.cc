@@ -4,11 +4,37 @@
 
 #include "components/autofill/core/common/autofill_prefs.h"
 
+#include "base/base64.h"
 #include "components/pref_registry/pref_registry_syncable.h"
 #include "components/prefs/pref_service.h"
+#include "components/prefs/scoped_user_pref_update.h"
+#include "crypto/sha2.h"
 
 namespace autofill {
 namespace prefs {
+namespace {
+
+// Returns the opt-in bitfield for the specific |account_id| or 0 if no entry
+// was found.
+int GetSyncTransportOptInBitFieldForAccount(const PrefService* prefs,
+                                            const std::string& account_hash) {
+
+  auto* dictionary = prefs->GetDictionary(prefs::kAutofillSyncTransportOptIn);
+
+  // If there is no dictionary it means the account didn't opt-in. Use 0 because
+  // it's the same as not having opted-in to anything.
+  if (!dictionary) {
+    return 0;
+  }
+
+  // If there is no entry in the dictionary, it means the account didn't opt-in.
+  // Use 0 because it's the same as not having opted-in to anything.
+  auto* found =
+      dictionary->FindKeyOfType(account_hash, base::Value::Type::INTEGER);
+  return found ? found->GetInt() : 0;
+}
+
+}  // namespace
 
 // Integer that is set to the last choice user made when prompted for saving a
 // credit card. The prompt is for user's consent in saving the card in the
@@ -20,9 +46,6 @@ const char kAutofillAcceptSaveCreditCardPromptState[] =
 // Integer that is set to the billing customer number fetched from priority
 // preference.
 const char kAutofillBillingCustomerNumber[] = "billing_customer_number";
-
-// The field type, validity state map of all profiles.
-const char kAutofillProfileValidity[] = "autofill.profile_validity";
 
 // Boolean that is true if Autofill is enabled and allowed to save credit card
 // data.
@@ -44,6 +67,11 @@ const char kAutofillJapanCityFieldMigrated[] =
 // was run. This routine will be run once per version.
 const char kAutofillLastVersionDeduped[] = "autofill.last_version_deduped";
 
+// Integer that is set to the last version where the profile validation routine
+// was run. We validate profiles at least once per version to keep track of the
+// changes in the validation logic.
+const char kAutofillLastVersionValidated[] = "autofill.last_version_validated";
+
 // Integer that is set to the last version where disused addresses were
 // deleted. This deletion will be run once per version.
 const char kAutofillLastVersionDisusedAddressesDeleted[] =
@@ -64,6 +92,19 @@ const char kAutofillOrphanRowsRemoved[] = "autofill.orphan_rows_removed";
 
 // Boolean that is true if Autofill is enabled and allowed to save profile data.
 const char kAutofillProfileEnabled[] = "autofill.profile_enabled";
+
+// The field type, validity state map of all profiles.
+// TODO(crbug.com/910596): Pref name is "autofill_" instead of "autofill."
+// because of a mismatch when the priorify prefs were generated. Consider
+// migrating this back to "autofill." in the future.
+const char kAutofillProfileValidity[] = "autofill_profile_validity";
+
+// The opt-ins for Sync Transport features for each client.
+const char kAutofillSyncTransportOptIn[] = "autofill.sync_transport_opt_ins";
+
+// The (randomly inititialied) seed value to use when encoding form/field
+// metadata for randomized uploads. The value of this pref is a string.
+const char kAutofillUploadEncodingSeed[] = "autofill.upload_encoding_seed";
 
 // Dictionary pref used to track which form signature uploads have been
 // performed. Each entry in the dictionary maps a form signature (reduced
@@ -100,6 +141,10 @@ void RegisterProfilePrefs(user_prefs::PrefRegistrySyncable* registry) {
       prefs::kAutofillLastVersionDeduped, 0,
       user_prefs::PrefRegistrySyncable::SYNCABLE_PREF);
   registry->RegisterIntegerPref(
+      prefs::kAutofillLastVersionValidated, 0,
+      user_prefs::PrefRegistrySyncable::SYNCABLE_PREF);
+
+  registry->RegisterIntegerPref(
       prefs::kAutofillLastVersionDisusedAddressesDeleted, 0,
       user_prefs::PrefRegistrySyncable::SYNCABLE_PREF);
   registry->RegisterBooleanPref(
@@ -124,9 +169,11 @@ void RegisterProfilePrefs(user_prefs::PrefRegistrySyncable* registry) {
   registry->RegisterBooleanPref(
       prefs::kAutofillMigrateLocalCardsCancelledPrompt, false);
   registry->RegisterBooleanPref(prefs::kAutofillOrphanRowsRemoved, false);
+  registry->RegisterStringPref(prefs::kAutofillUploadEncodingSeed, "");
   registry->RegisterDictionaryPref(prefs::kAutofillUploadEvents);
   registry->RegisterTimePref(prefs::kAutofillUploadEventsLastResetTimestamp,
                              base::Time());
+  registry->RegisterDictionaryPref(prefs::kAutofillSyncTransportOptIn);
 }
 
 void MigrateDeprecatedAutofillPrefs(PrefService* prefs) {
@@ -218,7 +265,55 @@ void SetPaymentsIntegrationEnabled(PrefService* prefs, bool enabled) {
 }
 
 std::string GetAllProfilesValidityMapsEncodedString(const PrefService* prefs) {
-  return prefs->GetString(kAutofillProfileValidity);
+  std::string value = prefs->GetString(kAutofillProfileValidity);
+  if (base::Base64Decode(value, &value))
+    return value;
+  return std::string();
+}
+
+void SetUserOptedInWalletSyncTransport(PrefService* prefs,
+                                       const std::string& account_id,
+                                       bool opted_in) {
+  // Get the hash of the account id. The hashing here is only a secondary bit of
+  // obfuscation. The primary privacy guarantees are handled by clearing this
+  // whenever cookies are cleared.
+  std::string account_hash;
+  base::Base64Encode(crypto::SHA256HashString(account_id), &account_hash);
+
+  DictionaryPrefUpdate update(prefs, prefs::kAutofillSyncTransportOptIn);
+  int value = GetSyncTransportOptInBitFieldForAccount(prefs, account_hash);
+
+  // If the user has opted in, set that bit while leaving the others intact.
+  if (opted_in) {
+    update->SetKey(account_hash,
+                   base::Value(value | sync_transport_opt_in::kWallet));
+    return;
+  }
+
+  // Invert the mask in order to reset the Wallet bit while leaving the other
+  // bits intact, or remove the key entirely if the Wallet was the only opt-in.
+  if (value & ~sync_transport_opt_in::kWallet) {
+    update->SetKey(account_hash,
+                   base::Value(value & ~sync_transport_opt_in::kWallet));
+  } else {
+    update->RemoveKey(account_hash);
+  }
+}
+
+bool IsUserOptedInWalletSyncTransport(const PrefService* prefs,
+                                      const std::string& account_id) {
+  // Get the hash of the account id.
+  std::string account_hash;
+  base::Base64Encode(crypto::SHA256HashString(account_id), &account_hash);
+
+  // Return whether the wallet opt-in bit is set.
+  return GetSyncTransportOptInBitFieldForAccount(prefs, account_hash) &
+         sync_transport_opt_in::kWallet;
+}
+
+void ClearSyncTransportOptIns(PrefService* prefs) {
+  DictionaryPrefUpdate update(prefs, prefs::kAutofillSyncTransportOptIn);
+  update->Clear();
 }
 
 }  // namespace prefs

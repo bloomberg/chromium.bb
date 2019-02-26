@@ -7,6 +7,8 @@ Polymer({
 
   listeners: {
     'toggle-pause-event': 'onTogglePauseEvent_',
+    'next-track-event': 'onNextTrackEvent_',
+    'previous-track-event': 'onPreviousTrackEvent_',
     'small-forward-skip-event': 'onSmallForwardSkipEvent_',
     'small-backword-skip-event': 'onSmallBackwordSkipEvent_',
     'big-forward-skip-event': 'onBigForwardSkipEvent_',
@@ -18,55 +20,85 @@ Polymer({
      * Flag whether the audio is playing or paused. True if playing, or false
      * paused.
      */
-    playing:
-        {type: Boolean, observer: 'playingChanged', reflectToAttribute: true},
+    playing: {
+      type: Boolean,
+      observer: 'playingChanged',
+      reflectToAttribute: true,
+    },
 
     /**
      * Current elapsed time in the current music in millisecond.
      */
-    time: {type: Number, observer: 'timeChanged'},
+    time: Number,
 
     /**
      * Whether the shuffle button is ON.
      */
-    shuffle: {type: Boolean, notify: true},
+    shuffle: {
+      type: Boolean,
+      notify: true,
+    },
 
     /**
      * What mode the repeat button idicates.
-     * repeat-modes can be "no-repeat", "repeat-all", "repeat-one".
+     * |repeatMode| can be "no-repeat", "repeat-all", or "repeat-one".
      */
-    repeatMode: {type: String, notify: true},
+    repeatMode: {
+      type: String,
+      notify: true,
+    },
 
     /**
      * The audio volume. 0 is silent, and 100 is maximum loud.
      */
-    volume: {type: Number, notify: true},
+    volume: {
+      type: Number,
+      notify: true,
+    },
 
     /**
      * Whether the playlist is expanded or not.
      */
-    playlistExpanded: {type: Boolean, notify: true},
+    playlistExpanded: {
+      type: Boolean,
+      notify: true,
+    },
     /**
      * Whether the artwork is expanded or not.
      */
-    trackInfoExpanded: {type: Boolean, notify: true},
+    trackInfoExpanded: {
+      type: Boolean,
+      notify: true,
+    },
 
     /**
      * Track index of the current track.
      */
-    currentTrackIndex: {type: Number, observer: 'currentTrackIndexChanged'},
+    currentTrackIndex: {
+      type: Number,
+      observer: 'currentTrackIndexChanged',
+    },
 
     /**
      * URL of the current track. (exposed publicly for tests)
      */
-    currenttrackurl: {type: String, value: '', reflectToAttribute: true},
+    currenttrackurl: {
+      type: String,
+      value: '',
+      reflectToAttribute: true,
+    },
 
     /**
      * The number of played tracks. (exposed publicly for tests)
      */
-    playcount: {type: Number, value: 0, reflectToAttribute: true},
+    playcount: {
+      type: Number,
+      value: 0,
+      reflectToAttribute: true,
+    },
 
-    ariaLabels: {type: Object}
+    /** @type {AriaLabels} */
+    ariaLabels: Object,
   },
 
   /**
@@ -80,10 +112,8 @@ Polymer({
    * element is ready.
    */
   ready: function() {
-    this.addEventListener('keydown', this.onKeyDown_.bind(this));
-
-    this.$.audioController.addEventListener('dragging-changed',
-        this.onDraggingChanged_.bind(this));
+    this.$.audioController.addEventListener(
+        'seeking-changed', this.onSeekingChanged_.bind(this));
 
     this.$.audio.addEventListener('ended', this.onAudioEnded.bind(this));
     this.$.audio.addEventListener('error', this.onAudioError.bind(this));
@@ -159,21 +189,6 @@ Polymer({
     this.cancelAutoAdvance_();
     this.$.audio.pause();
     this.currenttrackurl = '';
-    this.lastAudioUpdateTime_ = null;
-  },
-
-  /**
-   * Invoked when time is changed.
-   * @param {number} newValue new time (in ms).
-   * @param {number} oldValue old time (in ms).
-   */
-  timeChanged: function(newValue, oldValue) {
-    // Ignores updates from the audio element.
-    if (this.lastAudioUpdateTime_ === newValue)
-      return;
-
-    if (this.$.audio.readyState !== 0)
-      this.$.audio.currentTime = this.time / 1000;
   },
 
   /**
@@ -198,7 +213,6 @@ Polymer({
    */
   onAudioEnded: function() {
     this.playcount++;
-
     if(this.repeatMode === "repeat-one") {
       this.playing = true;
       this.$.audio.currentTime = 0;
@@ -226,10 +240,12 @@ Polymer({
    * @private
    */
   onAudioStatusUpdate_: function() {
-    this.time = (this.lastAudioUpdateTime_ = this.$.audio.currentTime * 1000);
+    this.playing = !this.$.audio.paused;
+    // If we're paused due to drag, do not update time.
+    if (this.playing)
+      this.time = this.$.audio.currentTime * 1000;
     if (!Number.isNaN(this.$.audio.duration))
       this.duration = this.$.audio.duration * 1000;
-    this.playing = !this.$.audio.paused;
   },
 
   /**
@@ -396,40 +412,28 @@ Polymer({
   /**
    * Invoked when dragging state of seek bar on control panel is changed.
    * During the user is dragging it, audio playback is paused temporalily.
+   * @param {!{detail: {value: boolean}}} e
    */
-  onDraggingChanged_: function() {
-    if (this.$.audioController.dragging) {
-      if (this.playing) {
-        this.wasPlayingOnDragStart_ = true;
-        this.$.audio.pause();
-      }
-    } else {
-      if (this.wasPlayingOnDragStart_) {
-        this.$.audio.play();
-        this.wasPlayingOnDragStart_ = false;
-      }
+  onSeekingChanged_: function(e) {
+    if (e.detail.value && this.playing) {
+      this.$.audio.pause();
+      this.wasPlayingOnDragStart_ = true;
+      return;
+    }
+
+    if (!e.detail.value && this.wasPlayingOnDragStart_) {
+      this.wasPlayingOnDragStart_ = false;
+      this.$.audio.play();
     }
   },
 
   /**
-   * Invoked when the 'keydown' event is fired.
-   * @param {Event} event The event object.
+   * @param {!{detail: number}} e
+   * @private
    */
-  onKeyDown_: function(event) {
-    switch (event.key) {
-      case 'MediaTrackNext':
-        this.onControllerNextClicked();
-        break;
-      case 'MediaPlayPause':
-        this.playing = !this.playing;
-        break;
-      case 'MediaTrackPrevious':
-        this.onControllerPreviousClicked();
-        break;
-      case 'MediaStop':
-        // TODO: Define "Stop" behavior.
-        break;
-    }
+  onUpdateTime_: function(e) {
+    this.$.audio.currentTime = e.detail / 1000;
+    this.time = e.detail;
   },
 
   /**
@@ -445,7 +449,7 @@ Polymer({
    * Toggle pause.
    * @private
    */
-  onTogglePauseEvent_: function(event) {
+  onTogglePauseEvent_: function() {
     this.$.audioController.playClick();
   },
 
@@ -453,7 +457,7 @@ Polymer({
    * Small skip forward.
    * @private
    */
-  onSmallForwardSkipEvent_: function(event) {
+  onSmallForwardSkipEvent_: function() {
     this.$.audioController.smallSkip(true);
   },
 
@@ -461,7 +465,7 @@ Polymer({
    * Small skip backword.
    * @private
    */
-  onSmallBackwordSkipEvent_: function(event) {
+  onSmallBackwordSkipEvent_: function() {
     this.$.audioController.smallSkip(false);
   },
 
@@ -469,7 +473,7 @@ Polymer({
    * Big skip forward.
    * @private
    */
-  onBigForwardSkipEvent_: function(event) {
+  onBigForwardSkipEvent_: function() {
     this.$.audioController.bigSkip(true);
   },
 
@@ -477,7 +481,17 @@ Polymer({
    * Big skip backword.
    * @private
    */
-  onBigBackwordSkipEvent_: function(event) {
+  onBigBackwordSkipEvent_: function() {
     this.$.audioController.bigSkip(false);
+  },
+
+  /** @private */
+  onNextTrackEvent_: function() {
+    this.onControllerNextClicked();
+  },
+
+  /** @private */
+  onPreviousTrackEvent_: function() {
+    this.onControllerPreviousClicked();
   },
 });

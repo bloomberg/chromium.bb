@@ -14,6 +14,7 @@
 #include "ppapi/cpp/graphics_2d.h"
 #include "ppapi/cpp/graphics_3d.h"
 #include "ppapi/cpp/image_data.h"
+#include "ppapi/cpp/input_event_interface_name.h"
 #include "ppapi/cpp/instance_handle.h"
 #include "ppapi/cpp/logging.h"
 #include "ppapi/cpp/message_handler.h"
@@ -31,10 +32,6 @@ namespace {
 
 template <> const char* interface_name<PPB_Console_1_0>() {
   return PPB_CONSOLE_INTERFACE_1_0;
-}
-
-template <> const char* interface_name<PPB_InputEvent_1_0>() {
-  return PPB_INPUT_EVENT_INTERFACE_1_0;
 }
 
 template <> const char* interface_name<PPB_Instance_1_0>() {

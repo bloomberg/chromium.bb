@@ -14,7 +14,7 @@ source_set("autofill") {
     "form_input_accessory_view.mm",
     "form_input_accessory_view_controller.h",
     "form_input_accessory_view_controller.mm",
-    "form_input_accessory_view_provider.h",
+    "form_input_suggestions_provider.h",
     "form_suggestion_controller.h",
     "form_suggestion_controller.mm",
     "form_suggestion_label.h",
@@ -23,11 +23,10 @@ source_set("autofill") {
     "form_suggestion_tab_helper.mm",
     "form_suggestion_view.h",
     "form_suggestion_view.mm",
-    "form_suggestion_view_client.h",
+    "legacy_strike_database_factory.cc",
+    "legacy_strike_database_factory.h",
     "personal_data_manager_factory.cc",
     "personal_data_manager_factory.h",
-    "strike_database_factory.cc",
-    "strike_database_factory.h",
     "validation_rules_storage_factory.cc",
     "validation_rules_storage_factory.h",
   ]
@@ -57,7 +56,6 @@ source_set("autofill") {
     "//components/keyed_service/core",
     "//components/keyed_service/ios",
     "//components/prefs",
-    "//components/signin/core/browser",
     "//ios/chrome/app/strings",
     "//ios/chrome/browser",
     "//ios/chrome/browser/browser_state",
@@ -65,7 +63,6 @@ source_set("autofill") {
     "//ios/chrome/browser/passwords:passwords_generation_utils",
     "//ios/chrome/browser/signin",
     "//ios/chrome/browser/ui",
-    "//ios/chrome/browser/ui/autofill/manual_fill",
     "//ios/chrome/browser/ui/autofill/manual_fill:manual_fill_ui",
     "//ios/chrome/browser/ui/image_util",
     "//ios/web",
@@ -80,10 +77,11 @@ source_set("autofill") {
 source_set("autofill_shared") {
   configs += [ "//build/config/compiler:enable_arc" ]
   sources = [
-    "form_input_accessory_view_delegate.h",
     "form_input_accessory_view_handler.h",
     "form_input_accessory_view_handler.mm",
-    "form_input_accessory_view_provider.h",
+    "form_input_navigator.h",
+    "form_input_suggestions_provider.h",
+    "form_suggestion_client.h",
   ]
   deps = [
     "//base",
@@ -97,8 +95,6 @@ source_set("autofill_shared") {
 source_set("autofill_internal") {
   configs += [ "//build/config/compiler:enable_arc" ]
   sources = [
-    "autofill_controller.h",
-    "autofill_controller.mm",
     "autofill_tab_helper.h",
     "autofill_tab_helper.mm",
   ]

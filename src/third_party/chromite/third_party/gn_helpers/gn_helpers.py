@@ -171,6 +171,19 @@ class GNValueParser(object):
     while not self.IsDone() and self.input[self.cur] in ' \t\n':
       self.cur += 1
 
+  def ConsumeComment(self):
+    if self.IsDone() or self.input[self.cur] != '#':
+      return
+
+    # Consume each comment, line by line.
+    while not self.IsDone() and self.input[self.cur] == '#':
+      # Consume the rest of the comment, up until the end of the line.
+      while not self.IsDone() and self.input[self.cur] != '\n':
+        self.cur += 1
+      # Move the cursor to the next line (if there is one).
+      if not self.IsDone():
+        self.cur += 1
+
   def Parse(self):
     """Converts a string representing a printed GN value to the Python type.
 
@@ -203,6 +216,7 @@ class GNValueParser(object):
     d = {}
 
     self.ConsumeWhitespace()
+    self.ConsumeComment()
     while not self.IsDone():
       ident = self._ParseIdent()
       self.ConsumeWhitespace()
@@ -212,6 +226,7 @@ class GNValueParser(object):
       self.ConsumeWhitespace()
       val = self._ParseAllowTrailing()
       self.ConsumeWhitespace()
+      self.ConsumeComment()
       d[ident] = val
 
     return d

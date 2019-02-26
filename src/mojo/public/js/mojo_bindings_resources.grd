@@ -7,7 +7,7 @@
     <output filename="grit/mojo_bindings_resources_map.h"
         type="gzipped_resource_map_header" />
     <output filename="grit/mojo_bindings_resources_map.cc"
-        type="gzipped_resource_file_map_source" />
+        type="gzipped_resource_map_source" />
     <output filename="mojo_bindings_resources.pak" type="data_package" />
   </outputs>
   <translations />
@@ -15,6 +15,11 @@
     <includes>
       <include name="IDR_MOJO_MOJO_BINDINGS_JS"
           file="${root_gen_dir}/mojo/public/js/mojo_bindings.js"
+          use_base_dir="false"
+          type="BINDATA"
+          compress="gzip" />
+      <include name="IDR_MOJO_MOJO_BINDINGS_LITE_JS"
+          file="${root_gen_dir}/mojo/public/js/mojo_bindings_lite.js"
           use_base_dir="false"
           type="BINDATA"
           compress="gzip" />

@@ -192,7 +192,6 @@
         <structure type="chrome_scaled_image" name="IDR_NOTIFICATION_SCREENSHOT_ANNOTATE" file="cros/notification_screenshot_annotate.png" />
         <structure type="chrome_scaled_image" name="IDR_NOTIFICATION_SCREENSHOT_COPY_TO_CLIPBOARD" file="cros/notification_screenshot_copy_to_clipboard.png" />
         <structure type="chrome_scaled_image" name="IDR_NOTIFICATION_EASYUNLOCK_ENABLED" file="cros/notification_easyunlock_enabled.png" />
-        <structure type="chrome_scaled_image" name="IDR_NOTIFICATION_EASYUNLOCK_PROMO" file="cros/notification_easyunlock_promo.png" />
       </if>
       <if expr="not is_android">
         <structure type="chrome_scaled_image" name="IDR_OMNIBOX_CALCULATOR_ROUND" file="chromium/calculator_round_24.png" />

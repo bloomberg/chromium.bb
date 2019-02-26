@@ -19,13 +19,9 @@ per-file host_zoom_*=wjmaclean@chromium.org
 per-file find_request_manager*=paulmeyer@chromium.org
 per-file site_per_process_*=kenrb@chromium.org
 
-# Mac Sandbox profiles.
-per-file *.sb=set noparent
-per-file *.sb=rsesek@chromium.org
-
-# Mac Sandbox parameters.
-per-file sandbox_parameters_mac.*=rsesek@chromium.org
-per-file sandbox_parameters_mac.*=kerrnel@chromium.org
+# Mac Sandbox parameters and unit tests.
+per-file sandbox_parameters_mac.*=file://sandbox/mac/OWNERS
+per-file sandbox_mac_unittest.*=file://sandbox/mac/OWNERS
 
 # Linux sandboxing.
 per-file sandbox_host_linux.*=jln@chromium.org

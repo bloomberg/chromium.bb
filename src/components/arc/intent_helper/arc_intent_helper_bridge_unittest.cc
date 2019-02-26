@@ -19,10 +19,11 @@ namespace {
 
 constexpr char kPackageName[] = "default.package.name";
 
-IntentFilter GetIntentFilter(const std::string& host) {
+IntentFilter GetIntentFilter(const std::string& host,
+                             const std::string& pkg_name) {
   std::vector<IntentFilter::AuthorityEntry> authorities;
-  authorities.emplace_back(host, -1);
-  return IntentFilter(kPackageName, std::move(authorities),
+  authorities.emplace_back(host, /*port=*/-1);
+  return IntentFilter(pkg_name, std::move(authorities),
                       std::vector<IntentFilter::PatternMatcher>());
 }
 
@@ -38,6 +39,7 @@ class ArcIntentHelperTest : public testing::Test {
 
     // OpenUrlDelegate:
     void OpenUrlFromArc(const GURL& url) override { last_opened_url_ = url; }
+    void OpenWebAppFromArc(const GURL& url) override { last_opened_url_ = url; }
 
     GURL TakeLastOpenedUrl() {
       GURL result = std::move(last_opened_url_);
@@ -201,7 +203,7 @@ TEST_F(ArcIntentHelperTest, TestDefault) {
 // Tests that ShouldChromeHandleUrl returns false when there's a match.
 TEST_F(ArcIntentHelperTest, TestSingleFilter) {
   std::vector<IntentFilter> array;
-  array.emplace_back(GetIntentFilter("www.google.com"));
+  array.emplace_back(GetIntentFilter("www.google.com", kPackageName));
   instance_->OnIntentFiltersUpdated(std::move(array));
 
   EXPECT_FALSE(instance_->ShouldChromeHandleUrl(GURL("http://www.google.com")));
@@ -215,9 +217,9 @@ TEST_F(ArcIntentHelperTest, TestSingleFilter) {
 // Tests the same with multiple filters.
 TEST_F(ArcIntentHelperTest, TestMultipleFilters) {
   std::vector<IntentFilter> array;
-  array.emplace_back(GetIntentFilter("www.google.com"));
-  array.emplace_back(GetIntentFilter("www.google.co.uk"));
-  array.emplace_back(GetIntentFilter("dev.chromium.org"));
+  array.emplace_back(GetIntentFilter("www.google.com", kPackageName));
+  array.emplace_back(GetIntentFilter("www.google.co.uk", kPackageName));
+  array.emplace_back(GetIntentFilter("dev.chromium.org", kPackageName));
   instance_->OnIntentFiltersUpdated(std::move(array));
 
   EXPECT_FALSE(instance_->ShouldChromeHandleUrl(GURL("http://www.google.com")));
@@ -238,7 +240,7 @@ TEST_F(ArcIntentHelperTest, TestMultipleFilters) {
 // Tests that ShouldChromeHandleUrl returns true for non http(s) URLs.
 TEST_F(ArcIntentHelperTest, TestNonHttp) {
   std::vector<IntentFilter> array;
-  array.emplace_back(GetIntentFilter("www.google.com"));
+  array.emplace_back(GetIntentFilter("www.google.com", kPackageName));
   instance_->OnIntentFiltersUpdated(std::move(array));
 
   EXPECT_TRUE(
@@ -251,14 +253,14 @@ TEST_F(ArcIntentHelperTest, TestNonHttp) {
 // UpdateIntentFilters is called with new ones.
 TEST_F(ArcIntentHelperTest, TestMultipleUpdate) {
   std::vector<IntentFilter> array;
-  array.emplace_back(GetIntentFilter("www.google.com"));
-  array.emplace_back(GetIntentFilter("dev.chromium.org"));
+  array.emplace_back(GetIntentFilter("www.google.com", kPackageName));
+  array.emplace_back(GetIntentFilter("dev.chromium.org", kPackageName));
   instance_->OnIntentFiltersUpdated(std::move(array));
 
   std::vector<IntentFilter> array2;
-  array2.emplace_back(GetIntentFilter("www.google.co.uk"));
-  array2.emplace_back(GetIntentFilter("dev.chromium.org"));
-  array2.emplace_back(GetIntentFilter("www.android.com"));
+  array2.emplace_back(GetIntentFilter("www.google.co.uk", kPackageName));
+  array2.emplace_back(GetIntentFilter("dev.chromium.org", kPackageName));
+  array2.emplace_back(GetIntentFilter("www.android.com", kPackageName));
   instance_->OnIntentFiltersUpdated(std::move(array2));
 
   EXPECT_TRUE(instance_->ShouldChromeHandleUrl(GURL("http://www.google.com")));
@@ -277,6 +279,28 @@ TEST_F(ArcIntentHelperTest, TestMultipleUpdate) {
       instance_->ShouldChromeHandleUrl(GURL("https://www.android.com")));
 }
 
+// Tests that intent helper app (on ARC) is not taken as an app candidate, other
+// suitable app candidates should still match if possible.
+TEST_F(ArcIntentHelperTest, TestIntentHelperAppIsNotAValidCandidate) {
+  std::vector<IntentFilter> array;
+  array.emplace_back(GetIntentFilter(
+      "www.google.com", ArcIntentHelperBridge::kArcIntentHelperPackageName));
+  array.emplace_back(GetIntentFilter(
+      "www.android.com", ArcIntentHelperBridge::kArcIntentHelperPackageName));
+  array.emplace_back(GetIntentFilter("dev.chromium.org", kPackageName));
+  instance_->OnIntentFiltersUpdated(std::move(array));
+
+  EXPECT_TRUE(instance_->ShouldChromeHandleUrl(GURL("http://www.google.com")));
+  EXPECT_TRUE(instance_->ShouldChromeHandleUrl(GURL("https://www.google.com")));
+  EXPECT_TRUE(instance_->ShouldChromeHandleUrl(GURL("http://www.android.com")));
+  EXPECT_TRUE(
+      instance_->ShouldChromeHandleUrl(GURL("https://www.android.com")));
+  EXPECT_FALSE(
+      instance_->ShouldChromeHandleUrl(GURL("http://dev.chromium.org")));
+  EXPECT_FALSE(
+      instance_->ShouldChromeHandleUrl(GURL("https://dev.chromium.org")));
+}
+
 // Tests that OnOpenUrl opens the URL in Chrome browser.
 TEST_F(ArcIntentHelperTest, TestOnOpenUrl) {
   instance_->OnOpenUrl("http://google.com");
@@ -284,6 +308,16 @@ TEST_F(ArcIntentHelperTest, TestOnOpenUrl) {
             test_open_url_delegate_->TakeLastOpenedUrl());
 
   instance_->OnOpenUrl("https://google.com");
+  EXPECT_EQ(GURL("https://google.com"),
+            test_open_url_delegate_->TakeLastOpenedUrl());
+}
+
+// Tests that OnOpenWebApp opens only HTTPS URLs.
+TEST_F(ArcIntentHelperTest, TestOnOpenWebApp) {
+  instance_->OnOpenWebApp("http://google.com");
+  EXPECT_EQ(GURL(), test_open_url_delegate_->TakeLastOpenedUrl());
+
+  instance_->OnOpenWebApp("https://google.com");
   EXPECT_EQ(GURL("https://google.com"),
             test_open_url_delegate_->TakeLastOpenedUrl());
 }
@@ -450,7 +484,7 @@ TEST_F(ArcIntentHelperTest, TestAppendStringToIntentHelperPackageName) {
                 fake_activity),
             package_name + "." + fake_activity);
 
-  std::string empty_string = "";
+  const std::string empty_string;
   EXPECT_EQ(ArcIntentHelperBridge::AppendStringToIntentHelperPackageName(
                 empty_string),
             package_name + ".");

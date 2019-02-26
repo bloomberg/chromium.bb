@@ -5,13 +5,13 @@
 #ifndef THIRD_PARTY_BLINK_RENDERER_PLATFORM_HEAP_GC_INFO_H_
 #define THIRD_PARTY_BLINK_RENDERER_PLATFORM_HEAP_GC_INFO_H_
 
+#include <atomic>
 #include "base/gtest_prod_util.h"
 #include "third_party/blink/renderer/platform/heap/finalizer_traits.h"
 #include "third_party/blink/renderer/platform/heap/name_traits.h"
 #include "third_party/blink/renderer/platform/heap/visitor.h"
 #include "third_party/blink/renderer/platform/wtf/allocator.h"
 #include "third_party/blink/renderer/platform/wtf/assertions.h"
-#include "third_party/blink/renderer/platform/wtf/atomics.h"
 #include "third_party/blink/renderer/platform/wtf/deque.h"
 #include "third_party/blink/renderer/platform/wtf/hash_counted_set.h"
 #include "third_party/blink/renderer/platform/wtf/hash_map.h"
@@ -72,7 +72,7 @@ class PLATFORM_EXPORT GCInfoTable {
     return info;
   }
 
-  void EnsureGCInfoIndex(const GCInfo*, uint32_t*);
+  uint32_t EnsureGCInfoIndex(const GCInfo*, std::atomic_uint32_t*);
 
   uint32_t GcInfoIndex() { return current_index_; }
 
@@ -115,12 +115,15 @@ struct GCInfoAtBaseType {
         NameTrait<T>::GetName,         FinalizerTrait<T>::kNonTrivialFinalizer,
         std::is_polymorphic<T>::value,
     };
-    static uint32_t gc_info_index = 0;
-    if (!AcquireLoad(&gc_info_index))
-      GCInfoTable::Get().EnsureGCInfoIndex(&kGcInfo, &gc_info_index);
-    DCHECK_GE(gc_info_index, 1u);
-    DCHECK(gc_info_index < GCInfoTable::kMaxIndex);
-    return gc_info_index;
+    // This is more complicated than using threadsafe initialization, but this
+    // is instantiated many times (once for every GC type).
+    static std::atomic_uint32_t gc_info_index{0};
+    uint32_t index = gc_info_index.load(std::memory_order_acquire);
+    if (!index)
+      index = GCInfoTable::Get().EnsureGCInfoIndex(&kGcInfo, &gc_info_index);
+    DCHECK_GE(index, 1u);
+    DCHECK_LT(index, GCInfoTable::kMaxIndex);
+    return index;
   }
 };
 

@@ -112,6 +112,10 @@ void TracedValue::AppendAsTraceFormat(std::string* out) const {
   traced_value_.AppendAsTraceFormat(out);
 }
 
+bool TracedValue::AppendToProto(ProtoAppender* appender) {
+  return traced_value_.AppendToProto(appender);
+}
+
 void TracedValue::EstimateTraceMemoryOverhead(
     base::trace_event::TraceEventMemoryOverhead* overhead) {
   traced_value_.EstimateTraceMemoryOverhead(overhead);

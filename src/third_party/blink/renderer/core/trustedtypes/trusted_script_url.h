@@ -22,15 +22,15 @@ class CORE_EXPORT TrustedScriptURL final : public ScriptWrappable {
 
  public:
   static TrustedScriptURL* Create(const KURL& url) {
-    return new TrustedScriptURL(url);
+    return MakeGarbageCollected<TrustedScriptURL>(url);
   }
+
+  TrustedScriptURL(const KURL&);
 
   // TrustedScriptURL.idl
   String toString() const;
 
  private:
-  TrustedScriptURL(const KURL&);
-
   KURL url_;
 };
 

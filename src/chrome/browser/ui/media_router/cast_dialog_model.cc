@@ -14,7 +14,7 @@ CastDialogModel::~CastDialogModel() = default;
 
 base::Optional<size_t> CastDialogModel::GetFirstActiveSinkIndex() const {
   for (size_t i = 0; i < media_sinks_.size(); i++) {
-    if (!media_sinks_.at(i).route_id.empty())
+    if (!media_sinks_.at(i).route)
       return i;
   }
   return base::nullopt;

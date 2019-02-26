@@ -22,8 +22,6 @@ static_library("core") {
     "safe_browsing_quiet_error_ui.h",
     "ssl_error_ui.cc",
     "ssl_error_ui.h",
-    "superfish_error_ui.cc",
-    "superfish_error_ui.h",
     "urls.cc",
     "urls.h",
   ]

@@ -12,6 +12,12 @@ std::string FrameSinkId::ToString() const {
   return base::StringPrintf("FrameSinkId(%u, %u)", client_id_, sink_id_);
 }
 
+std::string FrameSinkId::ToString(base::StringPiece debug_label) const {
+  return base::StringPrintf("FrameSinkId[%s](%u, %u)",
+                            debug_label.as_string().c_str(), client_id_,
+                            sink_id_);
+}
+
 std::ostream& operator<<(std::ostream& out, const FrameSinkId& frame_sink_id) {
   return out << frame_sink_id.ToString();
 }

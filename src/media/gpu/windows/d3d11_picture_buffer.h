@@ -16,6 +16,7 @@
 #include "gpu/command_buffer/service/texture_manager.h"
 #include "gpu/ipc/service/command_buffer_stub.h"
 #include "media/base/video_frame.h"
+#include "media/gpu/command_buffer_helper.h"
 #include "media/gpu/media_gpu_export.h"
 #include "media/video/picture.h"
 #include "third_party/angle/include/EGL/egl.h"
@@ -44,7 +45,8 @@ class MEDIA_GPU_EXPORT D3D11PictureBuffer
 
   D3D11PictureBuffer(GLenum target, gfx::Size size, size_t level);
 
-  bool Init(base::RepeatingCallback<gpu::CommandBufferStub*()> get_stub_cb,
+  bool Init(base::RepeatingCallback<scoped_refptr<CommandBufferHelper>()>
+                get_helper_cb,
             Microsoft::WRL::ComPtr<ID3D11VideoDevice> video_device,
             Microsoft::WRL::ComPtr<ID3D11Texture2D> texture,
             const GUID& decoder_guid,
@@ -101,7 +103,8 @@ class MEDIA_GPU_EXPORT D3D11PictureBuffer
     GpuResources();
     ~GpuResources();
 
-    bool Init(base::RepeatingCallback<gpu::CommandBufferStub*()> get_stub_cb,
+    bool Init(base::RepeatingCallback<scoped_refptr<CommandBufferHelper>()>
+                  get_helper_cb,
               int level,
               const std::vector<gpu::Mailbox> mailboxes,
               GLenum target,
@@ -109,9 +112,11 @@ class MEDIA_GPU_EXPORT D3D11PictureBuffer
               Microsoft::WRL::ComPtr<ID3D11Texture2D> angle_texture,
               int textures_per_picture);
 
-    std::vector<std::unique_ptr<gpu::gles2::AbstractTexture>> textures_;
+    std::vector<uint32_t> service_ids_;
 
    private:
+    scoped_refptr<CommandBufferHelper> helper_;
+
     DISALLOW_COPY_AND_ASSIGN(GpuResources);
   };
 

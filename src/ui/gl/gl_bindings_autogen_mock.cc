@@ -2963,6 +2963,48 @@ void GL_BINDING_CALL MockGLInterface::Mock_glMinSampleShading(GLfloat value) {
   interface_->MinSampleShading(value);
 }
 
+void GL_BINDING_CALL
+MockGLInterface::Mock_glMultiDrawArraysANGLE(GLenum mode,
+                                             const GLint* firsts,
+                                             const GLsizei* counts,
+                                             GLsizei drawcount) {
+  MakeGlMockFunctionUnique("glMultiDrawArraysANGLE");
+  interface_->MultiDrawArraysANGLE(mode, firsts, counts, drawcount);
+}
+
+void GL_BINDING_CALL MockGLInterface::Mock_glMultiDrawArraysInstancedANGLE(
+    GLenum mode,
+    const GLint* firsts,
+    const GLsizei* counts,
+    const GLsizei* instanceCounts,
+    GLsizei drawcount) {
+  MakeGlMockFunctionUnique("glMultiDrawArraysInstancedANGLE");
+  interface_->MultiDrawArraysInstancedANGLE(mode, firsts, counts,
+                                            instanceCounts, drawcount);
+}
+
+void GL_BINDING_CALL
+MockGLInterface::Mock_glMultiDrawElementsANGLE(GLenum mode,
+                                               const GLsizei* counts,
+                                               GLenum type,
+                                               const GLvoid* const* indices,
+                                               GLsizei drawcount) {
+  MakeGlMockFunctionUnique("glMultiDrawElementsANGLE");
+  interface_->MultiDrawElementsANGLE(mode, counts, type, indices, drawcount);
+}
+
+void GL_BINDING_CALL MockGLInterface::Mock_glMultiDrawElementsInstancedANGLE(
+    GLenum mode,
+    const GLsizei* counts,
+    GLenum type,
+    const GLvoid* const* indices,
+    const GLsizei* instanceCounts,
+    GLsizei drawcount) {
+  MakeGlMockFunctionUnique("glMultiDrawElementsInstancedANGLE");
+  interface_->MultiDrawElementsInstancedANGLE(mode, counts, type, indices,
+                                              instanceCounts, drawcount);
+}
+
 void GL_BINDING_CALL MockGLInterface::Mock_glObjectLabel(GLenum identifier,
                                                          GLuint name,
                                                          GLsizei length,
@@ -5658,6 +5700,17 @@ MockGLInterface::GetGLProcAddress(const char* name) {
     return reinterpret_cast<GLFunctionPointerType>(Mock_glMemoryBarrierEXT);
   if (strcmp(name, "glMinSampleShading") == 0)
     return reinterpret_cast<GLFunctionPointerType>(Mock_glMinSampleShading);
+  if (strcmp(name, "glMultiDrawArraysANGLE") == 0)
+    return reinterpret_cast<GLFunctionPointerType>(Mock_glMultiDrawArraysANGLE);
+  if (strcmp(name, "glMultiDrawArraysInstancedANGLE") == 0)
+    return reinterpret_cast<GLFunctionPointerType>(
+        Mock_glMultiDrawArraysInstancedANGLE);
+  if (strcmp(name, "glMultiDrawElementsANGLE") == 0)
+    return reinterpret_cast<GLFunctionPointerType>(
+        Mock_glMultiDrawElementsANGLE);
+  if (strcmp(name, "glMultiDrawElementsInstancedANGLE") == 0)
+    return reinterpret_cast<GLFunctionPointerType>(
+        Mock_glMultiDrawElementsInstancedANGLE);
   if (strcmp(name, "glObjectLabel") == 0)
     return reinterpret_cast<GLFunctionPointerType>(Mock_glObjectLabel);
   if (strcmp(name, "glObjectLabelKHR") == 0)

@@ -27,29 +27,33 @@
 #define THIRD_PARTY_BLINK_RENDERER_MODULES_DEVICE_ORIENTATION_DEVICE_ROTATION_RATE_H_
 
 #include "third_party/blink/renderer/modules/device_orientation/device_motion_data.h"
+#include "third_party/blink/renderer/modules/modules_export.h"
 #include "third_party/blink/renderer/platform/bindings/script_wrappable.h"
 #include "third_party/blink/renderer/platform/heap/handle.h"
 
 namespace blink {
 
-class DeviceRotationRate final : public ScriptWrappable {
+class DeviceRotationRateInit;
+
+class MODULES_EXPORT DeviceRotationRate final : public ScriptWrappable {
   DEFINE_WRAPPERTYPEINFO();
 
  public:
-  static DeviceRotationRate* Create(
-      DeviceMotionData::RotationRate* rotation_rate) {
-    return new DeviceRotationRate(rotation_rate);
-  }
-  void Trace(blink::Visitor*) override;
+  static DeviceRotationRate* Create(double alpha, double beta, double gamma);
+  static DeviceRotationRate* Create(const DeviceRotationRateInit*);
+
+  DeviceRotationRate(double alpha, double beta, double gamma);
+
+  bool HasRotationData() const;
 
   double alpha(bool& is_null) const;
   double beta(bool& is_null) const;
   double gamma(bool& is_null) const;
 
  private:
-  explicit DeviceRotationRate(DeviceMotionData::RotationRate*);
-
-  Member<DeviceMotionData::RotationRate> rotation_rate_;
+  const double alpha_;
+  const double beta_;
+  const double gamma_;
 };
 
 }  // namespace blink

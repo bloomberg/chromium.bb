@@ -7,6 +7,7 @@
 #import <Foundation/Foundation.h>
 #include <memory>
 
+#include "base/callback.h"
 #include "base/logging.h"
 #include "base/mac/bundle_locations.h"
 #include "base/memory/ptr_util.h"
@@ -99,6 +100,13 @@ void WKBasedNavigationManagerImpl::OnNavigationItemCommitted() {
 
     UMA_HISTOGRAM_TIMES(kRestoreNavigationTime, restoration_timer_->Elapsed());
     restoration_timer_.reset();
+
+    for (base::OnceClosure& callback : restore_session_completion_callbacks_) {
+      std::move(callback).Run();
+    }
+    restore_session_completion_callbacks_.clear();
+
+    LoadIfNecessary();
   }
 
   details.previous_item_index = GetPreviousItemIndex();
@@ -134,7 +142,7 @@ void WKBasedNavigationManagerImpl::AddTransientItem(const GURL& url) {
   // navigation manager.
   NavigationItem* item = GetPendingItem();
   if (!item)
-    item = GetLastCommittedNonAppSpecificItem();
+    item = GetLastCommittedItemWithUserAgentType();
   // Item may still be null in captive portal case if chrome://newtab is the
   // only entry in back/forward history.
   if (item) {
@@ -159,7 +167,7 @@ void WKBasedNavigationManagerImpl::AddPendingItem(
       &transient_url_rewriters_);
   RemoveTransientURLRewriters();
   UpdatePendingItemUserAgentType(user_agent_override_option,
-                                 GetLastCommittedNonAppSpecificItem(),
+                                 GetLastCommittedItemWithUserAgentType(),
                                  pending_item_.get());
 
   // No need to detect renderer-initiated back/forward navigation in detached
@@ -286,6 +294,10 @@ void WKBasedNavigationManagerImpl::AddPushStateItemIfNecessary(
     ui::PageTransition transition) {
   // WKBasedNavigationManager doesn't directly manage session history. Nothing
   // to do here.
+}
+
+bool WKBasedNavigationManagerImpl::IsRestoreSessionInProgress() const {
+  return is_restore_session_in_progress_;
 }
 
 BrowserState* WKBasedNavigationManagerImpl::GetBrowserState() const {
@@ -493,6 +505,10 @@ void WKBasedNavigationManagerImpl::Restore(
   // This pending item will become the first item in the restored history.
   params.virtual_url = items[0]->GetVirtualURL();
 
+  // Grab the title of the first item before |restored_visible_item_| (which may
+  // or may not be the first index) is moved out of |items| below.
+  const base::string16& firstTitle = items[0]->GetTitle();
+
   // Ordering is important. Cache the visible item of the restored session
   // before starting the new navigation, which may trigger client lookup of
   // visible item. The visible item of the restored session is the last
@@ -504,6 +520,22 @@ void WKBasedNavigationManagerImpl::Restore(
     restored_visible_item_ = std::move(items[last_committed_item_index]);
 
   LoadURLWithParams(params);
+
+  // On restore prime the first navigation item with the title.  The remaining
+  // navItem titles will be set from the WKBackForwardListItem title value.
+  NavigationItemImpl* pendingItem = GetPendingItemImpl();
+  if (pendingItem) {
+    pendingItem->SetTitle(firstTitle);
+  }
+}
+
+void WKBasedNavigationManagerImpl::AddRestoreCompletionCallback(
+    base::OnceClosure callback) {
+  if (!is_restore_session_in_progress_) {
+    std::move(callback).Run();
+    return;
+  }
+  restore_session_completion_callbacks_.push_back(std::move(callback));
 }
 
 void WKBasedNavigationManagerImpl::LoadIfNecessary() {
@@ -725,6 +757,7 @@ WKBasedNavigationManagerImpl::WKWebViewCache::GetNavigationItemImplAtIndex(
           nullptr /* use default rewriters only */);
   new_item->SetTimestamp(
       navigation_manager_->time_smoother_.GetSmoothedTime(base::Time::Now()));
+  new_item->SetTitle(base::SysNSStringToUTF16(wk_item.title));
   const GURL& url = new_item->GetURL();
   // If this navigation item has a restore_session.html URL, then it was created
   // to restore session history and will redirect to the target URL encoded in

@@ -16,10 +16,29 @@
 
 #include <utility>
 
+#include "minidump/minidump_extensions.h"
+#include "snapshot/memory_map_region_snapshot.h"
 #include "snapshot/minidump/minidump_simple_string_dictionary_reader.h"
 #include "util/file/file_io.h"
 
 namespace crashpad {
+
+namespace internal {
+
+class MemoryMapRegionSnapshotMinidump : public MemoryMapRegionSnapshot {
+ public:
+  MemoryMapRegionSnapshotMinidump(MINIDUMP_MEMORY_INFO info) : info_(info) {}
+  ~MemoryMapRegionSnapshotMinidump() override = default;
+
+  const MINIDUMP_MEMORY_INFO& AsMinidumpMemoryInfo() const override {
+    return info_;
+  }
+
+ private:
+  MINIDUMP_MEMORY_INFO info_;
+};
+
+}  // namespace internal
 
 ProcessSnapshotMinidump::ProcessSnapshotMinidump()
     : ProcessSnapshot(),
@@ -27,8 +46,14 @@ ProcessSnapshotMinidump::ProcessSnapshotMinidump()
       stream_directory_(),
       stream_map_(),
       modules_(),
+      threads_(),
       unloaded_modules_(),
+      mem_regions_(),
+      mem_regions_exposed_(),
+      custom_streams_(),
       crashpad_info_(),
+      system_snapshot_(),
+      arch_(CPUArchitecture::kCPUArchitectureUnknown),
       annotations_simple_map_(),
       file_reader_(nullptr),
       process_id_(static_cast<pid_t>(-1)),
@@ -86,7 +111,11 @@ bool ProcessSnapshotMinidump::Initialize(FileReaderInterface* file_reader) {
 
   if (!InitializeCrashpadInfo() ||
       !InitializeMiscInfo() ||
-      !InitializeModules()) {
+      !InitializeModules() ||
+      !InitializeSystemSnapshot() ||
+      !InitializeMemoryInfo() ||
+      !InitializeThreads() ||
+      !InitializeCustomMinidumpStreams()) {
     return false;
   }
 
@@ -153,14 +182,16 @@ ProcessSnapshotMinidump::AnnotationsSimpleMap() const {
 
 const SystemSnapshot* ProcessSnapshotMinidump::System() const {
   INITIALIZATION_STATE_DCHECK_VALID(initialized_);
-  NOTREACHED();  // https://crashpad.chromium.org/bug/10
-  return nullptr;
+  return &system_snapshot_;
 }
 
 std::vector<const ThreadSnapshot*> ProcessSnapshotMinidump::Threads() const {
   INITIALIZATION_STATE_DCHECK_VALID(initialized_);
-  NOTREACHED();  // https://crashpad.chromium.org/bug/10
-  return std::vector<const ThreadSnapshot*>();
+  std::vector<const ThreadSnapshot*> threads;
+  for (const auto& thread : threads_) {
+    threads.push_back(thread.get());
+  }
+  return threads;
 }
 
 std::vector<const ModuleSnapshot*> ProcessSnapshotMinidump::Modules() const {
@@ -188,8 +219,7 @@ const ExceptionSnapshot* ProcessSnapshotMinidump::Exception() const {
 std::vector<const MemoryMapRegionSnapshot*> ProcessSnapshotMinidump::MemoryMap()
     const {
   INITIALIZATION_STATE_DCHECK_VALID(initialized_);
-  NOTREACHED();  // https://crashpad.chromium.org/bug/10
-  return std::vector<const MemoryMapRegionSnapshot*>();
+  return mem_regions_exposed_;
 }
 
 std::vector<HandleSnapshot> ProcessSnapshotMinidump::Handles() const {
@@ -203,6 +233,23 @@ std::vector<const MemorySnapshot*> ProcessSnapshotMinidump::ExtraMemory()
   INITIALIZATION_STATE_DCHECK_VALID(initialized_);
   NOTREACHED();  // https://crashpad.chromium.org/bug/10
   return std::vector<const MemorySnapshot*>();
+}
+
+const ProcessMemory* ProcessSnapshotMinidump::Memory() const {
+  INITIALIZATION_STATE_DCHECK_VALID(initialized_);
+  return nullptr;
+}
+
+std::vector<const MinidumpStream*>
+ProcessSnapshotMinidump::CustomMinidumpStreams() const {
+  INITIALIZATION_STATE_DCHECK_VALID(initialized_);
+
+  std::vector<const MinidumpStream*> result;
+  result.reserve(custom_streams_.size());
+  for (const auto& custom_stream : custom_streams_) {
+    result.push_back(custom_stream.get());
+  }
+  return result;
 }
 
 bool ProcessSnapshotMinidump::InitializeCrashpadInfo() {
@@ -385,6 +432,145 @@ bool ProcessSnapshotMinidump::InitializeModulesCrashpadInfo(
           << minidump_link.minidump_module_list_index;
       return false;
     }
+  }
+
+  return true;
+}
+
+bool ProcessSnapshotMinidump::InitializeMemoryInfo() {
+  const auto& stream_it = stream_map_.find(kMinidumpStreamTypeMemoryInfoList);
+  if (stream_it == stream_map_.end()) {
+    return true;
+  }
+
+  if (stream_it->second->DataSize < sizeof(MINIDUMP_MEMORY_INFO_LIST)) {
+    LOG(ERROR) << "memory_info_list size mismatch";
+    return false;
+  }
+
+  if (!file_reader_->SeekSet(stream_it->second->Rva)) {
+    return false;
+  }
+
+  MINIDUMP_MEMORY_INFO_LIST list;
+
+  if (!file_reader_->ReadExactly(&list, sizeof(list))) {
+    return false;
+  }
+
+  if (list.SizeOfHeader != sizeof(list)) {
+    return false;
+  }
+
+  if (list.SizeOfEntry != sizeof(MINIDUMP_MEMORY_INFO)) {
+    return false;
+  }
+
+  if (sizeof(MINIDUMP_MEMORY_INFO_LIST) +
+      list.NumberOfEntries * list.SizeOfEntry != stream_it->second->DataSize) {
+    LOG(ERROR) << "memory_info_list size mismatch";
+    return false;
+  }
+
+  for (uint32_t i = 0; i < list.NumberOfEntries; i++) {
+    MINIDUMP_MEMORY_INFO info;
+
+    if (!file_reader_->ReadExactly(&info, sizeof(info))) {
+      return false;
+    }
+
+    mem_regions_.emplace_back(
+      std::make_unique<internal::MemoryMapRegionSnapshotMinidump>(info));
+    mem_regions_exposed_.emplace_back(mem_regions_.back().get());
+  }
+
+  return true;
+}
+
+bool ProcessSnapshotMinidump::InitializeThreads() {
+  const auto& stream_it = stream_map_.find(kMinidumpStreamTypeThreadList);
+  if (stream_it == stream_map_.end()) {
+    return true;
+  }
+
+  if (stream_it->second->DataSize < sizeof(MINIDUMP_THREAD_LIST)) {
+    LOG(ERROR) << "thread_list size mismatch";
+    return false;
+  }
+
+  if (!file_reader_->SeekSet(stream_it->second->Rva)) {
+    return false;
+  }
+
+  uint32_t thread_count;
+  if (!file_reader_->ReadExactly(&thread_count, sizeof(thread_count))) {
+    return false;
+  }
+
+  if (sizeof(MINIDUMP_THREAD_LIST) + thread_count * sizeof(MINIDUMP_THREAD) !=
+          stream_it->second->DataSize) {
+    LOG(ERROR) << "thread_list size mismatch";
+    return false;
+  }
+
+  for (uint32_t thread_index = 0; thread_index < thread_count; ++thread_index) {
+    const RVA thread_rva = stream_it->second->Rva + sizeof(thread_count) +
+                           thread_index * sizeof(MINIDUMP_THREAD);
+
+    auto thread = std::make_unique<internal::ThreadSnapshotMinidump>();
+    if (!thread->Initialize(file_reader_, thread_rva, arch_)) {
+      return false;
+    }
+
+    threads_.push_back(std::move(thread));
+  }
+
+  return true;
+}
+
+bool ProcessSnapshotMinidump::InitializeSystemSnapshot() {
+  const auto& stream_it = stream_map_.find(kMinidumpStreamTypeSystemInfo);
+  if (stream_it == stream_map_.end()) {
+    return true;
+  }
+
+  if (stream_it->second->DataSize < sizeof(MINIDUMP_SYSTEM_INFO)) {
+    LOG(ERROR) << "system info size mismatch";
+    return false;
+  }
+
+  if (!system_snapshot_.Initialize(file_reader_, stream_it->second->Rva)) {
+    return false;
+  }
+
+  arch_ = system_snapshot_.GetCPUArchitecture();
+  return true;
+}
+
+bool ProcessSnapshotMinidump::InitializeCustomMinidumpStreams() {
+  for (size_t i = 0; i < stream_directory_.size(); i++) {
+    const auto& stream = stream_directory_[i];
+
+    // Filter out reserved minidump and crashpad streams.
+    const uint32_t stream_type = stream.StreamType;
+    if (stream_type <=
+            MinidumpStreamType::kMinidumpStreamTypeLastReservedStream ||
+        (stream_type >= MinidumpStreamType::kMinidumpStreamTypeCrashpadInfo &&
+         stream_type <= MinidumpStreamType::
+                            kMinidumpStreamTypeCrashpadLastReservedStream)) {
+      continue;
+    }
+
+    std::vector<uint8_t> data(stream.Location.DataSize);
+    if (!file_reader_->SeekSet(stream.Location.Rva) ||
+        !file_reader_->ReadExactly(data.data(), data.size())) {
+      LOG(ERROR) << "Failed to read stream with ID 0x" << std::hex
+                 << stream_type << std::dec << " at index " << i;
+      return false;
+    }
+
+    custom_streams_.push_back(
+        std::make_unique<MinidumpStream>(stream_type, std::move(data)));
   }
 
   return true;

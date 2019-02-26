@@ -8,7 +8,6 @@
 
 #include "base/bind.h"
 #include "base/bind_helpers.h"
-#include "base/macros.h"
 #include "base/message_loop/message_loop_current.h"
 #include "base/run_loop.h"
 #include "base/strings/stringprintf.h"
@@ -162,8 +161,19 @@ class AutoEnrollmentClientImplTest
       case DeviceStateRetrieval::RESTORE_MODE_DISABLED:
         return DeviceInitialEnrollmentState::INITIAL_ENROLLMENT_MODE_NONE;
       case DeviceStateRetrieval::RESTORE_MODE_REENROLLMENT_ZERO_TOUCH:
-        return DeviceInitialEnrollmentState::INITIAL_ENROLLMENT_MODE_NONE;
+        return DeviceInitialEnrollmentState::
+            INITIAL_ENROLLMENT_MODE_ZERO_TOUCH_ENFORCED;
     }
+  }
+
+  std::string MapDeviceRestoreStateToDeviceInitialState(
+      const std::string& restore_state) const {
+    if (restore_state == kDeviceStateRestoreModeReEnrollmentEnforced)
+      return kDeviceStateInitialModeEnrollmentEnforced;
+    if (restore_state == kDeviceStateRestoreModeReEnrollmentZeroTouch)
+      return kDeviceStateInitialModeEnrollmentZeroTouch;
+    NOTREACHED();
+    return "";
   }
 
   void ServerWillSendState(
@@ -255,10 +265,14 @@ class AutoEnrollmentClientImplTest
     if (!expected_restore_mode.empty()) {
       std::string actual_restore_mode;
       EXPECT_TRUE(
-          state_dict->GetString(kDeviceStateRestoreMode, &actual_restore_mode));
-      EXPECT_EQ(expected_restore_mode, actual_restore_mode);
+          state_dict->GetString(kDeviceStateMode, &actual_restore_mode));
+      EXPECT_EQ(GetParam() == AutoEnrollmentProtocol::kFRE
+                    ? expected_restore_mode
+                    : MapDeviceRestoreStateToDeviceInitialState(
+                          expected_restore_mode),
+                actual_restore_mode);
     } else {
-      EXPECT_FALSE(state_dict->HasKey(kDeviceStateRestoreMode));
+      EXPECT_FALSE(state_dict->HasKey(kDeviceStateMode));
     }
 
     std::string actual_disabled_message;
@@ -485,11 +499,7 @@ TEST_P(AutoEnrollmentClientImplTest, ForcedReEnrollment) {
   EXPECT_EQ(AUTO_ENROLLMENT_STATE_TRIGGER_ENROLLMENT, state_);
 }
 
-TEST_P(AutoEnrollmentClientImplTest, ForcedReEnrollmentZeroTouch) {
-  // Zero-Touch is currently not supported in the initial-enrollment exchange.
-  if (GetParam() == AutoEnrollmentProtocol::kInitialEnrollment)
-    return;
-
+TEST_P(AutoEnrollmentClientImplTest, ForcedEnrollmentZeroTouch) {
   ServerWillReply(-1, true, true);
   ServerWillSendState(
       "example.com",

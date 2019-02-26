@@ -162,8 +162,6 @@ bool CanAppendNewLineFeedToSelection(const VisibleSelection& selection,
 
 }  // anonymous namespace
 
-using namespace HTMLNames;
-
 TypingCommand::TypingCommand(Document& document,
                              ETypingCommand command_type,
                              const String& text_to_insert,

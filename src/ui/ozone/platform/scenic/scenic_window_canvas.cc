@@ -5,6 +5,8 @@
 #include "ui/ozone/platform/scenic/scenic_window_canvas.h"
 
 #include "base/fuchsia/fuchsia_logging.h"
+#include "base/memory/read_only_shared_memory_region.h"
+#include "base/memory/writable_shared_memory_region.h"
 #include "ui/gfx/geometry/size_f.h"
 #include "ui/gfx/skia_util.h"
 #include "ui/gfx/vsync_provider.h"
@@ -20,30 +22,41 @@ ScenicWindowCanvas::Frame::Frame() = default;
 ScenicWindowCanvas::Frame::~Frame() = default;
 
 void ScenicWindowCanvas::Frame::Initialize(gfx::Size size,
-                                           ScenicSession* scenic) {
-  memory.Unmap();
+                                           scenic::Session* scenic) {
+  size_t bytes_per_row =
+      size.width() * SkColorTypeBytesPerPixel(kN32_SkColorType);
+  size_t buffer_size = bytes_per_row * size.height();
 
-  int bytes_per_row = size.width() * SkColorTypeBytesPerPixel(kN32_SkColorType);
-  int buffer_size = bytes_per_row * size.height();
-  if (!memory.CreateAndMapAnonymous(buffer_size)) {
+  base::WritableSharedMemoryRegion memory_region =
+      base::WritableSharedMemoryRegion::Create(buffer_size);
+  memory_mapping = memory_region.Map();
+
+  if (!memory_mapping.IsValid()) {
     LOG(WARNING) << "Failed to map memory for ScenicWindowCanvas.";
-    memory.Unmap();
+    memory_mapping = base::WritableSharedMemoryMapping();
     surface.reset();
-  } else {
-    memory_id = scenic->CreateMemory(memory.GetReadOnlyHandle(),
-                                     fuchsia::images::MemoryType::HOST_MEMORY);
-    surface = SkSurface::MakeRasterDirect(
-        SkImageInfo::MakeN32Premul(size.width(), size.height()),
-        memory.memory(), bytes_per_row);
-    dirty_region.setRect(gfx::RectToSkIRect(gfx::Rect(size)));
+    return;
   }
+
+  auto read_only_memory = base::WritableSharedMemoryRegion::ConvertToReadOnly(
+      std::move(memory_region));
+  auto memory_handle =
+      base::ReadOnlySharedMemoryRegion::TakeHandleForSerialization(
+          std::move(read_only_memory));
+  scenic_memory = std::make_unique<scenic::Memory>(
+      scenic, memory_handle.PassPlatformHandle(), buffer_size,
+      fuchsia::images::MemoryType::HOST_MEMORY);
+  surface = SkSurface::MakeRasterDirect(
+      SkImageInfo::MakeN32Premul(size.width(), size.height()),
+      memory_mapping.memory(), bytes_per_row);
+  dirty_region.setRect(gfx::RectToSkIRect(gfx::Rect(size)));
 }
 
 void ScenicWindowCanvas::Frame::CopyDirtyRegionFrom(const Frame& frame) {
   int stride = surface->width() * SkColorTypeBytesPerPixel(kN32_SkColorType);
   for (SkRegion::Iterator i(dirty_region); !i.done(); i.next()) {
     uint8_t* dst_ptr =
-        static_cast<uint8_t*>(memory.memory()) +
+        static_cast<uint8_t*>(memory_mapping.memory()) +
         i.rect().x() * SkColorTypeBytesPerPixel(kN32_SkColorType) +
         i.rect().y() * stride;
     frame.surface->readPixels(
@@ -53,28 +66,31 @@ void ScenicWindowCanvas::Frame::CopyDirtyRegionFrom(const Frame& frame) {
   dirty_region.setEmpty();
 }
 
-ScenicWindowCanvas::ScenicWindowCanvas(ScenicWindow* window) : window_(window) {
+ScenicWindowCanvas::ScenicWindowCanvas(fuchsia::ui::scenic::Scenic* scenic,
+                                       ScenicWindow* window)
+    : window_(window),
+      scenic_session_(scenic),
+      parent_(&scenic_session_),
+      material_(&scenic_session_) {
+  scenic::ShapeNode shape(&scenic_session_);
+  shape.SetShape(scenic::Rectangle(&scenic_session_, 1.f, 1.f));
+  shape.SetMaterial(material_);
+
+  zx::eventpair export_token;
+  parent_.BindAsRequest(&export_token);
+  parent_.AddChild(shape);
+  window_->ExportRenderingEntity(std::move(export_token));
 }
 
-ScenicWindowCanvas::~ScenicWindowCanvas() {
-  ScenicSession* scenic = window_->scenic_session();
-  for (int i = 0; i < kNumBuffers; ++i) {
-    if (!frames_[i].is_empty())
-      scenic->ReleaseResource(frames_[i].memory_id);
-  }
-}
+ScenicWindowCanvas::~ScenicWindowCanvas() = default;
 
 void ScenicWindowCanvas::ResizeCanvas(const gfx::Size& viewport_size) {
   viewport_size_ = viewport_size;
   viewport_size_.SetToMax(gfx::Size(1, 1));
 
-  ScenicSession* scenic = window_->scenic_session();
-
   // Allocate new buffers with the new size.
   for (int i = 0; i < kNumBuffers; ++i) {
-    if (!frames_[i].is_empty())
-      scenic->ReleaseResource(frames_[i].memory_id);
-    frames_[i].Initialize(viewport_size_, scenic);
+    frames_[i].Initialize(viewport_size_, &scenic_session_);
   }
 }
 
@@ -128,17 +144,14 @@ void ScenicWindowCanvas::PresentCanvas(const gfx::Rect& damage) {
   }
 
   // Create image that wraps the buffer and attach it as texture for the node.
-  ScenicSession* scenic = window_->scenic_session();
   fuchsia::images::ImageInfo info;
   info.width = viewport_size_.width();
   info.height = viewport_size_.height();
   info.stride =
       viewport_size_.width() * SkColorTypeBytesPerPixel(kN32_SkColorType);
-  ScenicSession::ResourceId image_id = scenic->CreateImage(
-      frames_[current_frame_].memory_id, 0, std::move(info));
-
-  window_->SetTexture(image_id);
-  scenic->ReleaseResource(image_id);
+  scenic::Image image(*frames_[current_frame_].scenic_memory, 0,
+                      std::move(info));
+  material_.SetTexture(image);
 
   // Create release fence for the current buffer or reset it if it already
   // exists.
@@ -159,10 +172,9 @@ void ScenicWindowCanvas::PresentCanvas(const gfx::Rect& damage) {
   auto status = frames_[current_frame_].release_fence.duplicate(
       ZX_RIGHT_SAME_RIGHTS, &release_fence_dup);
   ZX_CHECK(status == ZX_OK, status);
-  scenic->AddReleaseFence(std::move(release_fence_dup));
-
-  // Present the frame.
-  scenic->Present();
+  scenic_session_.EnqueueReleaseFence(std::move(release_fence_dup));
+  scenic_session_.Present(/*presentation_time=*/0,
+                          [](fuchsia::images::PresentationInfo info) {});
 
   // Move to the next buffer.
   current_frame_ = (current_frame_ + 1) % kNumBuffers;

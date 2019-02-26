@@ -27,6 +27,8 @@ extern const char kOverrideModelKey[];
 extern const char kEnforceRankerKey[];
 extern const char kOverrideModelHeuristicValue[];
 extern const char kOverrideModelGeoValue[];
+extern const char kOverrideModelDefaultValue[];
+extern const char kBackoffThresholdKey[];
 
 enum class OverrideLanguageModel {
   DEFAULT,

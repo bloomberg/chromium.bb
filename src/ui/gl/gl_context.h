@@ -194,6 +194,11 @@ class GL_EXPORT GLContext : public base::RefCounted<GLContext> {
   // current.
   virtual void ForceReleaseVirtuallyCurrent();
 
+  // Indicates that some GL state was modified that was not tracked by virtual
+  // contexts. Forces full reset from unknown state the next time a virtual
+  // context is made current.
+  void DirtyVirtualContextState();
+
 #if defined(OS_MACOSX)
   // Create a fence for all work submitted to this context so far, and return a
   // monotonically increasing handle to it. This returned handle never needs to

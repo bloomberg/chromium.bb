@@ -80,7 +80,7 @@ enum class ConnectionMigrationMode {
 
 // Cause of connection migration.
 enum ConnectionMigrationCause {
-  UNKNOWN,
+  UNKNOWN_CAUSE,
   ON_NETWORK_CONNECTED,                // No probing.
   ON_NETWORK_DISCONNECTED,             // No probing.
   ON_WRITE_ERROR,                      // No probing.
@@ -476,6 +476,7 @@ class NET_EXPORT_PRIVATE QuicChromiumClientSession
       const quic::CryptoHandshakeMessage& message) override;
   void OnGoAway(const quic::QuicGoAwayFrame& frame) override;
   void OnRstStream(const quic::QuicRstStreamFrame& frame) override;
+  void OnCanCreateNewOutgoingStream() override;
 
   // QuicClientSessionBase methods:
   void OnConfigNegotiated() override;
@@ -644,10 +645,10 @@ class NET_EXPORT_PRIVATE QuicChromiumClientSession
 
  protected:
   // quic::QuicSession methods:
-  bool ShouldCreateIncomingDynamicStream(quic::QuicStreamId id) override;
-  bool ShouldCreateOutgoingDynamicStream() override;
+  bool ShouldCreateIncomingStream(quic::QuicStreamId id) override;
+  bool ShouldCreateOutgoingStream() override;
 
-  QuicChromiumClientStream* CreateIncomingDynamicStream(
+  QuicChromiumClientStream* CreateIncomingStream(
       quic::QuicStreamId id) override;
 
  private:
@@ -665,8 +666,6 @@ class NET_EXPORT_PRIVATE QuicChromiumClientSession
       const NetworkTrafficAnnotationTag& traffic_annotation);
   // A completion callback invoked when a read completes.
   void OnReadComplete(int result);
-
-  void OnClosedStream();
 
   void CloseAllStreams(int net_error);
   void CloseAllHandles(int net_error);

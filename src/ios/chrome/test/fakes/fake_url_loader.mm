@@ -19,6 +19,7 @@
 @property(nonatomic) BOOL rendererInitiated;
 @property(nonatomic) BOOL inIncognito;
 @property(nonatomic, copy) NSDictionary* extraHeaders;
+@property(nonatomic) WindowOpenDisposition disposition;
 @end
 
 @implementation FakeURLLoader
@@ -28,12 +29,14 @@
 @synthesize inIncognito = _inIncognito;
 @synthesize extraHeaders = _extraHeaders;
 
-- (void)loadURLWithParams:(const web::NavigationManager::WebLoadParams&)params {
+- (void)loadURLWithParams:(const ChromeLoadParams&)chromeParams {
+  web::NavigationManager::WebLoadParams params = chromeParams.web_params;
   _url = params.url;
   _referrer = params.referrer;
   self.transition = params.transition_type;
   self.rendererInitiated = params.is_renderer_initiated;
   self.extraHeaders = params.extra_headers;
+  self.disposition = chromeParams.disposition;
 }
 
 - (void)webPageOrderedOpen:(OpenNewTabCommand*)command {

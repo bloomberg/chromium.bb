@@ -1,4 +1,0 @@
-This is a testharness.js-based test.
-FAIL legend assert_unreached: input in legend was focused Reached unreachable code
-Harness: the test ran to completion.
-

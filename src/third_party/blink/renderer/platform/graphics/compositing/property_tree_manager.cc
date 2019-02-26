@@ -178,11 +178,6 @@ void PropertyTreeManager::SetCurrentEffectHasRenderSurface() {
 
 int PropertyTreeManager::EnsureCompositorTransformNode(
     const TransformPaintPropertyNode* transform_node) {
-  DCHECK(transform_node);
-  // TODO(crbug.com/645615): Remove the failsafe here.
-  if (!transform_node)
-    return kSecondaryRootNodeId;
-
   transform_node = transform_node->Unalias();
   auto it = transform_node_map_.find(transform_node);
   if (it != transform_node_map_.end())
@@ -295,7 +290,7 @@ int PropertyTreeManager::EnsureCompositorTransformNode(
   return id;
 }
 
-void PropertyTreeManager::EnsureCompositorPageScaleTransformNode(
+int PropertyTreeManager::EnsureCompositorPageScaleTransformNode(
     const TransformPaintPropertyNode* node) {
   int id = EnsureCompositorTransformNode(node);
   DCHECK(GetTransformTree().Node(id));
@@ -308,15 +303,12 @@ void PropertyTreeManager::EnsureCompositorPageScaleTransformNode(
   compositor_node.post_local.matrix() = compositor_node.local.matrix();
   compositor_node.pre_local.matrix().setIdentity();
   compositor_node.local.matrix().setIdentity();
+
+  return id;
 }
 
 int PropertyTreeManager::EnsureCompositorClipNode(
     const ClipPaintPropertyNode* clip_node) {
-  DCHECK(clip_node);
-  // TODO(crbug.com/645615): Remove the failsafe here.
-  if (!clip_node)
-    return kSecondaryRootNodeId;
-
   clip_node = clip_node->Unalias();
   auto it = clip_node_map_.find(clip_node);
   if (it != clip_node_map_.end())
@@ -720,6 +712,7 @@ bool PropertyTreeManager::BuildEffectNodesRecursively(
   // decision until later phase of the pipeline. Remove premature optimization
   // here once the work is ready.
   if (!next_effect->Filter().IsEmpty() ||
+      !next_effect->BackdropFilter().IsEmpty() ||
       used_blend_mode != SkBlendMode::kSrcOver)
     effect_node.has_render_surface = true;
 
@@ -735,6 +728,8 @@ bool PropertyTreeManager::BuildEffectNodesRecursively(
                                            nullptr)));
   } else {
     effect_node.filters = next_effect->Filter().AsCcFilterOperations();
+    effect_node.backdrop_filters =
+        next_effect->BackdropFilter().AsCcFilterOperations();
     effect_node.filters_origin = next_effect->FiltersOrigin();
     effect_node.transform_id =
         EnsureCompositorTransformNode(next_effect->LocalTransformSpace());

@@ -127,7 +127,7 @@ void ParseIeFileVersionTwo(const base::Value& xml, ParsedXml* result) {
   }
 }
 
-void RawXmlParsed(ParseIeemXmlCallback callback,
+void RawXmlParsed(base::OnceCallback<void(ParsedXml)> callback,
                   std::unique_ptr<base::Value> xml,
                   const base::Optional<std::string>& error) {
   if (error) {
@@ -163,7 +163,8 @@ ParsedXml::ParsedXml(std::vector<std::string>&& sitelist_,
       error(std::move(error_)) {}
 ParsedXml::~ParsedXml() = default;
 
-void ParseIeemXml(const std::string& xml, ParseIeemXmlCallback callback) {
+void ParseIeemXml(const std::string& xml,
+                  base::OnceCallback<void(ParsedXml)> callback) {
   data_decoder::ParseXml(
       content::ServiceManagerConnection::GetForProcess()->GetConnector(), xml,
       base::BindOnce(&RawXmlParsed, std::move(callback)));

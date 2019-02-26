@@ -12,7 +12,12 @@
 namespace cc {
 namespace frame_viewer_instrumentation {
 
-extern const char kCategoryLayerTree[];
+constexpr const char* CategoryLayerTree() {
+  // Declared as a constexpr function to have an external linkage and to be
+  // known at compile-time.
+  return TRACE_DISABLED_BY_DEFAULT("cc.debug") "," TRACE_DISABLED_BY_DEFAULT(
+      "viz.quads") "," TRACE_DISABLED_BY_DEFAULT("devtools.timeline.layers");
+}
 
 class ScopedAnalyzeTask {
  public:

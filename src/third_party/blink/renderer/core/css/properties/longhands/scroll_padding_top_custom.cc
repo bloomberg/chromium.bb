@@ -9,7 +9,7 @@
 #include "third_party/blink/renderer/core/css/properties/computed_style_utils.h"
 
 namespace blink {
-namespace CSSLonghand {
+namespace css_longhand {
 
 const CSSValue* ScrollPaddingTop::ParseSingleValue(
     CSSParserTokenRange& range,
@@ -17,7 +17,7 @@ const CSSValue* ScrollPaddingTop::ParseSingleValue(
     const CSSParserLocalContext&) const {
   return ConsumeLengthOrPercent(
       range, context.Mode(), kValueRangeNonNegative,
-      CSSPropertyParserHelpers::UnitlessQuirk::kForbid);
+      css_property_parser_helpers::UnitlessQuirk::kForbid);
 }
 
 const CSSValue* ScrollPaddingTop::CSSValueFromComputedStyleInternal(
@@ -30,5 +30,5 @@ const CSSValue* ScrollPaddingTop::CSSValueFromComputedStyleInternal(
       style.ScrollPaddingTop(), style);
 }
 
-}  // namespace CSSLonghand
+}  // namespace css_longhand
 }  // namespace blink

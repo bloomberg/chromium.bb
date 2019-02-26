@@ -13,6 +13,7 @@
 #include "mojo/public/cpp/bindings/associated_binding.h"
 #include "ui/accelerated_widget_mac/accelerated_widget_mac.h"
 #include "ui/accelerated_widget_mac/display_link_mac.h"
+#include "ui/base/cocoa/accessibility_focus_overrider.h"
 #include "ui/base/ime/input_method_delegate.h"
 #include "ui/compositor/layer_owner.h"
 #include "ui/views/cocoa/bridge_factory_host.h"
@@ -26,6 +27,7 @@
 #include "ui/views_bridge_mac/mojo/bridged_native_widget_host.mojom.h"
 
 @class NativeWidgetMacNSWindow;
+@class NSAccessibilityRemoteUIElement;
 @class NSView;
 
 namespace ui {
@@ -47,14 +49,16 @@ class VIEWS_EXPORT BridgedNativeWidgetHostImpl
       public DialogObserver,
       public FocusChangeListener,
       public ui::internal::InputMethodDelegate,
+      public ui::AccessibilityFocusOverrider::Client,
       public ui::LayerDelegate,
       public ui::LayerOwner,
       public ui::AcceleratedWidgetMacNSView {
  public:
-  // Retrieves the bridge host associated with the given NSWindow. Returns null
-  // if the supplied handle has no associated Widget.
+  // Retrieves the bridge host associated with the given NativeWindow. Returns
+  // null if the supplied handle has no associated Widget.
   static BridgedNativeWidgetHostImpl* GetFromNativeWindow(
       gfx::NativeWindow window);
+  static BridgedNativeWidgetHostImpl* GetFromNativeView(gfx::NativeView view);
 
   // Unique integer id handles are used to bridge between the
   // BridgedNativeWidgetHostImpl in one process and the BridgedNativeWidgetHost
@@ -86,6 +90,12 @@ class VIEWS_EXPORT BridgedNativeWidgetHostImpl
   // object for this host is in this process, then this points to the bridge's
   // NSWindow. Otherwise, it mirrors the id and bounds of the child window.
   NativeWidgetMacNSWindow* GetLocalNSWindow() const;
+
+  // Return the accessibility object for the content NSView.
+  gfx::NativeViewAccessible GetNativeViewAccessibleForNSView() const;
+
+  // Return the accessibility object for the NSWindow.
+  gfx::NativeViewAccessible GetNativeViewAccessibleForNSWindow() const;
 
   // The mojo interface through which to communicate with the underlying
   // NSWindow and NSView.
@@ -196,7 +206,7 @@ class VIEWS_EXPORT BridgedNativeWidgetHostImpl
   void RankNSViewsRecursive(View* view, std::map<NSView*, int>* rank) const;
 
   // BridgedNativeWidgetHostHelper:
-  NSView* GetNativeViewAccessible() override;
+  id GetNativeViewAccessible() override;
   void DispatchKeyEvent(ui::KeyEvent* event) override;
   bool DispatchKeyEventToMenuController(ui::KeyEvent* event) override;
   void GetWordAt(const gfx::Point& location_in_content,
@@ -212,9 +222,9 @@ class VIEWS_EXPORT BridgedNativeWidgetHostImpl
   // views_bridge_mac::mojom::BridgedNativeWidgetHost:
   void OnVisibilityChanged(bool visible) override;
   void OnWindowNativeThemeChanged() override;
-  void SetViewSize(const gfx::Size& new_size) override;
+  void OnViewSizeChanged(const gfx::Size& new_size) override;
   void SetKeyboardAccessible(bool enabled) override;
-  void SetIsFirstResponder(bool is_first_responder) override;
+  void OnIsFirstResponderChanged(bool is_first_responder) override;
   void OnMouseCaptureActiveChanged(bool capture_is_active) override;
   void OnScrollEvent(std::unique_ptr<ui::Event> event) override;
   void OnMouseEvent(std::unique_ptr<ui::Event> event) override;
@@ -255,6 +265,9 @@ class VIEWS_EXPORT BridgedNativeWidgetHostImpl
   bool GetCanWindowBecomeKey(bool* can_window_become_key) override;
   bool GetAlwaysRenderWindowAsKey(bool* always_render_as_key) override;
   bool GetCanWindowClose(bool* can_window_close) override;
+  bool GetWindowFrameTitlebarHeight(bool* override_titlebar_height,
+                                    float* titlebar_height) override;
+  void OnFocusWindowToolbar() override;
 
   // views_bridge_mac::mojom::BridgedNativeWidgetHost, synchronous callbacks:
   void DispatchKeyEventRemote(std::unique_ptr<ui::Event> event,
@@ -281,6 +294,11 @@ class VIEWS_EXPORT BridgedNativeWidgetHostImpl
   void GetAlwaysRenderWindowAsKey(
       GetAlwaysRenderWindowAsKeyCallback callback) override;
   void GetCanWindowClose(GetCanWindowCloseCallback callback) override;
+  void GetWindowFrameTitlebarHeight(
+      GetWindowFrameTitlebarHeightCallback callback) override;
+  void GetAccessibilityTokens(const std::vector<uint8_t>& window_token,
+                              const std::vector<uint8_t>& view_token,
+                              GetAccessibilityTokensCallback callback) override;
 
   // DialogObserver:
   void OnDialogModelChanged() override;
@@ -293,6 +311,9 @@ class VIEWS_EXPORT BridgedNativeWidgetHostImpl
   ui::EventDispatchDetails DispatchKeyEventPostIME(
       ui::KeyEvent* key,
       base::OnceCallback<void(bool)> ack_callback) override;
+
+  // ui::AccessibilityFocusOverrider::Client:
+  id GetAccessibilityFocusedUIElement() override;
 
   // ui::LayerDelegate:
   void OnPaintLayer(const ui::PaintContext& context) override;
@@ -324,6 +345,16 @@ class VIEWS_EXPORT BridgedNativeWidgetHostImpl
   // The mojo pointer to a BridgedNativeWidget, which may exist in another
   // process.
   views_bridge_mac::mojom::BridgedNativeWidgetAssociatedPtr bridge_ptr_;
+
+  // Remote accessibility objects corresponding to the NSWindow and its root
+  // NSView.
+  base::scoped_nsobject<NSAccessibilityRemoteUIElement>
+      remote_window_accessible_;
+  base::scoped_nsobject<NSAccessibilityRemoteUIElement> remote_view_accessible_;
+
+  // Used to force the NSApplication's focused accessibility element to be the
+  // views::Views accessibility tree when the NSView for this is focused.
+  ui::AccessibilityFocusOverrider accessibility_focus_overrider_;
 
   // TODO(ccameron): Rather than instantiate a BridgedNativeWidgetImpl here,
   // we will instantiate a mojo BridgedNativeWidgetImpl interface to a Cocoa

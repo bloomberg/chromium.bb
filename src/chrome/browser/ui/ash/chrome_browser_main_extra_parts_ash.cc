@@ -18,7 +18,9 @@
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/chromeos/night_light/night_light_client.h"
+#include "chrome/browser/chromeos/policy/display_resolution_handler.h"
 #include "chrome/browser/chromeos/policy/display_rotation_default_handler.h"
+#include "chrome/browser/chromeos/policy/display_settings_handler.h"
 #include "chrome/browser/chromeos/profiles/profile_helper.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/signin/signin_error_notifier_factory_ash.h"
@@ -28,6 +30,7 @@
 #include "chrome/browser/ui/ash/ash_shell_init.h"
 #include "chrome/browser/ui/ash/cast_config_client_media_router.h"
 #include "chrome/browser/ui/ash/chrome_new_window_client.h"
+#include "chrome/browser/ui/ash/contained_shell_client.h"
 #include "chrome/browser/ui/ash/ime_controller_client.h"
 #include "chrome/browser/ui/ash/launcher/chrome_launcher_controller.h"
 #include "chrome/browser/ui/ash/login_screen_client.h"
@@ -44,7 +47,6 @@
 #include "chrome/browser/ui/ash/vpn_list_forwarder.h"
 #include "chrome/browser/ui/ash/wallpaper_controller_client.h"
 #include "chrome/browser/ui/views/frame/immersive_context_mus.h"
-#include "chrome/browser/ui/views/frame/immersive_handler_factory_mus.h"
 #include "chrome/browser/ui/views/ime_driver/ime_driver_mus.h"
 #include "chrome/browser/ui/views/select_file_dialog_extension.h"
 #include "chrome/browser/ui/views/select_file_dialog_extension_factory.h"
@@ -66,6 +68,7 @@
 #include "services/ws/public/mojom/user_activity_monitor.mojom.h"
 #include "ui/aura/mus/property_converter.h"
 #include "ui/aura/mus/user_activity_forwarder.h"
+#include "ui/aura/mus/window_tree_client.h"
 #include "ui/base/ime/chromeos/input_method_manager.h"
 #include "ui/base/ui_base_features.h"
 #include "ui/base/user_activity/user_activity_detector.h"
@@ -154,10 +157,10 @@ void ChromeBrowserMainExtraPartsAsh::ServiceManagerConnectionStarted(
   if (features::IsUsingWindowService()) {
     // Start up the window service and the ash system UI service.
     // NOTE: ash::Shell is still created below for SingleProcessMash.
-    connection->GetConnector()->StartService(
-        service_manager::Identity(ws::mojom::kServiceName));
-    connection->GetConnector()->StartService(
-        service_manager::Identity(ash::mojom::kServiceName));
+    connection->GetConnector()->WarmService(
+        service_manager::ServiceFilter::ByName(ws::mojom::kServiceName));
+    connection->GetConnector()->WarmService(
+        service_manager::ServiceFilter::ByName(ash::mojom::kServiceName));
 
     views::MusClient::InitParams params;
     params.connector = connection->GetConnector();
@@ -166,7 +169,6 @@ void ChromeBrowserMainExtraPartsAsh::ServiceManagerConnectionStarted(
     // WMState has already been created, so don't have MusClient create it.
     params.create_wm_state = false;
     params.running_in_ws_process = features::IsSingleProcessMash();
-    params.create_cursor_factory = !features::IsSingleProcessMash();
     mus_client_ = std::make_unique<views::MusClient>(params);
     // Register ash-specific window properties with Chrome's property converter.
     // Values of registered properties will be transported between the services.
@@ -188,8 +190,6 @@ void ChromeBrowserMainExtraPartsAsh::PreProfileInit() {
   if (!features::IsMultiProcessMash()) {
     ash_shell_init_ = std::make_unique<AshShellInit>();
   } else {
-    immersive_handler_factory_ = std::make_unique<ImmersiveHandlerFactoryMus>();
-
     // Enterprise support in the browser can monitor user activity. Connect to
     // the UI service to monitor activity. The ash process has its own monitor.
     // TODO(jamescook): Figure out if we need this for SingleProcessMash.
@@ -206,12 +206,8 @@ void ChromeBrowserMainExtraPartsAsh::PreProfileInit() {
   if (features::IsUsingWindowService())
     immersive_context_ = std::make_unique<ImmersiveContextMus>();
 
-  // TODO(estade): implement ScreenOrientationDelegateChromeos for Mash and
-  // remove this condition.
-  if (!features::IsUsingWindowService()) {
-    screen_orientation_delegate_ =
-        std::make_unique<ScreenOrientationDelegateChromeos>();
-  }
+  screen_orientation_delegate_ =
+      std::make_unique<ScreenOrientationDelegateChromeos>();
 
   app_list_client_ = std::make_unique<AppListClientImpl>();
 
@@ -258,12 +254,20 @@ void ChromeBrowserMainExtraPartsAsh::PostProfileInit() {
   cast_config_client_media_router_ =
       std::make_unique<CastConfigClientMediaRouter>();
   login_screen_client_ = std::make_unique<LoginScreenClient>();
+  // https://crbug.com/884127 ensuring that LoginScreenClient is initialized before using it InitializeDeviceDisablingManager.
+  g_browser_process->platform_part()->InitializeDeviceDisablingManager();
+
   media_client_ = std::make_unique<MediaClient>();
 
-  // Instantiate DisplayRotationDefaultHandler after CrosSettings has been
+  // Instantiate DisplaySettingsHandler after CrosSettings has been
   // initialized.
-  display_rotation_handler_ =
-      std::make_unique<policy::DisplayRotationDefaultHandler>();
+  display_settings_handler_ =
+      std::make_unique<policy::DisplaySettingsHandler>();
+  display_settings_handler_->RegisterHandler(
+      std::make_unique<policy::DisplayResolutionHandler>());
+  display_settings_handler_->RegisterHandler(
+      std::make_unique<policy::DisplayRotationDefaultHandler>());
+  display_settings_handler_->Start();
 
   // Do not create a NetworkPortalNotificationController for tests since the
   // NetworkPortalDetector instance may be replaced.
@@ -283,6 +287,9 @@ void ChromeBrowserMainExtraPartsAsh::PostProfileInit() {
     // Initialize TabScrubber after the Ash Shell has been initialized.
     TabScrubber::GetInstance();
   }
+
+  if (base::FeatureList::IsEnabled(ash::features::kContainedShell))
+    contained_shell_client_ = std::make_unique<ContainedShellClient>();
 }
 
 void ChromeBrowserMainExtraPartsAsh::PostBrowserStart() {
@@ -312,10 +319,11 @@ void ChromeBrowserMainExtraPartsAsh::PostMainMessageLoopRun() {
 
   // Initialized in PostProfileInit:
   network_portal_notification_controller_.reset();
-  display_rotation_handler_.reset();
+  display_settings_handler_.reset();
   media_client_.reset();
   login_screen_client_.reset();
   cast_config_client_media_router_.reset();
+  contained_shell_client_.reset();
 
   // Initialized in PreProfileInit:
   system_tray_client_.reset();
@@ -327,6 +335,10 @@ void ChromeBrowserMainExtraPartsAsh::PostMainMessageLoopRun() {
   // needs to be released before destroying the profile.
   app_list_client_.reset();
   ash_shell_init_.reset();
+
+  // WindowTreeClient needs to do some shutdown while the IO thread is alive.
+  if (mus_client_)
+    mus_client_->window_tree_client()->OnEarlyShutdown();
 
   chromeos::NetworkConnect::Shutdown();
   network_connect_delegate_.reset();

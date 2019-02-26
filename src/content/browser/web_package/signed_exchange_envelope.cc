@@ -12,7 +12,7 @@
 #include "base/strings/string_piece.h"
 #include "base/strings/stringprintf.h"
 #include "base/trace_event/trace_event.h"
-#include "components/cbor/cbor_reader.h"
+#include "components/cbor/reader.h"
 #include "content/browser/web_package/signed_exchange_consts.h"
 #include "content/browser/web_package/signed_exchange_utils.h"
 #include "net/http/http_response_headers.h"
@@ -33,7 +33,7 @@ bool IsStatefulRequestHeader(base::StringPiece name) {
 
   const char* const kStatefulRequestHeaders[] = {
       "authorization", "cookie", "cookie2", "proxy-authorization",
-      "sec-webSocket-key"};
+      "sec-websocket-key"};
 
   for (const char* field : kStatefulRequestHeaders) {
     if (name == field)
@@ -65,11 +65,7 @@ bool IsStatefulResponseHeader(base::StringPiece name) {
   return false;
 }
 
-bool IsMethodCacheable(base::StringPiece method) {
-  return method == "GET" || method == "HEAD" || method == "POST";
-}
-
-bool ParseRequestMap(const cbor::CBORValue& value,
+bool ParseRequestMap(const cbor::Value& value,
                      SignedExchangeEnvelope* out,
                      SignedExchangeDevToolsProxy* devtools_proxy) {
   TRACE_EVENT0(TRACE_DISABLED_BY_DEFAULT("loading"), "ParseRequestMap");
@@ -82,10 +78,10 @@ bool ParseRequestMap(const cbor::CBORValue& value,
     return false;
   }
 
-  const cbor::CBORValue::MapValue& request_map = value.GetMap();
+  const cbor::Value::MapValue& request_map = value.GetMap();
 
-  auto method_iter = request_map.find(
-      cbor::CBORValue(kMethodKey, cbor::CBORValue::Type::BYTE_STRING));
+  auto method_iter =
+      request_map.find(cbor::Value(kMethodKey, cbor::Value::Type::BYTE_STRING));
   if (method_iter == request_map.end() ||
       !method_iter->second.is_bytestring()) {
     signed_exchange_utils::ReportErrorAndTraceEvent(
@@ -93,16 +89,15 @@ bool ParseRequestMap(const cbor::CBORValue& value,
     return false;
   }
   base::StringPiece method_str = method_iter->second.GetBytestringAsString();
-  // 3. If exchange’s request method is not safe (Section 4.2.1 of [RFC7231])
-  // or not cacheable (Section 4.2.3 of [RFC7231]), return “invalid”.
-  // [spec text]
-  if (!net::HttpUtil::IsMethodSafe(method_str.as_string()) ||
-      !IsMethodCacheable(method_str)) {
+  // https://wicg.github.io/webpackage/loading.html#parse-cbor-headers
+  // If any of the following is true, return a failure:
+  // - ...
+  // - headers[0][`:method`] is not `GET`. [spec text]
+  if (method_str != "GET") {
     signed_exchange_utils::ReportErrorAndTraceEvent(
         devtools_proxy,
-        base::StringPrintf(
-            "Request method is not safe or not cacheable. method: %s",
-            method_str.as_string().c_str()));
+        base::StringPrintf("Request method must be GET, but is %s",
+                           method_str.as_string().c_str()));
     return false;
   }
   out->set_request_method(method_str);
@@ -125,8 +120,11 @@ bool ParseRequestMap(const cbor::CBORValue& value,
     if (name_str == kMethodKey)
       continue;
 
-    // TODO(kouhei): Add spec ref here once
-    // https://github.com/WICG/webpackage/issues/161 is resolved.
+    // https://tools.ietf.org/html/draft-yasskin-httpbis-origin-signed-exchanges-impl-02
+    // Section 3.2:
+    // "For each request header field in `exchange`, the header field's
+    // lowercase name as a byte string to the header field's value as a byte
+    // string."
     if (name_str != base::ToLowerASCII(name_str)) {
       signed_exchange_utils::ReportErrorAndTraceEvent(
           devtools_proxy,
@@ -150,7 +148,7 @@ bool ParseRequestMap(const cbor::CBORValue& value,
   return true;
 }
 
-bool ParseResponseMap(const cbor::CBORValue& value,
+bool ParseResponseMap(const cbor::Value& value,
                       SignedExchangeEnvelope* out,
                       SignedExchangeDevToolsProxy* devtools_proxy) {
   TRACE_EVENT0(TRACE_DISABLED_BY_DEFAULT("loading"), "ParseResponseMap");
@@ -163,9 +161,9 @@ bool ParseResponseMap(const cbor::CBORValue& value,
     return false;
   }
 
-  const cbor::CBORValue::MapValue& response_map = value.GetMap();
+  const cbor::Value::MapValue& response_map = value.GetMap();
   auto status_iter = response_map.find(
-      cbor::CBORValue(kStatusKey, cbor::CBORValue::Type::BYTE_STRING));
+      cbor::Value(kStatusKey, cbor::Value::Type::BYTE_STRING));
   if (status_iter == response_map.end() ||
       !status_iter->second.is_bytestring()) {
     signed_exchange_utils::ReportErrorAndTraceEvent(
@@ -178,6 +176,14 @@ bool ParseResponseMap(const cbor::CBORValue& value,
   if (!base::StringToInt(response_code_str, &response_code)) {
     signed_exchange_utils::ReportErrorAndTraceEvent(
         devtools_proxy, "Failed to parse status code to integer.");
+    return false;
+  }
+
+  // TODO(kouhei): Add spec ref here once
+  // https://github.com/WICG/webpackage/issues/326 is resolved.
+  if (response_code != 200) {
+    signed_exchange_utils::ReportErrorAndTraceEvent(devtools_proxy,
+                                                    "Status code is not 200.");
     return false;
   }
   out->set_response_code(static_cast<net::HttpStatusCode>(response_code));
@@ -199,8 +205,11 @@ bool ParseResponseMap(const cbor::CBORValue& value,
       return false;
     }
 
-    // TODO(kouhei): Add spec ref here once
-    // https://github.com/WICG/webpackage/issues/161 is resolved.
+    // https://tools.ietf.org/html/draft-yasskin-httpbis-origin-signed-exchanges-impl-02
+    // Section 3.2:
+    // "For each response header field in `exchange`, the header field's
+    // lowercase name as a byte string to the header field's value as a byte
+    // string."
     if (name_str != base::ToLowerASCII(name_str)) {
       signed_exchange_utils::ReportErrorAndTraceEvent(
           devtools_proxy,
@@ -282,26 +291,25 @@ base::Optional<SignedExchangeEnvelope> SignedExchangeEnvelope::Parse(
 
   const GURL& request_url = fallback_url;
 
-  cbor::CBORReader::DecoderError error;
-  base::Optional<cbor::CBORValue> value =
-      cbor::CBORReader::Read(cbor_header, &error);
+  cbor::Reader::DecoderError error;
+  base::Optional<cbor::Value> value = cbor::Reader::Read(cbor_header, &error);
   if (!value.has_value()) {
     signed_exchange_utils::ReportErrorAndTraceEvent(
         devtools_proxy,
-        base::StringPrintf("Failed to decode CBORValue. CBOR error: %s",
-                           cbor::CBORReader::ErrorCodeToString(error)));
+        base::StringPrintf("Failed to decode Value. CBOR error: %s",
+                           cbor::Reader::ErrorCodeToString(error)));
     return base::nullopt;
   }
   if (!value->is_array()) {
     signed_exchange_utils::ReportErrorAndTraceEvent(
         devtools_proxy,
         base::StringPrintf(
-            "Expected top-level CBORValue to be an array. Actual type : %d",
+            "Expected top-level Value to be an array. Actual type : %d",
             static_cast<int>(value->type())));
     return base::nullopt;
   }
 
-  const cbor::CBORValue::ArrayValue& top_level_array = value->GetArray();
+  const cbor::Value::ArrayValue& top_level_array = value->GetArray();
   constexpr size_t kTopLevelArraySize = 2;
   if (top_level_array.size() != kTopLevelArraySize) {
     signed_exchange_utils::ReportErrorAndTraceEvent(

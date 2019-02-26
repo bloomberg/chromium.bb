@@ -17,7 +17,7 @@
 #include "base/containers/queue.h"
 #include "base/logging.h"
 #include "base/metrics/histogram_macros.h"
-#include "base/sys_info.h"
+#include "base/system/sys_info.h"
 #include "base/task_runner_util.h"
 #include "base/threading/thread.h"
 #include "base/threading/thread_checker.h"
@@ -264,6 +264,7 @@ AndroidVideoDecodeAccelerator::AndroidVideoDecodeAccelerator(
     const MakeGLContextCurrentCallback& make_context_current_cb,
     const GetContextGroupCallback& get_context_group_cb,
     const AndroidOverlayMojoFactoryCB& overlay_factory_cb,
+    const CreateAbstractTextureCallback& create_abstract_texture_cb,
     DeviceInfo* device_info)
     : client_(nullptr),
       codec_allocator_(codec_allocator),
@@ -289,6 +290,7 @@ AndroidVideoDecodeAccelerator::AndroidVideoDecodeAccelerator(
       force_defer_surface_creation_for_testing_(false),
       force_allow_software_decoding_for_testing_(false),
       overlay_factory_cb_(overlay_factory_cb),
+      create_abstract_texture_cb_(create_abstract_texture_cb),
       weak_this_factory_(this) {}
 
 AndroidVideoDecodeAccelerator::~AndroidVideoDecodeAccelerator() {
@@ -1389,6 +1391,19 @@ const gfx::Size& AndroidVideoDecodeAccelerator::GetSize() const {
 gpu::gles2::ContextGroup* AndroidVideoDecodeAccelerator::GetContextGroup()
     const {
   return get_context_group_cb_.Run();
+}
+
+std::unique_ptr<gpu::gles2::AbstractTexture>
+AndroidVideoDecodeAccelerator::CreateAbstractTexture(GLenum target,
+                                                     GLenum internal_format,
+                                                     GLsizei width,
+                                                     GLsizei height,
+                                                     GLsizei depth,
+                                                     int border,
+                                                     GLenum format,
+                                                     GLenum type) {
+  return create_abstract_texture_cb_.Run(target, internal_format, width, height,
+                                         depth, border, format, type);
 }
 
 void AndroidVideoDecodeAccelerator::OnStopUsingOverlayImmediately(

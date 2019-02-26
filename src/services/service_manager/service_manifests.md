@@ -16,30 +16,44 @@ is configurable in the BUILD.gn file for the service
 The Service Manager is responsible for starting new service instances on-demand,
 and a given service may have any number of concurrently running instances.
 The Service Manager disambiguates service instances by their unique identity.
-A service's **identity** is represented by the 3-tuple of its service name,
-user ID, and instance qualifier:
+A service's **identity** is represented by the 4-tuple of its service name,
+instance group, instance ID, and a globally unique ID:
 
 ### Service name
 
 A free-form -- typically short -- string identifying the the specific service
 being run in the instance.
 
-### User ID
+### Instance Group
 
-A GUID string representing the identity of a user of the Service Manager.
-Every running service instance is associated with a specific user ID.
-This user ID is not related to any OS user ID or Chrome profile name.
+Service instances started by the Service Manager are organized into
+*instance groups*. Typically a service instance can only connect to other
+service instances in its own group. Exceptions are made for targeted services
+which are designed to be accessible cross-group (such as singleton services), as
+well as for connecting services which are sufficiently privileged to connect to
+any service instance in the system.
 
-There is a special `kInheritUserID` id which causes the target identity of a
-connection request to inherit the source identity. In Chrome, each
-`BrowserContext` is modeled as a separate unique user ID so that renderer
-instances running on behalf of different `BrowserContext`s run as different
-"users".
+Instance group is represented by a `base::Token` in `service_manager::Identity`.
+When instance group is omitted from an Identity passed with an interface request
+to the Service Manager, the Service Manager assumes that the request should be
+routed to a service instance in the requestor's same instance group.
 
-### Instance name
+In Chrome, every `BrowserContext` has a randomly generated instance group ID
+associated with it, and this is used to isolate the service instances which run
+on behalf of specific profiles, including renderers.
 
-An arbitrary free-form string used to disambiguate multiple instances of a
-service for the same user.
+### Instance ID
+
+Another `base::Token` in `service_manager::Identity`, used to disambiguate
+multiple instances of a service for the same user. Every instance has an
+instance ID, but it typically takes on the default value of a zero-token.
+
+### Globally Unique ID
+
+Every service instance started by the Service Manager is assigned a randomly
+generated `base::Token` value designated as the instance's
+**globally unique ID**. This value is always unique to a single instance across
+time and space.
 
 ### Connections
 
@@ -101,8 +115,9 @@ Possible values:
 When one service is connecting to another, checks are performed to either find
 an existing instance that matches the target identity or create a new one if
 no match is found.
-By default, all three identity components (service name, user id and instance
-name) are used to find a match.
+
+By default, all four identity components (service name, instance group, instance
+ID, and globally unique ID) are used to find a match.
 
 See
 [advice](https://chromium.googlesource.com/chromium/src/+/master/docs/servicification.md#is-your-service-global-or-per_browsercontext)
@@ -111,28 +126,29 @@ on using this option.
 Example:
 [identity](https://cs.chromium.org/chromium/src/services/identity/manifest.json)
 
-##### shared\_instance\_across\_users
+##### shared\_across\_instance\_groups
 
-In this case, the user id parameter is ignored when looking for a matching
-target instance, so when connecting with different user IDs (but the same
-service name and instance name), an existing instance (if any) will be reused.
+In this case, the instance group parameter is ignored when looking for a
+matching target instance, so an existing instance can be reused regardless of
+which instance group the connecting service belongs to.
 
 Example:
 [data_decoder](https://cs.chromium.org/chromium/src/services/data_decoder/manifest.json)
 
 ##### singleton
 
-In this case, both user id and instance name parameters are ignored.
-Only one service instance is created and used for all connections to this
-service.
+In this case, both instance group and instance ID parameters are ignored when
+an interface request is targeting the service. Only one service instance is
+created, and all interface requests targeting the service will be routed to that
+instance.
 
 Example:
 [download_manager](https://cs.chromium.org/chromium/src/chrome/browser/android/download/manifest.json)
 
-#### can\_connect\_to\_other\_services\_as\_any\_user (bool)
+#### can\_connect\_to\_instances\_in\_any\_group (bool)
 
-This option allows a service to make outgoing requests with a user id
-other than the one it was created with.
+This option allows a service to make outgoing requests with a target instance
+group other than its own.
 
 **Note:** this privilege must only be granted to services that are trusted
 at the same level as the browser process itself.
@@ -145,7 +161,7 @@ to act on behalf of different users.
 
 #### can\_connect\_to\_other\_services\_with\_any\_instance\_name (bool)
 
-This option allows a service to specify an instance name that is
+This option allows a service to specify an instance ID that is
 different from the service name when connecting.
 
 **Note:** this privilege must only be granted to services that are trusted
@@ -155,7 +171,7 @@ Example:
 [chrome_browser](https://cs.chromium.org/chromium/src/chrome/app/chrome_manifest.json)
 
 Code in chrome_browser calls an XML parsing library function, which generates a
-random instance name to
+random instance ID to
 [isolate unrelated decode operations](https://cs.chromium.org/chromium/src/services/data_decoder/public/cpp/safe_xml_parser.cc?l=50).
 
 #### can\_create\_other\_service\_instances (bool)

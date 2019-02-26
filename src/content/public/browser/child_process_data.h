@@ -7,12 +7,7 @@
 
 #include "base/process/process.h"
 #include "base/strings/string16.h"
-#include "build/build_config.h"
 #include "content/common/content_export.h"
-
-#if defined(OS_WIN)
-#include "base/win/scoped_handle.h"
-#endif
 
 namespace content {
 
@@ -32,18 +27,11 @@ struct CONTENT_EXPORT ChildProcessData {
   // The unique identifier for this child process. This identifier is NOT a
   // process ID, and will be unique for all types of child process for
   // one run of the browser.
-  int id;
+  int id = 0;
 
-#if defined(OS_WIN)
-  base::ProcessHandle GetHandle() const { return handle_.Get(); }
-  // Will duplicate the handle and assume ownership of the duplicate.
-  void SetHandle(base::ProcessHandle process);
-#else
-  base::ProcessHandle GetHandle() const { return handle_; }
-  void SetHandle(base::ProcessHandle process) { handle_ = process; }
-#endif
-
-  bool IsHandleValid() const { return GetHandle() != base::kNullProcessHandle; }
+  const base::Process& GetProcess() const { return process_; }
+  // Since base::Process is non-copyable, the caller has to provide a rvalue.
+  void SetProcess(base::Process process) { process_ = std::move(process); }
 
   explicit ChildProcessData(int process_type);
   ~ChildProcessData();
@@ -55,16 +43,8 @@ struct CONTENT_EXPORT ChildProcessData {
   ChildProcessData Duplicate() const;
 
  private:
-// The handle to the process. May have value kNullProcessHandle if no process
-// exists - either because it hasn't been started yet or it's running in the
-// current process.
-#if defined(OS_WIN)
-  // Must be a scoped handle on Windows holding a duplicated handle or else
-  // there are no guarantees the handle will still be valid when used.
-  base::win::ScopedHandle handle_;
-#else
-  base::ProcessHandle handle_;
-#endif
+  // May be invalid if the process isn't started or is the current process.
+  base::Process process_;
 };
 
 }  // namespace content

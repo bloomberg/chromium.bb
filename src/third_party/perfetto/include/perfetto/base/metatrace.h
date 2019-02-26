@@ -19,6 +19,8 @@
 
 #include <string.h>
 
+#include <string>
+
 #include "perfetto/base/logging.h"
 #include "perfetto/base/utils.h"
 
@@ -31,6 +33,11 @@ class MetaTrace {
     WriteEvent('B', evt_name, cpu);
   }
 
+  MetaTrace(const std::string& str, size_t cpu)
+      : str_copy_(str), evt_name_(str_copy_.c_str()), cpu_(cpu) {
+    WriteEvent('B', evt_name_, cpu);
+  }
+
   ~MetaTrace() { WriteEvent('E', evt_name_, cpu_); }
 
  private:
@@ -39,14 +46,17 @@ class MetaTrace {
 
   void WriteEvent(char type, const char* evt_name, size_t cpu);
 
+  std::string str_copy_;
   const char* const evt_name_;
   const size_t cpu_;
 };
 
+#define PERFETTO_METATRACE_UID2(a, b) a##b
+#define PERFETTO_METATRACE_UID(x) PERFETTO_METATRACE_UID2(metatrace_, x)
 #if PERFETTO_DCHECK_IS_ON() && !PERFETTO_BUILDFLAG(PERFETTO_CHROMIUM_BUILD)
 
 #define PERFETTO_METATRACE(...) \
-  ::perfetto::base::MetaTrace metatrace_##__COUNTER__(__VA_ARGS__)
+  ::perfetto::base::MetaTrace PERFETTO_METATRACE_UID(__COUNTER__)(__VA_ARGS__)
 #else
 #define PERFETTO_METATRACE(...) ::perfetto::base::ignore_result(__VA_ARGS__)
 #endif

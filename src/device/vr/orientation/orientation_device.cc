@@ -147,7 +147,7 @@ void VROrientationDevice::RequestSession(
   ReturnNonImmersiveSession(std::move(callback));
 }
 
-void VROrientationDevice::OnMagicWindowFrameDataRequest(
+void VROrientationDevice::OnGetInlineFrameData(
     mojom::XRFrameDataProvider::GetFrameDataCallback callback) {
   mojom::VRPosePtr pose = mojom::VRPose::New();
   pose->orientation.emplace(4);

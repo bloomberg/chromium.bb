@@ -355,6 +355,9 @@ class VIEWS_EXPORT HWNDMessageHandler : public gfx::WindowImpl,
     CR_MESSAGE_HANDLER_EX(WM_POINTERUPDATE, OnPointerEvent)
     CR_MESSAGE_HANDLER_EX(WM_POINTERENTER, OnPointerEvent)
     CR_MESSAGE_HANDLER_EX(WM_POINTERLEAVE, OnPointerEvent)
+    CR_MESSAGE_HANDLER_EX(WM_NCPOINTERDOWN, OnPointerEvent)
+    CR_MESSAGE_HANDLER_EX(WM_NCPOINTERUP, OnPointerEvent)
+    CR_MESSAGE_HANDLER_EX(WM_NCPOINTERUPDATE, OnPointerEvent)
 
     // Key events.
     CR_MESSAGE_HANDLER_EX(WM_KEYDOWN, OnKeyEvent)
@@ -517,13 +520,6 @@ class VIEWS_EXPORT HWNDMessageHandler : public gfx::WindowImpl,
                                     WPARAM w_param,
                                     LPARAM l_param);
 
-  LRESULT GenerateMouseEventFromPointerEvent(
-      UINT message,
-      UINT32 pointer_id,
-      const POINTER_INFO& pointer_info,
-      const gfx::Point& point,
-      const ui::PointerDetails& pointer_details);
-
   // Returns true if the mouse message passed in is an OS synthesized mouse
   // message.
   // |message| identifies the mouse message.
@@ -535,6 +531,9 @@ class VIEWS_EXPORT HWNDMessageHandler : public gfx::WindowImpl,
 
   // Provides functionality to transition a frame to DWM.
   void PerformDwmTransition();
+
+  // Updates DWM frame to extend into client area if needed.
+  void UpdateDwmFrame();
 
   // Generates a touch event and adds it to the |touch_events| parameter.
   // |point| is the point where the touch was initiated.
@@ -694,6 +693,11 @@ class VIEWS_EXPORT HWNDMessageHandler : public gfx::WindowImpl,
   // glass. Defaults to false.
   bool dwm_transition_desired_;
 
+  // Is DWM composition currently enabled?
+  // Note: According to MSDN docs for DwmIsCompositionEnabled(), this is always
+  // true starting in Windows 8.
+  bool dwm_composition_enabled_;
+
   // True if HandleWindowSizeChanging has been called in the delegate, but not
   // HandleClientSizeChanged.
   bool sent_window_size_changing_;
@@ -735,6 +739,13 @@ class VIEWS_EXPORT HWNDMessageHandler : public gfx::WindowImpl,
   // True if we enable feature kPrecisionTouchpadScrollPhase. Indicate we will
   // report the scroll phase information or not.
   bool precision_touchpad_scroll_phase_enabled_;
+
+  // True if DWM frame should be cleared on next WM_ERASEBKGND message.  This is
+  // necessary to avoid white flashing in the titlebar area around the
+  // minimize/maximize/close buttons.  Clearing the frame on every WM_ERASEBKGND
+  // message causes black flickering in the titlebar region so we do it on for
+  // the first message after frame type changes.
+  bool needs_dwm_frame_clear_ = true;
 
   // This is a map of the HMONITOR to full screeen window instance. It is safe
   // to keep a raw pointer to the HWNDMessageHandler instance as we track the

@@ -94,6 +94,12 @@ KeyboardEventProcessingResult WebContentsDelegate::PreHandleKeyboardEvent(
   return KeyboardEventProcessingResult::NOT_HANDLED;
 }
 
+bool WebContentsDelegate::HandleKeyboardEvent(
+    WebContents* source,
+    const NativeWebKeyboardEvent& event) {
+  return false;
+}
+
 bool WebContentsDelegate::PreHandleGestureEvent(
     WebContents* source,
     const blink::WebGestureEvent& event) {
@@ -292,6 +298,10 @@ std::unique_ptr<content::WebContents> WebContentsDelegate::SwapWebContents(
     bool did_start_load,
     bool did_finish_load) {
   return new_contents;
+}
+
+bool WebContentsDelegate::ShouldAllowLazyLoad() {
+  return true;
 }
 
 }  // namespace content

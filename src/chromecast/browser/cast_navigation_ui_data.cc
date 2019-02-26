@@ -4,6 +4,7 @@
 
 #include "chromecast/browser/cast_navigation_ui_data.h"
 
+#include "chromecast/browser/cast_session_id_map.h"
 #include "content/public/browser/web_contents.h"
 
 namespace chromecast {
@@ -32,6 +33,7 @@ void CastNavigationUIData::SetSessionIdForWebContents(
   DCHECK(web_contents);
   web_contents->SetUserData(kUserDataKey,
                             std::make_unique<SessionIdUserData>(session_id));
+  CastSessionIdMap::SetSessionId(session_id, web_contents);
 }
 
 // static

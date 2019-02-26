@@ -7,10 +7,12 @@
 #include "jni/VersionConstantsBridge_jni.h"
 
 namespace version_info {
+namespace android {
 
 Channel GetChannel() {
   JNIEnv* env = base::android::AttachCurrentThread();
   return static_cast<Channel>(Java_VersionConstantsBridge_getChannel(env));
 }
 
+}  // namespace android
 }  // namespace version_info

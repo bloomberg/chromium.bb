@@ -89,6 +89,13 @@ class CORE_EXPORT TypingCommand final : public CompositeEditCommand {
   static void UpdateSelectionIfDifferentFromCurrentSelection(TypingCommand*,
                                                              LocalFrame*);
 
+  TypingCommand(Document&,
+                ETypingCommand,
+                const String& text,
+                Options,
+                TextGranularity,
+                TextCompositionType);
+
   void InsertTextRunWithoutNewlines(const String& text,
                                     EditingState*);
   void InsertLineBreak(EditingState*);
@@ -119,8 +126,8 @@ class CORE_EXPORT TypingCommand final : public CompositeEditCommand {
       const String& text = "",
       Options options = 0,
       TextGranularity granularity = TextGranularity::kCharacter) {
-    return new TypingCommand(document, command, text, options, granularity,
-                             kTextCompositionNone);
+    return MakeGarbageCollected<TypingCommand>(
+        document, command, text, options, granularity, kTextCompositionNone);
   }
 
   static TypingCommand* Create(Document& document,
@@ -128,16 +135,10 @@ class CORE_EXPORT TypingCommand final : public CompositeEditCommand {
                                const String& text,
                                Options options,
                                TextCompositionType composition_type) {
-    return new TypingCommand(document, command, text, options,
-                             TextGranularity::kCharacter, composition_type);
+    return MakeGarbageCollected<TypingCommand>(document, command, text, options,
+                                               TextGranularity::kCharacter,
+                                               composition_type);
   }
-
-  TypingCommand(Document&,
-                ETypingCommand,
-                const String& text,
-                Options,
-                TextGranularity,
-                TextCompositionType);
 
   void SetSmartDelete(bool smart_delete) { smart_delete_ = smart_delete; }
   bool IsOpenForMoreTyping() const { return open_for_more_typing_; }

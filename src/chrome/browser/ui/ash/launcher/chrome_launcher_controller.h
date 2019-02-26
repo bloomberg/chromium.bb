@@ -321,7 +321,7 @@ class ChromeLauncherController
   void CreateBrowserShortcutLauncherItem();
 
   // Check if the given |web_contents| is in incognito mode.
-  bool IsIncognito(const content::WebContents* web_contents) const;
+  bool IsIncognito(content::WebContents* web_contents) const;
 
   // Finds the index of where to insert the next item.
   int FindInsertionPoint();

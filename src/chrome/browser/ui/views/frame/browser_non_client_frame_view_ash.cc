@@ -7,7 +7,6 @@
 #include <algorithm>
 
 #include "ash/frame/ash_frame_caption_controller.h"  // mash-ok
-#include "ash/public/cpp/app_list/app_list_features.h"
 #include "ash/public/cpp/app_types.h"
 #include "ash/public/cpp/ash_constants.h"
 #include "ash/public/cpp/ash_layout_constants.h"
@@ -82,16 +81,13 @@ constexpr SkColor kIncognitoWindowTitleTextColor = SK_ColorWHITE;
 // The indicator for teleported windows has 8 DIPs before and below it.
 constexpr int kProfileIndicatorPadding = 8;
 
-// The indicator for teleported windows is 24 DIP on a side.
-constexpr int kProfileIndicatorSize = 24;
-
 bool IsV1AppBackButtonEnabled() {
   return base::CommandLine::ForCurrentProcess()->HasSwitch(
       ash::switches::kAshEnableV1AppBackButton);
 }
 
 // Returns true if |window| is currently snapped in split view mode.
-bool IsSnappedInSplitView(aura::Window* window,
+bool IsSnappedInSplitView(const aura::Window* window,
                           ash::mojom::SplitViewState state) {
   ash::mojom::WindowStateType type =
       window->GetProperty(ash::kWindowStateTypeKey);
@@ -343,11 +339,9 @@ void BrowserNonClientFrameViewAsh::GetWindowMask(const gfx::Size& size,
 }
 
 void BrowserNonClientFrameViewAsh::ResetWindowControls() {
+  BrowserNonClientFrameView::ResetWindowControls();
   caption_button_container_->SetVisible(true);
   caption_button_container_->ResetWindowControls();
-
-  if (hosted_app_button_container_)
-    hosted_app_button_container_->UpdateContentSettingViewsVisibility();
 }
 
 void BrowserNonClientFrameViewAsh::UpdateWindowIcon() {
@@ -369,9 +363,6 @@ void BrowserNonClientFrameViewAsh::ActivationChanged(bool active) {
 
   const bool should_paint_as_active = ShouldPaintAsActive();
   frame_header_->SetPaintAsActive(should_paint_as_active);
-
-  if (hosted_app_button_container_)
-    hosted_app_button_container_->SetPaintAsActive(should_paint_as_active);
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -401,8 +392,8 @@ void BrowserNonClientFrameViewAsh::Layout() {
 
   if (profile_indicator_icon_)
     LayoutProfileIndicator();
-  if (hosted_app_button_container_) {
-    hosted_app_button_container_->LayoutInContainer(
+  if (hosted_app_button_container()) {
+    hosted_app_button_container()->LayoutInContainer(
         0, caption_button_container_->x(), 0, painted_height);
   }
 
@@ -433,9 +424,9 @@ gfx::Size BrowserNonClientFrameViewAsh::GetMinimumSize() const {
     // at its usual insets.
     const int min_tabstrip_width =
         browser_view()->tabstrip()->GetMinimumSize().width();
-    min_width = std::max(
-        min_width,
-        min_tabstrip_width + GetTabStripLeftInset() + GetTabStripRightInset());
+    min_width =
+        std::max(min_width, min_tabstrip_width + GetTabStripLeftInset() +
+                                GetTabStripRightInset());
   }
   return gfx::Size(min_width, min_client_view_size.height());
 }
@@ -592,10 +583,8 @@ void BrowserNonClientFrameViewAsh::OnTabletModeToggled(bool enabled) {
 
 bool BrowserNonClientFrameViewAsh::ShouldTabIconViewAnimate() const {
   // Hosted apps use their app icon and shouldn't show a throbber.
-  if (extensions::HostedAppBrowserController::IsForExperimentalHostedAppBrowser(
-          browser_view()->browser())) {
+  if (browser_view()->IsBrowserTypeHostedApp())
     return false;
-  }
 
   // This function is queried during the creation of the window as the
   // TabIconView we host is initialized, so we need to null check the selected
@@ -680,9 +669,9 @@ void BrowserNonClientFrameViewAsh::OnImmersiveRevealStarted() {
   // temporarily children of the TopContainerView while they're all painting to
   // their layers.
   browser_view()->top_container()->AddChildViewAt(caption_button_container_, 0);
-  if (hosted_app_button_container_) {
+  if (hosted_app_button_container()) {
     browser_view()->top_container()->AddChildViewAt(
-        hosted_app_button_container_, 0);
+        hosted_app_button_container(), 0);
   }
   if (back_button_)
     browser_view()->top_container()->AddChildViewAt(back_button_, 0);
@@ -692,8 +681,8 @@ void BrowserNonClientFrameViewAsh::OnImmersiveRevealStarted() {
 
 void BrowserNonClientFrameViewAsh::OnImmersiveRevealEnded() {
   AddChildViewAt(caption_button_container_, 0);
-  if (hosted_app_button_container_)
-    AddChildViewAt(hosted_app_button_container_, 0);
+  if (hosted_app_button_container())
+    AddChildViewAt(hosted_app_button_container(), 0);
   if (back_button_)
     AddChildViewAt(back_button_, 0);
   Layout();
@@ -701,11 +690,6 @@ void BrowserNonClientFrameViewAsh::OnImmersiveRevealEnded() {
 
 void BrowserNonClientFrameViewAsh::OnImmersiveFullscreenExited() {
   OnImmersiveRevealEnded();
-}
-
-HostedAppButtonContainer*
-BrowserNonClientFrameViewAsh::GetHostedAppButtonContainerForTesting() const {
-  return hosted_app_button_container_;
 }
 
 // static
@@ -735,21 +719,20 @@ bool BrowserNonClientFrameViewAsh::ShouldShowCaptionButtons() const {
   // Home Launcher feature is enabled, since it gives the user the ability to
   // minimize all windows when pressing the Launcher button on the shelf.
   const bool hide_caption_buttons_in_tablet_mode =
-      !browser_view()->browser()->is_app() &&
-      app_list_features::IsHomeLauncherEnabled();
+      !browser_view()->browser()->is_app();
   if (hide_caption_buttons_in_tablet_mode && TabletModeClient::Get() &&
       TabletModeClient::Get()->tablet_mode_enabled()) {
     return false;
   }
 
   return !IsInOverviewMode() ||
-         IsSnappedInSplitView(frame()->GetNativeWindow(), split_view_state_);
+         IsSnappedInSplitView(GetFrameWindow(), split_view_state_);
 }
 
 int BrowserNonClientFrameViewAsh::GetTabStripLeftInset() const {
   int left_inset = frame_values().normal_insets.left();
   if (profile_indicator_icon_)
-    left_inset += kProfileIndicatorPadding + kProfileIndicatorSize;
+    left_inset += kProfileIndicatorPadding + profile_indicator_icon_->width();
   return left_inset;
 }
 
@@ -789,8 +772,7 @@ BrowserNonClientFrameViewAsh::CreateFrameHeader() {
   } else {
     auto default_frame_header = std::make_unique<ash::DefaultFrameHeader>(
         frame(), this, caption_button_container_);
-    if (extensions::HostedAppBrowserController::
-            IsForExperimentalHostedAppBrowser(browser)) {
+    if (browser_view()->IsBrowserTypeHostedApp()) {
       SetUpForHostedApp(default_frame_header.get());
     } else if (!browser->is_app()) {
       default_frame_header->SetFrameColors(kMdWebUiFrameColor,
@@ -820,14 +802,17 @@ void BrowserNonClientFrameViewAsh::SetUpForHostedApp(
         ash::FrameCaptionButton::ColorMode::kThemed, *theme_color);
   }
 
+  if (!browser->hosted_app_controller()->ShouldShowHostedAppButtonContainer())
+    return;
+
   // Add the container for extra hosted app buttons (e.g app menu button).
   const float inactive_alpha_ratio =
       ash::FrameCaptionButton::GetInactiveButtonColorAlphaRatio();
   SkColor inactive_color =
       SkColorSetA(active_color, 255 * inactive_alpha_ratio);
-  hosted_app_button_container_ = new HostedAppButtonContainer(
-      frame(), browser_view(), active_color, inactive_color);
-  AddChildView(hosted_app_button_container_);
+  set_hosted_app_button_container(new HostedAppButtonContainer(
+      frame(), browser_view(), active_color, inactive_color));
+  AddChildView(hosted_app_button_container());
 }
 
 void BrowserNonClientFrameViewAsh::UpdateFrameColors() {
@@ -836,8 +821,7 @@ void BrowserNonClientFrameViewAsh::UpdateFrameColors() {
   if (!UsePackagedAppHeaderStyle(browser_view()->browser())) {
     active_color = GetFrameColor(kActive);
     inactive_color = GetFrameColor(kInactive);
-  } else if (extensions::HostedAppBrowserController::
-                 IsForExperimentalHostedAppBrowser(browser_view()->browser())) {
+  } else if (browser_view()->IsBrowserTypeHostedApp()) {
     active_color =
         browser_view()->browser()->hosted_app_controller()->GetThemeColor();
     frame_header_->set_button_color_mode(
@@ -888,19 +872,22 @@ bool BrowserNonClientFrameViewAsh::ShouldShowProfileIndicatorIcon() const {
 void BrowserNonClientFrameViewAsh::UpdateProfileIcons() {
   View* root_view = frame()->GetRootView();
   if (ShouldShowProfileIndicatorIcon()) {
+    bool needs_layout = !profile_indicator_icon_;
     if (!profile_indicator_icon_) {
       profile_indicator_icon_ = new ProfileIndicatorIcon();
       AddChildView(profile_indicator_icon_);
-      if (root_view) {
-        // Adding a child does not invalidate the layout.
-        InvalidateLayout();
-        root_view->Layout();
-      }
     }
 
-    profile_indicator_icon_->SetIcon(gfx::Image(
-        GetAvatarImageForContext(browser_view()->browser()->profile())));
-    profile_indicator_icon_->set_stroke_color(GetToolbarTopSeparatorColor());
+    gfx::Image image(
+        GetAvatarImageForContext(browser_view()->browser()->profile()));
+    profile_indicator_icon_->SetSize(image.Size());
+    profile_indicator_icon_->SetIcon(image);
+
+    if (needs_layout && root_view) {
+      // Adding a child does not invalidate the layout.
+      InvalidateLayout();
+      root_view->Layout();
+    }
   } else if (profile_indicator_icon_) {
     delete profile_indicator_icon_;
     profile_indicator_icon_ = nullptr;
@@ -911,12 +898,15 @@ void BrowserNonClientFrameViewAsh::UpdateProfileIcons() {
 
 void BrowserNonClientFrameViewAsh::LayoutProfileIndicator() {
   DCHECK(profile_indicator_icon_);
-  const int bottom = GetTopInset(false) + browser_view()->GetTabStripHeight() -
-                     kProfileIndicatorPadding;
-  profile_indicator_icon_->SetBounds(
-      kProfileIndicatorPadding, bottom - kProfileIndicatorSize,
-      kProfileIndicatorSize, kProfileIndicatorSize);
+  const int frame_height =
+      GetTopInset(false) + browser_view()->GetTabStripHeight();
+  profile_indicator_icon_->SetPosition(
+      gfx::Point(kProfileIndicatorPadding,
+                 (frame_height - profile_indicator_icon_->height()) / 2));
   profile_indicator_icon_->SetVisible(true);
+
+  // The layout size is set along with the image.
+  DCHECK_LE(profile_indicator_icon_->height(), frame_height);
 }
 
 ws::Id BrowserNonClientFrameViewAsh::GetServerWindowId() const {

@@ -256,8 +256,8 @@ void AwContentsClientBridge::ProvideClientCertificateResponse(
   // Convert the encoded chain to a vector of strings.
   std::vector<std::string> encoded_chain_strings;
   if (!encoded_chain_ref.is_null()) {
-    base::android::JavaArrayOfByteArrayToStringVector(
-        env, encoded_chain_ref.obj(), &encoded_chain_strings);
+    base::android::JavaArrayOfByteArrayToStringVector(env, encoded_chain_ref,
+                                                      &encoded_chain_strings);
   }
 
   std::vector<base::StringPiece> encoded_chain;

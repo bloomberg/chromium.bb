@@ -33,9 +33,7 @@ void VerifyEventsInListAndMap(const std::map<std::string, Event>& map,
 
 class PersistentEventStoreTest : public ::testing::Test {
  public:
-  PersistentEventStoreTest()
-      : db_(nullptr),
-        storage_dir_(FILE_PATH_LITERAL("/persistent/store/lalala")) {
+  PersistentEventStoreTest() : db_(nullptr) {
     load_callback_ = base::Bind(&PersistentEventStoreTest::LoadCallback,
                                 base::Unretained(this));
   }
@@ -53,7 +51,7 @@ class PersistentEventStoreTest : public ::testing::Test {
 
     auto db = std::make_unique<leveldb_proto::test::FakeDB<Event>>(&db_events_);
     db_ = db.get();
-    store_.reset(new PersistentEventStore(storage_dir_, std::move(db)));
+    store_.reset(new PersistentEventStore(std::move(db)));
   }
 
   void LoadCallback(bool success, std::unique_ptr<std::vector<Event>> events) {
@@ -69,18 +67,9 @@ class PersistentEventStoreTest : public ::testing::Test {
   std::map<std::string, Event> db_events_;
   leveldb_proto::test::FakeDB<Event>* db_;
   std::unique_ptr<EventStore> store_;
-
-  // Constant test data.
-  base::FilePath storage_dir_;
 };
 
 }  // namespace
-
-TEST_F(PersistentEventStoreTest, StorageDirectory) {
-  SetUpDB();
-  store_->Load(load_callback_);
-  EXPECT_EQ(storage_dir_, db_->GetDirectory());
-}
 
 TEST_F(PersistentEventStoreTest, SuccessfulInitAndLoadEmptyStore) {
   SetUpDB();

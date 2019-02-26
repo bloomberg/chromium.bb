@@ -129,6 +129,9 @@
 #define GL_REQUESTABLE_EXTENSIONS_ANGLE 0x93A8
 #define GL_NUM_REQUESTABLE_EXTENSIONS_ANGLE 0x93A8
 
+// GL_ANGLE_memory_size
+#define GL_MEMORY_SIZE_ANGLE 0x93AD
+
 // GL_EXT_occlusion_query_boolean
 #define GL_ANY_SAMPLES_PASSED_EXT                        0x8C2F
 #define GL_ANY_SAMPLES_PASSED_CONSERVATIVE_EXT           0x8D6A
@@ -418,6 +421,12 @@
 #define GL_MAX_SHADER_COMPILER_THREADS_KHR 0x91B0
 #define GL_COMPLETION_STATUS_KHR 0x91B1
 #endif /* GL_KHR_parallel_shader_compile */
+
+#ifndef GL_CHROMIUM_shared_image
+#define GL_CHROMIUM_shared_image 1
+#define GL_SHARED_IMAGE_ACCESS_MODE_READ_CHROMIUM 0x8AF5
+#define GL_SHARED_IMAGE_ACCESS_MODE_READWRITE_CHROMIUM 0x8AF6
+#endif /* GL_CHROMIUM_shared_image */
 
 #define GL_GLEXT_PROTOTYPES 1
 

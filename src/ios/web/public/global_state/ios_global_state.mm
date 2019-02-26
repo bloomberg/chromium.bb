@@ -96,4 +96,8 @@ void DestroyAtExitManager() {
   g_exit_manager = nullptr;
 }
 
+base::MessageLoop* GetMainThreadMessageLoop() {
+  return g_message_loop;
+}
+
 }  // namespace ios_global_state

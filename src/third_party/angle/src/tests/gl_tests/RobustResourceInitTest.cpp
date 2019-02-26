@@ -41,12 +41,12 @@ void UncompressDXTBlock(int destX,
     };
     bool isDXT1 =
         (format == GL_COMPRESSED_RGB_S3TC_DXT1_EXT) || (format == GL_COMPRESSED_RGBA_S3TC_DXT1_EXT);
-    int colorOffset = srcOffset + (isDXT1 ? 0 : 8);
-    int color0      = make565(colorOffset + 0);
-    int color1      = make565(colorOffset + 2);
-    bool c0gtc1     = color0 > color1 || !isDXT1;
-    GLColor rgba0   = make8888From565(color0);
-    GLColor rgba1   = make8888From565(color1);
+    int colorOffset               = srcOffset + (isDXT1 ? 0 : 8);
+    int color0                    = make565(colorOffset + 0);
+    int color1                    = make565(colorOffset + 2);
+    bool c0gtc1                   = color0 > color1 || !isDXT1;
+    GLColor rgba0                 = make8888From565(color0);
+    GLColor rgba1                 = make8888From565(color1);
     std::array<GLColor, 4> colors = {{rgba0, rgba1,
                                       c0gtc1 ? mix(2, rgba0, rgba1, 3) : mix(1, rgba0, rgba1, 2),
                                       c0gtc1 ? mix(2, rgba1, rgba0, 3) : GLColor::black}};
@@ -298,8 +298,7 @@ class RobustResourceInitTestES3 : public RobustResourceInitTest
 };
 
 class RobustResourceInitTestES31 : public RobustResourceInitTest
-{
-};
+{};
 
 // Robust resource initialization is not based on hardware support or native extensions, check that
 // it only works on the implemented renderers
@@ -1179,8 +1178,7 @@ TEST_P(RobustResourceInitTestES3, BlitFramebufferOutOfBounds)
     {
         constexpr Test(const Region &read, const Region &draw, const Region &real)
             : readRegion(read), drawRegion(draw), realRegion(real)
-        {
-        }
+        {}
 
         Region readRegion;
         Region drawRegion;
@@ -1380,6 +1378,8 @@ TEST_P(RobustResourceInitTestES3, MaskedStencilClearBuffer)
     // http://anglebug.com/2408
     ANGLE_SKIP_TEST_IF(IsOSX() && IsOpenGL() && (IsIntel() || IsNVIDIA()));
 
+    ANGLE_SKIP_TEST_IF(IsLinux() && IsOpenGL());
+
     // http://anglebug.com/2407
     ANGLE_SKIP_TEST_IF(IsAndroid());
 
@@ -1422,9 +1422,9 @@ TEST_P(RobustResourceInitTest, CopyTexSubImage2D)
     ANGLE_SKIP_TEST_IF(!hasGLExtension());
     ANGLE_SKIP_TEST_IF(IsD3D11_FL93());
 
-    constexpr int kDestSize = 4;
-    constexpr int kSrcSize  = kDestSize / 2;
-    constexpr int kOffset   = kSrcSize / 2;
+    static constexpr int kDestSize = 4;
+    constexpr int kSrcSize         = kDestSize / 2;
+    static constexpr int kOffset   = kSrcSize / 2;
 
     std::vector<GLColor> redColors(kDestSize * kDestSize, GLColor::red);
 
@@ -1454,7 +1454,7 @@ TEST_P(RobustResourceInitTest, CopyTexSubImage2D)
     glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, destTexture, 0);
     ASSERT_GL_NO_ERROR();
 
-    auto srcInitTest = [kOffset, kDestSize](int x, int y) {
+    auto srcInitTest = [](int x, int y) {
         return (x >= kOffset) && x < (kDestSize - kOffset) && (y >= kOffset) &&
                y < (kDestSize - kOffset);
     };
@@ -1489,9 +1489,9 @@ TEST_P(RobustResourceInitTestES3, CopyTexSubImage3D)
 {
     ANGLE_SKIP_TEST_IF(!hasGLExtension());
 
-    constexpr int kDestSize = 4;
-    constexpr int kSrcSize  = kDestSize / 2;
-    constexpr int kOffset   = kSrcSize / 2;
+    static constexpr int kDestSize = 4;
+    constexpr int kSrcSize         = kDestSize / 2;
+    static constexpr int kOffset   = kSrcSize / 2;
 
     std::vector<GLColor> redColors(kDestSize * kDestSize * kDestSize, GLColor::red);
 
@@ -1522,7 +1522,7 @@ TEST_P(RobustResourceInitTestES3, CopyTexSubImage3D)
     glFramebufferTextureLayer(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, destTexture, 0, 0);
     ASSERT_GL_NO_ERROR();
 
-    auto srcInitTest = [kOffset, kDestSize](int x, int y) {
+    auto srcInitTest = [](int x, int y) {
         return (x >= kOffset) && x < (kDestSize - kOffset) && (y >= kOffset) &&
                y < (kDestSize - kOffset);
     };
@@ -1705,7 +1705,10 @@ TEST_P(RobustResourceInitTest, SurfaceInitializedAfterSwap)
                                 EGL_SWAP_BEHAVIOR, &swapBehaviour));
 
     const std::array<GLColor, 4> clearColors = {{
-        GLColor::blue, GLColor::cyan, GLColor::red, GLColor::yellow,
+        GLColor::blue,
+        GLColor::cyan,
+        GLColor::red,
+        GLColor::yellow,
     }};
     for (size_t i = 0; i < clearColors.size(); i++)
     {
@@ -1823,4 +1826,4 @@ ANGLE_INSTANTIATE_TEST(RobustResourceInitTestES3, ES3_D3D11(), ES3_OPENGL(), ES3
 
 ANGLE_INSTANTIATE_TEST(RobustResourceInitTestES31, ES31_OPENGL(), ES31_D3D11());
 
-}  // namespace
+}  // namespace angle

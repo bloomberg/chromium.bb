@@ -15,10 +15,9 @@
 
 FakeGaiaCookieManagerService::FakeGaiaCookieManagerService(
     OAuth2TokenService* token_service,
-    const std::string& source,
     SigninClient* client,
     bool use_fake_url_loader)
-    : GaiaCookieManagerService(token_service, source, client) {
+    : GaiaCookieManagerService(token_service, client) {
   if (use_fake_url_loader) {
     test_url_loader_factory_ =
         std::make_unique<network::TestURLLoaderFactory>();
@@ -99,21 +98,6 @@ void FakeGaiaCookieManagerService::SetListAccountsResponseTwoAccounts(
         true /* verified */},
        {email2, gaia_id2, true /* valid */, false /* signed_out */,
         true /* verified */}});
-}
-
-std::string FakeGaiaCookieManagerService::GetSourceForRequest(
-    const GaiaCookieManagerService::GaiaCookieRequest& request) {
-  // Always return the default.  This value must match the source used in the
-  // SetXXXResponseYYY methods above so that the test URLFetcher factory will
-  // be able to find the URLs.
-  return GaiaConstants::kChromeSource;
-}
-
-std::string FakeGaiaCookieManagerService::GetDefaultSourceForRequest() {
-  // Always return the default.  This value must match the source used in the
-  // SetXXXResponseYYY methods above so that the test URLFetcher factory will
-  // be able to find the URLs.
-  return GaiaConstants::kChromeSource;
 }
 
 scoped_refptr<network::SharedURLLoaderFactory>

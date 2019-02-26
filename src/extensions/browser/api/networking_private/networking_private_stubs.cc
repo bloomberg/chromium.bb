@@ -199,17 +199,6 @@ NetworkingPrivateVerifyDestinationFunction::Run() {
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-// NetworkingPrivateVerifyAndEncryptCredentialsFunction
-
-NetworkingPrivateVerifyAndEncryptCredentialsFunction::
-    ~NetworkingPrivateVerifyAndEncryptCredentialsFunction() {}
-
-ExtensionFunction::ResponseAction
-NetworkingPrivateVerifyAndEncryptCredentialsFunction::Run() {
-  return RespondNow(Error(kStubError));
-}
-
-////////////////////////////////////////////////////////////////////////////////
 // NetworkingPrivateVerifyAndEncryptDataFunction
 
 NetworkingPrivateVerifyAndEncryptDataFunction::

@@ -33,12 +33,13 @@ QueryInOmnibox::QueryInOmnibox()
 
 bool QueryInOmnibox::GetDisplaySearchTerms(
     security_state::SecurityLevel security_level,
+    bool ignore_security_level,
     const GURL& url,
     base::string16* search_terms) {
   if (!base::FeatureList::IsEnabled(omnibox::kQueryInOmnibox))
     return false;
 
-  if (!ignore_security_level_ &&
+  if (!ignore_security_level &&
       !SecurityLevelSafeForQueryInOmnibox(security_level)) {
     return false;
   }

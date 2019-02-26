@@ -6,7 +6,9 @@
 #define NGPhysicalOffset_h
 
 #include "third_party/blink/renderer/core/core_export.h"
-#include "third_party/blink/renderer/platform/layout_unit.h"
+#include "third_party/blink/renderer/platform/geometry/layout_point.h"
+#include "third_party/blink/renderer/platform/geometry/layout_size.h"
+#include "third_party/blink/renderer/platform/geometry/layout_unit.h"
 #include "third_party/blink/renderer/platform/text/text_direction.h"
 #include "third_party/blink/renderer/platform/text/writing_mode.h"
 
@@ -35,23 +37,41 @@ struct CORE_EXPORT NGPhysicalOffset {
                                    NGPhysicalSize outer_size,
                                    NGPhysicalSize inner_size) const;
 
-  NGPhysicalOffset operator+(const NGPhysicalOffset& other) const;
-  NGPhysicalOffset& operator+=(const NGPhysicalOffset& other);
+  NGPhysicalOffset operator+(const NGPhysicalOffset& other) const {
+    return NGPhysicalOffset{this->left + other.left, this->top + other.top};
+  }
+  NGPhysicalOffset& operator+=(const NGPhysicalOffset& other) {
+    *this = *this + other;
+    return *this;
+  }
 
-  NGPhysicalOffset operator-(const NGPhysicalOffset& other) const;
-  NGPhysicalOffset& operator-=(const NGPhysicalOffset& other);
+  NGPhysicalOffset operator-(const NGPhysicalOffset& other) const {
+    return NGPhysicalOffset{this->left - other.left, this->top - other.top};
+  }
+  NGPhysicalOffset& operator-=(const NGPhysicalOffset& other) {
+    *this = *this - other;
+    return *this;
+  }
 
-  bool operator==(const NGPhysicalOffset& other) const;
+  bool operator==(const NGPhysicalOffset& other) const {
+    return other.left == left && other.top == top;
+  }
 
   // Conversions from/to existing code. New code prefers type safety for
   // logical/physical distinctions.
-  explicit NGPhysicalOffset(const LayoutPoint& point);
-  explicit NGPhysicalOffset(const LayoutSize& size);
+  explicit NGPhysicalOffset(const LayoutPoint& point) {
+    left = point.X();
+    top = point.Y();
+  }
+  explicit NGPhysicalOffset(const LayoutSize& size) {
+    left = size.Width();
+    top = size.Height();
+  }
 
   // Conversions from/to existing code. New code prefers type safety for
   // logical/physical distinctions.
-  LayoutPoint ToLayoutPoint() const;
-  LayoutSize ToLayoutSize() const;
+  LayoutPoint ToLayoutPoint() const { return {left, top}; }
+  LayoutSize ToLayoutSize() const { return {left, top}; }
 
   String ToString() const;
 };

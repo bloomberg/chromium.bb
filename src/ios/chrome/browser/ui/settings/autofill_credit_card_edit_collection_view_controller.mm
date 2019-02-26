@@ -19,13 +19,13 @@
 #include "ios/chrome/browser/application_context.h"
 #import "ios/chrome/browser/ui/autofill/autofill_ui_type.h"
 #import "ios/chrome/browser/ui/autofill/autofill_ui_type_util.h"
-#import "ios/chrome/browser/ui/autofill/cells/autofill_edit_item.h"
+#import "ios/chrome/browser/ui/autofill/cells/legacy_autofill_edit_item.h"
 #import "ios/chrome/browser/ui/collection_view/collection_view_model.h"
 #import "ios/chrome/browser/ui/commands/application_commands.h"
 #import "ios/chrome/browser/ui/commands/open_new_tab_command.h"
-#import "ios/chrome/browser/ui/settings/autofill_edit_collection_view_controller+protected.h"
 #import "ios/chrome/browser/ui/settings/cells/copied_to_chrome_item.h"
-#import "ios/chrome/browser/ui/uikit_ui_util.h"
+#import "ios/chrome/browser/ui/settings/legacy_autofill_edit_collection_view_controller+protected.h"
+#import "ios/chrome/browser/ui/util/uikit_ui_util.h"
 #include "ios/chrome/grit/ios_chromium_strings.h"
 #include "ios/chrome/grit/ios_strings.h"
 #import "ios/third_party/material_components_ios/src/components/Buttons/src/MaterialButtons.h"
@@ -117,8 +117,9 @@ typedef NS_ENUM(NSInteger, ItemType) {
     for (NSInteger itemIndex = 0; itemIndex < itemCount; ++itemIndex) {
       NSIndexPath* path =
           [NSIndexPath indexPathForItem:itemIndex inSection:section];
-      AutofillEditItem* item = base::mac::ObjCCastStrict<AutofillEditItem>(
-          [model itemAtIndexPath:path]);
+      LegacyAutofillEditItem* item =
+          base::mac::ObjCCastStrict<LegacyAutofillEditItem>(
+              [model itemAtIndexPath:path]);
       _creditCard.SetInfo(autofill::AutofillType(AutofillTypeFromAutofillUIType(
                               item.autofillUIType)),
                           base::SysNSStringToUTF16(item.textFieldValue),
@@ -143,8 +144,8 @@ typedef NS_ENUM(NSInteger, ItemType) {
   BOOL isEditing = self.editor.editing;
 
   [model addSectionWithIdentifier:SectionIdentifierFields];
-  AutofillEditItem* cardholderNameitem =
-      [[AutofillEditItem alloc] initWithType:ItemTypeCardholderName];
+  LegacyAutofillEditItem* cardholderNameitem =
+      [[LegacyAutofillEditItem alloc] initWithType:ItemTypeCardholderName];
   cardholderNameitem.cellStyle = CollectionViewCellStyle::kUIKit;
   cardholderNameitem.textFieldName =
       l10n_util::GetNSString(IDS_IOS_AUTOFILL_CARDHOLDER);
@@ -156,8 +157,8 @@ typedef NS_ENUM(NSInteger, ItemType) {
       toSectionWithIdentifier:SectionIdentifierFields];
 
   // Card number (PAN).
-  AutofillEditItem* cardNumberItem =
-      [[AutofillEditItem alloc] initWithType:ItemTypeCardNumber];
+  LegacyAutofillEditItem* cardNumberItem =
+      [[LegacyAutofillEditItem alloc] initWithType:ItemTypeCardNumber];
   cardNumberItem.cellStyle = CollectionViewCellStyle::kUIKit;
   cardNumberItem.textFieldName =
       l10n_util::GetNSString(IDS_IOS_AUTOFILL_CARD_NUMBER);
@@ -176,8 +177,8 @@ typedef NS_ENUM(NSInteger, ItemType) {
       toSectionWithIdentifier:SectionIdentifierFields];
 
   // Expiration month.
-  AutofillEditItem* expirationMonthItem =
-      [[AutofillEditItem alloc] initWithType:ItemTypeExpirationMonth];
+  LegacyAutofillEditItem* expirationMonthItem =
+      [[LegacyAutofillEditItem alloc] initWithType:ItemTypeExpirationMonth];
   expirationMonthItem.cellStyle = CollectionViewCellStyle::kUIKit;
   expirationMonthItem.textFieldName =
       l10n_util::GetNSString(IDS_IOS_AUTOFILL_EXP_MONTH);
@@ -190,8 +191,8 @@ typedef NS_ENUM(NSInteger, ItemType) {
       toSectionWithIdentifier:SectionIdentifierFields];
 
   // Expiration year.
-  AutofillEditItem* expirationYearItem =
-      [[AutofillEditItem alloc] initWithType:ItemTypeExpirationYear];
+  LegacyAutofillEditItem* expirationYearItem =
+      [[LegacyAutofillEditItem alloc] initWithType:ItemTypeExpirationYear];
   expirationYearItem.cellStyle = CollectionViewCellStyle::kUIKit;
   expirationYearItem.textFieldName =
       l10n_util::GetNSString(IDS_IOS_AUTOFILL_EXP_YEAR);
@@ -227,8 +228,9 @@ typedef NS_ENUM(NSInteger, ItemType) {
   // Find the respective item for the text field.
   NSIndexPath* indexPath = [self indexPathForCurrentTextField];
   DCHECK(indexPath);
-  AutofillEditItem* item = base::mac::ObjCCastStrict<AutofillEditItem>(
-      [self.collectionViewModel itemAtIndexPath:indexPath]);
+  LegacyAutofillEditItem* item =
+      base::mac::ObjCCastStrict<LegacyAutofillEditItem>(
+          [self.collectionViewModel itemAtIndexPath:indexPath]);
 
   // If the user is typing in the credit card number field, update the card type
   // icon (e.g. "Visa") to reflect the number being typed.
@@ -271,7 +273,8 @@ typedef NS_ENUM(NSInteger, ItemType) {
 
   NSInteger itemType =
       [self.collectionViewModel itemTypeForIndexPath:indexPath];
-  AutofillEditCell* textFieldCell = base::mac::ObjCCast<AutofillEditCell>(cell);
+  LegacyAutofillEditCell* textFieldCell =
+      base::mac::ObjCCast<LegacyAutofillEditCell>(cell);
   textFieldCell.textField.delegate = self;
   switch (itemType) {
     case ItemTypeCardholderName:

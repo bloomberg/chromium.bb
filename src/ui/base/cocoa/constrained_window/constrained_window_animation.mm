@@ -84,7 +84,7 @@ NSPoint GetCGSWindowScreenOrigin(NSWindow* window) {
   // Origin is relative to the screen with the menu bar (the screen at index 0).
   // Note, this is not the same as mainScreen which is the screen with the key
   // window.
-  NSScreen* main_screen = [screens objectAtIndex:0];
+  NSScreen* main_screen = screens[0];
 
   NSRect window_frame = [window frame];
   NSRect screen_frame = [main_screen frame];
@@ -211,7 +211,7 @@ bool AreWindowServerEffectsDisabled() {
 
 @implementation ConstrainedWindowAnimationBase
 
-- (id)initWithWindow:(NSWindow*)window {
+- (instancetype)initWithWindow:(NSWindow*)window {
   if ((self = [self initWithDuration:kAnimationDuration
                       animationCurve:NSAnimationEaseInOut])) {
     window_.reset([window retain]);

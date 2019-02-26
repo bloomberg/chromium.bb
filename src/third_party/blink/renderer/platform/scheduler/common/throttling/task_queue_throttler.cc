@@ -444,7 +444,7 @@ void TaskQueueThrottler::AsValueInto(base::trace_event::TracedValue* state,
   for (const auto& map_entry : queue_details_) {
     state->BeginDictionaryWithCopiedName(PointerToString(map_entry.first));
     state->SetInteger("throttling_ref_count",
-                      map_entry.second.throttling_ref_count);
+                      static_cast<int>(map_entry.second.throttling_ref_count));
     state->EndDictionary();
   }
   state->EndDictionary();

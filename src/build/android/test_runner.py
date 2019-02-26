@@ -496,6 +496,9 @@ def AddJUnitTestOptions(parser):
   parser = parser.add_argument_group('junit arguments')
 
   parser.add_argument(
+      '--jacoco', action='store_true',
+      help='Generate jacoco report.')
+  parser.add_argument(
       '--coverage-dir', type=os.path.realpath,
       help='Directory to store coverage info.')
   parser.add_argument(
@@ -742,6 +745,7 @@ def RunTestsInPlatformMode(args):
 
   ### Set up sigterm handler.
 
+  contexts_to_notify_on_sigterm = []
   def unexpected_sigterm(_signum, _frame):
     msg = [
       'Received SIGTERM. Shutting down.',
@@ -754,6 +758,9 @@ def RunTestsInPlatformMode(args):
         'Thread "%s" (ident: %s) is currently running:' % (
             live_thread.name, live_thread.ident),
         thread_stack])
+
+    for context in contexts_to_notify_on_sigterm:
+      context.ReceivedSigterm()
 
     infra_error('\n'.join(msg))
 
@@ -834,6 +841,9 @@ def RunTestsInPlatformMode(args):
   test_run = test_run_factory.CreateTestRun(
       args, env, test_instance, infra_error)
 
+  contexts_to_notify_on_sigterm.append(env)
+  contexts_to_notify_on_sigterm.append(test_run)
+
   ### Run.
   with out_manager, json_finalizer():
     with json_writer(), logcats_uploader, env, test_instance, test_run:
@@ -844,11 +854,17 @@ def RunTestsInPlatformMode(args):
           lambda: collections.defaultdict(int))
       iteration_count = 0
       for _ in repetitions:
-        raw_results = test_run.RunTests()
-        if not raw_results:
-          continue
-
+        # raw_results will be populated with base_test_result.TestRunResults by
+        # test_run.RunTests(). It is immediately added to all_raw_results so
+        # that in the event of an exception, all_raw_results will already have
+        # the up-to-date results and those can be written to disk.
+        raw_results = []
         all_raw_results.append(raw_results)
+
+        test_run.RunTests(raw_results)
+        if not raw_results:
+          all_raw_results.pop()
+          continue
 
         iteration_results = base_test_result.TestRunResults()
         for r in reversed(raw_results):
@@ -1002,6 +1018,10 @@ def main():
       args.enable_concurrent_adb):
     parser.error('--replace-system-package and --enable-concurrent-adb cannot '
                  'be used together')
+
+  if (getattr(args, 'jacoco', False) and
+      not getattr(args, 'coverage_dir', '')):
+    parser.error('--jacoco requires --coverage-dir')
 
   if (hasattr(args, 'debug_socket') or
       (hasattr(args, 'wait_for_java_debugger') and

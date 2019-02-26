@@ -4,6 +4,7 @@
 
 #include "chrome/browser/ui/ash/network/network_state_notifier.h"
 
+#include "ash/public/cpp/notification_utils.h"
 #include "ash/public/cpp/vector_icons/vector_icons.h"
 #include "base/bind.h"
 #include "base/location.h"
@@ -15,6 +16,7 @@
 #include "chrome/browser/ui/ash/system_tray_client.h"
 #include "chrome/grit/generated_resources.h"
 #include "chromeos/network/network_configuration_handler.h"
+#include "chromeos/network/network_connect.h"
 #include "chromeos/network/network_connection_handler.h"
 #include "chromeos/network/network_state.h"
 #include "chromeos/network/network_state_handler.h"
@@ -77,11 +79,11 @@ void ShowErrorNotification(const std::string& service_path,
   NET_LOG(ERROR) << "ShowErrorNotification: " << service_path << ": "
                  << base::UTF16ToUTF8(title);
   std::unique_ptr<message_center::Notification> notification =
-      message_center::Notification::CreateSystemNotification(
+      ash::CreateSystemNotification(
           message_center::NOTIFICATION_TYPE_SIMPLE, notification_id, title,
           message, base::string16() /* display_source */, GURL(),
           message_center::NotifierId(
-              message_center::NotifierId::SYSTEM_COMPONENT,
+              message_center::NotifierType::SYSTEM_COMPONENT,
               kNotifierNetworkError),
           message_center::RichNotificationData(),
           new message_center::HandleNotificationClickDelegate(callback),
@@ -263,7 +265,7 @@ void NetworkStateNotifier::UpdateCellularOutOfCredits(
     ShowErrorNotification(
         cellular->path(), kNetworkOutOfCreditsNotificationId, cellular->type(),
         l10n_util::GetStringUTF16(IDS_NETWORK_OUT_OF_CREDITS_TITLE), error_msg,
-        base::Bind(&NetworkStateNotifier::ShowNetworkSettings,
+        base::Bind(&NetworkStateNotifier::ShowMobileSetup,
                    weak_ptr_factory_.GetWeakPtr(), cellular->guid()));
   }
 }
@@ -284,7 +286,7 @@ void NetworkStateNotifier::UpdateCellularActivating(
 
   cellular_activating_.erase(cellular->path());
   std::unique_ptr<message_center::Notification> notification =
-      message_center::Notification::CreateSystemNotification(
+      ash::CreateSystemNotification(
           message_center::NOTIFICATION_TYPE_SIMPLE,
           kNetworkActivateNotificationId,
           l10n_util::GetStringUTF16(IDS_NETWORK_CELLULAR_ACTIVATED_TITLE),
@@ -292,7 +294,7 @@ void NetworkStateNotifier::UpdateCellularActivating(
                                      base::UTF8ToUTF16((cellular->name()))),
           base::string16() /* display_source */, GURL(),
           message_center::NotifierId(
-              message_center::NotifierId::SYSTEM_COMPONENT, kNotifierNetwork),
+              message_center::NotifierType::SYSTEM_COMPONENT, kNotifierNetwork),
           {},
           new message_center::HandleNotificationClickDelegate(
               base::Bind(&NetworkStateNotifier::ShowNetworkSettings,
@@ -330,7 +332,7 @@ void NetworkStateNotifier::ShowMobileActivationErrorForGuid(
     return;
   }
   std::unique_ptr<message_center::Notification> notification =
-      message_center::Notification::CreateSystemNotification(
+      ash::CreateSystemNotification(
           message_center::NOTIFICATION_TYPE_SIMPLE,
           kNetworkActivateNotificationId,
           l10n_util::GetStringUTF16(IDS_NETWORK_ACTIVATION_ERROR_TITLE),
@@ -338,7 +340,7 @@ void NetworkStateNotifier::ShowMobileActivationErrorForGuid(
                                      base::UTF8ToUTF16((cellular->name()))),
           base::string16() /* display_source */, GURL(),
           message_center::NotifierId(
-              message_center::NotifierId::SYSTEM_COMPONENT,
+              message_center::NotifierType::SYSTEM_COMPONENT,
               kNotifierNetworkError),
           {},
           new message_center::HandleNotificationClickDelegate(
@@ -503,6 +505,10 @@ void NetworkStateNotifier::ShowNetworkSettings(const std::string& network_id) {
   } else {
     SystemTrayClient::Get()->ShowNetworkSettings(network_id);
   }
+}
+
+void NetworkStateNotifier::ShowMobileSetup(const std::string& network_id) {
+  NetworkConnect::Get()->ShowMobileSetup(network_id);
 }
 
 }  // namespace chromeos

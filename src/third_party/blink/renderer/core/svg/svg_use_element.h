@@ -40,6 +40,8 @@ class SVGUseElement final : public SVGGraphicsElement,
 
  public:
   static SVGUseElement* Create(Document&);
+
+  explicit SVGUseElement(Document&);
   ~SVGUseElement() override;
 
   void InvalidateShadowTree();
@@ -62,8 +64,6 @@ class SVGUseElement final : public SVGGraphicsElement,
   void Trace(blink::Visitor*) override;
 
  private:
-  explicit SVGUseElement(Document&);
-
   void Dispose();
 
   FloatRect GetBBox() override;

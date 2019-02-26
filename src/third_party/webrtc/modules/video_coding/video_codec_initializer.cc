@@ -24,15 +24,13 @@
 
 namespace webrtc {
 
-bool VideoCodecInitializer::SetupCodec(
-    const VideoEncoderConfig& config,
-    const std::vector<VideoStream>& streams,
-    VideoCodec* codec,
-    std::unique_ptr<VideoBitrateAllocator>* bitrate_allocator) {
+bool VideoCodecInitializer::SetupCodec(const VideoEncoderConfig& config,
+                                       const std::vector<VideoStream>& streams,
+                                       VideoCodec* codec) {
   if (config.codec_type == kVideoCodecMultiplex) {
     VideoEncoderConfig associated_config = config.Copy();
     associated_config.codec_type = kVideoCodecVP9;
-    if (!SetupCodec(associated_config, streams, codec, bitrate_allocator)) {
+    if (!SetupCodec(associated_config, streams, codec)) {
       RTC_LOG(LS_ERROR) << "Failed to create stereo encoder configuration.";
       return false;
     }
@@ -41,29 +39,7 @@ bool VideoCodecInitializer::SetupCodec(
   }
 
   *codec = VideoEncoderConfigToVideoCodec(config, streams);
-  *bitrate_allocator = CreateBitrateAllocator(*codec);
-
   return true;
-}
-
-std::unique_ptr<VideoBitrateAllocator>
-VideoCodecInitializer::CreateBitrateAllocator(const VideoCodec& codec) {
-  std::unique_ptr<VideoBitrateAllocator> rate_allocator;
-
-  switch (codec.codecType) {
-    case kVideoCodecVP8:
-      RTC_FALLTHROUGH();
-    case kVideoCodecH264:
-      rate_allocator.reset(new SimulcastRateAllocator(codec));
-      break;
-    case kVideoCodecVP9:
-      rate_allocator.reset(new SvcRateAllocator(codec));
-      break;
-    default:
-      rate_allocator.reset(new DefaultVideoBitrateAllocator(codec));
-  }
-
-  return rate_allocator;
 }
 
 // TODO(sprang): Split this up and separate the codec specific parts.
@@ -210,6 +186,14 @@ VideoCodec VideoCodecInitializer::VideoEncoderConfigToVideoCodec(
           // Use codec's bitrate limits.
           spatial_layers.back().minBitrate = video_codec.minBitrate;
           spatial_layers.back().maxBitrate = video_codec.maxBitrate;
+        }
+
+        for (size_t spatial_idx = 0;
+             spatial_idx < config.simulcast_layers.size() &&
+             spatial_idx < spatial_layers.size();
+             ++spatial_idx) {
+          spatial_layers[spatial_layers.size() - spatial_idx - 1].active =
+              config.simulcast_layers[spatial_idx].active;
         }
       }
 

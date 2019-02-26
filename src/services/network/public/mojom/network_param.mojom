@@ -14,6 +14,13 @@ enum ApplicationState {
   HAS_DESTROYED_ACTIVITIES,
 };
 
+// Mirror of base::MemoryPressureListener::MemoryPressureLevel.
+enum MemoryPressureLevel {
+  NONE,
+  MODERATE,
+  CRITICAL,
+};
+
 [Native]
 struct AuthChallengeInfo;
 

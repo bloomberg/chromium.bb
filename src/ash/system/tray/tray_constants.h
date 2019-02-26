@@ -173,9 +173,10 @@ constexpr gfx::Insets kUnifiedSliderPadding(0, 16);
 constexpr int kUnifiedMenuVerticalPadding = 8;
 constexpr int kUnifiedNotificationCenterSpacing = 16;
 constexpr int kUnifiedTrayIconSize = 20;
-constexpr int kUnifiedTraySpacingBetweenIcons = 2;
+constexpr int kUnifiedTraySpacingBetweenIcons = 6;
+constexpr int kUnifiedTrayBatteryWidth = 10;
 constexpr int kUnifiedTrayCornerRadius = 20;
-constexpr int kUnifiedTrayContentPadding = 5;
+constexpr int kUnifiedTrayContentPadding = 8;
 constexpr int kUnifiedTopShortcutSpacing = 16;
 constexpr int kUnifiedNotificationHiddenLineHeight = 20;
 constexpr gfx::Insets kUnifiedTopShortcutPadding(0, 16);
@@ -237,6 +238,7 @@ constexpr int kUnifiedTopShortcutButtonMinSpacing = 4;
 constexpr gfx::Insets kUnifiedDetailedViewTitlePadding(0, 0, 0, 16);
 constexpr int kUnifiedDetailedViewTitleRowHeight = 64;
 
+// TODO(tetsui): Remove this class.
 class TrayConstants {
  public:
   // Returns the width of a line used to separate tray items in the shelf.

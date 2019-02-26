@@ -5,9 +5,9 @@
 #include "base/trace_event/blame_context.h"
 
 #include "base/json/json_writer.h"
-#include "base/message_loop/message_loop.h"
+#include "base/test/scoped_task_environment.h"
 #include "base/test/trace_event_analyzer.h"
-#include "base/trace_event/trace_event_argument.h"
+#include "base/trace_event/traced_value.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace base {
@@ -58,7 +58,7 @@ class DisabledTestBlameContext : public BlameContext {
 
 class BlameContextTest : public testing::Test {
  protected:
-  MessageLoop loop_;
+  test::ScopedTaskEnvironment scoped_task_environment_;
 };
 
 TEST_F(BlameContextTest, EnterAndLeave) {

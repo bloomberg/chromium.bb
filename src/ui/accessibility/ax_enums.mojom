@@ -76,6 +76,8 @@ enum Event {
   kShow,                      // Remove: http://crbug.com/392502
   kStateChanged,              // Native / Automation
   kTextChanged,
+  kWindowActivated,           // Native
+  kWindowDeactivated,         // Native
   kTextSelectionChanged,
   kTreeChanged,               // Accessibility tree changed. Don't
                               // explicitly fire an accessibility event,
@@ -379,6 +381,7 @@ enum Action {
   kSetValue,
 
   kShowContextMenu,
+  kGetTextLocation,
 };
 
 enum ActionFlags {
@@ -613,6 +616,9 @@ enum BoolAttribute {
 
   // Indicates whether this node is selected or unselected.
   kSelected,
+
+  // Indicates whether this node supports text location.
+  kSupportsTextLocation,
 };
 
 enum IntListAttribute {
@@ -728,23 +734,10 @@ enum TextPosition {
  // A Java counterpart will be generated for this enum.
  // GENERATED_JAVA_ENUM_PACKAGE: org.chromium.ui.accessibility
 enum TextStyle {
-  kNone,
-   // Assignments are ignored by the parser, but are kept here for clarity.
-  kTextStyleBold = 1,
-  kTextStyleItalic = 2,
-  kTextStyleBoldItalic = 3,
-  kTextStyleUnderline = 4,
-  kTextStyleBoldUnderline = 5,
-  kTextStyleItalicUnderline = 6,
-  kTextStyleBoldItalicUnderline = 7,
-  kTextStyleLineThrough = 8,
-  kTextStyleBoldLineThrough = 9,
-  kTextStyleItalicLineThrough = 10,
-  kTextStyleBoldItalicLineThrough = 11,
-  kTextStyleUnderlineLineThrough = 12,
-  kTextStyleBoldUnderlineLineThrough = 13,
-  kTextStyleItalicUnderlineLineThrough = 14,
-  kTextStyleBoldItalicUnderlineLineThrough = 15,
+  kBold,
+  kItalic,
+  kUnderline,
+  kLineThrough,
 };
 
 enum AriaCurrentState {

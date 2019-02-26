@@ -23,6 +23,12 @@ interface Assistant {
   // |AssistantInteractionSubscriber| interface to registered subscribers.
   StartMetalayerInteraction(gfx.mojom.Rect region);
 
+  // Starts a new Assistant text interaction. If |allow_tts| is true, the
+  // result will contain TTS. Otherwise TTS will not be present in the
+  // generated server response. Results will be returned through registered
+  // |AssistantInteractionSubscriber|.
+  StartTextInteraction(string query, bool allow_tts);
+
   // Starts a new Assistant voice interaction.
   StartVoiceInteraction();
 
@@ -30,10 +36,6 @@ interface Assistant {
   // |cancel_conversation|. If there is no active interaction, this method
   // is a no-op.
   StopActiveInteraction(bool cancel_conversation);
-
-  // Send text query to assistant. Result will be returned through registered
-  // |AssistantInteractionSubscriber|.
-  SendTextQuery(string query);
 
   // Registers assistant interaction event subscriber. Subscribers'
   // implementation is responsible for selecting events of interest.
@@ -45,9 +47,12 @@ interface Assistant {
       AssistantNotificationSubscriber subscriber);
 
   // Retrieves a notification. A voiceless interaction will be sent to server to
-  // retrieve the notification payload, which can trigger other assistant's
-  // events such as OnTextResponse to show the result in the UI. The reteived
-  // notification will be removed from the UI.
+  // retrieve the notification of |action_index|, which can trigger other
+  // Assistant events such as OnTextResponse to show the result in the UI. The
+  // retrieved notification will be removed from the UI.
+  // |action_index| is the index of the tapped action. The main UI in the
+  // notification contains the top level action, which index is 0. The buttons
+  // have the additional actions, which are indexed starting from 1.
   RetrieveNotification(AssistantNotification notification, int32 action_index);
 
   // Dismisses a notification.
@@ -184,6 +189,15 @@ struct AssistantSuggestion {
   url.mojom.Url action_url;
 };
 
+// Models a notification button.
+struct AssistantNotificationButton {
+  // Display text of the button.
+  string label;
+
+  // Optional URL to open when the tap action is invoked on the button.
+  url.mojom.Url action_url;
+};
+
 // Models an Assistant notification.
 struct AssistantNotification {
   // Title of the notification.
@@ -192,8 +206,12 @@ struct AssistantNotification {
   // Body text of the notification.
   string message;
 
-  // URL to open when the tap action is invoked on the notification.
+  // Optional URL to open when the tap action is invoked on the notification
+  // main UI.
   url.mojom.Url action_url;
+
+  // List of buttons in the notification.
+  array<AssistantNotificationButton> buttons;
 
   // An id that uniquely identifies a notification.
   string notification_id;

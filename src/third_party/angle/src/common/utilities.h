@@ -114,8 +114,7 @@ struct UniformTypeInfo final : angle::NonCopyable
           isSampler(isSampler),
           isMatrixType(isMatrixType),
           isImageType(isImageType)
-    {
-    }
+    {}
 
     GLenum type;
     GLenum componentType;
@@ -139,6 +138,12 @@ const char *GetGenericErrorMessage(GLenum error);
 
 unsigned int ElementTypeSize(GLenum elementType);
 
+template <typename T>
+T GetClampedVertexCount(size_t vertexCount)
+{
+    static constexpr size_t kMax = static_cast<size_t>(std::numeric_limits<T>::max());
+    return static_cast<T>(vertexCount > kMax ? kMax : vertexCount);
+}
 }  // namespace gl
 
 namespace egl
@@ -150,6 +155,7 @@ size_t CubeMapTextureTargetToLayerIndex(EGLenum target);
 EGLenum LayerIndexToCubeMapTextureTarget(size_t index);
 bool IsTextureTarget(EGLenum target);
 bool IsRenderbufferTarget(EGLenum target);
+bool IsExternalImageTarget(EGLenum target);
 
 const char *GetGenericErrorMessage(EGLint error);
 }  // namespace egl

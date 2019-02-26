@@ -79,7 +79,8 @@ login.createScreen('RecommendAppsScreen', 'recommend-apps', function() {
 
     setWebview: function(contents) {
       const appListView = this.getElement_('app-list-view');
-      appListView.src = 'data:text/html;charset=utf-8,' + contents;
+      appListView.src =
+          'data:text/html;charset=utf-8,' + encodeURIComponent(contents);
     },
 
     /**

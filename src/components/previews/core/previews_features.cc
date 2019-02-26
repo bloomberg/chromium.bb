@@ -46,6 +46,10 @@ const base::Feature kNoScriptPreviews {
 #endif  // defined(OS_ANDROID)
 };
 
+// Enables using (legacy) top level optimization hints to whitelist NoScript.
+const base::Feature kNoScriptPreviewsUsesTopLevelHints{
+    "NoScriptPreviewsUsesTopLevelHints", base::FEATURE_DISABLED_BY_DEFAULT};
+
 // Enables the Stale Previews timestamp on Previews infobars.
 const base::Feature kStalePreviewsTimestamp{"StalePreviewsTimestamp",
                                             base::FEATURE_ENABLED_BY_DEFAULT};
@@ -85,6 +89,14 @@ const base::Feature kLitePageServerPreviews{"LitePageServerPreviews",
 // when enabled. Only works and is honored on Android..
 const base::Feature kAndroidOmniboxPreviewsBadge{
     "AndroidOmniboxPreviewsBadge", base::FEATURE_DISABLED_BY_DEFAULT};
+
+// Provides slow page triggering parameters.
+const base::Feature kSlowPageTriggering{"PreviewsSlowPageTriggering",
+                                        base::FEATURE_DISABLED_BY_DEFAULT};
+
+// A feature to prevent previews on all reloads.
+const base::Feature kPreviewsDisallowedOnReloads{
+    "PreviewsDisallowedOnReloads", base::FEATURE_DISABLED_BY_DEFAULT};
 
 }  // namespace features
 }  // namespace previews

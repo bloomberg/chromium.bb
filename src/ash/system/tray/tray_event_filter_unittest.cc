@@ -4,11 +4,10 @@
 
 #include "ash/system/tray/tray_event_filter.h"
 
-#include "ash/public/cpp/ash_features.h"
 #include "ash/root_window_controller.h"
+#include "ash/shelf/shelf.h"
 #include "ash/shell.h"
 #include "ash/system/status_area_widget.h"
-#include "ash/system/tray/system_tray.h"
 #include "ash/system/unified/unified_system_tray.h"
 #include "ash/test/ash_test_base.h"
 #include "base/macros.h"
@@ -41,37 +40,19 @@ class TrayEventFilterTest : public AshTestBase {
 
  protected:
   void ShowSystemTrayMainView() {
-    if (features::IsSystemTrayUnifiedEnabled()) {
-      GetPrimaryUnifiedSystemTray()->ShowBubble(false /* show_by_click */);
-    } else {
-      GetPrimarySystemTray()->ShowDefaultView(BUBBLE_CREATE_NEW,
-                                              false /* show_by_click */);
-    }
+    GetPrimaryUnifiedSystemTray()->ShowBubble(false /* show_by_click */);
   }
 
   bool IsBubbleShown() {
-    if (features::IsSystemTrayUnifiedEnabled()) {
-      return GetPrimaryUnifiedSystemTray()->IsBubbleShown();
-    } else {
-      return GetPrimarySystemTray()->HasSystemBubble() &&
-             GetPrimarySystemTray()->IsSystemBubbleVisible();
-    }
+    return GetPrimaryUnifiedSystemTray()->IsBubbleShown();
   }
 
   gfx::Rect GetSystemTrayBoundsInScreen() {
-    if (features::IsSystemTrayUnifiedEnabled()) {
-      return GetPrimaryUnifiedSystemTray()->GetBubbleBoundsInScreen();
-    } else {
-      return GetPrimarySystemTray()->GetBoundsInScreen();
-    }
+    return GetPrimaryUnifiedSystemTray()->GetBubbleBoundsInScreen();
   }
 
   TrayEventFilter* GetTrayEventFilter() {
-    if (features::IsSystemTrayUnifiedEnabled()) {
-      return GetPrimaryUnifiedSystemTray()->tray_event_filter();
-    } else {
-      return GetPrimarySystemTray()->tray_event_filter();
-    }
+    return GetPrimaryUnifiedSystemTray()->tray_event_filter();
   }
 
   UnifiedSystemTray* GetPrimaryUnifiedSystemTray() {

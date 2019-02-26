@@ -14,7 +14,7 @@
 #include "chrome/browser/invalidation/profile_invalidation_provider_factory.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/signin/identity_manager_factory.h"
-#include "chrome/browser/signin/signin_manager_factory.h"
+#include "chrome/browser/signin/identity_test_environment_profile_adaptor.h"
 #include "chrome/browser/sync/chrome_sync_client.h"
 #include "chrome/common/channel_info.h"
 #include "chrome/test/base/testing_profile.h"
@@ -22,7 +22,6 @@
 #include "components/browser_sync/profile_sync_test_util.h"
 #include "components/invalidation/impl/invalidation_switches.h"
 #include "components/invalidation/impl/profile_invalidation_provider.h"
-#include "components/signin/core/browser/signin_manager.h"
 #include "components/sync/driver/startup_controller.h"
 #include "components/sync/driver/sync_api_component_factory_mock.h"
 #include "content/public/browser/browser_context.h"
@@ -77,9 +76,14 @@ ProfileSyncService::InitParams CreateProfileSyncServiceParamsForTest(
 }
 
 std::unique_ptr<TestingProfile> MakeSignedInTestingProfile() {
-  auto profile = std::make_unique<TestingProfile>();
-  SigninManagerFactory::GetForProfile(profile.get())
-      ->SetAuthenticatedAccountInfo("12345", "foo");
+  std::unique_ptr<TestingProfile> profile =
+      IdentityTestEnvironmentProfileAdaptor::
+          CreateProfileForIdentityTestEnvironment();
+  auto identity_test_env_profile_adaptor =
+      std::make_unique<IdentityTestEnvironmentProfileAdaptor>(profile.get());
+
+  identity_test_env_profile_adaptor->identity_test_env()->SetPrimaryAccount(
+      "test@mail.com");
   return profile;
 }
 

@@ -12,10 +12,10 @@
 #include "base/logging.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
-#include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
 #include "base/single_thread_task_runner.h"
 #include "base/test/gtest_util.h"
+#include "base/test/scoped_task_environment.h"
 #include "base/test/test_simple_task_runner.h"
 #include "base/threading/thread.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -37,7 +37,7 @@ class CancelableTaskTrackerTest : public testing::Test {
 
  private:
   // Needed by CancelableTaskTracker methods.
-  MessageLoop message_loop_;
+  test::ScopedTaskEnvironment scoped_task_environment_;
 };
 
 void AddFailureAt(const Location& location) {

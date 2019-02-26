@@ -19,32 +19,32 @@
         android:orientation="horizontal"
         android:id="@+id/menu_items" >
 
-        <android.support.v7.widget.AppCompatImageButton
+        <org.chromium.ui.widget.ChromeImageButton
             android:id="@+id/forward_menu_id"
             style="@style/OverflowMenuButton"
             android:src="@drawable/btn_forward"
             android:contentDescription="@string/accessibility_menu_forward" />
 
-        <android.support.v7.widget.AppCompatImageButton
+        <org.chromium.ui.widget.ChromeImageButton
             android:id="@+id/bookmark_this_page_id"
             style="@style/OverflowMenuButton"
             android:src="@drawable/btn_star"
             android:contentDescription="@string/accessibility_menu_bookmark" />
 
-        <android.support.v7.widget.AppCompatImageButton
+        <org.chromium.ui.widget.ChromeImageButton
             android:id="@+id/offline_page_id"
             style="@style/OverflowMenuButton"
             android:src="@drawable/ic_file_download_white_24dp"
             android:contentDescription="@string/download_page" />
 
-        <android.support.v7.widget.AppCompatImageButton
+        <org.chromium.ui.widget.ChromeImageButton
             android:id="@+id/info_menu_id"
             style="@style/OverflowMenuButton"
             android:src="@drawable/btn_info"
             android:contentDescription="@string/accessibility_menu_info" />
 
         <!-- The src will be set in onFinishInflate. -->
-        <android.support.v7.widget.AppCompatImageButton
+        <org.chromium.ui.widget.ChromeImageButton
             android:id="@+id/reload_menu_id"
             style="@style/OverflowMenuButton"
             android:contentDescription="@string/accessibility_btn_refresh"

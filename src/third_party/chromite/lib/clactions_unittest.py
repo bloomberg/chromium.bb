@@ -326,10 +326,10 @@ class TestCLActionHistory(cros_test_lib.TestCase):
 
     # Simulate the tryjobs launching, and picking up the changes.
     banana_build_id = self.fake_db.InsertBuild(
-        'banana', waterfall.WATERFALL_TRYBOT, 12, 'banana-pre-cq',
+        'banana', waterfall.WATERFALL_SWARMING, 12, 'banana-pre-cq',
         'banana hostname')
     pineapple_build_id = self.fake_db.InsertBuild(
-        'pineapple', waterfall.WATERFALL_TRYBOT, 87, 'pineapple-pre-cq',
+        'pineapple', waterfall.WATERFALL_SWARMING, 87, 'pineapple-pre-cq',
         'pineapple hostname')
 
     self._Act(banana_build_id, change, constants.CL_ACTION_PICKED_UP)
@@ -375,10 +375,10 @@ class TestCLActionHistory(cros_test_lib.TestCase):
         constants.PRE_CQ_LAUNCHER_NAME, waterfall.WATERFALL_INTERNAL,
         1, constants.PRE_CQ_LAUNCHER_CONFIG, 'bot hostname 1')
     pineapple_build_id = self.fake_db.InsertBuild(
-        'pineapple', waterfall.WATERFALL_TRYBOT, 87, 'pineapple-pre-cq',
+        'pineapple', waterfall.WATERFALL_SWARMING, 87, 'pineapple-pre-cq',
         'pineapple hostname')
     guava_build_id = self.fake_db.InsertBuild(
-        'guava', waterfall.WATERFALL_TRYBOT, 7, 'guava-pre-cq',
+        'guava', waterfall.WATERFALL_SWARMING, 7, 'guava-pre-cq',
         'guava hostname')
 
     # c1 has 3 pending verifications, but only 1 inflight and 1

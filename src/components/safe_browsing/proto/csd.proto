@@ -60,8 +60,11 @@ message ChromeUserPopulation {
   optional ProfileManagementStatus profile_management_status = 5
       [default = UNKNOWN];
 
-  // Indicates if user opted in advanced protection program (a.k.a Titanium).
+  // Indicates if user opted in advanced protection program.
   optional bool is_under_advanced_protection = 6;
+
+  // Indicates if user is in incognito mode.
+  optional bool is_incognito = 7;
 }
 
 message ClientPhishingRequest {
@@ -657,6 +660,11 @@ message ReferrerChainEntry {
     // chain is empty or partially missing, we will add/append recent navigation
     // events to this list. RECENT_NAVIGATION type is set for these cases.
     RECENT_NAVIGATION = 6;
+
+    // The REFERRER type is used for entries that recede the LANDING_REFERRER in
+    // the referrer chain, when more than two gestures are included in the
+    // referrer chain.
+    REFERRER = 7;
   }
 
   enum NavigationInitiation {
@@ -1055,6 +1063,7 @@ message ClientSafeBrowsingReportRequest {
     DANGEROUS_DOWNLOAD_OPENED = 13;
     AD_SAMPLE = 14;
     URL_SUSPICIOUS = 15;
+    BILLING = 16;
   }
 
   message HTTPHeader {

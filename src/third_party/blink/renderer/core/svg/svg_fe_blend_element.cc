@@ -21,6 +21,7 @@
 #include "third_party/blink/renderer/core/svg/svg_fe_blend_element.h"
 
 #include "third_party/blink/renderer/core/svg/graphics/filters/svg_filter_builder.h"
+#include "third_party/blink/renderer/core/svg/svg_enumeration_map.h"
 #include "third_party/blink/renderer/core/svg_names.h"
 #include "third_party/blink/renderer/platform/graphics/filters/fe_blend.h"
 
@@ -56,53 +57,36 @@ static BlendMode ToBlendMode(SVGFEBlendElement::Mode mode) {
 }
 
 template <>
-const SVGEnumerationStringEntries&
-GetStaticStringEntries<SVGFEBlendElement::Mode>() {
-  DEFINE_STATIC_LOCAL(SVGEnumerationStringEntries, entries, ());
-  if (entries.IsEmpty()) {
-    entries.push_back(std::make_pair(SVGFEBlendElement::kModeNormal, "normal"));
-    entries.push_back(
-        std::make_pair(SVGFEBlendElement::kModeMultiply, "multiply"));
-    entries.push_back(std::make_pair(SVGFEBlendElement::kModeScreen, "screen"));
-    entries.push_back(std::make_pair(SVGFEBlendElement::kModeDarken, "darken"));
-    entries.push_back(
-        std::make_pair(SVGFEBlendElement::kModeLighten, "lighten"));
-    entries.push_back(
-        std::make_pair(SVGFEBlendElement::kModeOverlay, "overlay"));
-    entries.push_back(
-        std::make_pair(SVGFEBlendElement::kModeColorDodge, "color-dodge"));
-    entries.push_back(
-        std::make_pair(SVGFEBlendElement::kModeColorBurn, "color-burn"));
-    entries.push_back(
-        std::make_pair(SVGFEBlendElement::kModeHardLight, "hard-light"));
-    entries.push_back(
-        std::make_pair(SVGFEBlendElement::kModeSoftLight, "soft-light"));
-    entries.push_back(
-        std::make_pair(SVGFEBlendElement::kModeDifference, "difference"));
-    entries.push_back(
-        std::make_pair(SVGFEBlendElement::kModeExclusion, "exclusion"));
-    entries.push_back(std::make_pair(SVGFEBlendElement::kModeHue, "hue"));
-    entries.push_back(
-        std::make_pair(SVGFEBlendElement::kModeSaturation, "saturation"));
-    entries.push_back(std::make_pair(SVGFEBlendElement::kModeColor, "color"));
-    entries.push_back(
-        std::make_pair(SVGFEBlendElement::kModeLuminosity, "luminosity"));
-  }
+const SVGEnumerationMap& GetEnumerationMap<SVGFEBlendElement::Mode>() {
+  static const SVGEnumerationMap::Entry enum_items[] = {
+      {SVGFEBlendElement::kModeNormal, "normal"},
+      {SVGFEBlendElement::kModeMultiply, "multiply"},
+      {SVGFEBlendElement::kModeScreen, "screen"},
+      {SVGFEBlendElement::kModeDarken, "darken"},
+      {SVGFEBlendElement::kModeLighten, "lighten"},
+      {SVGFEBlendElement::kModeOverlay, "overlay"},
+      {SVGFEBlendElement::kModeColorDodge, "color-dodge"},
+      {SVGFEBlendElement::kModeColorBurn, "color-burn"},
+      {SVGFEBlendElement::kModeHardLight, "hard-light"},
+      {SVGFEBlendElement::kModeSoftLight, "soft-light"},
+      {SVGFEBlendElement::kModeDifference, "difference"},
+      {SVGFEBlendElement::kModeExclusion, "exclusion"},
+      {SVGFEBlendElement::kModeHue, "hue"},
+      {SVGFEBlendElement::kModeSaturation, "saturation"},
+      {SVGFEBlendElement::kModeColor, "color"},
+      {SVGFEBlendElement::kModeLuminosity, "luminosity"},
+  };
+  static const SVGEnumerationMap entries(enum_items);
   return entries;
 }
 
-template <>
-unsigned short GetMaxExposedEnumValue<SVGFEBlendElement::Mode>() {
-  return SVGFEBlendElement::kModeLighten;
-}
-
 inline SVGFEBlendElement::SVGFEBlendElement(Document& document)
-    : SVGFilterPrimitiveStandardAttributes(SVGNames::feBlendTag, document),
-      in1_(SVGAnimatedString::Create(this, SVGNames::inAttr)),
-      in2_(SVGAnimatedString::Create(this, SVGNames::in2Attr)),
+    : SVGFilterPrimitiveStandardAttributes(svg_names::kFEBlendTag, document),
+      in1_(SVGAnimatedString::Create(this, svg_names::kInAttr)),
+      in2_(SVGAnimatedString::Create(this, svg_names::kIn2Attr)),
       mode_(SVGAnimatedEnumeration<Mode>::Create(
           this,
-          SVGNames::modeAttr,
+          svg_names::kModeAttr,
           SVGFEBlendElement::kModeNormal)) {
   AddToPropertyMap(in1_);
   AddToPropertyMap(in2_);
@@ -122,7 +106,7 @@ bool SVGFEBlendElement::SetFilterEffectAttribute(
     FilterEffect* effect,
     const QualifiedName& attr_name) {
   FEBlend* blend = static_cast<FEBlend*>(effect);
-  if (attr_name == SVGNames::modeAttr)
+  if (attr_name == svg_names::kModeAttr)
     return blend->SetBlendMode(ToBlendMode(mode_->CurrentValue()->EnumValue()));
 
   return SVGFilterPrimitiveStandardAttributes::SetFilterEffectAttribute(
@@ -130,13 +114,13 @@ bool SVGFEBlendElement::SetFilterEffectAttribute(
 }
 
 void SVGFEBlendElement::SvgAttributeChanged(const QualifiedName& attr_name) {
-  if (attr_name == SVGNames::modeAttr) {
+  if (attr_name == svg_names::kModeAttr) {
     SVGElement::InvalidationGuard invalidation_guard(this);
     PrimitiveAttributeChanged(attr_name);
     return;
   }
 
-  if (attr_name == SVGNames::inAttr || attr_name == SVGNames::in2Attr) {
+  if (attr_name == svg_names::kInAttr || attr_name == svg_names::kIn2Attr) {
     SVGElement::InvalidationGuard invalidation_guard(this);
     Invalidate();
     return;

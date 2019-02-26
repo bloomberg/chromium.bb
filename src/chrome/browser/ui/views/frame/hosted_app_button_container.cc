@@ -7,10 +7,12 @@
 #include "base/metrics/histogram_macros.h"
 #include "base/task_runner.h"
 #include "base/threading/sequenced_task_runner_handle.h"
+#include "chrome/browser/ui/browser_command_controller.h"
 #include "chrome/browser/ui/browser_content_setting_bubble_model_delegate.h"
 #include "chrome/browser/ui/content_settings/content_setting_image_model.h"
 #include "chrome/browser/ui/extensions/hosted_app_browser_controller.h"
 #include "chrome/browser/ui/layout_constants.h"
+#include "chrome/browser/ui/view_ids.h"
 #include "chrome/browser/ui/views/frame/browser_view.h"
 #include "chrome/browser/ui/views/frame/hosted_app_menu_button.h"
 #include "chrome/browser/ui/views/frame/hosted_app_origin_text.h"
@@ -77,8 +79,14 @@ constexpr base::TimeDelta HostedAppButtonContainer::kTitlebarAnimationDelay;
 constexpr base::TimeDelta HostedAppButtonContainer::kOriginFadeInDuration;
 constexpr base::TimeDelta HostedAppButtonContainer::kOriginPauseDuration;
 constexpr base::TimeDelta HostedAppButtonContainer::kOriginFadeOutDuration;
-const base::TimeDelta HostedAppButtonContainer::kOriginTotalDuration =
-    kOriginFadeInDuration + kOriginPauseDuration + kOriginFadeOutDuration;
+
+// static
+base::TimeDelta HostedAppButtonContainer::OriginTotalDuration() {
+  // TimeDelta.operator+ uses time_internal::SaturatedAdd() which isn't
+  // constexpr, so this needs to be a function to not introduce a static
+  // initializer.
+  return kOriginFadeInDuration + kOriginPauseDuration + kOriginFadeOutDuration;
+}
 
 class HostedAppButtonContainer::ContentSettingsContainer : public views::View {
  public:
@@ -164,23 +172,18 @@ HostedAppButtonContainer::ContentSettingsContainer::ContentSettingsContainer(
   }
 }
 
-HostedAppButtonContainer::HostedAppButtonContainer(views::Widget* widget,
-                                                   BrowserView* browser_view,
-                                                   SkColor active_color,
-                                                   SkColor inactive_color)
+HostedAppButtonContainer::HostedAppButtonContainer(
+    views::Widget* widget,
+    BrowserView* browser_view,
+    SkColor active_color,
+    SkColor inactive_color,
+    base::Optional<int> right_margin)
     : scoped_widget_observer_(this),
       browser_view_(browser_view),
       active_color_(active_color),
       inactive_color_(inactive_color),
       hosted_app_origin_text_(new HostedAppOriginText(browser_view->browser())),
       content_settings_container_(new ContentSettingsContainer(this)),
-      page_action_icon_container_view_(new PageActionIconContainerView(
-          {PageActionIconType::kFind, PageActionIconType::kZoom},
-          GetLayoutConstant(HOSTED_APP_PAGE_ACTION_ICON_SIZE),
-          HorizontalPaddingBetweenItems(),
-          browser_view->browser(),
-          this,
-          nullptr)),
       browser_actions_container_(
           new BrowserActionsContainer(browser_view->browser(),
                                       nullptr,
@@ -188,13 +191,17 @@ HostedAppButtonContainer::HostedAppButtonContainer(views::Widget* widget,
                                       false /* interactive */)),
       app_menu_button_(new HostedAppMenuButton(browser_view)) {
   DCHECK(browser_view_);
-  DCHECK(
-      extensions::HostedAppBrowserController::IsForExperimentalHostedAppBrowser(
-          browser_view_->browser()));
+  DCHECK(browser_view_->browser()
+             ->hosted_app_controller()
+             ->IsForExperimentalHostedAppBrowser());
+
+  set_id(VIEW_ID_HOSTED_APP_BUTTON_CONTAINER);
+
   views::BoxLayout& layout =
       *SetLayoutManager(std::make_unique<views::BoxLayout>(
           views::BoxLayout::kHorizontal,
-          gfx::Insets(0, HorizontalPaddingBetweenItems()),
+          gfx::Insets(0,
+                      right_margin.value_or(HorizontalPaddingBetweenItems())),
           HorizontalPaddingBetweenItems()));
   // Right align to clip the leftmost items first when not enough space.
   layout.set_main_axis_alignment(views::BoxLayout::MAIN_AXIS_ALIGNMENT_END);
@@ -206,7 +213,19 @@ HostedAppButtonContainer::HostedAppButtonContainer(views::Widget* widget,
   views::SetHitTestComponent(content_settings_container_,
                              static_cast<int>(HTCLIENT));
   AddChildView(content_settings_container_);
+  UpdateContentSettingViewsVisibility();
 
+  PageActionIconContainerView::Params params;
+  params.types_enabled.push_back(PageActionIconType::kManagePasswords);
+  params.types_enabled.push_back(PageActionIconType::kFind);
+  params.types_enabled.push_back(PageActionIconType::kZoom);
+  params.icon_size = GetLayoutConstant(HOSTED_APP_PAGE_ACTION_ICON_SIZE);
+  params.icon_color = GetIconColor();
+  params.between_icon_spacing = HorizontalPaddingBetweenItems();
+  params.browser = browser_view_->browser();
+  params.command_updater = browser_view_->browser()->command_controller();
+  params.page_action_icon_delegate = this;
+  page_action_icon_container_view_ = new PageActionIconContainerView(params);
   views::SetHitTestComponent(page_action_icon_container_view_,
                              static_cast<int>(HTCLIENT));
   AddChildView(page_action_icon_container_view_);
@@ -218,6 +237,12 @@ HostedAppButtonContainer::HostedAppButtonContainer(views::Widget* widget,
 
   UpdateChildrenColor();
 
+  DCHECK(!browser_view_->toolbar_button_provider() ||
+         browser_view_->toolbar_button_provider()
+                 ->GetAsAccessiblePaneView()
+                 ->GetClassName() == GetClassName())
+      << "This should be the first ToolbarButtorProvider or a replacement for "
+         "an existing instance of this class during a window frame refresh.";
   browser_view_->SetToolbarButtonProvider(this);
   browser_view_->immersive_mode_controller()->AddObserver(this);
   scoped_widget_observer_.Add(widget);
@@ -360,6 +385,10 @@ views::AccessiblePaneView* HostedAppButtonContainer::GetAsAccessiblePaneView() {
   return this;
 }
 
+views::View* HostedAppButtonContainer::GetAnchorView() {
+  return app_menu_button_;
+}
+
 void HostedAppButtonContainer::OnWidgetVisibilityChanged(views::Widget* widget,
                                                          bool visibility) {
   if (!visibility || !pending_widget_visibility_)
@@ -404,7 +433,7 @@ void HostedAppButtonContainer::StartTitlebarAnimation() {
   hosted_app_origin_text_->StartFadeAnimation();
   app_menu_button_->StartHighlightAnimation();
   icon_fade_in_delay_.Start(
-      FROM_HERE, kOriginTotalDuration, this,
+      FROM_HERE, OriginTotalDuration(), this,
       &HostedAppButtonContainer::FadeInContentSettingIcons);
 }
 

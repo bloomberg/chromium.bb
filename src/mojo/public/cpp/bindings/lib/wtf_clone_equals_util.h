@@ -43,7 +43,7 @@ struct EqualsTraits<WTF::Vector<T>, false> {
   static bool Equals(const WTF::Vector<T>& a, const WTF::Vector<T>& b) {
     if (a.size() != b.size())
       return false;
-    for (size_t i = 0; i < a.size(); ++i) {
+    for (wtf_size_t i = 0; i < a.size(); ++i) {
       if (!mojo::Equals(a[i], b[i]))
         return false;
     }

@@ -68,6 +68,14 @@ MockMediaSource::MockMediaSource(const std::string& filename,
   CHECK_LE(initial_append_size_, file_data_->data_size());
 }
 
+MockMediaSource::MockMediaSource(const std::string& filename,
+                                 size_t initial_append_size,
+                                 bool initial_sequence_mode)
+    : MockMediaSource(filename,
+                      GetMimeTypeForFile(filename),
+                      initial_append_size,
+                      initial_sequence_mode) {}
+
 MockMediaSource::MockMediaSource(scoped_refptr<DecoderBuffer> data,
                                  const std::string& mimetype,
                                  size_t initial_append_size,

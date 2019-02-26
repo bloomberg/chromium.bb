@@ -23,6 +23,7 @@
 #include "chrome/browser/chromeos/arc/optin/arc_terms_of_service_default_negotiator.h"
 #include "chrome/browser/chromeos/arc/optin/arc_terms_of_service_oobe_negotiator.h"
 #include "chrome/browser/chromeos/arc/policy/arc_android_management_checker.h"
+#include "chrome/browser/chromeos/login/demo_mode/demo_resources.h"
 #include "chrome/browser/chromeos/login/demo_mode/demo_session.h"
 #include "chrome/browser/chromeos/profiles/profile_helper.h"
 #include "chrome/browser/lifetime/application_lifetime.h"
@@ -1011,12 +1012,11 @@ void ArcSessionManager::StartArc() {
   const chromeos::DemoSession* demo_session = chromeos::DemoSession::Get();
   params.is_demo_session = demo_session && demo_session->started();
   if (params.is_demo_session) {
-    DCHECK(demo_session->offline_resources_loaded());
-    base::FilePath demo_session_apps_path;
-    params.demo_session_apps_path = demo_session->GetDemoAppsPath();
+    DCHECK(demo_session->resources()->loaded());
+    params.demo_session_apps_path =
+        demo_session->resources()->GetDemoAppsPath();
   }
 
-  params.is_child = profile_->IsChild();
   params.supervision_transition = GetSupervisionTransition(profile_);
   params.locale = locale;
   // Empty |preferred_languages| is converted to empty array.

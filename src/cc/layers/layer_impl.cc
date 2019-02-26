@@ -14,7 +14,7 @@
 #include "base/numerics/safe_conversions.h"
 #include "base/strings/stringprintf.h"
 #include "base/trace_event/trace_event.h"
-#include "base/trace_event/trace_event_argument.h"
+#include "base/trace_event/traced_value.h"
 #include "cc/base/math_util.h"
 #include "cc/base/simple_enclosed_region.h"
 #include "cc/benchmarks/micro_benchmark_impl.h"
@@ -789,7 +789,7 @@ void LayerImpl::AsValueInto(base::trace_event::TracedValue* state) const {
                                               *state);
 
   if (debug_info_)
-    state->SetValue("debug_info", *debug_info_);
+    state->SetValue("debug_info", debug_info_);
 }
 
 size_t LayerImpl::GPUMemoryUsageInBytes() const { return 0; }

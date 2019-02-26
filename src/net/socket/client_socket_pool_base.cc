@@ -68,6 +68,14 @@ std::unique_ptr<StreamSocket> ConnectJob::PassSocket() {
   return std::move(socket_);
 }
 
+void ConnectJob::ChangePriority(RequestPriority priority) {
+  // Priority of a job that ignores limits should not be changed because it
+  // should always be MAXIMUM_PRIORITY.
+  DCHECK_EQ(ClientSocketPool::RespectLimits::ENABLED, respect_limits());
+  set_priority(priority);
+  ChangePriorityInternal(priority);
+}
+
 int ConnectJob::Connect() {
   if (!timeout_duration_.is_zero())
     timer_.Start(FROM_HERE, timeout_duration_, this, &ConnectJob::OnTimeout);
@@ -95,7 +103,7 @@ void ConnectJob::SetSocket(std::unique_ptr<StreamSocket> socket) {
 }
 
 void ConnectJob::NotifyDelegateOfCompletion(int rv) {
-  TRACE_EVENT0(kNetTracingCategory, "ConnectJob::NotifyDelegateOfCompletion");
+  TRACE_EVENT0(NetTracingCategory(), "ConnectJob::NotifyDelegateOfCompletion");
   // The delegate will own |this|.
   Delegate* delegate = delegate_;
   delegate_ = NULL;
@@ -145,13 +153,34 @@ ClientSocketPoolBaseHelper::Request::Request(
       respect_limits_(respect_limits),
       flags_(flags),
       net_log_(net_log),
-      socket_tag_(socket_tag) {
+      socket_tag_(socket_tag),
+      job_(nullptr) {
   if (respect_limits_ == ClientSocketPool::RespectLimits::DISABLED)
     DCHECK_EQ(priority_, MAXIMUM_PRIORITY);
 }
 
 ClientSocketPoolBaseHelper::Request::~Request() {
   liveness_ = DEAD;
+}
+
+void ClientSocketPoolBaseHelper::Request::AssignJob(ConnectJob* job) {
+  DCHECK(job);
+  DCHECK(!job_);
+  job_ = job;
+  // If the priority of the new job does not match the priority of |this|,
+  // change the job's priority but only if the job respects limits. If the job
+  // ignores limits, then the priority should not be changed because it should
+  // always be MAXIMUM_PRIORITY.
+  if (job_->priority() != priority_ &&
+      job_->respect_limits() == ClientSocketPool::RespectLimits::ENABLED)
+    job_->ChangePriority(priority_);
+}
+
+ConnectJob* ClientSocketPoolBaseHelper::Request::ReleaseJob() {
+  DCHECK(job_);
+  ConnectJob* job = job_;
+  job_ = nullptr;
+  return job;
 }
 
 void ClientSocketPoolBaseHelper::Request::CrashIfInvalid() const {
@@ -375,7 +404,7 @@ int ClientSocketPoolBaseHelper::RequestSocketInternal(
     // If there are more ConnectJobs than pending requests, don't need to do
     // anything.  Can just wait for the extra job to connect, and then assign it
     // to the request.
-    if (!preconnecting && group->TryToUseUnassignedConnectJob())
+    if (!preconnecting && group->TryToUseNeverAssignedConnectJob())
       return ERR_IO_PENDING;
 
     // Can we make another active socket now?
@@ -948,8 +977,8 @@ void ClientSocketPoolBaseHelper::OnConnectJobComplete(
 
   if (result == OK) {
     DCHECK(socket.get());
-    RemoveConnectJob(job, group);
     std::unique_ptr<Request> request = group->PopNextPendingRequest();
+    RemoveConnectJob(job, group);
     if (request) {
       LogBoundConnectJobToRequest(job_log.source(), *request);
       HandOutSocket(std::move(socket), ClientSocketHandle::UNUSED,
@@ -1229,12 +1258,15 @@ void ClientSocketPoolBaseHelper::TryToCloseSocketsInLayeredPools() {
 }
 
 ClientSocketPoolBaseHelper::Group::Group()
-    : unassigned_job_count_(0),
+    : never_assigned_job_count_(0),
       pending_requests_(NUM_PRIORITIES),
       active_socket_count_(0) {}
 
 ClientSocketPoolBaseHelper::Group::~Group() {
-  DCHECK_EQ(0u, unassigned_job_count_);
+  DCHECK_EQ(0u, never_assigned_job_count());
+  DCHECK_EQ(0u, unassigned_job_count());
+  DCHECK(pending_requests_.empty());
+  DCHECK(jobs_.empty());
 }
 
 void ClientSocketPoolBaseHelper::Group::StartBackupJobTimer(
@@ -1256,12 +1288,12 @@ bool ClientSocketPoolBaseHelper::Group::BackupJobTimerIsRunning() const {
   return backup_job_timer_.IsRunning();
 }
 
-bool ClientSocketPoolBaseHelper::Group::TryToUseUnassignedConnectJob() {
+bool ClientSocketPoolBaseHelper::Group::TryToUseNeverAssignedConnectJob() {
   SanityCheck();
 
-  if (unassigned_job_count_ == 0)
+  if (never_assigned_job_count_ == 0)
     return false;
-  --unassigned_job_count_;
+  --never_assigned_job_count_;
   return true;
 }
 
@@ -1270,8 +1302,11 @@ void ClientSocketPoolBaseHelper::Group::AddJob(std::unique_ptr<ConnectJob> job,
   SanityCheck();
 
   if (is_preconnect)
-    ++unassigned_job_count_;
+    ++never_assigned_job_count_;
   jobs_.push_back(std::move(job));
+  TryToAssignUnassignedJob(jobs_.back().get());
+
+  SanityCheck();
 }
 
 void ClientSocketPoolBaseHelper::Group::RemoveJob(ConnectJob* job) {
@@ -1283,16 +1318,36 @@ void ClientSocketPoolBaseHelper::Group::RemoveJob(ConnectJob* job) {
                            return ptr.get() == job;
                          });
   DCHECK(it != jobs_.end());
+
+  // Check if |job| is in the unassigned jobs list. If so, remove it.
+  auto it2 = std::find(unassigned_jobs_.begin(), unassigned_jobs_.end(), job);
+  if (it2 != unassigned_jobs_.end()) {
+    unassigned_jobs_.erase(it2);
+  } else {
+    // Otherwise, |job| must be assigned to some Request. Unassign it, then
+    // try to replace it with another job if possible (either by taking an
+    // unassigned job or stealing from another request, if any requests after it
+    // have a job).
+    RequestQueue::Pointer request_with_job = FindRequestWithJob(job);
+    DCHECK(!request_with_job.is_null());
+    request_with_job.value()->ReleaseJob();
+    TryToAssignJobToRequest(request_with_job);
+  }
   std::unique_ptr<ConnectJob> owned_job = std::move(*it);
   jobs_.erase(it);
+
   size_t job_count = jobs_.size();
-  if (job_count < unassigned_job_count_)
-    unassigned_job_count_ = job_count;
+  if (job_count < never_assigned_job_count_)
+    never_assigned_job_count_ = job_count;
 
   // If we've got no more jobs for this group, then we no longer need a
   // backup job either.
-  if (jobs_.empty())
+  if (jobs_.empty()) {
+    DCHECK(unassigned_jobs_.empty());
     backup_job_timer_.Stop();
+  }
+
+  SanityCheck();
 }
 
 void ClientSocketPoolBaseHelper::Group::OnBackupJobTimerFired(
@@ -1329,36 +1384,108 @@ void ClientSocketPoolBaseHelper::Group::OnBackupJobTimerFired(
     pool->OnConnectJobComplete(rv, raw_backup_job);
 }
 
-void ClientSocketPoolBaseHelper::Group::SanityCheck() {
-  DCHECK_LE(unassigned_job_count_, jobs_.size());
+void ClientSocketPoolBaseHelper::Group::SanityCheck() const {
+#if DCHECK_IS_ON()
+  DCHECK_LE(never_assigned_job_count(), jobs_.size());
+  DCHECK_LE(unassigned_job_count(), jobs_.size());
+
+  // Check that |unassigned_jobs_| is empty iff there are at least as many
+  // requests as jobs.
+  DCHECK_EQ(unassigned_jobs_.empty(), jobs_.size() <= pending_requests_.size());
+
+  size_t num_assigned_jobs = jobs_.size() - unassigned_jobs_.size();
+
+  RequestQueue::Pointer pointer = pending_requests_.FirstMax();
+  for (size_t i = 0; i < pending_requests_.size();
+       ++i, pointer = pending_requests_.GetNextTowardsLastMin(pointer)) {
+    DCHECK(!pointer.is_null());
+    DCHECK(pointer.value());
+    // Check that the first |num_assigned_jobs| requests have valid job
+    // assignments.
+    if (i < num_assigned_jobs) {
+      // The request has a job.
+      ConnectJob* job = pointer.value()->job();
+      DCHECK(job);
+      // The request's job is not in |unassigned_jobs_|
+      DCHECK(std::find(unassigned_jobs_.begin(), unassigned_jobs_.end(), job) ==
+             unassigned_jobs_.end());
+      // The request's job is in |jobs_|
+      DCHECK(std::find_if(jobs_.begin(), jobs_.end(),
+                          [job](const std::unique_ptr<ConnectJob>& ptr) {
+                            return ptr.get() == job;
+                          }) != jobs_.end());
+      // The same job is not assigned to any other request with a job.
+      RequestQueue::Pointer pointer2 =
+          pending_requests_.GetNextTowardsLastMin(pointer);
+      for (size_t j = i + 1; j < num_assigned_jobs;
+           ++j, pointer2 = pending_requests_.GetNextTowardsLastMin(pointer2)) {
+        DCHECK(!pointer2.is_null());
+        ConnectJob* job2 = pointer2.value()->job();
+        DCHECK(job2);
+        DCHECK_NE(job, job2);
+      }
+      // The request's priority matches the job's priority, unless the job has
+      // RespectLimits::DISABLED, in which case the job should have
+      // MAXIMUM_PRIORITY.
+      if (job->respect_limits() == ClientSocketPool::RespectLimits::ENABLED) {
+        DCHECK_EQ(pointer.value()->priority(), job->priority());
+      } else {
+        DCHECK_EQ(MAXIMUM_PRIORITY, job->priority());
+      }
+    } else {
+      // Check that any subsequent requests do not have a job.
+      DCHECK(!pointer.value()->job());
+    }
+  }
+
+  for (auto it = unassigned_jobs_.begin(); it != unassigned_jobs_.end(); ++it) {
+    // Check that all unassigned jobs are in |jobs_|
+    ConnectJob* job = *it;
+    DCHECK(std::find_if(jobs_.begin(), jobs_.end(),
+                        [job](const std::unique_ptr<ConnectJob>& ptr) {
+                          return ptr.get() == job;
+                        }) != jobs_.end());
+    // Check that there are no duplicated entries in |unassigned_jobs_|
+    for (auto it2 = std::next(it); it2 != unassigned_jobs_.end(); ++it2) {
+      DCHECK_NE(job, *it2);
+    }
+  }
+#endif
 }
 
 void ClientSocketPoolBaseHelper::Group::RemoveAllJobs() {
   SanityCheck();
 
+  // Remove jobs from any requests that have them.
+  if (!pending_requests_.empty()) {
+    for (RequestQueue::Pointer pointer = pending_requests_.FirstMax();
+         !pointer.is_null() && pointer.value()->job();
+         pointer = pending_requests_.GetNextTowardsLastMin(pointer)) {
+      pointer.value()->ReleaseJob();
+    }
+  }
+  unassigned_jobs_.clear();
+  never_assigned_job_count_ = 0;
   // Delete active jobs.
   jobs_.clear();
-  unassigned_job_count_ = 0;
-
   // Stop backup job timer.
   backup_job_timer_.Stop();
+
+  SanityCheck();
 }
 
 const ClientSocketPoolBaseHelper::Request*
 ClientSocketPoolBaseHelper::Group::GetNextPendingRequest() const {
-  return
-      pending_requests_.empty() ? NULL : pending_requests_.FirstMax().value();
+  return pending_requests_.empty() ? NULL
+                                   : pending_requests_.FirstMax().value().get();
 }
 
 bool ClientSocketPoolBaseHelper::Group::HasConnectJobForHandle(
     const ClientSocketHandle* handle) const {
-  // Search the first |jobs_.size()| pending requests for |handle|.
-  // If it's farther back in the deque than that, it doesn't have a
-  // corresponding ConnectJob.
-  size_t i = 0;
+  // Search through the requests with a job for a request with |handle|.
   for (RequestQueue::Pointer pointer = pending_requests_.FirstMax();
-       !pointer.is_null() && i < jobs_.size();
-       pointer = pending_requests_.GetNextTowardsLastMin(pointer), ++i) {
+       !pointer.is_null() && pointer.value()->job();
+       pointer = pending_requests_.GetNextTowardsLastMin(pointer)) {
     if (pointer.value()->handle() == handle)
       return true;
   }
@@ -1367,17 +1494,29 @@ bool ClientSocketPoolBaseHelper::Group::HasConnectJobForHandle(
 
 void ClientSocketPoolBaseHelper::Group::InsertPendingRequest(
     std::unique_ptr<Request> request) {
+  SanityCheck();
+
+  // Should not have a job because it is not already in |pending_requests_|
+  DCHECK(!request->job());
   // This value must be cached before we release |request|.
   RequestPriority priority = request->priority();
+
+  RequestQueue::Pointer new_position;
   if (request->respect_limits() == ClientSocketPool::RespectLimits::DISABLED) {
     // Put requests with RespectLimits::DISABLED (which should have
     // priority == MAXIMUM_PRIORITY) ahead of other requests with
     // MAXIMUM_PRIORITY.
     DCHECK_EQ(priority, MAXIMUM_PRIORITY);
-    pending_requests_.InsertAtFront(request.release(), priority);
+    new_position =
+        pending_requests_.InsertAtFront(std::move(request), priority);
   } else {
-    pending_requests_.Insert(request.release(), priority);
+    new_position = pending_requests_.Insert(std::move(request), priority);
   }
+  DCHECK(!pending_requests_.empty());
+
+  TryToAssignJobToRequest(new_position);
+
+  SanityCheck();
 }
 
 std::unique_ptr<ClientSocketPoolBaseHelper::Request>
@@ -1429,18 +1568,113 @@ void ClientSocketPoolBaseHelper::Group::SetPriority(ClientSocketHandle* handle,
   NOTREACHED();
 }
 
+bool ClientSocketPoolBaseHelper::Group::RequestWithHandleHasJobForTesting(
+    const ClientSocketHandle* handle) const {
+  SanityCheck();
+  RequestQueue::Pointer pointer = pending_requests_.FirstMax();
+  for (size_t i = 0; i < pending_requests_.size(); ++i) {
+    if (pointer.value()->handle() == handle)
+      return pointer.value()->job() != nullptr;
+    pointer = pending_requests_.GetNextTowardsLastMin(pointer);
+  }
+  NOTREACHED();
+  return false;
+}
+
 std::unique_ptr<ClientSocketPoolBaseHelper::Request>
 ClientSocketPoolBaseHelper::Group::RemovePendingRequest(
     const RequestQueue::Pointer& pointer) {
+  SanityCheck();
+
   // TODO(eroman): Temporary for debugging http://crbug.com/467797.
   CHECK(!pointer.is_null());
-  std::unique_ptr<Request> request(pointer.value());
-  pending_requests_.Erase(pointer);
+  std::unique_ptr<Request> request = pending_requests_.Erase(pointer);
+  if (request->job()) {
+    TryToAssignUnassignedJob(request->ReleaseJob());
+  }
   // If there are no more requests, kill the backup timer.
-  if (pending_requests_.empty())
+  if (pending_requests_.empty()) {
     backup_job_timer_.Stop();
+  }
+
   request->CrashIfInvalid();
+  SanityCheck();
   return request;
+}
+
+ClientSocketPoolBaseHelper::RequestQueue::Pointer
+ClientSocketPoolBaseHelper::Group::FindRequestWithJob(
+    const ConnectJob* job) const {
+  SanityCheck();
+
+  for (RequestQueue::Pointer pointer = pending_requests_.FirstMax();
+       !pointer.is_null() && pointer.value()->job();
+       pointer = pending_requests_.GetNextTowardsLastMin(pointer)) {
+    if (pointer.value()->job() == job)
+      return pointer;
+  }
+  // If a request with the job was not found, it must be in |unassigned_jobs_|.
+  DCHECK(std::find(unassigned_jobs_.begin(), unassigned_jobs_.end(), job) !=
+         unassigned_jobs_.end());
+  return RequestQueue::Pointer();
+}
+
+ClientSocketPoolBaseHelper::RequestQueue::Pointer
+ClientSocketPoolBaseHelper::Group::GetFirstRequestWithoutJob() const {
+  RequestQueue::Pointer pointer = pending_requests_.FirstMax();
+  size_t i = 0;
+  for (; !pointer.is_null() && pointer.value()->job();
+       pointer = pending_requests_.GetNextTowardsLastMin(pointer)) {
+    ++i;
+  }
+  DCHECK_EQ(i, jobs_.size() - unassigned_jobs_.size());
+  DCHECK(pointer.is_null() || !pointer.value()->job());
+  return pointer;
+}
+
+void ClientSocketPoolBaseHelper::Group::TryToAssignUnassignedJob(
+    ConnectJob* job) {
+  unassigned_jobs_.push_back(job);
+  RequestQueue::Pointer first_request_without_job = GetFirstRequestWithoutJob();
+  if (!first_request_without_job.is_null()) {
+    first_request_without_job.value()->AssignJob(unassigned_jobs_.back());
+    unassigned_jobs_.pop_back();
+  }
+}
+
+void ClientSocketPoolBaseHelper::Group::TryToAssignJobToRequest(
+    ClientSocketPoolBaseHelper::RequestQueue::Pointer request_pointer) {
+  DCHECK(!request_pointer.value()->job());
+  if (!unassigned_jobs_.empty()) {
+    request_pointer.value()->AssignJob(unassigned_jobs_.front());
+    unassigned_jobs_.pop_front();
+    return;
+  }
+
+  // If the next request in the queue does not have a job, then there are no
+  // requests with a job after |request_pointer| from which we can steal.
+  RequestQueue::Pointer next_request =
+      pending_requests_.GetNextTowardsLastMin(request_pointer);
+  if (next_request.is_null() || !next_request.value()->job())
+    return;
+
+  // Walk down the queue to find the last request with a job.
+  RequestQueue::Pointer cur = next_request;
+  RequestQueue::Pointer next = pending_requests_.GetNextTowardsLastMin(cur);
+  while (!next.is_null() && next.value()->job()) {
+    cur = next;
+    next = pending_requests_.GetNextTowardsLastMin(next);
+  }
+  // Steal the job from the last request with a job.
+  TransferJobBetweenRequests(cur.value().get(), request_pointer.value().get());
+}
+
+void ClientSocketPoolBaseHelper::Group::TransferJobBetweenRequests(
+    ClientSocketPoolBaseHelper::Request* source,
+    ClientSocketPoolBaseHelper::Request* dest) {
+  DCHECK(!dest->job());
+  DCHECK(source->job());
+  dest->AssignJob(source->ReleaseJob());
 }
 
 }  // namespace internal

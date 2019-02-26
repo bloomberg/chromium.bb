@@ -5,7 +5,7 @@
     "service_manager:connector": {
       "requires": {
         "identity": [ "identity_manager" ],
-        "unzip": [ "unzip_file" ]
+        "unzip_service": [ "unzip_file" ]
       }
     }
   }

@@ -51,13 +51,13 @@ class FakePrinter(object):
     def print_expected(self, run_results, get_tests_with_result_type):
         pass
 
-    def print_workers_and_shards(self, num_workers, num_shards, num_locked_shards):
+    def print_workers_and_shards(self, port, num_workers, num_shards, num_locked_shards):
         pass
 
     def print_started_test(self, test_name):
         pass
 
-    def print_finished_test(self, result, expected, exp_str, got_str):
+    def print_finished_test(self, port, result, expected, exp_str, got_str):
         pass
 
     def write(self, msg):
@@ -77,21 +77,6 @@ class LockCheckingRunner(LayoutTestRunner):
         self._finished_list_called = False
         self._tester = tester
         self._should_have_http_lock = http_lock
-
-    def handle_finished_list(self, source, list_name, num_tests, elapsed_time):
-        # TODO(qyearsley): This is never called; it should be fixed or removed.
-        self._tester.fail('This is never called')
-        if not self._finished_list_called:
-            self._tester.assertEqual(list_name, 'locked_tests')
-            self._tester.assertTrue(self._remaining_locked_shards)
-            self._tester.assertTrue(self._has_http_lock is self._should_have_http_lock)
-
-        super(LockCheckingRunner, self).handle_finished_list(source, list_name, num_tests, elapsed_time)
-
-        if not self._finished_list_called:
-            self._tester.assertEqual(self._remaining_locked_shards, [])
-            self._tester.assertFalse(self._has_http_lock)
-            self._finished_list_called = True
 
 
 class LayoutTestRunnerTests(unittest.TestCase):
@@ -144,9 +129,7 @@ class LayoutTestRunnerTests(unittest.TestCase):
             runner._interrupt_if_at_failure_limits(run_results)
 
     def test_update_summary_with_result(self):
-        # Reftests expected to be image mismatch should be respected when pixel_tests=False.
         runner = self._runner()
-        runner._options.pixel_tests = False
         test = 'failures/expected/reftest.html'
         expectations = TestExpectations(runner._port, tests=[test])
         runner._expectations = expectations

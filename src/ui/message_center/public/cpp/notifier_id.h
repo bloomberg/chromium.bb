@@ -18,19 +18,20 @@
 
 namespace message_center {
 
+  // This enum is being used for histogram reporting and the elements should not
+  // be re-ordered.
+enum class NotifierType : int {
+  APPLICATION = 0,
+  ARC_APPLICATION = 1,
+  WEB_PAGE = 2,
+  SYSTEM_COMPONENT = 3,
+  CROSTINI_APPLICATION = 4,
+  kMaxValue = CROSTINI_APPLICATION,
+};
+
 // A struct that identifies the source of notifications. For example, a web page
 // might send multiple notifications but they'd all have the same NotifierId.
 struct MESSAGE_CENTER_PUBLIC_EXPORT NotifierId {
-  // This enum is being used for histogram reporting and the elements should not
-  // be re-ordered.
-  enum NotifierType : int {
-    APPLICATION = 0,
-    ARC_APPLICATION = 1,
-    WEB_PAGE = 2,
-    SYSTEM_COMPONENT = 3,
-    SIZE,
-  };
-
   // Default constructor needed for generated mojom files and tests.
   NotifierId();
 

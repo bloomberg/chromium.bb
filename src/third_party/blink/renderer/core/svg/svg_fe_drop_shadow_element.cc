@@ -29,14 +29,15 @@
 namespace blink {
 
 inline SVGFEDropShadowElement::SVGFEDropShadowElement(Document& document)
-    : SVGFilterPrimitiveStandardAttributes(SVGNames::feDropShadowTag, document),
-      dx_(SVGAnimatedNumber::Create(this, SVGNames::dxAttr, 2)),
-      dy_(SVGAnimatedNumber::Create(this, SVGNames::dyAttr, 2)),
+    : SVGFilterPrimitiveStandardAttributes(svg_names::kFEDropShadowTag,
+                                           document),
+      dx_(SVGAnimatedNumber::Create(this, svg_names::kDxAttr, 2)),
+      dy_(SVGAnimatedNumber::Create(this, svg_names::kDyAttr, 2)),
       std_deviation_(
           SVGAnimatedNumberOptionalNumber::Create(this,
-                                                  SVGNames::stdDeviationAttr,
+                                                  svg_names::kStdDeviationAttr,
                                                   2)),
-      in1_(SVGAnimatedString::Create(this, SVGNames::inAttr)) {
+      in1_(SVGAnimatedString::Create(this, svg_names::kInAttr)) {
   AddToPropertyMap(dx_);
   AddToPropertyMap(dy_);
   AddToPropertyMap(std_deviation_);
@@ -65,12 +66,12 @@ bool SVGFEDropShadowElement::SetFilterEffectAttribute(
   const ComputedStyle& style = ComputedStyleRef();
 
   FEDropShadow* drop_shadow = static_cast<FEDropShadow*>(effect);
-  if (attr_name == SVGNames::flood_colorAttr) {
+  if (attr_name == svg_names::kFloodColorAttr) {
     drop_shadow->SetShadowColor(
         style.VisitedDependentColor(GetCSSPropertyFloodColor()));
     return true;
   }
-  if (attr_name == SVGNames::flood_opacityAttr) {
+  if (attr_name == svg_names::kFloodOpacityAttr) {
     drop_shadow->SetShadowOpacity(style.SvgStyle().FloodOpacity());
     return true;
   }
@@ -80,9 +81,9 @@ bool SVGFEDropShadowElement::SetFilterEffectAttribute(
 
 void SVGFEDropShadowElement::SvgAttributeChanged(
     const QualifiedName& attr_name) {
-  if (attr_name == SVGNames::inAttr ||
-      attr_name == SVGNames::stdDeviationAttr ||
-      attr_name == SVGNames::dxAttr || attr_name == SVGNames::dyAttr) {
+  if (attr_name == svg_names::kInAttr ||
+      attr_name == svg_names::kStdDeviationAttr ||
+      attr_name == svg_names::kDxAttr || attr_name == svg_names::kDyAttr) {
     SVGElement::InvalidationGuard invalidation_guard(this);
     Invalidate();
     return;

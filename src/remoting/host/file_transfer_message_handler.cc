@@ -7,7 +7,9 @@
 #include "base/bind.h"
 #include "base/path_service.h"
 #include "base/stl_util.h"
+#include "base/strings/stringprintf.h"
 #include "remoting/base/compound_buffer.h"
+#include "remoting/protocol/file_transfer_helpers.h"
 
 namespace remoting {
 
@@ -26,26 +28,76 @@ void FileTransferMessageHandler::OnConnected() {
   // base::Unretained is safe here because |file_proxy_wrapper_| is owned by
   // this class, so the callback cannot be run after this class is destroyed.
   file_proxy_wrapper_->Init(base::BindOnce(
-      &FileTransferMessageHandler::StatusCallback, base::Unretained(this)));
+      &FileTransferMessageHandler::SaveResultCallback, base::Unretained(this)));
 }
 
 void FileTransferMessageHandler::OnIncomingMessage(
     std::unique_ptr<CompoundBuffer> buffer) {
-  FileProxyWrapper::State proxy_state = file_proxy_wrapper_->state();
-  if (proxy_state == FileProxyWrapper::kBusy ||
-      proxy_state == FileProxyWrapper::kClosed ||
-      proxy_state == FileProxyWrapper::kFailed) {
+  protocol::FileTransfer message;
+  CompoundBufferInputStream buffer_stream(buffer.get());
+  if (!message.ParseFromZeroCopyStream(&buffer_stream)) {
+    CancelAndSendError(
+        protocol::MakeFileTransferError(
+            FROM_HERE, protocol::FileTransfer_Error_Type_PROTOCOL_ERROR),
+        "Failed to parse message.");
     return;
   }
 
-  if (request_) {
-    // File transfer is already in progress, just pass the buffer to
-    // FileProxyWrapper to be written.
-    SendToFileProxy(std::move(buffer));
-  } else {
-    // A new file transfer has been started, parse the message into a request
-    // protobuf.
-    ParseNewRequest(std::move(buffer));
+  if (message.has_metadata()) {
+    StartFile(std::move(*message.mutable_metadata()));
+    return;
+  }
+
+  switch (file_proxy_wrapper_->state()) {
+    case FileProxyWrapper::kReady:
+      // This is the expected state.
+      break;
+    case FileProxyWrapper::kFailed:
+      // Ignore any messages that come in after we've returned an error.
+      return;
+    case FileProxyWrapper::kInitialized:
+      // Don't send an error in response to an error.
+      if (!message.has_error()) {
+        CancelAndSendError(
+            protocol::MakeFileTransferError(
+                FROM_HERE, protocol::FileTransfer_Error_Type_PROTOCOL_ERROR),
+            "First message must contain file metadata");
+      }
+      return;
+    case FileProxyWrapper::kBusy:
+    case FileProxyWrapper::kClosed:
+      CancelAndSendError(
+          protocol::MakeFileTransferError(
+              FROM_HERE, protocol::FileTransfer_Error_Type_PROTOCOL_ERROR),
+          "Message received after End");
+      return;
+    default:
+      CancelAndSendError(
+          protocol::MakeFileTransferError(
+              FROM_HERE, protocol::FileTransfer_Error_Type_UNEXPECTED_ERROR),
+          base::StringPrintf("Unexpected FileProxyWrapper state: %d",
+                             file_proxy_wrapper_->state()));
+      return;
+  }
+
+  switch (message.message_case()) {
+    case protocol::FileTransfer::kData:
+      file_proxy_wrapper_->WriteChunk(
+          std::move(*message.mutable_data()->mutable_data()));
+      break;
+    case protocol::FileTransfer::kEnd:
+      file_proxy_wrapper_->Close();
+      break;
+    case protocol::FileTransfer::kCancel:
+    case protocol::FileTransfer::kError:
+      file_proxy_wrapper_->Cancel();
+      break;
+    default:
+      CancelAndSendError(
+          protocol::MakeFileTransferError(
+              FROM_HERE, protocol::FileTransfer_Error_Type_PROTOCOL_ERROR),
+          "Received invalid file-transfer message.");
+      break;
   }
 }
 
@@ -58,66 +110,44 @@ void FileTransferMessageHandler::OnDisconnecting() {
   }
 }
 
-void FileTransferMessageHandler::StatusCallback(
-    FileProxyWrapper::State state,
-    base::Optional<protocol::FileTransferResponse_ErrorCode> error) {
-  protocol::FileTransferResponse response;
-  if (error.has_value()) {
-    DCHECK_EQ(state, FileProxyWrapper::kFailed);
-    response.set_error(error.value());
+void FileTransferMessageHandler::SaveResultCallback(
+    base::Optional<protocol::FileTransfer_Error> error) {
+  protocol::FileTransfer result_message;
+  if (error) {
+    *result_message.mutable_error() = std::move(*error);
   } else {
-    DCHECK_EQ(state, FileProxyWrapper::kClosed);
-    response.set_state(protocol::FileTransferResponse_TransferState_DONE);
-    response.set_total_bytes_written(request_->filesize());
+    result_message.mutable_success();
   }
-  Send(response, base::Closure());
+  Send(result_message, base::Closure());
 }
 
-void FileTransferMessageHandler::SendToFileProxy(
-    std::unique_ptr<CompoundBuffer> buffer) {
-  DCHECK_EQ(file_proxy_wrapper_->state(), FileProxyWrapper::kReady);
-
-  total_bytes_written_ += buffer->total_bytes();
-  file_proxy_wrapper_->WriteChunk(std::move(buffer));
-  if (total_bytes_written_ >= request_->filesize()) {
-    file_proxy_wrapper_->Close();
-  }
-
-  if (total_bytes_written_ > request_->filesize()) {
-    LOG(ERROR) << "File transfer received " << total_bytes_written_
-               << " bytes, but request said there would only be "
-               << request_->filesize() << " bytes.";
-  }
-}
-
-void FileTransferMessageHandler::ParseNewRequest(
-    std::unique_ptr<CompoundBuffer> buffer) {
-  std::string message;
-  message.resize(buffer->total_bytes());
-  buffer->CopyTo(base::data(message), message.size());
-
-  request_ = std::make_unique<protocol::FileTransferRequest>();
-  if (!request_->ParseFromString(message)) {
-    CancelAndSendError("Failed to parse request protobuf");
+void FileTransferMessageHandler::StartFile(
+    protocol::FileTransfer::Metadata metadata) {
+  if (file_proxy_wrapper_->state() != FileProxyWrapper::kInitialized) {
+    CancelAndSendError(
+        protocol::MakeFileTransferError(
+            FROM_HERE, protocol::FileTransfer_Error_Type_PROTOCOL_ERROR),
+        "Only one file per connection is supported.");
     return;
   }
 
   base::FilePath target_directory;
   if (!base::PathService::Get(base::DIR_USER_DESKTOP, &target_directory)) {
     CancelAndSendError(
+        protocol::MakeFileTransferError(
+            FROM_HERE, protocol::FileTransfer_Error_Type_UNEXPECTED_ERROR),
         "Failed to get DIR_USER_DESKTOP from base::PathService::Get");
     return;
   }
-
-  file_proxy_wrapper_->CreateFile(target_directory, request_->filename());
+  file_proxy_wrapper_->CreateFile(target_directory, metadata.filename());
 }
 
-void FileTransferMessageHandler::CancelAndSendError(const std::string& error) {
-  LOG(ERROR) << error;
+void FileTransferMessageHandler::CancelAndSendError(
+    protocol::FileTransfer_Error error,
+    const std::string& log_message) {
+  LOG(ERROR) << log_message;
   file_proxy_wrapper_->Cancel();
-  protocol::FileTransferResponse response;
-  response.set_error(protocol::FileTransferResponse_ErrorCode_UNEXPECTED_ERROR);
-  Send(response, base::Closure());
+  SaveResultCallback(error);
 }
 
 }  // namespace remoting

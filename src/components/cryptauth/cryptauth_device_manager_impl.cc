@@ -102,8 +102,19 @@ std::unique_ptr<base::ListValue> BeaconSeedsToListValue(
   return list;
 }
 
-void RecordDeviceSyncSoftwareFeaturesResult(bool success) {
+void RecordDeviceSyncSoftwareFeaturesResult(
+    bool success,
+    cryptauth::SoftwareFeature software_feature) {
   UMA_HISTOGRAM_BOOLEAN("CryptAuth.DeviceSyncSoftwareFeaturesResult", success);
+  if (!success) {
+    UMA_HISTOGRAM_ENUMERATION(
+        "CryptAuth.DeviceSyncSoftwareFeaturesResult.Failures", software_feature,
+        cryptauth::SoftwareFeature_ARRAYSIZE);
+  }
+}
+
+void RecordDeviceSyncResult(bool success) {
+  UMA_HISTOGRAM_BOOLEAN("CryptAuth.DeviceSync.Result", success);
 }
 
 // Converts supported and enabled SoftwareFeature protos to a single dictionary
@@ -126,20 +137,32 @@ SupportedAndEnabledSoftwareFeaturesToDictionaryValue(
 
   for (const auto& enabled_software_feature : enabled_software_features) {
     std::string software_feature_key = enabled_software_feature;
+    cryptauth::SoftwareFeature software_feature =
+        SoftwareFeatureStringToEnum(software_feature_key);
 
     int software_feature_state;
     if (!dictionary->GetInteger(software_feature_key,
                                 &software_feature_state) ||
         static_cast<SoftwareFeatureState>(software_feature_state) !=
             SoftwareFeatureState::kSupported) {
-      PA_LOG(ERROR) << "A feature is marked as enabled but not as supported: "
-                    << software_feature_key;
-      RecordDeviceSyncSoftwareFeaturesResult(false /* success */);
+      if (software_feature == cryptauth::SoftwareFeature::EASY_UNLOCK_HOST) {
+        // Allow this known special-case for legacy purposes; fall-through to
+        // logic which marks this device as enabled.
+        PA_LOG(VERBOSE) << "Encountered legacy case: feature EASY_UNLOCK_HOST "
+                           "is marked as supported but not enabled. Setting as "
+                           "enabled.";
+      } else {
+        PA_LOG(ERROR) << "A feature is marked as enabled but not as supported: "
+                      << software_feature_key << ". Not setting as enabled.";
+        RecordDeviceSyncSoftwareFeaturesResult(false /* success */,
+                                               software_feature);
 
-      continue;
-    } else {
-      RecordDeviceSyncSoftwareFeaturesResult(true /* success */);
+        continue;
+      }
     }
+
+    RecordDeviceSyncSoftwareFeaturesResult(true /* success */,
+                                           software_feature);
 
     dictionary->SetInteger(software_feature_key,
                            static_cast<int>(SoftwareFeatureState::kEnabled));
@@ -635,8 +658,12 @@ void CryptAuthDeviceManagerImpl::OnGetMyDevicesSuccess(
   // Update the synced devices stored in the user's prefs.
   std::unique_ptr<base::ListValue> devices_as_list(new base::ListValue());
 
-  if (!response.devices().empty())
-    PA_LOG(INFO) << "Devices were successfully synced.";
+  if (!response.devices().empty()) {
+    PA_LOG(VERBOSE) << "Devices were successfully synced.";
+    RecordDeviceSyncResult(true /* success */);
+  } else {
+    RecordDeviceSyncResult(false /* success */);
+  }
 
   for (const auto& device : response.devices()) {
     std::unique_ptr<base::DictionaryValue> device_dictionary =
@@ -684,6 +711,7 @@ void CryptAuthDeviceManagerImpl::OnGetMyDevicesFailure(
   cryptauth_client_.reset();
   sync_request_.reset();
   NotifySyncFinished(SyncResult::FAILURE, DeviceChangeResult::UNCHANGED);
+  RecordDeviceSyncResult(false /* success */);
 }
 
 void CryptAuthDeviceManagerImpl::OnResyncMessage() {

@@ -52,7 +52,8 @@ DateTimeAMPMFieldElement* DateTimeAMPMFieldElement::Create(
   DEFINE_STATIC_LOCAL(AtomicString, ampm_pseudo_id,
                       ("-webkit-datetime-edit-ampm-field"));
   DateTimeAMPMFieldElement* field =
-      new DateTimeAMPMFieldElement(document, field_owner, ampm_labels);
+      MakeGarbageCollected<DateTimeAMPMFieldElement>(document, field_owner,
+                                                     ampm_labels);
   field->Initialize(ampm_pseudo_id,
                     QueryString(WebLocalizedString::kAXAMPMFieldText));
   return field;
@@ -99,8 +100,10 @@ DateTimeDayFieldElement* DateTimeDayFieldElement::Create(
     const Range& range) {
   DEFINE_STATIC_LOCAL(AtomicString, day_pseudo_id,
                       ("-webkit-datetime-edit-day-field"));
-  DateTimeDayFieldElement* field = new DateTimeDayFieldElement(
-      document, field_owner, placeholder.IsEmpty() ? "--" : placeholder, range);
+  DateTimeDayFieldElement* field =
+      MakeGarbageCollected<DateTimeDayFieldElement>(
+          document, field_owner, placeholder.IsEmpty() ? "--" : placeholder,
+          range);
   field->Initialize(day_pseudo_id,
                     QueryString(WebLocalizedString::kAXDayOfMonthFieldText));
   return field;
@@ -207,7 +210,8 @@ DateTimeHour11FieldElement* DateTimeHour11FieldElement::Create(
   }
 
   DateTimeHour11FieldElement* field =
-      new DateTimeHour11FieldElement(document, field_owner, range, step);
+      MakeGarbageCollected<DateTimeHour11FieldElement>(document, field_owner,
+                                                       range, step);
   field->Initialize();
   return field;
 }
@@ -265,7 +269,8 @@ DateTimeHour12FieldElement* DateTimeHour12FieldElement::Create(
     range.maximum = 12;
   }
   DateTimeHour12FieldElement* field =
-      new DateTimeHour12FieldElement(document, field_owner, range, step);
+      MakeGarbageCollected<DateTimeHour12FieldElement>(document, field_owner,
+                                                       range, step);
   field->Initialize();
   return field;
 }
@@ -305,7 +310,8 @@ DateTimeHour23FieldElement* DateTimeHour23FieldElement::Create(
   DCHECK_LE(hour23_range.maximum, 23);
   DCHECK_LE(hour23_range.minimum, hour23_range.maximum);
   DateTimeHour23FieldElement* field =
-      new DateTimeHour23FieldElement(document, field_owner, hour23_range, step);
+      MakeGarbageCollected<DateTimeHour23FieldElement>(document, field_owner,
+                                                       hour23_range, step);
   field->Initialize();
   return field;
 }
@@ -360,7 +366,8 @@ DateTimeHour24FieldElement* DateTimeHour24FieldElement::Create(
   }
 
   DateTimeHour24FieldElement* field =
-      new DateTimeHour24FieldElement(document, field_owner, range, step);
+      MakeGarbageCollected<DateTimeHour24FieldElement>(document, field_owner,
+                                                       range, step);
   field->Initialize();
   return field;
 }
@@ -415,7 +422,8 @@ DateTimeMillisecondFieldElement* DateTimeMillisecondFieldElement::Create(
   DEFINE_STATIC_LOCAL(AtomicString, millisecond_pseudo_id,
                       ("-webkit-datetime-edit-millisecond-field"));
   DateTimeMillisecondFieldElement* field =
-      new DateTimeMillisecondFieldElement(document, field_owner, range, step);
+      MakeGarbageCollected<DateTimeMillisecondFieldElement>(
+          document, field_owner, range, step);
   field->Initialize(millisecond_pseudo_id,
                     QueryString(WebLocalizedString::kAXMillisecondFieldText));
   return field;
@@ -469,7 +477,8 @@ DateTimeMinuteFieldElement* DateTimeMinuteFieldElement::Create(
   DEFINE_STATIC_LOCAL(AtomicString, minute_pseudo_id,
                       ("-webkit-datetime-edit-minute-field"));
   DateTimeMinuteFieldElement* field =
-      new DateTimeMinuteFieldElement(document, field_owner, range, step);
+      MakeGarbageCollected<DateTimeMinuteFieldElement>(document, field_owner,
+                                                       range, step);
   field->Initialize(minute_pseudo_id,
                     QueryString(WebLocalizedString::kAXMinuteFieldText));
   return field;
@@ -520,8 +529,10 @@ DateTimeMonthFieldElement* DateTimeMonthFieldElement::Create(
     const Range& range) {
   DEFINE_STATIC_LOCAL(AtomicString, month_pseudo_id,
                       ("-webkit-datetime-edit-month-field"));
-  DateTimeMonthFieldElement* field = new DateTimeMonthFieldElement(
-      document, field_owner, placeholder.IsEmpty() ? "--" : placeholder, range);
+  DateTimeMonthFieldElement* field =
+      MakeGarbageCollected<DateTimeMonthFieldElement>(
+          document, field_owner, placeholder.IsEmpty() ? "--" : placeholder,
+          range);
   field->Initialize(month_pseudo_id,
                     QueryString(WebLocalizedString::kAXMonthFieldText));
   return field;
@@ -574,7 +585,8 @@ DateTimeSecondFieldElement* DateTimeSecondFieldElement::Create(
   DEFINE_STATIC_LOCAL(AtomicString, second_pseudo_id,
                       ("-webkit-datetime-edit-second-field"));
   DateTimeSecondFieldElement* field =
-      new DateTimeSecondFieldElement(document, field_owner, range, step);
+      MakeGarbageCollected<DateTimeSecondFieldElement>(document, field_owner,
+                                                       range, step);
   field->Initialize(second_pseudo_id,
                     QueryString(WebLocalizedString::kAXSecondFieldText));
   return field;
@@ -629,8 +641,8 @@ DateTimeSymbolicMonthFieldElement* DateTimeSymbolicMonthFieldElement::Create(
   DEFINE_STATIC_LOCAL(AtomicString, month_pseudo_id,
                       ("-webkit-datetime-edit-month-field"));
   DateTimeSymbolicMonthFieldElement* field =
-      new DateTimeSymbolicMonthFieldElement(document, field_owner, labels,
-                                            minimum, maximum);
+      MakeGarbageCollected<DateTimeSymbolicMonthFieldElement>(
+          document, field_owner, labels, minimum, maximum);
   field->Initialize(month_pseudo_id,
                     QueryString(WebLocalizedString::kAXMonthFieldText));
   return field;
@@ -684,7 +696,8 @@ DateTimeWeekFieldElement* DateTimeWeekFieldElement::Create(
   DEFINE_STATIC_LOCAL(AtomicString, week_pseudo_id,
                       ("-webkit-datetime-edit-week-field"));
   DateTimeWeekFieldElement* field =
-      new DateTimeWeekFieldElement(document, field_owner, range);
+      MakeGarbageCollected<DateTimeWeekFieldElement>(document, field_owner,
+                                                     range);
   field->Initialize(week_pseudo_id,
                     QueryString(WebLocalizedString::kAXWeekOfYearFieldText));
   return field;
@@ -741,7 +754,8 @@ DateTimeYearFieldElement* DateTimeYearFieldElement::Create(
   DEFINE_STATIC_LOCAL(AtomicString, year_pseudo_id,
                       ("-webkit-datetime-edit-year-field"));
   DateTimeYearFieldElement* field =
-      new DateTimeYearFieldElement(document, field_owner, parameters);
+      MakeGarbageCollected<DateTimeYearFieldElement>(document, field_owner,
+                                                     parameters);
   field->Initialize(year_pseudo_id,
                     QueryString(WebLocalizedString::kAXYearFieldText));
   return field;

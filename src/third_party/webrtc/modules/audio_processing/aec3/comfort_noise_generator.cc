@@ -16,9 +16,10 @@
 #if defined(WEBRTC_ARCH_X86_FAMILY)
 #include <emmintrin.h>
 #endif
-#include <math.h>
 #include <algorithm>
 #include <array>
+#include <cmath>
+#include <cstdint>
 #include <functional>
 #include <numeric>
 

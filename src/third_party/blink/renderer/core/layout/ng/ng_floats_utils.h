@@ -9,11 +9,12 @@
 #include "third_party/blink/renderer/core/core_export.h"
 #include "third_party/blink/renderer/core/layout/ng/ng_unpositioned_float_vector.h"
 #include "third_party/blink/renderer/core/style/computed_style_constants.h"
-#include "third_party/blink/renderer/platform/layout_unit.h"
+#include "third_party/blink/renderer/platform/geometry/layout_unit.h"
 #include "third_party/blink/renderer/platform/wtf/vector.h"
 
 namespace blink {
 
+class ComputedStyle;
 class NGBlockNode;
 class NGConstraintSpace;
 class NGContainerFragmentBuilder;
@@ -35,8 +36,9 @@ typedef int NGFloatTypes;
 
 // Returns the inline size (relative to {@code parent_space}) of the
 // unpositioned float.
-CORE_EXPORT LayoutUnit ComputeMarginBoxInlineSizeForUnpositionedFloat(
+LayoutUnit ComputeMarginBoxInlineSizeForUnpositionedFloat(
     const NGConstraintSpace& parent_space,
+    const ComputedStyle& parent_style,
     NGUnpositionedFloat* unpositioned_float);
 
 // Positions {@code unpositioned_float} into {@code new_parent_space}.
@@ -46,28 +48,30 @@ PositionFloat(const NGLogicalSize& float_available_size,
               const NGLogicalSize& float_percentage_size,
               const NGLogicalSize& float_replaced_percentage_size,
               const NGBfcOffset& origin_bfc_offset,
-              LayoutUnit parent_bfc_block_offset,
               NGUnpositionedFloat*,
               const NGConstraintSpace& parent_space,
+              const ComputedStyle& parent_style,
               NGExclusionSpace* exclusion_space);
 
 // Positions the list of {@code unpositioned_floats}. Adds them as exclusions to
 // {@code space}.
-CORE_EXPORT const NGPositionedFloatVector
-PositionFloats(const NGLogicalSize& float_available_size,
-               const NGLogicalSize& float_percentage_size,
-               const NGLogicalSize& float_replaced_percentage_size,
-               const NGBfcOffset& origin_bfc_offset,
-               LayoutUnit container_block_offset,
-               NGUnpositionedFloatVector& unpositioned_floats,
-               const NGConstraintSpace& space,
-               NGExclusionSpace* exclusion_space);
+CORE_EXPORT void PositionFloats(
+    const NGLogicalSize& float_available_size,
+    const NGLogicalSize& float_percentage_size,
+    const NGLogicalSize& float_replaced_percentage_size,
+    const NGBfcOffset& origin_bfc_offset,
+    NGUnpositionedFloatVector& unpositioned_floats,
+    const NGConstraintSpace& parent_space,
+    const ComputedStyle& parent_style,
+    NGExclusionSpace* exclusion_space,
+    NGPositionedFloatVector* positioned_floats);
 
 // Add a pending float to the list. It will be committed (positioned) once we
 // have resolved the BFC block offset.
 void AddUnpositionedFloat(NGUnpositionedFloatVector* unpositioned_floats,
                           NGContainerFragmentBuilder* fragment_builder,
-                          NGUnpositionedFloat unpositioned_float);
+                          NGUnpositionedFloat unpositioned_float,
+                          const NGConstraintSpace& parent_space);
 
 // Remove a pending float from the list.
 bool RemoveUnpositionedFloat(NGUnpositionedFloatVector* unpositioned_floats,

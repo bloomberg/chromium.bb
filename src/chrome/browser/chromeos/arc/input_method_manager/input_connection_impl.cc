@@ -112,6 +112,7 @@ void InputConnectionImpl::CommitText(const base::string16& text,
   if (!ime_engine_->CommitText(input_context_id_,
                                base::UTF16ToUTF8(text).c_str(), &error))
     LOG(ERROR) << "CommitText failed: error=\"" << error << "\"";
+  composing_text_.clear();
 }
 
 void InputConnectionImpl::DeleteSurroundingText(int before, int after) {

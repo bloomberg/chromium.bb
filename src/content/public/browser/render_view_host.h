@@ -6,7 +6,6 @@
 #define CONTENT_PUBLIC_BROWSER_RENDER_VIEW_HOST_H_
 
 #include "base/callback_forward.h"
-#include "base/files/file_path.h"
 #include "build/build_config.h"
 #include "content/common/content_export.h"
 #include "content/public/common/drop_data.h"
@@ -15,17 +14,12 @@
 #include "mojo/public/cpp/system/core.h"
 #include "third_party/blink/public/platform/web_drag_operation.h"
 
-namespace base {
-class FilePath;
-}
-
 namespace blink {
 struct WebPluginAction;
 }
 
 namespace gfx {
 class Point;
-class Size;
 }
 
 namespace content {
@@ -84,15 +78,6 @@ class CONTENT_EXPORT RenderViewHost : public IPC::Sender {
 
   // Returns the main frame for this render view.
   virtual RenderFrameHost* GetMainFrame() = 0;
-
-  // Notifies the listener that a directory enumeration is complete.
-  virtual void DirectoryEnumerationFinished(
-      int request_id,
-      const std::vector<base::FilePath>& files) = 0;
-
-  // Tells the renderer not to add scrollbars with height and width below a
-  // threshold.
-  virtual void DisableScrollbarsForThreshold(const gfx::Size& size) = 0;
 
   // Instructs the RenderView to send back updates to the preferred size.
   virtual void EnablePreferredSizeMode() = 0;

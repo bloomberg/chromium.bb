@@ -15,9 +15,7 @@
 #include "base/gtest_prod_util.h"
 #include "base/macros.h"
 #include "base/optional.h"
-#include "base/strings/string16.h"
 #include "base/threading/thread_checker.h"
-#include "base/time/time.h"
 #include "build/build_config.h"
 #include "components/data_reduction_proxy/core/browser/data_reduction_proxy_util.h"
 #include "net/http/http_request_headers.h"
@@ -67,6 +65,11 @@ class DataReductionProxyRequestOptions {
   void AddRequestHeader(net::HttpRequestHeaders* request_headers,
                         base::Optional<uint64_t> page_id);
 
+  // Adds |page_id| to the 'Chrome-Proxy' header, merging with existing value if
+  // it exists.
+  void AddPageIDRequestHeader(net::HttpRequestHeaders* request_headers,
+                              uint64_t page_id) const;
+
   // Stores the supplied key and sets up credentials suitable for authenticating
   // with the data reduction proxy.
   // This can be called more than once. For example on a platform that does not
@@ -91,21 +94,17 @@ class DataReductionProxyRequestOptions {
   void Invalidate();
 
   // Parses |request_headers| and returns the value of the session key.
-  std::string GetSessionKeyFromRequestHeaders(
-      const net::HttpRequestHeaders& request_headers) const;
+  static base::Optional<std::string> GetSessionKeyFromRequestHeaders(
+      const net::HttpRequestHeaders& request_headers);
+
+  // Parses |request_headers| and returns the value of the page id.
+  static base::Optional<uint64_t> GetPageIdFromRequestHeaders(
+      const net::HttpRequestHeaders& request_headers);
 
   // Creates and returns a new unique page ID (unique per session).
   uint64_t GeneratePageId();
 
  protected:
-  // Returns a UTF16 string that's the hash of the configured authentication
-  // |key| and |salt|. Returns an empty UTF16 string if no key is configured or
-  // the data reduction proxy feature isn't available.
-  static base::string16 AuthHashForSalt(int64_t salt, const std::string& key);
-  // Visible for testing.
-  virtual base::Time Now() const;
-  virtual void RandBytes(void* output, size_t length) const;
-
   // Visible for testing.
   virtual std::string GetDefaultKey() const;
 
@@ -134,12 +133,6 @@ class DataReductionProxyRequestOptions {
   // Adds the server-side experiment from the field trial.
   void AddServerExperimentFromFieldTrial();
 
-  // Generates a session ID and credentials suitable for authenticating with
-  // the data reduction proxy.
-  void ComputeCredentials(const base::Time& now,
-                          std::string* session,
-                          std::string* credentials) const;
-
   // Generates and updates the session ID and credentials.
   void UpdateCredentials();
 
@@ -155,20 +148,10 @@ class DataReductionProxyRequestOptions {
 
   // Name of the client and version of the data reduction proxy protocol to use.
   std::string client_;
-  std::string session_;
-  std::string credentials_;
   std::string secure_session_;
   std::string build_;
   std::string patch_;
   std::vector<std::string> experiments_;
-
-  // The time at which the session expires. Used to ensure that a session is
-  // never used for more than twenty-four hours.
-  base::Time credentials_expiration_time_;
-
-  // Whether the authentication headers are sourced by |this| or injected via
-  // |SetCredentials|.
-  bool use_assigned_credentials_;
 
   // Must outlive |this|.
   DataReductionProxyConfig* data_reduction_proxy_config_;

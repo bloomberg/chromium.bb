@@ -37,6 +37,9 @@ class TouchList;
 class TouchEventContext : public GarbageCollected<TouchEventContext> {
  public:
   static TouchEventContext* Create();
+
+  TouchEventContext();
+
   void HandleLocalEvents(Event&) const;
   TouchList& Touches() { return *touches_; }
   TouchList& TargetTouches() { return *target_touches_; }
@@ -45,8 +48,6 @@ class TouchEventContext : public GarbageCollected<TouchEventContext> {
   void Trace(blink::Visitor*);
 
  private:
-  TouchEventContext();
-
   Member<TouchList> touches_;
   Member<TouchList> target_touches_;
   Member<TouchList> changed_touches_;

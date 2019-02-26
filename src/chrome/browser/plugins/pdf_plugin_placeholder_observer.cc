@@ -46,7 +46,7 @@ void PDFPluginPlaceholderObserver::OnOpenPDF(
 
   content::Referrer referrer = content::Referrer::SanitizeForRequest(
       url, content::Referrer(web_contents()->GetURL(),
-                             blink::kWebReferrerPolicyDefault));
+                             network::mojom::ReferrerPolicy::kDefault));
 
 #if BUILDFLAG(ENABLE_PLUGINS)
   net::NetworkTrafficAnnotationTag traffic_annotation =

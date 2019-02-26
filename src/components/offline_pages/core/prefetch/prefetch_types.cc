@@ -135,6 +135,15 @@ RenderPageInfo::RenderPageInfo() = default;
 
 RenderPageInfo::RenderPageInfo(const RenderPageInfo& other) = default;
 
+PrefetchURL::PrefetchURL(const std::string& id,
+                         const GURL& url,
+                         const base::string16& title)
+    : id(id), url(url), title(title) {}
+
+PrefetchURL::~PrefetchURL() = default;
+
+PrefetchURL::PrefetchURL(const PrefetchURL& other) = default;
+
 PrefetchDownloadResult::PrefetchDownloadResult() = default;
 
 PrefetchDownloadResult::PrefetchDownloadResult(const std::string& download_id,

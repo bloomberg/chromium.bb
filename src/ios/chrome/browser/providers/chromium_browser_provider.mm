@@ -13,7 +13,6 @@
 #include "ios/chrome/browser/providers/signin/chromium_signin_resources_provider.h"
 #include "ios/chrome/browser/providers/ui/chromium_styled_text_field.h"
 #include "ios/public/provider/chrome/browser/distribution/app_distribution_provider.h"
-#include "ios/public/provider/chrome/browser/external_search/external_search_provider.h"
 #include "ios/public/provider/chrome/browser/signin/chrome_identity_service.h"
 #include "ios/public/provider/chrome/browser/signin/signin_error_provider.h"
 #import "ios/public/provider/chrome/browser/ui/fullscreen_provider.h"
@@ -32,7 +31,6 @@ ChromiumBrowserProvider::ChromiumBrowserProvider()
       user_feedback_provider_(std::make_unique<UserFeedbackProvider>()),
       voice_search_provider_(std::make_unique<ChromiumVoiceSearchProvider>()),
       spotlight_provider_(std::make_unique<ChromiumSpotlightProvider>()),
-      external_search_provider_(std::make_unique<ExternalSearchProvider>()),
       fullscreen_provider_(std::make_unique<FullscreenProvider>()) {}
 
 ChromiumBrowserProvider::~ChromiumBrowserProvider() {}
@@ -89,11 +87,6 @@ BrandedImageProvider* ChromiumBrowserProvider::GetBrandedImageProvider() const {
 
 SpotlightProvider* ChromiumBrowserProvider::GetSpotlightProvider() const {
   return spotlight_provider_.get();
-}
-
-ExternalSearchProvider* ChromiumBrowserProvider::GetExternalSearchProvider()
-    const {
-  return external_search_provider_.get();
 }
 
 FullscreenProvider* ChromiumBrowserProvider::GetFullscreenProvider() const {

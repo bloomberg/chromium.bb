@@ -6,6 +6,8 @@
 #include <stdint.h>
 #include <string.h>
 
+#include <vector>
+
 #include "base/command_line.h"
 #include "base/test/fuzzed_data_provider.h"
 #include "components/viz/service/display_embedder/server_shared_bitmap_manager.h"
@@ -23,14 +25,16 @@ constexpr uint32_t kMaxDepthAllowed = 255;
 // TODO(riajiang): Move into common functions that can be used by the fuzzer
 // for HitTestQuery.
 uint32_t GetNextUInt32NonZero(base::FuzzedDataProvider* fuzz) {
-  return fuzz->ConsumeUint32InRange(1, std::numeric_limits<uint32_t>::max());
+  return fuzz->ConsumeIntegralInRange<uint32_t>(
+      1, std::numeric_limits<uint32_t>::max());
 }
 
 gfx::Transform GetNextTransform(base::FuzzedDataProvider* fuzz) {
   gfx::Transform transform;
   if (fuzz->ConsumeBool() && fuzz->remaining_bytes() >= sizeof(transform)) {
-    std::string matrix_bytes = fuzz->ConsumeBytes(sizeof(gfx::Transform));
-    memcpy(&transform, matrix_bytes.data(), sizeof(gfx::Transform));
+    std::vector<uint8_t> matrix_bytes =
+        fuzz->ConsumeBytes(sizeof(gfx::Transform));
+    memcpy(&transform, matrix_bytes.data(), matrix_bytes.size());
   }
   return transform;
 }
@@ -58,14 +62,14 @@ void AddHitTestRegion(base::FuzzedDataProvider* fuzz,
     return;
 
   viz::HitTestRegion hit_test_region;
-  hit_test_region.flags = fuzz->ConsumeUint16();
+  hit_test_region.flags = fuzz->ConsumeIntegral<uint32_t>();
   if (fuzz->ConsumeBool())
     hit_test_region.flags |= viz::HitTestRegionFlags::kHitTestChildSurface;
-  hit_test_region.frame_sink_id =
-      viz::FrameSinkId(fuzz->ConsumeUint8(), fuzz->ConsumeUint8());
+  hit_test_region.frame_sink_id = viz::FrameSinkId(
+      fuzz->ConsumeIntegral<uint32_t>(), fuzz->ConsumeIntegral<uint32_t>());
   hit_test_region.rect =
-      gfx::Rect(fuzz->ConsumeUint8(), fuzz->ConsumeUint8(),
-                fuzz->ConsumeUint16(), fuzz->ConsumeUint16());
+      gfx::Rect(fuzz->ConsumeIntegral<int>(), fuzz->ConsumeIntegral<int>(),
+                fuzz->ConsumeIntegral<int>(), fuzz->ConsumeIntegral<int>());
   hit_test_region.transform = GetNextTransform(fuzz);
 
   if (fuzz->ConsumeBool() &&
@@ -108,16 +112,16 @@ void SubmitHitTestRegionList(
   base::Optional<viz::HitTestRegionList> hit_test_region_list;
   if (fuzz->ConsumeBool()) {
     hit_test_region_list.emplace();
-    hit_test_region_list->flags = fuzz->ConsumeUint16();
+    hit_test_region_list->flags = fuzz->ConsumeIntegral<uint32_t>();
     if (fuzz->ConsumeBool())
       hit_test_region_list->flags |=
           viz::HitTestRegionFlags::kHitTestChildSurface;
     hit_test_region_list->bounds =
-        gfx::Rect(fuzz->ConsumeUint8(), fuzz->ConsumeUint8(),
-                  fuzz->ConsumeUint16(), fuzz->ConsumeUint16());
+        gfx::Rect(fuzz->ConsumeIntegral<int>(), fuzz->ConsumeIntegral<int>(),
+                  fuzz->ConsumeIntegral<int>(), fuzz->ConsumeIntegral<int>());
     hit_test_region_list->transform = GetNextTransform(fuzz);
 
-    uint32_t child_count = fuzz->ConsumeUint16();
+    uint32_t child_count = fuzz->ConsumeIntegral<uint32_t>();
     AddHitTestRegion(fuzz, &hit_test_region_list->regions, child_count,
                      delegate, frame_sink_manager, surface_id, depth + 1);
   }

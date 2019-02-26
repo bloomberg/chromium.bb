@@ -3,13 +3,15 @@
 # found in the LICENSE file.
 
 DEPS = [
-  'git',
   'recipe_engine/context',
   'recipe_engine/path',
   'recipe_engine/platform',
   'recipe_engine/properties',
   'recipe_engine/raw_io',
+  'recipe_engine/runtime',
   'recipe_engine/step',
+
+  'git',
 ]
 
 
@@ -94,6 +96,10 @@ def RunSteps(api):
 
 def GenTests(api):
   yield api.test('basic')
+  yield (
+    api.test('basic_luci') +
+    api.runtime(is_luci=True, is_experimental=False)
+  )
   yield api.test('basic_tags') + api.properties(tags=True)
   yield api.test('basic_ref') + api.properties(revision='refs/foo/bar')
   yield api.test('basic_branch') + api.properties(revision='refs/heads/testing')

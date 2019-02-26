@@ -8,6 +8,7 @@ import static org.chromium.chrome.browser.autofill.keyboard_accessory.AccessoryS
 import static org.chromium.chrome.browser.autofill.keyboard_accessory.KeyboardAccessoryProperties.ACTIONS;
 import static org.chromium.chrome.browser.autofill.keyboard_accessory.KeyboardAccessoryProperties.ACTIVE_TAB;
 import static org.chromium.chrome.browser.autofill.keyboard_accessory.KeyboardAccessoryProperties.BOTTOM_OFFSET_PX;
+import static org.chromium.chrome.browser.autofill.keyboard_accessory.KeyboardAccessoryProperties.SHOW_KEYBOARD_CALLBACK;
 import static org.chromium.chrome.browser.autofill.keyboard_accessory.KeyboardAccessoryProperties.TABS;
 import static org.chromium.chrome.browser.autofill.keyboard_accessory.KeyboardAccessoryProperties.TAB_SELECTION_CALLBACKS;
 import static org.chromium.chrome.browser.autofill.keyboard_accessory.KeyboardAccessoryProperties.VISIBLE;
@@ -38,7 +39,7 @@ import java.util.List;
 class KeyboardAccessoryMediator
         implements ListObservable.ListObserver<Void>,
                    PropertyObservable.PropertyObserver<PropertyKey>,
-                   KeyboardAccessoryData.Observer<KeyboardAccessoryData.Action>,
+                   KeyboardAccessoryData.Observer<KeyboardAccessoryData.Action[]>,
                    TabLayout.OnTabSelectedListener {
     private final PropertyModel mModel;
     private final VisibilityDelegate mVisibilityDelegate;
@@ -54,10 +55,11 @@ class KeyboardAccessoryMediator
         mModel.get(TABS).addObserver(this);
         mModel.get(ACTIONS).addObserver(this);
         mModel.set(TAB_SELECTION_CALLBACKS, this);
+        mModel.set(SHOW_KEYBOARD_CALLBACK, this::closeSheet);
     }
 
     @Override
-    public void onItemsAvailable(int typeId, KeyboardAccessoryData.Action[] actions) {
+    public void onItemAvailable(int typeId, KeyboardAccessoryData.Action[] actions) {
         assert typeId != DEFAULT_TYPE : "Did not specify which Action type has been updated.";
         // If there is a new list, retain all actions that are of a different type than the provided
         // actions.
@@ -138,7 +140,7 @@ class KeyboardAccessoryMediator
             mVisibilityDelegate.onBottomControlSpaceChanged();
             if (!mModel.get(VISIBLE)) {
                 // TODO(fhorschig|ioanap): Maybe the generation bridge should take care of that.
-                onItemsAvailable(AccessoryAction.GENERATE_PASSWORD_AUTOMATIC, new Action[0]);
+                onItemAvailable(AccessoryAction.GENERATE_PASSWORD_AUTOMATIC, new Action[0]);
             }
             return;
         }
@@ -152,7 +154,8 @@ class KeyboardAccessoryMediator
             mVisibilityDelegate.onChangeAccessorySheet(activeTab);
             return;
         }
-        if (propertyKey == BOTTOM_OFFSET_PX || propertyKey == TAB_SELECTION_CALLBACKS) {
+        if (propertyKey == BOTTOM_OFFSET_PX || propertyKey == TAB_SELECTION_CALLBACKS
+                || propertyKey == SHOW_KEYBOARD_CALLBACK) {
             return;
         }
         assert false : "Every property update needs to be handled explicitly!";
@@ -171,10 +174,14 @@ class KeyboardAccessoryMediator
         if (mModel.get(ACTIVE_TAB) == null) {
             mModel.set(ACTIVE_TAB, tab.getPosition());
         } else {
-            KeyboardAccessoryMetricsRecorder.recordSheetTrigger(
-                    mModel.get(TABS).get(mModel.get(ACTIVE_TAB)).getRecordingType(), MANUAL_CLOSE);
-            mVisibilityDelegate.onOpenKeyboard(); // This will close the active tab gently.
+            closeSheet();
         }
+    }
+
+    private void closeSheet() {
+        KeyboardAccessoryMetricsRecorder.recordSheetTrigger(
+                mModel.get(TABS).get(mModel.get(ACTIVE_TAB)).getRecordingType(), MANUAL_CLOSE);
+        mVisibilityDelegate.onOpenKeyboard(); // This will close the active tab gently.
     }
 
     boolean hasContents() {

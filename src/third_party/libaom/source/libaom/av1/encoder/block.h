@@ -140,6 +140,20 @@ typedef struct tx_size_rd_info_node {
   struct tx_size_rd_info_node *children[4];
 } TXB_RD_INFO_NODE;
 
+// Simple translation rd state for prune_comp_search_by_single_result
+typedef struct {
+  RD_STATS rd_stats;
+  RD_STATS rd_stats_y;
+  RD_STATS rd_stats_uv;
+  uint8_t blk_skip[MAX_MIB_SIZE * MAX_MIB_SIZE];
+  uint8_t skip;
+  uint8_t disable_skip;
+  uint8_t early_skipped;
+} SimpleRDState;
+
+// 4: NEAREST, NEW, NEAR, GLOBAL
+#define SINGLE_REF_MODES ((REF_FRAMES - 1) * 4)
+
 // Region size for mode decision sampling in the first pass of partition
 // search(two_pass_partition_search speed feature), in units of mi size(4).
 // Used by the mode_pruning_based_on_two_pass_partition_search speed feature.
@@ -173,6 +187,9 @@ typedef struct {
   COMPOUND_TYPE comp_type;
 } INTERPOLATION_FILTER_STATS;
 
+#if CONFIG_COLLECT_INTER_MODE_RD_STATS
+struct inter_modes_info;
+#endif
 typedef struct macroblock MACROBLOCK;
 struct macroblock {
   struct macroblock_plane plane[MAX_MB_PLANE];
@@ -193,6 +210,9 @@ struct macroblock {
   // [comp_idx][saved stat_idx]
   INTERPOLATION_FILTER_STATS interp_filter_stats[2][MAX_INTERP_FILTER_STATS];
   int interp_filter_stats_idx[2];
+
+  // prune_comp_search_by_single_result (3:MAX_REF_MV_SERCH)
+  SimpleRDState simple_rd_state[SINGLE_REF_MODES][3];
 
   // Activate constrained coding block partition search range.
   int use_cb_search_range;
@@ -224,6 +244,7 @@ struct macroblock {
   // for sub-8x8 blocks.
   int sadperbit4;
   int rdmult;
+  int cb_rdmult;
   int mb_energy;
   int sb_energy_level;
   int *m_search_count_ptr;
@@ -241,12 +262,10 @@ struct macroblock {
   unsigned int pred_sse[REF_FRAMES];
   int pred_mv_sad[REF_FRAMES];
 
-  int *nmvjointcost;
   int nmv_vec_cost[MV_JOINTS];
   int *nmvcost[2];
   int *nmvcost_hp[2];
   int **mv_cost_stack;
-  int **mvcost;
 
   int32_t *wsrc_buf;
   int32_t *mask_buf;
@@ -257,6 +276,18 @@ struct macroblock {
 
   CONV_BUF_TYPE *tmp_conv_dst;
   uint8_t *tmp_obmc_bufs[2];
+
+  FRAME_CONTEXT *backup_tile_ctx;
+  // This context will be used to update color_map_cdf pointer which would be
+  // used during pack bitstream. For single thread and tile-multithreading case
+  // this ponter will be same as xd->tile_ctx, but for the case of row-mt:
+  // xd->tile_ctx will point to a temporary context while tile_pb_ctx will point
+  // to the accurate tile context.
+  FRAME_CONTEXT *tile_pb_ctx;
+
+#if CONFIG_COLLECT_INTER_MODE_RD_STATS
+  struct inter_modes_info *inter_modes_info;
+#endif
 
   // buffer for hash value calculation of a block
   // used only in av1_get_block_hash_value()
@@ -350,6 +381,9 @@ struct macroblock {
   int_mv best_mv;
   // Store the second best motion vector during full-pixel motion search
   int_mv second_best_mv;
+
+  // Store the fractional best motion vector during sub/Qpel-pixel motion search
+  int_mv fractional_best_mv[3];
 
   // use default transform and skip transform type search for intra modes
   int use_default_intra_tx_type;

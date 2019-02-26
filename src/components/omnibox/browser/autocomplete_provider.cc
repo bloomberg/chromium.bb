@@ -5,11 +5,16 @@
 #include "components/omnibox/browser/autocomplete_provider.h"
 
 #include <algorithm>
+#include <set>
 #include <string>
 
+#include "base/i18n/case_conversion.h"
 #include "base/logging.h"
+#include "base/no_destructor.h"
 #include "base/strings/utf_string_conversions.h"
+#include "base/strings/string_split.h"
 #include "base/trace_event/memory_usage_estimator.h"
+#include "components/omnibox/browser/autocomplete_i18n.h"
 #include "components/omnibox/browser/autocomplete_input.h"
 #include "components/omnibox/browser/autocomplete_match.h"
 #include "components/url_formatter/url_fixer.h"
@@ -59,6 +64,152 @@ void AutocompleteProvider::Stop(bool clear_cached_results,
 
 const char* AutocompleteProvider::GetName() const {
   return TypeToString(type_);
+}
+
+AutocompleteProvider::WordMap AutocompleteProvider::CreateWordMapForString(
+    const base::string16& text) {
+  // First, convert |text| to a vector of the unique words in it.
+  WordMap word_map;
+  // Use base::SplitString instead of base::i18n::BreakIterator due to
+  // https://crbug.com/784229
+  std::vector<base::string16> words =
+      base::SplitString(text, base::kWhitespaceASCIIAs16, base::TRIM_WHITESPACE,
+                        base::SPLIT_WANT_NONEMPTY);
+  if (words.empty())
+    return word_map;
+  std::sort(words.begin(), words.end());
+  words.erase(std::unique(words.begin(), words.end()), words.end());
+
+  // Now create a map from (first character) to (words beginning with that
+  // character).  We insert in reverse lexicographical order and rely on the
+  // multimap preserving insertion order for values with the same key.  (This
+  // is mandated in C++11, and part of that decision was based on a survey of
+  // existing implementations that found that it was already true everywhere.)
+  std::reverse(words.begin(), words.end());
+  for (std::vector<base::string16>::const_iterator i(words.begin());
+       i != words.end(); ++i)
+    word_map.insert(std::make_pair((*i)[0], *i));
+  return word_map;
+}
+
+ACMatchClassifications AutocompleteProvider::ClassifyAllMatchesInString(
+    const base::string16& find_text,
+    const WordMap& find_words,
+    const base::string16& text,
+    const bool text_is_search_query,
+    const ACMatchClassifications& original_class) {
+  DCHECK(!find_text.empty());
+  DCHECK(!find_words.empty());
+
+  static base::NoDestructor<std::set<base::char16>> whitespace_set{
+      base::StringPiece16(base::kWhitespaceASCIIAs16).begin(),
+      base::StringPiece16(base::kWhitespaceASCIIAs16).end()};
+
+  if (text.empty())
+    return original_class;
+
+  base::string16 text_lowercase(base::i18n::ToLower(text));
+
+  const ACMatchClassification::Style& class_of_find_text =
+      text_is_search_query ? ACMatchClassification::NONE
+                           : ACMatchClassification::MATCH;
+  const ACMatchClassification::Style& class_of_additional_text =
+      text_is_search_query ? ACMatchClassification::MATCH
+                           : ACMatchClassification::NONE;
+
+  ACMatchClassifications match_class;
+  size_t current_position = 0;
+
+  // First check whether |text| begins with |find_text| and mark that whole
+  // section as a match if so.
+  if (base::StartsWith(text_lowercase, find_text,
+                       base::CompareCase::SENSITIVE)) {
+    match_class.push_back(ACMatchClassification(0, class_of_find_text));
+    // If |text_lowercase| is actually equal to |find_text|, we don't need to
+    // (and in fact shouldn't) put a trailing NONE classification after the end
+    // of the string.
+    if (find_text.length() < text_lowercase.length()) {
+      match_class.push_back(
+          ACMatchClassification(find_text.length(), class_of_additional_text));
+    }
+    // Sets |current_position| to |text_lowercase.length()| to skip
+    // word-by-word highlighting.  That is, if we found a prefix match,
+    // we don't highlight additional word matches after the prefix.
+    current_position = text_lowercase.length();
+  } else {
+    // |match_class| should start at position 0.  If the first matching word is
+    // found at position 0, this will be popped from the vector further down.
+    match_class.push_back(ACMatchClassification(0, class_of_additional_text));
+  }
+
+  size_t word_end = 0;
+  bool has_matched = false;
+  // Now, starting with |current_position|, check each character in
+  // |text_lowercase| to see if we have words starting with that character in
+  // |find_words|. If so, check each of them to see if they match the portion
+  // of |text_lowercase| beginning with |current_position|. Accept the first
+  // matching word found (which should be the longest possible match at this
+  // location, given the construction of |find_words|) and add a MATCH region to
+  // |match_class|, moving |current_position| to be after the matching word. If
+  // we found no matching words, move to the next character or word and repeat.
+  while (current_position < text_lowercase.length()) {
+    auto range(find_words.equal_range(text_lowercase[current_position]));
+    for (WordMap::const_iterator i(range.first); i != range.second; ++i) {
+      const base::string16& word = i->second;
+      word_end = current_position + word.length();
+      if ((word_end <= text_lowercase.length()) &&
+          !text_lowercase.compare(current_position, word.length(), word)) {
+        // Collapse adjacent ranges into one.
+        if (match_class.back().offset == current_position)
+          match_class.pop_back();
+
+        AutocompleteMatch::AddLastClassificationIfNecessary(
+            &match_class, current_position, class_of_find_text);
+        if (word_end < text_lowercase.length()) {
+          if (!text_is_search_query ||
+              whitespace_set->find(text_lowercase[word_end]) ==
+                  whitespace_set->end()) {
+            match_class.push_back(
+                ACMatchClassification(word_end, class_of_additional_text));
+          }
+        }
+        has_matched = true;
+        current_position = word_end;
+        break;
+      }
+    }
+    // If there is no matching word, put |class_of_additional_text|.
+    if (!has_matched && (match_class.empty() || match_class.back().style !=
+                                                    class_of_additional_text)) {
+      match_class.push_back(
+          ACMatchClassification(current_position, class_of_additional_text));
+    }
+    // Moves to next character.
+    if (text_is_search_query) {
+      // Find next word for prefix search.
+      auto whitespaces = *whitespace_set;
+      auto found = std::find_if(
+          text_lowercase.begin() + current_position, text_lowercase.end(),
+          [whitespaces](auto next_char) {
+            return whitespaces.find(next_char) != whitespaces.end();
+          });
+      if (found != text_lowercase.end()) {
+        current_position =
+            std::distance(text_lowercase.begin(), found);
+        current_position++;
+      } else {
+        current_position = text_lowercase.length();
+      }
+    } else {
+      if (!has_matched)
+        current_position++;
+    }
+    has_matched = false;
+  }
+
+  if (original_class.empty())
+    return match_class;
+  return AutocompleteMatch::MergeClassifications(original_class, match_class);
 }
 
 metrics::OmniboxEventProto_ProviderType AutocompleteProvider::

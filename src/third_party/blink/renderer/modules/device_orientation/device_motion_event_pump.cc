@@ -10,8 +10,10 @@
 #include "third_party/blink/renderer/core/dom/document.h"
 #include "third_party/blink/renderer/core/frame/local_frame.h"
 #include "third_party/blink/renderer/core/frame/platform_event_controller.h"
+#include "third_party/blink/renderer/modules/device_orientation/device_acceleration.h"
 #include "third_party/blink/renderer/modules/device_orientation/device_motion_data.h"
 #include "third_party/blink/renderer/modules/device_orientation/device_motion_event_pump.h"
+#include "third_party/blink/renderer/modules/device_orientation/device_rotation_rate.h"
 #include "ui/gfx/geometry/angle_conversions.h"
 
 namespace {
@@ -121,56 +123,43 @@ bool DeviceMotionEventPump::SensorsReadyOrErrored() const {
 }
 
 DeviceMotionData* DeviceMotionEventPump::GetDataFromSharedMemory() {
-  DeviceMotionData::Acceleration* acceleration = nullptr;
-  DeviceMotionData::Acceleration* acceleration_including_gravity = nullptr;
-  DeviceMotionData::RotationRate* rotation_rate = nullptr;
+  DeviceAcceleration* acceleration = nullptr;
+  DeviceAcceleration* acceleration_including_gravity = nullptr;
+  DeviceRotationRate* rotation_rate = nullptr;
 
   if (accelerometer_.SensorReadingCouldBeRead()) {
     if (accelerometer_.reading.timestamp() == 0.0)
       return nullptr;
 
-    acceleration_including_gravity = DeviceMotionData::Acceleration::Create(
-        !std::isnan(accelerometer_.reading.accel.x.value()),
-        accelerometer_.reading.accel.x,
-        !std::isnan(accelerometer_.reading.accel.y.value()),
-        accelerometer_.reading.accel.y,
-        !std::isnan(accelerometer_.reading.accel.z.value()),
+    acceleration_including_gravity = DeviceAcceleration::Create(
+        accelerometer_.reading.accel.x, accelerometer_.reading.accel.y,
         accelerometer_.reading.accel.z);
   } else {
-    acceleration_including_gravity = DeviceMotionData::Acceleration::Create(
-        false, 0.0, false, 0.0, false, 0.0);
+    acceleration_including_gravity = DeviceAcceleration::Create(NAN, NAN, NAN);
   }
 
   if (linear_acceleration_sensor_.SensorReadingCouldBeRead()) {
     if (linear_acceleration_sensor_.reading.timestamp() == 0.0)
       return nullptr;
 
-    acceleration = DeviceMotionData::Acceleration::Create(
-        !std::isnan(linear_acceleration_sensor_.reading.accel.x.value()),
-        linear_acceleration_sensor_.reading.accel.x,
-        !std::isnan(linear_acceleration_sensor_.reading.accel.y.value()),
-        linear_acceleration_sensor_.reading.accel.y,
-        !std::isnan(linear_acceleration_sensor_.reading.accel.z.value()),
-        linear_acceleration_sensor_.reading.accel.z);
+    acceleration =
+        DeviceAcceleration::Create(linear_acceleration_sensor_.reading.accel.x,
+                                   linear_acceleration_sensor_.reading.accel.y,
+                                   linear_acceleration_sensor_.reading.accel.z);
   } else {
-    acceleration = DeviceMotionData::Acceleration::Create(false, 0.0, false,
-                                                          0.0, false, 0.0);
+    acceleration = DeviceAcceleration::Create(NAN, NAN, NAN);
   }
 
   if (gyroscope_.SensorReadingCouldBeRead()) {
     if (gyroscope_.reading.timestamp() == 0.0)
       return nullptr;
 
-    rotation_rate = DeviceMotionData::RotationRate::Create(
-        !std::isnan(gyroscope_.reading.gyro.x.value()),
-        gfx::RadToDeg(gyroscope_.reading.gyro.x),
-        !std::isnan(gyroscope_.reading.gyro.y.value()),
-        gfx::RadToDeg(gyroscope_.reading.gyro.y),
-        !std::isnan(gyroscope_.reading.gyro.z.value()),
-        gfx::RadToDeg(gyroscope_.reading.gyro.z));
+    rotation_rate =
+        DeviceRotationRate::Create(gfx::RadToDeg(gyroscope_.reading.gyro.x),
+                                   gfx::RadToDeg(gyroscope_.reading.gyro.y),
+                                   gfx::RadToDeg(gyroscope_.reading.gyro.z));
   } else {
-    rotation_rate = DeviceMotionData::RotationRate::Create(false, 0.0, false,
-                                                           0.0, false, 0.0);
+    rotation_rate = DeviceRotationRate::Create(NAN, NAN, NAN);
   }
 
   // The device orientation spec states that interval should be in

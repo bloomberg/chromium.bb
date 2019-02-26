@@ -28,7 +28,6 @@ class FakeGaiaCookieManagerService : public GaiaCookieManagerService {
   };
 
   FakeGaiaCookieManagerService(OAuth2TokenService* token_service,
-                               const std::string& source,
                                SigninClient* client,
                                bool use_fake_url_fetcher = true);
   ~FakeGaiaCookieManagerService() override;
@@ -49,9 +48,6 @@ class FakeGaiaCookieManagerService : public GaiaCookieManagerService {
                                           const std::string& gaia_id2);
 
  private:
-  std::string GetSourceForRequest(
-      const GaiaCookieManagerService::GaiaCookieRequest& request) override;
-  std::string GetDefaultSourceForRequest() override;
   scoped_refptr<network::SharedURLLoaderFactory> GetURLLoaderFactory() override;
 
   // Provide a fake response for calls to /ListAccounts.

@@ -6,16 +6,20 @@
 #define ASH_ASSISTANT_MODEL_ASSISTANT_UI_MODEL_OBSERVER_H_
 
 #include "base/macros.h"
+#include "base/observer_list_types.h"
+#include "base/optional.h"
 #include "ui/gfx/geometry/rect.h"
 
 namespace ash {
 
-enum class AssistantSource;
+enum class AssistantEntryPoint;
+enum class AssistantExitPoint;
 enum class AssistantUiMode;
 enum class AssistantVisibility;
 
-// An observer which receives notification of changes to the Assistant UI model.
-class AssistantUiModelObserver {
+// A checked observer which receives notification of changes to the Assistant UI
+// model.
+class AssistantUiModelObserver : public base::CheckedObserver {
  public:
   // Invoked when the UI mode is changed.
   virtual void OnUiModeChanged(AssistantUiMode ui_mode) {}
@@ -23,9 +27,11 @@ class AssistantUiModelObserver {
   // Invoked when the UI visibility is changed from |old_visibility| to
   // |new_visibility|. The |source| of the visibility change event is provided
   // for interested observers.
-  virtual void OnUiVisibilityChanged(AssistantVisibility new_visibility,
-                                     AssistantVisibility old_visibility,
-                                     AssistantSource source) {}
+  virtual void OnUiVisibilityChanged(
+      AssistantVisibility new_visibility,
+      AssistantVisibility old_visibility,
+      base::Optional<AssistantEntryPoint> entry_point,
+      base::Optional<AssistantExitPoint> exit_point) {}
 
   // Invoked when the usable display work area is changed. Observers should
   // respond to this event by ensuring they are sized/positioned within the
@@ -34,7 +40,7 @@ class AssistantUiModelObserver {
 
  protected:
   AssistantUiModelObserver() = default;
-  virtual ~AssistantUiModelObserver() = default;
+  ~AssistantUiModelObserver() override = default;
 
   DISALLOW_COPY_AND_ASSIGN(AssistantUiModelObserver);
 };

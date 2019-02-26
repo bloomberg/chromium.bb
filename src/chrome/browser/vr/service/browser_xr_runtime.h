@@ -27,6 +27,8 @@ class XRDeviceImpl;
 // browser thread.  Currently this is used on Windows to drive overlays.
 class BrowserXRRuntimeObserver : public base::CheckedObserver {
  public:
+  virtual void SetVRDisplayInfo(
+      device::mojom::VRDisplayInfoPtr display_info) = 0;
   virtual void SetWebXRWebContents(content::WebContents* contents) = 0;
 };
 
@@ -62,6 +64,7 @@ class BrowserXRRuntime : public device::mojom::XRRuntimeEventListener {
   // Methods called to support metrics/overlays on Windows.
   void AddObserver(BrowserXRRuntimeObserver* observer) {
     observers_.AddObserver(observer);
+    observer->SetVRDisplayInfo(display_info_.Clone());
   }
   void RemoveObserver(BrowserXRRuntimeObserver* observer) {
     observers_.RemoveObserver(observer);

@@ -30,14 +30,19 @@ class CORE_EXPORT HTMLPortalElement : public HTMLFrameOwnerElement {
  public:
   static HTMLElement* Create(Document&);
 
+  explicit HTMLPortalElement(Document&);
   ~HTMLPortalElement() override;
 
   // idl implementation.
   ScriptPromise activate(ScriptState*);
 
- private:
-  explicit HTMLPortalElement(Document&);
+  const base::UnguessableToken& GetToken() const { return portal_token_; }
 
+  FrameOwnerElementType OwnerType() const override {
+    return FrameOwnerElementType::kPortal;
+  }
+
+ private:
   // Navigates the portal to |url_|.
   void Navigate();
 

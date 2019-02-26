@@ -54,8 +54,15 @@ int MockTransferBuffer::GetShmId() {
   return buffer_ids_[actual_buffer_index_];
 }
 
-void* MockTransferBuffer::GetResultBuffer() {
+void* MockTransferBuffer::AcquireResultBuffer() {
+  EXPECT_FALSE(outstanding_result_pointer_);
+  outstanding_result_pointer_ = true;
   return actual_buffer() + actual_buffer_index_ * alignment_;
+}
+
+void MockTransferBuffer::ReleaseResultBuffer() {
+  EXPECT_TRUE(outstanding_result_pointer_);
+  outstanding_result_pointer_ = false;
 }
 
 int MockTransferBuffer::GetResultOffset() {

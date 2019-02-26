@@ -60,9 +60,9 @@
 #include "third_party/blink/renderer/platform/fonts/font.h"
 #include "third_party/blink/renderer/platform/fonts/font_selector.h"
 #include "third_party/blink/renderer/platform/geometry/float_rounded_rect.h"
+#include "third_party/blink/renderer/platform/geometry/length_functions.h"
 #include "third_party/blink/renderer/platform/graphics/graphics_context.h"
 #include "third_party/blink/renderer/platform/graphics/path.h"
-#include "third_party/blink/renderer/platform/length_functions.h"
 #include "third_party/blink/renderer/platform/text/capitalize.h"
 #include "third_party/blink/renderer/platform/text/character.h"
 #include "third_party/blink/renderer/platform/transforms/rotate_transform_operation.h"
@@ -206,8 +206,16 @@ StyleRecalcChange ComputedStyle::StylePropagationDiff(
     return kReattach;
   }
 
-  if (old_style->ForceLegacyLayout() != new_style->ForceLegacyLayout())
-    return kReattach;
+  if (RuntimeEnabledFeatures::LayoutNGEnabled()) {
+    // LayoutNG needs an anonymous inline wrapper if ::first-line is applied.
+    // Also see |LayoutBlockFlow::NeedsAnonymousInlineWrapper()|.
+    if (new_style->HasPseudoStyle(kPseudoIdFirstLine) &&
+        !old_style->HasPseudoStyle(kPseudoIdFirstLine))
+      return kReattach;
+
+    if (old_style->ForceLegacyLayout() != new_style->ForceLegacyLayout())
+      return kReattach;
+  }
 
   bool independent_equal = old_style->IndependentInheritedEqual(*new_style);
   bool non_independent_equal =
@@ -407,10 +415,6 @@ bool ComputedStyle::operator==(const ComputedStyle& o) const {
   return InheritedEqual(o) && NonInheritedEqual(o);
 }
 
-bool ComputedStyle::IsStyleAvailable() const {
-  return this != StyleResolver::StyleNotYetAvailable();
-}
-
 const ComputedStyle* ComputedStyle::GetCachedPseudoStyle(PseudoId pid) const {
   if (!cached_pseudo_styles_ || !cached_pseudo_styles_->size())
     return nullptr;
@@ -536,8 +540,8 @@ StyleDifference ComputedStyle::VisualInvalidationDiff(
 
   if (DiffNeedsPaintInvalidationSubtree(other))
     diff.SetNeedsPaintInvalidationSubtree();
-  else if (DiffNeedsPaintInvalidationObject(other))
-    diff.SetNeedsPaintInvalidationObject();
+  else
+    AdjustDiffForNeedsPaintInvalidationObject(other, diff);
 
   if (DiffNeedsVisualRectUpdate(other))
     diff.SetNeedsVisualRectUpdate();
@@ -699,24 +703,46 @@ bool ComputedStyle::DiffNeedsPaintInvalidationSubtree(
   return ComputedStyleBase::DiffNeedsPaintInvalidationSubtree(*this, other);
 }
 
-bool ComputedStyle::DiffNeedsPaintInvalidationObject(
-    const ComputedStyle& other) const {
-  if (ComputedStyleBase::DiffNeedsPaintInvalidationObject(*this, other))
-    return true;
+void ComputedStyle::AdjustDiffForNeedsPaintInvalidationObject(
+    const ComputedStyle& other,
+    StyleDifference& diff) const {
+  if (ComputedStyleBase::DiffNeedsPaintInvalidationObject(*this, other) ||
+      !BorderVisuallyEqual(other) || !RadiiEqual(other))
+    diff.SetNeedsPaintInvalidationObject();
 
-  if (!BorderVisuallyEqual(other) || !RadiiEqual(other) ||
-      !BackgroundVisuallyEqual(other))
-    return true;
+  AdjustDiffForBackgroundVisuallyEqual(other, diff);
+
+  if (diff.NeedsPaintInvalidationObject())
+    return;
 
   if (PaintImagesInternal()) {
     for (const auto& image : *PaintImagesInternal()) {
       DCHECK(image);
-      if (DiffNeedsPaintInvalidationObjectForPaintImage(*image, other))
-        return true;
+      if (DiffNeedsPaintInvalidationObjectForPaintImage(*image, other)) {
+        diff.SetNeedsPaintInvalidationObject();
+        return;
+      }
     }
   }
+}
 
-  return false;
+void ComputedStyle::AdjustDiffForBackgroundVisuallyEqual(
+    const ComputedStyle& other,
+    StyleDifference& diff) const {
+  if (BackgroundColorInternal() != other.BackgroundColorInternal()) {
+    diff.SetNeedsPaintInvalidationObject();
+    if (BackgroundColorInternal().HasAlpha() !=
+        other.BackgroundColorInternal().HasAlpha()) {
+      diff.SetHasAlphaChanged();
+      return;
+    }
+  }
+  if (!BackgroundInternal().VisuallyEqual(other.BackgroundInternal())) {
+    diff.SetNeedsPaintInvalidationObject();
+    // Changes of background fill layers, such as images, may have
+    // changed alpha.
+    diff.SetHasAlphaChanged();
+  }
 }
 
 bool ComputedStyle::DiffNeedsPaintInvalidationObjectForPaintImage(
@@ -764,14 +790,18 @@ bool ComputedStyle::CustomPropertiesEqual(
     const Vector<AtomicString>& properties,
     const ComputedStyle& other) const {
   // Short-circuit if neither of the styles have custom properties.
-  if (!InheritedVariables() && !NonInheritedVariables() &&
-      !other.InheritedVariables() && !other.NonInheritedVariables())
+  if (!HasVariables() && !other.HasVariables())
     return true;
 
   for (const AtomicString& property_name : properties) {
     if (!DataEquivalent(GetVariable(property_name),
-                        other.GetVariable(property_name)))
+                        other.GetVariable(property_name))) {
       return false;
+    }
+    if (!DataEquivalent(GetRegisteredVariable(property_name),
+                        other.GetRegisteredVariable(property_name))) {
+      return false;
+    }
   }
 
   return true;
@@ -853,7 +883,7 @@ void ComputedStyle::AddCursor(StyleImage* image,
                               bool hot_spot_specified,
                               const IntPoint& hot_spot) {
   if (!CursorDataInternal())
-    SetCursorDataInternal(new CursorList);
+    SetCursorDataInternal(MakeGarbageCollected<CursorList>());
   MutableCursorDataInternal()->push_back(
       CursorData(image, hot_spot_specified, hot_spot));
 }
@@ -1278,21 +1308,6 @@ bool ComputedStyle::CanRenderBorderImage() const {
   return border_image && border_image->CanRender() && border_image->IsLoaded();
 }
 
-static bool AllLayersAreFixed(const FillLayer& layer) {
-  for (const FillLayer* curr_layer = &layer; curr_layer;
-       curr_layer = curr_layer->Next()) {
-    if (!curr_layer->GetImage() ||
-        curr_layer->Attachment() != EFillAttachment::kFixed)
-      return false;
-  }
-
-  return true;
-}
-
-bool ComputedStyle::HasEntirelyFixedBackground() const {
-  return AllLayersAreFixed(BackgroundLayers());
-}
-
 const CounterDirectiveMap* ComputedStyle::GetCounterDirectives() const {
   return CounterDirectivesInternal().get();
 }
@@ -1634,6 +1649,15 @@ const Vector<AppliedTextDecoration>& ComputedStyle::AppliedTextDecorations()
   return AppliedTextDecorationsInternal()->GetVector();
 }
 
+static bool HasInitialVariables(const StyleInitialData* initial_data) {
+  return initial_data && initial_data->HasInitialVariables();
+}
+
+bool ComputedStyle::HasVariables() const {
+  return InheritedVariables() || NonInheritedVariables() ||
+         HasInitialVariables(InitialDataInternal().get());
+}
+
 StyleInheritedVariables* ComputedStyle::InheritedVariables() const {
   return InheritedVariablesInternal().get();
 }
@@ -1658,6 +1682,10 @@ StyleNonInheritedVariables& ComputedStyle::MutableNonInheritedVariables() {
   if (!variables)
     variables = StyleNonInheritedVariables::Create();
   return *variables;
+}
+
+void ComputedStyle::SetInitialData(scoped_refptr<StyleInitialData> data) {
+  MutableInitialDataInternal() = std::move(data);
 }
 
 void ComputedStyle::SetVariable(const AtomicString& name,
@@ -1705,7 +1733,36 @@ CSSVariableData* ComputedStyle::GetVariable(const AtomicString& name,
                                  : nullptr;
 }
 
+static const CSSValue* GetInitialRegisteredVariable(
+    const AtomicString& name,
+    const StyleInitialData* initial_data) {
+  if (!initial_data)
+    return nullptr;
+  return initial_data->GetInitialVariable(name);
+}
+
 const CSSValue* ComputedStyle::GetRegisteredVariable(
+    const AtomicString& name,
+    bool is_inherited_property) const {
+  const CSSValue* result =
+      GetNonInitialRegisteredVariable(name, is_inherited_property);
+  if (result)
+    return result;
+  return GetInitialRegisteredVariable(name, InitialDataInternal().get());
+}
+
+const CSSValue* ComputedStyle::GetRegisteredVariable(
+    const AtomicString& name) const {
+  const CSSValue* result = GetNonInitialRegisteredVariable(name, false);
+  if (result)
+    return result;
+  result = GetNonInitialRegisteredVariable(name, true);
+  if (result)
+    return result;
+  return GetInitialRegisteredVariable(name, InitialDataInternal().get());
+}
+
+const CSSValue* ComputedStyle::GetNonInitialRegisteredVariable(
     const AtomicString& name,
     bool is_inherited_property) const {
   if (is_inherited_property) {
@@ -1715,17 +1772,6 @@ const CSSValue* ComputedStyle::GetRegisteredVariable(
   return NonInheritedVariables()
              ? NonInheritedVariables()->RegisteredVariable(name)
              : nullptr;
-}
-
-const CSSValue* ComputedStyle::GetRegisteredVariable(
-    const AtomicString& name) const {
-  // Registered custom properties are by default non-inheriting so check there
-  // first.
-  const CSSValue* result = GetRegisteredVariable(name, false);
-  if (result) {
-    return result;
-  }
-  return GetRegisteredVariable(name, true);
 }
 
 bool ComputedStyle::SetFontDescription(const FontDescription& v) {

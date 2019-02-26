@@ -14,7 +14,7 @@ class AmbientLightSensor final : public Sensor {
 
  public:
   static AmbientLightSensor* Create(ExecutionContext*,
-                                    const SensorOptions&,
+                                    const SensorOptions*,
                                     ExceptionState&);
   static AmbientLightSensor* Create(ExecutionContext*, ExceptionState&);
 
@@ -23,7 +23,7 @@ class AmbientLightSensor final : public Sensor {
   void Trace(blink::Visitor*) override;
 
  private:
-  AmbientLightSensor(ExecutionContext*, const SensorOptions&, ExceptionState&);
+  AmbientLightSensor(ExecutionContext*, const SensorOptions*, ExceptionState&);
 };
 
 }  // namespace blink

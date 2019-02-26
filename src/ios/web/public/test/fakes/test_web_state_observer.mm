@@ -133,13 +133,6 @@ void TestWebStateObserver::DidChangeVisibleSecurityState(WebState* web_state) {
   did_change_visible_security_state_info_->web_state = web_state;
 }
 
-void TestWebStateObserver::DidSuppressDialog(WebState* web_state) {
-  ASSERT_EQ(web_state_, web_state);
-  did_suppress_dialog_info_ =
-      std::make_unique<web::TestDidSuppressDialogInfo>();
-  did_suppress_dialog_info_->web_state = web_state;
-}
-
 void TestWebStateObserver::FaviconUrlUpdated(
     WebState* web_state,
     const std::vector<FaviconURL>& candidates) {

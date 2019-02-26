@@ -79,6 +79,15 @@ void BrowsingDataDatabaseHelper::StartFetching(FetchCallback callback) {
                         identifier, base::UTF16ToUTF8(db),
                         base::UTF16ToUTF8(origin.GetDatabaseDescription(db)),
                         file_info.size, file_info.last_modified));
+                  } else {
+                    // This is an incognito database, so the file is not
+                    // accessible. This browsing data record will not be
+                    // user-visible, but is enumerated by test code, so produce
+                    // a dummy record for testing.
+                    result.push_back(DatabaseInfo(
+                        identifier, base::UTF16ToUTF8(db),
+                        base::UTF16ToUTF8(origin.GetDatabaseDescription(db)), 0,
+                        base::Time()));
                   }
                 }
               }

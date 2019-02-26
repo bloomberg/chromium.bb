@@ -28,6 +28,7 @@ class BrowserContext;
 
 namespace service_manager {
 class Connector;
+class Service;
 class TestConnectorFactory;
 }  // namespace service_manager
 
@@ -109,6 +110,9 @@ class TestExtensionSystem : public ExtensionSystem {
   OneShotEvent ready_;
   std::unique_ptr<service_manager::TestConnectorFactory> connector_factory_;
   std::unique_ptr<service_manager::Connector> connector_;
+
+  std::unique_ptr<service_manager::Service> data_decoder_;
+  std::unique_ptr<service_manager::Service> unzip_service_;
 
 #if defined(OS_CHROMEOS)
   std::unique_ptr<chromeos::ScopedTestUserManager> test_user_manager_;

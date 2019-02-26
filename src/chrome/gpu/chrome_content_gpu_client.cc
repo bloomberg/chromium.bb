@@ -9,6 +9,7 @@
 
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/time/time.h"
+#include "base/token.h"
 #include "build/build_config.h"
 #include "content/public/child/child_thread.h"
 #include "mojo/public/cpp/bindings/strong_binding.h"
@@ -101,7 +102,7 @@ void ChromeContentGpuClient::PostCompositorThreadCreated(
 
 #if BUILDFLAG(ENABLE_LIBRARY_CDMS)
 std::unique_ptr<media::CdmProxy> ChromeContentGpuClient::CreateCdmProxy(
-    const std::string& cdm_guid) {
+    const base::Token& cdm_guid) {
   if (cdm_guid == media::kClearKeyCdmGuid)
     return std::make_unique<media::ClearKeyCdmProxy>();
 

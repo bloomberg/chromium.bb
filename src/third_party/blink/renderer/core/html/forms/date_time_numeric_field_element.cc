@@ -25,7 +25,7 @@
 
 #include "third_party/blink/renderer/core/html/forms/date_time_numeric_field_element.h"
 
-#include "third_party/blink/renderer/core/css_property_names.h"
+#include "third_party/blink/renderer/core/css/css_property_names.h"
 #include "third_party/blink/renderer/core/css_value_keywords.h"
 #include "third_party/blink/renderer/core/events/keyboard_event.h"
 #include "third_party/blink/renderer/platform/fonts/font.h"
@@ -65,11 +65,11 @@ DateTimeNumericFieldElement::DateTimeNumericFieldElement(
   // We show a direction-neutral string such as "--" as a placeholder. It
   // should follow the direction of numeric values.
   if (LocaleForOwner().IsRTL()) {
-    WTF::Unicode::CharDirection dir =
-        WTF::Unicode::Direction(FormatValue(Maximum())[0]);
-    if (dir == WTF::Unicode::kLeftToRight ||
-        dir == WTF::Unicode::kEuropeanNumber ||
-        dir == WTF::Unicode::kArabicNumber) {
+    WTF::unicode::CharDirection dir =
+        WTF::unicode::Direction(FormatValue(Maximum())[0]);
+    if (dir == WTF::unicode::kLeftToRight ||
+        dir == WTF::unicode::kEuropeanNumber ||
+        dir == WTF::unicode::kArabicNumber) {
       SetInlineStyleProperty(CSSPropertyUnicodeBidi, CSSValueBidiOverride);
       SetInlineStyleProperty(CSSPropertyDirection, CSSValueLtr);
     }
@@ -115,7 +115,7 @@ String DateTimeNumericFieldElement::FormatValue(int value) const {
 void DateTimeNumericFieldElement::HandleKeyboardEvent(
     KeyboardEvent& keyboard_event) {
   DCHECK(!IsDisabled());
-  if (keyboard_event.type() != EventTypeNames::keypress)
+  if (keyboard_event.type() != event_type_names::kKeypress)
     return;
 
   UChar char_code = static_cast<UChar>(keyboard_event.charCode());

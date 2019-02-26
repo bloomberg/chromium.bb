@@ -73,7 +73,6 @@ void RulesRegistryService::Shutdown() {
   // be the last to reference the WebRequestRulesRegistry objects, so that
   // the posted task below causes their destruction on the IO thread, not on UI
   // where the destruction of |*this| takes place.
-  // TODO(vabr): Remove once http://crbug.com/218451#c6 gets addressed.
   rule_registries_.clear();
   base::PostTaskWithTraits(
       FROM_HERE, {content::BrowserThread::IO},

@@ -17,6 +17,7 @@
 #include "base/values.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chromeos/extensions/external_cache_impl.h"
+#include "chrome/browser/chromeos/login/demo_mode/demo_resources.h"
 #include "chrome/browser/chromeos/login/demo_mode/demo_session.h"
 #include "chrome/browser/chromeos/profiles/profile_helper.h"
 #include "chrome/browser/extensions/external_provider_impl.h"
@@ -126,10 +127,10 @@ std::string DemoExtensionsExternalLoader::GetInstalledExtensionVersion(
 
 void DemoExtensionsExternalLoader::StartLoadingFromOfflineDemoResources() {
   DemoSession* demo_session = DemoSession::Get();
-  DCHECK(demo_session->offline_resources_loaded());
+  DCHECK(demo_session->resources()->loaded());
 
   base::FilePath demo_extension_list =
-      demo_session->GetExternalExtensionsPrefsPath();
+      demo_session->resources()->GetExternalExtensionsPrefsPath();
   if (demo_extension_list.empty()) {
     LoadFinished(std::make_unique<base::DictionaryValue>());
     return;
@@ -180,8 +181,8 @@ void DemoExtensionsExternalLoader::DemoExternalExtensionsPrefsLoaded(
 
     dict_item.second.SetKey(
         extensions::ExternalProviderImpl::kExternalCrx,
-        base::Value(demo_session->GetOfflineResourceAbsolutePath(relative_path)
-                        .value()));
+        base::Value(
+            demo_session->resources()->GetAbsolutePath(relative_path).value()));
   }
 
   LoadFinished(base::DictionaryValue::From(

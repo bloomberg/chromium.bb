@@ -7,13 +7,17 @@
 #import <Foundation/Foundation.h>
 #include <memory>
 
+#include "base/feature_list.h"
 #include "base/mac/foundation_util.h"
 #include "ios/chrome/browser/browser_state/test_chrome_browser_state.h"
 #include "ios/chrome/browser/chrome_url_constants.h"
+#import "ios/chrome/browser/ntp/new_tab_page_tab_helper.h"
+#import "ios/chrome/browser/ntp/new_tab_page_tab_helper_delegate.h"
 #import "ios/chrome/browser/tabs/tab_model.h"
 #import "ios/chrome/browser/ui/tab_grid/grid/grid_commands.h"
 #import "ios/chrome/browser/ui/tab_grid/grid/grid_consumer.h"
 #import "ios/chrome/browser/ui/tab_grid/grid/grid_item.h"
+#include "ios/chrome/browser/ui/ui_feature_flags.h"
 #import "ios/chrome/browser/web/tab_id_tab_helper.h"
 #include "ios/chrome/browser/web_state_list/fake_web_state_list_delegate.h"
 #include "ios/chrome/browser/web_state_list/web_state_list.h"
@@ -88,6 +92,11 @@ class TabIdFakeWebStateListDelegate : public FakeWebStateListDelegate {
   // WebStateListDelegate implementation.
   void WillAddWebState(web::WebState* web_state) override {
     TabIdTabHelper::CreateForWebState(web_state);
+    // Create NTPTabHelper to ensure VisibleURL is set to kChromeUINewTabURL.
+    if (base::FeatureList::IsEnabled(kBrowserContainerContainsNTP)) {
+      id delegate = OCMProtocolMock(@protocol(NewTabPageTabHelperDelegate));
+      NewTabPageTabHelper::CreateForWebState(web_state, delegate);
+    }
   }
 };
 

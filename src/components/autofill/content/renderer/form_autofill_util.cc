@@ -19,6 +19,7 @@
 #include "base/no_destructor.h"
 #include "base/stl_util.h"
 #include "base/strings/string_number_conversions.h"
+#include "base/strings/string_split.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "build/build_config.h"
@@ -779,6 +780,42 @@ bool InferLabelForElement(const WebFormControlElement& element,
   return false;
 }
 
+base::string16 InferButtonTitleForForm(const WebFormElement& form_element) {
+  static base::NoDestructor<WebString> kSubmit("submit");
+  static base::NoDestructor<WebString> kButton("button");
+
+  base::string16 title;
+  WebVector<WebFormControlElement> control_elements;
+  form_element.GetFormControlElements(control_elements);
+  for (const WebFormControlElement& control_element : control_elements) {
+    bool is_submit_input =
+        control_element.FormControlTypeForAutofill() == *kSubmit;
+    bool is_button_input =
+        control_element.FormControlTypeForAutofill() == *kButton;
+    if (!is_submit_input && !is_button_input)
+      continue;
+    if (!control_element.Value().IsEmpty())
+      title = control_element.Value().Utf16() +
+              base::ASCIIToUTF16(is_submit_input ? "$" : "#") + title;
+    if (title.length() >= kMaxDataLength)
+      break;
+  }
+  WebElementCollection buttons =
+      form_element.GetElementsByHTMLTagName(*kButton);
+  for (WebElement item = buttons.FirstItem();
+       !item.IsNull() && title.length() <= kMaxDataLength;
+       item = buttons.NextItem()) {
+    if (!item.TextContent().IsEmpty()) {
+      bool is_submit_button =
+          item.HasAttribute("type") && item.GetAttribute("type") == *kSubmit;
+      title = item.TextContent().Utf16() +
+              base::ASCIIToUTF16(is_submit_button ? "&" : "%") + title;
+    }
+  }
+  TruncateString(&title, kMaxDataLength);
+  return title;
+}
+
 // Fills |option_strings| with the values of the <option> elements present in
 // |select_element|.
 void GetOptionStringsFromElement(const WebSelectElement& select_element,
@@ -845,6 +882,8 @@ void ForEachMatchingFormFieldCommon(
   // are appended to the end of the form and are not visible.
   for (size_t i = 0; i < control_elements->size(); ++i) {
     WebFormControlElement* element = &(*control_elements)[i];
+    element->SetAutofillSection(WebString::FromUTF8(data.fields[i].section));
+
     bool is_initiating_element = (*element == initiating_element);
 
     // Only autofill empty fields (or those with the field's default value
@@ -963,7 +1002,6 @@ void FillFormField(const FormFieldData& data,
     return;
 
   field->SetAutofillState(WebAutofillState::kAutofilled);
-  field->SetAutofillSection(WebString::FromUTF8(data.section));
 
   if (is_initiating_node &&
       ((IsTextInput(input_element) || IsMonthInput(input_element)) ||
@@ -1422,7 +1460,7 @@ bool IsWebElementVisible(const blink::WebElement& element) {
   return element.IsFocusable();
 }
 
-const base::string16 GetFormIdentifier(const WebFormElement& form) {
+base::string16 GetFormIdentifier(const WebFormElement& form) {
   base::string16 identifier = form.GetName().Utf16();
   static base::NoDestructor<WebString> kId("id");
   if (identifier.empty())
@@ -1475,6 +1513,7 @@ void WebFormControlElementToFormField(
   DCHECK(!element.IsNull());
   static base::NoDestructor<WebString> kAutocomplete("autocomplete");
   static base::NoDestructor<WebString> kId("id");
+  static base::NoDestructor<WebString> kName("name");
   static base::NoDestructor<WebString> kRole("role");
   static base::NoDestructor<WebString> kPlaceholder("placeholder");
   static base::NoDestructor<WebString> kClass("class");
@@ -1482,10 +1521,8 @@ void WebFormControlElementToFormField(
   // Save both id and name attributes, if present. If there is only one of them,
   // it will be saved to |name|. See HTMLFormControlElement::nameForAutofill.
   field->name = element.NameForAutofill().Utf16();
-  base::string16 id = element.GetAttribute(*kId).Utf16();
-  if (id != field->name)
-    field->id = id;
-
+  field->id_attribute = element.GetAttribute(*kId).Utf16();
+  field->name_attribute = element.GetAttribute(*kName).Utf16();
   field->unique_renderer_id = element.UniqueRendererFormControlId();
   field->form_control_type = element.FormControlTypeForAutofill().Utf8();
   field->autocomplete_attribute = element.GetAttribute(*kAutocomplete).Utf8();
@@ -1508,6 +1545,9 @@ void WebFormControlElementToFormField(
     field->properties_mask = field_data_manager->GetFieldPropertiesMask(
         element.UniqueRendererFormControlId());
   }
+
+  field->aria_label = GetAriaLabel(element.GetDocument(), element);
+  field->aria_description = GetAriaDescription(element.GetDocument(), element);
 
   if (!IsAutofillableElement(element))
     return;
@@ -1607,6 +1647,7 @@ bool WebFormElementToFormData(
   form->unique_renderer_id = form_element.UniqueRendererFormId();
   form->origin = GetCanonicalOriginForDocument(frame->GetDocument());
   form->action = GetCanonicalActionForForm(form_element);
+  form->button_title = InferButtonTitleForForm(form_element);
   if (frame->Top()) {
     form->main_frame_origin = frame->Top()->GetSecurityOrigin();
   } else {
@@ -1976,6 +2017,10 @@ bool InferLabelForElementForTesting(const WebFormControlElement& element,
   return InferLabelForElement(element, stop_words, label, label_source);
 }
 
+base::string16 InferButtonTitleForTesting(const WebFormElement& form_element) {
+  return InferButtonTitleForForm(form_element);
+}
+
 WebFormElement FindFormByUniqueRendererId(WebDocument doc,
                                           uint32_t form_renderer_id) {
   blink::WebVector<WebFormElement> forms;
@@ -2038,5 +2083,73 @@ std::vector<WebFormControlElement> FindFormControlElementsByUniqueRendererId(
   return result;
 }
 
+namespace {
+
+// Returns the coalesced child of the elements who's ids are founc in |id_list|.
+//
+// For example, given this document...
+//
+//      <div id="billing">Billing</div>
+//      <div>
+//        <div id="name">Name</div>
+//        <input id="field1" type="text" aria-labelledby="billing name"/>
+//     </div>
+//     <div>
+//       <div id="address">Address</div>
+//       <input id="field2" type="text" aria-labelledby="billing address"/>
+//     </div>
+//
+// The coalesced text by the id_list found in the aria-labelledby attribute
+// of the field1 input element would be "Billing Name" and for field2 it would
+// be "Billing Address".
+base::string16 CoalesceTextByIdList(const WebDocument& document,
+                                    const WebString& id_list) {
+  const base::string16 kSpace = base::ASCIIToUTF16(" ");
+
+  base::string16 text;
+  base::string16 id_list_utf16 = id_list.Utf16();
+  for (const auto& id : base::SplitStringPiece(
+           id_list_utf16, base::kWhitespaceUTF16, base::KEEP_WHITESPACE,
+           base::SPLIT_WANT_NONEMPTY)) {
+    auto node = document.GetElementById(WebString(id.data(), id.length()));
+    if (!node.IsNull()) {
+      base::string16 child_text = FindChildText(node);
+      if (!child_text.empty()) {
+        if (!text.empty())
+          text.append(kSpace);
+        text.append(child_text);
+      }
+    }
+  }
+  base::TrimWhitespace(text, base::TRIM_ALL, &text);
+  return text;
+}
+
+}  // namespace
+
+base::string16 GetAriaLabel(const blink::WebDocument& document,
+                            const WebFormControlElement& element) {
+  static const base::NoDestructor<WebString> kAriaLabelledBy("aria-labelledby");
+  if (element.HasAttribute(*kAriaLabelledBy)) {
+    base::string16 text =
+        CoalesceTextByIdList(document, element.GetAttribute(*kAriaLabelledBy));
+    if (!text.empty())
+      return text;
+  }
+
+  static const base::NoDestructor<WebString> kAriaLabel("aria-label");
+  if (element.HasAttribute(*kAriaLabel))
+    return element.GetAttribute(*kAriaLabel).Utf16();
+
+  return base::string16();
+}
+
+base::string16 GetAriaDescription(const blink::WebDocument& document,
+                                  const WebFormControlElement& element) {
+  static const base::NoDestructor<WebString> kAriaDescribedBy(
+      "aria-describedby");
+  return CoalesceTextByIdList(document,
+                              element.GetAttribute(*kAriaDescribedBy));
+}
 }  // namespace form_util
 }  // namespace autofill

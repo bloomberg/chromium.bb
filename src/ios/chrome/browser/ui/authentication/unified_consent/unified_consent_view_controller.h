@@ -26,8 +26,6 @@ extern NSString* const kUnifiedConsentScrollViewIdentifier;
 @property(nonatomic, assign, readonly) int openSettingsStringId;
 // Returns YES if the consent view is scrolled to the bottom.
 @property(nonatomic, assign, readonly) BOOL isScrolledToBottom;
-// Whether it is possible to interact with this ViewController.
-@property(nonatomic, assign) BOOL interactable;
 
 // -[UnifiedConsentViewController init] should be used.
 - (instancetype)initWithNibName:(NSString*)nibNameOrNil

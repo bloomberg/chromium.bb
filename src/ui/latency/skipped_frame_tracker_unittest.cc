@@ -75,6 +75,12 @@ class SkippedFrameTrackerTest : public testing::Test {
     return MaybeCallCountFailure(call_count);
   }
 
+  ::testing::AssertionResult WillNotProduceFrame() {
+    int call_count = client_.call_count_;
+    tracker_.WillNotProduceFrame();
+    return MaybeCallCountFailure(call_count);
+  }
+
   ::testing::AssertionResult WillProduceFrame() {
     int call_count = client_.call_count_;
     tracker_.WillProduceFrame();
@@ -241,6 +247,47 @@ TEST_F(SkippedFrameTrackerTest, NoSkips_ActiveIdleActive_JumpInIdle) {
   EXPECT_TRUE(tracker_.IsActive());
 }
 
+// Active, Set idle after WillProduceFrame, then active again.
+TEST_F(SkippedFrameTrackerTest, WillNotProduceFrame) {
+  EXPECT_TRUE(BeginFrame(100, 10));
+  EXPECT_TRUE(WillProduceFrame());
+  EXPECT_TRUE(DidProduceFrame());
+  VERIFY_ADD_PRODUCED_CALLED(100, 10, 0);
+  EXPECT_TRUE(FinishFrame());
+  EXPECT_TRUE(tracker_.IsActive());
+
+  EXPECT_TRUE(BeginFrame(110, 10));
+  EXPECT_TRUE(WillNotProduceFrame());
+  EXPECT_FALSE(tracker_.IsActive());
+
+  EXPECT_TRUE(WillProduceFrame());
+  EXPECT_TRUE(BeginFrame(200, 10));
+  EXPECT_TRUE(DidProduceFrame());
+  VERIFY_ADD_PRODUCED_CALLED(200, 10, 0);
+  EXPECT_TRUE(FinishFrame());
+  EXPECT_TRUE(tracker_.IsActive());
+}
+
+// Active, idle, then active again.
+TEST_F(SkippedFrameTrackerTest, WillNotProduceFrame2) {
+  EXPECT_TRUE(BeginFrame(100, 10));
+  EXPECT_TRUE(WillProduceFrame());
+  EXPECT_TRUE(DidProduceFrame());
+  VERIFY_ADD_PRODUCED_CALLED(100, 10, 0);
+  EXPECT_TRUE(FinishFrame());
+  EXPECT_TRUE(tracker_.IsActive());
+
+  EXPECT_TRUE(WillNotProduceFrame());
+  EXPECT_FALSE(tracker_.IsActive());
+
+  EXPECT_TRUE(WillProduceFrame());
+  EXPECT_TRUE(BeginFrame(200, 10));
+  EXPECT_TRUE(DidProduceFrame());
+  VERIFY_ADD_PRODUCED_CALLED(200, 10, 0);
+  EXPECT_TRUE(FinishFrame());
+  EXPECT_TRUE(tracker_.IsActive());
+}
+
 // If frames are pulled from later in the pipeline when the source hasn't tried
 // to create a new frame, it should not be recorded as a frame produced
 // by the source.
@@ -345,6 +392,18 @@ TEST_F(SkippedFrameTrackerTest, NoSkips_ActiveIdleActive_FramePulledIsPush) {
   EXPECT_TRUE(BeginFrame(110, 10));
   EXPECT_TRUE(FinishFrame());
   EXPECT_FALSE(tracker_.IsActive());
+}
+
+// Simulate that SetNeedsRedraw is called, then the client realized that it
+// doesn't need a new BeginFrame.
+TEST_F(SkippedFrameTrackerTest, NoFrameProduced) {
+  EXPECT_TRUE(WillProduceFrame());
+  EXPECT_TRUE(WillNotProduceFrame());
+
+  // Since no BeginFrame is needed, number of frames produced and the number
+  // of skipped frames should all be 0.
+  EXPECT_EQ(0, client_.amount_produced_);
+  EXPECT_EQ(0, client_.amount_skipped_);
 }
 
 }  // namespace

@@ -44,7 +44,7 @@ WebGLExtensionName WebGLDebugShaders::GetName() const {
 
 WebGLDebugShaders* WebGLDebugShaders::Create(
     WebGLRenderingContextBase* context) {
-  return new WebGLDebugShaders(context);
+  return MakeGarbageCollected<WebGLDebugShaders>(context);
 }
 
 String WebGLDebugShaders::getTranslatedShaderSource(WebGLShader* shader) {

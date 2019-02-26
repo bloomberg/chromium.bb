@@ -44,7 +44,7 @@ class PageTestBase : public testing::Test {
   PendingAnimations& GetPendingAnimations();
   FocusController& GetFocusController() const;
 
-  void UpdateAllLifecyclePhases();
+  void UpdateAllLifecyclePhasesForTest();
 
   // Load the 'Ahem' font to the LocalFrame.
   // The 'Ahem' font is the only font whose font metrics is consistent across

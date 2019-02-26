@@ -12,17 +12,19 @@
 
 #include "base/bind.h"
 #include "base/files/scoped_temp_dir.h"
+#include "base/memory/ref_counted.h"
+#include "base/test/metrics/histogram_tester.h"
 #include "base/test/mock_callback.h"
 #include "base/test/scoped_task_environment.h"
 #include "base/test/simple_test_clock.h"
 #include "base/threading/sequenced_task_runner_handle.h"
+#include "components/image_fetcher/core/cache/image_cache.h"
+#include "components/image_fetcher/core/cache/image_data_store_disk.h"
+#include "components/image_fetcher/core/cache/image_metadata_store_leveldb.h"
+#include "components/image_fetcher/core/cache/proto/cached_image_metadata.pb.h"
 #include "components/image_fetcher/core/fake_image_decoder.h"
 #include "components/image_fetcher/core/image_fetcher_impl.h"
 #include "components/image_fetcher/core/image_fetcher_types.h"
-#include "components/image_fetcher/core/storage/image_cache.h"
-#include "components/image_fetcher/core/storage/image_data_store_disk.h"
-#include "components/image_fetcher/core/storage/image_metadata_store_leveldb.h"
-#include "components/image_fetcher/core/storage/proto/cached_image_metadata.pb.h"
 #include "components/leveldb_proto/testing/fake_db.h"
 #include "components/prefs/testing_pref_service.h"
 #include "net/traffic_annotation/network_traffic_annotation_test_helper.h"
@@ -46,6 +48,15 @@ namespace {
 const GURL kImageUrl = GURL("http://gstatic.img.com/foo.jpg");
 constexpr char kImageData[] = "data";
 
+const char kCachedImageFetcherEventHistogramName[] =
+    "CachedImageFetcher.Events";
+const char kCacheLoadHistogramName[] =
+    "CachedImageFetcher.ImageLoadFromCacheTime";
+const char kNetworkLoadHistogramName[] =
+    "CachedImageFetcher.ImageLoadFromNetworkTime";
+const char kNetworkLoadAfterCacheHitHistogram[] =
+    "CachedImageFetcher.ImageLoadFromNetworkAfterCacheHit";
+
 }  // namespace
 
 class ComponentizedCachedImageFetcherTest : public testing::Test {
@@ -61,7 +72,11 @@ class ComponentizedCachedImageFetcherTest : public testing::Test {
 
   void SetUp() override {
     ASSERT_TRUE(data_dir_.CreateUniqueTempDir());
+    ImageCache::RegisterProfilePrefs(test_prefs_.registry());
+    CreateCachedImageFetcher(false);
+  }
 
+  void CreateCachedImageFetcher(bool read_only) {
     auto db =
         std::make_unique<FakeDB<CachedImageMetadataProto>>(&metadata_store_);
     db_ = db.get();
@@ -71,12 +86,11 @@ class ComponentizedCachedImageFetcherTest : public testing::Test {
     auto data_store = std::make_unique<ImageDataStoreDisk>(
         data_dir_.GetPath(), base::SequencedTaskRunnerHandle::Get());
 
-    ImageCache::RegisterProfilePrefs(test_prefs_.registry());
-    auto image_cache = std::make_unique<ImageCache>(
+    image_cache_ = base::MakeRefCounted<ImageCache>(
         std::move(data_store), std::move(metadata_store), &test_prefs_, &clock_,
         base::SequencedTaskRunnerHandle::Get());
-    image_cache_ = image_cache.get();
 
+    // Use an initial request to start the cache up.
     image_cache_->SaveImage(kImageUrl.spec(), kImageData);
     RunUntilIdle();
     db_->InitCallback(true);
@@ -93,7 +107,7 @@ class ComponentizedCachedImageFetcherTest : public testing::Test {
     cached_image_fetcher_ = std::make_unique<CachedImageFetcher>(
         std::make_unique<image_fetcher::ImageFetcherImpl>(std::move(decoder),
                                                           shared_factory_),
-        std::move(image_cache));
+        image_cache_, read_only);
 
     RunUntilIdle();
   }
@@ -103,11 +117,12 @@ class ComponentizedCachedImageFetcherTest : public testing::Test {
   CachedImageFetcher* cached_image_fetcher() {
     return cached_image_fetcher_.get();
   }
-  ImageCache* image_cache() { return image_cache_; }
+  scoped_refptr<ImageCache> image_cache() { return image_cache_; }
   FakeImageDecoder* image_decoder() { return fake_image_decoder_; }
   network::TestURLLoaderFactory* test_url_loader_factory() {
     return &test_url_loader_factory_;
   }
+  base::HistogramTester& histogram_tester() { return histogram_tester_; }
 
   MOCK_METHOD1(OnImageLoaded, void(std::string));
 
@@ -117,7 +132,7 @@ class ComponentizedCachedImageFetcherTest : public testing::Test {
   scoped_refptr<network::SharedURLLoaderFactory> shared_factory_;
   FakeImageDecoder* fake_image_decoder_;
 
-  ImageCache* image_cache_;
+  scoped_refptr<ImageCache> image_cache_;
   base::SimpleTestClock clock_;
   TestingPrefServiceSimple test_prefs_;
   base::ScopedTempDir data_dir_;
@@ -125,6 +140,7 @@ class ComponentizedCachedImageFetcherTest : public testing::Test {
   std::map<std::string, CachedImageMetadataProto> metadata_store_;
 
   base::test::ScopedTaskEnvironment scoped_task_environment_;
+  base::HistogramTester histogram_tester_;
 
   DISALLOW_COPY_AND_ASSIGN(ComponentizedCachedImageFetcherTest);
 };
@@ -141,6 +157,8 @@ MATCHER(NonEmptyString, "") {
   return !arg.empty();
 }
 
+// TODO(wylieb): Write a test that creates two CachedImageFetcher and tests
+// that they both can use what's inside.
 // TODO(wylieb): Rename these tests CachedImageFetcherTest* when ntp_snippets/-
 //               remote/cached_image_fetcher has been migrated.
 TEST_F(ComponentizedCachedImageFetcherTest, FetchImageFromCache) {
@@ -158,6 +176,53 @@ TEST_F(ComponentizedCachedImageFetcherTest, FetchImageFromCache) {
       TRAFFIC_ANNOTATION_FOR_TESTS);
 
   RunUntilIdle();
+
+  histogram_tester().ExpectTotalCount(kCacheLoadHistogramName, 1);
+  histogram_tester().ExpectBucketCount(kCachedImageFetcherEventHistogramName,
+                                       CachedImageFetcherEvent::kImageRequest,
+                                       1);
+  histogram_tester().ExpectBucketCount(kCachedImageFetcherEventHistogramName,
+                                       CachedImageFetcherEvent::kCacheHit, 1);
+}
+
+TEST_F(ComponentizedCachedImageFetcherTest, FetchImageFromCacheReadOnly) {
+  CreateCachedImageFetcher(/* read_only */ true);
+  // Save the image in the database.
+  image_cache()->SaveImage(kImageUrl.spec(), kImageData);
+  test_url_loader_factory()->AddResponse(kImageUrl.spec(), kImageData);
+  RunUntilIdle();
+  {
+    // Even if there's a decoding error, read_only cache shouldn't alter the
+    // cache.
+    image_decoder()->SetDecodingValid(false);
+    base::MockCallback<ImageDataFetcherCallback> data_callback;
+    base::MockCallback<ImageFetcherCallback> image_callback;
+    EXPECT_CALL(image_callback, Run(kImageUrl.spec(), EmptyImage(), _));
+    cached_image_fetcher()->FetchImageAndData(
+        kImageUrl.spec(), kImageUrl, data_callback.Get(), image_callback.Get(),
+        TRAFFIC_ANNOTATION_FOR_TESTS);
+    RunUntilIdle();
+
+    histogram_tester().ExpectBucketCount(kCachedImageFetcherEventHistogramName,
+                                         CachedImageFetcherEvent::kImageRequest,
+                                         1);
+    histogram_tester().ExpectBucketCount(kCachedImageFetcherEventHistogramName,
+                                         CachedImageFetcherEvent::kCacheHit, 1);
+    histogram_tester().ExpectBucketCount(
+        kCachedImageFetcherEventHistogramName,
+        CachedImageFetcherEvent::kCacheDecodingError, 1);
+  }
+  {
+    // Image should still be in the cache.
+    image_decoder()->SetDecodingValid(true);
+    base::MockCallback<ImageDataFetcherCallback> data_callback;
+    base::MockCallback<ImageFetcherCallback> image_callback;
+    EXPECT_CALL(image_callback, Run(kImageUrl.spec(), NonEmptyImage(), _));
+    cached_image_fetcher()->FetchImageAndData(
+        kImageUrl.spec(), kImageUrl, data_callback.Get(), image_callback.Get(),
+        TRAFFIC_ANNOTATION_FOR_TESTS);
+    RunUntilIdle();
+  }
 }
 
 TEST_F(ComponentizedCachedImageFetcherTest, FetchImagePopulatesCache) {
@@ -175,12 +240,20 @@ TEST_F(ComponentizedCachedImageFetcherTest, FetchImagePopulatesCache) {
         TRAFFIC_ANNOTATION_FOR_TESTS);
 
     RunUntilIdle();
+
+    histogram_tester().ExpectTotalCount(kNetworkLoadHistogramName, 1);
+    histogram_tester().ExpectBucketCount(kCachedImageFetcherEventHistogramName,
+                                         CachedImageFetcherEvent::kImageRequest,
+                                         1);
+    histogram_tester().ExpectBucketCount(kCachedImageFetcherEventHistogramName,
+                                         CachedImageFetcherEvent::kCacheMiss,
+                                         1);
   }
   // Make sure the image data is in the database.
   {
     EXPECT_CALL(*this, OnImageLoaded(NonEmptyString()));
     image_cache()->LoadImage(
-        kImageUrl.spec(),
+        /* read_only */ false, kImageUrl.spec(),
         base::BindOnce(&ComponentizedCachedImageFetcherTest::OnImageLoaded,
                        base::Unretained(this)));
     RunUntilIdle();
@@ -202,30 +275,62 @@ TEST_F(ComponentizedCachedImageFetcherTest, FetchImagePopulatesCache) {
   }
 }
 
-TEST_F(ComponentizedCachedImageFetcherTest, DecodingErrorWillDeleteCache) {
-  // Save the image in the database.
-  image_cache()->SaveImage(kImageUrl.spec(), kImageData);
-  RunUntilIdle();
+TEST_F(ComponentizedCachedImageFetcherTest, FetchImagePopulatesCacheReadOnly) {
+  CreateCachedImageFetcher(/* read_only */ true);
+  // Expect the image to be fetched by URL.
   {
-    // Set decoding always error.
-    image_decoder()->SetDecodingValid(false);
+    test_url_loader_factory()->AddResponse(kImageUrl.spec(), kImageData);
 
+    base::MockCallback<ImageDataFetcherCallback> data_callback;
     base::MockCallback<ImageFetcherCallback> image_callback;
-    cached_image_fetcher()->FetchImage(kImageUrl.spec(), kImageUrl,
-                                       image_callback.Get(),
-                                       TRAFFIC_ANNOTATION_FOR_TESTS);
+
+    EXPECT_CALL(data_callback, Run(NonEmptyString(), _));
+    EXPECT_CALL(image_callback, Run(kImageUrl.spec(), NonEmptyImage(), _));
+    cached_image_fetcher()->FetchImageAndData(
+        kImageUrl.spec(), kImageUrl, data_callback.Get(), image_callback.Get(),
+        TRAFFIC_ANNOTATION_FOR_TESTS);
 
     RunUntilIdle();
+
+    histogram_tester().ExpectTotalCount(kNetworkLoadHistogramName, 1);
+    histogram_tester().ExpectBucketCount(kCachedImageFetcherEventHistogramName,
+                                         CachedImageFetcherEvent::kImageRequest,
+                                         1);
+    histogram_tester().ExpectBucketCount(kCachedImageFetcherEventHistogramName,
+                                         CachedImageFetcherEvent::kCacheMiss,
+                                         1);
   }
-  // Make sure the image data was deleted from database.
+  // Make sure the image data is not in the database.
   {
     EXPECT_CALL(*this, OnImageLoaded(std::string()));
     image_cache()->LoadImage(
-        kImageUrl.spec(),
+        /* read_only */ false, kImageUrl.spec(),
         base::BindOnce(&ComponentizedCachedImageFetcherTest::OnImageLoaded,
                        base::Unretained(this)));
     RunUntilIdle();
   }
+}
+
+TEST_F(ComponentizedCachedImageFetcherTest, FetchDecodingErrorDeletesCache) {
+  // Save the image in the database.
+  image_cache()->SaveImage(kImageUrl.spec(), kImageData);
+  RunUntilIdle();
+
+  image_decoder()->SetDecodingValid(false);
+  base::MockCallback<ImageDataFetcherCallback> data_callback;
+  base::MockCallback<ImageFetcherCallback> image_callback;
+  EXPECT_CALL(data_callback, Run(NonEmptyString(), _));
+  EXPECT_CALL(image_callback, Run(kImageUrl.spec(), EmptyImage(), _));
+  test_url_loader_factory()->AddResponse(kImageUrl.spec(), kImageData);
+  cached_image_fetcher()->FetchImageAndData(
+      kImageUrl.spec(), kImageUrl, data_callback.Get(), image_callback.Get(),
+      TRAFFIC_ANNOTATION_FOR_TESTS);
+  RunUntilIdle();
+
+  histogram_tester().ExpectTotalCount(kNetworkLoadAfterCacheHitHistogram, 1);
+  histogram_tester().ExpectBucketCount(
+      kCachedImageFetcherEventHistogramName,
+      CachedImageFetcherEvent::kTranscodingError, 1);
 }
 
 }  // namespace image_fetcher

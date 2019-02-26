@@ -27,11 +27,11 @@ class NavigatorBattery final : public GarbageCollected<NavigatorBattery>,
   static ScriptPromise getBattery(ScriptState*, Navigator&);
   ScriptPromise getBattery(ScriptState*);
 
+  explicit NavigatorBattery(Navigator&);
+
   void Trace(blink::Visitor*) override;
 
  private:
-  explicit NavigatorBattery(Navigator&);
-
   Member<BatteryManager> battery_manager_;
 };
 

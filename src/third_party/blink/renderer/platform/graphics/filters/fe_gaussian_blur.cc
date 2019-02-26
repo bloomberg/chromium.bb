@@ -60,7 +60,7 @@ FEGaussianBlur::FEGaussianBlur(Filter* filter, float x, float y)
     : FilterEffect(filter), std_x_(x), std_y_(y) {}
 
 FEGaussianBlur* FEGaussianBlur::Create(Filter* filter, float x, float y) {
-  return new FEGaussianBlur(filter, x, y);
+  return MakeGarbageCollected<FEGaussianBlur>(filter, x, y);
 }
 
 FloatRect FEGaussianBlur::MapEffect(const FloatSize& std_deviation,
@@ -81,8 +81,8 @@ FloatRect FEGaussianBlur::MapEffect(const FloatRect& rect) const {
 }
 
 sk_sp<PaintFilter> FEGaussianBlur::CreateImageFilter() {
-  sk_sp<PaintFilter> input(
-      PaintFilterBuilder::Build(InputEffect(0), OperatingInterpolationSpace()));
+  sk_sp<PaintFilter> input(paint_filter_builder::Build(
+      InputEffect(0), OperatingInterpolationSpace()));
   float std_x = GetFilter()->ApplyHorizontalScale(std_x_);
   float std_y = GetFilter()->ApplyVerticalScale(std_y_);
   PaintFilter::CropRect rect = GetCropRect();

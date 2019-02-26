@@ -13,7 +13,7 @@ namespace switches {
 const char kAudioBufferSize[] = "audio-buffer-size";
 
 // Set a timeout (in milliseconds) for the audio service to quit if there are no
-// client connections to it. If the value is zero the service never quits.
+// client connections to it. If the value is negative the service never quits.
 const char kAudioServiceQuitTimeoutMs[] = "audio-service-quit-timeout-ms";
 
 // Command line flag name to set the autoplay policy.
@@ -195,10 +195,6 @@ const char kUserGestureRequiredForCrossOriginPolicy[] =
 
 namespace media {
 
-// Use new audio rendering mixer.
-const base::Feature kNewAudioRenderingMixingStrategy{
-    "NewAudioRenderingMixingStrategy", base::FEATURE_DISABLED_BY_DEFAULT};
-
 // Only used for disabling overlay fullscreen (aka SurfaceView) in Clank.
 const base::Feature kOverlayFullscreenVideo{"overlay-fullscreen-video",
                                             base::FEATURE_ENABLED_BY_DEFAULT};
@@ -228,6 +224,10 @@ const base::Feature kResumeBackgroundVideo {
 #endif
 };
 
+// Enable Media Capabilities with finch-parameters.
+const base::Feature kMediaCapabilitiesWithParameters{
+    "MediaCapabilitiesWithParameters", base::FEATURE_ENABLED_BY_DEFAULT};
+
 // Display the Cast overlay button on the media controls.
 const base::Feature kMediaCastOverlayButton{"MediaCastOverlayButton",
                                             base::FEATURE_ENABLED_BY_DEFAULT};
@@ -240,10 +240,6 @@ const base::Feature kUseAndroidOverlay{"UseAndroidOverlay",
 // requires that |kUseAndroidOverlay| is true, else it is ignored.
 const base::Feature kUseAndroidOverlayAggressively{
     "UseAndroidOverlayAggressively", base::FEATURE_ENABLED_BY_DEFAULT};
-
-// Enables playback of AV1 video files.
-const base::Feature kAv1Decoder{"Av1Decoder",
-                                base::FEATURE_ENABLED_BY_DEFAULT};
 
 // Let video track be unselected when video is playing in the background.
 const base::Feature kBackgroundSrcVideoTrackOptimization{
@@ -259,14 +255,15 @@ const base::Feature kBackgroundVideoPauseOptimization{
 const base::Feature kMemoryPressureBasedSourceBufferGC{
     "MemoryPressureBasedSourceBufferGC", base::FEATURE_DISABLED_BY_DEFAULT};
 
-// Enable MojoVideoDecoder.  On Android, we use this by default.  Elsewhere,
-// it's experimental.
+// Enable MojoVideoDecoder, replacing GpuVideoDecoder.
 const base::Feature kMojoVideoDecoder {
   "MojoVideoDecoder",
-#if defined(OS_ANDROID)
-      base::FEATURE_ENABLED_BY_DEFAULT
-#else
+#if defined(OS_CHROMEOS)
+      // TODO(posciak): Re-enable once the feature is verified on CrOS.
+      // https://crbug.com/902968.
       base::FEATURE_DISABLED_BY_DEFAULT
+#else
+      base::FEATURE_ENABLED_BY_DEFAULT
 #endif
 };
 
@@ -341,7 +338,7 @@ const base::Feature kUseSurfaceLayerForVideoPIP{
 
 // Enable VA-API hardware encode acceleration for VP8.
 const base::Feature kVaapiVP8Encoder{"VaapiVP8Encoder",
-                                     base::FEATURE_DISABLED_BY_DEFAULT};
+                                     base::FEATURE_ENABLED_BY_DEFAULT};
 
 // Inform video blitter of video color space.
 const base::Feature kVideoBlitColorAccuracy{"video-blit-color-accuracy",
@@ -360,6 +357,10 @@ const base::Feature kExternalClearKeyForTesting{
 const base::Feature kHardwareSecureDecryption{
     "HardwareSecureDecryption", base::FEATURE_DISABLED_BY_DEFAULT};
 
+// Enables handling of hardware media keys for controlling media.
+const base::Feature kHardwareMediaKeyHandling{
+    "HardwareMediaKeyHandling", base::FEATURE_DISABLED_BY_DEFAULT};
+
 // Limits number of media tags loading in parallel to 6. This speeds up
 // preloading of any media that requires multiple requests to preload.
 const base::Feature kLimitParallelMediaPreloading{
@@ -374,7 +375,7 @@ const base::Feature kLowDelayVideoRenderingOnLiveStream{
 // autoplay policy will be hardcoded to be the legacy one on based on the
 // platform
 const base::Feature kAutoplayIgnoreWebAudio{"AutoplayIgnoreWebAudio",
-                                            base::FEATURE_ENABLED_BY_DEFAULT};
+                                            base::FEATURE_DISABLED_BY_DEFAULT};
 
 // Whether we should show a setting to disable autoplay policy.
 const base::Feature kAutoplayDisableSettings{"AutoplayDisableSettings",
@@ -382,7 +383,7 @@ const base::Feature kAutoplayDisableSettings{"AutoplayDisableSettings",
 
 // Whether we should allow autoplay whitelisting via sounds settings.
 const base::Feature kAutoplayWhitelistSettings{
-    "AutoplayWhitelistSettings", base::FEATURE_DISABLED_BY_DEFAULT};
+    "AutoplayWhitelistSettings", base::FEATURE_ENABLED_BY_DEFAULT};
 
 #if defined(OS_ANDROID)
 // Enable a gesture to make the media controls expaned into the display cutout.

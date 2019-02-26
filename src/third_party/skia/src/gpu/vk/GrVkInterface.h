@@ -8,11 +8,12 @@
 #ifndef GrVkInterface_DEFINED
 #define GrVkInterface_DEFINED
 
+#include "GrVkVulkan.h"
+
 #include "SkRefCnt.h"
 
 #include "vk/GrVkBackendContext.h"
 #include "vk/GrVkTypes.h"
-#include "vk/GrVkDefines.h"
 
 class GrVkExtensions;
 
@@ -218,6 +219,10 @@ public:
 
         // Functions for VK_KHR_external_memory_capabilities
         VkPtr<PFN_vkGetPhysicalDeviceExternalBufferProperties> fGetPhysicalDeviceExternalBufferProperties;
+
+        // Functions for YCBCRConversion
+        VkPtr<PFN_vkCreateSamplerYcbcrConversion> fCreateSamplerYcbcrConversion;
+        VkPtr<PFN_vkDestroySamplerYcbcrConversion> fDestroySamplerYcbcrConversion;
 
 #ifdef SK_BUILD_FOR_ANDROID
         // Functions for VK_ANDROID_external_memory_android_hardware_buffer

@@ -25,57 +25,17 @@
 #include "third_party/blink/renderer/core/html/forms/html_legend_element.h"
 
 #include "third_party/blink/renderer/core/dom/document.h"
-#include "third_party/blink/renderer/core/dom/element_traversal.h"
-#include "third_party/blink/renderer/core/frame/use_counter.h"
 #include "third_party/blink/renderer/core/html/forms/html_field_set_element.h"
-#include "third_party/blink/renderer/core/html/forms/html_form_control_element.h"
 #include "third_party/blink/renderer/core/html_names.h"
 
 namespace blink {
 
-using namespace HTMLNames;
+using namespace html_names;
 
 inline HTMLLegendElement::HTMLLegendElement(Document& document)
-    : HTMLElement(legendTag, document) {}
+    : HTMLElement(kLegendTag, document) {}
 
 DEFINE_NODE_FACTORY(HTMLLegendElement)
-
-HTMLFormControlElement* HTMLLegendElement::AssociatedControl() {
-  // Check if there's a fieldset belonging to this legend.
-  HTMLFieldSetElement* fieldset =
-      Traversal<HTMLFieldSetElement>::FirstAncestor(*this);
-  if (!fieldset)
-    return nullptr;
-
-  // Find first form element inside the fieldset that is not a legend element.
-  // FIXME: Should we consider tabindex?
-  if (auto* control =
-          Traversal<HTMLFormControlElement>::Next(*fieldset, fieldset)) {
-    UseCounter::Count(GetDocument(),
-                      WebFeature::kLegendDelegateFocusOrAccessKey);
-    return control;
-  }
-  return nullptr;
-}
-
-void HTMLLegendElement::focus(const FocusParams& params) {
-  GetDocument().UpdateStyleAndLayoutTreeForNode(this);
-  if (IsFocusable()) {
-    Element::focus(params);
-    return;
-  }
-
-  // To match other browsers' behavior, never restore previous selection.
-  if (HTMLFormControlElement* control = AssociatedControl()) {
-    control->focus(FocusParams(SelectionBehaviorOnFocus::kReset, params.type,
-                               params.source_capabilities, params.options));
-  }
-}
-
-void HTMLLegendElement::AccessKeyAction(bool send_mouse_events) {
-  if (HTMLFormControlElement* control = AssociatedControl())
-    control->AccessKeyAction(send_mouse_events);
-}
 
 HTMLFormElement* HTMLLegendElement::form() const {
   // According to the specification, If the legend has a fieldset element as

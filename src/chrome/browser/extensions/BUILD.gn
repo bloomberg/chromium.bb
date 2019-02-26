@@ -9,6 +9,7 @@ import("//chrome/common/features.gni")
 import("//components/nacl/features.gni")
 import("//extensions/buildflags/buildflags.gni")
 import("//mojo/public/tools/bindings/mojom.gni")
+import("//pdf/features.gni")
 import("//rlz/buildflags/buildflags.gni")
 
 assert(enable_extensions)
@@ -226,8 +227,6 @@ jumbo_static_library("extensions") {
     "api/image_writer_private/write_from_file_operation.h",
     "api/image_writer_private/write_from_url_operation.cc",
     "api/image_writer_private/write_from_url_operation.h",
-    "api/inline_install_private/inline_install_private_api.cc",
-    "api/inline_install_private/inline_install_private_api.h",
     "api/instance_id/instance_id_api.cc",
     "api/instance_id/instance_id_api.h",
     "api/language_settings_private/language_settings_private_api.cc",
@@ -254,7 +253,6 @@ jumbo_static_library("extensions") {
     "api/metrics_private/chrome_metrics_private_delegate.h",
     "api/module/module.cc",
     "api/module/module.h",
-    "api/networking_private/networking_private_credentials_getter_chromeos.cc",
     "api/networking_private/networking_private_ui_delegate_chromeos.cc",
     "api/networking_private/networking_private_ui_delegate_chromeos.h",
     "api/networking_private/networking_private_ui_delegate_factory_impl.cc",
@@ -771,6 +769,7 @@ jumbo_static_library("extensions") {
     "//chrome/app/theme:chrome_unscaled_resources",
     "//chrome/app/theme:theme_resources",
     "//chrome/app/vector_icons",
+    "//chrome/browser:theme_properties",
     "//chrome/browser/devtools",
     "//chrome/browser/engagement:mojo_bindings",
     "//chrome/browser/media/router",
@@ -847,6 +846,7 @@ jumbo_static_library("extensions") {
     "//content/public/common",
     "//crypto",
     "//device/bluetooth",
+    "//device/fido",
     "//extensions:extensions_resources",
     "//extensions/browser",
     "//extensions/browser:core_api_provider",
@@ -863,6 +863,7 @@ jumbo_static_library("extensions") {
     "//services/audio/public/cpp",
     "//services/data_decoder/public/cpp",
     "//services/device/public/mojom",
+    "//services/identity/public/cpp",
     "//services/identity/public/mojom",
     "//services/network/public/mojom",
     "//services/service_manager/public/cpp",
@@ -926,8 +927,6 @@ jumbo_static_library("extensions") {
       "api/platform_keys/platform_keys_api.h",
       "api/platform_keys/verify_trust_api.cc",
       "api/platform_keys/verify_trust_api.h",
-      "api/screenlock_private/screenlock_private_api.cc",
-      "api/screenlock_private/screenlock_private_api.h",
       "api/settings_private/chromeos_resolve_time_zone_by_geolocation_method_short.cc",
       "api/settings_private/chromeos_resolve_time_zone_by_geolocation_method_short.h",
       "api/settings_private/chromeos_resolve_time_zone_by_geolocation_on_off.cc",
@@ -941,10 +940,6 @@ jumbo_static_library("extensions") {
       "api/virtual_keyboard_private/chrome_virtual_keyboard_delegate.cc",
       "api/virtual_keyboard_private/chrome_virtual_keyboard_delegate.h",
       "api/vpn_provider/vpn_service_factory.cc",
-      "api/webstore_widget_private/app_installer.cc",
-      "api/webstore_widget_private/app_installer.h",
-      "api/webstore_widget_private/webstore_widget_private_api.cc",
-      "api/webstore_widget_private/webstore_widget_private_api.h",
       "chrome_kiosk_delegate_chromeos.cc",
       "updater/chromeos_extension_cache_delegate.cc",
       "updater/chromeos_extension_cache_delegate.h",
@@ -966,7 +961,6 @@ jumbo_static_library("extensions") {
       "//chromeos/services/machine_learning/public/mojom",
       "//chromeos/services/media_perception/public/mojom",
       "//components/arc",
-      "//components/chrome_apps",
       "//components/constrained_window",
       "//components/drive",
       "//components/user_manager",
@@ -990,8 +984,6 @@ jumbo_static_library("extensions") {
     sources += [
       "api/enterprise_reporting_private/chrome_desktop_report_request_helper.cc",
       "api/enterprise_reporting_private/chrome_desktop_report_request_helper.h",
-      "api/enterprise_reporting_private/enterprise_reporting_policy_migrator.cc",
-      "api/enterprise_reporting_private/enterprise_reporting_policy_migrator.h",
       "api/enterprise_reporting_private/enterprise_reporting_private_api.cc",
       "api/enterprise_reporting_private/enterprise_reporting_private_api.h",
       "api/enterprise_reporting_private/prefs.cc",
@@ -1057,9 +1049,6 @@ jumbo_static_library("extensions") {
       "api/networking_cast_private/chrome_networking_cast_private_delegate.h",
       "api/networking_cast_private/networking_cast_private_api.cc",
       "api/networking_cast_private/networking_cast_private_api.h",
-      "api/networking_private/networking_private_credentials_getter.h",
-      "api/networking_private/networking_private_credentials_getter_mac.cc",
-      "api/networking_private/networking_private_credentials_getter_win.cc",
     ]
     deps += [ "//components/wifi" ]
   }
@@ -1110,6 +1099,13 @@ jumbo_static_library("extensions") {
     sources += [
       "api/mdns/mdns_api.cc",
       "api/mdns/mdns_api.h",
+    ]
+  }
+
+  if (enable_pdf) {
+    deps += [
+      "//pdf:buildflags",
+      "//pdf:features",
     ]
   }
 

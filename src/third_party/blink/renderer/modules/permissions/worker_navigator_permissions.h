@@ -25,11 +25,11 @@ class WorkerNavigatorPermissions final
   static WorkerNavigatorPermissions& From(WorkerNavigator&);
   static Permissions* permissions(WorkerNavigator&);
 
+  WorkerNavigatorPermissions();
+
   void Trace(blink::Visitor*) override;
 
  private:
-  WorkerNavigatorPermissions();
-
   Member<Permissions> permissions_;
 };
 

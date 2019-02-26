@@ -29,6 +29,7 @@ QuicReceivedPacketManager::QuicReceivedPacketManager(QuicConnectionStats* stats)
       ack_frame_updated_(false),
       max_ack_ranges_(0),
       time_largest_observed_(QuicTime::Zero()),
+      save_timestamps_(false),
       stats_(stats) {}
 
 QuicReceivedPacketManager::~QuicReceivedPacketManager() {}
@@ -60,8 +61,19 @@ void QuicReceivedPacketManager::RecordPacketReceived(
   }
   ack_frame_.packets.Add(packet_number);
 
-  ack_frame_.received_packet_times.push_back(
-      std::make_pair(packet_number, receipt_time));
+  if (save_timestamps_) {
+    // The timestamp format only handles packets in time order.
+    if (!ack_frame_.received_packet_times.empty() &&
+        ack_frame_.received_packet_times.back().second > receipt_time) {
+      LOG(WARNING)
+          << "Receive time went backwards from: "
+          << ack_frame_.received_packet_times.back().second.ToDebuggingValue()
+          << " to " << receipt_time.ToDebuggingValue();
+    } else {
+      ack_frame_.received_packet_times.push_back(
+          std::make_pair(packet_number, receipt_time));
+    }
+  }
 }
 
 bool QuicReceivedPacketManager::IsMissing(QuicPacketNumber packet_number) {

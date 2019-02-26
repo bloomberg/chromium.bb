@@ -8,13 +8,12 @@
 #include "third_party/blink/renderer/core/core_export.h"
 #include "third_party/blink/renderer/core/layout/ng/geometry/ng_box_strut.h"
 #include "third_party/blink/renderer/core/layout/ng/geometry/ng_logical_offset.h"
-#include "third_party/blink/renderer/platform/layout_unit.h"
+#include "third_party/blink/renderer/platform/geometry/layout_unit.h"
 #include "third_party/blink/renderer/platform/text/writing_mode.h"
 
 namespace blink {
 
 struct NGLogicalOffset;
-struct NGPhysicalSize;
 #define NGSizeIndefinite LayoutUnit(-1)
 
 // NGLogicalSize is the size of rect (typically a fragment) in the logical
@@ -24,11 +23,18 @@ struct CORE_EXPORT NGLogicalSize {
   NGLogicalSize(LayoutUnit inline_size, LayoutUnit block_size)
       : inline_size(inline_size), block_size(block_size) {}
 
+  // Use ToNGPhysicalSize to convert to a physical size.
+
   LayoutUnit inline_size;
   LayoutUnit block_size;
 
-  NGPhysicalSize ConvertToPhysical(WritingMode mode) const;
-  bool operator==(const NGLogicalSize& other) const;
+  bool operator==(const NGLogicalSize& other) const {
+    return std::tie(other.inline_size, other.block_size) ==
+           std::tie(inline_size, block_size);
+  }
+  bool operator!=(const NGLogicalSize& other) const {
+    return !(*this == other);
+  }
 
   bool IsEmpty() const {
     return inline_size == LayoutUnit() || block_size == LayoutUnit();

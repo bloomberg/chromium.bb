@@ -13,7 +13,6 @@
 #include <vector>
 
 #include "base/macros.h"
-#include "base/memory/linked_ptr.h"
 #include "components/autofill/content/common/autofill_agent.mojom.h"
 #include "components/autofill/content/common/autofill_driver.mojom.h"
 #include "components/autofill/content/renderer/renderer_save_password_progress_logger.h"
@@ -80,6 +79,10 @@ class PasswordGenerationAgent : public content::RenderFrameObserver,
   // Called right before PasswordAutofillAgent filled |password_element|.
   void OnFieldAutofilled(const blink::WebInputElement& password_element);
 
+  // Returns true iff the currently handled 'blur' event is fake and should be
+  // ignored.
+  bool ShouldIgnoreBlur() const;
+
 #if defined(UNIT_TEST)
   // This method requests the autofill::mojom::PasswordManagerClient which binds
   // requests the binding if it wasn't bound yet.
@@ -95,16 +98,11 @@ class PasswordGenerationAgent : public content::RenderFrameObserver,
   void set_enabled(bool enabled) { enabled_ = enabled; }
 
  private:
-  struct AccountCreationFormData {
-    linked_ptr<PasswordForm> form;
-    std::vector<blink::WebInputElement> password_elements;
-
-    AccountCreationFormData(
-        linked_ptr<PasswordForm> form,
-        std::vector<blink::WebInputElement> password_elements);
-    AccountCreationFormData(const AccountCreationFormData& other);
-    ~AccountCreationFormData();
-  };
+  // Contains information about a form for which generation is possible.
+  struct AccountCreationFormData;
+  // Contains information about generation status for an element for the
+  // lifetime of the possible interaction.
+  struct GenerationItemInfo;
 
   typedef std::vector<AccountCreationFormData> AccountCreationFormDataList;
 
@@ -123,9 +121,10 @@ class PasswordGenerationAgent : public content::RenderFrameObserver,
   // |possible_account_creation_form_|.
   void FindPossibleGenerationForm();
 
-  // Helper function to decide if |passwords_| contains password fields for
-  // an account creation form. Sets |generation_element_| to the field that
-  // we want to trigger the generation UI on.
+  // Helper function to decide if |possible_account_creation_forms_| contains
+  // password fields for an account creation form. Sets
+  // |automatic_generation_element_| to the field that we want to trigger the
+  // generation UI on.
   void DetermineGenerationElement();
 
   // Helper function which takes care of the form processing and collecting the
@@ -186,48 +185,27 @@ class PasswordGenerationAgent : public content::RenderFrameObserver,
   // forms will not be sent if the feature is disabled.
   std::vector<autofill::PasswordFormGenerationData> generation_enabled_forms_;
 
-  // Data for form which generation is allowed on.
-  std::unique_ptr<AccountCreationFormData> generation_form_data_;
+  // Data for form which automatic generation is allowed on.
+  std::unique_ptr<AccountCreationFormData> automatic_generation_form_data_;
 
-  // Element where we want to trigger password generation UI.
-  blink::WebInputElement generation_element_;
+  // Element where we want to trigger automatic password generation UI on.
+  blink::WebInputElement automatic_generation_element_;
+
+  // Contains the current element where generation is offered at the moment. It
+  // can be either automatic or manual password generation.
+  std::unique_ptr<GenerationItemInfo> current_generation_item_;
 
   // Password element that had focus last. Since Javascript could change focused
   // element after the user triggered a generation request, it is better to save
   // the last focused password element.
   blink::WebInputElement last_focused_password_element_;
 
-  // If the password field at |generation_element_| contains a generated
-  // password.
-  bool password_is_generated_;
-
-  // True if the last password generation was manually triggered.
-  bool is_manually_triggered_;
-
-  // True if a password was generated and the user edited it. Used for UMA
-  // stats.
-  bool password_edited_;
-
-  // True if the generation popup was shown during this navigation. Used to
-  // track UMA stats per page visit rather than per display, since the former
-  // is more interesting.
-  // TODO(crbug.com/845458): Remove this or change the description of the
-  // logged event as calling AutomaticgenerationStatusChanged will no longer
-  // imply that a popup is shown. This could instead be logged with the
-  // metrics collected on the browser process.
-  bool generation_popup_shown_;
-
-  // True if the editing popup was shown during this navigation. Used to track
-  // UMA stats per page rather than per display, since the former is more
-  // interesting.
-  bool editing_popup_shown_;
-
   // If this feature is enabled. Controlled by Finch.
   bool enabled_;
 
   // True iff the generation element should be marked with special HTML
   // attribute (only for experimental purposes).
-  bool mark_generation_element_;
+  const bool mark_generation_element_;
 
   // Unowned pointer. Used to notify PassowrdAutofillAgent when values
   // in password fields are updated.

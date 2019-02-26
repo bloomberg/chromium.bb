@@ -32,7 +32,7 @@ class ServiceDirectoryTestBase : public testing::Test {
 
   void ConnectClientContextToDirectory(const char* path);
   void VerifyTestInterface(fidl::InterfacePtr<testfidl::TestInterface>* stub,
-                           bool expect_error);
+                           zx_status_t expected_error);
 
  protected:
   MessageLoopForIO message_loop_;

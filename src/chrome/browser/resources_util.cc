@@ -9,7 +9,7 @@
 #include <utility>
 
 #include "base/containers/flat_map.h"
-#include "base/lazy_instance.h"
+#include "base/no_destructor.h"
 #include "build/build_config.h"
 #include "chrome/grit/theme_resources_map.h"
 #include "components/grit/components_scaled_resources_map.h"
@@ -22,15 +22,22 @@
 namespace {
 
 // A wrapper class that holds a map between resource strings and resource
-// ids.  This is done so we can use base::LazyInstance which takes care of
+// ids.  This is done so we can use base::NoDestructor which takes care of
 // thread safety in initializing the map for us.
 class ThemeMap {
  public:
-  typedef base::flat_map<std::string, int> StringIntMap;
+  using StringIntMap = base::flat_map<std::string, int>;
 
   ThemeMap() {
+    size_t storage_size =
+        kComponentsScaledResourcesSize + kThemeResourcesSize + kUiResourcesSize;
+#if defined(OS_CHROMEOS)
+    storage_size += kUiChromeosResourcesSize;
+#endif
+
     // Construct in one-shot from a moved vector.
     std::vector<StringIntMap::value_type> storage;
+    storage.reserve(storage_size);
 
     for (size_t i = 0; i < kComponentsScaledResourcesSize; ++i) {
       storage.emplace_back(kComponentsScaledResources[i].name,
@@ -52,22 +59,22 @@ class ThemeMap {
     id_map_ = StringIntMap(std::move(storage), base::KEEP_FIRST_OF_DUPES);
   }
 
-  int GetId(const std::string& resource_name) {
+  int GetId(const std::string& resource_name) const {
     auto it = id_map_.find(resource_name);
-    if (it == id_map_.end())
-      return -1;
-    return it->second;
+    return it != id_map_.end() ? it->second : -1;
   }
 
  private:
   StringIntMap id_map_;
 };
 
-static base::LazyInstance<ThemeMap>::DestructorAtExit g_theme_ids =
-    LAZY_INSTANCE_INITIALIZER;
+ThemeMap& GetThemeIdsMap() {
+  static base::NoDestructor<ThemeMap> s;
+  return *s;
+}
 
 }  // namespace
 
 int ResourcesUtil::GetThemeResourceId(const std::string& resource_name) {
-  return g_theme_ids.Get().GetId(resource_name);
+  return GetThemeIdsMap().GetId(resource_name);
 }

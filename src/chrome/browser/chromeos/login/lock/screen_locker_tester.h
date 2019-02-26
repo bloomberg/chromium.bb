@@ -5,50 +5,35 @@
 #ifndef CHROME_BROWSER_CHROMEOS_LOGIN_LOCK_SCREEN_LOCKER_TESTER_H_
 #define CHROME_BROWSER_CHROMEOS_LOGIN_LOCK_SCREEN_LOCKER_TESTER_H_
 
+#include <memory>
 #include <string>
 
-namespace views {
-class Widget;
-}  // namespace views
+class AccountId;
 
 namespace chromeos {
 
 class UserContext;
 
-namespace test {
-
-// ScreenLockerTester provides access to the private state/function
-// of ScreenLocker class. Used to implement unit tests.
+// ScreenLockerTester provides a high-level API to test the lock screen. This
+// API is meant to be representation independent.
 class ScreenLockerTester {
  public:
+  // Create a new tester.
+  static std::unique_ptr<ScreenLockerTester> Create();
+
   ScreenLockerTester();
   virtual ~ScreenLockerTester();
 
   // Returns true if the screen is locked.
-  virtual bool IsLocked();
+  virtual bool IsLocked() = 0;
 
   // Injects StubAuthenticator that uses the credentials in |user_context|.
   virtual void InjectStubUserContext(const UserContext& user_context);
 
-  // Sets the password text.
-  virtual void SetPassword(const std::string& password) = 0;
-
-  // Gets the password text.
-  virtual std::string GetPassword() = 0;
-
-  // Emulates entring a password.
-  virtual void EnterPassword(const std::string& password) = 0;
-
-  // Emulates the ready message from window manager.
-  virtual void EmulateWindowManagerReady() = 0;
-
-  // Returns the widget for screen locker window.
-  virtual views::Widget* GetWidget() const = 0;
-
-  virtual views::Widget* GetChildWidget() const = 0;
+  // Enters and submits the given password.
+  virtual void EnterPassword(const AccountId& account_id,
+                             const std::string& password) = 0;
 };
-
-}  // namespace test
 
 }  // namespace chromeos
 

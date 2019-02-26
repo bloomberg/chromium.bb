@@ -14,6 +14,7 @@
 #include "ui/gfx/native_widget_types.h"
 
 namespace gfx {
+
 class Rect;
 }
 
@@ -38,7 +39,7 @@ class AXPlatformNode;
 // otherwise.
 class AX_EXPORT AXPlatformNodeDelegate {
  public:
-  virtual ~AXPlatformNodeDelegate() {}
+  virtual ~AXPlatformNodeDelegate() = default;
 
   // Get the accessibility data that should be exposed for this node.
   // Virtually all of the information is obtained from this structure
@@ -49,8 +50,9 @@ class AX_EXPORT AXPlatformNodeDelegate {
   // Get the accessibility tree data for this node.
   virtual const AXTreeData& GetTreeData() const = 0;
 
-  // Get the window the node is contained in.
-  virtual gfx::NativeWindow GetTopLevelWidget() = 0;
+  // Get the accessibility node for the NSWindow the node is contained in. This
+  // method is only meaningful on macOS.
+  virtual gfx::NativeViewAccessible GetNSWindow() = 0;
 
   // Get the parent of the node, which may be an AXPlatformNode or it may
   // be a native accessible object implemented by another class.
@@ -118,12 +120,14 @@ class AX_EXPORT AXPlatformNodeDelegate {
 
   virtual int GetTableRowCount() const = 0;
   virtual int GetTableColCount() const = 0;
-  virtual std::vector<int32_t> GetColHeaderNodeIds() const = 0;
-  virtual std::vector<int32_t> GetColHeaderNodeIds(int32_t col_index) const = 0;
-  virtual std::vector<int32_t> GetRowHeaderNodeIds() const = 0;
-  virtual std::vector<int32_t> GetRowHeaderNodeIds(int32_t row_index) const = 0;
+  virtual const std::vector<int32_t> GetColHeaderNodeIds() const = 0;
+  virtual const std::vector<int32_t> GetColHeaderNodeIds(
+      int32_t col_index) const = 0;
+  virtual const std::vector<int32_t> GetRowHeaderNodeIds() const = 0;
+  virtual const std::vector<int32_t> GetRowHeaderNodeIds(
+      int32_t row_index) const = 0;
   virtual int32_t GetCellId(int32_t row_index, int32_t col_index) const = 0;
-  virtual int32_t CellIdToIndex(int32_t cell_id) const = 0;
+  virtual int32_t GetTableCellIndex() const = 0;
   virtual int32_t CellIndexToId(int32_t cell_index) const = 0;
 
   //
@@ -153,7 +157,7 @@ class AX_EXPORT AXPlatformNodeDelegate {
   virtual bool ShouldIgnoreHoveredStateForTesting() = 0;
 
  protected:
-  AXPlatformNodeDelegate() {}
+  AXPlatformNodeDelegate() = default;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(AXPlatformNodeDelegate);

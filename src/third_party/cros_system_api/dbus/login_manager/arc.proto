@@ -14,6 +14,8 @@ message StartArcMiniContainerRequest {
   optional bool native_bridge_experiment = 1 [default = false];
   // The density value passed to "ro.sf.lcd_density" property.
   optional int32 lcd_density = 2 [default = -1];
+  // Experiment flag for go/arc-file-picker.
+  optional bool arc_file_picker_experiment = 3 [default = false];
 }
 
 // ARC upgrade options sent from Chrome to session manager. This message is used
@@ -57,7 +59,7 @@ message UpgradeArcContainerRequest {
 
   // Option to notify ARC if the account is a child, allowing us to provide
   // special behavior for child account on ARC.
-  optional bool is_child = 9;
+  optional bool OBSOLETE_is_child = 9 [deprecated = true];
 
   // Whether the container is being upgraded for a Chrome OS demo session.
   optional bool is_demo_session = 10;
@@ -78,5 +80,8 @@ message UpgradeArcContainerRequest {
   // a non-supervised state, and vice-versa.
   optional SupervisionTransition supervision_transition = 11;
 
-  // Next ID to use: 12
+  // Temporary flag to support transition.
+  optional bool create_socket_in_chrome = 12 [default = false];
+
+  // Next ID to use: 13
 }

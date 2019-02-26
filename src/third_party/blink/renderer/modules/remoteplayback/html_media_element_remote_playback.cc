@@ -16,7 +16,7 @@ namespace blink {
 bool HTMLMediaElementRemotePlayback::FastHasAttribute(
     const QualifiedName& name,
     const HTMLMediaElement& element) {
-  DCHECK(name == HTMLNames::disableremoteplaybackAttr);
+  DCHECK(name == html_names::kDisableremoteplaybackAttr);
   return element.FastHasAttribute(name);
 }
 
@@ -25,7 +25,7 @@ void HTMLMediaElementRemotePlayback::SetBooleanAttribute(
     const QualifiedName& name,
     HTMLMediaElement& element,
     bool value) {
-  DCHECK(name == HTMLNames::disableremoteplaybackAttr);
+  DCHECK(name == html_names::kDisableremoteplaybackAttr);
   element.SetBooleanAttribute(name, value);
 
   HTMLMediaElementRemotePlayback& self =
@@ -41,7 +41,7 @@ HTMLMediaElementRemotePlayback& HTMLMediaElementRemotePlayback::From(
       Supplement<HTMLMediaElement>::From<HTMLMediaElementRemotePlayback>(
           element);
   if (!supplement) {
-    supplement = new HTMLMediaElementRemotePlayback();
+    supplement = MakeGarbageCollected<HTMLMediaElementRemotePlayback>();
     ProvideTo(element, supplement);
   }
   return *supplement;

@@ -39,6 +39,14 @@ cr.define('media_router_container_test_base', function() {
             // contents.
             continue;
           }
+          if ((id === 'search-results' || id === 'no-search-matches') &&
+              !elementIdList.includes('search-results-container')) {
+            // If 'search-results-container' is already expected to be hidden,
+            // don't check search-results or no-search-matches which are
+            // children of it. Polymer2 optimizes <dom-if>s that are false, by
+            // no longer updating its contents.
+            continue;
+          }
 
           checkElementVisibleWithId(false, id);
         }
@@ -202,6 +210,7 @@ cr.define('media_router_container_test_base', function() {
       'no-search-matches',
       'route-details',
       'search-results',
+      'search-results-container',
       'sink-list',
       'sink-list-view',
     ];

@@ -23,6 +23,8 @@ class PasswordManager;
 // Defines the interface the driver needs to the controller.
 @protocol PasswordManagerDriverDelegate
 
+@property(readonly, nonatomic) const GURL& lastCommittedURL;
+
 - (password_manager::PasswordManager*)passwordManager;
 
 // Finds and fills the password form using the supplied |formData| to
@@ -67,6 +69,7 @@ class IOSChromePasswordManagerDriver
       override;
   autofill::AutofillDriver* GetAutofillDriver() override;
   bool IsMainFrame() const override;
+  GURL GetLastCommittedURL() const override;
 
  private:
   id<PasswordManagerDriverDelegate> delegate_;  // (weak)

@@ -14,6 +14,7 @@ namespace blink {
 class MockP2PQuicTransportFactory
     : public testing::NiceMock<P2PQuicTransportFactory> {
  public:
+  MockP2PQuicTransportFactory() = default;
   MockP2PQuicTransportFactory(
       std::unique_ptr<MockP2PQuicTransport> mock_transport,
       P2PQuicTransport::Delegate** delegate_out = nullptr)
@@ -23,24 +24,29 @@ class MockP2PQuicTransportFactory
       // Ensure the caller has not left the delegate_out value floating.
       DCHECK_EQ(nullptr, *delegate_out);
     }
+    ON_CALL(*this, CreateQuicTransport(testing::_, testing::_, testing::_))
+        .WillByDefault(
+            testing::Invoke([this](P2PQuicTransport::Delegate* delegate,
+                                   P2PQuicPacketTransport* packet_transport,
+                                   const P2PQuicTransportConfig& config) {
+              DCHECK(mock_transport_);
+              if (delegate_out_) {
+                *delegate_out_ = delegate;
+              }
+              return std::move(mock_transport_);
+            }));
   }
 
   // P2PQuicTransportFactory overrides.
-  std::unique_ptr<P2PQuicTransport> CreateQuicTransport(
-      P2PQuicTransportConfig config) {
-    DCHECK(mock_transport_);
-    OnCreateQuicTransport(config);
-    if (delegate_out_) {
-      *delegate_out_ = config.delegate;
-    }
-    return std::move(mock_transport_);
-  }
-
-  MOCK_METHOD1(OnCreateQuicTransport, void(const P2PQuicTransportConfig&));
+  MOCK_METHOD3(CreateQuicTransport,
+               std::unique_ptr<P2PQuicTransport>(
+                   P2PQuicTransport::Delegate* delegate,
+                   P2PQuicPacketTransport* packet_transport,
+                   const P2PQuicTransportConfig& config));
 
  private:
   std::unique_ptr<MockP2PQuicTransport> mock_transport_;
-  P2PQuicTransport::Delegate** delegate_out_;
+  P2PQuicTransport::Delegate** delegate_out_ = nullptr;
 };
 
 }  // namespace blink

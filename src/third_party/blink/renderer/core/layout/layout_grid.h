@@ -132,11 +132,6 @@ class LayoutGrid final : public LayoutBlock {
       LayoutUnit& min_logical_width,
       LayoutUnit& max_logical_width) const override;
 
-  LayoutUnit ComputeIntrinsicLogicalContentHeightUsing(
-      const Length& logical_height_length,
-      LayoutUnit intrinsic_content_height,
-      LayoutUnit border_and_padding) const override;
-
   void AddChild(LayoutObject* new_child,
                 LayoutObject* before_child = nullptr) override;
   void RemoveChild(LayoutObject*) override;
@@ -184,10 +179,11 @@ class LayoutGrid final : public LayoutBlock {
   GridTrackSizingDirection AutoPlacementMajorAxisDirection() const;
   GridTrackSizingDirection AutoPlacementMinorAxisDirection() const;
 
-  void ComputeTrackSizesForIndefiniteSize(GridTrackSizingAlgorithm&,
-                                          GridTrackSizingDirection,
-                                          LayoutUnit& min_intrinsic_size,
-                                          LayoutUnit& max_intrinsic_size) const;
+  void ComputeTrackSizesForIndefiniteSize(
+      GridTrackSizingAlgorithm&,
+      GridTrackSizingDirection,
+      LayoutUnit* min_intrinsic_size = nullptr,
+      LayoutUnit* max_intrinsic_size = nullptr) const;
   void ComputeTrackSizesForDefiniteSize(GridTrackSizingDirection,
                                         LayoutUnit free_space);
 
@@ -318,9 +314,6 @@ class LayoutGrid final : public LayoutBlock {
       OutOfFlowPositionsMap;
   OutOfFlowPositionsMap column_of_positioned_item_;
   OutOfFlowPositionsMap row_of_positioned_item_;
-
-  LayoutUnit min_content_height_{-1};
-  LayoutUnit max_content_height_{-1};
 
   bool has_any_orthogonal_item_{false};
   bool baseline_items_cached_{false};

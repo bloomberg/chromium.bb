@@ -36,38 +36,42 @@ const char kReport[] = "report";
 }  // namespace
 
 SecurityPolicyViolationEvent::SecurityPolicyViolationEvent(
-    const AtomicString& type,
-    const SecurityPolicyViolationEventInit& initializer)
+    const AtomicString& type)
     : Event(type, Bubbles::kYes, Cancelable::kNo, ComposedMode::kComposed),
       disposition_(kContentSecurityPolicyHeaderTypeEnforce),
       line_number_(0),
       column_number_(0),
-      status_code_(0) {
-  if (initializer.hasDocumentURI())
-    document_uri_ = initializer.documentURI();
-  if (initializer.hasReferrer())
-    referrer_ = initializer.referrer();
-  if (initializer.hasBlockedURI())
-    blocked_uri_ = initializer.blockedURI();
-  if (initializer.hasViolatedDirective())
-    violated_directive_ = initializer.violatedDirective();
-  if (initializer.hasEffectiveDirective())
-    effective_directive_ = initializer.effectiveDirective();
-  if (initializer.hasOriginalPolicy())
-    original_policy_ = initializer.originalPolicy();
-  disposition_ = initializer.disposition() == kReport
+      status_code_(0) {}
+
+SecurityPolicyViolationEvent::SecurityPolicyViolationEvent(
+    const AtomicString& type,
+    const SecurityPolicyViolationEventInit* initializer)
+    : SecurityPolicyViolationEvent(type) {
+  if (initializer->hasDocumentURI())
+    document_uri_ = initializer->documentURI();
+  if (initializer->hasReferrer())
+    referrer_ = initializer->referrer();
+  if (initializer->hasBlockedURI())
+    blocked_uri_ = initializer->blockedURI();
+  if (initializer->hasViolatedDirective())
+    violated_directive_ = initializer->violatedDirective();
+  if (initializer->hasEffectiveDirective())
+    effective_directive_ = initializer->effectiveDirective();
+  if (initializer->hasOriginalPolicy())
+    original_policy_ = initializer->originalPolicy();
+  disposition_ = initializer->disposition() == kReport
                      ? kContentSecurityPolicyHeaderTypeReport
                      : kContentSecurityPolicyHeaderTypeEnforce;
-  if (initializer.hasSourceFile())
-    source_file_ = initializer.sourceFile();
-  if (initializer.hasLineNumber())
-    line_number_ = initializer.lineNumber();
-  if (initializer.hasColumnNumber())
-    column_number_ = initializer.columnNumber();
-  if (initializer.hasStatusCode())
-    status_code_ = initializer.statusCode();
-  if (initializer.hasSample())
-    sample_ = initializer.sample();
+  if (initializer->hasSourceFile())
+    source_file_ = initializer->sourceFile();
+  if (initializer->hasLineNumber())
+    line_number_ = initializer->lineNumber();
+  if (initializer->hasColumnNumber())
+    column_number_ = initializer->columnNumber();
+  if (initializer->hasStatusCode())
+    status_code_ = initializer->statusCode();
+  if (initializer->hasSample())
+    sample_ = initializer->sample();
 }
 
 const String& SecurityPolicyViolationEvent::disposition() const {

@@ -1,9 +1,11 @@
-#!/usr/bin/env python
 # Copyright (c) 2012 The Chromium Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
 '''Count number of occurrences of a given message ID.'''
+
+import getopt
+import sys
 
 from grit import grd_reader
 from grit.tool import interface
@@ -18,7 +20,21 @@ class CountMessage(interface.Tool):
   def ShortDescription(self):
     return 'Count the number of times a given message ID is used.'
 
+  def ParseOptions(self, args):
+    """Set this objects and return all non-option arguments."""
+    own_opts, args = getopt.getopt(args, '', ('help',))
+    for key, val in own_opts:
+      if key == '--help':
+        self.ShowUsage()
+        sys.exit(0)
+    return args
+
   def Run(self, opts, args):
+    args = self.ParseOptions(args)
+    if len(args) != 1:
+      print ('This tool takes a single tool-specific argument, the message '
+             'ID to count.')
+      return 2
     self.SetOptions(opts)
 
     id = args[0]

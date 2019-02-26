@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-// Next MinVersion: 17
+// Next MinVersion: 19
 
 module arc.mojom;
 
@@ -172,6 +172,16 @@ enum MetricsType {
   [MinVersion=9] ACCOUNT_CHECK_MILLISECONDS = 4,
 };
 
+// These values describe the type of account update.
+[Extensible]
+enum AccountUpdateType {
+  // An account was updated or inserted in Chrome OS Account Manager.
+  UPSERT = 0,
+
+  // An account was removed from Chrome OS Account Manager.
+  REMOVAL = 1,
+};
+
 // The necessary information for Android to sign in and provision itself.
 struct AccountInfo {
   // Name of account, used to map to existing Android account.
@@ -199,8 +209,12 @@ interface AuthHost {
   // Notifies Chrome that the authorization flow is completed and provides
   // resulting |status|. If |initial_signin| is true then this indicates that
   // authorization happened for initial device provisioning.
-  [MinVersion=11] OnAuthorizationComplete@10(ArcSignInStatus status,
-                                             bool initial_signin);
+  // If |account_name| is not present, it is assumed to be the Primary/Device
+  // account. It cannot/must not be supplied when |initial_signin| is true.
+  [MinVersion=11] OnAuthorizationComplete@10(
+      ArcSignInStatus status,
+      bool initial_signin,
+      [MinVersion=18] string? account_name);
 
   // Notifies Chrome that the sign-in is completed successfully.
   [MinVersion=2] OnSignInCompleteDeprecated@2();
@@ -249,7 +263,7 @@ interface AuthHost {
       => (ArcSignInStatus status, AccountInfo? account_info);
 };
 
-// Next Method ID: 3
+// Next Method ID: 4
 interface AuthInstance {
   // DEPRECATED: Please use Init@2 instead.
   InitDeprecated@0(AuthHost host_ptr);
@@ -267,4 +281,11 @@ interface AuthInstance {
   // than SUCCESS, and |account_info| is null.
   [MinVersion=5] OnAccountInfoReadyDeprecated@1(
       AccountInfo? account_info, [MinVersion=10] ArcSignInStatus status);
+
+  // A notification that an account was updated (or inserted, or removed; see
+  // |AccountUpdateType|) in Chrome OS Account Manager.
+  // This notification is sent for the Primary/Device Account and Secondary
+  // Accounts, both.
+  [MinVersion=17] OnAccountUpdated@3(
+      string account_name, AccountUpdateType update_type);
 };

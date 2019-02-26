@@ -117,7 +117,7 @@ function frameToTreeItem(frame) {
  * Initialize and return a tree item representing the WebContentsInfo object
  * and contains all frames in it as a subtree.
  * @param {mojom.WebContentsInfo} webContents
- * @return {cr.ui.TreeItem}
+ * @return {!cr.ui.TreeItem}
  */
 function webContentsToTreeItem(webContents) {
   let itemLabel = 'WebContents: ';
@@ -144,7 +144,8 @@ function webContentsToTreeItem(webContents) {
 /**
  * This is a callback which is invoked when the data for WebContents
  * associated with the browser profile is received from the browser process.
- * @param {mojom.ProcessInternalsHandler_GetAllWebContentsInfo_ResponseParams} input
+ * @param {mojom.ProcessInternalsHandler_GetAllWebContentsInfo_ResponseParams}
+ *     input
  */
 function populateWebContentsTab(input) {
   let tree = getTreeViewRoot();
@@ -170,8 +171,7 @@ document.addEventListener('DOMContentLoaded', function() {
   // Setup Mojo interface to the backend.
   uiHandler = new mojom.ProcessInternalsHandlerPtr;
   Mojo.bindInterface(
-      mojom.ProcessInternalsHandler.name,
-      mojo.makeRequest(uiHandler).handle);
+      mojom.ProcessInternalsHandler.name, mojo.makeRequest(uiHandler).handle);
 
   // Get the Site Isolation mode and populate it.
   uiHandler.getIsolationMode().then((response) => {
@@ -189,5 +189,4 @@ document.addEventListener('DOMContentLoaded', function() {
 
   $('refresh-button').addEventListener('click', loadWebContentsInfo);
 });
-
 })();

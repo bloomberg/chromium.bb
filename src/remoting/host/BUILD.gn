@@ -54,6 +54,10 @@ process_version("remoting_version") {
 # stripping code.
 static_library("host") {
   sources = [
+    "action_executor.cc",
+    "action_executor.h",
+    "action_message_handler.cc",
+    "action_message_handler.h",
     "audio_capturer.cc",
     "audio_capturer.h",
     "audio_capturer_chromeos.cc",
@@ -108,6 +112,8 @@ static_library("host") {
     "daemon_process_win.cc",
     "desktop_capturer_proxy.cc",
     "desktop_capturer_proxy.h",
+    "desktop_display_info.cc",
+    "desktop_display_info.h",
     "desktop_environment.h",
     "desktop_environment_options.cc",
     "desktop_environment_options.h",
@@ -189,6 +195,8 @@ static_library("host") {
     "input_injector_mac.cc",
     "input_injector_win.cc",
     "input_injector_x11.cc",
+    "ipc_action_executor.cc",
+    "ipc_action_executor.h",
     "ipc_audio_capturer.cc",
     "ipc_audio_capturer.h",
     "ipc_constants.cc",
@@ -300,6 +308,7 @@ static_library("host") {
     "//remoting/host/security_key",
     "//remoting/protocol",
     "//remoting/resources",
+    "//services/network:network_service",
     "//third_party/webrtc/modules/desktop_capture",
 
     # //remoting uses the power_save_blocker directly. See crbug.com/689423
@@ -502,6 +511,7 @@ source_set("unit_tests") {
   deps = [
     ":host",
     ":test_support",
+    "//remoting/host/file_transfer:unit_tests",
     "//remoting/host/it2me:common",
     "//remoting/host/native_messaging",
     "//remoting/host/security_key:unit_tests",

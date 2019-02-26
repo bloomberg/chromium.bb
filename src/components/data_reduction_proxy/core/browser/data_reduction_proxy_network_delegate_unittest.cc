@@ -16,7 +16,6 @@
 #include "base/command_line.h"
 #include "base/files/file_util.h"
 #include "base/macros.h"
-#include "base/message_loop/message_loop.h"
 #include "base/metrics/field_trial.h"
 #include "base/numerics/safe_conversions.h"
 #include "base/optional.h"
@@ -29,6 +28,7 @@
 #include "base/test/metrics/histogram_tester.h"
 #include "base/test/mock_entropy_provider.h"
 #include "base/test/scoped_feature_list.h"
+#include "base/test/scoped_task_environment.h"
 #include "base/time/time.h"
 #include "base/values.h"
 #include "build/build_config.h"
@@ -227,10 +227,6 @@ class TestLoFiDecider : public LoFiDecider {
     headers->RemoveHeader(chrome_proxy_accept_transform_header());
   }
 
-  bool ShouldRecordLoFiUMA(const net::URLRequest& request) const override {
-    return should_request_lofi_resource_;
-  }
-
   bool IsClientLoFiImageRequest(const net::URLRequest& request) const override {
     return should_be_client_lofi_;
   }
@@ -328,12 +324,12 @@ class DataReductionProxyNetworkDelegateTest : public testing::Test {
     mock_socket_factory_.reset(new net::MockClientSocketFactory());
 
     DataReductionProxyTestContext::Builder builder;
-    builder = builder.WithClient(kClient)
-                  .WithMockClientSocketFactory(mock_socket_factory_.get())
-                  .WithURLRequestContext(context_.get());
+    builder.WithClient(kClient)
+        .WithMockClientSocketFactory(mock_socket_factory_.get())
+        .WithURLRequestContext(context_.get());
 
     if (proxy_config != BYPASS_PROXY) {
-      builder = builder.WithProxiesForHttp({DataReductionProxyServer(
+      builder.WithProxiesForHttp({DataReductionProxyServer(
           proxy_server, ProxyServer::UNSPECIFIED_TYPE)});
     }
 
@@ -402,7 +398,7 @@ class DataReductionProxyNetworkDelegateTest : public testing::Test {
         io_data()->test_request_options()->GetHeaderValueForTesting().empty());
 
     std::string suffix =
-        std::string("Chrome-Proxy: ") +
+        std::string("chrome-proxy: ") +
         io_data()->test_request_options()->GetHeaderValueForTesting() +
         std::string("\r\n\r\n");
 
@@ -454,7 +450,6 @@ class DataReductionProxyNetworkDelegateTest : public testing::Test {
       EXPECT_FALSE(data);
     } else {
       EXPECT_TRUE(data->used_data_reduction_proxy());
-      EXPECT_EQ(lofi_used, data->lofi_requested());
     }
   }
 
@@ -601,7 +596,7 @@ class DataReductionProxyNetworkDelegateTest : public testing::Test {
                              "\r\n";
 
     std::string suffix_headers =
-        std::string("Chrome-Proxy: ") +
+        std::string("chrome-proxy: ") +
         io_data()->test_request_options()->GetHeaderValueForTesting() +
         std::string("\r\n\r\n");
 
@@ -714,7 +709,7 @@ class DataReductionProxyNetworkDelegateTest : public testing::Test {
         "keep-alive\r\nUser-Agent: \r\nAccept-Encoding: gzip, "
         "deflate\r\nAccept-Language: en-us,fr\r\n"
         "chrome-proxy-ect: Unknown\r\n"
-        "Chrome-Proxy: " +
+        "chrome-proxy: " +
         io_data()->test_request_options()->GetHeaderValueForTesting() +
         (page_id_value.empty() ? "" : (", " + page_id_value)) + "\r\n\r\n";
 
@@ -862,8 +857,13 @@ class DataReductionProxyNetworkDelegateTest : public testing::Test {
     return &ssl_socket_data_provider_;
   }
 
+  void DisableWarmupURLFetchCallback() {
+    test_context_->DisableWarmupURLFetchCallback();
+  }
+
  private:
-  base::MessageLoopForIO message_loop_;
+  base::test::ScopedTaskEnvironment task_environment_{
+      base::test::ScopedTaskEnvironment::MainThreadType::IO};
   std::unique_ptr<net::MockClientSocketFactory> mock_socket_factory_;
   std::unique_ptr<net::ProxyResolutionService> proxy_resolution_service_;
   std::unique_ptr<net::TestURLRequestContext> context_;
@@ -905,10 +905,6 @@ TEST_F(DataReductionProxyNetworkDelegateTest, AuthenticationTest) {
                                               proxy_retry_info, &headers);
 
   EXPECT_TRUE(headers.HasHeader(chrome_proxy_header()));
-  std::string header_value;
-  headers.GetHeader(chrome_proxy_header(), &header_value);
-  EXPECT_TRUE(header_value.find("ps=") != std::string::npos);
-  EXPECT_TRUE(header_value.find("sid=") != std::string::npos);
 }
 
 TEST_F(DataReductionProxyNetworkDelegateTest, LoFiTransitions) {
@@ -1101,7 +1097,6 @@ TEST_F(DataReductionProxyNetworkDelegateTest, RequestDataConfigurations) {
       EXPECT_TRUE(data->used_data_reduction_proxy());
       EXPECT_EQ(test.main_frame ? GURL(kTestURL) : GURL(), data->request_url());
       EXPECT_EQ(test.main_frame ? "fake-session" : "", data->session_key());
-      EXPECT_EQ(test.lofi_on, data->lofi_requested());
     }
   }
 }
@@ -1198,10 +1193,6 @@ TEST_F(DataReductionProxyNetworkDelegateTest, RedirectRequestDataCleared) {
       &headers_original);
   DataReductionProxyData* data = DataReductionProxyData::GetData(*request);
   uint64_t original_page_id = data->page_id().value();
-  // Artificially add a RequestInfo for sake of testing that it is persisted.
-  data->add_request_info(DataReductionProxyData::RequestInfo(
-      DataReductionProxyData::RequestInfo::Protocol::HTTP, false,
-      base::TimeDelta(), base::TimeDelta(), base::TimeDelta()));
 
   EXPECT_TRUE(data);
   EXPECT_EQ(net::EFFECTIVE_CONNECTION_TYPE_OFFLINE,
@@ -1209,7 +1200,6 @@ TEST_F(DataReductionProxyNetworkDelegateTest, RedirectRequestDataCleared) {
   EXPECT_TRUE(data->used_data_reduction_proxy());
   EXPECT_EQ(GURL(kTestURL), data->request_url());
   EXPECT_EQ("fake-session", data->session_key());
-  EXPECT_TRUE(data->lofi_requested());
 
   data_reduction_proxy_info.UseNamedProxy("port.of.other.proxy");
 
@@ -1218,9 +1208,8 @@ TEST_F(DataReductionProxyNetworkDelegateTest, RedirectRequestDataCleared) {
   network_delegate()->NotifyBeforeRedirect(request.get(), GURL(kTestURL));
   data = DataReductionProxyData::GetData(*request);
   EXPECT_FALSE(data && data->used_data_reduction_proxy());
-  // page_id and request_info should be persisted across redirects.
+  // page_id should be persisted across redirects.
   EXPECT_EQ(original_page_id, data->page_id().value());
-  EXPECT_EQ(1u, data->request_info().size());
 
   // Call NotifyBeforeSendHeaders again with different proxy info to check that
   // new data isn't added. Use a new set of headers since the redirected HTTP
@@ -1783,7 +1772,7 @@ TEST_F(DataReductionProxyNetworkDelegateTest, BrotliAdvertisement) {
   std::string response_headers =
       "HTTP/1.1 200 OK\r\n"
       "Via: 1.1 Chrome-Compression-Proxy\r\n"
-      "Chrome-Proxy: ofcl=200\r\n"
+      "chrome-proxy: ofcl=200\r\n"
       "Cache-Control: max-age=1200\r\n"
       "Content-Encoding: br\r\n"
       "Vary: accept-encoding\r\n";
@@ -1800,7 +1789,7 @@ TEST_F(DataReductionProxyNetworkDelegateTest,
   Init(USE_SECURE_PROXY, true /* enable_brotli_globally */);
 
   net::HttpRequestHeaders request_headers;
-  request_headers.AddHeaderFromString("Accept-Encoding: gzip, deflate, br");
+  request_headers.SetHeader("Accept-Encoding", "gzip, deflate, br");
 
   std::string response_headers =
       "HTTP/1.1 200 OK\r\n"
@@ -1824,7 +1813,7 @@ TEST_F(DataReductionProxyNetworkDelegateTest,
   Init(USE_SECURE_PROXY, true /* enable_brotli_globally */);
 
   net::HttpRequestHeaders request_headers;
-  request_headers.AddHeaderFromString("Accept-Encoding:");
+  request_headers.SetHeader("Accept-Encoding", "");
 
   std::string response_headers =
       "HTTP/1.1 200 OK\r\n"
@@ -1878,6 +1867,9 @@ TEST_F(DataReductionProxyNetworkDelegateTest, SubResourceNoPageId) {
 }
 
 TEST_F(DataReductionProxyNetworkDelegateTest, RedirectSharePid) {
+  // The test manually controls the fetch of warmup URL and the response.
+  DisableWarmupURLFetchCallback();
+
   // This is unaffacted by brotil and insecure proxy.
   Init(USE_SECURE_PROXY, false /* enable_brotli_globally */);
 
@@ -2098,7 +2090,8 @@ class DataReductionProxyNetworkDelegateClientLoFiTest : public testing::Test {
   }
 
  private:
-  base::MessageLoopForIO loop;
+  base::test::ScopedTaskEnvironment task_environment_{
+      base::test::ScopedTaskEnvironment::MainThreadType::IO};
   std::unique_ptr<net::TestURLRequestContext> context_;
   std::unique_ptr<net::URLRequestContextStorage> context_storage_;
   std::unique_ptr<net::MockClientSocketFactory> mock_socket_factory_;

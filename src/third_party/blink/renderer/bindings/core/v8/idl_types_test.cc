@@ -112,8 +112,8 @@ static_assert(std::is_same<IDLSequence<Element>::ImplType,
                            HeapVector<Member<Element>>>::value,
               "IDLSequence<GC-type>> produces a HeapVector<Member<>>");
 static_assert(std::is_same<IDLSequence<InternalDictionary>::ImplType,
-                           HeapVector<InternalDictionary>>::value,
-              "IDLSequence<dictionary type> produces a HeapVector");
+                           HeapVector<Member<InternalDictionary>>>::value,
+              "IDLSequence<dictionary type> produces a HeapVector<Member<>>");
 static_assert(std::is_same<IDLSequence<StringOrStringSequence>::ImplType,
                            HeapVector<StringOrStringSequence>>::value,
               "IDLSequence<union type> produces a HeapVector");
@@ -130,9 +130,10 @@ static_assert(
                  HeapVector<std::pair<String, Member<Element>>>>::value,
     "IDLRecord<IDLByteString, GC-type>> produces a HeapVector with Member<>");
 static_assert(
-    std::is_same<IDLRecord<IDLUSVString, InternalDictionary>::ImplType,
-                 HeapVector<std::pair<String, InternalDictionary>>>::value,
-    "IDLRecord<IDLUSVString, dictionary type> produces a HeapVector with no "
+    std::is_same<
+        IDLRecord<IDLUSVString, InternalDictionary>::ImplType,
+        HeapVector<std::pair<String, Member<InternalDictionary>>>>::value,
+    "IDLRecord<IDLUSVString, dictionary type> produces a HeapVector with "
     "Member<>");
 static_assert(
     std::is_same<IDLRecord<IDLString, StringOrStringSequence>::ImplType,

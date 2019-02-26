@@ -25,7 +25,7 @@ CSSURIValue::~CSSURIValue() = default;
 
 SVGResource* CSSURIValue::EnsureResourceReference() const {
   if (!resource_)
-    resource_ = new ExternalSVGResource(AbsoluteUrl());
+    resource_ = MakeGarbageCollected<ExternalSVGResource>(AbsoluteUrl());
   return resource_;
 }
 

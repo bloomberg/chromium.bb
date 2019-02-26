@@ -26,10 +26,12 @@
 #include "chrome/common/webui_url_constants.h"
 #include "chrome/test/base/ui_test_utils.h"
 #include "content/public/browser/javascript_dialog_manager.h"
+#include "content/public/browser/notification_service.h"
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_contents_delegate.h"
 #include "content/public/test/browser_test_utils.h"
+#include "content/public/test/test_utils.h"
 #include "extensions/browser/browsertest_util.h"
 #include "extensions/browser/extension_registry.h"
 #include "extensions/browser/notification_types.h"
@@ -360,8 +362,14 @@ IN_PROC_BROWSER_TEST_F(ContentScriptApiTest, ContentScriptCSSLocalization) {
 IN_PROC_BROWSER_TEST_F(ContentScriptApiTest, ContentScriptExtensionAPIs) {
   ASSERT_TRUE(StartEmbeddedTestServer());
 
+  // TODO(https://crbug.com/898682): Waiting for content scripts to load should
+  // be done as part of the extension loading process.
+  content::WindowedNotificationObserver scripts_updated_observer(
+      extensions::NOTIFICATION_USER_SCRIPTS_UPDATED,
+      content::NotificationService::AllSources());
   const extensions::Extension* extension = LoadExtension(
       test_data_dir_.AppendASCII("content_scripts/extension_api"));
+  scripts_updated_observer.Wait();
 
   ResultCatcher catcher;
   ui_test_utils::NavigateToURL(
@@ -562,7 +570,13 @@ IN_PROC_BROWSER_TEST_F(ContentScriptApiTest,
   ext_dir1.WriteManifest(
       base::StringPrintf(kManifest, "ext1", "document_idle"));
   ext_dir1.WriteFile(FILE_PATH_LITERAL("script.js"), kBlockingScript);
+  // TODO(https://crbug.com/898682): Waiting for content scripts to load should
+  // be done as part of the extension loading process.
+  content::WindowedNotificationObserver scripts_updated_observer(
+      extensions::NOTIFICATION_USER_SCRIPTS_UPDATED,
+      content::NotificationService::AllSources());
   const Extension* ext1 = LoadExtension(ext_dir1.UnpackedPath());
+  scripts_updated_observer.Wait();
   ASSERT_TRUE(ext1);
 
   content::WebContents* web_contents =

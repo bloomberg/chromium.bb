@@ -49,6 +49,8 @@ class MEDIA_MOJO_EXPORT VideoDecodePerfHistory
       public VideoDecodeStatsDBProvider,
       public base::SupportsUserData::Data {
  public:
+  static const char kMaxSmoothDroppedFramesPercentParamName[];
+
   explicit VideoDecodePerfHistory(std::unique_ptr<VideoDecodeStatsDB> db);
   ~VideoDecodePerfHistory() override;
 
@@ -84,6 +86,10 @@ class MEDIA_MOJO_EXPORT VideoDecodePerfHistory
  private:
   friend class VideoDecodePerfHistoryTest;
 
+  // Decode capabilities will be described as "smooth" whenever the percentage
+  // of dropped frames is less-than-or-equal-to this value.
+  static double GetMaxSmoothDroppedFramesPercent();
+
   // Track the status of database lazy initialization.
   enum InitStatus {
     UNINITIALIZED,
@@ -91,11 +97,6 @@ class MEDIA_MOJO_EXPORT VideoDecodePerfHistory
     COMPLETE,
     FAILED,
   };
-
-  // Decode capabilities will be described as "smooth" whenever the percentage
-  // of dropped frames is less-than-or-equal-to this value. 10% chosen as a
-  // lenient value after manual testing.
-  static constexpr double kMaxSmoothDroppedFramesPercent = .10;
 
   // Decode capabilities will be described as "power efficient" whenever the
   // percentage of power efficient decoded frames is higher-than-or-equal-to

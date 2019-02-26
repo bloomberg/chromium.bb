@@ -5,9 +5,12 @@
 #include "ios/chrome/browser/download/browser_download_service.h"
 
 #include "base/metrics/histogram_macros.h"
+#import "ios/chrome/browser/download/ar_quick_look_tab_helper.h"
 #import "ios/chrome/browser/download/download_manager_tab_helper.h"
+#import "ios/chrome/browser/download/features.h"
 #include "ios/chrome/browser/download/pass_kit_mime_type.h"
 #import "ios/chrome/browser/download/pass_kit_tab_helper.h"
+#include "ios/chrome/browser/download/usdz_mime_type.h"
 #import "ios/web/public/download/download_controller.h"
 #import "ios/web/public/download/download_task.h"
 
@@ -39,8 +42,38 @@ DownloadMimeTypeResult GetUmaResult(const std::string& mime_type) {
   if (mime_type == "text/calendar")
     return DownloadMimeTypeResult::iCalendar;
 
-  if (mime_type == "model/usd")
+  if (mime_type == kUsdzMimeType)
     return DownloadMimeTypeResult::UniversalSceneDescription;
+
+  if (mime_type == "application/x-apple-diskimage")
+    return DownloadMimeTypeResult::AppleDiskImage;
+
+  if (mime_type == "application/vnd.apple.installer+xml")
+    return DownloadMimeTypeResult::AppleInstallerPackage;
+
+  if (mime_type == "application/x-7z-compressed")
+    return DownloadMimeTypeResult::SevenZipArchive;
+
+  if (mime_type == "application/x-rar-compressed")
+    return DownloadMimeTypeResult::RARArchive;
+
+  if (mime_type == "application/x-tar")
+    return DownloadMimeTypeResult::TarArchive;
+
+  if (mime_type == "application/x-shockwave-flash")
+    return DownloadMimeTypeResult::AdobeFlash;
+
+  if (mime_type == "application/vnd.amazon.ebook")
+    return DownloadMimeTypeResult::AmazonKindleBook;
+
+  if (mime_type == "application/octet-stream")
+    return DownloadMimeTypeResult::BinaryData;
+
+  if (mime_type == "application/x-bittorrent")
+    return DownloadMimeTypeResult::BitTorrent;
+
+  if (mime_type == "application/java-archive")
+    return DownloadMimeTypeResult::JavaArchive;
 
   return DownloadMimeTypeResult::Other;
 }
@@ -69,6 +102,13 @@ void BrowserDownloadService::OnDownloadCreated(
 
   if (task->GetMimeType() == kPkPassMimeType) {
     PassKitTabHelper* tab_helper = PassKitTabHelper::FromWebState(web_state);
+    if (tab_helper) {
+      tab_helper->Download(std::move(task));
+    }
+  } else if (task->GetMimeType() == kUsdzMimeType &&
+             download::IsUsdzPreviewEnabled()) {
+    ARQuickLookTabHelper* tab_helper =
+        ARQuickLookTabHelper::FromWebState(web_state);
     if (tab_helper) {
       tab_helper->Download(std::move(task));
     }

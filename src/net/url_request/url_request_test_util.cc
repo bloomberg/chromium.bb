@@ -688,10 +688,6 @@ bool TestNetworkDelegate::OnCanAccessFile(
   return can_access_files_;
 }
 
-bool TestNetworkDelegate::OnAreExperimentalCookieFeaturesEnabled() const {
-  return experimental_cookie_features_enabled_;
-}
-
 bool TestNetworkDelegate::OnCancelURLRequestWithPolicyViolatingReferrerHeader(
     const URLRequest& request,
     const GURL& target_url,

@@ -19,7 +19,6 @@
 #include "chrome/browser/ui/views/toolbar/toolbar_ink_drop_util.h"
 #include "content/public/browser/notification_source.h"
 #include "ui/accessibility/ax_node_data.h"
-#include "ui/base/material_design/material_design_controller.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/base/theme_provider.h"
 #include "ui/compositor/paint_recorder.h"
@@ -34,7 +33,6 @@
 #include "ui/views/controls/menu/menu_model_adapter.h"
 #include "ui/views/controls/menu/menu_runner.h"
 #include "ui/views/mouse_constants.h"
-#include "ui/views/view_properties.h"
 
 using views::LabelButtonBorder;
 
@@ -53,7 +51,7 @@ const int kBorderInset = 0;
 ToolbarActionView::ToolbarActionView(
     ToolbarActionViewController* view_controller,
     ToolbarActionView::Delegate* delegate)
-    : MenuButton(base::string16(), this, false),
+    : MenuButton(base::string16(), this),
       view_controller_(view_controller),
       delegate_(delegate),
       called_register_command_(false),
@@ -86,8 +84,7 @@ ToolbarActionView::~ToolbarActionView() {
 
 void ToolbarActionView::OnBoundsChanged(const gfx::Rect& previous_bounds) {
   // TODO(pbos): Consolidate with ToolbarButton::OnBoundsChanged.
-  SetProperty(views::kHighlightPathKey,
-              CreateToolbarHighlightPath(this, gfx::Insets()).release());
+  SetToolbarButtonHighlightPath(this, gfx::Insets());
 
   MenuButton::OnBoundsChanged(previous_bounds);
 }
@@ -100,7 +97,8 @@ gfx::Rect ToolbarActionView::GetAnchorBoundsInScreen() const {
 
 void ToolbarActionView::GetAccessibleNodeData(ui::AXNodeData* node_data) {
   views::MenuButton::GetAccessibleNodeData(node_data);
-  node_data->role = ax::mojom::Role::kButton;
+  node_data->role = delegate_->ShownInsideMenu() ? ax::mojom::Role::kMenuItem
+                                                 : ax::mojom::Role::kButton;
 }
 
 std::unique_ptr<LabelButtonBorder> ToolbarActionView::CreateDefaultBorder()
@@ -132,23 +130,23 @@ bool ToolbarActionView::ShouldUseFloodFillInkDrop() const {
 }
 
 std::unique_ptr<views::InkDrop> ToolbarActionView::CreateInkDrop() {
-  auto ink_drop = CreateToolbarInkDrop<MenuButton>(this);
-
+  auto ink_drop = CreateToolbarInkDrop(this);
   ink_drop->SetShowHighlightOnHover(!delegate_->ShownInsideMenu());
   ink_drop->SetShowHighlightOnFocus(!focus_ring());
   return ink_drop;
 }
 
-std::unique_ptr<views::InkDropRipple> ToolbarActionView::CreateInkDropRipple()
-    const {
-  return CreateToolbarInkDropRipple<MenuButton>(
-      this, GetInkDropCenterBasedOnLastEvent(), gfx::Insets());
-}
-
 std::unique_ptr<views::InkDropHighlight>
 ToolbarActionView::CreateInkDropHighlight() const {
-  return CreateToolbarInkDropHighlight<MenuButton>(
-      this, GetMirroredRect(GetContentsBounds()).CenterPoint());
+  return CreateToolbarInkDropHighlight(this);
+}
+
+bool ToolbarActionView::OnKeyPressed(const ui::KeyEvent& event) {
+  if (event.key_code() == ui::VKEY_DOWN) {
+    ShowContextMenuForView(this, gfx::Point(), ui::MENU_SOURCE_KEYBOARD);
+    return true;
+  }
+  return MenuButton::OnKeyPressed(event);
 }
 
 content::WebContents* ToolbarActionView::GetCurrentWebContents() const {
@@ -278,7 +276,7 @@ void ToolbarActionView::OnPopupShown(bool by_user) {
     // or delegate_->GetOverflowReferenceView(), which returns a MenuButton.
     views::MenuButton* reference_view =
         static_cast<views::MenuButton*>(GetReferenceViewForPopup());
-    pressed_lock_.reset(new views::MenuButton::PressedLock(reference_view));
+    pressed_lock_ = reference_view->menu_button_event_handler()->TakeLock();
   }
 }
 
@@ -307,9 +305,6 @@ void ToolbarActionView::DoShowContextMenu(
 
   DCHECK(visible());  // We should never show a context menu for a hidden item.
 
-  gfx::Point screen_loc;
-  ConvertPointToScreen(this, &screen_loc);
-
   int run_types =
       views::MenuRunner::HAS_MNEMONICS | views::MenuRunner::CONTEXT_MENU;
   if (delegate_->ShownInsideMenu())
@@ -330,7 +325,7 @@ void ToolbarActionView::DoShowContextMenu(
   menu_ = menu_adapter_->CreateMenu();
   menu_runner_.reset(new views::MenuRunner(menu_, run_types));
 
-  menu_runner_->RunMenuAt(parent, this, gfx::Rect(screen_loc, size()),
+  menu_runner_->RunMenuAt(parent, this, GetAnchorBoundsInScreen(),
                           views::MENU_ANCHOR_TOPLEFT, source_type);
 }
 

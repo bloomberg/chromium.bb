@@ -51,8 +51,6 @@
 
 namespace WTF {
 
-WTF_EXPORT void InitializeDates();
-
 // Not really math related, but this is currently the only shared place to put
 // these.
 WTF_EXPORT double ParseDateFromNullTerminatedCharacters(

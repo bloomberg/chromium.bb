@@ -117,7 +117,7 @@ void GmsCoreNotificationsStateTrackerImpl::SendDeviceNamesChangeEvent() {
     ss.seekp(-1, ss.cur);
   }
   ss << "]";
-  PA_LOG(INFO) << ss.str();
+  PA_LOG(VERBOSE) << ss.str();
 
   NotifyGmsCoreNotificationStateChanged();
 }

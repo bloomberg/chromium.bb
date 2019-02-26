@@ -23,7 +23,7 @@
     <link rel="stylesheet" href="foreground/css/file_status.css">
     <link rel="stylesheet" href="foreground/css/file_types.css">
     <link rel="stylesheet" href="foreground/css/common.css">
-    <link rel="stylesheet" href="chrome-extension://fbjakikfhfdajcamjleinfciajelkpek/cws_widget/cws_widget_container.css">
+    <link rel="stylesheet" href="cws_widget/cws_widget_container.css">
 
     <script src="foreground/js/elements_importer.js"></script>
     <script src="foreground/js/main_scripts.js" defer></script>
@@ -95,7 +95,8 @@
                shortcut="c|Ctrl">
       <command id="paste" i18n-values="label:PASTE_BUTTON_LABEL"
                shortcut="v|Ctrl">
-      <command id="paste-into-current-folder" i18n-values="label:PASTE_BUTTON_LABEL">
+      <command id="paste-into-current-folder" i18n-values="label:PASTE_BUTTON_LABEL"
+               shortcut="v|Ctrl">
       <command id="paste-into-folder"
                i18n-values="label:PASTE_INTO_FOLDER_BUTTON_LABEL">
       <command id="get-info" i18n-values="label:GET_INFO_BUTTON_LABEL"
@@ -122,9 +123,6 @@
                shortcut="a|Ctrl">
       <command id="drive-sync-settings"
                i18n-values="label:DRIVE_MOBILE_CONNECTION_OPTION">
-      <command id="drive-hosted-settings"
-               i18n-values="label:DRIVE_SHOW_HOSTED_FILES_OPTION">
-
       <command id="search" shortcut="f|Ctrl /">
 
       <!-- Shortcuts for toggling between volumes (CTRL-1..CTRL-9). -->
@@ -170,6 +168,7 @@
       <command id="manage-in-drive"
                i18n-values="label:MANAGE_IN_DRIVE_BUTTON_LABEL" disabled hidden>
       <command id="share-with-linux" i18n-values="label:SHARE_WITH_LINUX_BUTTON_LABEL" disabled hidden>
+      <command id="manage-linux-sharing" i18n-values="label:MANAGE_LINUX_SHARING_BUTTON_LABEL" disabled hidden>
 
       <command id="zoom-in" shortcut="=|Ctrl">
       <command id="zoom-out" shortcut="-|Ctrl">
@@ -210,6 +209,7 @@
       <hr visibleif="full-page">
       <cr-menu-item command="#get-info"></cr-menu-item>
       <cr-menu-item command="#rename"></cr-menu-item>
+      <cr-menu-item command="#create-folder-shortcut"></cr-menu-item>
       <cr-menu-item command="#delete" i18n-content="DELETE_BUTTON_LABEL"
                 class="hide-on-toolbar"></cr-menu-item>
       <cr-menu-item command="#zip-selection"></cr-menu-item>
@@ -227,16 +227,18 @@
       <cr-menu-item command="#format"></cr-menu-item>
       <cr-menu-item command="#rename"></cr-menu-item>
       <cr-menu-item command="#remove-folder-shortcut"></cr-menu-item>
+      <cr-menu-item command="#share-with-linux"></cr-menu-item>
     </cr-menu>
 
     <cr-menu id="directory-tree-context-menu" class="chrome-menu files-menu"
              menu-item-selector="cr-menu-item,hr">
-      <cr-menu-item command="#create-folder-shortcut"></cr-menu-item>
       <cr-menu-item command="#cut" visibleif="full-page"></cr-menu-item>
       <cr-menu-item command="#copy" visibleif="full-page"></cr-menu-item>
       <cr-menu-item command="#paste-into-folder" visibleif="full-page"></cr-menu-item>
+      <cr-menu-item command="#share-with-linux"></cr-menu-item>
       <hr visibleif="full-page">
       <cr-menu-item command="#rename"></cr-menu-item>
+      <cr-menu-item command="#create-folder-shortcut"></cr-menu-item>
       <cr-menu-item command="#delete" i18n-content="DELETE_BUTTON_LABEL"></cr-menu-item>
       <hr visibleif="saveas-file full-page">
       <cr-menu-item command="#new-folder" visibleif="saveas-file full-page"></cr-menu-item>
@@ -268,10 +270,10 @@
                     command="#toggle-hidden-files"></cr-menu-item>
       <cr-menu-item id="gear-menu-toggle-hidden-android-folders"
                     command="#toggle-hidden-android-folders"></cr-menu-item>
+      <cr-menu-item id="gear-menu-manage-linux-sharing"
+                    command="#manage-linux-sharing"></cr-menu-item>
       <cr-menu-item id="gear-menu-drive-sync-settings"
                     command="#drive-sync-settings"></cr-menu-item>
-      <cr-menu-item id="gear-menu-drive-hosted-settings"
-                    command="#drive-hosted-settings"></cr-menu-item>
       <hr id="help-separator">
       <cr-menu-item id="gear-menu-drive-buy-more-space"
                     command="#drive-buy-more-space"></cr-menu-item>
@@ -355,7 +357,8 @@
         <div id="search-box">
           <cr-input type="search" tabindex="14" hidden
               i18n-values="aria-label:SEARCH_TEXT_LABEL;placeholder:SEARCH_TEXT_LABEL">
-            <span class="clear" slot="suffix"></span>
+            <span class="clear" slot="suffix" tabindex="14"
+              i18n-values="aria-label:SEARCH_CLEAR_LABEL" has-tooltip></span>
           </cr-input>
         </div>
         <button id="refresh-button" class="icon-button menu-button" tabindex="15" hidden
@@ -473,6 +476,7 @@
       <div class="splitter" id="navigation-list-splitter"></div>
       <div class="dialog-main">
         <div class="dialog-body">
+          <div id="a11y-msg" aria-live="polite" style="display: inline-block; position: fixed; clip: rect(0, 0, 0, 0);"></div>
           <div class="main-panel">
             <div class="filelist-panel">
               <div class="drive-welcome header"></div>
@@ -523,22 +527,23 @@
         <div class="progress-bar"><div class="progress-track"></div></div>
       </div>
       <div class="right buttonbar">
-        <button id="ok-button" class="ok primary" disabled tabindex="6">
-          <paper-ripple fit></paper-ripple>
-          <span></span>
-        </button>
-        <button id="cancel-button" class="cancel secondary" tabindex="7">
+        <button id="cancel-button" class="cancel secondary" tabindex="6">
           <paper-ripple fit></paper-ripple>
           <span i18n-content="CANCEL_LABEL"></span>
+        </button>
+        <button id="ok-button" class="ok primary" disabled tabindex="7">
+          <paper-ripple fit></paper-ripple>
+          <span></span>
         </button>
       </div>
     </div>
     <div id="drag-container"></div>
     <files-tooltip></files-tooltip>
-    <files-quick-view id="quick-view"
+    <files-quick-view tabindex="-1" id="quick-view"
                       i18n-values="no-playback-text:QUICK_VIEW_NO_PLAYBACK_AVAILABLE;no-preview-text:QUICK_VIEW_NO_PREVIEW_AVAILABLE">
     </files-quick-view>
     <iframe id="command-dispatcher" hidden aria-hidden="true"></iframe>
     <div id="drop-label"></div>
+    <files-toast id="toast"></files-toast>
   </body>
 </html>

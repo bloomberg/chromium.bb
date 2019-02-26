@@ -48,7 +48,7 @@ class DEVICE_VR_EXPORT VROrientationDevice : public VRDeviceBase,
       mojom::XRRuntime::RequestSessionCallback callback) override;
 
   // VRDeviceBase
-  void OnMagicWindowFrameDataRequest(
+  void OnGetInlineFrameData(
       mojom::XRFrameDataProvider::GetFrameDataCallback callback) override;
 
   // Indicates whether the device was able to connect to orientation events.

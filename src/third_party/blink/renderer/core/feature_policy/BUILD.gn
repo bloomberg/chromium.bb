@@ -10,6 +10,8 @@ blink_core_sources("feature_policy") {
     "feature_policy.cc",
     "feature_policy.h",
     "iframe_policy.h",
+    "layout_animations_policy.cc",
+    "layout_animations_policy.h",
     "policy.cc",
     "policy.h",
   ]

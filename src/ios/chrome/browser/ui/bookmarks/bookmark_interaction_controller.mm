@@ -19,6 +19,7 @@
 #include "ios/chrome/browser/browser_state/chrome_browser_state.h"
 #import "ios/chrome/browser/metrics/new_tab_page_uma.h"
 #import "ios/chrome/browser/tabs/tab.h"
+#import "ios/chrome/browser/tabs/tab_title_util.h"
 #import "ios/chrome/browser/ui/bookmarks/bookmark_edit_view_controller.h"
 #import "ios/chrome/browser/ui/bookmarks/bookmark_folder_editor_view_controller.h"
 #import "ios/chrome/browser/ui/bookmarks/bookmark_home_view_controller.h"
@@ -34,8 +35,8 @@
 #import "ios/chrome/browser/ui/table_view/table_view_navigation_controller_delegate.h"
 #import "ios/chrome/browser/ui/table_view/table_view_presentation_controller.h"
 #import "ios/chrome/browser/ui/table_view/table_view_presentation_controller_delegate.h"
-#include "ios/chrome/browser/ui/uikit_ui_util.h"
 #include "ios/chrome/browser/ui/url_loader.h"
+#include "ios/chrome/browser/ui/util/uikit_ui_util.h"
 #include "ios/chrome/grit/ios_strings.h"
 #import "ios/third_party/material_components_ios/src/components/Snackbar/src/MaterialSnackbar.h"
 #import "ios/web/public/navigation_manager.h"
@@ -206,7 +207,7 @@ enum class PresentedState {
         return;
       [strongSelf presentBookmarkEditorForBookmarkedTab:weakTab];
     };
-    [self.mediator addBookmarkWithTitle:tab.title
+    [self.mediator addBookmarkWithTitle:tab_util::GetTabTitle(tab.webState)
                                     URL:tab.webState->GetLastCommittedURL()
                              editAction:editAction];
   }
@@ -539,7 +540,8 @@ bookmarkHomeViewControllerWantsDismissal:(BookmarkHomeViewController*)controller
   }
   web::NavigationManager::WebLoadParams params(url);
   params.transition_type = ui::PAGE_TRANSITION_AUTO_BOOKMARK;
-  [_loader loadURLWithParams:params];
+  ChromeLoadParams chromeParams(params);
+  [_loader loadURLWithParams:chromeParams];
 }
 
 - (void)openURLInNewTab:(const GURL&)url

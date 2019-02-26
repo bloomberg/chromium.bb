@@ -94,8 +94,6 @@ class PhishingClassifierDelegateTest : public ChromeRenderViewTest {
     delegate_ = PhishingClassifierDelegate::Create(render_frame, classifier_);
   }
 
-  void TearDown() override { ChromeRenderViewTest::TearDown(); }
-
   void RegisterMainFrameRemoteInterfaces() override {
     service_manager::InterfaceProvider* remote_interfaces =
         view_->GetMainRenderFrame()->GetRemoteInterfaces();

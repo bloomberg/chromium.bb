@@ -96,11 +96,6 @@ class TestReportingService : public ReportingService {
 
   void RemoveAllBrowsingData(int data_type_mask) override { NOTREACHED(); }
 
-  int GetUploadDepth(const URLRequest& request) override {
-    NOTREACHED();
-    return 0;
-  }
-
   const ReportingPolicy& GetPolicy() const override {
     NOTREACHED();
     return dummy_policy_;
@@ -324,6 +319,43 @@ TEST_F(NetworkErrorLoggingServiceTest, FailureReportQueued) {
   base::ExpectDictStringValue("connection", *body,
                               NetworkErrorLoggingService::kPhaseKey);
   base::ExpectDictStringValue("tcp.refused", *body,
+                              NetworkErrorLoggingService::kTypeKey);
+}
+
+TEST_F(NetworkErrorLoggingServiceTest, UnknownFailureReportQueued) {
+  static const std::string kHeaderFailureFraction1 =
+      "{\"report_to\":\"group\",\"max_age\":86400,\"failure_fraction\":1.0}";
+  service()->OnHeader(kOrigin_, kServerIP_, kHeaderFailureFraction1);
+
+  // This error code happens to not be mapped to a NEL report `type` field
+  // value.
+  service()->OnRequest(MakeRequestDetails(kUrl_, ERR_FILE_NO_SPACE));
+
+  ASSERT_EQ(1u, reports().size());
+  const base::DictionaryValue* body;
+  ASSERT_TRUE(reports()[0].body->GetAsDictionary(&body));
+  base::ExpectDictStringValue("application", *body,
+                              NetworkErrorLoggingService::kPhaseKey);
+  base::ExpectDictStringValue("unknown", *body,
+                              NetworkErrorLoggingService::kTypeKey);
+}
+
+TEST_F(NetworkErrorLoggingServiceTest, UnknownCertFailureReportQueued) {
+  static const std::string kHeaderFailureFraction1 =
+      "{\"report_to\":\"group\",\"max_age\":86400,\"failure_fraction\":1.0}";
+  service()->OnHeader(kOrigin_, kServerIP_, kHeaderFailureFraction1);
+
+  // This error code happens to not be mapped to a NEL report `type` field
+  // value.  Because it's a certificate error, we'll set the `phase` to be
+  // `connection`.
+  service()->OnRequest(MakeRequestDetails(kUrl_, ERR_CERT_NON_UNIQUE_NAME));
+
+  ASSERT_EQ(1u, reports().size());
+  const base::DictionaryValue* body;
+  ASSERT_TRUE(reports()[0].body->GetAsDictionary(&body));
+  base::ExpectDictStringValue("connection", *body,
+                              NetworkErrorLoggingService::kPhaseKey);
+  base::ExpectDictStringValue("unknown", *body,
                               NetworkErrorLoggingService::kTypeKey);
 }
 
@@ -795,6 +827,17 @@ TEST_F(NetworkErrorLoggingServiceTest, StatusAsValue) {
   service()->OnHeader(kOrigin_, kServerIP_, kHeaderSuccessFraction1);
   service()->OnHeader(kOriginDifferentHost_, kServerIP_, kHeader_);
   service()->OnHeader(kOriginSubdomain_, kServerIP_, kHeaderIncludeSubdomains_);
+  const std::string kHeaderWrongTypes =
+      ("{\"report_to\":\"group\","
+       "\"max_age\":86400,"
+       // We'll ignore each of these fields because they're the wrong type.
+       // We'll use a default value instead.
+       "\"include_subdomains\":\"true\","
+       "\"success_fraction\": \"1.0\","
+       "\"failure_fraction\": \"0.0\"}");
+  service()->OnHeader(
+      url::Origin::Create(GURL("https://invalid-types.example.com")),
+      kServerIP_, kHeaderWrongTypes);
 
   base::Value actual = service()->StatusAsValue();
   std::unique_ptr<base::Value> expected = base::test::ParseJson(R"json(
@@ -810,6 +853,14 @@ TEST_F(NetworkErrorLoggingServiceTest, StatusAsValue) {
           },
           {
             "origin": "https://example2.com",
+            "includeSubdomains": false,
+            "expires": "86400000",
+            "reportTo": "group",
+            "successFraction": 0.0,
+            "failureFraction": 1.0,
+          },
+          {
+            "origin": "https://invalid-types.example.com",
             "includeSubdomains": false,
             "expires": "86400000",
             "reportTo": "group",

@@ -11,6 +11,7 @@
 #include <chrono>
 #include "GrSharedEnums.h"
 #include "GrTypes.h"
+#include "SkCanvas.h"
 #include "SkImageInfo.h"
 #include "SkImageInfoPriv.h"
 #include "SkRefCnt.h"
@@ -287,30 +288,24 @@ enum class GrAllowMixedSamples : bool { kNo = false, kYes = true };
 
 GrAAType GrChooseAAType(GrAA, GrFSAAType, GrAllowMixedSamples, const GrCaps&);
 
-/**
- * Controls anti-aliasing of a quad on a per-edge basis. Currently only used by GrTextureOp.
- * This will be moved to public API and renamed when this functionality is exposed.
- */
-enum class GrQuadAAFlags : unsigned {
-    kLeft   = 0b0001,
-    kTop    = 0b0010,
-    kRight  = 0b0100,
-    kBottom = 0b1000,
+enum class GrQuadAAFlags {
+    kLeft   = SkCanvas::kLeft_QuadAAFlag,
+    kTop    = SkCanvas::kTop_QuadAAFlag,
+    kRight  = SkCanvas::kRight_QuadAAFlag,
+    kBottom = SkCanvas::kBottom_QuadAAFlag,
 
-    kNone   = 0b0000,
-    kAll    = 0b1111,
-
-    kTopLeft     = kTop    | kLeft,
-    kTopRight    = kTop    | kRight,
-    kBottomRight = kBottom | kRight,
-    kBottomLeft  = kBottom | kLeft,
+    kNone = SkCanvas::kNone_QuadAAFlags,
+    kAll  = SkCanvas::kAll_QuadAAFlags
 };
 
 GR_MAKE_BITFIELD_CLASS_OPS(GrQuadAAFlags)
 
+static inline GrQuadAAFlags SkToGrQuadAAFlags(unsigned flags) {
+    return static_cast<GrQuadAAFlags>(flags);
+}
+
 /**
- * Types of shader-language-specific boxed variables we can create. (Currently only GrGLShaderVars,
- * but should be applicable to other shader languages.)
+ * Types of shader-language-specific boxed variables we can create.
  */
 enum GrSLType {
     kVoid_GrSLType,
@@ -389,7 +384,7 @@ GR_MAKE_BITFIELD_OPS(GrShaderFlags);
  * vary the internal precision based on the qualifiers. These currently only apply to float types (
  * including float vectors and matrices).
  */
-enum GrSLPrecision {
+enum GrSLPrecision : int {
     kLow_GrSLPrecision,
     kMedium_GrSLPrecision,
     kHigh_GrSLPrecision,
@@ -1066,6 +1061,35 @@ static inline bool GrPixelConfigIsAlphaOnly(GrPixelConfig config) {
         case kRG_float_GrPixelConfig:
         case kRGBA_half_GrPixelConfig:
             return false;
+    }
+    SK_ABORT("Invalid pixel config.");
+    return false;
+}
+
+static inline bool GrPixelConfigIsFloatingPoint(GrPixelConfig config) {
+    switch (config) {
+        case kUnknown_GrPixelConfig:
+        case kAlpha_8_GrPixelConfig:
+        case kAlpha_8_as_Alpha_GrPixelConfig:
+        case kAlpha_8_as_Red_GrPixelConfig:
+        case kGray_8_GrPixelConfig:
+        case kGray_8_as_Lum_GrPixelConfig:
+        case kGray_8_as_Red_GrPixelConfig:
+        case kRGB_565_GrPixelConfig:
+        case kRGBA_4444_GrPixelConfig:
+        case kRGB_888_GrPixelConfig:
+        case kRGBA_8888_GrPixelConfig:
+        case kBGRA_8888_GrPixelConfig:
+        case kSRGBA_8888_GrPixelConfig:
+        case kSBGRA_8888_GrPixelConfig:
+        case kRGBA_1010102_GrPixelConfig:
+            return false;
+        case kRGBA_float_GrPixelConfig:
+        case kRG_float_GrPixelConfig:
+        case kAlpha_half_GrPixelConfig:
+        case kAlpha_half_as_Red_GrPixelConfig:
+        case kRGBA_half_GrPixelConfig:
+            return true;
     }
     SK_ABORT("Invalid pixel config.");
     return false;

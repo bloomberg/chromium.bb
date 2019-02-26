@@ -6,7 +6,7 @@
 
 #include <memory>
 #include "base/optional.h"
-#include "base/trace_event/trace_event_argument.h"
+#include "base/trace_event/traced_value.h"
 #include "cc/paint/paint_flags.h"
 #include "cc/paint/paint_op_buffer.h"
 #include "third_party/blink/renderer/platform/geometry/geometry_as_json.h"
@@ -201,9 +201,7 @@ scoped_refptr<cc::PictureLayer> ContentLayerClientImpl::UpdateCcPictureLayer(
     json->SetArray("displayItems",
                    paint_artifact->GetDisplayItemList().SubsequenceAsJSON(
                        chunk.begin_index, chunk.end_index,
-                       DisplayItemList::kSkipNonDrawings |
-                           DisplayItemList::kShownOnlyDisplayItemTypes));
-    json->SetString("propertyTreeState", chunk.properties.ToTreeString());
+                       DisplayItemList::kShownOnlyDisplayItemTypes));
     paint_chunk_debug_data_->PushObject(std::move(json));
   }
 #endif

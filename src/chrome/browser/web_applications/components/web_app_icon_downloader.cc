@@ -14,6 +14,8 @@
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "ui/gfx/geometry/size.h"
 
+namespace web_app {
+
 WebAppIconDownloader::WebAppIconDownloader(
     content::WebContents* web_contents,
     const std::vector<GURL>& extra_favicon_urls,
@@ -93,7 +95,7 @@ void WebAppIconDownloader::FetchIcons(const std::vector<GURL>& urls) {
   // callback.
   if (in_progress_requests_.empty() && !need_favicon_urls_) {
     base::MessageLoopCurrent::Get()->task_runner()->PostTask(
-        FROM_HERE, base::BindOnce(std::move(callback_), true, favicon_map_));
+        FROM_HERE, base::BindOnce(std::move(callback_), true, icons_map_));
   }
 }
 
@@ -107,18 +109,19 @@ void WebAppIconDownloader::DidDownloadFavicon(
   if (in_progress_requests_.erase(id) == 0)
     return;
 
-  if (!https_status_code_class_histogram_name_.empty()) {
+  if (!https_status_code_class_histogram_name_.empty() &&
+      http_status_code != 0) {
     DCHECK_LE(100, http_status_code);
     DCHECK_GT(600, http_status_code);
     base::UmaHistogramExactLinear(https_status_code_class_histogram_name_,
                                   http_status_code / 100, 5);
   }
 
-  favicon_map_[image_url] = bitmaps;
+  icons_map_[image_url] = bitmaps;
 
   // Once all requests have been resolved, perform post-download tasks.
   if (in_progress_requests_.empty() && !need_favicon_urls_)
-    std::move(callback_).Run(true, favicon_map_);
+    std::move(callback_).Run(true, icons_map_);
 }
 
 // content::WebContentsObserver overrides:
@@ -130,8 +133,8 @@ void WebAppIconDownloader::DidFinishNavigation(
 
   // Clear all pending requests.
   in_progress_requests_.clear();
-  favicon_map_.clear();
-  std::move(callback_).Run(false, favicon_map_);
+  icons_map_.clear();
+  std::move(callback_).Run(false, icons_map_);
 }
 
 void WebAppIconDownloader::DidUpdateFaviconURL(
@@ -144,3 +147,5 @@ void WebAppIconDownloader::DidUpdateFaviconURL(
   need_favicon_urls_ = false;
   FetchIcons(candidates);
 }
+
+}  // namespace web_app

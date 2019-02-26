@@ -317,7 +317,7 @@ class ArcSessionManager : public ArcSessionRunner::Observer,
   // ACTIVE.
   void StartArc();
 
-  // Requests to stop ARC instnace. This resets two persistent flags:
+  // Requests to stop ARC instance. This resets two persistent flags:
   // kArcSignedIn and kArcTermsAccepted, so that, in next enabling,
   // it is started from Terms of Service negotiation.
   // TODO(hidehiko): Introduce STOPPING state, and this function should

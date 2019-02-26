@@ -15,6 +15,7 @@
 #include <vector>
 
 #include "ash/display/display_configuration_controller.h"
+#include "ash/multi_user/multi_user_window_manager.h"
 #include "ash/public/cpp/app_list/internal_app_id_constants.h"
 #include "ash/public/cpp/shelf_item.h"
 #include "ash/public/cpp/shelf_item_delegate.h"
@@ -39,7 +40,7 @@
 #include "chrome/browser/chromeos/arc/arc_util.h"
 #include "chrome/browser/chromeos/crostini/crostini_test_helper.h"
 #include "chrome/browser/chromeos/crostini/crostini_util.h"
-#include "chrome/browser/chromeos/login/demo_mode/demo_session.h"
+#include "chrome/browser/chromeos/login/demo_mode/demo_mode_test_helper.h"
 #include "chrome/browser/chromeos/login/users/fake_chrome_user_manager.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/extensions/test_extension_system.h"
@@ -79,22 +80,18 @@
 #include "chrome/common/pref_names.h"
 #include "chrome/test/base/browser_with_test_window_test.h"
 #include "chrome/test/base/test_browser_window_aura.h"
-#include "chrome/test/base/testing_browser_process.h"
 #include "chrome/test/base/testing_profile.h"
 #include "chrome/test/base/testing_profile_manager.h"
 #include "chromeos/chromeos_switches.h"
-#include "chromeos/dbus/dbus_thread_manager.h"
-#include "chromeos/dbus/fake_image_loader_client.h"
 #include "components/account_id/account_id.h"
 #include "components/arc/arc_prefs.h"
 #include "components/arc/arc_util.h"
 #include "components/arc/common/app.mojom.h"
 #include "components/arc/metrics/arc_metrics_constants.h"
 #include "components/arc/test/fake_app_instance.h"
-#include "components/exo/shell_surface.h"
+#include "components/exo/shell_surface_util.h"
 #include "components/keep_alive_registry/scoped_keep_alive.h"
 #include "components/prefs/pref_notifier_impl.h"
-#include "components/session_manager/core/session_manager.h"
 #include "components/sync/model/fake_sync_change_processor.h"
 #include "components/sync/model/sync_error_factory_mock.h"
 #include "components/sync/protocol/sync.pb.h"
@@ -556,6 +553,11 @@ class ChromeLauncherControllerTest : public BrowserWithTestWindowTest {
     extension_service_->AddExtension(extension_chrome_.get());
   }
 
+  ui::BaseWindow* GetLastActiveWindowForItemController(
+      AppWindowLauncherItemController* item_controller) {
+    return item_controller->last_active_window_;
+  }
+
   // Creates a running platform V2 app (not pinned) of type |app_id|.
   virtual void CreateRunningV2App(const std::string& app_id) {
     DCHECK(!test_controller_);
@@ -700,8 +702,7 @@ class ChromeLauncherControllerTest : public BrowserWithTestWindowTest {
     sync_pb::PreferenceSpecifics* pref_one = one.mutable_preference();
     pref_one->set_name(prefs::kPinnedLauncherApps);
     pref_one->set_value(serialized);
-    init_sync_list.push_back(
-        syncer::SyncData::CreateRemoteData(1, one, base::Time()));
+    init_sync_list.push_back(syncer::SyncData::CreateRemoteData(1, one));
     StartPrefSyncService(init_sync_list);
   }
 
@@ -1008,8 +1009,7 @@ class ChromeLauncherControllerTest : public BrowserWithTestWindowTest {
     widget->Init(params);
     // Set ARC id before showing the window to be recognized in
     // ArcAppWindowLauncherController.
-    exo::ShellSurface::SetApplicationId(widget->GetNativeWindow(),
-                                        window_app_id);
+    exo::SetShellApplicationId(widget->GetNativeWindow(), window_app_id);
     widget->Show();
     widget->Activate();
     return widget;
@@ -1089,16 +1089,12 @@ class ChromeLauncherControllerTest : public BrowserWithTestWindowTest {
 };
 
 class ChromeLauncherControllerWithArcTest
-    : public ChromeLauncherControllerTest,
-      public ::testing::WithParamInterface<bool> {
+    : public ChromeLauncherControllerTest {
  protected:
   ChromeLauncherControllerWithArcTest() { auto_start_arc_test_ = true; }
   ~ChromeLauncherControllerWithArcTest() override {}
 
   void SetUp() override {
-    if (GetParam())
-      arc::SetArcAlwaysStartForTesting(true);
-
     // To prevent crash on test exit and pending decode request.
     ArcAppIcon::DisableSafeDecodingForTesting();
 
@@ -1108,10 +1104,6 @@ class ChromeLauncherControllerWithArcTest
  private:
   DISALLOW_COPY_AND_ASSIGN(ChromeLauncherControllerWithArcTest);
 };
-
-INSTANTIATE_TEST_CASE_P(,
-                        ChromeLauncherControllerWithArcTest,
-                        ::testing::Bool());
 
 // Watches WebContents and blocks until it is destroyed. This is needed for
 // the destruction of a V2 application.
@@ -1252,7 +1244,9 @@ class MultiProfileMultiBrowserShelfLayoutChromeLauncherControllerTest
     const std::string email_string = user_name + "@example.com";
     const AccountId account_id(AccountId::FromUserEmail(email_string));
     // Add a user to the fake user manager.
-    GetFakeUserManager()->AddUser(account_id);
+    auto* user = GetFakeUserManager()->AddUser(account_id);
+    ash_test_helper()->test_session_controller_client()->AddUserSession(
+        user->GetDisplayEmail());
 
     GetFakeUserManager()->LoginUser(account_id);
 
@@ -1272,12 +1266,9 @@ class MultiProfileMultiBrowserShelfLayoutChromeLauncherControllerTest
   // Switch to another user.
   void SwitchActiveUser(const AccountId& account_id) {
     GetFakeUserManager()->SwitchActiveUser(account_id);
-    MultiUserWindowManagerChromeOS* manager =
-        static_cast<MultiUserWindowManagerChromeOS*>(
-            MultiUserWindowManager::GetInstance());
-    manager->SetAnimationSpeedForTest(
-        MultiUserWindowManagerChromeOS::ANIMATION_SPEED_DISABLED);
-    manager->ActiveUserChanged(GetFakeUserManager()->FindUser(account_id));
+    ash::MultiUserWindowManager::Get()->SetAnimationSpeedForTest(
+        ash::MultiUserWindowManager::ANIMATION_SPEED_DISABLED);
+    ash::MultiUserWindowManager::Get()->OnActiveUserSessionChanged(account_id);
     launcher_controller_->browser_status_monitor_for_test()->ActiveUserChanged(
         account_id.GetUserEmail());
 
@@ -1340,27 +1331,16 @@ class MultiProfileMultiBrowserShelfLayoutChromeLauncherControllerTest
 };
 
 class ChromeLauncherControllerMultiProfileWithArcTest
-    : public MultiProfileMultiBrowserShelfLayoutChromeLauncherControllerTest,
-      public ::testing::WithParamInterface<bool> {
+    : public MultiProfileMultiBrowserShelfLayoutChromeLauncherControllerTest {
  protected:
   ChromeLauncherControllerMultiProfileWithArcTest() {
     auto_start_arc_test_ = true;
   }
   ~ChromeLauncherControllerMultiProfileWithArcTest() override {}
 
-  void SetUp() override {
-    if (GetParam())
-      arc::SetArcAlwaysStartForTesting(true);
-    MultiProfileMultiBrowserShelfLayoutChromeLauncherControllerTest::SetUp();
-  }
-
  private:
   DISALLOW_COPY_AND_ASSIGN(ChromeLauncherControllerMultiProfileWithArcTest);
 };
-
-INSTANTIATE_TEST_CASE_P(,
-                        ChromeLauncherControllerMultiProfileWithArcTest,
-                        ::testing::Bool());
 
 TEST_F(ChromeLauncherControllerTest, DefaultApps) {
   InitLauncherController();
@@ -1379,7 +1359,7 @@ TEST_F(ChromeLauncherControllerTest, DefaultApps) {
   EXPECT_FALSE(launcher_controller_->IsAppPinned(extension2_->id()));
 }
 
-TEST_P(ChromeLauncherControllerWithArcTest, ArcAppPinCrossPlatformWorkflow) {
+TEST_F(ChromeLauncherControllerWithArcTest, ArcAppPinCrossPlatformWorkflow) {
   // Work on ARC disabled platform first.
   const std::string arc_app_id1 =
       ArcAppTest::GetAppId(arc_test_.fake_apps()[0]);
@@ -1456,9 +1436,6 @@ TEST_P(ChromeLauncherControllerWithArcTest, ArcAppPinCrossPlatformWorkflow) {
   EXPECT_EQ(0U, app_service_->sync_items().size());
 
   // Move back to ARC disabled platform.
-  // TODO(victorhsieh): Implement opt-out.
-  if (arc::ShouldArcAlwaysStart())
-    return;
   EnablePlayStore(false);
   StartAppSyncService(copy_sync_list);
   RecreateLauncherController()->Init();
@@ -1932,7 +1909,7 @@ TEST_F(ChromeLauncherControllerTest, CheckRunningV1AppOrder) {
   EXPECT_EQ("Back, AppList, Chrome", GetPinnedAppStatus());
 }
 
-TEST_P(ChromeLauncherControllerWithArcTest, ArcDeferredLaunch) {
+TEST_F(ChromeLauncherControllerWithArcTest, ArcDeferredLaunch) {
   InitLauncherController();
 
   const arc::mojom::AppInfo& app1 = arc_test_.fake_apps()[0];
@@ -2014,7 +1991,7 @@ TEST_P(ChromeLauncherControllerWithArcTest, ArcDeferredLaunch) {
 }
 
 // Launch is canceled in case app becomes suspended.
-TEST_P(ChromeLauncherControllerWithArcTest, ArcDeferredLaunchForSuspendedApp) {
+TEST_F(ChromeLauncherControllerWithArcTest, ArcDeferredLaunchForSuspendedApp) {
   InitLauncherController();
 
   arc::mojom::AppInfo app = arc_test_.fake_apps()[0];
@@ -2048,7 +2025,7 @@ TEST_P(ChromeLauncherControllerWithArcTest, ArcDeferredLaunchForSuspendedApp) {
 
 // Ensure the spinner controller does not override the active app controller
 // (crbug.com/701152).
-TEST_P(ChromeLauncherControllerWithArcTest, ArcDeferredLaunchForActiveApp) {
+TEST_F(ChromeLauncherControllerWithArcTest, ArcDeferredLaunchForActiveApp) {
   InitLauncherController();
   SendListOfArcApps();
   arc_test_.StopArcInstance();
@@ -2091,7 +2068,7 @@ TEST_P(ChromeLauncherControllerWithArcTest, ArcDeferredLaunchForActiveApp) {
       launcher_controller_->GetShelfSpinnerController()->HasApp(app_id));
 }
 
-TEST_P(ChromeLauncherControllerMultiProfileWithArcTest, ArcMultiUser) {
+TEST_F(ChromeLauncherControllerMultiProfileWithArcTest, ArcMultiUser) {
   SendListOfArcApps();
 
   InitLauncherController();
@@ -2156,7 +2133,7 @@ TEST_P(ChromeLauncherControllerMultiProfileWithArcTest, ArcMultiUser) {
   arc_window3->CloseNow();
 }
 
-TEST_P(ChromeLauncherControllerWithArcTest, ArcRunningApp) {
+TEST_F(ChromeLauncherControllerWithArcTest, ArcRunningApp) {
   InitLauncherController();
 
   const std::string arc_app_id = ArcAppTest::GetAppId(arc_test_.fake_apps()[0]);
@@ -2192,7 +2169,7 @@ TEST_P(ChromeLauncherControllerWithArcTest, ArcRunningApp) {
 
 // Test race creation/deletion of ARC app.
 // TODO(khmel): Remove after moving everything to wayland protocol.
-TEST_P(ChromeLauncherControllerWithArcTest, ArcRaceCreateClose) {
+TEST_F(ChromeLauncherControllerWithArcTest, ArcRaceCreateClose) {
   InitLauncherController();
 
   const std::string arc_app_id1 =
@@ -2231,7 +2208,7 @@ TEST_P(ChromeLauncherControllerWithArcTest, ArcRaceCreateClose) {
   EXPECT_FALSE(launcher_controller_->GetItem(ash::ShelfID(arc_app_id2)));
 }
 
-TEST_P(ChromeLauncherControllerWithArcTest, ArcWindowRecreation) {
+TEST_F(ChromeLauncherControllerWithArcTest, ArcWindowRecreation) {
   InitLauncherController();
 
   const std::string arc_app_id = ArcAppTest::GetAppId(arc_test_.fake_apps()[0]);
@@ -2261,7 +2238,7 @@ TEST_P(ChromeLauncherControllerWithArcTest, ArcWindowRecreation) {
 // but in case of ARC boot failure this may lead to such situation. This test
 // verifies that dynamic change of app launcher controllers is safe.
 // See more crbug.com/770005.
-TEST_P(ChromeLauncherControllerWithArcTest, OverrideAppItemController) {
+TEST_F(ChromeLauncherControllerWithArcTest, OverrideAppItemController) {
   extension_service_->AddExtension(arc_support_host_.get());
 
   InitLauncherController();
@@ -2362,7 +2339,7 @@ TEST_P(ChromeLauncherControllerWithArcTest, OverrideAppItemController) {
 
 // Validate that ARC app is pinned correctly and pin is removed automatically
 // once app is uninstalled.
-TEST_P(ChromeLauncherControllerWithArcTest, ArcAppPin) {
+TEST_F(ChromeLauncherControllerWithArcTest, ArcAppPin) {
   InitLauncherController();
 
   const std::string arc_app_id = ArcAppTest::GetAppId(arc_test_.fake_apps()[0]);
@@ -2385,10 +2362,7 @@ TEST_P(ChromeLauncherControllerWithArcTest, ArcAppPin) {
 
   EXPECT_EQ("Back, AppList, Chrome, App1, Fake App 0, App2",
             GetPinnedAppStatus());
-  // In opt-out mode, only system apps are available and can't be uninstalled.
-  // Skip the rest of the test.
-  if (arc::ShouldArcAlwaysStart())
-    return;
+
   UninstallArcApps();
   EXPECT_FALSE(launcher_controller_->IsAppPinned(arc_app_id));
   EXPECT_EQ("Back, AppList, Chrome, App1, App2", GetPinnedAppStatus());
@@ -2410,7 +2384,7 @@ TEST_P(ChromeLauncherControllerWithArcTest, ArcAppPin) {
 }
 
 // Validates that ARC app pins persist across OptOut/OptIn.
-TEST_P(ChromeLauncherControllerWithArcTest, ArcAppPinOptOutOptIn) {
+TEST_F(ChromeLauncherControllerWithArcTest, ArcAppPinOptOutOptIn) {
   InitLauncherController();
 
   const std::string arc_app_id1 =
@@ -2434,9 +2408,6 @@ TEST_P(ChromeLauncherControllerWithArcTest, ArcAppPinOptOutOptIn) {
   EXPECT_EQ("Back, AppList, Chrome, App1, Fake App 1, App2, Fake App 0",
             GetPinnedAppStatus());
 
-  // TODO(victorhsieh): Implement opt-out.
-  if (arc::ShouldArcAlwaysStart())
-    return;
   EnablePlayStore(false);
 
   EXPECT_EQ("Back, AppList, Chrome, App1, App2", GetPinnedAppStatus());
@@ -2458,7 +2429,7 @@ TEST_P(ChromeLauncherControllerWithArcTest, ArcAppPinOptOutOptIn) {
             GetPinnedAppStatus());
 }
 
-TEST_P(ChromeLauncherControllerWithArcTest, ArcCustomAppIcon) {
+TEST_F(ChromeLauncherControllerWithArcTest, ArcCustomAppIcon) {
   InitLauncherController();
 
   TestShelfController* shelf_controller =
@@ -2552,7 +2523,7 @@ TEST_P(ChromeLauncherControllerWithArcTest, ArcCustomAppIcon) {
                                          shelf_controller->GetLastItemImage()));
 }
 
-TEST_P(ChromeLauncherControllerWithArcTest, ArcWindowPackageName) {
+TEST_F(ChromeLauncherControllerWithArcTest, ArcWindowPackageName) {
   InitLauncherController();
   SendListOfArcApps();
 
@@ -3450,6 +3421,58 @@ TEST_F(MultiProfileMultiBrowserShelfLayoutChromeLauncherControllerTest,
   EXPECT_EQ(3, model_->item_count());
 }
 
+TEST_F(ChromeLauncherControllerTest, Active) {
+  InitLauncherController();
+
+  // Creates a new app window.
+  int initial_item_count = model_->item_count();
+  V2App app_1(profile(), extension1_.get());
+  EXPECT_TRUE(app_1.window()->GetNativeWindow()->IsVisible());
+  EXPECT_EQ(initial_item_count + 1, model_->item_count());
+  ash::ShelfItemDelegate* app_item_delegate_1 =
+      model_->GetShelfItemDelegate(model_->items()[initial_item_count].id);
+  ASSERT_TRUE(app_item_delegate_1);
+  AppWindowLauncherItemController* app_item_controller_1 =
+      app_item_delegate_1->AsAppWindowLauncherItemController();
+  ASSERT_TRUE(app_item_controller_1);
+  ui::BaseWindow* last_active =
+      GetLastActiveWindowForItemController(app_item_controller_1);
+  EXPECT_EQ(app_1.window()->GetBaseWindow(), last_active);
+  // Change the status so that we can verify it gets reset when the active
+  // window changes.
+  launcher_controller_->SetItemStatus(app_item_delegate_1->shelf_id(),
+                                      ash::STATUS_ATTENTION);
+
+  // Creates another app window, which should become active and reset |app_1|'s
+  // status (to running).
+  V2App app_2(profile(), extension2_.get());
+  EXPECT_TRUE(app_2.window()->GetNativeWindow()->IsVisible());
+  EXPECT_EQ(initial_item_count + 2, model_->item_count());
+  ash::ShelfItemDelegate* app_item_delegate_2 =
+      model_->GetShelfItemDelegate(model_->items()[initial_item_count + 1].id);
+  ASSERT_TRUE(app_item_delegate_2);
+  AppWindowLauncherItemController* app_item_controller_2 =
+      app_item_delegate_2->AsAppWindowLauncherItemController();
+  ASSERT_TRUE(app_item_controller_2);
+  last_active = GetLastActiveWindowForItemController(app_item_controller_2);
+  EXPECT_EQ(app_2.window()->GetBaseWindow(), last_active);
+  const ash::ShelfItem* shelf_item_1 =
+      launcher_controller_->GetItem(app_item_delegate_1->shelf_id());
+  ASSERT_TRUE(shelf_item_1);
+  EXPECT_EQ(ash::STATUS_RUNNING, shelf_item_1->status);
+
+  launcher_controller_->SetItemStatus(app_item_delegate_2->shelf_id(),
+                                      ash::STATUS_ATTENTION);
+
+  // Activate the first window, which should reset the status of the
+  // second apps window.
+  app_1.window()->GetBaseWindow()->Activate();
+  const ash::ShelfItem* shelf_item_2 =
+      launcher_controller_->GetItem(app_item_delegate_2->shelf_id());
+  ASSERT_TRUE(shelf_item_2);
+  EXPECT_EQ(ash::STATUS_RUNNING, shelf_item_2->status);
+}
+
 // Check that V2 applications will be made visible on the target desktop if
 // another window of the same type got previously teleported there.
 TEST_F(MultiProfileMultiBrowserShelfLayoutChromeLauncherControllerTest,
@@ -3894,7 +3917,7 @@ TEST_F(ChromeLauncherControllerTest, MultipleAppIconLoaders) {
   EXPECT_EQ(1, app_icon_loader2->clear_count());
 }
 
-TEST_P(ChromeLauncherControllerWithArcTest, ArcAppPinPolicy) {
+TEST_F(ChromeLauncherControllerWithArcTest, ArcAppPinPolicy) {
   InitLauncherControllerWithBrowser();
   arc::mojom::AppInfo appinfo =
       CreateAppInfo("Some App", "SomeActivity", "com.example.app");
@@ -3913,11 +3936,7 @@ TEST_P(ChromeLauncherControllerWithArcTest, ArcAppPinPolicy) {
             GetPinnableForAppID(app_id, profile()));
 }
 
-TEST_P(ChromeLauncherControllerWithArcTest, ArcManaged) {
-  // TODO(victorhsieh): Implement opt-in and opt-out.
-  if (arc::ShouldArcAlwaysStart())
-    return;
-
+TEST_F(ChromeLauncherControllerWithArcTest, ArcManaged) {
   extension_service_->AddExtension(arc_support_host_.get());
   // Test enables ARC, so turn it off for initial values.
   EnablePlayStore(false);
@@ -3976,7 +3995,7 @@ TEST_P(ChromeLauncherControllerWithArcTest, ArcManaged) {
 }
 
 // Test the application menu of a shelf item with multiple ARC windows.
-TEST_P(ChromeLauncherControllerWithArcTest, ShelfItemWithMultipleWindows) {
+TEST_F(ChromeLauncherControllerWithArcTest, ShelfItemWithMultipleWindows) {
   InitLauncherControllerWithBrowser();
 
   arc::mojom::AppInfo appinfo =
@@ -4035,16 +4054,13 @@ TEST_P(ChromeLauncherControllerWithArcTest, ShelfItemWithMultipleWindows) {
 
 namespace {
 class ChromeLauncherControllerArcDefaultAppsTest
-    : public ChromeLauncherControllerTest,
-      public ::testing::WithParamInterface<bool> {
+    : public ChromeLauncherControllerTest {
  public:
   ChromeLauncherControllerArcDefaultAppsTest() {}
   ~ChromeLauncherControllerArcDefaultAppsTest() override {}
 
  protected:
   void SetUp() override {
-    if (GetParam())
-      arc::SetArcAlwaysStartForTesting(true);
     ArcAppIcon::DisableSafeDecodingForTesting();
     ArcDefaultAppList::UseTestAppsDirectory();
     ChromeLauncherControllerTest::SetUp();
@@ -4053,10 +4069,6 @@ class ChromeLauncherControllerArcDefaultAppsTest
  private:
   DISALLOW_COPY_AND_ASSIGN(ChromeLauncherControllerArcDefaultAppsTest);
 };
-
-INSTANTIATE_TEST_CASE_P(,
-                        ChromeLauncherControllerArcDefaultAppsTest,
-                        ::testing::Bool());
 
 class ChromeLauncherControllerPlayStoreAvailabilityTest
     : public ChromeLauncherControllerTest,
@@ -4068,7 +4080,7 @@ class ChromeLauncherControllerPlayStoreAvailabilityTest
  protected:
   void SetUp() override {
     if (GetParam())
-      arc::SetArcAlwaysStartForTesting(false);
+      arc::SetArcAlwaysStartWithoutPlayStoreForTesting();
     ArcDefaultAppList::UseTestAppsDirectory();
     ChromeLauncherControllerTest::SetUp();
   }
@@ -4083,7 +4095,7 @@ INSTANTIATE_TEST_CASE_P(,
 
 }  // namespace
 
-TEST_P(ChromeLauncherControllerArcDefaultAppsTest, DefaultApps) {
+TEST_F(ChromeLauncherControllerArcDefaultAppsTest, DefaultApps) {
   arc_test_.SetUp(profile());
   InitLauncherController();
 
@@ -4154,7 +4166,7 @@ TEST_P(ChromeLauncherControllerArcDefaultAppsTest, DefaultApps) {
       shelf_controller->updated_count());
 }
 
-TEST_P(ChromeLauncherControllerArcDefaultAppsTest, PlayStoreDeferredLaunch) {
+TEST_F(ChromeLauncherControllerArcDefaultAppsTest, PlayStoreDeferredLaunch) {
   // Add ARC host app to enable Play Store default app.
   extension_service_->AddExtension(arc_support_host_.get());
   arc_test_.SetUp(profile());
@@ -4491,34 +4503,24 @@ class ChromeLauncherControllerDemoModeTest
   ~ChromeLauncherControllerDemoModeTest() override {}
 
   void SetUp() override {
-    arc::SetArcAlwaysStartForTesting(true);
-
     // To prevent crash on test exit and pending decode request.
     ArcAppIcon::DisableSafeDecodingForTesting();
 
-    // Fake online Demo Mode.
-    session_manager_ = std::make_unique<session_manager::SessionManager>();
-    chromeos::DBusThreadManager::GetSetterForTesting()->SetImageLoaderClient(
-        std::make_unique<chromeos::FakeImageLoaderClient>());
-    chromeos::DemoSession::SetDemoConfigForTesting(
-        chromeos::DemoSession::DemoModeConfig::kOnline);
-    ASSERT_TRUE(chromeos::DemoSession::StartIfInDemoMode());
-    chromeos::DemoSession::Get()->SetOfflineResourcesLoadedForTesting(
-        base::FilePath());
-
     ChromeLauncherControllerTest::SetUp();
+
+    // Fake Demo Mode.
+    demo_mode_test_helper_ = std::make_unique<chromeos::DemoModeTestHelper>();
+    demo_mode_test_helper_->InitializeSession();
   }
 
   void TearDown() override {
-    ChromeLauncherControllerTest::TearDown();
+    demo_mode_test_helper_.reset();
 
-    chromeos::DemoSession::ShutDownIfInitialized();
-    chromeos::DemoSession::ResetDemoConfigForTesting();
-    chromeos::DBusThreadManager::Shutdown();
+    ChromeLauncherControllerTest::TearDown();
   }
 
  private:
-  std::unique_ptr<session_manager::SessionManager> session_manager_;
+  std::unique_ptr<chromeos::DemoModeTestHelper> demo_mode_test_helper_;
 
   DISALLOW_COPY_AND_ASSIGN(ChromeLauncherControllerDemoModeTest);
 };

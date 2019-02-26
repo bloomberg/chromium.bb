@@ -9,6 +9,7 @@
 #include <string>
 #include <utility>
 
+#include "base/deferred_sequenced_task_runner.h"
 #include "base/environment.h"
 #include "base/feature_list.h"
 #include "base/no_destructor.h"
@@ -16,16 +17,17 @@
 #include "base/strings/utf_string_conversions.h"
 #include "base/task/post_task.h"
 #include "build/build_config.h"
+#include "content/browser/browser_main_loop.h"
 #include "content/browser/network_service_client.h"
 #include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/content_browser_client.h"
+#include "content/public/common/network_service_util.h"
 #include "content/public/common/service_manager_connection.h"
 #include "content/public/common/service_names.mojom.h"
 #include "net/log/net_log_util.h"
 #include "services/network/network_service.h"
 #include "services/network/public/cpp/features.h"
-#include "services/network/public/cpp/network_connection_tracker.h"
 #include "services/network/public/cpp/network_switches.h"
 #include "services/network/public/mojom/net_log.mojom.h"
 #include "services/network/public/mojom/network_change_manager.mojom.h"
@@ -56,11 +58,9 @@ void BindNetworkChangeManagerRequest(
   GetNetworkService()->GetNetworkChangeManager(std::move(request));
 }
 
-using CrashHandlersMap =
-    std::map<NetworkServiceCrashHandlerId, base::RepeatingClosure>;
-CrashHandlersMap& GetCrashHandlersMap() {
-  static base::NoDestructor<CrashHandlersMap> s_map;
-  return *s_map;
+base::CallbackList<void()>& GetCrashHandlersList() {
+  static base::NoDestructor<base::CallbackList<void()>> s_list;
+  return *s_list;
 }
 
 void OnNetworkServiceCrash() {
@@ -68,10 +68,7 @@ void OnNetworkServiceCrash() {
   DCHECK(g_network_service_ptr);
   DCHECK(g_network_service_ptr->is_bound());
   DCHECK(g_network_service_ptr->encountered_error());
-  for (const auto& it : GetCrashHandlersMap()) {
-    const base::RepeatingClosure& handler = it.second;
-    handler.Run();
-  }
+  GetCrashHandlersList().Notify();
 }
 
 }  // namespace
@@ -86,13 +83,22 @@ network::mojom::NetworkService* GetNetworkService() {
 
 CONTENT_EXPORT network::mojom::NetworkService* GetNetworkServiceFromConnector(
     service_manager::Connector* connector) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  const bool is_network_service_enabled =
+      base::FeatureList::IsEnabled(network::features::kNetworkService);
+  // The DCHECK for thread is only done without network service enabled. This is
+  // because the connector and the pre-existing |g_network_service_ptr| are
+  // bound to the right thread in the network service case, and this allows
+  // Android to instantiate the NetworkService before UI thread is promoted to
+  // BrowserThread::UI.
+  if (!is_network_service_enabled)
+    DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+
   if (!g_network_service_ptr)
     g_network_service_ptr = new network::mojom::NetworkServicePtr;
   static NetworkServiceClient* g_client;
   if (!g_network_service_ptr->is_bound() ||
       g_network_service_ptr->encountered_error()) {
-    if (base::FeatureList::IsEnabled(network::features::kNetworkService)) {
+    if (is_network_service_enabled) {
       connector->BindInterface(mojom::kNetworkServiceName,
                                g_network_service_ptr);
       g_network_service_ptr->set_connection_error_handler(
@@ -112,7 +118,7 @@ CONTENT_EXPORT network::mojom::NetworkService* GetNetworkServiceFromConnector(
 
       const base::CommandLine* command_line =
           base::CommandLine::ForCurrentProcess();
-      if (base::FeatureList::IsEnabled(network::features::kNetworkService)) {
+      if (is_network_service_enabled) {
         if (command_line->HasSwitch(network::switches::kLogNetLog)) {
           base::FilePath log_path =
               command_line->GetSwitchValuePath(network::switches::kLogNetLog);
@@ -161,30 +167,15 @@ CONTENT_EXPORT network::mojom::NetworkService* GetNetworkServiceFromConnector(
   return g_network_service_ptr->get();
 }
 
-NetworkServiceCrashHandlerId RegisterNetworkServiceCrashHandler(
-    base::RepeatingClosure handler) {
+std::unique_ptr<base::CallbackList<void()>::Subscription>
+RegisterNetworkServiceCrashHandler(base::RepeatingClosure handler) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   DCHECK(!handler.is_null());
 
-  static int next_handler_id = 1;
-  NetworkServiceCrashHandlerId handler_id =
-      NetworkServiceCrashHandlerId::FromUnsafeValue(next_handler_id++);
+  if (base::FeatureList::IsEnabled(network::features::kNetworkService))
+    return GetCrashHandlersList().Add(std::move(handler));
 
-  if (base::FeatureList::IsEnabled(network::features::kNetworkService)) {
-    CrashHandlersMap& map = GetCrashHandlersMap();
-    map[handler_id] = std::move(handler);
-  }
-
-  return handler_id;
-}
-
-void UnregisterNetworkServiceCrashHandler(
-    NetworkServiceCrashHandlerId handler_id) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  if (base::FeatureList::IsEnabled(network::features::kNetworkService)) {
-    CrashHandlersMap& map = GetCrashHandlersMap();
-    map.erase(handler_id);
-  }
+  return nullptr;
 }
 
 network::NetworkService* GetNetworkServiceImpl() {
@@ -198,6 +189,10 @@ network::NetworkService* GetNetworkServiceImpl() {
   return g_network_service;
 }
 
+net::NetworkChangeNotifier* GetNetworkChangeNotifier() {
+  return BrowserMainLoop::GetInstance()->network_change_notifier();
+}
+
 void FlushNetworkServiceInstanceForTesting() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
@@ -206,7 +201,8 @@ void FlushNetworkServiceInstanceForTesting() {
 }
 
 network::NetworkConnectionTracker* GetNetworkConnectionTracker() {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI) ||
+         !BrowserThread::IsThreadInitialized(BrowserThread::UI));
   if (!g_network_connection_tracker) {
     g_network_connection_tracker = new network::NetworkConnectionTracker(
         base::BindRepeating(&BindNetworkChangeManagerRequest));
@@ -216,9 +212,30 @@ network::NetworkConnectionTracker* GetNetworkConnectionTracker() {
 
 void GetNetworkConnectionTrackerFromUIThread(
     base::OnceCallback<void(network::NetworkConnectionTracker*)> callback) {
+  // TODO(fdoray): Investigate why this is needed. The IO thread is supposed to
+  // be initialized by the time the UI thread starts running tasks.
+  //
+  // GetNetworkConnectionTracker() will call CreateNetworkServiceOnIO(). Here it
+  // makes sure the IO thread is running when CreateNetworkServiceOnIO() is
+  // called.
+  if (!content::BrowserThread::IsThreadInitialized(
+          content::BrowserThread::IO)) {
+    // IO thread is not yet initialized. Try again in the next message pump.
+    bool task_posted = base::ThreadTaskRunnerHandle::Get()->PostTask(
+        FROM_HERE, base::BindOnce(&GetNetworkConnectionTrackerFromUIThread,
+                                  std::move(callback)));
+    DCHECK(task_posted);
+    return;
+  }
+
   base::PostTaskWithTraitsAndReplyWithResult(
       FROM_HERE, {BrowserThread::UI, base::TaskPriority::BEST_EFFORT},
       base::BindOnce(&GetNetworkConnectionTracker), std::move(callback));
+}
+
+network::NetworkConnectionTrackerAsyncGetter
+CreateNetworkConnectionTrackerAsyncGetter() {
+  return base::BindRepeating(&content::GetNetworkConnectionTrackerFromUIThread);
 }
 
 void SetNetworkConnectionTrackerForTesting(
@@ -227,6 +244,13 @@ void SetNetworkConnectionTrackerForTesting(
     DCHECK(!g_network_connection_tracker || !network_connection_tracker);
     g_network_connection_tracker = network_connection_tracker;
   }
+}
+
+scoped_refptr<base::DeferredSequencedTaskRunner> GetNetworkTaskRunner() {
+  DCHECK(IsInProcessNetworkService());
+  static base::NoDestructor<scoped_refptr<base::DeferredSequencedTaskRunner>>
+      instance(new base::DeferredSequencedTaskRunner());
+  return instance->get();
 }
 
 }  // namespace content

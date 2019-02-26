@@ -130,10 +130,12 @@ PaymentHandlerWebFlowViewController::PaymentHandlerWebFlowViewController(
     PaymentRequestSpec* spec,
     PaymentRequestState* state,
     PaymentRequestDialogView* dialog,
+    content::WebContents* log_destination,
     Profile* profile,
     GURL target,
     PaymentHandlerOpenWindowCallback first_navigation_complete_callback)
     : PaymentRequestSheetController(spec, state, dialog),
+      log_(log_destination),
       profile_(profile),
       target_(target),
       show_progress_bar_(false),
@@ -245,10 +247,9 @@ void PaymentHandlerWebFlowViewController::VisibleSecurityStateChanged(
   // Allow localhost for test.
   if (!SslValidityChecker::IsSslCertificateValid(source) &&
       !net::IsLocalhost(source->GetLastCommittedURL())) {
-    WarnIfPossible(
-        "Opened payment handler window's visible security state changed for "
-        "url " +
-        source->GetVisibleURL().spec());
+    log_.Error("Aborting payment handler window \"" + target_.spec() +
+               "\" because of insecure certificate state on \"" +
+               source->GetVisibleURL().spec() + "\"");
     AbortPayment();
   }
 }
@@ -294,9 +295,9 @@ void PaymentHandlerWebFlowViewController::DidFinishNavigation(
           navigation_handle->GetWebContents())) {
     // Allow localhost for test.
     if (!net::IsLocalhost(navigation_handle->GetURL())) {
-      WarnIfPossible(
-          "Opened payment handler window has an insecure navigation to url " +
-          navigation_handle->GetURL().spec());
+      log_.Error("Aborting payment handler window \"" + target_.spec() +
+                 "\" because of navigation to an insecure url \"" +
+                 navigation_handle->GetURL().spec() + "\"");
       AbortPayment();
       return;
     }
@@ -318,8 +319,9 @@ void PaymentHandlerWebFlowViewController::TitleWasSet(
 }
 
 void PaymentHandlerWebFlowViewController::DidAttachInterstitialPage() {
-  WarnIfPossible(
-      "An interstitial page attached to opened payment handler window.");
+  log_.Error("Aborting payment handler window \"" + target_.spec() +
+             "\" because of navigation to a page with invalid certificate "
+             "state or malicious content.");
   AbortPayment();
 }
 
@@ -328,16 +330,6 @@ void PaymentHandlerWebFlowViewController::AbortPayment() {
     web_contents()->Close();
 
   dialog()->ShowErrorMessage();
-}
-
-void PaymentHandlerWebFlowViewController::WarnIfPossible(
-    const std::string& message) {
-  if (web_contents()) {
-    web_contents()->GetMainFrame()->AddMessageToConsole(
-        content::ConsoleMessageLevel::CONSOLE_MESSAGE_LEVEL_WARNING, message);
-  } else {
-    LOG(WARNING) << message;
-  }
 }
 
 }  // namespace payments

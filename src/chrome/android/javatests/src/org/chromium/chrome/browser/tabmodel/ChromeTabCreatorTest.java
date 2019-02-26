@@ -81,7 +81,7 @@ public class ChromeTabCreatorTest {
         Assert.assertFalse(bgTab.isLoading());
 
         // Switch tabs and verify that the tab is loaded as it gets foregrounded.
-        ChromeTabUtils.waitForTabPageLoaded(bgTab, new Runnable() {
+        ChromeTabUtils.waitForTabPageLoaded(bgTab, mTestServer.getURL(TEST_PATH), new Runnable() {
             @Override
             public void run() {
                 ThreadUtils.runOnUiThreadBlocking(new Runnable() {

@@ -11,7 +11,7 @@
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "base/run_loop.h"
-#include "device/fido/fido_device_discovery.h"
+#include "device/fido/fido_discovery_factory.h"
 #include "device/fido/fido_transport_protocol.h"
 
 namespace service_manager {
@@ -117,7 +117,7 @@ class ScopedFakeFidoDiscoveryFactory
       StartMode mode = StartMode::kManual);
 
  protected:
-  std::unique_ptr<FidoDeviceDiscovery> CreateFidoDiscovery(
+  std::unique_ptr<FidoDiscoveryBase> CreateFidoDiscovery(
       FidoTransportProtocol transport,
       ::service_manager::Connector* connector) override;
 

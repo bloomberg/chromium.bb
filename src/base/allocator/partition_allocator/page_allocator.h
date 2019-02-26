@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef BASE_ALLOCATOR_PARTITION_ALLOCATOR_PAGE_ALLOCATOR_H
-#define BASE_ALLOCATOR_PARTITION_ALLOCATOR_PAGE_ALLOCATOR_H
+#ifndef BASE_ALLOCATOR_PARTITION_ALLOCATOR_PAGE_ALLOCATOR_H_
+#define BASE_ALLOCATOR_PARTITION_ALLOCATOR_PAGE_ALLOCATOR_H_
 
 #include <stdint.h>
 
@@ -68,7 +68,16 @@ BASE_EXPORT void FreePages(void* address, size_t length);
 //
 // Returns true if the permission change succeeded. In most cases you must
 // |CHECK| the result.
-BASE_EXPORT WARN_UNUSED_RESULT bool SetSystemPagesAccess(
+BASE_EXPORT WARN_UNUSED_RESULT bool TrySetSystemPagesAccess(
+    void* address,
+    size_t length,
+    PageAccessibilityConfiguration page_accessibility);
+
+// Mark one or more system pages, starting at |address| with the given
+// |page_accessibility|. |length| must be a multiple of |kSystemPageSize| bytes.
+//
+// Performs a CHECK that the operation succeeds.
+BASE_EXPORT void SetSystemPagesAccess(
     void* address,
     size_t length,
     PageAccessibilityConfiguration page_accessibility);
@@ -176,4 +185,4 @@ BASE_EXPORT uint32_t GetAllocPageErrorCode();
 
 }  // namespace base
 
-#endif  // BASE_ALLOCATOR_PARTITION_ALLOCATOR_PAGE_ALLOCATOR_H
+#endif  // BASE_ALLOCATOR_PARTITION_ALLOCATOR_PAGE_ALLOCATOR_H_

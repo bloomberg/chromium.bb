@@ -12,13 +12,14 @@
 #include "ash/public/cpp/ash_pref_names.h"
 #include "ash/public/cpp/stylus_utils.h"
 #include "base/memory/ptr_util.h"
-#include "base/sys_info.h"
+#include "base/system/sys_info.h"
 #include "base/values.h"
 #include "chrome/browser/app_mode/app_mode_utils.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chromeos/arc/arc_util.h"
 #include "chrome/browser/chromeos/login/startup_utils.h"
 #include "chrome/browser/chromeos/policy/browser_policy_connector_chromeos.h"
+#include "chrome/browser/chromeos/profiles/profile_helper.h"
 #include "chrome/browser/chromeos/settings/cros_settings.h"
 #include "chrome/browser/chromeos/system/timezone_util.h"
 #include "chrome/browser/profiles/profile.h"
@@ -429,9 +430,13 @@ ExtensionFunction::ResponseAction ChromeosInfoPrivateSetFunction::Run() {
       Profile::FromBrowserContext(context_)->GetPrefs()->SetString(
           prefs::kUserTimezone, param_value);
     } else {
-      chromeos::CrosSettings::Get()->Set(chromeos::kSystemTimezone,
-                                         base::Value(param_value));
+      const user_manager::User* user =
+          chromeos::ProfileHelper::Get()->GetUserByProfile(
+              Profile::FromBrowserContext(context_));
+      if (user)
+        chromeos::system::SetSystemTimezone(user, param_value);
     }
+
   } else {
     const char* pref_name = GetBoolPrefNameForApiProperty(param_name.c_str());
     if (pref_name) {

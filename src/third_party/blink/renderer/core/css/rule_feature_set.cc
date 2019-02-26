@@ -167,8 +167,8 @@ bool SupportsInvalidation(CSSSelector::PseudoType type) {
     case CSSSelector::kPseudoVideoPersistent:
     case CSSSelector::kPseudoVideoPersistentAncestor:
       return true;
-    case CSSSelector::kPseudoMatches:
-    case CSSSelector::kPseudoIS:
+    case CSSSelector::kPseudoIs:
+    case CSSSelector::kPseudoWhere:
     case CSSSelector::kPseudoUnknown:
     case CSSSelector::kPseudoLeftPage:
     case CSSSelector::kPseudoRightPage:
@@ -415,10 +415,6 @@ void RuleFeatureSet::ExtractInvalidationSetFeaturesFromSimpleSelector(
     case CSSSelector::kPseudoBlinkInternalElement:
       features.invalidation_flags.SetInvalidateCustomPseudo(true);
       return;
-    case CSSSelector::kPseudoBefore:
-    case CSSSelector::kPseudoAfter:
-      features.has_before_or_after = true;
-      return;
     case CSSSelector::kPseudoSlotted:
       features.invalidation_flags.SetInvalidatesSlotted(true);
       return;
@@ -485,6 +481,7 @@ InvalidationSet* RuleFeatureSet::InvalidationSetForSimpleSelector(
       case CSSSelector::kPseudoDefined:
       case CSSSelector::kPseudoVideoPersistent:
       case CSSSelector::kPseudoVideoPersistentAncestor:
+      case CSSSelector::kPseudoSpatialNavigationFocus:
         return &EnsurePseudoInvalidationSet(selector.GetPseudoType(), type,
                                             position);
       case CSSSelector::kPseudoFirstOfType:
@@ -526,8 +523,6 @@ void RuleFeatureSet::UpdateInvalidationSets(const RuleData* rule_data) {
     features.invalidation_flags.SetWholeSubtreeInvalid(true);
   if (features.has_nth_pseudo)
     AddFeaturesToInvalidationSet(EnsureNthInvalidationSet(), features);
-  if (features.has_before_or_after)
-    UpdateInvalidationSetsForContentAttribute(rule_data);
 
   const CSSSelector* next_compound = last_in_compound
                                          ? last_in_compound->TagHistory()
@@ -565,39 +560,6 @@ void RuleFeatureSet::UpdateRuleSetInvalidation(
 
   for (auto tag_name : features.tag_names)
     type_rule_invalidation_set_->AddTagName(tag_name);
-}
-
-void RuleFeatureSet::UpdateInvalidationSetsForContentAttribute(
-    const RuleData* rule_data) {
-  // If any ::before and ::after rules specify 'content: attr(...)', we
-  // need to create invalidation sets for those attributes to have content
-  // changes applied through style recalc.
-
-  const CSSPropertyValueSet& property_set = rule_data->Rule()->Properties();
-
-  int property_index = property_set.FindPropertyIndex(CSSPropertyContent);
-
-  if (property_index == -1)
-    return;
-
-  CSSPropertyValueSet::PropertyReference content_property =
-      property_set.PropertyAt(property_index);
-  const CSSValue& content_value = content_property.Value();
-
-  if (!content_value.IsValueList())
-    return;
-
-  for (auto& item : ToCSSValueList(content_value)) {
-    if (!item->IsFunctionValue())
-      continue;
-    const CSSFunctionValue* function_value = ToCSSFunctionValue(item.Get());
-    if (function_value->FunctionType() != CSSValueAttr)
-      continue;
-    EnsureAttributeInvalidationSet(
-        AtomicString(ToCSSCustomIdentValue(function_value->Item(0)).Value()),
-        kInvalidateDescendants, kSubject)
-        .SetInvalidatesSelf();
-  }
 }
 
 RuleFeatureSet::FeatureInvalidationType
@@ -1260,7 +1222,6 @@ void RuleFeatureSet::InvalidationSetFeatures::Add(
   max_direct_adjacent_selectors = std::max(max_direct_adjacent_selectors,
                                            other.max_direct_adjacent_selectors);
   invalidation_flags.Merge(other.invalidation_flags);
-  has_before_or_after |= other.has_before_or_after;
   content_pseudo_crossing |= other.content_pseudo_crossing;
   has_nth_pseudo |= other.has_nth_pseudo;
 }

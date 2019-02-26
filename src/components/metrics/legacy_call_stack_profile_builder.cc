@@ -162,7 +162,8 @@ LegacyCallStackProfileBuilder::Sample::Sample(const std::vector<Frame>& frames)
 LegacyCallStackProfileBuilder::LegacyCallStackProfileBuilder(
     const CallStackProfileParams& profile_params,
     base::OnceClosure completed_callback)
-    : profile_params_(profile_params),
+    : process_milestones_(0),
+      profile_params_(profile_params),
       profile_start_time_(base::TimeTicks::Now()) {
   completed_callback_ = std::move(completed_callback);
 }
@@ -173,8 +174,7 @@ void LegacyCallStackProfileBuilder::RecordAnnotations() {
   // The code inside this method must not do anything that could acquire a
   // mutex, including allocating memory (which includes LOG messages) because
   // that mutex could be held by a stopped thread, thus resulting in deadlock.
-  sample_.process_milestones =
-      base::subtle::NoBarrier_Load(&g_process_milestones);
+  process_milestones_ = base::subtle::NoBarrier_Load(&g_process_milestones);
 }
 
 void LegacyCallStackProfileBuilder::OnSampleCompleted(
@@ -185,12 +185,15 @@ void LegacyCallStackProfileBuilder::OnSampleCompleted(
 void LegacyCallStackProfileBuilder::OnSampleCompleted(
     std::vector<base::StackSamplingProfiler::Frame> frames,
     size_t count) {
+  Sample sample;
+  sample.process_milestones = process_milestones_;
+
   // Assemble sample_ from |frames| first.
   for (const auto& frame : frames) {
     const base::ModuleCache::Module& module(frame.module);
     if (!module.is_valid) {
-      sample_.frames.emplace_back(frame.instruction_pointer,
-                                  kUnknownModuleIndex);
+      sample.frames.emplace_back(frame.instruction_pointer,
+                                 kUnknownModuleIndex);
       continue;
     }
 
@@ -202,12 +205,12 @@ void LegacyCallStackProfileBuilder::OnSampleCompleted(
       loc = module_index_.insert(std::make_pair(module.base_address, index))
                 .first;
     }
-    sample_.frames.emplace_back(frame.instruction_pointer, loc->second);
+    sample.frames.emplace_back(frame.instruction_pointer, loc->second);
   }
 
-  // Write CallStackProfile::Sample protocol buffer message based on sample_.
+  // Write CallStackProfile::Sample protocol buffer message based on sample.
   int existing_sample_index = -1;
-  auto location = sample_index_.find(sample_);
+  auto location = sample_index_.find(sample);
   if (location != sample_index_.end())
     existing_sample_index = location->second;
 
@@ -220,17 +223,15 @@ void LegacyCallStackProfileBuilder::OnSampleCompleted(
 
   CallStackProfile::Sample* sample_proto =
       proto_profile_.add_deprecated_sample();
-  CopySampleToProto(sample_, modules_, sample_proto);
+  CopySampleToProto(sample, modules_, sample_proto);
   sample_proto->set_count(count);
-  CopyAnnotationsToProto(sample_.process_milestones & ~milestones_,
+  CopyAnnotationsToProto(sample.process_milestones & ~milestones_,
                          sample_proto);
-  milestones_ = sample_.process_milestones;
+  milestones_ = sample.process_milestones;
 
   sample_index_.insert(std::make_pair(
-      std::move(sample_),
+      std::move(sample),
       static_cast<int>(proto_profile_.deprecated_sample_size()) - 1));
-
-  sample_ = Sample();
 }
 
 // Build a SampledProfile in the protocol buffer message format from the

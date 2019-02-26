@@ -9,12 +9,12 @@
 namespace blink {
 
 HTMLDataElement::HTMLDataElement(Document& document)
-    : HTMLElement(HTMLNames::dataTag, document) {
+    : HTMLElement(html_names::kDataTag, document) {
   UseCounter::Count(document, WebFeature::kDataElement);
 }
 
 HTMLDataElement* HTMLDataElement::Create(Document& document) {
-  return new HTMLDataElement(document);
+  return MakeGarbageCollected<HTMLDataElement>(document);
 }
 
 }  // namespace blink

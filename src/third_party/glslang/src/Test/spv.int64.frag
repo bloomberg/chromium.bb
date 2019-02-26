@@ -1,6 +1,7 @@
 #version 450
 
 #extension GL_ARB_gpu_shader_int64: enable
+#extension GL_KHX_shader_explicit_arithmetic_types_int64: require
 
 layout(binding = 0) uniform Uniforms
 {
@@ -115,6 +116,8 @@ void operators()
     i64  = i64 % i;
 
     // Shift
+    u64v = u64v << i;
+    i64 = i64 >> uv.y;
     u64v <<= i;
     i64  >>= uv.y;
 
@@ -226,3 +229,39 @@ void builtinFuncs()
     bv    = notEqual(u64v, u64vec3(u64));
     bv.xy = notEqual(i64v, i64vec2(i64));
 }
+
+// Type conversion for specialization constant
+layout(constant_id = 100) const int64_t  si64 = -10L;
+layout(constant_id = 101) const uint64_t su64 = 20UL;
+layout(constant_id = 102) const int  si = -5;
+layout(constant_id = 103) const uint su = 4;
+layout(constant_id = 104) const bool sb = true;
+
+// bool <-> int64/uint64
+const bool i64_to_b = bool(si64);
+const bool u64_to_b = bool(su64);
+const int64_t  b_to_i64 = int64_t(sb);
+const uint64_t b_to_u64 = uint64_t(sb);
+
+// int <-> int64
+const int     i64_to_i = int(si64);
+const int64_t i_to_i64 = int64_t(si);
+
+// uint <-> uint64
+const uint     u64_to_u = uint(su64);
+const uint64_t u_to_u64 = uint64_t(su);
+
+// int64 <-> uint64
+const int64_t  u64_to_i64 = int64_t(su64);
+const uint64_t i64_to_u64 = uint64_t(si64);
+
+// int <-> uint64
+const int      u64_to_i = int(su64);
+const uint64_t i_to_u64 = uint64_t(si);
+
+// uint <-> int64
+const uint    i64_to_u = uint(si64);
+const int64_t u_to_i64 = int64_t(su);
+
+#define UINT64_MAX  18446744073709551615ul
+uint64_t u64Max = UINT64_MAX;

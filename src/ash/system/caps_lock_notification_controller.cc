@@ -5,7 +5,7 @@
 #include "ash/system/caps_lock_notification_controller.h"
 
 #include "ash/accessibility/accessibility_controller.h"
-#include "ash/public/cpp/ash_features.h"
+#include "ash/public/cpp/notification_utils.h"
 #include "ash/resources/vector_icons/vector_icons.h"
 #include "ash/session/session_controller.h"
 #include "ash/shell.h"
@@ -33,19 +33,17 @@ std::unique_ptr<Notification> CreateNotification() {
       CapsLockNotificationController::IsSearchKeyMappedToCapsLock()
           ? IDS_ASH_STATUS_TRAY_CAPS_LOCK_CANCEL_BY_SEARCH
           : IDS_ASH_STATUS_TRAY_CAPS_LOCK_CANCEL_BY_ALT_SEARCH;
-  std::unique_ptr<Notification> notification =
-      Notification::CreateSystemNotification(
-          message_center::NOTIFICATION_TYPE_SIMPLE, kCapsLockNotificationId,
-          l10n_util::GetStringUTF16(IDS_ASH_STATUS_TRAY_CAPS_LOCK_ENABLED),
-          l10n_util::GetStringUTF16(string_id),
-          base::string16() /* display_source */, GURL(),
-          message_center::NotifierId(
-              message_center::NotifierId::SYSTEM_COMPONENT, kNotifierCapsLock),
-          message_center::RichNotificationData(), nullptr,
-          kNotificationCapslockIcon,
-          message_center::SystemNotificationWarningLevel::NORMAL);
-  if (features::IsSystemTrayUnifiedEnabled())
-    notification->set_pinned(true);
+  std::unique_ptr<Notification> notification = ash::CreateSystemNotification(
+      message_center::NOTIFICATION_TYPE_SIMPLE, kCapsLockNotificationId,
+      l10n_util::GetStringUTF16(IDS_ASH_STATUS_TRAY_CAPS_LOCK_ENABLED),
+      l10n_util::GetStringUTF16(string_id),
+      base::string16() /* display_source */, GURL(),
+      message_center::NotifierId(message_center::NotifierType::SYSTEM_COMPONENT,
+                                 kNotifierCapsLock),
+      message_center::RichNotificationData(), nullptr,
+      kNotificationCapslockIcon,
+      message_center::SystemNotificationWarningLevel::NORMAL);
+  notification->set_pinned(true);
   return notification;
 }
 
@@ -98,13 +96,10 @@ void CapsLockNotificationController::OnCapsLockChanged(bool enabled) {
               : mojom::AccessibilityAlert::CAPS_OFF);
 
   if (enabled) {
-    if (!notification_shown_ || features::IsSystemTrayUnifiedEnabled()) {
-      Shell::Get()->metrics()->RecordUserMetricsAction(
-          UMA_STATUS_AREA_CAPS_LOCK_POPUP);
+    Shell::Get()->metrics()->RecordUserMetricsAction(
+        UMA_STATUS_AREA_CAPS_LOCK_POPUP);
 
-      MessageCenter::Get()->AddNotification(CreateNotification());
-      notification_shown_ = true;
-    }
+    MessageCenter::Get()->AddNotification(CreateNotification());
   } else if (MessageCenter::Get()->FindVisibleNotificationById(
                  kCapsLockNotificationId)) {
     MessageCenter::Get()->RemoveNotification(kCapsLockNotificationId, false);

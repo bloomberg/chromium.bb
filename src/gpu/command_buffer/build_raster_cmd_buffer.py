@@ -338,12 +338,6 @@ _FUNCTION_INFO = {
     'client_test': False,
     'cmd_args': 'GLuint url_bucket_id',
   },
-  'ResetActiveURLCHROMIUM': {
-    'impl_func': False,
-    'client_test': False,
-    'decoder_func': 'DoResetActiveURLCHROMIUM',
-    'unit_test': False,
-  },
   'InsertFenceSyncCHROMIUM': {
     'type': 'Custom',
     'internal': True,
@@ -432,6 +426,21 @@ _FUNCTION_INFO = {
     'internal': True,
     'impl_func': True,
     'client_test': False,
+    'unit_test': False,
+  },
+  'DeletePaintCacheTextBlobsINTERNAL': {
+    'type': 'DELn',
+    'internal': True,
+    'unit_test': False,
+  },
+  'DeletePaintCachePathsINTERNAL': {
+    'type': 'DELn',
+    'internal': True,
+    'unit_test': False,
+  },
+  'ClearPaintCacheINTERNAL': {
+    'decoder_func': 'DoClearPaintCacheINTERNAL',
+    'internal': True,
     'unit_test': False,
   },
   'UnlockTransferCacheEntryINTERNAL': {

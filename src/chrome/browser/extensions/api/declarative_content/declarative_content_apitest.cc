@@ -16,6 +16,7 @@
 #include "chrome/browser/extensions/extension_apitest.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/extensions/extension_tab_util.h"
+#include "chrome/browser/sessions/session_tab_helper.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_window.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
@@ -713,13 +714,15 @@ IN_PROC_BROWSER_TEST_F(DeclarativeContentApiTest,
 
 namespace {
 
-class ShowPageActionWithoutPageActionTest
+// TODO(devlin): Would this be better as a parameterized test case that could
+// exercise all of (page action, browser action, no action)?
+class ShowPageActionWithoutSpecifiedPageActionTest
     : public DeclarativeContentApiTest,
       public testing::WithParamInterface<bool> {};
 
 }  // namespace
 
-IN_PROC_BROWSER_TEST_P(ShowPageActionWithoutPageActionTest, Test) {
+IN_PROC_BROWSER_TEST_P(ShowPageActionWithoutSpecifiedPageActionTest, Test) {
   bool has_browser_action = GetParam();
   // Load an extension without a page action.
   std::string manifest_without_page_action = kDeclarativeContentManifest;
@@ -739,38 +742,50 @@ IN_PROC_BROWSER_TEST_P(ShowPageActionWithoutPageActionTest, Test) {
   content::BrowserContext::GetDefaultStoragePartition(profile())
       ->FlushNetworkInterfaceForTesting();
 
+  ExtensionAction* action = ExtensionActionManager::Get(browser()->profile())
+                                ->GetExtensionAction(*extension);
+  ASSERT_TRUE(action);
+  if (has_browser_action) {
+    // Set the browser action default visibility to false, so that we check the
+    // same behavior as with page actions.
+    action->SetIsVisible(ExtensionAction::kDefaultTabId, false);
+  }
+
   const char kScript[] =
       "setRules([{\n"
       "  conditions: [new PageStateMatcher({\n"
       "                   pageUrl: {hostPrefix: \"test\"}})],\n"
       "  actions: [new ShowPageAction()]\n"
       "}], 'test_rule');\n";
-  const char kErrorSubstr[] = "without a page action";
+  const char kSuccessStr[] = "test_rule";
+
   std::string result = ExecuteScriptInBackgroundPage(extension->id(), kScript);
 
-  // Extensions with no action provided are given a page action by default
-  // (for visibility reasons). If an extension has a browser action, it
-  // should cause an error.
-  if (has_browser_action)
-    EXPECT_THAT(result, testing::HasSubstr(kErrorSubstr));
-  else
-    EXPECT_THAT(result, testing::Not(testing::HasSubstr(kErrorSubstr)));
+  // Since extensions with no action provided are given a page action by default
+  // (for visibility reasons) and ShowPageAction() should also work with
+  // browser actions, both of these should pass.
+  EXPECT_THAT(result, testing::HasSubstr(kSuccessStr));
 
   content::WebContents* const tab =
       browser()->tab_strip_model()->GetWebContentsAt(0);
   NavigateInRenderer(tab, GURL("http://test/"));
 
+  const int tab_id = SessionTabHelper::IdForTab(tab).id();
+  EXPECT_TRUE(action->GetIsVisible(tab_id));
+
   bool expect_page_action = !has_browser_action;
-  ExtensionAction* page_action =
-      ExtensionActionManager::Get(browser()->profile())
-          ->GetPageAction(*extension);
-  EXPECT_EQ(expect_page_action, page_action != nullptr);
-  EXPECT_EQ(expect_page_action ? 1u : 0u,
-            extension_action_test_util::GetVisiblePageActionCount(tab));
+  if (expect_page_action) {
+    ExtensionAction* page_action =
+        ExtensionActionManager::Get(browser()->profile())
+            ->GetPageAction(*extension);
+    EXPECT_EQ(expect_page_action, page_action != nullptr);
+    EXPECT_EQ(expect_page_action ? 1u : 0u,
+              extension_action_test_util::GetVisiblePageActionCount(tab));
+  }
 }
 
-INSTANTIATE_TEST_CASE_P(ShowPageActionWithoutPageActionTest,
-                        ShowPageActionWithoutPageActionTest,
+INSTANTIATE_TEST_CASE_P(ShowPageActionWithoutSpecifiedPageActionTest,
+                        ShowPageActionWithoutSpecifiedPageActionTest,
                         ::testing::Bool());
 
 IN_PROC_BROWSER_TEST_F(DeclarativeContentApiTest,

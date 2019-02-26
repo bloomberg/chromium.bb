@@ -8,16 +8,15 @@
 #include "base/logging.h"
 #include "base/strings/string_number_conversions.h"
 #include "gpu/command_buffer/common/debug_marker_manager.h"
-#include "gpu/command_buffer/service/decoder_client.h"
 #include "gpu/command_buffer/service/gpu_switches.h"
 
 namespace gpu {
 namespace gles2 {
 
 Logger::Logger(const DebugMarkerManager* debug_marker_manager,
-               DecoderClient* client)
+               const LogMessageCallback& callback)
     : debug_marker_manager_(debug_marker_manager),
-      client_(client),
+      log_message_callback_(callback),
       log_message_count_(0),
       log_synthesized_gl_errors_(true) {
   Logger* this_temp = this;
@@ -40,7 +39,7 @@ void Logger::LogMessage(
       ::logging::LogMessage(
           filename, line, ::logging::LOG_ERROR).stream() << prefixed_msg;
     }
-    client_->OnConsoleMessage(0, prefixed_msg);
+    log_message_callback_.Run(prefixed_msg);
   } else {
     if (log_message_count_ == kMaxLogMessages) {
       ++log_message_count_;

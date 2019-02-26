@@ -25,19 +25,15 @@ void NoopUpdateCallback(bool success) {
 }  // namespace
 
 PersistentEventStore::PersistentEventStore(
-    const base::FilePath& storage_dir,
     std::unique_ptr<leveldb_proto::ProtoDatabase<Event>> db)
-    : storage_dir_(storage_dir),
-      db_(std::move(db)),
-      ready_(false),
-      weak_ptr_factory_(this) {}
+    : db_(std::move(db)), ready_(false), weak_ptr_factory_(this) {}
 
 PersistentEventStore::~PersistentEventStore() = default;
 
 void PersistentEventStore::Load(const OnLoadedCallback& callback) {
   DCHECK(!ready_);
 
-  db_->Init(kDBUMAName, storage_dir_, leveldb_proto::CreateSimpleOptions(),
+  db_->Init(kDBUMAName,
             base::BindOnce(&PersistentEventStore::OnInitComplete,
                            weak_ptr_factory_.GetWeakPtr(), callback));
 }
@@ -48,6 +44,7 @@ bool PersistentEventStore::IsReady() const {
 
 void PersistentEventStore::WriteEvent(const Event& event) {
   DCHECK(IsReady());
+
   std::unique_ptr<KeyEventList> entries = std::make_unique<KeyEventList>();
   entries->push_back(KeyEventPair(event.name(), event));
 

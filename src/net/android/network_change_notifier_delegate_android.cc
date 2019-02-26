@@ -55,7 +55,7 @@ void NetworkChangeNotifierDelegateAndroid::JavaLongArrayToNetworkMap(
     const JavaRef<jlongArray>& long_array,
     NetworkMap* network_map) {
   std::vector<int64_t> int64_list;
-  base::android::JavaLongArrayToInt64Vector(env, long_array.obj(), &int64_list);
+  base::android::JavaLongArrayToInt64Vector(env, long_array, &int64_list);
   network_map->clear();
   for (auto i = int64_list.begin(); i != int64_list.end(); ++i) {
     NetworkChangeNotifier::NetworkHandle network_handle = *i;

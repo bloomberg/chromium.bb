@@ -42,7 +42,7 @@ enum {
   kClientTaskRunner,
 };
 
-MidiPortInfo GetPortInfoFromEndpoint(MIDIEndpointRef endpoint) {
+mojom::PortInfo GetPortInfoFromEndpoint(MIDIEndpointRef endpoint) {
   std::string manufacturer;
   CFStringRef manufacturer_ref = NULL;
   OSStatus result = MIDIObjectGetStringProperty(
@@ -97,7 +97,7 @@ MidiPortInfo GetPortInfoFromEndpoint(MIDIEndpointRef endpoint) {
   }
 
   const PortState state = PortState::OPENED;
-  return MidiPortInfo(id, manufacturer, name, version, state);
+  return mojom::PortInfo(id, manufacturer, name, version, state);
 }
 
 base::TimeTicks MIDITimeStampToTimeTicks(MIDITimeStamp timestamp) {
@@ -236,8 +236,8 @@ void MidiManagerMac::ReceiveMidiNotify(const MIDINotification* message) {
       // Attaching device is an input device.
       auto it = std::find(sources_.begin(), sources_.end(), endpoint);
       if (it == sources_.end()) {
-        MidiPortInfo info = GetPortInfoFromEndpoint(endpoint);
-        // If the device disappears before finishing queries, MidiPortInfo
+        mojom::PortInfo info = GetPortInfoFromEndpoint(endpoint);
+        // If the device disappears before finishing queries, mojom::PortInfo
         // becomes incomplete. Skip and do not cache such information here.
         // On kMIDIMsgObjectRemoved, the entry will be ignored because it
         // will not be found in the pool.
@@ -254,7 +254,7 @@ void MidiManagerMac::ReceiveMidiNotify(const MIDINotification* message) {
       // Attaching device is an output device.
       auto it = std::find(destinations_.begin(), destinations_.end(), endpoint);
       if (it == destinations_.end()) {
-        MidiPortInfo info = GetPortInfoFromEndpoint(endpoint);
+        mojom::PortInfo info = GetPortInfoFromEndpoint(endpoint);
         // Skip cases that queries are not finished correctly.
         if (!info.id.empty()) {
           destinations_.push_back(endpoint);

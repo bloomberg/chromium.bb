@@ -43,7 +43,8 @@ void FilterData::Dispose() {
 }
 
 LayoutSVGResourceFilter::LayoutSVGResourceFilter(SVGFilterElement* node)
-    : LayoutSVGResourceContainer(node), filter_(new FilterMap) {}
+    : LayoutSVGResourceContainer(node),
+      filter_(MakeGarbageCollected<FilterMap>()) {}
 
 LayoutSVGResourceFilter::~LayoutSVGResourceFilter() = default;
 

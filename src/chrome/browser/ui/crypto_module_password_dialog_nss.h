@@ -26,7 +26,7 @@ void UnlockSlotsIfNecessary(std::vector<crypto::ScopedPK11Slot> modules,
                             CryptoModulePasswordReason reason,
                             const net::HostPortPair& server,
                             gfx::NativeWindow parent,
-                            const base::Closure& callback);
+                            base::OnceClosure callback);
 
 // Asynchronously unlock the |cert|'s module, if necessary. |callback| is
 // called when done (regardless if module was successfully unlocked or not).
@@ -35,7 +35,7 @@ void UnlockCertSlotIfNecessary(CERTCertificate* cert,
                                CryptoModulePasswordReason reason,
                                const net::HostPortPair& server,
                                gfx::NativeWindow parent,
-                               const base::Closure& callback);
+                               base::OnceClosure callback);
 
 }  // namespace chrome
 

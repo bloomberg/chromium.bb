@@ -6,6 +6,7 @@
 #define THIRD_PARTY_BLINK_PUBLIC_PLATFORM_WEB_CONTENT_DECRYPTION_MODULE_ACCESS_H_
 
 #include "third_party/blink/public/platform/web_common.h"
+#include "third_party/blink/public/platform/web_string.h"
 
 namespace blink {
 
@@ -18,6 +19,7 @@ class BLINK_PLATFORM_EXPORT WebContentDecryptionModuleAccess {
   virtual void CreateContentDecryptionModule(
       WebContentDecryptionModuleResult) = 0;
   virtual WebMediaKeySystemConfiguration GetConfiguration() = 0;
+  virtual WebString GetKeySystem() = 0;
 };
 
 }  // namespace blink

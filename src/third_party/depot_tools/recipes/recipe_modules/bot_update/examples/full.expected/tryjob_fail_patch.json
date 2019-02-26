@@ -168,9 +168,12 @@
     ]
   },
   {
-    "name": "$result",
-    "reason": "Step('Patch failure') failed with return_code 1",
-    "recipe_result": null,
-    "status_code": 1
+    "failure": {
+      "failure": {
+        "step": "Patch failure"
+      },
+      "humanReason": "Step('Patch failure') failed with return_code 1"
+    },
+    "name": "$result"
   }
 ]

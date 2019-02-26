@@ -37,7 +37,7 @@ DeviceOrientationEvent::DeviceOrientationEvent()
 
 DeviceOrientationEvent::DeviceOrientationEvent(
     const AtomicString& event_type,
-    const DeviceOrientationEventInit& initializer)
+    const DeviceOrientationEventInit* initializer)
     : Event(event_type, initializer),
       orientation_(DeviceOrientationData::Create(initializer)) {}
 
@@ -76,7 +76,7 @@ bool DeviceOrientationEvent::absolute() const {
 }
 
 const AtomicString& DeviceOrientationEvent::InterfaceName() const {
-  return EventNames::DeviceOrientationEvent;
+  return event_interface_names::kDeviceOrientationEvent;
 }
 
 void DeviceOrientationEvent::Trace(blink::Visitor* visitor) {

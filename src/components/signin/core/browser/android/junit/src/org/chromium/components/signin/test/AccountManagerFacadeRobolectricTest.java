@@ -14,6 +14,8 @@ import android.os.UserManager;
 import android.support.test.filters.SmallTest;
 import android.support.test.rule.UiThreadTestRule;
 
+import com.google.common.collect.ImmutableList;
+
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Rule;
@@ -22,7 +24,6 @@ import org.junit.runner.RunWith;
 import org.robolectric.RuntimeEnvironment;
 import org.robolectric.annotation.Config;
 
-import org.chromium.base.Callback;
 import org.chromium.base.task.test.CustomShadowAsyncTask;
 import org.chromium.base.test.BaseRobolectricTestRunner;
 import org.chromium.components.signin.AccountManagerDelegateException;
@@ -130,20 +131,20 @@ public class AccountManagerFacadeRobolectricTest {
     @Test
     @SmallTest
     public void testGetAccounts() throws AccountManagerDelegateException {
-        Assert.assertArrayEquals(new Account[] {}, mFacade.getGoogleAccounts());
+        Assert.assertEquals(ImmutableList.of(), mFacade.getGoogleAccounts());
 
         Account account = addTestAccount("test@gmail.com");
-        Assert.assertArrayEquals(new Account[] {account}, mFacade.getGoogleAccounts());
+        Assert.assertEquals(ImmutableList.of(account), mFacade.getGoogleAccounts());
 
         Account account2 = addTestAccount("test2@gmail.com");
-        Assert.assertArrayEquals(new Account[] {account, account2}, mFacade.getGoogleAccounts());
+        Assert.assertEquals(ImmutableList.of(account, account2), mFacade.getGoogleAccounts());
 
         Account account3 = addTestAccount("test3@gmail.com");
-        Assert.assertArrayEquals(
-                new Account[] {account, account2, account3}, mFacade.getGoogleAccounts());
+        Assert.assertEquals(
+                ImmutableList.of(account, account2, account3), mFacade.getGoogleAccounts());
 
         removeTestAccount(account2);
-        Assert.assertArrayEquals(new Account[] {account, account3}, mFacade.getGoogleAccounts());
+        Assert.assertEquals(ImmutableList.of(account, account3), mFacade.getGoogleAccounts());
     }
 
     @Test
@@ -151,19 +152,19 @@ public class AccountManagerFacadeRobolectricTest {
     public void testGetAccountsWithAccountPattern() throws AccountManagerDelegateException {
         setAccountRestrictionPatterns("*@example.com");
         Account account = addTestAccount("test@example.com");
-        Assert.assertArrayEquals(new Account[] {account}, mFacade.getGoogleAccounts());
+        Assert.assertEquals(ImmutableList.of(account), mFacade.getGoogleAccounts());
 
         addTestAccount("test@gmail.com"); // Doesn't match the pattern.
-        Assert.assertArrayEquals(new Account[] {account}, mFacade.getGoogleAccounts());
+        Assert.assertEquals(ImmutableList.of(account), mFacade.getGoogleAccounts());
 
         Account account2 = addTestAccount("test2@example.com");
-        Assert.assertArrayEquals(new Account[] {account, account2}, mFacade.getGoogleAccounts());
+        Assert.assertEquals(ImmutableList.of(account, account2), mFacade.getGoogleAccounts());
 
         addTestAccount("test2@gmail.com"); // Doesn't match the pattern.
-        Assert.assertArrayEquals(new Account[] {account, account2}, mFacade.getGoogleAccounts());
+        Assert.assertEquals(ImmutableList.of(account, account2), mFacade.getGoogleAccounts());
 
         removeTestAccount(account);
-        Assert.assertArrayEquals(new Account[] {account2}, mFacade.getGoogleAccounts());
+        Assert.assertEquals(ImmutableList.of(account2), mFacade.getGoogleAccounts());
     }
 
     @Test
@@ -172,44 +173,44 @@ public class AccountManagerFacadeRobolectricTest {
         setAccountRestrictionPatterns("test1@example.com", "test2@gmail.com");
         addTestAccount("test@gmail.com"); // Doesn't match the pattern.
         addTestAccount("test@example.com"); // Doesn't match the pattern.
-        Assert.assertArrayEquals(new Account[] {}, mFacade.getGoogleAccounts());
+        Assert.assertEquals(ImmutableList.of(), mFacade.getGoogleAccounts());
 
         Account account = addTestAccount("test1@example.com");
-        Assert.assertArrayEquals(new Account[] {account}, mFacade.getGoogleAccounts());
+        Assert.assertEquals(ImmutableList.of(account), mFacade.getGoogleAccounts());
 
         addTestAccount("test2@example.com"); // Doesn't match the pattern.
-        Assert.assertArrayEquals(new Account[] {account}, mFacade.getGoogleAccounts());
+        Assert.assertEquals(ImmutableList.of(account), mFacade.getGoogleAccounts());
 
         Account account2 = addTestAccount("test2@gmail.com");
-        Assert.assertArrayEquals(new Account[] {account, account2}, mFacade.getGoogleAccounts());
+        Assert.assertEquals(ImmutableList.of(account, account2), mFacade.getGoogleAccounts());
     }
 
     @Test
     @SmallTest
     public void testGetAccountsWithAccountPatternsChange() throws AccountManagerDelegateException {
-        Assert.assertArrayEquals(new Account[] {}, mFacade.getGoogleAccounts());
+        Assert.assertEquals(ImmutableList.of(), mFacade.getGoogleAccounts());
 
         Account account = addTestAccount("test@gmail.com");
-        Assert.assertArrayEquals(new Account[] {account}, mFacade.getGoogleAccounts());
+        Assert.assertEquals(ImmutableList.of(account), mFacade.getGoogleAccounts());
 
         Account account2 = addTestAccount("test2@example.com");
-        Assert.assertArrayEquals(new Account[] {account, account2}, mFacade.getGoogleAccounts());
+        Assert.assertEquals(ImmutableList.of(account, account2), mFacade.getGoogleAccounts());
 
         Account account3 = addTestAccount("test3@gmail.com");
-        Assert.assertArrayEquals(
-                new Account[] {account, account2, account3}, mFacade.getGoogleAccounts());
+        Assert.assertEquals(
+                ImmutableList.of(account, account2, account3), mFacade.getGoogleAccounts());
 
         setAccountRestrictionPatterns("test@gmail.com");
-        Assert.assertArrayEquals(new Account[] {account}, mFacade.getGoogleAccounts());
+        Assert.assertEquals(ImmutableList.of(account), mFacade.getGoogleAccounts());
 
         setAccountRestrictionPatterns("*@example.com", "test3@gmail.com");
-        Assert.assertArrayEquals(new Account[] {account2, account3}, mFacade.getGoogleAccounts());
+        Assert.assertEquals(ImmutableList.of(account2, account3), mFacade.getGoogleAccounts());
 
         removeTestAccount(account3);
-        Assert.assertArrayEquals(new Account[] {account2}, mFacade.getGoogleAccounts());
+        Assert.assertEquals(ImmutableList.of(account2), mFacade.getGoogleAccounts());
 
         clearAccountRestrictionPatterns();
-        Assert.assertArrayEquals(new Account[] {account, account2}, mFacade.getGoogleAccounts());
+        Assert.assertEquals(ImmutableList.of(account, account2), mFacade.getGoogleAccounts());
     }
 
     @Test
@@ -217,7 +218,7 @@ public class AccountManagerFacadeRobolectricTest {
     public void testGetAccountsMultipleMatchingPatterns() throws AccountManagerDelegateException {
         setAccountRestrictionPatterns("*@gmail.com", "test@gmail.com");
         Account account = addTestAccount("test@gmail.com"); // Matches both patterns
-        Assert.assertArrayEquals(new Account[] {account}, mFacade.getGoogleAccounts());
+        Assert.assertEquals(ImmutableList.of(account), mFacade.getGoogleAccounts());
     }
 
     @Test
@@ -256,12 +257,9 @@ public class AccountManagerFacadeRobolectricTest {
     private void assertChildAccountStatus(
             Account account, @ChildAccountStatus.Status Integer status) {
         final AtomicInteger callCount = new AtomicInteger();
-        AccountManagerFacade.get().checkChildAccountStatus(account, new Callback<Integer>() {
-            @Override
-            public void onResult(@ChildAccountStatus.Status Integer result) {
-                callCount.incrementAndGet();
-                Assert.assertEquals(result, status);
-            }
+        AccountManagerFacade.get().checkChildAccountStatus(account, result -> {
+            callCount.incrementAndGet();
+            Assert.assertEquals(result, status);
         });
         Assert.assertEquals(1, callCount.get());
     }

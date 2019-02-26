@@ -234,8 +234,8 @@ MIDIOutput* MIDIOutput::Create(MIDIAccess* access,
                                const String& version,
                                PortState state) {
   DCHECK(access);
-  return new MIDIOutput(access, port_index, id, manufacturer, name, version,
-                        state);
+  return MakeGarbageCollected<MIDIOutput>(access, port_index, id, manufacturer,
+                                          name, version, state);
 }
 
 MIDIOutput::MIDIOutput(MIDIAccess* access,

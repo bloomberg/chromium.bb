@@ -10,6 +10,7 @@
 
 #include "base/location.h"
 #include "base/memory/weak_ptr.h"
+#include "base/optional.h"
 #include "components/sync/base/model_type.h"
 #include "components/sync/model/entity_data.h"
 #include "components/sync/model/model_error.h"
@@ -36,7 +37,8 @@ class ModelTypeChangeProcessor {
                    std::unique_ptr<EntityData> entity_data,
                    MetadataChangeList* metadata_change_list) = 0;
 
-  // Inform the processor of a deleted entity.
+  // Inform the processor of a deleted entity. The call is ignored if
+  // |storage_key| is unknown.
   virtual void Delete(const std::string& storage_key,
                       MetadataChangeList* metadata_change_list) = 0;
 
@@ -50,20 +52,27 @@ class ModelTypeChangeProcessor {
                                 const std::string& storage_key,
                                 MetadataChangeList* metadata_change_list) = 0;
 
-  // Remove entity metadata and do not track the entity. This function only
-  // applies to datatypes that can't generate storage key based on EntityData.
-  // Bridge should call this function when handling
-  // MergeSyncData/ApplySyncChanges to inform the processor that this entity
-  // should not been tracked. Datatypes that support GetStorageKey should call
-  // change_processor()->Delete() instead.
-  virtual void UntrackEntity(const EntityData& entity_data) = 0;
-
   // Remove entity metadata and do not track the entity. Applies to datatypes
   // that support local deletions that should not get synced up (e.g. TYPED_URL
   // does not sync up deletions of expired URLs). If the deletion should get
   // synced up, use change_processor()->Delete() instead. The call is ignored if
   // |storage_key| is unknown.
   virtual void UntrackEntityForStorageKey(const std::string& storage_key) = 0;
+
+  // Remove entity metadata and do not track the entity, exactly like
+  // UntrackEntityForStorageKey() above. This function should only be called by
+  // datatypes that can't generate storage keys. The call is ignored if
+  // |client_tag_hash| is unknown.
+  virtual void UntrackEntityForClientTagHash(
+      const std::string& client_tag_hash) = 0;
+
+  // Returns true if a tracked entity has local changes. A commit may or may not
+  // be in progress at this time.
+  // TODO(mastiz): The only user of this is HISTORY_DELETE_DIRECTIVES which
+  // needs it for a rather questionable reason. Revisit this, for example by
+  // moving the SyncableService to history's backend thread, and leveraging
+  // USS's ability to delete local data upcon commit completion.
+  virtual bool IsEntityUnsynced(const std::string& storage_key) = 0;
 
   // Pass the pointer to the processor so that the processor can notify the
   // bridge of various events; |bridge| must not be nullptr and must outlive
@@ -94,6 +103,10 @@ class ModelTypeChangeProcessor {
   // be called after an error. This will result in sync being temporarily
   // disabled for the model type (generally until the next restart).
   virtual void ReportError(const ModelError& error) = 0;
+
+  // Returns whether the processor has encountered any error, either reported
+  // by the bridge via ReportError() or by other means.
+  virtual base::Optional<ModelError> GetError() const = 0;
 
   // Returns the delegate for the controller.
   virtual base::WeakPtr<ModelTypeControllerDelegate>

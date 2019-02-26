@@ -15,6 +15,10 @@
 
 namespace blink {
 
+// Determines if non-standardized members should be exposed based on if any
+// known WebRTC related Origin Trials are running.
+RTCStatsFilter GetRTCStatsFilter(const ScriptState* script_state);
+
 // https://w3c.github.io/webrtc-pc/#rtcstatsreport-object
 class RTCStatsReport final : public ScriptWrappable,
                              public Maplike<String, v8::Local<v8::Value>> {
@@ -23,7 +27,7 @@ class RTCStatsReport final : public ScriptWrappable,
  public:
   RTCStatsReport(std::unique_ptr<WebRTCStatsReport>);
 
-  size_t size() const { return report_->Size(); }
+  uint32_t size() const;
 
   // Maplike<String, v8::Local<v8::Value>>
   PairIterable<String, v8::Local<v8::Value>>::IterationSource* StartIteration(

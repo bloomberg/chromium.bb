@@ -41,10 +41,6 @@ namespace media {
 struct MediaLogEvent;
 }
 
-namespace net {
-class URLRequestContextGetter;
-}
-
 namespace content {
 class BrowserContext;
 class MediaInternals;
@@ -62,7 +58,6 @@ class CONTENT_EXPORT RenderMessageFilter
   // Create the filter.
   RenderMessageFilter(int render_process_id,
                       BrowserContext* browser_context,
-                      net::URLRequestContextGetter* request_context,
                       RenderWidgetHelper* render_widget_helper,
                       MediaInternals* media_internals);
 
@@ -113,9 +108,6 @@ class CONTENT_EXPORT RenderMessageFilter
   // not own it; it is managed by the BrowserProcess, which has a wider scope
   // than we do.
   ResourceDispatcherHostImpl* resource_dispatcher_host_;
-
-  // Contextual information to be used for requests created here.
-  scoped_refptr<net::URLRequestContextGetter> request_context_;
 
   // The ResourceContext which is to be used on the IO thread.
   ResourceContext* resource_context_;

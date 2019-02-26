@@ -397,9 +397,6 @@ static void decode_mbmi_block(AV1Decoder *const pbi, MACROBLOCKD *const xd,
       aom_internal_error(xd->error_info, AOM_CODEC_CORRUPT_FRAME,
                          "Invalid block size.");
   }
-
-  int reader_corrupted_flag = aom_reader_has_error(r);
-  aom_merge_corrupted_flag(&xd->corrupted, reader_corrupted_flag);
 }
 
 typedef struct PadBlock {
@@ -594,7 +591,7 @@ static INLINE void dec_calc_subpel_params(
     block->y1 =
         ((pos_y + (bh - 1) * subpel_params->ys) >> SCALE_SUBPEL_BITS) + 1;
 
-    MV temp_mv;
+    MV32 temp_mv;
     temp_mv = clamp_mv_to_umv_border_sb(xd, &mv, bw, bh, pd->subsampling_x,
                                         pd->subsampling_y);
     *scaled_mv = av1_scale_mv(&temp_mv, (mi_x + x), (mi_y + y), sf);
@@ -608,7 +605,7 @@ static INLINE void dec_calc_subpel_params(
     int pos_x = (pre_x + x) << SUBPEL_BITS;
     int pos_y = (pre_y + y) << SUBPEL_BITS;
 
-    const MV mv_q4 = clamp_mv_to_umv_border_sb(
+    const MV32 mv_q4 = clamp_mv_to_umv_border_sb(
         xd, &mv, bw, bh, pd->subsampling_x, pd->subsampling_y);
     subpel_params->xs = subpel_params->ys = SCALE_SUBPEL_SHIFTS;
     subpel_params->subpel_x = (mv_q4.col & SUBPEL_MASK) << SCALE_EXTRA_BITS;
@@ -792,8 +789,7 @@ static INLINE void dec_build_inter_predictors(const AV1_COMMON *cm,
       int do_warp = (bw >= 8 && bh >= 8 &&
                      av1_allow_warp(mi, &warp_types,
                                     &xd->global_motion[mi->ref_frame[ref]],
-                                    build_for_obmc, subpel_params[ref].xs,
-                                    subpel_params[ref].ys, NULL));
+                                    build_for_obmc, sf, NULL));
       do_warp = (do_warp && xd->cur_frame_force_integer_mv == 0);
 
       extend_mc_border(sf, pre_buf, scaled_mv, block, subpel_x_mv, subpel_y_mv,
@@ -1238,10 +1234,26 @@ static void store_bitmask_vartx(AV1_COMMON *cm, int mi_row, int mi_col,
                                 MB_MODE_INFO *mbmi);
 #endif
 
+static void set_inter_tx_size(MB_MODE_INFO *mbmi, int stride_log2,
+                              int tx_w_log2, int tx_h_log2, int min_txs,
+                              int split_size, int txs, int blk_row,
+                              int blk_col) {
+  for (int idy = 0; idy < tx_size_high_unit[split_size];
+       idy += tx_size_high_unit[min_txs]) {
+    for (int idx = 0; idx < tx_size_wide_unit[split_size];
+         idx += tx_size_wide_unit[min_txs]) {
+      const int index = (((blk_row + idy) >> tx_h_log2) << stride_log2) +
+                        ((blk_col + idx) >> tx_w_log2);
+      mbmi->inter_tx_size[index] = txs;
+    }
+  }
+}
+
 static void read_tx_size_vartx(MACROBLOCKD *xd, MB_MODE_INFO *mbmi,
                                TX_SIZE tx_size, int depth,
 #if LOOP_FILTER_BITMASK
                                AV1_COMMON *cm, int mi_row, int mi_col,
+                               int store_bitmask,
 #endif
                                int blk_row, int blk_col, aom_reader *r) {
   FRAME_CONTEXT *ec_ctx = xd->tile_ctx;
@@ -1251,15 +1263,17 @@ static void read_tx_size_vartx(MACROBLOCKD *xd, MB_MODE_INFO *mbmi,
   const int max_blocks_wide = max_block_wide(xd, bsize, 0);
   if (blk_row >= max_blocks_high || blk_col >= max_blocks_wide) return;
   assert(tx_size > TX_4X4);
+  TX_SIZE txs = max_txsize_rect_lookup[bsize];
+  for (int level = 0; level < MAX_VARTX_DEPTH - 1; ++level)
+    txs = sub_tx_size_map[txs];
+  const int tx_w_log2 = tx_size_wide_log2[txs] - MI_SIZE_LOG2;
+  const int tx_h_log2 = tx_size_high_log2[txs] - MI_SIZE_LOG2;
+  const int bw_log2 = mi_size_wide_log2[bsize];
+  const int stride_log2 = bw_log2 - tx_w_log2;
 
   if (depth == MAX_VARTX_DEPTH) {
-    for (int idy = 0; idy < tx_size_high_unit[tx_size]; ++idy) {
-      for (int idx = 0; idx < tx_size_wide_unit[tx_size]; ++idx) {
-        const int index =
-            av1_get_txb_size_index(bsize, blk_row + idy, blk_col + idx);
-        mbmi->inter_tx_size[index] = tx_size;
-      }
-    }
+    set_inter_tx_size(mbmi, stride_log2, tx_w_log2, tx_h_log2, txs, tx_size,
+                      tx_size, blk_row, blk_col);
     mbmi->tx_size = tx_size;
     txfm_partition_update(xd->above_txfm_context + blk_col,
                           xd->left_txfm_context + blk_row, tx_size, tx_size);
@@ -1277,26 +1291,24 @@ static void read_tx_size_vartx(MACROBLOCKD *xd, MB_MODE_INFO *mbmi,
     const int bsh = tx_size_high_unit[sub_txs];
 
     if (sub_txs == TX_4X4) {
-      for (int idy = 0; idy < tx_size_high_unit[tx_size]; ++idy) {
-        for (int idx = 0; idx < tx_size_wide_unit[tx_size]; ++idx) {
-          const int index =
-              av1_get_txb_size_index(bsize, blk_row + idy, blk_col + idx);
-          mbmi->inter_tx_size[index] = sub_txs;
-        }
-      }
+      set_inter_tx_size(mbmi, stride_log2, tx_w_log2, tx_h_log2, txs, tx_size,
+                        sub_txs, blk_row, blk_col);
       mbmi->tx_size = sub_txs;
       txfm_partition_update(xd->above_txfm_context + blk_col,
                             xd->left_txfm_context + blk_row, sub_txs, tx_size);
 #if LOOP_FILTER_BITMASK
-      store_bitmask_vartx(cm, mi_row + blk_row, mi_col + blk_col, BLOCK_8X8,
-                          TX_4X4, mbmi);
+      if (store_bitmask) {
+        store_bitmask_vartx(cm, mi_row + blk_row, mi_col + blk_col,
+                            txsize_to_bsize[tx_size], TX_4X4, mbmi);
+      }
 #endif
       return;
     }
 #if LOOP_FILTER_BITMASK
-    if (depth + 1 == MAX_VARTX_DEPTH) {
+    if (depth + 1 == MAX_VARTX_DEPTH && store_bitmask) {
       store_bitmask_vartx(cm, mi_row + blk_row, mi_col + blk_col,
                           txsize_to_bsize[tx_size], sub_txs, mbmi);
+      store_bitmask = 0;
     }
 #endif
 
@@ -1307,25 +1319,22 @@ static void read_tx_size_vartx(MACROBLOCKD *xd, MB_MODE_INFO *mbmi,
         int offsetc = blk_col + col;
         read_tx_size_vartx(xd, mbmi, sub_txs, depth + 1,
 #if LOOP_FILTER_BITMASK
-                           cm, mi_row, mi_col,
+                           cm, mi_row, mi_col, store_bitmask,
 #endif
                            offsetr, offsetc, r);
       }
     }
   } else {
-    for (int idy = 0; idy < tx_size_high_unit[tx_size]; ++idy) {
-      for (int idx = 0; idx < tx_size_wide_unit[tx_size]; ++idx) {
-        const int index =
-            av1_get_txb_size_index(bsize, blk_row + idy, blk_col + idx);
-        mbmi->inter_tx_size[index] = tx_size;
-      }
-    }
+    set_inter_tx_size(mbmi, stride_log2, tx_w_log2, tx_h_log2, txs, tx_size,
+                      tx_size, blk_row, blk_col);
     mbmi->tx_size = tx_size;
     txfm_partition_update(xd->above_txfm_context + blk_col,
                           xd->left_txfm_context + blk_row, tx_size, tx_size);
 #if LOOP_FILTER_BITMASK
-    store_bitmask_vartx(cm, mi_row + blk_row, mi_col + blk_col,
-                        txsize_to_bsize[tx_size], tx_size, mbmi);
+    if (store_bitmask) {
+      store_bitmask_vartx(cm, mi_row + blk_row, mi_col + blk_col,
+                          txsize_to_bsize[tx_size], tx_size, mbmi);
+    }
 #endif
   }
 }
@@ -1505,7 +1514,9 @@ static void store_bitmask_univariant_tx(AV1_COMMON *cm, int mi_row, int mi_col,
 }
 
 static void store_bitmask_other_info(AV1_COMMON *cm, int mi_row, int mi_col,
-                                     BLOCK_SIZE bsize, MB_MODE_INFO *mbmi) {
+                                     BLOCK_SIZE bsize, MB_MODE_INFO *mbmi,
+                                     int is_horz_coding_block_border,
+                                     int is_vert_coding_block_border) {
   int index;
   int shift;
   int row;
@@ -1513,14 +1524,26 @@ static void store_bitmask_other_info(AV1_COMMON *cm, int mi_row, int mi_col,
   const int row_start = mi_row % MI_SIZE_64X64;
   const int col_start = mi_col % MI_SIZE_64X64;
   shift = get_index_shift(col_start, row_start, &index);
-  const uint64_t top_edge_mask =
-      ((uint64_t)1 << (shift + mi_size_wide[bsize])) - ((uint64_t)1 << shift);
-  lfm->is_horz_border.bits[index] |= top_edge_mask;
-  const int is_vert_border = mask_id_table_vert_border[bsize];
-  const int vert_shift = block_size_high[bsize] <= 8 ? shift : col_start;
-  for (int i = 0; i + index < 4; ++i) {
-    lfm->is_vert_border.bits[i + index] |=
-        (left_mask_univariant_reordered[is_vert_border].bits[i] << vert_shift);
+  if (is_horz_coding_block_border) {
+    const int block_shift = shift + mi_size_wide[bsize];
+    assert(block_shift <= 64);
+    const uint64_t right_edge_shift =
+        (block_shift == 64) ? 0xffffffffffffffff : ((uint64_t)1 << block_shift);
+    const uint64_t left_edge_shift = (block_shift == 64)
+                                         ? (((uint64_t)1 << shift) - 1)
+                                         : ((uint64_t)1 << shift);
+    assert(right_edge_shift > left_edge_shift);
+    const uint64_t top_edge_mask = right_edge_shift - left_edge_shift;
+    lfm->is_horz_border.bits[index] |= top_edge_mask;
+  }
+  if (is_vert_coding_block_border) {
+    const int is_vert_border = mask_id_table_vert_border[bsize];
+    const int vert_shift = block_size_high[bsize] <= 8 ? shift : col_start;
+    for (int i = 0; i + index < 4; ++i) {
+      lfm->is_vert_border.bits[i + index] |=
+          (left_mask_univariant_reordered[is_vert_border].bits[i]
+           << vert_shift);
+    }
   }
   const int is_skip = mbmi->skip && is_inter_block(mbmi);
   if (is_skip) {
@@ -1541,9 +1564,13 @@ static void store_bitmask_other_info(AV1_COMMON *cm, int mi_row, int mi_col,
            sizeof(uint8_t) * mi_size_wide[bsize]);
     memset(&lfm->lfl_y_hor[row][col_start], level_horz_y,
            sizeof(uint8_t) * mi_size_wide[bsize]);
-    memset(&lfm->lfl_u[row][col_start], level_u,
+    memset(&lfm->lfl_u_ver[row][col_start], level_u,
            sizeof(uint8_t) * mi_size_wide[bsize]);
-    memset(&lfm->lfl_v[row][col_start], level_v,
+    memset(&lfm->lfl_u_hor[row][col_start], level_u,
+           sizeof(uint8_t) * mi_size_wide[bsize]);
+    memset(&lfm->lfl_v_ver[row][col_start], level_v,
+           sizeof(uint8_t) * mi_size_wide[bsize]);
+    memset(&lfm->lfl_v_hor[row][col_start], level_v,
            sizeof(uint8_t) * mi_size_wide[bsize]);
   }
 }
@@ -1574,7 +1601,7 @@ static void parse_decode_block(AV1Decoder *const pbi, ThreadData *const td,
       for (int idx = 0; idx < width; idx += bw)
         read_tx_size_vartx(xd, mbmi, max_tx_size, 0,
 #if LOOP_FILTER_BITMASK
-                           cm, mi_row, mi_col,
+                           cm, mi_row, mi_col, 1,
 #endif
                            idy, idx, r);
   } else {
@@ -1602,12 +1629,12 @@ static void parse_decode_block(AV1Decoder *const pbi, ThreadData *const td,
   const int w = mi_size_wide[bsize];
   const int h = mi_size_high[bsize];
   if (w <= mi_size_wide[BLOCK_64X64] && h <= mi_size_high[BLOCK_64X64]) {
-    store_bitmask_other_info(cm, mi_row, mi_col, bsize, mbmi);
+    store_bitmask_other_info(cm, mi_row, mi_col, bsize, mbmi, 1, 1);
   } else {
     for (int row = 0; row < h; row += mi_size_high[BLOCK_64X64]) {
       for (int col = 0; col < w; col += mi_size_wide[BLOCK_64X64]) {
         store_bitmask_other_info(cm, mi_row + row, mi_col + col, BLOCK_64X64,
-                                 mbmi);
+                                 mbmi, row == 0, col == 0);
       }
     }
   }
@@ -1633,9 +1660,6 @@ static void parse_decode_block(AV1Decoder *const pbi, ThreadData *const td,
   if (mbmi->skip) av1_reset_skip_context(xd, mi_row, mi_col, bsize, num_planes);
 
   decode_token_recon_block(pbi, td, mi_row, mi_col, r, bsize);
-
-  int reader_corrupted_flag = aom_reader_has_error(r);
-  aom_merge_corrupted_flag(&xd->corrupted, reader_corrupted_flag);
 }
 
 static void set_offsets_for_pred_and_recon(AV1Decoder *const pbi,
@@ -1703,7 +1727,7 @@ static PARTITION_TYPE read_partition(MACROBLOCKD *xd, int mi_row, int mi_col,
 
 // TODO(slavarnway): eliminate bsize and subsize in future commits
 static void decode_partition(AV1Decoder *const pbi, ThreadData *const td,
-                             int mi_row, int mi_col, aom_reader *r,
+                             int mi_row, int mi_col, aom_reader *reader,
                              BLOCK_SIZE bsize, int parse_decode_flag) {
   AV1_COMMON *const cm = &pbi->common;
   MACROBLOCKD *const xd = &td->xd;
@@ -1736,14 +1760,14 @@ static void decode_partition(AV1Decoder *const pbi, ThreadData *const td,
         for (int rrow = rrow0; rrow < rrow1; ++rrow) {
           for (int rcol = rcol0; rcol < rcol1; ++rcol) {
             const int runit_idx = rcol + rrow * rstride;
-            loop_restoration_read_sb_coeffs(cm, xd, r, plane, runit_idx);
+            loop_restoration_read_sb_coeffs(cm, xd, reader, plane, runit_idx);
           }
         }
       }
     }
 
     partition = (bsize < BLOCK_8X8) ? PARTITION_NONE
-                                    : read_partition(xd, mi_row, mi_col, r,
+                                    : read_partition(xd, mi_row, mi_col, reader,
                                                      has_rows, has_cols, bsize);
   } else {
     partition = get_partition(cm, mi_row, mi_col, bsize);
@@ -1762,12 +1786,12 @@ static void decode_partition(AV1Decoder *const pbi, ThreadData *const td,
 
 #define DEC_BLOCK_STX_ARG
 #define DEC_BLOCK_EPT_ARG partition,
-#define DEC_BLOCK(db_r, db_c, db_subsize)                                     \
-  block_visit[parse_decode_flag](pbi, td, DEC_BLOCK_STX_ARG(db_r), (db_c), r, \
-                                 DEC_BLOCK_EPT_ARG(db_subsize))
-#define DEC_PARTITION(db_r, db_c, db_subsize)                                 \
-  decode_partition(pbi, td, DEC_BLOCK_STX_ARG(db_r), (db_c), r, (db_subsize), \
-                   parse_decode_flag)
+#define DEC_BLOCK(db_r, db_c, db_subsize)                                  \
+  block_visit[parse_decode_flag](pbi, td, DEC_BLOCK_STX_ARG(db_r), (db_c), \
+                                 reader, DEC_BLOCK_EPT_ARG(db_subsize))
+#define DEC_PARTITION(db_r, db_c, db_subsize)                        \
+  decode_partition(pbi, td, DEC_BLOCK_STX_ARG(db_r), (db_c), reader, \
+                   (db_subsize), parse_decode_flag)
 
   switch (partition) {
     case PARTITION_NONE: DEC_BLOCK(mi_row, mi_col, subsize); break;
@@ -2226,14 +2250,15 @@ static void setup_quantization(AV1_COMMON *const cm,
 }
 
 // Build y/uv dequant values based on segmentation.
-static void setup_segmentation_dequant(AV1_COMMON *const cm) {
+static void setup_segmentation_dequant(AV1_COMMON *const cm,
+                                       MACROBLOCKD *const xd) {
   const int bit_depth = cm->seq_params.bit_depth;
   const int using_qm = cm->using_qmatrix;
   // When segmentation is disabled, only the first value is used.  The
   // remaining are don't cares.
   const int max_segments = cm->seg.enabled ? MAX_SEGMENTS : 1;
   for (int i = 0; i < max_segments; ++i) {
-    const int qindex = av1_get_qindex(&cm->seg, i, cm->base_qindex);
+    const int qindex = xd->qindex[i];
     cm->y_dequant_QTX[i][0] =
         av1_dc_quant_QTX(qindex, cm->y_dc_delta_q, bit_depth);
     cm->y_dequant_QTX[i][1] = av1_ac_quant_QTX(qindex, 0, bit_depth);
@@ -2245,9 +2270,7 @@ static void setup_segmentation_dequant(AV1_COMMON *const cm) {
         av1_dc_quant_QTX(qindex, cm->v_dc_delta_q, bit_depth);
     cm->v_dequant_QTX[i][1] =
         av1_ac_quant_QTX(qindex, cm->v_ac_delta_q, bit_depth);
-    const int lossless = qindex == 0 && cm->y_dc_delta_q == 0 &&
-                         cm->u_dc_delta_q == 0 && cm->u_ac_delta_q == 0 &&
-                         cm->v_dc_delta_q == 0 && cm->v_ac_delta_q == 0;
+    const int lossless = xd->lossless[i];
     // NB: depends on base index so there is only 1 set per frame
     // No quant weighting when lossless or signalled not using QM
     int qmlevel = (lossless || using_qm == 0) ? NUM_QM_LEVELS - 1 : cm->qm_y;
@@ -2356,10 +2379,6 @@ static void setup_buffer_pool(AV1_COMMON *cm) {
   }
   unlock_buffer_pool(pool);
 
-  pool->frame_bufs[cm->new_fb_idx].buf.subsampling_x =
-      seq_params->subsampling_x;
-  pool->frame_bufs[cm->new_fb_idx].buf.subsampling_y =
-      seq_params->subsampling_y;
   pool->frame_bufs[cm->new_fb_idx].buf.bit_depth =
       (unsigned int)seq_params->bit_depth;
   pool->frame_bufs[cm->new_fb_idx].buf.color_primaries =
@@ -3308,10 +3327,10 @@ static int tile_worker_hook(void *arg1, void *arg2) {
   set_decode_func_pointers(td, 0x3);
 
   assert(cm->tile_cols > 0);
-  while (1) {
+  while (!td->xd.corrupted) {
     TileJobsDec *cur_job_info = get_dec_job_info(&pbi->tile_mt_info);
 
-    if (cur_job_info != NULL && !td->xd.corrupted) {
+    if (cur_job_info != NULL) {
       const TileBufferDec *const tile_buffer = cur_job_info->tile_buffer;
       TileDataDec *const tile_data = cur_job_info->tile_data;
       tile_worker_hook_init(pbi, thread_data, tile_buffer, tile_data,
@@ -3328,6 +3347,16 @@ static int tile_worker_hook(void *arg1, void *arg2) {
   return !td->xd.corrupted;
 }
 
+// The caller must hold pbi->row_mt_mutex_ when calling this function.
+// Returns 1 if either the next job is stored in *next_job_info or 1 is stored
+// in *end_of_frame.
+// NOTE: The caller waits on pbi->row_mt_cond_ if this function returns 0.
+// The return value of this function depends on the following variables:
+// - frame_row_mt_info->mi_rows_parse_done
+// - frame_row_mt_info->mi_rows_decode_started
+// - frame_row_mt_info->row_mt_exit
+// Therefore we may need to signal or broadcast pbi->row_mt_cond_ if any of
+// these variables is modified.
 static int get_next_job_info(AV1Decoder *const pbi,
                              AV1DecRowMTJobInfo *next_job_info,
                              int *end_of_frame) {
@@ -3362,9 +3391,10 @@ static int get_next_job_info(AV1Decoder *const pbi,
   }
 
   // Decoding cannot start as bit-stream parsing is not complete.
-  if (frame_row_mt_info->mi_rows_parse_done -
-          frame_row_mt_info->mi_rows_decode_started ==
-      0)
+  assert(frame_row_mt_info->mi_rows_parse_done >=
+         frame_row_mt_info->mi_rows_decode_started);
+  if (frame_row_mt_info->mi_rows_parse_done ==
+      frame_row_mt_info->mi_rows_decode_started)
     return 0;
 
   // Choose the tile to decode.
@@ -3417,6 +3447,14 @@ static int get_next_job_info(AV1Decoder *const pbi,
   dec_row_mt_sync->num_threads_working++;
   dec_row_mt_sync->mi_rows_decode_started += sb_mi_size;
   frame_row_mt_info->mi_rows_decode_started += sb_mi_size;
+  assert(frame_row_mt_info->mi_rows_parse_done >=
+         frame_row_mt_info->mi_rows_decode_started);
+#if CONFIG_MULTITHREAD
+  if (frame_row_mt_info->mi_rows_decode_started ==
+      frame_row_mt_info->mi_rows_to_decode) {
+    pthread_cond_broadcast(pbi->row_mt_cond_);
+  }
+#endif
 
   return 1;
 }
@@ -3428,10 +3466,16 @@ static INLINE void signal_parse_sb_row_done(AV1Decoder *const pbi,
 #if CONFIG_MULTITHREAD
   pthread_mutex_lock(pbi->row_mt_mutex_);
 #endif
+  assert(frame_row_mt_info->mi_rows_parse_done >=
+         frame_row_mt_info->mi_rows_decode_started);
   tile_data->dec_row_mt_sync.mi_rows_parse_done += sb_mi_size;
   frame_row_mt_info->mi_rows_parse_done += sb_mi_size;
 #if CONFIG_MULTITHREAD
-  pthread_cond_broadcast(pbi->row_mt_cond_);
+  // A new decode job is available. Wake up one worker thread to handle the
+  // new decode job.
+  // NOTE: This assumes we bump mi_rows_parse_done and mi_rows_decode_started
+  // by the same increment (sb_mi_size).
+  pthread_cond_signal(pbi->row_mt_cond_);
   pthread_mutex_unlock(pbi->row_mt_mutex_);
 #endif
 }
@@ -3510,10 +3554,10 @@ static int row_mt_worker_hook(void *arg1, void *arg2) {
   set_decode_func_pointers(td, 0x1);
 
   assert(cm->tile_cols > 0);
-  while (1) {
+  while (!td->xd.corrupted) {
     TileJobsDec *cur_job_info = get_dec_job_info(&pbi->tile_mt_info);
 
-    if (cur_job_info != NULL && !td->xd.corrupted) {
+    if (cur_job_info != NULL) {
       const TileBufferDec *const tile_buffer = cur_job_info->tile_buffer;
       TileDataDec *const tile_data = cur_job_info->tile_data;
       tile_worker_hook_init(pbi, thread_data, tile_buffer, tile_data,
@@ -3759,6 +3803,7 @@ static void decode_mt_init(AV1Decoder *pbi) {
       ++pbi->num_workers;
 
       winterface->init(worker);
+      worker->thread_name = "aom tile worker";
       if (worker_idx < num_threads - 1 && !winterface->reset(worker)) {
         aom_internal_error(&cm->error, AOM_CODEC_ERROR,
                            "Tile decoder thread creation failed");
@@ -4312,7 +4357,6 @@ void av1_read_color_config(struct aom_read_bit_buffer *rb,
   if (seq_params->color_primaries == AOM_CICP_CP_BT_709 &&
       seq_params->transfer_characteristics == AOM_CICP_TC_SRGB &&
       seq_params->matrix_coefficients == AOM_CICP_MC_IDENTITY) {
-    // It would be good to remove this dependency.
     seq_params->subsampling_y = seq_params->subsampling_x = 0;
     seq_params->color_range = 1;  // assume full color-range
     if (!(seq_params->profile == PROFILE_1 ||
@@ -4613,49 +4657,24 @@ static void read_global_motion(AV1_COMMON *cm, struct aom_read_bit_buffer *rb) {
          REF_FRAMES * sizeof(WarpedMotionParams));
 }
 
-static void show_existing_frame_reset(AV1Decoder *const pbi,
-                                      int existing_frame_idx) {
+// Release the references to the frame buffers in cm->ref_frame_map and reset
+// all elements of cm->ref_frame_map to -1.
+static void reset_ref_frame_map(AV1_COMMON *const cm) {
+  BufferPool *const pool = cm->buffer_pool;
+  RefCntBuffer *const frame_bufs = pool->frame_bufs;
+
+  for (int i = 0; i < REF_FRAMES; i++) {
+    decrease_ref_count(cm->ref_frame_map[i], frame_bufs, pool);
+  }
+  memset(&cm->ref_frame_map, -1, sizeof(cm->ref_frame_map));
+}
+
+// Generate next_ref_frame_map.
+static void generate_next_ref_frame_map(AV1Decoder *const pbi) {
   AV1_COMMON *const cm = &pbi->common;
   BufferPool *const pool = cm->buffer_pool;
   RefCntBuffer *const frame_bufs = pool->frame_bufs;
 
-  assert(cm->show_existing_frame);
-
-  cm->frame_type = KEY_FRAME;
-
-  pbi->refresh_frame_flags = (1 << REF_FRAMES) - 1;
-
-  for (int i = 0; i < INTER_REFS_PER_FRAME; ++i) {
-    cm->frame_refs[i].idx = INVALID_IDX;
-    cm->frame_refs[i].buf = NULL;
-  }
-
-  if (pbi->need_resync) {
-    memset(&cm->ref_frame_map, -1, sizeof(cm->ref_frame_map));
-    pbi->need_resync = 0;
-  }
-
-  cm->cur_frame->intra_only = 1;
-
-  if (cm->seq_params.frame_id_numbers_present_flag) {
-    /* If bitmask is set, update reference frame id values and
-       mark frames as valid for reference.
-       Note that the displayed frame be valid for referencing
-       in order to have been selected.
-    */
-    int refresh_frame_flags = pbi->refresh_frame_flags;
-    int display_frame_id = cm->ref_frame_id[existing_frame_idx];
-    for (int i = 0; i < REF_FRAMES; i++) {
-      if ((refresh_frame_flags >> i) & 1) {
-        cm->ref_frame_id[i] = display_frame_id;
-        cm->valid_for_referencing[i] = 1;
-      }
-    }
-  }
-
-  cm->refresh_frame_context = REFRESH_FRAME_CONTEXT_DISABLED;
-
-  // Generate next_ref_frame_map.
   lock_buffer_pool(pool);
   int ref_index = 0;
   for (int mask = pbi->refresh_frame_flags; mask; mask >>= 1) {
@@ -4680,6 +4699,49 @@ static void show_existing_frame_reset(AV1Decoder *const pbi,
   }
   unlock_buffer_pool(pool);
   pbi->hold_ref_buf = 1;
+}
+
+static void show_existing_frame_reset(AV1Decoder *const pbi,
+                                      int existing_frame_idx) {
+  AV1_COMMON *const cm = &pbi->common;
+
+  assert(cm->show_existing_frame);
+
+  cm->frame_type = KEY_FRAME;
+
+  pbi->refresh_frame_flags = (1 << REF_FRAMES) - 1;
+
+  for (int i = 0; i < INTER_REFS_PER_FRAME; ++i) {
+    cm->frame_refs[i].idx = INVALID_IDX;
+    cm->frame_refs[i].buf = NULL;
+  }
+
+  if (pbi->need_resync) {
+    reset_ref_frame_map(cm);
+    pbi->need_resync = 0;
+  }
+
+  cm->cur_frame->intra_only = 1;
+
+  if (cm->seq_params.frame_id_numbers_present_flag) {
+    /* If bitmask is set, update reference frame id values and
+       mark frames as valid for reference.
+       Note that the displayed frame be valid for referencing
+       in order to have been selected.
+    */
+    int refresh_frame_flags = pbi->refresh_frame_flags;
+    int display_frame_id = cm->ref_frame_id[existing_frame_idx];
+    for (int i = 0; i < REF_FRAMES; i++) {
+      if ((refresh_frame_flags >> i) & 1) {
+        cm->ref_frame_id[i] = display_frame_id;
+        cm->valid_for_referencing[i] = 1;
+      }
+    }
+  }
+
+  cm->refresh_frame_context = REFRESH_FRAME_CONTEXT_DISABLED;
+
+  generate_next_ref_frame_map(pbi);
 
   // Reload the adapted CDFs from when we originally coded this keyframe
   *cm->fc = cm->frame_contexts[existing_frame_idx];
@@ -4689,17 +4751,18 @@ static INLINE void reset_frame_buffers(AV1_COMMON *cm) {
   RefCntBuffer *const frame_bufs = cm->buffer_pool->frame_bufs;
   int i;
 
-  memset(&cm->ref_frame_map, -1, sizeof(cm->ref_frame_map));
+  // We have not stored any references to frame buffers in
+  // cm->next_ref_frame_map, so we can directly reset it to all -1.
   memset(&cm->next_ref_frame_map, -1, sizeof(cm->next_ref_frame_map));
 
   lock_buffer_pool(cm->buffer_pool);
+  reset_ref_frame_map(cm);
+  assert(frame_bufs[cm->new_fb_idx].ref_count == 1);
   for (i = 0; i < FRAME_BUFFERS; ++i) {
-    if (i != cm->new_fb_idx) {
-      frame_bufs[i].ref_count = 0;
-      cm->buffer_pool->release_fb_cb(cm->buffer_pool->cb_priv,
-                                     &frame_bufs[i].raw_frame_buffer);
-    } else {
-      assert(frame_bufs[i].ref_count == 1);
+    // Reset all unreferenced frame buffers. We can also reset cm->new_fb_idx
+    // because we are the sole owner of cm->new_fb_idx.
+    if (frame_bufs[i].ref_count > 0 && i != cm->new_fb_idx) {
+      continue;
     }
     frame_bufs[i].cur_frame_offset = 0;
     av1_zero(frame_bufs[i].ref_frame_offset);
@@ -4733,6 +4796,12 @@ static int read_uncompressed_header(AV1Decoder *pbi,
     cm->show_existing_frame = 0;
     cm->show_frame = 1;
     cm->frame_type = KEY_FRAME;
+    if (pbi->sequence_header_changed) {
+      // This is the start of a new coded video sequence.
+      pbi->sequence_header_changed = 0;
+      pbi->decoding_first_frame = 1;
+      reset_frame_buffers(cm);
+    }
     cm->error_resilient_mode = 1;
   } else {
     cm->show_existing_frame = aom_rb_read_bit(rb);
@@ -4768,7 +4837,15 @@ static int read_uncompressed_header(AV1Decoder *pbi,
                            "Buffer %d does not contain a decoded frame",
                            frame_to_show);
       }
-      ref_cnt_fb(frame_bufs, &cm->new_fb_idx, frame_to_show);
+      // cm->new_fb_idx should be the return value of the get_free_fb() call
+      // in av1_receive_compressed_data(), and generate_next_ref_frame_map()
+      // has not been called, so ref_count should still be 1.
+      assert(frame_bufs[cm->new_fb_idx].ref_count == 1);
+      // ref_cnt_fb() decrements ref_count directly rather than call
+      // decrease_ref_count(). If frame_bufs[cm->new_fb_idx].raw_frame_buffer
+      // has already been allocated, it will not be released by ref_cnt_fb()!
+      assert(!frame_bufs[cm->new_fb_idx].raw_frame_buffer.data);
+      assign_frame_buffer(frame_bufs, &cm->new_fb_idx, frame_to_show);
       cm->reset_decoder_state =
           frame_bufs[frame_to_show].frame_type == KEY_FRAME;
       unlock_buffer_pool(pool);
@@ -4795,11 +4872,11 @@ static int read_uncompressed_header(AV1Decoder *pbi,
 
     cm->frame_type = (FRAME_TYPE)aom_rb_read_literal(rb, 2);  // 2 bits
     if (pbi->sequence_header_changed) {
-      if (pbi->common.frame_type == KEY_FRAME) {
+      if (cm->frame_type == KEY_FRAME) {
         // This is the start of a new coded video sequence.
         pbi->sequence_header_changed = 0;
         pbi->decoding_first_frame = 1;
-        reset_frame_buffers(&pbi->common);
+        reset_frame_buffers(cm);
       } else {
         aom_internal_error(&cm->error, AOM_CODEC_CORRUPT_FRAME,
                            "Sequence header has changed without a keyframe.");
@@ -4942,7 +5019,7 @@ static int read_uncompressed_header(AV1Decoder *pbi,
       cm->frame_refs[i].buf = NULL;
     }
     if (pbi->need_resync) {
-      memset(&cm->ref_frame_map, -1, sizeof(cm->ref_frame_map));
+      reset_ref_frame_map(cm);
       pbi->need_resync = 0;
     }
   } else {
@@ -4953,7 +5030,7 @@ static int read_uncompressed_header(AV1Decoder *pbi,
                            "Intra only frames cannot have refresh flags 0xFF");
       }
       if (pbi->need_resync) {
-        memset(&cm->ref_frame_map, -1, sizeof(cm->ref_frame_map));
+        reset_ref_frame_map(cm);
         pbi->need_resync = 0;
       }
     } else if (pbi->need_resync != 1) { /* Skip if need resync */
@@ -4999,6 +5076,7 @@ static int read_uncompressed_header(AV1Decoder *pbi,
                   AOM_BORDER_IN_PIXELS, cm->byte_alignment,
                   &pool->frame_bufs[buf_idx].raw_frame_buffer, pool->get_fb_cb,
                   pool->cb_priv)) {
+            decrease_ref_count(buf_idx, frame_bufs, pool);
             unlock_buffer_pool(pool);
             aom_internal_error(&cm->error, AOM_CODEC_MEM_ERROR,
                                "Failed to allocate frame buffer");
@@ -5193,31 +5271,7 @@ static int read_uncompressed_header(AV1Decoder *pbi,
                        " state");
   }
 
-  // Generate next_ref_frame_map.
-  lock_buffer_pool(pool);
-  int ref_index = 0;
-  for (int mask = pbi->refresh_frame_flags; mask; mask >>= 1) {
-    if (mask & 1) {
-      cm->next_ref_frame_map[ref_index] = cm->new_fb_idx;
-      ++frame_bufs[cm->new_fb_idx].ref_count;
-    } else {
-      cm->next_ref_frame_map[ref_index] = cm->ref_frame_map[ref_index];
-    }
-    // Current thread holds the reference frame.
-    if (cm->ref_frame_map[ref_index] >= 0)
-      ++frame_bufs[cm->ref_frame_map[ref_index]].ref_count;
-    ++ref_index;
-  }
-
-  for (; ref_index < REF_FRAMES; ++ref_index) {
-    cm->next_ref_frame_map[ref_index] = cm->ref_frame_map[ref_index];
-
-    // Current thread holds the reference frame.
-    if (cm->ref_frame_map[ref_index] >= 0)
-      ++frame_bufs[cm->ref_frame_map[ref_index]].ref_count;
-  }
-  unlock_buffer_pool(pool);
-  pbi->hold_ref_buf = 1;
+  generate_next_ref_frame_map(pbi);
 
   if (cm->allow_intrabc) {
     // Set parameters corresponding to no filtering.
@@ -5271,9 +5325,7 @@ static int read_uncompressed_header(AV1Decoder *pbi,
   xd->cur_frame_force_integer_mv = cm->cur_frame_force_integer_mv;
 
   for (int i = 0; i < MAX_SEGMENTS; ++i) {
-    const int qindex = cm->seg.enabled
-                           ? av1_get_qindex(&cm->seg, i, cm->base_qindex)
-                           : cm->base_qindex;
+    const int qindex = av1_get_qindex(&cm->seg, i, cm->base_qindex);
     xd->lossless[i] = qindex == 0 && cm->y_dc_delta_q == 0 &&
                       cm->u_dc_delta_q == 0 && cm->u_ac_delta_q == 0 &&
                       cm->v_dc_delta_q == 0 && cm->v_ac_delta_q == 0;
@@ -5281,7 +5333,7 @@ static int read_uncompressed_header(AV1Decoder *pbi,
   }
   cm->coded_lossless = is_coded_lossless(cm, xd);
   cm->all_lossless = cm->coded_lossless && !av1_superres_scaled(cm);
-  setup_segmentation_dequant(cm);
+  setup_segmentation_dequant(cm, xd);
   if (cm->coded_lossless) {
     cm->lf.filter_level[0] = 0;
     cm->lf.filter_level[1] = 0;
@@ -5361,7 +5413,7 @@ BITSTREAM_PROFILE av1_read_profile(struct aom_read_bit_buffer *rb) {
   return (BITSTREAM_PROFILE)profile;
 }
 
-void superres_post_decode(AV1Decoder *pbi) {
+static void superres_post_decode(AV1Decoder *pbi) {
   AV1_COMMON *const cm = &pbi->common;
   BufferPool *const pool = cm->buffer_pool;
 
@@ -5481,7 +5533,6 @@ void av1_decode_tg_tiles_and_wrapup(AV1Decoder *pbi, const uint8_t *data,
   const int num_planes = av1_num_planes(cm);
 #if LOOP_FILTER_BITMASK
   av1_loop_filter_frame_init(cm, 0, num_planes);
-  av1_zero_array(cm->lf.lfm, cm->lf.lfm_num);
 #endif
 
   if (pbi->max_threads > 1 && !(cm->large_scale_tile && !pbi->ext_tile_debug) &&
@@ -5505,19 +5556,20 @@ void av1_decode_tg_tiles_and_wrapup(AV1Decoder *pbi, const uint8_t *data,
 
   if (!cm->allow_intrabc && !cm->single_tile_decoding) {
     if (cm->lf.filter_level[0] || cm->lf.filter_level[1]) {
-#if LOOP_FILTER_BITMASK
-      av1_loop_filter_frame(get_frame_new_buffer(cm), cm, &pbi->mb, 1, 0,
-                            num_planes, 0);
-#else
       if (pbi->num_workers > 1) {
-        av1_loop_filter_frame_mt(get_frame_new_buffer(cm), cm, &pbi->mb, 0,
-                                 num_planes, 0, pbi->tile_workers,
-                                 pbi->num_workers, &pbi->lf_row_sync);
-      } else {
-        av1_loop_filter_frame(get_frame_new_buffer(cm), cm, &pbi->mb, 0,
-                              num_planes, 0);
-      }
+        av1_loop_filter_frame_mt(
+            get_frame_new_buffer(cm), cm, &pbi->mb, 0, num_planes, 0,
+#if LOOP_FILTER_BITMASK
+            1,
 #endif
+            pbi->tile_workers, pbi->num_workers, &pbi->lf_row_sync);
+      } else {
+        av1_loop_filter_frame(get_frame_new_buffer(cm), cm, &pbi->mb,
+#if LOOP_FILTER_BITMASK
+                              1,
+#endif
+                              0, num_planes, 0);
+      }
     }
 
     const int do_loop_restoration =
@@ -5568,6 +5620,9 @@ void av1_decode_tg_tiles_and_wrapup(AV1Decoder *pbi, const uint8_t *data,
       }
     }
   }
+#if LOOP_FILTER_BITMASK
+  av1_zero_array(cm->lf.lfm, cm->lf.lfm_num);
+#endif
 
   if (!xd->corrupted) {
     if (cm->refresh_frame_context == REFRESH_FRAME_CONTEXT_BACKWARD) {

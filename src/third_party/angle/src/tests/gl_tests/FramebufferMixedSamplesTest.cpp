@@ -143,7 +143,7 @@ class CHROMIUMFramebufferMixedSamplesTest : public ANGLETest
     GLint mColorLoc;
 };
 
-}  //
+}  // namespace
 
 TEST_P(CHROMIUMFramebufferMixedSamplesTest, StateSettingTest)
 {
@@ -273,4 +273,5 @@ TEST_P(CHROMIUMFramebufferMixedSamplesTest, MultisampleStencilEffective)
 ANGLE_INSTANTIATE_TEST(CHROMIUMFramebufferMixedSamplesTest,
                        ES2_OPENGL(),
                        ES2_OPENGLES(),
-                       ES3_OPENGL());
+                       ES3_OPENGL(),
+                       ES2_VULKAN());

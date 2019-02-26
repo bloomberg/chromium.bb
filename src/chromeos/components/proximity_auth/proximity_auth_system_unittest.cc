@@ -70,6 +70,7 @@ class MockUnlockManager : public UnlockManager {
   MOCK_METHOD1(SetRemoteDeviceLifeCycle, void(RemoteDeviceLifeCycle*));
   MOCK_METHOD0(OnLifeCycleStateChanged, void());
   MOCK_METHOD1(OnAuthAttempted, void(mojom::AuthType));
+  MOCK_METHOD0(CancelConnectionAttempt, void());
 
  private:
   DISALLOW_COPY_AND_ASSIGN(MockUnlockManager);
@@ -94,16 +95,10 @@ class MockProximityAuthPrefManager : public ProximityAuthProfilePrefManager {
 class TestableProximityAuthSystem : public ProximityAuthSystem {
  public:
   TestableProximityAuthSystem(
-      ScreenlockType screenlock_type,
-      ProximityAuthClient* proximity_auth_client,
       chromeos::secure_channel::SecureChannelClient* secure_channel_client,
       std::unique_ptr<UnlockManager> unlock_manager,
       ProximityAuthPrefManager* pref_manager)
-      : ProximityAuthSystem(screenlock_type,
-                            proximity_auth_client,
-                            secure_channel_client,
-                            std::move(unlock_manager),
-                            pref_manager),
+      : ProximityAuthSystem(secure_channel_client, std::move(unlock_manager)),
         life_cycle_(nullptr) {}
   ~TestableProximityAuthSystem() override {}
 
@@ -139,9 +134,7 @@ class ProximityAuthSystemTest : public testing::Test {
     pref_manager_.reset();
   }
 
-  void InitializeTest(bool multidevice_flags_enabled) {
-    SetMultiDeviceApi(multidevice_flags_enabled /* enabled */);
-
+  void SetUp() override {
     fake_multidevice_setup_client_ = std::make_unique<
         chromeos::multidevice_setup::FakeMultiDeviceSetupClient>();
     pref_manager_ = std::make_unique<NiceMock<MockProximityAuthPrefManager>>(
@@ -159,27 +152,6 @@ class ProximityAuthSystemTest : public testing::Test {
     user2_remote_devices_.push_back(
         CreateRemoteDevice(kUser2, "user2_device3"));
 
-    InitProximityAuthSystem(ProximityAuthSystem::SESSION_LOCK);
-    proximity_auth_system_->SetRemoteDevicesForUser(
-        AccountId::FromUserEmail(kUser1), user1_remote_devices_,
-        user1_local_device_);
-    proximity_auth_system_->Start();
-    LockScreen();
-  }
-
-  void SetMultiDeviceApi(bool enabled) {
-    static const std::vector<base::Feature> kFeatures{
-        chromeos::features::kMultiDeviceApi,
-        chromeos::features::kEnableUnifiedMultiDeviceSetup};
-
-    scoped_feature_list_.InitWithFeatures(
-        (enabled ? kFeatures
-                 : std::vector<base::Feature>() /* enable_features */),
-        (enabled ? std::vector<base::Feature>()
-                 : kFeatures /* disable_features */));
-  }
-
-  void InitProximityAuthSystem(ProximityAuthSystem::ScreenlockType type) {
     std::unique_ptr<MockUnlockManager> unlock_manager(
         new NiceMock<MockUnlockManager>());
     unlock_manager_ = unlock_manager.get();
@@ -188,8 +160,14 @@ class ProximityAuthSystemTest : public testing::Test {
         std::make_unique<chromeos::secure_channel::FakeSecureChannelClient>();
 
     proximity_auth_system_.reset(new TestableProximityAuthSystem(
-        type, &proximity_auth_client_, fake_secure_channel_client_.get(),
-        std::move(unlock_manager), pref_manager_.get()));
+        fake_secure_channel_client_.get(), std::move(unlock_manager),
+        pref_manager_.get()));
+
+    proximity_auth_system_->SetRemoteDevicesForUser(
+        AccountId::FromUserEmail(kUser1), user1_remote_devices_,
+        user1_local_device_);
+    proximity_auth_system_->Start();
+    LockScreen();
   }
 
   void LockScreen() {
@@ -240,9 +218,6 @@ class ProximityAuthSystemTest : public testing::Test {
 };
 
 TEST_F(ProximityAuthSystemTest, SetRemoteDevicesForUser_NotStarted) {
-  InitializeTest(false /* multidevice_flags_enabled */);
-  InitProximityAuthSystem(ProximityAuthSystem::SESSION_LOCK);
-
   AccountId account1 = AccountId::FromUserEmail(kUser1);
   AccountId account2 = AccountId::FromUserEmail(kUser2);
   proximity_auth_system_->SetRemoteDevicesForUser(
@@ -265,8 +240,6 @@ TEST_F(ProximityAuthSystemTest, SetRemoteDevicesForUser_NotStarted) {
 }
 
 TEST_F(ProximityAuthSystemTest, SetRemoteDevicesForUser_Started) {
-  InitializeTest(false /* multidevice_flags_enabled */);
-  InitProximityAuthSystem(ProximityAuthSystem::SESSION_LOCK);
   AccountId account1 = AccountId::FromUserEmail(kUser1);
   AccountId account2 = AccountId::FromUserEmail(kUser2);
   proximity_auth_system_->SetRemoteDevicesForUser(
@@ -285,7 +258,6 @@ TEST_F(ProximityAuthSystemTest, SetRemoteDevicesForUser_Started) {
 }
 
 TEST_F(ProximityAuthSystemTest, FocusRegisteredUser) {
-  InitializeTest(false /* multidevice_flags_enabled */);
   EXPECT_FALSE(life_cycle());
   EXPECT_EQ(std::string(),
             ScreenlockBridge::Get()->focused_account_id().GetUserEmail());
@@ -305,7 +277,6 @@ TEST_F(ProximityAuthSystemTest, FocusRegisteredUser) {
 }
 
 TEST_F(ProximityAuthSystemTest, FocusUnregisteredUser) {
-  InitializeTest(false /* multidevice_flags_enabled */);
   EXPECT_FALSE(life_cycle());
   EXPECT_EQ(std::string(),
             ScreenlockBridge::Get()->focused_account_id().GetUserEmail());
@@ -316,35 +287,6 @@ TEST_F(ProximityAuthSystemTest, FocusUnregisteredUser) {
 }
 
 TEST_F(ProximityAuthSystemTest, ToggleFocus_RegisteredUsers) {
-  InitializeTest(false /* multidevice_flags_enabled */);
-  proximity_auth_system_->SetRemoteDevicesForUser(
-      AccountId::FromUserEmail(kUser2), user2_remote_devices_,
-      user2_local_device_);
-
-  RemoteDeviceLifeCycle* life_cycle1 = nullptr;
-  EXPECT_CALL(*unlock_manager_, SetRemoteDeviceLifeCycle(_))
-      .WillOnce(SaveArg<0>(&life_cycle1));
-  FocusUser(kUser1);
-  EXPECT_EQ(kUser1, life_cycle1->GetRemoteDevice().user_id());
-
-  RemoteDeviceLifeCycle* life_cycle2 = nullptr;
-  {
-    InSequence sequence;
-    EXPECT_CALL(*unlock_manager_, SetRemoteDeviceLifeCycle(nullptr))
-        .Times(AtLeast(1));
-    EXPECT_CALL(*unlock_manager_, SetRemoteDeviceLifeCycle(_))
-        .WillOnce(SaveArg<0>(&life_cycle2));
-  }
-  FocusUser(kUser2);
-  EXPECT_EQ(kUser2, life_cycle2->GetRemoteDevice().user_id());
-
-  EXPECT_CALL(*unlock_manager_, SetRemoteDeviceLifeCycle(nullptr))
-      .Times(AtLeast(1));
-}
-
-TEST_F(ProximityAuthSystemTest,
-       ToggleFocus_RegisteredUsers_MultiDeviceApiEnabled) {
-  InitializeTest(true /* multidevice_flags_enabled */);
   proximity_auth_system_->SetRemoteDevicesForUser(
       AccountId::FromUserEmail(kUser1), user1_remote_devices_,
       user1_local_device_);
@@ -376,7 +318,6 @@ TEST_F(ProximityAuthSystemTest,
 }
 
 TEST_F(ProximityAuthSystemTest, ToggleFocus_UnregisteredUsers) {
-  InitializeTest(false /* multidevice_flags_enabled */);
   FocusUser(kUser2);
   EXPECT_FALSE(life_cycle());
 
@@ -388,8 +329,6 @@ TEST_F(ProximityAuthSystemTest, ToggleFocus_UnregisteredUsers) {
 }
 
 TEST_F(ProximityAuthSystemTest, ToggleFocus_RegisteredAndUnregisteredUsers) {
-  InitializeTest(false /* multidevice_flags_enabled */);
-
   // Focus User 1, who is registered. This should create a new life cycle.
   RemoteDeviceLifeCycle* life_cycle = nullptr;
   EXPECT_CALL(*unlock_manager_, SetRemoteDeviceLifeCycle(_))
@@ -416,7 +355,6 @@ TEST_F(ProximityAuthSystemTest, ToggleFocus_RegisteredAndUnregisteredUsers) {
 }
 
 TEST_F(ProximityAuthSystemTest, ToggleFocus_SameUserRefocused) {
-  InitializeTest(false /* multidevice_flags_enabled */);
   RemoteDeviceLifeCycle* life_cycle = nullptr;
   EXPECT_CALL(*unlock_manager_, SetRemoteDeviceLifeCycle(_))
       .WillOnce(SaveArg<0>(&life_cycle));
@@ -434,7 +372,6 @@ TEST_F(ProximityAuthSystemTest, ToggleFocus_SameUserRefocused) {
 }
 
 TEST_F(ProximityAuthSystemTest, RestartSystem_UnregisteredUserFocused) {
-  InitializeTest(false /* multidevice_flags_enabled */);
   FocusUser(kUser2);
 
   EXPECT_CALL(*unlock_manager_, SetRemoteDeviceLifeCycle(nullptr))
@@ -445,7 +382,6 @@ TEST_F(ProximityAuthSystemTest, RestartSystem_UnregisteredUserFocused) {
 }
 
 TEST_F(ProximityAuthSystemTest, StopSystem_RegisteredUserFocused) {
-  InitializeTest(false /* multidevice_flags_enabled */);
   EXPECT_CALL(*unlock_manager_, SetRemoteDeviceLifeCycle(NotNull()));
   FocusUser(kUser1);
 
@@ -459,7 +395,6 @@ TEST_F(ProximityAuthSystemTest, StopSystem_RegisteredUserFocused) {
 }
 
 TEST_F(ProximityAuthSystemTest, OnLifeCycleStateChanged) {
-  InitializeTest(false /* multidevice_flags_enabled */);
   FocusUser(kUser1);
 
   EXPECT_CALL(*unlock_manager_, OnLifeCycleStateChanged());
@@ -474,14 +409,12 @@ TEST_F(ProximityAuthSystemTest, OnLifeCycleStateChanged) {
 }
 
 TEST_F(ProximityAuthSystemTest, OnAuthAttempted) {
-  InitializeTest(false /* multidevice_flags_enabled */);
   FocusUser(kUser1);
   EXPECT_CALL(*unlock_manager_, OnAuthAttempted(_));
   proximity_auth_system_->OnAuthAttempted(AccountId::FromUserEmail(kUser1));
 }
 
 TEST_F(ProximityAuthSystemTest, Suspend_ScreenUnlocked) {
-  InitializeTest(false /* multidevice_flags_enabled */);
   UnlockScreen();
   EXPECT_FALSE(life_cycle());
   SimulateSuspend();
@@ -489,13 +422,11 @@ TEST_F(ProximityAuthSystemTest, Suspend_ScreenUnlocked) {
 }
 
 TEST_F(ProximityAuthSystemTest, Suspend_UnregisteredUserFocused) {
-  InitializeTest(false /* multidevice_flags_enabled */);
   SimulateSuspend();
   EXPECT_FALSE(life_cycle());
 }
 
 TEST_F(ProximityAuthSystemTest, Suspend_RegisteredUserFocused) {
-  InitializeTest(false /* multidevice_flags_enabled */);
   FocusUser(kUser1);
 
   {

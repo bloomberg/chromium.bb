@@ -126,10 +126,10 @@ class ContactsFetcherWorkerTask extends AsyncTask<ArrayList<ContactDetails>> {
 
         // A cursor containing the raw contacts data.
         Cursor cursor = mContentResolver.query(ContactsContract.Contacts.CONTENT_URI, PROJECTION,
-                null, null, ContactsContract.Contacts.DISPLAY_NAME_PRIMARY + " ASC");
+                null, null, ContactsContract.Contacts.SORT_KEY_PRIMARY + " ASC");
+        if (!cursor.moveToFirst()) return new ArrayList<ContactDetails>();
 
         ArrayList<ContactDetails> contacts = new ArrayList<ContactDetails>(cursor.getCount());
-        if (!cursor.moveToFirst()) return contacts;
         do {
             String id = cursor.getString(cursor.getColumnIndex(ContactsContract.Contacts._ID));
             String name = cursor.getString(

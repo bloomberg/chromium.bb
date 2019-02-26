@@ -117,14 +117,7 @@
 #include <string.h>
 
 #if !defined(__cplusplus)
-#if defined(__GNUC__) && \
-    (__GNUC__ * 10000 + __GNUC_MINOR__ * 100 + __GNUC_PATCHLEVEL__) < 40800
-// |alignas| and |alignof| were added in C11. GCC added support in version 4.8.
-// Testing for __STDC_VERSION__/__cplusplus doesn't work because 4.7 already
-// reports support for C11.
-#define alignas(x) __attribute__ ((aligned (x)))
-#define alignof(x) __alignof__ (x)
-#elif defined(_MSC_VER)
+#if defined(_MSC_VER)
 #define alignas(x) __declspec(align(x))
 #define alignof __alignof
 #else
@@ -155,6 +148,14 @@ extern "C" {
     defined(OPENSSL_AARCH64) || defined(OPENSSL_PPC64LE)
 // OPENSSL_cpuid_setup initializes the platform-specific feature cache.
 void OPENSSL_cpuid_setup(void);
+#endif
+
+#if (defined(OPENSSL_ARM) || defined(OPENSSL_AARCH64)) && \
+    !defined(OPENSSL_STATIC_ARMCAP)
+// OPENSSL_get_armcap_pointer_for_test returns a pointer to |OPENSSL_armcap_P|
+// for unit tests. Any modifications to the value must be made after
+// |CRYPTO_library_init| but before any other function call in BoringSSL.
+OPENSSL_EXPORT uint32_t *OPENSSL_get_armcap_pointer_for_test(void);
 #endif
 
 

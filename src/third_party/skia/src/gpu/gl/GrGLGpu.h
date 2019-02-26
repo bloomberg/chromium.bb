@@ -56,7 +56,7 @@ public:
     }
 
     // Used by GrGLProgram to configure OpenGL state.
-    void bindTexture(int unitIdx, const GrSamplerState& samplerState, GrGLTexture* texture);
+    void bindTexture(int unitIdx, GrSamplerState samplerState, GrGLTexture* texture);
 
     // These functions should be used to bind GL objects. They track the GL state and skip redundant
     // bindings. Making the equivalent glBind calls directly will confuse the state tracking.
@@ -108,9 +108,9 @@ public:
     // The GrGLGpuRTCommandBuffer does not buffer up draws before submitting them to the gpu.
     // Thus this is the implementation of the clear call for the corresponding passthrough function
     // on GrGLGpuRTCommandBuffer.
-    void clear(const GrFixedClip&, GrColor, GrRenderTarget*, GrSurfaceOrigin);
-    void clearColorAsDraw(const GrFixedClip&, GrGLfloat r, GrGLfloat g, GrGLfloat b, GrGLfloat a,
-                          GrRenderTarget*, GrSurfaceOrigin);
+    void clear(const GrFixedClip&, const SkPMColor4f&, GrRenderTarget*, GrSurfaceOrigin);
+    void clearColorAsDraw(const GrFixedClip&, const SkPMColor4f& color, GrRenderTarget*,
+                          GrSurfaceOrigin);
 
     // The GrGLGpuRTCommandBuffer does not buffer up draws before submitting them to the gpu.
     // Thus this is the implementation of the clearStencil call for the corresponding passthrough
@@ -121,7 +121,7 @@ public:
     void clearStencil(GrRenderTarget*, int clearValue);
 
     GrGpuRTCommandBuffer* getCommandBuffer(
-            GrRenderTarget*, GrSurfaceOrigin,
+            GrRenderTarget*, GrSurfaceOrigin, const SkRect&,
             const GrGpuRTCommandBuffer::LoadAndStoreInfo&,
             const GrGpuRTCommandBuffer::StencilLoadAndStoreInfo&) override;
 
@@ -189,7 +189,8 @@ private:
     GrBuffer* onCreateBuffer(size_t size, GrBufferType intendedType, GrAccessPattern,
                              const void* data) override;
 
-    sk_sp<GrTexture> onWrapBackendTexture(const GrBackendTexture&, GrWrapOwnership) override;
+    sk_sp<GrTexture> onWrapBackendTexture(const GrBackendTexture&, GrWrapOwnership,
+                                          bool purgeImmediately) override;
     sk_sp<GrTexture> onWrapRenderableBackendTexture(const GrBackendTexture&,
                                                     int sampleCnt,
                                                     GrWrapOwnership) override;
@@ -208,7 +209,7 @@ private:
     // The texture is populated with |texels|, if it exists.
     // The texture parameters are cached in |initialTexParams|.
     bool createTextureImpl(const GrSurfaceDesc& desc, GrGLTextureInfo* info, bool renderTarget,
-                           GrGLTexture::TexParams* initialTexParams, const GrMipLevel texels[],
+                           GrGLTexture::SamplerParams* initialTexParams, const GrMipLevel texels[],
                            int mipLevelCount, GrMipMapsStatus* mipMapsStatus);
 
     // Checks whether glReadPixels can be called to get pixel values in readConfig from the
@@ -561,14 +562,14 @@ private:
         GrBlendEquation fEquation;
         GrBlendCoeff    fSrcCoeff;
         GrBlendCoeff    fDstCoeff;
-        GrColor         fConstColor;
+        SkPMColor4f     fConstColor;
         bool            fConstColorValid;
         TriState        fEnabled;
 
         void invalidate() {
-            fEquation = static_cast<GrBlendEquation>(-1);
-            fSrcCoeff = static_cast<GrBlendCoeff>(-1);
-            fDstCoeff = static_cast<GrBlendCoeff>(-1);
+            fEquation = kIllegal_GrBlendEquation;
+            fSrcCoeff = kIllegal_GrBlendCoeff;
+            fDstCoeff = kIllegal_GrBlendCoeff;
             fConstColorValid = false;
             fEnabled = kUnknown_TriState;
         }
@@ -629,7 +630,9 @@ private:
 
     float fHWMinSampleShading;
     GrPrimitiveType fLastPrimitiveType;
-    bool fRequiresFlushBeforeNextInstancedDraw = false;
+
+    class SamplerObjectCache;
+    std::unique_ptr<SamplerObjectCache> fSamplerObjectCache;
 
     std::unique_ptr<GrGLGpuRTCommandBuffer>      fCachedRTCommandBuffer;
     std::unique_ptr<GrGLGpuTextureCommandBuffer> fCachedTexCommandBuffer;

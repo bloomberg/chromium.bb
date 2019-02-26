@@ -7,37 +7,54 @@
 
 #import "ios/chrome/browser/ui/coordinators/chrome_coordinator.h"
 
-#import "ios/chrome/browser/infobars/infobar_container_state_delegate.h"
-
 namespace infobars {
 class InfoBarManager;
 }
+namespace web {
+class WebState;
+}
 
+@class TabModel;
+@protocol ApplicationCommands;
 @protocol InfobarPositioner;
+@protocol SyncPresenter;
 
 // Coordinator that owns and manages an InfoBarContainer.
 @interface InfobarCoordinator : ChromeCoordinator
 
+// TODO(crbug.com/892376): Stop passing TabModel and use WebStateList instead.
 - (instancetype)initWithBaseViewController:(UIViewController*)viewController
+                              browserState:
+                                  (ios::ChromeBrowserState*)browserState
+                                  tabModel:(TabModel*)tabModel
+    NS_DESIGNATED_INITIALIZER;
+;
+
+- (instancetype)initWithBaseViewController:(UIViewController*)viewController
+    NS_UNAVAILABLE;
+
+- (instancetype)initWithBaseViewController:(UIViewController*)viewController
+                              browserState:
+                                  (ios::ChromeBrowserState*)browserState
     NS_UNAVAILABLE;
 
 // The InfoBarContainer View.
 - (UIView*)view;
 
-// Displays an Infobar it was previously hidden.
-- (void)restoreInfobars;
-
-// Hides an Infobar if being shown.
-- (void)suspendInfobars;
-
-// Sets the InfobarContainer manager to |infobarManager|.
-- (void)setInfobarManager:(infobars::InfoBarManager*)infobarManager;
-
 // Updates the InfobarContainer according to the positioner information.
 - (void)updateInfobarContainer;
 
+// YES if an infobar is being presented for |webState|.
+- (BOOL)isInfobarPresentingForWebState:(web::WebState*)webState;
+
+// The dispatcher for this Coordinator.
+@property(nonatomic, weak) id<ApplicationCommands> dispatcher;
+
 // The delegate used to position the InfoBarContainer in the view.
 @property(nonatomic, weak) id<InfobarPositioner> positioner;
+
+// The SyncPresenter delegate for this Coordinator.
+@property(nonatomic, weak) id<SyncPresenter> syncPresenter;
 
 @end
 

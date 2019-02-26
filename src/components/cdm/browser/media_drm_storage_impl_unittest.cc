@@ -114,7 +114,9 @@ class MediaDrmStorageImplTest : public content::RenderViewHostTestHarness {
                              const std::string& mime_type,
                              bool success = true) {
     media_drm_storage_->SavePersistentSession(
-        session_id, SessionData(key_set_id, mime_type), ExpectResult(success));
+        session_id,
+        SessionData(key_set_id, mime_type, media::MediaDrmKeyType::OFFLINE),
+        ExpectResult(success));
   }
 
   void LoadPersistentSession(const std::string& session_id,
@@ -122,7 +124,8 @@ class MediaDrmStorageImplTest : public content::RenderViewHostTestHarness {
                              const std::string& expected_mime_type) {
     media_drm_storage_->LoadPersistentSession(
         session_id, ExpectResult(std::make_unique<SessionData>(
-                        expected_key_set_id, expected_mime_type)));
+                        expected_key_set_id, expected_mime_type,
+                        media::MediaDrmKeyType::OFFLINE)));
   }
 
   void LoadPersistentSessionAndExpectFailure(const std::string& session_id) {

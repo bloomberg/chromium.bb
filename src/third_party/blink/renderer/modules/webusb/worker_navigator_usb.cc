@@ -15,7 +15,7 @@ WorkerNavigatorUSB& WorkerNavigatorUSB::From(
   WorkerNavigatorUSB* supplement =
       Supplement<WorkerNavigator>::From<WorkerNavigatorUSB>(worker_navigator);
   if (!supplement) {
-    supplement = new WorkerNavigatorUSB(worker_navigator);
+    supplement = MakeGarbageCollected<WorkerNavigatorUSB>(worker_navigator);
     ProvideTo(worker_navigator, supplement);
   }
   return *supplement;

@@ -5,7 +5,7 @@
 #include "third_party/blink/renderer/core/css/properties/longhands/clear.h"
 
 namespace blink {
-namespace CSSLonghand {
+namespace css_longhand {
 
 const CSSValue* Clear::CSSValueFromComputedStyleInternal(
     const ComputedStyle& style,
@@ -16,27 +16,5 @@ const CSSValue* Clear::CSSValueFromComputedStyleInternal(
   return CSSIdentifierValue::Create(style.Clear());
 }
 
-void Clear::ApplyValue(StyleResolverState& state, const CSSValue& value) const {
-  const CSSIdentifierValue& identifier_value = ToCSSIdentifierValue(value);
-
-  EClear c;
-  CSSValueID id = identifier_value.GetValueID();
-  switch (id) {
-    case CSSValueInlineStart:
-    case CSSValueInlineEnd:
-      if ((id == CSSValueInlineStart) ==
-          (state.Style()->Direction() == TextDirection::kLtr)) {
-        c = EClear::kLeft;
-      } else {
-        c = EClear::kRight;
-      }
-      break;
-    default:
-      c = identifier_value.ConvertTo<EClear>();
-      break;
-  }
-  state.Style()->SetClear(c);
-}
-
-}  // namespace CSSLonghand
+}  // namespace css_longhand
 }  // namespace blink

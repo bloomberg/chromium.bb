@@ -13,7 +13,7 @@
 #include "third_party/blink/renderer/core/style_property_shorthand.h"
 
 namespace blink {
-namespace CSSShorthand {
+namespace css_shorthand {
 
 bool Columns::ParseShorthand(
     bool important,
@@ -23,22 +23,25 @@ bool Columns::ParseShorthand(
     HeapVector<CSSPropertyValue, 256>& properties) const {
   CSSValue* column_width = nullptr;
   CSSValue* column_count = nullptr;
-  if (!CSSParsingUtils::ConsumeColumnWidthOrCount(range, column_width,
-                                                  column_count))
+  if (!css_parsing_utils::ConsumeColumnWidthOrCount(range, column_width,
+                                                    column_count))
     return false;
-  CSSParsingUtils::ConsumeColumnWidthOrCount(range, column_width, column_count);
+  css_parsing_utils::ConsumeColumnWidthOrCount(range, column_width,
+                                               column_count);
   if (!range.AtEnd())
     return false;
   if (!column_width)
     column_width = CSSIdentifierValue::Create(CSSValueAuto);
   if (!column_count)
     column_count = CSSIdentifierValue::Create(CSSValueAuto);
-  CSSPropertyParserHelpers::AddProperty(
+  css_property_parser_helpers::AddProperty(
       CSSPropertyColumnWidth, CSSPropertyInvalid, *column_width, important,
-      CSSPropertyParserHelpers::IsImplicitProperty::kNotImplicit, properties);
-  CSSPropertyParserHelpers::AddProperty(
+      css_property_parser_helpers::IsImplicitProperty::kNotImplicit,
+      properties);
+  css_property_parser_helpers::AddProperty(
       CSSPropertyColumnCount, CSSPropertyInvalid, *column_count, important,
-      CSSPropertyParserHelpers::IsImplicitProperty::kNotImplicit, properties);
+      css_property_parser_helpers::IsImplicitProperty::kNotImplicit,
+      properties);
   return true;
 }
 
@@ -53,5 +56,5 @@ const CSSValue* Columns::CSSValueFromComputedStyleInternal(
       allow_visited_style);
 }
 
-}  // namespace CSSShorthand
+}  // namespace css_shorthand
 }  // namespace blink

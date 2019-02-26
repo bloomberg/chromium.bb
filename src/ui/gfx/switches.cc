@@ -35,12 +35,6 @@ const base::Feature kLeftToRightUrls{"LeftToRightUrls",
 // ImageSkiaReps. This may reduce load on the UI thread by moving rasterization
 // of drawables away from this thread.
 const base::Feature kUsePaintRecordForImageSkia{
-  "UsePaintRecordForImageSkia",
-#if defined(OS_CHROMEOS)
-      base::FEATURE_ENABLED_BY_DEFAULT
-#else
-      base::FEATURE_DISABLED_BY_DEFAULT
-#endif
-};
+    "UsePaintRecordForImageSkia", base::FEATURE_ENABLED_BY_DEFAULT};
 
 }  // namespace features

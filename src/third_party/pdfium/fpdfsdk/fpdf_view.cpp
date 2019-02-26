@@ -84,26 +84,14 @@ void RenderPageImpl(CPDF_PageRenderContext* pContext,
   if (!pContext->m_pOptions)
     pContext->m_pOptions = pdfium::MakeUnique<CPDF_RenderOptions>();
 
-  uint32_t option_flags = pContext->m_pOptions->GetFlags();
-  if (flags & FPDF_LCD_TEXT)
-    option_flags |= RENDER_CLEARTYPE;
-  else
-    option_flags &= ~RENDER_CLEARTYPE;
-
-  if (flags & FPDF_NO_NATIVETEXT)
-    option_flags |= RENDER_NO_NATIVETEXT;
-  if (flags & FPDF_RENDER_LIMITEDIMAGECACHE)
-    option_flags |= RENDER_LIMITEDIMAGECACHE;
-  if (flags & FPDF_RENDER_FORCEHALFTONE)
-    option_flags |= RENDER_FORCE_HALFTONE;
-  if (flags & FPDF_RENDER_NO_SMOOTHTEXT)
-    option_flags |= RENDER_NOTEXTSMOOTH;
-  if (flags & FPDF_RENDER_NO_SMOOTHIMAGE)
-    option_flags |= RENDER_NOIMAGESMOOTH;
-  if (flags & FPDF_RENDER_NO_SMOOTHPATH)
-    option_flags |= RENDER_NOPATHSMOOTH;
-
-  pContext->m_pOptions->SetFlags(option_flags);
+  auto& options = pContext->m_pOptions->GetOptions();
+  options.bClearType = !!(flags & FPDF_LCD_TEXT);
+  options.bNoNativeText = !!(flags & FPDF_NO_NATIVETEXT);
+  options.bLimitedImageCache = !!(flags & FPDF_RENDER_LIMITEDIMAGECACHE);
+  options.bForceHalftone = !!(flags & FPDF_RENDER_FORCEHALFTONE);
+  options.bNoTextSmooth = !!(flags & FPDF_RENDER_NO_SMOOTHTEXT);
+  options.bNoImageSmooth = !!(flags & FPDF_RENDER_NO_SMOOTHIMAGE);
+  options.bNoPathSmooth = !!(flags & FPDF_RENDER_NO_SMOOTHPATH);
 
   // Grayscale output
   if (flags & FPDF_GRAYSCALE)
@@ -498,7 +486,7 @@ void RenderBitmap(CFX_RenderDevice* device,
 
   pDst->Clear(0xffffffff);
   pDst->CompositeBitmap(0, 0, size_x_bm, size_y_bm, pSrc, 0, 0,
-                        FXDIB_BLEND_NORMAL, nullptr, false);
+                        BlendMode::kNormal, nullptr, false);
 
   if (device->GetDeviceCaps(FXDC_DEVICE_CLASS) == FXDC_PRINTER) {
     device->StretchDIBits(pDst, mask_area.left, mask_area.top, size_x_bm,
@@ -547,9 +535,7 @@ FPDF_EXPORT void FPDF_CALLCONV FPDF_RenderPage(HDC dc,
     pDevice->Attach(pBitmap, false, nullptr, false);
     if (bHasMask) {
       pContext->m_pOptions = pdfium::MakeUnique<CPDF_RenderOptions>();
-      uint32_t option_flags = pContext->m_pOptions->GetFlags();
-      option_flags |= RENDER_BREAKFORMASKS;
-      pContext->m_pOptions->SetFlags(option_flags);
+      pContext->m_pOptions->GetOptions().bBreakForMasks = true;
     }
   } else {
     pContext->m_pDevice = pdfium::MakeUnique<CFX_WindowsRenderDevice>(dc);
@@ -581,10 +567,7 @@ FPDF_EXPORT void FPDF_CALLCONV FPDF_RenderPage(HDC dc,
     pContext = pPage->GetRenderContext();
     pContext->m_pDevice = pdfium::MakeUnique<CFX_WindowsRenderDevice>(dc);
     pContext->m_pOptions = pdfium::MakeUnique<CPDF_RenderOptions>();
-
-    uint32_t option_flags = pContext->m_pOptions->GetFlags();
-    option_flags |= RENDER_BREAKFORMASKS;
-    pContext->m_pOptions->SetFlags(option_flags);
+    pContext->m_pOptions->GetOptions().bBreakForMasks = true;
 
     RenderPageWithContext(pContext, page, start_x, start_y, size_x, size_y,
                           rotate, flags, true, nullptr);
@@ -606,7 +589,7 @@ FPDF_EXPORT void FPDF_CALLCONV FPDF_RenderPage(HDC dc,
       if (pDst->Create(size_x, size_y, FXDIB_Rgb32)) {
         memset(pDst->GetBuffer(), -1, pBitmap->GetPitch() * size_y);
         pDst->CompositeBitmap(0, 0, size_x, size_y, pBitmap, 0, 0,
-                              FXDIB_BLEND_NORMAL, nullptr, false);
+                              BlendMode::kNormal, nullptr, false);
         WinDC.StretchDIBits(pDst, 0, 0, size_x, size_y);
         bitsStretched = true;
       }
@@ -985,14 +968,14 @@ FPDF_VIEWERREF_GetPrintPageRange(FPDF_DOCUMENT document) {
 FPDF_EXPORT size_t FPDF_CALLCONV
 FPDF_VIEWERREF_GetPrintPageRangeCount(FPDF_PAGERANGE pagerange) {
   const CPDF_Array* pArray = CPDFArrayFromFPDFPageRange(pagerange);
-  return pArray ? pArray->GetCount() : 0;
+  return pArray ? pArray->size() : 0;
 }
 
 FPDF_EXPORT int FPDF_CALLCONV
 FPDF_VIEWERREF_GetPrintPageRangeElement(FPDF_PAGERANGE pagerange,
                                         size_t index) {
   const CPDF_Array* pArray = CPDFArrayFromFPDFPageRange(pagerange);
-  if (!pArray || index >= pArray->GetCount())
+  if (!pArray || index >= pArray->size())
     return -1;
   return pArray->GetIntegerAt(index);
 }
@@ -1047,7 +1030,7 @@ FPDF_CountNamedDests(FPDF_DOCUMENT document) {
   pdfium::base::CheckedNumeric<FPDF_DWORD> count = nameTree.GetCount();
   const CPDF_Dictionary* pDest = pRoot->GetDictFor("Dests");
   if (pDest)
-    count += pDest->GetCount();
+    count += pDest->size();
 
   if (!count.IsValid())
     return 0;
@@ -1068,6 +1051,13 @@ FPDF_GetNamedDestByName(FPDF_DOCUMENT document, FPDF_BYTESTRING name) {
   return FPDFDestFromCPDFArray(
       name_tree.LookupNamedDest(pDoc, PDF_DecodeText(ByteString(name))));
 }
+
+#ifdef PDF_ENABLE_V8
+FPDF_EXPORT const char* FPDF_CALLCONV FPDF_GetRecommendedV8Flags() {
+  // Reduce exposure since no PDF should contain web assembly.
+  return "--no-expose-wasm";
+}
+#endif  // PDF_ENABLE_V8
 
 #ifdef PDF_ENABLE_XFA
 FPDF_EXPORT FPDF_RESULT FPDF_CALLCONV FPDF_BStr_Init(FPDF_BSTR* str) {
@@ -1145,14 +1135,15 @@ FPDF_EXPORT FPDF_DEST FPDF_CALLCONV FPDF_GetNamedDest(FPDF_DOCUMENT document,
       return nullptr;
 
     pdfium::base::CheckedNumeric<int> checked_count = count;
-    checked_count += pDest->GetCount();
+    checked_count += pDest->size();
     if (!checked_count.IsValid() || index >= checked_count.ValueOrDie())
       return nullptr;
 
     index -= count;
     int i = 0;
     ByteString bsName;
-    for (const auto& it : *pDest) {
+    CPDF_DictionaryLocker locker(pDest);
+    for (const auto& it : locker) {
       bsName = it.first;
       pDestObj = it.second.get();
       if (!pDestObj)
@@ -1175,7 +1166,7 @@ FPDF_EXPORT FPDF_DEST FPDF_CALLCONV FPDF_GetNamedDest(FPDF_DOCUMENT document,
   if (!pDestObj->IsArray())
     return nullptr;
 
-  ByteString utf16Name = wsName.UTF16LE_Encode();
+  ByteString utf16Name = wsName.ToUTF16LE();
   int len = utf16Name.GetLength();
   if (!buffer) {
     *buflen = len;

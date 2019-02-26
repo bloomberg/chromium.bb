@@ -179,7 +179,10 @@ void BookmarkModelTypeProcessor::OnUpdateReceived(
       bookmark_model_, bookmark_undo_service_, bookmark_model_observer_.get());
   BookmarkRemoteUpdatesHandler updates_handler(
       bookmark_model_, favicon_service_, bookmark_tracker_.get());
-  updates_handler.Process(updates);
+  const bool got_new_encryption_requirements =
+      bookmark_tracker_->model_type_state().encryption_key_name() !=
+      model_type_state.encryption_key_name();
+  updates_handler.Process(updates, got_new_encryption_requirements);
   bookmark_tracker_->set_model_type_state(
       std::make_unique<sync_pb::ModelTypeState>(model_type_state));
   // Schedule save just in case one is needed.
@@ -216,10 +219,9 @@ void BookmarkModelTypeProcessor::ModelReadyToSync(
   sync_pb::BookmarkModelMetadata model_metadata;
   model_metadata.ParseFromString(metadata_str);
 
-  auto model_type_state = std::make_unique<sync_pb::ModelTypeState>();
-  model_type_state->Swap(model_metadata.mutable_model_type_state());
-
-  if (model_type_state->initial_sync_done()) {
+  if (model_metadata.model_type_state().initial_sync_done() &&
+      SyncedBookmarkTracker::BookmarkModelMatchesMetadata(model,
+                                                          model_metadata)) {
     std::vector<NodeMetadataPair> nodes_metadata;
     for (sync_pb::BookmarkMetadata& bookmark_metadata :
          *model_metadata.mutable_bookmarks_metadata()) {
@@ -227,35 +229,20 @@ void BookmarkModelTypeProcessor::ModelReadyToSync(
       // all nodes and store in a map keyed by id instead of doing a lookup for
       // every id.
       const bookmarks::BookmarkNode* node = nullptr;
-      if (bookmark_metadata.metadata().is_deleted()) {
-        if (bookmark_metadata.has_id()) {
-          DLOG(ERROR) << "Error when decoding sync metadata: Tombstones "
-                         "shouldn't have a bookmark id.";
-          continue;
-        }
-      } else {
-        if (!bookmark_metadata.has_id()) {
-          DLOG(ERROR)
-              << "Error when decoding sync metadata: Bookmark id is missing.";
-          continue;
-        }
+      if (!bookmark_metadata.metadata().is_deleted()) {
         node = GetBookmarkNodeByID(bookmark_model_, bookmark_metadata.id());
-        if (node == nullptr) {
-          DLOG(ERROR) << "Error when decoding sync metadata: Cannot find the "
-                         "bookmark node.";
-          continue;
-        }
+        DCHECK(node);
       }
       auto metadata = std::make_unique<sync_pb::EntityMetadata>();
       metadata->Swap(bookmark_metadata.mutable_metadata());
       nodes_metadata.emplace_back(node, std::move(metadata));
     }
-    // TODO(crbug.com/516866): Handle local nodes that don't have a
-    // corresponding
-    // metadata.
+    auto model_type_state = std::make_unique<sync_pb::ModelTypeState>();
+    model_type_state->Swap(model_metadata.mutable_model_type_state());
     StartTrackingMetadata(std::move(nodes_metadata),
                           std::move(model_type_state));
-  } else if (!model_metadata.bookmarks_metadata().empty()) {
+  } else if (!model_metadata.model_type_state().initial_sync_done() &&
+             !model_metadata.bookmarks_metadata().empty()) {
     DLOG(ERROR)
         << "Persisted Metadata not empty while initial sync is not done.";
   }
@@ -271,7 +258,9 @@ void BookmarkModelTypeProcessor::SetFaviconService(
 size_t BookmarkModelTypeProcessor::EstimateMemoryUsage() const {
   using base::trace_event::EstimateMemoryUsage;
   size_t memory_usage = 0;
-  memory_usage += bookmark_tracker_->EstimateMemoryUsage();
+  if (bookmark_tracker_) {
+    memory_usage += bookmark_tracker_->EstimateMemoryUsage();
+  }
   memory_usage += EstimateMemoryUsage(cache_guid_);
   return memory_usage;
 }
@@ -385,6 +374,15 @@ void BookmarkModelTypeProcessor::NudgeForCommitIfNeeded() {
   }
 }
 
+void BookmarkModelTypeProcessor::OnBookmarkModelBeingDeleted() {
+  DCHECK(bookmark_model_);
+  DCHECK(bookmark_model_observer_);
+  bookmark_model_->RemoveObserver(bookmark_model_observer_.get());
+  bookmark_model_ = nullptr;
+  bookmark_model_observer_.reset();
+  DisconnectSync();
+}
+
 void BookmarkModelTypeProcessor::StartTrackingMetadata(
     std::vector<NodeMetadataPair> nodes_metadata,
     std::unique_ptr<sync_pb::ModelTypeState> model_type_state) {
@@ -394,6 +392,8 @@ void BookmarkModelTypeProcessor::StartTrackingMetadata(
   bookmark_model_observer_ = std::make_unique<BookmarkModelObserverImpl>(
       base::BindRepeating(&BookmarkModelTypeProcessor::NudgeForCommitIfNeeded,
                           base::Unretained(this)),
+      base::BindOnce(&BookmarkModelTypeProcessor::OnBookmarkModelBeingDeleted,
+                     base::Unretained(this)),
       bookmark_tracker_.get());
   bookmark_model_->AddObserver(bookmark_model_observer_.get());
 }
@@ -497,21 +497,27 @@ void BookmarkModelTypeProcessor::AppendNodeAndChildrenForDebugging(
 void BookmarkModelTypeProcessor::GetStatusCountersForDebugging(
     StatusCountersCallback callback) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  DCHECK(bookmark_tracker_);
   syncer::StatusCounters counters;
-  counters.num_entries = bookmark_tracker_->TrackedBookmarksCountForDebugging();
-  counters.num_entries_and_tombstones =
-      counters.num_entries +
-      bookmark_tracker_->TrackedUncommittedTombstonesCountForDebugging();
+  if (bookmark_tracker_) {
+    counters.num_entries =
+        bookmark_tracker_->TrackedBookmarksCountForDebugging();
+    counters.num_entries_and_tombstones =
+        counters.num_entries +
+        bookmark_tracker_->TrackedUncommittedTombstonesCountForDebugging();
+  }
   std::move(callback).Run(syncer::BOOKMARKS, counters);
 }
 
 void BookmarkModelTypeProcessor::RecordMemoryUsageAndCountsHistograms() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   SyncRecordModelTypeMemoryHistogram(syncer::BOOKMARKS, EstimateMemoryUsage());
-  SyncRecordModelTypeCountHistogram(
-      syncer::BOOKMARKS,
-      bookmark_tracker_->TrackedBookmarksCountForDebugging());
+  if (bookmark_tracker_) {
+    SyncRecordModelTypeCountHistogram(
+        syncer::BOOKMARKS,
+        bookmark_tracker_->TrackedBookmarksCountForDebugging());
+  } else {
+    SyncRecordModelTypeCountHistogram(syncer::BOOKMARKS, 0);
+  }
 }
 
 }  // namespace sync_bookmarks

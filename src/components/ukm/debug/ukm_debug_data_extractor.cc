@@ -20,6 +20,8 @@ namespace debug {
 
 namespace {
 
+static const uint64_t BIT_FILTER_LAST32 = 0xffffffffULL;
+
 struct SourceData {
   UkmSource* source;
   std::vector<mojom::UkmEntry*> entries;
@@ -38,8 +40,8 @@ base::Value ConvertEntryToValue(const ukm::builders::DecodeMap& decode_map,
 
   const auto it = decode_map.find(entry.event_hash);
   if (it == decode_map.end()) {
-    entry_value.SetKey("name",
-                       base::Value(static_cast<double>(entry.event_hash)));
+    entry_value.SetKey(
+        "name", UkmDebugDataExtractor::UInt64AsPairOfInt(entry.event_hash));
   } else {
     entry_value.SetKey("name", base::Value(it->second.name));
 
@@ -49,8 +51,8 @@ base::Value ConvertEntryToValue(const ukm::builders::DecodeMap& decode_map,
       base::DictionaryValue metric_value;
       metric_value.SetKey("name",
                           base::Value(GetName(it->second, metric.first)));
-      metric_value.SetKey("value",
-                          base::Value(static_cast<double>(metric.second)));
+      metric_value.SetKey(
+          "value", UkmDebugDataExtractor::UInt64AsPairOfInt(metric.second));
       metrics_list_storage->push_back(std::move(metric_value));
     }
     entry_value.SetKey("metrics", std::move(metrics_list));
@@ -65,6 +67,17 @@ UkmDebugDataExtractor::UkmDebugDataExtractor() = default;
 UkmDebugDataExtractor::~UkmDebugDataExtractor() = default;
 
 // static
+base::Value UkmDebugDataExtractor::UInt64AsPairOfInt(uint64_t v) {
+  // Convert int64_t to pair of int. Passing int64_t in base::Value is not
+  // supported. The pair of int will be passed as a ListValue.
+  base::Value::ListStorage int_pair;
+  int_pair.push_back(
+      base::Value(static_cast<int>((v >> 32) & BIT_FILTER_LAST32)));
+  int_pair.push_back(base::Value(static_cast<int>(v & BIT_FILTER_LAST32)));
+  return base::Value(int_pair);
+}
+
+// static
 base::Value UkmDebugDataExtractor::GetStructuredData(
     const UkmService* ukm_service) {
   if (!ukm_service)
@@ -72,10 +85,10 @@ base::Value UkmDebugDataExtractor::GetStructuredData(
 
   base::DictionaryValue ukm_data;
   ukm_data.SetKey("state", base::Value(ukm_service->recording_enabled_));
-  ukm_data.SetKey("client_id",
-                  base::Value(static_cast<double>(ukm_service->client_id_)));
+  ukm_data.SetKey("client_id", UkmDebugDataExtractor::UInt64AsPairOfInt(
+                                   ukm_service->client_id_));
   ukm_data.SetKey("session_id",
-                  base::Value(static_cast<double>(ukm_service->session_id_)));
+                  base::Value(static_cast<int>(ukm_service->session_id_)));
 
   std::map<SourceId, SourceData> source_data;
   for (const auto& kv : ukm_service->recordings_.sources) {
@@ -93,10 +106,12 @@ base::Value UkmDebugDataExtractor::GetStructuredData(
 
     base::DictionaryValue source_value;
     if (src) {
-      source_value.SetKey("id", base::Value(static_cast<double>(src->id())));
+      source_value.SetKey("id",
+                          UkmDebugDataExtractor::UInt64AsPairOfInt(src->id()));
       source_value.SetKey("url", base::Value(src->url().spec()));
     } else {
-      source_value.SetKey("id", base::Value(static_cast<double>(kv.first)));
+      source_value.SetKey("id",
+                          UkmDebugDataExtractor::UInt64AsPairOfInt(kv.first));
     }
 
     base::ListValue entries_list;

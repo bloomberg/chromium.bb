@@ -70,6 +70,7 @@ class CORE_EXPORT HTMLImageElement final
                                                   unsigned width,
                                                   unsigned height);
 
+  explicit HTMLImageElement(Document&, bool created_by_parser = false);
   ~HTMLImageElement() override;
   void Trace(blink::Visitor*) override;
 
@@ -182,8 +183,6 @@ class CORE_EXPORT HTMLImageElement final
     kCollapsed
   };
 
-  explicit HTMLImageElement(Document&, bool created_by_parser = false);
-
   void DidMoveToNewDocument(Document& old_document) override;
 
   void DidAddUserAgentShadowRoot(ShadowRoot&) override;
@@ -241,7 +240,7 @@ class CORE_EXPORT HTMLImageElement final
   bool sizes_set_width_;
   bool is_default_overridden_intrinsic_size_;
 
-  ReferrerPolicy referrer_policy_;
+  network::mojom::ReferrerPolicy referrer_policy_;
 
   IntSize overridden_intrinsic_size_;
 

@@ -53,7 +53,7 @@ class SigninGlobalErrorTest : public testing::Test {
     TestingProfile::TestingFactories testing_factories;
     testing_factories.emplace_back(
         SigninManagerFactory::GetInstance(),
-        base::BindRepeating(&BuildFakeSigninManagerBase));
+        base::BindRepeating(&BuildFakeSigninManagerForTesting));
     profile_ = profile_manager_.CreateTestingProfile(
         "Person 1", std::unique_ptr<sync_preferences::PrefServiceSyncable>(),
         base::UTF8ToUTF16("Person 1"), 0, std::string(),

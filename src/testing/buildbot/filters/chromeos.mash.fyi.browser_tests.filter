@@ -9,12 +9,20 @@
 
 # Unknown failure.
 -BrowserTabRestoreTest.*
-
-# Extensive use of ash::WindowState.
--InitiallyMaximized/AcceleratorCommandsFullscreenBrowserTest.*
--InitiallyMaximized/AcceleratorCommandsPlatformAppFullscreenBrowserTest.*
--InitiallyRestored/AcceleratorCommandsFullscreenBrowserTest.*
--InitiallyRestored/AcceleratorCommandsPlatformAppFullscreenBrowserTest.*
+-NoBestEffortTasksTest.LoadAndPaintAboutBlank
+-NoBestEffortTasksTest.LoadAndPaintFromNetwork
+-ProcessMemoryMetricsEmitterTest.FetchDuringTrace
+-SwitchAccessPredicateTest.IsActionable
+-SwitchAccessPredicateTest.IsGroup
+-SwitchAccessPredicateTest.IsInterestingSubtree
+-SwitchAccessPredicateTest.IsSubtreeLeaf
+-SwitchAccessPredicateTest.LeafPredicate
+-SwitchAccessPredicateTest.RootPredicate
+-SwitchAccessPredicateTest.VisitPredicate
+-TrayAccessibilityLoginTestInstance/TrayAccessibilityLoginTest.ShowMenuWithShowOnLoginScreen/0
+-TrayAccessibilityLoginTestInstance/TrayAccessibilityLoginTest.ShowMenuWithShowOnLoginScreen/1
+-WebRtcGetDisplayMediaBrowserTestWithFakeUI.GetDisplayMedia/2
+-WebRtcGetDisplayMediaBrowserTestWithFakeUI.GetDisplayMediaWithConstraints/2
 
 # Volume adjustment fails.
 -WizardControllerTest.*ChromeVox
@@ -33,6 +41,10 @@
 -AutomationApiTestWithDeviceScaleFactor.*
 -AutomationManagerAuraBrowserTest.*
 
+# ChromeVox and Select-to-Speak not yet supported. https://crbug.com/594887
+-ChromeVox*
+-SelectToSpeak*
+
 # Touch gestures don't work in webcontents. https://crbug.com/866991.
 -TopControlsSlideControllerTest.TestScrollingMaximizedPageBeforeGoingToTabletMode
 -TopControlsSlideControllerTest.TestScrollingPage
@@ -40,9 +52,6 @@
 -TopControlsSlideControllerTest.TestClosingATab
 -TopControlsSlideControllerTest.TestFocusEditableElements
 -TopControlsSlideControllerTest.DisplayRotation
-
-# Uses Shell/SplitViewController.
--NonHomeLauncherBrowserNonClientFrameViewAshTest.HeaderHeightForSnappedBrowserInSplitView/*
 
 # ash::Shell access from ChromeViewsDelegate::CreateDefaultNonClientFrameView()
 # e.g. from chromeos::CaptivePortalWindowProxy::Show().
@@ -95,10 +104,6 @@
 # TODO: Very slow (>25 seconds) and occasional timeouts.
 -ExecuteScriptApiTest/DestructiveScriptTest.*
 
-# Fails: immersive_controller->IsRevealed() returns false.
-# http://crbug.com/791148
--ZoomBubbleBrowserTest.*
-
 # ozone_platform.cc(61) Check failed: instance_. OzonePlatform is not initialized
 -ExtensionWebstoreGetWebGLStatusTest.*
 
@@ -135,12 +140,6 @@
 -LauncherPlatformAppBrowserTest.PanelAttentionStatus
 -LauncherPlatformAppBrowserTest.PanelItemClickBehavior
 
-# JS failure: hasAccessToCurrentWindow: FAIL (no message)
--LockScreenNoteTakingTest.*
-
-# desktop_window_tree_host_mus.cc(796) Check failed: !window->GetRootWindow() || this->window() == window->GetRootWindow().
--LoginFeedbackTest.*
-
 # Missing magnification manager and also RefCounted check failed:
 # CalledOnValidSequence() from SchedulerWorkerDelegate::OnMainExit
 -LoginScreenDefaultPolicyInSessionBrowsertest.*
@@ -167,6 +166,9 @@
 # ash::Shell access in test for display configuration.
 # http://crbug.com/831826
 -ShelfAppBrowserTest.LaunchAppFromDisplayWithoutFocus*
+
+# Test fails. https://crbug.com/899867
+-ShelfAppBrowserTest.SettingsAndTaskManagerWindows
 
 # content::WaitForChildFrameSurfaceReady hangs.
 -SitePerProcessDevToolsSanityTest.InputDispatchEventsToOOPIF
@@ -205,13 +207,20 @@
 # Virtual keyboard not supported.
 -AccessibilityManagerLoginTest.ResumeSavedPref
 -DefaultKeyboardExtensionBrowserTest.*
+-KeyboardControllerAppWindowTest.*
+-KeyboardControllerStateTest.*
+-KeyboardControllerWebContentTest.*
 -KeyboardEndToEndFocusTest.*
 -KeyboardEndToEndFormTest.*
 -KeyboardEndToEndOverscrollTest.*
 -KioskVirtualKeyboardTest.*
--VirtualKeyboardAppWindowTest.*
--VirtualKeyboardStateTest.*
--VirtualKeyboardWebContentTest.*
+-PolicyTest.VirtualKeyboardEnabled
+
+# Also depends on keyboard. Test crashes in Mash. https://crbug.com/897012
+-SelectFileDialogExtensionBrowserTest.SelectFileVirtualKeyboard_TabletMode
+
+# Uses ash::LockWindow. https://crbug.com/899862
+-ShutdownPolicyLockerTest.*
 
 # Timeouts in content::WaitForChildFrameSurfaceReady()
 # Crashes in viz::HostFrameSinkManager::RegisterFrameSinkId()
@@ -229,18 +238,11 @@
 -PowerPolicyLoginScreenBrowserTest.SetDevicePolicy
 -EnterpriseEnrollmentTest.TestActiveDirectoryEnrollment_Success
 
-# Needs EventGenerator to work across window tree hosts. crbug.com/814675
--OmniboxPopupContentsViewTest.ClickOmnibox
-
 # HostedAppMenu needs porting to BrowserNonClientFrameViewMash crbug.com/813666
 -HostedAppPWAOnlyTest.AppInfoOpensPageInfo*
 
 # DCHECK in DelegatedFrameHost
 -SafeBrowsingTriggeredPopupBlockerBrowserTest.NoFeature_NoMessages
-
-# https://crbug.com/815379
--WindowOpenApiTest.RemoveLockedFullscreenFromWindow
--WindowOpenApiTest.RemoveLockedFullscreenFromWindowWithoutPermission
 
 # App list code flake: https://crbug.com/847154 https://crbug.com/843429
 -MultiProfileFileManagerBrowserTest.*
@@ -271,26 +273,21 @@
 -PlatformAppBrowserTest.PictureInPicture
 -PictureInPictureLazyBackgroundPageApiTest.PictureInPictureInBackgroundPage
 
-# These started failing with the switch to ws2.
-# https:://crbug.com/855767
--AppWindowApiTest.OnRestoredEvent
--BrowserActionApiTest.BrowserActionPopupWithIframe
--FirstRunUIBrowserTest.ModalWindowDoesNotBlock
--LauncherPlatformAppBrowserTest.AltNumberAppsTabbing
--LauncherPlatformAppBrowserTest.PackagedAppClickBehaviorInMinimizeMode
--LoginWebDialogTest.CannotMinimize
--LoginWebDialogTest.CloseDialogByAccelerator
--ShelfAppBrowserTest.AltNumberTabsTabbing
--ShelfAppBrowserTestNoDefaultBrowser.AltNumberBrowserTabbing
--ShelfAppBrowserTestNoDefaultBrowser.BrowserShortcutLauncherItemController
-
-# Excluded from Mash because pointer events from EventGenerator aren't seen.
-# https://crbug.com/814675
--ChromeOSInfoPrivateTest.StylusSeen
-
 # Has become super flaky on linux-chromeos-rel bot. Note that the test itself
 # is also flaky on Windows and Mac even without "mash":
 # https://crbug.com/671891
 -SiteDetailsBrowserTest.IsolateExtensions
+
+# Often timing out. https://crbug.com/899860
+-TopControlsSlideControllerTest.*
+
+# Crashing. https://crbug.com/899864
+-ExtensionDialogBoundsTest.*
+
+# Crashing. https://crbug.com/899865
+-MemoryTracingBrowserTest.TestMemoryInfra
+
+# Use of Shell. https://crbug.com/899869
+-AutotestPrivateApiTest.AutotestPrivate
 
 # See comment at top of file regarding adding test exclusions.

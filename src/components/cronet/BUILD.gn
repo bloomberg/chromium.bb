@@ -116,7 +116,13 @@ if (!is_ios && !is_android) {
     }
   }
 
+  _cronet_shared_lib_name = "cronet.$chrome_version_full"
+  _cronet_shared_lib_file_name =
+      "$shlib_prefix$_cronet_shared_lib_name$shlib_extension"
+
   shared_library("cronet") {
+    output_name = _cronet_shared_lib_name
+
     deps = [
       "//base",
       "//components/cronet:cronet_common",
@@ -131,7 +137,7 @@ if (!is_ios && !is_android) {
     if (is_mac && !is_component_build) {
       ldflags = [
         "-install_name",
-        "@rpath/lib${target_name}.dylib",
+        "@executable_path/$_cronet_shared_lib_file_name",
       ]
       public_configs = [ ":shared_library_public_config" ]
     }
@@ -201,27 +207,15 @@ if (!is_ios && !is_android) {
   # Copy boiler-plate files into the package.
   copy("cronet_package_copy") {
     sources = [
+      "$root_out_dir/$_cronet_shared_lib_file_name",
       "//AUTHORS",
       "//chrome/VERSION",
     ]
-
-    outputs = [
-      "$_package_dir/{{source_file_part}}",
-    ]
-  }
-
-  # Copy shared library adding the version to the file name.
-  copy("cronet_package_shlib") {
-    sources = [
-      "$root_out_dir/${shlib_prefix}cronet${shlib_extension}",
-    ]
-
-    outputs = [
-      "$_package_dir/${shlib_prefix}cronet.${chrome_version_full}${shlib_extension}",
-    ]
-
     deps = [
       ":cronet",
+    ]
+    outputs = [
+      "$_package_dir/{{source_file_part}}",
     ]
   }
 
@@ -238,7 +232,6 @@ if (!is_ios && !is_android) {
     deps = [
       ":cronet_package_copy",
       ":cronet_package_headers",
-      ":cronet_package_shlib",
       ":generate_license",
     ]
   }
@@ -256,6 +249,34 @@ if (!is_ios && !is_android) {
       "//components/cronet/native/test:cronet_native_tests",
       "//components/cronet/native/test:cronet_native_testutil",
       "//net:test_support",
+    ]
+  }
+
+  executable("cronet_sample") {
+    testonly = true
+    sources = [
+      "native/sample/main.cc",
+      "native/sample/sample_executor.cc",
+      "native/sample/sample_executor.h",
+      "native/sample/sample_url_request_callback.cc",
+      "native/sample/sample_url_request_callback.h",
+    ]
+    deps = [
+      "//components/cronet",
+      "//components/cronet/native:cronet_native_headers",
+    ]
+    if (is_linux && !is_component_build) {
+      public_configs = [ "//build/config/gcc:rpath_for_built_shared_libraries" ]
+    }
+  }
+
+  test("cronet_sample_test") {
+    sources = [
+      "native/sample/test/sample_test.cc",
+    ]
+    deps = [
+      ":cronet_sample",
+      "//testing/gtest:gtest",
     ]
   }
 }

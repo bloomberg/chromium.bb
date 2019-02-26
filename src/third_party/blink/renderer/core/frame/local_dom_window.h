@@ -101,11 +101,12 @@ class CORE_EXPORT LocalDOMWindow final : public DOMWindow,
                                   const DocumentInit&,
                                   bool force_xhtml);
   static LocalDOMWindow* Create(LocalFrame& frame) {
-    return new LocalDOMWindow(frame);
+    return MakeGarbageCollected<LocalDOMWindow>(frame);
   }
 
   static LocalDOMWindow* From(const ScriptState*);
 
+  explicit LocalDOMWindow(LocalFrame&);
   ~LocalDOMWindow() override;
 
   LocalFrame* GetFrame() const { return ToLocalFrame(DOMWindow::GetFrame()); }
@@ -198,11 +199,11 @@ class CORE_EXPORT LocalDOMWindow final : public DOMWindow,
   // FIXME: ScrollBehaviorSmooth is currently unsupported in VisualViewport.
   // crbug.com/434497
   void scrollBy(double x, double y) const;
-  void scrollBy(const ScrollToOptions&) const;
+  void scrollBy(const ScrollToOptions*) const;
   void scrollTo(double x, double y) const;
-  void scrollTo(const ScrollToOptions&) const;
+  void scrollTo(const ScrollToOptions*) const;
   void scroll(double x, double y) const { scrollTo(x, y); }
-  void scroll(const ScrollToOptions& scroll_to_options) const {
+  void scroll(const ScrollToOptions* scroll_to_options) const {
     scrollTo(scroll_to_options);
   }
   void moveBy(int x, int y) const;
@@ -232,7 +233,7 @@ class CORE_EXPORT LocalDOMWindow final : public DOMWindow,
   void queueMicrotask(V8VoidFunction*);
 
   // Idle callback extensions
-  int requestIdleCallback(V8IdleRequestCallback*, const IdleRequestOptions&);
+  int requestIdleCallback(V8IdleRequestCallback*, const IdleRequestOptions*);
   void cancelIdleCallback(int id);
 
   // Custom elements
@@ -249,22 +250,19 @@ class CORE_EXPORT LocalDOMWindow final : public DOMWindow,
 
   bool isSecureContext() const;
 
-  DEFINE_ATTRIBUTE_EVENT_LISTENER(animationend);
-  DEFINE_ATTRIBUTE_EVENT_LISTENER(animationiteration);
-  DEFINE_ATTRIBUTE_EVENT_LISTENER(animationstart);
-  DEFINE_ATTRIBUTE_EVENT_LISTENER(search);
-  DEFINE_ATTRIBUTE_EVENT_LISTENER(transitionend);
+  DEFINE_ATTRIBUTE_EVENT_LISTENER(animationend, kAnimationend);
+  DEFINE_ATTRIBUTE_EVENT_LISTENER(animationiteration, kAnimationiteration);
+  DEFINE_ATTRIBUTE_EVENT_LISTENER(animationstart, kAnimationstart);
+  DEFINE_ATTRIBUTE_EVENT_LISTENER(search, kSearch);
+  DEFINE_ATTRIBUTE_EVENT_LISTENER(transitionend, kTransitionend);
 
-  DEFINE_MAPPED_ATTRIBUTE_EVENT_LISTENER(webkitanimationstart,
-                                         webkitAnimationStart);
-  DEFINE_MAPPED_ATTRIBUTE_EVENT_LISTENER(webkitanimationiteration,
-                                         webkitAnimationIteration);
-  DEFINE_MAPPED_ATTRIBUTE_EVENT_LISTENER(webkitanimationend,
-                                         webkitAnimationEnd);
-  DEFINE_MAPPED_ATTRIBUTE_EVENT_LISTENER(webkittransitionend,
-                                         webkitTransitionEnd);
+  DEFINE_ATTRIBUTE_EVENT_LISTENER(webkitanimationstart, kWebkitAnimationStart);
+  DEFINE_ATTRIBUTE_EVENT_LISTENER(webkitanimationiteration,
+                                  kWebkitAnimationIteration);
+  DEFINE_ATTRIBUTE_EVENT_LISTENER(webkitanimationend, kWebkitAnimationEnd);
+  DEFINE_ATTRIBUTE_EVENT_LISTENER(webkittransitionend, kWebkitTransitionEnd);
 
-  DEFINE_ATTRIBUTE_EVENT_LISTENER(orientationchange);
+  DEFINE_ATTRIBUTE_EVENT_LISTENER(orientationchange, kOrientationchange);
 
   void RegisterEventListenerObserver(EventListenerObserver*);
 
@@ -344,7 +342,6 @@ class CORE_EXPORT LocalDOMWindow final : public DOMWindow,
   bool IsRemoteDOMWindow() const override { return false; }
   void WarnUnusedPreloads(TimerBase*);
 
-  explicit LocalDOMWindow(LocalFrame&);
   void Dispose();
 
   void DispatchLoadEvent();

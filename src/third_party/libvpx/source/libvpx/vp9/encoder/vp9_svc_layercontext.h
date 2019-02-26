@@ -125,6 +125,8 @@ typedef struct SVC {
 
   BLOCK_SIZE *prev_partition_svc;
   int mi_stride[VPX_MAX_LAYERS];
+  int mi_rows[VPX_MAX_LAYERS];
+  int mi_cols[VPX_MAX_LAYERS];
 
   int first_layer_denoise;
 
@@ -178,9 +180,14 @@ typedef struct SVC {
 
   int first_spatial_layer_to_encode;
 
+  // Parameters for allowing framerate per spatial layer, and buffer
+  // update based on timestamps.
   int64_t duration[VPX_SS_MAX_LAYERS];
-
   int64_t timebase_fac;
+  int64_t time_stamp_superframe;
+  int64_t time_stamp_prev[VPX_SS_MAX_LAYERS];
+
+  int num_encoded_top_layer;
 } SVC;
 
 struct VP9_COMP;
@@ -234,7 +241,7 @@ int vp9_one_pass_cbr_svc_start_layer(struct VP9_COMP *const cpi);
 
 void vp9_free_svc_cyclic_refresh(struct VP9_COMP *const cpi);
 
-void vp9_svc_reset_key_frame(struct VP9_COMP *const cpi);
+void vp9_svc_reset_temporal_layers(struct VP9_COMP *const cpi, int is_key);
 
 void vp9_svc_check_reset_layer_rc_flag(struct VP9_COMP *const cpi);
 

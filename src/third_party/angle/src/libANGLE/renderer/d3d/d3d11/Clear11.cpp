@@ -137,14 +137,11 @@ Clear11::ShaderManager::ShaderManager()
                CLEARPS(Uint6), CLEARPS(Uint7), CLEARPS(Uint8)}},
       mPsSInt{{CLEARPS(Sint1), CLEARPS(Sint2), CLEARPS(Sint3), CLEARPS(Sint4), CLEARPS(Sint5),
                CLEARPS(Sint6), CLEARPS(Sint7), CLEARPS(Sint8)}}
-{
-}
+{}
 
 #undef CLEARPS
 
-Clear11::ShaderManager::~ShaderManager()
-{
-}
+Clear11::ShaderManager::~ShaderManager() {}
 
 angle::Result Clear11::ShaderManager::getShadersAndLayout(const gl::Context *context,
                                                           Renderer11 *renderer,
@@ -238,12 +235,9 @@ Clear11::Clear11(Renderer11 *renderer)
       mConstantBuffer(),
       mVertexBuffer(),
       mShaderData({})
-{
-}
+{}
 
-Clear11::~Clear11()
-{
-}
+Clear11::~Clear11() {}
 
 angle::Result Clear11::ensureResourcesInitialized(const gl::Context *context)
 {
@@ -521,7 +515,7 @@ angle::Result Clear11::clearFramebuffer(const gl::Context *context,
         }
 
         RenderTarget11 *renderTarget = nullptr;
-        ANGLE_TRY_HANDLE(context, attachment.getRenderTarget(context, &renderTarget));
+        ANGLE_TRY(attachment.getRenderTarget(context, &renderTarget));
 
         const gl::InternalFormat &formatInfo = *attachment.getFormat().info;
 
@@ -623,13 +617,12 @@ angle::Result Clear11::clearFramebuffer(const gl::Context *context,
         RenderTarget11 *depthStencilRenderTarget = nullptr;
 
         ASSERT(depthStencilAttachment != nullptr);
-        ANGLE_TRY_HANDLE(
-            context, depthStencilAttachment->getRenderTarget(context, &depthStencilRenderTarget));
+        ANGLE_TRY(depthStencilAttachment->getRenderTarget(context, &depthStencilRenderTarget));
 
         dsv = depthStencilRenderTarget->getDepthStencilView().get();
         ASSERT(dsv != nullptr);
 
-        const auto &nativeFormat = depthStencilRenderTarget->getFormatSet().format();
+        const auto &nativeFormat      = depthStencilRenderTarget->getFormatSet().format();
         const auto *stencilAttachment = fboData.getStencilAttachment();
 
         uint32_t stencilUnmasked =
@@ -702,7 +695,7 @@ angle::Result Clear11::clearFramebuffer(const gl::Context *context,
     ANGLE_TRY(mRenderer->getBlendState(context, mBlendStateKey, &blendState));
 
     const d3d11::DepthStencilState *dsState = nullptr;
-    const float *zValue              = nullptr;
+    const float *zValue                     = nullptr;
 
     if (dsv)
     {
@@ -773,10 +766,10 @@ angle::Result Clear11::clearFramebuffer(const gl::Context *context,
     }
 
     // Get Shaders
-    const d3d11::VertexShader *vs = nullptr;
+    const d3d11::VertexShader *vs   = nullptr;
     const d3d11::GeometryShader *gs = nullptr;
-    const d3d11::InputLayout *il  = nullptr;
-    const d3d11::PixelShader *ps  = nullptr;
+    const d3d11::InputLayout *il    = nullptr;
+    const d3d11::PixelShader *ps    = nullptr;
     const bool hasLayeredLayout =
         (fboData.getMultiviewLayout() == GL_FRAMEBUFFER_MULTIVIEW_LAYERED_ANGLE);
     ANGLE_TRY(mShaderManager.getShadersAndLayout(context, mRenderer, clearParams.colorType, numRtvs,

@@ -8,6 +8,7 @@
 
 #include <memory>
 #include <set>
+#include <string>
 #include <vector>
 
 #include "base/command_line.h"
@@ -884,13 +885,10 @@ ChromeContentBrowserClientExtensionsPart::
     CreateURLLoaderFactoryForNetworkRequests(
         content::RenderProcessHost* process,
         network::mojom::NetworkContext* network_context,
+        network::mojom::TrustedURLLoaderHeaderClientPtrInfo* header_client,
         const url::Origin& request_initiator) {
-  // TODO(lukasza): https://crbug.com/894766: Re-enable after a real fix for
-  // this bug.  For now, let's just avoid using separate URLLoaderFactories
-  // for extensions.
-  // return URLLoaderFactoryManager::CreateFactory(process, network_context,
-  //                                              request_initiator);
-  return network::mojom::URLLoaderFactoryPtrInfo();
+  return URLLoaderFactoryManager::CreateFactory(
+      process, network_context, header_client, request_initiator);
 }
 
 // static

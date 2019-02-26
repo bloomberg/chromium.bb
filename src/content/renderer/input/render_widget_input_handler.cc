@@ -156,7 +156,8 @@ void LogAllPassiveEventListenersUma(const WebInputEvent& input_event,
 
 blink::WebCoalescedInputEvent GetCoalescedWebPointerEventForTouch(
     const WebPointerEvent& pointer_event,
-    std::vector<const WebInputEvent*> coalesced_events) {
+    std::vector<const WebInputEvent*> coalesced_events,
+    std::vector<const WebInputEvent*> predicted_events) {
   std::vector<WebPointerEvent> related_pointer_events;
   for (const WebInputEvent* event : coalesced_events) {
     DCHECK(WebInputEvent::IsTouchEventType(event->GetType()));
@@ -170,7 +171,22 @@ blink::WebCoalescedInputEvent GetCoalescedWebPointerEventForTouch(
       }
     }
   }
-  return blink::WebCoalescedInputEvent(pointer_event, related_pointer_events);
+  std::vector<WebPointerEvent> predicted_pointer_events;
+  for (const WebInputEvent* event : predicted_events) {
+    DCHECK(WebInputEvent::IsTouchEventType(event->GetType()));
+    const WebTouchEvent& touch_event =
+        static_cast<const WebTouchEvent&>(*event);
+    for (unsigned i = 0; i < touch_event.touches_length; ++i) {
+      if (touch_event.touches[i].id == pointer_event.id &&
+          touch_event.touches[i].state != WebTouchPoint::kStateStationary) {
+        predicted_pointer_events.push_back(
+            WebPointerEvent(touch_event, touch_event.touches[i]));
+      }
+    }
+  }
+
+  return blink::WebCoalescedInputEvent(pointer_event, related_pointer_events,
+                                       predicted_pointer_events);
 }
 
 viz::FrameSinkId GetRemoteFrameSinkId(const blink::WebNode& node) {
@@ -202,7 +218,7 @@ RenderWidgetInputHandler::RenderWidgetInputHandler(
 RenderWidgetInputHandler::~RenderWidgetInputHandler() {}
 
 viz::FrameSinkId RenderWidgetInputHandler::GetFrameSinkIdAtPoint(
-    const gfx::Point& point,
+    const gfx::PointF& point,
     gfx::PointF* local_point) {
   gfx::PointF point_in_pixel(point);
   if (widget_->compositor_deps()->IsUseZoomForDSFEnabled()) {
@@ -210,7 +226,7 @@ viz::FrameSinkId RenderWidgetInputHandler::GetFrameSinkIdAtPoint(
         widget_->GetOriginalScreenInfo().device_scale_factor, point_in_pixel);
   }
   blink::WebHitTestResult result = widget_->GetWebWidget()->HitTestResultAt(
-      blink::WebPoint(point_in_pixel.x(), point_in_pixel.y()));
+      blink::WebPoint(ToRoundedPoint(point_in_pixel)));
 
   blink::WebNode result_node = result.GetNode();
   *local_point = gfx::PointF(point);
@@ -263,7 +279,8 @@ WebInputEventResult RenderWidgetInputHandler::HandleTouchEvent(
           WebPointerEvent(touch_event, touch_point);
       const blink::WebCoalescedInputEvent& coalesced_pointer_event =
           GetCoalescedWebPointerEventForTouch(
-              pointer_event, coalesced_event.GetCoalescedEventsPointers());
+              pointer_event, coalesced_event.GetCoalescedEventsPointers(),
+              coalesced_event.GetPredictedEventsPointers());
       widget_->GetWebWidget()->HandleInputEvent(coalesced_pointer_event);
     }
   }
@@ -333,6 +350,11 @@ void RenderWidgetInputHandler::HandleInputEvent(
                  mouse_event.PositionInWidget().x, "y",
                  mouse_event.PositionInWidget().y);
     prevent_default = delegate_->WillHandleMouseEvent(mouse_event);
+
+    // Reset the last known cursor if mouse has left this widget. So next
+    // time that the mouse enters we always set the cursor accordingly.
+    if (mouse_event.GetType() == WebInputEvent::kMouseLeave)
+      current_cursor_.reset();
   }
 
   if (WebInputEvent::IsKeyboardEventType(input_event.GetType())) {
@@ -476,6 +498,14 @@ void RenderWidgetInputHandler::DidOverscrollFromBlink(
   }
 
   delegate_->OnDidOverscroll(*params);
+}
+
+bool RenderWidgetInputHandler::DidChangeCursor(const WebCursor& cursor) {
+  if (!current_cursor_ || !current_cursor_->IsEqual(cursor)) {
+    current_cursor_ = cursor;
+    return true;
+  }
+  return false;
 }
 
 bool RenderWidgetInputHandler::ProcessTouchAction(

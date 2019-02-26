@@ -18,10 +18,6 @@ const char kEnableHardwareOverlays[] = "enable-hardware-overlays";
 // Forces tests to produce pixel output when they normally wouldn't.
 const char kEnablePixelOutputInTests[] = "enable-pixel-output-in-tests";
 
-// Limits the compositor to output a certain number of frames per second,
-// maximum.
-const char kLimitFps[] = "limit-fps";
-
 const char kUIEnableRGBA4444Textures[] = "ui-enable-rgba-4444-textures";
 
 const char kUIEnableZeroCopy[] = "ui-enable-zero-copy";

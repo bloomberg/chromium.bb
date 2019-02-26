@@ -112,6 +112,7 @@ class WebRtcRemoteEventLogManager final
                           const std::string& peer_connection_id,
                           const base::FilePath& browser_context_dir,
                           size_t max_file_size_bytes,
+                          int output_period_ms,
                           size_t web_app_id,
                           std::string* log_id,
                           std::string* error_message);
@@ -181,6 +182,7 @@ class WebRtcRemoteEventLogManager final
   // If valid, returns true. Otherwise, false, and |error_message| gets
   // a relevant error.
   bool AreLogParametersValid(size_t max_file_size_bytes,
+                             int output_period_ms,
                              size_t web_app_id,
                              std::string* error_message) const;
 
@@ -245,6 +247,7 @@ class WebRtcRemoteEventLogManager final
   bool StartWritingLog(const PeerConnectionKey& key,
                        const base::FilePath& browser_context_dir,
                        size_t max_file_size_bytes,
+                       int output_period_ms,
                        size_t web_app_id,
                        std::string* log_id_out,
                        std::string* error_message_out);

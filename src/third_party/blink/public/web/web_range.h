@@ -33,7 +33,7 @@
 
 #include "third_party/blink/public/platform/web_common.h"
 #if INSIDE_BLINK
-#include "third_party/blink/renderer/core/editing/forward.h"
+#include "third_party/blink/renderer/core/editing/forward.h"  // nogncheck
 #endif
 
 namespace blink {
@@ -45,7 +45,7 @@ class Range;
 class WebRange final {
  public:
   BLINK_EXPORT WebRange(int start, int length);
-  BLINK_EXPORT WebRange() {}
+  BLINK_EXPORT WebRange();
 
   int StartOffset() const { return start_; }
   int EndOffset() const { return end_; }

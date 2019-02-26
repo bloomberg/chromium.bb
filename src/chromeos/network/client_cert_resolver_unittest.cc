@@ -8,12 +8,15 @@
 
 #include <memory>
 
+#include "base/base64.h"
 #include "base/bind.h"
 #include "base/bind_helpers.h"
+#include "base/callback_helpers.h"
 #include "base/files/file_path.h"
 #include "base/files/file_util.h"
 #include "base/json/json_reader.h"
 #include "base/macros.h"
+#include "base/run_loop.h"
 #include "base/strings/stringprintf.h"
 #include "base/test/scoped_task_environment.h"
 #include "base/test/simple_test_clock.h"
@@ -27,6 +30,8 @@
 #include "chromeos/network/network_configuration_handler.h"
 #include "chromeos/network/network_profile_handler.h"
 #include "chromeos/network/network_state_handler.h"
+#include "chromeos/network/onc/onc_certificate_importer_impl.h"
+#include "chromeos/network/onc/onc_test_utils.h"
 #include "components/onc/onc_constants.h"
 #include "crypto/scoped_nss_types.h"
 #include "crypto/scoped_test_nss_db.h"
@@ -48,6 +53,40 @@ constexpr char kWifiStub[] = "wifi_stub";
 constexpr char kWifiSSID[] = "wifi_ssid";
 constexpr char kUserProfilePath[] = "user_profile";
 constexpr char kUserHash[] = "user_hash";
+
+void OnImportCompleted(base::OnceClosure loop_quit_closure, bool success) {
+  EXPECT_TRUE(success);
+  std::move(loop_quit_closure).Run();
+}
+
+void OnListCertsDone(base::OnceClosure loop_quit_closure,
+                     net::ScopedCERTCertificateList* out_cert_list,
+                     net::ScopedCERTCertificateList cert_list) {
+  out_cert_list->swap(cert_list);
+  std::move(loop_quit_closure).Run();
+}
+
+// Returns a |OncParsedCertificates| which contains exactly one client
+// certificate with the contents of |client_cert_pkcs12_file| and the GUID
+// |guid|. Returns nullptr if the file could not be read.
+std::unique_ptr<onc::OncParsedCertificates> OncParsedCertificatesForPkcs12File(
+    const base::FilePath& client_cert_pkcs12_file,
+    base::StringPiece guid) {
+  std::string pkcs12_raw;
+  if (!base::ReadFileToString(client_cert_pkcs12_file, &pkcs12_raw))
+    return nullptr;
+
+  std::string pkcs12_base64_encoded;
+  base::Base64Encode(pkcs12_raw, &pkcs12_base64_encoded);
+
+  base::Value onc_certificate(base::Value::Type::DICTIONARY);
+  onc_certificate.SetKey("GUID", base::Value(guid));
+  onc_certificate.SetKey("Type", base::Value("Client"));
+  onc_certificate.SetKey("PKCS12", base::Value(pkcs12_base64_encoded));
+  base::Value onc_certificates(base::Value::Type::LIST);
+  onc_certificates.GetList().push_back(std::move(onc_certificate));
+  return std::make_unique<onc::OncParsedCertificates>(onc_certificates);
+}
 
 }  // namespace
 
@@ -224,91 +263,63 @@ class ClientCertResolverTest : public testing::Test,
   // Sets up a policy with a certificate pattern that matches any client cert
   // with a certain Issuer CN. It will match the test client cert imported by
   // SetupTestCerts.
-  void SetupPolicyMatchingIssuerCN(onc::ONCSource onc_source) {
-    const char* test_policy =
-        "[ { \"GUID\": \"wifi_stub\","
-        "    \"Name\": \"wifi_stub\","
-        "    \"Type\": \"WiFi\","
-        "    \"WiFi\": {"
-        "      \"Security\": \"WPA-EAP\","
-        "      \"SSID\": \"wifi_ssid\","
-        "      \"EAP\": {"
-        "        \"Outer\": \"EAP-TLS\","
-        "        \"ClientCertType\": \"Pattern\","
-        "        \"ClientCertPattern\": {"
-        "          \"Issuer\": {"
-        "            \"CommonName\": \"B CA\""
-        "          }"
-        "        }"
-        "      }"
-        "    }"
-        "} ]";
-
-    std::string error;
-    std::unique_ptr<base::Value> policy_value =
-        base::JSONReader::ReadAndReturnError(
-            test_policy, base::JSON_ALLOW_TRAILING_COMMAS, nullptr, &error);
-    ASSERT_TRUE(policy_value) << error;
-
-    base::ListValue* policy = nullptr;
-    ASSERT_TRUE(policy_value->GetAsList(&policy));
-
-    std::string user_hash =
-        onc_source == onc::ONC_SOURCE_USER_POLICY ? kUserHash : "";
-    managed_config_handler_->SetPolicy(
-        onc_source, user_hash, *policy,
-        base::DictionaryValue() /* no global network config */);
+  void SetupPolicyMatchingIssuerCN(::onc::ONCSource onc_source) {
+    const char* test_policy = R"(
+        [ { "GUID": "wifi_stub",
+            "Name": "wifi_stub",
+            "Type": "WiFi",
+            "WiFi": {
+              "Security": "WPA-EAP",
+              "SSID": "wifi_ssid",
+              "EAP": {
+                "Outer": "EAP-TLS",
+                "ClientCertType": "Pattern",
+                "ClientCertPattern": {
+                  "Issuer": {
+                    "CommonName": "B CA"
+                  }
+                }
+              }
+            }
+        } ])";
+    ASSERT_NO_FATAL_FAILURE(SetManagedNetworkPolicy(onc_source, test_policy));
   }
 
   // Sets up a policy with a certificate pattern that matches any client cert
   // with a Subject Organization set to "Blar". It will match the test client
   // cert imported by SetupTestCertWithBadPrintableString.
   void SetupPolicyMatchingSubjectOrgForBadPrintableStringCert(
-      onc::ONCSource onc_source) {
-    const char* test_policy =
-        "[ { \"GUID\": \"wifi_stub\","
-        "    \"Name\": \"wifi_stub\","
-        "    \"Type\": \"WiFi\","
-        "    \"WiFi\": {"
-        "      \"Security\": \"WPA-EAP\","
-        "      \"SSID\": \"wifi_ssid\","
-        "      \"EAP\": {"
-        "        \"Outer\": \"EAP-TLS\","
-        "        \"ClientCertType\": \"Pattern\","
-        "        \"ClientCertPattern\": {"
-        "          \"Subject\": {"
-        "            \"Organization\": \"Blar\""
-        "          }"
-        "        }"
-        "      }"
-        "    }"
-        "} ]";
-
-    std::string error;
-    std::unique_ptr<base::Value> policy_value =
-        base::JSONReader::ReadAndReturnError(
-            test_policy, base::JSON_ALLOW_TRAILING_COMMAS, nullptr, &error);
-    ASSERT_TRUE(policy_value) << error;
-
-    base::ListValue* policy = nullptr;
-    ASSERT_TRUE(policy_value->GetAsList(&policy));
-
-    std::string user_hash =
-        onc_source == onc::ONC_SOURCE_USER_POLICY ? kUserHash : "";
-    managed_config_handler_->SetPolicy(
-        onc_source, user_hash, *policy,
-        base::DictionaryValue() /* no global network config */);
+      ::onc::ONCSource onc_source) {
+    const char* test_policy = R"(
+        [ { "GUID": "wifi_stub",
+            "Name": "wifi_stub",
+            "Type": "WiFi",
+            "WiFi": {
+              "Security": "WPA-EAP",
+              "SSID": "wifi_ssid",
+              "EAP": {
+                "Outer": "EAP-TLS",
+                "ClientCertType": "Pattern",
+                "ClientCertPattern": {
+                  "Subject": {
+                    "Organization": "Blar"
+                  }
+                }
+              }
+            }
+        } ])";
+    ASSERT_NO_FATAL_FAILURE(SetManagedNetworkPolicy(onc_source, test_policy));
   }
 
   void SetupCertificateConfigMatchingIssuerCN(
-      onc::ONCSource onc_source,
+      ::onc::ONCSource onc_source,
       client_cert::ClientCertConfig* client_cert_config) {
-    const char* test_onc_pattern =
-        "{"
-        "  \"Issuer\": {"
-        "    \"CommonName\": \"B CA\""
-        "  }"
-        "}";
+    const char* test_onc_pattern = R"(
+        {
+          "Issuer": {
+            "CommonName": "B CA"
+          }
+        })";
     std::string error;
     std::unique_ptr<base::Value> onc_pattern_value =
         base::JSONReader::ReadAndReturnError(test_onc_pattern,
@@ -320,34 +331,39 @@ class ClientCertResolverTest : public testing::Test,
     onc_pattern_value->GetAsDictionary(&onc_pattern_dict);
 
     client_cert_config->onc_source = onc_source;
+    client_cert_config->client_cert_type = ::onc::client_cert::kPattern;
     client_cert_config->pattern.ReadFromONCDictionary(*onc_pattern_dict);
   }
 
   // Sets up a policy with a certificate pattern that matches any client cert
   // that is signed by the test CA cert (stored in |test_ca_cert_pem_|). In
   // particular it will match the test client cert.
-  void SetupPolicyMatchingIssuerPEM(onc::ONCSource onc_source,
+  void SetupPolicyMatchingIssuerPEM(::onc::ONCSource onc_source,
                                     const std::string& identity) {
-    const char* test_policy_template =
-        "[ { \"GUID\": \"wifi_stub\","
-        "    \"Name\": \"wifi_stub\","
-        "    \"Type\": \"WiFi\","
-        "    \"WiFi\": {"
-        "      \"Security\": \"WPA-EAP\","
-        "      \"SSID\": \"wifi_ssid\","
-        "      \"EAP\": {"
-        "        \"Identity\": \"%s\","
-        "        \"Outer\": \"EAP-TLS\","
-        "        \"ClientCertType\": \"Pattern\","
-        "        \"ClientCertPattern\": {"
-        "          \"IssuerCAPEMs\": [ \"%s\" ]"
-        "        }"
-        "      }"
-        "    }"
-        "} ]";
+    const char* test_policy_template = R"(
+        [ { "GUID": "wifi_stub",
+            "Name": "wifi_stub",
+            "Type": "WiFi",
+            "WiFi": {
+              "Security": "WPA-EAP",
+              "SSID": "wifi_ssid",
+              "EAP": {
+                "Identity": "%s",
+                "Outer": "EAP-TLS",
+                "ClientCertType": "Pattern",
+                "ClientCertPattern": {
+                  "IssuerCAPEMs": [ "%s" ]
+                }
+              }
+            }
+        } ])";
     std::string policy_json = base::StringPrintf(
         test_policy_template, identity.c_str(), test_ca_cert_pem_.c_str());
+    ASSERT_NO_FATAL_FAILURE(SetManagedNetworkPolicy(onc_source, policy_json));
+  }
 
+  void SetManagedNetworkPolicy(::onc::ONCSource onc_source,
+                               base::StringPiece policy_json) {
     std::string error;
     std::unique_ptr<base::Value> policy_value =
         base::JSONReader::ReadAndReturnError(
@@ -358,7 +374,7 @@ class ClientCertResolverTest : public testing::Test,
     ASSERT_TRUE(policy_value->GetAsList(&policy));
 
     std::string user_hash =
-        onc_source == onc::ONC_SOURCE_USER_POLICY ? kUserHash : "";
+        onc_source == ::onc::ONC_SOURCE_USER_POLICY ? kUserHash : "";
     managed_config_handler_->SetPolicy(
         onc_source, user_hash, *policy,
         base::DictionaryValue() /* no global network config */);
@@ -379,12 +395,25 @@ class ClientCertResolverTest : public testing::Test,
     properties->GetStringWithoutPathExpansion(prop_name, prop_value);
   }
 
+  // Returns a list of all certificates that are stored on |test_nsscertdb_|'s
+  // private slot.
+  net::ScopedCERTCertificateList ListCertsOnPrivateSlot() {
+    net::ScopedCERTCertificateList certs;
+    base::RunLoop run_loop;
+    test_nsscertdb_->ListCertsInSlot(
+        base::BindOnce(&OnListCertsDone, run_loop.QuitClosure(), &certs),
+        test_nsscertdb_->GetPrivateSlot().get());
+    run_loop.Run();
+    return certs;
+  }
+
   base::test::ScopedTaskEnvironment scoped_task_environment_;
   int network_properties_changed_count_ = 0;
   std::string test_cert_id_;
   std::unique_ptr<base::SimpleTestClock> test_clock_;
   std::unique_ptr<ClientCertResolver> client_cert_resolver_;
   NetworkCertLoader* network_cert_loader_ = nullptr;
+  std::unique_ptr<net::NSSCertDatabaseChromeOS> test_nsscertdb_;
 
  private:
   // ClientCertResolver::Observer:
@@ -404,7 +433,6 @@ class ClientCertResolverTest : public testing::Test,
   std::string test_ca_cert_pem_;
   crypto::ScopedTestNSSDB test_nssdb_;
   crypto::ScopedTestNSSDB test_system_nssdb_;
-  std::unique_ptr<net::NSSCertDatabaseChromeOS> test_nsscertdb_;
 
   DISALLOW_COPY_AND_ASSIGN(ClientCertResolverTest);
 };
@@ -416,7 +444,8 @@ TEST_F(ClientCertResolverTest, NoMatchingCertificates) {
   scoped_task_environment_.RunUntilIdle();
   network_properties_changed_count_ = 0;
   SetupNetworkHandlers();
-  SetupPolicyMatchingIssuerPEM(onc::ONC_SOURCE_USER_POLICY, "");
+  ASSERT_NO_FATAL_FAILURE(
+      SetupPolicyMatchingIssuerPEM(::onc::ONC_SOURCE_USER_POLICY, ""));
   scoped_task_environment_.RunUntilIdle();
 
   // Verify that no client certificate was configured.
@@ -433,7 +462,8 @@ TEST_F(ClientCertResolverTest, MatchIssuerCNWithoutIssuerInstalled) {
   scoped_task_environment_.RunUntilIdle();
 
   SetupNetworkHandlers();
-  SetupPolicyMatchingIssuerCN(onc::ONC_SOURCE_USER_POLICY);
+  ASSERT_NO_FATAL_FAILURE(
+      SetupPolicyMatchingIssuerCN(::onc::ONC_SOURCE_USER_POLICY));
   scoped_task_environment_.RunUntilIdle();
 
   network_properties_changed_count_ = 0;
@@ -459,7 +489,7 @@ TEST_F(ClientCertResolverTest, MatchSubjectOrgOnBadPrintableStringCert) {
   SetupNetworkHandlers();
   ASSERT_NO_FATAL_FAILURE(
       SetupPolicyMatchingSubjectOrgForBadPrintableStringCert(
-          onc::ONC_SOURCE_USER_POLICY));
+          ::onc::ONC_SOURCE_USER_POLICY));
   scoped_task_environment_.RunUntilIdle();
 
   network_properties_changed_count_ = 0;
@@ -480,7 +510,8 @@ TEST_F(ClientCertResolverTest, ResolveOnCertificatesLoaded) {
   scoped_task_environment_.RunUntilIdle();
 
   SetupNetworkHandlers();
-  SetupPolicyMatchingIssuerPEM(onc::ONC_SOURCE_USER_POLICY, "");
+  ASSERT_NO_FATAL_FAILURE(
+      SetupPolicyMatchingIssuerPEM(::onc::ONC_SOURCE_USER_POLICY, ""));
   scoped_task_environment_.RunUntilIdle();
 
   network_properties_changed_count_ = 0;
@@ -505,7 +536,8 @@ TEST_F(ClientCertResolverTest, ResolveAfterPolicyApplication) {
 
   // Policy application will trigger the ClientCertResolver.
   network_properties_changed_count_ = 0;
-  SetupPolicyMatchingIssuerPEM(onc::ONC_SOURCE_USER_POLICY, "");
+  ASSERT_NO_FATAL_FAILURE(
+      SetupPolicyMatchingIssuerPEM(::onc::ONC_SOURCE_USER_POLICY, ""));
   scoped_task_environment_.RunUntilIdle();
 
   // Verify that the resolver positively matched the pattern in the policy with
@@ -522,7 +554,8 @@ TEST_F(ClientCertResolverTest, ExpiringCertificate) {
   scoped_task_environment_.RunUntilIdle();
 
   SetupNetworkHandlers();
-  SetupPolicyMatchingIssuerPEM(onc::ONC_SOURCE_USER_POLICY, "");
+  ASSERT_NO_FATAL_FAILURE(
+      SetupPolicyMatchingIssuerPEM(::onc::ONC_SOURCE_USER_POLICY, ""));
   scoped_task_environment_.RunUntilIdle();
 
   StartNetworkCertLoader();
@@ -559,7 +592,8 @@ TEST_F(ClientCertResolverTest, SameCertAfterNetworkConnectionStateChanged) {
   scoped_task_environment_.RunUntilIdle();
 
   SetupNetworkHandlers();
-  SetupPolicyMatchingIssuerPEM(onc::ONC_SOURCE_USER_POLICY, "");
+  ASSERT_NO_FATAL_FAILURE(
+      SetupPolicyMatchingIssuerPEM(::onc::ONC_SOURCE_USER_POLICY, ""));
   scoped_task_environment_.RunUntilIdle();
 
   StartNetworkCertLoader();
@@ -591,7 +625,8 @@ TEST_F(ClientCertResolverTest, UserPolicyUsesSystemToken) {
   scoped_task_environment_.RunUntilIdle();
 
   SetupNetworkHandlers();
-  SetupPolicyMatchingIssuerCN(onc::ONC_SOURCE_USER_POLICY);
+  ASSERT_NO_FATAL_FAILURE(
+      SetupPolicyMatchingIssuerCN(::onc::ONC_SOURCE_USER_POLICY));
   scoped_task_environment_.RunUntilIdle();
 
   StartNetworkCertLoader();
@@ -611,11 +646,11 @@ TEST_F(ClientCertResolverTest, UserPolicyUsesSystemTokenSync) {
   scoped_task_environment_.RunUntilIdle();
 
   client_cert::ClientCertConfig client_cert_config;
-  SetupCertificateConfigMatchingIssuerCN(onc::ONC_SOURCE_USER_POLICY,
+  SetupCertificateConfigMatchingIssuerCN(::onc::ONC_SOURCE_USER_POLICY,
                                          &client_cert_config);
 
   base::DictionaryValue shill_properties;
-  ClientCertResolver::ResolveCertificatePatternSync(
+  ClientCertResolver::ResolveClientCertificateSync(
       client_cert::CONFIG_TYPE_EAP, client_cert_config, &shill_properties);
   std::string pkcs11_id;
   shill_properties.GetStringWithoutPathExpansion(shill::kEapCertIdProperty,
@@ -629,7 +664,8 @@ TEST_F(ClientCertResolverTest, DevicePolicyUsesSystemToken) {
   scoped_task_environment_.RunUntilIdle();
 
   SetupNetworkHandlers();
-  SetupPolicyMatchingIssuerCN(onc::ONC_SOURCE_USER_POLICY);
+  ASSERT_NO_FATAL_FAILURE(
+      SetupPolicyMatchingIssuerCN(::onc::ONC_SOURCE_USER_POLICY));
   scoped_task_environment_.RunUntilIdle();
 
   StartNetworkCertLoader();
@@ -649,11 +685,11 @@ TEST_F(ClientCertResolverTest, DevicePolicyUsesSystemTokenSync) {
   scoped_task_environment_.RunUntilIdle();
 
   client_cert::ClientCertConfig client_cert_config;
-  SetupCertificateConfigMatchingIssuerCN(onc::ONC_SOURCE_DEVICE_POLICY,
+  SetupCertificateConfigMatchingIssuerCN(::onc::ONC_SOURCE_DEVICE_POLICY,
                                          &client_cert_config);
 
   base::DictionaryValue shill_properties;
-  ClientCertResolver::ResolveCertificatePatternSync(
+  ClientCertResolver::ResolveClientCertificateSync(
       client_cert::CONFIG_TYPE_EAP, client_cert_config, &shill_properties);
   std::string pkcs11_id;
   shill_properties.GetStringWithoutPathExpansion(shill::kEapCertIdProperty,
@@ -667,7 +703,8 @@ TEST_F(ClientCertResolverTest, DevicePolicyDoesNotUseUserToken) {
   scoped_task_environment_.RunUntilIdle();
 
   SetupNetworkHandlers();
-  SetupPolicyMatchingIssuerCN(onc::ONC_SOURCE_DEVICE_POLICY);
+  ASSERT_NO_FATAL_FAILURE(
+      SetupPolicyMatchingIssuerCN(::onc::ONC_SOURCE_DEVICE_POLICY));
   scoped_task_environment_.RunUntilIdle();
 
   network_properties_changed_count_ = 0;
@@ -689,11 +726,11 @@ TEST_F(ClientCertResolverTest, DevicePolicyDoesNotUseUserTokenSync) {
   scoped_task_environment_.RunUntilIdle();
 
   client_cert::ClientCertConfig client_cert_config;
-  SetupCertificateConfigMatchingIssuerCN(onc::ONC_SOURCE_DEVICE_POLICY,
+  SetupCertificateConfigMatchingIssuerCN(::onc::ONC_SOURCE_DEVICE_POLICY,
                                          &client_cert_config);
 
   base::DictionaryValue shill_properties;
-  ClientCertResolver::ResolveCertificatePatternSync(
+  ClientCertResolver::ResolveClientCertificateSync(
       client_cert::CONFIG_TYPE_EAP, client_cert_config, &shill_properties);
   std::string pkcs11_id;
   shill_properties.GetStringWithoutPathExpansion(shill::kEapCertIdProperty,
@@ -707,8 +744,8 @@ TEST_F(ClientCertResolverTest, PopulateIdentityFromCert) {
   scoped_task_environment_.RunUntilIdle();
 
   SetupNetworkHandlers();
-  SetupPolicyMatchingIssuerPEM(onc::ONC_SOURCE_USER_POLICY,
-                               "${CERT_SAN_EMAIL}");
+  ASSERT_NO_FATAL_FAILURE(SetupPolicyMatchingIssuerPEM(
+      ::onc::ONC_SOURCE_USER_POLICY, "${CERT_SAN_EMAIL}"));
   scoped_task_environment_.RunUntilIdle();
 
   network_properties_changed_count_ = 0;
@@ -725,8 +762,8 @@ TEST_F(ClientCertResolverTest, PopulateIdentityFromCert) {
   // Verify that after changing the ONC policy to request a variant of the
   // Microsoft Universal Principal Name field instead, the correct value is
   // substituted into the shill service entry.
-  SetupPolicyMatchingIssuerPEM(onc::ONC_SOURCE_USER_POLICY,
-                               "upn-${CERT_SAN_UPN}-suffix");
+  ASSERT_NO_FATAL_FAILURE(SetupPolicyMatchingIssuerPEM(
+      ::onc::ONC_SOURCE_USER_POLICY, "upn-${CERT_SAN_UPN}-suffix"));
   scoped_task_environment_.RunUntilIdle();
 
   GetServiceProperty(shill::kEapIdentityProperty, &identity);
@@ -735,8 +772,9 @@ TEST_F(ClientCertResolverTest, PopulateIdentityFromCert) {
 
   // Verify that after changing the ONC policy to request the subject CommonName
   // field, the correct value is substituted into the shill service entry.
-  SetupPolicyMatchingIssuerPEM(onc::ONC_SOURCE_USER_POLICY,
-                               "subject-cn-${CERT_SUBJECT_COMMON_NAME}-suffix");
+  ASSERT_NO_FATAL_FAILURE(SetupPolicyMatchingIssuerPEM(
+      ::onc::ONC_SOURCE_USER_POLICY,
+      "subject-cn-${CERT_SUBJECT_COMMON_NAME}-suffix"));
   scoped_task_environment_.RunUntilIdle();
 
   GetServiceProperty(shill::kEapIdentityProperty, &identity);
@@ -752,7 +790,8 @@ TEST_F(ClientCertResolverTest, TestResolveTaskQueued) {
   StartNetworkCertLoader();
   SetupWifi();
   SetupNetworkHandlers();
-  SetupPolicyMatchingIssuerPEM(onc::ONC_SOURCE_USER_POLICY, "");
+  ASSERT_NO_FATAL_FAILURE(
+      SetupPolicyMatchingIssuerPEM(::onc::ONC_SOURCE_USER_POLICY, ""));
   scoped_task_environment_.RunUntilIdle();
 
   // Pretend that policy was applied, this shall queue a resolving task.
@@ -777,6 +816,84 @@ TEST_F(ClientCertResolverTest, TestResolveTaskQueued) {
   std::string pkcs11_id;
   GetServiceProperty(shill::kEapCertIdProperty, &pkcs11_id);
   EXPECT_EQ(test_cert_id_, pkcs11_id);
+}
+
+// Tests that a ClientCertRef reference is resolved by |ClientCertResolver|.
+// Uses the |CertificateImporterImpl| to import the client certificate from ONC
+// policy, ensuring that setting the cert's key's nickname (in the import step)
+// and evaluating it (in the matching step) work well together.
+TEST_F(ClientCertResolverTest, ResolveClientCertRef) {
+  const char* test_policy_network =
+      R"([ { "GUID": "wifi_stub",
+               "Name": "wifi_stub",
+               "Type": "WiFi",
+               "WiFi": {
+                 "Security": "WPA-EAP",
+                 "SSID": "wifi_ssid",
+                 "EAP": {
+                   "Identity": "TestIdentity",
+                   "Outer": "EAP-TLS",
+                   "ClientCertType": "Ref",
+                   "ClientCertRef": "{some-unique-guid}"
+                 }
+               }
+           } ])";
+
+  SetupWifi();
+  scoped_task_environment_.RunUntilIdle();
+  StartNetworkCertLoader();
+  scoped_task_environment_.RunUntilIdle();
+  SetupNetworkHandlers();
+  scoped_task_environment_.RunUntilIdle();
+
+  // Make sure that expiring client certs don't cause issues.
+  test_clock_->SetNow(base::Time::Min());
+
+  // Apply the network policy.
+  network_properties_changed_count_ = 0;
+  ASSERT_NO_FATAL_FAILURE(SetManagedNetworkPolicy(::onc::ONC_SOURCE_USER_POLICY,
+                                                  test_policy_network));
+  scoped_task_environment_.RunUntilIdle();
+
+  // The referenced client cert does not exist yet, so expect that it has not
+  // been resolved.
+  std::string pkcs11_id;
+  GetServiceProperty(shill::kEapCertIdProperty, &pkcs11_id);
+  EXPECT_TRUE(pkcs11_id.empty());
+  EXPECT_EQ(1, network_properties_changed_count_);
+
+  // Now import a client certificate which has the GUID required using the
+  // |CertificateImporterImpl|.
+  auto onc_parsed_certificates = OncParsedCertificatesForPkcs12File(
+      net::GetTestCertsDirectory().AppendASCII("client-empty-password.p12"),
+      "{some-unique-guid}");
+  ASSERT_TRUE(onc_parsed_certificates);
+
+  onc::CertificateImporterImpl importer(
+      scoped_task_environment_.GetMainThreadTaskRunner(),
+      test_nsscertdb_.get());
+  base::RunLoop import_loop;
+  importer.ImportClientCertificates(
+      onc_parsed_certificates->client_certificates(),
+      base::BindOnce(&OnImportCompleted, import_loop.QuitClosure()));
+  import_loop.Run();
+  scoped_task_environment_.RunUntilIdle();
+
+  // Find the imported cert and get its id.
+  net::ScopedCERTCertificateList private_slot_certs = ListCertsOnPrivateSlot();
+  ASSERT_EQ(1u, private_slot_certs.size());
+  int slot_id = 0;
+  const std::string imported_cert_pkcs11_id =
+      NetworkCertLoader::GetPkcs11IdAndSlotForCert(private_slot_certs[0].get(),
+                                                   &slot_id);
+  std::string imported_cert_formatted_pkcs11_id =
+      base::StringPrintf("%i:%s", slot_id, imported_cert_pkcs11_id.c_str());
+
+  // Verify that the resolver positively matched the pattern in the policy with
+  // the test client cert and configured the network.
+  GetServiceProperty(shill::kEapCertIdProperty, &pkcs11_id);
+  EXPECT_EQ(imported_cert_formatted_pkcs11_id, pkcs11_id);
+  EXPECT_EQ(2, network_properties_changed_count_);
 }
 
 }  // namespace chromeos

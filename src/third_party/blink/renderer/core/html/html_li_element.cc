@@ -22,7 +22,7 @@
 
 #include "third_party/blink/renderer/core/html/html_li_element.h"
 
-#include "third_party/blink/renderer/core/css_property_names.h"
+#include "third_party/blink/renderer/core/css/css_property_names.h"
 #include "third_party/blink/renderer/core/css_value_keywords.h"
 #include "third_party/blink/renderer/core/dom/document.h"
 #include "third_party/blink/renderer/core/dom/layout_tree_builder_traversal.h"
@@ -32,15 +32,15 @@
 
 namespace blink {
 
-using namespace HTMLNames;
+using namespace html_names;
 
 inline HTMLLIElement::HTMLLIElement(Document& document)
-    : HTMLElement(liTag, document) {}
+    : HTMLElement(kLiTag, document) {}
 
 DEFINE_NODE_FACTORY(HTMLLIElement)
 
 bool HTMLLIElement::IsPresentationAttribute(const QualifiedName& name) const {
-  if (name == typeAttr)
+  if (name == kTypeAttr)
     return true;
   return HTMLElement::IsPresentationAttribute(name);
 }
@@ -71,7 +71,7 @@ void HTMLLIElement::CollectStyleForPresentationAttribute(
     const QualifiedName& name,
     const AtomicString& value,
     MutableCSSPropertyValueSet* style) {
-  if (name == typeAttr) {
+  if (name == kTypeAttr) {
     CSSValueID type_value = ListTypeToCSSValueID(value);
     if (type_value != CSSValueInvalid)
       AddPropertyToPresentationAttributeStyle(style, CSSPropertyListStyleType,
@@ -82,7 +82,7 @@ void HTMLLIElement::CollectStyleForPresentationAttribute(
 }
 
 void HTMLLIElement::ParseAttribute(const AttributeModificationParams& params) {
-  if (params.name == valueAttr) {
+  if (params.name == kValueAttr) {
     if (ListItemOrdinal* ordinal = ListItemOrdinal::Get(*this))
       ParseValue(params.new_value, ordinal);
   } else {
@@ -113,7 +113,7 @@ void HTMLLIElement::AttachLayoutTree(AttachContext& context) {
     if (!list_node)
       ordinal->SetNotInList(true, *this);
 
-    ParseValue(FastGetAttribute(valueAttr), ordinal);
+    ParseValue(FastGetAttribute(kValueAttr), ordinal);
   }
 }
 

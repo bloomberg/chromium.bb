@@ -39,9 +39,15 @@ function makeSimpleFileListModel(names) {
   return fileListModel;
 }
 
-// MetadataModel for this test.
-// It is supposed to provide metadata from TEST_METADATA to work with the
-// FileListModel.
+/**
+ * MetadataModel for this test.
+ * It is supposed to provide metadata from TEST_METADATA to work with the
+ * FileListModel.
+ *
+ * @constructor
+ * @extends {MetadataModel}
+ * @param {Object} testdata
+ */
 function TestMetadataModel(testdata) {
   this.testdata_ = testdata;
 }

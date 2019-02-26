@@ -42,7 +42,10 @@
 #include "src/profiling/memory/wire_protocol.h"
 
 namespace perfetto {
+namespace profiling {
 namespace {
+
+constexpr struct timeval kSendTimeout = {1 /* s */, 0 /* us */};
 
 #if !PERFETTO_BUILDFLAG(PERFETTO_OS_ANDROID)
 // glibc does not define a wrapper around gettid, bionic does.
@@ -64,6 +67,12 @@ std::vector<base::ScopedFile> ConnectPool(const std::string& sock_name,
     auto sock = base::CreateSocket();
     if (connect(*sock, reinterpret_cast<sockaddr*>(&addr), addr_size) == -1) {
       PERFETTO_PLOG("Failed to connect to %s", sock_name.c_str());
+      continue;
+    }
+    if (setsockopt(*sock, SOL_SOCKET, SO_SNDTIMEO,
+                   reinterpret_cast<const char*>(&kSendTimeout),
+                   sizeof(kSendTimeout)) != 0) {
+      PERFETTO_PLOG("Failed to set timeout for %s", sock_name.c_str());
       continue;
     }
     res.emplace_back(std::move(sock));
@@ -118,7 +127,10 @@ void FreePage::FlushLocked(SocketPool* pool) {
   free_page_.num_entries = offset_;
   msg.free_header = &free_page_;
   BorrowedSocket fd(pool->Borrow());
-  SendWireMessage(*fd, msg);
+  if (!fd || !SendWireMessage(*fd, msg)) {
+    PERFETTO_DFATAL("Failed to send wire message");
+    fd.Close();
+  }
 }
 
 SocketPool::SocketPool(std::vector<base::ScopedFile> sockets)
@@ -126,27 +138,46 @@ SocketPool::SocketPool(std::vector<base::ScopedFile> sockets)
 
 BorrowedSocket SocketPool::Borrow() {
   std::unique_lock<std::mutex> lck_(mutex_);
-  if (available_sockets_ == 0)
-    cv_.wait(lck_, [this] { return available_sockets_ > 0; });
+  cv_.wait(lck_, [this] {
+    return available_sockets_ > 0 || dead_sockets_ == sockets_.size() ||
+           shutdown_;
+  });
+
+  if (dead_sockets_ == sockets_.size() || shutdown_) {
+    return {base::ScopedFile(), nullptr};
+  }
+
   PERFETTO_CHECK(available_sockets_ > 0);
   return {std::move(sockets_[--available_sockets_]), this};
 }
 
 void SocketPool::Return(base::ScopedFile sock) {
-  PERFETTO_CHECK(dead_sockets_ + available_sockets_ < sockets_.size());
-  if (!sock) {
-    // TODO(fmayer): Handle reconnect or similar.
-    // This is just to prevent a deadlock.
-    PERFETTO_CHECK(++dead_sockets_ != sockets_.size());
-    return;
-  }
   std::unique_lock<std::mutex> lck_(mutex_);
-  PERFETTO_CHECK(available_sockets_ < sockets_.size());
-  sockets_[available_sockets_++] = std::move(sock);
-  if (available_sockets_ == 1) {
+  PERFETTO_CHECK(dead_sockets_ + available_sockets_ < sockets_.size());
+  if (sock && !shutdown_) {
+    PERFETTO_CHECK(available_sockets_ < sockets_.size());
+    sockets_[available_sockets_++] = std::move(sock);
     lck_.unlock();
     cv_.notify_one();
+  } else {
+    dead_sockets_++;
+    if (dead_sockets_ == sockets_.size()) {
+      lck_.unlock();
+      cv_.notify_all();
+    }
   }
+}
+
+void SocketPool::Shutdown() {
+  {
+    std::lock_guard<std::mutex> l(mutex_);
+    for (size_t i = 0; i < available_sockets_; ++i)
+      sockets_[i].reset();
+    dead_sockets_ += available_sockets_;
+    available_sockets_ = 0;
+    shutdown_ = true;
+  }
+  cv_.notify_all();
 }
 
 const char* GetThreadStackBase() {
@@ -173,16 +204,30 @@ Client::Client(std::vector<base::ScopedFile> socks)
   uint64_t size = 0;
   base::ScopedFile maps(base::OpenFile("/proc/self/maps", O_RDONLY));
   base::ScopedFile mem(base::OpenFile("/proc/self/mem", O_RDONLY));
+  if (!maps || !mem) {
+    PERFETTO_DFATAL("Failed to open /proc/self/{maps,mem}");
+    return;
+  }
   int fds[2];
   fds[0] = *maps;
   fds[1] = *mem;
   auto fd = socket_pool_.Borrow();
+  if (!fd)
+    return;
   // Send an empty record to transfer fds for /proc/self/maps and
   // /proc/self/mem.
-  base::SockSend(*fd, &size, sizeof(size), fds, 2);
-  PERFETTO_DCHECK(recv(*fd, &client_config_, sizeof(client_config_), 0) ==
-                  sizeof(client_config_));
-  PERFETTO_DCHECK(client_config_.rate >= 1);
+  if (base::SockSend(*fd, &size, sizeof(size), fds, 2) != sizeof(size)) {
+    PERFETTO_DFATAL("Failed to send file descriptors.");
+    return;
+  }
+  if (recv(*fd, &client_config_, sizeof(client_config_), 0) !=
+      sizeof(client_config_)) {
+    PERFETTO_DFATAL("Failed to receive client config.");
+    return;
+  }
+  PERFETTO_DCHECK(client_config_.interval >= 1);
+  PERFETTO_DLOG("Initialized client.");
+  inited_.store(true, std::memory_order_release);
 }
 
 Client::Client(const std::string& sock_name, size_t conns)
@@ -211,24 +256,30 @@ const char* Client::GetStackBase() {
 //               +------------+    |
 //               |  main      |    v
 // stackbase +-> +------------+ 0xffff
-void Client::RecordMalloc(uint64_t alloc_size, uint64_t alloc_address) {
+void Client::RecordMalloc(uint64_t alloc_size,
+                          uint64_t total_size,
+                          uint64_t alloc_address) {
+  if (!inited_.load(std::memory_order_acquire))
+    return;
   AllocMetadata metadata;
   const char* stackbase = GetStackBase();
   const char* stacktop = reinterpret_cast<char*>(__builtin_frame_address(0));
   unwindstack::AsmGetRegs(metadata.register_data);
 
   if (stackbase < stacktop) {
-    PERFETTO_DCHECK(false);
+    PERFETTO_DFATAL("Stackbase >= stacktop.");
     return;
   }
 
   uint64_t stack_size = static_cast<uint64_t>(stackbase - stacktop);
+  metadata.total_size = total_size;
   metadata.alloc_size = alloc_size;
   metadata.alloc_address = alloc_address;
   metadata.stack_pointer = reinterpret_cast<uint64_t>(stacktop);
   metadata.stack_pointer_offset = sizeof(AllocMetadata);
   metadata.arch = unwindstack::Regs::CurrentArch();
-  metadata.sequence_number = ++sequence_number_;
+  metadata.sequence_number =
+      1 + sequence_number_.fetch_add(1, std::memory_order_acq_rel);
 
   WireMessage msg{};
   msg.record_type = RecordType::Malloc;
@@ -236,20 +287,44 @@ void Client::RecordMalloc(uint64_t alloc_size, uint64_t alloc_address) {
   msg.payload = const_cast<char*>(stacktop);
   msg.payload_size = static_cast<size_t>(stack_size);
 
-  BorrowedSocket sockfd = socket_pool_.Borrow();
-  // TODO(fmayer): Handle failure.
-  PERFETTO_CHECK(SendWireMessage(*sockfd, msg));
+  BorrowedSocket fd = socket_pool_.Borrow();
+  if (!fd || !SendWireMessage(*fd, msg)) {
+    PERFETTO_DFATAL("Failed to send wire message.");
+    fd.Close();
+  }
 }
 
 void Client::RecordFree(uint64_t alloc_address) {
-  free_page_.Add(alloc_address, ++sequence_number_, &socket_pool_);
+  if (!inited_.load(std::memory_order_acquire))
+    return;
+  free_page_.Add(alloc_address,
+                 1 + sequence_number_.fetch_add(1, std::memory_order_acq_rel),
+                 &socket_pool_);
 }
 
-bool Client::ShouldSampleAlloc(uint64_t alloc_size,
-                               void* (*unhooked_malloc)(size_t),
-                               void (*unhooked_free)(void*)) {
-  return ShouldSample(pthread_key_.get(), alloc_size, client_config_.rate,
-                      unhooked_malloc, unhooked_free);
+size_t Client::ShouldSampleAlloc(uint64_t alloc_size,
+                                 void* (*unhooked_malloc)(size_t),
+                                 void (*unhooked_free)(void*)) {
+  if (!inited_.load(std::memory_order_acquire))
+    return false;
+  return SampleSize(pthread_key_.get(), alloc_size, client_config_.interval,
+                    unhooked_malloc, unhooked_free);
 }
 
+void Client::MaybeSampleAlloc(uint64_t alloc_size,
+                              uint64_t alloc_address,
+                              void* (*unhooked_malloc)(size_t),
+                              void (*unhooked_free)(void*)) {
+  size_t total_size =
+      ShouldSampleAlloc(alloc_size, unhooked_malloc, unhooked_free);
+  if (total_size > 0)
+    RecordMalloc(alloc_size, total_size, alloc_address);
+}
+
+void Client::Shutdown() {
+  socket_pool_.Shutdown();
+  inited_.store(false, std::memory_order_release);
+}
+
+}  // namespace profiling
 }  // namespace perfetto

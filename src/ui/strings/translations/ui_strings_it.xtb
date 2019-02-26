@@ -30,16 +30,19 @@
 <translation id="1871244248791675517">Ins</translation>
 <translation id="1884435127456172652"><ph name="NUMBER" />%</translation>
 <translation id="1901303067676059328">Seleziona &amp;tutto</translation>
+<translation id="1938451708255335766">Riavvia l'app per regolare la densità della visualizzazione della finestra.</translation>
 <translation id="2141853158323869627">{DAYS,plural, =1{1 g}other{# gg}}</translation>
 <translation id="2148716181193084225">Oggi</translation>
 <translation id="2168039046890040389">Pagina su</translation>
 <translation id="2190355936436201913">(vuoto)</translation>
+<translation id="2192232475740621500">Usa densità bassa</translation>
 <translation id="219905428774326614">Avvio applicazioni, tutte le app</translation>
 <translation id="2267918077332197517">Blocca tutte le notifiche da questo sito</translation>
 <translation id="2289052229480071835">Tocca i touch target sul tuo schermo.</translation>
 <translation id="2295140143284145483">Sondaggio</translation>
 <translation id="2297836609126180313"><ph name="QUANTITY" /> TB/s</translation>
 <translation id="24452542372838207">Espandi la notifica</translation>
+<translation id="2445449901874883781">Usa densità alta</translation>
 <translation id="2482878487686419369">Notifiche</translation>
 <translation id="2497284189126895209">Tutti i file</translation>
 <translation id="2515586267016047495">Alt</translation>
@@ -60,6 +63,7 @@
 <translation id="3234408098842461169">Freccia GIÙ</translation>
 <translation id="3291688615589870984">{DAYS,plural, =1{1 giorno}other{# giorni}}</translation>
 <translation id="335581015389089642">Voce</translation>
+<translation id="3479552764303398839">Non adesso</translation>
 <translation id="3600566671520689681">{DAYS,plural, =1{1 giorno rimanente}other{# giorni rimanenti}}</translation>
 <translation id="3618849550573277856">Cerca "<ph name="LOOKUP_STRING" />"</translation>
 <translation id="364720409959344976">Seleziona la cartella da caricare</translation>
@@ -99,6 +103,7 @@
 <translation id="5613020302032141669">Freccia sinistra</translation>
 <translation id="5754277640426581776">{MINUTES,plural, =1{1 min}other{# min}}</translation>
 <translation id="5768079895599174203">{DAYS,plural, =1{1 giorno e }other{# giorni e }}</translation>
+<translation id="5895138241574237353">Riavvia</translation>
 <translation id="5906667377645263094">{SECONDS,plural, =1{1 secondo rimanente}other{# secondi rimanenti}}</translation>
 <translation id="5941711191222866238">Riduci a icona</translation>
 <translation id="5943826764092288734">{HOURS,plural, =1{1 ora}other{# ore}}</translation>

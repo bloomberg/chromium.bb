@@ -17,6 +17,7 @@
 #include "base/macros.h"
 #include "base/memory/singleton.h"
 #include "base/synchronization/lock.h"
+#include "build/build_config.h"
 
 namespace base {
 namespace debug {
@@ -315,16 +316,23 @@ void StackTrace::InitTrace(const CONTEXT* context_record) {
   // Initialize stack walking.
   STACKFRAME64 stack_frame;
   memset(&stack_frame, 0, sizeof(stack_frame));
-#if defined(_WIN64)
+#if defined(ARCH_CPU_X86_64)
   int machine_type = IMAGE_FILE_MACHINE_AMD64;
   stack_frame.AddrPC.Offset = context_record->Rip;
   stack_frame.AddrFrame.Offset = context_record->Rbp;
   stack_frame.AddrStack.Offset = context_record->Rsp;
-#else
+#elif defined(ARCH_CPU_ARM64)
+  int machine_type = IMAGE_FILE_MACHINE_ARM64;
+  stack_frame.AddrPC.Offset = context_record->Pc;
+  stack_frame.AddrFrame.Offset = context_record->Fp;
+  stack_frame.AddrStack.Offset = context_record->Sp;
+#elif defined(ARCH_CPU_X86)
   int machine_type = IMAGE_FILE_MACHINE_I386;
   stack_frame.AddrPC.Offset = context_record->Eip;
   stack_frame.AddrFrame.Offset = context_record->Ebp;
   stack_frame.AddrStack.Offset = context_record->Esp;
+#else
+#error Unsupported Windows Arch
 #endif
   stack_frame.AddrPC.Mode = AddrModeFlat;
   stack_frame.AddrFrame.Mode = AddrModeFlat;

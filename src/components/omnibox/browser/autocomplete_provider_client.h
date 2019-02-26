@@ -108,12 +108,6 @@ class AutocompleteProviderClient {
   // This function returns true if the user is signed in.
   virtual bool IsAuthenticated() const = 0;
 
-  // Determines whether Unified Consent is on as a feature, and the user has
-  // accepted the bit. Note this is a subset of
-  // IsPersonalizedUrlDataCollectionActive() in that the user has not
-  // necessarily consented to share browsing data with Google.
-  virtual bool IsUnifiedConsentGiven() const = 0;
-
   // Determines whether sync is enabled.
   virtual bool IsSyncActive() const = 0;
 
@@ -160,6 +154,9 @@ class AutocompleteProviderClient {
   // presence) if provided.
   virtual bool IsTabOpenWithURL(const GURL& url,
                                 const AutocompleteInput* input) = 0;
+
+  // Returns whether any browser update is ready.
+  virtual bool IsBrowserUpdateAvailable() const;
 };
 
 #endif  // COMPONENTS_OMNIBOX_BROWSER_AUTOCOMPLETE_PROVIDER_CLIENT_H_

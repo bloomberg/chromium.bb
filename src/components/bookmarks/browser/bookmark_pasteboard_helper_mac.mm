@@ -66,8 +66,8 @@ NSDictionary* DictionaryFromBookmarkMetaInfo(
   NSMutableDictionary* dictionary = [NSMutableDictionary dictionary];
 
   for (const auto& item : meta_info_map) {
-    [dictionary setObject:base::SysUTF8ToNSString(item.second)
-                   forKey:base::SysUTF8ToNSString(item.first)];
+    dictionary[base::SysUTF8ToNSString(item.first)] =
+        base::SysUTF8ToNSString(item.second);
   }
 
   return dictionary;
@@ -79,22 +79,21 @@ void ConvertNSArrayToElements(
   for (NSDictionary* bookmark_dict in input) {
     auto new_node = std::make_unique<BookmarkNode>(GURL());
 
-    NSNumber* node_id = base::mac::ObjCCast<NSNumber>(
-        [bookmark_dict objectForKey:kChromiumBookmarkIdKey]);
+    NSNumber* node_id =
+        base::mac::ObjCCast<NSNumber>(bookmark_dict[kChromiumBookmarkIdKey]);
     if (node_id)
       new_node->set_id([node_id longLongValue]);
 
     NSDictionary* meta_info = base::mac::ObjCCast<NSDictionary>(
-        [bookmark_dict objectForKey:kChromiumBookmarkMetaInfoKey]);
+        bookmark_dict[kChromiumBookmarkMetaInfoKey]);
     if (meta_info)
       new_node->SetMetaInfoMap(MetaInfoMapFromDictionary(meta_info));
 
-    NSString* title =
-        base::mac::ObjCCast<NSString>([bookmark_dict objectForKey:kTitleKey]);
+    NSString* title = base::mac::ObjCCast<NSString>(bookmark_dict[kTitleKey]);
     new_node->SetTitle(base::SysNSStringToUTF16(title));
 
-    NSString* type = base::mac::ObjCCast<NSString>(
-        [bookmark_dict objectForKey:kWebBookmarkTypeKey]);
+    NSString* type =
+        base::mac::ObjCCast<NSString>(bookmark_dict[kWebBookmarkTypeKey]);
     if (!type)
       continue;
 
@@ -103,8 +102,8 @@ void ConvertNSArrayToElements(
       new_node->set_type(BookmarkNode::FOLDER);
     } else {
       new_node->set_type(BookmarkNode::URL);
-      NSString* url_string = base::mac::ObjCCast<NSString>(
-          [bookmark_dict objectForKey:kURLStringKey]);
+      NSString* url_string =
+          base::mac::ObjCCast<NSString>(bookmark_dict[kURLStringKey]);
       if (!url_string)
         continue;
       new_node->set_url(GURL(base::SysNSStringToUTF8(url_string)));
@@ -119,8 +118,7 @@ void ConvertNSArrayToElements(
     e.date_folder_modified = base::Time();
 
     if (is_folder) {
-      ConvertNSArrayToElements([bookmark_dict objectForKey:kChildrenKey],
-                               &e.children);
+      ConvertNSArrayToElements(bookmark_dict[kChildrenKey], &e.children);
     }
 
     elements->push_back(e);
@@ -151,8 +149,8 @@ bool ReadWebURLsWithTitlesPboardType(
 
   NSUInteger len = [titles count];
   for (NSUInteger i = 0; i < len; ++i) {
-    base::string16 title = base::SysNSStringToUTF16([titles objectAtIndex:i]);
-    std::string url = base::SysNSStringToUTF8([urls objectAtIndex:i]);
+    base::string16 title = base::SysNSStringToUTF16(titles[i]);
+    std::string url = base::SysNSStringToUTF8(urls[i]);
     if (!url.empty()) {
       BookmarkNodeData::Element element;
       element.is_url = true;

@@ -37,6 +37,7 @@
 #include "third_party/blink/renderer/core/events/progress_event.h"
 #include "third_party/blink/renderer/core/execution_context/execution_context.h"
 #include "third_party/blink/renderer/core/fileapi/file.h"
+#include "third_party/blink/renderer/core/fileapi/file_error.h"
 #include "third_party/blink/renderer/core/frame/use_counter.h"
 #include "third_party/blink/renderer/core/probe/core_probes.h"
 #include "third_party/blink/renderer/core/typed_arrays/dom_array_buffer.h"
@@ -82,7 +83,7 @@ class FileReader::ThrottlingController final
     ThrottlingController* controller =
         Supplement<ExecutionContext>::From<ThrottlingController>(*context);
     if (!controller) {
-      controller = new ThrottlingController(*context);
+      controller = MakeGarbageCollected<ThrottlingController>(*context);
       ProvideTo(*context, controller);
     }
     return controller;
@@ -119,6 +120,10 @@ class FileReader::ThrottlingController final
     probe::AsyncTaskCanceled(context, reader);
   }
 
+  explicit ThrottlingController(ExecutionContext& context)
+      : Supplement<ExecutionContext>(context),
+        max_running_readers_(kMaxOutstandingRequestsPerThread) {}
+
   void Trace(blink::Visitor* visitor) override {
     visitor->Trace(pending_readers_);
     visitor->Trace(running_readers_);
@@ -126,10 +131,6 @@ class FileReader::ThrottlingController final
   }
 
  private:
-  explicit ThrottlingController(ExecutionContext& context)
-      : Supplement<ExecutionContext>(context),
-        max_running_readers_(kMaxOutstandingRequestsPerThread) {}
-
   void PushReader(FileReader* reader) {
     if (pending_readers_.IsEmpty() &&
         running_readers_.size() < max_running_readers_) {
@@ -192,7 +193,7 @@ const char FileReader::ThrottlingController::kSupplementName[] =
     "FileReaderThrottlingController";
 
 FileReader* FileReader::Create(ExecutionContext* context) {
-  return new FileReader(context);
+  return MakeGarbageCollected<FileReader>(context);
 }
 
 FileReader::FileReader(ExecutionContext* context)
@@ -208,7 +209,7 @@ FileReader::~FileReader() {
 }
 
 const AtomicString& FileReader::InterfaceName() const {
-  return EventTargetNames::FileReader;
+  return event_target_names::kFileReader;
 }
 
 void FileReader::ContextDestroyed(ExecutionContext* destroyed_context) {
@@ -337,14 +338,14 @@ void FileReader::abort() {
   base::AutoReset<bool> firing_events(&still_firing_events_, true);
 
   // Setting error implicitly makes |result| return null.
-  error_ = FileError::CreateDOMException(FileError::kAbortErr);
+  error_ = file_error::CreateDOMException(FileErrorCode::kAbortErr);
 
   // Unregister the reader.
   ThrottlingController::FinishReaderType final_step =
       ThrottlingController::RemoveReader(GetExecutionContext(), this);
 
-  FireEvent(EventTypeNames::abort);
-  FireEvent(EventTypeNames::loadend);
+  FireEvent(event_type_names::kAbort);
+  FireEvent(event_type_names::kLoadend);
 
   // All possible events have fired and we're done, no more pending activity.
   ThrottlingController::FinishReader(GetExecutionContext(), this, final_step);
@@ -382,7 +383,7 @@ void FileReader::Terminate() {
 
 void FileReader::DidStartLoading() {
   base::AutoReset<bool> firing_events(&still_firing_events_, true);
-  FireEvent(EventTypeNames::loadstart);
+  FireEvent(event_type_names::kLoadstart);
 }
 
 void FileReader::DidReceiveData() {
@@ -393,7 +394,7 @@ void FileReader::DidReceiveData() {
   } else if (now - last_progress_notification_time_ms_ >
              kProgressNotificationIntervalMS) {
     base::AutoReset<bool> firing_events(&still_firing_events_, true);
-    FireEvent(EventTypeNames::progress);
+    FireEvent(event_type_names::kProgress);
     last_progress_notification_time_ms_ = now;
   }
 }
@@ -415,7 +416,7 @@ void FileReader::DidFinishLoading() {
   // if we're still loading (therefore we need abort process) or not.
   loading_state_ = kLoadingStateNone;
 
-  FireEvent(EventTypeNames::progress);
+  FireEvent(event_type_names::kProgress);
 
   DCHECK_NE(kDone, state_);
   state_ = kDone;
@@ -424,14 +425,14 @@ void FileReader::DidFinishLoading() {
   ThrottlingController::FinishReaderType final_step =
       ThrottlingController::RemoveReader(GetExecutionContext(), this);
 
-  FireEvent(EventTypeNames::load);
-  FireEvent(EventTypeNames::loadend);
+  FireEvent(event_type_names::kLoad);
+  FireEvent(event_type_names::kLoadend);
 
   // All possible events have fired and we're done, no more pending activity.
   ThrottlingController::FinishReader(GetExecutionContext(), this, final_step);
 }
 
-void FileReader::DidFail(FileError::ErrorCode error_code) {
+void FileReader::DidFail(FileErrorCode error_code) {
   if (loading_state_ == kLoadingStateAborted)
     return;
 
@@ -443,14 +444,14 @@ void FileReader::DidFail(FileError::ErrorCode error_code) {
   DCHECK_NE(kDone, state_);
   state_ = kDone;
 
-  error_ = FileError::CreateDOMException(error_code);
+  error_ = file_error::CreateDOMException(error_code);
 
   // Unregister the reader.
   ThrottlingController::FinishReaderType final_step =
       ThrottlingController::RemoveReader(GetExecutionContext(), this);
 
-  FireEvent(EventTypeNames::error);
-  FireEvent(EventTypeNames::loadend);
+  FireEvent(event_type_names::kError);
+  FireEvent(event_type_names::kLoadend);
 
   // All possible events have fired and we're done, no more pending activity.
   ThrottlingController::FinishReader(GetExecutionContext(), this, final_step);

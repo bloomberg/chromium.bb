@@ -22,6 +22,10 @@ class MEDIA_EXPORT AudioThread {
   // Synchronously stops all underlying threads.
   virtual void Stop() = 0;
 
+  // Indicates whether the audio thread is responsive. If false, calling Stop()
+  // will likely block forever.
+  virtual bool IsHung() const = 0;
+
   // Returns the task runner used for audio IO.
   // It always returns a non-null task runner (even after Stop has been called).
   virtual base::SingleThreadTaskRunner* GetTaskRunner() = 0;

@@ -32,7 +32,8 @@ void P2PSocketDispatcher::AddNetworkListObserver(
   network_list_observers_->AddObserver(network_list_observer);
   main_task_runner_->PostTask(
       FROM_HERE,
-      base::Bind(&P2PSocketDispatcher::RequestNetworkEventsIfNecessary, this));
+      base::BindOnce(&P2PSocketDispatcher::RequestNetworkEventsIfNecessary,
+                     this));
 }
 
 void P2PSocketDispatcher::RemoveNetworkListObserver(
@@ -54,7 +55,7 @@ P2PSocketDispatcher::GetP2PSocketManager() {
   }
   main_task_runner_->PostTask(
       FROM_HERE,
-      base::Bind(&P2PSocketDispatcher::RequestInterfaceIfNecessary, this));
+      base::BindOnce(&P2PSocketDispatcher::RequestInterfaceIfNecessary, this));
   return thread_safe_p2p_socket_manager_;
 }
 

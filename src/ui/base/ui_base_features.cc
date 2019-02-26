@@ -12,6 +12,11 @@
 
 namespace features {
 
+#if defined(OS_WIN)
+// If enabled, calculate native window occlusion - Windows-only.
+const base::Feature kCalculateNativeWinOcclusion{
+    "CalculateNativeWinOcclusion", base::FEATURE_DISABLED_BY_DEFAULT};
+#endif  // OW_WIN
 // If enabled, the emoji picker context menu item may be shown for editable
 // text areas.
 const base::Feature kEnableEmojiContextMenu {
@@ -23,10 +28,6 @@ const base::Feature kEnableEmojiContextMenu {
 #endif
 };
 
-// Enables the floating virtual keyboard behavior.
-const base::Feature kEnableFloatingVirtualKeyboard = {
-    "enable-floating-virtual-keyboard", base::FEATURE_ENABLED_BY_DEFAULT};
-
 // Enables the full screen handwriting virtual keyboard behavior.
 const base::Feature kEnableFullscreenHandwritingVirtualKeyboard = {
     "enable-fullscreen-handwriting-virtual-keyboard",
@@ -35,16 +36,24 @@ const base::Feature kEnableFullscreenHandwritingVirtualKeyboard = {
 const base::Feature kEnableStylusVirtualKeyboard = {
     "enable-stylus-virtual-keyboard", base::FEATURE_ENABLED_BY_DEFAULT};
 
-// If enabled, uses the Material Design UI for virtual keyboard.
-const base::Feature kEnableVirtualKeyboardMdUi = {
-    "EnableVirtualKeyboardMdUi", base::FEATURE_ENABLED_BY_DEFAULT};
-
 const base::Feature kEnableVirtualKeyboardUkm = {
     "EnableVirtualKeyboardUkm", base::FEATURE_ENABLED_BY_DEFAULT};
 
 // Enables all upcoming UI features.
 const base::Feature kExperimentalUi{"ExperimentalUi",
                                     base::FEATURE_DISABLED_BY_DEFAULT};
+
+#if defined(OS_CHROMEOS)
+// Integrate input method specific settings to Chrome OS settings page.
+// https://crbug.com/895886.
+const base::Feature kSettingsShowsPerKeyboardSettings = {
+    "InputMethodIntegratedSettings", base::FEATURE_DISABLED_BY_DEFAULT};
+#endif  // defined(OS_CHROMEOS)
+
+// Update of the virtual keyboard settings UI as described in
+// https://crbug.com/876901.
+const base::Feature kInputMethodSettingsUiUpdate = {
+    "InputMethodSettingsUiUpdate", base::FEATURE_DISABLED_BY_DEFAULT};
 
 // Allows system keyboard event capture when |features::kKeyboardLockApi| is on.
 const base::Feature kSystemKeyboardLock{"SystemKeyboardLock",
@@ -115,6 +124,11 @@ const base::Feature kPrecisionTouchpadScrollPhase{
     "PrecisionTouchpadScrollPhase", base::FEATURE_ENABLED_BY_DEFAULT};
 #endif  // defined(OS_WIN)
 
+#if defined(OS_WIN) || defined(OS_CHROMEOS)
+const base::Feature kEnableAutomaticUiAdjustmentsForTouch{
+    "EnableAutomaticUiAdjustmentsForTouch", base::FEATURE_ENABLED_BY_DEFAULT};
+#endif  // defined(OS_WIN) || defined(OS_CHROMEOS)
+
 #if defined(OS_WIN) || defined(OS_MACOSX) || defined(OS_LINUX)
 // Enables stylus appearing as touch when in contact with digitizer.
 const base::Feature kDirectManipulationStylus = {
@@ -129,6 +143,9 @@ const base::Feature kDirectManipulationStylus = {
 
 const base::Feature kMash = {"Mash", base::FEATURE_DISABLED_BY_DEFAULT};
 
+const base::Feature kMashOopViz = {"MashOopViz",
+                                   base::FEATURE_DISABLED_BY_DEFAULT};
+
 const base::Feature kSingleProcessMash = {"SingleProcessMash",
                                           base::FEATURE_DISABLED_BY_DEFAULT};
 
@@ -140,8 +157,21 @@ bool IsMultiProcessMash() {
   return base::FeatureList::IsEnabled(features::kMash);
 }
 
+bool IsMashOopVizEnabled() {
+  return base::FeatureList::IsEnabled(features::kMashOopViz);
+}
+
 bool IsSingleProcessMash() {
   return base::FeatureList::IsEnabled(features::kSingleProcessMash);
+}
+
+bool IsAutomaticUiAdjustmentsForTouchEnabled() {
+#if defined(OS_WIN) || defined(OS_CHROMEOS)
+  return base::FeatureList::IsEnabled(
+      features::kEnableAutomaticUiAdjustmentsForTouch);
+#else
+  return false;
+#endif
 }
 
 #if defined(OS_MACOSX)

@@ -25,6 +25,30 @@ CHECK_ERROR_ENUM(kErrorMax);
 #undef CHECK_ERROR_ENUM
 
 // static
+arc::mojom::VideoFrameStorageType
+EnumTraits<arc::mojom::VideoFrameStorageType,
+           media::VideoEncodeAccelerator::Config::StorageType>::
+    ToMojom(media::VideoEncodeAccelerator::Config::StorageType input) {
+  NOTIMPLEMENTED();
+  return arc::mojom::VideoFrameStorageType::SHMEM;
+}
+
+bool EnumTraits<arc::mojom::VideoFrameStorageType,
+                media::VideoEncodeAccelerator::Config::StorageType>::
+    FromMojom(arc::mojom::VideoFrameStorageType input,
+              media::VideoEncodeAccelerator::Config::StorageType* output) {
+  switch (input) {
+    case arc::mojom::VideoFrameStorageType::SHMEM:
+      *output = media::VideoEncodeAccelerator::Config::StorageType::kShmem;
+      return true;
+    case arc::mojom::VideoFrameStorageType::DMABUF:
+      *output = media::VideoEncodeAccelerator::Config::StorageType::kDmabuf;
+      return true;
+  }
+  return false;
+}
+
+// static
 arc::mojom::VideoEncodeAccelerator::Error
 EnumTraits<arc::mojom::VideoEncodeAccelerator::Error,
            media::VideoEncodeAccelerator::Error>::
@@ -49,6 +73,12 @@ bool EnumTraits<arc::mojom::VideoEncodeAccelerator::Error,
       "enum ##value mismatch")
 
 CHECK_PIXEL_FORMAT_ENUM(PIXEL_FORMAT_I420);
+CHECK_PIXEL_FORMAT_ENUM(PIXEL_FORMAT_YV12);
+CHECK_PIXEL_FORMAT_ENUM(PIXEL_FORMAT_NV12);
+CHECK_PIXEL_FORMAT_ENUM(PIXEL_FORMAT_NV21);
+CHECK_PIXEL_FORMAT_ENUM(PIXEL_FORMAT_ARGB);
+CHECK_PIXEL_FORMAT_ENUM(PIXEL_FORMAT_ABGR);
+CHECK_PIXEL_FORMAT_ENUM(PIXEL_FORMAT_XBGR);
 
 #undef CHECK_PXIEL_FORMAT_ENUM
 
@@ -65,13 +95,19 @@ bool EnumTraits<arc::mojom::VideoPixelFormat, media::VideoPixelFormat>::
     FromMojom(arc::mojom::VideoPixelFormat input,
               media::VideoPixelFormat* output) {
   switch (input) {
+    case arc::mojom::VideoPixelFormat::PIXEL_FORMAT_UNKNOWN:
     case arc::mojom::VideoPixelFormat::PIXEL_FORMAT_I420:
+    case arc::mojom::VideoPixelFormat::PIXEL_FORMAT_YV12:
+    case arc::mojom::VideoPixelFormat::PIXEL_FORMAT_NV12:
+    case arc::mojom::VideoPixelFormat::PIXEL_FORMAT_NV21:
+    case arc::mojom::VideoPixelFormat::PIXEL_FORMAT_ARGB:
+    case arc::mojom::VideoPixelFormat::PIXEL_FORMAT_ABGR:
+    case arc::mojom::VideoPixelFormat::PIXEL_FORMAT_XBGR:
       *output = static_cast<media::VideoPixelFormat>(input);
       return true;
-    default:
-      DLOG(ERROR) << "Unknown VideoPixelFormat: " << input;
-      return false;
   }
+  NOTREACHED();
+  return false;
 }
 
 // static
@@ -101,9 +137,13 @@ bool StructTraits<arc::mojom::VideoEncodeAcceleratorConfigDataView,
     h264_output_level = input.h264_output_level();
   }
 
+  media::VideoEncodeAccelerator::Config::StorageType storage_type;
+  if (!input.ReadStorageType(&storage_type))
+    return false;
+
   *output = media::VideoEncodeAccelerator::Config(
       input_format, input_visible_size, output_profile, input.initial_bitrate(),
-      initial_framerate, h264_output_level);
+      initial_framerate, h264_output_level, storage_type);
   return true;
 }
 

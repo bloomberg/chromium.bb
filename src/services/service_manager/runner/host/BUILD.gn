@@ -42,7 +42,10 @@ source_set("lib") {
       "service_process_launcher.h",
     ]
 
-    deps += [ "//services/service_manager/public/cpp/standalone_service" ]
+    deps += [
+      "//mojo/core/embedder",
+      "//services/service_manager/public/cpp/standalone_service",
+    ]
   }
 }
 

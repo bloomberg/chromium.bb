@@ -9,7 +9,7 @@ import "mojo/public/mojom/base/string16.mojom";
 // Top-level items in the system tray bubble.
 // TODO(jamescook): Consolidate with SystemTrayItem::UmaType.
 enum TrayItem {
-  kEnterprise,
+  kAccessibility,
   kNetwork,
 };
 
@@ -36,7 +36,11 @@ interface SystemTrayTestApi {
   ShowDetailedView(TrayItem item) => ();
 
   // Returns true if the view exists in the bubble and is visible.
-  IsBubbleViewVisible(int32 view_id) => (bool visible);
+  // If |open_tray| is true, it also opens system tray bubble.
+  IsBubbleViewVisible(int32 view_id, bool open_tray) => (bool visible);
+
+  // Clicks the view |view_id|.
+  ClickBubbleView(int32 view_id) => ();
 
   // Returns the tooltip for a bubble view, or the empty string if the view
   // does not exist.

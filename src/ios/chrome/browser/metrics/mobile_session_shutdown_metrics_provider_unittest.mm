@@ -38,11 +38,11 @@ class MobileSessionShutdownMetricsProviderForTesting
     is_first_launch_after_upgrade_ = value;
   }
   void set_has_crash_logs(bool value) { has_crash_logs_ = value; }
-  void set_has_uploaded_crash_reports_in_background(bool value) {
-    has_uploaded_crash_reports_in_background_ = value;
-  }
   void set_received_memory_warning_before_last_shutdown(bool value) {
     received_memory_warning_before_last_shutdown_ = value;
+  }
+  void set_was_last_shutdown_frozen(bool value) {
+    was_last_shutdown_frozen_ = value;
   }
 
  protected:
@@ -51,18 +51,16 @@ class MobileSessionShutdownMetricsProviderForTesting
     return is_first_launch_after_upgrade_;
   }
   bool HasCrashLogs() override { return has_crash_logs_; }
-  bool HasUploadedCrashReportsInBackground() override {
-    return has_uploaded_crash_reports_in_background_;
-  }
   bool ReceivedMemoryWarningBeforeLastShutdown() override {
     return received_memory_warning_before_last_shutdown_;
   }
+  bool LastSessionEndedFrozen() override { return was_last_shutdown_frozen_; }
 
  private:
   bool is_first_launch_after_upgrade_;
   bool has_crash_logs_;
-  bool has_uploaded_crash_reports_in_background_;
   bool received_memory_warning_before_last_shutdown_;
+  bool was_last_shutdown_frozen_;
 
   DISALLOW_COPY_AND_ASSIGN(MobileSessionShutdownMetricsProviderForTesting);
 };
@@ -96,13 +94,12 @@ class MobileSessionShutdownMetricsProviderTest
 // most significant):
 //  - received memory warning;
 //  - crash log present;
-//  - uploaded crash reports in background;
 //  - last shutdown was clean;
 //  - first launch after upgrade.
 TEST_P(MobileSessionShutdownMetricsProviderTest, ProvideStabilityMetrics) {
   const bool received_memory_warning = GetParam() % 2;
   const bool has_crash_logs = (GetParam() >> 1) % 2;
-  const bool has_uploaded_crash_reports_in_background = (GetParam() >> 2) % 2;
+  const bool was_last_shutdown_frozen = (GetParam() >> 2) % 2;
   const bool was_last_shutdown_clean = (GetParam() >> 3) % 2;
   const bool is_first_launch_after_upgrade = (GetParam() >> 4) % 2;
 
@@ -112,10 +109,10 @@ TEST_P(MobileSessionShutdownMetricsProviderTest, ProvideStabilityMetrics) {
       SHUTDOWN_IN_FOREGROUND_NO_CRASH_LOG_WITH_MEMORY_WARNING,
       SHUTDOWN_IN_FOREGROUND_WITH_CRASH_LOG_NO_MEMORY_WARNING,
       SHUTDOWN_IN_FOREGROUND_WITH_CRASH_LOG_WITH_MEMORY_WARNING,
-      SHUTDOWN_IN_FOREGROUND_WITH_CRASH_LOG_NO_MEMORY_WARNING,
-      SHUTDOWN_IN_FOREGROUND_WITH_CRASH_LOG_WITH_MEMORY_WARNING,
-      SHUTDOWN_IN_FOREGROUND_WITH_CRASH_LOG_NO_MEMORY_WARNING,
-      SHUTDOWN_IN_FOREGROUND_WITH_CRASH_LOG_WITH_MEMORY_WARNING,
+      SHUTDOWN_IN_FOREGROUND_WITH_MAIN_THREAD_FROZEN,
+      SHUTDOWN_IN_FOREGROUND_WITH_MAIN_THREAD_FROZEN,
+      SHUTDOWN_IN_FOREGROUND_WITH_MAIN_THREAD_FROZEN,
+      SHUTDOWN_IN_FOREGROUND_WITH_MAIN_THREAD_FROZEN,
       // If wasLastShutdownClean is true, the memory warning and crash log don't
       // matter.
       SHUTDOWN_IN_BACKGROUND,
@@ -165,8 +162,7 @@ TEST_P(MobileSessionShutdownMetricsProviderTest, ProvideStabilityMetrics) {
   metrics_provider_->set_received_memory_warning_before_last_shutdown(
       received_memory_warning);
   metrics_provider_->set_has_crash_logs(has_crash_logs);
-  metrics_provider_->set_has_uploaded_crash_reports_in_background(
-      has_uploaded_crash_reports_in_background);
+  metrics_provider_->set_was_last_shutdown_frozen(was_last_shutdown_frozen);
 
   // Create a histogram tester for verifying samples written to the shutdown
   // type histogram.

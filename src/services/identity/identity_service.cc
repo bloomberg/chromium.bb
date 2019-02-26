@@ -5,14 +5,15 @@
 #include "services/identity/identity_service.h"
 
 #include "services/identity/identity_manager_impl.h"
-#include "services/service_manager/public/cpp/service_context.h"
 
 namespace identity {
 
 IdentityService::IdentityService(AccountTrackerService* account_tracker,
                                  SigninManagerBase* signin_manager,
-                                 ProfileOAuth2TokenService* token_service)
-    : account_tracker_(account_tracker),
+                                 ProfileOAuth2TokenService* token_service,
+                                 service_manager::mojom::ServiceRequest request)
+    : service_binding_(this, std::move(request)),
+      account_tracker_(account_tracker),
       signin_manager_(signin_manager),
       token_service_(token_service) {
   registry_.AddInterface<mojom::IdentityManager>(
@@ -25,8 +26,6 @@ IdentityService::IdentityService(AccountTrackerService* account_tracker,
 IdentityService::~IdentityService() {
   ShutDown();
 }
-
-void IdentityService::OnStart() {}
 
 void IdentityService::OnBindInterface(
     const service_manager::BindSourceInfo& source_info,

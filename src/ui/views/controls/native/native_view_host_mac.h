@@ -51,6 +51,7 @@ class NativeViewHostMac : public NativeViewHostWrapper,
   gfx::NativeView GetNativeViewContainer() const override;
   gfx::NativeViewAccessible GetNativeViewAccessible() override;
   gfx::NativeCursor GetCursor(int x, int y) override;
+  void SetVisible(bool visible) override;
 
  private:
   // Return the BridgedNativeWidgetHostImpl for this hosted view.

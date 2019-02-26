@@ -78,7 +78,13 @@ class FakeUsbChooser : public WebUsbChooser {
   ~FakeUsbChooser() override {}
 
   void ShowChooser(std::unique_ptr<UsbChooserController> controller) override {
-    new FakeChooserView(std::move(controller));
+    // Device list initialization in UsbChooserController may completed before
+    // having a valid view in which case OnOptionsInitialized() has no chance to
+    // be triggered, so select the first option directly if options are ready.
+    if (controller->NumOptions())
+      controller->Select({0});
+    else
+      new FakeChooserView(std::move(controller));
   }
 
   base::WeakPtr<WebUsbChooser> GetWeakPtr() override {

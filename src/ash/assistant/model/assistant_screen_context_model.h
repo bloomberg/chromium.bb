@@ -35,7 +35,7 @@ class AssistantScreenContextModel {
 
   ScreenContextRequestState request_state_ = ScreenContextRequestState::kIdle;
 
-  base::ObserverList<AssistantScreenContextModelObserver>::Unchecked observers_;
+  base::ObserverList<AssistantScreenContextModelObserver> observers_;
 
   DISALLOW_COPY_AND_ASSIGN(AssistantScreenContextModel);
 };

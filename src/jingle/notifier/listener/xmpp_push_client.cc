@@ -14,8 +14,8 @@ namespace notifier {
 
 XmppPushClient::XmppPushClient(const NotifierOptions& notifier_options)
     : notifier_options_(notifier_options) {
-  DCHECK(notifier_options_.request_context_getter->
-         GetNetworkTaskRunner()->BelongsToCurrentThread());
+  DCHECK(
+      notifier_options_.network_config.task_runner->BelongsToCurrentThread());
 }
 
 XmppPushClient::~XmppPushClient() {
@@ -129,7 +129,9 @@ void XmppPushClient::UpdateCredentials(
     DVLOG(1) << "Push: Starting XMPP connection";
     base_task_.reset();
     login_.reset(new notifier::Login(
-        this, xmpp_settings_, notifier_options_.request_context_getter,
+        this, xmpp_settings_,
+        notifier_options_.network_config
+            .get_proxy_resolving_socket_factory_callback,
         GetServerList(notifier_options_), notifier_options_.try_ssltcp_first,
         notifier_options_.auth_mechanism, traffic_annotation,
         notifier_options_.network_connection_tracker));

@@ -17,6 +17,7 @@
 #include "content/public/common/content_client.h"
 #include "content/renderer/in_process_renderer_thread.h"
 #include "content/utility/in_process_utility_thread.h"
+#include "net/base/network_change_notifier.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/base/material_design/material_design_controller.h"
 #include "ui/base/ui_base_paths.h"
@@ -41,7 +42,33 @@ constexpr gin::V8Initializer::V8SnapshotFileType kSnapshotType =
     gin::V8Initializer::V8SnapshotFileType::kDefault;
 #endif
 #endif
-}
+
+// Disables any leaked NetworkChangeNotifier before each test.
+// TODO(crbug.com/901092): Delete once the network service cleans itself up.
+class NetworkChangeNotifierDisabler : public testing::EmptyTestEventListener {
+ public:
+  NetworkChangeNotifierDisabler() {}
+  ~NetworkChangeNotifierDisabler() override {}
+
+  void OnTestCaseStart(const testing::TestCase& test_case) override {
+    if (net::NetworkChangeNotifier::HasNetworkChangeNotifier()) {
+      network_change_notifier_disabler_ =
+          std::make_unique<net::NetworkChangeNotifier::DisableForTest>();
+    }
+  }
+
+  void OnTestCaseEnd(const testing::TestCase& test_case) override {
+    network_change_notifier_disabler_ = nullptr;
+  }
+
+ private:
+  std::unique_ptr<net::NetworkChangeNotifier::DisableForTest>
+      network_change_notifier_disabler_;
+
+  DISALLOW_COPY_AND_ASSIGN(NetworkChangeNotifierDisabler);
+};
+
+}  // namespace
 
 ContentTestSuiteBase::ContentTestSuiteBase(int argc, char** argv)
     : base::TestSuite(argc, argv) {
@@ -49,6 +76,10 @@ ContentTestSuiteBase::ContentTestSuiteBase(int argc, char** argv)
 
 void ContentTestSuiteBase::Initialize() {
   base::TestSuite::Initialize();
+
+  testing::TestEventListeners& listeners =
+      testing::UnitTest::GetInstance()->listeners();
+  listeners.Append(new NetworkChangeNotifierDisabler());
 
 #if defined(V8_USE_EXTERNAL_STARTUP_DATA)
   gin::V8Initializer::LoadV8Snapshot(kSnapshotType);

@@ -72,8 +72,9 @@ struct CORE_EXPORT CachedDocumentParameters {
   Length default_viewport_min_width;
   bool viewport_meta_zero_values_quirk;
   bool viewport_meta_enabled;
-  ReferrerPolicy referrer_policy;
+  network::mojom::ReferrerPolicy referrer_policy;
   SubresourceIntegrity::IntegrityFeatures integrity_features;
+  bool lazyload_policy_enforced;
 
  private:
   explicit CachedDocumentParameters(Document*);
@@ -188,7 +189,8 @@ class CORE_EXPORT HTMLPreloadScanner {
 
   void AppendToEnd(const SegmentedString&);
   PreloadRequestStream Scan(const KURL& document_base_element_url,
-                            ViewportDescriptionWrapper*);
+                            ViewportDescriptionWrapper*,
+                            bool& has_csp_meta_tag);
 
  private:
   HTMLPreloadScanner(const HTMLParserOptions&,

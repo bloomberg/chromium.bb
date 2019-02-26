@@ -37,6 +37,8 @@ class CORE_EXPORT HTMLProgressElement final : public LabelableElement {
 
   static HTMLProgressElement* Create(Document&);
 
+  explicit HTMLProgressElement(Document&);
+
   double value() const;
   void setValue(double);
 
@@ -50,7 +52,6 @@ class CORE_EXPORT HTMLProgressElement final : public LabelableElement {
   void Trace(blink::Visitor*) override;
 
  private:
-  explicit HTMLProgressElement(Document&);
   ~HTMLProgressElement() override;
 
   bool AreAuthorShadowsAllowed() const override { return false; }

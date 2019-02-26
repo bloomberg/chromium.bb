@@ -22,7 +22,7 @@ class ProgressBar;
 }  // namespace views
 
 namespace crostini {
-enum class ConciergeClientResult;
+enum class CrostiniResult;
 }  // namespace crostini
 
 class Profile;
@@ -38,7 +38,10 @@ class CrostiniInstallerView
   // numeric values should never be reused.
   enum class SetupResult {
     kNotStarted = 0,
+
+    // Deprecated, use the more specific cancelled values further down
     kUserCancelled = 1,
+
     kSuccess = 2,
     kErrorLoadingTermina = 3,
     kErrorStartingConcierge = 4,
@@ -48,6 +51,19 @@ class CrostiniInstallerView
     kErrorOffline = 8,
     kErrorFetchingSshKeys = 9,
     kErrorMountingContainer = 10,
+    kErrorSettingUpContainer = 11,
+
+    kUserCancelledStart = 12,
+    kUserCancelledInstallImageLoader = 13,
+    kUserCancelledStartConcierge = 14,
+    kUserCancelledCreateDiskImage = 15,
+    kUserCancelledStartTerminaVm = 16,
+    kUserCancelledCreateContainer = 17,
+    kUserCancelledStartContainer = 18,
+    kUserCancelledSetupContainer = 19,
+    kUserCancelledFetchSshKeys = 20,
+    kUserCancelledMountContainer = 21,
+
     kCount
   };
 
@@ -66,21 +82,26 @@ class CrostiniInstallerView
   void LinkClicked(views::Link* source, int event_flags) override;
 
   // crostini::CrostiniManager::RestartObserver
-  void OnComponentLoaded(crostini::ConciergeClientResult result) override;
-  void OnConciergeStarted(crostini::ConciergeClientResult result) override;
-  void OnDiskImageCreated(crostini::ConciergeClientResult result) override;
-  void OnVmStarted(crostini::ConciergeClientResult result) override;
+  void OnComponentLoaded(crostini::CrostiniResult result) override;
+  void OnConciergeStarted(crostini::CrostiniResult result) override;
+  void OnDiskImageCreated(crostini::CrostiniResult result,
+                          vm_tools::concierge::DiskImageStatus status,
+                          int64_t disk_size_available) override;
+  void OnVmStarted(crostini::CrostiniResult result) override;
   void OnContainerDownloading(int32_t download_percent) override;
-  void OnContainerCreated(crostini::ConciergeClientResult result) override;
-  void OnContainerStarted(crostini::ConciergeClientResult result) override;
-  void OnSshKeysFetched(crostini::ConciergeClientResult result) override;
+  void OnContainerCreated(crostini::CrostiniResult result) override;
+  void OnContainerStarted(crostini::CrostiniResult result) override;
+  void OnContainerSetup(crostini::CrostiniResult result) override;
+  void OnSshKeysFetched(crostini::CrostiniResult result) override;
 
   static CrostiniInstallerView* GetActiveViewForTesting();
 
  private:
   enum class State {
-    PROMPT,  // Prompting the user to allow installation.
-    ERROR,   // Something unexpected happened.
+    PROMPT,            // Prompting the user to allow installation.
+    ERROR,             // Something unexpected happened.
+    CLEANUP,           // Deleting a partial installed
+    CLEANUP_FINISHED,  // Finished deleting partial install
     // We automatically progress through the following steps.
     INSTALL_START,         // The user has just clicked 'Install'.
     INSTALL_IMAGE_LOADER,  // Loading the Termina VM component.
@@ -89,6 +110,7 @@ class CrostiniInstallerView
     START_TERMINA_VM,      // Starting the Termina VM.
     CREATE_CONTAINER,      // Creating the container inside the Termina VM.
     START_CONTAINER,       // Starting the container inside the Termina VM.
+    SETUP_CONTAINER,       // Setting up the container inside the Termina VM.
     FETCH_SSH_KEYS,        // Fetch ssh keys from concierge.
     MOUNT_CONTAINER,       // Do sshfs mount of container.
     SHOW_LOGIN_SHELL,      // Showing a new crosh window.
@@ -98,8 +120,9 @@ class CrostiniInstallerView
   explicit CrostiniInstallerView(Profile* profile);
   ~CrostiniInstallerView() override;
 
+  void FinishCleanup(crostini::CrostiniResult result);
   void HandleError(const base::string16& error_message, SetupResult result);
-  void MountContainerFinished(crostini::ConciergeClientResult result);
+  void MountContainerFinished(crostini::CrostiniResult result);
   void ShowLoginShell();
   void StepProgress();
   void UpdateState(State new_state);
@@ -121,6 +144,7 @@ class CrostiniInstallerView
   int32_t container_download_percent_ = 0;
   base::Time state_start_time_;
   std::unique_ptr<base::RepeatingTimer> state_progress_timer_;
+  bool do_cleanup_ = true;
 
   // Whether the result has been logged or not is stored to prevent multiple
   // results being logged for a given setup flow. This can happen due to

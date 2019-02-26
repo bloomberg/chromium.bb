@@ -16,5 +16,5 @@ To create the FLAC-encoded version:
 avconv -i Composite.wav Composite.flac
 
 If you change Composite.flac (or Composite.wav), be sure to update
-LayoutTests/webaudio/resources/hrtf with the updated files!
+web_tests/webaudio/resources/hrtf with the updated files!
 

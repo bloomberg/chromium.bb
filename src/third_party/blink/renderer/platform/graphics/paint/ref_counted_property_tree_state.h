@@ -6,9 +6,6 @@
 #define THIRD_PARTY_BLINK_RENDERER_PLATFORM_GRAPHICS_PAINT_REF_COUNTED_PROPERTY_TREE_STATE_H_
 
 #include "third_party/blink/renderer/platform/graphics/paint/property_tree_state.h"
-#include "third_party/blink/renderer/platform/wtf/hash_functions.h"
-#include "third_party/blink/renderer/platform/wtf/hash_traits.h"
-#include "third_party/blink/renderer/platform/wtf/text/string_builder.h"
 
 namespace blink {
 
@@ -52,12 +49,6 @@ class PLATFORM_EXPORT RefCountedPropertyTreeState {
   PropertyTreeState GetPropertyTreeState() const {
     return PropertyTreeState(transform_.get(), clip_.get(), effect_.get());
   }
-
-  // Returns the compositor element id, if any, for this property state. If
-  // neither the effect nor transform nodes have a compositor element id then a
-  // default instance is returned.
-  const CompositorElementId GetCompositorElementId(
-      const CompositorElementIdSet& element_ids) const;
 
   void ClearChangedToRoot() const {
     Transform()->ClearChangedToRoot();

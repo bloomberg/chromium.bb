@@ -16,8 +16,7 @@
 #include "chrome/browser/chromeos/login/users/fake_chrome_user_manager.h"
 #include "chrome/browser/consent_auditor/consent_auditor_factory.h"
 #include "chrome/browser/consent_auditor/consent_auditor_test_utils.h"
-#include "chrome/browser/signin/identity_manager_factory.h"
-#include "chrome/browser/signin/signin_manager_factory.h"
+#include "chrome/browser/signin/identity_test_environment_profile_adaptor.h"
 #include "chrome/grit/generated_resources.h"
 #include "chrome/test/base/testing_profile.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
@@ -27,7 +26,6 @@
 #include "components/arc/arc_util.h"
 #include "components/arc/test/fake_arc_session.h"
 #include "components/consent_auditor/fake_consent_auditor.h"
-#include "components/signin/core/browser/signin_manager_base.h"
 #include "components/sync_preferences/testing_pref_service_syncable.h"
 #include "components/user_manager/scoped_user_manager.h"
 #include "content/public/test/test_browser_thread_bundle.h"
@@ -43,7 +41,7 @@ using testing::_;
 namespace arc {
 namespace {
 
-constexpr char kTestProfileName[] = "user@gmail.com";
+constexpr char kTestEmail[] = "user@gmail.com";
 constexpr char kTestGaiaId[] = "1234567890";
 
 class ArcPlayStoreEnabledPreferenceHandlerTest : public testing::Test {
@@ -63,12 +61,15 @@ class ArcPlayStoreEnabledPreferenceHandlerTest : public testing::Test {
 
     ASSERT_TRUE(temp_dir_.CreateUniqueTempDir());
     TestingProfile::Builder profile_builder;
-    profile_builder.SetProfileName(kTestProfileName);
+    profile_builder.SetProfileName(kTestEmail);
     profile_builder.SetPath(temp_dir_.GetPath().AppendASCII("TestArcProfile"));
     profile_builder.AddTestingFactory(
         ConsentAuditorFactory::GetInstance(),
         base::BindRepeating(&BuildFakeConsentAuditor));
-    profile_ = profile_builder.Build();
+    profile_ = IdentityTestEnvironmentProfileAdaptor::
+        CreateProfileForIdentityTestEnvironment(profile_builder);
+    identity_test_env_profile_adaptor_ =
+        std::make_unique<IdentityTestEnvironmentProfileAdaptor>(profile_.get());
 
     arc_session_manager_ = std::make_unique<ArcSessionManager>(
         std::make_unique<ArcSessionRunner>(base::Bind(FakeArcSession::Create)));
@@ -80,14 +81,14 @@ class ArcPlayStoreEnabledPreferenceHandlerTest : public testing::Test {
     GetFakeUserManager()->AddUser(account_id);
     GetFakeUserManager()->LoginUser(account_id);
 
-    SigninManagerBase* signin_manager =
-        SigninManagerFactory::GetForProfile(profile());
-    signin_manager->SetAuthenticatedAccountInfo(kTestGaiaId, kTestProfileName);
+    identity_test_env_profile_adaptor_->identity_test_env()->SetPrimaryAccount(
+        kTestEmail);
   }
 
   void TearDown() override {
     preference_handler_.reset();
     arc_session_manager_.reset();
+    identity_test_env_profile_adaptor_.reset();
     profile_.reset();
     chromeos::DBusThreadManager::Shutdown();
   }
@@ -110,15 +111,18 @@ class ArcPlayStoreEnabledPreferenceHandlerTest : public testing::Test {
   }
 
   std::string GetAuthenticatedAccountId() const {
-    return IdentityManagerFactory::GetForProfile(profile())
-        ->GetPrimaryAccountInfo()
-        .account_id;
+    auto* identity_manager =
+        identity_test_env_profile_adaptor_->identity_test_env()
+            ->identity_manager();
+    return identity_manager->GetPrimaryAccountInfo().account_id;
   }
 
  private:
   content::TestBrowserThreadBundle thread_bundle_;
   user_manager::ScopedUserManager user_manager_enabler_;
   base::ScopedTempDir temp_dir_;
+  std::unique_ptr<IdentityTestEnvironmentProfileAdaptor>
+      identity_test_env_profile_adaptor_;
   std::unique_ptr<TestingProfile> profile_;
   std::unique_ptr<ArcSessionManager> arc_session_manager_;
   std::unique_ptr<ArcPlayStoreEnabledPreferenceHandler> preference_handler_;

@@ -150,7 +150,7 @@ public class SadTab extends EmptyTabObserver implements UserData {
     }
 
     @Override
-    public void onPageLoadFinished(Tab tab) {
+    public void onPageLoadFinished(Tab tab, String url) {
         // Reset the succressiveRefresh counter after successfully loading a page.
         mSadTabSuccessiveRefreshCounter = 0;
         removeIfPresent();

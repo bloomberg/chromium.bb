@@ -51,30 +51,38 @@ class CORE_EXPORT MouseEvent : public UIEventWithKeyState {
     kPositionless,
   };
 
-  static MouseEvent* Create() { return new MouseEvent; }
+  static MouseEvent* Create() { return MakeGarbageCollected<MouseEvent>(); }
 
   static MouseEvent* Create(const AtomicString& event_type,
-                            const MouseEventInit&,
+                            const MouseEventInit*,
                             TimeTicks platform_time_stamp,
                             SyntheticEventType,
                             WebMenuSourceType);
 
   static MouseEvent* Create(ScriptState*,
                             const AtomicString& event_type,
-                            const MouseEventInit&);
+                            const MouseEventInit*);
 
   static MouseEvent* Create(const AtomicString& event_type,
                             AbstractView*,
                             Event* underlying_event,
                             SimulatedClickCreationScope);
 
+  MouseEvent(const AtomicString& type,
+             const MouseEventInit*,
+             TimeTicks platform_time_stamp,
+             SyntheticEventType = kRealOrIndistinguishable,
+             WebMenuSourceType = kMenuSourceNone);
+  MouseEvent(const AtomicString& type, const MouseEventInit* init)
+      : MouseEvent(type, init, CurrentTimeTicks()) {}
+  MouseEvent();
   ~MouseEvent() override;
 
   static unsigned short WebInputEventModifiersToButtons(unsigned modifiers);
   static void SetCoordinatesFromWebPointerProperties(
       const WebPointerProperties&,
       const LocalDOMWindow*,
-      MouseEventInit&);
+      MouseEventInit*);
 
   void initMouseEvent(ScriptState*,
                       const AtomicString& type,
@@ -185,8 +193,8 @@ class CORE_EXPORT MouseEvent : public UIEventWithKeyState {
   WebMenuSourceType GetMenuSourceType() const { return menu_source_type_; }
 
   // Page point in "absolute" coordinates (i.e. post-zoomed, page-relative
-  // coords, usable with LayoutObject::absoluteToLocal) relative to view(), i.e.
-  // the local frame.
+  // coords, usable with LayoutObject::absoluteToLocal) relative to view(),
+  // i.e. the local frame.
   const DoublePoint& AbsoluteLocation() const { return absolute_location_; }
 
   DispatchEventResult DispatchEvent(EventDispatcher&) override;
@@ -194,17 +202,6 @@ class CORE_EXPORT MouseEvent : public UIEventWithKeyState {
   void Trace(blink::Visitor*) override;
 
  protected:
-  MouseEvent(const AtomicString& type,
-             const MouseEventInit&,
-             TimeTicks platform_time_stamp,
-             SyntheticEventType = kRealOrIndistinguishable,
-             WebMenuSourceType = kMenuSourceNone);
-
-  MouseEvent(const AtomicString& type, const MouseEventInit& init)
-      : MouseEvent(type, init, CurrentTimeTicks()) {}
-
-  MouseEvent();
-
   short RawButton() const { return button_; }
 
   void ReceivedTarget() override;
@@ -215,7 +212,7 @@ class CORE_EXPORT MouseEvent : public UIEventWithKeyState {
 
   DoublePoint screen_location_;
   DoublePoint client_location_;
-  DoublePoint page_location_;  // zoomed CSS pixels
+  DoublePoint page_location_;    // zoomed CSS pixels
   DoublePoint offset_location_;  // zoomed CSS pixels
 
   bool has_cached_relative_position_ = false;

@@ -10,7 +10,7 @@
 
 namespace blink {
 
-void V8ExtendableMessageEvent::constructorCustom(
+void V8ExtendableMessageEvent::ConstructorCustom(
     const v8::FunctionCallbackInfo<v8::Value>& info) {
   v8::Isolate* isolate = info.GetIsolate();
   ExceptionState exception_state(isolate, ExceptionState::kConstructionContext,
@@ -25,7 +25,8 @@ void V8ExtendableMessageEvent::constructorCustom(
   if (!type.Prepare())
     return;
 
-  ExtendableMessageEventInit event_init_dict;
+  ExtendableMessageEventInit* event_init_dict =
+      ExtendableMessageEventInit::Create();
   if (!IsUndefinedOrNull(info[1])) {
     if (!info[1]->IsObject()) {
       exception_state.ThrowTypeError(
@@ -42,12 +43,12 @@ void V8ExtendableMessageEvent::constructorCustom(
       ExtendableMessageEvent::Create(type, event_init_dict);
   v8::Local<v8::Object> wrapper = info.Holder();
   wrapper = impl->AssociateWithWrapper(
-      isolate, &V8ExtendableMessageEvent::wrapperTypeInfo, wrapper);
+      isolate, &V8ExtendableMessageEvent::wrapper_type_info, wrapper);
 
   // TODO(bashi): Workaround for http://crbug.com/529941. We need to store
   // |data| as a private value to avoid cyclic references.
-  if (event_init_dict.hasData()) {
-    v8::Local<v8::Value> v8_data = event_init_dict.data().V8Value();
+  if (event_init_dict->hasData()) {
+    v8::Local<v8::Value> v8_data = event_init_dict->data().V8Value();
     V8PrivateProperty::GetMessageEventCachedData(isolate).Set(wrapper, v8_data);
     if (DOMWrapperWorld::Current(isolate).IsIsolatedWorld()) {
       impl->SetSerializedData(
@@ -58,7 +59,7 @@ void V8ExtendableMessageEvent::constructorCustom(
   V8SetReturnValue(info, wrapper);
 }
 
-void V8ExtendableMessageEvent::dataAttributeGetterCustom(
+void V8ExtendableMessageEvent::DataAttributeGetterCustom(
     const v8::FunctionCallbackInfo<v8::Value>& info) {
   ExtendableMessageEvent* event =
       V8ExtendableMessageEvent::ToImpl(info.Holder());

@@ -21,11 +21,16 @@
 #include "chrome/browser/ui/sync/one_click_signin_sync_starter.h"
 #include "chrome/common/buildflags.h"
 #include "components/content_settings/core/common/content_settings_types.h"
+#include "components/feature_engagement/buildflags.h"
 #include "components/signin/core/browser/signin_header_helper.h"
 #include "components/translate/core/common/translate_errors.h"
 #include "ui/base/base_window.h"
 #include "ui/base/window_open_disposition.h"
 #include "ui/gfx/native_widget_types.h"
+
+#if BUILDFLAG(ENABLE_DESKTOP_IN_PRODUCT_HELP)
+#include "chrome/browser/ui/in_product_help/in_product_help.h"
+#endif  // BUILDFLAG(ENABLE_DESKTOP_IN_PRODUCT_HELP)
 
 #if defined(OS_CHROMEOS)
 #include "chrome/browser/chromeos/apps/intent_helper/apps_navigation_types.h"
@@ -199,6 +204,12 @@ class BrowserWindow : public ui::BaseWindow {
                                   int index,
                                   int reason) = 0;
 
+  // Called when a tab is detached. Subclasses which implement
+  // TabStripModelObserver should implement this instead of processing this
+  // in OnTabStripModelChanged(); the Browser will call this method.
+  virtual void OnTabDetached(content::WebContents* contents,
+                             bool was_active) = 0;
+
   // Called to force the zoom state to for the active tab to be recalculated.
   // |can_show_bubble| is true when a user presses the zoom up or down keyboard
   // shortcuts and will be false in other cases (e.g. switching tabs, "clicking"
@@ -233,6 +244,10 @@ class BrowserWindow : public ui::BaseWindow {
   // Updates the toolbar with the state for the specified |contents|.
   virtual void UpdateToolbar(content::WebContents* contents) = 0;
 
+  // Updates whether or not the toolbar is visible. Animates the transition if
+  // |animate| is true.
+  virtual void UpdateToolbarVisibility(bool visible, bool animate) = 0;
+
   // Resets the toolbar's tab state for |contents|.
   virtual void ResetToolbarTabState(content::WebContents* contents) = 0;
 
@@ -244,6 +259,9 @@ class BrowserWindow : public ui::BaseWindow {
 
   // Called from toolbar subviews during their show/hide animations.
   virtual void ToolbarSizeChanged(bool is_animating) = 0;
+
+  // Called when the accociated window's tab dragging status changed.
+  virtual void TabDraggingStatusChanged(bool is_dragging) = 0;
 
   // Focuses the app menu like it was a menu bar.
   //
@@ -366,7 +384,7 @@ class BrowserWindow : public ui::BaseWindow {
 
   // Allows the BrowserWindow object to handle the specified keyboard event,
   // if the renderer did not process it.
-  virtual void HandleKeyboardEvent(
+  virtual bool HandleKeyboardEvent(
       const content::NativeWebKeyboardEvent& event) = 0;
 
   // Clipboard commands applied to the whole browser window.
@@ -426,6 +444,11 @@ class BrowserWindow : public ui::BaseWindow {
       const extensions::Extension* extension,
       const base::Callback<void(ImeWarningBubblePermissionStatus status)>&
           callback) = 0;
+
+#if BUILDFLAG(ENABLE_DESKTOP_IN_PRODUCT_HELP)
+  // Shows in-product help for the given feature.
+  virtual void ShowInProductHelpPromo(InProductHelpFeature iph_feature) = 0;
+#endif
 
   // Returns the platform-specific ID of the workspace the browser window
   // currently resides in.

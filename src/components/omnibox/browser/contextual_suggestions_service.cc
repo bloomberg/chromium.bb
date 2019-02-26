@@ -239,6 +239,9 @@ void ContextualSuggestionsService::CreateDefaultRequest(
   auto request = std::make_unique<network::ResourceRequest>();
   request->url = suggest_url;
   request->load_flags = net::LOAD_DO_NOT_SAVE_COOKIES;
+  // Try to attach cookies for signed in user.
+  request->attach_same_site_cookies = true;
+  request->site_for_cookies = suggest_url;
   AddVariationHeaders(request.get());
   // TODO(https://crbug.com/808498) re-add data use measurement once
   // SimpleURLLoader supports it.
@@ -312,7 +315,7 @@ void ContextualSuggestionsService::CreateExperimentalRequest(
   }
 
   // Create the oauth2 token fetcher.
-  const OAuth2TokenService::ScopeSet scopes{
+  const identity::ScopeSet scopes{
       "https://www.googleapis.com/auth/cusco-chrome-extension"};
   token_fetcher_ = std::make_unique<identity::PrimaryAccountAccessTokenFetcher>(
       "contextual_suggestions_service", identity_manager_, scopes,

@@ -64,6 +64,24 @@ Clipboard* Clipboard::GetForCurrentThread() {
 }
 
 // static
+std::unique_ptr<Clipboard> Clipboard::TakeForCurrentThread() {
+  base::AutoLock lock(clipboard_map_lock_.Get());
+
+  ClipboardMap* clipboard_map = clipboard_map_.Pointer();
+  base::PlatformThreadId id = base::PlatformThread::CurrentId();
+
+  Clipboard* clipboard = nullptr;
+
+  auto it = clipboard_map->find(id);
+  if (it != clipboard_map->end()) {
+    clipboard = it->second.release();
+    clipboard_map->erase(it);
+  }
+
+  return base::WrapUnique(clipboard);
+}
+
+// static
 void Clipboard::OnPreShutdownForCurrentThread() {
   base::AutoLock lock(clipboard_map_lock_.Get());
   base::PlatformThreadId id = GetAndValidateThreadID();

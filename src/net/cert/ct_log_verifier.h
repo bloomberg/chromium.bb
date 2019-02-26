@@ -12,10 +12,7 @@
 #include "base/strings/string_piece.h"
 #include "net/base/net_export.h"
 #include "net/cert/signed_certificate_timestamp.h"
-
-// Forward declare the crypto types to avoid having to include the full
-// headers.
-typedef struct evp_pkey_st EVP_PKEY;
+#include "third_party/boringssl/src/include/openssl/base.h"
 
 namespace net {
 

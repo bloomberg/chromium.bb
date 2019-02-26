@@ -139,6 +139,10 @@ class CONTENT_EXPORT RenderFrameProxy : public IPC::Listener,
   // zoom level has changed.
   void OnZoomLevelChanged(double zoom_level);
 
+  // Out-of-process child frames receive a signal from RenderWidget when the
+  // page scale factor has changed.
+  void OnPageScaleFactorChanged(float page_scale_factor);
+
   // Invoked by RenderWidget when a new capture sequence number was set,
   // indicating that surfaces should be synchronized.
   void UpdateCaptureSequenceNumber(uint32_t capture_sequence_number);
@@ -213,6 +217,8 @@ class CONTENT_EXPORT RenderFrameProxy : public IPC::Listener,
   // IPC handlers
   void OnDidStartLoading();
 
+  void WasEvicted();
+
  private:
   RenderFrameProxy(int routing_id);
 
@@ -262,6 +268,7 @@ class CONTENT_EXPORT RenderFrameProxy : public IPC::Listener,
   void OnEnableAutoResize(const gfx::Size& min_size, const gfx::Size& max_size);
   void OnDisableAutoResize();
   void OnSetHasReceivedUserGestureBeforeNavigation(bool value);
+  void OnRenderFallbackContent() const;
 
 #if defined(USE_AURA)
   // MusEmbeddedFrameDelegate

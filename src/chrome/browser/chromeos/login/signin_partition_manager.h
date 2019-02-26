@@ -52,7 +52,7 @@ class SigninPartitionManager : public KeyedService {
   // |signin_session_started| will be invoked with the partition name of the
   // started signin session on completition.
   void StartSigninSession(
-      const content::WebContents* embedder_web_contents,
+      content::WebContents* embedder_web_contents,
       StartSigninSessionDoneCallback signin_session_started);
 
   // Closes the current StoragePartition. All cached data in the

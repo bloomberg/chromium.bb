@@ -7,6 +7,7 @@
 #include "net/third_party/quic/core/proto/cached_network_parameters.pb.h"
 #include "net/third_party/quic/core/quic_connection.h"
 #include "net/third_party/quic/core/quic_stream.h"
+#include "net/third_party/quic/core/quic_utils.h"
 #include "net/third_party/quic/platform/api/quic_bug_tracker.h"
 #include "net/third_party/quic/platform/api/quic_flag_utils.h"
 #include "net/third_party/quic/platform/api/quic_flags.h"
@@ -17,12 +18,13 @@ namespace quic {
 
 QuicServerSessionBase::QuicServerSessionBase(
     const QuicConfig& config,
+    const ParsedQuicVersionVector& supported_versions,
     QuicConnection* connection,
     Visitor* visitor,
     QuicCryptoServerStream::Helper* helper,
     const QuicCryptoServerConfig* crypto_config,
     QuicCompressedCertsCache* compressed_certs_cache)
-    : QuicSpdySession(connection, visitor, config),
+    : QuicSpdySession(connection, visitor, config, supported_versions),
       crypto_config_(crypto_config),
       compressed_certs_cache_(compressed_certs_cache),
       helper_(helper),
@@ -192,13 +194,14 @@ void QuicServerSessionBase::OnCongestionWindowChange(QuicTime now) {
       connection()->sent_packet_manager().GetLargestSentPacket();
 }
 
-bool QuicServerSessionBase::ShouldCreateIncomingDynamicStream(QuicStreamId id) {
+bool QuicServerSessionBase::ShouldCreateIncomingStream(QuicStreamId id) {
   if (!connection()->connected()) {
-    QUIC_BUG << "ShouldCreateIncomingDynamicStream called when disconnected";
+    QUIC_BUG << "ShouldCreateIncomingStream called when disconnected";
     return false;
   }
 
-  if (id % 2 == 0) {
+  if (QuicUtils::IsServerInitiatedStreamId(connection()->transport_version(),
+                                           id)) {
     QUIC_DLOG(INFO) << "Invalid incoming even stream_id:" << id;
     connection()->CloseConnection(
         QUIC_INVALID_STREAM_ID, "Client created even numbered stream",
@@ -208,23 +211,25 @@ bool QuicServerSessionBase::ShouldCreateIncomingDynamicStream(QuicStreamId id) {
   return true;
 }
 
-bool QuicServerSessionBase::ShouldCreateOutgoingDynamicStream() {
+bool QuicServerSessionBase::ShouldCreateOutgoingStream() {
   if (!connection()->connected()) {
-    QUIC_BUG << "ShouldCreateOutgoingDynamicStream called when disconnected";
+    QUIC_BUG << "ShouldCreateOutgoingStream called when disconnected";
     return false;
   }
   if (!crypto_stream_->encryption_established()) {
     QUIC_BUG << "Encryption not established so no outgoing stream created.";
     return false;
   }
-  if (!GetQuicFlag(FLAGS_quic_use_common_stream_check)) {
+
+  if (!GetQuicReloadableFlag(quic_use_common_stream_check) &&
+      connection()->transport_version() != QUIC_VERSION_99) {
     if (GetNumOpenOutgoingStreams() >= max_open_outgoing_streams()) {
       VLOG(1) << "No more streams should be created. "
               << "Already " << GetNumOpenOutgoingStreams() << " open.";
       return false;
     }
   }
-  QUIC_FLAG_COUNT_N(quic_use_common_stream_check, 2, 2);
+  QUIC_FLAG_COUNT_N(quic_reloadable_flag_quic_use_common_stream_check, 2, 2);
   return CanOpenNextOutgoingStream();
 }
 

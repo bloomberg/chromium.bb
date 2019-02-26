@@ -83,7 +83,7 @@ uint16_t QuicSocketAddressImpl::port() const {
 }
 
 sockaddr_storage QuicSocketAddressImpl::generic_address() const {
-  sockaddr_storage raw_address;
+  sockaddr_storage raw_address = {};
   socklen_t address_len = sizeof(raw_address);
   CHECK(socket_address_.ToSockAddr(
       reinterpret_cast<struct sockaddr*>(&raw_address), &address_len));

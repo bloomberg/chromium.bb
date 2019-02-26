@@ -85,7 +85,7 @@ NavigatorShare& NavigatorShare::From(Navigator& navigator) {
   NavigatorShare* supplement =
       Supplement<Navigator>::From<NavigatorShare>(navigator);
   if (!supplement) {
-    supplement = new NavigatorShare();
+    supplement = MakeGarbageCollected<NavigatorShare>();
     ProvideTo(navigator, supplement);
   }
   return *supplement;
@@ -101,10 +101,11 @@ NavigatorShare::NavigatorShare() = default;
 const char NavigatorShare::kSupplementName[] = "NavigatorShare";
 
 ScriptPromise NavigatorShare::share(ScriptState* script_state,
-                                    const ShareData& share_data) {
+                                    const ShareData* share_data) {
   Document* doc = To<Document>(ExecutionContext::From(script_state));
 
-  if (!share_data.hasTitle() && !share_data.hasText() && !share_data.hasURL()) {
+  if (!share_data->hasTitle() && !share_data->hasText() &&
+      !share_data->hasURL()) {
     v8::Local<v8::Value> error = V8ThrowException::CreateTypeError(
         script_state->GetIsolate(),
         "No known share data fields supplied. If using only new fields (other "
@@ -112,7 +113,7 @@ ScriptPromise NavigatorShare::share(ScriptState* script_state,
     return ScriptPromise::Reject(script_state, error);
   }
 
-  KURL full_url = doc->CompleteURL(share_data.url());
+  KURL full_url = doc->CompleteURL(share_data->url());
   if (!full_url.IsNull() && !full_url.IsValid()) {
     v8::Local<v8::Value> error = V8ThrowException::CreateTypeError(
         script_state->GetIsolate(), "Invalid URL");
@@ -143,13 +144,14 @@ ScriptPromise NavigatorShare::share(ScriptState* script_state,
   }
 
   ScriptPromiseResolver* resolver = ScriptPromiseResolver::Create(script_state);
-  ShareClientImpl* client = new ShareClientImpl(this, resolver);
+  ShareClientImpl* client =
+      MakeGarbageCollected<ShareClientImpl>(this, resolver);
   clients_.insert(client);
   ScriptPromise promise = resolver->Promise();
 
   service_->Share(
-      share_data.hasTitle() ? share_data.title() : g_empty_string,
-      share_data.hasText() ? share_data.text() : g_empty_string, full_url,
+      share_data->hasTitle() ? share_data->title() : g_empty_string,
+      share_data->hasText() ? share_data->text() : g_empty_string, full_url,
       WTF::Bind(&ShareClientImpl::Callback, WrapPersistent(client)));
 
   return promise;
@@ -157,7 +159,7 @@ ScriptPromise NavigatorShare::share(ScriptState* script_state,
 
 ScriptPromise NavigatorShare::share(ScriptState* script_state,
                                     Navigator& navigator,
-                                    const ShareData& share_data) {
+                                    const ShareData* share_data) {
   return From(navigator).share(script_state, share_data);
 }
 

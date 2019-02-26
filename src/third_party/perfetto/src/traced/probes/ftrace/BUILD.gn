@@ -15,10 +15,10 @@
 import("../../../../gn/perfetto.gni")
 import("../../../../gn/proto_library.gni")
 import("../../../../gn/fuzzer.gni")
-import("../../../protozero/protozero_library.gni")
+import("../../../../gn/protozero_library.gni")
 
 # For use_libfuzzer.
-if (!build_with_chromium) {
+if (perfetto_build_standalone || perfetto_build_with_android) {
   import("//gn/standalone/sanitizers/vars.gni")
 } else {
   import("//build/config/sanitizers/sanitizers.gni")
@@ -32,7 +32,7 @@ source_set("test_support") {
     "../../../protozero",
   ]
   public_deps = [
-    "../../../protozero:test_support",
+    "../../../protozero",
   ]
 
   sources = [
@@ -44,6 +44,7 @@ source_set("test_support") {
 source_set("unittests") {
   testonly = true
   deps = [
+    ":format_parser",
     ":ftrace",
     ":test_messages_lite",
     ":test_messages_zero",
@@ -103,11 +104,11 @@ source_set("integrationtests") {
 
 source_set("ftrace") {
   public_deps = [
-    "../../../../gn:gtest_prod_config",
     "../../../../protos/perfetto/trace/ftrace:zero",
     "../../../tracing",
   ]
   deps = [
+    ":format_parser",
     "..:data_source",
     "../../../../gn:default_deps",
     "../../../../include/perfetto/traced",
@@ -125,8 +126,6 @@ source_set("ftrace") {
     "event_info.h",
     "event_info_constants.cc",
     "event_info_constants.h",
-    "format_parser.cc",
-    "format_parser.h",
     "ftrace_config.cc",
     "ftrace_config.h",
     "ftrace_config_muxer.cc",
@@ -146,7 +145,18 @@ source_set("ftrace") {
   ]
 }
 
-if (!build_with_chromium) {
+source_set("format_parser") {
+  deps = [
+    "../../../../gn:default_deps",
+    "../../../base",
+  ]
+  sources = [
+    "format_parser.cc",
+    "format_parser.h",
+  ]
+}
+
+if (perfetto_build_standalone) {
   source_set("benchmarks") {
     testonly = true
     deps = [

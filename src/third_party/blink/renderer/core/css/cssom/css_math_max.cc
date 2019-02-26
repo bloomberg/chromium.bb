@@ -31,8 +31,8 @@ CSSMathMax* CSSMathMax::Create(CSSNumericValueVector values) {
   CSSNumericValueType final_type =
       CSSMathVariadic::TypeCheck(values, CSSNumericValueType::Add, error);
   return error ? nullptr
-               : new CSSMathMax(CSSNumericArray::Create(std::move(values)),
-                                final_type);
+               : MakeGarbageCollected<CSSMathMax>(
+                     CSSNumericArray::Create(std::move(values)), final_type);
 }
 
 base::Optional<CSSNumericSumValue> CSSMathMax::SumValue() const {

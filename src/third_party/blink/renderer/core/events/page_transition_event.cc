@@ -25,7 +25,7 @@
 
 #include "third_party/blink/renderer/core/events/page_transition_event.h"
 
-#include "third_party/blink/renderer/core/event_names.h"
+#include "third_party/blink/renderer/core/event_interface_names.h"
 
 namespace blink {
 
@@ -37,16 +37,16 @@ PageTransitionEvent::PageTransitionEvent(const AtomicString& type,
 
 PageTransitionEvent::PageTransitionEvent(
     const AtomicString& type,
-    const PageTransitionEventInit& initializer)
+    const PageTransitionEventInit* initializer)
     : Event(type, initializer), persisted_(false) {
-  if (initializer.hasPersisted())
-    persisted_ = initializer.persisted();
+  if (initializer->hasPersisted())
+    persisted_ = initializer->persisted();
 }
 
 PageTransitionEvent::~PageTransitionEvent() = default;
 
 const AtomicString& PageTransitionEvent::InterfaceName() const {
-  return EventNames::PageTransitionEvent;
+  return event_interface_names::kPageTransitionEvent;
 }
 
 void PageTransitionEvent::Trace(blink::Visitor* visitor) {

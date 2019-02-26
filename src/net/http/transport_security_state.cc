@@ -897,7 +897,9 @@ void TransportSecurityState::ClearDynamicData() {
   enabled_expect_ct_hosts_.clear();
 }
 
-void TransportSecurityState::DeleteAllDynamicDataSince(const base::Time& time) {
+void TransportSecurityState::DeleteAllDynamicDataSince(
+    const base::Time& time,
+    base::OnceClosure callback) {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
 
   bool dirtied = false;
@@ -934,8 +936,10 @@ void TransportSecurityState::DeleteAllDynamicDataSince(const base::Time& time) {
     ++expect_ct_iterator;
   }
 
-  if (dirtied)
-    DirtyNotify();
+  if (dirtied && delegate_)
+    delegate_->WriteNow(this, std::move(callback));
+  else
+    std::move(callback).Run();
 }
 
 TransportSecurityState::~TransportSecurityState() {
@@ -972,29 +976,6 @@ bool TransportSecurityState::AddHSTSHeader(const std::string& host,
   return true;
 }
 
-bool TransportSecurityState::AddHPKPHeader(const std::string& host,
-                                           const std::string& value,
-                                           const SSLInfo& ssl_info) {
-  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
-
-  base::Time now = base::Time::Now();
-  base::TimeDelta max_age;
-  bool include_subdomains;
-  HashValueVector spki_hashes;
-  GURL report_uri;
-
-  if (!ParseHPKPHeader(value, ssl_info.public_key_hashes, &max_age,
-                       &include_subdomains, &spki_hashes, &report_uri)) {
-    return false;
-  }
-  // Handle max-age == 0.
-  if (max_age.InSeconds() == 0)
-    spki_hashes.clear();
-  AddHPKPInternal(host, now, now + max_age, include_subdomains, spki_hashes,
-                  report_uri);
-  return true;
-}
-
 void TransportSecurityState::AddHSTS(const std::string& host,
                                      const base::Time& expiry,
                                      bool include_subdomains) {
@@ -1018,39 +999,6 @@ void TransportSecurityState::AddExpectCT(const std::string& host,
                                          const GURL& report_uri) {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   AddExpectCTInternal(host, base::Time::Now(), expiry, enforce, report_uri);
-}
-
-bool TransportSecurityState::ProcessHPKPReportOnlyHeader(
-    const std::string& value,
-    const HostPortPair& host_port_pair,
-    const SSLInfo& ssl_info) {
-  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
-
-  base::Time now = base::Time::Now();
-  bool include_subdomains;
-  HashValueVector spki_hashes;
-  GURL report_uri;
-  std::string unused_failure_log;
-
-  if (!ParseHPKPReportOnlyHeader(value, &include_subdomains, &spki_hashes,
-                                 &report_uri) ||
-      !report_uri.is_valid() || report_uri.is_empty()) {
-    return false;
-  }
-
-  PKPState pkp_state;
-  pkp_state.last_observed = now;
-  pkp_state.expiry = now;
-  pkp_state.include_subdomains = include_subdomains;
-  pkp_state.spki_hashes = spki_hashes;
-  pkp_state.report_uri = report_uri;
-  pkp_state.domain = DNSDomainToString(CanonicalizeHost(host_port_pair.host()));
-
-  CheckPinsAndMaybeSendReport(
-      host_port_pair, ssl_info.is_issued_by_known_root, pkp_state,
-      ssl_info.public_key_hashes, ssl_info.unverified_cert.get(),
-      ssl_info.cert.get(), ENABLE_PIN_REPORTS, &unused_failure_log);
-  return true;
 }
 
 void TransportSecurityState::ProcessExpectCTHeader(
@@ -1357,14 +1305,6 @@ void TransportSecurityState::AddOrUpdateEnabledSTSHosts(
   enabled_sts_hosts_[hashed_host] = state;
 }
 
-void TransportSecurityState::AddOrUpdateEnabledPKPHosts(
-    const std::string& hashed_host,
-    const PKPState& state) {
-  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
-  DCHECK(state.HasPublicKeyPins());
-  enabled_pkp_hosts_[hashed_host] = state;
-}
-
 void TransportSecurityState::AddOrUpdateEnabledExpectCTHosts(
     const std::string& hashed_host,
     const ExpectCTState& state) {
@@ -1450,13 +1390,5 @@ bool TransportSecurityState::PKPState::CheckPublicKeyPins(
 bool TransportSecurityState::PKPState::HasPublicKeyPins() const {
   return spki_hashes.size() > 0 || bad_spki_hashes.size() > 0;
 }
-
-TransportSecurityState::PKPStateIterator::PKPStateIterator(
-    const TransportSecurityState& state)
-    : iterator_(state.enabled_pkp_hosts_.begin()),
-      end_(state.enabled_pkp_hosts_.end()) {
-}
-
-TransportSecurityState::PKPStateIterator::~PKPStateIterator() = default;
 
 }  // namespace net

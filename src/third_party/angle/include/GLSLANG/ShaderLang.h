@@ -25,7 +25,7 @@
 
 // Version number for shader translation API.
 // It is incremented every time the API changes.
-#define ANGLE_SH_VERSION 201
+#define ANGLE_SH_VERSION 202
 
 enum ShShaderSpec
 {
@@ -265,6 +265,14 @@ const ShCompileOptions SH_CLAMP_FRAG_DEPTH = UINT64_C(1) << 38;
 // prior to version 397.31.
 const ShCompileOptions SH_REWRITE_REPEATED_ASSIGN_TO_SWIZZLED = UINT64_C(1) << 39;
 
+// Rewrite gl_DrawID as a uniform int
+const ShCompileOptions SH_EMULATE_GL_DRAW_ID = UINT64_C(1) << 40;
+
+// This flag initializes shared variables to 0.
+// It is to avoid ompute shaders being able to read undefined values that could be coming from
+// another webpage/application.
+const ShCompileOptions SH_INIT_SHARED_VARIABLES = UINT64_C(1) << 41;
+
 // Defines alternate strategies for implementing array index clamping.
 enum ShArrayIndexClampingStrategy
 {
@@ -314,6 +322,8 @@ struct ShBuiltInResources
     int EXT_YUV_target;
     int EXT_geometry_shader;
     int OES_texture_storage_multisample_2d_array;
+    int ANGLE_texture_multisample;
+    int ANGLE_multi_draw;
 
     // Set to 1 to enable replacing GL_EXT_draw_buffers #extension directives
     // with GL_NV_draw_buffers in ESSL output. This flag can be used to emulate

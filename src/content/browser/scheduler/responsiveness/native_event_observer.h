@@ -7,7 +7,6 @@
 
 #include "base/callback.h"
 #include "base/macros.h"
-#include "base/time/time.h"
 #include "build/build_config.h"
 #include "content/common/content_export.h"
 
@@ -49,11 +48,8 @@ class CONTENT_EXPORT NativeEventObserver
  public:
   using WillRunEventCallback =
       base::RepeatingCallback<void(const void* opaque_identifier)>;
-
-  // |creation_time| refers to the time at which the native event was created.
   using DidRunEventCallback =
-      base::RepeatingCallback<void(const void* opaque_identifier,
-                                   base::TimeTicks creation_time)>;
+      base::RepeatingCallback<void(const void* opaque_identifier)>;
 
   // The constructor will register the object as an observer of the native event
   // processor. The destructor will unregister the object.
@@ -71,8 +67,7 @@ class CONTENT_EXPORT NativeEventObserver
   // NativeEventProcessorObserver overrides:
   // Exposed for tests.
   void WillRunNativeEvent(const void* opaque_identifier) override;
-  void DidRunNativeEvent(const void* opaque_identifier,
-                         base::TimeTicks creation_time) override;
+  void DidRunNativeEvent(const void* opaque_identifier) override;
 #elif defined(OS_LINUX)
   // aura::WindowEventDispatcherObserver overrides:
   void OnWindowEventDispatcherStartedProcessing(
@@ -93,7 +88,6 @@ class CONTENT_EXPORT NativeEventObserver
 #if defined(OS_LINUX)
   struct EventInfo {
     const void* unique_id;
-    base::TimeTicks creation_time;
   };
   std::vector<EventInfo> events_being_processed_;
 #endif

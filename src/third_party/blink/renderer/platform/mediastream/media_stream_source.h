@@ -81,6 +81,13 @@ class PLATFORM_EXPORT MediaStreamSource final
                                    ReadyState = kReadyStateLive,
                                    bool requires_consumer = false);
 
+  MediaStreamSource(const String& id,
+                    StreamType,
+                    const String& name,
+                    bool remote,
+                    ReadyState,
+                    bool requires_consumer);
+
   const String& Id() const { return id_; }
   StreamType GetType() const { return type_; }
   const String& GetName() const { return name_; }
@@ -129,13 +136,6 @@ class PLATFORM_EXPORT MediaStreamSource final
   void Trace(blink::Visitor*);
 
  private:
-  MediaStreamSource(const String& id,
-                    StreamType,
-                    const String& name,
-                    bool remote,
-                    ReadyState,
-                    bool requires_consumer);
-
   String id_;
   StreamType type_;
   String name_;

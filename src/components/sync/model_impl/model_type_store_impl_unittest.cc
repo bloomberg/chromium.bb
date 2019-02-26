@@ -12,6 +12,7 @@
 #include "base/message_loop/message_loop.h"
 #include "base/optional.h"
 #include "base/run_loop.h"
+#include "base/test/bind_test_util.h"
 #include "components/sync/model/model_error.h"
 #include "components/sync/model/model_type_store_test_util.h"
 #include "components/sync/protocol/entity_metadata.pb.h"
@@ -26,6 +27,7 @@ namespace {
 
 using testing::IsEmpty;
 using testing::Not;
+using testing::Pair;
 using testing::SizeIs;
 
 sync_pb::ModelTypeState CreateModelTypeState(const std::string& value) {
@@ -200,6 +202,51 @@ TEST_F(ModelTypeStoreImplTest, WriteThenRead) {
                                             RecordMatches("id2", "data2")));
   VerifyMetadata(std::move(metadata_batch), CreateModelTypeState("type_state"),
                  {{"id1", CreateEntityMetadata("metadata1")}});
+}
+
+TEST_F(ModelTypeStoreImplTest, WriteThenReadWithPreprocessing) {
+  WriteTestData();
+
+  base::RunLoop loop;
+  std::map<std::string, std::string> preprocessed;
+  store()->ReadAllDataAndPreprocess(
+      base::BindLambdaForTesting(
+          [&](std::unique_ptr<ModelTypeStore::RecordList> record_list)
+              -> base::Optional<ModelError> {
+            for (const auto& record : *record_list) {
+              preprocessed[std::string("key_") + record.id] =
+                  std::string("value_") + record.value;
+            }
+            return base::nullopt;
+          }),
+      base::BindLambdaForTesting([&](const base::Optional<ModelError>& error) {
+        EXPECT_FALSE(error) << error->ToString();
+        loop.Quit();
+      }));
+  loop.Run();
+
+  // Preprocessing function above prefixes "key_" and "value_" to keys and
+  // values respectively.
+  EXPECT_THAT(preprocessed,
+              testing::ElementsAre(Pair("key_id1", "value_data1"),
+                                   Pair("key_id2", "value_data2")));
+}
+
+TEST_F(ModelTypeStoreImplTest, WriteThenReadWithPreprocessingError) {
+  WriteTestData();
+
+  base::RunLoop loop;
+  store()->ReadAllDataAndPreprocess(
+      base::BindLambdaForTesting(
+          [&](std::unique_ptr<ModelTypeStore::RecordList> record_list)
+              -> base::Optional<ModelError> {
+            return ModelError(FROM_HERE, "Preprocessing error");
+          }),
+      base::BindLambdaForTesting([&](const base::Optional<ModelError>& error) {
+        EXPECT_TRUE(error);
+        loop.Quit();
+      }));
+  loop.Run();
 }
 
 // Test that records that DeleteAllDataAndMetadata() deletes everything.

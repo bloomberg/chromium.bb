@@ -24,7 +24,7 @@
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_finder.h"
 #include "chrome/browser/ui/browser_window.h"
-#include "components/exo/shell_surface.h"
+#include "components/exo/shell_surface_util.h"
 #include "components/user_manager/user_manager.h"
 #include "extensions/browser/app_window/app_window.h"
 #include "ui/aura/client/aura_constants.h"
@@ -102,7 +102,7 @@ void CrostiniAppWindowShelfController::AddToShelf(aura::Window* window,
   app_window->SetController(item_controller);
 }
 
-void CrostiniAppWindowShelfController::RemoveFromShelf(
+ash::ShelfID CrostiniAppWindowShelfController::RemoveFromShelf(
     aura::Window* window,
     AppWindowBase* app_window) {
   UnregisterAppWindow(app_window);
@@ -113,8 +113,12 @@ void CrostiniAppWindowShelfController::RemoveFromShelf(
       owner()->shelf_model()->GetAppWindowLauncherItemController(
           app_window->shelf_id());
 
-  if (item_controller != nullptr && item_controller->window_count() == 0)
-    owner()->CloseLauncherItem(item_controller->shelf_id());
+  if (item_controller != nullptr && item_controller->window_count() == 0) {
+    ash::ShelfID shelf_id = item_controller->shelf_id();
+    owner()->CloseLauncherItem(shelf_id);
+    return shelf_id;
+  }
+  return ash::ShelfID();
 }
 
 void CrostiniAppWindowShelfController::ActiveUserChanged(
@@ -183,14 +187,13 @@ void CrostiniAppWindowShelfController::OnWindowVisibilityChanging(
   }
 
   // Handle genuine Crostini app windows.
-  const std::string* window_app_id =
-      exo::ShellSurface::GetApplicationId(window);
+  const std::string* window_app_id = exo::GetShellApplicationId(window);
 
   crostini::CrostiniRegistryService* registry_service =
       crostini::CrostiniRegistryServiceFactory::GetForProfile(
           owner()->profile());
   const std::string& shelf_app_id = registry_service->GetCrostiniShelfAppId(
-      window_app_id, exo::ShellSurface::GetStartupId(window));
+      window_app_id, exo::GetShellStartupId(window));
   // Non-crostini apps (i.e. arc++) are filtered out here.
   if (shelf_app_id.empty())
     return;
@@ -257,7 +260,16 @@ void CrostiniAppWindowShelfController::OnWindowDestroying(
   if (app_window_it == aura_window_to_app_window_.end())
     return;
 
-  RemoveFromShelf(window, app_window_it->second.get());
+  ash::ShelfID shelf_id = RemoveFromShelf(window, app_window_it->second.get());
+  if (!shelf_id.IsNull()) {
+    const std::string& app_id = shelf_id.app_id;
+    if (app_id == app_id_to_restart_) {
+      crostini::LaunchCrostiniApp(
+          ChromeLauncherController::instance()->profile(), app_id,
+          display_id_to_restart_in_);
+      app_id_to_restart_.clear();
+    }
+  }
 
   aura_window_to_app_window_.erase(app_window_it);
 }
@@ -308,4 +320,11 @@ void CrostiniAppWindowShelfController::OnAppLaunchRequested(
     const std::string& app_id,
     int64_t display_id) {
   crostini_app_display_.Register(app_id, display_id);
+}
+
+void CrostiniAppWindowShelfController::Restart(const ash::ShelfID& shelf_id,
+                                               int64_t display_id) {
+  app_id_to_restart_ = shelf_id.app_id;
+  display_id_to_restart_in_ = display_id;
+  ChromeLauncherController::instance()->Close(shelf_id);
 }

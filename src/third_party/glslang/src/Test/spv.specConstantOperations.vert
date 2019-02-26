@@ -4,11 +4,15 @@ layout(constant_id = 200) const float sp_float = 3.1415926;
 layout(constant_id = 201) const int sp_int = 10;
 layout(constant_id = 202) const uint sp_uint = 100;
 layout(constant_id = 203) const int sp_sint = -10;
-
+layout(constant_id = 204) const double sp_double = 2.718281828459;
 
 //
 // Scalars
 //
+
+// float <-> double conversion
+const float float_from_double = float(sp_double);
+const double double_from_float = double(sp_float);
 
 // uint/int <-> bool conversion
 const bool bool_from_int = bool(sp_int);
@@ -106,5 +110,15 @@ int non_const_array_size_from_spec_const() {
     return array[sp_int + 1];
 }
 
-void main() {}
+// ternary
+layout(constant_id = 210) const int a = 4;
+layout(constant_id = 211) const int b = 6;
+layout(constant_id = 212) const bool c = true;
+int ternayArray1[a > b ? a : b];
+const int t1 = c ? 13 : 17;
+const int t2 = c ? a : 17;
+const int t3 = true ? a : 17;
+const int t4 = a > b ? 13 + a : 17 * b;
+const vec2 v2 = !c ? vec2(1.0) : vec2(2.0);
 
+void main() {}

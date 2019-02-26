@@ -36,15 +36,13 @@
 
 namespace blink {
 
-using namespace HTMLNames;
-
 AXSlider::AXSlider(LayoutObject* layout_object,
                    AXObjectCacheImpl& ax_object_cache)
     : AXLayoutObject(layout_object, ax_object_cache) {}
 
 AXSlider* AXSlider::Create(LayoutObject* layout_object,
                            AXObjectCacheImpl& ax_object_cache) {
-  return new AXSlider(layout_object, ax_object_cache);
+  return MakeGarbageCollected<AXSlider>(layout_object, ax_object_cache);
 }
 
 ax::mojom::Role AXSlider::DetermineAccessibilityRole() {
@@ -131,7 +129,7 @@ AXSliderThumb::AXSliderThumb(AXObjectCacheImpl& ax_object_cache)
     : AXMockObject(ax_object_cache) {}
 
 AXSliderThumb* AXSliderThumb::Create(AXObjectCacheImpl& ax_object_cache) {
-  return new AXSliderThumb(ax_object_cache);
+  return MakeGarbageCollected<AXSliderThumb>(ax_object_cache);
 }
 
 LayoutObject* AXSliderThumb::LayoutObjectForRelativeBounds() const {
@@ -144,7 +142,7 @@ LayoutObject* AXSliderThumb::LayoutObjectForRelativeBounds() const {
   Element* thumb_element =
       ToElement(slider_layout_object->GetNode())
           ->UserAgentShadowRoot()
-          ->getElementById(ShadowElementNames::SliderThumb());
+          ->getElementById(shadow_element_names::SliderThumb());
   DCHECK(thumb_element);
   return thumb_element->GetLayoutObject();
 }

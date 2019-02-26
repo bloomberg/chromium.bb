@@ -46,7 +46,6 @@ struct CC_EXPORT MainThreadScrollingReason {
     kHasOpacityAndLCDText = 1 << 16,
     kHasTransformAndLCDText = 1 << 17,
     kBackgroundNotOpaqueInRectAndLCDText = 1 << 18,
-    kHasBorderRadius = 1 << 19,
     kHasClipRelatedProperty = 1 << 20,
     kHasBoxShadowFromNonRootLayer = 1 << 21,
     kIsNotStackingContextAndLCDText = 1 << 22,
@@ -72,9 +71,8 @@ struct CC_EXPORT MainThreadScrollingReason {
 
   static const uint32_t kNonCompositedReasons =
       kHasOpacityAndLCDText | kHasTransformAndLCDText |
-      kBackgroundNotOpaqueInRectAndLCDText | kHasBorderRadius |
-      kHasClipRelatedProperty | kHasBoxShadowFromNonRootLayer |
-      kIsNotStackingContextAndLCDText;
+      kBackgroundNotOpaqueInRectAndLCDText | kHasClipRelatedProperty |
+      kHasBoxShadowFromNonRootLayer | kIsNotStackingContextAndLCDText;
 
   // Returns true if the given MainThreadScrollingReason can be set by the main
   // thread.

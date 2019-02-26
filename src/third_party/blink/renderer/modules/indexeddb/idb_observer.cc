@@ -19,7 +19,7 @@
 namespace blink {
 
 IDBObserver* IDBObserver::Create(V8IDBObserverCallback* callback) {
-  return new IDBObserver(callback);
+  return MakeGarbageCollected<IDBObserver>(callback);
 }
 
 IDBObserver::IDBObserver(V8IDBObserverCallback* callback)
@@ -27,7 +27,7 @@ IDBObserver::IDBObserver(V8IDBObserverCallback* callback)
 
 void IDBObserver::observe(IDBDatabase* database,
                           IDBTransaction* transaction,
-                          const IDBObserverInit& options,
+                          const IDBObserverInit* options,
                           ExceptionState& exception_state) {
   if (!transaction->IsActive()) {
     exception_state.ThrowDOMException(
@@ -46,26 +46,26 @@ void IDBObserver::observe(IDBDatabase* database,
                                       IDBDatabase::kDatabaseClosedErrorMessage);
     return;
   }
-  if (!options.hasOperationTypes()) {
+  if (!options->hasOperationTypes()) {
     exception_state.ThrowTypeError(
-        "operationTypes not specified in observe options.");
+        "operationTypes not specified in observe options->");
     return;
   }
-  if (options.operationTypes().IsEmpty()) {
+  if (options->operationTypes().IsEmpty()) {
     exception_state.ThrowTypeError("operationTypes must be populated.");
     return;
   }
 
-  std::bitset<kWebIDBOperationTypeCount> types;
-  for (const auto& operation_type : options.operationTypes()) {
-    if (operation_type == IndexedDBNames::add) {
-      types[kWebIDBAdd] = true;
-    } else if (operation_type == IndexedDBNames::put) {
-      types[kWebIDBPut] = true;
-    } else if (operation_type == IndexedDBNames::kDelete) {
-      types[kWebIDBDelete] = true;
-    } else if (operation_type == IndexedDBNames::clear) {
-      types[kWebIDBClear] = true;
+  std::bitset<kIDBOperationTypeCount> types;
+  for (const auto& operation_type : options->operationTypes()) {
+    if (operation_type == indexed_db_names::kAdd) {
+      types[static_cast<size_t>(mojom::IDBOperationType::Add)] = true;
+    } else if (operation_type == indexed_db_names::kPut) {
+      types[static_cast<size_t>(mojom::IDBOperationType::Put)] = true;
+    } else if (operation_type == indexed_db_names::kDelete) {
+      types[static_cast<size_t>(mojom::IDBOperationType::Delete)] = true;
+    } else if (operation_type == indexed_db_names::kClear) {
+      types[static_cast<size_t>(mojom::IDBOperationType::Clear)] = true;
     } else {
       exception_state.ThrowTypeError(
           "Unknown operation type in observe options: " + operation_type);
@@ -74,8 +74,8 @@ void IDBObserver::observe(IDBDatabase* database,
   }
 
   int32_t observer_id =
-      database->AddObserver(this, transaction->Id(), options.transaction(),
-                            options.noRecords(), options.values(), types);
+      database->AddObserver(this, transaction->Id(), options->transaction(),
+                            options->noRecords(), options->values(), types);
   observer_ids_.insert(observer_id, database);
 }
 

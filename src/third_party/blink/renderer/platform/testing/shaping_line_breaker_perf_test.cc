@@ -11,6 +11,7 @@
 #include "third_party/blink/renderer/platform/fonts/font_cache.h"
 #include "third_party/blink/renderer/platform/fonts/font_test_utilities.h"
 #include "third_party/blink/renderer/platform/fonts/shaping/shape_result_test_info.h"
+#include "third_party/blink/renderer/platform/fonts/shaping/shape_result_view.h"
 #include "third_party/blink/renderer/platform/text/text_break_iterator.h"
 #include "third_party/blink/renderer/platform/text/text_run.h"
 
@@ -30,7 +31,7 @@ LayoutUnit ShapeText(ShapingLineBreaker* breaker,
   unsigned break_offset = 0;
   LayoutUnit total_width;
   ShapingLineBreaker::Result result;
-  scoped_refptr<const ShapeResult> shape_result;
+  scoped_refptr<const ShapeResultView> shape_result;
   while (break_offset < string_length) {
     shape_result = breaker->ShapeLine(break_offset, available_space, &result);
     break_offset = result.break_offset;

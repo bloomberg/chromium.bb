@@ -7,7 +7,7 @@
 
 #import <Foundation/Foundation.h>
 
-class ToolbarModel;
+class LocationBarModel;
 
 namespace web {
 class WebState;
@@ -19,7 +19,7 @@ class WebState;
 - (void)locationBarHasResignedFirstResponder;
 - (void)locationBarBeganEdit;
 - (web::WebState*)webState;
-- (ToolbarModel*)toolbarModel;
+- (LocationBarModel*)locationBarModel;
 @end
 
 #endif  // IOS_SHARED_CHROME_BROWSER_UI_OMNIBOX_LOCATION_BAR_DELEGATE_H_

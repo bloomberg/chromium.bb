@@ -33,6 +33,7 @@ if (enable_pdf) {
   jumbo_static_library("pdf") {
     configs += [ ":pdf_common_config" ]
     deps = [
+      ":features",
       "//base",
       "//gin",
       "//net",
@@ -110,6 +111,22 @@ if (enable_pdf) {
         "pdfium/pdfium_unsupported_features.h",
       ]
     }
+  }
+
+  source_set("features") {
+    configs += [ ":pdf_common_config" ]
+    deps = [
+      "//base",
+    ]
+
+    public = [
+      "pdf_features.h",
+    ]
+
+    sources = [
+      "pdf_features.cc",
+      "pdf_features.h",
+    ]
   }
 
   source_set("pdf_test_utils") {

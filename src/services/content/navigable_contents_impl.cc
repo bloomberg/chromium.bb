@@ -46,11 +46,16 @@ NavigableContentsImpl::~NavigableContentsImpl() = default;
 
 void NavigableContentsImpl::Navigate(const GURL& url,
                                      mojom::NavigateParamsPtr params) {
-  // Ignore non-HTTP/HTTPS requests for now.
-  if (!url.SchemeIsHTTPOrHTTPS())
+  // Ignore non-HTTP/HTTPS/data requests for now.
+  if (!url.SchemeIsHTTPOrHTTPS() && !url.SchemeIs(url::kDataScheme))
     return;
 
   delegate_->Navigate(url, std::move(params));
+}
+
+void NavigableContentsImpl::GoBack(
+    mojom::NavigableContents::GoBackCallback callback) {
+  delegate_->GoBack(std::move(callback));
 }
 
 void NavigableContentsImpl::CreateView(bool in_service_process,
@@ -81,6 +86,14 @@ void NavigableContentsImpl::CreateView(bool in_service_process,
       token, base::BindOnce(&NavigableContentsImpl::EmbedInProcessClientView,
                             weak_ptr_factory_.GetWeakPtr()));
   std::move(callback).Run(token);
+}
+
+void NavigableContentsImpl::Focus() {
+  delegate_->Focus();
+}
+
+void NavigableContentsImpl::FocusThroughTabTraversal(bool reverse) {
+  delegate_->FocusThroughTabTraversal(reverse);
 }
 
 #if BUILDFLAG(ENABLE_REMOTE_NAVIGABLE_CONTENTS_VIEW)

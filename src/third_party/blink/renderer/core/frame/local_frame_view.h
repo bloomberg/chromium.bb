@@ -78,7 +78,7 @@ class Page;
 class PaintArtifactCompositor;
 class PaintController;
 class PaintLayerScrollableArea;
-class PaintTracker;
+class PaintTimingDetector;
 class PrintContext;
 class RootFrameViewport;
 class ScrollableArea;
@@ -110,6 +110,7 @@ class CORE_EXPORT LocalFrameView final
   static LocalFrameView* Create(LocalFrame&);
   static LocalFrameView* Create(LocalFrame&, const IntSize& initial_size);
 
+  explicit LocalFrameView(LocalFrame&, IntRect);
   ~LocalFrameView() override;
 
   void Invalidate() { InvalidateRect(IntRect(0, 0, Width(), Height())); }
@@ -270,10 +271,10 @@ class CORE_EXPORT LocalFrameView final
   void SetDisplayShape(DisplayShape);
 
   // Fixed-position objects.
-  typedef HashSet<LayoutObject*> ViewportConstrainedObjectSet;
+  typedef HashSet<LayoutObject*> ObjectSet;
   void AddViewportConstrainedObject(LayoutObject&);
   void RemoveViewportConstrainedObject(LayoutObject&);
-  const ViewportConstrainedObjectSet* ViewportConstrainedObjects() const {
+  const ObjectSet* ViewportConstrainedObjects() const {
     return viewport_constrained_objects_.get();
   }
   bool HasViewportConstrainedObjects() const {
@@ -287,8 +288,12 @@ class CORE_EXPORT LocalFrameView final
   bool HasBackgroundAttachmentFixedObjects() const {
     return background_attachment_fixed_objects_.size();
   }
+  const ObjectSet& BackgroundAttachmentFixedObjects() const {
+    return background_attachment_fixed_objects_;
+  }
   bool HasBackgroundAttachmentFixedDescendants(const LayoutObject&) const;
-  void InvalidateBackgroundAttachmentFixedDescendants(const LayoutObject&);
+  void InvalidateBackgroundAttachmentFixedDescendantsOnScroll(
+      const LayoutObject& scrolled_object);
 
   void HandleLoadCompleted();
 
@@ -315,8 +320,10 @@ class CORE_EXPORT LocalFrameView final
   // be in the lifecycle state PaintClean.  If lifecycle throttling is allowed
   // (see DocumentLifecycle::AllowThrottlingScope), some frames may skip the
   // lifecycle update (e.g., based on visibility) and will not end up being
-  // PaintClean.
-  void UpdateAllLifecyclePhases();
+  // PaintClean. Set |reason| to indicate the reason for this update,
+  // for metrics purposes.
+  void UpdateAllLifecyclePhases(
+      DocumentLifecycle::LifecycleUpdateReason reason);
 
   // Computes the style, layout, compositing and pre-paint lifecycle stages
   // if needed.
@@ -679,7 +686,12 @@ class CORE_EXPORT LocalFrameView final
 
   void ScrollAndFocusFragmentAnchor();
   JankTracker& GetJankTracker() { return *jank_tracker_; }
-  PaintTracker& GetPaintTracker() { return *paint_tracker_; }
+  PaintTimingDetector& GetPaintTimingDetector() const {
+    return *paint_timing_detector_;
+  }
+
+  // Return the UKM aggregator for this frame, creating it if necessary.
+  LocalFrameUkmAggregator& EnsureUkmAggregator();
 
  protected:
   void NotifyFrameRectsChangedIfNeeded();
@@ -713,8 +725,6 @@ class CORE_EXPORT LocalFrameView final
   };
 #endif
 
-  explicit LocalFrameView(LocalFrame&, IntRect);
-
   void PaintInternal(GraphicsContext&,
                      const GlobalPaintFlags,
                      const CullRect&) const;
@@ -729,7 +739,8 @@ class CORE_EXPORT LocalFrameView final
 
   // Returns whether the lifecycle was succesfully updated to the
   // target state.
-  bool UpdateLifecyclePhases(DocumentLifecycle::LifecycleState target_state);
+  bool UpdateLifecyclePhases(DocumentLifecycle::LifecycleState target_state,
+                             DocumentLifecycle::LifecycleUpdateReason reason);
   // The internal version that does the work after the proper context and checks
   // have passed in the above function call.
   void UpdateLifecyclePhasesInternal(
@@ -747,11 +758,9 @@ class CORE_EXPORT LocalFrameView final
   void RunPaintLifecyclePhase();
 
   void NotifyFrameRectsChangedIfNeededRecursive();
-  void UpdateStyleAndLayoutIfNeededRecursive();
   void PrePaint();
   void PaintTree();
-
-  void UpdateStyleAndLayoutIfNeededRecursiveInternal();
+  void UpdateStyleAndLayoutIfNeededRecursive();
 
   void PushPaintArtifactToCompositor(
       CompositorElementIdSet& composited_element_ids);
@@ -761,8 +770,6 @@ class CORE_EXPORT LocalFrameView final
   void PerformPreLayoutTasks();
   void PerformLayout(bool in_subtree_layout);
   void PerformPostLayoutTasks();
-
-  void RecordDeferredLoadingStats();
 
   DocumentLifecycle& Lifecycle() const;
 
@@ -828,8 +835,6 @@ class CORE_EXPORT LocalFrameView final
 
   void LayoutFromRootObject(LayoutObject& root);
 
-  LocalFrameUkmAggregator& EnsureUkmAggregator();
-
   LayoutSize size_;
 
   typedef HashSet<scoped_refptr<LayoutEmbeddedObject>> EmbeddedObjectSet;
@@ -879,9 +884,9 @@ class CORE_EXPORT LocalFrameView final
   Member<ScrollableAreaSet> scrollable_areas_;
   Member<ScrollableAreaSet> animating_scrollable_areas_;
   std::unique_ptr<ResizerAreaSet> resizer_areas_;
-  std::unique_ptr<ViewportConstrainedObjectSet> viewport_constrained_objects_;
+  std::unique_ptr<ObjectSet> viewport_constrained_objects_;
   unsigned sticky_position_object_count_;
-  ViewportConstrainedObjectSet background_attachment_fixed_objects_;
+  ObjectSet background_attachment_fixed_objects_;
   Member<FrameViewAutoSizeInfo> auto_size_info_;
 
   float input_events_scale_factor_for_emulation_;
@@ -972,7 +977,7 @@ class CORE_EXPORT LocalFrameView final
 
   UniqueObjectId unique_id_;
   std::unique_ptr<JankTracker> jank_tracker_;
-  Member<PaintTracker> paint_tracker_;
+  Member<PaintTimingDetector> paint_timing_detector_;
 
   FRIEND_TEST_ALL_PREFIXES(WebViewTest, DeviceEmulationResetScrollbars);
 };

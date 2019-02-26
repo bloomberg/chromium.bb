@@ -401,8 +401,8 @@ void Connector::WaitToReadMore() {
       base::Bind(&Connector::OnWatcherHandleReady, base::Unretained(this)));
 
   if (message_pipe_.is_valid()) {
-    peer_remoteness_tracker_.emplace(message_pipe_.get(),
-                                     MOJO_HANDLE_SIGNAL_PEER_REMOTE);
+    peer_remoteness_tracker_.emplace(
+        message_pipe_.get(), MOJO_HANDLE_SIGNAL_PEER_REMOTE, task_runner_);
   }
 
   if (rv != MOJO_RESULT_OK) {

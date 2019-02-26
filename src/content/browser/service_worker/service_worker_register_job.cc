@@ -40,7 +40,7 @@ ServiceWorkerRegisterJob::ServiceWorkerRegisterJob(
     const blink::mojom::ServiceWorkerRegistrationOptions& options)
     : context_(context),
       job_type_(REGISTRATION_JOB),
-      pattern_(options.scope),
+      scope_(options.scope),
       script_url_(script_url),
       worker_script_type_(options.type),
       update_via_cache_(options.update_via_cache),
@@ -60,7 +60,7 @@ ServiceWorkerRegisterJob::ServiceWorkerRegisterJob(
     bool skip_script_comparison)
     : context_(context),
       job_type_(UPDATE_JOB),
-      pattern_(registration->pattern()),
+      scope_(registration->scope()),
       update_via_cache_(registration->update_via_cache()),
       phase_(INITIAL),
       doom_installing_worker_(false),
@@ -117,15 +117,14 @@ void ServiceWorkerRegisterJob::StartImpl() {
   }
 
   scoped_refptr<ServiceWorkerRegistration> registration =
-      context_->storage()->GetUninstallingRegistration(pattern_);
+      context_->storage()->GetUninstallingRegistration(scope_);
   if (registration.get())
     base::ThreadTaskRunnerHandle::Get()->PostTask(
         FROM_HERE,
         base::BindOnce(std::move(next_step),
                        blink::ServiceWorkerStatusCode::kOk, registration));
   else
-    context_->storage()->FindRegistrationForPattern(pattern_,
-                                                    std::move(next_step));
+    context_->storage()->FindRegistrationForScope(scope_, std::move(next_step));
 }
 
 void ServiceWorkerRegisterJob::Abort() {
@@ -141,9 +140,9 @@ bool ServiceWorkerRegisterJob::Equals(ServiceWorkerRegisterJobBase* job) const {
   ServiceWorkerRegisterJob* register_job =
       static_cast<ServiceWorkerRegisterJob*>(job);
   if (job_type_ == UPDATE_JOB)
-    return register_job->pattern_ == pattern_;
+    return register_job->scope_ == scope_;
   DCHECK_EQ(REGISTRATION_JOB, job_type_);
-  return register_job->pattern_ == pattern_ &&
+  return register_job->scope_ == scope_ &&
          register_job->script_url_ == script_url_;
 }
 
@@ -345,7 +344,7 @@ void ServiceWorkerRegisterJob::RegisterAndContinue() {
   }
 
   blink::mojom::ServiceWorkerRegistrationOptions options(
-      pattern_, worker_script_type_, update_via_cache_);
+      scope_, worker_script_type_, update_via_cache_);
   set_registration(
       new ServiceWorkerRegistration(options, registration_id, context_));
   AddRegistrationToMatchingProviderHosts(registration());
@@ -404,12 +403,26 @@ void ServiceWorkerRegisterJob::UpdateAndContinue() {
     return;
   }
 
-  // "Let worker be a new ServiceWorker object..." and start
-  // the worker.
+  // Module service workers don't support pause after download so we can't
+  // perform script comparison.
+  // TODO(asamidoi): Support pause after download in module workers.
+  if (worker_script_type_ == blink::mojom::ScriptType::kModule) {
+    skip_script_comparison_ = true;
+  }
+
+  // Skip the byte-for-byte comparison when the script type is updated.
+  if (registration()->newest_installed_version() &&
+      registration()->newest_installed_version()->script_type() !=
+          worker_script_type_) {
+    skip_script_comparison_ = true;
+  }
+
+  // "Let worker be a new ServiceWorker object..." and start the worker.
   set_new_version(new ServiceWorkerVersion(
       registration(), script_url_, worker_script_type_, version_id, context_));
   new_version()->set_force_bypass_cache_for_scripts(force_bypass_cache_);
-  if (registration()->has_installed_version() && !skip_script_comparison_) {
+
+  if (registration()->newest_installed_version() && !skip_script_comparison_) {
     new_version()->SetToPauseAfterDownload(
         base::BindOnce(&ServiceWorkerRegisterJob::OnPausedAfterDownload,
                        weak_factory_.GetWeakPtr()));
@@ -503,11 +516,10 @@ void ServiceWorkerRegisterJob::DispatchInstallEvent(
 void ServiceWorkerRegisterJob::OnInstallFinished(
     int request_id,
     blink::mojom::ServiceWorkerEventStatus event_status,
-    bool has_fetch_handler,
-    base::TimeTicks dispatch_event_time) {
+    bool has_fetch_handler) {
   bool succeeded =
       event_status == blink::mojom::ServiceWorkerEventStatus::COMPLETED;
-  new_version()->FinishRequest(request_id, succeeded, dispatch_event_time);
+  new_version()->FinishRequest(request_id, succeeded);
 
   if (!succeeded) {
     OnInstallFailed(
@@ -582,7 +594,7 @@ void ServiceWorkerRegisterJob::Complete(blink::ServiceWorkerStatusCode status) {
 void ServiceWorkerRegisterJob::Complete(blink::ServiceWorkerStatusCode status,
                                         const std::string& status_message) {
   CompleteInternal(status, status_message);
-  context_->job_coordinator()->FinishJob(pattern_, this);
+  context_->job_coordinator()->FinishJob(scope_, this);
 }
 
 void ServiceWorkerRegisterJob::CompleteInternal(
@@ -610,7 +622,7 @@ void ServiceWorkerRegisterJob::CompleteInternal(
           !registration()->active_version()) {
         registration()->NotifyRegistrationFailed();
         context_->storage()->DeleteRegistration(
-            registration()->id(), registration()->pattern().GetOrigin(),
+            registration()->id(), registration()->scope().GetOrigin(),
             base::DoNothing());
       }
     }
@@ -621,7 +633,7 @@ void ServiceWorkerRegisterJob::CompleteInternal(
   if (registration()) {
     context_->storage()->NotifyDoneInstallingRegistration(
         registration(), new_version(), status);
-    if (registration()->has_installed_version())
+    if (registration()->newest_installed_version())
       registration()->set_is_uninstalled(false);
   }
 }
@@ -646,12 +658,11 @@ void ServiceWorkerRegisterJob::AddRegistrationToMatchingProviderHosts(
   DCHECK(registration);
   for (std::unique_ptr<ServiceWorkerContextCore::ProviderHostIterator> it =
            context_->GetClientProviderHostIterator(
-               registration->pattern().GetOrigin(),
+               registration->scope().GetOrigin(),
                true /* include_reserved_clients */);
        !it->IsAtEnd(); it->Advance()) {
     ServiceWorkerProviderHost* host = it->GetProviderHost();
-    if (!ServiceWorkerUtils::ScopeMatches(registration->pattern(),
-                                          host->document_url())) {
+    if (!ServiceWorkerUtils::ScopeMatches(registration->scope(), host->url())) {
       continue;
     }
     host->AddMatchingRegistration(registration);
@@ -698,7 +709,7 @@ void ServiceWorkerRegisterJob::BumpLastUpdateCheckTimeIfNeeded() {
       registration()->last_update_check().is_null()) {
     registration()->set_last_update_check(base::Time::Now());
 
-    if (registration()->has_installed_version())
+    if (registration()->newest_installed_version())
       context_->storage()->UpdateLastUpdateCheckTime(registration());
   }
 }

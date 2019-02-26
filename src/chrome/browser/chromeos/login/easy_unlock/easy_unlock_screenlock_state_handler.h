@@ -62,13 +62,6 @@ class EasyUnlockScreenlockStateHandler
   // Shows the hardlock UI if the hardlock_state_ is not NO_HARDLOCK.
   void MaybeShowHardlockUI();
 
-  // Marks the current screenlock state as the one for trial Easy Unlock run.
-  void SetTrialRun();
-
-  // Records that the user clicked on the lock icon during the trial run
-  // initiated by the Easy Unlock app.
-  void RecordClickOnLockIcon();
-
   proximity_auth::ScreenlockState state() const { return state_; }
 
  private:
@@ -103,11 +96,6 @@ class EasyUnlockScreenlockStateHandler
   // State of hardlock.
   HardlockState hardlock_state_;
   bool hardlock_ui_shown_ = false;
-
-  // Whether this is the trial Easy Unlock run. If this is the case, a
-  // tutorial message should be shown and hard-locking be disabled. The trial
-  // run should be set if the screen was locked by the Easy Unlock setup app.
-  bool is_trial_run_ = false;
 
   // Whether the user's phone was ever locked while on the current lock screen.
   bool did_see_locked_phone_ = false;

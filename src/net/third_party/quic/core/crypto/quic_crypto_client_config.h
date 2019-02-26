@@ -335,11 +335,6 @@ class QUIC_EXPORT_PRIVATE QuicCryptoClientConfig : public QuicCryptoConfig {
   // suffix will be used to initialize the cached state for this server.
   void AddCanonicalSuffix(const QuicString& suffix);
 
-  // Prefers AES-GCM (kAESG) over other AEAD algorithms. Call this method if
-  // the CPU has hardware acceleration for AES-GCM. This method can only be
-  // called after SetDefaults().
-  void PreferAesGcm();
-
   // Saves the |user_agent_id| that will be passed in QUIC's CHLO message.
   void set_user_agent_id(const QuicString& user_agent_id) {
     user_agent_id_ = user_agent_id;

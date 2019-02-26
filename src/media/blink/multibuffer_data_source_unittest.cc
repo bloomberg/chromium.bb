@@ -114,7 +114,7 @@ class TestResourceMultiBuffer : public ResourceMultiBuffer {
 
 class TestUrlData : public UrlData {
  public:
-  TestUrlData(const GURL& url, CORSMode cors_mode, UrlIndex* url_index)
+  TestUrlData(const GURL& url, CorsMode cors_mode, UrlIndex* url_index)
       : UrlData(url, cors_mode, url_index),
         block_shift_(url_index->block_shift()) {}
 
@@ -145,7 +145,7 @@ class TestUrlIndex : public UrlIndex {
       : UrlIndex(fetch_context) {}
 
   scoped_refptr<UrlData> NewUrlData(const GURL& url,
-                                    UrlData::CORSMode cors_mode) override {
+                                    UrlData::CorsMode cors_mode) override {
     last_url_data_ = new TestUrlData(url, cors_mode, this);
     return last_url_data_;
   }
@@ -223,9 +223,9 @@ class MultibufferDataSourceTest : public testing::Test {
 
   MOCK_METHOD1(OnInitialize, void(bool));
 
-  void InitializeWithCORS(const char* url,
+  void InitializeWithCors(const char* url,
                           bool expected,
-                          UrlData::CORSMode cors_mode,
+                          UrlData::CorsMode cors_mode,
                           size_t file_size = kFileSize) {
     GURL gurl(url);
     data_source_.reset(new MockMultibufferDataSource(
@@ -246,7 +246,7 @@ class MultibufferDataSourceTest : public testing::Test {
   void Initialize(const char* url,
                   bool expected,
                   size_t file_size = kFileSize) {
-    InitializeWithCORS(url, expected, UrlData::CORS_UNSPECIFIED, file_size);
+    InitializeWithCors(url, expected, UrlData::CORS_UNSPECIFIED, file_size);
   }
 
   // Helper to initialize tests with a valid 200 response.
@@ -782,8 +782,8 @@ TEST_F(MultibufferDataSourceTest,
 }
 
 TEST_F(MultibufferDataSourceTest,
-       Http_MixedResponse_ServiceWorkerProxiedAndDifferentOriginResponseCORS) {
-  InitializeWithCORS(kHttpUrl, true, UrlData::CORS_ANONYMOUS);
+       Http_MixedResponse_ServiceWorkerProxiedAndDifferentOriginResponseCors) {
+  InitializeWithCors(kHttpUrl, true, UrlData::CORS_ANONYMOUS);
   WebURLResponse response1 =
       response_generator_->GeneratePartial206(0, kDataSize - 1);
   response1.SetWasFetchedViaServiceWorker(true);
@@ -1494,7 +1494,7 @@ TEST_F(MultibufferDataSourceTest, FileSizeLessThanBlockSize) {
 }
 
 TEST_F(MultibufferDataSourceTest, ResponseTypeBasic) {
-  InitializeWithCORS(kHttpUrl, true, UrlData::CORS_ANONYMOUS);
+  InitializeWithCors(kHttpUrl, true, UrlData::CORS_ANONYMOUS);
   set_preload(MultibufferDataSource::NONE);
   WebURLResponse response1 =
       response_generator_->GeneratePartial206(0, kDataSize - 1);
@@ -1514,11 +1514,11 @@ TEST_F(MultibufferDataSourceTest, ResponseTypeBasic) {
 }
 
 TEST_F(MultibufferDataSourceTest, ResponseTypeCors) {
-  InitializeWithCORS(kHttpUrl, true, UrlData::CORS_ANONYMOUS);
+  InitializeWithCors(kHttpUrl, true, UrlData::CORS_ANONYMOUS);
   set_preload(MultibufferDataSource::NONE);
   WebURLResponse response1 =
       response_generator_->GeneratePartial206(0, kDataSize - 1);
-  response1.SetType(network::mojom::FetchResponseType::kCORS);
+  response1.SetType(network::mojom::FetchResponseType::kCors);
 
   EXPECT_CALL(host_, SetTotalBytes(kFileSize));
   EXPECT_CALL(host_, AddBufferedByteRange(0, kDataSize));
@@ -1534,7 +1534,7 @@ TEST_F(MultibufferDataSourceTest, ResponseTypeCors) {
 }
 
 TEST_F(MultibufferDataSourceTest, ResponseTypeDefault) {
-  InitializeWithCORS(kHttpUrl, true, UrlData::CORS_ANONYMOUS);
+  InitializeWithCors(kHttpUrl, true, UrlData::CORS_ANONYMOUS);
   set_preload(MultibufferDataSource::NONE);
   WebURLResponse response1 =
       response_generator_->GeneratePartial206(0, kDataSize - 1);
@@ -1554,7 +1554,7 @@ TEST_F(MultibufferDataSourceTest, ResponseTypeDefault) {
 }
 
 TEST_F(MultibufferDataSourceTest, ResponseTypeOpaque) {
-  InitializeWithCORS(kHttpUrl, true, UrlData::CORS_ANONYMOUS);
+  InitializeWithCors(kHttpUrl, true, UrlData::CORS_ANONYMOUS);
   set_preload(MultibufferDataSource::NONE);
   WebURLResponse response1 =
       response_generator_->GeneratePartial206(0, kDataSize - 1);
@@ -1574,7 +1574,7 @@ TEST_F(MultibufferDataSourceTest, ResponseTypeOpaque) {
 }
 
 TEST_F(MultibufferDataSourceTest, ResponseTypeOpaqueRedirect) {
-  InitializeWithCORS(kHttpUrl, true, UrlData::CORS_ANONYMOUS);
+  InitializeWithCors(kHttpUrl, true, UrlData::CORS_ANONYMOUS);
   set_preload(MultibufferDataSource::NONE);
   WebURLResponse response1 =
       response_generator_->GeneratePartial206(0, kDataSize - 1);

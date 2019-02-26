@@ -98,22 +98,6 @@ class AudioManagerAndroid {
         }
     }
 
-    // List if device models which have been vetted for good quality platform
-    // echo cancellation.
-    // NOTE: only add new devices to this list if manual tests have been
-    // performed where the AEC performance is evaluated using e.g. a WebRTC
-    // audio client such as https://apprtc.appspot.com/?r=<ROOM NAME>.
-    private static final String[] SUPPORTED_AEC_MODELS = new String[] {
-            "GT-I9300", // Galaxy S3
-            "GT-I9500", // Galaxy S4
-            "GT-N7105", // Galaxy Note 2
-            "Nexus 4", // Nexus 4
-            "Nexus 5", // Nexus 5
-            "Nexus 7", // Nexus 7
-            "SM-N9005", // Galaxy Note 3
-            "SM-T310", // Galaxy Tab 3 8.0 (WiFi)
-    };
-
     // Supported audio device types.
     private static final int DEVICE_DEFAULT = -2;
     private static final int DEVICE_INVALID = -1;
@@ -522,18 +506,7 @@ class AudioManagerAndroid {
     }
 
     @CalledByNative
-    private static boolean shouldUseAcousticEchoCanceler() {
-        // Verify that this device is among the supported/tested models.
-        List<String> supportedModels = Arrays.asList(SUPPORTED_AEC_MODELS);
-        if (!supportedModels.contains(Build.MODEL)) {
-            return false;
-        }
-        if (DEBUG && AcousticEchoCanceler.isAvailable()) {
-            logd("Approved for use of hardware acoustic echo canceler.");
-        }
-
-        // As a final check, verify that the device supports acoustic echo
-        // cancellation.
+    private static boolean acousticEchoCancelerIsAvailable() {
         return AcousticEchoCanceler.isAvailable();
     }
 

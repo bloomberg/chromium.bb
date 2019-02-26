@@ -12,6 +12,7 @@
 
 #include "base/callback_forward.h"
 #include "base/macros.h"
+#include "base/optional.h"
 #include "dbus/object_path.h"
 #include "dbus/property.h"
 #include "device/bluetooth/bluetooth_export.h"
@@ -45,6 +46,14 @@ class DEVICE_BLUETOOTH_EXPORT BluetoothAdapterClient : public BluezDBusClient {
 
    private:
     DISALLOW_COPY_AND_ASSIGN(DiscoveryFilter);
+  };
+
+  // Represent an error sent through DBus.
+  struct Error {
+    Error(const std::string& name, const std::string& message);
+
+    std::string name;
+    std::string message;
   };
 
   // Structure of properties associated with bluetooth adapters.
@@ -147,16 +156,27 @@ class DEVICE_BLUETOOTH_EXPORT BluetoothAdapterClient : public BluezDBusClient {
                                   const std::string& error_message)>
       ErrorCallback;
 
+  // Callback used by adapter methods to indicate that a response was
+  // received with an optional Error in case an error occurred.
+  using ResponseCallback =
+      base::OnceCallback<void(const base::Optional<Error>&)>;
+
   // Starts a device discovery on the adapter with object path |object_path|.
   virtual void StartDiscovery(const dbus::ObjectPath& object_path,
-                              const base::Closure& callback,
-                              ErrorCallback error_callback) = 0;
+                              ResponseCallback callback) = 0;
+  // DEPRECATED: Use StartDiscovery() above.
+  void StartDiscovery(const dbus::ObjectPath& object_path,
+                      const base::Closure& callback,
+                      ErrorCallback error_callback);
 
   // Cancels any previous device discovery on the adapter with object path
   // |object_path|.
   virtual void StopDiscovery(const dbus::ObjectPath& object_path,
-                             const base::Closure& callback,
-                             ErrorCallback error_callback) = 0;
+                             ResponseCallback callback) = 0;
+  // DEPRECATED: Use StopDiscovery() above.
+  void StopDiscovery(const dbus::ObjectPath& object_path,
+                     const base::Closure& callback,
+                     ErrorCallback error_callback);
 
   // Pauses all discovery sessions.
   virtual void PauseDiscovery(const dbus::ObjectPath& object_path,

@@ -29,6 +29,8 @@
 #import "ios/chrome/browser/passwords/password_tab_helper.h"
 #include "ios/chrome/browser/reading_list/reading_list_model_factory.h"
 #import "ios/chrome/browser/reading_list/reading_list_web_state_observer.h"
+#import "ios/chrome/browser/search_engines/feature_flags.h"
+#import "ios/chrome/browser/search_engines/search_engine_tab_helper.h"
 #import "ios/chrome/browser/sessions/ios_chrome_session_tab_helper.h"
 #import "ios/chrome/browser/snapshots/snapshot_tab_helper.h"
 #include "ios/chrome/browser/ssl/captive_portal_features.h"
@@ -46,21 +48,15 @@
 #import "ios/chrome/browser/web/features.h"
 #import "ios/chrome/browser/web/font_size_tab_helper.h"
 #import "ios/chrome/browser/web/image_fetch_tab_helper.h"
+#import "ios/chrome/browser/web/java_script_console/java_script_console_tab_helper.h"
 #import "ios/chrome/browser/web/load_timing_tab_helper.h"
 #import "ios/chrome/browser/web/network_activity_indicator_tab_helper.h"
 #import "ios/chrome/browser/web/page_placeholder_tab_helper.h"
-#import "ios/chrome/browser/web/repost_form_tab_helper.h"
 #import "ios/chrome/browser/web/tab_id_tab_helper.h"
 #import "ios/public/provider/chrome/browser/chrome_browser_provider.h"
 #import "ios/web/public/web_state/web_state.h"
 
 void AttachTabHelpers(web::WebState* web_state, bool for_prerender) {
-  // Tab's WebStateObserver callbacks expect VoiceSearchNavigationTabHelper's
-  // callbacks to be executed first so that state stays in sync.
-  // TODO(crbug.com/778416): Remove this ordering requirement by relying solely
-  // on the tab helper without going through Tab.
-  VoiceSearchNavigationTabHelper::CreateForWebState(web_state);
-
   // TabIdHelper sets up the tab ID which is required for the creation of the
   // Tab by LegacyTabHelper.
   TabIdTabHelper::CreateForWebState(web_state);
@@ -77,12 +73,14 @@ void AttachTabHelpers(web::WebState* web_state, bool for_prerender) {
 
   NSString* tab_id = TabIdTabHelper::FromWebState(web_state)->tab_id();
   NetworkActivityIndicatorTabHelper::CreateForWebState(web_state, tab_id);
+  VoiceSearchNavigationTabHelper::CreateForWebState(web_state);
   IOSChromeSyncedTabDelegate::CreateForWebState(web_state);
   InfoBarManagerImpl::CreateForWebState(web_state);
   IOSSecurityStateTabHelper::CreateForWebState(web_state);
   BlockedPopupTabHelper::CreateForWebState(web_state);
   FindTabHelper::CreateForWebState(web_state);
   StoreKitTabHelper::CreateForWebState(web_state);
+  JavaScriptConsoleTabHelper::CreateForWebState(tab.webState);
   if (base::FeatureList::IsEnabled(kITunesUrlsStoreKitHandling)) {
     ITunesUrlsHandlerTabHelper::CreateForWebState(web_state);
   }
@@ -118,6 +116,11 @@ void AttachTabHelpers(web::WebState* web_state, bool for_prerender) {
   PasswordTabHelper::CreateForWebState(web_state);
 
   AutofillTabHelper::CreateForWebState(web_state, nullptr);
+
+  // Depends on favicon::WebFaviconDriver, must be created after it.
+  if (base::FeatureList::IsEnabled(kCustomSearchEngines)) {
+    SearchEngineTabHelper::CreateForWebState(web_state);
+  }
 
   FormSuggestionTabHelper::CreateForWebState(web_state, @[
     PasswordTabHelper::FromWebState(web_state)->GetSuggestionProvider(),

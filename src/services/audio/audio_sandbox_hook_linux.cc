@@ -5,6 +5,7 @@
 #include "services/audio/audio_sandbox_hook_linux.h"
 
 #include <dlfcn.h>
+#include <unistd.h>
 #include <string>
 #include <vector>
 
@@ -73,6 +74,13 @@ void AddPulseAudioFilePermissions(
                                               kConfigPulsePath.value()};
   for (const auto& path : kReadOnlyRecursivePaths)
     permissions->push_back(BrokerFilePermission::ReadOnlyRecursive(path));
+
+  const std::string kRunUserPath = base::StringPrintf("/run/user/%d", getuid());
+  permissions->push_back(BrokerFilePermission::ReadWriteCreate(kRunUserPath));
+  permissions->push_back(
+      BrokerFilePermission::ReadWriteCreate(kRunUserPath + "/pulse"));
+  permissions->push_back(
+      BrokerFilePermission::ReadWriteCreateRecursive(kRunUserPath + "/pulse/"));
 }
 #endif
 
@@ -95,7 +103,7 @@ std::vector<BrokerFilePermission> GetAudioFilePermissions() {
 
 void LoadAudioLibraries() {
   const std::string kLibraries[]{"libasound.so.2", "libpulse.so.0",
-                                 "libpulsecommon-11.1.so", "libnss_files.so.2"};
+                                 "libnss_files.so.2"};
   for (const auto& library_name : kLibraries) {
     if (nullptr ==
         dlopen(library_name.c_str(), RTLD_NOW | RTLD_GLOBAL | RTLD_NODELETE)) {
@@ -111,11 +119,14 @@ bool AudioPreSandboxHook(service_manager::SandboxLinux::Options options) {
   LoadAudioLibraries();
   auto* instance = service_manager::SandboxLinux::GetInstance();
   instance->StartBrokerProcess(MakeBrokerCommandSet({
-                                   sandbox::syscall_broker::COMMAND_ACCESS,
-                                   sandbox::syscall_broker::COMMAND_OPEN,
-                                   sandbox::syscall_broker::COMMAND_READLINK,
-                                   sandbox::syscall_broker::COMMAND_STAT,
-                                   sandbox::syscall_broker::COMMAND_UNLINK,
+                                 sandbox::syscall_broker::COMMAND_ACCESS,
+#if defined(USE_PULSEAUDIO)
+                                     sandbox::syscall_broker::COMMAND_MKDIR,
+#endif
+                                     sandbox::syscall_broker::COMMAND_OPEN,
+                                     sandbox::syscall_broker::COMMAND_READLINK,
+                                     sandbox::syscall_broker::COMMAND_STAT,
+                                     sandbox::syscall_broker::COMMAND_UNLINK,
                                }),
                                GetAudioFilePermissions(),
                                service_manager::SandboxLinux::PreSandboxHook(),

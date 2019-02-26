@@ -11,7 +11,7 @@
 #include "base/logging.h"
 #include "base/single_thread_task_runner.h"
 #include "base/trace_event/trace_event.h"
-#include "base/trace_event/trace_event_argument.h"
+#include "base/trace_event/traced_value.h"
 #include "components/subresource_filter/content/browser/subresource_filter_safe_browsing_activation_throttle.h"
 #include "components/subresource_filter/content/browser/subresource_filter_safe_browsing_client_request.h"
 #include "content/public/browser/browser_thread.h"
@@ -23,7 +23,7 @@ SubresourceFilterSafeBrowsingClient::CheckResult::ToTracedValue() const {
   auto value = std::make_unique<base::trace_event::TracedValue>();
   value->SetInteger("request_id", request_id);
   value->SetInteger("threat_type", threat_type);
-  value->SetValue("threat_metadata", *threat_metadata.ToTracedValue());
+  value->SetValue("threat_metadata", threat_metadata.ToTracedValue().get());
   value->SetInteger("check_time (us)", check_time.InMicroseconds());
   value->SetBoolean("finished", finished);
   return value;

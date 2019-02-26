@@ -83,9 +83,10 @@ class PictureBufferManager
   //
   // A picture buffer may be dismissed even if it is bound to a VideoFrame; its
   // backing textures will be maintained until the VideoFrame is destroyed.
-  //
-  // Must be called on the GPU thread.
   virtual bool DismissPictureBuffer(int32_t picture_buffer_id) = 0;
+
+  // Dismisses all picture buffers from the pool.
+  virtual void DismissAllPictureBuffers() = 0;
 
   // Creates and returns a VideoFrame bound to a picture buffer, or nullptr on
   // failure.

@@ -40,11 +40,11 @@
 namespace blink {
 
 inline HTMLDataListElement::HTMLDataListElement(Document& document)
-    : HTMLElement(HTMLNames::datalistTag, document) {}
+    : HTMLElement(html_names::kDatalistTag, document) {}
 
 HTMLDataListElement* HTMLDataListElement::Create(Document& document) {
   UseCounter::Count(document, WebFeature::kDataListElement);
-  return new HTMLDataListElement(document);
+  return MakeGarbageCollected<HTMLDataListElement>(document);
 }
 
 HTMLDataListOptionsCollection* HTMLDataListElement::options() {

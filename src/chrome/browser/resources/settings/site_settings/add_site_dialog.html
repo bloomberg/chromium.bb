@@ -23,7 +23,7 @@
         <cr-input id="site" label="$i18n{addSite}"
             placeholder="$i18n{addSiteExceptionPlaceholder}"
             value="{{site_}}" on-input="validate_"
-            error-message="$i18n{notValidWebAddress}" spellcheck="false"
+            error-message="{{errorMessage_}}" spellcheck="false"
             autofocus></cr-input>
         <cr-checkbox id="incognito"
             hidden$="[[!showIncognitoSessionOnly_(hasIncognito,

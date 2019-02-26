@@ -77,7 +77,7 @@
 
 namespace blink {
 
-using namespace HTMLNames;
+using namespace html_names;
 
 // Upper limit of list_items_. According to the HTML standard, options larger
 // than this limit doesn't work well because |selectedIndex| IDL attribute is
@@ -85,7 +85,7 @@ using namespace HTMLNames;
 static const unsigned kMaxListItems = INT_MAX;
 
 HTMLSelectElement::HTMLSelectElement(Document& document)
-    : HTMLFormControlElementWithState(selectTag, document),
+    : HTMLFormControlElementWithState(kSelectTag, document),
       type_ahead_(this),
       size_(0),
       last_on_change_option_(nullptr),
@@ -99,7 +99,7 @@ HTMLSelectElement::HTMLSelectElement(Document& document)
 }
 
 HTMLSelectElement* HTMLSelectElement::Create(Document& document) {
-  HTMLSelectElement* select = new HTMLSelectElement(document);
+  HTMLSelectElement* select = MakeGarbageCollected<HTMLSelectElement>(document);
   select->EnsureUserAgentShadowRoot();
   return select;
 }
@@ -108,8 +108,8 @@ HTMLSelectElement::~HTMLSelectElement() = default;
 
 // static
 bool HTMLSelectElement::CanAssignToSelectSlot(const Node& node) {
-  return node.HasTagName(optionTag) || node.HasTagName(optgroupTag) ||
-         node.HasTagName(hrTag);
+  return node.HasTagName(kOptionTag) || node.HasTagName(kOptgroupTag) ||
+         node.HasTagName(kHrTag);
 }
 
 const AtomicString& HTMLSelectElement::FormControlType() const {
@@ -258,9 +258,9 @@ void HTMLSelectElement::setValue(const String& value, bool send_events) {
   SetSuggestedOption(nullptr);
   if (is_autofilled_by_preview_)
     SetAutofillState(WebAutofillState::kNotFilled);
-  SelectOptionFlags flags = kDeselectOtherOptions | kMakeOptionDirty;
+  SelectOptionFlags flags = kDeselectOtherOptionsFlag | kMakeOptionDirtyFlag;
   if (send_events)
-    flags |= kDispatchInputAndChangeEvent;
+    flags |= kDispatchInputAndChangeEventFlag;
   SelectOption(option, flags);
 
   if (send_events && previous_selected_option != option && !UsesMenuList())
@@ -290,7 +290,7 @@ void HTMLSelectElement::SetSuggestedValue(const String& value) {
 
 bool HTMLSelectElement::IsPresentationAttribute(
     const QualifiedName& name) const {
-  if (name == alignAttr) {
+  if (name == kAlignAttr) {
     // Don't map 'align' attribute. This matches what Firefox, Opera and IE do.
     // See http://bugs.webkit.org/show_bug.cgi?id=12072
     return false;
@@ -301,7 +301,7 @@ bool HTMLSelectElement::IsPresentationAttribute(
 
 void HTMLSelectElement::ParseAttribute(
     const AttributeModificationParams& params) {
-  if (params.name == sizeAttr) {
+  if (params.name == kSizeAttr) {
     unsigned old_size = size_;
     if (!ParseHTMLNonNegativeInteger(params.new_value, size_))
       size_ = 0;
@@ -313,9 +313,9 @@ void HTMLSelectElement::ParseAttribute(
       if (!UsesMenuList())
         SaveListboxActiveSelection();
     }
-  } else if (params.name == multipleAttr) {
+  } else if (params.name == kMultipleAttr) {
     ParseMultipleAttribute(params.new_value);
-  } else if (params.name == accesskeyAttr) {
+  } else if (params.name == kAccesskeyAttr) {
     // FIXME: ignore for the moment.
     //
   } else {
@@ -700,7 +700,7 @@ void HTMLSelectElement::SetOptionsChangedOnLayoutObject() {
       return;
     ToLayoutMenuList(layout_object)
         ->SetNeedsLayoutAndPrefWidthsRecalc(
-            LayoutInvalidationReason::kMenuOptionsChanged);
+            layout_invalidation_reason::kMenuOptionsChanged);
   }
 }
 
@@ -826,7 +826,7 @@ void HTMLSelectElement::ResetToDefaultSelection(ResetReason reason) {
     SelectOption(first_enabled_option,
                  reason == kResetReasonSelectedOptionRemoved
                      ? 0
-                     : kDeselectOtherOptions);
+                     : kDeselectOtherOptionsFlag);
     last_selected_option = first_enabled_option;
     did_change = true;
   }
@@ -857,7 +857,7 @@ int HTMLSelectElement::selectedIndex() const {
 }
 
 void HTMLSelectElement::setSelectedIndex(int index) {
-  SelectOption(item(index), kDeselectOtherOptions | kMakeOptionDirty);
+  SelectOption(item(index), kDeselectOtherOptionsFlag | kMakeOptionDirtyFlag);
 }
 
 int HTMLSelectElement::SelectedListIndex() const {
@@ -919,9 +919,9 @@ void HTMLSelectElement::OptionSelectionStateChanged(HTMLOptionElement* option,
                                                     bool option_is_selected) {
   DCHECK_EQ(option->OwnerSelectElement(), this);
   if (option_is_selected)
-    SelectOption(option, IsMultiple() ? 0 : kDeselectOtherOptions);
+    SelectOption(option, IsMultiple() ? 0 : kDeselectOtherOptionsFlag);
   else if (!UsesMenuList() || IsMultiple())
-    SelectOption(nullptr, IsMultiple() ? 0 : kDeselectOtherOptions);
+    SelectOption(nullptr, IsMultiple() ? 0 : kDeselectOtherOptionsFlag);
   else
     ResetToDefaultSelection();
 }
@@ -931,7 +931,7 @@ void HTMLSelectElement::OptionInserted(HTMLOptionElement& option,
   DCHECK_EQ(option.OwnerSelectElement(), this);
   SetRecalcListItems();
   if (option_is_selected) {
-    SelectOption(&option, IsMultiple() ? 0 : kDeselectOtherOptions);
+    SelectOption(&option, IsMultiple() ? 0 : kDeselectOtherOptionsFlag);
   } else {
     // No need to reset if we already have a selected option.
     if (!last_on_change_option_)
@@ -1009,12 +1009,12 @@ void HTMLSelectElement::SelectOption(HTMLOptionElement* element,
     if (!element->Selected())
       should_update_popup = true;
     element->SetSelectedState(true);
-    if (flags & kMakeOptionDirty)
+    if (flags & kMakeOptionDirtyFlag)
       element->SetDirty(true);
   }
 
   // DeselectItemsWithoutValidation() is O(N).
-  if (flags & kDeselectOtherOptions)
+  if (flags & kDeselectOtherOptionsFlag)
     should_update_popup |= DeselectItemsWithoutValidation(element);
 
   // We should update active selection after finishing OPTION state change
@@ -1022,10 +1022,10 @@ void HTMLSelectElement::SelectOption(HTMLOptionElement* element,
   if (element) {
     // setActiveSelectionAnchor is O(N).
     if (!active_selection_anchor_ || !IsMultiple() ||
-        flags & kDeselectOtherOptions)
+        flags & kDeselectOtherOptionsFlag)
       SetActiveSelectionAnchor(element);
     if (!active_selection_end_ || !IsMultiple() ||
-        flags & kDeselectOtherOptions)
+        flags & kDeselectOtherOptionsFlag)
       SetActiveSelectionEnd(element);
   }
 
@@ -1033,7 +1033,7 @@ void HTMLSelectElement::SelectOption(HTMLOptionElement* element,
   // LayoutMenuList::UpdateFromElement.
   bool should_dispatch_events = false;
   if (UsesMenuList()) {
-    should_dispatch_events = (flags & kDispatchInputAndChangeEvent) &&
+    should_dispatch_events = (flags & kDispatchInputAndChangeEventFlag) &&
                              last_on_change_option_ != element;
     last_on_change_option_ = element;
   }
@@ -1163,7 +1163,7 @@ void HTMLSelectElement::RestoreFormControlState(const FormControlState& state) {
   if (items_size == 0)
     return;
 
-  SelectOption(nullptr, kDeselectOtherOptions);
+  SelectOption(nullptr, kDeselectOtherOptionsFlag);
 
   // The saved state should have at least one value and an index.
   DCHECK_GE(state.ValueSize(), 2u);
@@ -1222,7 +1222,7 @@ void HTMLSelectElement::ParseMultipleAttribute(const AtomicString& value) {
     // WebKit. However Edge seems to "ask for a reset" simply.  As of 2016
     // March, the HTML specification says nothing about this.
     if (old_selected_option)
-      SelectOption(old_selected_option, kDeselectOtherOptions);
+      SelectOption(old_selected_option, kDeselectOtherOptionsFlag);
     else
       ResetToDefaultSelection();
   }
@@ -1241,7 +1241,7 @@ void HTMLSelectElement::AppendToFormData(FormData& form_data) {
 
 void HTMLSelectElement::ResetImpl() {
   for (auto* const option : GetOptionList()) {
-    option->SetSelectedState(option->FastHasAttribute(selectedAttr));
+    option->SetSelectedState(option->FastHasAttribute(kSelectedAttr));
     option->SetDirty(false);
   }
   ResetToDefaultSelection();
@@ -1293,7 +1293,7 @@ bool HTMLSelectElement::ShouldOpenPopupForKeyPressEvent(
 }
 
 void HTMLSelectElement::MenuListDefaultEventHandler(Event& event) {
-  if (event.type() == EventTypeNames::keydown) {
+  if (event.type() == event_type_names::kKeydown) {
     if (!GetLayoutObject() || !event.IsKeyboardEvent())
       return;
 
@@ -1345,15 +1345,15 @@ void HTMLSelectElement::MenuListDefaultEventHandler(Event& event) {
       handled = false;
 
     if (handled && option) {
-      SelectOption(option, kDeselectOtherOptions | kMakeOptionDirty |
-                               kDispatchInputAndChangeEvent);
+      SelectOption(option, kDeselectOtherOptionsFlag | kMakeOptionDirtyFlag |
+                               kDispatchInputAndChangeEventFlag);
     }
 
     if (handled)
       event.SetDefaultHandled();
   }
 
-  if (event.type() == EventTypeNames::keypress) {
+  if (event.type() == event_type_names::kKeypress) {
     if (!GetLayoutObject() || !event.IsKeyboardEvent())
       return;
 
@@ -1381,7 +1381,7 @@ void HTMLSelectElement::MenuListDefaultEventHandler(Event& event) {
     }
   }
 
-  if (event.type() == EventTypeNames::mousedown && event.IsMouseEvent() &&
+  if (event.type() == event_type_names::kMousedown && event.IsMouseEvent() &&
       ToMouseEvent(event).button() ==
           static_cast<short>(WebPointerProperties::Button::kLeft)) {
     InputDeviceCapabilities* source_capabilities =
@@ -1491,7 +1491,7 @@ void HTMLSelectElement::HandleMouseRelease() {
 }
 
 void HTMLSelectElement::ListBoxDefaultEventHandler(Event& event) {
-  if (event.type() == EventTypeNames::gesturetap && event.IsGestureEvent()) {
+  if (event.type() == event_type_names::kGesturetap && event.IsGestureEvent()) {
     focus();
     // Calling focus() may cause us to lose our layoutObject or change the
     // layoutObject type, in which case do not want to handle the event.
@@ -1508,7 +1508,7 @@ void HTMLSelectElement::ListBoxDefaultEventHandler(Event& event) {
       event.SetDefaultHandled();
     }
 
-  } else if (event.type() == EventTypeNames::mousedown &&
+  } else if (event.type() == event_type_names::kMousedown &&
              event.IsMouseEvent() &&
              ToMouseEvent(event).button() ==
                  static_cast<short>(WebPointerProperties::Button::kLeft)) {
@@ -1537,7 +1537,7 @@ void HTMLSelectElement::ListBoxDefaultEventHandler(Event& event) {
       event.SetDefaultHandled();
     }
 
-  } else if (event.type() == EventTypeNames::mousemove &&
+  } else if (event.type() == event_type_names::kMousemove &&
              event.IsMouseEvent()) {
     auto& mouse_event = ToMouseEvent(event);
     if (mouse_event.button() !=
@@ -1573,7 +1573,8 @@ void HTMLSelectElement::ListBoxDefaultEventHandler(Event& event) {
       }
     }
 
-  } else if (event.type() == EventTypeNames::mouseup && event.IsMouseEvent() &&
+  } else if (event.type() == event_type_names::kMouseup &&
+             event.IsMouseEvent() &&
              ToMouseEvent(event).button() ==
                  static_cast<short>(WebPointerProperties::Button::kLeft) &&
              GetLayoutObject()) {
@@ -1586,7 +1587,7 @@ void HTMLSelectElement::ListBoxDefaultEventHandler(Event& event) {
     else
       HandleMouseRelease();
 
-  } else if (event.type() == EventTypeNames::keydown) {
+  } else if (event.type() == event_type_names::kKeydown) {
     if (!event.IsKeyboardEvent())
       return;
     const String& key = ToKeyboardEvent(event).key();
@@ -1683,7 +1684,7 @@ void HTMLSelectElement::ListBoxDefaultEventHandler(Event& event) {
       event.SetDefaultHandled();
     }
 
-  } else if (event.type() == EventTypeNames::keypress) {
+  } else if (event.type() == event_type_names::kKeypress) {
     if (!event.IsKeyboardEvent())
       return;
     int key_code = ToKeyboardEvent(event).keyCode();
@@ -1708,8 +1709,8 @@ void HTMLSelectElement::DefaultEventHandler(Event& event) {
   if (!GetLayoutObject())
     return;
 
-  if (event.type() == EventTypeNames::click ||
-      event.type() == EventTypeNames::change) {
+  if (event.type() == event_type_names::kClick ||
+      event.type() == event_type_names::kChange) {
     user_has_edited_the_field_ = true;
   }
 
@@ -1725,11 +1726,11 @@ void HTMLSelectElement::DefaultEventHandler(Event& event) {
   if (event.DefaultHandled())
     return;
 
-  if (event.type() == EventTypeNames::keypress && event.IsKeyboardEvent()) {
+  if (event.type() == event_type_names::kKeypress && event.IsKeyboardEvent()) {
     auto& keyboard_event = ToKeyboardEvent(event);
     if (!keyboard_event.ctrlKey() && !keyboard_event.altKey() &&
         !keyboard_event.metaKey() &&
-        WTF::Unicode::IsPrintableChar(keyboard_event.charCode())) {
+        WTF::unicode::IsPrintableChar(keyboard_event.charCode())) {
       TypeAheadFind(keyboard_event);
       event.SetDefaultHandled();
       return;
@@ -1770,9 +1771,9 @@ void HTMLSelectElement::TypeAheadFind(const KeyboardEvent& event) {
       event, TypeAhead::kMatchPrefix | TypeAhead::kCycleFirstChar);
   if (index < 0)
     return;
-  SelectOption(OptionAtListIndex(index), kDeselectOtherOptions |
-                                             kMakeOptionDirty |
-                                             kDispatchInputAndChangeEvent);
+  SelectOption(OptionAtListIndex(index), kDeselectOtherOptionsFlag |
+                                             kMakeOptionDirtyFlag |
+                                             kDispatchInputAndChangeEventFlag);
   if (!UsesMenuList())
     ListBoxOnChange();
 }
@@ -1787,8 +1788,8 @@ void HTMLSelectElement::SelectOptionByAccessKey(HTMLOptionElement* option) {
   EventQueueScope scope;
   // If this index is already selected, unselect. otherwise update the
   // selected index.
-  SelectOptionFlags flags =
-      kDispatchInputAndChangeEvent | (IsMultiple() ? 0 : kDeselectOtherOptions);
+  SelectOptionFlags flags = kDispatchInputAndChangeEventFlag |
+                            (IsMultiple() ? 0 : kDeselectOtherOptionsFlag);
   if (option->Selected()) {
     if (UsesMenuList())
       SelectOption(nullptr, flags);
@@ -1951,8 +1952,8 @@ void HTMLSelectElement::SelectOptionByPopup(int list_index) {
   // the selected option is not change.
   if (option == SelectedOption())
     return;
-  SelectOption(option, kDeselectOtherOptions | kMakeOptionDirty |
-                           kDispatchInputAndChangeEvent);
+  SelectOption(option, kDeselectOtherOptionsFlag | kMakeOptionDirtyFlag |
+                           kDispatchInputAndChangeEventFlag);
 }
 
 void HTMLSelectElement::PopupDidCancel() {
@@ -2020,15 +2021,15 @@ class HTMLSelectElement::PopupUpdater : public MutationObserver::Delegate {
  public:
   explicit PopupUpdater(HTMLSelectElement& select)
       : select_(select), observer_(MutationObserver::Create(this)) {
-    MutationObserverInit init;
-    init.setAttributeOldValue(true);
-    init.setAttributes(true);
+    MutationObserverInit* init = MutationObserverInit::Create();
+    init->setAttributeOldValue(true);
+    init->setAttributes(true);
     // Observe only attributes which affect popup content.
-    init.setAttributeFilter({"disabled", "label", "selected", "value"});
-    init.setCharacterData(true);
-    init.setCharacterDataOldValue(true);
-    init.setChildList(true);
-    init.setSubtree(true);
+    init->setAttributeFilter({"disabled", "label", "selected", "value"});
+    init->setCharacterData(true);
+    init->setCharacterDataOldValue(true);
+    init->setChildList(true);
+    init->setSubtree(true);
     observer_->observe(select_, init, ASSERT_NO_EXCEPTION);
   }
 
@@ -2071,7 +2072,7 @@ class HTMLSelectElement::PopupUpdater : public MutationObserver::Delegate {
 
 void HTMLSelectElement::ObserveTreeMutation() {
   DCHECK(!popup_updater_);
-  popup_updater_ = new PopupUpdater(*this);
+  popup_updater_ = MakeGarbageCollected<PopupUpdater>(*this);
 }
 
 void HTMLSelectElement::UnobserveTreeMutation() {

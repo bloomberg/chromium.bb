@@ -44,7 +44,8 @@ class InfoMap;
 // the UI thread.
 class WebRequestProxyingURLLoaderFactory
     : public WebRequestAPI::Proxy,
-      public network::mojom::URLLoaderFactory {
+      public network::mojom::URLLoaderFactory,
+      public network::mojom::TrustedURLLoaderHeaderClient {
  public:
   class InProgressRequest : public network::mojom::URLLoader,
                             public network::mojom::URLLoaderClient {
@@ -64,10 +65,11 @@ class WebRequestProxyingURLLoaderFactory
     void Restart();
 
     // network::mojom::URLLoader:
-    void FollowRedirect(const base::Optional<std::vector<std::string>>&
-                            to_be_removed_request_headers,
-                        const base::Optional<net::HttpRequestHeaders>&
-                            modified_request_headers) override;
+    void FollowRedirect(
+        const base::Optional<std::vector<std::string>>&
+            to_be_removed_request_headers,
+        const base::Optional<net::HttpRequestHeaders>& modified_request_headers,
+        const base::Optional<GURL>& new_url) override;
     void ProceedWithResponse() override;
     void SetPriority(net::RequestPriority priority,
                      int32_t intra_priority_value) override;
@@ -92,9 +94,16 @@ class WebRequestProxyingURLLoaderFactory
         scoped_refptr<net::HttpResponseHeaders> response_headers,
         WebRequestAPI::AuthRequestCallback callback);
 
+    void OnBeforeSendHeaders(const net::HttpRequestHeaders& headers,
+                             OnBeforeSendHeadersCallback callback);
+    void OnHeadersReceived(const std::string& headers,
+                           OnHeadersReceivedCallback callback);
+
    private:
     void ContinueToBeforeSendHeaders(int error_code);
     void ContinueToSendHeaders(int error_code);
+    void ContinueToStartRequest(int error_code);
+    void ContinueToHandleOverrideHeaders(int error_code);
     void ContinueToResponseStarted(int error_code);
     void ContinueAuthRequest(net::AuthChallengeInfo* auth_info,
                              WebRequestAPI::AuthRequestCallback callback,
@@ -108,6 +117,7 @@ class WebRequestProxyingURLLoaderFactory
         const net::CompletionCallback& continuation);
     void OnRequestError(const network::URLLoaderCompletionStatus& status);
     bool IsRedirectSafe(const GURL& from_url, const GURL& to_url);
+    void HandleBeforeRequestRedirect();
 
     WebRequestProxyingURLLoaderFactory* const factory_;
     network::ResourceRequest request_;
@@ -139,7 +149,20 @@ class WebRequestProxyingURLLoaderFactory
     // lifetime.
     base::Optional<net::AuthCredentials> auth_credentials_;
 
+    // TODO(https://crbug.com/882661): Remove this once the bug is fixed.
+    bool on_receive_response_received_ = false;
+    bool on_receive_response_sent_ = false;
+
     bool request_completed_ = false;
+
+    // If |uses_header_client_| is set to true, the request will be sent with
+    // the network::mojom::kURLLoadOptionUseHeaderClient option, and we expect
+    // events to come through the network::mojom::TrustedURLLoaderHeaderClient
+    // binding on the factory. This is only set to true if there is a listener
+    // that needs to view or modify headers set in the network process.
+    bool uses_header_client_ = false;
+    OnBeforeSendHeadersCallback on_before_send_headers_callback_;
+    OnHeadersReceivedCallback on_headers_received_callback_;
 
     base::WeakPtrFactory<InProgressRequest> weak_factory_;
 
@@ -155,6 +178,7 @@ class WebRequestProxyingURLLoaderFactory
       InfoMap* info_map,
       network::mojom::URLLoaderFactoryRequest loader_request,
       network::mojom::URLLoaderFactoryPtrInfo target_factory_info,
+      network::mojom::TrustedURLLoaderHeaderClientRequest header_client_request,
       WebRequestAPI::ProxySet* proxies);
 
   ~WebRequestProxyingURLLoaderFactory() override;
@@ -167,7 +191,9 @@ class WebRequestProxyingURLLoaderFactory
       std::unique_ptr<ExtensionNavigationUIData> navigation_ui_data,
       InfoMap* info_map,
       network::mojom::URLLoaderFactoryRequest loader_request,
-      network::mojom::URLLoaderFactoryPtrInfo target_factory_info);
+      network::mojom::URLLoaderFactoryPtrInfo target_factory_info,
+      network::mojom::TrustedURLLoaderHeaderClientRequest
+          header_client_request);
 
   // network::mojom::URLLoaderFactory:
   void CreateLoaderAndStart(network::mojom::URLLoaderRequest loader_request,
@@ -179,6 +205,14 @@ class WebRequestProxyingURLLoaderFactory
                             const net::MutableNetworkTrafficAnnotationTag&
                                 traffic_annotation) override;
   void Clone(network::mojom::URLLoaderFactoryRequest loader_request) override;
+
+  // network::mojom::TrustedURLLoaderHeaderClient:
+  void OnBeforeSendHeaders(int32_t request_id,
+                           const net::HttpRequestHeaders& headers,
+                           OnBeforeSendHeadersCallback callback) override;
+  void OnHeadersReceived(int32_t request_id,
+                         const std::string& headers,
+                         OnHeadersReceivedCallback callback) override;
 
   // WebRequestAPI::Proxy:
   void HandleAuthRequest(
@@ -201,6 +235,8 @@ class WebRequestProxyingURLLoaderFactory
   InfoMap* const info_map_;
   mojo::BindingSet<network::mojom::URLLoaderFactory> proxy_bindings_;
   network::mojom::URLLoaderFactoryPtr target_factory_;
+  mojo::Binding<network::mojom::TrustedURLLoaderHeaderClient>
+      header_client_binding_;
   // Owns |this|.
   WebRequestAPI::ProxySet* const proxies_;
 

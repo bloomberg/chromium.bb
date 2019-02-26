@@ -32,6 +32,10 @@ class ContextFactoryPrivate;
 }  // namespace ui
 
 namespace ws {
+
+class HostEventQueue;
+class TestHostEventDispatcher;
+
 namespace test {
 
 // Service implementation that brings up the Window Service on top of aura.
@@ -51,6 +55,8 @@ class TestWindowService : public service_manager::Service,
       std::unique_ptr<GpuInterfaceProvider> gpu_interface_provider);
 
  private:
+  class VisibilitySynchronizer;
+
   void InitForOutOfProcess();
 
   // WindowServiceDelegate:
@@ -58,6 +64,11 @@ class TestWindowService : public service_manager::Service,
       aura::PropertyConverter* property_converter,
       const base::flat_map<std::string, std::vector<uint8_t>>& properties)
       override;
+  void RunWindowMoveLoop(aura::Window* window,
+                         mojom::MoveLoopSource source,
+                         const gfx::Point& cursor,
+                         DoneCallback callback) override;
+  void CancelWindowMoveLoop() override;
   void RunDragLoop(aura::Window* window,
                    const ui::OSExchangeData& data,
                    const gfx::Point& screen_location,
@@ -65,8 +76,6 @@ class TestWindowService : public service_manager::Service,
                    ui::DragDropTypes::DragEventSource source,
                    DragDropCompletedCallback callback) override;
   void CancelDragLoop(aura::Window* window) override;
-  aura::WindowTreeHost* GetWindowTreeHostForDisplayId(
-      int64_t display_id) override;
 
   // service_manager::Service:
   void OnStart() override;
@@ -84,6 +93,7 @@ class TestWindowService : public service_manager::Service,
   void OnGpuServiceInitialized() override;
 
   // test_ws::mojom::TestWs:
+  void MaximizeNextWindow(MaximizeNextWindowCallback cb) override;
   void Shutdown(test_ws::mojom::TestWs::ShutdownCallback callback) override;
 
   void BindServiceFactory(
@@ -114,10 +124,13 @@ class TestWindowService : public service_manager::Service,
   // For drag and drop code to convert to/from screen coordinates.
   wm::DefaultScreenPositionClient screen_position_client_;
 
+  DoneCallback window_move_done_callback_;
+
   TestDragDropClient drag_drop_client_;
 
   bool started_ = false;
   bool ui_service_created_ = false;
+  bool maximize_next_window_ = false;
 
   base::OnceClosure pending_create_service_;
 
@@ -127,6 +140,12 @@ class TestWindowService : public service_manager::Service,
   // Whether the service is used in process. Not using features because it
   // is used in service_unittests where ui features is not used there.
   bool is_in_process_ = false;
+
+  std::unique_ptr<TestHostEventDispatcher> test_host_event_dispatcher_;
+
+  std::unique_ptr<HostEventQueue> host_event_queue_;
+
+  std::unique_ptr<VisibilitySynchronizer> visibility_synchronizer_;
 
   DISALLOW_COPY_AND_ASSIGN(TestWindowService);
 };

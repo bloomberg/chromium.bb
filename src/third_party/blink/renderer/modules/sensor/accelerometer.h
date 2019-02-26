@@ -15,7 +15,7 @@ class Accelerometer : public Sensor {
 
  public:
   static Accelerometer* Create(ExecutionContext*,
-                               const SpatialSensorOptions&,
+                               const SpatialSensorOptions*,
                                ExceptionState&);
   static Accelerometer* Create(ExecutionContext*, ExceptionState&);
 
@@ -27,7 +27,7 @@ class Accelerometer : public Sensor {
 
  protected:
   Accelerometer(ExecutionContext*,
-                const SpatialSensorOptions&,
+                const SpatialSensorOptions*,
                 ExceptionState&,
                 device::mojom::blink::SensorType,
                 const Vector<mojom::FeaturePolicyFeature>&);

@@ -2,8 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/credential_provider/gaiacp/stdafx.h"
 #include "chrome/credential_provider/test/com_fakes.h"
+
+#include "base/logging.h"
+#include "chrome/credential_provider/gaiacp/stdafx.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace credential_provider {
@@ -112,6 +114,24 @@ HRESULT FakeGaiaCredentialProvider::OnUserAuthenticated(IUnknown* credential,
   username_ = username;
   password_ = password;
   sid_ = sid;
+  return S_OK;
+}
+
+HRESULT FakeGaiaCredentialProvider::HasInternetConnection() {
+  return has_internet_connection_ == kHicForceYes ? S_OK : S_FALSE;
+}
+
+// IGaiaCredentialProviderForTesting //////////////////////////////////////////
+
+HRESULT FakeGaiaCredentialProvider::SetReauthCheckDoneEvent(INT_PTR event) {
+  NOTREACHED();
+  return E_NOTIMPL;
+}
+
+HRESULT FakeGaiaCredentialProvider::SetHasInternetConnection(
+    HasInternetConnectionCheckType has_internet_connection) {
+  DCHECK(has_internet_connection != kHicCheckAlways);
+  has_internet_connection_ = has_internet_connection;
   return S_OK;
 }
 

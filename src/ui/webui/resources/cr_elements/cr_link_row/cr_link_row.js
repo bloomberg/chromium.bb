@@ -62,7 +62,7 @@ Polymer({
 
   _createRipple: function() {
     this._rippleContainer = this.$.icon;
-    var ripple = Polymer.PaperRippleBehavior._createRipple();
+    const ripple = Polymer.PaperRippleBehavior._createRipple();
     ripple.id = 'ink';
     ripple.setAttribute('recenters', '');
     ripple.classList.add('circle');

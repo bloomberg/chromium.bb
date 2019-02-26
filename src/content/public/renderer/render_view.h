@@ -86,9 +86,10 @@ class CONTENT_EXPORT RenderView : public IPC::Sender {
   // Returns the associated WebFrameWidget.
   virtual blink::WebFrameWidget* GetWebFrameWidget() = 0;
 
-  // Returns true if we should display scrollbars for the given view size and
-  // false if the scrollbars should be hidden.
-  virtual bool ShouldDisplayScrollbars(int width, int height) const = 0;
+  // Because visibility state can be overridden in the renderer process, this
+  // informs the RenderView to re-check those overrides or fall back to the
+  // browser specified visibility.
+  virtual void ResetVisibilityState() = 0;
 
   // Whether content state (such as form state, scroll position and page
   // contents) should be sent to the browser immediately. This is normally
@@ -106,11 +107,9 @@ class CONTENT_EXPORT RenderView : public IPC::Sender {
   // Returns |renderer_preferences_.accept_languages| value.
   virtual const std::string& GetAcceptLanguages() const = 0;
 
-#if defined(OS_ANDROID) || defined(OS_CHROMEOS)
   virtual void UpdateBrowserControlsState(BrowserControlsState constraints,
                                           BrowserControlsState current,
                                           bool animate) = 0;
-#endif
 
   // Converts the |rect| from Viewport coordinates to Window coordinates.
   // See blink::WebWidgetClient::convertViewportToWindow for more details.

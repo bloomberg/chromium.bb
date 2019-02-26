@@ -41,6 +41,9 @@ Polymer({
 
     lastFocused_: Object,
 
+    /** @private */
+    listBlurred_: Boolean,
+
     lastSelectedIndex: Number,
 
     /** @type {!QueryState} */

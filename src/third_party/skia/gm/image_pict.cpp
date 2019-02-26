@@ -184,7 +184,8 @@ protected:
         GrMipMapped mipMapped = willBeMipped ? GrMipMapped::kYes : GrMipMapped::kNo;
 
         sk_sp<GrSurfaceContext> dstContext(fCtx->contextPriv().makeDeferredSurfaceContext(
-                desc, fProxy->origin(), mipMapped, SkBackingFit::kExact, SkBudgeted::kYes));
+                fProxy->backendFormat(), desc, fProxy->origin(), mipMapped, SkBackingFit::kExact,
+                SkBudgeted::kYes));
         if (!dstContext) {
             return nullptr;
         }
@@ -259,15 +260,13 @@ protected:
 
     static void draw_as_bitmap(SkCanvas* canvas, SkImage* image, SkScalar x, SkScalar y) {
         SkBitmap bitmap;
-        as_IB(image)->getROPixels(&bitmap, canvas->imageInfo().colorSpace());
+        as_IB(image)->getROPixels(&bitmap);
         canvas->drawBitmap(bitmap, x, y);
     }
 
     static void draw_as_tex(SkCanvas* canvas, SkImage* image, SkScalar x, SkScalar y) {
-        sk_sp<SkColorSpace> texColorSpace;
         sk_sp<GrTextureProxy> proxy(as_IB(image)->asTextureProxyRef(
-                canvas->getGrContext(), GrSamplerState::ClampBilerp(),
-                canvas->imageInfo().colorSpace(), &texColorSpace, nullptr));
+                canvas->getGrContext(), GrSamplerState::ClampBilerp(), nullptr));
         if (!proxy) {
             // show placeholder if we have no texture
             SkPaint paint;
@@ -283,7 +282,7 @@ protected:
         // No API to draw a GrTexture directly, so we cheat and create a private image subclass
         sk_sp<SkImage> texImage(new SkImage_Gpu(
                 sk_ref_sp(canvas->getGrContext()), image->uniqueID(), kPremul_SkAlphaType,
-                std::move(proxy), std::move(texColorSpace), SkBudgeted::kNo));
+                std::move(proxy), image->refColorSpace(), SkBudgeted::kNo));
         canvas->drawImage(texImage.get(), x, y);
     }
 

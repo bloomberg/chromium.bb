@@ -8,8 +8,8 @@
 // DO NOT MODIFY!
 
 // clang-format off
-#ifndef XMLHttpRequestOrString_h
-#define XMLHttpRequestOrString_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_BINDINGS_TESTS_RESULTS_CORE_XML_HTTP_REQUEST_OR_STRING_H_
+#define THIRD_PARTY_BLINK_RENDERER_BINDINGS_TESTS_RESULTS_CORE_XML_HTTP_REQUEST_OR_STRING_H_
 
 #include "base/optional.h"
 #include "third_party/blink/renderer/bindings/core/v8/dictionary.h"
@@ -94,4 +94,4 @@ struct V8TypeOf<XMLHttpRequestOrString> {
 // See https://codereview.chromium.org/1118993002/#msg5 for more details.
 WTF_ALLOW_MOVE_AND_INIT_WITH_MEM_FUNCTIONS(blink::XMLHttpRequestOrString);
 
-#endif  // XMLHttpRequestOrString_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_BINDINGS_TESTS_RESULTS_CORE_XML_HTTP_REQUEST_OR_STRING_H_

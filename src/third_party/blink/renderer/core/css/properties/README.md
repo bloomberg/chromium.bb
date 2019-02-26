@@ -89,7 +89,7 @@ headers are in this directory.
     2.  Implement the required methods on the property class.
 3.  If logic is required by multiple property classes you may need to create a
     new Utils file. These utils methods are grouped by pipeline function (e.g.
-    [CSSParsingUtils](https://cs.chromium.org/chromium/src/third_party/blink/renderer/core/css/properties/css_parsing_utils.h)).
+    [css_parsing_utils](https://cs.chromium.org/chromium/src/third_party/blink/renderer/core/css/properties/css_parsing_utils.h)).
 4.  Add the new property to `core/css/css_properties.json5`. Ensure that you
     include all the methods implemented on the property in the
     'property_methods' flag so that the header file is generated correctly (see

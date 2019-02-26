@@ -88,7 +88,7 @@ TEST_F(AXTreeSourceAuraTest, Accessors) {
   ASSERT_TRUE(ax_tree.GetRoot());
 
   // ID's should be > 0.
-  ASSERT_GE(ax_tree.GetRoot()->GetUniqueId().Get(), 1);
+  ASSERT_GE(ax_tree.GetRoot()->GetUniqueId(), 1);
 
   // Grab the content view directly from cache to avoid walking down the tree.
   AXAuraObjWrapper* content =
@@ -131,7 +131,7 @@ TEST_F(AXTreeSourceAuraTest, DoDefault) {
   ASSERT_FALSE(textfield_->HasFocus());
   ui::AXActionData action_data;
   action_data.action = ax::mojom::Action::kDoDefault;
-  action_data.target_node_id = textfield_wrapper->GetUniqueId().Get();
+  action_data.target_node_id = textfield_wrapper->GetUniqueId();
   textfield_wrapper->HandleAccessibleAction(action_data);
   ASSERT_TRUE(textfield_->HasFocus());
 }
@@ -147,7 +147,7 @@ TEST_F(AXTreeSourceAuraTest, Focus) {
   ASSERT_FALSE(textfield_->HasFocus());
   ui::AXActionData action_data;
   action_data.action = ax::mojom::Action::kFocus;
-  action_data.target_node_id = textfield_wrapper->GetUniqueId().Get();
+  action_data.target_node_id = textfield_wrapper->GetUniqueId();
   textfield_wrapper->HandleAccessibleAction(action_data);
   ASSERT_TRUE(textfield_->HasFocus());
 }
@@ -184,7 +184,7 @@ TEST_F(AXTreeSourceAuraTest, Serialize) {
 
   int text_field_update_index = -1;
   for (size_t i = 0; i < node_count; ++i) {
-    if (textfield_wrapper->GetUniqueId().Get() == out_update2.nodes[i].id)
+    if (textfield_wrapper->GetUniqueId() == out_update2.nodes[i].id)
       text_field_update_index = i;
   }
 

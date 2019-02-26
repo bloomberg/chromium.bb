@@ -26,7 +26,7 @@ source_set("base") {
   sources = [
     "file_utils.cc",
     "metatrace.cc",
-    "page_allocator.cc",
+    "paged_memory.cc",
     "string_splitter.cc",
     "string_utils.cc",
     "thread_checker.cc",
@@ -38,15 +38,17 @@ source_set("base") {
   if (!is_win) {
     sources += [
       "event.cc",
+      "pipe.cc",
       "temp_file.cc",
       "unix_task_runner.cc",
     ]
   }
 
-  if (!build_with_chromium && (is_linux || is_android)) {
+  if ((perfetto_build_standalone || perfetto_build_with_android) &&
+      (is_linux || is_android)) {
     sources += [ "watchdog_posix.cc" ]
   }
-  if (is_debug && build_standalone && !is_wasm) {
+  if (is_debug && perfetto_build_standalone && !is_wasm) {
     deps += [ ":debug_crash_stack_trace" ]
   }
 }
@@ -54,7 +56,7 @@ source_set("base") {
 # The "android_task_runner" should be depended on only by targets that
 # explicitly need it, as it pulls in a dependency on libandroid.so that in turn
 # pulls dozen of other .so(s).
-if (is_android && !build_with_chromium) {
+if (is_android && (perfetto_build_standalone || perfetto_build_with_android)) {
   source_set("android_task_runner") {
     deps = [
       ":base",
@@ -71,7 +73,7 @@ if (is_android && !build_with_chromium) {
   }
 }
 
-if (is_debug && build_standalone && !is_wasm) {
+if (is_debug && perfetto_build_standalone && !is_wasm) {
   source_set("debug_crash_stack_trace") {
     sources = [
       "debug_crash_stack_trace.cc",
@@ -87,7 +89,7 @@ if (is_debug && build_standalone && !is_wasm) {
   }
 }
 
-if (!build_with_chromium) {
+if (perfetto_build_standalone || perfetto_build_with_android) {
   # This cannot be in :base as it does not build on WASM.
   source_set("unix_socket") {
     deps = [
@@ -132,11 +134,12 @@ source_set("unittests") {
     "../../gn:gtest_deps",
   ]
 
-  if (is_android && !build_with_chromium) {
+  if (is_android && (perfetto_build_standalone || perfetto_build_with_android)) {
     deps += [ ":android_task_runner" ]
   }
   sources = [
-    "page_allocator_unittest.cc",
+    "optional_unittest.cc",
+    "paged_memory_unittest.cc",
     "scoped_file_unittest.cc",
     "string_splitter_unittest.cc",
     "string_utils_unittest.cc",
@@ -154,7 +157,7 @@ source_set("unittests") {
       "utils_unittest.cc",
     ]
   }
-  if (!build_with_chromium) {
+  if (perfetto_build_standalone || perfetto_build_with_android) {
     sources += [ "unix_socket_unittest.cc" ]
     if (is_linux || is_android) {
       sources += [ "watchdog_unittest.cc" ]

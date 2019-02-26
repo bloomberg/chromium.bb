@@ -37,13 +37,13 @@
 
 namespace blink {
 
-using namespace HTMLNames;
+using namespace html_names;
 
 inline HTMLFieldSetElement::HTMLFieldSetElement(Document& document)
-    : HTMLFormControlElement(fieldsetTag, document) {}
+    : HTMLFormControlElement(kFieldsetTag, document) {}
 
 HTMLFieldSetElement* HTMLFieldSetElement::Create(Document& document) {
-  return new HTMLFieldSetElement(document);
+  return MakeGarbageCollected<HTMLFieldSetElement>(document);
 }
 
 bool HTMLFieldSetElement::MatchesValidityPseudoClasses() const {

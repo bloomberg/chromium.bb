@@ -49,7 +49,7 @@
 namespace blink {
 
 using blink::WebLocalizedString;
-using namespace HTMLNames;
+using namespace html_names;
 
 static const int kNumberDefaultStep = 1;
 static const int kNumberDefaultStepBase = 0;
@@ -95,7 +95,7 @@ static RealNumberRenderSize CalculateRenderSize(const Decimal& value) {
 }
 
 InputType* NumberInputType::Create(HTMLInputElement& element) {
-  return new NumberInputType(element);
+  return MakeGarbageCollected<NumberInputType>(element);
 }
 
 void NumberInputType::CountUsage() {
@@ -103,7 +103,7 @@ void NumberInputType::CountUsage() {
 }
 
 const AtomicString& NumberInputType::FormControlType() const {
-  return InputTypeNames::number;
+  return input_type_names::kNumber;
 }
 
 void NumberInputType::SetValue(const String& sanitized_value,
@@ -157,17 +157,17 @@ bool NumberInputType::SizeShouldIncludeDecoration(int default_size,
                                                   int& preferred_size) const {
   preferred_size = default_size;
 
-  const String step_string = GetElement().FastGetAttribute(stepAttr);
+  const String step_string = GetElement().FastGetAttribute(kStepAttr);
   if (DeprecatedEqualIgnoringCase(step_string, "any"))
     return false;
 
   const Decimal minimum =
-      ParseToDecimalForNumberType(GetElement().FastGetAttribute(minAttr));
+      ParseToDecimalForNumberType(GetElement().FastGetAttribute(kMinAttr));
   if (!minimum.IsFinite())
     return false;
 
   const Decimal maximum =
-      ParseToDecimalForNumberType(GetElement().FastGetAttribute(maxAttr));
+      ParseToDecimalForNumberType(GetElement().FastGetAttribute(kMaxAttr));
   if (!maximum.IsFinite())
     return false;
 
@@ -286,21 +286,23 @@ bool NumberInputType::SupportsPlaceholder() const {
 void NumberInputType::MinOrMaxAttributeChanged() {
   TextFieldInputType::MinOrMaxAttributeChanged();
 
-  if (GetElement().GetLayoutObject())
+  if (GetElement().GetLayoutObject()) {
     GetElement()
         .GetLayoutObject()
         ->SetNeedsLayoutAndPrefWidthsRecalcAndFullPaintInvalidation(
-            LayoutInvalidationReason::kAttributeChanged);
+            layout_invalidation_reason::kAttributeChanged);
+  }
 }
 
 void NumberInputType::StepAttributeChanged() {
   TextFieldInputType::StepAttributeChanged();
 
-  if (GetElement().GetLayoutObject())
+  if (GetElement().GetLayoutObject()) {
     GetElement()
         .GetLayoutObject()
         ->SetNeedsLayoutAndPrefWidthsRecalcAndFullPaintInvalidation(
-            LayoutInvalidationReason::kAttributeChanged);
+            layout_invalidation_reason::kAttributeChanged);
+  }
 }
 
 bool NumberInputType::SupportsSelectionAPI() const {

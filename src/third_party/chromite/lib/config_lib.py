@@ -38,6 +38,7 @@ DISPLAY_LABEL_FULL = 'full'
 DISPLAY_LABEL_CHROME_INFORMATIONAL = 'chrome_informational'
 DISPLAY_LABEL_INFORMATIONAL = 'informational'
 DISPLAY_LABEL_CQ = 'cq'
+DISPLAY_LABEL_POSTSUBMIT = 'postsubmit'
 DISPLAY_LABEL_RELEASE = 'release'
 DISPLAY_LABEL_CHROME_PFQ = 'chrome_pfq'
 DISPLAY_LABEL_MST_ANDROID_PFQ = 'mst_android_pfq'
@@ -59,6 +60,7 @@ ALL_DISPLAY_LABEL = {
     DISPLAY_LABEL_CHROME_INFORMATIONAL,
     DISPLAY_LABEL_INFORMATIONAL,
     DISPLAY_LABEL_CQ,
+    DISPLAY_LABEL_POSTSUBMIT,
     DISPLAY_LABEL_RELEASE,
     DISPLAY_LABEL_CHROME_PFQ,
     DISPLAY_LABEL_MST_ANDROID_PFQ,
@@ -79,12 +81,16 @@ ALL_DISPLAY_LABEL = {
 LUCI_BUILDER_TRY = 'Try'
 LUCI_BUILDER_PRECQ = 'PreCQ'
 LUCI_BUILDER_PROD = 'Prod'
+LUCI_BUILDER_INCREMENTAL = 'Incremental'
+LUCI_BUILDER_CQ = 'CQ'
 LUCI_BUILDER_STAGING = 'Staging'
 
 ALL_LUCI_BUILDER = {
     LUCI_BUILDER_TRY,
     LUCI_BUILDER_PRECQ,
     LUCI_BUILDER_PROD,
+    LUCI_BUILDER_INCREMENTAL,
+    LUCI_BUILDER_CQ,
     LUCI_BUILDER_STAGING,
 }
 
@@ -516,7 +522,8 @@ class HWTestConfig(object):
                offload_failures_only=False,
                enable_skylab=True):
     """Constructor -- see members above."""
-    assert not async or not blocking
+
+    assert not async or not blocking, "%s is async and blocking" % suite
     assert not warn_only or not critical
     self.suite = suite
     self.pool = pool
@@ -707,7 +714,7 @@ def DefaultSettings():
       gcc_githash=None,
 
       # Wipe and replace the board inside the chroot.
-      board_replace=True,
+      board_replace=False,
 
       # Wipe and replace chroot, but not source.
       chroot_replace=True,
@@ -879,6 +886,11 @@ def DefaultSettings():
 
       # Whether to build factory packages in BuildPackages.
       factory=True,
+
+      # Flag to control if all packages for the target are built. If disabled
+      # and unittests are enabled, the unit tests and their dependencies
+      # will still be built during the testing stage.
+      build_packages=True,
 
       # Tuple of specific packages we want to build.  Most configs won't
       # specify anything here and instead let build_packages calculate.
@@ -1067,6 +1079,13 @@ def DefaultSettings():
 
       # If false, turn off rebooting between builds
       auto_reboot=True,
+
+      # Attempt to run this build on the same bot each time it builds.
+      # This is only meaningful for slave builds run on swarming. This
+      # should only be used with LUCI Builders that use a reserved
+      # role to avoid having bots stolen by other builds while
+      # waiting on a new master build.
+      build_affinity=False,
   )
 
 
@@ -1209,9 +1228,6 @@ def DefaultSiteParameters():
       # Standard directories under buildroot for cloning these repos.
       EXTERNAL_MANIFEST_VERSIONS_PATH='manifest-versions',
       INTERNAL_MANIFEST_VERSIONS_PATH='manifest-versions-internal',
-
-      # URL of the repo project.
-      REPO_URL='https://chromium.googlesource.com/external/repo',
 
       # GS URL in which to archive build artifacts.
       ARCHIVE_URL='gs://chromeos-image-archive',
@@ -1916,3 +1932,28 @@ def GetSiteParams():
   site_params = SiteParameters()
   site_params.update(DefaultSiteParameters())
   return site_params
+
+def append_useflags(useflags):
+  """Used to append a set of useflags to existing useflags.
+
+  Useflags that shadow prior use flags will cause the prior flag to be removed.
+  (e.g. appending '-foo' to 'foo' will cause 'foo' to be removed)
+
+  Examples:
+    new_config = base_config.derive(useflags=append_useflags(['foo', '-bar'])
+
+  Args:
+    useflags: List of string useflags to append.
+  """
+  assert isinstance(useflags, (list, set))
+  shadowed_useflags = {'-' + flag for flag in useflags
+                       if not flag.startswith('-')}
+  shadowed_useflags.update({flag[1:] for flag in useflags
+                            if flag.startswith('-')})
+  def handler(old_useflags):
+    new_useflags = set(old_useflags or [])
+    new_useflags.update(useflags)
+    new_useflags.difference_update(shadowed_useflags)
+    return sorted(list(new_useflags))
+
+  return handler

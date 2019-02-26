@@ -1,6 +1,6 @@
 {
   metadata: {
-    namespace: "InputMode",
+    namespace: "input_mode_names",
     export: "CORE_EXPORT",
   },
 

@@ -12,17 +12,12 @@ namespace chromeos {
 
 // A custom WebUI that defines datasource for mobile setup registration page
 // that is used in Chrome OS activate modem and perform plan subscription tasks.
-class MobileSetupUI : public ui::WebDialogUI,
-                      public content::WebContentsObserver {
+class MobileSetupUI : public ui::WebDialogUI {
  public:
   explicit MobileSetupUI(content::WebUI* web_ui);
   ~MobileSetupUI() override;
 
  private:
-  // content::WebContentsObserver overrides.
-  void DidFinishNavigation(
-      content::NavigationHandle* navigation_handle) override;
-
   DISALLOW_COPY_AND_ASSIGN(MobileSetupUI);
 };
 

@@ -11,13 +11,13 @@ namespace blink {
 
 class CSSParserLocalContext;
 
-namespace CSSLonghand {
+namespace css_longhand {
 
 const CSSValue* WebkitMaskBoxImageSource::ParseSingleValue(
     CSSParserTokenRange& range,
     const CSSParserContext& context,
     const CSSParserLocalContext&) const {
-  return CSSPropertyParserHelpers::ConsumeImageOrNone(range, &context);
+  return css_property_parser_helpers::ConsumeImageOrNone(range, &context);
 }
 
 const CSSValue* WebkitMaskBoxImageSource::CSSValueFromComputedStyleInternal(
@@ -37,5 +37,5 @@ void WebkitMaskBoxImageSource::ApplyValue(StyleResolverState& state,
       state.GetStyleImage(CSSPropertyWebkitMaskBoxImageSource, value));
 }
 
-}  // namespace CSSLonghand
+}  // namespace css_longhand
 }  // namespace blink

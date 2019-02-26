@@ -163,8 +163,7 @@ bool IsSupportedVideoConfig(const VideoConfig& config) {
   switch (config.codec) {
     case media::kCodecAV1:
 #if BUILDFLAG(ENABLE_AV1_DECODER)
-      return base::FeatureList::IsEnabled(kAv1Decoder) &&
-             IsColorSpaceSupported(config.color_space);
+      return IsColorSpaceSupported(config.color_space);
 #else
       return false;
 #endif

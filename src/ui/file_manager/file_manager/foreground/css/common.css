@@ -82,6 +82,7 @@ html[dir='rtl'] cr-menu.chrome-menu > .menuitem-button.right {
 
 cr-menu.chrome-menu > cr-menu-item[disabled] {
   color: rgba(51, 51, 51, 0.20);
+  pointer-events: none;
 }
 
 cr-menu.chrome-menu > cr-menu-item:not([disabled])[selected],
@@ -143,13 +144,16 @@ cr-menu.chrome-menu > [checked]::before {
   padding: auto;
 }
 
-.cr-dialog-buttons > button.cr-dialog-ok {
+.cr-dialog-buttons > button.cr-dialog-ok,
+.cr-dialog-buttons > button.cr-dialog-ok:hover {
   background-color: rgb(51, 103, 214);
   color: white;
+  order: 1;
 }
 
 .cr-dialog-buttons > button.cr-dialog-cancel {
   color: rgb(100, 100, 100);
+  order: 0;
 }
 
 .cr-dialog-buttons > button.cr-dialog-cancel:hover {
@@ -244,7 +248,7 @@ html[dir='rtl'] .entry-name {
  }
 }
 
-.cr-dialog-frame.pulse {
+.cr-dialog-container.pulse {
   animation-duration: 180ms;
   animation-iteration-count: 1;
   animation-name: pulse;

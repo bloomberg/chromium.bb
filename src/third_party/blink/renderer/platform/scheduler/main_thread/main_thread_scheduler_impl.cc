@@ -19,25 +19,25 @@
 #include "base/strings/string_number_conversions.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/trace_event/trace_event.h"
-#include "base/trace_event/trace_event_argument.h"
+#include "base/trace_event/traced_value.h"
 #include "build/build_config.h"
 #include "components/viz/common/frame_sinks/begin_frame_args.h"
 #include "services/metrics/public/cpp/ukm_builders.h"
 #include "third_party/blink/public/common/page/launching_process_state.h"
-#include "third_party/blink/public/platform/scheduler/renderer_process_type.h"
+#include "third_party/blink/public/platform/scheduler/web_renderer_process_type.h"
 #include "third_party/blink/public/platform/web_mouse_wheel_event.h"
 #include "third_party/blink/public/platform/web_touch_event.h"
 #include "third_party/blink/renderer/platform/bindings/parkable_string_manager.h"
 #include "third_party/blink/renderer/platform/instrumentation/resource_coordinator/renderer_resource_coordinator.h"
 #include "third_party/blink/renderer/platform/runtime_enabled_features.h"
-#include "third_party/blink/renderer/platform/scheduler/child/features.h"
-#include "third_party/blink/renderer/platform/scheduler/child/process_state.h"
+#include "third_party/blink/renderer/platform/scheduler/common/features.h"
+#include "third_party/blink/renderer/platform/scheduler/common/process_state.h"
 #include "third_party/blink/renderer/platform/scheduler/common/throttling/task_queue_throttler.h"
 #include "third_party/blink/renderer/platform/scheduler/main_thread/auto_advancing_virtual_time_domain.h"
 #include "third_party/blink/renderer/platform/scheduler/main_thread/frame_scheduler_impl.h"
+#include "third_party/blink/renderer/platform/scheduler/main_thread/main_thread.h"
 #include "third_party/blink/renderer/platform/scheduler/main_thread/page_scheduler_impl.h"
 #include "third_party/blink/renderer/platform/scheduler/main_thread/task_type_names.h"
-#include "third_party/blink/renderer/platform/scheduler/renderer/webthread_impl_for_renderer_scheduler.h"
 
 namespace blink {
 namespace scheduler {
@@ -109,11 +109,11 @@ const char* AudioPlayingStateToString(bool is_audio_playing) {
   }
 }
 
-const char* RendererProcessTypeToString(RendererProcessType process_type) {
+const char* RendererProcessTypeToString(WebRendererProcessType process_type) {
   switch (process_type) {
-    case RendererProcessType::kRenderer:
+    case WebRendererProcessType::kRenderer:
       return "normal";
-    case RendererProcessType::kExtensionRenderer:
+    case WebRendererProcessType::kExtensionRenderer:
       return "extension";
   }
   NOTREACHED();
@@ -215,7 +215,10 @@ MainThreadSchedulerImpl::MainThreadSchedulerImpl(
                               base::Unretained(this)),
           helper_.ControlMainThreadTaskQueue()->CreateTaskRunner(
               TaskType::kMainThreadTaskQueueControl)),
-      queueing_time_estimator_(this, kQueueingTimeWindowDuration, 20),
+      queueing_time_estimator_(this,
+                               kQueueingTimeWindowDuration,
+                               20,
+                               kLaunchingProcessIsBackgrounded),
       main_thread_only_(this,
                         compositor_task_queue_,
                         helper_.GetClock(),
@@ -483,7 +486,7 @@ MainThreadSchedulerImpl::MainThreadOnly::MainThreadOnly(
           main_thread_scheduler_impl->helper_.HasCPUTimingForEachTask(),
           now,
           renderer_backgrounded),
-      process_type(RendererProcessType::kRenderer,
+      process_type(WebRendererProcessType::kRenderer,
                    "RendererProcessType",
                    main_thread_scheduler_impl,
                    &main_thread_scheduler_impl->tracing_controller_,
@@ -657,7 +660,7 @@ void MainThreadSchedulerImpl::Shutdown() {
 }
 
 std::unique_ptr<Thread> MainThreadSchedulerImpl::CreateMainThread() {
-  return std::make_unique<WebThreadImplForRendererScheduler>(this);
+  return std::make_unique<MainThread>(this);
 }
 
 scoped_refptr<base::SingleThreadTaskRunner>
@@ -995,7 +998,7 @@ void MainThreadSchedulerImpl::SetRendererBackgrounded(bool backgrounded) {
   internal::ProcessState::Get()->is_process_backgrounded = backgrounded;
 
   main_thread_only().background_status_changed_at = tick_clock()->NowTicks();
-  queueing_time_estimator_.OnRendererStateChanged(
+  queueing_time_estimator_.OnRecordingStateChanged(
       backgrounded, main_thread_only().background_status_changed_at);
 
   UpdatePolicy();
@@ -2349,14 +2352,16 @@ void MainThreadSchedulerImpl::ResetForNavigationLocked() {
   UpdatePolicyLocked(UpdateType::kMayEarlyOutIfPolicyUnchanged);
 
   UMA_HISTOGRAM_COUNTS_100("RendererScheduler.WebViewsPerScheduler",
-                           main_thread_only().page_schedulers.size());
+                           base::saturated_cast<base::HistogramBase::Sample>(
+                               main_thread_only().page_schedulers.size()));
 
   size_t frame_count = 0;
   for (PageSchedulerImpl* page_scheduler : main_thread_only().page_schedulers) {
     frame_count += page_scheduler->FrameCount();
   }
-  UMA_HISTOGRAM_COUNTS_100("RendererScheduler.WebFramesPerScheduler",
-                           frame_count);
+  UMA_HISTOGRAM_COUNTS_100(
+      "RendererScheduler.WebFramesPerScheduler",
+      base::saturated_cast<base::HistogramBase::Sample>(frame_count));
 }
 
 void MainThreadSchedulerImpl::SetTopLevelBlameContext(
@@ -2384,7 +2389,8 @@ void MainThreadSchedulerImpl::AddRAILModeObserver(
   observer->OnRAILModeChanged(main_thread_only().current_policy.rail_mode());
 }
 
-void MainThreadSchedulerImpl::SetRendererProcessType(RendererProcessType type) {
+void MainThreadSchedulerImpl::SetRendererProcessType(
+    WebRendererProcessType type) {
   main_thread_only().process_type = type;
 }
 
@@ -2600,7 +2606,7 @@ UkmRecordingStatus MainThreadSchedulerImpl::RecordTaskUkmImpl(
 
     // Trade off for privacy: Round to seconds for times below 10 minutes and
     // minutes afterwards.
-    int seconds_since_backgrounded = 0;
+    int64_t seconds_since_backgrounded = 0;
     if (time_since_backgrounded < base::TimeDelta::FromMinutes(10)) {
       seconds_since_backgrounded = time_since_backgrounded.InSeconds();
     } else {

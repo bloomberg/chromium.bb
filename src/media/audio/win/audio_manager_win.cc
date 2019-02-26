@@ -283,6 +283,8 @@ AudioParameters AudioManagerWin::GetPreferredOutputStreamParameters(
   int sample_rate = 48000;
   int buffer_size = kFallbackBufferSize;
   int effects = AudioParameters::NO_EFFECTS;
+  int min_buffer_size = 0;
+  int max_buffer_size = 0;
 
   // TODO(henrika): Remove kEnableExclusiveAudio and related code. It doesn't
   // look like it's used.
@@ -313,10 +315,18 @@ AudioParameters AudioManagerWin::GetPreferredOutputStreamParameters(
       return AudioParameters();
     }
 
+    DCHECK(params.IsValid());
+
     buffer_size = params.frames_per_buffer();
     channel_layout = params.channel_layout();
     sample_rate = params.sample_rate();
     effects = params.effects();
+
+    AudioParameters::HardwareCapabilities hardware_capabilities =
+        params.hardware_capabilities().value_or(
+            AudioParameters::HardwareCapabilities());
+    min_buffer_size = hardware_capabilities.min_frames_per_buffer;
+    max_buffer_size = hardware_capabilities.max_frames_per_buffer;
   }
 
   if (input_params.IsValid()) {
@@ -348,15 +358,25 @@ AudioParameters AudioManagerWin::GetPreferredOutputStreamParameters(
     }
 
     effects |= input_params.effects();
+
+    // Allow non-default buffer sizes if we have a valid min and max.
+    if (min_buffer_size > 0 && max_buffer_size > 0) {
+      buffer_size =
+          std::min(max_buffer_size,
+                   std::max(input_params.frames_per_buffer(), min_buffer_size));
+    }
   }
 
   int user_buffer_size = GetUserBufferSize();
   if (user_buffer_size)
     buffer_size = user_buffer_size;
 
-  AudioParameters params(AudioParameters::AUDIO_PCM_LOW_LATENCY, channel_layout,
-                         sample_rate, buffer_size);
+  AudioParameters params(
+      AudioParameters::AUDIO_PCM_LOW_LATENCY, channel_layout, sample_rate,
+      buffer_size,
+      AudioParameters::HardwareCapabilities(min_buffer_size, max_buffer_size));
   params.set_effects(effects);
+  DCHECK(params.IsValid());
   return params;
 }
 

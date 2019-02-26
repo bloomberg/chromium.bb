@@ -4,6 +4,7 @@
 
 #include "ui/events/gestures/gesture_recognizer_impl.h"
 
+#include "base/message_loop/message_loop.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/events/gestures/gesture_recognizer_observer.h"
 
@@ -118,12 +119,24 @@ class GestureRecognizerImplTest : public testing::Test {
   GestureRecognizerImpl gesture_recognizer_;
   TestGestureEventHelper helper_;
   std::unique_ptr<TestGestureRecognizerObserver> observer_;
+  base::MessageLoopForUI message_loop_;
 
   DISALLOW_COPY_AND_ASSIGN(GestureRecognizerImplTest);
 };
 
-TEST_F(GestureRecognizerImplTest, CancelActiveTouchEvents) {
+TEST_F(GestureRecognizerImplTest, CancelActiveTouchesNoCancellations) {
   GestureConsumer consumer;
+  gesture_recognizer()->CancelActiveTouches(&consumer);
+
+  EXPECT_EQ(0, observer()->active_touches_cancelled_call_count());
+  EXPECT_FALSE(observer()->last_cancelled());
+}
+
+TEST_F(GestureRecognizerImplTest, CancelActiveTouches) {
+  GestureConsumer consumer;
+  TouchEvent event(ET_TOUCH_PRESSED, gfx::Point(), base::TimeTicks::Now(),
+                   PointerDetails());
+  gesture_recognizer()->ProcessTouchEventPreDispatch(&event, &consumer);
   gesture_recognizer()->CancelActiveTouches(&consumer);
 
   EXPECT_EQ(1, observer()->active_touches_cancelled_call_count());

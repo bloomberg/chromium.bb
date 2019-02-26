@@ -109,7 +109,6 @@ void PageRequestSummary::UpdateOrAddToOrigins(
     const GURL& url,
     const content::mojom::CommonNetworkInfoPtr& network_info) {
   GURL origin = url.GetOrigin();
-  DCHECK(origin.is_valid());
   if (!origin.is_valid())
     return;
 

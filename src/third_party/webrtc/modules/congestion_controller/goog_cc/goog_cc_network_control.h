@@ -64,6 +64,9 @@ class GoogCcNetworkController : public NetworkControllerInterface {
 
   RtcEventLog* const event_log_;
   const bool packet_feedback_only_;
+  FieldTrialFlag safe_reset_on_route_change_;
+  FieldTrialFlag safe_reset_acknowledged_rate_;
+  const bool use_stable_bandwidth_estimate_;
 
   const std::unique_ptr<ProbeController> probe_controller_;
   const std::unique_ptr<CongestionWindowPushbackController>
@@ -71,6 +74,7 @@ class GoogCcNetworkController : public NetworkControllerInterface {
 
   std::unique_ptr<SendSideBandwidthEstimation> bandwidth_estimation_;
   std::unique_ptr<AlrDetector> alr_detector_;
+  std::unique_ptr<ProbeBitrateEstimator> probe_bitrate_estimator_;
   std::unique_ptr<DelayBasedBwe> delay_based_bwe_;
   std::unique_ptr<AcknowledgedBitrateEstimator> acknowledged_bitrate_estimator_;
 
@@ -84,8 +88,7 @@ class GoogCcNetworkController : public NetworkControllerInterface {
 
   std::deque<int64_t> feedback_max_rtts_;
 
-  DataRate last_bandwidth_;
-  absl::optional<TargetTransferRate> last_target_rate_;
+  DataRate last_target_rate_;
 
   int32_t last_estimated_bitrate_bps_ = 0;
   uint8_t last_estimated_fraction_loss_ = 0;

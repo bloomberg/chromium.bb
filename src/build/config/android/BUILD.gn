@@ -125,6 +125,7 @@ config("runtime_library") {
               root_build_dir)
     }
     cflags_cc += [
+      "-nostdinc++",
       "-isystem" + libcxx_include_path,
       "-isystem" + libcxxabi_include_path,
     ]
@@ -179,12 +180,6 @@ config("runtime_library") {
   if (current_cpu != "mipsel" && current_cpu != "mips64el") {
     ldflags += [ "-Wl,--warn-shared-textrel" ]
   }
-}
-
-config("executable_config") {
-  cflags = [ "-fPIE" ]
-  asmflags = [ "-fPIE" ]
-  ldflags = [ "-pie" ]
 }
 
 config("hide_all_but_jni_onload") {

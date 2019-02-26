@@ -10,6 +10,7 @@
 #include <string>
 
 #include "base/component_export.h"
+#include "base/containers/flat_set.h"
 #include "base/containers/span.h"
 #include "base/containers/unique_ptr_adapters.h"
 #include "base/macros.h"
@@ -24,12 +25,16 @@
 #include "services/network/keepalive_statistics_recorder.h"
 #include "services/network/network_change_manager.h"
 #include "services/network/network_quality_estimator_manager.h"
+#include "services/network/public/cpp/network_service_buildflags.h"
+#include "services/network/public/mojom/host_resolver.mojom.h"
 #include "services/network/public/mojom/net_log.mojom.h"
 #include "services/network/public/mojom/network_change_manager.mojom.h"
 #include "services/network/public/mojom/network_quality_estimator_manager.mojom.h"
 #include "services/network/public/mojom/network_service.mojom.h"
 #include "services/service_manager/public/cpp/binder_registry.h"
 #include "services/service_manager/public/cpp/service.h"
+#include "services/service_manager/public/cpp/service_binding.h"
+#include "services/service_manager/public/mojom/service.mojom.h"
 
 namespace net {
 class FileNetLogObserver;
@@ -40,14 +45,17 @@ class NetworkQualityEstimator;
 class URLRequestContext;
 }  // namespace net
 
+#if BUILDFLAG(IS_CT_SUPPORTED)
 namespace certificate_transparency {
 class STHDistributor;
 class STHReporter;
 }  // namespace certificate_transparency
+#endif  // BUILDFLAG(IS_CT_SUPPORTED)
 
 namespace network {
 
 class CRLSetDistributor;
+class DnsConfigChangeManager;
 class NetworkContext;
 class NetworkUsageAccumulator;
 class URLRequestContextBuilderMojo;
@@ -61,9 +69,11 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) NetworkService
   //
   // TODO(https://crbug.com/767450): Once the NetworkService can always create
   // its own NetLog in production, remove the |net_log| argument.
-  NetworkService(std::unique_ptr<service_manager::BinderRegistry> registry,
-                 mojom::NetworkServiceRequest request = nullptr,
-                 net::NetLog* net_log = nullptr);
+  NetworkService(
+      std::unique_ptr<service_manager::BinderRegistry> registry,
+      mojom::NetworkServiceRequest request = nullptr,
+      net::NetLog* net_log = nullptr,
+      service_manager::mojom::ServiceRequest service_request = nullptr);
 
   ~NetworkService() override;
 
@@ -106,9 +116,19 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) NetworkService
   // its own NetLog, instead of sharing one.
   static std::unique_ptr<NetworkService> Create(
       mojom::NetworkServiceRequest request,
-      net::NetLog* net_log = nullptr);
+      net::NetLog* net_log = nullptr,
+      service_manager::mojom::ServiceRequest service_request = nullptr);
 
+  // Creates a testing instance of NetworkService not bound to an actual
+  // Service pipe. This instance must be driven by direct calls onto the
+  // NetworkService object.
   static std::unique_ptr<NetworkService> CreateForTesting();
+
+  // Creates a testing instance of NetworkService similar to above, but the
+  // instance is bound to |request|. Test code may use an appropriate Connector
+  // to bind interface requests within this service instance.
+  static std::unique_ptr<NetworkService> CreateForTesting(
+      service_manager::mojom::ServiceRequest service_request);
 
   // These are called by NetworkContexts as they are being created and
   // destroyed.
@@ -139,15 +159,21 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) NetworkService
       mojom::HttpAuthStaticParamsPtr http_auth_static_params) override;
   void ConfigureHttpAuthPrefs(
       mojom::HttpAuthDynamicParamsPtr http_auth_dynamic_params) override;
-  void SetRawHeadersAccess(uint32_t process_id, bool allow) override;
+  void SetRawHeadersAccess(uint32_t process_id,
+                           const std::vector<url::Origin>& origins) override;
   void GetNetworkChangeManager(
       mojom::NetworkChangeManagerRequest request) override;
   void GetNetworkQualityEstimatorManager(
       mojom::NetworkQualityEstimatorManagerRequest request) override;
+  void GetDnsConfigChangeManager(
+      mojom::DnsConfigChangeManagerRequest request) override;
   void GetTotalNetworkUsages(
       mojom::NetworkService::GetTotalNetworkUsagesCallback callback) override;
+#if BUILDFLAG(IS_CT_SUPPORTED)
   void UpdateSignedTreeHead(const net::ct::SignedTreeHead& sth) override;
+#endif  // !BUILDFLAG(IS_CT_SUPPORTED)
   void UpdateCRLSet(base::span<const uint8_t> crl_set) override;
+  void OnCertDBChanged() override;
 #if defined(OS_LINUX) && !defined(OS_CHROMEOS)
   void SetCryptConfig(mojom::CryptConfigPtr crypt_config) override;
 #endif
@@ -156,6 +182,8 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) NetworkService
 #endif
   void AddCorbExceptionForPlugin(uint32_t process_id) override;
   void RemoveCorbExceptionForPlugin(uint32_t process_id) override;
+  void OnMemoryPressure(base::MemoryPressureListener::MemoryPressureLevel
+                            memory_pressure_level) override;
 #if defined(OS_ANDROID)
   void OnApplicationStateChange(base::android::ApplicationState state) override;
 #endif
@@ -168,7 +196,7 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) NetworkService
   void OnBeforeURLRequest();
 
   bool quic_disabled() const { return quic_disabled_; }
-  bool HasRawHeadersAccess(uint32_t process_id) const;
+  bool HasRawHeadersAccess(uint32_t process_id, const GURL& resource_url) const;
 
   mojom::NetworkServiceClient* client() { return client_.get(); }
   net::NetworkQualityEstimator* network_quality_estimator() {
@@ -183,7 +211,10 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) NetworkService
     return network_usage_accumulator_.get();
   }
 
+#if BUILDFLAG(IS_CT_SUPPORTED)
   certificate_transparency::STHReporter* sth_reporter();
+#endif  // BUILDFLAG(IS_CT_SUPPORTED)
+
   CRLSetDistributor* crl_set_distributor() {
     return crl_set_distributor_.get();
   }
@@ -217,6 +248,8 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) NetworkService
   // Starts timer call UpdateLoadInfo() again, if needed.
   void AckUpdateLoadInfo();
 
+  service_manager::ServiceBinding service_binding_{this};
+
   net::NetLog* net_log_ = nullptr;
 
   std::unique_ptr<net::FileNetLogObserver> file_net_log_observer_;
@@ -239,6 +272,8 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) NetworkService
 
   std::unique_ptr<NetworkQualityEstimatorManager>
       network_quality_estimator_manager_;
+
+  std::unique_ptr<DnsConfigChangeManager> dns_config_change_manager_;
 
   std::unique_ptr<net::HostResolver> host_resolver_;
   std::unique_ptr<NetworkUsageAccumulator> network_usage_accumulator_;
@@ -265,13 +300,18 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) NetworkService
   // this with |owned_network_contexts_|.
   std::set<NetworkContext*> network_contexts_;
 
-  std::set<uint32_t> processes_with_raw_headers_access_;
+  // A per-process_id map of origins that are white-listed to allow
+  // them to request raw headers for resources they request.
+  std::map<uint32_t, base::flat_set<url::Origin>>
+      raw_headers_access_origins_by_pid_;
 
   bool quic_disabled_ = false;
 
   bool os_crypt_config_set_ = false;
 
+#if BUILDFLAG(IS_CT_SUPPORTED)
   std::unique_ptr<certificate_transparency::STHDistributor> sth_distributor_;
+#endif  // BUILDFLAG(IS_CT_SUPPORTED)
   std::unique_ptr<CRLSetDistributor> crl_set_distributor_;
 
   // A timer that periodically calls UpdateLoadInfo while there are pending

@@ -410,6 +410,7 @@ void FeatureInfo::EnableOESTextureHalfFloatLinear() {
     return;
   AddExtensionString("GL_OES_texture_half_float_linear");
   feature_flags_.enable_texture_half_float_linear = true;
+  feature_flags_.gpu_memory_buffer_formats.Add(gfx::BufferFormat::RGBA_F16);
 }
 
 void FeatureInfo::InitializeFeatures() {
@@ -427,16 +428,18 @@ void FeatureInfo::InitializeFeatures() {
 
   bool enable_es3 = IsWebGL2OrES3OrHigherContext();
 
-  // Pixel buffer bindings can be manipulated by the client if ES3 is enabled or
-  // the GL_NV_pixel_buffer_object extension is exposed by ANGLE when using the
-  // passthrough command decoder
-  bool pixel_buffers_exposed =
-      enable_es3 || gfx::HasExtension(extensions, "GL_NV_pixel_buffer_object");
+  // Really it's part of core OpenGL 2.1 and up, but let's assume the
+  // extension is still advertised.
+  bool has_pixel_buffers =
+      gl_version_info_->is_es3 || gl_version_info_->is_desktop_core_profile ||
+      gfx::HasExtension(extensions, "GL_ARB_pixel_buffer_object") ||
+      gfx::HasExtension(extensions, "GL_NV_pixel_buffer_object");
 
-  // Both decoders may bind pixel buffers if exposing an ES3 or WebGL 2 context
-  // and the passthrough command decoder may also bind PBOs if
-  // NV_pixel_buffer_object is exposed.
-  ScopedPixelUnpackBufferOverride scoped_pbo_override(pixel_buffers_exposed, 0);
+  // If ES3 or pixel buffer objects are enabled by the driver, we have to assume
+  // the unpack buffer binding may be changed on the underlying context. This is
+  // true whether or not this particular decoder exposes PBOs, as it could be
+  // changed on another decoder that does expose them.
+  ScopedPixelUnpackBufferOverride scoped_pbo_override(has_pixel_buffers, 0);
 
   AddExtensionString("GL_ANGLE_translated_shader_source");
   AddExtensionString("GL_CHROMIUM_async_pixel_transfers");
@@ -842,6 +845,8 @@ void FeatureInfo::InitializeFeatures() {
         GL_BGRA8_EXT);
     validators_.texture_sized_texture_filterable_internal_format.AddValue(
         GL_BGRA8_EXT);
+    feature_flags_.gpu_memory_buffer_formats.Add(gfx::BufferFormat::BGRA_8888);
+    feature_flags_.gpu_memory_buffer_formats.Add(gfx::BufferFormat::BGRX_8888);
   }
 
   // On desktop, all devices support BGRA render buffers (note that on desktop
@@ -1024,10 +1029,11 @@ void FeatureInfo::InitializeFeatures() {
     validators_.texture_internal_format_storage.AddValue(GL_ETC1_RGB8_OES);
   }
 
-  // TODO(kainino): Once we have a way to query whether ANGLE is exposing
-  // native support for ETC2 textures, require that here.
-  // http://anglebug.com/1552
-  if (gl_version_info_->is_es3 && !gl_version_info_->is_angle) {
+  // Expose GL_CHROMIUM_compressed_texture_etc when ANGLE exposes it directly or
+  // running on top of a non-ANGLE ES driver. We assume that this implies native
+  // support of these formats.
+  if (gfx::HasExtension(extensions, "GL_CHROMIUM_compressed_texture_etc") ||
+      (gl_version_info_->is_es3 && !gl_version_info_->is_angle)) {
     AddExtensionString("GL_CHROMIUM_compressed_texture_etc");
     validators_.UpdateETCCompressedTextureFormats();
   }
@@ -1092,10 +1098,15 @@ void FeatureInfo::InitializeFeatures() {
   AddExtensionString("GL_CHROMIUM_ycbcr_420v_image");
   feature_flags_.chromium_image_ycbcr_420v = true;
 #endif
+  if (feature_flags_.chromium_image_ycbcr_420v) {
+    feature_flags_.gpu_memory_buffer_formats.Add(
+        gfx::BufferFormat::YUV_420_BIPLANAR);
+  }
 
   if (gfx::HasExtension(extensions, "GL_APPLE_ycbcr_422")) {
     AddExtensionString("GL_CHROMIUM_ycbcr_422_image");
     feature_flags_.chromium_image_ycbcr_422 = true;
+    feature_flags_.gpu_memory_buffer_formats.Add(gfx::BufferFormat::UYVY_422);
   }
 
 #if defined(OS_MACOSX)
@@ -1116,6 +1127,14 @@ void FeatureInfo::InitializeFeatures() {
     validators_.render_buffer_format.AddValue(GL_RGB10_A2_EXT);
     validators_.texture_internal_format_storage.AddValue(GL_RGB10_A2_EXT);
     validators_.pixel_type.AddValue(GL_UNSIGNED_INT_2_10_10_10_REV);
+  }
+  if (feature_flags_.chromium_image_xr30) {
+    feature_flags_.gpu_memory_buffer_formats.Add(
+        gfx::BufferFormat::BGRX_1010102);
+  }
+  if (feature_flags_.chromium_image_xb30) {
+    feature_flags_.gpu_memory_buffer_formats.Add(
+        gfx::BufferFormat::RGBX_1010102);
   }
 
   // TODO(gman): Add support for these extensions.
@@ -1250,13 +1269,6 @@ void FeatureInfo::InitializeFeatures() {
       gfx::HasExtension(extensions, "GL_ARB_map_buffer_range") ||
       gfx::HasExtension(extensions, "GL_EXT_map_buffer_range");
 
-  // Really it's part of core OpenGL 2.1 and up, but let's assume the
-  // extension is still advertised.
-  bool has_pixel_buffers =
-      gl_version_info_->is_es3 || gl_version_info_->is_desktop_core_profile ||
-      gfx::HasExtension(extensions, "GL_ARB_pixel_buffer_object") ||
-      gfx::HasExtension(extensions, "GL_NV_pixel_buffer_object");
-
   // We will use either glMapBuffer() or glMapBufferRange() for async readbacks.
   if (has_pixel_buffers && ui_gl_fence_works &&
       !workarounds_.disable_async_readpixels) {
@@ -1364,6 +1376,9 @@ void FeatureInfo::InitializeFeatures() {
 
     validators_.texture_internal_format_storage.AddValue(GL_R8_EXT);
     validators_.texture_internal_format_storage.AddValue(GL_RG8_EXT);
+
+    feature_flags_.gpu_memory_buffer_formats.Add(gfx::BufferFormat::R_8);
+    feature_flags_.gpu_memory_buffer_formats.Add(gfx::BufferFormat::RG_88);
   }
   UMA_HISTOGRAM_BOOLEAN("GPU.TextureRG", feature_flags_.ext_texture_rg);
 
@@ -1383,6 +1398,8 @@ void FeatureInfo::InitializeFeatures() {
     validators_.texture_internal_format.AddValue(GL_RED_EXT);
     validators_.texture_unsized_internal_format.AddValue(GL_RED_EXT);
     validators_.texture_internal_format_storage.AddValue(GL_R16_EXT);
+
+    feature_flags_.gpu_memory_buffer_formats.Add(gfx::BufferFormat::R_16);
   }
 
   UMA_HISTOGRAM_ENUMERATION(
@@ -1519,6 +1536,11 @@ void FeatureInfo::InitializeFeatures() {
     // https://crbug.com/881152
     validators_.shader_parameter.AddValue(GL_COMPLETION_STATUS_KHR);
     validators_.program_parameter.AddValue(GL_COMPLETION_STATUS_KHR);
+  }
+
+  if (gfx::HasExtension(extensions, "GL_KHR_robust_buffer_access_behavior")) {
+    AddExtensionString("GL_KHR_robust_buffer_access_behavior");
+    feature_flags_.khr_robust_buffer_access_behavior = true;
   }
 }
 

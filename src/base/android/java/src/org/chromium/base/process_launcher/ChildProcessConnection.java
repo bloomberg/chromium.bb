@@ -255,6 +255,10 @@ public class ChildProcessConnection {
 
     private MemoryPressureCallback mMemoryPressureCallback;
 
+    // Whether the process exited cleanly or not.
+    @GuardedBy("sBindingStateLock")
+    private boolean mCleanExit;
+
     public ChildProcessConnection(Context context, ComponentName serviceName, boolean bindToCaller,
             boolean bindAsExternalService, Bundle serviceBundle) {
         this(context, serviceName, bindToCaller, bindAsExternalService, serviceBundle,
@@ -502,6 +506,10 @@ public class ChildProcessConnection {
     }
 
     private void onSetupConnectionResult(int pid) {
+        if (mPid != 0) {
+            Log.e(TAG, "sendPid was called more than once: pid=%d", mPid);
+            return;
+        }
         mPid = pid;
         assert mPid != 0 : "Child service claims to be run by a process of pid=0.";
 
@@ -522,9 +530,9 @@ public class ChildProcessConnection {
             assert mServiceConnectComplete && mService != null;
             assert mConnectionParams != null;
 
-            ICallbackInt pidCallback = new ICallbackInt.Stub() {
+            IParentProcess parentProcess = new IParentProcess.Stub() {
                 @Override
-                public void call(final int pid) {
+                public void sendPid(final int pid) {
                     mLauncherHandler.post(new Runnable() {
                         @Override
                         public void run() {
@@ -532,9 +540,22 @@ public class ChildProcessConnection {
                         }
                     });
                 }
+
+                @Override
+                public void reportCleanExit() {
+                    synchronized (sBindingStateLock) {
+                        mCleanExit = true;
+                    }
+                    mLauncherHandler.post(new Runnable() {
+                        @Override
+                        public void run() {
+                            unbind();
+                        }
+                    });
+                }
             };
             try {
-                mService.setupConnection(mConnectionParams.mConnectionBundle, pidCallback,
+                mService.setupConnection(mConnectionParams.mConnectionBundle, parentProcess,
                         mConnectionParams.mClientInterfaces);
             } catch (RemoteException re) {
                 Log.e(TAG, "Failed to setup connection.", re);
@@ -672,6 +693,15 @@ public class ChildProcessConnection {
         // preventable without changing the caller's API, short of blocking.
         synchronized (sBindingStateLock) {
             return mKilledByUs;
+        }
+    }
+
+    /**
+     * @return true if the process exited cleanly.
+     */
+    public boolean hasCleanExit() {
+        synchronized (sBindingStateLock) {
+            return mCleanExit;
         }
     }
 

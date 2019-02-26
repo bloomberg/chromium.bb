@@ -2,7 +2,6 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "base/at_exit.h"
 #include "base/bind.h"
 #include "base/command_line.h"
 #include "base/message_loop/message_loop.h"
@@ -10,7 +9,6 @@
 #include "base/test/test_suite.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
-#include "third_party/swiftshader/tests/unittests/SwiftShaderTest.h"
 
 namespace {
 
@@ -20,6 +18,12 @@ int RunHelper(base::TestSuite* test_suite) {
 }
 
 }  // namespace
+
+class SwiftShaderTestEnvironment : public testing::Environment {
+ public:
+  void SetUp() override {}
+  void TearDown() override {}
+};
 
 int main(int argc, char** argv) {
   base::CommandLine::Init(argc, argv);
@@ -31,6 +35,6 @@ int main(int argc, char** argv) {
       1,     // Run tests serially.
       0,     // Disable batching.
       true,  // Use job objects.
-      base::Bind(&RunHelper, base::Unretained(&test_suite)));
+      base::BindOnce(&RunHelper, base::Unretained(&test_suite)));
   return rt;
 }

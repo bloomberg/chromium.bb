@@ -37,6 +37,7 @@
 #include "third_party/blink/renderer/core/dom/events/scoped_event_queue.h"
 #include "third_party/blink/renderer/core/dom/events/window_event_context.h"
 #include "third_party/blink/renderer/core/events/mouse_event.h"
+#include "third_party/blink/renderer/core/frame/ad_tracker.h"
 #include "third_party/blink/renderer/core/frame/deprecation.h"
 #include "third_party/blink/renderer/core/frame/local_dom_window.h"
 #include "third_party/blink/renderer/core/frame/local_frame_view.h"
@@ -69,7 +70,7 @@ EventDispatcher::EventDispatcher(Node& node, Event& event)
 void EventDispatcher::DispatchScopedEvent(Node& node, Event& event) {
   // We need to set the target here because it can go away by the time we
   // actually fire the event.
-  event.SetTarget(EventPath::EventTargetRespectingTargetRules(node));
+  event.SetTarget(&EventPath::EventTargetRespectingTargetRules(node));
   ScopedEventQueue::Instance()->EnqueueEvent(event);
 }
 
@@ -84,7 +85,7 @@ void EventDispatcher::DispatchSimulatedClick(
   // dispatchSimulatedClick().
   DEFINE_STATIC_LOCAL(Persistent<HeapHashSet<Member<Node>>>,
                       nodes_dispatching_simulated_clicks,
-                      (new HeapHashSet<Member<Node>>));
+                      (MakeGarbageCollected<HeapHashSet<Member<Node>>>()));
 
   if (IsDisabledFormControl(&node))
     return;
@@ -95,18 +96,18 @@ void EventDispatcher::DispatchSimulatedClick(
   nodes_dispatching_simulated_clicks->insert(&node);
 
   if (mouse_event_options == kSendMouseOverUpDownEvents)
-    EventDispatcher(node, *MouseEvent::Create(EventTypeNames::mouseover,
+    EventDispatcher(node, *MouseEvent::Create(event_type_names::kMouseover,
                                               node.GetDocument().domWindow(),
                                               underlying_event, creation_scope))
         .Dispatch();
 
   if (mouse_event_options != kSendNoEvents) {
-    EventDispatcher(node, *MouseEvent::Create(EventTypeNames::mousedown,
+    EventDispatcher(node, *MouseEvent::Create(event_type_names::kMousedown,
                                               node.GetDocument().domWindow(),
                                               underlying_event, creation_scope))
         .Dispatch();
     node.SetActive(true);
-    EventDispatcher(node, *MouseEvent::Create(EventTypeNames::mouseup,
+    EventDispatcher(node, *MouseEvent::Create(event_type_names::kMouseup,
                                               node.GetDocument().domWindow(),
                                               underlying_event, creation_scope))
         .Dispatch();
@@ -116,7 +117,7 @@ void EventDispatcher::DispatchSimulatedClick(
   node.SetActive(false);
 
   // always send click
-  EventDispatcher(node, *MouseEvent::Create(EventTypeNames::click,
+  EventDispatcher(node, *MouseEvent::Create(event_type_names::kClick,
                                             node.GetDocument().domWindow(),
                                             underlying_event, creation_scope))
       .Dispatch();
@@ -139,7 +140,7 @@ DispatchEventResult EventDispatcher::Dispatch() {
     return DispatchEventResult::kNotCanceled;
   }
   std::unique_ptr<EventTiming> eventTiming;
-  if (OriginTrials::EventTimingEnabled(&node_->GetDocument())) {
+  if (origin_trials::EventTimingEnabled(&node_->GetDocument())) {
     LocalFrame* frame = node_->GetDocument().GetFrame();
     if (frame && frame->DomWindow()) {
       UseCounter::Count(node_->GetDocument(),
@@ -150,13 +151,29 @@ DispatchEventResult EventDispatcher::Dispatch() {
   }
   event_->GetEventPath().EnsureWindowEventContext();
 
+  const bool is_click =
+      event_->IsMouseEvent() && event_->type() == event_type_names::kClick;
+
+  if (is_click && event_->isTrusted()) {
+    Document& document = node_->GetDocument();
+    LocalFrame* frame = document.GetFrame();
+    if (frame) {
+      // A genuine mouse click cannot be triggered by script so we don't expect
+      // there are any script in the stack.
+      DCHECK(!frame->GetAdTracker() ||
+             !frame->GetAdTracker()->IsAdScriptInStack());
+      if (frame->IsAdSubframe()) {
+        UseCounter::Count(document, WebFeature::kAdClick);
+      }
+    }
+  }
+
   // 6. Let isActivationEvent be true, if event is a MouseEvent object and
   // event's type attribute is "click", and false otherwise.
   //
   // We need to include non-standard textInput event for HTMLInputElement.
   const bool is_activation_event =
-      (event_->IsMouseEvent() && event_->type() == EventTypeNames::click) ||
-      event_->type() == EventTypeNames::textInput;
+      is_click || event_->type() == event_type_names::kTextInput;
 
   // 7. Let activationTarget be target, if isActivationEvent is true and target
   // has activation behavior, and null otherwise.
@@ -167,21 +184,21 @@ DispatchEventResult EventDispatcher::Dispatch() {
   if (is_activation_event && !activation_target && event_->bubbles()) {
     wtf_size_t size = event_->GetEventPath().size();
     for (wtf_size_t i = 1; i < size; ++i) {
-      Node* target = event_->GetEventPath()[i].GetNode();
-      if (target->HasActivationBehavior()) {
-        activation_target = target;
+      Node& target = event_->GetEventPath()[i].GetNode();
+      if (target.HasActivationBehavior()) {
+        activation_target = &target;
         break;
       }
     }
   }
 
-  event_->SetTarget(EventPath::EventTargetRespectingTargetRules(*node_));
+  event_->SetTarget(&EventPath::EventTargetRespectingTargetRules(*node_));
 #if DCHECK_IS_ON()
   DCHECK(!EventDispatchForbiddenScope::IsEventDispatchForbidden());
 #endif
   DCHECK(event_->target());
   TRACE_EVENT1("devtools.timeline", "EventDispatch", "data",
-               InspectorEventDispatchEvent::Data(*event_));
+               inspector_event_dispatch_event::Data(*event_));
   EventDispatchHandlingState* pre_dispatch_event_handler_result = nullptr;
   if (DispatchEventPreProcess(activation_target,
                               pre_dispatch_event_handler_result) ==
@@ -289,7 +306,7 @@ inline void EventDispatcher::DispatchEventAtBubbling() {
 inline void EventDispatcher::DispatchEventPostProcess(
     Node* activation_target,
     EventDispatchHandlingState* pre_dispatch_event_handler_result) {
-  event_->SetTarget(EventPath::EventTargetRespectingTargetRules(*node_));
+  event_->SetTarget(&EventPath::EventTargetRespectingTargetRules(*node_));
   // https://dom.spec.whatwg.org/#concept-event-dispatch
   // 14. Unset event’s dispatch flag, stop propagation flag, and stop immediate
   // propagation flag.
@@ -302,7 +319,7 @@ inline void EventDispatcher::DispatchEventPostProcess(
   event_->SetCurrentTarget(nullptr);
 
   bool is_click = event_->IsMouseEvent() &&
-                  ToMouseEvent(*event_).type() == EventTypeNames::click;
+                  ToMouseEvent(*event_).type() == event_type_names::kClick;
   if (is_click) {
     // Fire an accessibility event indicating a node was clicked on.  This is
     // safe if event_->target()->ToNode() returns null.
@@ -331,7 +348,7 @@ inline void EventDispatcher::DispatchEventPostProcess(
   // fastclick.js seems to generate these. crbug.com/642698
   // TODO(dtapuska): Change this to a target SDK quirk crbug.com/643705
   if (!is_trusted_or_click && event_->IsMouseEvent() &&
-      event_->type() == EventTypeNames::mousedown &&
+      event_->type() == event_type_names::kMousedown &&
       IsHTMLSelectElement(*node_)) {
     if (Settings* settings = node_->GetDocument().GetSettings()) {
       is_trusted_or_click = settings->GetWideViewportQuirkEnabled();
@@ -353,9 +370,9 @@ inline void EventDispatcher::DispatchEventPostProcess(
     if (!event_->DefaultHandled() && event_->bubbles()) {
       wtf_size_t size = event_->GetEventPath().size();
       for (wtf_size_t i = 1; i < size; ++i) {
-        event_->GetEventPath()[i].GetNode()->WillCallDefaultEventHandler(
+        event_->GetEventPath()[i].GetNode().WillCallDefaultEventHandler(
             *event_);
-        event_->GetEventPath()[i].GetNode()->DefaultEventHandler(*event_);
+        event_->GetEventPath()[i].GetNode().DefaultEventHandler(*event_);
         DCHECK(!event_->defaultPrevented());
         if (event_->DefaultHandled())
           break;
@@ -367,7 +384,7 @@ inline void EventDispatcher::DispatchEventPostProcess(
   // it to open. This measures a possible breakage of not allowing untrusted
   // events to open select boxes.
   if (!event_->isTrusted() && event_->IsMouseEvent() &&
-      event_->type() == EventTypeNames::mousedown &&
+      event_->type() == event_type_names::kMousedown &&
       IsHTMLSelectElement(*node_)) {
     UseCounter::Count(node_->GetDocument(),
                       WebFeature::kUntrustedMouseDownEventDispatchedToSelect);

@@ -98,7 +98,7 @@ TEST_P(HTMLCanvasPainterTestForSPv2, Canvas2DLayerAppearsInLayerTree) {
 
   // Force the page to paint.
   element->FinalizeFrame();
-  GetDocument().View()->UpdateAllLifecyclePhases();
+  UpdateAllLifecyclePhasesForTest();
 
   // Fetch the layer associated with the <canvas>, and check that it was
   // correctly configured in the layer tree.

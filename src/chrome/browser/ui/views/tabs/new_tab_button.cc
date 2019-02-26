@@ -4,15 +4,20 @@
 
 #include "chrome/browser/ui/views/tabs/new_tab_button.h"
 
+#include <string>
+
+#include "base/strings/string_number_conversions.h"
 #include "build/build_config.h"
 #include "chrome/browser/themes/theme_properties.h"
 #include "chrome/browser/ui/browser_list.h"
 #include "chrome/browser/ui/layout_constants.h"
 #include "chrome/browser/ui/views/chrome_layout_provider.h"
-#include "chrome/browser/ui/views/feature_promos/new_tab_promo_bubble_view.h"
+#include "chrome/browser/ui/views/feature_promos/feature_promo_bubble_view.h"
 #include "chrome/browser/ui/views/tabs/browser_tab_strip_controller.h"
 #include "chrome/browser/ui/views/tabs/tab_strip.h"
+#include "chrome/grit/generated_resources.h"
 #include "components/feature_engagement/buildflags.h"
+#include "components/variations/variations_associated_data.h"
 #include "ui/base/default_theme_provider.h"
 #include "ui/base/material_design/material_design_controller.h"
 #include "ui/gfx/color_utils.h"
@@ -31,8 +36,26 @@
 #if BUILDFLAG(ENABLE_DESKTOP_IN_PRODUCT_HELP)
 #include "chrome/browser/feature_engagement/new_tab/new_tab_tracker.h"
 #include "chrome/browser/feature_engagement/new_tab/new_tab_tracker_factory.h"
-#include "chrome/browser/ui/views/feature_promos/new_tab_promo_bubble_view.h"
 #endif
+
+namespace {
+
+// For new tab in-product help.
+int GetNewTabPromoStringSpecifier() {
+  static constexpr int kTextIds[] = {IDS_NEWTAB_PROMO_0, IDS_NEWTAB_PROMO_1,
+                                     IDS_NEWTAB_PROMO_2};
+  const std::string& str = variations::GetVariationParamValue(
+      "NewTabInProductHelp", "x_promo_string");
+  size_t text_specifier;
+  if (!base::StringToSizeT(str, &text_specifier) ||
+      text_specifier >= base::size(kTextIds)) {
+    text_specifier = 0;
+  }
+
+  return kTextIds[text_specifier];
+}
+
+}  // namespace
 
 // static
 const gfx::Size NewTabButton::kButtonSize{28, 28};
@@ -49,7 +72,7 @@ NewTabButton::NewTabButton(TabStrip* tab_strip, views::ButtonListener* listener)
   ink_drop_container_ = new views::InkDropContainerView();
   AddChildView(ink_drop_container_);
   ink_drop_container_->SetVisible(false);
-  SetInkDropMode(InkDropMode::ON_NO_GESTURE_HANDLER);
+  SetInkDropMode(InkDropMode::ON);
   set_ink_drop_visible_opacity(0.08f);
 
   SetFocusPainter(nullptr);
@@ -78,7 +101,9 @@ void NewTabButton::CloseBubbleForLastActiveBrowser() {
 void NewTabButton::ShowPromo() {
   DCHECK(!new_tab_promo_);
   // Owned by its native widget. Will be destroyed as its widget is destroyed.
-  new_tab_promo_ = NewTabPromoBubbleView::CreateOwned(this);
+  new_tab_promo_ = FeaturePromoBubbleView::CreateOwned(
+      this, views::BubbleBorder::LEFT_CENTER, GetNewTabPromoStringSpecifier(),
+      FeaturePromoBubbleView::ActivationAction::DO_NOT_ACTIVATE);
   new_tab_promo_observer_.Add(new_tab_promo_->GetWidget());
   SchedulePaint();
 }
@@ -200,7 +225,6 @@ gfx::Size NewTabButton::CalculatePreferredSize() const {
 void NewTabButton::OnBoundsChanged(const gfx::Rect& previous_bounds) {
   const gfx::Size ink_drop_size = GetContentsBounds().size();
   GetInkDrop()->HostSizeChanged(ink_drop_size);
-  UpdateInkDropMaskLayerSize(ink_drop_size);
 }
 
 bool NewTabButton::GetHitTestMask(gfx::Path* mask) const {
@@ -273,8 +297,7 @@ void NewTabButton::PaintPlusIcon(gfx::Canvas* canvas) const {
   constexpr int kStrokeWidth = 2;
   flags.setStrokeWidth(kStrokeWidth);
 
-  const int radius =
-      ui::MaterialDesignController::IsTouchOptimizedUiEnabled() ? 7 : 6;
+  const int radius = ui::MaterialDesignController::touch_ui() ? 7 : 6;
   const int offset = GetCornerRadius() - radius;
   // The cap will be added outside the end of the stroke; inset to compensate.
   constexpr int kCapRadius = kStrokeWidth / 2;

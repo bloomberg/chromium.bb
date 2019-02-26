@@ -35,7 +35,7 @@ void FakeNotificationsInstance::SetDoNotDisturbStatusOnAndroid(
   latest_do_not_disturb_status_ = std::move(status);
 }
 
-void FakeNotificationsInstance::CancelLongPress(const std::string& key) {}
+void FakeNotificationsInstance::CancelPress(const std::string& key) {}
 
 void FakeNotificationsInstance::InitDeprecated(
     mojom::NotificationsHostPtr host_ptr) {
@@ -56,5 +56,12 @@ const mojom::ArcDoNotDisturbStatusPtr&
 FakeNotificationsInstance::latest_do_not_disturb_status() const {
   return latest_do_not_disturb_status_;
 }
+
+void FakeNotificationsInstance::PerformDeferredUserAction(uint32_t action_id) {}
+void FakeNotificationsInstance::CancelDeferredUserAction(uint32_t action_id) {}
+void FakeNotificationsInstance::SetLockScreenSettingOnAndroid(
+    mojom::ArcLockScreenNotificationSettingPtr setting) {}
+void FakeNotificationsInstance::SetNotificationConfiguration(
+    mojom::NotificationConfigurationPtr configuration) {}
 
 }  // namespace arc

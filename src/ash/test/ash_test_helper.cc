@@ -12,8 +12,10 @@
 #include "ash/app_list/test/app_list_test_helper.h"
 #include "ash/display/display_configuration_controller_test_api.h"
 #include "ash/display/screen_ash.h"
+#include "ash/keyboard/ash_keyboard_controller.h"
 #include "ash/mojo_test_interface_factory.h"
 #include "ash/public/cpp/ash_switches.h"
+#include "ash/public/cpp/test/test_keyboard_controller_observer.h"
 #include "ash/session/test_session_controller_client.h"
 #include "ash/shell.h"
 #include "ash/shell_init_params.h"
@@ -25,6 +27,7 @@
 #include "base/guid.h"
 #include "base/run_loop.h"
 #include "base/strings/string_split.h"
+#include "base/token.h"
 #include "chromeos/audio/cras_audio_handler.h"
 #include "chromeos/cryptohome/system_salt_getter.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
@@ -42,6 +45,7 @@
 #include "services/service_manager/public/cpp/identity.h"
 #include "services/service_manager/public/cpp/service.h"
 #include "services/ws/public/cpp/host/gpu_interface_provider.h"
+#include "services/ws/public/mojom/constants.mojom.h"
 #include "services/ws/public/mojom/gpu.mojom.h"
 #include "services/ws/window_service.h"
 #include "ui/aura/env.h"
@@ -53,7 +57,6 @@
 #include "ui/base/ime/input_method_initializer.h"
 #include "ui/base/material_design/material_design_controller.h"
 #include "ui/base/platform_window_defaults.h"
-#include "ui/base/test/material_design_controller_test_api.h"
 #include "ui/base/ui_base_features.h"
 #include "ui/base/ui_base_switches_util.h"
 #include "ui/compositor/scoped_animation_duration_scale_mode.h"
@@ -102,94 +105,6 @@ class TestGpuInterfaceProvider : public ws::GpuInterfaceProvider {
   std::vector<mojo::ScopedMessagePipeHandle> request_handles_;
 
   DISALLOW_COPY_AND_ASSIGN(TestGpuInterfaceProvider);
-};
-
-// TODO(sky): refactor and move to services.
-class TestConnector : public service_manager::mojom::Connector {
- public:
-  TestConnector() : test_user_id_(base::GenerateGUID()) {}
-
-  ~TestConnector() override = default;
-
-  service_manager::mojom::ServiceRequest GenerateServiceRequest() {
-    return mojo::MakeRequest(&service_ptr_);
-  }
-
-  void Start() {
-    service_ptr_->OnStart(
-        service_manager::Identity("TestConnectorFactory", test_user_id_),
-        base::BindOnce(&TestConnector::OnStartCallback,
-                       base::Unretained(this)));
-  }
-
-  std::unique_ptr<service_manager::Connector> CreateConnector() {
-    service_manager::mojom::ConnectorPtr proxy;
-    Clone(mojo::MakeRequest(&proxy));
-    return std::make_unique<service_manager::Connector>(std::move(proxy));
-  }
-
- private:
-  void OnStartCallback(
-      service_manager::mojom::ConnectorRequest request,
-      service_manager::mojom::ServiceControlAssociatedRequest control_request) {
-  }
-
-  // mojom::Connector implementation:
-  void BindInterface(const service_manager::Identity& target,
-                     const std::string& interface_name,
-                     mojo::ScopedMessagePipeHandle interface_pipe,
-                     BindInterfaceCallback callback) override {
-    service_manager::mojom::ServicePtr* service_ptr = &service_ptr_;
-    // If you hit the DCHECK below, you need to add a call to AddService() in
-    // your test for the reported service.
-    DCHECK(service_ptr) << "Binding interface for unregistered service "
-                        << target.name();
-    (*service_ptr)
-        ->OnBindInterface(service_manager::BindSourceInfo(
-                              service_manager::Identity("TestConnectorFactory",
-                                                        test_user_id_),
-                              service_manager::CapabilitySet()),
-                          interface_name, std::move(interface_pipe),
-                          base::DoNothing());
-    std::move(callback).Run(service_manager::mojom::ConnectResult::SUCCEEDED,
-                            service_manager::Identity());
-  }
-
-  void StartService(const service_manager::Identity& target,
-                    StartServiceCallback callback) override {
-    NOTREACHED();
-  }
-
-  void QueryService(const service_manager::Identity& target,
-                    QueryServiceCallback callback) override {
-    NOTREACHED();
-  }
-
-  void StartServiceWithProcess(
-      const service_manager::Identity& identity,
-      mojo::ScopedMessagePipeHandle service,
-      service_manager::mojom::PIDReceiverRequest pid_receiver_request,
-      StartServiceWithProcessCallback callback) override {
-    NOTREACHED();
-  }
-
-  void Clone(service_manager::mojom::ConnectorRequest request) override {
-    bindings_.AddBinding(this, std::move(request));
-  }
-
-  void FilterInterfaces(
-      const std::string& spec,
-      const service_manager::Identity& source,
-      service_manager::mojom::InterfaceProviderRequest source_request,
-      service_manager::mojom::InterfaceProviderPtr target) override {
-    NOTREACHED();
-  }
-
-  const std::string test_user_id_;
-  mojo::BindingSet<service_manager::mojom::Connector> bindings_;
-  service_manager::mojom::ServicePtr service_ptr_;
-
-  DISALLOW_COPY_AND_ASSIGN(TestConnector);
 };
 
 AshTestHelper::AshTestHelper(AshTestEnvironment* ash_test_environment)
@@ -279,17 +194,17 @@ void AshTestHelper::SetUp(bool start_session, bool provide_local_state) {
   // last cursor visibility state, etc.
   ::wm::CursorManager::ResetCursorVisibilityStateForTest();
 
-  // ContentTestSuiteBase might have already initialized
-  // MaterialDesignController in unit_tests suite.
-  ui::test::MaterialDesignControllerTestAPI::Uninitialize();
   ui::MaterialDesignController::Initialize();
 
   CreateShell();
 
+  // Reset aura::Env to eliminate test dependency (https://crbug.com/586514).
+  aura::test::EnvTestHelper env_helper(Shell::Get()->aura_env());
+  env_helper.ResetEnvForTesting();
+
   aura::test::SetEnvForTestWindows(Shell::Get()->aura_env());
 
-  aura::test::EnvTestHelper(Shell::Get()->aura_env())
-      .SetInputStateLookup(std::unique_ptr<aura::InputStateLookup>());
+  env_helper.SetInputStateLookup(std::unique_ptr<aura::InputStateLookup>());
 
   Shell* shell = Shell::Get();
 
@@ -325,9 +240,19 @@ void AshTestHelper::SetUp(bool start_session, bool provide_local_state) {
   app_list_test_helper_ = std::make_unique<AppListTestHelper>();
 
   CreateWindowService();
+
+  // Create the test keyboard controller observer to respond to
+  // OnKeyboardLoadContents() and enable the virtual keyboard. Note: enabling
+  // the keyboard just makes it available, it does not show it or otherwise
+  // affect behavior.
+  test_keyboard_controller_observer_ =
+      std::make_unique<TestKeyboardControllerObserver>(
+          shell->ash_keyboard_controller());
+  shell->ash_keyboard_controller()->EnableKeyboard();
 }
 
 void AshTestHelper::TearDown() {
+  test_keyboard_controller_observer_.reset();
   app_list_test_helper_.reset();
 
   aura::test::SetEnvForTestWindows(nullptr);
@@ -419,17 +344,16 @@ service_manager::Connector* AshTestHelper::GetWindowServiceConnector() {
 }
 
 void AshTestHelper::CreateWindowService() {
-  test_connector_ = std::make_unique<TestConnector>();
   Shell::Get()->window_service_owner()->BindWindowService(
-      test_connector_->GenerateServiceRequest());
-  test_connector_->Start();
+      test_connector_factory_.RegisterInstance(ws::mojom::kServiceName));
+
   // WindowService::OnStart() is not immediately called (it happens async over
   // mojo). If this becomes a problem we could run the MessageLoop here.
   // Surprisingly running the MessageLooop results in some test failures. These
   // failures seem to be because spinning the messageloop causes some timers to
   // fire (perhaps animations too) the results in a slightly different Shell
   // state.
-  window_service_connector_ = test_connector_->CreateConnector();
+  window_service_connector_ = test_connector_factory_.CreateConnector();
 }
 
 void AshTestHelper::CreateShell() {

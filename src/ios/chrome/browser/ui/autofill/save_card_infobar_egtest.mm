@@ -95,7 +95,8 @@ class SaveCardInfobarEGTestHelper {
     DCHECK(web_state);
     return AutofillDriverIOS::FromWebStateAndWebFrame(web_state, main_frame)
         ->autofill_manager()
-        ->form_data_importer_.get()
+        ->client()
+        ->GetFormDataImporter()
         ->credit_card_save_manager_.get();
   }
 
@@ -105,7 +106,8 @@ class SaveCardInfobarEGTestHelper {
     DCHECK(web_state);
     return AutofillDriverIOS::FromWebStateAndWebFrame(web_state, main_frame)
         ->autofill_manager()
-        ->payments_client();
+        ->client()
+        ->GetPaymentsClient();
   }
 
  private:
@@ -157,6 +159,11 @@ class SaveCardInfobarEGTestHelper {
   // Clear existing credit cards.
   for (const auto* creditCard : personal_data_manager_->GetCreditCards()) {
     personal_data_manager_->RemoveByGUID(creditCard->guid());
+  }
+
+  // Clear existing profiles.
+  for (const auto* profile : personal_data_manager_->GetProfiles()) {
+    personal_data_manager_->RemoveByGUID(profile->guid());
   }
 
   [super tearDown];
@@ -419,6 +426,10 @@ class SaveCardInfobarEGTestHelper {
 // Google Payments, and UMA metrics are correctly logged if the user accepts
 // upload.
 - (void)testUMA_Upstream_UserAccepts {
+  // TODO(crbug.com/895687): Re-enable this test after eliminating the need for
+  // disabling EarlGrey synchronization.
+  EARL_GREY_TEST_DISABLED(@"Test disabled.");
+
   base::HistogramTester histogram_tester;
 
   [ChromeEarlGrey

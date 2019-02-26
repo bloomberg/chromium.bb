@@ -21,19 +21,17 @@ DIAGNOSTICS_QUERY_LIMIT = 10000
 HISTOGRAMS_QUERY_LIMIT = 1000
 ROWS_QUERY_LIMIT = 20000
 
-COLUMNS_REQUIRING_ROWS = {'timestamp', 'revisions'}.union(descriptor.STATISTICS)
+COLUMNS_REQUIRING_ROWS = {'timestamp', 'revisions', 'annotations'}.union(
+    descriptor.STATISTICS)
 CACHE_SECONDS = 60 * 60 * 24 * 7
 
 
 class Timeseries2Handler(api_request_handler.ApiRequestHandler):
 
-  def _AllowAnonymous(self):
-    return True
+  def _CheckUser(self):
+    pass
 
-  def PrivilegedPost(self, *args):
-    return self.UnprivilegedPost(*args)
-
-  def UnprivilegedPost(self, *_):
+  def Post(self):
     desc = descriptor.Descriptor(
         test_suite=self.request.get('test_suite'),
         measurement=self.request.get('measurement'),
@@ -200,9 +198,9 @@ class TimeseriesQuery(object):
     limit = ROWS_QUERY_LIMIT
     projection = None
 
-    # 'r_'-prefixed revisions are not in any index, so a projection query can't
-    # get them.
-    if 'revisions' in self._columns:
+    # revisions and annotations are not in any index, so a projection query
+    # can't get them.
+    if 'revisions' in self._columns or 'annotations' in self._columns:
       return projection, limit
 
     # There is no index like (parent_test, -timestamp, revision, value):
@@ -262,6 +260,10 @@ class TimeseriesQuery(object):
           datum['revisions'] = {
               attr: value for attr, value in row.to_dict().iteritems()
               if attr.startswith('r_')}
+        if 'annotations' in self._columns:
+          datum['annotations'] = {
+              attr: value for attr, value in row.to_dict().iteritems()
+              if attr.startswith('a_')}
 
     if 'histogram' in self._columns and test_desc.statistic == None:
       with timing.WallTimeLogger('fetch_histograms'):

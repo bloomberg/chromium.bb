@@ -10,9 +10,13 @@
 #include <set>
 #include <string>
 
+#include "base/base_paths.h"
 #include "base/feature_list.h"
 #include "base/files/file_path.h"
 #include "base/format_macros.h"
+#include "base/json/json_file_value_serializer.h"
+#include "base/path_service.h"
+#include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
 #include "base/test/metrics/histogram_enum_reader.h"
 #include "base/values.h"
@@ -64,6 +68,41 @@ std::set<std::string> GetAllSwitchesAndFeaturesForTesting() {
   return result;
 }
 
+struct FlagMetadataEntry {
+  std::vector<std::string> owners;
+  int expiry_milestone;
+};
+
+using FlagMetadataMap = std::map<std::string, FlagMetadataEntry>;
+
+FlagMetadataMap LoadFlagMetadata() {
+  FlagMetadataMap metadata;
+  base::FilePath metadata_path;
+  base::PathService::Get(base::DIR_SOURCE_ROOT, &metadata_path);
+  JSONFileValueDeserializer deserializer(
+      metadata_path.AppendASCII("chrome").AppendASCII("browser").AppendASCII(
+          "flag-metadata.json"));
+  int error_code;
+  std::string error_message;
+  std::unique_ptr<base::Value> metadata_json =
+      deserializer.Deserialize(&error_code, &error_message);
+  DCHECK(metadata_json) << "Failed to load flag metadata: " << error_code << " "
+                        << error_message;
+
+  for (const auto& entry : metadata_json->GetList()) {
+    std::string name = entry.FindKey("name")->GetString();
+    std::vector<std::string> owners;
+    if (const base::Value* e = entry.FindKey("owners")) {
+      for (const auto& owner : e->GetList())
+        owners.push_back(owner.GetString());
+    }
+    int expiry_milestone = entry.FindKey("expiry_milestone")->GetInt();
+    metadata[name] = FlagMetadataEntry{owners, expiry_milestone};
+  }
+
+  return metadata;
+}
+
 }  // anonymous namespace
 
 // Makes sure there are no separators in any of the entry names.
@@ -75,6 +114,41 @@ TEST(AboutFlagsTest, NoSeparators) {
     EXPECT_EQ(std::string::npos, name.find(flags_ui::testing::kMultiSeparator))
         << i;
   }
+}
+
+// Makes sure that every flag has an owner and an expiry entry in
+// flag-metadata.json.
+TEST(AboutFlagsTest, EveryFlagHasMetadata) {
+  size_t count;
+  const flags_ui::FeatureEntry* entries = testing::GetFeatureEntries(&count);
+  FlagMetadataMap metadata = LoadFlagMetadata();
+
+  std::vector<std::string> missing_flags;
+
+  for (size_t i = 0; i < count; ++i) {
+    if (metadata.count(entries[i].internal_name) == 0)
+      missing_flags.push_back(entries[i].internal_name);
+  }
+
+  std::sort(missing_flags.begin(), missing_flags.end());
+
+  EXPECT_EQ(0u, missing_flags.size())
+      << "Missing flags: " << base::JoinString(missing_flags, "\n  ");
+}
+
+TEST(AboutFlagsTest, DISABLED_EveryFlagHasNonEmptyOwners) {
+  FlagMetadataMap metadata = LoadFlagMetadata();
+  std::vector<std::string> sad_flags;
+
+  for (const auto& it : metadata) {
+    if (it.second.owners.empty())
+      sad_flags.push_back(it.first);
+  }
+
+  std::sort(sad_flags.begin(), sad_flags.end());
+
+  EXPECT_EQ(0u, sad_flags.size())
+      << "Flags missing owners: " << base::JoinString(sad_flags, "\n  ");
 }
 
 class AboutFlagsHistogramTest : public ::testing::Test {

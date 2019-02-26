@@ -4,6 +4,7 @@
 
 #include "chrome/browser/renderer_context_menu/render_view_context_menu.h"
 
+#include "base/bind.h"
 #include "base/run_loop.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/test/scoped_feature_list.h"
@@ -352,7 +353,8 @@ TEST_F(RenderViewContextMenuExtensionsTest,
       static_cast<MenuManager*>(
           (MenuManagerFactory::GetInstance()->SetTestingFactoryAndUse(
               profile(),
-              &MenuManagerFactory::BuildServiceInstanceForTesting)));
+              base::BindRepeating(
+                  &MenuManagerFactory::BuildServiceInstanceForTesting))));
 
   const Extension* extension1 = environment().MakeExtension(
       base::DictionaryValue(), "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa");
@@ -605,6 +607,7 @@ TEST_F(RenderViewContextMenuPrefsTest, ShowAllPasswords) {
       web_contents())
       ->RenderFrameCreated(web_contents()->GetMainFrame());
 
+  NavigateAndCommit(GURL("http://www.foo.com/"));
   content::ContextMenuParams params = CreateParams(MenuItem::EDITABLE);
   params.input_field_type = blink::WebContextMenuData::kInputFieldTypePassword;
   auto menu = std::make_unique<TestRenderViewContextMenu>(
@@ -625,6 +628,7 @@ TEST_F(RenderViewContextMenuPrefsTest, ShowAllPasswordsIncognito) {
       web_contents())
       ->RenderFrameCreated(web_contents()->GetMainFrame());
 
+  NavigateAndCommit(GURL("http://www.foo.com/"));
   content::ContextMenuParams params = CreateParams(MenuItem::EDITABLE);
   params.input_field_type = blink::WebContextMenuData::kInputFieldTypePassword;
   auto menu = std::make_unique<TestRenderViewContextMenu>(

@@ -154,8 +154,11 @@ ScriptPromise Body::arrayBuffer(ScriptState* script_state,
     BodyBuffer()->StartLoading(FetchDataLoader::CreateLoaderAsArrayBuffer(),
                                new BodyArrayBufferConsumer(resolver),
                                exception_state);
-    if (exception_state.HadException())
+    if (exception_state.HadException()) {
+      // Need to resolve the ScriptPromiseResolver to avoid a DCHECK().
+      resolver->Resolve();
       return ScriptPromise();
+    }
   } else {
     resolver->Resolve(DOMArrayBuffer::Create(0u, 1));
   }
@@ -178,8 +181,11 @@ ScriptPromise Body::blob(ScriptState* script_state,
     BodyBuffer()->StartLoading(
         FetchDataLoader::CreateLoaderAsBlobHandle(MimeType()),
         new BodyBlobConsumer(resolver), exception_state);
-    if (exception_state.HadException())
+    if (exception_state.HadException()) {
+      // Need to resolve the ScriptPromiseResolver to avoid a DCHECK().
+      resolver->Resolve();
       return ScriptPromise();
+    }
   } else {
     std::unique_ptr<BlobData> blob_data = BlobData::Create();
     blob_data->SetContentType(MimeType());
@@ -211,8 +217,11 @@ ScriptPromise Body::formData(ScriptState* script_state,
       body_buffer->StartLoading(
           FetchDataLoader::CreateLoaderAsFormData(boundary),
           new BodyFormDataConsumer(resolver), exception_state);
-      if (exception_state.HadException())
+      if (exception_state.HadException()) {
+        // Need to resolve the ScriptPromiseResolver to avoid a DCHECK().
+        resolver->Resolve();
         return ScriptPromise();
+      }
       return promise;
     }
   } else if (parsedType == "application/x-www-form-urlencoded") {
@@ -220,8 +229,11 @@ ScriptPromise Body::formData(ScriptState* script_state,
       BodyBuffer()->StartLoading(FetchDataLoader::CreateLoaderAsString(),
                                  new BodyFormDataConsumer(resolver),
                                  exception_state);
-      if (exception_state.HadException())
+      if (exception_state.HadException()) {
+        // Need to resolve the ScriptPromiseResolver to avoid a DCHECK().
+        resolver->Resolve();
         return ScriptPromise();
+      }
     } else {
       resolver->Resolve(FormData::Create());
     }
@@ -231,8 +243,11 @@ ScriptPromise Body::formData(ScriptState* script_state,
       BodyBuffer()->StartLoading(FetchDataLoader::CreateLoaderAsFailure(),
                                  new BodyFormDataConsumer(resolver),
                                  exception_state);
-      if (exception_state.HadException())
+      if (exception_state.HadException()) {
+        // Need to resolve the ScriptPromiseResolver to avoid a DCHECK().
+        resolver->Resolve();
         return ScriptPromise();
+      }
       return promise;
     }
   }
@@ -257,8 +272,11 @@ ScriptPromise Body::json(ScriptState* script_state,
   if (BodyBuffer()) {
     BodyBuffer()->StartLoading(FetchDataLoader::CreateLoaderAsString(),
                                new BodyJsonConsumer(resolver), exception_state);
-    if (exception_state.HadException())
+    if (exception_state.HadException()) {
+      // Need to resolve the ScriptPromiseResolver to avoid a DCHECK().
+      resolver->Resolve();
       return ScriptPromise();
+    }
   } else {
     resolver->Reject(V8ThrowException::CreateSyntaxError(
         script_state->GetIsolate(), "Unexpected end of input"));
@@ -281,20 +299,21 @@ ScriptPromise Body::text(ScriptState* script_state,
   if (BodyBuffer()) {
     BodyBuffer()->StartLoading(FetchDataLoader::CreateLoaderAsString(),
                                new BodyTextConsumer(resolver), exception_state);
-    if (exception_state.HadException())
+    if (exception_state.HadException()) {
+      // Need to resolve the ScriptPromiseResolver to avoid a DCHECK().
+      resolver->Resolve();
       return ScriptPromise();
+    }
   } else {
     resolver->Resolve(String());
   }
   return promise;
 }
 
-ScriptValue Body::body(ScriptState* script_state) {
+ReadableStream* Body::body() {
   if (!BodyBuffer())
-    return ScriptValue::CreateNull(script_state);
-  ScriptValue stream = BodyBuffer()->Stream();
-  DCHECK_EQ(stream.GetScriptState(), script_state);
-  return stream;
+    return nullptr;
+  return BodyBuffer()->Stream();
 }
 
 Body::BodyUsed Body::IsBodyUsed(ExceptionState& exception_state) {
@@ -327,8 +346,9 @@ bool Body::HasPendingActivity() const {
   return body_buffer->HasPendingActivity();
 }
 
-bool Body::IsBodyUsedForDCheck() {
-  return BodyBuffer() && BodyBuffer()->IsStreamDisturbedForDCheck();
+bool Body::IsBodyUsedForDCheck(ExceptionState& exception_state) {
+  return BodyBuffer() &&
+         BodyBuffer()->IsStreamDisturbedForDCheck(exception_state);
 }
 
 Body::Body(ExecutionContext* context) : ContextClient(context) {}

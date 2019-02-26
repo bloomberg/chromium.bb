@@ -13,8 +13,6 @@
 
 namespace blink {
 
-using namespace HTMLNames;
-
 AXRadioInput::AXRadioInput(LayoutObject* layout_object,
                            AXObjectCacheImpl& ax_object_cache)
     : AXLayoutObject(layout_object, ax_object_cache) {
@@ -28,7 +26,7 @@ AXRadioInput::AXRadioInput(LayoutObject* layout_object,
 
 AXRadioInput* AXRadioInput::Create(LayoutObject* layout_object,
                                    AXObjectCacheImpl& ax_object_cache) {
-  return new AXRadioInput(layout_object, ax_object_cache);
+  return MakeGarbageCollected<AXRadioInput>(layout_object, ax_object_cache);
 }
 
 void AXRadioInput::UpdatePosAndSetSize(int position) {

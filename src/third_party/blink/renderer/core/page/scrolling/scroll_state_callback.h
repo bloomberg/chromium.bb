@@ -42,10 +42,15 @@ class ScrollStateCallbackV8Impl : public ScrollStateCallback {
       V8ScrollStateCallback* callback,
       const String& native_scroll_behavior) {
     DCHECK(callback);
-    return new ScrollStateCallbackV8Impl(
+    return MakeGarbageCollected<ScrollStateCallbackV8Impl>(
         callback, ParseNativeScrollBehavior(native_scroll_behavior));
   }
 
+  explicit ScrollStateCallbackV8Impl(
+      V8ScrollStateCallback* callback,
+      WebNativeScrollBehavior native_scroll_behavior)
+      : ScrollStateCallback(native_scroll_behavior),
+        callback_(ToV8PersistentCallbackFunction(callback)) {}
   ~ScrollStateCallbackV8Impl() override = default;
 
   void Trace(blink::Visitor*) override;
@@ -55,12 +60,6 @@ class ScrollStateCallbackV8Impl : public ScrollStateCallback {
  private:
   static WebNativeScrollBehavior ParseNativeScrollBehavior(
       const String& native_scroll_behavior);
-
-  explicit ScrollStateCallbackV8Impl(
-      V8ScrollStateCallback* callback,
-      WebNativeScrollBehavior native_scroll_behavior)
-      : ScrollStateCallback(native_scroll_behavior),
-        callback_(ToV8PersistentCallbackFunction(callback)) {}
 
   Member<V8PersistentCallbackFunction<V8ScrollStateCallback>> callback_;
 };

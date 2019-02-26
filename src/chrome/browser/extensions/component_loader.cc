@@ -28,6 +28,7 @@
 #include "chrome/grit/chromium_strings.h"
 #include "chrome/grit/generated_resources.h"
 #include "components/crx_file/id_util.h"
+#include "components/nacl/common/buildflags.h"
 #include "components/version_info/version_info.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/plugin_service.h"
@@ -40,12 +41,12 @@
 #include "extensions/common/manifest_constants.h"
 #include "ppapi/buildflags/buildflags.h"
 #include "printing/buildflags/buildflags.h"
+#include "ui/accessibility/accessibility_switches.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/resource_bundle.h"
 
 #if defined(OS_CHROMEOS)
 #include "chromeos/chromeos_switches.h"
-#include "components/chrome_apps/grit/chrome_apps_resources.h"
 #include "components/user_manager/user_manager.h"
 #include "content/public/browser/site_instance.h"
 #include "content/public/browser/storage_partition.h"
@@ -319,7 +320,7 @@ void ComponentLoader::AddGalleryExtension() {
 }
 
 void ComponentLoader::AddZipArchiverExtension() {
-#if defined(OS_CHROMEOS)
+#if defined(OS_CHROMEOS) && BUILDFLAG(ENABLE_NACL)
   base::FilePath resources_path;
   if (base::PathService::Get(chrome::DIR_RESOURCES, &resources_path)) {
     AddWithNameAndDescriptionFromDir(
@@ -328,17 +329,7 @@ void ComponentLoader::AddZipArchiverExtension() {
         l10n_util::GetStringUTF8(IDS_ZIP_ARCHIVER_NAME),
         l10n_util::GetStringUTF8(IDS_ZIP_ARCHIVER_DESCRIPTION));
   }
-#endif  // defined(OS_CHROMEOS)
-}
-
-void ComponentLoader::AddWebstoreWidgetExtension() {
-#if defined(OS_CHROMEOS)
-  AddWithNameAndDescription(
-      IDR_CHROME_APPS_WEBSTORE_WIDGET_MANIFEST,
-      base::FilePath(FILE_PATH_LITERAL("webstore_widget")),
-      l10n_util::GetStringUTF8(IDS_WEBSTORE_WIDGET_APP_NAME),
-      l10n_util::GetStringUTF8(IDS_WEBSTORE_WIDGET_APP_DESC));
-#endif
+#endif  // defined(OS_CHROMEOS) && BUILDFLAG(ENABLE_NACL)
 }
 
 void ComponentLoader::AddHangoutServicesExtension() {
@@ -361,13 +352,20 @@ void ComponentLoader::AddNetworkSpeechSynthesisExtension() {
 }
 
 #if defined(OS_CHROMEOS)
-void ComponentLoader::AddChromeOsSpeechSynthesisExtension() {
+void ComponentLoader::AddChromeOsSpeechSynthesisExtensions() {
   AddComponentFromDir(
-      base::FilePath(extension_misc::kSpeechSynthesisExtensionPath),
-      extension_misc::kSpeechSynthesisExtensionId,
-      base::Bind(&ComponentLoader::EnableFileSystemInGuestMode,
-                 weak_factory_.GetWeakPtr(),
-                 extension_misc::kSpeechSynthesisExtensionId));
+      base::FilePath(extension_misc::kGoogleSpeechSynthesisExtensionPath),
+      extension_misc::kGoogleSpeechSynthesisExtensionId,
+      base::BindRepeating(&ComponentLoader::EnableFileSystemInGuestMode,
+                          weak_factory_.GetWeakPtr(),
+                          extension_misc::kGoogleSpeechSynthesisExtensionId));
+
+  if (::switches::AreExperimentalAccessibilityFeaturesEnabled()) {
+    AddComponentFromDir(
+        base::FilePath(extension_misc::kEspeakSpeechSynthesisExtensionPath),
+        extension_misc::kEspeakSpeechSynthesisExtensionId,
+        base::RepeatingClosure());
+  }
 }
 #endif
 
@@ -539,7 +537,6 @@ void ComponentLoader::AddDefaultComponentExtensionsWithBackgroundPages(
     AddFileManagerExtension();
     AddGalleryExtension();
     AddZipArchiverExtension();
-    AddWebstoreWidgetExtension();
 
     AddHangoutServicesExtension();
     AddImageLoaderExtension();

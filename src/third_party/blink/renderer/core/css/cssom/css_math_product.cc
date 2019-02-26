@@ -53,8 +53,8 @@ CSSMathProduct* CSSMathProduct::Create(CSSNumericValueVector values) {
   CSSNumericValueType final_type =
       CSSMathVariadic::TypeCheck(values, CSSNumericValueType::Multiply, error);
   return error ? nullptr
-               : new CSSMathProduct(CSSNumericArray::Create(std::move(values)),
-                                    final_type);
+               : MakeGarbageCollected<CSSMathProduct>(
+                     CSSNumericArray::Create(std::move(values)), final_type);
 }
 
 base::Optional<CSSNumericSumValue> CSSMathProduct::SumValue() const {

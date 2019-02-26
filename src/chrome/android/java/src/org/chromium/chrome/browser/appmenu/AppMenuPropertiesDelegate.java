@@ -178,19 +178,7 @@ public class AppMenuPropertiesDelegate {
                     !currentTab.isNativePage() && currentTab.getWebContents() != null);
 
             // Prepare translate menu button.
-            boolean isTranslateVisible = !isChromeScheme && !isFileScheme && !isContentScheme
-                    && !TextUtils.isEmpty(url) && currentTab.getWebContents() != null
-                    && ChromeFeatureList.isInitialized()
-                    && ChromeFeatureList.isEnabled(
-                               ChromeFeatureList.TRANSLATE_ANDROID_MANUAL_TRIGGER)
-                    && TranslateBridge.canManuallyTranslate(currentTab);
-            if (ChromeFeatureList.isInitialized()
-                    && ChromeFeatureList.isEnabled(
-                               ChromeFeatureList.TRANSLATE_ANDROID_MANUAL_TRIGGER)) {
-                RecordHistogram.recordBooleanHistogram(
-                        "Translate.MobileMenuTranslate.Shown", isTranslateVisible);
-            }
-            menu.findItem(R.id.translate_id).setVisible(isTranslateVisible);
+            prepareTranslateMenuItem(menu, currentTab);
 
             // Hide 'Add to homescreen' for the following:
             // * chrome:// pages - Android doesn't know how to direct those URLs.
@@ -297,6 +285,20 @@ public class AppMenuPropertiesDelegate {
             homescreenItem.setVisible(false);
             openWebApkItem.setVisible(false);
         }
+    }
+
+    /**
+     * Sets the visibility of the "Translate" menu item.
+     */
+    private void prepareTranslateMenuItem(Menu menu, Tab currentTab) {
+        boolean isTranslateVisible = isTranslateMenuItemVisible(currentTab);
+        if (ChromeFeatureList.isInitialized()
+                && ChromeFeatureList.isEnabled(
+                           ChromeFeatureList.TRANSLATE_ANDROID_MANUAL_TRIGGER)) {
+            RecordHistogram.recordBooleanHistogram(
+                    "Translate.MobileMenuTranslate.Shown", isTranslateVisible);
+        }
+        menu.findItem(R.id.translate_id).setVisible(isTranslateVisible);
     }
 
     /**
@@ -460,4 +462,20 @@ public class AppMenuPropertiesDelegate {
      * @param appMenu The menu the view is inside of.
      */
     public void onFooterViewInflated(AppMenu appMenu, View view) {}
+
+    /**
+     * Returns true iff the translate menu item should be visible.
+     * @param tab Tab being displayed.
+     */
+    public boolean isTranslateMenuItemVisible(Tab tab) {
+        String url = tab.getUrl();
+        boolean isChromeScheme = url.startsWith(UrlConstants.CHROME_URL_PREFIX)
+                || url.startsWith(UrlConstants.CHROME_NATIVE_URL_PREFIX);
+        boolean isFileScheme = url.startsWith(UrlConstants.FILE_URL_PREFIX);
+        boolean isContentScheme = url.startsWith(UrlConstants.CONTENT_URL_PREFIX);
+        return !isChromeScheme && !isFileScheme && !isContentScheme && !TextUtils.isEmpty(url)
+                && tab.getWebContents() != null && ChromeFeatureList.isInitialized()
+                && ChromeFeatureList.isEnabled(ChromeFeatureList.TRANSLATE_ANDROID_MANUAL_TRIGGER)
+                && TranslateBridge.canManuallyTranslate(tab);
+    }
 }

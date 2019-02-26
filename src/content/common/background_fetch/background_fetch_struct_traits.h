@@ -81,9 +81,9 @@ template <>
 struct CONTENT_EXPORT
     StructTraits<blink::mojom::BackgroundFetchSettledFetchDataView,
                  content::BackgroundFetchSettledFetch> {
-  static const content::ServiceWorkerFetchRequest& request(
+  static blink::mojom::FetchAPIRequestPtr request(
       const content::BackgroundFetchSettledFetch& fetch) {
-    return fetch.request;
+    return content::BackgroundFetchSettledFetch::CloneRequest(fetch.request);
   }
   static blink::mojom::FetchAPIResponsePtr response(
       const content::BackgroundFetchSettledFetch& fetch) {

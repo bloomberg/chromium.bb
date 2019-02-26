@@ -15,7 +15,7 @@ namespace content {
 
 namespace {
 
-SkPaint::Hinting RendererPreferencesToSkiaHinting(
+SkFontHinting RendererPreferencesToSkiaHinting(
     const RendererPreferences& prefs) {
   if (!prefs.should_antialias_text) {
     // When anti-aliasing is off, GTK maps all non-zero hinting settings to
@@ -23,25 +23,29 @@ SkPaint::Hinting RendererPreferencesToSkiaHinting(
     // hinting selected will see readable text in everything expect Chromium.
     switch (prefs.hinting) {
       case gfx::FontRenderParams::HINTING_NONE:
-        return SkPaint::kNo_Hinting;
+        return SkFontHinting::kNone;
       case gfx::FontRenderParams::HINTING_SLIGHT:
       case gfx::FontRenderParams::HINTING_MEDIUM:
       case gfx::FontRenderParams::HINTING_FULL:
-        return SkPaint::kNormal_Hinting;
+        return SkFontHinting::kNormal;
       default:
         NOTREACHED();
-        return SkPaint::kNormal_Hinting;
+        return SkFontHinting::kNormal;
     }
   }
 
   switch (prefs.hinting) {
-    case gfx::FontRenderParams::HINTING_NONE:   return SkPaint::kNo_Hinting;
-    case gfx::FontRenderParams::HINTING_SLIGHT: return SkPaint::kSlight_Hinting;
-    case gfx::FontRenderParams::HINTING_MEDIUM: return SkPaint::kNormal_Hinting;
-    case gfx::FontRenderParams::HINTING_FULL:   return SkPaint::kFull_Hinting;
+    case gfx::FontRenderParams::HINTING_NONE:
+      return SkFontHinting::kNone;
+    case gfx::FontRenderParams::HINTING_SLIGHT:
+      return SkFontHinting::kSlight;
+    case gfx::FontRenderParams::HINTING_MEDIUM:
+      return SkFontHinting::kNormal;
+    case gfx::FontRenderParams::HINTING_FULL:
+      return SkFontHinting::kFull;
     default:
       NOTREACHED();
-      return SkPaint::kNormal_Hinting;
+      return SkFontHinting::kNormal;
     }
 }
 

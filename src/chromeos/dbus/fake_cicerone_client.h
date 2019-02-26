@@ -58,6 +58,13 @@ class CHROMEOS_EXPORT FakeCiceroneClient : public CiceroneClient {
       DBusMethodCallback<vm_tools::cicerone::ContainerAppIconResponse> callback)
       override;
 
+  // Fake version of the method that gets information about a Linux package file
+  // inside a Container. |callback| is called after the method call finishes.
+  void GetLinuxPackageInfo(
+      const vm_tools::cicerone::LinuxPackageInfoRequest& request,
+      DBusMethodCallback<vm_tools::cicerone::LinuxPackageInfoResponse> callback)
+      override;
+
   // Fake version of the method that installs an application inside a running
   // Container. |callback| is called after the method call finishes. This does
   // not cause progress events to be fired.
@@ -146,6 +153,12 @@ class CHROMEOS_EXPORT FakeCiceroneClient : public CiceroneClient {
     container_app_icon_response_ = container_app_icon_response;
   }
 
+  void set_linux_package_info_response(
+      const vm_tools::cicerone::LinuxPackageInfoResponse&
+          get_linux_package_info_response) {
+    get_linux_package_info_response_ = get_linux_package_info_response;
+  }
+
   void set_install_linux_package_response(
       const vm_tools::cicerone::InstallLinuxPackageResponse&
           install_linux_package_response) {
@@ -202,6 +215,7 @@ class CHROMEOS_EXPORT FakeCiceroneClient : public CiceroneClient {
   vm_tools::cicerone::LaunchContainerApplicationResponse
       launch_container_application_response_;
   vm_tools::cicerone::ContainerAppIconResponse container_app_icon_response_;
+  vm_tools::cicerone::LinuxPackageInfoResponse get_linux_package_info_response_;
   vm_tools::cicerone::InstallLinuxPackageResponse
       install_linux_package_response_;
   vm_tools::cicerone::CreateLxdContainerResponse create_lxd_container_response_;

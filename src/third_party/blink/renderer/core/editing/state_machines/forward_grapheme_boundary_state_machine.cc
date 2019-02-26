@@ -12,7 +12,7 @@
 
 namespace blink {
 namespace {
-const UChar32 kUnsetCodePoint = WTF::Unicode::kMaxCodepoint + 1;
+const UChar32 kUnsetCodePoint = WTF::unicode::kMaxCodepoint + 1;
 }  // namespace
 
 #define FOR_EACH_FORWARD_GRAPHEME_BOUNDARY_STATE(V)                    \

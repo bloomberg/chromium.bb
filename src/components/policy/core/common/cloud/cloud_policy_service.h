@@ -37,7 +37,7 @@ class POLICY_EXPORT CloudPolicyService : public CloudPolicyClient::Observer,
     // Invoked when CloudPolicyService has finished initializing (any initial
     // policy load activity has completed and the CloudPolicyClient has
     // been registered, if possible).
-    virtual void OnInitializationCompleted(CloudPolicyService* service) = 0;
+    virtual void OnCloudPolicyServiceInitializationCompleted() = 0;
     virtual ~Observer() {}
   };
 
@@ -50,7 +50,7 @@ class POLICY_EXPORT CloudPolicyService : public CloudPolicyClient::Observer,
 
   // Refreshes policy. |callback| will be invoked after the operation completes
   // or aborts because of errors.
-  void RefreshPolicy(const RefreshPolicyCallback& callback);
+  virtual void RefreshPolicy(const RefreshPolicyCallback& callback);
 
   // Unregisters the device. |callback| will be invoked after the operation
   // completes or aborts because of errors. All pending refresh policy requests

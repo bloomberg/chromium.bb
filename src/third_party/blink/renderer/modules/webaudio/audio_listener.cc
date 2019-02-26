@@ -91,15 +91,15 @@ AudioListener::AudioListener(BaseAudioContext& context)
                              AudioParamHandler::AutomationRateMode::kVariable)),
       last_update_time_(-1),
       is_listener_dirty_(false),
-      position_x_values_(AudioUtilities::kRenderQuantumFrames),
-      position_y_values_(AudioUtilities::kRenderQuantumFrames),
-      position_z_values_(AudioUtilities::kRenderQuantumFrames),
-      forward_x_values_(AudioUtilities::kRenderQuantumFrames),
-      forward_y_values_(AudioUtilities::kRenderQuantumFrames),
-      forward_z_values_(AudioUtilities::kRenderQuantumFrames),
-      up_x_values_(AudioUtilities::kRenderQuantumFrames),
-      up_y_values_(AudioUtilities::kRenderQuantumFrames),
-      up_z_values_(AudioUtilities::kRenderQuantumFrames) {
+      position_x_values_(audio_utilities::kRenderQuantumFrames),
+      position_y_values_(audio_utilities::kRenderQuantumFrames),
+      position_z_values_(audio_utilities::kRenderQuantumFrames),
+      forward_x_values_(audio_utilities::kRenderQuantumFrames),
+      forward_y_values_(audio_utilities::kRenderQuantumFrames),
+      forward_z_values_(audio_utilities::kRenderQuantumFrames),
+      up_x_values_(audio_utilities::kRenderQuantumFrames),
+      up_y_values_(audio_utilities::kRenderQuantumFrames),
+      up_z_values_(audio_utilities::kRenderQuantumFrames) {
   // Initialize the cached values with the current values.  Thus, we don't need
   // to notify any panners because we haved moved.
   last_position_ = GetPosition();
@@ -148,7 +148,7 @@ bool AudioListener::HasSampleAccurateValues() const {
          upZ()->Handler().HasSampleAccurateValues();
 }
 
-void AudioListener::UpdateValuesIfNeeded(size_t frames_to_process) {
+void AudioListener::UpdateValuesIfNeeded(uint32_t frames_to_process) {
   double current_time =
       positionX()->Handler().DestinationHandler().CurrentTime();
   if (last_update_time_ != current_time) {
@@ -192,47 +192,47 @@ void AudioListener::UpdateValuesIfNeeded(size_t frames_to_process) {
   }
 }
 
-const float* AudioListener::GetPositionXValues(size_t frames_to_process) {
+const float* AudioListener::GetPositionXValues(uint32_t frames_to_process) {
   UpdateValuesIfNeeded(frames_to_process);
   return position_x_values_.Data();
 }
 
-const float* AudioListener::GetPositionYValues(size_t frames_to_process) {
+const float* AudioListener::GetPositionYValues(uint32_t frames_to_process) {
   UpdateValuesIfNeeded(frames_to_process);
   return position_y_values_.Data();
 }
 
-const float* AudioListener::GetPositionZValues(size_t frames_to_process) {
+const float* AudioListener::GetPositionZValues(uint32_t frames_to_process) {
   UpdateValuesIfNeeded(frames_to_process);
   return position_z_values_.Data();
 }
 
-const float* AudioListener::GetForwardXValues(size_t frames_to_process) {
+const float* AudioListener::GetForwardXValues(uint32_t frames_to_process) {
   UpdateValuesIfNeeded(frames_to_process);
   return forward_x_values_.Data();
 }
 
-const float* AudioListener::GetForwardYValues(size_t frames_to_process) {
+const float* AudioListener::GetForwardYValues(uint32_t frames_to_process) {
   UpdateValuesIfNeeded(frames_to_process);
   return forward_y_values_.Data();
 }
 
-const float* AudioListener::GetForwardZValues(size_t frames_to_process) {
+const float* AudioListener::GetForwardZValues(uint32_t frames_to_process) {
   UpdateValuesIfNeeded(frames_to_process);
   return forward_z_values_.Data();
 }
 
-const float* AudioListener::GetUpXValues(size_t frames_to_process) {
+const float* AudioListener::GetUpXValues(uint32_t frames_to_process) {
   UpdateValuesIfNeeded(frames_to_process);
   return up_x_values_.Data();
 }
 
-const float* AudioListener::GetUpYValues(size_t frames_to_process) {
+const float* AudioListener::GetUpYValues(uint32_t frames_to_process) {
   UpdateValuesIfNeeded(frames_to_process);
   return up_y_values_.Data();
 }
 
-const float* AudioListener::GetUpZValues(size_t frames_to_process) {
+const float* AudioListener::GetUpZValues(uint32_t frames_to_process) {
   UpdateValuesIfNeeded(frames_to_process);
   return up_z_values_.Data();
 }

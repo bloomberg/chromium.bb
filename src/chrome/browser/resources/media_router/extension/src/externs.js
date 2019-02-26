@@ -99,10 +99,12 @@ chrome.desktopCapture = {};
 
 /**
  * @param {Array<string>} sources
+ * @param {Tab?} initiatorTab
  * @param {function(string)} callback
  * @return {number} desktopMediaRequestId
  */
-chrome.desktopCapture.chooseDesktopMedia = function(sources, callback) {};
+chrome.desktopCapture.chooseDesktopMedia = function(
+    sources, initiatorTab, callback) {};
 
 
 /**

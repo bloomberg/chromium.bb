@@ -29,6 +29,8 @@ class GURL;
 namespace base {
 class FilePath;
 class SequencedTaskRunner;
+class Time;
+class TimeDelta;
 }  // namespace base
 
 namespace offline_pages {
@@ -158,11 +160,12 @@ class OfflinePageModelTaskified : public OfflinePageModel,
                           int64_t offline_id);
   void OnAddPageForSavePageDone(SavePageCallback callback,
                                 const OfflinePageItem& page_attempted,
+                                base::Time add_page_start_time,
                                 AddPageResult add_page_result,
                                 int64_t offline_id);
   void OnCreateArchiveDone(const SavePageParams& save_page_params,
                            int64_t offline_id,
-                           const base::Time& start_time,
+                           base::Time start_time,
                            std::unique_ptr<OfflinePageArchiver> archiver,
                            SavePageCallback callback,
                            OfflinePageArchiver::ArchiverResult archiver_result,
@@ -189,7 +192,7 @@ class OfflinePageModelTaskified : public OfflinePageModel,
   // Methods for clearing temporary pages and performing consistency checks. The
   // latter are executed only once per Chrome session.
   void ScheduleMaintenanceTasks();
-  void RunMaintenanceTasks(const base::Time now, bool first_run);
+  void RunMaintenanceTasks(base::Time now, bool first_run);
   void OnClearCachedPagesDone(size_t deleted_page_count,
                               ClearStorageTask::ClearStorageResult result);
   void OnPersistentPageConsistencyCheckDone(
@@ -205,6 +208,7 @@ class OfflinePageModelTaskified : public OfflinePageModel,
   // Callback for when PublishArchive has completd.
   void PublishArchiveDone(std::unique_ptr<OfflinePageArchiver> archiver,
                           SavePageCallback save_page_callback,
+                          base::Time publish_start_time,
                           const OfflinePageItem& offline_page,
                           PublishArchiveResult publish_results);
 

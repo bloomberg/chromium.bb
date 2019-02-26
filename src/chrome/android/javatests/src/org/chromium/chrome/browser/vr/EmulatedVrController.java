@@ -78,7 +78,7 @@ public class EmulatedVrController {
     }
 
     /**
-     * Either presses or releases the Daydream controller's touchpad button depending on wheter
+     * Either presses or releases the Daydream controller's touchpad button depending on whether
      * the button is currently pressed or not.
      */
     public void sendClickButtonToggleEvent() {
@@ -91,6 +91,14 @@ public class EmulatedVrController {
      */
     public void pressReleaseTouchpadButton() {
         getApi().buttonEvent.sendClickButtonEvent();
+    }
+
+    /**
+     * Either presses or releases the Daydream controller's app button depending on whether the
+     * button is currently pressed or not.
+     */
+    public void sendAppButtonToggleEvent() {
+        getApi().buttonEvent.sendAppButtonToggleEvent();
     }
 
     /**

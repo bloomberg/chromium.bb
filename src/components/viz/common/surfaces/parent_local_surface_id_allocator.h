@@ -8,9 +8,15 @@
 #include <stdint.h>
 
 #include "base/macros.h"
+#include "base/time/time.h"
 #include "base/unguessable_token.h"
+#include "components/viz/common/surfaces/local_surface_id_allocation.h"
 #include "components/viz/common/surfaces/surface_id.h"
 #include "components/viz/common/viz_common_export.h"
+
+namespace base {
+class TickClock;
+}  // namespace base
 
 namespace viz {
 
@@ -21,18 +27,18 @@ namespace viz {
 // child when the parent needs to change surface parameters, for example.
 class VIZ_COMMON_EXPORT ParentLocalSurfaceIdAllocator {
  public:
+  explicit ParentLocalSurfaceIdAllocator(const base::TickClock* tick_clock);
+
   ParentLocalSurfaceIdAllocator();
-  ParentLocalSurfaceIdAllocator(ParentLocalSurfaceIdAllocator&& other) =
-      default;
-  ParentLocalSurfaceIdAllocator& operator=(
-      ParentLocalSurfaceIdAllocator&& other) = default;
+
   ~ParentLocalSurfaceIdAllocator() = default;
 
   // When a child-allocated LocalSurfaceId arrives in the parent, the parent
   // needs to update its understanding of the last generated message so the
   // messages can continue to monotonically increase. Returns whether the
   // current LocalSurfaceId has been updated.
-  bool UpdateFromChild(const LocalSurfaceId& child_allocated_local_surface_id);
+  bool UpdateFromChild(
+      const LocalSurfaceIdAllocation& child_local_surface_id_allocation);
 
   // Resets this allocator with the provided |local_surface_id| as a seed.
   void Reset(const LocalSurfaceId& local_surface_id);
@@ -42,17 +48,18 @@ class VIZ_COMMON_EXPORT ParentLocalSurfaceIdAllocator {
   // provided from an external source.
   void Invalidate();
 
-  const LocalSurfaceId& GenerateId();
+  void GenerateId();
 
-  const LocalSurfaceId& GetCurrentLocalSurfaceId() const;
+  const LocalSurfaceIdAllocation& GetCurrentLocalSurfaceIdAllocation() const;
 
-  static const LocalSurfaceId& InvalidLocalSurfaceId();
+  bool HasValidLocalSurfaceIdAllocation() const;
+
+  static const LocalSurfaceIdAllocation& InvalidLocalSurfaceIdAllocation();
 
   bool is_allocation_suppressed() const { return is_allocation_suppressed_; }
 
  private:
-  static const LocalSurfaceId invalid_local_surface_id_;
-  LocalSurfaceId current_local_surface_id_;
+  LocalSurfaceIdAllocation current_local_surface_id_allocation_;
 
   // When true, the last known LocalSurfaceId is an invalid LocalSurfaceId.
   // TODO(fsamuel): Once the parent sequence number is only monotonically
@@ -60,6 +67,7 @@ class VIZ_COMMON_EXPORT ParentLocalSurfaceIdAllocator {
   // |current_local_surface_id_| to an invalid state.
   bool is_invalid_ = false;
   bool is_allocation_suppressed_ = false;
+  const base::TickClock* tick_clock_;
 
   friend class ScopedSurfaceIdAllocator;
 

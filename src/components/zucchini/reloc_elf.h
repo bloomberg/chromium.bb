@@ -10,9 +10,9 @@
 
 #include <vector>
 
+#include "base/numerics/safe_conversions.h"
 #include "base/optional.h"
 #include "components/zucchini/address_translator.h"
-#include "components/zucchini/buffer_source.h"
 #include "components/zucchini/buffer_view.h"
 #include "components/zucchini/image_utils.h"
 #include "components/zucchini/type_elf.h"

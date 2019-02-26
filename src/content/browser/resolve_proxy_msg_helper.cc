@@ -97,14 +97,18 @@ void ResolveProxyMsgHelper::OnProxyLookupComplete(
 
   binding_.Close();
 
-  // If all references except |owned_self_| have been released, just release
-  // the last reference, without doing anything.
-  if (HasOneRef()) {
-    scoped_refptr<ResolveProxyMsgHelper> self = std::move(owned_self_);
-    return;
-  }
+  // Need to keep |this| alive until the end of this method, and then release
+  // this reference. StartPendingRequest(), if called, will grab other
+  // reference, and a reference may be owned by the IO thread or by other
+  // posted tasks, so |this| may or may not be deleted at the end of this
+  // method.
+  scoped_refptr<ResolveProxyMsgHelper> owned_self = std::move(owned_self_);
 
-  owned_self_ = nullptr;
+  // If all references except |owned_self| have been released, then there's
+  // nothing waiting for pending requests to complete. So just exit this method,
+  // which will release the last reference, destroying |this|.
+  if (HasOneRef())
+    return;
 
   // Clear the current (completed) request.
   PendingRequest completed_req = std::move(pending_requests_.front());

@@ -348,8 +348,11 @@ void ConnectionFactoryImpl::StartConnection() {
           "but does not have any effect on other Google Cloud messages."
         )");
 
+  network::mojom::ProxyResolvingSocketOptionsPtr options =
+      network::mojom::ProxyResolvingSocketOptions::New();
+  options->use_tls = true;
   socket_factory_->CreateProxyResolvingSocket(
-      current_endpoint, true /* use_tls */,
+      current_endpoint, std::move(options),
       net::MutableNetworkTrafficAnnotationTag(traffic_annotation),
       mojo::MakeRequest(&socket_), nullptr /* observer */,
       base::BindOnce(&ConnectionFactoryImpl::OnConnectDone,

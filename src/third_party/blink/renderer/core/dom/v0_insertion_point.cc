@@ -41,8 +41,6 @@
 
 namespace blink {
 
-using namespace HTMLNames;
-
 V0InsertionPoint::V0InsertionPoint(const QualifiedName& tag_name,
                                    Document& document)
     : HTMLElement(tag_name, document, kCreateV0InsertionPoint),
@@ -159,7 +157,7 @@ void V0InsertionPoint::DidRecalcStyle(StyleRecalcChange change) {
     node->SetNeedsStyleRecalc(
         style_change_type,
         StyleChangeReasonForTracing::Create(
-            StyleChangeReason::kPropagateInheritChangeToDistributedNodes));
+            style_change_reason::kPropagateInheritChangeToDistributedNodes));
   }
 }
 

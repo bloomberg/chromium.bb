@@ -134,7 +134,7 @@ gfx::Image& ResourceBundle::GetNativeImageNamed(int resource_id) {
       return GetEmptyImage();
     }
 
-    image = gfx::Image(ns_image.release());
+    image = gfx::Image(ns_image);
   }
 
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);

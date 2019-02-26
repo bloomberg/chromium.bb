@@ -69,7 +69,7 @@ public class LogoDelegateImpl implements LogoView.Delegate {
         if (mIsDestroyed) return;
 
         if (!isAnimatedLogoShowing && mAnimatedLogoUrl != null) {
-            RecordHistogram.recordSparseSlowlyHistogram(LOGO_CLICK_UMA_NAME, CTA_IMAGE_CLICKED);
+            RecordHistogram.recordSparseHistogram(LOGO_CLICK_UMA_NAME, CTA_IMAGE_CLICKED);
             mLogoView.showLoadingView();
             mLogoBridge.getAnimatedLogo(new LogoBridge.AnimatedLogoCallback() {
                 @Override
@@ -79,7 +79,7 @@ public class LogoDelegateImpl implements LogoView.Delegate {
                 }
             }, mAnimatedLogoUrl);
         } else if (mOnLogoClickUrl != null) {
-            RecordHistogram.recordSparseSlowlyHistogram(LOGO_CLICK_UMA_NAME,
+            RecordHistogram.recordSparseHistogram(LOGO_CLICK_UMA_NAME,
                     isAnimatedLogoShowing ? ANIMATED_LOGO_CLICKED : STATIC_LOGO_CLICKED);
             mNavigationDelegate.openUrl(WindowOpenDisposition.CURRENT_TAB,
                     new LoadUrlParams(mOnLogoClickUrl, PageTransition.LINK));

@@ -38,7 +38,7 @@ DeviceMotionEvent::DeviceMotionEvent()
     : device_motion_data_(DeviceMotionData::Create()) {}
 
 DeviceMotionEvent::DeviceMotionEvent(const AtomicString& event_type,
-                                     const DeviceMotionEventInit& initializer)
+                                     const DeviceMotionEventInit* initializer)
     : Event(event_type, initializer),
       device_motion_data_(DeviceMotionData::Create(initializer)) {}
 
@@ -48,36 +48,15 @@ DeviceMotionEvent::DeviceMotionEvent(const AtomicString& event_type,
       device_motion_data_(device_motion_data) {}
 
 DeviceAcceleration* DeviceMotionEvent::acceleration() {
-  if (!device_motion_data_->GetAcceleration())
-    return nullptr;
-
-  if (!acceleration_)
-    acceleration_ =
-        DeviceAcceleration::Create(device_motion_data_->GetAcceleration());
-
-  return acceleration_.Get();
+  return device_motion_data_->GetAcceleration();
 }
 
 DeviceAcceleration* DeviceMotionEvent::accelerationIncludingGravity() {
-  if (!device_motion_data_->GetAccelerationIncludingGravity())
-    return nullptr;
-
-  if (!acceleration_including_gravity_)
-    acceleration_including_gravity_ = DeviceAcceleration::Create(
-        device_motion_data_->GetAccelerationIncludingGravity());
-
-  return acceleration_including_gravity_.Get();
+  return device_motion_data_->GetAccelerationIncludingGravity();
 }
 
 DeviceRotationRate* DeviceMotionEvent::rotationRate() {
-  if (!device_motion_data_->GetRotationRate())
-    return nullptr;
-
-  if (!rotation_rate_)
-    rotation_rate_ =
-        DeviceRotationRate::Create(device_motion_data_->GetRotationRate());
-
-  return rotation_rate_.Get();
+  return device_motion_data_->GetRotationRate();
 }
 
 double DeviceMotionEvent::interval() const {
@@ -85,14 +64,11 @@ double DeviceMotionEvent::interval() const {
 }
 
 const AtomicString& DeviceMotionEvent::InterfaceName() const {
-  return EventNames::DeviceMotionEvent;
+  return event_interface_names::kDeviceMotionEvent;
 }
 
 void DeviceMotionEvent::Trace(blink::Visitor* visitor) {
   visitor->Trace(device_motion_data_);
-  visitor->Trace(acceleration_);
-  visitor->Trace(acceleration_including_gravity_);
-  visitor->Trace(rotation_rate_);
   Event::Trace(visitor);
 }
 

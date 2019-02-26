@@ -8,15 +8,12 @@
 
 #include "base/logging.h"
 #include "components/payments/content/utility/fingerprint_parser.h"
-
-struct Environment {
-  Environment() { logging::SetMinLogLevel(logging::LOG_FATAL); }
-};
-
-Environment* env = new Environment();
+#include "components/payments/core/error_logger.h"
 
 extern "C" int LLVMFuzzerTestOneInput(const uint8_t* data, size_t size) {
+  payments::ErrorLogger log;
+  log.DisableInTest();
   payments::FingerprintStringToByteArray(
-      std::string(reinterpret_cast<const char*>(data), size));
+      std::string(reinterpret_cast<const char*>(data), size), log);
   return 0;
 }

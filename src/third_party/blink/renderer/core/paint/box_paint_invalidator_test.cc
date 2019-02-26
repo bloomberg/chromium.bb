@@ -44,7 +44,7 @@ class BoxPaintInvalidatorTest : public PaintControllerPaintTest {
   void ExpectFullPaintInvalidationOnGeometryChange(const char* test_title) {
     SCOPED_TRACE(test_title);
 
-    GetDocument().View()->UpdateAllLifecyclePhases();
+    UpdateAllLifecyclePhasesForTest();
     auto& target = *GetDocument().getElementById("target");
     auto& box = *ToLayoutBox(target.GetLayoutObject());
     LayoutRect visual_rect = box.FirstFragment().VisualRect();
@@ -55,8 +55,8 @@ class BoxPaintInvalidatorTest : public PaintControllerPaintTest {
               ComputePaintInvalidationReason(box, visual_rect, paint_offset));
 
     target.setAttribute(
-        HTMLNames::styleAttr,
-        target.getAttribute(HTMLNames::styleAttr) + "; width: 200px");
+        html_names::kStyleAttr,
+        target.getAttribute(html_names::kStyleAttr) + "; width: 200px");
     GetDocument().View()->UpdateLifecycleToLayoutClean();
     // Simulate that PaintInvalidator updates visual rect.
     box.GetMutableForPainting().SetVisualRect(
@@ -103,8 +103,8 @@ TEST_P(BoxPaintInvalidatorTest, ComputePaintInvalidationReasonPaintingNothing) {
   auto& target = *GetDocument().getElementById("target");
   auto& box = *ToLayoutBox(target.GetLayoutObject());
   // Remove border.
-  target.setAttribute(HTMLNames::classAttr, "");
-  GetDocument().View()->UpdateAllLifecyclePhases();
+  target.setAttribute(html_names::kClassAttr, "");
+  UpdateAllLifecyclePhasesForTest();
 
   EXPECT_TRUE(box.PaintedOutputOfObjectHasNoEffectRegardlessOfSize());
   LayoutRect visual_rect = box.FirstFragment().VisualRect();
@@ -121,7 +121,7 @@ TEST_P(BoxPaintInvalidatorTest, ComputePaintInvalidationReasonPaintingNothing) {
 
   // Visual rect size change.
   LayoutRect old_visual_rect = visual_rect;
-  target.setAttribute(HTMLNames::styleAttr, "width: 200px");
+  target.setAttribute(html_names::kStyleAttr, "width: 200px");
   GetDocument().View()->UpdateLifecycleToLayoutClean();
   // Simulate that PaintInvalidator updates visual rect.
   box.GetMutableForPainting().SetVisualRect(
@@ -137,9 +137,9 @@ TEST_P(BoxPaintInvalidatorTest, ComputePaintInvalidationReasonBasic) {
   auto& target = *GetDocument().getElementById("target");
   auto& box = *ToLayoutBox(target.GetLayoutObject());
   // Remove border.
-  target.setAttribute(HTMLNames::classAttr, "");
-  target.setAttribute(HTMLNames::styleAttr, "background: blue");
-  GetDocument().View()->UpdateAllLifecyclePhases();
+  target.setAttribute(html_names::kClassAttr, "");
+  target.setAttribute(html_names::kStyleAttr, "background: blue");
+  UpdateAllLifecyclePhasesForTest();
 
   box.SetShouldCheckForPaintInvalidation();
   LayoutRect visual_rect = box.FirstFragment().VisualRect();
@@ -152,7 +152,7 @@ TEST_P(BoxPaintInvalidatorTest, ComputePaintInvalidationReasonBasic) {
 
   // Visual rect size change.
   LayoutRect old_visual_rect = visual_rect;
-  target.setAttribute(HTMLNames::styleAttr, "background: blue; width: 200px");
+  target.setAttribute(html_names::kStyleAttr, "background: blue; width: 200px");
   GetDocument().View()->UpdateLifecycleToLayoutClean();
   // Simulate that PaintInvalidator updates visual rect.
   box.GetMutableForPainting().SetVisualRect(
@@ -189,26 +189,27 @@ TEST_P(BoxPaintInvalidatorTest, ComputePaintInvalidationReasonOtherCases) {
   ExpectFullPaintInvalidationOnGeometryChange("With border");
 
   // Clear border, set background.
-  target.setAttribute(HTMLNames::classAttr, "background");
-  target.setAttribute(HTMLNames::styleAttr, "border-radius: 5px");
+  target.setAttribute(html_names::kClassAttr, "background");
+  target.setAttribute(html_names::kStyleAttr, "border-radius: 5px");
   ExpectFullPaintInvalidationOnGeometryChange("With border-radius");
 
-  target.setAttribute(HTMLNames::styleAttr, "-webkit-mask: url(#)");
+  target.setAttribute(html_names::kStyleAttr, "-webkit-mask: url(#)");
   ExpectFullPaintInvalidationOnGeometryChange("With mask");
 
-  target.setAttribute(HTMLNames::styleAttr, "filter: blur(5px)");
+  target.setAttribute(html_names::kStyleAttr, "filter: blur(5px)");
   ExpectFullPaintInvalidationOnGeometryChange("With filter");
 
-  target.setAttribute(HTMLNames::styleAttr, "outline: 2px solid blue");
+  target.setAttribute(html_names::kStyleAttr, "outline: 2px solid blue");
   ExpectFullPaintInvalidationOnGeometryChange("With outline");
 
-  target.setAttribute(HTMLNames::styleAttr, "box-shadow: inset 3px 2px");
+  target.setAttribute(html_names::kStyleAttr, "box-shadow: inset 3px 2px");
   ExpectFullPaintInvalidationOnGeometryChange("With box-shadow");
 
-  target.setAttribute(HTMLNames::styleAttr, "-webkit-appearance: button");
+  target.setAttribute(html_names::kStyleAttr, "-webkit-appearance: button");
   ExpectFullPaintInvalidationOnGeometryChange("With appearance");
 
-  target.setAttribute(HTMLNames::styleAttr, "clip-path: circle(50% at 0 50%)");
+  target.setAttribute(html_names::kStyleAttr,
+                      "clip-path: circle(50% at 0 50%)");
   ExpectFullPaintInvalidationOnGeometryChange("With clip-path");
 }
 

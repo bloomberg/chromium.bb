@@ -221,7 +221,7 @@ void BrowserGpuChannelHostFactory::EstablishRequest::Wait() {
     // TODO(piman): Make this asynchronous (http://crbug.com/125248).
     TRACE_EVENT0("browser",
                  "BrowserGpuChannelHostFactory::EstablishGpuChannelSync");
-    base::ThreadRestrictions::ScopedAllowWait allow_wait;
+    base::ScopedAllowBaseSyncPrimitivesOutsideBlockingScope allow_wait;
     event_.Wait();
   }
   FinishOnMain();

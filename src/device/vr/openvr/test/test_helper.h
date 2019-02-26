@@ -6,6 +6,7 @@
 #define DEVICE_VR_OPENVR_TEST_TEST_HELPER_H_
 
 #include "base/synchronization/lock.h"
+#include "base/thread_annotations.h"
 #include "device/vr/openvr/test/test_hook.h"
 #include "third_party/openvr/src/headers/openvr.h"
 
@@ -50,7 +51,7 @@ class TestHelper : public device::TestHookRegistration {
   void SetTestHook(device::OpenVRTestHook* hook) final;
 
  private:
-  device::OpenVRTestHook* test_hook_ = nullptr;
+  device::OpenVRTestHook* test_hook_ GUARDED_BY(lock_) = nullptr;
   base::Lock lock_;
 };
 

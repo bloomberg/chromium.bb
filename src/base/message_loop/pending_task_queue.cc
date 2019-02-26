@@ -17,12 +17,6 @@ PendingTaskQueue::PendingTaskQueue() = default;
 
 PendingTaskQueue::~PendingTaskQueue() = default;
 
-void PendingTaskQueue::ReportMetricsOnIdle() const {
-  UMA_HISTOGRAM_COUNTS_1M(
-      "MessageLoop.DelayedTaskQueueForUI.PendingTasksCountOnIdle",
-      delayed_tasks_.Size());
-}
-
 PendingTaskQueue::DelayedQueue::DelayedQueue() {
   // The constructing sequence is not necessarily the running sequence, e.g. in
   // the case of a MessageLoop created unbound.

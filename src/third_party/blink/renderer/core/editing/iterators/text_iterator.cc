@@ -50,7 +50,7 @@
 
 namespace blink {
 
-using namespace HTMLNames;
+using namespace html_names;
 
 namespace {
 
@@ -74,7 +74,6 @@ TextIteratorBehavior AdjustBehaviorFlags<EditingInFlatTreeStrategy>(
       .SetExcludeAutofilledValue(behavior.ForSelectionToString() ||
                                  behavior.ExcludeAutofilledValue())
       .SetEntersOpenShadowRoots(false)
-      .SetEntersTextControls(false)
       .Build();
 }
 
@@ -163,6 +162,19 @@ bool IsRenderedAsTable(const Node* node) {
     return false;
   LayoutObject* layout_object = node->GetLayoutObject();
   return layout_object && layout_object->IsTable();
+}
+
+bool ShouldHandleChildren(const Node& node,
+                          const TextIteratorBehavior& behavior) {
+  // To support |TextIteratorEmitsImageAltText|, we don't traversal child
+  // nodes, in flat tree.
+  if (IsHTMLImageElement(node))
+    return false;
+  // Traverse internals of text control elements in flat tree only when
+  // |EntersTextControls| flag is set.
+  if (!behavior.EntersTextControls() && IsTextControl(node))
+    return false;
+  return true;
 }
 
 }  // namespace
@@ -307,7 +319,8 @@ void TextIteratorAlgorithm<Strategy>::Advance() {
     } else {
       // Enter author shadow roots, from youngest, if any and if necessary.
       if (iteration_progress_ < kHandledOpenShadowRoots) {
-        if (EntersOpenShadowRoots() && node_->IsElementNode() &&
+        if (std::is_same<Strategy, EditingStrategy>::value &&
+            EntersOpenShadowRoots() && node_->IsElementNode() &&
             ToElement(node_)->OpenShadowRoot()) {
           ShadowRoot* youngest_shadow_root = ToElement(node_)->OpenShadowRoot();
           DCHECK(youngest_shadow_root->GetType() == ShadowRootType::V0 ||
@@ -324,7 +337,8 @@ void TextIteratorAlgorithm<Strategy>::Advance() {
 
       // Enter user-agent shadow root, if necessary.
       if (iteration_progress_ < kHandledUserAgentShadowRoot) {
-        if (EntersTextControls() && layout_object->IsTextControl()) {
+        if (std::is_same<Strategy, EditingStrategy>::value &&
+            EntersTextControls() && layout_object->IsTextControl()) {
           ShadowRoot* user_agent_shadow_root =
               ToElement(node_)->UserAgentShadowRoot();
           DCHECK(user_agent_shadow_root->IsUserAgent());
@@ -369,12 +383,10 @@ void TextIteratorAlgorithm<Strategy>::Advance() {
     // calling exitNode() as we come back thru a parent node.
     //
     // 1. Iterate over child nodes, if we haven't done yet.
-    // To support |TextIteratorEmitsImageAltText|, we don't traversal child
-    // nodes, in flat tree.
-    Node* next =
-        iteration_progress_ < kHandledChildren && !IsHTMLImageElement(*node_)
-            ? Strategy::FirstChild(*node_)
-            : nullptr;
+    Node* next = iteration_progress_ < kHandledChildren &&
+                         ShouldHandleChildren(*node_, behavior_)
+                     ? Strategy::FirstChild(*node_)
+                     : nullptr;
     if (!next) {
       // 2. If we've already iterated children or they are not available, go to
       // the next sibling node.
@@ -489,7 +501,7 @@ bool TextIteratorAlgorithm<Strategy>::SupportsAltText(const Node& node) {
   if (IsHTMLImageElement(element))
     return true;
   if (IsHTMLInputElement(element) &&
-      ToHTMLInputElement(node).type() == InputTypeNames::image)
+      ToHTMLInputElement(node).type() == input_type_names::kImage)
     return true;
   return false;
 }
@@ -577,16 +589,16 @@ static bool ShouldEmitNewlinesBeforeAndAfterNode(const Node& node) {
   if (!r) {
     if (HasDisplayContents(node))
       return false;
-    return (node.HasTagName(blockquoteTag) || node.HasTagName(ddTag) ||
-            node.HasTagName(divTag) || node.HasTagName(dlTag) ||
-            node.HasTagName(dtTag) || node.HasTagName(h1Tag) ||
-            node.HasTagName(h2Tag) || node.HasTagName(h3Tag) ||
-            node.HasTagName(h4Tag) || node.HasTagName(h5Tag) ||
-            node.HasTagName(h6Tag) || node.HasTagName(hrTag) ||
-            node.HasTagName(liTag) || node.HasTagName(listingTag) ||
-            node.HasTagName(olTag) || node.HasTagName(pTag) ||
-            node.HasTagName(preTag) || node.HasTagName(trTag) ||
-            node.HasTagName(ulTag));
+    return (node.HasTagName(kBlockquoteTag) || node.HasTagName(kDdTag) ||
+            node.HasTagName(kDivTag) || node.HasTagName(kDlTag) ||
+            node.HasTagName(kDtTag) || node.HasTagName(kH1Tag) ||
+            node.HasTagName(kH2Tag) || node.HasTagName(kH3Tag) ||
+            node.HasTagName(kH4Tag) || node.HasTagName(kH5Tag) ||
+            node.HasTagName(kH6Tag) || node.HasTagName(kHrTag) ||
+            node.HasTagName(kLiTag) || node.HasTagName(kListingTag) ||
+            node.HasTagName(kOlTag) || node.HasTagName(kPTag) ||
+            node.HasTagName(kPreTag) || node.HasTagName(kTrTag) ||
+            node.HasTagName(kUlTag));
   }
 
   // Need to make an exception for option and optgroup, because we want to
@@ -642,7 +654,7 @@ static bool ShouldEmitExtraNewlineForNode(const Node* node) {
   if (!r || !r->IsBox())
     return false;
 
-  return node->HasTagName(pTag);
+  return node->HasTagName(kPTag);
 }
 
 // Whether or not we should emit a character as we enter node_ (if it's a

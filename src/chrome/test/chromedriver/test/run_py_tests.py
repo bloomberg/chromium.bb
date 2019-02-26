@@ -98,6 +98,11 @@ _VERSION_SPECIFIC_FILTER['HEAD'] = [
     'ChromeDriverPageLoadTimeoutTest.testRefreshWithPageLoadTimeout',
 ]
 
+_VERSION_SPECIFIC_FILTER['71'] = [
+    # https://bugs.chromium.org/p/chromedriver/issues/detail?id=2532
+    'ChromeDriverPageLoadTimeoutTest.testRefreshWithPageLoadTimeout',
+]
+
 _VERSION_SPECIFIC_FILTER['70'] = [
     # https://bugs.chromium.org/p/chromedriver/issues/detail?id=2532
     'ChromeDriverPageLoadTimeoutTest.testRefreshWithPageLoadTimeout',
@@ -111,12 +116,6 @@ _VERSION_SPECIFIC_FILTER['69'] = [
     # Feature not yet supported in this version
     'ChromeDriverTest.testGenerateTestReport',
 ]
-
-_VERSION_SPECIFIC_FILTER['68'] = [
-    # Feature not yet supported in this version
-    'ChromeDriverTest.testGenerateTestReport',
-]
-
 
 
 _OS_SPECIFIC_FILTER = {}
@@ -136,8 +135,6 @@ _OS_SPECIFIC_FILTER['mac'] = [
 ]
 
 _OS_VERSION_SPECIFIC_FILTER = {}
-_OS_VERSION_SPECIFIC_FILTER['mac', '68'] = [
-]
 
 _DESKTOP_NEGATIVE_FILTER = [
     # Desktop doesn't support touch (without --touch-events).
@@ -182,7 +179,15 @@ _INTEGRATION_NEGATIVE_FILTER = [
     # RemoteBrowserTest requires extra setup. TODO(johnchen@chromium.org):
     # Modify the test so it runs correctly as isolated test.
     'RemoteBrowserTest.*',
+    # Flaky: https://crbug.com/899919
+    'SessionHandlingTest.testGetSessions',
 ]
+
+# https://crbug.com/904061
+if util.GetPlatformName() == 'mac':
+  _INTEGRATION_NEGATIVE_FILTER += [
+    'ChromeDriverSiteIsolation.testCanClickOOPIF',
+  ]
 
 
 def _GetDesktopNegativeFilter(version_name):
@@ -238,6 +243,7 @@ _ANDROID_NEGATIVE_FILTER['chrome'] = (
         'LaunchDesktopTest.*',
         # https://bugs.chromium.org/p/chromedriver/issues/detail?id=2579
         'ChromeDriverTest.testTakeElementScreenshot',
+        'ChromeDriverTest.testTakeElementScreenshotInIframe',
     ]
 )
 _ANDROID_NEGATIVE_FILTER['chrome_stable'] = (
@@ -249,6 +255,8 @@ _ANDROID_NEGATIVE_FILTER['chrome_stable'] = (
         'ChromeDriverTest.testGetWindowHandles',
         'ChromeDriverTest.testShouldHandleNewWindowLoadingProperly',
         'ChromeDriverTest.testSwitchToWindow',
+        # Feature not yet supported in this version
+        'ChromeDriverTest.testGenerateTestReport',
     ]
 )
 _ANDROID_NEGATIVE_FILTER['chrome_beta'] = (
@@ -258,6 +266,8 @@ _ANDROID_NEGATIVE_FILTER['chrome_beta'] = (
         'ChromeDriverTest.testGetWindowHandles',
         'ChromeDriverTest.testShouldHandleNewWindowLoadingProperly',
         'ChromeDriverTest.testSwitchToWindow',
+        # Feature not yet supported in this version
+        'ChromeDriverTest.testGenerateTestReport',
     ]
 )
 _ANDROID_NEGATIVE_FILTER['chromium'] = (
@@ -701,6 +711,48 @@ class ChromeDriverTest(ChromeDriverBaseTestWithWebServer):
     alert_button = self._driver.FindElement('id', 'aa1')
     alert_button.Click()
     self.assertTrue(self._driver.IsAlertOpen())
+
+  def testActionsMouseMove(self):
+    self._driver.Load(self.GetHttpUrlForFile('/chromedriver/empty.html'))
+    div = self._driver.ExecuteScript(
+        'document.body.innerHTML = "<div>old</div>";'
+        'var div = document.getElementsByTagName("div")[0];'
+        'div.style["width"] = "100px";'
+        'div.style["height"] = "100px";'
+        'div.addEventListener("mouseover", function() {'
+        '  var div = document.getElementsByTagName("div")[0];'
+        '  div.innerHTML="new<br>";'
+        '});'
+        'return div;')
+    actions = ({"actions": [{
+      "type":"pointer",
+      "actions":[{"type": "pointerMove", "x": 10, "y": 10}],
+      "parameters": {"pointerType": "mouse"},
+      "id": "pointer1"}]})
+    self._driver.PerformActions(actions)
+    self.assertEquals(1, len(self._driver.FindElements('tag name', 'br')))
+
+  def testActionsMouseClick(self):
+    self._driver.Load(self.GetHttpUrlForFile('/chromedriver/empty.html'))
+    div = self._driver.ExecuteScript(
+        'document.body.innerHTML = "<div>old</div>";'
+        'var div = document.getElementsByTagName("div")[0];'
+        'div.style["width"] = "100px";'
+        'div.style["height"] = "100px";'
+        'div.addEventListener("click", function() {'
+        '  var div = document.getElementsByTagName("div")[0];'
+        '  div.innerHTML="new<br>";'
+        '});'
+        'return div;')
+    actions = ({"actions": [{
+      "type":"pointer",
+      "actions":[{"type": "pointerMove", "x": 10, "y": 10},
+                 {"type": "pointerDown", "button": 0},
+                 {"type": "pointerUp", "button": 0}],
+      "parameters": {"pointerType": "mouse"},
+      "id": "pointer1"}]})
+    self._driver.PerformActions(actions)
+    self.assertEquals(1, len(self._driver.FindElements('tag name', 'br')))
 
   def testPageLoadStrategyIsNormalByDefault(self):
     self.assertEquals('normal',
@@ -1369,6 +1421,8 @@ class ChromeDriverTest(ChromeDriverBaseTestWithWebServer):
         '/chromedriver/shadow_dom_test.html'))
     elem = self._driver.FindElement("css", "* /deep/ #olderButton")
     self.assertTrue(elem.IsDisplayed())
+    elem2 = self._driver.FindElement("css", "* /deep/ #hostContent")
+    self.assertTrue(elem2.IsDisplayed())
     self._driver.ExecuteScript(
         'document.querySelector("#outerDiv").style.display="None";')
     self.assertFalse(elem.IsDisplayed())
@@ -1775,6 +1829,15 @@ class ChromeDriverW3cTest(ChromeDriverBaseTestWithWebServer):
     text.SendKeysW3c(', there!')
     value = self._driver.ExecuteScript('return arguments[0].value;', text)
     self.assertEquals('0123456789+-*/ Hi, there!', value)
+
+  def testUnexpectedAlertOpenExceptionMessage(self):
+    self._driver.Load(self.GetHttpUrlForFile('/chromedriver/empty.html'))
+    self._driver.ExecuteScript('window.alert("Hi");')
+    self.assertRaisesRegexp(chromedriver.UnexpectedAlertOpen,
+                            '{Alert text : Hi}',
+                            self._driver.FindElement, 'tag name', 'divine')
+    # In W3C mode, the alert is dismissed by default.
+    self.assertFalse(self._driver.IsAlertOpen())
 
 class ChromeDriverSiteIsolation(ChromeDriverBaseTestWithWebServer):
   """Tests for ChromeDriver with the new Site Isolation Chrome feature.
@@ -2212,6 +2275,19 @@ class ChromeDesiredCapabilityTest(ChromeDriverBaseTest):
     self.assertRaisesRegexp(chromedriver.UnexpectedAlertOpen,
                             'unexpected alert open: {Alert text : HI}',
                             driver.FindElement, 'tag name', 'div')
+    self.assertFalse(driver.IsAlertOpen())
+
+  def testUnexpectedAlertBehaviourW3c(self):
+    driver = self.CreateDriver(unexpected_alert_behaviour='accept',
+                               send_w3c_capability=True, send_w3c_request=True)
+    self.assertEquals('accept',
+                      driver.capabilities['unhandledPromptBehavior'])
+    driver.ExecuteScript('alert("HI");')
+    self.WaitForCondition(driver.IsAlertOpen)
+    # With unhandledPromptBehavior=accept, calling GetTitle (and most other
+    # endpoints) automatically dismisses the alert, so IsAlertOpen() becomes
+    # False afterwards.
+    self.assertEquals(driver.GetTitle(), '')
     self.assertFalse(driver.IsAlertOpen())
 
 
@@ -3011,7 +3087,9 @@ class ZChromeStartRetryCountTest(unittest.TestCase):
 
   def testChromeStartRetryCount(self):
     self.assertEquals(0, chromedriver.ChromeDriver.retry_count,
-                      "Chrome was retried to start during suite execution")
+                      "Chrome was retried to start during suite execution "
+                      "in following tests:\n" +
+                      ', \n'.join(chromedriver.ChromeDriver.retried_tests))
 
 if __name__ == '__main__':
   parser = optparse.OptionParser()

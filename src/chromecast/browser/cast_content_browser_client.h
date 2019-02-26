@@ -47,6 +47,7 @@ class X509Certificate;
 namespace chromecast {
 class CastService;
 class CastWindowManager;
+class CastFeatureListCreator;
 class MemoryPressureControllerImpl;
 
 namespace media {
@@ -68,7 +69,8 @@ class CastContentBrowserClient : public content::ContentBrowserClient {
  public:
   // Creates an implementation of CastContentBrowserClient. Platform should
   // link in an implementation as needed.
-  static std::unique_ptr<CastContentBrowserClient> Create();
+  static std::unique_ptr<CastContentBrowserClient> Create(
+      CastFeatureListCreator* cast_feature_list_creator);
 
   ~CastContentBrowserClient() override;
 
@@ -180,9 +182,9 @@ class CastContentBrowserClient : public content::ContentBrowserClient {
   void ExposeInterfacesToMediaService(
       service_manager::BinderRegistry* registry,
       content::RenderFrameHost* render_frame_host) override;
-  void RegisterInProcessServices(
-      StaticServiceMap* services,
-      content::ServiceManagerConnection* connection) override;
+  void HandleServiceRequest(
+      const std::string& service_name,
+      service_manager::mojom::ServiceRequest request) override;
   std::unique_ptr<base::Value> GetServiceManifestOverlay(
       base::StringPiece service_name) override;
   void GetAdditionalMappedFilesForChildProcess(
@@ -197,13 +199,17 @@ class CastContentBrowserClient : public content::ContentBrowserClient {
   bool ShouldEnableStrictSiteIsolation() override;
   std::vector<std::unique_ptr<content::NavigationThrottle>>
   CreateThrottlesForNavigation(content::NavigationHandle* handle) override;
+  CastFeatureListCreator* GetCastFeatureListCreator() {
+    return cast_feature_list_creator_;
+  }
 
 #if BUILDFLAG(USE_CHROMECAST_CDMS)
   virtual std::unique_ptr<::media::CdmFactory> CreateCdmFactory();
 #endif  // BUILDFLAG(USE_CHROMECAST_CDMS)
 
  protected:
-  CastContentBrowserClient();
+  explicit CastContentBrowserClient(
+      CastFeatureListCreator* cast_feature_list_creator);
 
   URLRequestContextFactory* url_request_context_factory() const {
     return url_request_context_factory_.get();
@@ -221,6 +227,7 @@ class CastContentBrowserClient : public content::ContentBrowserClient {
       GURL requesting_url,
       const std::string& session_id,
       int render_process_id,
+      int render_frame_id,
       scoped_refptr<base::SequencedTaskRunner> original_runner,
       const base::Callback<void(scoped_refptr<net::X509Certificate>,
                                 scoped_refptr<net::SSLPrivateKey>)>&
@@ -256,6 +263,8 @@ class CastContentBrowserClient : public content::ContentBrowserClient {
   std::unique_ptr<CastResourceDispatcherHostDelegate>
       resource_dispatcher_host_delegate_;
   std::unique_ptr<media::CmaBackendFactory> cma_backend_factory_;
+
+  CastFeatureListCreator* cast_feature_list_creator_;
 
   DISALLOW_COPY_AND_ASSIGN(CastContentBrowserClient);
 };

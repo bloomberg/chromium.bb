@@ -333,8 +333,14 @@ static String ToCJKIdeographic(int number,
     return String(&table[kDigit0], 1);
 
   const bool negative = number < 0;
-  if (negative)
-    number = -number;
+  if (negative) {
+    // Negating the most negative integer (INT_MIN) doesn't work, since it has
+    // no positive counterpart. Deal with that here, manually.
+    if (UNLIKELY(number == INT_MIN))
+      number = INT_MAX;
+    else
+      number = -number;
+  }
 
   const int kGroupLength =
       9;  // 4 digits, 3 digit markers, group marker of size 2.

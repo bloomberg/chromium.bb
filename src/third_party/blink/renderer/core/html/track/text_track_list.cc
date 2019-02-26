@@ -236,7 +236,7 @@ bool TextTrackList::Contains(TextTrack* track) const {
 }
 
 const AtomicString& TextTrackList::InterfaceName() const {
-  return EventTargetNames::TextTrackList;
+  return event_target_names::kTextTrackList;
 }
 
 ExecutionContext* TextTrackList::GetExecutionContext() const {
@@ -256,7 +256,7 @@ void TextTrackList::ScheduleAddTrackEvent(TextTrack* track) {
   // not bubble and is not cancelable, and that uses the TrackEvent interface,
   // with the track attribute initialized to the text track's TextTrack object,
   // at the media element's textTracks attribute's TextTrackList object.
-  ScheduleTrackEvent(EventTypeNames::addtrack, track);
+  ScheduleTrackEvent(event_type_names::kAddtrack, track);
 }
 
 void TextTrackList::ScheduleChangeEvent() {
@@ -267,7 +267,7 @@ void TextTrackList::ScheduleChangeEvent() {
   // ...
   // Fire a simple event named change at the media element's textTracks
   // attribute's TextTrackList object.
-  EnqueueEvent(*Event::Create(EventTypeNames::change),
+  EnqueueEvent(*Event::Create(event_type_names::kChange),
                TaskType::kMediaElementEvent);
 }
 
@@ -281,7 +281,7 @@ void TextTrackList::ScheduleRemoveTrackEvent(TextTrack* track) {
   // interface, with the track attribute initialized to the text track's
   // TextTrack object, at the media element's textTracks attribute's
   // TextTrackList object.
-  ScheduleTrackEvent(EventTypeNames::removetrack, track);
+  ScheduleTrackEvent(event_type_names::kRemovetrack, track);
 }
 
 bool TextTrackList::HasShowingTracks() {

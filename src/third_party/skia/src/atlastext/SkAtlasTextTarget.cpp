@@ -105,7 +105,7 @@ public:
 
     void makeGrPaint(GrMaskFormat, const SkPaint& skPaint, const SkMatrix&,
                      GrPaint* grPaint) override {
-        grPaint->setColor4f(GrColor4f::FromRGBA4f(skPaint.getColor4f().premul()));
+        grPaint->setColor4f(skPaint.getColor4f().premul());
     }
 
     GrContext* getContext() override {
@@ -188,7 +188,6 @@ void SkInternalAtlasTextTarget::addDrawOp(const GrClip& clip, std::unique_ptr<Gr
             break;
         }
     }
-    op->visitProxies([](GrSurfaceProxy*) {});
     fOps.emplace_back(std::move(op));
 }
 
@@ -210,8 +209,10 @@ void SkInternalAtlasTextTarget::flush() {
 }
 
 void GrAtlasTextOp::finalizeForTextTarget(uint32_t color, const GrCaps& caps) {
+    // TODO4F: Odd handling of client colors among AtlasTextTarget and AtlasTextRenderer
+    SkPMColor4f color4f = SkPMColor4f::FromBytes_RGBA(color);
     for (int i = 0; i < fGeoCount; ++i) {
-        fGeoData[i].fColor = color;
+        fGeoData[i].fColor = color4f;
     }
     this->finalize(caps, nullptr /* applied clip */);
 }
@@ -230,10 +231,12 @@ void GrAtlasTextOp::executeForTextTarget(SkAtlasTextTarget* target) {
     }
 
     for (int i = 0; i < fGeoCount; ++i) {
+        // TODO4F: Preserve float colors
         GrTextBlob::VertexRegenerator regenerator(
                 resourceProvider, fGeoData[i].fBlob, fGeoData[i].fRun, fGeoData[i].fSubRun,
-                fGeoData[i].fViewMatrix, fGeoData[i].fX, fGeoData[i].fY, fGeoData[i].fColor,
-                &context, glyphCache, atlasManager, &autoGlyphCache);
+                fGeoData[i].fViewMatrix, fGeoData[i].fX, fGeoData[i].fY,
+                fGeoData[i].fColor.toBytes_RGBA(), &context, glyphCache, atlasManager,
+                &autoGlyphCache);
         bool done = false;
         while (!done) {
             GrTextBlob::VertexRegenerator::Result result;

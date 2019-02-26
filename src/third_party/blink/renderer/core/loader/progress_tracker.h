@@ -52,6 +52,7 @@ class CORE_EXPORT ProgressTracker final
  public:
   static ProgressTracker* Create(LocalFrame*);
 
+  explicit ProgressTracker(LocalFrame*);
   ~ProgressTracker();
   void Trace(blink::Visitor*);
   void Dispose();
@@ -66,12 +67,10 @@ class CORE_EXPORT ProgressTracker final
 
   void WillStartLoading(unsigned long identifier, ResourceLoadPriority);
   void IncrementProgress(unsigned long identifier, const ResourceResponse&);
-  void IncrementProgress(unsigned long identifier, int);
+  void IncrementProgress(unsigned long identifier, size_t);
   void CompleteProgress(unsigned long identifier);
 
  private:
-  explicit ProgressTracker(LocalFrame*);
-
   LocalFrameClient* GetLocalFrameClient() const;
 
   void MaybeSendProgress();

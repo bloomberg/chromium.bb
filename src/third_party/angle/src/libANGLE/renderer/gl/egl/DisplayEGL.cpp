@@ -18,12 +18,9 @@ namespace rx
 
 DisplayEGL::DisplayEGL(const egl::DisplayState &state)
     : DisplayGL(state), mEGL(nullptr), mConfig(EGL_NO_CONFIG)
-{
-}
+{}
 
-DisplayEGL::~DisplayEGL()
-{
-}
+DisplayEGL::~DisplayEGL() {}
 
 ImageImpl *DisplayEGL::createImage(const egl::ImageState &state,
                                    const gl::Context *context,
@@ -112,8 +109,8 @@ void DisplayEGL::generateExtensions(egl::DisplayExtensions *outExtensions) const
     outExtensions->createContextRobustness =
         mEGL->hasExtension("EGL_EXT_create_context_robustness");
 
-    outExtensions->postSubBuffer = false;  // Since SurfaceEGL::postSubBuffer is not implemented
-    outExtensions->presentationTime      = mEGL->hasExtension("EGL_ANDROID_presentation_time");
+    outExtensions->postSubBuffer    = false;  // Since SurfaceEGL::postSubBuffer is not implemented
+    outExtensions->presentationTime = mEGL->hasExtension("EGL_ANDROID_presentation_time");
 
     // Contexts are virtualized so textures can be shared globally
     outExtensions->displayTextureShareGroup = true;
@@ -131,6 +128,10 @@ void DisplayEGL::generateExtensions(egl::DisplayExtensions *outExtensions) const
     outExtensions->glTexture3DImage      = mEGL->hasExtension("EGL_KHR_gl_texture_3D_image");
     outExtensions->glRenderbufferImage   = mEGL->hasExtension("EGL_KHR_gl_renderbuffer_image");
 
+    outExtensions->imageNativeBuffer = mEGL->hasExtension("EGL_ANDROID_image_native_buffer");
+
+    outExtensions->getFrameTimestamps = mEGL->hasExtension("EGL_ANDROID_get_frame_timestamps");
+
     DisplayGL::generateExtensions(outExtensions);
 }
 
@@ -141,9 +142,10 @@ void DisplayEGL::generateCaps(egl::Caps *outCaps) const
 
 void DisplayEGL::setBlobCacheFuncs(EGLSetBlobFuncANDROID set, EGLGetBlobFuncANDROID get)
 {
-    ASSERT(mEGL->hasExtension("EGL_ANDROID_blob_cache"));
-
-    mEGL->setBlobCacheFuncsANDROID(set, get);
+    if (mEGL->hasExtension("EGL_ANDROID_blob_cache"))
+    {
+        mEGL->setBlobCacheFuncsANDROID(set, get);
+    }
 }
 
 }  // namespace rx

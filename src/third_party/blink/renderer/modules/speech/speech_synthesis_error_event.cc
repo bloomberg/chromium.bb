@@ -9,18 +9,18 @@ namespace blink {
 // static
 SpeechSynthesisErrorEvent* SpeechSynthesisErrorEvent::Create(
     const AtomicString& type,
-    const SpeechSynthesisErrorEventInit& init) {
+    const SpeechSynthesisErrorEventInit* init) {
   return new SpeechSynthesisErrorEvent(type, init);
 }
 
 SpeechSynthesisErrorEvent::SpeechSynthesisErrorEvent(
     const AtomicString& type,
-    const SpeechSynthesisErrorEventInit& init)
+    const SpeechSynthesisErrorEventInit* init)
     : SpeechSynthesisEvent(type,
-                           init.utterance(),
-                           init.charIndex(),
-                           init.elapsedTime(),
-                           init.name()),
-      error_(init.error()) {}
+                           init->utterance(),
+                           init->charIndex(),
+                           init->elapsedTime(),
+                           init->name()),
+      error_(init->error()) {}
 
 }  // namespace blink

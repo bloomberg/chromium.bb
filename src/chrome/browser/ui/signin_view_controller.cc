@@ -11,7 +11,7 @@
 #include "chrome/browser/signin/account_consistency_mode_manager.h"
 #include "chrome/browser/signin/account_tracker_service_factory.h"
 #include "chrome/browser/signin/dice_tab_helper.h"
-#include "chrome/browser/signin/signin_manager_factory.h"
+#include "chrome/browser/signin/identity_manager_factory.h"
 #include "chrome/browser/signin/signin_promo.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_dialogs.h"
@@ -21,10 +21,10 @@
 #include "chrome/browser/ui/singleton_tabs.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/common/webui_url_constants.h"
-#include "components/signin/core/browser/profile_management_switches.h"
-#include "components/signin/core/browser/signin_manager.h"
+#include "components/signin/core/browser/account_consistency_method.h"
 #include "content/public/browser/web_contents.h"
 #include "google_apis/gaia/gaia_urls.h"
+#include "services/identity/public/cpp/identity_manager.h"
 #include "url/url_constants.h"
 
 namespace {
@@ -129,8 +129,8 @@ void SigninViewController::ShowSignin(profiles::BubbleViewMode mode,
     std::string email;
     if (GetSigninReasonFromMode(mode) ==
         signin_metrics::Reason::REASON_REAUTHENTICATION) {
-      SigninManagerBase* manager = SigninManagerFactory::GetForProfile(profile);
-      email = manager->GetAuthenticatedAccountInfo().email;
+      auto* manager = IdentityManagerFactory::GetForProfile(profile);
+      email = manager->GetPrimaryAccountInfo().email;
     }
     signin_metrics::PromoAction promo_action = GetPromoActionForNewAccount(
         AccountTrackerServiceFactory::GetForProfile(profile),
@@ -165,19 +165,9 @@ void SigninViewController::ShowModalSyncConfirmationDialog(Browser* browser) {
   // The delegate will delete itself on request of the UI code when the widget
   // is closed.
   delegate_ = SigninViewControllerDelegate::CreateSyncConfirmationDelegate(
-      this, browser, false /* is consent bump */);
+      this, browser);
   chrome::RecordDialogCreation(
       chrome::DialogIdentifier::SIGN_IN_SYNC_CONFIRMATION);
-}
-
-void SigninViewController::ShowModalSyncConsentBump(Browser* browser) {
-  CloseModalSignin();
-  // The delegate will delete itself on request of the UI code when the widget
-  // is closed.
-  delegate_ = SigninViewControllerDelegate::CreateSyncConfirmationDelegate(
-      this, browser, true /* is consent bump */);
-  chrome::RecordDialogCreation(
-      chrome::DialogIdentifier::UNITY_SYNC_CONSENT_BUMP);
 }
 
 void SigninViewController::ShowModalSigninErrorDialog(Browser* browser) {

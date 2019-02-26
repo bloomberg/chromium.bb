@@ -49,19 +49,10 @@ class SVGAnimatedLength : public ScriptWrappable,
       SVGLengthMode mode,
       SVGLength::Initial initial_value,
       CSSPropertyID css_property_id = CSSPropertyInvalid) {
-    return new SVGAnimatedLength(context_element, attribute_name, mode,
-                                 initial_value, css_property_id);
+    return MakeGarbageCollected<SVGAnimatedLength>(
+        context_element, attribute_name, mode, initial_value, css_property_id);
   }
 
-  SVGParsingError AttributeChanged(const String&) override;
-
-  const CSSValue& CssValue() const {
-    return CurrentValue()->AsCSSPrimitiveValue();
-  }
-
-  void Trace(blink::Visitor*) override;
-
- protected:
   SVGAnimatedLength(SVGElement* context_element,
                     const QualifiedName& attribute_name,
                     SVGLengthMode mode,
@@ -72,6 +63,14 @@ class SVGAnimatedLength : public ScriptWrappable,
                                        SVGLength::Create(initial_value, mode),
                                        css_property_id,
                                        static_cast<unsigned>(initial_value)) {}
+
+  SVGParsingError AttributeChanged(const String&) override;
+
+  const CSSValue& CssValue() const {
+    return CurrentValue()->AsCSSPrimitiveValue();
+  }
+
+  void Trace(blink::Visitor*) override;
 };
 
 }  // namespace blink

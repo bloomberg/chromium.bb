@@ -74,21 +74,32 @@ const displayInfocard = (() => {
     }
 
     /**
-     * Updates the path text, which shows the idPath of the node but highlights
-     * the symbol name portion using bold text.
+     * Updates the path text, which shows the idPath for directory nodes, and
+     * srcPath / component for symbol nodes.
      * @param {TreeNode} node
      */
-    _updatePath(node) {
-      const path = node.idPath.slice(0, node.shortNameIndex);
-      const boldShortName = dom.textElement(
-        'span',
-        shortName(node),
-        'symbol-name-info'
-      );
-      const pathFragment = dom.createFragment([
-        document.createTextNode(path),
-        boldShortName,
-      ]);
+    _updatePaths(node) {
+      let pathFragment;
+      if (node.srcPath) {
+        pathFragment = dom.createFragment([
+            dom.textElement('span', 'Path: ', 'symbol-name-info'),
+            document.createTextNode(node.srcPath),
+            document.createElement('br'),
+            dom.textElement('span', 'Component: ', 'symbol-name-info'),
+            document.createTextNode(node.componet || '(No component)'),
+        ]);
+      } else {
+        const path = node.idPath.slice(0, node.shortNameIndex);
+        const boldShortName = dom.textElement(
+          'span',
+          shortName(node),
+          'symbol-name-info'
+        );
+        pathFragment = dom.createFragment([
+          document.createTextNode(path),
+          boldShortName,
+        ]);
+      }
 
       // Update DOM
       dom.replace(this._pathInfo, pathFragment);
@@ -145,7 +156,7 @@ const displayInfocard = (() => {
 
       // Update DOM
       this._updateSize(node);
-      this._updatePath(node);
+      this._updatePaths(node);
       if (type !== this._lastType) {
         // No need to create a new icon if it is identical.
         const icon = getIconTemplate(type);

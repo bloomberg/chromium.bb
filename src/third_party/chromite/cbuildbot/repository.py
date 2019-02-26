@@ -25,6 +25,7 @@ from chromite.lib import metrics
 from chromite.lib import osutils
 from chromite.lib import parallel
 from chromite.lib import path_util
+from chromite.lib import repo_util
 from chromite.lib import retry_util
 from chromite.lib import rewrite_git_alternates
 
@@ -121,7 +122,7 @@ class RepoRepository(object):
 
   def __init__(self, manifest_repo_url, directory, branch=None,
                referenced_repo=None, manifest=constants.DEFAULT_MANIFEST,
-               depth=None, repo_url=config_lib.GetSiteParams().REPO_URL,
+               depth=None, repo_url=None,
                repo_branch=None, groups=None, repo_cmd='repo',
                preserve_paths=(), git_cache_dir=None):
     """Initialize.
@@ -371,16 +372,15 @@ class RepoRepository(object):
     if not source_repo:
       source_repo = constants.SOURCE_ROOT
 
-    target_repo = os.path.join(self.directory, '.repo')
-
     # If target already exist, or source is invalid, don't copy.
-    if os.path.exists(target_repo) or not IsARepoRoot(source_repo):
+    if IsARepoRoot(self.directory) or not IsARepoRoot(source_repo):
       return
 
-    source_repo = os.path.join(source_repo, '.repo')
+    osutils.SafeMakedirs(self.directory)
 
-    logging.info("Preloading '%s' from '%s'.", target_repo, source_repo)
-    shutil.copytree(source_repo, target_repo, symlinks=True)
+    logging.info("Preloading '%s' from '%s'.", self.directory, source_repo)
+    repo_util.Repository(source_repo).Copy(self.directory)
+    logging.info("Preload Finsihed.")
 
 
   def Initialize(self, local_manifest=None, manifest_repo_url=None,
@@ -427,8 +427,9 @@ class RepoRepository(object):
     # Use our own repo, in case android.kernel.org (the default location) is
     # down.
     init_cmd = [self.repo_cmd, 'init',
-                '--repo-url', self.repo_url,
                 '--manifest-url', self.manifest_repo_url]
+    if self.repo_url:
+      init_cmd.extend(['--repo-url', self.repo_url])
     if self._referenced_repo:
       init_cmd.extend(['--reference', self._referenced_repo])
     if self._manifest:
@@ -506,16 +507,6 @@ class RepoRepository(object):
            self._referenced_repo]
     git.RunGit('.', cmd)
 
-  def _ForceSyncSupported(self):
-    """Detect whether --force-sync is supported
-
-    When repo changes its internal object layout, it'll refuse to sync unless
-    this option is specified.
-    """
-    result = cros_build_lib.RunCommand([self.repo_cmd, 'sync', '--help'],
-                                       capture_output=True, cwd=self.directory)
-    return '--force-sync' in result.output
-
   def _CleanUpAndRunCommand(self, *args, **kwargs):
     """Clean up repository and run command.
 
@@ -561,9 +552,7 @@ class RepoRepository(object):
       # Fix existing broken mirroring configurations.
       self._EnsureMirroring()
 
-      cmd = [self.repo_cmd, '--time', 'sync']
-      if self._ForceSyncSupported():
-        cmd += ['--force-sync']
+      cmd = [self.repo_cmd, '--time', 'sync', '--force-sync']
       if jobs:
         cmd += ['--jobs', str(jobs)]
       if not all_branches or self._depth is not None:

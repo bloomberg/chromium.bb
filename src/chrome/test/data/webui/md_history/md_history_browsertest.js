@@ -190,6 +190,7 @@ MaterialHistorySyncedTabsTest.prototype = {
   __proto__: MaterialHistoryBrowserTest.prototype,
 
   extraLibraries: MaterialHistoryBrowserTest.prototype.extraLibraries.concat([
+    '../settings/test_util.js',
     'history_synced_tabs_test.js',
   ]),
 };

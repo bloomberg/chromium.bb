@@ -14,12 +14,16 @@
 
 import("../../../gn/perfetto.gni")
 import("../../../gn/proto_library.gni")
-import("../../../src/protozero/protozero_library.gni")
+import("../../../gn/protozero_library.gni")
 
 proto_library("lite") {
   generate_python = false
   proto_in_dir = "$perfetto_root_path/protos"
   proto_out_dir = "$perfetto_root_path/protos"
+  if (!build_with_chromium) {
+    generate_descriptor =
+        "$perfetto_root_path/protos/perfetto/trace/config.descriptor"
+  }
   deps = [
     "../common:lite",
   ]
@@ -30,6 +34,7 @@ proto_library("lite") {
     "ftrace/ftrace_config.proto",
     "inode_file/inode_file_config.proto",
     "process_stats/process_stats_config.proto",
+    "profiling/heapprofd_config.proto",
     "sys_stats/sys_stats_config.proto",
     "test_config.proto",
     "trace_config.proto",
@@ -49,6 +54,7 @@ protozero_library("zero") {
     "ftrace/ftrace_config.proto",
     "inode_file/inode_file_config.proto",
     "process_stats/process_stats_config.proto",
+    "profiling/heapprofd_config.proto",
     "sys_stats/sys_stats_config.proto",
     "test_config.proto",
     "trace_config.proto",

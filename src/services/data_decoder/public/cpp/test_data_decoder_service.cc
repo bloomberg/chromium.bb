@@ -5,28 +5,29 @@
 #include "services/data_decoder/public/cpp/test_data_decoder_service.h"
 
 #include "services/data_decoder/data_decoder_service.h"
+#include "services/data_decoder/public/mojom/constants.mojom.h"
 
 namespace data_decoder {
 
 TestDataDecoderService::TestDataDecoderService()
-    : connector_factory_(
-          service_manager::TestConnectorFactory::CreateForUniqueService(
-              std::make_unique<DataDecoderService>())),
-      connector_(connector_factory_->CreateConnector()) {}
+    : connector_(connector_factory_.CreateConnector()),
+      service_(connector_factory_.RegisterInstance(
+          data_decoder::mojom::kServiceName)) {}
 
 TestDataDecoderService::~TestDataDecoderService() = default;
 
-CrashyDataDecoderService::CrashyDataDecoderService(bool crash_json,
-                                                   bool crash_image)
-    : CrashyDataDecoderService(DataDecoderService::Create(),
-                               crash_json,
-                               crash_image) {}
+CrashyDataDecoderService::CrashyDataDecoderService(
+    service_manager::mojom::ServiceRequest request,
+    bool crash_json,
+    bool crash_image)
+    : binding_(this, std::move(request)),
+      crash_json_(crash_json),
+      crash_image_(crash_image) {}
 
 CrashyDataDecoderService::~CrashyDataDecoderService() = default;
 
-// service_manager::Service:
 void CrashyDataDecoderService::OnStart() {
-  real_service_->OnStart();
+  real_service_.OnStart();
 }
 
 void CrashyDataDecoderService::OnBindInterface(
@@ -48,8 +49,8 @@ void CrashyDataDecoderService::OnBindInterface(
             this, mojom::ImageDecoderRequest(std::move(interface_pipe)));
     return;
   }
-  real_service_->OnBindInterface(source_info, interface_name,
-                                 std::move(interface_pipe));
+  real_service_.OnBindInterface(source_info, interface_name,
+                                std::move(interface_pipe));
 }
 
 // Overridden from mojom::ImageDecoder:
@@ -75,14 +76,5 @@ void CrashyDataDecoderService::Parse(const std::string& json,
                                      ParseCallback callback) {
   json_parser_binding_.reset();
 }
-
-CrashyDataDecoderService::CrashyDataDecoderService(
-    std::unique_ptr<service_manager::Service> real_service,
-    bool crash_json,
-    bool crash_image)
-    : ForwardingService(real_service.get()),
-      real_service_(std::move(real_service)),
-      crash_json_(crash_json),
-      crash_image_(crash_image) {}
 
 }  // namespace data_decoder

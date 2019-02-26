@@ -53,6 +53,7 @@ aggregate_vector_icons("chrome_vector_icons") {
     "forward_arrow_touch.icon",
     "generic_stop.icon",
     "globe.icon",
+    "google_g_logo.icon",
     "google_pay_logo.icon",
     "horizontal_menu.icon",
     "incognito.icon",
@@ -70,11 +71,9 @@ aggregate_vector_icons("chrome_vector_icons") {
     "overflow_chevron.icon",
     "page_info_content_paste.icon",
     "paintbrush.icon",
-    "pause.icon",
     "photo.icon",
     "photo_camera.icon",
     "picture_in_picture_control_background.icon",
-    "play_arrow.icon",
     "picture_in_picture_alt.icon",
     "reload_touch.icon",
     "remove.icon",
@@ -127,7 +126,6 @@ aggregate_vector_icons("chrome_vector_icons") {
   if (is_mac) {
     icons += [
       "default_favicon.icon",
-      "google_g_logo.icon",
       "new_tab_mac_touchbar.icon",
     ]
   }

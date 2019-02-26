@@ -6,15 +6,24 @@
 From a system-installed copy of the toolchain, packages all the required bits
 into a .zip file.
 
-It assumes default install locations for tools, in particular:
-- C:\Program Files (x86)\Microsoft Visual Studio 12.0\...
-- C:\Program Files (x86)\Windows Kits\10\...
+It assumes default install locations for tools, on the C: drive.
 
-1. Start from a fresh Win7 VM image.
-2. Install VS Pro. Deselect everything except MFC.
-3. Install Windows 10 SDK. Select only the Windows SDK and Debugging Tools for
-Windows.
-4. Run this script, which will build a <sha1>.zip.
+1. Start from a fresh Windows VM image.
+2. Download the VS 2017 installer. Run the installer with these parameters:
+    --add Microsoft.VisualStudio.Workload.NativeDesktop
+    --add Microsoft.VisualStudio.Component.VC.ATLMFC
+    --add Microsoft.VisualStudio.Component.VC.Tools.ARM64
+    --add Microsoft.VisualStudio.Component.VC.MFC.ARM64
+    --includeRecommended --passive
+These are equivalent to selecting the Desktop development with C++ workload,
+within that the Visual C++ MFC for x86 and x64 component, and then  Individual
+Components-> Compilers, build tools, and runtimes-> Visual C++ compilers and
+libraries for ARM64, and Individual Components-> SDKs, libraries, and
+frameworks-> Visual C++ MFC for ARM64 (which also brings in ATL for ARM64).
+3. Use Add or Remove Programs to find the Windows SDK installed with VS
+and modify it to include the debuggers.
+4. Run this script, which will build a <sha1>.zip, something like this:
+  python package_from_installed.py 2017 -w 10.0.17763.0
 
 Express is not yet supported by this script, but patches welcome (it's not too
 useful as the resulting zip can't be redistributed, and most will presumably
@@ -133,6 +142,11 @@ def BuildFileList(override_dir):
         ('VC/redist/MSVC/14.*.*/x64/Microsoft.VC*.CRT', 'VC/bin/amd64'),
         ('VC/redist/MSVC/14.*.*/x64/Microsoft.VC*.CRT', 'win_sdk/bin/x64'),
         ('VC/redist/MSVC/14.*.*/debug_nonredist/x64/Microsoft.VC*.DebugCRT', 'sys64'),
+        ('VC/redist/MSVC/14.*.*/arm64/Microsoft.VC*.CRT', 'sysarm64'),
+        ('VC/redist/MSVC/14.*.*/arm64/Microsoft.VC*.CRT', 'VC/bin/amd64_arm64'),
+        ('VC/redist/MSVC/14.*.*/arm64/Microsoft.VC*.CRT', 'VC/bin/arm64'),
+        ('VC/redist/MSVC/14.*.*/arm64/Microsoft.VC*.CRT', 'win_sdk/bin/arm64'),
+        ('VC/redist/MSVC/14.*.*/debug_nonredist/arm64/Microsoft.VC*.DebugCRT', 'sysarm64'),
     ]
   else:
     raise ValueError('VS_VERSION %s' % VS_VERSION)
@@ -192,7 +206,7 @@ def BuildFileList(override_dir):
       to = os.path.join('win_sdk', tail)
       result.append((combined, to))
 
-  # Copy the x86 ucrt DLLs to all directories with 32-bit binaries that are
+  # Copy the x86 ucrt DLLs to all directories with x86 binaries that are
   # added to the path by SetEnv.cmd, and to sys32.
   ucrt_paths = glob.glob(os.path.join(sdk_path, r'redist\ucrt\dlls\x86\*'))
   for ucrt_path in ucrt_paths:
@@ -200,7 +214,7 @@ def BuildFileList(override_dir):
     for dest_dir in [ r'win_sdk\bin\x86', 'sys32' ]:
       result.append((ucrt_path, os.path.join(dest_dir, ucrt_file)))
 
-  # Copy the x64 ucrt DLLs to all directories with 64-bit binaries that are
+  # Copy the x64 ucrt DLLs to all directories with x64 binaries that are
   # added to the path by SetEnv.cmd, and to sys64.
   ucrt_paths = glob.glob(os.path.join(sdk_path, r'redist\ucrt\dlls\x64\*'))
   for ucrt_path in ucrt_paths:
@@ -213,21 +227,17 @@ def BuildFileList(override_dir):
       # Needed to let debug binaries run.
       'ucrtbased.dll',
   ]
-  bitness = platform.architecture()[0]
-  # When running 64-bit python the x64 DLLs will be in System32
-  x64_path = 'System32' if bitness == '64bit' else 'Sysnative'
-  x64_path = os.path.join(r'C:\Windows', x64_path)
   for system_crt_file in system_crt_files:
-      result.append((os.path.join(r'C:\Windows\SysWOW64', system_crt_file),
-                      os.path.join('sys32', system_crt_file)))
-      result.append((os.path.join(x64_path, system_crt_file),
-                      os.path.join('sys64', system_crt_file)))
+    for cpu_pair in [('x86', 'sys32'), ('x64', 'sys64'), ('arm64', 'sysarm64')]:
+      target_cpu, dest_dir = cpu_pair
+      src_path = os.path.join(sdk_path, 'bin', WIN_VERSION, target_cpu, 'ucrt')
+      result.append((os.path.join(src_path, system_crt_file),
+                     os.path.join(dest_dir, system_crt_file)))
 
   # Generically drop all arm stuff that we don't need, and
   # drop .msi files because we don't need installers, and drop windows.winmd
   # because it is unneeded and is different on every machine.
   return [(f, t) for f, t in result if 'arm\\' not in f.lower() and
-                                       'arm64\\' not in f.lower() and
                                        not f.lower().endswith('.msi') and
                                        not f.lower().endswith('.msm') and
                                        not f.lower().endswith('windows.winmd')]
@@ -252,7 +262,7 @@ def GenerateSetEnvCmd(target_dir):
     ['..', '..'] + vc_tools_parts + ['include'],
     ['..', '..'] + vc_tools_parts + ['atlmfc', 'include'],
   ])
-  # Common to x86 and x64
+  # Common to x86, x64, and arm64
   env = collections.OrderedDict([
     # Yuck: These have a trailing \ character. No good way to represent this in
     # an OS-independent way.
@@ -319,6 +329,20 @@ def GenerateSetEnvCmd(target_dir):
         ['..', '..', 'VC', 'atlmfc', 'lib', 'amd64'],
       ]),
     ])
+  if VS_VERSION == '2017':
+    env_arm64 = collections.OrderedDict([
+      ('PATH', [
+        ['..', '..', 'win_sdk', 'bin', WIN_VERSION, 'x64'],
+        ['..', '..'] + vc_tools_parts + ['bin', 'HostX64', 'arm64'],
+        ['..', '..'] + vc_tools_parts + ['bin', 'HostX64', 'x64'],
+      ]),
+      ('LIB', [
+        ['..', '..'] + vc_tools_parts + ['lib', 'arm64'],
+        ['..', '..', 'win_sdk', 'Lib', WIN_VERSION, 'um', 'arm64'],
+        ['..', '..', 'win_sdk', 'Lib', WIN_VERSION, 'ucrt', 'arm64'],
+        ['..', '..'] + vc_tools_parts + ['atlmfc', 'lib', 'arm64'],
+      ]),
+    ])
   def BatDirs(dirs):
     return ';'.join(['%~dp0' + os.path.join(*d) for d in dirs])
   set_env_prefix = os.path.join(target_dir, r'win_sdk\bin\SetEnv')
@@ -328,6 +352,7 @@ def GenerateSetEnvCmd(target_dir):
     for var, dirs in env.iteritems():
       f.write('set %s=%s\n' % (var, BatDirs(dirs)))
     f.write('if "%1"=="/x64" goto x64\n')
+    f.write('if "%1"=="/arm64" goto arm64\n')
 
     for var, dirs in env_x86.iteritems():
       f.write('set %s=%s%s\n' % (
@@ -338,6 +363,13 @@ def GenerateSetEnvCmd(target_dir):
     for var, dirs in env_x64.iteritems():
       f.write('set %s=%s%s\n' % (
           var, BatDirs(dirs), ';%PATH%' if var == 'PATH' else ''))
+    f.write('goto :EOF\n')
+
+    f.write(':arm64\n')
+    for var, dirs in env_arm64.iteritems():
+      f.write('set %s=%s%s\n' % (
+          var, BatDirs(dirs), ';%PATH%' if var == 'PATH' else ''))
+    f.write('goto :EOF\n')
   with open(set_env_prefix + '.x86.json', 'wb') as f:
     assert not set(env.keys()) & set(env_x86.keys()), 'dupe keys'
     json.dump({'env': collections.OrderedDict(env.items() + env_x86.items())},
@@ -345,6 +377,10 @@ def GenerateSetEnvCmd(target_dir):
   with open(set_env_prefix + '.x64.json', 'wb') as f:
     assert not set(env.keys()) & set(env_x64.keys()), 'dupe keys'
     json.dump({'env': collections.OrderedDict(env.items() + env_x64.items())},
+              f)
+  with open(set_env_prefix + '.arm64.json', 'wb') as f:
+    assert not set(env.keys()) & set(env_arm64.keys()), 'dupe keys'
+    json.dump({'env': collections.OrderedDict(env.items() + env_arm64.items())},
               f)
 
 
@@ -360,6 +396,8 @@ def AddEnvSetup(files):
                 'win_sdk\\bin\\SetEnv.x86.json'))
   files.append((os.path.join(tempdir, 'win_sdk', 'bin', 'SetEnv.x64.json'),
                 'win_sdk\\bin\\SetEnv.x64.json'))
+  files.append((os.path.join(tempdir, 'win_sdk', 'bin', 'SetEnv.arm64.json'),
+                'win_sdk\\bin\\SetEnv.arm64.json'))
   vs_version_file = os.path.join(tempdir, 'VS_VERSION')
   with open(vs_version_file, 'wb') as version:
     print >>version, VS_VERSION

@@ -3,50 +3,31 @@
 <link rel="import" href="chrome://resources/cr_elements/paper_button_style_css.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/paper-button/paper-button.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/paper-styles/color.html">
+<link rel="import" href="landing_view_proxy.html">
 <link rel="import" href="navigation_behavior.html">
+<link rel="import" href="shared/action_link_style_css.html">
+<link rel="import" href="shared/onboarding_background.html">
+<link rel="import" href="shared/splash_pages_shared_css.html">
 <link rel="import" href="welcome_browser_proxy.html">
 
 <dom-module id="landing-view">
   <template>
-    <style include="paper-button-style">
-      #container {
-        align-items: center;
-        display: flex;
-        flex-direction: column;
-        height: 100%;
-        justify-content: center;
-        margin: auto;
-        width: 800px;
-      }
-
+    <style
+        include="paper-button-style action-link-style splash-pages-shared-css">
       h1 {
-        font-size: 4rem;
-        margin-bottom: 20px;
-      }
-
-      h2 {
-        color: darkgrey;
-        font-size: 1.5rem;
-      }
-
-      paper-button {
-        font-size: 1rem;
-        height: 2.5rem;
-        text-align: center;
-        white-space: nowrap;
-        width: 220px;
+        outline: none;
       }
     </style>
-    <!-- TODO(scottchen): localize -->
+    <onboarding-background></onboarding-background>
     <div id="container">
-      <h2>Set up your browser in a few simple steps</h2>
-      <h1>Make Chrome your own</h1>
+      <h2>$i18n{landingDescription}</h2>
+      <h1 tabindex="-1">$i18n{landingTitle}</h1>
       <paper-button class="action-button" on-click="onNewUserClick_">
-        Get Started
+        $i18n{landingNewUser}
       </paper-button>
-      <paper-button on-click="onExistingUserClick_">
-        Already set up? Sign in
-      </paper-button>
+      <button class="action-link" on-click="onExistingUserClick_">
+        $i18n{landingExistingUser}
+      </button>
     </div>
   </template>
   <script src="landing_view.js"></script>

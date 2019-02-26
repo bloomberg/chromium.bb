@@ -6,6 +6,7 @@
 #define GPU_IPC_CLIENT_SHARED_IMAGE_INTERFACE_PROXY_H_
 
 #include "base/synchronization/lock.h"
+#include "base/thread_annotations.h"
 #include "gpu/command_buffer/client/shared_image_interface.h"
 
 namespace gpu {
@@ -21,6 +22,13 @@ class SharedImageInterfaceProxy : public SharedImageInterface {
                             const gfx::Size& size,
                             const gfx::ColorSpace& color_space,
                             uint32_t usage) override;
+  Mailbox CreateSharedImage(gfx::GpuMemoryBuffer* gpu_memory_buffer,
+                            GpuMemoryBufferManager* gpu_memory_buffer_manager,
+                            const gfx::ColorSpace& color_space,
+                            uint32_t usage) override;
+  void UpdateSharedImage(const SyncToken& sync_token,
+                         const Mailbox& mailbox) override;
+
   void DestroySharedImage(const SyncToken& sync_token,
                           const Mailbox& mailbox) override;
   SyncToken GenUnverifiedSyncToken() override;
@@ -28,9 +36,9 @@ class SharedImageInterfaceProxy : public SharedImageInterface {
  private:
   GpuChannelHost* const host_;
   const int32_t route_id_;
-  // Protects next_release_id_.
   base::Lock lock_;
-  uint32_t next_release_id_ = 0;
+  uint32_t next_release_id_ GUARDED_BY(lock_) = 0;
+  uint32_t last_flush_id_ GUARDED_BY(lock_) = 0;
 };
 
 }  // namespace gpu

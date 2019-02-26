@@ -12,7 +12,6 @@
 #include "ash/strings/grit/ash_strings.h"
 #include "ash/system/model/system_tray_model.h"
 #include "ash/system/tray/system_menu_button.h"
-#include "ash/system/tray/system_tray.h"
 #include "ash/system/tray/tri_view.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/threading/thread_task_runner_handle.h"

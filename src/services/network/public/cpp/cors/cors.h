@@ -50,7 +50,7 @@ extern const char kAccessControlRequestMethod[];
 // Performs a CORS access check on the response parameters.
 // This implements https://fetch.spec.whatwg.org/#concept-cors-check
 COMPONENT_EXPORT(NETWORK_CPP)
-base::Optional<CORSErrorStatus> CheckAccess(
+base::Optional<CorsErrorStatus> CheckAccess(
     const GURL& response_url,
     const int response_status_code,
     const base::Optional<std::string>& allow_origin_header,
@@ -63,7 +63,7 @@ base::Optional<CORSErrorStatus> CheckAccess(
 // step 6, even for a preflight check, |credentials_mode| should be checked on
 // the actual request rather than preflight one.
 COMPONENT_EXPORT(NETWORK_CPP)
-base::Optional<CORSErrorStatus> CheckPreflightAccess(
+base::Optional<CorsErrorStatus> CheckPreflightAccess(
     const GURL& response_url,
     const int response_status_code,
     const base::Optional<std::string>& allow_origin_header,
@@ -76,7 +76,7 @@ base::Optional<CORSErrorStatus> CheckPreflightAccess(
 // - the URL has a CORS supported scheme and
 // - the URL does not contain the userinfo production.
 COMPONENT_EXPORT(NETWORK_CPP)
-base::Optional<CORSErrorStatus> CheckRedirectLocation(
+base::Optional<CorsErrorStatus> CheckRedirectLocation(
     const GURL& url,
     mojom::FetchRequestMode request_mode,
     const base::Optional<url::Origin>& origin,
@@ -87,17 +87,17 @@ base::Optional<CORSErrorStatus> CheckRedirectLocation(
 // Returns |kPreflightSuccess| if preflight response was successful.
 // TODO(toyoshim): Rename to CheckPreflightStatus.
 COMPONENT_EXPORT(NETWORK_CPP)
-base::Optional<mojom::CORSError> CheckPreflight(const int status_code);
+base::Optional<mojom::CorsError> CheckPreflight(const int status_code);
 
 // Checks errors for the currently experimental "Access-Control-Allow-External:"
 // header. Shares error conditions with standard preflight checking.
 // See https://crbug.com/590714.
 COMPONENT_EXPORT(NETWORK_CPP)
-base::Optional<CORSErrorStatus> CheckExternalPreflight(
+base::Optional<CorsErrorStatus> CheckExternalPreflight(
     const base::Optional<std::string>& allow_external);
 
 COMPONENT_EXPORT(NETWORK_CPP)
-bool IsCORSEnabledRequestMode(mojom::FetchRequestMode mode);
+bool IsCorsEnabledRequestMode(mojom::FetchRequestMode mode);
 
 // Returns the response tainting value
 // (https://fetch.spec.whatwg.org/#concept-request-response-tainting) for a
@@ -112,13 +112,13 @@ mojom::FetchResponseType CalculateResponseTainting(
 
 // Checks safelisted request parameters.
 COMPONENT_EXPORT(NETWORK_CPP)
-bool IsCORSSafelistedMethod(const std::string& method);
+bool IsCorsSafelistedMethod(const std::string& method);
 COMPONENT_EXPORT(NETWORK_CPP)
-bool IsCORSSafelistedContentType(const std::string& name);
+bool IsCorsSafelistedContentType(const std::string& name);
 COMPONENT_EXPORT(NETWORK_CPP)
-bool IsCORSSafelistedHeader(const std::string& name, const std::string& value);
+bool IsCorsSafelistedHeader(const std::string& name, const std::string& value);
 COMPONENT_EXPORT(NETWORK_CPP)
-bool IsNoCORSSafelistedHeader(const std::string& name,
+bool IsNoCorsSafelistedHeader(const std::string& name,
                               const std::string& value);
 
 // https://fetch.spec.whatwg.org/#cors-unsafe-request-header-names
@@ -126,7 +126,7 @@ bool IsNoCORSSafelistedHeader(const std::string& name,
 // The returned list is NOT sorted.
 // The returned list consists of lower-cased names.
 COMPONENT_EXPORT(NETWORK_CPP)
-std::vector<std::string> CORSUnsafeRequestHeaderNames(
+std::vector<std::string> CorsUnsafeRequestHeaderNames(
     const net::HttpRequestHeaders::HeaderVector& headers);
 
 // https://fetch.spec.whatwg.org/#cors-unsafe-request-header-names
@@ -137,13 +137,13 @@ std::vector<std::string> CORSUnsafeRequestHeaderNames(
 // The returned list is NOT sorted.
 // The returned list consists of lower-cased names.
 COMPONENT_EXPORT(NETWORK_CPP)
-std::vector<std::string> CORSUnsafeNotForbiddenRequestHeaderNames(
+std::vector<std::string> CorsUnsafeNotForbiddenRequestHeaderNames(
     const net::HttpRequestHeaders::HeaderVector& headers,
     bool is_revalidating);
 
 // Checks forbidden method in the fetch spec.
 // See https://fetch.spec.whatwg.org/#forbidden-method.
-// TODO(toyoshim): Move Blink FetchUtils::IsForbiddenMethod to CORS:: and use
+// TODO(toyoshim): Move Blink FetchUtils::IsForbiddenMethod to cors:: and use
 // this implementation internally.
 COMPONENT_EXPORT(NETWORK_CPP) bool IsForbiddenMethod(const std::string& name);
 
@@ -159,12 +159,12 @@ COMPONENT_EXPORT(NETWORK_CPP) bool IsOkStatus(int status);
 // Returns true if |type| is a response type which makes a response
 // CORS-same-origin. See https://html.spec.whatwg.org/#cors-same-origin.
 COMPONENT_EXPORT(NETWORK_CPP)
-bool IsCORSSameOriginResponseType(mojom::FetchResponseType type);
+bool IsCorsSameOriginResponseType(mojom::FetchResponseType type);
 
 // Returns true if |type| is a response type which makes a response
 // CORS-cross-origin. See https://html.spec.whatwg.org/#cors-cross-origin.
 COMPONENT_EXPORT(NETWORK_CPP)
-bool IsCORSCrossOriginResponseType(mojom::FetchResponseType type);
+bool IsCorsCrossOriginResponseType(mojom::FetchResponseType type);
 
 // Returns true if the credentials flag should be set for the given arguments
 // as in https://fetch.spec.whatwg.org/#http-network-or-cache-fetch.

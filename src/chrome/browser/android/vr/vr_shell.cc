@@ -20,7 +20,6 @@
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/trace_event/trace_event.h"
 #include "base/values.h"
-#include "chrome/browser/android/chrome_feature_list.h"
 #include "chrome/browser/android/tab_android.h"
 #include "chrome/browser/android/vr/android_ui_gesture_target.h"
 #include "chrome/browser/android/vr/autocomplete_controller.h"
@@ -38,12 +37,12 @@
 #include "chrome/browser/ssl/security_state_tab_helper.h"
 #include "chrome/browser/vr/assets_loader.h"
 #include "chrome/browser/vr/browser_renderer.h"
+#include "chrome/browser/vr/location_bar_helper.h"
 #include "chrome/browser/vr/metrics/metrics_helper.h"
 #include "chrome/browser/vr/metrics/session_metrics_helper.h"
 #include "chrome/browser/vr/model/assets.h"
 #include "chrome/browser/vr/model/omnibox_suggestions.h"
 #include "chrome/browser/vr/model/text_input_info.h"
-#include "chrome/browser/vr/toolbar_helper.h"
 #include "chrome/browser/vr/ui_test_input.h"
 #include "chrome/browser/vr/vr_tab_helper.h"
 #include "chrome/browser/vr/vr_web_contents_observer.h"
@@ -174,7 +173,7 @@ VrShell::VrShell(JNIEnv* env,
       pause_content, low_density, &gl_surface_created_event_,
       std::move(surface_callback));
   ui_ = gl_thread_.get();
-  toolbar_ = std::make_unique<ToolbarHelper>(ui_, this);
+  toolbar_ = std::make_unique<LocationBarHelper>(ui_, this);
   autocomplete_controller_ =
       std::make_unique<AutocompleteController>(base::BindRepeating(
           &BrowserUiInterface::SetOmniboxSuggestions, base::Unretained(ui_)));
@@ -371,11 +370,6 @@ void VrShell::OpenNewTab(bool incognito) {
   Java_VrShell_openNewTab(env, j_vr_shell_, incognito);
 }
 
-void VrShell::SelectTab(int id, bool incognito) {
-  JNIEnv* env = base::android::AttachCurrentThread();
-  Java_VrShell_selectTab(env, j_vr_shell_, id, incognito);
-}
-
 void VrShell::OpenBookmarks() {
   JNIEnv* env = base::android::AttachCurrentThread();
   Java_VrShell_openBookmarks(env, j_vr_shell_);
@@ -406,16 +400,6 @@ void VrShell::OpenSettings() {
   Java_VrShell_openSettings(env, j_vr_shell_);
 }
 
-void VrShell::CloseTab(int id, bool incognito) {
-  JNIEnv* env = base::android::AttachCurrentThread();
-  Java_VrShell_closeTab(env, j_vr_shell_, id, incognito);
-}
-
-void VrShell::CloseAllTabs() {
-  JNIEnv* env = base::android::AttachCurrentThread();
-  Java_VrShell_closeAllTabs(env, j_vr_shell_);
-}
-
 void VrShell::CloseAllIncognitoTabs() {
   JNIEnv* env = base::android::AttachCurrentThread();
   Java_VrShell_closeAllIncognitoTabs(env, j_vr_shell_);
@@ -441,13 +425,13 @@ void VrShell::ToggleCardboardGamepad(bool enabled) {
   }
 
   if (!cardboard_gamepad_source_active_ && enabled) {
-    device::GvrDevice* device = delegate_provider_->GetDevice();
-    if (!device)
+    device::GvrDevice* gvr_device = delegate_provider_->GetGvrDevice();
+    if (!gvr_device)
       return;
 
     device::GamepadDataFetcherManager::GetInstance()->AddFactory(
         new device::CardboardGamepadDataFetcher::Factory(this,
-                                                         device->GetId()));
+                                                         gvr_device->GetId()));
     cardboard_gamepad_source_active_ = true;
     if (pending_cardboard_trigger_) {
       OnTriggerEvent(nullptr, JavaParamRef<jobject>(nullptr), true);
@@ -460,12 +444,12 @@ void VrShell::ToggleGvrGamepad(bool enabled) {
   // Enable/disable updating gamepad state.
   if (enabled) {
     DCHECK(!gvr_gamepad_source_active_);
-    device::GvrDevice* device = delegate_provider_->GetDevice();
-    if (!device)
+    device::GvrDevice* gvr_device = delegate_provider_->GetGvrDevice();
+    if (!gvr_device)
       return;
 
     device::GamepadDataFetcherManager::GetInstance()->AddFactory(
-        new device::GvrGamepadDataFetcher::Factory(this, device->GetId()));
+        new device::GvrGamepadDataFetcher::Factory(this, gvr_device->GetId()));
     gvr_gamepad_source_active_ = true;
   } else {
     DCHECK(gvr_gamepad_source_active_);
@@ -595,21 +579,24 @@ void VrShell::OnTabListCreated(JNIEnv* env,
                                const JavaParamRef<jobject>& obj,
                                jobjectArray tabs,
                                jobjectArray incognito_tabs) {
-  ui_->RemoveAllTabs();
+  incognito_tab_ids_.clear();
+  regular_tab_ids_.clear();
   size_t len = env->GetArrayLength(incognito_tabs);
   for (size_t i = 0; i < len; ++i) {
     ScopedJavaLocalRef<jobject> j_tab(
         env, env->GetObjectArrayElement(incognito_tabs, i));
     TabAndroid* tab = TabAndroid::GetNativeTab(env, j_tab);
-    ui_->AddOrUpdateTab(tab->GetAndroidId(), true, tab->GetTitle());
+    incognito_tab_ids_.insert(tab->GetAndroidId());
   }
 
   len = env->GetArrayLength(tabs);
   for (size_t i = 0; i < len; ++i) {
     ScopedJavaLocalRef<jobject> j_tab(env, env->GetObjectArrayElement(tabs, i));
     TabAndroid* tab = TabAndroid::GetNativeTab(env, j_tab);
-    ui_->AddOrUpdateTab(tab->GetAndroidId(), false, tab->GetTitle());
+    regular_tab_ids_.insert(tab->GetAndroidId());
   }
+  ui_->SetIncognitoTabsOpen(!incognito_tab_ids_.empty());
+  ui_->SetRegularTabsOpen(!regular_tab_ids_.empty());
 }
 
 void VrShell::OnTabUpdated(JNIEnv* env,
@@ -617,16 +604,26 @@ void VrShell::OnTabUpdated(JNIEnv* env,
                            jboolean incognito,
                            jint id,
                            jstring jtitle) {
-  base::string16 title;
-  base::android::ConvertJavaStringToUTF16(env, jtitle, &title);
-  ui_->AddOrUpdateTab(id, incognito, title);
+  if (incognito) {
+    incognito_tab_ids_.insert(id);
+    ui_->SetIncognitoTabsOpen(!incognito_tab_ids_.empty());
+  } else {
+    regular_tab_ids_.insert(id);
+    ui_->SetRegularTabsOpen(!regular_tab_ids_.empty());
+  }
 }
 
 void VrShell::OnTabRemoved(JNIEnv* env,
                            const JavaParamRef<jobject>& obj,
                            jboolean incognito,
                            jint id) {
-  ui_->RemoveTab(id, incognito);
+  if (incognito) {
+    incognito_tab_ids_.erase(id);
+    ui_->SetIncognitoTabsOpen(!incognito_tab_ids_.empty());
+  } else {
+    regular_tab_ids_.erase(id);
+    ui_->SetRegularTabsOpen(!regular_tab_ids_.empty());
+  }
 }
 
 void VrShell::SetAlertDialog(JNIEnv* env,
@@ -1130,7 +1127,7 @@ content::WebContents* VrShell::GetActiveWebContents() const {
 bool VrShell::ShouldDisplayURL() const {
   content::NavigationEntry* entry = GetNavigationEntry();
   if (!entry) {
-    return ChromeToolbarModelDelegate::ShouldDisplayURL();
+    return ChromeLocationBarModelDelegate::ShouldDisplayURL();
   }
   GURL url = entry->GetVirtualURL();
   // URL is of the form chrome-native://.... This is not useful for the user.
@@ -1142,7 +1139,7 @@ bool VrShell::ShouldDisplayURL() const {
   if (url.SchemeIs(content::kChromeUIScheme)) {
     return true;
   }
-  return ChromeToolbarModelDelegate::ShouldDisplayURL();
+  return ChromeLocationBarModelDelegate::ShouldDisplayURL();
 }
 
 void VrShell::OnVoiceResults(const base::string16& result) {
@@ -1266,19 +1263,21 @@ void VrShell::SaveNextFrameBufferToDiskForTesting(
           base::android::ConvertJavaStringToUTF8(env, filepath_base)));
 }
 
-void VrShell::WatchElementForVisibilityChangeForTesting(
+void VrShell::WatchElementForVisibilityStatusForTesting(
     JNIEnv* env,
     const base::android::JavaParamRef<jobject>& obj,
     jint element_name,
-    jint timeout_ms) {
+    jint timeout_ms,
+    jboolean visibility) {
   VisibilityChangeExpectation visibility_expectation;
   visibility_expectation.element_name =
       static_cast<UserFriendlyElementName>(element_name);
   visibility_expectation.timeout_ms = timeout_ms;
+  visibility_expectation.visibility = visibility;
   PostToGlThread(
       FROM_HERE,
       base::BindOnce(
-          &BrowserRenderer::WatchElementForVisibilityChangeForTesting,
+          &BrowserRenderer::WatchElementForVisibilityStatusForTesting,
           gl_thread_->GetBrowserRenderer(), visibility_expectation));
 }
 
@@ -1370,8 +1369,6 @@ jlong JNI_VrShell_Init(JNIEnv* env,
       has_or_can_request_audio_permission;
   ui_initial_state.assets_supported = AssetsLoader::AssetsSupported();
   ui_initial_state.is_standalone_vr_device = is_standalone_vr_device;
-  ui_initial_state.create_tabs_view =
-      base::FeatureList::IsEnabled(chrome::android::kVrBrowsingTabsView);
   ui_initial_state.use_new_incognito_strings =
       base::FeatureList::IsEnabled(features::kIncognitoStrings);
 

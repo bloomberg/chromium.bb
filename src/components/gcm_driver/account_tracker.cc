@@ -219,7 +219,7 @@ AccountIdFetcher::~AccountIdFetcher() {
 }
 
 void AccountIdFetcher::Start() {
-  OAuth2TokenService::ScopeSet scopes;
+  identity::ScopeSet scopes;
   scopes.insert("https://www.googleapis.com/auth/userinfo.profile");
   access_token_fetcher_ = identity_manager_->CreateAccessTokenFetcherForAccount(
       account_key_, "gaia_account_tracker", scopes,

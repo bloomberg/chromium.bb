@@ -38,6 +38,7 @@
 #include "third_party/blink/public/mojom/service_worker/service_worker_client.mojom-blink.h"
 #include "third_party/blink/public/mojom/service_worker/service_worker_event_status.mojom-blink.h"
 #include "third_party/blink/public/platform/modules/notifications/web_notification_data.h"
+#include "third_party/blink/public/platform/modules/service_worker/web_service_worker_error.h"
 #include "third_party/blink/public/platform/modules/service_worker/web_service_worker_request.h"
 #include "third_party/blink/public/web/modules/service_worker/web_service_worker_context_client.h"
 #include "third_party/blink/public/web/web_serialized_script_value.h"
@@ -86,6 +87,7 @@
 #include "third_party/blink/renderer/platform/loader/fetch/resource_response.h"
 #include "third_party/blink/renderer/platform/wtf/assertions.h"
 #include "third_party/blink/renderer/platform/wtf/functional.h"
+#include "third_party/blink/renderer/platform/wtf/std_lib_extras.h"
 
 namespace mojo {
 
@@ -143,10 +145,11 @@ struct TypeConverter<blink::mojom::blink::NotificationDataPtr,
   static blink::mojom::blink::NotificationDataPtr Convert(
       const blink::WebNotificationData& input) {
     Vector<int32_t> vibration_pattern;
-    vibration_pattern.Append(input.vibrate.Data(), input.vibrate.size());
+    vibration_pattern.Append(input.vibrate.Data(),
+                             SafeCast<wtf_size_t>(input.vibrate.size()));
 
     Vector<uint8_t> data;
-    data.Append(input.data.Data(), input.data.size());
+    data.Append(input.data.Data(), SafeCast<wtf_size_t>(input.data.size()));
 
     Vector<blink::mojom::blink::NotificationActionPtr> actions;
     for (const auto& web_action : input.actions) {
@@ -169,7 +172,8 @@ namespace blink {
 ServiceWorkerGlobalScopeProxy* ServiceWorkerGlobalScopeProxy::Create(
     WebEmbeddedWorkerImpl& embedded_worker,
     WebServiceWorkerContextClient& client) {
-  return new ServiceWorkerGlobalScopeProxy(embedded_worker, client);
+  return MakeGarbageCollected<ServiceWorkerGlobalScopeProxy>(embedded_worker,
+                                                             client);
 }
 
 ServiceWorkerGlobalScopeProxy::~ServiceWorkerGlobalScopeProxy() {
@@ -192,9 +196,9 @@ void ServiceWorkerGlobalScopeProxy::BindServiceWorkerHost(
 }
 
 void ServiceWorkerGlobalScopeProxy::SetRegistration(
-    std::unique_ptr<WebServiceWorkerRegistration::Handle> handle) {
+    WebServiceWorkerRegistrationObjectInfo info) {
   DCHECK(WorkerGlobalScope()->IsContextThread());
-  WorkerGlobalScope()->SetRegistration(std::move(handle));
+  WorkerGlobalScope()->SetRegistration(std::move(info));
 }
 
 void ServiceWorkerGlobalScopeProxy::ReadyToEvaluateScript() {
@@ -215,13 +219,13 @@ void ServiceWorkerGlobalScopeProxy::DispatchBackgroundFetchAbortEvent(
   // BackgroundFetchEvent::Create which eventually calls ToV8.
   ScriptState::Scope scope(script_state);
 
-  BackgroundFetchEventInit init;
-  init.setRegistration(new BackgroundFetchRegistration(
+  BackgroundFetchEventInit* init = BackgroundFetchEventInit::Create();
+  init->setRegistration(new BackgroundFetchRegistration(
       WorkerGlobalScope()->registration() /* service_worker_registration */,
       registration));
 
   BackgroundFetchEvent* event = BackgroundFetchEvent::Create(
-      EventTypeNames::backgroundfetchabort, init, observer);
+      event_type_names::kBackgroundfetchabort, init, observer);
 
   WorkerGlobalScope()->DispatchExtendableEvent(event, observer);
 }
@@ -233,13 +237,13 @@ void ServiceWorkerGlobalScopeProxy::DispatchBackgroundFetchClickEvent(
   WaitUntilObserver* observer = WaitUntilObserver::Create(
       WorkerGlobalScope(), WaitUntilObserver::kBackgroundFetchClick, event_id);
 
-  BackgroundFetchEventInit init;
-  init.setRegistration(new BackgroundFetchRegistration(
+  BackgroundFetchEventInit* init = BackgroundFetchEventInit::Create();
+  init->setRegistration(new BackgroundFetchRegistration(
       WorkerGlobalScope()->registration() /* service_worker_registration */,
       registration));
 
   BackgroundFetchEvent* event = BackgroundFetchEvent::Create(
-      EventTypeNames::backgroundfetchclick, init, observer);
+      event_type_names::kBackgroundfetchclick, init, observer);
 
   WorkerGlobalScope()->DispatchExtendableEvent(event, observer);
 }
@@ -258,13 +262,13 @@ void ServiceWorkerGlobalScopeProxy::DispatchBackgroundFetchFailEvent(
   // BackgroundFetchSettledEvent::Create which eventually calls ToV8.
   ScriptState::Scope scope(script_state);
 
-  BackgroundFetchEventInit init;
-  init.setRegistration(new BackgroundFetchRegistration(
+  BackgroundFetchEventInit* init = BackgroundFetchEventInit::Create();
+  init->setRegistration(new BackgroundFetchRegistration(
       WorkerGlobalScope()->registration() /* service_worker_registration */,
       registration));
 
   BackgroundFetchUpdateUIEvent* event = BackgroundFetchUpdateUIEvent::Create(
-      EventTypeNames::backgroundfetchfail, init, observer,
+      event_type_names::kBackgroundfetchfail, init, observer,
       worker_global_scope_->registration());
 
   WorkerGlobalScope()->DispatchExtendableEvent(event, observer);
@@ -285,13 +289,13 @@ void ServiceWorkerGlobalScopeProxy::DispatchBackgroundFetchSuccessEvent(
   // BackgroundFetchSettledEvent::Create which eventually calls ToV8.
   ScriptState::Scope scope(script_state);
 
-  BackgroundFetchEventInit init;
-  init.setRegistration(new BackgroundFetchRegistration(
+  BackgroundFetchEventInit* init = BackgroundFetchEventInit::Create();
+  init->setRegistration(new BackgroundFetchRegistration(
       WorkerGlobalScope()->registration() /* service_worker_registration */,
       registration));
 
   BackgroundFetchUpdateUIEvent* event = BackgroundFetchUpdateUIEvent::Create(
-      EventTypeNames::backgroundfetchsuccess, init, observer,
+      event_type_names::kBackgroundfetchsuccess, init, observer,
       worker_global_scope_->registration());
 
   WorkerGlobalScope()->DispatchExtendableEvent(event, observer);
@@ -301,8 +305,8 @@ void ServiceWorkerGlobalScopeProxy::DispatchActivateEvent(int event_id) {
   DCHECK(WorkerGlobalScope()->IsContextThread());
   WaitUntilObserver* observer = WaitUntilObserver::Create(
       WorkerGlobalScope(), WaitUntilObserver::kActivate, event_id);
-  Event* event = ExtendableEvent::Create(EventTypeNames::activate,
-                                         ExtendableEventInit(), observer);
+  Event* event = ExtendableEvent::Create(
+      event_type_names::kActivate, ExtendableEventInit::Create(), observer);
   WorkerGlobalScope()->DispatchExtendableEvent(event, observer);
 }
 
@@ -314,11 +318,11 @@ void ServiceWorkerGlobalScopeProxy::DispatchCookieChangeEvent(
   WaitUntilObserver* observer = WaitUntilObserver::Create(
       WorkerGlobalScope(), WaitUntilObserver::kCookieChange, event_id);
 
-  HeapVector<CookieListItem> changed;
-  HeapVector<CookieListItem> deleted;
+  HeapVector<Member<CookieListItem>> changed;
+  HeapVector<Member<CookieListItem>> deleted;
   CookieChangeEvent::ToEventInfo(cookie, change_cause, changed, deleted);
   Event* event = ExtendableCookieChangeEvent::Create(
-      EventTypeNames::cookiechange, std::move(changed), std::move(deleted),
+      event_type_names::kCookiechange, std::move(changed), std::move(deleted),
       observer);
 
   // TODO(pwnall): Handle handle the case when
@@ -393,16 +397,18 @@ void ServiceWorkerGlobalScopeProxy::DispatchFetchEvent(
   Request* request = Request::Create(
       WorkerGlobalScope()->ScriptController()->GetScriptState(), web_request);
   request->getHeaders()->SetGuard(Headers::kImmutableGuard);
-  FetchEventInit event_init;
-  event_init.setCancelable(true);
-  event_init.setRequest(request);
-  event_init.setClientId(
+  FetchEventInit* event_init = FetchEventInit::Create();
+  event_init->setCancelable(true);
+  event_init->setRequest(request);
+  event_init->setClientId(
       web_request.IsMainResourceLoad() ? WebString() : web_request.ClientId());
-  event_init.setIsReload(web_request.IsReload());
+  event_init->setResultingClientId(
+      !web_request.IsMainResourceLoad() ? WebString() : web_request.ClientId());
+  event_init->setIsReload(web_request.IsReload());
   ScriptState* script_state =
       WorkerGlobalScope()->ScriptController()->GetScriptState();
   FetchEvent* fetch_event = FetchEvent::Create(
-      script_state, EventTypeNames::fetch, event_init, respond_with_observer,
+      script_state, event_type_names::kFetch, event_init, respond_with_observer,
       wait_until_observer, navigation_preload_sent);
   if (navigation_preload_sent) {
     // Keep |fetchEvent| until OnNavigationPreloadComplete() or
@@ -468,8 +474,9 @@ void ServiceWorkerGlobalScopeProxy::DispatchInstallEvent(int event_id) {
   DCHECK(WorkerGlobalScope()->IsContextThread());
   WaitUntilObserver* observer = WaitUntilObserver::Create(
       WorkerGlobalScope(), WaitUntilObserver::kInstall, event_id);
-  Event* event = InstallEvent::Create(
-      EventTypeNames::install, ExtendableEventInit(), event_id, observer);
+  Event* event =
+      InstallEvent::Create(event_type_names::kInstall,
+                           ExtendableEventInit::Create(), event_id, observer);
   WorkerGlobalScope()->SetIsInstalling(true);
   WorkerGlobalScope()->DispatchExtendableEvent(event, observer);
 }
@@ -483,14 +490,14 @@ void ServiceWorkerGlobalScopeProxy::DispatchNotificationClickEvent(
   DCHECK(WorkerGlobalScope()->IsContextThread());
   WaitUntilObserver* observer = WaitUntilObserver::Create(
       WorkerGlobalScope(), WaitUntilObserver::kNotificationClick, event_id);
-  NotificationEventInit event_init;
-  event_init.setNotification(Notification::Create(
+  NotificationEventInit* event_init = NotificationEventInit::Create();
+  event_init->setNotification(Notification::Create(
       WorkerGlobalScope(), notification_id,
       mojom::blink::NotificationData::From(data), true /* showing */));
   if (0 <= action_index && action_index < static_cast<int>(data.actions.size()))
-    event_init.setAction(data.actions[action_index].action);
-  event_init.setReply(reply);
-  Event* event = NotificationEvent::Create(EventTypeNames::notificationclick,
+    event_init->setAction(data.actions[action_index].action);
+  event_init->setReply(reply);
+  Event* event = NotificationEvent::Create(event_type_names::kNotificationclick,
                                            event_init, observer);
   WorkerGlobalScope()->DispatchExtendableEvent(event, observer);
 }
@@ -502,12 +509,12 @@ void ServiceWorkerGlobalScopeProxy::DispatchNotificationCloseEvent(
   DCHECK(WorkerGlobalScope()->IsContextThread());
   WaitUntilObserver* observer = WaitUntilObserver::Create(
       WorkerGlobalScope(), WaitUntilObserver::kNotificationClose, event_id);
-  NotificationEventInit event_init;
-  event_init.setAction(WTF::String());  // initialize as null.
-  event_init.setNotification(Notification::Create(
+  NotificationEventInit* event_init = NotificationEventInit::Create();
+  event_init->setAction(WTF::String());  // initialize as null.
+  event_init->setNotification(Notification::Create(
       WorkerGlobalScope(), notification_id,
       mojom::blink::NotificationData::From(data), false /* showing */));
-  Event* event = NotificationEvent::Create(EventTypeNames::notificationclose,
+  Event* event = NotificationEvent::Create(event_type_names::kNotificationclose,
                                            event_init, observer);
   WorkerGlobalScope()->DispatchExtendableEvent(event, observer);
 }
@@ -517,7 +524,7 @@ void ServiceWorkerGlobalScopeProxy::DispatchPushEvent(int event_id,
   DCHECK(WorkerGlobalScope()->IsContextThread());
   WaitUntilObserver* observer = WaitUntilObserver::Create(
       WorkerGlobalScope(), WaitUntilObserver::kPush, event_id);
-  Event* event = PushEvent::Create(EventTypeNames::push,
+  Event* event = PushEvent::Create(event_type_names::kPush,
                                    PushMessageData::Create(data), observer);
   WorkerGlobalScope()->DispatchExtendableEvent(event, observer);
 }
@@ -529,7 +536,7 @@ void ServiceWorkerGlobalScopeProxy::DispatchSyncEvent(int event_id,
   WaitUntilObserver* observer = WaitUntilObserver::Create(
       WorkerGlobalScope(), WaitUntilObserver::kSync, event_id);
   Event* event =
-      SyncEvent::Create(EventTypeNames::sync, id, last_chance, observer);
+      SyncEvent::Create(event_type_names::kSync, id, last_chance, observer);
   WorkerGlobalScope()->DispatchExtendableEvent(event, observer);
 }
 
@@ -542,7 +549,7 @@ void ServiceWorkerGlobalScopeProxy::DispatchAbortPaymentEvent(int event_id) {
                                           wait_until_observer);
 
   Event* event = AbortPaymentEvent::Create(
-      EventTypeNames::abortpayment, ExtendableEventInit(),
+      event_type_names::kAbortpayment, ExtendableEventInit::Create(),
       respond_with_observer, wait_until_observer);
 
   WorkerGlobalScope()->DispatchExtendableEventWithRespondWith(
@@ -560,7 +567,7 @@ void ServiceWorkerGlobalScopeProxy::DispatchCanMakePaymentEvent(
                                             wait_until_observer);
 
   Event* event = CanMakePaymentEvent::Create(
-      EventTypeNames::canmakepayment,
+      event_type_names::kCanmakepayment,
       PaymentEventDataConversion::ToCanMakePaymentEventInit(
           WorkerGlobalScope()->ScriptController()->GetScriptState(),
           web_event_data),
@@ -581,7 +588,7 @@ void ServiceWorkerGlobalScopeProxy::DispatchPaymentRequestEvent(
                                                 wait_until_observer);
 
   Event* event = PaymentRequestEvent::Create(
-      EventTypeNames::paymentrequest,
+      event_type_names::kPaymentrequest,
       PaymentEventDataConversion::ToPaymentRequestEventInit(
           WorkerGlobalScope()->ScriptController()->GetScriptState(),
           web_app_request),
@@ -593,7 +600,7 @@ void ServiceWorkerGlobalScopeProxy::DispatchPaymentRequestEvent(
 
 bool ServiceWorkerGlobalScopeProxy::HasFetchEventHandler() {
   DCHECK(WorkerGlobalScope()->IsContextThread());
-  return WorkerGlobalScope()->HasEventListeners(EventTypeNames::fetch);
+  return WorkerGlobalScope()->HasEventListeners(event_type_names::kFetch);
 }
 
 void ServiceWorkerGlobalScopeProxy::CountFeature(WebFeature feature) {
@@ -624,19 +631,6 @@ void ServiceWorkerGlobalScopeProxy::ReportConsoleMessage(
                                 location->Url());
 }
 
-void ServiceWorkerGlobalScopeProxy::PostMessageToPageInspector(
-    int session_id,
-    const String& message) {
-  DCHECK(embedded_worker_);
-  PostCrossThreadTask(
-      *parent_execution_context_task_runners_->Get(
-          TaskType::kInternalInspector),
-      FROM_HERE,
-      CrossThreadBind(&WebEmbeddedWorkerImpl::PostMessageToPageInspector,
-                      CrossThreadUnretained(embedded_worker_), session_id,
-                      message));
-}
-
 void ServiceWorkerGlobalScopeProxy::DidCreateWorkerGlobalScope(
     WorkerOrWorkletGlobalScope* worker_global_scope) {
   DCHECK(!worker_global_scope_);
@@ -656,6 +650,20 @@ void ServiceWorkerGlobalScopeProxy::DidInitializeWorkerContext() {
 void ServiceWorkerGlobalScopeProxy::DidLoadInstalledScript() {
   DCHECK(WorkerGlobalScope()->IsContextThread());
   Client().WorkerScriptLoaded();
+}
+
+void ServiceWorkerGlobalScopeProxy::DidFailToLoadInstalledClassicScript() {
+  DCHECK(WorkerGlobalScope()->IsContextThread());
+
+  // Tell ServiceWorkerContextClient about the failure. The generic
+  // WorkerContextFailedToStart() wouldn't make sense because
+  // WorkerContextStarted() was already called.
+  Client().FailedToLoadInstalledClassicScript();
+}
+
+void ServiceWorkerGlobalScopeProxy::DidFailToFetchModuleScript() {
+  DCHECK(WorkerGlobalScope()->IsContextThread());
+  Client().FailedToFetchModuleScript();
 }
 
 void ServiceWorkerGlobalScopeProxy::WillEvaluateClassicScript(
@@ -695,17 +703,12 @@ void ServiceWorkerGlobalScopeProxy::DidEvaluateModuleScript(bool success) {
 
 void ServiceWorkerGlobalScopeProxy::DidCloseWorkerGlobalScope() {
   DCHECK(WorkerGlobalScope()->IsContextThread());
-  // close() is not web-exposed. This is called when ServiceWorkerGlobalScope
-  // internally requests close() due to failure on startup when installed
-  // scripts couldn't be read.
+  // close() is not web-exposed for ServiceWorker. This is called when
+  // ServiceWorkerGlobalScope internally requests close(), for example, due to
+  // failure on startup when installed scripts couldn't be read.
   //
   // This may look like a roundabout way to terminate the thread, but close()
   // seems like the standard way to initiate termination from inside the thread.
-
-  // Tell ServiceWorkerContextClient about the failure. The generic
-  // WorkerContextFailedToStart() wouldn't make sense because
-  // WorkerContextStarted() was already called.
-  Client().FailedToLoadInstalledScript();
 
   // ServiceWorkerGlobalScope expects us to terminate the thread, so request
   // that here.

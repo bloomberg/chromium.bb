@@ -28,7 +28,8 @@ class RenderViewContextMenuMacCocoaBrowserTest : public InProcessBrowserTest {
     textField_.reset(
         [[NSTextField alloc] initWithFrame:NSMakeRect(20, 20, 100, 20)]);
     [textField_ setStringValue:@"some text"];
-    NSWindow* window = browser()->window()->GetNativeWindow();
+    NSWindow* window =
+        browser()->window()->GetNativeWindow().GetNativeNSWindow();
     [[window contentView] addSubview:textField_];
   }
 
@@ -70,7 +71,7 @@ IN_PROC_BROWSER_TEST_F(RenderViewContextMenuMacCocoaBrowserTest,
   // filters all context menus no matter which control invokes them (as well as
   // the application Services menu). So to test, we just need a control with a
   // bit of selected text.
-  NSWindow* window = browser()->window()->GetNativeWindow();
+  NSWindow* window = browser()->window()->GetNativeWindow().GetNativeNSWindow();
   [window makeFirstResponder:textField_];
   [textField_ selectText:nil];
 

@@ -29,7 +29,6 @@ import org.chromium.chrome.R;
 import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.chrome.test.ChromeActivityTestRule;
 import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
-import org.chromium.chrome.test.util.browser.Features.EnableFeatures;
 import org.chromium.content_public.browser.LoadUrlParams;
 import org.chromium.content_public.browser.NavigationController;
 import org.chromium.content_public.browser.NavigationEntry;
@@ -164,11 +163,6 @@ public class NavigationPopupTest {
         }
 
         @Override
-        public String getOriginalUrlForVisibleNavigationEntry() {
-            return null;
-        }
-
-        @Override
         public void clearSslPreferences() {
         }
 
@@ -209,23 +203,6 @@ public class NavigationPopupTest {
         @Override
         public boolean removeEntryAtIndex(int index) {
             return false;
-        }
-
-        @Override
-        public boolean canCopyStateOver() {
-            return false;
-        }
-
-        @Override
-        public boolean canPruneAllButLastCommitted() {
-            return false;
-        }
-
-        @Override
-        public void copyStateFrom(NavigationController source, boolean needsReload) {}
-
-        @Override
-        public void copyStateFromAndPrune(NavigationController source, boolean replaceEntry) {
         }
 
         @Override
@@ -294,7 +271,6 @@ public class NavigationPopupTest {
     @Test
     @MediumTest
     @Restriction(UiRestriction.RESTRICTION_TYPE_PHONE)
-    @EnableFeatures(ChromeFeatureList.LONG_PRESS_BACK_FOR_HISTORY)
     @Feature({"Navigation"})
     public void testLongPressBackTriggering() throws ExecutionException {
         KeyEvent event = new KeyEvent(KeyEvent.ACTION_DOWN, KeyEvent.KEYCODE_BACK);
@@ -311,7 +287,6 @@ public class NavigationPopupTest {
     @Test
     @SmallTest
     @Restriction(UiRestriction.RESTRICTION_TYPE_PHONE)
-    @EnableFeatures(ChromeFeatureList.LONG_PRESS_BACK_FOR_HISTORY)
     @Feature({"Navigation"})
     public void testLongPressBackTriggering_Cancellation() throws ExecutionException {
         ThreadUtils.runOnUiThreadBlocking(() -> {
@@ -336,7 +311,9 @@ public class NavigationPopupTest {
         return ThreadUtils.runOnUiThreadBlocking(() -> {
             NavigationPopup popup = new NavigationPopup(mProfile, mActivityTestRule.getActivity(),
                     controller, NavigationPopup.Type.TABLET_FORWARD);
-            popup.show(mActivityTestRule.getActivity().getToolbarManager().getToolbarLayout());
+            popup.show(mActivityTestRule.getActivity()
+                               .getToolbarManager()
+                               .getToolbarLayoutForTesting());
             return popup.getPopupForTesting();
         });
     }

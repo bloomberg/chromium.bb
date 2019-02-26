@@ -5,6 +5,8 @@
  * found in the LICENSE file.
  */
 
+#include "vk/GrVkVulkan.h"
+
 #include "GrContext.h"
 
 #include "GrContextPriv.h"
@@ -23,7 +25,7 @@
 
 class SK_API GrDirectContext : public GrContext {
 public:
-    GrDirectContext(GrBackend backend)
+    GrDirectContext(GrBackendApi backend)
             : INHERITED(backend)
             , fAtlasManager(nullptr) {
     }
@@ -112,7 +114,7 @@ sk_sp<GrContext> GrContext::MakeGL() {
 
 sk_sp<GrContext> GrContext::MakeGL(sk_sp<const GrGLInterface> interface,
                                    const GrContextOptions& options) {
-    sk_sp<GrContext> context(new GrDirectContext(kOpenGL_GrBackend));
+    sk_sp<GrContext> context(new GrDirectContext(GrBackendApi::kOpenGL));
 
     context->fGpu = GrGLGpu::Make(std::move(interface), options, context.get());
     if (!context->fGpu) {
@@ -133,7 +135,7 @@ sk_sp<GrContext> GrContext::MakeMock(const GrMockOptions* mockOptions) {
 
 sk_sp<GrContext> GrContext::MakeMock(const GrMockOptions* mockOptions,
                                      const GrContextOptions& options) {
-    sk_sp<GrContext> context(new GrDirectContext(kMock_GrBackend));
+    sk_sp<GrContext> context(new GrDirectContext(GrBackendApi::kMock));
 
     context->fGpu = GrMockGpu::Make(mockOptions, options, context.get());
     if (!context->fGpu) {
@@ -160,7 +162,7 @@ sk_sp<GrContext> GrContext::MakeVulkan(const GrVkBackendContext& backendContext,
                                        const GrContextOptions& options) {
 #ifdef SK_VULKAN
     GrContextOptions defaultOptions;
-    sk_sp<GrContext> context(new GrDirectContext(kVulkan_GrBackend));
+    sk_sp<GrContext> context(new GrDirectContext(GrBackendApi::kVulkan));
 
     context->fGpu = GrVkGpu::Make(backendContext, options, context.get());
     if (!context->fGpu) {
@@ -184,7 +186,7 @@ sk_sp<GrContext> GrContext::MakeMetal(void* device, void* queue) {
 }
 
 sk_sp<GrContext> GrContext::MakeMetal(void* device, void* queue, const GrContextOptions& options) {
-    sk_sp<GrContext> context(new GrDirectContext(kMetal_GrBackend));
+    sk_sp<GrContext> context(new GrDirectContext(GrBackendApi::kMetal));
 
     context->fGpu = GrMtlTrampoline::MakeGpu(context.get(), options, device, queue);
     if (!context->fGpu) {

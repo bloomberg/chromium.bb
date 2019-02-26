@@ -22,7 +22,7 @@ class TextureCapsMap;
 struct Caps;
 struct TextureCaps;
 struct InternalFormat;
-}
+}  // namespace gl
 
 namespace rx
 {
@@ -34,6 +34,7 @@ namespace vk
 {
 void GenerateCaps(const VkPhysicalDeviceProperties &physicalDeviceProperties,
                   const VkPhysicalDeviceFeatures &physicalDeviceFeatures,
+                  const VkQueueFamilyProperties &queueFamilyProperties,
                   const gl::TextureCapsMap &textureCaps,
                   gl::Caps *outCaps,
                   gl::Extensions *outExtensions,

@@ -42,7 +42,6 @@
 #include "content/public/browser/web_contents_observer.h"
 #include "content/public/browser/web_ui_controller.h"
 #include "content/public/common/bindings_policy.h"
-#include "content/public/common/browser_side_navigation_policy.h"
 #include "content/public/common/content_constants.h"
 #include "content/public/common/content_features.h"
 #include "content/public/common/url_constants.h"
@@ -299,16 +298,25 @@ class TestWebContentsObserver : public WebContentsObserver {
     last_url_ = validated_url;
   }
 
+  void DidFirstVisuallyNonEmptyPaint() override {
+    observed_did_first_visually_non_empty_paint_ = true;
+    EXPECT_TRUE(web_contents()->CompletedFirstVisuallyNonEmptyPaint());
+  }
+
   void DidChangeThemeColor(SkColor theme_color) override {
     last_theme_color_ = theme_color;
   }
 
   const GURL& last_url() const { return last_url_; }
   SkColor last_theme_color() const { return last_theme_color_; }
+  bool observed_did_first_visually_non_empty_paint() const {
+    return observed_did_first_visually_non_empty_paint_;
+  }
 
  private:
   GURL last_url_;
   SkColor last_theme_color_;
+  bool observed_did_first_visually_non_empty_paint_ = false;
 
   DISALLOW_COPY_AND_ASSIGN(TestWebContentsObserver);
 };
@@ -2481,6 +2489,7 @@ TEST_F(WebContentsImplTest, FilterURLs) {
   // about:blank
   GURL url_normalized(url::kAboutBlankURL);
   GURL url_from_ipc("about:whatever");
+  GURL url_blocked(kBlockedURL);
 
   // We navigate the test WebContents to about:blank, since NavigateAndCommit
   // will use the given URL to create the NavigationEntry as well, and that
@@ -2490,7 +2499,7 @@ TEST_F(WebContentsImplTest, FilterURLs) {
   // Check that an IPC with about:whatever is correctly normalized.
   contents()->TestDidFinishLoad(url_from_ipc);
 
-  EXPECT_EQ(url_normalized, observer.last_url());
+  EXPECT_EQ(url_blocked, observer.last_url());
 
   // Create and navigate another WebContents.
   std::unique_ptr<TestWebContents> other_contents(
@@ -2500,7 +2509,7 @@ TEST_F(WebContentsImplTest, FilterURLs) {
 
   // Check that an IPC with about:whatever is correctly normalized.
   other_contents->TestDidFailLoadWithError(url_from_ipc, 1, base::string16());
-  EXPECT_EQ(url_normalized, other_observer.last_url());
+  EXPECT_EQ(url_blocked, other_observer.last_url());
 }
 
 // Test that if a pending contents is deleted before it is shown, we don't
@@ -3056,8 +3065,8 @@ TEST_F(WebContentsImplTestWithSiteIsolation, StartStopEventsBalance) {
   // the spinner.
   {
     NavigationController::LoadURLParams load_params(bar_url);
-    load_params.referrer =
-        Referrer(GURL("http://referrer"), blink::kWebReferrerPolicyDefault);
+    load_params.referrer = Referrer(GURL("http://referrer"),
+                                    network::mojom::ReferrerPolicy::kDefault);
     load_params.transition_type = ui::PAGE_TRANSITION_GENERATED;
     load_params.extra_headers = "content-type: text/plain";
     load_params.load_type = NavigationController::LOAD_TYPE_DEFAULT;
@@ -3352,9 +3361,7 @@ TEST_F(WebContentsImplTest, ThemeColorChangeDependingOnFirstVisiblePaint) {
 
   // Simulate that the first visually non-empty paint has occurred. This will
   // propagate the current theme color to the delegates.
-  RenderViewHostTester::TestOnMessageReceived(
-      test_rvh(),
-      ViewHostMsg_DidFirstVisuallyNonEmptyPaint(test_rvh()->GetRoutingID()));
+  RenderViewHostTester::SimulateFirstPaint(test_rvh());
 
   EXPECT_EQ(SK_ColorRED, contents()->GetThemeColor());
   EXPECT_EQ(SK_ColorRED, observer.last_theme_color());
@@ -3583,6 +3590,15 @@ TEST_F(WebContentsImplTest, StartingSandboxFlags) {
   blink::WebSandboxFlags effective_flags =
       root->effective_frame_policy().sandbox_flags;
   EXPECT_EQ(effective_flags, expected_flags);
+}
+
+TEST_F(WebContentsImplTest, DidFirstVisuallyNonEmptyPaint) {
+  TestWebContentsObserver observer(contents());
+
+  RenderWidgetHostOwnerDelegate* rwhod = test_rvh();
+  rwhod->RenderWidgetDidFirstVisuallyNonEmptyPaint();
+
+  EXPECT_TRUE(observer.observed_did_first_visually_non_empty_paint());
 }
 
 }  // namespace content

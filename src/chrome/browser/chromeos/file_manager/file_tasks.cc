@@ -310,6 +310,14 @@ bool ExecuteFileTask(Profile* profile,
                      FileTaskFinishedCallback done) {
   UMA_HISTOGRAM_ENUMERATION("FileBrowser.ViewingTaskType", task.task_type,
                             NUM_TASK_TYPE);
+  if (drive::util::GetDriveConnectionStatus(profile) ==
+      drive::util::DRIVE_DISCONNECTED_NONETWORK) {
+    UMA_HISTOGRAM_ENUMERATION("FileBrowser.ViewingTaskType.Offline",
+                              task.task_type, NUM_TASK_TYPE);
+  } else {
+    UMA_HISTOGRAM_ENUMERATION("FileBrowser.ViewingTaskType.Online",
+                              task.task_type, NUM_TASK_TYPE);
+  }
 
   // ARC apps needs mime types for launching. Retrieve them first.
   if (task.task_type == TASK_TYPE_ARC_APP) {

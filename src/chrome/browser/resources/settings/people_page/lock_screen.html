@@ -2,15 +2,13 @@
 
 <link rel="import" href="chrome://resources/cr_components/chromeos/quick_unlock/lock_screen_constants.html">
 <link rel="import" href="chrome://resources/cr_elements/cr_radio_button/cr_radio_button.html">
+<link rel="import" href="chrome://resources/cr_elements/cr_radio_group/cr_radio_group.html">
 <link rel="import" href="chrome://resources/cr_elements/policy/cr_policy_indicator.html">
 <link rel="import" href="chrome://resources/html/assert.html">
 <link rel="import" href="chrome://resources/html/cr/ui/focus_without_ink.html">
 <link rel="import" href="chrome://resources/html/i18n_behavior.html">
 <link rel="import" href="chrome://resources/html/web_ui_listener_behavior.html">
-<link rel="import" href="chrome://resources/polymer/v1_0/paper-radio-group/paper-radio-group.html">
 <link rel="import" href="../controls/settings_toggle_button.html">
-<link rel="import" href="easy_unlock_browser_proxy.html">
-<link rel="import" href="easy_unlock_turn_off_dialog.html">
 <link rel="import" href="fingerprint_browser_proxy.html">
 <link rel="import" href="lock_state_behavior.html">
 <link rel="import" href="lock_screen_password_prompt_dialog.html">
@@ -32,14 +30,6 @@
         padding-top: 24px;
       }
 
-      #easyUnlock .start {
-        /* When the easy unlock toggle is shown, the easy unlock section's
-         * content becomes squashed to the top and bottom edges. Use padding to
-         * ensure the easy unlock content looks correct.
-         */
-        padding: 11px 0;
-      }
-
       #lockOptionsDiv {
         display: block;
       }
@@ -56,14 +46,6 @@
       #pinPasswordDiv,
       #pinPasswordSecondaryActionDiv {
         margin: auto;
-      }
-
-      #easyUnlockSettingsCollapsible {
-        @apply --settings-list-frame-padding;
-      }
-
-      .no-padding {
-        padding: 0;
       }
 
       .underbar {
@@ -93,9 +75,9 @@
             </template>
           </div>
           <div class="list-frame" >
-            <paper-radio-group id="unlockType"
+            <cr-radio-group id="unlockType"
                 disabled$="[[quickUnlockDisabledByPolicy_]]"
-                selected="{{selectedUnlockType}}" selectable="cr-radio-button">
+                selected="{{selectedUnlockType}}">
               <cr-radio-button name="password" class="list-item underbar">
                 <div class="start">
                   $i18n{lockScreenPasswordOnly}
@@ -121,7 +103,7 @@
                   </div>
                 </template>
               </cr-radio-button>
-            </paper-radio-group>
+            </cr-radio-group>
           </div>
         </div>
       </template>
@@ -132,8 +114,7 @@
         </h2>
         <div class="list-frame">
           <settings-radio-group
-              pref="{{prefs.ash.message_center.lock_screen_mode}}"
-              selectable="cr-radio-button">
+              pref="{{prefs.ash.message_center.lock_screen_mode}}">
             <template is="dom-if"
                 if="[[lockScreenHideSensitiveNotificationSupported_]]">
               <cr-radio-button name="hideSensitive" class="list-item underbar"
@@ -173,58 +154,6 @@
         </div>
       </template>
 
-      <template is="dom-if" if="[[easyUnlockAvailable_(
-          multideviceSettingsEnabled_, easyUnlockAllowed_,
-          easyUnlockInLegacyHostMode_)]]">
-        <div id="easyUnlock" class="settings-box two-line">
-          <div class="start">
-            <div>$i18n{easyUnlockSectionTitle}</div>
-            <div class="secondary">
-              [[getEasyUnlockDescription_(easyUnlockEnabled_,
-                  '$i18nPolymer{easyUnlockDescription}',
-                  '$i18nPolymer{easyUnlockSetupIntro}')]]
-              <a target="_blank" href="$i18n{easyUnlockLearnMoreURL}">
-                $i18n{learnMore}
-              </a>
-            </div>
-          </div>
-          <template is="dom-if" if="[[easyUnlockAvailable_(
-          multideviceSettingsEnabled_, easyUnlockAllowed_,
-          easyUnlockInLegacyHostMode_)]]">
-            <div class="separator"></div>
-            <template is="dom-if" if="[[!easyUnlockEnabled_]]">
-              <paper-button id="easyUnlockSetup" class="secondary-button"
-                  on-click="onEasyUnlockSetupTap_">
-                $i18n{easyUnlockSetupButton}
-              </paper-button>
-            </template>
-            <template is="dom-if" if="[[easyUnlockEnabled_]]">
-              <paper-button id="easyUnlockTurnOff" class="secondary-button"
-                  on-click="onEasyUnlockTurnOffTap_">
-                $i18n{easyUnlockTurnOffButton}
-              </paper-button>
-            </template>
-          </template>
-        </div>
-        <iron-collapse opened="[[easyUnlockEnabled_]]"
-            id="easyUnlockSettingsCollapsible">
-          <settings-toggle-button
-              class="continuation no-padding underbar"
-              pref="{{prefs.proximity_auth.is_chromeos_login_enabled}}"
-              label="$i18n{easyUnlockAllowSignInLabel}">
-          </settings-toggle-button>
-          <div class="settings-box continuation no-padding">
-            <div class="start">
-              $i18n{easyUnlockProximityThresholdLabel}
-            </div>
-            <settings-dropdown-menu
-              pref="{{prefs.easy_unlock.proximity_threshold}}"
-              menu-options="[[easyUnlockProximityThresholdMapping_]]">
-            </settings-dropdown-menu>
-          </div>
-        </iron-collapse>
-      </template>
-
       <template is="dom-if" if="[[showPasswordPromptDialog_]]" restamp>
         <settings-lock-screen-password-prompt-dialog
             id="lockScreenPasswordPrompt"
@@ -237,12 +166,6 @@
         <settings-setup-pin-dialog id="setupPin" set-modes="[[setModes_]]"
             on-close="onSetupPinDialogClose_">
         </settings-setup-pin-dialog>
-      </template>
-
-      <template is="dom-if" if="[[showEasyUnlockTurnOffDialog_]]" restamp>
-        <easy-unlock-turn-off-dialog id="easyUnlockTurnOffDialog"
-            on-close="onEasyUnlockTurnOffDialogClose_">
-        </easy-unlock-turn-off-dialog>
       </template>
     </div>
   </template>

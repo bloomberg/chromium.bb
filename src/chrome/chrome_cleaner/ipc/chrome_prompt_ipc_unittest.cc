@@ -17,9 +17,9 @@
 #include "base/threading/sequenced_task_runner_handle.h"
 #include "chrome/chrome_cleaner/ipc/ipc_test_util.h"
 #include "chrome/chrome_cleaner/logging/scoped_logging.h"
-#include "chrome/chrome_cleaner/test/test_name_helper.h"
 #include "chrome/chrome_cleaner/test/test_util.h"
 #include "components/chrome_cleaner/public/interfaces/chrome_prompt.mojom.h"
+#include "components/chrome_cleaner/test/test_name_helper.h"
 #include "mojo/public/cpp/bindings/binding.h"
 #include "mojo/public/cpp/system/message_pipe.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -226,6 +226,7 @@ class ChromePromptIPCChildProcess : public ChildProcess {
 
     std::vector<base::FilePath> files_to_delete;
     std::vector<base::string16> registry_keys;
+    std::vector<base::string16> extension_ids;
     if (uws_expected()) {
       files_to_delete.push_back(kBadFilePath);
       if (with_registry_keys())
@@ -234,6 +235,7 @@ class ChromePromptIPCChildProcess : public ChildProcess {
 
     chrome_prompt_ipc->PostPromptUserTask(
         std::move(files_to_delete), std::move(registry_keys),
+        std::move(extension_ids),
         base::BindOnce(&ChromePromptIPCChildProcess::ReceivePromptResult,
                        base::Unretained(this), base::Passed(&done)));
   }

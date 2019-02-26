@@ -13,7 +13,7 @@ from chromite.lib import failure_message_lib
 
 
 DEFAULT_BUILD_SCRIPT_FAILURE_EXTRA_INFO = (
-    '{\"shortname\": \"./security_test_image\"}')
+    '{\"shortname\": \"security_test_image\"}')
 DEFAULT_PACKAGE_BUILD_FAILURE_EXTRA_INFO = (
     '{\"shortname\": \"./build_image\", \"failed_packages\":'
     '[\"chromeos-base/chromeos-chrome\", \"chromeos-base/chromeos-init\"]}')
@@ -194,12 +194,12 @@ class StageFailureMessageTests(cros_test_lib.TestCase):
         extra_info=DEFAULT_BUILD_SCRIPT_FAILURE_EXTRA_INFO)
 
     self.assertEqual(failure_message.extra_info['shortname'],
-                     "./security_test_image")
+                     "security_test_image")
 
   def testDecodeExtraInfoWithNoneInvalidExtraInfo(self):
     """Test _DecodeExtraInfo with invalid extra_info."""
     failure_message = FailureMessageHelper.GetStageFailureMessage(
-        extra_info='{\"shortname\": \"./security_test_image\"')
+        extra_info='{\"shortname\": \"security_test_image\"')
 
     self.assertEqual(failure_message.extra_info, {})
 
@@ -227,7 +227,7 @@ class BuildScriptFailureMessageTests(cros_test_lib.TestCase):
     """Test GetShortname."""
     failure_message = FailureMessageHelper.GetBuildScriptFailureMessage()
 
-    self.assertEqual(failure_message.GetShortname(), "./security_test_image")
+    self.assertEqual(failure_message.GetShortname(), "security_test_image")
 
 
 class PackageBuildFailureMessageTests(cros_test_lib.TestCase):

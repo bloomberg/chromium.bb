@@ -4,6 +4,8 @@
 
 #include "components/sync/test/fake_server/fake_server_http_post_provider.h"
 
+#include <utility>
+
 #include "base/bind.h"
 #include "base/location.h"
 #include "base/time/time.h"
@@ -13,6 +15,24 @@
 using syncer::HttpPostProviderInterface;
 
 namespace fake_server {
+
+// static
+bool FakeServerHttpPostProvider::network_enabled_ = true;
+
+namespace {
+
+void HandleCommandOnFakeServerThread(base::WeakPtr<FakeServer> fake_server,
+                                     const std::string& request,
+                                     int* http_status_code,
+                                     std::string* response,
+                                     base::WaitableEvent* completion_event) {
+  if (fake_server) {
+    *http_status_code = fake_server->HandleCommand(request, response);
+  }
+  completion_event->Signal();
+}
+
+}  // namespace
 
 FakeServerHttpPostProviderFactory::FakeServerHttpPostProviderFactory(
     const base::WeakPtr<FakeServer>& fake_server,
@@ -64,28 +84,36 @@ void FakeServerHttpPostProvider::SetPostPayload(const char* content_type,
   request_content_.assign(content, content_length);
 }
 
-bool FakeServerHttpPostProvider::MakeSynchronousPost(int* error_code,
-                                                     int* response_code) {
+bool FakeServerHttpPostProvider::MakeSynchronousPost(int* net_error_code,
+                                                     int* http_status_code) {
+  if (!network_enabled_) {
+    response_.clear();
+    *net_error_code = net::ERR_INTERNET_DISCONNECTED;
+    *http_status_code = 0;
+    return false;
+  }
+
   // It is assumed that a POST is being made to /command.
-  int post_error_code = -1;
-  int post_response_code = -1;
+  int post_status_code = -1;
   std::string post_response;
 
   base::WaitableEvent post_complete(
       base::WaitableEvent::ResetPolicy::AUTOMATIC,
       base::WaitableEvent::InitialState::NOT_SIGNALED);
-  base::Closure signal_closure = base::Bind(&base::WaitableEvent::Signal,
-                                            base::Unretained(&post_complete));
 
   bool result = fake_server_task_runner_->PostTask(
       FROM_HERE,
-      base::BindOnce(&FakeServer::HandleCommand, fake_server_,
-                     base::ConstRef(request_content_),
-                     base::ConstRef(signal_closure), &post_error_code,
-                     &post_response_code, &post_response));
+      base::BindOnce(&HandleCommandOnFakeServerThread, fake_server_,
+                     request_content_, base::Unretained(&post_status_code),
+                     base::Unretained(&post_response),
+                     base::Unretained(&post_complete)));
 
-  if (!result)
+  if (!result) {
+    response_.clear();
+    *net_error_code = net::ERR_UNEXPECTED;
+    *http_status_code = 0;
     return false;
+  }
 
   // Note: This is a potential deadlock. Here we're on the sync thread, and
   // we're waiting for something to happen on the UI thread (where the
@@ -94,16 +122,16 @@ bool FakeServerHttpPostProvider::MakeSynchronousPost(int* error_code,
   // just give up after a few seconds.
   // TODO(crbug.com/869404): Maybe the FakeServer should live on its own thread.
   if (!post_complete.TimedWait(base::TimeDelta::FromSeconds(5))) {
-    *error_code = net::ERR_TIMED_OUT;
+    *net_error_code = net::ERR_TIMED_OUT;
     return false;
   }
-  post_error_code_ = post_error_code;
-  post_response_code_ = post_response_code;
+
+  // Zero means success.
+  *net_error_code = 0;
+  *http_status_code = post_status_code;
   response_ = post_response;
 
-  *error_code = post_error_code_;
-  *response_code = post_response_code_;
-  return *error_code == 0;
+  return true;
 }
 
 int FakeServerHttpPostProvider::GetResponseContentLength() const {
@@ -120,5 +148,13 @@ const std::string FakeServerHttpPostProvider::GetResponseHeaderValue(
 }
 
 void FakeServerHttpPostProvider::Abort() {}
+
+void FakeServerHttpPostProvider::DisableNetwork() {
+  network_enabled_ = false;
+}
+
+void FakeServerHttpPostProvider::EnableNetwork() {
+  network_enabled_ = true;
+}
 
 }  // namespace fake_server

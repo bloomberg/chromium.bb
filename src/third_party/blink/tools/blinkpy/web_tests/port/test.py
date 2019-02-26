@@ -57,7 +57,6 @@ class TestInstance(object):
         self.keyboard = False
         self.error = ''
         self.timeout = False
-        self.is_reftest = False
         self.device_failure = False
         self.leak = False
 
@@ -91,12 +90,19 @@ class TestList(object):
             test.__dict__[key] = value
         self.tests[name] = test
 
-    def add_reftest(self, name, reference_name, same_image, crash=False):
-        self.add(name, actual_text='reftest', actual_checksum='xxx', actual_image='XXX', is_reftest=True, crash=crash)
+    def add_reference(self, name, actual_checksum='checksum', actual_image='IMAGE'):
+        self.add(name, actual_checksum=actual_checksum, actual_image=actual_image,
+                 actual_text=None, expected_text=None, expected_image=None)
+
+    def add_reftest(self, name, reference_name, same_image=True,
+                    actual_text=None, expected_text=None, crash=False):
+        self.add(name, actual_checksum='checksum', actual_image='IMAGE', expected_image=None,
+                 actual_text=actual_text, expected_text=expected_text,
+                 crash=crash)
         if same_image:
-            self.add(reference_name, actual_checksum='xxx', actual_image='XXX', is_reftest=True)
+            self.add_reference(reference_name)
         else:
-            self.add(reference_name, actual_checksum='yyy', actual_image='YYY', is_reftest=True)
+            self.add_reference(reference_name, actual_checksum='diff', actual_image='DIFF')
 
     def keys(self):
         return self.tests.keys()
@@ -110,14 +116,14 @@ class TestList(object):
 #
 # These numbers may need to be updated whenever we add or delete tests. This includes virtual tests.
 #
-TOTAL_TESTS = 133
+TOTAL_TESTS = 127
 TOTAL_WONTFIX = 3
 TOTAL_SKIPS = 20 + TOTAL_WONTFIX
 TOTAL_CRASHES = 76
 
 UNEXPECTED_PASSES = 1
 UNEXPECTED_NON_VIRTUAL_FAILURES = 21
-UNEXPECTED_FAILURES = 49
+UNEXPECTED_FAILURES = 44
 
 
 def unit_test_list():
@@ -176,7 +182,7 @@ layer at (0,0) size 800x34
     tests.add('failures/unexpected/checksum-with-matching-image.html',
               actual_checksum='text-image-checksum_fail-checksum')
     tests.add('failures/unexpected/image-only.html',
-              expected_text=None, actual_text='text',
+              expected_text=None, actual_text=None,
               actual_image='image-only_fail-pngtEXtchecksum\x00checksum_fail',
               actual_checksum='image-only_fail-checksum')
     tests.add('failures/unexpected/skip_pass.html')
@@ -189,12 +195,12 @@ layer at (0,0) size 800x34
     tests.add('http/tests/ssl/text.html')
     tests.add('passes/args.html')
     tests.add('passes/error.html', error='stuff going to stderr')
-    tests.add('passes/image.html')
+    tests.add('passes/image.html', actual_text=None, expected_text=None)
     tests.add('passes/audio.html',
               actual_audio=base64.b64encode('audio-wav'), expected_audio='audio-wav',
               actual_text=None, expected_text=None,
               actual_image=None, expected_image=None,
-              actual_checksum=None)
+              actual_checksum=None, expected_checksum=None)
     tests.add('passes/platform_image.html')
     tests.add('passes/checksum_in_image.html',
               expected_image='tEXtchecksum\x00checksum_in_image-checksum')
@@ -212,41 +218,27 @@ layer at (0,0) size 800x34
               expected_text='\nfoo\n\n', actual_text='\nfoo\r\n\r\r\n')
 
     # For reftests.
-    tests.add_reftest('passes/reftest.html', 'passes/reftest-expected.html', same_image=True)
-
+    tests.add_reftest('passes/reftest.html', 'passes/reftest-expected.html')
     # This adds a different virtual reference to ensure that that also works.
-    tests.add('virtual/virtual_passes/passes/reftest-expected.html', actual_checksum='xxx', actual_image='XXX', is_reftest=True)
+    tests.add_reference('virtual/virtual_passes/passes/reftest-expected.html')
 
+    tests.add_reftest('passes/reftest-with-text.html', 'passes/reftest-with-text-expected.html',
+                      actual_text='reftest', expected_text='reftest')
     tests.add_reftest('passes/mismatch.html', 'passes/mismatch-expected-mismatch.html', same_image=False)
-    tests.add_reftest('passes/svgreftest.svg', 'passes/svgreftest-expected.svg', same_image=True)
-    tests.add_reftest('passes/xhtreftest.xht', 'passes/xhtreftest-expected.html', same_image=True)
+    tests.add_reftest('passes/svgreftest.svg', 'passes/svgreftest-expected.svg')
+    tests.add_reftest('passes/xhtreftest.xht', 'passes/xhtreftest-expected.html')
     tests.add_reftest('passes/phpreftest.php', 'passes/phpreftest-expected-mismatch.svg', same_image=False)
     tests.add_reftest('failures/expected/reftest.html', 'failures/expected/reftest-expected.html', same_image=False)
-    tests.add_reftest('failures/expected/mismatch.html', 'failures/expected/mismatch-expected-mismatch.html', same_image=True)
-    tests.add_reftest('failures/unexpected/crash-reftest.html',
-                      'failures/unexpected/crash-reftest-expected.html', same_image=True, crash=True)
+    tests.add_reftest('failures/unexpected/reftest-with-matching-text.html', 'failures/unexpected/reftest-with-matching-text-expected.html',
+                      same_image=False, actual_text='reftest', expected_text='reftest')
+    tests.add_reftest('failures/unexpected/reftest-with-mismatching-text.html', 'failures/unexpected/reftest-with-mismatching-text-expected.html',
+                      actual_text='reftest', expected_text='reftest-different')
+    tests.add_reftest('failures/expected/mismatch.html', 'failures/expected/mismatch-expected-mismatch.html')
+    tests.add_reftest('failures/unexpected/crash-reftest.html', 'failures/unexpected/crash-reftest-expected.html', crash=True)
     tests.add_reftest('failures/unexpected/reftest.html', 'failures/unexpected/reftest-expected.html', same_image=False)
-    tests.add_reftest('failures/unexpected/mismatch.html', 'failures/unexpected/mismatch-expected-mismatch.html', same_image=True)
-    tests.add('failures/unexpected/reftest-nopixel.html', actual_checksum=None, actual_image=None, is_reftest=True)
-    tests.add('failures/unexpected/reftest-nopixel-expected.html', actual_checksum=None, actual_image=None, is_reftest=True)
-    tests.add('reftests/foo/test.html')
-    tests.add('reftests/foo/test-ref.html')
-
-    tests.add('reftests/foo/multiple-match-success.html', actual_checksum='abc', actual_image='abc')
-    tests.add('reftests/foo/multiple-match-failure.html', actual_checksum='abc', actual_image='abc')
-    tests.add('reftests/foo/multiple-mismatch-success.html', actual_checksum='abc', actual_image='abc')
-    tests.add('reftests/foo/multiple-mismatch-failure.html', actual_checksum='abc', actual_image='abc')
-    tests.add('reftests/foo/multiple-both-success.html', actual_checksum='abc', actual_image='abc')
-    tests.add('reftests/foo/multiple-both-failure.html', actual_checksum='abc', actual_image='abc')
-
-    tests.add('reftests/foo/matching-ref.html', actual_checksum='abc', actual_image='abc')
-    tests.add('reftests/foo/mismatching-ref.html', actual_checksum='def', actual_image='def')
-    tests.add('reftests/foo/second-mismatching-ref.html', actual_checksum='ghi', actual_image='ghi')
-
-    # The following files shouldn't be treated as reftests
-    tests.add_reftest('reftests/foo/unlistedtest.html', 'reftests/foo/unlistedtest-expected.html', same_image=True)
-    tests.add('reftests/foo/reference/bar/common.html')
-    tests.add('reftests/foo/reftest/bar/shared.html')
+    tests.add_reftest('failures/unexpected/mismatch.html', 'failures/unexpected/mismatch-expected-mismatch.html')
+    tests.add('failures/unexpected/reftest-nopixel.html', actual_checksum=None, actual_image=None, expected_image=None)
+    tests.add('failures/unexpected/reftest-nopixel-expected.html', actual_checksum=None, actual_image=None)
 
     tests.add('websocket/tests/passes/text.html')
 
@@ -258,14 +250,6 @@ layer at (0,0) size 800x34
     tests.add('perf/foo/test.html')
     tests.add('perf/foo/test-ref.html')
 
-    # For testing --pixel-test-directories.
-    tests.add('failures/unexpected/pixeldir/image_in_pixeldir.html',
-              actual_image='image_in_pixeldir-pngtEXtchecksum\x00checksum_fail',
-              expected_image='image_in_pixeldir-pngtEXtchecksum\x00checksum-png')
-    tests.add('failures/unexpected/image_not_in_pixeldir.html',
-              actual_image='image_not_in_pixeldir-pngtEXtchecksum\x00checksum_fail',
-              expected_image='image_not_in_pixeldir-pngtEXtchecksum\x00checksum-png')
-
     # For testing that virtual test suites don't expand names containing themselves
     # See webkit.org/b/97925 and base_unittest.PortTest.test_tests().
     tests.add('passes/test-virtual-passes.html')
@@ -276,13 +260,15 @@ layer at (0,0) size 800x34
     tests.add('passes/testharness.html',
               actual_text='This is a testharness.js-based test.\nPASS: bah\n'
                           'Harness: the test ran to completion.',
-              actual_image=None,
-              expected_text=None)
+              expected_text=None,
+              actual_checksum=None, actual_image=None,
+              expected_checksum=None, expected_image=None)
     tests.add('failures/unexpected/testharness.html',
               actual_text='This is a testharness.js-based test.\nFAIL: bah\n'
                           'Harness: the test ran to completion.',
-              actual_image=None,
-              expected_text=None)
+              expected_text=None,
+              actual_checksum=None, actual_image=None,
+              expected_checksum=None, expected_image=None)
 
     return tests
 
@@ -326,26 +312,6 @@ Bug(test) failures/expected/exception.html [ WontFix ]
 Bug(test) failures/expected/device_failure.html [ WontFix ]
 """)
 
-    filesystem.maybe_make_directory(LAYOUT_TEST_DIR + '/reftests/foo')
-    filesystem.write_text_file(LAYOUT_TEST_DIR + '/reftests/foo/reftest.list', """
-== test.html test-ref.html
-
-== multiple-match-success.html mismatching-ref.html
-== multiple-match-success.html matching-ref.html
-== multiple-match-failure.html mismatching-ref.html
-== multiple-match-failure.html second-mismatching-ref.html
-!= multiple-mismatch-success.html mismatching-ref.html
-!= multiple-mismatch-success.html second-mismatching-ref.html
-!= multiple-mismatch-failure.html mismatching-ref.html
-!= multiple-mismatch-failure.html matching-ref.html
-== multiple-both-success.html matching-ref.html
-== multiple-both-success.html mismatching-ref.html
-!= multiple-both-success.html second-mismatching-ref.html
-== multiple-both-failure.html matching-ref.html
-!= multiple-both-failure.html second-mismatching-ref.html
-!= multiple-both-failure.html matching-ref.html
-""")
-
     # FIXME: This test was only being ignored because of missing a leading '/'.
     # Fixing the typo causes several tests to assert, so disabling the test entirely.
     # Add in a file should be ignored by port.find_test_files().
@@ -361,13 +327,12 @@ Bug(test) failures/expected/device_failure.html [ WontFix ]
     test_list = unit_test_list()
     for test in test_list.tests.values():
         add_file(test, test.name[test.name.rfind('.'):], '')
-        if test.is_reftest:
-            continue
-        if test.actual_audio:
+        if test.expected_audio:
             add_file(test, '-expected.wav', test.expected_audio)
-            continue
-        add_file(test, '-expected.txt', test.expected_text)
-        add_file(test, '-expected.png', test.expected_image)
+        if test.expected_text:
+            add_file(test, '-expected.txt', test.expected_text)
+        if test.expected_image:
+            add_file(test, '-expected.png', test.expected_image)
 
     filesystem.write_text_file(filesystem.join(LAYOUT_TEST_DIR, 'virtual', 'virtual_passes',
                                                'passes', 'args-expected.txt'), 'args-txt --virtual-arg')
@@ -458,7 +423,7 @@ class TestPort(Port):
     def check_build(self, needs_http, printer):
         return exit_codes.OK_EXIT_STATUS
 
-    def check_sys_deps(self, needs_http):
+    def check_sys_deps(self):
         return exit_codes.OK_EXIT_STATUS
 
     def default_configuration(self):
@@ -560,12 +525,11 @@ class TestDriver(Driver):
         self.started = False
         self.pid = 0
 
-    def cmd_line(self, pixel_tests, per_test_args):
-        pixel_tests_flag = '-p' if pixel_tests else ''
-        return [self._port._path_to_driver()] + [pixel_tests_flag] + \
+    def cmd_line(self, per_test_args):
+        return [self._port._path_to_driver()] + \
             self._port.get_option('additional_driver_flag', []) + per_test_args
 
-    def run_test(self, driver_input, stop_when_done):
+    def run_test(self, driver_input):
         if not self.started:
             self.started = True
             self.pid = TestDriver.next_pid
@@ -633,9 +597,6 @@ class TestDriver(Driver):
             crashed_pid = 3
             crash = True
             crash_log = 'reftest crash log'
-
-        if stop_when_done:
-            self.stop()
 
         if test.actual_checksum == driver_input.image_hash:
             image = None

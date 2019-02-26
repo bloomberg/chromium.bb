@@ -18,17 +18,21 @@ class TestRun(object):
     self._env = env
     self._test_instance = test_instance
 
+    # Some subclasses have different teardown behavior on receiving SIGTERM.
+    self._received_sigterm = False
+
   def TestPackage(self):
     raise NotImplementedError
 
   def SetUp(self):
     raise NotImplementedError
 
-  def RunTests(self):
-    """Runs Tests and returns test results.
+  def RunTests(self, results):
+    """Runs Tests and populates |results|.
 
-    Returns:
-      Should return list of |base_test_result.TestRunResults| objects.
+    Args:
+      results: An array that should be populated with
+               |base_test_result.TestRunResults| objects.
     """
     raise NotImplementedError
 
@@ -41,3 +45,6 @@ class TestRun(object):
 
   def __exit__(self, exc_type, exc_val, exc_tb):
     self.TearDown()
+
+  def ReceivedSigterm(self):
+    self._received_sigterm = True

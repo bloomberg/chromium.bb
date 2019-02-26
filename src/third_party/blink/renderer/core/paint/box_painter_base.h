@@ -67,7 +67,8 @@ class BoxPainterBase {
                                    const LayoutRect&,
                                    const ComputedStyle&,
                                    bool include_logical_left_edge = true,
-                                   bool include_logical_right_edge = true);
+                                   bool include_logical_right_edge = true,
+                                   bool background_is_skipped = true);
 
   static void PaintInsetBoxShadowWithBorderRect(
       const PaintInfo&,

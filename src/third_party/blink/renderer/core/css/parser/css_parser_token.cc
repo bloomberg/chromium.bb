@@ -131,11 +131,11 @@ bool CSSParserToken::ValueDataCharRawEqual(const CSSParserToken& other) const {
     return false;
 
   if (value_data_char_raw_ == other.value_data_char_raw_ &&
-      value_is8_bit_ == other.value_is8_bit_)
+      value_is_8bit_ == other.value_is_8bit_)
     return true;
 
-  if (value_is8_bit_) {
-    return other.value_is8_bit_
+  if (value_is_8bit_) {
+    return other.value_is_8bit_
                ? Equal(static_cast<const LChar*>(value_data_char_raw_),
                        static_cast<const LChar*>(other.value_data_char_raw_),
                        value_length_)
@@ -143,7 +143,7 @@ bool CSSParserToken::ValueDataCharRawEqual(const CSSParserToken& other) const {
                        static_cast<const UChar*>(other.value_data_char_raw_),
                        value_length_);
   } else {
-    return other.value_is8_bit_
+    return other.value_is_8bit_
                ? Equal(static_cast<const UChar*>(value_data_char_raw_),
                        static_cast<const LChar*>(other.value_data_char_raw_),
                        value_length_)

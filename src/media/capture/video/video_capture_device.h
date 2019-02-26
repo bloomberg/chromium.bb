@@ -307,13 +307,13 @@ class CAPTURE_EXPORT VideoCaptureDevice
 
   // Gets the power line frequency, either from the params if specified by the
   // user or from the current system time zone.
-  PowerLineFrequency GetPowerLineFrequency(
-      const VideoCaptureParams& params) const;
+  static PowerLineFrequency GetPowerLineFrequency(
+      const VideoCaptureParams& params);
 
  private:
   // Gets the power line frequency from the current system time zone if this is
   // defined, otherwise returns 0.
-  PowerLineFrequency GetPowerLineFrequencyForLocation() const;
+  static PowerLineFrequency GetPowerLineFrequencyForLocation();
 };
 
 VideoCaptureFrameDropReason ConvertReservationFailureToFrameDropReason(

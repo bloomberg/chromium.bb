@@ -12,8 +12,6 @@
 
 namespace remoting {
 
-class CompoundBuffer;
-
 // FileProxyWrapper is an interface for implementing platform-specific file
 // writers for file transfers. Each operation is posted to a separate file IO
 // thread, and possibly a different process depending on the platform.
@@ -43,13 +41,11 @@ class FileProxyWrapper {
     kFailed = 5,
   };
 
-  // If an error occured while writing the file, State will be kFailed and the
-  // Optional will contain the error which occured. If the file was written to
-  // and closed successfully, State will be kClosed and the Optional will be
-  // empty.
-  typedef base::OnceCallback<
-      void(State, base::Optional<protocol::FileTransferResponse_ErrorCode>)>
-      StatusCallback;
+  // If writing the file fails, the status callback will be called with the
+  // causal error. Otherwise, the callback will be called with a nullopt once
+  // the file has been successfully written.
+  typedef base::OnceCallback<void(base::Optional<protocol::FileTransfer_Error>)>
+      ResultCallback;
 
   typedef base::OnceCallback<void(int64_t filesize)> OpenFileCallback;
 
@@ -62,18 +58,18 @@ class FileProxyWrapper {
   FileProxyWrapper();
   virtual ~FileProxyWrapper();
 
-  // |status_callback| is called either when FileProxyWrapper encounters an
+  // |result_callback| is called either when FileProxyWrapper encounters an
   // error or when Close() has been called and the file has been written
-  // successfully. |status_callback| must not immediately destroy this
+  // successfully. |result_callback| must not immediately destroy this
   // FileProxyWrapper.
-  virtual void Init(StatusCallback status_callback) = 0;
+  virtual void Init(ResultCallback result_callback) = 0;
   // Creates a new file and opens it for writing.
   virtual void CreateFile(const base::FilePath& directory,
                           const std::string& filename) = 0;
   // Opens an existing file for reading.
   virtual void OpenFile(const base::FilePath& filepath,
                         OpenFileCallback open_callback) = 0;
-  virtual void WriteChunk(std::unique_ptr<CompoundBuffer> buffer) = 0;
+  virtual void WriteChunk(std::string buffer) = 0;
   // |size| must not be greater than the remaining amount of bytes in the file
   // from the current read offset. After calling ReadChunk(), ReadChunk() cannot
   // be called again until |read_callback| is called and state() returns kReady.

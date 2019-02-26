@@ -8,14 +8,12 @@ import android.app.Activity;
 import android.content.ActivityNotFoundException;
 import android.content.Context;
 import android.content.Intent;
-import android.content.SharedPreferences;
 import android.content.pm.ResolveInfo;
 import android.net.Uri;
 import android.os.Bundle;
 import android.text.TextUtils;
 import android.util.Log;
 
-import org.chromium.webapk.lib.common.WebApkConstants;
 import org.chromium.webapk.lib.common.WebApkMetaDataKeys;
 
 import java.util.List;
@@ -72,15 +70,8 @@ public class LaunchHostBrowserSelector {
         String packageName = mContext.getPackageName();
         Log.v(TAG, "Package name of the WebAPK:" + packageName);
 
-        String runtimeHostInPreferences =
-                HostBrowserUtils.getHostBrowserFromSharedPreference(mContext);
-        String runtimeHost = HostBrowserUtils.getHostBrowserPackageName(mContext);
-        if (!TextUtils.isEmpty(runtimeHostInPreferences)
-                && !runtimeHostInPreferences.equals(runtimeHost)) {
-            deleteSharedPref();
-            deleteInternalStorage();
-        }
-
+        String runtimeHost =
+                HostBrowserUtils.computeHostBrowserPackageClearCachedDataOnChange(mContext);
         if (!TextUtils.isEmpty(runtimeHost)) {
             selectCallback.onBrowserSelected(runtimeHost, false /* dialogShown */);
             return;
@@ -93,23 +84,6 @@ public class LaunchHostBrowserSelector {
         } else {
             showInstallHostBrowserDialog(metadata, selectCallback);
         }
-    }
-
-    /** Deletes the SharedPreferences. */
-    private void deleteSharedPref() {
-        SharedPreferences sharedPref =
-                mContext.getSharedPreferences(WebApkConstants.PREF_PACKAGE, Context.MODE_PRIVATE);
-        SharedPreferences.Editor editor = sharedPref.edit();
-        editor.clear();
-        editor.apply();
-    }
-
-    /** Deletes the internal storage. */
-    private void deleteInternalStorage() {
-        DexLoader.deletePath(mContext.getCacheDir());
-        DexLoader.deletePath(mContext.getFilesDir());
-        DexLoader.deletePath(
-                mContext.getDir(HostBrowserClassLoader.DEX_DIR_NAME, Context.MODE_PRIVATE));
     }
 
     /**

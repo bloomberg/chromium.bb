@@ -74,8 +74,7 @@ std::tuple<GURL, bool> AutocompleteController::GetUrlFromVoiceInput(
 void AutocompleteController::OnResultChanged(bool default_match_changed) {
   auto suggestions = std::make_unique<OmniboxSuggestions>();
   for (const auto& match : autocomplete_controller_->result()) {
-    const gfx::VectorIcon* icon = &AutocompleteMatch::TypeToVectorIcon(
-        match.type, false, match.document_type);
+    const gfx::VectorIcon* icon = &match.GetVectorIcon(false);
     suggestions->suggestions.emplace_back(OmniboxSuggestion(
         match.contents, match.description, match.contents_class,
         match.description_class, icon, match.destination_url,

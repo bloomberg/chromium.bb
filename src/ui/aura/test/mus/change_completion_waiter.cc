@@ -10,7 +10,7 @@
 #include "ui/aura/mus/in_flight_change.h"
 #include "ui/aura/mus/window_tree_client.h"
 #include "ui/aura/test/env_test_helper.h"
-#include "ui/aura/test/mus/window_tree_client_private.h"
+#include "ui/aura/test/mus/window_tree_client_test_api.h"
 
 namespace aura {
 namespace test {
@@ -49,7 +49,7 @@ AllChangesCompletedWaiter::AllChangesCompletedWaiter(WindowTreeClient* client)
 AllChangesCompletedWaiter::~AllChangesCompletedWaiter() = default;
 
 void AllChangesCompletedWaiter::Wait() {
-  if (!WindowTreeClientPrivate(client_).HasInFlightChanges())
+  if (!WindowTreeClientTestApi(client_).HasInFlightChanges())
     return;
 
   client_->AddTestObserver(this);
@@ -64,7 +64,7 @@ void AllChangesCompletedWaiter::OnChangeStarted(uint32_t change_id,
 void AllChangesCompletedWaiter::OnChangeCompleted(uint32_t change_id,
                                                   aura::ChangeType type,
                                                   bool success) {
-  if (!WindowTreeClientPrivate(client_).HasInFlightChanges())
+  if (!WindowTreeClientTestApi(client_).HasInFlightChanges())
     quit_closure_.Run();
 }
 
@@ -113,7 +113,20 @@ void ChangeCompletionWaiter::OnChangeCompleted(uint32_t change_id,
 void WaitForAllChangesToComplete(WindowTreeClient* client) {
   if (Env::GetInstance()->mode() == Env::Mode::LOCAL)
     return;
-  AllChangesCompletedWaiter(client ? client : GetWindowTreeClient()).Wait();
+  if (!client)
+    client = GetWindowTreeClient();
+
+  // Wait for any local changes.
+  AllChangesCompletedWaiter(client).Wait();
+
+  // Do this to flush any incoming calls from the server.
+  WindowTreeClientTestApi(client).FlushForTesting();
+
+  // And wait for any outgoing calls.
+  AllChangesCompletedWaiter(client).Wait();
+
+  // In theory we could keep doing the above until there are no more outgoing
+  // requests.
 }
 
 }  // namespace test

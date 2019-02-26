@@ -196,7 +196,8 @@ void SuggestionContainerView::ButtonPressed(views::Button* sender,
 void SuggestionContainerView::OnUiVisibilityChanged(
     AssistantVisibility new_visibility,
     AssistantVisibility old_visibility,
-    AssistantSource source) {
+    base::Optional<AssistantEntryPoint> entry_point,
+    base::Optional<AssistantExitPoint> exit_point) {
   if (assistant::util::IsStartingSession(new_visibility, old_visibility)) {
     // Show conversation starters at the start of a new Assistant session.
     OnConversationStartersChanged(assistant_controller_->cache_controller()

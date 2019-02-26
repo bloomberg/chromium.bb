@@ -66,7 +66,6 @@ class CONTENT_EXPORT RenderWidgetHostViewGuest
   RenderWidgetHostViewBase* GetParentView() override;
 
   // RenderWidgetHostView implementation.
-  bool OnMessageReceived(const IPC::Message& msg) override;
   void InitAsChild(gfx::NativeView parent_view) override;
   void SetSize(const gfx::Size& size) override;
   void SetBounds(const gfx::Rect& rect) override;
@@ -80,9 +79,6 @@ class CONTENT_EXPORT RenderWidgetHostViewGuest
   gfx::Rect GetBoundsInRootWindow() override;
   gfx::Size GetCompositorViewportPixelSize() const override;
   base::string16 GetSelectedText() override;
-  base::string16 GetSurroundingText() override;
-  gfx::Range GetSelectedRange() override;
-  size_t GetOffsetForSurroundingText() override;
   void SetNeedsBeginFrames(bool needs_begin_frames) override;
   TouchSelectionControllerClientManager*
   GetTouchSelectionControllerClientManager() override;
@@ -126,7 +122,8 @@ class CONTENT_EXPORT RenderWidgetHostViewGuest
   bool LockMouse() override;
   void UnlockMouse() override;
   viz::FrameSinkId GetRootFrameSinkId() override;
-  const viz::LocalSurfaceId& GetLocalSurfaceId() const override;
+  const viz::LocalSurfaceIdAllocation& GetLocalSurfaceIdAllocation()
+      const override;
   void DidCreateNewRendererCompositorFrameSink(
       viz::mojom::CompositorFrameSinkClient* renderer_compositor_frame_sink)
       override;
@@ -188,8 +185,8 @@ class CONTENT_EXPORT RenderWidgetHostViewGuest
                           int browser_plugin_instance_id,
                           const blink::WebInputEvent* event);
 
-  void ProcessTouchpadPinchAckInRoot(const blink::WebGestureEvent& event,
-                                     InputEventAckState ack_result);
+  void ProcessTouchpadZoomEventAckInRoot(const blink::WebGestureEvent& event,
+                                         InputEventAckState ack_result);
 
 #if defined(USE_AURA)
   void OnGotEmbedToken(const base::UnguessableToken& token);

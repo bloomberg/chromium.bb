@@ -18,6 +18,20 @@ const NightLightScheduleType = {
   CUSTOM: 2,
 };
 
+/**
+ * @typedef {{
+ *   value: (!{
+ *     recommended: (boolean|undefined),
+ *     external_width: (number|undefined),
+ *     external_height: (number|undefined),
+ *     external_use_native: (boolean|undefined),
+ *     external_scale_percentage: (number|undefined),
+ *     internal_scale_percentage: (number|undefined)
+ *   }|null)
+ * }}
+ */
+let DisplayResolutionPrefObject;
+
 cr.define('settings.display', function() {
   const systemDisplayApi =
       /** @type {!SystemDisplay} */ (chrome.system.display);
@@ -182,7 +196,7 @@ Polymer({
     'updateNightLightScheduleSettings_(prefs.ash.night_light.schedule_type.*,' +
         ' prefs.ash.night_light.enabled.*)',
     'onSelectedModeChange_(selectedModePref_.value)',
-    'onSelectedZoomChange_(selectedZoomPref_.value)',
+    'onSelectedZoomChange_(selectedZoomPref_.value)'
   ],
 
   /** @private {number} Selected mode index received from chrome. */
@@ -282,6 +296,69 @@ Polymer({
         return i;
     }
     return 0;
+  },
+
+  /**
+   * Checks if the given device policy is enabled.
+   * @param {DisplayResolutionPrefObject} policyPref
+   * @return {boolean}
+   * @private
+   */
+  isDevicePolicyEnabled_: function(policyPref) {
+    return policyPref !== undefined && policyPref.value !== null;
+  },
+
+  /**
+   * Checks if display resolution is managed by device policy.
+   * @param {DisplayResolutionPrefObject} resolutionPref
+   * @return {boolean}
+   * @private
+   */
+  isDisplayResolutionManagedByPolicy_: function(resolutionPref) {
+    return this.isDevicePolicyEnabled_(resolutionPref) &&
+        (resolutionPref.value.external_use_native !== undefined ||
+         (resolutionPref.value.external_width !== undefined &&
+          resolutionPref.value.external_height !== undefined));
+  },
+
+  /**
+   * Checks if display resolution is managed by policy and the policy
+   * is mandatory.
+   * @param {DisplayResolutionPrefObject} resolutionPref
+   * @return {boolean}
+   * @private
+   */
+  isDisplayResolutionMandatory_: function(resolutionPref) {
+    return this.isDisplayResolutionManagedByPolicy_(resolutionPref) &&
+        !resolutionPref.value.recommended;
+  },
+
+  /**
+   * Checks if display scale factor is managed by device policy.
+   * @param {chrome.system.display.DisplayUnitInfo} selectedDisplay
+   * @param {DisplayResolutionPrefObject} resolutionPref
+   * @return {boolean}
+   * @private
+   */
+  isDisplayScaleManagedByPolicy_: function(selectedDisplay, resolutionPref) {
+    if (!this.isDevicePolicyEnabled_(resolutionPref) || !selectedDisplay)
+      return false;
+    if (selectedDisplay.isInternal)
+      return resolutionPref.value.internal_scale_percentage !== undefined;
+    return resolutionPref.value.external_scale_percentage !== undefined;
+  },
+
+  /**
+   * Checks if display scale factor is managed by policy and the policy
+   * is mandatory.
+   * @param {DisplayResolutionPrefObject} resolutionPref
+   * @return {boolean}
+   * @private
+   */
+  isDisplayScaleMandatory_: function(selectedDisplay, resolutionPref) {
+    return this.isDisplayScaleManagedByPolicy_(
+               selectedDisplay, resolutionPref) &&
+        !resolutionPref.value.recommended;
   },
 
   /**

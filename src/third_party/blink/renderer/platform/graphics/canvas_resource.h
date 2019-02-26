@@ -86,6 +86,11 @@ class PLATFORM_EXPORT CanvasResource
   // Only CanvasResourceProvider and derivatives should call this.
   virtual void TakeSkImage(sk_sp<SkImage> image) = 0;
 
+  virtual GLuint GetBackingTextureHandleForOverwrite() {
+    NOTREACHED();
+    return 0;
+  }
+
  protected:
   CanvasResource(base::WeakPtr<CanvasResourceProvider>,
                  SkFilterQuality,
@@ -208,6 +213,7 @@ class PLATFORM_EXPORT CanvasResourceGpuMemoryBuffer final
                        GLenum format,
                        GLenum type) override;
   scoped_refptr<StaticBitmapImage> Bitmap() override;
+  GLuint GetBackingTextureHandleForOverwrite() final;
 
  private:
   void TearDown() override;
@@ -236,7 +242,6 @@ class PLATFORM_EXPORT CanvasResourceGpuMemoryBuffer final
   std::unique_ptr<gfx::GpuMemoryBuffer> gpu_memory_buffer_;
   void* buffer_base_address_ = nullptr;
   sk_sp<SkSurface> surface_;
-  GLuint image_id_ = 0;
   GLuint texture_id_ = 0;
   MailboxSyncMode mailbox_sync_mode_ = kVerifiedSyncToken;
   bool is_accelerated_;

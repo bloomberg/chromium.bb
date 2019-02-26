@@ -13,6 +13,7 @@
 #include "base/threading/thread_task_runner_handle.h"
 #include "chromecast/media/audio/fake_external_audio_pipeline_support.h"
 #include "chromecast/media/cma/backend/mock_mixer_source.h"
+#include "chromecast/media/cma/backend/mock_post_processor_factory.h"
 #include "chromecast/media/cma/backend/stream_mixer.h"
 #include "chromecast/public/media/external_audio_pipeline_shlib.h"
 #include "chromecast/public/media/mixer_output_stream.h"
@@ -162,6 +163,12 @@ TEST_F(ExternalAudioPipelineTest, ExternalAudioPipelineLoopbackData) {
   // Set Volume to 1, because we'd like the input to be w/o changes.
   mixer_->SetVolume(AudioContentType::kMedia, 1);
 
+  // Add fake postprocessor to override test configuration running on device.
+  const int kNumChannels = 2;
+  mixer_->SetNumOutputChannelsForTest(kNumChannels);
+  mixer_->ResetPostProcessorsForTest(
+      std::make_unique<MockPostProcessorFactory>(), "{}");
+
   // CastMediaShlib::LoopbackAudioObserver mock observer.
   MockLoopbackAudioObserver mock_loopback_observer;
   EXPECT_CALL(mock_loopback_observer, OnLoopbackAudio(_, _, _, _, _, _))
@@ -182,7 +189,6 @@ TEST_F(ExternalAudioPipelineTest, ExternalAudioPipelineLoopbackData) {
     test_data[i] = i;
 
   // Set test data in AudioBus.
-  const int kNumChannels = 2;
   const auto kNumFrames = kSampleSize / kNumChannels;
   auto data = ::media::AudioBus::Create(kNumChannels, kNumFrames);
   const size_t kBytesPerSample = sizeof(test_data[0]);

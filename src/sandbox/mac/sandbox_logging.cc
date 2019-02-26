@@ -93,6 +93,12 @@ void SendAslLog(Level level, const char* message) {
   asl_set(asl_message.get(), ASL_KEY_LEVEL, asl_level_string.c_str());
   asl_set(asl_message.get(), ASL_KEY_MSG, message);
   asl_send(asl_client.get(), asl_message.get());
+
+  if (__builtin_available(macOS 10.11, *)) {
+    if (level == Level::FATAL) {
+      abort_report_np(message);
+    }
+  }
 }
 
 // |error| is strerror(errno) when a P* logging function is called. Pass
@@ -120,17 +126,6 @@ void DoLogging(Level level,
 
   if (truncated)
     SendAslLog(level, "warning: previous log message truncated");
-}
-
-void AnnotateCrash(const char* fmt, va_list args) {
-  if (__builtin_available(macOS 10.11, *)) {
-    char message[4096];
-    int ret = vsnprintf(message, sizeof(message), fmt, args);
-
-    if (ret >= 0) {
-      abort_report_np(message);
-    }
-  }
 }
 
 }  // namespace
@@ -162,10 +157,6 @@ void Fatal(const char* fmt, ...) {
   DoLogging(Level::FATAL, fmt, args, nullptr);
   va_end(args);
 
-  va_start(args, fmt);
-  AnnotateCrash(fmt, args);
-  va_end(args);
-
   ABORT();
 }
 
@@ -182,10 +173,6 @@ void PFatal(const char* fmt, ...) {
   va_list args;
   va_start(args, fmt);
   DoLogging(Level::FATAL, fmt, args, &error);
-  va_end(args);
-
-  va_start(args, fmt);
-  AnnotateCrash(fmt, args);
   va_end(args);
 
   ABORT();

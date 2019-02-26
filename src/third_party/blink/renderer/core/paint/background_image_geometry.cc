@@ -15,7 +15,7 @@
 #include "third_party/blink/renderer/core/paint/paint_layer_scrollable_area.h"
 #include "third_party/blink/renderer/core/style/border_edge.h"
 #include "third_party/blink/renderer/platform/geometry/layout_rect.h"
-#include "third_party/blink/renderer/platform/layout_unit.h"
+#include "third_party/blink/renderer/platform/geometry/layout_unit.h"
 
 namespace blink {
 
@@ -43,6 +43,13 @@ bool FixedBackgroundPaintsInLocalCoordinates(
     return false;
 
   const LayoutView& view = ToLayoutView(obj);
+
+  // TODO(wangxianzhu): For SPv2, inline this function into
+  // FixedBackgroundPaintsInLocalCoordinates().
+  if (RuntimeEnabledFeatures::SlimmingPaintV2Enabled()) {
+    return view.GetBackgroundPaintLocation() !=
+           kBackgroundPaintInScrollingContents;
+  }
 
   if (global_paint_flags & kGlobalPaintFlattenCompositingLayers)
     return false;
@@ -368,9 +375,14 @@ LayoutRect FixedAttachmentPositioningArea(const LayoutBoxModelObject& obj,
   // The LayoutView is the only object that can paint a fixed background into
   // its scrolling contents layer, so it gets a special adjustment here.
   if (obj.IsLayoutView()) {
-    auto* mapping = obj.Layer()->GetCompositedLayerMapping();
-    if (mapping && mapping->BackgroundPaintsOntoScrollingContentsLayer())
+    if (RuntimeEnabledFeatures::SlimmingPaintV2Enabled()) {
+      DCHECK_EQ(obj.GetBackgroundPaintLocation(),
+                kBackgroundPaintInScrollingContents);
       rect.SetLocation(IntPoint(ToLayoutView(obj).ScrolledContentOffset()));
+    } else if (auto* mapping = obj.Layer()->GetCompositedLayerMapping()) {
+      if (mapping->BackgroundPaintsOntoScrollingContentsLayer())
+        rect.SetLocation(IntPoint(ToLayoutView(obj).ScrolledContentOffset()));
+    }
   }
 
   rect.MoveBy(AccumulatedScrollOffsetForFixedBackground(obj, container));
@@ -665,9 +677,12 @@ void BackgroundImageGeometry::ComputePositioningArea(
     // Apply the adjustments.
     snapped_dest_rect_ = unsnapped_dest_rect_;
     snapped_dest_rect_.Contract(snapped_dest_adjust);
+    snapped_dest_rect_ = LayoutRect(PixelSnappedIntRect(snapped_dest_rect_));
     unsnapped_dest_rect_.Contract(unsnapped_dest_adjust);
     snapped_positioning_area = unsnapped_positioning_area;
     snapped_positioning_area.Contract(snapped_box_outset);
+    snapped_positioning_area =
+        LayoutRect(PixelSnappedIntRect(snapped_positioning_area));
     unsnapped_positioning_area.Contract(unsnapped_box_outset);
 
     // Offset of the positioning area from the corner of the
@@ -738,12 +753,12 @@ void BackgroundImageGeometry::CalculateFillTileSize(
           // an intrinsic ratio or size.
           tile_size_.SetWidth(positioning_area_size.Width());
         } else if (image_intrinsic_size.Height()) {
-          LayoutUnit adjusted_width = image_intrinsic_size.Width() *
-                                      tile_size_.Height() /
-                                      image_intrinsic_size.Height();
+          float adjusted_width = image_intrinsic_size.Width().ToFloat() /
+                                 image_intrinsic_size.Height().ToFloat() *
+                                 tile_size_.Height().ToFloat();
           if (image_intrinsic_size.Width() >= 1 && adjusted_width < 1)
-            adjusted_width = LayoutUnit(1);
-          tile_size_.SetWidth(adjusted_width);
+            adjusted_width = 1;
+          tile_size_.SetWidth(LayoutUnit(adjusted_width));
         }
       } else if (!layer_width.IsAuto() && layer_height.IsAuto()) {
         if (image->ImageHasRelativeSize()) {
@@ -751,12 +766,12 @@ void BackgroundImageGeometry::CalculateFillTileSize(
           // an intrinsic ratio or size.
           tile_size_.SetHeight(positioning_area_size.Height());
         } else if (image_intrinsic_size.Width()) {
-          LayoutUnit adjusted_height = image_intrinsic_size.Height() *
-                                       tile_size_.Width() /
-                                       image_intrinsic_size.Width();
+          float adjusted_height = image_intrinsic_size.Height().ToFloat() /
+                                  image_intrinsic_size.Width().ToFloat() *
+                                  tile_size_.Width().ToFloat();
           if (image_intrinsic_size.Height() >= 1 && adjusted_height < 1)
-            adjusted_height = LayoutUnit(1);
-          tile_size_.SetHeight(adjusted_height);
+            adjusted_height = 1;
+          tile_size_.SetHeight(LayoutUnit(adjusted_height));
         }
       } else if (layer_width.IsAuto() && layer_height.IsAuto()) {
         // If both width and height are auto, use the image's intrinsic size.

@@ -13,6 +13,7 @@
 #include "testing/gmock/include/gmock/gmock.h"
 
 namespace autofill_assistant {
+struct RectF;
 
 class MockWebController : public WebController {
  public:
@@ -23,33 +24,63 @@ class MockWebController : public WebController {
 
   MOCK_METHOD1(LoadURL, void(const GURL&));
 
-  void ClickElement(const std::vector<std::string>& selectors,
-                    base::OnceCallback<void(bool)> callback) override {
+  void ClickOrTapElement(const Selector& selector,
+                         base::OnceCallback<void(bool)> callback) override {
     // Transforming callback into a references allows using RunOnceCallback on
     // the argument.
-    OnClickElement(selectors, callback);
+    OnClickOrTapElement(selector, callback);
   }
-  MOCK_METHOD2(OnClickElement,
-               void(const std::vector<std::string>& selectors,
+  MOCK_METHOD2(OnClickOrTapElement,
+               void(const Selector& selector,
                     base::OnceCallback<void(bool)>& callback));
 
-  void ElementExists(const std::vector<std::string>& selectors,
-                     base::OnceCallback<void(bool)> callback) override {
-    OnElementExists(selectors, callback);
+  void FocusElement(const Selector& selector,
+                    base::OnceCallback<void(bool)> callback) override {
+    OnFocusElement(selector, callback);
   }
-  MOCK_METHOD2(OnElementExists,
-               void(const std::vector<std::string>& selectors,
+  MOCK_METHOD2(OnFocusElement,
+               void(const Selector& selector,
+                    base::OnceCallback<void(bool)>& callback));
+
+  void ElementCheck(ElementCheckType check_type,
+                    const Selector& selector,
+                    base::OnceCallback<void(bool)> callback) override {
+    OnElementCheck(check_type, selector, callback);
+  }
+  MOCK_METHOD3(OnElementCheck,
+               void(ElementCheckType check_type,
+                    const Selector& selector,
                     base::OnceCallback<void(bool)>& callback));
 
   void GetFieldValue(
-      const std::vector<std::string>& selectors,
+      const Selector& selector,
       base::OnceCallback<void(bool, const std::string&)> callback) override {
-    OnGetFieldValue(selectors, callback);
+    OnGetFieldValue(selector, callback);
   }
   MOCK_METHOD2(
       OnGetFieldValue,
-      void(const std::vector<std::string>& selectors,
+      void(const Selector& selector,
            base::OnceCallback<void(bool, const std::string&)>& callback));
+
+  void GetElementPosition(
+      const Selector& selector,
+      base::OnceCallback<void(bool, const RectF&)> callback) override {
+    OnGetElementPosition(selector, callback);
+  }
+  MOCK_METHOD2(OnGetElementPosition,
+               void(const Selector& selector,
+                    base::OnceCallback<void(bool, const RectF&)>& callback));
+
+  void HasCookie(base::OnceCallback<void(bool)> callback) override {
+    std::move(callback).Run(false);
+  }
+
+  void SetCookie(const std::string& domain,
+                 base::OnceCallback<void(bool)> callback) override {
+    std::move(callback).Run(true);
+  }
+
+  MOCK_METHOD0(ClearCookie, void());
 };
 
 }  // namespace autofill_assistant

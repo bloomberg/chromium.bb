@@ -87,6 +87,7 @@ TEST_F(PrintPreviewUIUnitTest, PrintPreviewData) {
   PrintPreviewUI* preview_ui = static_cast<PrintPreviewUI*>(
       preview_dialog->GetWebUI()->GetController());
   ASSERT_TRUE(preview_ui);
+  preview_ui->SetPreviewUIId();
 
   scoped_refptr<base::RefCountedMemory> data;
   preview_ui->GetPrintPreviewDataForIndex(
@@ -134,6 +135,7 @@ TEST_F(PrintPreviewUIUnitTest, PrintPreviewDraftPages) {
   PrintPreviewUI* preview_ui = static_cast<PrintPreviewUI*>(
       preview_dialog->GetWebUI()->GetController());
   ASSERT_TRUE(preview_ui);
+  preview_ui->SetPreviewUIId();
 
   scoped_refptr<base::RefCountedMemory> data;
   preview_ui->GetPrintPreviewDataForIndex(printing::FIRST_PAGE_INDEX, &data);
@@ -194,6 +196,7 @@ TEST_F(PrintPreviewUIUnitTest, ShouldCancelRequest) {
   PrintPreviewUI* preview_ui = static_cast<PrintPreviewUI*>(
       preview_dialog->GetWebUI()->GetController());
   ASSERT_TRUE(preview_ui);
+  preview_ui->SetPreviewUIId();
 
   // Test with invalid UI ID.
   const int32_t kInvalidId = -5;
@@ -201,7 +204,7 @@ TEST_F(PrintPreviewUIUnitTest, ShouldCancelRequest) {
 
   const int kFirstRequestId = 1000;
   const int kSecondRequestId = 1001;
-  const int32_t preview_id = preview_ui->GetIDForPrintPreviewUI();
+  const int32_t preview_id = preview_ui->GetIDForPrintPreviewUI().value();
 
   // Test with kFirstRequestId.
   preview_ui->OnPrintPreviewRequest(kFirstRequestId);

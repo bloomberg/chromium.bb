@@ -51,6 +51,10 @@ class CONTENT_EXPORT URLLoaderFactoryBundleInfo
     return default_factory_info_;
   }
 
+  network::mojom::URLLoaderFactoryPtrInfo& appcache_factory_info() {
+    return appcache_factory_info_;
+  }
+
   SchemeMap& scheme_specific_factory_infos() {
     return scheme_specific_factory_infos_;
   }
@@ -68,6 +72,7 @@ class CONTENT_EXPORT URLLoaderFactoryBundleInfo
   scoped_refptr<network::SharedURLLoaderFactory> CreateFactory() override;
 
   network::mojom::URLLoaderFactoryPtrInfo default_factory_info_;
+  network::mojom::URLLoaderFactoryPtrInfo appcache_factory_info_;
   SchemeMap scheme_specific_factory_infos_;
   OriginMap initiator_specific_factory_infos_;
   bool bypass_redirect_checks_ = false;
@@ -128,7 +133,15 @@ class CONTENT_EXPORT URLLoaderFactoryBundle
     return output;
   }
 
+  // |default_factory_| is the default factory used by the bundle. It usually
+  // goes to "network", but it's possible it was overriden in case when the
+  // context should not be given access to the network.
   network::mojom::URLLoaderFactoryPtr default_factory_;
+
+  // |appcache_factory_| is a special loader factory that intercepts
+  // requests when the context has AppCache. See also
+  // AppCacheSubresourceURLFactory.
+  network::mojom::URLLoaderFactoryPtr appcache_factory_;
 
   // Map from URL scheme to URLLoaderFactoryPtr for handling URL requests for
   // schemes not handled by the |default_factory_|.  See also

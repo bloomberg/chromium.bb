@@ -8,6 +8,7 @@
 #include "base/memory/ptr_util.h"
 #include "base/numerics/safe_conversions.h"
 #include "base/strings/utf_string_conversions.h"
+#include "skia/ext/skia_utils_base.h"
 #include "ui/base/clipboard/clipboard_monitor.h"
 
 namespace ui {
@@ -187,9 +188,12 @@ void TestClipboard::WriteWebSmartPaste() {
 void TestClipboard::WriteBitmap(const SkBitmap& bitmap) {
   // Create a dummy entry.
   GetDefaultStore().data[GetBitmapFormatType()];
+
   SkBitmap& dst = GetDefaultStore().image;
-  if (dst.tryAllocPixels(bitmap.info())) {
-    bitmap.readPixels(dst.info(), dst.getPixels(), dst.rowBytes(), 0, 0);
+  // Either points bitmap at in_bitmap, or allocates and converts pixels.
+  if (!skia::SkBitmapToN32OpaqueOrPremul(bitmap, &dst)) {
+    NOTREACHED() << "Unable to convert bitmap for clipboard";
+    return;
   }
 }
 

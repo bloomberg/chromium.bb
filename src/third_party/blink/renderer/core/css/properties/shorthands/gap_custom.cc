@@ -11,7 +11,7 @@
 #include "third_party/blink/renderer/core/style_property_shorthand.h"
 
 namespace blink {
-namespace CSSShorthand {
+namespace css_shorthand {
 
 bool Gap::ParseShorthand(bool important,
                          CSSParserTokenRange& range,
@@ -19,18 +19,20 @@ bool Gap::ParseShorthand(bool important,
                          const CSSParserLocalContext&,
                          HeapVector<CSSPropertyValue, 256>& properties) const {
   DCHECK_EQ(shorthandForProperty(CSSPropertyGap).length(), 2u);
-  CSSValue* row_gap = CSSParsingUtils::ConsumeGapLength(range, context);
-  CSSValue* column_gap = CSSParsingUtils::ConsumeGapLength(range, context);
+  CSSValue* row_gap = css_parsing_utils::ConsumeGapLength(range, context);
+  CSSValue* column_gap = css_parsing_utils::ConsumeGapLength(range, context);
   if (!row_gap || !range.AtEnd())
     return false;
   if (!column_gap)
     column_gap = row_gap;
-  CSSPropertyParserHelpers::AddProperty(
+  css_property_parser_helpers::AddProperty(
       CSSPropertyRowGap, CSSPropertyGap, *row_gap, important,
-      CSSPropertyParserHelpers::IsImplicitProperty::kNotImplicit, properties);
-  CSSPropertyParserHelpers::AddProperty(
+      css_property_parser_helpers::IsImplicitProperty::kNotImplicit,
+      properties);
+  css_property_parser_helpers::AddProperty(
       CSSPropertyColumnGap, CSSPropertyGap, *column_gap, important,
-      CSSPropertyParserHelpers::IsImplicitProperty::kNotImplicit, properties);
+      css_property_parser_helpers::IsImplicitProperty::kNotImplicit,
+      properties);
   return true;
 }
 
@@ -44,5 +46,5 @@ const CSSValue* Gap::CSSValueFromComputedStyleInternal(
       gapShorthand(), style, layout_object, styled_node, allow_visited_style);
 }
 
-}  // namespace CSSShorthand
+}  // namespace css_shorthand
 }  // namespace blink

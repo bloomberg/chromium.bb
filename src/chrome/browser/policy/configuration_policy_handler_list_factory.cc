@@ -104,6 +104,11 @@
 #include "chrome/browser/policy/browser_signin_policy_handler.h"
 #endif
 
+#if defined(OS_WIN) || defined(OS_MACOSX) || \
+    (defined(OS_LINUX) && !defined(OS_CHROMEOS))
+#include "chrome/browser/browser_switcher/browser_switcher_prefs.h"
+#endif
+
 #if BUILDFLAG(ENABLE_EXTENSIONS)
 #include "chrome/browser/extensions/api/messaging/native_messaging_policy_handler.h"
 #include "chrome/browser/extensions/extension_management_constants.h"
@@ -276,11 +281,11 @@ const PolicyToPreferenceMapEntry kSimplePolicyMap[] = {
   { key::kMachineLevelUserCloudPolicyEnrollmentToken,
     policy_prefs::kMachineLevelUserCloudPolicyEnrollmentToken,
     base::Value::Type::STRING },
+  { key::kCloudManagementEnrollmentMandatory,
+    policy_prefs::kCloudManagementEnrollmentMandatory,
+    base::Value::Type::BOOLEAN },
   { key::kRequireOnlineRevocationChecksForLocalAnchors,
     prefs::kCertRevocationCheckingRequiredLocalAnchors,
-    base::Value::Type::BOOLEAN },
-  { key::kEnableSha1ForLocalAnchors,
-    prefs::kCertEnableSha1LocalAnchors,
     base::Value::Type::BOOLEAN },
   { key::kEnableSymantecLegacyInfrastructure,
     prefs::kCertEnableSymantecLegacyInfrastructure,
@@ -660,8 +665,8 @@ const PolicyToPreferenceMapEntry kSimplePolicyMap[] = {
   { key::kUserNativePrintersAllowed,
     prefs::kUserNativePrintersAllowed,
     base::Value::Type::BOOLEAN },
-  { key::kAllowedUILocales,
-    prefs::kAllowedUILocales,
+  { key::kAllowedLanguages,
+    prefs::kAllowedLanguages,
     base::Value::Type::LIST },
   { key::kAllowedInputMethods,
     prefs::kLanguageAllowedInputMethods,
@@ -719,6 +724,12 @@ const PolicyToPreferenceMapEntry kSimplePolicyMap[] = {
   { key::kReportUserIDData,
     extensions::enterprise_reporting::kReportUserIDData,
     base::Value::Type::BOOLEAN },
+  { key::kReportExtensionsAndPluginsData,
+    extensions::enterprise_reporting::kReportExtensionsAndPluginsData,
+    base::Value::Type::BOOLEAN },
+  { key::kReportSafeBrowsingData,
+    extensions::enterprise_reporting::kReportSafeBrowsingData,
+    base::Value::Type::BOOLEAN },
 #endif  // !defined(OS_CHROMEOS) && BUILDFLAG(ENABLE_EXTENSIONS)
 
 #if !defined(OS_MACOSX) && !defined(OS_CHROMEOS)
@@ -751,6 +762,9 @@ const PolicyToPreferenceMapEntry kSimplePolicyMap[] = {
     base::Value::Type::BOOLEAN },
   { key::kCloudPolicyOverridesMachinePolicy,
     prefs::kCloudPolicyOverridesMachinePolicy,
+    base::Value::Type::BOOLEAN },
+  { key::kCloudReportingEnabled,
+    prefs::kCloudReportingEnabled,
     base::Value::Type::BOOLEAN },
 #endif  // !defined(OS_CHROMEOS) && !defined(OS_ANDROID)
 
@@ -788,6 +802,10 @@ const PolicyToPreferenceMapEntry kSimplePolicyMap[] = {
     base::Value::Type::BOOLEAN },
 
 #if defined(OS_CHROMEOS)
+  { key::kDeviceWiFiFastTransitionEnabled,
+    chromeos::prefs::kDeviceWiFiFastTransitionEnabled,
+    base::Value::Type::BOOLEAN },
+
   { key::kNetworkThrottlingEnabled,
     prefs::kNetworkThrottlingEnabled,
     base::Value::Type::DICTIONARY },
@@ -909,6 +927,27 @@ const PolicyToPreferenceMapEntry kSimplePolicyMap[] = {
   { key::kEnterpriseHardwarePlatformAPIEnabled,
     prefs::kEnterpriseHardwarePlatformAPIEnabled,
     base::Value::Type::BOOLEAN },
+
+#if defined(OS_WIN) || defined(OS_MACOSX) || \
+    (defined(OS_LINUX) && !defined(OS_CHROMEOS))
+  { key::kAlternativeBrowserPath,
+    browser_switcher::prefs::kAlternativeBrowserPath,
+    base::Value::Type::STRING },
+  { key::kAlternativeBrowserParameters,
+    browser_switcher::prefs::kAlternativeBrowserParameters,
+    base::Value::Type::LIST },
+  { key::kBrowserSwitcherUrlList,
+    browser_switcher::prefs::kUrlList,
+    base::Value::Type::LIST },
+  { key::kBrowserSwitcherUrlGreylist,
+    browser_switcher::prefs::kUrlGreylist,
+    base::Value::Type::LIST },
+#endif
+#if defined(OS_WIN)
+  { key::kBrowserSwitcherUseIeSitelist,
+    browser_switcher::prefs::kUseIeSitelist,
+    base::Value::Type::BOOLEAN },
+#endif
 };
 // clang-format on
 
@@ -1251,6 +1290,8 @@ std::unique_ptr<ConfigurationPolicyHandlerList> BuildHandlerList(
   handlers->AddHandler(std::make_unique<LegacyPoliciesDeprecatingPolicyHandler>(
       std::move(screen_lock_legacy_policies),
       base::WrapUnique(new ScreenLockDelayPolicyHandler(chrome_schema))));
+  handlers->AddHandler(
+      std::make_unique<ScreenBrightnessPercentPolicyHandler>(chrome_schema));
   handlers->AddHandler(
       std::make_unique<ExternalDataPolicyHandler>(key::kUserAvatarImage));
   handlers->AddHandler(

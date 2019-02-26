@@ -115,10 +115,14 @@ const char kCdmSupportedCdmProxyProtocolsName[] =
 // The following strings are used to specify supported codecs in the
 // parameter |kCdmCodecsListName|.
 const char kCdmSupportedCodecVp8[] = "vp8";
-const char kCdmSupportedCodecVp9[] = "vp9.0";
-#if BUILDFLAG(USE_PROPRIETARY_CODECS)
+// Legacy VP9, which is equivalent to VP9 profile 0.
+// TODO(xhwang): Newer CDMs should support "vp09" below. Remove this after older
+// CDMs are obsolete.
+const char kCdmSupportedCodecLegacyVp9[] = "vp9.0";
+// Supports at least VP9 profile 0 and profile 2.
+const char kCdmSupportedCodecVp9[] = "vp09";
+const char kCdmSupportedCodecAv1[] = "av01";
 const char kCdmSupportedCodecAvc1[] = "avc1";
-#endif
 
 // The following strings are used to specify supported encryption schemes in
 // the parameter |kCdmSupportedEncryptionSchemesName|.
@@ -182,10 +186,12 @@ bool IsCompatibleWithChrome(const base::DictionaryValue& manifest) {
 }
 
 // Returns true and updates |video_codecs| if the appropriate manifest entry is
-// valid. Returns false and does not modify |video_codecs| if the manifest entry
-// is incorrectly formatted.
+// valid. When VP9 is supported, sets |supports_vp9_profile2| if profile 2 is
+// supported. Older CDMs may only support profile 0. Returns false and does not
+// modify |video_codecs| if the manifest entry is incorrectly formatted.
 bool GetCodecs(const base::DictionaryValue& manifest,
-               std::vector<media::VideoCodec>* video_codecs) {
+               std::vector<media::VideoCodec>* video_codecs,
+               bool* supports_vp9_profile2) {
   DCHECK(video_codecs);
 
   const base::Value* value = manifest.FindKey(kCdmCodecsListName);
@@ -211,15 +217,23 @@ bool GetCodecs(const base::DictionaryValue& manifest,
       base::SplitStringPiece(codecs, kCdmValueDelimiter, base::TRIM_WHITESPACE,
                              base::SPLIT_WANT_NONEMPTY);
 
+  // Assuming VP9 profile 2 is not supported by default. Will only be set when
+  // kCdmSupportedCodecVp9 is available below.
+  *supports_vp9_profile2 = false;
+
   for (const auto& codec : supported_codecs) {
-    if (codec == kCdmSupportedCodecVp8)
+    if (codec == kCdmSupportedCodecVp8) {
       result.push_back(media::VideoCodec::kCodecVP8);
-    else if (codec == kCdmSupportedCodecVp9)
+    } else if (codec == kCdmSupportedCodecLegacyVp9) {
       result.push_back(media::VideoCodec::kCodecVP9);
-#if BUILDFLAG(USE_PROPRIETARY_CODECS)
-    else if (codec == kCdmSupportedCodecAvc1)
+    } else if (codec == kCdmSupportedCodecVp9) {
+      result.push_back(media::VideoCodec::kCodecVP9);
+      *supports_vp9_profile2 = true;
+    } else if (codec == kCdmSupportedCodecAv1) {
+      result.push_back(media::VideoCodec::kCodecAV1);
+    } else if (codec == kCdmSupportedCodecAvc1) {
       result.push_back(media::VideoCodec::kCodecH264);
-#endif  // BUILDFLAG(USE_PROPRIETARY_CODECS)
+    }
   }
 
   video_codecs->swap(result);
@@ -351,7 +365,8 @@ bool GetCdmProxyProtocols(
 // may or may not be updated.
 bool ParseManifest(const base::DictionaryValue& manifest,
                    content::CdmCapability* capability) {
-  return GetCodecs(manifest, &capability->video_codecs) &&
+  return GetCodecs(manifest, &capability->video_codecs,
+                   &capability->supports_vp9_profile2) &&
          GetEncryptionSchemes(manifest, &capability->encryption_schemes) &&
          GetSessionTypes(manifest, &capability->session_types) &&
          GetCdmProxyProtocols(manifest, &capability->cdm_proxy_protocols);
@@ -447,8 +462,10 @@ void WidevineCdmComponentInstallerPolicy::ComponentReady(
     return;
   }
 
+  // Widevine CDM affects encrypted media playback, hence USER_VISIBLE.
+  // See http://crbug.com/900169 for the context.
   base::PostTaskWithTraits(
-      FROM_HERE, {base::MayBlock(), base::TaskPriority::BEST_EFFORT},
+      FROM_HERE, {base::MayBlock(), base::TaskPriority::USER_VISIBLE},
       base::BindOnce(&WidevineCdmComponentInstallerPolicy::UpdateCdmPath,
                      base::Unretained(this), version, path,
                      base::Passed(&manifest)));

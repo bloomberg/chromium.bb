@@ -125,9 +125,8 @@ class CategorizedWorkerPool;
 class DomStorageDispatcher;
 class FrameSwapMessageQueue;
 class GpuVideoAcceleratorFactoriesImpl;
-class IndexedDBDispatcher;
 class LowMemoryModeController;
-class MidiMessageFilter;
+class MidiSessionClientImpl;
 class P2PSocketDispatcher;
 class PeerConnectionDependencyFactory;
 class PeerConnectionTracker;
@@ -213,7 +212,7 @@ class CONTENT_EXPORT RenderThreadImpl
   int32_t GetClientId() override;
   bool IsOnline() override;
   void SetRendererProcessType(
-      blink::scheduler::RendererProcessType type) override;
+      blink::scheduler::WebRendererProcessType type) override;
   blink::WebString GetUserAgent() const override;
 
   // IPC::Listener implementation via ChildThreadImpl:
@@ -269,7 +268,7 @@ class CONTENT_EXPORT RenderThreadImpl
   using LayerTreeFrameSinkCallback =
       base::OnceCallback<void(std::unique_ptr<cc::LayerTreeFrameSink>)>;
   void RequestNewLayerTreeFrameSink(
-      int routing_id,
+      int widget_routing_id,
       scoped_refptr<FrameSwapMessageQueue> frame_swap_message_queue,
       const GURL& url,
       LayerTreeFrameSinkCallback callback,
@@ -281,7 +280,7 @@ class CONTENT_EXPORT RenderThreadImpl
   blink::AssociatedInterfaceRegistry* GetAssociatedInterfaceRegistry();
 
   std::unique_ptr<cc::SwapPromise> RequestCopyOfOutputForLayoutTest(
-      int32_t routing_id,
+      int32_t widget_routing_id,
       std::unique_ptr<viz::CopyOutputRequest> request);
 
   // True if we are running layout tests. This currently disables forwarding
@@ -326,8 +325,8 @@ class CONTENT_EXPORT RenderThreadImpl
     return dom_storage_dispatcher_.get();
   }
 
-  MidiMessageFilter* midi_message_filter() {
-    return midi_message_filter_.get();
+  MidiSessionClientImpl* midi_session_client_impl() {
+    return midi_session_client_impl_.get();
   }
 
   ResourceDispatcher* resource_dispatcher() const {
@@ -396,7 +395,7 @@ class CONTENT_EXPORT RenderThreadImpl
   // Returns a worker context provider that will be bound on the compositor
   // thread.
   scoped_refptr<viz::RasterContextProvider>
-  SharedCompositorWorkerContextProvider();
+  SharedCompositorWorkerContextProvider(bool try_gpu_rasterization);
 
   media::GpuVideoAcceleratorFactories* GetGpuFactories();
 
@@ -504,6 +503,14 @@ class CONTENT_EXPORT RenderThreadImpl
   scoped_refptr<base::SingleThreadTaskRunner>
   CreateVideoFrameCompositorTaskRunner();
 
+  // In the case of kOnDemand, we wont be using the task_runner created in
+  // CreateVideoFrameCompositorTaskRunner.
+  // TODO(https://crbug/901513): Remove once kOnDemand is removed.
+  void SetVideoFrameCompositorTaskRunner(
+      scoped_refptr<base::SingleThreadTaskRunner> task_runner) {
+    video_frame_compositor_task_runner_ = task_runner;
+  }
+
  private:
   void OnProcessFinalRelease() override;
   // IPC::Listener
@@ -589,14 +596,13 @@ class CONTENT_EXPORT RenderThreadImpl
   // These objects live solely on the render thread.
   std::unique_ptr<AppCacheDispatcher> appcache_dispatcher_;
   std::unique_ptr<DomStorageDispatcher> dom_storage_dispatcher_;
-  std::unique_ptr<IndexedDBDispatcher> main_thread_indexed_db_dispatcher_;
   std::unique_ptr<blink::scheduler::WebThreadScheduler> main_thread_scheduler_;
   std::unique_ptr<RendererBlinkPlatformImpl> blink_platform_impl_;
   std::unique_ptr<ResourceDispatcher> resource_dispatcher_;
   std::unique_ptr<URLLoaderThrottleProvider> url_loader_throttle_provider_;
 
   // Used on the renderer and IPC threads.
-  scoped_refptr<MidiMessageFilter> midi_message_filter_;
+  std::unique_ptr<MidiSessionClientImpl> midi_session_client_impl_;
 
   std::unique_ptr<BrowserPluginManager> browser_plugin_manager_;
 

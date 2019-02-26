@@ -146,6 +146,7 @@ public class ChromeCastSessionManager {
         mSession = session;
         mSessionLaunching = false;
         mCurrentSessionListener.onSessionStarted(session);
+        mListener.setSession(session);
     }
 
     /**
@@ -173,7 +174,7 @@ public class ChromeCastSessionManager {
      * Stops the current session.
      */
     public void stopApplication() {
-        mSession.stopApplication();
+        if (mSession != null) mSession.stopApplication();
     }
 
     /**

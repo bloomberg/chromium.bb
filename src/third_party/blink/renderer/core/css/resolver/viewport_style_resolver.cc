@@ -66,7 +66,7 @@ bool HasViewportFitProperty(const CSSPropertyValueSet* property_set) {
 ViewportStyleResolver::ViewportStyleResolver(Document& document)
     : document_(document) {
   DCHECK(document.GetFrame());
-  initial_viewport_medium_ = new MediaQueryEvaluator(
+  initial_viewport_medium_ = MakeGarbageCollected<MediaQueryEvaluator>(
       MediaValuesInitialViewport::Create(*document.GetFrame()));
 }
 

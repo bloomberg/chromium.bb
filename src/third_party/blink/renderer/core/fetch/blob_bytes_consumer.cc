@@ -28,8 +28,8 @@ BytesConsumer::Result BlobBytesConsumer::BeginRead(const char** buffer,
     scoped_refptr<EncodedFormData> form_data = EncodedFormData::Create();
     form_data->AppendDataPipe(base::MakeRefCounted<WrappedDataPipeGetter>(
         blob_data_handle_->AsDataPipeGetter()));
-    nested_consumer_ =
-        new FormDataBytesConsumer(execution_context_, std::move(form_data));
+    nested_consumer_ = MakeGarbageCollected<FormDataBytesConsumer>(
+        execution_context_, std::move(form_data));
     if (client_)
       nested_consumer_->SetClient(client_);
     blob_data_handle_ = nullptr;

@@ -290,6 +290,121 @@ public class TextSuggestionMenuTest {
         waitForMenuToHide(webContents);
     }
 
+    @Test
+    @LargeTest
+    public void testAutoCorrectionSuggestionSpan() throws InterruptedException, Throwable {
+        WebContents webContents = mRule.getWebContents();
+
+        DOMUtils.focusNode(webContents, "div");
+
+        SpannableString textToCommit = new SpannableString("hello");
+        SuggestionSpan suggestionSpan = new SuggestionSpan(
+                mRule.getActivity(), new String[0], SuggestionSpan.FLAG_AUTO_CORRECTION);
+        textToCommit.setSpan(suggestionSpan, 0, 5, Spanned.SPAN_EXCLUSIVE_EXCLUSIVE);
+        mRule.commitText(textToCommit, 1);
+
+        Assert.assertEquals("1",
+                JavaScriptUtils.executeJavaScriptAndWaitForResult(webContents,
+                        "internals.markerCountForNode("
+                                + "document.getElementById('div').firstChild, 'suggestion')"));
+    }
+
+    // The following 3 tests (test*RemovesAutoCorrectionSuggestionSpan()) are testing if we
+    // correctly removed SuggestionSpan with SPAN_COMPOSING flag. If IME sets the SPAN_COMPOSING
+    // flag for the span, the SuggestionSpan is in transition state, and we should remove it once we
+    // done with composing.
+    @Test
+    @LargeTest
+    public void testSetComposingTextRemovesAutoCorrectionSuggestionSpan()
+            throws InterruptedException, Throwable {
+        WebContents webContents = mRule.getWebContents();
+
+        DOMUtils.focusNode(webContents, "div");
+
+        SpannableString composingText = new SpannableString("hello");
+        SuggestionSpan suggestionSpan = new SuggestionSpan(
+                mRule.getActivity(), new String[0], SuggestionSpan.FLAG_AUTO_CORRECTION);
+        composingText.setSpan(
+                suggestionSpan, 0, 5, Spanned.SPAN_EXCLUSIVE_EXCLUSIVE | Spanned.SPAN_COMPOSING);
+        mRule.setComposingText(composingText, 1);
+
+        Assert.assertEquals("1",
+                JavaScriptUtils.executeJavaScriptAndWaitForResult(webContents,
+                        "internals.markerCountForNode("
+                                + "document.getElementById('div').firstChild, 'suggestion')"));
+
+        // setComposingText() will replace the text in current composing range and set a new
+        // composing range, so the spans associated with composing range should be removed. If there
+        // is no new span attached to the SpannableString, we should get 0 marker.
+        mRule.setComposingText(new SpannableString("helloworld"), 1);
+
+        Assert.assertEquals("0",
+                JavaScriptUtils.executeJavaScriptAndWaitForResult(webContents,
+                        "internals.markerCountForNode("
+                                + "document.getElementById('div').firstChild, 'suggestion')"));
+    }
+
+    @Test
+    @LargeTest
+    public void testCommitTextRemovesAutoCorrectionSuggestionSpan()
+            throws InterruptedException, Throwable {
+        WebContents webContents = mRule.getWebContents();
+
+        DOMUtils.focusNode(webContents, "div");
+
+        SpannableString composingText = new SpannableString("hello");
+        SuggestionSpan suggestionSpan = new SuggestionSpan(
+                mRule.getActivity(), new String[0], SuggestionSpan.FLAG_AUTO_CORRECTION);
+        composingText.setSpan(
+                suggestionSpan, 0, 5, Spanned.SPAN_EXCLUSIVE_EXCLUSIVE | Spanned.SPAN_COMPOSING);
+        mRule.setComposingText(composingText, 1);
+
+        Assert.assertEquals("1",
+                JavaScriptUtils.executeJavaScriptAndWaitForResult(webContents,
+                        "internals.markerCountForNode("
+                                + "document.getElementById('div').firstChild, 'suggestion')"));
+
+        // commitText() will replace the text in current composing range and there won't be a new
+        // composing range. So we done with composing and the SuggestionSpan with SPAN_COMPOSING
+        // should be removed.
+        mRule.commitText(new SpannableString("helloworld"), 1);
+
+        Assert.assertEquals("0",
+                JavaScriptUtils.executeJavaScriptAndWaitForResult(webContents,
+                        "internals.markerCountForNode("
+                                + "document.getElementById('div').firstChild, 'suggestion')"));
+    }
+
+    @Test
+    @LargeTest
+    public void testFinishComposingRemovesAutoCorrectionSuggestionSpan()
+            throws InterruptedException, Throwable {
+        WebContents webContents = mRule.getWebContents();
+
+        DOMUtils.focusNode(webContents, "div");
+
+        SpannableString composingText = new SpannableString("hello");
+        SuggestionSpan suggestionSpan = new SuggestionSpan(
+                mRule.getActivity(), new String[0], SuggestionSpan.FLAG_AUTO_CORRECTION);
+        composingText.setSpan(
+                suggestionSpan, 0, 5, Spanned.SPAN_EXCLUSIVE_EXCLUSIVE | Spanned.SPAN_COMPOSING);
+        mRule.setComposingText(composingText, 1);
+
+        Assert.assertEquals("1",
+                JavaScriptUtils.executeJavaScriptAndWaitForResult(webContents,
+                        "internals.markerCountForNode("
+                                + "document.getElementById('div').firstChild, 'suggestion')"));
+
+        // finishComposingText() will remove the composing range, any span has SPAN_COMPOSING flag
+        // should be removed since there is no composing range available.
+        mRule.finishComposingText();
+
+        Assert.assertEquals("0",
+                JavaScriptUtils.executeJavaScriptAndWaitForResult(webContents,
+                        "internals.markerCountForNode("
+                                + "document.getElementById('div').firstChild, 'suggestion')"));
+    }
+
     private void waitForMenuToShow(WebContents webContents) {
         CriteriaHelper.pollUiThread(new Criteria() {
             @Override

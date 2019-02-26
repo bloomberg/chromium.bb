@@ -9,16 +9,20 @@
 #include "base/run_loop.h"
 #include "base/stl_util.h"
 #include "build/build_config.h"
+#include "components/signin/core/browser/account_consistency_method.h"
 #include "components/signin/core/browser/account_tracker_service.h"
 #include "components/signin/core/browser/fake_gaia_cookie_manager_service.h"
 #include "components/signin/core/browser/fake_profile_oauth2_token_service.h"
 #include "components/signin/core/browser/fake_signin_manager.h"
-#include "components/signin/core/browser/profile_management_switches.h"
 #include "components/signin/core/browser/signin_switches.h"
 #include "components/signin/core/browser/test_signin_client.h"
 #include "components/sync_preferences/testing_pref_service_syncable.h"
 #include "google_apis/gaia/google_service_auth_error.h"
+#include "google_apis/gaia/oauth2_token_service_delegate.h"
 #include "services/identity/public/cpp/identity_test_utils.h"
+#include "services/identity/public/cpp/primary_account_mutator.h"
+#include "services/network/public/cpp/weak_wrapper_shared_url_loader_factory.h"
+#include "services/network/test/test_url_loader_factory.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace identity {
@@ -251,6 +255,12 @@ class TestIdentityManagerObserver : IdentityManager::Observer {
     return google_signin_failed_error_;
   }
 
+  // Each element represents all the changes from an individual batch that has
+  // occurred, with the elements ordered from oldest to newest batch occurrence.
+  const std::vector<std::vector<std::string>>& batch_change_records() const {
+    return batch_change_records_;
+  }
+
  private:
   // IdentityManager::Observer:
   void OnPrimaryAccountSet(const AccountInfo& primary_account_info) override {
@@ -272,12 +282,16 @@ class TestIdentityManagerObserver : IdentityManager::Observer {
   }
   void OnRefreshTokenUpdatedForAccount(const AccountInfo& account_info,
                                        bool is_valid) override {
+    EXPECT_TRUE(is_inside_batch_);
+    batch_change_records_.rbegin()->emplace_back(account_info.account_id);
     account_from_refresh_token_updated_callback_ = account_info;
     validity_from_refresh_token_updated_callback_ = is_valid;
     if (on_refresh_token_updated_callback_)
       std::move(on_refresh_token_updated_callback_).Run();
   }
   void OnRefreshTokenRemovedForAccount(const std::string& account_id) override {
+    EXPECT_TRUE(is_inside_batch_);
+    batch_change_records_.rbegin()->emplace_back(account_id);
     account_from_refresh_token_removed_callback_ = account_id;
     if (on_refresh_token_removed_callback_)
       on_refresh_token_removed_callback_.Run(account_id);
@@ -291,6 +305,17 @@ class TestIdentityManagerObserver : IdentityManager::Observer {
     accounts_from_cookie_change_callback_ = accounts;
     if (on_accounts_in_cookie_updated_callback_)
       std::move(on_accounts_in_cookie_updated_callback_).Run();
+  }
+  void OnStartBatchOfRefreshTokenStateChanges() override {
+    EXPECT_FALSE(is_inside_batch_);
+    is_inside_batch_ = true;
+
+    // Start a new batch.
+    batch_change_records_.emplace_back(std::vector<std::string>());
+  }
+  void OnEndBatchOfRefreshTokenStateChanges() override {
+    EXPECT_TRUE(is_inside_batch_);
+    is_inside_batch_ = false;
   }
 
   IdentityManager* identity_manager_;
@@ -309,6 +334,8 @@ class TestIdentityManagerObserver : IdentityManager::Observer {
   std::string account_from_refresh_token_removed_callback_;
   std::vector<AccountInfo> accounts_from_cookie_change_callback_;
   GoogleServiceAuthError google_signin_failed_error_;
+  bool is_inside_batch_ = false;
+  std::vector<std::vector<std::string>> batch_change_records_;
 };
 
 class TestIdentityManagerDiagnosticsObserver
@@ -333,16 +360,15 @@ class TestIdentityManagerDiagnosticsObserver
   const std::string& token_requestor_consumer_id() {
     return token_requestor_consumer_id_;
   }
-  const OAuth2TokenService::ScopeSet& token_requestor_scopes() {
+  const identity::ScopeSet& token_requestor_scopes() {
     return token_requestor_scopes_;
   }
 
  private:
   // IdentityManager::DiagnosticsObserver:
-  void OnAccessTokenRequested(
-      const std::string& account_id,
-      const std::string& consumer_id,
-      const OAuth2TokenService::ScopeSet& scopes) override {
+  void OnAccessTokenRequested(const std::string& account_id,
+                              const std::string& consumer_id,
+                              const identity::ScopeSet& scopes) override {
     token_requestor_account_id_ = account_id;
     token_requestor_consumer_id_ = consumer_id;
     token_requestor_scopes_ = scopes;
@@ -355,7 +381,7 @@ class TestIdentityManagerDiagnosticsObserver
   base::OnceClosure on_access_token_requested_callback_;
   std::string token_requestor_account_id_;
   std::string token_requestor_consumer_id_;
-  OAuth2TokenService::ScopeSet token_requestor_scopes_;
+  identity::ScopeSet token_requestor_scopes_;
 };
 
 }  // namespace
@@ -366,7 +392,6 @@ class IdentityManagerTest : public testing::Test {
       : signin_client_(&pref_service_),
         token_service_(&pref_service_),
         gaia_cookie_manager_service_(&token_service_,
-                                     "identity_manager_unittest",
                                      &signin_client_) {
     AccountTrackerService::RegisterPrefs(pref_service_.registry());
     ProfileOAuth2TokenService::RegisterProfilePrefs(pref_service_.registry());
@@ -461,9 +486,9 @@ class IdentityManagerTest : public testing::Test {
     identity_manager_diagnostics_observer_.reset();
     identity_manager_.reset();
 
-    identity_manager_.reset(
-        new IdentityManager(signin_manager_.get(), &token_service_,
-                            &account_tracker_, &gaia_cookie_manager_service_));
+    identity_manager_.reset(new IdentityManager(
+        signin_manager_.get(), &token_service_, &account_tracker_,
+        &gaia_cookie_manager_service_, nullptr));
     identity_manager_observer_.reset(
         new TestIdentityManagerObserver(identity_manager_.get()));
     identity_manager_diagnostics_observer_.reset(
@@ -489,10 +514,10 @@ class IdentityManagerTest : public testing::Test {
     // Ensure primary and secondary emails are set up with refresh tokens. Some
     // tests may do this externally for the primary account.
     if (!identity_manager()->HasPrimaryAccountWithRefreshToken())
-      SetRefreshTokenForPrimaryAccount(token_service(), identity_manager());
+      SetRefreshTokenForPrimaryAccount(identity_manager());
     EXPECT_TRUE(identity_manager()->HasPrimaryAccountWithRefreshToken());
-    AccountInfo secondary_account_info = MakeAccountAvailable(
-        account_tracker(), token_service(), identity_manager(), kTestEmail2);
+    AccountInfo secondary_account_info =
+        MakeAccountAvailable(identity_manager(), kTestEmail2);
     EXPECT_TRUE(identity_manager()->HasAccountWithRefreshToken(
         secondary_account_info.account_id));
 
@@ -668,7 +693,7 @@ TEST_F(IdentityManagerTest,
       SigninManagerSetup::kWithAuthenticatedAccout);
 
   // Set primary account to have authentication error.
-  SetRefreshTokenForPrimaryAccount(token_service(), identity_manager());
+  SetRefreshTokenForPrimaryAccount(identity_manager());
   token_service()->UpdateAuthErrorForTesting(
       identity_manager()->GetPrimaryAccountId(),
       GoogleServiceAuthError(
@@ -694,8 +719,8 @@ TEST_F(IdentityManagerTest, ClearPrimaryAccount_AuthInProgress) {
 
   // Add a secondary account to verify that its refresh token survives the
   // call to ClearPrimaryAccount(...) below.
-  AccountInfo secondary_account_info = MakeAccountAvailable(
-      account_tracker(), token_service(), identity_manager(), kTestEmail2);
+  AccountInfo secondary_account_info =
+      MakeAccountAvailable(identity_manager(), kTestEmail2);
   EXPECT_TRUE(identity_manager()->HasAccountWithRefreshToken(
       secondary_account_info.account_id));
 
@@ -825,7 +850,7 @@ TEST_F(IdentityManagerTest, GetAccountsInteractionWithPrimaryAccount) {
 
   // Add a refresh token for the primary account and check that it shows up in
   // GetAccountsWithRefreshTokens().
-  SetRefreshTokenForPrimaryAccount(token_service(), identity_manager());
+  SetRefreshTokenForPrimaryAccount(identity_manager());
 
   std::vector<AccountInfo> accounts_after_update =
       identity_manager()->GetAccountsWithRefreshTokens();
@@ -836,7 +861,7 @@ TEST_F(IdentityManagerTest, GetAccountsInteractionWithPrimaryAccount) {
   EXPECT_EQ(accounts_after_update[0].email, kTestEmail);
 
   // Update the token and check that it doesn't change the state (or blow up).
-  SetRefreshTokenForPrimaryAccount(token_service(), identity_manager());
+  SetRefreshTokenForPrimaryAccount(identity_manager());
 
   std::vector<AccountInfo> accounts_after_second_update =
       identity_manager()->GetAccountsWithRefreshTokens();
@@ -848,7 +873,7 @@ TEST_F(IdentityManagerTest, GetAccountsInteractionWithPrimaryAccount) {
 
   // Remove the token for the primary account and check that this is likewise
   // reflected.
-  RemoveRefreshTokenForPrimaryAccount(token_service(), identity_manager());
+  RemoveRefreshTokenForPrimaryAccount(identity_manager());
 
   EXPECT_TRUE(identity_manager()->GetAccountsWithRefreshTokens().empty());
 }
@@ -865,14 +890,14 @@ TEST_F(IdentityManagerTest,
 
   // Add a refresh token for the primary account and check that it affects this
   // state.
-  SetRefreshTokenForPrimaryAccount(token_service(), identity_manager());
+  SetRefreshTokenForPrimaryAccount(identity_manager());
 
   EXPECT_TRUE(
       identity_manager()->HasAccountWithRefreshToken(account_info.account_id));
   EXPECT_TRUE(identity_manager()->HasPrimaryAccountWithRefreshToken());
 
   // Update the token and check that it doesn't change the state (or blow up).
-  SetRefreshTokenForPrimaryAccount(token_service(), identity_manager());
+  SetRefreshTokenForPrimaryAccount(identity_manager());
 
   EXPECT_TRUE(
       identity_manager()->HasAccountWithRefreshToken(account_info.account_id));
@@ -880,7 +905,7 @@ TEST_F(IdentityManagerTest,
 
   // Remove the token for the primary account and check that this is likewise
   // reflected.
-  RemoveRefreshTokenForPrimaryAccount(token_service(), identity_manager());
+  RemoveRefreshTokenForPrimaryAccount(identity_manager());
 
   EXPECT_FALSE(
       identity_manager()->HasAccountWithRefreshToken(account_info.account_id));
@@ -894,7 +919,7 @@ TEST_F(IdentityManagerTest, GetAccountsReflectsNonemptyInitialState) {
 
   // Add a refresh token for the primary account and sanity-check that it shows
   // up in GetAccountsWithRefreshTokens().
-  SetRefreshTokenForPrimaryAccount(token_service(), identity_manager());
+  SetRefreshTokenForPrimaryAccount(identity_manager());
 
   std::vector<AccountInfo> accounts_after_update =
       identity_manager()->GetAccountsWithRefreshTokens();
@@ -925,7 +950,7 @@ TEST_F(IdentityManagerTest,
       identity_manager()->HasAccountWithRefreshToken(account_info.account_id));
   EXPECT_FALSE(identity_manager()->HasPrimaryAccountWithRefreshToken());
 
-  SetRefreshTokenForPrimaryAccount(token_service(), identity_manager());
+  SetRefreshTokenForPrimaryAccount(identity_manager());
 
   EXPECT_TRUE(
       identity_manager()->HasAccountWithRefreshToken(account_info.account_id));
@@ -949,7 +974,7 @@ TEST_F(IdentityManagerTest, GetAccountsInteractionWithSecondaryAccounts) {
   account_tracker()->SeedAccountInfo(kTestGaiaId2, kTestEmail2);
   std::string account_id2 =
       account_tracker()->FindAccountInfoByGaiaId(kTestGaiaId2).account_id;
-  SetRefreshTokenForAccount(token_service(), identity_manager(), account_id2);
+  SetRefreshTokenForAccount(identity_manager(), account_id2);
 
   std::vector<AccountInfo> accounts_after_update =
       identity_manager()->GetAccountsWithRefreshTokens();
@@ -964,7 +989,7 @@ TEST_F(IdentityManagerTest, GetAccountsInteractionWithSecondaryAccounts) {
   account_tracker()->SeedAccountInfo(kTestGaiaId3, kTestEmail3);
   std::string account_id3 =
       account_tracker()->FindAccountInfoByGaiaId(kTestGaiaId3).account_id;
-  SetRefreshTokenForAccount(token_service(), identity_manager(), account_id3);
+  SetRefreshTokenForAccount(identity_manager(), account_id3);
 
   std::vector<AccountInfo> accounts_after_second_update =
       identity_manager()->GetAccountsWithRefreshTokens();
@@ -981,8 +1006,7 @@ TEST_F(IdentityManagerTest, GetAccountsInteractionWithSecondaryAccounts) {
   }
 
   // Remove the token for account2 and check that account3 is still present.
-  RemoveRefreshTokenForAccount(token_service(), identity_manager(),
-                               account_id2);
+  RemoveRefreshTokenForAccount(identity_manager(), account_id2);
 
   std::vector<AccountInfo> accounts_after_third_update =
       identity_manager()->GetAccountsWithRefreshTokens();
@@ -1002,7 +1026,7 @@ TEST_F(IdentityManagerTest,
   account_tracker()->SeedAccountInfo(kTestGaiaId2, kTestEmail2);
   std::string account_id2 =
       account_tracker()->FindAccountInfoByGaiaId(kTestGaiaId2).account_id;
-  SetRefreshTokenForAccount(token_service(), identity_manager(), account_id2);
+  SetRefreshTokenForAccount(identity_manager(), account_id2);
 
   EXPECT_FALSE(identity_manager()->HasPrimaryAccountWithRefreshToken());
 
@@ -1011,13 +1035,12 @@ TEST_F(IdentityManagerTest,
   account_tracker()->SeedAccountInfo(kTestGaiaId3, kTestEmail3);
   std::string account_id3 =
       account_tracker()->FindAccountInfoByGaiaId(kTestGaiaId3).account_id;
-  SetRefreshTokenForAccount(token_service(), identity_manager(), account_id3);
+  SetRefreshTokenForAccount(identity_manager(), account_id3);
 
   EXPECT_FALSE(identity_manager()->HasPrimaryAccountWithRefreshToken());
 
   // Removing the token for account2 should have no effect.
-  RemoveRefreshTokenForAccount(token_service(), identity_manager(),
-                               account_id2);
+  RemoveRefreshTokenForAccount(identity_manager(), account_id2);
 
   EXPECT_FALSE(identity_manager()->HasPrimaryAccountWithRefreshToken());
 }
@@ -1034,7 +1057,7 @@ TEST_F(IdentityManagerTest,
 
   // Add a refresh token for account_info2 and check that this is reflected by
   // HasAccountWithRefreshToken(.account_id).
-  SetRefreshTokenForAccount(token_service(), identity_manager(), account_id2);
+  SetRefreshTokenForAccount(identity_manager(), account_id2);
 
   EXPECT_TRUE(
       identity_manager()->HasAccountWithRefreshToken(account_info2.account_id));
@@ -1050,7 +1073,7 @@ TEST_F(IdentityManagerTest,
   EXPECT_FALSE(
       identity_manager()->HasAccountWithRefreshToken(account_info3.account_id));
 
-  SetRefreshTokenForAccount(token_service(), identity_manager(), account_id3);
+  SetRefreshTokenForAccount(identity_manager(), account_id3);
 
   EXPECT_TRUE(
       identity_manager()->HasAccountWithRefreshToken(account_info2.account_id));
@@ -1058,8 +1081,7 @@ TEST_F(IdentityManagerTest,
       identity_manager()->HasAccountWithRefreshToken(account_info3.account_id));
 
   // Remove the token for account2.
-  RemoveRefreshTokenForAccount(token_service(), identity_manager(),
-                               account_id2);
+  RemoveRefreshTokenForAccount(identity_manager(), account_id2);
 
   EXPECT_FALSE(
       identity_manager()->HasAccountWithRefreshToken(account_info2.account_id));
@@ -1077,7 +1099,7 @@ TEST_F(IdentityManagerTest,
   account_tracker()->SeedAccountInfo(kTestGaiaId2, kTestEmail2);
   std::string account_id2 =
       account_tracker()->FindAccountInfoByGaiaId(kTestGaiaId2).account_id;
-  SetRefreshTokenForAccount(token_service(), identity_manager(), account_id2);
+  SetRefreshTokenForAccount(identity_manager(), account_id2);
 
   std::vector<AccountInfo> accounts_after_update =
       identity_manager()->GetAccountsWithRefreshTokens();
@@ -1093,7 +1115,7 @@ TEST_F(IdentityManagerTest,
   // also shows up in GetAccountsWithRefreshTokens().
   std::string primary_account_id =
       signin_manager()->GetAuthenticatedAccountId();
-  SetRefreshTokenForPrimaryAccount(token_service(), identity_manager());
+  SetRefreshTokenForPrimaryAccount(identity_manager());
 
   std::vector<AccountInfo> accounts_after_second_update =
       identity_manager()->GetAccountsWithRefreshTokens();
@@ -1113,7 +1135,7 @@ TEST_F(IdentityManagerTest,
 
   // Remove the token for the primary account and check that account2 is still
   // present.
-  RemoveRefreshTokenForPrimaryAccount(token_service(), identity_manager());
+  RemoveRefreshTokenForPrimaryAccount(identity_manager());
 
   std::vector<AccountInfo> accounts_after_third_update =
       identity_manager()->GetAccountsWithRefreshTokens();
@@ -1136,7 +1158,7 @@ TEST_F(
   account_tracker()->SeedAccountInfo(kTestGaiaId2, kTestEmail2);
   std::string account_id2 =
       account_tracker()->FindAccountInfoByGaiaId(kTestGaiaId2).account_id;
-  SetRefreshTokenForAccount(token_service(), identity_manager(), account_id2);
+  SetRefreshTokenForAccount(identity_manager(), account_id2);
 
   EXPECT_FALSE(identity_manager()->HasPrimaryAccountWithRefreshToken());
 
@@ -1144,20 +1166,19 @@ TEST_F(
   // *does* impact the stsate of HasPrimaryAccountWithRefreshToken().
   std::string primary_account_id =
       signin_manager()->GetAuthenticatedAccountId();
-  SetRefreshTokenForPrimaryAccount(token_service(), identity_manager());
+  SetRefreshTokenForPrimaryAccount(identity_manager());
 
   EXPECT_TRUE(identity_manager()->HasPrimaryAccountWithRefreshToken());
 
   // Remove the token for the secondary account and check that this doesn't flip
   // the state.
-  RemoveRefreshTokenForAccount(token_service(), identity_manager(),
-                               account_id2);
+  RemoveRefreshTokenForAccount(identity_manager(), account_id2);
 
   EXPECT_TRUE(identity_manager()->HasPrimaryAccountWithRefreshToken());
 
   // Remove the token for the primary account and check that this flips the
   // state.
-  RemoveRefreshTokenForPrimaryAccount(token_service(), identity_manager());
+  RemoveRefreshTokenForPrimaryAccount(identity_manager());
 
   EXPECT_FALSE(identity_manager()->HasPrimaryAccountWithRefreshToken());
 }
@@ -1181,7 +1202,7 @@ TEST_F(
 
   // Add a refresh token for account_info2 and check that this is reflected by
   // HasAccountWithRefreshToken(.account_id).
-  SetRefreshTokenForAccount(token_service(), identity_manager(), account_id2);
+  SetRefreshTokenForAccount(identity_manager(), account_id2);
 
   EXPECT_FALSE(identity_manager()->HasAccountWithRefreshToken(
       primary_account_info.account_id));
@@ -1189,7 +1210,7 @@ TEST_F(
       identity_manager()->HasAccountWithRefreshToken(account_info2.account_id));
 
   // Go through the same process for the primary account.
-  SetRefreshTokenForPrimaryAccount(token_service(), identity_manager());
+  SetRefreshTokenForPrimaryAccount(identity_manager());
 
   EXPECT_TRUE(identity_manager()->HasAccountWithRefreshToken(
       primary_account_info.account_id));
@@ -1197,8 +1218,7 @@ TEST_F(
       identity_manager()->HasAccountWithRefreshToken(account_info2.account_id));
 
   // Remove the token for account2.
-  RemoveRefreshTokenForAccount(token_service(), identity_manager(),
-                               account_id2);
+  RemoveRefreshTokenForAccount(identity_manager(), account_id2);
 
   EXPECT_TRUE(identity_manager()->HasAccountWithRefreshToken(
       primary_account_info.account_id));
@@ -1220,7 +1240,7 @@ TEST_F(IdentityManagerTest, GetErrorStateOfRefreshTokenForAccount) {
       identity_manager()->HasAccountWithRefreshTokenInPersistentErrorState(
           primary_account_id));
 
-  SetRefreshTokenForPrimaryAccount(token_service(), identity_manager());
+  SetRefreshTokenForPrimaryAccount(identity_manager());
   EXPECT_EQ(GoogleServiceAuthError::AuthErrorNone(),
             identity_manager()->GetErrorStateOfRefreshTokenForAccount(
                 primary_account_id));
@@ -1241,7 +1261,7 @@ TEST_F(IdentityManagerTest, GetErrorStateOfRefreshTokenForAccount) {
       identity_manager()->HasAccountWithRefreshTokenInPersistentErrorState(
           account_id2));
 
-  SetRefreshTokenForAccount(token_service(), identity_manager(), account_id2);
+  SetRefreshTokenForAccount(identity_manager(), account_id2);
   EXPECT_EQ(
       GoogleServiceAuthError::AuthErrorNone(),
       identity_manager()->GetErrorStateOfRefreshTokenForAccount(account_id2));
@@ -1301,8 +1321,7 @@ TEST_F(IdentityManagerTest, GetErrorStateOfRefreshTokenForAccount) {
 
   // Remove the token for account2 and check that it goes back to having no
   // error.
-  RemoveRefreshTokenForAccount(token_service(), identity_manager(),
-                               account_id2);
+  RemoveRefreshTokenForAccount(identity_manager(), account_id2);
   EXPECT_EQ(
       GoogleServiceAuthError::AuthErrorNone(),
       identity_manager()->GetErrorStateOfRefreshTokenForAccount(account_id2));
@@ -1344,6 +1363,94 @@ TEST_F(IdentityManagerTest, CreateAccessTokenFetcher) {
           identity_manager()->GetPrimaryAccountId(), "dummy_consumer", scopes,
           std::move(callback), AccessTokenFetcher::Mode::kImmediate);
   EXPECT_TRUE(token_fetcher);
+}
+
+TEST_F(IdentityManagerTest,
+       CreateAccessTokenFetcherWithCustomURLLoaderFactory) {
+  base::RunLoop run_loop;
+  identity_manager_diagnostics_observer()
+      ->set_on_access_token_requested_callback(run_loop.QuitClosure());
+
+  signin_manager()->SetAuthenticatedAccountInfo(kTestGaiaId, kTestEmail);
+  std::string account_id = signin_manager()->GetAuthenticatedAccountId();
+  token_service()->UpdateCredentials(account_id, "refresh_token");
+
+  std::set<std::string> scopes{"scope"};
+  AccessTokenFetcher::TokenCallback callback = base::BindOnce(
+      [](GoogleServiceAuthError error, AccessTokenInfo access_token_info) {});
+
+  // We first create and AccessTokenFetcher with a custom URLLoaderFactory,
+  // to check that such factory is actually used in the requests generated.
+  network::TestURLLoaderFactory test_url_loader_factory;
+  scoped_refptr<network::SharedURLLoaderFactory> test_shared_url_loader_factory(
+      base::MakeRefCounted<network::WeakWrapperSharedURLLoaderFactory>(
+          &test_url_loader_factory));
+  std::unique_ptr<AccessTokenFetcher> token_fetcher =
+      identity_manager()->CreateAccessTokenFetcherForAccount(
+          account_id, "dummy_consumer", test_shared_url_loader_factory, scopes,
+          std::move(callback), AccessTokenFetcher::Mode::kImmediate);
+
+  run_loop.Run();
+
+  // The URLLoaderFactory present in the pending request should match
+  // the one we specified when creating the AccessTokenFetcher.
+  std::vector<FakeProfileOAuth2TokenService::PendingRequest> pending_requests =
+      token_service()->GetPendingRequests();
+  EXPECT_EQ(pending_requests.size(), 1U);
+  EXPECT_EQ(pending_requests[0].url_loader_factory,
+            test_shared_url_loader_factory);
+
+  // The account ID and consumer's name should match the data passed as well.
+  EXPECT_EQ(
+      account_id,
+      identity_manager_diagnostics_observer()->token_requestor_account_id());
+  EXPECT_EQ(
+      "dummy_consumer",
+      identity_manager_diagnostics_observer()->token_requestor_consumer_id());
+
+  // Cancel the pending request in preparation to check that creating an
+  // AccessTokenFetcher without a custom factory works as expected as well.
+  token_service()->IssueErrorForAllPendingRequestsForAccount(
+      account_id,
+      GoogleServiceAuthError(GoogleServiceAuthError::REQUEST_CANCELED));
+
+  // Now add a second account and request an access token for it to test
+  // that the default URLLoaderFactory is used if none is specified.
+  base::RunLoop run_loop2;
+  identity_manager_diagnostics_observer()
+      ->set_on_access_token_requested_callback(run_loop2.QuitClosure());
+
+  account_tracker()->SeedAccountInfo(kTestGaiaId2, kTestEmail2);
+  std::string account_id2 =
+      account_tracker()->FindAccountInfoByGaiaId(kTestGaiaId2).account_id;
+  token_service()->UpdateCredentials(account_id2, "refresh_token");
+
+  // No changes to the declared scopes and callback, we can reuse them.
+  std::unique_ptr<AccessTokenFetcher> token_fetcher2 =
+      identity_manager()->CreateAccessTokenFetcherForAccount(
+          account_id2, "dummy_consumer 2", scopes, std::move(callback),
+          AccessTokenFetcher::Mode::kImmediate);
+
+  run_loop2.Run();
+
+  // There should be one pending request now as well, just like before.
+  std::vector<FakeProfileOAuth2TokenService::PendingRequest> pending_requests2 =
+      token_service()->GetPendingRequests();
+  EXPECT_EQ(pending_requests2.size(), 1U);
+
+  // The URLLoaderFactory present in the pending request should match
+  // the one created by default for the token service's delegate.
+  OAuth2TokenServiceDelegate* service_delegate = token_service()->GetDelegate();
+  EXPECT_EQ(pending_requests2[0].url_loader_factory,
+            service_delegate->GetURLLoaderFactory());
+
+  // The account ID and consumer's name should match the data passed again.
+  EXPECT_EQ(
+      account_id2,
+      identity_manager_diagnostics_observer()->token_requestor_account_id());
+  EXPECT_EQ(
+      "dummy_consumer 2",
+      identity_manager_diagnostics_observer()->token_requestor_consumer_id());
 }
 
 TEST_F(IdentityManagerTest, ObserveAccessTokenFetch) {
@@ -1463,7 +1570,7 @@ TEST_F(IdentityManagerTest,
        CallbackSentOnPrimaryAccountRefreshTokenUpdateWithValidToken) {
   std::string account_id = signin_manager()->GetAuthenticatedAccountId();
 
-  SetRefreshTokenForPrimaryAccount(token_service(), identity_manager());
+  SetRefreshTokenForPrimaryAccount(identity_manager());
 
   AccountInfo account_info =
       identity_manager_observer()
@@ -1479,7 +1586,7 @@ TEST_F(IdentityManagerTest,
        CallbackSentOnPrimaryAccountRefreshTokenUpdateWithInvalidToken) {
   std::string account_id = signin_manager()->GetAuthenticatedAccountId();
 
-  SetInvalidRefreshTokenForPrimaryAccount(token_service(), identity_manager());
+  SetInvalidRefreshTokenForPrimaryAccount(identity_manager());
 
   AccountInfo account_info =
       identity_manager_observer()
@@ -1494,9 +1601,9 @@ TEST_F(IdentityManagerTest,
 TEST_F(IdentityManagerTest, CallbackSentOnPrimaryAccountRefreshTokenRemoval) {
   std::string account_id = signin_manager()->GetAuthenticatedAccountId();
 
-  SetRefreshTokenForPrimaryAccount(token_service(), identity_manager());
+  SetRefreshTokenForPrimaryAccount(identity_manager());
 
-  RemoveRefreshTokenForPrimaryAccount(token_service(), identity_manager());
+  RemoveRefreshTokenForPrimaryAccount(identity_manager());
 
   EXPECT_EQ(account_id, identity_manager_observer()
                             ->account_from_refresh_token_removed_callback());
@@ -1504,8 +1611,8 @@ TEST_F(IdentityManagerTest, CallbackSentOnPrimaryAccountRefreshTokenRemoval) {
 
 TEST_F(IdentityManagerTest,
        CallbackSentOnSecondaryAccountRefreshTokenUpdateWithValidToken) {
-  AccountInfo expected_account_info = MakeAccountAvailable(
-      account_tracker(), token_service(), identity_manager(), kTestEmail2);
+  AccountInfo expected_account_info =
+      MakeAccountAvailable(identity_manager(), kTestEmail2);
   EXPECT_EQ(kTestEmail2, expected_account_info.email);
 
   AccountInfo account_info =
@@ -1521,11 +1628,11 @@ TEST_F(IdentityManagerTest,
 
 TEST_F(IdentityManagerTest,
        CallbackSentOnSecondaryAccountRefreshTokenUpdateWithInvalidToken) {
-  AccountInfo expected_account_info = MakeAccountAvailable(
-      account_tracker(), token_service(), identity_manager(), kTestEmail2);
+  AccountInfo expected_account_info =
+      MakeAccountAvailable(identity_manager(), kTestEmail2);
   EXPECT_EQ(kTestEmail2, expected_account_info.email);
 
-  SetInvalidRefreshTokenForAccount(token_service(), identity_manager(),
+  SetInvalidRefreshTokenForAccount(identity_manager(),
                                    expected_account_info.account_id);
 
   AccountInfo account_info =
@@ -1540,11 +1647,11 @@ TEST_F(IdentityManagerTest,
 }
 
 TEST_F(IdentityManagerTest, CallbackSentOnSecondaryAccountRefreshTokenRemoval) {
-  AccountInfo expected_account_info = MakeAccountAvailable(
-      account_tracker(), token_service(), identity_manager(), kTestEmail2);
+  AccountInfo expected_account_info =
+      MakeAccountAvailable(identity_manager(), kTestEmail2);
   EXPECT_EQ(kTestEmail2, expected_account_info.email);
 
-  RemoveRefreshTokenForAccount(token_service(), identity_manager(),
+  RemoveRefreshTokenForAccount(identity_manager(),
                                expected_account_info.account_id);
 
   EXPECT_EQ(expected_account_info.account_id,
@@ -1562,8 +1669,8 @@ TEST_F(
   signin_manager()->ForceSignOut();
   run_loop.Run();
 
-  AccountInfo expected_account_info = MakeAccountAvailable(
-      account_tracker(), token_service(), identity_manager(), kTestEmail2);
+  AccountInfo expected_account_info =
+      MakeAccountAvailable(identity_manager(), kTestEmail2);
   EXPECT_EQ(kTestEmail2, expected_account_info.email);
 
   AccountInfo account_info =
@@ -1586,11 +1693,11 @@ TEST_F(
   signin_manager()->ForceSignOut();
   run_loop.Run();
 
-  AccountInfo expected_account_info = MakeAccountAvailable(
-      account_tracker(), token_service(), identity_manager(), kTestEmail2);
+  AccountInfo expected_account_info =
+      MakeAccountAvailable(identity_manager(), kTestEmail2);
   EXPECT_EQ(kTestEmail2, expected_account_info.email);
 
-  SetInvalidRefreshTokenForAccount(token_service(), identity_manager(),
+  SetInvalidRefreshTokenForAccount(identity_manager(),
                                    expected_account_info.account_id);
 
   AccountInfo account_info =
@@ -1612,11 +1719,11 @@ TEST_F(IdentityManagerTest,
   signin_manager()->ForceSignOut();
   run_loop.Run();
 
-  AccountInfo expected_account_info = MakeAccountAvailable(
-      account_tracker(), token_service(), identity_manager(), kTestEmail2);
+  AccountInfo expected_account_info =
+      MakeAccountAvailable(identity_manager(), kTestEmail2);
   EXPECT_EQ(kTestEmail2, expected_account_info.email);
 
-  RemoveRefreshTokenForAccount(token_service(), identity_manager(),
+  RemoveRefreshTokenForAccount(identity_manager(),
                                expected_account_info.account_id);
 
   EXPECT_EQ(expected_account_info.account_id,
@@ -1726,8 +1833,7 @@ TEST_F(IdentityManagerTest,
       run_loop.QuitClosure());
 
   gaia_cookie_manager_service()->SetListAccountsResponseNoAccounts();
-  gaia_cookie_manager_service()->TriggerListAccounts(
-      "identity_manager_unittest");
+  gaia_cookie_manager_service()->TriggerListAccounts();
 
   run_loop.Run();
 
@@ -1744,8 +1850,7 @@ TEST_F(IdentityManagerTest,
 
   gaia_cookie_manager_service()->SetListAccountsResponseOneAccount(kTestEmail,
                                                                    kTestGaiaId);
-  gaia_cookie_manager_service()->TriggerListAccounts(
-      "identity_manager_unittest");
+  gaia_cookie_manager_service()->TriggerListAccounts();
   run_loop.Run();
 
   EXPECT_EQ(1u, identity_manager_observer()
@@ -1768,8 +1873,7 @@ TEST_F(IdentityManagerTest,
 
   gaia_cookie_manager_service()->SetListAccountsResponseTwoAccounts(
       kTestEmail, kTestGaiaId, kTestEmail2, kTestGaiaId2);
-  gaia_cookie_manager_service()->TriggerListAccounts(
-      "identity_manager_unittest");
+  gaia_cookie_manager_service()->TriggerListAccounts();
 
   run_loop.Run();
 
@@ -1806,15 +1910,14 @@ TEST_F(IdentityManagerTest, GetAccountsInCookieJarWithNoAccounts) {
   // accounts but should also trigger an internal update and eventual
   // notification that the accounts in the cookie jar have been updated.
   std::vector<AccountInfo> accounts_in_cookie_jar =
-      identity_manager()->GetAccountsInCookieJar("identity_manager_unittest");
+      identity_manager()->GetAccountsInCookieJar();
   EXPECT_TRUE(accounts_in_cookie_jar.empty());
 
   run_loop.Run();
 
   // The state of the accounts in IdentityManager should now reflect the
   // internal update.
-  accounts_in_cookie_jar =
-      identity_manager()->GetAccountsInCookieJar("identity_manager_unittest");
+  accounts_in_cookie_jar = identity_manager()->GetAccountsInCookieJar();
 
   EXPECT_TRUE(accounts_in_cookie_jar.empty());
 }
@@ -1831,15 +1934,14 @@ TEST_F(IdentityManagerTest, GetAccountsInCookieJarWithOneAccount) {
   // accounts but should also trigger an internal update and eventual
   // notification that the accounts in the cookie jar have been updated.
   std::vector<AccountInfo> accounts_in_cookie_jar =
-      identity_manager()->GetAccountsInCookieJar("identity_manager_unittest");
+      identity_manager()->GetAccountsInCookieJar();
   EXPECT_TRUE(accounts_in_cookie_jar.empty());
 
   run_loop.Run();
 
   // The state of the accounts in IdentityManager should now reflect the
   // internal update.
-  accounts_in_cookie_jar =
-      identity_manager()->GetAccountsInCookieJar("identity_manager_unittest");
+  accounts_in_cookie_jar = identity_manager()->GetAccountsInCookieJar();
 
   EXPECT_EQ(1u, accounts_in_cookie_jar.size());
 
@@ -1862,15 +1964,14 @@ TEST_F(IdentityManagerTest, GetAccountsInCookieJarWithTwoAccounts) {
   // accounts but should also trigger an internal update and eventual
   // notification that the accounts in the cookie jar have been updated.
   std::vector<AccountInfo> accounts_in_cookie_jar =
-      identity_manager()->GetAccountsInCookieJar("identity_manager_unittest");
+      identity_manager()->GetAccountsInCookieJar();
   EXPECT_TRUE(accounts_in_cookie_jar.empty());
 
   run_loop.Run();
 
   // The state of the accounts in IdentityManager should now reflect the
   // internal update.
-  accounts_in_cookie_jar =
-      identity_manager()->GetAccountsInCookieJar("identity_manager_unittest");
+  accounts_in_cookie_jar = identity_manager()->GetAccountsInCookieJar();
 
   EXPECT_EQ(2u, accounts_in_cookie_jar.size());
 
@@ -1888,6 +1989,24 @@ TEST_F(IdentityManagerTest, GetAccountsInCookieJarWithTwoAccounts) {
       account_info2.account_id);
   EXPECT_EQ(kTestGaiaId2, account_info2.gaia);
   EXPECT_EQ(kTestEmail2, account_info2.email);
+}
+
+TEST_F(IdentityManagerTest,
+       BatchChangeObserversAreNotifiedOnCredentialsUpdate) {
+  signin_manager()->SetAuthenticatedAccountInfo(kTestGaiaId, kTestEmail);
+  std::string account_id = signin_manager()->GetAuthenticatedAccountId();
+  token_service()->UpdateCredentials(account_id, "refresh_token");
+
+  EXPECT_EQ(1ul, identity_manager_observer()->batch_change_records().size());
+  EXPECT_EQ(1ul,
+            identity_manager_observer()->batch_change_records().at(0).size());
+  EXPECT_EQ(account_id,
+            identity_manager_observer()->batch_change_records().at(0).at(0));
+}
+
+TEST_F(IdentityManagerTest, GetAccountsMutator) {
+  AccountsMutator* mutator = identity_manager()->GetAccountsMutator();
+  EXPECT_TRUE(mutator);
 }
 
 }  // namespace identity

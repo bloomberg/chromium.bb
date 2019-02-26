@@ -42,8 +42,7 @@ ScopedPagePauser::ScopedPagePauser() {
     return;
 
   SetPaused(true);
-  pause_handle_ =
-      Platform::Current()->CurrentThread()->Scheduler()->PauseScheduler();
+  pause_handle_ = ThreadScheduler::Current()->PauseScheduler();
 }
 
 ScopedPagePauser::~ScopedPagePauser() {

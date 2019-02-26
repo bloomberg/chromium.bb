@@ -21,22 +21,29 @@ class CORE_EXPORT StaticRange final : public ScriptWrappable {
 
  public:
   static StaticRange* Create(Document& document) {
-    return new StaticRange(document);
+    return MakeGarbageCollected<StaticRange>(document);
   }
   static StaticRange* Create(Document& document,
                              Node* start_container,
                              unsigned start_offset,
                              Node* end_container,
                              unsigned end_offset) {
-    return new StaticRange(document, start_container, start_offset,
-                           end_container, end_offset);
+    return MakeGarbageCollected<StaticRange>(
+        document, start_container, start_offset, end_container, end_offset);
   }
   static StaticRange* Create(const Range* range) {
-    return new StaticRange(range->OwnerDocument(), range->startContainer(),
-                           range->startOffset(), range->endContainer(),
-                           range->endOffset());
+    return MakeGarbageCollected<StaticRange>(
+        range->OwnerDocument(), range->startContainer(), range->startOffset(),
+        range->endContainer(), range->endOffset());
   }
   static StaticRange* Create(const EphemeralRange&);
+
+  explicit StaticRange(Document&);
+  StaticRange(Document&,
+              Node* start_container,
+              unsigned start_offset,
+              Node* end_container,
+              unsigned end_offset);
 
   Node* startContainer() const { return start_container_.Get(); }
   void setStartContainer(Node* start_container) {
@@ -64,13 +71,6 @@ class CORE_EXPORT StaticRange final : public ScriptWrappable {
   void Trace(blink::Visitor*) override;
 
  private:
-  explicit StaticRange(Document&);
-  StaticRange(Document&,
-              Node* start_container,
-              unsigned start_offset,
-              Node* end_container,
-              unsigned end_offset);
-
   Member<Document> owner_document_;  // Required by |toRange()|.
   Member<Node> start_container_;
   unsigned start_offset_;

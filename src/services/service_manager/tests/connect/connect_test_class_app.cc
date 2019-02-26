@@ -63,8 +63,8 @@ class ConnectTestClassApp : public Service,
   void GetTitle(GetTitleCallback callback) override {
     std::move(callback).Run("CLASS APP");
   }
-  void GetInstance(GetInstanceCallback callback) override {
-    std::move(callback).Run(context()->identity().instance());
+  void GetInstanceId(GetInstanceIdCallback callback) override {
+    std::move(callback).Run(context()->identity().instance_id());
   }
 
   // test::mojom::ClassInterface:

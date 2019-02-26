@@ -33,15 +33,20 @@ class SVGRect final : public SVGPropertyHelper<SVGRect> {
  public:
   typedef SVGRectTearOff TearOffType;
 
-  static SVGRect* Create() { return new SVGRect(); }
+  static SVGRect* Create() { return MakeGarbageCollected<SVGRect>(); }
 
   static SVGRect* CreateInvalid() {
-    SVGRect* rect = new SVGRect();
+    SVGRect* rect = MakeGarbageCollected<SVGRect>();
     rect->SetInvalid();
     return rect;
   }
 
-  static SVGRect* Create(const FloatRect& rect) { return new SVGRect(rect); }
+  static SVGRect* Create(const FloatRect& rect) {
+    return MakeGarbageCollected<SVGRect>(rect);
+  }
+
+  SVGRect();
+  SVGRect(const FloatRect&);
 
   SVGRect* Clone() const;
 
@@ -77,9 +82,6 @@ class SVGRect final : public SVGPropertyHelper<SVGRect> {
   static AnimatedPropertyType ClassType() { return kAnimatedRect; }
 
  private:
-  SVGRect();
-  SVGRect(const FloatRect&);
-
   template <typename CharType>
   SVGParsingError Parse(const CharType*& ptr, const CharType* end);
 

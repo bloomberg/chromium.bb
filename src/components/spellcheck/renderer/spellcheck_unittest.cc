@@ -12,11 +12,11 @@
 #include "base/files/file_path.h"
 #include "base/files/file_util.h"
 #include "base/macros.h"
-#include "base/message_loop/message_loop.h"
 #include "base/path_service.h"
 #include "base/run_loop.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/utf_string_conversions.h"
+#include "base/test/scoped_task_environment.h"
 #include "build/build_config.h"
 #include "components/spellcheck/common/spellcheck_common.h"
 #include "components/spellcheck/common/spellcheck_result.h"
@@ -127,7 +127,7 @@ class SpellCheckTest : public testing::Test {
  private:
   spellcheck::EmptyLocalInterfaceProvider embedder_provider_;
   std::unique_ptr<SpellCheck> spell_check_;
-  base::MessageLoop loop_;
+  base::test::ScopedTaskEnvironment task_environment_;
 };
 
 // A fake completion object for verification.

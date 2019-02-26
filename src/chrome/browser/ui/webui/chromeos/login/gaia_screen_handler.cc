@@ -18,7 +18,7 @@
 #include "base/stl_util.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
-#include "base/sys_info.h"
+#include "base/system/sys_info.h"
 #include "base/task/post_task.h"
 #include "base/values.h"
 #include "chrome/browser/browser_process.h"
@@ -35,7 +35,6 @@
 #include "chrome/browser/chromeos/net/network_portal_detector_impl.h"
 #include "chrome/browser/chromeos/policy/browser_policy_connector_chromeos.h"
 #include "chrome/browser/chromeos/policy/device_network_configuration_updater.h"
-#include "chrome/browser/chromeos/policy/temp_certs_cache_nss.h"
 #include "chrome/browser/chromeos/profiles/profile_helper.h"
 #include "chrome/browser/chromeos/settings/cros_settings.h"
 #include "chrome/browser/lifetime/browser_shutdown.h"
@@ -67,9 +66,11 @@
 #include "components/version_info/version_info.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/render_frame_host.h"
+#include "content/public/browser/storage_partition.h"
 #include "google_apis/gaia/gaia_auth_util.h"
 #include "google_apis/gaia/gaia_urls.h"
 #include "mojo/public/cpp/bindings/callback_helpers.h"
+#include "services/network/nss_temp_certs_cache_chromeos.h"
 #include "services/network/public/mojom/network_context.mojom.h"
 #include "ui/base/ime/chromeos/input_method_manager.h"
 #include "ui/base/ime/chromeos/input_method_util.h"
@@ -89,6 +90,9 @@ const char kAuthIframeParentName[] = "signin-frame";
 const char kRestrictiveProxyURL[] = "https://www.google.com/generate_204";
 
 const char kEndpointGen[] = "1.0";
+
+const char kOAUTHCodeCookie[] = "oauth_code";
+const char kGAPSCookie[] = "GAPS";
 
 // The possible modes that the Gaia signin screen can be in.
 enum GaiaScreenMode {
@@ -351,6 +355,40 @@ void GaiaScreenHandler::LoadGaia(const GaiaContext& context) {
 void GaiaScreenHandler::LoadGaiaWithPartition(
     const GaiaContext& context,
     const std::string& partition_name) {
+  auto callback =
+      base::BindOnce(&GaiaScreenHandler::OnSetCookieForLoadGaiaWithPartition,
+                     weak_factory_.GetWeakPtr(), context, partition_name);
+  if (context.gaps_cookie.empty()) {
+    std::move(callback).Run(true);
+    return;
+  }
+
+  // When the network service is enabled the webRequest API doesn't allow
+  // modification of the cookie header. So manually write the GAPS cookie into
+  // the CookieManager.
+  login::SigninPartitionManager* signin_partition_manager =
+      login::SigninPartitionManager::Factory::GetForBrowserContext(
+          Profile::FromWebUI(web_ui()));
+  content::StoragePartition* partition =
+      signin_partition_manager->GetCurrentStoragePartition();
+  if (!partition)
+    return;
+
+  std::string gaps_cookie_value(kGAPSCookie);
+  gaps_cookie_value += "=" + context.gaps_cookie;
+  std::unique_ptr<net::CanonicalCookie> cc(net::CanonicalCookie::Create(
+      GaiaUrls::GetInstance()->gaia_url(), gaps_cookie_value, base::Time::Now(),
+      net::CookieOptions()));
+
+  partition->GetCookieManagerForBrowserProcess()->SetCanonicalCookie(
+      *cc.get(), true /* secure_source */, true /* modify_http_only */,
+      std::move(callback));
+}
+
+void GaiaScreenHandler::OnSetCookieForLoadGaiaWithPartition(
+    const GaiaContext& context,
+    const std::string& partition_name,
+    bool success) {
   std::unique_ptr<std::string> version = std::make_unique<std::string>();
   std::unique_ptr<bool> consent = std::make_unique<bool>();
   base::OnceClosure get_version_and_consent =
@@ -376,7 +414,6 @@ void GaiaScreenHandler::LoadGaiaWithPartitionAndVersionAndConsent(
   params.SetString("gaiaId", context.gaia_id);
   params.SetBoolean("readOnlyEmail", true);
   params.SetString("email", context.email);
-  params.SetString("gapsCookie", context.gaps_cookie);
 
   UpdateAuthParams(&params, IsRestrictiveProxy());
 
@@ -459,7 +496,7 @@ void GaiaScreenHandler::LoadGaiaWithPartitionAndVersionAndConsent(
   params.SetString("webviewPartitionName", partition_name);
 
   frame_state_ = FRAME_STATE_LOADING;
-  CallJS("loadAuthExtension", params);
+  CallJSWithPrefix("loadAuthExtension", params);
 }
 
 void GaiaScreenHandler::ReloadGaia(bool force_reload) {
@@ -482,7 +519,7 @@ void GaiaScreenHandler::ReloadGaia(bool force_reload) {
 }
 
 void GaiaScreenHandler::MonitorOfflineIdle(bool is_online) {
-  CallJS("monitorOfflineIdle", is_online);
+  CallJSWithPrefix("monitorOfflineIdle", is_online);
 }
 
 void GaiaScreenHandler::DeclareLocalizedValues(
@@ -704,16 +741,18 @@ void GaiaScreenHandler::DoAdAuth(
       break;
     case authpolicy::ERROR_PARSE_UPN_FAILED:
     case authpolicy::ERROR_BAD_USER_NAME:
-      CallJS("invalidateAd", username,
-             static_cast<int>(ActiveDirectoryErrorState::BAD_USERNAME));
+      CallJSWithPrefix(
+          "invalidateAd", username,
+          static_cast<int>(ActiveDirectoryErrorState::BAD_USERNAME));
       break;
     case authpolicy::ERROR_BAD_PASSWORD:
-      CallJS("invalidateAd", username,
-             static_cast<int>(ActiveDirectoryErrorState::BAD_AUTH_PASSWORD));
+      CallJSWithPrefix(
+          "invalidateAd", username,
+          static_cast<int>(ActiveDirectoryErrorState::BAD_AUTH_PASSWORD));
       break;
     default:
-      CallJS("invalidateAd", username,
-             static_cast<int>(ActiveDirectoryErrorState::NONE));
+      CallJSWithPrefix("invalidateAd", username,
+                       static_cast<int>(ActiveDirectoryErrorState::NONE));
       core_oobe_view_->ShowSignInError(
           0, GetAdErrorMessage(error), std::string(),
           HelpAppLauncher::HELP_CANT_ACCESS_ACCOUNT);
@@ -743,12 +782,51 @@ void GaiaScreenHandler::HandleCompleteAuthentication(
     const std::string& gaia_id,
     const std::string& email,
     const std::string& password,
-    const std::string& auth_code,
     bool using_saml,
-    const std::string& gaps_cookie,
     const ::login::StringList& services) {
   if (!LoginDisplayHost::default_host())
     return;
+
+  // When the network service is enabled, the webRequest API doesn't expose
+  // cookie headers. So manually fetch the cookies for the GAIA URL from the
+  // CookieManager.
+  login::SigninPartitionManager* signin_partition_manager =
+      login::SigninPartitionManager::Factory::GetForBrowserContext(
+          Profile::FromWebUI(web_ui()));
+  content::StoragePartition* partition =
+      signin_partition_manager->GetCurrentStoragePartition();
+  if (!partition)
+    return;
+
+  net::CookieOptions cookie_options;
+  cookie_options.set_include_httponly();
+
+  partition->GetCookieManagerForBrowserProcess()->GetCookieList(
+      GaiaUrls::GetInstance()->gaia_url(), cookie_options,
+      base::BindOnce(&GaiaScreenHandler::OnGetCookiesForCompleteAuthentication,
+                     weak_factory_.GetWeakPtr(), gaia_id, email, password,
+                     using_saml, services));
+}
+
+void GaiaScreenHandler::OnGetCookiesForCompleteAuthentication(
+    const std::string& gaia_id,
+    const std::string& email,
+    const std::string& password,
+    bool using_saml,
+    const ::login::StringList& services,
+    const std::vector<net::CanonicalCookie>& cookies) {
+  std::string auth_code, gaps_cookie;
+  for (const auto& cookie : cookies) {
+    if (cookie.Name() == kOAUTHCodeCookie)
+      auth_code = cookie.Value();
+    else if (cookie.Name() == kGAPSCookie)
+      gaps_cookie = cookie.Value();
+  }
+
+  if (auth_code.empty()) {
+    HandleCompleteLogin(gaia_id, email, password, using_saml);
+    return;
+  }
 
   DCHECK(!email.empty());
   DCHECK(!gaia_id.empty());
@@ -883,9 +961,6 @@ void GaiaScreenHandler::DoCompleteLogin(const std::string& gaia_id,
                                         const std::string& typed_email,
                                         const std::string& password,
                                         bool using_saml) {
-  if (!LoginDisplayHost::default_host())
-    return;
-
   if (using_saml && !using_saml_api_)
     RecordSAMLScrapingVerificationResultInHistogram(true);
 
@@ -1127,7 +1202,7 @@ void GaiaScreenHandler::ShowGaiaScreenIfReady() {
     // When the WebUI is destroyed, |untrusted_authority_certs_cache_| will go
     // out of scope and the certificates will not be held in memory anymore.
     untrusted_authority_certs_cache_ =
-        std::make_unique<policy::TempCertsCacheNSS>(
+        std::make_unique<network::NSSTempCertsCacheChromeOS>(
             g_browser_process->platform_part()
                 ->browser_policy_connector_chromeos()
                 ->GetDeviceNetworkConfigurationUpdater()
@@ -1162,7 +1237,7 @@ void GaiaScreenHandler::ShowWhitelistCheckFailedError() {
                     g_browser_process->platform_part()
                         ->browser_policy_connector_chromeos()
                         ->IsEnterpriseManaged());
-  CallJS("showWhitelistCheckFailedError", true, params);
+  CallJSWithPrefix("showWhitelistCheckFailedError", true, params);
 }
 
 void GaiaScreenHandler::LoadAuthExtension(bool force,

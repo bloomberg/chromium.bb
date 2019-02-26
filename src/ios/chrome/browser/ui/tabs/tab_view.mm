@@ -15,9 +15,9 @@
 #include "ios/chrome/browser/experimental_flags.h"
 #import "ios/chrome/browser/ui/colors/MDCPalette+CrAdditions.h"
 #import "ios/chrome/browser/ui/image_util/image_util.h"
-#include "ios/chrome/browser/ui/rtl_geometry.h"
-#include "ios/chrome/browser/ui/ui_util.h"
-#import "ios/chrome/browser/ui/uikit_ui_util.h"
+#include "ios/chrome/browser/ui/util/rtl_geometry.h"
+#include "ios/chrome/browser/ui/util/ui_util.h"
+#import "ios/chrome/browser/ui/util/uikit_ui_util.h"
 #import "ios/chrome/common/highlight_button.h"
 #import "ios/chrome/common/ui_util/constraints_ui_util.h"
 #include "ios/chrome/grit/ios_strings.h"
@@ -144,11 +144,9 @@ const int kTabCloseTintIncognito = 0xFFFFFF;
         forControlEvents:UIControlEventTouchUpInside];
 
     if (DragAndDropIsEnabled()) {
-      if (@available(iOS 11, *)) {
-        _dropInteraction =
-            [[DropAndNavigateInteraction alloc] initWithDelegate:self];
-        [self addInteraction:_dropInteraction];
-      }
+      _dropInteraction =
+          [[DropAndNavigateInteraction alloc] initWithDelegate:self];
+      [self addInteraction:_dropInteraction];
     }
   }
   return self;

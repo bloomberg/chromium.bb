@@ -25,6 +25,7 @@
 #import "ios/chrome/browser/tabs/tab.h"
 #import "ios/chrome/browser/tabs/tab_model.h"
 #import "ios/chrome/browser/tabs/tab_model_observer.h"
+#import "ios/chrome/browser/tabs/tab_title_util.h"
 #import "ios/chrome/browser/ui/bubble/bubble_util.h"
 #import "ios/chrome/browser/ui/bubble/bubble_view.h"
 #import "ios/chrome/browser/ui/commands/application_commands.h"
@@ -33,7 +34,6 @@
 #include "ios/chrome/browser/ui/fullscreen/fullscreen_controller_factory.h"
 #include "ios/chrome/browser/ui/fullscreen/scoped_fullscreen_disabler.h"
 #import "ios/chrome/browser/ui/popup_menu/public/popup_menu_long_press_delegate.h"
-#include "ios/chrome/browser/ui/rtl_geometry.h"
 #import "ios/chrome/browser/ui/tabs/requirements/tab_strip_constants.h"
 #import "ios/chrome/browser/ui/tabs/requirements/tab_strip_presentation.h"
 #import "ios/chrome/browser/ui/tabs/tab_strip_controller+placeholder_view.h"
@@ -41,10 +41,11 @@
 #import "ios/chrome/browser/ui/tabs/tab_strip_view.h"
 #import "ios/chrome/browser/ui/tabs/tab_view.h"
 #include "ios/chrome/browser/ui/tabs/target_frame_cache.h"
-#include "ios/chrome/browser/ui/ui_util.h"
-#import "ios/chrome/browser/ui/uikit_ui_util.h"
 #import "ios/chrome/browser/ui/util/named_guide.h"
+#include "ios/chrome/browser/ui/util/rtl_geometry.h"
 #import "ios/chrome/browser/ui/util/snapshot_util.h"
+#include "ios/chrome/browser/ui/util/ui_util.h"
+#import "ios/chrome/browser/ui/util/uikit_ui_util.h"
 #import "ios/chrome/browser/web_state_list/web_state_list.h"
 #include "ios/chrome/grit/ios_strings.h"
 #import "ios/web/public/web_state/web_state.h"
@@ -455,11 +456,9 @@ UIColor* BackgroundColor() {
             forControlEvents:UIControlEventTouchUpInside];
 
     if (DragAndDropIsEnabled()) {
-      if (@available(iOS 11.0, *)) {
-        _buttonNewTabInteraction =
-            [[DropAndNavigateInteraction alloc] initWithDelegate:self];
-        [_buttonNewTab addInteraction:_buttonNewTabInteraction];
-      }
+      _buttonNewTabInteraction =
+          [[DropAndNavigateInteraction alloc] initWithDelegate:self];
+      [_buttonNewTab addInteraction:_buttonNewTabInteraction];
     }
 
     [_tabStripView addSubview:_buttonNewTab];
@@ -535,7 +534,7 @@ UIColor* BackgroundColor() {
     [view setTransform:CGAffineTransformMakeScale(-1, 1)];
   [view setIncognitoStyle:(_style == INCOGNITO)];
   [view setContentMode:UIViewContentModeRedraw];
-  [[view titleLabel] setText:[tab title]];
+  [[view titleLabel] setText:tab_util::GetTabTitle(tab.webState)];
   [view setFavicon:nil];
 
   favicon::FaviconDriver* faviconDriver =
@@ -1036,7 +1035,7 @@ UIColor* BackgroundColor() {
   }
   NSUInteger index = [self indexForModelIndex:modelIndex];
   TabView* view = [_tabArray objectAtIndex:index];
-  [view setTitle:tab.title];
+  [view setTitle:tab_util::GetTabTitle(tab.webState)];
   [view setFavicon:nil];
 
   favicon::FaviconDriver* faviconDriver =

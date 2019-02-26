@@ -260,34 +260,13 @@ PositionWithAffinity PositionRespectingEditingBoundary(
     Node* target_node);
 Position ComputePositionForNodeRemoval(const Position&, const Node&);
 
+// TODO(editing-dev): These two functions should be eliminated.
+CORE_EXPORT Position PositionBeforeNode(const Node&);
+Position PositionAfterNode(const Node&);
+
 // -------------------------------------------------------------------------
 // VisiblePosition
 // -------------------------------------------------------------------------
-
-// Functions returning VisiblePosition
-
-// TODO(yosin) We should rename
-// |firstEditableVisiblePositionAfterPositionInRoot()| to a better name which
-// describes what this function returns, since it returns a position before
-// specified position due by canonicalization.
-CORE_EXPORT VisiblePosition
-FirstEditableVisiblePositionAfterPositionInRoot(const Position&,
-                                                ContainerNode&);
-CORE_EXPORT VisiblePositionInFlatTree
-FirstEditableVisiblePositionAfterPositionInRoot(const PositionInFlatTree&,
-                                                ContainerNode&);
-// TODO(yosin) We should rename
-// |lastEditableVisiblePositionBeforePositionInRoot()| to a better name which
-// describes what this function returns, since it returns a position after
-// specified position due by canonicalization.
-CORE_EXPORT VisiblePosition
-LastEditableVisiblePositionBeforePositionInRoot(const Position&,
-                                                ContainerNode&);
-CORE_EXPORT VisiblePositionInFlatTree
-LastEditableVisiblePositionBeforePositionInRoot(const PositionInFlatTree&,
-                                                ContainerNode&);
-CORE_EXPORT VisiblePosition VisiblePositionBeforeNode(const Node&);
-VisiblePosition VisiblePositionAfterNode(const Node&);
 
 int ComparePositions(const VisiblePosition&, const VisiblePosition&);
 

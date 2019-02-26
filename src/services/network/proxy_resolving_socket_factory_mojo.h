@@ -31,7 +31,7 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) ProxyResolvingSocketFactoryMojo
   // mojom::ProxyResolvingSocketFactory implementation.
   void CreateProxyResolvingSocket(
       const GURL& url,
-      bool use_tls,
+      mojom::ProxyResolvingSocketOptionsPtr options,
       const net::MutableNetworkTrafficAnnotationTag& traffic_annotation,
       mojom::ProxyResolvingSocketRequest request,
       mojom::SocketObserverPtr observer,

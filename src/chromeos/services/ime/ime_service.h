@@ -10,16 +10,16 @@
 #include "mojo/public/cpp/bindings/binding_set.h"
 #include "services/service_manager/public/cpp/binder_registry.h"
 #include "services/service_manager/public/cpp/service.h"
+#include "services/service_manager/public/cpp/service_binding.h"
+#include "services/service_manager/public/mojom/service.mojom.h"
 
 namespace chromeos {
 namespace ime {
 
-std::unique_ptr<service_manager::Service> CreateImeService();
-
 class ImeService : public service_manager::Service,
                    public mojom::InputEngineManager {
  public:
-  ImeService();
+  explicit ImeService(service_manager::mojom::ServiceRequest request);
   ~ImeService() override;
 
  private:
@@ -40,6 +40,8 @@ class ImeService : public service_manager::Service,
   void BindInputEngineManagerRequest(mojom::InputEngineManagerRequest request);
 
   void OnConnectionLost();
+
+  service_manager::ServiceBinding service_binding_;
 
   // For the duration of this service lifetime, there should be only one
   // input engine instance.

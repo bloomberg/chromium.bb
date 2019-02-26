@@ -10,26 +10,26 @@
 namespace signin {
 
 MirrorAccountReconcilorDelegate::MirrorAccountReconcilorDelegate(
-    SigninManagerBase* signin_manager)
-    : signin_manager_(signin_manager) {
-  DCHECK(signin_manager_);
-  signin_manager_->AddObserver(this);
+    identity::IdentityManager* identity_manager)
+    : identity_manager_(identity_manager) {
+  DCHECK(identity_manager_);
+  identity_manager_->AddObserver(this);
 }
 
 MirrorAccountReconcilorDelegate::~MirrorAccountReconcilorDelegate() {
-  signin_manager_->RemoveObserver(this);
+  identity_manager_->RemoveObserver(this);
 }
 
 bool MirrorAccountReconcilorDelegate::IsReconcileEnabled() const {
-  return signin_manager_->IsAuthenticated();
+  return identity_manager_->HasPrimaryAccount();
 }
 
 bool MirrorAccountReconcilorDelegate::IsAccountConsistencyEnforced() const {
   return true;
 }
 
-std::string MirrorAccountReconcilorDelegate::GetGaiaApiSource() const {
-  return "ChromiumAccountReconcilor";
+gaia::GaiaSource MirrorAccountReconcilorDelegate::GetGaiaApiSource() const {
+  return gaia::GaiaSource::kAccountReconcilorMirror;
 }
 
 bool MirrorAccountReconcilorDelegate::ShouldAbortReconcileIfPrimaryHasError()
@@ -49,48 +49,25 @@ std::string MirrorAccountReconcilorDelegate::GetFirstGaiaAccountForReconcile(
   return primary_account;
 }
 
-bool MirrorAccountReconcilorDelegate::ReorderChromeAccountsForReconcileIfNeeded(
+std::vector<std::string>
+MirrorAccountReconcilorDelegate::GetChromeAccountsForReconcile(
     const std::vector<std::string>& chrome_accounts,
-    const std::string primary_account,
+    const std::string& primary_account,
     const std::vector<gaia::ListedAccount>& gaia_accounts,
-    std::vector<std::string>* accounts_to_send) const {
-  DCHECK(accounts_to_send);
-  accounts_to_send->clear();
-  accounts_to_send->reserve(chrome_accounts.size());
-  bool needs_reordering = false;
-
-  DCHECK(!primary_account.empty());
-  accounts_to_send->push_back(primary_account);
-
-  for (const std::string& chrome_account : chrome_accounts) {
-    if (chrome_account == primary_account)
-      continue;
-    accounts_to_send->push_back(chrome_account);
+    const gaia::MultiloginMode mode) const {
+  DCHECK_EQ(mode,
+            gaia::MultiloginMode::MULTILOGIN_UPDATE_COOKIE_ACCOUNTS_ORDER);
+  return ReorderChromeAccountsForReconcile(chrome_accounts, primary_account,
+                                           gaia_accounts);
   }
 
-  if (gaia_accounts.size() != accounts_to_send->size()) {
-    needs_reordering = true;
-  } else {
-    for (size_t i = 0; i < accounts_to_send->size(); ++i) {
-      const gaia::ListedAccount& gaia_account = gaia_accounts[i];
-      if (gaia_account.id != accounts_to_send->at(i) || !gaia_account.valid) {
-        needs_reordering = true;
-        break;
-      }
-    }
-  }
-  return needs_reordering;
-}
-
-void MirrorAccountReconcilorDelegate::GoogleSigninSucceeded(
-    const std::string& account_id,
-    const std::string& username) {
+void MirrorAccountReconcilorDelegate::OnPrimaryAccountSet(
+    const AccountInfo& primary_account_info) {
   reconcilor()->EnableReconcile();
 }
 
-void MirrorAccountReconcilorDelegate::GoogleSignedOut(
-    const std::string& account_id,
-    const std::string& username) {
+void MirrorAccountReconcilorDelegate::OnPrimaryAccountCleared(
+    const AccountInfo& previous_primary_account_info) {
   reconcilor()->DisableReconcile(true /* logout_all_gaia_accounts */);
 }
 

@@ -156,14 +156,6 @@ class TestResourceDispatcherHostDelegate final
     ADD_FAILURE() << "RequestComplete should not be called.";
   }
 
-  PreviewsState DetermineEnabledPreviews(
-      net::URLRequest* url_request,
-      content::ResourceContext* resource_context,
-      PreviewsState previews_to_allow) override {
-    ADD_FAILURE() << "DetermineEnabledPreviews should not be called.";
-    return PREVIEWS_UNSPECIFIED;
-  }
-
   NavigationData* GetNavigationData(net::URLRequest* request) const override {
     ADD_FAILURE() << "GetNavigationData should not be called.";
     return nullptr;
@@ -309,7 +301,7 @@ class MojoAsyncResourceHandlerTestBase {
     // Create and initialize |request_|.  None of this matters, for these tests,
     // just need something non-NULL.
     request_context_ =
-        browser_context_->GetResourceContext()->GetRequestContext();
+        browser_context_->GetRequestContext()->GetURLRequestContext();
     request_ = request_context_->CreateRequest(
         GURL("http://foo/"), net::DEFAULT_PRIORITY, &url_request_delegate_,
         TRAFFIC_ANNOTATION_FOR_TESTS);
@@ -1217,7 +1209,7 @@ TEST_P(MojoAsyncResourceHandlerWithAllocationSizeTest, RedirectHandling) {
 
   ASSERT_EQ(MockResourceLoader::Status::CALLBACK_PENDING,
             mock_loader_->status());
-  handler_->FollowRedirect(base::nullopt, base::nullopt);
+  handler_->FollowRedirect(base::nullopt, base::nullopt, base::nullopt);
   ASSERT_EQ(MockResourceLoader::Status::IDLE, mock_loader_->status());
 
   url_loader_client_.ClearHasReceivedRedirect();
@@ -1238,7 +1230,7 @@ TEST_P(MojoAsyncResourceHandlerWithAllocationSizeTest, RedirectHandling) {
 
   ASSERT_EQ(MockResourceLoader::Status::CALLBACK_PENDING,
             mock_loader_->status());
-  handler_->FollowRedirect(base::nullopt, base::nullopt);
+  handler_->FollowRedirect(base::nullopt, base::nullopt, base::nullopt);
   ASSERT_EQ(MockResourceLoader::Status::IDLE, mock_loader_->status());
 
   // Give the final response.
@@ -1262,7 +1254,7 @@ TEST_P(MojoAsyncResourceHandlerWithAllocationSizeTest, RedirectHandling) {
 // redirect, despite the fact that no redirect has been received yet.
 TEST_P(MojoAsyncResourceHandlerWithAllocationSizeTest,
        MalformedFollowRedirectRequest) {
-  handler_->FollowRedirect(base::nullopt, base::nullopt);
+  handler_->FollowRedirect(base::nullopt, base::nullopt, base::nullopt);
 
   EXPECT_TRUE(handler_->has_received_bad_message());
 }
@@ -1283,7 +1275,7 @@ TEST_P(
 
   ASSERT_EQ(MockResourceLoader::Status::IDLE, mock_loader_->OnWillRead());
 
-  ASSERT_FALSE(url_loader_client_.response_body().is_valid());
+  ASSERT_TRUE(url_loader_client_.response_body().is_valid());
 
   ASSERT_EQ(MockResourceLoader::Status::IDLE,
             mock_loader_->OnReadCompleted("A"));
@@ -1336,7 +1328,7 @@ TEST_P(
   ASSERT_EQ(MockResourceLoader::Status::IDLE,
             mock_loader_->OnReadCompleted("B"));
 
-  ASSERT_FALSE(url_loader_client_.response_body().is_valid());
+  ASSERT_TRUE(url_loader_client_.response_body().is_valid());
   url_loader_client_.RunUntilResponseBodyArrived();
   ASSERT_TRUE(url_loader_client_.response_body().is_valid());
 
@@ -1550,8 +1542,6 @@ TEST_F(MojoAsyncResourceHandlerTest,
 
   // Prepare for loader read complete.
   ASSERT_TRUE(CallOnWillStartAndOnResponseStarted());
-  EXPECT_EQ(MockResourceLoader::Status::IDLE,
-            mock_loader_->OnWillStart(request_->url()));
   EXPECT_EQ(MockResourceLoader::Status::IDLE, mock_loader_->OnWillRead());
   // Only headers are read by the time the response is started.
   mock_loader_->OnReadCompleted(kResponseHeaders);

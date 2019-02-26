@@ -47,14 +47,12 @@ import org.chromium.chrome.browser.tabmodel.EmptyTabModelSelectorObserver;
 import org.chromium.chrome.browser.tabmodel.TabCreatorManager.TabCreator;
 import org.chromium.chrome.browser.tabmodel.TabModel;
 import org.chromium.chrome.browser.tabmodel.TabModel.TabLaunchType;
-import org.chromium.chrome.browser.tabmodel.TabModel.TabSelectionType;
 import org.chromium.chrome.browser.tabmodel.TabModelSelector;
 import org.chromium.chrome.browser.tabmodel.TabModelSelectorObserver;
 import org.chromium.chrome.browser.tabmodel.TabModelSelectorTabObserver;
-import org.chromium.chrome.browser.tabmodel.TabModelUtils;
+import org.chromium.chrome.browser.toolbar.NewTabButton;
 import org.chromium.chrome.browser.util.FeatureUtilities;
 import org.chromium.chrome.browser.vr.keyboard.VrInputMethodManagerWrapper;
-import org.chromium.chrome.browser.widget.newtab.NewTabButton;
 import org.chromium.content_public.browser.ImeAdapter;
 import org.chromium.content_public.browser.LoadUrlParams;
 import org.chromium.content_public.browser.ViewEventSink;
@@ -135,6 +133,23 @@ public class VrShell extends GvrLayout
 
     private ArrayList<Integer> mUiOperationResults;
     private ArrayList<Runnable> mUiOperationResultCallbacks;
+
+    /**
+     * A struct-like object for registering UI operations during tests.
+     */
+    @VisibleForTesting
+    public static class UiOperationData {
+        // The UiTestOperationType of this operation.
+        public int actionType;
+        // The callback to run when the operation completes.
+        public Runnable resultCallback;
+        // The timeout of the operation.
+        public int timeoutMs;
+        // The UserFriendlyElementName to perform the operation on.
+        public int elementName;
+        // The desired visibility status of the element.
+        public boolean visibility;
+    }
 
     public VrShell(
             ChromeActivity activity, VrShellDelegate delegate, TabModelSelector tabModelSelector) {
@@ -325,10 +340,10 @@ public class VrShell extends GvrLayout
     private void injectVrHostedUiView() {
         mNonVrModalDialogManager = mActivity.getModalDialogManager();
         mNonVrModalDialogManager.dismissAllDialogs(DialogDismissalCause.UNKNOWN);
-        mVrModalPresenter = new VrModalPresenter(this);
+        mVrModalPresenter = new VrModalPresenter(mActivity, this);
         mVrModalDialogManager =
                 new ModalDialogManager(mVrModalPresenter, ModalDialogManager.ModalDialogType.APP);
-        mActivity.setModalDialogManager(mVrModalDialogManager);
+        mActivity.overrideModalDialogManager(mVrModalDialogManager);
 
         ViewGroup decor = (ViewGroup) mActivity.getWindow().getDecorView();
         mUiView = new FrameLayout(decor.getContext());
@@ -732,7 +747,7 @@ public class VrShell extends GvrLayout
         if (mVrBrowsingEnabled) {
             if (mVrModalDialogManager != null) {
                 mVrModalDialogManager.dismissAllDialogs(DialogDismissalCause.UNKNOWN);
-                mActivity.setModalDialogManager(mNonVrModalDialogManager);
+                mActivity.overrideModalDialogManager(mNonVrModalDialogManager);
                 mVrModalDialogManager = null;
             }
             mNonVrViews.destroy();
@@ -1027,15 +1042,6 @@ public class VrShell extends GvrLayout
     }
 
     @CalledByNative
-    public void selectTab(int id, boolean incognito) {
-        TabModel tabModel = mTabModelSelector.getModel(incognito);
-        int index = TabModelUtils.getTabIndexById(tabModel, id);
-        if (index != TabModel.INVALID_TAB_INDEX) {
-            tabModel.setIndex(index, TabSelectionType.FROM_USER);
-        }
-    }
-
-    @CalledByNative
     public void openBookmarks() {
         mActivity.onMenuOrKeyboardAction(R.id.all_bookmarks_menu_id, true);
     }
@@ -1063,16 +1069,6 @@ public class VrShell extends GvrLayout
     @CalledByNative
     public void openSettings() {
         mActivity.onMenuOrKeyboardAction(R.id.preferences_id, true);
-    }
-
-    @CalledByNative
-    public void closeTab(int id, boolean incognito) {
-        TabModelUtils.closeTabById(mTabModelSelector.getModel(incognito), id);
-    }
-
-    @CalledByNative
-    public void closeAllTabs() {
-        mTabModelSelector.closeAllTabs();
     }
 
     @CalledByNative
@@ -1233,8 +1229,8 @@ public class VrShell extends GvrLayout
         });
     }
 
-    public void registerUiOperationCallbackForTesting(
-            int actionType, Runnable resultCallback, int timeoutMs, int elementName) {
+    public void registerUiOperationCallbackForTesting(UiOperationData operationData) {
+        int actionType = operationData.actionType;
         assert actionType < UiTestOperationType.NUM_UI_TEST_OPERATION_TYPES;
         // Fill the ArrayLists if this is the first time the method has been called.
         if (mUiOperationResults == null) {
@@ -1248,14 +1244,15 @@ public class VrShell extends GvrLayout
             }
         }
         mUiOperationResults.set(actionType, UiTestOperationResult.UNREPORTED);
-        mUiOperationResultCallbacks.set(actionType, resultCallback);
+        mUiOperationResultCallbacks.set(actionType, operationData.resultCallback);
 
         // In the case of the UI activity quiescence callback type, we need to let the native UI
         // know how long to wait before timing out.
         if (actionType == UiTestOperationType.UI_ACTIVITY_RESULT) {
-            nativeSetUiExpectingActivityForTesting(mNativeVrShell, timeoutMs);
-        } else if (actionType == UiTestOperationType.ELEMENT_VISIBILITY_CHANGE) {
-            nativeWatchElementForVisibilityChangeForTesting(mNativeVrShell, elementName, timeoutMs);
+            nativeSetUiExpectingActivityForTesting(mNativeVrShell, operationData.timeoutMs);
+        } else if (actionType == UiTestOperationType.ELEMENT_VISIBILITY_STATUS) {
+            nativeWatchElementForVisibilityStatusForTesting(mNativeVrShell,
+                    operationData.elementName, operationData.timeoutMs, operationData.visibility);
         }
     }
 
@@ -1327,8 +1324,8 @@ public class VrShell extends GvrLayout
             long nativeVrShell, int quiescenceTimeoutMs);
     private native void nativeSaveNextFrameBufferToDiskForTesting(
             long nativeVrShell, String filepathBase);
-    private native void nativeWatchElementForVisibilityChangeForTesting(
-            long nativeVrShell, int elementName, int timeoutMs);
+    private native void nativeWatchElementForVisibilityStatusForTesting(
+            long nativeVrShell, int elementName, int timeoutMs, boolean visibility);
     private native void nativeResumeContentRendering(long nativeVrShell);
     private native void nativeOnOverlayTextureEmptyChanged(long nativeVrShell, boolean empty);
 }

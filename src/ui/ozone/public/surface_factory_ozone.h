@@ -105,11 +105,6 @@ class OZONE_BASE_EXPORT SurfaceFactoryOzone {
   virtual std::unique_ptr<SurfaceOzoneCanvas> CreateCanvasForWidget(
       gfx::AcceleratedWidget widget);
 
-  // Returns all scanout formats for |widget| representing a particular display
-  // controller or default display controller for kNullAcceleratedWidget.
-  virtual std::vector<gfx::BufferFormat> GetScanoutFormats(
-      gfx::AcceleratedWidget widget);
-
   // Create a single native buffer to be used for overlay planes or zero copy
   // for |widget| representing a particular display controller or default
   // display controller for kNullAcceleratedWidget.

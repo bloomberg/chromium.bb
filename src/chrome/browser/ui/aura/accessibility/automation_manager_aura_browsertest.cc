@@ -14,6 +14,7 @@
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/test/browser_test_utils.h"
+#include "extensions/common/extension_messages.h"
 #include "ui/accessibility/ax_node_data.h"
 #include "ui/views/accessibility/view_accessibility.h"
 #include "ui/views/view.h"
@@ -176,21 +177,21 @@ IN_PROC_BROWSER_TEST_F(AutomationManagerAuraBrowserTest,
   // Focus view1, then block until we get an accessibility event that
   // shows this view is focused.
   view1->RequestFocus();
-  waiter.WaitForNodeIdToBeFocused(wrapper1->GetUniqueId().Get());
+  waiter.WaitForNodeIdToBeFocused(wrapper1->GetUniqueId());
 
-  EXPECT_TRUE(waiter.WasNodeIdFocused(wrapper1->GetUniqueId().Get()));
-  EXPECT_FALSE(waiter.WasNodeIdFocused(wrapper2->GetUniqueId().Get()));
-  EXPECT_FALSE(waiter.WasNodeIdFocused(wrapper3->GetUniqueId().Get()));
+  EXPECT_TRUE(waiter.WasNodeIdFocused(wrapper1->GetUniqueId()));
+  EXPECT_FALSE(waiter.WasNodeIdFocused(wrapper2->GetUniqueId()));
+  EXPECT_FALSE(waiter.WasNodeIdFocused(wrapper3->GetUniqueId()));
 
   // Now focus view2 and then view3. We shouldn't ever get an event
   // showing view2 as focused, just view3.
   view2->RequestFocus();
   view3->RequestFocus();
-  waiter.WaitForNodeIdToBeFocused(wrapper3->GetUniqueId().Get());
+  waiter.WaitForNodeIdToBeFocused(wrapper3->GetUniqueId());
 
-  EXPECT_TRUE(waiter.WasNodeIdFocused(wrapper1->GetUniqueId().Get()));
-  EXPECT_FALSE(waiter.WasNodeIdFocused(wrapper2->GetUniqueId().Get()));
-  EXPECT_TRUE(waiter.WasNodeIdFocused(wrapper3->GetUniqueId().Get()));
+  EXPECT_TRUE(waiter.WasNodeIdFocused(wrapper1->GetUniqueId()));
+  EXPECT_FALSE(waiter.WasNodeIdFocused(wrapper2->GetUniqueId()));
+  EXPECT_TRUE(waiter.WasNodeIdFocused(wrapper3->GetUniqueId()));
 
   cache->set_focused_widget_for_testing(nullptr);
 

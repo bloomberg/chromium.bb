@@ -13,50 +13,15 @@ namespace unified_consent {
 TEST(UnifiedConsentFeatureTest, FeatureState) {
   // Unified consent is disabled by default.
   EXPECT_FALSE(IsUnifiedConsentFeatureEnabled());
-  EXPECT_FALSE(IsUnifiedConsentFeatureWithBumpEnabled());
 
   {
     ScopedUnifiedConsent scoped_disabled(UnifiedConsentFeatureState::kDisabled);
     EXPECT_FALSE(IsUnifiedConsentFeatureEnabled());
-    EXPECT_FALSE(IsUnifiedConsentFeatureWithBumpEnabled());
   }
 
   {
-    ScopedUnifiedConsent scoped_no_bump(
-        UnifiedConsentFeatureState::kEnabledNoBump);
+    ScopedUnifiedConsent scoped_enabled(UnifiedConsentFeatureState::kEnabled);
     EXPECT_TRUE(IsUnifiedConsentFeatureEnabled());
-    EXPECT_FALSE(IsUnifiedConsentFeatureWithBumpEnabled());
-  }
-
-  {
-    ScopedUnifiedConsent scoped_bump(
-        UnifiedConsentFeatureState::kEnabledWithBump);
-    EXPECT_TRUE(IsUnifiedConsentFeatureEnabled());
-    EXPECT_TRUE(IsUnifiedConsentFeatureWithBumpEnabled());
-  }
-}
-
-TEST(UnifiedConsentFeatureTest, SyncUserConsentSeparateTypeDisabled) {
-  // Enable kSyncUserConsentSeparateType
-  base::test::ScopedFeatureList scoped_sync_user_consent_separate_type_feature;
-  scoped_sync_user_consent_separate_type_feature.InitAndDisableFeature(
-      switches::kSyncUserConsentSeparateType);
-
-  {
-    base::test::ScopedFeatureList unified_consent_feature_list_;
-    unified_consent_feature_list_.InitAndEnableFeature(kUnifiedConsent);
-    EXPECT_FALSE(IsUnifiedConsentFeatureEnabled());
-    EXPECT_FALSE(IsUnifiedConsentFeatureWithBumpEnabled());
-  }
-
-  {
-    std::map<std::string, std::string> feature_params;
-    feature_params[kUnifiedConsentShowBumpParameter] = "true";
-    base::test::ScopedFeatureList unified_consent_feature_list_;
-    unified_consent_feature_list_.InitAndEnableFeatureWithParameters(
-        kUnifiedConsent, feature_params);
-    EXPECT_FALSE(IsUnifiedConsentFeatureEnabled());
-    EXPECT_FALSE(IsUnifiedConsentFeatureWithBumpEnabled());
   }
 }
 

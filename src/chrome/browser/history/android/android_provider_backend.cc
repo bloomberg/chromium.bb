@@ -121,7 +121,9 @@ void RunNotifyFaviconChanged(HistoryBackendNotifier* notifier,
 
 void RunNotifyURLsModified(HistoryBackendNotifier* notifier,
                            std::unique_ptr<URLRows> rows) {
-  notifier->NotifyURLsModified(*rows);
+  // All modifications from the android UI are caused by user action and not by
+  // expiration.
+  notifier->NotifyURLsModified(*rows, /*is_from_expiration=*/false);
 }
 
 void RunNotifyURLsDeleted(HistoryBackendNotifier* notifier,

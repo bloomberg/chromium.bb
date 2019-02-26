@@ -14,18 +14,19 @@
 #import "ios/chrome/browser/ui/material_components/app_bar_view_controller_presenting.h"
 #import "ios/chrome/browser/ui/material_components/utils.h"
 #import "ios/chrome/browser/ui/settings/accounts_collection_view_controller.h"
+#import "ios/chrome/browser/ui/settings/autofill_credit_card_collection_view_controller.h"
 #import "ios/chrome/browser/ui/settings/autofill_profile_collection_view_controller.h"
 #import "ios/chrome/browser/ui/settings/google_services_settings_coordinator.h"
 #import "ios/chrome/browser/ui/settings/google_services_settings_view_controller.h"
-#import "ios/chrome/browser/ui/settings/import_data_collection_view_controller.h"
+#import "ios/chrome/browser/ui/settings/import_data_table_view_controller.h"
 #import "ios/chrome/browser/ui/settings/save_passwords_collection_view_controller.h"
 #import "ios/chrome/browser/ui/settings/settings_collection_view_controller.h"
 #import "ios/chrome/browser/ui/settings/settings_root_collection_view_controller.h"
 #import "ios/chrome/browser/ui/settings/settings_utils.h"
 #import "ios/chrome/browser/ui/settings/sync_encryption_passphrase_collection_view_controller.h"
 #import "ios/chrome/browser/ui/settings/sync_settings_collection_view_controller.h"
-#include "ios/chrome/browser/ui/ui_util.h"
-#import "ios/chrome/browser/ui/uikit_ui_util.h"
+#include "ios/chrome/browser/ui/util/ui_util.h"
+#import "ios/chrome/browser/ui/util/uikit_ui_util.h"
 #import "ios/chrome/common/ui_util/constraints_ui_util.h"
 #include "ios/chrome/grit/ios_strings.h"
 #import "ios/public/provider/chrome/browser/chrome_browser_provider.h"
@@ -51,8 +52,7 @@
 - (void)viewDidLayoutSubviews {
   [super viewDidLayoutSubviews];
 
-  id<LayoutGuideProvider> safeAreaLayoutGuide =
-      SafeAreaLayoutGuideForView(self.view);
+  id<LayoutGuideProvider> safeAreaLayoutGuide = self.view.safeAreaLayoutGuide;
   UIView* contentView = self.contentViewController.view;
   UIView* headerView = self.appBarViewController.headerView;
   contentView.translatesAutoresizingMaskIntoConstraints = NO;
@@ -221,11 +221,11 @@ newImportDataController:(ios::ChromeBrowserState*)browserState
               fromEmail:(NSString*)fromEmail
                 toEmail:(NSString*)toEmail
              isSignedIn:(BOOL)isSignedIn {
-  UIViewController* controller = [[ImportDataCollectionViewController alloc]
-      initWithDelegate:importDataDelegate
-             fromEmail:fromEmail
-               toEmail:toEmail
-            isSignedIn:isSignedIn];
+  UIViewController* controller =
+      [[ImportDataTableViewController alloc] initWithDelegate:importDataDelegate
+                                                    fromEmail:fromEmail
+                                                      toEmail:toEmail
+                                                   isSignedIn:isSignedIn];
 
   SettingsNavigationController* nc = [[SettingsNavigationController alloc]
       initWithRootViewController:controller
@@ -239,10 +239,31 @@ newImportDataController:(ios::ChromeBrowserState*)browserState
 }
 
 + (SettingsNavigationController*)
-newAutofillController:(ios::ChromeBrowserState*)browserState
-             delegate:(id<SettingsNavigationControllerDelegate>)delegate {
+newAutofillProfilleController:(ios::ChromeBrowserState*)browserState
+                     delegate:
+                         (id<SettingsNavigationControllerDelegate>)delegate {
   AutofillProfileCollectionViewController* controller =
       [[AutofillProfileCollectionViewController alloc]
+          initWithBrowserState:browserState];
+  controller.dispatcher = [delegate dispatcherForSettings];
+
+  SettingsNavigationController* nc = [[SettingsNavigationController alloc]
+      initWithRootViewController:controller
+                    browserState:browserState
+                        delegate:delegate];
+
+  // Make sure the close button is always present, as the Autofill screen
+  // isn't just shown from Settings.
+  [controller navigationItem].leftBarButtonItem = [nc closeButton];
+  return nc;
+}
+
++ (SettingsNavigationController*)
+newAutofillCreditCardController:(ios::ChromeBrowserState*)browserState
+                       delegate:
+                           (id<SettingsNavigationControllerDelegate>)delegate {
+  AutofillCreditCardCollectionViewController* controller =
+      [[AutofillCreditCardCollectionViewController alloc]
           initWithBrowserState:browserState];
   controller.dispatcher = [delegate dispatcherForSettings];
 
@@ -418,15 +439,10 @@ initWithRootViewController:(UIViewController*)rootViewController
       viewController.navigationItem.leftBarButtonItems.count == 0) {
     viewController.navigationItem.leftBarButtonItem = [self backButton];
   }
-  // TODO(crbug.com/875528): This is a workaround for iOS 10.x.
-  if (@available(iOS 11, *)) {
-    // Wrap the view controller in an MDCAppBarContainerViewController if
-    // needed.
-    [super pushViewController:[self wrappedControllerIfNeeded:viewController]
-                     animated:animated];
-  } else {
-    [super pushViewController:viewController animated:animated];
-  }
+  // Wrap the view controller in an MDCAppBarContainerViewController if
+  // needed.
+  [super pushViewController:[self wrappedControllerIfNeeded:viewController]
+                   animated:animated];
 }
 
 - (UIViewController*)popViewControllerAnimated:(BOOL)animated {
@@ -537,6 +553,26 @@ initWithRootViewController:(UIViewController*)rootViewController
     (UIViewController*)baseViewController {
   SavePasswordsCollectionViewController* controller =
       [[SavePasswordsCollectionViewController alloc]
+          initWithBrowserState:mainBrowserState_];
+  controller.dispatcher = [delegate_ dispatcherForSettings];
+  [self pushViewController:controller animated:YES];
+}
+
+// TODO(crbug.com/779791) : Do not pass |baseViewController| through dispatcher.
+- (void)showProfileSettingsFromViewController:
+    (UIViewController*)baseViewController {
+  AutofillProfileCollectionViewController* controller =
+      [[AutofillProfileCollectionViewController alloc]
+          initWithBrowserState:mainBrowserState_];
+  controller.dispatcher = [delegate_ dispatcherForSettings];
+  [self pushViewController:controller animated:YES];
+}
+
+// TODO(crbug.com/779791) : Do not pass |baseViewController| through dispatcher.
+- (void)showCreditCardSettingsFromViewController:
+    (UIViewController*)baseViewController {
+  AutofillCreditCardCollectionViewController* controller =
+      [[AutofillCreditCardCollectionViewController alloc]
           initWithBrowserState:mainBrowserState_];
   controller.dispatcher = [delegate_ dispatcherForSettings];
   [self pushViewController:controller animated:YES];

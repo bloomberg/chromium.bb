@@ -9,6 +9,9 @@
 
 class GURL;
 
+namespace image_fetcher {
+class ImageFetcher;
+}
 namespace ntp_snippets {
 class ContentSuggestionsService;
 }
@@ -92,6 +95,7 @@ class PrefetchService : public KeyedService {
   // Zine/Feed: Null when using the Feed.
   virtual ThumbnailFetcher* GetThumbnailFetcher() = 0;
   virtual OfflinePageModel* GetOfflinePageModel() = 0;
+  virtual image_fetcher::ImageFetcher* GetThumbnailImageFetcher() = 0;
 
   // Test-only methods.
 

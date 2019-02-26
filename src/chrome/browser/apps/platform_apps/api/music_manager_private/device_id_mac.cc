@@ -22,7 +22,7 @@
 #include "base/strings/string_util.h"
 #include "base/strings/sys_string_conversions.h"
 #include "base/task/post_task.h"
-#include "base/threading/thread_restrictions.h"
+#include "base/threading/scoped_blocking_call.h"
 #include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
 
@@ -40,6 +40,8 @@ typedef base::Callback<bool(const void* bytes, size_t size)>
 // through the mounted volumes .
 // Return "" if an error occured.
 std::string FindBSDNameOfSystemDisk() {
+  base::ScopedBlockingCall scoped_blocking_call(base::BlockingType::MAY_BLOCK);
+
   struct statfs* mounted_volumes;
   int num_volumes = getmntinfo(&mounted_volumes, 0);
   if (num_volumes == 0) {
@@ -61,6 +63,8 @@ std::string FindBSDNameOfSystemDisk() {
 // Return the Volume UUID property of a BSD disk name (e.g. '/dev/disk1').
 // Return "" if an error occured.
 std::string GetVolumeUUIDFromBSDName(const std::string& bsd_name) {
+  base::ScopedBlockingCall scoped_blocking_call(base::BlockingType::MAY_BLOCK);
+
   const CFAllocatorRef allocator = NULL;
 
   base::ScopedCFTypeRef<DASessionRef> session(DASessionCreate(allocator));
@@ -102,8 +106,6 @@ std::string GetVolumeUUIDFromBSDName(const std::string& bsd_name) {
 
 // Return Volume UUID property of disk mounted as "/".
 std::string GetVolumeUUID() {
-  base::AssertBlockingAllowed();
-
   std::string result;
   std::string bsd_name = FindBSDNameOfSystemDisk();
   if (!bsd_name.empty()) {
@@ -163,7 +165,7 @@ class MacAddressProcessor {
 
 std::string GetMacAddress(
     const IsValidMacAddressCallback& is_valid_mac_address) {
-  base::AssertBlockingAllowed();
+  base::ScopedBlockingCall scoped_blocking_call(base::BlockingType::MAY_BLOCK);
 
   mach_port_t master_port;
   kern_return_t kr = IOMasterPort(MACH_PORT_NULL, &master_port);
@@ -213,8 +215,6 @@ std::string GetMacAddress(
 
 void GetRawDeviceIdImpl(const IsValidMacAddressCallback& is_valid_mac_address,
                         const DeviceId::IdCallback& callback) {
-  base::AssertBlockingAllowed();
-
   std::string raw_device_id;
   std::string mac_address = GetMacAddress(is_valid_mac_address);
   std::string disk_id = GetVolumeUUID();

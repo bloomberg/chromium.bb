@@ -36,8 +36,6 @@
 
 namespace blink {
 
-using namespace HTMLNames;
-
 RadioNodeList::RadioNodeList(ContainerNode& root_node,
                              const AtomicString& name,
                              CollectionType type)
@@ -55,7 +53,7 @@ static inline HTMLInputElement* ToRadioButtonInputElement(Element& element) {
   if (!IsHTMLInputElement(element))
     return nullptr;
   HTMLInputElement& input_element = ToHTMLInputElement(element);
-  if (input_element.type() != InputTypeNames::radio ||
+  if (input_element.type() != input_type_names::kRadio ||
       input_element.value().IsEmpty())
     return nullptr;
   return &input_element;
@@ -121,7 +119,7 @@ bool RadioNodeList::ElementMatches(const Element& element) const {
     return false;
 
   if (IsHTMLInputElement(element) &&
-      ToHTMLInputElement(element).type() == InputTypeNames::image)
+      ToHTMLInputElement(element).type() == input_type_names::kImage)
     return false;
 
   return CheckElementMatchesRadioNodeListFilter(element);

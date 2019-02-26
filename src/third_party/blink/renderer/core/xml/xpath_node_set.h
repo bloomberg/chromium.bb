@@ -36,8 +36,11 @@ namespace xpath {
 
 class NodeSet final : public GarbageCollected<NodeSet> {
  public:
-  static NodeSet* Create() { return new NodeSet; }
+  static NodeSet* Create() { return MakeGarbageCollected<NodeSet>(); }
   static NodeSet* Create(const NodeSet&);
+
+  NodeSet() : is_sorted_(true), subtrees_are_disjoint_(false) {}
+
   void Trace(blink::Visitor* visitor) { visitor->Trace(nodes_); }
 
   wtf_size_t size() const { return nodes_.size(); }
@@ -88,7 +91,6 @@ class NodeSet final : public GarbageCollected<NodeSet> {
   void Reverse();
 
  private:
-  NodeSet() : is_sorted_(true), subtrees_are_disjoint_(false) {}
   void TraversalSort() const;
 
   bool is_sorted_;

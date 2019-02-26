@@ -26,7 +26,6 @@
 #include "components/data_reduction_proxy/core/common/data_reduction_proxy_type_info.h"
 #include "components/data_reduction_proxy/proto/client_config.pb.h"
 #include "components/previews/core/previews_experiments.h"
-#include "net/log/net_log_with_source.h"
 #include "net/proxy_resolution/proxy_config.h"
 #include "net/proxy_resolution/proxy_retry_info.h"
 #include "services/network/public/cpp/network_connection_tracker.h"
@@ -36,18 +35,14 @@ class SingleThreadTaskRunner;
 }
 
 namespace net {
-class NetLog;
 class ProxyServer;
 class URLRequest;
-class URLRequestContextGetter;
-class URLRequestStatus;
 }  // namespace net
 
 namespace data_reduction_proxy {
 
 class DataReductionProxyConfigValues;
 class DataReductionProxyConfigurator;
-class DataReductionProxyEventCreator;
 class NetworkPropertiesManager;
 class SecureProxyChecker;
 struct DataReductionProxyTypeInfo;
@@ -88,29 +83,24 @@ class DataReductionProxyConfig
  public:
   // The caller must ensure that all parameters remain alive for the lifetime
   // of the |DataReductionProxyConfig| instance, with the exception of
-  // |config_values| which is owned by |this|. |event_creator| is used for
-  // logging the start and end of a secure proxy check; |net_log| is used to
-  // create a net::NetLogWithSource for correlating the start and end of the
-  // check. |config_values| contains the Data Reduction Proxy configuration
-  // values. |configurator| is the target for a configuration update.
+  // |config_values| which is owned by |this|. |config_values| contains the Data
+  // Reduction Proxy configuration values. |configurator| is the target for a
+  // configuration update.
   DataReductionProxyConfig(
       scoped_refptr<base::SingleThreadTaskRunner> io_task_runner,
-      net::NetLog* net_log,
+      scoped_refptr<base::SingleThreadTaskRunner> ui_task_runner,
       network::NetworkConnectionTracker* network_connection_tracker,
       std::unique_ptr<DataReductionProxyConfigValues> config_values,
-      DataReductionProxyConfigurator* configurator,
-      DataReductionProxyEventCreator* event_creator);
+      DataReductionProxyConfigurator* configurator);
   ~DataReductionProxyConfig() override;
 
   // Performs initialization on the IO thread.
-  // |basic_url_request_context_getter| is the net::URLRequestContextGetter that
-  // disables the use of alternative protocols and proxies.
-  // |url_request_context_getter| is the default net::URLRequestContextGetter
-  // used for making URL requests.
+  // |url_loader_factory| is the network::URLLoaderFactory instance used for
+  // making URL requests. The requests disable the use of proxies.
   void InitializeOnIOThread(
-      const scoped_refptr<net::URLRequestContextGetter>&
-          basic_url_request_context_getter,
       scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory,
+      WarmupURLFetcher::CreateCustomProxyConfigCallback
+          create_custom_proxy_config_callback,
       NetworkPropertiesManager* manager);
 
   // Sets the proxy configs, enabling or disabling the proxy according to
@@ -124,6 +114,10 @@ class DataReductionProxyConfig
   // configured proxies, otherwise returns an empty optional value.
   base::Optional<DataReductionProxyTypeInfo> FindConfiguredDataReductionProxy(
       const net::ProxyServer& proxy_server) const;
+
+  // Gets a list of all the configured proxies. These are the same proxies that
+  // will be used if FindConfiguredDataReductionProxy() is called.
+  net::ProxyList GetAllConfiguredProxies() const;
 
   // Returns true if this request would be bypassed by the Data Reduction Proxy
   // based on applying the |data_reduction_proxy_config| param rules to the
@@ -195,17 +189,13 @@ class DataReductionProxyConfig
   // Returns the current HTTP RTT estimate.
   base::Optional<base::TimeDelta> GetHttpRttEstimate() const;
 
- protected:
-  virtual base::TimeTicks GetTicksNow() const;
-
   // Updates the Data Reduction Proxy configurator with the current config.
   void UpdateConfigForTesting(bool enabled,
                               bool secure_proxies_allowed,
                               bool insecure_proxies_allowed);
 
-  // Returns true if the default bypass rules should be added. Virtualized for
-  // testing.
-  virtual bool ShouldAddDefaultProxyBypassRules() const;
+ protected:
+  virtual base::TimeTicks GetTicksNow() const;
 
   // Returns the ID of the current network by calling the platform APIs.
   virtual std::string GetCurrentNetworkID() const;
@@ -220,8 +210,7 @@ class DataReductionProxyConfig
 
   // Returns the details of the proxy to which the next warmup URL probe should
   // be sent to.
-  base::Optional<std::pair<bool /* is_secure_proxy */, bool /*is_core_proxy */>>
-  GetProxyConnectionToProbe() const;
+  base::Optional<DataReductionProxyServer> GetProxyConnectionToProbe() const;
 
   // Returns true if a warmup URL probe is in-flight. Virtualized for testing.
   virtual bool IsFetchInFlight() const;
@@ -274,11 +263,12 @@ class DataReductionProxyConfig
   // Parses the secure proxy check responses and appropriately configures the
   // Data Reduction Proxy rules.
   void HandleSecureProxyCheckResponse(const std::string& response,
-                                      const net::URLRequestStatus& status,
+                                      int net_status,
                                       int http_response_code);
 
   // Adds the default proxy bypass rules for the Data Reduction Proxy.
-  void AddDefaultProxyBypassRules();
+  // Virtualized for testing.
+  virtual void AddDefaultProxyBypassRules();
 
   // Checks if all configured data reduction proxies are in the retry map.
   // Returns true if the request is bypassed by all configured data reduction
@@ -318,28 +308,18 @@ class DataReductionProxyConfig
   std::unique_ptr<DataReductionProxyConfigValues> config_values_;
 
   scoped_refptr<base::SingleThreadTaskRunner> io_task_runner_;
+  scoped_refptr<base::SingleThreadTaskRunner> ui_task_runner_;
 
 #if defined(OS_CHROMEOS)
   // Whether the network id should be obtained on a worker thread.
   bool get_network_id_asynchronously_ = false;
 #endif
 
-  // The caller must ensure that the |net_log_|, if set, outlives this instance.
-  // It is used to create new instances of |net_log_with_source_| on secure
-  // proxy checks. |net_log_with_source_| permits the correlation of the begin
-  // and end phases of a given secure proxy check, and a new one is created for
-  // each secure proxy check (with |net_log_| as a parameter).
-  net::NetLog* net_log_;
-  net::NetLogWithSource net_log_with_source_;
-
   // Watches for network connection changes.
   network::NetworkConnectionTracker* network_connection_tracker_;
 
   // The caller must ensure that the |configurator_| outlives this instance.
   DataReductionProxyConfigurator* configurator_;
-
-  // The caller must ensure that the |event_creator_| outlives this instance.
-  DataReductionProxyEventCreator* event_creator_;
 
   // Enforce usage on the IO thread.
   base::ThreadChecker thread_checker_;

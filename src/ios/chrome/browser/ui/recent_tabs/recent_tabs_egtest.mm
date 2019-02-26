@@ -16,7 +16,7 @@
 #import "ios/chrome/browser/ui/recent_tabs/recent_tabs_constants.h"
 #import "ios/chrome/browser/ui/table_view/table_view_model.h"
 #import "ios/chrome/browser/ui/table_view/table_view_navigation_controller_constants.h"
-#include "ios/chrome/browser/ui/ui_util.h"
+#include "ios/chrome/browser/ui/util/ui_util.h"
 #include "ios/chrome/grit/ios_strings.h"
 #import "ios/chrome/test/app/tab_test_util.h"
 #import "ios/chrome/test/earl_grey/chrome_earl_grey.h"
@@ -44,7 +44,7 @@ NSString* const kTitleOfTestPage = @"TestPageTitle";
 void OpenRecentTabsPanel() {
   // At least one tab is needed to be able to open the recent tabs panel.
   if (chrome_test_util::GetMainTabCount() == 0)
-    chrome_test_util::OpenNewTab();
+    [ChromeEarlGrey openNewTab];
 
   [ChromeEarlGreyUI openToolsMenu];
   [ChromeEarlGreyUI tapToolsMenuButton:RecentTabsMenuButton()];
@@ -105,10 +105,7 @@ id<GREYMatcher> TitleOfTestPage() {
 
   // Close the tab containing the test page and wait for the stack view to
   // appear.
-  chrome_test_util::CloseCurrentTab();
-  // TODO(crbug.com/783192): ChromeEarlGrey should have a method to close the
-  // current tab and synchronize with the UI.
-  [[GREYUIThreadExecutor sharedInstance] drainUntilIdle];
+  [ChromeEarlGrey closeCurrentTab];
 
   // Open the Recent Tabs panel and check that the test page is present.
   OpenRecentTabsPanel();
@@ -151,7 +148,7 @@ id<GREYMatcher> TitleOfTestPage() {
   [[EarlGrey selectElementWithMatcher:exitMatcher] performAction:grey_tap()];
 
   // Close tab.
-  chrome_test_util::CloseCurrentTab();
+  [ChromeEarlGrey closeCurrentTab];
 }
 
 // Tests that the sign-in promo can be reloaded correctly.

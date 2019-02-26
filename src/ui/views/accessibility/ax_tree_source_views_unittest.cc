@@ -9,6 +9,7 @@
 #include "base/macros.h"
 #include "base/strings/utf_string_conversions.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "ui/accessibility/ax_tree_data.h"
 #include "ui/accessibility/platform/ax_unique_id.h"
 #include "ui/gfx/geometry/rect_f.h"
 #include "ui/views/accessibility/ax_aura_obj_cache.h"
@@ -22,17 +23,16 @@
 namespace views {
 namespace {
 
-// TestAXTreeSourceViews provides a root object for testing.
+// TestAXTreeSourceViews provides a root with a default tree ID.
 class TestAXTreeSourceViews : public AXTreeSourceViews {
  public:
-  TestAXTreeSourceViews(AXAuraObjWrapper* root) : root_(root) {}
+  TestAXTreeSourceViews(AXAuraObjWrapper* root) {
+    Init(root, ui::AXTreeID::FromString("123"));
+  }
+
   ~TestAXTreeSourceViews() override = default;
 
-  // AXTreeSource:
-  AXAuraObjWrapper* GetRoot() const override { return root_; }
-
  private:
-  AXAuraObjWrapper* root_;
   DISALLOW_COPY_AND_ASSIGN(TestAXTreeSourceViews);
 };
 
@@ -71,8 +71,8 @@ class AXTreeSourceViewsTest : public ViewsTestBase {
   }
 
   std::unique_ptr<Widget> widget_;
-  Label* label1_ = nullptr;  // Owned by views hierarchy.
-  Label* label2_ = nullptr;  // Owned by views hierarchy.
+  Label* label1_ = nullptr;         // Owned by views hierarchy.
+  Label* label2_ = nullptr;         // Owned by views hierarchy.
   Textfield* textfield_ = nullptr;  // Owned by views hierarchy.
 
  private:
@@ -109,16 +109,16 @@ TEST_F(AXTreeSourceViewsTest, Basics) {
   EXPECT_EQ(root, tree.GetParent(textfield));
 
   // IDs match the ones in the cache.
-  EXPECT_EQ(root->GetUniqueId().Get(), tree.GetId(root));
-  EXPECT_EQ(label1->GetUniqueId().Get(), tree.GetId(label1));
-  EXPECT_EQ(label2->GetUniqueId().Get(), tree.GetId(label2));
-  EXPECT_EQ(textfield->GetUniqueId().Get(), tree.GetId(textfield));
+  EXPECT_EQ(root->GetUniqueId(), tree.GetId(root));
+  EXPECT_EQ(label1->GetUniqueId(), tree.GetId(label1));
+  EXPECT_EQ(label2->GetUniqueId(), tree.GetId(label2));
+  EXPECT_EQ(textfield->GetUniqueId(), tree.GetId(textfield));
 
   // Reverse ID lookups work.
-  EXPECT_EQ(root, tree.GetFromId(root->GetUniqueId().Get()));
-  EXPECT_EQ(label1, tree.GetFromId(label1->GetUniqueId().Get()));
-  EXPECT_EQ(label2, tree.GetFromId(label2->GetUniqueId().Get()));
-  EXPECT_EQ(textfield, tree.GetFromId(textfield->GetUniqueId().Get()));
+  EXPECT_EQ(root, tree.GetFromId(root->GetUniqueId()));
+  EXPECT_EQ(label1, tree.GetFromId(label1->GetUniqueId()));
+  EXPECT_EQ(label2, tree.GetFromId(label2->GetUniqueId()));
+  EXPECT_EQ(textfield, tree.GetFromId(textfield->GetUniqueId()));
 
   // Validity.
   EXPECT_TRUE(tree.IsValid(root));
@@ -147,7 +147,7 @@ TEST_F(AXTreeSourceViewsTest, GetTreeDataWithFocus) {
 
 TEST_F(AXTreeSourceViewsTest, IgnoredView) {
   View* ignored_view = new View();
-  ignored_view->GetViewAccessibility().set_is_ignored(true);
+  ignored_view->GetViewAccessibility().OverrideIsIgnored(true);
   widget_->GetContentsView()->AddChildView(ignored_view);
 
   AXAuraObjCache* cache = AXAuraObjCache::GetInstance();

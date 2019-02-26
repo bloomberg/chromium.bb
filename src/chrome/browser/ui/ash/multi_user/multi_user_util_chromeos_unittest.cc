@@ -3,50 +3,26 @@
 // found in the LICENSE file.
 
 #include "ash/test/ash_test_base.h"
+#include "base/bind.h"
 #include "base/memory/ptr_util.h"
 #include "chrome/browser/chromeos/login/users/fake_chrome_user_manager.h"
 #include "chrome/browser/chromeos/profiles/profile_helper.h"
-#include "chrome/browser/signin/account_tracker_service_factory.h"
-#include "chrome/browser/signin/fake_signin_manager_builder.h"
-#include "chrome/browser/signin/signin_manager_factory.h"
+#include "chrome/browser/signin/identity_manager_factory.h"
+#include "chrome/browser/signin/identity_test_environment_profile_adaptor.h"
 #include "chrome/browser/ui/ash/multi_user/multi_user_util.h"
 #include "chrome/test/base/testing_profile.h"
 #include "components/account_id/account_id.h"
-#include "components/signin/core/browser/account_tracker_service.h"
+#include "components/signin/core/browser/account_info.h"
 #include "components/user_manager/scoped_user_manager.h"
 #include "components/user_manager/user.h"
+#include "services/identity/public/cpp/identity_manager.h"
+#include "services/identity/public/cpp/identity_test_environment.h"
 
 namespace ash {
 
 namespace {
 
-const char kTestGaiaId[] = "gaia_id";
-const char kTestAccountId[] = "test@test.com";
-
-class MultiUserTestingProfile : public TestingProfile {
- public:
-  explicit MultiUserTestingProfile(TestingProfile* profile)
-      : profile_(profile) {}
-  ~MultiUserTestingProfile() override {}
-
-  Profile* GetOriginalProfile() override { return this; }
-
-  std::string GetProfileUserName() const override {
-    const SigninManagerBase* signin_manager =
-        SigninManagerFactory::GetForProfileIfExists(profile_.get());
-    if (signin_manager)
-      return signin_manager->GetAuthenticatedAccountInfo().email;
-
-    return std::string();
-  }
-
-  TestingProfile* profile() { return profile_.get(); }
-
- private:
-  std::unique_ptr<TestingProfile> profile_;
-
-  DISALLOW_COPY_AND_ASSIGN(MultiUserTestingProfile);
-};
+const char kTestAccountEmail[] = "test@test.com";
 
 }  // namespace
 
@@ -62,49 +38,49 @@ class MultiUserUtilTest : public AshTestBase {
     user_manager_enabler_ = std::make_unique<user_manager::ScopedUserManager>(
         base::WrapUnique(fake_user_manager_));
 
-    TestingProfile::Builder builder;
-    builder.AddTestingFactory(SigninManagerFactory::GetInstance(),
-                              BuildFakeSigninManagerBase);
-    TestingProfile* profile = builder.Build().release();
-    profile_.reset(new MultiUserTestingProfile(profile));
+    profile_.reset(IdentityTestEnvironmentProfileAdaptor::
+                       CreateProfileForIdentityTestEnvironment()
+                           .release());
+
+    identity_test_env_adaptor_.reset(
+        new IdentityTestEnvironmentProfileAdaptor(profile_.get()));
   }
 
   void TearDown() override {
+    identity_test_env_adaptor_.reset();
     profile_.reset();
     AshTestBase::TearDown();
   }
 
-  // Add a user to account tracker service with given gaia_id and email.
-  std::string AddUserToAccountTracker(const std::string& gaia_id,
-                                      const std::string& email) {
-    AccountTrackerService* account_tracker_service =
-        AccountTrackerServiceFactory::GetForProfile(profile_->profile());
-    FakeSigninManagerBase* signin_manager = static_cast<FakeSigninManagerBase*>(
-        SigninManagerFactory::GetForProfile(profile_->profile()));
-    account_tracker_service->SeedAccountInfo(gaia_id, email);
-    const std::string id =
-        account_tracker_service->PickAccountIdForAccount(gaia_id, email);
-    signin_manager->SignIn(id);
-
-    fake_user_manager_->AddUser(multi_user_util::GetAccountIdFromEmail(id));
+  // Add a user to the identity manager with given gaia_id and email.
+  std::string AddUserAndSignIn(const std::string& email) {
+    AccountInfo account_info =
+        identity_test_env()->MakePrimaryAccountAvailable(email);
+    fake_user_manager_->AddUser(
+        multi_user_util::GetAccountIdFromEmail(account_info.account_id));
     fake_user_manager_->UserLoggedIn(
-        multi_user_util::GetAccountIdFromEmail(id),
-        chromeos::ProfileHelper::GetUserIdHashByUserIdForTesting(id),
+        multi_user_util::GetAccountIdFromEmail(account_info.account_id),
+        chromeos::ProfileHelper::GetUserIdHashByUserIdForTesting(
+            account_info.account_id),
         false /* browser_restart */, false /* is_child */);
 
-    return id;
+    return account_info.account_id;
   }
 
   void SimulateTokenRevoked(const std::string& account_id) {
-    AccountTrackerService* account_tracker_service =
-        AccountTrackerServiceFactory::GetForProfile(profile_->profile());
-    account_tracker_service->RemoveAccount(account_id);
+    identity_test_env()->RemoveRefreshTokenForAccount(account_id);
   }
 
-  MultiUserTestingProfile* profile() { return profile_.get(); }
+  TestingProfile* profile() { return profile_.get(); }
+
+  identity::IdentityTestEnvironment* identity_test_env() {
+    return identity_test_env_adaptor_->identity_test_env();
+  };
 
  private:
-  std::unique_ptr<MultiUserTestingProfile> profile_;
+  std::unique_ptr<TestingProfile> profile_;
+  std::unique_ptr<IdentityTestEnvironmentProfileAdaptor>
+      identity_test_env_adaptor_;
   // |fake_user_manager_| is owned by |user_manager_enabler_|.
   chromeos::FakeChromeUserManager* fake_user_manager_;
   std::unique_ptr<user_manager::ScopedUserManager> user_manager_enabler_;
@@ -116,14 +92,18 @@ class MultiUserUtilTest : public AshTestBase {
 // valid profile is provided, even if this profile's refresh token has been
 // revoked. (On Chrome OS we don't force to end the session in this case.)
 TEST_F(MultiUserUtilTest, ReturnValidAccountIdIfTokenRevoked) {
-  std::string id = AddUserToAccountTracker(kTestGaiaId, kTestAccountId);
-  EXPECT_EQ(kTestAccountId, profile()->GetProfileUserName());
-  EXPECT_EQ(kTestAccountId,
+  std::string account_id = AddUserAndSignIn(kTestAccountEmail);
+  identity::IdentityManager* identity_manager =
+      identity_test_env()->identity_manager();
+
+  EXPECT_TRUE(identity_manager->HasAccountWithRefreshToken(account_id));
+  EXPECT_EQ(kTestAccountEmail,
             multi_user_util::GetAccountIdFromProfile(profile()).GetUserEmail());
 
-  SimulateTokenRevoked(id);
-  EXPECT_EQ(std::string(), profile()->GetProfileUserName());
-  EXPECT_EQ(kTestAccountId,
+  SimulateTokenRevoked(account_id);
+
+  EXPECT_FALSE(identity_manager->HasAccountWithRefreshToken(account_id));
+  EXPECT_EQ(kTestAccountEmail,
             multi_user_util::GetAccountIdFromProfile(profile()).GetUserEmail());
 }
 

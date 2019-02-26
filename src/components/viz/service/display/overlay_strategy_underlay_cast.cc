@@ -8,6 +8,7 @@
 #include "base/lazy_instance.h"
 #include "components/viz/common/quads/draw_quad.h"
 #include "components/viz/common/quads/solid_color_draw_quad.h"
+#include "components/viz/common/quads/texture_draw_quad.h"
 #include "ui/gfx/geometry/rect_conversions.h"
 
 namespace viz {
@@ -26,7 +27,7 @@ OverlayStrategyUnderlayCast::~OverlayStrategyUnderlayCast() {}
 
 bool OverlayStrategyUnderlayCast::Attempt(
     const SkMatrix44& output_color_matrix,
-    const OverlayProcessor::FilterOperationsMap& render_pass_background_filters,
+    const OverlayProcessor::FilterOperationsMap& render_pass_backdrop_filters,
     DisplayResourceProvider* resource_provider,
     RenderPass* render_pass,
     OverlayCandidateList* candidate_list,
@@ -45,8 +46,17 @@ bool OverlayStrategyUnderlayCast::Attempt(
     bool is_underlay = false;
     if (!found_underlay) {
       OverlayCandidate candidate;
-      is_underlay = OverlayCandidate::FromDrawQuad(
-          resource_provider, output_color_matrix, quad, &candidate);
+      // Look for quads that are overlayable and require an overlay. Chromecast
+      // only supports a video underlay so this can't promote all quads that are
+      // overlayable, it needs to ensure that the quad requires overlays since
+      // that quad is side-channeled through a secure path into an overlay
+      // sitting underneath the primary plane. This is only looking at where the
+      // quad is supposed to be to replace it with a transparent quad to allow
+      // the underlay to be visible.
+      is_underlay =
+          OverlayCandidate::FromDrawQuad(resource_provider, output_color_matrix,
+                                         quad, &candidate) &&
+          OverlayCandidate::RequiresOverlay(quad);
       found_underlay = is_underlay;
     }
 

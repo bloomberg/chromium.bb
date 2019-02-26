@@ -34,8 +34,10 @@ TestOptionsProvider::TestOptionsProvider()
       strike_server_(discardable_manager_.get()),
       strike_client_(discardable_manager_),
       color_space_(SkColorSpace::MakeSRGB()),
+      client_paint_cache_(std::numeric_limits<size_t>::max()),
       serialize_options_(this,
                          this,
+                         &client_paint_cache_,
                          &canvas_,
                          &strike_server_,
                          color_space_.get(),
@@ -44,7 +46,7 @@ TestOptionsProvider::TestOptionsProvider()
                          max_texture_size_,
                          max_texture_bytes_,
                          SkMatrix::I()),
-      deserialize_options_(this, &strike_client_) {}
+      deserialize_options_(this, &service_paint_cache_, &strike_client_) {}
 
 TestOptionsProvider::~TestOptionsProvider() = default;
 
@@ -89,6 +91,12 @@ ImageProvider::ScopedDecodedDrawImage TestOptionsProvider::GetDecodedDrawImage(
   return ScopedDecodedDrawImage(
       DecodedDrawImage(image_id, SkSize::MakeEmpty(), draw_image.scale(),
                        draw_image.filter_quality(), false, true));
+}
+
+void TestOptionsProvider::ClearPaintCache() {
+  client_paint_cache_.FinalizePendingEntries();
+  client_paint_cache_.PurgeAll();
+  service_paint_cache_.PurgeAll();
 }
 
 }  // namespace cc

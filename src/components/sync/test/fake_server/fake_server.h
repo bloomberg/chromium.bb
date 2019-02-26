@@ -12,9 +12,9 @@
 #include <string>
 #include <vector>
 
-#include "base/callback.h"
 #include "base/files/scoped_temp_dir.h"
 #include "base/observer_list.h"
+#include "base/optional.h"
 #include "base/threading/thread_checker.h"
 #include "base/values.h"
 #include "components/sync/base/model_type.h"
@@ -25,6 +25,7 @@
 #include "components/sync/engine_impl/loopback_server/persistent_unique_client_entity.h"
 #include "components/sync/protocol/client_commands.pb.h"
 #include "components/sync/protocol/sync.pb.h"
+#include "net/http/http_status_code.h"
 
 namespace fake_server {
 
@@ -55,16 +56,10 @@ class FakeServer : public syncer::LoopbackServer::ObserverForTests {
   FakeServer();
   ~FakeServer() override;
 
-  // Handles a /command POST (with the given |request|) to the server. Three
-  // output arguments, |error_code|, |response_code|, and |response|, are used
-  // to pass data back to the caller. The command has failed if the value
-  // pointed to by |error_code| is nonzero. |completion_closure| will be called
-  // immediately before return.
-  void HandleCommand(const std::string& request,
-                     const base::Closure& completion_closure,
-                     int* error_code,
-                     int* response_code,
-                     std::string* response);
+  // Handles a /command POST (with the given |request|) to the server.
+  // |response| must not be null.
+  net::HttpStatusCode HandleCommand(const std::string& request,
+                                    std::string* response);
 
   // Helpers for fetching the last Commit or GetUpdates messages, respectively.
   // Returns true if the specified message existed, and false if no message has
@@ -81,9 +76,20 @@ class FakeServer : public syncer::LoopbackServer::ObserverForTests {
   // Returns all entities stored by the server of the given |model_type|.
   // This method returns SyncEntity protocol buffer objects (instead of
   // LoopbackServerEntity) so that callers can inspect datatype-specific data
-  // (e.g., the URL of a session tab).
+  // (e.g., the URL of a session tab). Permanent entities are excluded.
   std::vector<sync_pb::SyncEntity> GetSyncEntitiesByModelType(
       syncer::ModelType model_type);
+
+  // Returns all permanent entities stored by the server of the given
+  // |model_type|. This method returns SyncEntity protocol buffer objects
+  // (instead of LoopbackServerEntity) so that callers can inspect
+  // datatype-specific data (e.g., the URL of a session tab).
+  std::vector<sync_pb::SyncEntity> GetPermanentSyncEntitiesByModelType(
+      syncer::ModelType model_type);
+
+  // Returns an empty string if no top-level permanent item of the given type
+  // was created.
+  std::string GetTopLevelPermanentItemId(syncer::ModelType model_type);
 
   // Adds |entity| to the server's collection of entities. This method makes no
   // guarantees that the added entity will result in successful server
@@ -115,13 +121,11 @@ class FakeServer : public syncer::LoopbackServer::ObserverForTests {
   // store birthday.
   void ClearServerData();
 
-  // Puts the server in a state where it acts as if authentication has
-  // succeeded.
-  void SetAuthenticated();
+  // Causes future calls to HandleCommand() fail with the given response code.
+  void SetHttpError(net::HttpStatusCode http_status_code);
 
-  // Puts the server in a state where all commands will fail with an
-  // authentication error.
-  void SetUnauthenticated();
+  // Undoes previous calls to SetHttpError().
+  void ClearHttpError();
 
   // Sets the provided |client_command| in all subsequent successful requests.
   void SetClientCommand(const sync_pb::ClientCommand& client_command);
@@ -141,6 +145,8 @@ class FakeServer : public syncer::LoopbackServer::ObserverForTests {
                               const std::string& url,
                               const sync_pb::SyncEnums::Action& action);
 
+  void ClearActionableError();
+
   // Instructs the server to send triggered errors on every other request
   // (starting with the first one after this call). This feature can be used to
   // test the resiliency of the client when communicating with a problematic
@@ -157,15 +163,11 @@ class FakeServer : public syncer::LoopbackServer::ObserverForTests {
   // must be called if AddObserver was ever called with |observer|.
   void RemoveObserver(Observer* observer);
 
-  // Undoes the effects of DisableNetwork.
-  void EnableNetwork();
-
-  // Forces every request to fail in a way that simulates a network failure.
-  // This can be used to trigger exponential backoff in the client.
-  void DisableNetwork();
-
   // Enables strong consistency model (i.e. server detects conflicts).
   void EnableStrongConsistencyWithConflictDetectionModel();
+
+  // Sets a maximum batch size for GetUpdates requests.
+  void SetMaxGetUpdatesBatchSize(int batch_size);
 
   // Implement LoopbackServer::ObserverForTests:
   void OnCommit(const std::string& committer_id,
@@ -186,16 +188,16 @@ class FakeServer : public syncer::LoopbackServer::ObserverForTests {
  private:
   // Returns whether a triggered error should be sent for the request.
   bool ShouldSendTriggeredError() const;
-  int SendToLoopbackServer(const std::string& request, std::string* response);
+  net::HttpStatusCode SendToLoopbackServer(const std::string& request,
+                                           std::string* response);
   void InjectClientCommand(std::string* response);
   void HandleWalletRequest(
       const sync_pb::ClientToServerMessage& request,
       const sync_pb::DataTypeProgressMarker& old_wallet_marker,
       std::string* response_string);
 
-  // Whether the server should act as if incoming connections are properly
-  // authenticated.
-  bool authenticated_;
+  // If set, the server will return HTTP errors.
+  base::Optional<net::HttpStatusCode> http_error_status_code_;
 
   // All Keystore keys known to the server.
   std::vector<std::string> keystore_keys_;
@@ -224,10 +226,6 @@ class FakeServer : public syncer::LoopbackServer::ObserverForTests {
 
   // FakeServer's observers.
   base::ObserverList<Observer, true>::Unchecked observers_;
-
-  // When true, the server operates normally. When false, a failure is returned
-  // on every request. This is used to simulate a network failure on the client.
-  bool network_enabled_;
 
   // The last received client to server messages.
   sync_pb::ClientToServerMessage last_commit_message_;

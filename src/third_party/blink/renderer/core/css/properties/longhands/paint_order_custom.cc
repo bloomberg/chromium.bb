@@ -6,18 +6,17 @@
 
 #include "third_party/blink/renderer/core/css/css_value_list.h"
 #include "third_party/blink/renderer/core/css/parser/css_property_parser_helpers.h"
-#include "third_party/blink/renderer/core/css/properties/computed_style_utils.h"
 #include "third_party/blink/renderer/core/style/computed_style.h"
 
 namespace blink {
-namespace CSSLonghand {
+namespace css_longhand {
 
 const CSSValue* PaintOrder::ParseSingleValue(
     CSSParserTokenRange& range,
     const CSSParserContext& context,
     const CSSParserLocalContext&) const {
   if (range.Peek().Id() == CSSValueNormal)
-    return CSSPropertyParserHelpers::ConsumeIdent(range);
+    return css_property_parser_helpers::ConsumeIdent(range);
 
   Vector<CSSValueID, 3> paint_type_list;
   CSSIdentifierValue* fill = nullptr;
@@ -26,11 +25,11 @@ const CSSValue* PaintOrder::ParseSingleValue(
   do {
     CSSValueID id = range.Peek().Id();
     if (id == CSSValueFill && !fill)
-      fill = CSSPropertyParserHelpers::ConsumeIdent(range);
+      fill = css_property_parser_helpers::ConsumeIdent(range);
     else if (id == CSSValueStroke && !stroke)
-      stroke = CSSPropertyParserHelpers::ConsumeIdent(range);
+      stroke = css_property_parser_helpers::ConsumeIdent(range);
     else if (id == CSSValueMarkers && !markers)
-      markers = CSSPropertyParserHelpers::ConsumeIdent(range);
+      markers = css_property_parser_helpers::ConsumeIdent(range);
     else
       return nullptr;
     paint_type_list.push_back(id);
@@ -69,10 +68,39 @@ const CSSValue* PaintOrder::CSSValueFromComputedStyleInternal(
     const ComputedStyle&,
     const SVGComputedStyle& svg_style,
     const LayoutObject*,
-    Node* styled_node,
+    Node*,
     bool allow_visited_style) const {
-  return ComputedStyleUtils::PaintOrderToCSSValueList(svg_style);
+  const EPaintOrder paint_order = svg_style.PaintOrder();
+  if (paint_order == kPaintOrderNormal)
+    return CSSIdentifierValue::Create(CSSValueNormal);
+
+  // Table mapping to the shortest (canonical) form of the property.
+  //
+  // Per spec, if any keyword is omitted it will be added last using
+  // the standard ordering. So "stroke" implies an order "stroke fill
+  // markers" etc. From a serialization PoV this means we never need
+  // to emit the last keyword.
+  //
+  // https://svgwg.org/svg2-draft/painting.html#PaintOrder
+  static const uint8_t canonical_form[][2] = {
+      // kPaintOrderNormal is handled above.
+      {PT_FILL, PT_NONE},       // kPaintOrderFillStrokeMarkers
+      {PT_FILL, PT_MARKERS},    // kPaintOrderFillMarkersStroke
+      {PT_STROKE, PT_NONE},     // kPaintOrderStrokeFillMarkers
+      {PT_STROKE, PT_MARKERS},  // kPaintOrderStrokeMarkersFill
+      {PT_MARKERS, PT_NONE},    // kPaintOrderMarkersFillStroke
+      {PT_MARKERS, PT_STROKE},  // kPaintOrderMarkersStrokeFill
+  };
+  DCHECK_LT(static_cast<size_t>(paint_order) - 1, base::size(canonical_form));
+  CSSValueList* list = CSSValueList::CreateSpaceSeparated();
+  for (const auto& keyword : canonical_form[paint_order - 1]) {
+    const auto paint_order_type = static_cast<EPaintOrderType>(keyword);
+    if (paint_order_type == PT_NONE)
+      break;
+    list->Append(*CSSIdentifierValue::Create(paint_order_type));
+  }
+  return list;
 }
 
-}  // namespace CSSLonghand
+}  // namespace css_longhand
 }  // namespace blink

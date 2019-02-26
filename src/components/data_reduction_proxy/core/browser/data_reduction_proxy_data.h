@@ -13,7 +13,6 @@
 #include "base/macros.h"
 #include "base/optional.h"
 #include "base/supports_user_data.h"
-#include "base/time/time.h"
 #include "net/base/network_change_notifier.h"
 #include "net/nqe/effective_connection_type.h"
 #include "url/gurl.h"
@@ -28,37 +27,6 @@ namespace data_reduction_proxy {
 // storage vehicles to associate this data with the object that owns it.
 class DataReductionProxyData : public base::SupportsUserData::Data {
  public:
-  // Holds connection timing data for each network request while loading the
-  // associated resource.
-  struct RequestInfo {
-    enum Protocol { HTTP, HTTPS, QUIC, UNKNOWN };
-
-    RequestInfo(Protocol protocol,
-                bool proxy_fallback,
-                base::TimeDelta dns_time,
-                base::TimeDelta connect_time,
-                base::TimeDelta http_time);
-
-    RequestInfo(const RequestInfo& other);
-
-    const Protocol protocol;
-
-    // If this request caused the proxy to fallback.
-    const bool proxy_bypass;
-
-    // See https://www.w3.org/TR/resource-timing/ for definitions.
-    const base::TimeDelta dns_time;
-    const base::TimeDelta connect_time;
-    const base::TimeDelta http_time;
-
-    // Used for testing.
-    bool operator==(const RequestInfo& other) const {
-      return protocol == other.protocol && proxy_bypass == other.proxy_bypass &&
-             dns_time == other.dns_time && connect_time == other.connect_time &&
-             http_time == other.http_time;
-    }
-  };
-
   DataReductionProxyData();
   ~DataReductionProxyData() override;
 
@@ -71,14 +39,6 @@ class DataReductionProxyData : public base::SupportsUserData::Data {
   bool used_data_reduction_proxy() const { return used_data_reduction_proxy_; }
   void set_used_data_reduction_proxy(bool used_data_reduction_proxy) {
     used_data_reduction_proxy_ = used_data_reduction_proxy;
-  }
-
-  // Whether Lo-Fi was requested for this request or navigation. True if the
-  // session is in Lo-Fi control or enabled group, and the network quality is
-  // slow.
-  bool lofi_requested() const { return lofi_requested_; }
-  void set_lofi_requested(bool lofi_requested) {
-    lofi_requested_ = lofi_requested;
   }
 
   // Whether a lite page response was seen for the request or navigation.
@@ -157,21 +117,6 @@ class DataReductionProxyData : public base::SupportsUserData::Data {
   bool black_listed() const { return black_listed_; }
   void set_black_listed(bool black_listed) { black_listed_ = black_listed; }
 
-  // Holds connection timing data for each redirect while loading the associated
-  // resource.
-  std::vector<RequestInfo> request_info() const { return request_info_; }
-  void set_request_info(std::vector<RequestInfo> request_info) {
-    request_info_ = std::move(request_info);
-  }
-  // Adds an additional |RequestInfo| to the end of the list.
-  void add_request_info(const RequestInfo& info) {
-    request_info_.push_back(info);
-  }
-
-  // Passes ownership of |request_info_| to the caller so it can be preserved
-  // when |this| is deleted.
-  std::vector<RequestInfo> TakeRequestInfo();
-
   // Removes |this| from |request|.
   static void ClearData(net::URLRequest* request);
 
@@ -182,12 +127,6 @@ class DataReductionProxyData : public base::SupportsUserData::Data {
   // URLRequest's UserData, and returns a raw pointer to the new instance.
   static DataReductionProxyData* GetDataAndCreateIfNecessary(
       net::URLRequest* request);
-
-  // Given a URLRequest, pull out the necessary timing information and returns a
-  // fully populated |RequestInfo| struct.
-  static std::unique_ptr<RequestInfo> CreateRequestInfoFromRequest(
-      net::URLRequest* request,
-      bool did_bypass_proxy);
 
   // Create a brand new instance of DataReductionProxyData that could be used in
   // a different thread. Several of deep copies may occur per navigation, so
@@ -201,17 +140,13 @@ class DataReductionProxyData : public base::SupportsUserData::Data {
   // Cached responses are not considered to have used DRP.
   bool used_data_reduction_proxy_;
 
-  // Whether server Lo-Fi was requested for this request or navigation. True if
-  // the session is in Lo-Fi control or enabled group, and the network quality
-  // is slow.
-  bool lofi_requested_;
-
   // Whether client Lo-Fi was requested for this request. This is only set on
   // image requests that have added a range header to attempt to get a smaller
   // file size image.
   bool client_lofi_requested_;
 
-  // Whether a lite page response was seen for the request or navigation.
+  // Whether a proxy-served lite page response was seen for the HTTP request or
+  // navigation.
   bool lite_page_received_;
 
   // Whether server Lo-Fi directive was received for this navigation. True if
@@ -245,10 +180,6 @@ class DataReductionProxyData : public base::SupportsUserData::Data {
   // An identifier that is guaranteed to be unique to each page load during a
   // data saver session. Only present on main frame requests.
   base::Optional<uint64_t> page_id_;
-
-  // Lists the connection timing data for each network request while loading the
-  // main frame html. Used in PLM pingbacks.
-  std::vector<RequestInfo> request_info_;
 
   DISALLOW_ASSIGN(DataReductionProxyData);
 };

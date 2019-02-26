@@ -58,6 +58,7 @@
 #include "third_party/blink/public/web/web_local_frame_client.h"
 #include "third_party/blink/public/web/web_scoped_user_gesture.h"
 #include "third_party/blink/public/web/web_view.h"
+#include "third_party/blink/public/web/web_widget.h"
 #include "url/gurl.h"
 
 #if defined(OS_ANDROID)
@@ -304,6 +305,7 @@ class MockSurfaceLayerBridge : public blink::WebSurfaceLayerBridge {
   MOCK_CONST_METHOD0(GetCcLayer, cc::Layer*());
   MOCK_CONST_METHOD0(GetFrameSinkId, const viz::FrameSinkId&());
   MOCK_CONST_METHOD0(GetSurfaceId, const viz::SurfaceId&());
+  MOCK_CONST_METHOD0(GetLocalSurfaceIdAllocationTime, base::TimeTicks());
   MOCK_METHOD0(ClearSurfaceId, void());
   MOCK_METHOD1(SetContentsOpaque, void(bool));
   MOCK_METHOD0(CreateSurfaceLayer, void());
@@ -319,8 +321,9 @@ class MockVideoFrameCompositor : public VideoFrameCompositor {
   // MOCK_METHOD doesn't like OnceCallback.
   void SetOnNewProcessedFrameCallback(OnNewProcessedFrameCB cb) override {}
   MOCK_METHOD0(GetCurrentFrameAndUpdateIfStale, scoped_refptr<VideoFrame>());
-  MOCK_METHOD5(EnableSubmission,
+  MOCK_METHOD6(EnableSubmission,
                void(const viz::SurfaceId&,
+                    base::TimeTicks,
                     media::VideoRotation,
                     bool,
                     bool,
@@ -423,7 +426,7 @@ class WebMediaPlayerImplTest : public testing::Test {
 
     base::RunLoop().RunUntilIdle();
 
-    web_view_->Close();
+    web_view_->MainFrameWidget()->Close();
   }
 
  protected:
@@ -499,31 +502,43 @@ class WebMediaPlayerImplTest : public testing::Test {
   WebMediaPlayerImpl::PlayState ComputePlayState() {
     EXPECT_CALL(client_, WasAlwaysMuted())
         .WillRepeatedly(Return(client_.was_always_muted_));
-    return wmpi_->UpdatePlayState_ComputePlayState(false, true, false, false);
+    return wmpi_->UpdatePlayState_ComputePlayState(false, false, true, false,
+                                                   false);
   }
 
   WebMediaPlayerImpl::PlayState ComputePlayState_FrameHidden() {
     EXPECT_CALL(client_, WasAlwaysMuted())
         .WillRepeatedly(Return(client_.was_always_muted_));
-    return wmpi_->UpdatePlayState_ComputePlayState(false, true, false, true);
+    return wmpi_->UpdatePlayState_ComputePlayState(false, false, true, false,
+                                                   true);
   }
 
   WebMediaPlayerImpl::PlayState ComputePlayState_Suspended() {
     EXPECT_CALL(client_, WasAlwaysMuted())
         .WillRepeatedly(Return(client_.was_always_muted_));
-    return wmpi_->UpdatePlayState_ComputePlayState(false, true, true, false);
+    return wmpi_->UpdatePlayState_ComputePlayState(false, false, true, true,
+                                                   false);
   }
 
   WebMediaPlayerImpl::PlayState ComputePlayState_Remote() {
     EXPECT_CALL(client_, WasAlwaysMuted())
         .WillRepeatedly(Return(client_.was_always_muted_));
-    return wmpi_->UpdatePlayState_ComputePlayState(true, true, false, false);
+    return wmpi_->UpdatePlayState_ComputePlayState(true, false, true, false,
+                                                   false);
+  }
+
+  WebMediaPlayerImpl::PlayState ComputePlayState_Flinging() {
+    EXPECT_CALL(client_, WasAlwaysMuted())
+        .WillRepeatedly(Return(client_.was_always_muted_));
+    return wmpi_->UpdatePlayState_ComputePlayState(false, true, true, false,
+                                                   false);
   }
 
   WebMediaPlayerImpl::PlayState ComputePlayState_BackgroundedStreaming() {
     EXPECT_CALL(client_, WasAlwaysMuted())
         .WillRepeatedly(Return(client_.was_always_muted_));
-    return wmpi_->UpdatePlayState_ComputePlayState(false, false, false, true);
+    return wmpi_->UpdatePlayState_ComputePlayState(false, false, false, false,
+                                                   true);
   }
 
   bool IsSuspended() { return wmpi_->pipeline_controller_.IsSuspended(); }
@@ -608,7 +623,7 @@ class WebMediaPlayerImplTest : public testing::Test {
 
     wmpi_->Load(blink::WebMediaPlayer::kLoadTypeURL,
                 blink::WebMediaPlayerSource(blink::WebURL(kTestURL)),
-                blink::WebMediaPlayer::kCORSModeUnspecified);
+                blink::WebMediaPlayer::kCorsModeUnspecified);
 
     base::RunLoop().RunUntilIdle();
 
@@ -774,7 +789,9 @@ TEST_F(WebMediaPlayerImplTest, LazyLoadPreloadMetadataSuspend) {
     EXPECT_CALL(client_, SetCcLayer(_)).Times(0);
     EXPECT_CALL(*surface_layer_bridge_ptr_, GetSurfaceId())
         .WillOnce(ReturnRef(surface_id_));
-    EXPECT_CALL(*compositor_, EnableSubmission(_, _, _, false, _));
+    EXPECT_CALL(*surface_layer_bridge_ptr_, GetLocalSurfaceIdAllocationTime())
+        .WillOnce(Return(base::TimeTicks()));
+    EXPECT_CALL(*compositor_, EnableSubmission(_, _, _, _, false, _));
     EXPECT_CALL(*surface_layer_bridge_ptr_, SetContentsOpaque(false));
   }
 
@@ -804,7 +821,9 @@ TEST_F(WebMediaPlayerImplTest, LoadPreloadMetadataSuspendNoVideoMemoryUsage) {
     EXPECT_CALL(client_, SetCcLayer(_)).Times(0);
     EXPECT_CALL(*surface_layer_bridge_ptr_, GetSurfaceId())
         .WillOnce(ReturnRef(surface_id_));
-    EXPECT_CALL(*compositor_, EnableSubmission(_, _, _, false, _));
+    EXPECT_CALL(*surface_layer_bridge_ptr_, GetLocalSurfaceIdAllocationTime())
+        .WillOnce(Return(base::TimeTicks()));
+    EXPECT_CALL(*compositor_, EnableSubmission(_, _, _, _, false, _));
     EXPECT_CALL(*surface_layer_bridge_ptr_, SetContentsOpaque(false));
   }
 
@@ -1125,11 +1144,24 @@ TEST_F(WebMediaPlayerImplTest, ComputePlayState_Remote) {
   SetMetadata(true, true);
   SetReadyState(blink::WebMediaPlayer::kReadyStateHaveFutureData);
 
-  // Remote media is always suspended.
+  // Remote media via wmpi_cast is always suspended.
   // TODO(sandersd): Decide whether this should count as idle or not.
   WebMediaPlayerImpl::PlayState state = ComputePlayState_Remote();
   EXPECT_EQ(WebMediaPlayerImpl::DelegateState::GONE, state.delegate_state);
   EXPECT_TRUE(state.is_suspended);
+  EXPECT_FALSE(state.is_memory_reporting_enabled);
+}
+
+TEST_F(WebMediaPlayerImplTest, ComputePlayState_Flinging) {
+  InitializeWebMediaPlayerImpl();
+  SetMetadata(true, true);
+  SetReadyState(blink::WebMediaPlayer::kReadyStateHaveFutureData);
+
+  // Remote media via the FlingingRenderer should not be idle.
+  WebMediaPlayerImpl::PlayState state = ComputePlayState_Flinging();
+  EXPECT_EQ(WebMediaPlayerImpl::DelegateState::GONE, state.delegate_state);
+  EXPECT_FALSE(state.is_idle);
+  EXPECT_FALSE(state.is_suspended);
   EXPECT_FALSE(state.is_memory_reporting_enabled);
 }
 
@@ -1221,7 +1253,7 @@ TEST_F(WebMediaPlayerImplTest, NoStreams) {
   if (base::FeatureList::IsEnabled(media::kUseSurfaceLayerForVideo)) {
     EXPECT_CALL(*surface_layer_bridge_ptr_, CreateSurfaceLayer()).Times(0);
     EXPECT_CALL(*surface_layer_bridge_ptr_, GetSurfaceId()).Times(0);
-    EXPECT_CALL(*compositor_, EnableSubmission(_, _, _, _, _)).Times(0);
+    EXPECT_CALL(*compositor_, EnableSubmission(_, _, _, _, _, _)).Times(0);
   }
 
   // Nothing should happen.  In particular, no assertions should fail.
@@ -1240,7 +1272,9 @@ TEST_F(WebMediaPlayerImplTest, NaturalSizeChange) {
     EXPECT_CALL(client_, SetCcLayer(_)).Times(0);
     EXPECT_CALL(*surface_layer_bridge_ptr_, GetSurfaceId())
         .WillOnce(ReturnRef(surface_id_));
-    EXPECT_CALL(*compositor_, EnableSubmission(_, _, _, false, _));
+    EXPECT_CALL(*surface_layer_bridge_ptr_, GetLocalSurfaceIdAllocationTime())
+        .WillOnce(Return(base::TimeTicks()));
+    EXPECT_CALL(*compositor_, EnableSubmission(_, _, _, _, false, _));
     EXPECT_CALL(*surface_layer_bridge_ptr_, SetContentsOpaque(false));
   } else {
     EXPECT_CALL(client_, SetCcLayer(NotNull()));
@@ -1267,7 +1301,9 @@ TEST_F(WebMediaPlayerImplTest, NaturalSizeChange_Rotated) {
     EXPECT_CALL(*surface_layer_bridge_ptr_, CreateSurfaceLayer());
     EXPECT_CALL(*surface_layer_bridge_ptr_, GetSurfaceId())
         .WillOnce(ReturnRef(surface_id_));
-    EXPECT_CALL(*compositor_, EnableSubmission(_, _, _, false, _));
+    EXPECT_CALL(*surface_layer_bridge_ptr_, GetLocalSurfaceIdAllocationTime())
+        .WillOnce(Return(base::TimeTicks()));
+    EXPECT_CALL(*compositor_, EnableSubmission(_, _, _, _, false, _));
     EXPECT_CALL(*surface_layer_bridge_ptr_, SetContentsOpaque(false));
   } else {
     EXPECT_CALL(client_, SetCcLayer(NotNull()));
@@ -1295,7 +1331,9 @@ TEST_F(WebMediaPlayerImplTest, VideoLockedWhenPausedWhenHidden) {
     EXPECT_CALL(*surface_layer_bridge_ptr_, CreateSurfaceLayer());
     EXPECT_CALL(*surface_layer_bridge_ptr_, GetSurfaceId())
         .WillOnce(ReturnRef(surface_id_));
-    EXPECT_CALL(*compositor_, EnableSubmission(_, _, _, false, _));
+    EXPECT_CALL(*surface_layer_bridge_ptr_, GetLocalSurfaceIdAllocationTime())
+        .WillOnce(Return(base::TimeTicks()));
+    EXPECT_CALL(*compositor_, EnableSubmission(_, _, _, _, false, _));
     EXPECT_CALL(*surface_layer_bridge_ptr_, SetContentsOpaque(false));
   } else {
     EXPECT_CALL(client_, SetCcLayer(NotNull()));
@@ -1371,7 +1409,9 @@ TEST_F(WebMediaPlayerImplTest, InfiniteDuration) {
     EXPECT_CALL(*surface_layer_bridge_ptr_, CreateSurfaceLayer());
     EXPECT_CALL(*surface_layer_bridge_ptr_, GetSurfaceId())
         .WillOnce(ReturnRef(surface_id_));
-    EXPECT_CALL(*compositor_, EnableSubmission(_, _, _, false, _));
+    EXPECT_CALL(*surface_layer_bridge_ptr_, GetLocalSurfaceIdAllocationTime())
+        .WillOnce(Return(base::TimeTicks()));
+    EXPECT_CALL(*compositor_, EnableSubmission(_, _, _, _, false, _));
     EXPECT_CALL(*surface_layer_bridge_ptr_, SetContentsOpaque(false));
   } else {
     EXPECT_CALL(client_, SetCcLayer(NotNull()));
@@ -1409,8 +1449,10 @@ TEST_F(WebMediaPlayerImplTest, SetContentsLayerGetsWebLayerFromBridge) {
   EXPECT_CALL(*surface_layer_bridge_ptr_, CreateSurfaceLayer());
   EXPECT_CALL(*surface_layer_bridge_ptr_, GetSurfaceId())
       .WillOnce(ReturnRef(surface_id_));
+  EXPECT_CALL(*surface_layer_bridge_ptr_, GetLocalSurfaceIdAllocationTime())
+      .WillOnce(Return(base::TimeTicks()));
   EXPECT_CALL(*surface_layer_bridge_ptr_, SetContentsOpaque(false));
-  EXPECT_CALL(*compositor_, EnableSubmission(_, _, _, false, _));
+  EXPECT_CALL(*compositor_, EnableSubmission(_, _, _, _, false, _));
 
   // We only call the callback to create the bridge in OnMetadata, so we need
   // to call it.
@@ -1451,7 +1493,9 @@ TEST_F(WebMediaPlayerImplTest, PictureInPictureTriggerCallback) {
   EXPECT_CALL(*surface_layer_bridge_ptr_, CreateSurfaceLayer());
   EXPECT_CALL(*surface_layer_bridge_ptr_, GetSurfaceId())
       .WillRepeatedly(ReturnRef(surface_id_));
-  EXPECT_CALL(*compositor_, EnableSubmission(_, _, _, false, _));
+  EXPECT_CALL(*surface_layer_bridge_ptr_, GetLocalSurfaceIdAllocationTime())
+      .WillRepeatedly(Return(base::TimeTicks()));
+  EXPECT_CALL(*compositor_, EnableSubmission(_, _, _, _, false, _));
   EXPECT_CALL(*surface_layer_bridge_ptr_, SetContentsOpaque(false));
 
   PipelineMetadata metadata;

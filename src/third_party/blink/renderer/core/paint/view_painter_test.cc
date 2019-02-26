@@ -5,9 +5,12 @@
 #include "third_party/blink/renderer/core/paint/view_painter.h"
 
 #include <gtest/gtest.h>
+#include "third_party/blink/renderer/core/frame/local_dom_window.h"
 #include "third_party/blink/renderer/core/paint/compositing/composited_layer_mapping.h"
 #include "third_party/blink/renderer/core/paint/paint_controller_paint_test.h"
 #include "third_party/blink/renderer/platform/graphics/paint/drawing_display_item.h"
+
+using testing::ElementsAre;
 
 namespace blink {
 
@@ -20,11 +23,6 @@ INSTANTIATE_PAINT_TEST_CASE_P(ViewPainterTest);
 
 void ViewPainterTest::RunFixedBackgroundTest(
     bool prefer_compositing_to_lcd_text) {
-  // TODO(crbug.com/792577): Cull rect for frame scrolling contents is too
-  // small.
-  if (RuntimeEnabledFeatures::SlimmingPaintV2Enabled())
-    return;
-
   if (prefer_compositing_to_lcd_text) {
     Settings* settings = GetDocument().GetFrame()->GetSettings();
     settings->SetPreferCompositingToLCDTextEnabled(true);
@@ -47,42 +45,74 @@ void ViewPainterTest::RunFixedBackgroundTest(
 
   ScrollOffset scroll_offset(200, 150);
   layout_viewport->SetScrollOffset(scroll_offset, kUserScroll);
-  frame_view->UpdateAllLifecyclePhases();
+  frame_view->UpdateAllLifecyclePhases(
+      DocumentLifecycle::LifecycleUpdateReason::kTest);
 
-  CompositedLayerMapping* clm =
-      GetLayoutView().Layer()->GetCompositedLayerMapping();
-
-  // If we prefer compositing to LCD text, the fixed background should go in a
-  // different layer from the scrolling content; otherwise, it should go in the
-  // same layer (i.e., the scrolling contents layer).
-  GraphicsLayer* layer_for_background;
-  if (prefer_compositing_to_lcd_text) {
-    layer_for_background = clm->MainGraphicsLayer();
+  const DisplayItem* background_display_item = nullptr;
+  if (RuntimeEnabledFeatures::SlimmingPaintV2Enabled()) {
+    const auto& display_items = RootPaintController().GetDisplayItemList();
+    if (prefer_compositing_to_lcd_text) {
+      EXPECT_THAT(
+          display_items,
+          ElementsAre(IsSameId(&GetLayoutView(), kDocumentBackgroundType),
+                      IsSameId(&GetLayoutView(), DisplayItem::kScrollHitTest),
+                      IsSameId(GetDocument().body()->GetLayoutObject(),
+                               kBackgroundType)));
+      background_display_item = &display_items[0];
+    } else {
+      EXPECT_THAT(
+          display_items,
+          ElementsAre(IsSameId(&GetLayoutView(), DisplayItem::kScrollHitTest),
+                      IsSameId(&ViewScrollingBackgroundClient(),
+                               kDocumentBackgroundType),
+                      IsSameId(GetDocument().body()->GetLayoutObject(),
+                               kBackgroundType)));
+      background_display_item = &display_items[1];
+    }
   } else {
-    layer_for_background = clm->ScrollingContentsLayer();
+    // If we prefer compositing to LCD text, the fixed background should go in a
+    // different layer from the scrolling content; otherwise, it should go in
+    // the same layer (i.e., the scrolling contents layer).
+    if (prefer_compositing_to_lcd_text) {
+      const auto& display_items = GetLayoutView()
+                                      .Layer()
+                                      ->GraphicsLayerBacking(&GetLayoutView())
+                                      ->GetPaintController()
+                                      .GetDisplayItemList();
+      EXPECT_THAT(
+          display_items,
+          ElementsAre(IsSameId(&GetLayoutView(), kDocumentBackgroundType)));
+      background_display_item = &display_items[0];
+    } else {
+      const auto& display_items = RootPaintController().GetDisplayItemList();
+      EXPECT_THAT(display_items,
+                  ElementsAre(IsSameId(&ViewScrollingBackgroundClient(),
+                                       kDocumentBackgroundType),
+                              IsSameId(GetDocument().body()->GetLayoutObject(),
+                                       kBackgroundType)));
+      background_display_item = &display_items[0];
+    }
   }
-  const DisplayItemList& display_items =
-      layer_for_background->GetPaintController().GetDisplayItemList();
-  const DisplayItem& background = display_items[0];
-  EXPECT_EQ(background.GetType(), kDocumentBackgroundType);
-  DisplayItemClient* expected_client;
-  if (!prefer_compositing_to_lcd_text)
-    expected_client = GetLayoutView().Layer()->GraphicsLayerBacking();
-  else
-    expected_client = &GetLayoutView();
-  EXPECT_EQ(&background.Client(), expected_client);
 
   sk_sp<const PaintRecord> record =
-      static_cast<const DrawingDisplayItem&>(background).GetPaintRecord();
+      static_cast<const DrawingDisplayItem*>(background_display_item)
+          ->GetPaintRecord();
   ASSERT_EQ(record->size(), 2u);
   cc::PaintOpBuffer::Iterator it(record.get());
   ASSERT_EQ((*++it)->GetType(), cc::PaintOpType::DrawRect);
 
-  // This is the dest_rect_ calculated by BackgroundImageGeometry.  For a fixed
+  // This is the dest_rect_ calculated by BackgroundImageGeometry. For a fixed
   // background in scrolling contents layer, its location is the scroll offset.
   SkRect rect = static_cast<const cc::DrawRectOp*>(*it)->rect;
-  ASSERT_EQ(prefer_compositing_to_lcd_text ? ScrollOffset() : scroll_offset,
-            ScrollOffset(rect.fLeft, rect.fTop));
+  if (prefer_compositing_to_lcd_text) {
+    EXPECT_EQ(SkRect::MakeXYWH(0, 0, 800, 600), rect);
+  } else if (RuntimeEnabledFeatures::SlimmingPaintV2Enabled()) {
+    EXPECT_EQ(SkRect::MakeXYWH(0, 0, 800, 600), rect);
+  } else {
+    EXPECT_EQ(SkRect::MakeXYWH(scroll_offset.Width(), scroll_offset.Height(),
+                               800, 600),
+              rect);
+  }
 }
 
 TEST_P(ViewPainterTest, DocumentFixedBackgroundLowDPI) {
@@ -94,32 +124,195 @@ TEST_P(ViewPainterTest, DocumentFixedBackgroundHighDPI) {
 }
 
 TEST_P(ViewPainterTest, DocumentBackgroundWithScroll) {
-  // TODO(crbug.com/792577): Cull rect for frame scrolling contents is too
-  // small.
-  if (RuntimeEnabledFeatures::SlimmingPaintV2Enabled())
-    return;
+  SetBodyInnerHTML(R"HTML(
+    <style>::-webkit-scrollbar { display: none }</style>
+    <div style='height: 5000px'></div>
+  )HTML");
 
-  SetBodyInnerHTML("<div style='height: 5000px'></div>");
+  if (RuntimeEnabledFeatures::SlimmingPaintV2Enabled()) {
+    EXPECT_THAT(
+        RootPaintController().GetDisplayItemList(),
+        ElementsAre(IsSameId(&GetLayoutView(), DisplayItem::kScrollHitTest),
+                    IsSameId(&ViewScrollingBackgroundClient(),
+                             kDocumentBackgroundType)));
+    EXPECT_THAT(
+        RootPaintController().PaintChunks(),
+        ElementsAre(
+            IsPaintChunk(
+                0, 1,
+                PaintChunk::Id(*GetLayoutView().Layer(),
+                               DisplayItem::kLayerChunkBackground),
+                GetLayoutView().FirstFragment().LocalBorderBoxProperties()),
+            IsPaintChunk(
+                1, 2,
+                PaintChunk::Id(ViewScrollingBackgroundClient(),
+                               kDocumentBackgroundType),
+                GetLayoutView().FirstFragment().ContentsProperties())));
+  } else {
+    EXPECT_THAT(RootPaintController().GetDisplayItemList(),
+                ElementsAre(IsSameId(&ViewScrollingBackgroundClient(),
+                                     kDocumentBackgroundType)));
+    EXPECT_THAT(RootPaintController().PaintChunks(),
+                ElementsAre(IsPaintChunk(
+                    0, 1,
+                    PaintChunk::Id(ViewScrollingBackgroundClient(),
+                                   kDocumentBackgroundType),
+                    GetLayoutView().FirstFragment().ContentsProperties())));
+  }
+}
 
-  const DisplayItemClient* background_item_client;
-  const DisplayItemClient* background_chunk_client;
-  background_item_client = GetLayoutView().Layer()->GraphicsLayerBacking();
-  background_chunk_client = background_item_client;
+class ViewPainterTestWithPaintTouchAction
+    : public ViewPainterTest,
+      private ScopedPaintTouchActionRectsForTest {
+ public:
+  ViewPainterTestWithPaintTouchAction()
+      : ViewPainterTest(), ScopedPaintTouchActionRectsForTest(true) {}
 
-  EXPECT_DISPLAY_LIST(
-      RootPaintController().GetDisplayItemList(), 1,
-      TestDisplayItem(*background_item_client, kDocumentBackgroundType));
+  void SetUp() override {
+    ViewPainterTest::SetUp();
+    Settings* settings = GetDocument().GetFrame()->GetSettings();
+    settings->SetPreferCompositingToLCDTextEnabled(true);
+  }
+};
 
-  const auto& chunks = RootPaintController().GetPaintArtifact().PaintChunks();
-  EXPECT_EQ(1u, chunks.size());
-  const auto& chunk = chunks[0];
-  EXPECT_EQ(background_chunk_client, &chunk.id.client);
+INSTANTIATE_PAINT_TEST_CASE_P(ViewPainterTestWithPaintTouchAction);
 
-  const auto& tree_state = chunk.properties;
-  EXPECT_EQ(&EffectPaintPropertyNode::Root(), tree_state.Effect());
-  const auto* properties = GetLayoutView().FirstFragment().PaintProperties();
-  EXPECT_EQ(properties->ScrollTranslation(), tree_state.Transform());
-  EXPECT_EQ(properties->OverflowClip(), tree_state.Clip());
+TEST_P(ViewPainterTestWithPaintTouchAction, TouchActionRectScrollingContents) {
+  SetBodyInnerHTML(R"HTML(
+    <style>
+      ::-webkit-scrollbar { display: none; }
+      html {
+        background: lightblue;
+        touch-action: none;
+      }
+      body {
+        margin: 0;
+      }
+    </style>
+    <div id='forcescroll' style='width: 0; height: 3000px;'></div>
+  )HTML");
+
+  GetFrame().DomWindow()->scrollBy(0, 100);
+  UpdateAllLifecyclePhasesForTest();
+
+  const auto& scrolling_client = ViewScrollingBackgroundClient();
+  auto scrolling_properties =
+      GetLayoutView().FirstFragment().ContentsProperties();
+  HitTestData view_hit_test_data;
+  view_hit_test_data.touch_action_rects.emplace_back(
+      LayoutRect(0, 0, 800, 3000));
+
+  auto* html =
+      ToLayoutBlock(GetDocument().documentElement()->GetLayoutObject());
+  HitTestData html_hit_test_data;
+  html_hit_test_data.touch_action_rects.emplace_back(
+      LayoutRect(0, 0, 800, 3000));
+  html_hit_test_data.touch_action_rects.emplace_back(
+      LayoutRect(0, 0, 800, 3000));
+
+  if (RuntimeEnabledFeatures::SlimmingPaintV2Enabled()) {
+    HitTestData non_scrolling_hit_test_data;
+    non_scrolling_hit_test_data.touch_action_rects.emplace_back(
+        LayoutRect(0, 0, 800, 600));
+    EXPECT_THAT(
+        RootPaintController().PaintChunks(),
+        ElementsAre(
+            IsPaintChunk(
+                0, 1,
+                PaintChunk::Id(*GetLayoutView().Layer(),
+                               DisplayItem::kLayerChunkBackground),
+                GetLayoutView().FirstFragment().LocalBorderBoxProperties(),
+                non_scrolling_hit_test_data),
+            IsPaintChunk(
+                1, 2,
+                PaintChunk::Id(GetLayoutView(), DisplayItem::kScrollHitTest),
+                GetLayoutView().FirstFragment().LocalBorderBoxProperties()),
+            IsPaintChunk(
+                2, 4, PaintChunk::Id(scrolling_client, kDocumentBackgroundType),
+                scrolling_properties, view_hit_test_data),
+            IsPaintChunk(4, 7,
+                         PaintChunk::Id(*html->Layer(),
+                                        kNonScrollingBackgroundChunkType),
+                         scrolling_properties, html_hit_test_data)));
+  } else {
+    EXPECT_THAT(
+        RootPaintController().PaintChunks(),
+        ElementsAre(
+            IsPaintChunk(
+                0, 2, PaintChunk::Id(scrolling_client, kDocumentBackgroundType),
+                scrolling_properties, view_hit_test_data),
+            IsPaintChunk(2, 5,
+                         PaintChunk::Id(*html->Layer(),
+                                        kNonScrollingBackgroundChunkType),
+                         scrolling_properties, html_hit_test_data)));
+  }
+}
+
+TEST_P(ViewPainterTestWithPaintTouchAction,
+       TouchActionRectNonScrollingContents) {
+  SetBodyInnerHTML(R"HTML(
+    <style>
+      ::-webkit-scrollbar { display: none; }
+      html {
+         background: radial-gradient(
+          circle at 100px 100px, blue, transparent 200px) fixed;
+        touch-action: none;
+      }
+      body {
+        margin: 0;
+      }
+    </style>
+    <div id='forcescroll' style='width: 0; height: 3000px;'></div>
+  )HTML");
+
+  GetFrame().DomWindow()->scrollBy(0, 100);
+  UpdateAllLifecyclePhasesForTest();
+
+  auto* view = &GetLayoutView();
+  auto non_scrolling_properties =
+      view->FirstFragment().LocalBorderBoxProperties();
+  HitTestData view_hit_test_data;
+  view_hit_test_data.touch_action_rects.emplace_back(
+      LayoutRect(0, 0, 800, 600));
+  auto* html =
+      ToLayoutBlock(GetDocument().documentElement()->GetLayoutObject());
+  auto scrolling_properties = view->FirstFragment().ContentsProperties();
+  HitTestData scrolling_hit_test_data;
+  scrolling_hit_test_data.touch_action_rects.emplace_back(
+      LayoutRect(0, 0, 800, 3000));
+  scrolling_hit_test_data.touch_action_rects.emplace_back(
+      LayoutRect(0, 0, 800, 3000));
+  if (RuntimeEnabledFeatures::SlimmingPaintV2Enabled()) {
+    EXPECT_THAT(
+        RootPaintController().PaintChunks(),
+        ElementsAre(
+            IsPaintChunk(0, 2,
+                         PaintChunk::Id(*view->Layer(),
+                                        DisplayItem::kLayerChunkBackground),
+                         non_scrolling_properties, view_hit_test_data),
+            IsPaintChunk(2, 3,
+                         PaintChunk::Id(*view, DisplayItem::kScrollHitTest),
+                         non_scrolling_properties),
+            IsPaintChunk(3, 6,
+                         PaintChunk::Id(*html->Layer(),
+                                        kNonScrollingBackgroundChunkType),
+                         scrolling_properties, scrolling_hit_test_data)));
+  } else {
+    auto& non_scrolling_paint_controller =
+        view->Layer()->GraphicsLayerBacking(view)->GetPaintController();
+    EXPECT_THAT(
+        non_scrolling_paint_controller.PaintChunks(),
+        ElementsAre(IsPaintChunk(
+            0, 2,
+            PaintChunk::Id(*view->Layer(), kNonScrollingBackgroundChunkType),
+            non_scrolling_properties, view_hit_test_data)));
+    EXPECT_THAT(
+        RootPaintController().PaintChunks(),
+        ElementsAre(IsPaintChunk(
+            0, 3,
+            PaintChunk::Id(*html->Layer(), kNonScrollingBackgroundChunkType),
+            scrolling_properties, scrolling_hit_test_data)));
+  }
 }
 
 }  // namespace blink

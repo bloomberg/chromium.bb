@@ -27,10 +27,10 @@
         <item name="android:statusBarColor" tools:targetApi="21">@android:color/black</item>
 
         <!--  Overriding AppCompat values -->
-        <!-- TODO(huayinz): Change this when the color for checkboxes are updated to modern. -->
-        <item name="colorControlNormal">@color/light_normal_color</item>
+        <item name="colorControlNormal">@color/control_normal_color</item>
         <item name="colorControlActivated">@color/light_active_color</item>
-        <item name="buttonStyle">@style/MainButtonStyle</item>
+        <item name="colorControlHighlight">@color/control_highlight_color</item>
+        <item name="spinnerStyle">@style/SpinnerStyle</item>
 
         <!-- Navigation Transitions, requires API level 21 -->
         <item name="android:windowAllowEnterTransitionOverlap" tools:targetApi="21">false</item>
@@ -45,10 +45,6 @@
     <style name="TranslucentMainTheme" parent="MainThemeBase">
         <item name="android:windowBackground">@android:color/transparent</item>
         <item name="android:windowIsTranslucent">true</item>
-    </style>
-
-    <style name="MainButtonStyle" parent="ButtonCompatBorderless">
-        <item name="android:textAppearance">@style/BlueButtonText2</item>
     </style>
 
     <!-- Extend MainThemeBase rather than MainTheme to avoid values-v27 navigation bar colors from
@@ -75,6 +71,8 @@
         <item name="colorPrimaryDark">@android:color/black</item>
         <item name="colorPrimary">@color/light_active_color</item>
         <item name="colorAccent">@color/light_active_color</item>
+        <item name="colorControlHighlight">@color/control_highlight_color</item>
+        <item name="spinnerStyle">@style/SpinnerStyle</item>
         <item name="windowNoTitle">true</item>
     </style>
     <style name="FullscreenWhite" parent="FullscreenWhiteBase" />
@@ -85,6 +83,8 @@
         <item name="android:windowIsFloating">true</item>
         <item name="android:colorBackgroundCacheHint">@null</item>
         <item name="android:windowIsTranslucent">true</item>
+        <item name="colorControlHighlight">@color/control_highlight_color</item>
+        <item name="spinnerStyle">@style/SpinnerStyle</item>
         <item name="windowNoTitle">true</item>
     </style>
 
@@ -108,8 +108,10 @@
         <!--  Overriding AppCompat values -->
         <item name="colorAccent">@color/light_active_color</item>
         <item name="colorControlActivated">@color/light_active_color</item>
-        <item name="colorControlNormal">@color/light_normal_color</item>
+        <item name="colorControlNormal">@color/control_normal_color</item>
+        <item name="colorControlHighlight">@color/control_highlight_color</item>
         <item name="colorPrimary">@color/light_active_color</item>
+        <item name="spinnerStyle">@style/SpinnerStyle</item>
     </style>
 
     <style name="AlertDialogTitleStyle" parent="RtlOverlay.DialogWindowTitle.AppCompat">
@@ -119,26 +121,9 @@
     <!-- The dim amount should match the alpha of modal_dialog_scrim_color. -->
     <style name="ModalDialogTheme" parent="AlertDialogTheme">
         <item name="android:windowFrame">@null</item>
-        <item name="android:windowBackground">@android:color/transparent</item>
         <item name="android:backgroundDimAmount">0.5</item>
-        <item name="android:windowMinWidthMajor">100%</item>
-        <item name="android:windowMinWidthMinor">100%</item>
-        <item name="buttonBarStyle">@style/ModalDialogButtonBarStyle</item>
-        <item name="buttonBarButtonStyle">@style/ModalDialogButtonStyle</item>
+        <item name="buttonBarButtonStyle">@style/TextButton</item>
         <item name="android:windowSoftInputMode">adjustResize|stateHidden</item>
-    </style>
-
-    <style name="ModalDialogButtonBarStyle" parent="Widget.AppCompat.ButtonBar.AlertDialog">
-        <item name="android:orientation">horizontal</item>
-        <item name="android:gravity">bottom|end</item>
-        <item name="android:paddingStart">@dimen/modal_dialog_control_padding_horizontal</item>
-        <item name="android:paddingEnd">@dimen/modal_dialog_control_padding_horizontal</item>
-        <item name="android:paddingTop">@dimen/modal_dialog_control_padding_vertical</item>
-        <item name="android:paddingBottom">@dimen/modal_dialog_control_padding_vertical</item>
-    </style>
-
-    <style name="ModalDialogButtonStyle" parent="Widget.AppCompat.Button.ButtonBar.AlertDialog">
-        <item name="android:textAppearance">@style/BlueButtonText2</item>
     </style>
 
     <style name="SimpleDialog" parent="AlertDialogTheme">
@@ -225,19 +210,10 @@
         <item name="colorPrimaryDark">@android:color/black</item>
         <!-- Color of checkboxes, switches, buttons, etc. -->
         <item name="colorAccent">@color/pref_accent_color</item>
-        <!-- Button style -->
-        <item name="buttonStyle">@style/MainButtonStyle</item>
+        <item name="colorControlHighlight">@color/control_highlight_color</item>
+        <item name="spinnerStyle">@style/SpinnerStyle</item>
     </style>
     <style name="ThemeWithActionBar" parent="ThemeWithActionBarBase" />
-
-    <style name="FlushFooterButton">
-        <item name="android:background">@drawable/flush_footer_button</item>
-        <item name="android:textAppearance">@style/TextAppearance.FlushFooterButton</item>
-    </style>
-    <style name="TextAppearance.FlushFooterButton"
-        parent="android:TextAppearance.DeviceDefault.Widget.Button">
-        <item name="android:textColor">@color/light_normal_color</item>
-    </style>
 
     <!-- Manage Space Activity -->
     <style name="ManageSpaceTheme" parent="PreferencesTheme">
@@ -293,6 +269,7 @@
         <item name="android:listDivider">@null</item>
         <item name="android:listPreferredItemHeightSmall">48dp</item>
         <item name="android:textAppearance">@style/BlackTitle1</item>
+        <item name="colorControlHighlight">@color/control_highlight_color</item>
     </style>
     <style name="OverflowMenuButton">
         <item name="android:layout_width">0dp</item>
@@ -346,13 +323,18 @@
         <item name="android:dividerPadding">0dp</item>
         <item name="android:showDividers">middle</item>
     </style>
-    <style name="ButtonBarButton" parent="@android:style/Widget.Holo.Light.Button">
+    <style name="ButtonBarButton" parent="@style/TextButton">
         <item name="android:layout_width">0dp</item>
         <item name="android:layout_height">match_parent</item>
         <item name="android:layout_weight">1</item>
-        <item name="android:background">?attr/selectableItemBackground</item>
         <item name="android:paddingStart">4dp</item>
         <item name="android:paddingEnd">4dp</item>
+    </style>
+
+    <!-- Spinner styles -->
+    <style name="SpinnerStyle" parent="Widget.AppCompat.Spinner">
+        <item name="android:popupBackground">@drawable/popup_bg</item>
+        <item name="android:popupElevation" tools:targetApi="21">0dp</item>
     </style>
 
     <!-- Bubble styles -->
@@ -469,7 +451,8 @@
         <item name="android:textColorLink">@color/default_text_color_link</item>
         <item name="colorPrimaryDark">@android:color/black</item>
         <item name="colorAccent">@color/light_active_color</item>
-        <item name="buttonStyle">@style/MainButtonStyle</item>
+        <item name="colorControlHighlight">@color/control_highlight_color</item>
+        <item name="spinnerStyle">@style/SpinnerStyle</item>
 
         <!-- Remove ActionBar -->
         <item name="windowNoTitle">true</item>
@@ -554,6 +537,24 @@
     <style name="TextAppearance.PaymentRequestHeaderTitle" parent="BlackTitle1">
         <item name="android:textStyle">bold</item>
     </style>
+    <style name="TextAppearance.PaymentRequestErrorText">
+        <item name="android:textColor">@color/error_text_color</item>
+        <item name="android:textSize">@dimen/text_size_large</item>
+    </style>
+
+    <!-- Autofill Card -->
+    <style name="TextAppearance.AutofillCardErrorMessage">
+        <item name="android:textColor">@color/input_underline_error_color</item>
+        <item name="android:textSize">@dimen/text_size_small</item>
+    </style>
+    <style name="TextAppearance.AutofillCardInstructionsText">
+        <item name="android:textColor">@color/explanation_text_color</item>
+        <item name="android:textSize">@dimen/text_size_large</item>
+    </style>
+    <style name="TextAppearance.AutofillCardCheckBoxText">
+        <item name="android:textColor">@color/explanation_text_color</item>
+        <item name="android:textSize">@dimen/text_size_medium</item>
+    </style>
 
     <!-- Misc styles -->
     <style name="LocationBarButton">
@@ -605,13 +606,7 @@
         <item name="android:textAppearance">@style/BlackBody</item>
         <item name="android:layout_gravity">start</item>
     </style>
-    <style name="SigninButtonCompat">
-        <item name="android:textAppearance">@style/WhiteButtonText</item>
-        <item name="buttonColor">@color/light_active_color</item>
-        <item name="buttonRaised">false</item>
-    </style>
-    <style name="SigninButtonBorderlessRegular">
-        <item name="android:background">?android:attr/selectableItemBackground</item>
+    <style name="SigninButtonBorderlessRegular" parent="@style/TextButton">
         <item name="android:paddingStart">0dp</item>
         <item name="android:paddingEnd">0dp</item>
         <item name="android:textAppearance">@style/BlueLink2</item>
@@ -757,7 +752,7 @@
     <style name="ContextualSuggestionCardBodyModern" parent="SuggestionCardBodyModern">
         <item name="leading">@dimen/text_size_medium_leading</item>
     </style>
-    <style name="SuggestionCardAction">
+    <style name="SuggestionCardAction" parent="@style/TextButton">
         <item name="android:minHeight">48dp</item>
     </style>
 
@@ -780,5 +775,13 @@
     <!-- Omnibox -->
     <style name="TextAppearance.OmniboxVerboseStatus" parent="@android:style/TextAppearance.Medium">
         <item name="android:textSize">@dimen/location_bar_url_text_size</item>
+    </style>
+
+    <!-- Trusted Web Activities -->
+    <style name="ClearDataDialogActivityTheme" parent="FullscreenTransparentActivityTheme">
+        <item name="android:windowBackground">@android:color/transparent</item>
+        <item name="android:windowEnterAnimation">@null</item>
+        <item name="android:windowExitAnimation">@null</item>
+        <item name="android:windowAnimationStyle">@null</item>
     </style>
 </resources>

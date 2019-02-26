@@ -348,7 +348,7 @@ int TextTrack::TrackIndexRelativeToRenderedTracks() {
 }
 
 const AtomicString& TextTrack::InterfaceName() const {
-  return EventTargetNames::TextTrack;
+  return event_target_names::kTextTrack;
 }
 
 ExecutionContext* TextTrack::GetExecutionContext() const {

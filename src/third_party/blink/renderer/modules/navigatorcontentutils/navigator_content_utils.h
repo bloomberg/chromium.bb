@@ -46,6 +46,9 @@ class MODULES_EXPORT NavigatorContentUtils final
  public:
   static const char kSupplementName[];
 
+  NavigatorContentUtils(Navigator& navigator,
+                        NavigatorContentUtilsClient* client)
+      : Supplement<Navigator>(navigator), client_(client) {}
   virtual ~NavigatorContentUtils();
 
   static NavigatorContentUtils* From(Navigator&);
@@ -69,10 +72,6 @@ class MODULES_EXPORT NavigatorContentUtils final
   }
 
  private:
-  NavigatorContentUtils(Navigator& navigator,
-                        NavigatorContentUtilsClient* client)
-      : Supplement<Navigator>(navigator), client_(client) {}
-
   NavigatorContentUtilsClient* Client() { return client_.Get(); }
 
   Member<NavigatorContentUtilsClient> client_;

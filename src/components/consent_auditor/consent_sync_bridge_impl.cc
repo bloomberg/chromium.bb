@@ -76,8 +76,12 @@ ConsentSyncBridgeImpl::CreateMetadataChangeList() {
 base::Optional<ModelError> ConsentSyncBridgeImpl::MergeSyncData(
     std::unique_ptr<MetadataChangeList> metadata_change_list,
     EntityChangeList entity_data) {
-  NOTREACHED();
-  return {};
+  DCHECK(entity_data.empty());
+  DCHECK(change_processor()->IsTrackingMetadata());
+  DCHECK(!change_processor()->TrackedAccountId().empty());
+  ReadAllDataAndResubmit();
+  return ApplySyncChanges(std::move(metadata_change_list),
+                          std::move(entity_data));
 }
 
 base::Optional<ModelError> ConsentSyncBridgeImpl::ApplySyncChanges(
@@ -119,25 +123,11 @@ std::string ConsentSyncBridgeImpl::GetStorageKey(
   return GetStorageKeyFromSpecifics(entity_data.specifics.user_consent());
 }
 
-void ConsentSyncBridgeImpl::OnSyncStarting(
-    const DataTypeActivationRequest& request) {
-  DCHECK(!request.authenticated_account_id.empty());
-  DCHECK(syncing_account_id_.empty());
-
-  syncing_account_id_ = request.authenticated_account_id;
-
-  if (store_ && change_processor()->IsTrackingMetadata()) {
-    ReadAllDataAndResubmit();
-  }
-}
-
 ModelTypeSyncBridge::StopSyncResponse
 ConsentSyncBridgeImpl::ApplyStopSyncChanges(
     std::unique_ptr<MetadataChangeList> delete_metadata_change_list) {
   // Sync can only be stopped after initialization.
   DCHECK(deferred_consents_while_initializing_.empty());
-
-  syncing_account_id_.clear();
 
   if (delete_metadata_change_list) {
     // Preserve all consents in the store, but delete their metadata, because it
@@ -158,7 +148,7 @@ ConsentSyncBridgeImpl::ApplyStopSyncChanges(
 }
 
 void ConsentSyncBridgeImpl::ReadAllDataAndResubmit() {
-  DCHECK(!syncing_account_id_.empty());
+  DCHECK(!change_processor()->TrackedAccountId().empty());
   DCHECK(change_processor()->IsTrackingMetadata());
   DCHECK(store_);
   store_->ReadAllData(
@@ -169,7 +159,7 @@ void ConsentSyncBridgeImpl::ReadAllDataAndResubmit() {
 void ConsentSyncBridgeImpl::OnReadAllDataToResubmit(
     const base::Optional<ModelError>& error,
     std::unique_ptr<RecordList> data_records) {
-  if (syncing_account_id_.empty()) {
+  if (change_processor()->TrackedAccountId().empty()) {
     // Meanwhile the sync has been disabled. We will try next time.
     return;
   }
@@ -180,21 +170,29 @@ void ConsentSyncBridgeImpl::OnReadAllDataToResubmit(
     return;
   }
 
+  std::unique_ptr<WriteBatch> batch = store_->CreateWriteBatch();
+
   for (const Record& r : *data_records) {
     auto specifics = std::make_unique<UserConsentSpecifics>();
-    if (specifics->ParseFromString(r.value) &&
-        specifics->account_id() == syncing_account_id_) {
-      RecordConsentImpl(std::move(specifics));
+    if (specifics->ParseFromString(r.value)) {
+      if (specifics->account_id() == change_processor()->TrackedAccountId()) {
+        change_processor()->Put(r.id, MoveToEntityData(std::move(specifics)),
+                                batch->GetMetadataChangeList());
+      }
     }
   }
+
+  store_->CommitWriteBatch(std::move(batch),
+                           base::BindOnce(&ConsentSyncBridgeImpl::OnCommit,
+                                          weak_ptr_factory_.GetWeakPtr()));
 }
 
 void ConsentSyncBridgeImpl::RecordConsent(
     std::unique_ptr<UserConsentSpecifics> specifics) {
   // TODO(vitaliii): Sanity-check specifics->account_id() against
-  // syncing_account_id_, maybe DCHECK.
+  // change_processor()->TrackedAccountId(), maybe DCHECK.
   DCHECK(!specifics->account_id().empty());
-  if (change_processor()->IsTrackingMetadata()) {
+  if (store_) {
     RecordConsentImpl(std::move(specifics));
     return;
   }
@@ -207,17 +205,23 @@ std::string ConsentSyncBridgeImpl::GetStorageKeyFromSpecificsForTest(
   return GetStorageKeyFromSpecifics(specifics);
 }
 
+std::unique_ptr<ModelTypeStore> ConsentSyncBridgeImpl::StealStoreForTest() {
+  return std::move(store_);
+}
+
 void ConsentSyncBridgeImpl::RecordConsentImpl(
     std::unique_ptr<UserConsentSpecifics> specifics) {
   DCHECK(store_);
-  DCHECK(change_processor()->IsTrackingMetadata());
 
   std::string storage_key = GetStorageKeyFromSpecifics(*specifics);
   std::unique_ptr<WriteBatch> batch = store_->CreateWriteBatch();
   batch->WriteData(storage_key, specifics->SerializeAsString());
 
-  change_processor()->Put(storage_key, MoveToEntityData(std::move(specifics)),
-                          batch->GetMetadataChangeList());
+  if (specifics->account_id() == change_processor()->TrackedAccountId()) {
+    change_processor()->Put(storage_key, MoveToEntityData(std::move(specifics)),
+                            batch->GetMetadataChangeList());
+  }
+
   store_->CommitWriteBatch(std::move(batch),
                            base::BindOnce(&ConsentSyncBridgeImpl::OnCommit,
                                           weak_ptr_factory_.GetWeakPtr()));
@@ -229,7 +233,6 @@ ConsentSyncBridgeImpl::GetControllerDelegate() {
 }
 
 void ConsentSyncBridgeImpl::ProcessQueuedEvents() {
-  DCHECK(change_processor()->IsTrackingMetadata());
   for (std::unique_ptr<sync_pb::UserConsentSpecifics>& event :
        deferred_consents_while_initializing_) {
     RecordConsentImpl(std::move(event));
@@ -245,8 +248,6 @@ void ConsentSyncBridgeImpl::OnStoreCreated(
     return;
   }
 
-  // TODO(vitaliii): Garbage collect old consents if sync is disabled.
-
   store_ = std::move(store);
   store_->ReadAllMetadata(
       base::BindOnce(&ConsentSyncBridgeImpl::OnReadAllMetadata,
@@ -260,8 +261,11 @@ void ConsentSyncBridgeImpl::OnReadAllMetadata(
     change_processor()->ReportError(*error);
   } else {
     change_processor()->ModelReadyToSync(std::move(metadata_batch));
-    DCHECK(change_processor()->IsTrackingMetadata());
-    if (!syncing_account_id_.empty()) {
+    if (!change_processor()->TrackedAccountId().empty()) {
+      // We resubmit all data in case the client crashed immediately after
+      // MergeSyncData(), where submissions are supposed to happen and
+      // metadata populated. This would be simpler if MergeSyncData() were
+      // asynchronous.
       ReadAllDataAndResubmit();
     }
     ProcessQueuedEvents();

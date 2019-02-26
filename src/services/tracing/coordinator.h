@@ -39,6 +39,10 @@ namespace tracing {
 //
 // If we see that the above-mentioned assumption does not hold in some cases, we
 // should guard against it using timeouts.
+//
+// Note that this class is only used when TraceLog is used as the tracing
+// backend; when Perfetto is used, PerfettoTracingCoordinator is used instead to
+// implement the same interface.
 class Coordinator : public mojom::Coordinator {
  public:
   explicit Coordinator(AgentRegistry* agent_registry);
@@ -89,8 +93,8 @@ class Coordinator : public mojom::Coordinator {
                                const std::string& categories);
 
   mojo::Binding<mojom::Coordinator> binding_;
-  scoped_refptr<base::SingleThreadTaskRunner> task_runner_;
-  scoped_refptr<base::SequencedTaskRunner> background_task_runner_;
+  const scoped_refptr<base::SingleThreadTaskRunner> task_runner_;
+  const scoped_refptr<base::SequencedTaskRunner> backend_task_runner_;
   AgentRegistry* agent_registry_;
   std::string config_;
   base::trace_event::TraceConfig parsed_config_;

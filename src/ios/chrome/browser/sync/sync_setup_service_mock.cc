@@ -4,9 +4,8 @@
 
 #include "ios/chrome/browser/sync/sync_setup_service_mock.h"
 
-SyncSetupServiceMock::SyncSetupServiceMock(syncer::SyncService* sync_service,
-                                           PrefService* prefs)
-    : SyncSetupService(sync_service, prefs) {}
+SyncSetupServiceMock::SyncSetupServiceMock(syncer::SyncService* sync_service)
+    : SyncSetupService(sync_service) {}
 
 SyncSetupServiceMock::~SyncSetupServiceMock() {
 }

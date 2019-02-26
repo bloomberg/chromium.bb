@@ -54,16 +54,16 @@ static XMLCat CharCat(UChar a_char) {
 
   if (a_char == '.' || a_char == '-')
     return kNameCont;
-  WTF::Unicode::CharCategory category = WTF::Unicode::Category(a_char);
+  WTF::unicode::CharCategory category = WTF::unicode::Category(a_char);
   if (category &
-      (WTF::Unicode::kLetter_Uppercase | WTF::Unicode::kLetter_Lowercase |
-       WTF::Unicode::kLetter_Other | WTF::Unicode::kLetter_Titlecase |
-       WTF::Unicode::kNumber_Letter))
+      (WTF::unicode::kLetter_Uppercase | WTF::unicode::kLetter_Lowercase |
+       WTF::unicode::kLetter_Other | WTF::unicode::kLetter_Titlecase |
+       WTF::unicode::kNumber_Letter))
     return kNameStart;
   if (category &
-      (WTF::Unicode::kMark_NonSpacing | WTF::Unicode::kMark_SpacingCombining |
-       WTF::Unicode::kMark_Enclosing | WTF::Unicode::kLetter_Modifier |
-       WTF::Unicode::kNumber_DecimalDigit))
+      (WTF::unicode::kMark_NonSpacing | WTF::unicode::kMark_SpacingCombining |
+       WTF::unicode::kMark_Enclosing | WTF::unicode::kLetter_Modifier |
+       WTF::unicode::kNumber_DecimalDigit))
     return kNameCont;
   return kNotPartOfName;
 }

@@ -17,10 +17,9 @@ class EXTColorBufferFloat final : public WebGLExtension {
   static bool Supported(WebGLRenderingContextBase*);
   static const char* ExtensionName();
 
-  WebGLExtensionName GetName() const override;
-
- private:
   explicit EXTColorBufferFloat(WebGLRenderingContextBase*);
+
+  WebGLExtensionName GetName() const override;
 };
 
 }  // namespace blink

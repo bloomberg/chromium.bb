@@ -19,10 +19,9 @@ class WebGPU final : public ScriptWrappable {
  public:
   static WebGPU* Create();
 
-  WebGPUAdapter* getAdapter(const WebGPUAdapterDescriptor&);
-
- private:
   WebGPU();
+
+  WebGPUAdapter* getAdapter(const WebGPUAdapterDescriptor*);
 };
 
 }  // namespace blink

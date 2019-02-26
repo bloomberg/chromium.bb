@@ -2,10 +2,19 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "base/logging.h"
 #include "components/services/heap_profiling/receiver.h"
 #include "components/services/heap_profiling/stream_parser.h"
 
 #include <utility>
+
+struct Environment {
+  Environment() {
+    // Disable noisy logging as per "libFuzzer in Chrome" documentation:
+    // testing/libfuzzer/getting_started.md#Disable-noisy-error-message-logging.
+    logging::SetMinLogLevel(logging::LOG_FATAL);
+  }
+};
 
 namespace heap_profiling {
 namespace {
@@ -27,6 +36,9 @@ class DummyReceiver : public Receiver {
 
 // Entry point for LibFuzzer.
 extern "C" int LLVMFuzzerTestOneInput(const uint8_t* data, size_t size) {
+  // Initialize environment once.
+  static Environment env;
+
   heap_profiling::DummyReceiver receiver;
   scoped_refptr<heap_profiling::StreamParser> parser(
       new heap_profiling::StreamParser(&receiver));

@@ -20,8 +20,6 @@ namespace {
 const char kPrintCommandPrefix[] = "print";
 }
 
-DEFINE_WEB_STATE_USER_DATA_KEY(PrintTabHelper);
-
 // static
 void PrintTabHelper::CreateForWebState(web::WebState* web_state,
                                        id<WebStatePrinter> printer) {

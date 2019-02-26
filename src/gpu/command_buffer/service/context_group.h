@@ -35,8 +35,11 @@ struct GpuPreferences;
 class MailboxManager;
 class TransferBufferManager;
 class SharedImageManager;
+class SharedImageRepresentationFactory;
 class ServiceDiscardableManager;
+class PassthroughDiscardableManager;
 class DecoderContext;
+class MemoryTracker;
 
 namespace gles2 {
 
@@ -49,7 +52,6 @@ class ProgramManager;
 class SamplerManager;
 class ShaderManager;
 class TextureManager;
-class MemoryTracker;
 struct DisallowedFeatures;
 struct PassthroughResources;
 
@@ -74,6 +76,7 @@ class GPU_GLES2_EXPORT ContextGroup : public base::RefCounted<ContextGroup> {
                gl::ProgressReporter* progress_reporter,
                const GpuFeatureInfo& gpu_feature_info,
                ServiceDiscardableManager* discardable_manager,
+               PassthroughDiscardableManager* passthrough_discardable_manager,
                SharedImageManager* shared_image_manager);
 
   // This should only be called by a DecoderContext. This must be paired with a
@@ -208,8 +211,9 @@ class GPU_GLES2_EXPORT ContextGroup : public base::RefCounted<ContextGroup> {
     return discardable_manager_;
   }
 
-  SharedImageManager* shared_image_manager() const {
-    return shared_image_manager_;
+  SharedImageRepresentationFactory* shared_image_representation_factory()
+      const {
+    return shared_image_representation_factory_.get();
   }
 
   uint32_t GetMemRepresented() const;
@@ -243,6 +247,10 @@ class GPU_GLES2_EXPORT ContextGroup : public base::RefCounted<ContextGroup> {
 
   PassthroughResources* passthrough_resources() const {
     return passthrough_resources_.get();
+  }
+
+  PassthroughDiscardableManager* passthrough_discardable_manager() const {
+    return passthrough_discardable_manager_;
   }
 
   const GpuFeatureInfo& gpu_feature_info() const { return gpu_feature_info_; }
@@ -320,6 +328,7 @@ class GPU_GLES2_EXPORT ContextGroup : public base::RefCounted<ContextGroup> {
 
   bool use_passthrough_cmd_decoder_;
   std::unique_ptr<PassthroughResources> passthrough_resources_;
+  PassthroughDiscardableManager* passthrough_discardable_manager_;
 
   // Used to notify the watchdog thread of progress during destruction,
   // preventing time-outs when destruction takes a long time. May be null when
@@ -330,7 +339,8 @@ class GPU_GLES2_EXPORT ContextGroup : public base::RefCounted<ContextGroup> {
 
   ServiceDiscardableManager* discardable_manager_;
 
-  SharedImageManager* shared_image_manager_;
+  std::unique_ptr<SharedImageRepresentationFactory>
+      shared_image_representation_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(ContextGroup);
 };

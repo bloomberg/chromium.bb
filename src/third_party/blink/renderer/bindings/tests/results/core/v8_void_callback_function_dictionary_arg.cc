@@ -3,7 +3,7 @@
 // found in the LICENSE file.
 
 // This file has been auto-generated from the Jinja2 template
-// third_party/blink/renderer/bindings/templates/callback_function.cpp.tmpl
+// third_party/blink/renderer/bindings/templates/callback_function.cc.tmpl
 // by the script code_generator_v8.py.
 // DO NOT MODIFY!
 
@@ -27,7 +27,7 @@ const char* V8VoidCallbackFunctionDictionaryArg::NameInHeapSnapshot() const {
   return "V8VoidCallbackFunctionDictionaryArg";
 }
 
-v8::Maybe<void> V8VoidCallbackFunctionDictionaryArg::Invoke(ScriptWrappable* callback_this_value, const TestDictionary& arg) {
+v8::Maybe<void> V8VoidCallbackFunctionDictionaryArg::Invoke(ScriptWrappable* callback_this_value, const TestDictionary*& arg) {
   if (!IsCallbackFunctionRunnable(CallbackRelevantScriptState(),
                                   IncumbentScriptState())) {
     // Wrapper-tracing for the callback function makes the function object and
@@ -95,7 +95,7 @@ v8::Maybe<void> V8VoidCallbackFunctionDictionaryArg::Invoke(ScriptWrappable* cal
   return v8::JustVoid();
 }
 
-void V8VoidCallbackFunctionDictionaryArg::InvokeAndReportException(ScriptWrappable* callback_this_value, const TestDictionary& arg) {
+void V8VoidCallbackFunctionDictionaryArg::InvokeAndReportException(ScriptWrappable* callback_this_value, const TestDictionary*& arg) {
   v8::TryCatch try_catch(GetIsolate());
   try_catch.SetVerbose(true);
 
@@ -105,12 +105,12 @@ void V8VoidCallbackFunctionDictionaryArg::InvokeAndReportException(ScriptWrappab
   ALLOW_UNUSED_LOCAL(maybe_result);
 }
 
-v8::Maybe<void> V8PersistentCallbackFunction<V8VoidCallbackFunctionDictionaryArg>::Invoke(ScriptWrappable* callback_this_value, const TestDictionary& arg) {
+v8::Maybe<void> V8PersistentCallbackFunction<V8VoidCallbackFunctionDictionaryArg>::Invoke(ScriptWrappable* callback_this_value, const TestDictionary*& arg) {
   return Proxy()->Invoke(
       callback_this_value, arg);
 }
 
-void V8PersistentCallbackFunction<V8VoidCallbackFunctionDictionaryArg>::InvokeAndReportException(ScriptWrappable* callback_this_value, const TestDictionary& arg) {
+void V8PersistentCallbackFunction<V8VoidCallbackFunctionDictionaryArg>::InvokeAndReportException(ScriptWrappable* callback_this_value, const TestDictionary*& arg) {
   Proxy()->InvokeAndReportException(
       callback_this_value, arg);
 }

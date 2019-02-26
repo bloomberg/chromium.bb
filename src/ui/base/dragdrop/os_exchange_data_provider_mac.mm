@@ -141,7 +141,7 @@ bool OSExchangeDataProviderMac::GetFilename(base::FilePath* path) const {
   if ([paths count] == 0)
     return false;
 
-  *path = base::FilePath([[paths objectAtIndex:0] UTF8String]);
+  *path = base::FilePath(base::SysNSStringToUTF8(paths[0]));
   return true;
 }
 

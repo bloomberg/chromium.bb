@@ -15,10 +15,6 @@ class StubClientNativePixmapFactory : public gfx::ClientNativePixmapFactory {
   ~StubClientNativePixmapFactory() override {}
 
   // ClientNativePixmapFactory:
-  bool IsConfigurationSupported(gfx::BufferFormat format,
-                                gfx::BufferUsage usage) const override {
-    return false;
-  }
   std::unique_ptr<gfx::ClientNativePixmap> ImportFromHandle(
       const gfx::NativePixmapHandle& handle,
       const gfx::Size& size,

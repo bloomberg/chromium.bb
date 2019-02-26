@@ -12,35 +12,21 @@
     {
       name: "animate",
       noTypeHelpers: true,
-      runtimeEnabled: "SMIL",
     },
     {
       name: "animateColor",
       JSInterfaceName: "SVGElement",
       interfaceName: "SVGUnknownElement",
       noConstructor: true,
-      runtimeEnabled: "SMIL",
     },
-    {
-      name: "animateMotion",
-      runtimeEnabled: "SMIL",
-    },
-    {
-      name: "animateTransform",
-      runtimeEnabled: "SMIL",
-    },
-    {
-      name: "set",
-      runtimeEnabled: "SMIL",
-    },
+    "animateMotion",
+    "animateTransform",
+    "set",
     "circle",
     "clipPath",
     "defs",
     "desc",
-    {
-      name: "discard",
-      runtimeEnabled: "SMIL",
-    },
+    "discard",
     "ellipse",
     "feBlend",
     "feColorMatrix",
@@ -79,7 +65,6 @@
     {
       name: "mpath",
       interfaceName: "SVGMPathElement",
-      runtimeEnabled: "SMIL",
     },
     "path",
     "pattern",

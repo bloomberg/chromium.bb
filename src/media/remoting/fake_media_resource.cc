@@ -28,7 +28,7 @@ FakeDemuxerStream::FakeDemuxerStream(bool is_audio) {
     gfx::Size size(640, 480);
     gfx::Rect rect(0, 0, 640, 480);
     video_config_.Initialize(kCodecH264, H264PROFILE_BASELINE,
-                             PIXEL_FORMAT_I420, COLOR_SPACE_SD_REC601,
+                             PIXEL_FORMAT_I420, VideoColorSpace::REC601(),
                              VIDEO_ROTATION_0, size, rect, size,
                              std::vector<uint8_t>(), Unencrypted());
   }

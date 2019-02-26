@@ -284,7 +284,7 @@ void LocalDOMWindow::AcceptLanguagesChanged() {
   if (navigator_)
     navigator_->SetLanguagesChanged();
 
-  DispatchEvent(*Event::Create(EventTypeNames::languagechange));
+  DispatchEvent(*Event::Create(event_type_names::kLanguagechange));
 }
 
 TrustedTypePolicyFactory* LocalDOMWindow::trustedTypes() const {
@@ -337,9 +337,6 @@ Document* LocalDOMWindow::InstallNewDocument(const String& mime_type,
     GetFrame()->GetPage()->GetChromeClient().InstallSupplements(*GetFrame());
   }
 
-  if (GetFrame()->IsCrossOriginSubframe())
-    document_->RecordDeferredLoadReason(WouldLoadReason::kCreated);
-
   return document_;
 }
 
@@ -384,12 +381,12 @@ void LocalDOMWindow::EnqueuePageshowEvent(PageshowEventPersistence persisted) {
     // The task source should be kDOMManipulation, but the spec doesn't say
     // anything about this.
     EnqueueWindowEvent(
-        *PageTransitionEvent::Create(EventTypeNames::pageshow, persisted),
+        *PageTransitionEvent::Create(event_type_names::kPageshow, persisted),
         TaskType::kMiscPlatformAPI);
     return;
   }
   DispatchEvent(
-      *PageTransitionEvent::Create(EventTypeNames::pageshow, persisted),
+      *PageTransitionEvent::Create(event_type_names::kPageshow, persisted),
       document_.Get());
 }
 
@@ -503,7 +500,7 @@ void LocalDOMWindow::SendOrientationChangeEvent() {
 
   for (LocalFrame* frame : frames) {
     frame->DomWindow()->DispatchEvent(
-        *Event::Create(EventTypeNames::orientationchange));
+        *Event::Create(event_type_names::kOrientationchange));
   }
 }
 
@@ -606,9 +603,9 @@ void LocalDOMWindow::SchedulePostMessage(
   // is problematic; consider imposing a limit or other restriction if this
   // surfaces often as a problem (see crbug.com/587012).
   std::unique_ptr<SourceLocation> location = SourceLocation::Capture(source);
-  PostMessageTimer* timer =
-      new PostMessageTimer(*this, event, std::move(target), std::move(location),
-                           UserGestureIndicator::CurrentToken());
+  PostMessageTimer* timer = MakeGarbageCollected<PostMessageTimer>(
+      *this, event, std::move(target), std::move(location),
+      UserGestureIndicator::CurrentToken());
   timer->StartOneShot(TimeDelta(), FROM_HERE);
   timer->PauseIfNeeded();
   probe::AsyncTaskScheduled(document(), "postMessage", timer);
@@ -1060,13 +1057,13 @@ double LocalDOMWindow::devicePixelRatio() const {
 }
 
 void LocalDOMWindow::scrollBy(double x, double y) const {
-  ScrollToOptions options;
-  options.setLeft(x);
-  options.setTop(y);
+  ScrollToOptions* options = ScrollToOptions::Create();
+  options->setLeft(x);
+  options->setTop(y);
   scrollBy(options);
 }
 
-void LocalDOMWindow::scrollBy(const ScrollToOptions& scroll_to_options) const {
+void LocalDOMWindow::scrollBy(const ScrollToOptions* scroll_to_options) const {
   if (!IsCurrentlyDisplayedInFrame())
     return;
 
@@ -1082,29 +1079,28 @@ void LocalDOMWindow::scrollBy(const ScrollToOptions& scroll_to_options) const {
 
   double x = 0.0;
   double y = 0.0;
-  if (scroll_to_options.hasLeft())
-    x = ScrollableArea::NormalizeNonFiniteScroll(scroll_to_options.left());
-  if (scroll_to_options.hasTop())
-    y = ScrollableArea::NormalizeNonFiniteScroll(scroll_to_options.top());
+  if (scroll_to_options->hasLeft())
+    x = ScrollableArea::NormalizeNonFiniteScroll(scroll_to_options->left());
+  if (scroll_to_options->hasTop())
+    y = ScrollableArea::NormalizeNonFiniteScroll(scroll_to_options->top());
 
   PaintLayerScrollableArea* viewport = view->LayoutViewport();
-  ScrollOffset current_offset = viewport->GetScrollOffset();
-  ScrollOffset scaled_delta(x * GetFrame()->PageZoomFactor(),
-                            y * GetFrame()->PageZoomFactor());
-  FloatPoint new_scaled_position =
-      viewport->ScrollOffsetToPosition(scaled_delta + current_offset);
-  if (RuntimeEnabledFeatures::CSSScrollSnapPointsEnabled()) {
-    new_scaled_position =
-        document()
-            ->GetSnapCoordinator()
-            ->GetSnapPositionForPoint(
-                *document()->GetLayoutView(), new_scaled_position,
-                scroll_to_options.hasLeft(), scroll_to_options.hasTop())
-            .value_or(new_scaled_position);
-  }
+  FloatPoint current_position = viewport->ScrollPosition();
+  FloatPoint scaled_delta(x * GetFrame()->PageZoomFactor(),
+                          y * GetFrame()->PageZoomFactor());
+  FloatPoint new_scaled_position = current_position + scaled_delta;
+
+  std::unique_ptr<SnapSelectionStrategy> strategy =
+      SnapSelectionStrategy::CreateForEndAndDirection(
+          gfx::ScrollOffset(current_position), gfx::ScrollOffset(scaled_delta));
+  new_scaled_position =
+      document()
+          ->GetSnapCoordinator()
+          ->GetSnapPosition(*document()->GetLayoutView(), *strategy)
+          .value_or(new_scaled_position);
 
   ScrollBehavior scroll_behavior = kScrollBehaviorAuto;
-  ScrollableArea::ScrollBehaviorFromString(scroll_to_options.behavior(),
+  ScrollableArea::ScrollBehaviorFromString(scroll_to_options->behavior(),
                                            scroll_behavior);
   viewport->SetScrollOffset(
       viewport->ScrollPositionToOffset(new_scaled_position),
@@ -1112,13 +1108,13 @@ void LocalDOMWindow::scrollBy(const ScrollToOptions& scroll_to_options) const {
 }
 
 void LocalDOMWindow::scrollTo(double x, double y) const {
-  ScrollToOptions options;
-  options.setLeft(x);
-  options.setTop(y);
+  ScrollToOptions* options = ScrollToOptions::Create();
+  options->setLeft(x);
+  options->setTop(y);
   scrollTo(options);
 }
 
-void LocalDOMWindow::scrollTo(const ScrollToOptions& scroll_to_options) const {
+void LocalDOMWindow::scrollTo(const ScrollToOptions* scroll_to_options) const {
   if (!IsCurrentlyDisplayedInFrame())
     return;
 
@@ -1132,8 +1128,8 @@ void LocalDOMWindow::scrollTo(const ScrollToOptions& scroll_to_options) const {
 
   // It is only necessary to have an up-to-date layout if the position may be
   // clamped, which is never the case for (0, 0).
-  if (!scroll_to_options.hasLeft() || !scroll_to_options.hasTop() ||
-      scroll_to_options.left() || scroll_to_options.top()) {
+  if (!scroll_to_options->hasLeft() || !scroll_to_options->hasTop() ||
+      scroll_to_options->left() || scroll_to_options->top()) {
     document()->UpdateStyleAndLayoutIgnorePendingStylesheets();
   }
 
@@ -1145,32 +1141,31 @@ void LocalDOMWindow::scrollTo(const ScrollToOptions& scroll_to_options) const {
   scaled_x = current_offset.Width();
   scaled_y = current_offset.Height();
 
-  if (scroll_to_options.hasLeft())
+  if (scroll_to_options->hasLeft())
     scaled_x =
-        ScrollableArea::NormalizeNonFiniteScroll(scroll_to_options.left()) *
+        ScrollableArea::NormalizeNonFiniteScroll(scroll_to_options->left()) *
         GetFrame()->PageZoomFactor();
 
-  if (scroll_to_options.hasTop())
+  if (scroll_to_options->hasTop())
     scaled_y =
-        ScrollableArea::NormalizeNonFiniteScroll(scroll_to_options.top()) *
+        ScrollableArea::NormalizeNonFiniteScroll(scroll_to_options->top()) *
         GetFrame()->PageZoomFactor();
 
   FloatPoint new_scaled_position =
       viewport->ScrollOffsetToPosition(ScrollOffset(scaled_x, scaled_y));
-  if (RuntimeEnabledFeatures::CSSScrollSnapPointsEnabled()) {
-    new_scaled_position =
-        document()
-            ->GetSnapCoordinator()
-            ->GetSnapPositionForPoint(
-                *document()->GetLayoutView(), new_scaled_position,
-                scroll_to_options.hasLeft(), scroll_to_options.hasTop())
-            .value_or(new_scaled_position);
-  }
 
+  std::unique_ptr<SnapSelectionStrategy> strategy =
+      SnapSelectionStrategy::CreateForEndPosition(
+          gfx::ScrollOffset(new_scaled_position), scroll_to_options->hasLeft(),
+          scroll_to_options->hasTop());
+  new_scaled_position =
+      document()
+          ->GetSnapCoordinator()
+          ->GetSnapPosition(*document()->GetLayoutView(), *strategy)
+          .value_or(new_scaled_position);
   ScrollBehavior scroll_behavior = kScrollBehaviorAuto;
-  ScrollableArea::ScrollBehaviorFromString(scroll_to_options.behavior(),
+  ScrollableArea::ScrollBehaviorFromString(scroll_to_options->behavior(),
                                            scroll_behavior);
-
   viewport->SetScrollOffset(
       viewport->ScrollPositionToOffset(new_scaled_position),
       kProgrammaticScroll, scroll_behavior);
@@ -1265,7 +1260,7 @@ void LocalDOMWindow::queueMicrotask(V8VoidFunction* callback) {
 }
 
 int LocalDOMWindow::requestIdleCallback(V8IdleRequestCallback* callback,
-                                        const IdleRequestOptions& options) {
+                                        const IdleRequestOptions* options) {
   if (Document* document = this->document()) {
     return document->RequestIdleCallback(
         ScriptedIdleTaskController::V8IdleTask::Create(callback), options);
@@ -1302,7 +1297,7 @@ void LocalDOMWindow::SetModulator(Modulator* modulator) {
 
 External* LocalDOMWindow::external() {
   if (!external_)
-    external_ = new External;
+    external_ = MakeGarbageCollected<External>();
   return external_;
 }
 
@@ -1329,19 +1324,19 @@ void LocalDOMWindow::AddedEventListener(
     it->DidAddEventListener(this, event_type);
   }
 
-  if (event_type == EventTypeNames::unload) {
+  if (event_type == event_type_names::kUnload) {
     UseCounter::Count(document(), WebFeature::kDocumentUnloadRegistered);
     TrackUnloadEventListener(this);
-  } else if (event_type == EventTypeNames::beforeunload) {
+  } else if (event_type == event_type_names::kBeforeunload) {
     UseCounter::Count(document(), WebFeature::kDocumentBeforeUnloadRegistered);
     TrackBeforeUnloadEventListener(this);
     if (GetFrame() && !GetFrame()->IsMainFrame()) {
       UseCounter::Count(document(),
                         WebFeature::kSubFrameBeforeUnloadRegistered);
     }
-  } else if (event_type == EventTypeNames::pagehide) {
+  } else if (event_type == event_type_names::kPagehide) {
     UseCounter::Count(document(), WebFeature::kDocumentPageHideRegistered);
-  } else if (event_type == EventTypeNames::pageshow) {
+  } else if (event_type == event_type_names::kPageshow) {
     UseCounter::Count(document(), WebFeature::kDocumentPageShowRegistered);
   }
 }
@@ -1359,9 +1354,9 @@ void LocalDOMWindow::RemovedEventListener(
     it->DidRemoveEventListener(this, event_type);
   }
 
-  if (event_type == EventTypeNames::unload) {
+  if (event_type == event_type_names::kUnload) {
     UntrackUnloadEventListener(this);
-  } else if (event_type == EventTypeNames::beforeunload) {
+  } else if (event_type == event_type_names::kBeforeunload) {
     UntrackBeforeUnloadEventListener(this);
   }
 }
@@ -1385,7 +1380,7 @@ void LocalDOMWindow::WarnUnusedPreloads(TimerBase* base) {
 }
 
 void LocalDOMWindow::DispatchLoadEvent() {
-  Event& load_event = *Event::Create(EventTypeNames::load);
+  Event& load_event = *Event::Create(event_type_names::kLoad);
   DocumentLoader* document_loader =
       GetFrame() ? GetFrame()->Loader().GetDocumentLoader() : nullptr;
   if (document_loader &&
@@ -1421,7 +1416,7 @@ void LocalDOMWindow::DispatchLoadEvent() {
 
   TRACE_EVENT_INSTANT1("devtools.timeline", "MarkLoad",
                        TRACE_EVENT_SCOPE_THREAD, "data",
-                       InspectorMarkLoadEvent::Data(GetFrame()));
+                       inspector_mark_load_event::Data(GetFrame()));
   probe::loadEventFired(GetFrame());
 }
 
@@ -1437,7 +1432,7 @@ DispatchEventResult LocalDOMWindow::DispatchEvent(Event& event,
   event.SetEventPhase(Event::kAtTarget);
 
   TRACE_EVENT1("devtools.timeline", "EventDispatch", "data",
-               InspectorEventDispatchEvent::Data(event));
+               inspector_event_dispatch_event::Data(event));
   return FireEventListeners(event);
 }
 

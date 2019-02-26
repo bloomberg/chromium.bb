@@ -21,10 +21,11 @@ CFFL_CheckBox::CFFL_CheckBox(CPDFSDK_FormFillEnvironment* pApp,
 
 CFFL_CheckBox::~CFFL_CheckBox() {}
 
-std::unique_ptr<CPWL_Wnd> CFFL_CheckBox::NewPDFWindow(
-    const CPWL_Wnd::CreateParams& cp) {
-  auto pWnd = pdfium::MakeUnique<CPWL_CheckBox>();
-  pWnd->Create(cp);
+std::unique_ptr<CPWL_Wnd> CFFL_CheckBox::NewPWLWindow(
+    const CPWL_Wnd::CreateParams& cp,
+    std::unique_ptr<CPWL_Wnd::PrivateData> pAttachedData) {
+  auto pWnd = pdfium::MakeUnique<CPWL_CheckBox>(cp, std::move(pAttachedData));
+  pWnd->Realize();
   pWnd->SetCheck(m_pWidget->IsChecked());
   return std::move(pWnd);
 }

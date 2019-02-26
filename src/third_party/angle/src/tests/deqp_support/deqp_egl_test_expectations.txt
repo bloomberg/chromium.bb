@@ -179,8 +179,7 @@
 2635 WIN VULKAN : dEQP-EGL.functional.resize.surface_size.stretch_width = FAIL
 2635 WIN VULKAN : dEQP-EGL.functional.wide_color.pbuffer_8888_colorspace_default = FAIL
 2716 WIN VULKAN : dEQP-EGL.functional.preserve_swap.no_preserve.* = FAIL
-2811 WIN VULKAN : dEQP-EGL.functional.swap_buffers_with_damage.* = SKIP
-
+2811 WIN VULKAN : dEQP-EGL.functional.swap_buffers_with_damage.resize* = SKIP
 
 // Linux failures
 2546 LINUX : dEQP-EGL.functional.color_clears.multi_context.gles1.rgba8888_pixmap = SKIP
@@ -259,9 +258,7 @@
 2546 ANDROID : dEQP-EGL.functional.color_clears.single_context.* = FAIL
 2546 ANDROID : dEQP-EGL.functional.native_color_mapping.native_window.* = FAIL
 2546 ANDROID : dEQP-EGL.functional.native_coord_mapping.native_window.* = FAIL
-2546 ANDROID : dEQP-EGL.functional.negative_api.choose_config = FAIL
 2546 ANDROID : dEQP-EGL.functional.negative_api.copy_buffers = FAIL
-2546 ANDROID : dEQP-EGL.functional.negative_api.swap_interval = FAIL
 2546 ANDROID : dEQP-EGL.functional.partial_update.odd_clear_* = FAIL
 2546 ANDROID : dEQP-EGL.functional.partial_update.odd_render_* = FAIL
 2546 ANDROID : dEQP-EGL.functional.partial_update.render_* = FAIL

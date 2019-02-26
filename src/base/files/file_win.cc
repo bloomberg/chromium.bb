@@ -273,7 +273,7 @@ File File::Duplicate() const {
 }
 
 bool File::DeleteOnClose(bool delete_on_close) {
-  FILE_DISPOSITION_INFO disposition = {delete_on_close ? TRUE : FALSE};
+  FILE_DISPOSITION_INFO disposition = {delete_on_close};
   return ::SetFileInformationByHandle(GetPlatformFile(), FileDispositionInfo,
                                       &disposition, sizeof(disposition)) != 0;
 }

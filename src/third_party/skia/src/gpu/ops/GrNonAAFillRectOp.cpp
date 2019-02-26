@@ -125,9 +125,10 @@ public:
 
     NonAAFillRectOp() = delete;
 
-    NonAAFillRectOp(const Helper::MakeArgs& args, GrColor color, const SkMatrix& viewMatrix,
-                    const SkRect& rect, const SkRect* localRect, const SkMatrix* localMatrix,
-                    GrAAType aaType, const GrUserStencilSettings* stencilSettings)
+    NonAAFillRectOp(const Helper::MakeArgs& args, const SkPMColor4f& color,
+                    const SkMatrix& viewMatrix, const SkRect& rect, const SkRect* localRect,
+                    const SkMatrix* localMatrix, GrAAType aaType,
+                    const GrUserStencilSettings* stencilSettings)
             : INHERITED(ClassID()), fHelper(args, aaType, stencilSettings) {
 
         SkASSERT(!viewMatrix.hasPerspective() && (!localMatrix || !localMatrix->hasPerspective()));
@@ -149,10 +150,11 @@ public:
 
     const char* name() const override { return "NonAAFillRectOp"; }
 
-    void visitProxies(const VisitProxyFunc& func) const override {
+    void visitProxies(const VisitProxyFunc& func, VisitorType) const override {
         fHelper.visitProxies(func);
     }
 
+#ifdef SK_DEBUG
     SkString dumpInfo() const override {
         SkString str;
         str.append(GrMeshDrawOp::dumpInfo());
@@ -160,16 +162,17 @@ public:
         for (int i = 0; i < fRects.count(); ++i) {
             const RectInfo& info = fRects[i];
             str.appendf("%d: Color: 0x%08x, Rect [L: %.2f, T: %.2f, R: %.2f, B: %.2f]\n", i,
-                        info.fColor, info.fRect.fLeft, info.fRect.fTop, info.fRect.fRight,
-                        info.fRect.fBottom);
+                        info.fColor.toBytes_RGBA(), info.fRect.fLeft, info.fRect.fTop,
+                        info.fRect.fRight, info.fRect.fBottom);
         }
         str += fHelper.dumpInfo();
         str += INHERITED::dumpInfo();
         return str;
     }
+#endif
 
     RequiresDstTexture finalize(const GrCaps& caps, const GrAppliedClip* clip) override {
-        GrColor* color = &fRects.front().fColor;
+        SkPMColor4f* color = &fRects.front().fColor;
         return fHelper.xpRequiresDstTexture(caps, clip, GrProcessorAnalysisCoverage::kNone, color);
     }
 
@@ -185,10 +188,7 @@ private:
             return;
         }
 
-        static constexpr size_t kVertexStride =
-                sizeof(GrDefaultGeoProcFactory::PositionColorLocalCoordAttr);
-        SkASSERT(kVertexStride == gp->debugOnly_vertexStride());
-
+        size_t kVertexStride = gp->vertexStride();
         int rectCount = fRects.count();
 
         sk_sp<const GrBuffer> indexBuffer = target->resourceProvider()->refQuadIndexBuffer();
@@ -203,7 +203,8 @@ private:
         for (int i = 0; i < rectCount; i++) {
             intptr_t verts =
                     reinterpret_cast<intptr_t>(vertices) + i * kVertsPerRect * kVertexStride;
-            tesselate(verts, kVertexStride, fRects[i].fColor, &fRects[i].fViewMatrix,
+            // TODO4F: Preserve float colors
+            tesselate(verts, kVertexStride, fRects[i].fColor.toBytes_RGBA(), &fRects[i].fViewMatrix,
                       fRects[i].fRect, &fRects[i].fLocalQuad);
         }
         auto pipe = fHelper.makePipeline(target);
@@ -216,12 +217,11 @@ private:
             return CombineResult::kCannotCombine;
         }
         fRects.push_back_n(that->fRects.count(), that->fRects.begin());
-        this->joinBounds(*that);
         return CombineResult::kMerged;
     }
 
     struct RectInfo {
-        GrColor fColor;
+        SkPMColor4f fColor;
         SkMatrix fViewMatrix;
         SkRect fRect;
         GrQuad fLocalQuad;
@@ -255,7 +255,7 @@ public:
 
     NonAAFillRectPerspectiveOp() = delete;
 
-    NonAAFillRectPerspectiveOp(const Helper::MakeArgs& args, GrColor color,
+    NonAAFillRectPerspectiveOp(const Helper::MakeArgs& args, const SkPMColor4f& color,
                                const SkMatrix& viewMatrix, const SkRect& rect,
                                const SkRect* localRect, const SkMatrix* localMatrix,
                                GrAAType aaType, const GrUserStencilSettings* stencilSettings)
@@ -279,26 +279,28 @@ public:
 
     const char* name() const override { return "NonAAFillRectPerspectiveOp"; }
 
-    void visitProxies(const VisitProxyFunc& func) const override {
+    void visitProxies(const VisitProxyFunc& func, VisitorType) const override {
         fHelper.visitProxies(func);
     }
 
+#ifdef SK_DEBUG
     SkString dumpInfo() const override {
         SkString str;
         str.appendf("# combined: %d\n", fRects.count());
         for (int i = 0; i < fRects.count(); ++i) {
             const RectInfo& geo = fRects[i];
             str.appendf("%d: Color: 0x%08x, Rect [L: %.2f, T: %.2f, R: %.2f, B: %.2f]\n", i,
-                        geo.fColor, geo.fRect.fLeft, geo.fRect.fTop, geo.fRect.fRight,
-                        geo.fRect.fBottom);
+                        geo.fColor.toBytes_RGBA(), geo.fRect.fLeft, geo.fRect.fTop,
+                        geo.fRect.fRight, geo.fRect.fBottom);
         }
         str += fHelper.dumpInfo();
         str += INHERITED::dumpInfo();
         return str;
     }
+#endif
 
     RequiresDstTexture finalize(const GrCaps& caps, const GrAppliedClip* clip) override {
-        GrColor* color = &fRects.front().fColor;
+        SkPMColor4f* color = &fRects.front().fColor;
         return fHelper.xpRequiresDstTexture(caps, clip, GrProcessorAnalysisCoverage::kNone, color);
     }
 
@@ -317,11 +319,7 @@ private:
             SkDebugf("Couldn't create GrGeometryProcessor\n");
             return;
         }
-        size_t vertexStride = fHasLocalRect
-                                      ? sizeof(GrDefaultGeoProcFactory::PositionColorLocalCoordAttr)
-                                      : sizeof(GrDefaultGeoProcFactory::PositionColorAttr);
-        SkASSERT(vertexStride == gp->debugOnly_vertexStride());
-
+        size_t vertexStride = gp->vertexStride();
         int rectCount = fRects.count();
 
         sk_sp<const GrBuffer> indexBuffer = target->resourceProvider()->refQuadIndexBuffer();
@@ -335,13 +333,15 @@ private:
 
         for (int i = 0; i < rectCount; i++) {
             const RectInfo& info = fRects[i];
+            // TODO4F: Preserve float colors
+            GrColor color = info.fColor.toBytes_RGBA();
             intptr_t verts =
                     reinterpret_cast<intptr_t>(vertices) + i * kVertsPerRect * vertexStride;
             if (fHasLocalRect) {
                 GrQuad quad(info.fLocalRect);
-                tesselate(verts, vertexStride, info.fColor, nullptr, info.fRect, &quad);
+                tesselate(verts, vertexStride, color, nullptr, info.fRect, &quad);
             } else {
-                tesselate(verts, vertexStride, info.fColor, nullptr, info.fRect, nullptr);
+                tesselate(verts, vertexStride, color, nullptr, info.fRect, nullptr);
             }
         }
         auto pipe = fHelper.makePipeline(target);
@@ -366,13 +366,12 @@ private:
         }
 
         fRects.push_back_n(that->fRects.count(), that->fRects.begin());
-        this->joinBounds(*that);
         return CombineResult::kMerged;
     }
 
     struct RectInfo {
         SkRect fRect;
-        GrColor fColor;
+        SkPMColor4f fColor;
         SkRect fLocalRect;
     };
 

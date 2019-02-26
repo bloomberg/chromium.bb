@@ -12,24 +12,6 @@
 
 void RefcountedBrowserContextKeyedServiceFactory::SetTestingFactory(
     content::BrowserContext* context,
-    TestingFactoryFunction testing_factory) {
-  TestingFactory wrapped_factory;
-  if (testing_factory) {
-    wrapped_factory = base::BindRepeating(testing_factory);
-  }
-  SetTestingFactory(context, std::move(wrapped_factory));
-}
-
-scoped_refptr<RefcountedKeyedService>
-RefcountedBrowserContextKeyedServiceFactory::SetTestingFactoryAndUse(
-    content::BrowserContext* context,
-    TestingFactoryFunction testing_factory) {
-  DCHECK(testing_factory);
-  return SetTestingFactoryAndUse(context, base::BindRepeating(testing_factory));
-}
-
-void RefcountedBrowserContextKeyedServiceFactory::SetTestingFactory(
-    content::BrowserContext* context,
     TestingFactory testing_factory) {
   RefcountedKeyedServiceFactory::TestingFactory wrapped_factory;
   if (testing_factory) {

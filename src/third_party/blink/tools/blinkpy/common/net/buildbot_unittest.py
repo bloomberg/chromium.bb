@@ -107,7 +107,7 @@ class BuilderTest(LoggingTestCase):
         def fetch_file(_):
             return ('ADD_RESULTS(%s);' % (json.dumps(
                 [{"TestType": "webkit_layout_tests (with patch)"},
-                 {"TestType": "site_per_process_webkit_layout_tests (with patch)"},
+                 {"TestType": "not_site_per_process_webkit_layout_tests (with patch)"},
                  {"TestType": "webkit_layout_tests (retry with patch)"},
                  {"TestType": "base_unittests (with patch)"}])))
 

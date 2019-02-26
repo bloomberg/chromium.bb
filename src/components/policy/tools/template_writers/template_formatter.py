@@ -2,7 +2,6 @@
 # Copyright 2017 The Chromium Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
-
 '''Takes translated policy_template.json files as input, applies template
 writers and emits various template and doc files (admx, html, json etc.).
 '''
@@ -22,6 +21,7 @@ from writers import adm_writer, adml_writer, admx_writer, \
                     google_admx_writer, google_adml_writer, \
                     android_policy_writer, reg_writer, doc_writer, \
                     json_writer, plist_writer, plist_strings_writer
+
 
 def MacLanguageMap(lang):
   '''Handles slightly different path naming convention for Macs:
@@ -43,27 +43,26 @@ Members:
   language_map: Optional language mapping for file paths.
   force_windows_line_ending: Forces output file to use Windows line ending.
 '''
-WriterDesc = collections.namedtuple(
-    'WriterDesc', ['type', 'is_per_language', 'encoding', 'language_map',
-                   'force_windows_line_ending'])
-
+WriterDesc = collections.namedtuple('WriterDesc', [
+    'type', 'is_per_language', 'encoding', 'language_map',
+    'force_windows_line_ending'
+])
 
 _WRITER_DESCS = [
-  WriterDesc('adm', True, 'utf-16', None, True),
-  WriterDesc('adml', True, 'utf-16', None, True),
-  WriterDesc('admx', False, 'utf-16', None, True),
-  WriterDesc('google_adml', True, 'utf-8', None, True),
-  WriterDesc('google_admx', False, 'utf-8', None, True),
-  WriterDesc('chromeos_adml', True, 'utf-8', None, True),
-  WriterDesc('chromeos_admx', False, 'utf-8', None, True),
-  WriterDesc('android_policy', False, 'utf-8', None, False),
-  WriterDesc('reg', False, 'utf-16', None, False),
-  WriterDesc('doc', True, 'utf-8', None, False),
-  WriterDesc('json', False, 'utf-8', None, False),
-  WriterDesc('plist', False, 'utf-8', None, False),
-  WriterDesc('plist_strings', True, 'utf-8', MacLanguageMap, False)
+    WriterDesc('adm', True, 'utf-16', None, True),
+    WriterDesc('adml', True, 'utf-16', None, True),
+    WriterDesc('admx', False, 'utf-16', None, True),
+    WriterDesc('google_adml', True, 'utf-8', None, True),
+    WriterDesc('google_admx', False, 'utf-8', None, True),
+    WriterDesc('chromeos_adml', True, 'utf-8', None, True),
+    WriterDesc('chromeos_admx', False, 'utf-8', None, True),
+    WriterDesc('android_policy', False, 'utf-8', None, False),
+    WriterDesc('reg', False, 'utf-16', None, False),
+    WriterDesc('doc', True, 'utf-8', None, False),
+    WriterDesc('json', False, 'utf-8', None, False),
+    WriterDesc('plist', False, 'utf-8', None, False),
+    WriterDesc('plist_strings', True, 'utf-8', MacLanguageMap, False)
 ]
-
 
 # Template writers that are not per-language use policy_templates.json from
 # this language.
@@ -93,6 +92,7 @@ def _GetWriterConfiguration(grit_defines):
     grit_defines_dict[parts[0]] = parts[1] if len(parts) > 1 else 1
   return writer_configuration.GetConfigurationForBuild(grit_defines_dict)
 
+
 def _ParseVersionFile(version_path):
   '''Parse version file, return major version if it exists.
 
@@ -103,7 +103,7 @@ def _ParseVersionFile(version_path):
 
   with open(version_path) as fp:
     for line in fp:
-      key,_,major_version = line.partition('=')
+      key, _, major_version = line.partition('=')
       if key.strip() == 'MAJOR':
         return int(major_version.strip())
   return None
@@ -169,14 +169,14 @@ def main(argv):
   # For each language, load policy data once and run all writers on it.
   for lang in languages:
     # Load the policy data.
-    policy_templates_json_path = \
-      options.translations.replace(_LANG_PLACEHOLDER, lang)
+    policy_templates_json_path = options.translations.replace(
+        _LANG_PLACEHOLDER, lang)
     with codecs.open(policy_templates_json_path, 'r', 'utf-16') as policy_file:
       policy_data = eval(policy_file.read())
 
     # Preprocess the policy data.
-    policy_generator = \
-        policy_template_generator.PolicyTemplateGenerator(config, policy_data)
+    policy_generator = policy_template_generator.PolicyTemplateGenerator(
+        config, policy_data)
 
     for writer_desc in _WRITER_DESCS:
       # For writer types that are not per language (e.g. admx), only do it once.
@@ -192,8 +192,8 @@ def main(argv):
         # Substitute language placeholder in output file.
         if (writer_desc.is_per_language):
           assert _LANG_PLACEHOLDER in output_path
-          mapped_lang = writer_desc.language_map(lang) \
-              if writer_desc.language_map else lang
+          mapped_lang = writer_desc.language_map(
+              lang) if writer_desc.language_map else lang
           output_path = output_path.replace(_LANG_PLACEHOLDER, mapped_lang)
         else:
           assert _LANG_PLACEHOLDER not in output_path

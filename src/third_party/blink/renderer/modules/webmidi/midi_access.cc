@@ -89,12 +89,12 @@ void MIDIAccess::Dispose() {
 }
 
 EventListener* MIDIAccess::onstatechange() {
-  return GetAttributeEventListener(EventTypeNames::statechange);
+  return GetAttributeEventListener(event_type_names::kStatechange);
 }
 
 void MIDIAccess::setOnstatechange(EventListener* listener) {
   has_pending_activity_ = listener;
-  SetAttributeEventListener(EventTypeNames::statechange, listener);
+  SetAttributeEventListener(event_type_names::kStatechange, listener);
 }
 
 bool MIDIAccess::HasPendingActivity() const {
@@ -115,7 +115,7 @@ MIDIInputMap* MIDIAccess::inputs() const {
     // There is id duplication that violates the spec.
     inputs.clear();
   }
-  return new MIDIInputMap(inputs);
+  return MakeGarbageCollected<MIDIInputMap>(inputs);
 }
 
 MIDIOutputMap* MIDIAccess::outputs() const {
@@ -131,7 +131,7 @@ MIDIOutputMap* MIDIAccess::outputs() const {
     // There is id duplication that violates the spec.
     outputs.clear();
   }
-  return new MIDIOutputMap(outputs);
+  return MakeGarbageCollected<MIDIOutputMap>(outputs);
 }
 
 void MIDIAccess::DidAddInputPort(const String& id,

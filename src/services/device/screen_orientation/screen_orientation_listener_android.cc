@@ -23,7 +23,7 @@ ScreenOrientationListenerAndroid::ScreenOrientationListenerAndroid()
     : listeners_count_(0) {}
 
 ScreenOrientationListenerAndroid::~ScreenOrientationListenerAndroid() {
-  DCHECK(base::MessageLoopForIO::IsCurrent());
+  DCHECK(base::MessageLoopCurrentForIO::IsSet());
   if (listeners_count_ > 0) {
     Java_ScreenOrientationListener_startAccurateListening(
         base::android::AttachCurrentThread());
@@ -31,7 +31,7 @@ ScreenOrientationListenerAndroid::~ScreenOrientationListenerAndroid() {
 }
 
 void ScreenOrientationListenerAndroid::Start() {
-  DCHECK(base::MessageLoopForIO::IsCurrent());
+  DCHECK(base::MessageLoopCurrentForIO::IsSet());
   ++listeners_count_;
   if (listeners_count_ == 1) {
     // Ask the ScreenOrientationListener (Java) to start accurately listening to
@@ -43,7 +43,7 @@ void ScreenOrientationListenerAndroid::Start() {
 }
 
 void ScreenOrientationListenerAndroid::Stop() {
-  DCHECK(base::MessageLoopForIO::IsCurrent());
+  DCHECK(base::MessageLoopCurrentForIO::IsSet());
   DCHECK(listeners_count_ > 0);
   --listeners_count_;
   if (listeners_count_ == 0) {

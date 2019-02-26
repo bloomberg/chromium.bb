@@ -4,12 +4,14 @@
 
 #include "chrome/installer/setup/install_service_work_item_impl.h"
 
-#include <string.h>
 #include <memory>
+#include <string>
 #include <utility>
 
 #include "base/command_line.h"
 #include "base/logging.h"
+#include "base/metrics/histogram_functions.h"
+#include "base/strings/strcat.h"
 #include "base/strings/stringprintf.h"
 #include "base/time/time.h"
 #include "base/win/registry.h"
@@ -30,6 +32,64 @@ constexpr base::char16 kServiceDependencies[] = L"RPCSS\0";
 // Do/Rollback scenarios are requested since the handle is reused.
 constexpr uint32_t kServiceAccess =
     DELETE | SERVICE_QUERY_CONFIG | SERVICE_CHANGE_CONFIG;
+
+// One value for each possible outcome of DoImpl.
+// These values are logged to histograms. Entries should not be renumbered and
+// numeric values should never be reused.
+enum class ServiceInstallResult {
+  kFailedFreshInstall = 0,
+  kFailedInstallNewAfterFailedUpgrade = 1,
+  kFailedOpenSCManager = 2,
+  kSucceededChangeServiceConfig = 3,
+  kSucceededFreshInstall = 4,
+  kSucceededInstallNewAndDeleteOriginal = 5,
+  kSucceededInstallNewAndFailedDeleteOriginal = 6,
+  kSucceededServiceCorrectlyConfigured = 7,
+  kMaxValue = kSucceededServiceCorrectlyConfigured,
+};
+
+// One value for each possible outcome of RollbackImpl.
+// These values are logged to histograms. Entries should not be renumbered and
+// numeric values should never be reused.
+enum class ServiceRollbackResult {
+  kFailedDeleteCurrentService = 0,
+  kFailedRollbackOriginalServiceConfig = 1,
+  kSucceededDeleteCurrentService = 2,
+  kSucceededRollbackOriginalServiceConfig = 3,
+  kMaxValue = kSucceededRollbackOriginalServiceConfig,
+};
+
+// One value for each possible call to RecordWin32ApiErrorCode. When new values
+// are added here, histogram_suffixes "SetupInstallWin32Apis" needs to be
+// updated in histograms.xml.
+constexpr char kChangeServiceConfig[] = "ChangeServiceConfig";
+constexpr char kCreateService[] = "CreateService";
+constexpr char kDeleteService[] = "DeleteService";
+constexpr char kOpenSCManager[] = "OpenSCManager";
+
+void RecordServiceInstallResult(ServiceInstallResult value) {
+  // Use the histogram function rather than the macro since only one value will
+  // be recorded per run.
+  base::UmaHistogramEnumeration("Setup.Install.ServiceInstallResult", value);
+}
+
+void RecordServiceRollbackResult(ServiceRollbackResult value) {
+  // Uses the histogram function rather than the macro since only one value will
+  // be recorded per run.
+  base::UmaHistogramEnumeration("Setup.Install.ServiceRollbackResult", value);
+}
+
+// Records the last Win32 error in a histogram named
+// "Setup.Install.Win32ApiError.|function|". |function| is one of the values in
+// the list of histogram suffixes "SetupInstallWin32Apis" above.
+void RecordWin32ApiErrorCode(const char* function) {
+  auto error_code = ::GetLastError();
+
+  // Uses the histogram function rather than the macro since the name of the
+  // histogram is computed at runtime.
+  base::UmaHistogramSparse(
+      base::StrCat({"Setup.Install.Win32ApiError.", function}), error_code);
+}
 
 }  // namespace
 
@@ -75,11 +135,22 @@ bool InstallServiceWorkItemImpl::DoImpl() {
                            SC_MANAGER_CONNECT | SC_MANAGER_CREATE_SERVICE));
   if (!scm_.IsValid()) {
     DPLOG(ERROR) << "::OpenSCManager Failed";
+    RecordServiceInstallResult(ServiceInstallResult::kFailedOpenSCManager);
+    RecordWin32ApiErrorCode(kOpenSCManager);
     return false;
   }
 
-  if (!OpenService())
-    return InstallNewService();
+  if (!OpenService()) {
+    const bool succeeded = InstallNewService();
+    if (succeeded) {
+      RecordServiceInstallResult(ServiceInstallResult::kSucceededFreshInstall);
+    } else {
+      RecordServiceInstallResult(ServiceInstallResult::kFailedFreshInstall);
+      RecordWin32ApiErrorCode(kCreateService);
+    }
+
+    return succeeded;
+  }
 
   // It is preferable to do a lightweight upgrade of the existing service,
   // instead of deleting and recreating a new service, since it is less
@@ -95,12 +166,23 @@ bool InstallServiceWorkItemImpl::DoImpl() {
   ScopedScHandle original_service = std::move(service_);
   if (InstallNewService()) {
     // Delete the previous version of the service.
-    if (!DeleteService(std::move(original_service)))
+    if (DeleteService(std::move(original_service))) {
+      RecordServiceInstallResult(
+          ServiceInstallResult::kSucceededInstallNewAndDeleteOriginal);
+    } else {
       original_service_still_exists_ = true;
+
+      RecordServiceInstallResult(
+          ServiceInstallResult::kSucceededInstallNewAndFailedDeleteOriginal);
+      RecordWin32ApiErrorCode(kDeleteService);
+    }
 
     return true;
   }
 
+  RecordServiceInstallResult(
+      ServiceInstallResult::kFailedInstallNewAfterFailedUpgrade);
+  RecordWin32ApiErrorCode(kCreateService);
   return false;
 }
 
@@ -113,7 +195,14 @@ void InstallServiceWorkItemImpl::RollbackImpl() {
   if (rollback_existing_service_) {
     DCHECK(service_.IsValid());
     DCHECK(original_service_config_.is_valid);
-    LOG_IF(WARNING, !RestoreOriginalServiceConfig());
+    if (RestoreOriginalServiceConfig()) {
+      RecordServiceRollbackResult(
+          ServiceRollbackResult::kSucceededRollbackOriginalServiceConfig);
+    } else {
+      RecordServiceRollbackResult(
+          ServiceRollbackResult::kFailedRollbackOriginalServiceConfig);
+      RecordWin32ApiErrorCode(kChangeServiceConfig);
+    }
     return;
   }
 
@@ -121,10 +210,14 @@ void InstallServiceWorkItemImpl::RollbackImpl() {
   DCHECK(service_.IsValid());
 
   // Delete the newly created service.
-  // TODO(ganesh): If this Delete fails, there will be an extra service. We need
-  // to use UMA to record occurrences. And have cleanup code that is run on
-  // subsequent updates to delete stale services.
-  LOG_IF(WARNING, !DeleteCurrentService());
+  if (DeleteCurrentService()) {
+    RecordServiceRollbackResult(
+        ServiceRollbackResult::kSucceededDeleteCurrentService);
+  } else {
+    RecordServiceRollbackResult(
+        ServiceRollbackResult::kFailedDeleteCurrentService);
+    RecordWin32ApiErrorCode(kDeleteService);
+  }
 
   if (original_service_name_.empty())
     return;
@@ -138,7 +231,8 @@ void InstallServiceWorkItemImpl::RollbackImpl() {
   // Recreate original service with a new service name to avoid possible SCM
   // issues with reusing the old name.
   LOG_IF(WARNING, !CreateAndSetServiceName());
-  LOG_IF(WARNING, !ReinstallOriginalService());
+  if (!ReinstallOriginalService())
+    RecordWin32ApiErrorCode(kCreateService);
 }
 
 bool InstallServiceWorkItemImpl::DeleteServiceImpl() {
@@ -306,16 +400,24 @@ bool InstallServiceWorkItemImpl::UpgradeService() {
   if (!GetServiceConfig(&config))
     return false;
 
-  if (IsServiceCorrectlyConfigured(config))
+  if (IsServiceCorrectlyConfigured(config)) {
+    RecordServiceInstallResult(
+        ServiceInstallResult::kSucceededServiceCorrectlyConfigured);
     return true;
+  }
 
   original_service_config_ = std::move(config);
 
   bool success = ChangeServiceConfig(
       ServiceConfig(kServiceType, kServiceStartType, kServiceErrorControl,
                     service_cmd_line_, kServiceDependencies));
-  if (success)
+  if (success) {
     rollback_existing_service_ = true;
+    RecordServiceInstallResult(
+        ServiceInstallResult::kSucceededChangeServiceConfig);
+  } else {
+    RecordWin32ApiErrorCode(kChangeServiceConfig);
+  }
 
   return success;
 }

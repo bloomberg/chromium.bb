@@ -14,6 +14,8 @@
 #include "base/callback.h"
 #include "base/macros.h"
 #include "base/metrics/histogram_macros.h"
+#include "base/metrics/user_metrics.h"
+#include "base/metrics/user_metrics_action.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "build/build_config.h"
@@ -23,6 +25,7 @@
 #include "chrome/browser/bitmap_fetcher/bitmap_fetcher_service_factory.h"
 #include "chrome/browser/bookmarks/bookmark_model_factory.h"
 #include "chrome/browser/bookmarks/bookmark_stats.h"
+#include "chrome/browser/browser_about_handler.h"
 #include "chrome/browser/command_updater.h"
 #include "chrome/browser/extensions/api/omnibox/omnibox_api.h"
 #include "chrome/browser/favicon/favicon_service_factory.h"
@@ -37,6 +40,10 @@
 #include "chrome/browser/search_engines/template_url_service_factory.h"
 #include "chrome/browser/sessions/session_tab_helper.h"
 #include "chrome/browser/translate/chrome_translate_client.h"
+#include "chrome/browser/ui/browser.h"
+#include "chrome/browser/ui/browser_commands.h"
+#include "chrome/browser/ui/browser_finder.h"
+#include "chrome/browser/ui/browser_window.h"
 #include "chrome/browser/ui/layout_constants.h"
 #include "chrome/browser/ui/omnibox/chrome_omnibox_edit_controller.h"
 #include "chrome/browser/ui/omnibox/chrome_omnibox_navigation_observer.h"
@@ -50,12 +57,12 @@
 #include "components/feature_engagement/buildflags.h"
 #include "components/omnibox/browser/autocomplete_match.h"
 #include "components/omnibox/browser/autocomplete_result.h"
+#include "components/omnibox/browser/location_bar_model.h"
 #include "components/omnibox/browser/search_provider.h"
 #include "components/prefs/pref_service.h"
 #include "components/search/search.h"
 #include "components/search_engines/search_engines_pref_names.h"
 #include "components/search_engines/template_url_service.h"
-#include "components/toolbar/toolbar_model.h"
 #include "components/translate/core/browser/translate_manager.h"
 #include "content/public/browser/navigation_controller.h"
 #include "content/public/browser/navigation_entry.h"
@@ -464,7 +471,7 @@ void ChromeOmniboxClient::OnURLOpenedFromOmnibox(OmniboxLog* log) {
 // and current URLs, but users edit URLs rarely enough that this is a
 // reasonable approximation.
 #if BUILDFLAG(ENABLE_DESKTOP_IN_PRODUCT_HELP)
-  if (controller_->GetToolbarModel()->ShouldDisplayURL()) {
+  if (controller_->GetLocationBarModel()->ShouldDisplayURL()) {
     feature_engagement::NewTabTrackerFactory::GetInstance()
         ->GetForProfile(profile_)
         ->OnOmniboxNavigation();
@@ -483,6 +490,10 @@ void ChromeOmniboxClient::DiscardNonCommittedNavigations() {
   controller_->GetWebContents()->GetController().DiscardNonCommittedEntries();
 }
 
+void ChromeOmniboxClient::NewIncognitoWindow() {
+  chrome::NewIncognitoWindow(profile_);
+}
+
 void ChromeOmniboxClient::PromptPageTranslation() {
   content::WebContents* contents = controller_->GetWebContents();
   if (contents) {
@@ -497,6 +508,24 @@ void ChromeOmniboxClient::PromptPageTranslation() {
           translate::TRANSLATE_STEP_BEFORE_TRANSLATE, state.original_language(),
           state.AutoTranslateTo(), translate::TranslateErrors::NONE,
           /*triggered_from_menu=*/true);
+    }
+  }
+}
+
+void ChromeOmniboxClient::OpenUpdateChromeDialog() {
+  const content::WebContents* contents = controller_->GetWebContents();
+  if (contents) {
+    Browser* browser = chrome::FindBrowserWithWebContents(contents);
+    if (browser) {
+      // Here we record and take action more directly than
+      // chrome::OpenUpdateChromeDialog because that call is intended for use
+      // by the delayed-update/auto-nag system, possibly presenting dialogs
+      // that don't apply when the goal is immediate relaunch & update.
+      // TODO(orinj): Ensure that this is the correct way to handle
+      // explicitly requested update regardless of the kind of update ready.
+      // See comments at https://crrev.com/c/1281162 for context.
+      base::RecordAction(base::UserMetricsAction("UpdateChrome"));
+      browser->window()->ShowUpdateChromeDialog();
     }
   }
 }

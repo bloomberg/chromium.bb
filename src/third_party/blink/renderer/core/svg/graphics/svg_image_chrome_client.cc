@@ -44,16 +44,13 @@ static constexpr TimeDelta kAnimationFrameDelay =
 SVGImageChromeClient::SVGImageChromeClient(SVGImage* image)
     : image_(image),
       animation_timer_(std::make_unique<TaskRunnerTimer<SVGImageChromeClient>>(
-          blink::Platform::Current()
-              ->CurrentThread()
-              ->Scheduler()
-              ->CompositorTaskRunner(),
+          ThreadScheduler::Current()->CompositorTaskRunner(),
           this,
           &SVGImageChromeClient::AnimationTimerFired)),
       timeline_state_(kRunning) {}
 
 SVGImageChromeClient* SVGImageChromeClient::Create(SVGImage* image) {
-  return new SVGImageChromeClient(image);
+  return MakeGarbageCollected<SVGImageChromeClient>(image);
 }
 
 bool SVGImageChromeClient::IsSVGImageChromeClient() const {

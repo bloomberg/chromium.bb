@@ -1,5 +1,5 @@
 
-# Fixing layout test flakiness
+# Fixing web test flakiness
 
 We'd like to stamp out all the tests that have ordering dependencies. This helps
 make the tests more reliable and, eventually, will make it so we can run tests

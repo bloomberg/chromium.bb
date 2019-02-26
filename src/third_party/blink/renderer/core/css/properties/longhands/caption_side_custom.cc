@@ -5,7 +5,7 @@
 #include "third_party/blink/renderer/core/css/properties/longhands/caption_side.h"
 
 namespace blink {
-namespace CSSLonghand {
+namespace css_longhand {
 
 const CSSValue* CaptionSide::CSSValueFromComputedStyleInternal(
     const ComputedStyle& style,
@@ -16,5 +16,5 @@ const CSSValue* CaptionSide::CSSValueFromComputedStyleInternal(
   return CSSIdentifierValue::Create(style.CaptionSide());
 }
 
-}  // namespace CSSLonghand
+}  // namespace css_longhand
 }  // namespace blink

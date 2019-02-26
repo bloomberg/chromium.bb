@@ -7,6 +7,7 @@ assert(is_fuchsia)
 import("//build/config/fuchsia/fidl_library.gni")
 import("//build/config/fuchsia/rules.gni")
 import("//build/util/process_version.gni")
+import("//mojo/public/tools/bindings/mojom.gni")
 import("//testing/test.gni")
 import("//tools/grit/repack.gni")
 
@@ -14,10 +15,40 @@ config("webrunner_implementation") {
   defines = [ "WEBRUNNER_IMPLEMENTATION" ]
 }
 
+fuchsia_package("castrunner_pkg") {
+  binary = ":castrunner_exe"
+  package_name_override = "cast_runner"
+  sandbox_policy = "app/cast/sandbox_policy"
+}
+
+fuchsia_package_runner("castrunner") {
+  package = ":castrunner_pkg"
+  package_name_override = "cast_runner"
+  install_only = true
+  package_deps = [ [
+        ":service_pkg",
+        "chromium",
+      ] ]
+}
+
+executable("castrunner_exe") {
+  sources = [
+    "app/cast/cast_runner.cc",
+    "app/cast/cast_runner.h",
+    "app/cast/main.cc",
+  ]
+  deps = [
+    ":web_fidl",
+    ":webrunner_common",
+    "//base",
+    "//url",
+  ]
+}
+
 fuchsia_package("webrunner_pkg") {
   binary = ":webrunner_exe"
   package_name_override = "web_runner"
-  sandbox_policy = "app/sandbox_policy"
+  sandbox_policy = "app/web/sandbox_policy"
 }
 
 fuchsia_package_runner("webrunner") {
@@ -30,18 +61,44 @@ fuchsia_package_runner("webrunner") {
       ] ]
 }
 
-executable("webrunner_exe") {
+source_set("webrunner_common") {
   sources = [
-    "app/component_controller_impl.cc",
-    "app/component_controller_impl.h",
-    "app/main.cc",
-    "app/web_content_runner.cc",
-    "app/web_content_runner.h",
+    "app/common/web_component.cc",
+    "app/common/web_component.h",
+    "app/common/web_content_runner.cc",
+    "app/common/web_content_runner.h",
   ]
   deps = [
-    ":fidl",
+    ":web_fidl",
     "//base",
+    "//third_party/fuchsia-sdk/sdk:app",
+    "//third_party/fuchsia-sdk/sdk:viewsv1",
     "//url",
+  ]
+}
+
+executable("webrunner_exe") {
+  sources = [
+    "app/web/main.cc",
+  ]
+  deps = [
+    ":web_fidl",
+    ":webrunner_common",
+    "//base",
+  ]
+}
+
+source_set("test_support") {
+  testonly = true
+  sources = [
+    "test/fake_context.cc",
+    "test/fake_context.h",
+  ]
+  deps = [
+    "//base",
+  ]
+  public_deps = [
+    ":web_fidl",
   ]
 }
 
@@ -53,8 +110,8 @@ fuchsia_package("service_pkg") {
 
 executable("service_exe") {
   deps = [
-    ":fidl",
     ":service_lib",
+    ":web_fidl",
     "//base",
     "//content/public/app:both",
     "//services/service_manager/embedder:embedder_switches",
@@ -70,8 +127,19 @@ fuchsia_package_runner("service_runner") {
   install_only = true
 }
 
+mojom("mojo_bindings") {
+  sources = [
+    "common/on_load_script_injector.mojom",
+  ]
+
+  public_deps = [
+    "//mojo/public/mojom/base",
+  ]
+}
+
 component("service_lib") {
   deps = [
+    ":mojo_bindings",
     ":service_pak",
     "//base",
     "//components/version_info",
@@ -80,7 +148,10 @@ component("service_lib") {
     "//content/public/child",
     "//content/public/common",
     "//content/public/renderer",
+    "//mojo/public/cpp/bindings",
     "//services/network/public/cpp",
+    "//skia/public/interfaces",
+    "//third_party/blink/public/common",
     "//ui/aura",
     "//ui/display",
     "//ui/ozone",
@@ -96,7 +167,7 @@ component("service_lib") {
     "$root_out_dir/webrunner.pak",
   ]
   public_deps = [
-    ":fidl",
+    ":web_fidl",
   ]
   configs += [ ":webrunner_implementation" ]
 
@@ -105,6 +176,10 @@ component("service_lib") {
     "browser/context_impl.h",
     "browser/frame_impl.cc",
     "browser/frame_impl.h",
+    "browser/message_port_impl.cc",
+    "browser/message_port_impl.h",
+    "browser/vmo_util.cc",
+    "browser/vmo_util.h",
     "browser/webrunner_browser_context.cc",
     "browser/webrunner_browser_context.h",
     "browser/webrunner_browser_main.cc",
@@ -122,6 +197,10 @@ component("service_lib") {
     "common/webrunner_content_client.cc",
     "common/webrunner_content_client.h",
     "common/webrunner_export.h",
+    "renderer/on_load_script_injector.cc",
+    "renderer/on_load_script_injector.h",
+    "renderer/webrunner_content_renderer_client.cc",
+    "renderer/webrunner_content_renderer_client.h",
     "service/common.cc",
     "service/common.h",
     "service/context_provider_impl.cc",
@@ -175,6 +254,8 @@ test("webrunner_browsertests") {
   sources = [
     "browser/context_impl_browsertest.cc",
     "browser/frame_impl_browsertest.cc",
+    "browser/run_with_timeout.cc",
+    "browser/run_with_timeout.h",
     "browser/test_common.cc",
     "browser/test_common.h",
     "browser/webrunner_browser_test.cc",
@@ -186,8 +267,8 @@ test("webrunner_browsertests") {
     "browser/test/data",
   ]
   deps = [
-    ":fidl",
     ":service_lib",
+    ":web_fidl",
     "//base/test:test_support",
     "//content/test:test_support",
     "//net:test_support",
@@ -202,8 +283,9 @@ test("webrunner_unittests") {
     "service/context_provider_impl_unittest.cc",
   ]
   deps = [
-    ":fidl",
     ":service_lib",
+    ":test_support",
+    ":web_fidl",
     "//base/test:run_all_unittests",
     "//base/test:test_support",
     "//testing/gmock",
@@ -211,22 +293,22 @@ test("webrunner_unittests") {
   ]
 }
 
-fidl_library("fidl") {
+fidl_library("web_fidl") {
   library_name = "web"
   namespace = "chromium"
 
   sources = [
-    "fidl/context.fidl",
-    "fidl/context_provider.fidl",
-    "fidl/frame.fidl",
-    "fidl/navigation_controller.fidl",
-    "fidl/navigation_event_observer.fidl",
+    "fidl/web/context.fidl",
+    "fidl/web/context_provider.fidl",
+    "fidl/web/frame.fidl",
+    "fidl/web/navigation_controller.fidl",
+    "fidl/web/navigation_event_observer.fidl",
   ]
 
   public_deps = [
     "//third_party/fuchsia-sdk/sdk:gfx",
     "//third_party/fuchsia-sdk/sdk:sys",
-    "//third_party/fuchsia-sdk/sdk:viewsv1",
+    "//third_party/fuchsia-sdk/sdk:viewsv1token",
   ]
 }
 
@@ -278,15 +360,19 @@ process_version("build_id") {
 # Puts copies of files at the top level of the CIPD archive's structure.
 copy("restaged_packages") {
   sources = [
+    "$root_gen_dir/webrunner/cast_runner/cast_runner.far",
     "$root_gen_dir/webrunner/chromium/chromium.far",
+    "$root_gen_dir/webrunner/net_http/http/http.far",
     "$root_gen_dir/webrunner/web_runner/web_runner.far",
   ]
   outputs = [
     "$_artifact_root/{{source_file_part}}",
   ]
   deps = [
+    ":castrunner_pkg",
     ":service_pkg",
     ":webrunner_pkg",
+    "net_http:http_pkg",
   ]
 }
 

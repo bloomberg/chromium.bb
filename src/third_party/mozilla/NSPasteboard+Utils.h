@@ -60,11 +60,3 @@ MOZILLA_EXPORT extern NSString* const kWebURLsWithTitlesPboardType;
 - (BOOL) containsURLDataConvertingTextToURL:(BOOL)convertTextToURL;
 
 @end
-
-@interface NSPasteboard(ChromiumHTMLUtils)
-
-// Returns the HTML converted from RTF data on the pasteboard. If there is
-// none, returns an empty string.
-- (NSString*)htmlFromRtf;
-
-@end

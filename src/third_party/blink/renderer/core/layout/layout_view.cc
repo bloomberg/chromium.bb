@@ -43,6 +43,7 @@
 #include "third_party/blink/renderer/core/layout/view_fragmentation_context.h"
 #include "third_party/blink/renderer/core/page/chrome_client.h"
 #include "third_party/blink/renderer/core/page/page.h"
+#include "third_party/blink/renderer/core/page/scrolling/root_scroller_controller.h"
 #include "third_party/blink/renderer/core/page/scrolling/scrolling_coordinator_context.h"
 #include "third_party/blink/renderer/core/paint/compositing/paint_layer_compositor.h"
 #include "third_party/blink/renderer/core/paint/paint_layer.h"
@@ -111,6 +112,13 @@ LayoutView::LayoutView(Document* document)
   SetPreferredLogicalWidthsDirty(kMarkOnlyThis);
 
   SetPositionState(EPosition::kAbsolute);  // to 0,0 :)
+
+  // Update the cached bit here since the Document is made the effective root
+  // scroller before we've created the layout tree.
+  if (GetDocument().GetRootScrollerController().EffectiveRootScroller() ==
+      GetDocument()) {
+    SetIsEffectiveRootScroller(true);
+  }
 }
 
 LayoutView::~LayoutView() = default;
@@ -121,7 +129,7 @@ bool LayoutView::HitTest(const HitTestLocation& location,
   // hit test recurses into a child document, it could trigger a layout on the
   // parent document, which can destroy PaintLayer that are higher up in the
   // call stack, leading to crashes.
-  // Note that Document::updateLayout calls its parent's updateLayout.
+  // Note that Document::UpdateLayout calls its parent's UpdateLayout.
   // Note that if an iframe has its render pipeline throttled, it will not
   // update layout here, and it will also not propagate the hit test into the
   // iframe's inner document.
@@ -189,8 +197,8 @@ bool LayoutView::HitTestNoLifecycleUpdate(const HitTestLocation& location,
   }
 
   TRACE_EVENT_END1("blink,devtools.timeline", "HitTest", "endData",
-                   InspectorHitTestEvent::EndData(result.GetHitTestRequest(),
-                                                  location, result));
+                   inspector_hit_test_event::EndData(result.GetHitTestRequest(),
+                                                     location, result));
   return hit_layer;
 }
 
@@ -221,8 +229,6 @@ bool LayoutView::CanHaveChildren() const {
   FrameOwner* owner = GetFrame()->Owner();
   if (!owner)
     return true;
-  if (!RuntimeEnabledFeatures::DisplayNoneIFrameCreatesNoLayoutObjectEnabled())
-    return true;
   // Although it is not spec compliant, many websites intentionally call
   // Window.print() on display:none iframes. https://crbug.com/819327.
   if (GetDocument().Printing())
@@ -242,29 +248,6 @@ void LayoutView::CheckLayoutState() {
   DCHECK(!layout_state_->Next());
 }
 #endif
-
-void LayoutView::SetShouldDoFullPaintInvalidationOnResizeIfNeeded(
-    bool width_changed,
-    bool height_changed) {
-  // When background-attachment is 'fixed', we treat the viewport (instead of
-  // the 'root' i.e. html or body) as the background positioning area, and we
-  // should fully invalidate on viewport resize if the background image is not
-  // composited and needs full paint invalidation on background positioning area
-  // resize.
-  if (StyleRef().HasFixedBackgroundImage()) {
-    if ((width_changed && MustInvalidateFillLayersPaintOnWidthChange(
-                              StyleRef().BackgroundLayers())) ||
-        (height_changed && MustInvalidateFillLayersPaintOnHeightChange(
-                               StyleRef().BackgroundLayers()))) {
-      SetShouldDoFullPaintInvalidation(PaintInvalidationReason::kBackground);
-      // In case that the background will be painted on the scrolling contents
-      // layer, we need this to invalidate the background.
-      // TODO(wangxianzhu): Clean up and fix other such cases about invalidation
-      // of background painted on the scrolling contents layer.
-      SetBackgroundChangedSinceLastPaintInvalidation();
-    }
-  }
-}
 
 bool LayoutView::ShouldPlaceBlockDirectionScrollbarOnLogicalLeft() const {
   LocalFrame& frame = GetFrameView()->GetFrame();
@@ -321,11 +304,6 @@ void LayoutView::UpdateBlockLayout(bool relayout_children) {
 void LayoutView::UpdateLayout() {
   if (!GetDocument().Printing())
     SetPageLogicalHeight(LayoutUnit());
-
-  // TODO(wangxianzhu): Move this into ViewPaintInvalidator.
-  SetShouldDoFullPaintInvalidationOnResizeIfNeeded(
-      OffsetWidth() != GetLayoutSize(kIncludeScrollbars).Width(),
-      OffsetHeight() != GetLayoutSize(kIncludeScrollbars).Height());
 
   if (PageLogicalHeight() && ShouldUsePrintingLayout()) {
     min_preferred_logical_width_ = max_preferred_logical_width_ =
@@ -626,9 +604,10 @@ LayoutRect LayoutView::OverflowClipRect(
     const LayoutPoint& location,
     OverlayScrollbarClipBehavior overlay_scrollbar_clip_behavior) const {
   LayoutRect rect = ViewRect();
-  if (rect.IsEmpty())
+  if (rect.IsEmpty()) {
     return LayoutBox::OverflowClipRect(location,
                                        overlay_scrollbar_clip_behavior);
+  }
 
   rect.SetLocation(location);
   if (HasOverflowClip())

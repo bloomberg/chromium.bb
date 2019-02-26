@@ -16,7 +16,7 @@ WindowWebGPU& WindowWebGPU::From(LocalDOMWindow& window) {
   WindowWebGPU* supplement =
       Supplement<LocalDOMWindow>::From<WindowWebGPU>(window);
   if (!supplement) {
-    supplement = new WindowWebGPU(window);
+    supplement = MakeGarbageCollected<WindowWebGPU>(window);
     ProvideTo(window, supplement);
   }
   return *supplement;

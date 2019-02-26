@@ -365,13 +365,15 @@ public:
     std::unique_ptr<GrFragmentProcessor> asFragmentProcessor(const GrFPArgs&) const override;
 #endif
 
-    SK_DECLARE_PUBLIC_FLATTENABLE_DESERIALIZATION_PROCS(SkPerlinNoiseShaderImpl)
-
 protected:
     void flatten(SkWriteBuffer&) const override;
+#ifdef SK_ENABLE_LEGACY_SHADERCONTEXT
     Context* onMakeContext(const ContextRec&, SkArenaAlloc*) const override;
+#endif
 
 private:
+    SK_FLATTENABLE_HOOKS(SkPerlinNoiseShaderImpl)
+
     const SkPerlinNoiseShaderImpl::Type fType;
     const SkScalar                  fBaseFrequencyX;
     const SkScalar                  fBaseFrequencyY;
@@ -646,10 +648,12 @@ SkPMColor SkPerlinNoiseShaderImpl::PerlinNoiseShaderContext::shade(
     return SkPreMultiplyARGB(rgba[3], rgba[0], rgba[1], rgba[2]);
 }
 
+#ifdef SK_ENABLE_LEGACY_SHADERCONTEXT
 SkShaderBase::Context* SkPerlinNoiseShaderImpl::onMakeContext(const ContextRec& rec,
                                                               SkArenaAlloc* alloc) const {
     return alloc->make<PerlinNoiseShaderContext>(*this, rec);
 }
+#endif
 
 static inline SkMatrix total_matrix(const SkShaderBase::ContextRec& rec,
                                     const SkShaderBase& shader) {
@@ -1442,7 +1446,7 @@ std::unique_ptr<GrFragmentProcessor> SkPerlinNoiseShaderImpl::asFragmentProcesso
             // color space of the noise. Either way, this case (and the GLSL) need to convert to
             // the destination.
             auto inner =
-                    GrConstColorProcessor::Make(GrColorToPMColor4f(0x80404040),
+                    GrConstColorProcessor::Make(SkPMColor4f::FromBytes_RGBA(0x80404040),
                                                 GrConstColorProcessor::InputMode::kModulateRGBA);
             return GrFragmentProcessor::MulChildByInputAlpha(std::move(inner));
         }
@@ -1533,6 +1537,6 @@ sk_sp<SkShader> SkPerlinNoiseShader::MakeImprovedNoise(SkScalar baseFrequencyX,
                                                  nullptr));
 }
 
-SK_DEFINE_FLATTENABLE_REGISTRAR_GROUP_START(SkPerlinNoiseShader)
-    SK_DEFINE_FLATTENABLE_REGISTRAR_ENTRY(SkPerlinNoiseShaderImpl)
-SK_DEFINE_FLATTENABLE_REGISTRAR_GROUP_END
+void SkPerlinNoiseShader::RegisterFlattenables() {
+    SK_REGISTER_FLATTENABLE(SkPerlinNoiseShaderImpl)
+}

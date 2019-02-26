@@ -102,6 +102,7 @@ void SerialGetDevicesFunction::OnGotDevices(
       serial::GetDevices::Results::Create(
           mojo::ConvertTo<std::vector<serial::DeviceInfo>>(devices));
   Respond(ArgumentList(std::move(results)));
+  enumerator_.reset();
 }
 
 SerialConnectFunction::SerialConnectFunction() {}

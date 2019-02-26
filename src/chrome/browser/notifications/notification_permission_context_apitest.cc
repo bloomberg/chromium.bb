@@ -38,7 +38,7 @@ class ExtensionPermissionUpdater : public ExtensionRegistryObserver {
     DCHECK(notifier_state_tracker);
 
     notifier_state_tracker->SetNotifierEnabled(
-        message_center::NotifierId(message_center::NotifierId::APPLICATION,
+        message_center::NotifierId(message_center::NotifierType::APPLICATION,
                                    extension->id()),
         enabled_);
   }

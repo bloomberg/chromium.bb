@@ -63,10 +63,10 @@ struct LinkLoadParameters {
                      const String& nonce,
                      const String& integrity,
                      const String& importance,
-                     const ReferrerPolicy& referrer_policy,
+                     network::mojom::ReferrerPolicy referrer_policy,
                      const KURL& href,
-                     const String& srcset,
-                     const String& sizes)
+                     const String& image_srcset,
+                     const String& image_sizes)
       : rel(rel),
         cross_origin(cross_origin),
         type(type),
@@ -77,8 +77,8 @@ struct LinkLoadParameters {
         importance(importance),
         referrer_policy(referrer_policy),
         href(href),
-        srcset(srcset),
-        sizes(sizes) {}
+        image_srcset(image_srcset),
+        image_sizes(image_sizes) {}
   LinkLoadParameters(const LinkHeader&, const KURL& base_url);
 
   LinkRelAttribute rel;
@@ -89,10 +89,10 @@ struct LinkLoadParameters {
   String nonce;
   String integrity;
   String importance;
-  ReferrerPolicy referrer_policy;
+  network::mojom::ReferrerPolicy referrer_policy;
   KURL href;
-  String srcset;
-  String sizes;
+  String image_srcset;
+  String image_sizes;
 };
 
 // The LinkLoader can load link rel types icon, dns-prefetch, prefetch, and
@@ -103,8 +103,11 @@ class CORE_EXPORT LinkLoader final : public SingleModuleClient,
 
  public:
   static LinkLoader* Create(LinkLoaderClient* client) {
-    return new LinkLoader(client, client->GetLoadingTaskRunner());
+    return MakeGarbageCollected<LinkLoader>(client,
+                                            client->GetLoadingTaskRunner());
   }
+
+  LinkLoader(LinkLoaderClient*, scoped_refptr<base::SingleThreadTaskRunner>);
   ~LinkLoader() override;
 
   // from PrerenderClient
@@ -150,7 +153,6 @@ class CORE_EXPORT LinkLoader final : public SingleModuleClient,
 
  private:
   class FinishObserver;
-  LinkLoader(LinkLoaderClient*, scoped_refptr<base::SingleThreadTaskRunner>);
 
   void NotifyFinished();
   // SingleModuleClient implementation

@@ -21,8 +21,8 @@ class MediaCapabilities final : public ScriptWrappable {
  public:
   MediaCapabilities();
 
-  ScriptPromise decodingInfo(ScriptState*, const MediaDecodingConfiguration&);
-  ScriptPromise encodingInfo(ScriptState*, const MediaEncodingConfiguration&);
+  ScriptPromise decodingInfo(ScriptState*, const MediaDecodingConfiguration*);
+  ScriptPromise encodingInfo(ScriptState*, const MediaEncodingConfiguration*);
 };
 
 }  // namespace blink

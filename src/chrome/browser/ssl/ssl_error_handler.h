@@ -47,7 +47,6 @@ class NetworkTimeTracker;
 extern const base::Feature kMITMSoftwareInterstitial;
 extern const base::Feature kCaptivePortalInterstitial;
 extern const base::Feature kCaptivePortalCertificateList;
-extern const base::Feature kSuperfishInterstitial;
 
 // This class is responsible for deciding what type of interstitial to display
 // for an SSL validation error and actually displaying it. The display of the
@@ -225,7 +224,6 @@ class SSLErrorHandler : public content::WebContentsUserData<SSLErrorHandler>,
   static int CalculateOptionsMask(int cert_error,
                                   bool hard_override_disabled,
                                   bool should_ssl_errors_be_fatal,
-                                  bool is_superfish,
                                   bool expired_previous_decision);
 
   std::unique_ptr<Delegate> delegate_;

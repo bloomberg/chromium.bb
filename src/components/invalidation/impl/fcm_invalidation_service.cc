@@ -4,6 +4,7 @@
 
 #include "components/invalidation/impl/fcm_invalidation_service.h"
 
+#include "base/metrics/histogram_macros.h"
 #include "components/gcm_driver/instance_id/instance_id_driver.h"
 #include "components/invalidation/impl/fcm_invalidator.h"
 #include "components/invalidation/impl/fcm_network_handler.h"
@@ -143,6 +144,7 @@ void FCMInvalidationService::OnActiveAccountLogout() {
 
 void FCMInvalidationService::OnInvalidatorStateChange(
     syncer::InvalidatorState state) {
+  UMA_HISTOGRAM_ENUMERATION("Invalidations.StatusChanged", state);
   invalidator_registrar_.UpdateInvalidatorState(state);
   logger_.OnStateChange(state);
 }

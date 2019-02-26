@@ -22,13 +22,16 @@
 #define THIRD_PARTY_BLINK_RENDERER_CORE_CSS_CSS_INITIAL_VALUE_H_
 
 #include "base/memory/scoped_refptr.h"
+#include "third_party/blink/renderer/core/core_export.h"
 #include "third_party/blink/renderer/core/css/css_value.h"
 
 namespace blink {
 
-class CSSInitialValue : public CSSValue {
+class CORE_EXPORT CSSInitialValue : public CSSValue {
  public:
   static CSSInitialValue* Create();
+
+  CSSInitialValue() : CSSValue(kInitialClass) {}
 
   String CustomCSSText() const;
 
@@ -40,8 +43,6 @@ class CSSInitialValue : public CSSValue {
 
  private:
   friend class CSSValuePool;
-
-  CSSInitialValue() : CSSValue(kInitialClass) {}
 };
 
 DEFINE_CSS_VALUE_TYPE_CASTS(CSSInitialValue, IsInitialValue());

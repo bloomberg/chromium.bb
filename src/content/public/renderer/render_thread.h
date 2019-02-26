@@ -25,7 +25,7 @@ class WaitableEvent;
 
 namespace blink {
 namespace scheduler {
-enum class RendererProcessType;
+enum class WebRendererProcessType;
 }
 }  // namespace blink
 
@@ -103,7 +103,7 @@ class CONTENT_EXPORT RenderThread : virtual public ChildThread {
 
   // Set the renderer process type.
   virtual void SetRendererProcessType(
-      blink::scheduler::RendererProcessType type) = 0;
+      blink::scheduler::WebRendererProcessType type) = 0;
 
   // Returns the user-agent string.
   virtual blink::WebString GetUserAgent() const = 0;

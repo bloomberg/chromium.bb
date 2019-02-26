@@ -377,8 +377,8 @@ bool URLRequestJob::CanSetCookie(const net::CanonicalCookie& cookie,
   return request_->CanSetCookie(cookie, options);
 }
 
-bool URLRequestJob::CanEnablePrivacyMode() const {
-  return request_->CanEnablePrivacyMode();
+PrivacyMode URLRequestJob::privacy_mode() const {
+  return request_->privacy_mode();
 }
 
 void URLRequestJob::NotifyHeadersComplete() {

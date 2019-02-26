@@ -28,11 +28,6 @@ FakeAsynchronousShutdownObjectContainer::tether_host_fetcher() {
   return tether_host_fetcher_;
 }
 
-BleConnectionManager*
-FakeAsynchronousShutdownObjectContainer::ble_connection_manager() {
-  return ble_connection_manager_;
-}
-
 DisconnectTetheringRequestSender*
 FakeAsynchronousShutdownObjectContainer::disconnect_tethering_request_sender() {
   return disconnect_tethering_request_sender_;

@@ -135,7 +135,7 @@ void VideoCaptureDeviceAndroid::AllocateAndStart(
   jboolean ret = Java_VideoCapture_allocate(
       env, j_capture_, params.requested_format.frame_size.width(),
       params.requested_format.frame_size.height(),
-      params.requested_format.frame_rate);
+      params.requested_format.frame_rate, params.enable_face_detection);
   if (!ret) {
     SetErrorState(media::VideoCaptureError::kAndroidFailedToAllocate, FROM_HERE,
                   "failed to allocate");
@@ -518,7 +518,7 @@ void VideoCaptureDeviceAndroid::OnPhotoTaken(
 
   if (data != nullptr) {
     mojom::BlobPtr blob = mojom::Blob::New();
-    base::android::JavaByteArrayToByteVector(env, data.obj(), &blob->data);
+    base::android::JavaByteArrayToByteVector(env, data, &blob->data);
     blob->mime_type = blob->data.empty() ? "" : "image/jpeg";
     std::move(*cb).Run(std::move(blob));
   }

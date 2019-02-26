@@ -80,7 +80,7 @@ QuitWithAppsController::QuitWithAppsController()
           IDR_PRODUCT_LOGO_128),
       l10n_util::GetStringUTF16(IDS_QUIT_WITH_APPS_NOTIFICATION_DISPLAY_SOURCE),
       GURL(kQuitWithAppsOriginUrl),
-      message_center::NotifierId(message_center::NotifierId::SYSTEM_COMPONENT,
+      message_center::NotifierId(message_center::NotifierType::SYSTEM_COMPONENT,
                                  kQuitWithAppsNotificationID),
       rich_notification_data, this));
 }

@@ -38,8 +38,7 @@
   self.navigationController.navigationBar.backgroundColor =
       [UIColor clearColor];
   [self.navigationController.navigationBar addSubview:visualEffectView];
-  if (@available(iOS 11, *))
-    self.navigationBar.prefersLargeTitles = YES;
+  self.navigationBar.prefersLargeTitles = YES;
 
   [self.toolbar setShadowImage:[UIImage new]
             forToolbarPosition:UIBarPositionAny];

@@ -3,6 +3,9 @@
 // found in the LICENSE file.
 #include "components/sync/engine_impl/loopback_server/loopback_connection_manager.h"
 
+#include "components/sync/engine_impl/net/server_connection_manager.h"
+#include "net/http/http_status_code.h"
+
 namespace syncer {
 
 LoopbackConnectionManager::LoopbackConnectionManager(
@@ -17,10 +20,17 @@ bool LoopbackConnectionManager::PostBufferToPath(
     PostBufferParams* params,
     const std::string& path,
     const std::string& auth_token) {
-  loopback_server_.HandleCommand(
-      params->buffer_in, &params->response.server_status,
-      &params->response.response_code, &params->buffer_out);
-  return params->response.server_status == HttpResponse::SERVER_CONNECTION_OK;
+  params->response.http_status_code =
+      loopback_server_.HandleCommand(params->buffer_in, &params->buffer_out);
+  DCHECK_GE(params->response.http_status_code, 0);
+
+  if (params->response.http_status_code != net::HTTP_OK) {
+    params->response.server_status = HttpResponse::SYNC_SERVER_ERROR;
+    return false;
+  }
+
+  params->response.server_status = HttpResponse::SERVER_CONNECTION_OK;
+  return true;
 }
 
 }  // namespace syncer

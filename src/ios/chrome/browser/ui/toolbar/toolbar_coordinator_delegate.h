@@ -7,7 +7,7 @@
 
 #import <Foundation/Foundation.h>
 
-class ToolbarModel;
+class LocationBarModel;
 
 // Protocol receiving notification when the some events occur in the
 // ToolbarCoordinator
@@ -19,8 +19,8 @@ class ToolbarModel;
 - (void)locationBarDidResignFirstResponder;
 // Called when the location bar receives a key press.
 - (void)locationBarBeganEdit;
-// Returns the toolbar model.
-- (ToolbarModel*)toolbarModel;
+// Returns the location bar model.
+- (LocationBarModel*)locationBarModel;
 
 @end
 

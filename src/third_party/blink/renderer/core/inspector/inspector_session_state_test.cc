@@ -17,7 +17,7 @@ using testing::UnorderedElementsAre;
 // This session object is normally on the browser side; see
 // content/browser/devtools/devtools_session.{h,cc}, but here's a minimal
 // reimplementation to allow testing without sending data through a Mojo pipe.
-class DevToolsSession {
+class FakeDevToolsSession {
  public:
   void ApplyUpdates(DevToolsSessionStatePtr updates) {
     if (!updates)
@@ -65,9 +65,8 @@ struct AgentWithSimpleFields {
 
 TEST(InspectorSessionStateTest, SimpleFields) {
   // The browser session (DevToolsSession) remains live while renderer
-  // sessions (InspectorSession - here we just exercise
-  // InspectorSessionState) may come and go.
-  DevToolsSession dev_tools_session;
+  // sessions (here we just exercise InspectorSessionState) may come and go.
+  FakeDevToolsSession dev_tools_session;
 
   {  // Renderer session.
     InspectorSessionState session_state(dev_tools_session.CloneCookie());
@@ -138,7 +137,7 @@ struct AgentWithMapFields {
 };
 
 TEST(InspectorSessionStateTest, MapFields) {
-  DevToolsSession dev_tools_session;  // Browser session.
+  FakeDevToolsSession dev_tools_session;  // Browser session.
 
   {  // Renderer session.
     InspectorSessionState session_state(dev_tools_session.CloneCookie());
@@ -205,7 +204,7 @@ TEST(InspectorSessionStateTest, MapFields) {
 }
 
 TEST(InspectorSessionStateTest, MultipleAgents) {
-  DevToolsSession dev_tools_session;  // Browser session.
+  FakeDevToolsSession dev_tools_session;  // Browser session.
 
   {  // Renderer session.
     InspectorSessionState session_state(dev_tools_session.CloneCookie());

@@ -11,7 +11,7 @@ namespace blink {
 // static
 StaticSelection* StaticSelection::FromSelectionInFlatTree(
     const SelectionInFlatTree& seleciton) {
-  return new StaticSelection(seleciton);
+  return MakeGarbageCollected<StaticSelection>(seleciton);
 }
 
 StaticSelection::StaticSelection(const SelectionInFlatTree& seleciton)

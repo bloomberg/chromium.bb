@@ -17,7 +17,6 @@
 #include "base/logging.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted_memory.h"
-#include "base/message_loop/message_loop.h"
 #include "base/single_thread_task_runner.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
@@ -308,11 +307,12 @@ void StartServerOnHandlerThread(
 // messages sent to a DebuggerShell instance.
 class DevToolsAgentHostClientImpl : public DevToolsAgentHostClient {
  public:
-  DevToolsAgentHostClientImpl(base::MessageLoop* message_loop,
-                              ServerWrapper* server_wrapper,
-                              int connection_id,
-                              scoped_refptr<DevToolsAgentHost> agent_host)
-      : message_loop_(message_loop),
+  DevToolsAgentHostClientImpl(
+      scoped_refptr<base::SingleThreadTaskRunner> task_runner,
+      ServerWrapper* server_wrapper,
+      int connection_id,
+      scoped_refptr<DevToolsAgentHost> agent_host)
+      : task_runner_(std::move(task_runner)),
         server_wrapper_(server_wrapper),
         connection_id_(connection_id),
         agent_host_(agent_host) {
@@ -337,7 +337,7 @@ class DevToolsAgentHostClientImpl : public DevToolsAgentHostClient {
     DispatchProtocolMessage(agent_host, message);
 
     agent_host_ = nullptr;
-    message_loop_->task_runner()->PostTask(
+    task_runner_->PostTask(
         FROM_HERE,
         base::BindOnce(&ServerWrapper::Close, base::Unretained(server_wrapper_),
                        connection_id_));
@@ -347,10 +347,10 @@ class DevToolsAgentHostClientImpl : public DevToolsAgentHostClient {
                                const std::string& message) override {
     DCHECK_CURRENTLY_ON(BrowserThread::UI);
     DCHECK(agent_host == agent_host_.get());
-    message_loop_->task_runner()->PostTask(
-        FROM_HERE, base::BindOnce(&ServerWrapper::SendOverWebSocket,
-                                  base::Unretained(server_wrapper_),
-                                  connection_id_, message));
+    task_runner_->PostTask(FROM_HERE,
+                           base::BindOnce(&ServerWrapper::SendOverWebSocket,
+                                          base::Unretained(server_wrapper_),
+                                          connection_id_, message));
   }
 
   void OnMessage(const std::string& message) {
@@ -360,7 +360,7 @@ class DevToolsAgentHostClientImpl : public DevToolsAgentHostClient {
   }
 
  private:
-  base::MessageLoop* const message_loop_;
+  const scoped_refptr<base::SingleThreadTaskRunner> task_runner_;
   ServerWrapper* const server_wrapper_;
   const int connection_id_;
   scoped_refptr<DevToolsAgentHost> agent_host_;
@@ -736,7 +736,7 @@ void DevToolsHttpHandler::OnWebSocketRequest(
             base::Bind(&DevToolsSocketFactory::CreateForTethering,
                        base::Unretained(socket_factory_.get())));
     connection_to_client_[connection_id].reset(new DevToolsAgentHostClientImpl(
-        thread_->message_loop(), server_wrapper_.get(), connection_id,
+        thread_->task_runner(), server_wrapper_.get(), connection_id,
         browser_agent));
     AcceptWebSocket(connection_id, request);
     return;
@@ -757,7 +757,7 @@ void DevToolsHttpHandler::OnWebSocketRequest(
   }
 
   connection_to_client_[connection_id].reset(new DevToolsAgentHostClientImpl(
-      thread_->message_loop(), server_wrapper_.get(), connection_id, agent));
+      thread_->task_runner(), server_wrapper_.get(), connection_id, agent));
 
   AcceptWebSocket(connection_id, request);
 }
@@ -789,8 +789,7 @@ DevToolsHttpHandler::DevToolsHttpHandler(
   base::Thread::Options options;
   options.message_loop_type = base::MessageLoop::TYPE_IO;
   if (thread->StartWithOptions(options)) {
-    base::TaskRunner* task_runner = thread->task_runner().get();
-    task_runner->PostTask(
+    thread->task_runner()->PostTask(
         FROM_HERE,
         base::BindOnce(&StartServerOnHandlerThread, weak_factory_.GetWeakPtr(),
                        std::move(thread), std::move(socket_factory),

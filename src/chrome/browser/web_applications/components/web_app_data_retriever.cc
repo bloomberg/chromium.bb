@@ -5,6 +5,7 @@
 #include "chrome/browser/web_applications/components/web_app_data_retriever.h"
 
 #include <memory>
+#include <set>
 #include <string>
 #include <utility>
 #include <vector>
@@ -12,6 +13,9 @@
 #include "base/bind.h"
 #include "base/callback.h"
 #include "base/strings/utf_string_conversions.h"
+#include "chrome/browser/installable/installable_data.h"
+#include "chrome/browser/installable/installable_manager.h"
+#include "chrome/browser/web_applications/components/web_app_icon_downloader.h"
 #include "chrome/browser/web_applications/components/web_app_icon_generator.h"
 #include "chrome/common/chrome_render_frame.mojom.h"
 #include "chrome/common/web_application_info.h"
@@ -63,45 +67,42 @@ void WebAppDataRetriever::GetWebApplicationInfo(
       web_contents, entry->GetUniqueID()));
 }
 
-void WebAppDataRetriever::GetIcons(const GURL& app_url,
+void WebAppDataRetriever::CheckInstallabilityAndRetrieveManifest(
+    content::WebContents* web_contents,
+    CheckInstallabilityCallback callback) {
+  InstallableManager* installable_manager =
+      InstallableManager::FromWebContents(web_contents);
+  DCHECK(installable_manager);
+
+  // TODO(crbug.com/829232) Unify with other calls to GetData.
+  InstallableParams params;
+  params.check_eligibility = true;
+  params.valid_primary_icon = true;
+  params.valid_manifest = true;
+  params.has_worker = true;
+  // Do not wait_for_worker. OnDidPerformInstallableCheck is always invoked.
+  installable_manager->GetData(
+      params, base::BindRepeating(
+                  &WebAppDataRetriever::OnDidPerformInstallableCheck,
+                  weak_ptr_factory_.GetWeakPtr(), base::Passed(&callback)));
+}
+
+void WebAppDataRetriever::GetIcons(content::WebContents* web_contents,
                                    const std::vector<GURL>& icon_urls,
+                                   bool skip_page_fav_icons,
                                    GetIconsCallback callback) {
-  // TODO(crbug.com/864904): Download icons using |icon_urls|.
+  DCHECK(!icon_urls.empty());
 
-  // Generate missing icons.
-  static constexpr int kIconSizesToGenerate[] = {
-      icon_size::k32,     icon_size::k32 * 2, icon_size::k48,
-      icon_size::k48 * 2, icon_size::k128,    icon_size::k128 * 2,
-  };
+  // TODO(loyso): Refactor WebAppIconDownloader: crbug.com/907296.
+  icon_downloader_ = std::make_unique<WebAppIconDownloader>(
+      web_contents, icon_urls, "WebApp.Icon.HttpStatusCodeClassOnCreate",
+      base::BindOnce(&WebAppDataRetriever::OnIconsDownloaded,
+                     weak_ptr_factory_.GetWeakPtr(), std::move(callback)));
 
-  // Get the letter to use in the generated icon.
-  char icon_letter = ' ';
-  std::string domain_and_registry(
-      net::registry_controlled_domains::GetDomainAndRegistry(
-          app_url,
-          net::registry_controlled_domains::INCLUDE_PRIVATE_REGISTRIES));
+  if (skip_page_fav_icons)
+    icon_downloader_->SkipPageFavicons();
 
-  // TODO(crbug.com/867311): Decode the app URL or the domain before retrieving
-  // the first character, otherwise we generate an icon with "x" if the domain
-  // or app URL starts with a UTF-8 character.
-  if (!domain_and_registry.empty()) {
-    icon_letter = domain_and_registry[0];
-  } else if (app_url.has_host()) {
-    icon_letter = app_url.host_piece()[0];
-  }
-  DCHECK(icon_letter >= '!' && icon_letter <= '~');
-
-  std::vector<WebApplicationInfo::IconInfo> icons;
-  for (int size : kIconSizesToGenerate) {
-    WebApplicationInfo::IconInfo icon_info;
-    icon_info.width = size;
-    icon_info.height = size;
-    icon_info.data = GenerateBitmap(size, SK_ColorDKGRAY, icon_letter);
-    icons.push_back(icon_info);
-  }
-
-  base::ThreadTaskRunnerHandle::Get()->PostTask(
-      FROM_HERE, base::BindOnce(std::move(callback), std::move(icons)));
+  icon_downloader_->Start();
 }
 
 void WebAppDataRetriever::OnGetWebApplicationInfo(
@@ -130,6 +131,30 @@ void WebAppDataRetriever::OnGetWebApplicationInfo(
 
 void WebAppDataRetriever::OnGetWebApplicationInfoFailed() {
   std::move(get_web_app_info_callback_).Run(nullptr);
+}
+
+void WebAppDataRetriever::OnDidPerformInstallableCheck(
+    CheckInstallabilityCallback callback,
+    const InstallableData& data) {
+  DCHECK(data.manifest_url.is_valid() || data.manifest->IsEmpty());
+
+  const bool is_installable = data.error_code == NO_ERROR_DETECTED;
+
+  std::move(callback).Run(*data.manifest, is_installable);
+}
+
+void WebAppDataRetriever::OnIconsDownloaded(GetIconsCallback callback,
+                                            bool success,
+                                            const IconsMap& icons_map) {
+  // |icons_map| is owned by |icon_downloader_|. Take a copy before destroying
+  // the downloader. Return empty |result_map| if the tab has navigated away
+  // during the icon download.
+  IconsMap result_map;
+  if (success)
+    result_map = icons_map;
+  icon_downloader_.reset();
+
+  std::move(callback).Run(std::move(result_map));
 }
 
 }  // namespace web_app

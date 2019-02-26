@@ -10,8 +10,7 @@
             <solid android:color="@color/modern_grey_200" />
         </shape>
     </item>
-    <item xmlns:android="http://schemas.android.com/apk/res/android"
-        android:bottom="1dp">
+    <item android:bottom="1dp">
         <shape android:shape="rectangle">
             <solid android:color="@android:color/white" />
         </shape>

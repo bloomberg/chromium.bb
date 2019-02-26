@@ -194,6 +194,12 @@ Polymer({
         this.destinationStore_,
         print_preview.DestinationStore.EventType.DESTINATION_SELECT,
         this.onDestinationSelect_.bind(this));
+    // <if expr="chromeos">
+    this.tracker_.add(
+        this.destinationStore_,
+        print_preview.DestinationStore.EventType.NO_DESTINATIONS_FOUND,
+        this.onNoDestinationsFound_.bind(this));
+    // </if>
     this.tracker_.add(
         this.destinationStore_,
         print_preview.DestinationStore.EventType
@@ -263,6 +269,13 @@ Polymer({
     if (e.code == 'KeyP') {
       if ((cr.isMac && e.metaKey && e.altKey && !e.shiftKey && !e.ctrlKey) ||
           (!cr.isMac && e.shiftKey && e.ctrlKey && !e.altKey && !e.metaKey)) {
+        // Don't use system dialog if the link isn't available.
+        const linkContainer = this.$$('print-preview-link-container');
+        if (!linkContainer || !linkContainer.systemDialogLinkAvailable()) {
+          e.preventDefault();
+          return;
+        }
+
         // Don't try to print with system dialog on Windows if the document is
         // not ready, because we send the preview document to the printer on
         // Windows.
@@ -273,7 +286,8 @@ Polymer({
       }
     }
 
-    if (e.code == 'Enter' && this.state == print_preview_new.State.READY &&
+    if ((e.code === 'Enter' || e.code === 'NumpadEnter') &&
+        this.state === print_preview_new.State.READY &&
         this.openDialogs_.length === 0) {
       const activeElementTag = e.path[0].tagName;
       if (['PAPER-BUTTON', 'BUTTON', 'SELECT', 'A', 'CR-CHECKBOX'].includes(
@@ -359,11 +373,11 @@ Polymer({
    */
   onCloudPrintEnable_: function(cloudPrintUrl, appKioskMode) {
     assert(!this.cloudPrintInterface_);
-    this.cloudPrintInterface_ = new cloudprint.CloudPrintInterface(
+    this.cloudPrintInterface_ = cloudprint.getCloudPrintInterface(
         cloudPrintUrl, assert(this.nativeLayer_), assert(this.userInfo_),
         appKioskMode);
     this.tracker_.add(
-        assert(this.cloudPrintInterface_),
+        assert(this.cloudPrintInterface_).getEventTarget(),
         cloudprint.CloudPrintInterfaceEventType.SUBMIT_DONE,
         this.close_.bind(this));
     [cloudprint.CloudPrintInterfaceEventType.SEARCH_FAILED,
@@ -371,7 +385,7 @@ Polymer({
      cloudprint.CloudPrintInterfaceEventType.PRINTER_FAILED,
     ].forEach(eventType => {
       this.tracker_.add(
-          assert(this.cloudPrintInterface_), eventType,
+          assert(this.cloudPrintInterface_).getEventTarget(), eventType,
           this.onCloudPrintError_.bind(this));
     });
 
@@ -402,6 +416,9 @@ Polymer({
 
     if (!this.$.model.initialized())
       this.$.model.applyStickySettings();
+
+    if (this.destination_)
+      this.$.model.applyDestinationSpecificPolicies();
 
     if (this.state == print_preview_new.State.NOT_READY ||
         this.state == print_preview_new.State.INVALID_PRINTER) {
@@ -635,10 +652,24 @@ Polymer({
    * @private
    */
   shouldExpandSettings_: function() {
+    if (this.settingsExpandedByUser_ === undefined ||
+        this.shouldShowMoreSettings_ === undefined) {
+      return false;
+    }
+
     // Expand the settings if the user has requested them expanded or if more
     // settings is not displayed (i.e. less than 6 total settings available).
     return this.settingsExpandedByUser_ || !this.shouldShowMoreSettings_;
   },
+
+  // <if expr="chromeos">
+  /** @private */
+  onNoDestinationsFound_: function() {
+    this.$.state.transitTo(print_preview_new.State.INVALID_PRINTER);
+    this.$.previewArea.setNoDestinationsFound();
+    this.$.destinationSettings.noDestinationsFound = true;
+  },
+  // </if>
 
   /** @private */
   close_: function() {

@@ -19,9 +19,21 @@
 #include "media/gpu/vaapi/vaapi_jpeg_encode_accelerator.h"
 #endif
 
+#if defined(USE_V4L2_JEA)
+#include "media/gpu/v4l2/v4l2_device.h"
+#include "media/gpu/v4l2/v4l2_jpeg_encode_accelerator.h"
+#endif
+
 namespace media {
 
 namespace {
+
+#if defined(USE_V4L2_JEA)
+std::unique_ptr<JpegEncodeAccelerator> CreateV4L2JEA(
+    scoped_refptr<base::SingleThreadTaskRunner> io_task_runner) {
+  return std::make_unique<V4L2JpegEncodeAccelerator>(std::move(io_task_runner));
+}
+#endif
 
 #if BUILDFLAG(USE_VAAPI)
 std::unique_ptr<JpegEncodeAccelerator> CreateVaapiJEA(
@@ -45,7 +57,7 @@ GpuJpegEncodeAcceleratorFactory::GetAcceleratorFactories() {
   // This list is ordered by priority of use.
   std::vector<CreateAcceleratorCB> result;
 #if defined(USE_V4L2_JEA)
-// TODO(mojahsu): Add CreateV4l2JEA here.
+  result.push_back(base::BindRepeating(&CreateV4L2JEA));
 #endif
 #if BUILDFLAG(USE_VAAPI)
   result.push_back(base::BindRepeating(&CreateVaapiJEA));

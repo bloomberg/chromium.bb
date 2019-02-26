@@ -18,6 +18,7 @@
 #include "base/macros.h"
 #include "base/memory/ptr_util.h"
 #include "base/message_loop/message_loop_current.h"
+#include "base/metrics/histogram_macros.h"
 #include "base/no_destructor.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
@@ -493,7 +494,7 @@ class HarfBuzzLineBreaker {
     paint.setTypeface(run.font_params.skia_face);
     paint.setTextSize(SkIntToScalar(run.font_params.font_size));
     paint.setAntiAlias(run.font_params.render_params.antialiasing);
-    SkPaint::FontMetrics metrics;
+    SkFontMetrics metrics;
     paint.getFontMetrics(&metrics);
 
     // max_descent_ is y-down, fDescent is y-down, baseline_offset is y-down
@@ -1305,6 +1306,53 @@ std::vector<RenderText::FontSpan> RenderTextHarfBuzz::GetFontSpansForTesting() {
   return spans;
 }
 
+std::vector<Rect> RenderTextHarfBuzz::GetSubstringBounds(const Range& range) {
+  EnsureLayout();
+  DCHECK(!update_display_run_list_);
+  DCHECK(Range(0, text().length()).Contains(range));
+  const size_t start =
+      IsValidCursorIndex(range.GetMin())
+          ? range.GetMin()
+          : IndexOfAdjacentGrapheme(range.GetMin(), CURSOR_BACKWARD);
+  const size_t end =
+      IsValidCursorIndex(range.GetMax())
+          ? range.GetMax()
+          : IndexOfAdjacentGrapheme(range.GetMax(), CURSOR_FORWARD);
+  const Range display_range(TextIndexToDisplayIndex(start),
+                            TextIndexToDisplayIndex(end));
+  DCHECK(Range(0, GetDisplayText().length()).Contains(display_range));
+
+  std::vector<Rect> rects;
+  if (display_range.is_empty())
+    return rects;
+
+  internal::TextRunList* run_list = GetRunList();
+  for (size_t line_index = 0; line_index < lines().size(); ++line_index) {
+    const internal::Line& line = lines()[line_index];
+    // Only the last line can be empty.
+    DCHECK(!line.segments.empty() || (line_index == lines().size() - 1));
+    const float line_start_x =
+        line.segments.empty()
+            ? 0
+            : run_list->runs()[line.segments[0].run]->preceding_run_widths;
+
+    for (const internal::LineSegment& segment : line.segments) {
+      const Range intersection = segment.char_range.Intersect(display_range);
+      DCHECK(!intersection.is_reversed());
+      if (!intersection.is_empty()) {
+        const internal::TextRunHarfBuzz& run = *run_list->runs()[segment.run];
+        RangeF selected_span =
+            run.GetGraphemeSpanForCharRange(this, intersection);
+        int start_x = std::ceil(selected_span.start() - line_start_x);
+        int end_x = std::ceil(selected_span.end() - line_start_x);
+        Rect rect(start_x, 0, end_x - start_x, std::ceil(line.size.height()));
+        rects.push_back(rect + GetLineOffset(line_index));
+      }
+    }
+  }
+  return rects;
+}
+
 Range RenderTextHarfBuzz::GetCursorSpan(const Range& text_range) {
   DCHECK(!text_range.is_reversed());
   EnsureLayout();
@@ -1422,7 +1470,8 @@ SelectionModel RenderTextHarfBuzz::AdjacentWordSelectionModel(
     size_t cursor = current.caret_pos();
 #if defined(OS_WIN)
     // Windows generally advances to the start of a word in either direction.
-    // TODO: Break on the end of a word when the neighboring text is puctuation.
+    // TODO: Break on the end of a word when the neighboring text is
+    // punctuation.
     if (iter.IsStartOfWord(cursor))
       break;
 #else
@@ -1433,53 +1482,6 @@ SelectionModel RenderTextHarfBuzz::AdjacentWordSelectionModel(
 #endif  // defined(OS_WIN)
   }
   return current;
-}
-
-std::vector<Rect> RenderTextHarfBuzz::GetSubstringBounds(const Range& range) {
-  EnsureLayout();
-  DCHECK(!update_display_run_list_);
-  DCHECK(Range(0, text().length()).Contains(range));
-  const size_t start =
-      IsValidCursorIndex(range.GetMin())
-          ? range.GetMin()
-          : IndexOfAdjacentGrapheme(range.GetMin(), CURSOR_BACKWARD);
-  const size_t end =
-      IsValidCursorIndex(range.GetMax())
-          ? range.GetMax()
-          : IndexOfAdjacentGrapheme(range.GetMax(), CURSOR_FORWARD);
-  const Range display_range(TextIndexToDisplayIndex(start),
-                            TextIndexToDisplayIndex(end));
-  DCHECK(Range(0, GetDisplayText().length()).Contains(display_range));
-
-  std::vector<Rect> rects;
-  if (display_range.is_empty())
-    return rects;
-
-  internal::TextRunList* run_list = GetRunList();
-  for (size_t line_index = 0; line_index < lines().size(); ++line_index) {
-    const internal::Line& line = lines()[line_index];
-    // Only the last line can be empty.
-    DCHECK(!line.segments.empty() || (line_index == lines().size() - 1));
-    const float line_start_x =
-        line.segments.empty()
-            ? 0
-            : run_list->runs()[line.segments[0].run]->preceding_run_widths;
-
-    for (const internal::LineSegment& segment : line.segments) {
-      const Range intersection = segment.char_range.Intersect(display_range);
-      DCHECK(!intersection.is_reversed());
-      if (!intersection.is_empty()) {
-        const internal::TextRunHarfBuzz& run = *run_list->runs()[segment.run];
-        RangeF selected_span =
-            run.GetGraphemeSpanForCharRange(this, intersection);
-        int start_x = std::ceil(selected_span.start() - line_start_x);
-        int end_x = std::ceil(selected_span.end() - line_start_x);
-        Rect rect(start_x, 0, end_x - start_x, std::ceil(line.size.height()));
-        rects.push_back(rect + GetLineOffset(line_index));
-      }
-    }
-  }
-  return rects;
 }
 
 size_t RenderTextHarfBuzz::TextIndexToDisplayIndex(size_t index) {
@@ -1786,7 +1788,6 @@ void RenderTextHarfBuzz::ShapeRuns(
   TRACE_EVENT1("ui", "RenderTextHarfBuzz::ShapeRuns", "run_count", runs.size());
 
   const Font& primary_font = font_list().GetPrimaryFont();
-  Font best_font(primary_font);
 
   for (const Font& font : font_list().GetFonts()) {
     internal::TextRunHarfBuzz::FontParams test_font_params = font_params;
@@ -1816,33 +1817,43 @@ void RenderTextHarfBuzz::ShapeRuns(
   }
 #endif
 
-  std::vector<Font> fallback_font_list = GetFallbackFonts(primary_font);
+  std::vector<Font> fallback_font_list;
+  {
+    SCOPED_UMA_HISTOGRAM_LONG_TIMER("RenderTextHarfBuzz.GetFallbackFontsTime");
+    TRACE_EVENT0("ui", "RenderTextHarfBuzz::GetFallbackFonts");
+    fallback_font_list = GetFallbackFonts(primary_font);
 
 #if defined(OS_WIN)
-  // Append fonts in the fallback list of the preferred fallback font.
-  // TODO(tapted): Investigate whether there's a case that benefits from this on
-  // Mac.
-  if (!preferred_fallback_family.empty()) {
-    std::vector<Font> fallback_fonts = GetFallbackFonts(fallback_font);
-    fallback_font_list.insert(fallback_font_list.end(), fallback_fonts.begin(),
-                              fallback_fonts.end());
-  }
+    // Append fonts in the fallback list of the preferred fallback font.
+    // TODO(tapted): Investigate whether there's a case that benefits from this
+    // on Mac.
+    if (!preferred_fallback_family.empty()) {
+      std::vector<Font> fallback_fonts = GetFallbackFonts(fallback_font);
+      fallback_font_list.insert(fallback_font_list.end(),
+                                fallback_fonts.begin(), fallback_fonts.end());
+    }
 
-  // Add Segoe UI and its associated linked fonts to the fallback font list to
-  // ensure that the fallback list covers the basic cases.
-  // http://crbug.com/467459. On some Windows configurations the default font
-  // could be a raster font like System, which would not give us a reasonable
-  // fallback font list.
-  if (!base::LowerCaseEqualsASCII(primary_font.GetFontName(), "segoe ui") &&
-      !base::LowerCaseEqualsASCII(preferred_fallback_family, "segoe ui")) {
-    std::vector<Font> default_fallback_families =
-        GetFallbackFonts(Font("Segoe UI", 13));
-    fallback_font_list.insert(fallback_font_list.end(),
-        default_fallback_families.begin(), default_fallback_families.end());
-  }
+    // Add Segoe UI and its associated linked fonts to the fallback font list to
+    // ensure that the fallback list covers the basic cases.
+    // http://crbug.com/467459. On some Windows configurations the default font
+    // could be a raster font like System, which would not give us a reasonable
+    // fallback font list.
+    if (!base::LowerCaseEqualsASCII(primary_font.GetFontName(), "segoe ui") &&
+        !base::LowerCaseEqualsASCII(preferred_fallback_family, "segoe ui")) {
+      std::vector<Font> default_fallback_families =
+          GetFallbackFonts(Font("Segoe UI", 13));
+      fallback_font_list.insert(fallback_font_list.end(),
+                                default_fallback_families.begin(),
+                                default_fallback_families.end());
+    }
 #endif
+  }
 
   // Use a set to track the fallback fonts and avoid duplicate entries.
+  SCOPED_UMA_HISTOGRAM_LONG_TIMER(
+      "RenderTextHarfBuzz.ShapeRunsWithFallbackFontsTime");
+  TRACE_EVENT1("ui", "RenderTextHarfBuzz::ShapeRunsWithFallbackFonts",
+               "fonts_count", fallback_font_list.size());
   std::set<Font, CaseInsensitiveCompare> fallback_fonts;
 
   // Try shaping with the fallback fonts.
@@ -1865,8 +1876,12 @@ void RenderTextHarfBuzz::ShapeRuns(
     if (test_font_params.SetFontAndRenderParams(font, fallback_render_params)) {
       ShapeRunsWithFont(text, test_font_params, &runs);
     }
-    if (runs.empty())
+    if (runs.empty()) {
+      TRACE_EVENT_INSTANT1("ui", "RenderTextHarfBuzz::FallbackFont",
+                           TRACE_EVENT_SCOPE_THREAD, "font_name",
+                           TRACE_STR_COPY(font_name.c_str()));
       return;
+    }
   }
 
   for (internal::TextRunHarfBuzz*& run : runs) {

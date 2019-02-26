@@ -26,10 +26,7 @@ void BrowserChildProcessWatcher::BrowserChildProcessLaunchedAndConnected(
     gpu_process_resource_coordinator_ =
         std::make_unique<resource_coordinator::ProcessResourceCoordinator>(
             content::ServiceManagerConnection::GetForProcess()->GetConnector());
-
-    gpu_process_resource_coordinator_->SetLaunchTime(base::Time::Now());
-    gpu_process_resource_coordinator_->SetPID(
-        base::GetProcId(data.GetHandle()));
+    gpu_process_resource_coordinator_->OnProcessLaunched(data.GetProcess());
   }
 }
 

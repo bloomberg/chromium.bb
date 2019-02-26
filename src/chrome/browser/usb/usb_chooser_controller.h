@@ -5,6 +5,7 @@
 #ifndef CHROME_BROWSER_USB_USB_CHOOSER_CONTROLLER_H_
 #define CHROME_BROWSER_USB_USB_CHOOSER_CONTROLLER_H_
 
+#include <string>
 #include <unordered_map>
 #include <utility>
 #include <vector>
@@ -65,9 +66,8 @@ class UsbChooserController : public ChooserController,
   base::WeakPtr<UsbChooserContext> chooser_context_;
   ScopedObserver<UsbChooserContext, UsbChooserContext::Observer> observer_;
 
-  // Each pair is a (device, device name).
-  std::vector<std::pair<device::mojom::UsbDeviceInfoPtr, base::string16>>
-      devices_;
+  // Each pair is a (device guid, device name).
+  std::vector<std::pair<std::string, base::string16>> devices_;
   // Maps from device name to number of devices.
   std::unordered_map<base::string16, int> device_name_map_;
   base::WeakPtrFactory<UsbChooserController> weak_factory_;

@@ -16,7 +16,7 @@ void OffscreenCanvasModule::getContext(
     ExecutionContext* execution_context,
     OffscreenCanvas& offscreen_canvas,
     const String& id,
-    const CanvasContextCreationAttributesModule& attributes,
+    const CanvasContextCreationAttributesModule* attributes,
     ExceptionState& exception_state,
     OffscreenRenderingContext& result) {
   if (offscreen_canvas.IsNeutered()) {

@@ -12,11 +12,10 @@
 #include "mojo/public/cpp/bindings/interface_request.h"
 #include "services/resource_coordinator/coordination_unit/coordination_unit_graph.h"
 #include "services/resource_coordinator/public/mojom/coordination_unit_provider.mojom.h"
+#include "services/service_manager/public/cpp/service_keepalive.h"
 
 namespace service_manager {
 struct BindSourceInfo;
-class ServiceContextRefFactory;
-class ServiceContextRef;
 }  // service_manager
 
 namespace resource_coordinator {
@@ -24,7 +23,7 @@ namespace resource_coordinator {
 class CoordinationUnitProviderImpl : public mojom::CoordinationUnitProvider {
  public:
   CoordinationUnitProviderImpl(
-      service_manager::ServiceContextRefFactory* service_ref_factory,
+      service_manager::ServiceKeepalive* service_keepalive,
       CoordinationUnitGraph* coordination_unit_graph);
   ~CoordinationUnitProviderImpl() override;
 
@@ -49,8 +48,8 @@ class CoordinationUnitProviderImpl : public mojom::CoordinationUnitProvider {
       override;
 
  private:
-  service_manager::ServiceContextRefFactory* service_ref_factory_;
-  std::unique_ptr<service_manager::ServiceContextRef> service_ref_;
+  service_manager::ServiceKeepalive* const service_keepalive_;
+  std::unique_ptr<service_manager::ServiceKeepaliveRef> keepalive_ref_;
   CoordinationUnitGraph* coordination_unit_graph_;
   mojo::BindingSet<mojom::CoordinationUnitProvider> bindings_;
 

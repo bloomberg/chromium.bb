@@ -7,6 +7,7 @@
 #include "base/android/jni_string.h"
 #include "chrome/browser/download/offline_item_utils.h"
 #include "chrome/grit/generated_resources.h"
+#include "components/download/public/common/download_utils.h"
 #include "jni/DownloadUtils_jni.h"
 #include "ui/base/l10n/l10n_util.h"
 
@@ -22,6 +23,19 @@ static ScopedJavaLocalRef<jstring> JNI_DownloadUtils_GetFailStateMessage(
       static_cast<offline_items_collection::FailState>(fail_state));
   l10n_util::GetStringFUTF16(IDS_DOWNLOAD_STATUS_INTERRUPTED, message);
   return ConvertUTF16ToJavaString(env, message);
+}
+
+static jint JNI_DownloadUtils_GetResumeMode(
+    JNIEnv* env,
+    const base::android::JavaParamRef<jclass>& jcaller,
+    const base::android::JavaParamRef<jstring>& jurl,
+    jint failState) {
+  std::string url = ConvertJavaStringToUTF8(env, jurl);
+  auto reason = OfflineItemUtils::ConvertFailStateToDownloadInterruptReason(
+      static_cast<offline_items_collection::FailState>(failState));
+  return static_cast<jint>(download::GetDownloadResumeMode(
+      GURL(std::move(url)), reason, false /* restart_required */,
+      true /* user_action_required */));
 }
 
 // static

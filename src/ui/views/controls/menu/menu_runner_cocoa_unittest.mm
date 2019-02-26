@@ -106,7 +106,8 @@ class MenuRunnerCocoaTest : public ViewsTestBase,
         gfx::Rect(kWindowOffset, kWindowOffset, kWindowWidth, kWindowHeight));
     parent_->Show();
 
-    native_view_subview_count_ = [[parent_->GetNativeView() subviews] count];
+    native_view_subview_count_ =
+        [[parent_->GetNativeView().GetNativeNSView() subviews] count];
 
     base::Closure on_close = base::Bind(&MenuRunnerCocoaTest::MenuCloseCallback,
                                         base::Unretained(this));
@@ -119,7 +120,7 @@ class MenuRunnerCocoaTest : public ViewsTestBase,
 
   void TearDown() override {
     EXPECT_EQ(native_view_subview_count_,
-              [[parent_->GetNativeView() subviews] count]);
+              [[parent_->GetNativeView().GetNativeNSView() subviews] count]);
 
     if (runner_) {
       runner_->Release();
@@ -252,12 +253,11 @@ class MenuRunnerCocoaTest : public ViewsTestBase,
   }
 
   void ComboboxRunMenuAtCallback() {
-    NSArray* subviews = [parent_->GetNativeView() subviews];
+    NSArray* subviews = [parent_->GetNativeView().GetNativeNSView() subviews];
     // An anchor view should only be added for Native menus.
     if (GetParam() == MenuType::NATIVE) {
       ASSERT_EQ(native_view_subview_count_ + 1, [subviews count]);
-      last_anchor_frame_ =
-          [[subviews objectAtIndex:native_view_subview_count_] frame];
+      last_anchor_frame_ = [subviews[native_view_subview_count_] frame];
     } else {
       EXPECT_EQ(native_view_subview_count_, [subviews count]);
     }

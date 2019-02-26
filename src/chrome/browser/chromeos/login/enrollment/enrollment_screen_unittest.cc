@@ -282,14 +282,14 @@ TEST_F(ZeroTouchEnrollmentScreenUnitTest, DoNotRetryAfterSuccess) {
  *   1. We want to check that some same tests pass in both classes
  *   2. We want to leverage Zero-Touch Hands Off to test for proper completions
  */
-class AutomaticReenrollmentScreenUnitTest
-    : public ZeroTouchEnrollmentScreenUnitTest {
+class AutomaticEnrollmentScreenUnitTest
+    : public ZeroTouchEnrollmentScreenUnitTest,
+      public ::testing::WithParamInterface<policy::EnrollmentConfig::Mode> {
  public:
-  AutomaticReenrollmentScreenUnitTest() = default;
+  AutomaticEnrollmentScreenUnitTest() = default;
 
   void SetUpEnrollmentScreen() override {
-    enrollment_config_.mode =
-        policy::EnrollmentConfig::MODE_ATTESTATION_SERVER_FORCED;
+    enrollment_config_.mode = GetParam();
     enrollment_config_.auth_mechanism =
         policy::EnrollmentConfig::AUTH_MECHANISM_BEST_AVAILABLE;
     EnrollmentScreenUnitTest::SetUpEnrollmentScreen();
@@ -301,21 +301,21 @@ class AutomaticReenrollmentScreenUnitTest
   }
 
  private:
-  DISALLOW_COPY_AND_ASSIGN(AutomaticReenrollmentScreenUnitTest);
+  DISALLOW_COPY_AND_ASSIGN(AutomaticEnrollmentScreenUnitTest);
 };
 
-TEST_F(AutomaticReenrollmentScreenUnitTest, ShowErrorPanel) {
+TEST_P(AutomaticEnrollmentScreenUnitTest, ShowErrorPanel) {
   // We use Zero-Touch's test for retries as a way to know that there was
   // an error pane with a Retry button displayed to the user when we encounter
   // a DMServer error that is not that the device isn't setup for Auto RE.
   TestRetry();
 }
 
-TEST_F(AutomaticReenrollmentScreenUnitTest, FinishEnrollmentFlow) {
+TEST_P(AutomaticEnrollmentScreenUnitTest, FinishEnrollmentFlow) {
   TestFinishEnrollmentFlow();
 }
 
-TEST_F(AutomaticReenrollmentScreenUnitTest, Fallback) {
+TEST_P(AutomaticEnrollmentScreenUnitTest, Fallback) {
   TestFallback();
 }
 
@@ -375,5 +375,12 @@ TEST_F(MultiLicenseEnrollmentScreenUnitTest, TestLicenseSelection) {
   enrollment_screen_->OnLoginDone("user@domain.com", "oauth");
   enrollment_screen_->OnLicenseTypeSelected("annual");
 }
+
+INSTANTIATE_TEST_CASE_P(
+    P,
+    AutomaticEnrollmentScreenUnitTest,
+    ::testing::Values(
+        policy::EnrollmentConfig::MODE_ATTESTATION_INITIAL_SERVER_FORCED,
+        policy::EnrollmentConfig::MODE_ATTESTATION_SERVER_FORCED));
 
 }  // namespace chromeos

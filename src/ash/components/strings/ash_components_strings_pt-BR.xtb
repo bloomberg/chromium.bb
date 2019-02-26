@@ -11,6 +11,7 @@
 <translation id="1299858300159559687">Imprimir a página atual</translation>
 <translation id="1383876407941801731">Pesquisar</translation>
 <translation id="1454364489140280055"><ph name="CTRL" /><ph name="SEPARATOR1" /><ph name="SHIFT1" /><ph name="SEPARATOR2" /><ph name="G" /> ou <ph name="SHIFT2" /><ph name="SEPARATOR3" /><ph name="ENTER" /></translation>
+<translation id="1477442857810932985">Ir para o fim da linha</translation>
 <translation id="1510238584712386396">Iniciador</translation>
 <translation id="152892567002884378">Aumentar volume</translation>
 <translation id="1560480564179555003"><ph name="SHIFT" /><ph name="SEPARATOR1" /><ph name="ALT" /><ph name="SEPARATOR2" /><ph name="L" /> e depois <ph name="ESC" /></translation>
@@ -191,6 +192,7 @@
 <translation id="9041599225465145264">Colar conteúdo da área de transferência</translation>
 <translation id="9052808072970550123">Alternar para o próximo usuário</translation>
 <translation id="906458777597946297">Maximizar janela</translation>
+<translation id="9091855755813503076">Ir para o início da linha</translation>
 <translation id="9106898733795143799">Página e navegador da Web</translation>
 <translation id="9162942292291287644">Nenhum resultado da pesquisa para <ph name="QUERY" /></translation>
 <translation id="9179672198516322668">Atalhos mais usados</translation>

@@ -8,6 +8,7 @@ import android.content.Context;
 import android.content.res.Resources;
 import android.content.res.Resources.NotFoundException;
 import android.graphics.Bitmap;
+import android.graphics.drawable.Icon;
 import android.os.Build;
 import android.support.annotation.IntDef;
 import android.util.DisplayMetrics;
@@ -84,7 +85,8 @@ public class SplashLayout {
 
     /** Builds splash screen and attaches it to the parent view. */
     public static void createLayout(Context appContext, ViewGroup parentView, Bitmap icon,
-            @IconClassification int iconClassification, String text, boolean useLightTextColor) {
+            boolean isIconAdaptive, @IconClassification int iconClassification, String text,
+            boolean useLightTextColor) {
         int layoutId = selectLayoutFromIconClassification(iconClassification);
         ViewGroup layout =
                 (ViewGroup) LayoutInflater.from(appContext).inflate(layoutId, parentView, true);
@@ -97,6 +99,13 @@ public class SplashLayout {
         }
 
         ImageView splashIconView = (ImageView) layout.findViewById(R.id.webapp_splash_screen_icon);
-        if (splashIconView != null) splashIconView.setImageBitmap(icon);
+        if (splashIconView == null) return;
+
+        // Adaptive icons should only be present on Android O.
+        if (isIconAdaptive && Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+            splashIconView.setImageIcon(Icon.createWithAdaptiveBitmap(icon));
+        } else {
+            splashIconView.setImageBitmap(icon);
+        }
     }
 }

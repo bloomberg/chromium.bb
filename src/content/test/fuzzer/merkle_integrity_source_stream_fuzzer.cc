@@ -27,7 +27,7 @@ extern "C" int LLVMFuzzerTestOneInput(const uint8_t* data, size_t size) {
   auto mi_stream = std::make_unique<content::MerkleIntegritySourceStream>(
       header, std::move(fuzzed_source_stream));
   while (true) {
-    size_t read_size = data_provider.ConsumeUint32InRange(1, 1024);
+    size_t read_size = data_provider.ConsumeIntegralInRange(1, 1024);
     auto io_buffer = base::MakeRefCounted<net::IOBufferWithSize>(read_size);
     int result = mi_stream->Read(io_buffer.get(), io_buffer->size(),
                                  callback.callback());

@@ -7,6 +7,7 @@
 #include "base/run_loop.h"
 #include "base/test/scoped_task_environment.h"
 #include "base/threading/thread_task_runner_handle.h"
+#include "build/build_config.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace base {
@@ -70,7 +71,13 @@ class SequenceBoundTest : public ::testing::Test {
   Value value = kInitialValue;
 };
 
-TEST_F(SequenceBoundTest, ConstructThenPostThenReset) {
+#if defined(OS_IOS) && !TARGET_OS_SIMULATOR
+#define MAYBE_ConstructThenPostThenReset FLAKY_ConstructThenPostThenReset
+#else
+#define MAYBE_ConstructThenPostThenReset ConstructThenPostThenReset
+#endif
+// https://crbug.com/899779 tracks test flakiness on iOS.
+TEST_F(SequenceBoundTest, MAYBE_ConstructThenPostThenReset) {
   auto derived = SequenceBound<Derived>(task_runner_, &value);
   EXPECT_FALSE(derived.is_null());
 

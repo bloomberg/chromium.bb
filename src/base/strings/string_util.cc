@@ -68,37 +68,32 @@ inline void AppendToString(string_type* target,
 
 // Assuming that a pointer is the size of a "machine word", then
 // uintptr_t is an integer type that is also a machine word.
-typedef uintptr_t MachineWord;
-const uintptr_t kMachineWordAlignmentMask = sizeof(MachineWord) - 1;
+using MachineWord = uintptr_t;
 
-inline bool IsAlignedToMachineWord(const void* pointer) {
-  return !(reinterpret_cast<MachineWord>(pointer) & kMachineWordAlignmentMask);
+inline bool IsMachineWordAligned(const void* pointer) {
+  return !(reinterpret_cast<MachineWord>(pointer) & (sizeof(MachineWord) - 1));
 }
 
-template<typename T> inline T* AlignToMachineWord(T* pointer) {
-  return reinterpret_cast<T*>(reinterpret_cast<MachineWord>(pointer) &
-                              ~kMachineWordAlignmentMask);
-}
-
-template<size_t size, typename CharacterType> struct NonASCIIMask;
-template<> struct NonASCIIMask<4, char16> {
-    static inline uint32_t value() { return 0xFF80FF80U; }
+template <typename CharacterType>
+struct NonASCIIMask;
+template <>
+struct NonASCIIMask<char> {
+  static constexpr MachineWord value() {
+    return static_cast<MachineWord>(0x8080808080808080ULL);
+  }
 };
-template<> struct NonASCIIMask<4, char> {
-    static inline uint32_t value() { return 0x80808080U; }
-};
-template<> struct NonASCIIMask<8, char16> {
-    static inline uint64_t value() { return 0xFF80FF80FF80FF80ULL; }
-};
-template<> struct NonASCIIMask<8, char> {
-    static inline uint64_t value() { return 0x8080808080808080ULL; }
+template <>
+struct NonASCIIMask<char16> {
+  static constexpr MachineWord value() {
+    return static_cast<MachineWord>(0xFF80FF80FF80FF80ULL);
+  }
 };
 #if defined(WCHAR_T_IS_UTF32)
-template<> struct NonASCIIMask<4, wchar_t> {
-    static inline uint32_t value() { return 0xFFFFFF80U; }
-};
-template<> struct NonASCIIMask<8, wchar_t> {
-    static inline uint64_t value() { return 0xFFFFFF80FFFFFF80ULL; }
+template <>
+struct NonASCIIMask<wchar_t> {
+  static constexpr MachineWord value() {
+    return static_cast<MachineWord>(0xFFFFFF80FFFFFF80ULL);
+  }
 };
 #endif  // WCHAR_T_IS_UTF32
 
@@ -458,31 +453,42 @@ bool ContainsOnlyChars(StringPiece16 input, StringPiece16 characters) {
 
 template <class Char>
 inline bool DoIsStringASCII(const Char* characters, size_t length) {
+  if (!length)
+    return true;
+  constexpr MachineWord non_ascii_bit_mask = NonASCIIMask<Char>::value();
   MachineWord all_char_bits = 0;
   const Char* end = characters + length;
 
   // Prologue: align the input.
-  while (!IsAlignedToMachineWord(characters) && characters != end) {
-    all_char_bits |= *characters;
-    ++characters;
-  }
+  while (!IsMachineWordAligned(characters) && characters < end)
+    all_char_bits |= *characters++;
+  if (all_char_bits & non_ascii_bit_mask)
+    return false;
 
   // Compare the values of CPU word size.
-  const Char* word_end = AlignToMachineWord(end);
-  const size_t loop_increment = sizeof(MachineWord) / sizeof(Char);
-  while (characters < word_end) {
+  constexpr size_t chars_per_word = sizeof(MachineWord) / sizeof(Char);
+  constexpr int batch_count = 16;
+  while (characters <= end - batch_count * chars_per_word) {
+    all_char_bits = 0;
+    for (int i = 0; i < batch_count; ++i) {
+      all_char_bits |= *(reinterpret_cast<const MachineWord*>(characters));
+      characters += chars_per_word;
+    }
+    if (all_char_bits & non_ascii_bit_mask)
+      return false;
+  }
+
+  // Process the remaining words.
+  all_char_bits = 0;
+  while (characters <= end - chars_per_word) {
     all_char_bits |= *(reinterpret_cast<const MachineWord*>(characters));
-    characters += loop_increment;
+    characters += chars_per_word;
   }
 
   // Process the remaining bytes.
-  while (characters != end) {
-    all_char_bits |= *characters;
-    ++characters;
-  }
+  while (characters < end)
+    all_char_bits |= *characters++;
 
-  MachineWord non_ascii_bit_mask =
-      NonASCIIMask<sizeof(MachineWord), Char>::value();
   return !(all_char_bits & non_ascii_bit_mask);
 }
 

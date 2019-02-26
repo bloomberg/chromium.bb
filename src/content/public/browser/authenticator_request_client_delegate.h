@@ -118,8 +118,8 @@ class CONTENT_EXPORT AuthenticatorRequestClientDelegate
   void FidoAuthenticatorRemoved(base::StringPiece device_id) override;
   void FidoAuthenticatorIdChanged(base::StringPiece old_authenticator_id,
                                   std::string new_authenticator_id) override;
-  void FidoAuthenticatorPairingModeChanged(
-      base::StringPiece authenticator_id) override;
+  void FidoAuthenticatorPairingModeChanged(base::StringPiece authenticator_id,
+                                           bool is_in_pairing_mode) override;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(AuthenticatorRequestClientDelegate);

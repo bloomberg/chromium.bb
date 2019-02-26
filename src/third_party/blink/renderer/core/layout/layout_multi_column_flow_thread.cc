@@ -604,7 +604,7 @@ bool LayoutMultiColumnFlowThread::RemoveSpannerPlaceholderIfNoLongerValid(
   // it for relayout.
   spanner_object_in_flow_thread->ContainingBlock()
       ->SetNeedsLayoutAndPrefWidthsRecalc(
-          LayoutInvalidationReason::kColumnsChanged);
+          layout_invalidation_reason::kColumnsChanged);
 
   // Now generate a column set for this ex-spanner, if needed and none is there
   // for us already.

@@ -86,6 +86,7 @@ const char kPerOriginOnlyInAutomaticError[] = "Can only set scope to "
     "\"per-origin\" in \"automatic\" mode.";
 const char kWindowNotFoundError[] = "No window with id: *.";
 const char kTabIndexNotFoundError[] = "No tab at index: *.";
+const char kNotFoundNextPageError[] = "Cannot find a next page in history.";
 const char kTabNotFoundError[] = "No tab with id: *.";
 const char kCannotDiscardTab[] = "Cannot discard tab with id: *.";
 const char kCannotFindTabToDiscard[] = "Cannot find a tab to discard.";

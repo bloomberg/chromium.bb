@@ -15,6 +15,10 @@
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/gfx/client_native_pixmap_factory.h"
 
+#if defined(USE_OZONE)
+#include "ui/ozone/public/ozone_platform.h"
+#endif
+
 namespace viz {
 
 namespace {
@@ -171,34 +175,6 @@ class TestGpuService : public mojom::GpuService {
   DISALLOW_COPY_AND_ASSIGN(TestGpuService);
 };
 
-// It is necessary to install a custom pixmap factory which claims to support
-// all native configurations, so that code that deals with this can be tested
-// correctly.
-class FakeClientNativePixmapFactory : public gfx::ClientNativePixmapFactory {
- public:
-  explicit FakeClientNativePixmapFactory(bool allow_native_buffers)
-      : allow_native_buffers_(allow_native_buffers) {}
-  ~FakeClientNativePixmapFactory() override {}
-
-  // gfx::ClientNativePixmapFactory:
-  bool IsConfigurationSupported(gfx::BufferFormat format,
-                                gfx::BufferUsage usage) const override {
-    return allow_native_buffers_;
-  }
-  std::unique_ptr<gfx::ClientNativePixmap> ImportFromHandle(
-      const gfx::NativePixmapHandle& handle,
-      const gfx::Size& size,
-      gfx::BufferUsage usage) override {
-    NOTREACHED();
-    return nullptr;
-  }
-
- private:
-  bool allow_native_buffers_ = false;
-
-  DISALLOW_COPY_AND_ASSIGN(FakeClientNativePixmapFactory);
-};
-
 }  // namespace
 
 class HostGpuMemoryBufferManagerTest : public ::testing::Test {
@@ -232,32 +208,33 @@ class HostGpuMemoryBufferManagerTest : public ::testing::Test {
   DISALLOW_COPY_AND_ASSIGN(HostGpuMemoryBufferManagerTest);
 };
 
-std::unique_ptr<gpu::GpuMemoryBufferSupport> MakeGpuMemoryBufferSupport(
-    bool allow_native_buffers) {
-#if defined(OS_LINUX)
-  return std::make_unique<gpu::GpuMemoryBufferSupport>(
-      std::make_unique<FakeClientNativePixmapFactory>(allow_native_buffers));
-#else
-  return std::make_unique<gpu::GpuMemoryBufferSupport>();
-#endif
-}
-
 // Tests that allocation requests from a client that goes away before allocation
 // completes are cleaned up correctly.
 TEST_F(HostGpuMemoryBufferManagerTest, AllocationRequestsForDestroyedClient) {
-#if !defined(USE_OZONE) && !defined(OS_MACOSX) && !defined(OS_WIN)
-  // Not all platforms support native configurations (currently only ozone and
-  // mac support it). Abort the test in those platforms.
-  gpu::GpuMemoryBufferSupport support;
-  DCHECK(gpu::GetNativeGpuMemoryBufferConfigurations(&support).empty());
-  return;
-#else
+  // Not all platforms support native configurations (currently only Windows,
+  // Mac and some Ozone platforms). Abort the test in those platforms.
+  bool native_pixmap_supported = false;
+#if defined(USE_OZONE)
+  native_pixmap_supported =
+      ui::OzonePlatform::GetInstance()->IsNativePixmapConfigSupported(
+          gfx::BufferFormat::RGBA_8888, gfx::BufferUsage::GPU_READ);
+#elif defined(OS_MACOSX) || defined(OS_WIN)
+  native_pixmap_supported = true;
+#endif
+
+  if (!native_pixmap_supported) {
+    gpu::GpuMemoryBufferSupport support;
+    DCHECK(gpu::GetNativeGpuMemoryBufferConfigurations(&support).empty());
+    return;
+  }
+
   // Note: HostGpuMemoryBufferManager normally operates on a mojom::GpuService
   // implementation over mojo. Which means the communication from SGMBManager to
   // GpuService is asynchronous. In this test, the mojom::GpuService is not
   // bound to a mojo pipe, which means those calls are all synchronous.
   TestGpuService gpu_service;
-  auto gpu_memory_buffer_support = MakeGpuMemoryBufferSupport(true);
+  auto gpu_memory_buffer_support =
+      std::make_unique<gpu::GpuMemoryBufferSupport>();
   HostGpuMemoryBufferManager manager(gpu_service.CreateProvider(), 1,
                                      std::move(gpu_memory_buffer_support),
                                      base::ThreadTaskRunnerHandle::Get());
@@ -282,12 +259,12 @@ TEST_F(HostGpuMemoryBufferManagerTest, AllocationRequestsForDestroyedClient) {
   // should request the allocated memory to be freed.
   gpu_service.SatisfyAllocationRequest(buffer_id, client_id);
   EXPECT_TRUE(gpu_service.HasDestructionRequest(buffer_id, client_id));
-#endif
 }
 
 TEST_F(HostGpuMemoryBufferManagerTest, RequestsFromUntrustedClientsValidated) {
   TestGpuService gpu_service;
-  auto gpu_memory_buffer_support = MakeGpuMemoryBufferSupport(false);
+  auto gpu_memory_buffer_support =
+      std::make_unique<gpu::GpuMemoryBufferSupport>();
   HostGpuMemoryBufferManager manager(gpu_service.CreateProvider(), 1,
                                      std::move(gpu_memory_buffer_support),
                                      base::ThreadTaskRunnerHandle::Get());
@@ -332,7 +309,8 @@ TEST_F(HostGpuMemoryBufferManagerTest, RequestsFromUntrustedClientsValidated) {
 
 TEST_F(HostGpuMemoryBufferManagerTest, GpuMemoryBufferDestroyed) {
   TestGpuService gpu_service;
-  auto gpu_memory_buffer_support = MakeGpuMemoryBufferSupport(false);
+  auto gpu_memory_buffer_support =
+      std::make_unique<gpu::GpuMemoryBufferSupport>();
   HostGpuMemoryBufferManager manager(gpu_service.CreateProvider(), 1,
                                      std::move(gpu_memory_buffer_support),
                                      base::ThreadTaskRunnerHandle::Get());
@@ -344,7 +322,8 @@ TEST_F(HostGpuMemoryBufferManagerTest, GpuMemoryBufferDestroyed) {
 TEST_F(HostGpuMemoryBufferManagerTest,
        GpuMemoryBufferDestroyedOnDifferentThread) {
   TestGpuService gpu_service;
-  auto gpu_memory_buffer_support = MakeGpuMemoryBufferSupport(false);
+  auto gpu_memory_buffer_support =
+      std::make_unique<gpu::GpuMemoryBufferSupport>();
   HostGpuMemoryBufferManager manager(gpu_service.CreateProvider(), 1,
                                      std::move(gpu_memory_buffer_support),
                                      base::ThreadTaskRunnerHandle::Get());

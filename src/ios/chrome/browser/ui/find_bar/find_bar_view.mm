@@ -6,8 +6,8 @@
 
 #include "components/strings/grit/components_strings.h"
 #import "ios/chrome/browser/ui/find_bar/find_bar_constants.h"
-#import "ios/chrome/browser/ui/toolbar/buttons/toolbar_constants.h"
-#import "ios/chrome/browser/ui/uikit_ui_util.h"
+#import "ios/chrome/browser/ui/toolbar/public/toolbar_constants.h"
+#import "ios/chrome/browser/ui/util/uikit_ui_util.h"
 #import "ios/chrome/common/ui_util/constraints_ui_util.h"
 #include "ios/chrome/grit/ios_strings.h"
 #include "ui/base/l10n/l10n_util_mac.h"
@@ -91,7 +91,7 @@ const CGFloat kBlueTintColor = 0x1A73E8;
 // The subviews layout is the following:
 // |-[inputField]-[previousButton][nextButton]-[closeButton]-|
 - (void)setupConstraints {
-  id<LayoutGuideProvider> safeArea = SafeAreaLayoutGuideForView(self);
+  id<LayoutGuideProvider> safeArea = self.safeAreaLayoutGuide;
 
   [self.closeButton
       setContentCompressionResistancePriority:UILayoutPriorityDefaultHigh + 1

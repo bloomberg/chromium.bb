@@ -22,6 +22,7 @@
 #include "remoting/host/host_experiment_session_plugin.h"
 #include "remoting/host/host_extension_session_manager.h"
 #include "remoting/host/remote_input_filter.h"
+#include "remoting/proto/action.pb.h"
 #include "remoting/protocol/clipboard_echo_filter.h"
 #include "remoting/protocol/clipboard_filter.h"
 #include "remoting/protocol/clipboard_stub.h"
@@ -130,6 +131,8 @@ class ClientSession : public protocol::HostStub,
   void DisconnectSession(protocol::ErrorCode error) override;
   void OnLocalMouseMoved(const webrtc::DesktopVector& position) override;
   void SetDisableInputs(bool disable_inputs) override;
+  void OnDesktopDisplayChanged(
+      std::unique_ptr<protocol::VideoLayout> layout) override;
 
   // ClientSessionDetails interface.
   uint32_t desktop_session_id() const override;
@@ -160,6 +163,11 @@ class ClientSession : public protocol::HostStub,
   void OnVideoSizeChanged(protocol::VideoStream* stream,
                           const webrtc::DesktopSize& size,
                           const webrtc::DesktopVector& dpi) override;
+
+  void CreateActionMessageHandler(
+      std::vector<protocol::ActionRequest::Action> capabilities,
+      const std::string& channel_name,
+      std::unique_ptr<protocol::MessagePipe> pipe);
 
   void CreateFileTransferMessageHandler(
       const std::string& channel_name,

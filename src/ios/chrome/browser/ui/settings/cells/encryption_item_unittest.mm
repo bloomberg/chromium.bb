@@ -4,6 +4,7 @@
 
 #import "ios/chrome/browser/ui/settings/cells/encryption_item.h"
 
+#import "ios/chrome/browser/ui/table_view/chrome_table_view_styler.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #import "testing/gtest_mac.h"
 #include "testing/platform_test.h"
@@ -28,12 +29,12 @@ TEST_F(EncryptionItemTest, ConfigureCell) {
 
   item.text = text;
   item.enabled = NO;
-  item.accessoryType = MDCCollectionViewCellAccessoryCheckmark;
-  [item configureCell:cell];
+  item.accessoryType = UITableViewCellAccessoryCheckmark;
+  [item configureCell:cell withStyler:[[ChromeTableViewStyler alloc] init]];
 
   EXPECT_NSEQ(text, cell.textLabel.text);
   EXPECT_NE(enabledColor, cell.textLabel.textColor);
-  EXPECT_EQ(MDCCollectionViewCellAccessoryCheckmark, cell.accessoryType);
+  EXPECT_EQ(UITableViewCellAccessoryCheckmark, cell.accessoryType);
 }
 
 }  // namespace

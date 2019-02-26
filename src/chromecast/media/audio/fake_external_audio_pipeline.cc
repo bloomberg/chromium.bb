@@ -92,10 +92,32 @@ class TestLoopBack {
   DISALLOW_COPY_AND_ASSIGN(TestLoopBack);
 };
 
+class TestMediaMetadata {
+ public:
+  TestMediaMetadata() = default;
+
+  // Called from library.
+  void AddExternalMediaMetadataChangeObserver(
+      ExternalAudioPipelineShlib::ExternalMediaMetadataChangeObserver*
+          observer) {
+    media_metadata_change_observer_ = observer;
+  }
+  void RemoveExternalMediaMetadataChangeObserver(
+      ExternalAudioPipelineShlib::ExternalMediaMetadataChangeObserver*) {
+    media_metadata_change_observer_ = nullptr;
+  }
+
+ protected:
+  ExternalAudioPipelineShlib::ExternalMediaMetadataChangeObserver*
+      media_metadata_change_observer_ = nullptr;
+  DISALLOW_COPY_AND_ASSIGN(TestMediaMetadata);
+};
+
 // Final class includes library implementation for testing media volume/mute
 // + loopback and FakeExternalAudioPipelineSupport implementation.
 class TestMedia : public TestMediaVolumeMute,
                   public TestLoopBack,
+                  public TestMediaMetadata,
                   public testing::FakeExternalAudioPipelineSupport {
  public:
   TestMedia() = default;
@@ -123,6 +145,14 @@ class TestMedia : public TestMediaVolumeMute,
   void OnMuteChangeRequest(bool muted) override {
     CHECK(volume_change_request_observer_);
     volume_change_request_observer_->OnMuteChangeRequest(muted);
+  }
+
+  void UpdateExternalMediaMetadata(
+      const ExternalAudioPipelineShlib::ExternalMediaMetadata& metadata)
+      override {
+    if (media_metadata_change_observer_) {
+      media_metadata_change_observer_->OnExternalMediaMetadataChanged(metadata);
+    }
   }
 
  private:
@@ -222,10 +252,14 @@ void ExternalAudioPipelineShlib::RemoveExternalLoopbackAudioObserver(
 }
 
 void ExternalAudioPipelineShlib::AddExternalMediaMetadataChangeObserver(
-    ExternalMediaMetadataChangeObserver* observer) {}
+    ExternalMediaMetadataChangeObserver* observer) {
+  GetTestMedia()->AddExternalMediaMetadataChangeObserver(observer);
+}
 
 void ExternalAudioPipelineShlib::RemoveExternalMediaMetadataChangeObserver(
-    ExternalMediaMetadataChangeObserver* observer) {}
+    ExternalMediaMetadataChangeObserver* observer) {
+  GetTestMedia()->RemoveExternalMediaMetadataChangeObserver(observer);
+}
 
 std::unique_ptr<MixerOutputStream>
 ExternalAudioPipelineShlib::CreateMixerOutputStream() {

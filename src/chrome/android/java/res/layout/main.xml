@@ -3,7 +3,10 @@
      Use of this source code is governed by a BSD-style license that can be
      found in the LICENSE file. -->
 
-<merge xmlns:android="http://schemas.android.com/apk/res/android">
+<merge 
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto">
+
     <org.chromium.chrome.browser.coordinator.CoordinatorLayoutForPointer
         android:id="@+id/coordinator"
         android:layout_width="match_parent"
@@ -37,7 +40,6 @@
 
         <ViewStub
             android:id="@+id/keyboard_accessory_sheet_stub"
-            android:inflatedId="@+id/keyboard_accessory_sheet"
             android:layout="@layout/keyboard_accessory_sheet"
             android:layout_height="@dimen/keyboard_accessory_sheet_height"
             android:layout_width="match_parent"
@@ -69,6 +71,7 @@
             android:id="@+id/omnibox_results_container_stub"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
+            app:layout_anchor="@id/control_container"
             android:inflatedId="@+id/omnibox_results_container"
             android:layout="@layout/omnibox_results_container" />
 
@@ -115,4 +118,5 @@
         android:layout_width="match_parent"
         android:layout_height="0px"
         android:layout_gravity="bottom" />
+
 </merge>

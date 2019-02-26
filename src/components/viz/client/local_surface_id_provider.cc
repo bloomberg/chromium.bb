@@ -12,17 +12,24 @@ LocalSurfaceIdProvider::LocalSurfaceIdProvider() = default;
 
 LocalSurfaceIdProvider::~LocalSurfaceIdProvider() = default;
 
+void LocalSurfaceIdProvider::ForceAllocateNewId() {
+  parent_local_surface_id_allocator_.GenerateId();
+}
+
 DefaultLocalSurfaceIdProvider::DefaultLocalSurfaceIdProvider() = default;
 
-const LocalSurfaceId& DefaultLocalSurfaceIdProvider::GetLocalSurfaceIdForFrame(
+const LocalSurfaceIdAllocation&
+DefaultLocalSurfaceIdProvider::GetLocalSurfaceIdAllocationForFrame(
     const CompositorFrame& frame) {
   if (frame.size_in_pixels() != surface_size_ ||
-      frame.device_scale_factor() != device_scale_factor_) {
+      frame.device_scale_factor() != device_scale_factor_ ||
+      !parent_local_surface_id_allocator_.HasValidLocalSurfaceIdAllocation()) {
     parent_local_surface_id_allocator_.GenerateId();
   }
   surface_size_ = frame.size_in_pixels();
   device_scale_factor_ = frame.device_scale_factor();
-  return parent_local_surface_id_allocator_.GetCurrentLocalSurfaceId();
+  return parent_local_surface_id_allocator_
+      .GetCurrentLocalSurfaceIdAllocation();
 }
 
 }  // namespace viz

@@ -26,8 +26,8 @@ PermissionStatus* PermissionStatus::CreateAndListen(
     ExecutionContext* execution_context,
     MojoPermissionStatus status,
     MojoPermissionDescriptor descriptor) {
-  PermissionStatus* permission_status =
-      new PermissionStatus(execution_context, status, std::move(descriptor));
+  PermissionStatus* permission_status = MakeGarbageCollected<PermissionStatus>(
+      execution_context, status, std::move(descriptor));
   permission_status->PauseIfNeeded();
   permission_status->StartListening();
   return permission_status;
@@ -48,7 +48,7 @@ void PermissionStatus::Dispose() {
 }
 
 const AtomicString& PermissionStatus::InterfaceName() const {
-  return EventTargetNames::PermissionStatus;
+  return event_target_names::kPermissionStatus;
 }
 
 ExecutionContext* PermissionStatus::GetExecutionContext() const {
@@ -106,7 +106,7 @@ void PermissionStatus::OnPermissionStatusChange(MojoPermissionStatus status) {
     return;
 
   status_ = status;
-  DispatchEvent(*Event::Create(EventTypeNames::change));
+  DispatchEvent(*Event::Create(event_type_names::kChange));
 }
 
 void PermissionStatus::Trace(blink::Visitor* visitor) {

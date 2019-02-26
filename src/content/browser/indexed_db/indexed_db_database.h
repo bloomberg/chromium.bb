@@ -30,6 +30,7 @@
 #include "content/common/content_export.h"
 #include "third_party/blink/public/common/indexeddb/indexeddb_key.h"
 #include "third_party/blink/public/common/indexeddb/web_idb_types.h"
+#include "third_party/blink/public/mojom/indexeddb/indexeddb.mojom.h"
 
 namespace blink {
 class IndexedDBKeyPath;
@@ -107,7 +108,7 @@ class CONTENT_EXPORT IndexedDBDatabase
       int64_t transaction_id,
       IndexedDBConnection* connection,
       const std::vector<int64_t>& object_store_ids,
-      blink::WebIDBTransactionMode mode);
+      blink::mojom::IDBTransactionMode mode);
   void Close(IndexedDBConnection* connection, bool forced);
   void ForceClose();
 
@@ -152,7 +153,7 @@ class CONTENT_EXPORT IndexedDBDatabase
   // |value| can be null for delete and clear operations.
   void FilterObservation(IndexedDBTransaction*,
                          int64_t object_store_id,
-                         blink::WebIDBOperationType type,
+                         blink::mojom::IDBOperationType type,
                          const blink::IndexedDBKeyRange& key_range,
                          const IndexedDBValue* value);
   void SendObservations(
@@ -175,7 +176,7 @@ class CONTENT_EXPORT IndexedDBDatabase
            int64_t object_store_id,
            IndexedDBValue* value,
            std::unique_ptr<blink::IndexedDBKey> key,
-           blink::WebIDBPutMode mode,
+           blink::mojom::IDBPutMode mode,
            scoped_refptr<IndexedDBCallbacks> callbacks,
            const std::vector<blink::IndexedDBIndexKeys>& index_keys);
   void SetIndexKeys(IndexedDBTransaction* transaction,
@@ -189,9 +190,9 @@ class CONTENT_EXPORT IndexedDBDatabase
                   int64_t object_store_id,
                   int64_t index_id,
                   std::unique_ptr<blink::IndexedDBKeyRange> key_range,
-                  blink::WebIDBCursorDirection,
+                  blink::mojom::IDBCursorDirection,
                   bool key_only,
-                  blink::WebIDBTaskType task_type,
+                  blink::mojom::IDBTaskType task_type,
                   scoped_refptr<IndexedDBCallbacks> callbacks);
   void Count(IndexedDBTransaction* transaction,
              int64_t object_store_id,

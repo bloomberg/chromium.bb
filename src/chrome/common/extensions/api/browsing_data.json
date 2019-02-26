@@ -54,7 +54,12 @@
           "cache": {
             "type": "boolean",
             "optional": true,
-            "description": "The browser's cache. Note: when removing data, this clears the <em>entire</em> cache: it is not limited to the range you specify."
+            "description": "The browser's cache."
+          },
+          "cacheStorage": {
+            "type": "boolean",
+            "optional": true,
+            "description": "Cache storage"
           },
           "cookies": {
             "type": "boolean",
@@ -204,6 +209,24 @@
             "name": "callback",
             "type": "function",
             "description": "Called when the browser's cache has been cleared.",
+            "optional": true,
+            "parameters": []
+          }
+        ]
+      },
+      {
+        "name": "removeCacheStorage",
+        "description": "Clears websites' cache storage data.",
+        "type": "function",
+        "parameters": [
+          {
+            "$ref": "RemovalOptions",
+            "name": "options"
+          },
+          {
+            "name": "callback",
+            "type": "function",
+            "description": "Called when websites' cache storage has been cleared.",
             "optional": true,
             "parameters": []
           }
@@ -366,6 +389,24 @@
             "name": "callback",
             "type": "function",
             "description": "Called when the browser's passwords have been cleared.",
+            "optional": true,
+            "parameters": []
+          }
+        ]
+      },
+      {
+        "name": "removeServiceWorkers",
+        "description": "Clears websites' service workers.",
+        "type": "function",
+        "parameters": [
+          {
+            "$ref": "RemovalOptions",
+            "name": "options"
+          },
+          {
+            "name": "callback",
+            "type": "function",
+            "description": "Called when websites' service workers have been cleared.",
             "optional": true,
             "parameters": []
           }

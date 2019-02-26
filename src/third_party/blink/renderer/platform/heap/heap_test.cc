@@ -43,16 +43,15 @@
 #include "third_party/blink/renderer/platform/heap/heap.h"
 #include "third_party/blink/renderer/platform/heap/heap_linked_stack.h"
 #include "third_party/blink/renderer/platform/heap/heap_stats_collector.h"
-#include "third_party/blink/renderer/platform/heap/heap_terminated_array_builder.h"
 #include "third_party/blink/renderer/platform/heap/heap_test_utilities.h"
 #include "third_party/blink/renderer/platform/heap/marking_visitor.h"
 #include "third_party/blink/renderer/platform/heap/self_keep_alive.h"
 #include "third_party/blink/renderer/platform/heap/stack_frame_depth.h"
 #include "third_party/blink/renderer/platform/heap/thread_state.h"
 #include "third_party/blink/renderer/platform/heap/visitor.h"
+#include "third_party/blink/renderer/platform/scheduler/public/post_cross_thread_task.h"
 #include "third_party/blink/renderer/platform/scheduler/public/thread.h"
 #include "third_party/blink/renderer/platform/testing/unit_test_helpers.h"
-#include "third_party/blink/renderer/platform/web_task_runner.h"
 #include "third_party/blink/renderer/platform/wtf/hash_traits.h"
 #include "third_party/blink/renderer/platform/wtf/linked_hash_set.h"
 
@@ -622,7 +621,8 @@ class ThreadedWeaknessTester : public ThreadedTesterBase {
     while (!Done()) {
       {
         Persistent<HeapHashMap<ThreadMarker, WeakMember<IntWrapper>>> weak_map =
-            new HeapHashMap<ThreadMarker, WeakMember<IntWrapper>>;
+            MakeGarbageCollected<
+                HeapHashMap<ThreadMarker, WeakMember<IntWrapper>>>();
 
         for (int i = 0; i < kNumberOfAllocations; i++) {
           weak_map->insert(static_cast<unsigned>(i), IntWrapper::Create(0));
@@ -1249,8 +1249,10 @@ class FinalizationObserverWithHashMap {
 
  private:
   static ObserverMap& Observers() {
-    if (!observer_map_)
-      observer_map_ = new Persistent<ObserverMap>(new ObserverMap());
+    if (!observer_map_) {
+      observer_map_ =
+          new Persistent<ObserverMap>(MakeGarbageCollected<ObserverMap>());
+    }
     return **observer_map_;
   }
 
@@ -1897,7 +1899,9 @@ TEST(HeapTest, SimplePersistent) {
 }
 
 TEST(HeapTest, SimpleFinalization) {
+  ClearOutOldGarbage();
   {
+    SimpleFinalizedObject::destructor_calls_ = 0;
     Persistent<SimpleFinalizedObject> finalized =
         SimpleFinalizedObject::Create();
     EXPECT_EQ(0, SimpleFinalizedObject::destructor_calls_);
@@ -2069,6 +2073,8 @@ TEST(HeapTest, EagerlySweepingPages) {
 
 TEST(HeapTest, Finalization) {
   {
+    HeapTestSubClass::destructor_calls_ = 0;
+    HeapTestSuperClass::destructor_calls_ = 0;
     HeapTestSubClass* t1 = HeapTestSubClass::Create();
     HeapTestSubClass* t2 = HeapTestSubClass::Create();
     HeapTestSuperClass* t3 = HeapTestSuperClass::Create();
@@ -2108,6 +2114,7 @@ TEST(HeapTest, NoAllocation) {
 }
 
 TEST(HeapTest, Members) {
+  ClearOutOldGarbage();
   Bar::live_ = 0;
   {
     Persistent<Baz> h1;
@@ -2131,6 +2138,7 @@ TEST(HeapTest, Members) {
 }
 
 TEST(HeapTest, MarkTest) {
+  ClearOutOldGarbage();
   {
     Bar::live_ = 0;
     Persistent<Bar> bar = Bar::Create();
@@ -2158,6 +2166,7 @@ TEST(HeapTest, MarkTest) {
 }
 
 TEST(HeapTest, DeepTest) {
+  ClearOutOldGarbage();
   const unsigned kDepth = 100000;
   Bar::live_ = 0;
   {
@@ -2187,6 +2196,7 @@ TEST(HeapTest, DeepTest) {
 }
 
 TEST(HeapTest, WideTest) {
+  ClearOutOldGarbage();
   Bar::live_ = 0;
   {
     Bars* bars = Bars::Create();
@@ -2204,10 +2214,9 @@ TEST(HeapTest, WideTest) {
 }
 
 TEST(HeapTest, HashMapOfMembers) {
+  ClearOutOldGarbage();
   ThreadHeap& heap = ThreadState::Current()->Heap();
   IntWrapper::destructor_calls_ = 0;
-
-  ClearOutOldGarbage();
   size_t initial_object_payload_size = heap.ObjectPayloadSizeForTesting();
   {
     typedef HeapHashMap<Member<IntWrapper>, Member<IntWrapper>,
@@ -2216,7 +2225,8 @@ TEST(HeapTest, HashMapOfMembers) {
                         HashTraits<Member<IntWrapper>>>
         HeapObjectIdentityMap;
 
-    Persistent<HeapObjectIdentityMap> map = new HeapObjectIdentityMap();
+    Persistent<HeapObjectIdentityMap> map =
+        MakeGarbageCollected<HeapObjectIdentityMap>();
 
     map->clear();
     size_t after_set_was_created = heap.ObjectPayloadSizeForTesting();
@@ -2388,7 +2398,7 @@ TEST(HeapTest, MAYBE_LargeHashMap) {
   wtf_size_t size = kMaxHeapObjectSize /
                     sizeof(HeapHashMap<int, Member<IntWrapper>>::ValueType);
   Persistent<HeapHashMap<int, Member<IntWrapper>>> map =
-      new HeapHashMap<int, Member<IntWrapper>>();
+      MakeGarbageCollected<HeapHashMap<int, Member<IntWrapper>>>();
   map->ReserveCapacityForSize(size);
   EXPECT_LE(size, map->Capacity());
 }
@@ -2399,7 +2409,8 @@ TEST(HeapTest, LargeVector) {
   // Try to allocate a HeapVectors larger than kMaxHeapObjectSize
   // (crbug.com/597953).
   wtf_size_t size = kMaxHeapObjectSize / sizeof(int);
-  Persistent<HeapVector<int>> vector = new HeapVector<int>(size);
+  Persistent<HeapVector<int>> vector =
+      MakeGarbageCollected<HeapVector<int>>(size);
   EXPECT_LE(size, vector->capacity());
 }
 
@@ -2612,26 +2623,30 @@ TEST(HeapTest, HeapCollectionTypes) {
   typedef HeapDeque<PairWrappedUnwrapped, 0> DequeWU;
   typedef HeapDeque<PairUnwrappedWrapped, 0> DequeUW;
 
-  Persistent<MemberMember> member_member = new MemberMember();
-  Persistent<MemberMember> member_member2 = new MemberMember();
-  Persistent<MemberMember> member_member3 = new MemberMember();
-  Persistent<MemberPrimitive> member_primitive = new MemberPrimitive();
-  Persistent<PrimitiveMember> primitive_member = new PrimitiveMember();
-  Persistent<MemberSet> set = new MemberSet();
-  Persistent<MemberSet> set2 = new MemberSet();
+  Persistent<MemberMember> member_member = MakeGarbageCollected<MemberMember>();
+  Persistent<MemberMember> member_member2 =
+      MakeGarbageCollected<MemberMember>();
+  Persistent<MemberMember> member_member3 =
+      MakeGarbageCollected<MemberMember>();
+  Persistent<MemberPrimitive> member_primitive =
+      MakeGarbageCollected<MemberPrimitive>();
+  Persistent<PrimitiveMember> primitive_member =
+      MakeGarbageCollected<PrimitiveMember>();
+  Persistent<MemberSet> set = MakeGarbageCollected<MemberSet>();
+  Persistent<MemberSet> set2 = MakeGarbageCollected<MemberSet>();
   Persistent<MemberCountedSet> set3 = new MemberCountedSet();
-  Persistent<MemberVector> vector = new MemberVector();
-  Persistent<MemberVector> vector2 = new MemberVector();
-  Persistent<VectorWU> vector_wu = new VectorWU();
-  Persistent<VectorWU> vector_wu2 = new VectorWU();
-  Persistent<VectorUW> vector_uw = new VectorUW();
-  Persistent<VectorUW> vector_uw2 = new VectorUW();
-  Persistent<MemberDeque> deque = new MemberDeque();
-  Persistent<MemberDeque> deque2 = new MemberDeque();
-  Persistent<DequeWU> deque_wu = new DequeWU();
-  Persistent<DequeWU> deque_wu2 = new DequeWU();
-  Persistent<DequeUW> deque_uw = new DequeUW();
-  Persistent<DequeUW> deque_uw2 = new DequeUW();
+  Persistent<MemberVector> vector = MakeGarbageCollected<MemberVector>();
+  Persistent<MemberVector> vector2 = MakeGarbageCollected<MemberVector>();
+  Persistent<VectorWU> vector_wu = MakeGarbageCollected<VectorWU>();
+  Persistent<VectorWU> vector_wu2 = MakeGarbageCollected<VectorWU>();
+  Persistent<VectorUW> vector_uw = MakeGarbageCollected<VectorUW>();
+  Persistent<VectorUW> vector_uw2 = MakeGarbageCollected<VectorUW>();
+  Persistent<MemberDeque> deque = MakeGarbageCollected<MemberDeque>();
+  Persistent<MemberDeque> deque2 = MakeGarbageCollected<MemberDeque>();
+  Persistent<DequeWU> deque_wu = MakeGarbageCollected<DequeWU>();
+  Persistent<DequeWU> deque_wu2 = MakeGarbageCollected<DequeWU>();
+  Persistent<DequeUW> deque_uw = MakeGarbageCollected<DequeUW>();
+  Persistent<DequeUW> deque_uw2 = MakeGarbageCollected<DequeUW>();
   Persistent<Container> container = Container::Create();
 
   ClearOutOldGarbage();
@@ -3185,7 +3200,7 @@ TEST(HeapTest, HeapWeakCollectionSimple) {
   IntWrapper::destructor_calls_ = 0;
 
   Persistent<HeapVector<Member<IntWrapper>>> keep_numbers_alive =
-      new HeapVector<Member<IntWrapper>>;
+      MakeGarbageCollected<HeapVector<Member<IntWrapper>>>();
 
   typedef HeapHashMap<WeakMember<IntWrapper>, Member<IntWrapper>> WeakStrong;
   typedef HeapHashMap<Member<IntWrapper>, WeakMember<IntWrapper>> StrongWeak;
@@ -3193,10 +3208,10 @@ TEST(HeapTest, HeapWeakCollectionSimple) {
   typedef HeapHashSet<WeakMember<IntWrapper>> WeakSet;
   typedef HeapHashCountedSet<WeakMember<IntWrapper>> WeakCountedSet;
 
-  Persistent<WeakStrong> weak_strong = new WeakStrong();
-  Persistent<StrongWeak> strong_weak = new StrongWeak();
-  Persistent<WeakWeak> weak_weak = new WeakWeak();
-  Persistent<WeakSet> weak_set = new WeakSet();
+  Persistent<WeakStrong> weak_strong = MakeGarbageCollected<WeakStrong>();
+  Persistent<StrongWeak> strong_weak = MakeGarbageCollected<StrongWeak>();
+  Persistent<WeakWeak> weak_weak = MakeGarbageCollected<WeakWeak>();
+  Persistent<WeakSet> weak_set = MakeGarbageCollected<WeakSet>();
   Persistent<WeakCountedSet> weak_counted_set = new WeakCountedSet();
 
   Persistent<IntWrapper> two = IntWrapper::Create(2);
@@ -3246,10 +3261,10 @@ void OrderedSetHelper(bool strong) {
   IntWrapper::destructor_calls_ = 0;
 
   Persistent<HeapVector<Member<IntWrapper>>> keep_numbers_alive =
-      new HeapVector<Member<IntWrapper>>;
+      MakeGarbageCollected<HeapVector<Member<IntWrapper>>>();
 
-  Persistent<Set> set1 = new Set();
-  Persistent<Set> set2 = new Set();
+  Persistent<Set> set1 = MakeGarbageCollected<Set>();
+  Persistent<Set> set2 = MakeGarbageCollected<Set>();
 
   const Set& const_set = *set1.Get();
 
@@ -3396,8 +3411,8 @@ static void HeapMapDestructorHelper(bool clear_maps) {
                       HashTraits<WeakMember<IntWrapper>>>
       Map;
 
-  Persistent<Map> map(new Map());
-  Persistent<RefMap> ref_map(new RefMap());
+  Persistent<Map> map(MakeGarbageCollected<Map>());
+  Persistent<RefMap> ref_map(MakeGarbageCollected<RefMap>());
 
   Persistent<IntWrapper> luck(IntWrapper::Create(103));
 
@@ -3554,12 +3569,12 @@ void WeakPairsHelper() {
   IntWrapper::destructor_calls_ = 0;
 
   Persistent<HeapVector<Member<IntWrapper>>> keep_numbers_alive =
-      new HeapVector<Member<IntWrapper>>;
+      MakeGarbageCollected<HeapVector<Member<IntWrapper>>>();
 
-  Persistent<WSSet> weak_strong = new WSSet();
-  Persistent<SWSet> strong_weak = new SWSet();
-  Persistent<WUSet> weak_unwrapped = new WUSet();
-  Persistent<UWSet> unwrapped_weak = new UWSet();
+  Persistent<WSSet> weak_strong = MakeGarbageCollected<WSSet>();
+  Persistent<SWSet> strong_weak = MakeGarbageCollected<SWSet>();
+  Persistent<WUSet> weak_unwrapped = MakeGarbageCollected<WUSet>();
+  Persistent<UWSet> unwrapped_weak = MakeGarbageCollected<UWSet>();
 
   Persistent<IntWrapper> two = IntWrapper::Create(2);
 
@@ -3642,15 +3657,16 @@ TEST(HeapTest, HeapWeakCollectionTypes) {
 
       unsigned added = add_afterwards ? 100 : 0;
 
-      Persistent<WeakStrong> weak_strong = new WeakStrong();
-      Persistent<StrongWeak> strong_weak = new StrongWeak();
-      Persistent<WeakWeak> weak_weak = new WeakWeak();
+      Persistent<WeakStrong> weak_strong = MakeGarbageCollected<WeakStrong>();
+      Persistent<StrongWeak> strong_weak = MakeGarbageCollected<StrongWeak>();
+      Persistent<WeakWeak> weak_weak = MakeGarbageCollected<WeakWeak>();
 
-      Persistent<WeakSet> weak_set = new WeakSet();
-      Persistent<WeakOrderedSet> weak_ordered_set = new WeakOrderedSet();
+      Persistent<WeakSet> weak_set = MakeGarbageCollected<WeakSet>();
+      Persistent<WeakOrderedSet> weak_ordered_set =
+          MakeGarbageCollected<WeakOrderedSet>();
 
       Persistent<HeapVector<Member<IntWrapper>>> keep_numbers_alive =
-          new HeapVector<Member<IntWrapper>>;
+          MakeGarbageCollected<HeapVector<Member<IntWrapper>>>();
       for (int i = 0; i < 128; i += 2) {
         IntWrapper* wrapped = IntWrapper::Create(i);
         IntWrapper* wrapped2 = IntWrapper::Create(i + 1);
@@ -3895,6 +3911,7 @@ TEST(HeapTest, RefCountedGarbageCollected) {
 }
 
 TEST(HeapTest, WeakMembers) {
+  ClearOutOldGarbage();
   Bar::live_ = 0;
   {
     Persistent<Bar> h1 = Bar::Create();
@@ -4098,8 +4115,10 @@ TEST(HeapTest, CollectionNesting) {
   IntWrapper::destructor_calls_ = 0;
   typedef HeapVector<Member<IntWrapper>> IntVector;
   typedef HeapDeque<Member<IntWrapper>> IntDeque;
-  HeapHashMap<void*, IntVector>* map = new HeapHashMap<void*, IntVector>();
-  HeapHashMap<void*, IntDeque>* map2 = new HeapHashMap<void*, IntDeque>();
+  HeapHashMap<void*, IntVector>* map =
+      MakeGarbageCollected<HeapHashMap<void*, IntVector>>();
+  HeapHashMap<void*, IntDeque>* map2 =
+      MakeGarbageCollected<HeapHashMap<void*, IntDeque>>();
   static_assert(WTF::IsTraceable<IntVector>::value,
                 "Failed to recognize HeapVector as traceable");
   static_assert(WTF::IsTraceable<IntDeque>::value,
@@ -4153,7 +4172,7 @@ TEST(HeapTest, GarbageCollectedMixin) {
   EXPECT_EQ(2, UseMixin::trace_count_);
 
   Persistent<HeapHashSet<WeakMember<Mixin>>> weak_map =
-      new HeapHashSet<WeakMember<Mixin>>;
+      MakeGarbageCollected<HeapHashSet<WeakMember<Mixin>>>();
   weak_map->insert(UseMixin::Create());
   PreciselyCollectGarbage();
   EXPECT_EQ(0u, weak_map->size());
@@ -4164,7 +4183,8 @@ TEST(HeapTest, CollectionNesting2) {
   void* key = &IntWrapper::destructor_calls_;
   IntWrapper::destructor_calls_ = 0;
   typedef HeapHashSet<Member<IntWrapper>> IntSet;
-  HeapHashMap<void*, IntSet>* map = new HeapHashMap<void*, IntSet>();
+  HeapHashMap<void*, IntSet>* map =
+      MakeGarbageCollected<HeapHashMap<void*, IntSet>>();
 
   map->insert(key, IntSet());
 
@@ -4185,8 +4205,8 @@ TEST(HeapTest, CollectionNesting3) {
   IntWrapper::destructor_calls_ = 0;
   typedef HeapVector<Member<IntWrapper>> IntVector;
   typedef HeapDeque<Member<IntWrapper>> IntDeque;
-  HeapVector<IntVector>* vector = new HeapVector<IntVector>();
-  HeapDeque<IntDeque>* deque = new HeapDeque<IntDeque>();
+  HeapVector<IntVector>* vector = MakeGarbageCollected<HeapVector<IntVector>>();
+  HeapDeque<IntDeque>* deque = MakeGarbageCollected<HeapDeque<IntDeque>>();
 
   vector->push_back(IntVector());
   deque->push_back(IntDeque());
@@ -4214,9 +4234,9 @@ TEST(HeapTest, EmbeddedInVector) {
   SimpleFinalizedObject::destructor_calls_ = 0;
   {
     Persistent<HeapVector<VectorObject, 2>> inline_vector =
-        new HeapVector<VectorObject, 2>;
+        MakeGarbageCollected<HeapVector<VectorObject, 2>>();
     Persistent<HeapVector<VectorObject>> outline_vector =
-        new HeapVector<VectorObject>;
+        MakeGarbageCollected<HeapVector<VectorObject>>();
     VectorObject i1, i2;
     inline_vector->push_back(i1);
     inline_vector->push_back(i2);
@@ -4226,7 +4246,7 @@ TEST(HeapTest, EmbeddedInVector) {
     outline_vector->push_back(o2);
 
     Persistent<HeapVector<VectorObjectInheritedTrace>> vector_inherited_trace =
-        new HeapVector<VectorObjectInheritedTrace>;
+        MakeGarbageCollected<HeapVector<VectorObjectInheritedTrace>>();
     VectorObjectInheritedTrace it1, it2;
     vector_inherited_trace->push_back(it1);
     vector_inherited_trace->push_back(it2);
@@ -4243,9 +4263,9 @@ TEST(HeapTest, EmbeddedInDeque) {
   SimpleFinalizedObject::destructor_calls_ = 0;
   {
     Persistent<HeapDeque<VectorObject, 2>> inline_deque =
-        new HeapDeque<VectorObject, 2>;
+        MakeGarbageCollected<HeapDeque<VectorObject, 2>>();
     Persistent<HeapDeque<VectorObject>> outline_deque =
-        new HeapDeque<VectorObject>;
+        MakeGarbageCollected<HeapDeque<VectorObject>>();
     VectorObject i1, i2;
     inline_deque->push_back(i1);
     inline_deque->push_back(i2);
@@ -4255,7 +4275,7 @@ TEST(HeapTest, EmbeddedInDeque) {
     outline_deque->push_back(o2);
 
     Persistent<HeapDeque<VectorObjectInheritedTrace>> deque_inherited_trace =
-        new HeapDeque<VectorObjectInheritedTrace>;
+        MakeGarbageCollected<HeapDeque<VectorObjectInheritedTrace>>();
     VectorObjectInheritedTrace it1, it2;
     deque_inherited_trace->push_back(it1);
     deque_inherited_trace->push_back(it2);
@@ -4454,60 +4474,6 @@ void RawPtrInHashHelper() {
     EXPECT_EQ(42, **it);
     delete *it;
   }
-}
-
-TEST(HeapTest, HeapTerminatedArray) {
-  ClearOutOldGarbage();
-  IntWrapper::destructor_calls_ = 0;
-
-  HeapTerminatedArray<TerminatedArrayItem>* arr = nullptr;
-
-  const wtf_size_t kPrefixSize = 4;
-  const wtf_size_t kSuffixSize = 4;
-
-  {
-    HeapTerminatedArrayBuilder<TerminatedArrayItem> builder(arr);
-    builder.Grow(kPrefixSize);
-    ConservativelyCollectGarbage();
-    for (wtf_size_t i = 0; i < kPrefixSize; i++)
-      builder.Append(TerminatedArrayItem(IntWrapper::Create(i)));
-    arr = builder.Release();
-  }
-
-  ConservativelyCollectGarbage();
-  EXPECT_EQ(0, IntWrapper::destructor_calls_);
-  EXPECT_EQ(kPrefixSize, arr->size());
-  for (wtf_size_t i = 0; i < kPrefixSize; i++)
-    EXPECT_EQ(i, static_cast<wtf_size_t>(arr->at(i).Payload()->Value()));
-
-  {
-    HeapTerminatedArrayBuilder<TerminatedArrayItem> builder(arr);
-    builder.Grow(kSuffixSize);
-    for (wtf_size_t i = 0; i < kSuffixSize; i++)
-      builder.Append(TerminatedArrayItem(IntWrapper::Create(kPrefixSize + i)));
-    arr = builder.Release();
-  }
-
-  ConservativelyCollectGarbage();
-  EXPECT_EQ(0, IntWrapper::destructor_calls_);
-  EXPECT_EQ(kPrefixSize + kSuffixSize, arr->size());
-  for (wtf_size_t i = 0; i < kPrefixSize + kSuffixSize; i++)
-    EXPECT_EQ(i, static_cast<wtf_size_t>(arr->at(i).Payload()->Value()));
-
-  {
-    Persistent<HeapTerminatedArray<TerminatedArrayItem>> persistent_arr = arr;
-    arr = nullptr;
-    PreciselyCollectGarbage();
-    arr = persistent_arr.Get();
-    EXPECT_EQ(0, IntWrapper::destructor_calls_);
-    EXPECT_EQ(kPrefixSize + kSuffixSize, arr->size());
-    for (wtf_size_t i = 0; i < kPrefixSize + kSuffixSize; i++)
-      EXPECT_EQ(i, static_cast<wtf_size_t>(arr->at(i).Payload()->Value()));
-  }
-
-  arr = nullptr;
-  PreciselyCollectGarbage();
-  EXPECT_EQ(8, IntWrapper::destructor_calls_);
 }
 
 TEST(HeapTest, HeapLinkedStack) {
@@ -4823,10 +4789,10 @@ template <typename Set>
 void SetWithCustomWeaknessHandling() {
   typedef typename Set::iterator Iterator;
   Persistent<IntWrapper> living_int(IntWrapper::Create(42));
-  Persistent<Set> set1(new Set());
+  Persistent<Set> set1(MakeGarbageCollected<Set>());
   {
     Set set2;
-    Set* set3 = new Set();
+    Set* set3 = MakeGarbageCollected<Set>();
     set2.insert(
         PairWithWeakHandling(IntWrapper::Create(0), IntWrapper::Create(1)));
     set3->insert(
@@ -4887,11 +4853,11 @@ TEST(HeapTest, MapWithCustomWeaknessHandling) {
   ClearOutOldGarbage();
   OffHeapInt::destructor_calls_ = 0;
 
-  Persistent<Map> map1(new Map());
+  Persistent<Map> map1(MakeGarbageCollected<Map>());
   Persistent<IntWrapper> living_int(IntWrapper::Create(42));
   {
     Map map2;
-    Map* map3 = new Map();
+    Map* map3 = MakeGarbageCollected<Map>();
     map2.insert(
         PairWithWeakHandling(IntWrapper::Create(0), IntWrapper::Create(1)),
         OffHeapInt::Create(1001));
@@ -4969,12 +4935,12 @@ TEST(HeapTest, MapWithCustomWeaknessHandling2) {
   ClearOutOldGarbage();
   OffHeapInt::destructor_calls_ = 0;
 
-  Persistent<Map> map1(new Map());
+  Persistent<Map> map1(MakeGarbageCollected<Map>());
   Persistent<IntWrapper> living_int(IntWrapper::Create(42));
 
   {
     Map map2;
-    Map* map3 = new Map();
+    Map* map3 = MakeGarbageCollected<Map>();
     map2.insert(
         OffHeapInt::Create(1001),
         PairWithWeakHandling(IntWrapper::Create(0), IntWrapper::Create(1)));
@@ -5056,7 +5022,7 @@ static void AddElementsToWeakMap(
 // If it doesn't assert a concurrent modification to the map, then it's passing.
 TEST(HeapTest, RegressNullIsStrongified) {
   Persistent<HeapHashMap<int, WeakMember<IntWrapper>>> map =
-      new HeapHashMap<int, WeakMember<IntWrapper>>();
+      MakeGarbageCollected<HeapHashMap<int, WeakMember<IntWrapper>>>();
   AddElementsToWeakMap(map);
   HeapHashMap<int, WeakMember<IntWrapper>>::AddResult result =
       map->insert(800, nullptr);
@@ -5146,7 +5112,7 @@ TEST(HeapTest, RemoveEmptySets) {
   typedef HeapHashMap<Key, WeakSet, WTF::DefaultHash<Key>::Hash,
                       HashTraits<Key>, EmptyClearingHashSetTraits>
       Map;
-  Persistent<Map> map(new Map());
+  Persistent<Map> map(MakeGarbageCollected<Map>());
   map->insert(OffHeapInt::Create(1), WeakSet());
   {
     WeakSet& set = map->begin()->value;
@@ -5179,7 +5145,7 @@ TEST(HeapTest, EphemeronsInEphemerons) {
 
   for (int keep_outer_alive = 0; keep_outer_alive <= 1; keep_outer_alive++) {
     for (int keep_inner_alive = 0; keep_inner_alive <= 1; keep_inner_alive++) {
-      Persistent<OuterMap> outer = new OuterMap();
+      Persistent<OuterMap> outer = MakeGarbageCollected<OuterMap>();
       Persistent<IntWrapper> one = IntWrapper::Create(1);
       Persistent<IntWrapper> two = IntWrapper::Create(2);
       outer->insert(one, InnerMap());
@@ -5207,7 +5173,7 @@ TEST(HeapTest, EphemeronsInEphemerons) {
       Persistent<IntWrapper> home = IntWrapper::Create(103);
       Persistent<IntWrapper> composite = IntWrapper::Create(91);
       Persistent<HeapVector<Member<IntWrapper>>> keep_alive =
-          new HeapVector<Member<IntWrapper>>();
+          MakeGarbageCollected<HeapVector<Member<IntWrapper>>>();
       for (int i = 0; i < 10000; i++) {
         IntWrapper* value = IntWrapper::Create(i);
         keep_alive->push_back(value);
@@ -5290,15 +5256,15 @@ TEST(HeapTest, Ephemeron) {
   typedef HeapHashMap<PairWithWeakHandling, WeakMember<IntWrapper>> PairWeakMap;
   typedef HeapHashSet<WeakMember<IntWrapper>> Set;
 
-  Persistent<WeakPairMap> weak_pair_map = new WeakPairMap();
-  Persistent<WeakPairMap> weak_pair_map2 = new WeakPairMap();
-  Persistent<WeakPairMap> weak_pair_map3 = new WeakPairMap();
-  Persistent<WeakPairMap> weak_pair_map4 = new WeakPairMap();
+  Persistent<WeakPairMap> weak_pair_map = MakeGarbageCollected<WeakPairMap>();
+  Persistent<WeakPairMap> weak_pair_map2 = MakeGarbageCollected<WeakPairMap>();
+  Persistent<WeakPairMap> weak_pair_map3 = MakeGarbageCollected<WeakPairMap>();
+  Persistent<WeakPairMap> weak_pair_map4 = MakeGarbageCollected<WeakPairMap>();
 
-  Persistent<PairWeakMap> pair_weak_map = new PairWeakMap();
-  Persistent<PairWeakMap> pair_weak_map2 = new PairWeakMap();
+  Persistent<PairWeakMap> pair_weak_map = MakeGarbageCollected<PairWeakMap>();
+  Persistent<PairWeakMap> pair_weak_map2 = MakeGarbageCollected<PairWeakMap>();
 
-  Persistent<Set> set = new Set();
+  Persistent<Set> set = MakeGarbageCollected<Set>();
 
   Persistent<IntWrapper> wp1 = IntWrapper::Create(1);
   Persistent<IntWrapper> wp2 = IntWrapper::Create(2);
@@ -5381,7 +5347,7 @@ class Link1 : public GarbageCollected<Link1> {
 
 TEST(HeapTest, IndirectStrongToWeak) {
   typedef HeapHashMap<WeakMember<IntWrapper>, Member<Link1>> Map;
-  Persistent<Map> map = new Map();
+  Persistent<Map> map = MakeGarbageCollected<Map>();
   Persistent<IntWrapper> dead_object =
       IntWrapper::Create(100);  // Named for "Drowning by Numbers" (1988).
   Persistent<IntWrapper> life_object = IntWrapper::Create(42);
@@ -5489,7 +5455,8 @@ class ThreadedStrongificationTester {
     Persistent<IntWrapper> wrapper4 = IntWrapper::Create(32);
     Persistent<IntWrapper> wrapper5 = IntWrapper::Create(32);
     Persistent<IntWrapper> wrapper6 = IntWrapper::Create(32);
-    Persistent<WeakCollectionType> weak_collection = new WeakCollectionType;
+    Persistent<WeakCollectionType> weak_collection =
+        MakeGarbageCollected<WeakCollectionType>();
     weak_collection->insert(wrapper1, wrapper1);
     weak_collection->insert(wrapper2, wrapper2);
     weak_collection->insert(wrapper3, wrapper3);
@@ -5738,6 +5705,7 @@ int ClassWithGarbageCollectingMixinConstructor::trace_called_ = 0;
 // Regression test for out of bounds call through vtable.
 // Passes if it doesn't crash.
 TEST(HeapTest, GarbageCollectionDuringMixinConstruction) {
+  ClassWithGarbageCollectingMixinConstructor::trace_called_ = 0;
   ClassWithGarbageCollectingMixinConstructor* a =
       new ClassWithGarbageCollectingMixinConstructor();
   a->Verify();
@@ -5883,7 +5851,7 @@ namespace blink {
 
 TEST(HeapTest, GCInHashMapOperations) {
   typedef HeapHashMap<AllocatesOnAssignment, AllocatesOnAssignment> Map;
-  Map* map = new Map();
+  Map* map = MakeGarbageCollected<Map>();
   IntWrapper* key = new IntWrapper(42);
   map->insert(key, AllocatesOnAssignment(103));
   map->erase(key);
@@ -6048,7 +6016,7 @@ TEST(HeapTest, DequeExpand) {
 
   typedef HeapDeque<Member<IntWrapper>> IntDeque;
 
-  Persistent<IntDeque> deque = new IntDeque();
+  Persistent<IntDeque> deque = MakeGarbageCollected<IntDeque>();
 
   // Append a sequence, bringing about repeated expansions of the
   // deque's buffer.
@@ -6130,9 +6098,9 @@ TEST(HeapTest, DequePartObjectsExpand) {
 
   using PartDeque = HeapDeque<PartObjectWithRef>;
 
-  Persistent<PartDeque> deque = new PartDeque();
+  Persistent<PartDeque> deque = MakeGarbageCollected<PartDeque>();
   // Auxillary Deque used to prevent 'inline' buffer expansion.
-  Persistent<PartDeque> deque_unused = new PartDeque();
+  Persistent<PartDeque> deque_unused = MakeGarbageCollected<PartDeque>();
 
   // Append a sequence, bringing about repeated expansions of the
   // deque's buffer.
@@ -6366,6 +6334,7 @@ class TestMixinAllocatingObject final
 };
 
 TEST(HeapTest, MixinConstructionNoGC) {
+  ClearOutOldGarbage();
   Persistent<ClassWithMember> object = ClassWithMember::Create();
   EXPECT_EQ(0, object->TraceCount());
   TestMixinAllocatingObject* mixin =
@@ -6541,7 +6510,7 @@ ThreadedClearOnShutdownTester::GetWeakHeapObjectSet() {
                                   singleton, ());
   Persistent<WeakHeapObjectSet>& singleton_persistent = *singleton;
   if (!singleton_persistent) {
-    singleton_persistent = new WeakHeapObjectSet();
+    singleton_persistent = MakeGarbageCollected<WeakHeapObjectSet>();
     singleton_persistent.RegisterAsStaticReference();
   }
   return *singleton_persistent;
@@ -6553,7 +6522,7 @@ ThreadedClearOnShutdownTester::GetHeapObjectSet() {
                                   singleton, ());
   Persistent<HeapObjectSet>& singleton_persistent = *singleton;
   if (!singleton_persistent) {
-    singleton_persistent = new HeapObjectSet();
+    singleton_persistent = MakeGarbageCollected<HeapObjectSet>();
     singleton_persistent.RegisterAsStaticReference();
   }
   return *singleton_persistent;
@@ -6653,9 +6622,6 @@ TEST(HeapTest, IsGarbageCollected) {
   static_assert(
       WTF::IsGarbageCollectedType<HeapDeque<Member<IntWrapper>>>::value,
       "HeapDeque");
-  static_assert(WTF::IsGarbageCollectedType<
-                    HeapTerminatedArray<Member<IntWrapper>>>::value,
-                "HeapTerminatedArray");
 }
 
 TEST(HeapTest, HeapHashMapCallsDestructor) {
@@ -6785,6 +6751,7 @@ TEST(HeapTest, PromptlyFreeStackAllocatedHeapHashSet) {
 }
 
 TEST(HeapTest, PromptlyFreeStackAllocatedHeapListHashSet) {
+  ClearOutOldGarbage();
   NormalPageArena* normal_arena = static_cast<NormalPageArena*>(
       ThreadState::Current()->Heap().Arena(BlinkGC::kHashTableArenaIndex));
   CHECK(normal_arena);
@@ -6829,6 +6796,87 @@ TEST(HeapTest, ShrinkVector) {
   // scenario that would create a free HeapObjectHeader that is assumed to be
   // black which it is not.
   vector.ShrinkToFit();
+}
+
+namespace {
+
+class MixinCheckingConstructionScope : public GarbageCollectedMixin {
+ public:
+  MixinCheckingConstructionScope() {
+    // Oilpan treats mixin construction as forbidden scopes for garbage
+    // collection.
+    CHECK(ThreadState::Current()->IsMixinInConstruction());
+  }
+};
+
+class UsingMixinCheckingConstructionScope
+    : public GarbageCollected<UsingMixinCheckingConstructionScope>,
+      public MixinCheckingConstructionScope {
+  USING_GARBAGE_COLLECTED_MIXIN(UsingMixinCheckingConstructionScope);
+};
+
+}  // namespace
+
+TEST(HeapTest, NoConservativeGCDuringMixinConstruction) {
+  // Regression test: https://crbug.com/904546
+  MakeGarbageCollected<UsingMixinCheckingConstructionScope>();
+}
+
+namespace {
+
+class ObjectCheckingForInConstruction
+    : public GarbageCollected<ObjectCheckingForInConstruction> {
+ public:
+  ObjectCheckingForInConstruction() {
+    CHECK(HeapObjectHeader::FromPayload(this)->IsInConstruction());
+  }
+
+  virtual void Trace(Visitor* v) { v->Trace(foo_); }
+
+ private:
+  Member<IntWrapper> foo_;
+};
+
+class MixinCheckingInConstruction : public GarbageCollectedMixin {
+ public:
+  MixinCheckingInConstruction() {
+    BasePage* const page = PageFromObject(reinterpret_cast<Address>(this));
+    HeapObjectHeader* const header =
+        static_cast<NormalPage*>(page)->FindHeaderFromAddress(
+            reinterpret_cast<Address>(
+                const_cast<MixinCheckingInConstruction*>(this)));
+    CHECK(header->IsInConstruction());
+  }
+
+  void Trace(Visitor* v) override { v->Trace(bar_); }
+
+ private:
+  Member<IntWrapper> bar_;
+};
+
+class MixinAppCheckingInConstruction
+    : public GarbageCollected<MixinAppCheckingInConstruction>,
+      public MixinCheckingInConstruction {
+  USING_GARBAGE_COLLECTED_MIXIN(MixinAppCheckingInConstruction)
+ public:
+  MixinAppCheckingInConstruction() {
+    CHECK(HeapObjectHeader::FromPayload(this)->IsInConstruction());
+  }
+
+  void Trace(Visitor* v) override { v->Trace(foo_); }
+
+ private:
+  Member<IntWrapper> foo_;
+};
+
+}  // namespace
+
+TEST(HeapTest, GarbageCollectedInConstruction) {
+  MakeGarbageCollected<ObjectCheckingForInConstruction>();
+}
+
+TEST(HeapTest, GarbageCollectedMixinInConstruction) {
+  MakeGarbageCollected<MixinAppCheckingInConstruction>();
 }
 
 }  // namespace blink

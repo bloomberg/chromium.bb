@@ -1,8 +1,10 @@
+--min-version 1.0.4 canvas-alpha-bug.html
 --min-version 1.0.4 --max-version 1.9.9 clipping-wide-points.html
 --min-version 1.0.2 culling.html
 --min-version 1.0.4 default-texture-draw-bug.html
 draw-arrays-out-of-bounds.html
 draw-elements-out-of-bounds.html
+--min-version 1.0.4 draw-webgl-to-canvas-2d-repeatedly.html
 --min-version 1.0.4 draw-with-changing-start-vertex-bug.html
 --min-version 1.0.3 framebuffer-switch.html
 --min-version 1.0.3 framebuffer-texture-switch.html
@@ -25,6 +27,7 @@ point-size.html
 --min-version 1.0.3 point-with-gl-pointcoord-in-fragment-shader.html
 --min-version 1.0.3 polygon-offset.html
 --min-version 1.0.4 preservedrawingbuffer-leak.html
+--min-version 1.0.4 rendering-sampling-feedback-loop.html
 --min-version 1.0.4 scissor-rect-repeated-rendering.html
 --min-version 1.0.2 simple.html
 triangle.html

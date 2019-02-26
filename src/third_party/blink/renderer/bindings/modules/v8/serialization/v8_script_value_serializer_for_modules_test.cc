@@ -166,13 +166,14 @@ TEST(V8ScriptValueSerializerForModulesTest, RoundTripRTCCertificate) {
           WebString::FromUTF8(kEcdsaPrivateKey, sizeof(kEcdsaPrivateKey)),
           WebString::FromUTF8(kEcdsaCertificate, sizeof(kEcdsaCertificate)));
   ASSERT_TRUE(web_certificate);
-  RTCCertificate* certificate = new RTCCertificate(std::move(web_certificate));
+  RTCCertificate* certificate =
+      MakeGarbageCollected<RTCCertificate>(std::move(web_certificate));
 
   // Round trip test.
   v8::Local<v8::Value> wrapper =
       ToV8(certificate, scope.GetContext()->Global(), scope.GetIsolate());
   v8::Local<v8::Value> result = RoundTripForModules(wrapper, scope);
-  ASSERT_TRUE(V8RTCCertificate::hasInstance(result, scope.GetIsolate()));
+  ASSERT_TRUE(V8RTCCertificate::HasInstance(result, scope.GetIsolate()));
   RTCCertificate* new_certificate =
       V8RTCCertificate::ToImpl(result.As<v8::Object>());
   rtc::RTCCertificatePEM pem = new_certificate->Certificate()->ToPEM();
@@ -199,7 +200,7 @@ TEST(V8ScriptValueSerializerForModulesTest, DecodeRTCCertificate) {
   // Decode test.
   v8::Local<v8::Value> result =
       V8ScriptValueDeserializerForModules(script_state, input).Deserialize();
-  ASSERT_TRUE(V8RTCCertificate::hasInstance(result, scope.GetIsolate()));
+  ASSERT_TRUE(V8RTCCertificate::HasInstance(result, scope.GetIsolate()));
   RTCCertificate* new_certificate =
       V8RTCCertificate::ToImpl(result.As<v8::Object>());
   rtc::RTCCertificatePEM pem = new_certificate->Certificate()->ToPEM();
@@ -407,7 +408,7 @@ TEST(V8ScriptValueSerializerForModulesTest, RoundTripCryptoKeyAES) {
   // Round trip it and check the visible attributes.
   v8::Local<v8::Value> wrapper = ToV8(key, scope.GetScriptState());
   v8::Local<v8::Value> result = RoundTripForModules(wrapper, scope);
-  ASSERT_TRUE(V8CryptoKey::hasInstance(result, scope.GetIsolate()));
+  ASSERT_TRUE(V8CryptoKey::HasInstance(result, scope.GetIsolate()));
   CryptoKey* new_key = V8CryptoKey::ToImpl(result.As<v8::Object>());
   EXPECT_EQ("secret", new_key->type());
   EXPECT_TRUE(new_key->extractable());
@@ -444,7 +445,7 @@ TEST(V8ScriptValueSerializerForModulesTest, DecodeCryptoKeyAES) {
                        0x70, 0xa2, 0xae, 0x98, 0x79, 0x1b, 0xc5, 0xf7});
   v8::Local<v8::Value> result =
       V8ScriptValueDeserializerForModules(script_state, input).Deserialize();
-  ASSERT_TRUE(V8CryptoKey::hasInstance(result, scope.GetIsolate()));
+  ASSERT_TRUE(V8CryptoKey::HasInstance(result, scope.GetIsolate()));
   CryptoKey* new_key = V8CryptoKey::ToImpl(result.As<v8::Object>());
   EXPECT_EQ("secret", new_key->type());
   EXPECT_FALSE(new_key->extractable());
@@ -479,7 +480,7 @@ TEST(V8ScriptValueSerializerForModulesTest, RoundTripCryptoKeyHMAC) {
   // Round trip it and check the visible attributes.
   v8::Local<v8::Value> wrapper = ToV8(key, scope.GetScriptState());
   v8::Local<v8::Value> result = RoundTripForModules(wrapper, scope);
-  ASSERT_TRUE(V8CryptoKey::hasInstance(result, scope.GetIsolate()));
+  ASSERT_TRUE(V8CryptoKey::HasInstance(result, scope.GetIsolate()));
   CryptoKey* new_key = V8CryptoKey::ToImpl(result.As<v8::Object>());
   EXPECT_EQ("secret", new_key->type());
   EXPECT_TRUE(new_key->extractable());
@@ -517,7 +518,7 @@ TEST(V8ScriptValueSerializerForModulesTest, DecodeCryptoKeyHMAC) {
        0x85, 0xaf, 0x41, 0xc4, 0x6a, 0x2d, 0x06, 0x7a});
   v8::Local<v8::Value> result =
       V8ScriptValueDeserializerForModules(script_state, input).Deserialize();
-  ASSERT_TRUE(V8CryptoKey::hasInstance(result, scope.GetIsolate()));
+  ASSERT_TRUE(V8CryptoKey::HasInstance(result, scope.GetIsolate()));
   CryptoKey* new_key = V8CryptoKey::ToImpl(result.As<v8::Object>());
   EXPECT_EQ("secret", new_key->type());
   EXPECT_FALSE(new_key->extractable());
@@ -554,7 +555,7 @@ TEST(V8ScriptValueSerializerForModulesTest, RoundTripCryptoKeyRSAHashed) {
   // Round trip the private key and check the visible attributes.
   v8::Local<v8::Value> wrapper = ToV8(private_key, scope.GetScriptState());
   v8::Local<v8::Value> result = RoundTripForModules(wrapper, scope);
-  ASSERT_TRUE(V8CryptoKey::hasInstance(result, scope.GetIsolate()));
+  ASSERT_TRUE(V8CryptoKey::HasInstance(result, scope.GetIsolate()));
   CryptoKey* new_private_key = V8CryptoKey::ToImpl(result.As<v8::Object>());
   EXPECT_EQ("private", new_private_key->type());
   EXPECT_TRUE(new_private_key->extractable());
@@ -600,7 +601,7 @@ TEST(V8ScriptValueSerializerForModulesTest, DecodeCryptoKeyRSAHashed) {
        0xb1, 0x19, 0x24, 0xae, 0x8d, 0x22, 0xb5, 0x02, 0x03, 0x01, 0x00, 0x01});
   v8::Local<v8::Value> result =
       V8ScriptValueDeserializerForModules(script_state, input).Deserialize();
-  ASSERT_TRUE(V8CryptoKey::hasInstance(result, scope.GetIsolate()));
+  ASSERT_TRUE(V8CryptoKey::HasInstance(result, scope.GetIsolate()));
   CryptoKey* new_public_key = V8CryptoKey::ToImpl(result.As<v8::Object>());
   EXPECT_EQ("public", new_public_key->type());
   EXPECT_TRUE(new_public_key->extractable());
@@ -645,7 +646,7 @@ TEST(V8ScriptValueSerializerForModulesTest, RoundTripCryptoKeyEC) {
   // Round trip the private key and check the visible attributes.
   v8::Local<v8::Value> wrapper = ToV8(private_key, scope.GetScriptState());
   v8::Local<v8::Value> result = RoundTripForModules(wrapper, scope);
-  ASSERT_TRUE(V8CryptoKey::hasInstance(result, scope.GetIsolate()));
+  ASSERT_TRUE(V8CryptoKey::HasInstance(result, scope.GetIsolate()));
   CryptoKey* new_private_key = V8CryptoKey::ToImpl(result.As<v8::Object>());
   EXPECT_EQ("private", new_private_key->type());
   EXPECT_TRUE(new_private_key->extractable());
@@ -686,7 +687,7 @@ TEST(V8ScriptValueSerializerForModulesTest, DecodeCryptoKeyEC) {
        0x0e, 0x1c, 0x31, 0x5a, 0xaa, 0x2d});
   v8::Local<v8::Value> result =
       V8ScriptValueDeserializerForModules(script_state, input).Deserialize();
-  ASSERT_TRUE(V8CryptoKey::hasInstance(result, scope.GetIsolate()));
+  ASSERT_TRUE(V8CryptoKey::HasInstance(result, scope.GetIsolate()));
   CryptoKey* new_public_key = V8CryptoKey::ToImpl(result.As<v8::Object>());
   EXPECT_EQ("public", new_public_key->type());
   EXPECT_TRUE(new_public_key->extractable());
@@ -721,7 +722,7 @@ TEST(V8ScriptValueSerializerForModulesTest, RoundTripCryptoKeyNoParams) {
   // Round trip the key and check the visible attributes.
   v8::Local<v8::Value> wrapper = ToV8(key, scope.GetScriptState());
   v8::Local<v8::Value> result = RoundTripForModules(wrapper, scope);
-  ASSERT_TRUE(V8CryptoKey::hasInstance(result, scope.GetIsolate()));
+  ASSERT_TRUE(V8CryptoKey::HasInstance(result, scope.GetIsolate()));
   CryptoKey* new_key = V8CryptoKey::ToImpl(result.As<v8::Object>());
   EXPECT_EQ("secret", new_key->type());
   EXPECT_FALSE(new_key->extractable());
@@ -751,7 +752,7 @@ TEST(V8ScriptValueSerializerForModulesTest, DecodeCryptoKeyNoParams) {
                        0x03, 0x01, 0x02, 0x03, 0x00});
   v8::Local<v8::Value> result =
       V8ScriptValueDeserializerForModules(script_state, input).Deserialize();
-  ASSERT_TRUE(V8CryptoKey::hasInstance(result, scope.GetIsolate()));
+  ASSERT_TRUE(V8CryptoKey::HasInstance(result, scope.GetIsolate()));
   CryptoKey* new_key = V8CryptoKey::ToImpl(result.As<v8::Object>());
   EXPECT_EQ("secret", new_key->type());
   EXPECT_FALSE(new_key->extractable());
@@ -902,7 +903,7 @@ TEST(V8ScriptValueSerializerForModulesTest, RoundTripDOMFileSystem) {
   v8::Local<v8::Value> wrapper = ToV8(fs, scope.GetScriptState());
   v8::Local<v8::Value> result = RoundTripForModules(wrapper, scope);
   ASSERT_FALSE(result.IsEmpty());
-  ASSERT_TRUE(V8DOMFileSystem::hasInstance(result, scope.GetIsolate()));
+  ASSERT_TRUE(V8DOMFileSystem::HasInstance(result, scope.GetIsolate()));
   DOMFileSystem* new_fs = V8DOMFileSystem::ToImpl(result.As<v8::Object>());
   EXPECT_EQ("http_example.com_0:Persistent", new_fs->name());
   EXPECT_EQ(mojom::blink::FileSystemType::kPersistent, new_fs->GetType());
@@ -945,7 +946,7 @@ TEST(V8ScriptValueSerializerForModulesTest, DecodeDOMFileSystem) {
   // Decode test.
   v8::Local<v8::Value> result =
       V8ScriptValueDeserializerForModules(script_state, input).Deserialize();
-  ASSERT_TRUE(V8DOMFileSystem::hasInstance(result, scope.GetIsolate()));
+  ASSERT_TRUE(V8DOMFileSystem::HasInstance(result, scope.GetIsolate()));
   DOMFileSystem* new_fs = V8DOMFileSystem::ToImpl(result.As<v8::Object>());
   EXPECT_EQ("http_example.com_0:Persistent", new_fs->name());
   EXPECT_EQ(mojom::blink::FileSystemType::kPersistent, new_fs->GetType());
@@ -987,7 +988,7 @@ TEST(V8ScriptValueSerializerForModulesTest, DecodeDetectedBarcode) {
        0x00, 0x00, 0xf0, 0x3f, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x40});
   v8::Local<v8::Value> result =
       V8ScriptValueDeserializerForModules(script_state, input).Deserialize();
-  ASSERT_TRUE(V8DetectedBarcode::hasInstance(result, scope.GetIsolate()));
+  ASSERT_TRUE(V8DetectedBarcode::HasInstance(result, scope.GetIsolate()));
   DetectedBarcode* detected_barcode =
       V8DetectedBarcode::ToImpl(result.As<v8::Object>());
   EXPECT_EQ("text", detected_barcode->rawValue());
@@ -996,10 +997,11 @@ TEST(V8ScriptValueSerializerForModulesTest, DecodeDetectedBarcode) {
   EXPECT_EQ(2, bounding_box->y());
   EXPECT_EQ(3, bounding_box->width());
   EXPECT_EQ(4, bounding_box->height());
-  const HeapVector<Point2D>& corner_points = detected_barcode->cornerPoints();
+  const HeapVector<Member<Point2D>>& corner_points =
+      detected_barcode->cornerPoints();
   EXPECT_EQ(1u, corner_points.size());
-  EXPECT_EQ(1, corner_points[0].x());
-  EXPECT_EQ(2, corner_points[0].y());
+  EXPECT_EQ(1, corner_points[0]->x());
+  EXPECT_EQ(2, corner_points[0]->y());
 }
 
 TEST(V8ScriptValueSerializerForModulesTest, DecodeDetectedFace) {
@@ -1013,20 +1015,20 @@ TEST(V8ScriptValueSerializerForModulesTest, DecodeDetectedFace) {
        0x00, 0x00, 0xf0, 0x3f, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x40});
   v8::Local<v8::Value> result =
       V8ScriptValueDeserializerForModules(script_state, input).Deserialize();
-  ASSERT_TRUE(V8DetectedFace::hasInstance(result, scope.GetIsolate()));
+  ASSERT_TRUE(V8DetectedFace::HasInstance(result, scope.GetIsolate()));
   DetectedFace* detected_face = V8DetectedFace::ToImpl(result.As<v8::Object>());
   DOMRectReadOnly* bounding_box = detected_face->boundingBox();
   EXPECT_EQ(1, bounding_box->x());
   EXPECT_EQ(2, bounding_box->y());
   EXPECT_EQ(3, bounding_box->width());
   EXPECT_EQ(4, bounding_box->height());
-  const HeapVector<Landmark>& landmarks = detected_face->landmarks();
+  const HeapVector<Member<Landmark>>& landmarks = detected_face->landmarks();
   EXPECT_EQ(1u, landmarks.size());
-  EXPECT_EQ("eye", landmarks[0].type());
-  const HeapVector<Point2D>& locations = landmarks[0].locations();
+  EXPECT_EQ("eye", landmarks[0]->type());
+  const HeapVector<Member<Point2D>>& locations = landmarks[0]->locations();
   EXPECT_EQ(1u, locations.size());
-  EXPECT_EQ(1, locations[0].x());
-  EXPECT_EQ(2, locations[0].y());
+  EXPECT_EQ(1, locations[0]->x());
+  EXPECT_EQ(2, locations[0]->y());
 }
 
 TEST(V8ScriptValueSerializerForModulesTest, DecodeDetectedText) {
@@ -1040,7 +1042,7 @@ TEST(V8ScriptValueSerializerForModulesTest, DecodeDetectedText) {
        0x00, 0x00, 0xf0, 0x3f, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x40});
   v8::Local<v8::Value> result =
       V8ScriptValueDeserializerForModules(script_state, input).Deserialize();
-  ASSERT_TRUE(V8DetectedText::hasInstance(result, scope.GetIsolate()));
+  ASSERT_TRUE(V8DetectedText::HasInstance(result, scope.GetIsolate()));
   DetectedText* detected_text = V8DetectedText::ToImpl(result.As<v8::Object>());
   EXPECT_EQ("text", detected_text->rawValue());
   DOMRectReadOnly* bounding_box = detected_text->boundingBox();
@@ -1048,10 +1050,11 @@ TEST(V8ScriptValueSerializerForModulesTest, DecodeDetectedText) {
   EXPECT_EQ(2, bounding_box->y());
   EXPECT_EQ(3, bounding_box->width());
   EXPECT_EQ(4, bounding_box->height());
-  const HeapVector<Point2D>& corner_points = detected_text->cornerPoints();
+  const HeapVector<Member<Point2D>>& corner_points =
+      detected_text->cornerPoints();
   EXPECT_EQ(1u, corner_points.size());
-  EXPECT_EQ(1, corner_points[0].x());
-  EXPECT_EQ(2, corner_points[0].y());
+  EXPECT_EQ(1, corner_points[0]->x());
+  EXPECT_EQ(2, corner_points[0]->y());
 }
 
 }  // namespace

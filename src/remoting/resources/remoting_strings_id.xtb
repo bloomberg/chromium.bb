@@ -2,6 +2,7 @@
 <!DOCTYPE translationbundle>
 <translationbundle lang="id">
 <translation id="1002108253973310084">Versi protokol yang tidak kompatibel terdeteksi. Pastikan Anda memasang software versi terbaru di kedua komputer dan coba lagi.</translation>
+<translation id="1008557486741366299">Jangan Sekarang</translation>
 <translation id="1050693411695664090">Buruk</translation>
 <translation id="1152528166145813711">Pilih…</translation>
 <translation id="1199593201721843963">Nonaktifkan sambungan jarak jauh</translation>
@@ -62,8 +63,9 @@ Untuk informasi tentang privasi, lihat Kebijakan Privasi Google (http://goo.gl/S
 <translation id="2314101195544969792">Sesi <ph name="APPLICATION_NAME" /> Anda tidak aktif untuk sementara waktu dan akan diputuskan sementara.</translation>
 <translation id="2317666076142640974">Coba <ph name="LINK_BEGIN" />aplikasi web Chrome Desktop Jarak Jauh<ph name="LINK_END" /> yang baru. Kami ingin mendengar masukan Anda.</translation>
 <translation id="2320166752086256636">Sembunyikan keyboard</translation>
+<translation id="2332192922827071008">Buka Preferensi</translation>
 <translation id="2353140552984634198">Anda dapat mengakses komputer ini dengan aman menggunakan Chromoting.</translation>
-<translation id="2359808026110333948">Lanjut</translation>
+<translation id="2359808026110333948">Lanjutkan</translation>
 <translation id="2366718077645204424">Tidak dapat menjangkau inang. Ini mungkin karena konfigurasi jaringan yang Anda gunakan.</translation>
 <translation id="2370754117186920852"><ph name="OPTIONAL_OFFLINE_REASON" />  Terakhir terlihat online <ph name="RELATIVE_TIMESTAMP" />.</translation>
 <translation id="2405928220797050937">Aplikasi ini tidak lagi didukung. Untuk memastikan Anda mendapatkan update fitur dan keamanan terbaru, gunakan <ph name="LINK_BEGIN" />aplikasi web Chrome Desktop Jarak Jauh<ph name="LINK_END" />.</translation>
@@ -82,6 +84,7 @@ Untuk informasi tentang privasi, lihat Kebijakan Privasi Google (http://goo.gl/S
 <translation id="2841013758207633010">Waktu</translation>
 <translation id="2851754573186462851">Chromium App Streaming</translation>
 <translation id="2888969873284818612">Terjadi kesalahan jaringan. Kami akan memulai ulang aplikasi saat perangkat Anda kembali online.</translation>
+<translation id="2891243864890517178">Untuk Mac (OS X Yosemite 10.10 dan versi lebih baru)</translation>
 <translation id="289405675947420287">Akses komputer dari perangkat iOS dengan aman. Cepat, mudah, dan gratis.
 
 • Download aplikasi Chrome Desktop Jarak Jauh dari Chrome Webstore di komputer yang ingin diakses dari jarak jauh.
@@ -188,6 +191,7 @@ PC</translation>
 <translation id="4973800994433240357">Dengan mendownload Pemasang Host Chrome Desktop Jarak Jauh, Anda menyetujui <ph name="LINK_BEGIN" />Persyaratan Layanan<ph name="LINK_END" /> Google.</translation>
 <translation id="4974476491460646149">Sambungan terputus untuk <ph name="HOSTNAME" /></translation>
 <translation id="4985296110227979402">Pertama, Anda perlu menyiapkan komputer untuk akses jarak jauh</translation>
+<translation id="5059773780693835145">Diperlukan langkah konfigurasi tambahan sebelum Anda dapat mengontrol mesin ini dari jarak jauh menggunakan <ph name="PRODUCT_NAME" />. Untuk mengaktifkan fungsi ini, pilih '<ph name="BUTTON_NAME" />' untuk menampilkan panel preferensi Keamanan dan Privasi, lalu centang kotak di samping '<ph name="SERVICE_SCRIPT_NAME" />'.</translation>
 <translation id="5064360042339518108"><ph name="HOSTNAME" /> (offline)</translation>
 <translation id="5070121137485264635">Hosting jarak jauh mewajibkan Anda mengautentikasi ke situs web pihak ketiga. Untuk melanjutkan, Anda harus memberikan izin tambahan ke Chrome Desktop Jarak Jauh untuk mengakses alamat ini:</translation>
 <translation id="507204348399810022">Yakin ingin menonaktifkan sambungan jarak jauh ke <ph name="HOSTNAME" />?</translation>
@@ -249,7 +253,6 @@ PC</translation>
 <translation id="6542902059648396432">Melaporkan masalah...</translation>
 <translation id="6550675742724504774">Opsi</translation>
 <translation id="6570205395680337606">Setel ulang aplikasi. Anda akan kehilangan pekerjaan yang belum disimpan.</translation>
-<translation id="6572345186230665992">Untuk Mac (OS X Mavericks 10.9 dan lebih tinggi)</translation>
 <translation id="6583902294974160967">Dukungan</translation>
 <translation id="6612717000975622067">Kirim Ctrl-Alt-Del</translation>
 <translation id="6654753848497929428">Bagikan</translation>
@@ -313,6 +316,7 @@ PC</translation>
 <translation id="809687642899217504">Komputer Saya</translation>
 <translation id="811307782653349804">Akses komputer Anda dari mana saja.</translation>
 <translation id="8116630183974937060">Terjadi kesalahan jaringan. Periksa bahwa perangkat Anda online dan coba lagi.</translation>
+<translation id="8123581458650016326">Izinkan pengguna jarak jauh untuk mengontrol mesin ini</translation>
 <translation id="8178433417677596899">Berbagi layar pengguna ke pengguna, cocok untuk dukungan teknis jarak jauh.</translation>
 <translation id="8187079423890319756">Hak Cipta 2013 Pengarang Chromium. Semua Hak Dilindungi Undang-Undang.</translation>
 <translation id="8196755618196986400">Guna mengizinkan kami menghubungi Anda untuk informasi lebih lanjut, alamat email Anda akan disertakan dalam masukan apa pun yang Anda kirimkan.</translation>

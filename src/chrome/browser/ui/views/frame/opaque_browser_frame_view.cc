@@ -4,6 +4,9 @@
 
 #include "chrome/browser/ui/views/frame/opaque_browser_frame_view.h"
 
+#include <algorithm>
+#include <utility>
+
 #include "build/build_config.h"
 #include "build/buildflag.h"
 #include "chrome/browser/themes/theme_properties.h"
@@ -43,7 +46,6 @@
 #include "ui/views/resources/grit/views_resources.h"
 #include "ui/views/views_delegate.h"
 #include "ui/views/window/frame_background.h"
-#include "ui/views/window/hit_test_utils.h"
 #include "ui/views/window/window_shape.h"
 
 #if defined(OS_LINUX)
@@ -175,13 +177,13 @@ OpaqueBrowserFrameView::OpaqueBrowserFrameView(
   window_title_->set_id(VIEW_ID_WINDOW_TITLE);
   AddChildView(window_title_);
 
-  if (extensions::HostedAppBrowserController::IsForExperimentalHostedAppBrowser(
-          browser_view->browser())) {
-    hosted_app_button_container_ = new HostedAppButtonContainer(
+  extensions::HostedAppBrowserController* controller =
+      browser_view->browser()->hosted_app_controller();
+  if (controller && controller->ShouldShowHostedAppButtonContainer()) {
+    set_hosted_app_button_container(new HostedAppButtonContainer(
         frame, browser_view, GetReadableFrameForegroundColor(kActive),
-        GetReadableFrameForegroundColor(kInactive));
-    hosted_app_button_container_->set_id(VIEW_ID_HOSTED_APP_BUTTON_CONTAINER);
-    AddChildView(hosted_app_button_container_);
+        GetReadableFrameForegroundColor(kInactive)));
+    AddChildView(hosted_app_button_container());
   }
 }
 
@@ -214,7 +216,7 @@ void OpaqueBrowserFrameView::UpdateThrobber(bool running) {
 }
 
 gfx::Size OpaqueBrowserFrameView::GetMinimumSize() const {
-  return layout_->GetMinimumSize(width());
+  return layout_->GetMinimumSize(this);
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -230,6 +232,10 @@ gfx::Rect OpaqueBrowserFrameView::GetWindowBoundsForClientBounds(
 }
 
 int OpaqueBrowserFrameView::NonClientHitTest(const gfx::Point& point) {
+  int super_component = BrowserNonClientFrameView::NonClientHitTest(point);
+  if (super_component != HTNOWHERE)
+    return super_component;
+
   if (!bounds().Contains(point))
     return HTNOWHERE;
 
@@ -265,15 +271,6 @@ int OpaqueBrowserFrameView::NonClientHitTest(const gfx::Point& point) {
       minimize_button_->GetMirroredBounds().Contains(point))
     return HTMINBUTTON;
 
-  if (hosted_app_button_container_) {
-    // TODO(alancutter): Assign hit test components to all children and refactor
-    // this entire function call to just be GetHitTestComponent(this, point).
-    int hosted_app_component =
-        views::GetHitTestComponent(hosted_app_button_container_, point);
-    if (hosted_app_component != HTNOWHERE)
-      return hosted_app_component;
-  }
-
   views::WidgetDelegate* delegate = frame()->widget_delegate();
   if (!delegate) {
     LOG(WARNING) << "delegate is null, returning safe default.";
@@ -302,12 +299,11 @@ void OpaqueBrowserFrameView::GetWindowMask(const gfx::Size& size,
 }
 
 void OpaqueBrowserFrameView::ResetWindowControls() {
+  BrowserNonClientFrameView::ResetWindowControls();
   restore_button_->SetState(views::Button::STATE_NORMAL);
   minimize_button_->SetState(views::Button::STATE_NORMAL);
   maximize_button_->SetState(views::Button::STATE_NORMAL);
   // The close button isn't affected by this constraint.
-  if (hosted_app_button_container_)
-    hosted_app_button_container_->UpdateContentSettingViewsVisibility();
 }
 
 void OpaqueBrowserFrameView::UpdateWindowIcon() {
@@ -324,23 +320,11 @@ void OpaqueBrowserFrameView::UpdateWindowTitle() {
 
 void OpaqueBrowserFrameView::SizeConstraintsChanged() {}
 
-void OpaqueBrowserFrameView::ActivationChanged(bool active) {
-  BrowserNonClientFrameView::ActivationChanged(active);
-  if (hosted_app_button_container_)
-    hosted_app_button_container_->SetPaintAsActive(active);
-}
-
 ///////////////////////////////////////////////////////////////////////////////
 // OpaqueBrowserFrameView, views::View overrides:
 
 const char* OpaqueBrowserFrameView::GetClassName() const {
   return kClassName;
-}
-
-void OpaqueBrowserFrameView::ChildPreferredSizeChanged(views::View* child) {
-  BrowserNonClientFrameView::ChildPreferredSizeChanged(child);
-  if (browser_view()->initialized() && child == hosted_app_button_container_)
-    Layout();
 }
 
 void OpaqueBrowserFrameView::GetAccessibleNodeData(ui::AXNodeData* node_data) {
@@ -660,8 +644,7 @@ bool OpaqueBrowserFrameView::ShouldShowWindowTitleBar() const {
 SkColor OpaqueBrowserFrameView::GetReadableFrameForegroundColor(
     ActiveState active_state) const {
   const SkColor frame_color = GetFrameColor(active_state);
-  if (extensions::HostedAppBrowserController::IsForExperimentalHostedAppBrowser(
-          browser_view()->browser())) {
+  if (browser_view()->IsBrowserTypeHostedApp()) {
     const bool has_site_theme = browser_view()
                                     ->browser()
                                     ->hosted_app_controller()

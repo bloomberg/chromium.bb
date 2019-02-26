@@ -14,6 +14,7 @@
 #include "third_party/blink/public/platform/web_media_stream_track.h"
 #include "third_party/blink/public/platform/web_rtc_rtp_receiver.h"
 #include "third_party/blink/public/platform/web_rtc_rtp_transceiver.h"
+#include "third_party/blink/public/platform/web_rtc_stats.h"
 #include "third_party/webrtc/api/mediastreaminterface.h"
 #include "third_party/webrtc/api/peerconnectioninterface.h"
 #include "third_party/webrtc/api/rtpreceiverinterface.h"
@@ -116,7 +117,8 @@ class CONTENT_EXPORT RTCRtpReceiver : public blink::WebRTCRtpReceiver {
   blink::WebVector<blink::WebString> StreamIds() const override;
   blink::WebVector<std::unique_ptr<blink::WebRTCRtpContributingSource>>
   GetSources() override;
-  void GetStats(std::unique_ptr<blink::WebRTCStatsReportCallback>) override;
+  void GetStats(std::unique_ptr<blink::WebRTCStatsReportCallback>,
+                blink::RTCStatsFilter) override;
 
  private:
   class RTCRtpReceiverInternal;

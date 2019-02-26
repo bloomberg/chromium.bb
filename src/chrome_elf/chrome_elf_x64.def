@@ -5,7 +5,7 @@ LIBRARY  "chrome_elf.dll"
 
 EXPORTS
   ; When functions are added to this file, they must also be added to
-  ; chrome_elf_x86.def
+  ; chrome_elf_x86.def and chrome_elf_arm64.def
 
   ; From components/crash/content/app/crash_export_stubs.cc
   CrashForException_ExportThunk
@@ -37,6 +37,12 @@ EXPORTS
   IsBlacklistInitialized
   SuccessfullyBlocked
 
-  ; From chrome_elf/third_party_dlls/logs
+  ; From chrome_elf/third_party_dlls/logs.cc
   DrainLog
   RegisterLogNotification
+  GetBlockedModulesCount
+  GetUniqueBlockedModulesCount
+
+  ; From chrome_elf/third_party_dlls/hook.cc
+  DisableHook
+  GetApplyHookResult

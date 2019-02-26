@@ -35,8 +35,7 @@ const uint32_t AW_STATE_VERSION = internal::AW_STATE_VERSION_DATA_URL;
 
 }  // namespace
 
-void WriteToPickle(const content::WebContents& web_contents,
-                   base::Pickle* pickle) {
+void WriteToPickle(content::WebContents& web_contents, base::Pickle* pickle) {
   DCHECK(pickle);
 
   internal::WriteHeaderToPickle(pickle);
@@ -214,7 +213,7 @@ bool RestoreNavigationEntryFromPickle(uint32_t state_version,
       return false;
 
     referrer.url = GURL(referrer_url);
-    referrer.policy = static_cast<blink::WebReferrerPolicy>(policy);
+    referrer.policy = static_cast<network::mojom::ReferrerPolicy>(policy);
     entry->SetReferrer(referrer);
   }
 

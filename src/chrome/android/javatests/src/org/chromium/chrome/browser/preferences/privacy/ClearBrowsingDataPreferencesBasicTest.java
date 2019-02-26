@@ -54,7 +54,7 @@ public class ClearBrowsingDataPreferencesBasicTest {
 
     @Before
     public void setUp() throws InterruptedException {
-        SigninTestUtil.setUpAuthForTest(InstrumentationRegistry.getInstrumentation());
+        SigninTestUtil.setUpAuthForTest();
         mActivityTestRule.startMainActivityOnBlankPage();
     }
 
@@ -84,9 +84,9 @@ public class ClearBrowsingDataPreferencesBasicTest {
         delegate.setMasterSyncAutomatically(syncable);
         AndroidSyncSettings.overrideForTests(delegate, null);
         if (syncable) {
-            AndroidSyncSettings.enableChromeSync();
+            AndroidSyncSettings.get().enableChromeSync();
         } else {
-            AndroidSyncSettings.disableChromeSync();
+            AndroidSyncSettings.get().disableChromeSync();
         }
 
         ThreadUtils.runOnUiThreadBlocking(new Runnable() {

@@ -67,23 +67,25 @@ NTSTATUS WINAPI TargetNtCreateKey(NtCreateKeyFunction orig_CreateKey,
     CountedParameterSet<OpenKey> params;
     params[OpenKey::ACCESS] = ParamPickerMake(desired_access_uint32);
 
-    wchar_t* full_name = nullptr;
-    const wchar_t* name_ptr = name.get();
+    bool query_broker = false;
+    {
+      std::unique_ptr<wchar_t, NtAllocDeleter> full_name;
+      const wchar_t* name_ptr = name.get();
+      const wchar_t* full_name_ptr = nullptr;
 
-    if (root_directory) {
-      ret =
-          sandbox::AllocAndGetFullPath(root_directory, name.get(), &full_name);
-      if (!NT_SUCCESS(ret) || !full_name)
-        break;
-      params[OpenKey::NAME] = ParamPickerMake(full_name);
-    } else {
-      params[OpenKey::NAME] = ParamPickerMake(name_ptr);
+      if (root_directory) {
+        ret = sandbox::AllocAndGetFullPath(root_directory, name.get(),
+                                           &full_name);
+        if (!NT_SUCCESS(ret) || !full_name)
+          break;
+        full_name_ptr = full_name.get();
+        params[OpenKey::NAME] = ParamPickerMake(full_name_ptr);
+      } else {
+        params[OpenKey::NAME] = ParamPickerMake(name_ptr);
+      }
+
+      query_broker = QueryBroker(IPC_NTCREATEKEY_TAG, params.GetBase());
     }
-
-    bool query_broker = QueryBroker(IPC_NTCREATEKEY_TAG, params.GetBase());
-
-    if (full_name)
-      operator delete(full_name, NT_ALLOC);
 
     if (!query_broker)
       break;
@@ -150,23 +152,25 @@ NTSTATUS WINAPI CommonNtOpenKey(NTSTATUS status,
     CountedParameterSet<OpenKey> params;
     params[OpenKey::ACCESS] = ParamPickerMake(desired_access_uint32);
 
-    wchar_t* full_name = nullptr;
-    const wchar_t* name_ptr = name.get();
+    bool query_broker = false;
+    {
+      std::unique_ptr<wchar_t, NtAllocDeleter> full_name;
+      const wchar_t* name_ptr = name.get();
+      const wchar_t* full_name_ptr = nullptr;
 
-    if (root_directory) {
-      ret =
-          sandbox::AllocAndGetFullPath(root_directory, name.get(), &full_name);
-      if (!NT_SUCCESS(ret) || !full_name)
-        break;
-      params[OpenKey::NAME] = ParamPickerMake(full_name);
-    } else {
-      params[OpenKey::NAME] = ParamPickerMake(name_ptr);
+      if (root_directory) {
+        ret = sandbox::AllocAndGetFullPath(root_directory, name.get(),
+                                           &full_name);
+        if (!NT_SUCCESS(ret) || !full_name)
+          break;
+        full_name_ptr = full_name.get();
+        params[OpenKey::NAME] = ParamPickerMake(full_name_ptr);
+      } else {
+        params[OpenKey::NAME] = ParamPickerMake(name_ptr);
+      }
+
+      query_broker = QueryBroker(IPC_NTOPENKEY_TAG, params.GetBase());
     }
-
-    bool query_broker = QueryBroker(IPC_NTOPENKEY_TAG, params.GetBase());
-
-    if (full_name)
-      operator delete(full_name, NT_ALLOC);
 
     if (!query_broker)
       break;

@@ -10,7 +10,7 @@
 #include "third_party/blink/renderer/core/workers/parent_execution_context_task_runners.h"
 #include "third_party/blink/renderer/core/workers/threaded_messaging_proxy_base.h"
 #include "third_party/blink/renderer/platform/cross_thread_functional.h"
-#include "third_party/blink/renderer/platform/web_task_runner.h"
+#include "third_party/blink/renderer/platform/scheduler/public/post_cross_thread_task.h"
 #include "third_party/blink/renderer/platform/wtf/functional.h"
 
 namespace blink {
@@ -41,19 +41,6 @@ void ThreadedObjectProxyBase::ReportConsoleMessage(MessageSource source,
       CrossThreadBind(&ThreadedMessagingProxyBase::ReportConsoleMessage,
                       MessagingProxyWeakPtr(), source, level, message,
                       WTF::Passed(location->Clone())));
-}
-
-void ThreadedObjectProxyBase::PostMessageToPageInspector(
-    int session_id,
-    const String& message) {
-  // The TaskType of Inspector tasks need to be Unthrottled because they need to
-  // run even on a suspended page.
-  PostCrossThreadTask(
-      *GetParentExecutionContextTaskRunners()->Get(
-          TaskType::kInternalInspector),
-      FROM_HERE,
-      CrossThreadBind(&ThreadedMessagingProxyBase::PostMessageToPageInspector,
-                      MessagingProxyWeakPtr(), session_id, message));
 }
 
 void ThreadedObjectProxyBase::DidCloseWorkerGlobalScope() {

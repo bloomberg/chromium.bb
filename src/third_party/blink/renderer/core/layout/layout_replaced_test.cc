@@ -24,7 +24,7 @@ TEST_F(LayoutReplacedTest, InvalidateAfterAddingBorderRadius) {
   LayoutObject* layout_object = target_element->GetLayoutObject();
   ASSERT_FALSE(layout_object->StyleRef().HasBorderRadius());
 
-  target_element->setAttribute(HTMLNames::styleAttr, "border-radius: 10px");
+  target_element->setAttribute(html_names::kStyleAttr, "border-radius: 10px");
 
   GetDocument().View()->UpdateLifecycleToLayoutClean();
   EXPECT_TRUE(layout_object->NeedsPaintPropertyUpdate());

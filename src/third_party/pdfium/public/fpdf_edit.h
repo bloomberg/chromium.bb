@@ -565,6 +565,31 @@ FPDFImageObj_LoadJpegFileInline(FPDF_PAGE* pages,
                                 FPDF_PAGEOBJECT image_object,
                                 FPDF_FILEACCESS* fileAccess);
 
+// Experimental API.
+// Get the transform matrix of an image object.
+//
+//   image_object - handle to an image object.
+//   a            - matrix value.
+//   b            - matrix value.
+//   c            - matrix value.
+//   d            - matrix value.
+//   e            - matrix value.
+//   f            - matrix value.
+//
+// The matrix is composed as:
+//   |a c e|
+//   |b d f|
+// and used to scale, rotate, shear and translate the image.
+//
+// Returns TRUE on success.
+FPDF_EXPORT FPDF_BOOL FPDF_CALLCONV FPDFImageObj_GetMatrix(FPDF_PAGEOBJECT path,
+                                                           double* a,
+                                                           double* b,
+                                                           double* c,
+                                                           double* d,
+                                                           double* e,
+                                                           double* f);
+
 // Set the transform matrix of |image_object|.
 //
 //   image_object - handle to an image object.
@@ -578,7 +603,7 @@ FPDFImageObj_LoadJpegFileInline(FPDF_PAGE* pages,
 // The matrix is composed as:
 //   |a c e|
 //   |b d f|
-// and can be used to scale, rotate, shear and translate the |page| annotations.
+// and can be used to scale, rotate, shear and translate the |image_object|.
 //
 // Returns TRUE on success.
 FPDF_EXPORT FPDF_BOOL FPDF_CALLCONV
@@ -835,6 +860,16 @@ FPDFPageObj_SetStrokeWidth(FPDF_PAGEOBJECT page_object, float width);
 FPDF_EXPORT FPDF_BOOL FPDF_CALLCONV
 FPDFPageObj_GetStrokeWidth(FPDF_PAGEOBJECT page_object, float* width);
 
+// Get the line join of |page_object|.
+//
+// page_object  - handle to a page object.
+//
+// Returns the line join, or -1 on failure.
+// Line join can be one of following: FPDF_LINEJOIN_MITER, FPDF_LINEJOIN_ROUND,
+// FPDF_LINEJOIN_BEVEL
+FPDF_EXPORT int FPDF_CALLCONV
+FPDFPageObj_GetLineJoin(FPDF_PAGEOBJECT page_object);
+
 // DEPRECATED as of May 2018. This API will be removed in the future. Please
 // use FPDFPageObj_SetLineJoin instead.
 //
@@ -857,6 +892,16 @@ FPDF_EXPORT void FPDF_CALLCONV FPDFPath_SetLineJoin(FPDF_PAGEOBJECT page_object,
 // FPDF_LINEJOIN_BEVEL
 FPDF_EXPORT FPDF_BOOL FPDF_CALLCONV
 FPDFPageObj_SetLineJoin(FPDF_PAGEOBJECT page_object, int line_join);
+
+// Get the line cap of |page_object|.
+//
+// page_object - handle to a page object.
+//
+// Returns the line cap, or -1 on failure.
+// Line cap can be one of following: FPDF_LINECAP_BUTT, FPDF_LINECAP_ROUND,
+// FPDF_LINECAP_PROJECTING_SQUARE
+FPDF_EXPORT int FPDF_CALLCONV
+FPDFPageObj_GetLineCap(FPDF_PAGEOBJECT page_object);
 
 // DEPRECATED as of May 2018. This API will be removed in the future. Please
 // use FPDFPageObj_SetLineCap instead.

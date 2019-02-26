@@ -70,7 +70,7 @@ class MODULES_EXPORT Notification final
   // when the developer-provided data is valid.
   static Notification* Create(ExecutionContext* context,
                               const String& title,
-                              const NotificationOptions& options,
+                              const NotificationOptions* options,
                               ExceptionState& state);
 
   // Used for embedder-created persistent notifications. Initializes the state
@@ -80,14 +80,22 @@ class MODULES_EXPORT Notification final
                               mojom::blink::NotificationDataPtr data,
                               bool showing);
 
+  // The type of notification this instance represents. Non-persistent
+  // notifications will have events delivered to their instance, whereas
+  // persistent notification will be using a Service Worker.
+  enum class Type { kNonPersistent, kPersistent };
+
+  Notification(ExecutionContext* context,
+               Type type,
+               mojom::blink::NotificationDataPtr data);
   ~Notification() override;
 
   void close();
 
-  DEFINE_ATTRIBUTE_EVENT_LISTENER(click);
-  DEFINE_ATTRIBUTE_EVENT_LISTENER(show);
-  DEFINE_ATTRIBUTE_EVENT_LISTENER(error);
-  DEFINE_ATTRIBUTE_EVENT_LISTENER(close);
+  DEFINE_ATTRIBUTE_EVENT_LISTENER(click, kClick);
+  DEFINE_ATTRIBUTE_EVENT_LISTENER(show, kShow);
+  DEFINE_ATTRIBUTE_EVENT_LISTENER(error, kError);
+  DEFINE_ATTRIBUTE_EVENT_LISTENER(close, kClose);
 
   // NonPersistentNotificationListener interface.
   void OnShow() override;
@@ -116,7 +124,7 @@ class MODULES_EXPORT Notification final
       ScriptState* script_state,
       V8NotificationPermissionCallback* deprecated_callback = nullptr);
 
-  static size_t maxActions();
+  static uint32_t maxActions();
 
   // EventTarget interface.
   ExecutionContext* GetExecutionContext() const final {
@@ -137,17 +145,8 @@ class MODULES_EXPORT Notification final
   DispatchEventResult DispatchEventInternal(Event& event) final;
 
  private:
-  // The type of notification this instance represents. Non-persistent
-  // notifications will have events delivered to their instance, whereas
-  // persistent notification will be using a Service Worker.
-  enum class Type { kNonPersistent, kPersistent };
-
   // The current phase of the notification in its lifecycle.
   enum class State { kLoading, kShowing, kClosing, kClosed };
-
-  Notification(ExecutionContext* context,
-               Type type,
-               mojom::blink::NotificationDataPtr data);
 
   // Sets the state of the notification in its lifecycle.
   void SetState(State state) { state_ = state; }

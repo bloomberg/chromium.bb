@@ -23,19 +23,10 @@
 // test it by making sure the conversion routines actually work at the same
 // time.
 
-using blink::WebLocalFrameClient;
 using blink::WebString;
 using blink::WebView;
 using blink::WebURL;
 using blink::WebURLRequest;
-
-namespace {
-
-// The base class destructor is protected, so derive.
-class TestWebFrameClient : public WebLocalFrameClient {};
-
-}  // namespace
-
 using ppapi::proxy::URLRequestInfoResource;
 using ppapi::URLRequestInfoData;
 

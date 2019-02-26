@@ -7,6 +7,7 @@
 
 #include "SkAtomics.h"
 #include "SkBitmapCache.h"
+#include "SkBitmapProvider.h"
 #include "SkImage.h"
 #include "SkResourceCache.h"
 #include "SkMipMap.h"
@@ -27,27 +28,15 @@ void SkNotifyBitmapGenIDIsStale(uint32_t bitmapGenID) {
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 
-SkBitmapCacheDesc SkBitmapCacheDesc::Make(uint32_t imageID, SkColorType colorType,
-                                          SkColorSpace* colorSpace, const SkIRect& subset) {
+SkBitmapCacheDesc SkBitmapCacheDesc::Make(uint32_t imageID, const SkIRect& subset) {
     SkASSERT(imageID);
     SkASSERT(subset.width() > 0 && subset.height() > 0);
-    return { imageID,
-             colorType,
-             colorSpace ? colorSpace->toXYZD50Hash() : 0,
-             colorSpace ? colorSpace->transferFnHash() : 0,
-             subset };
-}
-
-SkBitmapCacheDesc SkBitmapCacheDesc::Make(const SkBitmap& bm) {
-    SkASSERT(bm.pixelRef());
-    SkIPoint origin = bm.pixelRefOrigin();
-    SkIRect bounds = SkIRect::MakeXYWH(origin.fX, origin.fY, bm.width(), bm.height());
-    return Make(bm.getGenerationID(), bm.colorType(), bm.colorSpace(), bounds);
+    return { imageID, subset };
 }
 
 SkBitmapCacheDesc SkBitmapCacheDesc::Make(const SkImage* image) {
     SkIRect bounds = SkIRect::MakeWH(image->width(), image->height());
-    return Make(image->uniqueID(), image->colorType(), image->colorSpace(), bounds);
+    return Make(image->uniqueID(), bounds);
 }
 
 namespace {
@@ -232,10 +221,6 @@ SkBitmapCache::RecPtr SkBitmapCache::Alloc(const SkBitmapCacheDesc& desc, const 
     // Ensure that the info matches the subset (i.e. the subset is the entire image)
     SkASSERT(info.width() == desc.fSubset.width());
     SkASSERT(info.height() == desc.fSubset.height());
-    SkASSERT(info.colorType() == desc.fColorType);
-    SkASSERT((info.colorSpace() ? info.colorSpace()->toXYZD50Hash() : 0) == desc.fCSXYZHash);
-    SkASSERT((info.colorSpace() ? info.colorSpace()->transferFnHash() : 0) ==
-             desc.fCSTransferFnHash);
 
     const size_t rb = info.minRowBytes();
     size_t size = info.computeByteSize(rb);
@@ -342,12 +327,18 @@ static SkResourceCache::DiscardableFactory get_fact(SkResourceCache* localCache)
                       : SkResourceCache::GetDiscardableFactory();
 }
 
-const SkMipMap* SkMipMapCache::AddAndRef(const SkBitmap& src, SkResourceCache* localCache) {
+const SkMipMap* SkMipMapCache::AddAndRef(const SkBitmapProvider& provider,
+                                         SkResourceCache* localCache) {
+    SkBitmap src;
+    if (!provider.asBitmap(&src)) {
+        return nullptr;
+    }
+
     SkMipMap* mipmap = SkMipMap::Build(src, get_fact(localCache));
     if (mipmap) {
-        MipMapRec* rec = new MipMapRec(SkBitmapCacheDesc::Make(src), mipmap);
+        MipMapRec* rec = new MipMapRec(provider.makeCacheDesc(), mipmap);
         CHECK_LOCAL(localCache, add, Add, rec);
-        src.pixelRef()->notifyAddedToCache();
+        provider.notifyAddedToCache();
     }
     return mipmap;
 }

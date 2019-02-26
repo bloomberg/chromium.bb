@@ -633,13 +633,7 @@ IN_PROC_BROWSER_TEST_F(BrowserKeyEventsTest, MAYBE_AccessKeys) {
   EXPECT_NO_FATAL_FAILURE(CheckFocusedElement(tab_index, L""));
 }
 
-// Flaky, http://crbug.com/69475.
-#if defined(OS_LINUX)
-#define MAYBE_ReservedAccelerators DISABLED_ReservedAccelerators
-#else
-#define MAYBE_ReservedAccelerators ReservedAccelerators
-#endif
-IN_PROC_BROWSER_TEST_F(BrowserKeyEventsTest, MAYBE_ReservedAccelerators) {
+IN_PROC_BROWSER_TEST_F(BrowserKeyEventsTest, ReservedAccelerators) {
   ASSERT_TRUE(embedded_test_server()->Start());
 
   ASSERT_TRUE(ui_test_utils::BringBrowserWindowToFront(browser()));

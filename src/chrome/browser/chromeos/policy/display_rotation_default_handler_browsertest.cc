@@ -4,8 +4,6 @@
 
 #include "chrome/browser/chromeos/policy/display_rotation_default_handler.h"
 
-#include <stdint.h>
-
 #include <memory>
 
 #include "ash/display/display_configuration_controller.h"

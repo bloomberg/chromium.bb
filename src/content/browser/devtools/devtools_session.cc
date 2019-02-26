@@ -5,12 +5,13 @@
 #include "content/browser/devtools/devtools_session.h"
 
 #include "base/json/json_reader.h"
-#include "base/json/json_writer.h"
+#include "base/strings/stringprintf.h"
 #include "content/browser/devtools/devtools_manager.h"
 #include "content/browser/devtools/protocol/devtools_domain_handler.h"
 #include "content/browser/devtools/protocol/protocol.h"
 #include "content/browser/devtools/render_frame_devtools_agent_host.h"
 #include "content/browser/frame_host/render_frame_host_impl.h"
+#include "content/public/browser/devtools_external_agent_proxy_delegate.h"
 #include "content/public/browser/devtools_manager_delegate.h"
 
 namespace content {
@@ -29,21 +30,45 @@ bool ShouldSendOnIO(const std::string& method) {
          method == "Emulation.setScriptExecutionDisabled";
 }
 
+static const char kMethod[] = "method";
+static const char kResumeMethod[] = "Runtime.runIfWaitingForDebugger";
+static const char kSessionId[] = "sessionId";
+
 }  // namespace
 
-DevToolsSession::DevToolsSession(DevToolsAgentHostImpl* agent_host,
-                                 DevToolsAgentHostClient* client)
+// static
+bool DevToolsSession::IsRuntimeResumeCommand(base::Value* value) {
+  if (value && value->is_dict()) {
+    base::Value* method = value->FindKey(kMethod);
+    return method && method->is_string() &&
+           method->GetString() == kResumeMethod;
+  }
+  return false;
+}
+
+DevToolsSession::DevToolsSession(DevToolsAgentHostClient* client)
     : binding_(this),
-      agent_host_(agent_host),
       client_(client),
       dispatcher_(new protocol::UberDispatcher(this)),
       weak_factory_(this) {}
 
 DevToolsSession::~DevToolsSession() {
+  if (proxy_delegate_)
+    proxy_delegate_->Detach(this);
   // It is Ok for session to be deleted without the dispose -
   // it can be kicked out by an extension connect / disconnect.
   if (dispatcher_)
     Dispose();
+}
+
+void DevToolsSession::SetAgentHost(DevToolsAgentHostImpl* agent_host) {
+  DCHECK(!agent_host_);
+  agent_host_ = agent_host;
+}
+
+void DevToolsSession::SetRuntimeResumeCallback(
+    base::OnceClosure runtime_resume) {
+  runtime_resume_ = std::move(runtime_resume);
 }
 
 void DevToolsSession::Dispose() {
@@ -53,8 +78,13 @@ void DevToolsSession::Dispose() {
   handlers_.clear();
 }
 
+DevToolsSession* DevToolsSession::GetRootSession() {
+  return root_session_ ? root_session_ : this;
+}
+
 void DevToolsSession::AddHandler(
     std::unique_ptr<protocol::DevToolsDomainHandler> handler) {
+  DCHECK(agent_host_);
   handler->Wire(dispatcher_.get());
   handlers_[handler->name()] = std::move(handler);
 }
@@ -63,7 +93,14 @@ void DevToolsSession::SetBrowserOnly(bool browser_only) {
   browser_only_ = browser_only;
 }
 
+void DevToolsSession::TurnIntoExternalProxy(
+    DevToolsExternalAgentProxyDelegate* proxy_delegate) {
+  proxy_delegate_ = proxy_delegate;
+  proxy_delegate_->Attach(this);
+}
+
 void DevToolsSession::AttachToAgent(blink::mojom::DevToolsAgent* agent) {
+  DCHECK(agent_host_);
   if (!agent) {
     binding_.Close();
     session_ptr_.reset();
@@ -99,23 +136,41 @@ void DevToolsSession::AttachToAgent(blink::mojom::DevToolsAgent* agent) {
     session_state_cookie_ = blink::mojom::DevToolsSessionState::New();
 }
 
-void DevToolsSession::SendResponse(
-    std::unique_ptr<base::DictionaryValue> response) {
-  std::string json;
-  base::JSONWriter::Write(*response.get(), &json);
-  client_->DispatchProtocolMessage(agent_host_, json);
-  // |this| may be deleted at this point.
-}
-
 void DevToolsSession::MojoConnectionDestroyed() {
   binding_.Close();
   session_ptr_.reset();
   io_session_ptr_.reset();
 }
 
-void DevToolsSession::DispatchProtocolMessage(
+bool DevToolsSession::DispatchProtocolMessage(const std::string& message) {
+  std::unique_ptr<base::DictionaryValue> parsed_message =
+      base::DictionaryValue::From(base::JSONReader::Read(message));
+
+  std::string session_id;
+  if (!parsed_message || !parsed_message->GetString(kSessionId, &session_id))
+    return DispatchProtocolMessageInternal(message, std::move(parsed_message));
+
+  auto it = child_sessions_.find(session_id);
+  if (it == child_sessions_.end())
+    return false;
+  DevToolsSession* session = it->second;
+  return session->DispatchProtocolMessageInternal(message,
+                                                  std::move(parsed_message));
+}
+
+bool DevToolsSession::DispatchProtocolMessageInternal(
     const std::string& message,
     std::unique_ptr<base::DictionaryValue> parsed_message) {
+  if (!runtime_resume_.is_null() &&
+      IsRuntimeResumeCommand(parsed_message.get())) {
+    std::move(runtime_resume_).Run();
+  }
+
+  if (proxy_delegate_) {
+    proxy_delegate_->SendMessageToBackend(this, message);
+    return true;
+  }
+
   DevToolsManagerDelegate* delegate =
       DevToolsManager::GetInstance()->delegate();
   if (delegate && parsed_message) {
@@ -126,6 +181,7 @@ void DevToolsSession::DispatchProtocolMessage(
   } else {
     HandleCommand(std::move(parsed_message), message);
   }
+  return true;
 }
 
 void DevToolsSession::HandleCommand(
@@ -225,6 +281,19 @@ void DevToolsSession::DispatchProtocolNotification(
   // |this| may be deleted at this point.
 }
 
+void DevToolsSession::DispatchOnClientHost(const std::string& message) {
+  client_->DispatchProtocolMessage(agent_host_, message);
+  // |this| may be deleted at this point.
+}
+
+void DevToolsSession::ConnectionClosed() {
+  DevToolsAgentHostClient* client = client_;
+  DevToolsAgentHostImpl* agent_host = agent_host_;
+  agent_host->DetachInternal(this);
+  // |this| is delete here, do not use any fields below.
+  client->AgentHostClosed(agent_host);
+}
+
 void DevToolsSession::ApplySessionStateUpdates(
     blink::mojom::DevToolsSessionStatePtr updates) {
   if (!updates)
@@ -238,4 +307,41 @@ void DevToolsSession::ApplySessionStateUpdates(
       session_state_cookie_->entries.erase(entry.first);
   }
 }
+
+DevToolsSession* DevToolsSession::AttachChildSession(
+    const std::string& session_id,
+    DevToolsAgentHostImpl* agent_host,
+    DevToolsAgentHostClient* client) {
+  DCHECK(!agent_host->SessionByClient(client));
+  DCHECK(!root_session_);
+  auto session = std::make_unique<DevToolsSession>(client);
+  session->root_session_ = this;
+  DevToolsSession* session_ptr = session.get();
+  // If attach did not succeed, |session| is already destroyed.
+  if (!agent_host->AttachInternal(std::move(session)))
+    return nullptr;
+  child_sessions_[session_id] = session_ptr;
+  return session_ptr;
+}
+
+void DevToolsSession::DetachChildSession(const std::string& session_id) {
+  child_sessions_.erase(session_id);
+}
+
+void DevToolsSession::SendMessageFromChildSession(const std::string& session_id,
+                                                  const std::string& message) {
+  if (child_sessions_.find(session_id) == child_sessions_.end())
+    return;
+  if (!message.length() || message[message.length() - 1] != '}')
+    return;
+  std::string suffix =
+      base::StringPrintf(", \"sessionId\": \"%s\"}", session_id.c_str());
+  std::string patched;
+  patched.reserve(message.length() + suffix.length() - 1);
+  patched.append(message.data(), message.length() - 1);
+  patched.append(suffix);
+  client_->DispatchProtocolMessage(agent_host_, patched);
+  // |this| may be deleted at this point.
+}
+
 }  // namespace content

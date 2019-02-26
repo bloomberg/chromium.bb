@@ -18,6 +18,7 @@
 #include "components/sync/base/unrecoverable_error_handler.h"
 #include "components/sync/engine/cycle/status_counters.h"
 #include "components/sync/engine/shutdown_reason.h"
+#include "components/sync/engine/sync_encryption_handler.h"
 #include "components/sync/model/data_type_error_handler.h"
 
 namespace syncer {
@@ -178,6 +179,13 @@ class DataTypeController : public base::SupportsWeakPtr<DataTypeController> {
   // Records entities count and estimated memory usage of the type into
   // histograms. Can be called only if state() != NOT_RUNNING.
   virtual void RecordMemoryUsageAndCountsHistograms() = 0;
+
+  // Allows datatype controllers to receive crypto updates directly from the
+  // sync thread.
+  // TODO(crbug.com/856941): Remove when PASSWORDS are migrated to USS, which
+  // will likely make this API unnecessary.
+  virtual std::unique_ptr<SyncEncryptionHandler::Observer>
+  GetEncryptionObserverProxy();
 
  protected:
   explicit DataTypeController(ModelType type);

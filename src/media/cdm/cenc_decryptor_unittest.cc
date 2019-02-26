@@ -6,6 +6,7 @@
 
 #include <stdint.h>
 
+#include <algorithm>
 #include <string>
 #include <vector>
 
@@ -160,10 +161,11 @@ TEST_F(CencDecryptorTest, ExtraData) {
   EXPECT_EQ(encrypted_buffer->is_key_frame(), decrypted_buffer->is_key_frame());
   EXPECT_EQ(encrypted_buffer->side_data_size(),
             decrypted_buffer->side_data_size());
-  EXPECT_EQ(base::make_span(encrypted_buffer->side_data(),
-                            encrypted_buffer->side_data_size()),
-            base::make_span(decrypted_buffer->side_data(),
-                            decrypted_buffer->side_data_size()));
+  EXPECT_TRUE(std::equal(
+      encrypted_buffer->side_data(),
+      encrypted_buffer->side_data() + encrypted_buffer->side_data_size(),
+      decrypted_buffer->side_data(),
+      decrypted_buffer->side_data() + encrypted_buffer->side_data_size()));
 }
 
 TEST_F(CencDecryptorTest, NoSubsamples) {

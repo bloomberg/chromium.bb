@@ -145,6 +145,7 @@ CompositorFrame CompositorFrameBuilder::MakeInitCompositorFrame() const {
   CompositorFrame frame;
   frame.metadata.begin_frame_ack = BeginFrameAck::CreateManualAckWithDamage();
   frame.metadata.device_scale_factor = 1.f;
+  frame.metadata.local_surface_id_allocation_time = base::TimeTicks::Now();
   return frame;
 }
 

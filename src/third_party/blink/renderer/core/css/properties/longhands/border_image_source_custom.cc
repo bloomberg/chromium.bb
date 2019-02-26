@@ -12,13 +12,13 @@ namespace blink {
 
 class CSSParserLocalContext;
 
-namespace CSSLonghand {
+namespace css_longhand {
 
 const CSSValue* BorderImageSource::ParseSingleValue(
     CSSParserTokenRange& range,
     const CSSParserContext& context,
     const CSSParserLocalContext&) const {
-  return CSSPropertyParserHelpers::ConsumeImageOrNone(range, &context);
+  return css_property_parser_helpers::ConsumeImageOrNone(range, &context);
 }
 
 const CSSValue* BorderImageSource::CSSValueFromComputedStyleInternal(
@@ -44,5 +44,5 @@ void BorderImageSource::ApplyValue(StyleResolverState& state,
       state.GetStyleImage(CSSPropertyBorderImageSource, value));
 }
 
-}  // namespace CSSLonghand
+}  // namespace css_longhand
 }  // namespace blink

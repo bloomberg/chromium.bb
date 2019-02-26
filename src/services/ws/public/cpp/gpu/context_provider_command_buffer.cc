@@ -133,7 +133,7 @@ gpu::ContextResult ContextProviderCommandBuffer::BindToCurrentThread() {
   // This command buffer is a client-side proxy to the command buffer in the
   // GPU process.
   command_buffer_ = std::make_unique<gpu::CommandBufferProxyImpl>(
-      std::move(channel_), gpu_memory_buffer_manager_, stream_id_, task_runner);
+      channel_, gpu_memory_buffer_manager_, stream_id_, task_runner);
   bind_result_ = command_buffer_->Initialize(
       surface_handle_, /*shared_command_buffer=*/nullptr, stream_priority_,
       attributes_, active_url_);
@@ -170,9 +170,9 @@ gpu::ContextResult ContextProviderCommandBuffer::BindToCurrentThread() {
     impl_ = nullptr;
     webgpu_interface_ = std::move(webgpu_impl);
     helper_ = std::move(webgpu_helper);
-  } else if (attributes_.enable_oop_rasterization) {
-    DCHECK(attributes_.enable_raster_interface);
-    DCHECK(!attributes_.enable_gles2_interface);
+  } else if (!command_buffer_->channel()->gpu_info().passthrough_cmd_decoder &&
+             attributes_.enable_raster_interface &&
+             !attributes_.enable_gles2_interface) {
     DCHECK(!support_grcontext_);
     // The raster helper writes the command buffer protocol.
     auto raster_helper =
@@ -191,10 +191,12 @@ gpu::ContextResult ContextProviderCommandBuffer::BindToCurrentThread() {
 
     // The RasterImplementation exposes the RasterInterface, as well as the
     // gpu::ContextSupport interface.
+    DCHECK(channel_);
     auto raster_impl = std::make_unique<gpu::raster::RasterImplementation>(
         raster_helper.get(), transfer_buffer_.get(),
         attributes_.bind_generates_resource,
-        attributes_.lose_context_when_out_of_memory, command_buffer_.get());
+        attributes_.lose_context_when_out_of_memory, command_buffer_.get(),
+        channel_->image_decode_accelerator_proxy());
     bind_result_ = raster_impl->Initialize(memory_limits_);
     if (bind_result_ != gpu::ContextResult::kSuccess) {
       DLOG(ERROR) << "Failed to initialize RasterImplementation.";
@@ -348,7 +350,7 @@ gpu::raster::RasterInterface* ContextProviderCommandBuffer::RasterInterface() {
     return nullptr;
 
   raster_interface_ = std::make_unique<gpu::raster::RasterImplementationGLES>(
-      gles2_impl_.get(), command_buffer_.get(), ContextCapabilities());
+      gles2_impl_.get(), ContextCapabilities());
   return raster_interface_.get();
 }
 

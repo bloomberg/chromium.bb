@@ -13,16 +13,17 @@
 #include "third_party/blink/renderer/core/style/shape_clip_path_operation.h"
 
 namespace blink {
-namespace CSSLonghand {
+namespace css_longhand {
 
 const CSSValue* ClipPath::ParseSingleValue(CSSParserTokenRange& range,
                                            const CSSParserContext& context,
                                            const CSSParserLocalContext&) const {
   if (range.Peek().Id() == CSSValueNone)
-    return CSSPropertyParserHelpers::ConsumeIdent(range);
-  if (CSSURIValue* url = CSSPropertyParserHelpers::ConsumeUrl(range, &context))
+    return css_property_parser_helpers::ConsumeIdent(range);
+  if (CSSURIValue* url =
+          css_property_parser_helpers::ConsumeUrl(range, &context))
     return url;
-  return CSSParsingUtils::ConsumeBasicShape(range, context);
+  return css_parsing_utils::ConsumeBasicShape(range, context);
 }
 
 const CSSValue* ClipPath::CSSValueFromComputedStyleInternal(
@@ -44,5 +45,5 @@ const CSSValue* ClipPath::CSSValueFromComputedStyleInternal(
   return CSSIdentifierValue::Create(CSSValueNone);
 }
 
-}  // namespace CSSLonghand
+}  // namespace css_longhand
 }  // namespace blink

@@ -44,6 +44,7 @@ DXVA2_ExtendedFormat ColorSpaceWin::GetExtendedFormat(
       break;
 
     case gfx::ColorSpace::MatrixID::RGB:
+    case gfx::ColorSpace::MatrixID::GBR:
     case gfx::ColorSpace::MatrixID::FCC:
     case gfx::ColorSpace::MatrixID::YCOCG:
     case gfx::ColorSpace::MatrixID::BT2020_NCL:
@@ -226,6 +227,7 @@ D3D11_VIDEO_PROCESSOR_COLOR_SPACE ColorSpaceWin::GetD3D11ColorSpace(
 
     case gfx::ColorSpace::MatrixID::SMPTE240M:
     case gfx::ColorSpace::MatrixID::RGB:
+    case gfx::ColorSpace::MatrixID::GBR:
     case gfx::ColorSpace::MatrixID::FCC:
     case gfx::ColorSpace::MatrixID::YCOCG:
     case gfx::ColorSpace::MatrixID::BT2020_NCL:

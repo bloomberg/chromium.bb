@@ -27,7 +27,7 @@ Response InspectorIOAgent::resolveBlob(const String& object_id, String* uuid) {
                                  &value, &context, nullptr))
     return Response::Error(ToCoreString(std::move(error)));
 
-  if (!V8Blob::hasInstance(value, isolate_))
+  if (!V8Blob::HasInstance(value, isolate_))
     return Response::Error("Object id doesn't reference a Blob");
 
   Blob* blob = V8Blob::ToImpl(v8::Local<v8::Object>::Cast(value));

@@ -15,6 +15,7 @@
 
 #include <anglebase/sha1.h>
 #include "common/MemoryBuffer.h"
+#include "common/hash_utils.h"
 #include "libANGLE/Error.h"
 #include "libANGLE/SizedMRUCache.h"
 
@@ -135,6 +136,8 @@ class BlobCache final : angle::NonCopyable
     void setBlobCacheFuncs(EGLSetBlobFuncANDROID set, EGLGetBlobFuncANDROID get);
 
     bool areBlobCacheFuncsSet() const;
+
+    bool isCachingEnabled() const { return areBlobCacheFuncsSet() || maxSize() > 0; }
 
   private:
     // This internal cache is used only if the application is not providing caching callbacks

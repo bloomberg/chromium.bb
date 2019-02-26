@@ -14,14 +14,20 @@ import android.os.Build;
 import android.os.Bundle;
 import android.support.annotation.IntDef;
 
+import dalvik.system.BaseDexClassLoader;
+
 import org.chromium.base.ContextUtils;
+import org.chromium.base.StrictModeContext;
 import org.chromium.base.ThreadUtils;
 import org.chromium.base.annotations.CalledByNative;
 import org.chromium.base.annotations.JNINamespace;
+import org.chromium.base.annotations.UsedByReflection;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.infobar.InfoBarIdentifier;
 import org.chromium.chrome.browser.infobar.SimpleConfirmInfoBarBuilder;
 import org.chromium.chrome.browser.tab.Tab;
+import org.chromium.components.module_installer.ModuleInstaller;
+import org.chromium.ui.widget.Toast;
 
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
@@ -30,6 +36,7 @@ import java.lang.annotation.RetentionPolicy;
  * Provides ARCore classes access to java-related app functionality.
  */
 @JNINamespace("vr")
+@UsedByReflection("ArDelegate.java")
 public class ArCoreJavaUtils {
     private static final int MIN_SDK_VERSION = Build.VERSION_CODES.O;
     private static final String AR_CORE_PACKAGE = "com.google.ar.core";
@@ -58,6 +65,11 @@ public class ArCoreJavaUtils {
     private boolean mAppInfoInitialized;
     private int mAppMinArCoreApkVersionCode = ARCORE_NOT_INSTALLED_VERSION_CODE;
 
+    @UsedByReflection("ArDelegate.java")
+    public static void installArCoreDeviceProviderFactory() {
+        nativeInstallArCoreDeviceProviderFactory();
+    }
+
     /**
      * Gets the current application context.
      *
@@ -68,21 +80,18 @@ public class ArCoreJavaUtils {
         return ContextUtils.getApplicationContext();
     }
 
-    /**
-     * Determines whether ARCore's SDK should be loaded. Currently, this only
-     * depends on the OS version, but could be more sophisticated.
-     *
-     * @return true if the SDK should be loaded.
-     */
-    @CalledByNative
-    private static boolean shouldLoadArCoreSdk() {
-        return Build.VERSION.SDK_INT >= MIN_SDK_VERSION;
-    }
-
     @CalledByNative
     private static ArCoreJavaUtils create(long nativeArCoreJavaUtils) {
         ThreadUtils.assertOnUiThread();
         return new ArCoreJavaUtils(nativeArCoreJavaUtils);
+    }
+
+    @CalledByNative
+    private static String getArCoreShimLibraryPath() {
+        try (StrictModeContext unused = StrictModeContext.allowDiskReads()) {
+            return ((BaseDexClassLoader) ContextUtils.getApplicationContext().getClassLoader())
+                    .findLibrary("arcore_sdk_c_minimal");
+        }
     }
 
     private ArCoreJavaUtils(long nativeArCoreJavaUtils) {
@@ -115,6 +124,9 @@ public class ArCoreJavaUtils {
                     "Application manifest must contain meta-data " + METADATA_KEY_MIN_APK_VERSION);
         }
         mAppInfoInitialized = true;
+
+        // Need to be called before trying to access the AR module.
+        ModuleInstaller.init();
     }
 
     private int getArCoreApkVersionNumber() {
@@ -146,6 +158,27 @@ public class ArCoreJavaUtils {
     @CalledByNative
     private boolean shouldRequestInstallSupportedArCore() {
         return getArCoreInstallStatus() != ArCoreInstallStatus.ARCORE_INSTALLED;
+    }
+
+    @CalledByNative
+    private void requestInstallArModule() {
+        // TODO(crbug.com/863064): This is a placeholder UI. Replace once proper UI is spec'd.
+        Toast.makeText(ContextUtils.getApplicationContext(), R.string.ar_module_install_start_text,
+                     Toast.LENGTH_SHORT)
+                .show();
+
+        ModuleInstaller.install("ar", success -> {
+            // TODO(crbug.com/863064): This is a placeholder UI. Replace once proper UI is spec'd.
+            int mToastTextRes = success ? R.string.ar_module_install_success_text
+                                        : R.string.ar_module_install_failure_text;
+            Toast.makeText(ContextUtils.getApplicationContext(), mToastTextRes, Toast.LENGTH_SHORT)
+                    .show();
+
+            if (mNativeArCoreJavaUtils != 0) {
+                assert shouldRequestInstallArModule() == !success;
+                nativeOnRequestInstallArModuleResult(mNativeArCoreJavaUtils, success);
+            }
+        });
     }
 
     @CalledByNative
@@ -191,5 +224,19 @@ public class ArCoreJavaUtils {
                 R.drawable.vr_services, infobarText, buttonText, null, true);
     }
 
+    @CalledByNative
+    private boolean shouldRequestInstallArModule() {
+        try {
+            // Try to find class in AR module that has not been obfuscated.
+            Class.forName("com.google.vr.dynamite.client.UsedByNative");
+            return false;
+        } catch (ClassNotFoundException e) {
+            return true;
+        }
+    }
+
+    private static native void nativeInstallArCoreDeviceProviderFactory();
+    private native void nativeOnRequestInstallArModuleResult(
+            long nativeArCoreJavaUtils, boolean success);
     private native void nativeOnRequestInstallSupportedArCoreCanceled(long nativeArCoreJavaUtils);
 }

@@ -61,7 +61,10 @@ enum class DriveMountStatus {
   kSuccess = 0,
   kUnknownFailure = 1,
   kTemporaryUnavailable = 2,
-  kMaxValue = kTemporaryUnavailable,
+  kInvocationFailure = 3,
+  kUnexpectedDisconnect = 4,
+  kTimeout = 5,
+  kMaxValue = kTimeout,
 };
 
 // Interface for classes that need to observe events from
@@ -75,6 +78,10 @@ class DriveIntegrationServiceObserver {
   // Triggered when the file system is being unmounted.
   virtual void OnFileSystemBeingUnmounted() {
   }
+
+  // Triggered when mounting the filesystem has failed in a fashion that will
+  // not be automatically retried.
+  virtual void OnFileSystemMountFailed() {}
 
  protected:
   virtual ~DriveIntegrationServiceObserver() {}
@@ -122,6 +129,8 @@ class DriveIntegrationService : public KeyedService,
 
   bool IsMounted() const;
 
+  bool mount_failed() const { return mount_failed_; }
+
   // Returns the path of the mount point for drive. It is only valid to call if
   // |IsMounted()|.
   base::FilePath GetMountPointPath() const;
@@ -141,14 +150,16 @@ class DriveIntegrationService : public KeyedService,
   void RemoveObserver(DriveIntegrationServiceObserver* observer);
 
   // DriveNotificationObserver implementation.
-  void OnNotificationReceived(const std::set<std::string>& ids) override;
+  void OnNotificationReceived(
+      const std::map<std::string, int64_t>& invalidations) override;
   void OnNotificationTimerFired() override;
   void OnPushNotificationEnabled(bool enabled) override;
 
   // MountObserver implementation.
   void OnMounted(const base::FilePath& mount_path) override;
   void OnUnmounted(base::Optional<base::TimeDelta> remount_delay) override;
-  void OnMountFailed(base::Optional<base::TimeDelta> remount_delay) override;
+  void OnMountFailed(MountFailure failure,
+                     base::Optional<base::TimeDelta> remount_delay) override;
 
   EventLogger* event_logger() { return logger_.get(); }
   DriveServiceInterface* drive_service() { return drive_service_.get(); }
@@ -222,7 +233,9 @@ class DriveIntegrationService : public KeyedService,
 
   // Change the download directory to the local "Downloads" if the download
   // destination is set under Drive. This must be called when disabling Drive.
-  void AvoidDriveAsDownloadDirecotryPreference();
+  void AvoidDriveAsDownloadDirectoryPreference();
+
+  bool DownloadDirectoryPreferenceIsInDrive();
 
   // content::NotificationObserver overrides.
   void Observe(int type,
@@ -240,6 +253,7 @@ class DriveIntegrationService : public KeyedService,
   Profile* profile_;
   State state_;
   bool enabled_;
+  bool mount_failed_ = false;
   // Custom mount point name that can be injected for testing in constructor.
   std::string mount_point_name_;
 
@@ -258,11 +272,11 @@ class DriveIntegrationService : public KeyedService,
   std::unique_ptr<DebugInfoCollector> debug_info_collector_;
 
   base::ObserverList<DriveIntegrationServiceObserver>::Unchecked observers_;
-  std::unique_ptr<PreferenceWatcher> preference_watcher_;
   std::unique_ptr<content::NotificationRegistrar>
       profile_notification_registrar_;
 
   std::unique_ptr<DriveFsHolder> drivefs_holder_;
+  std::unique_ptr<PreferenceWatcher> preference_watcher_;
   std::unique_ptr<NotificationManager> notification_manager_;
   int drivefs_total_failures_count_ = 0;
   int drivefs_consecutive_failures_count_ = 0;

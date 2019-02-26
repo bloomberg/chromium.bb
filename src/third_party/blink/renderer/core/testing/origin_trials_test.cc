@@ -13,7 +13,7 @@ namespace blink {
 bool OriginTrialsTest::throwingAttribute(ScriptState* script_state,
                                          ExceptionState& exception_state) {
   String error_message;
-  if (!OriginTrials::OriginTrialsSampleAPIEnabled(
+  if (!origin_trials::OriginTrialsSampleAPIEnabled(
           ExecutionContext::From(script_state))) {
     exception_state.ThrowDOMException(
         DOMExceptionCode::kNotSupportedError,

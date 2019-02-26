@@ -15,6 +15,9 @@ constexpr char kDefaultArcNotifierId[] = "ARC_NOTIFICATION";
 // world, from a notification key, which is used in Android.
 constexpr char kArcNotificationIdPrefix[] = "ARC_NOTIFICATION_";
 
+// The custom view type that should be set on ARC notifications.
+constexpr char kArcNotificationCustomViewType[] = "arc";
+
 }  // namespace ash
 
 #endif  // ASH_SYSTEM_MESSAGE_CENTER_ARC_ARC_NOTIFICATION_CONSTANTS_H_

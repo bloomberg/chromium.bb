@@ -93,7 +93,7 @@ Text* GranularityStrategyTest::AppendTextNode(const String& data) {
 void GranularityStrategyTest::SetInnerHTML(const char* html_content) {
   GetDocument().documentElement()->SetInnerHTMLFromString(
       String::FromUTF8(html_content));
-  GetDocument().View()->UpdateAllLifecyclePhases();
+  UpdateAllLifecyclePhasesForTest();
 }
 
 void GranularityStrategyTest::ParseText(Text* text) {
@@ -156,7 +156,7 @@ Text* GranularityStrategyTest::SetupTranslateZ(String str) {
   Element* div = GetDocument().getElementById("mytext");
   div->AppendChild(text);
 
-  GetDocument().View()->UpdateAllLifecyclePhases();
+  UpdateAllLifecyclePhasesForTest();
 
   ParseText(text);
   return text;
@@ -181,7 +181,7 @@ Text* GranularityStrategyTest::SetupTransform(String str) {
   Element* div = GetDocument().getElementById("mytext");
   div->AppendChild(text);
 
-  GetDocument().View()->UpdateAllLifecyclePhases();
+  UpdateAllLifecyclePhasesForTest();
 
   ParseText(text);
   return text;
@@ -206,7 +206,7 @@ Text* GranularityStrategyTest::SetupRotate(String str) {
   Element* div = GetDocument().getElementById("mytext");
   div->AppendChild(text);
 
-  GetDocument().View()->UpdateAllLifecyclePhases();
+  UpdateAllLifecyclePhasesForTest();
 
   ParseText(text);
   return text;
@@ -227,7 +227,7 @@ void GranularityStrategyTest::SetupTextSpan(String str1,
   span->AppendChild(text2);
   div->AppendChild(text3);
 
-  GetDocument().View()->UpdateAllLifecyclePhases();
+  UpdateAllLifecyclePhasesForTest();
 
   Vector<IntPoint> letter_pos;
   Vector<IntPoint> word_middle_pos;
@@ -720,11 +720,13 @@ TEST_F(GranularityStrategyTest, UpdateExtentWithNullPositionForCharacter) {
                                .SetIsDirectional(true)
                                .Build());
 
-  // Since, it is not obvious that |visiblePositionForContentsPoint()| returns
-  // null position, we verify here.
-  ASSERT_EQ(Position(),
-            VisiblePositionForContentsPoint(IntPoint(0, 0), &GetFrame())
-                .DeepEquivalent())
+  // Since, it is not obvious that
+  // |PositionForContentsPointRespectingEditingBoundary()| returns null
+  // position, we verify here.
+  ASSERT_EQ(Position(), CreateVisiblePosition(
+                            PositionForContentsPointRespectingEditingBoundary(
+                                IntPoint(0, 0), &GetFrame()))
+                            .DeepEquivalent())
       << "This test requires null position.";
 
   // Point to RANGE inside shadow root to get null position from
@@ -756,11 +758,13 @@ TEST_F(GranularityStrategyTest, UpdateExtentWithNullPositionForDirectional) {
                                .SetIsDirectional(true)
                                .Build());
 
-  // Since, it is not obvious that |visiblePositionForContentsPoint()| returns
-  // null position, we verify here.
-  ASSERT_EQ(Position(),
-            VisiblePositionForContentsPoint(IntPoint(0, 0), &GetFrame())
-                .DeepEquivalent())
+  // Since, it is not obvious that
+  // |PositionForContentsPointRespectingEditingBoundary()| returns null
+  // position, we verify here.
+  ASSERT_EQ(Position(), CreateVisiblePosition(
+                            PositionForContentsPointRespectingEditingBoundary(
+                                IntPoint(0, 0), &GetFrame()))
+                            .DeepEquivalent())
       << "This test requires null position.";
 
   // Point to RANGE inside shadow root to get null position from

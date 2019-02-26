@@ -50,38 +50,38 @@ enum PaymentTestModificationType {
   kPaymentTestRemoveKey
 };
 
-PaymentItem BuildPaymentItemForTest(
+PaymentItem* BuildPaymentItemForTest(
     PaymentTestDataToChange = kPaymentTestDataNone,
     PaymentTestModificationType = kPaymentTestOverwriteValue,
     const String& value_to_use = String());
 
-PaymentShippingOption BuildShippingOptionForTest(
+PaymentShippingOption* BuildShippingOptionForTest(
     PaymentTestDataToChange = kPaymentTestDataNone,
     PaymentTestModificationType = kPaymentTestOverwriteValue,
     const String& value_to_use = String());
 
-PaymentDetailsModifier BuildPaymentDetailsModifierForTest(
+PaymentDetailsModifier* BuildPaymentDetailsModifierForTest(
     PaymentTestDetailToChange = kPaymentTestDetailNone,
     PaymentTestDataToChange = kPaymentTestDataNone,
     PaymentTestModificationType = kPaymentTestOverwriteValue,
     const String& value_to_use = String());
 
-PaymentDetailsInit BuildPaymentDetailsInitForTest(
+PaymentDetailsInit* BuildPaymentDetailsInitForTest(
     PaymentTestDetailToChange = kPaymentTestDetailNone,
     PaymentTestDataToChange = kPaymentTestDataNone,
     PaymentTestModificationType = kPaymentTestOverwriteValue,
     const String& value_to_use = String());
 
-PaymentDetailsUpdate BuildPaymentDetailsUpdateForTest(
+PaymentDetailsUpdate* BuildPaymentDetailsUpdateForTest(
     PaymentTestDetailToChange = kPaymentTestDetailNone,
     PaymentTestDataToChange = kPaymentTestDataNone,
     PaymentTestModificationType = kPaymentTestOverwriteValue,
     const String& value_to_use = String());
 
-PaymentDetailsUpdate BuildPaymentDetailsErrorMsgForTest(
+PaymentDetailsUpdate* BuildPaymentDetailsErrorMsgForTest(
     const String& value_to_use = String());
 
-HeapVector<PaymentMethodData> BuildPaymentMethodDataForTest();
+HeapVector<Member<PaymentMethodData>> BuildPaymentMethodDataForTest();
 
 payments::mojom::blink::PaymentResponsePtr BuildPaymentResponseForTest();
 

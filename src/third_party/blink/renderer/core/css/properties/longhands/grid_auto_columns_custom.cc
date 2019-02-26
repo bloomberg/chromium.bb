@@ -10,14 +10,15 @@
 #include "third_party/blink/renderer/core/style/computed_style.h"
 
 namespace blink {
-namespace CSSLonghand {
+namespace css_longhand {
 
 const CSSValue* GridAutoColumns::ParseSingleValue(
     CSSParserTokenRange& range,
     const CSSParserContext& context,
     const CSSParserLocalContext&) const {
-  return CSSParsingUtils::ConsumeGridTrackList(
-      range, context.Mode(), CSSParsingUtils::TrackListType::kGridAuto);
+  return css_parsing_utils::ConsumeGridTrackList(
+      range, context, context.Mode(),
+      css_parsing_utils::TrackListType::kGridAuto);
 }
 
 // Specs mention that getComputedStyle() should return the used value of the
@@ -36,5 +37,5 @@ const CSSValue* GridAutoColumns::CSSValueFromComputedStyleInternal(
   return ComputedStyleUtils::ValueForGridTrackSizeList(kForColumns, style);
 }
 
-}  // namespace CSSLonghand
+}  // namespace css_longhand
 }  // namespace blink

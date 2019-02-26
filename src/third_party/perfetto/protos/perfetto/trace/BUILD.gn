@@ -12,7 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-import("../../../src/protozero/protozero_library.gni")
+import("../../../gn/protozero_library.gni")
 import("../../../gn/perfetto.gni")
 import("../../../gn/proto_library.gni")
 
@@ -38,6 +38,7 @@ protozero_library("zero") {
     "chrome:zero",
     "filesystem:zero",
     "ftrace:zero",
+    "profiling:zero",
     "ps:zero",
     "sys_stats:zero",
   ]
@@ -56,10 +57,11 @@ proto_library("lite") {
     "chrome:lite",
     "filesystem:lite",
     "ftrace:lite",
+    "profiling:lite",
     "ps:lite",
     "sys_stats:lite",
   ]
-  if (!build_with_chromium) {
+  if (perfetto_build_standalone) {
     generate_descriptor = "$perfetto_root_path/protos/trace/trace.descriptor"
   }
   sources = proto_sources

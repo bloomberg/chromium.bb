@@ -13,6 +13,7 @@
 #include "third_party/blink/renderer/modules/filesystem/file_system_callbacks.h"
 #include "third_party/blink/renderer/modules/filesystem/file_system_dispatcher.h"
 #include "third_party/blink/renderer/modules/filesystem/file_system_writer.h"
+#include "third_party/blink/renderer/platform/wtf/functional.h"
 
 namespace blink {
 
@@ -50,9 +51,10 @@ ScriptPromise FileSystemFileHandle::createWriter(ScriptState* script_state) {
               [](ScriptPromiseResolver* resolver, base::File::Error result,
                  mojom::blink::FileWriterPtr writer) {
                 if (result == base::File::FILE_OK) {
-                  resolver->Resolve(new FileSystemWriter(std::move(writer)));
+                  resolver->Resolve(MakeGarbageCollected<FileSystemWriter>(
+                      std::move(writer)));
                 } else {
-                  resolver->Reject(FileError::CreateDOMException(result));
+                  resolver->Reject(file_error::CreateDOMException(result));
                 }
               },
               WrapPersistent(resolver)));
@@ -64,12 +66,13 @@ ScriptPromise FileSystemFileHandle::getFile(ScriptState* script_state) {
   ScriptPromise result = resolver->Promise();
   KURL file_system_url = filesystem()->CreateFileSystemURL(this);
   FileSystemDispatcher::From(ExecutionContext::From(script_state))
-      .CreateSnapshotFile(file_system_url,
-                          SnapshotFileCallback::Create(
-                              filesystem(), name(), file_system_url,
-                              new OnDidCreateSnapshotFilePromise(resolver),
-                              new PromiseErrorCallback(resolver),
-                              ExecutionContext::From(script_state)));
+      .CreateSnapshotFile(
+          file_system_url,
+          SnapshotFileCallback::Create(
+              filesystem(), name(), file_system_url,
+              new OnDidCreateSnapshotFilePromise(resolver),
+              MakeGarbageCollected<PromiseErrorCallback>(resolver),
+              ExecutionContext::From(script_state)));
   return result;
 }
 

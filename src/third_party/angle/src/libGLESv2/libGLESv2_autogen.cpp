@@ -2507,6 +2507,44 @@ void GL_APIENTRY glVertexAttribDivisorANGLE(GLuint index, GLuint divisor)
     return gl::VertexAttribDivisorANGLE(index, divisor);
 }
 
+// GL_ANGLE_multi_draw
+void GL_APIENTRY glMultiDrawArraysANGLE(GLenum mode,
+                                        const GLint *firsts,
+                                        const GLsizei *counts,
+                                        GLsizei drawcount)
+{
+    return gl::MultiDrawArraysANGLE(mode, firsts, counts, drawcount);
+}
+
+void GL_APIENTRY glMultiDrawArraysInstancedANGLE(GLenum mode,
+                                                 const GLint *firsts,
+                                                 const GLsizei *counts,
+                                                 const GLsizei *instanceCounts,
+                                                 GLsizei drawcount)
+{
+    return gl::MultiDrawArraysInstancedANGLE(mode, firsts, counts, instanceCounts, drawcount);
+}
+
+void GL_APIENTRY glMultiDrawElementsANGLE(GLenum mode,
+                                          const GLsizei *counts,
+                                          GLenum type,
+                                          const GLvoid *const *indices,
+                                          GLsizei drawcount)
+{
+    return gl::MultiDrawElementsANGLE(mode, counts, type, indices, drawcount);
+}
+
+void GL_APIENTRY glMultiDrawElementsInstancedANGLE(GLenum mode,
+                                                   const GLsizei *counts,
+                                                   GLenum type,
+                                                   const GLvoid *const *indices,
+                                                   const GLsizei *instanceCounts,
+                                                   GLsizei drawcount)
+{
+    return gl::MultiDrawElementsInstancedANGLE(mode, counts, type, indices, instanceCounts,
+                                               drawcount);
+}
+
 // GL_ANGLE_multiview
 void GL_APIENTRY glFramebufferTextureMultiviewLayeredANGLE(GLenum target,
                                                            GLenum attachment,
@@ -3174,6 +3212,44 @@ void GL_APIENTRY glGetQueryObjectui64vRobustANGLE(GLuint id,
                                                   GLuint64 *params)
 {
     return gl::GetQueryObjectui64vRobustANGLE(id, pname, bufSize, length, params);
+}
+
+// GL_ANGLE_texture_multisample
+void GL_APIENTRY glTexStorage2DMultisampleANGLE(GLenum target,
+                                                GLsizei samples,
+                                                GLenum internalformat,
+                                                GLsizei width,
+                                                GLsizei height,
+                                                GLboolean fixedsamplelocations)
+{
+    return gl::TexStorage2DMultisampleANGLE(target, samples, internalformat, width, height,
+                                            fixedsamplelocations);
+}
+
+void GL_APIENTRY glGetTexLevelParameterivANGLE(GLenum target,
+                                               GLint level,
+                                               GLenum pname,
+                                               GLint *params)
+{
+    return gl::GetTexLevelParameterivANGLE(target, level, pname, params);
+}
+
+void GL_APIENTRY glGetTexLevelParameterfvANGLE(GLenum target,
+                                               GLint level,
+                                               GLenum pname,
+                                               GLfloat *params)
+{
+    return gl::GetTexLevelParameterfvANGLE(target, level, pname, params);
+}
+
+void GL_APIENTRY glGetMultisamplefvANGLE(GLenum pname, GLuint index, GLfloat *val)
+{
+    return gl::GetMultisamplefvANGLE(pname, index, val);
+}
+
+void GL_APIENTRY glSampleMaskiANGLE(GLuint maskNumber, GLbitfield mask)
+{
+    return gl::SampleMaskiANGLE(maskNumber, mask);
 }
 
 // GL_ANGLE_translated_shader_source
@@ -3964,6 +4040,47 @@ void GL_APIENTRY glPointSizePointerOES(GLenum type, GLsizei stride, const void *
 GLbitfield GL_APIENTRY glQueryMatrixxOES(GLfixed *mantissa, GLint *exponent)
 {
     return gl::QueryMatrixxOES(mantissa, exponent);
+}
+
+// GL_OES_texture_border_clamp
+void GL_APIENTRY glGetSamplerParameterIivOES(GLuint sampler, GLenum pname, GLint *params)
+{
+    return gl::GetSamplerParameterIivOES(sampler, pname, params);
+}
+
+void GL_APIENTRY glGetSamplerParameterIuivOES(GLuint sampler, GLenum pname, GLuint *params)
+{
+    return gl::GetSamplerParameterIuivOES(sampler, pname, params);
+}
+
+void GL_APIENTRY glGetTexParameterIivOES(GLenum target, GLenum pname, GLint *params)
+{
+    return gl::GetTexParameterIivOES(target, pname, params);
+}
+
+void GL_APIENTRY glGetTexParameterIuivOES(GLenum target, GLenum pname, GLuint *params)
+{
+    return gl::GetTexParameterIuivOES(target, pname, params);
+}
+
+void GL_APIENTRY glSamplerParameterIivOES(GLuint sampler, GLenum pname, const GLint *param)
+{
+    return gl::SamplerParameterIivOES(sampler, pname, param);
+}
+
+void GL_APIENTRY glSamplerParameterIuivOES(GLuint sampler, GLenum pname, const GLuint *param)
+{
+    return gl::SamplerParameterIuivOES(sampler, pname, param);
+}
+
+void GL_APIENTRY glTexParameterIivOES(GLenum target, GLenum pname, const GLint *params)
+{
+    return gl::TexParameterIivOES(target, pname, params);
+}
+
+void GL_APIENTRY glTexParameterIuivOES(GLenum target, GLenum pname, const GLuint *params)
+{
+    return gl::TexParameterIuivOES(target, pname, params);
 }
 
 // GL_OES_texture_cube_map
@@ -5692,6 +5809,22 @@ void GL_APIENTRY glGetRenderbufferParameterivOESContextANGLE(GLeglContext ctx,
     return gl::GetRenderbufferParameterivOESContextANGLE(ctx, target, pname, params);
 }
 
+void GL_APIENTRY glGetSamplerParameterIivOESContextANGLE(GLeglContext ctx,
+                                                         GLuint sampler,
+                                                         GLenum pname,
+                                                         GLint *params)
+{
+    return gl::GetSamplerParameterIivOESContextANGLE(ctx, sampler, pname, params);
+}
+
+void GL_APIENTRY glGetSamplerParameterIuivOESContextANGLE(GLeglContext ctx,
+                                                          GLuint sampler,
+                                                          GLenum pname,
+                                                          GLuint *params)
+{
+    return gl::GetSamplerParameterIuivOESContextANGLE(ctx, sampler, pname, params);
+}
+
 void GL_APIENTRY glGetSamplerParameterfvContextANGLE(GLeglContext ctx,
                                                      GLuint sampler,
                                                      GLenum pname,
@@ -5828,6 +5961,22 @@ void GL_APIENTRY glGetTexLevelParameterivContextANGLE(GLeglContext ctx,
                                                       GLint *params)
 {
     return gl::GetTexLevelParameterivContextANGLE(ctx, target, level, pname, params);
+}
+
+void GL_APIENTRY glGetTexParameterIivOESContextANGLE(GLeglContext ctx,
+                                                     GLenum target,
+                                                     GLenum pname,
+                                                     GLint *params)
+{
+    return gl::GetTexParameterIivOESContextANGLE(ctx, target, pname, params);
+}
+
+void GL_APIENTRY glGetTexParameterIuivOESContextANGLE(GLeglContext ctx,
+                                                      GLenum target,
+                                                      GLenum pname,
+                                                      GLuint *params)
+{
+    return gl::GetTexParameterIuivOESContextANGLE(ctx, target, pname, params);
 }
 
 void GL_APIENTRY glGetTexParameterfvContextANGLE(GLeglContext ctx,
@@ -6914,6 +7063,22 @@ void GL_APIENTRY glSampleMaskiContextANGLE(GLeglContext ctx, GLuint maskNumber, 
     return gl::SampleMaskiContextANGLE(ctx, maskNumber, mask);
 }
 
+void GL_APIENTRY glSamplerParameterIivOESContextANGLE(GLeglContext ctx,
+                                                      GLuint sampler,
+                                                      GLenum pname,
+                                                      const GLint *param)
+{
+    return gl::SamplerParameterIivOESContextANGLE(ctx, sampler, pname, param);
+}
+
+void GL_APIENTRY glSamplerParameterIuivOESContextANGLE(GLeglContext ctx,
+                                                       GLuint sampler,
+                                                       GLenum pname,
+                                                       const GLuint *param)
+{
+    return gl::SamplerParameterIuivOESContextANGLE(ctx, sampler, pname, param);
+}
+
 void GL_APIENTRY glSamplerParameterfContextANGLE(GLeglContext ctx,
                                                  GLuint sampler,
                                                  GLenum pname,
@@ -7156,6 +7321,22 @@ void GL_APIENTRY glTexImage3DContextANGLE(GLeglContext ctx,
 {
     return gl::TexImage3DContextANGLE(ctx, target, level, internalformat, width, height, depth,
                                       border, format, type, pixels);
+}
+
+void GL_APIENTRY glTexParameterIivOESContextANGLE(GLeglContext ctx,
+                                                  GLenum target,
+                                                  GLenum pname,
+                                                  const GLint *params)
+{
+    return gl::TexParameterIivOESContextANGLE(ctx, target, pname, params);
+}
+
+void GL_APIENTRY glTexParameterIuivOESContextANGLE(GLeglContext ctx,
+                                                   GLenum target,
+                                                   GLenum pname,
+                                                   const GLuint *params)
+{
+    return gl::TexParameterIuivOESContextANGLE(ctx, target, pname, params);
 }
 
 void GL_APIENTRY glTexParameterfContextANGLE(GLeglContext ctx,
@@ -8890,6 +9071,93 @@ void GL_APIENTRY glCopySubTexture3DANGLEContextANGLE(GLeglContext ctx,
     return gl::CopySubTexture3DANGLEContextANGLE(
         ctx, sourceId, sourceLevel, destTarget, destId, destLevel, xoffset, yoffset, zoffset, x, y,
         z, width, height, depth, unpackFlipY, unpackPremultiplyAlpha, unpackUnmultiplyAlpha);
+}
+
+void GL_APIENTRY glTexStorage2DMultisampleANGLEContextANGLE(GLeglContext ctx,
+                                                            GLenum target,
+                                                            GLsizei samples,
+                                                            GLenum internalformat,
+                                                            GLsizei width,
+                                                            GLsizei height,
+                                                            GLboolean fixedsamplelocations)
+{
+    return gl::TexStorage2DMultisampleANGLEContextANGLE(ctx, target, samples, internalformat, width,
+                                                        height, fixedsamplelocations);
+}
+
+void GL_APIENTRY glGetTexLevelParameterivANGLEContextANGLE(GLeglContext ctx,
+                                                           GLenum target,
+                                                           GLint level,
+                                                           GLenum pname,
+                                                           GLint *params)
+{
+    return gl::GetTexLevelParameterivANGLEContextANGLE(ctx, target, level, pname, params);
+}
+
+void GL_APIENTRY glGetTexLevelParameterfvANGLEContextANGLE(GLeglContext ctx,
+                                                           GLenum target,
+                                                           GLint level,
+                                                           GLenum pname,
+                                                           GLfloat *params)
+{
+    return gl::GetTexLevelParameterfvANGLEContextANGLE(ctx, target, level, pname, params);
+}
+
+void GL_APIENTRY glMultiDrawArraysANGLEContextANGLE(GLeglContext ctx,
+                                                    GLenum mode,
+                                                    const GLint *firsts,
+                                                    const GLsizei *counts,
+                                                    GLsizei drawcount)
+{
+    return gl::MultiDrawArraysANGLEContextANGLE(ctx, mode, firsts, counts, drawcount);
+}
+
+void GL_APIENTRY glMultiDrawArraysInstancedANGLEContextANGLE(GLeglContext ctx,
+                                                             GLenum mode,
+                                                             const GLint *firsts,
+                                                             const GLsizei *counts,
+                                                             const GLsizei *instanceCounts,
+                                                             GLsizei drawcount)
+{
+    return gl::MultiDrawArraysInstancedANGLEContextANGLE(ctx, mode, firsts, counts, instanceCounts,
+                                                         drawcount);
+}
+
+void GL_APIENTRY glMultiDrawElementsANGLEContextANGLE(GLeglContext ctx,
+                                                      GLenum mode,
+                                                      const GLsizei *counts,
+                                                      GLenum type,
+                                                      const GLvoid *const *indices,
+                                                      GLsizei drawcount)
+{
+    return gl::MultiDrawElementsANGLEContextANGLE(ctx, mode, counts, type, indices, drawcount);
+}
+
+void GL_APIENTRY glMultiDrawElementsInstancedANGLEContextANGLE(GLeglContext ctx,
+                                                               GLenum mode,
+                                                               const GLsizei *counts,
+                                                               GLenum type,
+                                                               const GLvoid *const *indices,
+                                                               const GLsizei *instanceCounts,
+                                                               GLsizei drawcount)
+{
+    return gl::MultiDrawElementsInstancedANGLEContextANGLE(ctx, mode, counts, type, indices,
+                                                           instanceCounts, drawcount);
+}
+
+void GL_APIENTRY glGetMultisamplefvANGLEContextANGLE(GLeglContext ctx,
+                                                     GLenum pname,
+                                                     GLuint index,
+                                                     GLfloat *val)
+{
+    return gl::GetMultisamplefvANGLEContextANGLE(ctx, pname, index, val);
+}
+
+void GL_APIENTRY glSampleMaskiANGLEContextANGLE(GLeglContext ctx,
+                                                GLuint maskNumber,
+                                                GLbitfield mask)
+{
+    return gl::SampleMaskiANGLEContextANGLE(ctx, maskNumber, mask);
 }
 
 }  // extern "C"

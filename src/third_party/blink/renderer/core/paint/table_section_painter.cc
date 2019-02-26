@@ -278,7 +278,7 @@ void TableSectionPainter::PaintBoxDecorationBackground(
       dirtied_columns == layout_table_section_.FullTableEffectiveColumnSpan() &&
               dirtied_rows == layout_table_section_.FullSectionRowSpan()
           ? kFullyPainted
-          : kMayBeClippedByPaintDirtyRect;
+          : kMayBeClippedByCullRect;
   layout_table_section_.GetMutableForPainting().UpdatePaintResult(
       paint_result, paint_info.GetCullRect());
 

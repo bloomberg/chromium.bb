@@ -45,10 +45,10 @@ class SVGNumberListTearOff final
       SVGNumberList* target,
       SVGAnimatedPropertyBase* binding,
       PropertyIsAnimValType property_is_anim_val) {
-    return new SVGNumberListTearOff(target, binding, property_is_anim_val);
+    return MakeGarbageCollected<SVGNumberListTearOff>(target, binding,
+                                                      property_is_anim_val);
   }
 
- private:
   SVGNumberListTearOff(SVGNumberList* target,
                        SVGAnimatedPropertyBase* binding,
                        PropertyIsAnimValType property_is_anim_val)

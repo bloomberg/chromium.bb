@@ -16,7 +16,7 @@
     android:padding="16dp"
     android:gravity="center" >
 
-    <android.support.v7.widget.AppCompatImageView
+    <org.chromium.ui.widget.ChromeImageView
         android:id="@+id/image"
         android:layout_width="20sp"
         android:layout_height="20sp"

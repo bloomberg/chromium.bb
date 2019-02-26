@@ -15,6 +15,13 @@ class CORE_EXPORT MediaValuesDynamic : public MediaValues {
  public:
   static MediaValues* Create(Document&);
   static MediaValues* Create(LocalFrame*);
+
+  MediaValuesDynamic(LocalFrame*);
+  MediaValuesDynamic(LocalFrame*,
+                     bool overridden_viewport_dimensions,
+                     double viewport_width,
+                     double viewport_height);
+
   MediaValues* Copy() const override;
   bool ComputeLength(double value,
                      CSSPrimitiveValue::UnitType,
@@ -48,12 +55,6 @@ class CORE_EXPORT MediaValuesDynamic : public MediaValues {
   void Trace(blink::Visitor*) override;
 
  protected:
-  MediaValuesDynamic(LocalFrame*);
-  MediaValuesDynamic(LocalFrame*,
-                     bool overridden_viewport_dimensions,
-                     double viewport_width,
-                     double viewport_height);
-
   Member<LocalFrame> frame_;
   bool viewport_dimensions_overridden_;
   double viewport_width_override_;

@@ -7,12 +7,11 @@
 #include <unordered_map>
 #include <utility>
 
+#include "base/format_macros.h"
 #include "base/json/json_reader.h"
 #include "base/json/json_writer.h"
 #include "base/json/string_escape.h"
 #include "base/logging.h"
-
-#include "base/format_macros.h"
 #include "base/strings/stringprintf.h"
 #include "base/trace_event/trace_event.h"
 #include "services/tracing/public/mojom/perfetto_service.mojom.h"
@@ -23,7 +22,64 @@
 
 using TraceEvent = base::trace_event::TraceEvent;
 
+namespace tracing {
+
 namespace {
+
+const size_t kTraceEventBufferSizeInBytes = 100 * 1024;
+const size_t kPerfettoRingbufferSizeInKBs = 1024 * 300;
+
+void AppendProtoArrayAsJSON(std::string* out,
+                            const perfetto::protos::ChromeTracedValue& array);
+
+void AppendProtoValueAsJSON(std::string* out,
+                            const perfetto::protos::ChromeTracedValue& value) {
+  base::trace_event::TraceEvent::TraceValue json_value;
+  if (value.has_int_value()) {
+    json_value.as_int = value.int_value();
+    TraceEvent::AppendValueAsJSON(TRACE_VALUE_TYPE_INT, json_value, out);
+  } else if (value.has_double_value()) {
+    json_value.as_double = value.double_value();
+    TraceEvent::AppendValueAsJSON(TRACE_VALUE_TYPE_DOUBLE, json_value, out);
+  } else if (value.has_bool_value()) {
+    json_value.as_bool = value.bool_value();
+    TraceEvent::AppendValueAsJSON(TRACE_VALUE_TYPE_BOOL, json_value, out);
+  } else if (value.has_string_value()) {
+    json_value.as_string = value.string_value().c_str();
+    TraceEvent::AppendValueAsJSON(TRACE_VALUE_TYPE_STRING, json_value, out);
+  } else if (value.has_nested_type()) {
+    if (value.nested_type() == perfetto::protos::ChromeTracedValue::ARRAY) {
+      AppendProtoArrayAsJSON(out, value);
+      return;
+    } else if (value.nested_type() ==
+               perfetto::protos::ChromeTracedValue::DICT) {
+      AppendProtoDictAsJSON(out, value);
+    } else {
+      NOTREACHED();
+    }
+  } else {
+    NOTREACHED();
+  }
+}
+
+void AppendProtoArrayAsJSON(std::string* out,
+                            const perfetto::protos::ChromeTracedValue& array) {
+  out->append("[");
+
+  bool is_first_entry = true;
+  for (auto& value : array.array_values()) {
+    if (!is_first_entry) {
+      out->append(",");
+    } else {
+      is_first_entry = false;
+    }
+
+    AppendProtoValueAsJSON(out, value);
+  }
+
+  out->append("]");
+}
+
 const char* GetStringFromStringTable(
     const std::unordered_map<int, std::string>& string_table,
     int index) {
@@ -193,6 +249,13 @@ void OutputJSONFromTraceEventProto(
       *out += arg.json_value();
       continue;
     }
+
+    if (arg.has_traced_value()) {
+      AppendProtoDictAsJSON(out, arg.traced_value());
+      continue;
+    }
+
+    NOTREACHED();
   }
 
   *out += "}}";
@@ -200,7 +263,24 @@ void OutputJSONFromTraceEventProto(
 
 }  // namespace
 
-namespace tracing {
+void AppendProtoDictAsJSON(std::string* out,
+                           const perfetto::protos::ChromeTracedValue& dict) {
+  out->append("{");
+
+  DCHECK_EQ(dict.dict_keys_size(), dict.dict_values_size());
+  for (int i = 0; i < dict.dict_keys_size(); ++i) {
+    if (i != 0) {
+      out->append(",");
+    }
+
+    base::EscapeJSONString(dict.dict_keys(i), true, out);
+    out->append(":");
+
+    AppendProtoValueAsJSON(out, dict.dict_values(i));
+  }
+
+  out->append("}");
+}
 
 JSONTraceExporter::JSONTraceExporter(const std::string& config,
                                      perfetto::TracingService* service)
@@ -209,13 +289,19 @@ JSONTraceExporter::JSONTraceExporter(const std::string& config,
 
   // Start tracing.
   perfetto::TraceConfig trace_config;
-  trace_config.add_buffers()->set_size_kb(4096 * 100);
+  trace_config.add_buffers()->set_size_kb(kPerfettoRingbufferSizeInKBs);
 
   auto* trace_event_config = trace_config.add_data_sources()->mutable_config();
   trace_event_config->set_name(mojom::kTraceEventDataSourceName);
   trace_event_config->set_target_buffer(0);
   auto* chrome_config = trace_event_config->mutable_chrome_config();
   chrome_config->set_trace_config(config_);
+
+  auto* system_trace_config = trace_config.add_data_sources()->mutable_config();
+  system_trace_config->set_name(mojom::kSystemTraceDataSourceName);
+  system_trace_config->set_target_buffer(0);
+  auto* system_chrome_config = system_trace_config->mutable_chrome_config();
+  system_chrome_config->set_trace_config(config_);
 
   auto* trace_metadata_config =
       trace_config.add_data_sources()->mutable_config();
@@ -250,7 +336,12 @@ void JSONTraceExporter::OnTraceData(std::vector<perfetto::TracePacket> packets,
   DCHECK(json_callback_);
   DCHECK(!packets.empty() || !has_more);
 
+  // Since we write each event before checking the limit, we'll
+  // always go slightly over and hence we reserve some extra space
+  // to avoid most reallocs.
+  const size_t kReserveCapacity = kTraceEventBufferSizeInBytes * 5 / 4;
   std::string out;
+  out.reserve(kReserveCapacity);
 
   if (!has_output_json_preamble_) {
     out = "{\"traceEvents\":[";
@@ -274,8 +365,13 @@ void JSONTraceExporter::OnTraceData(std::vector<perfetto::TracePacket> packets,
     }
 
     for (auto& event : bundle.trace_events()) {
+      if (out.size() > kTraceEventBufferSizeInBytes) {
+        json_callback_.Run(out, nullptr, true);
+        out.clear();
+      }
+
       if (has_output_first_event_) {
-        out += ",";
+        out += ",\n";
       } else {
         has_output_first_event_ = true;
       }
@@ -298,10 +394,56 @@ void JSONTraceExporter::OnTraceData(std::vector<perfetto::TracePacket> packets,
         NOTREACHED();
       }
     }
+
+    for (auto& legacy_ftrace_output : bundle.legacy_ftrace_output()) {
+      legacy_system_ftrace_output_ += legacy_ftrace_output;
+    }
+
+    for (auto& legacy_json_trace : bundle.legacy_json_trace()) {
+      // Tracing agents should only add this field when there is some data.
+      DCHECK(!legacy_json_trace.data().empty());
+      switch (legacy_json_trace.type()) {
+        case perfetto::protos::ChromeLegacyJsonTrace::USER_TRACE:
+          if (has_output_first_event_) {
+            out += ",\n";
+          } else {
+            has_output_first_event_ = true;
+          }
+          out += legacy_json_trace.data();
+          break;
+        case perfetto::protos::ChromeLegacyJsonTrace::SYSTEM_TRACE:
+          if (legacy_system_trace_events_.empty()) {
+            legacy_system_trace_events_ = "{";
+          } else {
+            legacy_system_trace_events_ += ",";
+          }
+          legacy_system_trace_events_ += legacy_json_trace.data();
+          break;
+        default:
+          NOTREACHED();
+      }
+    }
   }
 
   if (!has_more) {
     out += "]";
+
+    if (!legacy_system_ftrace_output_.empty() ||
+        !legacy_system_trace_events_.empty()) {
+      // Should only have system events (e.g. ETW) or system ftrace output.
+      DCHECK(legacy_system_ftrace_output_.empty() ||
+             legacy_system_trace_events_.empty());
+      out += ",\"systemTraceEvents\":";
+      if (!legacy_system_ftrace_output_.empty()) {
+        std::string escaped;
+        base::EscapeJSONString(legacy_system_ftrace_output_,
+                               true /* put_in_quotes */, &escaped);
+        out += escaped;
+      } else {
+        out += legacy_system_trace_events_ + "}";
+      }
+    }
+
     if (!metadata_->empty()) {
       out += ",\"metadata\":";
       std::string json_value;

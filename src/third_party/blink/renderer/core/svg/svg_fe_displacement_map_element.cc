@@ -20,37 +20,34 @@
 #include "third_party/blink/renderer/core/svg/svg_fe_displacement_map_element.h"
 
 #include "third_party/blink/renderer/core/svg/graphics/filters/svg_filter_builder.h"
+#include "third_party/blink/renderer/core/svg/svg_enumeration_map.h"
 #include "third_party/blink/renderer/core/svg_names.h"
 
 namespace blink {
 
 template <>
-const SVGEnumerationStringEntries&
-GetStaticStringEntries<ChannelSelectorType>() {
-  DEFINE_STATIC_LOCAL(SVGEnumerationStringEntries, entries, ());
-  if (entries.IsEmpty()) {
-    entries.push_back(std::make_pair(CHANNEL_R, "R"));
-    entries.push_back(std::make_pair(CHANNEL_G, "G"));
-    entries.push_back(std::make_pair(CHANNEL_B, "B"));
-    entries.push_back(std::make_pair(CHANNEL_A, "A"));
-  }
+const SVGEnumerationMap& GetEnumerationMap<ChannelSelectorType>() {
+  static const SVGEnumerationMap::Entry enum_items[] = {
+      {CHANNEL_R, "R"}, {CHANNEL_G, "G"}, {CHANNEL_B, "B"}, {CHANNEL_A, "A"},
+  };
+  static const SVGEnumerationMap entries(enum_items);
   return entries;
 }
 
 inline SVGFEDisplacementMapElement::SVGFEDisplacementMapElement(
     Document& document)
-    : SVGFilterPrimitiveStandardAttributes(SVGNames::feDisplacementMapTag,
+    : SVGFilterPrimitiveStandardAttributes(svg_names::kFEDisplacementMapTag,
                                            document),
-      scale_(SVGAnimatedNumber::Create(this, SVGNames::scaleAttr, 0.0f)),
-      in1_(SVGAnimatedString::Create(this, SVGNames::inAttr)),
-      in2_(SVGAnimatedString::Create(this, SVGNames::in2Attr)),
+      scale_(SVGAnimatedNumber::Create(this, svg_names::kScaleAttr, 0.0f)),
+      in1_(SVGAnimatedString::Create(this, svg_names::kInAttr)),
+      in2_(SVGAnimatedString::Create(this, svg_names::kIn2Attr)),
       x_channel_selector_(SVGAnimatedEnumeration<ChannelSelectorType>::Create(
           this,
-          SVGNames::xChannelSelectorAttr,
+          svg_names::kXChannelSelectorAttr,
           CHANNEL_A)),
       y_channel_selector_(SVGAnimatedEnumeration<ChannelSelectorType>::Create(
           this,
-          SVGNames::yChannelSelectorAttr,
+          svg_names::kYChannelSelectorAttr,
           CHANNEL_A)) {
   AddToPropertyMap(scale_);
   AddToPropertyMap(in1_);
@@ -74,13 +71,13 @@ bool SVGFEDisplacementMapElement::SetFilterEffectAttribute(
     FilterEffect* effect,
     const QualifiedName& attr_name) {
   FEDisplacementMap* displacement_map = static_cast<FEDisplacementMap*>(effect);
-  if (attr_name == SVGNames::xChannelSelectorAttr)
+  if (attr_name == svg_names::kXChannelSelectorAttr)
     return displacement_map->SetXChannelSelector(
         x_channel_selector_->CurrentValue()->EnumValue());
-  if (attr_name == SVGNames::yChannelSelectorAttr)
+  if (attr_name == svg_names::kYChannelSelectorAttr)
     return displacement_map->SetYChannelSelector(
         y_channel_selector_->CurrentValue()->EnumValue());
-  if (attr_name == SVGNames::scaleAttr)
+  if (attr_name == svg_names::kScaleAttr)
     return displacement_map->SetScale(scale_->CurrentValue()->Value());
 
   return SVGFilterPrimitiveStandardAttributes::SetFilterEffectAttribute(
@@ -89,15 +86,15 @@ bool SVGFEDisplacementMapElement::SetFilterEffectAttribute(
 
 void SVGFEDisplacementMapElement::SvgAttributeChanged(
     const QualifiedName& attr_name) {
-  if (attr_name == SVGNames::xChannelSelectorAttr ||
-      attr_name == SVGNames::yChannelSelectorAttr ||
-      attr_name == SVGNames::scaleAttr) {
+  if (attr_name == svg_names::kXChannelSelectorAttr ||
+      attr_name == svg_names::kYChannelSelectorAttr ||
+      attr_name == svg_names::kScaleAttr) {
     SVGElement::InvalidationGuard invalidation_guard(this);
     PrimitiveAttributeChanged(attr_name);
     return;
   }
 
-  if (attr_name == SVGNames::inAttr || attr_name == SVGNames::in2Attr) {
+  if (attr_name == svg_names::kInAttr || attr_name == svg_names::kIn2Attr) {
     SVGElement::InvalidationGuard invalidation_guard(this);
     Invalidate();
     return;

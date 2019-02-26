@@ -44,6 +44,11 @@ class PLATFORM_EXPORT Filter final : public GarbageCollected<Filter> {
                         UnitScaling);
   static Filter* Create(float scale);
 
+  Filter(const FloatRect& reference_box,
+         const FloatRect& filter_region,
+         float scale,
+         UnitScaling);
+
   void Trace(blink::Visitor*);
 
   float Scale() const { return scale_; }
@@ -68,11 +73,6 @@ class PLATFORM_EXPORT Filter final : public GarbageCollected<Filter> {
   SourceGraphic* GetSourceGraphic() const { return source_graphic_.Get(); }
 
  private:
-  Filter(const FloatRect& reference_box,
-         const FloatRect& filter_region,
-         float scale,
-         UnitScaling);
-
   FloatRect reference_box_;
   FloatRect filter_region_;
   float scale_;

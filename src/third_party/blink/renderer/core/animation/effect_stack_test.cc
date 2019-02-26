@@ -180,8 +180,8 @@ TEST_F(AnimationEffectStackTest, ForwardsFillDiscarding) {
 
   UpdateTimeline(TimeDelta::FromSeconds(11));
   ThreadState::Current()->CollectAllGarbage();
-  interpolations =
-      new ActiveInterpolationsMap(EffectStack::ActiveInterpolations(
+  interpolations = MakeGarbageCollected<ActiveInterpolationsMap>(
+      EffectStack::ActiveInterpolations(
           &element->GetElementAnimations()->GetEffectStack(), nullptr, nullptr,
           KeyframeEffect::kDefaultPriority));
   EXPECT_EQ(1u, interpolations->size());
@@ -190,8 +190,8 @@ TEST_F(AnimationEffectStackTest, ForwardsFillDiscarding) {
 
   UpdateTimeline(TimeDelta::FromSeconds(13));
   ThreadState::Current()->CollectAllGarbage();
-  interpolations =
-      new ActiveInterpolationsMap(EffectStack::ActiveInterpolations(
+  interpolations = MakeGarbageCollected<ActiveInterpolationsMap>(
+      EffectStack::ActiveInterpolations(
           &element->GetElementAnimations()->GetEffectStack(), nullptr, nullptr,
           KeyframeEffect::kDefaultPriority));
   EXPECT_EQ(1u, interpolations->size());
@@ -200,8 +200,8 @@ TEST_F(AnimationEffectStackTest, ForwardsFillDiscarding) {
 
   UpdateTimeline(TimeDelta::FromSeconds(15));
   ThreadState::Current()->CollectAllGarbage();
-  interpolations =
-      new ActiveInterpolationsMap(EffectStack::ActiveInterpolations(
+  interpolations = MakeGarbageCollected<ActiveInterpolationsMap>(
+      EffectStack::ActiveInterpolations(
           &element->GetElementAnimations()->GetEffectStack(), nullptr, nullptr,
           KeyframeEffect::kDefaultPriority));
   EXPECT_EQ(1u, interpolations->size());
@@ -210,8 +210,8 @@ TEST_F(AnimationEffectStackTest, ForwardsFillDiscarding) {
 
   UpdateTimeline(TimeDelta::FromSeconds(17));
   ThreadState::Current()->CollectAllGarbage();
-  interpolations =
-      new ActiveInterpolationsMap(EffectStack::ActiveInterpolations(
+  interpolations = MakeGarbageCollected<ActiveInterpolationsMap>(
+      EffectStack::ActiveInterpolations(
           &element->GetElementAnimations()->GetEffectStack(), nullptr, nullptr,
           KeyframeEffect::kDefaultPriority));
   EXPECT_EQ(1u, interpolations->size());

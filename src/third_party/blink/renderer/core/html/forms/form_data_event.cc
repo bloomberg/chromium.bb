@@ -4,16 +4,17 @@
 
 #include "third_party/blink/renderer/core/html/forms/form_data_event.h"
 
+#include "third_party/blink/renderer/core/event_interface_names.h"
 #include "third_party/blink/renderer/core/html/forms/form_data.h"
 
 namespace blink {
 
 FormDataEvent::FormDataEvent(FormData& form_data)
-    : Event(EventTypeNames::formdata, Bubbles::kYes, Cancelable::kNo),
+    : Event(event_type_names::kFormdata, Bubbles::kYes, Cancelable::kNo),
       form_data_(form_data) {}
 
 FormDataEvent* FormDataEvent::Create(FormData& form_data) {
-  return new FormDataEvent(form_data);
+  return MakeGarbageCollected<FormDataEvent>(form_data);
 }
 
 void FormDataEvent::Trace(Visitor* visitor) {
@@ -22,7 +23,7 @@ void FormDataEvent::Trace(Visitor* visitor) {
 }
 
 const AtomicString& FormDataEvent::InterfaceName() const {
-  return EventNames::FormDataEvent;
+  return event_interface_names::kFormDataEvent;
 }
 
 }  // namespace blink

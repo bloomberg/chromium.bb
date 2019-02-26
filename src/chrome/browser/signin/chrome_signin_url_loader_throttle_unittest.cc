@@ -90,7 +90,6 @@ TEST(ChromeSigninURLLoaderThrottleTest, Intercept) {
   request.url = kTestURL;
   request.referrer = kTestReferrer;
   request.resource_type = static_cast<int>(content::RESOURCE_TYPE_MAIN_FRAME);
-  request.is_main_frame = true;
   request.headers.SetHeader("X-Request-1", "Foo");
   bool defer = false;
   throttle->WillStartRequest(&request, &defer);
@@ -162,7 +161,7 @@ TEST(ChromeSigninURLLoaderThrottleTest, Intercept) {
 
   std::vector<std::string> request_headers_to_remove;
   net::HttpRequestHeaders modified_request_headers;
-  throttle->WillRedirectRequest(redirect_info, *response_head, &defer,
+  throttle->WillRedirectRequest(&redirect_info, *response_head, &defer,
                                 &request_headers_to_remove,
                                 &modified_request_headers);
 
@@ -230,7 +229,6 @@ TEST(ChromeSigninURLLoaderThrottleTest, InterceptSubFrame) {
   network::ResourceRequest request;
   request.url = GURL("https://google.com");
   request.resource_type = static_cast<int>(content::RESOURCE_TYPE_SUB_FRAME);
-  request.is_main_frame = false;
 
   bool defer = false;
   throttle->WillStartRequest(&request, &defer);
@@ -248,7 +246,7 @@ TEST(ChromeSigninURLLoaderThrottleTest, InterceptSubFrame) {
 
   std::vector<std::string> request_headers_to_remove;
   net::HttpRequestHeaders modified_request_headers;
-  throttle->WillRedirectRequest(redirect_info, response_head, &defer,
+  throttle->WillRedirectRequest(&redirect_info, response_head, &defer,
                                 &request_headers_to_remove,
                                 &modified_request_headers);
   EXPECT_FALSE(defer);

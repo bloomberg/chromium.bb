@@ -6,10 +6,10 @@
 #define THIRD_PARTY_BLINK_RENDERER_CORE_FRAME_WEB_FRAME_WIDGET_BASE_H_
 
 #include "base/single_thread_task_runner.h"
+#include "services/network/public/mojom/referrer_policy.mojom-blink.h"
 #include "third_party/blink/public/platform/web_coalesced_input_event.h"
 #include "third_party/blink/public/platform/web_drag_data.h"
 #include "third_party/blink/public/platform/web_gesture_device.h"
-#include "third_party/blink/public/platform/web_referrer_policy.h"
 #include "third_party/blink/public/web/web_frame_widget.h"
 #include "third_party/blink/renderer/core/clipboard/data_object.h"
 #include "third_party/blink/renderer/core/core_export.h"
@@ -21,8 +21,11 @@ namespace cc {
 class Layer;
 }
 
-namespace blink {
+namespace gfx {
+class Point;
+}
 
+namespace blink {
 class AnimationWorkletMutatorDispatcherImpl;
 class CompositorAnimationHost;
 class GraphicsLayer;
@@ -43,6 +46,10 @@ class CORE_EXPORT WebFrameWidgetBase
 
   WebWidgetClient* Client() const { return client_; }
   WebLocalFrameImpl* LocalRootImpl() const { return local_root_; }
+
+  // Returns the bounding box of the block type node touched by the WebPoint.
+  WebRect ComputeBlockBound(const gfx::Point& point_in_root_frame,
+                            bool ignore_clipping) const;
 
   void BindLocalRoot(WebLocalFrame&);
 
@@ -66,7 +73,7 @@ class CORE_EXPORT WebFrameWidgetBase
   virtual WebLayerTreeView* GetLayerTreeView() const = 0;
   virtual CompositorAnimationHost* AnimationHost() const = 0;
 
-  virtual HitTestResult CoreHitTestResultAt(const WebPoint&) = 0;
+  virtual HitTestResult CoreHitTestResultAt(const gfx::Point&) = 0;
 
   // WebFrameWidget implementation.
   void Close() override;
@@ -95,11 +102,11 @@ class CORE_EXPORT WebFrameWidgetBase
   WebLocalFrame* FocusedWebLocalFrameInWidget() const override;
 
   // Called when a drag-n-drop operation should begin.
-  void StartDragging(WebReferrerPolicy,
+  void StartDragging(network::mojom::ReferrerPolicy,
                      const WebDragData&,
                      WebDragOperationsMask,
                      const SkBitmap& drag_image,
-                     const WebPoint& drag_image_offset);
+                     const gfx::Point& drag_image_offset);
 
   bool DoingDragAndDrop() { return doing_drag_and_drop_; }
   static void SetIgnoreInputEvents(bool value) { ignore_input_events_ = value; }

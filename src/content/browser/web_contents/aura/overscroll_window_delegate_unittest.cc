@@ -236,7 +236,7 @@ TEST_F(OverscrollWindowDelegateTest, AbortOverscrollThreshold) {
 TEST_F(OverscrollWindowDelegateTest, EventAbortsOverscroll) {
   ui::test::EventGenerator generator(root_window());
   // Start an OVERSCROLL_EAST gesture, without releasing touch.
-  generator.set_current_location(gfx::Point(0, 0));
+  generator.set_current_screen_location(gfx::Point(0, 0));
   generator.PressTouch();
   int touch_x = touch_start_threshold() + 1;
   generator.MoveTouch(gfx::Point(touch_x, 0));

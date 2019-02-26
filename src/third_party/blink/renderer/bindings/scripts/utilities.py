@@ -281,19 +281,10 @@ def resolve_cygpath(cygdrive_names):
     return idl_file_names
 
 
-def read_idl_files_list_from_file(filename, is_gyp_format):
-    """Similar to read_file_to_list, but also resolves cygpath.
-
-    If is_gyp_format is True, the file is treated as a newline-separated list
-    with no quoting or escaping. When False, the file is interpreted as a
-    Posix-style quoted and space-separated list."""
+def read_idl_files_list_from_file(filename):
+    """Similar to read_file_to_list, but also resolves cygpath."""
     with open(filename) as input_file:
-        if is_gyp_format:
-            file_names = sorted([os.path.realpath(line.rstrip('\n'))
-                                 for line in input_file])
-        else:
-            file_names = sorted(shlex.split(input_file))
-
+        file_names = sorted(shlex.split(input_file))
         idl_file_names = [file_name for file_name in file_names
                           if not file_name.startswith('/cygdrive')]
         cygdrive_names = [file_name for file_name in file_names
@@ -374,7 +365,7 @@ def match_interface_extended_attributes_and_name_from_idl(file_contents):
     file_contents = re.sub(block_comment_re, '', file_contents)
 
     match = re.search(
-        r'(?:\[([^[]*)\]\s*)?'
+        r'(?:\[([^{};]*)\]\s*)?'
         r'(interface|callback\s+interface|partial\s+interface|dictionary)\s+'
         r'(\w+)\s*'
         r'(:\s*\w+\s*)?'
@@ -382,22 +373,34 @@ def match_interface_extended_attributes_and_name_from_idl(file_contents):
         file_contents, flags=re.DOTALL)
     return match
 
+
 def get_interface_extended_attributes_from_idl(file_contents):
     match = match_interface_extended_attributes_and_name_from_idl(file_contents)
     if not match or not match.group(1):
         return {}
 
-    extended_attributes_string = match.group(1)
-    extended_attributes = {}
-    # FIXME: this splitting is WRONG: it fails on extended attributes where lists of
-    # multiple values are used, which are seperated by a comma and a space.
+    extended_attributes_string = match.group(1).strip()
     parts = [extended_attribute.strip()
-             for extended_attribute in re.split(',\s+', extended_attributes_string)
+             for extended_attribute in re.split(',', extended_attributes_string)
              # Discard empty parts, which may exist due to trailing comma
              if extended_attribute.strip()]
+
+    # Joins |parts| with commas as far as the parences are not balanced,
+    # and then converts a (joined) term to a dict entry.
+    # ex. ['ab=c', 'ab(cd', 'ef', 'gh)', 'f=(a', 'b)']
+    #   => {'ab': 'c', 'ab(cd,ef,gh)': '', 'f': '(a,b)'}
+    extended_attributes = {}
+    concatenated = None
     for part in parts:
-        name, _, value = map(string.strip, part.partition('='))
-        extended_attributes[name] = value
+        concatenated = (concatenated + ', ' + part) if concatenated else part
+        parences = concatenated.count('(') - concatenated.count(')')
+        square_brackets = concatenated.count('[') - concatenated.count(']')
+        if parences < 0 or square_brackets < 0:
+            raise ValueError('You have more close braces than open braces.')
+        if parences == 0 and square_brackets == 0:
+            name, _, value = map(string.strip, concatenated.partition('='))
+            extended_attributes[name] = value
+            concatenated = None
     return extended_attributes
 
 
@@ -419,6 +422,7 @@ def get_interface_exposed_arguments(file_contents):
 
 
 def get_first_interface_name_from_idl(file_contents):
+    # TODO(peria): This function returns 'mixin' for interface mixins.
     match = match_interface_extended_attributes_and_name_from_idl(file_contents)
     if match:
         return match.group(3)
@@ -437,7 +441,7 @@ def shorten_union_name(union_type):
         'CanvasRenderingContext2DOrWebGLRenderingContextOrWebGL2RenderingContextOrWebGL2ComputeRenderingContextOrImageBitmapRenderingContextOrXRPresentationContext': 'RenderingContext',
         # modules/canvas/htmlcanvas/html_canvas_element_module.idl
         'CanvasRenderingContext2DOrWebGLRenderingContextOrWebGL2RenderingContextOrImageBitmapRenderingContextOrXRPresentationContext': 'RenderingContext',
-        # core/imagebitmap/ImageBitmapFactories.idl
+        # core/frame/window_or_worker_global_scope.idl
         'HTMLImageElementOrSVGImageElementOrHTMLVideoElementOrHTMLCanvasElementOrBlobOrImageDataOrImageBitmapOrOffscreenCanvas': 'ImageBitmapSource',
         # bindings/tests/idls/core/TestTypedefs.idl
         'NodeOrLongSequenceOrEventOrXMLHttpRequestOrStringOrStringByteStringOrNodeListRecord': 'NestedUnionType',
@@ -463,6 +467,10 @@ def shorten_union_name(union_type):
 
 def to_snake_case(name):
     return NameStyleConverter(name).to_snake_case()
+
+
+def to_header_guard(path):
+    return NameStyleConverter(path).to_header_guard()
 
 
 def format_remove_duplicates(text, patterns):

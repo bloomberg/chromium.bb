@@ -47,7 +47,7 @@ TEST_F(CSSSelectorWatchTest, RecalcOnDocumentChange) {
   selectors.push_back(".a");
   watch.WatchCSSSelectors(selectors);
 
-  GetDocument().View()->UpdateAllLifecyclePhases();
+  UpdateAllLifecyclePhasesForTest();
 
   selectors.clear();
   selectors.push_back(".b");
@@ -55,7 +55,7 @@ TEST_F(CSSSelectorWatchTest, RecalcOnDocumentChange) {
   selectors.push_back("#nomatch");
   watch.WatchCSSSelectors(selectors);
 
-  GetDocument().View()->UpdateAllLifecyclePhases();
+  UpdateAllLifecyclePhasesForTest();
 
   Element* x = GetDocument().getElementById("x");
   Element* y = GetDocument().getElementById("y");
@@ -64,14 +64,14 @@ TEST_F(CSSSelectorWatchTest, RecalcOnDocumentChange) {
   ASSERT_TRUE(y);
   ASSERT_TRUE(z);
 
-  x->removeAttribute(HTMLNames::classAttr);
-  y->removeAttribute(HTMLNames::classAttr);
-  z->setAttribute(HTMLNames::classAttr, "c");
+  x->removeAttribute(html_names::kClassAttr);
+  y->removeAttribute(html_names::kClassAttr);
+  z->setAttribute(html_names::kClassAttr, "c");
 
   ClearAddedRemoved(watch);
 
   unsigned before_count = GetStyleEngine().StyleForElementCount();
-  GetDocument().View()->UpdateAllLifecyclePhases();
+  UpdateAllLifecyclePhasesForTest();
   unsigned after_count = GetStyleEngine().StyleForElementCount();
 
   EXPECT_EQ(2u, after_count - before_count);

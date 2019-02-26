@@ -11,6 +11,7 @@
 #include "base/callback_forward.h"
 #include "chrome/test/chromedriver/command.h"
 #include "chrome/test/chromedriver/net/sync_websocket_factory.h"
+#include "services/network/public/mojom/url_loader_factory.mojom.h"
 
 namespace base {
 class DictionaryValue;
@@ -20,16 +21,15 @@ class Value;
 class DeviceManager;
 struct Session;
 class Status;
-class URLRequestContextGetter;
 
 struct InitSessionParams {
-  InitSessionParams(scoped_refptr<URLRequestContextGetter> context_getter,
+  InitSessionParams(network::mojom::URLLoaderFactory* factory,
                     const SyncWebSocketFactory& socket_factory,
                     DeviceManager* device_manager);
   InitSessionParams(const InitSessionParams& other);
   ~InitSessionParams();
 
-  scoped_refptr<URLRequestContextGetter> context_getter;
+  network::mojom::URLLoaderFactory* url_loader_factory;
   SyncWebSocketFactory socket_factory;
   DeviceManager* device_manager;
 };
@@ -126,10 +126,6 @@ Status ExecuteSetNetworkConnection(Session* session,
                                    const base::DictionaryValue& params,
                                    std::unique_ptr<base::Value>* value);
 
-Status ExecuteGetWindowRect(Session* session,
-                            const base::DictionaryValue& params,
-                            std::unique_ptr<base::Value>* value);
-
 Status ExecuteGetWindowPosition(Session* session,
                                 const base::DictionaryValue& params,
                                 std::unique_ptr<base::Value>* value);
@@ -142,25 +138,9 @@ Status ExecuteGetWindowSize(Session* session,
                             const base::DictionaryValue& params,
                             std::unique_ptr<base::Value>* value);
 
-Status ExecuteSetWindowRect(Session* session,
-                            const base::DictionaryValue& params,
-                            std::unique_ptr<base::Value>* value);
-
 Status ExecuteSetWindowSize(Session* session,
                             const base::DictionaryValue& params,
                             std::unique_ptr<base::Value>* value);
-
-Status ExecuteMaximizeWindow(Session* session,
-                             const base::DictionaryValue& params,
-                             std::unique_ptr<base::Value>* value);
-
-Status ExecuteMinimizeWindow(Session* session,
-                             const base::DictionaryValue& params,
-                             std::unique_ptr<base::Value>* value);
-
-Status ExecuteFullScreenWindow(Session* session,
-                               const base::DictionaryValue& params,
-                               std::unique_ptr<base::Value>* value);
 
 Status ExecuteGetAvailableLogTypes(Session* session,
                                    const base::DictionaryValue& params,

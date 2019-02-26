@@ -14,13 +14,14 @@
 #import "ios/chrome/browser/tabs/tab.h"
 #import "ios/chrome/browser/tabs/tab_model.h"
 #import "ios/chrome/browser/ui/background_generator.h"
-#include "ios/chrome/browser/ui/rtl_geometry.h"
 #import "ios/chrome/browser/ui/side_swipe/side_swipe_util.h"
+#import "ios/chrome/browser/ui/side_swipe/swipe_view.h"
 #import "ios/chrome/browser/ui/side_swipe_gesture_recognizer.h"
 #import "ios/chrome/browser/ui/tab_grid/grid/grid_constants.h"
 #import "ios/chrome/browser/ui/toolbar/public/side_swipe_toolbar_snapshot_providing.h"
-#include "ios/chrome/browser/ui/ui_util.h"
-#import "ios/chrome/browser/ui/uikit_ui_util.h"
+#include "ios/chrome/browser/ui/util/rtl_geometry.h"
+#include "ios/chrome/browser/ui/util/ui_util.h"
+#import "ios/chrome/browser/ui/util/uikit_ui_util.h"
 #import "ios/chrome/browser/web/page_placeholder_tab_helper.h"
 #import "ios/chrome/common/ui_util/constraints_ui_util.h"
 #include "ios/chrome/grit/ios_theme_resources.h"
@@ -46,122 +47,6 @@ const NSTimeInterval kAnimationDuration = 0.15;
 // Reduce size in -smallGreyImage by this factor.
 const CGFloat kResizeFactor = 4;
 }  // anonymous namespace
-
-@interface SwipeView : UIView
-
-@property(nonatomic, strong) UIImageView* topToolbarSnapshot;
-@property(nonatomic, strong) UIImageView* bottomToolbarSnapshot;
-
-@property(nonatomic, assign) CGFloat topMargin;
-@property(nonatomic, strong) NSLayoutConstraint* toolbarTopConstraint;
-@property(nonatomic, strong) NSLayoutConstraint* imageTopConstraint;
-
-@end
-
-@implementation SwipeView {
-  UIImageView* _image;
-}
-
-@synthesize topToolbarSnapshot = _topToolbarSnapshot;
-@synthesize bottomToolbarSnapshot = _bottomToolbarSnapshot;
-@synthesize topMargin = _topMargin;
-@synthesize toolbarTopConstraint = _toolbarTopConstraint;
-@synthesize imageTopConstraint = _imageTopConstraint;
-
-- (instancetype)initWithFrame:(CGRect)frame topMargin:(CGFloat)topMargin {
-  self = [super initWithFrame:frame];
-  if (self) {
-    _topMargin = topMargin;
-
-    _image = [[UIImageView alloc] initWithFrame:CGRectZero];
-    [_image setClipsToBounds:YES];
-    [_image setContentMode:UIViewContentModeScaleAspectFill];
-    [self addSubview:_image];
-
-    _topToolbarSnapshot = [[UIImageView alloc] initWithFrame:CGRectZero];
-    [self addSubview:_topToolbarSnapshot];
-
-    _bottomToolbarSnapshot = [[UIImageView alloc] initWithFrame:CGRectZero];
-    [self addSubview:_bottomToolbarSnapshot];
-
-    // All subviews are as wide as the parent
-    NSMutableArray* constraints = [NSMutableArray array];
-    for (UIView* view in self.subviews) {
-      [view setTranslatesAutoresizingMaskIntoConstraints:NO];
-      [constraints addObject:[view.leadingAnchor
-                                 constraintEqualToAnchor:self.leadingAnchor]];
-      [constraints addObject:[view.trailingAnchor
-                                 constraintEqualToAnchor:self.trailingAnchor]];
-    }
-
-    _toolbarTopConstraint = [[_topToolbarSnapshot topAnchor]
-        constraintEqualToAnchor:self.topAnchor];
-
-    if (!base::FeatureList::IsEnabled(
-            web::features::kBrowserContainerFullscreen)) {
-      _toolbarTopConstraint.constant = -StatusBarHeight();
-    }
-
-    _imageTopConstraint =
-        [_image.topAnchor constraintEqualToAnchor:self.topAnchor
-                                         constant:topMargin];
-    [constraints addObjectsFromArray:@[
-      _imageTopConstraint,
-      [[_image bottomAnchor] constraintEqualToAnchor:self.bottomAnchor],
-      _toolbarTopConstraint,
-      [_bottomToolbarSnapshot.bottomAnchor
-          constraintEqualToAnchor:self.bottomAnchor],
-    ]];
-
-    [NSLayoutConstraint activateConstraints:constraints];
-  }
-  return self;
-}
-
-- (void)layoutSubviews {
-  [super layoutSubviews];
-  [self updateImageBoundsAndZoom];
-}
-
-- (void)updateImageBoundsAndZoom {
-  UIImage* image = [_image image];
-  if (image) {
-    CGSize imageSize = image.size;
-    CGSize viewSize = [_image frame].size;
-    CGFloat zoomRatio = std::max(viewSize.height / imageSize.height,
-                                 viewSize.width / imageSize.width);
-    [_image layer].contentsRect =
-        CGRectMake(0.0, 0.0, viewSize.width / (zoomRatio * imageSize.width),
-                   viewSize.height / (zoomRatio * imageSize.height));
-  }
-}
-
-- (void)setTopMargin:(CGFloat)topMargin {
-  _topMargin = topMargin;
-  self.imageTopConstraint.constant = topMargin;
-}
-
-- (void)setImage:(UIImage*)image {
-  [_image setImage:image];
-  [self updateImageBoundsAndZoom];
-}
-
-- (void)setTopToolbarImage:(UIImage*)image {
-  [self.topToolbarSnapshot setImage:image];
-  if (!base::FeatureList::IsEnabled(
-          web::features::kBrowserContainerFullscreen)) {
-    // Update constraints as StatusBarHeight changes depending on orientation.
-    self.toolbarTopConstraint.constant = -StatusBarHeight();
-  }
-  [self.topToolbarSnapshot setNeedsLayout];
-}
-
-- (void)setBottomToolbarImage:(UIImage*)image {
-  [self.bottomToolbarSnapshot setImage:image];
-  [self.bottomToolbarSnapshot setNeedsLayout];
-}
-
-@end
 
 @interface CardSideSwipeView ()
 
@@ -211,12 +96,7 @@ const CGFloat kResizeFactor = 4;
     [self addSubview:background];
 
     [background setTranslatesAutoresizingMaskIntoConstraints:NO];
-    CGFloat topInset = 0;
-    if (@available(iOS 11, *)) {
-      topInset = self.safeAreaInsets.top;
-    } else {
-      topInset = StatusBarHeight();
-    }
+    CGFloat topInset = self.safeAreaInsets.top;
     self.backgroundTopConstraint =
         [[background topAnchor] constraintEqualToAnchor:self.topAnchor
                                                constant:-topInset];
@@ -251,12 +131,7 @@ const CGFloat kResizeFactor = 4;
 
 - (void)updateConstraints {
   [super updateConstraints];
-  CGFloat topInset = 0;
-  if (@available(iOS 11, *)) {
-    topInset = self.safeAreaInsets.top;
-  } else {
-    topInset = StatusBarHeight();
-  }
+  CGFloat topInset = self.safeAreaInsets.top;
   self.backgroundTopConstraint.constant = -topInset;
 }
 

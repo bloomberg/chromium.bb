@@ -127,9 +127,9 @@ void ArcOemCryptoBridge::Connect(mojom::OemCryptoServiceRequest request) {
       mojo::InterfacePtrInfo<arc_oemcrypto::mojom::OemCryptoHostDaemon>(
           std::move(server_pipe), 0u));
   DVLOG(1) << "Bound remote OemCryptoHostDaemon interface to pipe";
+
   oemcrypto_host_daemon_ptr_.set_connection_error_handler(base::BindOnce(
-      &mojo::InterfacePtr<arc_oemcrypto::mojom::OemCryptoHostDaemon>::reset,
-      base::Unretained(&oemcrypto_host_daemon_ptr_)));
+      &ArcOemCryptoBridge::OnMojoConnectionError, weak_factory_.GetWeakPtr()));
   chromeos::DBusThreadManager::Get()
       ->GetArcOemCryptoClient()
       ->BootstrapMojoConnection(
@@ -140,6 +140,11 @@ void ArcOemCryptoBridge::Connect(mojom::OemCryptoServiceRequest request) {
 
 void ArcOemCryptoBridge::ConnectToDaemon(
     mojom::OemCryptoServiceRequest request) {
+  if (!oemcrypto_host_daemon_ptr_) {
+    VLOG(1) << "Mojo connection is already lost.";
+    return;
+  }
+
   // We need to get the GPU interface on the IO thread, then after that is
   // done it will run the Mojo call on our thread.
   base::PostTaskAndReplyWithResult(
@@ -153,8 +158,18 @@ void ArcOemCryptoBridge::ConnectToDaemon(
 void ArcOemCryptoBridge::FinishConnectingToDaemon(
     mojom::OemCryptoServiceRequest request,
     mojom::ProtectedBufferManagerPtr gpu_buffer_manager) {
+  if (!oemcrypto_host_daemon_ptr_) {
+    VLOG(1) << "Mojo connection is already lost.";
+    return;
+  }
+
   oemcrypto_host_daemon_ptr_->Connect(std::move(request),
                                       std::move(gpu_buffer_manager));
+}
+
+void ArcOemCryptoBridge::OnMojoConnectionError() {
+  LOG(ERROR) << "ArcOemCryptoBridge Mojo connection lost.";
+  oemcrypto_host_daemon_ptr_.reset();
 }
 
 }  // namespace arc

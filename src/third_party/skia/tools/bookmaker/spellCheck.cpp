@@ -5,8 +5,9 @@
  * found in the LICENSE file.
  */
 
-#include "bookmaker.h"
+#include "bmhParser.h"
 
+#include "SkCommandLineFlags.h"
 #include "SkOSFile.h"
 #include "SkOSPath.h"
 
@@ -179,8 +180,6 @@ bool SpellCheck::check(Definition* def) {
         } break;
         case MarkType::kDefine:
             break;
-        case MarkType::kDeprecated:
-            break;
         case MarkType::kDescription:
             fInDescription = true;
             break;
@@ -194,11 +193,11 @@ bool SpellCheck::check(Definition* def) {
             break;
         case MarkType::kExample:
             break;
-        case MarkType::kExperimental:
-            break;
         case MarkType::kExternal:
             break;
         case MarkType::kFile:
+            break;
+        case MarkType::kFilter:
             break;
         case MarkType::kFormula:
             fInFormula = true;
@@ -266,8 +265,6 @@ bool SpellCheck::check(Definition* def) {
         case MarkType::kPlatform:
             break;
         case MarkType::kPopulate:
-            break;
-        case MarkType::kPrivate:
             break;
         case MarkType::kReturn:
             break;
@@ -367,7 +364,7 @@ bool SpellCheck::check(Definition* def) {
 }
 
 bool SpellCheck::checkable(MarkType markType) {
-    return BmhParser::Resolvable::kYes == fBmhParser.kMarkProps[(int) markType].fResolve;
+    return Resolvable::kYes == fBmhParser.kMarkProps[(int) markType].fResolve;
 }
 
 void SpellCheck::childCheck(Definition* def, const char* start) {

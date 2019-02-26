@@ -35,19 +35,19 @@
 
 namespace blink {
 
-using namespace HTMLNames;
+using namespace html_names;
 
 inline HTMLButtonElement::HTMLButtonElement(Document& document)
-    : HTMLFormControlElement(buttonTag, document),
+    : HTMLFormControlElement(kButtonTag, document),
       type_(SUBMIT),
       is_activated_submit_(false) {}
 
 HTMLButtonElement* HTMLButtonElement::Create(Document& document) {
-  return new HTMLButtonElement(document);
+  return MakeGarbageCollected<HTMLButtonElement>(document);
 }
 
 void HTMLButtonElement::setType(const AtomicString& type) {
-  setAttribute(typeAttr, type);
+  setAttribute(kTypeAttr, type);
 }
 
 LayoutObject* HTMLButtonElement::CreateLayoutObject(const ComputedStyle&) {
@@ -76,7 +76,7 @@ const AtomicString& HTMLButtonElement::FormControlType() const {
 
 bool HTMLButtonElement::IsPresentationAttribute(
     const QualifiedName& name) const {
-  if (name == alignAttr) {
+  if (name == kAlignAttr) {
     // Don't map 'align' attribute.  This matches what Firefox and IE do, but
     // not Opera.  See http://bugs.webkit.org/show_bug.cgi?id=12071
     return false;
@@ -87,7 +87,7 @@ bool HTMLButtonElement::IsPresentationAttribute(
 
 void HTMLButtonElement::ParseAttribute(
     const AttributeModificationParams& params) {
-  if (params.name == typeAttr) {
+  if (params.name == kTypeAttr) {
     if (DeprecatedEqualIgnoringCase(params.new_value, "reset"))
       type_ = RESET;
     else if (DeprecatedEqualIgnoringCase(params.new_value, "button"))
@@ -98,14 +98,15 @@ void HTMLButtonElement::ParseAttribute(
     if (formOwner() && isConnected())
       formOwner()->InvalidateDefaultButtonStyle();
   } else {
-    if (params.name == formactionAttr)
+    if (params.name == kFormactionAttr)
       LogUpdateAttributeIfIsolatedWorldAndInDocument("button", params);
     HTMLFormControlElement::ParseAttribute(params);
   }
 }
 
 void HTMLButtonElement::DefaultEventHandler(Event& event) {
-  if (event.type() == EventTypeNames::DOMActivate && !IsDisabledFormControl()) {
+  if (event.type() == event_type_names::kDOMActivate &&
+      !IsDisabledFormControl()) {
     if (Form() && type_ == SUBMIT) {
       Form()->PrepareForSubmission(event, this);
       event.SetDefaultHandled();
@@ -117,13 +118,13 @@ void HTMLButtonElement::DefaultEventHandler(Event& event) {
   }
 
   if (event.IsKeyboardEvent()) {
-    if (event.type() == EventTypeNames::keydown &&
+    if (event.type() == event_type_names::kKeydown &&
         ToKeyboardEvent(event).key() == " ") {
       SetActive(true);
       // No setDefaultHandled() - IE dispatches a keypress in this case.
       return;
     }
-    if (event.type() == EventTypeNames::keypress) {
+    if (event.type() == event_type_names::kKeypress) {
       switch (ToKeyboardEvent(event).charCode()) {
         case '\r':
           DispatchSimulatedClick(&event);
@@ -135,7 +136,7 @@ void HTMLButtonElement::DefaultEventHandler(Event& event) {
           return;
       }
     }
-    if (event.type() == EventTypeNames::keyup &&
+    if (event.type() == event_type_names::kKeyup &&
         ToKeyboardEvent(event).key() == " ") {
       if (IsActive())
         DispatchSimulatedClick(&event);
@@ -182,12 +183,12 @@ void HTMLButtonElement::AccessKeyAction(bool send_mouse_events) {
 }
 
 bool HTMLButtonElement::IsURLAttribute(const Attribute& attribute) const {
-  return attribute.GetName() == formactionAttr ||
+  return attribute.GetName() == kFormactionAttr ||
          HTMLFormControlElement::IsURLAttribute(attribute);
 }
 
 const AtomicString& HTMLButtonElement::Value() const {
-  return getAttribute(valueAttr);
+  return getAttribute(kValueAttr);
 }
 
 bool HTMLButtonElement::RecalcWillValidate() const {
@@ -213,8 +214,8 @@ Node::InsertionNotificationRequest HTMLButtonElement::InsertedInto(
     ContainerNode& insertion_point) {
   InsertionNotificationRequest request =
       HTMLFormControlElement::InsertedInto(insertion_point);
-  LogAddElementIfIsolatedWorldAndInDocument("button", typeAttr, formmethodAttr,
-                                            formactionAttr);
+  LogAddElementIfIsolatedWorldAndInDocument("button", kTypeAttr,
+                                            kFormmethodAttr, kFormactionAttr);
   return request;
 }
 

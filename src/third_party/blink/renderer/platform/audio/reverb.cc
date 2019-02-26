@@ -41,7 +41,7 @@
 
 namespace blink {
 
-using namespace VectorMath;
+using namespace vector_math;
 
 // Empirical gain calibration tested across many impulse responses to ensure
 // perceived volume is same as dry (unprocessed) signal
@@ -148,7 +148,7 @@ void Reverb::Initialize(AudioBus* impulse_response_buffer,
 
 void Reverb::Process(const AudioBus* source_bus,
                      AudioBus* destination_bus,
-                     size_t frames_to_process) {
+                     uint32_t frames_to_process) {
   // Do a fairly comprehensive sanity check.
   // If these conditions are satisfied, all of the source and destination
   // pointers will be valid for the various matrixing cases.

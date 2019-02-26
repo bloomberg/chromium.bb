@@ -105,7 +105,7 @@ using content::RenderViewHost;
 }
 
 - (NSView*)viewThatWantsHistoryOverlay {
-  return renderWidgetHost_->GetView()->GetNativeView();
+  return renderWidgetHost_->GetView()->GetNativeView().GetNativeNSView();
 }
 
 - (BOOL)validateUserInterfaceItem:(id<NSValidatedUserInterfaceItem>)item
@@ -266,7 +266,7 @@ using content::RenderViewHost;
 // window should become key.
 - (void)resignFirstResponder {
   NSWindow* browserWindow =
-      renderWidgetHost_->GetView()->GetNativeView().window;
+      [renderWidgetHost_->GetView()->GetNativeView().GetNativeNSView() window];
   DCHECK(browserWindow);
 
   // If the browser window is already key, there's nothing to do.
@@ -295,7 +295,8 @@ using content::RenderViewHost;
 - (void)windowDidBecomeKey {
   if (resigningFirstResponder_)
     return;
-  NSView* view = renderWidgetHost_->GetView()->GetNativeView();
+  NSView* view =
+      renderWidgetHost_->GetView()->GetNativeView().GetNativeNSView();
   if (view.window.firstResponder == view)
     [self makeAnyDialogKey];
 }

@@ -10,6 +10,7 @@
 #include "base/macros.h"
 #include "components/policy/core/common/cloud/cloud_policy_constants.h"
 #include "components/policy/core/common/cloud/mock_cloud_policy_client.h"
+#include "components/policy/core/common/cloud/mock_cloud_policy_service.h"
 #include "components/policy/core/common/cloud/mock_cloud_policy_store.h"
 #include "components/policy/proto/device_management_backend.pb.h"
 #include "testing/gmock/include/gmock/gmock.h"
@@ -20,16 +21,6 @@ namespace em = enterprise_management;
 using testing::_;
 
 namespace policy {
-
-class MockCloudPolicyServiceObserver : public CloudPolicyService::Observer {
- public:
-  MockCloudPolicyServiceObserver() {}
-  ~MockCloudPolicyServiceObserver() override {}
-
-  MOCK_METHOD1(OnInitializationCompleted, void(CloudPolicyService* service));
- private:
-  DISALLOW_COPY_AND_ASSIGN(MockCloudPolicyServiceObserver);
-};
 
 class CloudPolicyServiceTest : public testing::Test {
  public:
@@ -260,14 +251,14 @@ TEST_F(CloudPolicyServiceTest, StoreLoadAfterCreation) {
   MockCloudPolicyServiceObserver observer;
   service_.AddObserver(&observer);
   // Service should be marked as initialized and observer should be called back.
-  EXPECT_CALL(observer, OnInitializationCompleted(&service_)).Times(1);
+  EXPECT_CALL(observer, OnCloudPolicyServiceInitializationCompleted()).Times(1);
   store_.NotifyStoreLoaded();
   EXPECT_TRUE(service_.IsInitializationComplete());
   testing::Mock::VerifyAndClearExpectations(&observer);
 
   // Now, the next time the store is loaded, the observer should not be called
   // again.
-  EXPECT_CALL(observer, OnInitializationCompleted(&service_)).Times(0);
+  EXPECT_CALL(observer, OnCloudPolicyServiceInitializationCompleted()).Times(0);
   store_.NotifyStoreLoaded();
   service_.RemoveObserver(&observer);
 }

@@ -22,9 +22,9 @@ class ImageView;
 }
 
 namespace ash {
-class SystemTrayItem;
+class Shelf;
 
-// Lable view which can be given a different data from the visible label.
+// Label view which can be given a different data from the visible label.
 // IME icons like "US" (US keyboard) or "あ(Google Japanese Input)" are
 // rendered as a label, but reading such text literally will not always be
 // understandable.
@@ -47,7 +47,7 @@ class IconizedLabel : public views::Label {
 class ASH_EXPORT TrayItemView : public views::View,
                                 public gfx::AnimationDelegate {
  public:
-  explicit TrayItemView(SystemTrayItem* owner);
+  explicit TrayItemView(Shelf* shelf);
   ~TrayItemView() override;
 
   // Convenience function for creating a child Label or ImageView.
@@ -55,7 +55,6 @@ class ASH_EXPORT TrayItemView : public views::View,
   void CreateLabel();
   void CreateImageView();
 
-  SystemTrayItem* owner() const { return owner_; }
   IconizedLabel* label() const { return label_; }
   views::ImageView* image_view() const { return image_view_; }
 
@@ -68,6 +67,9 @@ class ASH_EXPORT TrayItemView : public views::View,
   // The default animation duration is 200ms. But each view can customize this.
   virtual int GetAnimationDurationMS();
 
+  // Returns whether the shelf is horizontal.
+  bool IsHorizontalAlignment() const;
+
  private:
   // Overridden from views::View.
   void ChildPreferredSizeChanged(View* child) override;
@@ -77,7 +79,7 @@ class ASH_EXPORT TrayItemView : public views::View,
   void AnimationEnded(const gfx::Animation* animation) override;
   void AnimationCanceled(const gfx::Animation* animation) override;
 
-  SystemTrayItem* owner_;
+  Shelf* const shelf_;
   std::unique_ptr<gfx::SlideAnimation> animation_;
   // Only one of |label_| and |image_view_| should be non-null.
   IconizedLabel* label_;

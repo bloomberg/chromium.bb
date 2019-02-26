@@ -46,7 +46,7 @@
 
 namespace blink {
 
-using namespace HTMLNames;
+using namespace html_names;
 
 struct PresentationAttributeCacheKey {
   PresentationAttributeCacheKey() : tag_name(nullptr) {}
@@ -76,7 +76,7 @@ using PresentationAttributeCache =
                 AlreadyHashed>;
 static PresentationAttributeCache& GetPresentationAttributeCache() {
   DEFINE_STATIC_LOCAL(Persistent<PresentationAttributeCache>, cache,
-                      (new PresentationAttributeCache));
+                      (MakeGarbageCollected<PresentationAttributeCache>()));
   return *cache;
 }
 
@@ -105,7 +105,7 @@ static void MakePresentationAttributeCacheKey(
       return;
     // FIXME: Background URL may depend on the base URL and can't be shared.
     // Disallow caching.
-    if (attr.GetName() == backgroundAttr)
+    if (attr.GetName() == kBackgroundAttr)
       return;
     result.attributes_and_values.push_back(
         std::make_pair(attr.LocalName().Impl(), attr.Value()));
@@ -182,7 +182,7 @@ CSSPropertyValueSet* ComputePresentationAttributeStyle(Element& element) {
     return style;
 
   PresentationAttributeCacheEntry* new_entry =
-      new PresentationAttributeCacheEntry;
+      MakeGarbageCollected<PresentationAttributeCacheEntry>();
   new_entry->key = cache_key;
   new_entry->value = style;
 

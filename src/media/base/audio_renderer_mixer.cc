@@ -12,6 +12,7 @@
 #include "base/memory/ptr_util.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/trace_event/trace_event.h"
+#include "media/base/audio_renderer_mixer_input.h"
 #include "media/base/audio_timestamp_helper.h"
 
 namespace media {
@@ -23,8 +24,8 @@ enum { kPauseDelaySeconds = 10 };
 // lock.
 class AudioRendererMixer::UMAMaxValueTracker {
  public:
-  UMAMaxValueTracker(const UmaLogCallback& log_callback)
-      : log_callback_(log_callback), count_(0), max_count_(0) {}
+  UMAMaxValueTracker(UmaLogCallback log_callback)
+      : log_callback_(std::move(log_callback)), count_(0), max_count_(0) {}
 
   ~UMAMaxValueTracker() = default;
 
@@ -52,7 +53,7 @@ class AudioRendererMixer::UMAMaxValueTracker {
 
 AudioRendererMixer::AudioRendererMixer(const AudioParameters& output_params,
                                        scoped_refptr<AudioRendererSink> sink,
-                                       const UmaLogCallback& log_callback)
+                                       UmaLogCallback log_callback)
     : output_params_(output_params),
       audio_sink_(std::move(sink)),
       master_converter_(output_params, output_params, true),
@@ -60,7 +61,7 @@ AudioRendererMixer::AudioRendererMixer(const AudioParameters& output_params,
       last_play_time_(base::TimeTicks::Now()),
       // Initialize |playing_| to true since Start() results in an auto-play.
       playing_(true),
-      input_count_tracker_(new UMAMaxValueTracker(log_callback)) {
+      input_count_tracker_(new UMAMaxValueTracker(std::move(log_callback))) {
   DCHECK(audio_sink_);
   audio_sink_->Initialize(output_params, this);
   audio_sink_->Start();
@@ -73,7 +74,7 @@ AudioRendererMixer::~AudioRendererMixer() {
   // Ensure that all mixer inputs have removed themselves prior to destruction.
   DCHECK(master_converter_.empty());
   DCHECK(converters_.empty());
-  DCHECK_EQ(error_callbacks_.size(), 0U);
+  DCHECK(error_callbacks_.empty());
 }
 
 void AudioRendererMixer::AddMixerInput(const AudioParameters& input_params,
@@ -93,12 +94,11 @@ void AudioRendererMixer::AddMixerInput(const AudioParameters& input_params,
     if (converter == converters_.end()) {
       std::pair<AudioConvertersMap::iterator, bool> result =
           converters_.insert(std::make_pair(
-              input_sample_rate, base::WrapUnique(
+              input_sample_rate, std::make_unique<LoopbackAudioConverter>(
                                      // We expect all InputCallbacks to be
                                      // capable of handling arbitrary buffer
                                      // size requests, disabling FIFO.
-                                     new LoopbackAudioConverter(
-                                         input_params, output_params_, true))));
+                                     input_params, output_params_, true)));
       converter = result.first;
 
       // Add newly-created resampler as an input to the master mixer.
@@ -132,31 +132,23 @@ void AudioRendererMixer::RemoveMixerInput(
   input_count_tracker_->Decrement();
 }
 
-void AudioRendererMixer::AddErrorCallback(const base::Closure& error_cb) {
+void AudioRendererMixer::AddErrorCallback(AudioRendererMixerInput* input) {
   base::AutoLock auto_lock(lock_);
-  error_callbacks_.push_back(error_cb);
+  error_callbacks_.insert(input);
 }
 
-void AudioRendererMixer::RemoveErrorCallback(const base::Closure& error_cb) {
+void AudioRendererMixer::RemoveErrorCallback(AudioRendererMixerInput* input) {
   base::AutoLock auto_lock(lock_);
-  for (auto it = error_callbacks_.begin(); it != error_callbacks_.end(); ++it) {
-    if (it->Equals(error_cb)) {
-      error_callbacks_.erase(it);
-      return;
-    }
-  }
-
-  // An error callback should always exist when called.
-  NOTREACHED();
-}
-
-OutputDeviceInfo AudioRendererMixer::GetOutputDeviceInfo() {
-  DVLOG(1) << __func__;
-  return audio_sink_->GetOutputDeviceInfo();
+  error_callbacks_.erase(input);
 }
 
 bool AudioRendererMixer::CurrentThreadIsRenderingThread() {
   return audio_sink_->CurrentThreadIsRenderingThread();
+}
+
+void AudioRendererMixer::SetPauseDelayForTesting(base::TimeDelta delay) {
+  base::AutoLock auto_lock(lock_);
+  pause_delay_ = delay;
 }
 
 int AudioRendererMixer::Render(base::TimeDelta delay,
@@ -186,8 +178,8 @@ int AudioRendererMixer::Render(base::TimeDelta delay,
 void AudioRendererMixer::OnRenderError() {
   // Call each mixer input and signal an error.
   base::AutoLock auto_lock(lock_);
-  for (const auto& cb : error_callbacks_)
-    cb.Run();
+  for (auto* input : error_callbacks_)
+    input->OnRenderError();
 }
 
 }  // namespace media

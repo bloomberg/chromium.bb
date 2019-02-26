@@ -38,12 +38,12 @@ KURL StripFragmentIdentifier(const KURL& url) {
 }
 
 String SourceMapUrlFromResponse(const ResourceResponse& response) {
-  String source_map_url = response.HttpHeaderField(HTTPNames::SourceMap);
+  String source_map_url = response.HttpHeaderField(http_names::kSourceMap);
   if (!source_map_url.IsEmpty())
     return source_map_url;
 
   // Try to get deprecated header.
-  return response.HttpHeaderField(HTTPNames::X_SourceMap);
+  return response.HttpHeaderField(http_names::kXSourceMap);
 }
 
 }  // namespace
@@ -89,6 +89,16 @@ ScriptSourceCode::ScriptSourceCode(ScriptStreamer* streamer,
       source_location_type_(ScriptSourceLocationType::kExternalFile) {
   DCHECK_EQ(!streamer, reason != ScriptStreamer::NotStreamingReason::kInvalid);
 }
+
+ScriptSourceCode::ScriptSourceCode(const String& source,
+                                   SingleCachedMetadataHandler* cache_handler,
+                                   const KURL& url)
+    : source_(TreatNullSourceAsEmpty(ParkableString(source.Impl()))),
+      cache_handler_(cache_handler),
+      not_streaming_reason_(ScriptStreamer::kWorkerTopLevelScript),
+      url_(url),
+      start_position_(TextPosition::MinimumPosition()),
+      source_location_type_(ScriptSourceLocationType::kUnknown) {}
 
 ScriptSourceCode::~ScriptSourceCode() = default;
 

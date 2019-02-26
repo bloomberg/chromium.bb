@@ -22,7 +22,7 @@
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/render_widget_host_iterator.h"
 #include "content/public/browser/web_contents.h"
-#include "content/public/common/browser_side_navigation_policy.h"
+#include "content/public/common/navigation_policy.h"
 #include "content/public/test/browser_side_navigation_test_utils.h"
 #include "content/public/test/mock_render_process_host.h"
 #include "content/public/test/test_browser_context.h"
@@ -35,7 +35,7 @@
 #include "content/test/test_web_contents.h"
 #include "net/base/network_change_notifier.h"
 #include "ui/base/material_design/material_design_controller.h"
-#include "ui/base/test/material_design_controller_test_api.h"
+#include "ui/events/devices/input_device_manager.h"
 
 #if defined(OS_ANDROID)
 #include "ui/android/dummy_screen_android.h"
@@ -48,6 +48,7 @@
 
 #if defined(USE_AURA)
 #include "ui/aura/test/aura_test_helper.h"
+#include "ui/aura/test/aura_test_utils.h"
 #include "ui/compositor/test/context_factories_for_test.h"
 #include "ui/wm/core/default_activation_client.h"
 #endif
@@ -122,10 +123,10 @@ RenderViewHostTester* RenderViewHostTester::For(RenderViewHost* host) {
 }
 
 // static
-bool RenderViewHostTester::TestOnMessageReceived(RenderViewHost* rvh,
-                                                 const IPC::Message& msg) {
-  return static_cast<RenderViewHostImpl*>(rvh)->GetWidget()->OnMessageReceived(
-      msg);
+void RenderViewHostTester::SimulateFirstPaint(RenderViewHost* rvh) {
+  static_cast<RenderViewHostImpl*>(rvh)
+      ->GetWidget()
+      ->OnFirstVisuallyNonEmptyPaint();
 }
 
 // static
@@ -161,6 +162,9 @@ RenderViewHostTestEnabler::RenderViewHostTestEnabler()
   if (base::ThreadTaskRunnerHandle::IsSet())
     ui::WindowResizeHelperMac::Get()->Init(base::ThreadTaskRunnerHandle::Get());
 #endif  // OS_MACOSX
+#if defined(USE_AURA)
+  input_device_client_ = aura::test::CreateTestInputDeviceManager();
+#endif
 }
 
 RenderViewHostTestEnabler::~RenderViewHostTestEnabler() {
@@ -267,9 +271,6 @@ void RenderViewHostTestHarness::SetUp() {
   // tests.
   network_change_notifier_.reset(net::NetworkChangeNotifier::CreateMock());
 
-  // ContentTestSuiteBase might have already initialized
-  // MaterialDesignController in unit_tests suite.
-  ui::test::MaterialDesignControllerTestAPI::Uninitialize();
   ui::MaterialDesignController::Initialize();
 
   rvh_test_enabler_.reset(new RenderViewHostTestEnabler);

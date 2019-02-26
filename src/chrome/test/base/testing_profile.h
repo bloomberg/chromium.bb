@@ -93,14 +93,6 @@ class TestingProfile : public Profile {
 
     // Adds a testing factory to the TestingProfile. These testing factories
     // are applied before the ProfileKeyedServices are created.
-    // DEPRECATED: use TestingFactory version instead, see
-    // http://crbug.com/809610
-    void AddTestingFactory(
-        BrowserContextKeyedServiceFactory* service_factory,
-        BrowserContextKeyedServiceFactory::TestingFactoryFunction function);
-
-    // Adds a testing factory to the TestingProfile. These testing factories
-    // are applied before the ProfileKeyedServices are created.
     void AddTestingFactory(
         BrowserContextKeyedServiceFactory* service_factory,
         BrowserContextKeyedServiceFactory::TestingFactory testing_factory);
@@ -249,7 +241,6 @@ class TestingProfile : public Profile {
 
   // content::BrowserContext
   base::FilePath GetPath() const override;
-  base::FilePath GetCachePath() const override;
 #if !defined(OS_ANDROID)
   std::unique_ptr<content::ZoomLevelDelegate> CreateZoomLevelDelegate(
       const base::FilePath& partition_path) override;
@@ -345,10 +336,12 @@ class TestingProfile : public Profile {
       const base::FilePath& relative_partition_path) override;
 
 #if defined(OS_CHROMEOS)
-  void ChangeAppLocale(const std::string&, AppLocaleChangedVia) override {}
+  void ChangeAppLocale(const std::string&, AppLocaleChangedVia) override;
   void OnLogin() override {}
   void InitChromeOSPreferences() override {}
   chromeos::ScopedCrosSettingsTestHelper* ScopedCrosSettingsTestHelper();
+
+  base::Optional<std::string> requested_locale() { return requested_locale_; }
 #endif  // defined(OS_CHROMEOS)
 
   // Schedules a task on the history backend and runs a nested loop until the
@@ -458,6 +451,8 @@ class TestingProfile : public Profile {
 #if defined(OS_CHROMEOS)
   std::unique_ptr<chromeos::ScopedCrosSettingsTestHelper>
       scoped_cros_settings_test_helper_;
+
+  base::Optional<std::string> requested_locale_;
 #endif  // defined(OS_CHROMEOS)
 
   std::unique_ptr<policy::PolicyService> policy_service_;

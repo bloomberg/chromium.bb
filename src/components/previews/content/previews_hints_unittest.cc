@@ -4,12 +4,17 @@
 
 #include "components/previews/content/previews_hints.h"
 
+#include <string>
+
+#include "base/command_line.h"
+#include "base/files/file_util.h"
 #include "base/files/scoped_temp_dir.h"
 #include "base/test/metrics/histogram_tester.h"
 #include "base/test/scoped_feature_list.h"
-#include "components/optimization_guide/optimization_guide_service_observer.h"
+#include "components/optimization_guide/hints_component_info.h"
 #include "components/optimization_guide/proto/hints.pb.h"
 #include "components/previews/core/previews_features.h"
+#include "components/previews/core/previews_switches.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "url/gurl.h"
 
@@ -30,18 +35,18 @@ class TestHostFilter : public previews::HostFilter {
 
 class PreviewsHintsTest : public testing::Test {
  public:
-  explicit PreviewsHintsTest() : previews_hints_(nullptr) {}
+  PreviewsHintsTest() : previews_hints_(nullptr) {}
 
   ~PreviewsHintsTest() override {}
 
   void SetUp() override { ASSERT_TRUE(temp_dir_.CreateUniqueTempDir()); }
 
   void ParseConfig(const optimization_guide::proto::Configuration& config) {
-    optimization_guide::ComponentInfo info(
+    optimization_guide::HintsComponentInfo info(
         base::Version("1.0"),
         temp_dir_.GetPath().Append(FILE_PATH_LITERAL("somefile.pb")));
-    previews_hints_ = PreviewsHints::CreateFromConfig(config, info);
-    previews_hints_->Initialize();
+    ASSERT_NO_FATAL_FAILURE(WriteConfigToFile(config, info.path));
+    previews_hints_ = PreviewsHints::CreateFromHintsComponent(info);
   }
 
   PreviewsHints* previews_hints() { return previews_hints_.get(); }
@@ -51,6 +56,15 @@ class PreviewsHintsTest : public testing::Test {
   }
 
  private:
+  void WriteConfigToFile(const optimization_guide::proto::Configuration& config,
+                         const base::FilePath& filePath) {
+    std::string serialized_config;
+    ASSERT_TRUE(config.SerializeToString(&serialized_config));
+    ASSERT_EQ(static_cast<int32_t>(serialized_config.length()),
+              base::WriteFile(filePath, serialized_config.data(),
+                              serialized_config.length()));
+  }
+
   base::ScopedTempDir temp_dir_;
   std::unique_ptr<PreviewsHints> previews_hints_;
 };
@@ -178,6 +192,22 @@ TEST_F(PreviewsHintsTest, IsBlacklisted) {
                                              PreviewsType::LITE_PAGE_REDIRECT));
 }
 
+TEST_F(PreviewsHintsTest, IgnoreLitePageRedirectBlacklist) {
+  std::unique_ptr<PreviewsHints> previews_hints =
+      PreviewsHints::CreateForTesting(
+          std::make_unique<TestHostFilter>("black.com"));
+
+  base::CommandLine::ForCurrentProcess()->AppendSwitch(
+      switches::kIgnoreLitePageRedirectOptimizationBlacklist);
+
+  EXPECT_FALSE(previews_hints->IsBlacklisted(GURL("https://black.com/path"),
+                                             PreviewsType::LOFI));
+  EXPECT_FALSE(previews_hints->IsBlacklisted(GURL("https://black.com/path"),
+                                             PreviewsType::LITE_PAGE_REDIRECT));
+  EXPECT_FALSE(previews_hints->IsBlacklisted(GURL("https://nonblack.com"),
+                                             PreviewsType::LITE_PAGE_REDIRECT));
+}
+
 TEST_F(PreviewsHintsTest, IsBlacklistedFromConfig) {
   base::test::ScopedFeatureList scoped_list;
   scoped_list.InitAndEnableFeature(features::kLitePageServerPreviews);
@@ -300,14 +330,47 @@ TEST_F(PreviewsHintsTest, IsWhitelistedOutParams) {
   resource_hint1->set_loading_optimization_type(
       optimization_guide::proto::LOADING_BLOCK_RESOURCE);
   resource_hint1->set_resource_pattern("default_resource.js");
+  // Page hint for "/has_max_ect_trigger/"
+  optimization_guide::proto::PageHint* page_hint2 = hint1->add_page_hints();
+  page_hint2->set_page_pattern("/has_max_ect_trigger/");
+  page_hint2->set_max_ect_trigger(
+      optimization_guide::proto::EffectiveConnectionType::
+          EFFECTIVE_CONNECTION_TYPE_4G);
+  optimization_guide::proto::Optimization*
+      optimization_without_inflation_percent =
+          page_hint2->add_whitelisted_optimizations();
+  optimization_without_inflation_percent->set_optimization_type(
+      optimization_guide::proto::RESOURCE_LOADING);
+  optimization_guide::proto::ResourceLoadingHint* resource_hint2 =
+      optimization_without_inflation_percent->add_resource_loading_hints();
+  resource_hint2->set_loading_optimization_type(
+      optimization_guide::proto::LOADING_BLOCK_RESOURCE);
+  resource_hint2->set_resource_pattern("default_resource.js");
   ParseConfig(config);
 
   // Verify optimization providing inflation_percent.
   int inflation_percent = 0;
+  net::EffectiveConnectionType ect_threshold =
+      net::EffectiveConnectionType::EFFECTIVE_CONNECTION_TYPE_UNKNOWN;
   EXPECT_TRUE(previews_hints()->IsWhitelisted(
       GURL("https://www.somedomain.org/has_inflation_percent/"),
-      PreviewsType::RESOURCE_LOADING_HINTS, &inflation_percent));
+      PreviewsType::RESOURCE_LOADING_HINTS, &inflation_percent,
+      &ect_threshold));
   EXPECT_EQ(55, inflation_percent);
+  EXPECT_EQ(net::EffectiveConnectionType::EFFECTIVE_CONNECTION_TYPE_UNKNOWN,
+            ect_threshold);
+
+  // Verify page hint providing ECT trigger.
+  inflation_percent = 0;
+  ect_threshold =
+      net::EffectiveConnectionType::EFFECTIVE_CONNECTION_TYPE_UNKNOWN;
+  EXPECT_TRUE(previews_hints()->IsWhitelisted(
+      GURL("https://www.somedomain.org/has_max_ect_trigger/"),
+      PreviewsType::RESOURCE_LOADING_HINTS, &inflation_percent,
+      &ect_threshold));
+  EXPECT_EQ(0, inflation_percent);
+  EXPECT_EQ(net::EffectiveConnectionType::EFFECTIVE_CONNECTION_TYPE_4G,
+            ect_threshold);
 }
 
 TEST_F(PreviewsHintsTest,
@@ -329,9 +392,11 @@ TEST_F(PreviewsHintsTest,
   ParseConfig(config);
 
   int inflation_percent = 0;
+  net::EffectiveConnectionType ect_threshold =
+      net::EffectiveConnectionType::EFFECTIVE_CONNECTION_TYPE_UNKNOWN;
   EXPECT_TRUE(previews_hints()->IsWhitelisted(
       GURL("https://www.somedomain.org/has_noscript/"), PreviewsType::NOSCRIPT,
-      &inflation_percent));
+      &inflation_percent, &ect_threshold));
 }
 
 TEST_F(PreviewsHintsTest, IsWhitelistedForExperimentalPreview) {
@@ -346,6 +411,9 @@ TEST_F(PreviewsHintsTest, IsWhitelistedForExperimentalPreview) {
   // Page hint for "/experimental_preview/"
   optimization_guide::proto::PageHint* page_hint1 = hint1->add_page_hints();
   page_hint1->set_page_pattern("/experimental_preview/");
+  page_hint1->set_max_ect_trigger(
+      optimization_guide::proto::EffectiveConnectionType::
+          EFFECTIVE_CONNECTION_TYPE_3G);
   // First add experimental PageHint optimization.
   optimization_guide::proto::Optimization* experimental_optimization =
       page_hint1->add_whitelisted_optimizations();
@@ -378,11 +446,16 @@ TEST_F(PreviewsHintsTest, IsWhitelistedForExperimentalPreview) {
 
     // Verify default resource hint whitelisted (via inflation_percent).
     int inflation_percent = 0;
+    net::EffectiveConnectionType ect_threshold =
+        net::EffectiveConnectionType::EFFECTIVE_CONNECTION_TYPE_UNKNOWN;
     EXPECT_TRUE(previews_hints()->IsWhitelisted(
         GURL("https://www.somedomain.org/experimental_preview/"
              "experimental_resource.js"),
-        PreviewsType::RESOURCE_LOADING_HINTS, &inflation_percent));
+        PreviewsType::RESOURCE_LOADING_HINTS, &inflation_percent,
+        &ect_threshold));
     EXPECT_EQ(33, inflation_percent);
+    EXPECT_EQ(net::EffectiveConnectionType::EFFECTIVE_CONNECTION_TYPE_3G,
+              ect_threshold);
 
     // Verify that the experimental optimization was not added when it was
     // disabled.
@@ -403,11 +476,16 @@ TEST_F(PreviewsHintsTest, IsWhitelistedForExperimentalPreview) {
     ParseConfig(config);
 
     int inflation_percent = 0;
+    net::EffectiveConnectionType ect_threshold =
+        net::EffectiveConnectionType::EFFECTIVE_CONNECTION_TYPE_2G;
     EXPECT_TRUE(previews_hints()->IsWhitelisted(
         GURL("https://www.somedomain.org/experimental_preview/"
              "experimental_resource.js"),
-        PreviewsType::RESOURCE_LOADING_HINTS, &inflation_percent));
+        PreviewsType::RESOURCE_LOADING_HINTS, &inflation_percent,
+        &ect_threshold));
     EXPECT_EQ(99, inflation_percent);
+    EXPECT_EQ(net::EffectiveConnectionType::EFFECTIVE_CONNECTION_TYPE_3G,
+              ect_threshold);
 
     // Verify that the second optimization was not added when the experimental
     // optimization was enabled.

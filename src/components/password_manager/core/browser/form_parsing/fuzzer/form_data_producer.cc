@@ -4,6 +4,9 @@
 
 #include "components/password_manager/core/browser/form_parsing/fuzzer/form_data_producer.h"
 
+#include "base/strings/string_number_conversions.h"
+#include "base/strings/utf_string_conversions.h"
+#include "build/build_config.h"
 #include "components/autofill/core/common/form_field_data.h"
 #include "components/password_manager/core/browser/form_parsing/fuzzer/data_accessor.h"
 #include "url/gurl.h"
@@ -93,7 +96,14 @@ FormData GenerateWithDataAccessor(DataAccessor* accessor) {
         accessor->ConsumeString16(field_params[i].label_length);
     result.fields[i].name =
         accessor->ConsumeString16(field_params[i].name_length);
-    result.fields[i].id = accessor->ConsumeString16(field_params[i].id_length);
+    result.fields[i].name_attribute = result.fields[i].name;
+    result.fields[i].id_attribute =
+        accessor->ConsumeString16(field_params[i].id_length);
+#if defined(OS_IOS)
+    result.fields[i].unique_id = result.fields[i].id_attribute +
+                                 base::UTF8ToUTF16("-") +
+                                 base::NumberToString16(i);
+#endif
     if (field_params[i].same_value_field &&
         first_field_with_same_value != static_cast<int>(i)) {
       result.fields[i].value = result.fields[first_field_with_same_value].value;

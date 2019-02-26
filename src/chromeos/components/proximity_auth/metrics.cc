@@ -56,20 +56,6 @@ void RecordAuthProximityRollingRssi(int rolling_rssi) {
                            rolling_rssi);
 }
 
-void RecordAuthProximityTransmitPowerDelta(int transmit_power_delta) {
-  if (transmit_power_delta != kUnknownProximityValue)
-    transmit_power_delta = std::min(50, std::max(-100, transmit_power_delta));
-
-  base::UmaHistogramSparse("EasyUnlock.AuthProximity.TransmitPowerDelta",
-                           transmit_power_delta);
-}
-
-void RecordAuthProximityTimeSinceLastZeroRssi(
-    base::TimeDelta time_since_last_zero_rssi) {
-  UMA_HISTOGRAM_TIMES("EasyUnlock.AuthProximity.TimeSinceLastZeroRssi",
-                      time_since_last_zero_rssi);
-}
-
 void RecordAuthProximityRemoteDeviceModelHash(const std::string& device_model) {
   base::UmaHistogramSparse("EasyUnlock.AuthProximity.RemoteDeviceModelHash",
                            HashDeviceModelName(device_model));

@@ -20,7 +20,8 @@
 // spend time to do that?
 
 #include <stddef.h>
-#include <stdint.h>
+
+#include <cstdint>
 
 #include "net/third_party/http2/decoder/decode_buffer.h"
 #include "net/third_party/http2/hpack/decoder/hpack_block_decoder.h"

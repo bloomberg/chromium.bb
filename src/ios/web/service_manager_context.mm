@@ -31,9 +31,9 @@
 #include "services/service_manager/connect_params.h"
 #include "services/service_manager/embedder/manifest_utils.h"
 #include "services/service_manager/public/cpp/connector.h"
+#include "services/service_manager/public/cpp/constants.h"
 #include "services/service_manager/public/cpp/service.h"
 #include "services/service_manager/public/mojom/service.mojom.h"
-#include "services/service_manager/runner/common/client_util.h"
 #include "services/service_manager/service_manager.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
@@ -133,7 +133,8 @@ class ServiceManagerContext::InProcessServiceManagerContext
     packaged_services_service.Bind(std::move(packaged_services_service_info));
     service_manager_->RegisterService(
         service_manager::Identity(mojom::kPackagedServicesServiceName,
-                                  service_manager::mojom::kRootUserID),
+                                  service_manager::kSystemInstanceGroup,
+                                  base::Token{}, base::Token::CreateRandom()),
         std::move(packaged_services_service), nullptr);
   }
 
@@ -150,7 +151,6 @@ class ServiceManagerContext::InProcessServiceManagerContext
 
 ServiceManagerContext::ServiceManagerContext() {
   service_manager::mojom::ServiceRequest packaged_services_request;
-  DCHECK(!service_manager::ServiceManagerIsRemote());
   std::unique_ptr<BuiltinManifestProvider> manifest_provider =
       std::make_unique<BuiltinManifestProvider>();
 
@@ -173,6 +173,9 @@ ServiceManagerContext::ServiceManagerContext() {
   packaged_services_connection_ = ServiceManagerConnection::Create(
       std::move(packaged_services_request),
       base::CreateSingleThreadTaskRunnerWithTraits({WebThread::IO}));
+  packaged_services_connection_->SetDefaultServiceRequestHandler(
+      base::BindRepeating(&ServiceManagerContext::OnUnhandledServiceRequest,
+                          weak_ptr_factory_.GetWeakPtr()));
 
   service_manager::mojom::ServicePtr root_browser_service;
   ServiceManagerConnection::Set(ServiceManagerConnection::Create(
@@ -181,9 +184,10 @@ ServiceManagerContext::ServiceManagerContext() {
   auto* browser_connection = ServiceManagerConnection::Get();
 
   service_manager::mojom::PIDReceiverPtr pid_receiver;
-  packaged_services_connection_->GetConnector()->StartService(
+  packaged_services_connection_->GetConnector()->RegisterServiceInstance(
       service_manager::Identity(mojom::kBrowserServiceName,
-                                service_manager::mojom::kRootUserID),
+                                service_manager::kSystemInstanceGroup,
+                                base::Token{}, base::Token::CreateRandom()),
       std::move(root_browser_service), mojo::MakeRequest(&pid_receiver));
   pid_receiver->SetPID(base::GetCurrentProcId());
 
@@ -211,6 +215,27 @@ ServiceManagerContext::~ServiceManagerContext() {
     in_process_context_->ShutDown();
   if (ServiceManagerConnection::Get())
     ServiceManagerConnection::Destroy();
+}
+
+void ServiceManagerContext::OnUnhandledServiceRequest(
+    const std::string& service_name,
+    service_manager::mojom::ServiceRequest request) {
+  std::unique_ptr<service_manager::Service> service =
+      GetWebClient()->HandleServiceRequest(service_name, std::move(request));
+  if (!service) {
+    LOG(ERROR) << "Ignoring unhandled request for service: " << service_name;
+    return;
+  }
+
+  auto* raw_service = service.get();
+  service->set_termination_closure(
+      base::BindOnce(&ServiceManagerContext::OnServiceQuit,
+                     base::Unretained(this), raw_service));
+  running_services_.emplace(raw_service, std::move(service));
+}
+
+void ServiceManagerContext::OnServiceQuit(service_manager::Service* service) {
+  running_services_.erase(service);
 }
 
 }  // namespace web

@@ -11,7 +11,6 @@
 #include "base/logging.h"
 #include "build/build_config.h"
 #include "chrome/browser/ui/omnibox/alternate_nav_infobar_delegate.h"
-#include "chrome/browser/ui/views_mode_controller.h"
 #include "ui/base/window_open_disposition.h"
 #include "ui/gfx/text_elider.h"
 #include "ui/views/controls/label.h"

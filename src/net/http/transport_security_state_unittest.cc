@@ -10,6 +10,7 @@
 #include <vector>
 
 #include "base/base64.h"
+#include "base/bind_helpers.h"
 #include "base/files/file_path.h"
 #include "base/json/json_reader.h"
 #include "base/metrics/field_trial.h"
@@ -556,20 +557,20 @@ TEST_F(TransportSecurityStateTest, Expiration) {
 
   state.AddHPKP("example1.test", older, false, GetSampleSPKIHashes(),
                 report_uri);
-  EXPECT_TRUE(TransportSecurityState::PKPStateIterator(state).HasNext());
+  EXPECT_TRUE(state.has_dynamic_pkp_state());
   EXPECT_FALSE(state.HasPublicKeyPins("example1.test"));
   // Querying |state| for a domain should flush out expired entries.
-  EXPECT_FALSE(TransportSecurityState::PKPStateIterator(state).HasNext());
+  EXPECT_FALSE(state.has_dynamic_pkp_state());
 
   state.AddHSTS("example1.test", older, false);
   state.AddHPKP("example1.test", older, false, GetSampleSPKIHashes(),
                 report_uri);
   EXPECT_TRUE(TransportSecurityState::STSStateIterator(state).HasNext());
-  EXPECT_TRUE(TransportSecurityState::PKPStateIterator(state).HasNext());
+  EXPECT_TRUE(state.has_dynamic_pkp_state());
   EXPECT_FALSE(state.ShouldSSLErrorsBeFatal("example1.test"));
   // Querying |state| for a domain should flush out expired entries.
   EXPECT_FALSE(TransportSecurityState::STSStateIterator(state).HasNext());
-  EXPECT_FALSE(TransportSecurityState::PKPStateIterator(state).HasNext());
+  EXPECT_FALSE(state.has_dynamic_pkp_state());
 
   // Test that HSTS can outlive HPKP.
   state.AddHSTS("example1.test", expiry, false);
@@ -731,18 +732,18 @@ TEST_F(TransportSecurityStateTest, DeleteAllDynamicDataSince) {
                 GetSampleSPKIHashes(), GURL());
   state.AddExpectCT("example.com", expiry, true, GURL());
 
-  state.DeleteAllDynamicDataSince(expiry);
+  state.DeleteAllDynamicDataSince(expiry, base::DoNothing());
   EXPECT_TRUE(state.ShouldUpgradeToSSL("example.com"));
   EXPECT_TRUE(state.HasPublicKeyPins("example.com"));
   EXPECT_TRUE(state.GetDynamicExpectCTState("example.com", &expect_ct_state));
-  state.DeleteAllDynamicDataSince(older);
+  state.DeleteAllDynamicDataSince(older, base::DoNothing());
   EXPECT_FALSE(state.ShouldUpgradeToSSL("example.com"));
   EXPECT_FALSE(state.HasPublicKeyPins("example.com"));
   EXPECT_FALSE(state.GetDynamicExpectCTState("example.com", &expect_ct_state));
 
   // Dynamic data in |state| should be empty now.
   EXPECT_FALSE(TransportSecurityState::STSStateIterator(state).HasNext());
-  EXPECT_FALSE(TransportSecurityState::PKPStateIterator(state).HasNext());
+  EXPECT_FALSE(state.has_dynamic_pkp_state());
   EXPECT_FALSE(TransportSecurityState::ExpectCTStateIterator(state).HasNext());
 }
 

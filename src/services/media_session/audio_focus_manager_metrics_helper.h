@@ -65,7 +65,7 @@ class AudioFocusManagerMetricsHelper {
 
   bool ShouldRecordMetrics() const;
 
-  const std::string& source_name_;
+  std::string source_name_;
 
   base::HistogramBase* const request_source_histogram_;
   base::HistogramBase* const focus_type_histogram_;

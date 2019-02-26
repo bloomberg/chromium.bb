@@ -13,8 +13,8 @@
 #include "base/files/file_path.h"
 #include "base/macros.h"
 #include "components/keyed_service/core/keyed_service.h"
+#include "components/signin/core/browser/account_consistency_method.h"
 #include "components/signin/core/browser/account_reconcilor.h"
-#include "components/signin/core/browser/profile_management_switches.h"
 #include "components/signin/core/browser/signin_header_helper.h"
 #include "google_apis/gaia/gaia_auth_consumer.h"
 
@@ -23,9 +23,12 @@ class AccountTrackerService;
 class GaiaAuthFetcher;
 class GoogleServiceAuthError;
 class SigninClient;
-class SigninManager;
 class ProfileOAuth2TokenService;
 class Profile;
+
+namespace identity {
+class IdentityManager;
+}
 
 // Exposed for testing.
 extern const int kDiceTokenFetchTimeoutSeconds;
@@ -54,8 +57,8 @@ class DiceResponseHandler : public KeyedService {
   static DiceResponseHandler* GetForProfile(Profile* profile);
 
   DiceResponseHandler(SigninClient* signin_client,
-                      SigninManager* signin_manager,
                       ProfileOAuth2TokenService* profile_oauth2_token_service,
+                      identity::IdentityManager* identity_manager,
                       AccountTrackerService* account_tracker_service,
                       AccountReconcilor* account_reconcilor,
                       AboutSigninInternals* about_signin_internals,
@@ -152,9 +155,9 @@ class DiceResponseHandler : public KeyedService {
   void OnTokenExchangeFailure(DiceTokenFetcher* token_fetcher,
                               const GoogleServiceAuthError& error);
 
-  SigninManager* signin_manager_;
   SigninClient* signin_client_;
   ProfileOAuth2TokenService* token_service_;
+  identity::IdentityManager* identity_manager_;
   AccountTrackerService* account_tracker_service_;
   AccountReconcilor* account_reconcilor_;
   AboutSigninInternals* about_signin_internals_;

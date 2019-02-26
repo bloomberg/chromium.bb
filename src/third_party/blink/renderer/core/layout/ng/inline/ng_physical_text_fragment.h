@@ -10,12 +10,14 @@
 #include "third_party/blink/renderer/core/layout/ng/ng_physical_fragment.h"
 #include "third_party/blink/renderer/platform/fonts/ng_text_fragment_paint_info.h"
 #include "third_party/blink/renderer/platform/fonts/shaping/shape_result.h"
+#include "third_party/blink/renderer/platform/fonts/shaping/shape_result_view.h"
 #include "third_party/blink/renderer/platform/wtf/text/string_view.h"
 #include "third_party/blink/renderer/platform/wtf/text/wtf_string.h"
 
 namespace blink {
 
 struct NGPhysicalOffsetRect;
+class NGTextFragmentBuilder;
 
 enum class AdjustMidCluster;
 
@@ -57,17 +59,7 @@ class CORE_EXPORT NGPhysicalTextFragment final : public NGPhysicalFragment {
     // enough to store.
   };
 
-  NGPhysicalTextFragment(LayoutObject* layout_object,
-                         const ComputedStyle& style,
-                         NGStyleVariant style_variant,
-                         NGTextType text_type,
-                         const String& text,
-                         unsigned start_offset,
-                         unsigned end_offset,
-                         NGPhysicalSize size,
-                         NGLineOrientation line_orientation,
-                         NGTextEndEffect end_effect,
-                         scoped_refptr<const ShapeResult> shape_result);
+  NGPhysicalTextFragment(NGTextFragmentBuilder*);
 
   NGTextType TextType() const { return static_cast<NGTextType>(sub_type_); }
   // True if this is a generated text.
@@ -80,12 +72,14 @@ class CORE_EXPORT NGPhysicalTextFragment final : public NGPhysicalFragment {
     return IsLineBreak() || TextType() == kFlowControl;
   }
 
+  const ComputedStyle& Style() const;
+
   unsigned Length() const { return end_offset_ - start_offset_; }
   StringView Text() const { return StringView(text_, start_offset_, Length()); }
   const String& TextContent() const { return text_; }
 
   // ShapeResult may be nullptr if |IsFlowControl()|.
-  const ShapeResult* TextShapeResult() const { return shape_result_.get(); }
+  const ShapeResultView* TextShapeResult() const { return shape_result_.get(); }
 
   // Start/end offset to the text of the block container.
   unsigned StartOffset() const { return start_offset_; }
@@ -110,11 +104,7 @@ class CORE_EXPORT NGPhysicalTextFragment final : public NGPhysicalFragment {
 
   // The visual bounding box that includes glpyh bounding box and CSS
   // properties, in local coordinates.
-  NGPhysicalOffsetRect SelfInkOverflow() const { return self_ink_overflow_; }
-
-  NGTextEndEffect EndEffect() const {
-    return static_cast<NGTextEndEffect>(end_effect_);
-  }
+  NGPhysicalOffsetRect SelfInkOverflow() const;
 
   // Create a new fragment that has part of the text of this fragment.
   // All other properties are the same as this fragment.
@@ -135,8 +125,8 @@ class CORE_EXPORT NGPhysicalTextFragment final : public NGPhysicalFragment {
   // Returns the text offset in the fragment placed closest to the given point.
   unsigned TextOffsetForPoint(const NGPhysicalOffset&) const;
 
-  UBiDiLevel BidiLevel() const override;
-  TextDirection ResolvedDirection() const override;
+  UBiDiLevel BidiLevel() const;
+  TextDirection ResolvedDirection() const;
 
   // Compute line-relative coordinates for given offsets, this is not
   // flow-relative:
@@ -146,13 +136,26 @@ class CORE_EXPORT NGPhysicalTextFragment final : public NGPhysicalFragment {
       unsigned end_offset) const;
 
  private:
+  // For use by TrimText only
+  NGPhysicalTextFragment(const NGPhysicalTextFragment& source,
+                         unsigned start_offset,
+                         unsigned end_offset,
+                         scoped_refptr<const ShapeResultView> shape_result);
+
+  struct RareData {
+    NGPhysicalOffsetRect self_ink_overflow_;
+    scoped_refptr<const ComputedStyle> style_;  // Used only for ellipsis.
+  };
+  RareData* EnsureRareData();
+
   LayoutUnit InlinePositionForOffset(unsigned offset,
                                      LayoutUnit (*round)(float),
                                      AdjustMidCluster) const;
 
   NGPhysicalOffsetRect ConvertToLocal(const LayoutRect&) const;
 
-  NGPhysicalOffsetRect ComputeSelfInkOverflow() const;
+  void UpdateSelfInkOverflow();
+  void ClearSelfInkOverflow();
 
   // The text of NGInlineNode; i.e., of a parent block. The text for this
   // fragment is a substring(start_offset_, end_offset_) of this string.
@@ -161,12 +164,9 @@ class CORE_EXPORT NGPhysicalTextFragment final : public NGPhysicalFragment {
   // Start and end offset of the parent block text.
   const unsigned start_offset_;
   const unsigned end_offset_;
-  NGPhysicalOffsetRect self_ink_overflow_;
-  const scoped_refptr<const ShapeResult> shape_result_;
+  const scoped_refptr<const ShapeResultView> shape_result_;
 
-  const unsigned line_orientation_ : 2;  // NGLineOrientation
-  const unsigned end_effect_ : 1;        // NGTextEndEffect
-  const unsigned is_anonymous_text_ : 1;
+  std::unique_ptr<RareData> rare_data_;
 };
 
 DEFINE_TYPE_CASTS(NGPhysicalTextFragment,

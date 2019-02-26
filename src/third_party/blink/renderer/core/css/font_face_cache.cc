@@ -51,8 +51,10 @@ void FontFaceCache::AddFontFace(FontFace* font_face, bool css_connected) {
   SegmentedFacesByFamily::AddResult capabilities_result =
       segmented_faces_.insert(font_face->family(), nullptr);
 
-  if (capabilities_result.is_new_entry)
-    capabilities_result.stored_value->value = new CapabilitiesSet();
+  if (capabilities_result.is_new_entry) {
+    capabilities_result.stored_value->value =
+        MakeGarbageCollected<CapabilitiesSet>();
+  }
 
   DCHECK(font_face->GetFontSelectionCapabilities().IsValid() &&
          !font_face->GetFontSelectionCapabilities().IsHashTableDeletedValue());
@@ -156,8 +158,8 @@ CSSSegmentedFontFace* FontFaceCache::Get(
   // Either add or retrieve a cache entry in the selection query cache for the
   // specified family.
   FontSelectionQueryCache::AddResult cache_entry_for_family_add =
-      font_selection_query_cache_.insert(family,
-                                         new FontSelectionQueryResult());
+      font_selection_query_cache_.insert(
+          family, MakeGarbageCollected<FontSelectionQueryResult>());
   auto cache_entry_for_family = cache_entry_for_family_add.stored_value->value;
 
   const FontSelectionRequest& request =

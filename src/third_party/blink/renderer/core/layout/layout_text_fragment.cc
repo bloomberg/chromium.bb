@@ -28,6 +28,7 @@
 #include "third_party/blink/renderer/core/dom/text.h"
 #include "third_party/blink/renderer/core/frame/local_frame_view.h"
 #include "third_party/blink/renderer/core/layout/hit_test_result.h"
+#include "third_party/blink/renderer/core/layout/ng/inline/layout_ng_text_fragment.h"
 #include "third_party/blink/renderer/core/layout/ng/inline/ng_offset_mapping.h"
 
 namespace blink {
@@ -43,19 +44,28 @@ LayoutTextFragment::LayoutTextFragment(Node* node,
       content_string_(str),
       first_letter_pseudo_element_(nullptr) {}
 
-LayoutTextFragment::LayoutTextFragment(Node* node, StringImpl* str)
-    : LayoutTextFragment(node, str, 0, str ? str->length() : 0) {}
-
 LayoutTextFragment::~LayoutTextFragment() {
   DCHECK(!first_letter_pseudo_element_);
 }
 
-LayoutTextFragment* LayoutTextFragment::CreateAnonymous(PseudoElement& pseudo,
-                                                        StringImpl* text,
-                                                        unsigned start,
-                                                        unsigned length) {
+LayoutTextFragment* LayoutTextFragment::Create(const ComputedStyle& style,
+                                               Node* node,
+                                               StringImpl* str,
+                                               int start_offset,
+                                               int length) {
+  if (RuntimeEnabledFeatures::LayoutNGEnabled() && !style.ForceLegacyLayout())
+    return new LayoutNGTextFragment(node, str, start_offset, length);
+  return new LayoutTextFragment(node, str, start_offset, length);
+}
+
+LayoutTextFragment* LayoutTextFragment::CreateAnonymous(
+    const ComputedStyle& style,
+    PseudoElement& pseudo,
+    StringImpl* text,
+    unsigned start,
+    unsigned length) {
   LayoutTextFragment* fragment =
-      new LayoutTextFragment(nullptr, text, start, length);
+      LayoutTextFragment::Create(style, nullptr, text, start, length);
   fragment->SetDocumentForAnonymous(&pseudo.GetDocument());
   if (length)
     pseudo.GetDocument().View()->IncrementVisuallyNonEmptyCharacterCount(
@@ -63,9 +73,11 @@ LayoutTextFragment* LayoutTextFragment::CreateAnonymous(PseudoElement& pseudo,
   return fragment;
 }
 
-LayoutTextFragment* LayoutTextFragment::CreateAnonymous(PseudoElement& pseudo,
-                                                        StringImpl* text) {
-  return CreateAnonymous(pseudo, text, 0, text ? text->length() : 0);
+LayoutTextFragment* LayoutTextFragment::CreateAnonymous(
+    const ComputedStyle& style,
+    PseudoElement& pseudo,
+    StringImpl* text) {
+  return CreateAnonymous(style, pseudo, text, 0, text ? text->length() : 0);
 }
 
 void LayoutTextFragment::WillBeDestroyed() {

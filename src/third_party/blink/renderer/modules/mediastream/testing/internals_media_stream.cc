@@ -13,7 +13,7 @@ ScriptPromise InternalsMediaStream::addFakeDevice(
     ScriptState* script_state,
     Internals&,
     const MediaDeviceInfo* device_info,
-    const MediaTrackConstraints& capabilities,
+    const MediaTrackConstraints*,
     const MediaStreamTrack* data_source) {
   ScriptPromiseResolver* resolver = ScriptPromiseResolver::Create(script_state);
   ScriptPromise promise = resolver->Promise();

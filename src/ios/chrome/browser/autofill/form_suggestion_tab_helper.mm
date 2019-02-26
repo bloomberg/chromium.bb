@@ -12,8 +12,6 @@
 #error "This file requires ARC support."
 #endif
 
-DEFINE_WEB_STATE_USER_DATA_KEY(FormSuggestionTabHelper);
-
 FormSuggestionTabHelper::~FormSuggestionTabHelper() = default;
 
 // static
@@ -28,9 +26,9 @@ void FormSuggestionTabHelper::CreateForWebState(
   }
 }
 
-id<FormInputAccessoryViewProvider>
+id<FormInputSuggestionsProvider>
 FormSuggestionTabHelper::GetAccessoryViewProvider() {
-  return controller_.accessoryViewProvider;
+  return controller_;
 }
 
 FormSuggestionTabHelper::FormSuggestionTabHelper(

@@ -173,7 +173,8 @@ void ContextualSuggestionsBridge::OnSuggestionsAvailable(
       Java_ContextualSuggestionsBridge_createContextualSuggestionsResult(
           env, ConvertUTF8ToJavaString(env, result.peek_text));
   Java_ContextualSuggestionsBridge_setPeekConditionsOnResult(
-      env, j_result, result.peek_conditions.page_scroll_percentage,
+      env, j_result, result.peek_conditions.confidence,
+      result.peek_conditions.page_scroll_percentage,
       result.peek_conditions.minimum_seconds_on_page,
       result.peek_conditions.maximum_number_of_peeks);
   for (auto& cluster : result.clusters) {

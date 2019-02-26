@@ -4,12 +4,13 @@
 // found in the LICENSE file.
 //
 
-// feature_support_util.cpp: Implementation of the code that helps the Android EGL loader
-// determine whether to use ANGLE or a native GLES driver.
+// feature_support_util.cpp: Helps Android EGL loader to determine whether to use ANGLE or a native
+// GLES driver.  Helps ANGLE know which work-arounds to use.
 
 #include "feature_support_util.h"
 #include <json/json.h>
 #include <string.h>
+#include <unistd.h>
 #include <fstream>
 #include <list>
 
@@ -17,26 +18,26 @@
 //{
 
 #if defined(ANDROID)
-#include <android/log.h>
+#    include <android/log.h>
 
 // Define ANGLE_FEATURE_UTIL_LOG_VERBOSE if you want ALOGV to output
 // ANGLE_FEATURE_UTIL_LOG_VERBOSE is automatically defined when is_debug = true
 
-#define ALOGE(...) __android_log_print(ANDROID_LOG_ERROR, "ANGLE", __VA_ARGS__)
-#define ALOGW(...) __android_log_print(ANDROID_LOG_WARN, "ANGLE", __VA_ARGS__)
-#define ALOGI(...) __android_log_print(ANDROID_LOG_INFO, "ANGLE", __VA_ARGS__)
-#define ALOGD(...) __android_log_print(ANDROID_LOG_DEBUG, "ANGLE", __VA_ARGS__)
-#ifdef ANGLE_FEATURE_UTIL_LOG_VERBOSE
-#define ALOGV(...) __android_log_print(ANDROID_LOG_VERBOSE, "ANGLE", __VA_ARGS__)
-#else
-#define ALOGV(...) ((void)0)
-#endif
+#    define ALOGE(...) __android_log_print(ANDROID_LOG_ERROR, "ANGLE", __VA_ARGS__)
+#    define ALOGW(...) __android_log_print(ANDROID_LOG_WARN, "ANGLE", __VA_ARGS__)
+#    define ALOGI(...) __android_log_print(ANDROID_LOG_INFO, "ANGLE", __VA_ARGS__)
+#    define ALOGD(...) __android_log_print(ANDROID_LOG_DEBUG, "ANGLE", __VA_ARGS__)
+#    ifdef ANGLE_FEATURE_UTIL_LOG_VERBOSE
+#        define ALOGV(...) __android_log_print(ANDROID_LOG_VERBOSE, "ANGLE", __VA_ARGS__)
+#    else
+#        define ALOGV(...) ((void)0)
+#    endif
 #else  // defined(ANDROID)
-#define ALOGE(...) printf(__VA_ARGS__);
-#define ALOGW(...) printf(__VA_ARGS__);
-#define ALOGI(...) printf(__VA_ARGS__);
-#define ALOGD(...) printf(__VA_ARGS__);
-#define ALOGV(...) printf(__VA_ARGS__);
+#    define ALOGE(...) printf(__VA_ARGS__);
+#    define ALOGW(...) printf(__VA_ARGS__);
+#    define ALOGI(...) printf(__VA_ARGS__);
+#    define ALOGD(...) printf(__VA_ARGS__);
+#    define ALOGV(...) printf(__VA_ARGS__);
 #endif  // defined(ANDROID)
 
 // JSON values are generally composed of either:
@@ -224,12 +225,10 @@ class Version
   public:
     Version(uint32_t major, uint32_t minor, uint32_t subminor, uint32_t patch)
         : mMajor(major), mMinor(minor), mSubminor(subminor), mPatch(patch), mWildcard(false)
-    {
-    }
+    {}
     Version(uint32_t major, uint32_t minor, uint32_t subminor)
         : mMajor(major), mMinor(minor), mSubminor(subminor), mWildcard(false)
-    {
-    }
+    {}
     Version(uint32_t major, uint32_t minor) : mMajor(major), mMinor(minor), mWildcard(false) {}
     Version(uint32_t major) : mMajor(major), mWildcard(false) {}
     Version() : mWildcard(true) {}
@@ -239,8 +238,7 @@ class Version
           mSubminor(toCopy.mSubminor),
           mPatch(toCopy.mPatch),
           mWildcard(toCopy.mWildcard)
-    {
-    }
+    {}
     ~Version() {}
     bool match(Version &toCheck)
     {
@@ -353,16 +351,13 @@ class Application
   public:
     Application(std::string name, Version &version, std::string intent)
         : mName(name), mVersion(version), mIntent(intent), mWildcard(false)
-    {
-    }
+    {}
     Application(std::string name, std::string intent)
         : mName(name), mVersion(), mIntent(intent), mWildcard(false)
-    {
-    }
+    {}
     Application(std::string name, Version &version)
         : mName(name), mVersion(version), mIntent(), mWildcard(false)
-    {
-    }
+    {}
     Application(std::string name) : mName(name), mVersion(), mIntent(), mWildcard(false) {}
     Application() : mName(), mVersion(), mIntent(), mWildcard(true) {}
     ~Application() {}
@@ -452,21 +447,17 @@ class GPU
   public:
     GPU(std::string vendor, uint32_t deviceId, Version &version)
         : mVendor(vendor), mDeviceId(IntegerPart(deviceId)), mVersion(version), mWildcard(false)
-    {
-    }
+    {}
     GPU(uint32_t deviceId, Version &version)
         : mVendor(), mDeviceId(IntegerPart(deviceId)), mVersion(version), mWildcard(false)
-    {
-    }
+    {}
     GPU(std::string vendor, uint32_t deviceId)
         : mVendor(vendor), mDeviceId(IntegerPart(deviceId)), mVersion(), mWildcard(false)
-    {
-    }
+    {}
     GPU(std::string vendor) : mVendor(vendor), mDeviceId(), mVersion(), mWildcard(false) {}
     GPU(uint32_t deviceId)
         : mVendor(), mDeviceId(IntegerPart(deviceId)), mVersion(), mWildcard(false)
-    {
-    }
+    {}
     GPU() : mVendor(), mDeviceId(), mVersion(), mWildcard(true) {}
     bool match(GPU &toCheck)
     {
@@ -565,12 +556,10 @@ class Device
   public:
     Device(std::string manufacturer, std::string model)
         : mManufacturer(manufacturer), mModel(model), mGpuList("GPU"), mWildcard(false)
-    {
-    }
+    {}
     Device(std::string manufacturer)
         : mManufacturer(manufacturer), mModel(), mGpuList("GPU"), mWildcard(false)
-    {
-    }
+    {}
     Device() : mManufacturer(), mModel(), mGpuList("GPU"), mWildcard(true) {}
     ~Device() {}
     void addGPU(GPU &gpu) { mGpuList.addItem(gpu); }
@@ -671,8 +660,7 @@ class Scenario
   public:
     Scenario(const char *appName, const char *deviceMfr, const char *deviceModel)
         : mApplication(Application(appName)), mDevice(Device(deviceMfr, deviceModel))
-    {
-    }
+    {}
     ~Scenario() {}
     void logScenario()
     {
@@ -704,8 +692,7 @@ class Rule
           mDevList("Device"),
           mAppChoice(appChoice),
           mAnswer(answer)
-    {
-    }
+    {}
     ~Rule() {}
     void addApp(Application &app) { mAppList.addItem(app); }
     void addDev(Device &dev) { mDevList.addItem(dev); }
@@ -740,8 +727,7 @@ class Rule
           mDevList("Device"),
           mAppChoice(false),
           mAnswer(false)
-    {
-    }
+    {}
 };
 
 // This encapsulates a list of Rules that Scenarios are matched against.  A Scenario is compared
@@ -805,29 +791,15 @@ class RuleList
 
         return answer;
     }
-    static RuleList *ReadRulesFromJsonFile()
+    static RuleList *ReadRulesFromJsonString(std::string jsonFileContents)
     {
         RuleList *rules = new RuleList;
 
         // Open the file and start parsing it:
         using namespace std;
-#ifdef READ_FROM_JSON_FILE
-        // FIXME/TODO: NEED TO GET THE FINAL LOCATION AND ENSURE THAT ANY APPLICATION CAN READ FROM
-        // THAT LOCATION.
-        ifstream ifs("/system/app/ANGLEPrebuilt/a4a_rules.json");
-        Json::Reader jReader;
-        Json::Value jTopLevelObject;
-        jReader.parse(ifs, jTopLevelObject);
-#else  // READ_FROM_JSON_FILE
-        // Embed the rules file contents into a string:
-        const char *s =
-#include "a4a_rules.json"
-            ;
-        std::string jsonFileContents = s;
         Json::Reader jReader;
         Json::Value jTopLevelObject;
         jReader.parse(jsonFileContents, jTopLevelObject);
-#endif  // READ_FROM_JSON_FILE
         Json::Value jRules = jTopLevelObject[kJsonRules];
         for (unsigned int i = 0; i < jRules.size(); i++)
         {
@@ -907,9 +879,17 @@ ANGLE_EXPORT bool ANGLEUseForApplication(const char *appName,
                                          ANGLEPreference appPreference)
 {
     Scenario scenario(appName, deviceMfr, deviceModel);
-    RuleList *rules = RuleList::ReadRulesFromJsonFile();
-    bool rtn        = false;
+    bool rtn = false;
     scenario.logScenario();
+
+    // #include the contents of the file into a string and then parse it:
+    using namespace std;
+    // Embed the rules file contents into a string:
+    const char *s =
+#include "a4a_rules.json"
+        ;
+    std::string jsonFileContents = s;
+    RuleList *rules              = RuleList::ReadRulesFromJsonString(jsonFileContents);
     rules->logRules();
 
     if (developerOption != ANGLE_NO_PREFERENCE)
@@ -924,6 +904,70 @@ ANGLE_EXPORT bool ANGLEUseForApplication(const char *appName,
     {
         rtn = rules->getAnswer(scenario);
     }
+    ALOGV("Application \"%s\" should %s ANGLE", appName, rtn ? "use" : "NOT use");
+    delete rules;
+    return rtn;
+}
+
+ANGLE_EXPORT bool ANGLEGetUtilityAPI(unsigned int *versionToUse)
+{
+    if (*versionToUse >= kFeatureVersion_LowestSupported)
+    {
+        if (*versionToUse <= kFeatureVersion_HighestSupported)
+        {
+            // This versionToUse is valid, and doesn't need to be changed.
+            return true;
+        }
+        else
+        {
+            // The versionToUse is greater than the highest version supported; change it to the
+            // highest version supported (caller will decide if it can use that version).
+            *versionToUse = kFeatureVersion_HighestSupported;
+            return true;
+        }
+    }
+    else
+    {
+        // The versionToUse is less than the lowest version supported, which is an error.
+        return false;
+    }
+}
+
+ANGLE_EXPORT bool AndroidUseANGLEForApplication(int rules_fd,
+                                                long rules_offset,
+                                                long rules_length,
+                                                const char *appName,
+                                                const char *deviceMfr,
+                                                const char *deviceModel)
+{
+    Scenario scenario(appName, deviceMfr, deviceModel);
+    bool rtn = false;
+    scenario.logScenario();
+
+    // Read the contents of the file into a string and then parse it:
+    if (rules_fd < 0)
+    {
+        ALOGW("Asked to read a non-open JSON file");
+        return rtn;
+    }
+    off_t fileSize       = rules_length;
+    off_t startOfContent = rules_offset;
+    // This is temporary magic--while there's extra stuff at the start of the file
+    // (so that it can be #include'd into the source code):
+    startOfContent += 8;
+    fileSize -= (8 + 7 + 2);
+    lseek(rules_fd, startOfContent, SEEK_SET);
+    char *buffer                 = new char[fileSize + 1];
+    ssize_t numBytesRead         = read(rules_fd, buffer, fileSize);
+    buffer[numBytesRead]         = '\0';
+    std::string jsonFileContents = std::string(buffer);
+    delete[] buffer;
+    RuleList *rules = RuleList::ReadRulesFromJsonString(jsonFileContents);
+    rules->logRules();
+
+    rtn = rules->getAnswer(scenario);
+    ALOGV("Application \"%s\" should %s ANGLE", appName, rtn ? "use" : "NOT use");
+
     delete rules;
     return rtn;
 }

@@ -694,6 +694,7 @@ gin::ObjectTemplateBuilder WebAXObjectProxy::GetObjectTemplateBuilder(
       .SetProperty("isExpanded", &WebAXObjectProxy::IsExpanded)
       .SetProperty("checked", &WebAXObjectProxy::Checked)
       .SetProperty("isVisible", &WebAXObjectProxy::IsVisible)
+      .SetProperty("isVisited", &WebAXObjectProxy::IsVisited)
       .SetProperty("isOffScreen", &WebAXObjectProxy::IsOffScreen)
       .SetProperty("isCollapsed", &WebAXObjectProxy::IsCollapsed)
       .SetProperty("hasPopup", &WebAXObjectProxy::HasPopup)
@@ -844,8 +845,9 @@ void WebAXObjectProxy::NotificationReceived(
 
   v8::Local<v8::Value> argv[] = {
       v8::String::NewFromUtf8(isolate, notification_name.data(),
-                              v8::String::kNormalString,
-                              notification_name.size()),
+                              v8::NewStringType::kNormal,
+                              notification_name.size())
+          .ToLocalChecked(),
   };
   frame->CallFunctionEvenIfScriptDisabled(
       v8::Local<v8::Function>::New(isolate, notification_callback_),
@@ -1184,6 +1186,11 @@ bool WebAXObjectProxy::IsCollapsed() {
 bool WebAXObjectProxy::IsVisible() {
   accessibility_object_.UpdateLayoutAndCheckValidity();
   return accessibility_object_.IsVisible();
+}
+
+bool WebAXObjectProxy::IsVisited() {
+  accessibility_object_.UpdateLayoutAndCheckValidity();
+  return accessibility_object_.IsVisited();
 }
 
 bool WebAXObjectProxy::IsOffScreen() {

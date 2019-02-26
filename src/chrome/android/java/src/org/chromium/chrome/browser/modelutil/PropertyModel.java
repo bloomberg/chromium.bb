@@ -4,7 +4,13 @@
 
 package org.chromium.chrome.browser.modelutil;
 
+import android.content.Context;
+import android.content.res.Resources;
+import android.graphics.drawable.Drawable;
+import android.support.annotation.DrawableRes;
+import android.support.annotation.StringRes;
 import android.support.v4.util.ObjectsCompat;
+import android.support.v7.content.res.AppCompatResources;
 
 import org.chromium.base.annotations.RemovableInRelease;
 
@@ -49,7 +55,22 @@ public class PropertyModel extends PropertyObservable<PropertyKey> {
      * @param <T> The type of the Object being tracked by the key.
      */
     public final static class WritableObjectPropertyKey<T>
-            extends ReadableObjectPropertyKey<T> implements PropertyKey {}
+            extends ReadableObjectPropertyKey<T> implements PropertyKey {
+        private final boolean mSkipEquality;
+
+        /** Default constructor for a writable object property. */
+        public WritableObjectPropertyKey() {
+            this(false);
+        }
+
+        /**
+         * Constructs a new writable object property.
+         * @param skipEquality Whether the equality check should be bypassed for this key.
+         */
+        public WritableObjectPropertyKey(boolean skipEquality) {
+            mSkipEquality = skipEquality;
+        }
+    }
 
     private final Map<PropertyKey, ValueContainer> mData;
 
@@ -60,6 +81,15 @@ public class PropertyModel extends PropertyObservable<PropertyKey> {
      */
     public PropertyModel(PropertyKey... keys) {
         this(buildData(keys));
+    }
+
+    /**
+     * Constructs a model with a generic collection of existing keys.
+     *
+     * @param keys The key types supported by this model.
+     */
+    public PropertyModel(Collection<PropertyKey> keys) {
+        this(buildData(keys.toArray(new PropertyKey[keys.size()])));
     }
 
     private PropertyModel(Map<PropertyKey, ValueContainer> startingValues) {
@@ -171,7 +201,7 @@ public class PropertyModel extends PropertyObservable<PropertyKey> {
         if (container == null) {
             container = new ObjectContainer<T>();
             mData.put(key, container);
-        } else if (ObjectsCompat.equals(container.value, value)) {
+        } else if (!key.mSkipEquality && ObjectsCompat.equals(container.value, value)) {
             return;
         }
 
@@ -184,6 +214,15 @@ public class PropertyModel extends PropertyObservable<PropertyKey> {
         List<PropertyKey> properties = new ArrayList<>();
         for (Map.Entry<PropertyKey, ValueContainer> entry : mData.entrySet()) {
             if (entry.getValue() != null) properties.add(entry.getKey());
+        }
+        return properties;
+    }
+
+    @Override
+    public Collection<PropertyKey> getAllProperties() {
+        List<PropertyKey> properties = new ArrayList<>();
+        for (Map.Entry<PropertyKey, ValueContainer> entry : mData.entrySet()) {
+            properties.add(entry.getKey());
         }
         return properties;
     }
@@ -238,6 +277,30 @@ public class PropertyModel extends PropertyObservable<PropertyKey> {
             ObjectContainer<T> container = new ObjectContainer<>();
             container.value = value;
             mData.put(key, container);
+            return this;
+        }
+
+        /**
+         * @param key The key of the specified {@link ReadableObjectPropertyKey<String>}.
+         * @param resources The {@link Resources} for obtaining the specified string resource.
+         * @param resId The specified string resource id.
+         * @return The {@link Builder} with the specified key and string resource set.
+         */
+        public Builder with(
+                ReadableObjectPropertyKey<String> key, Resources resources, @StringRes int resId) {
+            if (resId != 0) with(key, resources.getString(resId));
+            return this;
+        }
+
+        /**
+         * @param key The key of the specified {@link ReadableObjectPropertyKey<Drawable>}.
+         * @param context The {@link Context} for obtaining the specified drawable resource.
+         * @param resId The specified drawable resource id.
+         * @return The {@link Builder} with the specified key and drawable resource set.
+         */
+        public Builder with(
+                ReadableObjectPropertyKey<Drawable> key, Context context, @DrawableRes int resId) {
+            if (resId != 0) with(key, AppCompatResources.getDrawable(context, resId));
             return this;
         }
 

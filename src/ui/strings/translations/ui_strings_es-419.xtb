@@ -19,7 +19,7 @@
 <translation id="1710340000377843106">ahora</translation>
 <translation id="1752946267035950200">{MINUTES,plural, =1{1 minuto}other{# minutos}}</translation>
 <translation id="1761785978543082658"><ph name="QUANTITY" /> B</translation>
-<translation id="1801827354178857021">Período</translation>
+<translation id="1801827354178857021">Punto</translation>
 <translation id="1803208670097017349">{MONTHS,plural, =1{1 mes}other{# meses}}</translation>
 <translation id="1809410197924942083"><ph name="QUANTITY" /> de MB</translation>
 <translation id="1812519734428420144">Calificación por estrellas <ph name="RATING_SCORE" /></translation>
@@ -30,16 +30,19 @@
 <translation id="1871244248791675517">Insert</translation>
 <translation id="1884435127456172652"><ph name="NUMBER" />%</translation>
 <translation id="1901303067676059328">Seleccionar &amp;todo</translation>
+<translation id="1938451708255335766">Para ajustar la densidad de la visualización de la ventana, reinicia la app.</translation>
 <translation id="2141853158323869627">{DAYS,plural, =1{1 d}other{# d}}</translation>
 <translation id="2148716181193084225">Hoy</translation>
 <translation id="2168039046890040389">Retroceder página</translation>
 <translation id="2190355936436201913">(vacío)</translation>
+<translation id="2192232475740621500">Usar la densidad baja</translation>
 <translation id="219905428774326614">Launcher, todas las apps</translation>
 <translation id="2267918077332197517">No permitir las notificaciones de este sitio</translation>
 <translation id="2289052229480071835">Presiona los objetivos táctiles en tu pantalla.</translation>
 <translation id="2295140143284145483">Encuesta</translation>
 <translation id="2297836609126180313"><ph name="QUANTITY" /> TB/s</translation>
 <translation id="24452542372838207">Expandir notificación</translation>
+<translation id="2445449901874883781">Usar la densidad alta</translation>
 <translation id="2482878487686419369">Notificaciones</translation>
 <translation id="2497284189126895209">Todos los archivos</translation>
 <translation id="2515586267016047495">Alt</translation>
@@ -60,6 +63,7 @@
 <translation id="3234408098842461169">Flecha abajo</translation>
 <translation id="3291688615589870984">{DAYS,plural, =1{1 día}other{# días}}</translation>
 <translation id="335581015389089642">Voz</translation>
+<translation id="3479552764303398839">Ahora no</translation>
 <translation id="3600566671520689681">{DAYS,plural, =1{Falta 1 día.}other{Faltan # días.}}</translation>
 <translation id="3618849550573277856">Buscar "<ph name="LOOKUP_STRING" />"</translation>
 <translation id="364720409959344976">Seleccionar carpeta para cargar</translation>
@@ -99,6 +103,7 @@
 <translation id="5613020302032141669">Flecha izquierda</translation>
 <translation id="5754277640426581776">{MINUTES,plural, =1{1 min}other{# min}}</translation>
 <translation id="5768079895599174203">{DAYS,plural, =1{1 día y }other{# días y }}</translation>
+<translation id="5895138241574237353">Reiniciar</translation>
 <translation id="5906667377645263094">{SECONDS,plural, =1{Falta 1 segundo.}other{Faltan # segundos.}}</translation>
 <translation id="5941711191222866238">Minimizar</translation>
 <translation id="5943826764092288734">{HOURS,plural, =1{1 hora}other{# horas}}</translation>

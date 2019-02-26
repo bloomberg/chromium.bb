@@ -15,14 +15,6 @@ namespace gin {
 
 class GIN_EXPORT Debug {
  public:
-  /* Installs a callback that is invoked on entry to every V8-generated
-   * function.
-   *
-   * This only affects IsolateHolder instances created after
-   * SetFunctionEntryHook was invoked.
-   */
-  static void SetFunctionEntryHook(v8::FunctionEntryHook entry_hook);
-
   /* Installs a callback that is invoked each time jit code is added, moved,
    * or removed.
    *

@@ -8,6 +8,7 @@ dictionary MediaTrackCapabilities {
     DoubleRange aspectRatio;
     DoubleRange frameRate;
     sequence<DOMString> facingMode;
+    sequence<DOMString> resizeMode;
     sequence<boolean> echoCancellation;
     // See http://crbug.com/846270.
     [OriginTrialEnabled=ExperimentalHardwareEchoCancellation] sequence<DOMString> echoCancellationType;

@@ -49,8 +49,8 @@ class LayoutWorkletTest : public PageTestBase {
     KURL js_url("https://example.com/worklet.js");
     ScriptModule module = ScriptModule::Compile(
         script_state->GetIsolate(), source_code, js_url, js_url,
-        ScriptFetchOptions(), kSharableCrossOrigin,
-        TextPosition::MinimumPosition(), ASSERT_NO_EXCEPTION);
+        ScriptFetchOptions(), TextPosition::MinimumPosition(),
+        ASSERT_NO_EXCEPTION);
     EXPECT_FALSE(module.IsNull());
 
     ScriptValue exception = module.Instantiate(script_state);
@@ -62,46 +62,6 @@ class LayoutWorkletTest : public PageTestBase {
   Persistent<WorkletGlobalScopeProxy> proxy_;
   Persistent<LayoutWorklet> layout_worklet_;
 };
-
-TEST_F(LayoutWorkletTest, GarbageCollectionOfCSSLayoutDefinition) {
-  EvaluateScriptModule(R"JS(
-    registerLayout('foo', class {
-      *intrinsicSizes() { }
-      *layout() { }
-    });
-  )JS");
-
-  LayoutWorkletGlobalScope* global_scope = GetGlobalScope();
-  CSSLayoutDefinition* definition = global_scope->FindDefinition("foo");
-  EXPECT_NE(nullptr, definition);
-
-  v8::Isolate* isolate =
-      global_scope->ScriptController()->GetScriptState()->GetIsolate();
-  DCHECK(isolate);
-
-  // Set our ScopedPersistent to the layout function, and make weak.
-  ScopedPersistent<v8::Function> handle;
-  {
-    v8::HandleScope handle_scope(isolate);
-    handle.Set(isolate, definition->LayoutFunctionForTesting(isolate));
-    handle.SetPhantom();
-  }
-  EXPECT_FALSE(handle.IsEmpty());
-  EXPECT_TRUE(handle.IsWeak());
-
-  // Run a GC, persistent shouldn't have been collected yet.
-  ThreadState::Current()->CollectAllGarbage();
-  V8GCController::CollectAllGarbageForTesting(isolate);
-  EXPECT_FALSE(handle.IsEmpty());
-
-  // Delete the page & associated objects.
-  Terminate();
-
-  // Run a GC, the persistent should have been collected.
-  ThreadState::Current()->CollectAllGarbage();
-  V8GCController::CollectAllGarbageForTesting(isolate);
-  EXPECT_TRUE(handle.IsEmpty());
-}
 
 TEST_F(LayoutWorkletTest, ParseProperties) {
   EvaluateScriptModule(R"JS(

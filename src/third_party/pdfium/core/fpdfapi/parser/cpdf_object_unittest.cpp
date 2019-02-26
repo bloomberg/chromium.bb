@@ -86,10 +86,10 @@ class PDFObjectsTest : public testing::Test {
                            name_obj,          m_ArrayObj.Get(), m_DictObj.Get(),
                            stream_obj,        null_obj};
     m_DirectObjTypes = {
-        CPDF_Object::BOOLEAN, CPDF_Object::BOOLEAN, CPDF_Object::NUMBER,
-        CPDF_Object::NUMBER,  CPDF_Object::STRING,  CPDF_Object::STRING,
-        CPDF_Object::NAME,    CPDF_Object::ARRAY,   CPDF_Object::DICTIONARY,
-        CPDF_Object::STREAM,  CPDF_Object::NULLOBJ};
+        CPDF_Object::kBoolean, CPDF_Object::kBoolean, CPDF_Object::kNumber,
+        CPDF_Object::kNumber,  CPDF_Object::kString,  CPDF_Object::kString,
+        CPDF_Object::kName,    CPDF_Object::kArray,   CPDF_Object::kDictionary,
+        CPDF_Object::kStream,  CPDF_Object::kNullobj};
     for (size_t i = 0; i < FX_ArraySize(objs); ++i)
       m_DirectObjs.emplace_back(objs[i]);
 
@@ -114,40 +114,40 @@ class PDFObjectsTest : public testing::Test {
     if (!obj1 || !obj2 || obj1->GetType() != obj2->GetType())
       return false;
     switch (obj1->GetType()) {
-      case CPDF_Object::BOOLEAN:
+      case CPDF_Object::kBoolean:
         return obj1->GetInteger() == obj2->GetInteger();
-      case CPDF_Object::NUMBER:
+      case CPDF_Object::kNumber:
         return obj1->AsNumber()->IsInteger() == obj2->AsNumber()->IsInteger() &&
                obj1->GetInteger() == obj2->GetInteger();
-      case CPDF_Object::STRING:
-      case CPDF_Object::NAME:
+      case CPDF_Object::kString:
+      case CPDF_Object::kName:
         return obj1->GetString() == obj2->GetString();
-      case CPDF_Object::ARRAY: {
+      case CPDF_Object::kArray: {
         const CPDF_Array* array1 = obj1->AsArray();
         const CPDF_Array* array2 = obj2->AsArray();
-        if (array1->GetCount() != array2->GetCount())
+        if (array1->size() != array2->size())
           return false;
-        for (size_t i = 0; i < array1->GetCount(); ++i) {
+        for (size_t i = 0; i < array1->size(); ++i) {
           if (!Equal(array1->GetObjectAt(i), array2->GetObjectAt(i)))
             return false;
         }
         return true;
       }
-      case CPDF_Object::DICTIONARY: {
+      case CPDF_Object::kDictionary: {
         const CPDF_Dictionary* dict1 = obj1->AsDictionary();
         const CPDF_Dictionary* dict2 = obj2->AsDictionary();
-        if (dict1->GetCount() != dict2->GetCount())
+        if (dict1->size() != dict2->size())
           return false;
-        for (CPDF_Dictionary::const_iterator it = dict1->begin();
-             it != dict1->end(); ++it) {
-          if (!Equal(it->second.get(), dict2->GetObjectFor(it->first)))
+        CPDF_DictionaryLocker locker1(dict1);
+        for (const auto& item : locker1) {
+          if (!Equal(item.second.get(), dict2->GetObjectFor(item.first)))
             return false;
         }
         return true;
       }
-      case CPDF_Object::NULLOBJ:
+      case CPDF_Object::kNullobj:
         return true;
-      case CPDF_Object::STREAM: {
+      case CPDF_Object::kStream: {
         const CPDF_Stream* stream1 = obj1->AsStream();
         const CPDF_Stream* stream2 = obj2->AsStream();
         if (!stream1->GetDict() && !stream2->GetDict())
@@ -168,7 +168,7 @@ class PDFObjectsTest : public testing::Test {
         return memcmp(streamAcc1->GetData(), streamAcc2->GetData(),
                       streamAcc2->GetSize()) == 0;
       }
-      case CPDF_Object::REFERENCE:
+      case CPDF_Object::kReference:
         return obj1->AsReference()->GetRefObjNum() ==
                obj2->AsReference()->GetRefObjNum();
     }
@@ -300,7 +300,7 @@ TEST_F(PDFObjectsTest, GetType) {
 
   // Check indirect references.
   for (const auto& it : m_RefObjs)
-    EXPECT_EQ(CPDF_Object::REFERENCE, it->GetType());
+    EXPECT_EQ(CPDF_Object::kReference, it->GetType());
 }
 
 TEST_F(PDFObjectsTest, GetDirect) {
@@ -328,7 +328,7 @@ TEST_F(PDFObjectsTest, SetString) {
 TEST_F(PDFObjectsTest, IsTypeAndAsType) {
   // Check for direct objects.
   for (size_t i = 0; i < m_DirectObjs.size(); ++i) {
-    if (m_DirectObjTypes[i] == CPDF_Object::ARRAY) {
+    if (m_DirectObjTypes[i] == CPDF_Object::kArray) {
       EXPECT_TRUE(m_DirectObjs[i]->IsArray());
       EXPECT_EQ(m_DirectObjs[i].get(), m_DirectObjs[i]->AsArray());
     } else {
@@ -336,7 +336,7 @@ TEST_F(PDFObjectsTest, IsTypeAndAsType) {
       EXPECT_EQ(nullptr, m_DirectObjs[i]->AsArray());
     }
 
-    if (m_DirectObjTypes[i] == CPDF_Object::BOOLEAN) {
+    if (m_DirectObjTypes[i] == CPDF_Object::kBoolean) {
       EXPECT_TRUE(m_DirectObjs[i]->IsBoolean());
       EXPECT_EQ(m_DirectObjs[i].get(), m_DirectObjs[i]->AsBoolean());
     } else {
@@ -344,7 +344,7 @@ TEST_F(PDFObjectsTest, IsTypeAndAsType) {
       EXPECT_EQ(nullptr, m_DirectObjs[i]->AsBoolean());
     }
 
-    if (m_DirectObjTypes[i] == CPDF_Object::NAME) {
+    if (m_DirectObjTypes[i] == CPDF_Object::kName) {
       EXPECT_TRUE(m_DirectObjs[i]->IsName());
       EXPECT_EQ(m_DirectObjs[i].get(), m_DirectObjs[i]->AsName());
     } else {
@@ -352,7 +352,7 @@ TEST_F(PDFObjectsTest, IsTypeAndAsType) {
       EXPECT_EQ(nullptr, m_DirectObjs[i]->AsName());
     }
 
-    if (m_DirectObjTypes[i] == CPDF_Object::NUMBER) {
+    if (m_DirectObjTypes[i] == CPDF_Object::kNumber) {
       EXPECT_TRUE(m_DirectObjs[i]->IsNumber());
       EXPECT_EQ(m_DirectObjs[i].get(), m_DirectObjs[i]->AsNumber());
     } else {
@@ -360,7 +360,7 @@ TEST_F(PDFObjectsTest, IsTypeAndAsType) {
       EXPECT_EQ(nullptr, m_DirectObjs[i]->AsNumber());
     }
 
-    if (m_DirectObjTypes[i] == CPDF_Object::STRING) {
+    if (m_DirectObjTypes[i] == CPDF_Object::kString) {
       EXPECT_TRUE(m_DirectObjs[i]->IsString());
       EXPECT_EQ(m_DirectObjs[i].get(), m_DirectObjs[i]->AsString());
     } else {
@@ -368,7 +368,7 @@ TEST_F(PDFObjectsTest, IsTypeAndAsType) {
       EXPECT_EQ(nullptr, m_DirectObjs[i]->AsString());
     }
 
-    if (m_DirectObjTypes[i] == CPDF_Object::DICTIONARY) {
+    if (m_DirectObjTypes[i] == CPDF_Object::kDictionary) {
       EXPECT_TRUE(m_DirectObjs[i]->IsDictionary());
       EXPECT_EQ(m_DirectObjs[i].get(), m_DirectObjs[i]->AsDictionary());
     } else {
@@ -376,7 +376,7 @@ TEST_F(PDFObjectsTest, IsTypeAndAsType) {
       EXPECT_EQ(nullptr, m_DirectObjs[i]->AsDictionary());
     }
 
-    if (m_DirectObjTypes[i] == CPDF_Object::STREAM) {
+    if (m_DirectObjTypes[i] == CPDF_Object::kStream) {
       EXPECT_TRUE(m_DirectObjs[i]->IsStream());
       EXPECT_EQ(m_DirectObjs[i].get(), m_DirectObjs[i]->AsStream());
     } else {
@@ -667,7 +667,7 @@ TEST(PDFArrayTest, GetTypeAt) {
                                 0, 0, 0, 0,     0,    0, 0};
     const float expected_float[] = {0, 0, 0, -1234, 2345, 0.05f, 0,
                                     0, 0, 0, 0,     0,    0,     0};
-    for (size_t i = 0; i < arr->GetCount(); ++i) {
+    for (size_t i = 0; i < arr->size(); ++i) {
       EXPECT_STREQ(expected_str[i], arr->GetStringAt(i).c_str());
       EXPECT_EQ(expected_int[i], arr->GetIntegerAt(i));
       EXPECT_EQ(expected_float[i], arr->GetNumberAt(i));
@@ -697,7 +697,7 @@ TEST(PDFArrayTest, AddNumber) {
   for (size_t i = 0; i < FX_ArraySize(vals); ++i)
     arr->AddNew<CPDF_Number>(vals[i]);
   for (size_t i = 0; i < FX_ArraySize(vals); ++i) {
-    EXPECT_EQ(CPDF_Object::NUMBER, arr->GetObjectAt(i)->GetType());
+    EXPECT_EQ(CPDF_Object::kNumber, arr->GetObjectAt(i)->GetType());
     EXPECT_EQ(vals[i], arr->GetObjectAt(i)->GetNumber());
   }
 }
@@ -708,7 +708,7 @@ TEST(PDFArrayTest, AddInteger) {
   for (size_t i = 0; i < FX_ArraySize(vals); ++i)
     arr->AddNew<CPDF_Number>(vals[i]);
   for (size_t i = 0; i < FX_ArraySize(vals); ++i) {
-    EXPECT_EQ(CPDF_Object::NUMBER, arr->GetObjectAt(i)->GetType());
+    EXPECT_EQ(CPDF_Object::kNumber, arr->GetObjectAt(i)->GetType());
     EXPECT_EQ(vals[i], arr->GetObjectAt(i)->GetNumber());
   }
 }
@@ -724,9 +724,9 @@ TEST(PDFArrayTest, AddStringAndName) {
     name_array->AddNew<CPDF_Name>(vals[i]);
   }
   for (size_t i = 0; i < FX_ArraySize(vals); ++i) {
-    EXPECT_EQ(CPDF_Object::STRING, string_array->GetObjectAt(i)->GetType());
+    EXPECT_EQ(CPDF_Object::kString, string_array->GetObjectAt(i)->GetType());
     EXPECT_STREQ(vals[i], string_array->GetObjectAt(i)->GetString().c_str());
-    EXPECT_EQ(CPDF_Object::NAME, name_array->GetObjectAt(i)->GetType());
+    EXPECT_EQ(CPDF_Object::kName, name_array->GetObjectAt(i)->GetType());
     EXPECT_STREQ(vals[i], name_array->GetObjectAt(i)->GetString().c_str());
   }
 }
@@ -756,12 +756,12 @@ TEST(PDFArrayTest, AddReferenceAndGetObjectAt) {
   for (size_t i = 0; i < FX_ArraySize(obj_nums); ++i)
     EXPECT_EQ(indirect_objs[i], holder->GetOrParseIndirectObject(obj_nums[i]));
   // Check arrays.
-  EXPECT_EQ(arr->GetCount(), arr1->GetCount());
-  for (size_t i = 0; i < arr->GetCount(); ++i) {
-    EXPECT_EQ(CPDF_Object::REFERENCE, arr->GetObjectAt(i)->GetType());
+  EXPECT_EQ(arr->size(), arr1->size());
+  for (size_t i = 0; i < arr->size(); ++i) {
+    EXPECT_EQ(CPDF_Object::kReference, arr->GetObjectAt(i)->GetType());
     EXPECT_EQ(indirect_objs[i], arr->GetObjectAt(i)->GetDirect());
     EXPECT_EQ(indirect_objs[i], arr->GetDirectObjectAt(i));
-    EXPECT_EQ(CPDF_Object::REFERENCE, arr1->GetObjectAt(i)->GetType());
+    EXPECT_EQ(CPDF_Object::kReference, arr1->GetObjectAt(i)->GetType());
     EXPECT_EQ(indirect_objs[i], arr1->GetObjectAt(i)->GetDirect());
     EXPECT_EQ(indirect_objs[i], arr1->GetDirectObjectAt(i));
   }
@@ -771,7 +771,7 @@ TEST(PDFArrayTest, CloneDirectObject) {
   CPDF_IndirectObjectHolder objects_holder;
   auto array = pdfium::MakeUnique<CPDF_Array>();
   array->AddNew<CPDF_Reference>(&objects_holder, 1234);
-  ASSERT_EQ(1U, array->GetCount());
+  ASSERT_EQ(1U, array->size());
   CPDF_Object* obj = array->GetObjectAt(0);
   ASSERT_TRUE(obj);
   EXPECT_TRUE(obj->IsReference());
@@ -782,7 +782,7 @@ TEST(PDFArrayTest, CloneDirectObject) {
 
   std::unique_ptr<CPDF_Array> cloned_array =
       ToArray(std::move(cloned_array_object));
-  ASSERT_EQ(0U, cloned_array->GetCount());
+  ASSERT_EQ(0U, cloned_array->size());
   CPDF_Object* cloned_obj = cloned_array->GetObjectAt(0);
   EXPECT_FALSE(cloned_obj);
 }
@@ -878,7 +878,7 @@ TEST(PDFDictionaryTest, CloneDirectObject) {
   CPDF_IndirectObjectHolder objects_holder;
   auto dict = pdfium::MakeUnique<CPDF_Dictionary>();
   dict->SetNewFor<CPDF_Reference>("foo", &objects_holder, 1234);
-  ASSERT_EQ(1U, dict->GetCount());
+  ASSERT_EQ(1U, dict->size());
   CPDF_Object* obj = dict->GetObjectFor("foo");
   ASSERT_TRUE(obj);
   EXPECT_TRUE(obj->IsReference());
@@ -889,7 +889,7 @@ TEST(PDFDictionaryTest, CloneDirectObject) {
 
   std::unique_ptr<CPDF_Dictionary> cloned_dict =
       ToDictionary(std::move(cloned_dict_object));
-  ASSERT_EQ(0U, cloned_dict->GetCount());
+  ASSERT_EQ(0U, cloned_dict->size());
   CPDF_Object* cloned_obj = cloned_dict->GetObjectFor("foo");
   EXPECT_FALSE(cloned_obj);
 }
@@ -906,7 +906,7 @@ TEST(PDFObjectTest, CloneCheckLoop) {
     std::unique_ptr<CPDF_Array> cloned_array = ToArray(arr_obj->Clone());
     // Cloned object should be the same as the original.
     ASSERT_TRUE(cloned_array);
-    EXPECT_EQ(1u, cloned_array->GetCount());
+    EXPECT_EQ(1u, cloned_array->size());
     CPDF_Object* cloned_dict = cloned_array->GetObjectAt(0);
     ASSERT_TRUE(cloned_dict);
     ASSERT_TRUE(cloned_dict->IsDictionary());
@@ -953,7 +953,7 @@ TEST(PDFObjectTest, CloneCheckLoop) {
     CPDF_Object* cloned_arr = cloned_dict->GetObjectFor("arr");
     ASSERT_TRUE(cloned_arr);
     ASSERT_TRUE(cloned_arr->IsArray());
-    EXPECT_EQ(0U, cloned_arr->AsArray()->GetCount());
+    EXPECT_EQ(0U, cloned_arr->AsArray()->size());
     // Recursively referenced object is not cloned.
     EXPECT_EQ(nullptr, cloned_arr->AsArray()->GetObjectAt(0));
   }

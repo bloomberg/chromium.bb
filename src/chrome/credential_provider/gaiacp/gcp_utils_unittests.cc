@@ -2,10 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "base/command_line.h"
 #include "base/compiler_specific.h"
 #include "base/macros.h"
 #include "base/process/launch.h"
 #include "base/stl_util.h"
+#include "base/strings/stringprintf.h"
 #include "base/win/scoped_handle.h"
 #include "build/build_config.h"
 #include "chrome/credential_provider/gaiacp/gcp_utils.h"
@@ -100,41 +102,43 @@ TEST_F(GcpProcHelperTest, ScopedStartupInfo_desktop) {
 }
 
 TEST_F(GcpProcHelperTest, ScopedStartupInfo_handles) {
-  base::win::ScopedHandle::Handle hstdin = INVALID_HANDLE_VALUE;
-  base::win::ScopedHandle::Handle hstdout = INVALID_HANDLE_VALUE;
-  base::win::ScopedHandle::Handle hstderr = INVALID_HANDLE_VALUE;
+  ScopedStartupInfo info;
+  base::win::ScopedHandle shstdin;
+  CreateHandle(&shstdin);
+  base::win::ScopedHandle shstdout;
+  CreateHandle(&shstdout);
+  base::win::ScopedHandle shstderr;
+  CreateHandle(&shstderr);
 
-  {
-    ScopedStartupInfo info;
-    base::win::ScopedHandle shstdin;
-    CreateHandle(&shstdin);
-    base::win::ScopedHandle shstdout;
-    CreateHandle(&shstdout);
-    base::win::ScopedHandle shstderr;
-    CreateHandle(&shstderr);
+  // Setting handles in the info should take ownership.
+  ASSERT_EQ(S_OK, info.SetStdHandles(&shstdin, &shstdout, &shstderr));
+  ASSERT_FALSE(shstdin.IsValid());
+  ASSERT_FALSE(shstdout.IsValid());
+  ASSERT_FALSE(shstderr.IsValid());
+  ASSERT_EQ(static_cast<DWORD>(STARTF_USESTDHANDLES),
+            info.GetInfo()->dwFlags & STARTF_USESTDHANDLES);
+  ASSERT_NE(INVALID_HANDLE_VALUE, info.GetInfo()->hStdInput);
+  ASSERT_NE(INVALID_HANDLE_VALUE, info.GetInfo()->hStdOutput);
+  ASSERT_NE(INVALID_HANDLE_VALUE, info.GetInfo()->hStdError);
+}
 
-    // Setting handles in the info should take ownership.
-    ASSERT_EQ(S_OK, info.SetStdHandles(&shstdin, &shstdout, &shstderr));
-    ASSERT_FALSE(shstdin.IsValid());
-    ASSERT_FALSE(shstdout.IsValid());
-    ASSERT_FALSE(shstderr.IsValid());
-    ASSERT_EQ(static_cast<DWORD>(STARTF_USESTDHANDLES),
-              info.GetInfo()->dwFlags & STARTF_USESTDHANDLES);
-    ASSERT_NE(INVALID_HANDLE_VALUE, info.GetInfo()->hStdInput);
-    ASSERT_NE(INVALID_HANDLE_VALUE, info.GetInfo()->hStdOutput);
-    ASSERT_NE(INVALID_HANDLE_VALUE, info.GetInfo()->hStdError);
-    hstdin = info.GetInfo()->hStdInput;
-    hstdout = info.GetInfo()->hStdOutput;
-    hstderr = info.GetInfo()->hStdError;
-  }
+TEST_F(GcpProcHelperTest, ScopedStartupInfo_somehandles) {
+  ScopedStartupInfo info;
+  base::win::ScopedHandle shstdin;
+  base::win::ScopedHandle shstdout;
+  CreateHandle(&shstdout);
+  base::win::ScopedHandle shstderr;
 
-  // When the info goes out of scope with handles attached, those handle should
-  // be closed.  In this test, it is unlikely that handles will get recycled
-  // and become valid again.
-  DWORD flags;
-  ASSERT_FALSE(GetHandleInformation(hstdin, &flags));
-  ASSERT_FALSE(GetHandleInformation(hstdout, &flags));
-  ASSERT_FALSE(GetHandleInformation(hstderr, &flags));
+  // Setting handles in the info should take ownership.
+  ASSERT_EQ(S_OK, info.SetStdHandles(&shstdin, &shstdout, &shstderr));
+  ASSERT_FALSE(shstdin.IsValid());
+  ASSERT_FALSE(shstdout.IsValid());
+  ASSERT_FALSE(shstderr.IsValid());
+  ASSERT_EQ(static_cast<DWORD>(STARTF_USESTDHANDLES),
+            info.GetInfo()->dwFlags & STARTF_USESTDHANDLES);
+  ASSERT_EQ(::GetStdHandle(STD_INPUT_HANDLE), info.GetInfo()->hStdInput);
+  ASSERT_NE(INVALID_HANDLE_VALUE, info.GetInfo()->hStdOutput);
+  ASSERT_EQ(::GetStdHandle(STD_ERROR_HANDLE), info.GetInfo()->hStdError);
 }
 
 TEST_F(GcpProcHelperTest, CreatePipeForChildProcess_ParentReads) {
@@ -206,7 +210,8 @@ TEST_F(GcpProcHelperTest, InitializeStdHandles_ParentToChild) {
   StdParentHandles parent_handles;
 
   ASSERT_EQ(S_OK, InitializeStdHandles(CommDirection::kParentToChildOnly,
-                                       &startupinfo, &parent_handles));
+                                       kAllStdHandles, &startupinfo,
+                                       &parent_handles));
 
   // Check parent handles.
   ASSERT_TRUE(parent_handles.hstdin_write.IsValid());
@@ -230,7 +235,8 @@ TEST_F(GcpProcHelperTest, InitializeStdHandles_ChildToParent) {
   StdParentHandles parent_handles;
 
   ASSERT_EQ(S_OK, InitializeStdHandles(CommDirection::kChildToParentOnly,
-                                       &startupinfo, &parent_handles));
+                                       kAllStdHandles, &startupinfo,
+                                       &parent_handles));
 
   // Check parent handles.
   ASSERT_FALSE(parent_handles.hstdin_write.IsValid());
@@ -253,8 +259,9 @@ TEST_F(GcpProcHelperTest, InitializeStdHandles_ParentChildBirectional) {
   ScopedStartupInfo startupinfo;
   StdParentHandles parent_handles;
 
-  ASSERT_EQ(S_OK, InitializeStdHandles(CommDirection::kBidirectional,
-                                       &startupinfo, &parent_handles));
+  ASSERT_EQ(S_OK,
+            InitializeStdHandles(CommDirection::kBidirectional, kAllStdHandles,
+                                 &startupinfo, &parent_handles));
 
   // Check parent handles.
   ASSERT_TRUE(parent_handles.hstdin_write.IsValid());
@@ -275,12 +282,87 @@ TEST_F(GcpProcHelperTest, InitializeStdHandles_ParentChildBirectional) {
                        startupinfo.GetInfo()->hStdOutput));
 }
 
-TEST_F(GcpProcHelperTest, WaitForProcess) {
+TEST_F(GcpProcHelperTest, InitializeStdHandles_SomeHandlesChildToParent) {
+  ScopedStartupInfo startupinfo;
+  StdParentHandles parent_handles;
+
+  ASSERT_EQ(S_OK, InitializeStdHandles(CommDirection::kChildToParentOnly,
+                                       (kStdInput | kStdOutput), &startupinfo,
+                                       &parent_handles));
+
+  // Check parent handles.
+  ASSERT_FALSE(parent_handles.hstdin_write.IsValid());
+  ASSERT_TRUE(parent_handles.hstdout_read.IsValid());
+  ASSERT_FALSE(parent_handles.hstderr_read.IsValid());
+
+  // Check child handles. stderr goes to default handle.
+  ASSERT_NE(nullptr, startupinfo.GetInfo()->hStdInput);
+  ASSERT_NE(INVALID_HANDLE_VALUE, startupinfo.GetInfo()->hStdInput);
+  ASSERT_NE(nullptr, startupinfo.GetInfo()->hStdOutput);
+  ASSERT_NE(INVALID_HANDLE_VALUE, startupinfo.GetInfo()->hStdOutput);
+  ASSERT_EQ(::GetStdHandle(STD_ERROR_HANDLE), startupinfo.GetInfo()->hStdError);
+
+  EXPECT_TRUE(TestPipe(parent_handles.hstdout_read.Get(),
+                       startupinfo.GetInfo()->hStdOutput));
+}
+
+TEST_F(GcpProcHelperTest, InitializeStdHandles_SomeHandlesParentToChild) {
+  ScopedStartupInfo startupinfo;
+  StdParentHandles parent_handles;
+
+  ASSERT_EQ(S_OK, InitializeStdHandles(CommDirection::kParentToChildOnly,
+                                       (kStdInput | kStdOutput), &startupinfo,
+                                       &parent_handles));
+
+  // Check parent handles.
+  ASSERT_TRUE(parent_handles.hstdin_write.IsValid());
+  ASSERT_FALSE(parent_handles.hstdout_read.IsValid());
+  ASSERT_FALSE(parent_handles.hstderr_read.IsValid());
+
+  // Check child handles. stderr goes to default handle.
+  ASSERT_NE(nullptr, startupinfo.GetInfo()->hStdInput);
+  ASSERT_NE(INVALID_HANDLE_VALUE, startupinfo.GetInfo()->hStdInput);
+  ASSERT_NE(nullptr, startupinfo.GetInfo()->hStdOutput);
+  ASSERT_NE(INVALID_HANDLE_VALUE, startupinfo.GetInfo()->hStdOutput);
+  ASSERT_EQ(::GetStdHandle(STD_ERROR_HANDLE), startupinfo.GetInfo()->hStdError);
+
+  EXPECT_TRUE(TestPipe(startupinfo.GetInfo()->hStdInput,
+                       parent_handles.hstdin_write.Get()));
+}
+
+TEST_F(GcpProcHelperTest, InitializeStdHandles_SomeHandlesBidirectional) {
   ScopedStartupInfo startupinfo;
   StdParentHandles parent_handles;
 
   ASSERT_EQ(S_OK, InitializeStdHandles(CommDirection::kBidirectional,
-                                       &startupinfo, &parent_handles));
+                                       (kStdInput | kStdOutput), &startupinfo,
+                                       &parent_handles));
+
+  // Check parent handles.
+  ASSERT_TRUE(parent_handles.hstdin_write.IsValid());
+  ASSERT_TRUE(parent_handles.hstdout_read.IsValid());
+  ASSERT_FALSE(parent_handles.hstderr_read.IsValid());
+
+  // Check child handles. stderr goes to default handle.
+  ASSERT_NE(nullptr, startupinfo.GetInfo()->hStdInput);
+  ASSERT_NE(INVALID_HANDLE_VALUE, startupinfo.GetInfo()->hStdInput);
+  ASSERT_NE(nullptr, startupinfo.GetInfo()->hStdOutput);
+  ASSERT_NE(INVALID_HANDLE_VALUE, startupinfo.GetInfo()->hStdOutput);
+  ASSERT_EQ(::GetStdHandle(STD_ERROR_HANDLE), startupinfo.GetInfo()->hStdError);
+
+  EXPECT_TRUE(TestPipe(startupinfo.GetInfo()->hStdInput,
+                       parent_handles.hstdin_write.Get()));
+  EXPECT_TRUE(TestPipe(parent_handles.hstdout_read.Get(),
+                       startupinfo.GetInfo()->hStdOutput));
+}
+
+TEST_F(GcpProcHelperTest, WaitForProcess) {
+  ScopedStartupInfo startupinfo;
+  StdParentHandles parent_handles;
+
+  ASSERT_EQ(S_OK,
+            InitializeStdHandles(CommDirection::kBidirectional, kAllStdHandles,
+                                 &startupinfo, &parent_handles));
   base::LaunchOptions options;
   options.inherit_mode = base::LaunchOptions::Inherit::kAll;
   options.stdin_handle = startupinfo.GetInfo()->hStdInput;
@@ -312,36 +394,31 @@ TEST_F(GcpProcHelperTest, WaitForProcess) {
 
   DWORD exit_code;
   char output_buffer[kBufferSize];
-  char error_buffer[kBufferSize];
   EXPECT_EQ(S_OK, WaitForProcess(process.Handle(), parent_handles, &exit_code,
-                                 output_buffer, error_buffer, kBufferSize));
+                                 output_buffer, kBufferSize));
   EXPECT_EQ(0u, exit_code);
   StripCrLf(output_buffer);
   EXPECT_STREQ(input_buffer, output_buffer);
 }
 
 TEST_F(GcpProcHelperTest, GetCommandLineForEntrypoint) {
-  wchar_t command_line[256];
+  base::CommandLine command_line(base::CommandLine::NO_PROGRAM);
 
-  EXPECT_NE(S_OK, GetCommandLineForEntrypoint(nullptr, L"entrypoint",
-                                              command_line, 0));
-  EXPECT_NE(S_OK, GetCommandLineForEntrypoint(nullptr, L"entrypoint",
-                                              command_line, 20));
+  // In tests, GetCommandLineForEntrypoint() will always return S_FALSE.
+  ASSERT_EQ(S_FALSE,
+            GetCommandLineForEntrypoint(nullptr, L"entrypoint", &command_line));
 
   // Get short path name of this binary and build the expect command line.
   wchar_t path[MAX_PATH];
   wchar_t short_path[MAX_PATH];
-  wchar_t expected_command_line[MAX_PATH];
   ASSERT_LT(0u, GetModuleFileName(nullptr, path, base::size(path)));
   ASSERT_LT(0u, GetShortPathName(path, short_path, base::size(short_path)));
-  ASSERT_NE(-1,
-            swprintf_s(expected_command_line, base::size(expected_command_line),
-                       L"rundll32 %s,entrypoint", short_path));
 
-  EXPECT_EQ(S_OK,
-            GetCommandLineForEntrypoint(nullptr, L"entrypoint", command_line,
-                                        base::size(command_line)));
-  EXPECT_STREQ(expected_command_line, command_line);
+  base::string16 expected_arg =
+      base::StringPrintf(L"%ls,%ls", short_path, L"entrypoint");
+
+  ASSERT_EQ(1u, command_line.GetArgs().size());
+  ASSERT_EQ(expected_arg, command_line.GetArgs()[0]);
 }
 
 }  // namespace credential_provider

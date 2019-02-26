@@ -4,7 +4,8 @@
 
 module content.mojom;
 
-import "services/viz/public/interfaces/compositing/local_surface_id.mojom";
+import "mojo/public/mojom/base/time.mojom";
+import "services/viz/public/interfaces/compositing/local_surface_id_allocation.mojom";
 import "services/viz/public/interfaces/compositing/selection.mojom";
 import "ui/gfx/geometry/mojo/geometry.mojom";
 
@@ -40,11 +41,16 @@ struct RenderFrameMetadata {
   // The size of the viewport used to generate a CompositorFrame.
   gfx.mojom.Size viewport_size_in_pixels;
 
-  // The last viz::LocalSurfaceId used to submit a CompositorFrame.
-  viz.mojom.LocalSurfaceId? local_surface_id;
+  // The last viz::LocalSurfaceIdAllocation used to submit a CompositorFrame.
+  viz.mojom.LocalSurfaceIdAllocation? local_surface_id_allocation;
 
   // The page scale factor used on the content.
   float page_scale_factor;
+
+  // The subframe page scale factor used on the content. This value will match
+  // |page_scale_factor|, which is only ever set for the main frame, and it is
+  // only used for setting raster scale in child renderers.
+  float external_page_scale_factor;
 
   // Used to position the Android location top bar and page content, whose
   // precise position is computed by the renderer compositor.

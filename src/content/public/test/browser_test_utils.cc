@@ -44,10 +44,12 @@
 #include "content/browser/frame_host/interstitial_page_impl.h"
 #include "content/browser/frame_host/render_frame_host_impl.h"
 #include "content/browser/frame_host/render_widget_host_view_guest.h"
+#include "content/browser/renderer_host/input/synthetic_touchscreen_pinch_gesture.h"
 #include "content/browser/renderer_host/render_process_host_impl.h"
 #include "content/browser/renderer_host/render_widget_host_impl.h"
 #include "content/browser/renderer_host/render_widget_host_input_event_router.h"
 #include "content/browser/renderer_host/render_widget_host_view_child_frame.h"
+#include "content/browser/screen_orientation/screen_orientation_provider.h"
 #include "content/browser/service_manager/service_manager_context.h"
 #include "content/browser/web_contents/web_contents_impl.h"
 #include "content/browser/web_contents/web_contents_view.h"
@@ -653,13 +655,16 @@ GURL GetFileUrlWithQuery(const base::FilePath& path,
 void ResetTouchAction(RenderWidgetHost* host) {
   static_cast<InputRouterImpl*>(
       static_cast<RenderWidgetHostImpl*>(host)->input_router())
-      ->OnHasTouchEventHandlersForTest(true);
+      ->ForceResetTouchActionForTest();
 }
 
 void ResendGestureScrollUpdateToEmbedder(WebContents* guest_web_contents,
                                          const blink::WebInputEvent& event) {
-  DCHECK(guest_web_contents->GetBrowserPluginGuest());
-  guest_web_contents->GetBrowserPluginGuest()->ResendEventToEmbedder(event);
+  auto* guest_web_contents_impl =
+      static_cast<WebContentsImpl*>(guest_web_contents);
+  DCHECK(guest_web_contents_impl->GetBrowserPluginGuest());
+  guest_web_contents_impl->GetBrowserPluginGuest()->ResendEventToEmbedder(
+      event);
 }
 
 void MaybeSendSyntheticTapGesture(WebContents* guest_web_contents) {
@@ -917,6 +922,29 @@ void SimulateMouseWheelCtrlZoomEvent(WebContents* web_contents,
       web_contents->GetRenderViewHost()->GetWidget());
   widget_host->ForwardWheelEvent(wheel_event);
 }
+
+void SimulateTouchscreenPinch(WebContents* web_contents,
+                              const gfx::PointF& anchor,
+                              float scale_change,
+                              base::OnceClosure on_complete) {
+  SyntheticPinchGestureParams params;
+  params.gesture_source_type = SyntheticGestureParams::TOUCH_INPUT;
+  params.scale_factor = scale_change;
+  params.anchor = anchor;
+
+  auto pinch_gesture =
+      std::make_unique<SyntheticTouchscreenPinchGesture>(params);
+  RenderWidgetHostImpl* widget_host = RenderWidgetHostImpl::From(
+      web_contents->GetTopLevelRenderWidgetHostView()->GetRenderWidgetHost());
+  widget_host->QueueSyntheticGesture(
+      std::move(pinch_gesture),
+      base::BindOnce(
+          [](base::OnceClosure on_complete, SyntheticGesture::Result result) {
+            std::move(on_complete).Run();
+          },
+          std::move(on_complete)));
+}
+
 #endif  // !defined(OS_MACOSX)
 
 void SimulateGesturePinchSequence(WebContents* web_contents,
@@ -1989,6 +2017,10 @@ bool IsInnerInterstitialPageConnected(InterstitialPage* interstitial_page) {
          frame_connector->GetParentRenderWidgetHostView();
 }
 
+ScreenOrientationDelegate* GetScreenOrientationDelegate() {
+  return ScreenOrientationProvider::GetDelegateForTesting();
+}
+
 std::vector<RenderWidgetHostView*> GetInputEventRouterRenderWidgetHostViews(
     WebContents* web_contents) {
   return static_cast<WebContentsImpl*>(web_contents)
@@ -2334,6 +2366,26 @@ void RenderFrameSubmissionObserver::WaitForAnyFrameSubmission() {
 
 void RenderFrameSubmissionObserver::WaitForMetadataChange() {
   Wait();
+}
+
+void RenderFrameSubmissionObserver::WaitForPageScaleFactor(
+    float expected_page_scale_factor,
+    const float tolerance) {
+  while (std::abs(render_frame_metadata_provider_->LastRenderFrameMetadata()
+                      .page_scale_factor -
+                  expected_page_scale_factor) < tolerance) {
+    WaitForMetadataChange();
+  }
+}
+
+void RenderFrameSubmissionObserver::WaitForExternalPageScaleFactor(
+    float expected_external_page_scale_factor,
+    const float tolerance) {
+  while (std::abs(render_frame_metadata_provider_->LastRenderFrameMetadata()
+                      .external_page_scale_factor -
+                  expected_external_page_scale_factor) < tolerance) {
+    WaitForMetadataChange();
+  }
 }
 
 void RenderFrameSubmissionObserver::WaitForScrollOffset(
@@ -3018,8 +3070,9 @@ bool TestChildOrGuestAutoresize(bool is_guest,
     embedder_rph_impl->AddFilter(filter.get());
   }
 
-  viz::LocalSurfaceId current_id =
-      guest_rwh_impl->GetView()->GetLocalSurfaceId();
+  viz::LocalSurfaceId current_id = guest_rwh_impl->GetView()
+                                       ->GetLocalSurfaceIdAllocation()
+                                       .local_surface_id();
   // The guest may not yet be fully attached / initted. If not, |current_id|
   // will be invalid, and we should wait for an ID before proceeding.
   if (!current_id.is_valid())
@@ -3040,7 +3093,8 @@ bool TestChildOrGuestAutoresize(bool is_guest,
                                        current_id.embed_token());
   cc::RenderFrameMetadata metadata;
   metadata.viewport_size_in_pixels = gfx::Size(75, 75);
-  metadata.local_surface_id = local_surface_id;
+  metadata.local_surface_id_allocation =
+      viz::LocalSurfaceIdAllocation(local_surface_id, base::TimeTicks::Now());
   guest_rwh_impl->DidUpdateVisualProperties(metadata);
 
   // This won't generate a response, as we short-circuit auto-resizes, so cause
@@ -3094,33 +3148,30 @@ SynchronizeVisualPropertiesMessageFilter::
 
 void SynchronizeVisualPropertiesMessageFilter::
     OnSynchronizeFrameHostVisualProperties(
-        const viz::SurfaceId& surface_id,
-        const FrameVisualProperties& resize_params) {
-  OnSynchronizeVisualProperties(surface_id.local_surface_id(),
-                                surface_id.frame_sink_id(), resize_params);
+        const viz::FrameSinkId& frame_sink_id,
+        const FrameVisualProperties& visual_properties) {
+  OnSynchronizeVisualProperties(frame_sink_id, visual_properties);
 }
 
 void SynchronizeVisualPropertiesMessageFilter::
     OnSynchronizeBrowserPluginVisualProperties(
         int browser_plugin_guest_instance_id,
-        viz::LocalSurfaceId surface_id,
-        FrameVisualProperties resize_params) {
-  OnSynchronizeVisualProperties(surface_id, viz::FrameSinkId(), resize_params);
+        FrameVisualProperties visual_properties) {
+  OnSynchronizeVisualProperties(viz::FrameSinkId(), visual_properties);
 }
 
 void SynchronizeVisualPropertiesMessageFilter::OnSynchronizeVisualProperties(
-    const viz::LocalSurfaceId& local_surface_id,
     const viz::FrameSinkId& frame_sink_id,
-    const FrameVisualProperties& resize_params) {
-  gfx::Rect screen_space_rect_in_dip = resize_params.screen_space_rect;
+    const FrameVisualProperties& visual_properties) {
+  gfx::Rect screen_space_rect_in_dip = visual_properties.screen_space_rect;
   if (IsUseZoomForDSFEnabled()) {
     screen_space_rect_in_dip =
         gfx::Rect(gfx::ScaleToFlooredPoint(
-                      resize_params.screen_space_rect.origin(),
-                      1.f / resize_params.screen_info.device_scale_factor),
+                      visual_properties.screen_space_rect.origin(),
+                      1.f / visual_properties.screen_info.device_scale_factor),
                   gfx::ScaleToCeiledSize(
-                      resize_params.screen_space_rect.size(),
-                      1.f / resize_params.screen_info.device_scale_factor));
+                      visual_properties.screen_space_rect.size(),
+                      1.f / visual_properties.screen_info.device_scale_factor));
   }
   // Track each rect updates.
   base::PostTaskWithTraits(
@@ -3134,7 +3185,8 @@ void SynchronizeVisualPropertiesMessageFilter::OnSynchronizeVisualProperties(
       FROM_HERE, {content::BrowserThread::UI},
       base::BindOnce(
           &SynchronizeVisualPropertiesMessageFilter::OnUpdatedSurfaceIdOnUI,
-          this, local_surface_id));
+          this,
+          visual_properties.local_surface_id_allocation.local_surface_id()));
 
   // Record the received value. We cannot check the current state of the child
   // frame, as it can only be processed on the UI thread, and we cannot block

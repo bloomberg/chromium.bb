@@ -106,7 +106,7 @@ TEST_P(DeviceCloudPolicyInitializerTest,
 
   // Server-backed state: advertised enrollment.
   base::DictionaryValue state_dict;
-  state_dict.SetString(kDeviceStateRestoreMode,
+  state_dict.SetString(kDeviceStateMode,
                        kDeviceStateRestoreModeReEnrollmentRequested);
   state_dict.SetString(kDeviceStateManagementDomain, "example.com");
   local_state_.Set(prefs::kServerBackedDeviceState, state_dict);
@@ -137,7 +137,7 @@ TEST_P(DeviceCloudPolicyInitializerTest,
   EXPECT_EQ(GetParam().auth_mechanism, config.auth_mechanism);
 
   // Server-backed state: forced enrollment.
-  state_dict.SetString(kDeviceStateRestoreMode,
+  state_dict.SetString(kDeviceStateMode,
                        kDeviceStateRestoreModeReEnrollmentEnforced);
   local_state_.Set(prefs::kServerBackedDeviceState, state_dict);
   config = device_cloud_policy_initializer_.GetPrescribedEnrollmentConfig();

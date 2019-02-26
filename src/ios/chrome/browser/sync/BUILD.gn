@@ -29,8 +29,6 @@ source_set("sync") {
     "sync_setup_service.h",
     "sync_setup_service_factory.cc",
     "sync_setup_service_factory.h",
-    "synced_sessions_bridge.h",
-    "synced_sessions_bridge.mm",
   ]
   deps = [
     "//base",
@@ -53,7 +51,6 @@ source_set("sync") {
     "//components/sync",
     "//components/sync_preferences",
     "//components/sync_sessions",
-    "//components/unified_consent",
     "//components/version_info",
     "//google_apis",
     "//ios/chrome/browser",
@@ -105,7 +102,6 @@ source_set("test_support") {
     "//components/browser_sync:test_support",
     "//components/keyed_service/core",
     "//components/keyed_service/ios",
-    "//components/signin/core/browser",
     "//components/sync",
     "//components/sync:test_support_driver",
     "//ios/chrome/browser/browser_state",

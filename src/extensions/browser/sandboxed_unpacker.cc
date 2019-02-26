@@ -232,7 +232,10 @@ SandboxedUnpacker::SandboxedUnpacker(
       extensions_dir_(extensions_dir),
       location_(location),
       creation_flags_(creation_flags),
-      unpacker_io_task_runner_(unpacker_io_task_runner) {
+      unpacker_io_task_runner_(unpacker_io_task_runner),
+      data_decoder_service_filter_(service_manager::ServiceFilter::ByNameWithId(
+          data_decoder::mojom::kServiceName,
+          base::Token::CreateRandom())) {
   // Tracking for crbug.com/692069. The location must be valid. If it's invalid,
   // the utility process kills itself for a bad IPC.
   CHECK_GT(location, Manifest::INVALID_LOCATION);
@@ -240,12 +243,6 @@ SandboxedUnpacker::SandboxedUnpacker(
 
   // The connector should not be bound to any thread yet.
   DCHECK(!connector_->IsBound());
-
-  // Use a random instance ID to guarantee the connection is to a new data
-  // decoder service (running in its own process).
-  data_decoder_identity_ = service_manager::Identity(
-      data_decoder::mojom::kServiceName, service_manager::mojom::kInheritUserID,
-      base::UnguessableToken::Create().ToString());
 }
 
 bool SandboxedUnpacker::CreateTempDirectory() {
@@ -530,7 +527,8 @@ void SandboxedUnpacker::UnpackExtensionSucceeded(
   std::set<base::FilePath> image_paths =
       ExtensionsClient::Get()->GetBrowserImagePaths(extension_.get());
   image_sanitizer_ = ImageSanitizer::CreateAndStart(
-      connector_.get(), data_decoder_identity_, extension_root_, image_paths,
+      connector_.get(), data_decoder_service_filter_, extension_root_,
+      image_paths,
       base::BindRepeating(&SandboxedUnpacker::ImageSanitizerDecodedImage, this),
       base::BindOnce(&SandboxedUnpacker::ImageSanitizationDone, this,
                      std::move(manifest)));
@@ -631,7 +629,7 @@ void SandboxedUnpacker::SanitizeMessageCatalogs(
     const std::set<base::FilePath>& message_catalog_paths) {
   DCHECK(unpacker_io_task_runner_->RunsTasksInCurrentSequence());
   json_file_sanitizer_ = JsonFileSanitizer::CreateAndStart(
-      connector_.get(), data_decoder_identity_, message_catalog_paths,
+      connector_.get(), data_decoder_service_filter_, message_catalog_paths,
       base::BindOnce(&SandboxedUnpacker::MessageCatalogsSanitized, this,
                      std::move(manifest)));
 }
@@ -692,7 +690,8 @@ void SandboxedUnpacker::IndexAndPersistJSONRulesetIfNeeded(
   }
 
   declarative_net_request::IndexAndPersistRules(
-      connector_.get(), &data_decoder_identity_, *extension_,
+      connector_.get(), *data_decoder_service_filter_.instance_id(),
+      *extension_,
       base::BindOnce(&SandboxedUnpacker::OnJSONRulesetIndexed, this,
                      std::move(manifest)));
 }
@@ -715,7 +714,7 @@ void SandboxedUnpacker::OnJSONRulesetIndexed(
 data_decoder::mojom::JsonParser* SandboxedUnpacker::GetJsonParserPtr() {
   DCHECK(unpacker_io_task_runner_->RunsTasksInCurrentSequence());
   if (!json_parser_ptr_) {
-    connector_->BindInterface(data_decoder_identity_, &json_parser_ptr_);
+    connector_->BindInterface(data_decoder_service_filter_, &json_parser_ptr_);
     json_parser_ptr_.set_connection_error_handler(base::BindOnce(
         &SandboxedUnpacker::ReportFailure, this,
         SandboxedUnpackerFailureReason::

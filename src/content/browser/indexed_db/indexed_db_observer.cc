@@ -6,14 +6,15 @@
 
 namespace content {
 
-IndexedDBObserver::Options::Options(bool include_transaction,
-                                    bool no_records,
-                                    bool values,
-                                    uint16_t types)
+IndexedDBObserver::Options::Options(
+    bool include_transaction,
+    bool no_records,
+    bool values,
+    std::bitset<blink::kIDBOperationTypeCount> types)
     : include_transaction(include_transaction),
       no_records(no_records),
       values(values),
-      operation_types(types) {}
+      operation_types(std::move(types)) {}
 
 IndexedDBObserver::Options::Options(const Options&) = default;
 

@@ -444,7 +444,7 @@ class TopControlsSlideControllerTest : public InProcessBrowserTest {
     aura::Window* browser_window = browser()->window()->GetNativeWindow();
     ui::test::EventGenerator event_generator(browser_window->GetRootWindow(),
                                              browser_window);
-    const gfx::Point start_point = event_generator.current_location();
+    const gfx::Point start_point = event_generator.current_screen_location();
     const gfx::Point end_point =
         start_point +
         gfx::Vector2d(0, direction == ScrollDirection::kDown ? -100 : 100);
@@ -801,7 +801,7 @@ IN_PROC_BROWSER_TEST_F(TopControlsSlideControllerTest, DisplayRotation) {
   aura::Window* browser_window = browser()->window()->GetNativeWindow();
   ui::test::EventGenerator event_generator(browser_window->GetRootWindow(),
                                            browser_window);
-  gfx::Point start_point = event_generator.current_location();
+  gfx::Point start_point = event_generator.current_screen_location();
   gfx::Point end_point = start_point + gfx::Vector2d(0, -100);
   GenerateGestureFlingScrollSequence(&event_generator, start_point, end_point);
   TopControlsShownRatioWaiter waiter(top_controls_slide_controller());
@@ -1065,7 +1065,7 @@ IN_PROC_BROWSER_TEST_F(TopControlsSlideControllerTest,
   aura::Window* browser_window = browser()->window()->GetNativeWindow();
   ui::test::EventGenerator event_generator(browser_window->GetRootWindow(),
                                            browser_window);
-  const gfx::Point start_point = event_generator.current_location();
+  const gfx::Point start_point = event_generator.current_screen_location();
   const gfx::Point end_point = start_point + gfx::Vector2d(0, -100);
 
   // Large number of ET_GESTURE_SCROLL_UPDATE steps with small velocity so that

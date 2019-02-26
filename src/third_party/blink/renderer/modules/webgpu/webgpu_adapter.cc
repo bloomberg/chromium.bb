@@ -10,7 +10,7 @@ namespace blink {
 
 // static
 WebGPUAdapter* WebGPUAdapter::Create(const String& name) {
-  return new WebGPUAdapter(name);
+  return MakeGarbageCollected<WebGPUAdapter>(name);
 }
 
 const String& WebGPUAdapter::name() const {

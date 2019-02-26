@@ -46,7 +46,7 @@ class AudioProcessingEvent final : public Event {
                                       double playback_time);
 
   static AudioProcessingEvent* Create(const AtomicString& type,
-                                      const AudioProcessingEventInit&);
+                                      const AudioProcessingEventInit*);
 
   ~AudioProcessingEvent() override;
 
@@ -64,7 +64,7 @@ class AudioProcessingEvent final : public Event {
                        AudioBuffer* output_buffer,
                        double playback_time);
   AudioProcessingEvent(const AtomicString& type,
-                       const AudioProcessingEventInit&);
+                       const AudioProcessingEventInit*);
 
   Member<AudioBuffer> input_buffer_;
   Member<AudioBuffer> output_buffer_;

@@ -15,9 +15,6 @@ extern const base::FilePath::CharType kFaviconsFilename[];
 extern const base::FilePath::CharType kHistoryFilename[];
 extern const base::FilePath::CharType kTopSitesFilename[];
 
-// The maximum size of the list returned by history::HistoryService::TopHosts().
-extern const int kMaxTopHosts;
-
 // The maximum number of times a page can change it's title during the relevant
 // timestamp (page is either loading is has recently loaded as per
 // GetTitleSettingWindow() below).

@@ -1882,6 +1882,7 @@ class GerritPatch(GerritFetchOnlyPatch):
         max(x['grantedOn'] for x in self._approvals) if self._approvals else 0)
     self._commit_message = None
     self.commit_message = patch_dict.get('commitMessage')
+    self.topic = patch_dict.get('topic')
 
   @staticmethod
   def ConvertQueryResults(change, host):
@@ -1918,6 +1919,7 @@ class GerritPatch(GerritFetchOnlyPatch):
           'status': change['status'],
           'subject': change.get('subject'),
           'private': change.get('is_private', False),
+          'topic': change.get('topic'),
       }
       current_revision = change.get('current_revision', '')
       current_revision_info = change.get('revisions', {}).get(current_revision)
@@ -2067,6 +2069,8 @@ class GerritPatch(GerritFetchOnlyPatch):
       return PatchNotSubmittable(self, 'is a draft.')
     elif self.IsPrivate():
       return PatchNotSubmittable(self, 'is marked private still.')
+    elif self.topic:
+      return PatchNotSubmittable(self, 'topics are not supported yet.')
 
     if self.status != 'NEW':
       statuses = {

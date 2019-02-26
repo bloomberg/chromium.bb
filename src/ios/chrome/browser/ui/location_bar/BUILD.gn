@@ -29,11 +29,9 @@ source_set("location_bar") {
     "resources:location_bar_voice",
     "//base",
     "//components/google/core/browser",
-    "//components/google/core/browser",
     "//components/omnibox/browser",
     "//components/search_engines",
     "//components/strings",
-    "//components/toolbar",
     "//components/variations/net",
     "//ios/chrome/app/strings",
     "//ios/chrome/app/theme",
@@ -52,7 +50,6 @@ source_set("location_bar") {
     "//ios/chrome/browser/ui/omnibox:omnibox_util",
     "//ios/chrome/browser/ui/omnibox/popup",
     "//ios/chrome/browser/ui/orchestrator:orchestrator",
-    "//ios/chrome/browser/ui/qr_scanner/requirements",
     "//ios/chrome/browser/ui/toolbar/buttons",
     "//ios/chrome/browser/ui/toolbar/keyboard_assist:keyboard_assist",
     "//ios/chrome/browser/ui/toolbar/public",
@@ -84,17 +81,16 @@ source_set("location_bar") {
       [ "//ios/chrome/browser/ui/omnibox:omnibox_internal" ]
 }
 
-source_set("toolbar_model_delegate") {
+source_set("location_bar_model_delegate") {
   configs += [ "//build/config/compiler:enable_arc" ]
   sources = [
-    "toolbar_model_delegate_ios.h",
-    "toolbar_model_delegate_ios.mm",
+    "location_bar_model_delegate_ios.h",
+    "location_bar_model_delegate_ios.mm",
   ]
   deps = [
     "//base",
     "//components/omnibox/browser",
     "//components/prefs",
-    "//components/toolbar",
     "//ios/chrome/browser",
     "//ios/chrome/browser/autocomplete",
     "//ios/chrome/browser/browser_state",
@@ -127,7 +123,7 @@ source_set("unit_tests") {
     ":location_bar",
     "//base",
     "//base/test:test_support",
-    "//components/toolbar:test_support",
+    "//components/omnibox/browser:test_support",
     "//components/variations",
     "//ios/chrome/app/strings",
     "//ios/chrome/browser",

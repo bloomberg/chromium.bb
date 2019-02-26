@@ -7,6 +7,7 @@
 
 #include <map>
 #include <memory>
+#include <string>
 
 #include "base/macros.h"
 #include "base/memory/scoped_refptr.h"
@@ -48,7 +49,8 @@ class DataReductionProxyPingbackClientImpl
  public:
   DataReductionProxyPingbackClientImpl(
       scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory,
-      scoped_refptr<base::SingleThreadTaskRunner> ui_task_runner);
+      scoped_refptr<base::SingleThreadTaskRunner> ui_task_runner,
+      const std::string& channel);
   ~DataReductionProxyPingbackClientImpl() override;
 
  protected:
@@ -121,6 +123,9 @@ class DataReductionProxyPingbackClientImpl
   size_t current_loader_crash_count_;
 
   scoped_refptr<base::SingleThreadTaskRunner> ui_task_runner_;
+
+  // The release channel of this Chrome instance.
+  std::string channel_;
 
 #if defined(OS_ANDROID)
   typedef std::tuple<DataReductionProxyData, DataReductionProxyPageLoadTiming>

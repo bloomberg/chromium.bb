@@ -66,12 +66,17 @@ void AdTracker::WillExecuteScript(ExecutionContext* execution_context,
   bool is_ad = script_url.IsEmpty()
                    ? false
                    : IsKnownAdScript(execution_context, script_url);
-  ExecutingScript script(script_url, is_ad);
-  executing_scripts_.push_back(script);
+  stack_frame_is_ad_.push_back(is_ad);
+  if (is_ad)
+    num_ads_in_stack_ += 1;
 }
 
 void AdTracker::DidExecuteScript() {
-  executing_scripts_.pop_back();
+  if (stack_frame_is_ad_.back()) {
+    DCHECK_LT(0u, num_ads_in_stack_);
+    num_ads_in_stack_ -= 1;
+  }
+  stack_frame_is_ad_.pop_back();
 }
 
 void AdTracker::Will(const probe::ExecuteScript& probe) {
@@ -110,18 +115,27 @@ void AdTracker::WillSendRequest(ExecutionContext* execution_context,
                                 const ResourceResponse& redirect_response,
                                 const FetchInitiatorInfo& initiator_info,
                                 ResourceType resource_type) {
-  // If the resource is not already marked as an ad, check if any executing
-  // script is an ad. If yes, mark this as an ad.
-  if (!request.IsAdResource() && IsAdScriptInStack())
+  // If the resource is not already marked as an ad, check if the document
+  // loading the resource is an ad or if any executing script is an ad.
+  if (!request.IsAdResource() &&
+      (IsKnownAdExecutionContext(execution_context) || IsAdScriptInStack())) {
     request.SetIsAdResource();
+  }
 
-  // If it is a script marked as an ad, append it to the known ad scripts set.
-  if (resource_type == ResourceType::kScript && request.IsAdResource()) {
+  // If it is a script marked as an ad and it's not in an ad context, append it
+  // to the known ad script set. We don't need to keep track of ad scripts in ad
+  // contexts, because any script executed inside an ad context is considered an
+  // ad script by IsKnownAdScript.
+  if (resource_type == ResourceType::kScript && request.IsAdResource() &&
+      !IsKnownAdExecutionContext(execution_context)) {
     AppendToKnownAdScripts(*execution_context, request.Url().GetString());
   }
 }
 
 bool AdTracker::IsAdScriptInStack() {
+  if (num_ads_in_stack_ > 0)
+    return true;
+
   ExecutionContext* execution_context = GetCurrentExecutionContext();
   if (!execution_context)
     return false;
@@ -139,11 +153,6 @@ bool AdTracker::IsAdScriptInStack() {
   if (!top_script.IsEmpty() && IsKnownAdScript(execution_context, top_script))
     return true;
 
-  // Scan the pseudo-stack for ad scripts.
-  for (const auto& executing_script : executing_scripts_) {
-    if (executing_script.is_ad)
-      return true;
-  }
   return false;
 }
 
@@ -152,9 +161,6 @@ bool AdTracker::IsKnownAdScript(ExecutionContext* execution_context,
   if (!execution_context)
     return false;
 
-  // TODO(jkarlin): Minor memory optimization, stop tracking known ad scripts in
-  // ad contexts. This will reduce the size of executing_scripts_. Note that
-  // this is a minor win, as the strings are already ref-counted.
   if (IsKnownAdExecutionContext(execution_context))
     return true;
 

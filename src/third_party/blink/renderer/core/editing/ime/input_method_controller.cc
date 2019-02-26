@@ -69,7 +69,7 @@ void DispatchCompositionUpdateEvent(LocalFrame& frame, const String& text) {
     return;
 
   CompositionEvent* event = CompositionEvent::Create(
-      EventTypeNames::compositionupdate, frame.DomWindow(), text);
+      event_type_names::kCompositionupdate, frame.DomWindow(), text);
   target->DispatchEvent(*event);
 }
 
@@ -84,7 +84,7 @@ void DispatchCompositionEndEvent(LocalFrame& frame, const String& text) {
     return;
 
   CompositionEvent* event = CompositionEvent::Create(
-      EventTypeNames::compositionend, frame.DomWindow(), text);
+      event_type_names::kCompositionend, frame.DomWindow(), text);
   EventDispatcher::DispatchScopedEvent(*target, *event);
 }
 
@@ -210,7 +210,7 @@ AtomicString GetInputModeAttribute(Element* element) {
 
   // TODO(dtapuska): We may wish to restrict this to a yet to be proposed
   // <contenteditable> or <richtext> element Mozilla discussed at TPAC 2016.
-  return element->FastGetAttribute(HTMLNames::inputmodeAttr).LowerASCII();
+  return element->FastGetAttribute(html_names::kInputmodeAttr).LowerASCII();
 }
 
 constexpr int kInvalidDeletionLength = -1;
@@ -324,9 +324,9 @@ int ComputeAutocapitalizeFlags(const Element* element) {
   // https://html.spec.whatwg.org/multipage/interaction.html#used-autocapitalization-hint
   if (auto* input = ToHTMLInputElementOrNull(*html_element)) {
     const AtomicString& input_type = input->type();
-    if (input_type == InputTypeNames::email ||
-        input_type == InputTypeNames::url ||
-        input_type == InputTypeNames::password) {
+    if (input_type == input_type_names::kEmail ||
+        input_type == input_type_names::kUrl ||
+        input_type == input_type_names::kPassword) {
       // The autocapitalize IDL attribute value is ignored for these input
       // types, so we set the None flag.
       return kWebTextInputFlagAutocapitalizeNone;
@@ -366,7 +366,7 @@ int ComputeAutocapitalizeFlags(const Element* element) {
 enum class InputMethodController::TypingContinuation { kContinue, kEnd };
 
 InputMethodController* InputMethodController::Create(LocalFrame& frame) {
-  return new InputMethodController(frame);
+  return MakeGarbageCollected<InputMethodController>(frame);
 }
 
 InputMethodController::InputMethodController(LocalFrame& frame)
@@ -393,6 +393,8 @@ inline Editor& InputMethodController::GetEditor() const {
 }
 
 void InputMethodController::Clear() {
+  RemoveSuggestionMarkerInCompositionRange();
+
   has_composition_ = false;
   if (composition_range_) {
     composition_range_->setStart(&GetDocument(), 0);
@@ -407,7 +409,7 @@ void InputMethodController::ContextDestroyed(Document*) {
   composition_range_ = nullptr;
 }
 
-void InputMethodController::DocumentAttached(Document* document) {
+void InputMethodController::DidAttachDocument(Document* document) {
   DCHECK(document);
   SetContext(document);
 }
@@ -620,6 +622,8 @@ void InputMethodController::AddImeTextSpans(
                 .SetUnderlineColor(ime_text_span.UnderlineColor())
                 .SetThickness(ime_text_span.Thickness())
                 .SetBackgroundColor(ime_text_span.BackgroundColor())
+                .SetRemoveOnFinishComposing(
+                    ime_text_span.NeedsRemovalOnFinishComposing())
                 .Build());
         break;
     }
@@ -736,7 +740,7 @@ bool InputMethodController::DispatchCompositionStartEvent(const String& text) {
     return IsAvailable();
 
   CompositionEvent* event = CompositionEvent::Create(
-      EventTypeNames::compositionstart, GetFrame().DomWindow(), text);
+      event_type_names::kCompositionstart, GetFrame().DomWindow(), text);
   target->DispatchEvent(*event);
 
   return IsAvailable();
@@ -1048,6 +1052,13 @@ bool InputMethodController::SetEditableSelectionOffsets(
   return SetSelectionOffsets(selection_offsets, typing_continuation);
 }
 
+void InputMethodController::RemoveSuggestionMarkerInCompositionRange() {
+  if (HasComposition()) {
+    GetDocument().Markers().RemoveSuggestionMarkerInRangeOnFinish(
+        EphemeralRangeInFlatTree(composition_range_.Get()));
+  }
+}
+
 PlainTextRange InputMethodController::CreateRangeForSelection(
     int start,
     int end,
@@ -1338,14 +1349,14 @@ int InputMethodController::TextInputFlags() const {
   int flags = 0;
 
   const AtomicString& autocomplete =
-      element->getAttribute(HTMLNames::autocompleteAttr);
+      element->getAttribute(html_names::kAutocompleteAttr);
   if (autocomplete == "on")
     flags |= kWebTextInputFlagAutocompleteOn;
   else if (autocomplete == "off")
     flags |= kWebTextInputFlagAutocompleteOff;
 
   const AtomicString& autocorrect =
-      element->getAttribute(HTMLNames::autocorrectAttr);
+      element->getAttribute(html_names::kAutocorrectAttr);
   if (autocorrect == "on")
     flags |= kWebTextInputFlagAutocorrectOn;
   else if (autocorrect == "off")
@@ -1396,21 +1407,21 @@ WebTextInputMode InputMethodController::InputModeOfFocusedElement() const {
 
   if (mode.IsEmpty())
     return kWebTextInputModeDefault;
-  if (mode == InputModeNames::none)
+  if (mode == input_mode_names::kNone)
     return kWebTextInputModeNone;
-  if (mode == InputModeNames::text)
+  if (mode == input_mode_names::kText)
     return kWebTextInputModeText;
-  if (mode == InputModeNames::tel)
+  if (mode == input_mode_names::kTel)
     return kWebTextInputModeTel;
-  if (mode == InputModeNames::url)
+  if (mode == input_mode_names::kUrl)
     return kWebTextInputModeUrl;
-  if (mode == InputModeNames::email)
+  if (mode == input_mode_names::kEmail)
     return kWebTextInputModeEmail;
-  if (mode == InputModeNames::numeric)
+  if (mode == input_mode_names::kNumeric)
     return kWebTextInputModeNumeric;
-  if (mode == InputModeNames::decimal)
+  if (mode == input_mode_names::kDecimal)
     return kWebTextInputModeDecimal;
-  if (mode == InputModeNames::search)
+  if (mode == input_mode_names::kSearch)
     return kWebTextInputModeSearch;
   return kWebTextInputModeDefault;
 }
@@ -1440,19 +1451,19 @@ WebTextInputType InputMethodController::TextInputType() const {
     if (input->IsDisabledOrReadOnly())
       return kWebTextInputTypeNone;
 
-    if (type == InputTypeNames::password)
+    if (type == input_type_names::kPassword)
       return kWebTextInputTypePassword;
-    if (type == InputTypeNames::search)
+    if (type == input_type_names::kSearch)
       return kWebTextInputTypeSearch;
-    if (type == InputTypeNames::email)
+    if (type == input_type_names::kEmail)
       return kWebTextInputTypeEmail;
-    if (type == InputTypeNames::number)
+    if (type == input_type_names::kNumber)
       return kWebTextInputTypeNumber;
-    if (type == InputTypeNames::tel)
+    if (type == input_type_names::kTel)
       return kWebTextInputTypeTelephone;
-    if (type == InputTypeNames::url)
+    if (type == input_type_names::kUrl)
       return kWebTextInputTypeURL;
-    if (type == InputTypeNames::text)
+    if (type == input_type_names::kText)
       return kWebTextInputTypeText;
 
     return kWebTextInputTypeNone;

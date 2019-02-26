@@ -20,6 +20,7 @@
 #include "net/base/load_states.h"
 #include "net/base/net_error_details.h"
 #include "net/base/net_export.h"
+#include "net/base/privacy_mode.h"
 #include "net/base/request_priority.h"
 #include "net/cookies/canonical_cookie.h"
 #include "net/filter/source_stream.h"
@@ -264,15 +265,15 @@ class NET_EXPORT URLRequestJob : public base::PowerObserver {
   // Notifies the job about an SSL certificate error.
   void NotifySSLCertificateError(const SSLInfo& ssl_info, bool fatal);
 
-  // Delegates to URLRequest::Delegate.
+  // Delegates to URLRequest.
   bool CanGetCookies(const CookieList& cookie_list) const;
 
-  // Delegates to URLRequest::Delegate.
+  // Delegates to URLRequest.
   bool CanSetCookie(const net::CanonicalCookie& cookie,
                     CookieOptions* options) const;
 
-  // Delegates to URLRequest::Delegate.
-  bool CanEnablePrivacyMode() const;
+  // Delegates to URLRequest.
+  PrivacyMode privacy_mode() const;
 
   // Notifies the job that headers have been received.
   void NotifyHeadersComplete();

@@ -106,6 +106,11 @@ class CORE_EXPORT InspectorPageAgent final
   static ResourceType ToResourceType(const blink::ResourceType);
   static String CachedResourceTypeJson(const Resource&);
 
+  InspectorPageAgent(InspectedFrames*,
+                     Client*,
+                     InspectorResourceContentLoader*,
+                     v8_inspector::V8InspectorSession*);
+
   // Page API for frontend
   protocol::Response enable() override;
   protocol::Response disable() override;
@@ -164,7 +169,7 @@ class CORE_EXPORT InspectorPageAgent final
 
   protocol::Response setProduceCompilationCache(bool enabled) override;
   protocol::Response addCompilationCache(const String& url,
-                                         const String& data) override;
+                                         const protocol::Binary& data) override;
   protocol::Response clearCompilationCache() override;
 
   // InspectorInstrumentation API
@@ -209,11 +214,6 @@ class CORE_EXPORT InspectorPageAgent final
   void Trace(blink::Visitor*) override;
 
  private:
-  InspectorPageAgent(InspectedFrames*,
-                     Client*,
-                     InspectorResourceContentLoader*,
-                     v8_inspector::V8InspectorSession*);
-
   void GetResourceContentAfterResourcesContentLoaded(
       const String& frame_id,
       const String& url,
@@ -236,7 +236,7 @@ class CORE_EXPORT InspectorPageAgent final
   std::unique_ptr<protocol::Page::FrameResourceTree> BuildObjectForResourceTree(
       LocalFrame*);
   Member<InspectedFrames> inspected_frames_;
-  HashMap<String, Vector<char>> compilation_cache_;
+  HashMap<String, protocol::Binary> compilation_cache_;
   v8_inspector::V8InspectorSession* v8_session_;
   Client* client_;
   String pending_script_to_evaluate_on_load_once_;

@@ -43,10 +43,12 @@ FeedSchedulerBridge::FeedSchedulerBridge(const JavaRef<jobject>& j_this,
       base::BindRepeating(&FeedSchedulerBridge::TriggerRefresh,
                           weak_factory_.GetWeakPtr()),
       base::BindRepeating(&FeedSchedulerBridge::ScheduleWakeUp,
+                          weak_factory_.GetWeakPtr()),
+      base::BindRepeating(&FeedSchedulerBridge::CancelWakeUp,
                           weak_factory_.GetWeakPtr()));
 }
 
-FeedSchedulerBridge::~FeedSchedulerBridge() {}
+FeedSchedulerBridge::~FeedSchedulerBridge() = default;
 
 void FeedSchedulerBridge::Destroy(JNIEnv* env, const JavaRef<jobject>& j_this) {
   delete this;
@@ -86,22 +88,23 @@ void FeedSchedulerBridge::OnFixedTimer(
     JNIEnv* env,
     const JavaRef<jobject>& j_this,
     const base::android::JavaRef<jobject>& j_callback) {
-  base::OnceClosure callback =
-      base::BindOnce(&base::android::RunObjectCallbackAndroid,
-                     ScopedJavaGlobalRef<jobject>(j_callback), nullptr);
+  base::OnceClosure callback = base::BindOnce(
+      &FeedSchedulerBridge::FixedTimerHandlingDone, weak_factory_.GetWeakPtr(),
+      ScopedJavaGlobalRef<jobject>(j_callback));
   scheduler_host_->OnFixedTimer(std::move(callback));
-}
-
-void FeedSchedulerBridge::OnTaskReschedule(
-    JNIEnv* env,
-    const base::android::JavaRef<jobject>& j_this) {
-  scheduler_host_->OnTaskReschedule();
 }
 
 void FeedSchedulerBridge::OnSuggestionConsumed(
     JNIEnv* env,
     const base::android::JavaRef<jobject>& j_this) {
   scheduler_host_->OnSuggestionConsumed();
+}
+
+void FeedSchedulerBridge::OnArticlesCleared(
+    JNIEnv* env,
+    const base::android::JavaRef<jobject>& j_this,
+    jboolean j_suppress_refreshes) {
+  scheduler_host_->OnArticlesCleared(j_suppress_refreshes);
 }
 
 void FeedSchedulerBridge::TriggerRefresh() {
@@ -118,6 +121,11 @@ void FeedSchedulerBridge::ScheduleWakeUp(base::TimeDelta threshold) {
 void FeedSchedulerBridge::CancelWakeUp() {
   JNIEnv* env = base::android::AttachCurrentThread();
   Java_FeedSchedulerBridge_cancelWakeUp(env, j_this_);
+}
+
+void FeedSchedulerBridge::FixedTimerHandlingDone(
+    ScopedJavaGlobalRef<jobject> j_callback) {
+  base::android::RunObjectCallbackAndroid(j_callback, nullptr);
 }
 
 }  // namespace feed

@@ -32,9 +32,9 @@ from chromite.lib import constants
 from chromite.lib import cros_logging as logging
 from chromite.lib import cros_sdk_lib
 from chromite.lib import failures_lib
-from chromite.lib import osutils
 
-FORCE_BUILD_PACKAGES = '10774.0.0'
+BUILD_PACKAGES_PREBUILTS = '10774.0.0'
+BUILD_PACKAGES_WITH_DEBUG_SYMBOLS = '6302.0.0'
 
 class InvalidWorkspace(failures_lib.StepFailure):
   """Raised when a workspace isn't usable."""
@@ -85,53 +85,17 @@ class WorkspaceStageBase(generic_stages.BuilderStage):
     """
     return manifest_version.VersionInfo.from_repo(self._build_root)
 
-  def BeforeLimit(self, limit):
-    """Is worksapce version older that cutoff limit?
+  def AfterLimit(self, limit):
+    """Is worksapce version newer than cutoff limit?
 
     Args:
       limit: String version of format '123.0.0'
 
     Returns:
-      bool: True if workspace has older version than limit.
+      bool: True if workspace has newer version than limit.
     """
     version_info = self.GetWorkspaceVersionInfo()
-    return version_info < manifest_version.VersionInfo(limit)
-
-
-class WorkspaceCleanStage(WorkspaceStageBase):
-  """Clean a working directory checkout."""
-
-  category = constants.CI_INFRA_STAGE
-
-  def PerformStage(self):
-    """Clean stuff!."""
-    logging.info('Cleaning: %s', self._build_root)
-
-    repo = self.GetWorkspaceRepo()
-
-    #
-    # TODO: This logic is copied from cbuildbot_launch, need to share.
-    #
-
-    logging.info('Remove Chroot.')
-    chroot_dir = os.path.join(repo.directory, constants.DEFAULT_CHROOT_DIR)
-    if os.path.exists(chroot_dir) or os.path.exists(chroot_dir + '.img'):
-      cros_sdk_lib.CleanupChrootMount(chroot_dir, delete=True)
-
-    logging.info('Remove Chrome checkout.')
-    osutils.RmDir(os.path.join(repo.directory, '.cache', 'distfiles'),
-                  ignore_missing=True, sudo=True)
-
-    try:
-      # If there is any failure doing the cleanup, wipe everything.
-      # The previous run might have been killed in the middle leaving stale git
-      # locks. Clean those up, first.
-      repo.PreLoad()
-      repo.CleanStaleLocks()
-      repo.BuildRootGitCleanup(prune_all=True)
-    except Exception:
-      logging.info('Checkout cleanup failed, wiping buildroot:', exc_info=True)
-      repository.ClearBuildRoot(repo.directory)
+    return version_info > manifest_version.VersionInfo(limit)
 
 
 class WorkspaceSyncStage(WorkspaceStageBase):
@@ -145,6 +109,8 @@ class WorkspaceSyncStage(WorkspaceStageBase):
                  self._run.config.workspace_branch, self._build_root)
 
     repo = self.GetWorkspaceRepo()
+    repo.PreLoad()
+    repo.BuildRootGitCleanup(prune_all=True)
     repo.Sync(detach=True)
 
 
@@ -183,17 +149,10 @@ class WorkspacePublishBuildspecStage(WorkspaceStageBase):
 
     # Use the manifest-versions directories that exist in the original
     # checkout. They may already be populated.
-    int_manifest_versions_path = os.path.join(
+    manifest_versions_int = os.path.join(
         self._orig_root, site_params.INTERNAL_MANIFEST_VERSIONS_PATH)
-    manifest_version.RefreshManifestCheckout(
-        int_manifest_versions_path,
-        site_params.MANIFEST_VERSIONS_INT_GOB_URL)
-
-    ext_manifest_versions_path = os.path.join(
+    manifest_versions_ext = os.path.join(
         self._orig_root, site_params.EXTERNAL_MANIFEST_VERSIONS_PATH)
-    manifest_version.RefreshManifestCheckout(
-        ext_manifest_versions_path,
-        site_params.MANIFEST_VERSIONS_GOB_URL)
 
     repo = self.GetWorkspaceRepo()
 
@@ -206,8 +165,8 @@ class WorkspacePublishBuildspecStage(WorkspaceStageBase):
     build_spec_path = manifest_version.GenerateAndPublishOfficialBuildSpec(
         repo,
         incr_type,
-        manifest_versions_int=int_manifest_versions_path,
-        manifest_versions_ext=ext_manifest_versions_path,
+        manifest_versions_int=manifest_versions_int,
+        manifest_versions_ext=manifest_versions_ext,
         dryrun=self._run.options.debug)
 
     if self._run.options.debug:
@@ -255,18 +214,35 @@ class WorkspaceBuildPackagesStage(generic_stages.BoardSpecificBuilderStage,
   category = constants.PRODUCT_OS_STAGE
 
   def PerformStage(self):
-    usepkg = self._run.config.usepkg_build_packages
-    if self.BeforeLimit(FORCE_BUILD_PACKAGES):
-      usepkg = False
+    usepkg = False
+    if self.AfterLimit(BUILD_PACKAGES_PREBUILTS):
+      usepkg = self._run.config.usepkg_build_packages
 
     packages = self.GetListOfPackagesToBuild()
-    commands.Build(self._build_root,
-                   self._current_board,
-                   build_autotest=False,
-                   usepkg=usepkg,
-                   packages=packages,
-                   skip_chroot_upgrade=True,
-                   chrome_root=self._run.options.chrome_root,
-                   noretry=self._run.config.nobuildretry,
-                   chroot_args=None,
-                   extra_env=self._portage_extra_env)
+
+    cmd = ['./build_packages', '--board=%s' % self._current_board,
+           '--accept_licenses=@CHROMEOS', '--skip_chroot_upgrade',
+           '--nowithautotest', ]
+
+    if self.AfterLimit(BUILD_PACKAGES_WITH_DEBUG_SYMBOLS):
+      cmd.append('--withdebugsymbols')
+
+    if not usepkg:
+      cmd.extend(commands.LOCAL_BUILD_FLAGS)
+
+    if self._run.config.nobuildretry:
+      cmd.append('--nobuildretry')
+
+    chroot_args = []
+    if self._run.options.chrome_root:
+      chroot_args.append('--chrome_root=%s' % self._run.options.chrome_root)
+
+    # TODO: Add event file handling, for build package performance tracking.
+    #if self.AfterLimit(BUILD_PACKAGES_EVENTS):
+    #  cmd.append('--withevents')
+    #  cmd.append('--eventfile=%s' % event_file)
+
+    cmd.extend(packages)
+
+    commands.RunBuildScript(
+        self._build_root, cmd, chroot_args=chroot_args, enter_chroot=True)

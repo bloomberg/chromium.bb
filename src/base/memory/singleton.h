@@ -219,14 +219,15 @@ template <typename Type,
           typename DifferentiatingType = Type>
 class Singleton {
  private:
-  // Classes using the Singleton<T> pattern should declare a GetInstance()
-  // method and call Singleton::get() from within that.
-  friend Type* Type::GetInstance();
+  // A class T using the Singleton<T> pattern should declare a GetInstance()
+  // method and call Singleton::get() from within that. T may also declare a
+  // GetInstanceIfExists() method to invoke Singleton::GetIfExists().
+  friend Type;
 
   // This class is safe to be constructed and copy-constructed since it has no
   // member.
 
-  // Return a pointer to the one true instance of the class.
+  // Returns a pointer to the one true instance of the class.
   static Type* get() {
 #if DCHECK_IS_ON()
     if (!Traits::kAllowedToAccessOnNonjoinableThread)
@@ -236,6 +237,22 @@ class Singleton {
     return subtle::GetOrCreateLazyPointer(
         &instance_, &CreatorFunc, nullptr,
         Traits::kRegisterAtExit ? OnExit : nullptr, nullptr);
+  }
+
+  // Returns the same result as get() if the instance exists but doesn't
+  // construct it (and returns null) if it doesn't.
+  static Type* GetIfExists() {
+#if DCHECK_IS_ON()
+    if (!Traits::kAllowedToAccessOnNonjoinableThread)
+      ThreadRestrictions::AssertSingletonAllowed();
+#endif
+
+    if (!subtle::NoBarrier_Load(&instance_))
+      return nullptr;
+
+    // Need to invoke get() nonetheless as some Traits return null after
+    // destruction (even though |instance_| still holds garbage).
+    return get();
   }
 
   // Internal method used as an adaptor for GetOrCreateLazyPointer(). Do not use

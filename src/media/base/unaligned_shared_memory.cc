@@ -7,7 +7,7 @@
 #include <limits>
 
 #include "base/logging.h"
-#include "base/sys_info.h"
+#include "base/system/sys_info.h"
 #include "mojo/public/cpp/system/platform_handle.h"
 
 namespace media {

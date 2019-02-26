@@ -25,6 +25,11 @@ class AutofillProfile;
 // Utilities to process, normalize and compare international phone numbers.
 namespace i18n {
 
+// No reasonable phone number should need more than |kMaxPhoneNumberSize|
+// characters. Longer inputs might be an error or an attack and processing them
+// takes non-trivial time (parsing with regex), so will be ignored.
+extern const size_t kMaxPhoneNumberSize;
+
 // Return true if the given |phone_number| object is likely to be a phone number
 // This method uses IsPossibleNumber from libphonenumber, instead of
 // IsValidNumber. IsPossibleNumber does a less strict check, it will not try to

@@ -125,7 +125,7 @@ class CheckerImageTrackerTest : public testing::Test,
                          .TakePaintImage(),
                      SkIRect::MakeWH(dimension, dimension),
                      kNone_SkFilterQuality, SkMatrix::I(),
-                     PaintImage::kDefaultFrameIndex, gfx::ColorSpace());
+                     PaintImage::kDefaultFrameIndex);
   }
 
   bool ShouldCheckerImage(const DrawImage& draw_image, WhichTree tree) {
@@ -433,8 +433,7 @@ TEST_F(CheckerImageTrackerTest, CheckersOnlyStaticCompletedImages) {
           .set_paint_image_generator(CreatePaintImageGenerator(image_size))
           .TakePaintImage(),
       SkIRect::MakeWH(image_size.width(), image_size.height()),
-      kNone_SkFilterQuality, SkMatrix::I(), PaintImage::kDefaultFrameIndex,
-      gfx::ColorSpace());
+      kNone_SkFilterQuality, SkMatrix::I(), PaintImage::kDefaultFrameIndex);
   EXPECT_FALSE(
       ShouldCheckerImage(completed_paint_image, WhichTree::PENDING_TREE));
 }
@@ -461,12 +460,10 @@ TEST_F(CheckerImageTrackerTest, ChoosesMaxScaleAndQuality) {
   SetUpTracker(true);
 
   DrawImage image = CreateImage(ImageType::CHECKERABLE);
-  DrawImage scaled_image1(image, 0.5f, PaintImage::kDefaultFrameIndex,
-                          gfx::ColorSpace());
+  DrawImage scaled_image1(image, 0.5f, PaintImage::kDefaultFrameIndex);
   DrawImage scaled_image2 =
       DrawImage(image.paint_image(), image.src_rect(), kHigh_SkFilterQuality,
-                SkMatrix::MakeScale(1.8f), PaintImage::kDefaultFrameIndex,
-                gfx::ColorSpace());
+                SkMatrix::MakeScale(1.8f), PaintImage::kDefaultFrameIndex);
 
   std::vector<DrawImage> draw_images = {scaled_image1, scaled_image2};
   CheckerImageTracker::ImageDecodeQueue image_decode_queue =
@@ -541,7 +538,7 @@ TEST_F(CheckerImageTrackerTest, UseSrcRectForSize) {
   DrawImage image = CreateImage(ImageType::CHECKERABLE);
   image = DrawImage(image.paint_image(), SkIRect::MakeWH(200, 200),
                     image.filter_quality(), SkMatrix::I(),
-                    PaintImage::kDefaultFrameIndex, image.target_color_space());
+                    PaintImage::kDefaultFrameIndex);
   EXPECT_FALSE(ShouldCheckerImage(image, WhichTree::PENDING_TREE));
 }
 

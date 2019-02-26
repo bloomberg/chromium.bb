@@ -39,7 +39,9 @@ struct DeltaSetIndexMap
   {
     TRACE_SANITIZE (this);
     return_trace (c->check_struct (this) &&
-		  c->check_array (mapDataZ.arrayZ, mapCount, get_width ()));
+		  c->check_range (mapDataZ.arrayZ,
+				  mapCount,
+				  get_width ()));
   }
 
   unsigned int map (unsigned int v) const /* Returns 16.16 outer.inner. */
@@ -115,7 +117,7 @@ struct HVARVVAR
   }
 
   inline float get_advance_var (hb_codepoint_t glyph,
-				int *coords, unsigned int coord_count) const
+				const int *coords, unsigned int coord_count) const
   {
     unsigned int varidx = (this+advMap).map (glyph);
     return (this+varStore).get_delta (varidx, coords, coord_count);

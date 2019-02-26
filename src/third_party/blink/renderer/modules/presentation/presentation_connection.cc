@@ -10,6 +10,7 @@
 #include "third_party/blink/renderer/core/dom/document.h"
 #include "third_party/blink/renderer/core/dom/events/event.h"
 #include "third_party/blink/renderer/core/events/message_event.h"
+#include "third_party/blink/renderer/core/fileapi/file_error.h"
 #include "third_party/blink/renderer/core/fileapi/file_reader_loader.h"
 #include "third_party/blink/renderer/core/fileapi/file_reader_loader_client.h"
 #include "third_party/blink/renderer/core/frame/deprecation.h"
@@ -25,6 +26,7 @@
 #include "third_party/blink/renderer/modules/presentation/presentation_receiver.h"
 #include "third_party/blink/renderer/modules/presentation/presentation_request.h"
 #include "third_party/blink/renderer/platform/wtf/assertions.h"
+#include "third_party/blink/renderer/platform/wtf/functional.h"
 #include "third_party/blink/renderer/platform/wtf/text/atomic_string.h"
 
 namespace blink {
@@ -136,7 +138,7 @@ class PresentationConnection::BlobLoader final
     presentation_connection_->DidFinishLoadingBlob(
         loader_->ArrayBufferResult());
   }
-  void DidFail(FileError::ErrorCode error_code) override {
+  void DidFail(FileErrorCode error_code) override {
     presentation_connection_->DidFailLoadingBlob(error_code);
   }
 
@@ -189,12 +191,12 @@ void PresentationConnection::DidChangeState(
     case mojom::blink::PresentationConnectionState::CONNECTING:
       return;
     case mojom::blink::PresentationConnectionState::CONNECTED:
-      DispatchStateChangeEvent(Event::Create(EventTypeNames::connect));
+      DispatchStateChangeEvent(Event::Create(event_type_names::kConnect));
       return;
     case mojom::blink::PresentationConnectionState::CLOSED:
       return;
     case mojom::blink::PresentationConnectionState::TERMINATED:
-      DispatchStateChangeEvent(Event::Create(EventTypeNames::terminate));
+      DispatchStateChangeEvent(Event::Create(event_type_names::kTerminate));
       return;
   }
   NOTREACHED();
@@ -240,7 +242,7 @@ ControllerPresentationConnection* ControllerPresentationConnection::Take(
 
   // Fire onconnectionavailable event asynchronously.
   auto* event = PresentationConnectionAvailableEvent::Create(
-      EventTypeNames::connectionavailable, connection);
+      event_type_names::kConnectionavailable, connection);
   request->GetExecutionContext()
       ->GetTaskRunner(TaskType::kPresentation)
       ->PostTask(FROM_HERE,
@@ -302,9 +304,9 @@ ReceiverPresentationConnection* ReceiverPresentationConnection::Take(
   DCHECK(receiver);
 
   ReceiverPresentationConnection* connection =
-      new ReceiverPresentationConnection(*receiver->GetFrame(), receiver,
-                                         presentation_info.id,
-                                         presentation_info.url);
+      MakeGarbageCollected<ReceiverPresentationConnection>(
+          *receiver->GetFrame(), receiver, presentation_info.id,
+          presentation_info.url);
   connection->Init(std::move(controller_connection),
                    std::move(receiver_connection_request));
 
@@ -367,7 +369,7 @@ void ReceiverPresentationConnection::Trace(blink::Visitor* visitor) {
 }
 
 const AtomicString& PresentationConnection::InterfaceName() const {
-  return EventTargetNames::PresentationConnection;
+  return event_target_names::kPresentationConnection;
 }
 
 ExecutionContext* PresentationConnection::GetExecutionContext() const {
@@ -381,17 +383,17 @@ void PresentationConnection::AddedEventListener(
     RegisteredEventListener& registered_listener) {
   EventTargetWithInlineData::AddedEventListener(event_type,
                                                 registered_listener);
-  if (event_type == EventTypeNames::connect) {
+  if (event_type == event_type_names::kConnect) {
     UseCounter::Count(GetExecutionContext(),
                       WebFeature::kPresentationConnectionConnectEventListener);
-  } else if (event_type == EventTypeNames::close) {
+  } else if (event_type == event_type_names::kClose) {
     UseCounter::Count(GetExecutionContext(),
                       WebFeature::kPresentationConnectionCloseEventListener);
-  } else if (event_type == EventTypeNames::terminate) {
+  } else if (event_type == event_type_names::kTerminate) {
     UseCounter::Count(
         GetExecutionContext(),
         WebFeature::kPresentationConnectionTerminateEventListener);
-  } else if (event_type == EventTypeNames::message) {
+  } else if (event_type == event_type_names::kMessage) {
     UseCounter::Count(GetExecutionContext(),
                       WebFeature::kPresentationConnectionMessageEventListener);
   }
@@ -419,7 +421,7 @@ void PresentationConnection::send(const String& message,
   if (!CanSendMessage(exception_state))
     return;
 
-  messages_.push_back(new Message(message));
+  messages_.push_back(MakeGarbageCollected<Message>(message));
   HandleMessageQueue();
 }
 
@@ -430,7 +432,7 @@ void PresentationConnection::send(DOMArrayBuffer* array_buffer,
   if (!CanSendMessage(exception_state))
     return;
 
-  messages_.push_back(new Message(array_buffer));
+  messages_.push_back(MakeGarbageCollected<Message>(array_buffer));
   HandleMessageQueue();
 }
 
@@ -441,7 +443,8 @@ void PresentationConnection::send(
   if (!CanSendMessage(exception_state))
     return;
 
-  messages_.push_back(new Message(array_buffer_view.View()->buffer()));
+  messages_.push_back(
+      MakeGarbageCollected<Message>(array_buffer_view.View()->buffer()));
   HandleMessageQueue();
 }
 
@@ -450,7 +453,7 @@ void PresentationConnection::send(Blob* data, ExceptionState& exception_state) {
   if (!CanSendMessage(exception_state))
     return;
 
-  messages_.push_back(new Message(data->GetBlobDataHandle()));
+  messages_.push_back(MakeGarbageCollected<Message>(data->GetBlobDataHandle()));
   HandleMessageQueue();
 }
 
@@ -495,7 +498,8 @@ void PresentationConnection::HandleMessageQueue() {
         break;
       case kMessageTypeBlob:
         DCHECK(!blob_loader_);
-        blob_loader_ = new BlobLoader(message->blob_data_handle, this);
+        blob_loader_ =
+            MakeGarbageCollected<BlobLoader>(message->blob_data_handle, this);
         break;
     }
   }
@@ -590,7 +594,8 @@ void PresentationConnection::DidClose(
 
   state_ = mojom::blink::PresentationConnectionState::CLOSED;
   DispatchStateChangeEvent(PresentationConnectionCloseEvent::Create(
-      EventTypeNames::close, ConnectionCloseReasonToString(reason), message));
+      event_type_names::kClose, ConnectionCloseReasonToString(reason),
+      message));
 }
 
 void PresentationConnection::DidFinishLoadingBlob(DOMArrayBuffer* buffer) {
@@ -607,8 +612,7 @@ void PresentationConnection::DidFinishLoadingBlob(DOMArrayBuffer* buffer) {
   HandleMessageQueue();
 }
 
-void PresentationConnection::DidFailLoadingBlob(
-    FileError::ErrorCode error_code) {
+void PresentationConnection::DidFailLoadingBlob(FileErrorCode error_code) {
   DCHECK(!messages_.IsEmpty());
   DCHECK_EQ(messages_.front()->type, kMessageTypeBlob);
   // FIXME: generate error message?

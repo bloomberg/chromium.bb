@@ -132,8 +132,10 @@ filelist.decorateListItem = function(li, entry, metadataModel) {
   // The metadata may not yet be ready. In that case, the list item will be
   // updated when the metadata is ready via updateListItemsMetadata. For files
   // not on an external backend, externalProps is not available.
-  var externalProps = metadataModel.getCache(
-      [entry], ['hosted', 'availableOffline', 'customIconUrl', 'shared'])[0];
+  var externalProps = metadataModel.getCache([entry], [
+    'hosted', 'availableOffline', 'customIconUrl', 'shared', 'isMachineRoot',
+    'isExternalMedia'
+  ])[0];
   filelist.updateListItemExternalProps(
       li, externalProps, util.isTeamDriveRoot(entry));
 
@@ -200,7 +202,6 @@ filelist.renderFileNameLabel = function(doc, entry) {
  * Updates grid item or table row for the externalProps.
  * @param {cr.ui.ListItem} li List item.
  * @param {Object} externalProps Metadata.
- * @param {boolean} isTeamDriveRoot Whether the item is a team drive root entry.
  */
 filelist.updateListItemExternalProps = function(
     li, externalProps, isTeamDriveRoot) {
@@ -226,6 +227,9 @@ filelist.updateListItemExternalProps = function(
   if (li.classList.contains('directory')) {
     iconDiv.classList.toggle('shared', !!externalProps.shared);
     iconDiv.classList.toggle('team-drive-root', !!isTeamDriveRoot);
+    iconDiv.classList.toggle('computers-root', !!externalProps.isMachineRoot);
+    iconDiv.classList.toggle(
+        'external-media-root', !!externalProps.isExternalMedia);
   }
 };
 
@@ -456,6 +460,7 @@ filelist.handleKeyDown = function(e) {
   // Ctrl/Meta+A
   if (sm.multiple && e.keyCode == 65 &&
       (cr.isMac && e.metaKey || !cr.isMac && e.ctrlKey)) {
+    sm.setCheckSelectMode(true);
     sm.selectAll();
     e.preventDefault();
     return;

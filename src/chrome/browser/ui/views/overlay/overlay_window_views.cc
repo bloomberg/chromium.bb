@@ -14,8 +14,10 @@
 #include "chrome/app/vector_icons/vector_icons.h"
 #include "chrome/browser/ui/views/overlay/close_image_button.h"
 #include "chrome/browser/ui/views/overlay/control_image_button.h"
+#include "chrome/browser/ui/views/overlay/playback_image_button.h"
 #include "chrome/browser/ui/views/overlay/resize_handle_button.h"
 #include "chrome/grit/generated_resources.h"
+#include "components/vector_icons/vector_icons.h"
 #include "content/public/browser/picture_in_picture_window_controller.h"
 #include "content/public/browser/web_contents.h"
 #include "media/base/video_util.h"
@@ -32,6 +34,12 @@
 #include "ui/views/widget/widget_delegate.h"
 #include "ui/views/window/non_client_view.h"
 #include "ui/views/window/window_resize_utils.h"
+
+#if defined(OS_CHROMEOS)
+#include "ash/public/cpp/ash_features.h"
+#include "ash/public/cpp/window_properties.h"  // nogncheck
+#include "ui/aura/window.h"
+#endif
 
 // static
 std::unique_ptr<content::OverlayWindow> content::OverlayWindow::Create(
@@ -104,12 +112,21 @@ class OverlayWindowFrameView : public views::NonClientFrameView {
 
     // The media controls should take and handle user interaction.
     OverlayWindowViews* window = static_cast<OverlayWindowViews*>(widget_);
-    if (window->GetCloseControlsBounds().Contains(point) ||
-        window->GetFirstCustomControlsBounds().Contains(point) ||
-        window->GetSecondCustomControlsBounds().Contains(point) ||
-        window->GetPlayPauseControlsBounds().Contains(point)) {
+    if (window->AreControlsVisible() &&
+        (window->GetCloseControlsBounds().Contains(point) ||
+         window->GetFirstCustomControlsBounds().Contains(point) ||
+         window->GetSecondCustomControlsBounds().Contains(point) ||
+         window->GetPlayPauseControlsBounds().Contains(point))) {
       return window_component;
     }
+
+#if defined(OS_CHROMEOS)
+    // If the resize handle is clicked on, we want to force the hit test to
+    // force a resize drag.
+    if (window->AreControlsVisible() &&
+        window->GetResizeHandleControlsBounds().Contains(point))
+      return window->GetResizeHTComponent();
+#endif
 
     // Allows for dragging and resizing the window.
     return (window_component == HTNOWHERE) ? HTCAPTION : window_component;
@@ -170,7 +187,7 @@ OverlayWindowViews::OverlayWindowViews(
 #if defined(OS_CHROMEOS)
       resize_handle_view_(new views::ResizeHandleButton(this)),
 #endif
-      play_pause_controls_view_(new views::ToggleImageButton(this)),
+      play_pause_controls_view_(new views::PlaybackImageButton(this)),
       hide_controls_timer_(
           FROM_HERE,
           base::TimeDelta::FromMilliseconds(2500 /* 2.5 seconds */),
@@ -183,12 +200,18 @@ OverlayWindowViews::OverlayWindowViews(
   params.keep_on_top = true;
   params.visible_on_all_workspaces = true;
   params.remove_standard_frame = true;
+  params.name = "PictureInPictureWindow";
+  params.layer_type = ui::LAYER_NOT_DRAWN;
 
   // Set WidgetDelegate for more control over |widget_|.
   params.delegate = new OverlayWindowWidgetDelegate(this);
 
   Init(params);
   SetUpViews();
+
+#if defined(OS_CHROMEOS)
+  GetNativeWindow()->SetProperty(ash::kWindowPipTypeKey, true);
+#endif  // defined(OS_CHROMEOS)
 
   is_initialized_ = true;
 }
@@ -259,6 +282,9 @@ gfx::Rect OverlayWindowViews::CalculateAndUpdateWindowBounds() {
 }
 
 void OverlayWindowViews::SetUpViews() {
+  GetRootView()->SetPaintToLayer(ui::LAYER_TEXTURED);
+  GetRootView()->layer()->set_name("RootView");
+
   // views::View that is displayed when video is hidden. ----------------------
   // Adding an extra pixel to width/height makes sure controls background cover
   // entirely window when platform has fractional scale applied.
@@ -266,11 +292,13 @@ void OverlayWindowViews::SetUpViews() {
   larger_window_bounds.Inset(-1, -1);
   window_background_view_->SetSize(larger_window_bounds.size());
   window_background_view_->SetPaintToLayer(ui::LAYER_SOLID_COLOR);
+  window_background_view_->layer()->set_name("WindowBackgroundView");
   GetWindowBackgroundLayer()->SetColor(SK_ColorBLACK);
 
   // views::View that holds the scrim, which appears with the controls. -------
   controls_scrim_view_->SetSize(GetBounds().size());
   controls_scrim_view_->SetPaintToLayer(ui::LAYER_SOLID_COLOR);
+  controls_scrim_view_->layer()->set_name("ControlsScrimView");
   GetControlsScrimLayer()->SetColor(gfx::kGoogleGrey900);
   GetControlsScrimLayer()->SetOpacity(0.43f);
 
@@ -278,43 +306,31 @@ void OverlayWindowViews::SetUpViews() {
   controls_parent_view_->SetPaintToLayer(ui::LAYER_TEXTURED);
   controls_parent_view_->SetSize(GetBounds().size());
   controls_parent_view_->layer()->SetFillsBoundsOpaquely(false);
+  controls_parent_view_->layer()->set_name("ControlsParentView");
   controls_parent_view_->set_owned_by_client();
 
   // views::View that closes the window. --------------------------------------
   close_controls_view_->SetPaintToLayer(ui::LAYER_TEXTURED);
   close_controls_view_->layer()->SetFillsBoundsOpaquely(false);
+  close_controls_view_->layer()->set_name("CloseControlsView");
   close_controls_view_->set_owned_by_client();
 
   // view::View that holds the video. -----------------------------------------
   video_view_->SetPaintToLayer(ui::LAYER_TEXTURED);
+  video_view_->layer()->set_name("VideoView");
 
-  // views::View that toggles play/pause. -------------------------------------
-  play_pause_controls_view_->SetImageAlignment(
-      views::ImageButton::ALIGN_CENTER, views::ImageButton::ALIGN_MIDDLE);
-  play_pause_controls_view_->SetToggled(controller_->IsPlayerActive());
+  // views::View that toggles play/pause/replay. ------------------------------
+  play_pause_controls_view_->SetPlaybackState(
+      controller_->IsPlayerActive() ? kPlaying : kPaused);
   play_pause_controls_view_->set_owned_by_client();
 
 #if defined(OS_CHROMEOS)
   // views::View that shows the affordance that the window can be resized. ----
   resize_handle_view_->SetPaintToLayer(ui::LAYER_TEXTURED);
   resize_handle_view_->layer()->SetFillsBoundsOpaquely(false);
+  resize_handle_view_->layer()->set_name("ResizeHandleView");
   resize_handle_view_->set_owned_by_client();
 #endif
-
-  // Accessibility.
-  play_pause_controls_view_->SetFocusForPlatform();  // Make button focusable.
-  const base::string16 play_pause_accessible_button_label(
-      l10n_util::GetStringUTF16(
-          IDS_PICTURE_IN_PICTURE_PLAY_PAUSE_CONTROL_ACCESSIBLE_TEXT));
-  play_pause_controls_view_->SetAccessibleName(
-      play_pause_accessible_button_label);
-  const base::string16 play_button_label(
-      l10n_util::GetStringUTF16(IDS_PICTURE_IN_PICTURE_PLAY_CONTROL_TEXT));
-  play_pause_controls_view_->SetTooltipText(play_button_label);
-  const base::string16 pause_button_label(
-      l10n_util::GetStringUTF16(IDS_PICTURE_IN_PICTURE_PAUSE_CONTROL_TEXT));
-  play_pause_controls_view_->SetToggledTooltipText(pause_button_label);
-  play_pause_controls_view_->SetInstallFocusRingOnFocus(true);
 
   // Set up view::Views heirarchy. --------------------------------------------
   controls_parent_view_->AddChildView(play_pause_controls_view_.get());
@@ -360,16 +376,13 @@ void OverlayWindowViews::UpdateControlsVisibility(bool is_visible) {
   if (always_hide_play_pause_button_ && is_visible)
     play_pause_controls_view_->SetVisible(false);
 
+  GetControlsScrimLayer()->SetVisible(is_visible);
+  GetControlsParentLayer()->SetVisible(is_visible);
   GetCloseControlsLayer()->SetVisible(is_visible);
 
 #if defined(OS_CHROMEOS)
   GetResizeHandleLayer()->SetVisible(is_visible);
 #endif
-
-  GetControlsScrimLayer()->SetVisible(
-      (playback_state_ == kNoVideo) ? false : is_visible);
-  GetControlsParentLayer()->SetVisible(
-      (playback_state_ == kNoVideo) ? false : is_visible);
 }
 
 void OverlayWindowViews::UpdateControlsBounds() {
@@ -416,14 +429,14 @@ void OverlayWindowViews::UpdateCustomControlsSize(
   if (control_button == first_custom_controls_view_.get()) {
     first_custom_controls_view_->SetImage(
         views::Button::STATE_NORMAL,
-        gfx::CreateVectorIcon(kPlayArrowIcon, button_size_.width() / 2,
-                              kControlIconColor));
+        gfx::CreateVectorIcon(vector_icons::kPlayArrowIcon,
+                              button_size_.width() / 2, kControlIconColor));
   }
   if (control_button == second_custom_controls_view_.get()) {
     second_custom_controls_view_->SetImage(
         views::Button::STATE_NORMAL,
-        gfx::CreateVectorIcon(kPauseIcon, button_size_.width() / 2,
-                              kControlIconColor));
+        gfx::CreateVectorIcon(vector_icons::kPauseIcon,
+                              button_size_.width() / 2, kControlIconColor));
   }
   const gfx::ImageSkia control_background = gfx::CreateVectorIcon(
       kPictureInPictureControlBackgroundIcon, button_size_.width(), kBgColor);
@@ -433,19 +446,7 @@ void OverlayWindowViews::UpdateCustomControlsSize(
 
 void OverlayWindowViews::UpdatePlayPauseControlsSize() {
   UpdateButtonSize();
-  play_pause_controls_view_->SetSize(button_size_);
-  play_pause_controls_view_->SetImage(
-      views::Button::STATE_NORMAL,
-      gfx::CreateVectorIcon(kPlayArrowIcon, button_size_.width() / 2,
-                            kControlIconColor));
-  gfx::ImageSkia pause_icon = gfx::CreateVectorIcon(
-      kPauseIcon, button_size_.width() / 2, kControlIconColor);
-  play_pause_controls_view_->SetToggledImage(views::Button::STATE_NORMAL,
-                                             &pause_icon);
-  const gfx::ImageSkia play_pause_background = gfx::CreateVectorIcon(
-      kPictureInPictureControlBackgroundIcon, button_size_.width(), kBgColor);
-  play_pause_controls_view_->SetBackgroundImage(
-      kBgColor, &play_pause_background, &play_pause_background);
+  play_pause_controls_view_->SetButtonSize(button_size_);
 }
 
 void OverlayWindowViews::CreateCustomControl(
@@ -530,7 +531,17 @@ void OverlayWindowViews::Close() {
 }
 
 void OverlayWindowViews::Show() {
+#if defined(OS_CHROMEOS)
+  views::Widget::ShowInactive();
+  // For rounded corners.
+  if (ash::features::IsPipRoundedCornersEnabled()) {
+    decorator_ = std::make_unique<ash::RoundedCornerDecorator>(
+        GetNativeWindow(), GetNativeWindow(), GetRootView()->layer(),
+        ash::kPipRoundedCornerRadius);
+  }
+#else
   views::Widget::Show();
+#endif
 
   // If this is not the first time the window is shown, this will be a no-op.
   has_been_shown_ = true;
@@ -549,7 +560,7 @@ bool OverlayWindowViews::IsAlwaysOnTop() const {
 }
 
 ui::Layer* OverlayWindowViews::GetLayer() {
-  return views::Widget::GetLayer();
+  return GetRootView()->layer();
 }
 
 gfx::Rect OverlayWindowViews::GetBounds() const {
@@ -567,31 +578,8 @@ void OverlayWindowViews::UpdateVideoSize(const gfx::Size& natural_size) {
 }
 
 void OverlayWindowViews::SetPlaybackState(PlaybackState playback_state) {
-  // TODO(apacible): have machine state for controls visibility.
-  bool controls_parent_layer_visible = GetControlsParentLayer()->visible();
-
-  playback_state_ = playback_state;
-
-  switch (playback_state_) {
-    case kPlaying:
-      play_pause_controls_view_->SetToggled(true);
-      controls_parent_view_->SetVisible(true);
-      video_view_->SetVisible(true);
-      GetControlsParentLayer()->SetVisible(controls_parent_layer_visible);
-      break;
-    case kPaused:
-      play_pause_controls_view_->SetToggled(false);
-      controls_parent_view_->SetVisible(true);
-      video_view_->SetVisible(true);
-      GetControlsParentLayer()->SetVisible(controls_parent_layer_visible);
-      break;
-    case kNoVideo:
-      controls_scrim_view_->SetVisible(false);
-      controls_parent_view_->SetVisible(false);
-      video_view_->SetVisible(false);
-      GetControlsParentLayer()->SetVisible(false);
-      break;
-  }
+  playback_state_for_testing_ = playback_state;
+  play_pause_controls_view_->SetPlaybackState(playback_state);
 }
 
 void OverlayWindowViews::SetAlwaysHidePlayPauseButton(bool is_visible) {
@@ -764,7 +752,7 @@ void OverlayWindowViews::OnGestureEvent(ui::GestureEvent* event) {
   // layers are expected to have the same visibility.
   // TODO(apacible): This placeholder logic should be updated with touchscreen
   // specific investigation. https://crbug/854373
-  if (!GetControlsScrimLayer()->visible()) {
+  if (!AreControlsVisible()) {
     UpdateControlsVisibility(true);
     return;
   }
@@ -777,8 +765,6 @@ void OverlayWindowViews::OnGestureEvent(ui::GestureEvent* event) {
     TogglePlayPause();
     event->SetHandled();
   }
-
-  views::Widget::OnGestureEvent(event);
 }
 
 void OverlayWindowViews::ButtonPressed(views::Button* sender,
@@ -801,6 +787,10 @@ gfx::Rect OverlayWindowViews::GetCloseControlsBounds() {
   return close_controls_view_->GetMirroredBounds();
 }
 
+gfx::Rect OverlayWindowViews::GetResizeHandleControlsBounds() {
+  return resize_handle_view_->GetMirroredBounds();
+}
+
 gfx::Rect OverlayWindowViews::GetPlayPauseControlsBounds() {
   return play_pause_controls_view_->GetMirroredBounds();
 }
@@ -815,6 +805,14 @@ gfx::Rect OverlayWindowViews::GetSecondCustomControlsBounds() {
   if (!second_custom_controls_view_)
     return gfx::Rect();
   return second_custom_controls_view_->GetMirroredBounds();
+}
+
+int OverlayWindowViews::GetResizeHTComponent() const {
+  return resize_handle_view_->GetHTComponent();
+}
+
+bool OverlayWindowViews::AreControlsVisible() const {
+  return controls_scrim_view_->layer()->visible();
 }
 
 ui::Layer* OverlayWindowViews::GetControlsScrimLayer() {
@@ -838,10 +836,10 @@ void OverlayWindowViews::TogglePlayPause() {
   // TogglePlayPause() since the IPC message may not have been propogated
   // the media player yet.
   bool is_active = controller_->TogglePlayPause();
-  play_pause_controls_view_->SetToggled(is_active);
+  play_pause_controls_view_->SetPlaybackState(is_active ? kPlaying : kPaused);
 }
 
-views::ToggleImageButton*
+views::PlaybackImageButton*
 OverlayWindowViews::play_pause_controls_view_for_testing() const {
   return play_pause_controls_view_.get();
 }
@@ -860,5 +858,5 @@ views::View* OverlayWindowViews::controls_parent_view_for_testing() const {
 
 OverlayWindowViews::PlaybackState
 OverlayWindowViews::playback_state_for_testing() const {
-  return playback_state_;
+  return playback_state_for_testing_;
 }

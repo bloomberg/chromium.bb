@@ -32,7 +32,7 @@ TEST_F(AppListTest, PressAppListButtonToShowAndDismiss) {
 
   aura::Window* app_list_container =
       root_window->GetChildById(ash::kShellWindowId_AppListContainer);
-  ui::test::EventGenerator generator(shelf_widget->GetNativeWindow());
+  ui::test::EventGenerator generator(root_window);
 
   // Click the app list button to show the app list.
   ash::Shell* shell = ash::Shell::Get();
@@ -42,7 +42,7 @@ TEST_F(AppListTest, PressAppListButtonToShowAndDismiss) {
   EXPECT_FALSE(presenter->GetTargetVisibility());
   EXPECT_EQ(0u, app_list_container->children().size());
   EXPECT_FALSE(app_list_button->is_showing_app_list());
-  generator.set_current_location(
+  generator.set_current_screen_location(
       app_list_button->GetBoundsInScreen().CenterPoint());
   generator.ClickLeftButton();
   // Flush the mojo message from Ash to Chrome to show the app list.

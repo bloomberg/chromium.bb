@@ -23,7 +23,8 @@ interface QuotaDispatcherHost {
                             blink.mojom.StorageType storage_type) =>
       (blink.mojom.QuotaStatusCode error,
        int64 current_usage,
-       int64 current_quota);
+       int64 current_quota,
+       UsageBreakdown usage_breakdown);
 
   // Renderer process requests a new quota size for the origin's storage from
   // the browser process. |requested_size| indicates how much storage space (in

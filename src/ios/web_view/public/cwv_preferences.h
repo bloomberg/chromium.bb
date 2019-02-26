@@ -9,7 +9,8 @@
 
 #import "cwv_export.h"
 
-// Preferences for user settings.
+// Preferences for user settings. The preferences are stored on the local
+// storage.
 CWV_EXPORT
 @interface CWVPreferences : NSObject
 

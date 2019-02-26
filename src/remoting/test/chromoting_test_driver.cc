@@ -150,8 +150,8 @@ void PrintJsonFileInfo() {
 
 int main(int argc, char* argv[]) {
   base::TestSuite test_suite(argc, argv);
-  base::MessageLoopForIO message_loop;
   base::FeatureList::InitializeInstance(std::string(), std::string());
+  base::MessageLoopForIO message_loop;
 
   if (!base::CommandLine::InitializedForCurrentProcess()) {
     if (!base::CommandLine::Init(argc, argv)) {
@@ -165,6 +165,8 @@ int main(int argc, char* argv[]) {
 
   // Do not retry if tests fails.
   command_line->AppendSwitchASCII(switches::kTestLauncherRetryLimit, "0");
+  command_line->AppendSwitchASCII(
+      switches::kIsolatedScriptTestLauncherRetryLimit, "0");
 
   // Different tests may require access to the same host if run in parallel.
   // To avoid shared resource contention, tests will be run one at a time.

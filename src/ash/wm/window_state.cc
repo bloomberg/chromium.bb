@@ -7,6 +7,8 @@
 #include <memory>
 #include <utility>
 
+#include "ash/focus_cycler.h"
+#include "ash/public/cpp/window_animation_types.h"
 #include "ash/public/cpp/window_properties.h"
 #include "ash/public/cpp/window_state_type.h"
 #include "ash/public/interfaces/window_pin_type.mojom.h"
@@ -14,6 +16,8 @@
 #include "ash/screen_util.h"
 #include "ash/shell.h"
 #include "ash/wm/default_state.h"
+#include "ash/wm/immersive_gesture_drag_handler.h"
+#include "ash/wm/pip/pip_positioner.h"
 #include "ash/wm/tablet_mode/tablet_mode_controller.h"
 #include "ash/wm/window_animations.h"
 #include "ash/wm/window_positioning_utils.h"
@@ -29,10 +33,13 @@
 #include "ui/aura/window.h"
 #include "ui/aura/window_delegate.h"
 #include "ui/compositor/layer_tree_owner.h"
+#include "ui/compositor/paint_recorder.h"
 #include "ui/compositor/scoped_layer_animation_settings.h"
 #include "ui/display/display.h"
 #include "ui/display/screen.h"
 #include "ui/views/painter.h"
+#include "ui/views/widget/widget.h"
+#include "ui/views/widget/widget_delegate.h"
 #include "ui/wm/core/coordinate_conversion.h"
 #include "ui/wm/core/ime_util_chromeos.h"
 #include "ui/wm/core/window_util.h"
@@ -40,9 +47,6 @@
 namespace ash {
 namespace wm {
 namespace {
-
-// TODO(edcourtney): Move this to a PIP specific file, once it's created.
-const int kPipRoundedCornerRadius = 8;
 
 bool IsTabletModeEnabled() {
   return Shell::Get()
@@ -145,6 +149,8 @@ void MoveAllTransientChildrenToNewRoot(aura::Window* window) {
 }
 
 }  // namespace
+
+constexpr base::TimeDelta WindowState::kBoundsChangeSlideDuration;
 
 WindowState::~WindowState() {
   // WindowState is registered as an owned property of |window_|, and window
@@ -447,12 +453,7 @@ void WindowState::SetCanConsumeSystemKeys(bool can_consume_system_keys) {
 }
 
 bool WindowState::IsInImmersiveFullscreen() const {
-  return window_->GetProperty(aura::client::kImmersiveFullscreenKey);
-}
-
-void WindowState::SetInImmersiveFullscreen(bool enabled) {
-  base::AutoReset<bool> resetter(&ignore_property_change_, true);
-  window_->SetProperty(aura::client::kImmersiveFullscreenKey, enabled);
+  return window_->GetProperty(kImmersiveIsActive);
 }
 
 void WindowState::set_bounds_changed_by_user(bool bounds_changed_by_user) {
@@ -480,6 +481,18 @@ void WindowState::OnRevertDrag(const gfx::Point& location) {
   DCHECK(drag_details_);
   if (delegate_)
     delegate_->OnDragFinished(/*canceled=*/true, location);
+}
+
+void WindowState::OnActivationLost() {
+  if (IsPip()) {
+    views::Widget::GetWidgetForNativeWindow(window())
+        ->widget_delegate()
+        ->set_can_activate(false);
+  }
+}
+
+display::Display WindowState::GetDisplay() {
+  return display::Screen::GetScreen()->GetDisplayNearestWindow(window());
 }
 
 void WindowState::CreateDragDetails(const gfx::Point& point_in_parent,
@@ -511,6 +524,7 @@ WindowState::WindowState(aura::Window* window)
       ignore_property_change_(false),
       current_state_(new DefaultState(ToWindowStateType(GetShowState()))) {
   window_->AddObserver(this);
+  UpdatePipState(/*was_pip=*/false);
 }
 
 bool WindowState::GetAlwaysOnTop() const {
@@ -583,6 +597,7 @@ void WindowState::NotifyPreStateTypeChange(
     mojom::WindowStateType old_window_state_type) {
   for (auto& observer : observer_list_)
     observer.OnPreWindowStateTypeChange(this, old_window_state_type);
+  UpdatePipState(old_window_state_type == mojom::WindowStateType::PIP);
 }
 
 void WindowState::NotifyPostStateTypeChange(
@@ -621,15 +636,13 @@ void WindowState::SetBoundsConstrained(const gfx::Rect& bounds) {
   SetBoundsDirect(child_bounds);
 }
 
-void WindowState::SetBoundsDirectAnimated(const gfx::Rect& bounds) {
-  const int kBoundsChangeSlideDurationMs = 120;
-
+void WindowState::SetBoundsDirectAnimated(const gfx::Rect& bounds,
+                                          base::TimeDelta duration) {
   ui::Layer* layer = window_->layer();
   ui::ScopedLayerAnimationSettings slide_settings(layer->GetAnimator());
   slide_settings.SetPreemptionStrategy(
       ui::LayerAnimator::IMMEDIATELY_ANIMATE_TO_NEW_TARGET);
-  slide_settings.SetTransitionDuration(
-      base::TimeDelta::FromMilliseconds(kBoundsChangeSlideDurationMs));
+  slide_settings.SetTransitionDuration(duration);
   SetBoundsDirect(bounds);
 }
 
@@ -664,26 +677,36 @@ void WindowState::SetBoundsDirectCrossFade(const gfx::Rect& new_bounds,
   CrossFadeAnimation(window_, std::move(old_layer_owner), animation_type);
 }
 
-void WindowState::UpdatePipRoundedCorners() {
-  auto* layer = window()->layer();
-  if (!IsPip()) {
-    // Only remove the mask layer if it is from the existing PIP mask.
-    if (layer && pip_mask_ && layer->layer_mask_layer() == pip_mask_->layer())
-      layer->SetMaskLayer(nullptr);
-    pip_mask_.reset();
-    return;
+void WindowState::UpdatePipState(bool was_pip) {
+  auto* widget = views::Widget::GetWidgetForNativeWindow(window());
+  if (IsPip()) {
+    // widget may not exit in some unit tests.
+    // TODO(oshima): Fix unit tests and add DCHECK.
+    if (widget) {
+      widget->widget_delegate()->set_can_activate(false);
+      if (widget->IsActive())
+        widget->Deactivate();
+      Shell::Get()->focus_cycler()->AddWidget(widget);
+    }
+    ::wm::SetWindowVisibilityAnimationType(
+        window(), WINDOW_VISIBILITY_ANIMATION_TYPE_FADE_IN_SLIDE_OUT);
+  } else if (was_pip) {
+    if (widget) {
+      widget->widget_delegate()->set_can_activate(true);
+      Shell::Get()->focus_cycler()->RemoveWidget(widget);
+    }
+    ::wm::SetWindowVisibilityAnimationType(
+        window(), ::wm::WINDOW_VISIBILITY_ANIMATION_TYPE_DEFAULT);
   }
+}
 
-  gfx::Rect bounds = window()->bounds();
-  if (layer && (!pip_mask_ || pip_mask_->layer()->size() != bounds.size())) {
-    layer->SetMaskLayer(nullptr);
-    pip_mask_ = views::Painter::CreatePaintedLayer(
-        views::Painter::CreateSolidRoundRectPainter(SK_ColorBLACK,
-                                                    kPipRoundedCornerRadius));
-    pip_mask_->layer()->SetBounds(bounds);
-    pip_mask_->layer()->SetFillsBoundsOpaquely(false);
-    layer->SetFillsBoundsOpaquely(false);
-    layer->SetMaskLayer(pip_mask_->layer());
+void WindowState::UpdatePipBounds() {
+  gfx::Rect new_bounds =
+      PipPositioner::GetPositionAfterMovementAreaChange(this);
+  if (window()->GetBoundsInScreen() != new_bounds) {
+    wm::SetBoundsEvent event(wm::WM_EVENT_SET_BOUNDS, new_bounds,
+                             /*animate=*/true);
+    OnWMEvent(&event);
   }
 }
 
@@ -710,6 +733,7 @@ const WindowState* GetWindowState(const aura::Window* window) {
 void WindowState::OnWindowPropertyChanged(aura::Window* window,
                                           const void* key,
                                           intptr_t old) {
+  DCHECK_EQ(window_, window);
   if (key == aura::client::kShowStateKey) {
     if (!ignore_property_change_) {
       WMEvent event(WMEventTypeFromShowState(GetShowState()));
@@ -724,6 +748,16 @@ void WindowState::OnWindowPropertyChanged(aura::Window* window,
     }
     return;
   }
+  if (key == kWindowPipTypeKey) {
+    if (window->GetProperty(kWindowPipTypeKey)) {
+      WMEvent event(WM_EVENT_PIP);
+      OnWMEvent(&event);
+    } else {
+      // Currently "restore" is not implemented.
+      NOTIMPLEMENTED();
+    }
+    return;
+  }
   if (key == kWindowStateTypeKey) {
     if (!ignore_property_change_) {
       // This change came from somewhere else. Revert it.
@@ -731,12 +765,21 @@ void WindowState::OnWindowPropertyChanged(aura::Window* window,
     }
     return;
   }
-  if (key == kHideShelfWhenFullscreenKey ||
-      key == aura::client::kImmersiveFullscreenKey) {
+  if (key == kHideShelfWhenFullscreenKey || key == kImmersiveIsActive) {
     if (!ignore_property_change_) {
       // This change came from outside ash. Update our shelf visibility based
       // on our changed state.
       ash::Shell::Get()->UpdateShelfVisibility();
+    }
+    if (key == kImmersiveIsActive) {
+      if (IsInImmersiveFullscreen()) {
+        if (!immersive_gesture_drag_handler_) {
+          immersive_gesture_drag_handler_ =
+              std::make_unique<ImmersiveGestureDragHandler>(window);
+        }
+      } else {
+        immersive_gesture_drag_handler_.reset();
+      }
     }
     return;
   }
@@ -751,6 +794,11 @@ void WindowState::OnWindowAddedToRootWindow(aura::Window* window) {
 
 void WindowState::OnWindowDestroying(aura::Window* window) {
   DCHECK_EQ(window_, window);
+  auto* widget = views::Widget::GetWidgetForNativeWindow(window);
+  if (widget)
+    Shell::Get()->focus_cycler()->RemoveWidget(widget);
+
+  immersive_gesture_drag_handler_.reset();
   current_state_->OnWindowDestroying(this);
   delegate_.reset();
 }

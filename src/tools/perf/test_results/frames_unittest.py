@@ -13,7 +13,6 @@ import mock
 from test_results import frames
 
 
-@unittest.skipIf(frames.pandas is None, 'pandas module not available')
 class TestDataFrames(unittest.TestCase):
   def testBuildersDataFrame(self):
     sample_data = {

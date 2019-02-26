@@ -26,8 +26,42 @@ bool DnsConfigOverrides::operator==(const DnsConfigOverrides& other) const {
          dns_over_https_servers == other.dns_over_https_servers;
 }
 
+bool DnsConfigOverrides::operator!=(const DnsConfigOverrides& other) const {
+  return !(*this == other);
+}
+
+// static
+DnsConfigOverrides
+DnsConfigOverrides::CreateOverridingEverythingWithDefaults() {
+  DnsConfig defaults;
+
+  DnsConfigOverrides overrides;
+  overrides.nameservers = defaults.nameservers;
+  overrides.search = defaults.search;
+  overrides.hosts = defaults.hosts;
+  overrides.append_to_multi_label_name = defaults.append_to_multi_label_name;
+  overrides.randomize_ports = defaults.randomize_ports;
+  overrides.ndots = defaults.ndots;
+  overrides.timeout = defaults.timeout;
+  overrides.attempts = defaults.attempts;
+  overrides.rotate = defaults.rotate;
+  overrides.use_local_ipv6 = defaults.use_local_ipv6;
+  overrides.dns_over_https_servers = defaults.dns_over_https_servers;
+
+  return overrides;
+}
+
+bool DnsConfigOverrides::OverridesEverything() const {
+  return nameservers && search && hosts && append_to_multi_label_name &&
+         randomize_ports && ndots && timeout && attempts && rotate &&
+         use_local_ipv6 && dns_over_https_servers;
+}
+
 DnsConfig DnsConfigOverrides::ApplyOverrides(const DnsConfig& config) const {
-  DnsConfig overridden(config);
+  DnsConfig overridden;
+
+  if (!OverridesEverything())
+    overridden = config;
 
   if (nameservers)
     overridden.nameservers = nameservers.value();

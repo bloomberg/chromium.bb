@@ -42,7 +42,7 @@ class CategoryCardViewHolderFactory implements RecyclerViewAdapter.ViewHolderFac
                                .inflate(R.layout.explore_sites_loading_from_net_view, parent,
                                        /* attachToRoot = */ false);
                 break;
-            case CategoryCardAdapter.ViewType.ERROR: // inflate error
+            case CategoryCardAdapter.ViewType.ERROR:
                 view = LayoutInflater.from(parent.getContext())
                                .inflate(R.layout.explore_sites_loading_error_view, parent,
                                        /* attachToRoot = */ false);

@@ -68,7 +68,8 @@ TEST_P(FenceNVTest, Errors)
 
     GLuint fence = 20;
 
-    // glGenFencesNV should generate INVALID_VALUE for a negative n and not write anything to the fences pointer
+    // glGenFencesNV should generate INVALID_VALUE for a negative n and not write anything to the
+    // fences pointer
     glGenFencesNV(-1, &fence);
     EXPECT_GL_ERROR(GL_INVALID_VALUE);
     EXPECT_EQ(20u, fence);
@@ -81,7 +82,8 @@ TEST_P(FenceNVTest, Errors)
                                             "that is not started and generate an INVALID_OPERATION";
     EXPECT_GL_ERROR(GL_INVALID_OPERATION);
 
-    // glGetFenceivNV should generate an INVALID_OPERATION for an invalid or unstarted fence and not modify the params
+    // glGetFenceivNV should generate an INVALID_OPERATION for an invalid or unstarted fence and not
+    // modify the params
     GLint result = 30;
     glGetFenceivNV(10, GL_FENCE_STATUS_NV, &result);
     EXPECT_GL_ERROR(GL_INVALID_OPERATION);
@@ -107,18 +109,19 @@ TEST_P(FenceNVTest, BasicOperations)
 
     glClearColor(1.0f, 0.0f, 1.0f, 1.0f);
 
-    GLuint fences[20] = { 0 };
+    constexpr size_t kFenceCount = 20;
+    GLuint fences[kFenceCount]   = {0};
     glGenFencesNV(static_cast<GLsizei>(ArraySize(fences)), fences);
     EXPECT_GL_NO_ERROR();
 
     for (GLuint fence : fences)
     {
-        glSetFenceNV(fence, GL_ALL_COMPLETED_NV);
-
         glClear(GL_COLOR_BUFFER_BIT);
+        glSetFenceNV(fence, GL_ALL_COMPLETED_NV);
     }
 
-    glFinish();
+    // Finish the last fence, all fences before should be marked complete
+    glFinishFenceNV(fences[kFenceCount - 1]);
 
     for (GLuint fence : fences)
     {
@@ -160,12 +163,15 @@ TEST_P(FenceSyncTest, Errors)
     EXPECT_EQ(0, glFenceSync(GL_SYNC_GPU_COMMANDS_COMPLETE, 10));
     EXPECT_GL_ERROR(GL_INVALID_VALUE);
 
-    // glClientWaitSync generates GL_INVALID_VALUE and returns GL_WAIT_FAILED if flags contains more than just GL_SYNC_FLUSH_COMMANDS_BIT
+    // glClientWaitSync generates GL_INVALID_VALUE and returns GL_WAIT_FAILED if flags contains more
+    // than just GL_SYNC_FLUSH_COMMANDS_BIT
     EXPECT_GLENUM_EQ(GL_WAIT_FAILED, glClientWaitSync(sync, GL_SYNC_FLUSH_COMMANDS_BIT | 0x2, 0));
     EXPECT_GL_ERROR(GL_INVALID_VALUE);
 
-    // glClientWaitSync generates GL_INVALID_VALUE and returns GL_WAIT_FAILED if the sync object is not valid
-    EXPECT_GLENUM_EQ(GL_WAIT_FAILED, glClientWaitSync(reinterpret_cast<GLsync>(30), GL_SYNC_FLUSH_COMMANDS_BIT, 0));
+    // glClientWaitSync generates GL_INVALID_VALUE and returns GL_WAIT_FAILED if the sync object is
+    // not valid
+    EXPECT_GLENUM_EQ(GL_WAIT_FAILED,
+                     glClientWaitSync(reinterpret_cast<GLsync>(30), GL_SYNC_FLUSH_COMMANDS_BIT, 0));
     EXPECT_GL_ERROR(GL_INVALID_VALUE);
 
     // glWaitSync generates GL_INVALID_VALUE if flags is non-zero
@@ -180,15 +186,17 @@ TEST_P(FenceSyncTest, Errors)
     glWaitSync(reinterpret_cast<GLsync>(30), 0, GL_TIMEOUT_IGNORED);
     EXPECT_GL_ERROR(GL_INVALID_VALUE);
 
-    // glGetSynciv generates GL_INVALID_VALUE if bufSize is less than zero, results should be untouched
+    // glGetSynciv generates GL_INVALID_VALUE if bufSize is less than zero, results should be
+    // untouched
     GLsizei length = 20;
-    GLint value = 30;
+    GLint value    = 30;
     glGetSynciv(sync, GL_OBJECT_TYPE, -1, &length, &value);
     EXPECT_GL_ERROR(GL_INVALID_VALUE);
     EXPECT_EQ(20, length);
     EXPECT_EQ(30, value);
 
-    // glGetSynciv generates GL_INVALID_VALUE if the sync object tis not valid, results should be untouched
+    // glGetSynciv generates GL_INVALID_VALUE if the sync object tis not valid, results should be
+    // untouched
     glGetSynciv(reinterpret_cast<GLsync>(30), GL_OBJECT_TYPE, 1, &length, &value);
     EXPECT_GL_ERROR(GL_INVALID_VALUE);
     EXPECT_EQ(20, length);
@@ -199,8 +207,8 @@ TEST_P(FenceSyncTest, Errors)
 TEST_P(FenceSyncTest, BasicQueries)
 {
     GLsizei length = 0;
-    GLint value = 0;
-    GLsync sync = glFenceSync(GL_SYNC_GPU_COMMANDS_COMPLETE, 0);
+    GLint value    = 0;
+    GLsync sync    = glFenceSync(GL_SYNC_GPU_COMMANDS_COMPLETE, 0);
 
     glGetSynciv(sync, GL_SYNC_CONDITION, 1, &length, &value);
     EXPECT_GL_NO_ERROR();
@@ -226,8 +234,8 @@ TEST_P(FenceSyncTest, BasicOperations)
     glWaitSync(sync, 0, GL_TIMEOUT_IGNORED);
     EXPECT_GL_NO_ERROR();
 
-    GLsizei length = 0;
-    GLint value = 0;
+    GLsizei length         = 0;
+    GLint value            = 0;
     unsigned int loopCount = 0;
 
     glFlush();
@@ -251,7 +259,8 @@ TEST_P(FenceSyncTest, BasicOperations)
     }
 }
 
-// Use this to select which configurations (e.g. which renderer, which GLES major version) these tests should be run against.
+// Use this to select which configurations (e.g. which renderer, which GLES major version) these
+// tests should be run against.
 ANGLE_INSTANTIATE_TEST(FenceNVTest,
                        ES2_D3D9(),
                        ES2_D3D11(),
@@ -259,5 +268,6 @@ ANGLE_INSTANTIATE_TEST(FenceNVTest,
                        ES2_OPENGL(),
                        ES3_OPENGL(),
                        ES2_OPENGLES(),
-                       ES3_OPENGLES());
+                       ES3_OPENGLES(),
+                       ES2_VULKAN());
 ANGLE_INSTANTIATE_TEST(FenceSyncTest, ES3_D3D11(), ES3_OPENGL(), ES3_OPENGLES());

@@ -21,7 +21,6 @@
 #include "SkShaderBase.h"
 #include "SkTLazy.h"
 #include "SkWriteBuffer.h"
-#include "../jumper/SkJumper.h"
 
 #if SK_SUPPORT_GPU
 #include "GrFragmentProcessor.h"
@@ -101,6 +100,7 @@ bool SkShaderBase::asLuminanceColor(SkColor* colorPtr) const {
 }
 
 SkShaderBase::Context* SkShaderBase::makeContext(const ContextRec& rec, SkArenaAlloc* alloc) const {
+#ifdef SK_ENABLE_LEGACY_SHADERCONTEXT
     // We always fall back to raster pipeline when perspective is present.
     if (rec.fMatrix->hasPerspective() ||
         fLocalMatrix.hasPerspective() ||
@@ -110,11 +110,14 @@ SkShaderBase::Context* SkShaderBase::makeContext(const ContextRec& rec, SkArenaA
     }
 
     return this->onMakeContext(rec, alloc);
+#else
+    return nullptr;
+#endif
 }
 
 SkShaderBase::Context* SkShaderBase::makeBurstPipelineContext(const ContextRec& rec,
                                                               SkArenaAlloc* alloc) const {
-
+#ifdef SK_ENABLE_LEGACY_SHADERCONTEXT
     // Always use vanilla stages for perspective.
     if (rec.fMatrix->hasPerspective() || fLocalMatrix.hasPerspective()) {
         return nullptr;
@@ -123,6 +126,9 @@ SkShaderBase::Context* SkShaderBase::makeBurstPipelineContext(const ContextRec& 
     return this->computeTotalInverse(*rec.fMatrix, rec.fLocalMatrix, nullptr)
         ? this->onMakeBurstPipelineContext(rec, alloc)
         : nullptr;
+#else
+    return nullptr;
+#endif
 }
 
 SkShaderBase::Context::Context(const SkShaderBase& shader, const ContextRec& rec)
@@ -160,12 +166,6 @@ void SkShaderBase::Context::shadeSpan4f(int x, int y, SkPMColor4f dst[], int cou
 const SkMatrix& SkShader::getLocalMatrix() const {
     return as_SB(this)->getLocalMatrix();
 }
-
-#ifdef SK_SUPPORT_LEGACY_SHADER_ISABITMAP
-bool SkShader::isABitmap(SkBitmap* outTexture, SkMatrix* outMatrix, TileMode xy[2]) const {
-    return  as_SB(this)->onIsABitmap(outTexture, outMatrix, xy);
-}
-#endif
 
 SkImage* SkShader::isAImage(SkMatrix* localMatrix, TileMode xy[2]) const {
     return as_SB(this)->onIsAImage(localMatrix, xy);
@@ -218,9 +218,9 @@ bool SkShaderBase::onAppendStages(const StageRec& rec) const {
         opaquePaint.writable()->setAlpha(SK_AlphaOPAQUE);
     }
 
-    ContextRec cr(*opaquePaint, rec.fCTM, rec.fLocalM, rec.fDstCS);
+    ContextRec cr(*opaquePaint, rec.fCTM, rec.fLocalM, rec.fDstColorType, rec.fDstCS);
 
-    struct CallbackCtx : SkJumper_CallbackCtx {
+    struct CallbackCtx : SkRasterPipeline_CallbackCtx {
         sk_sp<SkShader> shader;
         Context*        ctx;
     };
@@ -228,7 +228,7 @@ bool SkShaderBase::onAppendStages(const StageRec& rec) const {
     cb->shader = rec.fDstCS ? SkColorSpaceXformer::Make(sk_ref_sp(rec.fDstCS))->apply(this)
                             : sk_ref_sp((SkShader*)this);
     cb->ctx = as_SB(cb->shader)->makeContext(cr, rec.fAlloc);
-    cb->fn  = [](SkJumper_CallbackCtx* self, int active_pixels) {
+    cb->fn  = [](SkRasterPipeline_CallbackCtx* self, int active_pixels) {
         auto c = (CallbackCtx*)self;
         int x = (int)c->rgba[0],
         y = (int)c->rgba[1];

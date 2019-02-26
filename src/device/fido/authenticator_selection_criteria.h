@@ -15,15 +15,9 @@ namespace device {
 // https://w3c.github.io/webauthn/#authenticatorSelection
 class COMPONENT_EXPORT(DEVICE_FIDO) AuthenticatorSelectionCriteria {
  public:
-  enum class AuthenticatorAttachment {
-    kAny,
-    kPlatform,
-    kCrossPlatform,
-  };
-
   AuthenticatorSelectionCriteria();
   AuthenticatorSelectionCriteria(
-      AuthenticatorAttachment authenticator_attachement,
+      AuthenticatorAttachment authenticator_attachment,
       bool require_resident_key,
       UserVerificationRequirement user_verification_requirement);
   AuthenticatorSelectionCriteria(const AuthenticatorSelectionCriteria& other);
@@ -34,8 +28,8 @@ class COMPONENT_EXPORT(DEVICE_FIDO) AuthenticatorSelectionCriteria {
       AuthenticatorSelectionCriteria&& other);
   ~AuthenticatorSelectionCriteria();
 
-  AuthenticatorAttachment authenticator_attachement() const {
-    return authenticator_attachement_;
+  AuthenticatorAttachment authenticator_attachment() const {
+    return authenticator_attachment_;
   }
 
   bool require_resident_key() const { return require_resident_key_; }
@@ -45,7 +39,7 @@ class COMPONENT_EXPORT(DEVICE_FIDO) AuthenticatorSelectionCriteria {
   }
 
  private:
-  AuthenticatorAttachment authenticator_attachement_ =
+  AuthenticatorAttachment authenticator_attachment_ =
       AuthenticatorAttachment::kAny;
   bool require_resident_key_ = false;
   UserVerificationRequirement user_verification_requirement_ =

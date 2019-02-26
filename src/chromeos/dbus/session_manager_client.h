@@ -10,7 +10,6 @@
 #include <vector>
 
 #include "base/callback.h"
-#include "base/files/scoped_file.h"
 #include "base/macros.h"
 #include "base/observer_list.h"
 #include "base/time/time.h"
@@ -326,17 +325,14 @@ class CHROMEOS_EXPORT SessionManagerClient : public DBusClient {
       StartArcMiniContainerCallback callback) = 0;
 
   // UpgradeArcContainer upgrades a mini-container to a full ARC container. In
-  // case of success, success_callback is called. |server_socket| should be
-  // accept(2)ed to connect to the ArcBridgeService Mojo channel.  In case of
-  // error, error_callback will be called with a |low_free_disk_space| signaling
+  // case of success, success_callback is called. In case of error,
+  // error_callback will be called with a |low_free_disk_space| signaling
   // whether the failure was due to low free disk space.
-  using UpgradeArcContainerCallback =
-      base::OnceCallback<void(base::ScopedFD server_socket)>;
   using UpgradeErrorCallback =
       base::OnceCallback<void(bool low_free_disk_space)>;
   virtual void UpgradeArcContainer(
       const login_manager::UpgradeArcContainerRequest& request,
-      UpgradeArcContainerCallback success_callback,
+      base::OnceClosure success_callback,
       UpgradeErrorCallback error_callback) = 0;
 
   // Asynchronously stops the ARC instance.  Upon completion, invokes
@@ -364,13 +360,6 @@ class CHROMEOS_EXPORT SessionManagerClient : public DBusClient {
   // Returns nullopt if there is no ARC instance or ARC is not available.
   virtual void GetArcStartTime(
       DBusMethodCallback<base::TimeTicks> callback) = 0;
-
-  // Asynchronously removes all ARC user data for the user whose cryptohome is
-  // located by |cryptohome_id|. Upon completion, invokes |callback| with the
-  // result; true on success, false on failure (either session manager failed
-  // to remove user data or session manager can not be reached).
-  virtual void RemoveArcData(const cryptohome::AccountIdentifier& cryptohome_id,
-                             VoidDBusMethodCallback callback) = 0;
 
   // Creates the instance.
   static SessionManagerClient* Create(DBusClientImplementationType type);

@@ -7,6 +7,7 @@ package org.chromium.chrome.browser.ntp.snippets;
 import android.support.annotation.LayoutRes;
 
 import org.chromium.base.VisibleForTesting;
+import org.chromium.base.metrics.RecordUserAction;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.metrics.ImpressionTracker;
 import org.chromium.chrome.browser.native_page.ContextMenuManager;
@@ -80,7 +81,11 @@ public class SnippetArticleViewHolder extends CardViewHolder {
 
     @Override
     public void onCardTapped() {
-        if (!mArticle.isContextual()) SuggestionsMetrics.recordCardTapped();
+        if (mArticle.isContextual()) {
+            RecordUserAction.record("ContextualSuggestions.SuggestionClicked");
+        } else {
+            SuggestionsMetrics.recordCardTapped();
+        }
         int windowDisposition = WindowOpenDisposition.CURRENT_TAB;
         mUiDelegate.getEventReporter().onSuggestionOpened(
                 mArticle, windowDisposition, mUiDelegate.getSuggestionsRanker());

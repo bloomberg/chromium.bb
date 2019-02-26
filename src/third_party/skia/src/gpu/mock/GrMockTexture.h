@@ -24,9 +24,10 @@ public:
 
     enum Wrapped { kWrapped };
     GrMockTexture(GrMockGpu* gpu, Wrapped, const GrSurfaceDesc& desc,
-                  GrMipMapsStatus mipMapsStatus, const GrMockTextureInfo& info)
+                  GrMipMapsStatus mipMapsStatus, const GrMockTextureInfo& info,
+                  bool purgeImmediately)
             : GrMockTexture(gpu, desc, mipMapsStatus, info) {
-        this->registerWithCacheWrapped();
+        this->registerWithCacheWrapped(purgeImmediately);
     }
 
     ~GrMockTexture() override {}
@@ -34,6 +35,10 @@ public:
     GrBackendTexture getBackendTexture() const override {
         return GrBackendTexture(this->width(), this->height(), this->texturePriv().mipMapped(),
                                 fInfo);
+    }
+
+    GrBackendFormat backendFormat() const override {
+        return GrBackendFormat::MakeMock(fInfo.fConfig);
     }
 
     void textureParamsModified() override {}
@@ -114,6 +119,10 @@ public:
         return {this->width(), this->height(), this->numColorSamples(), numStencilBits, fInfo};
     }
 
+    GrBackendFormat backendFormat() const override {
+        return GrBackendFormat::MakeMock(fInfo.fConfig);
+    }
+
 protected:
     // constructor for subclasses
     GrMockRenderTarget(GrMockGpu* gpu, const GrSurfaceDesc& desc,
@@ -152,6 +161,10 @@ public:
     GrRenderTarget* asRenderTarget() override { return this; }
     const GrTexture* asTexture() const override { return this; }
     const GrRenderTarget* asRenderTarget() const override { return this; }
+
+    GrBackendFormat backendFormat() const override {
+        return GrMockTexture::backendFormat();
+    }
 
 private:
     void onAbandon() override {

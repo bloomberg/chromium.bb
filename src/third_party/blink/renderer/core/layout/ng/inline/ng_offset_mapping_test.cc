@@ -1149,4 +1149,40 @@ TEST_F(NGOffsetMappingTest, TextOverflowEllipsis) {
   TEST_RANGE(mapping.GetRanges(), text, 0u, 1u);
 }
 
+// Test |GetOffsetMapping| which is available both for LayoutNG and for legacy.
+class NGOffsetMappingGetterTest : public RenderingTest,
+                                  public testing::WithParamInterface<bool>,
+                                  private ScopedLayoutNGForTest {
+ public:
+  NGOffsetMappingGetterTest() : ScopedLayoutNGForTest(GetParam()) {}
+};
+
+INSTANTIATE_TEST_CASE_P(NGOffsetMappingTest,
+                        NGOffsetMappingGetterTest,
+                        testing::Bool());
+
+TEST_P(NGOffsetMappingGetterTest, Get) {
+  SetBodyInnerHTML(R"HTML(
+    <div id=container>
+      Whitespaces   in this text   should be   collapsed.
+    </div>
+  )HTML");
+  LayoutBlockFlow* layout_block_flow =
+      ToLayoutBlockFlow(GetLayoutObjectByElementId("container"));
+  DCHECK(layout_block_flow->ChildrenInline());
+
+  // For the purpose of this test, ensure this is laid out by each layout
+  // engine.
+  DCHECK_EQ(layout_block_flow->IsLayoutNGMixin(), GetParam());
+
+  std::unique_ptr<NGOffsetMapping> storage;
+  const NGOffsetMapping* mapping =
+      NGInlineNode::GetOffsetMapping(layout_block_flow, &storage);
+  EXPECT_TRUE(mapping);
+  EXPECT_EQ(!storage, GetParam());  // |storage| is used only for legacy.
+
+  const String& text_content = mapping->GetText();
+  EXPECT_EQ(text_content, "Whitespaces in this text should be collapsed.");
+}
+
 }  // namespace blink

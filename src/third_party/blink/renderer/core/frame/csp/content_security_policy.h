@@ -510,9 +510,9 @@ class CORE_EXPORT ContentSecurityPolicy
 
   bool ShouldSendViolationReport(const String&) const;
   void DidSendViolationReport(const String&);
-  void DispatchViolationEvents(const SecurityPolicyViolationEventInit&,
+  void DispatchViolationEvents(const SecurityPolicyViolationEventInit*,
                                Element*);
-  void PostViolationReport(const SecurityPolicyViolationEventInit&,
+  void PostViolationReport(const SecurityPolicyViolationEventInit*,
                            LocalFrame*,
                            const Vector<String>& report_endpoints,
                            bool use_reporting_api);

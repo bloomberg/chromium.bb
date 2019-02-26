@@ -140,15 +140,13 @@ class P2PQuicPacketWriter : public quic::QuicPacketWriter,
 // using the QuicTransportConfig::packet_transport for writing. The |helper|
 // and |alarm_factory| should be chromium specific implementations.
 std::unique_ptr<quic::QuicConnection> CreateQuicConnection(
-    bool is_server,
+    quic::Perspective perspective,
     quic::QuicConnectionHelperInterface* helper,
     quic::QuicPacketWriter* packet_writer,
     quic::QuicAlarmFactory* alarm_factory) {
   quic::QuicIpAddress ip;
   ip.FromString("0.0.0.0");
   quic::QuicSocketAddress dummy_address(ip, 0 /* Port */);
-  quic::Perspective perspective =
-      is_server ? quic::Perspective::IS_SERVER : quic::Perspective::IS_CLIENT;
   return std::make_unique<quic::QuicConnection>(
       0 /* dummy ID */, dummy_address, helper, alarm_factory, packet_writer,
       /* owns_writer */ true, perspective, quic::CurrentSupportedVersions());
@@ -166,9 +164,12 @@ P2PQuicTransportFactoryImpl::P2PQuicTransportFactoryImpl(
 // QuicClock, QuicRandom, QuicConnectionHelper and QuicAlarmFactory.
 std::unique_ptr<P2PQuicTransport>
 P2PQuicTransportFactoryImpl::CreateQuicTransport(
-    P2PQuicTransportConfig config) {
-  DCHECK(config.packet_transport);
+    P2PQuicTransport::Delegate* delegate,
+    P2PQuicPacketTransport* packet_transport,
+    const P2PQuicTransportConfig& config) {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
+  DCHECK(delegate);
+  DCHECK(packet_transport);
 
   quic::QuicRandom* quic_random = quic::QuicRandom::GetInstance();
   // The P2PQuicSession owns these chromium specific objects required
@@ -177,9 +178,9 @@ P2PQuicTransportFactoryImpl::CreateQuicTransport(
       std::make_unique<net::QuicChromiumConnectionHelper>(clock_, quic_random);
 
   P2PQuicPacketWriter* packet_writer =
-      new P2PQuicPacketWriter(config.packet_transport);
+      new P2PQuicPacketWriter(packet_transport);
   std::unique_ptr<quic::QuicConnection> quic_connection = CreateQuicConnection(
-      config.is_server, helper.get(), packet_writer, alarm_factory_.get());
+      config.perspective, helper.get(), packet_writer, alarm_factory_.get());
   // It's okay for the quic::QuicConnection to have a P2PQuicPacketWriter before
   // the P2PQuicPacketWriter is initialized, because the P2QuicPacketWriter
   // won't be writable until this occurs.
@@ -188,7 +189,7 @@ P2PQuicTransportFactoryImpl::CreateQuicTransport(
   // QUIC configurations for the session are specified here.
   quic::QuicConfig quic_config;
   return std::make_unique<P2PQuicTransportImpl>(
-      std::move(config), std::move(helper), std::move(quic_connection),
-      quic_config, clock_);
+      delegate, packet_transport, std::move(config), std::move(helper),
+      std::move(quic_connection), quic_config, clock_);
 }
 }  // namespace blink

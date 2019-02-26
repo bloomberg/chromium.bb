@@ -8,6 +8,7 @@
 #include <set>
 #include <utility>
 
+#include "base/barrier_closure.h"
 #include "base/bind.h"
 #include "base/callback.h"
 #include "base/logging.h"
@@ -347,13 +348,14 @@ void ChromeBrowserStateImplIOData::ClearNetworkingHistorySinceOnIOThread(
     const base::Closure& completion) {
   DCHECK_CURRENTLY_ON(web::WebThread::IO);
   DCHECK(initialized());
-
   DCHECK(transport_security_state());
-  // Completes synchronously.
-  transport_security_state()->DeleteAllDynamicDataSince(time);
-  http_server_properties()->Clear(base::BindOnce(
-      [](const base::Closure& completion) {
-        base::PostTaskWithTraits(FROM_HERE, {web::WebThread::UI}, completion);
-      },
-      completion));
+  auto barrier = base::BarrierClosure(
+      2, base::BindOnce(
+             [](base::OnceClosure callback) {
+               base::PostTaskWithTraits(FROM_HERE, {web::WebThread::UI},
+                                        std::move(callback));
+             },
+             completion));
+  transport_security_state()->DeleteAllDynamicDataSince(time, barrier);
+  http_server_properties()->Clear(barrier);
 }

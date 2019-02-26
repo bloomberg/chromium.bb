@@ -27,8 +27,7 @@ SkRunFont::SkRunFont(const SkPaint& paint)
         , fScaleX(paint.getTextScaleX())
         , fTypeface(SkPaintPriv::RefTypefaceOrDefault(paint))
         , fSkewX(paint.getTextSkewX())
-        , fAlign(paint.getTextAlign())
-        , fHinting(paint.getHinting())
+        , fHinting(static_cast<unsigned>(paint.getHinting()))
         , fFlags(paint.getFlags() & kFlagsMask) { }
 
 void SkRunFont::applyToPaint(SkPaint* paint) const {
@@ -37,8 +36,7 @@ void SkRunFont::applyToPaint(SkPaint* paint) const {
     paint->setTextSize(fSize);
     paint->setTextScaleX(fScaleX);
     paint->setTextSkewX(fSkewX);
-    paint->setTextAlign(static_cast<SkPaint::Align>(fAlign));
-    paint->setHinting(static_cast<SkPaint::Hinting>(fHinting));
+    paint->setHinting(static_cast<SkFontHinting>(fHinting));
 
     paint->setFlags((paint->getFlags() & ~kFlagsMask) | fFlags);
 }
@@ -48,7 +46,6 @@ bool SkRunFont::operator==(const SkRunFont& other) const {
            && fSize == other.fSize
            && fScaleX == other.fScaleX
            && fSkewX == other.fSkewX
-           && fAlign == other.fAlign
            && fHinting == other.fHinting
            && fFlags == other.fFlags;
 }
@@ -526,6 +523,39 @@ void SkTextBlobBuilder::allocInternal(const SkPaint &font,
     }
 }
 
+// SkFont versions
+
+const SkTextBlobBuilder::RunBuffer& SkTextBlobBuilder::allocRun(const SkFont& font, int count,
+                                                                SkScalar x, SkScalar y,
+                                                                const SkRect* bounds) {
+    SkPaint legacyPaint;
+    font.LEGACY_applyToPaint(&legacyPaint);
+    legacyPaint.setTextEncoding(SkPaint::kGlyphID_TextEncoding);
+
+    return this->allocRunText(legacyPaint, count, x, y, 0, SkString(), bounds);
+}
+
+const SkTextBlobBuilder::RunBuffer& SkTextBlobBuilder::allocRunPosH(const SkFont& font, int count,
+                                                                    SkScalar y,
+                                                                    const SkRect* bounds) {
+    SkPaint legacyPaint;
+    font.LEGACY_applyToPaint(&legacyPaint);
+    legacyPaint.setTextEncoding(SkPaint::kGlyphID_TextEncoding);
+
+    return this->allocRunTextPosH(legacyPaint, count, y, 0, SkString(), bounds);
+}
+
+const SkTextBlobBuilder::RunBuffer& SkTextBlobBuilder::allocRunPos(const SkFont& font, int count,
+                                                                   const SkRect* bounds) {
+    SkPaint legacyPaint;
+    font.LEGACY_applyToPaint(&legacyPaint);
+    legacyPaint.setTextEncoding(SkPaint::kGlyphID_TextEncoding);
+
+    return this->allocRunTextPos(legacyPaint, count, 0, SkString(), bounds);
+}
+
+// SkPaint versions
+
 const SkTextBlobBuilder::RunBuffer& SkTextBlobBuilder::allocRunText(const SkPaint& font, int count,
                                                                     SkScalar x, SkScalar y,
                                                                     int textByteCount,
@@ -725,20 +755,22 @@ sk_sp<SkTextBlob> SkTextBlobPriv::MakeFromBuffer(SkReadBuffer& reader) {
     return blobBuilder.make();
 }
 
-sk_sp<SkTextBlob> SkTextBlob::MakeFromText(
-        const void* text, size_t byteLength, const SkPaint& paint) {
+sk_sp<SkTextBlob> SkTextBlob::MakeFromText(const void* text, size_t byteLength, const SkFont& font,
+                                           SkPaint::TextEncoding encoding) {
+    SkPaint legacyPaint;
+    font.LEGACY_applyToPaint(&legacyPaint);
+    legacyPaint.setTextEncoding(encoding);
+
     SkGlyphRunBuilder runBuilder;
 
-    runBuilder.drawText(paint, text, byteLength, SkPoint::Make(0, 0));
+    runBuilder.drawText(legacyPaint, text, byteLength, SkPoint::Make(0, 0));
 
     auto glyphRunList = runBuilder.useGlyphRunList();
     SkTextBlobBuilder blobBuilder;
     if (!glyphRunList.empty()) {
         auto run = glyphRunList[0];
-        SkPaint blobPaint(paint);
-        blobPaint.setTextEncoding(SkPaint::kGlyphID_TextEncoding);
 
-        auto runData = blobBuilder.allocRunPos(blobPaint, run.runSize());
+        auto runData = blobBuilder.allocRunPos(font, run.runSize());
         run.filloutGlyphsAndPositions(runData.glyphs, (SkPoint *)runData.pos);
     }
 

@@ -17,6 +17,7 @@
 
 namespace angle
 {
+constexpr unsigned int kIterationsPerStep = 128;
 
 enum AllocationStyle
 {
@@ -33,18 +34,15 @@ struct BindingsParams final : public RenderTestParams
         minorVersion = 0;
         windowWidth  = 720;
         windowHeight = 720;
-        iterations   = 128;
 
-        numObjects      = 100;
-        allocationStyle = EVERY_ITERATION;
+        numObjects        = 100;
+        allocationStyle   = EVERY_ITERATION;
+        iterationsPerStep = kIterationsPerStep;
     }
 
     std::string suffix() const override;
     size_t numObjects;
     AllocationStyle allocationStyle;
-
-    // static parameters
-    size_t iterations;
 };
 
 std::ostream &operator<<(std::ostream &os, const BindingsParams &params)
@@ -91,14 +89,11 @@ class BindingsBenchmark : public ANGLERenderTest,
     std::vector<GLenum> mBindingPoints;
 };
 
-BindingsBenchmark::BindingsBenchmark() : ANGLERenderTest("Bindings", GetParam())
-{
-}
+BindingsBenchmark::BindingsBenchmark() : ANGLERenderTest("Bindings", GetParam()) {}
 
 void BindingsBenchmark::initializeBenchmark()
 {
     const auto &params = GetParam();
-    ASSERT_GT(params.iterations, 0u);
 
     mBuffers.resize(params.numObjects, 0);
     if (params.allocationStyle == AT_INITIALIZATION)
@@ -144,7 +139,7 @@ void BindingsBenchmark::drawBenchmark()
 {
     const auto &params = GetParam();
 
-    for (size_t it = 0; it < params.iterations; ++it)
+    for (unsigned int it = 0; it < params.iterationsPerStep; ++it)
     {
         // Generate a buffer (if needed) and bind it to a "random" binding point
         if (params.allocationStyle == EVERY_ITERATION)

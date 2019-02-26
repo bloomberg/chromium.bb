@@ -392,17 +392,12 @@ Polymer({
         /** @type {!Array<string>} */ (translateBlockedPref.value));
 
     for (let i = 0; i < this.languages.enabled.length; i++) {
-      if (this.languages.enabled[i].language.code ==
-          this.languages.prospectiveUILanguage) {
-        continue;
-      }
-      // This conversion primarily strips away the region part.
-      // For example "fr-CA" --> "fr".
-      const translateCode = this.convertLanguageCodeForTranslate(
-          this.languages.enabled[i].language.code);
+      const language = this.languages.enabled[i].language;
+      const translateEnabled = this.isTranslateEnabled_(
+          language.code, !!language.supportsTranslate, translateBlockedSet,
+          this.languages.translateTarget, this.languages.prospectiveUILanguage);
       this.set(
-          'languages.enabled.' + i + '.translateEnabled',
-          !translateBlockedSet.has(translateCode));
+          'languages.enabled.' + i + '.translateEnabled', translateEnabled);
     }
   },
 
@@ -427,7 +422,7 @@ Polymer({
       language.supportsUI = !!language.supportsUI;
       language.supportsTranslate = !!language.supportsTranslate;
       language.supportsSpellcheck = !!language.supportsSpellcheck;
-      language.isProhibitedUILocale = !!language.isProhibitedUILocale;
+      language.isProhibitedLanguage = !!language.isProhibitedLanguage;
       this.supportedLanguageMap_.set(language.code, language);
     }
 
@@ -542,18 +537,37 @@ Polymer({
       const languageState = /** @type {LanguageState} */ ({});
       languageState.language = language;
       languageState.spellCheckEnabled = !!spellCheckSet.has(code);
-      // Translate is considered disabled if this language maps to any translate
-      // language that is blocked.
-      const translateCode = this.convertLanguageCodeForTranslate(code);
-      languageState.translateEnabled = !!language.supportsTranslate &&
-          !translateBlockedSet.has(translateCode) &&
-          translateCode != translateTarget &&
-          (!prospectiveUILanguage || code != prospectiveUILanguage);
+      languageState.translateEnabled = this.isTranslateEnabled_(
+          code, !!language.supportsTranslate, translateBlockedSet,
+          translateTarget, prospectiveUILanguage);
       languageState.isManaged = !!spellCheckForcedSet.has(code);
       languageState.downloadDictionaryFailureCount = 0;
       enabledLanguageStates.push(languageState);
     }
     return enabledLanguageStates;
+  },
+
+  /**
+   * True iff we translate pages that are in the given language.
+   * @param {string} code Language code.
+   * @param {boolean} supportsTranslate If translation supports the given
+   *     language.
+   * @param {!Set<string>} translateBlockedSet Set of languages for which
+   *     translation is blocked.
+   * @param {string} translateTarget Language code of the default translate
+   *     target language.
+   * @param {(string|undefined)} prospectiveUILanguage Prospective UI display
+   *     language. Only defined on Windows and Chrome OS.
+   * @return {boolean}
+   * @private
+   */
+  isTranslateEnabled_: function(
+      code, supportsTranslate, translateBlockedSet, translateTarget,
+      prospectiveUILanguage) {
+    const translateCode = this.convertLanguageCodeForTranslate(code);
+    return supportsTranslate && !translateBlockedSet.has(translateCode) &&
+        translateCode != translateTarget &&
+        (!prospectiveUILanguage || code != prospectiveUILanguage);
   },
 
   // <if expr="not is_macosx">
@@ -808,6 +822,17 @@ Polymer({
           }, this);
         }, this);
     return otherInputMethodsEnabled;
+  },
+
+  /**
+   * @param {!chrome.languageSettingsPrivate.Language} language
+   * @return {boolean} true if the given language can be enabled
+   */
+  canEnableLanguage(language) {
+    return !(
+        this.isLanguageEnabled(language.code) ||
+        language.isProhibitedLanguage ||
+        this.isLanguageCodeForArcIme(language.code) /* internal use only */);
   },
 
   /**

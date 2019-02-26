@@ -54,7 +54,8 @@ class UrlRuleUtilTest : public ::testing::Test {
   UrlRuleUtilTest() = default;
 
   const flat::UrlRule* MakeFlatRule(const proto::UrlRule& rule) {
-    auto offset = url_pattern_index::SerializeUrlRule(rule, &flat_builder_);
+    auto offset =
+        url_pattern_index::SerializeUrlRule(rule, &flat_builder_, &domain_map_);
     return flatbuffers::GetTemporaryPointer(flat_builder_, offset);
   }
 
@@ -71,6 +72,8 @@ class UrlRuleUtilTest : public ::testing::Test {
   }
 
   flatbuffers::FlatBufferBuilder flat_builder_;
+
+  FlatDomainMap domain_map_;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(UrlRuleUtilTest);

@@ -18,7 +18,15 @@
 #include <stdlib.h>
 #include <string.h>
 
-#if !defined(_LIBUNWIND_IS_BAREMETAL) && !defined(_WIN32)
+#ifndef _LIBUNWIND_USE_DLADDR
+  #if !defined(_LIBUNWIND_IS_BAREMETAL) && !defined(_WIN32)
+    #define _LIBUNWIND_USE_DLADDR 1
+  #else
+    #define _LIBUNWIND_USE_DLADDR 0
+  #endif
+#endif
+
+#if _LIBUNWIND_USE_DLADDR
 #include <dlfcn.h>
 #endif
 
@@ -147,7 +155,7 @@ namespace libunwind {
 struct UnwindInfoSections {
 #if defined(_LIBUNWIND_SUPPORT_DWARF_UNWIND) || defined(_LIBUNWIND_SUPPORT_DWARF_INDEX) ||       \
     defined(_LIBUNWIND_SUPPORT_COMPACT_UNWIND)
-  // No dso_base for ARM EHABI.
+  // No dso_base for SEH or ARM EHABI.
   uintptr_t       dso_base;
 #endif
 #if defined(_LIBUNWIND_SUPPORT_DWARF_UNWIND)
@@ -172,7 +180,7 @@ struct UnwindInfoSections {
 /// LocalAddressSpace is used as a template parameter to UnwindCursor when
 /// unwinding a thread in the same process.  The wrappers compile away,
 /// making local unwinds fast.
-class __attribute__((visibility("hidden"))) LocalAddressSpace {
+class _LIBUNWIND_HIDDEN LocalAddressSpace {
 public:
   typedef uintptr_t pint_t;
   typedef intptr_t  sint_t;
@@ -446,6 +454,10 @@ inline bool LocalAddressSpace::findUnwindSections(pint_t targetAddr,
     }
   }
   return false;
+#elif defined(_LIBUNWIND_SUPPORT_SEH_UNWIND) && defined(_WIN32)
+  // Don't even bother, since Windows has functions that do all this stuff
+  // for us.
+  return true;
 #elif defined(_LIBUNWIND_ARM_EHABI) && defined(__BIONIC__) &&                  \
     (__ANDROID_API__ < 21)
   int length = 0;
@@ -576,7 +588,7 @@ inline bool LocalAddressSpace::findOtherFDE(pint_t targetAddr, pint_t &fde) {
 inline bool LocalAddressSpace::findFunctionName(pint_t addr, char *buf,
                                                 size_t bufLen,
                                                 unw_word_t *offset) {
-#if !defined(_LIBUNWIND_IS_BAREMETAL) && !defined(_WIN32)
+#if _LIBUNWIND_USE_DLADDR
   Dl_info dyldInfo;
   if (dladdr((void *)addr, &dyldInfo)) {
     if (dyldInfo.dli_sname != NULL) {

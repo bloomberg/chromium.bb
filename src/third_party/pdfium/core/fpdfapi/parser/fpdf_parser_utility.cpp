@@ -76,7 +76,7 @@ Optional<FX_FILESIZE> GetHeaderOffset(
   static constexpr size_t kBufSize = 4;
   uint8_t buf[kBufSize];
   for (FX_FILESIZE offset = 0; offset <= 1024; ++offset) {
-    if (!pFile->ReadBlock(buf, offset, kBufSize))
+    if (!pFile->ReadBlockAtOffset(buf, offset, kBufSize))
       return {};
 
     if (memcmp(buf, "%PDF", 4) == 0)
@@ -158,29 +158,29 @@ std::ostream& operator<<(std::ostream& buf, const CPDF_Object* pObj) {
     return buf;
   }
   switch (pObj->GetType()) {
-    case CPDF_Object::NULLOBJ:
+    case CPDF_Object::kNullobj:
       buf << " null";
       break;
-    case CPDF_Object::BOOLEAN:
-    case CPDF_Object::NUMBER:
+    case CPDF_Object::kBoolean:
+    case CPDF_Object::kNumber:
       buf << " " << pObj->GetString();
       break;
-    case CPDF_Object::STRING:
+    case CPDF_Object::kString:
       buf << PDF_EncodeString(pObj->GetString(), pObj->AsString()->IsHex());
       break;
-    case CPDF_Object::NAME: {
+    case CPDF_Object::kName: {
       ByteString str = pObj->GetString();
       buf << "/" << PDF_NameEncode(str);
       break;
     }
-    case CPDF_Object::REFERENCE: {
+    case CPDF_Object::kReference: {
       buf << " " << pObj->AsReference()->GetRefObjNum() << " 0 R ";
       break;
     }
-    case CPDF_Object::ARRAY: {
+    case CPDF_Object::kArray: {
       const CPDF_Array* p = pObj->AsArray();
       buf << "[";
-      for (size_t i = 0; i < p->GetCount(); i++) {
+      for (size_t i = 0; i < p->size(); i++) {
         const CPDF_Object* pElement = p->GetObjectAt(i);
         if (pElement && !pElement->IsInline()) {
           buf << " " << pElement->GetObjNum() << " 0 R";
@@ -191,10 +191,10 @@ std::ostream& operator<<(std::ostream& buf, const CPDF_Object* pObj) {
       buf << "]";
       break;
     }
-    case CPDF_Object::DICTIONARY: {
-      const CPDF_Dictionary* p = pObj->AsDictionary();
+    case CPDF_Object::kDictionary: {
+      CPDF_DictionaryLocker locker(pObj->AsDictionary());
       buf << "<<";
-      for (const auto& it : *p) {
+      for (const auto& it : locker) {
         const ByteString& key = it.first;
         CPDF_Object* pValue = it.second.get();
         buf << "/" << PDF_NameEncode(key);
@@ -207,7 +207,7 @@ std::ostream& operator<<(std::ostream& buf, const CPDF_Object* pObj) {
       buf << ">>";
       break;
     }
-    case CPDF_Object::STREAM: {
+    case CPDF_Object::kStream: {
       const CPDF_Stream* p = pObj->AsStream();
       buf << p->GetDict() << "stream\r\n";
       auto pAcc = pdfium::MakeRetain<CPDF_StreamAcc>(p);

@@ -72,6 +72,7 @@ class WebGLConformanceIntegrationTest(gpu_integration_test.GpuIntegrationTest):
 
   _webgl_version = None
   _is_asan = False
+  _crash_count = 0
 
   @classmethod
   def Name(cls):
@@ -79,6 +80,7 @@ class WebGLConformanceIntegrationTest(gpu_integration_test.GpuIntegrationTest):
 
   @classmethod
   def AddCommandlineArgs(cls, parser):
+    super(WebGLConformanceIntegrationTest, cls).AddCommandlineArgs(parser)
     parser.add_option('--webgl-conformance-version',
         help='Version of the WebGL conformance tests to run.',
         default='1.0.4')
@@ -188,13 +190,19 @@ class WebGLConformanceIntegrationTest(gpu_integration_test.GpuIntegrationTest):
     getattr(self, test_name)(test_path, *args[1:])
 
   def _NavigateTo(self, test_path, harness_script):
+    self._crash_count = self.browser.GetSystemInfo().gpu \
+        .aux_attributes['process_crash_count']
     url = self.UrlOfStaticFilePath(test_path)
     self.tab.Navigate(url, script_to_evaluate_on_commit=harness_script)
 
   def _CheckTestCompletion(self):
     self.tab.action_runner.WaitForJavaScriptCondition(
         'webglTestHarness._finished', timeout=self._GetTestTimeout())
-    if not self._DidWebGLTestSucceed(self.tab):
+    if self._crash_count != self.browser.GetSystemInfo().gpu \
+        .aux_attributes['process_crash_count']:
+      self.fail('GPU process crashed during test.\n' +
+                self._WebGLTestMessages(self.tab))
+    elif not self._DidWebGLTestSucceed(self.tab):
       self.fail(self._WebGLTestMessages(self.tab))
 
   def _RunConformanceTest(self, test_path, *args):

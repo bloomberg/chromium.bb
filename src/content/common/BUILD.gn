@@ -2,7 +2,6 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-import("features.gni")
 import("//build/buildflag_header.gni")
 import("//build/config/features.gni")
 import("//build/config/ui.gni")
@@ -11,6 +10,7 @@ import("//mojo/public/tools/bindings/mojom.gni")
 import("//ppapi/buildflags/buildflags.gni")
 import("//sandbox/features.gni")
 import("//tools/ipc_fuzzer/ipc_fuzzer.gni")
+import("features.gni")
 if (is_mac) {
   import("//build/config/mac/mac_sdk.gni")
 }
@@ -115,8 +115,6 @@ source_set("common") {
     "font_list_fontconfig.cc",
     "font_list_mac.mm",
     "font_list_win.cc",
-    "font_loader_dispatcher_mac.cc",
-    "font_loader_dispatcher_mac.h",
     "frame_message_enums.h",
     "frame_message_structs.cc",
     "frame_message_structs.h",
@@ -191,7 +189,6 @@ source_set("common") {
     "media/media_player_messages_android.h",
     "media/media_stream_controls.cc",
     "media/media_stream_controls.h",
-    "media/midi_messages.h",
     "media/peer_connection_tracker_messages.h",
     "media/video_capture.h",
     "mime_sniffing_throttle.cc",
@@ -239,6 +236,8 @@ source_set("common") {
     "service_manager/service_manager_connection_impl.h",
     "service_worker/service_worker_loader_helpers.cc",
     "service_worker/service_worker_loader_helpers.h",
+    "service_worker/service_worker_type_converter.cc",
+    "service_worker/service_worker_type_converter.h",
     "service_worker/service_worker_types.cc",
     "service_worker/service_worker_types.h",
     "service_worker/service_worker_utils.cc",
@@ -283,6 +282,7 @@ source_set("common") {
     "//gpu/command_buffer/common",
     "//ipc",
     "//services/network:network_service",
+    "//services/service_manager/public/cpp",
     "//services/service_manager/sandbox",
     "//third_party/blink/public:blink_headers",
     "//third_party/blink/public/common",
@@ -330,9 +330,6 @@ source_set("common") {
     "//services/network/public/cpp",
     "//services/network/public/mojom",
     "//services/resource_coordinator/public/cpp/memory_instrumentation",
-    "//services/service_manager",
-    "//services/service_manager/embedder",
-    "//services/service_manager/public/cpp",
     "//services/service_manager/public/mojom",
     "//services/service_manager/runner/common",
     "//services/service_manager/zygote:zygote_buildflags",
@@ -466,8 +463,9 @@ source_set("common") {
     ]
 
     deps += [
-      "//third_party/fuchsia-sdk:fdio",
+      "//third_party/fuchsia-sdk/sdk:fdio",
       "//third_party/fuchsia-sdk/sdk:fonts",
+      "//third_party/fuchsia-sdk/sdk:mediacodec",
       "//third_party/fuchsia-sdk/sdk:scenic",
     ]
   }
@@ -492,11 +490,6 @@ mojom("mojo_bindings") {
   # at some point.
   cpp_only = true
 
-  # imports vs deps check is disabled for this target to work around
-  # windows multiple definitions linker error caused by having
-  # both a direct and an indirect dependency on the same target
-  skip_deps_check = true
-
   disable_variants = true
 
   sources = [
@@ -504,7 +497,6 @@ mojom("mojo_bindings") {
     "associated_interfaces.mojom",
     "child.mojom",
     "child_control.mojom",
-    "child_memory_coordinator.mojom",
     "field_trial_recorder.mojom",
     "frame.mojom",
     "frame_sink_provider.mojom",
@@ -519,7 +511,6 @@ mojom("mojo_bindings") {
     "media/peer_connection_tracker.mojom",
     "media/renderer_audio_input_stream_factory.mojom",
     "media/renderer_audio_output_stream_factory.mojom",
-    "memory_coordinator.mojom",
     "native_types.mojom",
     "navigation_client.mojom",
     "navigation_params.mojom",
@@ -552,8 +543,8 @@ mojom("mojo_bindings") {
 
   if (is_mac) {
     sources += [
-      "font_loader_mac.mojom",
       "render_widget_host_ns_view.mojom",
+      "sandbox_support_mac.mojom",
     ]
   }
 

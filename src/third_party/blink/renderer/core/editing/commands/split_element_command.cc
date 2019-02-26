@@ -62,7 +62,7 @@ void SplitElementCommand::ExecuteApply() {
 
   // Delete id attribute from the second element because the same id cannot be
   // used for more than one element
-  element2_->removeAttribute(HTMLNames::idAttr);
+  element2_->removeAttribute(html_names::kIdAttr);
 
   for (const auto& child : children)
     element1_->AppendChild(child, exception_state);
@@ -88,9 +88,9 @@ void SplitElementCommand::DoUnapply() {
     element2_->InsertBefore(child, ref_child, IGNORE_EXCEPTION_FOR_TESTING);
 
   // Recover the id attribute of the original element.
-  const AtomicString& id = element1_->getAttribute(HTMLNames::idAttr);
+  const AtomicString& id = element1_->getAttribute(html_names::kIdAttr);
   if (!id.IsNull())
-    element2_->setAttribute(HTMLNames::idAttr, id);
+    element2_->setAttribute(html_names::kIdAttr, id);
 
   element1_->remove(IGNORE_EXCEPTION_FOR_TESTING);
 }

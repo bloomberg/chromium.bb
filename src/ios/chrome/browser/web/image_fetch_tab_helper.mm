@@ -22,8 +22,6 @@
 #error "This file requires ARC support."
 #endif
 
-DEFINE_WEB_STATE_USER_DATA_KEY(ImageFetchTabHelper);
-
 const char kUmaGetImageDataByJsResult[] =
     "ContextMenu.iOS.GetImageDataByJsResult";
 

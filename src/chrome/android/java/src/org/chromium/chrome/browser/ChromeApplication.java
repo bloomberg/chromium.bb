@@ -19,7 +19,6 @@ import org.chromium.base.CommandLineInitUtil;
 import org.chromium.base.ContextUtils;
 import org.chromium.base.DiscardableReferencePool;
 import org.chromium.base.Log;
-import org.chromium.base.Supplier;
 import org.chromium.base.ThreadUtils;
 import org.chromium.base.TraceEvent;
 import org.chromium.base.annotations.MainDex;
@@ -30,6 +29,7 @@ import org.chromium.base.task.AsyncTask;
 import org.chromium.build.BuildHooks;
 import org.chromium.build.BuildHooksAndroid;
 import org.chromium.build.BuildHooksConfig;
+import org.chromium.chrome.browser.crash.ApplicationStatusTracker;
 import org.chromium.chrome.browser.crash.PureJavaExceptionHandler;
 import org.chromium.chrome.browser.crash.PureJavaExceptionReporter;
 import org.chromium.chrome.browser.customtabs.CustomTabsConnection;
@@ -42,6 +42,7 @@ import org.chromium.chrome.browser.metrics.UmaUtils;
 import org.chromium.chrome.browser.preferences.ChromePreferenceManager;
 import org.chromium.chrome.browser.vr.OnExitVrRequestListener;
 import org.chromium.chrome.browser.vr.VrModuleProvider;
+import org.chromium.components.module_installer.ModuleInstaller;
 
 /**
  * Basic application functionality that should be shared among all browser applications that use
@@ -71,17 +72,10 @@ public class ChromeApplication extends Application {
             }
             checkAppBeingReplaced();
 
-            // Renderers and GPU process have command line passed to them via IPC
+            // Renderer and GPU processes have command line passed to them via IPC
             // (see ChildProcessService.java).
-            Supplier<Boolean> shouldUseDebugFlags = new Supplier<Boolean>() {
-                @Override
-                public Boolean get() {
-                    ChromePreferenceManager manager = ChromePreferenceManager.getInstance();
-                    return manager.readBoolean(
-                            ChromePreferenceManager.COMMAND_LINE_ON_NON_ROOTED_ENABLED_KEY, false);
-                }
-            };
-            CommandLineInitUtil.initCommandLine(COMMAND_LINE_FILE, shouldUseDebugFlags);
+            CommandLineInitUtil.initCommandLine(
+                    COMMAND_LINE_FILE, ChromeApplication::shouldUseDebugFlags);
 
             // Requires command-line flags.
             TraceEvent.maybeEnableEarlyTracing();
@@ -92,21 +86,26 @@ public class ChromeApplication extends Application {
             // Chrome is just the browser process).
             ApplicationStatus.initialize(this);
 
+            // Register and initialize application status listener for crashes, this needs to be
+            // done as early as possible so that this value is set before any crashes are reported.
+            ApplicationStatusTracker tracker = new ApplicationStatusTracker();
+            tracker.onApplicationStateChange(ApplicationStatus.getStateForApplication());
+            ApplicationStatus.registerApplicationStateListener(tracker);
+
             // Only browser process requires custom resources.
             BuildHooksAndroid.initCustomResources(this);
 
             // Disable MemoryPressureMonitor polling when Chrome goes to the background.
-            ApplicationStatus.registerApplicationStateListener(newState -> {
-                if (newState == ApplicationState.HAS_RUNNING_ACTIVITIES) {
-                    MemoryPressureMonitor.INSTANCE.enablePolling();
-                } else if (newState == ApplicationState.HAS_STOPPED_ACTIVITIES) {
-                    MemoryPressureMonitor.INSTANCE.disablePolling();
-                }
-            });
+            ApplicationStatus.registerApplicationStateListener(
+                    ChromeApplication::updateMemoryPressurePolling);
 
             // Not losing much to not cover the below conditional since it just has simple setters.
             TraceEvent.end("ChromeApplication.attachBaseContext");
         }
+
+        // Write installed modules to crash keys. This needs to be done as early as possible so that
+        // these values are set before any crashes are reported.
+        ModuleInstaller.updateCrashKeys();
 
         MemoryPressureMonitor.INSTANCE.registerComponentCallbacks();
 
@@ -120,6 +119,19 @@ public class ChromeApplication extends Application {
             }
         }
         AsyncTask.takeOverAndroidThreadPool();
+    }
+
+    private static Boolean shouldUseDebugFlags() {
+        return ChromePreferenceManager.getInstance().readBoolean(
+                ChromePreferenceManager.COMMAND_LINE_ON_NON_ROOTED_ENABLED_KEY, false);
+    }
+
+    private static void updateMemoryPressurePolling(@ApplicationState int newState) {
+        if (newState == ApplicationState.HAS_RUNNING_ACTIVITIES) {
+            MemoryPressureMonitor.INSTANCE.enablePolling();
+        } else if (newState == ApplicationState.HAS_STOPPED_ACTIVITIES) {
+            MemoryPressureMonitor.INSTANCE.disablePolling();
+        }
     }
 
     /** Ensure this application object is not out-of-date. */
@@ -216,6 +228,13 @@ public class ChromeApplication extends Application {
                 ModuleFactoryOverrides.getOverrideFor(ChromeAppModule.Factory.class);
         ChromeAppModule module =
                 overriddenFactory == null ? new ChromeAppModule() : overriddenFactory.create();
-        return DaggerChromeAppComponent.builder().chromeAppModule(module).build();
+
+        AppHooksModule.Factory appHooksFactory =
+                ModuleFactoryOverrides.getOverrideFor(AppHooksModule.Factory.class);
+        AppHooksModule appHooksModule =
+                appHooksFactory == null ? new AppHooksModule() : appHooksFactory.create();
+
+        return DaggerChromeAppComponent.builder().chromeAppModule(module)
+                .appHooksModule(appHooksModule).build();
     }
 }

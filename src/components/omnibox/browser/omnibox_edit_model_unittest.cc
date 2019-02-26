@@ -16,12 +16,15 @@
 #include "components/omnibox/browser/omnibox_field_trial.h"
 #include "components/omnibox/browser/omnibox_view.h"
 #include "components/omnibox/browser/search_provider.h"
+#include "components/omnibox/browser/test_location_bar_model.h"
 #include "components/omnibox/browser/test_omnibox_client.h"
 #include "components/omnibox/browser/test_omnibox_edit_controller.h"
 #include "components/omnibox/browser/test_omnibox_edit_model.h"
 #include "components/omnibox/browser/test_omnibox_view.h"
-#include "components/toolbar/test_toolbar_model.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/metrics_proto/omnibox_event.pb.h"
+
+using metrics::OmniboxEventProto;
 
 class OmniboxEditModelTest : public testing::Test {
  public:
@@ -33,7 +36,9 @@ class OmniboxEditModelTest : public testing::Test {
   }
 
   TestOmniboxView* view() { return view_.get(); }
-  TestToolbarModel* toolbar_model() { return controller_->GetToolbarModel(); }
+  TestLocationBarModel* location_bar_model() {
+    return controller_->GetLocationBarModel();
+  }
   TestOmniboxEditModel* model() {
     return static_cast<TestOmniboxEditModel*>(view_->model());
   }
@@ -130,9 +135,9 @@ TEST_F(OmniboxEditModelTest, AdjustTextForCopy) {
   };
 
   for (size_t i = 0; i < arraysize(input); ++i) {
-    toolbar_model()->set_formatted_full_url(
+    location_bar_model()->set_formatted_full_url(
         base::ASCIIToUTF16(input[i].url_for_editing));
-    toolbar_model()->set_url_for_display(
+    location_bar_model()->set_url_for_display(
         base::ASCIIToUTF16(input[i].url_for_display));
     model()->ResetDisplayTexts();
 
@@ -158,9 +163,8 @@ TEST_F(OmniboxEditModelTest, AdjustTextForCopy) {
 // Tests that AdjustTextForCopy behaves properly with Query in Omnibox enabled.
 // For more general tests of copy adjustment, see the AdjustTextForCopy test.
 TEST_F(OmniboxEditModelTest, AdjustTextForCopyQueryInOmnibox) {
-  toolbar_model()->set_formatted_full_url(
-      base::ASCIIToUTF16("https://www.example.com/"));
-  toolbar_model()->set_url_for_display(base::ASCIIToUTF16("example.com"));
+  location_bar_model()->set_url(GURL("https://www.example.com/"));
+  location_bar_model()->set_url_for_display(base::ASCIIToUTF16("example.com"));
 
   TestOmniboxClient* client =
       static_cast<TestOmniboxClient*>(model()->client());
@@ -255,9 +259,8 @@ TEST_F(OmniboxEditModelTest, AlternateNavHasHTTP) {
 }
 
 TEST_F(OmniboxEditModelTest, CurrentMatch) {
-  toolbar_model()->set_formatted_full_url(
-      base::ASCIIToUTF16("http://localhost/"));
-  toolbar_model()->set_url_for_display(base::ASCIIToUTF16("localhost"));
+  location_bar_model()->set_url(GURL("http://localhost/"));
+  location_bar_model()->set_url_for_display(base::ASCIIToUTF16("localhost"));
   model()->ResetDisplayTexts();
 
   // Tests that we use the formatted full URL instead of the elided URL to
@@ -283,29 +286,38 @@ TEST_F(OmniboxEditModelTest, CurrentMatch) {
 }
 
 TEST_F(OmniboxEditModelTest, DisplayText) {
-  toolbar_model()->set_formatted_full_url(
-      base::ASCIIToUTF16("https://www.example.com/"));
-  toolbar_model()->set_url_for_display(base::ASCIIToUTF16("example.com"));
+  location_bar_model()->set_url(GURL("https://www.example.com/"));
+  location_bar_model()->set_url_for_display(base::ASCIIToUTF16("example.com"));
 
   // Verify we show the display text when there is no Query in Omnibox match.
-  {
-    model()->ResetDisplayTexts();
+  model()->ResetDisplayTexts();
 #if defined(OS_IOS)
-    // iOS OmniboxEditModel always provides the full URL as the OmniboxView
-    // permanent display text.
-    EXPECT_EQ(base::ASCIIToUTF16("https://www.example.com/"),
-              model()->GetPermanentDisplayText());
+  // iOS OmniboxEditModel always provides the full URL as the OmniboxView
+  // permanent display text.
+  EXPECT_EQ(base::ASCIIToUTF16("https://www.example.com/"),
+            model()->GetPermanentDisplayText());
 #else
-    EXPECT_EQ(base::ASCIIToUTF16("example.com"),
-              model()->GetPermanentDisplayText());
+  EXPECT_EQ(base::ASCIIToUTF16("example.com"),
+            model()->GetPermanentDisplayText());
 #endif
 
-    base::string16 search_terms;
-    EXPECT_FALSE(model()->GetQueryInOmniboxSearchTerms(&search_terms));
-    EXPECT_TRUE(search_terms.empty());
+  base::string16 search_terms;
+  EXPECT_FALSE(model()->GetQueryInOmniboxSearchTerms(&search_terms));
+  EXPECT_TRUE(search_terms.empty());
 
-    EXPECT_TRUE(model()->CurrentTextIsURL());
-  }
+  EXPECT_TRUE(model()->CurrentTextIsURL());
+
+  // Verify we can unelide and show the full URL properly.
+  model()->Unelide(false /* exit_query_in_omnibox */);
+  EXPECT_EQ(base::ASCIIToUTF16("https://www.example.com/"), view()->GetText());
+  EXPECT_TRUE(model()->user_input_in_progress());
+  EXPECT_TRUE(view()->IsSelectAll());
+  EXPECT_TRUE(model()->CurrentTextIsURL());
+}
+
+TEST_F(OmniboxEditModelTest, DisplayAndExitQueryInOmnibox) {
+  location_bar_model()->set_url(GURL("https://www.example.com/"));
+  location_bar_model()->set_url_for_display(base::ASCIIToUTF16("example.com"));
 
   // Verify the displayed text when there is a Query in Omnibox match.
   TestOmniboxClient* client =
@@ -321,10 +333,11 @@ TEST_F(OmniboxEditModelTest, DisplayText) {
   EXPECT_FALSE(model()->CurrentTextIsURL());
 
   // Verify we can exit Query in Omnibox mode properly.
-  model()->SetUserTextToURLForEditing();
+  model()->Unelide(true /* exit_query_in_omnibox */);
   EXPECT_EQ(base::ASCIIToUTF16("https://www.example.com/"), view()->GetText());
   EXPECT_TRUE(model()->user_input_in_progress());
   EXPECT_TRUE(view()->IsSelectAll());
+  EXPECT_TRUE(model()->CurrentTextIsURL());
 }
 
 TEST_F(OmniboxEditModelTest, DisablePasteAndGoForLongTexts) {
@@ -401,14 +414,13 @@ TEST_F(OmniboxEditModelTest, KeywordModePreservesInlineAutocompleteText) {
   // Entering keyword search mode should preserve the full display text as the
   // user text, and select all.
   model()->EnterKeywordModeForDefaultSearchProvider(
-      KeywordModeEntryMethod::KEYBOARD_SHORTCUT);
+      OmniboxEventProto::KEYBOARD_SHORTCUT);
   EXPECT_EQ(base::UTF8ToUTF16("user text"), model()->GetUserTextForTesting());
   EXPECT_EQ(base::UTF8ToUTF16("user text"), view()->GetText());
   EXPECT_TRUE(view()->IsSelectAll());
 
-  // Deleting the user text and exiting keyword mode should clear everything.
+  // Deleting the user text (exiting keyword) mode should clear everything.
   view()->SetUserText(base::string16());
-  model()->ClearKeyword();
   {
     EXPECT_TRUE(view()->GetText().empty());
     EXPECT_TRUE(model()->GetUserTextForTesting().empty());
@@ -431,7 +443,7 @@ TEST_F(OmniboxEditModelTest, KeywordModePreservesTemporaryText) {
   // Entering keyword search mode should preserve temporary text as the user
   // text, and select all.
   model()->EnterKeywordModeForDefaultSearchProvider(
-      KeywordModeEntryMethod::KEYBOARD_SHORTCUT);
+      OmniboxEventProto::KEYBOARD_SHORTCUT);
   EXPECT_EQ(base::UTF8ToUTF16("match text"), model()->GetUserTextForTesting());
   EXPECT_EQ(base::UTF8ToUTF16("match text"), view()->GetText());
   EXPECT_TRUE(view()->IsSelectAll());

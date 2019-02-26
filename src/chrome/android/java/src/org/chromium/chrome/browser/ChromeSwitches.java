@@ -96,6 +96,12 @@ public abstract class ChromeSwitches {
      */
     public static final String DISABLE_TAB_MERGING_FOR_TESTING = "disable-tab-merging";
 
+    /**
+     * Turn on No Touch Mode, which will replace ChromeTabbedActivity with a single tab, non-touchy
+     * alternative.
+     */
+    public static final String NO_TOUCH_MODE = "no-touch-mode";
+
     ///////////////////////////////////////////////////////////////////////////////////////////////
     // Native Switches
     ///////////////////////////////////////////////////////////////////////////////////////////////

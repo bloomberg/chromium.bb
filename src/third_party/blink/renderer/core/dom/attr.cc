@@ -34,8 +34,6 @@
 
 namespace blink {
 
-using namespace HTMLNames;
-
 Attr::Attr(Element& element, const QualifiedName& name)
     : Node(&element.GetDocument(), kCreateOther),
       element_(&element),

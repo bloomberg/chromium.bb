@@ -19,10 +19,11 @@ bool HasEnabledPreviews(content::PreviewsState previews_state);
 // definitions for content::PreviewsState.
 // |is_reload| is used to eliminate certain preview types, and |previews_data|
 // is populated with relevant information.
-content::PreviewsState DetermineEnabledClientPreviewsState(
+content::PreviewsState DetermineAllowedClientPreviewsState(
     previews::PreviewsUserData* previews_data,
     const GURL& url,
     bool is_reload,
+    bool is_redirect,
     bool is_data_saver_user,
     previews::PreviewsDecider* previews_decider);
 

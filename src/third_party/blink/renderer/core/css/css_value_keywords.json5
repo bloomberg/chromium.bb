@@ -797,9 +797,9 @@
     //
     // pointer-events
     //
-    "visiblePainted",
-    "visibleFill",
-    "visibleStroke",
+    "visiblepainted",
+    "visiblefill",
+    "visiblestroke",
     //visible
     "painted",
     "fill",

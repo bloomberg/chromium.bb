@@ -210,10 +210,11 @@ TEST_F(WebMeaningfulLayoutsTest, LayoutWithPendingRenderBlockingStylesheet) {
       "<link rel=\"stylesheet\" href=\"style.css\">"
       "</head><body></body></html>");
 
-  GetDocument().UpdateStyleAndLayoutTreeIgnorePendingStylesheets();
-  EXPECT_TRUE(GetDocument().DidLayoutWithPendingStylesheets());
+  GetDocument().UpdateStyleAndLayoutTree();
+  EXPECT_FALSE(GetDocument().IsRenderingReady());
 
   style_resource.Complete("");
+  EXPECT_TRUE(GetDocument().IsRenderingReady());
 }
 
 // A pending stylesheet in the body is not render-blocking and should not
@@ -248,10 +249,13 @@ TEST_F(WebMeaningfulLayoutsTest, LayoutWithPendingImportInHead) {
       "<link rel=\"import\" href=\"import.html\">"
       "</head><body></body></html>");
 
-  GetDocument().UpdateStyleAndLayoutTreeIgnorePendingStylesheets();
-  EXPECT_TRUE(GetDocument().DidLayoutWithPendingStylesheets());
+  GetDocument().UpdateStyleAndLayoutTree();
+  EXPECT_FALSE(GetDocument().IsRenderingReady());
 
   import_resource.Complete("");
+  // Pump the HTMLImportTreeRoot::RecalcTimerFired task.
+  test::RunPendingTasks();
+  EXPECT_TRUE(GetDocument().IsRenderingReady());
 }
 
 // A pending import in the body is render-blocking and will be treated like
@@ -267,10 +271,13 @@ TEST_F(WebMeaningfulLayoutsTest, LayoutWithPendingImportInBody) {
       "<link rel=\"import\" href=\"import.html\">"
       "</body></html>");
 
-  GetDocument().UpdateStyleAndLayoutTreeIgnorePendingStylesheets();
-  EXPECT_TRUE(GetDocument().DidLayoutWithPendingStylesheets());
+  GetDocument().UpdateStyleAndLayoutTree();
+  EXPECT_FALSE(GetDocument().IsRenderingReady());
 
   import_resource.Complete("");
+  // Pump the HTMLImportTreeRoot::RecalcTimerFired task.
+  test::RunPendingTasks();
+  EXPECT_TRUE(GetDocument().IsRenderingReady());
 }
 
 }  // namespace blink

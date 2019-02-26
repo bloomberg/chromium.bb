@@ -201,7 +201,7 @@ public abstract class RequestGenerator {
                 () -> ProcessInitializationHandler.getInstance().initializePreNative());
         int numAccounts = 0;
         try {
-            numAccounts = AccountManagerFacade.get().getGoogleAccounts().length;
+            numAccounts = AccountManagerFacade.get().getGoogleAccounts().size();
         } catch (Exception e) {
             Log.e(TAG, "Can't get number of accounts.", e);
         }

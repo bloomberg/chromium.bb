@@ -94,80 +94,9 @@ class SimpleBuilder(generic_builders.Builder):
       builder_run: BuilderRun object for these background stages.
       board: Board name.
     """
+    self._RunStage(test_stages.TestPlanStage, board,
+                   builder_run=builder_run)
 
-    if not builder_run.options.archive:
-      logging.warning("HWTests were requested but could not be run because "
-                      "artifacts weren't uploaded. Please ensure the archive "
-                      "option in the builder config is set to True.")
-      return
-
-    # For non-uni builds, we don't pass a model (just board)
-    models = [config_lib.ModelTestConfig(None, board)]
-
-    if builder_run.config.models:
-      models = builder_run.config.models
-
-    parallel_stages = []
-    for suite_config in builder_run.config.hw_tests:
-      # Even for blocking stages, all models can still be run in parallel since
-      # it will still block the next stage from executing.
-      for model in models:
-        new_stage = self._GetHWTestStage(
-            builder_run, board, model, suite_config)
-        if new_stage:
-          parallel_stages.append(new_stage)
-
-      # Please see docstring for blocking in the HWTestConfig for more
-      # information on this behavior.
-      # Expected behavior:
-      #     1) Blocking suites are kicked off first, e.g. provision suite.
-      #     2) If it's unibuild, the blocking suites of all models are kicked
-      #        off in parallel first.
-      if suite_config.blocking:
-        self._RunParallelStages(parallel_stages)
-        parallel_stages = []
-
-    if parallel_stages:
-      self._RunParallelStages(parallel_stages)
-
-  def _GetHWTestStage(self, builder_run, board, model, suite_config):
-    """Gets the correct hw test stage for a given test suite and model.
-
-    Args:
-      builder_run: BuilderRun object for these background stages.
-      board: board overlay name
-      model: ModelTestConfig object to test against.
-      suite_config: HWTestConfig object that defines the test suite.
-
-    Returns:
-      The test stage or None if the test suite was filtered for the model.
-    """
-    result = None
-
-    # If test_suites doesn't exist, then there is no filter.
-    # Whereas, an empty array will act as a comprehensive filter.
-    if (model.test_suites is None
-        or suite_config.suite in model.test_suites):
-      stage_class = None
-      if suite_config.async:
-        stage_class = test_stages.ASyncHWTestStage
-      else:
-        stage_class = test_stages.HWTestStage
-
-      if (builder_run.config.enable_skylab_hw_tests and
-          suite_config.enable_skylab):
-        if suite_config.async:
-          stage_class = test_stages.ASyncSkylabHWTestStage
-        else:
-          stage_class = test_stages.SkylabHWTestStage
-
-      result = self._GetStageInstance(stage_class,
-                                      board,
-                                      model.name,
-                                      suite_config,
-                                      lab_board_name=model.lab_board_name,
-                                      builder_run=builder_run)
-    return result
 
   def _RunVMTests(self, builder_run, board):
     """Run VM test stages for the specified board.
@@ -336,6 +265,7 @@ class SimpleBuilder(generic_builders.Builder):
       self._RunStage(scheduler_stages.ScheduleSlavesStage, self.sync_stage)
     self._RunStage(build_stages.UprevStage)
     self._RunStage(build_stages.InitSDKStage)
+    self._RunStage(build_stages.UpdateSDKStage)
     # The CQ/Chrome PFQ master will not actually run the SyncChrome stage, but
     # we want the logic that gets triggered when SyncChrome stage is skipped.
     self._RunStage(chrome_stages.SyncChromeStage)
@@ -353,6 +283,7 @@ class SimpleBuilder(generic_builders.Builder):
       self._RunStage(scheduler_stages.ScheduleSlavesStage, self.sync_stage)
     self._RunStage(build_stages.UprevStage)
     self._RunStage(build_stages.InitSDKStage)
+    self._RunStage(build_stages.UpdateSDKStage)
     self._RunStage(build_stages.RegenPortageCacheStage)
     self.RunSetupBoard()
     self._RunStage(chrome_stages.SyncChromeStage)

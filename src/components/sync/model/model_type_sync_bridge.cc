@@ -64,4 +64,12 @@ ModelTypeChangeProcessor* ModelTypeSyncBridge::change_processor() {
   return change_processor_.get();
 }
 
+base::Optional<ModelError>
+ModelTypeSyncBridge::ApplySyncChangesWithNewEncryptionRequirements(
+    std::unique_ptr<MetadataChangeList> metadata_change_list,
+    EntityChangeList entity_changes) {
+  return ApplySyncChanges(std::move(metadata_change_list),
+                          std::move(entity_changes));
+}
+
 }  // namespace syncer

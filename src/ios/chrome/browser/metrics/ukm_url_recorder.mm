@@ -163,6 +163,3 @@ SourceId GetSourceIdForWebStateDocument(web::WebState* web_state) {
 }
 
 }  // namespace ukm
-
-DEFINE_WEB_STATE_USER_DATA_KEY(
-    ukm::internal::SourceUrlRecorderWebStateObserver);

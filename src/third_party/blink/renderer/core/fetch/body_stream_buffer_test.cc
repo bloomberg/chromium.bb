@@ -8,12 +8,17 @@
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/blink/renderer/bindings/core/v8/v8_binding_for_testing.h"
+#include "third_party/blink/renderer/bindings/core/v8/v8_readable_stream.h"
 #include "third_party/blink/renderer/core/dom/document.h"
 #include "third_party/blink/renderer/core/fetch/blob_bytes_consumer.h"
 #include "third_party/blink/renderer/core/fetch/bytes_consumer.h"
 #include "third_party/blink/renderer/core/fetch/bytes_consumer_test_util.h"
 #include "third_party/blink/renderer/core/fetch/form_data_bytes_consumer.h"
 #include "third_party/blink/renderer/core/html/forms/form_data.h"
+#include "third_party/blink/renderer/core/streams/readable_stream.h"
+#include "third_party/blink/renderer/core/streams/readable_stream_default_controller_wrapper.h"
+#include "third_party/blink/renderer/core/streams/test_underlying_source.h"
+#include "third_party/blink/renderer/core/typed_arrays/dom_typed_array.h"
 #include "third_party/blink/renderer/platform/bindings/exception_state.h"
 #include "third_party/blink/renderer/platform/blob/blob_data.h"
 #include "third_party/blink/renderer/platform/blob/blob_url.h"
@@ -134,13 +139,26 @@ TEST_F(BodyStreamBufferTest, Tee) {
 TEST_F(BodyStreamBufferTest, TeeFromHandleMadeFromStream) {
   V8TestingScope scope;
   NonThrowableExceptionState exception_state;
-  ScriptValue stream = EvalWithPrintingError(
-      scope.GetScriptState(),
-      "stream = new ReadableStream({start: c => controller = c});"
-      "controller.enqueue(new Uint8Array([0x41, 0x42]));"
-      "controller.enqueue(new Uint8Array([0x55, 0x58]));"
-      "controller.close();"
-      "stream");
+
+  auto* underlying_source =
+      MakeGarbageCollected<TestUnderlyingSource>(scope.GetScriptState());
+  auto* chunk1 = DOMUint8Array::Create(2);
+  chunk1->Data()[0] = 0x41;
+  chunk1->Data()[1] = 0x42;
+  auto* chunk2 = DOMUint8Array::Create(2);
+  chunk2->Data()[0] = 0x55;
+  chunk2->Data()[1] = 0x58;
+
+  auto* stream = ReadableStream::CreateWithCountQueueingStrategy(
+      scope.GetScriptState(), underlying_source, 0);
+  ASSERT_TRUE(stream);
+
+  underlying_source->Enqueue(ScriptValue(scope.GetScriptState(),
+                                         ToV8(chunk1, scope.GetScriptState())));
+  underlying_source->Enqueue(ScriptValue(scope.GetScriptState(),
+                                         ToV8(chunk2, scope.GetScriptState())));
+  underlying_source->Close();
+
   Checkpoint checkpoint;
   MockFetchDataLoaderClient* client1 = MockFetchDataLoaderClient::Create();
   MockFetchDataLoaderClient* client2 = MockFetchDataLoaderClient::Create();
@@ -154,7 +172,7 @@ TEST_F(BodyStreamBufferTest, TeeFromHandleMadeFromStream) {
   EXPECT_CALL(checkpoint, Call(4));
 
   BodyStreamBuffer* buffer =
-      new BodyStreamBuffer(scope.GetScriptState(), stream, exception_state);
+      new BodyStreamBuffer(scope.GetScriptState(), stream);
 
   BodyStreamBuffer* new1;
   BodyStreamBuffer* new2;
@@ -237,10 +255,11 @@ TEST_F(BodyStreamBufferTest,
        DrainAsBlobFromBufferMadeFromBufferMadeFromStream) {
   V8TestingScope scope;
   NonThrowableExceptionState exception_state;
-  ScriptValue stream =
-      EvalWithPrintingError(scope.GetScriptState(), "new ReadableStream()");
+  auto* stream =
+      ReadableStream::Create(scope.GetScriptState(), exception_state);
+  ASSERT_TRUE(stream);
   BodyStreamBuffer* buffer =
-      new BodyStreamBuffer(scope.GetScriptState(), stream, exception_state);
+      new BodyStreamBuffer(scope.GetScriptState(), stream);
 
   EXPECT_FALSE(buffer->HasPendingActivity());
   EXPECT_FALSE(buffer->IsStreamLocked(exception_state).value_or(true));
@@ -265,10 +284,11 @@ TEST_F(BodyStreamBufferTest, DrainAsFormData) {
   scoped_refptr<EncodedFormData> input_form_data =
       data->EncodeMultiPartFormData();
 
-  BodyStreamBuffer* buffer = new BodyStreamBuffer(
-      scope.GetScriptState(),
-      new FormDataBytesConsumer(scope.GetExecutionContext(), input_form_data),
-      nullptr);
+  BodyStreamBuffer* buffer =
+      new BodyStreamBuffer(scope.GetScriptState(),
+                           MakeGarbageCollected<FormDataBytesConsumer>(
+                               scope.GetExecutionContext(), input_form_data),
+                           nullptr);
 
   EXPECT_FALSE(buffer->IsStreamLocked(ASSERT_NO_EXCEPTION).value_or(true));
   EXPECT_FALSE(buffer->IsStreamDisturbed(ASSERT_NO_EXCEPTION).value_or(true));
@@ -305,10 +325,10 @@ TEST_F(BodyStreamBufferTest,
        DrainAsFormDataFromBufferMadeFromBufferMadeFromStream) {
   V8TestingScope scope;
   NonThrowableExceptionState exception_state;
-  ScriptValue stream =
-      EvalWithPrintingError(scope.GetScriptState(), "new ReadableStream()");
+  auto* stream =
+      ReadableStream::Create(scope.GetScriptState(), exception_state);
   BodyStreamBuffer* buffer =
-      new BodyStreamBuffer(scope.GetScriptState(), stream, exception_state);
+      new BodyStreamBuffer(scope.GetScriptState(), stream);
 
   EXPECT_FALSE(buffer->HasPendingActivity());
   EXPECT_FALSE(buffer->IsStreamLocked(exception_state).value_or(true));
@@ -543,7 +563,8 @@ TEST_F(BodyStreamBufferTest, NestedPull) {
   auto result =
       scope.GetScriptState()->GetContext()->Global()->CreateDataProperty(
           scope.GetScriptState()->GetContext(),
-          V8String(scope.GetIsolate(), "stream"), buffer->Stream().V8Value());
+          V8String(scope.GetIsolate(), "stream"),
+          ToV8(buffer->Stream(), scope.GetScriptState()));
 
   ASSERT_TRUE(result.IsJust());
   ASSERT_TRUE(result.FromJust());

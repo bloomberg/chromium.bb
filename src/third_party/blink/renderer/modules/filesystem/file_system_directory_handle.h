@@ -22,16 +22,16 @@ class FileSystemDirectoryHandle : public FileSystemBaseHandle {
   bool isDirectory() const override { return true; }
   ScriptPromise getFile(ScriptState*,
                         const String& name,
-                        const FileSystemGetFileOptions&);
+                        const FileSystemGetFileOptions*);
   ScriptPromise getDirectory(ScriptState*,
                              const String& name,
-                             const FileSystemGetDirectoryOptions&);
+                             const FileSystemGetDirectoryOptions*);
   ScriptValue getEntries(ScriptState*);
   ScriptPromise removeRecursively(ScriptState*);
 
   static ScriptPromise getSystemDirectory(
       ScriptState*,
-      const GetSystemDirectoryOptions& options);
+      const GetSystemDirectoryOptions* options);
 };
 
 }  // namespace blink

@@ -18,7 +18,7 @@ cr.define('device_page_tests', function() {
    * @implements {settings.DevicePageBrowserProxy}
    */
   function TestDevicePageBrowserProxy() {
-    this.keyboardShortcutsOverlayShown_ = 0;
+    this.keyboardShortcutViewerShown_ = 0;
     this.updatePowerStatusCalled_ = 0;
     this.requestPowerManagementSettingsCalled_ = 0;
     this.requestNoteTakingApps_ = 0;
@@ -48,8 +48,8 @@ cr.define('device_page_tests', function() {
     initializeKeyboard: function() {},
 
     /** override */
-    showKeyboardShortcutsOverlay: function() {
-      this.keyboardShortcutsOverlayShown_++;
+    showKeyboardShortcutViewer: function() {
+      this.keyboardShortcutViewerShown_++;
     },
 
     /** @override */
@@ -592,10 +592,10 @@ cr.define('device_page_tests', function() {
         PolymerTest.flushTasks();
         expectNaturalScrollValue(pointersPage, false);
 
-        triggerKeyEvents(naturalScrollOn, 'Enter', 'Enter');
-        PolymerTest.flushTasks();
-        expectNaturalScrollValue(pointersPage, true);
-
+        pointersPage.$$('settings-radio-group').selected = '';
+        const falseRadio = pointersPage.$$('cr-radio-button[name="false"]');
+        assertTrue(!!falseRadio);
+        assertFalse(falseRadio.checked);
         triggerKeyEvents(naturalScrollOff, 'Space', ' ');
         PolymerTest.flushTasks();
         expectNaturalScrollValue(pointersPage, false);
@@ -708,12 +708,12 @@ cr.define('device_page_tests', function() {
                 false);
             expectFalse(collapse.opened);
 
-            // Test keyboard shortcut overlay button.
-            keyboardPage.$$('#keyboardOverlay').click();
+            // Test keyboard shortcut viewer button.
+            keyboardPage.$$('#keyboardShortcutViewer').click();
             expectEquals(
                 1,
                 settings.DevicePageBrowserProxyImpl.getInstance()
-                    .keyboardShortcutsOverlayShown_);
+                    .keyboardShortcutViewerShown_);
           });
     });
 

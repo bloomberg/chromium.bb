@@ -41,8 +41,9 @@ class NumberInputType final : public TextFieldInputType {
  public:
   static InputType* Create(HTMLInputElement&);
 
- private:
   NumberInputType(HTMLInputElement& element) : TextFieldInputType(element) {}
+
+ private:
   void CountUsage() override;
   const AtomicString& FormControlType() const override;
   void SetValue(const String&,

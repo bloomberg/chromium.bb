@@ -42,7 +42,8 @@ namespace blink {
 ScopedEventQueue* ScopedEventQueue::instance_ = nullptr;
 
 ScopedEventQueue::ScopedEventQueue()
-    : queued_events_(new HeapVector<Member<Event>>()), scoping_level_(0) {}
+    : queued_events_(MakeGarbageCollected<HeapVector<Member<Event>>>()),
+      scoping_level_(0) {}
 
 ScopedEventQueue::~ScopedEventQueue() {
   DCHECK(!scoping_level_);

@@ -26,7 +26,7 @@ void LongTaskDetector::RegisterObserver(LongTaskObserver* observer) {
   DCHECK(observer);
   if (observers_.insert(observer).is_new_entry && observers_.size() == 1) {
     // Number of observers just became non-zero.
-    Platform::Current()->CurrentThread()->AddTaskTimeObserver(this);
+    Thread::Current()->AddTaskTimeObserver(this);
   }
 }
 
@@ -34,7 +34,7 @@ void LongTaskDetector::UnregisterObserver(LongTaskObserver* observer) {
   DCHECK(IsMainThread());
   observers_.erase(observer);
   if (observers_.size() == 0) {
-    Platform::Current()->CurrentThread()->RemoveTaskTimeObserver(this);
+    Thread::Current()->RemoveTaskTimeObserver(this);
   }
 }
 

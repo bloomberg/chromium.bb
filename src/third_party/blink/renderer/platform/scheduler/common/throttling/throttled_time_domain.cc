@@ -54,5 +54,10 @@ base::Optional<base::TimeDelta> ThrottledTimeDomain::DelayTillNextTask(
   return base::nullopt;
 }
 
+bool ThrottledTimeDomain::MaybeFastForwardToNextTask(
+    bool quit_when_idle_requested) {
+  return false;
+}
+
 }  // namespace scheduler
 }  // namespace blink

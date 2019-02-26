@@ -14,10 +14,9 @@ package org.chromium.chromecast.base;
  * instantiable).
  */
 public final class Unit {
-    private static Unit sInstance;
+    private static final Unit sInstance = new Unit();
     private Unit() {}
     public static Unit unit() {
-        if (sInstance == null) sInstance = new Unit();
         return sInstance;
     }
 }

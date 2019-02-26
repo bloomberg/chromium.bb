@@ -437,18 +437,18 @@ def DoInline(
 
     return pattern % InlineCSSText(text, filepath)
 
-
   def InlineCSSImages(text, filepath=input_filepath):
     """Helper function that inlines external images in CSS backgrounds."""
     # Replace contents of url() for css attributes: content, background,
     # or *-image.
-    return re.sub('(content|background|[\w-]*-image):[^;]*' +
-                  '(url\((?P<quote1>"|\'|)[^"\'()]*(?P=quote1)\)|' +
-                      'image-set\(' +
-                          '([ ]*url\((?P<quote2>"|\'|)[^"\'()]*(?P=quote2)\)' +
-                              '[ ]*[0-9.]*x[ ]*(,[ ]*)?)+\))',
-                  lambda m: InlineCSSUrls(m, filepath),
-                  text)
+    property_re = '(content|background|[\w-]*-image):[^;]*'
+    url_value_re = 'url\((?!\[\[|{{)(?P<quote1>"|\'|)[^"\'()]*(?P=quote1)\)'
+    image_set_value_re = 'image-set\(([ ]*url\((?!\[\[|{{)' + \
+        '(?P<quote2>"|\'|)[^"\'()]*(?P=quote2)\)' + \
+        '[ ]*[0-9.]*x[ ]*(,[ ]*)?)+\)'
+    value_re = '(%s|%s)' % (url_value_re, image_set_value_re)
+    css_re = property_re + value_re
+    return re.sub(css_re, lambda m: InlineCSSUrls(m, filepath), text)
 
   def InlineCSSUrls(src_match, filepath=input_filepath):
     """Helper function that inlines each url on a CSS image rule match."""

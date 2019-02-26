@@ -66,7 +66,7 @@ void CustomElementReactionStack::Enqueue(Member<ElementQueue>& queue,
                                          Element* element,
                                          CustomElementReaction* reaction) {
   if (!queue)
-    queue = new ElementQueue();
+    queue = MakeGarbageCollected<ElementQueue>();
   queue->push_back(element);
 
   CustomElementReactionQueue* reactions = map_.at(element);

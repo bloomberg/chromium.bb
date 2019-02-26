@@ -22,7 +22,6 @@
 #include "chrome/browser/android/explore_sites/explore_sites_types.h"
 #include "chrome/browser/android/explore_sites/url_util.h"
 #include "chrome/browser/browser_process.h"
-#include "chrome/browser/net/chrome_accept_language_settings.h"
 #include "chrome/common/channel_info.h"
 #include "components/variations/service/variations_service.h"
 #include "components/version_info/version_info.h"

@@ -85,7 +85,7 @@ audio::-webkit-media-controls-panel, video::-webkit-media-controls-panel {
     min-width: 48px;
     line-height: 32px;
     background-color: #fafafa;
-    /* The duration is also specified in MediaControlElements.cpp and LayoutTests/media/media-controls.js */
+    /* The duration is also specified in media_control_elements.cc and web_tests/media/media-controls.js */
     transition: opacity 0.3s;
 
     font-size: 12px;

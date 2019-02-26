@@ -31,7 +31,7 @@ class Profile;
 namespace base {
 class CommandLine;
 class DictionaryValue;
-}
+}  // namespace base
 
 namespace content {
 class SessionStorageNamespace;
@@ -40,7 +40,7 @@ class SessionStorageNamespace;
 namespace extensions {
 class Extension;
 class ExtensionRegistry;
-}
+}  // namespace extensions
 
 namespace gfx {
 class Rect;

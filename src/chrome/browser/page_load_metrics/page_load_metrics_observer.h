@@ -136,6 +136,7 @@ struct PageLoadExtraInfo {
       const base::Optional<base::TimeDelta>& page_end_time,
       const mojom::PageLoadMetadata& main_frame_metadata,
       const mojom::PageLoadMetadata& subframe_metadata,
+      const mojom::PageRenderData& main_frame_render_data,
       ukm::SourceId source_id);
 
   // Simplified version of the constructor, intended for use in tests.
@@ -209,6 +210,8 @@ struct PageLoadExtraInfo {
 
   // PageLoadMetadata for subframes of the current page load.
   const mojom::PageLoadMetadata subframe_metadata;
+
+  const mojom::PageRenderData main_frame_render_data;
 
   // UKM SourceId for the current page load.
   const ukm::SourceId source_id;
@@ -413,6 +416,22 @@ class PageLoadMetricsObserver {
       const mojom::PageLoadTiming& timing,
       const PageLoadExtraInfo& extra_info) {}
 
+  // These signatures are used to report the last candidate for each of FCP++
+  // metrics. They will be invoked at the end of page load's life time, around
+  // the time of the OnComplete callback.
+  virtual void OnLargestImagePaintInMainFrameDocument(
+      const mojom::PageLoadTiming& last_candidate,
+      const page_load_metrics::PageLoadExtraInfo& info) {}
+  virtual void OnLastImagePaintInMainFrameDocument(
+      const mojom::PageLoadTiming& last_candidate,
+      const page_load_metrics::PageLoadExtraInfo& info) {}
+  virtual void OnLargestTextPaintInMainFrameDocument(
+      const mojom::PageLoadTiming& last_candidate,
+      const page_load_metrics::PageLoadExtraInfo& info) {}
+  virtual void OnLastTextPaintInMainFrameDocument(
+      const mojom::PageLoadTiming& last_candidate,
+      const page_load_metrics::PageLoadExtraInfo& info) {}
+
   virtual void OnPageInteractive(const mojom::PageLoadTiming& timing,
                                  const PageLoadExtraInfo& extra_info) {}
 
@@ -428,7 +447,7 @@ class PageLoadMetricsObserver {
                                        const PageLoadExtraInfo& extra_info) {}
 
   // Invoked when there is data use for loading a resource on the page
-  // acrosss all frames. This only contains resources that have had new
+  // across all frames. This only contains resources that have had new
   // data use since the last callback.
   virtual void OnResourceDataUseObserved(
       const std::vector<mojom::ResourceDataUpdatePtr>& resources) {}

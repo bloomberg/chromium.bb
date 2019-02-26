@@ -4,21 +4,44 @@
 
 #include "chrome/browser/ui/views/location_bar/star_view.h"
 
+#include <string>
+
 #include "base/metrics/histogram_macros.h"
+#include "base/strings/string_number_conversions.h"
 #include "chrome/app/chrome_command_ids.h"
 #include "chrome/browser/bookmarks/bookmark_stats.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_commands.h"
 #include "chrome/browser/ui/view_ids.h"
 #include "chrome/browser/ui/views/bookmarks/bookmark_bubble_view.h"
-#include "chrome/browser/ui/views/feature_promos/bookmark_promo_bubble_view.h"
+#include "chrome/browser/ui/views/feature_promos/feature_promo_bubble_view.h"
 #include "chrome/grit/generated_resources.h"
+#include "components/omnibox/browser/vector_icons.h"
 #include "components/strings/grit/components_strings.h"
-#include "components/toolbar/vector_icons.h"
+#include "components/variations/variations_associated_data.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/gfx/color_utils.h"
 #include "ui/gfx/paint_vector_icon.h"
 #include "ui/views/widget/widget_observer.h"
+
+namespace {
+
+// For bookmark in-product help.
+int GetBookmarkPromoStringSpecifier() {
+  static constexpr int kTextIds[] = {IDS_BOOKMARK_PROMO_0, IDS_BOOKMARK_PROMO_1,
+                                     IDS_BOOKMARK_PROMO_2};
+  const std::string& str = variations::GetVariationParamValue(
+      "BookmarkInProductHelp", "x_promo_string");
+  size_t text_specifier;
+  if (!base::StringToSizeT(str, &text_specifier) ||
+      text_specifier >= base::size(kTextIds)) {
+    text_specifier = 0;
+  }
+
+  return kTextIds[text_specifier];
+}
+
+}  // namespace
 
 StarView::StarView(CommandUpdater* command_updater,
                    Browser* browser,
@@ -37,8 +60,11 @@ void StarView::SetToggled(bool on) {
 }
 
 void StarView::ShowPromo() {
-  BookmarkPromoBubbleView* bookmark_promo_bubble =
-      BookmarkPromoBubbleView::CreateOwned(this);
+  FeaturePromoBubbleView* bookmark_promo_bubble =
+      FeaturePromoBubbleView::CreateOwned(
+          this, views::BubbleBorder::TOP_RIGHT,
+          GetBookmarkPromoStringSpecifier(),
+          FeaturePromoBubbleView::ActivationAction::ACTIVATE);
   if (!bookmark_promo_observer_.IsObserving(
           bookmark_promo_bubble->GetWidget())) {
     bookmark_promo_observer_.Add(bookmark_promo_bubble->GetWidget());
@@ -79,7 +105,7 @@ views::BubbleDialogDelegateView* StarView::GetBubble() const {
 }
 
 const gfx::VectorIcon& StarView::GetVectorIcon() const {
-  return active() ? toolbar::kStarActiveIcon : toolbar::kStarIcon;
+  return active() ? omnibox::kStarActiveIcon : omnibox::kStarIcon;
 }
 
 base::string16 StarView::GetTextForTooltipAndAccessibleName() const {

@@ -8,7 +8,9 @@
 #include <utility>
 
 #include "base/numerics/ranges.h"
+#include "base/stl_util.h"
 #include "base/strings/string_util.h"
+#include "build/build_config.h"
 #include "content/browser/media/session/audio_focus_delegate.h"
 #include "content/browser/media/session/media_session_controller.h"
 #include "content/browser/media/session/media_session_player_observer.h"
@@ -30,6 +32,7 @@ namespace content {
 
 using MediaSessionUserAction = MediaSessionUmaHelper::MediaSessionUserAction;
 using media_session::mojom::MediaSessionInfo;
+using media_session::mojom::MediaPlaybackState;
 
 namespace {
 
@@ -37,10 +40,6 @@ const double kUnduckedVolumeMultiplier = 1.0;
 const double kDefaultDuckingVolumeMultiplier = 0.2;
 
 const char kDebugInfoOwnerSeparator[] = " - ";
-const char kDebugInfoDucked[] = "Ducked";
-const char kDebugInfoActive[] = "Active";
-const char kDebugInfoInactive[] = "Inactive";
-const char kDebugInfoStateSeparator[] = " ";
 
 using MapRenderFrameHostToDepth = std::map<RenderFrameHost*, size_t>;
 
@@ -68,23 +67,23 @@ size_t ComputeFrameDepth(RenderFrameHost* rfh,
 }
 
 MediaSessionUserAction MediaSessionActionToUserAction(
-    blink::mojom::MediaSessionAction action) {
+    media_session::mojom::MediaSessionAction action) {
   switch (action) {
-    case blink::mojom::MediaSessionAction::PLAY:
+    case media_session::mojom::MediaSessionAction::kPlay:
       return MediaSessionUserAction::Play;
-    case blink::mojom::MediaSessionAction::PAUSE:
+    case media_session::mojom::MediaSessionAction::kPause:
       return MediaSessionUserAction::Pause;
-    case blink::mojom::MediaSessionAction::PREVIOUS_TRACK:
+    case media_session::mojom::MediaSessionAction::kPreviousTrack:
       return MediaSessionUserAction::PreviousTrack;
-    case blink::mojom::MediaSessionAction::NEXT_TRACK:
+    case media_session::mojom::MediaSessionAction::kNextTrack:
       return MediaSessionUserAction::NextTrack;
-    case blink::mojom::MediaSessionAction::SEEK_BACKWARD:
+    case media_session::mojom::MediaSessionAction::kSeekBackward:
       return MediaSessionUserAction::SeekBackward;
-    case blink::mojom::MediaSessionAction::SEEK_FORWARD:
+    case media_session::mojom::MediaSessionAction::kSeekForward:
       return MediaSessionUserAction::SeekForward;
   }
   NOTREACHED();
-  return MediaSessionUserAction::Count;
+  return MediaSessionUserAction::Play;
 }
 
 // If the string is not empty then push it to the back of a vector.
@@ -179,6 +178,17 @@ void MediaSessionImpl::DidFinishNavigation(
     services_[rfh]->DidFinishNavigation();
 }
 
+void MediaSessionImpl::OnWebContentsFocused(
+    RenderWidgetHost* render_widget_host) {
+#if !defined(OS_ANDROID)
+  // If we have just gained focus and we have audio focus we should re-request
+  // system audio focus. This will ensure this media session is towards the top
+  // of the stack if we have multiple sessions active at the same time.
+  if (audio_focus_state_ == State::ACTIVE)
+    RequestSystemAudioFocus(desired_audio_focus_type_);
+#endif
+}
+
 void MediaSessionImpl::AddObserver(MediaSessionObserver* observer) {
   observers_.AddObserver(observer);
   NotifyAddedObserver(observer);
@@ -193,7 +203,7 @@ void MediaSessionImpl::NotifyAddedObserver(MediaSessionObserver* observer) {
       routed_service_ ? routed_service_->metadata() : base::nullopt);
   observer->MediaSessionActionsChanged(
       routed_service_ ? routed_service_->actions()
-                      : std::set<blink::mojom::MediaSessionAction>());
+                      : std::set<media_session::mojom::MediaSessionAction>());
   observer->MediaSessionStateChanged(IsControllable(), IsActuallyPaused());
 }
 
@@ -204,7 +214,7 @@ void MediaSessionImpl::NotifyMediaSessionMetadataChange(
 }
 
 void MediaSessionImpl::NotifyMediaSessionActionsChange(
-    const std::set<blink::mojom::MediaSessionAction>& actions) {
+    const std::set<media_session::mojom::MediaSessionAction>& actions) {
   for (auto& observer : observers_)
     observer.MediaSessionActionsChanged(actions);
 }
@@ -267,7 +277,7 @@ bool MediaSessionImpl::AddPlayer(MediaSessionPlayerObserver* observer,
 
   if (old_audio_focus_state != audio_focus_state_ ||
       old_controllable != IsControllable()) {
-    NotifyAboutStateChange();
+    NotifyLegacyObserversStateChange();
   }
 
   return true;
@@ -298,7 +308,7 @@ void MediaSessionImpl::RemovePlayer(MediaSessionPlayerObserver* observer,
   // However AbandonSystemAudioFocusIfNeeded will short-return and won't notify
   // about the state change.
   if (!was_controllable && IsControllable())
-    NotifyAboutStateChange();
+    NotifyLegacyObserversStateChange();
 }
 
 void MediaSessionImpl::RemovePlayers(MediaSessionPlayerObserver* observer) {
@@ -332,7 +342,7 @@ void MediaSessionImpl::RemovePlayers(MediaSessionPlayerObserver* observer) {
   // However AbandonSystemAudioFocusIfNeeded will short-return and won't notify
   // about the state change.
   if (!was_controllable && IsControllable())
-    NotifyAboutStateChange();
+    NotifyLegacyObserversStateChange();
 }
 
 void MediaSessionImpl::RecordSessionDuck() {
@@ -439,14 +449,32 @@ void MediaSessionImpl::Stop(SuspendType suspend_type) {
   AbandonSystemAudioFocusIfNeeded();
 }
 
-void MediaSessionImpl::SeekForward(base::TimeDelta seek_time) {
-  for (const auto& it : normal_players_)
-    it.first.observer->OnSeekForward(it.first.player_id, seek_time);
-}
+void MediaSessionImpl::Seek(base::TimeDelta seek_time) {
+  DCHECK(!seek_time.is_zero());
 
-void MediaSessionImpl::SeekBackward(base::TimeDelta seek_time) {
-  for (const auto& it : normal_players_)
-    it.first.observer->OnSeekBackward(it.first.player_id, seek_time);
+  if (seek_time > base::TimeDelta()) {
+    // If the site has registered an action handler for seek forward then we
+    // should pass it to the site and let them handle it.
+    if (IsActionSupported(
+            media_session::mojom::MediaSessionAction::kSeekForward)) {
+      DidReceiveAction(media_session::mojom::MediaSessionAction::kSeekForward);
+      return;
+    }
+
+    for (const auto& it : normal_players_)
+      it.first.observer->OnSeekForward(it.first.player_id, seek_time);
+  } else if (seek_time < base::TimeDelta()) {
+    // If the site has registered an action handler for seek backward then we
+    // should pass it to the site and let them handle it.
+    if (IsActionSupported(
+            media_session::mojom::MediaSessionAction::kSeekBackward)) {
+      DidReceiveAction(media_session::mojom::MediaSessionAction::kSeekBackward);
+      return;
+    }
+
+    for (const auto& it : normal_players_)
+      it.first.observer->OnSeekBackward(it.first.player_id, seek_time * -1);
+  }
 }
 
 bool MediaSessionImpl::IsControllable() const {
@@ -471,12 +499,17 @@ void MediaSessionImpl::SetDuckingVolumeMultiplier(double multiplier) {
   ducking_volume_multiplier_ = base::ClampToRange(multiplier, 0.0, 1.0);
 }
 
+void MediaSessionImpl::SetAudioFocusGroupId(
+    const base::UnguessableToken& group_id) {
+  audio_focus_group_id_ = group_id;
+}
+
 void MediaSessionImpl::StartDucking() {
   if (is_ducking_)
     return;
   is_ducking_ = true;
   UpdateVolumeMultiplier();
-  NotifyObserversInfoChanged();
+  OnMediaSessionInfoChanged();
 }
 
 void MediaSessionImpl::StopDucking() {
@@ -484,7 +517,7 @@ void MediaSessionImpl::StopDucking() {
     return;
   is_ducking_ = false;
   UpdateVolumeMultiplier();
-  NotifyObserversInfoChanged();
+  OnMediaSessionInfoChanged();
 }
 
 void MediaSessionImpl::UpdateVolumeMultiplier() {
@@ -594,7 +627,7 @@ void MediaSessionImpl::OnSuspendInternal(SuspendType suspend_type,
     it.observer->OnSetVolumeMultiplier(it.player_id,
                                        ducking_volume_multiplier_);
 
-  NotifyAboutStateChange();
+  NotifyLegacyObserversStateChange();
 }
 
 void MediaSessionImpl::OnResumeInternal(SuspendType suspend_type) {
@@ -609,7 +642,7 @@ void MediaSessionImpl::OnResumeInternal(SuspendType suspend_type) {
   for (const auto& it : pepper_players_)
     it.observer->OnSetVolumeMultiplier(it.player_id, GetVolumeMultiplier());
 
-  NotifyAboutStateChange();
+  NotifyLegacyObserversStateChange();
 }
 
 MediaSessionImpl::MediaSessionImpl(WebContents* web_contents)
@@ -618,7 +651,8 @@ MediaSessionImpl::MediaSessionImpl(WebContents* web_contents)
       desired_audio_focus_type_(AudioFocusType::kGainTransientMayDuck),
       is_ducking_(false),
       ducking_volume_multiplier_(kDefaultDuckingVolumeMultiplier),
-      routed_service_(nullptr) {
+      routed_service_(nullptr),
+      info_changed_timer_(new base::OneShotTimer()) {
 #if defined(OS_ANDROID)
   session_android_.reset(new MediaSessionAndroid(this));
 #endif  // defined(OS_ANDROID)
@@ -660,11 +694,6 @@ void MediaSessionImpl::GetDebugInfo(GetDebugInfoCallback callback) {
   media_session::mojom::MediaSessionDebugInfoPtr info(
       media_session::mojom::MediaSessionDebugInfo::New());
 
-  // Convert the address of |this| to a string and use it as the name.
-  std::stringstream stream;
-  stream << this;
-  info->name = stream.str();
-
   // Add the title and the url to the owner.
   std::vector<std::string> owner_parts;
   MaybePushBackString(owner_parts,
@@ -672,13 +701,6 @@ void MediaSessionImpl::GetDebugInfo(GetDebugInfoCallback callback) {
   MaybePushBackString(owner_parts,
                       web_contents()->GetLastCommittedURL().spec());
   info->owner = base::JoinString(owner_parts, kDebugInfoOwnerSeparator);
-
-  // Add the ducking state to state.
-  std::vector<std::string> state_parts;
-  MaybePushBackString(state_parts,
-                      IsActive() ? kDebugInfoActive : kDebugInfoInactive);
-  MaybePushBackString(state_parts, is_ducking_ ? kDebugInfoDucked : "");
-  info->state = base::JoinString(state_parts, kDebugInfoStateSeparator);
 
   std::move(callback).Run(std::move(info));
 }
@@ -706,6 +728,9 @@ MediaSessionImpl::GetMediaSessionInfoSync() {
 
   // If we have Pepper players then we should force ducking.
   info->force_duck = HasPepper();
+
+  info->playback_state = IsActuallyPaused() ? MediaPlaybackState::kPaused
+                                            : MediaPlaybackState::kPlaying;
   return info;
 }
 
@@ -755,6 +780,14 @@ void MediaSessionImpl::FinishSystemAudioFocusRequest(
   }
 }
 
+void MediaSessionImpl::PreviousTrack() {
+  DidReceiveAction(media_session::mojom::MediaSessionAction::kPreviousTrack);
+}
+
+void MediaSessionImpl::NextTrack() {
+  DidReceiveAction(media_session::mojom::MediaSessionAction::kNextTrack);
+}
+
 void MediaSessionImpl::AbandonSystemAudioFocusIfNeeded() {
   if (audio_focus_state_ == State::INACTIVE || !normal_players_.empty() ||
       !pepper_players_.empty() || !one_shot_players_.empty()) {
@@ -764,15 +797,17 @@ void MediaSessionImpl::AbandonSystemAudioFocusIfNeeded() {
   is_ducking_ = false;
 
   SetAudioFocusState(State::INACTIVE);
-  NotifyAboutStateChange();
+  NotifyLegacyObserversStateChange();
 }
 
-void MediaSessionImpl::NotifyAboutStateChange() {
+void MediaSessionImpl::NotifyLegacyObserversStateChange() {
   media_session_state_listeners_.Notify(audio_focus_state_);
 
   bool is_actually_paused = IsActuallyPaused();
   for (auto& observer : observers_)
     observer.MediaSessionStateChanged(IsControllable(), is_actually_paused);
+
+  OnMediaSessionInfoChanged();
 }
 
 void MediaSessionImpl::SetAudioFocusState(State audio_focus_state) {
@@ -792,14 +827,22 @@ void MediaSessionImpl::SetAudioFocusState(State audio_focus_state) {
       break;
   }
 
-  NotifyObserversInfoChanged();
+  OnMediaSessionInfoChanged();
 }
 
 void MediaSessionImpl::FlushForTesting() {
   mojo_observers_.FlushForTesting();
 }
 
-void MediaSessionImpl::NotifyObserversInfoChanged() {
+void MediaSessionImpl::OnMediaSessionInfoChanged() {
+  info_changed_timer_->Start(
+      FROM_HERE, base::TimeDelta::FromSeconds(0),
+      base::BindOnce(
+          &MediaSessionImpl::NotifyMojoObserversMediaSessionInfoChanged,
+          base::Unretained(this)));
+}
+
+void MediaSessionImpl::NotifyMojoObserversMediaSessionInfoChanged() {
   media_session::mojom::MediaSessionInfoPtr current_info =
       GetMediaSessionInfoSync();
 
@@ -821,7 +864,7 @@ bool MediaSessionImpl::AddPepperPlayer(MediaSessionPlayerObserver* observer,
 
   observer->OnSetVolumeMultiplier(player_id, GetVolumeMultiplier());
 
-  NotifyAboutStateChange();
+  NotifyLegacyObserversStateChange();
   return result != AudioFocusDelegate::AudioFocusResult::kFailed;
 }
 
@@ -834,7 +877,7 @@ bool MediaSessionImpl::AddOneShotPlayer(MediaSessionPlayerObserver* observer,
     return false;
 
   one_shot_players_.insert(PlayerIdentifier(observer, player_id));
-  NotifyAboutStateChange();
+  NotifyLegacyObserversStateChange();
 
   return true;
 }
@@ -862,7 +905,7 @@ void MediaSessionImpl::OnMediaSessionPlaybackStateChanged(
     MediaSessionServiceImpl* service) {
   if (service != routed_service_)
     return;
-  NotifyAboutStateChange();
+  NotifyLegacyObserversStateChange();
 }
 
 void MediaSessionImpl::OnMediaSessionMetadataChanged(
@@ -882,7 +925,7 @@ void MediaSessionImpl::OnMediaSessionActionsChanged(
 }
 
 void MediaSessionImpl::DidReceiveAction(
-    blink::mojom::MediaSessionAction action) {
+    media_session::mojom::MediaSessionAction action) {
   MediaSessionUmaHelper::RecordMediaSessionUserAction(
       MediaSessionActionToUserAction(action));
 
@@ -899,7 +942,7 @@ void MediaSessionImpl::DidReceiveAction(
   // OneShot players are not really suspended, so that the session is still
   // active after this. See https://crbug.com/619084 and
   // https://crbug.com/596516.
-  if (blink::mojom::MediaSessionAction::PAUSE == action) {
+  if (media_session::mojom::MediaSessionAction::kPause == action) {
     RenderFrameHost* rfh_of_routed_service =
         routed_service_ ? routed_service_->GetRenderFrameHost() : nullptr;
     for (const auto& player : normal_players_) {
@@ -979,6 +1022,12 @@ MediaSessionServiceImpl* MediaSessionImpl::ComputeServiceForRouting() {
   }
 
   return best_frame ? services_[best_frame] : nullptr;
+}
+
+bool MediaSessionImpl::IsActionSupported(
+    media_session::mojom::MediaSessionAction action) const {
+  return routed_service_ &&
+         base::ContainsKey(routed_service_->actions(), action);
 }
 
 }  // namespace content

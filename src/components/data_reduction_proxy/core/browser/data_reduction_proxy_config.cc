@@ -29,8 +29,8 @@
 #include "build/build_config.h"
 #include "components/data_reduction_proxy/core/browser/data_reduction_proxy_configurator.h"
 #include "components/data_reduction_proxy/core/browser/network_properties_manager.h"
+#include "components/data_reduction_proxy/core/common/data_reduction_proxy_bypass_protocol.h"
 #include "components/data_reduction_proxy/core/common/data_reduction_proxy_config_values.h"
-#include "components/data_reduction_proxy/core/common/data_reduction_proxy_event_creator.h"
 #include "components/data_reduction_proxy/core/common/data_reduction_proxy_features.h"
 #include "components/data_reduction_proxy/core/common/data_reduction_proxy_params.h"
 #include "components/data_reduction_proxy/core/common/data_reduction_proxy_type_info.h"
@@ -42,15 +42,13 @@
 #include "net/base/network_change_notifier.h"
 #include "net/base/network_interfaces.h"
 #include "net/base/proxy_server.h"
-#include "net/log/net_log_source_type.h"
 #include "net/nqe/effective_connection_type.h"
+#include "net/proxy_resolution/proxy_resolution_service.h"
 #include "net/traffic_annotation/network_traffic_annotation.h"
 #include "net/url_request/url_fetcher.h"
 #include "net/url_request/url_fetcher_delegate.h"
 #include "net/url_request/url_request.h"
 #include "net/url_request/url_request_context.h"
-#include "net/url_request/url_request_context_getter.h"
-#include "net/url_request/url_request_status.h"
 #include "services/network/public/cpp/shared_url_loader_factory.h"
 
 #if defined(OS_ANDROID)
@@ -152,7 +150,9 @@ std::string DoGetCurrentNetworkID(
       case network::mojom::ConnectionType::CONNECTION_ETHERNET:
         break;
       case network::mojom::ConnectionType::CONNECTION_WIFI:
-#if defined(OS_ANDROID) || defined(OS_LINUX) || defined(OS_WIN)
+// Get WiFi SSID only on Android since calling it on non-Android
+// platforms may result in hung IO loop. See https://crbg.com/896296.
+#if defined(OS_ANDROID)
         ssid_mccmnc = net::GetWifiSSID();
 #endif
         break;
@@ -185,26 +185,23 @@ namespace data_reduction_proxy {
 
 DataReductionProxyConfig::DataReductionProxyConfig(
     scoped_refptr<base::SingleThreadTaskRunner> io_task_runner,
-    net::NetLog* net_log,
+    scoped_refptr<base::SingleThreadTaskRunner> ui_task_runner,
     network::NetworkConnectionTracker* network_connection_tracker,
     std::unique_ptr<DataReductionProxyConfigValues> config_values,
-    DataReductionProxyConfigurator* configurator,
-    DataReductionProxyEventCreator* event_creator)
+    DataReductionProxyConfigurator* configurator)
     : unreachable_(false),
       enabled_by_user_(false),
       config_values_(std::move(config_values)),
       io_task_runner_(io_task_runner),
-      net_log_(net_log),
+      ui_task_runner_(ui_task_runner),
       network_connection_tracker_(network_connection_tracker),
       configurator_(configurator),
-      event_creator_(event_creator),
       connection_type_(network::mojom::ConnectionType::CONNECTION_UNKNOWN),
       network_properties_manager_(nullptr),
       weak_factory_(this) {
   DCHECK(io_task_runner_);
   DCHECK(network_connection_tracker_);
   DCHECK(configurator);
-  DCHECK(event_creator);
 
   // Constructed on the UI thread, but should be checked on the IO thread.
   thread_checker_.DetachFromThread();
@@ -215,37 +212,31 @@ DataReductionProxyConfig::~DataReductionProxyConfig() {
 }
 
 void DataReductionProxyConfig::InitializeOnIOThread(
-    const scoped_refptr<net::URLRequestContextGetter>&
-        basic_url_request_context_getter,
     scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory,
+    WarmupURLFetcher::CreateCustomProxyConfigCallback
+        create_custom_proxy_config_callback,
     NetworkPropertiesManager* manager) {
   DCHECK(thread_checker_.CalledOnValidThread());
   network_properties_manager_ = manager;
   network_properties_manager_->ResetWarmupURLFetchMetrics();
 
-  secure_proxy_checker_.reset(
-      new SecureProxyChecker(basic_url_request_context_getter));
+  secure_proxy_checker_.reset(new SecureProxyChecker(url_loader_factory));
   warmup_url_fetcher_.reset(new WarmupURLFetcher(
-      std::move(url_loader_factory),
+      url_loader_factory, create_custom_proxy_config_callback,
       base::BindRepeating(
           &DataReductionProxyConfig::HandleWarmupFetcherResponse,
           base::Unretained(this)),
       base::BindRepeating(&DataReductionProxyConfig::GetHttpRttEstimate,
-                          base::Unretained(this))));
+                          base::Unretained(this)),
+      ui_task_runner_));
 
-  if (ShouldAddDefaultProxyBypassRules())
-    AddDefaultProxyBypassRules();
+  AddDefaultProxyBypassRules();
 
   network_connection_tracker_->AddNetworkConnectionObserver(this);
   network_connection_tracker_->GetConnectionType(
       &connection_type_,
       base::BindOnce(&DataReductionProxyConfig::OnConnectionChanged,
                      weak_factory_.GetWeakPtr()));
-}
-
-bool DataReductionProxyConfig::ShouldAddDefaultProxyBypassRules() const {
-  DCHECK(thread_checker_.CalledOnValidThread());
-  return true;
 }
 
 void DataReductionProxyConfig::OnNewClientConfigFetched() {
@@ -275,6 +266,11 @@ DataReductionProxyConfig::FindConfiguredDataReductionProxy(
     const net::ProxyServer& proxy_server) const {
   DCHECK(thread_checker_.CalledOnValidThread());
   return config_values_->FindConfiguredDataReductionProxy(proxy_server);
+}
+
+net::ProxyList DataReductionProxyConfig::GetAllConfiguredProxies() const {
+  DCHECK(thread_checker_.CalledOnValidThread());
+  return config_values_->GetAllConfiguredProxies();
 }
 
 bool DataReductionProxyConfig::IsBypassedByDataReductionProxyLocalRules(
@@ -355,16 +351,8 @@ bool DataReductionProxyConfig::IsProxyBypassed(
     const net::ProxyServer& proxy_server,
     base::TimeDelta* retry_delay) const {
   DCHECK(thread_checker_.CalledOnValidThread());
-  auto found = retry_map.find(proxy_server.ToURI());
-
-  if (found == retry_map.end() || found->second.bad_until < GetTicksNow()) {
-    return false;
-  }
-
-  if (retry_delay)
-     *retry_delay = found->second.current_delay;
-
-  return true;
+  return IsProxyBypassedAtTime(retry_map, proxy_server, GetTicksNow(),
+                               retry_delay);
 }
 
 bool DataReductionProxyConfig::ContainsDataReductionProxy(
@@ -454,7 +442,7 @@ void DataReductionProxyConfig::SetNetworkPropertiesManagerForTesting(
   network_properties_manager_ = manager;
 }
 
-base::Optional<std::pair<bool /* is_secure_proxy */, bool /*is_core_proxy */>>
+base::Optional<DataReductionProxyServer>
 DataReductionProxyConfig::GetProxyConnectionToProbe() const {
   DCHECK(thread_checker_.CalledOnValidThread());
 
@@ -472,7 +460,7 @@ DataReductionProxyConfig::GetProxyConnectionToProbe() const {
                                                               is_core_proxy) &&
         network_properties_manager_->ShouldFetchWarmupProbeURL(is_secure_proxy,
                                                                is_core_proxy)) {
-      return std::make_pair(is_secure_proxy, is_core_proxy);
+      return proxy_server;
     }
   }
 
@@ -484,7 +472,7 @@ DataReductionProxyConfig::GetProxyConnectionToProbe() const {
     bool is_core_proxy = proxy_server.IsCoreProxy();
     if (network_properties_manager_->ShouldFetchWarmupProbeURL(is_secure_proxy,
                                                                is_core_proxy)) {
-      return std::make_pair(is_secure_proxy, is_core_proxy);
+      return proxy_server;
     }
   }
 
@@ -582,25 +570,20 @@ void DataReductionProxyConfig::HandleWarmupFetcherResponse(
 
 void DataReductionProxyConfig::HandleSecureProxyCheckResponse(
     const std::string& response,
-    const net::URLRequestStatus& status,
+    int net_status,
     int http_response_code) {
   bool success_response =
       base::StartsWith(response, "OK", base::CompareCase::SENSITIVE);
-  if (event_creator_) {
-    event_creator_->EndSecureProxyCheck(net_log_with_source_, status.error(),
-                                        http_response_code, success_response);
-  }
 
-  if (!status.is_success()) {
-    if (status.error() == net::ERR_INTERNET_DISCONNECTED) {
+  if (net_status != net::OK) {
+    if (net_status == net::ERR_INTERNET_DISCONNECTED) {
       RecordSecureProxyCheckFetchResult(INTERNET_DISCONNECTED);
       return;
     }
     // TODO(bengr): Remove once we understand the reasons secure proxy checks
     // are failing. Secure proxy check errors are either due to fetcher-level
     // errors or modified responses. This only tracks the former.
-    base::UmaHistogramSparse(kUMAProxyProbeURLNetError,
-                             std::abs(status.error()));
+    base::UmaHistogramSparse(kUMAProxyProbeURLNetError, std::abs(net_status));
   }
 
   bool secure_proxy_allowed_past =
@@ -674,13 +657,13 @@ void DataReductionProxyConfig::ContinueNetworkChanged(
 
 void DataReductionProxyConfig::AddDefaultProxyBypassRules() {
   DCHECK(configurator_);
+  // Under the hood we use an instance of ProxyBypassRules to evaluate these
+  // rules. ProxyBypassRules implicitly bypasses localhost, loopback, and
+  // link-local addresses, so it is not necessary to explicitly add them here.
+  // See ProxyBypassRules::MatchesImplicitRules() for details.
   configurator_->SetBypassRules(
-      // localhost
+      // Hostnames with no dot in them.
       "<local>,"
-
-      // RFC6890 loopback addresses.
-      // TODO(tbansal): Remove this once crbug/446705 is fixed.
-      "127.0.0.0/8,"
 
       // RFC6890 current network (only valid as source address).
       "0.0.0.0/8,"
@@ -703,13 +686,6 @@ void DataReductionProxyConfig::AddDefaultProxyBypassRules() {
 
 void DataReductionProxyConfig::SecureProxyCheck(
     SecureProxyCheckerCallback fetcher_callback) {
-  net_log_with_source_ = net::NetLogWithSource::Make(
-      net_log_, net::NetLogSourceType::DATA_REDUCTION_PROXY);
-  if (event_creator_) {
-    event_creator_->BeginSecureProxyCheck(net_log_with_source_,
-                                          params::GetSecureProxyCheckURL());
-  }
-
   secure_proxy_checker_->CheckIfSecureProxyIsAllowed(fetcher_callback);
 }
 
@@ -734,15 +710,15 @@ void DataReductionProxyConfig::FetchWarmupProbeURL() {
     return;
   }
 
-  base::Optional<std::pair<bool /* is_secure_proxy */, bool /*is_core_proxy */>>
-      warmup_config = GetProxyConnectionToProbe();
+  base::Optional<DataReductionProxyServer> warmup_proxy =
+      GetProxyConnectionToProbe();
 
-  if (!warmup_config)
+  if (!warmup_proxy)
     return;
 
   // Refetch the warmup URL when it has failed.
-  warmup_url_fetch_in_flight_secure_proxy_ = warmup_config->first;
-  warmup_url_fetch_in_flight_core_proxy_ = warmup_config->second;
+  warmup_url_fetch_in_flight_secure_proxy_ = warmup_proxy->IsSecureProxy();
+  warmup_url_fetch_in_flight_core_proxy_ = warmup_proxy->IsCoreProxy();
 
   size_t previous_attempt_counts = GetWarmupURLFetchAttemptCounts();
 
@@ -752,7 +728,8 @@ void DataReductionProxyConfig::FetchWarmupProbeURL() {
 
   RecordWarmupURLFetchAttemptEvent(WarmupURLFetchAttemptEvent::kFetchInitiated);
 
-  warmup_url_fetcher_->FetchWarmupURL(previous_attempt_counts);
+  warmup_url_fetcher_->FetchWarmupURL(previous_attempt_counts,
+                                      warmup_proxy.value());
 }
 
 size_t DataReductionProxyConfig::GetWarmupURLFetchAttemptCounts() const {

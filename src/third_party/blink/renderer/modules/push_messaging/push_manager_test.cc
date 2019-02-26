@@ -28,8 +28,8 @@ const uint8_t kApplicationServerKey[kApplicationServerKeyLength] = {
     0xB6, 0x01, 0x20, 0xD8, 0x35, 0xA5, 0xD9, 0x3C, 0x43, 0xDF};
 
 TEST(PushManagerTest, ValidSenderKey) {
-  PushSubscriptionOptionsInit options;
-  options.setApplicationServerKey(
+  PushSubscriptionOptionsInit* options = PushSubscriptionOptionsInit::Create();
+  options->setApplicationServerKey(
       ArrayBufferOrArrayBufferView::FromArrayBuffer(DOMArrayBuffer::Create(
           kApplicationServerKey, kApplicationServerKeyLength)));
 
@@ -54,9 +54,10 @@ TEST(PushManagerTest, ValidSenderKey) {
 TEST(PushManagerTest, InvalidSenderKeyLength) {
   uint8_t sender_key[kMaxKeyLength + 1];
   memset(sender_key, 0, sizeof(sender_key));
-  PushSubscriptionOptionsInit options;
-  options.setApplicationServerKey(ArrayBufferOrArrayBufferView::FromArrayBuffer(
-      DOMArrayBuffer::Create(sender_key, kMaxKeyLength + 1)));
+  PushSubscriptionOptionsInit* options = PushSubscriptionOptionsInit::Create();
+  options->setApplicationServerKey(
+      ArrayBufferOrArrayBufferView::FromArrayBuffer(
+          DOMArrayBuffer::Create(sender_key, kMaxKeyLength + 1)));
 
   DummyExceptionStateForTesting exception_state;
   WebPushSubscriptionOptions output =

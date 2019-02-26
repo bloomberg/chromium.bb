@@ -51,7 +51,7 @@ class HTMLResourcePreloaderTest : public PageTestBase {
     PreloaderNetworkHintsMock network_hints;
     auto preload_request = PreloadRequest::CreateIfNeeded(
         String(), TextPosition(), test_case.url, KURL(test_case.base_url),
-        ResourceType::kImage, ReferrerPolicy(),
+        ResourceType::kImage, network::mojom::ReferrerPolicy(),
         PreloadRequest::kDocumentIsReferrer, ResourceFetcher::kImageNotImageSet,
         FetchParameters::ResourceWidth(), ClientHintsPreferences(),
         PreloadRequest::kRequestTypePreconnect);

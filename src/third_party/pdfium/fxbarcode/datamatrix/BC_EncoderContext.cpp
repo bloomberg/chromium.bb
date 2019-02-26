@@ -24,41 +24,30 @@
 
 #include <utility>
 
-#include "fxbarcode/BC_UtilCodingConvert.h"
 #include "fxbarcode/common/BC_CommonBitMatrix.h"
 #include "fxbarcode/datamatrix/BC_Encoder.h"
 #include "fxbarcode/datamatrix/BC_SymbolInfo.h"
-#include "fxbarcode/utils.h"
 
 CBC_EncoderContext::CBC_EncoderContext(const WideString& msg,
                                        const WideString& ecLevel,
-                                       int32_t& e) {
-  ByteString dststr;
-  CBC_UtilCodingConvert::UnicodeToUTF8(msg, dststr);
+                                       bool bAllowRectangular)
+    : m_bAllowRectangular(bAllowRectangular) {
+  ByteString dststr = msg.ToUTF8();
   size_t c = dststr.GetLength();
   WideString sb;
   sb.Reserve(c);
   for (size_t i = 0; i < c; i++) {
     wchar_t ch = static_cast<wchar_t>(dststr[i] & 0xff);
     if (ch == '?' && dststr[i] != '?') {
-      e = BCExceptionCharactersOutsideISO88591Encoding;
+      m_bHasCharactersOutsideISO88591Encoding = true;
     }
     sb += ch;
   }
   m_msg = std::move(sb);
   m_codewords.Reserve(m_msg.GetLength());
-  m_allowRectangular = true;
-  m_newEncoding = -1;
-  m_pos = 0;
-  m_symbolInfo = nullptr;
-  m_skipAtEnd = 0;
 }
 
-CBC_EncoderContext::~CBC_EncoderContext() {}
-
-void CBC_EncoderContext::setAllowRectangular(bool allow) {
-  m_allowRectangular = allow;
-}
+CBC_EncoderContext::~CBC_EncoderContext() = default;
 
 void CBC_EncoderContext::setSkipAtEnd(int32_t count) {
   m_skipAtEnd = count;
@@ -92,19 +81,22 @@ bool CBC_EncoderContext::hasMoreCharacters() {
 size_t CBC_EncoderContext::getRemainingCharacters() {
   return getTotalMessageCharCount() - m_pos;
 }
-void CBC_EncoderContext::updateSymbolInfo(int32_t& e) {
-  updateSymbolInfo(getCodewordCount(), e);
+
+bool CBC_EncoderContext::UpdateSymbolInfo() {
+  return UpdateSymbolInfo(getCodewordCount());
 }
-void CBC_EncoderContext::updateSymbolInfo(int32_t len, int32_t& e) {
+
+bool CBC_EncoderContext::UpdateSymbolInfo(int32_t len) {
   if (!m_symbolInfo || len > m_symbolInfo->dataCapacity()) {
-    m_symbolInfo = CBC_SymbolInfo::lookup(len, m_allowRectangular, e);
-    if (e != BCExceptionNO)
-      return;
+    m_symbolInfo = CBC_SymbolInfo::Lookup(len, m_bAllowRectangular);
+    if (!m_symbolInfo)
+      return false;
   }
+  return true;
 }
 
 void CBC_EncoderContext::resetSymbolInfo() {
-  m_allowRectangular = true;
+  m_bAllowRectangular = true;
 }
 
 size_t CBC_EncoderContext::getTotalMessageCharCount() {

@@ -53,6 +53,12 @@ public abstract class PropertyObservable<T> {
     public abstract Collection<T> getAllSetProperties();
 
     /**
+     * @return A collection of all properties of this model. The returned collection should not be
+     *         modified.
+     */
+    public abstract Collection<T> getAllProperties();
+
+    /**
      * Notifies observers that the property identified by {@code propertyKey} has changed.
      *
      * @param propertyKey The key of the property that has changed.

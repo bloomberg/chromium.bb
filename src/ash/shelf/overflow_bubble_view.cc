@@ -86,15 +86,22 @@ void OverflowBubbleView::InitOverflowBubble(views::View* anchor,
   AddChildView(shelf_view_);
 }
 
-void OverflowBubbleView::ProcessGestureEvent(const ui::GestureEvent& event) {
+bool OverflowBubbleView::ProcessGestureEvent(const ui::GestureEvent& event) {
+  // Handle scroll-related events, but don't do anything special for begin and
+  // end.
+  if (event.type() == ui::ET_GESTURE_SCROLL_BEGIN ||
+      event.type() == ui::ET_GESTURE_SCROLL_END) {
+    return true;
+  }
   if (event.type() != ui::ET_GESTURE_SCROLL_UPDATE)
-    return;
+    return false;
 
   if (shelf_->IsHorizontalAlignment())
     ScrollByXOffset(static_cast<int>(-event.details().scroll_x()));
   else
     ScrollByYOffset(static_cast<int>(-event.details().scroll_y()));
   Layout();
+  return true;
 }
 
 void OverflowBubbleView::ScrollByXOffset(int x_offset) {

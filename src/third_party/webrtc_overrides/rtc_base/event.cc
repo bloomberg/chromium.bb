@@ -10,6 +10,8 @@ namespace rtc {
 
 using base::WaitableEvent;
 
+Event::Event() : Event(false, false) {}
+
 Event::Event(bool manual_reset, bool initially_signaled)
     : event_(manual_reset ? WaitableEvent::ResetPolicy::MANUAL
                           : WaitableEvent::ResetPolicy::AUTOMATIC,

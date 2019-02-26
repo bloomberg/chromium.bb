@@ -31,14 +31,14 @@ cc_component("paint") {
     "image_provider.h",
     "image_transfer_cache_entry.cc",
     "image_transfer_cache_entry.h",
+    "paint_cache.cc",
+    "paint_cache.h",
     "paint_canvas.h",
     "paint_export.h",
     "paint_filter.cc",
     "paint_filter.h",
     "paint_flags.cc",
     "paint_flags.h",
-    "paint_font.cc",
-    "paint_font.h",
     "paint_image.cc",
     "paint_image.h",
     "paint_image_builder.cc",
@@ -59,12 +59,6 @@ cc_component("paint") {
     "paint_recorder.h",
     "paint_shader.cc",
     "paint_shader.h",
-    "paint_text_blob.cc",
-    "paint_text_blob.h",
-    "paint_text_blob_builder.cc",
-    "paint_text_blob_builder.h",
-    "path_transfer_cache_entry.cc",
-    "path_transfer_cache_entry.h",
     "raw_memory_transfer_cache_entry.cc",
     "raw_memory_transfer_cache_entry.h",
     "record_paint_canvas.cc",
@@ -79,6 +73,8 @@ cc_component("paint") {
     "skia_paint_canvas.h",
     "skia_paint_image_generator.cc",
     "skia_paint_image_generator.h",
+    "skottie_wrapper.cc",
+    "skottie_wrapper.h",
     "solid_color_analyzer.cc",
     "solid_color_analyzer.h",
     "transfer_cache_deserialize_helper.h",
@@ -121,19 +117,6 @@ fuzzer_test("paint_op_buffer_fuzzer") {
     "//cc/paint",
     "//components/viz/test:test_support",
     "//gpu/command_buffer/service:gles2",
-  ]
-}
-
-fuzzer_test("paint_op_buffer_eq_fuzzer") {
-  sources = [
-    "paint_op_buffer_eq_fuzzer.cc",
-  ]
-
-  libfuzzer_options = [ "max_len=4096" ]
-
-  deps = [
-    "//cc:test_support",
-    "//cc/paint",
   ]
 }
 

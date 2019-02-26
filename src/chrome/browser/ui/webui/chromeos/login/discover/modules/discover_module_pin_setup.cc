@@ -8,6 +8,7 @@
 
 #include "base/i18n/number_formatting.h"
 #include "base/values.h"
+#include "chrome/browser/chromeos/login/quick_unlock/pin_backend.h"
 #include "chrome/browser/ui/webui/chromeos/login/discover/discover_handler.h"
 #include "chrome/grit/browser_resources.h"
 #include "chrome/grit/generated_resources.h"
@@ -34,15 +35,22 @@ class DiscoverModulePinSetupHandler : public DiscoverHandler {
  private:
   // Message handlers.
   void HandleGetUserPassword(const std::string& callbackId);
+  void HandleGetHasLoginSupport(const std::string& callbackId);
+
+  // quick_unlock::PinBackend::HasLoginSupport callback.
+  void OnPinLoginAvailable(const std::string& callbackId, bool is_available);
 
   base::WeakPtr<DiscoverModulePinSetup> module_;
 
+  base::WeakPtrFactory<DiscoverModulePinSetupHandler> weak_factory_;
   DISALLOW_COPY_AND_ASSIGN(DiscoverModulePinSetupHandler);
 };
 
 DiscoverModulePinSetupHandler::DiscoverModulePinSetupHandler(
     base::WeakPtr<DiscoverModulePinSetup> module)
-    : DiscoverHandler(DiscoverModulePinSetup::kModuleName), module_(module) {}
+    : DiscoverHandler(DiscoverModulePinSetup::kModuleName),
+      module_(module),
+      weak_factory_(this) {}
 
 void DiscoverModulePinSetupHandler::DeclareLocalizedValues(
     ::login::LocalizedValuesBuilder* builder) {
@@ -57,7 +65,10 @@ void DiscoverModulePinSetupHandler::DeclareLocalizedValues(
   builder->Add("discoverPinSetupSkip", IDS_DISCOVER_PIN_SETUP_SKIP);
   builder->Add("discoverPinSetupTitle2", IDS_DISCOVER_PIN_SETUP_TITLE2);
   builder->Add("discoverPinSetupTitle3", IDS_DISCOVER_PIN_SETUP_TITLE3);
-  builder->Add("discoverPinSetupSubtitle3", IDS_DISCOVER_PIN_SETUP_SUBTITLE3);
+  builder->Add("discoverPinSetupSubtitle3NoLogin",
+               IDS_DISCOVER_PIN_SETUP_SUBTITLE3_NO_LOGIN);
+  builder->Add("discoverPinSetupSubtitle3WithLogin",
+               IDS_DISCOVER_PIN_SETUP_SUBTITLE3_WITH_LOGIN);
   builder->Add("discoverPinSetupPasswordTitle",
                IDS_DISCOVER_PIN_SETUP_PASSWORD_TITLE);
   builder->Add("discoverPinSetupPasswordSubTitle",
@@ -93,6 +104,8 @@ void DiscoverModulePinSetupHandler::Initialize() {}
 void DiscoverModulePinSetupHandler::RegisterMessages() {
   AddCallback("discover.pinSetup.getUserPassword",
               &DiscoverModulePinSetupHandler::HandleGetUserPassword);
+  AddCallback("discover.pinSetup.getHasLoginSupport",
+              &DiscoverModulePinSetupHandler::HandleGetHasLoginSupport);
 }
 
 void DiscoverModulePinSetupHandler::HandleGetUserPassword(
@@ -101,6 +114,21 @@ void DiscoverModulePinSetupHandler::HandleGetUserPassword(
       "window.discoverReturn", base::Value(callbackId),
       base::Value(module_->ConsumePrimaryUserPassword()));
   return;
+}
+
+void DiscoverModulePinSetupHandler::OnPinLoginAvailable(
+    const std::string& callbackId,
+    bool is_available) {
+  web_ui()->CallJavascriptFunctionUnsafe("window.discoverReturn",
+                                         base::Value(callbackId),
+                                         base::Value(is_available));
+}
+
+void DiscoverModulePinSetupHandler::HandleGetHasLoginSupport(
+    const std::string& callbackId) {
+  chromeos::quick_unlock::PinBackend::GetInstance()->HasLoginSupport(
+      base::BindOnce(&DiscoverModulePinSetupHandler::OnPinLoginAvailable,
+                     weak_factory_.GetWeakPtr(), callbackId));
 }
 
 }  // anonymous namespace

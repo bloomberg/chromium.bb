@@ -14,17 +14,15 @@ namespace chromeos {
 
 namespace {
 
-const char kUpstartServiceName[] = "com.ubuntu.Upstart";
-const char kUpstartJobInterface[] = "com.ubuntu.Upstart0_6.Job";
-const char kUpstartStartMethod[] = "Start";
-const char kUpstartRestartMethod[] = "Restart";
-const char kUpstartStopMethod[] = "Stop";
+constexpr char kUpstartServiceName[] = "com.ubuntu.Upstart";
+constexpr char kUpstartJobInterface[] = "com.ubuntu.Upstart0_6.Job";
+constexpr char kStartMethod[] = "Start";
+constexpr char kRestartMethod[] = "Restart";
+constexpr char kStopMethod[] = "Stop";
 
-const char kUpstartAuthPolicyPath[] = "/com/ubuntu/Upstart/jobs/authpolicyd";
-const char kUpstartMediaAnalyticsPath[] =
-    "/com/ubuntu/Upstart/jobs/rtanalytics";
-const char kUpstartBluetoothLoggingPath[] =
-    "/com/ubuntu/Upstart/jobs/bluetoothlog";
+constexpr char kUpstartJobsPath[] = "/com/ubuntu/Upstart/jobs/";
+constexpr char kAuthPolicyJob[] = "authpolicyd";
+constexpr char kMediaAnalyticsJob[] = "rtanalytics";
 
 class UpstartClientImpl : public UpstartClient {
  public:
@@ -32,118 +30,70 @@ class UpstartClientImpl : public UpstartClient {
 
   ~UpstartClientImpl() override = default;
 
-  // UpstartClient override.
+  // UpstartClient overrides:
+  void StartJob(const std::string& job,
+                const std::vector<std::string>& upstart_env,
+                VoidDBusMethodCallback callback) override {
+    CallJobMethod(job, kStartMethod, upstart_env, std::move(callback));
+  }
+
+  void StopJob(const std::string& job,
+               VoidDBusMethodCallback callback) override {
+    CallJobMethod(job, kStopMethod, {}, std::move(callback));
+  }
+
   void StartAuthPolicyService() override {
-    dbus::MethodCall method_call(kUpstartJobInterface, kUpstartStartMethod);
-    dbus::MessageWriter writer(&method_call);
-    writer.AppendArrayOfStrings(std::vector<std::string>());
-    writer.AppendBool(true /* wait for response */);
-    auth_proxy_->CallMethod(
-        &method_call, dbus::ObjectProxy::TIMEOUT_USE_DEFAULT,
-        base::BindOnce(&UpstartClientImpl::HandleAuthResponse,
-                       weak_ptr_factory_.GetWeakPtr()));
+    StartJob(kAuthPolicyJob, {}, EmptyVoidDBusMethodCallback());
   }
 
   void RestartAuthPolicyService() override {
-    dbus::MethodCall method_call(kUpstartJobInterface, kUpstartRestartMethod);
-    dbus::MessageWriter writer(&method_call);
-    writer.AppendArrayOfStrings(std::vector<std::string>());
-    writer.AppendBool(true /* wait for response */);
-    auth_proxy_->CallMethod(
-        &method_call, dbus::ObjectProxy::TIMEOUT_USE_DEFAULT,
-        base::BindOnce(&UpstartClientImpl::HandleAuthResponse,
-                       weak_ptr_factory_.GetWeakPtr()));
+    CallJobMethod(kAuthPolicyJob, kRestartMethod, {},
+                  EmptyVoidDBusMethodCallback());
   }
 
   void StartMediaAnalytics(const std::vector<std::string>& upstart_env,
                            VoidDBusMethodCallback callback) override {
-    dbus::MethodCall method_call(kUpstartJobInterface, kUpstartStartMethod);
-    dbus::MessageWriter writer(&method_call);
-    writer.AppendArrayOfStrings(upstart_env);
-    writer.AppendBool(true /* wait for response */);
-    ma_proxy_->CallMethod(
-        &method_call, dbus::ObjectProxy::TIMEOUT_USE_DEFAULT,
-        base::BindOnce(&UpstartClientImpl::OnVoidMethod,
-                       weak_ptr_factory_.GetWeakPtr(), std::move(callback)));
+    StartJob(kMediaAnalyticsJob, upstart_env, std::move(callback));
   }
 
   void RestartMediaAnalytics(VoidDBusMethodCallback callback) override {
-    dbus::MethodCall method_call(kUpstartJobInterface, kUpstartRestartMethod);
-    dbus::MessageWriter writer(&method_call);
-    writer.AppendArrayOfStrings(std::vector<std::string>());
-    writer.AppendBool(true /* wait for response */);
-    ma_proxy_->CallMethod(
-        &method_call, dbus::ObjectProxy::TIMEOUT_USE_DEFAULT,
-        base::BindOnce(&UpstartClientImpl::OnVoidMethod,
-                       weak_ptr_factory_.GetWeakPtr(), std::move(callback)));
+    CallJobMethod(kMediaAnalyticsJob, kRestartMethod, {}, std::move(callback));
   }
 
   void StopMediaAnalytics() override {
-    dbus::MethodCall method_call(kUpstartJobInterface, kUpstartStopMethod);
-    dbus::MessageWriter writer(&method_call);
-    writer.AppendArrayOfStrings(std::vector<std::string>());
-    writer.AppendBool(true /* wait for response */);
-    ma_proxy_->CallMethod(
-        &method_call, dbus::ObjectProxy::TIMEOUT_USE_DEFAULT,
-        base::BindOnce(&UpstartClientImpl::HandleStopMediaAnalyticsResponse,
-                       weak_ptr_factory_.GetWeakPtr()));
+    StopJob(kMediaAnalyticsJob, EmptyVoidDBusMethodCallback());
   }
 
   void StopMediaAnalytics(VoidDBusMethodCallback callback) override {
-    dbus::MethodCall method_call(kUpstartJobInterface, kUpstartStopMethod);
-    dbus::MessageWriter writer(&method_call);
-    writer.AppendArrayOfStrings(std::vector<std::string>());
-    writer.AppendBool(true /* wait for response */);
-    ma_proxy_->CallMethod(
-        &method_call, dbus::ObjectProxy::TIMEOUT_USE_DEFAULT,
-        base::BindOnce(&UpstartClientImpl::OnVoidMethod,
-                       weak_ptr_factory_.GetWeakPtr(), std::move(callback)));
+    StopJob(kMediaAnalyticsJob, std::move(callback));
   }
-
-  void StartBluetoothLogging() override {
-    dbus::MethodCall method_call(kUpstartJobInterface, kUpstartStartMethod);
-    dbus::MessageWriter writer(&method_call);
-    writer.AppendArrayOfStrings(std::vector<std::string>());
-    writer.AppendBool(true /* wait for response */);
-    bluetooth_proxy_->CallMethod(
-        &method_call, dbus::ObjectProxy::TIMEOUT_USE_DEFAULT,
-        base::BindOnce(&UpstartClientImpl::HandleBluetoothLoggingResponse,
-                       weak_ptr_factory_.GetWeakPtr()));
-  }
-
  protected:
   void Init(dbus::Bus* bus) override {
     bus_ = bus;
-    auth_proxy_ = bus_->GetObjectProxy(
-        kUpstartServiceName, dbus::ObjectPath(kUpstartAuthPolicyPath));
-    ma_proxy_ = bus_->GetObjectProxy(
-        kUpstartServiceName, dbus::ObjectPath(kUpstartMediaAnalyticsPath));
-    bluetooth_proxy_ = bus_->GetObjectProxy(
-        kUpstartServiceName, dbus::ObjectPath(kUpstartBluetoothLoggingPath));
   }
 
  private:
-  void HandleAuthResponse(dbus::Response* response) {
-    LOG_IF(ERROR, !response) << "Failed to signal Upstart, response is null";
+  void CallJobMethod(const std::string& job,
+                     const std::string& method,
+                     const std::vector<std::string>& upstart_env,
+                     VoidDBusMethodCallback callback) {
+    dbus::ObjectProxy* job_proxy = bus_->GetObjectProxy(
+        kUpstartServiceName, dbus::ObjectPath(kUpstartJobsPath + job));
+    dbus::MethodCall method_call(kUpstartJobInterface, method);
+    dbus::MessageWriter writer(&method_call);
+    writer.AppendArrayOfStrings(upstart_env);
+    writer.AppendBool(true /* wait for response */);
+    job_proxy->CallMethod(
+        &method_call, dbus::ObjectProxy::TIMEOUT_USE_DEFAULT,
+        base::BindOnce(&UpstartClientImpl::OnVoidMethod,
+                       weak_ptr_factory_.GetWeakPtr(), std::move(callback)));
   }
 
   void OnVoidMethod(VoidDBusMethodCallback callback, dbus::Response* response) {
     std::move(callback).Run(response);
   }
 
-  void HandleStopMediaAnalyticsResponse(dbus::Response* response) {
-    LOG_IF(ERROR, !response) << "Failed to signal Upstart, response is null";
-  }
-
-  void HandleBluetoothLoggingResponse(dbus::Response* response) {
-    LOG_IF(ERROR, !response)
-        << "Failed to start bluetooth logging service, response is null";
-  }
-
   dbus::Bus* bus_ = nullptr;
-  dbus::ObjectProxy* auth_proxy_ = nullptr;
-  dbus::ObjectProxy* ma_proxy_ = nullptr;
-  dbus::ObjectProxy* bluetooth_proxy_ = nullptr;
 
   // Note: This should remain the last member so it'll be destroyed and
   // invalidate its weak pointers before any other members are destroyed.

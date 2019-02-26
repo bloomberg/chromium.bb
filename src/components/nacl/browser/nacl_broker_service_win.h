@@ -12,6 +12,7 @@
 #include "base/macros.h"
 #include "base/memory/singleton.h"
 #include "base/memory/weak_ptr.h"
+#include "base/process/process.h"
 #include "components/nacl/browser/nacl_broker_host_win.h"
 #include "services/service_manager/public/mojom/service.mojom.h"
 
@@ -33,7 +34,7 @@ class NaClBrokerService {
                     service_manager::mojom::ServiceRequest service_request);
 
   // Called by NaClBrokerHost to notify the service that a loader was launched.
-  void OnLoaderLaunched(int launch_id, base::ProcessHandle handle);
+  void OnLoaderLaunched(int launch_id, base::Process process);
 
   // Called by NaClProcessHost when a loader process is terminated
   void OnLoaderDied();

@@ -105,8 +105,11 @@ class CC_EXPORT LayerTreeFrameSink : public viz::SharedBitmapReporter,
 
   // For successful swaps, the implementation must call
   // DidReceiveCompositorFrameAck() asynchronously when the frame has been
-  // processed in order to unthrottle the next frame.
-  virtual void SubmitCompositorFrame(viz::CompositorFrame frame) = 0;
+  // processed in order to unthrottle the next frame. |show_hit_test_borders|
+  // controls whether viz will insert debug borders over hit-test data and is
+  // passed from LayerTreeDebugState.
+  virtual void SubmitCompositorFrame(viz::CompositorFrame frame,
+                                     bool show_hit_test_borders) = 0;
 
   // Signals that a BeginFrame issued by the viz::BeginFrameSource provided to
   // the client did not lead to a CompositorFrame submission.
@@ -116,6 +119,10 @@ class CC_EXPORT LayerTreeFrameSink : public viz::SharedBitmapReporter,
   void DidAllocateSharedBitmap(mojo::ScopedSharedBufferHandle buffer,
                                const viz::SharedBitmapId& id) override = 0;
   void DidDeleteSharedBitmap(const viz::SharedBitmapId& id) override = 0;
+
+  // Ensure next CompositorFrame is submitted to a new surface. Only used when
+  // surface synchronization is off.
+  virtual void ForceAllocateNewId() {}
 
  protected:
   class ContextLostForwarder;

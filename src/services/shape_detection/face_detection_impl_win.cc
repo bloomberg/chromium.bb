@@ -73,8 +73,7 @@ FaceDetectionImplWin::BuildFaceDetectionResult(
     AsyncOperation<IVector<DetectedFace*>>::IAsyncOperationPtr async_op) {
   std::vector<mojom::FaceDetectionResultPtr> results;
   Microsoft::WRL::ComPtr<IVector<DetectedFace*>> detected_face;
-  HRESULT hr =
-      async_op ? async_op->GetResults(detected_face.GetAddressOf()) : E_FAIL;
+  HRESULT hr = async_op ? async_op->GetResults(&detected_face) : E_FAIL;
   if (FAILED(hr)) {
     DLOG(ERROR) << "GetResults failed: "
                 << logging::SystemErrorCodeToString(hr);

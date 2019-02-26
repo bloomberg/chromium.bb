@@ -106,15 +106,6 @@ class CONTENT_EXPORT RequestExtraData : public blink::WebURLRequest::ExtraData {
     is_for_no_state_prefetch_ = prefetch;
   }
 
-  // The request is downloaded to the network cache, but not rendered or
-  // executed.
-  bool download_to_network_cache_only() const {
-    return download_to_network_cache_only_;
-  }
-  void set_download_to_network_cache_only(bool download_to_cache) {
-    download_to_network_cache_only_ = download_to_cache;
-  }
-
   // Copy of the settings value determining if mixed plugin content should be
   // blocked.
   bool block_mixed_plugin_content() const {
@@ -174,7 +165,6 @@ class CONTENT_EXPORT RequestExtraData : public blink::WebURLRequest::ExtraData {
   base::OnceClosure continue_navigation_function_;
   bool initiated_in_secure_context_;
   bool is_for_no_state_prefetch_;
-  bool download_to_network_cache_only_;
   bool block_mixed_plugin_content_;
   bool navigation_initiated_by_renderer_;
   bool attach_same_site_cookies_;

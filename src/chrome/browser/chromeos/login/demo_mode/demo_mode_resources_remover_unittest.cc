@@ -10,17 +10,14 @@
 
 #include "base/bind.h"
 #include "base/files/file_util.h"
-#include "base/files/scoped_temp_dir.h"
 #include "base/macros.h"
 #include "base/optional.h"
-#include "base/test/scoped_path_override.h"
 #include "base/test/simple_test_tick_clock.h"
 #include "base/values.h"
-#include "chrome/browser/chromeos/login/demo_mode/demo_session.h"
+#include "chrome/browser/chromeos/login/demo_mode/demo_mode_test_helper.h"
 #include "chrome/browser/chromeos/login/users/fake_chrome_user_manager.h"
 #include "chrome/browser/chromeos/profiles/profile_helper.h"
 #include "chrome/browser/chromeos/settings/stub_install_attributes.h"
-#include "chromeos/chromeos_paths.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
 #include "chromeos/dbus/fake_cryptohome_client.h"
 #include "components/prefs/testing_pref_service.h"
@@ -65,25 +62,17 @@ class DemoModeResourcesRemoverTest : public testing::Test {
     chromeos::DBusThreadManager::GetSetterForTesting()->SetCryptohomeClient(
         std::move(cryptohome_client));
 
-    ASSERT_TRUE(scoped_temp_dir_.CreateUniqueTempDir());
-    components_path_override_ = std::make_unique<base::ScopedPathOverride>(
-        chromeos::DIR_PREINSTALLED_COMPONENTS, scoped_temp_dir_.GetPath());
-    demo_resources_path_ =
-        scoped_temp_dir_.GetPath()
-            .AppendASCII("cros-components")
-            .AppendASCII(DemoSession::kDemoModeResourcesComponentName);
+    demo_mode_test_helper_ = std::make_unique<DemoModeTestHelper>();
+    demo_resources_path_ = demo_mode_test_helper_->GetDemoResourcesPath();
 
     scoped_user_manager_ = std::make_unique<user_manager::ScopedUserManager>(
         std::make_unique<FakeChromeUserManager>());
-
-    DemoSession::SetDemoConfigForTesting(DemoSession::DemoModeConfig::kNone);
 
     DemoModeResourcesRemover::RegisterLocalStatePrefs(local_state_.registry());
   }
 
   void TearDown() override {
-    DemoSession::ShutDownIfInitialized();
-    DemoSession::ResetDemoConfigForTesting();
+    demo_mode_test_helper_.reset();
     chromeos::DBusThreadManager::Shutdown();
   }
 
@@ -179,6 +168,8 @@ class DemoModeResourcesRemoverTest : public testing::Test {
   TestingPrefServiceSimple local_state_;
   content::TestBrowserThreadBundle thread_bundle_;
 
+  std::unique_ptr<DemoModeTestHelper> demo_mode_test_helper_;
+
   ui::UserActivityDetector activity_detector_;
   // Tick clock that can be used for tests - not used by default, but tests can
   // inject it into DemoModeResourcesRemover using OverrideTimeForTesting().
@@ -187,8 +178,6 @@ class DemoModeResourcesRemoverTest : public testing::Test {
  private:
   std::unique_ptr<ScopedStubInstallAttributes> install_attributes_;
 
-  base::ScopedTempDir scoped_temp_dir_;
-  std::unique_ptr<base::ScopedPathOverride> components_path_override_;
   base::FilePath demo_resources_path_;
 
   std::unique_ptr<user_manager::ScopedUserManager> scoped_user_manager_;
@@ -269,7 +258,7 @@ TEST_F(DemoModeResourcesRemoverTest, LowDiskSpace) {
 
 TEST_F(DemoModeResourcesRemoverTest, LowDiskSpaceInDemoSession) {
   ASSERT_TRUE(CreateDemoModeResources());
-  DemoSession::SetDemoConfigForTesting(DemoSession::DemoModeConfig::kOnline);
+  demo_mode_test_helper_->InitializeSession();
 
   std::unique_ptr<DemoModeResourcesRemover> remover =
       DemoModeResourcesRemover::CreateIfNeeded(&local_state_);
@@ -339,7 +328,7 @@ TEST_F(DemoModeResourcesRemoverTest, AttemptRemovalInDemoSession) {
   ASSERT_TRUE(CreateDemoModeResources());
   std::unique_ptr<DemoModeResourcesRemover> remover =
       DemoModeResourcesRemover::CreateIfNeeded(&local_state_);
-  DemoSession::SetDemoConfigForTesting(DemoSession::DemoModeConfig::kOnline);
+  demo_mode_test_helper_->InitializeSession();
 
   base::Optional<DemoModeResourcesRemover::RemovalResult> result;
   remover->AttemptRemoval(

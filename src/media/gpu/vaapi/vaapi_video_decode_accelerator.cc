@@ -27,6 +27,7 @@
 #include "media/gpu/accelerated_video_decoder.h"
 #include "media/gpu/format_utils.h"
 #include "media/gpu/h264_decoder.h"
+#include "media/gpu/macros.h"
 #include "media/gpu/vaapi/vaapi_common.h"
 #include "media/gpu/vaapi/vaapi_h264_accelerator.h"
 #include "media/gpu/vaapi/vaapi_picture.h"
@@ -36,9 +37,6 @@
 #include "media/gpu/vp9_decoder.h"
 #include "media/video/picture.h"
 #include "ui/gl/gl_image.h"
-
-#define DVLOGF(level) DVLOG(level) << __func__ << "(): "
-#define VLOGF(level) VLOG(level) << __func__ << "(): "
 
 namespace media {
 
@@ -73,6 +71,8 @@ void CloseGpuMemoryBufferHandle(const gfx::GpuMemoryBufferHandle& handle) {
 #endif
 
 // Returns true if the CPU is an Intel Kaby Lake or later.
+// cpu platform id's are referenced from the following file in kernel source
+// arch/x86/include/asm/intel-family.h
 bool IsKabyLakeOrLater() {
   constexpr int kPentiumAndLaterFamily = 0x06;
   constexpr int kFirstKabyLakeModelId = 0x8E;
@@ -83,6 +83,15 @@ bool IsKabyLakeOrLater() {
   return is_kaby_lake_or_later;
 }
 
+bool IsGeminiLakeOrLater() {
+  constexpr int kPentiumAndLaterFamily = 0x06;
+  constexpr int kGeminiLakeModelId = 0x7A;
+  static base::CPU cpuid;
+  static bool is_geminilake_or_later =
+      cpuid.family() == kPentiumAndLaterFamily &&
+      cpuid.model() >= kGeminiLakeModelId;
+  return is_geminilake_or_later;
+}
 }  // namespace
 
 #define RETURN_AND_NOTIFY_ON_FAILURE(result, log, error_code, ret) \
@@ -208,7 +217,8 @@ bool VaapiVideoDecodeAccelerator::Initialize(const Config& config,
         std::make_unique<VaapiVP8Accelerator>(this, vaapi_wrapper_)));
   } else if (profile >= VP9PROFILE_MIN && profile <= VP9PROFILE_MAX) {
     decoder_.reset(new VP9Decoder(
-        std::make_unique<VaapiVP9Accelerator>(this, vaapi_wrapper_)));
+        std::make_unique<VaapiVP9Accelerator>(this, vaapi_wrapper_),
+        config.container_color_space));
   } else {
     VLOGF(1) << "Unsupported profile " << GetProfileName(profile);
     return false;
@@ -298,7 +308,7 @@ void VaapiVideoDecodeAccelerator::QueueInputBuffer(
     scoped_refptr<DecoderBuffer> buffer,
     int32_t bitstream_id) {
   DVLOGF(4) << "Queueing new input buffer id: " << bitstream_id
-            << " size: " << buffer->data_size();
+            << " size: " << (buffer->end_of_stream() ? 0 : buffer->data_size());
   DCHECK(task_runner_->BelongsToCurrentThread());
   TRACE_EVENT1("media,gpu", "QueueInputBuffer", "input_id", bitstream_id);
 
@@ -364,7 +374,7 @@ bool VaapiVideoDecodeAccelerator::GetCurrInputBuffer_Locked() {
   DCHECK(!input_buffers_.empty());
   curr_input_buffer_ = std::move(input_buffers_.front());
   input_buffers_.pop();
-  TRACE_COUNTER1("media,gpu", "Input buffers", input_buffers_.size());
+  TRACE_COUNTER1("media,gpu", "Vaapi input buffers", input_buffers_.size());
 
   if (curr_input_buffer_->IsFlushRequest()) {
     DVLOGF(4) << "New flush buffer";
@@ -520,7 +530,7 @@ void VaapiVideoDecodeAccelerator::TryFinishSurfaceSetChange() {
   // All surfaces released, destroy them and dismiss all PictureBuffers.
   awaiting_va_surfaces_recycle_ = false;
   available_va_surfaces_.clear();
-  vaapi_wrapper_->DestroySurfaces();
+  vaapi_wrapper_->DestroyContextAndSurfaces();
 
   for (auto iter = pictures_.begin(); iter != pictures_.end(); ++iter) {
     VLOGF(2) << "Dismissing picture id: " << iter->first;
@@ -620,22 +630,22 @@ void VaapiVideoDecodeAccelerator::AssignPictureBuffers(
     surfaces_available_.Signal();
   }
 
-  decode_using_client_picture_buffers_ = !va_surface_ids.empty() &&
-                                         IsKabyLakeOrLater() &&
-                                         profile_ == VP9PROFILE_PROFILE0;
+  decode_using_client_picture_buffers_ =
+      !va_surface_ids.empty() &&
+      (IsKabyLakeOrLater() || IsGeminiLakeOrLater()) &&
+      profile_ == VP9PROFILE_PROFILE0;
 
   // If we have some |va_surface_ids|, use them for decode, otherwise ask
   // |vaapi_wrapper_| to allocate them for us.
   if (decode_using_client_picture_buffers_) {
     RETURN_AND_NOTIFY_ON_FAILURE(
-        vaapi_wrapper_->CreateContext(va_format, requested_pic_size_,
-                                      va_surface_ids),
+        vaapi_wrapper_->CreateContext(va_format, requested_pic_size_),
         "Failed creating VA Context", PLATFORM_FAILURE, );
   } else {
     va_surface_ids.clear();
     RETURN_AND_NOTIFY_ON_FAILURE(
-        vaapi_wrapper_->CreateSurfaces(va_format, requested_pic_size_,
-                                       buffers.size(), &va_surface_ids),
+        vaapi_wrapper_->CreateContextAndSurfaces(
+            va_format, requested_pic_size_, buffers.size(), &va_surface_ids),
         "Failed creating VA Surfaces", PLATFORM_FAILURE, );
   }
   DCHECK_EQ(va_surface_ids.size(), buffers.size());

@@ -1561,6 +1561,8 @@ bool InterceptURLLoad(content::URLLoaderInterceptor::RequestParams* params) {
     load_timing.push_end = base::TimeTicks::Now();
 
   params->client->OnReceiveResponse(response);
+  mojo::DataPipe pipe;  // The response's body is empty. The pipe is not filled.
+  params->client->OnStartLoadingResponseBody(std::move(pipe.consumer_handle));
   params->client->OnComplete(network::URLLoaderCompletionStatus());
   return true;
 }
@@ -1841,6 +1843,19 @@ IN_PROC_BROWSER_TEST_F(WorkerDevToolsSanityTest,
 
   // Wait until worker script is paused on the debugger statement.
   RunTestFunction(window_, "testPauseInSharedWorkerInitialization2");
+  CloseDevToolsWindow();
+}
+
+IN_PROC_BROWSER_TEST_F(WorkerDevToolsSanityTest,
+                       InspectSharedWorkerNetworkPanel) {
+  ASSERT_TRUE(spawned_test_server()->Start());
+  GURL url = spawned_test_server()->GetURL(kSharedWorkerTestPage);
+  ui_test_utils::NavigateToURL(browser(), url);
+
+  scoped_refptr<DevToolsAgentHost> host =
+      WaitForFirstSharedWorker(kSharedWorkerTestWorker);
+  OpenDevToolsWindow(host);
+  RunTestFunction(window_, "testSharedWorkerNetworkPanel");
   CloseDevToolsWindow();
 }
 

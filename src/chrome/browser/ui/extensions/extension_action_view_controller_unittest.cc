@@ -407,14 +407,9 @@ TEST_P(ExtensionActionViewControllerGrayscaleTest,
   RunGrayscaleTest(PermissionType::kScriptableHost);
 }
 
-INSTANTIATE_TEST_CASE_P(
-    ,
-    ExtensionActionViewControllerGrayscaleTest,
-    testing::Values(ui::MaterialDesignController::MATERIAL_NORMAL,
-                    ui::MaterialDesignController::MATERIAL_HYBRID,
-                    ui::MaterialDesignController::MATERIAL_TOUCH_OPTIMIZED,
-                    ui::MaterialDesignController::MATERIAL_REFRESH,
-                    ui::MaterialDesignController::MATERIAL_TOUCH_REFRESH));
+INSTANTIATE_TEST_CASE_P(,
+                        ExtensionActionViewControllerGrayscaleTest,
+                        testing::Values(false, true));
 
 TEST_P(ToolbarActionsBarUnitTest, RuntimeHostsTooltip) {
   base::test::ScopedFeatureList feature_list;

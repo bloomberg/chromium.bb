@@ -108,19 +108,21 @@ class DeviceTarget(target.Target):
       bootserver_command = [
           bootserver_path,
           '-1',
-          '--efi',
-          EnsurePathExists(boot_data.GetTargetFile(self._GetTargetSdkArch(),
-                                                   'local.esp.blk')),
           '--fvm',
           EnsurePathExists(boot_data.GetTargetFile(self._GetTargetSdkArch(),
                                                    'fvm.sparse.blk')),
-          '--fvm',
-          EnsurePathExists(
-              boot_data.ConfigureDataFVM(self._output_dir,
-                                         boot_data.FVM_TYPE_SPARSE)),
-          EnsurePathExists(boot_data.GetTargetFile(self._GetTargetSdkArch(),
-                                                   'fuchsia.zbi')),
-          '--'] + boot_data.GetKernelArgs(self._output_dir)
+          EnsurePathExists(boot_data.GetBootImage(self._output_dir,
+                                                  self._GetTargetSdkArch()))]
+
+      if self._GetTargetSdkArch() == 'x64':
+        bootserver_command += [
+            '--efi',
+            EnsurePathExists(boot_data.GetTargetFile(self._GetTargetSdkArch(),
+                                                     'local.esp.blk'))]
+
+      bootserver_command += ['--']
+      bootserver_command += boot_data.GetKernelArgs(self._output_dir)
+
       logging.debug(' '.join(bootserver_command))
       subprocess.check_call(bootserver_command)
 

@@ -1352,20 +1352,6 @@
       ]
     },
     {
-      "id": 143,
-      "description": "Timer queries crash on Intel GPUs on Linux",
-      "cr_bugs": [540543, 576991],
-      "os": {
-        "type": "linux"
-      },
-      "vendor_id": "0x8086",
-      "driver_vendor": "Mesa",
-      "disabled_extensions": [
-        "GL_ARB_timer_query",
-        "GL_EXT_timer_query"
-      ]
-    },
-    {
       "id": 144,
       "cr_bugs": [563714],
       "description": "Pack parameters work incorrectly with pack buffer bound",
@@ -2963,18 +2949,6 @@
       ]
     },
     {
-      "id":276,
-      "cr_bugs": [835353],
-      "description": "Adreno 3xx requires a high-priority WebGL context to avoid MSAA and performance issues",
-      "os": {
-        "type": "android"
-      },
-      "gl_renderer": "Adreno \\(TM\\) 3.*",
-      "features": [
-        "use_high_priority_for_webgl"
-      ]
-    },
-    {
       "id": 277,
       "description": "Direct composition path is buggy on certain AMD devices/drivers",
       "cr_bugs": [800950],
@@ -3017,6 +2991,22 @@
       ]
     },
     {
+      "id": 280,
+      "description": "ReadPixels is broken with EXT_multisampled_render_to_texture on recent Adreno drivers.",
+      "cr_bugs": [890002],
+      "os": {
+        "type": "android"
+      },
+      "driver_version": {
+        "op": ">",
+        "value": "237.0"
+      },
+      "gl_renderer": "Adreno \\(TM\\) .*",
+      "features": [
+        "use_copyteximage2d_instead_of_readpixels_on_multisampled_textures"
+      ]
+    },
+    {
       "id":281,
       "cr_bugs": [838725],
       "description": "Disable AImageReader on Imagination Technologies GPU as its buggy.",
@@ -3038,6 +3028,17 @@
       "gl_vendor": "NVIDIA.*",
       "features": [
         "disable_aimagereader"
+      ]
+    },
+    {
+      "id": 283,
+      "cr_bugs": [893177],
+      "description": "Some drivers can't recover after OUT_OF_MEM and context lost",
+      "os": {
+        "type": "linux"
+      },
+      "features": [
+        "exit_on_context_lost"
       ]
     }
   ]

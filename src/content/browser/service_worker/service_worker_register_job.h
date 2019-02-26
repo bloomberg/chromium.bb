@@ -125,8 +125,7 @@ class ServiceWorkerRegisterJob : public ServiceWorkerRegisterJobBase {
   void DispatchInstallEvent(blink::ServiceWorkerStatusCode start_worker_status);
   void OnInstallFinished(int request_id,
                          blink::mojom::ServiceWorkerEventStatus event_status,
-                         bool has_fetch_handler,
-                         base::TimeTicks dispatch_event_time);
+                         bool has_fetch_handler);
   void OnInstallFailed(blink::ServiceWorkerStatusCode status);
   void Complete(blink::ServiceWorkerStatusCode status);
   void Complete(blink::ServiceWorkerStatusCode status,
@@ -150,7 +149,7 @@ class ServiceWorkerRegisterJob : public ServiceWorkerRegisterJobBase {
   std::unique_ptr<ServiceWorkerUpdateChecker> update_checker_;
 
   RegistrationJobType job_type_;
-  const GURL pattern_;
+  const GURL scope_;
   GURL script_url_;
   // "A job has a worker type ("classic" or "module")."
   // https://w3c.github.io/ServiceWorker/#dfn-job-worker-type

@@ -164,6 +164,7 @@ void DownloadDriverImpl::Start(
   download_url_params->set_download_source(
       download::DownloadSource::INTERNAL_API);
   download_url_params->set_post_body(post_body);
+  download_url_params->set_follow_cross_origin_redirects(true);
 
   download_manager_->DownloadUrl(std::move(download_url_params),
                                  nullptr /* blob_data_handle */,

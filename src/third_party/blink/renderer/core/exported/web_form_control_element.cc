@@ -62,7 +62,7 @@ WebString WebFormControlElement::FormControlType() const {
 WebString WebFormControlElement::FormControlTypeForAutofill() const {
   if (auto* input = ToHTMLInputElementOrNull(*private_)) {
     if (input->IsTextField() && input->HasBeenPasswordField())
-      return InputTypeNames::password;
+      return input_type_names::kPassword;
   }
 
   return ConstUnwrap<HTMLFormControlElement>()->type();
@@ -135,10 +135,10 @@ void WebFormControlElement::SetAutofillValue(const WebString& value) {
                                             nullptr);
     }
     Unwrap<Element>()->DispatchScopedEvent(
-        *Event::CreateBubble(EventTypeNames::keydown));
+        *Event::CreateBubble(event_type_names::kKeydown));
     Unwrap<TextControlElement>()->SetAutofillValue(value);
     Unwrap<Element>()->DispatchScopedEvent(
-        *Event::CreateBubble(EventTypeNames::keyup));
+        *Event::CreateBubble(event_type_names::kKeyup));
     if (!Focused()) {
       Unwrap<Element>()->DispatchBlurEvent(nullptr, kWebFocusTypeForward,
                                            nullptr);

@@ -6,12 +6,11 @@
 
 namespace unzip {
 
-CrashyUnzipService::CrashyUnzipService() = default;
+CrashyUnzipService::CrashyUnzipService(
+    service_manager::mojom::ServiceRequest request)
+    : binding_(this, std::move(request)) {}
 
 CrashyUnzipService::~CrashyUnzipService() = default;
-
-// service_manager::Service implmentation:
-void CrashyUnzipService::OnStart() {}
 
 void CrashyUnzipService::OnBindInterface(
     const service_manager::BindSourceInfo& source_info,
@@ -23,7 +22,6 @@ void CrashyUnzipService::OnBindInterface(
       this, mojom::UnzipperRequest(std::move(interface_pipe)));
 }
 
-// unzip::mojom::Unzipper:
 void CrashyUnzipService::Unzip(base::File zip_file,
                                filesystem::mojom::DirectoryPtr output_dir,
                                UnzipCallback callback) {

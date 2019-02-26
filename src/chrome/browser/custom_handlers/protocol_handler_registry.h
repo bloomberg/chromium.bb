@@ -40,6 +40,10 @@ class ProtocolHandlerRegistry : public KeyedService {
     POLICY,  // The handler was installed by policy
   };
 
+  typedef std::map<std::string, ProtocolHandler> ProtocolHandlerMap;
+  typedef std::vector<ProtocolHandler> ProtocolHandlerList;
+  typedef std::map<std::string, ProtocolHandlerList> ProtocolHandlerMultiMap;
+
   // |Delegate| provides an interface for interacting asynchronously
   // with the underlying OS for the purposes of registering Chrome
   // as the default handler for specific protocols.
@@ -56,8 +60,58 @@ class ProtocolHandlerRegistry : public KeyedService {
                                           ProtocolHandlerRegistry* registry);
   };
 
-  // Forward declaration of the internal implementation class.
-  class IOThreadDelegate;
+  // IOThreadDelegate is an IO thread specific object. Access to the class
+  // should all be done via the IO thread. The registry living on the UI thread
+  // makes a best effort to update the IO object after local updates are
+  // completed.
+  class IOThreadDelegate : public base::RefCountedThreadSafe<IOThreadDelegate> {
+   public:
+    // Creates a new instance. If |enabled| is true the registry is considered
+    // enabled on the IO thread.
+    explicit IOThreadDelegate(bool enabled);
+
+    // Returns true if the protocol has a default protocol handler.
+    // Should be called only from the IO thread.
+    bool IsHandledProtocol(const std::string& scheme) const;
+
+    // Clears the default for the provided protocol.
+    // Should be called only from the IO thread.
+    void ClearDefault(const std::string& scheme);
+
+    // Makes this ProtocolHandler the default handler for its protocol.
+    // Should be called only from the IO thread.
+    void SetDefault(const ProtocolHandler& handler);
+
+    // Returns a translated url if |url| is handled by a protocol handler,
+    // otherwise it returns an empty URL.
+    GURL Translate(const GURL& url) const;
+
+    // Creates a URL request job for the given request if there is a matching
+    // protocol handler, returns NULL otherwise.
+    net::URLRequestJob* MaybeCreateJob(
+        net::URLRequest* request,
+        net::NetworkDelegate* network_delegate) const;
+
+    // Indicate that the registry has been enabled in the IO thread's
+    // copy of the data.
+    void Enable();
+
+    // Indicate that the registry has been disabled in the IO thread's copy of
+    // the data.
+    void Disable();
+
+   private:
+    friend class base::RefCountedThreadSafe<IOThreadDelegate>;
+    virtual ~IOThreadDelegate();
+
+    // Copy of protocol handlers use only on the IO thread.
+    ProtocolHandlerRegistry::ProtocolHandlerMap default_handlers_;
+
+    // Is the registry enabled on the IO thread.
+    bool enabled_;
+
+    DISALLOW_COPY_AND_ASSIGN(IOThreadDelegate);
+  };
 
   // JobInterceptorFactory intercepts URLRequestJob creation for URLRequests the
   // ProtocolHandlerRegistry is registered to handle.  When no handler is
@@ -103,10 +157,6 @@ class ProtocolHandlerRegistry : public KeyedService {
 
     DISALLOW_COPY_AND_ASSIGN(JobInterceptorFactory);
   };
-
-  typedef std::map<std::string, ProtocolHandler> ProtocolHandlerMap;
-  typedef std::vector<ProtocolHandler> ProtocolHandlerList;
-  typedef std::map<std::string, ProtocolHandlerList> ProtocolHandlerMultiMap;
 
   // Creates a new instance. Assumes ownership of |delegate|.
   ProtocolHandlerRegistry(content::BrowserContext* context, Delegate* delegate);
@@ -231,6 +281,10 @@ class ProtocolHandlerRegistry : public KeyedService {
   static void RegisterProfilePrefs(user_prefs::PrefRegistrySyncable* registry);
 
   bool enabled() const { return enabled_; }
+
+  scoped_refptr<IOThreadDelegate> io_thread_delegate() {
+    return io_thread_delegate_;
+  }
 
   // Add a predefined protocol handler. This has to be called before the first
   // load command was issued, otherwise the command will be ignored.

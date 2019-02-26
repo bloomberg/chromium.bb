@@ -413,7 +413,7 @@ ScopedFPDFDocument PDFiumPrint::CreateSinglePageRasterPdf(
 
   FPDF_RenderPageBitmap(bitmap.get(), page_to_print, 0, 0, bitmap_size.width(),
                         bitmap_size.height(), print_settings.orientation,
-                        FPDF_PRINTING | FPDF_NO_CATCH);
+                        FPDF_PRINTING);
 
   unsigned char* bitmap_data =
       static_cast<unsigned char*>(FPDFBitmap_GetBuffer(bitmap.get()));

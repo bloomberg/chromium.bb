@@ -29,10 +29,10 @@
 
 namespace blink {
 
-using namespace HTMLNames;
+using namespace html_names;
 
 HTMLSpanElement::HTMLSpanElement(Document& document)
-    : HTMLElement(spanTag, document) {}
+    : HTMLElement(kSpanTag, document) {}
 
 DEFINE_NODE_FACTORY(HTMLSpanElement)
 

@@ -9,8 +9,8 @@
 #include "base/bind.h"
 #include "base/logging.h"
 #include "base/macros.h"
-#include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
+#include "base/test/scoped_task_environment.h"
 #include "components/cronet/native/generated/cronet.idl_impl_interface.h"
 #include "components/cronet/native/include/cronet_c.h"
 #include "components/cronet/native/test/test_util.h"
@@ -43,7 +43,7 @@ class RunnablesTest : public ::testing::Test {
   bool callback_called() const { return callback_called_; }
 
   // Provide a message loop for use by TestExecutor instances.
-  base::MessageLoop message_loop_;
+  base::test::ScopedTaskEnvironment task_environment_;
 
  private:
   bool callback_called_ = false;

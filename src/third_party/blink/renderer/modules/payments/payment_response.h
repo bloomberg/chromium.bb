@@ -14,6 +14,7 @@
 #include "third_party/blink/renderer/modules/modules_export.h"
 #include "third_party/blink/renderer/modules/payments/payment_currency_amount.h"
 #include "third_party/blink/renderer/platform/bindings/script_wrappable.h"
+#include "third_party/blink/renderer/platform/bindings/trace_wrapper_v8_reference.h"
 #include "third_party/blink/renderer/platform/heap/handle.h"
 #include "third_party/blink/renderer/platform/wtf/noncopyable.h"
 #include "third_party/blink/renderer/platform/wtf/text/wtf_string.h"
@@ -59,11 +60,11 @@ class MODULES_EXPORT PaymentResponse final
   const String& payerPhone() const { return payer_phone_; }
 
   ScriptPromise complete(ScriptState*, const String& result = "");
-  ScriptPromise retry(ScriptState*, const PaymentValidationErrors&);
+  ScriptPromise retry(ScriptState*, const PaymentValidationErrors*);
 
   bool HasPendingActivity() const override;
 
-  DEFINE_ATTRIBUTE_EVENT_LISTENER(payerdetailchange);
+  DEFINE_ATTRIBUTE_EVENT_LISTENER(payerdetailchange, kPayerdetailchange);
 
   const AtomicString& InterfaceName() const override;
   ExecutionContext* GetExecutionContext() const override;
@@ -73,7 +74,7 @@ class MODULES_EXPORT PaymentResponse final
  private:
   String request_id_;
   String method_name_;
-  ScriptValue details_;
+  TraceWrapperV8Reference<v8::Value> details_;
   Member<PaymentAddress> shipping_address_;
   String shipping_option_;
   String payer_name_;

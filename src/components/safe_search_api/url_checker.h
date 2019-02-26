@@ -52,6 +52,11 @@ class URLChecker {
              const net::NetworkTrafficAnnotationTag& traffic_annotation,
              const std::string& country,
              size_t cache_size);
+  URLChecker(scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory,
+             const net::NetworkTrafficAnnotationTag& traffic_annotation,
+             const std::string& country,
+             size_t cache_size,
+             const std::string& api_key);
   ~URLChecker();
 
   // Returns whether |callback| was run synchronously.
@@ -77,6 +82,7 @@ class URLChecker {
   scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory_;
   const net::NetworkTrafficAnnotationTag traffic_annotation_;
   const std::string country_;
+  const std::string api_key_;
 
   CheckList checks_in_progress_;
 

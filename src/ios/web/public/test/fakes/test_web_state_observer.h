@@ -61,10 +61,6 @@ class TestWebStateObserver : public WebStateObserver {
   did_change_visible_security_state_info() {
     return did_change_visible_security_state_info_.get();
   }
-  // Arguments passed to |DidSuppressDialog|.
-  web::TestDidSuppressDialogInfo* did_suppress_dialog_info() {
-    return did_suppress_dialog_info_.get();
-  }
   // Arguments passed to |FaviconUrlUpdated|.
   web::TestUpdateFaviconUrlCandidatesInfo*
   update_favicon_url_candidates_info() {
@@ -113,7 +109,6 @@ class TestWebStateObserver : public WebStateObserver {
                            NavigationContext* context) override;
   void TitleWasSet(WebState* web_state) override;
   void DidChangeVisibleSecurityState(WebState* web_state) override;
-  void DidSuppressDialog(WebState* web_state) override;
   void FaviconUrlUpdated(WebState* web_state,
                          const std::vector<FaviconURL>& candidates) override;
   void WebFrameDidBecomeAvailable(WebState* web_state,
@@ -144,7 +139,6 @@ class TestWebStateObserver : public WebStateObserver {
   std::unique_ptr<web::TestTitleWasSetInfo> title_was_set_info_;
   std::unique_ptr<web::TestDidChangeVisibleSecurityStateInfo>
       did_change_visible_security_state_info_;
-  std::unique_ptr<web::TestDidSuppressDialogInfo> did_suppress_dialog_info_;
   std::unique_ptr<web::TestUpdateFaviconUrlCandidatesInfo>
       update_favicon_url_candidates_info_;
   std::unique_ptr<web::TestWebFrameAvailabilityInfo> web_frame_available_info_;

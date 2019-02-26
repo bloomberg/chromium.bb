@@ -4,6 +4,7 @@
 
 package org.chromium.chrome.browser.preferences.website;
 
+import android.app.Activity;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
@@ -24,12 +25,13 @@ import android.widget.ListAdapter;
 import android.widget.ListView;
 
 import org.chromium.base.VisibleForTesting;
+import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ContentSettingsType;
+import org.chromium.chrome.browser.browserservices.Origin;
 import org.chromium.chrome.browser.notifications.channels.SiteChannelsManager;
 import org.chromium.chrome.browser.preferences.PrefServiceBridge;
 import org.chromium.chrome.browser.preferences.PreferenceUtils;
-import org.chromium.components.url_formatter.UrlFormatter;
 
 import java.util.Arrays;
 import java.util.Collection;
@@ -93,11 +95,17 @@ public class SingleWebsitePreferences extends PreferenceFragment
 
     private static final int REQUEST_CODE_NOTIFICATION_CHANNEL_SETTINGS = 1;
 
+    private final SiteDataCleaner mSiteDataCleaner = new SiteDataCleaner();
+
     // The website this page is displaying details about.
     private Website mSite;
 
     // The number of chosen object permissions displayed.
     private int mObjectPermissionCount;
+
+    // Records previous notification permission on Android O+ to allow detection of permission
+    // revocation within the Android system permission activity.
+    private ContentSetting mPreviousNotificationPermission;
 
     private class SingleWebsitePermissionsPopulator
             implements WebsitePermissionsFetcher.WebsitePermissionsCallback {
@@ -114,11 +122,23 @@ public class SingleWebsitePreferences extends PreferenceFragment
             if (getActivity() == null) return;
 
             // TODO(mvanouwerkerk): Avoid modifying the outer class from this inner class.
-            mSite = mergePermissionInfoForTopLevelOrigin(mSiteAddress, sites);
+            mSite = mergePermissionAndStorageInfoForTopLevelOrigin(mSiteAddress, sites);
 
             displaySitePermissions();
         }
     }
+
+    private final Runnable mDataClearedCallback = () -> {
+        Activity activity = getActivity();
+        if (activity == null || activity.isFinishing()) {
+            return;
+        }
+        removePreferenceSafely(PREF_CLEAR_DATA);
+        if (!hasUsagePreferences()) {
+            removePreferenceSafely(PREF_USAGE);
+        }
+        popBackIfNoSettings();
+    };
 
     /**
      * Creates a Bundle with the correct arguments for opening this fragment for
@@ -130,9 +150,7 @@ public class SingleWebsitePreferences extends PreferenceFragment
      */
     public static Bundle createFragmentArgsForSite(String url) {
         Bundle fragmentArgs = new Bundle();
-        // TODO(mvanouwerkerk): Define a pure getOrigin method in UrlUtilities that is the
-        // equivalent of the call below, because this is perfectly fine for non-display purposes.
-        String origin = UrlFormatter.formatUrlForSecurityDisplay(url);
+        String origin = new Origin(url).toString();
         fragmentArgs.putSerializable(EXTRA_SITE_ADDRESS, WebsiteAddress.create(origin));
         return fragmentArgs;
     }
@@ -151,9 +169,9 @@ public class SingleWebsitePreferences extends PreferenceFragment
             displaySitePermissions();
         } else if (extraSiteAddress != null && extraSite == null) {
             WebsitePermissionsFetcher fetcher;
-            fetcher = new WebsitePermissionsFetcher(
+            fetcher = new WebsitePermissionsFetcher();
+            fetcher.fetchAllPreferences(
                     new SingleWebsitePermissionsPopulator((WebsiteAddress) extraSiteAddress));
-            fetcher.fetchAllPreferences();
         } else {
             assert false : "Exactly one of EXTRA_SITE or EXTRA_SITE_ADDRESS must be provided.";
         }
@@ -163,16 +181,16 @@ public class SingleWebsitePreferences extends PreferenceFragment
 
     /**
      * Given an address and a list of sets of websites, returns a new site with the same origin
-     * as |address| which has merged into it the permissions of the matching input sites. If a
-     * permission is found more than once, the one found first is used and the latter are ignored.
-     * This should not drop any relevant data as there should not be duplicates like that in the
-     * first place.
+     * as |address| which has merged into it the permissions and storage info of the matching input
+     * sites. If a permission is found more than once, the one found first is used and the latter
+     * are ignored. This should not drop any relevant data as there should not be duplicates like
+     * that in the first place.
      *
      * @param address The address to search for.
      * @param websites The websites to search in.
      * @return The merged website.
      */
-    private static Website mergePermissionInfoForTopLevelOrigin(
+    private static Website mergePermissionAndStorageInfoForTopLevelOrigin(
             WebsiteAddress address, Collection<Website> websites) {
         String origin = address.getOrigin();
         String host = Uri.parse(origin).getHost();
@@ -214,8 +232,7 @@ public class SingleWebsitePreferences extends PreferenceFragment
             if (host.equals(other.getAddress().getHost())) {
                 for (@ContentSettingException.Type int type = 0;
                         type < ContentSettingException.Type.NUM_ENTRIES; type++) {
-                    if (type == ContentSettingException.Type.ADS
-                            || type == ContentSettingException.Type.COOKIE) {
+                    if (type == ContentSettingException.Type.ADS) {
                         continue;
                     }
                     if (merged.getContentSettingException(type) == null
@@ -268,10 +285,10 @@ public class SingleWebsitePreferences extends PreferenceFragment
 
         // Remove categories if no sub-items.
         if (!hasUsagePreferences()) {
-            preferenceScreen.removePreference(preferenceScreen.findPreference(PREF_USAGE));
+            removePreferenceSafely(PREF_USAGE);
         }
         if (!hasPermissionsPreferences()) {
-            preferenceScreen.removePreference(preferenceScreen.findPreference(PREF_PERMISSIONS));
+            removePreferenceSafely(PREF_PERMISSIONS);
         }
     }
 
@@ -327,7 +344,7 @@ public class SingleWebsitePreferences extends PreferenceFragment
                     .setConfirmationListener(new DialogInterface.OnClickListener() {
                         @Override
                         public void onClick(DialogInterface dialog, int which) {
-                            clearStoredData();
+                            mSite.clearAllStoredData(mDataClearedCallback::run);
                         }
                     });
         } else {
@@ -394,6 +411,9 @@ public class SingleWebsitePreferences extends PreferenceFragment
     }
 
     private void launchOsChannelSettings(Context context, String channelId) {
+        // Store current value of permission to allow comparison against new value at return.
+        mPreviousNotificationPermission = mSite.getPermission(PermissionInfo.Type.NOTIFICATION);
+
         Intent intent = new Intent(Settings.ACTION_CHANNEL_NOTIFICATION_SETTINGS);
         intent.putExtra(Settings.EXTRA_CHANNEL_ID, channelId);
         intent.putExtra(Settings.EXTRA_APP_PACKAGE, context.getPackageName());
@@ -422,6 +442,21 @@ public class SingleWebsitePreferences extends PreferenceFragment
             if (notificationsPreference != null) {
                 setUpNotificationsPreference(notificationsPreference);
             }
+
+            // To ensure UMA receives notification revocations, we detect if the setting has changed
+            // after returning to Chrome.  This is lossy, as it will miss when users revoke a
+            // permission, but do not return immediately to Chrome (e.g. they close the permissions
+            // activity, instead of hitting the back button), but prevents us from having to check
+            // for changes each time Chrome becomes active.
+            ContentSetting newPermission = mSite.getPermission(PermissionInfo.Type.NOTIFICATION);
+            if (mPreviousNotificationPermission == ContentSetting.ALLOW &&
+                    newPermission != ContentSetting.ALLOW) {
+                WebsitePreferenceBridge.nativeReportNotificationRevokedForOrigin(
+                    mSite.getAddress().getOrigin(),
+                    newPermission.toInt(),
+                    mSite.getPermissionInfo(PermissionInfo.Type.NOTIFICATION).isIncognito());
+                mPreviousNotificationPermission = null;
+            }
         }
     }
 
@@ -444,12 +479,9 @@ public class SingleWebsitePreferences extends PreferenceFragment
         SiteSettingsCategory categoryWithWarning = getWarningCategory();
         // Remove the 'permission is off in Android' message if not needed.
         if (categoryWithWarning == null) {
-            preferenceScreen.removePreference(
-                    preferenceScreen.findPreference(PREF_OS_PERMISSIONS_WARNING));
-            preferenceScreen.removePreference(
-                    preferenceScreen.findPreference(PREF_OS_PERMISSIONS_WARNING_EXTRA));
-            preferenceScreen.removePreference(
-                    preferenceScreen.findPreference(PREF_OS_PERMISSIONS_WARNING_DIVIDER));
+            removePreferenceSafely(PREF_OS_PERMISSIONS_WARNING);
+            removePreferenceSafely(PREF_OS_PERMISSIONS_WARNING_EXTRA);
+            removePreferenceSafely(PREF_OS_PERMISSIONS_WARNING_DIVIDER);
         } else {
             Preference osWarning = preferenceScreen.findPreference(PREF_OS_PERMISSIONS_WARNING);
             Preference osWarningExtra =
@@ -457,11 +489,9 @@ public class SingleWebsitePreferences extends PreferenceFragment
             categoryWithWarning.configurePermissionIsOffPreferences(
                     osWarning, osWarningExtra, getActivity(), false);
             if (osWarning.getTitle() == null) {
-                preferenceScreen.removePreference(
-                        preferenceScreen.findPreference(PREF_OS_PERMISSIONS_WARNING));
+                preferenceScreen.removePreference(osWarning);
             } else if (osWarningExtra.getTitle() == null) {
-                preferenceScreen.removePreference(
-                        preferenceScreen.findPreference(PREF_OS_PERMISSIONS_WARNING_EXTRA));
+                preferenceScreen.removePreference(osWarningExtra);
             }
         }
     }
@@ -477,12 +507,8 @@ public class SingleWebsitePreferences extends PreferenceFragment
                         != null;
 
         if (!adBlockingActivated) {
-            Preference intrusiveAdsInfo = preferenceScreen.findPreference(PREF_INTRUSIVE_ADS_INFO);
-            Preference intrusiveAdsInfoDivider =
-                    preferenceScreen.findPreference(PREF_INTRUSIVE_ADS_INFO_DIVIDER);
-
-            preferenceScreen.removePreference(intrusiveAdsInfo);
-            preferenceScreen.removePreference(intrusiveAdsInfoDivider);
+            removePreferenceSafely(PREF_INTRUSIVE_ADS_INFO);
+            removePreferenceSafely(PREF_INTRUSIVE_ADS_INFO_DIVIDER);
         }
     }
 
@@ -505,8 +531,9 @@ public class SingleWebsitePreferences extends PreferenceFragment
     }
 
     private boolean showWarningFor(@SiteSettingsCategory.Type int type) {
-        for (int i = 0; i < PermissionInfo.CONTENT_TYPES.length; i++) {
-            if (PermissionInfo.CONTENT_TYPES[i] == SiteSettingsCategory.contentSettingsType(type)) {
+        for (int i = 0; i < PermissionInfo.Type.NUM_ENTRIES; i++) {
+            if (PermissionInfo.getContentSettingsType(i)
+                    == SiteSettingsCategory.contentSettingsType(type)) {
                 return mSite.getPermission(i) == null
                         ? false
                         : SiteSettingsCategory.createFromType(type).showPermissionBlockedMessage(
@@ -685,29 +712,12 @@ public class SingleWebsitePreferences extends PreferenceFragment
         for (int i = 0; i < PERMISSION_PREFERENCE_KEYS.length; i++) {
             if (PERMISSION_PREFERENCE_KEYS[i].equals(preferenceKey)) {
                 return i < ContentSettingException.Type.NUM_ENTRIES
-                        ? ContentSettingException.CONTENT_TYPES[i]
-                        : PermissionInfo
-                                  .CONTENT_TYPES[i - ContentSettingException.Type.NUM_ENTRIES];
+                        ? ContentSettingException.getContentSettingsType(i)
+                        : PermissionInfo.getContentSettingsType(
+                                  i - ContentSettingException.Type.NUM_ENTRIES);
             }
         }
         return 0;
-    }
-
-    private void clearStoredData() {
-        mSite.clearAllStoredData(
-                new Website.StoredDataClearedCallback() {
-                    @Override
-                    public void onStoredDataCleared() {
-                        PreferenceScreen preferenceScreen = getPreferenceScreen();
-                        preferenceScreen.removePreference(
-                                preferenceScreen.findPreference(PREF_CLEAR_DATA));
-                        if (!hasUsagePreferences()) {
-                            preferenceScreen.removePreference(
-                                    preferenceScreen.findPreference(PREF_USAGE));
-                        }
-                        popBackIfNoSettings();
-                    }
-                });
     }
 
     private void popBackIfNoSettings() {
@@ -777,36 +787,36 @@ public class SingleWebsitePreferences extends PreferenceFragment
         // TODO(mvanouwerkerk): Refactor this class so that it does not depend on the screen state
         // for its logic. This class should maintain its own data model, and only update the screen
         // after a change is made.
-        PreferenceScreen screen = getPreferenceScreen();
         for (String key : PERMISSION_PREFERENCE_KEYS) {
-            Preference preference = screen.findPreference(key);
-            if (preference != null) screen.removePreference(preference);
+            removePreferenceSafely(key);
         }
 
-        String origin = mSite.getAddress().getOrigin();
-        WebsitePreferenceBridge.nativeClearCookieData(origin);
-        WebsitePreferenceBridge.nativeClearBannerData(origin);
-
-        // Clear the permissions.
-        for (@ContentSettingException.Type int type = 0;
-                type < ContentSettingException.Type.NUM_ENTRIES; type++) {
-            mSite.setContentSettingPermission(type, ContentSetting.DEFAULT);
-        }
-        for (@PermissionInfo.Type int type = 0; type < PermissionInfo.Type.NUM_ENTRIES; type++) {
-            mSite.setPermission(type, ContentSetting.DEFAULT);
-        }
-
-        for (ChosenObjectInfo info : mSite.getChosenObjectInfo()) info.revoke();
         mObjectPermissionCount = 0;
 
-        // Clear the storage and finish the activity if necessary.
-        if (mSite.getTotalUsage() > 0) {
-            clearStoredData();
-        } else {
-            // Clearing stored data implies popping back to parent menu if there
-            // is nothing left to show. Therefore, we only need to explicitly
-            // close the activity if there's no stored data to begin with.
+        // Clearing stored data implies popping back to parent menu if there
+        // is nothing left to show. Therefore, we only need to explicitly
+        // close the activity if there's no stored data to begin with.
+        boolean finishActivityImmediately = mSite.getTotalUsage() == 0;
+
+        mSiteDataCleaner.clearData(mSite, mDataClearedCallback);
+
+        int navigationSource = getArguments().getInt(
+                SettingsNavigationSource.EXTRA_KEY, SettingsNavigationSource.OTHER);
+        RecordHistogram.recordEnumeratedHistogram("SingleWebsitePreferences.NavigatedFromToReset",
+                navigationSource, SettingsNavigationSource.NUM_ENTRIES);
+
+        if (finishActivityImmediately) {
             getActivity().finish();
         }
+    }
+
+    /**
+     * Ensures preference exists before removing to avoid NPE in
+     * {@link PreferenceScreen#removePreference}.
+     */
+    private void removePreferenceSafely(CharSequence prefKey) {
+        PreferenceScreen screen = getPreferenceScreen();
+        Preference preference = screen.findPreference(prefKey);
+        if (preference != null) screen.removePreference(preference);
     }
 }

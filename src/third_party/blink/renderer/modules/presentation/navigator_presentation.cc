@@ -19,7 +19,7 @@ NavigatorPresentation& NavigatorPresentation::From(Navigator& navigator) {
   NavigatorPresentation* supplement =
       Supplement<Navigator>::From<NavigatorPresentation>(navigator);
   if (!supplement) {
-    supplement = new NavigatorPresentation();
+    supplement = MakeGarbageCollected<NavigatorPresentation>();
     ProvideTo(navigator, supplement);
   }
   return *supplement;

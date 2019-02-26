@@ -32,7 +32,6 @@ import logging
 import math
 import re
 
-from blinkpy.common.path_finder import TESTS_IN_BLINK
 from blinkpy.web_tests.layout_package.json_results_generator import convert_times_trie_to_flat_paths
 from blinkpy.web_tests.models import test_expectations
 
@@ -46,10 +45,7 @@ class LayoutTestFinder(object):
         self._port = port
         self._options = options
         self._filesystem = self._port.host.filesystem
-        if TESTS_IN_BLINK:
-            self.LAYOUT_TESTS_DIRECTORIES = ('src', 'third_party', 'blink', 'web_tests')
-        else:
-            self.LAYOUT_TESTS_DIRECTORIES = ('src', 'third_party', 'WebKit', 'LayoutTests')
+        self.LAYOUT_TESTS_DIRECTORIES = ('src', 'third_party', 'blink', 'web_tests')
 
     def find_tests(self, args, test_list=None, fastest_percentile=None):
         paths = self._strip_test_dir_prefixes(args)
@@ -120,10 +116,10 @@ class LayoutTestFinder(object):
         return [self._strip_test_dir_prefix(path) for path in paths if path]
 
     def _strip_test_dir_prefix(self, path):
-        # Remove src/third_party/WebKit/LayoutTests/ from the front of the test path,
+        # Remove src/third_party/blink/web_tests/ from the front of the test path,
         # or any subset of these.
         for i in range(len(self.LAYOUT_TESTS_DIRECTORIES)):
-            # Handle both "LayoutTests/foo/bar.html" and "LayoutTests\foo\bar.html" if
+            # Handle both "web_tests/foo/bar.html" and "web_tests\foo\bar.html" if
             # the filesystem uses '\\' as a directory separator
             for separator in (self._port.TEST_PATH_SEPARATOR, self._filesystem.sep):
                 directory_prefix = separator.join(self.LAYOUT_TESTS_DIRECTORIES[i:]) + separator

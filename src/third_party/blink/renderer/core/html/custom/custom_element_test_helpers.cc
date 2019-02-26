@@ -9,7 +9,7 @@ namespace blink {
 CustomElementDefinition* TestCustomElementDefinitionBuilder::Build(
     const CustomElementDescriptor& descriptor,
     CustomElementDefinition::Id) {
-  return new TestCustomElementDefinition(descriptor);
+  return MakeGarbageCollected<TestCustomElementDefinition>(descriptor);
 }
 
 }  // namespace blink

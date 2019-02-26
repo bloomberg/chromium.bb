@@ -195,15 +195,12 @@ void AwContentRendererClient::PrepareErrorPage(
     content::RenderFrame* render_frame,
     const blink::WebURLRequest& failed_request,
     const blink::WebURLError& error,
-    std::string* error_html,
-    base::string16* error_description) {
+    std::string* error_html) {
   std::string err;
   if (error.reason() == net::ERR_TEMPORARILY_THROTTLED)
     err = kThrottledErrorDescription;
   else
     err = net::ErrorToString(error.reason());
-  if (error_description)
-    *error_description = base::ASCIIToUTF16(err);
 
   if (!error_html)
     return;
@@ -300,7 +297,8 @@ void AwContentRendererClient::GetInterface(
   // TODO(crbug.com/806394): Use a WebView-specific service for SpellCheckHost
   // and SafeBrowsing, instead of |content_browser|.
   RenderThread::Get()->GetConnector()->BindInterface(
-      service_manager::Identity(content::mojom::kBrowserServiceName),
+      service_manager::ServiceFilter::ByName(
+          content::mojom::kBrowserServiceName),
       interface_name, std::move(interface_pipe));
 }
 

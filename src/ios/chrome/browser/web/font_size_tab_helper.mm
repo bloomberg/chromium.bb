@@ -13,8 +13,6 @@
 #error "This file requires ARC support."
 #endif
 
-DEFINE_WEB_STATE_USER_DATA_KEY(FontSizeTabHelper);
-
 FontSizeTabHelper::~FontSizeTabHelper() {
   // Remove observer in destructor because |this| is captured by the usingBlock
   // in calling [NSNotificationCenter.defaultCenter

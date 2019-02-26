@@ -69,9 +69,10 @@ TEST_F(RenderWidgetTest, OnSynchronizeVisualProperties) {
   // Setting the bounds to a "real" rect should send the ack.
   render_thread_->sink().ClearMessages();
   viz::ParentLocalSurfaceIdAllocator local_surface_id_allocator;
+  local_surface_id_allocator.GenerateId();
   gfx::Size size(100, 100);
-  visual_properties.local_surface_id =
-      local_surface_id_allocator.GetCurrentLocalSurfaceId();
+  visual_properties.local_surface_id_allocation =
+      local_surface_id_allocator.GetCurrentLocalSurfaceIdAllocation();
   visual_properties.new_size = size;
   visual_properties.compositor_viewport_pixel_size = size;
   OnSynchronizeVisualProperties(visual_properties);
@@ -86,7 +87,7 @@ TEST_F(RenderWidgetTest, OnSynchronizeVisualProperties) {
   // Resetting the rect to empty should not send the ack.
   visual_properties.new_size = gfx::Size();
   visual_properties.compositor_viewport_pixel_size = gfx::Size();
-  visual_properties.local_surface_id = base::nullopt;
+  visual_properties.local_surface_id_allocation = base::nullopt;
   OnSynchronizeVisualProperties(visual_properties);
 
   // Changing the screen info should not send the ack.
@@ -105,8 +106,8 @@ class RenderWidgetInitialSizeTest : public RenderWidgetTest {
         new VisualProperties());
     initial_visual_properties->new_size = initial_size_;
     initial_visual_properties->compositor_viewport_pixel_size = initial_size_;
-    initial_visual_properties->local_surface_id =
-        local_surface_id_allocator_.GetCurrentLocalSurfaceId();
+    initial_visual_properties->local_surface_id_allocation =
+        local_surface_id_allocator_.GetCurrentLocalSurfaceIdAllocation();
     return initial_visual_properties;
   }
 
@@ -123,7 +124,7 @@ TEST_F(RenderWidgetTest, HitTestAPI) {
       "</body>'></iframe><div></body>");
   gfx::PointF point;
   viz::FrameSinkId main_frame_sink_id =
-      widget()->GetFrameSinkIdAtPoint(gfx::Point(10, 10), &point);
+      widget()->GetFrameSinkIdAtPoint(gfx::PointF(10, 10), &point);
   EXPECT_EQ(static_cast<uint32_t>(widget()->routing_id()),
             main_frame_sink_id.sink_id());
   EXPECT_EQ(static_cast<uint32_t>(RenderThreadImpl::Get()->GetClientId()),
@@ -133,7 +134,7 @@ TEST_F(RenderWidgetTest, HitTestAPI) {
   // Targeting a child frame should also return the FrameSinkId for the main
   // widget.
   viz::FrameSinkId frame_sink_id =
-      widget()->GetFrameSinkIdAtPoint(gfx::Point(150, 150), &point);
+      widget()->GetFrameSinkIdAtPoint(gfx::PointF(150, 150), &point);
   EXPECT_EQ(static_cast<uint32_t>(widget()->routing_id()),
             frame_sink_id.sink_id());
   EXPECT_EQ(main_frame_sink_id.client_id(), frame_sink_id.client_id());

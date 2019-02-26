@@ -46,7 +46,7 @@ NavigatorBattery& NavigatorBattery::From(Navigator& navigator) {
   NavigatorBattery* supplement =
       Supplement<Navigator>::From<NavigatorBattery>(navigator);
   if (!supplement) {
-    supplement = new NavigatorBattery(navigator);
+    supplement = MakeGarbageCollected<NavigatorBattery>(navigator);
     ProvideTo(navigator, supplement);
   }
   return *supplement;

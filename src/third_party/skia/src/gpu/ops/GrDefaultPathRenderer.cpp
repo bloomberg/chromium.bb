@@ -357,13 +357,14 @@ public:
 
     const char* name() const override { return "DefaultPathOp"; }
 
-    void visitProxies(const VisitProxyFunc& func) const override {
+    void visitProxies(const VisitProxyFunc& func, VisitorType) const override {
         fHelper.visitProxies(func);
     }
 
+#ifdef SK_DEBUG
     SkString dumpInfo() const override {
         SkString string;
-        string.appendf("Color: 0x%08x Count: %d\n", fColor, fPaths.count());
+        string.appendf("Color: 0x%08x Count: %d\n", fColor.toBytes_RGBA(), fPaths.count());
         for (const auto& path : fPaths) {
             string.appendf("Tolerance: %.2f\n", path.fTolerance);
         }
@@ -371,8 +372,9 @@ public:
         string += INHERITED::dumpInfo();
         return string;
     }
+#endif
 
-    DefaultPathOp(const Helper::MakeArgs& helperArgs, GrColor color, const SkPath& path,
+    DefaultPathOp(const Helper::MakeArgs& helperArgs, const SkPMColor4f& color, const SkPath& path,
                   SkScalar tolerance, uint8_t coverage, const SkMatrix& viewMatrix, bool isHairline,
                   GrAAType aaType, const SkRect& devBounds,
                   const GrUserStencilSettings* stencilSettings)
@@ -413,7 +415,7 @@ private:
                                                this->viewMatrix());
         }
 
-        SkASSERT(gp->debugOnly_vertexStride() == sizeof(SkPoint));
+        SkASSERT(gp->vertexStride() == sizeof(SkPoint));
 
         int instanceCount = fPaths.count();
 
@@ -462,11 +464,10 @@ private:
         }
 
         fPaths.push_back_n(that->fPaths.count(), that->fPaths.begin());
-        this->joinBounds(*that);
         return CombineResult::kMerged;
     }
 
-    GrColor color() const { return fColor; }
+    const SkPMColor4f& color() const { return fColor; }
     uint8_t coverage() const { return fCoverage; }
     const SkMatrix& viewMatrix() const { return fViewMatrix; }
     bool isHairline() const { return fIsHairline; }
@@ -478,7 +479,7 @@ private:
 
     SkSTArray<1, PathData, true> fPaths;
     Helper fHelper;
-    GrColor fColor;
+    SkPMColor4f fColor;
     uint8_t fCoverage;
     SkMatrix fViewMatrix;
     bool fIsHairline;

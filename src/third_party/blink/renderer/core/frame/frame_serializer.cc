@@ -197,7 +197,7 @@ void SerializerMarkupAccumulator::AppendAttribute(StringBuilder& out,
   // Check if link rewriting can affect the attribute.
   bool is_link_attribute = element.HasLegalLinkAttribute(attribute.GetName());
   bool is_src_doc_attribute = IsHTMLFrameElementBase(element) &&
-                              attribute.GetName() == HTMLNames::srcdocAttr;
+                              attribute.GetName() == html_names::kSrcdocAttr;
   if (is_link_attribute || is_src_doc_attribute) {
     // Check if the delegate wants to do link rewriting for the element.
     String new_link_for_the_element;
@@ -212,7 +212,7 @@ void SerializerMarkupAccumulator::AppendAttribute(StringBuilder& out,
         // serialized subframe to use html contents from the link provided by
         // Delegate::rewriteLink rather than html contents from srcdoc
         // attribute.
-        AppendRewrittenAttribute(out, element, HTMLNames::srcAttr.LocalName(),
+        AppendRewrittenAttribute(out, element, html_names::kSrcAttr.LocalName(),
                                  new_link_for_the_element);
       }
       return;
@@ -329,11 +329,12 @@ void FrameSerializer::SerializeFrame(const LocalFrame& frame) {
     }
 
     if (auto* image = ToHTMLImageElementOrNull(element)) {
-      KURL url = document.CompleteURL(image->getAttribute(HTMLNames::srcAttr));
+      KURL url =
+          document.CompleteURL(image->getAttribute(html_names::kSrcAttr));
       ImageResourceContent* cached_image = image->CachedImage();
       AddImageToResources(cached_image, url);
     } else if (auto* input = ToHTMLInputElementOrNull(element)) {
-      if (input->type() == InputTypeNames::image && input->ImageLoader()) {
+      if (input->type() == input_type_names::kImage && input->ImageLoader()) {
         KURL url = input->Src();
         ImageResourceContent* cached_image = input->ImageLoader()->GetContent();
         AddImageToResources(cached_image, url);
@@ -341,7 +342,7 @@ void FrameSerializer::SerializeFrame(const LocalFrame& frame) {
     } else if (auto* link = ToHTMLLinkElementOrNull(element)) {
       if (CSSStyleSheet* sheet = link->sheet()) {
         KURL url =
-            document.CompleteURL(link->getAttribute(HTMLNames::hrefAttr));
+            document.CompleteURL(link->getAttribute(html_names::kHrefAttr));
         SerializeCSSStyleSheet(*sheet, url);
       }
     } else if (auto* style = ToHTMLStyleElementOrNull(element)) {
@@ -491,6 +492,7 @@ void FrameSerializer::SerializeCSSRule(CSSRule* rule) {
     case CSSRule::kKeyframeRule:
     case CSSRule::kNamespaceRule:
     case CSSRule::kViewportRule:
+    case CSSRule::kFontFeatureValuesRule:
       break;
   }
 }

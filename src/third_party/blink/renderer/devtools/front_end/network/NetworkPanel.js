@@ -368,10 +368,13 @@ Network.NetworkPanel = class extends UI.Panel {
   }
 
   _resetFilmStripView() {
+    const reloadShortcutDescriptor = UI.shortcutRegistry.shortcutDescriptorsForAction('inspector_main.reload')[0];
+
     this._filmStripView.reset();
-    this._filmStripView.setStatusText(Common.UIString(
-        'Hit %s to reload and capture filmstrip.',
-        UI.shortcutRegistry.shortcutDescriptorsForAction('inspector_main.reload')[0].name));
+    if (reloadShortcutDescriptor) {
+      this._filmStripView.setStatusText(
+          Common.UIString('Hit %s to reload and capture filmstrip.', reloadShortcutDescriptor.name));
+    }
   }
 
   /**
@@ -662,6 +665,8 @@ Network.NetworkPanel.FilmStripRecorder = class {
       this._tracingModel.dispose();
     this._tracingModel = new SDK.TracingModel(new Bindings.TempFileBackingStorage());
     this._tracingManager.start(this, '-*,disabled-by-default-devtools.screenshot', '');
+
+    Host.userMetrics.actionTaken(Host.UserMetrics.Action.FilmStripStartedRecording);
   }
 
   /**

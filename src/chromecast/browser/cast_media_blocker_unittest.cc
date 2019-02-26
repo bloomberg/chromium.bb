@@ -30,20 +30,22 @@ class MockMediaSession : public content::MediaSession {
   MOCK_METHOD1(Resume, void(content::MediaSession::SuspendType));
   MOCK_METHOD1(Suspend, void(content::MediaSession::SuspendType));
   MOCK_METHOD1(Stop, void(content::MediaSession::SuspendType));
-  MOCK_METHOD1(SeekForward, void(base::TimeDelta));
-  MOCK_METHOD1(SeekBackward, void(base::TimeDelta));
+  MOCK_METHOD1(Seek, void(base::TimeDelta));
   MOCK_CONST_METHOD0(IsControllable, bool());
   MOCK_CONST_METHOD0(IsActuallyPaused, bool());
   MOCK_METHOD0(StartDucking, void());
   MOCK_METHOD0(StopDucking, void());
   MOCK_METHOD1(SetDuckingVolumeMultiplier, void(double));
-  MOCK_METHOD1(DidReceiveAction, void(blink::mojom::MediaSessionAction));
+  MOCK_METHOD1(DidReceiveAction,
+               void(media_session::mojom::MediaSessionAction));
   MOCK_METHOD1(AddObserver, void(content::MediaSessionObserver*));
   MOCK_METHOD1(AddObserver,
                void(media_session::mojom::MediaSessionObserverPtr));
   MOCK_METHOD1(RemoveObserver, void(content::MediaSessionObserver*));
   MOCK_METHOD1(GetMediaSessionInfo, void(GetMediaSessionInfoCallback));
   MOCK_METHOD1(GetDebugInfo, void(GetDebugInfoCallback));
+  MOCK_METHOD0(PreviousTrack, void());
+  MOCK_METHOD0(NextTrack, void());
 
  private:
   DISALLOW_COPY_AND_ASSIGN(MockMediaSession);
@@ -63,8 +65,6 @@ class CastMediaBlockerTest : public content::RenderViewHostTestHarness {
     media_session_ = std::make_unique<MockMediaSession>();
     media_blocker_ = std::make_unique<CastMediaBlocker>(media_session_.get());
   }
-
-  void TearDown() override { content::RenderViewHostTestHarness::TearDown(); }
 
   void MediaSessionChanged(bool controllable, bool suspended) {
     media_blocker_->MediaSessionStateChanged(controllable, suspended);

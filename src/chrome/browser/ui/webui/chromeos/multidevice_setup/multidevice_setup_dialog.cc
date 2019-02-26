@@ -6,12 +6,13 @@
 
 #include "ash/public/cpp/shell_window_ids.h"
 #include "base/strings/utf_string_conversions.h"
-#include "base/sys_info.h"
+#include "base/system/sys_info.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/ui/browser_dialogs.h"
 #include "chrome/browser/ui/webui/chromeos/multidevice_setup/multidevice_setup_handler.h"
 #include "chrome/browser/ui/webui/chromeos/multidevice_setup/multidevice_setup_localized_strings_provider.h"
+#include "chrome/browser/ui/webui/metrics_handler.h"
 #include "chrome/common/url_constants.h"
 #include "chrome/common/webui_url_constants.h"
 #include "chrome/grit/generated_resources.h"
@@ -108,6 +109,7 @@ MultiDeviceSetupDialogUI::MultiDeviceSetupDialogUI(content::WebUI* web_ui)
   }
 
   web_ui->AddMessageHandler(std::make_unique<MultideviceSetupHandler>());
+  web_ui->AddMessageHandler(std::make_unique<MetricsHandler>());
   content::WebUIDataSource::Add(Profile::FromWebUI(web_ui), source);
 
   // Add Mojo bindings to this WebUI so that Mojo calls can occur in JavaScript.

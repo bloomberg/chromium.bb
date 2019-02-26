@@ -132,9 +132,8 @@ class NET_EXPORT_PRIVATE ProxyConfigServiceLinux : public ProxyConfigService {
     // whitelist rather than blacklist. (This is KDE-specific.)
     virtual bool BypassListIsReversed() = 0;
 
-    // Returns true if the bypass rules should be interpreted as
-    // suffix-matching rules.
-    virtual bool MatchHostsUsingSuffixMatching() = 0;
+    // Returns the format to use when parsing the bypass rules list.
+    virtual ProxyBypassRules::ParseFormat GetBypassListFormat() = 0;
 
    private:
     DISALLOW_COPY_AND_ASSIGN(SettingGetter);

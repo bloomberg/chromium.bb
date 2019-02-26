@@ -108,17 +108,6 @@ class ShelfConstants {
   // Size of the icons within shelf buttons.
   static int button_icon_size() { return kShelfButtonIconSize; }
 
-  // The width and height of the material design overflow button.
-  static int overflow_button_size() { return kShelfControlSize; }
-
-  // The radius of the rounded corners of the overflow button.
-  static int overflow_button_corner_radius() {
-    return overflow_button_size() / 2;
-  }
-
-  // The radius of the circular material design app list button.
-  static int app_list_button_radius() { return control_border_radius(); }
-
   // The radius of shelf control buttons.
   static int control_border_radius() { return kShelfControlSize / 2; }
 

@@ -26,6 +26,8 @@
 
 #include "third_party/blink/renderer/core/page/focus_controller.h"
 
+#include <limits>
+
 #include "third_party/blink/renderer/core/accessibility/ax_object_cache.h"
 #include "third_party/blink/renderer/core/dom/container_node.h"
 #include "third_party/blink/renderer/core/dom/document.h"
@@ -58,11 +60,7 @@
 #include "third_party/blink/renderer/core/page/slot_scoped_traversal.h"
 #include "third_party/blink/renderer/core/page/spatial_navigation.h"
 
-#include <limits>
-
 namespace blink {
-
-using namespace HTMLNames;
 
 namespace {
 
@@ -358,9 +356,9 @@ inline void DispatchBlurEvent(const Document& document,
                               Element& focused_element) {
   focused_element.DispatchBlurEvent(nullptr, kWebFocusTypePage);
   if (focused_element == document.FocusedElement()) {
-    focused_element.DispatchFocusOutEvent(EventTypeNames::focusout, nullptr);
+    focused_element.DispatchFocusOutEvent(event_type_names::kFocusout, nullptr);
     if (focused_element == document.FocusedElement())
-      focused_element.DispatchFocusOutEvent(EventTypeNames::DOMFocusOut,
+      focused_element.DispatchFocusOutEvent(event_type_names::kDOMFocusOut,
                                             nullptr);
   }
 }
@@ -369,11 +367,12 @@ inline void DispatchFocusEvent(const Document& document,
                                Element& focused_element) {
   focused_element.DispatchFocusEvent(nullptr, kWebFocusTypePage);
   if (focused_element == document.FocusedElement()) {
-    focused_element.DispatchFocusInEvent(EventTypeNames::focusin, nullptr,
+    focused_element.DispatchFocusInEvent(event_type_names::kFocusin, nullptr,
                                          kWebFocusTypePage);
-    if (focused_element == document.FocusedElement())
-      focused_element.DispatchFocusInEvent(EventTypeNames::DOMFocusIn, nullptr,
-                                           kWebFocusTypePage);
+    if (focused_element == document.FocusedElement()) {
+      focused_element.DispatchFocusInEvent(event_type_names::kDOMFocusIn,
+                                           nullptr, kWebFocusTypePage);
+    }
   }
 }
 
@@ -400,8 +399,8 @@ inline void DispatchEventsOnWindowAndFocusedElement(Document* document,
   }
 
   if (LocalDOMWindow* window = document->domWindow()) {
-    window->DispatchEvent(
-        *Event::Create(focused ? EventTypeNames::focus : EventTypeNames::blur));
+    window->DispatchEvent(*Event::Create(focused ? event_type_names::kFocus
+                                                 : event_type_names::kBlur));
   }
   if (focused && document->FocusedElement()) {
     Element* focused_element(document->FocusedElement());
@@ -768,7 +767,7 @@ FocusController::FocusController(Page* page)
       is_emulating_focus_(false) {}
 
 FocusController* FocusController::Create(Page* page) {
-  return new FocusController(page);
+  return MakeGarbageCollected<FocusController>(page);
 }
 
 void FocusController::SetFocusedFrame(Frame* frame, bool notify_embedder) {
@@ -791,13 +790,14 @@ void FocusController::SetFocusedFrame(Frame* frame, bool notify_embedder) {
   // states of both frames.
   if (old_frame && old_frame->View()) {
     old_frame->Selection().SetFrameIsFocused(false);
-    old_frame->DomWindow()->DispatchEvent(*Event::Create(EventTypeNames::blur));
+    old_frame->DomWindow()->DispatchEvent(
+        *Event::Create(event_type_names::kBlur));
   }
 
   if (new_frame && new_frame->View() && IsFocused()) {
     new_frame->Selection().SetFrameIsFocused(true);
     new_frame->DomWindow()->DispatchEvent(
-        *Event::Create(EventTypeNames::focus));
+        *Event::Create(event_type_names::kFocus));
   }
 
   is_changing_focused_frame_ = false;
@@ -843,10 +843,7 @@ void FocusController::FocusDocumentView(Frame* frame, bool notify_embedder) {
 }
 
 LocalFrame* FocusController::FocusedFrame() const {
-  // TODO(alexmos): Strengthen this to DCHECK that whoever called this really
-  // expected a LocalFrame. Refactor call sites so that the rare cases that
-  // need to know about focused RemoteFrames use a separate accessor (to be
-  // added).
+  // All callsites only care about *local* focused frames.
   if (focused_frame_ && focused_frame_->IsRemoteFrame())
     return nullptr;
   return ToLocalFrame(focused_frame_.Get());
@@ -856,9 +853,10 @@ Frame* FocusController::FocusedOrMainFrame() const {
   if (LocalFrame* frame = FocusedFrame())
     return frame;
 
-  // FIXME: This is a temporary hack to ensure that we return a LocalFrame, even
-  // when the mainFrame is remote.  FocusController needs to be refactored to
-  // deal with RemoteFrames cross-process focus transfers.
+  // TODO(dcheng, alexmos): https://crbug.com/820786: This is a temporary hack
+  // to ensure that we return a LocalFrame, even when the mainFrame is remote.
+  // FocusController needs to be refactored to deal with RemoteFrames
+  // cross-process focus transfers.
   for (Frame* frame = &page_->MainFrame()->Tree().Top(); frame;
        frame = frame->Tree().TraverseNext()) {
     if (frame->IsLocalFrame() && ToLocalFrame(frame)->IsLocalRoot())
@@ -866,6 +864,11 @@ Frame* FocusController::FocusedOrMainFrame() const {
   }
 
   return page_->MainFrame();
+}
+
+void FocusController::FrameDetached(Frame* detached_frame) {
+  if (detached_frame == focused_frame_)
+    SetFocusedFrame(nullptr);
 }
 
 HTMLFrameOwnerElement* FocusController::FocusedFrameOwnerElement(

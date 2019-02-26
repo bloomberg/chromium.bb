@@ -15,7 +15,6 @@ class WebGLVertexArrayObject final : public WebGLVertexArrayObjectBase {
  public:
   static WebGLVertexArrayObject* Create(WebGLRenderingContextBase*, VaoType);
 
- private:
   explicit WebGLVertexArrayObject(WebGLRenderingContextBase*, VaoType);
 };
 

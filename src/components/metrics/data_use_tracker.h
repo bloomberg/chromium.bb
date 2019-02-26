@@ -17,9 +17,6 @@
 
 namespace metrics {
 
-typedef base::Callback<void(const std::string&, int, bool)>
-    UpdateUsagePrefCallbackType;
-
 // Records the data use of user traffic and UMA traffic in user prefs. Taking
 // into account those prefs it can verify whether certain UMA log upload is
 // allowed.
@@ -36,9 +33,10 @@ class DataUseTracker {
   static void RegisterPrefs(PrefRegistrySimple* registry);
 
   // Updates data usage tracking prefs with the specified values.
-  void UpdateMetricsUsagePrefs(int message_size,
-                               bool is_cellular,
-                               bool is_metrics_service_usage);
+  static void UpdateMetricsUsagePrefs(int message_size,
+                                      bool is_cellular,
+                                      bool is_metrics_service_usage,
+                                      PrefService* local_state);
 
   // Returns whether a log with provided |log_bytes| can be uploaded according
   // to data use ratio and UMA quota provided by variations.
@@ -49,6 +47,11 @@ class DataUseTracker {
   FRIEND_TEST_ALL_PREFIXES(DataUseTrackerTest, CheckRemoveExpiredEntries);
   FRIEND_TEST_ALL_PREFIXES(DataUseTrackerTest, CheckComputeTotalDataUse);
   FRIEND_TEST_ALL_PREFIXES(DataUseTrackerTest, CheckCanUploadUMALog);
+
+  // Updates data usage tracking prefs with the specified values.
+  void UpdateMetricsUsagePrefsInternal(int message_size,
+                                       bool is_cellular,
+                                       bool is_metrics_service_usage);
 
   // Updates provided |pref_name| for a current date with the given message
   // size.

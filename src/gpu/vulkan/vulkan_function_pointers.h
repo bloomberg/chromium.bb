@@ -14,6 +14,7 @@
 #include <vulkan/vulkan.h>
 
 #include "base/native_library.h"
+#include "build/build_config.h"
 #include "gpu/vulkan/vulkan_export.h"
 
 namespace gpu {
@@ -90,6 +91,7 @@ struct VulkanFunctionPointers {
   PFN_vkDestroySampler vkDestroySamplerFn = nullptr;
   PFN_vkDestroySemaphore vkDestroySemaphoreFn = nullptr;
   PFN_vkDestroyShaderModule vkDestroyShaderModuleFn = nullptr;
+  PFN_vkDeviceWaitIdle vkDeviceWaitIdleFn = nullptr;
   PFN_vkFreeCommandBuffers vkFreeCommandBuffersFn = nullptr;
   PFN_vkFreeDescriptorSets vkFreeDescriptorSetsFn = nullptr;
   PFN_vkFreeMemory vkFreeMemoryFn = nullptr;
@@ -98,6 +100,12 @@ struct VulkanFunctionPointers {
   PFN_vkResetFences vkResetFencesFn = nullptr;
   PFN_vkUpdateDescriptorSets vkUpdateDescriptorSetsFn = nullptr;
   PFN_vkWaitForFences vkWaitForFencesFn = nullptr;
+
+// Android only device functions.
+#if defined(OS_ANDROID)
+  PFN_vkImportSemaphoreFdKHR vkImportSemaphoreFdKHRFn = nullptr;
+  PFN_vkGetSemaphoreFdKHR vkGetSemaphoreFdKHRFn = nullptr;
+#endif
 
   // Queue functions
   PFN_vkQueueSubmit vkQueueSubmitFn = nullptr;
@@ -195,6 +203,7 @@ struct VulkanFunctionPointers {
   gpu::GetVulkanFunctionPointers()->vkDestroySemaphoreFn
 #define vkDestroyShaderModule \
   gpu::GetVulkanFunctionPointers()->vkDestroyShaderModuleFn
+#define vkDeviceWaitIdle gpu::GetVulkanFunctionPointers()->vkDeviceWaitIdleFn
 #define vkFreeCommandBuffers \
   gpu::GetVulkanFunctionPointers()->vkFreeCommandBuffersFn
 #define vkFreeDescriptorSets \
@@ -206,6 +215,13 @@ struct VulkanFunctionPointers {
 #define vkUpdateDescriptorSets \
   gpu::GetVulkanFunctionPointers()->vkUpdateDescriptorSetsFn
 #define vkWaitForFences gpu::GetVulkanFunctionPointers()->vkWaitForFencesFn
+
+#if defined(OS_ANDROID)
+#define vkImportSemaphoreFdKHR \
+  gpu::GetVulkanFunctionPointers()->vkImportSemaphoreFdKHRFn
+#define vkGetSemaphoreFdKHR \
+  gpu::GetVulkanFunctionPointers()->vkGetSemaphoreFdKHRFn
+#endif
 
 // Queue functions
 #define vkQueueSubmit gpu::GetVulkanFunctionPointers()->vkQueueSubmitFn

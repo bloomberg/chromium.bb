@@ -46,7 +46,7 @@ void TriggerCreator::MaybeCreateTriggersForWebContents(
   // running on old tabs, but that's acceptable. The trigger will be started for
   // new tabs.
   SBErrorOptions options = TriggerManager::GetSBErrorDisplayOptions(
-      *profile->GetPrefs(), *web_contents);
+      *profile->GetPrefs(), web_contents);
   scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory =
       content::BrowserContext::GetDefaultStoragePartition(profile)
           ->GetURLLoaderFactoryForBrowserProcess();

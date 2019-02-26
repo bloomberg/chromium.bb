@@ -32,17 +32,34 @@ const char kRequestRequiresUserActivation[] =
 const char kSessionNotSupported[] =
     "The specified session configuration is not supported.";
 
+/**
+ * Helper method to convert IDL options into Mojo options.
+ */
+device::mojom::blink::XRSessionOptionsPtr convertIdlOptionsToMojo(
+    const XRSessionCreationOptions* options) {
+  auto session_options = device::mojom::blink::XRSessionOptions::New();
+  if (options->hasImmersive()) {
+    session_options->immersive = options->immersive();
+  }
+  if (options->hasEnvironmentIntegration()) {
+    session_options->environment_integration =
+        options->environmentIntegration();
+  }
+
+  return session_options;
+}
+
 }  // namespace
 
 XRDevice::XRDevice(XR* xr, device::mojom::blink::XRDevicePtr device)
     : xr_(xr), device_ptr_(std::move(device)) {}
 
 const char* XRDevice::checkSessionSupport(
-    const XRSessionCreationOptions& options) const {
-  if (!options.immersive()) {
+    const XRSessionCreationOptions* options) const {
+  if (!options->immersive()) {
     // Validation for non-immersive sessions. Validation for immersive sessions
     // happens browser side.
-    if (!options.hasOutputContext()) {
+    if (!options->hasOutputContext()) {
       return kNoOutputContext;
     }
   }
@@ -52,7 +69,7 @@ const char* XRDevice::checkSessionSupport(
 
 ScriptPromise XRDevice::supportsSession(
     ScriptState* script_state,
-    const XRSessionCreationOptions& options) {
+    const XRSessionCreationOptions* options) {
   // Check to see if the device is capable of supporting the requested session
   // options. Note that reporting support here does not guarantee that creating
   // a session with those options will succeed, as other external and
@@ -71,8 +88,7 @@ ScriptPromise XRDevice::supportsSession(
   ScriptPromise promise = resolver->Promise();
 
   device::mojom::blink::XRSessionOptionsPtr session_options =
-      device::mojom::blink::XRSessionOptions::New();
-  session_options->immersive = options.immersive();
+      convertIdlOptionsToMojo(options);
 
   device_ptr_->SupportsSession(
       std::move(session_options),
@@ -94,12 +110,17 @@ int64_t XRDevice::GetSourceId() const {
   return xr_->GetSourceId();
 }
 
+const device::mojom::blink::XREnvironmentIntegrationProviderAssociatedPtr&
+XRDevice::xrEnvironmentProviderPtr() {
+  return environment_provider_;
+}
+
 ScriptPromise XRDevice::requestSession(
     ScriptState* script_state,
-    const XRSessionCreationOptions& options) {
+    const XRSessionCreationOptions* options) {
   Document* doc = To<Document>(ExecutionContext::From(script_state));
 
-  if (options.immersive() && !did_log_request_immersive_session_ && doc) {
+  if (options->immersive() && !did_log_request_immersive_session_ && doc) {
     ukm::builders::XR_WebXR(GetSourceId())
         .SetDidRequestPresentation(1)
         .Record(doc->UkmRecorder());
@@ -121,7 +142,7 @@ ScriptPromise XRDevice::requestSession(
 
   // Check if the current page state prevents the requested session from being
   // created.
-  if (options.immersive()) {
+  if (options->immersive()) {
     if (frameProvider()->immersive_session()) {
       return ScriptPromise::RejectWithDOMException(
           script_state,
@@ -137,7 +158,7 @@ ScriptPromise XRDevice::requestSession(
   }
 
   // All AR sessions require a user gesture.
-  if (options.environmentIntegration()) {
+  if (options->environmentIntegration()) {
     if (!has_user_activation) {
       return ScriptPromise::RejectWithDOMException(
           script_state, DOMException::Create(DOMExceptionCode::kSecurityError,
@@ -149,14 +170,11 @@ ScriptPromise XRDevice::requestSession(
   ScriptPromise promise = resolver->Promise();
 
   device::mojom::blink::XRSessionOptionsPtr session_options =
-      device::mojom::blink::XRSessionOptions::New();
-  session_options->immersive = options.immersive();
-  session_options->provide_passthrough_camera =
-      options.environmentIntegration();
+      convertIdlOptionsToMojo(options);
   session_options->has_user_activation = has_user_activation;
 
   XRPresentationContext* output_context =
-      options.hasOutputContext() ? options.outputContext() : nullptr;
+      options->hasOutputContext() ? options->outputContext() : nullptr;
 
   // TODO(http://crbug.com/826899) Once device activation is sorted out for
   // WebXR, either pass in the correct value for metrics to know whether
@@ -166,7 +184,7 @@ ScriptPromise XRDevice::requestSession(
       std::move(session_options), false /* triggered by display activate */,
       WTF::Bind(&XRDevice::OnRequestSessionReturned, WrapWeakPersistent(this),
                 WrapPersistent(resolver), WrapPersistent(output_context),
-                options.environmentIntegration(), options.immersive()));
+                options->environmentIntegration(), options->immersive()));
   return promise;
 }
 
@@ -185,24 +203,31 @@ void XRDevice::OnRequestSessionReturned(
     return;
   }
 
+  // immersive sessions must supply display info.
+  DCHECK(session_ptr->display_info);
+  // If the session supports environment integration, ensure the device does
+  // as well.
+  DCHECK(!environment_integration || session_ptr->display_info->capabilities
+                                         ->canProvideEnvironmentIntegration);
+
   XRSession::EnvironmentBlendMode blend_mode = XRSession::kBlendModeOpaque;
   if (environment_integration)
     blend_mode = XRSession::kBlendModeAlphaBlend;
 
-  XRSession* session =
-      new XRSession(this, std::move(session_ptr->client_request), immersive,
-                    environment_integration, output_context, blend_mode);
-  // immersive sessions must supply display info.
-  DCHECK(!immersive || session_ptr->display_info);
-  if (session_ptr->display_info)
-    session->SetXRDisplayInfo(std::move(session_ptr->display_info));
+  XRSession* session = MakeGarbageCollected<XRSession>(
+      this, std::move(session_ptr->client_request), immersive,
+      environment_integration, output_context, blend_mode);
+  session->SetXRDisplayInfo(std::move(session_ptr->display_info));
   sessions_.insert(session);
 
   if (immersive) {
     frameProvider()->BeginImmersiveSession(session, std::move(session_ptr));
   } else {
     magic_window_provider_.Bind(std::move(session_ptr->data_provider));
-    environment_provider_.Bind(std::move(session_ptr->environment_provider));
+    if (environment_integration) {
+      magic_window_provider_->GetEnvironmentIntegrationProvider(
+          mojo::MakeRequest(&environment_provider_));
+    }
   }
 
   resolver->Resolve(session);
@@ -228,7 +253,7 @@ bool XRDevice::IsFrameFocused() {
 
 XRFrameProvider* XRDevice::frameProvider() {
   if (!frame_provider_) {
-    frame_provider_ = new XRFrameProvider(this);
+    frame_provider_ = MakeGarbageCollected<XRFrameProvider>(this);
   }
 
   return frame_provider_;

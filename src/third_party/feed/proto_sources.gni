@@ -12,6 +12,7 @@ feed_lib_proto_sources = [
   "src/src/main/proto/search/now/ui/piet/actions.proto",
   "src/src/main/proto/search/now/ui/piet/binding_refs.proto",
   "src/src/main/proto/search/now/ui/piet/elements.proto",
+  "src/src/main/proto/search/now/ui/piet/errors.proto",
   "src/src/main/proto/search/now/ui/piet/form_fields.proto",
   "src/src/main/proto/search/now/ui/piet/gradients.proto",
   "src/src/main/proto/search/now/ui/piet/images.proto",

@@ -5,7 +5,7 @@
 #include "third_party/blink/renderer/modules/storage/cached_storage_area.h"
 
 #include "testing/gtest/include/gtest/gtest.h"
-#include "third_party/blink/public/platform/scheduler/test/fake_renderer_scheduler.h"
+#include "third_party/blink/public/platform/scheduler/test/renderer_scheduler_test_support.h"
 #include "third_party/blink/renderer/modules/storage/testing/fake_area_source.h"
 #include "third_party/blink/renderer/modules/storage/testing/mock_storage_area.h"
 #include "third_party/blink/renderer/platform/weborigin/kurl.h"
@@ -32,16 +32,16 @@ class CachedStorageAreaTest : public testing::Test,
     if (IsSessionStorage()) {
       cached_area_ = CachedStorageArea::CreateForSessionStorage(
           kOrigin, mock_storage_area_.GetAssociatedInterfacePtr(),
-          renderer_scheduler_->IPCTaskRunner(), this);
+          scheduler::GetSingleThreadTaskRunnerForTesting(), this);
     } else {
       cached_area_ = CachedStorageArea::CreateForLocalStorage(
           kOrigin, mock_storage_area_.GetInterfacePtr(),
-          renderer_scheduler_->IPCTaskRunner(), this);
+          scheduler::GetSingleThreadTaskRunnerForTesting(), this);
     }
-    source_area_ = new FakeAreaSource(kPageUrl);
+    source_area_ = MakeGarbageCollected<FakeAreaSource>(kPageUrl);
     source_area_id_ = cached_area_->RegisterSource(source_area_);
     source_ = kPageUrl.GetString() + "\n" + source_area_id_;
-    source_area2_ = new FakeAreaSource(kPageUrl2);
+    source_area2_ = MakeGarbageCollected<FakeAreaSource>(kPageUrl2);
     cached_area_->RegisterSource(source_area2_);
   }
 
@@ -98,8 +98,6 @@ class CachedStorageAreaTest : public testing::Test,
   }
 
  protected:
-  std::unique_ptr<scheduler::WebThreadScheduler> renderer_scheduler_ =
-      std::make_unique<scheduler::FakeRendererScheduler>();
   MockStorageArea mock_storage_area_;
   Persistent<FakeAreaSource> source_area_;
   Persistent<FakeAreaSource> source_area2_;

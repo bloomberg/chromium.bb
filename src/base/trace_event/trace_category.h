@@ -47,7 +47,7 @@ struct TraceCategory {
   // today TRACE_EVENT* macros cache the state ptr. They should just cache the
   // full TraceCategory ptr, which is immutable, and use these helper function
   // here. This will get rid of the need of this awkward ptr getter completely.
-  const uint8_t* state_ptr() const {
+  constexpr const uint8_t* state_ptr() const {
     return const_cast<const uint8_t*>(&state_);
   }
 

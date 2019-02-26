@@ -16,6 +16,7 @@
 
 namespace viz {
 class DisplayResourceProvider;
+class OutputSurface;
 
 class VIZ_SERVICE_EXPORT DCLayerOverlaySharedState
     : public base::RefCounted<DCLayerOverlaySharedState> {
@@ -42,6 +43,18 @@ class VIZ_SERVICE_EXPORT DCLayerOverlay {
   DCLayerOverlay(const DCLayerOverlay& other);
   ~DCLayerOverlay();
 
+  bool IsProtectedVideo() const {
+    return (protected_video_type != ui::ProtectedVideoType::kClear);
+  }
+  // TODO(magchen): Once software protected video is enabled for all GPUs and
+  // all configurations, RequiresOverlay() will be equivalent to
+  // IsProtectedVideo. Currently, we only force the overlay swap chain path
+  // (RequiresOverlay) for hardware protected video and soon for Finch
+  // experiment on software protected video.
+  bool RequiresOverlay() const {
+    return (protected_video_type == ui::ProtectedVideoType::kHardwareProtected);
+  }
+
   // State that is frequently shared between consecutive DCLayerOverlays.
   scoped_refptr<DCLayerOverlaySharedState> shared_state;
 
@@ -67,8 +80,7 @@ class VIZ_SERVICE_EXPORT DCLayerOverlay {
   // normally BT.709.
   gfx::ColorSpace color_space;
 
-  bool require_overlay = false;
-  bool is_protected_video = false;
+  ui::ProtectedVideoType protected_video_type = ui::ProtectedVideoType::kClear;
 };
 
 typedef std::vector<DCLayerOverlay> DCLayerOverlayList;
@@ -88,10 +100,11 @@ class DCLayerOverlayProcessor {
     DC_LAYER_FAILED_TRANSPARENT,
     DC_LAYER_FAILED_NON_ROOT,
     DC_LAYER_FAILED_TOO_MANY_OVERLAYS,
-    DC_LAYER_FAILED_MAX,
+    DC_LAYER_FAILED_NO_HW_OVERLAY_SUPPORT,
+    kMaxValue = DC_LAYER_FAILED_NO_HW_OVERLAY_SUPPORT,
   };
 
-  DCLayerOverlayProcessor();
+  explicit DCLayerOverlayProcessor(OutputSurface* surface);
   ~DCLayerOverlayProcessor();
 
   void Process(DisplayResourceProvider* resource_provider,
@@ -104,6 +117,7 @@ class DCLayerOverlayProcessor {
     previous_frame_underlay_rect_ = gfx::Rect();
     previous_frame_underlay_occlusion_ = gfx::Rect();
   }
+  void SetHasHwOverlaySupport() { has_hw_overlay_support_ = true; }
 
  private:
   DCLayerResult FromDrawQuad(DisplayResourceProvider* resource_provider,
@@ -143,6 +157,7 @@ class DCLayerOverlayProcessor {
   gfx::Rect previous_frame_underlay_occlusion_;
   gfx::RectF previous_display_rect_;
   bool processed_overlay_in_frame_ = false;
+  bool has_hw_overlay_support_ = true;
 
   // Store information about clipped punch-through rects in target space for
   // non-root render passes. These rects are used to clear the corresponding

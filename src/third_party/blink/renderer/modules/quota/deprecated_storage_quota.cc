@@ -42,13 +42,16 @@
 #include "third_party/blink/renderer/core/execution_context/execution_context.h"
 #include "third_party/blink/renderer/modules/quota/dom_error.h"
 #include "third_party/blink/renderer/modules/quota/quota_utils.h"
+#include "third_party/blink/renderer/modules/quota/storage_estimate.h"
 #include "third_party/blink/renderer/platform/bindings/script_state.h"
 #include "third_party/blink/renderer/platform/weborigin/kurl.h"
 #include "third_party/blink/renderer/platform/weborigin/security_origin.h"
+#include "third_party/blink/renderer/platform/wtf/functional.h"
 
 namespace blink {
 
 using mojom::StorageType;
+using mojom::blink::UsageBreakdownPtr;
 
 namespace {
 
@@ -68,7 +71,8 @@ void DeprecatedQueryStorageUsageAndQuotaCallback(
     V8PersistentCallbackFunction<V8StorageErrorCallback>* error_callback,
     mojom::QuotaStatusCode status_code,
     int64_t usage_in_bytes,
-    int64_t quota_in_bytes) {
+    int64_t quota_in_bytes,
+    UsageBreakdownPtr usage_breakdown) {
   if (status_code != mojom::QuotaStatusCode::kOk) {
     if (error_callback) {
       error_callback->InvokeAndReportException(nullptr,
@@ -156,7 +160,8 @@ void DeprecatedStorageQuota::queryUsageAndQuota(
       .QueryStorageUsageAndQuota(
           WrapRefCounted(security_origin), storage_type,
           mojo::WrapCallbackWithDefaultInvokeIfNotRun(
-              std::move(callback), mojom::QuotaStatusCode::kErrorAbort, 0, 0));
+              std::move(callback), mojom::QuotaStatusCode::kErrorAbort, 0, 0,
+              nullptr));
 }
 
 void DeprecatedStorageQuota::requestQuota(
@@ -198,8 +203,11 @@ void DeprecatedStorageQuota::requestQuota(
 mojom::blink::QuotaDispatcherHost& DeprecatedStorageQuota::GetQuotaHost(
     ExecutionContext* execution_context) {
   if (!quota_host_) {
-    ConnectToQuotaDispatcherHost(execution_context,
-                                 mojo::MakeRequest(&quota_host_));
+    ConnectToQuotaDispatcherHost(
+        execution_context,
+        mojo::MakeRequest(&quota_host_,
+                          execution_context->GetTaskRunner(
+                              blink::TaskType::kInternalDefault)));
   }
   return *quota_host_;
 }

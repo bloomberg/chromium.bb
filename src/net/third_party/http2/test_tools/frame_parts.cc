@@ -7,16 +7,16 @@
 #include <type_traits>
 
 #include "base/logging.h"
-#include "net/base/escape.h"
 #include "net/third_party/http2/http2_structures_test_util.h"
-#include "net/third_party/http2/tools/failure.h"
+#include "net/third_party/http2/platform/api/http2_string_utils.h"
+#include "net/third_party/http2/platform/api/http2_test_helpers.h"
+#include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 using ::testing::AssertionFailure;
 using ::testing::AssertionResult;
 using ::testing::AssertionSuccess;
 using ::testing::ContainerEq;
-using net::EscapeQueryParamValue;
 
 namespace http2 {
 namespace test {
@@ -77,7 +77,7 @@ AssertionResult FrameParts::VerifyEquals(const FrameParts& that) const {
   VERIFY_EQ(padding_, that.padding_) << COMMON_MESSAGE;
   VERIFY_EQ(altsvc_origin_, that.altsvc_origin_) << COMMON_MESSAGE;
   VERIFY_EQ(altsvc_value_, that.altsvc_value_) << COMMON_MESSAGE;
-  VERIFY_EQ(settings_, that.settings_) << COMMON_MESSAGE;
+  VERIFY_THAT(settings_, ContainerEq(that.settings_)) << COMMON_MESSAGE;
 
 #define VERIFY_OPTIONAL_FIELD(field_name) \
   VERIFY_SUCCESS(VerifyOptionalEq(field_name, that.field_name))
@@ -414,18 +414,16 @@ void FrameParts::OnFrameSizeError(const Http2FrameHeader& header) {
 void FrameParts::OutputTo(std::ostream& out) const {
   out << "FrameParts{\n  frame_header_: " << frame_header_ << "\n";
   if (!payload_.empty()) {
-    out << "  payload_=\"" << EscapeQueryParamValue(payload_, false) << "\"\n";
+    out << "  payload_=\"" << Http2HexEscape(payload_) << "\"\n";
   }
   if (!padding_.empty()) {
-    out << "  padding_=\"" << EscapeQueryParamValue(padding_, false) << "\"\n";
+    out << "  padding_=\"" << Http2HexEscape(padding_) << "\"\n";
   }
   if (!altsvc_origin_.empty()) {
-    out << "  altsvc_origin_=\"" << EscapeQueryParamValue(altsvc_origin_, false)
-        << "\"\n";
+    out << "  altsvc_origin_=\"" << Http2HexEscape(altsvc_origin_) << "\"\n";
   }
   if (!altsvc_value_.empty()) {
-    out << "  altsvc_value_=\"" << EscapeQueryParamValue(altsvc_value_, false)
-        << "\"\n";
+    out << "  altsvc_value_=\"" << Http2HexEscape(altsvc_value_) << "\"\n";
   }
   if (opt_priority_) {
     out << "  priority=" << opt_priority_.value() << "\n";
@@ -508,7 +506,7 @@ AssertionResult FrameParts::InPaddedFrame() {
 
 AssertionResult FrameParts::AppendString(Http2StringPiece source,
                                          Http2String* target,
-                                         base::Optional<size_t>* opt_length) {
+                                         Http2Optional<size_t>* opt_length) {
   target->append(source.data(), source.size());
   if (opt_length != nullptr) {
     VERIFY_TRUE(*opt_length) << "Length is not set yet\n" << *this;

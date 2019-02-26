@@ -28,6 +28,8 @@ class SilentMainDialog : public MainDialogAPI {
   void NoPUPsFound() override;
   void CleanupDone(ResultCode cleanup_result) override;
   void Close() override;
+  void DisableExtensions(const std::vector<base::string16>& extensions,
+                         base::OnceCallback<void(bool)> on_disable) override;
 
  protected:
   void ConfirmCleanup(

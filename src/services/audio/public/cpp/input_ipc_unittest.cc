@@ -129,15 +129,11 @@ class InputIPCTest : public ::testing::Test {
         service_manager::Connector::Create(&request);
 
     factory_ = std::make_unique<StrictMock<TestStreamFactory>>();
-    {
-      service_manager::Connector::TestApi test_api(connector.get());
-
-      test_api.OverrideBinderForTesting(
-          service_manager::Identity(audio::mojom::kServiceName),
-          audio::mojom::StreamFactory::Name_,
-          base::BindRepeating(&TestStreamFactory::Bind,
-                              base::Unretained(factory_.get())));
-    }
+    connector->OverrideBinderForTesting(
+        service_manager::ServiceFilter::ByName(audio::mojom::kServiceName),
+        audio::mojom::StreamFactory::Name_,
+        base::BindRepeating(&TestStreamFactory::Bind,
+                            base::Unretained(factory_.get())));
     ipc = std::make_unique<InputIPC>(std::move(connector), kDeviceId, nullptr);
   }
 };

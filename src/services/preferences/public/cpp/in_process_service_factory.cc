@@ -10,17 +10,6 @@
 #include "services/preferences/public/cpp/pref_service_main.h"
 
 namespace prefs {
-namespace {
-
-static std::unique_ptr<service_manager::Service> WeakCreatePrefService(
-    base::WeakPtr<InProcessPrefServiceFactory> weak_factory) {
-  if (!weak_factory)
-    return std::make_unique<service_manager::Service>();
-
-  return weak_factory->CreatePrefService();
-}
-
-}  // namespace
 
 // Registers all provided |PrefStore|s with the pref service. The pref stores
 // remaining registered for the life time of |this|.
@@ -80,8 +69,7 @@ class InProcessPrefServiceFactory::RegisteringDelegate
   DISALLOW_COPY_AND_ASSIGN(RegisteringDelegate);
 };
 
-InProcessPrefServiceFactory::InProcessPrefServiceFactory()
-    : weak_factory_(this) {}
+InProcessPrefServiceFactory::InProcessPrefServiceFactory() = default;
 
 InProcessPrefServiceFactory::~InProcessPrefServiceFactory() {
   if (quit_closure_)
@@ -93,15 +81,11 @@ InProcessPrefServiceFactory::CreateDelegate() {
   return std::make_unique<RegisteringDelegate>(weak_factory_.GetWeakPtr());
 }
 
-base::Callback<std::unique_ptr<service_manager::Service>()>
-InProcessPrefServiceFactory::CreatePrefServiceFactory() {
-  return base::Bind(&WeakCreatePrefService, weak_factory_.GetWeakPtr());
-}
-
 std::unique_ptr<service_manager::Service>
-InProcessPrefServiceFactory::CreatePrefService() {
+InProcessPrefServiceFactory::CreatePrefService(
+    service_manager::mojom::ServiceRequest request) {
   auto result = prefs::CreatePrefService(
-      managed_prefs_.get(), supervised_user_prefs_.get(),
+      std::move(request), managed_prefs_.get(), supervised_user_prefs_.get(),
       extension_prefs_.get(), command_line_prefs_.get(), user_prefs_.get(),
       incognito_user_prefs_underlay_.get(), recommended_prefs_.get(),
       pref_registry_.get(), std::move(persistent_perf_names_));

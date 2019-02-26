@@ -32,6 +32,9 @@
 #include "chrome/browser/search/one_google_bar/one_google_bar_data.h"
 #include "chrome/browser/search/one_google_bar/one_google_bar_service.h"
 #include "chrome/browser/search/one_google_bar/one_google_bar_service_factory.h"
+#include "chrome/browser/search/promos/promo_data.h"
+#include "chrome/browser/search/promos/promo_service.h"
+#include "chrome/browser/search/promos/promo_service_factory.h"
 #include "chrome/browser/search/search.h"
 #include "chrome/browser/search_engines/template_url_service_factory.h"
 #include "chrome/browser/search_provider_logos/logo_service_factory.h"
@@ -45,6 +48,7 @@
 #include "chrome/common/url_constants.h"
 #include "chrome/grit/browser_resources.h"
 #include "chrome/grit/generated_resources.h"
+#include "chrome/grit/local_ntp_resources.h"
 #include "components/prefs/pref_registry_simple.h"
 #include "components/prefs/pref_service.h"
 #include "components/search_engines/search_terms_data.h"
@@ -53,6 +57,7 @@
 #include "components/search_provider_logos/logo_common.h"
 #include "components/search_provider_logos/logo_service.h"
 #include "components/search_provider_logos/logo_tracker.h"
+#include "components/search_provider_logos/switches.h"
 #include "components/strings/grit/components_strings.h"
 #include "content/public/browser/browser_accessibility_state.h"
 #include "content/public/browser/browser_thread.h"
@@ -85,6 +90,7 @@ const char kNtpBackgroundCollectionScriptFilename[] =
     "ntp-background-collections.js";
 const char kNtpBackgroundImageScriptFilename[] = "ntp-background-images.js";
 const char kOneGoogleBarScriptFilename[] = "one-google.js";
+const char kPromoScriptFilename[] = "promo.js";
 const char kDoodleScriptFilename[] = "doodle.js";
 const char kIntegrityFormat[] = "integrity=\"sha256-%s\"";
 
@@ -98,17 +104,21 @@ const struct Resource{
     {"voice.js", IDR_LOCAL_NTP_VOICE_JS, "application/javascript"},
     {"custom-backgrounds.js", IDR_LOCAL_NTP_CUSTOM_BACKGROUNDS_JS,
      "application/javascript"},
+    {"animations.js", IDR_LOCAL_NTP_ANIMATIONS_JS, "application/javascript"},
+    {"utils.js", IDR_LOCAL_NTP_UTILS_JS, "application/javascript"},
     {kConfigDataFilename, kLocalResource, "application/javascript"},
     {kThemeCSSFilename, kLocalResource, "text/css"},
     {"local-ntp.css", IDR_LOCAL_NTP_CSS, "text/css"},
     {"voice.css", IDR_LOCAL_NTP_VOICE_CSS, "text/css"},
     {"custom-backgrounds.css", IDR_LOCAL_NTP_CUSTOM_BACKGROUNDS_CSS,
      "text/css"},
+    {"animations.css", IDR_LOCAL_NTP_ANIMATIONS_CSS, "text/css"},
     {"images/close_3_mask.png", IDR_CLOSE_3_MASK, "image/png"},
     {"images/ntp_default_favicon.png", IDR_NTP_DEFAULT_FAVICON, "image/png"},
     {kNtpBackgroundCollectionScriptFilename, kLocalResource, "text/javascript"},
     {kNtpBackgroundImageScriptFilename, kLocalResource, "text/javascript"},
     {kOneGoogleBarScriptFilename, kLocalResource, "text/javascript"},
+    {kPromoScriptFilename, kLocalResource, "text/javascript"},
     {kDoodleScriptFilename, kLocalResource, "text/javascript"},
     // Image may not be a jpeg but the .jpg extension here still works for other
     // filetypes. Special handling for different extensions isn't worth the
@@ -362,6 +372,16 @@ std::unique_ptr<base::DictionaryValue> ConvertOGBDataToDict(
   result->SetString("afterBarScript", og.after_bar_script);
   result->SetString("endOfBodyHtml", og.end_of_body_html);
   result->SetString("endOfBodyScript", og.end_of_body_script);
+  return result;
+}
+
+std::unique_ptr<base::DictionaryValue> ConvertPromoDataToDict(
+    const base::Optional<PromoData>& promo) {
+  auto result = std::make_unique<base::DictionaryValue>();
+  if (promo.has_value())
+    result->SetString("promoHtml", promo->promo_html);
+  else
+    result->SetString("promoHtml", std::string());
   return result;
 }
 
@@ -662,6 +682,8 @@ LocalNtpSource::LocalNtpSource(Profile* profile)
       one_google_bar_service_(
           OneGoogleBarServiceFactory::GetForProfile(profile_)),
       one_google_bar_service_observer_(this),
+      promo_service_(PromoServiceFactory::GetForProfile(profile_)),
+      promo_service_observer_(this),
       logo_service_(nullptr),
       weak_ptr_factory_(this) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
@@ -675,6 +697,11 @@ LocalNtpSource::LocalNtpSource(Profile* profile)
   // disabled.
   if (one_google_bar_service_)
     one_google_bar_service_observer_.Add(one_google_bar_service_);
+
+  // |promo_service_| is null in incognito, or when the feature is
+  // disabled.
+  if (promo_service_)
+    promo_service_observer_.Add(promo_service_);
 
   if (base::FeatureList::IsEnabled(features::kDoodlesOnLocalNtp)) {
     logo_service_ = LogoServiceFactory::GetForProfile(profile_);
@@ -794,9 +821,21 @@ void LocalNtpSource::StartDataRequest(
     }
 
     one_google_bar_requests_.emplace_back(base::TimeTicks::Now(), callback);
-    // TODO(treib): Figure out if there are cases where we can safely serve
-    // cached data. crbug.com/742937
     one_google_bar_service_->Refresh();
+
+    return;
+  }
+
+  if (stripped_path == kPromoScriptFilename) {
+    if (!promo_service_) {
+      callback.Run(nullptr);
+      return;
+    }
+
+    // TODO(crbug/909931): There's no need to fetch the promo on each load,
+    // we can sometimes use cached data.
+    promo_requests_.emplace_back(base::TimeTicks::Now(), callback);
+    promo_service_->Refresh();
 
     return;
   }
@@ -853,6 +892,16 @@ void LocalNtpSource::StartDataRequest(
                                            "{{LOCAL_NTP_CUSTOM_BG_INTEGRITY}}",
                                            local_ntp_custom_bg_integrity);
 
+    std::string utils_integrity =
+        base::StringPrintf(kIntegrityFormat, UTILS_JS_INTEGRITY);
+    base::ReplaceFirstSubstringAfterOffset(&html, 0, "{{UTILS_INTEGRITY}}",
+                                           utils_integrity);
+
+    std::string animations_integrity =
+        base::StringPrintf(kIntegrityFormat, ANIMATIONS_JS_INTEGRITY);
+    base::ReplaceFirstSubstringAfterOffset(&html, 0, "{{ANIMATIONS_INTEGRITY}}",
+                                           animations_integrity);
+
     std::string config_data_integrity = base::StringPrintf(
         kIntegrityFormat,
         search_config_provider_->config_data_integrity().c_str());
@@ -861,6 +910,17 @@ void LocalNtpSource::StartDataRequest(
 
     base::ReplaceFirstSubstringAfterOffset(
         &html, 0, "{{CONTENT_SECURITY_POLICY}}", GetContentSecurityPolicy());
+
+    std::string force_doodle_param;
+    GURL path_url = GURL(chrome::kChromeSearchLocalNtpUrl).Resolve(path);
+    if (net::GetValueForKeyInQuery(path_url, "force-doodle",
+                                   &force_doodle_param)) {
+      base::CommandLine* command_line = base::CommandLine::ForCurrentProcess();
+      command_line->AppendSwitchASCII(
+          search_provider_logos::switches::kGoogleDoodleUrl,
+          "https://www.gstatic.com/chrome/ntp/doodle_test/ddljson_desktop" +
+              force_doodle_param + ".json");
+    }
 
     callback.Run(base::RefCountedString::TakeString(&html));
     return;
@@ -939,9 +999,10 @@ std::string LocalNtpSource::GetContentSecurityPolicy() const {
   // 'strict-dynamic' allows those scripts to load dependencies not listed here.
   std::string script_src_csp = base::StringPrintf(
       "script-src 'strict-dynamic' 'sha256-%s' 'sha256-%s' 'sha256-%s' "
-      "'sha256-%s';",
+      "'sha256-%s' 'sha256-%s' 'sha256-%s';",
       LOCAL_NTP_JS_INTEGRITY, VOICE_JS_INTEGRITY,
-      CUSTOM_BACKGROUNDS_JS_INTEGRITY,
+      CUSTOM_BACKGROUNDS_JS_INTEGRITY, UTILS_JS_INTEGRITY,
+      ANIMATIONS_JS_INTEGRITY,
       search_config_provider_->config_data_integrity().c_str());
 
   return GetContentSecurityPolicyObjectSrc() +
@@ -1099,6 +1160,19 @@ void LocalNtpSource::OnOneGoogleBarServiceShuttingDown() {
   one_google_bar_service_ = nullptr;
 }
 
+void LocalNtpSource::OnPromoDataUpdated() {
+  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
+
+  ServePromo(promo_service_->promo_data());
+}
+
+void LocalNtpSource::OnPromoServiceShuttingDown() {
+  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
+
+  promo_service_observer_.RemoveAll();
+  promo_service_ = nullptr;
+}
+
 void LocalNtpSource::ServeOneGoogleBar(
     const base::Optional<OneGoogleBarData>& data) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
@@ -1130,6 +1204,34 @@ void LocalNtpSource::ServeOneGoogleBar(
   one_google_bar_requests_.clear();
 }
 
+void LocalNtpSource::ServePromo(const base::Optional<PromoData>& data) {
+  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
+
+  if (promo_requests_.empty())
+    return;
+
+  scoped_refptr<base::RefCountedString> result;
+  std::string js;
+  base::JSONWriter::Write(*ConvertPromoDataToDict(data), &js);
+  js = "var promo = " + js + ";";
+  result = base::RefCountedString::TakeString(&js);
+
+  base::TimeTicks now = base::TimeTicks::Now();
+  for (const auto& request : promo_requests_) {
+    request.callback.Run(result);
+    base::TimeDelta delta = now - request.start_time;
+    UMA_HISTOGRAM_MEDIUM_TIMES("NewTabPage.Promos.RequestLatency", delta);
+    if (result) {
+      UMA_HISTOGRAM_MEDIUM_TIMES("NewTabPage.Promos.RequestLatency.Success",
+                                 delta);
+    } else {
+      UMA_HISTOGRAM_MEDIUM_TIMES("NewTabPage.Promos.RequestLatency.Failure",
+                                 delta);
+    }
+  }
+  promo_requests_.clear();
+}
+
 LocalNtpSource::NtpBackgroundRequest::NtpBackgroundRequest(
     base::TimeTicks start_time,
     const content::URLDataSource::GotDataCallback& callback)
@@ -1149,3 +1251,12 @@ LocalNtpSource::OneGoogleBarRequest::OneGoogleBarRequest(
     const OneGoogleBarRequest&) = default;
 
 LocalNtpSource::OneGoogleBarRequest::~OneGoogleBarRequest() = default;
+
+LocalNtpSource::PromoRequest::PromoRequest(
+    base::TimeTicks start_time,
+    const content::URLDataSource::GotDataCallback& callback)
+    : start_time(start_time), callback(callback) {}
+
+LocalNtpSource::PromoRequest::PromoRequest(const PromoRequest&) = default;
+
+LocalNtpSource::PromoRequest::~PromoRequest() = default;

@@ -53,7 +53,7 @@ constexpr char kCrostiniAppIdPrefix[] = "crostini:";
 //    desktop file id, vm name, and container name.
 //    - The Terminal is a special case, using kCrostiniTerminalId (see below).
 // 3) Exo Window App Ids (window_app_id):
-//    - Retrieved from exo::ShellSurface::GetApplicationId()
+//    - Retrieved from exo::GetShellApplicationId()
 //    - For Wayland apps, this is the surface class of the app
 //    - For X apps, this is of the form org.chromium.termina.wmclass.foo when
 //    WM_CLASS is set to foo, or otherwise some string prefixed by
@@ -90,6 +90,9 @@ class CrostiniRegistryService : public KeyedService {
 
     // Whether this app should scale up when displayed.
     bool IsScaled() const;
+
+    // Whether this app is the default terminal app.
+    bool is_terminal_app() const { return is_terminal_app_; }
 
    private:
     std::string LocalizedString(base::StringPiece key) const;
@@ -191,7 +194,7 @@ class CrostiniRegistryService : public KeyedService {
   // Callback for when we request an icon from the container.
   void OnContainerAppIcon(const std::string& app_id,
                           ui::ScaleFactor scale_factor,
-                          ConciergeClientResult result,
+                          CrostiniResult result,
                           const std::vector<Icon>& icons);
   // Callback for our internal call for saving out icon data.
   void OnIconInstalled(const std::string& app_id,

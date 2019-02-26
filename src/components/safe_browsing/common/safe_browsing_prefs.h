@@ -34,18 +34,8 @@ extern const char kSafeBrowsingIncidentsSent[];
 // users to proceed anyway.
 extern const char kSafeBrowsingProceedAnywayDisabled[];
 
-// Boolean indicating whether the user has ever seen a security interstitial
-// containing the legacy Extended Reporting opt-in.
-extern const char kSafeBrowsingSawInterstitialExtendedReporting[];
-
-// Boolean indicating whether the user has ever seen a security interstitial
-// containing the new Scout opt-in.
+// Boolean indicating whether the user has ever seen a security interstitial.
 extern const char kSafeBrowsingSawInterstitialScoutReporting[];
-
-// Boolean indicating whether the Scout reporting workflow is enabled. This
-// affects which of SafeBrowsingExtendedReporting or SafeBrowsingScoutReporting
-// is used.
-extern const char kSafeBrowsingScoutGroupSelected[];
 
 // Boolean indicating whether Safe Browsing Scout reporting is enabled, which
 // collects data for malware detection.
@@ -93,11 +83,6 @@ extern const char kAdvancedProtectionLastRefreshInUs[];
 }
 
 namespace safe_browsing {
-
-// When this feature is enabled, the Scout opt-in text will be displayed as of
-// the next security incident. Until then, the legacy SBER text will appear.
-// TODO: this is temporary (crbug.com/662944)
-extern const base::Feature kCanShowScoutOptIn;
 
 // Enumerates the level of Safe Browsing Extended Reporting that is currently
 // available.

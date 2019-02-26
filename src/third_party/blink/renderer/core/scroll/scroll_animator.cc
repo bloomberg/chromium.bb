@@ -57,7 +57,7 @@ ScrollAnimatorBase* ScrollAnimatorBase::Create(
     ScrollableArea* scrollable_area) {
   if (scrollable_area && scrollable_area->ScrollAnimatorEnabled())
     return new ScrollAnimator(scrollable_area);
-  return new ScrollAnimatorBase(scrollable_area);
+  return MakeGarbageCollected<ScrollAnimatorBase>(scrollable_area);
 }
 
 ScrollAnimator::ScrollAnimator(ScrollableArea* scrollable_area,
@@ -258,7 +258,7 @@ bool ScrollAnimator::SendAnimationToCompositor() {
 
   std::unique_ptr<CompositorKeyframeModel> animation =
       CompositorKeyframeModel::Create(
-          *animation_curve_, CompositorTargetProperty::SCROLL_OFFSET, 0, 0);
+          *animation_curve_, compositor_target_property::SCROLL_OFFSET, 0, 0);
   // Being here means that either there is an animation that needs
   // to be sent to the compositor, or an animation that needs to
   // be updated (a new scroll event before the previous animation

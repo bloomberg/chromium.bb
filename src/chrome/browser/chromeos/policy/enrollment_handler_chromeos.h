@@ -13,12 +13,13 @@
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
 #include "base/optional.h"
+#include "chrome/browser/chromeos/policy/device_account_initializer.h"
 #include "chrome/browser/chromeos/policy/device_cloud_policy_initializer.h"
 #include "chrome/browser/chromeos/policy/device_cloud_policy_validator.h"
 #include "chrome/browser/chromeos/policy/enrollment_config.h"
-#include "chrome/browser/chromeos/settings/install_attributes.h"
 #include "chromeos/dbus/attestation_constants.h"
 #include "chromeos/dbus/auth_policy_client.h"
+#include "chromeos/settings/install_attributes.h"
 #include "components/policy/core/common/cloud/cloud_policy_client.h"
 #include "components/policy/core/common/cloud/cloud_policy_constants.h"
 #include "components/policy/core/common/cloud/cloud_policy_store.h"
@@ -58,7 +59,7 @@ class ServerBackedStateKeysBroker;
 //   7. Store the policy blob and API refresh token.
 class EnrollmentHandlerChromeOS : public CloudPolicyClient::Observer,
                                   public CloudPolicyStore::Observer,
-                                  public gaia::GaiaOAuthClient::Delegate {
+                                  public DeviceAccountInitializer::Delegate {
  public:
   using EnrollmentCallback = DeviceCloudPolicyInitializer::EnrollmentCallback;
   using AvailableLicensesCallback =
@@ -106,36 +107,33 @@ class EnrollmentHandlerChromeOS : public CloudPolicyClient::Observer,
   void OnStoreLoaded(CloudPolicyStore* store) override;
   void OnStoreError(CloudPolicyStore* store) override;
 
-  // GaiaOAuthClient::Delegate:
-  void OnGetTokensResponse(const std::string& refresh_token,
-                           const std::string& access_token,
-                           int expires_in_seconds) override;
-  void OnRefreshTokenResponse(const std::string& access_token,
-                              int expires_in_seconds) override;
-  void OnOAuthError() override;
-  void OnNetworkError(int response_code) override;
+  // DeviceAccountInitializer::Delegate:
+  void OnDeviceAccountTokenFetched(bool empty_token) override;
+  void OnDeviceAccountTokenStored() override;
+  void OnDeviceAccountTokenError(EnrollmentStatus status) override;
+  void OnDeviceAccountClientError(DeviceManagementStatus status) override;
 
  private:
   // Indicates what step of the process is currently pending. These steps need
   // to be listed in the order they are traversed in.  (Steps are numbered
   // explicitly to make it easier to read debug logs.)
   enum EnrollmentStep {
-    STEP_PENDING = 0,             // Not started yet.
-    STEP_STATE_KEYS = 1,          // Waiting for state keys to become available.
-    STEP_LOADING_STORE = 2,       // Waiting for |store_| to initialize.
-    STEP_REGISTRATION = 3,        // Currently registering the client.
-    STEP_POLICY_FETCH = 4,        // Fetching policy.
-    STEP_VALIDATION = 5,          // Policy validation.
-    STEP_ROBOT_AUTH_FETCH = 6,    // Fetching device API auth code.
-    STEP_ROBOT_AUTH_REFRESH = 7,  // Fetching device API refresh token.
-    STEP_AD_DOMAIN_JOIN = 8,      // Joining Active Directory domain.
-    STEP_SET_FWMP_DATA = 9,       // Setting the firmware management parameters.
-    STEP_LOCK_DEVICE = 10,        // Writing installation-time attributes.
-    STEP_STORE_TOKEN = 11,        // Encrypting and storing DM token.
-    STEP_STORE_ROBOT_AUTH = 12,   // Encrypting & writing robot refresh token.
-    STEP_STORE_POLICY = 13,       // Storing policy and API refresh token. For
-                                  // AD, includes policy fetch via authpolicyd.
-    STEP_FINISHED = 14,           // Enrollment process done, no further action.
+    STEP_PENDING = 0,           // Not started yet.
+    STEP_STATE_KEYS = 1,        // Waiting for state keys to become available.
+    STEP_LOADING_STORE = 2,     // Waiting for |store_| to initialize.
+    STEP_REGISTRATION = 3,      // Currently registering the client.
+    STEP_POLICY_FETCH = 4,      // Fetching policy.
+    STEP_VALIDATION = 5,        // Policy validation.
+    STEP_ROBOT_AUTH_FETCH = 6,  // Fetching device API auth code.
+    UNUSED_ROBOT_AUTH_REFRESH = 7,  // Fetching device API refresh token.
+    STEP_AD_DOMAIN_JOIN = 8,        // Joining Active Directory domain.
+    STEP_SET_FWMP_DATA = 9,      // Setting the firmware management parameters.
+    STEP_LOCK_DEVICE = 10,       // Writing installation-time attributes.
+    STEP_STORE_TOKEN = 11,       // Encrypting and storing DM token.
+    STEP_STORE_ROBOT_AUTH = 12,  // Encrypting & writing robot refresh token.
+    STEP_STORE_POLICY = 13,      // Storing policy and API refresh token. For
+                                 // AD, includes policy fetch via authpolicyd.
+    STEP_FINISHED = 14,          // Enrollment process done, no further action.
   };
 
   // Handles the response to a request for server-backed state keys.
@@ -198,9 +196,6 @@ class EnrollmentHandlerChromeOS : public CloudPolicyClient::Observer,
   // Initiates storing of robot auth token.
   void StartStoreRobotAuth();
 
-  // Handles completion of the robot token store operation.
-  void HandleStoreRobotAuthTokenResult(bool result);
-
   // Handles result from device policy refresh via authpolicyd.
   void HandleActiveDirectoryPolicyRefreshed(authpolicy::ErrorType error);
 
@@ -234,7 +229,7 @@ class EnrollmentHandlerChromeOS : public CloudPolicyClient::Observer,
   std::unique_ptr<CloudPolicyClient> client_;
   scoped_refptr<base::SequencedTaskRunner> background_task_runner_;
   chromeos::ActiveDirectoryJoinDelegate* ad_join_delegate_ = nullptr;
-  std::unique_ptr<gaia::GaiaOAuthClient> gaia_oauth_client_;
+  std::unique_ptr<DeviceAccountInitializer> device_account_initializer_;
   std::unique_ptr<policy::DMTokenStorage> dm_token_storage_;
 
   EnrollmentConfig enrollment_config_;

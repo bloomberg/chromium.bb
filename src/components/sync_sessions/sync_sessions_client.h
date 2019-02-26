@@ -61,9 +61,6 @@ class SyncSessionsClient {
   // embedder's context.
   virtual LocalSessionEventRouter* GetLocalSessionEventRouter() = 0;
 
-  // Called when foreign sessions have been updated.
-  virtual void NotifyForeignSessionUpdated() = 0;
-
  private:
   DISALLOW_COPY_AND_ASSIGN(SyncSessionsClient);
 };

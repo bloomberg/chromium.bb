@@ -45,7 +45,6 @@ config("wtf_config") {
 jumbo_component("wtf") {
   sources = [
     "address_sanitizer.h",
-    "alignment.h",
     "allocator.cc",
     "allocator.h",
     "allocator/partition_allocator.cc",
@@ -166,7 +165,6 @@ jumbo_component("wtf") {
     "text/string_mac.mm",
     "text/string_operators.h",
     "text/string_statics.cc",
-    "text/string_statics.h",
     "text/string_statics.h",
     "text/string_to_number.cc",
     "text/string_to_number.h",

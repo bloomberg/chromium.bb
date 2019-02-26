@@ -15,6 +15,7 @@
 #include "base/time/time.h"
 #include "content/common/content_export.h"
 #include "storage/browser/blob/blob_data_handle.h"
+#include "third_party/blink/public/mojom/indexeddb/indexeddb.mojom.h"
 
 namespace content {
 
@@ -22,6 +23,11 @@ class CONTENT_EXPORT IndexedDBBlobInfo {
  public:
   // TODO(mek): Use ShareableFileReference::FinalReleaseCallback somehow.
   typedef base::RepeatingCallback<void(const base::FilePath&)> ReleaseCallback;
+
+  static void ConvertBlobInfo(
+      const std::vector<IndexedDBBlobInfo>& blob_info,
+      std::vector<blink::mojom::IDBBlobInfoPtr>* blob_or_file_info);
+
   IndexedDBBlobInfo();
   // These two are used for Blobs.
   IndexedDBBlobInfo(std::unique_ptr<storage::BlobDataHandle> blob_handle,

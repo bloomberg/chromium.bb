@@ -42,10 +42,4 @@ ChannelIDStore::~ChannelIDStore() {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
 }
 
-void ChannelIDStore::InitializeFrom(const ChannelIDList& list) {
-  for (auto i = list.begin(); i != list.end(); ++i) {
-    SetChannelID(std::unique_ptr<ChannelID>(new ChannelID(*i)));
-  }
-}
-
 }  // namespace net

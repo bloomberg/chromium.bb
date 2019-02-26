@@ -8,10 +8,8 @@
 #include <memory>
 #include <string>
 
-#include "base/compiler_specific.h"
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
-#include "base/scoped_observer.h"
 #include "base/values.h"
 #include "components/sync/driver/sync_service_observer.h"
 #include "components/sync/engine/cycle/type_debug_info_observer.h"
@@ -20,10 +18,6 @@
 #include "components/sync/js/js_event_handler.h"
 #include "components/version_info/channel.h"
 #include "content/public/browser/web_ui_message_handler.h"
-
-namespace browser_sync {
-class ProfileSyncService;
-}  // namespace browser_sync
 
 namespace syncer {
 class SyncService;

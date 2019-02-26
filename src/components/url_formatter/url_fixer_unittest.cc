@@ -463,7 +463,7 @@ TEST(URLFixerTest, FixupFile) {
     //   {"file:///foo:/bar", "file://foo/bar"},
     //   {"file:/\\/server\\folder/file", "file://server/folder/file"},
   };
-#elif defined(OS_POSIX)
+#elif defined(OS_POSIX) || defined(OS_FUCHSIA)
 
 #if defined(OS_MACOSX)
 #define HOME "/Users/"
@@ -512,7 +512,8 @@ TEST(URLFixerTest, FixupRelativeFile) {
     base::FilePath input = base::FilePath::FromUTF8Unsafe(value.input);
     EXPECT_EQ(value.output,
               url_formatter::FixupRelativeFile(temp_dir_.GetPath(), input)
-                  .possibly_invalid_spec());
+                  .possibly_invalid_spec())
+        << "input: " << value.input;
   }
 
   // make sure the existing file got fixed-up to a file URL, and that there

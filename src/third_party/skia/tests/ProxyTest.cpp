@@ -124,6 +124,12 @@ DEF_GPUTEST_FOR_RENDERING_CONTEXTS(DeferredProxyTest, reporter, ctxInfo) {
                             desc.fConfig = config;
                             desc.fSampleCnt = numSamples;
 
+                            GrSRGBEncoded srgbEncoded;
+                            GrColorType colorType =
+                                    GrPixelConfigToColorTypeAndEncoding(config, &srgbEncoded);
+                            const GrBackendFormat format =
+                                    caps.getBackendFormatFromGrColorType(colorType, srgbEncoded);
+
                             {
                                 sk_sp<GrTexture> tex;
                                 if (SkBackingFit::kApprox == fit) {
@@ -134,7 +140,8 @@ DEF_GPUTEST_FOR_RENDERING_CONTEXTS(DeferredProxyTest, reporter, ctxInfo) {
                                 }
 
                                 sk_sp<GrTextureProxy> proxy =
-                                        proxyProvider->createProxy(desc, origin, fit, budgeted);
+                                        proxyProvider->createProxy(format, desc, origin, fit,
+                                                                   budgeted);
                                 REPORTER_ASSERT(reporter, SkToBool(tex) == SkToBool(proxy));
                                 if (proxy) {
                                     REPORTER_ASSERT(reporter, proxy->asRenderTargetProxy());
@@ -168,7 +175,8 @@ DEF_GPUTEST_FOR_RENDERING_CONTEXTS(DeferredProxyTest, reporter, ctxInfo) {
                                 }
 
                                 sk_sp<GrTextureProxy> proxy(
-                                        proxyProvider->createProxy(desc, origin, fit, budgeted));
+                                        proxyProvider->createProxy(format, desc, origin, fit,
+                                                                   budgeted));
                                 REPORTER_ASSERT(reporter, SkToBool(tex) == SkToBool(proxy));
                                 if (proxy) {
                                     // This forces the proxy to compute and cache its
@@ -234,7 +242,7 @@ DEF_GPUTEST_FOR_RENDERING_CONTEXTS(WrappedProxyTest, reporter, ctxInfo) {
 
                 // Test wrapping FBO 0 (with made up properties). This tests sample count and the
                 // special case where FBO 0 doesn't support window rectangles.
-                if (kOpenGL_GrBackend == ctxInfo.backend()) {
+                if (GrBackendApi::kOpenGL == ctxInfo.backend()) {
                     GrGLFramebufferInfo fboInfo;
                     fboInfo.fFBOID = 0;
                     static constexpr int kStencilBits = 8;
@@ -346,8 +354,12 @@ DEF_GPUTEST_FOR_RENDERING_CONTEXTS(ZeroSizedProxyTest, reporter, ctxInfo) {
                     desc.fConfig = kRGBA_8888_GrPixelConfig;
                     desc.fSampleCnt = 1;
 
+                    const GrBackendFormat format =
+                        ctxInfo.grContext()->contextPriv().caps()->getBackendFormatFromColorType(
+                                kRGBA_8888_SkColorType);
+
                     sk_sp<GrTextureProxy> proxy = provider->createProxy(
-                            desc, kBottomLeft_GrSurfaceOrigin, fit, SkBudgeted::kNo);
+                            format, desc, kBottomLeft_GrSurfaceOrigin, fit, SkBudgeted::kNo);
                     REPORTER_ASSERT(reporter, !proxy);
                 }
             }

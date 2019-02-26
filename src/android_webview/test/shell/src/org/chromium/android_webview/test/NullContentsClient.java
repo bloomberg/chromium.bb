@@ -18,6 +18,7 @@ import org.chromium.android_webview.AwContentsClient;
 import org.chromium.android_webview.AwContentsClientBridge;
 import org.chromium.android_webview.AwGeolocationPermissions;
 import org.chromium.android_webview.AwHttpAuthHandler;
+import org.chromium.android_webview.AwRenderProcess;
 import org.chromium.android_webview.AwRenderProcessGoneDetail;
 import org.chromium.android_webview.AwSafeBrowsingResponse;
 import org.chromium.android_webview.AwWebResourceResponse;
@@ -257,6 +258,12 @@ public class NullContentsClient extends AwContentsClient {
     @Override
     public void onPermissionRequestCanceled(AwPermissionRequest awPermissionRequest) {
     }
+
+    @Override
+    public void onRendererUnresponsive(AwRenderProcess process) {}
+
+    @Override
+    public void onRendererResponsive(AwRenderProcess process) {}
 
     @Override
     public boolean onRenderProcessGone(AwRenderProcessGoneDetail detail) {

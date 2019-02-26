@@ -17,13 +17,13 @@ namespace blink {
 
 CanMakePaymentEvent* CanMakePaymentEvent::Create(
     const AtomicString& type,
-    const CanMakePaymentEventInit& initializer) {
+    const CanMakePaymentEventInit* initializer) {
   return new CanMakePaymentEvent(type, initializer, nullptr, nullptr);
 }
 
 CanMakePaymentEvent* CanMakePaymentEvent::Create(
     const AtomicString& type,
-    const CanMakePaymentEventInit& initializer,
+    const CanMakePaymentEventInit* initializer,
     RespondWithObserver* respond_with_observer,
     WaitUntilObserver* wait_until_observer) {
   return new CanMakePaymentEvent(type, initializer, respond_with_observer,
@@ -33,7 +33,7 @@ CanMakePaymentEvent* CanMakePaymentEvent::Create(
 CanMakePaymentEvent::~CanMakePaymentEvent() = default;
 
 const AtomicString& CanMakePaymentEvent::InterfaceName() const {
-  return EventNames::CanMakePaymentEvent;
+  return event_interface_names::kCanMakePaymentEvent;
 }
 
 const String& CanMakePaymentEvent::topOrigin() const {
@@ -44,12 +44,13 @@ const String& CanMakePaymentEvent::paymentRequestOrigin() const {
   return payment_request_origin_;
 }
 
-const HeapVector<PaymentMethodData>& CanMakePaymentEvent::methodData() const {
+const HeapVector<Member<PaymentMethodData>>& CanMakePaymentEvent::methodData()
+    const {
   return method_data_;
 }
 
-const HeapVector<PaymentDetailsModifier>& CanMakePaymentEvent::modifiers()
-    const {
+const HeapVector<Member<PaymentDetailsModifier>>&
+CanMakePaymentEvent::modifiers() const {
   return modifiers_;
 }
 
@@ -78,18 +79,18 @@ void CanMakePaymentEvent::Trace(blink::Visitor* visitor) {
 
 CanMakePaymentEvent::CanMakePaymentEvent(
     const AtomicString& type,
-    const CanMakePaymentEventInit& initializer,
+    const CanMakePaymentEventInit* initializer,
     RespondWithObserver* respond_with_observer,
     WaitUntilObserver* wait_until_observer)
     : ExtendableEvent(type, initializer, wait_until_observer),
-      top_origin_(initializer.topOrigin()),
-      payment_request_origin_(initializer.paymentRequestOrigin()),
-      method_data_(initializer.hasMethodData()
-                       ? initializer.methodData()
-                       : HeapVector<PaymentMethodData>()),
-      modifiers_(initializer.hasModifiers()
-                     ? initializer.modifiers()
-                     : HeapVector<PaymentDetailsModifier>()),
+      top_origin_(initializer->topOrigin()),
+      payment_request_origin_(initializer->paymentRequestOrigin()),
+      method_data_(initializer->hasMethodData()
+                       ? initializer->methodData()
+                       : HeapVector<Member<PaymentMethodData>>()),
+      modifiers_(initializer->hasModifiers()
+                     ? initializer->modifiers()
+                     : HeapVector<Member<PaymentDetailsModifier>>()),
       observer_(respond_with_observer) {}
 
 }  // namespace blink

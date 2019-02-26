@@ -39,17 +39,18 @@ class StyleRuleCSSStyleDeclaration : public PropertySetCSSStyleDeclaration {
   static StyleRuleCSSStyleDeclaration* Create(
       MutableCSSPropertyValueSet& property_set,
       CSSRule* parent_rule) {
-    return new StyleRuleCSSStyleDeclaration(property_set, parent_rule);
+    return MakeGarbageCollected<StyleRuleCSSStyleDeclaration>(property_set,
+                                                              parent_rule);
   }
+
+  StyleRuleCSSStyleDeclaration(MutableCSSPropertyValueSet&, CSSRule*);
+  ~StyleRuleCSSStyleDeclaration() override;
 
   void Reattach(MutableCSSPropertyValueSet&);
 
   void Trace(blink::Visitor*) override;
 
  protected:
-  StyleRuleCSSStyleDeclaration(MutableCSSPropertyValueSet&, CSSRule*);
-  ~StyleRuleCSSStyleDeclaration() override;
-
   CSSStyleSheet* ParentStyleSheet() const override;
 
   CSSRule* parentRule() const override { return parent_rule_; }

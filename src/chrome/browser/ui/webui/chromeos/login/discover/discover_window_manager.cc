@@ -19,6 +19,8 @@
 #include "chrome/grit/generated_resources.h"
 #include "content/public/browser/web_contents.h"
 #include "ui/aura/client/aura_constants.h"
+#include "ui/display/display.h"
+#include "ui/display/screen.h"
 #include "ui/gfx/geometry/rect.h"
 #include "url/gurl.h"
 
@@ -52,7 +54,7 @@ void DiscoverWindowManager::ShowChromeDiscoverPageForProfile(Profile* profile) {
   Browser* browser = FindBrowserForProfile(profile);
   if (browser) {
     DCHECK(browser->profile() == profile);
-    const content::WebContents* web_contents =
+    content::WebContents* web_contents =
         browser->tab_strip_model()->GetWebContentsAt(0);
     if (web_contents && web_contents->GetURL() == gurl) {
       browser->window()->Show();
@@ -87,6 +89,11 @@ void DiscoverWindowManager::ShowChromeDiscoverPageForProfile(Profile* profile) {
   window->SetProperty(kOverrideWindowIconResourceIdKey, IDR_DISCOVER_APP_192);
   window->SetProperty(aura::client::kAppType,
                       static_cast<int>(ash::AppType::CHROME_APP));
+  // Manually position the window in center of the screen.
+  gfx::Rect center_in_screen =
+      display::Screen::GetScreen()->GetDisplayNearestWindow(window).work_area();
+  center_in_screen.ClampToCenteredSize(window->bounds().size());
+  window->SetBounds(center_in_screen);
 
   for (DiscoverWindowManagerObserver& observer : observers_)
     observer.OnNewDiscoverWindow(params.browser);

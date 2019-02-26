@@ -40,8 +40,8 @@ class ChannelSplitterHandler final : public AudioHandler {
   Create(AudioNode&, float sample_rate, unsigned number_of_outputs);
 
   // AudioHandler
-  void Process(size_t frames_to_process) override;
-  void SetChannelCount(unsigned long, ExceptionState&) final;
+  void Process(uint32_t frames_to_process) override;
+  void SetChannelCount(unsigned, ExceptionState&) final;
   void SetChannelCountMode(const String&, ExceptionState&) final;
   void SetChannelInterpretation(const String&, ExceptionState&) final;
 
@@ -64,7 +64,7 @@ class ChannelSplitterNode final : public AudioNode {
                                      unsigned number_of_outputs,
                                      ExceptionState&);
   static ChannelSplitterNode* Create(BaseAudioContext*,
-                                     const ChannelSplitterOptions&,
+                                     const ChannelSplitterOptions*,
                                      ExceptionState&);
 
  private:

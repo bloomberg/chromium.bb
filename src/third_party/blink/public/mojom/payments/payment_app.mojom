@@ -12,7 +12,6 @@ import "url/mojom/url.mojom";
 
 enum PaymentHandlerStatus {
   SUCCESS,
-  NOT_IMPLEMENTED,
   NOT_FOUND,
   NO_ACTIVE_WORKER,
   STORAGE_OPERATION_FAILED,
@@ -89,10 +88,7 @@ struct PaymentHandlerResponse {
 // This interface is provided to pass a payment handler response from payment
 // request event in renderer side to browser side by calling respondWith().
 interface PaymentHandlerResponseCallback {
-  OnResponseForAbortPayment(bool payment_aborted,
-                            mojo_base.mojom.TimeTicks dispatch_event_time);
-  OnResponseForCanMakePayment(bool can_make_payment,
-                              mojo_base.mojom.TimeTicks dispatch_event_time);
-  OnResponseForPaymentRequest(PaymentHandlerResponse response,
-                              mojo_base.mojom.TimeTicks dispatch_event_time);
+  OnResponseForAbortPayment(bool payment_aborted);
+  OnResponseForCanMakePayment(bool can_make_payment);
+  OnResponseForPaymentRequest(PaymentHandlerResponse response);
 };

@@ -23,14 +23,15 @@ class CONTENT_EXPORT DelegatedFrameHostClientAndroid
  private:
   // DelegatedFrameHostAndroid::Client implementation.
   void SetBeginFrameSource(viz::BeginFrameSource* begin_frame_source) override;
-  void DidPresentCompositorFrame(
-      uint32_t presentation_token,
-      const gfx::PresentationFeedback& feedback) override;
+  void DidPresentCompositorFrames(
+      const base::flat_map<uint32_t, gfx::PresentationFeedback>& feedbacks)
+      override;
   void DidReceiveCompositorFrameAck(
       const std::vector<viz::ReturnedResource>& resources) override;
   void ReclaimResources(
       const std::vector<viz::ReturnedResource>& resources) override;
   void OnFrameTokenChanged(uint32_t frame_token) override;
+  void WasEvicted() override;
 
   RenderWidgetHostViewAndroid* render_widget_host_view_;
 

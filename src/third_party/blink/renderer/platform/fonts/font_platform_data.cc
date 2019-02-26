@@ -20,6 +20,7 @@
 
 #include "third_party/blink/renderer/platform/fonts/font_platform_data.h"
 
+#include "SkFont.h"
 #include "SkTypeface.h"
 #include "build/build_config.h"
 #include "hb-ot.h"
@@ -28,8 +29,8 @@
 #include "third_party/blink/public/platform/platform.h"
 #include "third_party/blink/renderer/platform/fonts/font_cache.h"
 #include "third_party/blink/renderer/platform/fonts/shaping/harfbuzz_face.h"
-#include "third_party/blink/renderer/platform/layout_test_support.h"
 #include "third_party/blink/renderer/platform/text/character.h"
+#include "third_party/blink/renderer/platform/web_test_support.h"
 #include "third_party/blink/renderer/platform/wtf/hash_map.h"
 #include "third_party/blink/renderer/platform/wtf/text/character_names.h"
 #include "third_party/blink/renderer/platform/wtf/text/string_hash.h"
@@ -147,11 +148,11 @@ FontPlatformData::FontPlatformData(sk_sp<SkTypeface> typeface,
   auto system_style =
       QuerySystemRenderStyle(family_, text_size_, typeface_->fontStyle());
 
-  // In layout tests, ignore system preference for subpixel positioning,
+  // In web tests, ignore system preference for subpixel positioning,
   // or explicitly disable if requested.
-  if (LayoutTestSupport::IsRunningLayoutTest()) {
+  if (WebTestSupport::IsRunningWebTest()) {
     system_style.use_subpixel_positioning =
-        LayoutTestSupport::IsTextSubpixelPositioningAllowedForTest()
+        WebTestSupport::IsTextSubpixelPositioningAllowedForTest()
             ? WebFontRenderStyle::kNoPreference
             : 0;
   }
@@ -281,13 +282,9 @@ unsigned FontPlatformData::GetHash() const {
 
 #if !defined(OS_MACOSX)
 bool FontPlatformData::FontContainsCharacter(UChar32 character) {
-  PaintFont font;
-  SetupPaintFont(&font);
-  font.SetTextEncoding(SkPaint::kUTF32_TextEncoding);
-
-  uint16_t glyph;
-  font.ToSkPaint().textToGlyphs(&character, sizeof(character), &glyph);
-  return glyph;
+  SkFont font;
+  SetupSkFont(&font);
+  return font.unicharToGlyph(character);
 }
 #endif
 
@@ -314,18 +311,32 @@ WebFontRenderStyle FontPlatformData::QuerySystemRenderStyle(
   return result;
 }
 
-void FontPlatformData::SetupPaintFont(PaintFont* font,
-                                      float device_scale_factor,
-                                      const Font*) const {
-  style_.ApplyToPaintFont(*font, device_scale_factor);
+void FontPlatformData::SetupSkPaint(SkPaint* font,
+                                    float device_scale_factor,
+                                    const Font*) const {
+  style_.ApplyToSkPaint(*font, device_scale_factor);
 
   const float ts = text_size_ >= 0 ? text_size_ : 12;
-  font->SetTextSize(SkFloatToScalar(ts));
-  font->SetTypeface(typeface_);
-  font->SetFakeBoldText(synthetic_bold_);
-  font->SetTextSkewX(synthetic_italic_ ? -SK_Scalar1 / 4 : 0);
+  font->setTextSize(SkFloatToScalar(ts));
+  font->setTypeface(typeface_);
+  font->setFakeBoldText(synthetic_bold_);
+  font->setTextSkewX(synthetic_italic_ ? -SK_Scalar1 / 4 : 0);
 
-  font->SetEmbeddedBitmapText(!avoid_embedded_bitmaps_);
+  font->setEmbeddedBitmapText(!avoid_embedded_bitmaps_);
+}
+
+void FontPlatformData::SetupSkFont(SkFont* font,
+                                   float device_scale_factor,
+                                   const Font*) const {
+  style_.ApplyToSkFont(font, device_scale_factor);
+
+  const float ts = text_size_ >= 0 ? text_size_ : 12;
+  font->setSize(SkFloatToScalar(ts));
+  font->setTypeface(typeface_);
+  font->setEmbolden(synthetic_bold_);
+  font->setSkewX(synthetic_italic_ ? -SK_Scalar1 / 4 : 0);
+
+  font->setEmbeddedBitmaps(!avoid_embedded_bitmaps_);
 }
 #endif
 

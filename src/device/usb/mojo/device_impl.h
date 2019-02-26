@@ -95,6 +95,8 @@ class DeviceImpl : public mojom::UsbDevice, public device::UsbDevice::Observer {
   // device::UsbDevice::Observer implementation:
   void OnDeviceRemoved(scoped_refptr<device::UsbDevice> device) override;
 
+  void OnClientConnectionError();
+
   const scoped_refptr<device::UsbDevice> device_;
   ScopedObserver<device::UsbDevice, device::UsbDevice::Observer> observer_;
 

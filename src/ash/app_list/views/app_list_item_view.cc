@@ -20,7 +20,6 @@
 #include "build/build_config.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/resource_bundle.h"
-#include "ui/base/ui_base_features.h"
 #include "ui/compositor/layer.h"
 #include "ui/compositor/scoped_layer_animation_settings.h"
 #include "ui/gfx/animation/throb_animation.h"
@@ -381,8 +380,11 @@ void AppListItemView::OnTouchDragTimer(
 }
 
 void AppListItemView::CancelContextMenu() {
-  if (context_menu_)
-    context_menu_->Cancel();
+  if (!context_menu_)
+    return;
+
+  menu_close_initiated_from_drag_ = true;
+  context_menu_->Cancel();
 }
 
 void AppListItemView::OnDragEnded() {
@@ -405,7 +407,12 @@ void AppListItemView::SetAsAttemptedFolderTarget(bool is_target_folder) {
 
 void AppListItemView::SetItemName(const base::string16& display_name,
                                   const base::string16& full_name) {
-  title_->SetText(display_name);
+  if (is_folder_ && display_name.empty()) {
+    title_->SetText(ui::ResourceBundle::GetSharedInstance().GetLocalizedString(
+        IDS_APP_LIST_FOLDER_NAME_PLACEHOLDER));
+  } else {
+    title_->SetText(display_name);
+  }
 
   tooltip_text_ = display_name == full_name ? base::string16() : full_name;
 
@@ -459,24 +466,20 @@ void AppListItemView::OnContextMenuModelReceived(
 
   if (!apps_grid_view_->IsSelectedView(this))
     apps_grid_view_->ClearAnySelectedView();
-  int run_types = views::MenuRunner::HAS_MNEMONICS;
+
+  int run_types = views::MenuRunner::HAS_MNEMONICS |
+                  views::MenuRunner::USE_TOUCHABLE_LAYOUT |
+                  views::MenuRunner::FIXED_ANCHOR |
+                  views::MenuRunner::CONTEXT_MENU;
 
   if (source_type == ui::MENU_SOURCE_TOUCH && touch_dragging_)
     run_types |= views::MenuRunner::SEND_GESTURE_EVENTS_TO_OWNER;
 
-  views::MenuAnchorPosition anchor_position = views::MENU_ANCHOR_TOPLEFT;
-  gfx::Rect anchor_rect = gfx::Rect(point, gfx::Size());
-
-  if (::features::IsTouchableAppContextMenuEnabled()) {
-    run_types |= views::MenuRunner::USE_TOUCHABLE_LAYOUT |
-                 views::MenuRunner::FIXED_ANCHOR |
-                 views::MenuRunner::CONTEXT_MENU;
-    anchor_position = views::MENU_ANCHOR_BUBBLE_TOUCHABLE_RIGHT;
-    anchor_rect = apps_grid_view_->GetIdealBounds(this);
-    // Anchor the menu to the same rect that is used for selection highlight.
-    AdaptBoundsForSelectionHighlight(&anchor_rect);
-    views::View::ConvertRectToScreen(apps_grid_view_, &anchor_rect);
-  }
+  gfx::Rect anchor_rect =
+      apps_grid_view_->GetMirroredRect(apps_grid_view_->GetIdealBounds(this));
+  // Anchor the menu to the same rect that is used for selection highlight.
+  AdaptBoundsForSelectionHighlight(&anchor_rect);
+  views::View::ConvertRectToScreen(apps_grid_view_, &anchor_rect);
 
   context_menu_ = std::make_unique<AppListMenuModelAdapter>(
       item_weak_->GetMetadata()->id, this, source_type, this,
@@ -484,13 +487,16 @@ void AppListItemView::OnContextMenuModelReceived(
       base::BindOnce(&AppListItemView::OnMenuClosed,
                      weak_ptr_factory_.GetWeakPtr()));
   context_menu_->Build(std::move(menu));
-  context_menu_->Run(anchor_rect, anchor_position, run_types);
+  context_menu_->Run(anchor_rect, views::MENU_ANCHOR_BUBBLE_TOUCHABLE_RIGHT,
+                     run_types);
   apps_grid_view_->SetSelectedView(this);
 }
 
 void AppListItemView::ShowContextMenuForView(views::View* source,
                                              const gfx::Point& point,
                                              ui::MenuSourceType source_type) {
+  if (context_menu_ && context_menu_->IsShowingMenu())
+    return;
   // Prevent multiple requests for context menus before the current request
   // completes. If a second request is sent before the first one can respond,
   // the Chrome side delegate will become unresponsive
@@ -555,7 +561,7 @@ void AppListItemView::PaintButtonContents(gfx::Canvas* canvas) {
                           flags);
   }
 
-  int preview_circle_radius = GetPreviewCircleRadius();
+  const int preview_circle_radius = GetPreviewCircleRadius();
   if (!preview_circle_radius)
     return;
 
@@ -654,6 +660,12 @@ bool AppListItemView::OnMouseDragged(const ui::MouseEvent& event) {
     SetUIState(UI_STATE_DRAGGING);
   }
   return true;
+}
+
+bool AppListItemView::SkipDefaultKeyEventProcessing(const ui::KeyEvent& event) {
+  // Ensure accelerators take priority in the app list. This ensures, e.g., that
+  // Ctrl+Space will switch input methods rather than activate the button.
+  return false;
 }
 
 void AppListItemView::OnFocus() {
@@ -793,6 +805,14 @@ void AppListItemView::AnimationProgressed(const gfx::Animation* animation) {
 }
 
 void AppListItemView::OnMenuClosed() {
+  if (!menu_close_initiated_from_drag_) {
+    // If the menu was not closed due to a drag sequence(e.g. multi touch) reset
+    // the drag state.
+    SetState(STATE_NORMAL);
+    SetTouchDragging(false);
+  }
+
+  menu_close_initiated_from_drag_ = false;
   OnBlur();
 }
 
@@ -835,6 +855,7 @@ void AppListItemView::SetDragUIState() {
   SetUIState(UI_STATE_DRAGGING);
 }
 
+// static
 gfx::Rect AppListItemView::GetIconBoundsForTargetViewBounds(
     const gfx::Rect& target_bounds,
     const gfx::Size& icon_size) {
@@ -844,6 +865,7 @@ gfx::Rect AppListItemView::GetIconBoundsForTargetViewBounds(
   return rect;
 }
 
+// static
 gfx::Rect AppListItemView::GetTitleBoundsForTargetViewBounds(
     const gfx::Rect& target_bounds,
     const gfx::Size& title_size) {
@@ -855,6 +877,7 @@ gfx::Rect AppListItemView::GetTitleBoundsForTargetViewBounds(
   return rect;
 }
 
+// static
 gfx::Rect AppListItemView::GetProgressBarBoundsForTargetViewBounds(
     const gfx::Rect& target_bounds,
     const gfx::Size& progress_bar_size) {

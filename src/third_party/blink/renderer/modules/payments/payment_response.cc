@@ -63,7 +63,8 @@ void PaymentResponse::UpdateDetailsFromJSON(ScriptState* script_state,
                                             const String& json) {
   ScriptState::Scope scope(script_state);
   if (json.IsEmpty()) {
-    details_ = V8ObjectBuilder(script_state).GetScriptValue();
+    details_.Set(script_state->GetIsolate(),
+                 V8ObjectBuilder(script_state).V8Value());
     return;
   }
 
@@ -75,10 +76,11 @@ void PaymentResponse::UpdateDetailsFromJSON(ScriptState* script_state,
                      json, exception_state);
   if (exception_state.HadException()) {
     exception_state.ClearException();
-    details_ = V8ObjectBuilder(script_state).GetScriptValue();
+    details_.Set(script_state->GetIsolate(),
+                 V8ObjectBuilder(script_state).V8Value());
     return;
   }
-  details_ = ScriptValue(script_state, parsed_value);
+  details_.Set(script_state->GetIsolate(), parsed_value);
 }
 
 ScriptValue PaymentResponse::toJSONForBinding(ScriptState* script_state) const {
@@ -102,7 +104,7 @@ ScriptValue PaymentResponse::toJSONForBinding(ScriptState* script_state) const {
 }
 
 ScriptValue PaymentResponse::details(ScriptState* script_state) const {
-  return ScriptValue(script_state, details_.V8ValueFor(script_state));
+  return ScriptValue::ToWorldSafeScriptValue(script_state, details_);
 }
 
 ScriptPromise PaymentResponse::complete(ScriptState* script_state,
@@ -118,7 +120,7 @@ ScriptPromise PaymentResponse::complete(ScriptState* script_state,
 
 ScriptPromise PaymentResponse::retry(
     ScriptState* script_state,
-    const PaymentValidationErrors& error_fields) {
+    const PaymentValidationErrors* error_fields) {
   return payment_state_resolver_->Retry(script_state, error_fields);
 }
 
@@ -127,7 +129,7 @@ bool PaymentResponse::HasPendingActivity() const {
 }
 
 const AtomicString& PaymentResponse::InterfaceName() const {
-  return EventTypeNames::payerdetailchange;
+  return event_type_names::kPayerdetailchange;
 }
 
 ExecutionContext* PaymentResponse::GetExecutionContext() const {
@@ -135,6 +137,7 @@ ExecutionContext* PaymentResponse::GetExecutionContext() const {
 }
 
 void PaymentResponse::Trace(blink::Visitor* visitor) {
+  visitor->Trace(details_);
   visitor->Trace(shipping_address_);
   visitor->Trace(payment_state_resolver_);
   EventTargetWithInlineData::Trace(visitor);

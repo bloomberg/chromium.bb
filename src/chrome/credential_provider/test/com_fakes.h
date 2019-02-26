@@ -88,7 +88,8 @@ class FakeCredentialProviderEvents : public ICredentialProviderEvents {
 ///////////////////////////////////////////////////////////////////////////////
 
 // Fake the GaiaCredentialProvider COM object.
-class FakeGaiaCredentialProvider : public IGaiaCredentialProvider {
+class FakeGaiaCredentialProvider : public IGaiaCredentialProvider,
+                                   public IGaiaCredentialProviderForTesting {
  public:
   FakeGaiaCredentialProvider();
   virtual ~FakeGaiaCredentialProvider();
@@ -97,7 +98,6 @@ class FakeGaiaCredentialProvider : public IGaiaCredentialProvider {
   const CComBSTR& password() const { return password_; }
   const CComBSTR& sid() const { return sid_; }
 
- private:
   // IGaiaCredentialProvider
   IFACEMETHODIMP QueryInterface(REFIID riid, void** ppv) override;
   ULONG STDMETHODCALLTYPE AddRef() override;
@@ -106,10 +106,18 @@ class FakeGaiaCredentialProvider : public IGaiaCredentialProvider {
                                      BSTR username,
                                      BSTR password,
                                      BSTR sid) override;
+  IFACEMETHODIMP HasInternetConnection() override;
 
+  // IGaiaCredentialProviderForTesting
+  IFACEMETHODIMP SetReauthCheckDoneEvent(INT_PTR event) override;
+  IFACEMETHODIMP SetHasInternetConnection(
+      HasInternetConnectionCheckType has_internet_connection) override;
+
+ private:
   CComBSTR username_;
   CComBSTR password_;
   CComBSTR sid_;
+  HasInternetConnectionCheckType has_internet_connection_ = kHicForceYes;
 };
 
 }  // namespace credential_provider

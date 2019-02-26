@@ -11,6 +11,7 @@
 #include "base/memory/weak_ptr.h"
 #include "chromeos/services/multidevice_setup/public/cpp/android_sms_app_helper_delegate.h"
 #include "components/content_settings/core/browser/host_content_settings_map.h"
+#include "services/network/public/mojom/cookie_manager.mojom.h"
 #include "url/gurl.h"
 
 class Profile;
@@ -37,21 +38,26 @@ class AndroidSmsAppHelperDelegateImpl : public AndroidSmsAppHelperDelegate {
   // function are added. See https://crbug.com/876972.
   AndroidSmsAppHelperDelegateImpl(
       web_app::PendingAppManager* pending_app_manager,
-      HostContentSettingsMap* host_content_settings_map);
+      HostContentSettingsMap* host_content_settings_map,
+      network::mojom::CookieManager* cookie_manager);
   void OnAppInstalled(bool launch_on_install,
                       const GURL& app_url,
                       web_app::InstallResultCode code);
-  void InstallAndroidSmsApp(bool launch_on_install);
+  void SetUpAndroidSmsApp(bool launch_on_install);
   void LaunchAndroidSmsApp();
+  void OnSetDefaultToPersistCookieForInstall(bool launch_on_install,
+                                             bool set_cookie_success);
 
   // AndroidSmsAppHelperDelegate:
-  void InstallAndroidSmsApp() override;
-  void InstallAndLaunchAndroidSmsApp() override;
+  void SetUpAndroidSmsApp() override;
+  void SetUpAndLaunchAndroidSmsApp() override;
+  void TearDownAndroidSmsApp() override;
 
   static const char kMessagesWebAppUrl[];
   web_app::PendingAppManager* pending_app_manager_;
   Profile* profile_;
   HostContentSettingsMap* host_content_settings_map_;
+  network::mojom::CookieManager* cookie_manager_;
   base::WeakPtrFactory<AndroidSmsAppHelperDelegateImpl> weak_ptr_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(AndroidSmsAppHelperDelegateImpl);

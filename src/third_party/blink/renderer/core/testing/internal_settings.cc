@@ -110,7 +110,7 @@ void InternalSettings::Backup::RestoreTo(Settings* settings) {
 InternalSettings* InternalSettings::From(Page& page) {
   InternalSettings* supplement = Supplement<Page>::From<InternalSettings>(page);
   if (!supplement) {
-    supplement = new InternalSettings(page);
+    supplement = MakeGarbageCollected<InternalSettings>(page);
     ProvideTo(page, supplement);
   }
   return supplement;

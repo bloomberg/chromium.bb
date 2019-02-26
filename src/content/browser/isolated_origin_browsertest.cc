@@ -14,7 +14,6 @@
 #include "content/browser/storage_partition_impl.h"
 #include "content/browser/web_contents/web_contents_impl.h"
 #include "content/public/browser/render_process_host.h"
-#include "content/public/common/browser_side_navigation_policy.h"
 #include "content/public/common/content_features.h"
 #include "content/public/common/content_switches.h"
 #include "content/public/test/browser_test_utils.h"
@@ -1105,7 +1104,7 @@ class IsolatedOriginFieldTrialTest : public ContentBrowserTest {
 
 IN_PROC_BROWSER_TEST_F(IsolatedOriginFieldTrialTest, Test) {
   bool expected_to_isolate = !base::CommandLine::ForCurrentProcess()->HasSwitch(
-      switches::kDisableSiteIsolationTrials);
+      switches::kDisableSiteIsolation);
 
   auto* policy = ChildProcessSecurityPolicyImpl::GetInstance();
   EXPECT_EQ(expected_to_isolate, policy->IsIsolatedOrigin(url::Origin::Create(
@@ -1134,7 +1133,7 @@ class IsolatedOriginCommandLineAndFieldTrialTest
 IN_PROC_BROWSER_TEST_F(IsolatedOriginCommandLineAndFieldTrialTest, Test) {
   auto* policy = ChildProcessSecurityPolicyImpl::GetInstance();
   // --isolate-origins should take effect regardless of the
-  //   kDisableSiteIsolationTrials opt-out flag.
+  //   kDisableSiteIsolation opt-out flag.
   EXPECT_TRUE(policy->IsIsolatedOrigin(
       url::Origin::Create(GURL("https://cmd.line.com/"))));
   EXPECT_TRUE(policy->IsIsolatedOrigin(
@@ -1143,7 +1142,7 @@ IN_PROC_BROWSER_TEST_F(IsolatedOriginCommandLineAndFieldTrialTest, Test) {
   // Field trial origins should also take effect, but only if the opt-out flag
   // is not present.
   bool expected_to_isolate = !base::CommandLine::ForCurrentProcess()->HasSwitch(
-      switches::kDisableSiteIsolationTrials);
+      switches::kDisableSiteIsolation);
   EXPECT_EQ(expected_to_isolate, policy->IsIsolatedOrigin(url::Origin::Create(
                                      GURL("https://field.trial.com/"))));
   EXPECT_EQ(
@@ -1315,7 +1314,7 @@ IN_PROC_BROWSER_TEST_F(IsolatedOriginTestWithMojoBlobURLs, NavigateToBlobURL) {
   EXPECT_TRUE(load_observer.last_navigation_succeeded());
 }
 
-// Ensure that --disable-site-isolation-trials disables field trials.
+// Ensure that --disable-site-isolation-trials disables origin isolation.
 class IsolatedOriginTrialOverrideTest : public IsolatedOriginFieldTrialTest {
  public:
   IsolatedOriginTrialOverrideTest() {}
@@ -1323,7 +1322,7 @@ class IsolatedOriginTrialOverrideTest : public IsolatedOriginFieldTrialTest {
   ~IsolatedOriginTrialOverrideTest() override {}
 
   void SetUpCommandLine(base::CommandLine* command_line) override {
-    command_line->AppendSwitch(switches::kDisableSiteIsolationTrials);
+    command_line->AppendSwitch(switches::kDisableSiteIsolation);
   }
 
  private:
@@ -1349,7 +1348,7 @@ class IsolatedOriginNoFlagOverrideTest : public IsolatedOriginTest {
 
   void SetUpCommandLine(base::CommandLine* command_line) override {
     IsolatedOriginTest::SetUpCommandLine(command_line);
-    command_line->AppendSwitch(switches::kDisableSiteIsolationTrials);
+    command_line->AppendSwitch(switches::kDisableSiteIsolation);
   }
 
  private:

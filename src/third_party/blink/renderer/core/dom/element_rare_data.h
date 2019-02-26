@@ -27,6 +27,7 @@
 #include "third_party/blink/renderer/core/aom/accessible_node.h"
 #include "third_party/blink/renderer/core/css/cssom/inline_style_property_map.h"
 #include "third_party/blink/renderer/core/css/inline_css_style_declaration.h"
+#include "third_party/blink/renderer/core/display_lock/display_lock_context.h"
 #include "third_party/blink/renderer/core/dom/attr.h"
 #include "third_party/blink/renderer/core/dom/dataset_dom_string_map.h"
 #include "third_party/blink/renderer/core/dom/dom_token_list.h"
@@ -47,15 +48,18 @@
 
 namespace blink {
 
+class Element;
+class HTMLElement;
 class ResizeObservation;
 class ResizeObserver;
 
 class ElementRareData : public NodeRareData {
  public:
   static ElementRareData* Create(NodeRenderingData* node_layout_data) {
-    return new ElementRareData(node_layout_data);
+    return MakeGarbageCollected<ElementRareData>(node_layout_data);
   }
 
+  explicit ElementRareData(NodeRenderingData*);
   ~ElementRareData();
 
   void SetPseudoElement(PseudoId, PseudoElement*);
@@ -96,15 +100,12 @@ class ElementRareData : public NodeRareData {
     class_list_ = class_list;
   }
 
-  void SetPart(const AtomicString part_names) {
+  void SetPart(DOMTokenList* part) {
     if (!RuntimeEnabledFeatures::CSSPartPseudoElementEnabled())
       return;
-    if (!part_names_) {
-      part_names_.reset(new SpaceSplitString());
-    }
-    part_names_->Set(part_names);
+    part_ = part;
   }
-  const SpaceSplitString* PartNames() const { return part_names_.get(); }
+  DOMTokenList* GetPart() const { return part_.Get(); }
 
   void SetPartNamesMap(const AtomicString part_names) {
     if (!RuntimeEnabledFeatures::CSSPartPseudoElementEnabled())
@@ -153,6 +154,9 @@ class ElementRareData : public NodeRareData {
   }
   void SetIsValue(const AtomicString& is_value) { is_value_ = is_value; }
   const AtomicString& IsValue() const { return is_value_; }
+  void SetDidAttachInternals() { did_attach_internals_ = true; }
+  bool DidAttachInternals() const { return did_attach_internals_; }
+  ElementInternals& EnsureElementInternals(HTMLElement& target);
 
   AccessibleNode* GetAccessibleNode() const { return accessible_node_.Get(); }
   AccessibleNode* EnsureAccessibleNode(Element* owner_element) {
@@ -174,7 +178,8 @@ class ElementRareData : public NodeRareData {
   }
   ElementIntersectionObserverData& EnsureIntersectionObserverData() {
     if (!intersection_observer_data_) {
-      intersection_observer_data_ = new ElementIntersectionObserverData();
+      intersection_observer_data_ =
+          MakeGarbageCollected<ElementIntersectionObserverData>();
     }
     return *intersection_observer_data_;
   }
@@ -186,6 +191,17 @@ class ElementRareData : public NodeRareData {
     return resize_observer_data_;
   }
   ResizeObserverDataMap& EnsureResizeObserverData();
+
+  DisplayLockContext* EnsureDisplayLockContext(Element* element,
+                                               ExecutionContext* context) {
+    if (!display_lock_context_ || display_lock_context_->IsResolved()) {
+      display_lock_context_ = new DisplayLockContext(element, context);
+    }
+    return display_lock_context_.Get();
+  }
+  DisplayLockContext* GetDisplayLockContext() const {
+    return display_lock_context_;
+  }
 
   const AtomicString& GetNonce() const { return nonce_; }
   void SetNonce(const AtomicString& nonce) { nonce_ = nonce; }
@@ -199,7 +215,7 @@ class ElementRareData : public NodeRareData {
   TraceWrapperMember<DatasetDOMStringMap> dataset_;
   TraceWrapperMember<ShadowRoot> shadow_root_;
   TraceWrapperMember<DOMTokenList> class_list_;
-  std::unique_ptr<SpaceSplitString> part_names_;
+  TraceWrapperMember<DOMTokenList> part_;
   std::unique_ptr<NamesMap> part_names_map_;
   TraceWrapperMember<NamedNodeMap> attribute_map_;
   TraceWrapperMember<AttrNodeList> attr_node_list_;
@@ -216,12 +232,14 @@ class ElementRareData : public NodeRareData {
   Member<V0CustomElementDefinition> v0_custom_element_definition_;
   Member<CustomElementDefinition> custom_element_definition_;
   AtomicString is_value_;
+  TraceWrapperMember<ElementInternals> element_internals_;
 
   Member<PseudoElementData> pseudo_element_data_;
 
   TraceWrapperMember<AccessibleNode> accessible_node_;
 
-  explicit ElementRareData(NodeRenderingData*);
+  WeakMember<DisplayLockContext> display_lock_context_;
+  bool did_attach_internals_ = false;
 };
 
 inline LayoutSize DefaultMinimumSizeForResizing() {

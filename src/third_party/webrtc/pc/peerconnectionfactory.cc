@@ -47,6 +47,7 @@
 #include "pc/videocapturertracksource.h"
 #include "pc/videotrack.h"
 #include "rtc_base/experiments/congestion_controller_experiment.h"
+#include "system_wrappers/include/field_trial.h"
 
 namespace webrtc {
 
@@ -359,9 +360,12 @@ PeerConnectionFactory::CreatePeerConnection(
                                                         network_thread_);
   }
   if (!dependencies.allocator) {
-    dependencies.allocator.reset(new cricket::BasicPortAllocator(
-        default_network_manager_.get(), default_socket_factory_.get(),
-        configuration.turn_customizer));
+    network_thread_->Invoke<void>(RTC_FROM_HERE, [this, &configuration,
+                                                  &dependencies]() {
+      dependencies.allocator = absl::make_unique<cricket::BasicPortAllocator>(
+          default_network_manager_.get(), default_socket_factory_.get(),
+          configuration.turn_customizer);
+    });
   }
 
   // TODO(zstein): Once chromium injects its own AsyncResolverFactory, set
@@ -445,7 +449,10 @@ rtc::Thread* PeerConnectionFactory::network_thread() {
 
 std::unique_ptr<RtcEventLog> PeerConnectionFactory::CreateRtcEventLog_w() {
   RTC_DCHECK_RUN_ON(worker_thread_);
-  const auto encoding_type = RtcEventLog::EncodingType::Legacy;
+
+  auto encoding_type = RtcEventLog::EncodingType::Legacy;
+  if (field_trial::IsEnabled("WebRTC-RtcEventLogNewFormat"))
+    encoding_type = RtcEventLog::EncodingType::NewFormat;
   return event_log_factory_
              ? event_log_factory_->CreateRtcEventLog(encoding_type)
              : absl::make_unique<RtcEventLogNullImpl>();
@@ -463,7 +470,8 @@ std::unique_ptr<Call> PeerConnectionFactory::CreateCall_w(
   if (!channel_manager_->media_engine() || !call_factory_) {
     return nullptr;
   }
-  call_config.audio_state = channel_manager_->media_engine()->GetAudioState();
+  call_config.audio_state =
+      channel_manager_->media_engine()->voice().GetAudioState();
   call_config.bitrate_config.min_bitrate_bps = kMinBandwidthBps;
   call_config.bitrate_config.start_bitrate_bps = kStartBandwidthBps;
   call_config.bitrate_config.max_bitrate_bps = kMaxBandwidthBps;

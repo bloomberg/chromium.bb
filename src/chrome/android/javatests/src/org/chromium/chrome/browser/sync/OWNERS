@@ -2,4 +2,6 @@ mastiz@chromium.org
 nyquist@chromium.org
 yfriedman@chromium.org
 
+file://components/sync/OWNERS
+
 # COMPONENT: Services>Sync

@@ -99,7 +99,7 @@ void ReportValidationErrorForMessage(
     ValidationError error,
     const char* description) {
   ValidationContext validation_context(nullptr, 0, 0, 0, message, description);
-  ReportValidationError(&validation_context, error);
+  ReportValidationError(&validation_context, error, description);
 }
 
 ScopedSuppressValidationErrorLoggingForTests

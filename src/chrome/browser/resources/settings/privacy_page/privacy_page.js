@@ -310,7 +310,9 @@ Polymer({
   onMoreSettingsBoxClicked_: function(e) {
     if (e.target.tagName === 'A') {
       e.preventDefault();
-      settings.navigateTo(settings.routes.SYNC);
+      // Navigate to sync page, and remove (privacy related) search text to
+      // avoid the sync page from being hidden.
+      settings.navigateTo(settings.routes.SYNC, null, true);
     }
   },
 

@@ -47,17 +47,17 @@ class VideoPlaybackQuality : public ScriptWrappable {
                                       unsigned dropped_video_frames,
                                       unsigned corrupted_video_frames);
 
+  VideoPlaybackQuality(const Document&,
+                       unsigned total_video_frames,
+                       unsigned dropped_video_frames,
+                       unsigned corrupted_video_frames);
+
   double creationTime() const { return creation_time_; }
   unsigned totalVideoFrames() const { return total_video_frames_; }
   unsigned droppedVideoFrames() const { return dropped_video_frames_; }
   unsigned corruptedVideoFrames() const { return corrupted_video_frames_; }
 
  private:
-  VideoPlaybackQuality(const Document&,
-                       unsigned total_video_frames,
-                       unsigned dropped_video_frames,
-                       unsigned corrupted_video_frames);
-
   double creation_time_;
   unsigned total_video_frames_;
   unsigned dropped_video_frames_;

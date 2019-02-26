@@ -42,6 +42,10 @@ extern const char kRestoreSessionTargetUrlHashPrefix[];
 // Returns true if |url| is a placeholder URL or restore_session.html URL.
 bool IsWKInternalUrl(const GURL& url);
 
+// Returns true if |url| is an app specific url or an about:// scheme
+// non-placeholder url.
+bool URLNeedsUserAgentType(const GURL& url);
+
 // Returns a file:// URL that points to the magic restore_session.html file.
 // This is used in unit tests.
 GURL GetRestoreSessionBaseUrl();

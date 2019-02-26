@@ -33,7 +33,6 @@ source_set("tests") {
     "//base",
     "//base/test:test_support",
     "//services/service_manager/public/cpp",
-    "//services/service_manager/public/cpp:service_test_support",
     "//services/ws/public/cpp/input_devices",
     "//services/ws/public/mojom/input_devices",
     "//testing/gtest",

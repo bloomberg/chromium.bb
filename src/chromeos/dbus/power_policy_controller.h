@@ -129,6 +129,8 @@ class CHROMEOS_EXPORT PowerPolicyController
 
   // PowerManagerClient::Observer implementation:
   void PowerManagerRestarted() override;
+  void ScreenBrightnessChanged(
+      const power_manager::BacklightBrightnessChange& change) override;
 
  private:
   explicit PowerPolicyController(PowerManagerClient* client);
@@ -172,7 +174,7 @@ class CHROMEOS_EXPORT PowerPolicyController
   power_manager::PowerManagementPolicy prefs_policy_;
 
   // Was ApplyPrefs() called?
-  bool prefs_were_set_;
+  bool prefs_were_set_ = false;
 
   // Maps from an ID representing a request to prevent the screen from
   // getting dimmed or turned off or to prevent the system from suspending
@@ -180,21 +182,25 @@ class CHROMEOS_EXPORT PowerPolicyController
   WakeLockMap wake_locks_;
 
   // Should |wake_locks_| be honored?
-  bool honor_wake_locks_;
+  bool honor_wake_locks_ = true;
 
   // If wake locks are honored, should TYPE_SCREEN or TYPE_DIM entries in
   // |wake_locks_| be honored?
   // If false, screen wake locks are just treated as TYPE_SYSTEM instead.
-  bool honor_screen_wake_locks_;
+  bool honor_screen_wake_locks_ = true;
 
   // Next ID to be used by an Add*WakeLock() request.
-  int next_wake_lock_id_;
+  int next_wake_lock_id_ = 1;
 
   // True if Chrome is in the process of exiting.
-  bool chrome_is_exiting_;
+  bool chrome_is_exiting_ = false;
 
   // True if a user homedir is in the process of migrating encryption formats.
-  bool encryption_migration_active_;
+  bool encryption_migration_active_ = false;
+
+  // Whether brightness policy value was overridden by a user adjustment in the
+  // current user session.
+  bool per_session_brightness_override_ = false;
 
   DISALLOW_COPY_AND_ASSIGN(PowerPolicyController);
 };

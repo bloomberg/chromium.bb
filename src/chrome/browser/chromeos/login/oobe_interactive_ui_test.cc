@@ -311,17 +311,6 @@ class OobeInteractiveUITest
     LOG(INFO) << "OobeInteractiveUITest: Switched to 'user-image' screen.";
   }
 
-  void RunUserImageScreenChecks() {
-    js_checker_.ExpectTrue("!$('user-image').hidden");
-  }
-
-  void ExitUserImageScreen() {
-    js_checker_.Evaluate("$('user-image').querySelector('#ok-button').click()");
-
-    LOG(INFO) << "OobeInteractiveUITest: Exited 'user-image' screen.";
-    WaitForLoginDisplayHostShutdown();
-  }
-
   base::Optional<std::string> quick_unlock_private_get_auth_token_password_;
 
  private:
@@ -364,9 +353,6 @@ IN_PROC_BROWSER_TEST_F(OobeInteractiveUITest, DISABLED_SimpleEndToEnd) {
   WaitForMarketingOptInScreen();
   RunMarketingOptInScreenChecks();
   ExitMarketingOptInScreen();
-
-  RunUserImageScreenChecks();
-  ExitUserImageScreen();
 
   WaitForLoginDisplayHostShutdown();
 }

@@ -13,6 +13,12 @@
 
 namespace content {
 
+namespace {
+void SessionStorageResponse(base::OnceClosure callback, bool success) {
+  std::move(callback).Run();
+}
+}  // namespace
+
 SessionStorageNamespaceImplMojo::SessionStorageNamespaceImplMojo(
     std::string namespace_id,
     SessionStorageDataMap::Listener* data_map_listener,
@@ -111,11 +117,12 @@ void SessionStorageNamespaceImplMojo::PurgeUnboundAreas() {
 }
 
 void SessionStorageNamespaceImplMojo::RemoveOriginData(
-    const url::Origin& origin) {
+    const url::Origin& origin,
+    base::OnceClosure callback) {
   if (waiting_on_clone_population_) {
     run_after_clone_population_.push_back(
         base::BindOnce(&SessionStorageNamespaceImplMojo::RemoveOriginData,
-                       base::Unretained(this), origin));
+                       base::Unretained(this), origin, std::move(callback)));
     return;
   }
   DCHECK(IsPopulated());
@@ -124,7 +131,8 @@ void SessionStorageNamespaceImplMojo::RemoveOriginData(
     return;
   // Renderer process expects |source| to always be two newline separated
   // strings.
-  it->second->DeleteAll("\n", base::DoNothing());
+  it->second->DeleteAll(
+      "\n", base::BindOnce(&SessionStorageResponse, std::move(callback)));
   it->second->NotifyObserversAllDeleted();
   it->second->data_map()->storage_area()->ScheduleImmediateCommit();
 }

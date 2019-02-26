@@ -42,7 +42,7 @@ typedef HeapHashMap<WeakMember<Element>, Member<V0CustomElementObserver>>
 
 static ElementObserverMap& ElementObservers() {
   DEFINE_STATIC_LOCAL(Persistent<ElementObserverMap>, map,
-                      (new ElementObserverMap));
+                      (MakeGarbageCollected<ElementObserverMap>()));
   return *map;
 }
 

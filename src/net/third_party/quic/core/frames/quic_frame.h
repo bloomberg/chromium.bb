@@ -23,6 +23,7 @@
 #include "net/third_party/quic/core/frames/quic_path_challenge_frame.h"
 #include "net/third_party/quic/core/frames/quic_path_response_frame.h"
 #include "net/third_party/quic/core/frames/quic_ping_frame.h"
+#include "net/third_party/quic/core/frames/quic_retire_connection_id_frame.h"
 #include "net/third_party/quic/core/frames/quic_rst_stream_frame.h"
 #include "net/third_party/quic/core/frames/quic_stop_sending_frame.h"
 #include "net/third_party/quic/core/frames/quic_stop_waiting_frame.h"
@@ -54,6 +55,7 @@ struct QUIC_EXPORT_PRIVATE QuicFrame {
   explicit QuicFrame(QuicBlockedFrame* frame);
   explicit QuicFrame(QuicApplicationCloseFrame* frame);
   explicit QuicFrame(QuicNewConnectionIdFrame* frame);
+  explicit QuicFrame(QuicRetireConnectionIdFrame* frame);
   explicit QuicFrame(QuicNewTokenFrame* frame);
   explicit QuicFrame(QuicPathResponseFrame* frame);
   explicit QuicFrame(QuicPathChallengeFrame* frame);
@@ -94,6 +96,7 @@ struct QUIC_EXPORT_PRIVATE QuicFrame {
         QuicBlockedFrame* blocked_frame;
         QuicApplicationCloseFrame* application_close_frame;
         QuicNewConnectionIdFrame* new_connection_id_frame;
+        QuicRetireConnectionIdFrame* retire_connection_id_frame;
         QuicPathResponseFrame* path_response_frame;
         QuicPathChallengeFrame* path_challenge_frame;
         QuicStopSendingFrame* stop_sending_frame;

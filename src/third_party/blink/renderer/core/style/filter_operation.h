@@ -30,10 +30,10 @@
 #include "third_party/blink/renderer/core/core_export.h"
 #include "third_party/blink/renderer/core/style/shadow_data.h"
 #include "third_party/blink/renderer/platform/geometry/float_rect.h"
+#include "third_party/blink/renderer/platform/geometry/length.h"
 #include "third_party/blink/renderer/platform/graphics/box_reflection.h"
 #include "third_party/blink/renderer/platform/graphics/color.h"
 #include "third_party/blink/renderer/platform/heap/handle.h"
-#include "third_party/blink/renderer/platform/length.h"
 #include "third_party/blink/renderer/platform/wtf/text/wtf_string.h"
 
 namespace blink {
@@ -132,8 +132,10 @@ class CORE_EXPORT ReferenceFilterOperation : public FilterOperation {
  public:
   static ReferenceFilterOperation* Create(const AtomicString& url,
                                           SVGResource* resource) {
-    return new ReferenceFilterOperation(url, resource);
+    return MakeGarbageCollected<ReferenceFilterOperation>(url, resource);
   }
+
+  ReferenceFilterOperation(const AtomicString& url, SVGResource*);
 
   bool AffectsOpacity() const override { return true; }
   bool MovesPixels() const override { return true; }
@@ -152,8 +154,6 @@ class CORE_EXPORT ReferenceFilterOperation : public FilterOperation {
   void Trace(blink::Visitor*) override;
 
  private:
-  ReferenceFilterOperation(const AtomicString& url, SVGResource*);
-
   FilterOperation* Blend(const FilterOperation* from,
                          double progress) const override {
     NOTREACHED();
@@ -290,8 +290,11 @@ DEFINE_FILTER_OPERATION_TYPE_CASTS(BlurFilterOperation, BLUR);
 class CORE_EXPORT DropShadowFilterOperation : public FilterOperation {
  public:
   static DropShadowFilterOperation* Create(const ShadowData& shadow) {
-    return new DropShadowFilterOperation(shadow);
+    return MakeGarbageCollected<DropShadowFilterOperation>(shadow);
   }
+
+  DropShadowFilterOperation(const ShadowData& shadow)
+      : FilterOperation(DROP_SHADOW), shadow_(shadow) {}
 
   const ShadowData& Shadow() const { return shadow_; }
 
@@ -309,9 +312,6 @@ class CORE_EXPORT DropShadowFilterOperation : public FilterOperation {
         static_cast<const DropShadowFilterOperation*>(&o);
     return shadow_ == other->shadow_;
   }
-
-  DropShadowFilterOperation(const ShadowData& shadow)
-      : FilterOperation(DROP_SHADOW), shadow_(shadow) {}
 
   ShadowData shadow_;
 };

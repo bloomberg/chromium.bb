@@ -137,3 +137,38 @@ TEST(OriginPolicy, CSPDispositionAbsent) {
   )");
   ASSERT_FALSE(policy->GetContentSecurityPolicies()[0].report_only);
 }
+
+TEST(OriginPolicy, FeatureOne) {
+  auto policy = blink::OriginPolicy::From(R"(
+      { "feature-policy": ["geolocation 'self' http://maps.google.com"] } )");
+  ASSERT_EQ(1U, policy->GetFeaturePolicies().size());
+  ASSERT_EQ("geolocation 'self' http://maps.google.com",
+            policy->GetFeaturePolicies()[0]);
+}
+
+TEST(OriginPolicy, FeatureTwo) {
+  auto policy = blink::OriginPolicy::From(R"(
+      { "feature-policy": ["geolocation 'self' http://maps.google.com",
+                     "camera https://example.com"]} )");
+  ASSERT_EQ(2U, policy->GetFeaturePolicies().size());
+  ASSERT_EQ("geolocation 'self' http://maps.google.com",
+            policy->GetFeaturePolicies()[0]);
+  ASSERT_EQ("camera https://example.com", policy->GetFeaturePolicies()[1]);
+}
+
+TEST(OriginPolicy, FeatureTwoPolicies) {
+  auto policy = blink::OriginPolicy::From(R"(
+      { "feature-policy": ["geolocation 'self' http://maps.google.com"],
+        "feature-policy": ["camera https://example.com"] } )");
+
+  // TODO(vogelheim): Determine whether this is the correct behaviour.
+  ASSERT_EQ(1U, policy->GetFeaturePolicies().size());
+}
+
+TEST(OriginPolicy, FeatureComma) {
+  auto policy = blink::OriginPolicy::From(R"(
+      { "feature-policy": ["geolocation 'self' http://maps.google.com, camera https://example.com"]} )");
+
+  // TODO: Determine what to do with this case !
+  ASSERT_EQ(1U, policy->GetFeaturePolicies().size());
+}

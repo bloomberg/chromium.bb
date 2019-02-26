@@ -25,6 +25,7 @@
 
 #include "third_party/blink/renderer/core/html/parser/html_tree_builder_simulator.h"
 
+#include "third_party/blink/public/mojom/script/script_type.mojom-blink.h"
 #include "third_party/blink/renderer/core/html/parser/html_parser_idioms.h"
 #include "third_party/blink/renderer/core/html/parser/html_tokenizer.h"
 #include "third_party/blink/renderer/core/html/parser/html_tree_builder.h"
@@ -35,71 +36,79 @@
 
 namespace blink {
 
-using namespace HTMLNames;
+using namespace html_names;
 
 static bool TokenExitsForeignContent(const CompactHTMLToken& token) {
   // FIXME: This is copied from HTMLTreeBuilder::processTokenInForeignContent
   // and changed to use threadSafeHTMLNamesMatch.
   const String& tag_name = token.Data();
-  return ThreadSafeMatch(tag_name, bTag) || ThreadSafeMatch(tag_name, bigTag) ||
-         ThreadSafeMatch(tag_name, blockquoteTag) ||
-         ThreadSafeMatch(tag_name, bodyTag) ||
-         ThreadSafeMatch(tag_name, brTag) ||
-         ThreadSafeMatch(tag_name, centerTag) ||
-         ThreadSafeMatch(tag_name, codeTag) ||
-         ThreadSafeMatch(tag_name, ddTag) ||
-         ThreadSafeMatch(tag_name, divTag) ||
-         ThreadSafeMatch(tag_name, dlTag) || ThreadSafeMatch(tag_name, dtTag) ||
-         ThreadSafeMatch(tag_name, emTag) ||
-         ThreadSafeMatch(tag_name, embedTag) ||
-         ThreadSafeMatch(tag_name, h1Tag) || ThreadSafeMatch(tag_name, h2Tag) ||
-         ThreadSafeMatch(tag_name, h3Tag) || ThreadSafeMatch(tag_name, h4Tag) ||
-         ThreadSafeMatch(tag_name, h5Tag) || ThreadSafeMatch(tag_name, h6Tag) ||
-         ThreadSafeMatch(tag_name, headTag) ||
-         ThreadSafeMatch(tag_name, hrTag) || ThreadSafeMatch(tag_name, iTag) ||
-         ThreadSafeMatch(tag_name, imgTag) ||
-         ThreadSafeMatch(tag_name, liTag) ||
-         ThreadSafeMatch(tag_name, listingTag) ||
-         ThreadSafeMatch(tag_name, menuTag) ||
-         ThreadSafeMatch(tag_name, metaTag) ||
-         ThreadSafeMatch(tag_name, nobrTag) ||
-         ThreadSafeMatch(tag_name, olTag) || ThreadSafeMatch(tag_name, pTag) ||
-         ThreadSafeMatch(tag_name, preTag) ||
-         ThreadSafeMatch(tag_name, rubyTag) ||
-         ThreadSafeMatch(tag_name, sTag) ||
-         ThreadSafeMatch(tag_name, smallTag) ||
-         ThreadSafeMatch(tag_name, spanTag) ||
-         ThreadSafeMatch(tag_name, strongTag) ||
-         ThreadSafeMatch(tag_name, strikeTag) ||
-         ThreadSafeMatch(tag_name, subTag) ||
-         ThreadSafeMatch(tag_name, supTag) ||
-         ThreadSafeMatch(tag_name, tableTag) ||
-         ThreadSafeMatch(tag_name, ttTag) || ThreadSafeMatch(tag_name, uTag) ||
-         ThreadSafeMatch(tag_name, ulTag) ||
-         ThreadSafeMatch(tag_name, varTag) ||
-         (ThreadSafeMatch(tag_name, fontTag) &&
-          (token.GetAttributeItem(colorAttr) ||
-           token.GetAttributeItem(faceAttr) ||
-           token.GetAttributeItem(sizeAttr)));
+  return ThreadSafeMatch(tag_name, kBTag) ||
+         ThreadSafeMatch(tag_name, kBigTag) ||
+         ThreadSafeMatch(tag_name, kBlockquoteTag) ||
+         ThreadSafeMatch(tag_name, kBodyTag) ||
+         ThreadSafeMatch(tag_name, kBrTag) ||
+         ThreadSafeMatch(tag_name, kCenterTag) ||
+         ThreadSafeMatch(tag_name, kCodeTag) ||
+         ThreadSafeMatch(tag_name, kDdTag) ||
+         ThreadSafeMatch(tag_name, kDivTag) ||
+         ThreadSafeMatch(tag_name, kDlTag) ||
+         ThreadSafeMatch(tag_name, kDtTag) ||
+         ThreadSafeMatch(tag_name, kEmTag) ||
+         ThreadSafeMatch(tag_name, kEmbedTag) ||
+         ThreadSafeMatch(tag_name, kH1Tag) ||
+         ThreadSafeMatch(tag_name, kH2Tag) ||
+         ThreadSafeMatch(tag_name, kH3Tag) ||
+         ThreadSafeMatch(tag_name, kH4Tag) ||
+         ThreadSafeMatch(tag_name, kH5Tag) ||
+         ThreadSafeMatch(tag_name, kH6Tag) ||
+         ThreadSafeMatch(tag_name, kHeadTag) ||
+         ThreadSafeMatch(tag_name, kHrTag) ||
+         ThreadSafeMatch(tag_name, kITag) ||
+         ThreadSafeMatch(tag_name, kImgTag) ||
+         ThreadSafeMatch(tag_name, kLiTag) ||
+         ThreadSafeMatch(tag_name, kListingTag) ||
+         ThreadSafeMatch(tag_name, kMenuTag) ||
+         ThreadSafeMatch(tag_name, kMetaTag) ||
+         ThreadSafeMatch(tag_name, kNobrTag) ||
+         ThreadSafeMatch(tag_name, kOlTag) ||
+         ThreadSafeMatch(tag_name, kPTag) ||
+         ThreadSafeMatch(tag_name, kPreTag) ||
+         ThreadSafeMatch(tag_name, kRubyTag) ||
+         ThreadSafeMatch(tag_name, kSTag) ||
+         ThreadSafeMatch(tag_name, kSmallTag) ||
+         ThreadSafeMatch(tag_name, kSpanTag) ||
+         ThreadSafeMatch(tag_name, kStrongTag) ||
+         ThreadSafeMatch(tag_name, kStrikeTag) ||
+         ThreadSafeMatch(tag_name, kSubTag) ||
+         ThreadSafeMatch(tag_name, kSupTag) ||
+         ThreadSafeMatch(tag_name, kTableTag) ||
+         ThreadSafeMatch(tag_name, kTtTag) ||
+         ThreadSafeMatch(tag_name, kUTag) ||
+         ThreadSafeMatch(tag_name, kUlTag) ||
+         ThreadSafeMatch(tag_name, kVarTag) ||
+         (ThreadSafeMatch(tag_name, kFontTag) &&
+          (token.GetAttributeItem(kColorAttr) ||
+           token.GetAttributeItem(kFaceAttr) ||
+           token.GetAttributeItem(kSizeAttr)));
 }
 
 static bool TokenExitsMath(const CompactHTMLToken& token) {
   // FIXME: This is copied from HTMLElementStack::isMathMLTextIntegrationPoint
   // and changed to use threadSafeMatch.
   const String& tag_name = token.Data();
-  return ThreadSafeMatch(tag_name, MathMLNames::miTag) ||
-         ThreadSafeMatch(tag_name, MathMLNames::moTag) ||
-         ThreadSafeMatch(tag_name, MathMLNames::mnTag) ||
-         ThreadSafeMatch(tag_name, MathMLNames::msTag) ||
-         ThreadSafeMatch(tag_name, MathMLNames::mtextTag);
+  return ThreadSafeMatch(tag_name, mathml_names::kMiTag) ||
+         ThreadSafeMatch(tag_name, mathml_names::kMoTag) ||
+         ThreadSafeMatch(tag_name, mathml_names::kMnTag) ||
+         ThreadSafeMatch(tag_name, mathml_names::kMsTag) ||
+         ThreadSafeMatch(tag_name, mathml_names::kMtextTag);
 }
 
 static bool TokenExitsInSelect(const CompactHTMLToken& token) {
   // https://html.spec.whatwg.org/#parsing-main-inselect
   const String& tag_name = token.Data();
-  return ThreadSafeMatch(tag_name, inputTag) ||
-         ThreadSafeMatch(tag_name, keygenTag) ||
-         ThreadSafeMatch(tag_name, textareaTag);
+  return ThreadSafeMatch(tag_name, kInputTag) ||
+         ThreadSafeMatch(tag_name, kKeygenTag) ||
+         ThreadSafeMatch(tag_name, kTextareaTag);
 }
 
 HTMLTreeBuilderSimulator::HTMLTreeBuilderSimulator(
@@ -116,9 +125,9 @@ HTMLTreeBuilderSimulator::State HTMLTreeBuilderSimulator::StateFor(
            tree_builder->OpenElements()->TopRecord();
        record; record = record->Next()) {
     Namespace current_namespace = HTML;
-    if (record->NamespaceURI() == SVGNames::svgNamespaceURI)
+    if (record->NamespaceURI() == svg_names::kNamespaceURI)
       current_namespace = SVG;
-    else if (record->NamespaceURI() == MathMLNames::mathmlNamespaceURI)
+    else if (record->NamespaceURI() == mathml_names::kNamespaceURI)
       current_namespace = kMathML;
 
     if (namespace_stack.IsEmpty() ||
@@ -136,9 +145,9 @@ HTMLTreeBuilderSimulator::SimulatedToken HTMLTreeBuilderSimulator::Simulate(
 
   if (token.GetType() == HTMLToken::kStartTag) {
     const String& tag_name = token.Data();
-    if (ThreadSafeMatch(tag_name, SVGNames::svgTag))
+    if (ThreadSafeMatch(tag_name, svg_names::kSVGTag))
       namespace_stack_.push_back(SVG);
-    if (ThreadSafeMatch(tag_name, MathMLNames::mathTag))
+    if (ThreadSafeMatch(tag_name, mathml_names::kMathTag))
       namespace_stack_.push_back(kMathML);
     if (InForeignContent() && TokenExitsForeignContent(token))
       namespace_stack_.pop_back();
@@ -148,44 +157,44 @@ HTMLTreeBuilderSimulator::SimulatedToken HTMLTreeBuilderSimulator::Simulate(
     } else if (!InForeignContent()) {
       // FIXME: This is just a copy of Tokenizer::updateStateFor which uses
       // threadSafeMatches.
-      if (ThreadSafeMatch(tag_name, textareaTag) ||
-          ThreadSafeMatch(tag_name, titleTag)) {
+      if (ThreadSafeMatch(tag_name, kTextareaTag) ||
+          ThreadSafeMatch(tag_name, kTitleTag)) {
         tokenizer->SetState(HTMLTokenizer::kRCDATAState);
-      } else if (ThreadSafeMatch(tag_name, scriptTag)) {
+      } else if (ThreadSafeMatch(tag_name, kScriptTag)) {
         tokenizer->SetState(HTMLTokenizer::kScriptDataState);
 
         String type_attribute_value;
-        if (auto* item = token.GetAttributeItem(typeAttr)) {
+        if (auto* item = token.GetAttributeItem(kTypeAttr)) {
           type_attribute_value = item->Value();
         }
 
         String language_attribute_value;
-        if (auto* item = token.GetAttributeItem(languageAttr)) {
+        if (auto* item = token.GetAttributeItem(kLanguageAttr)) {
           language_attribute_value = item->Value();
         }
 
-        ScriptType script_type;
+        mojom::ScriptType script_type;
         if (ScriptLoader::IsValidScriptTypeAndLanguage(
                 type_attribute_value, language_attribute_value,
                 ScriptLoader::kAllowLegacyTypeInTypeAttribute, script_type)) {
           simulated_token = kValidScriptStart;
         }
-      } else if (ThreadSafeMatch(tag_name, linkTag)) {
+      } else if (ThreadSafeMatch(tag_name, kLinkTag)) {
         simulated_token = kLink;
       } else if (!in_select_insertion_mode_) {
         // If we're in the "in select" insertion mode, all of these tags are
         // ignored, so we shouldn't change the tokenizer state:
         // https://html.spec.whatwg.org/#parsing-main-inselect
-        if (ThreadSafeMatch(tag_name, plaintextTag) &&
+        if (ThreadSafeMatch(tag_name, kPlaintextTag) &&
             !in_select_insertion_mode_) {
           tokenizer->SetState(HTMLTokenizer::kPLAINTEXTState);
-        } else if (ThreadSafeMatch(tag_name, styleTag) ||
-                   ThreadSafeMatch(tag_name, iframeTag) ||
-                   ThreadSafeMatch(tag_name, xmpTag) ||
-                   (ThreadSafeMatch(tag_name, noembedTag) &&
+        } else if (ThreadSafeMatch(tag_name, kStyleTag) ||
+                   ThreadSafeMatch(tag_name, kIFrameTag) ||
+                   ThreadSafeMatch(tag_name, kXmpTag) ||
+                   (ThreadSafeMatch(tag_name, kNoembedTag) &&
                     options_.plugins_enabled) ||
-                   ThreadSafeMatch(tag_name, noframesTag) ||
-                   (ThreadSafeMatch(tag_name, noscriptTag) &&
+                   ThreadSafeMatch(tag_name, kNoframesTag) ||
+                   (ThreadSafeMatch(tag_name, kNoscriptTag) &&
                     options_.script_enabled)) {
           tokenizer->SetState(HTMLTokenizer::kRAWTEXTState);
         }
@@ -197,7 +206,7 @@ HTMLTreeBuilderSimulator::SimulatedToken HTMLTreeBuilderSimulator::Simulate(
       // textual content.
       //
       // https://html.spec.whatwg.org/#parsing-main-inselect
-      if (ThreadSafeMatch(tag_name, selectTag)) {
+      if (ThreadSafeMatch(tag_name, kSelectTag)) {
         in_select_insertion_mode_ = true;
       } else if (in_select_insertion_mode_ && TokenExitsInSelect(token)) {
         in_select_insertion_mode_ = false;
@@ -210,23 +219,31 @@ HTMLTreeBuilderSimulator::SimulatedToken HTMLTreeBuilderSimulator::Simulate(
        InForeignContent())) {
     const String& tag_name = token.Data();
     if ((namespace_stack_.back() == SVG &&
-         ThreadSafeMatch(tag_name, SVGNames::svgTag)) ||
+         ThreadSafeMatch(tag_name, svg_names::kSVGTag)) ||
         (namespace_stack_.back() == kMathML &&
-         ThreadSafeMatch(tag_name, MathMLNames::mathTag)) ||
+         ThreadSafeMatch(tag_name, mathml_names::kMathTag)) ||
         IsHTMLIntegrationPointForEndTag(token) ||
         (namespace_stack_.Contains(kMathML) &&
          namespace_stack_.back() == HTML && TokenExitsMath(token))) {
       namespace_stack_.pop_back();
     }
-    if (ThreadSafeMatch(tag_name, scriptTag)) {
+    if (ThreadSafeMatch(tag_name, kScriptTag)) {
       if (!InForeignContent())
         tokenizer->SetState(HTMLTokenizer::kDataState);
       return kScriptEnd;
-    } else if (ThreadSafeMatch(tag_name, selectTag)) {
-      in_select_insertion_mode_ = false;
     }
-    if (ThreadSafeMatch(tag_name, styleTag))
+    if (ThreadSafeMatch(tag_name, kSelectTag))
+      in_select_insertion_mode_ = false;
+    if (ThreadSafeMatch(tag_name, kStyleTag))
       simulated_token = kStyleEnd;
+  }
+  if (token.GetType() == HTMLToken::kStartTag &&
+      simulated_token == kOtherToken) {
+    const String& tag_name = token.Data();
+    // Use the presence of a dash in the tag name as a proxy for
+    // "is a custom element".
+    if (tag_name.find('-') != kNotFound)
+      simulated_token = kCustomElementBegin;
   }
 
   // FIXME: Also setForceNullCharacterReplacement when in text mode.
@@ -243,9 +260,9 @@ bool HTMLTreeBuilderSimulator::IsHTMLIntegrationPointForStartTag(
   Namespace tokens_ns = namespace_stack_.back();
   const String& tag_name = token.Data();
   if (tokens_ns == kMathML) {
-    if (!ThreadSafeMatch(tag_name, MathMLNames::annotation_xmlTag))
+    if (!ThreadSafeMatch(tag_name, mathml_names::kAnnotationXmlTag))
       return false;
-    if (auto* encoding = token.GetAttributeItem(MathMLNames::encodingAttr)) {
+    if (auto* encoding = token.GetAttributeItem(mathml_names::kEncodingAttr)) {
       return EqualIgnoringASCIICase(encoding->Value(), "text/html") ||
              EqualIgnoringASCIICase(encoding->Value(), "application/xhtml+xml");
     }
@@ -253,10 +270,10 @@ bool HTMLTreeBuilderSimulator::IsHTMLIntegrationPointForStartTag(
     // FIXME: It's very fragile that we special case foreignObject here to be
     // case-insensitive.
     if (DeprecatedEqualIgnoringCase(tag_name,
-                                    SVGNames::foreignObjectTag.LocalName()))
+                                    svg_names::kForeignObjectTag.LocalName()))
       return true;
-    return ThreadSafeMatch(tag_name, SVGNames::descTag) ||
-           ThreadSafeMatch(tag_name, SVGNames::titleTag);
+    return ThreadSafeMatch(tag_name, svg_names::kDescTag) ||
+           ThreadSafeMatch(tag_name, svg_names::kTitleTag);
   }
   return false;
 }
@@ -277,15 +294,15 @@ bool HTMLTreeBuilderSimulator::IsHTMLIntegrationPointForEndTag(
 
   const String& tag_name = token.Data();
   if (tokens_ns == kMathML)
-    return ThreadSafeMatch(tag_name, MathMLNames::annotation_xmlTag);
+    return ThreadSafeMatch(tag_name, mathml_names::kAnnotationXmlTag);
   if (tokens_ns == SVG) {
     // FIXME: It's very fragile that we special case foreignObject here to be
     // case-insensitive.
     if (DeprecatedEqualIgnoringCase(tag_name,
-                                    SVGNames::foreignObjectTag.LocalName()))
+                                    svg_names::kForeignObjectTag.LocalName()))
       return true;
-    return ThreadSafeMatch(tag_name, SVGNames::descTag) ||
-           ThreadSafeMatch(tag_name, SVGNames::titleTag);
+    return ThreadSafeMatch(tag_name, svg_names::kDescTag) ||
+           ThreadSafeMatch(tag_name, svg_names::kTitleTag);
   }
   return false;
 }

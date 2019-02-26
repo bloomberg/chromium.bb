@@ -48,3 +48,28 @@ component("gl_in_process_context") {
     "//ui/gl/init",
   ]
 }
+
+component("gpu_thread_holder") {
+  testonly = true
+
+  sources = [
+    "in_process_gpu_thread_holder.cc",
+    "in_process_gpu_thread_holder.h",
+    "test_gpu_thread_holder.cc",
+    "test_gpu_thread_holder.h",
+  ]
+
+  defines = [ "IS_GPU_THREAD_HOLDER_IMPL" ]
+
+  public_deps = [
+    "//gpu/config",
+  ]
+
+  deps = [
+    ":gl_in_process_context",
+    "//base",
+    "//gpu/command_buffer/service",
+    "//gpu/command_buffer/service:gles2",
+    "//gpu/ipc/service",
+  ]
+}

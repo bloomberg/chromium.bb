@@ -52,7 +52,7 @@ typedef HeapHashMap<Member<Element>, Member<V0CustomElementCallbackQueue>>
 
 static ElementCallbackQueueMap& CallbackQueues() {
   DEFINE_STATIC_LOCAL(Persistent<ElementCallbackQueueMap>, map,
-                      (new ElementCallbackQueueMap));
+                      (MakeGarbageCollected<ElementCallbackQueueMap>()));
   return *map;
 }
 

@@ -319,7 +319,7 @@ void AppCacheUpdateJob::HandleCacheFailure(
     group_->SetUpdateAppCacheStatus(AppCacheGroup::IDLE);
     group_ = nullptr;
     service_->DeleteAppCacheGroup(manifest_url_,
-                                  base::Bind(EmptyCompletionCallback));
+                                  base::BindOnce(EmptyCompletionCallback));
   }
 
   DeleteSoon();  // To unwind the stack prior to deletion.

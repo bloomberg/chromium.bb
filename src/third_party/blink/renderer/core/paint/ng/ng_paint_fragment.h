@@ -58,20 +58,81 @@ class CORE_EXPORT NGPaintFragment : public RefCounted<NGPaintFragment>,
       NGPhysicalOffset offset);
 
   // Next/last fragment for  when this is fragmented.
-  NGPaintFragment* Next() { return next_fragmented_.get(); }
+  NGPaintFragment* Next();
   void SetNext(scoped_refptr<NGPaintFragment>);
   NGPaintFragment* Last();
   NGPaintFragment* Last(const NGBreakToken&);
   static scoped_refptr<NGPaintFragment>* Find(scoped_refptr<NGPaintFragment>*,
                                               const NGBreakToken*);
 
+  template <typename Traverse>
+  class List {
+   public:
+    explicit List(NGPaintFragment* first) : first_(first) {}
+
+    class iterator final
+        : public std::iterator<std::forward_iterator_tag, NGPaintFragment*> {
+     public:
+      explicit iterator(NGPaintFragment* first) : current_(first) {}
+
+      NGPaintFragment* operator*() const { return current_; }
+      NGPaintFragment* operator->() const { return current_; }
+      iterator& operator++() {
+        DCHECK(current_);
+        current_ = Traverse::Next(current_);
+        return *this;
+      }
+      bool operator==(const iterator& other) const {
+        return current_ == other.current_;
+      }
+      bool operator!=(const iterator& other) const {
+        return current_ != other.current_;
+      }
+
+     private:
+      NGPaintFragment* current_;
+    };
+
+    CORE_EXPORT iterator begin() const { return iterator(first_); }
+    CORE_EXPORT iterator end() const { return iterator(nullptr); }
+
+    // Returns the first |NGPaintFragment| in |FragmentRange| as STL container.
+    // It is error to call |front()| for empty range.
+    NGPaintFragment& front() const;
+
+    // Returns the last |NGPaintFragment| in |FragmentRange| as STL container.
+    // It is error to call |back()| for empty range.
+    // Note: The complexity of |back()| is O(n) where n is number of elements
+    // in this |FragmentRange|.
+    NGPaintFragment& back() const;
+
+    // Returns number of fragments in this range. The complexity is O(n) where n
+    // is number of elements.
+    wtf_size_t size() const;
+    CORE_EXPORT bool IsEmpty() const { return !first_; }
+
+    void ToList(Vector<NGPaintFragment*, 16>*) const;
+
+   private:
+    NGPaintFragment* first_;
+  };
+
+  class TraverseNextSibling {
+   public:
+    static NGPaintFragment* Next(NGPaintFragment* current) {
+      return current->next_sibling_.get();
+    }
+  };
+  using ChildList = List<TraverseNextSibling>;
+
   // The parent NGPaintFragment. This is nullptr for a root; i.e., when parent
   // is not for NGPaint. In the first phase, this means that this is a root of
   // an inline formatting context.
   NGPaintFragment* Parent() const { return parent_; }
-  const Vector<scoped_refptr<NGPaintFragment>>& Children() const {
-    return children_;
-  }
+  NGPaintFragment* FirstChild() const { return first_child_.get(); }
+  NGPaintFragment* NextSibling() const { return next_sibling_.get(); }
+  ChildList Children() const { return ChildList(first_child_.get()); }
+
   // Note, as the name implies, |IsDescendantOfNotSelf| returns false for the
   // same object. This is different from |LayoutObject::IsDescendant| but is
   // same as |Node::IsDescendant|.
@@ -109,10 +170,8 @@ class CORE_EXPORT NGPaintFragment : public RefCounted<NGPaintFragment>,
   LayoutRect VisualRect() const override { return visual_rect_; }
   void SetVisualRect(const LayoutRect& rect) { visual_rect_ = rect; }
 
-  LayoutRect SelectionVisualRect() const { return selection_visual_rect_; }
-  void SetSelectionVisualRect(const LayoutRect& rect) {
-    selection_visual_rect_ = rect;
-  }
+  LayoutRect SelectionVisualRect() const;
+  void SetSelectionVisualRect(const LayoutRect& rect);
 
   // CSS ink overflow https://www.w3.org/TR/css-overflow-3/#ink
   // Encloses all pixels painted by self + children.
@@ -171,15 +230,23 @@ class CORE_EXPORT NGPaintFragment : public RefCounted<NGPaintFragment>,
   }
 
   // Returns true when associated fragment of |layout_object| has line box.
-  static bool TryMarkLineBoxDirtyFor(const LayoutObject& layout_object);
+  static bool TryMarkFirstLineBoxDirtyFor(const LayoutObject& layout_object);
+  static bool TryMarkLastLineBoxDirtyFor(const LayoutObject& layout_object);
 
   // A range of fragments for |FragmentsFor()|.
-  class CORE_EXPORT FragmentRange {
+  class TraverseNextForSameLayoutObject {
+   public:
+    static NGPaintFragment* Next(NGPaintFragment* current) {
+      return current->next_for_same_layout_object_;
+    }
+  };
+  class CORE_EXPORT FragmentRange
+      : public List<TraverseNextForSameLayoutObject> {
    public:
     explicit FragmentRange(
         NGPaintFragment* first,
         bool is_in_layout_ng_inline_formatting_context = true)
-        : first_(first),
+        : List(first),
           is_in_layout_ng_inline_formatting_context_(
               is_in_layout_ng_inline_formatting_context) {}
 
@@ -187,50 +254,7 @@ class CORE_EXPORT NGPaintFragment : public RefCounted<NGPaintFragment>,
       return is_in_layout_ng_inline_formatting_context_;
     }
 
-    bool IsEmpty() const { return !first_; }
-
-    class iterator final
-        : public std::iterator<std::forward_iterator_tag, NGPaintFragment*> {
-     public:
-      explicit iterator(NGPaintFragment* first) : current_(first) {}
-
-      NGPaintFragment* operator*() const { return current_; }
-      NGPaintFragment* operator->() const { return current_; }
-      iterator& operator++() {
-        CHECK(current_);
-        current_ = current_->next_for_same_layout_object_;
-        return *this;
-      }
-      bool operator==(const iterator& other) const {
-        return current_ == other.current_;
-      }
-      bool operator!=(const iterator& other) const {
-        return current_ != other.current_;
-      }
-
-     private:
-      NGPaintFragment* current_;
-    };
-
-    iterator begin() const { return iterator(first_); }
-    iterator end() const { return iterator(nullptr); }
-
-    // Returns the first |NGPaintFragment| in |FragmentRange| as STL container.
-    // It is error to call |front()| for empty range.
-    NGPaintFragment& front() const;
-
-    // Returns the last |NGPaintFragment| in |FragmentRange| as STL container.
-    // It is error to call |back()| for empty range.
-    // Note: The complexity of |back()| is O(n) where n is number of elements
-    // in this |FragmentRange|.
-    NGPaintFragment& back() const;
-
-    // Returns number of fragments in this range. The complexity is O(n) where n
-    // is number of elements.
-    wtf_size_t size() const;
-
    private:
-    NGPaintFragment* first_;
     bool is_in_layout_ng_inline_formatting_context_;
   };
 
@@ -246,8 +270,21 @@ class CORE_EXPORT NGPaintFragment : public RefCounted<NGPaintFragment>,
   // for a LayoutObject.
   static FragmentRange InlineFragmentsFor(const LayoutObject*);
 
+  const NGPaintFragment* LastForSameLayoutObject() const;
+  NGPaintFragment* LastForSameLayoutObject();
+
   // Called when lines containing |child| is dirty.
   static void DirtyLinesFromChangedChild(LayoutObject* child);
+
+  // Mark this line box was changed, in order to re-use part of an inline
+  // formatting context.
+  void MarkLineBoxDirty() {
+    DCHECK(PhysicalFragment().IsLineBox());
+    is_dirty_inline_ = true;
+  }
+
+  // Mark the line box that contains this fragment dirty.
+  void MarkContainingLineBoxDirty();
 
   // Computes LocalVisualRect for an inline LayoutObject in the
   // LayoutObject::LocalVisualRect semantics; i.e., physical coordinates with
@@ -272,6 +309,8 @@ class CORE_EXPORT NGPaintFragment : public RefCounted<NGPaintFragment>,
       LayoutObject*,
       HashMap<const LayoutObject*, NGPaintFragment*>* last_fragment_map);
 
+  void RemoveChildren();
+
   // Helps for PositionForPoint() when |this| falls in different categories.
   PositionWithAffinity PositionForPointInText(const NGPhysicalOffset&) const;
   PositionWithAffinity PositionForPointInInlineFormattingContext(
@@ -282,10 +321,6 @@ class CORE_EXPORT NGPaintFragment : public RefCounted<NGPaintFragment>,
   // Dirty line boxes containing |layout_object|.
   static void MarkLineBoxesDirtyFor(const LayoutObject& layout_object);
 
-  // Mark this line box was changed, in order to re-use part of an inline
-  // formatting context.
-  void MarkLineBoxDirty();
-
   //
   // Following fields are computed in the layout phase.
   //
@@ -294,10 +329,21 @@ class CORE_EXPORT NGPaintFragment : public RefCounted<NGPaintFragment>,
   NGPhysicalOffset offset_;
 
   NGPaintFragment* parent_;
-  Vector<scoped_refptr<NGPaintFragment>> children_;
+  scoped_refptr<NGPaintFragment> first_child_;
+  scoped_refptr<NGPaintFragment> next_sibling_;
 
-  // The next fragment for when this is fragmented.
-  scoped_refptr<NGPaintFragment> next_fragmented_;
+  struct RareData {
+    USING_FAST_MALLOC(RareData);
+
+   public:
+    // The next fragment for when this is fragmented.
+    scoped_refptr<NGPaintFragment> next_fragmented_;
+
+    // Used for invalidating selected fragment.
+    LayoutRect selection_visual_rect_;
+  };
+  RareData& EnsureRareData();
+  std::unique_ptr<RareData> rare_data_;
 
   NGPaintFragment* next_for_same_layout_object_ = nullptr;
   NGPhysicalOffset inline_offset_to_container_box_;
@@ -313,8 +359,12 @@ class CORE_EXPORT NGPaintFragment : public RefCounted<NGPaintFragment>,
   //
 
   LayoutRect visual_rect_;
-  LayoutRect selection_visual_rect_;
 };
+
+extern template class CORE_EXTERN_TEMPLATE_EXPORT
+    NGPaintFragment::List<NGPaintFragment::TraverseNextForSameLayoutObject>;
+extern template class CORE_EXTERN_TEMPLATE_EXPORT
+    NGPaintFragment::List<NGPaintFragment::TraverseNextSibling>;
 
 }  // namespace blink
 

@@ -1,6 +1,7 @@
 include_rules = [
   "+media/audio/sounds",
   "+services/device/public/mojom",
+  "+services/network",
 ]
 
 specific_include_rules = {

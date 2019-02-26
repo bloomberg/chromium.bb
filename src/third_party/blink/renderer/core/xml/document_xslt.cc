@@ -27,14 +27,18 @@ class DOMContentLoadedListener final
 
  public:
   static DOMContentLoadedListener* Create(ProcessingInstruction* pi) {
-    return new DOMContentLoadedListener(pi);
+    return MakeGarbageCollected<DOMContentLoadedListener>(pi);
   }
+
+  DOMContentLoadedListener(ProcessingInstruction* pi)
+      : EventListener(EventListener::kCPPEventListenerType),
+        processing_instruction_(pi) {}
 
   bool operator==(const EventListener& rhs) const override {
     return this == &rhs;
   }
 
-  void handleEvent(ExecutionContext* execution_context, Event* event) override {
+  void Invoke(ExecutionContext* execution_context, Event* event) override {
     DCHECK(RuntimeEnabledFeatures::XSLTEnabled());
     DCHECK_EQ(event->type(), "DOMContentLoaded");
 
@@ -65,10 +69,6 @@ class DOMContentLoadedListener final
   }
 
  private:
-  DOMContentLoadedListener(ProcessingInstruction* pi)
-      : EventListener(EventListener::kCPPEventListenerType),
-        processing_instruction_(pi) {}
-
   // If this event listener is attached to a ProcessingInstruction, keep a
   // weak reference back to it. That ProcessingInstruction is responsible for
   // detaching itself and clear out the reference.
@@ -124,7 +124,8 @@ bool DocumentXSLT::ProcessingInstructionInsertedIntoDocument(
     return true;
 
   DOMContentLoadedListener* listener = DOMContentLoadedListener::Create(pi);
-  document.addEventListener(EventTypeNames::DOMContentLoaded, listener, false);
+  document.addEventListener(event_type_names::kDOMContentLoaded, listener,
+                            false);
   DCHECK(!pi->EventListenerForXSLT());
   pi->SetEventListenerForXSLT(listener);
   return true;
@@ -140,7 +141,7 @@ bool DocumentXSLT::ProcessingInstructionRemovedFromDocument(
     return true;
 
   DCHECK(RuntimeEnabledFeatures::XSLTEnabled());
-  document.removeEventListener(EventTypeNames::DOMContentLoaded,
+  document.removeEventListener(event_type_names::kDOMContentLoaded,
                                pi->EventListenerForXSLT(), false);
   pi->ClearEventListenerForXSLT();
   return true;
@@ -168,7 +169,7 @@ bool DocumentXSLT::HasTransformSourceDocument(Document& document) {
 DocumentXSLT& DocumentXSLT::From(Document& document) {
   DocumentXSLT* supplement = Supplement<Document>::From<DocumentXSLT>(document);
   if (!supplement) {
-    supplement = new DocumentXSLT(document);
+    supplement = MakeGarbageCollected<DocumentXSLT>(document);
     Supplement<Document>::ProvideTo(document, supplement);
   }
   return *supplement;

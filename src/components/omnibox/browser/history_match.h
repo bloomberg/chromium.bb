@@ -43,7 +43,6 @@ struct HistoryMatch {
   // selected.)
   bool match_in_scheme;
   bool match_in_subdomain;
-  bool match_after_host;
 
   // A match after any scheme/"www.", if the user input could match at both
   // locations.  If the user types "w", an innermost match ("website.com") is

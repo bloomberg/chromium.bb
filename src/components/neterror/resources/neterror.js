@@ -2,6 +2,17 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+// Decodes a UTF16 string that is encoded as base64.
+function decodeUTF16Base64ToString(encoded_text) {
+  var data = atob(encoded_text);
+  var result = '';
+  for (var i = 0; i < data.length; i += 2) {
+    result +=
+        String.fromCharCode(data.charCodeAt(i) * 256 + data.charCodeAt(i + 1));
+  }
+  return result;
+}
+
 function toggleHelpBox() {
   var helpBoxOuter = document.getElementById('details');
   helpBoxOuter.classList.toggle(HIDDEN_CLASS);
@@ -159,6 +170,26 @@ var primaryControlOnLeft = true;
 primaryControlOnLeft = false;
 // </if>
 
+function setAutoFetchState(scheduled, can_schedule) {
+  document.getElementById('cancel-save-page-button')
+      .classList.toggle(HIDDEN_CLASS, !scheduled);
+  document.getElementById('save-page-for-later-button')
+      .classList.toggle(HIDDEN_CLASS, scheduled || !can_schedule);
+}
+
+function savePageLaterClick() {
+  errorPageController.savePageForLater();
+  // savePageForLater will eventually trigger a call to setAutoFetchState() when
+  // it completes.
+}
+
+function cancelSavePageClick() {
+  errorPageController.cancelSavePage();
+  // setAutoFetchState is not called in response to cancelSavePage(), so do it
+  // now.
+  setAutoFetchState(false, true);
+}
+
 function toggleErrorInformationPopup() {
   document.getElementById('error-information-popup-container')
       .classList.toggle(HIDDEN_CLASS);
@@ -203,6 +234,8 @@ function getIconForSuggestedItem(item) {
 function getSuggestedContentDiv(item, index) {
   // Note: See AvailableContentToValue in available_offline_content_helper.cc
   // for the data contained in an |item|.
+  // TODO(carlosk): Present |snippet_base64| when that content becomes
+  // available.
   var visual = '';
   var extraContainerClasses = [];
   // html_inline.py will try to replace src attributes with data URIs using a
@@ -217,7 +250,7 @@ function getSuggestedContentDiv(item, index) {
     visual = `<div><img class="${iconClass}"></div>`;
   }
 
-  if (!item.attribution)
+  if (!item.attribution_base64)
     extraContainerClasses.push('no-attribution');
 
   return `
@@ -246,10 +279,10 @@ function getSuggestedContentDiv(item, index) {
 
 // Populates a list of suggested offline content.
 // Note: For security reasons all content downloaded from the web is considered
-// unsafe and must be securely handled to be presented on the dino page. The
-// image content is already safely re-encoded after being downloaded but the
-// textual content, like title and attribution, must be properly handled here.
-function offlineContentAvailable(suggestions) {
+// unsafe and must be securely handled to be presented on the dino page. Images
+// have already been safely re-encoded but textual content -- like title and
+// attribution -- must be properly handled here.
+function offlineContentAvailable(isShown, suggestions) {
   if (!suggestions || !loadTimeData.valueExists('offlineContentList'))
     return;
 
@@ -264,15 +297,32 @@ function offlineContentAvailable(suggestions) {
   // plain text.
   for (var index = 0; index < suggestions.length; index++) {
     document.getElementById(`offline-content-suggestion-title-${index}`)
-        .textContent = suggestions[index].title;
+        .textContent =
+        decodeUTF16Base64ToString(suggestions[index].title_base64);
     document.getElementById(`offline-content-suggestion-attribution-${index}`)
-        .textContent = suggestions[index].attribution;
+        .textContent =
+        decodeUTF16Base64ToString(suggestions[index].attribution_base64);
   }
 
   var contentListElement = document.getElementById('offline-content-list');
   if (document.dir == 'rtl')
     contentListElement.classList.add('is-rtl');
+  // The list is configured as shown by default. Hide if needed.
+  if (!isShown)
+    toggleOfflineContentListVisibility(false);
   contentListElement.hidden = false;
+}
+
+function toggleOfflineContentListVisibility(updatePref) {
+  if (!loadTimeData.valueExists('offlineContentList'))
+    return;
+
+  var contentListElement = document.getElementById('offline-content-list');
+  var isVisible = !contentListElement.classList.toggle('list-hidden');
+
+  if (updatePref && window.errorPageController) {
+    errorPageController.listVisibilityChanged(isVisible);
+  }
 }
 
 function onDocumentLoad() {
@@ -287,8 +337,7 @@ function onDocumentLoad() {
   var showSavedCopyButtonVisible =
       loadTimeData.valueExists('showSavedCopyButton') &&
       loadTimeData.getValue('showSavedCopyButton').msg;
-  var downloadButtonVisible =
-      loadTimeData.valueExists('downloadButton') &&
+  var downloadButtonVisible = loadTimeData.valueExists('downloadButton') &&
       loadTimeData.getValue('downloadButton').msg;
 
   // If offline content suggestions will be visible, the usual buttons will not
@@ -341,9 +390,12 @@ function onDocumentLoad() {
     detailsButton.classList.add('singular');
   }
 
+  var attemptAutoFetch = loadTimeData.valueExists('attemptAutoFetch') &&
+      loadTimeData.getValue('attemptAutoFetch');
+
   // Show control buttons.
   if (reloadButtonVisible || showSavedCopyButtonVisible ||
-      downloadButtonVisible) {
+      downloadButtonVisible || attemptAutoFetch) {
     controlButtonDiv.hidden = false;
 
     // Set the secondary button state in the cases of two call to actions.

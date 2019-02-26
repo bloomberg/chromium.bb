@@ -72,10 +72,10 @@ void MediaStreamCenter::DidCreateMediaStreamAndTracks(
   if (!private_)
     return;
 
-  for (size_t i = 0; i < stream->NumberOfAudioComponents(); ++i)
+  for (uint32_t i = 0; i < stream->NumberOfAudioComponents(); ++i)
     DidCreateMediaStreamTrack(stream->AudioComponent(i));
 
-  for (size_t i = 0; i < stream->NumberOfVideoComponents(); ++i)
+  for (uint32_t i = 0; i < stream->NumberOfVideoComponents(); ++i)
     DidCreateMediaStreamTrack(stream->VideoComponent(i));
 }
 

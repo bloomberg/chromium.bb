@@ -36,6 +36,9 @@
 #include "url/url_canon.h"
 #include "url/url_util.h"
 
+// KURL stands for the URL parser in KDE's HTML Widget (KHTML). The name hasn't
+// changed since Blink forked WebKit, which in turn forked KHTML.
+//
 // KURL is Blink's main URL class, and is the analog to GURL in other Chromium
 // code. It is not thread safe but is generally cheap to copy and compare KURLs
 // to each other.

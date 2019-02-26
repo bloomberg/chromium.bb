@@ -35,7 +35,7 @@
 
 namespace blink {
 
-using namespace HTMLNames;
+using namespace html_names;
 
 static inline bool IsInSection(HTMLTableRowElement& row,
                                const HTMLQualifiedName& section_tag) {
@@ -61,10 +61,10 @@ HTMLTableRowElement* HTMLTableRowsCollection::RowAfter(
   HTMLElement* child = nullptr;
   if (!previous)
     child = Traversal<HTMLElement>::FirstChild(table);
-  else if (IsInSection(*previous, theadTag))
+  else if (IsInSection(*previous, kTheadTag))
     child = Traversal<HTMLElement>::NextSibling(*previous->parentNode());
   for (; child; child = Traversal<HTMLElement>::NextSibling(*child)) {
-    if (child->HasTagName(theadTag)) {
+    if (child->HasTagName(kTheadTag)) {
       if (HTMLTableRowElement* row =
               Traversal<HTMLTableRowElement>::FirstChild(*child))
         return row;
@@ -73,16 +73,16 @@ HTMLTableRowElement* HTMLTableRowsCollection::RowAfter(
 
   // If still looking at top level and bodies, find the next row in top level or
   // the first in the next body section.
-  if (!previous || IsInSection(*previous, theadTag))
+  if (!previous || IsInSection(*previous, kTheadTag))
     child = Traversal<HTMLElement>::FirstChild(table);
   else if (previous->parentNode() == table)
     child = Traversal<HTMLElement>::NextSibling(*previous);
-  else if (IsInSection(*previous, tbodyTag))
+  else if (IsInSection(*previous, kTbodyTag))
     child = Traversal<HTMLElement>::NextSibling(*previous->parentNode());
   for (; child; child = Traversal<HTMLElement>::NextSibling(*child)) {
     if (auto* row = ToHTMLTableRowElementOrNull(child))
       return row;
-    if (child->HasTagName(tbodyTag)) {
+    if (child->HasTagName(kTbodyTag)) {
       if (HTMLTableRowElement* row =
               Traversal<HTMLTableRowElement>::FirstChild(*child))
         return row;
@@ -90,12 +90,12 @@ HTMLTableRowElement* HTMLTableRowsCollection::RowAfter(
   }
 
   // Find the first row in the next foot section.
-  if (!previous || !IsInSection(*previous, tfootTag))
+  if (!previous || !IsInSection(*previous, kTfootTag))
     child = Traversal<HTMLElement>::FirstChild(table);
   else
     child = Traversal<HTMLElement>::NextSibling(*previous->parentNode());
   for (; child; child = Traversal<HTMLElement>::NextSibling(*child)) {
-    if (child->HasTagName(tfootTag)) {
+    if (child->HasTagName(kTfootTag)) {
       if (HTMLTableRowElement* row =
               Traversal<HTMLTableRowElement>::FirstChild(*child))
         return row;
@@ -107,9 +107,9 @@ HTMLTableRowElement* HTMLTableRowsCollection::RowAfter(
 
 HTMLTableRowElement* HTMLTableRowsCollection::LastRow(HTMLTableElement& table) {
   for (HTMLElement* tfoot =
-           Traversal<HTMLElement>::LastChild(table, HasHTMLTagName(tfootTag));
+           Traversal<HTMLElement>::LastChild(table, HasHTMLTagName(kTfootTag));
        tfoot; tfoot = Traversal<HTMLElement>::PreviousSibling(
-                  *tfoot, HasHTMLTagName(tfootTag))) {
+                  *tfoot, HasHTMLTagName(kTfootTag))) {
     if (HTMLTableRowElement* last_row =
             Traversal<HTMLTableRowElement>::LastChild(*tfoot))
       return last_row;
@@ -119,7 +119,7 @@ HTMLTableRowElement* HTMLTableRowsCollection::LastRow(HTMLTableElement& table) {
        child = Traversal<HTMLElement>::PreviousSibling(*child)) {
     if (auto* row = ToHTMLTableRowElementOrNull(child))
       return row;
-    if (child->HasTagName(tbodyTag)) {
+    if (child->HasTagName(kTbodyTag)) {
       if (HTMLTableRowElement* last_row =
               Traversal<HTMLTableRowElement>::LastChild(*child))
         return last_row;
@@ -127,9 +127,9 @@ HTMLTableRowElement* HTMLTableRowsCollection::LastRow(HTMLTableElement& table) {
   }
 
   for (HTMLElement* thead =
-           Traversal<HTMLElement>::LastChild(table, HasHTMLTagName(theadTag));
+           Traversal<HTMLElement>::LastChild(table, HasHTMLTagName(kTheadTag));
        thead; thead = Traversal<HTMLElement>::PreviousSibling(
-                  *thead, HasHTMLTagName(theadTag))) {
+                  *thead, HasHTMLTagName(kTheadTag))) {
     if (HTMLTableRowElement* last_row =
             Traversal<HTMLTableRowElement>::LastChild(*thead))
       return last_row;
@@ -149,7 +149,7 @@ HTMLTableRowsCollection::HTMLTableRowsCollection(ContainerNode& table)
 HTMLTableRowsCollection* HTMLTableRowsCollection::Create(ContainerNode& table,
                                                          CollectionType type) {
   DCHECK_EQ(type, kTableRows);
-  return new HTMLTableRowsCollection(table);
+  return MakeGarbageCollected<HTMLTableRowsCollection>(table);
 }
 
 Element* HTMLTableRowsCollection::VirtualItemAfter(Element* previous) const {

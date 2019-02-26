@@ -229,21 +229,23 @@ uint32_t GrRenderTargetContextPriv::testingOnly_getOpListID() {
     return fRenderTargetContext->getOpList()->uniqueID();
 }
 
-uint32_t GrRenderTargetContextPriv::testingOnly_addDrawOp(std::unique_ptr<GrDrawOp> op) {
-    return this->testingOnly_addDrawOp(GrNoClip(), std::move(op));
+void GrRenderTargetContextPriv::testingOnly_addDrawOp(std::unique_ptr<GrDrawOp> op) {
+    this->testingOnly_addDrawOp(GrNoClip(), std::move(op));
 }
 
-uint32_t GrRenderTargetContextPriv::testingOnly_addDrawOp(const GrClip& clip,
-                                                          std::unique_ptr<GrDrawOp> op) {
+void GrRenderTargetContextPriv::testingOnly_addDrawOp(
+        const GrClip& clip,
+        std::unique_ptr<GrDrawOp> op,
+        const std::function<GrRenderTargetContext::WillAddOpFn>& willAddFn) {
     ASSERT_SINGLE_OWNER
     if (fRenderTargetContext->drawingManager()->wasAbandoned()) {
         fRenderTargetContext->fContext->contextPriv().opMemoryPool()->release(std::move(op));
-        return SK_InvalidUniqueID;
+        return;
     }
     SkDEBUGCODE(fRenderTargetContext->validate());
     GR_AUDIT_TRAIL_AUTO_FRAME(fRenderTargetContext->fAuditTrail,
                               "GrRenderTargetContext::testingOnly_addDrawOp");
-    return fRenderTargetContext->addDrawOp(clip, std::move(op));
+    fRenderTargetContext->addDrawOp(clip, std::move(op), willAddFn);
 }
 
 #undef ASSERT_SINGLE_OWNER
@@ -297,6 +299,7 @@ DRAW_OP_TEST_EXTERN(DashOp);
 DRAW_OP_TEST_EXTERN(DefaultPathOp);
 DRAW_OP_TEST_EXTERN(DIEllipseOp);
 DRAW_OP_TEST_EXTERN(EllipseOp);
+DRAW_OP_TEST_EXTERN(FillRectOp);
 DRAW_OP_TEST_EXTERN(GrAtlasTextOp);
 DRAW_OP_TEST_EXTERN(GrDrawAtlasOp);
 DRAW_OP_TEST_EXTERN(GrDrawVerticesOp);
@@ -324,6 +327,7 @@ void GrDrawRandomOp(SkRandom* random, GrRenderTargetContext* renderTargetContext
             DRAW_OP_TEST_ENTRY(DefaultPathOp),
             DRAW_OP_TEST_ENTRY(DIEllipseOp),
             DRAW_OP_TEST_ENTRY(EllipseOp),
+            DRAW_OP_TEST_ENTRY(FillRectOp),
             DRAW_OP_TEST_ENTRY(GrAtlasTextOp),
             DRAW_OP_TEST_ENTRY(GrDrawAtlasOp),
             DRAW_OP_TEST_ENTRY(GrDrawVerticesOp),

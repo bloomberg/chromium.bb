@@ -11,6 +11,7 @@
 #include "base/command_line.h"
 #include "base/files/file_util.h"
 #include "base/logging.h"
+#include "base/metrics/histogram_functions.h"
 #include "base/task/post_task.h"
 #include "build/build_config.h"
 #include "chrome/browser/bad_message.h"
@@ -65,6 +66,15 @@ void WebRtcLoggingHandlerHost::SetMetaData(
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
   DCHECK(!callback.is_null());
 
+  // Set the web app ID if there's a "client" key, otherwise leave it unchanged.
+  for (const auto& it : *meta_data) {
+    if (it.first == "client") {
+      web_app_id_ = static_cast<int>(base::PersistentHash(it.second));
+      text_log_handler_->SetWebAppId(web_app_id_);
+      break;
+    }
+  }
+
   text_log_handler_->SetMetaData(std::move(meta_data), callback);
 }
 
@@ -106,6 +116,8 @@ void WebRtcLoggingHandlerHost::UploadLog(const UploadDoneCallback& callback) {
   // Would it be better to upload whatever logs we have, or would the lack of
   // an error callback make it harder to debug potential errors?
 
+  base::UmaHistogramSparse("WebRtcTextLogging.UploadStarted", web_app_id_);
+
   base::PostTaskAndReplyWithResult(
       log_uploader_->background_task_runner().get(), FROM_HERE,
       base::Bind(&WebRtcLoggingHandlerHost::GetLogDirectoryAndEnsureExists,
@@ -119,14 +131,18 @@ void WebRtcLoggingHandlerHost::UploadStoredLog(
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
   DCHECK(!callback.is_null());
 
+  base::UmaHistogramSparse("WebRtcTextLogging.UploadStoredStarted",
+                           web_app_id_);
+
   log_uploader_->background_task_runner()->PostTask(
       FROM_HERE,
       base::BindOnce(&WebRtcLoggingHandlerHost::UploadStoredLogOnFileThread,
-                     this, log_id, callback));
+                     this, log_id, web_app_id_, callback));
 }
 
 void WebRtcLoggingHandlerHost::UploadStoredLogOnFileThread(
     const std::string& log_id,
+    int web_app_id,
     const UploadDoneCallback& callback) {
   DCHECK(log_uploader_->background_task_runner()->RunsTasksInCurrentSequence());
 
@@ -135,6 +151,7 @@ void WebRtcLoggingHandlerHost::UploadStoredLogOnFileThread(
   upload_data.callback = callback;
   upload_data.host = this;
   upload_data.local_log_id = log_id;
+  upload_data.web_app_id = web_app_id;
 
   log_uploader_->UploadStoredLog(upload_data);
 }
@@ -255,12 +272,13 @@ void WebRtcLoggingHandlerHost::StopRtpDump(
 void WebRtcLoggingHandlerHost::StartEventLogging(
     const std::string& peer_connection_id,
     size_t max_log_size_bytes,
+    int output_period_ms,
     size_t web_app_id,
     const StartEventLoggingCallback& callback) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   WebRtcEventLogManager::GetInstance()->StartRemoteLogging(
-      render_process_id_, peer_connection_id, max_log_size_bytes, web_app_id,
-      callback);
+      render_process_id_, peer_connection_id, max_log_size_bytes,
+      output_period_ms, web_app_id, callback);
 }
 
 #if defined(OS_LINUX) || defined(OS_CHROMEOS)
@@ -507,6 +525,16 @@ void WebRtcLoggingHandlerHost::DoUploadLogAndRtpDumps(
        text_logging_state != WebRtcTextLogHandler::STOPPED) ||
       (channel_is_closing &&
        text_log_handler_->GetState() == WebRtcTextLogHandler::CLOSED)) {
+    // If the channel is not closing the log is expected to be uploaded, so
+    // it's considered a failure if it isn't.
+    // If the channel is closing we don't log failure to UMA for consistency,
+    // since there are other cases during shutdown were we don't get a chance
+    // to log.
+    if (!channel_is_closing) {
+      base::UmaHistogramSparse("WebRtcTextLogging.UploadFailed", web_app_id_);
+      base::UmaHistogramSparse("WebRtcTextLogging.UploadFailureReason",
+                               UploadFailureReason::kInvalidState);
+    }
     base::PostTaskWithTraits(
         FROM_HERE, {content::BrowserThread::UI},
         base::BindOnce(callback, false, "",
@@ -518,6 +546,7 @@ void WebRtcLoggingHandlerHost::DoUploadLogAndRtpDumps(
   upload_done_data.log_path = log_directory;
   upload_done_data.callback = callback;
   upload_done_data.host = this;
+  upload_done_data.web_app_id = web_app_id_;
   ReleaseRtpDumps(&upload_done_data);
 
   std::unique_ptr<WebRtcLogBuffer> log_buffer;

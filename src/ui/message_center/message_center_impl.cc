@@ -100,6 +100,9 @@ void MessageCenterImpl::SetVisibility(Visibility visibility) {
       for (auto& observer : observer_list_)
         observer.OnNotificationUpdated(id);
     }
+
+    for (Notification* notification : GetPopupNotifications())
+      MarkSinglePopupAsShown(notification->id(), false);
   }
 
   for (auto& observer : observer_list_)

@@ -3,15 +3,17 @@
 <translationbundle lang="hi">
 <translation id="1296843352074373664">Google उपयोगकर्ता</translation>
 <translation id="1383286653814676580">'Google क्रेडेंशियल देने वाला' साइन इन पेज चलाने के लिए इस्तेमाल किया जाता है.</translation>
-<translation id="2119303206591679297">इस Google खाते के साथ लॉगऑन करने की मंज़ूरी नहीं है.</translation>
-<translation id="3374277789313311065">एक अंदरूनी गड़बड़ी हुई. अगर गड़बड़ी ठीक नहीं होती, तो कृपया Google को रिपोर्ट करें.</translation>
-<translation id="3713454256426064844">अपने Google खाते से लॉगऑन करें.</translation>
-<translation id="440343981193409132">अपने अपडेट किए गए Google खाता पासवर्ड के ज़रिए लॉगऑन करें.</translation>
-<translation id="4735679347289592174">आपके Google खाते में साइन इन नहीं हो पाया, कृपया फिर से कोशिश करें. यह पक्का कर लें कि कंप्यूटर एक सही इंटरनेट कनेक्शन से जुड़ा है. अगर गड़बड़ी ठीक नहीं होती, तो कृपया Google को रिपोर्ट करें.</translation>
-<translation id="7000592418234387954">Google खाता साइन इन</translation>
+<translation id="195232392645680541">अपने Google खाते से साइन इन करें.</translation>
+<translation id="3623301090691182018">Google खाता साइन-इन</translation>
+<translation id="4057329986137569701">कोई आंतरिक गड़बड़ी हुई.</translation>
+<translation id="4128734677223009352">आपके Google खाते में साइन इन नहीं हो पाया. पक्का कर लें कि कंप्यूटर इंटरनेट कनेक्शन से जुड़ा हुआ है, उसके बाद फिर से कोशिश करें.</translation>
+<translation id="4307406925561182259">अपने Google खाते के अपडेट किए गए पासवर्ड का इस्तेमाल करके साइन इन करें.</translation>
+<translation id="6064337552080329342">माफ़ करें, आपके पासवर्ड की पुष्टि नहीं की जा सकी. कृपया फिर से कोशिश करें.</translation>
+<translation id="6613125771987245372">इस Google खाते से साइन इन नहीं किया जा सकता. कोई दूसरा खाता आज़माएं.</translation>
+<translation id="7357241217513796177">पक्का करें कि आपके पास नेटवर्क कनेक्शन है और फिर से कोशिश करें.</translation>
+<translation id="7463006580194749499">व्‍यक्ति जोड़ें</translation>
 <translation id="8474372283141585908">Google क्रेडेंशियल देने वाला</translation>
 <translation id="866458870819756755">उपयोगकर्ता बनाया नहीं जा सका.</translation>
 <translation id="8860262547644202689">Google क्रेडेंशियल देने वाला सहायक</translation>
-<translation id="8912362522468806198">Google खाता</translation>
 <translation id="9094033019050270033">पासवर्ड अपडेट करें</translation>
 </translationbundle>

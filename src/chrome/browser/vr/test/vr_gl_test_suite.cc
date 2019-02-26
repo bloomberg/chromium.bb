@@ -9,10 +9,7 @@
 
 #if defined(VR_USE_COMMAND_BUFFER)
 #include "gpu/command_buffer/client/gles2_lib.h"  // nogncheck
-#include "gpu/config/gpu_info_collector.h"        // nogncheck
-#include "gpu/config/gpu_preferences.h"           // nogncheck
-#include "gpu/config/gpu_util.h"                  // nogncheck
-#include "gpu/ipc/in_process_command_buffer.h"    // nogncheck
+#include "gpu/ipc/test_gpu_thread_holder.h"       // nogncheck
 #endif  // defined(VR_USE_COMMAND_BUFFER)
 
 namespace vr {
@@ -25,18 +22,12 @@ void VrGlTestSuite::Initialize() {
   gl::GLImageTestSupport::InitializeGL(base::nullopt);
 
 #if defined(VR_USE_COMMAND_BUFFER)
-  base::CommandLine* command_line = base::CommandLine::ForCurrentProcess();
-  gpu::GPUInfo gpu_info;
-  gpu::CollectGraphicsInfoForTesting(&gpu_info);
-  gpu::GpuFeatureInfo gpu_feature_info = gpu::ComputeGpuFeatureInfo(
-      gpu_info, gpu::GpuPreferences(), command_line, nullptr);
   // Always enable gpu and oop raster, regardless of platform and blacklist.
-  gpu_feature_info.status_values[gpu::GPU_FEATURE_TYPE_GPU_RASTERIZATION] =
+  auto* gpu_feature_info = gpu::GetTestGpuThreadHolder()->GetGpuFeatureInfo();
+  gpu_feature_info->status_values[gpu::GPU_FEATURE_TYPE_GPU_RASTERIZATION] =
       gpu::kGpuFeatureStatusEnabled;
-  gpu_feature_info.status_values[gpu::GPU_FEATURE_TYPE_OOP_RASTERIZATION] =
+  gpu_feature_info->status_values[gpu::GPU_FEATURE_TYPE_OOP_RASTERIZATION] =
       gpu::kGpuFeatureStatusEnabled;
-  gpu::InProcessCommandBuffer::InitializeDefaultServiceForTesting(
-      gpu_feature_info);
   gles2::Initialize();
 #endif  // defined(VR_USE_COMMAND_BUFFER)
 }

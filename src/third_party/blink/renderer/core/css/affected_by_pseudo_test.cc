@@ -16,7 +16,7 @@
 
 namespace blink {
 
-using namespace HTMLNames;
+using namespace html_names;
 
 class AffectedByPseudoTest : public PageTestBase {
  protected:
@@ -33,7 +33,7 @@ class AffectedByPseudoTest : public PageTestBase {
 void AffectedByPseudoTest::SetHtmlInnerHTML(const char* html_content) {
   GetDocument().documentElement()->SetInnerHTMLFromString(
       String::FromUTF8(html_content));
-  UpdateAllLifecyclePhases();
+  UpdateAllLifecyclePhasesForTest();
 }
 
 void AffectedByPseudoTest::CheckElementsForFocus(
@@ -57,11 +57,11 @@ void AffectedByPseudoTest::CheckElementsForFocus(
 // ":focus div" will mark ascendants of all divs with
 // childrenOrSiblingsAffectedByFocus.
 TEST_F(AffectedByPseudoTest, FocusedAscendant) {
-  ElementResult expected[] = {{bodyTag, true},
-                              {divTag, true},
-                              {divTag, false},
-                              {divTag, false},
-                              {spanTag, false}};
+  ElementResult expected[] = {{kBodyTag, true},
+                              {kDivTag, true},
+                              {kDivTag, false},
+                              {kDivTag, false},
+                              {kSpanTag, false}};
 
   SetHtmlInnerHTML(R"HTML(
     <head>
@@ -79,11 +79,11 @@ TEST_F(AffectedByPseudoTest, FocusedAscendant) {
 // "body:focus div" will mark the body element with
 // childrenOrSiblingsAffectedByFocus.
 TEST_F(AffectedByPseudoTest, FocusedAscendantWithType) {
-  ElementResult expected[] = {{bodyTag, true},
-                              {divTag, false},
-                              {divTag, false},
-                              {divTag, false},
-                              {spanTag, false}};
+  ElementResult expected[] = {{kBodyTag, true},
+                              {kDivTag, false},
+                              {kDivTag, false},
+                              {kDivTag, false},
+                              {kSpanTag, false}};
 
   SetHtmlInnerHTML(R"HTML(
     <head>
@@ -104,11 +104,11 @@ TEST_F(AffectedByPseudoTest, FocusedAscendantWithType) {
 // is checked and the childrenOrSiblingsAffectedByFocus flag set before the
 // negated type selector is found.
 TEST_F(AffectedByPseudoTest, FocusedAscendantWithNegatedType) {
-  ElementResult expected[] = {{bodyTag, false},
-                              {divTag, true},
-                              {divTag, false},
-                              {divTag, false},
-                              {spanTag, false}};
+  ElementResult expected[] = {{kBodyTag, false},
+                              {kDivTag, true},
+                              {kDivTag, false},
+                              {kDivTag, false},
+                              {kSpanTag, false}};
 
   SetHtmlInnerHTML(R"HTML(
     <head>
@@ -131,7 +131,7 @@ TEST_F(AffectedByPseudoTest, FocusedAscendantWithNegatedType) {
 // makes sure the sibling also gets its styles recalculated.
 TEST_F(AffectedByPseudoTest, FocusedSibling) {
   ElementResult expected[] = {
-      {bodyTag, false}, {divTag, true}, {spanTag, false}, {divTag, false}};
+      {kBodyTag, false}, {kDivTag, true}, {kSpanTag, false}, {kDivTag, false}};
 
   SetHtmlInnerHTML(R"HTML(
     <head>
@@ -168,12 +168,12 @@ TEST_F(AffectedByPseudoTest, AffectedByFocusUpdate) {
     </div>
   )HTML");
 
-  UpdateAllLifecyclePhases();
+  UpdateAllLifecyclePhasesForTest();
 
   unsigned start_count = GetStyleEngine().StyleForElementCount();
 
   GetElementById("d")->focus();
-  UpdateAllLifecyclePhases();
+  UpdateAllLifecyclePhasesForTest();
 
   unsigned element_count =
       GetStyleEngine().StyleForElementCount() - start_count;
@@ -201,12 +201,12 @@ TEST_F(AffectedByPseudoTest, ChildrenOrSiblingsAffectedByFocusUpdate) {
     </div>
   )HTML");
 
-  UpdateAllLifecyclePhases();
+  UpdateAllLifecyclePhasesForTest();
 
   unsigned start_count = GetStyleEngine().StyleForElementCount();
 
   GetElementById("d")->focus();
-  UpdateAllLifecyclePhases();
+  UpdateAllLifecyclePhasesForTest();
 
   unsigned element_count =
       GetStyleEngine().StyleForElementCount() - start_count;
@@ -234,12 +234,12 @@ TEST_F(AffectedByPseudoTest, InvalidationSetFocusUpdate) {
     </div>
   )HTML");
 
-  UpdateAllLifecyclePhases();
+  UpdateAllLifecyclePhasesForTest();
 
   unsigned start_count = GetStyleEngine().StyleForElementCount();
 
   GetElementById("d")->focus();
-  UpdateAllLifecyclePhases();
+  UpdateAllLifecyclePhasesForTest();
 
   unsigned element_count =
       GetStyleEngine().StyleForElementCount() - start_count;
@@ -269,12 +269,12 @@ TEST_F(AffectedByPseudoTest, NoInvalidationSetFocusUpdate) {
     </div>
   )HTML");
 
-  UpdateAllLifecyclePhases();
+  UpdateAllLifecyclePhasesForTest();
 
   unsigned start_count = GetStyleEngine().StyleForElementCount();
 
   GetElementById("d")->focus();
-  UpdateAllLifecyclePhases();
+  UpdateAllLifecyclePhasesForTest();
 
   unsigned element_count =
       GetStyleEngine().StyleForElementCount() - start_count;
@@ -296,12 +296,12 @@ TEST_F(AffectedByPseudoTest, FocusWithinCommonAncestor) {
     </div>
   )HTML");
 
-  UpdateAllLifecyclePhases();
+  UpdateAllLifecyclePhasesForTest();
 
   unsigned start_count = GetStyleEngine().StyleForElementCount();
 
   GetElementById("focusme1")->focus();
-  UpdateAllLifecyclePhases();
+  UpdateAllLifecyclePhasesForTest();
 
   unsigned element_count =
       GetStyleEngine().StyleForElementCount() - start_count;
@@ -311,7 +311,7 @@ TEST_F(AffectedByPseudoTest, FocusWithinCommonAncestor) {
   start_count += element_count;
 
   GetElementById("focusme2")->focus();
-  UpdateAllLifecyclePhases();
+  UpdateAllLifecyclePhasesForTest();
 
   element_count = GetStyleEngine().StyleForElementCount() - start_count;
 
@@ -325,7 +325,7 @@ TEST_F(AffectedByPseudoTest, HoverScrollbar) {
       "<style>div::-webkit-scrollbar:hover { color: pink; }</style>"
       "<div id=div1></div>");
 
-  UpdateAllLifecyclePhases();
+  UpdateAllLifecyclePhasesForTest();
   EXPECT_FALSE(GetElementById("div1")->GetComputedStyle()->AffectedByHover());
 }
 

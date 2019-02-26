@@ -111,12 +111,7 @@ typedef struct OffsetTable
   {
     Tag t;
     t.set (tag);
-    /* Linear-search for small tables to work around fonts with unsorted
-     * table list. */
-    int i = tables.len < 64 ? tables.lsearch (t) : tables.bsearch (t);
-    if (table_index)
-      *table_index = i == -1 ? (unsigned) Index::NOT_FOUND_INDEX : (unsigned) i;
-    return i != -1;
+    return tables.bfind (t, table_index, HB_BFIND_NOT_FOUND_STORE, Index::NOT_FOUND_INDEX);
   }
   inline const TableRecord& get_table_by_tag (hb_tag_t tag) const
   {
@@ -160,7 +155,7 @@ typedef struct OffsetTable
 
       memcpy (start, hb_blob_get_data (blob, nullptr), rec.length);
 
-      /* 4-byte allignment. */
+      /* 4-byte alignment. */
       c->align (4);
       const char *end = (const char *) c->head;
 
@@ -330,8 +325,7 @@ struct ResourceTypeRecord
   inline const ResourceRecord& get_resource_record (unsigned int i,
 						    const void *type_base) const
   {
-    return hb_array_t<ResourceRecord> ((type_base+resourcesZ).arrayZ,
-				       get_resource_count ()) [i];
+    return (type_base+resourcesZ).as_array (get_resource_count ())[i];
   }
 
   inline bool sanitize (hb_sanitize_context_t *c,

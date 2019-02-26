@@ -4,6 +4,7 @@
 
 #include "ash/assistant/assistant_cache_controller.h"
 
+#include <utility>
 #include <vector>
 
 #include "ash/assistant/assistant_controller.h"
@@ -25,34 +26,34 @@ namespace {
 // Conversation starters -------------------------------------------------------
 
 const base::Feature kConversationStartersFeature{
-    "ChromeOSAssistantConversationStarters", base::FEATURE_DISABLED_BY_DEFAULT};
+    "ChromeOSAssistantConversationStarters", base::FEATURE_ENABLED_BY_DEFAULT};
 
 constexpr base::FeatureParam<bool> kImBoredChipEnabled{
-    &kConversationStartersFeature, "im-bored-chip-enabled", false};
+    &kConversationStartersFeature, "im-bored-chip-enabled", true};
 
 constexpr base::FeatureParam<bool> kOpenFilesChipEnabled{
-    &kConversationStartersFeature, "open-files-chip-enabled", false};
+    &kConversationStartersFeature, "open-files-chip-enabled", true};
 
 constexpr base::FeatureParam<bool> kPlayMusicChipEnabled{
-    &kConversationStartersFeature, "play-music-chip-enabled", false};
+    &kConversationStartersFeature, "play-music-chip-enabled", true};
 
 constexpr base::FeatureParam<bool> kSendAnEmailChipEnabled{
-    &kConversationStartersFeature, "send-an-email-chip-enabled", false};
+    &kConversationStartersFeature, "send-an-email-chip-enabled", true};
 
 constexpr base::FeatureParam<bool> kSetAReminderChipEnabled{
-    &kConversationStartersFeature, "set-a-reminder-chip-enabled", false};
+    &kConversationStartersFeature, "set-a-reminder-chip-enabled", true};
 
 constexpr base::FeatureParam<bool> kWhatCanYouDoChipEnabled{
-    &kConversationStartersFeature, "what-can-you-do-chip-enabled", false};
+    &kConversationStartersFeature, "what-can-you-do-chip-enabled", true};
 
 constexpr base::FeatureParam<bool> kWhatsOnMyCalendarChipEnabled{
-    &kConversationStartersFeature, "whats-on-my-calendar-chip-enabled", false};
+    &kConversationStartersFeature, "whats-on-my-calendar-chip-enabled", true};
 
 constexpr base::FeatureParam<bool> kWhatsOnMyScreenChipEnabled{
-    &kConversationStartersFeature, "whats-on-my-screen-chip-enabled", false};
+    &kConversationStartersFeature, "whats-on-my-screen-chip-enabled", true};
 
 constexpr base::FeatureParam<bool> kWhatsTheWeatherChipEnabled{
-    &kConversationStartersFeature, "whats-the-weather-chip-enabled", false};
+    &kConversationStartersFeature, "whats-the-weather-chip-enabled", true};
 
 constexpr int kMaxNumOfConversationStarters = 3;
 
@@ -62,20 +63,15 @@ constexpr int kMaxNumOfConversationStarters = 3;
 
 AssistantCacheController::AssistantCacheController(
     AssistantController* assistant_controller)
-    : assistant_controller_(assistant_controller),
-      voice_interaction_binding_(this) {
+    : assistant_controller_(assistant_controller) {
   UpdateConversationStarters();
-
   assistant_controller_->AddObserver(this);
-
-  // Bind to observe changes to screen context preference.
-  mojom::VoiceInteractionObserverPtr ptr;
-  voice_interaction_binding_.Bind(mojo::MakeRequest(&ptr));
-  Shell::Get()->voice_interaction_controller()->AddObserver(std::move(ptr));
+  Shell::Get()->voice_interaction_controller()->AddLocalObserver(this);
 }
 
 AssistantCacheController::~AssistantCacheController() {
   assistant_controller_->RemoveObserver(this);
+  Shell::Get()->voice_interaction_controller()->RemoveLocalObserver(this);
 }
 
 void AssistantCacheController::AddModelObserver(
@@ -99,7 +95,8 @@ void AssistantCacheController::OnAssistantControllerDestroying() {
 void AssistantCacheController::OnUiVisibilityChanged(
     AssistantVisibility new_visibility,
     AssistantVisibility old_visibility,
-    AssistantSource source) {
+    base::Optional<AssistantEntryPoint> entry_point,
+    base::Optional<AssistantExitPoint> exit_point) {
   // When Assistant is finishing a session, we update our cache of conversation
   // starters so that they're fresh for the next launch.
   if (assistant::util::IsFinishingSession(new_visibility))
@@ -116,7 +113,8 @@ void AssistantCacheController::UpdateConversationStarters() {
   if (!base::FeatureList::IsEnabled(kConversationStartersFeature))
     return;
 
-  using namespace chromeos::assistant::mojom;
+  using chromeos::assistant::mojom::AssistantSuggestion;
+  using chromeos::assistant::mojom::AssistantSuggestionPtr;
 
   std::vector<AssistantSuggestionPtr> conversation_starters;
 
@@ -134,7 +132,8 @@ void AssistantCacheController::UpdateConversationStarters() {
 
   // If enabled, always show the "What's on my screen?" conversation starter.
   if (kWhatsOnMyScreenChipEnabled.Get() &&
-      Shell::Get()->voice_interaction_controller()->context_enabled()) {
+      Shell::Get()->voice_interaction_controller()->context_enabled().value_or(
+          false)) {
     AddConversationStarter(IDS_ASH_ASSISTANT_CHIP_WHATS_ON_MY_SCREEN,
                            assistant::util::CreateWhatsOnMyScreenDeepLink());
   }

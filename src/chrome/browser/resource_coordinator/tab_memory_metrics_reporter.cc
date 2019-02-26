@@ -18,13 +18,6 @@
 
 namespace resource_coordinator {
 
-// static
-TabMemoryMetricsReporter* TabMemoryMetricsReporter::Get() {
-  static base::NoDestructor<TabMemoryMetricsReporter>
-      tab_memory_metrics_reporter;
-  return tab_memory_metrics_reporter.get();
-}
-
 TabMemoryMetricsReporter::TabMemoryMetricsReporter() = default;
 
 TabMemoryMetricsReporter::~TabMemoryMetricsReporter() = default;
@@ -191,7 +184,7 @@ TabMemoryMetricsReporter::NextStateOfEmitMemoryDumpAfterPageLoaded(
 
 bool TabMemoryMetricsReporter::WebContentsDataComparator::operator()(
     const WebContentsData& a,
-    const WebContentsData& b) {
+    const WebContentsData& b) const {
   return a.next_emit_time < b.next_emit_time;
 }
 

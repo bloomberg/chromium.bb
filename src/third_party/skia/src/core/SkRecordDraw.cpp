@@ -109,6 +109,7 @@ template <> void Draw::draw(const DrawImageLattice& r) {
 
 DRAW(DrawImageRect, legacy_drawImageRect(r.image.get(), r.src, r.dst, r.paint, r.constraint));
 DRAW(DrawImageNine, drawImageNine(r.image.get(), r.center, r.dst, r.paint));
+DRAW(DrawImageSet, experimental_DrawImageSetV1(r.set.get(), r.count, r.quality, r.mode));
 DRAW(DrawOval, drawOval(r.oval, r.paint));
 DRAW(DrawPaint, drawPaint(r.paint));
 DRAW(DrawPath, drawPath(r.path, r.paint));
@@ -383,6 +384,13 @@ private:
     Bounds bounds(const DrawImageNine& op) const {
         return this->adjustAndMap(op.dst, op.paint);
     }
+    Bounds bounds(const DrawImageSet& op) const {
+        SkRect rect = SkRect::MakeEmpty();
+        for (int i = 0; i < op.count; ++i) {
+            rect.join(this->adjustAndMap(op.set[i].fDstRect, nullptr));
+        }
+        return rect;
+    }
     Bounds bounds(const DrawPath& op) const {
         return op.path.isInverseFillType() ? fCullRect
                                            : this->adjustAndMap(op.path.getBounds(), &op.paint);
@@ -487,7 +495,7 @@ private:
                        xPad = 4.0f * yPad;
         rect->outset(xPad, yPad);
 #ifdef SK_DEBUG
-        SkPaint::FontMetrics metrics;
+        SkFontMetrics metrics;
         paint.getFontMetrics(&metrics);
         correct.fLeft   += metrics.fXMin;
         correct.fTop    += metrics.fTop;

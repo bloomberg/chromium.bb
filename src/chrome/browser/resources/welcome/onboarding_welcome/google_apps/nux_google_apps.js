@@ -5,21 +5,22 @@
 Polymer({
   is: 'nux-google-apps',
 
+  behaviors: [welcome.NavigationBehavior],
+
   properties: {
-    /** @private */
-    hasAppsSelected_: Boolean,
+    /** @type {nux.stepIndicatorModel} */
+    indicatorModel: Object,
   },
 
-  /** @private */
-  onNoThanksClicked_: function() {
-    chrome.send('rejectGoogleApps');
-    window.location.replace('chrome://newtab');
+  onRouteEnter: function() {
+    this.$.appChooser.onRouteEnter();
   },
 
-  /** @private */
-  onGetStartedClicked_: function() {
-    let selectedApps = this.$.appChooser.getSelectedAppList();
-    nux.NuxGoogleAppsProxyImpl.getInstance().addGoogleApps(selectedApps);
-    window.location.replace('chrome://newtab');
+  onRouteExit: function() {
+    this.$.appChooser.onRouteExit();
+  },
+
+  onRouteUnload: function() {
+    this.$.appChooser.onRouteUnload();
   },
 });

@@ -20,21 +20,23 @@ class MODULES_EXPORT DetectedBarcode final : public ScriptWrappable {
 
  public:
   static DetectedBarcode* Create();
-  static DetectedBarcode* Create(String, DOMRectReadOnly*, HeapVector<Point2D>);
+  static DetectedBarcode* Create(String,
+                                 DOMRectReadOnly*,
+                                 HeapVector<Member<Point2D>>);
+
+  DetectedBarcode(String, DOMRectReadOnly*, HeapVector<Member<Point2D>>);
 
   const String& rawValue() const;
   DOMRectReadOnly* boundingBox() const;
-  const HeapVector<Point2D>& cornerPoints() const;
+  const HeapVector<Member<Point2D>>& cornerPoints() const;
 
   ScriptValue toJSONForBinding(ScriptState*) const;
   void Trace(blink::Visitor*) override;
 
  private:
-  DetectedBarcode(String, DOMRectReadOnly*, HeapVector<Point2D>);
-
   const String raw_value_;
   const Member<DOMRectReadOnly> bounding_box_;
-  const HeapVector<Point2D> corner_points_;
+  const HeapVector<Member<Point2D>> corner_points_;
 };
 
 }  // namespace blink

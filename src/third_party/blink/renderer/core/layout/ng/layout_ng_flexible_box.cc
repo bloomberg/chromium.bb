@@ -33,7 +33,7 @@ void LayoutNGFlexibleBox::UpdateBlockLayout(bool relayout_children) {
     descendant.node.UseOldOutOfFlowPositioning();
 
   const NGPhysicalBoxFragment* fragment =
-      ToNGPhysicalBoxFragment(result->PhysicalFragment().get());
+      ToNGPhysicalBoxFragment(result->PhysicalFragment());
 
   // Pasted from layout_ng_block_flow. TODO(dgrogan): Factor a utility method.
   const LayoutBlock* containing_block = ContainingBlock();

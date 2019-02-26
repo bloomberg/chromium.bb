@@ -3,11 +3,13 @@
 // found in the LICENSE file.
 
 /**
- * Progress center at the background page.
+ * Implementation of {ProgressCenter} at the background page.
+ *
  * @constructor
  * @struct
+ * @implements {ProgressCenter}
  */
-var ProgressCenter = function() {
+var ProgressCenterImpl = function() {
   /**
    * Current items managed by the progress center.
    * @type {Array<!ProgressCenterItem>}
@@ -20,9 +22,8 @@ var ProgressCenter = function() {
    * @type {Object<string>}
    * @private
    */
-  this.notifications_ = new ProgressCenter.Notifications_(
-      this.requestCancel.bind(this),
-      this.onNotificationDismissed_.bind(this));
+  this.notifications_ = new ProgressCenterImpl.Notifications_(
+      this.requestCancel.bind(this), this.onNotificationDismissed_.bind(this));
 
   /**
    * List of panel UI managed by the progress center.
@@ -42,10 +43,10 @@ var ProgressCenter = function() {
  * @struct
  * @private
  */
-ProgressCenter.Notifications_ = function(cancelCallback, dismissCallback) {
+ProgressCenterImpl.Notifications_ = function(cancelCallback, dismissCallback) {
   /**
    * ID set of notifications that is progressing now.
-   * @type {Object<ProgressCenter.Notifications_.NotificationState_>}
+   * @type {Object<ProgressCenterImpl.Notifications_.NotificationState_>}
    * @private
    */
   this.ids_ = {};
@@ -81,7 +82,7 @@ ProgressCenter.Notifications_ = function(cancelCallback, dismissCallback) {
  * @const
  * @private
  */
-ProgressCenter.Notifications_.NotificationState_ = {
+ProgressCenterImpl.Notifications_.NotificationState_ = {
   VISIBLE: 'visible',
   DISMISSED: 'dismissed'
 };
@@ -91,9 +92,9 @@ ProgressCenter.Notifications_.NotificationState_ = {
  * @param {ProgressCenterItem} item Item to contain new information.
  * @param {boolean} newItemAcceptable Whether to accept new item or not.
  */
-ProgressCenter.Notifications_.prototype.updateItem = function(
+ProgressCenterImpl.Notifications_.prototype.updateItem = function(
     item, newItemAcceptable) {
-  var NotificationState = ProgressCenter.Notifications_.NotificationState_;
+  var NotificationState = ProgressCenterImpl.Notifications_.NotificationState_;
   var newlyAdded = !(item.id in this.ids_);
 
   // If new item is not acceptable, just return.
@@ -147,7 +148,7 @@ ProgressCenter.Notifications_.prototype.updateItem = function(
  * Dismisses error item.
  * @param {string} id Item ID.
  */
-ProgressCenter.Notifications_.prototype.dismissErrorItem = function(id) {
+ProgressCenterImpl.Notifications_.prototype.dismissErrorItem = function(id) {
   if (!this.ids_[id])
     return;
 
@@ -163,7 +164,7 @@ ProgressCenter.Notifications_.prototype.dismissErrorItem = function(id) {
  * @param {string} id Item ID.
  * @private
  */
-ProgressCenter.Notifications_.prototype.onButtonClicked_ = function(id) {
+ProgressCenterImpl.Notifications_.prototype.onButtonClicked_ = function(id) {
   if (id in this.ids_)
     this.cancelCallback_(id);
 };
@@ -173,9 +174,10 @@ ProgressCenter.Notifications_.prototype.onButtonClicked_ = function(id) {
  * @param {string} id Item ID.
  * @private
  */
-ProgressCenter.Notifications_.prototype.onClosed_ = function(id) {
+ProgressCenterImpl.Notifications_.prototype.onClosed_ = function(id) {
   if (id in this.ids_) {
-    this.ids_[id] = ProgressCenter.Notifications_.NotificationState_.DISMISSED;
+    this.ids_[id] =
+        ProgressCenterImpl.Notifications_.NotificationState_.DISMISSED;
     this.dismissCallback_(id);
   }
 };
@@ -186,7 +188,7 @@ ProgressCenter.Notifications_.prototype.onClosed_ = function(id) {
  *
  * @param {ProgressCenterItem} item Updated item.
  */
-ProgressCenter.prototype.updateItem = function(item) {
+ProgressCenterImpl.prototype.updateItem = function(item) {
   // Update item.
   var index = this.getItemIndex_(item.id);
   if (item.state === ProgressItemState.PROGRESSING) {
@@ -213,7 +215,7 @@ ProgressCenter.prototype.updateItem = function(item) {
  * Requests to cancel the progress item.
  * @param {string} id Progress ID to be requested to cancel.
  */
-ProgressCenter.prototype.requestCancel = function(id) {
+ProgressCenterImpl.prototype.requestCancel = function(id) {
   var item = this.getItemById(id);
   if (item && item.cancelCallback)
     item.cancelCallback();
@@ -224,7 +226,7 @@ ProgressCenter.prototype.requestCancel = function(id) {
  * @param {string} id Item id.
  * @private
  */
-ProgressCenter.prototype.onNotificationDismissed_ = function(id) {
+ProgressCenterImpl.prototype.onNotificationDismissed_ = function(id) {
   var item = this.getItemById(id);
   if (item && item.state === ProgressItemState.ERROR)
     this.dismissErrorItem_(id);
@@ -234,7 +236,7 @@ ProgressCenter.prototype.onNotificationDismissed_ = function(id) {
  * Adds a panel UI to the notification center.
  * @param {ProgressCenterPanel} panel Panel UI.
  */
-ProgressCenter.prototype.addPanel = function(panel) {
+ProgressCenterImpl.prototype.addPanel = function(panel) {
   if (this.panels_.indexOf(panel) !== -1)
     return;
 
@@ -256,7 +258,7 @@ ProgressCenter.prototype.addPanel = function(panel) {
  * Removes a panel UI from the notification center.
  * @param {ProgressCenterPanel} panel Panel UI.
  */
-ProgressCenter.prototype.removePanel = function(panel) {
+ProgressCenterImpl.prototype.removePanel = function(panel) {
   var index = this.panels_.indexOf(panel);
   if (index === -1)
     return;
@@ -277,7 +279,7 @@ ProgressCenter.prototype.removePanel = function(panel) {
  * @return {ProgressCenterItem} Progress center item having the specified
  *     ID. Null if the item is not found.
  */
-ProgressCenter.prototype.getItemById = function(id) {
+ProgressCenterImpl.prototype.getItemById = function(id) {
   return this.items_[this.getItemIndex_(id)];
 };
 
@@ -287,7 +289,7 @@ ProgressCenter.prototype.getItemById = function(id) {
  * @return {number} Item index. Returns -1 If the item is not found.
  * @private
  */
-ProgressCenter.prototype.getItemIndex_ = function(id) {
+ProgressCenterImpl.prototype.getItemIndex_ = function(id) {
   for (var i = 0; i < this.items_.length; i++) {
     if (this.items_[i].id === id)
       return i;
@@ -300,7 +302,7 @@ ProgressCenter.prototype.getItemIndex_ = function(id) {
  * @param {string} id Item ID.
  * @private
  */
-ProgressCenter.prototype.dismissErrorItem_ = function(id) {
+ProgressCenterImpl.prototype.dismissErrorItem_ = function(id) {
   var index = this.getItemIndex_(id);
   if (index > -1)
     this.items_.splice(index, 1);

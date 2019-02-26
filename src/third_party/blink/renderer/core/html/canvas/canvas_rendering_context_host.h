@@ -34,6 +34,12 @@ class CORE_EXPORT CanvasRenderingContextHost : public CanvasResourceHost,
  public:
   CanvasRenderingContextHost();
 
+  enum HostType {
+    kCanvasHost,
+    kOffscreenCanvasHost,
+  };
+
+  void static RecordCanvasSizeToUMA(unsigned width, unsigned height, HostType);
   virtual void DetachContext() = 0;
 
   virtual void DidDraw(const FloatRect& rect) = 0;
@@ -89,7 +95,7 @@ class CORE_EXPORT CanvasRenderingContextHost : public CanvasResourceHost,
   CanvasColorParams ColorParams() const;
 
   ScriptPromise convertToBlob(ScriptState*,
-                              const ImageEncodeOptions&,
+                              const ImageEncodeOptions*,
                               ExceptionState&) const;
 
  protected:

@@ -14,7 +14,7 @@
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_split.h"
 #include "base/strings/string_util.h"
-#include "base/sys_info.h"
+#include "base/system/sys_info.h"
 #include "chromeos/chromeos_switches.h"
 #include "device/udev_linux/scoped_udev.h"
 #include "ui/base/ime/chromeos/ime_keyboard.h"
@@ -255,6 +255,17 @@ ui::DomCode RelocateModifier(ui::DomCode code, ui::DomKeyLocation location) {
       break;
   }
   return code;
+}
+
+// Returns true if |mouse_event| was generated from a touchpad device.
+bool IsFromTouchpadDevice(const ui::MouseEvent& mouse_event) {
+  for (const ui::InputDevice& touchpad :
+       ui::InputDeviceManager::GetInstance()->GetTouchpadDevices()) {
+    if (touchpad.id == mouse_event.source_device_id())
+      return true;
+  }
+
+  return false;
 }
 
 }  // namespace
@@ -1171,11 +1182,15 @@ void EventRewriterChromeOS::RewriteLocatedEvent(const ui::Event& event,
 int EventRewriterChromeOS::RewriteModifierClick(
     const ui::MouseEvent& mouse_event,
     int* flags) {
+  // Note that this behavior is limited to mouse events coming from touchpad
+  // devices. https://crbug.com/890648.
+
   // Remap Alt+Button1 to Button3.
   const int kAltLeftButton = (ui::EF_ALT_DOWN | ui::EF_LEFT_MOUSE_BUTTON);
   if (((*flags & kAltLeftButton) == kAltLeftButton) &&
       ((mouse_event.type() == ui::ET_MOUSE_PRESSED) ||
-       pressed_device_ids_.count(mouse_event.source_device_id()))) {
+       pressed_device_ids_.count(mouse_event.source_device_id())) &&
+      IsFromTouchpadDevice(mouse_event)) {
     *flags &= ~kAltLeftButton;
     *flags |= ui::EF_RIGHT_MOUSE_BUTTON;
     if (mouse_event.type() == ui::ET_MOUSE_PRESSED)

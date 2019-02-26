@@ -24,7 +24,7 @@
 
 #include "third_party/blink/renderer/core/html/html_embed_element.h"
 
-#include "third_party/blink/renderer/core/css_property_names.h"
+#include "third_party/blink/renderer/core/css/css_property_names.h"
 #include "third_party/blink/renderer/core/dom/attribute.h"
 #include "third_party/blink/renderer/core/dom/element_traversal.h"
 #include "third_party/blink/renderer/core/dom/shadow_root.h"
@@ -39,18 +39,18 @@
 
 namespace blink {
 
-using namespace HTMLNames;
+using namespace html_names;
 
 inline HTMLEmbedElement::HTMLEmbedElement(Document& document,
                                           const CreateElementFlags flags)
-    : HTMLPlugInElement(embedTag,
+    : HTMLPlugInElement(kEmbedTag,
                         document,
                         flags,
                         kShouldPreferPlugInsForImages) {}
 
 HTMLEmbedElement* HTMLEmbedElement::Create(Document& document,
                                            const CreateElementFlags flags) {
-  auto* element = new HTMLEmbedElement(document, flags);
+  auto* element = MakeGarbageCollected<HTMLEmbedElement>(document, flags);
   element->EnsureUserAgentShadowRoot();
   return element;
 }
@@ -78,7 +78,7 @@ LayoutEmbeddedContent* HTMLEmbedElement::ExistingLayoutEmbeddedContent() const {
 
 bool HTMLEmbedElement::IsPresentationAttribute(
     const QualifiedName& name) const {
-  if (name == hiddenAttr)
+  if (name == kHiddenAttr)
     return true;
   return HTMLPlugInElement::IsPresentationAttribute(name);
 }
@@ -87,7 +87,7 @@ void HTMLEmbedElement::CollectStyleForPresentationAttribute(
     const QualifiedName& name,
     const AtomicString& value,
     MutableCSSPropertyValueSet* style) {
-  if (name == hiddenAttr) {
+  if (name == kHiddenAttr) {
     if (DeprecatedEqualIgnoringCase(value, "yes") ||
         DeprecatedEqualIgnoringCase(value, "true")) {
       AddPropertyToPresentationAttributeStyle(
@@ -102,7 +102,7 @@ void HTMLEmbedElement::CollectStyleForPresentationAttribute(
 
 void HTMLEmbedElement::ParseAttribute(
     const AttributeModificationParams& params) {
-  if (params.name == typeAttr) {
+  if (params.name == kTypeAttr) {
     SetServiceType(params.new_value.LowerASCII());
     wtf_size_t pos = service_type_.Find(";");
     if (pos != kNotFound)
@@ -112,11 +112,11 @@ void HTMLEmbedElement::ParseAttribute(
       GetLayoutObject()->SetNeedsLayoutAndFullPaintInvalidation(
           "Embed type changed");
     }
-  } else if (params.name == codeAttr) {
+  } else if (params.name == kCodeAttr) {
     // TODO(schenney): Remove this branch? It's not in the spec and we're not in
     // the HTMLAppletElement hierarchy.
     SetUrl(StripLeadingAndTrailingHTMLSpaces(params.new_value));
-  } else if (params.name == srcAttr) {
+  } else if (params.name == kSrcAttr) {
     SetUrl(StripLeadingAndTrailingHTMLSpaces(params.new_value));
     if (GetLayoutObject() && IsImageType()) {
       if (!image_loader_)
@@ -124,7 +124,7 @@ void HTMLEmbedElement::ParseAttribute(
       image_loader_->UpdateFromElement(ImageLoader::kUpdateIgnorePreviousError);
     } else if (GetLayoutObject()) {
       // Check if this Embed can transition from potentially-active to active
-      if (FastHasAttribute(typeAttr)) {
+      if (FastHasAttribute(kTypeAttr)) {
         SetNeedsPluginUpdate(true);
         LazyReattachIfNeeded();
       }
@@ -185,7 +185,7 @@ bool HTMLEmbedElement::LayoutObjectIsNeeded(const ComputedStyle& style) const {
   // represents nothing:
 
   // * The element has neither a src attribute nor a type attribute.
-  if (!FastHasAttribute(srcAttr) && !FastHasAttribute(typeAttr))
+  if (!FastHasAttribute(kSrcAttr) && !FastHasAttribute(kTypeAttr))
     return false;
 
   // * The element has a media element ancestor.
@@ -204,12 +204,12 @@ bool HTMLEmbedElement::LayoutObjectIsNeeded(const ComputedStyle& style) const {
 }
 
 bool HTMLEmbedElement::IsURLAttribute(const Attribute& attribute) const {
-  return attribute.GetName() == srcAttr ||
+  return attribute.GetName() == kSrcAttr ||
          HTMLPlugInElement::IsURLAttribute(attribute);
 }
 
 const QualifiedName& HTMLEmbedElement::SubResourceAttributeName() const {
-  return srcAttr;
+  return kSrcAttr;
 }
 
 bool HTMLEmbedElement::IsInteractiveContent() const {

@@ -107,6 +107,10 @@ std::vector<std::string> LitePagePreviewsBlacklistedPathSuffixes();
 // as an experiment for automated and manual testing.
 bool LitePagePreviewsTriggerOnLocalhost();
 
+// Whether to request a Lite Page Server Preview even if there are optimization
+// page hints for the host.
+bool LitePagePreviewsOverridePageHints();
+
 // The maximum data byte size for the server-provided blacklist. This is
 // a client-side safety limit for RAM use in case server sends too large of
 // a blacklist.
@@ -115,10 +119,23 @@ int LitePageRedirectPreviewMaxServerBlacklistByteSize();
 // The maximum number of seconds to loadshed the Previews server for.
 int PreviewServerLoadshedMaxSeconds();
 
-// The threshold of EffectiveConnectionType above which preview |type| will be
+// The experimental config to send to the previews server.
+std::string LitePageRedirectPreviewExperiment();
+
+// Returns true if we should only report metrics and not trigger when the Lite
+// Page Redirect preview is enabled.
+bool IsInLitePageRedirectControl();
+
+// The default EffectiveConnectionType threshold where preview |type| will be
 // triggered.
 net::EffectiveConnectionType GetECTThresholdForPreview(
     previews::PreviewsType type);
+
+// The maximum EffectiveConnectionType threshold where this client session is
+// allowed to trigger previews (for slow page triggered previews). This may be
+// Finch configured on a session basis to limit the proportion of previews
+// triggered at faster connections.
+net::EffectiveConnectionType GetSessionMaxECTThreshold();
 
 // Whether any previews are allowed. Acts as a kill-switch or holdback check.
 bool ArePreviewsAllowed();
@@ -150,9 +167,6 @@ bool IsOptimizationHintsEnabled();
 // should not be served.
 net::EffectiveConnectionType EffectiveConnectionTypeThresholdForClientLoFi();
 
-// Returns the hosts that are blacklisted by the Client Lo-Fi field trial.
-std::vector<std::string> GetBlackListedHostsForClientLoFiFieldTrial();
-
 // For estimating NoScript data savings, this is the percentage factor to
 // multiple by the network bytes for inflating the original_bytes count.
 int NoScriptPreviewsInflationPercent();
@@ -160,6 +174,11 @@ int NoScriptPreviewsInflationPercent();
 // For estimating NoScript data savings, this is the number of bytes to
 // for inflating the original_bytes count.
 int NoScriptPreviewsInflationBytes();
+
+// Whether to use top level optimization hints for NoScript instead of
+// page hints. This is to allow for reverting to original behavior until
+// page hints for NoScript is successfully launched.
+bool NoScriptPreviewsUsesTopLevelHints();
 
 // For estimating ResourceLoadingHints data savings, this is the percentage
 // factor to multiple by the network bytes for inflating the original_bytes

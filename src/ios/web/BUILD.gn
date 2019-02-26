@@ -52,7 +52,7 @@ source_set("web") {
     "//services/network/public/mojom",
     "//services/service_manager",
     "//services/service_manager/embedder",
-    "//services/service_manager/runner/common",
+    "//services/service_manager/public/cpp",
   ]
 
   sources = [
@@ -71,6 +71,8 @@ source_set("web") {
     "url_util.cc",
     "web_client.mm",
     "web_kit_constants.cc",
+    "web_sub_thread.cc",
+    "web_sub_thread.h",
     "web_thread_impl.cc",
     "web_thread_impl.h",
     "web_view_creation_util.mm",
@@ -610,7 +612,6 @@ js_compile_bundle("main_frame_web_bundle") {
   closure_entry_point = "__crWeb.mainFrameWebBundle"
 
   sources = [
-    "web_state/js/resources/console.js",
     "web_state/js/resources/error.js",
     "web_state/js/resources/legacy.js",
     "web_state/js/resources/main_frame_context_menu.js",

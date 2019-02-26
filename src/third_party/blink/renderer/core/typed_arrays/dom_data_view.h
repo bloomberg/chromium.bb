@@ -20,13 +20,12 @@ class CORE_EXPORT DOMDataView final : public DOMArrayBufferView {
                              unsigned byte_offset,
                              unsigned byte_length);
 
-  v8::Local<v8::Object> Wrap(v8::Isolate*,
-                             v8::Local<v8::Object> creation_context) override;
-
- private:
   DOMDataView(scoped_refptr<WTF::ArrayBufferView> data_view,
               DOMArrayBufferBase* dom_array_buffer)
       : DOMArrayBufferView(std::move(data_view), dom_array_buffer) {}
+
+  v8::Local<v8::Object> Wrap(v8::Isolate*,
+                             v8::Local<v8::Object> creation_context) override;
 };
 
 }  // namespace blink

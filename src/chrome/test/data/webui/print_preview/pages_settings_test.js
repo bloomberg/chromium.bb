@@ -254,7 +254,7 @@ cr.define('pages_settings_test', function() {
     // the "all" radio button.
     test(assert(TestNames.ClearInput), function() {
       const input = pagesSection.$.pageSettingsCustomInput.inputElement;
-      const radioGroup = pagesSection.$$('paper-radio-group');
+      const radioGroup = pagesSection.$$('cr-radio-group');
       assertEquals(pagesSection.pagesValueEnum_.ALL, radioGroup.selected);
       return setupInput('1-2', 3)
           .then(function() {
@@ -301,7 +301,7 @@ cr.define('pages_settings_test', function() {
     test(assert(TestNames.TabOrder), function() {
       documentInfo.updatePageCount(3);
 
-      const radioGroup = pagesSection.$$('paper-radio-group');
+      const radioGroup = pagesSection.$$('cr-radio-group');
       const customRadio = pagesSection.$.customRadioButton;
       const allRadio = pagesSection.$.allRadioButton;
       const input = pagesSection.$.pageSettingsCustomInput;
@@ -317,7 +317,7 @@ cr.define('pages_settings_test', function() {
         assertEquals(!allSelected, allRadio.tabIndex === -1);
       };
 
-      let whenFocused = test_util.eventToPromise('focus', radioGroup);
+      const whenFocused = test_util.eventToPromise('focus', allRadio);
       // Focus the radio group.
       radioGroup.focus();
       return whenFocused
@@ -326,7 +326,8 @@ cr.define('pages_settings_test', function() {
             validateTabOrder(true);
 
             // Down arrow, to switch to custom.
-            whenFocused = test_util.eventToPromise('focus', input.inputElement);
+            const whenFocused =
+                test_util.eventToPromise('focus', input.inputElement);
             MockInteractions.keyEventOn(
                 allRadio, 'keydown', 40, [], 'ArrowDown');
             return whenFocused;
@@ -394,7 +395,7 @@ cr.define('pages_settings_test', function() {
 
     test(assert(TestNames.ClickingCustomFocusesInput), function() {
       const input = pagesSection.$.pageSettingsCustomInput.inputElement;
-      const radioGroup = pagesSection.$$('paper-radio-group');
+      const radioGroup = pagesSection.$$('cr-radio-group');
       assertEquals(pagesSection.pagesValueEnum_.ALL, radioGroup.selected);
 
       // Click the custom input and set a valid value.
@@ -508,7 +509,7 @@ cr.define('pages_settings_test', function() {
     // print.
     test(assert(TestNames.EnterOnInputTriggersPrint), function() {
       const input = pagesSection.$.pageSettingsCustomInput.inputElement;
-      const radioGroup = pagesSection.$$('paper-radio-group');
+      const radioGroup = pagesSection.$$('cr-radio-group');
       const whenPrintReceived =
           test_util.eventToPromise('keydown', pagesSection);
 

@@ -7,6 +7,7 @@
 #include <memory>
 #include <utility>
 
+#include "base/task/post_task.h"
 #include "build/build_config.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/gcm/gcm_profile_service_factory.h"
@@ -28,6 +29,8 @@
 #include "components/keyed_service/content/browser_context_dependency_manager.h"
 #include "components/pref_registry/pref_registry_syncable.h"
 #include "components/prefs/pref_registry.h"
+#include "content/public/browser/browser_task_traits.h"
+#include "content/public/browser/browser_thread.h"
 #include "content/public/browser/network_service_instance.h"
 #include "content/public/browser/storage_partition.h"
 #include "content/public/common/service_manager_connection.h"
@@ -51,6 +54,36 @@
 #endif
 
 namespace invalidation {
+
+namespace {
+
+#if !defined(OS_ANDROID)
+void RequestProxyResolvingSocketFactoryOnUIThread(
+    Profile* profile,
+    base::WeakPtr<TiclInvalidationService> service,
+    network::mojom::ProxyResolvingSocketFactoryRequest request) {
+  if (!service)
+    return;
+  network::mojom::NetworkContext* network_context =
+      content::BrowserContext::GetDefaultStoragePartition(profile)
+          ->GetNetworkContext();
+  network_context->CreateProxyResolvingSocketFactory(std::move(request));
+}
+
+// A thread-safe wrapper to request a ProxyResolvingSocketFactoryPtr.
+void RequestProxyResolvingSocketFactory(
+    Profile* profile,
+    base::WeakPtr<TiclInvalidationService> service,
+    network::mojom::ProxyResolvingSocketFactoryRequest request) {
+  base::PostTaskWithTraits(
+      FROM_HERE, {content::BrowserThread::UI},
+      base::BindOnce(&RequestProxyResolvingSocketFactoryOnUIThread, profile,
+                     std::move(service), std::move(request)));
+}
+
+#endif
+
+}  // namespace
 
 // static
 ProfileInvalidationProvider*
@@ -134,7 +167,9 @@ DeprecatedProfileInvalidationProviderFactory::BuildServiceInstanceFor(
           GetUserAgent(), identity_provider.get(),
           std::make_unique<TiclProfileSettingsProvider>(profile->GetPrefs()),
           gcm::GCMProfileServiceFactory::GetForProfile(profile)->driver(),
-          profile->GetRequestContext(),
+          base::BindRepeating(&RequestProxyResolvingSocketFactory, profile),
+          base::CreateSingleThreadTaskRunnerWithTraits(
+              {content::BrowserThread::IO}),
           content::BrowserContext::GetDefaultStoragePartition(profile)
               ->GetURLLoaderFactoryForBrowserProcess(),
           content::GetNetworkConnectionTracker());

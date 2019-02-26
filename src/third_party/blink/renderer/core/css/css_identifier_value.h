@@ -26,12 +26,23 @@ class CORE_EXPORT CSSIdentifierValue : public CSSValue {
     static_assert(!std::is_same<T, CSSValueID>::value,
                   "Do not call create() with a CSSValueID; call "
                   "createIdentifier() instead");
-    return new CSSIdentifierValue(value);
+    return MakeGarbageCollected<CSSIdentifierValue>(value);
   }
 
   static CSSIdentifierValue* Create(const Length& value) {
-    return new CSSIdentifierValue(value);
+    return MakeGarbageCollected<CSSIdentifierValue>(value);
   }
+
+  explicit CSSIdentifierValue(CSSValueID);
+
+  // TODO(sashab): Remove this function, and update mapping methods to
+  // specialize the create() method instead.
+  template <typename T>
+  CSSIdentifierValue(
+      T t)  // Overriden for special cases in CSSPrimitiveValueMappings.h
+      : CSSValue(kIdentifierClass), value_id_(PlatformEnumToCSSValueID(t)) {}
+
+  CSSIdentifierValue(const Length&);
 
   CSSValueID GetValueID() const { return value_id_; }
 
@@ -50,17 +61,6 @@ class CORE_EXPORT CSSIdentifierValue : public CSSValue {
   void TraceAfterDispatch(blink::Visitor*);
 
  private:
-  explicit CSSIdentifierValue(CSSValueID);
-
-  // TODO(sashab): Remove this function, and update mapping methods to
-  // specialize the create() method instead.
-  template <typename T>
-  CSSIdentifierValue(
-      T t)  // Overriden for special cases in CSSPrimitiveValueMappings.h
-      : CSSValue(kIdentifierClass), value_id_(PlatformEnumToCSSValueID(t)) {}
-
-  CSSIdentifierValue(const Length&);
-
   CSSValueID value_id_;
 };
 

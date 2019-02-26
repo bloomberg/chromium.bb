@@ -13,16 +13,15 @@
 #include "services/service_manager/public/cpp/binder_registry.h"
 #include "services/service_manager/public/cpp/interface_provider.h"
 #include "services/service_manager/public/cpp/service.h"
-#include "services/service_manager/public/cpp/service_context_ref.h"
+#include "services/service_manager/public/cpp/service_binding.h"
+#include "services/service_manager/public/mojom/service.mojom.h"
 
 namespace shape_detection {
 
 class ShapeDetectionService : public service_manager::Service {
  public:
-  // Factory function for use as an embedded service.
-  static std::unique_ptr<service_manager::Service> Create();
-
-  ShapeDetectionService();
+  explicit ShapeDetectionService(
+      service_manager::mojom::ServiceRequest request);
   ~ShapeDetectionService() override;
 
   void OnStart() override;
@@ -41,7 +40,7 @@ class ShapeDetectionService : public service_manager::Service {
   void* vision_framework_;
 #endif
 
-  std::unique_ptr<service_manager::ServiceContextRefFactory> ref_factory_;
+  service_manager::ServiceBinding service_binding_;
   service_manager::BinderRegistry registry_;
 
   DISALLOW_COPY_AND_ASSIGN(ShapeDetectionService);

@@ -21,14 +21,14 @@ class GLSurface;
 }
 
 namespace gpu {
-class DecoderContext;
+class GLContextVirtualDelegate;
 
 // Encapsulates a virtual OpenGL context.
 class GPU_GLES2_EXPORT GLContextVirtual : public gl::GLContext {
  public:
   GLContextVirtual(gl::GLShareGroup* share_group,
                    gl::GLContext* shared_context,
-                   base::WeakPtr<DecoderContext> decoder);
+                   base::WeakPtr<GLContextVirtualDelegate> delegate);
 
   // Implement GLContext.
   bool Initialize(gl::GLSurface* compatible_surface,
@@ -61,7 +61,7 @@ class GPU_GLES2_EXPORT GLContextVirtual : public gl::GLContext {
   void Destroy();
 
   scoped_refptr<gl::GLContext> shared_context_;
-  base::WeakPtr<DecoderContext> decoder_;
+  base::WeakPtr<GLContextVirtualDelegate> delegate_;
 
   DISALLOW_COPY_AND_ASSIGN(GLContextVirtual);
 };

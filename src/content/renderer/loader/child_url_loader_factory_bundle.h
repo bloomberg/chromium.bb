@@ -38,6 +38,7 @@ class CONTENT_EXPORT ChildURLLoaderFactoryBundleInfo
       std::unique_ptr<URLLoaderFactoryBundleInfo> base_info);
   ChildURLLoaderFactoryBundleInfo(
       network::mojom::URLLoaderFactoryPtrInfo default_factory_info,
+      network::mojom::URLLoaderFactoryPtrInfo default_network_factory_info,
       SchemeMap scheme_specific_factory_infos,
       OriginMap initiator_specific_factory_infos,
       PossiblyAssociatedURLLoaderFactoryPtrInfo direct_network_factory_info,
@@ -96,16 +97,18 @@ class CONTENT_EXPORT ChildURLLoaderFactoryBundle
                                 traffic_annotation) override;
   std::unique_ptr<network::SharedURLLoaderFactoryInfo> Clone() override;
 
-  // Returns an info that omits this bundle's default factory, if any. This is
-  // useful to make a clone that bypasses AppCache, for example.
+  // Does the same as Clone(), but without cloning the appcache_factory_.
+  // This is used for creating a bundle for network fallback loading with
+  // Service Workers (where AppCache must be skipped).
+  // TODO(kinuko): See if this is really needed and remove otherwise.
   virtual std::unique_ptr<network::SharedURLLoaderFactoryInfo>
-  CloneWithoutDefaultFactory();
+  CloneWithoutAppCacheFactory();
 
   std::unique_ptr<ChildURLLoaderFactoryBundleInfo> PassInterface();
 
-  void Update(std::unique_ptr<ChildURLLoaderFactoryBundleInfo> info,
-              base::Optional<std::vector<mojom::TransferrableURLLoaderPtr>>
-                  subresource_overrides);
+  void Update(std::unique_ptr<ChildURLLoaderFactoryBundleInfo> info);
+  void UpdateSubresourceOverrides(
+      std::vector<mojom::TransferrableURLLoaderPtr>* subresource_overrides);
   void SetPrefetchLoaderFactory(
       network::mojom::URLLoaderFactoryPtr prefetch_loader_factory);
 
@@ -121,7 +124,7 @@ class CONTENT_EXPORT ChildURLLoaderFactoryBundle
  private:
   void InitDirectNetworkFactoryIfNecessary();
   std::unique_ptr<network::SharedURLLoaderFactoryInfo> CloneInternal(
-      bool include_default);
+      bool include_appcache);
 
   PossiblyAssociatedFactoryGetterCallback direct_network_factory_getter_;
   PossiblyAssociatedURLLoaderFactoryPtr direct_network_factory_;

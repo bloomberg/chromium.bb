@@ -29,12 +29,12 @@ class PLATFORM_EXPORT SourceAlpha final : public FilterEffect {
  public:
   static SourceAlpha* Create(FilterEffect*);
 
+  explicit SourceAlpha(FilterEffect*);
+
   WTF::TextStream& ExternalRepresentation(WTF::TextStream&,
                                           int indention) const override;
 
  private:
-  explicit SourceAlpha(FilterEffect*);
-
   FilterEffectType GetFilterEffectType() const override {
     return kFilterEffectTypeSourceInput;
   }

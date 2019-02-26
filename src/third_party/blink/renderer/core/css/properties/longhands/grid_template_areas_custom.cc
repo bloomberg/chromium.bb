@@ -16,21 +16,21 @@
 #include "third_party/blink/renderer/core/style/grid_area.h"
 
 namespace blink {
-namespace CSSLonghand {
+namespace css_longhand {
 
 const CSSValue* GridTemplateAreas::ParseSingleValue(
     CSSParserTokenRange& range,
     const CSSParserContext&,
     const CSSParserLocalContext&) const {
   if (range.Peek().Id() == CSSValueNone)
-    return CSSPropertyParserHelpers::ConsumeIdent(range);
+    return css_property_parser_helpers::ConsumeIdent(range);
 
   NamedGridAreaMap grid_area_map;
   size_t row_count = 0;
   size_t column_count = 0;
 
   while (range.Peek().GetType() == kStringToken) {
-    if (!CSSParsingUtils::ParseGridTemplateAreasRow(
+    if (!css_parsing_utils::ParseGridTemplateAreasRow(
             range.ConsumeIncludingWhitespace().Value().ToString(),
             grid_area_map, row_count, column_count))
       return nullptr;
@@ -109,5 +109,5 @@ void GridTemplateAreas::ApplyValue(StyleResolverState& state,
       grid_template_areas_value.ColumnCount());
 }
 
-}  // namespace CSSLonghand
+}  // namespace css_longhand
 }  // namespace blink

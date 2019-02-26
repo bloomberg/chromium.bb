@@ -71,10 +71,10 @@
       'ToTMacASan', # https://crbug.com/828031
       # chromium.fyi
       'Chromium Mac 10.13', # https://crbug.com/828031
+      'mac-osxbeta-rel', # https://crbug.com/828031
       'mac-views-rel', # https://crbug.com/828031
       # chromium.mac
       'Mac10.10 Tests', # https://crbug.com/828031
-      'Mac10.13 Tests', # https://crbug.com/828031
       # chromium.memory
       'Linux TSan Tests',  # https://crbug.com/368525
       'Mac ASan 64 Tests (1)', # https://crbug.com/828031
@@ -85,7 +85,7 @@
       # chromium.chromiumos
       'linux-chromeos-dbg': {
         'swarming': {
-          'shards': 20,
+          'shards': 21,
         },
       },
       # chromium.clang
@@ -107,14 +107,6 @@
           '--test-launcher-filter-file=../../testing/buildbot/filters/mac_window_server_killers.browser_tests.filter',
           '--gtest_shuffle',
         ],
-        'swarming': {
-          'dimension_sets': [
-            {
-              'pool': 'Chrome-quarantine',
-              'gpu': 'none',
-            },
-          ],
-        },
       },
       'Mac10.12 Tests': {
         # A subset of tests seem to cause WindowServer deaths on VMs.
@@ -123,14 +115,14 @@
           '--test-launcher-filter-file=../../testing/buildbot/filters/mac_window_server_killers.browser_tests.filter',
           '--gtest_shuffle',
         ],
-        'swarming': {
-          'dimension_sets': [
-            {
-              'pool': 'Chrome-quarantine',
-              'gpu': 'none',
-            },
-          ],
-        },
+      },
+      'Mac10.13 Tests': {
+        # A subset of tests seem to cause WindowServer deaths on VMs.
+        # crbug.com/828031 et al.
+        'args': [
+          '--test-launcher-filter-file=../../testing/buildbot/filters/mac_window_server_killers.browser_tests.filter',
+          '--gtest_shuffle',
+        ],
       },
       'Mac10.13 Tests (dbg)': {
         # A subset of tests seem to cause WindowServer deaths on VMs.
@@ -139,30 +131,6 @@
           '--test-launcher-filter-file=../../testing/buildbot/filters/mac_window_server_killers.browser_tests.filter',
           '--gtest_shuffle',
         ],
-        'swarming': {
-          'dimension_sets': [
-            {
-              'pool': 'Chrome-quarantine',
-              'gpu': 'none',
-            },
-          ],
-        },
-      },
-      'mac-osxbeta-rel': {
-        # A subset of tests seem to cause WindowServer deaths on VMs.
-        # crbug.com/828031 et al.
-        'args': [
-          '--test-launcher-filter-file=../../testing/buildbot/filters/mac_window_server_killers.browser_tests.filter',
-          '--gtest_shuffle',
-        ],
-        'swarming': {
-          'dimension_sets': [
-            {
-              'pool': 'Chrome-quarantine',
-              'gpu': 'none',
-            },
-          ],
-        },
       },
       # chromium.memory
       'Linux ASan LSan Tests (1)': {
@@ -181,14 +149,14 @@
         # These are very slow on the Chrome OS MSAN trybot for some reason.
         # crbug.com/865455
         'swarming': {
-          'shards': 20,
+          'shards': 25,
         },
       },
       'Linux Chromium OS ASan LSan Tests (1)': {
         # These are very slow on the ASAN trybot for some reason.
         # crbug.com/794372
         'swarming': {
-          'shards': 30,
+          'shards': 31,
         },
       },
       # client.v8.chromium
@@ -253,16 +221,17 @@
     ],
   },
   'chrome_public_test_apk': {
-    'remove_from': [
-      # TODO(crbug.com/877280): Add it back when we have the capacity.
-      'android-marshmallow-arm64-rel',
-    ],
     'modifications': {
       # chromium.android
       'android-kitkat-arm-rel': {
         'swarming': {
           'shards': 12,
         },
+      },
+      'android-marshmallow-arm64-rel': {
+        # TODO(crbug.com/731759): Enable this once we're confident that it
+        # passes.
+        'experiment_percentage': 50,
       },
       'KitKat Phone Tester (dbg)': {
         'swarming': {
@@ -294,54 +263,29 @@
       'KitKat Tablet Tester',
       'Lollipop Tablet Tester',
       'Marshmallow Tablet Tester',
+      # chromium.android.fyi
+      'x64 Device Tester',
+      'x86 Cloud Tester',
+      # chromium.clang
+      'ToTAndroid',
+      'ToTAndroidCFI',
     ],
-    'modifications': {
-      'android-kitkat-arm-rel': {
-        'args': [
-          '--shared-prefs-file=//chrome/android/shared_preference_files/test/vr_cardboard_skipdon_setupcomplete.json',
-          '--additional-apk=//third_party/gvr-android-sdk/test-apks/vr_services/vr_services_current.apk',
-        ],
-      },
-      'android-marshmallow-arm64-rel': {
-        'args': [
-          '--shared-prefs-file=//chrome/android/shared_preference_files/test/vr_cardboard_skipdon_setupcomplete.json',
-          '--additional-apk=//third_party/gvr-android-sdk/test-apks/vr_services/vr_services_current.apk',
-        ],
-      },
-      'Lollipop Phone Tester': {
-        'args': [
-          '--shared-prefs-file=//chrome/android/shared_preference_files/test/vr_cardboard_skipdon_setupcomplete.json',
-          '--additional-apk=//third_party/gvr-android-sdk/test-apks/vr_services/vr_services_current.apk',
-        ],
-      },
-      'Marshmallow 64 bit Tester': {
-        'args': [
-          '--shared-prefs-file=//chrome/android/shared_preference_files/test/vr_cardboard_skipdon_setupcomplete.json',
-          '--additional-apk=//third_party/gvr-android-sdk/test-apks/vr_services/vr_services_current.apk',
-        ],
-      },
-    },
   },
-  'chrome_sync_shell_test_apk': {
+  'chrome_public_test_vr_apk-vega': {
     'modifications': {
       # chromium.android
-      'KitKat Phone Tester (dbg)': {
+      'Oreo Phone Tester': {
         'swarming': {
-          'shards': 2,
+          'dimension_sets': [
+            {
+              'device_os': 'OVR1.180808.003',
+              'device_type': 'vega',
+              'os': 'Android',
+            },
+          ],
         },
-      },
-    },
-  },
-  'chromevox_tests': {
-    'modifications': {
-      'Linux ChromiumOS MSan Tests': {
-        # These are very slow on the Chrome OS MSAN trybot for some reason.
-        # crbug.com/865455
-        'swarming': {
-          'shards': 6,
-        },
-      },
-    },
+      }
+    }
   },
   'components_unittests': {
     'modifications': {
@@ -460,10 +404,6 @@
     },
   },
   'content_unittests': {
-    'remove_from': [
-      # chromium.fyi
-      'fuchsia-fyi-arm64-rel',  # https://crbug.com/881334
-    ],
     'modifications': {
       # chromium.memory
       'Linux ASan LSan Tests (1)': {
@@ -496,6 +436,13 @@
       # chromium.clang
       'linux-win_cross-rel', # https://crbug.com/762167
     ],
+  },
+  'extensions_browsertests': {
+    'modifications': {
+      'Win10 Tests x64 (dbg)': {
+        'experiment_percentage': 100, # https://crbug.com/876615
+      },
+    },
   },
   'gin_unittests': {
     'remove_from': [
@@ -655,6 +602,12 @@
       'ToTLinuxASan',  # https://crbug.com/843732
       # chromium.memory
       'Linux ASan LSan Tests (1)',  # https://crbug.com/843732
+    ],
+  },
+  'http_service_tests': {
+    'remove_from': [
+      # chromium.linux
+      'Fuchsia x64',  # https://crbug.com/896884
     ],
   },
   'info_collection_tests': {
@@ -902,6 +855,14 @@
       },
     },
   },
+  'not_site_per_process_webkit_layout_tests': {
+    'remove_from': [
+      # chromium.linux
+      # TODO(dpranke): Should we be running this step on Linux Tests (dbg)(1)?
+      'Linux Tests (dbg)(1)',
+      'Linux Tests (dbg)(1)(32)',
+    ],
+  },
   'notification_helper_unittests': {
     'remove_from': [
       # The test uses WinRT, which only exists in Windows 8 or above.
@@ -983,14 +944,6 @@
         },
       },
     },
-  },
-  'site_per_process_webkit_layout_tests': {
-    'remove_from': [
-      # chromium.linux
-      # TODO(dpranke): Should we be running this step on Linux Tests (dbg)(1)?
-      'Linux Tests (dbg)(1)',
-      'Linux Tests (dbg)(1)(32)',
-    ],
   },
   'sizes': {
     'remove_from': [
@@ -1145,6 +1098,13 @@
           'shards': 20,
         },
         'experiment_percentage': 100,
+      },
+      # luci.chromium.ci
+      'linux-tcmalloc-rel': {
+        'args': [
+          '--xvfb',
+          '--jobs=1',
+        ],
       },
     },
     'remove_from': [
@@ -1317,12 +1277,19 @@
       },
     },
   },
+  'webgl_conformance_vulkan_passthrough_tests': {
+    'remove_from': [
+      'Win7 FYI Debug (AMD)',
+    ],
+  },
   'webkit_layout_tests': {
     'remove_from': [
       # chromium.fyi
       'Chromium Mac 10.13',
       # chromium.linux
       'Linux Tests (dbg)(1)(32)', # 32-bit linux is unsupported
+      # chromium.mac
+      'Mac10.13 Tests', # crbug.com/908551
       # chromium.win
       'Win 7 Tests x64 (1)',  # 64-bit win is unsupported by the layout tests.
       'Win10 Tests x64 (dbg)',
@@ -1515,7 +1482,7 @@
       'WebKit Linux Trusty ASAN': {
         'args': [
           '--additional-expectations',
-          '../../third_party/WebKit/LayoutTests/ASANExpectations',
+          '../../third_party/blink/web_tests/ASANExpectations',
           '--time-out-ms',
           '48000',
           '--enable-sanitizer',
@@ -1532,7 +1499,7 @@
       'WebKit Linux Trusty Leak': {
         'args': [
           '--additional-expectations',
-          '../../third_party/WebKit/LayoutTests/LeakExpectations',
+          '../../third_party/blink/web_tests/LeakExpectations',
           '--time-out-ms',
           '48000',
           '--enable-leak-detection',
@@ -1549,7 +1516,7 @@
       'WebKit Linux Trusty MSAN': {
         'args': [
           '--additional-expectations',
-          '../../third_party/WebKit/LayoutTests/MSANExpectations',
+          '../../third_party/blink/web_tests/MSANExpectations',
           '--time-out-ms',
           '66000',
           '--enable-sanitizer',

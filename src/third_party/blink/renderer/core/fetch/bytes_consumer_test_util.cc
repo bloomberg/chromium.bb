@@ -177,7 +177,8 @@ void BytesConsumerTestUtil::TwoPhaseReader::OnStateChange() {
       // We don't use |available| as-is to test cases where endRead
       // is called with a number smaller than |available|. We choose 3
       // because of the same reasons as Reader::onStateChange.
-      size_t read = std::min(static_cast<size_t>(3), available);
+      wtf_size_t read =
+          static_cast<wtf_size_t>(std::min(static_cast<size_t>(3), available));
       data_.Append(buffer, read);
       result = consumer_->EndRead(read);
     }

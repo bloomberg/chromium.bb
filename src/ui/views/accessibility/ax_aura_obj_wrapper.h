@@ -17,7 +17,6 @@
 namespace ui {
 struct AXActionData;
 struct AXNodeData;
-class AXUniqueId;
 }  // namespace ui
 
 namespace views {
@@ -36,7 +35,7 @@ class VIEWS_EXPORT AXAuraObjWrapper {
   virtual void GetChildren(
       std::vector<AXAuraObjWrapper*>* out_children) = 0;
   virtual void Serialize(ui::AXNodeData* out_node_data) = 0;
-  virtual const ui::AXUniqueId& GetUniqueId() const = 0;
+  virtual int32_t GetUniqueId() const = 0;
 
   // Actions.
   virtual bool HandleAccessibleAction(const ui::AXActionData& action);

@@ -42,7 +42,7 @@ class CORE_EXPORT CustomElementRegistry final : public ScriptWrappable {
   CustomElementDefinition* define(ScriptState*,
                                   const AtomicString& name,
                                   V8CustomElementConstructor* constructor,
-                                  const ElementDefinitionOptions&,
+                                  const ElementDefinitionOptions*,
                                   ExceptionState&);
 
   ScriptValue get(const AtomicString& name);
@@ -72,7 +72,7 @@ class CORE_EXPORT CustomElementRegistry final : public ScriptWrappable {
   CustomElementDefinition* DefineInternal(ScriptState*,
                                           const AtomicString& name,
                                           CustomElementDefinitionBuilder&,
-                                          const ElementDefinitionOptions&,
+                                          const ElementDefinitionOptions*,
                                           ExceptionState&);
 
   bool V0NameIsDefined(const AtomicString& name);

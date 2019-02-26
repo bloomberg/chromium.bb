@@ -19,8 +19,10 @@
 #include "perfetto/base/utils.h"
 
 namespace perfetto {
+namespace profiling {
 namespace {
 ThreadLocalSamplingData* GetSpecific(pthread_key_t key,
+                                     uint64_t interval,
                                      void* (*unhooked_malloc)(size_t),
                                      void (*unhooked_free)(void*)) {
   // This should not be used with glibc as it might re-enter into malloc, see
@@ -28,41 +30,45 @@ ThreadLocalSamplingData* GetSpecific(pthread_key_t key,
   void* specific = pthread_getspecific(key);
   if (specific == nullptr) {
     specific = unhooked_malloc(sizeof(ThreadLocalSamplingData));
-    new (specific) ThreadLocalSamplingData(unhooked_free);
+    new (specific) ThreadLocalSamplingData(unhooked_free, interval);
     pthread_setspecific(key, specific);
   }
   return reinterpret_cast<ThreadLocalSamplingData*>(specific);
 }
 }  // namespace
 
-// The algorithm below is a inspired by the Chromium sampling algorithm at
+// The algorithm below is inspired by the Chromium sampling algorithm at
 // https://cs.chromium.org/search/?q=f:cc+symbol:AllocatorShimLogAlloc+package:%5Echromium$&type=cs
 
-int64_t ThreadLocalSamplingData::NextSampleInterval(double rate) {
-  std::exponential_distribution<double> dist(1 / rate);
+int64_t ThreadLocalSamplingData::NextSampleInterval() {
+  std::exponential_distribution<double> dist(rate_);
   int64_t next = static_cast<int64_t>(dist(random_engine_));
-  return next < 1 ? 1 : next;
+  // The +1 corrects the distribution of the first value in the interval.
+  // TODO(fmayer): Figure out why.
+  return next + 1;
 }
 
-size_t ThreadLocalSamplingData::ShouldSample(size_t sz, double rate) {
+size_t ThreadLocalSamplingData::NumberOfSamples(size_t sz) {
   interval_to_next_sample_ -= sz;
   size_t sz_multiplier = 0;
   while (PERFETTO_UNLIKELY(interval_to_next_sample_ <= 0)) {
-    interval_to_next_sample_ += NextSampleInterval(rate);
+    interval_to_next_sample_ += NextSampleInterval();
     ++sz_multiplier;
   }
   return sz_multiplier;
 }
 
-size_t ShouldSample(pthread_key_t key,
-                    size_t sz,
-                    double rate,
-                    void* (*unhooked_malloc)(size_t),
-                    void (*unhooked_free)(void*)) {
-  if (PERFETTO_UNLIKELY(sz >= rate))
-    return 1;
-  return GetSpecific(key, unhooked_malloc, unhooked_free)
-      ->ShouldSample(sz, rate);
+std::atomic<uint64_t> ThreadLocalSamplingData::seed(1);
+
+size_t SampleSize(pthread_key_t key,
+                  size_t sz,
+                  uint64_t interval,
+                  void* (*unhooked_malloc)(size_t),
+                  void (*unhooked_free)(void*)) {
+  if (PERFETTO_UNLIKELY(sz >= interval))
+    return sz;
+  return interval * GetSpecific(key, interval, unhooked_malloc, unhooked_free)
+                        ->NumberOfSamples(sz);
 }
 
 void ThreadLocalSamplingData::KeyDestructor(void* ptr) {
@@ -73,4 +79,5 @@ void ThreadLocalSamplingData::KeyDestructor(void* ptr) {
   unhooked_free(ptr);
 }
 
+}  // namespace profiling
 }  // namespace perfetto

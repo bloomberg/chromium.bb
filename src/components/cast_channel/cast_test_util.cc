@@ -6,6 +6,7 @@
 
 #include <utility>
 
+#include "base/token.h"
 #include "net/base/ip_address.h"
 #include "services/service_manager/public/cpp/connector.h"
 
@@ -52,7 +53,7 @@ MockCastMessageHandler::MockCastMessageHandler(
     MockCastSocketService* socket_service)
     : CastMessageHandler(socket_service,
                          /* connector */ nullptr,
-                         "batchId",
+                         base::Token{},
                          "userAgent",
                          "1.2.3.4",
                          "en-US") {}

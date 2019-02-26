@@ -47,9 +47,12 @@ class ProfileMetrics {
     DELETE_PROFILE_SETTINGS_SHOW_WARNING,
     // Aborts profile deletion in an OnBeforeUnload event in any browser tab.
     DELETE_PROFILE_ABORTED,
-    // Delete profile from web signout with Dice, when Chrome signout is
-    // prohibited.
-    DELETE_PROFILE_DICE_WEB_SIGNOUT,
+    // Commented out as it is not used anymore (kept in the enum as it was used
+    // as a bucket in a histogram).
+    // DELETE_PROFILE_DICE_WEB_SIGNOUT
+    // Delete profile internally when Chrome signout is prohibited and the
+    // username is no longer allowed.
+    DELETE_PROFILE_PRIMARY_ACCOUNT_NOT_ALLOWED = DELETE_PROFILE_ABORTED + 2,
     NUM_DELETE_PROFILE_METRICS
   };
 

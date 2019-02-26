@@ -35,6 +35,9 @@ class UI_BASE_EXPORT MenuModel {
     TYPE_BUTTON_ITEM,  // Shows a row of buttons.
     TYPE_SUBMENU,      // Presents a submenu within another menu.
     TYPE_ACTIONABLE_SUBMENU,  // A SUBMENU that is also a COMMAND.
+    TYPE_HIGHLIGHTED,  // Performs an action when selected, and has a different
+                       // colored background. When placed at the bottom, the
+                       // background matches the menu's rounded corners.
   };
 
   virtual ~MenuModel() {}

@@ -48,6 +48,9 @@ class PLATFORM_EXPORT PlatformSpeechSynthesisUtterance final
   static PlatformSpeechSynthesisUtterance* Create(
       PlatformSpeechSynthesisUtteranceClient*);
 
+  explicit PlatformSpeechSynthesisUtterance(
+      PlatformSpeechSynthesisUtteranceClient*);
+
   const String& GetText() const { return text_; }
   void SetText(const String& text) { text_ = text; }
 
@@ -77,16 +80,13 @@ class PLATFORM_EXPORT PlatformSpeechSynthesisUtterance final
   void Trace(blink::Visitor*);
 
  private:
-  explicit PlatformSpeechSynthesisUtterance(
-      PlatformSpeechSynthesisUtteranceClient*);
-
   Member<PlatformSpeechSynthesisUtteranceClient> client_;
   String text_;
   String lang_;
   scoped_refptr<PlatformSpeechSynthesisVoice> voice_;
-  float volume_ = SpeechSynthesisConstants::kDoublePrefNotSet;
-  float rate_ = SpeechSynthesisConstants::kDoublePrefNotSet;
-  float pitch_ = SpeechSynthesisConstants::kDoublePrefNotSet;
+  float volume_ = kWebSpeechSynthesisDoublePrefNotSet;
+  float rate_ = kWebSpeechSynthesisDoublePrefNotSet;
+  float pitch_ = kWebSpeechSynthesisDoublePrefNotSet;
   double start_time_;
 };
 

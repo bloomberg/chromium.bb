@@ -20,10 +20,11 @@ namespace rx
 namespace vk
 {
 class CommandBuffer;
-class CommandGraphResource;
 struct Format;
+class FramebufferHelper;
 class ImageHelper;
 class ImageView;
+class RecordableGraphResource;
 class RenderPassDesc;
 }  // namespace vk
 
@@ -33,29 +34,27 @@ class RenderPassDesc;
 class RenderTargetVk final : public FramebufferAttachmentRenderTarget
 {
   public:
-    RenderTargetVk(vk::ImageHelper *image,
-                   vk::ImageView *imageView,
-                   size_t layerIndex);
+    RenderTargetVk(vk::ImageHelper *image, vk::ImageView *imageView, size_t layerIndex);
     ~RenderTargetVk();
 
     // Used in std::vector initialization.
     RenderTargetVk(RenderTargetVk &&other);
 
     // Note: RenderTargets should be called in order, with the depth/stencil onRender last.
-    void onColorDraw(vk::CommandGraphResource *framebufferVk,
+    void onColorDraw(vk::FramebufferHelper *framebufferVk,
                      vk::CommandBuffer *commandBuffer,
                      vk::RenderPassDesc *renderPassDesc);
-    void onDepthStencilDraw(vk::CommandGraphResource *framebufferVk,
+    void onDepthStencilDraw(vk::FramebufferHelper *framebufferVk,
                             vk::CommandBuffer *commandBuffer,
                             vk::RenderPassDesc *renderPassDesc);
 
     const vk::ImageHelper &getImage() const;
 
     // getImageForRead will also transition the resource to the given layout.
-    vk::ImageHelper *getImageForRead(vk::CommandGraphResource *readingResource,
+    vk::ImageHelper *getImageForRead(vk::RecordableGraphResource *readingResource,
                                      VkImageLayout layout,
                                      vk::CommandBuffer *commandBuffer);
-    vk::ImageHelper *getImageForWrite(vk::CommandGraphResource *writingResource) const;
+    vk::ImageHelper *getImageForWrite(vk::RecordableGraphResource *writingResource) const;
     vk::ImageView *getImageView() const;
 
     const vk::Format &getImageFormat() const;

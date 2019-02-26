@@ -4,6 +4,7 @@
 
 // Event management for WebView.
 
+var $Document = require('safeMethods').SafeMethods.$Document;
 var CreateEvent = require('guestViewEvents').CreateEvent;
 var DCHECK = requireNative('logging').DCHECK;
 var DeclarativeWebRequestSchema =
@@ -196,6 +197,11 @@ WebViewEvents.EVENTS = {
   }
 };
 
+WebViewEvents.EVENTS.__proto__ = null;
+for (var eventName in WebViewEvents.EVENTS) {
+  WebViewEvents.EVENTS[eventName].__proto__ = null;
+}
+
 WebViewEvents.prototype.setupWebRequestEvents = function() {
   var request = {};
   var createWebRequestEvent = $Function.bind(function(webRequestEvent) {
@@ -277,7 +283,7 @@ WebViewEvents.prototype.handleFrameNameChangedEvent = function(event) {
 };
 
 WebViewEvents.prototype.handleFullscreenExitEvent = function(event, eventName) {
-  document.webkitCancelFullScreen();
+  $Document.webkitCancelFullScreen(document);
 };
 
 WebViewEvents.prototype.handleLoadAbortEvent = function(event, eventName) {

@@ -55,8 +55,9 @@ PerformanceResourceTiming::PerformanceResourceTiming(
                            time_origin,
                            info.finish_time,
                            info.allow_negative_values)),
-      initiator_type_(initiator_type.IsEmpty() ? FetchInitiatorTypeNames::other
-                                               : initiator_type),
+      initiator_type_(initiator_type.IsEmpty()
+                          ? fetch_initiator_type_names::kOther
+                          : initiator_type),
       alpn_negotiated_protocol_(
           static_cast<String>(info.alpn_negotiated_protocol)),
       connection_info_(static_cast<String>(info.connection_info)),
@@ -88,7 +89,7 @@ PerformanceResourceTiming::PerformanceResourceTiming(
 PerformanceResourceTiming::~PerformanceResourceTiming() = default;
 
 AtomicString PerformanceResourceTiming::entryType() const {
-  return PerformanceEntryNames::resource;
+  return performance_entry_names::kResource;
 }
 
 PerformanceEntryType PerformanceResourceTiming::EntryTypeEnum() const {

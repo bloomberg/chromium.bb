@@ -56,7 +56,7 @@ void InputMethodControllerTest::CreateHTMLWithCompositionInputEventListeners() {
   GetDocument().GetSettings()->SetScriptEnabled(true);
   Element* editable =
       InsertHTMLElement("<div id='sample' contenteditable></div>", "sample");
-  Element* script = GetDocument().CreateRawElement(HTMLNames::scriptTag);
+  Element* script = GetDocument().CreateRawElement(html_names::kScriptTag);
   script->SetInnerHTMLFromString(
       "document.getElementById('sample').addEventListener('beforeinput', "
       "  event => document.title = `beforeinput.data:${event.data};`);"
@@ -65,7 +65,7 @@ void InputMethodControllerTest::CreateHTMLWithCompositionInputEventListeners() {
       "document.getElementById('sample').addEventListener('compositionend', "
       "  event => document.title += `compositionend.data:${event.data};`);");
   GetDocument().body()->AppendChild(script);
-  GetDocument().View()->UpdateAllLifecyclePhases();
+  UpdateAllLifecyclePhasesForTest();
   editable->focus();
 }
 
@@ -74,7 +74,7 @@ void InputMethodControllerTest::CreateHTMLWithCompositionEndEventListener(
   GetDocument().GetSettings()->SetScriptEnabled(true);
   Element* editable =
       InsertHTMLElement("<div id='sample' contentEditable></div>", "sample");
-  Element* script = GetDocument().CreateRawElement(HTMLNames::scriptTag);
+  Element* script = GetDocument().CreateRawElement(html_names::kScriptTag);
 
   switch (type) {
     case kNoSelection:
@@ -110,7 +110,7 @@ void InputMethodControllerTest::CreateHTMLWithCompositionEndEventListener(
       NOTREACHED();
   }
   GetDocument().body()->AppendChild(script);
-  GetDocument().View()->UpdateAllLifecyclePhases();
+  UpdateAllLifecyclePhasesForTest();
   editable->focus();
 }
 
@@ -1192,7 +1192,7 @@ TEST_F(InputMethodControllerTest, CompositionInputEventIsComposing) {
   GetDocument().GetSettings()->SetScriptEnabled(true);
   Element* editable =
       InsertHTMLElement("<div id='sample' contenteditable></div>", "sample");
-  Element* script = GetDocument().CreateRawElement(HTMLNames::scriptTag);
+  Element* script = GetDocument().CreateRawElement(html_names::kScriptTag);
   script->SetInnerHTMLFromString(
       "document.getElementById('sample').addEventListener('beforeinput', "
       "  event => document.title = "
@@ -1201,7 +1201,7 @@ TEST_F(InputMethodControllerTest, CompositionInputEventIsComposing) {
       "  event => document.title += "
       "  `input.isComposing:${event.isComposing};`);");
   GetDocument().body()->AppendChild(script);
-  GetDocument().View()->UpdateAllLifecyclePhases();
+  UpdateAllLifecyclePhasesForTest();
 
   // Simulate composition in the |contentEditable|.
   Vector<ImeTextSpan> ime_text_spans;
@@ -2363,6 +2363,46 @@ TEST_F(InputMethodControllerTest,
   EXPECT_EQ(0u, GetDocument().Markers().Markers().size());
 }
 
+TEST_F(InputMethodControllerTest, RemoveSuggestionMarkerInRangeOnFinish) {
+  InsertHTMLElement(
+      "<div id='sample' contenteditable spellcheck='true'>text</div>",
+      "sample");
+
+  Vector<ImeTextSpan> ime_text_spans;
+  ime_text_spans.push_back(ImeTextSpan(
+      ImeTextSpan::Type::kMisspellingSuggestion, 0, 5, Color::kTransparent,
+      ImeTextSpanThickness::kNone, Color::kTransparent, Color ::kTransparent,
+      /* remove_on_finish_composing */ true));
+
+  // Case 1: SetComposition() -> FinishComposingText() removes the suggestion
+  // marker when remove_on_finish_composing is true.
+  Controller().SetComposition("hello", ime_text_spans, 0, 5);
+  ASSERT_EQ(1u, GetDocument().Markers().Markers().size());
+  ASSERT_TRUE(
+      Controller().FinishComposingText(InputMethodController::kKeepSelection));
+
+  EXPECT_EQ(0u, GetDocument().Markers().Markers().size());
+
+  // Case 2: SetComposition() -> CommitText() removes the suggestion marker when
+  // remove_on_finish_composing is true.
+  Controller().SetComposition("hello", ime_text_spans, 0, 5);
+  ASSERT_EQ(1u, GetDocument().Markers().Markers().size());
+  ASSERT_TRUE(Controller().CommitText("world", Vector<ImeTextSpan>(), 1));
+
+  EXPECT_EQ(0u, GetDocument().Markers().Markers().size());
+
+  // Case 3: SetComposition() -> SetComposingText() removes the suggestion
+  // marker when remove_on_finish_composing is true.
+  Controller().SetComposition("hello", ime_text_spans, 0, 5);
+  ASSERT_EQ(1u, GetDocument().Markers().Markers().size());
+  Controller().SetComposition("helloworld", Vector<ImeTextSpan>(), 0, 10);
+
+  // SetComposing() will add a composition marker.
+  EXPECT_EQ(1u, GetDocument().Markers().Markers().size());
+  EXPECT_EQ(DocumentMarker::MarkerType::kComposition,
+            GetDocument().Markers().Markers()[0]->GetType());
+}
+
 // For http://crbug.com/712761
 TEST_F(InputMethodControllerTest, TextInputTypeAtBeforeEditable) {
   GetDocument().body()->setContentEditable("true", ASSERT_NO_EXCEPTION);
@@ -2546,7 +2586,7 @@ TEST_F(InputMethodControllerTest,
   InsertHTMLElement("<div id='sample' contenteditable>hello</div>", "sample");
 
   GetDocument().GetSettings()->SetScriptEnabled(true);
-  Element* script = GetDocument().CreateRawElement(HTMLNames::scriptTag);
+  Element* script = GetDocument().CreateRawElement(html_names::kScriptTag);
   script->SetInnerHTMLFromString(
       "document.getElementById('sample').addEventListener('input', "
       "  event => {"
@@ -2557,7 +2597,7 @@ TEST_F(InputMethodControllerTest,
       "    selection.extend(node.firstChild, 11);"
       "});");
   GetDocument().body()->AppendChild(script);
-  GetDocument().View()->UpdateAllLifecyclePhases();
+  UpdateAllLifecyclePhasesForTest();
 
   // Open composition on "hello".
   Controller().SetCompositionFromExistingText(Vector<ImeTextSpan>(), 0, 5);
@@ -2581,7 +2621,7 @@ TEST_F(InputMethodControllerTest,
       "<div id='sample' contenteditable>hello world</div>", "sample");
 
   GetDocument().GetSettings()->SetScriptEnabled(true);
-  Element* script = GetDocument().CreateRawElement(HTMLNames::scriptTag);
+  Element* script = GetDocument().CreateRawElement(html_names::kScriptTag);
   script->SetInnerHTMLFromString(
       "document.getElementById('sample').addEventListener('input', "
       "  event => {"
@@ -2591,7 +2631,7 @@ TEST_F(InputMethodControllerTest,
       "    selection.extend(node.firstChild, 0);"
       "});");
   GetDocument().body()->AppendChild(script);
-  GetDocument().View()->UpdateAllLifecyclePhases();
+  UpdateAllLifecyclePhasesForTest();
 
   // Select "hello".
   GetFrame().Selection().SetSelectionAndEndTyping(
@@ -2619,7 +2659,7 @@ TEST_F(
                     "sample");
 
   GetDocument().GetSettings()->SetScriptEnabled(true);
-  Element* script = GetDocument().CreateRawElement(HTMLNames::scriptTag);
+  Element* script = GetDocument().CreateRawElement(html_names::kScriptTag);
   script->SetInnerHTMLFromString(
       "document.getElementById('sample').addEventListener('input', "
       "  event => {"
@@ -2630,7 +2670,7 @@ TEST_F(
       "    selection.extend(node.firstChild, 2);"
       "});");
   GetDocument().body()->AppendChild(script);
-  GetDocument().View()->UpdateAllLifecyclePhases();
+  UpdateAllLifecyclePhasesForTest();
 
   // Open composition on "world".
   Controller().SetCompositionFromExistingText(Vector<ImeTextSpan>(), 6, 11);
@@ -2652,7 +2692,7 @@ TEST_F(InputMethodControllerTest,
                     "sample");
 
   GetDocument().GetSettings()->SetScriptEnabled(true);
-  Element* script = GetDocument().CreateRawElement(HTMLNames::scriptTag);
+  Element* script = GetDocument().CreateRawElement(html_names::kScriptTag);
   script->SetInnerHTMLFromString(
       "document.getElementById('sample').addEventListener('input', "
       "  event => {"
@@ -2663,7 +2703,7 @@ TEST_F(InputMethodControllerTest,
       "    selection.extend(node.firstChild, 2);"
       "});");
   GetDocument().body()->AppendChild(script);
-  GetDocument().View()->UpdateAllLifecyclePhases();
+  UpdateAllLifecyclePhasesForTest();
 
   // Open composition on "world".
   Controller().SetCompositionFromExistingText(Vector<ImeTextSpan>(), 6, 11);
@@ -2686,7 +2726,7 @@ TEST_F(InputMethodControllerTest,
                     "sample");
 
   GetDocument().GetSettings()->SetScriptEnabled(true);
-  Element* script = GetDocument().CreateRawElement(HTMLNames::scriptTag);
+  Element* script = GetDocument().CreateRawElement(html_names::kScriptTag);
   script->SetInnerHTMLFromString(
       "document.getElementById('sample').addEventListener('input', "
       "  event => {"
@@ -2696,7 +2736,7 @@ TEST_F(InputMethodControllerTest,
       "    selection.extend(node.firstChild, 5);"
       "});");
   GetDocument().body()->AppendChild(script);
-  GetDocument().View()->UpdateAllLifecyclePhases();
+  UpdateAllLifecyclePhasesForTest();
 
   // Open composition on "world".
   Controller().SetCompositionFromExistingText(Vector<ImeTextSpan>(), 6, 11);
@@ -2720,7 +2760,7 @@ TEST_F(InputMethodControllerTest,
                     "sample");
 
   GetDocument().GetSettings()->SetScriptEnabled(true);
-  Element* script = GetDocument().CreateRawElement(HTMLNames::scriptTag);
+  Element* script = GetDocument().CreateRawElement(html_names::kScriptTag);
   script->SetInnerHTMLFromString(
       "document.getElementById('sample').addEventListener('input', "
       "  event => {"
@@ -2730,7 +2770,7 @@ TEST_F(InputMethodControllerTest,
       "    selection.extend(node.firstChild, 5);"
       "});");
   GetDocument().body()->AppendChild(script);
-  GetDocument().View()->UpdateAllLifecyclePhases();
+  UpdateAllLifecyclePhasesForTest();
 
   // Open composition on "world".
   Controller().SetCompositionFromExistingText(Vector<ImeTextSpan>(), 6, 11);
@@ -2753,7 +2793,7 @@ TEST_F(InputMethodControllerTest,
       "<div id='sample' contenteditable>hello world</div>", "sample");
 
   GetDocument().GetSettings()->SetScriptEnabled(true);
-  Element* script = GetDocument().CreateRawElement(HTMLNames::scriptTag);
+  Element* script = GetDocument().CreateRawElement(html_names::kScriptTag);
   script->SetInnerHTMLFromString(
       "document.getElementById('sample').addEventListener('input', "
       "  event => {"
@@ -2763,7 +2803,7 @@ TEST_F(InputMethodControllerTest,
       "    selection.extend(node.firstChild, 5);"
       "});");
   GetDocument().body()->AppendChild(script);
-  GetDocument().View()->UpdateAllLifecyclePhases();
+  UpdateAllLifecyclePhasesForTest();
 
   // Select "world".
   GetFrame().Selection().SetSelectionAndEndTyping(
@@ -2790,7 +2830,7 @@ TEST_F(InputMethodControllerTest,
   InsertHTMLElement("<div id='sample' contenteditable>hello</div>", "sample");
 
   GetDocument().GetSettings()->SetScriptEnabled(true);
-  Element* script = GetDocument().CreateRawElement(HTMLNames::scriptTag);
+  Element* script = GetDocument().CreateRawElement(html_names::kScriptTag);
   script->SetInnerHTMLFromString(
       "document.getElementById('sample').addEventListener('compositionend', "
       "  event => {"
@@ -2801,7 +2841,7 @@ TEST_F(InputMethodControllerTest,
       "    selection.extend(node.firstChild, 11);"
       "});");
   GetDocument().body()->AppendChild(script);
-  GetDocument().View()->UpdateAllLifecyclePhases();
+  UpdateAllLifecyclePhasesForTest();
 
   // Open composition on "hello".
   Controller().SetCompositionFromExistingText(Vector<ImeTextSpan>(), 0, 5);
@@ -2826,7 +2866,7 @@ TEST_F(
                     "sample");
 
   GetDocument().GetSettings()->SetScriptEnabled(true);
-  Element* script = GetDocument().CreateRawElement(HTMLNames::scriptTag);
+  Element* script = GetDocument().CreateRawElement(html_names::kScriptTag);
   script->SetInnerHTMLFromString(
       "document.getElementById('sample').addEventListener('compositionend', "
       "  event => {"
@@ -2837,7 +2877,7 @@ TEST_F(
       "    selection.extend(node.firstChild, 2);"
       "});");
   GetDocument().body()->AppendChild(script);
-  GetDocument().View()->UpdateAllLifecyclePhases();
+  UpdateAllLifecyclePhasesForTest();
 
   // Open composition on "world".
   Controller().SetCompositionFromExistingText(Vector<ImeTextSpan>(), 6, 11);
@@ -2860,7 +2900,7 @@ TEST_F(
                     "sample");
 
   GetDocument().GetSettings()->SetScriptEnabled(true);
-  Element* script = GetDocument().CreateRawElement(HTMLNames::scriptTag);
+  Element* script = GetDocument().CreateRawElement(html_names::kScriptTag);
   script->SetInnerHTMLFromString(
       "document.getElementById('sample').addEventListener('compositionend', "
       "  event => {"
@@ -2870,7 +2910,7 @@ TEST_F(
       "    selection.extend(node.firstChild, 5);"
       "});");
   GetDocument().body()->AppendChild(script);
-  GetDocument().View()->UpdateAllLifecyclePhases();
+  UpdateAllLifecyclePhasesForTest();
 
   // Open composition on "world".
   Controller().SetCompositionFromExistingText(Vector<ImeTextSpan>(), 6, 11);
@@ -2893,7 +2933,7 @@ TEST_F(InputMethodControllerTest,
                     "sample");
 
   GetDocument().GetSettings()->SetScriptEnabled(true);
-  Element* script = GetDocument().CreateRawElement(HTMLNames::scriptTag);
+  Element* script = GetDocument().CreateRawElement(html_names::kScriptTag);
   script->SetInnerHTMLFromString(
       "document.getElementById('sample').addEventListener('compositionend', "
       "  event => {"
@@ -2903,7 +2943,7 @@ TEST_F(InputMethodControllerTest,
       "    selection.extend(node.firstChild, 5);"
       "});");
   GetDocument().body()->AppendChild(script);
-  GetDocument().View()->UpdateAllLifecyclePhases();
+  UpdateAllLifecyclePhasesForTest();
 
   // Open composition on "world".
   Controller().SetCompositionFromExistingText(Vector<ImeTextSpan>(), 6, 11);
@@ -2925,7 +2965,7 @@ TEST_F(InputMethodControllerTest,
                     "sample");
 
   GetDocument().GetSettings()->SetScriptEnabled(true);
-  Element* script = GetDocument().CreateRawElement(HTMLNames::scriptTag);
+  Element* script = GetDocument().CreateRawElement(html_names::kScriptTag);
   script->SetInnerHTMLFromString(
       "document.getElementById('sample').addEventListener('compositionend', "
       "  event => {"
@@ -2935,7 +2975,7 @@ TEST_F(InputMethodControllerTest,
       "    selection.extend(node.firstChild, 5);"
       "});");
   GetDocument().body()->AppendChild(script);
-  GetDocument().View()->UpdateAllLifecyclePhases();
+  UpdateAllLifecyclePhasesForTest();
 
   // Open composition on "world".
   Controller().SetCompositionFromExistingText(Vector<ImeTextSpan>(), 6, 11);
@@ -2957,7 +2997,7 @@ TEST_F(InputMethodControllerTest,
       InsertHTMLElement("<input id='sample' maxlength='2'>", "sample"));
 
   GetDocument().GetSettings()->SetScriptEnabled(true);
-  Element* script = GetDocument().CreateRawElement(HTMLNames::scriptTag);
+  Element* script = GetDocument().CreateRawElement(html_names::kScriptTag);
   script->SetInnerHTMLFromString(
       "document.getElementById('sample').addEventListener('input', "
       "  event => {"
@@ -2965,7 +3005,7 @@ TEST_F(InputMethodControllerTest,
       "    node.setSelectionRange(1, 1);"
       "});");
   GetDocument().body()->AppendChild(script);
-  GetDocument().View()->UpdateAllLifecyclePhases();
+  UpdateAllLifecyclePhasesForTest();
 
   input->focus();
 
@@ -2987,7 +3027,7 @@ TEST_F(InputMethodControllerTest,
       InsertHTMLElement("<input id='sample' maxlength='2'>", "sample"));
 
   GetDocument().GetSettings()->SetScriptEnabled(true);
-  Element* script = GetDocument().CreateRawElement(HTMLNames::scriptTag);
+  Element* script = GetDocument().CreateRawElement(html_names::kScriptTag);
   script->SetInnerHTMLFromString(
       "document.getElementById('sample').addEventListener('input', "
       "  event => {"
@@ -2995,7 +3035,7 @@ TEST_F(InputMethodControllerTest,
       "    node.setSelectionRange(1, 1);"
       "});");
   GetDocument().body()->AppendChild(script);
-  GetDocument().View()->UpdateAllLifecyclePhases();
+  UpdateAllLifecyclePhasesForTest();
 
   input->focus();
 
@@ -3017,7 +3057,7 @@ TEST_F(InputMethodControllerTest,
       InsertHTMLElement("<input id='sample' maxlength='2'>", "sample"));
 
   GetDocument().GetSettings()->SetScriptEnabled(true);
-  Element* script = GetDocument().CreateRawElement(HTMLNames::scriptTag);
+  Element* script = GetDocument().CreateRawElement(html_names::kScriptTag);
   script->SetInnerHTMLFromString(
       "document.getElementById('sample').addEventListener('compositionend', "
       "  event => {"
@@ -3025,7 +3065,7 @@ TEST_F(InputMethodControllerTest,
       "    node.setSelectionRange(1, 1);"
       "});");
   GetDocument().body()->AppendChild(script);
-  GetDocument().View()->UpdateAllLifecyclePhases();
+  UpdateAllLifecyclePhasesForTest();
 
   input->focus();
 
@@ -3049,7 +3089,7 @@ TEST_F(
       InsertHTMLElement("<input id='sample' maxlength='2'>", "sample"));
 
   GetDocument().GetSettings()->SetScriptEnabled(true);
-  Element* script = GetDocument().CreateRawElement(HTMLNames::scriptTag);
+  Element* script = GetDocument().CreateRawElement(html_names::kScriptTag);
   script->SetInnerHTMLFromString(
       "document.getElementById('sample').addEventListener('compositionend', "
       "  event => {"
@@ -3057,7 +3097,7 @@ TEST_F(
       "    node.setSelectionRange(1, 1);"
       "});");
   GetDocument().body()->AppendChild(script);
-  GetDocument().View()->UpdateAllLifecyclePhases();
+  UpdateAllLifecyclePhasesForTest();
 
   input->focus();
 
@@ -3076,7 +3116,7 @@ TEST_F(
 
 TEST_F(InputMethodControllerTest, AutocapitalizeTextInputFlags) {
   // This test assumes that the behavior tested in
-  // LayoutTests/fast/forms/autocapitalize.html works properly and tests the
+  // web_tests/fast/forms/autocapitalize.html works properly and tests the
   // following:
   // - The autocapitalize IDL states map properly to WebTextInputFlags for
   //   <input> elements, <textarea> elements, and editable regions

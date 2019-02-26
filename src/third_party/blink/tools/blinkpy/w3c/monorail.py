@@ -98,14 +98,14 @@ class MonorailAPI(object):
         'https://monorail-prod.appspot.com/_ah/api/discovery/v1/apis/'
         '{api}/{apiVersion}/rest')
 
-    def __init__(self, service_account_key_json=None):
+    def __init__(self, service_account_key_json=None, access_token=None):
         """Initializes a MonorailAPI instance.
 
         Args:
             service_account_key_json: The path to a JSON private key of a
-                service account for accessing Monorail. If None, try to load
-                from the default location, i.e. the path stored in the
-                environment variable GOOGLE_APPLICATION_CREDENTIALS.
+                service account for accessing Monorail. If None, use access_token.
+            access_token: An OAuth access token. If None, fall back to Google
+                application default credentials.
         """
         # Make it easier to mock out the two libraries in the future.
         # Dependencies managed by wpt-import.vpython - pylint: disable=import-error,no-member
@@ -114,8 +114,13 @@ class MonorailAPI(object):
         import oauth2client.client
         self._oauth2_client = oauth2client.client
 
+        # TODO(robertma): Deprecate the JSON key support once BuildBot is gone.
         if service_account_key_json:
             credentials = self._oauth2_client.GoogleCredentials.from_stream(service_account_key_json)
+        elif access_token:
+            credentials = self._oauth2_client.AccessTokenCredentials(
+                access_token=access_token,
+                user_agent='blinkpy/1.0')
         else:
             credentials = self._oauth2_client.GoogleCredentials.get_application_default()
 

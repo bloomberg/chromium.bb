@@ -20,20 +20,10 @@ typedef enum {
 // UITextField subclass to allow for adjusting borders.
 @interface OmniboxTextFieldIOS : UITextField
 
-// Initialize the omnibox with the given frame, font, text color, and tint
-// color.
+// Initialize the omnibox with the given frame, text color, and tint color.
 - (instancetype)initWithFrame:(CGRect)frame
-                         font:(UIFont*)font
                     textColor:(UIColor*)textColor
                     tintColor:(UIColor*)tintColor NS_DESIGNATED_INITIALIZER;
-
-// Initializer that allows specifying a larger font to use in Regular x Regular
-// size class.
-- (instancetype)initWithFrame:(CGRect)frame
-                         font:(UIFont*)font
-                   largerFont:(UIFont*)largerFont
-                    textColor:(UIColor*)textColor
-                    tintColor:(UIColor*)tintColor;
 
 - (instancetype)initWithCoder:(NSCoder*)aDecoder NS_UNAVAILABLE;
 

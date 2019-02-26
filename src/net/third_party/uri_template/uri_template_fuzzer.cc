@@ -12,7 +12,7 @@ extern "C" int LLVMFuzzerTestOneInput(const uint8_t* data, size_t size) {
   std::string uri_template = fuzzed_data.ConsumeRandomLengthString(256);
   // Construct a map containing variable names and corresponding values.
   std::unordered_map<std::string, std::string> parameters;
-  uint8_t num_vars(fuzzed_data.ConsumeUint8());
+  uint8_t num_vars(fuzzed_data.ConsumeIntegral<uint8_t>());
   for (uint8_t i = 0; i < num_vars; i++) {
     parameters.emplace(fuzzed_data.ConsumeRandomLengthString(10),
                        fuzzed_data.ConsumeRandomLengthString(10));

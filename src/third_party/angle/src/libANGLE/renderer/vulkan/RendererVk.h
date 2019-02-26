@@ -17,15 +17,16 @@
 #include "libANGLE/BlobCache.h"
 #include "libANGLE/Caps.h"
 #include "libANGLE/renderer/vulkan/CommandGraph.h"
-#include "libANGLE/renderer/vulkan/FeaturesVk.h"
+#include "libANGLE/renderer/vulkan/QueryVk.h"
 #include "libANGLE/renderer/vulkan/vk_format_utils.h"
-#include "libANGLE/renderer/vulkan/vk_internal_shaders.h"
+#include "libANGLE/renderer/vulkan/vk_helpers.h"
+#include "libANGLE/renderer/vulkan/vk_internal_shaders_autogen.h"
 
 namespace egl
 {
-class AttributeMap;
+class Display;
 class BlobCache;
-}
+}  // namespace egl
 
 namespace rx
 {
@@ -43,16 +44,16 @@ class RendererVk : angle::NonCopyable
     RendererVk();
     ~RendererVk();
 
-    angle::Result initialize(DisplayVk *displayVk,
-                             const egl::AttributeMap &attribs,
-                             const char *wsiName);
+    angle::Result initialize(DisplayVk *displayVk, egl::Display *display, const char *wsiName);
     void onDestroy(vk::Context *context);
 
-    void markDeviceLost();
+    void notifyDeviceLost();
     bool isDeviceLost() const;
 
     std::string getVendorString() const;
     std::string getRendererDescription() const;
+
+    gl::Version getMaxSupportedESVersion() const;
 
     VkInstance getInstance() const { return mInstance; }
     VkPhysicalDevice getPhysicalDevice() const { return mPhysicalDevice; }
@@ -72,9 +73,7 @@ class RendererVk : angle::NonCopyable
                                                uint32_t *presentQueueOut);
 
     angle::Result finish(vk::Context *context);
-    angle::Result flush(vk::Context *context,
-                        const vk::Semaphore &waitSemaphore,
-                        const vk::Semaphore &signalSemaphore);
+    angle::Result flush(vk::Context *context);
 
     const vk::CommandPool &getCommandPool() const;
 
@@ -85,6 +84,7 @@ class RendererVk : angle::NonCopyable
     uint32_t getMaxActiveTextures();
 
     Serial getCurrentQueueSerial() const { return mCurrentQueueSerial; }
+    Serial getLastSubmittedQueueSerial() const { return mLastSubmittedQueueSerial; }
     Serial getLastCompletedQueueSerial() const { return mLastCompletedQueueSerial; }
 
     bool isSerialInUse(Serial serial) const;
@@ -101,6 +101,13 @@ class RendererVk : angle::NonCopyable
             object->dumpResources(resourceSerial, &mGarbage);
         }
     }
+
+    // Check to see which batches have finished completion (forward progress for
+    // mLastCompletedQueueSerial, for example for when the application busy waits on a query
+    // result).
+    angle::Result checkCompletedCommands(vk::Context *context);
+    // Wait for completion of batches until (at least) batch with given serial is finished.
+    angle::Result finishToSerial(vk::Context *context, Serial serial);
 
     uint32_t getQueueFamilyIndex() const { return mCurrentQueueFamilyIndex; }
 
@@ -122,15 +129,6 @@ class RendererVk : angle::NonCopyable
                                        const vk::AttachmentOpsArray &ops,
                                        vk::RenderPass **renderPassOut);
 
-    // For getting a vk::Pipeline and checking the pipeline cache.
-    angle::Result getPipeline(vk::Context *context,
-                              const vk::ShaderAndSerial &vertexShader,
-                              const vk::ShaderAndSerial &fragmentShader,
-                              const vk::PipelineLayout &pipelineLayout,
-                              const vk::PipelineDesc &pipelineDesc,
-                              const gl::AttributesMask &activeAttribLocationsMask,
-                              vk::PipelineAndSerial **pipelineOut);
-
     // Queries the descriptor set layout cache. Creates the layout if not present.
     angle::Result getDescriptorSetLayout(
         vk::Context *context,
@@ -145,6 +143,16 @@ class RendererVk : angle::NonCopyable
 
     angle::Result syncPipelineCacheVk(DisplayVk *displayVk);
 
+    vk::DynamicSemaphorePool *getDynamicSemaphorePool() { return &mSubmitSemaphorePool; }
+
+    // Request a semaphore, that is expected to be signaled externally.  The next submission will
+    // wait on it.
+    angle::Result allocateSubmitWaitSemaphore(vk::Context *context,
+                                              const vk::Semaphore **outSemaphore);
+    // Get the last signaled semaphore to wait on externally.  The semaphore will not be waited on
+    // by next submission.
+    const vk::Semaphore *getSubmitLastSignaledSemaphore(vk::Context *context);
+
     // This should only be called from ResourceVk.
     // TODO(jmadill): Keep in ContextVk to enable threaded rendering.
     vk::CommandGraph *getCommandGraph();
@@ -152,31 +160,72 @@ class RendererVk : angle::NonCopyable
     // Issues a new serial for linked shader modules. Used in the pipeline cache.
     Serial issueShaderSerial();
 
-    vk::ShaderLibrary *getShaderLibrary();
-    const FeaturesVk &getFeatures() const { return mFeatures; }
+    angle::Result getFullScreenClearShaderProgram(vk::Context *context,
+                                                  vk::ShaderProgramHelper **programOut);
+    const angle::FeaturesVk &getFeatures() const { return mFeatures; }
+
+    angle::Result getTimestamp(vk::Context *context, uint64_t *timestampOut);
+
+    // Create Begin/End/Instant GPU trace events, which take their timestamps from GPU queries.
+    // The events are queued until the query results are available.  Possible values for `phase`
+    // are TRACE_EVENT_PHASE_*
+    ANGLE_INLINE angle::Result traceGpuEvent(vk::Context *context,
+                                             vk::CommandBuffer *commandBuffer,
+                                             char phase,
+                                             const char *name)
+    {
+        if (mGpuEventsEnabled)
+            return traceGpuEventImpl(context, commandBuffer, phase, name);
+        return angle::Result::Continue();
+    }
+
+    bool isMockICDEnabled() const { return mEnableMockICD; }
+
+    const vk::PipelineCache &getPipelineCache() const { return mPipelineCache; }
 
   private:
+    // Number of semaphores for external entities to renderer to issue a wait, such as surface's
+    // image acquire.
+    static constexpr size_t kMaxExternalSemaphores = 64;
+    // Total possible number of semaphores a submission can wait on.  +1 is for the semaphore
+    // signaled in the last submission.
+    static constexpr size_t kMaxWaitSemaphores = kMaxExternalSemaphores + 1;
+
     angle::Result initializeDevice(DisplayVk *displayVk, uint32_t queueFamilyIndex);
     void ensureCapsInitialized() const;
+    void getSubmitWaitSemaphores(
+        vk::Context *context,
+        angle::FixedVector<VkSemaphore, kMaxWaitSemaphores> *waitSemaphores,
+        angle::FixedVector<VkPipelineStageFlags, kMaxWaitSemaphores> *waitStageMasks);
     angle::Result submitFrame(vk::Context *context,
                               const VkSubmitInfo &submitInfo,
                               vk::CommandBuffer &&commandBuffer);
-    angle::Result checkInFlightCommands(vk::Context *context);
     void freeAllInFlightResources();
     angle::Result flushCommandGraph(vk::Context *context, vk::CommandBuffer *commandBatch);
     void initFeatures();
     void initPipelineCacheVkKey();
-    angle::Result initPipelineCacheVk(DisplayVk *display);
+    angle::Result initPipelineCache(DisplayVk *display);
+
+    angle::Result synchronizeCpuGpuTime(vk::Context *context);
+    angle::Result traceGpuEventImpl(vk::Context *context,
+                                    vk::CommandBuffer *commandBuffer,
+                                    char phase,
+                                    const char *name);
+    angle::Result checkCompletedGpuEvents(vk::Context *context);
+    void flushGpuEvents(double nextSyncGpuTimestampS, double nextSyncCpuTimestampS);
+
+    egl::Display *mDisplay;
 
     mutable bool mCapsInitialized;
     mutable gl::Caps mNativeCaps;
     mutable gl::TextureCapsMap mNativeTextureCaps;
     mutable gl::Extensions mNativeExtensions;
     mutable gl::Limitations mNativeLimitations;
-    mutable FeaturesVk mFeatures;
+    mutable angle::FeaturesVk mFeatures;
 
     VkInstance mInstance;
     bool mEnableValidationLayers;
+    bool mEnableMockICD;
     VkDebugReportCallbackEXT mDebugReportCallback;
     VkPhysicalDevice mPhysicalDevice;
     VkPhysicalDeviceProperties mPhysicalDeviceProperties;
@@ -189,6 +238,7 @@ class RendererVk : angle::NonCopyable
     SerialFactory mQueueSerialFactory;
     SerialFactory mShaderSerialFactory;
     Serial mLastCompletedQueueSerial;
+    Serial mLastSubmittedQueueSerial;
     Serial mCurrentQueueSerial;
 
     bool mDeviceLost;
@@ -213,11 +263,30 @@ class RendererVk : angle::NonCopyable
     vk::FormatTable mFormatTable;
 
     RenderPassCache mRenderPassCache;
-    PipelineCache mPipelineCache;
 
-    vk::PipelineCache mPipelineCacheVk;
+    vk::PipelineCache mPipelineCache;
     egl::BlobCache::Key mPipelineCacheVkBlobKey;
     uint32_t mPipelineCacheVkUpdateTimeout;
+
+    // mSubmitWaitSemaphores is a list of specifically requested semaphores to be waited on before a
+    // command buffer submission, for example, semaphores signaled by vkAcquireNextImageKHR.
+    // After first use, the list is automatically cleared.  This is a vector to support concurrent
+    // rendering to multiple surfaces.
+    //
+    // Note that with multiple contexts present, this may result in a context waiting on image
+    // acquisition even if it doesn't render to that surface.  If CommandGraphs are separated by
+    // context or share group for example, this could be moved to the one that actually uses the
+    // image.
+    angle::FixedVector<vk::SemaphoreHelper, kMaxExternalSemaphores> mSubmitWaitSemaphores;
+    // mSubmitLastSignaledSemaphore shows which semaphore was last signaled by submission.  This can
+    // be set to nullptr if retrieved to be waited on outside RendererVk, such
+    // as by the surface before presentation.  Each submission waits on the
+    // previously signaled semaphore (as well as any in mSubmitWaitSemaphores)
+    // and allocates a new semaphore to signal.
+    vk::SemaphoreHelper mSubmitLastSignaledSemaphore;
+
+    // A pool of semaphores used to support the aforementioned mid-frame submissions.
+    vk::DynamicSemaphorePool mSubmitSemaphorePool;
 
     // See CommandGraph.h for a desription of the Command Graph.
     vk::CommandGraph mCommandGraph;
@@ -230,6 +299,59 @@ class RendererVk : angle::NonCopyable
 
     // Internal shader library.
     vk::ShaderLibrary mShaderLibrary;
+    vk::ShaderProgramHelper mFullScreenClearShaderProgram;
+
+    // The GpuEventQuery struct holds together a timestamp query and enough data to create a
+    // trace event based on that. Use traceGpuEvent to insert such queries.  They will be readback
+    // when the results are available, without inserting a GPU bubble.
+    //
+    // - eventName will be the reported name of the event
+    // - phase is either 'B' (duration begin), 'E' (duration end) or 'i' (instant // event).
+    //   See Google's "Trace Event Format":
+    //   https://docs.google.com/document/d/1CvAClvFfyA5R-PhYUmn5OOQtYMH4h6I0nSsKchNAySU
+    // - serial is the serial of the batch the query was submitted on.  Until the batch is
+    //   submitted, the query is not checked to avoid incuring a flush.
+    struct GpuEventQuery final
+    {
+        const char *name;
+        char phase;
+
+        uint32_t queryIndex;
+        size_t queryPoolIndex;
+
+        Serial serial;
+    };
+
+    // Once a query result is available, the timestamp is read and a GpuEvent object is kept until
+    // the next clock sync, at which point the clock drift is compensated in the results before
+    // handing them off to the application.
+    struct GpuEvent final
+    {
+        uint64_t gpuTimestampCycles;
+        const char *name;
+        char phase;
+    };
+
+    bool mGpuEventsEnabled;
+    vk::DynamicQueryPool mGpuEventQueryPool;
+    // A list of queries that have yet to be turned into an event (their result is not yet
+    // available).
+    std::vector<GpuEventQuery> mInFlightGpuEventQueries;
+    // A list of gpu events since the last clock sync.
+    std::vector<GpuEvent> mGpuEvents;
+
+    // Hold information from the last gpu clock sync for future gpu-to-cpu timestamp conversions.
+    struct GpuClockSyncInfo
+    {
+        double gpuTimestampS;
+        double cpuTimestampS;
+    };
+    GpuClockSyncInfo mGpuClockSync;
+
+    // The very first timestamp queried for a GPU event is used as origin, so event timestamps would
+    // have a value close to zero, to avoid losing 12 bits when converting these 64 bit values to
+    // double.
+    uint64_t mGpuEventTimestampOrigin;
 };
 
 uint32_t GetUniformBufferDescriptorCount();

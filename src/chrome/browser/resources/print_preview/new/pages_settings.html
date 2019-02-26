@@ -1,8 +1,8 @@
 <link rel="import" href="chrome://resources/html/polymer.html">
 
 <link rel="import" href="chrome://resources/cr_elements/cr_radio_button/cr_radio_button.html">
+<link rel="import" href="chrome://resources/cr_elements/cr_radio_group/cr_radio_group.html">
 <link rel="import" href="chrome://resources/cr_elements/cr_input/cr_input.html">
-<link rel="import" href="chrome://resources/polymer/v1_0/paper-radio-group/paper-radio-group.html">
 <link rel="import" href="../data/document_info.html">
 <link rel="import" href="../print_preview_utils.html">
 <link rel="import" href="input_behavior.html">
@@ -15,7 +15,7 @@
   <template>
     <style include="print-preview-shared">
       :host {
-        --paper-radio-group-item-padding: 0;
+        --cr-radio-group-item-padding: 0;
       }
 
       :host([error-state_='0']) #pageSettingsCustomInput,
@@ -37,22 +37,18 @@
       }
 
       :host #title {
-        justify-content: flex-start;
-        padding-top: 9px;
+        align-self: baseline;
       }
     </style>
     <print-preview-settings-section>
       <span id="title" slot="title">$i18n{pagesLabel}</span>
       <div slot="controls" id="controls">
-        <paper-radio-group selectable="cr-radio-button" class="radio"
-            disabled$="[[controlsDisabled_]]"
+        <cr-radio-group class="radio" disabled="[[controlsDisabled_]]"
             selected="{{optionSelected_}}">
           <cr-radio-button name="[[pagesValueEnum_.ALL]]" id="allRadioButton"
-              disabled$="[[controlsDisabled_]]"
               label="$i18n{optionAllPages}">
           </cr-radio-button>
           <cr-radio-button id="customRadioButton"
-              disabled$="[[controlsDisabled_]]"
               name="[[pagesValueEnum_.CUSTOM]]"
               on-blur="onCustomRadioBlur_"
               on-click="onCustomRadioClick_"
@@ -69,7 +65,7 @@
                     documentInfo.pageCount)]]">
             </cr-input>
           </cr-radio-button>
-        </paper-radio-group>
+        </cr-radio-group>
       </div>
     </print-preview-settings-section>
   </template>

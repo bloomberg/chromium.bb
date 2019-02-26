@@ -192,9 +192,8 @@ void DecoderStreamTraits<DemuxerStream::VIDEO>::OnDecode(
     return;
   }
 
-  base::TimeDelta frame_distance =
+  const base::TimeDelta frame_distance =
       current_frame_timestamp - last_keyframe_timestamp_;
-  UMA_HISTOGRAM_MEDIUM_TIMES("Media.Video.KeyFrameDistance", frame_distance);
   last_keyframe_timestamp_ = current_frame_timestamp;
   keyframe_distance_average_.AddSample(frame_distance);
 }

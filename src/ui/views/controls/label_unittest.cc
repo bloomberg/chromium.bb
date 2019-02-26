@@ -27,6 +27,7 @@
 #include "ui/views/test/focus_manager_test.h"
 #include "ui/views/test/views_test_base.h"
 #include "ui/views/widget/widget.h"
+#include "ui/views/widget/widget_utils.h"
 
 using base::ASCIIToUTF16;
 using base::WideToUTF16;
@@ -164,7 +165,7 @@ class LabelSelectionTest : public LabelTest {
   void SetUp() override {
     LabelTest::SetUp();
     event_generator_ =
-        std::make_unique<ui::test::EventGenerator>(widget()->GetNativeWindow());
+        std::make_unique<ui::test::EventGenerator>(GetRootWindow(widget()));
   }
 
  protected:

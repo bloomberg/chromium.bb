@@ -7,14 +7,14 @@ source_set("side_swipe") {
   sources = [
     "card_side_swipe_view.h",
     "card_side_swipe_view.mm",
-    "history_side_swipe_provider.h",
-    "history_side_swipe_provider.mm",
     "side_swipe_controller.h",
     "side_swipe_controller.mm",
     "side_swipe_navigation_view.h",
     "side_swipe_navigation_view.mm",
     "side_swipe_util.h",
     "side_swipe_util.mm",
+    "swipe_view.h",
+    "swipe_view.mm",
   ]
   deps = [
     "resources:side_swipe_navigation_back",
@@ -31,6 +31,7 @@ source_set("side_swipe") {
     "//ios/chrome/browser/ui:feature_flags",
     "//ios/chrome/browser/ui/fullscreen",
     "//ios/chrome/browser/ui/ntp",
+    "//ios/chrome/browser/ui/ntp:util",
     "//ios/chrome/browser/ui/tab_grid/grid:grid_ui",
     "//ios/chrome/browser/ui/tabs/requirements",
     "//ios/chrome/browser/ui/toolbar/public",
@@ -52,6 +53,8 @@ source_set("unit_tests") {
   deps = [
     ":side_swipe",
     "//base",
+    "//base/test:test_support",
+    "//ios/chrome/browser",
     "//ios/chrome/browser/browser_state:test_support",
     "//ios/web/public/test",
     "//testing/gtest",
@@ -70,8 +73,8 @@ source_set("eg_tests") {
     ":side_swipe",
     "//base",
     "//ios/chrome/browser",
-    "//ios/chrome/browser/ui:ui_util",
     "//ios/chrome/browser/ui/toolbar:toolbar_ui",
+    "//ios/chrome/browser/ui/util",
     "//ios/chrome/test/app:test_support",
     "//ios/chrome/test/earl_grey:test_support",
     "//ios/testing/earl_grey:earl_grey_support",

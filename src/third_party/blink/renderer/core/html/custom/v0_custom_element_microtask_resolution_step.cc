@@ -40,8 +40,8 @@ V0CustomElementMicrotaskResolutionStep::Create(
     V0CustomElementRegistrationContext* context,
     Element* element,
     const V0CustomElementDescriptor& descriptor) {
-  return new V0CustomElementMicrotaskResolutionStep(context, element,
-                                                    descriptor);
+  return MakeGarbageCollected<V0CustomElementMicrotaskResolutionStep>(
+      context, element, descriptor);
 }
 
 V0CustomElementMicrotaskResolutionStep::V0CustomElementMicrotaskResolutionStep(

@@ -10,7 +10,7 @@
 #include "third_party/blink/renderer/core/style_property_shorthand.h"
 
 namespace blink {
-namespace CSSShorthand {
+namespace css_shorthand {
 
 bool GridRowGap::ParseShorthand(
     bool important,
@@ -18,13 +18,14 @@ bool GridRowGap::ParseShorthand(
     const CSSParserContext& context,
     const CSSParserLocalContext&,
     HeapVector<CSSPropertyValue, 256>& properties) const {
-  CSSValue* gap_length = CSSParsingUtils::ConsumeGapLength(range, context);
+  CSSValue* gap_length = css_parsing_utils::ConsumeGapLength(range, context);
   if (!gap_length || !range.AtEnd())
     return false;
 
-  CSSPropertyParserHelpers::AddProperty(
+  css_property_parser_helpers::AddProperty(
       CSSPropertyRowGap, CSSPropertyGridRowGap, *gap_length, important,
-      CSSPropertyParserHelpers::IsImplicitProperty::kNotImplicit, properties);
+      css_property_parser_helpers::IsImplicitProperty::kNotImplicit,
+      properties);
   return true;
 }
 
@@ -39,5 +40,5 @@ const CSSValue* GridRowGap::CSSValueFromComputedStyleInternal(
       allow_visited_style);
 }
 
-}  // namespace CSSShorthand
+}  // namespace css_shorthand
 }  // namespace blink

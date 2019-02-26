@@ -102,8 +102,7 @@ class TestPasswordProtectionService : public MockPasswordProtectionService {
   DISALLOW_COPY_AND_ASSIGN(TestPasswordProtectionService);
 };
 
-class PasswordProtectionServiceTest
-    : public ::testing::TestWithParam<std::vector<bool>> {
+class PasswordProtectionServiceTest : public ::testing::TestWithParam<bool> {
  public:
   PasswordProtectionServiceTest(){};
 
@@ -131,12 +130,10 @@ class PasswordProtectionServiceTest
             base::MakeRefCounted<network::WeakWrapperSharedURLLoaderFactory>(
                 &test_url_loader_factory_),
             content_setting_map_);
-
-    ASSERT_EQ(2ul, GetParam().size());
     EXPECT_CALL(*password_protection_service_, IsExtendedReporting())
-        .WillRepeatedly(Return(GetParam()[0]));
+        .WillRepeatedly(Return(GetParam()));
     EXPECT_CALL(*password_protection_service_, IsIncognito())
-        .WillRepeatedly(Return(GetParam()[1]));
+        .WillRepeatedly(Return(false));
     EXPECT_CALL(*password_protection_service_, GetSyncAccountType())
         .WillRepeatedly(Return(PasswordReuseEvent::NOT_SIGNED_IN));
     EXPECT_CALL(*password_protection_service_,
@@ -412,6 +409,45 @@ TEST_P(PasswordProtectionServiceTest, TestCachePasswordReuseVerdicts) {
                     LoginReputationClientRequest::UNFAMILIAR_LOGIN_PAGE));
 }
 
+TEST_P(PasswordProtectionServiceTest, TestCachePasswordReuseVerdictsIncognito) {
+  EXPECT_CALL(*password_protection_service_, IsIncognito())
+      .WillRepeatedly(Return(true));
+  ASSERT_EQ(0U, GetStoredVerdictCount(
+                    LoginReputationClientRequest::PASSWORD_REUSE_EVENT));
+
+  // No verdict will be cached for incognito profile.
+  CacheVerdict(GURL("http://www.test.com/foo/index.html"),
+               LoginReputationClientRequest::PASSWORD_REUSE_EVENT,
+               PasswordReuseEvent::SIGN_IN_PASSWORD,
+               LoginReputationClientResponse::SAFE, 10 * kMinute,
+               "test.com/foo/", base::Time::Now());
+
+  EXPECT_EQ(0U, GetStoredVerdictCount(
+                    LoginReputationClientRequest::PASSWORD_REUSE_EVENT));
+
+  // Try cache another verdict with the some origin and cache_expression.
+  // Verdict count should not increase.
+  CacheVerdict(GURL("http://www.test.com/foo/index2.html"),
+               LoginReputationClientRequest::PASSWORD_REUSE_EVENT,
+               PasswordReuseEvent::SIGN_IN_PASSWORD,
+               LoginReputationClientResponse::PHISHING, 10 * kMinute,
+               "test.com/foo/", base::Time::Now());
+  EXPECT_EQ(0U, GetStoredVerdictCount(
+                    LoginReputationClientRequest::PASSWORD_REUSE_EVENT));
+
+  // Now cache a UNFAMILIAR_LOGIN_PAGE verdict, verdict count should not
+  // increase.
+  CacheVerdict(GURL("http://www.test.com/foobar/index3.html"),
+               LoginReputationClientRequest::UNFAMILIAR_LOGIN_PAGE,
+               PasswordReuseEvent::REUSED_PASSWORD_TYPE_UNKNOWN,
+               LoginReputationClientResponse::SAFE, 10 * kMinute,
+               "test.com/foobar/", base::Time::Now());
+  EXPECT_EQ(0U, GetStoredVerdictCount(
+                    LoginReputationClientRequest::PASSWORD_REUSE_EVENT));
+  EXPECT_EQ(0U, GetStoredVerdictCount(
+                    LoginReputationClientRequest::UNFAMILIAR_LOGIN_PAGE));
+}
+
 TEST_P(PasswordProtectionServiceTest, TestCacheUnfamiliarLoginVerdicts) {
   ASSERT_EQ(0U, GetStoredVerdictCount(
                     LoginReputationClientRequest::UNFAMILIAR_LOGIN_PAGE));
@@ -448,6 +484,44 @@ TEST_P(PasswordProtectionServiceTest, TestCacheUnfamiliarLoginVerdicts) {
   EXPECT_EQ(2U, GetStoredVerdictCount(
                     LoginReputationClientRequest::UNFAMILIAR_LOGIN_PAGE));
   EXPECT_EQ(1U, GetStoredVerdictCount(
+                    LoginReputationClientRequest::PASSWORD_REUSE_EVENT));
+}
+
+TEST_P(PasswordProtectionServiceTest,
+       TestCacheUnfamiliarLoginVerdictsIncognito) {
+  EXPECT_CALL(*password_protection_service_, IsIncognito())
+      .WillRepeatedly(Return(true));
+  ASSERT_EQ(0U, GetStoredVerdictCount(
+                    LoginReputationClientRequest::UNFAMILIAR_LOGIN_PAGE));
+
+  // No verdict will be cached for incognito profile.
+  CacheVerdict(GURL("http://www.test.com/foo/index.html"),
+               LoginReputationClientRequest::UNFAMILIAR_LOGIN_PAGE,
+               PasswordReuseEvent::REUSED_PASSWORD_TYPE_UNKNOWN,
+               LoginReputationClientResponse::SAFE, 10 * kMinute,
+               "test.com/foo/", base::Time::Now());
+
+  EXPECT_EQ(0U, GetStoredVerdictCount(
+                    LoginReputationClientRequest::UNFAMILIAR_LOGIN_PAGE));
+
+  CacheVerdict(GURL("http://www.test.com/bar/index2.html"),
+               LoginReputationClientRequest::UNFAMILIAR_LOGIN_PAGE,
+               PasswordReuseEvent::REUSED_PASSWORD_TYPE_UNKNOWN,
+               LoginReputationClientResponse::SAFE, 10 * kMinute,
+               "test.com/bar/", base::Time::Now());
+  EXPECT_EQ(0U, GetStoredVerdictCount(
+                    LoginReputationClientRequest::UNFAMILIAR_LOGIN_PAGE));
+
+  // Now cache a PASSWORD_REUSE_EVENT verdict. Verdict count should not
+  // increase.
+  CacheVerdict(GURL("http://www.test.com/foobar/index3.html"),
+               LoginReputationClientRequest::PASSWORD_REUSE_EVENT,
+               PasswordReuseEvent::SIGN_IN_PASSWORD,
+               LoginReputationClientResponse::SAFE, 10 * kMinute,
+               "test.com/foobar/", base::Time::Now());
+  EXPECT_EQ(0U, GetStoredVerdictCount(
+                    LoginReputationClientRequest::UNFAMILIAR_LOGIN_PAGE));
+  EXPECT_EQ(0U, GetStoredVerdictCount(
                     LoginReputationClientRequest::PASSWORD_REUSE_EVENT));
 }
 
@@ -1199,6 +1273,12 @@ TEST_P(PasswordProtectionServiceTest, VerifyIsEventLoggingEnabled) {
 }
 
 TEST_P(PasswordProtectionServiceTest, VerifyContentTypeIsPopulated) {
+  LoginReputationClientResponse response =
+      CreateVerdictProto(LoginReputationClientResponse::SAFE, 10 * kMinute,
+                         GURL(kTargetUrl).host());
+  test_url_loader_factory_.AddResponse(url_.spec(),
+                                       response.SerializeAsString());
+
   content::WebContents* web_contents = GetWebContents();
 
   content::WebContentsTester::For(web_contents)
@@ -1253,12 +1333,11 @@ TEST_P(PasswordProtectionServiceTest, TestPingsForAboutBlank) {
   histograms_.ExpectTotalCount(kPasswordOnFocusRequestOutcomeHistogram, 1);
 }
 
-INSTANTIATE_TEST_CASE_P(
-    InstSBERIncog,
-    PasswordProtectionServiceTest,
-    ::testing::Values(std::vector<bool>({false, false}),  // SBER, incog.
-                      std::vector<bool>({false, true}),
-                      std::vector<bool>({true, false}),
-                      std::vector<bool>({true, true})));
+INSTANTIATE_TEST_CASE_P(Regular,
+                        PasswordProtectionServiceTest,
+                        ::testing::Values(false));
+INSTANTIATE_TEST_CASE_P(SBER,
+                        PasswordProtectionServiceTest,
+                        ::testing::Values(true));
 
 }  // namespace safe_browsing

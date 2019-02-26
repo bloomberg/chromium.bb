@@ -22,8 +22,22 @@ class MappedHostResolver::AlwaysErrorRequestImpl
   int Start(CompletionOnceCallback callback) override { return error_; }
 
   const base::Optional<AddressList>& GetAddressResults() const override {
-    static base::NoDestructor<base::Optional<AddressList>> nullopt_address_list;
-    return *nullopt_address_list;
+    static base::NoDestructor<base::Optional<AddressList>> nullopt_result;
+    return *nullopt_result;
+  }
+
+  const base::Optional<std::vector<std::string>>& GetTextResults()
+      const override {
+    static const base::NoDestructor<base::Optional<std::vector<std::string>>>
+        nullopt_result;
+    return *nullopt_result;
+  }
+
+  const base::Optional<std::vector<HostPortPair>>& GetHostnameResults()
+      const override {
+    static const base::NoDestructor<base::Optional<std::vector<HostPortPair>>>
+        nullopt_result;
+    return *nullopt_result;
   }
 
  private:

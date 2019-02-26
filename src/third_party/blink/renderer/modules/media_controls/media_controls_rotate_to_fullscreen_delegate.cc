@@ -18,6 +18,7 @@
 #include "third_party/blink/renderer/modules/device_orientation/device_orientation_data.h"
 #include "third_party/blink/renderer/modules/device_orientation/device_orientation_event.h"
 #include "third_party/blink/renderer/modules/media_controls/media_controls_impl.h"
+#include "third_party/blink/renderer/platform/wtf/functional.h"
 
 namespace blink {
 
@@ -42,20 +43,21 @@ void MediaControlsRotateToFullscreenDelegate::Attach() {
   if (!dom_window)
     return;
 
-  video_element_->addEventListener(EventTypeNames::play, this, true);
-  video_element_->addEventListener(EventTypeNames::pause, this, true);
+  video_element_->addEventListener(event_type_names::kPlay, this, true);
+  video_element_->addEventListener(event_type_names::kPause, this, true);
 
   // Listen to two different fullscreen events in order to make sure the new and
   // old APIs are handled.
-  video_element_->addEventListener(EventTypeNames::webkitfullscreenchange, this,
-                                   true);
+  video_element_->addEventListener(event_type_names::kWebkitfullscreenchange,
+                                   this, true);
   video_element_->GetDocument().addEventListener(
-      EventTypeNames::fullscreenchange, this, true);
+      event_type_names::kFullscreenchange, this, true);
 
   current_screen_orientation_ = ComputeScreenOrientation();
   // TODO(johnme): Check this is battery efficient (note that this doesn't need
   // to receive events for 180 deg rotations).
-  dom_window->addEventListener(EventTypeNames::orientationchange, this, false);
+  dom_window->addEventListener(event_type_names::kOrientationchange, this,
+                               false);
 
   // TODO(795286): device orientation now requires a v8::Context in the stack so
   // we are creating one so the event pump starts running.
@@ -64,7 +66,8 @@ void MediaControlsRotateToFullscreenDelegate::Attach() {
     return;
 
   ScriptState::Scope scope(ToScriptStateForMainWorld(frame));
-  dom_window->addEventListener(EventTypeNames::deviceorientation, this, false);
+  dom_window->addEventListener(event_type_names::kDeviceorientation, this,
+                               false);
 }
 
 void MediaControlsRotateToFullscreenDelegate::Detach() {
@@ -77,20 +80,20 @@ void MediaControlsRotateToFullscreenDelegate::Detach() {
     is_visible_ = false;
   }
 
-  video_element_->removeEventListener(EventTypeNames::play, this, true);
-  video_element_->removeEventListener(EventTypeNames::pause, this, true);
+  video_element_->removeEventListener(event_type_names::kPlay, this, true);
+  video_element_->removeEventListener(event_type_names::kPause, this, true);
 
-  video_element_->removeEventListener(EventTypeNames::webkitfullscreenchange,
+  video_element_->removeEventListener(event_type_names::kWebkitfullscreenchange,
                                       this, true);
   video_element_->GetDocument().removeEventListener(
-      EventTypeNames::fullscreenchange, this, true);
+      event_type_names::kFullscreenchange, this, true);
 
   LocalDOMWindow* dom_window = video_element_->GetDocument().domWindow();
   if (!dom_window)
     return;
-  dom_window->removeEventListener(EventTypeNames::orientationchange, this,
+  dom_window->removeEventListener(event_type_names::kOrientationchange, this,
                                   false);
-  dom_window->removeEventListener(EventTypeNames::deviceorientation, this,
+  dom_window->removeEventListener(event_type_names::kDeviceorientation, this,
                                   false);
 }
 
@@ -99,24 +102,25 @@ bool MediaControlsRotateToFullscreenDelegate::operator==(
   return this == &other;
 }
 
-void MediaControlsRotateToFullscreenDelegate::handleEvent(
+void MediaControlsRotateToFullscreenDelegate::Invoke(
     ExecutionContext* execution_context,
     Event* event) {
-  if (event->type() == EventTypeNames::play ||
-      event->type() == EventTypeNames::pause ||
-      event->type() == EventTypeNames::fullscreenchange ||
-      event->type() == EventTypeNames::webkitfullscreenchange) {
+  if (event->type() == event_type_names::kPlay ||
+      event->type() == event_type_names::kPause ||
+      event->type() == event_type_names::kFullscreenchange ||
+      event->type() == event_type_names::kWebkitfullscreenchange) {
     OnStateChange();
     return;
   }
-  if (event->type() == EventTypeNames::deviceorientation) {
+  if (event->type() == event_type_names::kDeviceorientation) {
     if (event->isTrusted() &&
-        event->InterfaceName() == EventNames::DeviceOrientationEvent) {
+        event->InterfaceName() ==
+            event_interface_names::kDeviceOrientationEvent) {
       OnDeviceOrientationAvailable(ToDeviceOrientationEvent(event));
     }
     return;
   }
-  if (event->type() == EventTypeNames::orientationchange) {
+  if (event->type() == event_type_names::kOrientationchange) {
     OnScreenOrientationChange();
     return;
   }
@@ -133,7 +137,7 @@ void MediaControlsRotateToFullscreenDelegate::OnStateChange() {
            << needs_visibility_observer;
 
   if (needs_visibility_observer && !visibility_observer_) {
-    visibility_observer_ = new ElementVisibilityObserver(
+    visibility_observer_ = MakeGarbageCollected<ElementVisibilityObserver>(
         video_element_,
         WTF::BindRepeating(
             &MediaControlsRotateToFullscreenDelegate::OnVisibilityChange,
@@ -158,7 +162,7 @@ void MediaControlsRotateToFullscreenDelegate::OnDeviceOrientationAvailable(
   if (!dom_window)
     return;
   // Stop listening after the first event. Just need to know if it's available.
-  dom_window->removeEventListener(EventTypeNames::deviceorientation, this,
+  dom_window->removeEventListener(event_type_names::kDeviceorientation, this,
                                   false);
 
   // MediaControlsOrientationLockDelegate needs Device Orientation events with

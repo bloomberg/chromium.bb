@@ -12,10 +12,6 @@
  * OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF OR IN
  * CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE. */
 
-#if !defined(__STDC_FORMAT_MACROS)
-#define __STDC_FORMAT_MACROS
-#endif
-
 #include <openssl/base.h>
 
 #if !defined(OPENSSL_WINDOWS)
@@ -708,6 +704,7 @@ static bool DoConnection(bssl::UniquePtr<SSL_SESSION> *out_session,
 
     // Reset the connection and try again at 1-RTT.
     SSL_reset_early_data_reject(ssl.get());
+    GetTestState(ssl.get())->cert_verified = false;
 
     // After reseting, the socket should report it is no longer in an early data
     // state.

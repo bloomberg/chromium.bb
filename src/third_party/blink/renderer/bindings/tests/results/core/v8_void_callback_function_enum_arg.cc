@@ -3,7 +3,7 @@
 // found in the LICENSE file.
 
 // This file has been auto-generated from the Jinja2 template
-// third_party/blink/renderer/bindings/templates/callback_function.cpp.tmpl
+// third_party/blink/renderer/bindings/templates/callback_function.cc.tmpl
 // by the script code_generator_v8.py.
 // DO NOT MODIFY!
 
@@ -67,7 +67,7 @@ v8::Maybe<void> V8VoidCallbackFunctionEnumArg::Invoke(ScriptWrappable* callback_
   // Enum values provided by Blink must be valid, otherwise typo.
 #if DCHECK_IS_ON()
   {
-    const char* valid_arg_values[] = {
+    const char* kValidArgValues[] = {
         "",
         "EnumValue1",
         "EnumValue2",
@@ -77,7 +77,7 @@ v8::Maybe<void> V8VoidCallbackFunctionEnumArg::Invoke(ScriptWrappable* callback_
                                    ExceptionState::kExecutionContext,
                                    "VoidCallbackFunctionEnumArg",
                                    "invoke");
-    if (!IsValidEnum(arg, valid_arg_values, base::size(valid_arg_values), "TestEnum", exception_state)) { //
+    if (!IsValidEnum(arg, kValidArgValues, base::size(kValidArgValues), "TestEnum", exception_state)) { //
       NOTREACHED();
       return v8::Nothing<void>();
     }

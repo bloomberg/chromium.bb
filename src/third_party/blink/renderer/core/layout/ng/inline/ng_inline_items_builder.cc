@@ -4,13 +4,22 @@
 
 #include "third_party/blink/renderer/core/layout/ng/inline/ng_inline_items_builder.h"
 
+#include <type_traits>
+
 #include "third_party/blink/renderer/core/layout/layout_object.h"
 #include "third_party/blink/renderer/core/layout/layout_text.h"
 #include "third_party/blink/renderer/core/layout/ng/inline/layout_ng_text.h"
 #include "third_party/blink/renderer/core/layout/ng/inline/ng_offset_mapping_builder.h"
 #include "third_party/blink/renderer/core/style/computed_style.h"
+#include "third_party/blink/renderer/platform/fonts/shaping/shape_result_view.h"
 
 namespace blink {
+
+// Returns true if items builder is used for other than offset mapping.
+template <typename OffsetMappingBuilder>
+bool NGInlineItemsBuilderTemplate<OffsetMappingBuilder>::NeedsBoxInfo() {
+  return !std::is_same<NGOffsetMappingBuilder, OffsetMappingBuilder>::value;
+}
 
 template <typename OffsetMappingBuilder>
 NGInlineItemsBuilderTemplate<
@@ -21,11 +30,6 @@ NGInlineItemsBuilderTemplate<
 
 template <typename OffsetMappingBuilder>
 String NGInlineItemsBuilderTemplate<OffsetMappingBuilder>::ToString() {
-  // Segment Break Transformation Rules[1] defines to keep trailing new lines,
-  // but it will be removed in Phase II[2]. We prefer not to add trailing new
-  // lines and collapsible spaces in Phase I.
-  RemoveTrailingCollapsibleSpaceIfExists();
-
   return text_.ToString();
 }
 
@@ -247,8 +251,8 @@ void NGInlineItemsBuilderTemplate<OffsetMappingBuilder>::
 template <typename OffsetMappingBuilder>
 bool NGInlineItemsBuilderTemplate<OffsetMappingBuilder>::Append(
     const String& original_string,
-    LayoutNGText* layout_text,
-    const Vector<NGInlineItem*>& items) {
+    LayoutText* layout_text) {
+  const Vector<NGInlineItem*>& items = layout_text->InlineItems();
   // Don't reuse existing items if they might be affected by whitespace
   // collapsing.
   // TODO(layout-dev): This could likely be optimized further.
@@ -335,8 +339,8 @@ bool NGInlineItemsBuilderTemplate<OffsetMappingBuilder>::Append(
     DCHECK_EQ(start, adjusted_item.StartOffset());
     DCHECK_EQ(end, adjusted_item.EndOffset());
     if (adjusted_item.TextShapeResult()) {
-      DCHECK_EQ(start, adjusted_item.TextShapeResult()->StartIndexForResult());
-      DCHECK_EQ(end, adjusted_item.TextShapeResult()->EndIndexForResult());
+      DCHECK_EQ(start, adjusted_item.TextShapeResult()->StartIndex());
+      DCHECK_EQ(end, adjusted_item.TextShapeResult()->EndIndex());
     }
     DCHECK_EQ(item->IsEmptyItem(), adjusted_item.IsEmptyItem());
 #endif
@@ -348,10 +352,8 @@ bool NGInlineItemsBuilderTemplate<OffsetMappingBuilder>::Append(
 }
 
 template <>
-bool NGInlineItemsBuilderTemplate<NGOffsetMappingBuilder>::Append(
-    const String&,
-    LayoutNGText*,
-    const Vector<NGInlineItem*>&) {
+bool NGInlineItemsBuilderTemplate<NGOffsetMappingBuilder>::Append(const String&,
+                                                                  LayoutText*) {
   NOTREACHED();
   return false;
 }
@@ -600,7 +602,7 @@ void NGInlineItemsBuilderTemplate<
       continue;
     }
 
-    size_t end = string.Find(IsControlItemCharacter, start + 1);
+    wtf_size_t end = string.Find(IsControlItemCharacter, start + 1);
     if (end == kNotFound)
       end = string.length();
     AppendTextItem(string, start, end, style, layout_object);
@@ -620,7 +622,7 @@ void NGInlineItemsBuilderTemplate<OffsetMappingBuilder>::AppendPreserveNewline(
       continue;
     }
 
-    size_t end = string.find(kNewlineCharacter, start + 1);
+    wtf_size_t end = string.find(kNewlineCharacter, start + 1);
     if (end == kNotFound)
       end = string.length();
     DCHECK_GE(end, start);
@@ -777,8 +779,13 @@ void NGInlineItemsBuilderTemplate<
   // Remove the item if the item has only one space that we're removing.
   if (item->Length() == 1) {
     DCHECK_EQ(item->StartOffset(), space_offset);
-    unsigned index = std::distance(items_->begin(), item);
+    wtf_size_t index =
+        static_cast<wtf_size_t>(std::distance(items_->begin(), item));
     items_->EraseAt(index);
+    for (BoxInfo& box : boxes_) {
+      if (box.item_index >= index)
+        --box.item_index;
+    }
     if (index == items_->size())
       return;
     // Re-compute |item| because |EraseAt| may have reallocated the buffer.
@@ -937,6 +944,9 @@ void NGInlineItemsBuilderTemplate<OffsetMappingBuilder>::EnterInline(
 
   AppendOpaque(NGInlineItem::kOpenTag, style, node);
 
+  if (!NeedsBoxInfo())
+    return;
+
   // Set |ShouldCreateBoxFragment| of the parent box if needed.
   BoxInfo* current_box =
       &boxes_.emplace_back(items_->size() - 1, items_->back());
@@ -952,6 +962,11 @@ void NGInlineItemsBuilderTemplate<OffsetMappingBuilder>::EnterInline(
 template <typename OffsetMappingBuilder>
 void NGInlineItemsBuilderTemplate<OffsetMappingBuilder>::ExitBlock() {
   Exit(nullptr);
+
+  // Segment Break Transformation Rules[1] defines to keep trailing new lines,
+  // but it will be removed in Phase II[2]. We prefer not to add trailing new
+  // lines and collapsible spaces in Phase I.
+  RemoveTrailingCollapsibleSpaceIfExists();
 }
 
 template <typename OffsetMappingBuilder>
@@ -961,7 +976,8 @@ void NGInlineItemsBuilderTemplate<OffsetMappingBuilder>::ExitInline(
 
   AppendOpaque(NGInlineItem::kCloseTag, node->Style(), node);
 
-  boxes_.pop_back();
+  if (NeedsBoxInfo())
+    boxes_.pop_back();
 
   Exit(node);
 

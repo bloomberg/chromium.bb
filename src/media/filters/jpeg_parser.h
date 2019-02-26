@@ -49,6 +49,25 @@ enum JpegMarker {
   JPEG_MARKER_PREFIX = 0xFF,  // jpeg marker prefix
 };
 
+// JPEG format uses 2 bytes to denote the size of a segment, and the size
+// includes the 2 bytes used for specifying it. Therefore, maximum data size
+// allowed is: 65535 - 2 = 65533.
+constexpr size_t kMaxMarkerSizeAllowed = 65533;
+
+// JPEG header only uses 2 bytes to represent width and height.
+constexpr int kMaxDimension = 65535;
+
+constexpr size_t kDctSize = 64;
+constexpr size_t kNumDcRunSizeBits = 16;
+constexpr size_t kNumAcRunSizeBits = 16;
+constexpr size_t kNumDcCodeWordsHuffVal = 12;
+constexpr size_t kNumAcCodeWordsHuffVal = 162;
+constexpr size_t kJpegDefaultHeaderSize =
+    67 + (kDctSize * 2) + (kNumDcRunSizeBits * 2) +
+    (kNumDcCodeWordsHuffVal * 2) + (kNumAcRunSizeBits * 2) +
+    (kNumAcCodeWordsHuffVal * 2);
+constexpr size_t kJFIFApp0Size = 16;
+
 const size_t kJpegMaxHuffmanTableNumBaseline = 2;
 const size_t kJpegMaxComponents = 4;
 const size_t kJpegMaxQuantizationTableNum = 4;
@@ -71,8 +90,14 @@ MEDIA_EXPORT extern const JpegHuffmanTable
 // Parsing result of JPEG DQT marker.
 struct JpegQuantizationTable {
   bool valid;
-  uint8_t value[64];  // baseline only supports 8 bits quantization table
+  uint8_t value[kDctSize];  // baseline only supports 8 bits quantization table
 };
+
+MEDIA_EXPORT extern const uint8_t kZigZag8x8[64];
+
+// Table K.1 Luminance quantization table
+// Table K.2 Chrominance quantization table
+MEDIA_EXPORT extern const JpegQuantizationTable kDefaultQuantTable[2];
 
 // Parsing result of a JPEG component.
 struct JpegComponent {

@@ -28,10 +28,9 @@ class FakeRendererCompositorFrameSink
   // viz::mojom::CompositorFrameSinkClient implementation.
   void DidReceiveCompositorFrameAck(
       const std::vector<viz::ReturnedResource>& resources) override;
-  void DidPresentCompositorFrame(
-      uint32_t presentation_token,
-      const gfx::PresentationFeedback& feedback) override {}
-  void OnBeginFrame(const viz::BeginFrameArgs& args) override {}
+  void OnBeginFrame(const viz::BeginFrameArgs& args,
+                    const base::flat_map<uint32_t, gfx::PresentationFeedback>&
+                        feedbacks) override {}
   void OnBeginFramePausedChanged(bool paused) override {}
   void ReclaimResources(
       const std::vector<viz::ReturnedResource>& resources) override;

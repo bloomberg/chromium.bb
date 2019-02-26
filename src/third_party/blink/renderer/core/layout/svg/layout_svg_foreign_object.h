@@ -59,6 +59,7 @@ class LayoutSVGForeignObject final : public LayoutSVGBlock {
   FloatRect VisualRectInLocalSVGCoordinates() const override {
     return ObjectBoundingBox();
   }
+  bool IsObjectBoundingBoxValid() const { return !FrameRect().IsEmpty(); }
 
   bool NodeAtPoint(HitTestResult&,
                    const HitTestLocation&,

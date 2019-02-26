@@ -5,7 +5,7 @@
 #include "third_party/blink/renderer/core/css/properties/longhands/scroll_behavior.h"
 
 namespace blink {
-namespace CSSLonghand {
+namespace css_longhand {
 
 const CSSValue* ScrollBehavior::CSSValueFromComputedStyleInternal(
     const ComputedStyle& style,
@@ -16,5 +16,5 @@ const CSSValue* ScrollBehavior::CSSValueFromComputedStyleInternal(
   return CSSIdentifierValue::Create(style.GetScrollBehavior());
 }
 
-}  // namespace CSSLonghand
+}  // namespace css_longhand
 }  // namespace blink

@@ -10,6 +10,7 @@
 #include "base/callback.h"
 #include "base/macros.h"
 #include "base/strings/string16.h"
+#include "components/autofill/core/browser/autofill_client.h"
 #include "components/autofill/core/browser/autofill_metrics.h"
 #include "components/autofill/core/browser/legal_message_line.h"
 #include "components/infobars/core/confirm_infobar_delegate.h"
@@ -23,7 +24,7 @@ class DictionaryValue;
 namespace autofill {
 
 class CreditCard;
-class StrikeDatabase;
+class LegacyStrikeDatabase;
 
 // An InfoBarDelegate that enables the user to allow or deny storing credit
 // card information gathered from a form submission. Only used on mobile.
@@ -31,10 +32,11 @@ class AutofillSaveCardInfoBarDelegateMobile : public ConfirmInfoBarDelegate {
  public:
   AutofillSaveCardInfoBarDelegateMobile(
       bool upload,
+      bool should_request_name_from_user,
       const CreditCard& card,
       std::unique_ptr<base::DictionaryValue> legal_message,
-      StrikeDatabase* strike_database,
-      base::OnceCallback<void(const base::string16&)> upload_save_card_callback,
+      LegacyStrikeDatabase* legacy_strike_database,
+      AutofillClient::UserAcceptedUploadCallback upload_save_card_callback,
       base::OnceClosure local_save_card_callback,
       PrefService* pref_service);
 
@@ -76,9 +78,12 @@ class AutofillSaveCardInfoBarDelegateMobile : public ConfirmInfoBarDelegate {
   // Whether the action is an upload or a local save.
   bool upload_;
 
+  // Whether the user should enter/confirm cardholder name.
+  bool should_request_name_from_user_;
+
   // The callback to save the credit card to Google Payments if |upload_| is
   // true and the user accepts the infobar.
-  base::OnceCallback<void(const base::string16&)> upload_save_card_callback_;
+  AutofillClient::UserAcceptedUploadCallback upload_save_card_callback_;
 
   // The callback to save the credit card locally to the device if |upload_| is
   // false and the user accepts the infobar.
@@ -87,8 +92,8 @@ class AutofillSaveCardInfoBarDelegateMobile : public ConfirmInfoBarDelegate {
   // Weak reference to read & write |kAutofillAcceptSaveCreditCardPromptState|,
   PrefService* pref_service_;
 
-  // Weak reference to the Autofill StrikeDatabase.
-  StrikeDatabase* strike_database_;
+  // Weak reference to the Autofill LegacyStrikeDatabase.
+  LegacyStrikeDatabase* legacy_strike_database_;
 
   // Did the user ever explicitly accept or dismiss this infobar?
   bool had_user_interaction_;

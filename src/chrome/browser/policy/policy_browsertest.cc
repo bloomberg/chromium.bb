@@ -17,10 +17,12 @@
 #include "base/callback.h"
 #include "base/callback_helpers.h"
 #include "base/command_line.h"
+#include "base/feature_list.h"
 #include "base/files/file_enumerator.h"
 #include "base/files/file_path.h"
 #include "base/files/file_util.h"
 #include "base/files/scoped_temp_dir.h"
+#include "base/json/json_reader.h"
 #include "base/macros.h"
 #include "base/memory/ptr_util.h"
 #include "base/memory/ref_counted.h"
@@ -78,7 +80,6 @@
 #include "chrome/browser/net/url_request_mock_util.h"
 #include "chrome/browser/permissions/permission_request_manager.h"
 #include "chrome/browser/policy/chrome_browser_policy_connector.h"
-#include "chrome/browser/policy/cloud/test_request_interceptor.h"
 #include "chrome/browser/policy/profile_policy_connector.h"
 #include "chrome/browser/policy/profile_policy_connector_factory.h"
 #include "chrome/browser/prefs/session_startup_pref.h"
@@ -135,8 +136,10 @@
 #include "components/content_settings/core/common/content_settings_pattern.h"
 #include "components/content_settings/core/common/pref_names.h"
 #include "components/download/public/common/download_item.h"
+#include "components/google/core/common/google_util.h"
 #include "components/infobars/core/infobar.h"
 #include "components/language/core/browser/pref_names.h"
+#include "components/network_session_configurator/common/network_switches.h"
 #include "components/network_time/network_time_tracker.h"
 #include "components/omnibox/browser/autocomplete_controller.h"
 #include "components/omnibox/browser/omnibox_edit_model.h"
@@ -191,6 +194,7 @@
 #include "content/public/common/content_features.h"
 #include "content/public/common/content_paths.h"
 #include "content/public/common/content_switches.h"
+#include "content/public/common/network_service_util.h"
 #include "content/public/common/result_codes.h"
 #include "content/public/common/service_manager_connection.h"
 #include "content/public/common/service_names.mojom.h"
@@ -269,6 +273,7 @@
 #include "chrome/browser/chromeos/policy/user_policy_test_helper.h"
 #include "chrome/browser/chromeos/profiles/profile_helper.h"
 #include "chrome/browser/chromeos/system/timezone_resolver_manager.h"
+#include "chrome/browser/ui/ash/chrome_keyboard_controller_client.h"
 #include "chrome/browser/ui/ash/chrome_screenshot_grabber.h"
 #include "chrome/browser/ui/ash/chrome_screenshot_grabber_test_observer.h"
 #include "chromeos/audio/cras_audio_handler.h"
@@ -280,7 +285,6 @@
 #include "components/arc/arc_util.h"
 #include "components/arc/test/fake_arc_session.h"
 #include "components/user_manager/user_manager.h"
-#include "ui/keyboard/keyboard_util.h"
 #include "ui/snapshot/screenshot_grabber.h"
 #endif
 
@@ -770,6 +774,10 @@ class MockPasswordProtectionService
   }
 };
 
+bool AreCommittedInterstitialsEnabled() {
+  return base::FeatureList::IsEnabled(features::kSSLCommittedInterstitials);
+}
+
 }  // namespace
 
 class PolicyTest : public InProcessBrowserTest {
@@ -1002,6 +1010,20 @@ class PolicyTest : public InProcessBrowserTest {
     UpdateProviderPolicy(policies);
   }
 
+#if defined(OS_CHROMEOS)
+  void SetEnableFlag(const keyboard::mojom::KeyboardEnableFlag& flag) {
+    auto* keyboard_client = ChromeKeyboardControllerClient::Get();
+    keyboard_client->SetEnableFlag(flag);
+    keyboard_client->FlushForTesting();
+  }
+
+  void ClearEnableFlag(const keyboard::mojom::KeyboardEnableFlag& flag) {
+    auto* keyboard_client = ChromeKeyboardControllerClient::Get();
+    keyboard_client->ClearEnableFlag(flag);
+    keyboard_client->FlushForTesting();
+  }
+#endif
+
   static GURL GetExpectedSearchURL(bool expect_safe_search) {
     std::string expected_url("http://google.com/");
     if (expect_safe_search) {
@@ -1012,12 +1034,14 @@ class PolicyTest : public InProcessBrowserTest {
     return GURL(expected_url);
   }
 
-  static void CheckSafeSearch(Browser* browser, bool expect_safe_search) {
+  static void CheckSafeSearch(Browser* browser,
+                              bool expect_safe_search,
+                              const std::string& url = "http://google.com/") {
     content::WebContents* web_contents =
         browser->tab_strip_model()->GetActiveWebContents();
     content::TestNavigationObserver observer(web_contents);
     LocationBar* location_bar = browser->window()->GetLocationBar();
-    ui_test_utils::SendToOmniboxAndSubmit(location_bar, "http://google.com/");
+    ui_test_utils::SendToOmniboxAndSubmit(location_bar, url);
     OmniboxEditModel* model = location_bar->GetOmniboxView()->model();
     observer.Wait();
     EXPECT_TRUE(model->CurrentMatch(NULL).destination_url.is_valid());
@@ -1101,7 +1125,7 @@ class SSLPolicyTestCommittedInterstitials
 
   void SetUpCommandLine(base::CommandLine* command_line) override {
     PolicyTest::SetUpCommandLine(command_line);
-    if (AreCommittedInterstitialsEnabled()) {
+    if (GetParam()) {
       scoped_feature_list_.InitAndEnableFeature(
           features::kSSLCommittedInterstitials);
     }
@@ -1112,8 +1136,6 @@ class SSLPolicyTestCommittedInterstitials
   }
 
  protected:
-  bool AreCommittedInterstitialsEnabled() const { return GetParam(); }
-
   bool IsShowingInterstitial(content::WebContents* tab) {
     if (AreCommittedInterstitialsEnabled()) {
       security_interstitials::SecurityInterstitialTabHelper* helper =
@@ -1235,7 +1257,7 @@ IN_PROC_BROWSER_TEST_F(LocalePolicyTest, ApplicationLocaleValue) {
 #endif
 
 #if defined(OS_CHROMEOS)
-IN_PROC_BROWSER_TEST_F(LoginPolicyTestBase, PRE_AllowedUILocales) {
+IN_PROC_BROWSER_TEST_F(LoginPolicyTestBase, PRE_AllowedLanguages) {
   SkipToLoginScreen();
   LogIn(kAccountId, kAccountPassword, kEmptyServices);
 
@@ -1252,13 +1274,13 @@ IN_PROC_BROWSER_TEST_F(LoginPolicyTestBase, PRE_AllowedUILocales) {
   // Set policy to only allow "fr" as locale.
   std::unique_ptr<base::DictionaryValue> policy =
       std::make_unique<base::DictionaryValue>();
-  base::ListValue allowed_ui_locales;
-  allowed_ui_locales.AppendString("fr");
-  policy->SetKey(key::kAllowedUILocales, std::move(allowed_ui_locales));
+  base::ListValue allowed_languages;
+  allowed_languages.AppendString("fr");
+  policy->SetKey(key::kAllowedLanguages, std::move(allowed_languages));
   user_policy_helper()->UpdatePolicy(*policy, base::DictionaryValue(), profile);
 }
 
-IN_PROC_BROWSER_TEST_F(LoginPolicyTestBase, AllowedUILocales) {
+IN_PROC_BROWSER_TEST_F(LoginPolicyTestBase, AllowedLanguages) {
   LogIn(kAccountId, kAccountPassword, kEmptyServices);
 
   const user_manager::User* const user =
@@ -1287,7 +1309,7 @@ IN_PROC_BROWSER_TEST_F(LoginPolicyTestBase, AllowedUILocales) {
 
   // Verifiy that the enforced locale is added into the list of
   // preferred languages.
-  EXPECT_EQ("en-US,fr", prefs->GetString(prefs::kLanguagePreferredLanguages));
+  EXPECT_EQ("fr", prefs->GetString(prefs::kLanguagePreferredLanguages));
 }
 
 IN_PROC_BROWSER_TEST_F(LoginPolicyTestBase, AllowedInputMethods) {
@@ -1733,6 +1755,46 @@ IN_PROC_BROWSER_TEST_F(PolicyTest, ForceGoogleSafeSearch) {
                   google_urls_requested.end());
     }
   }
+}
+
+class PolicyTestSafeSearchRedirect : public PolicyTest {
+ public:
+  PolicyTestSafeSearchRedirect() = default;
+
+ private:
+  void SetUpOnMainThread() override {
+    // The test makes requests to google.com which we want to redirect to the
+    // test server.
+    host_resolver()->AddRule("*", "127.0.0.1");
+
+    // The production code only allows known ports (80 for http and 443 for
+    // https), but the test server runs on a random port.
+    google_util::IgnorePortNumbersForGoogleURLChecksForTesting();
+  }
+
+  void SetUpCommandLine(base::CommandLine* command_line) override {
+    // HTTPS server only serves a valid cert for localhost, so this is needed to
+    // load pages from "www.google.com" without an interstitial.
+    command_line->AppendSwitch(switches::kIgnoreCertificateErrors);
+  }
+
+  DISALLOW_COPY_AND_ASSIGN(PolicyTestSafeSearchRedirect);
+};
+
+IN_PROC_BROWSER_TEST_F(PolicyTestSafeSearchRedirect, ForceGoogleSafeSearch) {
+  net::EmbeddedTestServer https_server(net::EmbeddedTestServer::TYPE_HTTPS);
+  https_server.AddDefaultHandlers(
+      base::FilePath(FILE_PATH_LITERAL("chrome/test/data")));
+  ASSERT_TRUE(https_server.Start());
+
+  ApplySafeSearchPolicy(nullptr,  // ForceSafeSearch
+                        std::make_unique<base::Value>(true),
+                        nullptr,   // ForceYouTubeSafetyMode
+                        nullptr);  // ForceYouTubeRestrict
+
+  GURL url = https_server.GetURL("www.google.com",
+                                 "/server-redirect?http://google.com/");
+  CheckSafeSearch(browser(), true, url.spec());
 }
 
 IN_PROC_BROWSER_TEST_F(PolicyTest, ForceYouTubeRestrict) {
@@ -3875,13 +3937,17 @@ IN_PROC_BROWSER_TEST_F(PolicyTest, AccessibilityVirtualKeyboardEnabled) {
 }
 
 IN_PROC_BROWSER_TEST_F(PolicyTest, VirtualKeyboardEnabled) {
+  auto* keyboard_client = ChromeKeyboardControllerClient::Get();
+  ASSERT_TRUE(keyboard_client);
+
   // Verify keyboard disabled by default.
-  EXPECT_FALSE(keyboard::IsKeyboardEnabled());
+  EXPECT_FALSE(keyboard_client->is_keyboard_enabled());
+
   // Verify keyboard can be toggled by default.
-  keyboard::SetTouchKeyboardEnabled(true);
-  EXPECT_TRUE(keyboard::IsKeyboardEnabled());
-  keyboard::SetTouchKeyboardEnabled(false);
-  EXPECT_FALSE(keyboard::IsKeyboardEnabled());
+  SetEnableFlag(keyboard::mojom::KeyboardEnableFlag::kTouchEnabled);
+  EXPECT_TRUE(keyboard_client->is_keyboard_enabled());
+  ClearEnableFlag(keyboard::mojom::KeyboardEnableFlag::kTouchEnabled);
+  EXPECT_FALSE(keyboard_client->is_keyboard_enabled());
 
   // Verify enabling the policy takes effect immediately and that that user
   // cannot disable the keyboard..
@@ -3890,9 +3956,9 @@ IN_PROC_BROWSER_TEST_F(PolicyTest, VirtualKeyboardEnabled) {
                POLICY_SCOPE_USER, POLICY_SOURCE_CLOUD,
                std::make_unique<base::Value>(true), nullptr);
   UpdateProviderPolicy(policies);
-  EXPECT_TRUE(keyboard::IsKeyboardEnabled());
-  keyboard::SetTouchKeyboardEnabled(false);
-  EXPECT_TRUE(keyboard::IsKeyboardEnabled());
+  EXPECT_TRUE(keyboard_client->is_keyboard_enabled());
+  ClearEnableFlag(keyboard::mojom::KeyboardEnableFlag::kTouchEnabled);
+  EXPECT_TRUE(keyboard_client->is_keyboard_enabled());
 
   // Verify that disabling the policy takes effect immediately and that the user
   // cannot enable the keyboard.
@@ -3900,9 +3966,9 @@ IN_PROC_BROWSER_TEST_F(PolicyTest, VirtualKeyboardEnabled) {
                POLICY_SCOPE_USER, POLICY_SOURCE_CLOUD,
                std::make_unique<base::Value>(false), nullptr);
   UpdateProviderPolicy(policies);
-  EXPECT_FALSE(keyboard::IsKeyboardEnabled());
-  keyboard::SetTouchKeyboardEnabled(true);
-  EXPECT_FALSE(keyboard::IsKeyboardEnabled());
+  EXPECT_FALSE(keyboard_client->is_keyboard_enabled());
+  SetEnableFlag(keyboard::mojom::KeyboardEnableFlag::kTouchEnabled);
+  EXPECT_FALSE(keyboard_client->is_keyboard_enabled());
 }
 
 #endif
@@ -4148,8 +4214,8 @@ class PolicyWebStoreIconTest : public PolicyTest {
   }
 
  private:
-  DISALLOW_COPY_AND_ASSIGN(PolicyWebStoreIconTest);
   base::test::ScopedFeatureList scoped_feature_list;
+  DISALLOW_COPY_AND_ASSIGN(PolicyWebStoreIconTest);
 };
 
 IN_PROC_BROWSER_TEST_F(PolicyWebStoreIconTest, AppsWebStoreIconHidden) {
@@ -4231,8 +4297,8 @@ class PolicyWebStoreIconHiddenTest : public PolicyTest {
   }
 
  private:
-  DISALLOW_COPY_AND_ASSIGN(PolicyWebStoreIconHiddenTest);
   base::test::ScopedFeatureList scoped_feature_list;
+  DISALLOW_COPY_AND_ASSIGN(PolicyWebStoreIconHiddenTest);
 };
 
 IN_PROC_BROWSER_TEST_F(PolicyWebStoreIconHiddenTest, NTPWebStoreIconHidden) {
@@ -4590,12 +4656,8 @@ IN_PROC_BROWSER_TEST_P(SSLPolicyTestCommittedInterstitials,
             browser()->tab_strip_model()->GetActiveWebContents()->GetTitle());
 
   // Now ensure that this setting still works after a network process crash.
-  if (!base::FeatureList::IsEnabled(network::features::kNetworkService) ||
-      base::CommandLine::ForCurrentProcess()->HasSwitch(
-          switches::kSingleProcess) ||
-      base::FeatureList::IsEnabled(features::kNetworkServiceInProcess)) {
+  if (!content::IsOutOfProcessNetworkService())
     return;
-  }
 
   ui_test_utils::NavigateToURL(browser(),
                                https_server_ok.GetURL("/title1.html"));
@@ -4625,15 +4687,29 @@ IN_PROC_BROWSER_TEST_F(PolicyTest,
 
   ui_test_utils::NavigateToURL(browser(), https_server_ok.GetURL("/"));
 
-  // The page should initially be blocked.
-  const content::InterstitialPage* interstitial =
-      content::InterstitialPage::GetInterstitialPage(
-          browser()->tab_strip_model()->GetActiveWebContents());
-  ASSERT_TRUE(interstitial);
-  ASSERT_TRUE(content::WaitForRenderFrameReady(interstitial->GetMainFrame()));
+  content::WebContents* web_contents =
+      browser()->tab_strip_model()->GetActiveWebContents();
 
+  // The page should initially be blocked.
+  content::RenderFrameHost* main_frame;
+  if (AreCommittedInterstitialsEnabled()) {
+    security_interstitials::SecurityInterstitialTabHelper* helper =
+        security_interstitials::SecurityInterstitialTabHelper::FromWebContents(
+            web_contents);
+    ASSERT_TRUE(helper);
+    ASSERT_TRUE(
+        helper->GetBlockingPageForCurrentlyCommittedNavigationForTesting());
+    main_frame = web_contents->GetMainFrame();
+  } else {
+    const content::InterstitialPage* interstitial =
+        content::InterstitialPage::GetInterstitialPage(web_contents);
+    ASSERT_TRUE(interstitial);
+    main_frame = interstitial->GetMainFrame();
+  }
+  ASSERT_TRUE(content::WaitForRenderFrameReady(main_frame));
   EXPECT_TRUE(chrome_browser_interstitials::IsInterstitialDisplayingText(
-      interstitial->GetMainFrame(), "proceed-link"));
+      main_frame, "proceed-link"));
+
   EXPECT_NE(base::UTF8ToUTF16("OK"),
             browser()->tab_strip_model()->GetActiveWebContents()->GetTitle());
 
@@ -4656,9 +4732,15 @@ IN_PROC_BROWSER_TEST_F(PolicyTest,
                                https_server_ok.GetURL("/simple.html"));
 
   // There should be no interstitial after the page loads.
-  interstitial = content::InterstitialPage::GetInterstitialPage(
-      browser()->tab_strip_model()->GetActiveWebContents());
-  ASSERT_FALSE(interstitial);
+  // With committed interstitials enabled, we don't have an interstitial page to
+  // check against, so we only check that the title is the correct one after
+  // navigating away.
+  if (!AreCommittedInterstitialsEnabled()) {
+    const content::InterstitialPage* interstitial =
+        content::InterstitialPage::GetInterstitialPage(
+            browser()->tab_strip_model()->GetActiveWebContents());
+    ASSERT_FALSE(interstitial);
+  }
 
   EXPECT_EQ(base::UTF8ToUTF16("OK"),
             browser()->tab_strip_model()->GetActiveWebContents()->GetTitle());
@@ -5430,10 +5512,31 @@ void ComponentUpdaterPolicyTest::VerifyExpectations(bool update_disabled) {
       << post_interceptor_->GetRequestsAsString();
   ASSERT_EQ(1, post_interceptor_->GetCount())
       << post_interceptor_->GetRequestsAsString();
-  EXPECT_NE(std::string::npos,
-            post_interceptor_->GetRequestBody(0).find(base::StringPrintf(
-                "<updatecheck%s/>",
-                update_disabled ? " updatedisabled=\"true\"" : "")));
+
+  const auto& request = post_interceptor_->GetRequestBody(0);
+
+  // Handle XML and JSON protocols.
+  if (base::StartsWith(request, "<?xml", base::CompareCase::SENSITIVE)) {
+    EXPECT_NE(std::string::npos,
+              request.find(base::StringPrintf(
+                  "<updatecheck%s/>",
+                  update_disabled ? " updatedisabled=\"true\"" : "")));
+  } else if (base::StartsWith(request, R"({"request":{)",
+                              base::CompareCase::SENSITIVE)) {
+    const auto root = base::JSONReader().Read(request);
+    ASSERT_TRUE(root);
+    const auto* update_check =
+        root->FindKey("request")->FindKey("app")->GetList()[0].FindKey(
+            "updatecheck");
+    ASSERT_TRUE(update_check);
+    if (update_disabled) {
+      EXPECT_EQ(true, update_check->FindKey("updatedisabled")->GetBool());
+    } else {
+      EXPECT_FALSE(update_check->FindKey("updatedisabled"));
+    }
+  } else {
+    NOTREACHED();
+  }
 }
 
 void ComponentUpdaterPolicyTest::DefaultPolicy_GroupPolicySupported() {
@@ -5550,7 +5653,6 @@ IN_PROC_BROWSER_TEST_F(PolicyVariationsServiceTest, VariationsURLIsValid) {
 
   const GURL url =
       g_browser_process->variations_service()->GetVariationsServerURL(
-          g_browser_process->local_state(), std::string(),
           variations::VariationsService::HttpOptions::USE_HTTPS);
   EXPECT_TRUE(base::StartsWith(url.spec(), default_variations_url,
                                base::CompareCase::SENSITIVE));
@@ -6315,12 +6417,12 @@ IN_PROC_BROWSER_TEST_F(PolicyTest, WebUsbAllowDevicesForUrls) {
   base::Value devices_value(base::Value::Type::LIST);
   devices_value.GetList().push_back(std::move(device_value));
 
-  base::Value url_patterns_value(base::Value::Type::LIST);
-  url_patterns_value.GetList().emplace_back(base::Value("https://[*.]foo.com"));
+  base::Value urls_value(base::Value::Type::LIST);
+  urls_value.GetList().emplace_back(base::Value("https://foo.com"));
 
   base::Value entry(base::Value::Type::DICTIONARY);
   entry.SetKey("devices", std::move(devices_value));
-  entry.SetKey("url_patterns", std::move(url_patterns_value));
+  entry.SetKey("urls", std::move(urls_value));
 
   auto policy_value = std::make_unique<base::Value>(base::Value::Type::LIST);
   policy_value->GetList().push_back(std::move(entry));
@@ -6389,6 +6491,39 @@ IN_PROC_BROWSER_TEST_F(WebAppInstallForceListPolicyTest,
       extensions::AppLaunchInfo::GetFullLaunchURL(installed_extension);
   EXPECT_EQ(policy_app_url_, installed_app_url);
 }
+
+#if defined(OS_WIN)
+
+class ForceNetworkInProcessTest : public InProcessBrowserTest {
+ public:
+  // InProcessBrowserTest implementation:
+  void SetUp() override {
+    EXPECT_CALL(policy_provider_, IsInitializationComplete(testing::_))
+        .WillRepeatedly(testing::Return(true));
+    policy::PolicyMap values;
+    values.Set(policy::key::kForceNetworkInProcess,
+               policy::POLICY_LEVEL_MANDATORY, policy::POLICY_SCOPE_MACHINE,
+               policy::POLICY_SOURCE_CLOUD, std::make_unique<base::Value>(true),
+               nullptr);
+    policy_provider_.UpdateChromePolicy(values);
+    policy::BrowserPolicyConnector::SetPolicyProviderForTesting(
+        &policy_provider_);
+
+    InProcessBrowserTest::SetUp();
+  }
+
+ private:
+  policy::MockConfigurationPolicyProvider policy_provider_;
+};
+
+IN_PROC_BROWSER_TEST_F(ForceNetworkInProcessTest, Enabled) {
+  if (!base::FeatureList::IsEnabled(network::features::kNetworkService))
+    return;
+
+  ASSERT_TRUE(content::IsInProcessNetworkService());
+}
+
+#endif  // defined(OS_WIN)
 
 #if !defined(OS_ANDROID)
 
@@ -6561,12 +6696,15 @@ IN_PROC_BROWSER_TEST_P(WebRtcEventLogCollectionAllowedPolicyTest, RunTest) {
 
   {
     constexpr size_t kMaxFileSizeBytes = 1000 * 1000;
+    constexpr int kOutputPeriodMs = 1000;
+
     base::RunLoop run_loop;
 
     // Test focus - remote-bound logging allowed if and only if the policy
     // is configured to allow it.
     webrtc_event_log_manager->StartRemoteLogging(
-        render_process_id, kPeerConnectionId, kMaxFileSizeBytes, kWebAppId,
+        render_process_id, kPeerConnectionId, kMaxFileSizeBytes,
+        kOutputPeriodMs, kWebAppId,
         BlockingBoolExpectingReplyWithExtras(&run_loop,
                                              remote_logging_allowed));
     run_loop.Run();

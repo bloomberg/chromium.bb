@@ -12,11 +12,11 @@
 #include "third_party/blink/renderer/platform/audio/vector_math_scalar.h"
 
 namespace blink {
-namespace VectorMath {
-namespace NEON {
+namespace vector_math {
+namespace neon {
 
 // TODO: Consider optimizing this.
-using Scalar::Conv;
+using scalar::Conv;
 
 static ALWAYS_INLINE void Vadd(const float* source1p,
                                int source_stride1,
@@ -24,7 +24,7 @@ static ALWAYS_INLINE void Vadd(const float* source1p,
                                int source_stride2,
                                float* dest_p,
                                int dest_stride,
-                               size_t frames_to_process) {
+                               uint32_t frames_to_process) {
   int n = frames_to_process;
 
   if (source_stride1 == 1 && source_stride2 == 1 && dest_stride == 1) {
@@ -43,7 +43,7 @@ static ALWAYS_INLINE void Vadd(const float* source1p,
     n = tail_frames;
   }
 
-  Scalar::Vadd(source1p, source_stride1, source2p, source_stride2, dest_p,
+  scalar::Vadd(source1p, source_stride1, source2p, source_stride2, dest_p,
                dest_stride, n);
 }
 
@@ -53,7 +53,7 @@ static ALWAYS_INLINE void Vclip(const float* source_p,
                                 const float* high_threshold_p,
                                 float* dest_p,
                                 int dest_stride,
-                                size_t frames_to_process) {
+                                uint32_t frames_to_process) {
   int n = frames_to_process;
 
   if (source_stride == 1 && dest_stride == 1) {
@@ -71,14 +71,14 @@ static ALWAYS_INLINE void Vclip(const float* source_p,
     n = tail_frames;
   }
 
-  Scalar::Vclip(source_p, source_stride, low_threshold_p, high_threshold_p,
+  scalar::Vclip(source_p, source_stride, low_threshold_p, high_threshold_p,
                 dest_p, dest_stride, n);
 }
 
 static ALWAYS_INLINE void Vmaxmgv(const float* source_p,
                                   int source_stride,
                                   float* max_p,
-                                  size_t frames_to_process) {
+                                  uint32_t frames_to_process) {
   int n = frames_to_process;
 
   if (source_stride == 1) {
@@ -101,7 +101,7 @@ static ALWAYS_INLINE void Vmaxmgv(const float* source_p,
     n = tail_frames;
   }
 
-  Scalar::Vmaxmgv(source_p, source_stride, max_p, n);
+  scalar::Vmaxmgv(source_p, source_stride, max_p, n);
 }
 
 static ALWAYS_INLINE void Vmul(const float* source1p,
@@ -110,7 +110,7 @@ static ALWAYS_INLINE void Vmul(const float* source1p,
                                int source_stride2,
                                float* dest_p,
                                int dest_stride,
-                               size_t frames_to_process) {
+                               uint32_t frames_to_process) {
   int n = frames_to_process;
 
   if (source_stride1 == 1 && source_stride2 == 1 && dest_stride == 1) {
@@ -129,7 +129,7 @@ static ALWAYS_INLINE void Vmul(const float* source1p,
     n = tail_frames;
   }
 
-  Scalar::Vmul(source1p, source_stride1, source2p, source_stride2, dest_p,
+  scalar::Vmul(source1p, source_stride1, source2p, source_stride2, dest_p,
                dest_stride, n);
 }
 
@@ -138,7 +138,7 @@ static ALWAYS_INLINE void Vsma(const float* source_p,
                                const float* scale,
                                float* dest_p,
                                int dest_stride,
-                               size_t frames_to_process) {
+                               uint32_t frames_to_process) {
   int n = frames_to_process;
 
   if (source_stride == 1 && dest_stride == 1) {
@@ -159,7 +159,7 @@ static ALWAYS_INLINE void Vsma(const float* source_p,
     n = tail_frames;
   }
 
-  Scalar::Vsma(source_p, source_stride, scale, dest_p, dest_stride, n);
+  scalar::Vsma(source_p, source_stride, scale, dest_p, dest_stride, n);
 }
 
 static ALWAYS_INLINE void Vsmul(const float* source_p,
@@ -167,7 +167,7 @@ static ALWAYS_INLINE void Vsmul(const float* source_p,
                                 const float* scale,
                                 float* dest_p,
                                 int dest_stride,
-                                size_t frames_to_process) {
+                                uint32_t frames_to_process) {
   int n = frames_to_process;
 
   if (source_stride == 1 && dest_stride == 1) {
@@ -185,13 +185,13 @@ static ALWAYS_INLINE void Vsmul(const float* source_p,
     n = tail_frames;
   }
 
-  Scalar::Vsmul(source_p, source_stride, scale, dest_p, dest_stride, n);
+  scalar::Vsmul(source_p, source_stride, scale, dest_p, dest_stride, n);
 }
 
 static ALWAYS_INLINE void Vsvesq(const float* source_p,
                                  int source_stride,
                                  float* sum_p,
-                                 size_t frames_to_process) {
+                                 uint32_t frames_to_process) {
   int n = frames_to_process;
 
   if (source_stride == 1) {
@@ -214,7 +214,7 @@ static ALWAYS_INLINE void Vsvesq(const float* source_p,
     n = tail_frames;
   }
 
-  Scalar::Vsvesq(source_p, source_stride, sum_p, n);
+  scalar::Vsvesq(source_p, source_stride, sum_p, n);
 }
 
 static ALWAYS_INLINE void Zvmul(const float* real1p,
@@ -223,7 +223,7 @@ static ALWAYS_INLINE void Zvmul(const float* real1p,
                                 const float* imag2p,
                                 float* real_dest_p,
                                 float* imag_dest_p,
-                                size_t frames_to_process) {
+                                uint32_t frames_to_process) {
   unsigned i = 0;
 
   unsigned end_size = frames_to_process - frames_to_process % 4;
@@ -242,12 +242,12 @@ static ALWAYS_INLINE void Zvmul(const float* real1p,
     i += 4;
   }
 
-  Scalar::Zvmul(real1p + i, imag1p + i, real2p + i, imag2p + i, real_dest_p + i,
+  scalar::Zvmul(real1p + i, imag1p + i, real2p + i, imag2p + i, real_dest_p + i,
                 imag_dest_p + i, frames_to_process - i);
 }
 
-}  // namespace NEON
-}  // namespace VectorMath
+}  // namespace neon
+}  // namespace vector_math
 }  // namespace blink
 
 #endif  // THIRD_PARTY_BLINK_RENDERER_PLATFORM_AUDIO_CPU_ARM_VECTOR_MATH_NEON_H_

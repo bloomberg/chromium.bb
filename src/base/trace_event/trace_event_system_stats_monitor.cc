@@ -6,6 +6,7 @@
 
 #include <memory>
 
+#include "base/bind.h"
 #include "base/debug/leak_annotations.h"
 #include "base/json/json_writer.h"
 #include "base/lazy_instance.h"
@@ -14,6 +15,7 @@
 #include "base/process/process_metrics.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
+#include "base/task/post_task.h"
 #include "base/threading/thread_local_storage.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/trace_event/trace_event.h"
@@ -47,6 +49,17 @@ class SystemStatsHolder : public base::trace_event::ConvertableToTraceFormat {
 
 void SystemStatsHolder::GetSystemProfilingStats() {
   system_stats_ = SystemMetrics::Sample();
+}
+
+void DumpSystemStatsImpl(TraceEventSystemStatsMonitor* stats_monitor) {
+  std::unique_ptr<SystemStatsHolder> dump_holder =
+      std::make_unique<SystemStatsHolder>();
+  dump_holder->GetSystemProfilingStats();
+
+  TRACE_EVENT_OBJECT_SNAPSHOT_WITH_ID(
+      TRACE_DISABLED_BY_DEFAULT("system_stats"),
+      "base::TraceEventSystemStatsMonitor::SystemStats", stats_monitor,
+      std::move(dump_holder));
 }
 
 }  // namespace
@@ -102,15 +115,17 @@ void TraceEventSystemStatsMonitor::StartProfiling() {
                                weak_factory_.GetWeakPtr()));
 }
 
-// If system tracing is enabled, dumps a profile to the tracing system.
 void TraceEventSystemStatsMonitor::DumpSystemStats() {
-  std::unique_ptr<SystemStatsHolder> dump_holder(new SystemStatsHolder());
-  dump_holder->GetSystemProfilingStats();
-
-  TRACE_EVENT_OBJECT_SNAPSHOT_WITH_ID(
-      TRACE_DISABLED_BY_DEFAULT("system_stats"),
-      "base::TraceEventSystemStatsMonitor::SystemStats", this,
-      std::move(dump_holder));
+  // Calls to |DumpSystemStatsImpl| might be blocking.
+  //
+  // TODO(sebmarchand): Ideally the timer that calls this function should use a
+  // thread with the MayBlock trait to avoid having to use a trampoline here.
+  // This isn't currently possible due to https://crbug.com/896990.
+  base::PostTaskWithTraits(
+      FROM_HERE,
+      {base::MayBlock(), base::TaskPriority::BEST_EFFORT,
+       base::TaskShutdownBehavior::SKIP_ON_SHUTDOWN},
+      base::BindOnce(&DumpSystemStatsImpl, base::Unretained(this)));
 }
 
 void TraceEventSystemStatsMonitor::StopProfiling() {

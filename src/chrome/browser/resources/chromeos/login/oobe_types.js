@@ -69,9 +69,18 @@ OobeTypes.TimezoneDsc;
  * OOBE configuration, allows automation during OOBE.
  * Keys are also listed in chrome/browser/chromeos/login/configuration_keys.h
  * @typedef {{
+ *   language: string|undefined,
+ *   inputMethod: string|undefined,
  *   welcomeNext: boolean|undefined,
+ *   enableDemoMode: boolean|undefined,
+ *   demoPreferencesNext: boolean|undefined,
  *   networkSelectGuid: string|undefined,
+ *   networkOfflineDemo: boolean|undefined,
+ *   eulaAutoAccept: boolean|undefined,
+ *   eulaSendStatistics: boolean|undefined,
+ *   networkUseConnected: boolean|undefined,
  *   updateSkipNonCritical: boolean|undefined,
+ *   arcTosAutoAccept: boolean|undefined,
  * }}
  */
 OobeTypes.OobeConfiguration;

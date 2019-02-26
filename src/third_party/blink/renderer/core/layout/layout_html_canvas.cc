@@ -34,8 +34,6 @@
 
 namespace blink {
 
-using namespace HTMLNames;
-
 LayoutHTMLCanvas::LayoutHTMLCanvas(HTMLCanvasElement* element)
     : LayoutReplaced(element, LayoutSize(element->Size())) {
   View()->GetFrameView()->SetIsVisuallyNonEmpty();
@@ -79,7 +77,7 @@ void LayoutHTMLCanvas::CanvasSizeChanged() {
   }
 
   if (!SelfNeedsLayout())
-    SetNeedsLayout(LayoutInvalidationReason::kSizeChanged);
+    SetNeedsLayout(layout_invalidation_reason::kSizeChanged);
 }
 
 void LayoutHTMLCanvas::InvalidatePaint(

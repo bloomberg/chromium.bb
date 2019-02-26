@@ -28,18 +28,18 @@ class MODULES_EXPORT IDBObserver final : public ScriptWrappable {
 
   V8IDBObserverCallback* Callback() { return callback_; }
 
+  explicit IDBObserver(V8IDBObserverCallback*);
+
   // Implement the IDBObserver IDL.
   void observe(IDBDatabase*,
                IDBTransaction*,
-               const IDBObserverInit&,
+               const IDBObserverInit*,
                ExceptionState&);
   void unobserve(IDBDatabase*, ExceptionState&);
 
   void Trace(blink::Visitor*) override;
 
  private:
-  explicit IDBObserver(V8IDBObserverCallback*);
-
   TraceWrapperMember<V8IDBObserverCallback> callback_;
   HeapHashMap<int32_t, WeakMember<IDBDatabase>> observer_ids_;
 };

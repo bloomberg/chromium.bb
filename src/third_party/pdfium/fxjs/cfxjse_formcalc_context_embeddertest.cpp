@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 #include "fxjs/cfxjse_engine.h"
+#include "fxjs/cfxjse_value.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "testing/xfa_js_embedder_test.h"
 #include "xfa/fxfa/cxfa_eventparam.h"
@@ -1056,16 +1057,32 @@ TEST_F(CFXJSE_FormCalcContextEmbedderTest, Decode) {
     const char* program;
     const char* result;
   } tests[] = {
-      {"Decode(\"&AElig;&Aacute;&Acirc;&Aacute;&Acirc;\", \"html\")", "ÆÁÂÁÂ"},
-      // {"Decode(\"~!@#$%%^&amp;*()_+|`{&quot;}[]&lt;&gt;?,./;&apos;:\", "
-      //  "\"xml\")",
-      //  "~!@#$%%^&*()_+|`{"
-      //  "}[]<>?,./;':"}
+      // HTML
+      {R"(Decode("", "html"))", ""},
+      {R"(Decode("abc&Acirc;xyz", "html"))", "abc\xC3\x82xyz"},
+      {R"(Decode("abc&NoneSuchButVeryLongIndeed;", "html"))", "abc"},
+      {R"(Decode("&#x0041;&AElig;&Aacute;", "html"))", "A\xC3\x86\xC3\x81"},
+      {R"(Decode("xyz&#", "html"))", "xyz"},
+
+      // XML
+      {R"(Decode("", "xml"))", ""},
+      {R"(Decode("~!@#$%%^&amp;*()_+|`", "xml"))", "~!@#$%%^&*()_+|`"},
+      {R"(Decode("abc&nonesuchbutverylongindeed;", "xml"))", "abc"},
+      {R"(Decode("&quot;&#x45;&lt;&gt;[].&apos;", "xml"))", "\"E<>[].'"},
+      {R"(Decode("xyz&#", "xml"))", "xyz"},
+
+      // URL
+      {R"(Decode("", "url"))", ""},
+      {R"(Decode("~%26^&*()_+|`{", "url"))", "~&^&*()_+|`{"},
+      {R"(Decode("~%26^&*()_+|`{", "mbogo"))", "~&^&*()_+|`{"},
+      {R"(Decode("~%26^&*()_+|`{"))", "~&^&*()_+|`{"},
+      {R"(Decode("~%~~"))", ""},
+      {R"(Decode("?%~"))", ""},
+      {R"(Decode("?%"))", "?"},
   };
 
   for (size_t i = 0; i < FX_ArraySize(tests); ++i) {
     EXPECT_TRUE(Execute(tests[i].program));
-
     CFXJSE_Value* value = GetValue();
     EXPECT_TRUE(value->IsString());
     EXPECT_STREQ(tests[i].result, value->ToString().c_str())

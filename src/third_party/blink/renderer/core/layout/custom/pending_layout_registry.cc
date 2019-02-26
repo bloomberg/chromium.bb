@@ -38,7 +38,7 @@ void PendingLayoutRegistry::AddPendingLayout(const AtomicString& name,
   Member<PendingSet>& set =
       pending_layouts_.insert(name, nullptr).stored_value->value;
   if (!set)
-    set = new PendingSet;
+    set = MakeGarbageCollected<PendingSet>();
   set->insert(node);
 }
 

@@ -21,7 +21,7 @@ class IconDecodeRequest : public ImageDecoder::ImageRequest {
  public:
   using SetIconCallback = base::OnceCallback<void(const gfx::ImageSkia& icon)>;
 
-  IconDecodeRequest(SetIconCallback set_icon_callback, int requested_size);
+  IconDecodeRequest(SetIconCallback set_icon_callback, int dimension_dip);
   ~IconDecodeRequest() override;
 
   // Disables async safe decoding requests when unit tests are executed.
@@ -35,13 +35,17 @@ class IconDecodeRequest : public ImageDecoder::ImageRequest {
   // DisableSafeDecodingForTesting() is called.
   void StartWithOptions(const std::vector<uint8_t>& image_data);
 
+  // If |normalized| is true, MD normalization is applied to the decoded icon.
+  void set_normalized(bool normalized) { normalized_ = normalized; }
+
   // ImageDecoder::ImageRequest:
   void OnImageDecoded(const SkBitmap& bitmap) override;
   void OnDecodeImageFailed() override;
 
  private:
   SetIconCallback set_icon_callback_;
-  int requested_size_ = 0;
+  const int dimension_dip_;
+  bool normalized_ = false;
 
   DISALLOW_COPY_AND_ASSIGN(IconDecodeRequest);
 };

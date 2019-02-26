@@ -103,7 +103,7 @@ typedef int(fractional_mv_step_fp)(
     int iters_per_step, int *cost_list, int *mvjcost, int *mvcost[2],
     int *distortion, unsigned int *sse1, const uint8_t *second_pred,
     const uint8_t *mask, int mask_stride, int invert_mask, int w, int h,
-    int use_accurate_subpel_search);
+    int use_accurate_subpel_search, const int do_reset_fractional_mv);
 
 extern fractional_mv_step_fp av1_find_best_sub_pixel_tree;
 extern fractional_mv_step_fp av1_find_best_sub_pixel_tree_pruned;
@@ -153,6 +153,12 @@ unsigned int av1_refine_warped_mv(const struct AV1_COMP *cpi,
                                   MACROBLOCK *const x, BLOCK_SIZE bsize,
                                   int mi_row, int mi_col, int *pts0,
                                   int *pts_inref0, int total_samples);
+
+static INLINE void av1_set_fractional_mv(int_mv *fractional_best_mv) {
+  for (int z = 0; z < 3; z++) {
+    fractional_best_mv[z].as_int = INVALID_MV;
+  }
+}
 
 #ifdef __cplusplus
 }  // extern "C"

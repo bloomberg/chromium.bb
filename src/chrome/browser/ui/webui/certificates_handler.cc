@@ -571,8 +571,8 @@ void CertificatesHandler::HandleExportPersonalPasswordSelected(
       selected_cert_list_[0].get(), kCryptoModulePasswordCertExport,
       net::HostPortPair(),  // unused.
       GetParentWindow(),
-      base::Bind(&CertificatesHandler::ExportPersonalSlotsUnlocked,
-                 base::Unretained(this)));
+      base::BindOnce(&CertificatesHandler::ExportPersonalSlotsUnlocked,
+                     base::Unretained(this)));
 }
 
 void CertificatesHandler::ExportPersonalSlotsUnlocked() {
@@ -708,8 +708,8 @@ void CertificatesHandler::HandleImportPersonalPasswordSelected(
       std::move(modules), kCryptoModulePasswordCertImport,
       net::HostPortPair(),  // unused.
       GetParentWindow(),
-      base::Bind(&CertificatesHandler::ImportPersonalSlotUnlocked,
-                 base::Unretained(this)));
+      base::BindOnce(&CertificatesHandler::ImportPersonalSlotUnlocked,
+                     base::Unretained(this)));
 }
 
 void CertificatesHandler::ImportPersonalSlotUnlocked() {

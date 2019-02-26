@@ -30,24 +30,24 @@
 namespace blink {
 
 RTCDTMFToneChangeEvent* RTCDTMFToneChangeEvent::Create(const String& tone) {
-  return new RTCDTMFToneChangeEvent(tone);
+  return MakeGarbageCollected<RTCDTMFToneChangeEvent>(tone);
 }
 
 RTCDTMFToneChangeEvent* RTCDTMFToneChangeEvent::Create(
     const AtomicString& type,
-    const RTCDTMFToneChangeEventInit& initializer) {
-  return new RTCDTMFToneChangeEvent(initializer);
+    const RTCDTMFToneChangeEventInit* initializer) {
+  return MakeGarbageCollected<RTCDTMFToneChangeEvent>(initializer);
 }
 
 RTCDTMFToneChangeEvent::RTCDTMFToneChangeEvent(const String& tone)
-    : Event(EventTypeNames::tonechange, Bubbles::kNo, Cancelable::kNo),
+    : Event(event_type_names::kTonechange, Bubbles::kNo, Cancelable::kNo),
       tone_(tone) {}
 
 RTCDTMFToneChangeEvent::RTCDTMFToneChangeEvent(
-    const RTCDTMFToneChangeEventInit& initializer)
-    : Event(EventTypeNames::tonechange, initializer) {
-  if (initializer.hasTone())
-    tone_ = initializer.tone();
+    const RTCDTMFToneChangeEventInit* initializer)
+    : Event(event_type_names::kTonechange, initializer) {
+  if (initializer->hasTone())
+    tone_ = initializer->tone();
 }
 
 RTCDTMFToneChangeEvent::~RTCDTMFToneChangeEvent() = default;
@@ -57,7 +57,7 @@ const String& RTCDTMFToneChangeEvent::tone() const {
 }
 
 const AtomicString& RTCDTMFToneChangeEvent::InterfaceName() const {
-  return EventNames::RTCDTMFToneChangeEvent;
+  return event_interface_names::kRTCDTMFToneChangeEvent;
 }
 
 void RTCDTMFToneChangeEvent::Trace(blink::Visitor* visitor) {

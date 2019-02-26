@@ -32,7 +32,6 @@
 #include "third_party/blink/renderer/platform/graphics/skia/skia_utils.h"
 #include "third_party/blink/renderer/platform/image-decoders/image_decoder.h"
 #include "third_party/blink/renderer/platform/image-decoders/segment_reader.h"
-#include "third_party/blink/renderer/platform/instrumentation/platform_instrumentation.h"
 #include "third_party/blink/renderer/platform/instrumentation/tracing/trace_event.h"
 #include "third_party/blink/renderer/platform/shared_buffer.h"
 #include "third_party/skia/include/core/SkData.h"
@@ -131,6 +130,7 @@ bool DecodingImageGenerator::GetPixels(const SkImageInfo& dst_info,
   // the requested color type from N32.
   SkImageInfo target_info = dst_info;
   char* memory = static_cast<char*>(pixels);
+  std::unique_ptr<char[]> memory_ref_ptr;
   size_t adjusted_row_bytes = row_bytes;
   if ((target_info.colorType() != kN32_SkColorType) &&
       (target_info.colorType() != kRGBA_F16_SkColorType)) {
@@ -141,7 +141,8 @@ bool DecodingImageGenerator::GetPixels(const SkImageInfo& dst_info,
     DCHECK_EQ(0ul, row_bytes % dst_info.bytesPerPixel());
     adjusted_row_bytes =
         target_info.bytesPerPixel() * (row_bytes / dst_info.bytesPerPixel());
-    memory = new char[target_info.computeMinByteSize()];
+    memory_ref_ptr.reset(new char[target_info.computeMinByteSize()]);
+    memory = memory_ref_ptr.get();
   }
 
   // Skip the check for alphaType.  blink::ImageFrame may have changed the
@@ -162,64 +163,83 @@ bool DecodingImageGenerator::GetPixels(const SkImageInfo& dst_info,
     decode_info = decode_info.makeAlphaType(kUnpremul_SkAlphaType);
   }
 
-  PlatformInstrumentation::WillDecodeLazyPixelRef(lazy_pixel_ref);
-  bool decoded = frame_generator_->DecodeAndScale(
-      data_.get(), all_data_received_, frame_index, decode_info, memory,
-      adjusted_row_bytes, alpha_option, client_id);
-  PlatformInstrumentation::DidDecodeLazyPixelRef();
+  bool decoded = false;
+  {
+    TRACE_EVENT1(TRACE_DISABLED_BY_DEFAULT("devtools.timeline"),
+                 "Decode LazyPixelRef", "LazyPixelRef", lazy_pixel_ref);
+    decoded = frame_generator_->DecodeAndScale(
+        data_.get(), all_data_received_, frame_index, decode_info, memory,
+        adjusted_row_bytes, alpha_option, client_id);
+  }
 
   if (decoded && needs_color_xform) {
     TRACE_EVENT0("blink", "DecodingImageGenerator::getPixels - apply xform");
     SkPixmap src(decode_info, memory, adjusted_row_bytes);
-    decoded =
-        decoded && src.readPixels(target_info, memory, adjusted_row_bytes);
+    decoded = src.readPixels(target_info, memory, adjusted_row_bytes);
     DCHECK(decoded);
   }
 
   // Convert the color type to the requested one if necessary
   if (decoded && target_info.colorType() != dst_info.colorType()) {
-    decoded =
-        decoded && SkPixmap{target_info, memory, adjusted_row_bytes}.readPixels(
-                       SkPixmap{dst_info, pixels, row_bytes});
-    delete[] memory;
+    decoded = SkPixmap{target_info, memory, adjusted_row_bytes}.readPixels(
+        SkPixmap{dst_info, pixels, row_bytes});
     DCHECK(decoded);
   }
-
   return decoded;
 }
 
-bool DecodingImageGenerator::QueryYUV8(SkYUVSizeInfo* size_info,
-                                       SkYUVColorSpace* color_space) const {
-  // YUV decoding does not currently support progressive decoding. See comment
-  // in ImageFrameGenerator.h.
-  if (!can_yuv_decode_ || !all_data_received_)
+bool DecodingImageGenerator::QueryYUVA8(
+    SkYUVASizeInfo* size_info,
+    SkYUVAIndex indices[SkYUVAIndex::kIndexCount],
+    SkYUVColorSpace* color_space) const {
+  if (!can_yuv_decode_)
     return false;
 
-  TRACE_EVENT0("blink", "DecodingImageGenerator::queryYUV8");
+  TRACE_EVENT0("blink", "DecodingImageGenerator::queryYUVA8");
 
   if (color_space)
     *color_space = kJPEG_SkYUVColorSpace;
 
+  // Indicate that we have three separate planes
+  indices[SkYUVAIndex::kY_Index] = {0, SkColorChannel::kR};
+  indices[SkYUVAIndex::kU_Index] = {1, SkColorChannel::kR};
+  indices[SkYUVAIndex::kV_Index] = {2, SkColorChannel::kR};
+  indices[SkYUVAIndex::kA_Index] = {-1, SkColorChannel::kR};
+
   return frame_generator_->GetYUVComponentSizes(data_.get(), size_info);
 }
 
-bool DecodingImageGenerator::GetYUV8Planes(const SkYUVSizeInfo& size_info,
-                                           void* planes[3],
-                                           size_t frame_index,
-                                           uint32_t lazy_pixel_ref) {
+bool DecodingImageGenerator::GetYUVA8Planes(const SkYUVASizeInfo& size_info,
+                                            const SkYUVAIndex indices[4],
+                                            void* planes[3],
+                                            size_t frame_index,
+                                            uint32_t lazy_pixel_ref) {
   // YUV decoding does not currently support progressive decoding. See comment
   // in ImageFrameGenerator.h.
   DCHECK(can_yuv_decode_);
   DCHECK(all_data_received_);
 
-  TRACE_EVENT0("blink", "DecodingImageGenerator::getYUV8Planes");
+  TRACE_EVENT0("blink", "DecodingImageGenerator::getYUVA8Planes");
+  TRACE_EVENT1(TRACE_DISABLED_BY_DEFAULT("devtools.timeline"),
+               "Decode LazyPixelRef", "LazyPixelRef", lazy_pixel_ref);
 
-  PlatformInstrumentation::WillDecodeLazyPixelRef(lazy_pixel_ref);
+  // Verify sizes and indices
+  for (int i = 0; i < 3; ++i) {
+    if (size_info.fSizes[i].isEmpty() || !size_info.fWidthBytes[i]) {
+      return false;
+    }
+  }
+  if (!size_info.fSizes[3].isEmpty() || size_info.fWidthBytes[3]) {
+    return false;
+  }
+  int numPlanes;
+  if (!SkYUVAIndex::AreValidIndices(indices, &numPlanes) || numPlanes != 3) {
+    return false;
+  }
+
   bool decoded =
       frame_generator_->DecodeToYUV(data_.get(), frame_index, size_info.fSizes,
                                     planes, size_info.fWidthBytes);
-  PlatformInstrumentation::DidDecodeLazyPixelRef();
-
   return decoded;
 }
 

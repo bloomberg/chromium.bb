@@ -40,7 +40,7 @@ inline RemoteFrame::RemoteFrame(RemoteFrameClient* client,
 RemoteFrame* RemoteFrame::Create(RemoteFrameClient* client,
                                  Page& page,
                                  FrameOwner* owner) {
-  RemoteFrame* frame = new RemoteFrame(client, page, owner);
+  RemoteFrame* frame = MakeGarbageCollected<RemoteFrame>(client, page, owner);
   PageScheduler* page_scheduler = page.GetPageScheduler();
   if (frame->IsMainFrame() && page_scheduler)
     page_scheduler->SetIsMainFrameLocal(false);
@@ -79,6 +79,9 @@ void RemoteFrame::ScheduleNavigation(Document& origin_document,
 
 void RemoteFrame::Navigate(const FrameLoadRequest& passed_request,
                            WebFrameLoadType frame_load_type) {
+  if (!navigation_rate_limiter().CanProceed())
+    return;
+
   FrameLoadRequest frame_request(passed_request);
 
   // The process where this frame actually lives won't have sufficient

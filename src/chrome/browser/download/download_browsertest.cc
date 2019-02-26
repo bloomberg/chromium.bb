@@ -30,7 +30,7 @@
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
-#include "base/sys_info.h"
+#include "base/system/sys_info.h"
 #include "base/task/post_task.h"
 #include "base/test/metrics/histogram_tester.h"
 #include "base/test/test_file_util.h"
@@ -143,6 +143,10 @@ using net::test_server::EmbeddedTestServer;
 namespace {
 
 const char kDownloadTest1Path[] = "download-test1.lib";
+
+void VerifyNewDownloadId(uint32_t expected_download_id, uint32_t download_id) {
+  ASSERT_EQ(expected_download_id, download_id);
+}
 
 class DownloadTestContentBrowserClient : public content::ContentBrowserClient {
  public:
@@ -317,7 +321,7 @@ class DownloadTestObserverResumable : public content::DownloadTestObserver {
 const char kGoodCrxId[] = "ldnnhddmnhbkjipkidpdiheffobcpfmf";
 const char kGoodCrxPath[] = "extensions/good.crx";
 
-const char kLargeThemeCrxId[] = "pjpgmfcmabopnnfonnhmdjglfpjjfkbf";
+const char kLargeThemeCrxId[] = "ibcijncamhmjjdodjamgiipcgnnaeagd";
 const char kLargeThemePath[] = "extensions/theme2.crx";
 
 // User script file used in tests.
@@ -1224,7 +1228,7 @@ IN_PROC_BROWSER_TEST_F(DownloadTest, DownloadMimeType) {
   CheckDownload(browser(), file, file);
 }
 
-#if defined(OS_WIN) || defined(OS_LINUX)
+#if defined(OS_WIN) || (defined(OS_LINUX) && !defined(OS_CHROMEOS))
 // Download a file and confirm that the file is correctly quarantined.
 //
 // TODO(asanka): We should enable the test on Mac as well, but currently
@@ -1625,6 +1629,11 @@ IN_PROC_BROWSER_TEST_F(DownloadTest, DownloadTest_IncognitoRegular) {
   ASSERT_TRUE(base::PathExists(download_items[0]->GetTargetFilePath()));
   EXPECT_TRUE(VerifyFile(download_items[0]->GetTargetFilePath(),
                          original_contents, origin_file_size));
+  uint32_t download_id = download_items[0]->GetId();
+  // Verify that manager will increment the download ID when a new download is
+  // requested.
+  DownloadManagerForBrowser(browser())->GetNextId(
+      base::BindOnce(&VerifyNewDownloadId, download_id + 1));
 
   // Setup an incognito window.
   Browser* incognito = CreateIncognitoBrowser();
@@ -1648,6 +1657,8 @@ IN_PROC_BROWSER_TEST_F(DownloadTest, DownloadTest_IncognitoRegular) {
   ASSERT_TRUE(base::PathExists(download_items[0]->GetTargetFilePath()));
   EXPECT_TRUE(VerifyFile(download_items[0]->GetTargetFilePath(),
                          original_contents, origin_file_size));
+  // The incognito download should increment the download ID again.
+  ASSERT_EQ(download_id + 2, download_items[0]->GetId());
 }
 
 // Navigate to a new background page, but don't download.

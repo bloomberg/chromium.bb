@@ -55,9 +55,9 @@ class CONTENT_EXPORT URLLoaderClientImpl final
   // If set to true, this causes the raw datapipe containing the response body
   // to be passed on to the ResourceDispatcher. Otherwise a
   // URLResponseBodyConsumer is created that passes individual chunks of data
-  // from teh body to the dispatcher.
+  // from the body to the dispatcher.
   void SetPassResponsePipeToDispatcher(bool pass_pipe) {
-    pass_response_pipe_to_dispatcher_ = true;
+    pass_response_pipe_to_dispatcher_ = pass_pipe;
   }
 
   // Binds this instance to the given URLLoaderClient endpoints so that it can

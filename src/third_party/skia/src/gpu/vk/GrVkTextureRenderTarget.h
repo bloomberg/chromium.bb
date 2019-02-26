@@ -9,6 +9,8 @@
 #ifndef GrVkTextureRenderTarget_DEFINED
 #define GrVkTextureRenderTarget_DEFINED
 
+#include "GrVkVulkan.h"
+
 #include "GrVkTexture.h"
 #include "GrVkRenderTarget.h"
 
@@ -37,6 +39,8 @@ public:
                                                                          sk_sp<GrVkImageLayout>);
 
     bool updateForMipmap(GrVkGpu* gpu, const GrVkImageInfo& newInfo);
+
+    GrBackendFormat backendFormat() const override { return this->getBackendFormat(); }
 
 protected:
     void onAbandon() override {

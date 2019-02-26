@@ -11,6 +11,7 @@
 #include "base/json/json_file_value_serializer.h"
 #include "base/logging.h"
 #include "base/macros.h"
+#include "base/memory/ptr_util.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
@@ -47,9 +48,10 @@ static void AddPattern(URLPatternSet* extent, const std::string& pattern) {
 }
 
 size_t IndexOf(const PermissionMessages& warnings, const std::string& warning) {
+  base::string16 warning16 = base::ASCIIToUTF16(warning);
   size_t i = 0;
   for (const PermissionMessage& msg : warnings) {
-    if (msg.message() == base::ASCIIToUTF16(warning))
+    if (msg.message() == warning16)
       return i;
     ++i;
   }
@@ -123,10 +125,8 @@ testing::AssertionResult PermissionSetProducesMessage(
 TEST(PermissionsTest, GetByID) {
   PermissionsInfo* info = PermissionsInfo::GetInstance();
   APIPermissionSet apis = info->GetAll();
-  for (APIPermissionSet::const_iterator i = apis.begin();
-       i != apis.end(); ++i) {
-    EXPECT_EQ(i->id(), i->info()->id());
-  }
+  for (const auto* api : apis)
+    EXPECT_EQ(api->id(), api->info()->id());
 }
 
 // Tests that GetByName works with normal permission names and aliases.
@@ -142,8 +142,7 @@ TEST(PermissionsTest, GetAll) {
   size_t count = 0;
   PermissionsInfo* info = PermissionsInfo::GetInstance();
   APIPermissionSet apis = info->GetAll();
-  for (APIPermissionSet::const_iterator api = apis.begin();
-       api != apis.end(); ++api) {
+  for (const auto* api : apis) {
     // Make sure only the valid permission IDs get returned.
     EXPECT_NE(APIPermission::kInvalid, api->id());
     EXPECT_NE(APIPermission::kUnknown, api->id());
@@ -325,8 +324,6 @@ TEST(PermissionsTest, ExplicitAccessToOrigin) {
 }
 
 TEST(PermissionsTest, CreateUnion) {
-  APIPermission* permission = NULL;
-
   ManifestPermissionSet manifest_permissions;
   APIPermissionSet apis1;
   APIPermissionSet apis2;
@@ -348,13 +345,14 @@ TEST(PermissionsTest, CreateUnion) {
 
   const APIPermissionInfo* permission_info =
     PermissionsInfo::GetInstance()->GetByID(APIPermission::kSocket);
-  permission = permission_info->CreateAPIPermission();
+  std::unique_ptr<APIPermission> permission =
+      permission_info->CreateAPIPermission();
   {
     std::unique_ptr<base::ListValue> value(new base::ListValue());
     value->AppendString("tcp-connect:*.example.com:80");
     value->AppendString("udp-bind::8080");
     value->AppendString("udp-send-to::8888");
-    ASSERT_TRUE(permission->FromValue(value.get(), NULL, NULL));
+    ASSERT_TRUE(permission->FromValue(value.get(), nullptr, nullptr));
   }
 
   // Union with an empty set.
@@ -363,7 +361,7 @@ TEST(PermissionsTest, CreateUnion) {
   apis1.insert(permission->Clone());
   expected_apis.insert(APIPermission::kTab);
   expected_apis.insert(APIPermission::kBackground);
-  expected_apis.insert(permission);
+  expected_apis.insert(std::move(permission));
 
   AddPattern(&explicit_hosts1, "http://*.google.com/*");
   AddPattern(&expected_explicit_hosts, "http://*.google.com/*");
@@ -396,9 +394,9 @@ TEST(PermissionsTest, CreateUnion) {
     std::unique_ptr<base::ListValue> value(new base::ListValue());
     value->AppendString("tcp-connect:*.example.com:80");
     value->AppendString("udp-send-to::8899");
-    ASSERT_TRUE(permission->FromValue(value.get(), NULL, NULL));
+    ASSERT_TRUE(permission->FromValue(value.get(), nullptr, nullptr));
   }
-  apis2.insert(permission);
+  apis2.insert(std::move(permission));
 
   expected_apis.insert(APIPermission::kTab);
   expected_apis.insert(APIPermission::kProxy);
@@ -411,10 +409,10 @@ TEST(PermissionsTest, CreateUnion) {
     value->AppendString("udp-bind::8080");
     value->AppendString("udp-send-to::8888");
     value->AppendString("udp-send-to::8899");
-    ASSERT_TRUE(permission->FromValue(value.get(), NULL, NULL));
+    ASSERT_TRUE(permission->FromValue(value.get(), nullptr, nullptr));
   }
   // Insert a new permission socket permisssion which will replace the old one.
-  expected_apis.insert(permission);
+  expected_apis.insert(std::move(permission));
 
   AddPattern(&explicit_hosts2, "http://*.example.com/*");
   AddPattern(&scriptable_hosts2, "http://*.google.com/*");
@@ -443,8 +441,6 @@ TEST(PermissionsTest, CreateUnion) {
 }
 
 TEST(PermissionsTest, CreateIntersection) {
-  APIPermission* permission = NULL;
-
   ManifestPermissionSet manifest_permissions;
   APIPermissionSet apis1;
   APIPermissionSet apis2;
@@ -470,15 +466,16 @@ TEST(PermissionsTest, CreateIntersection) {
   // Intersection with an empty set.
   apis1.insert(APIPermission::kTab);
   apis1.insert(APIPermission::kBackground);
-  permission = permission_info->CreateAPIPermission();
+  std::unique_ptr<APIPermission> permission =
+      permission_info->CreateAPIPermission();
   {
     std::unique_ptr<base::ListValue> value(new base::ListValue());
     value->AppendString("tcp-connect:*.example.com:80");
     value->AppendString("udp-bind::8080");
     value->AppendString("udp-send-to::8888");
-    ASSERT_TRUE(permission->FromValue(value.get(), NULL, NULL));
+    ASSERT_TRUE(permission->FromValue(value.get(), nullptr, nullptr));
   }
-  apis1.insert(permission);
+  apis1.insert(std::move(permission));
 
   AddPattern(&explicit_hosts1, "http://*.google.com/*");
   AddPattern(&scriptable_hosts1, "http://www.reddit.com/*");
@@ -511,9 +508,9 @@ TEST(PermissionsTest, CreateIntersection) {
     value->AppendString("udp-bind::8080");
     value->AppendString("udp-send-to::8888");
     value->AppendString("udp-send-to::8899");
-    ASSERT_TRUE(permission->FromValue(value.get(), NULL, NULL));
+    ASSERT_TRUE(permission->FromValue(value.get(), nullptr, nullptr));
   }
-  apis2.insert(permission);
+  apis2.insert(std::move(permission));
 
   expected_apis.insert(APIPermission::kTab);
   permission = permission_info->CreateAPIPermission();
@@ -521,9 +518,9 @@ TEST(PermissionsTest, CreateIntersection) {
     std::unique_ptr<base::ListValue> value(new base::ListValue());
     value->AppendString("udp-bind::8080");
     value->AppendString("udp-send-to::8888");
-    ASSERT_TRUE(permission->FromValue(value.get(), NULL, NULL));
+    ASSERT_TRUE(permission->FromValue(value.get(), nullptr, nullptr));
   }
-  expected_apis.insert(permission);
+  expected_apis.insert(std::move(permission));
 
   AddPattern(&explicit_hosts2, "http://*.example.com/*");
   AddPattern(&explicit_hosts2, "http://*.google.com/*");
@@ -552,8 +549,6 @@ TEST(PermissionsTest, CreateIntersection) {
 }
 
 TEST(PermissionsTest, CreateDifference) {
-  APIPermission* permission = NULL;
-
   ManifestPermissionSet manifest_permissions;
   APIPermissionSet apis1;
   APIPermissionSet apis2;
@@ -579,15 +574,16 @@ TEST(PermissionsTest, CreateDifference) {
   // Difference with an empty set.
   apis1.insert(APIPermission::kTab);
   apis1.insert(APIPermission::kBackground);
-  permission = permission_info->CreateAPIPermission();
+  std::unique_ptr<APIPermission> permission =
+      permission_info->CreateAPIPermission();
   {
     std::unique_ptr<base::ListValue> value(new base::ListValue());
     value->AppendString("tcp-connect:*.example.com:80");
     value->AppendString("udp-bind::8080");
     value->AppendString("udp-send-to::8888");
-    ASSERT_TRUE(permission->FromValue(value.get(), NULL, NULL));
+    ASSERT_TRUE(permission->FromValue(value.get(), nullptr, nullptr));
   }
-  apis1.insert(permission);
+  apis1.insert(std::move(permission));
 
   AddPattern(&explicit_hosts1, "http://*.google.com/*");
   AddPattern(&scriptable_hosts1, "http://www.reddit.com/*");
@@ -608,9 +604,9 @@ TEST(PermissionsTest, CreateDifference) {
     std::unique_ptr<base::ListValue> value(new base::ListValue());
     value->AppendString("tcp-connect:*.example.com:80");
     value->AppendString("udp-send-to::8899");
-    ASSERT_TRUE(permission->FromValue(value.get(), NULL, NULL));
+    ASSERT_TRUE(permission->FromValue(value.get(), nullptr, nullptr));
   }
-  apis2.insert(permission);
+  apis2.insert(std::move(permission));
 
   expected_apis.insert(APIPermission::kBackground);
   permission = permission_info->CreateAPIPermission();
@@ -618,9 +614,9 @@ TEST(PermissionsTest, CreateDifference) {
     std::unique_ptr<base::ListValue> value(new base::ListValue());
     value->AppendString("udp-bind::8080");
     value->AppendString("udp-send-to::8888");
-    ASSERT_TRUE(permission->FromValue(value.get(), NULL, NULL));
+    ASSERT_TRUE(permission->FromValue(value.get(), nullptr, nullptr));
   }
-  expected_apis.insert(permission);
+  expected_apis.insert(std::move(permission));
 
   AddPattern(&explicit_hosts2, "http://*.example.com/*");
   AddPattern(&explicit_hosts2, "http://*.google.com/*");
@@ -764,7 +760,6 @@ TEST(PermissionsTest, PermissionMessages) {
   skip.insert(APIPermission::kGcm);
   skip.insert(APIPermission::kIdle);
   skip.insert(APIPermission::kImeWindowEnabled);
-  skip.insert(APIPermission::kInlineInstallPrivate);
   skip.insert(APIPermission::kIdltest);
   skip.insert(APIPermission::kOverrideEscFullscreen);
   skip.insert(APIPermission::kPointerLock);
@@ -835,7 +830,6 @@ TEST(PermissionsTest, PermissionMessages) {
   skip.insert(APIPermission::kCommandLinePrivate);
   skip.insert(APIPermission::kDeveloperPrivate);
   skip.insert(APIPermission::kDownloadsInternal);
-  skip.insert(APIPermission::kEasyUnlockPrivate);
   skip.insert(APIPermission::kEchoPrivate);
   skip.insert(APIPermission::kEnterprisePlatformKeysPrivate);
   skip.insert(APIPermission::kEnterpriseReportingPrivate);
@@ -896,15 +890,14 @@ TEST(PermissionsTest, PermissionMessages) {
   const PermissionMessageProvider* provider = PermissionMessageProvider::Get();
   PermissionsInfo* info = PermissionsInfo::GetInstance();
   APIPermissionSet permissions = info->GetAll();
-  for (APIPermissionSet::const_iterator i = permissions.begin();
-       i != permissions.end(); ++i) {
-    const APIPermissionInfo* permission_info = i->info();
-    EXPECT_TRUE(permission_info != NULL);
+  for (const auto* permission : permissions) {
+    const APIPermissionInfo* permission_info = permission->info();
+    EXPECT_TRUE(permission_info);
 
     PermissionIDSet id;
     id.insert(permission_info->id());
     bool has_message = !provider->GetPermissionMessages(id).empty();
-    bool should_have_message = !skip.count(i->id());
+    bool should_have_message = !skip.count(permission->id());
     EXPECT_EQ(should_have_message, has_message) << permission_info->name();
   }
 }

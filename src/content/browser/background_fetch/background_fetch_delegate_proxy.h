@@ -31,7 +31,7 @@ class CONTENT_EXPORT BackgroundFetchDelegateProxy {
   // Subclasses must only be destroyed on the IO thread, since these methods
   // will be called on the IO thread.
   using DispatchClickEventCallback =
-      base::RepeatingCallback<void(const std::string& /* unique_id */)>;
+      base::RepeatingCallback<void(const std::string& unique_id)>;
   class Controller {
    public:
     // Called when the given |request| has started fetching.
@@ -49,7 +49,14 @@ class CONTENT_EXPORT BackgroundFetchDelegateProxy {
         const scoped_refptr<BackgroundFetchRequestInfo>& request) = 0;
 
     // Called when the delegate aborts a Background Fetch registration.
-    virtual void Abort(blink::mojom::BackgroundFetchFailureReason) = 0;
+    virtual void AbortFromDelegate(
+        blink::mojom::BackgroundFetchFailureReason) = 0;
+
+    // Called by the delegate when the Download Service is requesting the
+    // upload data.
+    virtual void GetUploadData(
+        blink::mojom::FetchAPIRequestPtr request,
+        BackgroundFetchDelegate::GetUploadDataCallback callback) = 0;
 
     virtual ~Controller() {}
   };
@@ -99,16 +106,22 @@ class CONTENT_EXPORT BackgroundFetchDelegateProxy {
                     scoped_refptr<BackgroundFetchRequestInfo> request);
 
   // Updates the representation of this registration in the user interface to
-  // match the given |title| or |icon|.
+  // match the given |title| or |icon|. |update_ui_callback| should be called
+  // after all the relevant UI information has been processed.
   // Called from the Controller (on the IO thread).
   void UpdateUI(const std::string& job_unique_id,
                 const base::Optional<std::string>& title,
-                const base::Optional<SkBitmap>& icon);
+                const base::Optional<SkBitmap>& icon,
+                blink::mojom::BackgroundFetchService::UpdateUICallback
+                    update_ui_callback);
 
   // Aborts in progress downloads for the given registration. Called from the
   // Controller (on the IO thread) after it is aborted. May occur even if all
   // requests already called OnDownloadComplete.
   void Abort(const std::string& job_unique_id);
+
+  // Called when the fetch associated |job_unique_id| is completed.
+  void MarkJobComplete(const std::string& job_unique_id);
 
  private:
   class Core;
@@ -139,6 +152,14 @@ class CONTENT_EXPORT BackgroundFetchDelegateProxy {
   // Should only be called from the BackgroundFetchDelegate (on the IO thread).
   void DidActivateUI(const std::string& job_unique_id);
 
+  // Should only be called from the BackgroundFetchDelegate (on the IO thread).
+  void DidUpdateUI(const std::string& job_unique_id);
+
+  // Should only be called from the BackgroundFetchDelegate (on the IO thread).
+  void GetUploadData(const std::string& job_unique_id,
+                     const std::string& download_guid,
+                     BackgroundFetchDelegate::GetUploadDataCallback callback);
+
   std::unique_ptr<Core, BrowserThread::DeleteOnUIThread> ui_core_;
   base::WeakPtr<Core> ui_core_ptr_;
 
@@ -154,6 +175,8 @@ class CONTENT_EXPORT BackgroundFetchDelegateProxy {
     // Map from DownloadService GUIDs to their corresponding request.
     base::flat_map<std::string, scoped_refptr<BackgroundFetchRequestInfo>>
         current_request_map;
+
+    blink::mojom::BackgroundFetchService::UpdateUICallback update_ui_callback;
 
    private:
     DISALLOW_COPY_AND_ASSIGN(JobDetails);

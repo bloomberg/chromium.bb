@@ -35,7 +35,6 @@ class WebLocalFrame;
 class WebString;
 class WebView;
 class WebWidget;
-struct WebPoint;
 struct WebWindowFeatures;
 }
 
@@ -78,7 +77,6 @@ class TEST_RUNNER_EXPORT ProxyWebWidgetClient : public blink::WebWidgetClient {
   blink::WebRect ViewRect() override;
   void SetToolTipText(const blink::WebString&,
                       blink::WebTextDirection hint) override;
-  blink::WebScreenInfo GetScreenInfo() override;
   bool RequestPointerLock() override;
   void RequestPointerUnlock() override;
   bool IsPointerLocked() override;
@@ -96,11 +94,11 @@ class TEST_RUNNER_EXPORT ProxyWebWidgetClient : public blink::WebWidgetClient {
   void ShowVirtualKeyboardOnElementFocus() override;
   void ConvertViewportToWindow(blink::WebRect* rect) override;
   void ConvertWindowToViewport(blink::WebFloatRect* rect) override;
-  void StartDragging(blink::WebReferrerPolicy,
+  void StartDragging(network::mojom::ReferrerPolicy,
                      const blink::WebDragData&,
                      blink::WebDragOperationsMask,
                      const SkBitmap& drag_image,
-                     const blink::WebPoint& drag_image_offset) override;
+                     const gfx::Point& drag_image_offset) override;
 
  private:
   blink::WebWidgetClient* base_class_widget_client_;
@@ -161,9 +159,9 @@ class TEST_RUNNER_EXPORT WebViewTestProxyBase : private WebWidgetTestProxyBase {
   DISALLOW_COPY_AND_ASSIGN(WebViewTestProxyBase);
 };
 
-// WebViewTestProxy is used during LayoutTests. The intent of that class is to
-// wrap RenderViewImpl for tests purposes in order to reduce the amount of test
-// specific code in the production code.
+// WebViewTestProxy is used during running web tests. The intent of that class
+// is to wrap RenderViewImpl for tests purposes in order to reduce the amount of
+// test specific code in the production code.
 //
 // WebViewTestProxy is only doing the glue between RenderViewImpl and
 // WebViewTestProxyBase, that means that there is no logic living in this class
@@ -173,7 +171,7 @@ class TEST_RUNNER_EXPORT WebViewTestProxyBase : private WebWidgetTestProxyBase {
 //  * when a fooClient has a mock implementation, WebViewTestProxy can override
 //    the fooClient() call and have WebViewTestProxyBase return the mock
 //    implementation.
-//  * when a value needs to be overridden by LayoutTests, WebViewTestProxy can
+//  * when a value needs to be overridden by web tests, WebViewTestProxy can
 //    override RenderViewImpl's getter and call a getter from
 //    WebViewTestProxyBase instead. In addition, WebViewTestProxyBase will have
 //    a public setter that could be called from the TestRunner.
@@ -192,11 +190,17 @@ class TEST_RUNNER_EXPORT WebViewTestProxy : public content::RenderViewImpl,
                              const blink::WebString& frame_name,
                              blink::WebNavigationPolicy policy,
                              bool suppress_opener,
-                             blink::WebSandboxFlags sandbox_flags) override;
+                             blink::WebSandboxFlags sandbox_flags,
+                             const blink::SessionStorageNamespaceId&
+                                 session_storage_namespace_id) override;
   void PrintPage(blink::WebLocalFrame* frame) override;
   blink::WebString AcceptLanguages() override;
   void DidFocus(blink::WebLocalFrame* calling_frame) override;
+  blink::WebScreenInfo GetScreenInfo() override;
   blink::WebWidgetClient* WidgetClient() override;
+
+  // Exposed for our TestRunner harness.
+  using RenderViewImpl::ApplyPageVisibility;
 
  private:
   // RenderViewImpl has no public destructor.

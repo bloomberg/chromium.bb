@@ -15,6 +15,7 @@
 #include "base/command_line.h"
 #include "base/feature_list.h"
 #include "base/metrics/field_trial.h"
+#include "base/metrics/field_trial_params.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/optional.h"
 #include "base/single_thread_task_runner.h"
@@ -524,12 +525,6 @@ void MediaStreamAudioProcessor::OnRenderThreadChanged() {
   DCHECK(render_thread_checker_.CalledOnValidThread());
 }
 
-void MediaStreamAudioProcessor::GetStats(AudioProcessorStats* stats) {
-  // This is the old GetStats interface from webrtc::AudioProcessorInterface.
-  // It should not be in use by Chrome any longer.
-  NOTREACHED();
-}
-
 webrtc::AudioProcessorInterface::AudioProcessorStatistics
 MediaStreamAudioProcessor::GetStats(bool has_remote_tracks) {
   AudioProcessorStatistics stats;
@@ -600,14 +595,17 @@ void MediaStreamAudioProcessor::InitializeAudioProcessingModule(
   }
 
   // Create and configure the webrtc::AudioProcessing.
+  base::Optional<std::string> audio_processing_platform_config_json;
+  if (GetContentClient() && GetContentClient()->renderer()) {
+    audio_processing_platform_config_json =
+        GetContentClient()
+            ->renderer()
+            ->WebRTCPlatformSpecificAudioProcessingConfiguration();
+  }
   webrtc::AudioProcessingBuilder ap_builder;
   if (properties.echo_cancellation_type ==
       EchoCancellationType::kEchoCancellationAec3) {
     webrtc::EchoCanceller3Config aec3_config;
-    base::Optional<std::string> audio_processing_platform_config_json =
-        GetContentClient()
-            ->renderer()
-            ->WebRTCPlatformSpecificAudioProcessingConfiguration();
     if (audio_processing_platform_config_json) {
       aec3_config = webrtc::Aec3ConfigFromJsonString(
           *audio_processing_platform_config_json);
@@ -615,12 +613,6 @@ void MediaStreamAudioProcessor::InitializeAudioProcessingModule(
           webrtc::EchoCanceller3Config::Validate(&aec3_config);
       RTC_DCHECK(config_parameters_already_valid);
     }
-    aec3_config.ep_strength.bounded_erl |=
-        base::FeatureList::IsEnabled(features::kWebRtcAecBoundedErlSetup);
-    aec3_config.echo_removal_control.has_clock_drift |=
-        base::FeatureList::IsEnabled(features::kWebRtcAecClockDriftSetup);
-    aec3_config.echo_audibility.use_stationary_properties |=
-        base::FeatureList::IsEnabled(features::kWebRtcAecNoiseTransparency);
 
     ap_builder.SetEchoControlFactory(
         std::unique_ptr<webrtc::EchoControlFactory>(
@@ -655,8 +647,18 @@ void MediaStreamAudioProcessor::InitializeAudioProcessingModule(
     EnableTypingDetection(audio_processing_.get(), typing_detector_.get());
   }
 
-  if (properties.goog_auto_gain_control)
-    EnableAutomaticGainControl(audio_processing_.get());
+  // TODO(saza): When Chrome uses AGC2, handle all JSON config via the
+  // webrtc::AudioProcessing::Config, crbug.com/895814.
+  base::Optional<double> pre_amplifier_fixed_gain_factor,
+      gain_control_compression_gain_db;
+  GetExtraGainConfig(audio_processing_platform_config_json,
+                     &pre_amplifier_fixed_gain_factor,
+                     &gain_control_compression_gain_db);
+
+  if (properties.goog_auto_gain_control) {
+    EnableAutomaticGainControl(audio_processing_.get(),
+                               gain_control_compression_gain_db);
+  }
 
   webrtc::AudioProcessing::Config apm_config = audio_processing_->GetConfig();
   apm_config.high_pass_filter.enabled = properties.goog_highpass_filter;
@@ -664,8 +666,25 @@ void MediaStreamAudioProcessor::InitializeAudioProcessingModule(
   if (properties.goog_experimental_auto_gain_control) {
     apm_config.gain_controller2.enabled =
         base::FeatureList::IsEnabled(features::kWebRtcHybridAgc);
-    apm_config.gain_controller2.fixed_gain_db = 0.f;
+    apm_config.gain_controller2.fixed_digital.gain_db = 0.f;
+
+    apm_config.gain_controller2.adaptive_digital.enabled = true;
+
+    const bool use_peaks_not_rms = base::GetFieldTrialParamByFeatureAsBool(
+        features::kWebRtcHybridAgc, "use_peaks_not_rms", false);
+    using Shortcut =
+        webrtc::AudioProcessing::Config::GainController2::LevelEstimator;
+    apm_config.gain_controller2.adaptive_digital.level_estimator =
+        use_peaks_not_rms ? Shortcut::kPeak : Shortcut::kRms;
+
+    const int saturation_margin = base::GetFieldTrialParamByFeatureAsInt(
+        features::kWebRtcHybridAgc, "saturation_margin", -1);
+    if (saturation_margin != -1) {
+      apm_config.gain_controller2.adaptive_digital.extra_saturation_margin_db =
+          saturation_margin;
+    }
   }
+  ConfigPreAmplifier(&apm_config, pre_amplifier_fixed_gain_factor);
   audio_processing_->ApplyConfig(apm_config);
 
   RecordProcessingState(AUDIO_PROCESSING_ENABLED);

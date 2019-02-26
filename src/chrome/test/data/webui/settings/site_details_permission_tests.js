@@ -167,7 +167,10 @@ suite('SiteDetailsPermission', function() {
         source: testSource,
       };
       assertEquals(
-          permissionSourcesNoSetting[testSource],
+          permissionSourcesNoSetting[testSource] +
+              (permissionSourcesNoSetting[testSource].length === 0 ?
+                   'Block (default)\nAllow\nBlock\nAsk' :
+                   '\nBlock (default)\nAllow\nBlock\nAsk'),
           testElement.$.permissionItem.innerText.trim());
       assertEquals(
           permissionSourcesNoSetting[testSource] != '',
@@ -199,7 +202,8 @@ suite('SiteDetailsPermission', function() {
         source: settings.SiteSettingSource.EXTENSION,
       };
       assertEquals(
-          extensionSourceStrings[testSetting],
+          extensionSourceStrings[testSetting] +
+              '\nBlock (default)\nAllow\nBlock\nAsk',
           testElement.$.permissionItem.innerText.trim());
       assertTrue(testElement.$.permissionItem.classList.contains('two-line'));
       assertTrue(testElement.$.permission.disabled);
@@ -223,7 +227,8 @@ suite('SiteDetailsPermission', function() {
         source: settings.SiteSettingSource.POLICY,
       };
       assertEquals(
-          policySourceStrings[testSetting],
+          policySourceStrings[testSetting] +
+              '\nBlock (default)\nAllow\nBlock\nAsk',
           testElement.$.permissionItem.innerText.trim());
       assertTrue(testElement.$.permissionItem.classList.contains('two-line'));
       assertTrue(testElement.$.permission.disabled);
@@ -238,7 +243,9 @@ suite('SiteDetailsPermission', function() {
       setting: settings.ContentSetting.ASK,
       source: settings.SiteSettingSource.DEFAULT,
     };
-    assertEquals('', testElement.$.permissionItem.innerText.trim());
+    assertEquals(
+        'Ask (default)\nAllow\nBlock\nAsk',
+        testElement.$.permissionItem.innerText.trim());
     assertFalse(testElement.$.permissionItem.classList.contains('two-line'));
     assertFalse(testElement.$.permission.disabled);
   });
@@ -254,7 +261,8 @@ suite('SiteDetailsPermission', function() {
       source: settings.SiteSettingSource.DRM_DISABLED,
     };
     assertEquals(
-        'To change this setting, first turn on identifiers',
+        'To change this setting, first turn on identifiers' +
+            '\nAllow\nBlock\nAsk',
         testElement.$.permissionItem.innerText.trim());
     assertTrue(testElement.$.permissionItem.classList.contains('two-line'));
     assertTrue(testElement.$.permission.disabled);
@@ -270,7 +278,8 @@ suite('SiteDetailsPermission', function() {
       source: settings.SiteSettingSource.ADS_FILTER_BLACKLIST,
     };
     assertEquals(
-        'Site shows intrusive or misleading ads',
+        'Site shows intrusive or misleading ads' +
+            '\nAllow\nBlock\nAsk',
         testElement.$.permissionItem.innerText.trim());
     assertTrue(testElement.$.permissionItem.classList.contains('two-line'));
     assertFalse(testElement.$.permission.disabled);
@@ -283,7 +292,8 @@ suite('SiteDetailsPermission', function() {
       source: settings.SiteSettingSource.PREFERENCE,
     };
     assertEquals(
-        'Block if site shows intrusive or misleading ads',
+        'Block if site shows intrusive or misleading ads' +
+            '\nAllow\nBlock\nAsk',
         testElement.$.permissionItem.innerText.trim());
     assertTrue(testElement.$.permissionItem.classList.contains('two-line'));
     assertFalse(testElement.$.permission.disabled);
@@ -296,7 +306,8 @@ suite('SiteDetailsPermission', function() {
       source: settings.SiteSettingSource.DEFAULT,
     };
     assertEquals(
-        'Block if site shows intrusive or misleading ads',
+        'Block if site shows intrusive or misleading ads' +
+            '\nBlock (default)\nAllow\nBlock\nAsk',
         testElement.$.permissionItem.innerText.trim());
     assertTrue(testElement.$.permissionItem.classList.contains('two-line'));
     assertFalse(testElement.$.permission.disabled);
@@ -308,7 +319,9 @@ suite('SiteDetailsPermission', function() {
       setting: settings.ContentSetting.ALLOW,
       source: settings.SiteSettingSource.PREFERENCE,
     };
-    assertEquals('', testElement.$.permissionItem.innerText.trim());
+    assertEquals(
+        'Block (default)\nAllow\nBlock\nAsk',
+        testElement.$.permissionItem.innerText.trim());
     assertFalse(testElement.$.permissionItem.classList.contains('two-line'));
     assertFalse(testElement.$.permission.disabled);
   });

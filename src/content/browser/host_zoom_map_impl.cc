@@ -79,7 +79,7 @@ HostZoomMap* HostZoomMap::Get(SiteInstance* instance) {
   return partition->GetHostZoomMap();
 }
 
-HostZoomMap* HostZoomMap::GetForWebContents(const WebContents* contents) {
+HostZoomMap* HostZoomMap::GetForWebContents(WebContents* contents) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   // TODO(wjmaclean): Update this behaviour to work with OOPIF.
   // See crbug.com/528407.
@@ -92,32 +92,31 @@ HostZoomMap* HostZoomMap::GetForWebContents(const WebContents* contents) {
 
 // Helper function for setting/getting zoom levels for WebContents without
 // having to import HostZoomMapImpl everywhere.
-double HostZoomMap::GetZoomLevel(const WebContents* web_contents) {
+double HostZoomMap::GetZoomLevel(WebContents* web_contents) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   HostZoomMapImpl* host_zoom_map = static_cast<HostZoomMapImpl*>(
       HostZoomMap::GetForWebContents(web_contents));
   return host_zoom_map->GetZoomLevelForWebContents(
-      *static_cast<const WebContentsImpl*>(web_contents));
+      static_cast<WebContentsImpl*>(web_contents));
 }
 
-bool HostZoomMap::PageScaleFactorIsOne(const WebContents* web_contents) {
+bool HostZoomMap::PageScaleFactorIsOne(WebContents* web_contents) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   HostZoomMapImpl* host_zoom_map = static_cast<HostZoomMapImpl*>(
       HostZoomMap::GetForWebContents(web_contents));
   return host_zoom_map->PageScaleFactorIsOneForWebContents(
-      *static_cast<const WebContentsImpl*>(web_contents));
+      static_cast<WebContentsImpl*>(web_contents));
 }
 
-void HostZoomMap::SetZoomLevel(const WebContents* web_contents, double level) {
+void HostZoomMap::SetZoomLevel(WebContents* web_contents, double level) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   HostZoomMapImpl* host_zoom_map = static_cast<HostZoomMapImpl*>(
       HostZoomMap::GetForWebContents(web_contents));
   host_zoom_map->SetZoomLevelForWebContents(
-      *static_cast<const WebContentsImpl*>(web_contents), level);
+      static_cast<WebContentsImpl*>(web_contents), level);
 }
 
-void HostZoomMap::SendErrorPageZoomLevelRefresh(
-    const WebContents* web_contents) {
+void HostZoomMap::SendErrorPageZoomLevelRefresh(WebContents* web_contents) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   HostZoomMapImpl* host_zoom_map =
       static_cast<HostZoomMapImpl*>(HostZoomMap::GetDefaultForBrowserContext(
@@ -342,11 +341,11 @@ HostZoomMapImpl::AddZoomLevelChangedCallback(
 }
 
 double HostZoomMapImpl::GetZoomLevelForWebContents(
-    const WebContentsImpl& web_contents_impl) const {
+    WebContentsImpl* web_contents_impl) const {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   int render_process_id =
-      web_contents_impl.GetRenderViewHost()->GetProcess()->GetID();
-  int routing_id = web_contents_impl.GetRenderViewHost()->GetRoutingID();
+      web_contents_impl->GetRenderViewHost()->GetProcess()->GetID();
+  int routing_id = web_contents_impl->GetRenderViewHost()->GetRoutingID();
 
   if (UsesTemporaryZoomLevel(render_process_id, routing_id))
     return GetTemporaryZoomLevel(render_process_id, routing_id);
@@ -356,7 +355,7 @@ double HostZoomMapImpl::GetZoomLevelForWebContents(
   // is different than is stored in the map.
   GURL url;
   NavigationEntry* entry =
-      web_contents_impl.GetController().GetLastCommittedEntry();
+      web_contents_impl->GetController().GetLastCommittedEntry();
   // It is possible for a WebContent's zoom level to be queried before
   // a navigation has occurred.
   if (entry)
@@ -366,12 +365,12 @@ double HostZoomMapImpl::GetZoomLevelForWebContents(
 }
 
 void HostZoomMapImpl::SetZoomLevelForWebContents(
-    const WebContentsImpl& web_contents_impl,
+    WebContentsImpl* web_contents_impl,
     double level) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   int render_process_id =
-      web_contents_impl.GetRenderViewHost()->GetProcess()->GetID();
-  int render_view_id = web_contents_impl.GetRenderViewHost()->GetRoutingID();
+      web_contents_impl->GetRenderViewHost()->GetProcess()->GetID();
+  int render_view_id = web_contents_impl->GetRenderViewHost()->GetRoutingID();
   if (UsesTemporaryZoomLevel(render_process_id, render_view_id)) {
     SetTemporaryZoomLevel(render_process_id, render_view_id, level);
   } else {
@@ -380,7 +379,7 @@ void HostZoomMapImpl::SetZoomLevelForWebContents(
     // is different than what the render view is using. If the two don't match,
     // the attempt to set the zoom will fail.
     NavigationEntry* entry =
-        web_contents_impl.GetController().GetLastCommittedEntry();
+        web_contents_impl->GetController().GetLastCommittedEntry();
     // Tests may invoke this function with a null entry, but we don't
     // want to save zoom levels in this case.
     if (!entry)
@@ -414,14 +413,14 @@ void HostZoomMapImpl::SetPageScaleFactorIsOneForView(int render_process_id,
 }
 
 bool HostZoomMapImpl::PageScaleFactorIsOneForWebContents(
-    const WebContentsImpl& web_contents_impl) const {
+    WebContentsImpl* web_contents_impl) const {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
-  if (!web_contents_impl.GetRenderViewHost()->GetProcess())
+  if (!web_contents_impl->GetRenderViewHost()->GetProcess())
     return true;
 
   const auto it = view_page_scale_factors_are_one_.find(RenderViewKey(
-      web_contents_impl.GetRenderViewHost()->GetProcess()->GetID(),
-      web_contents_impl.GetRenderViewHost()->GetRoutingID()));
+      web_contents_impl->GetRenderViewHost()->GetProcess()->GetID(),
+      web_contents_impl->GetRenderViewHost()->GetRoutingID()));
   return it != view_page_scale_factors_are_one_.end() ? it->second : true;
 }
 

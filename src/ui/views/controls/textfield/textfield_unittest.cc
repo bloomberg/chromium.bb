@@ -56,6 +56,7 @@
 #include "ui/views/test/views_test_base.h"
 #include "ui/views/test/widget_test.h"
 #include "ui/views/widget/widget.h"
+#include "ui/views/widget/widget_utils.h"
 #include "url/gurl.h"
 
 #if defined(OS_WIN)
@@ -492,8 +493,8 @@ class TextfieldTest : public ViewsTestBase, public TextfieldController {
     widget_->Show();
     textfield_->RequestFocus();
 
-    event_generator_.reset(
-        new ui::test::EventGenerator(widget_->GetNativeWindow()));
+    event_generator_ =
+        std::make_unique<ui::test::EventGenerator>(GetRootWindow(widget_));
     event_generator_->set_target(ui::test::EventGenerator::Target::WINDOW);
   }
   ui::MenuModel* GetContextMenuModel() {
@@ -3074,7 +3075,7 @@ TEST_F(TextfieldTest, CursorBlinkRestartsOnInsertOrReplace) {
 TEST_F(TextfieldTest, VirtualKeyboardFocusEnsureCaretNotInRect) {
   InitTextfield();
 
-  aura::Window* root_window = widget_->GetNativeView()->GetRootWindow();
+  aura::Window* root_window = GetRootWindow(widget_);
   int keyboard_height = 200;
   gfx::Rect root_bounds = root_window->bounds();
   gfx::Rect orig_widget_bounds = gfx::Rect(0, 300, 400, 200);

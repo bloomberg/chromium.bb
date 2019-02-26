@@ -8,6 +8,10 @@ const string kServiceName = "test_ws";
 
 // Implemented by TestWindowService.
 interface TestWs {
+  // Requests that the window service create the next top-level window with
+  // show state maximized.
+  MaximizeNextWindow() => ();
+
   // Used when caller needs to explicitly shutdown the window service hosted
   // in test_ws. Callback is provided so that caller can resume its shutdown
   // sequence.

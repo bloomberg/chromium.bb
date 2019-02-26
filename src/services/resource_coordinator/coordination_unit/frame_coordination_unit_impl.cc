@@ -14,8 +14,8 @@ namespace resource_coordinator {
 FrameCoordinationUnitImpl::FrameCoordinationUnitImpl(
     const CoordinationUnitID& id,
     CoordinationUnitGraph* graph,
-    std::unique_ptr<service_manager::ServiceContextRef> service_ref)
-    : CoordinationUnitInterface(id, graph, std::move(service_ref)),
+    std::unique_ptr<service_manager::ServiceKeepaliveRef> keepalive_ref)
+    : CoordinationUnitInterface(id, graph, std::move(keepalive_ref)),
       parent_frame_coordination_unit_(nullptr),
       page_coordination_unit_(nullptr),
       process_coordination_unit_(nullptr) {}
@@ -29,6 +29,16 @@ FrameCoordinationUnitImpl::~FrameCoordinationUnitImpl() {
     process_coordination_unit_->RemoveFrame(this);
   for (auto* child_frame : child_frame_coordination_units_)
     child_frame->RemoveParentFrame(this);
+}
+
+void FrameCoordinationUnitImpl::SetProcess(const CoordinationUnitID& cu_id) {
+  ProcessCoordinationUnitImpl* process_cu =
+      ProcessCoordinationUnitImpl::GetCoordinationUnitByID(graph_, cu_id);
+  if (!process_cu)
+    return;
+  DCHECK(!process_coordination_unit_);
+  process_coordination_unit_ = process_cu;
+  process_cu->AddFrame(this);
 }
 
 void FrameCoordinationUnitImpl::AddChildFrame(const CoordinationUnitID& cu_id) {
@@ -176,12 +186,6 @@ void FrameCoordinationUnitImpl::AddPageCoordinationUnit(
     PageCoordinationUnitImpl* page_coordination_unit) {
   DCHECK(!page_coordination_unit_);
   page_coordination_unit_ = page_coordination_unit;
-}
-
-void FrameCoordinationUnitImpl::AddProcessCoordinationUnit(
-    ProcessCoordinationUnitImpl* process_coordination_unit) {
-  DCHECK(!process_coordination_unit_);
-  process_coordination_unit_ = process_coordination_unit;
 }
 
 void FrameCoordinationUnitImpl::RemovePageCoordinationUnit(

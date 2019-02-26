@@ -17,6 +17,7 @@
 #include "GrRenderTargetContext.h"
 #include "GrShape.h"
 #include "GrStyle.h"
+#include "GrVertexWriter.h"
 #include "SkGeometry.h"
 #include "SkPathPriv.h"
 #include "SkString.h"
@@ -80,30 +81,22 @@ GrAALinearizingConvexPathRenderer::onCanDrawPath(const CanDrawPathArgs& args) co
 
 // extract the result vertices and indices from the GrAAConvexTessellator
 static void extract_verts(const GrAAConvexTessellator& tess,
-                          void* vertices,
+                          void* vertData,
                           size_t vertexStride,
                           GrColor color,
                           uint16_t firstIndex,
                           uint16_t* idxs,
                           bool tweakAlphaForCoverage) {
-    intptr_t verts = reinterpret_cast<intptr_t>(vertices);
-
+    GrVertexWriter verts{vertData};
     for (int i = 0; i < tess.numPts(); ++i) {
-        *((SkPoint*)((intptr_t)verts + i * vertexStride)) = tess.point(i);
-    }
-
-    // Make 'verts' point to the colors
-    verts += sizeof(SkPoint);
-    for (int i = 0; i < tess.numPts(); ++i) {
+        verts.write(tess.point(i));
         if (tweakAlphaForCoverage) {
             SkASSERT(SkScalarRoundToInt(255.0f * tess.coverage(i)) <= 255);
             unsigned scale = SkScalarRoundToInt(255.0f * tess.coverage(i));
             GrColor scaledColor = (0xff == scale) ? color : SkAlphaMulQ(color, scale);
-            *reinterpret_cast<GrColor*>(verts + i * vertexStride) = scaledColor;
+            verts.write(scaledColor);
         } else {
-            *reinterpret_cast<GrColor*>(verts + i * vertexStride) = color;
-            *reinterpret_cast<float*>(verts + i * vertexStride + sizeof(GrColor)) =
-                    tess.coverage(i);
+            verts.write(color, tess.coverage(i));
         }
     }
 
@@ -157,7 +150,7 @@ public:
     }
 
     AAFlatteningConvexPathOp(const Helper::MakeArgs& helperArgs,
-                             GrColor color,
+                             const SkPMColor4f& color,
                              const SkMatrix& viewMatrix,
                              const SkPath& path,
                              SkScalar strokeWidth,
@@ -185,22 +178,25 @@ public:
 
     const char* name() const override { return "AAFlatteningConvexPathOp"; }
 
-    void visitProxies(const VisitProxyFunc& func) const override {
+    void visitProxies(const VisitProxyFunc& func, VisitorType) const override {
         fHelper.visitProxies(func);
     }
 
+#ifdef SK_DEBUG
     SkString dumpInfo() const override {
         SkString string;
         for (const auto& path : fPaths) {
             string.appendf(
                     "Color: 0x%08x, StrokeWidth: %.2f, Style: %d, Join: %d, "
                     "MiterLimit: %.2f\n",
-                    path.fColor, path.fStrokeWidth, path.fStyle, path.fJoin, path.fMiterLimit);
+                    path.fColor.toBytes_RGBA(), path.fStrokeWidth, path.fStyle, path.fJoin,
+                    path.fMiterLimit);
         }
         string += fHelper.dumpInfo();
         string += INHERITED::dumpInfo();
         return string;
     }
+#endif
 
     FixedFunctionFlags fixedFunctionFlags() const override { return fHelper.fixedFunctionFlags(); }
 
@@ -253,11 +249,7 @@ private:
             return;
         }
 
-        size_t vertexStride = fHelper.compatibleWithAlphaAsCoverage()
-                                      ? sizeof(GrDefaultGeoProcFactory::PositionColorAttr)
-                                      : sizeof(GrDefaultGeoProcFactory::PositionColorCoverageAttr);
-        SkASSERT(vertexStride == gp->debugOnly_vertexStride());
-
+        size_t vertexStride = gp->vertexStride();
         int instanceCount = fPaths.count();
 
         int64_t vertexCount = 0;
@@ -304,8 +296,9 @@ private:
                 indices = (uint16_t*) sk_realloc_throw(indices, maxIndices * sizeof(uint16_t));
             }
 
-            extract_verts(tess, vertices + vertexStride * vertexCount, vertexStride, args.fColor,
-                          vertexCount, indices + indexCount,
+            // TODO4F: Preserve float colors
+            extract_verts(tess, vertices + vertexStride * vertexCount, vertexStride,
+                          args.fColor.toBytes_RGBA(), vertexCount, indices + indexCount,
                           fHelper.compatibleWithAlphaAsCoverage());
             vertexCount += currentVertices;
             indexCount += currentIndices;
@@ -325,14 +318,13 @@ private:
         }
 
         fPaths.push_back_n(that->fPaths.count(), that->fPaths.begin());
-        this->joinBounds(*that);
         return CombineResult::kMerged;
     }
 
     const SkMatrix& viewMatrix() const { return fPaths[0].fViewMatrix; }
 
     struct PathData {
-        GrColor fColor;
+        SkPMColor4f fColor;
         SkMatrix fViewMatrix;
         SkPath fPath;
         SkScalar fStrokeWidth;
