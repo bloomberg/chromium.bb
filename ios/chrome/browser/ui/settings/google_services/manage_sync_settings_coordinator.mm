@@ -6,8 +6,13 @@
 
 #include "base/logging.h"
 #include "components/browser_sync/profile_sync_service.h"
+#include "components/google/core/common/google_util.h"
+#include "ios/chrome/browser/application_context.h"
+#include "ios/chrome/browser/chrome_url_constants.h"
 #include "ios/chrome/browser/sync/profile_sync_service_factory.h"
 #include "ios/chrome/browser/sync/sync_setup_service_factory.h"
+#import "ios/chrome/browser/ui/commands/application_commands.h"
+#import "ios/chrome/browser/ui/commands/open_new_tab_command.h"
 #import "ios/chrome/browser/ui/settings/google_services/manage_sync_settings_command_handler.h"
 #import "ios/chrome/browser/ui/settings/google_services/manage_sync_settings_mediator.h"
 #import "ios/chrome/browser/ui/settings/google_services/manage_sync_settings_table_view_controller.h"
@@ -84,6 +89,11 @@
 }
 
 - (void)openDataFromChromeSyncWebPage {
+  GURL url = google_util::AppendGoogleLocaleParam(
+      GURL(kSyncGoogleDashboardURL),
+      GetApplicationContext()->GetApplicationLocale());
+  OpenNewTabCommand* command = [OpenNewTabCommand commandWithURLFromChrome:url];
+  [self.dispatcher closeSettingsUIAndOpenURL:command];
 }
 
 @end
