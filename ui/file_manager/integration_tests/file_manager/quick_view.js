@@ -3,6 +3,28 @@
 // found in the LICENSE file.
 'use strict';
 
+(function() {
+
+/**
+ * Waits for QuickView element to be closed.
+ * @param {string} appId Files app windowId.
+ */
+async function waitQuickViewClose(appId) {
+  const caller = getCaller();
+  function checkQuickViewElementsDisplayNone(elements) {
+    chrome.test.assertTrue(Array.isArray(elements));
+    if (elements.length > 0 && elements[0].styles.display !== 'none') {
+      return pending(caller, 'Waiting for Quick View to close.');
+    }
+  }
+  await repeatUntil(async () => {
+    const elements = ['#quick-view', '#dialog:not([open])'];
+    return checkQuickViewElementsDisplayNone(
+        await remoteCall.callRemoteTestUtil(
+            'deepQueryAllElements', appId, [elements, ['display']]));
+  });
+}
+
 /**
  * Opens the Quick View dialog on a given file |name|. The file must be present
  * in the Files app file list.
@@ -48,16 +70,6 @@ async function openQuickView(appId, name) {
  * @param {string} appId Files app windowId.
  */
 async function closeQuickView(appId) {
-  let caller = getCaller();
-
-  function checkQuickViewElementsDisplayNone(elements) {
-    chrome.test.assertTrue(Array.isArray(elements));
-    if (elements.length > 0 && elements[0].styles.display !== 'none') {
-      return pending(caller, 'Waiting for Quick View to close.');
-    }
-    return;
-  }
-
   // Click on Quick View to close it.
   const panelElements = ['#quick-view', '#contentPanel'];
   chrome.test.assertTrue(
@@ -66,12 +78,7 @@ async function closeQuickView(appId) {
       'fakeMouseClick failed');
 
   // Check: the Quick View element should not be shown.
-  await repeatUntil(async () => {
-    const elements = ['#quick-view', '#dialog:not([open])'];
-    return checkQuickViewElementsDisplayNone(
-        await remoteCall.callRemoteTestUtil(
-            'deepQueryAllElements', appId, [elements, ['display']]));
-  });
+  await waitQuickViewClose(appId);
 }
 
 /**
@@ -928,3 +935,32 @@ testcase.cantOpenQuickViewWithMultipleFiles = async function() {
       await remoteCall.callRemoteTestUtil(
           'deepQueryAllElements', appId, [['#quick-view', '#dialog[open]']]));
 };
+
+/**
+ * Tests opening Quick View and closing with Escape key returns focus to file
+ * list.
+ */
+testcase.openQuickViewAndEscape = async function() {
+  // Open Files app on Downloads containing ENTRIES.hello.
+  const appId =
+      await setupAndWaitUntilReady(RootPath.DOWNLOADS, [ENTRIES.hello], []);
+
+  // Open the file in Quick View.
+  await openQuickView(appId, ENTRIES.hello.nameText);
+
+  // Hit Escape key to close Quick View.
+  const panelElements = ['#quick-view', '#contentPanel'];
+  const key = [panelElements, 'Escape', false, false, false];
+  chrome.test.assertTrue(
+      !!await remoteCall.callRemoteTestUtil('fakeKeyDown', appId, key),
+      'fakeKeyDown Escape failed');
+
+  // Check: the Quick View element should not be shown.
+  await waitQuickViewClose(appId);
+
+  // Check: the file list should gain the focus.
+  const element = await remoteCall.waitForElement(appId, '#file-list:focus');
+  chrome.test.assertEq(
+      'file-list', element.attributes['id'], '#file-list should be focused');
+};
+})();
