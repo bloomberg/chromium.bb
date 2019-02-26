@@ -363,7 +363,7 @@ public class FeedNewTabPage extends NewTabPage {
                                 new BasicCardConfiguration(
                                         chromeActivity.getResources(), mUiConfig),
                                 new BasicSnackbarApi(mNewTabPageManager.getSnackbarManager()),
-                                loggingBridge, offlineIndicator)
+                                offlineIndicator)
                         .build();
 
         mStream = streamScope.getStream();
