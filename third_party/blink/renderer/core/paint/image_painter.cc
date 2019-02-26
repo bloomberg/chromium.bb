@@ -18,6 +18,7 @@
 #include "third_party/blink/renderer/core/page/page.h"
 #include "third_party/blink/renderer/core/paint/image_element_timing.h"
 #include "third_party/blink/renderer/core/paint/paint_info.h"
+#include "third_party/blink/renderer/core/paint/paint_timing_detector.h"
 #include "third_party/blink/renderer/core/paint/scoped_paint_state.h"
 #include "third_party/blink/renderer/platform/geometry/layout_point.h"
 #include "third_party/blink/renderer/platform/graphics/paint/display_item_cache_skipper.h"
@@ -215,6 +216,12 @@ void ImagePainter::PaintIntoRect(GraphicsContext& context,
     DCHECK(window);
     ImageElementTiming::From(*window).NotifyImagePainted(
         &layout_image_, layout_image_.CachedImage(), painting_layer);
+  }
+
+  if (RuntimeEnabledFeatures::FirstContentfulPaintPlusPlusEnabled()) {
+    PaintTimingDetector::NotifyImagePaint(
+        layout_image_,
+        context.GetPaintController().CurrentPaintChunkProperties());
   }
 }
 

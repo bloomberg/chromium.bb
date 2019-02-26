@@ -10,6 +10,7 @@
 #include "third_party/blink/renderer/core/origin_trials/origin_trials.h"
 #include "third_party/blink/renderer/core/paint/image_element_timing.h"
 #include "third_party/blink/renderer/core/paint/paint_info.h"
+#include "third_party/blink/renderer/core/paint/paint_timing_detector.h"
 #include "third_party/blink/renderer/core/paint/scoped_svg_paint_state.h"
 #include "third_party/blink/renderer/core/paint/svg_model_object_painter.h"
 #include "third_party/blink/renderer/core/svg/graphics/svg_image.h"
@@ -86,6 +87,12 @@ void SVGImagePainter::PaintForeground(const PaintInfo& paint_info) {
     ImageElementTiming::From(*window).NotifyImagePainted(
         &layout_svg_image_, image_resource->CachedImage(),
         paint_info.PaintContainer()->Layer());
+  }
+
+  if (RuntimeEnabledFeatures::FirstContentfulPaintPlusPlusEnabled()) {
+    PaintTimingDetector::NotifyImagePaint(
+        layout_svg_image_,
+        paint_info.context.GetPaintController().CurrentPaintChunkProperties());
   }
 }
 
