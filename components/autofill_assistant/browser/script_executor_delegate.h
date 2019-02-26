@@ -14,6 +14,7 @@
 #include "components/autofill_assistant/browser/details.h"
 #include "components/autofill_assistant/browser/payment_request.h"
 #include "components/autofill_assistant/browser/state.h"
+#include "url/gurl.h"
 
 namespace autofill {
 class PersonalDataManager;
@@ -32,20 +33,14 @@ class ClientMemory;
 
 class ScriptExecutorDelegate {
  public:
+  virtual const GURL& GetCurrentURL() = 0;
   virtual Service* GetService() = 0;
-
   virtual UiController* GetUiController() = 0;
-
   virtual WebController* GetWebController() = 0;
-
   virtual ClientMemory* GetClientMemory() = 0;
-
   virtual const std::map<std::string, std::string>& GetParameters() = 0;
-
   virtual autofill::PersonalDataManager* GetPersonalDataManager() = 0;
-
   virtual content::WebContents* GetWebContents() = 0;
-
   virtual void EnterState(AutofillAssistantState state) = 0;
 
   // Make the area of the screen that correspond to the given elements

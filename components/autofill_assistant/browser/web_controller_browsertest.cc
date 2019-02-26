@@ -751,10 +751,12 @@ IN_PROC_BROWSER_TEST_F(WebControllerBrowserTest, ConcurrentGetFieldsValue) {
 }
 
 IN_PROC_BROWSER_TEST_F(WebControllerBrowserTest, NavigateToUrl) {
-  EXPECT_EQ(kTargetWebsitePath, web_controller_->GetUrl().path());
+  EXPECT_EQ(kTargetWebsitePath,
+            shell()->web_contents()->GetLastCommittedURL().path());
   web_controller_->LoadURL(GURL(url::kAboutBlankURL));
   WaitForLoadStop(shell()->web_contents());
-  EXPECT_EQ(url::kAboutBlankURL, web_controller_->GetUrl().spec());
+  EXPECT_EQ(url::kAboutBlankURL,
+            shell()->web_contents()->GetLastCommittedURL().spec());
 }
 
 IN_PROC_BROWSER_TEST_F(WebControllerBrowserTest, HighlightElement) {

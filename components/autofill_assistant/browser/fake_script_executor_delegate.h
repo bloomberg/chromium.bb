@@ -22,6 +22,7 @@ class FakeScriptExecutorDelegate : public ScriptExecutorDelegate {
   FakeScriptExecutorDelegate();
   ~FakeScriptExecutorDelegate() override;
 
+  const GURL& GetCurrentURL() override;
   Service* GetService() override;
   UiController* GetUiController() override;
   WebController* GetWebController() override;
@@ -39,6 +40,8 @@ class FakeScriptExecutorDelegate : public ScriptExecutorDelegate {
   void SetChips(std::unique_ptr<std::vector<Chip>> chips) override;
   void SetPaymentRequestOptions(
       std::unique_ptr<PaymentRequestOptions> options) override;
+
+  void SetCurrentURL(const GURL& url) { current_url_ = url; }
 
   void SetService(Service* service) { service_ = service; }
 
@@ -63,6 +66,7 @@ class FakeScriptExecutorDelegate : public ScriptExecutorDelegate {
   PaymentRequestOptions* GetOptions() { return payment_request_options_.get(); }
 
  private:
+  GURL current_url_;
   Service* service_ = nullptr;
   UiController* ui_controller_ = nullptr;
   WebController* web_controller_ = nullptr;

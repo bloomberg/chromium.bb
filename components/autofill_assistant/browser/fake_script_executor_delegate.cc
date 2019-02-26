@@ -11,6 +11,10 @@ namespace autofill_assistant {
 FakeScriptExecutorDelegate::FakeScriptExecutorDelegate() = default;
 FakeScriptExecutorDelegate::~FakeScriptExecutorDelegate() = default;
 
+const GURL& FakeScriptExecutorDelegate::GetCurrentURL() {
+  return current_url_;
+}
+
 Service* FakeScriptExecutorDelegate::GetService() {
   return service_;
 }

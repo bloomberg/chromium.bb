@@ -96,9 +96,6 @@ class ControllerTest : public content::RenderViewHostTestHarness {
     ON_CALL(*mock_service_, OnGetNextActions(_, _, _, _))
         .WillByDefault(RunOnceCallback<3>(true, ""));
 
-    // Make WebController::GetUrl accessible.
-    ON_CALL(*mock_web_controller_, GetUrl()).WillByDefault(ReturnRef(url_));
-
     ON_CALL(mock_ui_controller_, OnStateChanged(_))
         .WillByDefault(Invoke([this](AutofillAssistantState state) {
           states_.emplace_back(state);
@@ -141,13 +138,13 @@ class ControllerTest : public content::RenderViewHostTestHarness {
         .WillOnce(RunOnceCallback<2>(true, scripts_str));
   }
 
-  void Start() {
-    GURL initialUrl("http://initialurl.com");
-    controller_->Start(initialUrl, /* parameters= */ {});
+  void Start() { Start("http://initialurl.com"); }
+
+  void Start(const std::string& url) {
+    controller_->Start(GURL(url), /* parameters= */ {});
   }
 
   void SetLastCommittedUrl(const GURL& url) {
-    url_ = url;
     tester_->SetLastCommittedURL(url);
   }
 
@@ -186,7 +183,6 @@ class ControllerTest : public content::RenderViewHostTestHarness {
 
   UiDelegate* GetUiDelegate() { return controller_.get(); }
 
-  GURL url_;
   std::vector<AutofillAssistantState> states_;
   MockService* mock_service_;
   MockWebController* mock_web_controller_;
@@ -198,10 +194,6 @@ class ControllerTest : public content::RenderViewHostTestHarness {
 };
 
 TEST_F(ControllerTest, FetchAndRunScripts) {
-  Start();
-
-  // Going to the URL triggers a whole flow:
-  // loading scripts
   SupportsScriptResponseProto script_response;
   AddRunnableScript(&script_response, "script1");
   auto* script2 = AddRunnableScript(&script_response, "script2");
@@ -210,8 +202,7 @@ TEST_F(ControllerTest, FetchAndRunScripts) {
 
   testing::InSequence seq;
 
-  // Start the flow.
-  SimulateNavigateToUrl(GURL("http://a.example.com/path"));
+  Start("http://a.example.com/path");
 
   // Offering the choices: script1 and script2
   EXPECT_EQ(AutofillAssistantState::AUTOSTART_FALLBACK_PROMPT,
@@ -232,23 +223,19 @@ TEST_F(ControllerTest, FetchAndRunScripts) {
 }
 
 TEST_F(ControllerTest, ReportPromptAndSuggestionsChanged) {
-  Start();
-
   SupportsScriptResponseProto script_response;
   AddRunnableScript(&script_response, "script1");
   AddRunnableScript(&script_response, "script2");
   SetNextScriptResponse(script_response);
 
   EXPECT_CALL(mock_ui_controller_, OnSuggestionsChanged(SizeIs(2)));
-  EXPECT_CALL(
-      mock_ui_controller_,
-      OnStateChanged(AutofillAssistantState::AUTOSTART_FALLBACK_PROMPT));
-  SimulateNavigateToUrl(GURL("http://a.example.com/path"));
+  Start("http://a.example.com/path");
+
+  EXPECT_EQ(AutofillAssistantState::AUTOSTART_FALLBACK_PROMPT,
+            controller_->GetState());
 }
 
 TEST_F(ControllerTest, ClearChipsWhenRunning) {
-  Start();
-
   SupportsScriptResponseProto script_response;
   AddRunnableScript(&script_response, "script1");
   AddRunnableScript(&script_response, "script2");
@@ -266,13 +253,11 @@ TEST_F(ControllerTest, ClearChipsWhenRunning) {
     EXPECT_CALL(mock_ui_controller_, OnSuggestionsChanged(_))
         .Times(AnyNumber());
   }
-  SimulateNavigateToUrl(GURL("http://a.example.com/path"));
+  Start("http://a.example.com/path");
   controller_->SelectSuggestion(0);
 }
 
 TEST_F(ControllerTest, ShowFirstInitialStatusMessage) {
-  Start();
-
   SupportsScriptResponseProto script_response;
   AddRunnableScript(&script_response, "script1");
 
@@ -293,17 +278,14 @@ TEST_F(ControllerTest, ShowFirstInitialStatusMessage) {
 
   SetNextScriptResponse(script_response);
 
-  // Start the flow.
-  SimulateNavigateToUrl(GURL("http://a.example.com/path"));
+  Start("http://a.example.com/path");
 
+  EXPECT_THAT(controller_->GetSuggestions(), SizeIs(4));
   // Script3, with higher priority (lower number), wins.
   EXPECT_EQ("script3 prompt", controller_->GetStatusMessage());
-  EXPECT_THAT(controller_->GetSuggestions(), SizeIs(4));
 }
 
 TEST_F(ControllerTest, Stop) {
-  Start();
-
   ActionsResponseProto actions_response;
   actions_response.add_actions()->mutable_stop();
   std::string actions_response_str;
@@ -322,8 +304,6 @@ TEST_F(ControllerTest, Stop) {
 }
 
 TEST_F(ControllerTest, Reset) {
-  Start();
-
     // 1. Fetch scripts for URL, which in contains a single "reset" script.
     SupportsScriptResponseProto script_response;
     auto* reset_script = AddRunnableScript(&script_response, "reset");
@@ -333,7 +313,7 @@ TEST_F(ControllerTest, Reset) {
     EXPECT_CALL(*mock_service_, OnGetScriptsForUrl(_, _, _))
         .WillRepeatedly(RunOnceCallback<2>(true, script_response_str));
 
-    SimulateNavigateToUrl(GURL("http://a.example.com/path"));
+    Start("http://a.example.com/path");
     EXPECT_THAT(controller_->GetSuggestions(),
                 ElementsAre(Field(&Chip::text, StrEq("reset"))));
 
@@ -361,7 +341,6 @@ TEST_F(ControllerTest, Reset) {
 }
 
 TEST_F(ControllerTest, RefreshScriptWhenDomainChanges) {
-  Start();
 
   EXPECT_CALL(*mock_service_,
               OnGetScriptsForUrl(Eq(GURL("http://a.example.com/path1")), _, _))
@@ -370,7 +349,7 @@ TEST_F(ControllerTest, RefreshScriptWhenDomainChanges) {
               OnGetScriptsForUrl(Eq(GURL("http://b.example.com/path1")), _, _))
       .WillOnce(RunOnceCallback<2>(true, ""));
 
-  SimulateNavigateToUrl(GURL("http://a.example.com/path1"));
+  Start("http://a.example.com/path1");
   SimulateNavigateToUrl(GURL("http://a.example.com/path2"));
   SimulateNavigateToUrl(GURL("http://b.example.com/path1"));
   SimulateNavigateToUrl(GURL("http://b.example.com/path2"));
@@ -388,8 +367,6 @@ TEST_F(ControllerTest, ForwardParameters) {
 }
 
 TEST_F(ControllerTest, Autostart) {
-  Start();
-
   SupportsScriptResponseProto script_response;
   AddRunnableScript(&script_response, "runnable");
   AddRunnableScript(&script_response, "autostart")
@@ -401,12 +378,10 @@ TEST_F(ControllerTest, Autostart) {
   EXPECT_CALL(*mock_service_, OnGetActions(StrEq("autostart"), _, _, _, _, _))
       .WillOnce(RunOnceCallback<5>(true, ""));
 
-  SimulateNavigateToUrl(GURL("http://a.example.com/path"));
+  Start("http://a.example.com/path");
 }
 
 TEST_F(ControllerTest, AutostartFirstInterrupt) {
-  Start();
-
   SupportsScriptResponseProto script_response;
   AddRunnableScript(&script_response, "runnable");
 
@@ -430,12 +405,10 @@ TEST_F(ControllerTest, AutostartFirstInterrupt) {
   // The script fails, ending the flow. What matters is that the correct
   // expectation is met.
 
-  SimulateNavigateToUrl(GURL("http://a.example.com/path"));
+  Start("http://a.example.com/path");
 }
 
 TEST_F(ControllerTest, InterruptThenAutostart) {
-  Start();
-
   SupportsScriptResponseProto script_response;
   AddRunnableScript(&script_response, "runnable");
 
@@ -458,12 +431,10 @@ TEST_F(ControllerTest, InterruptThenAutostart) {
                 OnGetActions(StrEq("autostart"), _, _, _, _, _));
   }
 
-  SimulateNavigateToUrl(GURL("http://a.example.com/path"));
+  Start("http://a.example.com/path");
 }
 
 TEST_F(ControllerTest, AutostartIsNotPassedToTheUi) {
-  Start();
-
   SupportsScriptResponseProto script_response;
   auto* autostart = AddRunnableScript(&script_response, "runnable");
   autostart->mutable_presentation()->set_autostart(true);
@@ -531,8 +502,6 @@ TEST_F(ControllerTest, IgnoreProgressDecreases) {
 
 TEST_F(ControllerTest, StateChanges) {
   EXPECT_EQ(AutofillAssistantState::INACTIVE, GetUiDelegate()->GetState());
-  Start();
-  EXPECT_EQ(AutofillAssistantState::STARTING, GetUiDelegate()->GetState());
 
   SupportsScriptResponseProto script_response;
   auto* script1 = AddRunnableScript(&script_response, "script1");
@@ -541,10 +510,10 @@ TEST_F(ControllerTest, StateChanges) {
   RunOnce(script2);
   SetNextScriptResponse(script_response);
 
-  SimulateNavigateToUrl(GURL("http://a.example.com/path"));
-
-  EXPECT_EQ(AutofillAssistantState::AUTOSTART_FALLBACK_PROMPT,
-            GetUiDelegate()->GetState());
+  Start("http://a.example.com/path");
+  EXPECT_THAT(states_,
+              ElementsAre(AutofillAssistantState::STARTING,
+                          AutofillAssistantState::AUTOSTART_FALLBACK_PROMPT));
 
   // Run script1: State should become RUNNING, as there's another script, then
   // go back to prompt to propose that script.
@@ -579,7 +548,12 @@ TEST_F(ControllerTest, ShowUIWhenContentsFocused) {
 
   testing::InSequence seq;
   EXPECT_CALL(fake_client_, ShowUI());
+
+  SupportsScriptResponseProto script_response;
+  AddRunnableScript(&script_response, "script1");
+  SetNextScriptResponse(script_response);
   Start();  // must call ShowUI
+
   EXPECT_CALL(fake_client_, ShowUI());
   SimulateWebContentsFocused();  // must call ShowUI
 

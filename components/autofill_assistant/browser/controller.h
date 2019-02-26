@@ -51,7 +51,7 @@ class Controller : public ScriptExecutorDelegate,
   bool NeedsUI() const;
 
   // Called when autofill assistant can start executing scripts.
-  void Start(const GURL& initialUrl,
+  void Start(const GURL& initial_url,
              const std::map<std::string, std::string>& parameters);
 
   // Initiates a clean shutdown.
@@ -69,6 +69,7 @@ class Controller : public ScriptExecutorDelegate,
   bool Terminate(Metrics::DropOutReason reason);
 
   // Overrides ScriptExecutorDelegate:
+  const GURL& GetCurrentURL() override;
   Service* GetService() override;
   UiController* GetUiController() override;
   WebController* GetWebController() override;
@@ -117,7 +118,7 @@ class Controller : public ScriptExecutorDelegate,
       std::unique_ptr<WebController> web_controller,
       std::unique_ptr<Service> service);
 
-  void GetOrCheckScripts(const GURL& url);
+  void GetOrCheckScripts();
   void OnGetScripts(const GURL& url, bool result, const std::string& response);
   void ExecuteScript(const std::string& script_path);
   void OnScriptExecuted(const std::string& script_path,
@@ -142,16 +143,16 @@ class Controller : public ScriptExecutorDelegate,
   // for the intial URL, we show a warning that the website has already been
   // visited and could contain old data. The cookie is cleared (or expires) when
   // a script terminated with a Stop action.
-  void OnGetCookie(const GURL& initial_url, bool has_cookie);
-  void OnSetCookie(const GURL& initial_url, bool result);
-  void FinishStart(const GURL& initial_url);
+  void OnGetCookie(bool has_cookie);
+  void OnSetCookie(bool result);
+  void FinishStart();
   void MaybeSetInitialDetails();
 
   // Called when a script is selected.
   void OnScriptSelected(const std::string& script_path);
 
   // Overrides ScriptTracker::Listener:
-  void OnNoRunnableScriptsAnymore() override;
+  void OnNoRunnableScripts() override;
   void OnRunnableScriptsChanged(
       const std::vector<ScriptHandle>& runnable_scripts) override;
 
@@ -186,6 +187,9 @@ class Controller : public ScriptExecutorDelegate,
   std::unique_ptr<ClientMemory> memory_;
 
   AutofillAssistantState state_ = AutofillAssistantState::INACTIVE;
+
+  // The URL passed to Start(). Used only as long as there's no committed URL.
+  GURL initial_url_;
 
   // Domain of the last URL the controller requested scripts from.
   std::string script_domain_;

@@ -253,7 +253,12 @@ void ClientAndroid::Shutdown(Metrics::DropOutReason reason) {
   }
 
   Metrics::RecordDropOut(reason);
-  controller_.reset();
+
+  // Delete the controller in a separate task. This avoids tricky ordering
+  // issues when Shutdown is called from the controller.
+  base::PostTaskWithTraits(FROM_HERE, {content::BrowserThread::UI},
+                           base::BindOnce(&ClientAndroid::DestroyController,
+                                          weak_ptr_factory_.GetWeakPtr()));
 }
 
 void ClientAndroid::FetchAccessToken(
@@ -277,6 +282,10 @@ void ClientAndroid::CreateController() {
     return;
   }
   controller_ = std::make_unique<Controller>(web_contents_, /* client= */ this);
+}
+
+void ClientAndroid::DestroyController() {
+  controller_.reset();
 }
 
 bool ClientAndroid::NeedsUI() {

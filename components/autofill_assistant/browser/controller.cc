@@ -65,6 +65,14 @@ Controller::Controller(content::WebContents* web_contents, Client* client)
 
 Controller::~Controller() = default;
 
+const GURL& Controller::GetCurrentURL() {
+  const GURL& last_committed = web_contents()->GetLastCommittedURL();
+  if (!last_committed.is_empty())
+    return last_committed;
+
+  return initial_url_;
+}
+
 Service* Controller::GetService() {
   if (!service_) {
     service_ = Service::Create(web_contents()->GetBrowserContext(), client_);
@@ -235,11 +243,12 @@ void Controller::SetWebControllerAndServiceForTest(
   service_ = std::move(service);
 }
 
-void Controller::GetOrCheckScripts(const GURL& url) {
+void Controller::GetOrCheckScripts() {
   if (!started_ || script_tracker()->running()) {
     return;
   }
 
+  const GURL& url = GetCurrentURL();
   if (script_domain_ != url.host()) {
     StopPeriodicScriptChecks();
     script_domain_ = url.host();
@@ -307,16 +316,29 @@ void Controller::OnGetScripts(const GURL& url,
     return;
 
   if (!result) {
-    DVLOG(1) << "Failed to get assistant scripts for URL " << url.spec();
-    // TODO(crbug.com/806868): Terminate Autofill Assistant.
+    DVLOG(1) << "Failed to get assistant scripts for " << script_domain_;
+    OnFatalError(l10n_util::GetStringUTF8(IDS_AUTOFILL_ASSISTANT_DEFAULT_ERROR),
+                 Metrics::GET_SCRIPTS_FAILED);
     return;
   }
 
   std::vector<std::unique_ptr<Script>> scripts;
   bool parse_result = ProtocolUtils::ParseScripts(response, &scripts);
-  DVLOG(2) << __func__ << " from " << url.host() << " returned "
+  if (!parse_result) {
+    DVLOG(2) << __func__ << " from " << script_domain_ << " returned "
+             << "unparseable response";
+    OnFatalError(l10n_util::GetStringUTF8(IDS_AUTOFILL_ASSISTANT_DEFAULT_ERROR),
+                 Metrics::GET_SCRIPTS_UNPARSABLE);
+    return;
+  }
+
+  if (scripts.empty()) {
+    OnNoRunnableScripts();
+    return;
+  }
+
+  DVLOG(2) << __func__ << " from " << script_domain_ << " returned "
            << scripts.size() << " scripts";
-  DCHECK(parse_result);
   script_tracker()->SetScripts(std::move(scripts));
   script_tracker()->CheckScripts(kPeriodicScriptCheckInterval);
   StartPeriodicScriptChecks();
@@ -393,7 +415,7 @@ void Controller::OnScriptExecuted(const std::string& script_path,
       break;
   }
   EnterState(AutofillAssistantState::PROMPT);
-  GetOrCheckScripts(web_contents()->GetLastCommittedURL());
+  GetOrCheckScripts();
 }
 
 bool Controller::MaybeAutostartScript(
@@ -434,36 +456,37 @@ bool Controller::MaybeAutostartScript(
   return false;
 }
 
-void Controller::OnGetCookie(const GURL& initial_url, bool has_cookie) {
+void Controller::OnGetCookie(bool has_cookie) {
   if (has_cookie) {
     // This code is only active with the experiment parameter.
     parameters_.insert(
         std::make_pair(kWebsiteVisitedBeforeParameterName, kTrueValue));
-    OnSetCookie(initial_url, has_cookie);
+    OnSetCookie(has_cookie);
     return;
   }
   GetWebController()->SetCookie(
-      initial_url.host(),
+      initial_url_.host(),
       base::BindOnce(&Controller::OnSetCookie,
                      // WebController is owned by Controller.
-                     base::Unretained(this), initial_url));
+                     base::Unretained(this)));
 }
 
-void Controller::OnSetCookie(const GURL& initial_url, bool result) {
+void Controller::OnSetCookie(bool result) {
   DCHECK(result) << "Setting cookie failed";
-  FinishStart(initial_url);
+  FinishStart();
 }
 
-void Controller::FinishStart(const GURL& initial_url) {
+void Controller::FinishStart() {
   started_ = true;
-  GetOrCheckScripts(initial_url);
   if (allow_autostart_) {
     should_fail_after_checking_scripts_ = true;
     MaybeSetInitialDetails();
-    SetStatusMessage(l10n_util::GetStringFUTF8(
-        IDS_AUTOFILL_ASSISTANT_LOADING, base::UTF8ToUTF16(initial_url.host())));
+    SetStatusMessage(
+        l10n_util::GetStringFUTF8(IDS_AUTOFILL_ASSISTANT_LOADING,
+                                  base::UTF8ToUTF16(initial_url_.host())));
     SetProgress(kAutostartInitialProgress);
   }
+  GetOrCheckScripts();
 }
 
 void Controller::MaybeSetInitialDetails() {
@@ -477,22 +500,23 @@ bool Controller::NeedsUI() const {
          state_ != AutofillAssistantState::STOPPED;
 }
 
-void Controller::Start(const GURL& initialUrl,
+void Controller::Start(const GURL& initial_url,
                        const std::map<std::string, std::string>& parameters) {
   if (state_ != AutofillAssistantState::INACTIVE) {
     NOTREACHED();
     return;
   }
   parameters_ = parameters;
+  initial_url_ = initial_url;
   EnterState(AutofillAssistantState::STARTING);
   client_->ShowUI();
   if (IsCookieExperimentEnabled()) {
     GetWebController()->HasCookie(
         base::BindOnce(&Controller::OnGetCookie,
                        // WebController is owned by Controller.
-                       base::Unretained(this), initialUrl));
+                       base::Unretained(this)));
   } else {
-    FinishStart(initialUrl);
+    FinishStart();
   }
 }
 
@@ -584,15 +608,23 @@ void Controller::OnFatalError(const std::string& error_message,
   StopAndShutdown(reason);
 }
 
-void Controller::OnNoRunnableScriptsAnymore() {
+void Controller::OnNoRunnableScripts() {
   if (script_tracker()->running())
     return;
+
+  if (state_ == AutofillAssistantState::STARTING) {
+    // We're still waiting for the set of initial scripts, but either didn't get
+    // any scripts or didn't get scripts that could possibly become runnable
+    // with a DOM change.
+    OnFatalError(l10n_util::GetStringUTF8(IDS_AUTOFILL_ASSISTANT_DEFAULT_ERROR),
+                 Metrics::NO_INITIAL_SCRIPTS);
+    return;
+  }
 
   // We're navigated to a page that has no scripts or the scripts have reached a
   // state from which they cannot recover through a DOM change.
   OnFatalError(l10n_util::GetStringUTF8(IDS_AUTOFILL_ASSISTANT_GIVE_UP),
                Metrics::NO_SCRIPTS);
-  return;
 }
 
 void Controller::OnRunnableScriptsChanged(
@@ -663,7 +695,7 @@ void Controller::DidFinishLoad(content::RenderFrameHost* render_frame_host,
                                const GURL& validated_url) {
   // validated_url might not be the page URL. Ignore it and always check the
   // last committed url.
-  GetOrCheckScripts(web_contents()->GetLastCommittedURL());
+  GetOrCheckScripts();
 }
 
 void Controller::DidStartNavigation(
@@ -695,7 +727,7 @@ void Controller::DidStartNavigation(
 }
 
 void Controller::DocumentAvailableInMainFrame() {
-  GetOrCheckScripts(web_contents()->GetLastCommittedURL());
+  GetOrCheckScripts();
 }
 
 void Controller::RenderProcessGone(base::TerminationStatus status) {

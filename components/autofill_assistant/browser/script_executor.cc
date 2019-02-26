@@ -147,11 +147,10 @@ void ScriptExecutor::Run(RunScriptCallback callback) {
   callback_ = std::move(callback);
   DCHECK(delegate_->GetService());
 
-  DVLOG(2) << "GetActions for "
-           << delegate_->GetWebController()->GetUrl().host();
+  DVLOG(2) << "GetActions for " << delegate_->GetCurrentURL().host();
   delegate_->GetService()->GetActions(
-      script_path_, delegate_->GetWebController()->GetUrl(),
-      delegate_->GetParameters(), last_global_payload_, last_script_payload_,
+      script_path_, delegate_->GetCurrentURL(), delegate_->GetParameters(),
+      last_global_payload_, last_script_payload_,
       base::BindOnce(&ScriptExecutor::OnGetActions,
                      weak_ptr_factory_.GetWeakPtr()));
 }
@@ -640,9 +639,8 @@ void ScriptExecutor::WaitWithInterrupts::Run() {
     }
 
     interrupt->precondition->Check(
-        main_script_->delegate_->GetWebController()->GetUrl(),
-        batch_element_checker_.get(), main_script_->delegate_->GetParameters(),
-        *main_script_->scripts_state_,
+        main_script_->delegate_->GetCurrentURL(), batch_element_checker_.get(),
+        main_script_->delegate_->GetParameters(), *main_script_->scripts_state_,
         base::BindOnce(&WaitWithInterrupts::OnPreconditionCheckDone,
                        weak_ptr_factory_.GetWeakPtr(),
                        base::Unretained(interrupt)));

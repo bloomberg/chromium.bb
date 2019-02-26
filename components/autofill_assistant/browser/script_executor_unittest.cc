@@ -51,6 +51,7 @@ class ScriptExecutorTest : public testing::Test,
     delegate_.SetService(&mock_service_);
     delegate_.SetUiController(&mock_ui_controller_);
     delegate_.SetWebController(&mock_web_controller_);
+    delegate_.SetCurrentURL(GURL("http://example.com/"));
 
     executor_ = std::make_unique<ScriptExecutor>(
         kScriptPath,
@@ -58,7 +59,6 @@ class ScriptExecutorTest : public testing::Test,
         /* script_payload= */ "initial payload",
         /* listener= */ this, &scripts_state_, &ordered_interrupts_,
         /* delegate= */ &delegate_);
-    url_ = GURL("http://example.com/");
 
     // In this test, "tell" actions always succeed and "click" actions always
     // fail. The following makes a click action fail immediately
@@ -69,7 +69,6 @@ class ScriptExecutorTest : public testing::Test,
         .WillByDefault(RunOnceCallback<2>(true));
     ON_CALL(mock_web_controller_, OnFocusElement(_, _))
         .WillByDefault(RunOnceCallback<1>(true));
-    ON_CALL(mock_web_controller_, GetUrl()).WillByDefault(ReturnRef(url_));
   }
 
  protected:
@@ -164,7 +163,6 @@ class ScriptExecutorTest : public testing::Test,
   std::unique_ptr<ScriptExecutor> executor_;
   StrictMock<base::MockCallback<ScriptExecutor::RunScriptCallback>>
       executor_callback_;
-  GURL url_;
 };
 
 TEST_F(ScriptExecutorTest, GetActionsFails) {

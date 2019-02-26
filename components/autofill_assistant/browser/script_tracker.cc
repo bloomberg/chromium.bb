@@ -36,7 +36,6 @@ ScriptTracker::ScriptTracker(ScriptExecutorDelegate* delegate,
                              ScriptTracker::Listener* listener)
     : delegate_(delegate),
       listener_(listener),
-      reported_runnable_scripts_(false),
       weak_ptr_factory_(this) {
   DCHECK(delegate_);
   DCHECK(listener_);
@@ -73,6 +72,7 @@ void ScriptTracker::CheckScripts(const base::TimeDelta& max_duration) {
 
   DCHECK(pending_runnable_scripts_.empty());
 
+  GURL url = delegate_->GetCurrentURL();
   batch_element_checker_ =
       delegate_->GetWebController()->CreateBatchElementChecker();
   for (const auto& entry : available_scripts_) {
@@ -81,17 +81,19 @@ void ScriptTracker::CheckScripts(const base::TimeDelta& max_duration) {
       continue;
 
     script->precondition->Check(
-        delegate_->GetWebController()->GetUrl(), batch_element_checker_.get(),
-        delegate_->GetParameters(), scripts_state_,
+        url, batch_element_checker_.get(), delegate_->GetParameters(),
+        scripts_state_,
         base::BindOnce(&ScriptTracker::OnPreconditionCheck,
                        weak_ptr_factory_.GetWeakPtr(), script));
   }
   if (batch_element_checker_->all_found() &&
-      pending_runnable_scripts_.empty() && reported_runnable_scripts_) {
+      pending_runnable_scripts_.empty() && !available_scripts_.empty()) {
+    DVLOG(1) << __func__ << ": No runnable scripts for " << url << " out of "
+             << available_scripts_.size() << " available.";
     // There are no runnable scripts, even though we haven't checked the DOM
     // yet. Report it all immediately.
     UpdateRunnableScriptsIfNecessary();
-    listener_->OnNoRunnableScriptsAnymore();
+    listener_->OnNoRunnableScripts();
     OnCheckDone();
     return;
   }
@@ -204,7 +206,6 @@ void ScriptTracker::UpdateRunnableScriptsIfNecessary() {
     runnable_scripts_.push_back(script->handle);
   }
 
-  reported_runnable_scripts_ = true;
   listener_->OnRunnableScriptsChanged(runnable_scripts_);
 }
 
