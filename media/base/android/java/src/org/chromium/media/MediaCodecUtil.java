@@ -42,7 +42,7 @@ class MediaCodecUtil {
     public static class CodecCreationInfo {
         public MediaCodec mediaCodec;
         public boolean supportsAdaptivePlayback;
-        public BitrateAdjuster bitrateAdjuster = BitrateAdjuster.NO_ADJUSTMENT;
+        public @BitrateAdjuster.Type int bitrateAdjuster = BitrateAdjuster.Type.NO_ADJUSTMENT;
     }
 
     public static final class MimeTypes {
@@ -497,23 +497,23 @@ class MediaCodecUtil {
     // List of supported HW encoders.
     private static enum HWEncoderProperties {
         QcomVp8(MimeTypes.VIDEO_VP8, "OMX.qcom.", Build.VERSION_CODES.KITKAT,
-                BitrateAdjuster.NO_ADJUSTMENT),
+                BitrateAdjuster.Type.NO_ADJUSTMENT),
         QcomH264(MimeTypes.VIDEO_H264, "OMX.qcom.", Build.VERSION_CODES.KITKAT,
-                BitrateAdjuster.NO_ADJUSTMENT),
+                BitrateAdjuster.Type.NO_ADJUSTMENT),
         ExynosVp8(MimeTypes.VIDEO_VP8, "OMX.Exynos.", Build.VERSION_CODES.M,
-                BitrateAdjuster.NO_ADJUSTMENT),
+                BitrateAdjuster.Type.NO_ADJUSTMENT),
         ExynosH264(MimeTypes.VIDEO_H264, "OMX.Exynos.", Build.VERSION_CODES.LOLLIPOP,
-                BitrateAdjuster.FRAMERATE_ADJUSTMENT),
+                BitrateAdjuster.Type.FRAMERATE_ADJUSTMENT),
         MediatekH264(MimeTypes.VIDEO_H264, "OMX.MTK.", Build.VERSION_CODES.O_MR1,
-                BitrateAdjuster.FRAMERATE_ADJUSTMENT);
+                BitrateAdjuster.Type.FRAMERATE_ADJUSTMENT);
 
         private final String mMime;
         private final String mPrefix;
         private final int mMinSDK;
-        private final BitrateAdjuster mBitrateAdjuster;
+        private final @BitrateAdjuster.Type int mBitrateAdjuster;
 
         private HWEncoderProperties(
-                String mime, String prefix, int minSDK, BitrateAdjuster bitrateAdjuster) {
+                String mime, String prefix, int minSDK, @BitrateAdjuster.Type int bitrateAdjuster) {
             this.mMime = mime;
             this.mPrefix = prefix;
             this.mMinSDK = minSDK;
@@ -532,7 +532,7 @@ class MediaCodecUtil {
             return mMinSDK;
         }
 
-        public BitrateAdjuster getBitrateAdjuster() {
+        public @BitrateAdjuster.Type int getBitrateAdjuster() {
             return mBitrateAdjuster;
         }
     }
