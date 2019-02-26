@@ -857,8 +857,8 @@ void DocumentLoader::CommitNavigation(const AtomicString& mime_type,
     Frame* owner_frame = frame_->Tree().Parent();
     if (!owner_frame)
       owner_frame = frame_->Loader().Opener();
-    if (owner_frame && owner_frame->IsLocalFrame()) {
-      owner_document = ToLocalFrame(owner_frame)->GetDocument();
+    if (auto* owner_local_frame = DynamicTo<LocalFrame>(owner_frame)) {
+      owner_document = owner_local_frame->GetDocument();
       initiator_origin = owner_document->GetSecurityOrigin();
     }
   }

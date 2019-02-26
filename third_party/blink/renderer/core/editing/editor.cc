@@ -504,7 +504,7 @@ bool Editor::InsertTextWithoutSendingTextEvent(
   if (LocalFrame* edited_frame = selection.Start().GetDocument()->GetFrame()) {
     if (Page* page = edited_frame->GetPage()) {
       LocalFrame* focused_or_main_frame =
-          ToLocalFrame(page->GetFocusController().FocusedOrMainFrame());
+          To<LocalFrame>(page->GetFocusController().FocusedOrMainFrame());
       focused_or_main_frame->Selection().RevealSelection(
           ScrollAlignment::kAlignToEdgeIfNeeded);
     }

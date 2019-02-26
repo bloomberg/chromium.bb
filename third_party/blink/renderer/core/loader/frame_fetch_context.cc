@@ -130,19 +130,20 @@ const base::Feature kAllowClientHintsToThirdParty{
 mojom::FetchCacheMode DetermineFrameCacheMode(Frame* frame) {
   if (!frame)
     return mojom::FetchCacheMode::kDefault;
-  if (!frame->IsLocalFrame())
+  auto* local_frame = DynamicTo<LocalFrame>(frame);
+  if (!local_frame)
     return DetermineFrameCacheMode(frame->Tree().Parent());
 
   // Does not propagate cache policy for subresources after the load event.
   // TODO(toyoshim): We should be able to remove following parents' policy check
   // if each frame has a relevant WebFrameLoadType for reload and history
   // navigations.
-  if (ToLocalFrame(frame)->GetDocument()->LoadEventFinished())
+  if (local_frame->GetDocument()->LoadEventFinished())
     return mojom::FetchCacheMode::kDefault;
 
   // Respects BypassingCache rather than parent's policy.
   WebFrameLoadType load_type =
-      ToLocalFrame(frame)->Loader().GetDocumentLoader()->LoadType();
+      local_frame->Loader().GetDocumentLoader()->LoadType();
   if (load_type == WebFrameLoadType::kReloadBypassingCache)
     return mojom::FetchCacheMode::kBypassCache;
 
@@ -229,13 +230,14 @@ ResourceFetcher* FrameFetchContext::CreateFetcher(
   // The MHTMLArchive is parsed as a whole, but can be constructed from frames
   // in multiple processes. In that case, which process should parse it and how
   // should the output be spread back across multiple processes?
-  if (!init.properties->IsMainFrame() &&
-      frame.Tree().Parent()->IsLocalFrame()) {
-    init.archive = ToLocalFrame(frame.Tree().Parent())
-                       ->Loader()
-                       .GetDocumentLoader()
-                       ->Fetcher()
-                       ->Archive();
+  if (!init.properties->IsMainFrame()) {
+    if (auto* parent_local_frame =
+            DynamicTo<LocalFrame>(frame.Tree().Parent())) {
+      init.archive = parent_local_frame->Loader()
+                         .GetDocumentLoader()
+                         ->Fetcher()
+                         ->Archive();
+    }
   }
   init.frame_scheduler = frame.GetFrameScheduler();
   return MakeGarbageCollected<ResourceFetcher>(init);

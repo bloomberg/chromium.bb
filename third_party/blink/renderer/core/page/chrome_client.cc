@@ -85,14 +85,14 @@ bool ChromeClient::CanOpenUIElementIfDuringPageDismissal(
     const String& message) {
   for (Frame* frame = &main_frame; frame;
        frame = frame->Tree().TraverseNext()) {
-    if (!frame->IsLocalFrame())
+    auto* local_frame = DynamicTo<LocalFrame>(frame);
+    if (!local_frame)
       continue;
-    LocalFrame& local_frame = ToLocalFrame(*frame);
     Document::PageDismissalType dismissal =
-        local_frame.GetDocument()->PageDismissalEventBeingDispatched();
+        local_frame->GetDocument()->PageDismissalEventBeingDispatched();
     if (dismissal != Document::kNoDismissal) {
       return ShouldOpenUIElementDuringPageDismissal(
-          local_frame, ui_element_type, message, dismissal);
+          *local_frame, ui_element_type, message, dismissal);
     }
   }
   return true;

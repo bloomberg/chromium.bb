@@ -264,8 +264,9 @@ class ImageDocumentViewportTest : public SimTest {
   }
 
   ImageDocument& GetDocument() {
-    Document* document =
-        ToLocalFrame(WebView().GetPage()->MainFrame())->DomWindow()->document();
+    Document* document = To<LocalFrame>(WebView().GetPage()->MainFrame())
+                             ->DomWindow()
+                             ->document();
     ImageDocument* image_document = static_cast<ImageDocument*>(document);
     return *image_document;
   }

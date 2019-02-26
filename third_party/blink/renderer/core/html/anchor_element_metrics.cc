@@ -34,8 +34,12 @@ Document* GetRootDocument(const HTMLAnchorElement& anchor) {
 int AccumulatedScrollOffset(const HTMLAnchorElement& anchor_element) {
   IntSize offset;
   Frame* frame = anchor_element.GetDocument().GetFrame();
-  while (frame && frame->View() && frame->IsLocalFrame()) {
-    offset += ToLocalFrame(frame)->View()->LayoutViewport()->ScrollOffsetInt();
+  while (frame && frame->View()) {
+    auto* local_frame = DynamicTo<LocalFrame>(frame);
+    if (!local_frame)
+      break;
+
+    offset += local_frame->View()->LayoutViewport()->ScrollOffsetInt();
     frame = frame->Tree().Parent();
   }
   return offset.Height();
@@ -44,9 +48,8 @@ int AccumulatedScrollOffset(const HTMLAnchorElement& anchor_element) {
 // Whether the element is inside an iframe.
 bool IsInIFrame(const HTMLAnchorElement& anchor_element) {
   Frame* frame = anchor_element.GetDocument().GetFrame();
-  while (frame && frame->IsLocalFrame()) {
-    HTMLFrameOwnerElement* owner =
-        ToLocalFrame(frame)->GetDocument()->LocalOwner();
+  while (auto* local_frame = DynamicTo<LocalFrame>(frame)) {
+    HTMLFrameOwnerElement* owner = local_frame->GetDocument()->LocalOwner();
     if (owner && IsHTMLIFrameElement(owner))
       return true;
     frame = frame->Tree().Parent();

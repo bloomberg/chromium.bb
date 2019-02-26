@@ -738,10 +738,9 @@ void WebFrameWidgetImpl::MouseContextMenu(const WebMouseEvent& event) {
   // is refactored, at which point focusedOrMainFrame will never return a
   // RemoteFrame.
   // See https://crbug.com/341918.
-  if (!target_frame->IsLocalFrame())
+  LocalFrame* target_local_frame = DynamicTo<LocalFrame>(target_frame);
+  if (!target_local_frame)
     return;
-
-  LocalFrame* target_local_frame = ToLocalFrame(target_frame);
 
   {
     ContextMenuAllowedScope scope;
@@ -856,11 +855,9 @@ WebInputEventResult WebFrameWidgetImpl::HandleKeyEvent(
   // event.
   suppress_next_keypress_event_ = false;
 
-  Frame* focused_frame = FocusedCoreFrame();
-  if (!focused_frame || !focused_frame->IsLocalFrame())
+  auto* frame = DynamicTo<LocalFrame>(FocusedCoreFrame());
+  if (!frame)
     return WebInputEventResult::kNotHandled;
-
-  LocalFrame* frame = ToLocalFrame(focused_frame);
 
   WebInputEventResult result = frame->GetEventHandler().KeyEvent(event);
   if (result != WebInputEventResult::kNotHandled) {
@@ -914,7 +911,7 @@ WebInputEventResult WebFrameWidgetImpl::HandleCharEvent(
   bool suppress = suppress_next_keypress_event_;
   suppress_next_keypress_event_ = false;
 
-  LocalFrame* frame = ToLocalFrame(FocusedCoreFrame());
+  LocalFrame* frame = To<LocalFrame>(FocusedCoreFrame());
   if (!frame) {
     return suppress ? WebInputEventResult::kHandledSuppressed
                     : WebInputEventResult::kNotHandled;

@@ -179,7 +179,7 @@ void LazyLoadFrameObserver::LoadImmediately() {
 
   // Note that calling FrameLoader::StartNavigation() causes the
   // |lazy_load_intersection_observer_| to be disconnected.
-  ToLocalFrame(element_->ContentFrame())
+  To<LocalFrame>(element_->ContentFrame())
       ->Loader()
       .StartNavigation(FrameLoadRequest(&element_->GetDocument(),
                                         scoped_request_info->resource_request),

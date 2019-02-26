@@ -302,20 +302,23 @@ void TouchEvent::preventDefault() {
 
   if ((type() == event_type_names::kTouchstart ||
        type() == event_type_names::kTouchmove) &&
-      view() && view()->IsLocalDOMWindow() && view()->GetFrame() &&
-      current_touch_action_ == TouchAction::kTouchActionAuto) {
-    switch (HandlingPassive()) {
-      case PassiveMode::kNotPassiveDefault:
-        UseCounter::Count(ToLocalFrame(view()->GetFrame()),
-                          WebFeature::kTouchEventPreventedNoTouchAction);
-        break;
-      case PassiveMode::kPassiveForcedDocumentLevel:
-        UseCounter::Count(
-            ToLocalFrame(view()->GetFrame()),
-            WebFeature::kTouchEventPreventedForcedDocumentPassiveNoTouchAction);
-        break;
-      default:
-        break;
+      local_dom_window) {
+    auto* local_frame = DynamicTo<LocalFrame>(view()->GetFrame());
+    if (local_frame && current_touch_action_ == TouchAction::kTouchActionAuto) {
+      switch (HandlingPassive()) {
+        case PassiveMode::kNotPassiveDefault:
+          UseCounter::Count(local_frame,
+                            WebFeature::kTouchEventPreventedNoTouchAction);
+          break;
+        case PassiveMode::kPassiveForcedDocumentLevel:
+          UseCounter::Count(
+              local_frame,
+              WebFeature::
+                  kTouchEventPreventedForcedDocumentPassiveNoTouchAction);
+          break;
+        default:
+          break;
+      }
     }
   }
 }

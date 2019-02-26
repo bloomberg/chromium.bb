@@ -299,7 +299,7 @@ void TouchActionTest::RunTestOnTree(
       std::string failure_context_pos = context_stream.str();
 
       LocalFrame* main_frame =
-          ToLocalFrame(WebFrame::ToCoreFrame(*web_view->MainFrame()));
+          To<LocalFrame>(WebFrame::ToCoreFrame(*web_view->MainFrame()));
       LocalFrameView* main_frame_view = main_frame->View();
       IntRect visible_rect = WindowClipRect(*main_frame_view);
       ASSERT_TRUE(visible_rect.Contains(window_point))

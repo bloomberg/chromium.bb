@@ -1090,17 +1090,16 @@ WebInputEventResult EventHandler::HandleMouseReleaseEvent(
   return event_result;
 }
 
+// TODO(jbroman): Simplify this method, given that it produces two values,
+// and the usage always checks both, even though the function returns true
+// if it produces a non-null value.
 static bool TargetIsFrame(Node* target, LocalFrame*& frame) {
   if (!IsHTMLFrameElementBase(target))
     return false;
 
   // Cross-process drag and drop is not yet supported.
-  if (ToHTMLFrameElementBase(target)->ContentFrame() &&
-      !ToHTMLFrameElementBase(target)->ContentFrame()->IsLocalFrame())
-    return false;
-
-  frame = ToLocalFrame(ToHTMLFrameElementBase(target)->ContentFrame());
-  return true;
+  frame = DynamicTo<LocalFrame>(ToHTMLFrameElementBase(target)->ContentFrame());
+  return !!frame;
 }
 
 WebInputEventResult EventHandler::UpdateDragAndDrop(
@@ -1561,9 +1560,7 @@ void EventHandler::UpdateGestureHoverActiveState(const HitTestRequest& request,
   while (new_hover_frame_in_document && new_hover_frame_in_document != frame_) {
     new_hover_frame_chain.push_back(new_hover_frame_in_document);
     Frame* parent_frame = new_hover_frame_in_document->Tree().Parent();
-    new_hover_frame_in_document = parent_frame && parent_frame->IsLocalFrame()
-                                      ? ToLocalFrame(parent_frame)
-                                      : nullptr;
+    new_hover_frame_in_document = DynamicTo<LocalFrame>(parent_frame);
   }
 
   Element* old_hover_element_in_cur_doc = frame_->GetDocument()->HoverElement();
@@ -1583,10 +1580,11 @@ void EventHandler::UpdateGestureHoverActiveState(const HitTestRequest& request,
         new_hover_frame = new_hover_frame_chain[--index_frame_chain];
 
       auto* owner = To<HTMLFrameOwnerElement>(old_hover_element_in_cur_doc);
-      if (!owner->ContentFrame() || !owner->ContentFrame()->IsLocalFrame())
+      LocalFrame* old_hover_frame =
+          DynamicTo<LocalFrame>(owner->ContentFrame());
+      if (!old_hover_frame)
         break;
 
-      LocalFrame* old_hover_frame = ToLocalFrame(owner->ContentFrame());
       Document* doc = old_hover_frame->GetDocument();
       if (!doc)
         break;
@@ -1630,9 +1628,7 @@ void EventHandler::UpdateGestureTargetNodeForMouseEvent(
   while (entered_frame_in_document) {
     entered_frame_chain.push_back(entered_frame_in_document);
     Frame* parent_frame = entered_frame_in_document->Tree().Parent();
-    entered_frame_in_document = parent_frame && parent_frame->IsLocalFrame()
-                                    ? ToLocalFrame(parent_frame)
-                                    : nullptr;
+    entered_frame_in_document = DynamicTo<LocalFrame>(parent_frame);
   }
 
   wtf_size_t index_entered_frame_chain = entered_frame_chain.size();
@@ -1649,8 +1645,8 @@ void EventHandler::UpdateGestureTargetNodeForMouseEvent(
 
     LocalFrame* next_exited_frame_in_document = nullptr;
     if (auto* owner = DynamicTo<HTMLFrameOwnerElement>(last_node_under_tap)) {
-      if (owner->ContentFrame() && owner->ContentFrame()->IsLocalFrame())
-        next_exited_frame_in_document = ToLocalFrame(owner->ContentFrame());
+      next_exited_frame_in_document =
+          DynamicTo<LocalFrame>(owner->ContentFrame());
     }
 
     if (exited_frame_chain.size() > 0) {
@@ -1689,9 +1685,8 @@ void EventHandler::UpdateGestureTargetNodeForMouseEvent(
   while (index_entered_frame_chain) {
     Frame* parent_frame =
         entered_frame_chain[--index_entered_frame_chain]->Tree().Parent();
-    if (parent_frame && parent_frame->IsLocalFrame()) {
-      ToLocalFrame(parent_frame)
-          ->GetEventHandler()
+    if (auto* parent_local_frame = DynamicTo<LocalFrame>(parent_frame)) {
+      parent_local_frame->GetEventHandler()
           .mouse_event_manager_->SetElementUnderMouse(
               EffectiveMouseEventTargetElement(To<HTMLFrameOwnerElement>(
                   entered_frame_chain[index_entered_frame_chain]->Owner())),

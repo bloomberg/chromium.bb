@@ -897,7 +897,7 @@ TEST_P(FrameThrottlingTest, DumpThrottledFrame) {
   CompositeFrame();
   EXPECT_TRUE(frame_element->contentDocument()->View()->CanThrottleRendering());
 
-  LocalFrame* local_frame = ToLocalFrame(frame_element->ContentFrame());
+  LocalFrame* local_frame = To<LocalFrame>(frame_element->ContentFrame());
   local_frame->GetScriptController().ExecuteScriptInMainWorld(
       "document.body.innerHTML = 'throttled'");
   EXPECT_FALSE(Compositor().NeedsBeginFrame());
@@ -1172,7 +1172,8 @@ TEST_P(FrameThrottlingTest, SynchronousLayoutInAnimationFrameCallback) {
   // frame is throttled during the animation frame callback.
   auto* second_frame_element =
       ToHTMLIFrameElement(GetDocument().getElementById("second"));
-  LocalFrame* local_frame = ToLocalFrame(second_frame_element->ContentFrame());
+  LocalFrame* local_frame =
+      To<LocalFrame>(second_frame_element->ContentFrame());
   local_frame->GetScriptController().ExecuteScriptInMainWorld(
       "window.requestAnimationFrame(function() {\n"
       "  var throttledFrame = window.parent.frames.first;\n"
@@ -1205,7 +1206,7 @@ TEST_P(FrameThrottlingTest, AllowOneAnimationFrame) {
   CompositeFrame();
   EXPECT_TRUE(frame_element->contentDocument()->View()->CanThrottleRendering());
 
-  LocalFrame* local_frame = ToLocalFrame(frame_element->ContentFrame());
+  LocalFrame* local_frame = To<LocalFrame>(frame_element->ContentFrame());
   v8::HandleScope scope(v8::Isolate::GetCurrent());
   v8::Local<v8::Value> result =
       local_frame->GetScriptController().ExecuteScriptInMainWorldAndReturnValue(

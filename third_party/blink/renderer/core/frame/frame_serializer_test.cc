@@ -124,7 +124,7 @@ class FrameSerializerTest : public testing::Test,
     for (; frame; frame = frame->Tree().TraverseNext()) {
       // This is safe, because tests do not do cross-site navigation
       // (and therefore don't have remote frames).
-      serializer.SerializeFrame(*ToLocalFrame(frame));
+      serializer.SerializeFrame(*To<LocalFrame>(frame));
     }
   }
 

@@ -54,8 +54,8 @@ void ResizeViewportAnchor::EndScope() {
 
 LocalFrameView* ResizeViewportAnchor::RootFrameView() {
   if (Frame* frame = page_->MainFrame()) {
-    if (frame->IsLocalFrame())
-      return ToLocalFrame(frame)->View();
+    if (LocalFrame* local_frame = DynamicTo<LocalFrame>(frame))
+      return local_frame->View();
   }
   return nullptr;
 }

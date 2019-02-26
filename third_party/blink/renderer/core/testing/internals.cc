@@ -274,8 +274,8 @@ void Internals::ResetToConsistentState(Page* page) {
   // not cause additional lifecycle updates.
   for (Frame* frame = page->MainFrame(); frame;
        frame = frame->Tree().TraverseNext()) {
-    if (frame->IsLocalFrame())
-      ToLocalFrame(frame)->GetEventHandler().Clear();
+    if (auto* local_frame = DynamicTo<LocalFrame>(frame))
+      local_frame->GetEventHandler().Clear();
   }
 
   LocalFrame* frame = page->DeprecatedLocalMainFrame();
@@ -491,7 +491,7 @@ int Internals::getResourcePriority(const String& url, Document* document) {
 bool Internals::doesWindowHaveUrlFragment(DOMWindow* window) {
   if (IsA<RemoteDOMWindow>(window))
     return false;
-  return ToLocalFrame(window->GetFrame())
+  return To<LocalFrame>(window->GetFrame())
       ->GetDocument()
       ->Url()
       .HasFragmentIdentifier();
@@ -2167,9 +2167,10 @@ unsigned Internals::numberOfScrollableAreas(Document* document) {
 
   for (Frame* child = frame->Tree().FirstChild(); child;
        child = child->Tree().NextSibling()) {
-    if (child->IsLocalFrame() && ToLocalFrame(child)->View() &&
-        ToLocalFrame(child)->View()->ScrollableAreas())
-      count += ToLocalFrame(child)->View()->ScrollableAreas()->size();
+    auto* child_local_frame = DynamicTo<LocalFrame>(child);
+    if (child_local_frame && child_local_frame->View() &&
+        child_local_frame->View()->ScrollableAreas())
+      count += child_local_frame->View()->ScrollableAreas()->size();
   }
 
   return count;
@@ -2906,13 +2907,14 @@ StaticSelection* Internals::getSelectionInFlatTree(
     DOMWindow* window,
     ExceptionState& exception_state) {
   Frame* const frame = window->GetFrame();
-  if (!frame || !frame->IsLocalFrame()) {
+  auto* local_frame = DynamicTo<LocalFrame>(frame);
+  if (!local_frame) {
     exception_state.ThrowDOMException(DOMExceptionCode::kInvalidAccessError,
                                       "Must supply local window");
     return nullptr;
   }
   return StaticSelection::FromSelectionInFlatTree(ConvertToSelectionInFlatTree(
-      ToLocalFrame(frame)->Selection().GetSelectionInDOMTree()));
+      local_frame->Selection().GetSelectionInDOMTree()));
 }
 
 Node* Internals::visibleSelectionAnchorNode() {
@@ -3224,7 +3226,7 @@ Element* Internals::interestedElement() {
     return nullptr;
 
   if (!RuntimeEnabledFeatures::FocuslessSpatialNavigationEnabled()) {
-    return ToLocalFrame(
+    return To<LocalFrame>(
                GetFrame()->GetPage()->GetFocusController().FocusedOrMainFrame())
         ->GetDocument()
         ->ActiveElement();

@@ -628,6 +628,11 @@ DEFINE_TYPE_CASTS(LocalFrame,
                   localFrame->IsLocalFrame(),
                   localFrame.IsLocalFrame());
 
+template <>
+struct DowncastTraits<LocalFrame> {
+  static bool AllowFrom(const Frame& frame) { return frame.IsLocalFrame(); }
+};
+
 DECLARE_WEAK_IDENTIFIER_MAP(LocalFrame);
 
 class FrameNavigationDisabler {

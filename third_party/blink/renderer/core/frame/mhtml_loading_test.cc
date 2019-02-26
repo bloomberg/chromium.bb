@@ -94,7 +94,7 @@ TEST_F(MHTMLLoadingTest, CheckDomain) {
 
   LoadURLInTopFrame(ToKURL(kFileURL), "simple_test.mht");
   ASSERT_TRUE(GetPage());
-  LocalFrame* frame = ToLocalFrame(GetPage()->MainFrame());
+  LocalFrame* frame = To<LocalFrame>(GetPage()->MainFrame());
   ASSERT_TRUE(frame);
   Document* document = frame->GetDocument();
   ASSERT_TRUE(document);
@@ -112,7 +112,7 @@ TEST_F(MHTMLLoadingTest, EnforceSandboxFlags) {
 
   LoadURLInTopFrame(ToKURL(kURL), "page_with_javascript.mht");
   ASSERT_TRUE(GetPage());
-  LocalFrame* frame = ToLocalFrame(GetPage()->MainFrame());
+  LocalFrame* frame = To<LocalFrame>(GetPage()->MainFrame());
   ASSERT_TRUE(frame);
   Document* document = frame->GetDocument();
   ASSERT_TRUE(document);
@@ -133,7 +133,7 @@ TEST_F(MHTMLLoadingTest, EnforceSandboxFlags) {
 
   // Make sure the subframe is also sandboxed.
   LocalFrame* child_frame =
-      ToLocalFrame(GetPage()->MainFrame()->Tree().FirstChild());
+      To<LocalFrame>(GetPage()->MainFrame()->Tree().FirstChild());
   ASSERT_TRUE(child_frame);
   Document* child_document = child_frame->GetDocument();
   ASSERT_TRUE(child_document);
@@ -156,7 +156,7 @@ TEST_F(MHTMLLoadingTest, EnforceSandboxFlagsInXSLT) {
 
   LoadURLInTopFrame(ToKURL(kURL), "xslt.mht");
   ASSERT_TRUE(GetPage());
-  LocalFrame* frame = ToLocalFrame(GetPage()->MainFrame());
+  LocalFrame* frame = To<LocalFrame>(GetPage()->MainFrame());
   ASSERT_TRUE(frame);
   Document* document = frame->GetDocument();
   ASSERT_TRUE(document);
@@ -178,7 +178,7 @@ TEST_F(MHTMLLoadingTest, ShadowDom) {
 
   LoadURLInTopFrame(ToKURL(kURL), "shadow.mht");
   ASSERT_TRUE(GetPage());
-  LocalFrame* frame = ToLocalFrame(GetPage()->MainFrame());
+  LocalFrame* frame = To<LocalFrame>(GetPage()->MainFrame());
   ASSERT_TRUE(frame);
   Document* document = frame->GetDocument();
   ASSERT_TRUE(document);
@@ -204,7 +204,7 @@ TEST_F(MHTMLLoadingTest, FormControlElements) {
 
   LoadURLInTopFrame(ToKURL(kURL), "form.mht");
   ASSERT_TRUE(GetPage());
-  LocalFrame* frame = ToLocalFrame(GetPage()->MainFrame());
+  LocalFrame* frame = To<LocalFrame>(GetPage()->MainFrame());
   ASSERT_TRUE(frame);
   Document* document = frame->GetDocument();
   ASSERT_TRUE(document);
@@ -223,7 +223,7 @@ TEST_F(MHTMLLoadingTest, LoadMHTMLContainingSoftLineBreaks) {
 
   LoadURLInTopFrame(ToKURL(kURL), "soft_line_break.mht");
   ASSERT_TRUE(GetPage());
-  LocalFrame* frame = ToLocalFrame(GetPage()->MainFrame());
+  LocalFrame* frame = To<LocalFrame>(GetPage()->MainFrame());
   ASSERT_TRUE(frame);
   // We should not have problem to concatenate header lines separated by soft
   // line breaks.

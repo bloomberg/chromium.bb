@@ -310,11 +310,11 @@ ScopedFocusNavigation ScopedFocusNavigation::OwnedByIFrame(
     FocusController::OwnerMap& owner_map) {
   DCHECK(frame.ContentFrame());
   DCHECK(frame.ContentFrame()->IsLocalFrame());
-  ToLocalFrame(frame.ContentFrame())
+  To<LocalFrame>(frame.ContentFrame())
       ->GetDocument()
       ->UpdateDistributionForLegacyDistributedNodes();
   return ScopedFocusNavigation(
-      *ToLocalFrame(frame.ContentFrame())->GetDocument(), nullptr, owner_map);
+      *To<LocalFrame>(frame.ContentFrame())->GetDocument(), nullptr, owner_map);
 }
 
 ScopedFocusNavigation ScopedFocusNavigation::OwnedByHTMLSlotElement(
@@ -678,10 +678,10 @@ Element* FindFocusableElementDescendingDownIntoFrameDocument(
   // 2) the deepest-nested HTMLFrameOwnerElement.
   while (IsA<HTMLFrameOwnerElement>(element)) {
     HTMLFrameOwnerElement& owner = To<HTMLFrameOwnerElement>(*element);
-    if (!owner.ContentFrame() || !owner.ContentFrame()->IsLocalFrame())
+    auto* container_local_frame = DynamicTo<LocalFrame>(owner.ContentFrame());
+    if (!container_local_frame)
       break;
-    ToLocalFrame(owner.ContentFrame())
-        ->GetDocument()
+    container_local_frame->GetDocument()
         ->UpdateStyleAndLayoutIgnorePendingStylesheets();
     ScopedFocusNavigation scope =
         ScopedFocusNavigation::OwnedByIFrame(owner, owner_map);
@@ -779,12 +779,8 @@ void FocusController::SetFocusedFrame(Frame* frame, bool notify_embedder) {
 
   is_changing_focused_frame_ = true;
 
-  LocalFrame* old_frame = (focused_frame_ && focused_frame_->IsLocalFrame())
-                              ? ToLocalFrame(focused_frame_.Get())
-                              : nullptr;
-
-  LocalFrame* new_frame =
-      (frame && frame->IsLocalFrame()) ? ToLocalFrame(frame) : nullptr;
+  auto* old_frame = DynamicTo<LocalFrame>(focused_frame_.Get());
+  auto* new_frame = DynamicTo<LocalFrame>(frame);
 
   focused_frame_ = frame;
 
@@ -1232,8 +1228,9 @@ bool FocusController::SetFocusedElement(Element* element,
   Document* new_document = nullptr;
   if (element)
     new_document = &element->GetDocument();
-  else if (new_focused_frame && new_focused_frame->IsLocalFrame())
-    new_document = ToLocalFrame(new_focused_frame)->GetDocument();
+  else if (auto* new_focused_local_frame =
+               DynamicTo<LocalFrame>(new_focused_frame))
+    new_document = new_focused_local_frame->GetDocument();
 
   if (new_document && old_document == new_document &&
       new_document->FocusedElement() == element)
@@ -1260,9 +1257,8 @@ bool FocusController::SetFocusedElement(Element* element,
 
 void FocusController::ActiveHasChanged() {
   Frame* frame = FocusedOrMainFrame();
-  if (frame->IsLocalFrame()) {
-    Document* const document =
-        ToLocalFrame(frame)->LocalFrameRoot().GetDocument();
+  if (auto* local_frame = DynamicTo<LocalFrame>(frame)) {
+    Document* const document = local_frame->LocalFrameRoot().GetDocument();
     DCHECK(document);
     if (!document->IsActive())
       return;
@@ -1271,7 +1267,7 @@ void FocusController::ActiveHasChanged() {
     // we invalidate from the root LocalFrameView instead of just the focused.
     if (LocalFrameView* view = document->View())
       view->InvalidateAllCustomScrollbarsOnActiveChanged();
-    ToLocalFrame(frame)->Selection().PageActivationChanged();
+    local_frame->Selection().PageActivationChanged();
   }
 }
 

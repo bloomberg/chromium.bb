@@ -429,8 +429,8 @@ void LocalDOMWindow::SendOrientationChangeEvent() {
   for (wtf_size_t i = 0; i < frames.size(); i++) {
     for (Frame* child = frames[i]->Tree().FirstChild(); child;
          child = child->Tree().NextSibling()) {
-      if (child->IsLocalFrame())
-        frames.push_back(ToLocalFrame(child));
+      if (auto* child_local_frame = DynamicTo<LocalFrame>(child))
+        frames.push_back(child_local_frame);
     }
   }
 
@@ -827,9 +827,8 @@ IntSize LocalDOMWindow::GetViewportSize() const {
   // FIXME: This is potentially too much work. We really only need to know the
   // dimensions of the parent frame's layoutObject.
   if (Frame* parent = GetFrame()->Tree().Parent()) {
-    if (parent && parent->IsLocalFrame())
-      ToLocalFrame(parent)
-          ->GetDocument()
+    if (auto* parent_local_frame = DynamicTo<LocalFrame>(parent))
+      parent_local_frame->GetDocument()
           ->UpdateStyleAndLayoutIgnorePendingStylesheets();
   }
 

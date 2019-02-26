@@ -299,9 +299,9 @@ void StorageArea::DispatchLocalStorageEvent(
          frame = frame->Tree().TraverseNext()) {
       // Remote frames are cross-origin and do not need to be notified of
       // events.
-      if (!frame->IsLocalFrame())
+      auto* local_frame = DynamicTo<LocalFrame>(frame);
+      if (!local_frame)
         continue;
-      LocalFrame* local_frame = ToLocalFrame(frame);
       LocalDOMWindow* local_window = local_frame->DomWindow();
       StorageArea* storage =
           DOMWindowStorage::From(*local_window).OptionalLocalStorage();
@@ -336,9 +336,9 @@ void StorageArea::DispatchSessionStorageEvent(
   for (Frame* frame = page->MainFrame(); frame;
        frame = frame->Tree().TraverseNext()) {
     // Remote frames are cross-origin and do not need to be notified of events.
-    if (!frame->IsLocalFrame())
+    auto* local_frame = DynamicTo<LocalFrame>(frame);
+    if (!local_frame)
       continue;
-    LocalFrame* local_frame = ToLocalFrame(frame);
     LocalDOMWindow* local_window = local_frame->DomWindow();
     StorageArea* storage =
         DOMWindowStorage::From(*local_window).OptionalSessionStorage();

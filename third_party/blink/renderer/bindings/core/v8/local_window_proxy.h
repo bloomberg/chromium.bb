@@ -107,7 +107,9 @@ class LocalWindowProxy final : public WindowProxy {
   // Updates Activity Logger for the current context.
   void UpdateActivityLogger();
 
-  LocalFrame* GetFrame() const { return ToLocalFrame(WindowProxy::GetFrame()); }
+  LocalFrame* GetFrame() const {
+    return To<LocalFrame>(WindowProxy::GetFrame());
+  }
 
   Member<ScriptState> script_state_;
 };
