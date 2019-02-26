@@ -152,14 +152,6 @@ void LogPlatformNotificationInHistogram(
                             notification, NETWORK_NOTIFICATION_MAX);
 }
 
-void LogStaleHostRacing(bool used) {
-  UMA_HISTOGRAM_BOOLEAN("Net.QuicSession.StaleHostRacing", used);
-}
-
-void LogStaleAndFreshHostMatched(bool matched) {
-  UMA_HISTOGRAM_BOOLEAN("Net.QuicSession.StaleAndFreshHostMatched", matched);
-}
-
 void LogConnectionIpPooling(bool pooled) {
   UMA_HISTOGRAM_BOOLEAN("Net.QuicSession.ConnectionIpPooled", pooled);
 }
@@ -428,6 +420,32 @@ class QuicStreamFactory::Job {
     return false;
   }
 
+  void LogStaleHostRacing(bool used) {
+    if (used) {
+      net_log_.AddEvent(
+          NetLogEventType::
+              QUIC_STREAM_FACTORY_JOB_STALE_HOST_TRIED_ON_CONNECTION);
+    } else {
+      net_log_.AddEvent(
+          NetLogEventType::
+              QUIC_STREAM_FACTORY_JOB_STALE_HOST_NOT_USED_ON_CONNECTION);
+    }
+    UMA_HISTOGRAM_BOOLEAN("Net.QuicSession.StaleHostRacing", used);
+  }
+
+  void LogStaleAndFreshHostMatched(bool matched) {
+    if (matched) {
+      net_log_.AddEvent(
+          NetLogEventType::
+              QUIC_STREAM_FACTORY_JOB_STALE_HOST_RESOLUTION_MATCHED);
+    } else {
+      net_log_.AddEvent(
+          NetLogEventType::
+              QUIC_STREAM_FACTORY_JOB_STALE_HOST_RESOLUTION_NO_MATCH);
+    }
+    UMA_HISTOGRAM_BOOLEAN("Net.QuicSession.StaleAndFreshHostMatched", matched);
+  }
+
   IoState io_state_;
   QuicStreamFactory* factory_;
   quic::QuicTransportVersion quic_version_;
@@ -580,9 +598,6 @@ void QuicStreamFactory::Job::OnResolveHostComplete(int rv) {
         return;
       }
       LogStaleAndFreshHostMatched(false);
-      net_log_.AddEvent(
-          NetLogEventType::
-              QUIC_STREAM_FACTORY_JOB_STALE_HOST_RESOLUTION_NO_MATCH);
       CloseStaleHostConnection();
       resolve_host_request_ = std::move(fresh_resolve_host_request_);
       io_state_ = STATE_RESOLVE_HOST_COMPLETE;
@@ -774,8 +789,6 @@ int QuicStreamFactory::Job::DoValidateHost() {
   }
 
   LogStaleAndFreshHostMatched(false);
-  net_log_.AddEvent(
-      NetLogEventType::QUIC_STREAM_FACTORY_JOB_STALE_HOST_RESOLUTION_NO_MATCH);
   resolve_host_request_ = std::move(fresh_resolve_host_request_);
   CloseStaleHostConnection();
   io_state_ = STATE_RESOLVE_HOST_COMPLETE;

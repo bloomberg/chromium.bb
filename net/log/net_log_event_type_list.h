@@ -1680,11 +1680,17 @@ EVENT_TYPE(QUIC_STREAM_FACTORY_JOB_CONNECT)
 // will be attempted soon.
 EVENT_TYPE(QUIC_STREAM_FACTORY_JOB_RETRY_ON_ALTERNATE_NETWORK)
 
-// This event indicates that the stale host resolution has failed.
-EVENT_TYPE(QUIC_STREAM_FACTORY_JOB_STALE_HOST_RESOLUTION_FAILED)
+// This event indicates that the stale host result is used to try connecting.
+EVENT_TYPE(QUIC_STREAM_FACTORY_JOB_STALE_HOST_TRIED_ON_CONNECTION)
+
+// This event indicates that stale host was not used to try connecting.
+EVENT_TYPE(QUIC_STREAM_FACTORY_JOB_STALE_HOST_NOT_USED_ON_CONNECTION)
 
 // This event indicates that the stale host doesn't match with fresh host.
 EVENT_TYPE(QUIC_STREAM_FACTORY_JOB_STALE_HOST_RESOLUTION_NO_MATCH)
+
+// This event indicates that stale host matches with fresh resolution.
+EVENT_TYPE(QUIC_STREAM_FACTORY_JOB_STALE_HOST_RESOLUTION_MATCHED)
 
 // ------------------------------------------------------------------------
 // quic::QuicSession
