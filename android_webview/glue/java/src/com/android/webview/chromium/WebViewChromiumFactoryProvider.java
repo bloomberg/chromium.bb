@@ -289,7 +289,7 @@ public class WebViewChromiumFactoryProvider implements WebViewFactoryProvider {
                 cl.appendSwitch("webview-sandboxed-renderer");
             }
 
-            ThreadUtils.setWillOverrideUiThread();
+            ThreadUtils.setWillOverrideUiThread(true);
             BuildInfo.setBrowserPackageInfo(packageInfo);
 
             try (StrictModeContext smc = StrictModeContext.allowDiskWrites()) {

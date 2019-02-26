@@ -45,7 +45,7 @@ public class UiThreadSchedulerTest {
     public void setUp() {
         mNativeLibraryTestRule.loadNativeLibraryNoBrowserProcess();
         ThreadUtils.setUiThread(null);
-        ThreadUtils.setWillOverrideUiThread();
+        ThreadUtils.setWillOverrideUiThread(true);
         mUiThread = new HandlerThread("UiThreadForTest");
         mUiThread.start();
         ThreadUtils.setUiThread(mUiThread.getLooper());
@@ -57,6 +57,7 @@ public class UiThreadSchedulerTest {
     public void tearDown() {
         mUiThread.quitSafely();
         ThreadUtils.setUiThread(null);
+        ThreadUtils.setWillOverrideUiThread(false);
     }
 
     @Test
