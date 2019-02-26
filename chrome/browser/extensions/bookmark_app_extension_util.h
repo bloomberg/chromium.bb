@@ -5,8 +5,6 @@
 #ifndef CHROME_BROWSER_EXTENSIONS_BOOKMARK_APP_EXTENSION_UTIL_H_
 #define CHROME_BROWSER_EXTENSIONS_BOOKMARK_APP_EXTENSION_UTIL_H_
 
-#include "extensions/common/constants.h"
-
 class Profile;
 
 namespace content {
@@ -19,10 +17,13 @@ class Extension;
 
 void BookmarkAppCreateOsShortcuts(Profile* profile, const Extension* extension);
 
-void BookmarkAppReparentTab(Profile* profile,
-                            content::WebContents* contents,
-                            const Extension* extension,
-                            LaunchType launch_type);
+void BookmarkAppReparentTab(content::WebContents* contents,
+                            const Extension* extension);
+
+// Returns true if OS supports AppShim revealing,
+bool CanBookmarkAppRevealAppShim();
+// Reveals AppShim in Finder for a given app,
+void BookmarkAppRevealAppShim(Profile* profile, const Extension* extension);
 
 }  // namespace extensions
 

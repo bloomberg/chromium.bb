@@ -77,7 +77,6 @@ class WebAppInstallManager final : public InstallManager,
                          bool user_accepted,
                          std::unique_ptr<WebApplicationInfo> web_app_info);
   void OnInstallFinalized(std::unique_ptr<WebApplicationInfo> web_app_info,
-                          ForInstallableSite for_installable_site,
                           const AppId& app_id,
                           InstallResultCode code);
 

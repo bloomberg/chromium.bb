@@ -101,9 +101,19 @@ void WebAppInstallFinalizer::CreateOsShortcuts(const AppId& app_id) {
   NOTIMPLEMENTED();
 }
 
-void WebAppInstallFinalizer::ReparentTab(const WebApplicationInfo& web_app_info,
-                                         const AppId& app_id,
+void WebAppInstallFinalizer::ReparentTab(const AppId& app_id,
                                          content::WebContents* web_contents) {
+  // TODO(loyso): Implement it.
+  NOTIMPLEMENTED();
+}
+
+bool WebAppInstallFinalizer::CanRevealAppShim() const {
+  // TODO(loyso): Implement it.
+  NOTIMPLEMENTED();
+  return false;
+}
+
+void WebAppInstallFinalizer::RevealAppShim(const AppId& app_id) {
   // TODO(loyso): Implement it.
   NOTIMPLEMENTED();
 }

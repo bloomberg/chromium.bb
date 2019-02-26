@@ -24,9 +24,10 @@ class TestInstallFinalizer final : public InstallFinalizer {
   void FinalizeInstall(const WebApplicationInfo& web_app_info,
                        InstallFinalizedCallback callback) override;
   void CreateOsShortcuts(const AppId& app_id) override;
-  void ReparentTab(const WebApplicationInfo& web_app_info,
-                   const AppId& app_id,
+  void ReparentTab(const AppId& app_id,
                    content::WebContents* web_contents) override;
+  bool CanRevealAppShim() const override;
+  void RevealAppShim(const AppId& app_id) override;
 
   void SetNextFinalizeInstallResult(const AppId& app_id,
                                     InstallResultCode code);
@@ -36,7 +37,8 @@ class TestInstallFinalizer final : public InstallFinalizer {
   }
 
   int num_create_os_shortcuts_calls() { return num_create_os_shortcuts_calls_; }
-  int num_reparent_tab_num_calls() { return num_reparent_tab_num_calls_; }
+  int num_reparent_tab_calls() { return num_reparent_tab_calls_; }
+  int num_reveal_appshim_calls() { return num_reveal_appshim_calls_; }
 
  private:
   std::unique_ptr<WebApplicationInfo> web_app_info_copy_;
@@ -45,7 +47,8 @@ class TestInstallFinalizer final : public InstallFinalizer {
   base::Optional<InstallResultCode> next_result_code_;
 
   int num_create_os_shortcuts_calls_ = 0;
-  int num_reparent_tab_num_calls_ = 0;
+  int num_reparent_tab_calls_ = 0;
+  int num_reveal_appshim_calls_ = 0;
 
   DISALLOW_COPY_AND_ASSIGN(TestInstallFinalizer);
 };

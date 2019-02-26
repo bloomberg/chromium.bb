@@ -36,9 +36,10 @@ class BookmarkAppInstallFinalizer : public web_app::InstallFinalizer {
   void FinalizeInstall(const WebApplicationInfo& web_app_info,
                        InstallFinalizedCallback callback) override;
   void CreateOsShortcuts(const web_app::AppId& app_id) override;
-  void ReparentTab(const WebApplicationInfo& web_app_info,
-                   const web_app::AppId& app_id,
+  void ReparentTab(const web_app::AppId& app_id,
                    content::WebContents* web_contents) override;
+  bool CanRevealAppShim() const override;
+  void RevealAppShim(const web_app::AppId& app_id) override;
 
   void SetCrxInstallerForTesting(scoped_refptr<CrxInstaller> crx_installer);
 

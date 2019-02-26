@@ -201,8 +201,7 @@ void WebAppInstallManager::OnDialogCompleted(
   install_finalizer_->FinalizeInstall(
       web_app_info_copy,
       base::BindOnce(&WebAppInstallManager::OnInstallFinalized,
-                     weak_ptr_factory_.GetWeakPtr(), std::move(web_app_info),
-                     for_installable_site));
+                     weak_ptr_factory_.GetWeakPtr(), std::move(web_app_info)));
 
   // Check that the finalizer hasn't called OnInstallFinalized synchronously:
   DCHECK(install_callback_);
@@ -210,7 +209,6 @@ void WebAppInstallManager::OnDialogCompleted(
 
 void WebAppInstallManager::OnInstallFinalized(
     std::unique_ptr<WebApplicationInfo> web_app_info,
-    ForInstallableSite for_installable_site,
     const AppId& app_id,
     InstallResultCode code) {
   if (InstallInterrupted())
@@ -222,7 +220,11 @@ void WebAppInstallManager::OnInstallFinalized(
     // TODO(loyso): Implement |create_shortcuts| to skip OS shortcuts creation.
     install_finalizer_->CreateOsShortcuts(app_id);
     // TODO(loyso): Implement |reparent_tab| to skip tab reparenting logic.
-    install_finalizer_->ReparentTab(*web_app_info, app_id, web_contents());
+    if (web_app_info->open_as_window)
+      install_finalizer_->ReparentTab(app_id, web_contents());
+
+    if (install_finalizer_->CanRevealAppShim())
+      install_finalizer_->RevealAppShim(app_id);
   }
 
   CallInstallCallback(app_id, code);

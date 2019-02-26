@@ -102,13 +102,21 @@ void BookmarkAppInstallFinalizer::CreateOsShortcuts(
 }
 
 void BookmarkAppInstallFinalizer::ReparentTab(
-    const WebApplicationInfo& web_app_info,
     const web_app::AppId& app_id,
     content::WebContents* web_contents) {
   DCHECK(web_contents);
+  DCHECK(!profile_->IsOffTheRecord());
   const Extension* app = GetExtensionById(profile_, app_id);
-  const LaunchType launch_type = GetLaunchType(web_app_info);
-  BookmarkAppReparentTab(profile_, web_contents, app, launch_type);
+  BookmarkAppReparentTab(web_contents, app);
+}
+
+bool BookmarkAppInstallFinalizer::CanRevealAppShim() const {
+  return CanBookmarkAppRevealAppShim();
+}
+
+void BookmarkAppInstallFinalizer::RevealAppShim(const web_app::AppId& app_id) {
+  const Extension* app = GetExtensionById(profile_, app_id);
+  BookmarkAppRevealAppShim(profile_, app);
 }
 
 }  // namespace extensions
