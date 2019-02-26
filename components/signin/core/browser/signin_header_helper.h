@@ -235,7 +235,6 @@ bool AppendOrRemoveDiceRequestHeader(
     const GURL& redirect_url,
     const std::string& account_id,
     bool sync_enabled,
-    bool sync_has_auth_error,
     AccountConsistencyMethod account_consistency,
     const content_settings::CookieSettings* cookie_settings,
     const std::string& device_id);

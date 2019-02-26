@@ -158,7 +158,6 @@ ProfileSyncService::ProfileSyncService(InitParams init_params)
       sync_prefs_(sync_client_->GetPrefService()),
       identity_manager_(init_params.identity_manager),
       auth_manager_(std::make_unique<SyncAuthManager>(
-          &sync_prefs_,
           identity_manager_,
           base::BindRepeating(&ProfileSyncService::AccountStateChanged,
                               base::Unretained(this)),

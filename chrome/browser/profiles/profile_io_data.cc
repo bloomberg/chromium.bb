@@ -452,8 +452,6 @@ void ProfileIOData::InitializeOnUIThread(Profile* profile) {
     sync_first_setup_complete_.Init(syncer::prefs::kSyncFirstSetupComplete,
                                     pref_service);
     sync_first_setup_complete_.MoveToThread(io_task_runner);
-    sync_has_auth_error_.Init(syncer::prefs::kSyncHasAuthError, pref_service);
-    sync_has_auth_error_.MoveToThread(io_task_runner);
   }
 
 #if !defined(OS_CHROMEOS)
@@ -820,10 +818,6 @@ bool ProfileIOData::IsSyncEnabled() const {
          !sync_suppress_start_.GetValue();
 }
 
-bool ProfileIOData::SyncHasAuthError() const {
-  return sync_has_auth_error_.GetValue();
-}
-
 #if !defined(OS_CHROMEOS)
 std::string ProfileIOData::GetSigninScopedDeviceId() const {
   return signin_scoped_device_id_.GetValue();
@@ -1163,7 +1157,6 @@ void ProfileIOData::ShutdownOnUIThread(
   google_services_user_account_id_.Destroy();
   sync_suppress_start_.Destroy();
   sync_first_setup_complete_.Destroy();
-  sync_has_auth_error_.Destroy();
 #if !defined(OS_CHROMEOS)
   signin_scoped_device_id_.Destroy();
 #endif

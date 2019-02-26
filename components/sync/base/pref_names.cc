@@ -22,9 +22,6 @@ const char kSyncLongPollIntervalSeconds[] = "sync.long_poll_interval";
 // Boolean specifying whether the user finished setting up sync at least once.
 const char kSyncFirstSetupComplete[] = "sync.has_setup_completed";
 
-// Boolean specifying whether sync has an auth error.
-const char kSyncHasAuthError[] = "sync.has_auth_error";
-
 // Boolean specifying whether to automatically sync all data types (including
 // future ones, as they're added).  If this is true, the following preferences
 // (kSyncBookmarks, kSyncPasswords, etc.) can all be ignored.

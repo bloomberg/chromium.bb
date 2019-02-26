@@ -151,7 +151,6 @@ class ProfileIOData {
 
   // Gets Sync state, for Dice account consistency.
   bool IsSyncEnabled() const;
-  bool SyncHasAuthError() const;
 
   BooleanPrefMember* safe_browsing_enabled() const {
     return &safe_browsing_enabled_;
@@ -496,7 +495,6 @@ class ProfileIOData {
       client_cert_store_factory_;
 
   mutable StringPrefMember google_services_user_account_id_;
-  mutable BooleanPrefMember sync_has_auth_error_;
   mutable BooleanPrefMember sync_suppress_start_;
   mutable BooleanPrefMember sync_first_setup_complete_;
   mutable signin::AccountConsistencyMethod account_consistency_;
