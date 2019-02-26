@@ -24,10 +24,12 @@ RendererWebApplicationCacheHostImpl::RendererWebApplicationCacheHostImpl(
     RenderViewImpl* render_view,
     WebApplicationCacheHostClient* client,
     int appcache_host_id,
-    int frame_routing_id)
+    int frame_routing_id,
+    scoped_refptr<base::SingleThreadTaskRunner> task_runner)
     : WebApplicationCacheHostImpl(client,
                                   appcache_host_id,
-                                  frame_routing_id),
+                                  frame_routing_id,
+                                  std::move(task_runner)),
       routing_id_(render_view->GetRoutingID()),
       frame_routing_id_(frame_routing_id) {}
 
