@@ -373,7 +373,12 @@ ANDROID_NYC_BUILD_TARGETS = {
     'X86_64_USERDEBUG': ('linux-cheets_x86_64-userdebug', r'\.zip$'),
 }
 ANDROID_PI_BUILD_TARGETS = {
-    'ARM': ('linux-cheets_arm-user', r'\.zip$'),
+    # Roll XkbToKcmConverter with system image. It's a host executable and
+    # doesn't depend on the target as long as it's pi-arc branch. The converter
+    # is ARC specific and not a part of Android SDK. Having a custom target like
+    # SDK_TOOLS might be better in the long term, but let's use one from ARM
+    # target as there's no other similar executables right now.
+    'ARM': ('linux-cheets_arm-user', r'(\.zip|/XkbToKcmConverter)$'),
     'X86': ('linux-cheets_x86-user', r'\.zip$'),
     'X86_NDK_TRANSLATION': ('linux-cheets_x86_ndk_translation-user', r'\.zip$'),
     'X86_64': ('linux-cheets_x86_64-user', r'\.zip$'),
